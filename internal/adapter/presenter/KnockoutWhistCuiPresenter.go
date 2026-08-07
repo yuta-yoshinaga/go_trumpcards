@@ -29,6 +29,15 @@ func knockoutWhistPlayerStr(g interfaces.KnockoutWhistGame, idx int) string {
 		return ""
 	}
 	var b strings.Builder
+	// **リード権と直前ラウンドの勝者が CUI に出ていなかった (#4762)。**Web は
+	// leader / roundWinner バッジを常時出している。SpoilFiveCuiPresenter に
+	// 同じ目的のマークがすでにあるので、体裁を揃える。
+	if idx == g.GetLeadPlayerIdx() {
+		b.WriteString(i18n.T("knockoutwhist.leaderMark"))
+	}
+	if idx == g.GetRoundWinnerIdx() {
+		b.WriteString(i18n.T("knockoutwhist.winnerMark"))
+	}
 	if player.GetEliminated() {
 		b.WriteString(i18n.Tf("knockoutwhist.playerLineEliminated",
 			"name", cuiPlayerName(player, idx)))

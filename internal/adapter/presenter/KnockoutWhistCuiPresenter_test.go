@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -29,6 +30,8 @@ func setupKnockoutWhistCuiMock() *interfaces.MockKnockoutWhistGame {
 	m.On("GetHandSize").Return(7)
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetTrumpSuit").Return(domain.CardDesignSpade)
+	m.On("GetLeadPlayerIdx").Return(-1).Maybe()
+	m.On("GetRoundWinnerIdx").Return(-1).Maybe()
 	m.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.KnockoutWhistPhasePlay)
@@ -152,8 +155,51 @@ func TestKnockoutWhistCuiPresenter_TrumpSelectPrompt(t *testing.T) {
 	m, _ := setupKnockoutWhistCuiMockWithPlayers()
 	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 	m.On("GetPhase").Return(domain.KnockoutWhistPhaseTrumpSelect)
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLeadPlayerIdx")
 	m.On("GetLeadPlayerIdx").Return(0)
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "st <1-4>") // help line advertising the select-trump command
+}
+
+// **リード権と直前ラウンドの勝者が CUI に出ていなかった (#4762)。**Web は
+// leader / roundWinner バッジを常時出しており、SpoilFive の CUI にも同じ
+// 目的のマークがある。
+func TestKnockoutWhistCuiPresenter_LeaderAndWinnerMarks(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.KnockoutWhistCuiPresenter)
+
+	withSeats := func(lead, winner int) *interfaces.MockKnockoutWhistGame {
+		m, _ := setupKnockoutWhistCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLeadPlayerIdx")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundWinnerIdx")
+		m.On("GetLeadPlayerIdx").Return(lead)
+		m.On("GetRoundWinnerIdx").Return(winner)
+		return m
+	}
+
+	t.Run("marks the lead seat once", func(t *testing.T) {
+		out := p.Output(withSeats(1, -1), nil)
+		assert.Equal(t, 1, strings.Count(out, "▶(リード)"), "印が付くのは1席だけ")
+	})
+
+	t.Run("marks the round winner once", func(t *testing.T) {
+		out := p.Output(withSeats(-1, 2), nil)
+		assert.Equal(t, 1, strings.Count(out, "★(勝者)"))
+	})
+
+	// **同じ席がリードかつ勝者になることがある。**片方で上書きしない。
+	t.Run("marks a seat that is both lead and round winner", func(t *testing.T) {
+		out := p.Output(withSeats(0, 0), nil)
+		assert.Contains(t, out, "▶(リード)")
+		assert.Contains(t, out, "★(勝者)")
+	})
+
+	t.Run("marks nothing before either is decided", func(t *testing.T) {
+		out := p.Output(withSeats(-1, -1), nil)
+		assert.NotContains(t, out, "▶(リード)")
+		assert.NotContains(t, out, "★(勝者)")
+	})
 }

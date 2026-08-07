@@ -21,5 +21,7 @@
   "hintReasonLeadHigh": "Lead a high card to seize the trick",
   "hintReasonFollowWin": "Win the trick to survive (trick tally matters)",
   "hintReasonFollowDuck": "Cannot win — follow with a low card",
-  "hintReasonDiscardLow": "Cannot follow suit — discard a low card"
+  "hintReasonDiscardLow": "Cannot follow suit — discard a low card",
+  "leaderMark": "▶(lead) ",
+  "winnerMark": "★(winner) "
 }
