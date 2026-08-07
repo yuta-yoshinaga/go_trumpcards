@@ -11,6 +11,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
@@ -20,6 +21,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
@@ -31,6 +33,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { FOURCARDPOKER_HELP, parseFourCardPokerCommand } from '../utils/cli/commands/fourcardpokerCommands';
 import { formatFourCardPokerState } from '../utils/cli/formatters/fourcardpokerFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Four Card Poker tutorial step definitions. */
 const FCP_TUTORIAL_STEPS: TutorialStep[] = [
@@ -83,6 +86,15 @@ function FourCardPokerPageContent() {
 
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec: execApi, retry } = useGameApi(fourcardpokerApi.exec);
+
+  // **ヒントロジックは 132 行のフル実装で hintFactories にも登録済みなのに、
+  // ページが useGameHint を import すらしておらず誰にも使われていなかった
+  // (#4715)。**4枚役特有のフラッシュ>ストレート順位まで踏まえた推奨が死んでいた。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('fourcardpoker', state);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('fourcardpoker');
   const cliConfig: CliGameConfig<FourCardPokerResponse, Parameters<typeof execApi>> = useMemo(
@@ -309,7 +321,11 @@ function FourCardPokerPageContent() {
 
           <GameFooter className={`${gameTheme.fourcardpoker.footer} px-4 pt-3`}>
             <ErrorAlert message={error} onRetry={retry} />
-            <SettingsPanel title={t('settings.title')} groups={[]} />
+            <SettingsPanel
+              title={t('settings.title')}
+              groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
+            />
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
             {isBetPhase && (
               <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="fcp-bet-controls">
                 <ChipBetInput

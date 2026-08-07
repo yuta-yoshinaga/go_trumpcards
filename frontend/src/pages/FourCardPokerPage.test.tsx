@@ -267,4 +267,38 @@ describe('FourCardPokerPage', () => {
     expect(screen.getByRole('alert')).toHaveTextContent(/残高/);
     expect(screen.getByRole('button', { name: 'ベット' })).toBeDisabled();
   });
+
+  // **ヒントロジックは 132 行のフル実装で hintFactories にも登録済みなのに、
+  // ページが useGameHint を import すらしておらず誰にも使われていなかった
+  // (#4715)。**4枚役特有のフラッシュ>ストレート順位まで踏まえた推奨が死んでいた。
+  it('shows the frontend hint once the toggle is on', async () => {
+    // useGameHint はこのファイルで自動モック済み。既定は hint:null / enabled:false
+    // なので、出す側を明示的に作る。
+    vi.mocked(useGameHint).mockReturnValue({
+      hint: { targetAction: 'play', reason: 'hint.strong_hand', confidence: 'high' },
+      hintEnabled: true,
+      setHintEnabled: vi.fn(),
+    });
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<FourCardPokerPage />);
+
+    await waitFor(() => expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument());
+  });
+
+  // 逆側。既定 (OFF) では出さない。
+  it('shows no hint while the toggle is off', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<FourCardPokerPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
+  });
+
+  it('offers the hint toggle in the settings panel', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<FourCardPokerPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.getByLabelText(/ヒント/)).toBeInTheDocument();
+  });
 });
