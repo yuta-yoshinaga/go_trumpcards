@@ -749,4 +749,25 @@ describe('OhHellPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(document.querySelectorAll('[data-hint-suggested="true"]')).toHaveLength(0);
   });
+
+  // **カード側のハイライトも踏む。**ビッドボタンだけ確かめて満足すると、
+  // 同じ PR で足したもう一方が未検証のまま残る (codecov が partial として検出)。
+  it('highlights the recommended card during the play phase', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<OhHellPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+    mockExec.mockResolvedValue({ ...playPhaseState, hint: { cardIndex: 1, reason: 'follow_suit' } });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    await waitFor(() => expect(document.querySelectorAll('[data-hint-suggested="true"]')).toHaveLength(1));
+  });
+
+  it('highlights no card before a play hint arrives', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<OhHellPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(document.querySelectorAll('[data-hint-suggested="true"]')).toHaveLength(0);
+  });
 });
