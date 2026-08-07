@@ -38,5 +38,11 @@
   "roundEnd": "Round complete",
   "result.humanWin": "Game over! Your team wins!",
   "result.cpuWin": "Game over! Team {{team}} wins!",
-  "bidHistory": "Bids: {{bids}}"
+  "bidHistory": "Bids: {{bids}}",
+  "teamA": "Team A",
+  "teamB": "Team B",
+  "contractProgress": "Contract: {{team}} {{got}}/{{contract}} points - {{status}}",
+  "contractMade": "made",
+  "contractFailed": "can no longer be made",
+  "contractNeedMore": "{{remaining}} more needed"
 }

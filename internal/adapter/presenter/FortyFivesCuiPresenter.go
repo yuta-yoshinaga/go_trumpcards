@@ -151,6 +151,10 @@ func (p *FortyFivesCuiPresenter) writePrompt(b *strings.Builder, g interfaces.Fo
 			"bids", strings.Join(entries, ", ")) + "\n")
 		b.WriteString(i18n.T("fortyfives.promptBidHelp") + "\n")
 	case domain.FortyFivesPhasePlay:
+		// **契約の進捗はラウンドが終わるまで一切出ていなかった (#4724)。**
+		// Web は ff-contract-progress に「あと何点必要か」を常時出している。
+		// 落札チームが何点必要かは、降りるか押すかの判断そのもの。
+		writeFortyFivesContractProgress(b, g)
 		currentIdx := g.GetCurrentPlayerIdx()
 		b.WriteString(i18n.Tf("fortyfives.promptPlay",
 			"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
@@ -162,6 +166,35 @@ func (p *FortyFivesCuiPresenter) writePrompt(b *strings.Builder, g interfaces.Fo
 		b.WriteString(i18n.T("fortyfives.promptRoundEnd") + "\n")
 		b.WriteString(i18n.T("fortyfives.promptRoundEndHelp") + "\n")
 	}
+}
+
+// fortyFivesContractStatusKeys は進捗ステータスから i18n キーへの対応。
+var fortyFivesContractStatusKeys = map[string]string{
+	domain.FortyFivesContractMade:     "fortyfives.contractMade",
+	domain.FortyFivesContractFailed:   "fortyfives.contractFailed",
+	domain.FortyFivesContractNeedMore: "fortyfives.contractNeedMore",
+}
+
+// writeFortyFivesContractProgress は落札チームの契約進捗を1行で書く。
+// 落札が決まっていなければ何も書かない。
+func writeFortyFivesContractProgress(b *strings.Builder, g interfaces.FortyFivesGame) {
+	pr := g.GetContractProgress()
+	if pr == nil {
+		return
+	}
+	key, ok := fortyFivesContractStatusKeys[pr.Status]
+	if !ok {
+		return
+	}
+	team := i18n.T("fortyfives.teamA")
+	if pr.DeclarerTeam == 1 {
+		team = i18n.T("fortyfives.teamB")
+	}
+	b.WriteString(i18n.Tf("fortyfives.contractProgress",
+		"team", team,
+		"got", strconv.Itoa(pr.Points),
+		"contract", strconv.Itoa(pr.Contract),
+		"status", i18n.Tf(key, "remaining", strconv.Itoa(pr.Remaining))) + "\n")
 }
 
 // HintOutput emits the current Forty-Fives hint.

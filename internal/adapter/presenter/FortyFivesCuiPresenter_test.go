@@ -33,6 +33,7 @@ func setupFortyFivesCuiMock() *interfaces.MockFortyFivesGame {
 	m.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.FortyFivesPhasePlay)
+	m.On("GetContractProgress").Return((*domain.FortyFivesContractProgress)(nil)).Maybe()
 	m.On("GetCurrentPlayerIdx").Return(0)
 	m.On("GetDeclarerIdx").Return(0)
 	m.On("GetContract").Return(domain.FortyFivesBidTwenty)
@@ -154,4 +155,49 @@ func TestFortyFivesCuiPresenter_ActionLogOutput(t *testing.T) {
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, "play")
+}
+
+// **契約の進捗がラウンド終了まで一切出ていなかった (#4724)。**落札チームが
+// あと何点必要かは、押すか降りるかの判断そのもの。
+func TestFortyFivesCuiPresenter_ContractProgress(t *testing.T) {
+	p := new(presenter.FortyFivesCuiPresenter)
+	withProgress := func(pr *domain.FortyFivesContractProgress) *interfaces.MockFortyFivesGame {
+		m, _ := setupFortyFivesCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetContractProgress")
+		m.On("GetContractProgress").Return(pr)
+		return m
+	}
+
+	t.Run("shows the points the declaring team still needs", func(t *testing.T) {
+		out := p.Output(withProgress(&domain.FortyFivesContractProgress{
+			DeclarerTeam: 0, Points: 5, Contract: 20, Remaining: 15,
+			Status: domain.FortyFivesContractNeedMore,
+		}), nil)
+		assert.Contains(t, out, "5/20")
+		assert.Contains(t, out, "あと15点")
+	})
+
+	t.Run("says when the contract is already made", func(t *testing.T) {
+		out := p.Output(withProgress(&domain.FortyFivesContractProgress{
+			DeclarerTeam: 1, Points: 25, Contract: 20,
+			Status: domain.FortyFivesContractMade,
+		}), nil)
+		assert.Contains(t, out, "成立")
+		assert.Contains(t, out, "チームB")
+	})
+
+	// **「もう届かない」と「あと何点」は別の話。**同じ文言だと、投げるべき
+	// ラウンドと押すべきラウンドの区別が付かない。
+	t.Run("says when the contract can no longer be made", func(t *testing.T) {
+		out := p.Output(withProgress(&domain.FortyFivesContractProgress{
+			DeclarerTeam: 0, Points: 5, Contract: 25, Remaining: 20,
+			Status: domain.FortyFivesContractFailed,
+		}), nil)
+		assert.Contains(t, out, "不成立")
+		assert.NotContains(t, out, "あと20点")
+	})
+
+	t.Run("shows nothing before the bid is settled", func(t *testing.T) {
+		assert.NotContains(t, p.Output(withProgress(nil), nil), "契約:")
+	})
 }

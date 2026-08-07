@@ -176,6 +176,14 @@ func (_m *MockFortyFivesGame) GetRoundTeamPoints() [domain.FortyFivesTeamCnt]int
 	return ret.Get(0).([domain.FortyFivesTeamCnt]int)
 }
 
+func (_m *MockFortyFivesGame) GetContractProgress() *domain.FortyFivesContractProgress {
+	args := _m.Called()
+	if args.Get(0) == nil {
+		return nil
+	}
+	return args.Get(0).(*domain.FortyFivesContractProgress)
+}
+
 // GetWinnerTeam モック
 func (_m *MockFortyFivesGame) GetWinnerTeam() int {
 	ret := _m.Called()

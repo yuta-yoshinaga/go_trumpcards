@@ -839,6 +839,74 @@ func (g *FortyFives) GetTeamScores() [FortyFivesTeamCnt]int { return g.teamScore
 // SetTeamScores チーム別累積点設定 (テスト用)
 func (g *FortyFives) SetTeamScores(s [FortyFivesTeamCnt]int) { g.teamScores = s }
 
+// 契約の進捗 (#4724)。
+const (
+	// FortyFivesContractMade 契約成立 (すでに必要点に届いている)。
+	FortyFivesContractMade = "made"
+	// FortyFivesContractFailed 契約不成立が確定 (残りトリックを全部取っても届かない)。
+	FortyFivesContractFailed = "failed"
+	// FortyFivesContractNeedMore まだ足りないが、届く可能性が残っている。
+	FortyFivesContractNeedMore = "needMore"
+)
+
+// FortyFivesContractProgress は落札チームの契約達成見込み。
+type FortyFivesContractProgress struct {
+	// DeclarerTeam は落札チーム (0 or 1)。
+	DeclarerTeam int
+	// Points は落札チームの現在の得点。
+	Points int
+	// Contract は達成すべき点数。
+	Contract int
+	// Remaining はあと何点必要か (成立済みなら 0)。
+	Remaining int
+	// Status は FortyFivesContract* のいずれか。
+	Status string
+}
+
+// GetContractProgress は落札チームが契約に届くかどうかを返す。落札が
+// 決まっていない、または契約が無いときは nil。
+//
+// **CUI はラウンドが終わるまで契約の進捗を一切出していなかった (#4724)。**
+// Web は ff-contract-progress に「あと何点必要か」を色分きで常時出している。
+//
+// 「もう届かない」は**残りトリックを全部取っても足りない**ときに確定する。
+// 得点の合計から消化済みトリック数が分かるので、残りは
+// (全トリック - 消化済み) × 1トリックの点。
+func (g *FortyFives) GetContractProgress() *FortyFivesContractProgress {
+	if g.declarerIdx < 0 || g.contract <= 0 {
+		return nil
+	}
+	team := g.declarerIdx % FortyFivesTeamCnt
+	points := g.roundTeamPts[team]
+	contract := int(g.contract)
+
+	resolved := 0
+	for _, p := range g.roundTeamPts {
+		resolved += p
+	}
+	remainingTricks := FortyFivesTrickCount - resolved/FortyFivesPointsPerTrick
+	if remainingTricks < 0 {
+		remainingTricks = 0
+	}
+	available := remainingTricks * FortyFivesPointsPerTrick
+
+	status := FortyFivesContractNeedMore
+	switch {
+	case points >= contract:
+		status = FortyFivesContractMade
+	case points+available < contract:
+		status = FortyFivesContractFailed
+	}
+	remaining := contract - points
+	if remaining < 0 {
+		remaining = 0
+	}
+	return &FortyFivesContractProgress{
+		DeclarerTeam: team, Points: points, Contract: contract,
+		Remaining: remaining, Status: status,
+	}
+}
+
 // GetRoundTeamPoints 現ラウンドのチーム別得点取得
 func (g *FortyFives) GetRoundTeamPoints() [FortyFivesTeamCnt]int { return g.roundTeamPts }
 
