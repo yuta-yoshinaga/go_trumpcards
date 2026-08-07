@@ -737,3 +737,55 @@ func TestTexasHoldemBonus_JSONUnmarshal_TooLarge(t *testing.T) {
 	err = json.Unmarshal(data, &restored)
 	assert.Error(t, err)
 }
+
+// **画面に出す額と実際に引かれる額は同じ関数から来なければならない。**
+// 別々に計算すると、表示だけ正しくて請求がずれる余地が残る (#4698)。
+func TestTexasHoldemBonus_GetNextBetCost(t *testing.T) {
+	newBetGame := func(t *testing.T) *domain.TexasHoldemBonus {
+		t.Helper()
+		g := domain.NewDefaultTexasHoldemBonus()
+		g.Reset()
+		require.NoError(t, g.Bet(100, 0))
+		return g
+	}
+
+	t.Run("no cost before the ante is placed", func(t *testing.T) {
+		g := domain.NewDefaultTexasHoldemBonus()
+		g.Reset()
+		assert.Equal(t, 0, g.GetNextBetCost())
+	})
+
+	t.Run("pre-flop Play costs twice the ante", func(t *testing.T) {
+		assert.Equal(t, 200, newBetGame(t).GetNextBetCost())
+	})
+
+	// Play が実際に引いた額 = 直前に表示していた額。
+	t.Run("Play charges exactly what it advertised", func(t *testing.T) {
+		g := newBetGame(t)
+		cost := g.GetNextBetCost()
+		before := g.GetChips()
+		require.NoError(t, g.Play())
+		assert.Equal(t, before-cost, g.GetChips())
+		assert.Equal(t, cost, g.GetFlopBet())
+	})
+
+	t.Run("flop and turn Raise cost one ante", func(t *testing.T) {
+		g := newBetGame(t)
+		require.NoError(t, g.Play())
+		assert.Equal(t, 100, g.GetNextBetCost())
+
+		cost := g.GetNextBetCost()
+		before := g.GetChips()
+		require.NoError(t, g.Raise())
+		assert.Equal(t, before-cost, g.GetChips())
+		assert.Equal(t, 100, g.GetNextBetCost(), "ターンも1×アンテ")
+	})
+
+	t.Run("no cost once the round is resolved", func(t *testing.T) {
+		g := newBetGame(t)
+		require.NoError(t, g.Play())
+		require.NoError(t, g.Raise())
+		require.NoError(t, g.Raise())
+		assert.Equal(t, 0, g.GetNextBetCost())
+	})
+}

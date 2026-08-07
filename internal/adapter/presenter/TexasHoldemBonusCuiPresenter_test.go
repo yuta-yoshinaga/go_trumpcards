@@ -17,6 +17,7 @@ func setupTexasHoldemBonusCuiMockDefaults(m *interfaces.MockTexasHoldemBonusGame
 	m.On("GetCommunity").Return(([]*domain.Card)(nil)).Maybe()
 	m.On("GetGameEndFlag").Return(false).Maybe()
 	m.On("GetAnteBet").Return(0).Maybe()
+	m.On("GetNextBetCost").Return(0).Maybe()
 	m.On("GetBonusBet").Return(0).Maybe()
 	m.On("GetFlopBet").Return(0).Maybe()
 	m.On("GetTurnBet").Return(0).Maybe()
@@ -60,6 +61,7 @@ func TestTexasHoldemBonusCuiPresenter_Output_PreFlopPhase(t *testing.T) {
 	m.On("GetCommunity").Return(([]*domain.Card)(nil)).Maybe()
 	m.On("GetGameEndFlag").Return(false).Maybe()
 	m.On("GetAnteBet").Return(100).Maybe()
+	m.On("GetNextBetCost").Return(0).Maybe()
 	m.On("GetBonusBet").Return(0).Maybe()
 	m.On("GetFlopBet").Return(0).Maybe()
 	m.On("GetTurnBet").Return(0).Maybe()
@@ -102,6 +104,7 @@ func TestTexasHoldemBonusCuiPresenter_Output_FlopPhase(t *testing.T) {
 	}).Maybe()
 	m.On("GetGameEndFlag").Return(false).Maybe()
 	m.On("GetAnteBet").Return(100).Maybe()
+	m.On("GetNextBetCost").Return(0).Maybe()
 	m.On("GetBonusBet").Return(0).Maybe()
 	m.On("GetFlopBet").Return(200).Maybe()
 	m.On("GetTurnBet").Return(0).Maybe()
@@ -143,6 +146,7 @@ func TestTexasHoldemBonusCuiPresenter_Output_EndPhase_PlayerWins(t *testing.T) {
 	}).Maybe()
 	m.On("GetGameEndFlag").Return(true).Maybe()
 	m.On("GetAnteBet").Return(100).Maybe()
+	m.On("GetNextBetCost").Return(0).Maybe()
 	m.On("GetBonusBet").Return(0).Maybe()
 	m.On("GetFlopBet").Return(200).Maybe()
 	m.On("GetTurnBet").Return(0).Maybe()
@@ -179,6 +183,7 @@ func TestTexasHoldemBonusCuiPresenter_Output_EndPhase_Fold(t *testing.T) {
 	m.On("GetCommunity").Return(([]*domain.Card)(nil)).Maybe()
 	m.On("GetGameEndFlag").Return(true).Maybe()
 	m.On("GetAnteBet").Return(100).Maybe()
+	m.On("GetNextBetCost").Return(0).Maybe()
 	m.On("GetBonusBet").Return(0).Maybe()
 	m.On("GetFlopBet").Return(0).Maybe()
 	m.On("GetTurnBet").Return(0).Maybe()
@@ -219,6 +224,7 @@ func TestTexasHoldemBonusCuiPresenter_Output_EndPhase_Push(t *testing.T) {
 	}).Maybe()
 	m.On("GetGameEndFlag").Return(true).Maybe()
 	m.On("GetAnteBet").Return(100).Maybe()
+	m.On("GetNextBetCost").Return(0).Maybe()
 	m.On("GetBonusBet").Return(0).Maybe()
 	m.On("GetFlopBet").Return(200).Maybe()
 	m.On("GetTurnBet").Return(0).Maybe()
@@ -259,6 +265,7 @@ func TestTexasHoldemBonusCuiPresenter_Output_EndPhase_DealerWins(t *testing.T) {
 	}).Maybe()
 	m.On("GetGameEndFlag").Return(true).Maybe()
 	m.On("GetAnteBet").Return(100).Maybe()
+	m.On("GetNextBetCost").Return(0).Maybe()
 	m.On("GetBonusBet").Return(0).Maybe()
 	m.On("GetFlopBet").Return(200).Maybe()
 	m.On("GetTurnBet").Return(0).Maybe()
@@ -301,6 +308,7 @@ func TestTexasHoldemBonusCuiPresenter_PhaseStr_Unknown(t *testing.T) {
 	m := new(interfaces.MockTexasHoldemBonusGame)
 	m.On("GetChips").Return(0).Maybe()
 	m.On("GetPhase").Return(999).Maybe()
+	m.On("GetNextBetCost").Return(0).Maybe()
 	m.On("GetPlayerHand").Return(([]*domain.Card)(nil)).Maybe()
 	m.On("GetDealerHand").Return(([]*domain.Card)(nil)).Maybe()
 	m.On("GetCommunity").Return(([]*domain.Card)(nil)).Maybe()
@@ -308,4 +316,51 @@ func TestTexasHoldemBonusCuiPresenter_PhaseStr_Unknown(t *testing.T) {
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "フェーズ: UNKNOWN")
+}
+
+// **アクション中はアンテ額も実コストも画面のどこにも出ていなかった (#4698)。**
+// Web は Play/Raise ボタンに ante×倍率をラベル表示している。
+func TestTexasHoldemBonusCuiPresenter_BetCostLine(t *testing.T) {
+	p := new(TexasHoldemBonusCuiPresenter)
+	game := func(phase, ante, cost int) *interfaces.MockTexasHoldemBonusGame {
+		m := new(interfaces.MockTexasHoldemBonusGame)
+		// **先に登録した期待が勝つ。**defaults より前に置く。
+		m.On("GetPhase").Return(phase)
+		m.On("GetAnteBet").Return(ante)
+		m.On("GetNextBetCost").Return(cost)
+		setupTexasHoldemBonusCuiMockDefaults(m)
+		return m
+	}
+
+	t.Run("pre-flop shows the ante and the 2x Play cost", func(t *testing.T) {
+		out := p.Output(game(domain.TexasHoldemBonusPhasePreFlop, 100, 200), nil)
+		assert.Contains(t, out, "アンテ: 100")
+		assert.Contains(t, out, "プレイ: 200")
+	})
+
+	// **プリフロップとフロップで倍率が違う。**同じ文言だと 2× と 1× の
+	// 区別が付かない。
+	t.Run("flop shows the 1x Raise cost under its own label", func(t *testing.T) {
+		out := p.Output(game(domain.TexasHoldemBonusPhaseFlop, 100, 100), nil)
+		assert.Contains(t, out, "レイズ: 100")
+		assert.NotContains(t, out, "プレイ: ")
+	})
+
+	t.Run("turn shows the raise cost too", func(t *testing.T) {
+		assert.Contains(t,
+			p.Output(game(domain.TexasHoldemBonusPhaseTurn, 50, 50), nil),
+			"レイズ: 50")
+	})
+
+	// **END の anteLine と重ならないこと。**結果表示の行とは別物。
+	t.Run("no cost line once the round is over", func(t *testing.T) {
+		out := p.Output(game(domain.TexasHoldemBonusPhaseEnd, 100, 0), nil)
+		assert.NotContains(t, out, "レイズ: ")
+		assert.NotContains(t, out, "プレイ: ")
+	})
+
+	t.Run("no cost line before the ante is placed", func(t *testing.T) {
+		out := p.Output(game(domain.TexasHoldemBonusPhaseBet, 0, 0), nil)
+		assert.NotContains(t, out, "チップ / ")
+	})
 }

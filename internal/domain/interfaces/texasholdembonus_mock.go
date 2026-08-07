@@ -81,6 +81,11 @@ func (m *MockTexasHoldemBonusGame) GetAnteBet() int {
 	return args.Int(0)
 }
 
+func (m *MockTexasHoldemBonusGame) GetNextBetCost() int {
+	args := m.Called()
+	return args.Int(0)
+}
+
 func (m *MockTexasHoldemBonusGame) GetBonusBet() int {
 	args := m.Called()
 	return args.Int(0)
