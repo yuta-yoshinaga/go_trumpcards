@@ -390,7 +390,9 @@ function RussianSolitairePageContent() {
             {/* Tableau */}
             {!rulesDismissed && (
               <div className="flex items-center justify-center gap-1 mb-1" data-testid="rs-facedown-rule" role="note">
-                <p className="text-game-text-muted text-xs text-center">{t('faceDownRule')}</p>
+                {/* Yukon との唯一の違いである「同スート降順」を伝える。裏向きは動かせない
+                    という汎用ルールしか出ていなかった (#4789)。testid は既存のまま。 */}
+                <p className="text-game-text-muted text-xs text-center">{t('tableauRule')}</p>
                 <button
                   type="button"
                   onClick={() => setRulesDismissed(true)}
