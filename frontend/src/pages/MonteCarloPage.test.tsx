@@ -297,3 +297,29 @@ describe('MonteCarloPage', () => {
     }
   });
 });
+
+// **山札が尽きたら「配る」は押せない (#4796)。**姉妹の Wasp / Spiderette は
+// stockCount === 0 を明示的にガードしている。ドメインも「隣接ペアなし かつ
+// 山札0 かつ 圧縮の余地なし」で手詰まりと判定するので、この状態は実際に起きる。
+describe('MonteCarloPage deal guard', () => {
+  it('disables the deal button once the stock is empty', async () => {
+    mockExec.mockResolvedValue({ ...playingState, stockCount: 0 });
+    renderWithProviders(<MonteCarloPage />);
+    expect(await screen.findByTestId('mc-deal-button')).toBeDisabled();
+  });
+
+  it('keeps the deal button live while cards remain', async () => {
+    mockExec.mockResolvedValue({ ...playingState, stockCount: 5 });
+    renderWithProviders(<MonteCarloPage />);
+    expect(await screen.findByTestId('mc-deal-button')).toBeEnabled();
+  });
+
+  // **無効な操作を「押せ」と誘導しない。**ペアが無くて山札も無いのは手詰まり
+  // であって、配れという合図ではない。
+  it('does not ring the deal button when there is nothing left to deal', async () => {
+    mockExec.mockResolvedValue({ ...playingState, stockCount: 0, board: [] });
+    renderWithProviders(<MonteCarloPage />);
+    const button = await screen.findByTestId('mc-deal-button');
+    expect(button.className).not.toContain('ring-ds-warning');
+  });
+});
