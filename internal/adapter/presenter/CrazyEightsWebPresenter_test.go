@@ -317,3 +317,13 @@ func TestCrazyEightsWebPresenter_ActionLogOutput(t *testing.T) {
 		m.AssertExpectations(t)
 	})
 }
+
+// **受動ヒントとは別に、`command: "hint"` 専用のレスポンスも返す (#4737)。**
+// Web はクライアント側でも簡易ヒントを出すが、これはサーバー計算のもの。
+func TestCrazyEightsWebPresenter_HintOutput(t *testing.T) {
+	m, _ := setupCrazyEightsWebMockWithPlayers()
+
+	out := new(presenter.CrazyEightsWebPresenter).HintOutput(m)
+	assert.True(t, json.Valid([]byte(out)), "JSON として妥当")
+	assert.Contains(t, out, `"players"`, "状態も一緒に返る")
+}

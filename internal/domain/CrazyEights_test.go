@@ -1157,6 +1157,55 @@ func TestCrazyEights_GetHint(t *testing.T) {
 		}
 	})
 
+	// **理由キーの分岐を全部踏む。**8 と数字一致は別の助言なので、片方しか
+	// 出ないと「なぜその札か」が伝わらない。
+	t.Run("reasons distinguish a wild from a rank match", func(t *testing.T) {
+		g := setup(t)
+		human := g.GetPlayer(0)
+		for human.GetCardsSize() > 0 {
+			human.RemoveCard(0)
+		}
+		top := g.GetDiscardTop()
+		if top == nil {
+			t.Fatal("前提: 捨て札の一番上があること")
+		}
+		// 8 だけを持たせる → play_wild
+		human.AddCard(domain.NewCard(domain.CardDesignSpade, domain.CrazyEightsWildValue, false))
+		hint := g.GetHint()
+		if hint == nil || hint.Reason != "play_wild" {
+			t.Errorf("8 のみの手札では play_wild: %+v", hint)
+		}
+
+		// 捨て札と同じ数字 (スート違い) → match_rank
+		for human.GetCardsSize() > 0 {
+			human.RemoveCard(0)
+		}
+		other := domain.CardDesignSpade
+		if top.GetDesign() == domain.CardDesignSpade {
+			other = domain.CardDesignHeart
+		}
+		if top.GetValue() == domain.CrazyEightsWildValue {
+			t.Skip("捨て札が 8 の配りでは数字一致を作れない")
+		}
+		human.AddCard(domain.NewCard(other, top.GetValue(), false))
+		hint = g.GetHint()
+		if hint == nil || hint.Reason != "match_rank" {
+			t.Errorf("同じ数字の札では match_rank: %+v", hint)
+		}
+	})
+
+	// **出せる札が無ければヒントを出さない。**引くしかない局面で札を勧めると嘘になる。
+	t.Run("no hint when nothing can be played", func(t *testing.T) {
+		g := setup(t)
+		human := g.GetPlayer(0)
+		for human.GetCardsSize() > 0 {
+			human.RemoveCard(0)
+		}
+		if g.GetHint() != nil {
+			t.Error("手札が空ならヒントは出ない")
+		}
+	})
+
 	// プレイでもスート選択でもないフェーズでは出さない。
 	t.Run("no hint outside the playable phases", func(t *testing.T) {
 		g := setup(t)

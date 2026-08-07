@@ -334,6 +334,16 @@ func TestCrazyEightsCuiPresenter_HintOutput(t *testing.T) {
 		assert.Contains(t, out, "手札に一番多いスート")
 	})
 
+	// CardIndex も Suit も無いヒント (ありえないが防御的な分岐) でも、
+	// 黙らずに「ヒントなし」と言うこと。
+	t.Run("a hint with neither a card nor a suit falls back to none", func(t *testing.T) {
+		m, _ := setupCrazyEightsCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
+		m.On("GetHint").Return(&domain.CrazyEightsHint{Reason: "play_valid"})
+
+		assert.Contains(t, p.HintOutput(m), "ヒントはありません")
+	})
+
 	// **ヒントが無い側も踏む。**nil を「空文字」で返すと、CUI に何も出ず
 	// プレイヤーはコマンドが効いたのか分からない。
 	t.Run("no hint says so explicitly", func(t *testing.T) {
