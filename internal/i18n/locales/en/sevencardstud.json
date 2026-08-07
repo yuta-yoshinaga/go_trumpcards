@@ -67,5 +67,6 @@
   "hintReasonFlush": "three to a flush",
   "hintReasonStraight": "three to a straight",
   "hintReasonHigh": "three high cards",
-  "hintReasonFold": "no qualifying starting hand"
+  "hintReasonFold": "no qualifying starting hand",
+  "currentBestHand": "Best hand so far: {{hand}} ({{cards}})"
 }

@@ -169,31 +169,35 @@ func (p *SevenCardStudPlayer) GetComparisonCards() []*Card {
 	return cards
 }
 
-// EvalBestHand 全7枚からベスト5枚を評価
-func (p *SevenCardStudPlayer) EvalBestHand() int {
+// PeekBestHand は現在の持ち札から最善の 5 枚役を求めて返す。**状態を変えない。**
+//
+// 表示だけのために EvalBestHand を呼ぶと、描画のたびに handRank / bestHand を
+// 書き換えてしまう。CUI の途中経過表示はこちらを使う (#4695)。5 枚未満のときは
+// ハイカード扱いで、確定した組は返さない。
+func (p *SevenCardStudPlayer) PeekBestHand() (rank int, best []*Card) {
 	all := p.GetAllCards()
-
 	if len(all) < 5 {
-		p.handRank = PokerHandHighCard
-		p.bestHand = nil
-		return p.handRank
+		return PokerHandHighCard, nil
 	}
 
-	combos := combinations(all, 5)
 	bestRank := -1
 	var bestCards []*Card
-
-	for _, combo := range combos {
-		rank := evalFiveCardHand(combo)
-		if rank > bestRank || (rank == bestRank && compareHighCardsSlice(combo, bestCards) > 0) {
-			bestRank = rank
+	for _, combo := range combinations(all, 5) {
+		r := evalFiveCardHand(combo)
+		if r > bestRank || (r == bestRank && compareHighCardsSlice(combo, bestCards) > 0) {
+			bestRank = r
 			bestCards = make([]*Card, 5)
 			copy(bestCards, combo)
 		}
 	}
+	return bestRank, bestCards
+}
 
-	p.handRank = bestRank
-	p.bestHand = bestCards
+// EvalBestHand 全7枚からベスト5枚を評価し、結果をプレイヤーに記録する。
+func (p *SevenCardStudPlayer) EvalBestHand() int {
+	// **判定は PeekBestHand が唯一の出どころ。**同じ探索を2つ持つと、片方だけ
+	// 直したときに「表示とショーダウンで役が違う」ずれになる。
+	p.handRank, p.bestHand = p.PeekBestHand()
 	return p.handRank
 }
 
