@@ -26,6 +26,9 @@ func setupTonkCuiMock() *interfaces.MockTonkGame {
 	m.On("GetIsTonk").Return(false)
 	m.On("GetKnockerMelds").Return(([][]*domain.Card)(nil)).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// #4750: ディスカード表示が最小デッドウッドを引くようになった。
+	m.On("GetBestDeadwood", 0).Return(3, 0).Maybe()
+
 	return m
 }
 
@@ -134,11 +137,12 @@ func TestTonkCuiPresenter_Output(t *testing.T) {
 		m, players := setupTonkCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.On("GetPhase").Return(domain.TonkPhaseDiscard)
-		// A run plus a single low stray: discarding the stray leaves deadwood 0.
-		for _, v := range []int{1, 2, 3} {
-			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, v, false))
-		}
-		players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 4, false))
+		// **計算はドメインの仕事になった (#4750)。**ここで確かめるのは
+		// 「閾値と比べて正しい文言を選ぶこと」だけ。値そのものの正しさは
+		// TestTonk_GetBestDeadwood が実際の手札で見ている。
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetBestDeadwood")
+		m.On("GetBestDeadwood", 0).Return(domain.TonkKnockThreshold, 0)
+		_ = players
 
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "最小デッドウッド(1枚捨て後):")
@@ -149,11 +153,10 @@ func TestTonkCuiPresenter_Output(t *testing.T) {
 		m, players := setupTonkCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.On("GetPhase").Return(domain.TonkPhaseDiscard)
-		// Scattered high cards with no meld: deadwood stays above the threshold.
-		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 13, false))
-		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
-		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 9, false))
-		players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+		// 閾値のすぐ上。境界 (== 閾値) は上の subtest が押さえている。
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetBestDeadwood")
+		m.On("GetBestDeadwood", 0).Return(domain.TonkKnockThreshold+1, 0)
+		_ = players
 
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "最小デッドウッド(1枚捨て後):")

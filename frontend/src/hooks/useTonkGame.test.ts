@@ -39,6 +39,8 @@ const defaultState: TonkResponse = {
   opponentDeadwood: [],
   isTonk: false,
   isUndercut: false,
+  bestDeadwood: -1,
+  knockThreshold: 5,
   message: '',
   config: { cpuDifficulty: 1, pointLimit: 50 },
 };

@@ -411,23 +411,9 @@ func (g *Tonk) cpuDraw() {
 func (g *Tonk) cpuDiscardOrKnock() {
 	player := g.players[g.currentPlayerIdx]
 
-	bestDiscardIdx := 0
-	bestDeadwood := -1
-
-	for i := 0; i < player.GetCardsSize(); i++ {
-		testCards := make([]*Card, 0, player.GetCardsSize()-1)
-		for j := 0; j < player.GetCardsSize(); j++ {
-			if j != i {
-				testCards = append(testCards, player.GetCard(j))
-			}
-		}
-		_, dw := FindBestMelds(testCards)
-		dwVal := CalcDeadwoodValue(dw)
-
-		if bestDeadwood < 0 || dwVal < bestDeadwood {
-			bestDeadwood = dwVal
-			bestDiscardIdx = i
-		}
+	bestDeadwood, bestDiscardIdx := g.GetBestDeadwood(g.currentPlayerIdx)
+	if bestDiscardIdx < 0 {
+		bestDiscardIdx = 0
 	}
 
 	if bestDeadwood <= TonkKnockThreshold {
@@ -601,6 +587,38 @@ func (g *Tonk) checkGameEnd() {
 // --- State getters ---
 
 // GetPhase 現在のフェーズ取得
+// GetBestDeadwood は1枚捨てたときに到達できる最小デッドウッド値と、その捨て札の
+// 位置を返す。手札が空なら (0, -1)。
+//
+// **この計算は元々3箇所に散る寸前だった。**CPU の判断 (cpuDiscardOrKnock) と
+// CUI の表示 (tonkBestDeadwood) が別々に同じループを持っており、Web にも
+// 3つ目を書くところだった。TonkKnockThreshold と比べる値なので、実装が割れると
+// 「ノック可能と表示したのに弾かれる」ずれになる。
+func (g *Tonk) GetBestDeadwood(playerIdx int) (best int, discardIdx int) {
+	if playerIdx < 0 || playerIdx >= len(g.players) {
+		return 0, -1
+	}
+	player := g.players[playerIdx]
+	n := player.GetCardsSize()
+	best, discardIdx = -1, -1
+	for i := 0; i < n; i++ {
+		sub := make([]*Card, 0, n-1)
+		for j := 0; j < n; j++ {
+			if j != i {
+				sub = append(sub, player.GetCard(j))
+			}
+		}
+		_, dw := FindBestMelds(sub)
+		if v := CalcDeadwoodValue(dw); best < 0 || v < best {
+			best, discardIdx = v, i
+		}
+	}
+	if best < 0 {
+		return 0, -1
+	}
+	return best, discardIdx
+}
+
 func (g *Tonk) GetPhase() TonkPhase { return g.phase }
 
 // SetPhase フェーズ設定 (テスト用)

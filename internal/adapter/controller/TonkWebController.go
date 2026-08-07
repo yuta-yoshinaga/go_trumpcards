@@ -53,6 +53,13 @@ type TonkWebOutput struct {
 	OpponentDeadwood []*WebOutputCard       `json:"opponentDeadwood"`
 	IsTonk           bool                   `json:"isTonk"`
 	IsUndercut       bool                   `json:"isUndercut"`
+	// BestDeadwood は1枚捨てて到達できる最小デッドウッド。CUI は毎ターン
+	// これを閾値と比べて「ノック可能/不可」を出しているのに、Web は同じ判断を
+	// プレイヤーの手計算に任せていた。人間のディスカードフェーズ以外は -1。
+	BestDeadwood int `json:"bestDeadwood"`
+	// KnockThreshold はノックできるデッドウッド上限 (domain.TonkKnockThreshold)。
+	// フロントに数値を写さず、判断の基準ごと送る。
+	KnockThreshold int `json:"knockThreshold"`
 	WebOutputBase
 	Config TonkWebOutputConfig `json:"config"`
 }

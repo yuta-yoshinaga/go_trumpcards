@@ -423,6 +423,26 @@ function TonkPageContent() {
                   >
                     {t('discardButton')}
                   </button>
+                  {/* **CUI は毎ターン「ノック可能/不可」を出しているのに、Web は
+                      プレイヤーの手計算に任せていた。**ノックボタンは1枚選択されて
+                      いれば常に活性化するので、押すまで合法か分からなかった。
+                      -1 は「まだ聞くべき場面でない」印なので出さない。 */}
+                  {state.bestDeadwood >= 0 && (
+                    <span
+                      className={`self-center text-xs ${
+                        state.bestDeadwood <= state.knockThreshold ? 'text-ds-success' : 'text-ds-text-muted'
+                      }`}
+                      role="status"
+                      aria-live="polite"
+                      data-testid="tonk-deadwood"
+                      data-knockable={state.bestDeadwood <= state.knockThreshold ? 'true' : undefined}
+                    >
+                      {t('deadwood.current', { value: state.bestDeadwood })}{' '}
+                      {state.bestDeadwood <= state.knockThreshold
+                        ? t('deadwood.knockable')
+                        : t('deadwood.notKnockable', { threshold: state.knockThreshold })}
+                    </span>
+                  )}
                   <button
                     type="button"
                     className={knockBtnClass}
