@@ -406,6 +406,41 @@ func (s *Scopa) scoreRound() *ScopaScoreDetail {
 	return det
 }
 
+// ScopaCategoryWinner は1カテゴリの勝者と得点。
+type ScopaCategoryWinner struct {
+	// Key はカテゴリ ("cards" / "denari" / "primiera" / "settebello")。
+	Key string
+	// Winner は勝者のインデックス。同点・該当なしは -1。
+	Winner int
+	// Points は与えられる点数 (該当なしは 0)。
+	Points int
+}
+
+// ScopaCategoryWinners は得点内訳のうち「単独勝者が決まる4カテゴリ」を返す。
+//
+// **CUI はなぜその点数になったのかを一切出していなかった (#4756)。**Web は
+// カルテ/デナリ/プリミエラ/セッテベッロごとに誰が取ったかを出している。
+//
+// 判定は得点計算そのものと同じ uniqueMaxIndex を通す。**別実装にすると、
+// 内訳の合計が実際の得点と合わなくなる。**
+func ScopaCategoryWinners(det *ScopaScoreDetail) []ScopaCategoryWinner {
+	if det == nil {
+		return nil
+	}
+	award := func(key string, winner, points int) ScopaCategoryWinner {
+		if winner < 0 {
+			return ScopaCategoryWinner{Key: key, Winner: -1}
+		}
+		return ScopaCategoryWinner{Key: key, Winner: winner, Points: points}
+	}
+	return []ScopaCategoryWinner{
+		award("cards", uniqueMaxIndex(det.Cards), ScopaScoreMostCards),
+		award("denari", uniqueMaxIndex(det.Diamonds), ScopaScoreMostDiamonds),
+		award("primiera", uniqueMaxIndex(det.Sevens), ScopaScoreMostSevens),
+		award("settebello", det.HasSetteBello, ScopaScoreSetteBello),
+	}
+}
+
 // removeTableCardsByIndex は降順に並び替えてから tableCards を削除する。
 func (s *Scopa) removeTableCardsByIndex(idxs []int) {
 	if len(idxs) == 0 {

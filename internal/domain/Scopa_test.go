@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewDefaultScopa(t *testing.T) {
@@ -330,4 +332,67 @@ func TestScopaUnmarshalRejectsMissingDeck(t *testing.T) {
 	if err := json.Unmarshal([]byte(`{"pl":[]}`), &s); err == nil {
 		t.Error("expected error for missing trump cards")
 	}
+}
+
+// **なぜその点数になったのかを CUI は一切出していなかった (#4756)。**内訳は
+// 得点計算そのものと同じ判定 (uniqueMaxIndex) から出す。**別実装にすると、
+// 内訳の合計が実際の得点と合わなくなる。**
+func TestScopaCategoryWinners(t *testing.T) {
+	t.Run("nothing to report without a detail", func(t *testing.T) {
+		assert.Nil(t, ScopaCategoryWinners(nil))
+	})
+
+	t.Run("names the unique leader of each category", func(t *testing.T) {
+		rows := ScopaCategoryWinners(&ScopaScoreDetail{
+			Cards:         map[int]int{0: 21, 1: 19},
+			Diamonds:      map[int]int{0: 4, 1: 6},
+			Sevens:        map[int]int{0: 3, 1: 1},
+			HasSetteBello: 1,
+		})
+		byKey := map[string]ScopaCategoryWinner{}
+		for _, r := range rows {
+			byKey[r.Key] = r
+		}
+		assert.Equal(t, 0, byKey["cards"].Winner)
+		assert.Equal(t, 1, byKey["denari"].Winner)
+		assert.Equal(t, 0, byKey["primiera"].Winner)
+		assert.Equal(t, 1, byKey["settebello"].Winner)
+	})
+
+	// **同点は誰も取らない。**勝者を1人でっち上げると、内訳の合計が実際の
+	// 得点より大きくなる。
+	t.Run("awards nothing on a tie", func(t *testing.T) {
+		rows := ScopaCategoryWinners(&ScopaScoreDetail{
+			Cards:         map[int]int{0: 20, 1: 20},
+			Diamonds:      map[int]int{0: 5, 1: 5},
+			Sevens:        map[int]int{0: 2, 1: 2},
+			HasSetteBello: -1,
+		})
+		for _, r := range rows {
+			assert.Equal(t, -1, r.Winner, "%s に勝者が付いている", r.Key)
+			assert.Equal(t, 0, r.Points, "%s に点が付いている", r.Key)
+		}
+	})
+
+	// **内訳の合計は実際に加算された点数と一致しなければならない。**
+	t.Run("the category points add up to what the round awarded", func(t *testing.T) {
+		det := &ScopaScoreDetail{
+			Cards:         map[int]int{0: 21, 1: 19},
+			Diamonds:      map[int]int{0: 6, 1: 4},
+			Sevens:        map[int]int{0: 1, 1: 3},
+			HasSetteBello: 1,
+			Scopas:        map[int]int{0: 2},
+		}
+		perPlayer := map[int]int{}
+		for _, r := range ScopaCategoryWinners(det) {
+			if r.Winner >= 0 {
+				perPlayer[r.Winner] += r.Points
+			}
+		}
+		for i, n := range det.Scopas {
+			perPlayer[i] += n * ScopaScoreScopa
+		}
+		assert.Equal(t, ScopaScoreMostCards+ScopaScoreMostDiamonds+2*ScopaScoreScopa, perPlayer[0])
+		assert.Equal(t, ScopaScoreMostSevens+ScopaScoreSetteBello, perPlayer[1])
+	})
 }

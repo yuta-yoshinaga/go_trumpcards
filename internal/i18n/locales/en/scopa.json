@@ -19,5 +19,13 @@
   "gameEnd": "Game over!",
   "scoreEntry": "  {{name}}: {{score}}pt",
   "promptCurrentTurn": "Current turn: {{name}}",
-  "promptHelp": "p <hand> [table...] to capture or lay / n for the next round"
+  "promptHelp": "p <hand> [table...] to capture or lay / n for the next round",
+  "breakdownHeader": "--- Last round breakdown ---",
+  "breakdownNobody": "nobody (tie)",
+  "breakdownRow": "{{category}}: {{name}} (+{{points}})",
+  "breakdownScopa": "Scopa: {{name}} x {{count}}",
+  "category.cards": "Carte (most cards)",
+  "category.denari": "Denari (most diamonds)",
+  "category.primiera": "Primiera (most sevens)",
+  "category.settebello": "Settebello (7 of diamonds)"
 }
