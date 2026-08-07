@@ -27,5 +27,6 @@
   "stockLine": "ストック: {{count}}枚",
   "stockNext": " 次のカード: {{card}}",
   "hintStock": "ヒント: ストック → ファンデーション{{foundation}}",
-  "hintWaste": "ヒント: ウェイスト{{waste}} → ファンデーション{{foundation}}"
+  "hintWaste": "ヒント: ウェイスト{{waste}} → ファンデーション{{foundation}}",
+  "nextRank": " → 次: {{rank}}"
 }

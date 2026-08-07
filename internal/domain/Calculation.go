@@ -348,6 +348,26 @@ func (c *Calculation) canPlaceOnFoundation(card *Card, fIdx int) bool {
 	return card.GetValue() == calculationNextValue(topCard.GetValue(), fIdx+1)
 }
 
+// GetNextFoundationRank は fIdx のファンデーションに次に置けるランクを返す。
+// もう置けない (山が空 / 13枚そろった) ときは 0。
+//
+// **各列が +1/+2/+3/+4 ずつ 13 を法として進む (#4794)。**Web はバッジと
+// 「次のカード列」で常時出しているのに、CUI は現在の一番上の札しか出さず、
+// 毎手この暗算を強いていた。
+//
+// 判定は配置の検証 canPlaceOnFoundation が使う calculationNextValue を通す。
+// **別実装にすると、案内したランクが実際には置けないことが起きる。**
+func (c *Calculation) GetNextFoundationRank(fIdx int) int {
+	if fIdx < 0 || fIdx >= len(c.foundations) {
+		return 0
+	}
+	pile := c.foundations[fIdx]
+	if len(pile) == 0 || len(pile) >= CardValueMax {
+		return 0
+	}
+	return calculationNextValue(pile[len(pile)-1].GetValue(), fIdx+1)
+}
+
 // calculationNextValue ファンデーションの次に置くべき値を返す（step は 1..4、V は 1..13）。
 // v+step は最大で 13+4 = 17 なので、mod 13 は一度の減算で十分（ループ不要）。
 func calculationNextValue(v, step int) int {
