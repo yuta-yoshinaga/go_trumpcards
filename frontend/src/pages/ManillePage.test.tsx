@@ -183,3 +183,22 @@ describe('ManillePage', () => {
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
   });
 });
+
+// **目標点を確認するのに設定パネルを開き直す必要があった (#4758)。**姉妹ゲームの
+// Mariáš は同じ位置に出している。現在のチームスコアと突き合わせられないと、
+// あと何点で終わるか分からない。
+describe('ManillePage target points', () => {
+  it('shows the target score in the header bar', async () => {
+    mockExec.mockResolvedValue(makeManilleState({ config: { cpuDifficulty: 1, targetPoints: 21 } }));
+    renderWithProviders(<ManillePage />);
+    await waitFor(() => expect(screen.getByText('目標: 21点')).toBeInTheDocument());
+  });
+
+  // **設定した値をそのまま出す。**固定値を出すと、設定を変えても嘘のままになる。
+  it('follows the configured target rather than a fixed number', async () => {
+    mockExec.mockResolvedValue(makeManilleState({ config: { cpuDifficulty: 1, targetPoints: 41 } }));
+    renderWithProviders(<ManillePage />);
+    await waitFor(() => expect(screen.getByText('目標: 41点')).toBeInTheDocument());
+    expect(screen.queryByText('目標: 21点')).not.toBeInTheDocument();
+  });
+});
