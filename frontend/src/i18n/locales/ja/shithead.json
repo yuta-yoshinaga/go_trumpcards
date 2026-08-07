@@ -53,5 +53,17 @@
     "burnTen": "10で場札を焼却すると一気に主導権を握れます",
     "resetTwo": "2でリセットして高いカードのプレッシャーから抜けましょう",
     "playLowest": "場札に勝てる中でもっとも小さい値のカードを選びます"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "easy": "かんたん",
+    "normal": "ふつう",
+    "hard": "むずかしい",
+    "magicTwo": "2 のマジック（リセット）",
+    "magicSeven": "7 のマジック（以下縛り）",
+    "magicEight": "8 のマジック（スキップ）",
+    "magicTen": "10 のマジック（場を焼く）",
+    "fourOfAKindBurn": "同じ数字4枚で場を焼く"
   }
 }
