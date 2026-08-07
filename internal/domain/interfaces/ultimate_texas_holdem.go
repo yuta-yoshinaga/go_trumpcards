@@ -54,6 +54,8 @@ type UltimateTexasHoldemGame interface {
 	GetTotalPayout() int
 	// GetPlayerHandRank プレイヤーハンドランクを取得する
 	GetPlayerHandRank() int
+	// RecommendPlay 現在のフェーズでの推奨アクションを取得する
+	RecommendPlay() string
 	// GetDealerHandRank ディーラーハンドランクを取得する
 	GetDealerHandRank() int
 	// GetPlayerBest プレイヤー最良5枚を取得する

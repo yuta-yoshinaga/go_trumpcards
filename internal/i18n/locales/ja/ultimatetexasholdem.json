@@ -26,5 +26,12 @@
   "dealerWins": "ディーラーの勝ち！",
   "playerFolded": "プレイヤーがフォールド。",
   "push": "プッシュ！",
-  "totalPayoutLine": "合計払戻し: {{payout}}"
+  "totalPayoutLine": "合計払戻し: {{payout}}",
+  "hintNone": "いまはヒントを出せません。",
+  "hintPlay4x": "推奨: 4倍でプレイ（強いスターティングハンド）",
+  "hintPlay3x": "推奨: 3倍でプレイ（そこそこのスターティングハンド）",
+  "hintPlay2x": "推奨: 2倍でプレイ（ワンペア以上）",
+  "hintPlay1x": "推奨: 1倍でプレイ（役ができている）",
+  "hintCheck": "推奨: チェック（次のカードを待つ）",
+  "hintFold": "推奨: フォールド（役ができていない）"
 }

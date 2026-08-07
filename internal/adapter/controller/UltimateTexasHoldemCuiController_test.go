@@ -23,6 +23,7 @@ func newMockUltimateTexasHoldemInteractor() *usecase.MockUltimateTexasHoldemInte
 	m.On("Check").Return("check result")
 	m.On("Fold").Return("fold result")
 	m.On("ActionLog").Return("action log result")
+	m.On("Hint").Return("hint result")
 	return m
 }
 
@@ -132,4 +133,22 @@ func TestUltimateTexasHoldemCuiController_Empty(t *testing.T) {
 	c := controller.NewUltimateTexasHoldemCuiController(m)
 	result := c.Exec("")
 	assert.Contains(t, result, "'help' でコマンド一覧を表示します。")
+}
+
+// **CUI には 4x/3x/2x/1x/check/fold を選ぶ材料が何も無かった (#4709)。**
+func TestUltimateTexasHoldemCuiController_Hint(t *testing.T) {
+	m := newMockUltimateTexasHoldemInteractor()
+	c := controller.NewUltimateTexasHoldemCuiController(m)
+
+	assert.Equal(t, "hint result", c.Exec("h"))
+	assert.Equal(t, "hint result", c.Exec("hint"))
+}
+
+// **既存コマンドは何も変わらない。**
+func TestUltimateTexasHoldemCuiController_HintDoesNotShadowOthers(t *testing.T) {
+	m := newMockUltimateTexasHoldemInteractor()
+	c := controller.NewUltimateTexasHoldemCuiController(m)
+
+	assert.Equal(t, "check result", c.Exec("c"))
+	m.AssertNotCalled(t, "Hint")
 }

@@ -126,6 +126,29 @@ func (up *UltimateTexasHoldemCuiPresenter) Output(g interfaces.UltimateTexasHold
 	return sb.String()
 }
 
+// uthHintKeys は推奨アクションから表示用の i18n キーへの対応。
+var uthHintKeys = map[string]string{
+	domain.UTHRecommendPlay4x: "ultimatetexasholdem.hintPlay4x",
+	domain.UTHRecommendPlay3x: "ultimatetexasholdem.hintPlay3x",
+	domain.UTHRecommendPlay2x: "ultimatetexasholdem.hintPlay2x",
+	domain.UTHRecommendPlay1x: "ultimatetexasholdem.hintPlay1x",
+	domain.UTHRecommendCheck:  "ultimatetexasholdem.hintCheck",
+	domain.UTHRecommendFold:   "ultimatetexasholdem.hintFold",
+}
+
+// HintOutput は現在のフェーズでの推奨アクションを出力する。
+//
+// **CUI には 4x/3x/2x/1x/check/fold を選ぶ材料が何も無かった (#4709)。**
+// Web はプリフロップの強さで 4x / 3x ボタンを光らせている。判定はドメインの
+// RecommendPlay 1か所に置いたので、CUI と Web が違う倍率を指すことはない。
+func (up *UltimateTexasHoldemCuiPresenter) HintOutput(g interfaces.UltimateTexasHoldemGame) string {
+	key, ok := uthHintKeys[g.RecommendPlay()]
+	if !ok {
+		return i18n.T("ultimatetexasholdem.hintNone") + "\n"
+	}
+	return color.Yellow(i18n.T(key)) + "\n"
+}
+
 // ActionLogOutput 棋譜をテキスト出力
 func (up *UltimateTexasHoldemCuiPresenter) ActionLogOutput(g interfaces.UltimateTexasHoldemGame) string {
 	return actionLogOutputText(g)
