@@ -756,6 +756,51 @@ func (g *Nap) SetLeadPlayerIdx(idx int) { g.leadPlayerIdx = idx }
 // GetDealerIdx ディーラーインデックス取得
 func (g *Nap) GetDealerIdx() int { return g.dealerIdx }
 
+// NapDeclarerProgress は宣言者の契約達成状況。
+type NapDeclarerProgress struct {
+	// Won は宣言者がこれまでに取ったトリック数。
+	Won int
+	// Needed は契約に必要なトリック数。
+	Needed int
+	// Remaining は残りのトリック数。
+	Remaining int
+	// Unreachable はもう契約に届かないことが確定したか。
+	Unreachable bool
+}
+
+// GetDeclarerProgress は宣言者の契約達成状況を返す。宣言者が決まっていない、
+// またはプレイ中/トリック終了以外のフェーズでは nil。
+//
+// **CUI は宣言者が何トリック取ったかを一切知らせていなかった (#4763)。**
+// Web は nap-declarer-progress で常時出している。CLI プレイヤーは自分で
+// トリック数を数えるしかなかった。
+//
+// Nap は1ラウンド5トリックで、契約値 (2/3/4/5) がそのまま必要トリック数。
+func (g *Nap) GetDeclarerProgress() *NapDeclarerProgress {
+	if g.phase != NapPhasePlay && g.phase != NapPhaseTrickEnd {
+		return nil
+	}
+	if g.declarerIdx < 0 || g.declarerIdx >= len(g.players) {
+		return nil
+	}
+	played := 0
+	for _, p := range g.players {
+		played += p.GetTrickCount()
+	}
+	remaining := NapTrickCount - played
+	if remaining < 0 {
+		remaining = 0
+	}
+	won := g.players[g.declarerIdx].GetTrickCount()
+	needed := int(g.contract)
+	return &NapDeclarerProgress{
+		Won: won, Needed: needed, Remaining: remaining,
+		// **「もう届かない」は残りを全部取っても足りないときだけ。**早すぎる
+		// 判定は、まだ勝てるラウンドを投げさせる。
+		Unreachable: needed-won > remaining,
+	}
+}
+
 // GetDeclarerIdx 宣言者インデックス取得 (-1=未確定)
 func (g *Nap) GetDeclarerIdx() int { return g.declarerIdx }
 
