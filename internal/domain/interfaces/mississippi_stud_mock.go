@@ -93,6 +93,19 @@ func (m *MockMississippiStudGame) GetHandRank() int {
 	return args.Int(0)
 }
 
+func (m *MockMississippiStudGame) GetCurrentMadeHand() *domain.MississippiStudMadeHand {
+	args := m.Called()
+	if args.Get(0) == nil {
+		return nil
+	}
+	return args.Get(0).(*domain.MississippiStudMadeHand)
+}
+
+func (m *MockMississippiStudGame) RecommendBet() string {
+	args := m.Called()
+	return args.String(0)
+}
+
 func (m *MockMississippiStudGame) GetPayoutMultiplier() int {
 	args := m.Called()
 	return args.Int(0)

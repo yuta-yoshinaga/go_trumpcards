@@ -29,6 +29,11 @@ func (m *MockMississippiStudInteractor) Fold() string {
 	return args.String(0)
 }
 
+func (m *MockMississippiStudInteractor) Hint() string {
+	args := m.Called()
+	return args.String(0)
+}
+
 func (m *MockMississippiStudInteractor) ActionLog() string {
 	args := m.Called()
 	return args.String(0)

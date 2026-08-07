@@ -23,6 +23,10 @@ func (s *stubMississippiStudPresenter) ActionLogOutput(_ interfaces.MississippiS
 	return `{"log":[]}`
 }
 
+func (s *stubMississippiStudPresenter) HintOutput(_ interfaces.MississippiStudGame) string {
+	return `{}`
+}
+
 func TestMississippiStudInteractor_SnapshotRestore(t *testing.T) {
 	g := domain.NewDefaultMississippiStud()
 	mi := NewMississippiStudInteractor(g, new(stubMississippiStudPresenter))

@@ -22,5 +22,12 @@
   "playerWins": "Player wins!",
   "playerLoses": "Player loses.",
   "push": "Push.",
-  "foldLossLine": "Loss on fold: {{loss}}"
+  "foldLossLine": "Loss on fold: {{loss}}",
+  "hintNone": "No hint is available now.",
+  "hintPlay3x": "Recommended: bet 3x",
+  "hintPlay1x": "Recommended: bet 1x",
+  "hintFold": "Recommended: fold",
+  "madeHandLine": "Current hand: {{hand}} ({{eligible}})",
+  "madeHandEligible": "pays",
+  "madeHandNotEligible": "does not pay"
 }

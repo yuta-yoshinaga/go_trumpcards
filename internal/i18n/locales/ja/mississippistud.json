@@ -22,5 +22,12 @@
   "playerWins": "プレイヤーの勝ち！",
   "playerLoses": "プレイヤーの負け。",
   "push": "プッシュ。",
-  "foldLossLine": "フォールド時の損失: {{loss}}"
+  "foldLossLine": "フォールド時の損失: {{loss}}",
+  "hintNone": "いまはヒントを出せません。",
+  "hintPlay3x": "推奨: 3倍を置く",
+  "hintPlay1x": "推奨: 1倍を置く",
+  "hintFold": "推奨: フォールド",
+  "madeHandLine": "現在の役: {{hand}} ({{eligible}})",
+  "madeHandEligible": "配当あり",
+  "madeHandNotEligible": "配当なし"
 }
