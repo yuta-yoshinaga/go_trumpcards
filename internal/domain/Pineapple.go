@@ -918,6 +918,70 @@ func (p *Pineapple) GetHumanDiscardPreviews() []PineappleDiscardPreview {
 	return previews
 }
 
+// PineappleDiscardPairPreview は「この2枚を捨てたら残る手」。
+// Irish Poker のように2枚まとめて捨てる変種で使う。
+type PineappleDiscardPairPreview struct {
+	// DiscardIdx0 / DiscardIdx1 は捨てるホールカードのインデックス。
+	DiscardIdx0 int
+	DiscardIdx1 int
+	// HandRank は残る2枚がボードと作る最強の役 (PokerHand*)。
+	HandRank int
+	// Recommended は最も強い役が残る組み合わせに付く。同点なら全部に付く。
+	Recommended bool
+}
+
+// GetHumanDiscardPairPreviews は4枚配りで「どの2枚を捨てるか」の C(4,2)=6 通りを
+// すべて評価して返す (#4687)。
+//
+// **Web は1枚目を選んだ後の3択しか出せない**（残り3択の絞り込み表示）。CUI には
+// 選択途中という状態が無いので、代わりに6通りを最初から並べる。暗算の負荷を
+// 消すという目的は同じで、情報量はこちらが多い。
+//
+// 3枚配り (Pineapple / Crazy Pineapple) では nil。そちらは1枚捨てなので
+// GetHumanDiscardPreviews の担当。
+func (p *Pineapple) GetHumanDiscardPairPreviews() []PineappleDiscardPairPreview {
+	if p.phase != PineapplePhaseDiscard {
+		return nil
+	}
+	var human *PineapplePlayer
+	for _, pl := range p.players {
+		if pl.GetIsHuman() {
+			human = pl
+			break
+		}
+	}
+	if human == nil || human.GetFolded() || human.GetCardsSize() != 4 {
+		return nil
+	}
+	if len(p.communityCards) < 3 {
+		return nil
+	}
+
+	previews := make([]PineappleDiscardPairPreview, 0, 6)
+	best := -1
+	for i := 0; i < human.GetCardsSize(); i++ {
+		for j := i + 1; j < human.GetCardsSize(); j++ {
+			keep := make([]*Card, 0, 2)
+			for k := 0; k < human.GetCardsSize(); k++ {
+				if k != i && k != j {
+					keep = append(keep, human.GetCard(k))
+				}
+			}
+			rank := p.bestRankWithBoard(keep)
+			previews = append(previews, PineappleDiscardPairPreview{
+				DiscardIdx0: i, DiscardIdx1: j, HandRank: rank,
+			})
+			if rank > best {
+				best = rank
+			}
+		}
+	}
+	for i := range previews {
+		previews[i].Recommended = previews[i].HandRank == best
+	}
+	return previews
+}
+
 // GetPotOdds ポットオッズを返す
 func (p *Pineapple) GetPotOdds() float64 {
 	if p.phase < PineapplePhasePreFlop || p.phase > PineapplePhaseRiver {

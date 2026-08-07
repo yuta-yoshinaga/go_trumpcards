@@ -150,7 +150,21 @@ func (pp *PineappleCuiPresenter) Output(p interfaces.PineappleGame, lastErr erro
 			// フロップ前に捨てるプレーンな Pineapple ではまだ役が決まらないので、
 			// スーテッド/コネクターといった性質を出すしかない (#4685)。
 			// Web も variant でこの2つを出し分けている。
-			if previews := p.GetHumanDiscardPreviews(); len(previews) > 0 {
+			// **4枚配り (Irish) は2枚まとめて捨てるので、候補は C(4,2)=6 通り。**
+			// Web は1枚目を選んだ後の3択しか出せないが、CUI には選択途中という
+			// 状態が無いので6通りを最初から並べる (#4687)。
+			if pairs := p.GetHumanDiscardPairPreviews(); len(pairs) > 0 {
+				for _, pv := range pairs {
+					line := i18n.Tf("pineapple.discardCandidatePair",
+						"idx0", strconv.Itoa(pv.DiscardIdx0),
+						"idx1", strconv.Itoa(pv.DiscardIdx1),
+						"hand", cuiPokerHandName(pv.HandRank))
+					if pv.Recommended {
+						line += color.BoldYellow(i18n.T("pineapple.discardRecommended"))
+					}
+					b.WriteString(line + "\n")
+				}
+			} else if previews := p.GetHumanDiscardPreviews(); len(previews) > 0 {
 				for _, pv := range previews {
 					line := i18n.Tf("pineapple.discardCandidate",
 						"idx", strconv.Itoa(pv.CardIdx),
