@@ -362,7 +362,11 @@ describe('BakersDozenPage legal targets', () => {
   // 別の列を掴む。
   it('leaves the illegal targets clickable', async () => {
     await selectSpadeFive();
-    const heartSix = screen.getByRole('button', { name: '♥ 6' });
-    expect(heartSix).toBeEnabled();
+    // **合法な移動先を選んではいけない。**♥6 は ♠5 の合法な置き先なので、
+    // 「押せなくしない」ことの検証にならない。空の組札は ♠5 では絶対に
+    // 合法にならない (A しか置けない) illegal target。
+    const emptyFoundation = screen.getByRole('button', { name: '空の組札 (♠)' });
+    expect(emptyFoundation.closest('[data-legal-target="true"]')).toBeNull();
+    expect(emptyFoundation).toBeEnabled();
   });
 });
