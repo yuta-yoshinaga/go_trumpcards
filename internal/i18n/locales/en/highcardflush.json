@@ -23,5 +23,9 @@
   "totalPayoutLine": "total payout: {{payout}}",
   "hintNone": "No hint available.",
   "hintRaise": "Recommended: Raise (your flush meets the dealer qualifying length)",
-  "hintFold": "Recommended: Fold (your flush is below the dealer qualifying length)"
+  "hintFold": "Recommended: Fold (your flush is below the dealer qualifying length)",
+  "hintRaise3x": "Recommended: raise 3x (flush of 6 or more)",
+  "hintRaise2x": "Recommended: raise 2x (flush of 5)",
+  "hintRaise1x": "Recommended: raise 1x (flush of 4)",
+  "hintRaise1xMarginal": "Recommended: raise 1x (only 3, but the high card is Queen or better)"
 }

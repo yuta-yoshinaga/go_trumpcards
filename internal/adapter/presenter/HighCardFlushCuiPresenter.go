@@ -103,15 +103,56 @@ func (hp *HighCardFlushCuiPresenter) phaseStr(phase int) string {
 	}
 }
 
-// HintOutput emits a raise/fold recommendation during the action phase. Basic
-// strategy: raise once the player's longest flush reaches the dealer's
-// qualifying length (3); otherwise fold. Other phases have no decision to advise.
+// highCardFlushMarginalHigh は3枚フラッシュで賭けに回れる最低の最高札 (Q)。
+const highCardFlushMarginalHigh = 12
+
+// HintOutput emits a raise/fold recommendation during the action phase.
+//
+// **倍率まで言う (#4714)。**Web には 1x / 2x / 3x の3つのボタンが並ぶのに、
+// CUI は「レイズ」か「フォールド」の二択しか返しておらず、いくら賭けるべきかは
+// 分からなかった。段階はフロントの getHighCardFlushHint と同じ:
+// 6枚以上=3x、5枚=2x、4枚=1x、3枚は最高札 Q 以上なら 1x、それ以外はフォールド。
+//
+// **3枚フラッシュを一律レイズにしない。**以前はディーラーの成立条件
+// (3枚) に届いた時点でレイズと言っていたが、それは弱い3枚でも押す助言だった。
 func (hp *HighCardFlushCuiPresenter) HintOutput(hcf interfaces.HighCardFlushGame) string {
 	if hcf.GetPhase() != domain.HighCardFlushPhaseAction {
 		return i18n.T("highcardflush.hintNone") + "\n"
 	}
-	if hcf.GetPlayerFlushLen() >= domain.HighCardFlushDealerMinFlushLen {
-		return color.Yellow(i18n.T("highcardflush.hintRaise")) + "\n"
+	switch n := hcf.GetPlayerFlushLen(); {
+	case n >= 6:
+		return color.Yellow(i18n.T("highcardflush.hintRaise3x")) + "\n"
+	case n == 5:
+		return color.Yellow(i18n.T("highcardflush.hintRaise2x")) + "\n"
+	case n == 4:
+		return color.Yellow(i18n.T("highcardflush.hintRaise1x")) + "\n"
+	case n == 3 && highCardFlushBestFlushHigh(hcf.GetPlayerHand()) >= highCardFlushMarginalHigh:
+		return color.Yellow(i18n.T("highcardflush.hintRaise1xMarginal")) + "\n"
 	}
 	return color.Yellow(i18n.T("highcardflush.hintFold")) + "\n"
+}
+
+// highCardFlushBestFlushHigh は3枚以上そろっているスートの中で最も高い札の値を
+// 返す。**エースは 14 として数える。**フロントの getHighCardFlushHint と同じ。
+func highCardFlushBestFlushHigh(hand []*domain.Card) int {
+	bySuit := map[int][]int{}
+	for _, c := range hand {
+		v := c.GetValue()
+		if v == 1 {
+			v = 14
+		}
+		bySuit[c.GetDesign()] = append(bySuit[c.GetDesign()], v)
+	}
+	best := 0
+	for _, vals := range bySuit {
+		if len(vals) < domain.HighCardFlushDealerMinFlushLen {
+			continue
+		}
+		for _, v := range vals {
+			if v > best {
+				best = v
+			}
+		}
+	}
+	return best
 }
