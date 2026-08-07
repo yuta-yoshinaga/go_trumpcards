@@ -45,6 +45,8 @@ type SpoilFiveGame interface {
 	GetLeadPlayerIdx() int
 	// GetDealerIdx ディーラーインデックスを取得する
 	GetDealerIdx() int
+	// GetTopTrumps 固定序列の上位札を強い順に取得する
+	GetTopTrumps() []*domain.Card
 	// GetTrumpSuit 切り札スートを取得する (1-4)
 	GetTrumpSuit() int
 	// GetPot 現在のポット額を取得する

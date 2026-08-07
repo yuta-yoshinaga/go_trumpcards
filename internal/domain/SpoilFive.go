@@ -368,6 +368,43 @@ func (g *SpoilFive) trickWinner() int {
 	return winnerIdx
 }
 
+// GetTopTrumps は固定序列の上位札を強い順に返す (#4765)。
+//
+// **この序列が Spoil Five の核心ルール。**5 > J > ♥A > 切り札A > K > Q で、
+// ♥A は切り札でなくても常に3番目に強い。Web は折りたたみパネルで常時出して
+// いるのに、CUI は切り札スートの記号を出すだけで、CLI プレイヤーは
+// 「なぜこのカードで負けたか」をルールブック無しに理解できなかった。
+//
+// **ハートが切り札のときは ♥A を重複させない。**そのとき ♥A は切り札の A
+// そのものなので、2度並べると6枚あるように見える。
+//
+// 並びは spoilRank そのものから導く。順序を手で書き写すと、ランクを直した
+// ときに説明だけ古くなる。
+func (g *SpoilFive) GetTopTrumps() []*Card {
+	candidates := []*Card{
+		NewCard(g.trumpSuit, 5, false),
+		NewCard(g.trumpSuit, 11, false),
+		NewCard(CardDesignHeart, 1, false),
+		NewCard(g.trumpSuit, 1, false),
+		NewCard(g.trumpSuit, 13, false),
+		NewCard(g.trumpSuit, 12, false),
+	}
+	out := make([]*Card, 0, len(candidates))
+	seen := map[[2]int]bool{}
+	for _, c := range candidates {
+		key := [2]int{c.GetDesign(), c.GetValue()}
+		if seen[key] {
+			continue
+		}
+		seen[key] = true
+		out = append(out, c)
+	}
+	sort.SliceStable(out, func(i, j int) bool {
+		return g.spoilRank(out[i]) > g.spoilRank(out[j])
+	})
+	return out
+}
+
 // spoilRank Spoil Five の固定ランクを返す (高いほど強い)。
 func (g *SpoilFive) spoilRank(card *Card) int {
 	d, v := card.GetDesign(), card.GetValue()
