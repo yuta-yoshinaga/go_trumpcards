@@ -71,3 +71,101 @@ describe('getCasinoHoldemHint', () => {
     expect(hint?.confidence).toBe('strong');
   });
 });
+
+// **CUI と Web が逆の助言を出していた (#4712)。**ドメインの RecommendCall は
+// 「ワンペア以上、または5枚のどこかに A か K があればコール」。CUI はこれを
+// そのまま使うのに、こちらはランクしか見ていなかった。
+describe('getCasinoHoldemHint — ace/king rule (sync: CasinoHoldem.RecommendCall)', () => {
+  it('calls on an ace in the hole with no made hand', () => {
+    const hint = getCasinoHoldemHint(
+      makeState({
+        playerHand: [
+          { design: 'SPADE', value: 1 },
+          { design: 'HEART', value: 6 },
+        ],
+        community: [
+          { design: 'DIAMOND', value: 3 },
+          { design: 'CLOVER', value: 9 },
+          { design: 'SPADE', value: 11 },
+        ],
+        playerHandRank: 0,
+      }),
+    );
+    expect(hint?.targetAction).toBe('call');
+  });
+
+  it('calls on a king in the hole with no made hand', () => {
+    const hint = getCasinoHoldemHint(
+      makeState({
+        playerHand: [
+          { design: 'SPADE', value: 13 },
+          { design: 'HEART', value: 6 },
+        ],
+        community: [
+          { design: 'DIAMOND', value: 3 },
+          { design: 'CLOVER', value: 9 },
+          { design: 'SPADE', value: 11 },
+        ],
+        playerHandRank: 0,
+      }),
+    );
+    expect(hint?.targetAction).toBe('call');
+  });
+
+  // **ボードの A / K も数える。**ドメインは hole と community を区別せず
+  // 5枚すべてを走査する。ここだけ手札に限ると、また CUI とずれる。
+  it('calls when the ace is on the board rather than in the hole', () => {
+    const hint = getCasinoHoldemHint(
+      makeState({
+        playerHand: [
+          { design: 'SPADE', value: 6 },
+          { design: 'HEART', value: 4 },
+        ],
+        community: [
+          { design: 'DIAMOND', value: 1 },
+          { design: 'CLOVER', value: 9 },
+          { design: 'SPADE', value: 11 },
+        ],
+        playerHandRank: 0,
+      }),
+    );
+    expect(hint?.targetAction).toBe('call');
+  });
+
+  // **A と K の両方は要らない。**oasispoker の hasAceKing とは規則が違う。
+  it('does not require both an ace and a king', () => {
+    const hint = getCasinoHoldemHint(
+      makeState({
+        playerHand: [
+          { design: 'SPADE', value: 1 },
+          { design: 'HEART', value: 4 },
+        ],
+        community: [
+          { design: 'DIAMOND', value: 6 },
+          { design: 'CLOVER', value: 9 },
+          { design: 'SPADE', value: 11 },
+        ],
+        playerHandRank: 0,
+      }),
+    );
+    expect(hint?.targetAction).toBe('call');
+  });
+
+  it('still folds when no card is an ace or a king', () => {
+    const hint = getCasinoHoldemHint(
+      makeState({
+        playerHand: [
+          { design: 'SPADE', value: 6 },
+          { design: 'HEART', value: 4 },
+        ],
+        community: [
+          { design: 'DIAMOND', value: 3 },
+          { design: 'CLOVER', value: 9 },
+          { design: 'SPADE', value: 11 },
+        ],
+        playerHandRank: 0,
+      }),
+    );
+    expect(hint?.targetAction).toBe('fold');
+  });
+});
