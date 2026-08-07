@@ -707,7 +707,6 @@ func (g *TeenPatti) GetPot() int { return g.pot }
 // SetPot ポット設定 (テスト用)
 func (g *TeenPatti) SetPot(v int) { g.pot = v }
 
-// GetStake 現在の賭け単位取得
 // GetRaiseRange は指定プレイヤーがいまレイズできる額の範囲を返す。
 // レイズできないときは ok=false。
 //
@@ -730,6 +729,7 @@ func (g *TeenPatti) GetRaiseRange(playerIdx int) (minRaise, maxRaise int, ok boo
 	return minRaise, maxRaise, true
 }
 
+// GetStake 現在の賭け単位取得
 func (g *TeenPatti) GetStake() int { return g.stake }
 
 // SetStake 賭け単位設定 (テスト用)

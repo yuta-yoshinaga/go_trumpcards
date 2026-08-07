@@ -231,4 +231,25 @@ describe('TeenPattiPage', () => {
     expect(raise).toBeDisabled();
     expect(raise).toHaveAttribute('title', 'チップ不足のためレイズできません');
   });
+
+  // **CPU がレイズすると minRaise が上がるのに、ローカルの raiseStake は
+  // 据え置きだった (レビュー指摘)。**下限を割った額を送信でき、サーバーで
+  // 弾かれる — 上限を塞いだのと同じ穴が下側に残っていた。
+  it('pulls the raise amount up when the minimum rises mid-round', async () => {
+    mockExec.mockResolvedValue(makeTeenPattiState({ minRaise: 11, maxRaise: 30, canRaise: true }));
+    renderWithProviders(<TeenPattiPage />);
+
+    const raise = await screen.findByTestId('tp-raise-button');
+    // 初期値 2 のままだと下限 11 を割る。
+    expect(raise).toHaveTextContent('11');
+  });
+
+  it('pulls the raise amount down when it exceeds the maximum', async () => {
+    mockExec.mockResolvedValue(makeTeenPattiState({ minRaise: 2, maxRaise: 1, canRaise: false }));
+    renderWithProviders(<TeenPattiPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    // レイズ不可でもボタン文言が範囲外の額を出さないこと。
+    expect(screen.getByTestId('tp-raise-button')).not.toHaveTextContent('30');
+  });
 });

@@ -114,6 +114,17 @@ function TeenPattiPageContent() {
   // Raise stake amount (local UI state).
   const [raiseStake, setRaiseStake] = useState(2);
 
+  // **サーバーが送る範囲に追従させる。**CPU がレイズすると minRaise が上がるが、
+  // ローカルの raiseStake は据え置きなので、下限を割った額を送信できてしまう
+  // (上限を塞いだのと同じ穴が下側に残っていた)。範囲が動くたびに畳み込む。
+  // state は読み込み前 null になり得るが、フックは条件付きで呼べない。
+  const minRaise = state?.minRaise ?? 0;
+  const maxRaise = state?.maxRaise ?? 0;
+  useEffect(() => {
+    if (minRaise <= 0) return; // まだ状態が来ていない
+    setRaiseStake((a) => Math.min(Math.max(a, minRaise), Math.max(minRaise, maxRaise)));
+  }, [minRaise, maxRaise]);
+
   // Fetch a fresh game on mount.
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset is stable per render of the hook; run once on mount.
   useEffect(() => {
