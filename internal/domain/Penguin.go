@@ -609,6 +609,26 @@ func (p *Penguin) isValidTableauSequence(cards []*Card) bool {
 	return true
 }
 
+// GetMaxMovableCards はいま一度に動かせる最大枚数を返す (#4802)。
+//
+// **空き列を移動先にすると上限は下がる。**その列自身を経由地に使えないため。
+// 移動先を選ぶ前の一般的な上限がこちらで、空き列に置くときの上限は
+// GetMaxMovableCardsToEmptyColumn。
+func (p *Penguin) GetMaxMovableCards() int {
+	return p.maxMovableCards(-1)
+}
+
+// GetMaxMovableCardsToEmptyColumn は空き列へ動かすときの上限を返す。
+// 空き列が無いときは 0。
+func (p *Penguin) GetMaxMovableCardsToEmptyColumn() int {
+	for i := 0; i < PenguinTableauCnt; i++ {
+		if len(p.tableau[i]) == 0 {
+			return p.maxMovableCards(i)
+		}
+	}
+	return 0
+}
+
 // maxMovableCards 移動可能な最大カード枚数を計算
 func (p *Penguin) maxMovableCards(toCol int) int {
 	emptyFreeCells := 0

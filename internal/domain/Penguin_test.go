@@ -1101,3 +1101,61 @@ func TestPenguinNewDefault(t *testing.T) {
 	p.Reset()
 	assert.Equal(t, PenguinPhasePlaying, p.GetPhase())
 }
+
+// **上限が出ておらず、拒否されたコマンドで初めて気づく形だった (#4802)。**
+// 姉妹の Eight Off は supermoveLine を毎ターン出している。
+func TestPenguin_GetMaxMovableCards(t *testing.T) {
+	card := func(v int) *Card { return NewCard(CardDesignSpade, v, false) }
+	board := func(filledCells, filledCols int) *Penguin {
+		p := NewDefaultPenguin()
+		p.Reset()
+		var cells [PenguinCellCnt]*Card
+		for i := 0; i < filledCells && i < PenguinCellCnt; i++ {
+			cells[i] = card(i + 2)
+		}
+		p.SetFreeCells(cells)
+		var tableau [PenguinTableauCnt][]*Card
+		for i := 0; i < PenguinTableauCnt; i++ {
+			if i < filledCols {
+				tableau[i] = []*Card{card(5)}
+			}
+		}
+		p.SetTableau(tableau)
+		return p
+	}
+
+	// **(1 + 空きセル) × 2^(空き列)。**セルは足し算、列は掛け算。
+	t.Run("counts free cells additively and empty columns as doubling", func(t *testing.T) {
+		assert.Equal(t, 1+PenguinCellCnt, board(0, PenguinTableauCnt).GetMaxMovableCards())
+		assert.Equal(t, (1+PenguinCellCnt)*2, board(0, PenguinTableauCnt-1).GetMaxMovableCards())
+	})
+
+	t.Run("with everything full only a single card moves", func(t *testing.T) {
+		assert.Equal(t, 1, board(PenguinCellCnt, PenguinTableauCnt).GetMaxMovableCards())
+	})
+
+	// **一般の上限はどの列も除外しない。**特定の列を除外した値を返すと、
+	// 空き列が1つ少ない前提の小さすぎる数を出すことになる。
+	t.Run("the general limit excludes no column, not even the first", func(t *testing.T) {
+		p := NewDefaultPenguin()
+		p.Reset()
+		p.SetFreeCells([PenguinCellCnt]*Card{})
+		var tableau [PenguinTableauCnt][]*Card
+		for i := 1; i < PenguinTableauCnt; i++ {
+			tableau[i] = []*Card{card(5)}
+		}
+		p.SetTableau(tableau)
+		assert.Equal(t, (1+PenguinCellCnt)*2, p.GetMaxMovableCards())
+	})
+
+	// **空き列を移動先にすると上限は下がる。**その列自身を経由地に使えない。
+	t.Run("moving onto an empty column halves the limit", func(t *testing.T) {
+		p := board(0, PenguinTableauCnt-1)
+		assert.Equal(t, (1+PenguinCellCnt)*2, p.GetMaxMovableCards())
+		assert.Equal(t, 1+PenguinCellCnt, p.GetMaxMovableCardsToEmptyColumn())
+	})
+
+	t.Run("reports zero when there is no empty column to move onto", func(t *testing.T) {
+		assert.Equal(t, 0, board(0, PenguinTableauCnt).GetMaxMovableCardsToEmptyColumn())
+	})
+}

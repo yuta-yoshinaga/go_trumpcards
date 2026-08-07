@@ -81,6 +81,20 @@ func (p *PenguinCuiPresenter) Output(pg interfaces.PenguinGame, lastErr error) s
 			if pg.IsStalemate() {
 				b.WriteString(color.Red(i18n.T("cuiSolitaireStalemate")) + "\n")
 			}
+			// **上限が出ておらず、拒否されたコマンドで初めて気づく形だった
+			// (#4802)。**姉妹の Eight Off は supermoveLine を毎ターン出し、
+			// Web も pg-supermove-badge を常設している。
+			b.WriteString(i18n.Tf("penguin.supermoveLine",
+				"limit", strconv.Itoa(pg.GetMaxMovableCards()),
+				"cells", strconv.Itoa(penguinEmptyCells(pg)),
+				"cols", strconv.Itoa(penguinEmptyColumns(pg))))
+			// **空き列を移動先にすると上限は下がる。**その列自身を経由地に
+			// 使えないため。空き列があるときだけ出す。
+			if toEmpty := pg.GetMaxMovableCardsToEmptyColumn(); toEmpty > 0 {
+				b.WriteString(i18n.Tf("penguin.supermoveToEmpty",
+					"limit", strconv.Itoa(toEmpty)))
+			}
+			b.WriteString("\n")
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
 				"count", strconv.Itoa(pg.GetMoveCount())) + "\n")
 		case domain.PenguinPhaseGameClear:
@@ -125,4 +139,26 @@ func (p *PenguinCuiPresenter) ActionLogOutput(pg interfaces.PenguinGame) string 
 		return actionLogToText(nil)
 	}
 	return actionLogToText(pg.GetActionLog())
+}
+
+// penguinEmptyCells は空いているフリーセルの数を返す。
+func penguinEmptyCells(pg interfaces.PenguinGame) int {
+	n := 0
+	for _, c := range pg.GetFreeCells() {
+		if c == nil {
+			n++
+		}
+	}
+	return n
+}
+
+// penguinEmptyColumns は空いているタブロー列の数を返す。
+func penguinEmptyColumns(pg interfaces.PenguinGame) int {
+	n := 0
+	for _, col := range pg.GetTableau() {
+		if len(col) == 0 {
+			n++
+		}
+	}
+	return n
 }
