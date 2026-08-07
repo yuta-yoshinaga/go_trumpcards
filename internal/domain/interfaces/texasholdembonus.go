@@ -32,6 +32,8 @@ type TexasHoldemBonusGame interface {
 	GetGameEndFlag() bool
 	// GetAnteBet アンテベット額を取得する
 	GetAnteBet() int
+	// GetNextBetCost 現在のフェーズで Play / Raise に必要なチップ額を取得する
+	GetNextBetCost() int
 	// GetBonusBet ボーナスサイドベット額を取得する
 	GetBonusBet() int
 	// GetFlopBet フロップベット額を取得する

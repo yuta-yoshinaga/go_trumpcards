@@ -149,7 +149,7 @@ func (t *TexasHoldemBonus) Play() error {
 	if t.phase != TexasHoldemBonusPhasePreFlop {
 		return NewDomainError(ErrWrongPhase, "Play is only allowed during the pre-flop phase.")
 	}
-	bet := t.anteBet * 2
+	bet := t.GetNextBetCost()
 	if !t.chips.SubtractChips(bet) {
 		return NewDomainError(ErrInsufficientChips, "Insufficient chips for flop bet.")
 	}
@@ -199,7 +199,7 @@ func (t *TexasHoldemBonus) Check() error {
 
 // Raise フロップ後またはターン後に1×アンテを置いて次フェーズへ進む。
 func (t *TexasHoldemBonus) Raise() error {
-	bet := t.anteBet
+	bet := t.GetNextBetCost()
 	switch t.phase {
 	case TexasHoldemBonusPhaseFlop:
 		if !t.chips.SubtractChips(bet) {
@@ -221,6 +221,30 @@ func (t *TexasHoldemBonus) Raise() error {
 		return nil
 	default:
 		return NewDomainError(ErrWrongPhase, "Raise is only allowed during the flop or turn phase.")
+	}
+}
+
+// アクションで置く額はアンテの何倍か。
+const (
+	// TexasHoldemBonusFlopMultiplier プリフロップの Play は 2×アンテ。
+	TexasHoldemBonusFlopMultiplier = 2
+	// TexasHoldemBonusRaiseMultiplier フロップ/ターンの Raise は 1×アンテ。
+	TexasHoldemBonusRaiseMultiplier = 1
+)
+
+// GetNextBetCost は現在のフェーズで Play / Raise に必要なチップ額を返す。
+// アクションフェーズ以外では 0。
+//
+// **Play() と Raise() が実際に引く額もここから取る。**別々に計算すると、
+// 画面に出す額と引かれる額がずれる余地が残る。
+func (t *TexasHoldemBonus) GetNextBetCost() int {
+	switch t.phase {
+	case TexasHoldemBonusPhasePreFlop:
+		return t.anteBet * TexasHoldemBonusFlopMultiplier
+	case TexasHoldemBonusPhaseFlop, TexasHoldemBonusPhaseTurn:
+		return t.anteBet * TexasHoldemBonusRaiseMultiplier
+	default:
+		return 0
 	}
 }
 
