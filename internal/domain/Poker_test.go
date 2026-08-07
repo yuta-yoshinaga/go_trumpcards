@@ -3408,3 +3408,73 @@ func TestPoker_PlayerAction_TransitionsToExchangeAndRunsCpuExchanges(t *testing.
 		)
 	}
 }
+
+// **Holdem 系は EquityDisplay で勝率とポットオッズを出しているのに、5 カード
+// ドローには仕組み自体が無く、2巡目ベットの判断材料が交換確率パネルしか
+// 無かった (#4678)。**
+func TestPoker_EquityAndPotOdds(t *testing.T) {
+	withHand := func(t *testing.T, cards []*Card) *Poker {
+		t.Helper()
+		pk, players := setupPokerForHumanAction(PokerPhaseSecondBet)
+		human := players[0]
+		human.Reset()
+		for _, c := range cards {
+			human.AddCard(c)
+		}
+		return pk
+	}
+	quads := []*Card{
+		NewCard(CardDesignSpade, 1, false),
+		NewCard(CardDesignHeart, 1, false),
+		NewCard(CardDesignClover, 1, false),
+		NewCard(CardDesignDiamond, 1, false),
+		NewCard(CardDesignSpade, 13, false),
+	}
+
+	t.Run("a strong hand beats a weak one", func(t *testing.T) {
+		strong := withHand(t, quads)
+		weak := withHand(t, []*Card{
+			NewCard(CardDesignSpade, 2, false),
+			NewCard(CardDesignHeart, 4, false),
+			NewCard(CardDesignClover, 6, false),
+			NewCard(CardDesignDiamond, 9, false),
+			NewCard(CardDesignSpade, 11, false),
+		})
+
+		se, we := strong.GetEquity(), weak.GetEquity()
+		if se == nil || we == nil {
+			t.Fatal("ベッティングフェーズではエクイティが出る")
+		}
+		// **順序だけを見る。**モンテカルロなので絶対値を固定するとフレークになる。
+		// フォーカードがハイカードに負ける確率はほぼ 0 なので、この比較は安定。
+		if se.Equity <= we.Equity {
+			t.Errorf("フォーカード %.3f がハイカード %.3f 以下", se.Equity, we.Equity)
+		}
+		if se.Equity <= 0.5 {
+			t.Errorf("フォーカードの勝率が %.3f は低すぎる", se.Equity)
+		}
+	})
+
+	// **交換フェーズでは出さない。**まだ手が変わるので、確定した勝率として
+	// 読まれると誤解を招く。
+	t.Run("no equity outside the betting phases", func(t *testing.T) {
+		pk := withHand(t, quads)
+		pk.SetPhase(PokerPhaseExchange)
+		if pk.GetEquity() != nil {
+			t.Error("交換フェーズではエクイティを出さない")
+		}
+		if pk.GetPotOdds() != 0 {
+			t.Error("交換フェーズではポットオッズを出さない")
+		}
+	})
+
+	t.Run("pot odds reflect the amount needed to call", func(t *testing.T) {
+		pk := withHand(t, quads)
+		pk.SetPot(90)
+		pk.SetLastBet(10)
+		// コール 10 / (ポット 90 + 10) = 10%
+		if got := pk.GetPotOdds(); got < 9.9 || got > 10.1 {
+			t.Errorf("GetPotOdds() = %.2f, want ~10", got)
+		}
+	})
+}

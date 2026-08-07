@@ -89,12 +89,17 @@ type PokerWebOutputMetaAI struct {
 
 // PokerWebOutput ポーカーWebアウトプット
 type PokerWebOutput struct {
-	Players      []*PokerWebOutputPlayer         `json:"players"`
-	Pot          int                             `json:"pot"`
-	SidePots     []*PokerWebOutputSidePot        `json:"sidePots"`
-	DealerIdx    int                             `json:"dealerIdx"`
-	CurrentTurn  int                             `json:"currentTurn"`
-	Phase        int                             `json:"phase"`
+	Players     []*PokerWebOutputPlayer  `json:"players"`
+	Pot         int                      `json:"pot"`
+	SidePots    []*PokerWebOutputSidePot `json:"sidePots"`
+	DealerIdx   int                      `json:"dealerIdx"`
+	CurrentTurn int                      `json:"currentTurn"`
+	Phase       int                      `json:"phase"`
+	// Equity / PotOdds は 2 巡目ベットの判断材料。Holdem 系は EquityDisplay で
+	// 出しているのに、5 カードドローには仕組み自体が無かった (#4678)。
+	// ベッティングフェーズ以外では省略される。
+	Equity       *HoldemWebOutputEquity          `json:"equity,omitempty"`
+	PotOdds      *float64                        `json:"potOdds,omitempty"`
 	GameEndFlag  bool                            `json:"gameEndFlag"`
 	LastBet      int                             `json:"lastBet"`
 	MinRaise     int                             `json:"minRaise"`

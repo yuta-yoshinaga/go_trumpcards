@@ -50,6 +50,17 @@ func (_m *MockPokerGame) GetPhase() int {
 }
 
 // GetPot モック
+// GetEquity はエクイティを返すモック。
+func (_m *MockPokerGame) GetEquity() *domain.HoldemEquityResult {
+	out, _ := _m.Called().Get(0).(*domain.HoldemEquityResult)
+	return out
+}
+
+// GetPotOdds はポットオッズを返すモック。
+func (_m *MockPokerGame) GetPotOdds() float64 {
+	return _m.Called().Get(0).(float64)
+}
+
 func (_m *MockPokerGame) GetPot() int {
 	ret := _m.Called()
 	return ret.Get(0).(int)

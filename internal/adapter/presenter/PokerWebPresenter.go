@@ -45,6 +45,22 @@ func (pwp *PokerWebPresenter) buildOutput(p interfaces.PokerGame, lastErr error)
 	resObj := new(controller.PokerWebOutput)
 	resObj.Phase = p.GetPhase()
 	resObj.Pot = p.GetPot()
+
+	// **判定はドメイン。**Holdem 系と同じ形で、ベッティングフェーズのときだけ
+	// 勝率とポットオッズを載せる (#4678)。
+	if eq := p.GetEquity(); eq != nil {
+		handOdds := make([]*controller.HoldemWebOutputHandOdds, len(eq.HandOdds))
+		for i, ho := range eq.HandOdds {
+			handOdds[i] = &controller.HoldemWebOutputHandOdds{
+				HandRank:    ho.HandRank,
+				HandName:    ho.HandName,
+				Probability: ho.Probability,
+			}
+		}
+		resObj.Equity = &controller.HoldemWebOutputEquity{WinProbability: eq.Equity, HandOdds: handOdds}
+		potOdds := p.GetPotOdds()
+		resObj.PotOdds = &potOdds
+	}
 	resObj.DealerIdx = p.GetDealerIdx()
 	resObj.CurrentTurn = p.GetCurrentTurn()
 	resObj.GameEndFlag = p.GetGameEndFlag()

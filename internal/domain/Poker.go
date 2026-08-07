@@ -1036,6 +1036,62 @@ func (p *Poker) findStraightDrawDiscard(playerIdx int) int {
 // --- ゲッター ---
 
 // GetPhase フェーズ取得
+// pokerEquitySimulations はエクイティ計算のモンテカルロ試行回数。
+const pokerEquitySimulations = 2000
+
+// GetEquity はベッティングフェーズでの人間の勝率を返す。それ以外では nil。
+//
+// **Holdem 系は EquityDisplay でこれを出しているのに、5 カードドローには
+// 仕組み自体が無く、2巡目ベットで call/raise/fold を判断する材料が
+// 交換確率パネルしか無かった (#4678)。**
+func (p *Poker) GetEquity() *HoldemEquityResult {
+	if p.round.phase != PokerPhaseDeal && p.round.phase != PokerPhaseSecondBet {
+		return nil
+	}
+	human := p.findHumanPlayer()
+	if human == nil || human.GetFolded() {
+		return nil
+	}
+	cards := make([]*Card, human.GetCardsSize())
+	for i := range cards {
+		cards[i] = human.GetCard(i)
+	}
+	active := 0
+	for _, pl := range p.players {
+		if !pl.GetIsHuman() && !pl.GetFolded() {
+			active++
+		}
+	}
+	result := CalcPokerEquity(cards, active, pokerEquitySimulations, nil)
+	return &result
+}
+
+// GetPotOdds はコールに必要な額に対するポットオッズを返す (0-100)。
+func (p *Poker) GetPotOdds() float64 {
+	if p.round.phase != PokerPhaseDeal && p.round.phase != PokerPhaseSecondBet {
+		return 0.0
+	}
+	human := p.findHumanPlayer()
+	if human == nil {
+		return 0.0
+	}
+	callAmount := p.round.lastBet - human.GetCurrentBet()
+	if callAmount < 0 {
+		callAmount = 0
+	}
+	return CalcPotOdds(p.round.pot, callAmount)
+}
+
+// findHumanPlayer は人間プレイヤーを返す (見つからなければ nil)。
+func (p *Poker) findHumanPlayer() *PokerPlayer {
+	for _, pl := range p.players {
+		if pl.GetIsHuman() {
+			return pl
+		}
+	}
+	return nil
+}
+
 func (p *Poker) GetPhase() int { return p.round.phase }
 
 // GetPlayers プレイヤー一覧取得
