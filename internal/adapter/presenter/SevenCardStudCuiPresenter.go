@@ -276,11 +276,62 @@ func sevenCardStudThirdStreetAdvice(cards []*domain.Card) (cont bool, reasonKey 
 	return false, "sevencardstud.hintReasonFold"
 }
 
-// HintOutput advises continue/fold on third street using basic starting-hand
-// strategy. It applies to the high game only (Razz inverts hand strength, and
-// already surfaces the best low), and to the human's turn on third street.
+// razzLowCardMax はラズで「ロー札」と数える上限 (A-8)。フロントの
+// razzHint.ts の LOW_CARD_MAX と同じ。
+const razzLowCardMax = 8
+
+// razzBettingPhases はラズのヒントを出すストリート。
+//
+// **ハイの助言と違って全ストリートで出す。**フロントの getRazzHint が
+// そうなっている。ラズは引くたびにロー札の枚数が変わるので、3rd だけでは
+// 足りない。
+var razzBettingPhases = map[int]bool{
+	domain.SevenCardStudPhaseThirdStreet:   true,
+	domain.SevenCardStudPhaseFourthStreet:  true,
+	domain.SevenCardStudPhaseFifthStreet:   true,
+	domain.SevenCardStudPhaseSixthStreet:   true,
+	domain.SevenCardStudPhaseSeventhStreet: true,
+}
+
+// razzAdvice はラズの助言を返す。判定はフロントの getRazzHint と同じ規則:
+// ペアがあれば降りる、ロー札が十分あればレイズ、そこそこならコール。
+//
+// **ラズは役の強弱が逆。**ハイの基本戦略 (ペアがあれば続行) をそのまま
+// 当てると、最悪の手で押すことになる。
+func razzAdvice(cards []*domain.Card) (actionKey, reasonKey string) {
+	seen := map[int]bool{}
+	low := 0
+	for _, c := range cards {
+		v := c.GetValue()
+		if seen[v] {
+			return "sevencardstud.hintFold", "sevencardstud.hintReasonRazzPair"
+		}
+		seen[v] = true
+		if v <= razzLowCardMax {
+			low++
+		}
+	}
+	total := len(cards)
+	if low >= min(5, total) {
+		return "sevencardstud.hintRaise", "sevencardstud.hintReasonRazzStrong"
+	}
+	if low >= min(4, total-1) {
+		return "sevencardstud.hintCall", "sevencardstud.hintReasonRazzDecent"
+	}
+	return "sevencardstud.hintFold", "sevencardstud.hintReasonRazzWeak"
+}
+
+// HintOutput advises on the human's turn. The high game uses basic
+// starting-hand strategy on third street; Razz inverts hand strength, so it
+// gets its own fold/call/raise advice on every betting street (#4703).
 func (p *SevenCardStudCuiPresenter) HintOutput(s interfaces.SevenCardStudGame) string {
-	if s.GetIsLowball() || !s.IsHumanTurn() || s.GetPhase() != domain.SevenCardStudPhaseThirdStreet {
+	if !s.IsHumanTurn() {
+		return i18n.T("sevencardstud.hintNone") + "\n"
+	}
+	if s.GetIsLowball() {
+		return razzHintOutput(s)
+	}
+	if s.GetPhase() != domain.SevenCardStudPhaseThirdStreet {
 		return i18n.T("sevencardstud.hintNone") + "\n"
 	}
 	player := s.GetPlayer(s.GetCurrentTurn())
@@ -294,4 +345,18 @@ func (p *SevenCardStudCuiPresenter) HintOutput(s interfaces.SevenCardStudGame) s
 	}
 	return color.Yellow(i18n.Tf("sevencardstud.hint",
 		"action", action, "reason", i18n.T(reasonKey))) + "\n"
+}
+
+// razzHintOutput はラズ (Lowball) 向けのヒント行を返す。
+func razzHintOutput(s interfaces.SevenCardStudGame) string {
+	if !razzBettingPhases[s.GetPhase()] {
+		return i18n.T("sevencardstud.hintNone") + "\n"
+	}
+	player := s.GetPlayer(s.GetCurrentTurn())
+	if player == nil || player.GetFolded() || len(player.GetAllCards()) == 0 {
+		return i18n.T("sevencardstud.hintNone") + "\n"
+	}
+	actionKey, reasonKey := razzAdvice(player.GetAllCards())
+	return color.Yellow(i18n.Tf("sevencardstud.hint",
+		"action", i18n.T(actionKey), "reason", i18n.T(reasonKey))) + "\n"
 }

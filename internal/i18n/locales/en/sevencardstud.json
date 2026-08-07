@@ -68,5 +68,11 @@
   "hintReasonStraight": "three to a straight",
   "hintReasonHigh": "three high cards",
   "hintReasonFold": "no qualifying starting hand",
-  "currentBestHand": "Best hand so far: {{hand}} ({{cards}})"
+  "currentBestHand": "Best hand so far: {{hand}} ({{cards}})",
+  "hintCall": "call",
+  "hintRaise": "raise",
+  "hintReasonRazzPair": "you have a pair, which is weak for a low hand",
+  "hintReasonRazzStrong": "you have plenty of low cards",
+  "hintReasonRazzDecent": "you have a fair number of low cards",
+  "hintReasonRazzWeak": "you do not have enough low cards"
 }

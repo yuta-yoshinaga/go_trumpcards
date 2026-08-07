@@ -620,18 +620,67 @@ func TestSevenCardStudCuiPresenter_HintOutput(t *testing.T) {
 		assert.Contains(t, p.HintOutput(s), i18n.T("sevencardstud.hintNone"))
 	})
 
-	t.Run("no hint in Razz (lowball)", func(t *testing.T) {
-		tc := domain.NewTrumpCards(0)
+	// **ラズは以前ここで常に「ヒントなし」だった (#4703)。**Web は razzHint.ts で
+	// fold/call/raise を助言しているのに、CUI だけ黙っていた。この t.Run は
+	// その挙動を「仕様」として固定してしまっていたので、中身を入れ替えた。
+	newRazz := func(cards ...*domain.Card) *domain.SevenCardStud {
 		players := []*domain.SevenCardStudPlayer{
 			domain.NewSevenCardStudPlayer(true, domain.HoldemStyleTAG),
 			domain.NewSevenCardStudPlayer(false, domain.HoldemStyleLAP),
 		}
-		s := domain.NewRazz(tc, players, domain.DefaultSevenCardStudConfig())
+		s := domain.NewRazz(domain.NewTrumpCards(0), players, domain.DefaultSevenCardStudConfig())
 		s.SetPhase(domain.SevenCardStudPhaseThirdStreet)
 		s.SetCurrentTurn(0)
-		players[0].AddHoleCard(domain.NewCard(domain.CardDesignSpade, 8, false))
-		players[0].AddHoleCard(domain.NewCard(domain.CardDesignHeart, 8, false))
-		players[0].AddDoorCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		for i, c := range cards {
+			if i < 2 {
+				players[0].AddHoleCard(c)
+			} else {
+				players[0].AddDoorCard(c)
+			}
+		}
+		return s
+	}
+	card := func(design, value int) *domain.Card { return domain.NewCard(design, value, false) }
+
+	// **ラズは役の強弱が逆。**ペアはハイなら続行材料だが、ローでは弱い。
+	t.Run("Razz folds a pair instead of continuing on it", func(t *testing.T) {
+		out := p.HintOutput(newRazz(
+			card(domain.CardDesignSpade, 8), card(domain.CardDesignHeart, 8),
+			card(domain.CardDesignClover, 2)))
+		assert.Contains(t, out, i18n.T("sevencardstud.hintFold"))
+		assert.Contains(t, out, i18n.T("sevencardstud.hintReasonRazzPair"))
+		assert.NotContains(t, out, i18n.T("sevencardstud.hintNone"))
+	})
+
+	t.Run("Razz raises on three low cards", func(t *testing.T) {
+		out := p.HintOutput(newRazz(
+			card(domain.CardDesignSpade, 1), card(domain.CardDesignHeart, 3),
+			card(domain.CardDesignClover, 5)))
+		assert.Contains(t, out, i18n.T("sevencardstud.hintRaise"))
+	})
+
+	t.Run("Razz folds a hand made of high cards", func(t *testing.T) {
+		out := p.HintOutput(newRazz(
+			card(domain.CardDesignSpade, 12), card(domain.CardDesignHeart, 11),
+			card(domain.CardDesignClover, 9)))
+		assert.Contains(t, out, i18n.T("sevencardstud.hintFold"))
+		assert.Contains(t, out, i18n.T("sevencardstud.hintReasonRazzWeak"))
+	})
+
+	// **ハイと違って全ストリートで出す。**引くたびにロー札の枚数が変わる。
+	t.Run("Razz still advises on fifth street", func(t *testing.T) {
+		s := newRazz(
+			card(domain.CardDesignSpade, 1), card(domain.CardDesignHeart, 3),
+			card(domain.CardDesignClover, 5), card(domain.CardDesignDiamond, 7))
+		s.SetPhase(domain.SevenCardStudPhaseFifthStreet)
+		assert.NotContains(t, p.HintOutput(s), i18n.T("sevencardstud.hintNone"))
+	})
+
+	t.Run("Razz gives no hint at showdown", func(t *testing.T) {
+		s := newRazz(
+			card(domain.CardDesignSpade, 1), card(domain.CardDesignHeart, 3),
+			card(domain.CardDesignClover, 5))
+		s.SetPhase(domain.SevenCardStudPhaseShowdown)
 		assert.Contains(t, p.HintOutput(s), i18n.T("sevencardstud.hintNone"))
 	})
 }
