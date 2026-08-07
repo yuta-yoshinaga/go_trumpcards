@@ -667,3 +667,38 @@ func diffName(d domain.PitchCpuDifficulty) string {
 	}
 	return "?"
 }
+
+// **入札前に手札の得点価値を暗算させていた (#4751)。**Web は入札中にバッジと
+// 内訳を出している。集計は Game ポイント計算そのものと同じ pitchPipValue を通す。
+func TestPitchHandPips(t *testing.T) {
+	card := func(v int) *domain.Card { return domain.NewCard(domain.CardDesignSpade, v, false) }
+
+	t.Run("an empty hand is worth nothing", func(t *testing.T) {
+		assert.Equal(t, 0, domain.PitchHandPips(nil))
+	})
+
+	// **10 が一番重く、A は 4。**素朴に「大きい札ほど高い」と思うと 10 を捨てる。
+	t.Run("scores ten highest, then king queen jack, with the ace at four", func(t *testing.T) {
+		assert.Equal(t, 10, domain.PitchHandPips([]*domain.Card{card(10)}))
+		assert.Equal(t, 4, domain.PitchHandPips([]*domain.Card{card(1)}))
+		assert.Equal(t, 3, domain.PitchHandPips([]*domain.Card{card(13)}))
+		assert.Equal(t, 2, domain.PitchHandPips([]*domain.Card{card(12)}))
+		assert.Equal(t, 1, domain.PitchHandPips([]*domain.Card{card(11)}))
+	})
+
+	t.Run("spot cards are worth nothing", func(t *testing.T) {
+		for v := 2; v <= 9; v++ {
+			assert.Equal(t, 0, domain.PitchHandPips([]*domain.Card{card(v)}), "%d が 0 でない", v)
+		}
+	})
+
+	t.Run("sums the whole hand", func(t *testing.T) {
+		assert.Equal(t, 20, domain.PitchHandPips([]*domain.Card{
+			card(1), card(10), card(13), card(12), card(11), card(7),
+		}))
+	})
+
+	t.Run("skips nil entries instead of panicking", func(t *testing.T) {
+		assert.Equal(t, 10, domain.PitchHandPips([]*domain.Card{nil, card(10), nil}))
+	})
+}
