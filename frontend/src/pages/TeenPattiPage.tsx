@@ -423,8 +423,8 @@ function TeenPattiPageContent() {
                     <button
                       type="button"
                       className={btnSecondary}
-                      onClick={() => setRaiseStake((a) => Math.max(state.stake + 1, a - 1))}
-                      disabled={loading}
+                      onClick={() => setRaiseStake((a) => Math.max(state.minRaise, a - 1))}
+                      disabled={loading || raiseStake <= state.minRaise}
                       aria-label="-"
                     >
                       −
@@ -435,8 +435,11 @@ function TeenPattiPageContent() {
                     <button
                       type="button"
                       className={btnSecondary}
-                      onClick={() => setRaiseStake((a) => a + 1)}
-                      disabled={loading}
+                      // **上限はサーバーが送る値でクランプする (#4729)。**以前は
+                      // 上限が無く、払えない額を送信できてサーバーエラーで初めて
+                      // 気づいた。
+                      onClick={() => setRaiseStake((a) => Math.min(state.maxRaise, a + 1))}
+                      disabled={loading || raiseStake >= state.maxRaise}
                       aria-label="+"
                     >
                       ＋
@@ -445,7 +448,9 @@ function TeenPattiPageContent() {
                       type="button"
                       className={btnWarning}
                       onClick={() => handleRaise(raiseStake)}
-                      disabled={loading}
+                      disabled={loading || !state.canRaise}
+                      title={state.canRaise ? undefined : t('raiseUnavailable')}
+                      data-testid="tp-raise-button"
                     >
                       {t('raiseButton', { amount: raiseStake })}
                     </button>

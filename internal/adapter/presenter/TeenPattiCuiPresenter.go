@@ -77,13 +77,8 @@ func teenPattiRaiseRangeStr(g interfaces.TeenPattiGame) string {
 	if player == nil || !player.GetIsHuman() {
 		return ""
 	}
-	minRaise := g.GetStake() + 1
-	maxRaise := player.GetChips()
-	if player.GetSeen() {
-		// Seen players pay double the stake to call/raise, halving the affordable ceiling.
-		maxRaise = player.GetChips() / 2
-	}
-	if maxRaise < minRaise {
+	minRaise, maxRaise, ok := g.GetRaiseRange(g.GetCurrentPlayerIdx())
+	if !ok {
 		return i18n.T("teenpatti.promptRaiseUnavailable") + "\n"
 	}
 	return i18n.Tf("teenpatti.promptRaiseRange",

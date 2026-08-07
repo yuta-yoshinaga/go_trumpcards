@@ -45,6 +45,8 @@ type TeenPattiGame interface {
 	GetPot() int
 	// GetStake 現在の賭け単位を取得する
 	GetStake() int
+	// GetRaiseRange レイズ可能な最小/最大額 (ok=false ならレイズ不可)
+	GetRaiseRange(playerIdx int) (int, int, bool)
 	// GetRoundWinnerIdx 直近ディールの勝者を取得する (-1=未確定)
 	GetRoundWinnerIdx() int
 	// IsShowdown ショーダウンが行われたかを返す

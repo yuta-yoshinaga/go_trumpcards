@@ -111,6 +111,12 @@ func (_m *MockTeenPattiGame) GetPot() int {
 	return ret.Get(0).(int)
 }
 
+// GetRaiseRange はレイズ可能な最小/最大額を返すモック。
+func (_m *MockTeenPattiGame) GetRaiseRange(playerIdx int) (int, int, bool) {
+	ret := _m.Called(playerIdx)
+	return ret.Int(0), ret.Int(1), ret.Bool(2)
+}
+
 // GetStake モック
 func (_m *MockTeenPattiGame) GetStake() int {
 	ret := _m.Called()
