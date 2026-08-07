@@ -27,5 +27,6 @@
   "stockLine": "Stock: {{count}}",
   "stockNext": " next: {{card}}",
   "hintStock": "Hint: stock → foundation {{foundation}}",
-  "hintWaste": "Hint: waste {{waste}} → foundation {{foundation}}"
+  "hintWaste": "Hint: waste {{waste}} → foundation {{foundation}}",
+  "nextRank": " -> next: {{rank}}"
 }
