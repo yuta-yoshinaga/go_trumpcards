@@ -383,11 +383,21 @@ function SpiderPageContent() {
                                 cardIndex: cardIdx,
                               };
                               const inMovableRun = hoveredRun?.col === colIdx && hoveredRun.indices.includes(cardIdx);
+                              // タップ選択でのプレビュー。onMouseEnter も onFocus も発火しない
+                              // タッチ端末では、選んだ札と一緒に動く連番がどこまでかを
+                              // 事前に確かめる手段が無かった (#4780, Yukon の #3152 と同じ)。
+                              const inSelectedRun =
+                                selectedSource?.zone === 'tableau' &&
+                                selectedSource.col === colIdx &&
+                                selectedSource.cardIndex !== undefined &&
+                                spiderMovableRun(col, selectedSource.cardIndex).includes(cardIdx);
                               const ringClass = isSourceSelected(colIdx, cardIdx)
                                 ? 'ring-2 ring-ds-warning'
                                 : inMovableRun
                                   ? 'ring-2 ring-ds-success'
-                                  : '';
+                                  : inSelectedRun
+                                    ? 'ring-2 ring-ds-info'
+                                    : '';
                               return (
                                 <div
                                   key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
@@ -406,6 +416,7 @@ function SpiderPageContent() {
                                       }
                                       onBlur={() => setHoveredRun(null)}
                                       data-movable-run={inMovableRun ? 'true' : undefined}
+                                      data-selected-block={inSelectedRun || undefined}
                                       onClick={() => {
                                         if (selectedSource) {
                                           // If clicking a different column, treat as move target
