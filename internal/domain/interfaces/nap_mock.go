@@ -140,6 +140,14 @@ func (_m *MockNapGame) GetDeclarerIdx() int {
 	return ret.Get(0).(int)
 }
 
+func (_m *MockNapGame) GetDeclarerProgress() *domain.NapDeclarerProgress {
+	args := _m.Called()
+	if args.Get(0) == nil {
+		return nil
+	}
+	return args.Get(0).(*domain.NapDeclarerProgress)
+}
+
 // GetContract モック
 func (_m *MockNapGame) GetContract() domain.NapBid {
 	ret := _m.Called()

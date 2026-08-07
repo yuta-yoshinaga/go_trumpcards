@@ -108,7 +108,29 @@ func (p *NapCuiPresenter) Output(g interfaces.NapGame, lastErr error) string {
 	})
 }
 
-// writePrompt renders the phase-specific prompt block.
+// writeNapDeclarerProgress は宣言者の契約達成状況を1行で書く。
+//
+// **CUI は宣言者が何トリック取ったかを一切知らせていなかった (#4763)。**
+// Web は nap-declarer-progress で常時出しているのに、CLI プレイヤーは自分で
+// トリック数を数えるしかなかった。
+func writeNapDeclarerProgress(b *strings.Builder, g interfaces.NapGame) {
+	pr := g.GetDeclarerProgress()
+	if pr == nil {
+		return
+	}
+	line := i18n.Tf("nap.declarerProgress",
+		"won", strconv.Itoa(pr.Won),
+		"needed", strconv.Itoa(pr.Needed),
+		"remaining", strconv.Itoa(pr.Remaining))
+	// **もう届かないなら押す意味が変わる。**同じ文言だと区別が付かない。
+	if pr.Unreachable {
+		b.WriteString(color.BoldYellow(line+i18n.T("nap.contractUnreachable")) + "\n")
+		return
+	}
+	b.WriteString(line + "\n")
+}
+
+// writePrompt// writePrompt renders the phase-specific prompt block.
 func (p *NapCuiPresenter) writePrompt(b *strings.Builder, g interfaces.NapGame) {
 	switch g.GetPhase() {
 	case domain.NapPhaseBid:
@@ -124,11 +146,13 @@ func (p *NapCuiPresenter) writePrompt(b *strings.Builder, g interfaces.NapGame) 
 		}
 		b.WriteString(i18n.T("nap.promptBidHelp") + "\n")
 	case domain.NapPhasePlay:
+		writeNapDeclarerProgress(b, g)
 		currentIdx := g.GetCurrentPlayerIdx()
 		b.WriteString(i18n.Tf("nap.promptPlay",
 			"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
 		b.WriteString(i18n.T("nap.promptPlayHelp") + "\n")
 	case domain.NapPhaseTrickEnd:
+		writeNapDeclarerProgress(b, g)
 		b.WriteString(i18n.T("nap.promptTrickEnd") + "\n")
 		b.WriteString(i18n.T("nap.promptTrickEndHelp") + "\n")
 	case domain.NapPhaseRoundEnd:

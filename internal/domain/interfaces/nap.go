@@ -51,6 +51,8 @@ type NapGame interface {
 	GetLeadPlayerIdx() int
 	// GetDealerIdx ディーラーインデックスを取得する
 	GetDealerIdx() int
+	// GetDeclarerProgress 宣言者の契約達成状況を取得する
+	GetDeclarerProgress() *domain.NapDeclarerProgress
 	// GetDeclarerIdx 宣言者インデックスを取得する (-1=未確定)
 	GetDeclarerIdx() int
 	// GetContract 確定した契約を取得する

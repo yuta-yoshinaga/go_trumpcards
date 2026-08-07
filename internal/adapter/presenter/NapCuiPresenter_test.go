@@ -41,6 +41,7 @@ func setupNapCuiMock() *interfaces.MockNapGame {
 	m.On("GetPhase").Return(domain.NapPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
 	m.On("GetDeclarerIdx").Return(0)
+	m.On("GetDeclarerProgress").Return((*domain.NapDeclarerProgress)(nil)).Maybe()
 	m.On("GetContract").Return(domain.NapBidThree)
 	m.On("GetWinnerPlayer").Return(-1)
 	m.On("GetPlayerScores").Return([domain.NapPlayerCnt]int{0, 0, 0, 0})
@@ -172,4 +173,57 @@ func TestNapCuiPresenter_ActionLogOutput(t *testing.T) {
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, "play")
+}
+
+// **CUI は宣言者が何トリック取ったかを一切知らせていなかった (#4763)。**
+// CLI プレイヤーは自分でトリック数を数えるしかなかった。
+func TestNapCuiPresenter_DeclarerProgress(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.NapCuiPresenter)
+
+	withProgress := func(pr *domain.NapDeclarerProgress, phase domain.NapPhase) *interfaces.MockNapGame {
+		m, _ := setupNapCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDeclarerProgress")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetDeclarerProgress").Return(pr)
+		m.On("GetPhase").Return(phase)
+		return m
+	}
+
+	t.Run("shows tricks won, needed and remaining", func(t *testing.T) {
+		out := p.Output(withProgress(&domain.NapDeclarerProgress{
+			Won: 1, Needed: 3, Remaining: 3,
+		}, domain.NapPhasePlay), nil)
+		assert.Contains(t, out, "1/3")
+		assert.Contains(t, out, "残り3")
+	})
+
+	// **もう届かないなら押す意味が変わる。**同じ文言だと区別が付かない。
+	t.Run("calls out a contract that can no longer be made", func(t *testing.T) {
+		out := p.Output(withProgress(&domain.NapDeclarerProgress{
+			Won: 0, Needed: 5, Remaining: 4, Unreachable: true,
+		}, domain.NapPhasePlay), nil)
+		assert.Contains(t, out, "達成不可能")
+	})
+
+	t.Run("does not call a reachable contract unreachable", func(t *testing.T) {
+		out := p.Output(withProgress(&domain.NapDeclarerProgress{
+			Won: 1, Needed: 3, Remaining: 3,
+		}, domain.NapPhasePlay), nil)
+		assert.NotContains(t, out, "達成不可能")
+	})
+
+	t.Run("shows the progress at trick end too", func(t *testing.T) {
+		out := p.Output(withProgress(&domain.NapDeclarerProgress{
+			Won: 2, Needed: 3, Remaining: 2,
+		}, domain.NapPhaseTrickEnd), nil)
+		assert.Contains(t, out, "2/3")
+	})
+
+	t.Run("shows nothing when there is no declarer yet", func(t *testing.T) {
+		// 既存の「宣言者: あなた — スリー」行とは別物なので、進捗行だけを狙う。
+		assert.NotContains(t, p.Output(withProgress(nil, domain.NapPhasePlay), nil), "トリック (残り")
+	})
 }
