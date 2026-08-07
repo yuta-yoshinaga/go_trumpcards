@@ -9,6 +9,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -16,6 +17,7 @@ import { useCardSelection } from '../hooks/useCardSelection';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
@@ -108,6 +110,17 @@ function ShengJiPageContent() {
 
   const { cardWidth } = useCardDimensions();
   const phaseNames = usePhaseNames('shengji', SHENGJI_PHASE_KEYS);
+  // **ヒントは前から算出されていた。**getShengJiHint も hintFactories への
+  // 登録もあるのに、このページが一度も読んでいなかった (#4774)。
+  // check-hint-coverage はファクトリの有無しか見ないので CI をすり抜けていた。
+  //
+  // **フックは早期 return より上。**下に置くと初回レンダーだけフック数が
+  // 変わってページが骨組みのまま固まる。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('shengji', state);
 
   if (!state)
     return <GameSkeleton gameKey="shengji" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 12 }} />;
@@ -281,6 +294,16 @@ function ShengJiPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+
+            <label className="flex items-center gap-1 text-ds-text-primary text-xs w-full justify-center cursor-pointer min-h-[44px]">
+              <input
+                type="checkbox"
+                checked={frontendHintEnabled}
+                onChange={(e) => setFrontendHintEnabled(e.target.checked)}
+              />
+              {tc('hint.toggle', { ns: 'tutorial' })}
+            </label>
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <ActionLogSection
               isEndPhase={isGameEnd}
