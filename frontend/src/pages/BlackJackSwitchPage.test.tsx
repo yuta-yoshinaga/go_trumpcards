@@ -443,3 +443,19 @@ describe('BlackJackSwitchPage', () => {
     expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
   });
 });
+
+// **ヒントは前から算出されていたのに、ページが一度も読んでいなかった (#4708)。**
+// useGameHint に blackjackswitch の factory は登録済みで、結果を捨てていた。
+describe('BlackJackSwitchPage hint', () => {
+  it('shows a switch recommendation once hints are enabled', async () => {
+    mockApi.mockResolvedValue(switchState);
+    renderWithProviders(<BlackJackSwitchPage />);
+    await waitFor(() => expect(screen.getByTestId('card-area')).toBeInTheDocument());
+
+    // トグルを入れるまでは出さない。
+    expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByLabelText('ヒント表示'));
+    expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument();
+  });
+});
