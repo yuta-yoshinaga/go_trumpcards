@@ -1113,9 +1113,33 @@ func TestCrazyEights_GetHint(t *testing.T) {
 
 	t.Run("recommends a card the rules actually allow", func(t *testing.T) {
 		g := setup(t)
+		// **配りに賭けない。**出せる札が1枚も無い配りでは GetHint が nil を返すのが
+		// 正しい挙動で、実測 22/200 (11%) でその配りを引いていた。捨て札の一番上と
+		// 同じスートを1枚持たせて、必ず出せる状態にする。
+		top := g.GetDiscardTop()
+		if top == nil {
+			t.Fatal("前提: 捨て札の一番上があること")
+		}
+		human := g.GetPlayer(0)
+		for human.GetCardsSize() > 0 {
+			human.RemoveCard(0)
+		}
+		// **index 0 は出せない札にする。**1枚だけ持たせると「常に先頭を勧める」
+		// 実装でも通ってしまい、推奨が正しいかを確かめられない。
+		otherSuit := domain.CardDesignSpade
+		if top.GetDesign() == domain.CardDesignSpade {
+			otherSuit = domain.CardDesignHeart
+		}
+		unplayable := top.GetValue()%13 + 1
+		if unplayable == top.GetValue() || unplayable == domain.CrazyEightsWildValue {
+			unplayable = (unplayable)%13 + 1
+		}
+		human.AddCard(domain.NewCard(otherSuit, unplayable, false))                // index 0: 出せない
+		human.AddCard(domain.NewCard(top.GetDesign(), top.GetValue()%13+1, false)) // index 1: 出せる
+
 		hint := g.GetHint()
 		if hint == nil {
-			t.Fatal("配り直後の人間の手番ではヒントが出る")
+			t.Fatal("出せる札があるのでヒントが出る")
 		}
 		if hint.CardIndex == nil {
 			t.Fatal("プレイフェーズでは CardIndex が入る")
