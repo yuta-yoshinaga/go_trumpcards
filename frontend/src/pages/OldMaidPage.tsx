@@ -223,6 +223,24 @@ function OldMaidPageContent() {
               },
             ]}
           />
+          {/* **CUI は oldmaid.metaAILine で「自分の癖がどれだけ読まれているか」を
+              毎回出しているのに、Web は同じ値をレスポンスで受け取りながら一度も
+              描画していなかった。**メタAI を ON にした意味が画面から分からない。
+              enabled のときだけ出す -- OFF なら学習していないので数字に意味が無い。 */}
+          {state.metaAI?.enabled && (
+            <div
+              className="mx-4 lg:mx-8 mb-1 text-xs text-ds-text-muted"
+              role="status"
+              aria-live="polite"
+              data-testid="om-metaai"
+            >
+              {t('metaAI.status', {
+                games: state.metaAI.gamesPlayed,
+                rate: Math.round(state.metaAI.edgePickRate * 100),
+              })}
+            </div>
+          )}
+
           <ReplaySpeedSettingsPanel />
           {/* Scrollable: CPU rows + discard + status + logs + result */}
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
