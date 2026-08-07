@@ -10,6 +10,7 @@ import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { PokerStatsBadge } from '../components/fivecardstud/PokerStatsBadge';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
@@ -264,6 +265,7 @@ function FiveCardStudPageContent() {
                   <div className="text-ds-text-primary text-sm mb-1">
                     CPU {p.id}
                     <span className="ml-2 text-xs text-ds-text-muted">{p.playStyleName}</span>
+                    <PokerStatsBadge stats={p} t={t} />
                     <span className="ml-2 text-xs">
                       {tc('betting.chips')} {p.chips}
                     </span>
@@ -364,6 +366,7 @@ function FiveCardStudPageContent() {
               <div className="mb-2" data-tutorial="fcs-player-hand">
                 <div className="text-ds-text-primary text-lg mb-1">
                   {t('yourHand')}
+                  <PokerStatsBadge stats={humanPlayer} t={t} />
                   <span className="ml-3 text-xs">
                     {tc('betting.chips')} {humanPlayer.chips}
                   </span>
