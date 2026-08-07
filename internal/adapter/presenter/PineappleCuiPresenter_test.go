@@ -138,6 +138,57 @@ func TestPineappleCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "手札から1枚選んで")
 	})
 
+	// **Web は残す2枚の性質を候補ごとに出しているのに、CUI はインデックス付きの
+	// 手札一覧だけだった (#4685)。**ボードがまだ無い段階で唯一の判断材料になる。
+	t.Run("discard phase names what each keep would leave", func(t *testing.T) {
+		m, players := setupPineappleCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.PineapplePhaseDiscard)
+		players[0].Reset()
+		// ♠1 ♠13 ♥5: [2] を捨てるとスーテッド かつ コネクター (A-K)。
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 13, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "スーテッド")
+		// **エースは 1 と 14 の両方で数える。**A-K がコネクターと出ること。
+		assert.Contains(t, result, "コネクター")
+	})
+
+	t.Run("discard phase reports a pair when the keep is paired", func(t *testing.T) {
+		m, players := setupPineappleCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.PineapplePhaseDiscard)
+		players[0].Reset()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+
+		assert.Contains(t, p.Output(m, nil), "ペア")
+	})
+
+	// **4枚配り (Irish) では出さない。**2枚捨てなので「1枚捨てたら残る2枚」
+	// という前提が成り立たない。
+	t.Run("no keep features for a four-card deal", func(t *testing.T) {
+		m, players := setupPineappleCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetInitialDealCount")
+		m.On("GetPhase").Return(domain.PineapplePhaseDiscard)
+		m.On("GetInitialDealCount").Return(4)
+		players[0].Reset()
+		for _, c := range []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 1, false),
+			domain.NewCard(domain.CardDesignSpade, 13, false),
+			domain.NewCard(domain.CardDesignHeart, 5, false),
+			domain.NewCard(domain.CardDesignClover, 9, false),
+		} {
+			players[0].AddCard(c)
+		}
+
+		assert.NotContains(t, p.Output(m, nil), "を捨てる →")
+	})
+
 	t.Run("discard prompt says 2 cards for a 4-card deal (Irish Poker)", func(t *testing.T) {
 		m, _ := setupPineappleCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
