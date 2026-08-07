@@ -356,3 +356,60 @@ func TestOsmosis_GetActionLog(t *testing.T) {
 	assert.NoError(t, o.Draw())
 	assert.NotEmpty(t, o.GetActionLog())
 }
+
+// TestOsmosis_IsStalemate confirms the dead-end detector fires only when no
+// card anywhere can still reach a foundation.
+//
+// **山札が0枚かどうかは条件にならない。**Draw はウェイストをストックに戻して
+// 循環させるので、山札の中身は何周でも見に行ける。詰みは「リザーブのトップ・
+// ストック・ウェイストのどのカードも置けない」ときだけ (#4808)。
+func TestOsmosis_IsStalemate(t *testing.T) {
+	// 8 をベースにし、♠ の段だけ開いた盤面を作る。
+	setup := func() *domain.Osmosis {
+		o := setupPlayingOsmosis()
+		o.SetBaseRank(8)
+		var f [domain.OsmosisFoundationCnt][]*domain.Card
+		f[0] = []*domain.Card{osCard(domain.CardDesignSpade, 8)}
+		o.SetFoundation(f)
+		o.SetStock(nil)
+		o.SetWaste(nil)
+		o.SetReserve([domain.OsmosisReserveCnt][]*domain.Card{})
+		return o
+	}
+
+	t.Run("no card anywhere can be placed", func(t *testing.T) {
+		o := setup()
+		// ♥9 は ♠ 段には置けず、下の段はベースランクでないと始められない。
+		o.SetWaste([]*domain.Card{osCard(domain.CardDesignHeart, 9)})
+		assert.True(t, o.IsStalemate())
+	})
+
+	t.Run("a playable reserve top keeps the game alive", func(t *testing.T) {
+		o := setup()
+		o.SetWaste([]*domain.Card{osCard(domain.CardDesignHeart, 9)})
+		var r [domain.OsmosisReserveCnt][]*domain.Card
+		r[0] = []*domain.Card{osCard(domain.CardDesignSpade, 11)}
+		o.SetReserve(r)
+		assert.False(t, o.IsStalemate())
+	})
+
+	// **循環するので山札の奥も数える。**トップだけ見ると、めくれば置ける札が
+	// 残っているのに詰みと言ってしまう。
+	t.Run("a playable card buried in the stock keeps the game alive", func(t *testing.T) {
+		o := setup()
+		o.SetWaste([]*domain.Card{osCard(domain.CardDesignHeart, 9)})
+		o.SetStock([]*domain.Card{
+			osCard(domain.CardDesignSpade, 11),
+			osCard(domain.CardDesignHeart, 10),
+			osCard(domain.CardDesignClover, 3),
+		})
+		assert.False(t, o.IsStalemate())
+	})
+
+	t.Run("never reports a stalemate once the game has ended", func(t *testing.T) {
+		o := setup()
+		o.SetWaste([]*domain.Card{osCard(domain.CardDesignHeart, 9)})
+		o.GiveUp()
+		assert.False(t, o.IsStalemate())
+	})
+}

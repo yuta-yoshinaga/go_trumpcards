@@ -2,9 +2,11 @@
   "phase": {
     "playing": "Playing",
     "gameClear": "Game Clear",
-    "gameOver": "Game Over"
+    "gameOver": "Game Over",
+    "stalemate": "Dead end"
   },
   "title": "Osmosis",
+  "stalemate": "Dead end — no card can reach a foundation any more.",
   "stock": "Stock",
   "waste": "Waste",
   "reserve": "Reserve",

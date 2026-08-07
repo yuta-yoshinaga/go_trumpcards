@@ -280,6 +280,40 @@ func (o *Osmosis) AutoComplete() error {
 
 // --- Getters / Setters ---
 
+// IsStalemate は、どのカードもファンデーションへ送れなくなった手詰まりを報告する。
+//
+// **山札の残枚数は条件にならない。**Draw はウェイストをストックへ戻して循環させる
+// ので、山札の中身は何周でも見に行ける。逆に、リザーブのトップ・ストック・ウェイスト
+// のどれ一つ置けないなら盤面はもう動かず、めくり続けても同じ状態に戻るだけになる。
+//
+// 判定は findFoundationFor に委ねる。移動側と同じ関数を読まないと、詰みと言った
+// 直後に打てる手が残る (あるいはその逆になる)。
+func (o *Osmosis) IsStalemate() bool {
+	if o.phase != OsmosisPhasePlaying {
+		return false
+	}
+	for rIdx := range OsmosisReserveCnt {
+		pile := o.reserve[rIdx]
+		if len(pile) == 0 {
+			continue
+		}
+		if o.findFoundationFor(pile[len(pile)-1]) >= 0 {
+			return false
+		}
+	}
+	for _, card := range o.stock {
+		if o.findFoundationFor(card) >= 0 {
+			return false
+		}
+	}
+	for _, card := range o.waste {
+		if o.findFoundationFor(card) >= 0 {
+			return false
+		}
+	}
+	return true
+}
+
 // GetPhase フェーズ取得
 func (o *Osmosis) GetPhase() OsmosisPhase { return o.phase }
 

@@ -12,6 +12,7 @@ import (
 )
 
 func setupOsmosisWebMockDefaults(og *interfaces.MockOsmosisGame) {
+	og.On("IsStalemate").Return(false).Maybe()
 	og.On("GetPhase").Return(domain.OsmosisPhasePlaying).Maybe()
 	og.On("GetMoveCount").Return(0).Maybe()
 	og.On("GetStockCount").Return(34).Maybe()
@@ -93,6 +94,31 @@ func TestOsmosisWebPresenter_Output(t *testing.T) {
 // **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
 // レスポンスで、ページの state にはマージされない (#4483)。
 // このゲームは手詰まり判定を持たないので、ゲートは進行中かどうかだけ。
+// **手詰まりでもフェーズは Playing のまま (#4808)。**メッセージコードと
+// isStalemate の両方で通知する。両側を踏まないと常時 true の実装でも通る。
+func TestOsmosisWebPresenter_Stalemate(t *testing.T) {
+	t.Run("reports the dead end", func(t *testing.T) {
+		og := new(interfaces.MockOsmosisGame)
+		og.On("IsStalemate").Return(true)
+		setupOsmosisWebMockDefaults(og)
+		og.On("GetHint").Return((*domain.OsmosisHint)(nil)).Maybe()
+
+		result := new(OsmosisWebPresenter).Output(og, nil)
+		assert.Contains(t, result, `"isStalemate":true`)
+		assert.Contains(t, result, `"messageCode":"osmosis.stalemate"`)
+	})
+
+	t.Run("stays in the plain playing state while a move remains", func(t *testing.T) {
+		og := new(interfaces.MockOsmosisGame)
+		setupOsmosisWebMockDefaults(og)
+		og.On("GetHint").Return((*domain.OsmosisHint)(nil)).Maybe()
+
+		result := new(OsmosisWebPresenter).Output(og, nil)
+		assert.Contains(t, result, `"isStalemate":false`)
+		assert.Contains(t, result, `"messageCode":"osmosis.playing"`)
+	})
+}
+
 func TestOsmosisWebPresenter_OutputCarriesTheHint(t *testing.T) {
 	t.Run("playing", func(t *testing.T) {
 		og := new(interfaces.MockOsmosisGame)

@@ -161,11 +161,15 @@ function OsmosisPageContent() {
     disabled: loading,
   });
 
+  // 手詰まりでもフェーズは Playing のままサーバから返る。放っておくと
+  // 「プレイ中」と出たまま、もう動かない盤面をめくり続けることになる (#4808)。
   const phaseName = isGameClear
     ? t('phase.gameClear')
     : phase === OsmosisPhase.GAME_OVER
       ? t('phase.gameOver')
-      : t('phase.playing');
+      : state?.isStalemate
+        ? t('phase.stalemate')
+        : t('phase.playing');
 
   // Bind letter-key shortcuts to the play-phase actions. Memoize so the effect
   // doesn't re-subscribe every render, and call the hook before any early return
