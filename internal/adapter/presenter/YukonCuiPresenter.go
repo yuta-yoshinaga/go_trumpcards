@@ -60,6 +60,10 @@ func (p *YukonCuiPresenter) Output(y interfaces.YukonGame, lastErr error) string
 			}
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
 				"count", strconv.Itoa(y.GetMoveCount())) + "\n")
+			// 盤面は Klondike とまったく同じ見た目なので、Klondike 経験者は
+			// 「揃った並びしか動かせない」と思い込んだままになる。Web 版が専用の
+			// ホバープレビューまで用意しているルールを、CUI でも明示する (#4788)。
+			b.WriteString(i18n.T("yukon.blockMoveRule") + "\n")
 		case domain.YukonPhaseGameClear:
 			b.WriteString(color.Green(i18n.T("cuiSolitaireGameClear")) + " " +
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(y.GetMoveCount())) + "\n")

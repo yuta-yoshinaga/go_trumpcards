@@ -11,6 +11,7 @@
   "invalidFromZone": "Invalid source zone: {{.val}} (only t is valid)",
   "moveUsage": "Usage: m t <col> <cardIdx> t <col> or m t <col> f",
   "playing": "Move cards to build foundation",
+  "blockMoveRule": "Tip: grab any face-up card — everything stacked on it moves along, in any order (only the bottom card has to fit the destination).",
   "gameClear": "Game clear! Moves: {{.moveCount}}",
   "gameOver": "Game over",
   "stalemate": "Stalemate",
