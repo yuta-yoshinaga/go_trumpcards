@@ -65,5 +65,10 @@
     "badgeTitle": "Trump"
   },
   "hintRequested": "Hint available",
-  "noHint": "No hint available"
+  "noHint": "No hint available",
+  "livePoints": {
+    "title": "Card points so far",
+    "re": "Re: {{points}} (needs {{target}})",
+    "kontra": "Kontra: {{points}} (needs {{target}})"
+  }
 }

@@ -33,6 +33,12 @@ const DoppelkopfTrickCount = 12
 // DoppelkopfTotalPoints 1 ラウンドのカードポイント合計
 const DoppelkopfTotalPoints = 240
 
+// DoppelkopfReWinPoints は Re チームが勝つのに必要なカード得点。
+//
+// 全 240 点の過半数。Kontra は 120 点で勝つ (引き分けが無いよう Re 側だけ
+// 1 点多く必要) ため、この非対称は仕様であって誤差ではない。
+const DoppelkopfReWinPoints = 121
+
 // DoppelkopfPhase ゲームフェーズ
 type DoppelkopfPhase int
 
@@ -320,7 +326,7 @@ func (g *Doppelkopf) ScoreRound() {
 
 	rePts := g.teamPoints(true)
 	kontraPts := DoppelkopfTotalPoints - rePts
-	reWon := rePts >= 121 // Re は 121 点以上で勝利 (Kontra は 120 点で勝利)
+	reWon := rePts >= DoppelkopfReWinPoints
 	loserPts := kontraPts
 	if !reWon {
 		loserPts = rePts
