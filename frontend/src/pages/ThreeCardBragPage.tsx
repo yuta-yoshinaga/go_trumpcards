@@ -35,6 +35,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { parseThreeCardBragCommand, THREE_CARD_BRAG_HELP } from '../utils/cli/commands/threeCardBragCommands';
 import { formatThreeCardBragState } from '../utils/cli/formatters/threeCardBragFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isRequestedHint } from '../utils/hintRequest';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import {
   clampThreeCardBragRaise,
@@ -353,6 +354,19 @@ function ThreeCardBragPageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
+            {/* **バックエンドは Output() で常に hint を詰めているのに、ページが
+                一度も読んでいなかった (#4728)。**設定にヒントのチェックボックスは
+                あるのに、サーバーの提案自体は画面に出ていなかった。他の全ゲームと
+                同じく、明示的に要求されたときだけ出す。 */}
+            {state.hint && isRequestedHint(state) && (
+              <div className="text-ds-warning text-sm mb-2" data-testid="tcb-server-hint">
+                {t('hintAvailable')}: {t(`hint.${state.hint.reason}`, { defaultValue: state.hint.reason })}
+                {/* **識別子をそのまま出さない。**訳が無ければ識別子に落とす
+                    (キー文字列は出さない)。 */}
+                {state.hint.action != null &&
+                  ` (${t(`hint.${state.hint.action}`, { defaultValue: state.hint.action })})`}
+              </div>
+            )}
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="threecardbrag-action-buttons">

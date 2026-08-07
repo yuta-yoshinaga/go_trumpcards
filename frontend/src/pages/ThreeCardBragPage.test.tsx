@@ -404,4 +404,30 @@ describe('ThreeCardBragPage', () => {
     renderWithProviders(<ThreeCardBragPage />);
     await waitFor(() => expect(screen.getByText('ゲーム終了！ あなたの勝利です！')).toBeInTheDocument());
   });
+
+  // **バックエンドは Output() で常に hint を詰めているのに、ページが一度も
+  // 読んでいなかった (#4728)。**設定にヒントのチェックボックスはあるのに、
+  // サーバーの提案自体は画面に出ていなかった。
+  it('shows the backend suggestion once a hint has been requested', async () => {
+    mockExec.mockResolvedValue({
+      ...bettingState,
+      hint: { action: 'raise', reason: 'strong_hand' },
+      messageCode: 'threecardbrag.hintRequested',
+    });
+    renderWithProviders(<ThreeCardBragPage />);
+
+    const banner = await screen.findByTestId('tcb-server-hint');
+    expect(banner).toHaveTextContent('強い手');
+    expect(banner).toHaveTextContent('ステークを上げて');
+  });
+
+  // **受動ヒントは出さない。**Output() は毎回 hint を詰めるので、messageCode で
+  // ゲートしないと「頼んでいないヒント」が常時表示される。
+  it('shows no suggestion when the hint was not requested', async () => {
+    mockExec.mockResolvedValue({ ...bettingState, hint: { action: 'raise', reason: 'strong_hand' } });
+    renderWithProviders(<ThreeCardBragPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('tcb-server-hint')).not.toBeInTheDocument();
+  });
 });

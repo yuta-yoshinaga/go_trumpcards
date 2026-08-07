@@ -175,6 +175,12 @@ func (p *ThreeCardBragWebPresenter) HintOutput(g interfaces.ThreeCardBragGame) s
 			Action: hint.Action,
 			Reason: hint.Reason,
 		}
+		// **「頼んだヒントか」を画面が見分けられるようにする。**Output() は
+		// 受動ヒントとして常に hint を詰めるので、これが無いとページ側は
+		// 要求の有無を区別できず、要求していないヒントを出してしまう。
+		// このゲーム群の hintAvailable は画面のラベルとして既に使われている
+		// ので、別キーを出す (#4483 と同じ理由)。
+		resObj.MessageCode = "threecardbrag.hintRequested"
 	}
 	return marshalOrError(resObj)
 }
