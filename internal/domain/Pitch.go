@@ -459,6 +459,24 @@ func pitchRankValue(v int) int {
 	return v
 }
 
+// PitchHandPips は手札のゲームピップ合計を返す。
+//
+// **CUI は入札前に手札の得点価値を暗算させていた (#4751)。**Web は入札中に
+// バッジと内訳ポップオーバーを出している。
+//
+// 集計は Game ポイントの計算そのものと同じ pitchPipValue を通す。**別実装に
+// すると、プレビューした値と実際に数えられる値がずれる。**
+func PitchHandPips(cards []*Card) int {
+	total := 0
+	for _, c := range cards {
+		if c == nil {
+			continue
+		}
+		total += pitchPipValue(c.GetValue())
+	}
+	return total
+}
+
 // pitchPipValue Game ポイント計算用のピップ値: A=4 K=3 Q=2 J=1 10=10 他=0
 func pitchPipValue(v int) int {
 	switch v {

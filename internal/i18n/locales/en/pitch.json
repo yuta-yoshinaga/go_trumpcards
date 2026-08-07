@@ -22,5 +22,6 @@
   "hintReasonSetTrumpLead": "declare trump on lead",
   "hintReasonTrumpCut": "cut with trump",
   "hintReasonBidStrong": "bid with a strong hand",
-  "hintReasonBidPass": "pass with a weak hand"
+  "hintReasonBidPass": "pass with a weak hand",
+  "handPips": "Game pips in hand: {{total}} ({{breakdown}})"
 }
