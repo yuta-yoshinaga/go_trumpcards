@@ -41,6 +41,11 @@ func (p *ScopaCuiPresenter) Output(sg interfaces.ScopaGame, lastErr error) strin
 			}
 		}
 
+		// **なぜその点数になったのかを CUI は一切出していなかった (#4756)。**
+		// Web はカルテ/デナリ/プリミエラ/セッテベッロごとに誰が取ったかを
+		// 出している。CUI は最終合計しか見えなかった。
+		writeScopaBreakdown(b, sg)
+
 		cuiErrorBlock(b, lastErr)
 
 		if sg.GetGameEndFlag() {
@@ -152,4 +157,46 @@ func (p *ScopaCuiPresenter) HintOutput(sg interfaces.ScopaGame) string {
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *ScopaCuiPresenter) ActionLogOutput(sg interfaces.ScopaGame) string {
 	return actionLogOutputText(sg)
+}
+
+// writeScopaBreakdown は直前ラウンドの得点内訳を書く。まだ1ラウンドも
+// 終わっていなければ何も書かない。
+func writeScopaBreakdown(b *strings.Builder, sg interfaces.ScopaGame) {
+	det := sg.GetLastRoundDetail()
+	if det == nil {
+		return
+	}
+	rows := domain.ScopaCategoryWinners(det)
+	if len(rows) == 0 {
+		return
+	}
+	b.WriteString("----------\n")
+	b.WriteString(i18n.T("scopa.breakdownHeader") + "\n")
+	for _, row := range rows {
+		// **同点・該当なしも書く。**行が消えると「誰かが取った」と読める。
+		name := i18n.T("scopa.breakdownNobody")
+		if row.Winner >= 0 {
+			if pl := sg.GetPlayer(row.Winner); pl != nil {
+				name = cuiPlayerName(pl, row.Winner)
+			}
+		}
+		b.WriteString(i18n.Tf("scopa.breakdownRow",
+			"category", i18n.T("scopa.category."+row.Key),
+			"name", name,
+			"points", strconv.Itoa(row.Points)) + "\n")
+	}
+	// スコパ回数は単独勝者ではなく人数ぶんの回数なので別に出す。
+	for i := 0; i < sg.GetPlayerCnt(); i++ {
+		n := det.Scopas[i]
+		if n == 0 {
+			continue
+		}
+		pl := sg.GetPlayer(i)
+		if pl == nil {
+			continue
+		}
+		b.WriteString(i18n.Tf("scopa.breakdownScopa",
+			"name", cuiPlayerName(pl, i),
+			"count", strconv.Itoa(n)) + "\n")
+	}
 }
