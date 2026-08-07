@@ -51,6 +51,15 @@ export function useCliGame<TState, TArgs extends unknown[]>(
     addInput(input);
 
     // Parse command
+    // **API を呼ばずに答えられるコマンドもある (#4792)。**手元の状態を読むだけの
+    // 問い合わせ (Wasp の legal など) は、何も計算しない API アクションを
+    // 増やさずに済む。parseCommand より先に見る。
+    const local = cfg.localCommand?.(input);
+    if (local != null) {
+      addOutput(local);
+      return;
+    }
+
     const parsed = cfg.parseCommand(input);
     if ('error' in parsed) {
       addError(parsed.error);
