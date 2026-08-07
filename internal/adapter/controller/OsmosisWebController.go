@@ -30,15 +30,17 @@ type OsmosisWebOutputHint struct {
 
 // OsmosisWebOutput オズモシスWebアウトプット
 type OsmosisWebOutput struct {
-	Reserve    [][]*WebOutputCard    `json:"reserve"`
-	StockCount int                   `json:"stockCount"`
-	Waste      []*WebOutputCard      `json:"waste"`
-	Foundation [][]*WebOutputCard    `json:"foundation"`
-	BaseRank   int                   `json:"baseRank"`
-	Phase      int                   `json:"phase"`
-	MoveCount  int                   `json:"moveCount"`
-	CanUndo    bool                  `json:"canUndo"`
-	Hint       *OsmosisWebOutputHint `json:"hint,omitempty"`
+	Reserve    [][]*WebOutputCard `json:"reserve"`
+	StockCount int                `json:"stockCount"`
+	Waste      []*WebOutputCard   `json:"waste"`
+	Foundation [][]*WebOutputCard `json:"foundation"`
+	BaseRank   int                `json:"baseRank"`
+	Phase      int                `json:"phase"`
+	MoveCount  int                `json:"moveCount"`
+	CanUndo    bool               `json:"canUndo"`
+	// IsStalemate はどのカードもファンデーションへ送れなくなった状態 (#4808)。
+	IsStalemate bool                  `json:"isStalemate"`
+	Hint        *OsmosisWebOutputHint `json:"hint,omitempty"`
 	WebOutputBase
 }
 

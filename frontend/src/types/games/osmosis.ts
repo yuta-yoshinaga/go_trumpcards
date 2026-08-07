@@ -20,6 +20,8 @@ export interface OsmosisResponse extends BaseGameResponse {
   phase: number;
   moveCount: number;
   canUndo: boolean;
+  /** Whether no card anywhere can still reach a foundation (#4808). */
+  isStalemate: boolean;
   hint?: OsmosisHint;
 }
 

@@ -44,4 +44,6 @@ type OsmosisGame interface {
 	GetFoundation() [domain.OsmosisFoundationCnt][]*domain.Card
 	// GetBaseRank ベースランク取得
 	GetBaseRank() int
+	// IsStalemate 手詰まり状態を取得する
+	IsStalemate() bool
 }

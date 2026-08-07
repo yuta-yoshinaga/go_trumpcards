@@ -16,6 +16,7 @@ const mockExec = vi.mocked(osmosisApi.exec);
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 
 const playingState: OsmosisResponse = {
+  isStalemate: false,
   reserve: [[card('SPADE', 2)], [card('HEART', 9)], [card('CLOVER', 4)], [card('DIAMOND', 10)]],
   stockCount: 34,
   waste: [card('HEART', 4)],
@@ -51,6 +52,20 @@ describe('OsmosisPage', () => {
   it('renders heading', async () => {
     renderWithProviders(<OsmosisPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+  });
+
+  // **手詰まりでもサーバは Playing を返す (#4808)。**「プレイ中」と出たままだと、
+  // もう動かない盤面をめくり続けることになる。出る側と出ない側の両方を踏む。
+  it('announces the dead end once no card can be placed', async () => {
+    mockExec.mockResolvedValue({ ...playingState, isStalemate: true, messageCode: 'osmosis.stalemate' });
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(screen.getByText(/手詰まりです/)).toBeInTheDocument());
+  });
+
+  it('says nothing about a dead end while a move remains', async () => {
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(screen.getAllByText('プレイ中').length).toBeGreaterThanOrEqual(1));
+    expect(screen.queryByText(/手詰まりです/)).not.toBeInTheDocument();
   });
 
   it('calls reset on mount', async () => {

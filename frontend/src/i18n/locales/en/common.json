@@ -1005,6 +1005,7 @@
     "ninetynine.result.humanWin": "Game over! You win!",
     "ninetynine.roundEnd": "Round complete",
     "ninetynine.trickEnd": "Trick complete",
+    "osmosis.stalemate": "Dead end — no card can reach a foundation any more.",
     "oasispoker.result.dealerNotQualified": "Dealer does not qualify!",
     "oasispoker.result.dealerWins": "Dealer wins!",
     "oasispoker.result.fold": "Folded",

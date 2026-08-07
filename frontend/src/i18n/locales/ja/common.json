@@ -1005,6 +1005,7 @@
     "ninetynine.result.humanWin": "ゲーム終了！ あなたの勝ち！",
     "ninetynine.roundEnd": "ラウンド終了",
     "ninetynine.trickEnd": "トリック終了",
+    "osmosis.stalemate": "手詰まりです。置けるカードがもうありません。",
     "oasispoker.result.dealerNotQualified": "ディーラー未クオリファイ！",
     "oasispoker.result.dealerWins": "ディーラー勝利！",
     "oasispoker.result.fold": "フォールド",

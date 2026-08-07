@@ -161,6 +161,9 @@ function OsmosisPageContent() {
     disabled: loading,
   });
 
+  // 手詰まりはフェーズ表示ではなく GameMessageBox の messageCode
+  // (osmosis.stalemate) で知らせる。姉妹のソリティアが全てそうしているので、
+  // ここだけフェーズバッジを差し替えると同じことを二度言うことになる。
   const phaseName = isGameClear
     ? t('phase.gameClear')
     : phase === OsmosisPhase.GAME_OVER
