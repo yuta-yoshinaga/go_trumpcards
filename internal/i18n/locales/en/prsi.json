@@ -12,5 +12,6 @@
   "promptPlayHelp": "play <idx>: play a card matching suit or rank",
   "promptDrawHelp": "draw: draw when stuck (takes the whole 7-penalty stack)",
   "legalPlays": "Playable: {{cards}}",
-  "noLegalPlay": "No playable card → use draw to take a card"
+  "noLegalPlay": "No playable card → use draw to take a card",
+  "pendingSkips": " / skips pending: {{count}}"
 }

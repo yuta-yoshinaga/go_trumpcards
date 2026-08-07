@@ -12,5 +12,6 @@
   "promptPlayHelp": "play <idx>・・・スートかランクが一致するカードを出す",
   "promptDrawHelp": "draw・・・出せなければ山札から引く (7ペナルティ中はまとめて引く)",
   "legalPlays": "出せる札: {{cards}}",
-  "noLegalPlay": "出せる札がありません → draw で引いてください"
+  "noLegalPlay": "出せる札がありません → draw で引いてください",
+  "pendingSkips": " / スキップ{{count}}人ぶん"
 }

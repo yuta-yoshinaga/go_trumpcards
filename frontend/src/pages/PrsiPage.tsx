@@ -153,6 +153,10 @@ function PrsiPageContent() {
   const isGameEnd = state.phase === PrsiPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
   const hasPenalty = state.penaltyDrawCount > 0;
+  // **エース/ジャックのスキップも重ねられる。**7 の累積ペナルティは「+N」バッジと
+  // 警告バナーで目立たせているのに、pendingSkips は一度も読まれていなかった
+  // (#4772)。2以上になると複数人が連続で飛ばされる、同じくらい大きな状態変化。
+  const hasSkips = state.pendingSkips > 0;
 
   return (
     <GamePageShell
@@ -253,6 +257,16 @@ function PrsiPageContent() {
                     data-testid="penalty-indicator"
                   >
                     {t('penalty', { count: state.penaltyDrawCount })}
+                  </div>
+                )}
+
+                {hasSkips && (
+                  <div
+                    className={`my-2 p-2 rounded text-sm font-semibold ${badgeWarningColors}`}
+                    role="status"
+                    data-testid="skip-indicator"
+                  >
+                    {t('pendingSkips', { count: state.pendingSkips })}
                   </div>
                 )}
 
