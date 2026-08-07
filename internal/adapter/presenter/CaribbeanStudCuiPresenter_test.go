@@ -178,3 +178,93 @@ func TestCaribbeanStudCuiPresenter_ActionLogOutput(t *testing.T) {
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, "棋譜はありません")
 }
+
+// **同じバッチの RedDog / Badugi / DeuceToSeven / SevenCardStud には HintOutput が
+// あるのに、カリビアンスタッドだけ CUI に戦略アシストが無かった (#4697)。**
+func TestCaribbeanStudCuiPresenter_HintOutput(t *testing.T) {
+	p := new(CaribbeanStudCuiPresenter)
+	game := func(phase, rank int, hand []*domain.Card) *interfaces.MockCaribbeanStudGame {
+		m := new(interfaces.MockCaribbeanStudGame)
+		m.On("GetPhase").Return(phase)
+		m.On("GetPlayerHand").Return(hand).Maybe()
+		m.On("GetPlayerHandRank").Return(rank).Maybe()
+		return m
+	}
+	aceKing := []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 1, false),
+		domain.NewCard(domain.CardDesignHeart, 13, false),
+		domain.NewCard(domain.CardDesignClover, 7, false),
+		domain.NewCard(domain.CardDesignDiamond, 4, false),
+		domain.NewCard(domain.CardDesignSpade, 2, false),
+	}
+	junk := []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 9, false),
+		domain.NewCard(domain.CardDesignHeart, 7, false),
+		domain.NewCard(domain.CardDesignClover, 5, false),
+		domain.NewCard(domain.CardDesignDiamond, 4, false),
+		domain.NewCard(domain.CardDesignSpade, 2, false),
+	}
+
+	t.Run("recommends play with one pair or better", func(t *testing.T) {
+		out := p.HintOutput(game(domain.CaribbeanStudPhaseAction, domain.PokerHandOnePair, junk))
+		assert.Contains(t, out, "プレイ")
+		assert.Contains(t, out, "ワンペア以上")
+	})
+
+	// **役が無くても A-K なら降りない。**ここを落とすと期待値上正しい手を
+	// フォールドさせる。
+	t.Run("recommends play on Ace-King high with no made hand", func(t *testing.T) {
+		out := p.HintOutput(game(domain.CaribbeanStudPhaseAction, domain.PokerHandHighCard, aceKing))
+		assert.Contains(t, out, "プレイ")
+		assert.Contains(t, out, "A と K")
+	})
+
+	t.Run("recommends folding a hand below Ace-King", func(t *testing.T) {
+		out := p.HintOutput(game(domain.CaribbeanStudPhaseAction, domain.PokerHandHighCard, junk))
+		assert.Contains(t, out, "フォールド")
+	})
+
+	// **A だけ、K だけでは足りない。**両方揃って初めて A-K ハイ。片方で Play を
+	// 勧めると、期待値上フォールドすべき手を打たせる。
+	t.Run("folds an ace without a king", func(t *testing.T) {
+		aceOnly := []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 1, false),
+			domain.NewCard(domain.CardDesignHeart, 9, false),
+			domain.NewCard(domain.CardDesignClover, 7, false),
+			domain.NewCard(domain.CardDesignDiamond, 4, false),
+			domain.NewCard(domain.CardDesignSpade, 2, false),
+		}
+		out := p.HintOutput(game(domain.CaribbeanStudPhaseAction, domain.PokerHandHighCard, aceOnly))
+		assert.Contains(t, out, "フォールド")
+	})
+
+	t.Run("folds a king without an ace", func(t *testing.T) {
+		kingOnly := []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 13, false),
+			domain.NewCard(domain.CardDesignHeart, 9, false),
+			domain.NewCard(domain.CardDesignClover, 7, false),
+			domain.NewCard(domain.CardDesignDiamond, 4, false),
+			domain.NewCard(domain.CardDesignSpade, 2, false),
+		}
+		out := p.HintOutput(game(domain.CaribbeanStudPhaseAction, domain.PokerHandHighCard, kingOnly))
+		assert.Contains(t, out, "フォールド")
+	})
+
+	t.Run("gives no hint in the bet phase", func(t *testing.T) {
+		assert.Contains(t,
+			p.HintOutput(game(domain.CaribbeanStudPhaseBet, domain.PokerHandHighCard, nil)),
+			"ヒントを出せません")
+	})
+
+	t.Run("gives no hint once the round is over", func(t *testing.T) {
+		assert.Contains(t,
+			p.HintOutput(game(domain.CaribbeanStudPhaseEnd, domain.PokerHandOnePair, junk)),
+			"ヒントを出せません")
+	})
+
+	t.Run("gives no hint before any card is dealt", func(t *testing.T) {
+		assert.Contains(t,
+			p.HintOutput(game(domain.CaribbeanStudPhaseAction, domain.PokerHandHighCard, nil)),
+			"ヒントを出せません")
+	})
+}

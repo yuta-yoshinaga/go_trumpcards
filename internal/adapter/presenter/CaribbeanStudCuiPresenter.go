@@ -101,6 +101,46 @@ func (cp *CaribbeanStudCuiPresenter) Output(cs interfaces.CaribbeanStudGame, las
 	return sb.String()
 }
 
+// caribbeanStudAceValue / caribbeanStudKingValue はエースとキングのカード値。
+const (
+	caribbeanStudAceValue  = 1
+	caribbeanStudKingValue = 13
+)
+
+// HintOutput はアクションフェーズで Play / Fold を助言する。
+//
+// **判定はフロントの getCaribbeanStudHint と同じ規則。**ワンペア以上なら Play、
+// 役なしでも A と K を持っていれば Play、それ以外は Fold。ずれると同じ手札で
+// CUI と Web が逆の助言を出す。
+func (cp *CaribbeanStudCuiPresenter) HintOutput(cs interfaces.CaribbeanStudGame) string {
+	if cs.GetPhase() != domain.CaribbeanStudPhaseAction || len(cs.GetPlayerHand()) == 0 {
+		return i18n.T("caribbeanstud.hintNone") + "\n"
+	}
+	action, reason := i18n.T("caribbeanstud.hintFold"), "caribbeanstud.hintWeakHand"
+	switch {
+	case cs.GetPlayerHandRank() >= domain.PokerHandOnePair:
+		action, reason = i18n.T("caribbeanstud.hintPlay"), "caribbeanstud.hintPairOrBetter"
+	case caribbeanStudHasAceKing(cs.GetPlayerHand()):
+		action, reason = i18n.T("caribbeanstud.hintPlay"), "caribbeanstud.hintAceKingHigh"
+	}
+	return color.Yellow(i18n.Tf("caribbeanstud.hintDecision",
+		"action", action, "reason", i18n.T(reason))) + "\n"
+}
+
+// caribbeanStudHasAceKing は手札に A と K の両方があるかを返す。
+func caribbeanStudHasAceKing(cards []*domain.Card) bool {
+	hasAce, hasKing := false, false
+	for _, c := range cards {
+		switch c.GetValue() {
+		case caribbeanStudAceValue:
+			hasAce = true
+		case caribbeanStudKingValue:
+			hasKing = true
+		}
+	}
+	return hasAce && hasKing
+}
+
 // ActionLogOutput 棋譜をテキスト出力
 func (cp *CaribbeanStudCuiPresenter) ActionLogOutput(cs interfaces.CaribbeanStudGame) string {
 	return actionLogOutputText(cs)

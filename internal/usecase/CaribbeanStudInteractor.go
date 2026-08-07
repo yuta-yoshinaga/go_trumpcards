@@ -20,6 +20,8 @@ type CaribbeanStudInteractorIF interface {
 	Play() string
 	// Fold フォールド
 	Fold() string
+	// Hint ヒント取得
+	Hint() string
 	// ActionLog 棋譜を出力する
 	ActionLog() string
 }
@@ -57,6 +59,11 @@ func (ci *CaribbeanStudInteractor) Play() string {
 // Fold フォールド
 func (ci *CaribbeanStudInteractor) Fold() string {
 	return execAndPresent(ci.Game, ci.cp, ci.Game.Fold)
+}
+
+// Hint ヒント取得
+func (ci *CaribbeanStudInteractor) Hint() string {
+	return ci.cp.HintOutput(ci.Game)
 }
 
 // ActionLog 棋譜を出力する
