@@ -33,6 +33,11 @@ func (m *MockChinesePokerInteractor) ActionLog() string {
 	return args.String(0)
 }
 
+func (m *MockChinesePokerInteractor) Hint() string {
+	args := m.Called()
+	return args.String(0)
+}
+
 // Snapshot スナップショット
 func (m *MockChinesePokerInteractor) Snapshot() ([]byte, error) {
 	ret := m.Called()

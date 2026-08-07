@@ -69,6 +69,13 @@ func (pp *ChinesePokerWebPresenter) Output(cp interfaces.ChinesePokerGame, lastE
 	return marshalOrError(resObj)
 }
 
+// HintOutput ヒントを出力する。Web ではヒントはクライアント側 (useGameHint) で
+// 算出するため、通常の状態出力を返す。ChinesePokerPresenter インタフェースを
+// 満たすための実装。
+func (cp *ChinesePokerWebPresenter) HintOutput(g interfaces.ChinesePokerGame) string {
+	return cp.Output(g, nil)
+}
+
 // ActionLogOutput 棋譜をJSON出力
 func (pp *ChinesePokerWebPresenter) ActionLogOutput(cp interfaces.ChinesePokerGame) string {
 	return actionLogOutputJSON(cp)

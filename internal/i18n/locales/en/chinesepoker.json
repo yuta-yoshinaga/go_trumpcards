@@ -21,5 +21,11 @@
   "dealerWins": "Dealer wins!",
   "dealerScoop": "Dealer scoop!",
   "payoutLine": "Payout: {{payout}}",
-  "royaltyLine": "Royalties: Player={{player}} / Dealer={{dealer}}"
+  "royaltyLine": "Royalties: Player={{player}} / Dealer={{dealer}}",
+  "hintNone": "No hint is available now.",
+  "hintRowFront": "Front (3): {{cards}}",
+  "hintRowMiddle": "Middle (5): {{cards}}",
+  "hintRowBack": "Back (5): {{cards}}",
+  "hintSplitOk": "This split does not foul",
+  "hintFoulRisk": "Careful: this split fouls. Rework the front and middle rows"
 }
