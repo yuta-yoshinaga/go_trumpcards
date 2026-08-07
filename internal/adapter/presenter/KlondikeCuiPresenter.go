@@ -114,6 +114,13 @@ func (p *KlondikeCuiPresenter) Output(k interfaces.KlondikeGame, lastErr error) 
 			if k.IsStalemate() {
 				b.WriteString(color.Red(i18n.T("cuiSolitaireStalemate")) + "\n")
 			}
+			// **もう自動で揃えられることを能動的に知らせる (#4776)。**Web は
+			// 条件が揃うとボタンを光らせバッジも出すのに、CUI は ac コマンドが
+			// あること自体も、いま使えるかも出していなかった。タブロー全体を
+			// 目で確認して自分で判断するしかない。
+			if k.CanAutoComplete() {
+				b.WriteString(color.Green(i18n.T("klondike.autoCompleteReady")) + "\n")
+			}
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
 				"count", strconv.Itoa(k.GetMoveCount())) + "\n")
 		case domain.KlondikePhaseGameClear:

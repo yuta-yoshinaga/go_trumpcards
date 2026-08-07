@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
@@ -1272,4 +1273,55 @@ func TestKlondike_UndoN_Excessive(t *testing.T) {
 	err := k.UndoN(5)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "undo step")
+}
+
+// **もう自動で揃えられることを CUI は知らせていなかった (#4776)。**Web は
+// 条件が揃うとボタンを光らせバッジも出す。
+func TestKlondike_CanAutoComplete(t *testing.T) {
+	card := func(v int) *domain.Card { return domain.NewCard(domain.CardDesignSpade, v, false) }
+	board := func(stock []*domain.Card, faceDown bool) *domain.Klondike {
+		k := domain.NewKlondike(domain.NewTrumpCards(0))
+		k.Reset()
+		k.SetPhase(domain.KlondikePhasePlaying)
+		k.SetStock(stock)
+		var tableau [domain.KlondikeTableauCnt][]*domain.KlondikeTableauCard
+		for i := range tableau {
+			tableau[i] = []*domain.KlondikeTableauCard{{Card: card(i + 2), FaceUp: true}}
+		}
+		if faceDown {
+			tableau[0][0].FaceUp = false
+		}
+		k.SetTableau(tableau)
+		return k
+	}
+
+	t.Run("ready once the stock is empty and everything is face up", func(t *testing.T) {
+		assert.True(t, board(nil, false).CanAutoComplete())
+	})
+
+	// **山札が残っていれば駄目。**まだ引ける札があるうちは全部見えていない。
+	t.Run("not ready while cards remain in the stock", func(t *testing.T) {
+		assert.False(t, board([]*domain.Card{card(5)}, false).CanAutoComplete())
+	})
+
+	t.Run("not ready while a tableau card is face down", func(t *testing.T) {
+		assert.False(t, board(nil, true).CanAutoComplete())
+	})
+
+	t.Run("not ready outside the playing phase", func(t *testing.T) {
+		k := board(nil, false)
+		k.SetPhase(domain.KlondikePhaseGameClear)
+		assert.False(t, k.CanAutoComplete())
+	})
+
+	// **表示の条件と AutoComplete が通る条件は同じでなければならない。**
+	t.Run("agrees with AutoComplete", func(t *testing.T) {
+		ready := board(nil, false)
+		require.True(t, ready.CanAutoComplete())
+		assert.NoError(t, ready.AutoComplete())
+
+		blocked := board([]*domain.Card{card(5)}, false)
+		require.False(t, blocked.CanAutoComplete())
+		assert.Error(t, blocked.AutoComplete())
+	})
 }

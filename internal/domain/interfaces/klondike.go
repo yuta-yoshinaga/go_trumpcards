@@ -39,6 +39,8 @@ type KlondikeGame interface {
 	GetFoundation() [domain.KlondikeFoundationCnt][]*domain.Card
 	// AllFaceUp 全カードが表向きかを返す
 	AllFaceUp() bool
+	// CanAutoComplete いまオートコンプリートが実行できるかを返す
+	CanAutoComplete() bool
 	// GetDrawCount ドロー枚数設定を取得する
 	GetDrawCount() int
 	// GetScore 現在のスコアを取得する

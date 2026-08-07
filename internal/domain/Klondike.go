@@ -479,6 +479,15 @@ func (k *Klondike) AutoComplete() error {
 	return nil
 }
 
+// CanAutoComplete はいまオートコンプリートが実行できるかを返す (#4776)。
+//
+// **AutoComplete が通る条件と同じものを見る。**Web は条件が揃うとボタンを
+// 光らせてバッジも出すのに、CUI は ac コマンドがあること自体もいま使えるかも
+// 出していなかった。表示と実行が別条件だと、光っているのに動かない。
+func (k *Klondike) CanAutoComplete() bool {
+	return k.phase == KlondikePhasePlaying && k.AllFaceUp()
+}
+
 // AllFaceUp 全カードが表向きかどうか（ストックとウェイストも含む）
 func (k *Klondike) AllFaceUp() bool {
 	if len(k.stock) > 0 {
