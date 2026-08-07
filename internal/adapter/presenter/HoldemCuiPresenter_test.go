@@ -202,6 +202,44 @@ func TestHoldemCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "100チップ獲得")
 	})
 
+	// **Web は勝利役を構成する5枚をハイライトしているのに、CUI は役名と
+	// キッカーだけだった (#4679)。**僅差の役でどのカードが決め手か分からない。
+	t.Run("showdown names the five cards that made the hand", func(t *testing.T) {
+		h, players := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhaseEnd)
+		// ショーダウン時点で bestHand は確定済み。
+		players[0].SetBestHand([]*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 2, false),
+			domain.NewCard(domain.CardDesignSpade, 5, false),
+			domain.NewCard(domain.CardDesignSpade, 7, false),
+			domain.NewCard(domain.CardDesignSpade, 9, false),
+			domain.NewCard(domain.CardDesignSpade, 13, false),
+		})
+		h.SetRoundResults([]domain.HoldemResult{
+			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100},
+		})
+
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "♠13")
+		assert.Contains(t, result, "♠2")
+	})
+
+	// **マックしたプレイヤーの手は見せない。**降りた相手の札が漏れる。
+	t.Run("a mucked hand does not reveal its cards", func(t *testing.T) {
+		h, players := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhaseEnd)
+		players[0].SetBestHand([]*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 2, false),
+			domain.NewCard(domain.CardDesignSpade, 5, false),
+			domain.NewCard(domain.CardDesignSpade, 7, false),
+			domain.NewCard(domain.CardDesignSpade, 9, false),
+			domain.NewCard(domain.CardDesignSpade, 13, false),
+		})
+		h.SetRoundResults([]domain.HoldemResult{{PlayerIdx: 0, Mucked: true}})
+
+		assert.NotContains(t, p.Output(h, nil), "♠13")
+	})
+
 	t.Run("showdown results with kickers", func(t *testing.T) {
 		h, _ := makeHoldemForPresenter()
 		h.SetPhase(domain.HoldemPhaseEnd)
