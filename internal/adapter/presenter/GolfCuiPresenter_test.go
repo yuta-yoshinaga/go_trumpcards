@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
@@ -235,5 +236,75 @@ func TestGolfCuiPresenterActionLogOutput(t *testing.T) {
 		p := &GolfCuiPresenter{}
 		result := p.ActionLogOutput(gg)
 		assert.NotEmpty(t, result)
+	})
+}
+
+// TestGolfCuiPresenter_NineHoleScorecard confirms the CUI accumulates a 9-hole
+// card across deals, the way the web GUI's useGolfNineHole does (#4784).
+func TestGolfCuiPresenter_NineHoleScorecard(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+
+	// remaining は「タブローに残す枚数」。0 ならクリア相当のスコア。
+	endedGame := func(remaining int, phase domain.GolfPhase) *interfaces.MockGolfGame {
+		g := new(interfaces.MockGolfGame)
+		var layout [domain.GolfColCnt][domain.GolfRowCnt]*domain.GolfCard
+		for i := 0; i < remaining; i++ {
+			layout[i%domain.GolfColCnt][i/domain.GolfColCnt] =
+				&domain.GolfCard{Card: domain.NewCard(domain.CardDesignSpade, i%13+1, false)}
+		}
+		g.On("GetLayout").Return(layout).Maybe()
+		g.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
+		g.On("GetStockCount").Return(0).Maybe()
+		g.On("GetMoveCount").Return(10).Maybe()
+		g.On("IsStalemate").Return(false).Maybe()
+		g.On("IsExposed", mock.Anything, mock.Anything).Return(false).Maybe()
+		g.On("GetPhase").Return(phase).Maybe()
+		return g
+	}
+
+	t.Run("no scorecard before any deal has ended", func(t *testing.T) {
+		p := &GolfCuiPresenter{}
+		assert.NotContains(t, p.Output(endedGame(5, domain.GolfPhasePlaying), nil), "ホール")
+	})
+
+	t.Run("records each finished deal and keeps a running total", func(t *testing.T) {
+		p := &GolfCuiPresenter{}
+		assert.Contains(t, p.Output(endedGame(4, domain.GolfPhaseGameOver), nil), "ホール 1/9  今回: 4  合計: 4")
+
+		// 次のディールが始まる。
+		p.Output(endedGame(9, domain.GolfPhasePlaying), nil)
+		assert.Contains(t, p.Output(endedGame(3, domain.GolfPhaseGameClear), nil), "ホール 2/9  今回: 3  合計: 7")
+	})
+
+	// **1ディールは1回しか数えない。**終局後は Output が何度も呼ばれる。
+	t.Run("does not count the same deal twice", func(t *testing.T) {
+		p := &GolfCuiPresenter{}
+		p.Output(endedGame(4, domain.GolfPhaseGameOver), nil)
+		result := p.Output(endedGame(4, domain.GolfPhaseGameOver), nil)
+		assert.Contains(t, result, "ホール 1/9")
+		assert.NotContains(t, result, "ホール 2/9")
+	})
+
+	t.Run("announces the total once all nine holes are in", func(t *testing.T) {
+		p := &GolfCuiPresenter{}
+		for i := 0; i < 9; i++ {
+			p.Output(endedGame(2, domain.GolfPhaseGameOver), nil)
+			p.Output(endedGame(2, domain.GolfPhasePlaying), nil)
+		}
+		result := p.Output(endedGame(2, domain.GolfPhasePlaying), nil)
+		assert.Contains(t, result, "9ホール終了")
+		assert.Contains(t, result, "合計 18 打")
+	})
+
+	// 9ホールを超えて記録しない。10ディール目は無視される。
+	t.Run("stops recording past the ninth hole", func(t *testing.T) {
+		p := &GolfCuiPresenter{}
+		for i := 0; i < 10; i++ {
+			p.Output(endedGame(2, domain.GolfPhaseGameOver), nil)
+			p.Output(endedGame(2, domain.GolfPhasePlaying), nil)
+		}
+		assert.Contains(t, p.Output(endedGame(2, domain.GolfPhasePlaying), nil), "合計 18 打")
 	})
 }

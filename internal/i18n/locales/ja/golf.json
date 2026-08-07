@@ -9,6 +9,8 @@
   "stockLine": "Stock: {{count}}枚",
   "wasteCard": " | Waste: {{card}}",
   "wasteEmpty": " | Waste: [空]",
+  "holeScore": "ホール {{hole}}/{{holes}}  今回: {{score}}  合計: {{total}}",
+  "roundComplete": "9ホール終了！ 合計 {{total}} 打",
   "hintRemove": "ヒント: カード除去: 列{{col}}",
   "hintDraw": "ヒント: ストックからカードを引いてください",
   "hintUnknown": "ヒント: 不明"

@@ -23,8 +23,67 @@ func golfAdjacentRank(v1, v2 int) bool {
 	return diff == 1 || diff == 12
 }
 
+// golfTotalHoles is the number of deals that make up a full round, matching the
+// web GUI's GOLF_TOTAL_HOLES.
+const golfTotalHoles = 9
+
 // GolfCuiPresenter renders the Golf Solitaire CUI view.
-type GolfCuiPresenter struct{}
+//
+// **スコアカードはプレゼンターが持つ (#4784)。**9ホールは Web では
+// localStorage に置かれた表示層の状態で、ドメインには存在しない。同じものを
+// ドメインへ足すと KV 復元やスナップショットの対象になり、CUI にしか要らない
+// 値のために Web 側の永続化を触ることになる。CUI では GameManager が
+// セッションごとに1つ生成するので、ここがちょうど同じ寿命になる。
+type GolfCuiPresenter struct {
+	// holes は記録済みホールのスコア (ディール終了時にタブローに残った枚数)。
+	holes []int
+	// dealRecorded は今のディールを既に記録したか。1回のディール終了で
+	// Output が何度呼ばれても二重計上しない。
+	dealRecorded bool
+}
+
+// golfRemainingCount counts the cards still on the tableau — the deal's score.
+// Mirrors the web GUI's countGolfRemaining; lower is better, 0 on a clear.
+func golfRemainingCount(layout [domain.GolfColCnt][domain.GolfRowCnt]*domain.GolfCard) int {
+	n := 0
+	for col := range domain.GolfColCnt {
+		for _, gc := range layout[col] {
+			if gc != nil && !gc.Removed {
+				n++
+			}
+		}
+	}
+	return n
+}
+
+// recordHole appends the finished deal's score, ignoring calls once the round is
+// full so an extra Output cannot inflate the card.
+func (pr *GolfCuiPresenter) recordHole(score int) {
+	if len(pr.holes) >= golfTotalHoles {
+		return
+	}
+	pr.holes = append(pr.holes, score)
+}
+
+// golfHoleLines writes the hole number, this deal's score and the running total,
+// plus the final line once all holes are in.
+func (pr *GolfCuiPresenter) golfHoleLines(b *strings.Builder) {
+	if len(pr.holes) == 0 {
+		return
+	}
+	total := 0
+	for _, s := range pr.holes {
+		total += s
+	}
+	b.WriteString(i18n.Tf("golf.holeScore",
+		"hole", strconv.Itoa(len(pr.holes)),
+		"holes", strconv.Itoa(golfTotalHoles),
+		"score", strconv.Itoa(pr.holes[len(pr.holes)-1]),
+		"total", strconv.Itoa(total)) + "\n")
+	if len(pr.holes) >= golfTotalHoles {
+		b.WriteString(color.Green(i18n.Tf("golf.roundComplete", "total", strconv.Itoa(total))) + "\n")
+	}
+}
 
 // Output renders the current game state for the active locale (#1699).
 func (pr *GolfCuiPresenter) Output(g interfaces.GolfGame, lastErr error) string {
@@ -81,6 +140,15 @@ func (pr *GolfCuiPresenter) Output(g interfaces.GolfGame, lastErr error) string 
 
 		cuiErrorBlock(b, lastErr)
 
+		// ディールが終わった最初の Output で1ホール分を記録する。次のディールが
+		// 始まったら (= Playing に戻ったら) また記録できるようにする。
+		if g.GetPhase() == domain.GolfPhasePlaying {
+			pr.dealRecorded = false
+		} else if !pr.dealRecorded {
+			pr.recordHole(golfRemainingCount(layout))
+			pr.dealRecorded = true
+		}
+
 		switch g.GetPhase() {
 		case domain.GolfPhasePlaying:
 			if g.IsStalemate() {
@@ -94,6 +162,8 @@ func (pr *GolfCuiPresenter) Output(g interfaces.GolfGame, lastErr error) string 
 		case domain.GolfPhaseGameOver:
 			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
 		}
+
+		pr.golfHoleLines(b)
 	})
 }
 
