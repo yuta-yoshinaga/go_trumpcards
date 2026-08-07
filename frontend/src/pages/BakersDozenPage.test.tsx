@@ -328,3 +328,41 @@ describe('BakersDozenPage', () => {
     await waitFor(() => expect(mockPlaySound).toHaveBeenCalledWith('shuffle'));
   });
 });
+
+// **選択後は押すまで正誤が分からず、クリック→サーバーエラーのループになって
+// いた (#4795)。**13列 + 4組札で移動先候補が多い。姉妹の Wasp / Accordion は
+// 選択時に合法な移動先をリング表示している。
+describe('BakersDozenPage legal targets', () => {
+  const selectSpadeFive = async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BakersDozenPage />);
+    fireEvent.click(await screen.findByRole('button', { name: '♠ 5' }));
+  };
+
+  // ♠5 は ♥6 の列 (1) に乗る。スートは問われない。
+  it('rings the column whose top card is one rank higher', async () => {
+    await selectSpadeFive();
+    await waitFor(() => expect(document.querySelectorAll('[data-legal-target="true"]').length).toBeGreaterThan(0));
+  });
+
+  // **空き列は光らせない。**Baker's Dozen は空き列を埋められない。
+  it('never rings an empty column', async () => {
+    await selectSpadeFive();
+    await waitFor(() => expect(document.querySelectorAll('[data-legal-target="true"]').length).toBe(1));
+  });
+
+  it('rings nothing before a card is selected', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BakersDozenPage />);
+    await screen.findByRole('button', { name: '♠ 5' });
+    expect(document.querySelectorAll('[data-legal-target="true"]').length).toBe(0);
+  });
+
+  // **押せなくはしない。**押せなくすると E2E の「最初の列をクリック」が
+  // 別の列を掴む。
+  it('leaves the illegal targets clickable', async () => {
+    await selectSpadeFive();
+    const heartSix = screen.getByRole('button', { name: '♥ 6' });
+    expect(heartSix).toBeEnabled();
+  });
+});
