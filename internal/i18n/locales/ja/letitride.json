@@ -19,5 +19,8 @@
   "betStatusPull": "PULL",
   "playerWins": "プレイヤーの勝ち！",
   "playerLoses": "プレイヤーの負け。",
-  "totalPayoutLine": "合計払戻し: {{payout}}"
+  "totalPayoutLine": "合計払戻し: {{payout}}",
+  "pullConfirm": "ベットを1口引き下げます。{{amount}} が戻り、場に残る額は {{risk}} → {{newRisk}} になります。この操作は取り消せません。",
+  "pullConfirmPrompt": "実行するには y を入力してください (他のコマンドで取り消し)。",
+  "pullUnavailable": "いまは引き下げられません。"
 }

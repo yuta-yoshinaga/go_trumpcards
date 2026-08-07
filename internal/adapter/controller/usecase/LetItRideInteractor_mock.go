@@ -24,6 +24,11 @@ func (m *MockLetItRideInteractor) Pull() string {
 	return args.String(0)
 }
 
+func (m *MockLetItRideInteractor) PullConfirm() string {
+	args := m.Called()
+	return args.String(0)
+}
+
 func (m *MockLetItRideInteractor) LetItRide() string {
 	args := m.Called()
 	return args.String(0)

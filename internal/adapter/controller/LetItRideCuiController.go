@@ -12,6 +12,11 @@ import (
 // LetItRideCuiController レット・イット・ライドCUIコントローラークラス
 type LetItRideCuiController struct {
 	ci usecase.LetItRideInteractorIF
+	// pullPending は "p" が一度打たれ、確認待ちであることを表す。
+	//
+	// **Pull は取り消せない。**Web は専用ダイアログでリスクの前後を見せてから
+	// 実行するのに、CUI は "p" 一発で確定していた (#4699)。ここで一段挟む。
+	pullPending bool
 }
 
 // NewLetItRideCuiController コンストラクタ
@@ -27,8 +32,15 @@ func (lc *LetItRideCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
 		func(_ []string) string { return lc.ci.Reset() },
-		[]string{"b", "bet", "p", "pull", "l", "letitride", "log"},
+		[]string{"b", "bet", "p", "pull", "y", "yes", "l", "letitride", "log"},
 		func(cmd string, args []string) (string, bool) {
+			// **確認待ちは "y" 以外のどのコマンドでも取り消す。**残したままだと、
+			// あとで打った "y" が意図しない Pull を確定させてしまう。
+			pending := lc.pullPending
+			if cmd != "y" && cmd != "yes" {
+				lc.pullPending = false
+			}
+
 			switch cmd {
 			case "b", "bet":
 				amount, errMsg, ok := cuiutil.ParseIntArg(args, "Bet amount is required.", "Invalid bet amount. Please enter a number.", 1, math.MaxInt)
@@ -37,6 +49,13 @@ func (lc *LetItRideCuiController) Exec(command string) string {
 				}
 				return lc.ci.Bet(amount), true
 			case "p", "pull":
+				lc.pullPending = true
+				return lc.ci.PullConfirm(), true
+			case "y", "yes":
+				if !pending {
+					return "Nothing to confirm.", true
+				}
+				lc.pullPending = false
 				return lc.ci.Pull(), true
 			case "l", "letitride":
 				return lc.ci.LetItRide(), true

@@ -143,6 +143,38 @@ func (lir *LetItRide) Pull() error {
 	}
 }
 
+// LetItRidePullPreview は Pull を実行したときの掛け金の動き。
+type LetItRidePullPreview struct {
+	// Returned は手元に戻る額 (1口分)。
+	Returned int
+	// RiskBefore / RiskAfter は場に残る総額の前後。
+	RiskBefore int
+	RiskAfter  int
+}
+
+// GetPullPreview は Pull を実行したときに戻る額とリスクの増減を返す。
+// 判断フェーズ以外では nil。
+//
+// **Pull はリスクを「下げる」操作。**1口ぶん取り下げて手元に戻すので、
+// 負ける額も勝てる額も減る。取り消せないのはそこで、危険だからではない。
+func (lir *LetItRide) GetPullPreview() *LetItRidePullPreview {
+	if lir.phase != LetItRidePhaseFirstDecision && lir.phase != LetItRidePhaseSecondDecision {
+		return nil
+	}
+	active := 0
+	for _, on := range []bool{lir.bet1Active, lir.bet2Active, lir.bet3Active} {
+		if on {
+			active++
+		}
+	}
+	before := lir.betAmount * active
+	after := before - lir.betAmount
+	if after < 0 {
+		after = 0
+	}
+	return &LetItRidePullPreview{Returned: lir.betAmount, RiskBefore: before, RiskAfter: after}
+}
+
 // LetItRideAction ベットをそのままにする（Let It Ride）。
 // Named "Action" to avoid a name collision with the LetItRide type itself;
 // the use-case layer exposes this as LetItRide() in its public interface.
