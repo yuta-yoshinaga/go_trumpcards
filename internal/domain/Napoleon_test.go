@@ -1181,3 +1181,43 @@ func TestNapoleon_TrickWinner_EmptyTrick(t *testing.T) {
 	n.SetCurrentTrick(nil) // empty
 	n.ResolveTrick()       // no-op because trick incomplete
 }
+
+// **人間の席はコンストラクタ次第 (#4689)。**CUI の表示が GetPlayer(0) を
+// 決め打ちしていた件で公開したアクセサ。並びを変えても正しく解決すること。
+func TestNapoleon_GetHumanIdx(t *testing.T) {
+	t.Run("default layout puts the human first", func(t *testing.T) {
+		n := domain.NewDefaultNapoleon()
+		n.Reset()
+		if got := n.GetHumanIdx(); got != 0 {
+			t.Errorf("GetHumanIdx() = %d, want 0", got)
+		}
+	})
+
+	// **席順を変えて踏む。**既定配置だけ試しても「0 を返すだけ」の実装と
+	// 区別が付かない。
+	t.Run("finds the human at a later seat", func(t *testing.T) {
+		players := []*domain.NapoleonPlayer{
+			domain.NewNapoleonPlayer(false),
+			domain.NewNapoleonPlayer(false),
+			domain.NewNapoleonPlayer(true),
+			domain.NewNapoleonPlayer(false),
+		}
+		n := domain.NewNapoleon(domain.NewTrumpCards(1), players, domain.DefaultNapoleonConfig())
+		if got := n.GetHumanIdx(); got != 2 {
+			t.Errorf("GetHumanIdx() = %d, want 2", got)
+		}
+	})
+
+	t.Run("reports -1 when no player is human", func(t *testing.T) {
+		players := []*domain.NapoleonPlayer{
+			domain.NewNapoleonPlayer(false),
+			domain.NewNapoleonPlayer(false),
+			domain.NewNapoleonPlayer(false),
+			domain.NewNapoleonPlayer(false),
+		}
+		n := domain.NewNapoleon(domain.NewTrumpCards(1), players, domain.DefaultNapoleonConfig())
+		if got := n.GetHumanIdx(); got != -1 {
+			t.Errorf("GetHumanIdx() = %d, want -1", got)
+		}
+	})
+}
