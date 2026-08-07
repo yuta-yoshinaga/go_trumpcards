@@ -81,7 +81,9 @@ func (pr *GolfCuiPresenter) golfHoleLines(b *strings.Builder) {
 		"score", strconv.Itoa(pr.holes[len(pr.holes)-1]),
 		"total", strconv.Itoa(total)) + "\n")
 	if len(pr.holes) >= golfTotalHoles {
-		b.WriteString(color.Green(i18n.Tf("golf.roundComplete", "total", strconv.Itoa(total))) + "\n")
+		b.WriteString(color.Green(i18n.Tf("golf.roundComplete",
+			"total", strconv.Itoa(total),
+			"holes", strconv.Itoa(golfTotalHoles))) + "\n")
 	}
 }
 
