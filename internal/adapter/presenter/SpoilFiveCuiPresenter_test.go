@@ -30,6 +30,7 @@ func setupSpoilFiveCuiMock() *interfaces.MockSpoilFiveGame {
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetTrumpSuit").Return(domain.CardDesignSpade)
+	m.On("GetTopTrumps").Return(([]*domain.Card)(nil)).Maybe()
 	m.On("GetPot").Return(5)
 	m.On("GetLeadPlayerIdx").Return(0)
 	m.On("GetRoundWinnerIdx").Return(-1)
@@ -151,4 +152,34 @@ func TestSpoilFiveCuiPresenter_ActionLogOutput(t *testing.T) {
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, "play")
+}
+
+// **固定序列が Spoil Five の核心ルール (#4765)。**Web は折りたたみパネルで
+// 常時出しているのに、CUI は切り札の記号を出すだけだった。
+func TestSpoilFiveCuiPresenter_TopTrumpLine(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.SpoilFiveCuiPresenter)
+
+	withTops := func(tops []*domain.Card) *interfaces.MockSpoilFiveGame {
+		m, _ := setupSpoilFiveCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTopTrumps")
+		m.On("GetTopTrumps").Return(tops)
+		return m
+	}
+
+	t.Run("prints the ranking strongest first", func(t *testing.T) {
+		out := p.Output(withTops([]*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 5, false),
+			domain.NewCard(domain.CardDesignSpade, 11, false),
+			domain.NewCard(domain.CardDesignHeart, 1, false),
+		}), nil)
+		assert.Contains(t, out, "強さ順")
+		assert.Contains(t, out, ">")
+	})
+
+	t.Run("says nothing when there is no ranking to show", func(t *testing.T) {
+		assert.NotContains(t, p.Output(withTops(nil), nil), "強さ順")
+	})
 }

@@ -20,5 +20,6 @@
   "hintReasonTakeTrick": "このトリックを取りにいく（3トリックでポット獲得）",
   "hintReasonDiscardLow": "取れないので低い札を捨てる",
   "leaderMark": "▶(リード) ",
-  "winnerMark": "★(勝者) "
+  "winnerMark": "★(勝者) ",
+  "topTrumpLine": "強さ順: {{cards}} > その他の切り札 > 非切り札"
 }

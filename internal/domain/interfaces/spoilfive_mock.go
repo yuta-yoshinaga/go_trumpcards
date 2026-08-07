@@ -123,6 +123,14 @@ func (_m *MockSpoilFiveGame) GetTrumpSuit() int {
 	return ret.Get(0).(int)
 }
 
+func (_m *MockSpoilFiveGame) GetTopTrumps() []*domain.Card {
+	args := _m.Called()
+	if args.Get(0) == nil {
+		return nil
+	}
+	return args.Get(0).([]*domain.Card)
+}
+
 // GetPot モック
 func (_m *MockSpoilFiveGame) GetPot() int {
 	ret := _m.Called()
