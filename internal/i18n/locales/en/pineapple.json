@@ -58,5 +58,8 @@
   "keepFeaturePair": "pair",
   "keepFeatureSuited": "suited",
   "keepFeatureConnector": "connector",
-  "keepFeatureHighCard": "high card"
+  "keepFeatureHighCard": "high card",
+  "discardUpcoming": "You will discard {{count}} card(s) after the flop betting round",
+  "discardCandidate": "  [{{idx}}] discard this and you keep: {{hand}}",
+  "discardRecommended": " <- recommended"
 }

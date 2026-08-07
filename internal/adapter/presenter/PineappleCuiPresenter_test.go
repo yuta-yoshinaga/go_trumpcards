@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -37,6 +38,7 @@ func setupPineappleCuiMock() *interfaces.MockPineappleGame {
 	m.On("GetInitialDealCount").Return(3).Maybe()
 	m.On("IsDiscardAfterFlopBetting").Return(false).Maybe()
 	m.On("GetDiscardDone").Return(([]bool)(nil)).Maybe()
+	m.On("GetHumanDiscardPreviews").Return(([]domain.PineappleDiscardPreview)(nil)).Maybe()
 	return m
 }
 
@@ -166,6 +168,98 @@ func TestPineappleCuiPresenter_Output(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
 
 		assert.Contains(t, p.Output(m, nil), "ペア")
+	})
+
+	// **Crazy Pineapple は捨てるのがフロップベットの「後」。**Web は事前告知の
+	// バナーを出しているのに、CUI は無言だった (#4686)。
+	t.Run("flop betting warns that a discard is still coming", func(t *testing.T) {
+		m, _ := setupPineappleCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "IsDiscardAfterFlopBetting")
+		m.On("GetPhase").Return(domain.PineapplePhaseFlop)
+		m.On("IsDiscardAfterFlopBetting").Return(true)
+
+		assert.Contains(t, p.Output(m, nil), "フロップベット終了後にカードを1枚捨てます")
+	})
+
+	t.Run("flop betting says two cards for a four-card deal (Irish)", func(t *testing.T) {
+		m, _ := setupPineappleCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "IsDiscardAfterFlopBetting")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetInitialDealCount")
+		m.On("GetPhase").Return(domain.PineapplePhaseFlop)
+		m.On("IsDiscardAfterFlopBetting").Return(true)
+		m.On("GetInitialDealCount").Return(4)
+
+		assert.Contains(t, p.Output(m, nil), "カードを2枚捨てます")
+	})
+
+	// **プレーンな Pineapple は告知してはいけない。**フロップ前にもう捨て終えて
+	// いるので、「この後捨てる」は嘘になる。
+	t.Run("plain Pineapple gets no upcoming-discard notice", func(t *testing.T) {
+		m, _ := setupPineappleCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.PineapplePhaseFlop)
+
+		assert.NotContains(t, p.Output(m, nil), "捨てます")
+	})
+
+	// **ボードがある局面では完成役そのものを名指しできる (#4686)。**
+	t.Run("discard phase names the hand each discard would leave", func(t *testing.T) {
+		m, _ := setupPineappleCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHumanDiscardPreviews")
+		m.On("GetPhase").Return(domain.PineapplePhaseDiscard)
+		m.On("GetHumanDiscardPreviews").Return([]domain.PineappleDiscardPreview{
+			{CardIdx: 0, HandRank: domain.PokerHandOnePair},
+			{CardIdx: 1, HandRank: domain.PokerHandOnePair},
+			{CardIdx: 2, HandRank: domain.PokerHandFlush, Recommended: true},
+		})
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "[0] これを捨てると: ワンペア")
+		assert.Contains(t, result, "[2] これを捨てると: フラッシュ")
+	})
+
+	t.Run("discard phase marks only the recommended discard", func(t *testing.T) {
+		m, _ := setupPineappleCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHumanDiscardPreviews")
+		m.On("GetPhase").Return(domain.PineapplePhaseDiscard)
+		m.On("GetHumanDiscardPreviews").Return([]domain.PineappleDiscardPreview{
+			{CardIdx: 0, HandRank: domain.PokerHandOnePair},
+			{CardIdx: 1, HandRank: domain.PokerHandOnePair},
+			{CardIdx: 2, HandRank: domain.PokerHandFlush, Recommended: true},
+		})
+
+		result := p.Output(m, nil)
+		assert.Equal(t, 1, strings.Count(result, "おすすめ"), "推奨は1枚だけのはず")
+		for _, line := range strings.Split(result, "\n") {
+			if strings.Contains(line, "おすすめ") {
+				assert.Contains(t, line, "フラッシュ", "推奨が付くのは最強の役が残る捨て札")
+			}
+		}
+	})
+
+	// **完成役が出せるときに性質だけの助言を重ねない。**役が言えるならそちらが
+	// 上位互換で、2種類が並ぶと読み手はどちらに従うのか分からなくなる。
+	t.Run("keep features give way to the hand preview", func(t *testing.T) {
+		m, players := setupPineappleCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHumanDiscardPreviews")
+		m.On("GetPhase").Return(domain.PineapplePhaseDiscard)
+		m.On("GetHumanDiscardPreviews").Return([]domain.PineappleDiscardPreview{
+			{CardIdx: 0, HandRank: domain.PokerHandOnePair},
+			{CardIdx: 1, HandRank: domain.PokerHandOnePair},
+			{CardIdx: 2, HandRank: domain.PokerHandFlush, Recommended: true},
+		})
+		players[0].Reset()
+		// ♠A ♠K ♥5 — #4685 の性質表示ならスーテッド/コネクターが出る手札。
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 13, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+
+		assert.NotContains(t, p.Output(m, nil), "スーテッド")
 	})
 
 	// **4枚配り (Irish) では出さない。**2枚捨てなので「1枚捨てたら残る2枚」

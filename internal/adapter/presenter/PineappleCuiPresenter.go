@@ -128,6 +128,15 @@ func (pp *PineappleCuiPresenter) Output(p interfaces.PineappleGame, lastErr erro
 			}
 		}
 
+		// **Crazy Pineapple / Irish Poker は捨てるのがフロップベットの「後」。**
+		// Web は cp-discard-upcoming-banner で事前告知しているのに CUI は無言で、
+		// 捨てる前提を知らないままベット額を決めることになっていた (#4686)。
+		if p.IsDiscardAfterFlopBetting() && p.GetPhase() == domain.PineapplePhaseFlop {
+			b.WriteString("----------\n")
+			b.WriteString(i18n.Tf("pineapple.discardUpcoming",
+				"count", strconv.Itoa(p.GetInitialDealCount()-2)) + "\n")
+		}
+
 		if p.GetPhase() == domain.PineapplePhaseDiscard {
 			b.WriteString("----------\n")
 			b.WriteString(i18n.T("pineapple.discardHeader") + "\n")
@@ -136,12 +145,26 @@ func (pp *PineappleCuiPresenter) Output(p interfaces.PineappleGame, lastErr erro
 			discardCount := p.GetInitialDealCount() - 2
 			b.WriteString(i18n.Tf("pineapple.discardPrompt", "count", strconv.Itoa(discardCount)) + "\n")
 
-			// **Web は残す2枚の性質 (ペア/スーテッド/コネクター) を候補ごとに
-			// 出しているのに、CUI はインデックス付きの手札一覧だけだった (#4685)。**
-			// ボードがまだ無い段階で唯一の判断材料になる。
-			if human := pineappleHumanPlayer(p); human != nil {
-				for _, line := range pineappleKeepFeatureLines(human) {
+			// **ボードがあるかどうかで出す手掛かりが変わる。**フロップ後に捨てる
+			// Crazy Pineapple では残る2枚の完成役を名指しできる (#4686) が、
+			// フロップ前に捨てるプレーンな Pineapple ではまだ役が決まらないので、
+			// スーテッド/コネクターといった性質を出すしかない (#4685)。
+			// Web も variant でこの2つを出し分けている。
+			if previews := p.GetHumanDiscardPreviews(); len(previews) > 0 {
+				for _, pv := range previews {
+					line := i18n.Tf("pineapple.discardCandidate",
+						"idx", strconv.Itoa(pv.CardIdx),
+						"hand", cuiPokerHandName(pv.HandRank))
+					if pv.Recommended {
+						line += color.BoldYellow(i18n.T("pineapple.discardRecommended"))
+					}
 					b.WriteString(line + "\n")
+				}
+			} else if !p.IsDiscardAfterFlopBetting() {
+				if human := pineappleHumanPlayer(p); human != nil {
+					for _, line := range pineappleKeepFeatureLines(human) {
+						b.WriteString(line + "\n")
+					}
 				}
 			}
 		}
