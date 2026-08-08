@@ -38,5 +38,10 @@
   "gameEnd": "Game over",
   "betLimitsMax": "Min raise: {{min}} / Max bet: {{max}}",
   "betLimitsNoCap": "Min raise: {{min}} / Max bet: unlimited",
-  "betLimitsMin": "Min raise: {{min}}"
+  "betLimitsMin": "Min raise: {{min}}",
+  "handRank1": "1-card",
+  "handRank2": "2-card",
+  "handRank3": "3-card",
+  "handRank4": "Badugi",
+  "handRankUnknown": "Unknown"
 }
