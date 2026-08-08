@@ -73,12 +73,6 @@ export function ActionLogPanel({ entries, onClose }: ActionLogPanelProps) {
     setCopied(true);
   };
 
-  // Focus restore lives in the effect cleanup, which covers this path too —
-  // the page closes the panel by clearing its state, so onClose unmounts it.
-  const handleClose = () => {
-    onClose();
-  };
-
   const handleDownload = () => {
     const blob = new Blob([textContent], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
@@ -108,7 +102,7 @@ export function ActionLogPanel({ entries, onClose }: ActionLogPanelProps) {
           <button type="button" className={btnSecondary} onClick={handleDownload}>
             {t('actionLog.download')}
           </button>
-          <button type="button" className={btnPrimary} onClick={handleClose}>
+          <button type="button" className={btnPrimary} onClick={onClose}>
             {t('actionLog.close')}
           </button>
         </div>
