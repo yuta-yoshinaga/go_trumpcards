@@ -139,50 +139,81 @@ describe('ActionLogPanel', () => {
     spy.mockRestore();
   });
 
-  it('traps focus: Tab from last element wraps to first', () => {
+  // The panel is a landmark `role="region"`, not a dialog: it has no
+  // `aria-modal`, the game behind it stays live, and it is meant to be read
+  // alongside the board. Cycling Tab inside it left keyboard users with no way
+  // out except finding the close button by sight — WCAG 2.1.2 (Level A).
+  // See issue #5183.
+  it('does not trap focus: Tab from the last element leaves the panel', () => {
     render(<ActionLogPanel entries={sampleEntries} onClose={vi.fn()} />);
-    const region = screen.getByRole('region', { name: '棋譜' });
     const closeButton = screen.getByRole('button', { name: '閉じる' });
     const copyButton = screen.getByRole('button', { name: 'コピー' });
 
     closeButton.focus();
-    fireEvent.keyDown(region, { key: 'Tab', shiftKey: false });
-    expect(document.activeElement).toBe(copyButton);
+    // Fire on the focused element, not on `document`: a real Tab keydown
+    // originates at the focused button and bubbles up through the panel, which
+    // is what reaches a panel-level listener. Dispatching on `document`
+    // instead never reaches one, so the assertion would hold even with the
+    // trap still in place.
+    fireEvent.keyDown(closeButton, { key: 'Tab', shiftKey: false });
+    // jsdom does not move focus for Tab; what matters is that nothing wrapped
+    // it back to the top of the panel.
+    expect(document.activeElement).not.toBe(copyButton);
+    expect(document.activeElement).toBe(closeButton);
   });
 
-  it('traps focus: Shift+Tab from first element wraps to last', () => {
+  it('does not trap focus: Shift+Tab from the first element leaves the panel', () => {
     render(<ActionLogPanel entries={sampleEntries} onClose={vi.fn()} />);
-    const region = screen.getByRole('region', { name: '棋譜' });
     const copyButton = screen.getByRole('button', { name: 'コピー' });
     const closeButton = screen.getByRole('button', { name: '閉じる' });
 
     copyButton.focus();
-    fireEvent.keyDown(region, { key: 'Tab', shiftKey: true });
-    expect(document.activeElement).toBe(closeButton);
+    fireEvent.keyDown(copyButton, { key: 'Tab', shiftKey: true });
+    expect(document.activeElement).not.toBe(closeButton);
+    expect(document.activeElement).toBe(copyButton);
   });
 
-  it('does not trap focus on Shift+Tab from non-first element', () => {
+  it('never calls preventDefault on Tab', () => {
     render(<ActionLogPanel entries={sampleEntries} onClose={vi.fn()} />);
-    const region = screen.getByRole('region', { name: '棋譜' });
-    const downloadButton = screen.getByRole('button', { name: 'ダウンロード' });
+    const closeButton = screen.getByRole('button', { name: '閉じる' });
+    const copyButton = screen.getByRole('button', { name: 'コピー' });
 
-    downloadButton.focus();
-    const event = new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true });
-    const preventDefaultSpy = vi.spyOn(event, 'preventDefault');
-    region.dispatchEvent(event);
-    expect(preventDefaultSpy).not.toHaveBeenCalled();
+    // Both boundaries: the last element with Tab and the first with Shift+Tab
+    // are exactly the two positions the old trap intercepted.
+    for (const [el, shiftKey] of [
+      [closeButton, false],
+      [copyButton, true],
+    ] as const) {
+      el.focus();
+      const event = new KeyboardEvent('keydown', { key: 'Tab', shiftKey, bubbles: true });
+      const preventDefaultSpy = vi.spyOn(event, 'preventDefault');
+      el.dispatchEvent(event);
+      expect(preventDefaultSpy).not.toHaveBeenCalled();
+    }
   });
 
-  it('does not trap focus when Tab is pressed on non-boundary element', () => {
-    render(<ActionLogPanel entries={sampleEntries} onClose={vi.fn()} />);
-    const region = screen.getByRole('region', { name: '棋譜' });
-    const downloadButton = screen.getByRole('button', { name: 'ダウンロード' });
+  it('closes on Escape', () => {
+    const onClose = vi.fn();
+    render(<ActionLogPanel entries={sampleEntries} onClose={onClose} />);
 
-    downloadButton.focus();
-    const event = new KeyboardEvent('keydown', { key: 'Tab', shiftKey: false, bubbles: true });
-    const preventDefaultSpy = vi.spyOn(event, 'preventDefault');
-    region.dispatchEvent(event);
-    expect(preventDefaultSpy).not.toHaveBeenCalled();
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('restores focus to the trigger when unmounted without the close button', () => {
+    const triggerButton = document.createElement('button');
+    document.body.appendChild(triggerButton);
+    triggerButton.focus();
+
+    const { unmount } = render(<ActionLogPanel entries={sampleEntries} onClose={vi.fn()} />);
+    expect(document.activeElement).not.toBe(triggerButton);
+
+    // The page unmounts the panel by clearing its state, which can happen
+    // without the close button ever being clicked (game reset, route change).
+    unmount();
+    expect(document.activeElement).toBe(triggerButton);
+
+    document.body.removeChild(triggerButton);
   });
 
   it('restores focus to trigger element on close', () => {
@@ -192,13 +223,16 @@ describe('ActionLogPanel', () => {
     triggerButton.focus();
 
     const onClose = vi.fn();
-    render(<ActionLogPanel entries={sampleEntries} onClose={onClose} />);
+    const { unmount } = render(<ActionLogPanel entries={sampleEntries} onClose={onClose} />);
     // Panel has stolen focus to its first focusable element
     expect(document.activeElement).not.toBe(triggerButton);
 
     const closeButton = screen.getByRole('button', { name: '閉じる' });
     fireEvent.click(closeButton);
     expect(onClose).toHaveBeenCalledTimes(1);
+    // The page closes the panel by clearing the state onClose feeds, so the
+    // real close path is "onClose then unmount"; restore happens on unmount.
+    unmount();
     expect(document.activeElement).toBe(triggerButton);
 
     document.body.removeChild(triggerButton);
