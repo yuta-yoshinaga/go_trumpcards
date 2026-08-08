@@ -12,9 +12,12 @@ package domain
 // persisted to KV for the Cloudflare Workers, and a codec change there would
 // silently drop history rather than fail loudly.
 //
-// This base carries the numbered variant, where TurnNumber counts entries.
-// Solitaire games number their entries by move count instead and keep their own
-// appendLog for now; collapsing those needs a different base, not this one.
+// Two numbering schemes share this one base. `appendLog` numbers by entry
+// count, which is what most games want and what they get through promotion.
+// The solitaires number by move count instead, so they define their own
+// 3-arg `appendLog` — which shadows the promoted one by name — and delegate to
+// `appendLogAt`, supplying the number themselves. Neither scheme can drift into
+// the other: they are pinned by separate tests.
 type actionLogBase struct {
 	actionLog []*ActionLogEntry
 }
