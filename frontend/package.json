@@ -13,7 +13,7 @@
     "lint": "biome lint .",
     "lint:tokens": "bun scripts/check-design-tokens.mjs",
     "format": "biome format --write .",
-    "check": "biome check . && bun scripts/check-guard-floors.mjs && bun scripts/check-design-tokens.mjs && bun scripts/check-discover-blurbs.mjs && bun scripts/check-message-codes.mjs && bun scripts/check-hint-coverage.mjs && bun scripts/check-hint-reasons.mjs && bun scripts/check-markdown-tables.mjs && bun scripts/check-hint-gate.mjs && bun scripts/check-dependency-licenses.mjs && bun scripts/check-trademark-terms.mjs && bun scripts/check-asset-provenance.mjs && bun scripts/check-codecov-uploads.mjs",
+    "check": "biome check . && bun scripts/check-guard-floors.mjs && bun scripts/check-design-tokens.mjs && bun scripts/check-discover-blurbs.mjs && bun scripts/check-message-codes.mjs && bun scripts/check-hint-coverage.mjs && bun scripts/check-hint-reasons.mjs && bun scripts/check-markdown-tables.mjs && bun scripts/check-hint-gate.mjs && bun scripts/check-dependency-licenses.mjs && bun scripts/check-trademark-terms.mjs && bun scripts/check-asset-provenance.mjs && bun scripts/check-codecov-uploads.mjs && bun scripts/check-mermaid.mjs",
     "check:write": "biome check --write .",
     "preview": "vite preview",
     "test": "vitest run",

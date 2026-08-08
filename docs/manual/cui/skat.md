@@ -45,16 +45,16 @@ go run ./cmd/trumpcards --lang en skat
 
 ```mermaid
 flowchart TD
-    A[ゲーム開始 - reset] --> B[ビッド (b 0/1)]
+    A[ゲーム開始 - reset] --> B["ビッド (b 0/1)"]
     B --> C{宣言者決定?}
-    C -- Yes --> D[スカート拾い (ps 0/1)]
+    C -- Yes --> D["スカート拾い (ps 0/1)"]
     D --> E{拾った?}
-    E -- Yes --> F[2枚伏せる (d i j)]
+    E -- Yes --> F["2枚伏せる (d i j)"]
     E -- No --> G[ハンドゲーム]
-    F --> H[ゲーム宣言 (g type [trump])]
+    F --> H["ゲーム宣言 (g type [trump])"]
     G --> H
-    H --> I[10トリックをプレイ (p idx)]
-    I --> J[ラウンド終了 (nr)]
+    H --> I["10トリックをプレイ (p idx)"]
+    I --> J["ラウンド終了 (nr)"]
     J --> K{目標スコア達成?}
     K -- No --> B
     K -- Yes --> L[ゲーム終了]
