@@ -60,6 +60,13 @@ func TestIsHumanTurnWiredForEveryGame(t *testing.T) {
 			game := g.make()
 			assert.NotPanics(t, func() { _ = game.IsHumanTurn() },
 				"a freshly constructed game must answer IsHumanTurn without panicking")
+			// NewDefault* seats the human first and starts the turn there, so a
+			// correctly wired delegation returns true here. Verified true for all
+			// 25 before asserting it. NotPanics alone would also pass for a body
+			// hardcoded to `return false`; this pins the answer as well as the
+			// wiring. Raised in review on #5204.
+			assert.True(t, game.IsHumanTurn(),
+				"the human is seated first on a fresh game, so it is their turn")
 		})
 	}
 }
