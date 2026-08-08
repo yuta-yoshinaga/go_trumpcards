@@ -40,7 +40,7 @@ Shared building blocks:
 
 **TDD cycle (Red-Green-Refactor):**
 
-1. **Red** -- Write a failing test (`bun run test -- --run TestName` confirms failure)
+1. **Red** -- Write a failing test (`bunx vitest run <file> -t "<test name>"` confirms failure; a bare argument filters by filename, not by test name)
 2. **Green** -- Write the minimum code to pass the test
 3. **Refactor** -- Clean up while keeping all tests green (`bun run test`)
 
