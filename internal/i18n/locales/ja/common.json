@@ -59,6 +59,7 @@
   "cliGamesJSONIgnoredFlags": "警告: --json モードでは --short / --aliases は無視されます (JSON スキーマは固定)",
   "cliSubcommandFlagError": "エラー: trumpcards {{cmd}}: {{err}}",
   "cliTryHelp": "使い方は 'trumpcards help {{cmd}}' を実行してください。",
+  "cliTryHelpTop": "使い方は 'trumpcards --help' を実行してください。",
   "cliFlagError": "エラー: 不明なオプションです ({{err}})",
   "cliInvalidColorMode": "エラー: 無効な --color モード「{{mode}}」です (対応: auto, always, never)",
   "metaAIRequired": "メタAI設定が必要です (0=オフ, 1=オン)。",

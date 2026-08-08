@@ -1007,6 +1007,7 @@ func TestRunUnknownTopLevelFlagIsI18nError(t *testing.T) {
 		wantExit    int
 		wantPrefix  string
 		wantInclude string
+		wantHint    string
 	}{
 		{
 			name:        "ja locale wraps error in cliFlagError",
@@ -1014,6 +1015,7 @@ func TestRunUnknownTopLevelFlagIsI18nError(t *testing.T) {
 			wantExit:    2,
 			wantPrefix:  "エラー: 不明なオプション",
 			wantInclude: "-bogus",
+			wantHint:    "trumpcards --help",
 		},
 		{
 			name:        "en locale wraps error in cliFlagError",
@@ -1021,6 +1023,7 @@ func TestRunUnknownTopLevelFlagIsI18nError(t *testing.T) {
 			wantExit:    2,
 			wantPrefix:  "Error: invalid option",
 			wantInclude: "-bogus",
+			wantHint:    "trumpcards --help",
 		},
 	}
 	for _, tc := range cases {
@@ -1058,10 +1061,22 @@ func TestRunUnknownTopLevelFlagIsI18nError(t *testing.T) {
 			if !strings.Contains(errStr, tc.wantInclude) {
 				t.Errorf("stderr should include offending flag %q; got: %q", tc.wantInclude, firstLine(errStr))
 			}
-			// Count a locale-independent USAGE command line rather than the
-			// now-localized "USAGE:" heading.
-			if n := strings.Count(errStr, "trumpcards [--lang ja|en] [game]"); n != 1 {
-				t.Errorf("help text should be printed exactly once; got %d usage-line markers", n)
+			// The full help must NOT be dumped: it buries the error line that
+			// says what was actually wrong. Counted via a locale-independent
+			// USAGE command line rather than the localized "USAGE:" heading.
+			// See issue #5180.
+			if n := strings.Count(errStr, "trumpcards [--lang ja|en] [game]"); n != 0 {
+				t.Errorf("full help must not be dumped on a flag error; got %d usage-line markers", n)
+			}
+			// A one-line recovery hint replaces it, matching the unknown-game
+			// path (cliUnknownGameHint) and the subcommand path (cliTryHelp).
+			if !strings.Contains(errStr, tc.wantHint) {
+				t.Errorf("stderr should carry the recovery hint %q; got: %q", tc.wantHint, errStr)
+			}
+			// Error line + hint, nothing more. Guards against a future change
+			// re-introducing a multi-line dump under a different heading.
+			if n := len(strings.Split(strings.TrimSuffix(errStr, "\n"), "\n")); n != 2 {
+				t.Errorf("expected exactly 2 stderr lines (error + hint); got %d:\n%s", n, errStr)
 			}
 		})
 	}
