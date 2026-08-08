@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全219ゲーム)](#12-ゲームドメイン-全219ゲーム)
+  - [1.2 ゲームドメイン (全264ゲーム)](#12-ゲームドメイン-全264ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -103,40 +103,39 @@ classDiagram
     }
 
     class TrumpCards {
-        -cards []*Card
-        -drawIdx int
+        -deck []*Card
+        -deckDrawCnt int
+        -deckCnt int
         +NewTrumpCards(jokerCount int) *TrumpCards
         +Shuffle()
-        +DrawOne() *Card
-        +Remaining() int
-        +Cards() []*Card
+        +DrawCard() *Card
+        +GetRemainingCount() int
+        +GetTotalCount() int
     }
 
     class Player {
         -cards []*Card
         +AddCard(card *Card)
         +RemoveCard(index int) *Card
-        +Cards() []*Card
-        +CardLen() int
-        +Shuffle()
-        +Reorder(indices []int)
+        +GetCard(index int) *Card
+        +GetCardsSize() int
+        +ShuffleCards()
+        +ReorderCards(indices []int) error
     }
 
     class GamePlayer {
-        +bool IsHuman
-        +bool IsFinished
+        -bool isHuman
+        -bool isFinished
     }
 
     class RankedGamePlayer {
-        +int Rank
+        -int rank
     }
 
     class ChipHolder {
-        +int Chips
-        +int Bet
+        -int chips
         +AddChips(amount int)
-        +PlaceBet(amount int) error
-        +ResetBet()
+        +SubtractChips(amount int) bool
     }
 
     class ActionLogEntry {
@@ -154,7 +153,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全219ゲーム)
+### 1.2 ゲームドメイン (全264ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -173,8 +172,8 @@ classDiagram
         +PlayerSplit() error
         +PlayerInsurance(accept bool) error
         +PlayerSurrender() error
-        +Phase() int
-        +ActionLog() []*ActionLogEntry
+        +GetPhase() int
+        +GetActionLog() []*ActionLogEntry
     }
 
     class BlackJackPlayer {
@@ -207,13 +206,9 @@ classDiagram
         -round pokerRoundState
         +Reset()
         +PlayerExchange(indices []int) error
-        +PlayerFold() error
-        +PlayerCheck() error
-        +PlayerCall() error
-        +PlayerBet(amount int) error
-        +PlayerRaise(amount int) error
-        +PlayerAllIn() error
-        +Phase() int
+        +PlayerStand() error
+        +PlayerAction(action int, amount int, humanPlayMs int) error
+        +GetPhase() int
     }
 
     class Baccarat {
@@ -222,8 +217,8 @@ classDiagram
         -bankerHand []*Card
         -phase int
         +Reset()
-        +PlayerBet(betType string, amount int) error
-        +Phase() int
+        +Bet(amount int, betType int, ppBet int, bpBet int) error
+        +GetPhase() int
     }
 
     class VideoPoker {
@@ -237,10 +232,10 @@ classDiagram
         -payout int
         -variantConfig *VideoPokerVariantConfig
         +Reset()
-        +PlayerBet(amount int) error
-        +PlayerHold(indices []int) error
-        +Phase() int
-        +ActionLog() []*ActionLogEntry
+        +Bet(amount int) error
+        +Hold(indices []int) error
+        +GetPhase() int
+        +GetActionLog() []*ActionLogEntry
     }
 
     class VideoPokerVariantConfig {
@@ -268,11 +263,11 @@ classDiagram
         -pairPlusBet int
         -playBet int
         +Reset()
-        +PlayerBet(amount int, pairPlusBet int) error
-        +PlayerPlay() error
-        +PlayerFold() error
-        +Phase() int
-        +ActionLog() []*ActionLogEntry
+        +Bet(ante int, pairPlus int) error
+        +Play() error
+        +Fold() error
+        +GetPhase() int
+        +GetActionLog() []*ActionLogEntry
     }
 
     class CaribbeanStud {
@@ -348,10 +343,10 @@ classDiagram
         -phase int
         -bet int
         +Reset()
-        +PlayerBet(amount int) error
-        +PlayerSet(low0 int, low1 int) error
-        +Phase() int
-        +ActionLog() []*ActionLogEntry
+        +Bet(amount int) error
+        +SetHands(lowIdx0 int, lowIdx1 int) error
+        +GetPhase() int
+        +GetActionLog() []*ActionLogEntry
     }
 
     Baccarat --> "1" TrumpCards
@@ -449,12 +444,12 @@ classDiagram
         -phase HeartsPhase
         -currentTrick []*TrickCard
         +Reset()
-        +PassCards(indices []int) error
-        +PlayCard(index int) error
+        +PlayerPass(cardIndices []int) error
+        +PlayerPlay(cardIndex int) error
         +NextTrick() error
         +NextRound() error
-        +Hint() *HeartsHint
-        +Phase() HeartsPhase
+        +GetHint() *HeartsHint
+        +GetPhase() HeartsPhase
     }
 
     class Spades {
@@ -464,12 +459,12 @@ classDiagram
         -phase SpadesPhase
         -currentTrick []*TrickCard
         +Reset()
-        +Bid(amount int) error
-        +PlayCard(index int) error
+        +PlayerBid(bid int) error
+        +PlayerPlay(cardIndex int) error
         +NextTrick() error
         +NextRound() error
-        +Hint() *SpadesHint
-        +Phase() SpadesPhase
+        +GetHint() *SpadesHint
+        +GetPhase() SpadesPhase
     }
 
     %% Shared trick-card type (internal/domain/trick_helpers.go, issue #4297) —
@@ -486,14 +481,14 @@ classDiagram
         -config NapoleonConfig
         -round napoleonRoundState
         +Reset()
-        +Bid(amount int) error
-        +DeclareTrump(suit int) error
-        +Exchange(indices []int) error
-        +PlayCard(index int) error
+        +PlayerBid(bid int) error
+        +PlayerDeclareTrump(suit int, adjSuit int, adjVal int) error
+        +PlayerExchangeKitty(discardIndex int) error
+        +PlayerPlay(cardIndex int) error
         +NextTrick() error
         +NextRound() error
-        +Hint() *NapoleonHint
-        +Phase() NapoleonPhase
+        +GetHint() *NapoleonHint
+        +GetPhase() NapoleonPhase
     }
 
     class NapoleonTrickCard {
@@ -565,25 +560,20 @@ classDiagram
         -players []*EuchrePlayer
         -config EuchreConfig
         -phase EuchrePhase
-        -trickCards []*EuchreTrickCard
+        -currentTrick []*TrickCard
         -turnedUpCard *Card
         -trumpSuit int
         -dealerIdx int
         +Reset()
-        +OrderUp(alone bool) error
-        +Pass() error
-        +CallTrump(suit int, alone bool) error
-        +Discard(index int) error
-        +PlayCard(index int) error
+        +PlayerPickUp(orderUp bool, goAlone bool) error
+        +PlayerPassCall() error
+        +PlayerCallTrump(suit int, goAlone bool) error
+        +PlayerDiscard(cardIndex int) error
+        +PlayerPlay(cardIndex int) error
         +NextTrick() error
         +NextRound() error
-        +Hint() *EuchreHint
-        +Phase() EuchrePhase
-    }
-
-    class EuchreTrickCard {
-        +int PlayerIdx
-        +*Card Card
+        +GetHint() *EuchreHint
+        +GetPhase() EuchrePhase
     }
 
     class OhHell {
@@ -610,7 +600,7 @@ classDiagram
         -players []*BridgePlayer
         -config BridgeConfig
         -phase BridgePhase
-        -trickCards []*BridgeTrickCard
+        -currentTrick []*TrickCard
         -trumpSuit int
         -contractLevel int
         -contractSuit int
@@ -618,17 +608,12 @@ classDiagram
         -dummyIdx int
         -vulnerability [2]bool
         +Reset()
-        +Bid(bidType int, level int, suit int) error
-        +PlayCard(index int) error
+        +PlayerBid(bidType int, level int, suit int) error
+        +PlayerPlay(cardIndex int) error
         +NextTrick() error
         +NextRound() error
-        +Hint() *BridgeHint
-        +Phase() BridgePhase
-    }
-
-    class BridgeTrickCard {
-        +int PlayerIdx
-        +*Card Card
+        +GetHint() *BridgeHint
+        +GetPhase() BridgePhase
     }
 
     class TwoTenJack {
@@ -661,11 +646,11 @@ classDiagram
     Mighty --> "*" MightyTrickCard
     Mighty ..> MightyHint
     Euchre --> "4" EuchrePlayer
-    Euchre --> "*" EuchreTrickCard
+    Euchre --> "*" TrickCard
     OhHell --> "4" OhHellPlayer
     OhHell --> "*" TrickCard
     Bridge --> "4" BridgePlayer
-    Bridge --> "*" BridgeTrickCard
+    Bridge --> "*" TrickCard
     TwoTenJack --> "4" TwoTenJackPlayer
     TwoTenJack --> "*" TrickCard
     HeartsPlayer --|> GamePlayer
@@ -691,15 +676,12 @@ classDiagram
         -pot int
         -bettingState BettingState
         +Reset()
-        +PlayerFold() error
-        +PlayerCheck() error
-        +PlayerCall() error
-        +PlayerBet(amount int) error
-        +PlayerRaise(amount int) error
-        +PlayerAllIn() error
-        +PlayerRebuy() error
-        +PlayerAddon() error
-        +Phase() int
+        +PlayerAction(action int, amount int, humanPlayMs int) error
+        +Rebuy() error
+        +Addon() error
+        +Muck() error
+        +ShowHand() error
+        +GetPhase() int
     }
 
     class Omaha {
@@ -712,13 +694,12 @@ classDiagram
         -holeCards int
         +Reset()
         +GetHoleCardCount() int
-        +PlayerFold() error
-        +PlayerCheck() error
-        +PlayerCall() error
-        +PlayerBet(amount int) error
-        +PlayerRaise(amount int) error
-        +PlayerAllIn() error
-        +Phase() int
+        +PlayerAction(action int, amount int, humanPlayMs int) error
+        +Rebuy() error
+        +Addon() error
+        +Muck() error
+        +ShowHand() error
+        +GetPhase() int
     }
 
     class HoldemPlayer {
@@ -752,13 +733,12 @@ classDiagram
         -communityCards []*Card
         -phase int
         +Reset()
-        +PlayerFold() error
-        +PlayerCheck() error
-        +PlayerCall() error
-        +PlayerBet(amount int) error
-        +PlayerRaise(amount int) error
-        +PlayerAllIn() error
-        +Phase() int
+        +PlayerAction(action int, amount int, humanPlayMs int) error
+        +Rebuy() error
+        +Addon() error
+        +Muck() error
+        +ShowHand() error
+        +GetPhase() int
     }
 
     ShortDeck --> "*" ShortDeckPlayer
@@ -773,16 +753,14 @@ classDiagram
         -isDiscardPhase bool
         -discardDone bool
         +Reset()
-        +PlayerFold() error
-        +PlayerCheck() error
-        +PlayerCall() error
-        +PlayerBet(amount int) error
-        +PlayerRaise(amount int) error
-        +PlayerAllIn() error
-        +PlayerDiscard(cardIdx int) error
-        +PlayerRebuy() error
-        +PlayerAddon() error
-        +Phase() int
+        +PlayerAction(action int, amount int, humanPlayMs int) error
+        +DiscardCard(cardIdx int) error
+        +DiscardCards(cardIdxs []int) error
+        +Rebuy() error
+        +Addon() error
+        +Muck() error
+        +ShowHand() error
+        +GetPhase() int
     }
 
     Pineapple --> "*" HoldemPlayer
@@ -807,9 +785,8 @@ classDiagram
         -raiseCount int
         -humanProfile *IndianPokerHumanProfile
         +Reset()
-        +ResetWithConfig(config IndianPokerConfig)
-        +Action(action int, amount int, humanPlayMs int) error
-        +Phase() int
+        +PlayerAction(action int, amount int, humanPlayMs int) error
+        +GetPhase() int
     }
 
     class IndianPokerPlayer {
@@ -858,8 +835,8 @@ classDiagram
         -config OldMaidConfig
         -currentTurn int
         +Reset()
-        +Draw(index int) error
-        +Phase() int
+        +PlayerDraw(cardIdx int) error
+        +GetGameEndFlag() bool
     }
 
     class Daifugo {
@@ -869,10 +846,9 @@ classDiagram
         -sortMode DaifugoSortMode
         -round daifugoRoundState
         +Reset()
-        +Play(indices []int) error
-        +Pass() error
-        +Sort(mode int)
-        +Phase() int
+        +PlayerPlay(indices []int) error
+        +SortHumanHand(mode DaifugoSortMode) error
+        +GetGameEndFlag() bool
     }
 
     class Sevens {
@@ -882,9 +858,9 @@ classDiagram
         -currentTurn int
         -tablePlaced [5]uint16
         +Reset()
-        +Play(cardIdx int) error
-        +PlayJoker(suit int, value int) error
-        +Phase() int
+        +PlayerPlay(idx int) error
+        +PlayerPlayJoker(cardIdx int, targetSuit int, targetValue int) error
+        +GetGameEndFlag() bool
     }
 
     class Doubt {
@@ -895,10 +871,10 @@ classDiagram
         -currentTurn int
         -tableCards []*Card
         +Reset()
-        +Play(indices []int) error
-        +Doubt() *DoubtDoubtResult
+        +PlayerPlay(cardIndices []int, claimedValue int, humanPlayMs int) error
+        +ResolveDoubt(doubterIndices []int)
         +SkipDoubt()
-        +Phase() DoubtPhase
+        +GetPhase() DoubtPhase
     }
 
     class CrazyEights {
@@ -908,11 +884,11 @@ classDiagram
         -phase CrazyEightsPhase
         -discardPile []*Card
         +Reset()
-        +Play(index int) error
-        +Draw() error
-        +ChooseSuit(suit int) error
+        +PlayerPlay(cardIndex int) error
+        +PlayerDraw() error
+        +PlayerChooseSuit(suit int) error
         +NextRound() error
-        +Phase() CrazyEightsPhase
+        +GetPhase() CrazyEightsPhase
     }
 
     class GinRummy {
@@ -922,13 +898,13 @@ classDiagram
         -phase GinRummyPhase
         -discardPile []*Card
         +Reset()
-        +DrawFromStock() error
-        +DrawFromDiscard() error
-        +Discard(index int) error
-        +Knock() error
-        +Layoff(indices []int) error
+        +PlayerDrawFromStock() error
+        +PlayerDrawFromDiscard() error
+        +PlayerDiscard(cardIndex int) error
+        +PlayerKnock(cardIndex int) error
+        +PlayerLayoff(cardIndices []int) error
         +NextRound() error
-        +Phase() GinRummyPhase
+        +GetPhase() GinRummyPhase
     }
 
     class Speed {
@@ -938,11 +914,11 @@ classDiagram
         -centerPiles [2]*Card
         -phase SpeedPhase
         +Reset()
-        +Play(cardIndex int, pileIndex int) error
+        +PlayerPlay(cardIndex int, pileIndex int) error
         +Flip() error
-        +Hint() *SpeedHint
-        +Phase() SpeedPhase
-        +ActionLog() []*ActionLogEntry
+        +GetHint() *SpeedHint
+        +GetPhase() SpeedPhase
+        +GetActionLog() []*ActionLogEntry
     }
 
     class SpeedPlayer {
@@ -970,9 +946,9 @@ classDiagram
         -phase GoFishPhase
         -currentTurn int
         +Reset()
-        +Ask(targetIdx int, rank int) error
-        +Phase() GoFishPhase
-        +ActionLog() []*ActionLogEntry
+        +PlayerAsk(targetIdx int, rank int) error
+        +GetPhase() GoFishPhase
+        +GetActionLog() []*ActionLogEntry
     }
 
     class GoFishPlayer {
@@ -998,14 +974,14 @@ classDiagram
         -discardPile []*Card
         -isFrozen bool
         +Reset()
-        +DrawFromStock() error
-        +DrawFromDiscard(pairIndices []int) error
-        +Meld(groups [][]int) error
-        +SkipMeld() error
-        +Discard(index int) error
-        +GoOut() error
+        +PlayerDrawFromStock() error
+        +PlayerDrawFromDiscard(naturalPairIndices []int) error
+        +PlayerMeld(meldGroups [][]int) error
+        +PlayerSkipMeld() error
+        +PlayerDiscard(cardIndex int) error
+        +PlayerGoOut() error
         +NextRound()
-        +Phase() CanastaPhase
+        +GetPhase() CanastaPhase
     }
 
     class CanastaPlayer {
@@ -1073,9 +1049,9 @@ classDiagram
         -currentTurn int
         -gameEndFlag bool
         +Reset()
-        +Draw() error
+        +PlayerAction(action int) error
         +GetGameEndFlag() bool
-        +ActionLog() []*ActionLogEntry
+        +GetActionLog() []*ActionLogEntry
     }
 
     class PigsTailPlayer {
@@ -1099,7 +1075,7 @@ classDiagram
         +Stop() error
         +CpuPlay() error
         +GetGameEndFlag() bool
-        +ActionLog() []*ActionLogEntry
+        +GetActionLog() []*ActionLogEntry
     }
 
     class FiftyOnePlayer {
@@ -1133,18 +1109,13 @@ classDiagram
         -bringInPlayerIdx int
         -humanProfile *BettingHumanProfile
         +Reset()
-        +PlayerFold() error
-        +PlayerCheck() error
-        +PlayerCall() error
-        +PlayerBet(amount int) error
-        +PlayerRaise(amount int) error
-        +PlayerAllIn() error
-        +PlayerRebuy() error
-        +PlayerAddon() error
-        +PlayerMuck() error
-        +PlayerShow() error
-        +Phase() int
-        +ActionLog() []*ActionLogEntry
+        +PlayerAction(action int, amount int, humanPlayMs int) error
+        +Rebuy() error
+        +Addon() error
+        +Muck() error
+        +ShowHand() error
+        +GetPhase() int
+        +GetActionLog() []*ActionLogEntry
     }
 
     class SevenCardStudPlayer {
@@ -1191,14 +1162,17 @@ classDiagram
         -history []*klondikeSnapshot
         +Reset()
         +Draw() error
-        +Move(from string, fromCol int, fromIdx int, to string, toCol int) error
-        +Hint() *KlondikeHint
+        +MoveTableauToTableau(fromCol int, cardIndex int, toCol int) error
+        +MoveTableauToFoundation(col int) error
+        +MoveWasteToTableau(col int) error
+        +MoveWasteToFoundation() error
+        +GetHint() *KlondikeHint
         +Undo() error
         +UndoN(n int) error
         +UndoToEscape() int
-        +Autocomplete() error
+        +AutoComplete() error
         +GiveUp()
-        +Phase() KlondikePhase
+        +GetPhase() KlondikePhase
     }
 
     class FreeCell {
@@ -1209,14 +1183,18 @@ classDiagram
         -phase FreeCellPhase
         -history []*freeCellSnapshot
         +Reset()
-        +Move(from string, fromCol int, fromIdx int, to string, toCol int) error
-        +Hint() *FreeCellHint
+        +MoveTableauToTableau(fromCol int, cardIndex int, toCol int) error
+        +MoveTableauToFoundation(col int) error
+        +MoveTableauToFreeCell(col int, cell int) error
+        +MoveFreeCellToTableau(cell int, col int) error
+        +MoveFreeCellToFoundation(cell int) error
+        +GetHint() *FreeCellHint
         +Undo() error
         +UndoN(n int) error
         +UndoToEscape() int
-        +Autocomplete() error
+        +AutoComplete() error
         +GiveUp()
-        +Phase() FreeCellPhase
+        +GetPhase() FreeCellPhase
     }
 
     class Spider {
@@ -1229,14 +1207,14 @@ classDiagram
         -history []*spiderSnapshot
         +Reset()
         +Deal() error
-        +Move(fromCol int, fromIdx int, toCol int) error
-        +Hint() *SpiderHint
+        +MoveTableauToTableau(fromCol int, cardIndex int, toCol int) error
+        +GetHint() *SpiderHint
         +Undo() error
         +UndoN(n int) error
         +UndoToEscape() int
-        +Autocomplete() error
+        +AutoComplete() error
         +GiveUp()
-        +Phase() SpiderPhase
+        +GetPhase() SpiderPhase
     }
 
     class Pyramid {
@@ -1257,7 +1235,7 @@ classDiagram
         +UndoN(n int) error
         +UndoToEscape() int
         +GiveUp()
-        +Phase() PyramidPhase
+        +GetPhase() PyramidPhase
     }
 
     class TriPeaks {
@@ -1275,7 +1253,7 @@ classDiagram
         +UndoN(n int) error
         +UndoToEscape() int
         +GiveUp()
-        +Phase() TriPeaksPhase
+        +GetPhase() TriPeaksPhase
     }
 
     class Golf {
@@ -1293,7 +1271,7 @@ classDiagram
         +UndoN(n int) error
         +UndoToEscape() int
         +GiveUp()
-        +Phase() GolfPhase
+        +GetPhase() GolfPhase
     }
 
     class Durak {
@@ -1306,16 +1284,15 @@ classDiagram
         -tableAttack []*Card
         -tableDefense []*Card
         +Reset()
-        +Attack(cardIdx int) error
-        +Defend(cardIdx int) error
-        +PickUp() error
-        +Done() error
-        +Pass() error
-        +Phase() DurakPhase
+        +PlayerAttack(cardIdx int) error
+        +PlayerDefend(attackIdx int, handIdx int) error
+        +PlayerTakeCards() error
+        +PlayerPass() error
+        +GetPhase() DurakPhase
     }
 
     class DurakPlayer {
-        +bool IsHuman
+        -bool isHuman
     }
 
     class DurakConfig {
@@ -1332,12 +1309,15 @@ classDiagram
         -phase FortyThievesPhase
         +Reset()
         +Draw() error
-        +Move(src string, dst string) error
+        +MoveTableauToTableau(fromCol int, cardIndex int, toCol int) error
+        +MoveTableauToFoundation(col int) error
+        +MoveWasteToTableau(col int) error
+        +MoveWasteToFoundation() error
         +Undo() error
         +GiveUp()
-        +Hint() string
+        +GetHint() *FortyThievesHint
         +AutoComplete() error
-        +Phase() FortyThievesPhase
+        +GetPhase() FortyThievesPhase
     }
 
     class ClockSolitaire {
@@ -1349,7 +1329,7 @@ classDiagram
         +Reset()
         +Step() error
         +AutoPlay() error
-        +Phase() ClockSolitairePhase
+        +GetPhase() ClockSolitairePhase
     }
 
     class Cribbage {
@@ -1362,12 +1342,12 @@ classDiagram
         -pegCount int
         -pegPlayedCards []*Card
         +Reset()
-        +Discard(indices []int) error
-        +Peg(cardIdx int) error
-        +Go() error
+        +PlayerDiscard(indices []int) error
+        +PlayerPeg(cardIndex int) error
+        +PlayerGo() error
         +ShowNext() error
         +NextRound() error
-        +Phase() CribbagePhase
+        +GetPhase() CribbagePhase
     }
 
     class Memory {
@@ -1377,9 +1357,9 @@ classDiagram
         -config MemoryConfig
         -phase MemoryPhase
         +Reset()
-        +Flip(position int) error
-        +Next() error
-        +Phase() MemoryPhase
+        +PlayerFlip(pos int) error
+        +ResolveFlip()
+        +GetPhase() MemoryPhase
     }
 
     class KlondikeTableauCard {
@@ -1439,7 +1419,7 @@ classDiagram
         +Reset()
         +MoveTableauToTableau(fromCol int, fromIdx int, toCol int) error
         +MoveTableauToFoundation(fromCol int) error
-        +Hint() *YukonHint
+        +GetHint() *YukonHint
         +Undo() error
         +UndoN(n int) error
         +UndoToEscape() int
@@ -1680,7 +1660,7 @@ classDiagram
         <<interface>>
         +Output(game PokerGame, lastErr error) string
         +ActionLogOutput(game PokerGame) string
-        +OddsOutput(game PokerGame) string
+        +OutputWithOdds(p PokerGame, lastErr error, odds []domain.PokerDrawOdds) string
     }
 
     class HeartsPresenter {
@@ -1703,7 +1683,7 @@ classDiagram
     note for GamePresenter "各ゲームの Presenter は\nGamePresenter[G] の型エイリアス\nまたは拡張インターフェース"
 ```
 
-**Interactor パターン (全219ゲーム共通)**
+**Interactor パターン (全264ゲーム共通)**
 
 ```mermaid
 classDiagram
@@ -1738,9 +1718,11 @@ classDiagram
     }
 
     class SessionStore~T~ {
-        -sessions map[string]*sessionEntry~T~
-        +GetOrCreate(sessionId string, factory func() T) T
-        +Get(sessionId string) T
+        -entries map[string]*sessionEntry~T~
+        +GetWithLock(id string, factory func() T) (T, *sync.Mutex, bool)
+        +EvictExpired()
+        +Len() int
+        +Stop()
     }
 
     class sessionEntry~T~ {
@@ -1755,7 +1737,7 @@ classDiagram
 
     class GameWebController {
         -store *SessionStore~GameInteractorIF~
-        +Handle(w ResponseWriter, r *Request)
+        +Exec(w http.ResponseWriter, r *http.Request)
     }
 
     class GameCuiPresenter {
@@ -1775,8 +1757,8 @@ classDiagram
     GameCuiPresenter ..|> GamePresenter : implements
     GameWebPresenter ..|> GamePresenter : implements
 
-    note for GameCuiController "219ゲーム × CUI/Web = 438 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
-    note for GameCuiPresenter "219ゲーム × CUI/Web = 438 Presenter 実装"
+    note for GameCuiController "264ゲーム × CUI/Web = 528 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
+    note for GameCuiPresenter "264ゲーム × CUI/Web = 528 Presenter 実装"
 ```
 
 ### 1.5 インフラストラクチャ層
@@ -1801,7 +1783,6 @@ classDiagram
         -games map[string]CuiExecer
         -currentGame string
         +Exec(cmd string) string
-        +Switch(game string) error
     }
 
     class CuiExecer {
@@ -1816,8 +1797,8 @@ classDiagram
     }
 
     TrumpCardsWeb --> "*" gameEntry : registerAll() over games.All()
-    gameEntry --> GameWebController : holds 219 controllers
-    GameManager --> "*" CuiExecer : holds 219 games
+    gameEntry --> GameWebController : holds 264 controllers
+    GameManager --> "*" CuiExecer : holds 264 games
     GameCui ..|> CuiExecer : implements
     GameCui --> GameCuiController : delegates
 ```
@@ -1873,10 +1854,10 @@ sequenceDiagram
     participant Pres as WebPresenter
 
     Client->>Server: POST /blackjack/exec<br/>{"cmd":"hit","sessionId":"abc123"}
-    Server->>WebCtrl: Handle(w, r)
+    Server->>WebCtrl: Exec(w, r)
     WebCtrl->>WebCtrl: JSONパース (WebInput)
 
-    WebCtrl->>Store: GetOrCreate("abc123", factory)
+    WebCtrl->>Store: GetWithLock("abc123", factory)
     alt 新規セッション
         Store->>Store: factory() でInteractor生成
         Store-->>WebCtrl: 新規Interactor
@@ -1904,8 +1885,8 @@ sequenceDiagram
     participant Store as SessionStore
 
     C1->>WebCtrl: POST {"sessionId":"sess-1","cmd":"reset"}
-    WebCtrl->>Store: GetOrCreate("sess-1")
-    Store->>Store: sessions["sess-1"] 作成 + mutex lock
+    WebCtrl->>Store: GetWithLock("sess-1")
+    Store->>Store: entries["sess-1"] 作成 + mutex lock
     Note over Store: Interactor A 生成
     Store-->>WebCtrl: Interactor A (locked)
     WebCtrl->>WebCtrl: Reset() 実行
@@ -1913,7 +1894,7 @@ sequenceDiagram
     WebCtrl-->>C1: レスポンス
 
     C2->>WebCtrl: POST {"sessionId":"sess-2","cmd":"reset"}
-    WebCtrl->>Store: GetOrCreate("sess-2")
+    WebCtrl->>Store: GetWithLock("sess-2")
     Store->>Store: sessions["sess-2"] 作成 + mutex lock
     Note over Store: Interactor B 生成 (独立)
     Store-->>WebCtrl: Interactor B (locked)
@@ -1938,7 +1919,7 @@ sequenceDiagram
     Note over User,Pres: ベットフロー
     User->>Ctrl: bet 3
     Ctrl->>Interactor: Bet(3)
-    Interactor->>Domain: PlayerBet(3)
+    Interactor->>Domain: Bet(3)
     Domain->>Domain: チップ減算 → 5枚配布 → phase=Draw
     Domain-->>Interactor: nil
     Interactor->>Pres: Output(game, nil)
@@ -1947,7 +1928,7 @@ sequenceDiagram
     Note over User,Pres: ホールドフロー
     User->>Ctrl: hold 0 2 4
     Ctrl->>Interactor: Hold([0,2,4])
-    Interactor->>Domain: PlayerHold([0,2,4])
+    Interactor->>Domain: Hold([0,2,4])
     Domain->>Domain: 非ホールドカードを交換
     Domain->>Eval: evalFiveCardHand(hand)
     Eval-->>Domain: handRank, handName
@@ -2201,7 +2182,7 @@ sequenceDiagram
 
     Note over User,Pres: ベッティングフロー (サード～セブンスストリート)
     User->>Ctrl: bet 40 / call / raise 80 / fold / allin
-    Ctrl->>Interactor: PlayerBet(40) / PlayerCall() / PlayerRaise(80) / PlayerFold() / PlayerAllIn()
+    Ctrl->>Interactor: Action(action, amount, humanPlayMs)
     Interactor->>Domain: アクション実行
     Domain->>Domain: ベット処理 → CPU自動アクション → ストリート進行判定
     Domain-->>Interactor: nil
@@ -2299,7 +2280,7 @@ sequenceDiagram
     Note over User,Pres: ベットフロー
     User->>Ctrl: bet 100
     Ctrl->>Interactor: Bet(100)
-    Interactor->>Domain: PlayerBet(100)
+    Interactor->>Domain: Bet(100)
     Domain->>Domain: チップ減算 → 7枚ずつ配布 → phase=Set
     Domain-->>Interactor: nil
     Interactor->>Pres: Output(game, nil)
@@ -2307,8 +2288,8 @@ sequenceDiagram
 
     Note over User,Pres: セットフロー
     User->>Ctrl: set 2 5
-    Ctrl->>Interactor: Set(2, 5)
-    Interactor->>Domain: PlayerSet(2, 5)
+    Ctrl->>Interactor: SetHands(2, 5)
+    Interactor->>Domain: SetHands(2, 5)
     Domain->>Domain: ローハンド(2枚) / ハイハンド(5枚) 分離
     Domain->>Domain: ディーラーハウスウェイ設定
     Domain->>Eval: evalFiveCardHand(playerHighHand)
@@ -2655,7 +2636,7 @@ stateDiagram-v2
     [*] --> Playing : Reset()
     Playing --> Playing : Move / Draw / Deal / Remove / Step / Undo / Redeal
     Playing --> GameClear : 全カードをFoundation/Pyramid/Tableau除去完了または全表向き
-    Playing --> GameClear : Autocomplete成功 (Klondike/FreeCell/SeahavenTowers/Spider のみ)
+    Playing --> GameClear : AutoComplete成功 (Klondike/FreeCell/SeahavenTowers/Spider のみ)
     Playing --> GameOver : GiveUp / 4枚目のK表向き(ClockSolitaire) / Redeal不可かつ手詰まり(Cruel)
     GameClear --> [*]
     GameOver --> [*]
@@ -2673,7 +2654,7 @@ Golf 固有のアクション: `Draw` / `Remove` / `Undo`。除去条件はウ�
 
 ClockSolitaire 固有のアクション: `Step` / `AutoPlay`。52枚を13山に4枚ずつ配り、ランクに対応する山へ移動させる完全自動ゲーム。4枚目のKが表向きになる前に全カードが表向きになるとクリア。
 
-SeahavenTowers 固有のアクション: `Move` / `Undo` / `Autocomplete`。FreeCell 派生の 4 セル + 10 タブロー構成。タブローへ置けるのは K のみで、自由セルは 4 枚まで。全 52 枚を Foundation に積み上げてクリア。
+SeahavenTowers 固有のアクション: `MoveTableauToTableau` / `MoveTableauToFoundation` / `MoveTableauToFreeCell` / `MoveFreeCellToTableau` / `MoveFreeCellToFoundation` / `Undo` / `AutoComplete`。FreeCell 派生の 4 セル + 10 タブロー構成。タブローへ置けるのは K のみで、自由セルは 4 枚まで。全 52 枚を Foundation に積み上げてクリア。
 
 Cruel 固有のアクション: `Move` / `Redeal` / `Undo`。タブロー 12 山 × 4 枚に配置されたカードを Foundation へ送る。詰まったら `Redeal` で残りカードを再配置（回数無制限）。Foundation に全 52 枚揃えればクリア、Redeal 後も手詰まりなら GameOver。
 

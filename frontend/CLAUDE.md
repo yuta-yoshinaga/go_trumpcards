@@ -96,7 +96,7 @@ bun run e2e:ui       # Run with Playwright UI
 The Web GUI supports Japanese (ja) and English (en) via **react-i18next** with **i18next-browser-languagedetector**.
 
 - **Config**: `src/i18n/index.ts`
-- **Translation files**: `src/i18n/locales/{ja,en}/<game>.json` (each game name + `common.json`, `tutorial.json`)
+- **Translation files**: `src/i18n/locales/{ja,en}/<game>.json` (each game name + `common.json`, `tutorial.json`, `discover.json`)
 - **In components**: use the `useTranslation()` hook
 - **In non-component files** (e.g., `playerUtils.ts`, `messages.ts`, `gameConstants.ts`): import the `i18n` instance directly
 - **Tests**: i18n is initialized in `src/test/setup.ts` with ja translations loaded
@@ -121,7 +121,7 @@ bun run build && bun run check && bun run test
 
 ## Guard scripts (`scripts/check-*.mjs`)
 
-`bun run check` is Biome plus eleven guard scripts, each pinning down an invariant that no
+`bun run check` is Biome plus twelve guard scripts, each pinning down an invariant that no
 type or test covers (design tokens, discover blurbs, message codes, hint coverage, markdown
 tables, dependency licences, trademark terms, asset provenance, …).
 

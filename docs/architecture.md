@@ -7,9 +7,12 @@ cmd/
   trumpcards/                    # CLI entrypoint (all games + web server)
   server/                        # Web server dedicated entrypoint
   workers/                       # Cloudflare Workers WASM entrypoints
-    casino/main.go               # Table & poker games
-    classic/main.go              # Trick-taking & matching games
-    solo/main.go                 # Solitaire & rummy games
+    casino/main.go               # Size bucket, not a genre (see ADR-0027/0032/0036)
+    classic/main.go
+    solo/main.go
+    extra/main.go
+    extra2/main.go
+    extra3/main.go
 internal/
   domain/                      # Core business logic (innermost)
   usecase/                     # Application business rules (interactors)
@@ -38,7 +41,7 @@ frontend/                      # React frontend source (Vite + React + TypeScrip
 public/                        # Built frontend assets served by Go web server
   assets/                      # Vite-compiled JS/CSS bundles
   images/                      # Card images (PNG)
-  css/                         # Bootstrap CSS
+  sounds/                      # Sound effects
 ```
 
 **Data flow:** `infrastructure` -> `adapter` -> `usecase` -> `domain`
