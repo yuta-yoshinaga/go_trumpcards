@@ -970,8 +970,10 @@ func TestDoubt_MetaAI_CpuUsesAdjustedBluffChance(t *testing.T) {
 	// When human has high doubt accuracy, CPU should bluff less
 	t.Run("CPU bluffs less when human has high doubt accuracy", func(t *testing.T) {
 		trials := 20000
-		// Large enough that most plays leave >1 card behind, so calcBluffChance
-		// uses the normal base rather than its last-card special case.
+		// numCards is Uniform{1..handSize}, and calcBluffChance falls back to its
+		// last-card special case when handSize-numCards <= 1 -- that is numCards
+		// 25 or 26, so 2/26 (~7.7%) of plays. The other ~92% exercise the normal
+		// base, which is the path the meta-AI adjustment matters on.
 		const handSize = 26
 
 		// Count bluffs WITHOUT meta-AI
