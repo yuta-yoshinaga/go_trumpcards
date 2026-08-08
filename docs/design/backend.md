@@ -301,7 +301,7 @@ classDiagram
         +Reset()
         +Bet(amount int) error
         +Pull() error
-        +LetItRide() error
+        +LetItRideAction() error
         +GetPhase() int
         +GetActionLog() []*ActionLogEntry
     }
@@ -3182,8 +3182,8 @@ stateDiagram-v2
 stateDiagram-v2
     [*] --> Bet : Reset()
     Bet --> Decision1 : Bet() (3等分ベット＋配布)
-    Decision1 --> Decision2 : Pull() or LetItRide() (1枚目コミュニティ公開)
-    Decision2 --> End : Pull() or LetItRide() (2枚目コミュニティ公開＋判定)
+    Decision1 --> Decision2 : Pull() or LetItRideAction() (1枚目コミュニティ公開)
+    Decision2 --> End : Pull() or LetItRideAction() (2枚目コミュニティ公開＋判定)
     End --> Bet : Reset() (次ラウンド)
     End --> [*]
 
