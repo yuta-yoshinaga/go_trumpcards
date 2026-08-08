@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import type { ActionLogEntry } from '../types/card';
 import { cardLabel } from '../utils/cardUtils';
+import { getFocusableElements } from '../utils/dom';
 
 /** Props for {@link ActionLogPanel}. */
 export interface ActionLogPanelProps {
@@ -17,14 +18,6 @@ function formatEntry(entry: ActionLogEntry, t: (key: string, opts?: Record<strin
     line += ` [${entry.cards.map(cardLabel).join(', ')}]`;
   }
   return line;
-}
-
-function getFocusableElements(container: HTMLElement): HTMLElement[] {
-  return Array.from(
-    container.querySelectorAll<HTMLElement>(
-      'a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])',
-    ),
-  ).filter((el) => !el.hasAttribute('disabled'));
 }
 
 /** Renders a panel displaying game action log entries with copy and download. */
@@ -43,34 +36,36 @@ export function ActionLogPanel({ entries, onClose }: ActionLogPanelProps) {
     return () => clearTimeout(timer);
   }, [copied]);
 
+  // Keep the latest onClose without re-running the effect (and re-stealing
+  // focus) when a parent passes a new inline callback each render.
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
+  // This panel is a landmark `role="region"`, not a dialog — no `aria-modal`,
+  // the game behind it stays live, and it exists to be read alongside the
+  // board. So it deliberately does NOT trap Tab: cycling focus inside a
+  // non-modal region is a WCAG 2.1.2 keyboard trap, and the only way out was
+  // to find the close button by sight. Moving focus in on open is still right
+  // (the user opened it deliberately); Escape and focus restore give them the
+  // way back. See issue #5183.
   useEffect(() => {
     triggerRef.current = document.activeElement;
 
-    const dialog = dialogRef.current as HTMLElement;
-    const focusable = getFocusableElements(dialog);
-    if (focusable.length === 0) return;
+    const dialog = dialogRef.current;
+    if (dialog) getFocusableElements(dialog)[0]?.focus();
 
-    focusable[0].focus();
-    const first = focusable[0];
-    const last = focusable[focusable.length - 1];
-
+    // Listen on document, not on the panel: once focus legitimately leaves the
+    // region, a panel-level listener would never see the key again.
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key !== 'Tab') return;
-      if (e.shiftKey) {
-        if (document.activeElement === first) {
-          e.preventDefault();
-          last.focus();
-        }
-      } else {
-        if (document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
-        }
-      }
+      if (e.key === 'Escape') onCloseRef.current();
     };
-
-    dialog.addEventListener('keydown', handleKeyDown);
-    return () => dialog.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      // Restore here rather than in the close handler so any unmount path
+      // (game reset, route change) returns focus, not just the close button.
+      if (triggerRef.current instanceof HTMLElement) triggerRef.current.focus();
+    };
   }, []);
 
   const handleCopy = async () => {
@@ -78,11 +73,10 @@ export function ActionLogPanel({ entries, onClose }: ActionLogPanelProps) {
     setCopied(true);
   };
 
+  // Focus restore lives in the effect cleanup, which covers this path too —
+  // the page closes the panel by clearing its state, so onClose unmounts it.
   const handleClose = () => {
     onClose();
-    if (triggerRef.current instanceof HTMLElement) {
-      triggerRef.current.focus();
-    }
   };
 
   const handleDownload = () => {
