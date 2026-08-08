@@ -149,6 +149,30 @@ describe('BadugiPage', () => {
     await waitFor(() => expect(screen.getByText('あなたの勝ちです。')).toBeInTheDocument());
   });
 
+  // **サーバの handName は英語の生値。**バドゥーギの役名はポーカー役表と対応
+  // しないので共通の訳表が無く、Web だけ英語のまま残っていた (#4987 の続き)。
+  it('shows the localized hand name at showdown, not the raw English one', async () => {
+    mockExec.mockResolvedValue(
+      baseState({
+        phase: BadugiPhase.END,
+        gameEndFlag: true,
+        players: [humanPlayer({ handSize: 4, handName: 'Badugi' }), cpuPlayer(1), cpuPlayer(2)],
+      }),
+    );
+    renderWithProviders(<BadugiPage />);
+    await waitFor(() => expect(screen.getByTestId('bg-hand-name')).toHaveTextContent('バドゥーギ'));
+    // 生の英語名がどこにも漏れていないこと。
+    expect(screen.queryByText('Badugi')).not.toBeInTheDocument();
+  });
+
+  // 未評価 (handSize 0) の席には役名を出さない。
+  it('shows no hand name before the hand has been evaluated', async () => {
+    mockExec.mockResolvedValue(baseState({ phase: BadugiPhase.END, gameEndFlag: true }));
+    renderWithProviders(<BadugiPage />);
+    await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+    expect(screen.queryByTestId('bg-hand-name')).not.toBeInTheDocument();
+  });
+
   it('wires betting buttons during the human turn', async () => {
     mockExec.mockResolvedValue(baseState({ phase: BadugiPhase.DEAL, currentTurn: 0 }));
     renderWithProviders(<BadugiPage />);

@@ -47,5 +47,11 @@
     "lose": "You lose.",
     "folded": "You folded.",
     "gameOver": "Game over."
+  },
+  "handName": {
+    "1": "1-card",
+    "2": "2-card",
+    "3": "3-card",
+    "4": "Badugi"
   }
 }
