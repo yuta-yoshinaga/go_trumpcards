@@ -222,3 +222,23 @@ func TestPlayerName_HumanNeedNotBeFirst(t *testing.T) {
 	assert.Equal(t, "CPU 0", playerName(seats, 0))
 	assert.Equal(t, "You", playerName(seats, 2))
 }
+
+func TestIsHumanTurn(t *testing.T) {
+	seats := []fakeSeat{{false}, {true}, {false}}
+
+	assert.True(t, isHumanTurn(seats, 1))
+	assert.False(t, isHumanTurn(seats, 0))
+	assert.False(t, isHumanTurn(seats, 2))
+}
+
+// Out-of-range returns false instead of panicking. 81 other games deliberately
+// keep their own version -- 22 of them omit this check and would panic here --
+// so the boundary is the reason those were not folded in.
+func TestIsHumanTurn_OutOfRangeIsFalseNotPanic(t *testing.T) {
+	seats := []fakeSeat{{true}}
+
+	assert.NotPanics(t, func() { isHumanTurn(seats, -1) })
+	assert.False(t, isHumanTurn(seats, -1))
+	assert.False(t, isHumanTurn(seats, 1))
+	assert.False(t, isHumanTurn([]fakeSeat{}, 0))
+}
