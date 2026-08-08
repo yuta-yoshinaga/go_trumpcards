@@ -149,6 +149,50 @@ describe('BadugiPage', () => {
     await waitFor(() => expect(screen.getByText('あなたの勝ちです。')).toBeInTheDocument());
   });
 
+  // **サーバの handName は英語の生値。**バドゥーギの役名はポーカー役表と対応
+  // しないので共通の訳表が無く、Web だけ英語のまま残っていた (#4987 の続き)。
+  it('shows the localized hand name at showdown, not the raw English one', async () => {
+    mockExec.mockResolvedValue(
+      baseState({
+        phase: BadugiPhase.END,
+        gameEndFlag: true,
+        players: [humanPlayer({ handSize: 4, handName: 'Badugi' }), cpuPlayer(1), cpuPlayer(2)],
+      }),
+    );
+    renderWithProviders(<BadugiPage />);
+    await waitFor(() => expect(screen.getByTestId('bg-hand-name')).toHaveTextContent('バドゥーギ'));
+    // 生の英語名がどこにも漏れていないこと。
+    expect(screen.queryByText('Badugi')).not.toBeInTheDocument();
+  });
+
+  // CPU 側も同じ経路を通す。人間の席だけ直しても、相手の役名が英語のまま残る。
+  it('localizes the CPU hand names at showdown as well', async () => {
+    mockExec.mockResolvedValue(
+      baseState({
+        phase: BadugiPhase.END,
+        gameEndFlag: true,
+        players: [
+          humanPlayer({ handSize: 4, handName: 'Badugi' }),
+          { ...cpuPlayer(1), handSize: 3, handName: '3-card' },
+          { ...cpuPlayer(2), handSize: 2, handName: '2-card' },
+        ],
+      }),
+    );
+    renderWithProviders(<BadugiPage />);
+    await waitFor(() => expect(screen.getByText('3カード')).toBeInTheDocument());
+    expect(screen.getByText('2カード')).toBeInTheDocument();
+    expect(screen.queryByText('3-card')).not.toBeInTheDocument();
+    expect(screen.queryByText('2-card')).not.toBeInTheDocument();
+  });
+
+  // 未評価 (handSize 0) の席には役名を出さない。
+  it('shows no hand name before the hand has been evaluated', async () => {
+    mockExec.mockResolvedValue(baseState({ phase: BadugiPhase.END, gameEndFlag: true }));
+    renderWithProviders(<BadugiPage />);
+    await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+    expect(screen.queryByTestId('bg-hand-name')).not.toBeInTheDocument();
+  });
+
   it('wires betting buttons during the human turn', async () => {
     mockExec.mockResolvedValue(baseState({ phase: BadugiPhase.DEAL, currentTurn: 0 }));
     renderWithProviders(<BadugiPage />);
