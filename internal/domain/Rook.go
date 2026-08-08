@@ -233,7 +233,7 @@ func (g *Rook) PlayerBid(bid int) error {
 	if g.phase != RookPhaseBid {
 		return ErrWrongPhase
 	}
-	humanIdx := g.findHumanIdx()
+	humanIdx := findHumanIdx(g.players)
 	if humanIdx < 0 || g.bidPlayerIdx != humanIdx {
 		return ErrNotHumanTurn
 	}
@@ -260,7 +260,7 @@ func (g *Rook) PlayerPass() error {
 	if g.phase != RookPhaseBid {
 		return ErrWrongPhase
 	}
-	humanIdx := g.findHumanIdx()
+	humanIdx := findHumanIdx(g.players)
 	if humanIdx < 0 || g.bidPlayerIdx != humanIdx {
 		return ErrNotHumanTurn
 	}
@@ -950,7 +950,7 @@ func (g *Rook) getValidPlayIndices(playerIdx int) []int {
 
 // GetHint 現在の人間の手番に対するヒントを返す
 func (g *Rook) GetHint() *RookHint {
-	humanIdx := g.findHumanIdx()
+	humanIdx := findHumanIdx(g.players)
 	if humanIdx < 0 || g.gameEndFlag {
 		return nil
 	}
@@ -1169,16 +1169,6 @@ func (g *Rook) EffectiveSuitPublic(card *Card) int { return g.effectiveSuit(card
 func (g *Rook) CardPointsPublic(card *Card) int { return rookCardPoints(card) }
 
 // --- Private helpers ---
-
-// findHumanIdx 人間プレイヤーのインデックスを返す (-1=なし)
-func (g *Rook) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
 
 // sortAllHands 全プレイヤーの手札をソートする
 func (g *Rook) sortAllHands() {

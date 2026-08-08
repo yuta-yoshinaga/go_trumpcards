@@ -173,7 +173,7 @@ func TestWhist_isPartnerWinning(t *testing.T) {
 
 func TestWhist_findHumanIdx(t *testing.T) {
 	w := newInternalTestWhist()
-	assert.Equal(t, 0, w.findHumanIdx())
+	assert.Equal(t, 0, findHumanIdx(w.players))
 }
 
 func TestWhist_playerName(t *testing.T) {

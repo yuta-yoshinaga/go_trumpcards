@@ -278,7 +278,7 @@ func (g *Cinch) pickSafeDiscard(p *CinchPlayer, valid []int) int {
 
 // GetHint は人間プレイヤーの手番における推奨アクションを返す。
 func (g *Cinch) GetHint() *CinchHint {
-	humanIdx := g.findHumanIdx()
+	humanIdx := findHumanIdx(g.players)
 	if humanIdx < 0 {
 		return nil
 	}

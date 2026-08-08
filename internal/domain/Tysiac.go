@@ -867,16 +867,6 @@ func (g *Tysiac) trickTopRank(winnerIdx int) int {
 	return g.tysiacRank(g.currentTrick[idx].Card)
 }
 
-// findHumanIdx 人間プレイヤーのインデックス (-1=なし)。
-func (g *Tysiac) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 // --- CPU AI (play) ---
 
 // cpuSelectPlayCard CPU がプレイするカードのインデックスを選ぶ。
@@ -958,7 +948,7 @@ func tysiacFilter(indices []int, pred func(int) bool) []int {
 
 // GetHint 人間プレイヤーの手番における推奨アクションを返す。
 func (g *Tysiac) GetHint() *TysiacHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 {
 		return nil
 	}

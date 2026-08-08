@@ -356,16 +356,6 @@ func (g *Sedma) playerName(idx int) string {
 	return fmt.Sprintf("CPU %d", idx)
 }
 
-// findHumanIdx 人間プレイヤーのインデックス (-1=なし)。
-func (g *Sedma) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 // --- CPU AI ---
 
 // cpuSelectPlayCard CPU がプレイするカードのインデックスを選ぶ。
@@ -440,7 +430,7 @@ func sedmaFilter(indices []int, pred func(int) bool) []int {
 
 // GetHint 人間プレイヤーの手番における推奨プレイを返す。
 func (g *Sedma) GetHint() *SedmaHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 || g.phase != SedmaPhasePlay || g.currentPlayerIdx != human {
 		return nil
 	}

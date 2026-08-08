@@ -190,7 +190,7 @@ func (e *Euchre) PlayerPickUp(orderUp bool, goAlone bool) error {
 	if e.phase != EuchrePhasePickUp {
 		return ErrWrongPhase
 	}
-	humanIdx := e.findHumanIdx()
+	humanIdx := findHumanIdx(e.players)
 	if humanIdx < 0 || e.bidPlayerIdx != humanIdx {
 		return ErrNotHumanTurn
 	}
@@ -274,7 +274,7 @@ func (e *Euchre) PlayerCallTrump(suit int, goAlone bool) error {
 	if e.phase != EuchrePhaseCallTrump {
 		return ErrWrongPhase
 	}
-	humanIdx := e.findHumanIdx()
+	humanIdx := findHumanIdx(e.players)
 	if humanIdx < 0 || e.bidPlayerIdx != humanIdx {
 		return ErrNotHumanTurn
 	}
@@ -297,7 +297,7 @@ func (e *Euchre) PlayerPassCall() error {
 	if e.phase != EuchrePhaseCallTrump {
 		return ErrWrongPhase
 	}
-	humanIdx := e.findHumanIdx()
+	humanIdx := findHumanIdx(e.players)
 	if humanIdx < 0 || e.bidPlayerIdx != humanIdx {
 		return ErrNotHumanTurn
 	}
@@ -742,16 +742,6 @@ func (e *Euchre) cardRank(card *Card) int {
 
 // --- Private methods ---
 
-// findHumanIdx 人間プレイヤーのインデックスを返す (-1=なし)
-func (e *Euchre) findHumanIdx() int {
-	for i, p := range e.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 // startPlayPhase プレイフェーズを開始する
 func (e *Euchre) startPlayPhase() {
 	e.trickNumber = 1
@@ -925,7 +915,7 @@ func (e *Euchre) playerName(idx int) string {
 
 // GetHint ヒントを取得する
 func (e *Euchre) GetHint() *EuchreHint {
-	humanIdx := e.findHumanIdx()
+	humanIdx := findHumanIdx(e.players)
 	if humanIdx < 0 {
 		return nil
 	}
@@ -972,7 +962,7 @@ func (e *Euchre) GetHint() *EuchreHint {
 
 // playHintReason プレイヒントの理由を判定する
 func (e *Euchre) playHintReason(chosenIdx int) string {
-	player := e.players[e.findHumanIdx()]
+	player := e.players[findHumanIdx(e.players)]
 	card := player.GetCard(chosenIdx)
 
 	if len(e.currentTrick) == 0 {

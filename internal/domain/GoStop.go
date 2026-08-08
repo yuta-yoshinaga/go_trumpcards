@@ -933,7 +933,7 @@ func (g *GoStop) GetHint() *GoStopHint {
 	if g.state.gameEndFlag {
 		return nil
 	}
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 || g.state.currentTurn != human {
 		return nil
 	}
@@ -959,15 +959,6 @@ func (g *GoStop) GetHint() *GoStopHint {
 }
 
 // --- ヘルパー ---
-
-func (g *GoStop) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
 
 // sortHumanHand は人間の手札を月→インデックス順に並べ替える。
 func (g *GoStop) sortHumanHand() {
@@ -1118,7 +1109,7 @@ func (g *GoStop) GetResult() GoStopResult {
 	if !g.state.gameEndFlag {
 		return GoStopResultNone
 	}
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	switch {
 	case g.state.winner < 0:
 		return GoStopResultDraw

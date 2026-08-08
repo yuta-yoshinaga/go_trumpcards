@@ -618,16 +618,6 @@ func (g *Klaverjas) trickTopRank(winnerIdx int) int {
 	return g.klaverjasRank(g.currentTrick[idx].Card)
 }
 
-// findHumanIdx 人間プレイヤーのインデックス (-1=なし)。
-func (g *Klaverjas) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 // --- CPU AI ---
 
 // cpuSelectPlayCard CPU がプレイするカードのインデックスを選ぶ。
@@ -692,7 +682,7 @@ func klaverjasFilter(indices []int, pred func(int) bool) []int {
 
 // GetHint 人間プレイヤーの手番における推奨プレイを返す。
 func (g *Klaverjas) GetHint() *KlaverjasHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 || g.phase != KlaverjasPhasePlay || g.currentPlayerIdx != human {
 		return nil
 	}

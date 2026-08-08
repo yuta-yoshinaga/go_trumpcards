@@ -612,15 +612,6 @@ func (g *Loo) getValidPlayIndices(playerIdx int) []int {
 
 // --- ヘルパー ---
 
-func (g *Loo) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 func (g *Loo) sortAllHands() {
 	for _, p := range g.players {
 		looSortHand(p)
@@ -754,7 +745,7 @@ func looFilter(indices []int, pred func(int) bool) []int {
 
 // GetHint は人間プレイヤーの手番における推奨を返す (decide / play フェーズ)。
 func (g *Loo) GetHint() *LooHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 {
 		return nil
 	}

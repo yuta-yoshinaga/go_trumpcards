@@ -254,7 +254,7 @@ func (b *Belote) PlayerPickUp(orderUp bool) error {
 	if b.phase != BelotePhaseBidPickUp {
 		return ErrWrongPhase
 	}
-	humanIdx := b.findHumanIdx()
+	humanIdx := findHumanIdx(b.players)
 	if humanIdx < 0 || b.bidPlayerIdx != humanIdx {
 		return ErrNotHumanTurn
 	}
@@ -322,7 +322,7 @@ func (b *Belote) PlayerCallTrump(suit int) error {
 	if b.phase != BelotePhaseBidCallTrump {
 		return ErrWrongPhase
 	}
-	humanIdx := b.findHumanIdx()
+	humanIdx := findHumanIdx(b.players)
 	if humanIdx < 0 || b.bidPlayerIdx != humanIdx {
 		return ErrNotHumanTurn
 	}
@@ -344,7 +344,7 @@ func (b *Belote) PlayerPassCall() error {
 	if b.phase != BelotePhaseBidCallTrump {
 		return ErrWrongPhase
 	}
-	humanIdx := b.findHumanIdx()
+	humanIdx := findHumanIdx(b.players)
 	if humanIdx < 0 || b.bidPlayerIdx != humanIdx {
 		return ErrNotHumanTurn
 	}
@@ -1076,15 +1076,6 @@ func beloteSortHand(p *BelotePlayer, b *Belote) {
 	})
 }
 
-func (b *Belote) findHumanIdx() int {
-	for i, p := range b.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 func (b *Belote) playerName(idx int) string {
 	if idx < 0 || idx >= len(b.players) {
 		return fmt.Sprintf("Player %d", idx)
@@ -1099,7 +1090,7 @@ func (b *Belote) playerName(idx int) string {
 
 // GetHint 現フェーズのヒントを返す (人間プレイヤー視点)
 func (b *Belote) GetHint() *BeloteHint {
-	humanIdx := b.findHumanIdx()
+	humanIdx := findHumanIdx(b.players)
 	if humanIdx < 0 {
 		return nil
 	}
@@ -1134,7 +1125,7 @@ func (b *Belote) GetHint() *BeloteHint {
 }
 
 func (b *Belote) playHintReason(chosenIdx int) string {
-	humanIdx := b.findHumanIdx()
+	humanIdx := findHumanIdx(b.players)
 	if humanIdx < 0 {
 		return ""
 	}

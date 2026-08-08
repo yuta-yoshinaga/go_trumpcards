@@ -539,7 +539,7 @@ func (ip *IndianPoker) cpuDecide(idx int) (int, int) {
 	if ip.config.CpuMetaAI && ip.humanProfile != nil && ip.lastHumanPlayMs > 0 {
 		if action == IndianPokerActionFold && callAmount > 0 {
 			// CPUは人間のカードが見える → 人間のカードランクブラケットで判定
-			humanIdx := ip.findHumanIdx()
+			humanIdx := findHumanIdx(ip.players)
 			if humanIdx >= 0 && ip.players[humanIdx].GetCardsSize() > 0 {
 				humanCardRank := indianPokerCardRank(ip.players[humanIdx].GetCard(0))
 				bracket := indianPokerCardBracket(humanCardRank)
@@ -624,16 +624,6 @@ func (ip *IndianPoker) estimateOwnStrength(idx int) int {
 
 	strength := min(cardsAbove*100/totalRemaining, 100)
 	return strength
-}
-
-// findHumanIdx 人間プレイヤーのインデックスを返す (-1 = 見つからない)
-func (ip *IndianPoker) findHumanIdx() int {
-	for i, p := range ip.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
 }
 
 // cpuPotBet ポット比率ベースのベット額を計算 (最低Ante, 最低minRaise)

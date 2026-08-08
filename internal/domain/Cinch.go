@@ -366,7 +366,7 @@ func (g *Cinch) PlayerBid(bid int) error {
 	if g.phase != CinchPhaseBid {
 		return ErrWrongPhase
 	}
-	humanIdx := g.findHumanIdx()
+	humanIdx := findHumanIdx(g.players)
 	if humanIdx < 0 || g.bidPlayerIdx != humanIdx {
 		return ErrNotHumanTurn
 	}
@@ -809,15 +809,6 @@ func (g *Cinch) finishGame(winner int) {
 }
 
 // --- ヘルパー ---
-
-func (g *Cinch) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
 
 func (g *Cinch) sortAllHands() {
 	for _, p := range g.players {

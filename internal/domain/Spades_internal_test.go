@@ -20,7 +20,7 @@ func newInternalTestSpades() *Spades {
 
 func TestSpades_findHumanIdx(t *testing.T) {
 	s := newInternalTestSpades()
-	assert.Equal(t, 0, s.findHumanIdx())
+	assert.Equal(t, 0, findHumanIdx(s.players))
 
 	// All CPU
 	allCpu := []*SpadesPlayer{
@@ -30,7 +30,7 @@ func TestSpades_findHumanIdx(t *testing.T) {
 		NewSpadesPlayer(false),
 	}
 	s2 := NewSpades(NewTrumpCards(0), allCpu, DefaultSpadesConfig())
-	assert.Equal(t, -1, s2.findHumanIdx())
+	assert.Equal(t, -1, findHumanIdx(s2.players))
 }
 
 func TestSpades_findTwoOfClubs(t *testing.T) {

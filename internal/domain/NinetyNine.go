@@ -164,7 +164,7 @@ func (o *NinetyNine) PlayerBid(buryIndices []int) error {
 		return ErrWrongPhase
 	}
 
-	humanIdx := o.findHumanIdx()
+	humanIdx := findHumanIdx(o.players)
 	if humanIdx < 0 || o.bidPlayerIdx != humanIdx {
 		return ErrNotHumanTurn
 	}
@@ -470,16 +470,6 @@ func (o *NinetyNine) GetValidPlayIndices(playerIdx int) []int {
 
 // --- Private methods ---
 
-// findHumanIdx 人間プレイヤーのインデックスを返す (-1=なし)
-func (o *NinetyNine) findHumanIdx() int {
-	for i, p := range o.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 // deal カードを配り、切り札を決める
 func (o *NinetyNine) deal() {
 	o.trumpCards = NewTrumpCardsNinetyNine()
@@ -683,7 +673,7 @@ func (o *NinetyNine) getValidPlayIndices(playerIdx int) []int {
 
 // GetHint ヒントを取得する
 func (o *NinetyNine) GetHint() *NinetyNineHint {
-	humanIdx := o.findHumanIdx()
+	humanIdx := findHumanIdx(o.players)
 	if humanIdx < 0 {
 		return nil
 	}

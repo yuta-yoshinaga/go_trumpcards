@@ -151,7 +151,7 @@ func (cb *CallBreak) PlayerBid(bid int) error {
 		return ErrWrongPhase
 	}
 
-	humanIdx := cb.findHumanIdx()
+	humanIdx := findHumanIdx(cb.players)
 	if humanIdx < 0 {
 		return ErrNotHumanTurn
 	}
@@ -416,16 +416,6 @@ func (cb *CallBreak) GetConfig() CallBreakConfig { return cb.config }
 func (cb *CallBreak) SetConfig(cfg CallBreakConfig) { cb.config = cfg }
 
 // --- Private methods ---
-
-// findHumanIdx 人間プレイヤーのインデックスを返す (-1 = なし)
-func (cb *CallBreak) findHumanIdx() int {
-	for i, p := range cb.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
 
 // checkBidComplete 全員がビッドしたかチェックし、プレイフェーズに移行
 func (cb *CallBreak) checkBidComplete() {

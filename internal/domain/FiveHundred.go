@@ -265,7 +265,7 @@ func (g *FiveHundred) PlayerBid(kind FiveHundredContractKind, tricks, suit int) 
 	if g.phase != FiveHundredPhaseBid {
 		return ErrWrongPhase
 	}
-	humanIdx := g.findHumanIdx()
+	humanIdx := findHumanIdx(g.players)
 	if humanIdx < 0 || g.bidPlayerIdx != humanIdx {
 		return ErrNotHumanTurn
 	}
@@ -288,7 +288,7 @@ func (g *FiveHundred) PlayerPass() error {
 	if g.phase != FiveHundredPhaseBid {
 		return ErrWrongPhase
 	}
-	humanIdx := g.findHumanIdx()
+	humanIdx := findHumanIdx(g.players)
 	if humanIdx < 0 || g.bidPlayerIdx != humanIdx {
 		return ErrNotHumanTurn
 	}
@@ -1079,7 +1079,7 @@ func (g *FiveHundred) getValidPlayIndices(playerIdx int) []int {
 
 // GetHint 現在の人間の手番に対するヒントを返す
 func (g *FiveHundred) GetHint() *FiveHundredHint {
-	humanIdx := g.findHumanIdx()
+	humanIdx := findHumanIdx(g.players)
 	if humanIdx < 0 || g.gameEndFlag {
 		return nil
 	}
@@ -1289,16 +1289,6 @@ func (g *FiveHundred) CardRankPublic(card *Card) int { return g.cardRank(card) }
 func (g *FiveHundred) EffectiveSuitPublic(card *Card) int { return g.effectiveSuit(card) }
 
 // --- Private helpers ---
-
-// findHumanIdx 人間プレイヤーのインデックスを返す (-1=なし)
-func (g *FiveHundred) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
 
 // sortAllHands 全プレイヤーの手札をソートする
 func (g *FiveHundred) sortAllHands() {

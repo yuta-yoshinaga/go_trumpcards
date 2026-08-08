@@ -154,7 +154,7 @@ func (g *GongZhu) PlayerExpose(cardIndices []int) error {
 		return ErrWrongPhase
 	}
 
-	humanIdx := g.findHumanIdx()
+	humanIdx := findHumanIdx(g.players)
 	if humanIdx < 0 {
 		return ErrNotHumanTurn
 	}
@@ -502,16 +502,6 @@ func (g *GongZhu) SetTrickNumber(n int) { g.trickNumber = n }
 
 // --- Private methods ---
 
-// findHumanIdx 人間プレイヤーのインデックスを返す (-1=なし)
-func (g *GongZhu) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 // markExposed 公開対象カードに応じて公開フラグを立てる
 func (g *GongZhu) markExposed(c *Card) {
 	switch {
@@ -787,7 +777,7 @@ func gzRankValue(c *Card) int {
 
 // GetHint ヒントを取得する
 func (g *GongZhu) GetHint() *GongZhuHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 {
 		return nil
 	}

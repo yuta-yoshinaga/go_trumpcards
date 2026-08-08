@@ -238,7 +238,7 @@ func (g *Ulti) startRound() {
 	g.trickNumber = 1
 	g.currentTrick = nil
 	g.lastTrickWinner = -1
-	g.declarerIdx = g.findHumanIdx()
+	g.declarerIdx = findHumanIdx(g.players)
 	if g.declarerIdx < 0 {
 		g.declarerIdx = 0
 	}
@@ -593,7 +593,7 @@ func (g *Ulti) checkGameEnd() {
 
 // humanResult 人間 (seat 0) の視点でマッチ結果を返す。単独トップなら Win、トップ同点なら None、他は Lose。
 func (g *Ulti) humanResult(leader int, tie bool) UltiResult {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 {
 		return UltiResultNone
 	}
@@ -910,16 +910,6 @@ func (g *Ulti) indexOfPlayerInTrick(playerIdx int) int {
 	return -1
 }
 
-// findHumanIdx 人間プレイヤーのインデックス (-1=なし)。
-func (g *Ulti) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 // --- CPU AI (play) ---
 
 // cpuSelectPlayCard CPU がプレイするカードのインデックスを選ぶ。
@@ -1027,7 +1017,7 @@ func (g *Ulti) maxByStrength(playerIdx int, indices []int) int {
 
 // GetHint 人間プレイヤーの手番における推奨アクションを返す。
 func (g *Ulti) GetHint() *UltiHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 {
 		return nil
 	}

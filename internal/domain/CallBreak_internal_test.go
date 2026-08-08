@@ -21,7 +21,7 @@ func newInternalCallBreak() *CallBreak {
 
 func TestCallBreak_findHumanIdx(t *testing.T) {
 	cb := newInternalCallBreak()
-	assert.Equal(t, 0, cb.findHumanIdx())
+	assert.Equal(t, 0, findHumanIdx(cb.players))
 
 	allCpu := []*CallBreakPlayer{
 		NewCallBreakPlayer(false),
@@ -30,7 +30,7 @@ func TestCallBreak_findHumanIdx(t *testing.T) {
 		NewCallBreakPlayer(false),
 	}
 	cb2 := NewCallBreak(NewTrumpCards(0), allCpu, DefaultCallBreakConfig())
-	assert.Equal(t, -1, cb2.findHumanIdx())
+	assert.Equal(t, -1, findHumanIdx(cb2.players))
 }
 
 func TestCallBreak_playerHasSuit(t *testing.T) {
