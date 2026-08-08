@@ -54,7 +54,7 @@ The `internal/infrastructure/games/` package provides DRY helpers for the per-ga
 |--------|-------|---------|
 | `BindWebControllerFor[I, P, O]` | `games/server_helper.go` | One-call HTTP-server registration. Used by `games_server.go` (server build only, build tag `!js \|\| !wasm`). |
 | `RegisterKVGame[I, P, O]` | `games/worker_helper.go` | One-call Cloudflare-Worker (KV-backed) registration. Used by per-category sub-packages (`casino/`, `classic/`, `solo/`, `extra/`, `extra2/`, `extra3/`) under build tag `js && wasm`. |
-| `webControllerPair[I, P, O]` | `adapter/controller/web_controller_pair.go` | Generates `NewXWebController` + `NewXWebControllerWithProvider` together. Called inside per-game `*WebController.go`. |
+| `webControllerPair[I, P, O]` | `adapter/controller/game_web_controller.go` | Generates `NewXWebController` + `NewXWebControllerWithProvider` together. Called inside per-game `*WebController.go`. |
 | `execCuiCommand` + `handleCuiLog` | `adapter/controller/cui_controller_helper.go` | Common CUI command parsing (`q`/`quit`/`r`/`reset` + suggestion-based unknown-command messages). Every `*CuiController.Exec` should delegate to it. |
 
 The build-tag split (`!js \|\| !wasm` for the server, `js && wasm` for workers) is what keeps each Cloudflare Worker binary under the 1 MB gzipped free-tier limit by letting TinyGo dead-code-eliminate the games from the other categories. See the package doc comment in `games/registry.go` for the full design rationale.
