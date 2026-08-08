@@ -3,6 +3,7 @@
   "helpStep": "  s                    現手番プレイヤーがカードをめくる",
   "helpSlap": "  j, slap              人間がスラップを試みる (ペア/サンドイッチ)",
   "helpTick": "  tick                 CPUを1tick進める",
+  "helpLog": "  log, l               棋譜を表示",
   "helpSetDifficulty": "  sd <n>               CPU難易度 (0=Easy, 1=Normal, 2=Hard) を設定してリセット",
   "labelHuman": "あなた",
   "labelCpu": "CPU",
@@ -30,5 +31,7 @@
   "chanceResponder": "応答者: {{name}}",
   "responderHuman": "あなた",
   "responderCpu": "CPU",
-  "chanceTrigger": "発動カード: {{card}}"
+  "chanceTrigger": "発動カード: {{card}}",
+  "difficultyRequired": "CPU難易度を指定してください (0=Easy, 1=Normal, 2=Hard)。",
+  "difficultyInvalid": "CPU難易度が不正です: %s。0〜2 を指定してください。"
 }

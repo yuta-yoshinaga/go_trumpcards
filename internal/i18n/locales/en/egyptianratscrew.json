@@ -3,6 +3,7 @@
   "helpStep": "  s                    current player flips the top card",
   "helpSlap": "  j, slap              human attempts a slap (pair/sandwich)",
   "helpTick": "  tick                 advance CPU by one tick",
+  "helpLog": "  log, l               show the action log",
   "helpSetDifficulty": "  sd <n>               set CPU difficulty (0=Easy, 1=Normal, 2=Hard) and reset",
   "labelHuman": "You",
   "labelCpu": "CPU",
@@ -30,5 +31,7 @@
   "chanceResponder": "Responder: {{name}}",
   "responderHuman": "You",
   "responderCpu": "CPU",
-  "chanceTrigger": "Triggered by: {{card}}"
+  "chanceTrigger": "Triggered by: {{card}}",
+  "difficultyRequired": "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).",
+  "difficultyInvalid": "Invalid CPU difficulty: %s. Please enter 0-2."
 }

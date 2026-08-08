@@ -1779,6 +1779,7 @@ var gameRegistry = []GameRegistryEntry{
 					"slapjack.helpStep",
 					"slapjack.helpSlap",
 					"slapjack.helpTick",
+					"slapjack.helpLog",
 				},
 				SettingKeys: []string{"slapjack.helpSetDifficulty"},
 			})
@@ -1793,6 +1794,7 @@ var gameRegistry = []GameRegistryEntry{
 					"egyptianratscrew.helpStep",
 					"egyptianratscrew.helpSlap",
 					"egyptianratscrew.helpTick",
+					"egyptianratscrew.helpLog",
 				},
 				SettingKeys: []string{"egyptianratscrew.helpSetDifficulty"},
 			})
