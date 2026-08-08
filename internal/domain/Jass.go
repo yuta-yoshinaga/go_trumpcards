@@ -261,7 +261,7 @@ func (g *Jass) CpuBid() {
 func (g *Jass) doSchieben(playerIdx int) {
 	g.schieben = true
 	g.appendLog(playerIdx, "schieben",
-		fmt.Sprintf("%s schiebt (passes to partner)", g.playerName(playerIdx)), nil)
+		fmt.Sprintf("%s schiebt (passes to partner)", playerName(g.players, playerIdx)), nil)
 	g.bidPlayerIdx = (playerIdx + 2) % JassPlayerCnt
 	g.phase = JassPhaseBidPartner
 }
@@ -272,7 +272,7 @@ func (g *Jass) doChooseTrump(playerIdx, suit int) {
 	g.makerTeam = g.players[playerIdx].GetTeam()
 	g.makerPlayerIdx = playerIdx
 	g.appendLog(playerIdx, "choose_trump",
-		fmt.Sprintf("%s chooses %s as trump", g.playerName(playerIdx), suitStr(suit)), nil)
+		fmt.Sprintf("%s chooses %s as trump", playerName(g.players, playerIdx), suitStr(suit)), nil)
 
 	g.sortAllHands()
 	g.resolveWeis()
@@ -347,7 +347,7 @@ func (g *Jass) ResolveTrick() {
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.roundPoints[g.players[winnerIdx].GetTeam()] += trickPoints
 
-	winnerName := g.playerName(winnerIdx)
+	winnerName := playerName(g.players, winnerIdx)
 	g.appendLog(winnerIdx, "trick_win",
 		fmt.Sprintf("%s wins trick %d (%d pts)", winnerName, g.trickNumber, trickPoints),
 		trickCards)
@@ -900,7 +900,7 @@ func (g *Jass) resolveStock() {
 			g.roundStockPoints[team] += JassStockBonus
 			g.appendLog(i, "stock",
 				fmt.Sprintf("%s has Stöck (+%d for team %d)",
-					g.playerName(i), JassStockBonus, team), nil)
+					playerName(g.players, i), JassStockBonus, team), nil)
 		}
 	}
 }
@@ -923,7 +923,7 @@ func (g *Jass) playCard(playerIdx int, card *Card) {
 		Card:      card,
 	})
 	g.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+		fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == JassPlayerCnt {
 		g.phase = JassPhaseTrickEnd
@@ -1080,16 +1080,6 @@ func jassSortHand(p *JassPlayer, g *Jass) {
 		}
 		return g.cardRank(ci) > g.cardRank(cj)
 	})
-}
-
-func (g *Jass) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // --- Hints ---

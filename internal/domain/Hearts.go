@@ -316,7 +316,7 @@ func (h *Hearts) ResolveTrick() {
 	}
 	h.players[winnerIdx].roundScore += points
 
-	winnerName := h.playerName(winnerIdx)
+	winnerName := playerName(h.players, winnerIdx)
 	h.appendLog(winnerIdx, "trick_win", fmt.Sprintf("%s wins trick %d (%+d pts)", winnerName, h.trickNumber, points), trickCards)
 
 	h.leadPlayerIdx = winnerIdx
@@ -365,7 +365,7 @@ func (h *Hearts) ScoreRound() {
 	}
 
 	if moonShooter >= 0 {
-		h.appendLog(moonShooter, "shoot_moon", fmt.Sprintf("%s shot the moon!", h.playerName(moonShooter)), nil)
+		h.appendLog(moonShooter, "shoot_moon", fmt.Sprintf("%s shot the moon!", playerName(h.players, moonShooter)), nil)
 		h.players[moonShooter].roundScore = 0
 		for i := 0; i < HeartsPlayerCnt; i++ {
 			if i != moonShooter {
@@ -382,7 +382,7 @@ func (h *Hearts) ScoreRound() {
 	// スコアログ
 	for i := 0; i < HeartsPlayerCnt; i++ {
 		h.appendLog(i, "round_score", fmt.Sprintf("%s: round=%d, total=%d",
-			h.playerName(i), h.players[i].roundScore, h.players[i].cumulativeScore), nil)
+			playerName(h.players, i), h.players[i].roundScore, h.players[i].cumulativeScore), nil)
 	}
 
 	// ゲーム終了判定
@@ -406,7 +406,7 @@ func (h *Hearts) ScoreRound() {
 				h.winnerIdx = i
 			}
 		}
-		h.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", h.playerName(h.winnerIdx)), nil)
+		h.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(h.players, h.winnerIdx)), nil)
 	}
 }
 
@@ -542,7 +542,7 @@ func (h *Hearts) playCard(playerIdx int, card *Card) {
 		h.heartsBroken = true
 	}
 
-	h.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", h.playerName(playerIdx), cardStr(card)), []*Card{card})
+	h.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(h.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(h.currentTrick) == HeartsPlayerCnt {
 		h.phase = HeartsPhaseTrickEnd
@@ -1136,17 +1136,6 @@ func (h *Hearts) getValidPlayIndices(playerIdx int) []int {
 	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
 		return h.validatePlay(playerIdx, player.GetCard(i)) == nil
 	})
-}
-
-// playerName プレイヤー名を返す
-func (h *Hearts) playerName(idx int) string {
-	if idx < 0 || idx >= len(h.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if h.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // heartsJSON is the JSON wire format for Hearts.

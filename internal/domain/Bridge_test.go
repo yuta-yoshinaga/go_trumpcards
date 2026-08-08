@@ -1117,10 +1117,10 @@ func TestBridgeCardDesignToBidSuit(t *testing.T) {
 
 func TestBridgePlayerName(t *testing.T) {
 	b := newTestBridge()
-	assert.Contains(t, b.playerName(0), "You")
-	assert.Contains(t, b.playerName(1), "CPU")
-	assert.Contains(t, b.playerName(-1), "Player")
-	assert.Contains(t, b.playerName(10), "Player")
+	assert.Contains(t, playerName(b.players, 0), "You")
+	assert.Contains(t, playerName(b.players, 1), "CPU")
+	assert.Contains(t, playerName(b.players, -1), "Player")
+	assert.Contains(t, playerName(b.players, 10), "Player")
 }
 
 func TestBridgeResolveTrickWrongPhase(t *testing.T) {

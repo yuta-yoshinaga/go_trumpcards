@@ -238,9 +238,9 @@ func (g *SoloWhist) applyBid(idx int, bid SoloWhistBid) error {
 	g.bids[idx] = bid
 	g.bidDone[idx] = true
 	if bid != SoloWhistBidPass {
-		g.appendLog(idx, "bid", fmt.Sprintf("%s bids %s", g.playerName(idx), soloWhistBidName(bid)), nil)
+		g.appendLog(idx, "bid", fmt.Sprintf("%s bids %s", playerName(g.players, idx), soloWhistBidName(bid)), nil)
 	} else {
-		g.appendLog(idx, "bid", fmt.Sprintf("%s passes", g.playerName(idx)), nil)
+		g.appendLog(idx, "bid", fmt.Sprintf("%s passes", playerName(g.players, idx)), nil)
 	}
 	// 次の未入札プレイヤーへ。
 	for k := 1; k <= SoloWhistPlayerCnt; k++ {
@@ -272,7 +272,7 @@ func (g *SoloWhist) resolveBidding() {
 		g.trumpSuit = g.longestSuit(idx)
 	}
 	g.appendLog(idx, "contract",
-		fmt.Sprintf("%s declares %s (trump %d)", g.playerName(idx), soloWhistBidName(bid), g.trumpSuit), nil)
+		fmt.Sprintf("%s declares %s (trump %d)", playerName(g.players, idx), soloWhistBidName(bid), g.trumpSuit), nil)
 	g.leadPlayerIdx = (g.dealerIdx + 1) % SoloWhistPlayerCnt
 	g.currentPlayerIdx = g.leadPlayerIdx
 	g.phase = SoloWhistPhasePlay
@@ -373,7 +373,7 @@ func (g *SoloWhist) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *SoloWhist) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == SoloWhistPlayerCnt {
 		g.phase = SoloWhistPhaseTrickEnd
@@ -395,7 +395,7 @@ func (g *SoloWhist) ResolveTrick() {
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.roundTricks[winnerIdx]++
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", g.playerName(winnerIdx), g.trickNumber), trickCards)
+		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= SoloWhistTrickCount {
@@ -469,7 +469,7 @@ func (g *SoloWhist) checkGameEnd() {
 		g.gameEndFlag = true
 		g.winnerPlayer = leader
 		g.phase = SoloWhistPhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", g.playerName(leader)), nil)
+		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
 	}
 }
 
@@ -572,17 +572,6 @@ func soloWhistSortHand(p *SoloWhistPlayer) {
 	for _, c := range cards {
 		p.AddCard(c)
 	}
-}
-
-// playerName プレイヤー名を返す。
-func (g *SoloWhist) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // indexOfPlayerInTrick currentTrick 内で playerIdx の札の位置を返す (-1=なし)。

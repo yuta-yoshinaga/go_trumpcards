@@ -161,7 +161,7 @@ func (s *Spades) PlayerBid(bid int) error {
 	if bid == 0 {
 		bidStr = "Nil"
 	}
-	s.appendLog(humanIdx, "bid", fmt.Sprintf("%s bids %s", s.playerName(humanIdx), bidStr), nil)
+	s.appendLog(humanIdx, "bid", fmt.Sprintf("%s bids %s", playerName(s.players, humanIdx), bidStr), nil)
 
 	s.bidPlayerIdx++
 	s.checkBidComplete()
@@ -186,7 +186,7 @@ func (s *Spades) CpuBid() {
 	if bid == 0 {
 		bidStr = "Nil"
 	}
-	s.appendLog(s.bidPlayerIdx, "bid", fmt.Sprintf("%s bids %s", s.playerName(s.bidPlayerIdx), bidStr), nil)
+	s.appendLog(s.bidPlayerIdx, "bid", fmt.Sprintf("%s bids %s", playerName(s.players, s.bidPlayerIdx), bidStr), nil)
 
 	s.bidPlayerIdx++
 	s.checkBidComplete()
@@ -254,7 +254,7 @@ func (s *Spades) ResolveTrick() {
 
 	s.players[winnerIdx].AddTrick(trickCards)
 
-	winnerName := s.playerName(winnerIdx)
+	winnerName := playerName(s.players, winnerIdx)
 	s.appendLog(winnerIdx, "trick_win", fmt.Sprintf("%s wins trick %d", winnerName, s.trickNumber), trickCards)
 
 	s.leadPlayerIdx = winnerIdx
@@ -292,10 +292,10 @@ func (s *Spades) ScoreRound() {
 			// ニルビッド
 			if tricks == 0 {
 				p.roundScore = s.config.NilBonus
-				s.appendLog(i, "nil_success", fmt.Sprintf("%s nil success! +%d", s.playerName(i), s.config.NilBonus), nil)
+				s.appendLog(i, "nil_success", fmt.Sprintf("%s nil success! +%d", playerName(s.players, i), s.config.NilBonus), nil)
 			} else {
 				p.roundScore = -s.config.NilBonus
-				s.appendLog(i, "nil_fail", fmt.Sprintf("%s nil failed! -%d (%d tricks taken)", s.playerName(i), s.config.NilBonus, tricks), nil)
+				s.appendLog(i, "nil_fail", fmt.Sprintf("%s nil failed! -%d (%d tricks taken)", playerName(s.players, i), s.config.NilBonus, tricks), nil)
 			}
 		} else if tricks >= bid {
 			// ビッド成功
@@ -308,7 +308,7 @@ func (s *Spades) ScoreRound() {
 				penalty := (p.bags / s.config.BagPenaltyThreshold) * 100
 				p.roundScore -= penalty
 				p.bags %= s.config.BagPenaltyThreshold
-				s.appendLog(i, "bag_penalty", fmt.Sprintf("%s bag penalty! -%d", s.playerName(i), penalty), nil)
+				s.appendLog(i, "bag_penalty", fmt.Sprintf("%s bag penalty! -%d", playerName(s.players, i), penalty), nil)
 			}
 		} else {
 			// ビッド失敗
@@ -316,7 +316,7 @@ func (s *Spades) ScoreRound() {
 		}
 
 		s.appendLog(i, "round_score", fmt.Sprintf("%s: bid=%d tricks=%d round=%d bags=%d",
-			s.playerName(i), bid, tricks, p.roundScore, p.bags), nil)
+			playerName(s.players, i), bid, tricks, p.roundScore, p.bags), nil)
 	}
 
 	// 累積スコアに加算
@@ -327,7 +327,7 @@ func (s *Spades) ScoreRound() {
 	// スコアログ
 	for i := 0; i < SpadesPlayerCnt; i++ {
 		s.appendLog(i, "cumulative_score", fmt.Sprintf("%s: total=%d",
-			s.playerName(i), s.players[i].cumulativeScore), nil)
+			playerName(s.players, i), s.players[i].cumulativeScore), nil)
 	}
 
 	// ゲーム終了判定
@@ -476,7 +476,7 @@ func (s *Spades) playCard(playerIdx int, card *Card) {
 		s.spadesBroken = true
 	}
 
-	s.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", s.playerName(playerIdx), cardStr(card)), []*Card{card})
+	s.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(s.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(s.currentTrick) == SpadesPlayerCnt {
 		s.phase = SpadesPhaseTrickEnd
@@ -592,7 +592,7 @@ func (s *Spades) checkGameEnd() {
 			s.winnerIdx = i
 		}
 	}
-	s.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", s.playerName(s.winnerIdx)), nil)
+	s.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(s.players, s.winnerIdx)), nil)
 }
 
 // sortAllHands 全プレイヤーの手札をソートする
@@ -610,17 +610,6 @@ func spadeSortHand(p *SpadesPlayer) {
 		}
 		return ci.GetValue() < cj.GetValue()
 	})
-}
-
-// playerName プレイヤー名を返す
-func (s *Spades) playerName(idx int) string {
-	if idx < 0 || idx >= len(s.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if s.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // GetHint ヒントを取得する

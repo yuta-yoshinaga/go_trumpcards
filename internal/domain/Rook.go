@@ -291,7 +291,7 @@ func (g *Rook) applyBid(idx, bid int) {
 	g.players[idx].SetBid(bid)
 	g.highestBid = bid
 	g.highestBidder = idx
-	g.appendLog(idx, "bid", fmt.Sprintf("%s bids %d", g.playerName(idx), bid), nil)
+	g.appendLog(idx, "bid", fmt.Sprintf("%s bids %d", playerName(g.players, idx), bid), nil)
 	g.advanceBid()
 }
 
@@ -299,7 +299,7 @@ func (g *Rook) applyBid(idx, bid int) {
 func (g *Rook) applyPass(idx int) {
 	g.passed[idx] = true
 	g.players[idx].SetPassed(true)
-	g.appendLog(idx, "pass", fmt.Sprintf("%s passes", g.playerName(idx)), nil)
+	g.appendLog(idx, "pass", fmt.Sprintf("%s passes", playerName(g.players, idx)), nil)
 	g.advanceBid()
 }
 
@@ -350,7 +350,7 @@ func (g *Rook) finalizeBid() {
 	}
 	g.nest = nil
 	g.appendLog(g.declarerIdx, "win_bid",
-		fmt.Sprintf("%s wins the auction for %d", g.playerName(g.declarerIdx), g.contractBid), nil)
+		fmt.Sprintf("%s wins the auction for %d", playerName(g.players, g.declarerIdx), g.contractBid), nil)
 	g.sortAllHands()
 	g.phase = RookPhaseNestExchange
 	g.currentPlayerIdx = g.declarerIdx
@@ -413,7 +413,7 @@ func (g *Rook) doExchange(discardIndices []int, trumpColor int) error {
 	}
 	g.trumpColor = trumpColor
 	g.appendLog(g.declarerIdx, "exchange",
-		fmt.Sprintf("%s discards %d cards, trump=%s", g.playerName(g.declarerIdx), len(discarded), rookColorName(trumpColor)), discarded)
+		fmt.Sprintf("%s discards %d cards, trump=%s", playerName(g.players, g.declarerIdx), len(discarded), rookColorName(trumpColor)), discarded)
 	g.sortAllHands()
 	g.startPlayPhase()
 	return nil
@@ -477,7 +477,7 @@ func (g *Rook) CpuPlay() {
 func (g *Rook) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	g.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", g.playerName(playerIdx), rookCardLabel(card)), []*Card{card})
+		fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), rookCardLabel(card)), []*Card{card})
 	if len(g.currentTrick) == RookPlayerCnt {
 		g.phase = RookPhaseTrickEnd
 	} else {
@@ -503,13 +503,13 @@ func (g *Rook) ResolveTrick() {
 	if g.trickNumber >= RookTrickCnt {
 		g.players[winnerIdx].AddPoints(g.nestPoints)
 		g.appendLog(winnerIdx, "trick_win",
-			fmt.Sprintf("%s wins the last trick %d (+%d nest)", g.playerName(winnerIdx), g.trickNumber, g.nestPoints), cards)
+			fmt.Sprintf("%s wins the last trick %d (+%d nest)", playerName(g.players, winnerIdx), g.trickNumber, g.nestPoints), cards)
 		g.leadPlayerIdx = winnerIdx
 		g.phase = RookPhaseRoundEnd
 		return
 	}
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (+%d)", g.playerName(winnerIdx), g.trickNumber, trickPts), cards)
+		fmt.Sprintf("%s wins trick %d (+%d)", playerName(g.players, winnerIdx), g.trickNumber, trickPts), cards)
 	g.leadPlayerIdx = winnerIdx
 	g.phase = RookPhaseTrickEnd
 }
@@ -1195,17 +1195,6 @@ func (g *Rook) sortHand(p *RookPlayer) {
 	for _, c := range cards {
 		p.AddCard(c)
 	}
-}
-
-// playerName プレイヤー名を返す
-func (g *Rook) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // rookColorName 色番号を英字ラベルにする (ログ用)

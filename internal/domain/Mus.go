@@ -247,11 +247,11 @@ func (g *Mus) resolveMus(mus bool) {
 		mus = false
 	}
 	if !mus {
-		g.appendLog(g.musTurn, "corte", fmt.Sprintf("%s cuts (no mus)", g.playerName(g.musTurn)), nil)
+		g.appendLog(g.musTurn, "corte", fmt.Sprintf("%s cuts (no mus)", playerName(g.players, g.musTurn)), nil)
 		g.beginBetting()
 		return
 	}
-	g.appendLog(g.musTurn, "mus", fmt.Sprintf("%s wants mus", g.playerName(g.musTurn)), nil)
+	g.appendLog(g.musTurn, "mus", fmt.Sprintf("%s wants mus", playerName(g.players, g.musTurn)), nil)
 	g.musAgreed++
 	if g.musAgreed >= MusPlayerCnt {
 		// 全員合意 → 交換フェーズ。
@@ -313,7 +313,7 @@ func (g *Mus) applyDiscard(indices []int) {
 		musSortHand(p)
 	}
 	g.appendLog(g.discardTurn, "discard",
-		fmt.Sprintf("%s exchanges %d cards", g.playerName(g.discardTurn), len(indices)), nil)
+		fmt.Sprintf("%s exchanges %d cards", playerName(g.players, g.discardTurn), len(indices)), nil)
 
 	if g.discardTurn == (g.manoIdx+MusPlayerCnt-1)%MusPlayerCnt {
 		// 全員交換完了 → 再び Mus 宣言へ。
@@ -803,17 +803,6 @@ func musSortHand(p *MusPlayer) {
 	for _, c := range cards {
 		p.AddCard(c)
 	}
-}
-
-// playerName プレイヤー名。
-func (g *Mus) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // musRoundName ラウンド名。

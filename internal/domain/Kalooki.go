@@ -213,7 +213,7 @@ func (g *Kalooki) drawFromStock() error {
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", g.playerName(g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, g.currentPlayerIdx)), nil)
 	g.phase = KalookiPhaseMeld
 	return nil
 }
@@ -227,7 +227,7 @@ func (g *Kalooki) drawFromDiscard() error {
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s draws %s from discard", g.playerName(g.currentPlayerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s draws %s from discard", playerName(g.players, g.currentPlayerIdx), cardStr(card)), []*Card{card})
 	g.phase = KalookiPhaseMeld
 	return nil
 }
@@ -322,7 +322,7 @@ func (g *Kalooki) applyMeld(meldGroups [][]int) error {
 		player.RemoveCard(idx)
 	}
 
-	g.appendLog(g.currentPlayerIdx, "meld", fmt.Sprintf("%s melds %d group(s)", g.playerName(g.currentPlayerIdx), len(groupCards)), nil)
+	g.appendLog(g.currentPlayerIdx, "meld", fmt.Sprintf("%s melds %d group(s)", playerName(g.players, g.currentPlayerIdx), len(groupCards)), nil)
 
 	if player.GetCardsSize() == 0 {
 		g.finishRound(g.currentPlayerIdx)
@@ -372,7 +372,7 @@ func (g *Kalooki) applyLayoff(targetPlayerIdx, meldIdx, cardIndex int) error {
 	target.AddCardToMeld(meldIdx, card)
 	current.RemoveCard(cardIndex)
 
-	g.appendLog(g.currentPlayerIdx, "layoff", fmt.Sprintf("%s lays off %s on player %d's meld", g.playerName(g.currentPlayerIdx), cardStr(card), targetPlayerIdx), []*Card{card})
+	g.appendLog(g.currentPlayerIdx, "layoff", fmt.Sprintf("%s lays off %s on player %d's meld", playerName(g.players, g.currentPlayerIdx), cardStr(card), targetPlayerIdx), []*Card{card})
 	if current.GetCardsSize() == 0 {
 		g.finishRound(g.currentPlayerIdx)
 	}
@@ -401,7 +401,7 @@ func (g *Kalooki) applyDiscard(cardIndex int) error {
 
 	discarded := player.RemoveCard(cardIndex)
 	g.discardPile = append(g.discardPile, discarded)
-	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", g.playerName(g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
 
 	if player.GetCardsSize() == 0 {
 		g.finishRound(g.currentPlayerIdx)
@@ -611,7 +611,7 @@ func (g *Kalooki) finishRound(winnerIdx int) {
 	}
 
 	if winnerIdx >= 0 {
-		g.appendLog(winnerIdx, "round_win", fmt.Sprintf("%s goes out!", g.playerName(winnerIdx)), nil)
+		g.appendLog(winnerIdx, "round_win", fmt.Sprintf("%s goes out!", playerName(g.players, winnerIdx)), nil)
 	} else {
 		g.appendLog(-1, "draw", "Round ends in a draw (stock empty)", nil)
 	}
@@ -642,7 +642,7 @@ func (g *Kalooki) finalizeGameEnd() {
 			}
 		}
 	}
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", g.playerName(g.winnerIdx)), nil)
+	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, g.winnerIdx)), nil)
 }
 
 // --- Getters / Setters ---
@@ -727,16 +727,6 @@ func (g *Kalooki) sortHand(playerIdx int) {
 	for _, c := range cards {
 		p.AddCard(c)
 	}
-}
-
-func (g *Kalooki) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // --- Pure card-evaluation helpers ---

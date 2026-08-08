@@ -233,7 +233,7 @@ func (g *ThreeCardBrag) startDeal() {
 		g.gameEndFlag = true
 		g.phase = ThreeCardBragPhaseGameEnd
 		g.matchWinnerIdx = g.firstAlive()
-		g.appendLog(g.matchWinnerIdx, "game_end", fmt.Sprintf("%s wins the match", g.playerName(g.matchWinnerIdx)), nil)
+		g.appendLog(g.matchWinnerIdx, "game_end", fmt.Sprintf("%s wins the match", playerName(g.players, g.matchWinnerIdx)), nil)
 		return
 	}
 	g.trumpCards.Replenish()
@@ -277,7 +277,7 @@ func (g *ThreeCardBrag) PlayerSee() error {
 		return NewDomainError(ErrInvalidPlay, "すでに手札を見ています")
 	}
 	g.players[g.currentPlayerIdx].SetSeen(true)
-	g.appendLog(g.currentPlayerIdx, "see", fmt.Sprintf("%s sees their hand", g.playerName(g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "see", fmt.Sprintf("%s sees their hand", playerName(g.players, g.currentPlayerIdx)), nil)
 	return nil
 }
 
@@ -348,7 +348,7 @@ func (g *ThreeCardBrag) applyCall(idx int) error {
 	p.AddRoundBet(cost)
 	g.pot += cost
 	g.actionCount++
-	g.appendLog(idx, "bet", fmt.Sprintf("%s bets %d (pot %d)", g.playerName(idx), cost, g.pot), nil)
+	g.appendLog(idx, "bet", fmt.Sprintf("%s bets %d (pot %d)", playerName(g.players, idx), cost, g.pot), nil)
 	g.advanceOrResolve(idx)
 	return nil
 }
@@ -366,7 +366,7 @@ func (g *ThreeCardBrag) applyRaise(idx, newStake int) error {
 	g.pot += cost
 	g.lastAggressorIdx = idx
 	g.actionCount++
-	g.appendLog(idx, "raise", fmt.Sprintf("%s raises to %d, bets %d (pot %d)", g.playerName(idx), newStake, cost, g.pot), nil)
+	g.appendLog(idx, "raise", fmt.Sprintf("%s raises to %d, bets %d (pot %d)", playerName(g.players, idx), newStake, cost, g.pot), nil)
 	g.advanceOrResolve(idx)
 	return nil
 }
@@ -374,7 +374,7 @@ func (g *ThreeCardBrag) applyRaise(idx, newStake int) error {
 // applyFold フォールドを適用する。
 func (g *ThreeCardBrag) applyFold(idx int) {
 	g.players[idx].SetFolded(true)
-	g.appendLog(idx, "fold", fmt.Sprintf("%s folds", g.playerName(idx)), nil)
+	g.appendLog(idx, "fold", fmt.Sprintf("%s folds", playerName(g.players, idx)), nil)
 	if g.activeCount() == 1 {
 		g.endDeal([]int{g.firstActive()})
 		return
@@ -392,7 +392,7 @@ func (g *ThreeCardBrag) applyShow(idx int) {
 	p.SubtractChips(cost)
 	p.AddRoundBet(cost)
 	g.pot += cost
-	g.appendLog(idx, "show", fmt.Sprintf("%s pays %d to see (pot %d)", g.playerName(idx), cost, g.pot), nil)
+	g.appendLog(idx, "show", fmt.Sprintf("%s pays %d to see (pot %d)", playerName(g.players, idx), cost, g.pot), nil)
 	opp := g.otherActive(idx)
 	g.showdown = true
 	g.phase = ThreeCardBragPhaseShowdown
@@ -440,7 +440,7 @@ func (g *ThreeCardBrag) CpuAct() {
 	// Blind の場合はまず手札を見る (簡易 AI)。
 	if !p.GetSeen() {
 		p.SetSeen(true)
-		g.appendLog(idx, "see", fmt.Sprintf("%s sees their hand", g.playerName(idx)), nil)
+		g.appendLog(idx, "see", fmt.Sprintf("%s sees their hand", playerName(g.players, idx)), nil)
 	}
 	cat, _ := g.handEval(idx)
 	cost := g.callCost(idx)
@@ -491,7 +491,7 @@ func (g *ThreeCardBrag) endDeal(winners []int) {
 		g.players[w].AddChips(amt)
 	}
 	g.roundWinnerIdx = winners[0]
-	g.appendLog(winners[0], "win", fmt.Sprintf("%s wins the pot (%d)", g.playerName(winners[0]), g.pot), nil)
+	g.appendLog(winners[0], "win", fmt.Sprintf("%s wins the pot (%d)", playerName(g.players, winners[0]), g.pot), nil)
 
 	// チップ 0 は脱落。
 	for _, p := range g.players {
@@ -503,7 +503,7 @@ func (g *ThreeCardBrag) endDeal(winners []int) {
 		g.gameEndFlag = true
 		g.phase = ThreeCardBragPhaseGameEnd
 		g.matchWinnerIdx = g.firstAlive()
-		g.appendLog(g.matchWinnerIdx, "game_end", fmt.Sprintf("%s wins the match", g.playerName(g.matchWinnerIdx)), nil)
+		g.appendLog(g.matchWinnerIdx, "game_end", fmt.Sprintf("%s wins the match", playerName(g.players, g.matchWinnerIdx)), nil)
 		return
 	}
 	g.phase = ThreeCardBragPhaseRoundEnd
@@ -618,16 +618,6 @@ func (g *ThreeCardBrag) firstAlive() int {
 		}
 	}
 	return 0
-}
-
-func (g *ThreeCardBrag) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // --- State getters ---

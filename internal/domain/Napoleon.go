@@ -385,7 +385,7 @@ func (n *Napoleon) ResolveTrick() {
 	picCount := n.countPictureCards(trickCards)
 	n.players[winnerIdx].pictureCards += picCount
 
-	winnerName := n.playerName(winnerIdx)
+	winnerName := playerName(n.players, winnerIdx)
 	s := fmt.Sprintf("%s wins trick %d", winnerName, n.round.trickNumber)
 	if picCount > 0 {
 		s += fmt.Sprintf(" (+%d picture cards)", picCount)
@@ -458,7 +458,7 @@ func (n *Napoleon) ScoreRound() {
 				p.roundScore = bid
 			}
 		}
-		n.appendLog(i, "round_score", fmt.Sprintf("%s: round=%d", n.playerName(i), p.roundScore), nil)
+		n.appendLog(i, "round_score", fmt.Sprintf("%s: round=%d", playerName(n.players, i), p.roundScore), nil)
 	}
 
 	// 累積スコアに加算
@@ -469,7 +469,7 @@ func (n *Napoleon) ScoreRound() {
 	// 累積スコアログ
 	for i := range NapoleonPlayerCnt {
 		n.appendLog(i, "cumulative_score", fmt.Sprintf("%s: total=%d",
-			n.playerName(i), n.players[i].cumulativeScore), nil)
+			playerName(n.players, i), n.players[i].cumulativeScore), nil)
 	}
 
 	// ゲーム終了判定
@@ -717,10 +717,10 @@ func (n *Napoleon) applyBid(playerIdx int, bid int) {
 	n.players[playerIdx].SetBid(bid)
 
 	if bid == 0 {
-		n.appendLog(playerIdx, "bid", fmt.Sprintf("%s passes", n.playerName(playerIdx)), nil)
+		n.appendLog(playerIdx, "bid", fmt.Sprintf("%s passes", playerName(n.players, playerIdx)), nil)
 		n.round.passCount++
 	} else {
-		n.appendLog(playerIdx, "bid", fmt.Sprintf("%s bids %d", n.playerName(playerIdx), bid), nil)
+		n.appendLog(playerIdx, "bid", fmt.Sprintf("%s bids %d", playerName(n.players, playerIdx), bid), nil)
 		n.round.highestBid = bid
 		n.round.highestBidder = playerIdx
 	}
@@ -740,12 +740,12 @@ func (n *Napoleon) checkBidComplete() {
 		n.round.highestBid = n.config.MinBid
 		n.round.highestBidder = 0
 		n.players[0].SetBid(n.config.MinBid)
-		n.appendLog(0, "forced_bid", fmt.Sprintf("%s is forced to bid %d (all pass)", n.playerName(0), n.config.MinBid), nil)
+		n.appendLog(0, "forced_bid", fmt.Sprintf("%s is forced to bid %d (all pass)", playerName(n.players, 0), n.config.MinBid), nil)
 	}
 
 	n.round.napoleonIdx = n.round.highestBidder
 	n.players[n.round.napoleonIdx].SetIsNapoleon(true)
-	n.appendLog(n.round.napoleonIdx, "napoleon", fmt.Sprintf("%s becomes Napoleon (bid %d)", n.playerName(n.round.napoleonIdx), n.round.highestBid), nil)
+	n.appendLog(n.round.napoleonIdx, "napoleon", fmt.Sprintf("%s becomes Napoleon (bid %d)", playerName(n.players, n.round.napoleonIdx), n.round.highestBid), nil)
 
 	n.round.phase = NapoleonPhaseTrumpDeclaration
 }
@@ -761,9 +761,9 @@ func (n *Napoleon) applyDeclareTrump(suit int, adjSuit int, adjVal int) {
 		CardDesignJoker: "Joker",
 	}
 	n.appendLog(n.round.napoleonIdx, "declare_trump",
-		fmt.Sprintf("%s declares %s as trump", n.playerName(n.round.napoleonIdx), suitNames[suit]), nil)
+		fmt.Sprintf("%s declares %s as trump", playerName(n.players, n.round.napoleonIdx), suitNames[suit]), nil)
 	n.appendLog(n.round.napoleonIdx, "declare_adjutant",
-		fmt.Sprintf("%s names %s as adjutant card", n.playerName(n.round.napoleonIdx), napoleonCardStr(n.round.adjutantCard)), nil)
+		fmt.Sprintf("%s names %s as adjutant card", playerName(n.players, n.round.napoleonIdx), napoleonCardStr(n.round.adjutantCard)), nil)
 
 	// 副官を特定
 	n.round.adjutantIdx = n.findAdjutantHolder()
@@ -791,7 +791,7 @@ func (n *Napoleon) applyExchangeKitty(discardIndex int) {
 	discarded := player.RemoveCard(discardIndex)
 	n.round.kitty = []*Card{discarded}
 
-	n.appendLog(n.round.napoleonIdx, "exchange", fmt.Sprintf("%s exchanges kitty card", n.playerName(n.round.napoleonIdx)), nil)
+	n.appendLog(n.round.napoleonIdx, "exchange", fmt.Sprintf("%s exchanges kitty card", playerName(n.players, n.round.napoleonIdx)), nil)
 
 	n.sortHand(player)
 	n.startPlayPhase()
@@ -813,7 +813,7 @@ func (n *Napoleon) playCard(playerIdx int, card *Card) {
 		Card:      card,
 	})
 
-	n.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", n.playerName(playerIdx), napoleonCardStr(card)), []*Card{card})
+	n.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(n.players, playerIdx), napoleonCardStr(card)), []*Card{card})
 
 	// 副官カードが出されたら公開
 	n.checkAdjutantReveal(playerIdx, card)
@@ -981,7 +981,7 @@ func (n *Napoleon) checkAdjutantReveal(playerIdx int, card *Card) {
 			n.round.adjutantIdx = playerIdx
 			n.players[playerIdx].SetIsAdjutant(true)
 		}
-		n.appendLog(playerIdx, "adjutant_reveal", fmt.Sprintf("%s is revealed as the adjutant!", n.playerName(playerIdx)), []*Card{card})
+		n.appendLog(playerIdx, "adjutant_reveal", fmt.Sprintf("%s is revealed as the adjutant!", playerName(n.players, playerIdx)), []*Card{card})
 	}
 }
 
@@ -1031,7 +1031,7 @@ func (n *Napoleon) checkGameEnd() {
 			winnerIdx = i
 		}
 	}
-	n.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", n.playerName(winnerIdx)), nil)
+	n.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(n.players, winnerIdx)), nil)
 }
 
 // sortAllHands 全プレイヤーの手札をソートする
@@ -1050,17 +1050,6 @@ func (n *Napoleon) sortHand(p *NapoleonPlayer) {
 		}
 		return ci.GetValue() < cj.GetValue()
 	})
-}
-
-// playerName プレイヤー名を返す
-func (n *Napoleon) playerName(idx int) string {
-	if idx < 0 || idx >= len(n.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if n.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // appendLog 棋譜にエントリを追加する

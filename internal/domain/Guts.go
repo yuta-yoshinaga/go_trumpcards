@@ -289,7 +289,7 @@ func (g *Guts) settle() {
 		g.state.carryCount = 0
 		g.players[winner].AddChips(g.state.pot)
 		g.appendLog(winner, "win",
-			fmt.Sprintf("%s wins the pot (%d)", g.playerName(winner), g.state.pot), nil)
+			fmt.Sprintf("%s wins the pot (%d)", playerName(g.players, winner), g.state.pot), nil)
 		// 勝者以外の「イン」プレイヤーはポット額をマッチして次ラウンドの種銭に積む。
 		for _, idx := range inPlayers {
 			if idx == winner {
@@ -301,7 +301,7 @@ func (g *Guts) settle() {
 			g.state.carryPot += pay
 			g.state.matchers = append(g.state.matchers, idx)
 			g.appendLog(idx, "match",
-				fmt.Sprintf("%s matches the pot (pays %d)", g.playerName(idx), pay), nil)
+				fmt.Sprintf("%s matches the pot (pays %d)", playerName(g.players, idx), pay), nil)
 		}
 		g.setHumanResult(winner)
 	}
@@ -340,7 +340,7 @@ func (g *Guts) endGame() {
 	g.state.phase = GutsPhaseResult
 	g.state.matchWinnerIdx = g.richestIdx()
 	g.appendLog(g.state.matchWinnerIdx, "game_end",
-		fmt.Sprintf("%s wins the game", g.playerName(g.state.matchWinnerIdx)), nil)
+		fmt.Sprintf("%s wins the game", playerName(g.players, g.state.matchWinnerIdx)), nil)
 }
 
 // --- 手役評価 (インライン) ---
@@ -447,17 +447,6 @@ func (g *Guts) richestIdx() int {
 		}
 	}
 	return best
-}
-
-// playerName は表示用のプレイヤー名を返す。
-func (g *Guts) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // gutsDeclareText は宣言の棋譜テキストを返す。

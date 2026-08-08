@@ -284,10 +284,10 @@ func (g *Calabresella) applyBid(playerIdx int, bid CalabresellaBid) {
 	g.bidActed[playerIdx] = true
 	if bid == CalabresellaBidNone {
 		g.appendLog(playerIdx, "bid_pass",
-			fmt.Sprintf("%s passes", g.playerName(playerIdx)), nil)
+			fmt.Sprintf("%s passes", playerName(g.players, playerIdx)), nil)
 	} else {
 		g.appendLog(playerIdx, "bid",
-			fmt.Sprintf("%s bids %s", g.playerName(playerIdx), calabresellaBidName(bid)), nil)
+			fmt.Sprintf("%s bids %s", playerName(g.players, playerIdx), calabresellaBidName(bid)), nil)
 	}
 
 	if g.allBidsActed() {
@@ -340,7 +340,7 @@ func (g *Calabresella) finalizeAuction() {
 	g.soloistIdx = soloist
 	g.winningBid = best
 	g.appendLog(soloist, "soloist",
-		fmt.Sprintf("%s is soloist with %s", g.playerName(soloist), calabresellaBidName(best)), nil)
+		fmt.Sprintf("%s is soloist with %s", playerName(g.players, soloist), calabresellaBidName(best)), nil)
 
 	g.startDiscard()
 }
@@ -387,7 +387,7 @@ func (g *Calabresella) startDiscard() {
 	g.monte = nil
 	calabresellaSortHand(g.players[g.soloistIdx])
 	g.appendLog(g.soloistIdx, "monte_take",
-		fmt.Sprintf("%s takes the monte", g.playerName(g.soloistIdx)), revealed)
+		fmt.Sprintf("%s takes the monte", playerName(g.players, g.soloistIdx)), revealed)
 	g.discardCount = 0
 	g.currentPlayerIdx = g.soloistIdx
 
@@ -425,7 +425,7 @@ func (g *Calabresella) discardOne(cardIndex int) {
 	g.players[g.soloistIdx].AddTrick([]*Card{card})
 	g.roundThirds[g.soloistIdx] += calabresellaThirds(card.GetValue())
 	g.appendLog(g.soloistIdx, "discard",
-		fmt.Sprintf("%s discards %s", g.playerName(g.soloistIdx), cardStr(card)), []*Card{card})
+		fmt.Sprintf("%s discards %s", playerName(g.players, g.soloistIdx), cardStr(card)), []*Card{card})
 	g.discardCount++
 }
 
@@ -512,7 +512,7 @@ func (g *Calabresella) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Calabresella) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == CalabresellaPlayerCnt {
 		g.phase = CalabresellaPhaseTrickEnd
@@ -541,7 +541,7 @@ func (g *Calabresella) ResolveTrick() {
 	}
 	g.roundThirds[winnerIdx] += thirds
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (+%d/3%s)", g.playerName(winnerIdx), g.trickNumber, thirds, bonus), trickCards)
+		fmt.Sprintf("%s wins trick %d (+%d/3%s)", playerName(g.players, winnerIdx), g.trickNumber, thirds, bonus), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= CalabresellaTrickCount {
@@ -597,7 +597,7 @@ func (g *Calabresella) ScoreRound() {
 	}
 	g.appendLog(-1, "round_score",
 		fmt.Sprintf("round %d: soloist(%s) %s (%d/3, stake=%d)",
-			g.roundNumber, g.playerName(g.soloistIdx), result, soloistThirds, stake), nil)
+			g.roundNumber, playerName(g.players, g.soloistIdx), result, soloistThirds, stake), nil)
 	g.checkGameEnd()
 }
 
@@ -614,7 +614,7 @@ func (g *Calabresella) checkGameEnd() {
 		g.gameEndFlag = true
 		g.winnerPlayer = leader
 		g.phase = CalabresellaPhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", g.playerName(leader)), nil)
+		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
 	}
 }
 
@@ -745,17 +745,6 @@ func calabresellaSortHand(p *CalabresellaPlayer) {
 	for _, c := range cards {
 		p.AddCard(c)
 	}
-}
-
-// playerName プレイヤー名を返す。
-func (g *Calabresella) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // calabresellaBidName ビッドの表示名を返す。

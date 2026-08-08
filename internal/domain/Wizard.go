@@ -182,7 +182,7 @@ func (o *Wizard) PlayerBid(bid int) error {
 	// Wizardはフックルール（合計制限）を持たない: 合計ビッド≠トリック数を許容する。
 
 	o.players[humanIdx].SetBid(bid)
-	o.appendLog(humanIdx, "bid", fmt.Sprintf("%s bids %d", o.playerName(humanIdx), bid), nil)
+	o.appendLog(humanIdx, "bid", fmt.Sprintf("%s bids %d", playerName(o.players, humanIdx), bid), nil)
 
 	o.advanceBid()
 	return nil
@@ -202,7 +202,7 @@ func (o *Wizard) CpuBid() {
 
 	bid := o.cpuSelectBid(o.bidPlayerIdx)
 	o.players[o.bidPlayerIdx].SetBid(bid)
-	o.appendLog(o.bidPlayerIdx, "bid", fmt.Sprintf("%s bids %d", o.playerName(o.bidPlayerIdx), bid), nil)
+	o.appendLog(o.bidPlayerIdx, "bid", fmt.Sprintf("%s bids %d", playerName(o.players, o.bidPlayerIdx), bid), nil)
 
 	o.advanceBid()
 }
@@ -269,7 +269,7 @@ func (o *Wizard) ResolveTrick() {
 
 	o.players[winnerIdx].AddTrick(trickCards)
 
-	winnerName := o.playerName(winnerIdx)
+	winnerName := playerName(o.players, winnerIdx)
 	o.appendLog(winnerIdx, "trick_win", fmt.Sprintf("%s wins trick %d", winnerName, o.trickNumber), trickCards)
 
 	o.leadPlayerIdx = winnerIdx
@@ -307,7 +307,7 @@ func (o *Wizard) ScoreRound() {
 			// ビッド的中: 20 + 10×bid ポイント
 			p.roundScore = 20 + 10*bid
 			o.appendLog(i, "bid_success", fmt.Sprintf("%s bid %d, took %d: +%d",
-				o.playerName(i), bid, tricks, p.roundScore), nil)
+				playerName(o.players, i), bid, tricks, p.roundScore), nil)
 		} else {
 			// 外れ: -10×|トリック数 - ビッド|
 			diff := tricks - bid
@@ -316,7 +316,7 @@ func (o *Wizard) ScoreRound() {
 			}
 			p.roundScore = -10 * diff
 			o.appendLog(i, "bid_fail", fmt.Sprintf("%s bid %d, took %d: %d",
-				o.playerName(i), bid, tricks, p.roundScore), nil)
+				playerName(o.players, i), bid, tricks, p.roundScore), nil)
 		}
 	}
 
@@ -328,7 +328,7 @@ func (o *Wizard) ScoreRound() {
 	// スコアログ
 	for i := range WizardPlayerCnt {
 		o.appendLog(i, "cumulative_score", fmt.Sprintf("%s: total=%d",
-			o.playerName(i), o.players[i].cumulativeScore), nil)
+			playerName(o.players, i), o.players[i].cumulativeScore), nil)
 	}
 
 	// ゲーム終了判定
@@ -588,7 +588,7 @@ func (o *Wizard) playCard(playerIdx int, card *Card) {
 		Card:      card,
 	})
 
-	o.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", o.playerName(playerIdx), wizardCardStr(card)), []*Card{card})
+	o.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(o.players, playerIdx), wizardCardStr(card)), []*Card{card})
 
 	if len(o.currentTrick) == WizardPlayerCnt {
 		o.phase = WizardPhaseTrickEnd
@@ -737,7 +737,7 @@ func (o *Wizard) determineWinner() {
 			o.winnerIdx = i
 		}
 	}
-	o.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", o.playerName(o.winnerIdx)), nil)
+	o.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(o.players, o.winnerIdx)), nil)
 }
 
 // sortAllHands 全プレイヤーの手札をソートする
@@ -769,17 +769,6 @@ func wizardCardStr(card *Card) string {
 		return "Jester"
 	}
 	return cardStr(card)
-}
-
-// playerName プレイヤー名を返す
-func (o *Wizard) playerName(idx int) string {
-	if idx < 0 || idx >= len(o.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if o.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す

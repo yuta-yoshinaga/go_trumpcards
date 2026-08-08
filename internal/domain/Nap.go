@@ -219,9 +219,9 @@ func (g *Nap) applyBid(idx int, bid NapBid) error {
 	g.bids[idx] = bid
 	g.bidDone[idx] = true
 	if bid != NapBidPass {
-		g.appendLog(idx, "bid", fmt.Sprintf("%s bids %s", g.playerName(idx), napBidName(bid)), nil)
+		g.appendLog(idx, "bid", fmt.Sprintf("%s bids %s", playerName(g.players, idx), napBidName(bid)), nil)
 	} else {
-		g.appendLog(idx, "bid", fmt.Sprintf("%s passes", g.playerName(idx)), nil)
+		g.appendLog(idx, "bid", fmt.Sprintf("%s passes", playerName(g.players, idx)), nil)
 	}
 	for k := 1; k <= NapPlayerCnt; k++ {
 		ni := (idx + k) % NapPlayerCnt
@@ -247,7 +247,7 @@ func (g *Nap) resolveBidding() {
 	g.contract = bid
 	g.trumpSuit = g.longestSuit(idx)
 	g.appendLog(idx, "contract",
-		fmt.Sprintf("%s declares %s (trump %d)", g.playerName(idx), napBidName(bid), g.trumpSuit), nil)
+		fmt.Sprintf("%s declares %s (trump %d)", playerName(g.players, idx), napBidName(bid), g.trumpSuit), nil)
 	g.leadPlayerIdx = idx // declarer leads in Nap
 	g.currentPlayerIdx = g.leadPlayerIdx
 	g.phase = NapPhasePlay
@@ -350,7 +350,7 @@ func (g *Nap) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Nap) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == NapPlayerCnt {
 		g.phase = NapPhaseTrickEnd
@@ -372,7 +372,7 @@ func (g *Nap) ResolveTrick() {
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.roundTricks[winnerIdx]++
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", g.playerName(winnerIdx), g.trickNumber), trickCards)
+		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= NapTrickCount {
@@ -453,7 +453,7 @@ func (g *Nap) checkGameEnd() {
 		g.gameEndFlag = true
 		g.winnerPlayer = leader
 		g.phase = NapPhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", g.playerName(leader)), nil)
+		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
 	}
 }
 
@@ -553,17 +553,6 @@ func napSortHand(p *NapPlayer) {
 	for _, c := range cards {
 		p.AddCard(c)
 	}
-}
-
-// playerName プレイヤー名を返す。
-func (g *Nap) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // indexOfPlayerInTrick currentTrick 内で playerIdx の札の位置を返す (-1=なし)。

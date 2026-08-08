@@ -320,7 +320,7 @@ func (g *Ulti) applyBid(contract UltiContract, trumpSuit int) {
 	g.talonTaken = true
 	g.sortAllHands()
 	g.appendLog(g.declarerIdx, "bid",
-		fmt.Sprintf("%s declares %s (trump %s)", g.playerName(g.declarerIdx), ultiContractName(contract), ultiSuitName(g.trumpSuit)), nil)
+		fmt.Sprintf("%s declares %s (trump %s)", playerName(g.players, g.declarerIdx), ultiContractName(contract), ultiSuitName(g.trumpSuit)), nil)
 	g.phase = UltiPhaseDiscard
 }
 
@@ -359,7 +359,7 @@ func (g *Ulti) PlayerDiscard(cardIndices []int) error {
 		g.discards = append(g.discards, player.RemoveCard(idx))
 	}
 	g.appendLog(g.declarerIdx, "discard",
-		fmt.Sprintf("%s discards %d cards", g.playerName(g.declarerIdx), len(g.discards)), append([]*Card(nil), g.discards...))
+		fmt.Sprintf("%s discards %d cards", playerName(g.players, g.declarerIdx), len(g.discards)), append([]*Card(nil), g.discards...))
 	g.startPlay()
 	return nil
 }
@@ -423,7 +423,7 @@ func (g *Ulti) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Ulti) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == UltiPlayerCnt {
 		g.phase = UltiPhaseTrickEnd
@@ -444,7 +444,7 @@ func (g *Ulti) ResolveTrick() {
 	}
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", g.playerName(winnerIdx), g.trickNumber), trickCards)
+		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= UltiTrickCount {
@@ -477,7 +477,7 @@ func (g *Ulti) enterRoundEnd() {
 	g.applyScores(g.outcome)
 	g.appendLog(-1, "round_score",
 		fmt.Sprintf("round %d: declarer(%s) %s %s",
-			g.roundNumber, g.playerName(g.declarerIdx), ultiContractName(g.contract), ultiOutcomeName(g.outcome)), nil)
+			g.roundNumber, playerName(g.players, g.declarerIdx), ultiContractName(g.contract), ultiOutcomeName(g.outcome)), nil)
 	g.checkGameEnd()
 }
 
@@ -588,7 +588,7 @@ func (g *Ulti) checkGameEnd() {
 	g.winnerPlayer = leader
 	g.phase = UltiPhaseGameEnd
 	g.result = g.humanResult(leader, tie)
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", g.playerName(leader)), nil)
+	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
 }
 
 // humanResult 人間 (seat 0) の視点でマッチ結果を返す。単独トップなら Win、トップ同点なら None、他は Lose。
@@ -812,17 +812,6 @@ func ultiSortHand(p *UltiPlayer, trump int, contract UltiContract) {
 	for _, c := range cards {
 		p.AddCard(c)
 	}
-}
-
-// playerName プレイヤー名を返す。
-func (g *Ulti) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // ultiContractName コントラクトの表示名を返す。

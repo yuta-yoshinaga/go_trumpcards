@@ -190,7 +190,7 @@ func (w *Whist) ResolveTrick() {
 
 	w.players[winnerIdx].AddTrick(trickCards)
 
-	winnerName := w.playerName(winnerIdx)
+	winnerName := playerName(w.players, winnerIdx)
 	w.appendLog(winnerIdx, "trick_win", fmt.Sprintf("%s wins trick %d", winnerName, w.trickNumber), trickCards)
 
 	w.leadPlayerIdx = winnerIdx
@@ -390,7 +390,7 @@ func (w *Whist) playCard(playerIdx int, card *Card) {
 		Card:      card,
 	})
 
-	w.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", w.playerName(playerIdx), cardStr(card)), []*Card{card})
+	w.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(w.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(w.currentTrick) == WhistPlayerCnt {
 		w.phase = WhistPhaseTrickEnd
@@ -474,17 +474,6 @@ func whistSortHand(p *WhistPlayer) {
 		}
 		return ci.GetValue() < cj.GetValue()
 	})
-}
-
-// playerName プレイヤー名を返す
-func (w *Whist) playerName(idx int) string {
-	if idx < 0 || idx >= len(w.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if w.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // playHintReason プレイヒントの理由を判定する

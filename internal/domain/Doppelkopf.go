@@ -235,10 +235,10 @@ func (g *Doppelkopf) canAnnounce(playerIdx int) bool {
 func (g *Doppelkopf) applyAnnounce(playerIdx int) {
 	if g.reTeam[playerIdx] {
 		g.reAnnounced = true
-		g.appendLog(playerIdx, "announce_re", fmt.Sprintf("%s announces Re", g.playerName(playerIdx)), nil)
+		g.appendLog(playerIdx, "announce_re", fmt.Sprintf("%s announces Re", playerName(g.players, playerIdx)), nil)
 	} else {
 		g.kontraAnnounced = true
-		g.appendLog(playerIdx, "announce_kontra", fmt.Sprintf("%s announces Kontra", g.playerName(playerIdx)), nil)
+		g.appendLog(playerIdx, "announce_kontra", fmt.Sprintf("%s announces Kontra", playerName(g.players, playerIdx)), nil)
 	}
 }
 
@@ -270,7 +270,7 @@ func (g *Doppelkopf) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Doppelkopf) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == DoppelkopfPlayerCnt {
 		g.phase = DoppelkopfPhaseTrickEnd
@@ -293,7 +293,7 @@ func (g *Doppelkopf) ResolveTrick() {
 	}
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (%d pts)", g.playerName(winnerIdx), g.trickNumber, pts), trickCards)
+		fmt.Sprintf("%s wins trick %d (%d pts)", playerName(g.players, winnerIdx), g.trickNumber, pts), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	// Clear the resolved trick so a spurious second ResolveTrick call cannot
@@ -346,7 +346,7 @@ func (g *Doppelkopf) ScoreRound() {
 		g.gameEndFlag = true
 		g.winnerIdx = w
 		g.phase = DoppelkopfPhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", g.playerName(w)), nil)
+		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, w)), nil)
 	}
 }
 
@@ -507,17 +507,6 @@ func dkSortHand(p *DoppelkopfPlayer) {
 	for _, c := range cards {
 		p.AddCard(c)
 	}
-}
-
-// playerName プレイヤー名を返す。
-func (g *Doppelkopf) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // indexOfPlayerInTrick currentTrick 内で playerIdx の札の位置を返す (-1=なし)。

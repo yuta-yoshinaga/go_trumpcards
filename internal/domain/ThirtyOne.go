@@ -173,7 +173,7 @@ func (g *ThirtyOne) checkBlitzOnDeal() {
 			continue
 		}
 		if p.BestSuitScore() == ThirtyOneTarget {
-			g.appendLog(i, "blitz", fmt.Sprintf("%s is dealt 31!", g.playerName(i)), nil)
+			g.appendLog(i, "blitz", fmt.Sprintf("%s is dealt 31!", playerName(g.players, i)), nil)
 			g.declareThirtyOne(i)
 			return
 		}
@@ -265,7 +265,7 @@ func (g *ThirtyOne) drawFromStock(idx int) {
 	card := g.drawPile[len(g.drawPile)-1]
 	g.drawPile = g.drawPile[:len(g.drawPile)-1]
 	g.players[idx].AddCard(card)
-	g.appendLog(idx, "draw_stock", fmt.Sprintf("%s draws from stock", g.playerName(idx)), nil)
+	g.appendLog(idx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, idx)), nil)
 	g.phase = ThirtyOnePhaseDiscard
 }
 
@@ -274,7 +274,7 @@ func (g *ThirtyOne) drawFromDiscard(idx int) {
 	card := g.discardPile[len(g.discardPile)-1]
 	g.discardPile = g.discardPile[:len(g.discardPile)-1]
 	g.players[idx].AddCard(card)
-	g.appendLog(idx, "draw_discard", fmt.Sprintf("%s draws %s from discard", g.playerName(idx), cardStr(card)), []*Card{card})
+	g.appendLog(idx, "draw_discard", fmt.Sprintf("%s draws %s from discard", playerName(g.players, idx), cardStr(card)), []*Card{card})
 	g.phase = ThirtyOnePhaseDiscard
 }
 
@@ -282,10 +282,10 @@ func (g *ThirtyOne) drawFromDiscard(idx int) {
 func (g *ThirtyOne) discardAndResolve(idx, cardIndex int) {
 	discarded := g.players[idx].RemoveCard(cardIndex)
 	g.discardPile = append(g.discardPile, discarded)
-	g.appendLog(idx, "discard", fmt.Sprintf("%s discards %s", g.playerName(idx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(idx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, idx), cardStr(discarded)), []*Card{discarded})
 
 	if g.players[idx].BestSuitScore() == ThirtyOneTarget {
-		g.appendLog(idx, "thirty_one", fmt.Sprintf("%s reaches 31!", g.playerName(idx)), nil)
+		g.appendLog(idx, "thirty_one", fmt.Sprintf("%s reaches 31!", playerName(g.players, idx)), nil)
 		g.declareThirtyOne(idx)
 		return
 	}
@@ -295,7 +295,7 @@ func (g *ThirtyOne) discardAndResolve(idx, cardIndex int) {
 // knock ノックを記録してターンを進める
 func (g *ThirtyOne) knock(idx int) {
 	g.knockerIdx = idx
-	g.appendLog(idx, "knock", fmt.Sprintf("%s knocks (score: %d)", g.playerName(idx), g.players[idx].BestSuitScore()), nil)
+	g.appendLog(idx, "knock", fmt.Sprintf("%s knocks (score: %d)", playerName(g.players, idx), g.players[idx].BestSuitScore()), nil)
 	g.advanceTurn()
 }
 
@@ -504,7 +504,7 @@ func (g *ThirtyOne) declareThirtyOne(idx int) {
 		p.LoseLife()
 		g.roundLosers = append(g.roundLosers, i)
 	}
-	g.appendLog(idx, "round_win", fmt.Sprintf("%s wins the round with 31", g.playerName(idx)), nil)
+	g.appendLog(idx, "round_win", fmt.Sprintf("%s wins the round with 31", playerName(g.players, idx)), nil)
 	g.finishRound()
 }
 
@@ -538,7 +538,7 @@ func (g *ThirtyOne) endRound(reason string) {
 		if p.BestSuitScore() == minScore {
 			p.LoseLife()
 			g.roundLosers = append(g.roundLosers, i)
-			g.appendLog(i, "lose_life", fmt.Sprintf("%s loses a life (score: %d)", g.playerName(i), minScore), nil)
+			g.appendLog(i, "lose_life", fmt.Sprintf("%s loses a life (score: %d)", playerName(g.players, i), minScore), nil)
 		}
 	}
 	g.finishRound()
@@ -570,7 +570,7 @@ func (g *ThirtyOne) checkGameEnd() {
 	g.gameEndFlag = true
 	g.phase = ThirtyOnePhaseGameEnd
 	g.winnerIdx = g.leaderIdx()
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", g.playerName(g.winnerIdx)), nil)
+	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, g.winnerIdx)), nil)
 }
 
 // leaderIdx 最もライフが多いプレイヤー (同点は若いインデックス) を返す
@@ -708,17 +708,6 @@ func (g *ThirtyOne) GetConfig() ThirtyOneConfig { return g.config }
 
 // SetConfig ゲーム設定を設定する
 func (g *ThirtyOne) SetConfig(cfg ThirtyOneConfig) { g.config = cfg }
-
-// playerName プレイヤー名を返す
-func (g *ThirtyOne) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
 
 // --- JSON ---
 

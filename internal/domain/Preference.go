@@ -247,9 +247,9 @@ func (g *Preference) applyBid(idx int, bid PreferenceBid) error {
 	g.bids[idx] = bid
 	g.bidDone[idx] = true
 	if bid != PreferenceBidPass {
-		g.appendLog(idx, "bid", fmt.Sprintf("%s bids %s", g.playerName(idx), preferenceBidName(bid)), nil)
+		g.appendLog(idx, "bid", fmt.Sprintf("%s bids %s", playerName(g.players, idx), preferenceBidName(bid)), nil)
 	} else {
-		g.appendLog(idx, "bid", fmt.Sprintf("%s passes", g.playerName(idx)), nil)
+		g.appendLog(idx, "bid", fmt.Sprintf("%s passes", playerName(g.players, idx)), nil)
 	}
 	for k := 1; k <= PreferencePlayerCnt; k++ {
 		ni := (idx + k) % PreferencePlayerCnt
@@ -279,7 +279,7 @@ func (g *Preference) resolveBidding() {
 		g.trumpSuit = g.longestSuit(idx)
 	}
 	g.appendLog(idx, "contract",
-		fmt.Sprintf("%s declares %s (trump %d)", g.playerName(idx), preferenceBidName(bid), g.trumpSuit), nil)
+		fmt.Sprintf("%s declares %s (trump %d)", playerName(g.players, idx), preferenceBidName(bid), g.trumpSuit), nil)
 	g.leadPlayerIdx = (g.dealerIdx + 1) % PreferencePlayerCnt
 	g.currentPlayerIdx = g.leadPlayerIdx
 	g.phase = PreferencePhasePlay
@@ -382,7 +382,7 @@ func (g *Preference) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Preference) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == PreferencePlayerCnt {
 		g.phase = PreferencePhaseTrickEnd
@@ -404,7 +404,7 @@ func (g *Preference) ResolveTrick() {
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.roundTricks[winnerIdx]++
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", g.playerName(winnerIdx), g.trickNumber), trickCards)
+		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= PreferenceTrickCount {
@@ -473,7 +473,7 @@ func (g *Preference) checkGameEnd() {
 		g.gameEndFlag = true
 		g.winnerPlayer = leader
 		g.phase = PreferencePhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", g.playerName(leader)), nil)
+		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
 	}
 }
 
@@ -576,17 +576,6 @@ func preferenceSortHand(p *PreferencePlayer) {
 	for _, c := range cards {
 		p.AddCard(c)
 	}
-}
-
-// playerName プレイヤー名を返す。
-func (g *Preference) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // indexOfPlayerInTrick currentTrick 内で playerIdx の札の位置を返す (-1=なし)。

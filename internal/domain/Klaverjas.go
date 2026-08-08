@@ -171,7 +171,7 @@ func (g *Klaverjas) detectRoem() {
 		roem := klaverjasHandRoem(g.players[i])
 		if roem > 0 {
 			g.roundRoem[KlaverjasTeamOf(i)] += roem
-			g.appendLog(i, "roem", fmt.Sprintf("%s scores %d roem", g.playerName(i), roem), nil)
+			g.appendLog(i, "roem", fmt.Sprintf("%s scores %d roem", playerName(g.players, i), roem), nil)
 		}
 	}
 }
@@ -223,7 +223,7 @@ func (g *Klaverjas) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Klaverjas) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == KlaverjasPlayerCnt {
 		g.phase = KlaverjasPhaseTrickEnd
@@ -253,7 +253,7 @@ func (g *Klaverjas) ResolveTrick() {
 		bonus = fmt.Sprintf(" +%d last", KlaverjasLastTrickBonus)
 	}
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (+%d%s)", g.playerName(winnerIdx), g.trickNumber, pts, bonus), trickCards)
+		fmt.Sprintf("%s wins trick %d (+%d%s)", playerName(g.players, winnerIdx), g.trickNumber, pts, bonus), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= KlaverjasTrickCount {
@@ -586,17 +586,6 @@ func klaverjasSortHand(p *KlaverjasPlayer) {
 	for _, c := range cards {
 		p.AddCard(c)
 	}
-}
-
-// playerName プレイヤー名を返す。
-func (g *Klaverjas) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // indexOfPlayerInTrick currentTrick 内で playerIdx の札の位置を返す (-1=なし)。

@@ -198,7 +198,7 @@ func (e *Euchre) PlayerPickUp(orderUp bool, goAlone bool) error {
 	if orderUp {
 		e.doOrderUp(humanIdx, goAlone)
 	} else {
-		e.appendLog(humanIdx, "pass", fmt.Sprintf("%s passes", e.playerName(humanIdx)), nil)
+		e.appendLog(humanIdx, "pass", fmt.Sprintf("%s passes", playerName(e.players, humanIdx)), nil)
 		e.advanceBidPickUp()
 	}
 	return nil
@@ -220,7 +220,7 @@ func (e *Euchre) CpuPickUp() {
 	if orderUp {
 		e.doOrderUp(e.bidPlayerIdx, goAlone)
 	} else {
-		e.appendLog(e.bidPlayerIdx, "pass", fmt.Sprintf("%s passes", e.playerName(e.bidPlayerIdx)), nil)
+		e.appendLog(e.bidPlayerIdx, "pass", fmt.Sprintf("%s passes", playerName(e.players, e.bidPlayerIdx)), nil)
 		e.advanceBidPickUp()
 	}
 }
@@ -238,10 +238,10 @@ func (e *Euchre) doOrderUp(playerIdx int, goAlone bool) {
 		e.goingAlone = true
 		e.goingAlonePlayerIdx = playerIdx
 		e.appendLog(playerIdx, "order_up_alone",
-			fmt.Sprintf("%s orders up %s and goes alone", e.playerName(playerIdx), cardStr(e.faceUpCard)), []*Card{e.faceUpCard})
+			fmt.Sprintf("%s orders up %s and goes alone", playerName(e.players, playerIdx), cardStr(e.faceUpCard)), []*Card{e.faceUpCard})
 	} else {
 		e.appendLog(playerIdx, "order_up",
-			fmt.Sprintf("%s orders up %s", e.playerName(playerIdx), cardStr(e.faceUpCard)), []*Card{e.faceUpCard})
+			fmt.Sprintf("%s orders up %s", playerName(e.players, playerIdx), cardStr(e.faceUpCard)), []*Card{e.faceUpCard})
 	}
 
 	e.faceUpCard = nil
@@ -306,7 +306,7 @@ func (e *Euchre) PlayerPassCall() error {
 		return NewDomainError(ErrCannotPass, "ディーラーは必ずスートを選ばなければなりません")
 	}
 
-	e.appendLog(humanIdx, "pass", fmt.Sprintf("%s passes", e.playerName(humanIdx)), nil)
+	e.appendLog(humanIdx, "pass", fmt.Sprintf("%s passes", playerName(e.players, humanIdx)), nil)
 	e.advanceBidCallTrump()
 	return nil
 }
@@ -329,7 +329,7 @@ func (e *Euchre) CpuCallTrump() {
 			forcedSuit := e.cpuForceCallTrump(e.bidPlayerIdx)
 			e.doCallTrump(e.bidPlayerIdx, forcedSuit, false)
 		} else {
-			e.appendLog(e.bidPlayerIdx, "pass", fmt.Sprintf("%s passes", e.playerName(e.bidPlayerIdx)), nil)
+			e.appendLog(e.bidPlayerIdx, "pass", fmt.Sprintf("%s passes", playerName(e.players, e.bidPlayerIdx)), nil)
 			e.advanceBidCallTrump()
 		}
 	}
@@ -345,10 +345,10 @@ func (e *Euchre) doCallTrump(playerIdx int, suit int, goAlone bool) {
 		e.goingAlone = true
 		e.goingAlonePlayerIdx = playerIdx
 		e.appendLog(playerIdx, "call_trump_alone",
-			fmt.Sprintf("%s calls %s as trump and goes alone", e.playerName(playerIdx), suitName), nil)
+			fmt.Sprintf("%s calls %s as trump and goes alone", playerName(e.players, playerIdx), suitName), nil)
 	} else {
 		e.appendLog(playerIdx, "call_trump",
-			fmt.Sprintf("%s calls %s as trump", e.playerName(playerIdx), suitName), nil)
+			fmt.Sprintf("%s calls %s as trump", playerName(e.players, playerIdx), suitName), nil)
 	}
 
 	e.startPlayPhase()
@@ -380,7 +380,7 @@ func (e *Euchre) PlayerDiscard(cardIndex int) error {
 	}
 
 	discarded := player.RemoveCard(cardIndex)
-	e.appendLog(e.dealerIdx, "discard", fmt.Sprintf("%s discards a card", e.playerName(e.dealerIdx)), []*Card{discarded})
+	e.appendLog(e.dealerIdx, "discard", fmt.Sprintf("%s discards a card", playerName(e.players, e.dealerIdx)), []*Card{discarded})
 	e.sortAllHands()
 	e.startPlayPhase()
 	return nil
@@ -397,7 +397,7 @@ func (e *Euchre) CpuDiscard() {
 
 	idx := e.cpuSelectDiscard(e.dealerIdx)
 	discarded := e.players[e.dealerIdx].RemoveCard(idx)
-	e.appendLog(e.dealerIdx, "discard", fmt.Sprintf("%s discards a card", e.playerName(e.dealerIdx)), []*Card{discarded})
+	e.appendLog(e.dealerIdx, "discard", fmt.Sprintf("%s discards a card", playerName(e.players, e.dealerIdx)), []*Card{discarded})
 	e.sortAllHands()
 	e.startPlayPhase()
 }
@@ -467,7 +467,7 @@ func (e *Euchre) ResolveTrick() {
 
 	e.players[winnerIdx].AddTrick(trickCards)
 
-	winnerName := e.playerName(winnerIdx)
+	winnerName := playerName(e.players, winnerIdx)
 	e.appendLog(winnerIdx, "trick_win", fmt.Sprintf("%s wins trick %d", winnerName, e.trickNumber), trickCards)
 
 	e.leadPlayerIdx = winnerIdx
@@ -789,7 +789,7 @@ func (e *Euchre) playCard(playerIdx int, card *Card) {
 		Card:      card,
 	})
 
-	e.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", e.playerName(playerIdx), cardStr(card)), []*Card{card})
+	e.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(e.players, playerIdx), cardStr(card)), []*Card{card})
 
 	expectedCards := e.activePlayerCount()
 	if len(e.currentTrick) == expectedCards {
@@ -898,17 +898,6 @@ func euchreSortHand(p *EuchrePlayer, e *Euchre) {
 		}
 		return e.cardRank(ci) < e.cardRank(cj)
 	})
-}
-
-// playerName プレイヤー名を返す
-func (e *Euchre) playerName(idx int) string {
-	if idx < 0 || idx >= len(e.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if e.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // suitStr スート名を返す

@@ -174,7 +174,7 @@ func (g *KnockoutWhist) startRound() {
 		g.phase = KnockoutWhistPhaseTrumpSelect
 		g.appendLog(g.leadPlayerIdx, "trump_select",
 			fmt.Sprintf("round %d: %d cards each, %s chooses trump",
-				g.roundNumber, g.handSize, g.playerName(g.leadPlayerIdx)), nil)
+				g.roundNumber, g.handSize, playerName(g.players, g.leadPlayerIdx)), nil)
 		return
 	}
 
@@ -182,7 +182,7 @@ func (g *KnockoutWhist) startRound() {
 	g.phase = KnockoutWhistPhasePlay
 	g.appendLog(g.leadPlayerIdx, "round_start",
 		fmt.Sprintf("round %d: %d cards each, trump %d, %s leads",
-			g.roundNumber, g.handSize, g.trumpSuit, g.playerName(g.leadPlayerIdx)), nil)
+			g.roundNumber, g.handSize, g.trumpSuit, playerName(g.players, g.leadPlayerIdx)), nil)
 }
 
 // PlayerSelectTrump 人間のラウンド勝者が次ラウンドの切り札スートを選択する (1-4)。
@@ -203,7 +203,7 @@ func (g *KnockoutWhist) PlayerSelectTrump(suit int) error {
 	g.phase = KnockoutWhistPhasePlay
 	g.appendLog(g.leadPlayerIdx, "round_start",
 		fmt.Sprintf("round %d: %d cards each, trump %d, %s leads",
-			g.roundNumber, g.handSize, g.trumpSuit, g.playerName(g.leadPlayerIdx)), nil)
+			g.roundNumber, g.handSize, g.trumpSuit, playerName(g.players, g.leadPlayerIdx)), nil)
 	return nil
 }
 
@@ -286,7 +286,7 @@ func (g *KnockoutWhist) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *KnockoutWhist) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) >= g.activeCount() {
 		g.phase = KnockoutWhistPhaseTrickEnd
@@ -308,7 +308,7 @@ func (g *KnockoutWhist) ResolveTrick() {
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.players[winnerIdx].IncRoundTricks()
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", g.playerName(winnerIdx), g.trickNumber), trickCards)
+		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= g.handSize {
@@ -346,10 +346,10 @@ func (g *KnockoutWhist) ScoreRound() {
 		if p.GetRoundTricks() == 0 {
 			if p.GetDogbones() > 0 {
 				p.SetDogbones(p.GetDogbones() - 1)
-				g.appendLog(i, "dogbone", fmt.Sprintf("%s spends a dogbone to survive", g.playerName(i)), nil)
+				g.appendLog(i, "dogbone", fmt.Sprintf("%s spends a dogbone to survive", playerName(g.players, i)), nil)
 			} else {
 				p.SetEliminated(true)
-				g.appendLog(i, "eliminated", fmt.Sprintf("%s is knocked out", g.playerName(i)), nil)
+				g.appendLog(i, "eliminated", fmt.Sprintf("%s is knocked out", playerName(g.players, i)), nil)
 			}
 		}
 	}
@@ -364,7 +364,7 @@ func (g *KnockoutWhist) ScoreRound() {
 			// 全滅 (同時 0 トリック) や最終ラウンド到達時はラウンド勝者を優勝とする。
 			g.winnerPlayer = g.roundWinnerIdx
 		}
-		g.appendLog(g.winnerPlayer, "game_end", fmt.Sprintf("%s wins the match!", g.playerName(g.winnerPlayer)), nil)
+		g.appendLog(g.winnerPlayer, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, g.winnerPlayer)), nil)
 	}
 }
 
@@ -482,17 +482,6 @@ func knockoutSortHand(p *KnockoutWhistPlayer) {
 	for _, c := range cards {
 		p.AddCard(c)
 	}
-}
-
-// playerName プレイヤー名を返す。
-func (g *KnockoutWhist) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // indexOfPlayerInTrick currentTrick 内で playerIdx の札の位置を返す (-1=なし)。

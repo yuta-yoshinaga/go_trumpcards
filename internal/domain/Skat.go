@@ -228,7 +228,7 @@ func (s *Skat) startRound() {
 
 	s.round.phase = SkatPhaseBid
 
-	s.appendLog(-1, "round_start", fmt.Sprintf("Round %d: dealer=%s", s.round.roundNumber, s.playerName(s.round.dealerIdx)), nil)
+	s.appendLog(-1, "round_start", fmt.Sprintf("Round %d: dealer=%s", s.round.roundNumber, playerName(s.players, s.round.dealerIdx)), nil)
 }
 
 // NextRound advances to the next round.
@@ -352,14 +352,14 @@ func (s *Skat) applyBidStep(actorIdx int, accept bool) {
 		if accept {
 			s.round.currentBid = SkatBidLadder[0]
 			s.appendLog(actorIdx, "bid_call",
-				fmt.Sprintf("%s calls %d", s.playerName(actorIdx), s.round.currentBid), nil)
+				fmt.Sprintf("%s calls %d", playerName(s.players, actorIdx), s.round.currentBid), nil)
 			s.round.bidStep = 1
 			return
 		}
 		// Bidder passed without calling.
 		s.round.passedAtCall[actorIdx] = true
 		s.appendLog(actorIdx, "bid_pass",
-			fmt.Sprintf("%s passes", s.playerName(actorIdx)), nil)
+			fmt.Sprintf("%s passes", playerName(s.players, actorIdx)), nil)
 		s.bidderDroppedOut()
 		return
 	}
@@ -367,11 +367,11 @@ func (s *Skat) applyBidStep(actorIdx int, accept bool) {
 	// Responder turn.
 	if accept {
 		s.appendLog(actorIdx, "bid_yes",
-			fmt.Sprintf("%s answers yes at %d", s.playerName(actorIdx), s.round.currentBid), nil)
+			fmt.Sprintf("%s answers yes at %d", playerName(s.players, actorIdx), s.round.currentBid), nil)
 		if s.round.bidStep < len(SkatBidLadder) {
 			s.round.currentBid = SkatBidLadder[s.round.bidStep]
 			s.appendLog(s.round.bidderIdx, "bid_call",
-				fmt.Sprintf("%s calls %d", s.playerName(s.round.bidderIdx), s.round.currentBid), nil)
+				fmt.Sprintf("%s calls %d", playerName(s.players, s.round.bidderIdx), s.round.currentBid), nil)
 			s.round.bidStep++
 			return
 		}
@@ -383,7 +383,7 @@ func (s *Skat) applyBidStep(actorIdx int, accept bool) {
 	// Responder passes — bidder is round survivor.
 	s.round.passedAtCall[actorIdx] = true
 	s.appendLog(actorIdx, "bid_pass",
-		fmt.Sprintf("%s passes", s.playerName(actorIdx)), nil)
+		fmt.Sprintf("%s passes", playerName(s.players, actorIdx)), nil)
 	s.responderDroppedOut()
 }
 
@@ -440,7 +440,7 @@ func (s *Skat) declareDeclarer(idx int) {
 	s.players[idx].SetIsDeclarer(true)
 	s.players[idx].SetBid(s.round.currentBid)
 	s.appendLog(idx, "declarer",
-		fmt.Sprintf("%s wins the auction at %d", s.playerName(idx), s.round.currentBid), nil)
+		fmt.Sprintf("%s wins the auction at %d", playerName(s.players, idx), s.round.currentBid), nil)
 	s.round.phase = SkatPhaseSkatPickup
 }
 
@@ -483,7 +483,7 @@ func (s *Skat) applyPickSkat(pickup bool) {
 		}
 		s.sortHand(declarer)
 		s.appendLog(s.round.declarerIdx, "pick_skat",
-			fmt.Sprintf("%s picks up the skat", s.playerName(s.round.declarerIdx)), s.round.skat)
+			fmt.Sprintf("%s picks up the skat", playerName(s.players, s.round.declarerIdx)), s.round.skat)
 		s.round.skat = nil
 		s.round.phase = SkatPhaseDiscard
 		return
@@ -491,7 +491,7 @@ func (s *Skat) applyPickSkat(pickup bool) {
 
 	// Hand game — skat stays face-down; go straight to game declaration.
 	s.appendLog(s.round.declarerIdx, "hand_game",
-		fmt.Sprintf("%s plays a hand game", s.playerName(s.round.declarerIdx)), nil)
+		fmt.Sprintf("%s plays a hand game", playerName(s.players, s.round.declarerIdx)), nil)
 	s.round.phase = SkatPhaseGameDeclaration
 }
 
@@ -545,7 +545,7 @@ func (s *Skat) applyDiscard(idxA, idxB int) {
 	s.round.skat = []*Card{cardLo, cardHi}
 	s.sortHand(declarer)
 	s.appendLog(s.round.declarerIdx, "discard",
-		fmt.Sprintf("%s discards 2 cards into the skat", s.playerName(s.round.declarerIdx)),
+		fmt.Sprintf("%s discards 2 cards into the skat", playerName(s.players, s.round.declarerIdx)),
 		[]*Card{cardLo, cardHi})
 	s.round.phase = SkatPhaseGameDeclaration
 }
@@ -594,7 +594,7 @@ func (s *Skat) applyGameDeclaration(gt SkatGameType, trumpSuit int) {
 		s.round.trumpSuit = 0
 	}
 	s.appendLog(s.round.declarerIdx, "declare_game",
-		fmt.Sprintf("%s declares %s", s.playerName(s.round.declarerIdx), s.gameTypeName()), nil)
+		fmt.Sprintf("%s declares %s", playerName(s.players, s.round.declarerIdx), s.gameTypeName()), nil)
 	s.startPlay()
 }
 
@@ -664,7 +664,7 @@ func (s *Skat) CpuPlay() {
 func (s *Skat) playCard(playerIdx int, card *Card) {
 	s.round.currentTrick = append(s.round.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	s.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", s.playerName(playerIdx), cardStr(card)), []*Card{card})
+		fmt.Sprintf("%s plays %s", playerName(s.players, playerIdx), cardStr(card)), []*Card{card})
 	if len(s.round.currentTrick) == SkatPlayerCnt {
 		s.round.phase = SkatPhaseTrickEnd
 		return
@@ -687,7 +687,7 @@ func (s *Skat) ResolveTrick() {
 	s.players[winnerIdx].AddTrick(cards)
 	s.players[winnerIdx].SetCardPoints(s.players[winnerIdx].GetCardPoints() + pts)
 	s.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (%d card points)", s.playerName(winnerIdx), s.round.trickNumber, pts), cards)
+		fmt.Sprintf("%s wins trick %d (%d card points)", playerName(s.players, winnerIdx), s.round.trickNumber, pts), cards)
 	s.round.leadPlayerIdx = winnerIdx
 	if s.round.trickNumber >= SkatTricksPerRound {
 		s.round.phase = SkatPhaseRoundEnd
@@ -741,18 +741,18 @@ func (s *Skat) ScoreRound() {
 		declarer.SetRoundScore(gameValue)
 		declarer.IncRoundsWon()
 		s.appendLog(declarerIdx, "round_result",
-			fmt.Sprintf("%s wins (+%d)", s.playerName(declarerIdx), gameValue), nil)
+			fmt.Sprintf("%s wins (+%d)", playerName(s.players, declarerIdx), gameValue), nil)
 	} else {
 		s.round.winnerSide = SkatWinnerDefenders
 		declarer.SetRoundScore(-gameValue)
 		declarer.IncRoundsLost()
 		s.appendLog(declarerIdx, "round_result",
-			fmt.Sprintf("%s loses (-%d)", s.playerName(declarerIdx), gameValue), nil)
+			fmt.Sprintf("%s loses (-%d)", playerName(s.players, declarerIdx), gameValue), nil)
 	}
 
 	declarer.CommitRoundScore()
 	s.appendLog(declarerIdx, "cumulative_score",
-		fmt.Sprintf("%s total=%d", s.playerName(declarerIdx), declarer.GetCumulativeScore()), nil)
+		fmt.Sprintf("%s total=%d", playerName(s.players, declarerIdx), declarer.GetCumulativeScore()), nil)
 
 	s.checkGameEnd()
 }
@@ -1152,7 +1152,7 @@ func (s *Skat) checkGameEnd() {
 			s.round.gameEndFlag = true
 			s.round.phase = SkatPhaseGameEnd
 			s.appendLog(-1, "game_end",
-				fmt.Sprintf("%s reaches %d points and wins!", s.playerName(s.findIndex(p)), p.GetCumulativeScore()), nil)
+				fmt.Sprintf("%s reaches %d points and wins!", playerName(s.players, s.findIndex(p)), p.GetCumulativeScore()), nil)
 			return
 		}
 	}
@@ -1248,17 +1248,6 @@ func (s *Skat) GetHint() *SkatHint {
 		return &SkatHint{CardIndex: &idx, Reason: "best_play"}
 	}
 	return nil
-}
-
-// playerName returns the player display name.
-func (s *Skat) playerName(idx int) string {
-	if idx < 0 || idx >= len(s.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if s.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // gameTypeName returns the human-readable game type.

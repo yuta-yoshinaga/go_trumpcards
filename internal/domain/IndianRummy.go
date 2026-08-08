@@ -280,7 +280,7 @@ func (g *IndianRummy) drawFromStock() error {
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", g.playerName(g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, g.currentPlayerIdx)), nil)
 	g.phase = IndianRummyPhaseDiscard
 	return nil
 }
@@ -294,7 +294,7 @@ func (g *IndianRummy) drawFromDiscard() error {
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s draws %s from discard", g.playerName(g.currentPlayerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s draws %s from discard", playerName(g.players, g.currentPlayerIdx), cardStr(card)), []*Card{card})
 	g.phase = IndianRummyPhaseDiscard
 	return nil
 }
@@ -334,7 +334,7 @@ func (g *IndianRummy) applyDiscard(cardIndex int) error {
 	}
 	discarded := player.RemoveCard(cardIndex)
 	g.discardPile = append(g.discardPile, discarded)
-	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", g.playerName(g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
 	g.advanceTurn()
 	return nil
 }
@@ -370,7 +370,7 @@ func (g *IndianRummy) applyDeclare(cardIndex int) error {
 	if !g.declarationValid {
 		status = "invalid"
 	}
-	g.appendLog(g.currentPlayerIdx, "declare", fmt.Sprintf("%s declares (%s)", g.playerName(g.currentPlayerIdx), status), nil)
+	g.appendLog(g.currentPlayerIdx, "declare", fmt.Sprintf("%s declares (%s)", playerName(g.players, g.currentPlayerIdx), status), nil)
 
 	g.enterRoundEnd()
 	return nil
@@ -526,9 +526,9 @@ func (g *IndianRummy) scoreRound() {
 	}
 
 	if g.declarerIdx >= 0 && g.declarationValid {
-		g.appendLog(g.declarerIdx, "round_win", fmt.Sprintf("%s wins the round with a valid declaration", g.playerName(g.declarerIdx)), nil)
+		g.appendLog(g.declarerIdx, "round_win", fmt.Sprintf("%s wins the round with a valid declaration", playerName(g.players, g.declarerIdx)), nil)
 	} else if g.declarerIdx >= 0 {
-		g.appendLog(g.declarerIdx, "round_end", fmt.Sprintf("%s made an invalid declaration (+%d penalty)", g.playerName(g.declarerIdx), IndianRummyDeadwoodCap), nil)
+		g.appendLog(g.declarerIdx, "round_end", fmt.Sprintf("%s made an invalid declaration (+%d penalty)", playerName(g.players, g.declarerIdx), IndianRummyDeadwoodCap), nil)
 	}
 
 	for i := range g.players {
@@ -549,7 +549,7 @@ func (g *IndianRummy) finalizeGameEnd() {
 			g.winnerIdx = i
 		}
 	}
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game with %d points!", g.playerName(g.winnerIdx), minScore), nil)
+	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game with %d points!", playerName(g.players, g.winnerIdx), minScore), nil)
 }
 
 // --- Getters / Setters ---
@@ -676,16 +676,6 @@ func (g *IndianRummy) sortHand(playerIdx int) {
 	for _, c := range cards {
 		p.AddCard(c)
 	}
-}
-
-func (g *IndianRummy) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // indianRummyCollectCards プレイヤーの手札を []*Card で返す

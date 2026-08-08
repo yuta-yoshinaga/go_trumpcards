@@ -233,7 +233,7 @@ func (g *HandAndFoot) autoLayRed3s(playerIdx int) {
 			if CanastaIsRed3(card) {
 				player.RemoveCard(i)
 				g.teamRed3s[team] = append(g.teamRed3s[team], card)
-				g.appendLog(playerIdx, "red3", fmt.Sprintf("%s lays down red 3: %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+				g.appendLog(playerIdx, "red3", fmt.Sprintf("%s lays down red 3: %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 				if len(g.drawPile) > 0 {
 					replacement := g.drawPile[len(g.drawPile)-1]
 					g.drawPile = g.drawPile[:len(g.drawPile)-1]
@@ -261,7 +261,7 @@ func (g *HandAndFoot) enterFootIfEmpty(playerIdx int) bool {
 	}
 	player.SetFoot(make([]*Card, 0))
 	player.SetInFoot(true)
-	g.appendLog(playerIdx, "foot", fmt.Sprintf("%s picks up the foot (%d cards)", g.playerName(playerIdx), len(foot)), nil)
+	g.appendLog(playerIdx, "foot", fmt.Sprintf("%s picks up the foot (%d cards)", playerName(g.players, playerIdx), len(foot)), nil)
 	g.autoLayRed3s(playerIdx)
 	g.sortHand(playerIdx)
 	return true
@@ -363,7 +363,7 @@ func (g *HandAndFoot) PlayerDrawFromStock() error {
 			g.autoLayRed3s(g.currentPlayerIdx)
 		}
 	}
-	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws 2 from stock", g.playerName(g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws 2 from stock", playerName(g.players, g.currentPlayerIdx)), nil)
 
 	g.drewFromDiscard = false
 	g.drawnCard = nil
@@ -430,7 +430,7 @@ func (g *HandAndFoot) PlayerDrawFromDiscard(naturalPairIndices []int) error {
 	}
 	g.isFrozen = false
 
-	g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s picks up %d cards from the discard pile", g.playerName(g.currentPlayerIdx), len(taken)), []*Card{topCard})
+	g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s picks up %d cards from the discard pile", playerName(g.players, g.currentPlayerIdx), len(taken)), []*Card{topCard})
 
 	g.autoLayRed3s(g.currentPlayerIdx)
 	g.sortHand(g.currentPlayerIdx)
@@ -560,7 +560,7 @@ func (g *HandAndFoot) PlayerMeld(meldGroups [][]int) error {
 			}
 			meld := &CanastaMeld{Cards: action.cards, IsNatural: isNatural}
 			g.teamMelds[team] = append(g.teamMelds[team], meld)
-			g.appendLog(g.currentPlayerIdx, "meld", fmt.Sprintf("%s melds %d cards (rank %d)", g.playerName(g.currentPlayerIdx), len(action.cards), meld.GetRank()), action.cards)
+			g.appendLog(g.currentPlayerIdx, "meld", fmt.Sprintf("%s melds %d cards (rank %d)", playerName(g.players, g.currentPlayerIdx), len(action.cards), meld.GetRank()), action.cards)
 		} else {
 			existing := g.teamMelds[team][action.existingIdx]
 			for _, c := range action.cards {
@@ -569,7 +569,7 @@ func (g *HandAndFoot) PlayerMeld(meldGroups [][]int) error {
 					existing.IsNatural = false
 				}
 			}
-			g.appendLog(g.currentPlayerIdx, "meld_add", fmt.Sprintf("%s adds %d cards to meld (rank %d)", g.playerName(g.currentPlayerIdx), len(action.cards), existing.GetRank()), action.cards)
+			g.appendLog(g.currentPlayerIdx, "meld_add", fmt.Sprintf("%s adds %d cards to meld (rank %d)", playerName(g.players, g.currentPlayerIdx), len(action.cards), existing.GetRank()), action.cards)
 		}
 	}
 
@@ -582,7 +582,7 @@ func (g *HandAndFoot) PlayerMeld(meldGroups [][]int) error {
 
 	for _, m := range g.teamMelds[team] {
 		if m.IsCanasta() {
-			g.appendLog(g.currentPlayerIdx, "canasta", fmt.Sprintf("%s completes a %s canasta!", g.playerName(g.currentPlayerIdx), canastaTypeStr(m.IsNatural)), nil)
+			g.appendLog(g.currentPlayerIdx, "canasta", fmt.Sprintf("%s completes a %s canasta!", playerName(g.players, g.currentPlayerIdx), canastaTypeStr(m.IsNatural)), nil)
 		}
 	}
 
@@ -641,7 +641,7 @@ func (g *HandAndFoot) PlayerDiscard(cardIndex int) error {
 	if CanastaIsWild(discarded) {
 		g.isFrozen = true
 	}
-	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", g.playerName(g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
 
 	// 捨て札で手札を出し切ったらフットを取り込む
 	g.enterFootIfEmpty(g.currentPlayerIdx)
@@ -677,7 +677,7 @@ func (g *HandAndFoot) PlayerGoOut() error {
 		if CanastaIsWild(discarded) {
 			g.isFrozen = true
 		}
-		g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", g.playerName(g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+		g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
 	} else if player.GetCardsSize() > 1 {
 		return NewDomainError(ErrInvalidPlay, "上がるには手札が0枚または1枚でなければなりません")
 	}
@@ -688,7 +688,7 @@ func (g *HandAndFoot) PlayerGoOut() error {
 
 // goOut 上がり処理
 func (g *HandAndFoot) goOut(playerIdx int) {
-	g.appendLog(playerIdx, "go_out", fmt.Sprintf("%s goes out! (bonus: %d)", g.playerName(playerIdx), HandAndFootGoingOutBonus), nil)
+	g.appendLog(playerIdx, "go_out", fmt.Sprintf("%s goes out! (bonus: %d)", playerName(g.players, playerIdx), HandAndFootGoingOutBonus), nil)
 	g.scoreRound(HandAndFootTeamOf(playerIdx))
 }
 
@@ -736,7 +736,7 @@ func (g *HandAndFoot) cpuDraw() {
 					player.AddCard(c)
 				}
 				g.isFrozen = false
-				g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s picks up %d cards from the discard pile", g.playerName(g.currentPlayerIdx), len(taken)), []*Card{topCard})
+				g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s picks up %d cards from the discard pile", playerName(g.players, g.currentPlayerIdx), len(taken)), []*Card{topCard})
 				g.autoLayRed3s(g.currentPlayerIdx)
 				g.sortHand(g.currentPlayerIdx)
 				g.phase = HandAndFootPhaseMeld
@@ -758,7 +758,7 @@ func (g *HandAndFoot) cpuDraw() {
 			g.autoLayRed3s(g.currentPlayerIdx)
 		}
 	}
-	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws 2 from stock", g.playerName(g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws 2 from stock", playerName(g.players, g.currentPlayerIdx)), nil)
 
 	g.drewFromDiscard = false
 	g.drawnCard = nil
@@ -789,7 +789,7 @@ func (g *HandAndFoot) cpuMeld() {
 					existing.IsNatural = false
 				}
 			}
-			g.appendLog(g.currentPlayerIdx, "meld_add", fmt.Sprintf("%s adds %d cards to meld (rank %d)", g.playerName(g.currentPlayerIdx), len(group), existing.GetRank()), group)
+			g.appendLog(g.currentPlayerIdx, "meld_add", fmt.Sprintf("%s adds %d cards to meld (rank %d)", playerName(g.players, g.currentPlayerIdx), len(group), existing.GetRank()), group)
 		} else {
 			isNatural := true
 			for _, c := range group {
@@ -800,7 +800,7 @@ func (g *HandAndFoot) cpuMeld() {
 			}
 			meld := &CanastaMeld{Cards: group, IsNatural: isNatural}
 			g.teamMelds[team] = append(g.teamMelds[team], meld)
-			g.appendLog(g.currentPlayerIdx, "meld", fmt.Sprintf("%s melds %d cards (rank %d)", g.playerName(g.currentPlayerIdx), len(group), meld.GetRank()), group)
+			g.appendLog(g.currentPlayerIdx, "meld", fmt.Sprintf("%s melds %d cards (rank %d)", playerName(g.players, g.currentPlayerIdx), len(group), meld.GetRank()), group)
 		}
 
 		for _, c := range group {
@@ -850,7 +850,7 @@ func (g *HandAndFoot) cpuDiscard() {
 			if CanastaIsWild(discarded) {
 				g.isFrozen = true
 			}
-			g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", g.playerName(g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+			g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
 			g.goOut(g.currentPlayerIdx)
 			return
 		}
@@ -862,7 +862,7 @@ func (g *HandAndFoot) cpuDiscard() {
 	if CanastaIsWild(discarded) {
 		g.isFrozen = true
 	}
-	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", g.playerName(g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
 
 	g.enterFootIfEmpty(g.currentPlayerIdx)
 	g.advanceTurn()
@@ -1358,17 +1358,6 @@ func (g *HandAndFoot) sortHand(playerIdx int) {
 		}
 		return ci.GetValue() < cj.GetValue()
 	})
-}
-
-// playerName プレイヤー名を返す
-func (g *HandAndFoot) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // --- JSON serialization ---

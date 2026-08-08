@@ -303,7 +303,7 @@ func (g *Anaconda) executePass(humanIndices []int) {
 		}
 		outgoing[k] = p.RemoveCards(idxs)
 		g.appendLog(seat, "pass",
-			fmt.Sprintf("%s passes %d card(s) left", g.playerName(seat), len(outgoing[k])), append([]*Card(nil), outgoing[k]...))
+			fmt.Sprintf("%s passes %d card(s) left", playerName(g.players, seat), len(outgoing[k])), append([]*Card(nil), outgoing[k]...))
 	}
 	for k := range participants {
 		recipient := participants[(k+1)%n]
@@ -378,7 +378,7 @@ func (g *Anaconda) applyKeep(seat int, keep []int) {
 	}
 	removed := p.RemoveCards(discard)
 	g.appendLog(seat, "keep",
-		fmt.Sprintf("%s discards %d card(s)", g.playerName(seat), len(removed)), append([]*Card(nil), removed...))
+		fmt.Sprintf("%s discards %d card(s)", playerName(g.players, seat), len(removed)), append([]*Card(nil), removed...))
 }
 
 // cpuBestKeepIndices は 7 枚から最良の 5 枚を残すインデックス列を返す (捨てる 2 枚を総当り)。
@@ -497,7 +497,7 @@ func (g *Anaconda) applyCall(idx int) {
 	}
 	g.state.actedSinceRaise++
 	g.state.actionCount++
-	g.appendLog(idx, "call", fmt.Sprintf("%s calls %d (pot %d)", g.playerName(idx), need, g.state.pot), nil)
+	g.appendLog(idx, "call", fmt.Sprintf("%s calls %d (pot %d)", playerName(g.players, idx), need, g.state.pot), nil)
 	g.advanceOrClose(idx)
 }
 
@@ -518,7 +518,7 @@ func (g *Anaconda) applyRaise(idx int) {
 	g.state.pot += need
 	g.state.actedSinceRaise = 1
 	g.state.actionCount++
-	g.appendLog(idx, "raise", fmt.Sprintf("%s raises to %d, pays %d (pot %d)", g.playerName(idx), newBet, need, g.state.pot), nil)
+	g.appendLog(idx, "raise", fmt.Sprintf("%s raises to %d, pays %d (pot %d)", playerName(g.players, idx), newBet, need, g.state.pot), nil)
 	g.advanceOrClose(idx)
 }
 
@@ -526,7 +526,7 @@ func (g *Anaconda) applyRaise(idx int) {
 func (g *Anaconda) applyFold(idx int) {
 	g.players[idx].SetFolded(true)
 	g.state.actionCount++
-	g.appendLog(idx, "fold", fmt.Sprintf("%s folds", g.playerName(idx)), nil)
+	g.appendLog(idx, "fold", fmt.Sprintf("%s folds", playerName(g.players, idx)), nil)
 	g.advanceOrClose(idx)
 }
 
@@ -568,7 +568,7 @@ func (g *Anaconda) resolveShowdown() {
 	if winner >= 0 {
 		g.players[winner].AddChips(g.state.pot)
 		g.appendLog(winner, "win",
-			fmt.Sprintf("%s wins the pot (%d)", g.playerName(winner), g.state.pot), nil)
+			fmt.Sprintf("%s wins the pot (%d)", playerName(g.players, winner), g.state.pot), nil)
 	}
 	g.setHumanResult(winner)
 	g.state.pot = 0
@@ -605,7 +605,7 @@ func (g *Anaconda) endGame() {
 	g.state.phase = AnacondaPhaseResult
 	g.state.matchWinnerIdx = g.richestIdx()
 	g.appendLog(g.state.matchWinnerIdx, "game_end",
-		fmt.Sprintf("%s wins the game", g.playerName(g.state.matchWinnerIdx)), nil)
+		fmt.Sprintf("%s wins the game", playerName(g.players, g.state.matchWinnerIdx)), nil)
 }
 
 // --- CPU ---
@@ -887,17 +887,6 @@ func (g *Anaconda) richestIdx() int {
 		}
 	}
 	return best
-}
-
-// playerName は表示用のプレイヤー名を返す。
-func (g *Anaconda) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // anacondaValidateIndices はカードインデックス列の妥当性 (枚数・範囲・重複なし) を検証する。

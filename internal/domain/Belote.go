@@ -262,7 +262,7 @@ func (b *Belote) PlayerPickUp(orderUp bool) error {
 	if orderUp {
 		b.doOrderUp(humanIdx)
 	} else {
-		b.appendLog(humanIdx, "pass", fmt.Sprintf("%s passes", b.playerName(humanIdx)), nil)
+		b.appendLog(humanIdx, "pass", fmt.Sprintf("%s passes", playerName(b.players, humanIdx)), nil)
 		b.advanceBidPickUp()
 	}
 	return nil
@@ -283,7 +283,7 @@ func (b *Belote) CpuPickUp() {
 	if b.cpuSelectPickUp(b.bidPlayerIdx) {
 		b.doOrderUp(b.bidPlayerIdx)
 	} else {
-		b.appendLog(b.bidPlayerIdx, "pass", fmt.Sprintf("%s passes", b.playerName(b.bidPlayerIdx)), nil)
+		b.appendLog(b.bidPlayerIdx, "pass", fmt.Sprintf("%s passes", playerName(b.players, b.bidPlayerIdx)), nil)
 		b.advanceBidPickUp()
 	}
 }
@@ -294,7 +294,7 @@ func (b *Belote) doOrderUp(playerIdx int) {
 	b.makerTeam = b.players[playerIdx].GetTeam()
 	b.makerPlayerIdx = playerIdx
 	b.appendLog(playerIdx, "order_up",
-		fmt.Sprintf("%s takes %s as trump", b.playerName(playerIdx), cardStr(b.faceUpCard)),
+		fmt.Sprintf("%s takes %s as trump", playerName(b.players, playerIdx), cardStr(b.faceUpCard)),
 		[]*Card{b.faceUpCard})
 
 	b.dealRemainder(playerIdx)
@@ -348,7 +348,7 @@ func (b *Belote) PlayerPassCall() error {
 	if humanIdx < 0 || b.bidPlayerIdx != humanIdx {
 		return ErrNotHumanTurn
 	}
-	b.appendLog(humanIdx, "pass", fmt.Sprintf("%s passes", b.playerName(humanIdx)), nil)
+	b.appendLog(humanIdx, "pass", fmt.Sprintf("%s passes", playerName(b.players, humanIdx)), nil)
 	b.advanceBidCallTrump()
 	return nil
 }
@@ -366,7 +366,7 @@ func (b *Belote) CpuCallTrump() {
 	if suit > 0 {
 		b.doCallTrump(b.bidPlayerIdx, suit)
 	} else {
-		b.appendLog(b.bidPlayerIdx, "pass", fmt.Sprintf("%s passes", b.playerName(b.bidPlayerIdx)), nil)
+		b.appendLog(b.bidPlayerIdx, "pass", fmt.Sprintf("%s passes", playerName(b.players, b.bidPlayerIdx)), nil)
 		b.advanceBidCallTrump()
 	}
 }
@@ -378,7 +378,7 @@ func (b *Belote) doCallTrump(playerIdx int, suit int) {
 	b.makerPlayerIdx = playerIdx
 	suitName := suitStr(suit)
 	b.appendLog(playerIdx, "call_trump",
-		fmt.Sprintf("%s calls %s as trump", b.playerName(playerIdx), suitName), nil)
+		fmt.Sprintf("%s calls %s as trump", playerName(b.players, playerIdx), suitName), nil)
 
 	b.dealRemainder(playerIdx)
 	b.startPlayPhase()
@@ -469,7 +469,7 @@ func (b *Belote) ResolveTrick() {
 	b.players[winnerIdx].AddTrick(trickCards)
 	b.roundPoints[b.players[winnerIdx].GetTeam()] += trickPoints
 
-	winnerName := b.playerName(winnerIdx)
+	winnerName := playerName(b.players, winnerIdx)
 	b.appendLog(winnerIdx, "trick_win",
 		fmt.Sprintf("%s wins trick %d (%d pts)", winnerName, b.trickNumber, trickPoints),
 		trickCards)
@@ -829,7 +829,7 @@ func (b *Belote) playCard(playerIdx int, card *Card) {
 	})
 	b.maybeDeclareBeloteRebelote(playerIdx, card)
 	b.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", b.playerName(playerIdx), cardStr(card)), []*Card{card})
+		fmt.Sprintf("%s plays %s", playerName(b.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(b.currentTrick) == BelotePlayerCnt {
 		b.phase = BelotePhaseTrickEnd
@@ -863,7 +863,7 @@ func (b *Belote) maybeDeclareBeloteRebelote(playerIdx int, card *Card) {
 		b.beloteDeclared = true
 		b.appendLog(playerIdx, "belote_rebelote",
 			fmt.Sprintf("%s declares Belote/Rebelote (+%d)",
-				b.playerName(playerIdx), BeloteRebeloteBonus), nil)
+				playerName(b.players, playerIdx), BeloteRebeloteBonus), nil)
 	}
 }
 
@@ -1074,16 +1074,6 @@ func beloteSortHand(p *BelotePlayer, b *Belote) {
 		// strong card instead of the weakest.
 		return b.cardRank(ci) > b.cardRank(cj)
 	})
-}
-
-func (b *Belote) playerName(idx int) string {
-	if idx < 0 || idx >= len(b.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if b.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // --- Hints ---

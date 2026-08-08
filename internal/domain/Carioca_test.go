@@ -829,10 +829,10 @@ func TestCarioca_Penalty(t *testing.T) {
 
 func TestCarioca_PlayerNameFallback(t *testing.T) {
 	g := helperCariocaHand(t)
-	if got := g.playerName(-1); got == "" {
+	if got := playerName(g.players, -1); got == "" {
 		t.Error("playerName(-1) should return non-empty fallback")
 	}
-	if got := g.playerName(99); got == "" {
+	if got := playerName(g.players, 99); got == "" {
 		t.Error("playerName(99) should return non-empty fallback")
 	}
 }

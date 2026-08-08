@@ -242,9 +242,9 @@ func (g *TwentyNine) applyBid(idx int, bid TwentyNineBid) error {
 	g.bids[idx] = bid
 	g.bidDone[idx] = true
 	if bid != TwentyNineBidPass {
-		g.appendLog(idx, "bid", fmt.Sprintf("%s bids %d", g.playerName(idx), int(bid)), nil)
+		g.appendLog(idx, "bid", fmt.Sprintf("%s bids %d", playerName(g.players, idx), int(bid)), nil)
 	} else {
-		g.appendLog(idx, "bid", fmt.Sprintf("%s passes", g.playerName(idx)), nil)
+		g.appendLog(idx, "bid", fmt.Sprintf("%s passes", playerName(g.players, idx)), nil)
 	}
 	for k := 1; k <= TwentyNinePlayerCnt; k++ {
 		ni := (idx + k) % TwentyNinePlayerCnt
@@ -271,7 +271,7 @@ func (g *TwentyNine) resolveBidding() {
 	g.trumpSuit = g.longestSuit(idx)
 	g.trumpRevealed = false
 	g.appendLog(idx, "contract",
-		fmt.Sprintf("%s (team %s) bids %d with a hidden trump", g.playerName(idx), twentyNineTeamName(TwentyNineTeamOf(idx)), int(bid)), nil)
+		fmt.Sprintf("%s (team %s) bids %d with a hidden trump", playerName(g.players, idx), twentyNineTeamName(TwentyNineTeamOf(idx)), int(bid)), nil)
 	g.leadPlayerIdx = idx
 	g.currentPlayerIdx = g.leadPlayerIdx
 	g.phase = TwentyNinePhasePlay
@@ -377,7 +377,7 @@ func (g *TwentyNine) playCard(playerIdx int, card *Card) {
 		}
 	}
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == TwentyNinePlayerCnt {
 		g.phase = TwentyNinePhaseTrickEnd
@@ -407,7 +407,7 @@ func (g *TwentyNine) ResolveTrick() {
 		bonus = " +1 last"
 	}
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (+%d%s)", g.playerName(winnerIdx), g.trickNumber, pts, bonus), trickCards)
+		fmt.Sprintf("%s wins trick %d (+%d%s)", playerName(g.players, winnerIdx), g.trickNumber, pts, bonus), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= TwentyNineTrickCount {
@@ -590,17 +590,6 @@ func twentyNineSortHand(p *TwentyNinePlayer) {
 	for _, c := range cards {
 		p.AddCard(c)
 	}
-}
-
-// playerName プレイヤー名を返す。
-func (g *TwentyNine) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // indexOfPlayerInTrick currentTrick 内で playerIdx の札の位置を返す (-1=なし)。

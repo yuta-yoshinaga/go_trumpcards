@@ -275,7 +275,7 @@ func (g *GongZhu) ResolveTrick() {
 	for _, c := range trickCards {
 		rawPts += gzCardRawPoints(c)
 	}
-	g.appendLog(winnerIdx, "trick_win", fmt.Sprintf("%s wins trick %d (raw %+d)", g.playerName(winnerIdx), g.trickNumber, rawPts), trickCards)
+	g.appendLog(winnerIdx, "trick_win", fmt.Sprintf("%s wins trick %d (raw %+d)", playerName(g.players, winnerIdx), g.trickNumber, rawPts), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= GongZhuHandSize {
@@ -304,7 +304,7 @@ func (g *GongZhu) ScoreRound() {
 
 	for i := 0; i < GongZhuPlayerCnt; i++ {
 		if g.playerHeartCount(i) == GongZhuHandSize {
-			g.appendLog(i, "all_hearts", fmt.Sprintf("%s collected all hearts!", g.playerName(i)), nil)
+			g.appendLog(i, "all_hearts", fmt.Sprintf("%s collected all hearts!", playerName(g.players, i)), nil)
 		}
 		g.players[i].SetRoundScore(g.scoreForPlayer(i))
 	}
@@ -315,7 +315,7 @@ func (g *GongZhu) ScoreRound() {
 
 	for i := 0; i < GongZhuPlayerCnt; i++ {
 		g.appendLog(i, "round_score", fmt.Sprintf("%s: round=%+d, total=%+d",
-			g.playerName(i), g.players[i].GetRoundScore(), g.players[i].GetCumulativeScore()), nil)
+			playerName(g.players, i), g.players[i].GetRoundScore(), g.players[i].GetCumulativeScore()), nil)
 	}
 
 	ended := false
@@ -338,7 +338,7 @@ func (g *GongZhu) ScoreRound() {
 				g.winnerIdx = i
 			}
 		}
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", g.playerName(g.winnerIdx)), nil)
+		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, g.winnerIdx)), nil)
 	}
 }
 
@@ -586,7 +586,7 @@ func (g *GongZhu) playCard(playerIdx int, card *Card) {
 		g.heartsBroken = true
 	}
 
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == GongZhuPlayerCnt {
 		g.phase = GongZhuPhaseTrickEnd
@@ -701,17 +701,6 @@ func gzSortHand(p *GongZhuPlayer) {
 		}
 		return ci.GetValue() < cj.GetValue()
 	})
-}
-
-// playerName プレイヤー名を返す
-func (g *GongZhu) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // --- Card helpers ---
