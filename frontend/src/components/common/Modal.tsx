@@ -21,6 +21,14 @@ export interface ModalProps {
   ariaDescribedBy?: string;
   /** Classes for the inner dialog panel. */
   panelClassName?: string;
+  /**
+   * Classes for the backdrop scrim, including how the panel is aligned within
+   * it. Defaults to a centered panel over the standard dim. Override only to
+   * preserve a dialog's existing look when adopting this primitive — the
+   * first-visit tutorial dialog uses a heavier blurred scrim, and Daifugo's
+   * rules modal is a bottom sheet on mobile (`items-end sm:items-center`).
+   */
+  backdropClassName?: string;
   /** Whether a backdrop click closes the modal (default true). */
   dismissOnBackdrop?: boolean;
 }
@@ -43,6 +51,7 @@ export function Modal({
   ariaLabelledBy,
   ariaDescribedBy,
   panelClassName = '',
+  backdropClassName = 'items-center justify-center bg-black/50',
   dismissOnBackdrop = true,
 }: ModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -54,7 +63,7 @@ export function Modal({
   return createPortal(
     // biome-ignore lint/a11y/noStaticElementInteractions: overlay backdrop dismisses the dialog on click
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      className={`fixed inset-0 z-50 flex ${backdropClassName}`}
       role="presentation"
       onClick={dismissOnBackdrop ? onClose : undefined}
     >

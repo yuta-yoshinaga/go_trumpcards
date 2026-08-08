@@ -98,4 +98,73 @@ describe('useFocusTrap', () => {
     expect(onClose).not.toHaveBeenCalled();
     cleanup();
   });
+  // Non-modal panels (a landmark `role="region"`, say) still want the open /
+  // Escape / restore half of this hook, but cycling Tab inside them is a
+  // WCAG 2.1.2 keyboard trap. `trap: false` keeps everything except the
+  // cycling. See issues #5182 and #5183.
+  describe('trap: false', () => {
+    it('does not cycle Tab at either boundary', () => {
+      const { ref, cleanup } = mountContainer(2);
+      renderHook(() => useFocusTrap(ref, true, () => {}, { trap: false }));
+      const [first, last] = Array.from(ref.current.querySelectorAll('button'));
+
+      last.focus();
+      const fwd = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true });
+      const fwdSpy = vi.spyOn(fwd, 'preventDefault');
+      act(() => {
+        document.dispatchEvent(fwd);
+      });
+      expect(fwdSpy).not.toHaveBeenCalled();
+      expect(document.activeElement).toBe(last);
+
+      first.focus();
+      const back = new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true });
+      const backSpy = vi.spyOn(back, 'preventDefault');
+      act(() => {
+        document.dispatchEvent(back);
+      });
+      expect(backSpy).not.toHaveBeenCalled();
+      expect(document.activeElement).toBe(first);
+
+      cleanup();
+    });
+
+    it('still focuses on open, closes on Escape, and restores on close', () => {
+      const outside = document.createElement('button');
+      document.body.appendChild(outside);
+      outside.focus();
+
+      const { ref, cleanup } = mountContainer(2);
+      const onClose = vi.fn();
+      const { unmount } = renderHook(() => useFocusTrap(ref, true, onClose, { trap: false }));
+
+      expect(document.activeElement).toBe(ref.current.querySelector('button'));
+
+      act(() => {
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      });
+      expect(onClose).toHaveBeenCalledTimes(1);
+
+      unmount();
+      expect(document.activeElement).toBe(outside);
+
+      outside.remove();
+      cleanup();
+    });
+  });
+
+  // Negative control: the default must still trap, or `trap: false` proves nothing.
+  it('traps by default when no options are passed', () => {
+    const { ref, cleanup } = mountContainer(2);
+    renderHook(() => useFocusTrap(ref, true, () => {}));
+    const [first, last] = Array.from(ref.current.querySelectorAll('button'));
+
+    last.focus();
+    act(() => {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true }));
+    });
+    expect(document.activeElement).toBe(first);
+
+    cleanup();
+  });
 });
