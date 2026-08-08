@@ -1117,10 +1117,14 @@ func TestBridgeCardDesignToBidSuit(t *testing.T) {
 
 func TestBridgePlayerName(t *testing.T) {
 	b := newTestBridge()
-	assert.Contains(t, playerName(b.players, 0), "You")
-	assert.Contains(t, playerName(b.players, 1), "CPU")
-	assert.Contains(t, playerName(b.players, -1), "Player")
-	assert.Contains(t, playerName(b.players, 10), "Player")
+	// Bridge names seats by compass position, which is why it keeps its own
+	// playerName rather than using the shared helper. Assert the whole string:
+	// a Contains check on "You" alone would still pass if the position were
+	// dropped, which is exactly the regression this test exists to catch.
+	assert.Equal(t, "You (North)", b.playerName(0))
+	assert.Equal(t, "CPU 1 (East)", b.playerName(1))
+	assert.Equal(t, "Player -1", b.playerName(-1))
+	assert.Equal(t, "Player 10", b.playerName(10))
 }
 
 func TestBridgeResolveTrickWrongPhase(t *testing.T) {
