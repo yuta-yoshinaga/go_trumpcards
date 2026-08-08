@@ -1,9 +1,9 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import type { ActionLogEntry } from '../types/card';
 import { cardLabel } from '../utils/cardUtils';
-import { getFocusableElements } from '../utils/dom';
 
 /** Props for {@link ActionLogPanel}. */
 export interface ActionLogPanelProps {
@@ -25,7 +25,6 @@ export function ActionLogPanel({ entries, onClose }: ActionLogPanelProps) {
   const { t } = useTranslation('common');
   const [copied, setCopied] = useState(false);
   const dialogRef = useRef<HTMLElement>(null);
-  const triggerRef = useRef<Element | null>(null);
   const titleId = useId();
 
   const textContent = entries.length === 0 ? t('actionLog.empty') : entries.map((e) => formatEntry(e, t)).join('\n');
@@ -36,37 +35,13 @@ export function ActionLogPanel({ entries, onClose }: ActionLogPanelProps) {
     return () => clearTimeout(timer);
   }, [copied]);
 
-  // Keep the latest onClose without re-running the effect (and re-stealing
-  // focus) when a parent passes a new inline callback each render.
-  const onCloseRef = useRef(onClose);
-  onCloseRef.current = onClose;
-
-  // This panel is a landmark `role="region"`, not a dialog — no `aria-modal`,
-  // the game behind it stays live, and it exists to be read alongside the
-  // board. So it deliberately does NOT trap Tab: cycling focus inside a
-  // non-modal region is a WCAG 2.1.2 keyboard trap, and the only way out was
-  // to find the close button by sight. Moving focus in on open is still right
-  // (the user opened it deliberately); Escape and focus restore give them the
-  // way back. See issue #5183.
-  useEffect(() => {
-    triggerRef.current = document.activeElement;
-
-    const dialog = dialogRef.current;
-    if (dialog) getFocusableElements(dialog)[0]?.focus();
-
-    // Listen on document, not on the panel: once focus legitimately leaves the
-    // region, a panel-level listener would never see the key again.
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onCloseRef.current();
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      // Restore here rather than in the close handler so any unmount path
-      // (game reset, route change) returns focus, not just the close button.
-      if (triggerRef.current instanceof HTMLElement) triggerRef.current.focus();
-    };
-  }, []);
+  // Landmark `role="region"`, not a dialog: no `aria-modal`, the game behind it
+  // stays live, and it exists to be read alongside the board. So Tab is NOT
+  // cycled — that would be a WCAG 2.1.2 keyboard trap with no way out but
+  // finding the close button by sight (issue #5183). Everything else the hook
+  // provides is still wanted: focus in on open, Escape to leave, and restore on
+  // any unmount path (game reset, route change), not just the close button.
+  useFocusTrap(dialogRef, true, onClose, { trap: false });
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(textContent);
