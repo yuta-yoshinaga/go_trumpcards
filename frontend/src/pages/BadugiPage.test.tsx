@@ -165,6 +165,26 @@ describe('BadugiPage', () => {
     expect(screen.queryByText('Badugi')).not.toBeInTheDocument();
   });
 
+  // CPU 側も同じ経路を通す。人間の席だけ直しても、相手の役名が英語のまま残る。
+  it('localizes the CPU hand names at showdown as well', async () => {
+    mockExec.mockResolvedValue(
+      baseState({
+        phase: BadugiPhase.END,
+        gameEndFlag: true,
+        players: [
+          humanPlayer({ handSize: 4, handName: 'Badugi' }),
+          { ...cpuPlayer(1), handSize: 3, handName: '3-card' },
+          { ...cpuPlayer(2), handSize: 2, handName: '2-card' },
+        ],
+      }),
+    );
+    renderWithProviders(<BadugiPage />);
+    await waitFor(() => expect(screen.getByText('3カード')).toBeInTheDocument());
+    expect(screen.getByText('2カード')).toBeInTheDocument();
+    expect(screen.queryByText('3-card')).not.toBeInTheDocument();
+    expect(screen.queryByText('2-card')).not.toBeInTheDocument();
+  });
+
   // 未評価 (handSize 0) の席には役名を出さない。
   it('shows no hand name before the hand has been evaluated', async () => {
     mockExec.mockResolvedValue(baseState({ phase: BadugiPhase.END, gameEndFlag: true }));
