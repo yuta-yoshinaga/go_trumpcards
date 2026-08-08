@@ -450,12 +450,14 @@ func (b *BlackJack) GetBasicStrategySuggestion() BJSuggestedAction {
 	if dealerUpcard == nil {
 		return BJSuggestNone
 	}
+	// **バリアントを渡す。**48枚デッキのスパニッシュ21に標準デッキの基本戦略を
+	// 当てると、10 が抜けている分だけ助言がずれる (#4705)。
 	if b.phase == BJPhaseEarlySurrender {
-		action := GetBasicStrategyAction(hand, dealerUpcard, b.config.DealerHitsSoft17)
+		action := GetVariantStrategyAction(hand, dealerUpcard, b.config.DealerHitsSoft17, b.config.Variant)
 		if action == BJSuggestSurrender {
 			return BJSuggestSurrender
 		}
 		return BJSuggestStand // "continue" = decline early surrender
 	}
-	return GetBasicStrategyAction(hand, dealerUpcard, b.config.DealerHitsSoft17)
+	return GetVariantStrategyAction(hand, dealerUpcard, b.config.DealerHitsSoft17, b.config.Variant)
 }

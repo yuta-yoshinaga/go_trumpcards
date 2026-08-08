@@ -128,8 +128,11 @@ func softStrategy(softTotal, di int) BJSuggestedAction {
 		{H, H, D, D, D, H, H, H, H, H},      // soft 16 (A+5)
 		{H, D, D, D, D, H, H, H, H, H},      // soft 17 (A+6)
 		{Ds, Ds, Ds, Ds, Ds, S, S, H, H, H}, // soft 18 (A+7)
-		{S, S, S, S, Ds, S, S, S, S, S},     // soft 19 (A+8)
-		{S, S, S, S, S, S, S, S, S, S},      // soft 20 (A+9)
+		// soft 19 vs 6 は **S17 ならスタンド**。ここを Ds にすると softH17Override が
+		// 何も変えられず、S17 のプレイヤーに H17 用の助言が出る (#4705 のソルバが検出。
+		// 実測 EV: S17 stand 0.4960 > double 0.4796 / H17 double 0.4611 > stand 0.4531)。
+		{S, S, S, S, S, S, S, S, S, S}, // soft 19 (A+8)
+		{S, S, S, S, S, S, S, S, S, S}, // soft 20 (A+9)
 	}
 	idx := softTotal - 13
 	if idx < 0 {
