@@ -605,7 +605,7 @@ func (g *Tute) cpuPlaySmart(playerIdx int, valid []int) int {
 	player := g.players[playerIdx]
 	if len(g.currentTrick) == 0 {
 		// リード: 得点・強さの低い札を温存。
-		return g.minBy(player, valid, func(c *Card) int {
+		return pickLowest(player, valid, func(c *Card) int {
 			return tuteCardPoints(c.GetValue())*100 + tuteStrength(c.GetValue())
 		})
 	}
@@ -627,14 +627,14 @@ func (g *Tute) cpuPlaySmart(playerIdx int, valid []int) int {
 	if len(follows) == 0 {
 		if partnerWinning {
 			// 味方が勝っている: 得点札を渡す (切り札は温存)。
-			return g.maxBy(player, valid, func(c *Card) int {
+			return pickHighest(player, valid, func(c *Card) int {
 				if c.GetDesign() == g.trumpSuit {
 					return -tuteStrength(c.GetValue())
 				}
 				return tuteCardPoints(c.GetValue())*100 - tuteStrength(c.GetValue())
 			})
 		}
-		return g.minBy(player, valid, func(c *Card) int {
+		return pickLowest(player, valid, func(c *Card) int {
 			return tuteCardPoints(c.GetValue())*100 + tuteStrength(c.GetValue())
 		})
 	}
@@ -642,44 +642,18 @@ func (g *Tute) cpuPlaySmart(playerIdx int, valid []int) int {
 	if partnerWinning {
 		nonWinners := tuteFilter(follows, func(idx int) bool { return g.tuteRank(player.GetCard(idx)) < topRank })
 		if len(nonWinners) > 0 {
-			return g.maxBy(player, nonWinners, func(c *Card) int {
+			return pickHighest(player, nonWinners, func(c *Card) int {
 				return tuteCardPoints(c.GetValue())*100 - tuteStrength(c.GetValue())
 			})
 		}
-		return g.minBy(player, follows, func(c *Card) int { return tuteStrength(c.GetValue()) })
+		return pickLowest(player, follows, func(c *Card) int { return tuteStrength(c.GetValue()) })
 	}
 	if trickPts > 0 && len(winners) > 0 {
-		return g.minBy(player, winners, func(c *Card) int { return tuteStrength(c.GetValue()) })
+		return pickLowest(player, winners, func(c *Card) int { return tuteStrength(c.GetValue()) })
 	}
-	return g.minBy(player, follows, func(c *Card) int {
+	return pickLowest(player, follows, func(c *Card) int {
 		return tuteCardPoints(c.GetValue())*100 + tuteStrength(c.GetValue())
 	})
-}
-
-// minBy score が最小となるインデックスを返す。
-func (g *Tute) minBy(player *TutePlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s < bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
-}
-
-// maxBy score が最大となるインデックスを返す。
-func (g *Tute) maxBy(player *TutePlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s > bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
 }
 
 // tuteFilter 述語を満たすインデックスを抽出する。

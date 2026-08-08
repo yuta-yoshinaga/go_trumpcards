@@ -551,7 +551,7 @@ func (g *Marias) cpuSelectPlayCard(playerIdx int) int {
 func (g *Marias) cpuPlaySmart(playerIdx int, valid []int) int {
 	player := g.players[playerIdx]
 	if len(g.currentTrick) == 0 {
-		return g.minBy(player, valid, func(c *Card) int {
+		return pickLowest(player, valid, func(c *Card) int {
 			return mariasCardPoints(c)*100 + g.mariasRank(c)
 		})
 	}
@@ -563,24 +563,11 @@ func (g *Marias) cpuPlaySmart(playerIdx int, valid []int) int {
 	}
 	winners := mariasFilter(valid, func(idx int) bool { return g.mariasRank(player.GetCard(idx)) > topRank })
 	if trickPts > 0 && len(winners) > 0 {
-		return g.minBy(player, winners, func(c *Card) int { return g.mariasRank(c) })
+		return pickLowest(player, winners, func(c *Card) int { return g.mariasRank(c) })
 	}
-	return g.minBy(player, valid, func(c *Card) int {
+	return pickLowest(player, valid, func(c *Card) int {
 		return mariasCardPoints(c)*100 + g.mariasRank(c)
 	})
-}
-
-// minBy score が最小となるインデックスを返す。
-func (g *Marias) minBy(player *MariasPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s < bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
 }
 
 // mariasFilter 述語を満たすインデックスを抽出する。

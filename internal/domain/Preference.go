@@ -641,48 +641,22 @@ func (g *Preference) cpuPlaySmart(playerIdx int, valid []int) int {
 	isDeclarer := playerIdx == g.declarerIdx
 	misere := g.contract == PreferenceBidMisere
 	if isDeclarer && misere {
-		return g.minBy(player, valid, func(c *Card) int { return g.preferenceRank(c) })
+		return pickLowest(player, valid, func(c *Card) int { return g.preferenceRank(c) })
 	}
 	if len(g.currentTrick) == 0 {
 		if isDeclarer {
-			return g.maxBy(player, valid, func(c *Card) int { return g.preferenceRank(c) })
+			return pickHighest(player, valid, func(c *Card) int { return g.preferenceRank(c) })
 		}
-		return g.minBy(player, valid, func(c *Card) int { return g.preferenceRank(c) })
+		return pickLowest(player, valid, func(c *Card) int { return g.preferenceRank(c) })
 	}
 	winnerIdx := g.trickWinner()
 	topRank := g.trickTopRank(winnerIdx)
 	winners := preferenceFilter(valid, func(idx int) bool { return g.preferenceRank(player.GetCard(idx)) > topRank })
 	wantWin := isDeclarer != misere
 	if wantWin && len(winners) > 0 {
-		return g.minBy(player, winners, func(c *Card) int { return g.preferenceRank(c) })
+		return pickLowest(player, winners, func(c *Card) int { return g.preferenceRank(c) })
 	}
-	return g.minBy(player, valid, func(c *Card) int { return g.preferenceRank(c) })
-}
-
-// minBy score が最小となるインデックスを返す。
-func (g *Preference) minBy(player *PreferencePlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s < bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
-}
-
-// maxBy score が最大となるインデックスを返す。
-func (g *Preference) maxBy(player *PreferencePlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s > bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
+	return pickLowest(player, valid, func(c *Card) int { return g.preferenceRank(c) })
 }
 
 // preferenceFilter 述語を満たすインデックスを抽出する。

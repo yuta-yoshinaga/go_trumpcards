@@ -546,43 +546,17 @@ func (g *KnockoutWhist) cpuPlaySmart(playerIdx int, valid []int) int {
 	player := g.players[playerIdx]
 	if len(g.currentTrick) == 0 {
 		// リード: 強い札で主導権を取る。
-		return g.maxBy(player, valid, func(c *Card) int { return g.knockoutRank(c) })
+		return pickHighest(player, valid, func(c *Card) int { return g.knockoutRank(c) })
 	}
 	winnerIdx := g.trickWinner()
 	topRank := g.trickTopRank(winnerIdx)
 	winners := knockoutFilter(valid, func(idx int) bool { return g.knockoutRank(player.GetCard(idx)) > topRank })
 	if len(winners) > 0 {
 		// 最小コストで勝てる札。
-		return g.minBy(player, winners, func(c *Card) int { return g.knockoutRank(c) })
+		return pickLowest(player, winners, func(c *Card) int { return g.knockoutRank(c) })
 	}
 	// 勝てない: 最弱札を捨てる。
-	return g.minBy(player, valid, func(c *Card) int { return g.knockoutRank(c) })
-}
-
-// minBy score が最小となるインデックスを返す。
-func (g *KnockoutWhist) minBy(player *KnockoutWhistPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s < bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
-}
-
-// maxBy score が最大となるインデックスを返す。
-func (g *KnockoutWhist) maxBy(player *KnockoutWhistPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s > bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
+	return pickLowest(player, valid, func(c *Card) int { return g.knockoutRank(c) })
 }
 
 // knockoutFilter 述語を満たすインデックスを抽出する。

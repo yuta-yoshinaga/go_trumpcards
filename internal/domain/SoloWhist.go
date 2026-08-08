@@ -638,49 +638,23 @@ func (g *SoloWhist) cpuPlaySmart(playerIdx int, valid []int) int {
 	misere := g.contract == SoloWhistBidMisere
 	// Misère の宣言者は勝ちたくないので最も弱い札を出す。
 	if isDeclarer && misere {
-		return g.minBy(player, valid, func(c *Card) int { return g.soloWhistRank(c) })
+		return pickLowest(player, valid, func(c *Card) int { return g.soloWhistRank(c) })
 	}
 	if len(g.currentTrick) == 0 {
 		// リード: 宣言者は強い札、防御は弱い札。
 		if isDeclarer {
-			return g.maxBy(player, valid, func(c *Card) int { return g.soloWhistRank(c) })
+			return pickHighest(player, valid, func(c *Card) int { return g.soloWhistRank(c) })
 		}
-		return g.minBy(player, valid, func(c *Card) int { return g.soloWhistRank(c) })
+		return pickLowest(player, valid, func(c *Card) int { return g.soloWhistRank(c) })
 	}
 	winnerIdx := g.trickWinner()
 	topRank := g.trickTopRank(winnerIdx)
 	winners := soloWhistFilter(valid, func(idx int) bool { return g.soloWhistRank(player.GetCard(idx)) > topRank })
 	wantWin := isDeclarer != misere // 宣言者(非Misère)は勝ちたい; 防御は宣言者を負かしたい
 	if wantWin && len(winners) > 0 {
-		return g.minBy(player, winners, func(c *Card) int { return g.soloWhistRank(c) })
+		return pickLowest(player, winners, func(c *Card) int { return g.soloWhistRank(c) })
 	}
-	return g.minBy(player, valid, func(c *Card) int { return g.soloWhistRank(c) })
-}
-
-// minBy score が最小となるインデックスを返す。
-func (g *SoloWhist) minBy(player *SoloWhistPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s < bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
-}
-
-// maxBy score が最大となるインデックスを返す。
-func (g *SoloWhist) maxBy(player *SoloWhistPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s > bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
+	return pickLowest(player, valid, func(c *Card) int { return g.soloWhistRank(c) })
 }
 
 // soloWhistFilter 述語を満たすインデックスを抽出する。

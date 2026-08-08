@@ -673,7 +673,7 @@ func (g *FortyFives) cpuSelectPlayCard(playerIdx int) int {
 func (g *FortyFives) cpuPlaySmart(playerIdx int, valid []int) int {
 	player := g.players[playerIdx]
 	if len(g.currentTrick) == 0 {
-		return g.maxBy(player, valid, func(c *Card) int { return g.fortyFivesRank(c) })
+		return pickHighest(player, valid, func(c *Card) int { return g.fortyFivesRank(c) })
 	}
 	winnerIdx := g.trickWinner()
 	topRank := g.trickTopRank(winnerIdx)
@@ -681,38 +681,12 @@ func (g *FortyFives) cpuPlaySmart(playerIdx int, valid []int) int {
 	winners := fortyFivesFilter(valid, func(idx int) bool { return g.fortyFivesRank(player.GetCard(idx)) > topRank })
 	if partnerWinning {
 		// 味方が勝っている: 最弱札を温存・捨てる。
-		return g.minBy(player, valid, func(c *Card) int { return g.fortyFivesRank(c) })
+		return pickLowest(player, valid, func(c *Card) int { return g.fortyFivesRank(c) })
 	}
 	if len(winners) > 0 {
-		return g.minBy(player, winners, func(c *Card) int { return g.fortyFivesRank(c) })
+		return pickLowest(player, winners, func(c *Card) int { return g.fortyFivesRank(c) })
 	}
-	return g.minBy(player, valid, func(c *Card) int { return g.fortyFivesRank(c) })
-}
-
-// minBy score が最小となるインデックスを返す。
-func (g *FortyFives) minBy(player *FortyFivesPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s < bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
-}
-
-// maxBy score が最大となるインデックスを返す。
-func (g *FortyFives) maxBy(player *FortyFivesPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s > bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
+	return pickLowest(player, valid, func(c *Card) int { return g.fortyFivesRank(c) })
 }
 
 // fortyFivesFilter 述語を満たすインデックスを抽出する。

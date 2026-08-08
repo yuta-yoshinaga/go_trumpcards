@@ -570,7 +570,7 @@ func (g *Tressette) cpuPlaySmart(playerIdx int, valid []int) int {
 
 	// リード: 得点・強さの低いカードを出して温存する。
 	if len(g.currentTrick) == 0 {
-		return g.minBy(player, valid, func(c *Card) int {
+		return pickLowest(player, valid, func(c *Card) int {
 			return tressetteThirds(c.GetValue())*100 + tressetteStrength(c.GetValue())
 		})
 	}
@@ -593,7 +593,7 @@ func (g *Tressette) cpuPlaySmart(playerIdx int, valid []int) int {
 
 	if len(follows) == 0 {
 		// ボイド: 得点・強さの低いカードを捨てて温存する。
-		return g.minBy(player, valid, func(c *Card) int {
+		return pickLowest(player, valid, func(c *Card) int {
 			return tressetteThirds(c.GetValue())*100 + tressetteStrength(c.GetValue())
 		})
 	}
@@ -609,48 +609,22 @@ func (g *Tressette) cpuPlaySmart(playerIdx int, valid []int) int {
 		})
 		if len(nonWinners) > 0 {
 			// 勝ちを取らない範囲で最も得点の高い札を渡す。
-			return g.maxBy(player, nonWinners, func(c *Card) int {
+			return pickHighest(player, nonWinners, func(c *Card) int {
 				return tressetteThirds(c.GetValue())*100 - tressetteStrength(c.GetValue())
 			})
 		}
 		// 上書きせざるを得ない場合は最弱札で被害を抑える。
-		return g.minBy(player, follows, func(c *Card) int { return tressetteStrength(c.GetValue()) })
+		return pickLowest(player, follows, func(c *Card) int { return tressetteStrength(c.GetValue()) })
 	}
 
 	// 相手が勝っている: 得点があり勝てるなら最小限の札で取りに行く。
 	if trickThirds > 0 && len(winners) > 0 {
-		return g.minBy(player, winners, func(c *Card) int { return tressetteStrength(c.GetValue()) })
+		return pickLowest(player, winners, func(c *Card) int { return tressetteStrength(c.GetValue()) })
 	}
 	// 取れない/取る価値がない: 得点・強さの低い札でダックする。
-	return g.minBy(player, follows, func(c *Card) int {
+	return pickLowest(player, follows, func(c *Card) int {
 		return tressetteThirds(c.GetValue())*100 + tressetteStrength(c.GetValue())
 	})
-}
-
-// minBy score が最小となるインデックスを返す
-func (g *Tressette) minBy(player *TressettePlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s < bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
-}
-
-// maxBy score が最大となるインデックスを返す
-func (g *Tressette) maxBy(player *TressettePlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s > bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
 }
 
 // tressetteFilter 述語を満たすインデックスを抽出する

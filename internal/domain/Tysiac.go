@@ -902,7 +902,7 @@ func (g *Tysiac) cpuPlaySmart(playerIdx int, valid []int) int {
 		if idx := g.cpuMarriageLead(playerIdx, valid); idx >= 0 {
 			return idx
 		}
-		return g.minBy(player, valid, func(c *Card) int {
+		return pickLowest(player, valid, func(c *Card) int {
 			return tysiacCardPoints(c)*100 + g.tysiacRank(c)
 		})
 	}
@@ -914,9 +914,9 @@ func (g *Tysiac) cpuPlaySmart(playerIdx int, valid []int) int {
 	}
 	winners := tysiacFilter(valid, func(idx int) bool { return g.tysiacRank(player.GetCard(idx)) > topRank })
 	if trickPts > 0 && len(winners) > 0 {
-		return g.minBy(player, winners, func(c *Card) int { return g.tysiacRank(c) })
+		return pickLowest(player, winners, func(c *Card) int { return g.tysiacRank(c) })
 	}
-	return g.minBy(player, valid, func(c *Card) int {
+	return pickLowest(player, valid, func(c *Card) int {
 		return tysiacCardPoints(c)*100 + g.tysiacRank(c)
 	})
 }
@@ -937,19 +937,6 @@ func (g *Tysiac) cpuMarriageLead(playerIdx int, valid []int) int {
 		}
 		if pts := tysiacMarriagePoints(suit); pts > bestPts {
 			bestPts = pts
-			best = idx
-		}
-	}
-	return best
-}
-
-// minBy score が最小となるインデックスを返す。
-func (g *Tysiac) minBy(player *TysiacPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s < bestScore {
-			bestScore = s
 			best = idx
 		}
 	}

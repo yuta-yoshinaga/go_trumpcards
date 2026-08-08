@@ -503,7 +503,7 @@ func (g *Sueca) cpuSelectPlayCard(playerIdx int) int {
 func (g *Sueca) cpuPlaySmart(playerIdx int, valid []int) int {
 	player := g.players[playerIdx]
 	if len(g.currentTrick) == 0 {
-		return g.minBy(player, valid, func(c *Card) int {
+		return pickLowest(player, valid, func(c *Card) int {
 			return suecaCardPoints(c.GetValue())*100 + suecaStrength(c.GetValue())
 		})
 	}
@@ -523,14 +523,14 @@ func (g *Sueca) cpuPlaySmart(playerIdx int, valid []int) int {
 	}
 	if len(follows) == 0 {
 		if partnerWinning {
-			return g.maxBy(player, valid, func(c *Card) int {
+			return pickHighest(player, valid, func(c *Card) int {
 				if c.GetDesign() == g.trumpSuit {
 					return -suecaStrength(c.GetValue())
 				}
 				return suecaCardPoints(c.GetValue())*100 - suecaStrength(c.GetValue())
 			})
 		}
-		return g.minBy(player, valid, func(c *Card) int {
+		return pickLowest(player, valid, func(c *Card) int {
 			return suecaCardPoints(c.GetValue())*100 + suecaStrength(c.GetValue())
 		})
 	}
@@ -538,44 +538,18 @@ func (g *Sueca) cpuPlaySmart(playerIdx int, valid []int) int {
 	if partnerWinning {
 		nonWinners := suecaFilter(follows, func(idx int) bool { return g.suecaRank(player.GetCard(idx)) < topRank })
 		if len(nonWinners) > 0 {
-			return g.maxBy(player, nonWinners, func(c *Card) int {
+			return pickHighest(player, nonWinners, func(c *Card) int {
 				return suecaCardPoints(c.GetValue())*100 - suecaStrength(c.GetValue())
 			})
 		}
-		return g.minBy(player, follows, func(c *Card) int { return suecaStrength(c.GetValue()) })
+		return pickLowest(player, follows, func(c *Card) int { return suecaStrength(c.GetValue()) })
 	}
 	if trickPts > 0 && len(winners) > 0 {
-		return g.minBy(player, winners, func(c *Card) int { return suecaStrength(c.GetValue()) })
+		return pickLowest(player, winners, func(c *Card) int { return suecaStrength(c.GetValue()) })
 	}
-	return g.minBy(player, follows, func(c *Card) int {
+	return pickLowest(player, follows, func(c *Card) int {
 		return suecaCardPoints(c.GetValue())*100 + suecaStrength(c.GetValue())
 	})
-}
-
-// minBy score が最小となるインデックスを返す。
-func (g *Sueca) minBy(player *SuecaPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s < bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
-}
-
-// maxBy score が最大となるインデックスを返す。
-func (g *Sueca) maxBy(player *SuecaPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s > bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
 }
 
 // suecaFilter 述語を満たすインデックスを抽出する。
