@@ -15,6 +15,12 @@
           },
           {
             "type": "command",
+            "command": "hook=.claude/hooks/git-restore-guard.sh; if [ -f \"$hook\" ]; then bash \"$hook\"; else echo \"{}\"; fi",
+            "timeout": 15,
+            "statusMessage": "Checking for uncommitted changes a restore would discard..."
+          },
+          {
+            "type": "command",
             "command": "cmd=$(jq -r '.tool_input.command'); if printf '%s' \"$cmd\" | grep -qE '(^|[^[:alnum:]_-])git[[:space:]]+(add[[:space:]]+(-A|--all|\\.)([[:space:]/]|$)|checkout[[:space:]]+[^[:space:]]+[[:space:]]+--[[:space:]]+\\.([[:space:]]|$))'; then printf '%s' '{\"continue\": false, \"stopReason\": \"Blocked: do not use git add -A / git add . / git checkout <ref> -- . in this worktree. It has local-only files (node_modules, vendored .claude/skills, casino/classic/solo TinyGo build dirs, public/sounds) that must never be staged. Stage specific paths instead, e.g. git add path/to/file.\"}'; else echo '{}'; fi",
             "timeout": 5,
             "statusMessage": "Guarding against bulk git add..."

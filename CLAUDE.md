@@ -206,6 +206,7 @@ Key routing rules:
 - Per-game improvement proposals → GitHub issues ("各ゲームの改善提案", "全ゲームのissueを作って") → invoke game-improve
 - New-game candidates → GitHub issues ("追加した方が良いゲームを提案", "新規ゲーム候補をissueに") → invoke propose-games
 - Add a new game end-to-end ("ゲームを追加", "add a new game", "implement <game>") → invoke new-game (explicit `/new-game <name> <category>`) — it drives the New Game Addition Checklist so no registration point or hardcoded count is missed
+- Merge a PR ("マージして", "land it", "merge #NNNN") → invoke land-pr (explicit `/land-pr <#>`) — a green tick alone is not the gate; it also checks the head SHA still matches and that the checks actually ran
 - Docs out of sync with the code ("ドキュメントの乖離", "docs are stale") → invoke doc-drift-check (explicit `/doc-drift-check [--fix]`)
 - Coverage of only this branch's changes, before pushing → invoke coverage-gate
 - A test failed and you suspect a flake → invoke flake-ledger
