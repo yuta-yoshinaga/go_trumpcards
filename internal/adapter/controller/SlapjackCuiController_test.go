@@ -73,4 +73,41 @@ func TestSlapjackCuiController_Exec(t *testing.T) {
 		assert.NotEmpty(t, c.Exec(""))
 		assert.NotEmpty(t, c.Exec("xyz"))
 	})
+
+	// `sd <n>` has been advertised by slapjack.helpSetDifficulty since the game
+	// shipped but was never implemented -- it fell through to "Unknown command"
+	// in both line and realtime mode, while the Web GUI has had a difficulty
+	// selector all along. See issue #5179.
+	t.Run("set difficulty", func(t *testing.T) {
+		for _, tc := range []struct {
+			cmd  string
+			want domain.SlapjackCpuDifficulty
+		}{
+			{"sd 0", domain.SlapjackCpuEasy},
+			{"sd 1", domain.SlapjackCpuNormal},
+			{"sd 2", domain.SlapjackCpuHard},
+			{"setdifficulty 2", domain.SlapjackCpuHard},
+		} {
+			m := newSlapjackCuiMock()
+			var got domain.SlapjackConfig
+			m.On("ResetWithConfig", mock.Anything).Return("reset-cfg-ok").Run(func(args mock.Arguments) {
+				got = args.Get(0).(domain.SlapjackConfig)
+			})
+			c := controller.NewSlapjackCuiController(m)
+			assert.Equal(t, "reset-cfg-ok", c.Exec(tc.cmd), tc.cmd)
+			assert.Equal(t, tc.want, got.CpuDifficulty, tc.cmd)
+		}
+	})
+
+	t.Run("set difficulty rejects bad input without resetting", func(t *testing.T) {
+		for _, cmd := range []string{"sd", "sd x", "sd -1", "sd 3"} {
+			m := newSlapjackCuiMock()
+			m.On("ResetWithConfig", mock.Anything).Return("reset-cfg-ok")
+			c := controller.NewSlapjackCuiController(m)
+			out := c.Exec(cmd)
+			assert.NotEmpty(t, out, cmd)
+			assert.NotEqual(t, "reset-cfg-ok", out, cmd)
+			m.AssertNotCalled(t, "ResetWithConfig", mock.Anything)
+		}
+	})
 }

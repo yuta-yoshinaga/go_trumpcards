@@ -127,5 +127,15 @@
   "stud.helpBigBet": "  bb <amount>          big bet (>=1)",
   "stud.helpLevelUpHands": "  lh <hands>           ante level-up hands (>=1)",
   "stud.helpTableSize": "  ts [2-7]             table size",
-  "realtime.banner": "Realtime mode: space=slap, s=step, r=reset, q=quit (Ctrl+C also quits)."
+  "realtime.banner": "Realtime mode (single keypress, no Enter):",
+  "realtime.keySpace": "Space",
+  "realtime.labelSlap": "slap",
+  "realtime.labelStep": "flip your top card",
+  "realtime.labelReset": "reset",
+  "realtime.labelLog": "show the action log",
+  "realtime.labelEasy": "set CPU difficulty Easy and reset",
+  "realtime.labelNormal": "set CPU difficulty Normal and reset",
+  "realtime.labelHard": "set CPU difficulty Hard and reset",
+  "realtime.labelHelp": "show this key list again",
+  "realtime.labelQuit": "quit"
 }

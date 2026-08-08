@@ -73,4 +73,39 @@ func TestEgyptianRatscrewCuiController_Exec(t *testing.T) {
 		assert.NotEmpty(t, c.Exec(""))
 		assert.NotEmpty(t, c.Exec("xyz"))
 	})
+
+	// Advertised by egyptianratscrew.helpSetDifficulty but never implemented.
+	// See issue #5179.
+	t.Run("set difficulty", func(t *testing.T) {
+		for _, tc := range []struct {
+			cmd  string
+			want domain.EgyptianRatscrewCpuDifficulty
+		}{
+			{"sd 0", domain.EgyptianRatscrewCpuEasy},
+			{"sd 1", domain.EgyptianRatscrewCpuNormal},
+			{"sd 2", domain.EgyptianRatscrewCpuHard},
+			{"setdifficulty 2", domain.EgyptianRatscrewCpuHard},
+		} {
+			m := newEgyptianRatscrewCuiMock()
+			var got domain.EgyptianRatscrewConfig
+			m.On("ResetWithConfig", mock.Anything).Return("reset-cfg-ok").Run(func(args mock.Arguments) {
+				got = args.Get(0).(domain.EgyptianRatscrewConfig)
+			})
+			c := controller.NewEgyptianRatscrewCuiController(m)
+			assert.Equal(t, "reset-cfg-ok", c.Exec(tc.cmd), tc.cmd)
+			assert.Equal(t, tc.want, got.CpuDifficulty, tc.cmd)
+		}
+	})
+
+	t.Run("set difficulty rejects bad input without resetting", func(t *testing.T) {
+		for _, cmd := range []string{"sd", "sd x", "sd -1", "sd 3"} {
+			m := newEgyptianRatscrewCuiMock()
+			m.On("ResetWithConfig", mock.Anything).Return("reset-cfg-ok")
+			c := controller.NewEgyptianRatscrewCuiController(m)
+			out := c.Exec(cmd)
+			assert.NotEmpty(t, out, cmd)
+			assert.NotEqual(t, "reset-cfg-ok", out, cmd)
+			m.AssertNotCalled(t, "ResetWithConfig", mock.Anything)
+		}
+	})
 }
