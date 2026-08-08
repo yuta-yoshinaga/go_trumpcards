@@ -29,7 +29,7 @@ go run ./cmd/trumpcards 500           # エイリアス（rummy, 500, r500 も�
 flowchart TD
     A[ゲーム開始] --> B[ドローフェーズ]
     B -->|ds| C[プレイフェーズ]
-    B -->|dd [idx]| C
+    B -->|"dd [idx]"| C
     C -->|m idx,idx,...| C
     C -->|lo owner meld card| C
     C -->|d idx| D{手札0枚?}

@@ -121,9 +121,9 @@ bun run build && bun run check && bun run test
 
 ## Guard scripts (`scripts/check-*.mjs`)
 
-`bun run check` is Biome plus twelve guard scripts, each pinning down an invariant that no
+`bun run check` is Biome plus thirteen guard scripts, each pinning down an invariant that no
 type or test covers (design tokens, discover blurbs, message codes, hint coverage, markdown
-tables, dependency licences, trademark terms, asset provenance, …).
+tables, mermaid diagrams, dependency licences, trademark terms, asset provenance, …).
 
 **Every guard that reports a discovered count must assert a floor under it.** A guard walks
 something and then reports on what it found; when the walk breaks, it finds nothing, nothing

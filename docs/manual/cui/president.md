@@ -51,7 +51,7 @@ go run ./cmd/trumpcards --lang en president   # 英語モード
 ```mermaid
 flowchart TD
     A[ゲーム開始 - reset] --> B{手番は自分?}
-    B -- はい --> C[p [idx...] でカードを出す]
+    B -- はい --> C["p [idx...] でカードを出す"]
     C --> D{出せる?}
     D -- はい --> E[次の手番へ]
     D -- いいえ --> F[エラー]
