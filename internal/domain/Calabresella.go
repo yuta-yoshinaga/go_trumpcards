@@ -125,7 +125,7 @@ type Calabresella struct {
 	lastTrickWinner  int                                    // 最終トリック勝者 (-1=未確定)
 	gameEndFlag      bool
 	winnerPlayer     int // -1=未確定
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewCalabresella コンストラクタ
@@ -790,17 +790,6 @@ func (g *Calabresella) findHumanIdx() int {
 	return -1
 }
 
-// appendLog 棋譜にエントリを追加する。
-func (g *Calabresella) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // --- CPU AI (play) ---
 
 // cpuSelectPlayCard CPU がプレイするカードのインデックスを選ぶ。
@@ -1109,9 +1098,6 @@ func (g *Calabresella) GetConfig() CalabresellaConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *Calabresella) SetConfig(cfg CalabresellaConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *Calabresella) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetPlayableIndices プレイ可能なカードのインデックス一覧を返す。
 func (g *Calabresella) GetPlayableIndices(playerIdx int) []int {

@@ -112,7 +112,7 @@ type Bridge struct {
 	leadPlayerIdx    int
 	gameEndFlag      bool
 	winnerTeam       int // 勝利チーム (-1 = 未確定)
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewBridge コンストラクタ
@@ -1020,9 +1020,6 @@ func (b *Bridge) GetConfig() BridgeConfig { return b.config }
 // SetConfig 設定変更
 func (b *Bridge) SetConfig(cfg BridgeConfig) { b.config = cfg }
 
-// GetActionLog 棋譜取得
-func (b *Bridge) GetActionLog() []*ActionLogEntry { return b.actionLog }
-
 // IsOpeningLeadDone オープニングリード完了か
 func (b *Bridge) IsOpeningLeadDone() bool { return b.openingLeadDone }
 
@@ -1270,17 +1267,6 @@ func (b *Bridge) playerName(idx int) string {
 		return fmt.Sprintf("You (%s)", positions[idx])
 	}
 	return fmt.Sprintf("CPU %d (%s)", idx, positions[idx])
-}
-
-// appendLog 棋譜にエントリを追加する
-func (b *Bridge) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	b.actionLog = append(b.actionLog, &ActionLogEntry{
-		TurnNumber: len(b.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // playHintReason プレイヒントの理由を判定する

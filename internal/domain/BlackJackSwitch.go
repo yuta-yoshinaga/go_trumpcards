@@ -37,18 +37,18 @@ const BJSwitchDealerHitsSoft17 = true
 // 簡略化のため、スプリット / インシュランス / サレンダー / サイドベット
 // / CPU はサポートしない（標準BJ実装に任せる）。
 type BlackJackSwitch struct {
-	trumpCards     *TrumpCards       // 山札
-	player         *BlackJackPlayer  // プレイヤー（チップ保持）
-	dealer         *BlackJackPlayer  // ディーラー
-	hands          []*BlackJackHand  // 常に2ハンド
-	currentHandIdx int               // 現在操作中のハンドインデックス
-	phase          int               // 現在のフェーズ
-	gameEndFlag    bool              // ゲーム終了フラグ
-	switched       bool              // 直近のラウンドでスイッチを実行したか
-	handResults    []GameResult      // 各ハンドの勝敗結果
-	handPayouts    []int             // 各ハンドの配当（ベット返却込み）
-	dealerPushed22 bool              // ディーラー22プッシュが発生したか
-	actionLog      []*ActionLogEntry // 棋譜
+	trumpCards     *TrumpCards      // 山札
+	player         *BlackJackPlayer // プレイヤー（チップ保持）
+	dealer         *BlackJackPlayer // ディーラー
+	hands          []*BlackJackHand // 常に2ハンド
+	currentHandIdx int              // 現在操作中のハンドインデックス
+	phase          int              // 現在のフェーズ
+	gameEndFlag    bool             // ゲーム終了フラグ
+	switched       bool             // 直近のラウンドでスイッチを実行したか
+	handResults    []GameResult     // 各ハンドの勝敗結果
+	handPayouts    []int            // 各ハンドの配当（ベット返却込み）
+	dealerPushed22 bool             // ディーラー22プッシュが発生したか
+	actionLogBase
 }
 
 // NewBlackJackSwitch コンストラクタ
@@ -445,17 +445,6 @@ func (bs *BlackJackSwitch) overallResult() GameResult {
 	}
 }
 
-// appendLog 棋譜にエントリを追加する。
-func (bs *BlackJackSwitch) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	bs.actionLog = append(bs.actionLog, &ActionLogEntry{
-		TurnNumber: len(bs.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // --- Getters ---
 
 // GetPlayer プレイヤー
@@ -499,9 +488,6 @@ func (bs *BlackJackSwitch) GetTotalPayout() int {
 
 // GetOverallResult 総合勝敗（一行サマリ用）
 func (bs *BlackJackSwitch) GetOverallResult() GameResult { return bs.overallResult() }
-
-// GetActionLog 棋譜
-func (bs *BlackJackSwitch) GetActionLog() []*ActionLogEntry { return bs.actionLog }
 
 // --- Test helpers ---
 

@@ -81,9 +81,9 @@ type Conquian struct {
 	winnerIdx        int // ラウンド勝者 (-1 = 未確定/引き分け)
 	matchWinnerIdx   int // マッチ全体の勝者 (-1 = 未確定)
 	roundNumber      int
-	actionLog        []*ActionLogEntry
-	tookDiscard      bool // 今ターン、捨て札を取って必ずメルドに使う必要があるか
-	pendingCard      *Card
+	actionLogBase
+	tookDiscard bool // 今ターン、捨て札を取って必ずメルドに使う必要があるか
+	pendingCard *Card
 }
 
 // NewConquian コンストラクタ
@@ -914,9 +914,6 @@ func (g *Conquian) GetConfig() ConquianConfig { return g.config }
 // SetConfig 設定変更
 func (g *Conquian) SetConfig(cfg ConquianConfig) { g.config = cfg }
 
-// GetActionLog 棋譜取得
-func (g *Conquian) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // GetTookDiscard 今ターンに捨て札を取ったか (強制使用待ち) を返す
 func (g *Conquian) GetTookDiscard() bool { return g.tookDiscard }
 
@@ -957,17 +954,6 @@ func (g *Conquian) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (g *Conquian) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- JSON ---

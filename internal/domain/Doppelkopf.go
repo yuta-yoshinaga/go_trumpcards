@@ -82,7 +82,7 @@ type Doppelkopf struct {
 	roundGamePts     int                       // 直近ラウンドのゲームポイント (倍率込み)
 	gameEndFlag      bool
 	winnerIdx        int // ゲーム勝者 (-1 = 未確定)
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewDoppelkopf コンストラクタ
@@ -520,17 +520,6 @@ func (g *Doppelkopf) playerName(idx int) string {
 	return fmt.Sprintf("CPU %d", idx)
 }
 
-// appendLog 棋譜にエントリを追加する。
-func (g *Doppelkopf) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // indexOfPlayerInTrick currentTrick 内で playerIdx の札の位置を返す (-1=なし)。
 func (g *Doppelkopf) indexOfPlayerInTrick(playerIdx int) int {
 	for i, tc := range g.currentTrick {
@@ -795,9 +784,6 @@ func (g *Doppelkopf) GetConfig() DoppelkopfConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *Doppelkopf) SetConfig(cfg DoppelkopfConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *Doppelkopf) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetPlayableIndices プレイ可能なカードのインデックス一覧を返す。
 func (g *Doppelkopf) GetPlayableIndices(playerIdx int) []int {

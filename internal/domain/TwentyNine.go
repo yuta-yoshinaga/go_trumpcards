@@ -96,7 +96,7 @@ type TwentyNine struct {
 	roundTeamPts     [TwentyNineTeamCnt]int // 現ラウンドのチーム別カード得点
 	gameEndFlag      bool
 	winnerTeam       int // -1=未確定
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewTwentyNine コンストラクタ
@@ -632,17 +632,6 @@ func (g *TwentyNine) findHumanIdx() int {
 	return -1
 }
 
-// appendLog 棋譜にエントリを追加する。
-func (g *TwentyNine) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // --- CPU AI ---
 
 // cpuSelectPlayCard CPU がプレイするカードのインデックスを選ぶ。
@@ -860,9 +849,6 @@ func (g *TwentyNine) GetConfig() TwentyNineConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *TwentyNine) SetConfig(cfg TwentyNineConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *TwentyNine) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetPlayableIndices プレイ可能なカードのインデックス一覧を返す。
 func (g *TwentyNine) GetPlayableIndices(playerIdx int) []int {

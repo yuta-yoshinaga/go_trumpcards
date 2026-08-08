@@ -80,8 +80,8 @@ type Cuckoo struct {
 	roundNumber      int
 	roundLowest      int   // 直近ラウンドの最低カード値 (-1=未確定)
 	roundLosers      []int // 直近ラウンドでライフを失ったプレイヤー
-	actionLog        []*ActionLogEntry
-	rng              *rand.Rand
+	actionLogBase
+	rng *rand.Rand
 }
 
 // NewCuckoo コンストラクタ
@@ -620,9 +620,6 @@ func (g *Cuckoo) GetConfig() CuckooConfig { return g.config }
 // SetConfig ゲーム設定を設定する
 func (g *Cuckoo) SetConfig(cfg CuckooConfig) { g.config = cfg }
 
-// GetActionLog 棋譜を取得する
-func (g *Cuckoo) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // playerName プレイヤー名を返す
 func (g *Cuckoo) playerName(idx int) string {
 	if idx < 0 || idx >= len(g.players) {
@@ -632,17 +629,6 @@ func (g *Cuckoo) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (g *Cuckoo) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- JSON ---

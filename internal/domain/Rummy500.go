@@ -46,8 +46,8 @@ type Rummy500 struct {
 	gameEndFlag      bool
 	winnerIdx        int
 	roundNumber      int
-	actionLog        []*ActionLogEntry
-	roundEnderIdx    int // ラウンド終了を引き起こしたプレイヤー（-1 = 山切れ）
+	actionLogBase
+	roundEnderIdx int // ラウンド終了を引き起こしたプレイヤー（-1 = 山切れ）
 }
 
 // NewRummy500 コンストラクタ
@@ -662,9 +662,6 @@ func (g *Rummy500) GetConfig() Rummy500Config { return g.config }
 // SetConfig 設定変更
 func (g *Rummy500) SetConfig(cfg Rummy500Config) { g.config = cfg }
 
-// GetActionLog 棋譜取得
-func (g *Rummy500) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // GetRoundEnderIdx ラウンドを終わらせたプレイヤーのインデックス（-1=山切れ）
 func (g *Rummy500) GetRoundEnderIdx() int { return g.roundEnderIdx }
 
@@ -694,16 +691,6 @@ func (g *Rummy500) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-func (g *Rummy500) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- Meld / Run / Set / Layoff helpers ---

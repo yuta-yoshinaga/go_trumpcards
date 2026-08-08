@@ -52,8 +52,8 @@ type ThirtyOne struct {
 	thirtyOneIdx     int   // 31 を達成したプレイヤー (-1 = なし)
 	roundWinnerIdx   int   // 直近ラウンドの勝者 (-1 = 未確定)
 	roundLosers      []int // 直近ラウンドでライフを失ったプレイヤー
-	actionLog        []*ActionLogEntry
-	rng              *rand.Rand
+	actionLogBase
+	rng *rand.Rand
 }
 
 // NewThirtyOne コンストラクタ
@@ -709,9 +709,6 @@ func (g *ThirtyOne) GetConfig() ThirtyOneConfig { return g.config }
 // SetConfig ゲーム設定を設定する
 func (g *ThirtyOne) SetConfig(cfg ThirtyOneConfig) { g.config = cfg }
 
-// GetActionLog 棋譜を取得する
-func (g *ThirtyOne) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // playerName プレイヤー名を返す
 func (g *ThirtyOne) playerName(idx int) string {
 	if idx < 0 || idx >= len(g.players) {
@@ -721,17 +718,6 @@ func (g *ThirtyOne) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (g *ThirtyOne) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- JSON ---

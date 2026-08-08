@@ -73,7 +73,7 @@ type Tarneeb struct {
 	teamScores       [TarneebTeamCnt]int
 	gameEndFlag      bool
 	winnerTeam       int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewTarneeb コンストラクタ
@@ -544,9 +544,6 @@ func (t *Tarneeb) GetConfig() TarneebConfig { return t.config }
 // SetConfig 設定変更
 func (t *Tarneeb) SetConfig(cfg TarneebConfig) { t.config = cfg }
 
-// GetActionLog 棋譜取得
-func (t *Tarneeb) GetActionLog() []*ActionLogEntry { return t.actionLog }
-
 // IsHumanTurn 現在の手番が人間かどうか
 func (t *Tarneeb) IsHumanTurn() bool {
 	if t.currentPlayerIdx < 0 || t.currentPlayerIdx >= len(t.players) {
@@ -715,17 +712,6 @@ func (t *Tarneeb) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (t *Tarneeb) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	t.actionLog = append(t.actionLog, &ActionLogEntry{
-		TurnNumber: len(t.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // isValidSuit 4スートのうちいずれかか

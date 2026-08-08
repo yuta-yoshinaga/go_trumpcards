@@ -67,7 +67,7 @@ type OldMaid struct {
 	cpuHighlightedCardIdx int                        // CPU心理戦: 奇数カードの位置 (-1=なし)
 	humanHandDirty        bool                       // 人間がシャッフル/並び替えしたフラグ
 	humanProfile          *OldMaidHumanProfile       // メタAIプロファイル
-	actionLog             []*ActionLogEntry          // 棋譜
+	actionLogBase
 }
 
 // NewOldMaid コンストラクタ
@@ -714,20 +714,6 @@ func (o *OldMaid) GetHumanAction() *OldMaidCpuAction {
 // GetDrawHistory ゲーム全体の引き履歴取得
 func (o *OldMaid) GetDrawHistory() []*OldMaidDrawHistoryEntry {
 	return o.drawHistory
-}
-
-// GetActionLog 棋譜を取得する
-func (o *OldMaid) GetActionLog() []*ActionLogEntry { return o.actionLog }
-
-// appendLog 棋譜にエントリを追加する
-func (o *OldMaid) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	o.actionLog = append(o.actionLog, &ActionLogEntry{
-		TurnNumber: len(o.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- JSON Serialization ---

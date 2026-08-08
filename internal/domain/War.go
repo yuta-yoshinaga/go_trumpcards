@@ -52,7 +52,7 @@ type War struct {
 	roundsPlayed    int
 	gameEndFlag     bool
 	winnerIdx       int
-	actionLog       []*ActionLogEntry
+	actionLogBase
 }
 
 // NewWar コンストラクタ
@@ -292,17 +292,6 @@ func (w *War) finishByTotal() {
 	w.players[w.winnerIdx].SetIsFinished(true)
 }
 
-// appendLog 棋譜にエントリを追加する
-func (w *War) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	w.actionLog = append(w.actionLog, &ActionLogEntry{
-		TurnNumber: len(w.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // --- Getters ---
 
 // GetPhase フェーズ取得
@@ -348,9 +337,6 @@ func (w *War) GetConfig() WarConfig { return w.config }
 
 // SetConfig 設定更新
 func (w *War) SetConfig(cfg WarConfig) { w.config = cfg }
-
-// GetActionLog 棋譜取得
-func (w *War) GetActionLog() []*ActionLogEntry { return w.actionLog }
 
 // IsHumanTurn 戦争は常に人間入力待ち
 func (w *War) IsHumanTurn() bool { return !w.gameEndFlag }

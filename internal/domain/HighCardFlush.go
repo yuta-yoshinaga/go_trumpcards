@@ -54,26 +54,26 @@ type HighCardFlushHand struct {
 
 // HighCardFlush ハイカードフラッシュクラス
 type HighCardFlush struct {
-	trumpCards        *TrumpCards       // トランプカード
-	playerHand        []*Card           // プレイヤーハンド (7枚)
-	dealerHand        []*Card           // ディーラーハンド (7枚)
-	chips             ChipHolder        // チップ
-	anteBet           int               // アンテベット額
-	flushBonusBet     int               // Flush Bonus サイドベット額
-	straightFlushBet  int               // Straight Flush Bonus サイドベット額
-	raiseBet          int               // レイズベット額（プレイ時にante×倍率で決定）
-	phase             int               // 現在のフェーズ
-	gameEndFlag       bool              // ゲーム終了フラグ
-	result            GameResult        // ゲーム結果
-	antePayout        int               // アンテ配当（元ベットを含む合計返却）
-	raisePayout       int               // レイズ配当（元ベットを含む合計返却）
-	flushBonusPayout  int               // Flush Bonus 配当（元ベットを含む合計返却）
-	straightFlushPay  int               // Straight Flush Bonus 配当（元ベットを含む合計返却）
-	dealerQualified   bool              // ディーラークオリファイフラグ
-	playerFlushLen    int               // プレイヤーのフラッシュ長
-	dealerFlushLen    int               // ディーラーのフラッシュ長
-	playerStraightLen int               // プレイヤーのストレートフラッシュ長（最大0なら無し）
-	actionLog         []*ActionLogEntry // 棋譜
+	trumpCards        *TrumpCards // トランプカード
+	playerHand        []*Card     // プレイヤーハンド (7枚)
+	dealerHand        []*Card     // ディーラーハンド (7枚)
+	chips             ChipHolder  // チップ
+	anteBet           int         // アンテベット額
+	flushBonusBet     int         // Flush Bonus サイドベット額
+	straightFlushBet  int         // Straight Flush Bonus サイドベット額
+	raiseBet          int         // レイズベット額（プレイ時にante×倍率で決定）
+	phase             int         // 現在のフェーズ
+	gameEndFlag       bool        // ゲーム終了フラグ
+	result            GameResult  // ゲーム結果
+	antePayout        int         // アンテ配当（元ベットを含む合計返却）
+	raisePayout       int         // レイズ配当（元ベットを含む合計返却）
+	flushBonusPayout  int         // Flush Bonus 配当（元ベットを含む合計返却）
+	straightFlushPay  int         // Straight Flush Bonus 配当（元ベットを含む合計返却）
+	dealerQualified   bool        // ディーラークオリファイフラグ
+	playerFlushLen    int         // プレイヤーのフラッシュ長
+	dealerFlushLen    int         // ディーラーのフラッシュ長
+	playerStraightLen int         // プレイヤーのストレートフラッシュ長（最大0なら無し）
+	actionLogBase
 }
 
 // NewHighCardFlush コンストラクタ
@@ -446,17 +446,6 @@ func longestConsecutiveRun(set map[int]bool) int {
 	return best
 }
 
-// appendLog 棋譜にエントリを追加する
-func (hcf *HighCardFlush) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	hcf.actionLog = append(hcf.actionLog, &ActionLogEntry{
-		TurnNumber: len(hcf.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // --- Getters ---
 
 // GetPlayerHand プレイヤーハンドを取得する
@@ -517,9 +506,6 @@ func (hcf *HighCardFlush) GetPlayerStraightFlushLen() int { return hcf.playerStr
 
 // GetChips チップ
 func (hcf *HighCardFlush) GetChips() int { return hcf.chips.GetChips() }
-
-// GetActionLog 棋譜を取得する
-func (hcf *HighCardFlush) GetActionLog() []*ActionLogEntry { return hcf.actionLog }
 
 // --- Test helpers ---
 

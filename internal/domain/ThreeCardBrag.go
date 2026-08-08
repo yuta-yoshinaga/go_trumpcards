@@ -163,7 +163,7 @@ type ThreeCardBrag struct {
 	showdown         bool
 	gameEndFlag      bool
 	matchWinnerIdx   int // 試合の勝者 (-1: 未確定)
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewThreeCardBrag コンストラクタ
@@ -630,16 +630,6 @@ func (g *ThreeCardBrag) playerName(idx int) string {
 	return fmt.Sprintf("CPU %d", idx)
 }
 
-func (g *ThreeCardBrag) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // --- State getters ---
 
 // GetPhase 現在のフェーズ取得
@@ -703,9 +693,6 @@ func (g *ThreeCardBrag) GetConfig() ThreeCardBragConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *ThreeCardBrag) SetConfig(cfg ThreeCardBragConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *ThreeCardBrag) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (g *ThreeCardBrag) IsHumanTurn() bool {

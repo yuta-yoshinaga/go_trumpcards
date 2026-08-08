@@ -105,7 +105,7 @@ type Mao struct {
 	gameEndFlag      bool
 	winnerIdx        int
 	roundNumber      int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 
 	// --- 隠しルールシステム ---
 	hiddenRule         MaoHiddenRule // ゲーム開始時に決定的に選ばれる
@@ -646,9 +646,6 @@ func (g *Mao) GetConfig() MaoConfig { return g.config }
 // SetConfig 設定変更
 func (g *Mao) SetConfig(cfg MaoConfig) { g.config = cfg }
 
-// GetActionLog 棋譜取得
-func (g *Mao) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // --- Hidden-rule getters/setters ---
 
 // GetAwaitingWord 人間が隠しルールに従って言葉を宣言すべき状態か
@@ -917,17 +914,6 @@ func (g *Mao) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (g *Mao) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- CPU AI ---

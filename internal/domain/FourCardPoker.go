@@ -68,7 +68,7 @@ type FourCardPoker struct {
 	acesUpPayout    int // returned acesUp wager + bonus
 	playerHandRank  int
 	dealerHandRank  int
-	actionLog       []*ActionLogEntry
+	actionLogBase
 }
 
 // NewFourCardPoker constructs an empty game bound to a deck.
@@ -315,16 +315,6 @@ func (fcp *FourCardPoker) pairIsAces(cards []*Card) bool {
 	return counts[1] == 2
 }
 
-func (fcp *FourCardPoker) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	fcp.actionLog = append(fcp.actionLog, &ActionLogEntry{
-		TurnNumber: len(fcp.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // --- Getters ---
 
 // GetPlayerHand returns the 5-card player hand.
@@ -393,9 +383,6 @@ func (fcp *FourCardPoker) GetDealerHandRank() int { return fcp.dealerHandRank }
 
 // GetChips returns the current chip stack.
 func (fcp *FourCardPoker) GetChips() int { return fcp.chips.GetChips() }
-
-// GetActionLog returns the round action log.
-func (fcp *FourCardPoker) GetActionLog() []*ActionLogEntry { return fcp.actionLog }
 
 // --- Test helpers ---
 

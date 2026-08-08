@@ -161,7 +161,7 @@ type FiveHundred struct {
 	teamScores  [FiveHundredTeamCnt]int
 	gameEndFlag bool
 	winnerTeam  int // 勝利チーム (-1 = 未確定)
-	actionLog   []*ActionLogEntry
+	actionLogBase
 }
 
 // NewFiveHundred コンストラクタ
@@ -1282,9 +1282,6 @@ func (g *FiveHundred) GetConfig() FiveHundredConfig { return g.config }
 // SetConfig 設定変更
 func (g *FiveHundred) SetConfig(cfg FiveHundredConfig) { g.config = cfg }
 
-// GetActionLog 棋譜取得
-func (g *FiveHundred) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // CardRankPublic カードランク取得 (テスト用)
 func (g *FiveHundred) CardRankPublic(card *Card) int { return g.cardRank(card) }
 
@@ -1339,17 +1336,6 @@ func (g *FiveHundred) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (g *FiveHundred) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // fiveHundredCardLabel カードのログ表示文字列 (ジョーカー対応)

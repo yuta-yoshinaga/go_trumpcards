@@ -138,7 +138,7 @@ type BidWhist struct {
 	teamScores  [BidWhistTeamCnt]int
 	gameEndFlag bool
 	winnerTeam  int
-	actionLog   []*ActionLogEntry
+	actionLogBase
 }
 
 // NewBidWhist コンストラクタ
@@ -1200,9 +1200,6 @@ func (g *BidWhist) GetConfig() BidWhistConfig { return g.config }
 // SetConfig 設定変更
 func (g *BidWhist) SetConfig(cfg BidWhistConfig) { g.config = cfg }
 
-// GetActionLog 棋譜取得
-func (g *BidWhist) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // CardRankPublic カードランク取得 (テスト用)
 func (g *BidWhist) CardRankPublic(card *Card) int { return g.cardRank(card) }
 
@@ -1260,17 +1257,6 @@ func (g *BidWhist) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (g *BidWhist) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // bidWhistValidSuit 4スートのうちいずれかか

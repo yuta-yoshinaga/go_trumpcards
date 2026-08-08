@@ -138,7 +138,7 @@ type Mus struct {
 	// 終了
 	gameEndFlag bool
 	winnerTeam  int // -1=未確定
-	actionLog   []*ActionLogEntry
+	actionLogBase
 }
 
 // NewMus コンストラクタ
@@ -842,17 +842,6 @@ func musRoundName(ri int) string {
 	}
 }
 
-// appendLog 棋譜にエントリを追加する。
-func (g *Mus) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // --- CPU ---
 
 // CpuPlay 現在の手番が CPU の場合に 1 アクション実行する。
@@ -1113,9 +1102,6 @@ func (g *Mus) GetConfig() MusConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *Mus) SetConfig(cfg MusConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *Mus) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // --- JSON ---
 

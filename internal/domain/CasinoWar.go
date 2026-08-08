@@ -39,7 +39,7 @@ type CasinoWar struct {
 	gameEndFlag   bool
 	result        GameResult
 	totalPayout   int
-	actionLog     []*ActionLogEntry
+	actionLogBase
 }
 
 // NewCasinoWar コンストラクタ
@@ -215,17 +215,6 @@ func (cw *CasinoWar) ResolveWar() {
 	cw.phase = CasinoWarPhaseEnd
 }
 
-// appendLog 棋譜にエントリを追加する
-func (cw *CasinoWar) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	cw.actionLog = append(cw.actionLog, &ActionLogEntry{
-		TurnNumber: len(cw.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // --- Getters ---
 
 // GetPlayerCard プレイヤーの初手カード
@@ -263,9 +252,6 @@ func (cw *CasinoWar) GetTotalPayout() int { return cw.totalPayout }
 
 // GetChips チップ
 func (cw *CasinoWar) GetChips() int { return cw.chips.GetChips() }
-
-// GetActionLog 棋譜
-func (cw *CasinoWar) GetActionLog() []*ActionLogEntry { return cw.actionLog }
 
 // --- Test helpers ---
 

@@ -147,7 +147,7 @@ type Truco struct {
 	handWinnerIdx     int // 直近マノの勝者 (-1: 未確定)
 	gameEndFlag       bool
 	winnerIdx         int // マッチ勝者 (-1: 未確定)
-	actionLog         []*ActionLogEntry
+	actionLogBase
 }
 
 // NewTruco コンストラクタ
@@ -405,9 +405,6 @@ func (t *Truco) GetConfig() TrucoConfig { return t.config }
 
 // SetConfig 設定変更
 func (t *Truco) SetConfig(cfg TrucoConfig) { t.config = cfg }
-
-// GetActionLog 棋譜取得
-func (t *Truco) GetActionLog() []*ActionLogEntry { return t.actionLog }
 
 // IsHumanTurn 現在の手番 (プレイまたは応答) が人間かどうか
 func (t *Truco) IsHumanTurn() bool {
@@ -770,17 +767,6 @@ func trucoLevelName(level int) string {
 	default:
 		return "Truco"
 	}
-}
-
-// appendLog 棋譜エントリを追加する。
-func (t *Truco) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	t.actionLog = append(t.actionLog, &ActionLogEntry{
-		TurnNumber: len(t.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // playHintReason プレイ推奨の理由キーを判定する。

@@ -68,7 +68,7 @@ type Kalooki struct {
 	winnerIdx        int
 	roundWinnerIdx   int // 上がったプレイヤー。-1 は山切れ流局
 	turnCount        int // 暴走防止用ターンカウンタ
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewKalooki コンストラクタ
@@ -702,9 +702,6 @@ func (g *Kalooki) GetConfig() KalookiConfig { return g.config }
 // SetConfig 設定変更
 func (g *Kalooki) SetConfig(c KalookiConfig) { g.config = c }
 
-// GetActionLog 棋譜取得
-func (g *Kalooki) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // GetRoundWinnerIdx 直近ラウンドの勝者
 func (g *Kalooki) GetRoundWinnerIdx() int { return g.roundWinnerIdx }
 
@@ -740,16 +737,6 @@ func (g *Kalooki) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-func (g *Kalooki) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- Pure card-evaluation helpers ---

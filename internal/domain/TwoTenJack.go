@@ -57,7 +57,7 @@ type TwoTenJack struct {
 	trumpSuit        int // -1 = 未宣言
 	gameEndFlag      bool
 	winnerTeam       int // -1 = 未確定, 0 = (0,2), 1 = (1,3)
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewTwoTenJack コンストラクタ
@@ -421,9 +421,6 @@ func (t *TwoTenJack) GetConfig() TwoTenJackConfig { return t.config }
 // SetConfig 設定変更
 func (t *TwoTenJack) SetConfig(cfg TwoTenJackConfig) { t.config = cfg }
 
-// GetActionLog 棋譜取得
-func (t *TwoTenJack) GetActionLog() []*ActionLogEntry { return t.actionLog }
-
 // --- Private methods ---
 
 // startPlayPhase プレイフェーズ開始: 宣言者がリード
@@ -531,17 +528,6 @@ func (t *TwoTenJack) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (t *TwoTenJack) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	t.actionLog = append(t.actionLog, &ActionLogEntry{
-		TurnNumber: len(t.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // twoTenJackSuitName スート名を返す

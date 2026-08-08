@@ -98,7 +98,7 @@ type FortyFives struct {
 	roundTeamPts     [FortyFivesTeamCnt]int // 現ラウンドのチーム別トリック得点
 	gameEndFlag      bool
 	winnerTeam       int // -1=未確定
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewFortyFives コンストラクタ
@@ -652,17 +652,6 @@ func (g *FortyFives) findHumanIdx() int {
 	return -1
 }
 
-// appendLog 棋譜にエントリを追加する。
-func (g *FortyFives) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // --- CPU AI ---
 
 // cpuSelectPlayCard CPU がプレイするカードのインデックスを選ぶ。
@@ -943,9 +932,6 @@ func (g *FortyFives) GetConfig() FortyFivesConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *FortyFives) SetConfig(cfg FortyFivesConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *FortyFives) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetPlayableIndices プレイ可能なカードのインデックス一覧を返す。
 func (g *FortyFives) GetPlayableIndices(playerIdx int) []int {

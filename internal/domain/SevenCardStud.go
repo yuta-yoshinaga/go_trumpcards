@@ -63,30 +63,30 @@ const (
 
 // SevenCardStud セブンカードスタッド
 type SevenCardStud struct {
-	trumpCards       *TrumpCards
-	players          []*SevenCardStudPlayer
-	communityCard    *Card // カード不足時の共有カード
-	pot              int
-	sidePots         []SidePot
-	dealerIdx        int
-	currentTurn      int
-	phase            int
-	config           SevenCardStudConfig
-	gameEndFlag      bool
-	lastBet          int
-	minRaise         int
-	raiseCount       int
-	actedFlags       []bool
-	roundResults     []SevenCardStudResult
-	cpuActions       []SevenCardStudCpuAction
-	startingChips    []int
-	vpipTracked      []bool
-	pfrTracked       []bool
-	threeBetTracked  []bool
-	tournamentBase   // handCount / rebuyCounts / addonUsed (issue #1463)
-	lastCpuError     error
-	rebuyPhaseType   int
-	actionLog        []*ActionLogEntry
+	trumpCards      *TrumpCards
+	players         []*SevenCardStudPlayer
+	communityCard   *Card // カード不足時の共有カード
+	pot             int
+	sidePots        []SidePot
+	dealerIdx       int
+	currentTurn     int
+	phase           int
+	config          SevenCardStudConfig
+	gameEndFlag     bool
+	lastBet         int
+	minRaise        int
+	raiseCount      int
+	actedFlags      []bool
+	roundResults    []SevenCardStudResult
+	cpuActions      []SevenCardStudCpuAction
+	startingChips   []int
+	vpipTracked     []bool
+	pfrTracked      []bool
+	threeBetTracked []bool
+	tournamentBase  // handCount / rebuyCounts / addonUsed (issue #1463)
+	lastCpuError    error
+	rebuyPhaseType  int
+	actionLogBase
 	humanProfile     *BettingHumanProfile
 	lastHumanPlayMs  int
 	bringInPlayerIdx int  // ブリングインプレイヤーインデックス
@@ -949,16 +949,6 @@ func getRazzHandName(rank int, bestHand []*Card) string {
 
 // --- 棋譜 ---
 
-func (s *SevenCardStud) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	s.actionLog = append(s.actionLog, &ActionLogEntry{
-		TurnNumber: len(s.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 func (s *SevenCardStud) logAction(playerIdx, action, amount int) {
 	switch action {
 	case SevenCardStudActionFold:
@@ -1083,9 +1073,6 @@ func (s *SevenCardStud) GetActedFlags() []bool {
 
 // GetHandCount ハンド数取得
 func (s *SevenCardStud) GetHandCount() int { return s.handCount }
-
-// GetActionLog 棋譜を取得する
-func (s *SevenCardStud) GetActionLog() []*ActionLogEntry { return s.actionLog }
 
 // GetBringInPlayerIdx ブリングインプレイヤーインデックス取得
 func (s *SevenCardStud) GetBringInPlayerIdx() int { return s.bringInPlayerIdx }

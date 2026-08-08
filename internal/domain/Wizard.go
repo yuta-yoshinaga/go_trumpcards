@@ -66,7 +66,7 @@ type Wizard struct {
 	trumpSuit        int   // 切り札スート (-1 = 切り札なし)
 	gameEndFlag      bool
 	winnerIdx        int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewWizard コンストラクタ
@@ -449,9 +449,6 @@ func (o *Wizard) GetConfig() WizardConfig { return o.config }
 // SetConfig 設定変更
 func (o *Wizard) SetConfig(cfg WizardConfig) { o.config = cfg }
 
-// GetActionLog 棋譜取得
-func (o *Wizard) GetActionLog() []*ActionLogEntry { return o.actionLog }
-
 // GetRestrictedBid ディーラーのビッド制限値を返す。
 // Wizardはフックルールを持たないため常に -1 (制限なし)。
 // トリックテイカー共通インタフェース/DTO との互換のために残している。
@@ -793,17 +790,6 @@ func (o *Wizard) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (o *Wizard) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	o.actionLog = append(o.actionLog, &ActionLogEntry{
-		TurnNumber: len(o.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す

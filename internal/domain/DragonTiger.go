@@ -50,8 +50,8 @@ type DragonTiger struct {
 	gameEndFlag bool
 	result      GameResult
 	payout      int
-	actionLog   []*ActionLogEntry
-	history     []int // 罫線（Big Road）履歴
+	actionLogBase
+	history []int // 罫線（Big Road）履歴
 }
 
 // NewDragonTiger コンストラクタ
@@ -211,17 +211,6 @@ func dragonTigerBetTypeName(betType int) string {
 	}
 }
 
-// appendLog 棋譜にエントリを追加する
-func (dt *DragonTiger) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	dt.actionLog = append(dt.actionLog, &ActionLogEntry{
-		TurnNumber: len(dt.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // --- Getters ---
 
 // GetDragonCard ドラゴン枠のカード
@@ -250,9 +239,6 @@ func (dt *DragonTiger) GetPayout() int { return dt.payout }
 
 // GetChips チップ
 func (dt *DragonTiger) GetChips() int { return dt.chips.GetChips() }
-
-// GetActionLog 棋譜を取得する
-func (dt *DragonTiger) GetActionLog() []*ActionLogEntry { return dt.actionLog }
 
 // GetHistory 罫線履歴を取得する
 func (dt *DragonTiger) GetHistory() []int { return dt.history }

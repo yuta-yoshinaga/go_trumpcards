@@ -60,30 +60,30 @@ var errFiveCardStudInvalid = fmt.Errorf("fivecardstud: invalid game state")
 
 // FiveCardStud ファイブカードスタッド
 type FiveCardStud struct {
-	trumpCards       *TrumpCards
-	players          []*FiveCardStudPlayer
-	communityCard    *Card // カード不足時の共有カード
-	pot              int
-	sidePots         []SidePot
-	dealerIdx        int
-	currentTurn      int
-	phase            int
-	config           FiveCardStudConfig
-	gameEndFlag      bool
-	lastBet          int
-	minRaise         int
-	raiseCount       int
-	actedFlags       []bool
-	roundResults     []FiveCardStudResult
-	cpuActions       []FiveCardStudCpuAction
-	startingChips    []int
-	vpipTracked      []bool
-	pfrTracked       []bool
-	threeBetTracked  []bool
-	tournamentBase   // handCount / rebuyCounts / addonUsed (issue #1463)
-	lastCpuError     error
-	rebuyPhaseType   int
-	actionLog        []*ActionLogEntry
+	trumpCards      *TrumpCards
+	players         []*FiveCardStudPlayer
+	communityCard   *Card // カード不足時の共有カード
+	pot             int
+	sidePots        []SidePot
+	dealerIdx       int
+	currentTurn     int
+	phase           int
+	config          FiveCardStudConfig
+	gameEndFlag     bool
+	lastBet         int
+	minRaise        int
+	raiseCount      int
+	actedFlags      []bool
+	roundResults    []FiveCardStudResult
+	cpuActions      []FiveCardStudCpuAction
+	startingChips   []int
+	vpipTracked     []bool
+	pfrTracked      []bool
+	threeBetTracked []bool
+	tournamentBase  // handCount / rebuyCounts / addonUsed (issue #1463)
+	lastCpuError    error
+	rebuyPhaseType  int
+	actionLogBase
 	humanProfile     *BettingHumanProfile
 	lastHumanPlayMs  int
 	bringInPlayerIdx int // ブリングインプレイヤーインデックス
@@ -753,16 +753,6 @@ func (s *FiveCardStud) getHandName(rank int) string {
 
 // --- 棋譜 ---
 
-func (s *FiveCardStud) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	s.actionLog = append(s.actionLog, &ActionLogEntry{
-		TurnNumber: len(s.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 func (s *FiveCardStud) logAction(playerIdx, action, amount int) {
 	switch action {
 	case FiveCardStudActionFold:
@@ -887,9 +877,6 @@ func (s *FiveCardStud) GetActedFlags() []bool {
 
 // GetHandCount ハンド数取得
 func (s *FiveCardStud) GetHandCount() int { return s.handCount }
-
-// GetActionLog 棋譜を取得する
-func (s *FiveCardStud) GetActionLog() []*ActionLogEntry { return s.actionLog }
 
 // GetBringInPlayerIdx ブリングインプレイヤーインデックス取得
 func (s *FiveCardStud) GetBringInPlayerIdx() int { return s.bringInPlayerIdx }

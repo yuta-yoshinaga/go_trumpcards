@@ -91,7 +91,7 @@ type Sheepshead struct {
 	roundPickerWon   bool    // 直近ラウンドでピッカー組が勝ったか
 	gameEndFlag      bool
 	winnerIdx        int // ゲーム勝者 (-1 = 未確定)
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewSheepshead コンストラクタ
@@ -688,17 +688,6 @@ func (g *Sheepshead) playerName(idx int) string {
 	return fmt.Sprintf("CPU %d", idx)
 }
 
-// appendLog 棋譜にエントリを追加する。
-func (g *Sheepshead) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // indexOfPlayerInTrick currentTrick 内で playerIdx の札の位置を返す (-1=なし)。
 func (g *Sheepshead) indexOfPlayerInTrick(playerIdx int) int {
 	for i, tc := range g.currentTrick {
@@ -952,9 +941,6 @@ func (g *Sheepshead) GetConfig() SheepsheadConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *Sheepshead) SetConfig(cfg SheepsheadConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *Sheepshead) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetPlayableIndices プレイ可能なカードのインデックス一覧を返す。
 func (g *Sheepshead) GetPlayableIndices(playerIdx int) []int {

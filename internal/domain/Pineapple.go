@@ -59,7 +59,7 @@ type Pineapple struct {
 	tournamentBase  // handCount / rebuyCounts / addonUsed (issue #1463)
 	lastCpuError    error
 	rebuyPhaseType  int
-	actionLog       []*ActionLogEntry
+	actionLogBase
 	humanProfile    *BettingHumanProfile
 	lastHumanPlayMs int
 	discardDone     []bool // ディスカード済みフラグ
@@ -1240,25 +1240,11 @@ func (p *Pineapple) GetActedFlags() []bool {
 // GetHandCount ハンド数取得
 func (p *Pineapple) GetHandCount() int { return p.handCount }
 
-// GetActionLog 棋譜を取得する
-func (p *Pineapple) GetActionLog() []*ActionLogEntry { return p.actionLog }
-
 // GetDiscardDone ディスカード済みフラグ取得
 func (p *Pineapple) GetDiscardDone() []bool {
 	result := make([]bool, len(p.discardDone))
 	copy(result, p.discardDone)
 	return result
-}
-
-// appendLog 棋譜にエントリを追加する
-func (p *Pineapple) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	p.actionLog = append(p.actionLog, &ActionLogEntry{
-		TurnNumber: len(p.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // logAction ベッティングアクションを棋譜に記録する

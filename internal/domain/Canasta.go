@@ -65,9 +65,9 @@ type Canasta struct {
 	gameEndFlag      bool
 	winnerIdx        int
 	roundNumber      int
-	actionLog        []*ActionLogEntry
-	drewFromDiscard  bool  // 現在のターンで捨て札の山から引いたか
-	drawnCard        *Card // 捨て札の山のトップカード (メルドバリデーション用)
+	actionLogBase
+	drewFromDiscard bool  // 現在のターンで捨て札の山から引いたか
+	drawnCard       *Card // 捨て札の山のトップカード (メルドバリデーション用)
 }
 
 // NewCanasta コンストラクタ
@@ -1444,9 +1444,6 @@ func (g *Canasta) GetConfig() CanastaConfig { return g.config }
 // SetConfig 設定変更
 func (g *Canasta) SetConfig(cfg CanastaConfig) { g.config = cfg }
 
-// GetActionLog 棋譜取得
-func (g *Canasta) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // GetDrewFromDiscard 捨て札から引いたか取得
 func (g *Canasta) GetDrewFromDiscard() bool { return g.drewFromDiscard }
 
@@ -1538,17 +1535,6 @@ func (g *Canasta) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (g *Canasta) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // canastaTypeStr カナスタの種別文字列を返す

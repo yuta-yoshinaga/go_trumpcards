@@ -69,7 +69,7 @@ type Escoba struct {
 	gameEndFlag     bool
 	winnerIdx       int // -1: 未確定
 	lastRoundDetail *EscobaScoreDetail
-	actionLog       []*ActionLogEntry
+	actionLogBase
 }
 
 // NewEscoba コンストラクタ
@@ -483,9 +483,6 @@ func (e *Escoba) GetConfig() EscobaConfig { return e.config }
 // SetConfig 設定変更
 func (e *Escoba) SetConfig(cfg EscobaConfig) { e.config = cfg }
 
-// GetActionLog 棋譜取得
-func (e *Escoba) GetActionLog() []*ActionLogEntry { return e.actionLog }
-
 // IsHumanTurn 現在の手番が人間かどうか
 func (e *Escoba) IsHumanTurn() bool {
 	if e.gameEndFlag || e.currentTurn < 0 || e.currentTurn >= len(e.players) {
@@ -504,16 +501,6 @@ func (e *Escoba) GetValidCaptures(handIdx int) [][]int {
 		return nil
 	}
 	return EscobaCaptures(p.GetCard(handIdx), e.tableCards)
-}
-
-func (e *Escoba) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	e.actionLog = append(e.actionLog, &ActionLogEntry{
-		TurnNumber: len(e.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- JSON ---

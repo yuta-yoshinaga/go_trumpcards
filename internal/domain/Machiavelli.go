@@ -104,7 +104,7 @@ type Machiavelli struct {
 	roundNumber      int
 	scored           bool // ラウンド終了スコアリングが完了したか（フェーズ再入時の二重加算防止）
 	roundWinnerIdx   int  // 直近ラウンドの勝者（-1 = 山切れ流局）
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewMachiavelli コンストラクタ
@@ -643,9 +643,6 @@ func (g *Machiavelli) SetConfig(c MachiavelliConfig) { g.config = c }
 // GetTargetRounds ゲーム終了までのラウンド数
 func (g *Machiavelli) GetTargetRounds() int { return g.config.TargetRounds }
 
-// GetActionLog 棋譜取得
-func (g *Machiavelli) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // PlayerDeadwoodValue プレイヤー i の手札デッドウッド点。
 func (g *Machiavelli) PlayerDeadwoodValue(i int) int {
 	p := g.GetPlayer(i)
@@ -684,16 +681,6 @@ func (g *Machiavelli) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-func (g *Machiavelli) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // machiavelliCollectCards プレイヤーの手札を []*Card で返す

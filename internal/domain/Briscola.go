@@ -102,7 +102,7 @@ type Briscola struct {
 	playerPoints     []int
 	gameEndFlag      bool
 	winnerIdx        int // -1: 未確定または引き分け
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewBriscola コンストラクタ
@@ -348,9 +348,6 @@ func (b *Briscola) GetConfig() BriscolaConfig { return b.config }
 // SetConfig 設定変更
 func (b *Briscola) SetConfig(cfg BriscolaConfig) { b.config = cfg }
 
-// GetActionLog 棋譜取得
-func (b *Briscola) GetActionLog() []*ActionLogEntry { return b.actionLog }
-
 // GetValidPlayIndices プレイ可能なカードのインデックスリストを返す。
 // Briscola には must-follow 制約がないため、現在の手札全てが対象。
 func (b *Briscola) GetValidPlayIndices(playerIdx int) []int {
@@ -571,17 +568,6 @@ func (b *Briscola) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜エントリを追加する
-func (b *Briscola) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	b.actionLog = append(b.actionLog, &ActionLogEntry{
-		TurnNumber: len(b.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // playHintReason ヒント理由キーを判定する

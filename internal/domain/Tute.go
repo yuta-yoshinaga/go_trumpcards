@@ -81,7 +81,7 @@ type Tute struct {
 	roundTeamPts     [TuteTeamCnt]int        // 現ラウンドの得点 (カード+結婚+最終)
 	gameEndFlag      bool
 	winnerTeam       int // -1=未確定
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewTute コンストラクタ
@@ -569,17 +569,6 @@ func (g *Tute) findHumanIdx() int {
 	return -1
 }
 
-// appendLog 棋譜にエントリを追加する。
-func (g *Tute) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // --- CPU AI ---
 
 // cpuMarriageSuit CPU がリード時に宣言する結婚スートを返す (0=なし)。切り札を優先。
@@ -872,9 +861,6 @@ func (g *Tute) GetConfig() TuteConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *Tute) SetConfig(cfg TuteConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *Tute) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetPlayableIndices プレイ可能なカードのインデックス一覧を返す。
 func (g *Tute) GetPlayableIndices(playerIdx int) []int {

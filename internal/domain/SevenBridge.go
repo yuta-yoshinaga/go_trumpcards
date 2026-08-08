@@ -51,9 +51,9 @@ type SevenBridge struct {
 	gameEndFlag      bool
 	winnerIdx        int
 	roundNumber      int
-	actionLog        []*ActionLogEntry
-	roundWinnerIdx   int  // ラウンド勝者（上がったプレイヤー）。-1 は山切れ流局
-	claimedThisTurn  bool // 直前のターンで discard を pon/chi で取得したか
+	actionLogBase
+	roundWinnerIdx  int  // ラウンド勝者（上がったプレイヤー）。-1 は山切れ流局
+	claimedThisTurn bool // 直前のターンで discard を pon/chi で取得したか
 }
 
 // NewSevenBridge コンストラクタ
@@ -945,9 +945,6 @@ func (g *SevenBridge) GetConfig() SevenBridgeConfig { return g.config }
 // SetConfig 設定変更
 func (g *SevenBridge) SetConfig(cfg SevenBridgeConfig) { g.config = cfg }
 
-// GetActionLog 棋譜取得
-func (g *SevenBridge) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // GetRoundWinnerIdx 直近ラウンドの勝者
 func (g *SevenBridge) GetRoundWinnerIdx() int { return g.roundWinnerIdx }
 
@@ -980,16 +977,6 @@ func (g *SevenBridge) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-func (g *SevenBridge) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- Pure helpers ---

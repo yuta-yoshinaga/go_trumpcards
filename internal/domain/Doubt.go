@@ -133,7 +133,7 @@ type Doubt struct {
 	turnCounter     int
 	humanProfile    *DoubtHumanProfile
 	lastHumanPlayMs int
-	actionLog       []*ActionLogEntry
+	actionLogBase
 }
 
 // NewDoubt コンストラクタ
@@ -633,20 +633,6 @@ func (d *Doubt) ImportProfile(data []byte) error {
 	d.humanProfile = &DoubtHumanProfile{}
 	d.humanProfile.Import(pd)
 	return nil
-}
-
-// GetActionLog 棋譜を取得する
-func (d *Doubt) GetActionLog() []*ActionLogEntry { return d.actionLog }
-
-// appendLog 棋譜にエントリを追加する
-func (d *Doubt) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	d.actionLog = append(d.actionLog, &ActionLogEntry{
-		TurnNumber: len(d.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // findHumanIdx 人間プレイヤーのインデックスを返す (-1=なし)

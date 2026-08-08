@@ -60,8 +60,8 @@ type BlackJack struct {
 	twentyOnePlus3Bet  int                     // 21+3サイドベット額
 	sideBetResults     []*BJSideBetResult      // サイドベット結果
 	multiHandCount     int                     // マルチハンド数（0=デフォルト1）
-	actionLog          []*ActionLogEntry       // 棋譜
-	bonusKeys          []string                // 当ラウンドで成立したバリアントボーナスのi18nキー (Spanish 21 等)
+	actionLogBase
+	bonusKeys []string // 当ラウンドで成立したバリアントボーナスのi18nキー (Spanish 21 等)
 }
 
 // NewDefaultBlackJack デフォルト設定のブラックジャックを生成するファクトリ関数
@@ -739,20 +739,6 @@ func (b *BlackJack) advanceEarlySurrender() {
 	b.currentHandIdx = 0
 	b.phase = BJPhaseAction
 	b.checkNaturalBlackJack()
-}
-
-// GetActionLog 棋譜を取得する
-func (b *BlackJack) GetActionLog() []*ActionLogEntry { return b.actionLog }
-
-// appendLog 棋譜にエントリを追加する
-func (b *BlackJack) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	b.actionLog = append(b.actionLog, &ActionLogEntry{
-		TurnNumber: len(b.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // blackJackJSON is the JSON wire format for BlackJack.

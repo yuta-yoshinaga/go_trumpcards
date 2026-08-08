@@ -57,29 +57,29 @@ const (
 
 // UltimateTexasHoldem アルティメット・テキサスホールデムクラス
 type UltimateTexasHoldem struct {
-	trumpCards      *TrumpCards       // トランプカード
-	playerHand      []*Card           // プレイヤーホールカード
-	dealerHand      []*Card           // ディーラーホールカード
-	community       []*Card           // コミュニティカード
-	chips           ChipHolder        // チップ
-	anteBet         int               // アンテベット額
-	blindBet        int               // ブラインドベット額（常に anteBet と同額）
-	tripsBet        int               // トリップス（任意のサイドベット）額
-	playBet         int               // プレイベット額（0/1×/2×/3×/4× アンテ）
-	folded          bool              // リバーでフォールドしたかどうか
-	phase           int               // 現在のフェーズ
-	gameEndFlag     bool              // ゲーム終了フラグ
-	result          GameResult        // ショーダウン結果（フォールド時は Lose）
-	dealerQualified bool              // ディーラークオリファイ（ペア以上）
-	antePayout      int               // アンテ配当（返却額込み）
-	blindPayout     int               // ブラインド配当（返却額込み）
-	playPayout      int               // プレイベット配当（返却額込み）
-	tripsPayout     int               // トリップス配当（返却額込み）
-	playerHandRank  int               // プレイヤー最良5枚ランク
-	dealerHandRank  int               // ディーラー最良5枚ランク
-	playerBest      []*Card           // プレイヤー最良5枚
-	dealerBest      []*Card           // ディーラー最良5枚
-	actionLog       []*ActionLogEntry // 棋譜
+	trumpCards      *TrumpCards // トランプカード
+	playerHand      []*Card     // プレイヤーホールカード
+	dealerHand      []*Card     // ディーラーホールカード
+	community       []*Card     // コミュニティカード
+	chips           ChipHolder  // チップ
+	anteBet         int         // アンテベット額
+	blindBet        int         // ブラインドベット額（常に anteBet と同額）
+	tripsBet        int         // トリップス（任意のサイドベット）額
+	playBet         int         // プレイベット額（0/1×/2×/3×/4× アンテ）
+	folded          bool        // リバーでフォールドしたかどうか
+	phase           int         // 現在のフェーズ
+	gameEndFlag     bool        // ゲーム終了フラグ
+	result          GameResult  // ショーダウン結果（フォールド時は Lose）
+	dealerQualified bool        // ディーラークオリファイ（ペア以上）
+	antePayout      int         // アンテ配当（返却額込み）
+	blindPayout     int         // ブラインド配当（返却額込み）
+	playPayout      int         // プレイベット配当（返却額込み）
+	tripsPayout     int         // トリップス配当（返却額込み）
+	playerHandRank  int         // プレイヤー最良5枚ランク
+	dealerHandRank  int         // ディーラー最良5枚ランク
+	playerBest      []*Card     // プレイヤー最良5枚
+	dealerBest      []*Card     // ディーラー最良5枚
+	actionLogBase
 }
 
 // NewUltimateTexasHoldem コンストラクタ
@@ -575,17 +575,6 @@ func (u *UltimateTexasHoldem) evaluateTrips() {
 	u.tripsPayout = u.tripsBet + u.tripsBet*mult
 }
 
-// appendLog 棋譜にエントリを追加する
-func (u *UltimateTexasHoldem) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	u.actionLog = append(u.actionLog, &ActionLogEntry{
-		TurnNumber: len(u.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // --- Getters ---
 
 // GetPlayerHand プレイヤーホールカード取得
@@ -655,9 +644,6 @@ func (u *UltimateTexasHoldem) GetDealerBest() []*Card { return u.dealerBest }
 
 // GetChips チップ
 func (u *UltimateTexasHoldem) GetChips() int { return u.chips.GetChips() }
-
-// GetActionLog 棋譜を取得する
-func (u *UltimateTexasHoldem) GetActionLog() []*ActionLogEntry { return u.actionLog }
 
 // --- Test helpers ---
 

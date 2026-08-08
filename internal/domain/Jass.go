@@ -77,7 +77,7 @@ type Jass struct {
 	bidPlayerIdx     int
 	gameEndFlag      bool
 	winnerTeam       int // 勝利チーム (-1 = 未確定)
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewJass コンストラクタ
@@ -543,9 +543,6 @@ func (g *Jass) GetConfig() JassConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *Jass) SetConfig(cfg JassConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *Jass) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // CardRankPublic カードランク取得 (テスト用公開メソッド)
 func (g *Jass) CardRankPublic(card *Card) int { return g.cardRank(card) }
@@ -1102,16 +1099,6 @@ func (g *Jass) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-func (g *Jass) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- Hints ---

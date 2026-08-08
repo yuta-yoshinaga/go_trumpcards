@@ -58,7 +58,7 @@ type Prsi struct {
 	pendingSkips     int // 累積スキップ数 (Ace/Under)
 	gameEndFlag      bool
 	winnerIdx        int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewPrsi コンストラクタ
@@ -283,9 +283,6 @@ func (g *Prsi) GetConfig() PrsiConfig { return g.config }
 // SetConfig 設定変更
 func (g *Prsi) SetConfig(cfg PrsiConfig) { g.config = cfg }
 
-// GetActionLog 棋譜取得
-func (g *Prsi) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // --- Private methods ---
 
 // isValidPlay カードがプレイ可能か判定
@@ -460,17 +457,6 @@ func (g *Prsi) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (g *Prsi) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- CPU AI ---

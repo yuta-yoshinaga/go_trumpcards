@@ -54,26 +54,26 @@ const (
 
 // CasinoHoldem カジノホールデムクラス
 type CasinoHoldem struct {
-	trumpCards     *TrumpCards       // トランプカード
-	playerHand     []*Card           // プレイヤーホールカード
-	dealerHand     []*Card           // ディーラーホールカード
-	community      []*Card           // コミュニティカード
-	chips          ChipHolder        // チップ
-	anteBet        int               // アンテベット額
-	bonusBet       int               // AA ボーナスベット額
-	callBet        int               // コールベット額（2×アンテ）
-	phase          int               // 現在のフェーズ
-	gameEndFlag    bool              // ゲーム終了フラグ
-	result         GameResult        // ゲーム結果
-	dealerQualify  bool              // ディーラークオリファイフラグ
-	antePayout     int               // アンテ配当
-	callPayout     int               // コール配当
-	bonusPayout    int               // AA ボーナス配当
-	playerHandRank int               // プレイヤー最良5枚ランク
-	dealerHandRank int               // ディーラー最良5枚ランク
-	playerBest     []*Card           // プレイヤー最良5枚
-	dealerBest     []*Card           // ディーラー最良5枚
-	actionLog      []*ActionLogEntry // 棋譜
+	trumpCards     *TrumpCards // トランプカード
+	playerHand     []*Card     // プレイヤーホールカード
+	dealerHand     []*Card     // ディーラーホールカード
+	community      []*Card     // コミュニティカード
+	chips          ChipHolder  // チップ
+	anteBet        int         // アンテベット額
+	bonusBet       int         // AA ボーナスベット額
+	callBet        int         // コールベット額（2×アンテ）
+	phase          int         // 現在のフェーズ
+	gameEndFlag    bool        // ゲーム終了フラグ
+	result         GameResult  // ゲーム結果
+	dealerQualify  bool        // ディーラークオリファイフラグ
+	antePayout     int         // アンテ配当
+	callPayout     int         // コール配当
+	bonusPayout    int         // AA ボーナス配当
+	playerHandRank int         // プレイヤー最良5枚ランク
+	dealerHandRank int         // ディーラー最良5枚ランク
+	playerBest     []*Card     // プレイヤー最良5枚
+	dealerBest     []*Card     // ディーラー最良5枚
+	actionLogBase
 }
 
 // NewCasinoHoldem コンストラクタ
@@ -425,17 +425,6 @@ func casinoHoldemDealerQualifies(rank int, best []*Card) bool {
 	return false
 }
 
-// appendLog 棋譜にエントリを追加する
-func (c *CasinoHoldem) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	c.actionLog = append(c.actionLog, &ActionLogEntry{
-		TurnNumber: len(c.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // --- Getters ---
 
 // GetPlayerHand プレイヤーホールカード取得
@@ -517,9 +506,6 @@ func (c *CasinoHoldem) GetDealerBest() []*Card { return c.dealerBest }
 
 // GetChips チップ
 func (c *CasinoHoldem) GetChips() int { return c.chips.GetChips() }
-
-// GetActionLog 棋譜を取得する
-func (c *CasinoHoldem) GetActionLog() []*ActionLogEntry { return c.actionLog }
 
 // --- Test helpers ---
 

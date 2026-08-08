@@ -46,7 +46,7 @@ type RedDog struct {
 	gameEndFlag  bool
 	result       GameResult
 	totalPayout  int
-	actionLog    []*ActionLogEntry
+	actionLogBase
 }
 
 // NewRedDog コンストラクタ
@@ -258,17 +258,6 @@ func (rd *RedDog) payoutMultiplier() int {
 	}
 }
 
-// appendLog 棋譜にエントリを追加する
-func (rd *RedDog) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	rd.actionLog = append(rd.actionLog, &ActionLogEntry{
-		TurnNumber: len(rd.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // --- Getters ---
 
 // GetInitialCards 初手2枚
@@ -300,9 +289,6 @@ func (rd *RedDog) GetTotalPayout() int { return rd.totalPayout }
 
 // GetChips チップ
 func (rd *RedDog) GetChips() int { return rd.chips.GetChips() }
-
-// GetActionLog 棋譜
-func (rd *RedDog) GetActionLog() []*ActionLogEntry { return rd.actionLog }
 
 // --- Test helpers ---
 

@@ -54,7 +54,7 @@ type Tonk struct {
 	gameEndFlag      bool
 	winnerIdx        int
 	roundNumber      int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 	knockerIdx       int       // ノック/Tonkしたプレイヤーのインデックス (-1 = 未確定)
 	knockerMelds     [][]*Card // ノッカーのメルド
 	knockerDeadwood  []*Card   // ノッカーのデッドウッド
@@ -687,9 +687,6 @@ func (g *Tonk) GetConfig() TonkConfig { return g.config }
 // SetConfig 設定変更
 func (g *Tonk) SetConfig(cfg TonkConfig) { g.config = cfg }
 
-// GetActionLog 棋譜取得
-func (g *Tonk) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // GetKnockerIdx ノッカーのインデックス取得
 func (g *Tonk) GetKnockerIdx() int { return g.knockerIdx }
 
@@ -752,17 +749,6 @@ func (g *Tonk) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (g *Tonk) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // tonkJSON is the JSON wire format for Tonk.
