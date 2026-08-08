@@ -74,6 +74,16 @@ describe('check-design-doc-identifiers', () => {
     expect(r.code).toBe(0);
   });
 
+  it('accepts a class exported through a type-only renamed re-export', () => {
+    // `export type { A as B }` — the `type` keyword sits between `export` and
+    // the brace, so a regex that only allows whitespace there misses it and
+    // reports a legitimately exported name as missing.
+    const r = check(
+      fixture({ sources: { 'a.ts': 'type A = { x: number };\nexport type { A as Renamed };' }, classes: ['Renamed'] }),
+    );
+    expect(r.code).toBe(0);
+  });
+
   it('accepts the documented placeholders', () => {
     const r = check(fixture({ sources: { 'a.ts': 'export const x = 1;' }, classes: ['GamePage', 'DurakPhase'] }));
     expect(r.code).toBe(0);

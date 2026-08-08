@@ -50,8 +50,12 @@ const SKIP = new Set(['node_modules', '.git', 'dist', 'coverage', 'playwright-re
 /** `export function X` / `export const X` / `export class X` / `export type X` … */
 const EXPORT_DECL =
   /export\s+(?:default\s+)?(?:async\s+)?(?:function|const|let|var|class|interface|type|enum)\s+([A-Za-z0-9_$]+)/g;
-/** `export { A, B as C }` — take the exported (right-hand) name. */
-const EXPORT_LIST = /export\s*\{([^}]*)\}/g;
+/**
+ * `export { A, B as C }` — take the exported (right-hand) name. The optional
+ * `type` keyword matters: `export type { A as B }` is a real re-export, and
+ * missing it would report a legitimately exported name as unresolved.
+ */
+const EXPORT_LIST = /export\s*(?:type\s+)?\{([^}]*)\}/g;
 /** `export default someIdentifier` — a bare re-export of an existing binding. */
 const EXPORT_DEFAULT_IDENT = /export\s+default\s+([A-Za-z0-9_$]+)\s*;/g;
 
