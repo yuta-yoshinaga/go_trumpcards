@@ -622,16 +622,6 @@ func (g *TwentyNine) trickTopRank(winnerIdx int) int {
 	return g.twentyNineRank(g.currentTrick[idx].Card)
 }
 
-// findHumanIdx 人間プレイヤーのインデックス (-1=なし)。
-func (g *TwentyNine) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 // --- CPU AI ---
 
 // cpuSelectPlayCard CPU がプレイするカードのインデックスを選ぶ。
@@ -684,7 +674,7 @@ func twentyNineFilter(indices []int, pred func(int) bool) []int {
 
 // GetHint 人間プレイヤーの手番における推奨プレイを返す。
 func (g *TwentyNine) GetHint() *TwentyNineHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 || g.phase != TwentyNinePhasePlay || g.currentPlayerIdx != human {
 		return nil
 	}

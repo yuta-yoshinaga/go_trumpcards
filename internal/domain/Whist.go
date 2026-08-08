@@ -358,16 +358,6 @@ func (w *Whist) GetHint() *WhistHint {
 
 // --- Private methods ---
 
-// findHumanIdx 人間プレイヤーのインデックスを返す (-1=なし)
-func (w *Whist) findHumanIdx() int {
-	for i, p := range w.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 // dealAndSetTrump カードを配布し、ディーラーの最後のカードのスートをトランプに設定する
 func (w *Whist) dealAndSetTrump() {
 	dealAllCards(w.trumpCards, w.players)

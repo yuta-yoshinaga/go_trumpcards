@@ -960,7 +960,7 @@ func (g *Sheepshead) GetCallableSuits() []int { return g.callableSuits() }
 
 // GetHint 人間プレイヤーの手番における推奨アクションを返す。
 func (g *Sheepshead) GetHint() *SheepsheadHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 {
 		return nil
 	}
@@ -998,16 +998,6 @@ func (g *Sheepshead) GetHint() *SheepsheadHint {
 	default:
 		return nil
 	}
-}
-
-// findHumanIdx 人間プレイヤーのインデックスを返す (-1=なし)。
-func (g *Sheepshead) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
 }
 
 // playHintReason プレイヒントの理由キーを判定する。

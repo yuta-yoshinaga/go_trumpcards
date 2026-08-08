@@ -559,16 +559,6 @@ func (g *Tute) trickTopRank(winnerIdx int) int {
 	return g.tuteRank(g.currentTrick[idx].Card)
 }
 
-// findHumanIdx 人間プレイヤーのインデックス (-1=なし)。
-func (g *Tute) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 // --- CPU AI ---
 
 // cpuMarriageSuit CPU がリード時に宣言する結婚スートを返す (0=なし)。切り札を優先。
@@ -671,7 +661,7 @@ func tuteFilter(indices []int, pred func(int) bool) []int {
 
 // GetHint 人間プレイヤーの手番における推奨アクションを返す。
 func (g *Tute) GetHint() *TuteHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 || g.phase != TutePhasePlay || g.currentPlayerIdx != human {
 		return nil
 	}
@@ -800,7 +790,7 @@ func (g *Tute) IsHumanTurn() bool {
 
 // CanHumanDeclareMarriage 人間が今いずれかのスートで結婚宣言できるか。
 func (g *Tute) CanHumanDeclareMarriage() bool {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 || g.currentPlayerIdx != human {
 		return false
 	}
@@ -811,7 +801,7 @@ func (g *Tute) CanHumanDeclareMarriage() bool {
 // the human may currently declare a K+Q marriage — the human leads and holds an
 // unclaimed suit's King and Queen. Empty when no declaration is possible now.
 func (g *Tute) GetHumanDeclarableMarriageSuits() []int {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 {
 		return nil
 	}
@@ -826,7 +816,7 @@ func (g *Tute) GetHumanDeclarableMarriageSuits() []int {
 
 // CanHumanDeclareTute 人間が今 Tute を宣言できるか。
 func (g *Tute) CanHumanDeclareTute() bool {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	return human >= 0 && g.currentPlayerIdx == human && len(g.currentTrick) == 0 && g.hasTute(human)
 }
 

@@ -1058,19 +1058,9 @@ func (g *Vira) GetPlayableIndices(playerIdx int) []int {
 	return g.GetValidPlayIndices(playerIdx)
 }
 
-// findHumanIdx 人間プレイヤーの席。いなければ -1。
-func (g *Vira) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 // GetHint 人間プレイヤーへのヒント。手番でなければ nil。
 func (g *Vira) GetHint() *ViraHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 || g.phase != ViraPhasePlay || g.currentPlayerIdx != human {
 		return nil
 	}

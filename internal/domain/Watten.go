@@ -830,15 +830,6 @@ func (g *Watten) sortAllHands() {
 	}
 }
 
-func (g *Watten) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 func (g *Watten) playerName(idx int) string {
 	if idx < 0 || idx >= len(g.players) {
 		return fmt.Sprintf("Player %d", idx)
@@ -1022,7 +1013,7 @@ func (g *Watten) cpuWantsToHold(playerIdx int) bool {
 
 // GetHint 現フェーズのヒントを返す (人間プレイヤー視点)。
 func (g *Watten) GetHint() *WattenHint {
-	humanIdx := g.findHumanIdx()
+	humanIdx := findHumanIdx(g.players)
 	if humanIdx < 0 {
 		return nil
 	}

@@ -204,7 +204,7 @@ func (n *Napoleon) PlayerBid(bid int) error {
 		return ErrWrongPhase
 	}
 
-	humanIdx := n.findHumanIdx()
+	humanIdx := findHumanIdx(n.players)
 	if humanIdx < 0 || n.round.bidPlayerIdx != humanIdx {
 		return ErrNotHumanTurn
 	}
@@ -642,7 +642,7 @@ func (n *Napoleon) GetValidPlayIndices(playerIdx int) []int {
 
 // GetHint ヒントを取得する
 func (n *Napoleon) GetHint() *NapoleonHint {
-	humanIdx := n.findHumanIdx()
+	humanIdx := findHumanIdx(n.players)
 	if humanIdx < 0 {
 		return nil
 	}
@@ -691,17 +691,7 @@ func (n *Napoleon) GetHint() *NapoleonHint {
 // **コンストラクタは任意の並び順を受け付ける。**ドメイン内部は findHumanIdx で
 // 都度解決しているのに、CUI の表示だけが GetPlayer(0) を決め打ちしていて
 // 取り残されていた (#4689)。表示側も同じ解決を使えるように公開する。
-func (n *Napoleon) GetHumanIdx() int { return n.findHumanIdx() }
-
-// findHumanIdx 人間プレイヤーのインデックスを返す (-1=なし)
-func (n *Napoleon) findHumanIdx() int {
-	for i, p := range n.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
+func (n *Napoleon) GetHumanIdx() int { return findHumanIdx(n.players) }
 
 // dealCards 53枚を配る: 13枚×4人 + 場札1枚
 func (n *Napoleon) dealCards() {
@@ -1088,7 +1078,7 @@ func napoleonCardStr(card *Card) string {
 
 // playHintReason プレイヒントの理由を判定する
 func (n *Napoleon) playHintReason(chosenIdx int) string {
-	player := n.players[n.findHumanIdx()]
+	player := n.players[findHumanIdx(n.players)]
 	card := player.GetCard(chosenIdx)
 
 	if len(n.round.currentTrick) == 0 {

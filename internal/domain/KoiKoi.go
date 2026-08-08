@@ -858,7 +858,7 @@ func (g *KoiKoi) GetHint() *KoiKoiHint {
 	if g.state.gameEndFlag {
 		return nil
 	}
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 || g.state.currentTurn != human {
 		return nil
 	}
@@ -884,15 +884,6 @@ func (g *KoiKoi) GetHint() *KoiKoiHint {
 }
 
 // --- ヘルパー ---
-
-func (g *KoiKoi) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
 
 // sortHumanHand は人間の手札を月→インデックス順に並べ替える。
 func (g *KoiKoi) sortHumanHand() {

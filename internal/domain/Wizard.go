@@ -169,7 +169,7 @@ func (o *Wizard) PlayerBid(bid int) error {
 		return ErrWrongPhase
 	}
 
-	humanIdx := o.findHumanIdx()
+	humanIdx := findHumanIdx(o.players)
 	if humanIdx < 0 {
 		return ErrNotHumanTurn
 	}
@@ -460,16 +460,6 @@ func (o *Wizard) GetValidPlayIndices(playerIdx int) []int {
 }
 
 // --- Private methods ---
-
-// findHumanIdx 人間プレイヤーのインデックスを返す (-1=なし)
-func (o *Wizard) findHumanIdx() int {
-	for i, p := range o.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
 
 // calcTotalRounds 総ラウンド数を計算する (60枚 / 4人 = 15ラウンド、昇順のみ)。
 func (o *Wizard) calcTotalRounds() int {
@@ -802,7 +792,7 @@ func (o *Wizard) getValidPlayIndices(playerIdx int) []int {
 
 // GetHint ヒントを取得する
 func (o *Wizard) GetHint() *WizardHint {
-	humanIdx := o.findHumanIdx()
+	humanIdx := findHumanIdx(o.players)
 	if humanIdx < 0 {
 		return nil
 	}

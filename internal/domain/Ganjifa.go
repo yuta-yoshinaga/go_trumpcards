@@ -764,19 +764,9 @@ func (g *Ganjifa) GetActionLog() []*ActionLogEntry {
 	return g.actionLog
 }
 
-// findHumanIdx 人間プレイヤーの席。いなければ -1。
-func (g *Ganjifa) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 // GetHint 人間プレイヤーへのヒント。手番でなければ nil。
 func (g *Ganjifa) GetHint() *GanjifaHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 || g.phase != GanjifaPhasePlay || g.currentPlayerIdx != human {
 		return nil
 	}

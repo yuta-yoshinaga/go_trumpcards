@@ -174,7 +174,7 @@ func (h *Hearts) PlayerPass(cardIndices []int) error {
 		return ErrWrongPhase
 	}
 
-	humanIdx := h.findHumanIdx()
+	humanIdx := findHumanIdx(h.players)
 	if humanIdx < 0 {
 		return ErrNotHumanTurn
 	}
@@ -497,16 +497,6 @@ func (h *Hearts) SetRoundNumber(n int) { h.roundNumber = n }
 func (h *Hearts) SetTrickNumber(n int) { h.trickNumber = n }
 
 // --- Private methods ---
-
-// findHumanIdx 人間プレイヤーのインデックスを返す (-1=なし)
-func (h *Hearts) findHumanIdx() int {
-	for i, p := range h.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
 
 // startPlayPhase プレイフェーズ開始: 2♣を持つプレイヤーをリードに設定
 func (h *Hearts) startPlayPhase() {

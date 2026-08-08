@@ -515,7 +515,7 @@ func (c *CourtPiece) GetValidPlayIndices(playerIdx int) []int {
 
 // GetHint ヒントを取得する
 func (c *CourtPiece) GetHint() *CourtPieceHint {
-	humanIdx := c.findHumanIdx()
+	humanIdx := findHumanIdx(c.players)
 	if humanIdx < 0 {
 		return nil
 	}
@@ -541,16 +541,6 @@ func (c *CourtPiece) GetHint() *CourtPieceHint {
 }
 
 // --- Private helpers ---
-
-// findHumanIdx 人間プレイヤーのインデックス (-1 = なし)
-func (c *CourtPiece) findHumanIdx() int {
-	for i, p := range c.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
 
 // playCard カードをプレイする共通処理
 func (c *CourtPiece) playCard(playerIdx int, card *Card) {

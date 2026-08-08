@@ -554,7 +554,7 @@ func (g *Scarto) capturedHalfPoints() [ScartoPlayerCnt]int {
 
 // humanOutcome 人間の deal 精算符号から結果を返す。
 func (g *Scarto) humanOutcome() ScartoOutcome {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 {
 		return ScartoOutcomeNone
 	}
@@ -598,7 +598,7 @@ func (g *Scarto) checkGameEnd() {
 
 // humanResult 人間 (seat 0) 視点でマッチ結果を返す。単独トップなら Win、トップ同点なら None。
 func (g *Scarto) humanResult(leader int, tie bool) ScartoResult {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 {
 		return ScartoResultNone
 	}
@@ -1022,7 +1022,7 @@ func scartoPlayRank(c *Card, led int) int {
 
 // GetHint 人間プレイヤーの手番における推奨アクションを返す。
 func (g *Scarto) GetHint() *ScartoHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 || g.gameEndFlag {
 		return nil
 	}
@@ -1105,16 +1105,6 @@ func (g *Scarto) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-// findHumanIdx 人間プレイヤーのインデックス (-1=なし)。
-func (g *Scarto) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
 }
 
 // isHumanScartoTurn 現在のスカルト手番が人間 (=人間が親) か。

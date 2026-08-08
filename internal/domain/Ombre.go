@@ -649,7 +649,7 @@ func (g *Ombre) checkGameEnd() {
 
 // humanResult 人間 (seat 0) の視点でマッチ結果を返す。単独トップなら Win、トップ同点なら None、他は Lose。
 func (g *Ombre) humanResult(leader int, tie bool) OmbreResult {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 {
 		return OmbreResultNone
 	}
@@ -987,16 +987,6 @@ func (g *Ombre) indexOfPlayerInTrick(playerIdx int) int {
 	return -1
 }
 
-// findHumanIdx 人間プレイヤーのインデックス (-1=なし)。
-func (g *Ombre) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 // --- CPU AI (play) ---
 
 // cpuSelectPlayCard CPU がプレイするカードのインデックスを選ぶ。
@@ -1100,7 +1090,7 @@ func ombreFilter(indices []int, pred func(int) bool) []int {
 
 // GetHint 人間プレイヤーの手番における推奨アクションを返す。
 func (g *Ombre) GetHint() *OmbreHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 {
 		return nil
 	}

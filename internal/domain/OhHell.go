@@ -139,7 +139,7 @@ func (o *OhHell) PlayerBid(bid int) error {
 		return ErrWrongPhase
 	}
 
-	humanIdx := o.findHumanIdx()
+	humanIdx := findHumanIdx(o.players)
 	if humanIdx < 0 {
 		return ErrNotHumanTurn
 	}
@@ -456,16 +456,6 @@ func (o *OhHell) GetValidPlayIndices(playerIdx int) []int {
 
 // --- Private methods ---
 
-// findHumanIdx 人間プレイヤーのインデックスを返す (-1=なし)
-func (o *OhHell) findHumanIdx() int {
-	for i, p := range o.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 // calcTotalRounds 総ラウンド数を計算する
 func (o *OhHell) calcTotalRounds() int {
 	max := o.config.MaxHandSize
@@ -667,7 +657,7 @@ func (o *OhHell) getValidPlayIndices(playerIdx int) []int {
 
 // GetHint ヒントを取得する
 func (o *OhHell) GetHint() *OhHellHint {
-	humanIdx := o.findHumanIdx()
+	humanIdx := findHumanIdx(o.players)
 	if humanIdx < 0 {
 		return nil
 	}

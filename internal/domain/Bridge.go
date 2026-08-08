@@ -225,7 +225,7 @@ func (b *Bridge) PlayerBid(bidType int, level int, suit int) error {
 	if b.phase != BridgePhaseBid {
 		return ErrWrongPhase
 	}
-	humanIdx := b.findHumanIdx()
+	humanIdx := findHumanIdx(b.players)
 	if humanIdx < 0 || b.bidPlayerIdx != humanIdx {
 		return ErrNotHumanTurn
 	}
@@ -490,7 +490,7 @@ func (b *Bridge) PlayerPlay(cardIndex int) error {
 
 	// デクレアラーはダミーのカードもプレイできる
 	actingPlayer := b.currentPlayerIdx
-	humanIdx := b.findHumanIdx()
+	humanIdx := findHumanIdx(b.players)
 	if humanIdx < 0 {
 		return ErrNotHumanTurn
 	}
@@ -995,7 +995,7 @@ func (b *Bridge) IsHumanTurn() bool {
 	if b.phase != BridgePhasePlay {
 		return false
 	}
-	humanIdx := b.findHumanIdx()
+	humanIdx := findHumanIdx(b.players)
 	if humanIdx < 0 {
 		return false
 	}
@@ -1043,7 +1043,7 @@ func (b *Bridge) GetValidPlayIndices(playerIdx int) []int {
 
 // GetHint ヒントを取得する
 func (b *Bridge) GetHint() *BridgeHint {
-	humanIdx := b.findHumanIdx()
+	humanIdx := findHumanIdx(b.players)
 	if humanIdx < 0 {
 		return nil
 	}
@@ -1076,16 +1076,6 @@ func (b *Bridge) GetHint() *BridgeHint {
 }
 
 // --- Private methods ---
-
-// findHumanIdx 人間プレイヤーのインデックスを返す (-1=なし)
-func (b *Bridge) findHumanIdx() int {
-	for i, p := range b.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
 
 // playCard カードをプレイする共通処理
 func (b *Bridge) playCard(playerIdx int, card *Card) {

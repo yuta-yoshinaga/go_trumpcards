@@ -209,7 +209,7 @@ func (g *Doppelkopf) PlayerAnnounce() error {
 	if g.phase != DoppelkopfPhasePlay {
 		return ErrWrongPhase
 	}
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 {
 		return ErrNotHumanTurn
 	}
@@ -540,16 +540,6 @@ func (g *Doppelkopf) trickTopStrength(winnerIdx int) int {
 	return dkStrength(g.currentTrick[idx].Card)
 }
 
-// findHumanIdx 人間プレイヤーのインデックスを返す (-1=なし)。
-func (g *Doppelkopf) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 // --- Card classification ---
 
 // dkIsTrump 切り札 (ダイヤ全札, 全 Q, 全 J, ♥10=Dulle) か。
@@ -741,7 +731,7 @@ func (g *Doppelkopf) IsKontraAnnounced() bool { return g.kontraAnnounced }
 
 // CanHumanAnnounce 人間プレイヤーが今宣言できるか
 func (g *Doppelkopf) CanHumanAnnounce() bool {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	return human >= 0 && g.canAnnounce(human)
 }
 
@@ -797,7 +787,7 @@ func (g *Doppelkopf) GetPlayableIndices(playerIdx int) []int {
 
 // GetHint 人間プレイヤーの手番における推奨プレイを返す。
 func (g *Doppelkopf) GetHint() *DoppelkopfHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 || g.phase != DoppelkopfPhasePlay || g.currentPlayerIdx != human {
 		return nil
 	}

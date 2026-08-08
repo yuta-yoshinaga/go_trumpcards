@@ -594,7 +594,7 @@ func (b *Bourre) checkGameEnd() {
 			solvent++
 		}
 	}
-	humanIdx := b.findHumanIdx()
+	humanIdx := findHumanIdx(b.players)
 	humanBroke := humanIdx >= 0 && b.players[humanIdx].GetChips() <= 0
 	if solvent > 1 && !humanBroke {
 		return
@@ -670,16 +670,6 @@ func (b *Bourre) activeCount() int {
 		}
 	}
 	return cnt
-}
-
-// findHumanIdx 人間プレイヤーのインデックス (-1 = なし)
-func (b *Bourre) findHumanIdx() int {
-	for i, p := range b.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
 }
 
 // isLegalPlay card のプレイが合法か (legalPlays への所属で判定)

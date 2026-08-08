@@ -780,16 +780,6 @@ func (g *Calabresella) indexOfPlayerInTrick(playerIdx int) int {
 	return -1
 }
 
-// findHumanIdx 人間プレイヤーのインデックス (-1=なし)。
-func (g *Calabresella) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 // --- CPU AI (play) ---
 
 // cpuSelectPlayCard CPU がプレイするカードのインデックスを選ぶ。
@@ -883,7 +873,7 @@ func calabresellaFilter(indices []int, pred func(int) bool) []int {
 
 // GetHint 人間プレイヤーの手番における推奨アクションを返す。
 func (g *Calabresella) GetHint() *CalabresellaHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 {
 		return nil
 	}

@@ -179,7 +179,7 @@ func (p *Pitch) PlayerBid(bid int) error {
 	if p.phase != PitchPhaseBid {
 		return ErrWrongPhase
 	}
-	humanIdx := p.findHumanIdx()
+	humanIdx := findHumanIdx(p.players)
 	if humanIdx < 0 || p.bidPlayerIdx != humanIdx {
 		return ErrNotHumanTurn
 	}
@@ -762,15 +762,6 @@ func (p *Pitch) GetValidPlayIndices(playerIdx int) []int {
 
 // --- private helpers ---
 
-func (p *Pitch) findHumanIdx() int {
-	for i, pl := range p.players {
-		if pl.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 func (p *Pitch) sortAllHands() {
 	for _, pl := range p.players {
 		pitchSortHand(pl)
@@ -1129,7 +1120,7 @@ func pickLowestNonTrumpFollow(pl *PitchPlayer, validIndices []int, leadSuit, tru
 
 // GetHint ヒントを取得する
 func (p *Pitch) GetHint() *PitchHint {
-	humanIdx := p.findHumanIdx()
+	humanIdx := findHumanIdx(p.players)
 	if humanIdx < 0 {
 		return nil
 	}

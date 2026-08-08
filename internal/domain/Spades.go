@@ -145,7 +145,7 @@ func (s *Spades) PlayerBid(bid int) error {
 		return ErrWrongPhase
 	}
 
-	humanIdx := s.findHumanIdx()
+	humanIdx := findHumanIdx(s.players)
 	if humanIdx < 0 {
 		return ErrNotHumanTurn
 	}
@@ -424,16 +424,6 @@ func (s *Spades) GetConfig() SpadesConfig { return s.config }
 func (s *Spades) SetConfig(cfg SpadesConfig) { s.config = cfg }
 
 // --- Private methods ---
-
-// findHumanIdx 人間プレイヤーのインデックスを返す (-1=なし)
-func (s *Spades) findHumanIdx() int {
-	for i, p := range s.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
 
 // checkBidComplete 全員がビッドしたかチェックし、プレイフェーズに移行
 func (s *Spades) checkBidComplete() {

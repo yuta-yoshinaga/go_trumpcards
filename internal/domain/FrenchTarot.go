@@ -823,7 +823,7 @@ func (g *FrenchTarot) checkGameEnd() {
 
 // humanResult 人間 (seat 0) 視点でマッチ結果を返す。単独トップなら Win、トップ同点なら None。
 func (g *FrenchTarot) humanResult(leader int, tie bool) FrenchTarotResult {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 {
 		return FrenchTarotResultNone
 	}
@@ -1380,7 +1380,7 @@ func frenchTarotPlayRank(c *Card, led int) int {
 
 // GetHint 人間プレイヤーの手番における推奨アクションを返す。
 func (g *FrenchTarot) GetHint() *FrenchTarotHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 || g.gameEndFlag {
 		return nil
 	}
@@ -1471,16 +1471,6 @@ func (g *FrenchTarot) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-// findHumanIdx 人間プレイヤーのインデックス (-1=なし)。
-func (g *FrenchTarot) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
 }
 
 // isHumanBidTurn 現在の入札手番が人間か。

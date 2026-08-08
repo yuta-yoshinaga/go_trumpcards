@@ -575,7 +575,7 @@ func (t *Tarneeb) GetValidPlayIndices(playerIdx int) []int {
 
 // GetHint ヒントを取得する
 func (t *Tarneeb) GetHint() *TarneebHint {
-	humanIdx := t.findHumanIdx()
+	humanIdx := findHumanIdx(t.players)
 	if humanIdx < 0 {
 		return nil
 	}
@@ -613,16 +613,6 @@ func hintBidReason(bid int) string {
 		return "bid_pass"
 	}
 	return "bid_estimate"
-}
-
-// findHumanIdx 人間プレイヤーのインデックス (-1 = なし)
-func (t *Tarneeb) findHumanIdx() int {
-	for i, p := range t.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
 }
 
 // playCard カードをプレイする共通処理

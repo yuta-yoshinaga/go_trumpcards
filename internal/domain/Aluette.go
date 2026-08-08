@@ -693,19 +693,9 @@ type AluetteHint struct {
 	Reason      string // ヒント理由キー
 }
 
-// findHumanIdx 人間の席を返す (居なければ -1)。
-func (g *Aluette) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 // GetHint 人間プレイヤーへのヒント。手番でなければ nil。
 func (g *Aluette) GetHint() *AluetteHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 || g.phase != AluettePhasePlay || g.currentPlayerIdx != human {
 		return nil
 	}

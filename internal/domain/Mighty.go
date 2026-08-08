@@ -217,7 +217,7 @@ func (m *Mighty) PlayerBid(bid int, noTrump bool) error {
 		return ErrWrongPhase
 	}
 
-	humanIdx := m.findHumanIdx()
+	humanIdx := findHumanIdx(m.players)
 	if humanIdx < 0 || m.round.bidPlayerIdx != humanIdx {
 		return ErrNotHumanTurn
 	}
@@ -783,7 +783,7 @@ func (m *Mighty) GetValidPlayIndices(playerIdx int) []int {
 
 // GetHint ヒントを取得する
 func (m *Mighty) GetHint() *MightyHint {
-	humanIdx := m.findHumanIdx()
+	humanIdx := findHumanIdx(m.players)
 	if humanIdx < 0 {
 		return nil
 	}
@@ -835,16 +835,6 @@ func (m *Mighty) GetHint() *MightyHint {
 }
 
 // --- Private methods ---
-
-// findHumanIdx 人間プレイヤーのインデックスを返す (-1=なし)
-func (m *Mighty) findHumanIdx() int {
-	for i, p := range m.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
 
 // dealCards 53枚を配る: 10枚×5人 + 場札3枚
 func (m *Mighty) dealCards() {
@@ -1423,7 +1413,7 @@ func mightyCardStr(card *Card) string {
 
 // playHintReason プレイヒントの理由を判定する
 func (m *Mighty) playHintReason(chosenIdx int) string {
-	humanIdx := m.findHumanIdx()
+	humanIdx := findHumanIdx(m.players)
 	if humanIdx < 0 {
 		return ""
 	}

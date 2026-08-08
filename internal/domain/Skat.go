@@ -284,7 +284,7 @@ func (s *Skat) PlayerBid(accept bool) error {
 	if s.round.phase != SkatPhaseBid {
 		return ErrWrongPhase
 	}
-	humanIdx := s.findHumanIdx()
+	humanIdx := findHumanIdx(s.players)
 	if humanIdx < 0 {
 		return ErrNotHumanTurn
 	}
@@ -1168,16 +1168,6 @@ func (s *Skat) findIndex(p *SkatPlayer) int {
 	return -1
 }
 
-// findHumanIdx returns the human player index (-1 if none).
-func (s *Skat) findHumanIdx() int {
-	for i, p := range s.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 // IsHumanTurn reports whether the current player is human (play phase).
 func (s *Skat) IsHumanTurn() bool {
 	if s.round.currentPlayerIdx < 0 || s.round.currentPlayerIdx >= len(s.players) {
@@ -1212,7 +1202,7 @@ func (s *Skat) GetValidPlayIndices(playerIdx int) []int {
 
 // GetHint returns a hint for the human player based on the current phase.
 func (s *Skat) GetHint() *SkatHint {
-	humanIdx := s.findHumanIdx()
+	humanIdx := findHumanIdx(s.players)
 	if humanIdx < 0 {
 		return nil
 	}

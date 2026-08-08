@@ -795,7 +795,7 @@ func (g *HachiHachi) GetHint() *HachiHachiHint {
 	if g.state.gameEndFlag {
 		return nil
 	}
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 || g.state.currentTurn != human || g.state.phase != HachiHachiPhasePlay {
 		return nil
 	}
@@ -811,15 +811,6 @@ func (g *HachiHachi) GetHint() *HachiHachiHint {
 }
 
 // --- ヘルパー ---
-
-func (g *HachiHachi) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
 
 // sortHumanHand は人間の手札を月→インデックス順に並べ替える。
 func (g *HachiHachi) sortHumanHand() {
@@ -961,7 +952,7 @@ func (g *HachiHachi) GetResult() HachiHachiResult {
 	if !g.state.gameEndFlag {
 		return HachiHachiResultNone
 	}
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if g.state.winner < 0 {
 		return HachiHachiResultDraw
 	}

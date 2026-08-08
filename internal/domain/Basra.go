@@ -754,7 +754,7 @@ func (g *Basra) GetHint() *BasraHint {
 	if g.state.gameEndFlag || g.state.phase != BasraPhasePlay {
 		return nil
 	}
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 || g.state.currentTurn != human {
 		return nil
 	}
@@ -792,15 +792,6 @@ func (g *Basra) GetHint() *BasraHint {
 }
 
 // --- ヘルパー ---
-
-func (g *Basra) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
 
 // sortHumanHand は人間の手札を表示用にスート→ランク順で並べ替える。
 func (g *Basra) sortHumanHand() {

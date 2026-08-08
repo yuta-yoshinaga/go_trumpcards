@@ -1082,15 +1082,6 @@ func jassSortHand(p *JassPlayer, g *Jass) {
 	})
 }
 
-func (g *Jass) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 func (g *Jass) playerName(idx int) string {
 	if idx < 0 || idx >= len(g.players) {
 		return fmt.Sprintf("Player %d", idx)
@@ -1105,7 +1096,7 @@ func (g *Jass) playerName(idx int) string {
 
 // GetHint 現フェーズのヒントを返す (人間プレイヤー視点)
 func (g *Jass) GetHint() *JassHint {
-	humanIdx := g.findHumanIdx()
+	humanIdx := findHumanIdx(g.players)
 	if humanIdx < 0 {
 		return nil
 	}
@@ -1141,7 +1132,7 @@ func (g *Jass) GetHint() *JassHint {
 }
 
 func (g *Jass) playHintReason(chosenIdx int) string {
-	humanIdx := g.findHumanIdx()
+	humanIdx := findHumanIdx(g.players)
 	if humanIdx < 0 {
 		return ""
 	}

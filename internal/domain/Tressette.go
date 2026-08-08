@@ -348,16 +348,6 @@ func (g *Tressette) GetPlayableIndices(playerIdx int) []int {
 
 // --- Private methods ---
 
-// findHumanIdx 人間プレイヤーのインデックスを返す (-1=なし)
-func (g *Tressette) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 // playCard カードをプレイする共通処理
 func (g *Tressette) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{
@@ -504,7 +494,7 @@ func tressetteThirds(value int) int {
 
 // GetHint 人間プレイヤーの手番における推奨プレイを返す。
 func (g *Tressette) GetHint() *TressetteHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 || g.phase != TressettePhasePlay || g.currentPlayerIdx != human {
 		return nil
 	}
