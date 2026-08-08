@@ -34,6 +34,38 @@ func cuiEntry(ctrl CuiExecer, spec CuiHelpSpec) cuiGame {
 	return newCuiGame(ctrl, BuildCuiHelp(spec))
 }
 
+// BindCuiFor assembles one gameRegistry entry, giving the CLI the same
+// registration shape the other four registration points already use:
+// games_server.go has BindWebControllerFor and the per-category worker packages
+// have RegisterKVGame, while this one was still hand-writing the nested
+// constructors internal/CLAUDE.md tells you not to write.
+//
+// Two type parameters, not one: interactor constructors return a concrete type
+// (*BlackJackInteractor) while CUI controller constructors take the interface
+// (BlackJackInteractorIF), and Go function types are not covariant in their
+// results. Constraining C by CuiExecer rather than returning it lets a
+// controller constructor be passed by name. newInteractor must still be an
+// interface-annotated closure for the same reason — which is why
+// BindWebControllerFor's call sites look the way they do.
+//
+// newInteractor is called inside the NewCui closure, never here: gameRegistry is
+// a package-level var, so building interactors eagerly would construct all 264
+// games' domain state at process start instead of when one is played.
+// See issue #5187.
+func BindCuiFor[I any, C CuiExecer](
+	name string,
+	newInteractor func() I,
+	newCtrl func(I) C,
+	spec CuiHelpSpec,
+) GameRegistryEntry {
+	return GameRegistryEntry{
+		Name: name,
+		NewCui: func() cuiGame {
+			return cuiEntry(newCtrl(newInteractor()), spec)
+		},
+	}
+}
+
 // Shared poker-family help keys live here so a label change (e.g. renaming
 // "small blind" wording) updates every entry that uses them. See issue #1511.
 var (
