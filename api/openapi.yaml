@@ -531,6 +531,16 @@ tags:
     description: Wizard (ウィザード) game
   - name: zheng
     description: Zheng Shangyou (争上游) game
+  - name: aluette
+    description: Aluette (アリュエット) game
+  - name: ganjifa
+    description: Ganjifa (ガンジファ) game
+  - name: minchiate
+    description: Minchiate (ミンキアーテ) game
+  - name: tarocchini
+    description: Tarocchini (タロッキーニ) game
+  - name: vira
+    description: Vira (ヴィーラ) game
 
 paths:
   /blackjack/exec:
