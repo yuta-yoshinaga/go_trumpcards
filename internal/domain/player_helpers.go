@@ -33,6 +33,24 @@ type finishable interface {
 	GetIsFinished() bool
 }
 
+// humanReporter is the minimal view needed to tell the human player apart from
+// the CPUs.
+type humanReporter interface {
+	GetIsHuman() bool
+}
+
+// findHumanIdx returns the index of the human player, or -1 when every seat is
+// a CPU. 62 games had written this loop out; the receiver was unused in all of
+// them, which is what made it free-function-shaped. See issue #5185.
+func findHumanIdx[T humanReporter](players []T) int {
+	for i, p := range players {
+		if p.GetIsHuman() {
+			return i
+		}
+	}
+	return -1
+}
+
 // nextActivePlayer performs a circular search for the next non-finished player.
 // direction: 1 = forward, -1 = reverse (e.g. Daifugo 9-reverse).
 // Returns -1 if no active player is found.

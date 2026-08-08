@@ -174,3 +174,24 @@ func TestSortPlayerHand_Empty(t *testing.T) {
 	sortPlayerHand(h, func(ci, cj *Card) bool { return ci.GetValue() < cj.GetValue() })
 	assert.Equal(t, 0, h.GetCardsSize())
 }
+
+type fakeSeat struct{ human bool }
+
+func (f fakeSeat) GetIsHuman() bool { return f.human }
+
+func TestFindHumanIdx(t *testing.T) {
+	assert.Equal(t, 0, findHumanIdx([]fakeSeat{{true}, {false}, {false}}))
+	assert.Equal(t, 2, findHumanIdx([]fakeSeat{{false}, {false}, {true}}))
+}
+
+// -1 rather than 0 when nobody is human: callers compare against -1, and
+// returning a valid-looking index would silently designate seat 0 as the human.
+func TestFindHumanIdx_AllCPU(t *testing.T) {
+	assert.Equal(t, -1, findHumanIdx([]fakeSeat{{false}, {false}}))
+	assert.Equal(t, -1, findHumanIdx([]fakeSeat{}))
+}
+
+// The first human wins, matching what the 62 hand-written loops did.
+func TestFindHumanIdx_FirstHumanWins(t *testing.T) {
+	assert.Equal(t, 1, findHumanIdx([]fakeSeat{{false}, {true}, {true}}))
+}
