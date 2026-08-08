@@ -171,7 +171,7 @@ type Bezique struct {
 	meldsDeclared    []int // プレイヤー毎の宣言済みメルドビットマスク
 	gameEndFlag      bool
 	winnerIdx        int // -1: 未確定
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewBezique コンストラクタ
@@ -492,9 +492,6 @@ func (b *Bezique) GetConfig() BeziqueConfig { return b.config }
 
 // SetConfig 設定変更
 func (b *Bezique) SetConfig(cfg BeziqueConfig) { b.config = cfg }
-
-// GetActionLog 棋譜取得
-func (b *Bezique) GetActionLog() []*ActionLogEntry { return b.actionLog }
 
 // GetValidPlayIndices プレイ可能なカードのインデックスリストを返す。
 func (b *Bezique) GetValidPlayIndices(playerIdx int) []int {
@@ -938,17 +935,6 @@ func (b *Bezique) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜エントリを追加する
-func (b *Bezique) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	b.actionLog = append(b.actionLog, &ActionLogEntry{
-		TurnNumber: len(b.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // playHintReason ヒント理由キーを判定する

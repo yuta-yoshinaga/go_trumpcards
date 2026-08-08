@@ -45,25 +45,25 @@ type IndianPokerCpuAction struct {
 
 // IndianPoker インディアンポーカークラス
 type IndianPoker struct {
-	trumpCards      *TrumpCards
-	players         []*IndianPokerPlayer
-	pot             int
-	sidePots        []SidePot
-	dealerIdx       int
-	currentTurn     int
-	phase           int
-	config          IndianPokerConfig
-	gameEndFlag     bool
-	lastBet         int
-	minRaise        int
-	raiseCount      int
-	actedFlags      []bool
-	roundResults    []IndianPokerResult
-	cpuActions      []IndianPokerCpuAction
-	startingChips   []int
-	handCount       int
-	lastCpuError    error
-	actionLog       []*ActionLogEntry
+	trumpCards    *TrumpCards
+	players       []*IndianPokerPlayer
+	pot           int
+	sidePots      []SidePot
+	dealerIdx     int
+	currentTurn   int
+	phase         int
+	config        IndianPokerConfig
+	gameEndFlag   bool
+	lastBet       int
+	minRaise      int
+	raiseCount    int
+	actedFlags    []bool
+	roundResults  []IndianPokerResult
+	cpuActions    []IndianPokerCpuAction
+	startingChips []int
+	handCount     int
+	lastCpuError  error
+	actionLogBase
 	humanProfile    *IndianPokerHumanProfile
 	lastHumanPlayMs int
 }
@@ -751,20 +751,6 @@ func (ip *IndianPoker) GetActedFlags() []bool {
 
 // GetHandCount ハンド数取得
 func (ip *IndianPoker) GetHandCount() int { return ip.handCount }
-
-// GetActionLog 棋譜を取得する
-func (ip *IndianPoker) GetActionLog() []*ActionLogEntry { return ip.actionLog }
-
-// appendLog 棋譜にエントリを追加する
-func (ip *IndianPoker) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	ip.actionLog = append(ip.actionLog, &ActionLogEntry{
-		TurnNumber: len(ip.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
 
 // logAction ベッティングアクションを棋譜に記録する
 func (ip *IndianPoker) logAction(playerIdx, action, amount int) {

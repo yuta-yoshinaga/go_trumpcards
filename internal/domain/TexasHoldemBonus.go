@@ -48,27 +48,27 @@ const (
 
 // TexasHoldemBonus テキサスホールデムボーナスポーカークラス
 type TexasHoldemBonus struct {
-	trumpCards     *TrumpCards       // トランプカード
-	playerHand     []*Card           // プレイヤーホールカード
-	dealerHand     []*Card           // ディーラーホールカード
-	community      []*Card           // コミュニティカード
-	chips          ChipHolder        // チップ
-	anteBet        int               // アンテベット額
-	bonusBet       int               // ボーナスサイドベット額
-	flopBet        int               // フロップベット額（プリフロップで2×アンテ）
-	turnBet        int               // ターンベット額（フロップ後で1×アンテ）
-	riverBet       int               // リバーベット額（ターン後で1×アンテ）
-	phase          int               // 現在のフェーズ
-	gameEndFlag    bool              // ゲーム終了フラグ
-	result         GameResult        // ゲーム結果
-	antePayout     int               // アンテ＋アンテボーナス配当
-	playPayout     int               // プレイベット配当合計（フロップ＋ターン＋リバー）
-	bonusPayout    int               // ボーナスサイドベット配当
-	playerHandRank int               // プレイヤー最良5枚ランク
-	dealerHandRank int               // ディーラー最良5枚ランク
-	playerBest     []*Card           // プレイヤー最良5枚
-	dealerBest     []*Card           // ディーラー最良5枚
-	actionLog      []*ActionLogEntry // 棋譜
+	trumpCards     *TrumpCards // トランプカード
+	playerHand     []*Card     // プレイヤーホールカード
+	dealerHand     []*Card     // ディーラーホールカード
+	community      []*Card     // コミュニティカード
+	chips          ChipHolder  // チップ
+	anteBet        int         // アンテベット額
+	bonusBet       int         // ボーナスサイドベット額
+	flopBet        int         // フロップベット額（プリフロップで2×アンテ）
+	turnBet        int         // ターンベット額（フロップ後で1×アンテ）
+	riverBet       int         // リバーベット額（ターン後で1×アンテ）
+	phase          int         // 現在のフェーズ
+	gameEndFlag    bool        // ゲーム終了フラグ
+	result         GameResult  // ゲーム結果
+	antePayout     int         // アンテ＋アンテボーナス配当
+	playPayout     int         // プレイベット配当合計（フロップ＋ターン＋リバー）
+	bonusPayout    int         // ボーナスサイドベット配当
+	playerHandRank int         // プレイヤー最良5枚ランク
+	dealerHandRank int         // ディーラー最良5枚ランク
+	playerBest     []*Card     // プレイヤー最良5枚
+	dealerBest     []*Card     // ディーラー最良5枚
+	actionLogBase
 }
 
 // NewTexasHoldemBonus コンストラクタ
@@ -454,17 +454,6 @@ func bonusMultiplier(a, b *Card) int {
 	return 0
 }
 
-// appendLog 棋譜にエントリを追加する
-func (t *TexasHoldemBonus) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	t.actionLog = append(t.actionLog, &ActionLogEntry{
-		TurnNumber: len(t.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // --- Getters ---
 
 // GetPlayerHand プレイヤーホールカード取得
@@ -531,9 +520,6 @@ func (t *TexasHoldemBonus) GetDealerBest() []*Card { return t.dealerBest }
 
 // GetChips チップ
 func (t *TexasHoldemBonus) GetChips() int { return t.chips.GetChips() }
-
-// GetActionLog 棋譜を取得する
-func (t *TexasHoldemBonus) GetActionLog() []*ActionLogEntry { return t.actionLog }
 
 // --- Test helpers ---
 

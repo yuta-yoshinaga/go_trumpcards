@@ -72,7 +72,7 @@ type Euchre struct {
 	bidPlayerIdx        int // 現在のビッド手番
 	gameEndFlag         bool
 	winnerTeam          int // 勝利チーム (-1 = 未確定)
-	actionLog           []*ActionLogEntry
+	actionLogBase
 }
 
 // NewEuchre コンストラクタ
@@ -676,9 +676,6 @@ func (e *Euchre) GetConfig() EuchreConfig { return e.config }
 // SetConfig 設定変更
 func (e *Euchre) SetConfig(cfg EuchreConfig) { e.config = cfg }
 
-// GetActionLog 棋譜取得
-func (e *Euchre) GetActionLog() []*ActionLogEntry { return e.actionLog }
-
 // CardRankPublic カードランク取得 (テスト用公開メソッド)
 func (e *Euchre) CardRankPublic(card *Card) int { return e.cardRank(card) }
 
@@ -925,17 +922,6 @@ func (e *Euchre) playerName(idx int) string {
 }
 
 // suitStr スート名を返す
-
-// appendLog 棋譜にエントリを追加する
-func (e *Euchre) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	e.actionLog = append(e.actionLog, &ActionLogEntry{
-		TurnNumber: len(e.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
 
 // GetHint ヒントを取得する
 func (e *Euchre) GetHint() *EuchreHint {

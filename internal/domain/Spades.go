@@ -54,7 +54,7 @@ type Spades struct {
 	bidPlayerIdx     int
 	gameEndFlag      bool
 	winnerIdx        int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewSpades コンストラクタ
@@ -423,9 +423,6 @@ func (s *Spades) GetConfig() SpadesConfig { return s.config }
 // SetConfig 設定変更
 func (s *Spades) SetConfig(cfg SpadesConfig) { s.config = cfg }
 
-// GetActionLog 棋譜取得
-func (s *Spades) GetActionLog() []*ActionLogEntry { return s.actionLog }
-
 // --- Private methods ---
 
 // findHumanIdx 人間プレイヤーのインデックスを返す (-1=なし)
@@ -634,17 +631,6 @@ func (s *Spades) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (s *Spades) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	s.actionLog = append(s.actionLog, &ActionLogEntry{
-		TurnNumber: len(s.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // GetHint ヒントを取得する

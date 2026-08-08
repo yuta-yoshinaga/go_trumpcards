@@ -63,7 +63,7 @@ type GongZhu struct {
 	leadPlayerIdx    int
 	gameEndFlag      bool
 	winnerIdx        int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewGongZhu コンストラクタ
@@ -494,9 +494,6 @@ func (g *GongZhu) GetConfig() GongZhuConfig { return g.config }
 // SetConfig 設定変更
 func (g *GongZhu) SetConfig(cfg GongZhuConfig) { g.config = cfg }
 
-// GetActionLog 棋譜取得
-func (g *GongZhu) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // SetRoundNumber ラウンド番号設定 (テスト用)
 func (g *GongZhu) SetRoundNumber(n int) { g.roundNumber = n }
 
@@ -725,17 +722,6 @@ func (g *GongZhu) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (g *GongZhu) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- Card helpers ---

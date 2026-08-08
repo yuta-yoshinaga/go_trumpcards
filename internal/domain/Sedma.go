@@ -72,7 +72,7 @@ type Sedma struct {
 	roundCardPts     [SedmaTeamCnt]int // 現ラウンドのカード得点
 	gameEndFlag      bool
 	winnerTeam       int // -1=未確定
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewSedma コンストラクタ
@@ -366,17 +366,6 @@ func (g *Sedma) findHumanIdx() int {
 	return -1
 }
 
-// appendLog 棋譜にエントリを追加する。
-func (g *Sedma) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // --- CPU AI ---
 
 // cpuSelectPlayCard CPU がプレイするカードのインデックスを選ぶ。
@@ -585,9 +574,6 @@ func (g *Sedma) GetConfig() SedmaConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *Sedma) SetConfig(cfg SedmaConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *Sedma) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetPlayableIndices プレイ可能なカードのインデックス一覧を返す。
 func (g *Sedma) GetPlayableIndices(playerIdx int) []int {

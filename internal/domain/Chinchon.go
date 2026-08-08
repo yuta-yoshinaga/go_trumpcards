@@ -109,11 +109,11 @@ type Chinchon struct {
 	gameEndFlag      bool
 	winnerIdx        int // マッチ勝者 (-1 = 未確定)
 	roundNumber      int
-	actionLog        []*ActionLogEntry
-	knockerIdx       int       // ノックしたプレイヤー (-1 = ノックなし)
-	knockerMelds     [][]*Card // ノッカーのメルド (レイオフ用)
-	knockerDeadwood  []*Card   // ノッカーのデッドウッド
-	layoffQueue      []int     // 残りのレイオフ対象プレイヤー (順番)
+	actionLogBase
+	knockerIdx      int       // ノックしたプレイヤー (-1 = ノックなし)
+	knockerMelds    [][]*Card // ノッカーのメルド (レイオフ用)
+	knockerDeadwood []*Card   // ノッカーのデッドウッド
+	layoffQueue     []int     // 残りのレイオフ対象プレイヤー (順番)
 }
 
 // NewChinchon コンストラクタ
@@ -776,9 +776,6 @@ func (g *Chinchon) GetConfig() ChinchonConfig { return g.config }
 // SetConfig 設定変更
 func (g *Chinchon) SetConfig(cfg ChinchonConfig) { g.config = cfg }
 
-// GetActionLog 棋譜取得
-func (g *Chinchon) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // GetKnockerIdx ノッカーのインデックス取得 (-1 = ノックなし)
 func (g *Chinchon) GetKnockerIdx() int { return g.knockerIdx }
 
@@ -851,17 +848,6 @@ func (g *Chinchon) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (g *Chinchon) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- JSON ---

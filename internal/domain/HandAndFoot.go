@@ -78,9 +78,9 @@ type HandAndFoot struct {
 	gameEndFlag      bool
 	winnerTeam       int
 	roundNumber      int
-	actionLog        []*ActionLogEntry
-	drewFromDiscard  bool
-	drawnCard        *Card
+	actionLogBase
+	drewFromDiscard bool
+	drawnCard       *Card
 }
 
 // NewHandAndFoot コンストラクタ
@@ -1337,9 +1337,6 @@ func (g *HandAndFoot) GetConfig() HandAndFootConfig { return g.config }
 // SetConfig 設定変更
 func (g *HandAndFoot) SetConfig(cfg HandAndFootConfig) { g.config = cfg }
 
-// GetActionLog 棋譜取得
-func (g *HandAndFoot) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // GetDrewFromDiscard 捨て札から引いたか取得
 func (g *HandAndFoot) GetDrewFromDiscard() bool { return g.drewFromDiscard }
 
@@ -1372,17 +1369,6 @@ func (g *HandAndFoot) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (g *HandAndFoot) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- JSON serialization ---

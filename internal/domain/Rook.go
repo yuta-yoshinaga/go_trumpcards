@@ -103,7 +103,7 @@ type Rook struct {
 	teamScores  [RookTeamCnt]int
 	gameEndFlag bool
 	winnerTeam  int // 勝利チーム (-1 = 未確定)
-	actionLog   []*ActionLogEntry
+	actionLogBase
 }
 
 // NewRook コンストラクタ
@@ -1159,9 +1159,6 @@ func (g *Rook) GetConfig() RookConfig { return g.config }
 // SetConfig 設定変更
 func (g *Rook) SetConfig(cfg RookConfig) { g.config = cfg }
 
-// GetActionLog 棋譜取得
-func (g *Rook) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // CardRankPublic カードランク取得 (テスト用)
 func (g *Rook) CardRankPublic(card *Card) int { return g.cardRank(card) }
 
@@ -1219,17 +1216,6 @@ func (g *Rook) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (g *Rook) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // rookColorName 色番号を英字ラベルにする (ログ用)

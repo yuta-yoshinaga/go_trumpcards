@@ -90,7 +90,7 @@ type Gaigel struct {
 	lastTrickWinner  int
 	gameEndFlag      bool
 	winnerTeam       int // -1: 未確定
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewGaigel コンストラクタ
@@ -762,9 +762,6 @@ func (g *Gaigel) GetConfig() GaigelConfig { return g.config }
 // SetConfig 設定変更
 func (g *Gaigel) SetConfig(cfg GaigelConfig) { g.config = cfg }
 
-// GetActionLog 棋譜取得
-func (g *Gaigel) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // GetValidPlayIndices プレイ可能なカードのインデックスリストを返す。
 // 第1フェーズは制約なし。第2フェーズはマストフォローを適用する。
 func (g *Gaigel) GetValidPlayIndices(playerIdx int) []int {
@@ -1044,16 +1041,6 @@ func (g *Gaigel) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-func (g *Gaigel) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- Test-only helpers ---

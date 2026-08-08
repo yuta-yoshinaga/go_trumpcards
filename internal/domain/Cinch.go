@@ -116,7 +116,7 @@ type Cinch struct {
 	gameEndFlag      bool
 	winnerIdx        int
 	lastDealDetail   *CinchDealDetail
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewCinch はコンストラクタ。
@@ -853,16 +853,6 @@ func (g *Cinch) playerName(idx int) string {
 	return fmt.Sprintf("CPU %d", idx)
 }
 
-func (g *Cinch) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 func (g *Cinch) getValidPlayIndices(playerIdx int) []int {
 	player := g.players[playerIdx]
 	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
@@ -986,9 +976,6 @@ func (g *Cinch) GetConfig() CinchConfig { return g.config }
 
 // SetConfig はローカルルール設定を変更する。
 func (g *Cinch) SetConfig(cfg CinchConfig) { g.config = cfg }
-
-// GetActionLog は棋譜を返す。
-func (g *Cinch) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetPlayableIndices はプレイフェーズでプレイ可能な手札インデックスを返す。
 func (g *Cinch) GetPlayableIndices(playerIdx int) []int {

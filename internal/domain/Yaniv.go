@@ -51,8 +51,8 @@ type Yaniv struct {
 	asafWinnerIdx    int   // アサフで宣言者を下回ったプレイヤー (-1 = なし)
 	isAsaf           bool  // 直近の宣言がアサフだったか
 	roundScores      []int // 直近ラウンドで各プレイヤーが加算された失点
-	actionLog        []*ActionLogEntry
-	rng              *rand.Rand
+	actionLogBase
+	rng *rand.Rand
 }
 
 // NewYaniv コンストラクタ
@@ -810,9 +810,6 @@ func (g *Yaniv) GetConfig() YanivConfig { return g.config }
 // SetConfig ゲーム設定を設定する
 func (g *Yaniv) SetConfig(cfg YanivConfig) { g.config = cfg }
 
-// GetActionLog 棋譜を取得する
-func (g *Yaniv) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // --- Private helpers ---
 
 // sortAllHands 全プレイヤーの手札をソートする
@@ -850,17 +847,6 @@ func (g *Yaniv) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (g *Yaniv) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // cardsStr 複数カードを空白区切りの文字列にする

@@ -87,7 +87,7 @@ type Faro struct {
 	phase       int
 	gameEndFlag bool
 	totalPayout int // 直近のラウンドのプレイヤー純損益（正=利得）。
-	actionLog   []*ActionLogEntry
+	actionLogBase
 }
 
 // NewFaro はトランプデッキを受け取りファロを生成する。
@@ -386,17 +386,6 @@ func ranksEqual(a, b []int) bool {
 	return true
 }
 
-// appendLog は棋譜にエントリを追加する。
-func (f *Faro) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	f.actionLog = append(f.actionLog, &ActionLogEntry{
-		TurnNumber: len(f.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // --- Getters ---
 
 // GetPhase は現在のフェーズを返す。
@@ -473,9 +462,6 @@ func (f *Faro) GetBetRanks() []int {
 
 // GetConfig は設定を返す。
 func (f *Faro) GetConfig() FaroConfig { return f.config }
-
-// GetActionLog は棋譜を返す。
-func (f *Faro) GetActionLog() []*ActionLogEntry { return f.actionLog }
 
 // --- Test helpers ---
 

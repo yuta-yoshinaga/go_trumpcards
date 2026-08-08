@@ -84,7 +84,7 @@ type Belote struct {
 	bidPassCount      int // 連続パス数 (両ラウンド合計; 8で再配布)
 	gameEndFlag       bool
 	winnerTeam        int // 勝利チーム (-1 = 未確定)
-	actionLog         []*ActionLogEntry
+	actionLogBase
 }
 
 // NewBelote コンストラクタ
@@ -706,9 +706,6 @@ func (b *Belote) GetConfig() BeloteConfig { return b.config }
 // SetConfig 設定変更
 func (b *Belote) SetConfig(cfg BeloteConfig) { b.config = cfg }
 
-// GetActionLog 棋譜取得
-func (b *Belote) GetActionLog() []*ActionLogEntry { return b.actionLog }
-
 // CardRankPublic カードランク取得 (テスト用公開メソッド)
 func (b *Belote) CardRankPublic(card *Card) int { return b.cardRank(card) }
 
@@ -1096,16 +1093,6 @@ func (b *Belote) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-func (b *Belote) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	b.actionLog = append(b.actionLog, &ActionLogEntry{
-		TurnNumber: len(b.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- Hints ---

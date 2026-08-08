@@ -67,7 +67,7 @@ type KnockoutWhist struct {
 	roundWinnerIdx   int // 直近ラウンドの勝者 (次ラウンドのリード/切り札決定者)
 	gameEndFlag      bool
 	winnerPlayer     int // -1=未確定
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewKnockoutWhist コンストラクタ
@@ -524,17 +524,6 @@ func (g *KnockoutWhist) findHumanIdx() int {
 	return -1
 }
 
-// appendLog 棋譜にエントリを追加する。
-func (g *KnockoutWhist) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // --- CPU AI ---
 
 // cpuSelectPlayCard CPU がプレイするカードのインデックスを選ぶ。
@@ -729,9 +718,6 @@ func (g *KnockoutWhist) GetConfig() KnockoutWhistConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *KnockoutWhist) SetConfig(cfg KnockoutWhistConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *KnockoutWhist) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetPlayableIndices プレイ可能なカードのインデックス一覧を返す。
 func (g *KnockoutWhist) GetPlayableIndices(playerIdx int) []int {

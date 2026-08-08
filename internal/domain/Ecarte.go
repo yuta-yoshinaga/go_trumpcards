@@ -108,7 +108,7 @@ type Ecarte struct {
 	refusalByDealer  bool
 	gameEndFlag      bool
 	winnerIdx        int // -1: 未確定
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewEcarte コンストラクタ
@@ -753,9 +753,6 @@ func (e *Ecarte) GetConfig() EcarteConfig { return e.config }
 // SetConfig 設定変更
 func (e *Ecarte) SetConfig(cfg EcarteConfig) { e.config = cfg }
 
-// GetActionLog 棋譜取得
-func (e *Ecarte) GetActionLog() []*ActionLogEntry { return e.actionLog }
-
 // GetValidPlayIndices プレイ可能なカードのインデックスリストを返す。
 func (e *Ecarte) GetValidPlayIndices(playerIdx int) []int {
 	if playerIdx < 0 || playerIdx >= len(e.players) || e.phase != EcartePhasePlay {
@@ -826,16 +823,6 @@ func (e *Ecarte) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-func (e *Ecarte) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	e.actionLog = append(e.actionLog, &ActionLogEntry{
-		TurnNumber: len(e.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 func (e *Ecarte) playHintReason(playerIdx, chosenIdx int) string {

@@ -70,7 +70,7 @@ type Pitch struct {
 	trumpSuit        int // 切り札スート (PitchTrumpUnset=未確定)
 	gameEndFlag      bool
 	winnerIdx        int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewPitch コンストラクタ
@@ -755,9 +755,6 @@ func (p *Pitch) GetConfig() PitchConfig { return p.config }
 // SetConfig 設定変更
 func (p *Pitch) SetConfig(cfg PitchConfig) { p.config = cfg }
 
-// GetActionLog 棋譜取得
-func (p *Pitch) GetActionLog() []*ActionLogEntry { return p.actionLog }
-
 // GetValidPlayIndices プレイ可能なカードのインデックスリストを返す (Web用)
 func (p *Pitch) GetValidPlayIndices(playerIdx int) []int {
 	return p.getValidPlayIndices(playerIdx)
@@ -797,16 +794,6 @@ func (p *Pitch) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-func (p *Pitch) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	p.actionLog = append(p.actionLog, &ActionLogEntry{
-		TurnNumber: len(p.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 func (p *Pitch) getValidPlayIndices(playerIdx int) []int {

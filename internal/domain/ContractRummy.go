@@ -101,9 +101,9 @@ type ContractRummy struct {
 	gameEndFlag      bool
 	winnerIdx        int
 	roundNumber      int
-	actionLog        []*ActionLogEntry
-	roundWinnerIdx   int // 直近ラウンドの勝者（上がったプレイヤー）。-1 は山切れ流局
-	startingPlayer   int // 当該ラウンドの先手
+	actionLogBase
+	roundWinnerIdx int // 直近ラウンドの勝者（上がったプレイヤー）。-1 は山切れ流局
+	startingPlayer int // 当該ラウンドの先手
 }
 
 // NewContractRummy コンストラクタ
@@ -828,9 +828,6 @@ func (g *ContractRummy) GetConfig() ContractRummyConfig { return g.config }
 // SetConfig 設定変更
 func (g *ContractRummy) SetConfig(c ContractRummyConfig) { g.config = c }
 
-// GetActionLog 棋譜取得
-func (g *ContractRummy) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // GetRoundWinnerIdx 直近ラウンドの勝者
 func (g *ContractRummy) GetRoundWinnerIdx() int { return g.roundWinnerIdx }
 
@@ -868,16 +865,6 @@ func (g *ContractRummy) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-func (g *ContractRummy) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- Pure helpers ---

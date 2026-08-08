@@ -65,7 +65,7 @@ type Scopone struct {
 	gameEndFlag     bool
 	winnerTeam      int // -1: 未確定
 	lastRoundDetail *ScoponeScoreDetail
-	actionLog       []*ActionLogEntry
+	actionLogBase
 }
 
 // NewScopone コンストラクタ
@@ -431,9 +431,6 @@ func (s *Scopone) GetConfig() ScoponeConfig { return s.config }
 // SetConfig 設定変更
 func (s *Scopone) SetConfig(cfg ScoponeConfig) { s.config = cfg }
 
-// GetActionLog 棋譜取得
-func (s *Scopone) GetActionLog() []*ActionLogEntry { return s.actionLog }
-
 // IsHumanTurn 現在の手番が人間かどうか
 func (s *Scopone) IsHumanTurn() bool {
 	if s.gameEndFlag || s.currentTurn < 0 || s.currentTurn >= len(s.players) {
@@ -452,16 +449,6 @@ func (s *Scopone) GetValidCaptures(handIdx int) [][]int {
 		return nil
 	}
 	return EnumerateScopaCaptures(p.GetCard(handIdx), s.tableCards)
-}
-
-func (s *Scopone) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	s.actionLog = append(s.actionLog, &ActionLogEntry{
-		TurnNumber: len(s.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- JSON ---

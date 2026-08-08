@@ -72,7 +72,7 @@ type AllFours struct {
 	giftAward        int   // gift で 1 点を得たプレイヤー (-1=gift なし)
 	gameEndFlag      bool
 	winnerIdx        int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewAllFours コンストラクタ
@@ -699,9 +699,6 @@ func (a *AllFours) GetConfig() AllFoursConfig { return a.config }
 // SetConfig 設定変更
 func (a *AllFours) SetConfig(cfg AllFoursConfig) { a.config = cfg }
 
-// GetActionLog 棋譜取得
-func (a *AllFours) GetActionLog() []*ActionLogEntry { return a.actionLog }
-
 // GetValidPlayIndices プレイ可能なカードのインデックスリストを返す (Web用)
 func (a *AllFours) GetValidPlayIndices(playerIdx int) []int {
 	pl := a.players[playerIdx]
@@ -739,16 +736,6 @@ func (a *AllFours) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-func (a *AllFours) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	a.actionLog = append(a.actionLog, &ActionLogEntry{
-		TurnNumber: len(a.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // allFoursSuitGlyph スートを Unicode グリフで返す。

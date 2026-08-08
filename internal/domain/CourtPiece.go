@@ -76,7 +76,7 @@ type CourtPiece struct {
 	lastRoundCourt   bool
 	gameEndFlag      bool
 	winnerTeam       int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewCourtPiece コンストラクタ
@@ -492,9 +492,6 @@ func (c *CourtPiece) GetConfig() CourtPieceConfig { return c.config }
 // SetConfig 設定変更
 func (c *CourtPiece) SetConfig(cfg CourtPieceConfig) { c.config = cfg }
 
-// GetActionLog 棋譜取得
-func (c *CourtPiece) GetActionLog() []*ActionLogEntry { return c.actionLog }
-
 // IsHumanTurn 現在の手番が人間かどうか
 func (c *CourtPiece) IsHumanTurn() bool {
 	if c.currentPlayerIdx < 0 || c.currentPlayerIdx >= len(c.players) {
@@ -655,17 +652,6 @@ func (c *CourtPiece) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (c *CourtPiece) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	c.actionLog = append(c.actionLog, &ActionLogEntry{
-		TurnNumber: len(c.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // playHintReason プレイヒントの理由キー

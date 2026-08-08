@@ -54,11 +54,11 @@ type GinRummy struct {
 	gameEndFlag      bool
 	winnerIdx        int
 	roundNumber      int
-	actionLog        []*ActionLogEntry
-	knockerIdx       int       // ノックしたプレイヤーのインデックス (-1 = ノックなし)
-	knockerMelds     [][]*Card // ノッカーのメルド (レイオフ用)
-	knockerDeadwood  []*Card   // ノッカーのデッドウッド
-	isGin            bool      // ジンかどうか
+	actionLogBase
+	knockerIdx      int       // ノックしたプレイヤーのインデックス (-1 = ノックなし)
+	knockerMelds    [][]*Card // ノッカーのメルド (レイオフ用)
+	knockerDeadwood []*Card   // ノッカーのデッドウッド
+	isGin           bool      // ジンかどうか
 }
 
 // NewGinRummy コンストラクタ
@@ -806,9 +806,6 @@ func (g *GinRummy) GetConfig() GinRummyConfig { return g.config }
 // SetConfig 設定変更
 func (g *GinRummy) SetConfig(cfg GinRummyConfig) { g.config = cfg }
 
-// GetActionLog 棋譜取得
-func (g *GinRummy) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // GetKnockerIdx ノッカーのインデックス取得
 func (g *GinRummy) GetKnockerIdx() int { return g.knockerIdx }
 
@@ -862,17 +859,6 @@ func (g *GinRummy) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (g *GinRummy) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- Meld Detection ---

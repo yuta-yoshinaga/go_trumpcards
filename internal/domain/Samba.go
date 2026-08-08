@@ -70,9 +70,9 @@ type Samba struct {
 	winnerIdx        int // 勝利チームのインデックス (0 or 1), -1 = 未確定
 	roundNumber      int
 	teamScores       []int // チーム累積スコア (length SambaTeamCnt)
-	actionLog        []*ActionLogEntry
-	drewFromDiscard  bool  // 現在のターンで捨て札の山から引いたか
-	drawnCard        *Card // 捨て札の山のトップカード (メルドバリデーション用)
+	actionLogBase
+	drewFromDiscard bool  // 現在のターンで捨て札の山から引いたか
+	drawnCard       *Card // 捨て札の山のトップカード (メルドバリデーション用)
 }
 
 // NewSamba コンストラクタ
@@ -1617,9 +1617,6 @@ func (g *Samba) GetConfig() SambaConfig { return g.config }
 // SetConfig 設定変更
 func (g *Samba) SetConfig(cfg SambaConfig) { g.config = cfg }
 
-// GetActionLog 棋譜取得
-func (g *Samba) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // GetDrewFromDiscard 捨て札から引いたか取得
 func (g *Samba) GetDrewFromDiscard() bool { return g.drewFromDiscard }
 
@@ -1652,17 +1649,6 @@ func (g *Samba) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (g *Samba) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- JSON serialization ---

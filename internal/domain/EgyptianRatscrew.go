@@ -93,7 +93,7 @@ type EgyptianRatscrew struct {
 	lastEvent     EgyptianRatscrewLastEvent
 	gameEndFlag   bool
 	winnerIdx     int
-	actionLog     []*ActionLogEntry
+	actionLogBase
 
 	// now 現在時刻取得関数 (テストで差し替え可能)
 	now func() time.Time
@@ -271,9 +271,6 @@ func (g *EgyptianRatscrew) GetPending() EgyptianRatscrewPending { return g.pendi
 
 // GetLastEvent 直近イベント
 func (g *EgyptianRatscrew) GetLastEvent() EgyptianRatscrewLastEvent { return g.lastEvent }
-
-// GetActionLog 棋譜取得
-func (g *EgyptianRatscrew) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // --- アクション ---
 
@@ -552,17 +549,6 @@ func (g *EgyptianRatscrew) checkStuck() {
 	}
 	// 両者ストック空 + スラップ不可 + チャンスバトルなしで詰み。引き分けとする。
 	g.endGame(-1)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (g *EgyptianRatscrew) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // slapReasonLabel スラップ理由のログ用ラベル

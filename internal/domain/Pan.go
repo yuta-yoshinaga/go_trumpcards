@@ -122,7 +122,7 @@ type Pan struct {
 	roundNumber      int
 	scored           bool // ラウンド終了スコアリングが完了したか（フェーズ再入時の二重加算防止）
 	panDeclarerIdx   int  // 「パン」を宣言したプレイヤー（-1 = 宣言なし／山切れ）
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewPan コンストラクタ
@@ -708,9 +708,6 @@ func (g *Pan) GetPanDeclarerIdx() int { return g.panDeclarerIdx }
 // SetPanDeclarerIdx 宣言プレイヤー設定（テスト用）
 func (g *Pan) SetPanDeclarerIdx(i int) { g.panDeclarerIdx = i }
 
-// GetActionLog 棋譜取得
-func (g *Pan) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // PlayerHandPoints プレイヤー i の手札ピップ点。
 func (g *Pan) PlayerHandPoints(i int) int {
 	p := g.GetPlayer(i)
@@ -755,16 +752,6 @@ func (g *Pan) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-func (g *Pan) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- Scoring / meld helpers ---

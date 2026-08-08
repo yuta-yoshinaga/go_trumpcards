@@ -46,7 +46,7 @@ type CatchTen struct {
 	teamScores       [CatchTenTeamCnt]int
 	gameEndFlag      bool
 	winnerTeam       int // -1 = 未確定 / -2 = 引き分け
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // CatchTenDrawTeam は両チームが同時にポイント上限へ到達した際の引き分けを表す。
@@ -389,9 +389,6 @@ func (g *CatchTen) GetConfig() CatchTenConfig { return g.config }
 // SetConfig 設定変更
 func (g *CatchTen) SetConfig(cfg CatchTenConfig) { g.config = cfg }
 
-// GetActionLog 棋譜取得
-func (g *CatchTen) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // GetValidPlayIndices プレイ可能なカードのインデックスリストを返す (Web用)
 func (g *CatchTen) GetValidPlayIndices(playerIdx int) []int {
 	return g.getValidPlayIndices(playerIdx)
@@ -575,17 +572,6 @@ func (g *CatchTen) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (g *CatchTen) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // playHintReason プレイヒントの理由を判定する

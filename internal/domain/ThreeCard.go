@@ -40,24 +40,24 @@ const (
 
 // ThreeCard スリーカードポーカークラス
 type ThreeCard struct {
-	trumpCards      *TrumpCards       // トランプカード
-	playerHand      []*Card           // プレイヤーハンド
-	dealerHand      []*Card           // ディーラーハンド
-	chips           ChipHolder        // チップ
-	anteBet         int               // アンテベット額
-	pairPlusBet     int               // ペアプラスベット額
-	playBet         int               // プレイベット額
-	phase           int               // 現在のフェーズ
-	gameEndFlag     bool              // ゲーム終了フラグ
-	result          GameResult        // ゲーム結果
-	antePayout      int               // アンテ配当
-	playPayout      int               // プレイ配当
-	anteBonusPayout int               // アンテボーナス配当
-	pairPlusPayout  int               // ペアプラス配当
-	dealerQualified bool              // ディーラークオリファイフラグ
-	playerHandRank  int               // プレイヤーハンドランク
-	dealerHandRank  int               // ディーラーハンドランク
-	actionLog       []*ActionLogEntry // 棋譜
+	trumpCards      *TrumpCards // トランプカード
+	playerHand      []*Card     // プレイヤーハンド
+	dealerHand      []*Card     // ディーラーハンド
+	chips           ChipHolder  // チップ
+	anteBet         int         // アンテベット額
+	pairPlusBet     int         // ペアプラスベット額
+	playBet         int         // プレイベット額
+	phase           int         // 現在のフェーズ
+	gameEndFlag     bool        // ゲーム終了フラグ
+	result          GameResult  // ゲーム結果
+	antePayout      int         // アンテ配当
+	playPayout      int         // プレイ配当
+	anteBonusPayout int         // アンテボーナス配当
+	pairPlusPayout  int         // ペアプラス配当
+	dealerQualified bool        // ディーラークオリファイフラグ
+	playerHandRank  int         // プレイヤーハンドランク
+	dealerHandRank  int         // ディーラーハンドランク
+	actionLogBase
 }
 
 // NewThreeCard コンストラクタ
@@ -287,17 +287,6 @@ func (tc *ThreeCard) evaluatePairPlus() {
 	}
 }
 
-// appendLog 棋譜にエントリを追加する
-func (tc *ThreeCard) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	tc.actionLog = append(tc.actionLog, &ActionLogEntry{
-		TurnNumber: len(tc.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // --- Getters ---
 
 // GetPlayerHand プレイヤーハンド取得
@@ -352,9 +341,6 @@ func (tc *ThreeCard) GetDealerHandRank() int { return tc.dealerHandRank }
 
 // GetChips チップ
 func (tc *ThreeCard) GetChips() int { return tc.chips.GetChips() }
-
-// GetActionLog 棋譜を取得する
-func (tc *ThreeCard) GetActionLog() []*ActionLogEntry { return tc.actionLog }
 
 // --- Test helpers ---
 

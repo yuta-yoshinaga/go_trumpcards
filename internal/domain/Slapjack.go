@@ -73,7 +73,7 @@ type Slapjack struct {
 	lastEvent      SlapjackLastEvent
 	gameEndFlag    bool
 	winnerIdx      int
-	actionLog      []*ActionLogEntry
+	actionLogBase
 
 	// now 現在時刻取得関数 (テストで差し替え可能)
 	now func() time.Time
@@ -220,9 +220,6 @@ func (g *Slapjack) GetPending() SlapjackPending { return g.pending }
 
 // GetLastEvent 直近イベント
 func (g *Slapjack) GetLastEvent() SlapjackLastEvent { return g.lastEvent }
-
-// GetActionLog 棋譜取得
-func (g *Slapjack) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // --- アクション ---
 
@@ -422,17 +419,6 @@ func (g *Slapjack) checkStuck() {
 	if !g.players[0].HasStock() && !g.players[1].HasStock() && !g.IsTopJack() {
 		g.endGame(0)
 	}
-}
-
-// appendLog 棋譜にエントリを追加する
-func (g *Slapjack) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- JSON ---

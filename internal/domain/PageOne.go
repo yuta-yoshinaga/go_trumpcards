@@ -42,7 +42,7 @@ type PageOne struct {
 	gameEndFlag      bool
 	winnerIdx        int
 	roundNumber      int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewPageOne コンストラクタ
@@ -395,9 +395,6 @@ func (g *PageOne) GetConfig() PageOneConfig { return g.config }
 // SetConfig 設定変更
 func (g *PageOne) SetConfig(cfg PageOneConfig) { g.config = cfg }
 
-// GetActionLog 棋譜取得
-func (g *PageOne) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // GetValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (g *PageOne) GetValidPlayIndices(playerIdx int) []int {
 	return g.getValidPlayIndices(playerIdx)
@@ -560,17 +557,6 @@ func (g *PageOne) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (g *PageOne) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- CPU AI ---

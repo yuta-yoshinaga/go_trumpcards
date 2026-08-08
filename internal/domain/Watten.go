@@ -117,7 +117,7 @@ type Watten struct {
 	gameEndFlag      bool
 	winnerTeam       int          // マッチ勝者チーム (-1 = 未確定)
 	result           WattenResult // 人間 (チーム 0) 視点の結果
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewWatten コンストラクタ
@@ -849,16 +849,6 @@ func (g *Watten) playerName(idx int) string {
 	return fmt.Sprintf("CPU %d", idx)
 }
 
-func (g *Watten) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // --- CPU AI ---
 
 // cpuBestDeclaration CPU の宣言: 最頻スートを T, 最頻ランクを R とする。
@@ -1234,9 +1224,6 @@ func (g *Watten) GetConfig() WattenConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *Watten) SetConfig(cfg WattenConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *Watten) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // --- Test-only helpers ---
 

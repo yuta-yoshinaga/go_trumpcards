@@ -49,7 +49,7 @@ type Whist struct {
 	teamScores       [WhistTeamCnt]int
 	gameEndFlag      bool
 	winnerTeam       int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewWhist コンストラクタ
@@ -338,9 +338,6 @@ func (w *Whist) GetConfig() WhistConfig { return w.config }
 // SetConfig 設定変更
 func (w *Whist) SetConfig(cfg WhistConfig) { w.config = cfg }
 
-// GetActionLog 棋譜取得
-func (w *Whist) GetActionLog() []*ActionLogEntry { return w.actionLog }
-
 // GetValidPlayIndices プレイ可能なカードのインデックスリストを返す (Web用)
 func (w *Whist) GetValidPlayIndices(playerIdx int) []int {
 	return w.getValidPlayIndices(playerIdx)
@@ -498,17 +495,6 @@ func (w *Whist) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (w *Whist) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	w.actionLog = append(w.actionLog, &ActionLogEntry{
-		TurnNumber: len(w.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // playHintReason プレイヒントの理由を判定する

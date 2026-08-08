@@ -124,7 +124,7 @@ type Schnapsen struct {
 	marriageDeclared [CardDesignMax + 1]bool // suit -> 当ラウンドで宣言済か
 	gameEndFlag      bool
 	winnerIdx        int // -1: 未確定
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewSchnapsen コンストラクタ
@@ -403,9 +403,6 @@ func (s *Schnapsen) GetConfig() SchnapsenConfig { return s.config }
 
 // SetConfig 設定変更
 func (s *Schnapsen) SetConfig(cfg SchnapsenConfig) { s.config = cfg }
-
-// GetActionLog 棋譜取得
-func (s *Schnapsen) GetActionLog() []*ActionLogEntry { return s.actionLog }
 
 // GetValidPlayIndices プレイ可能なカードのインデックスリストを返す。
 // 第1フェーズは制約なし。第2フェーズはマストフォロー (同スート優先 →
@@ -788,17 +785,6 @@ func (s *Schnapsen) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜エントリを追加する
-func (s *Schnapsen) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	s.actionLog = append(s.actionLog, &ActionLogEntry{
-		TurnNumber: len(s.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // playHintReason ヒント理由キーを判定する

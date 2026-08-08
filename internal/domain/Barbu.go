@@ -91,7 +91,7 @@ type Barbu struct {
 	gameEndFlag     bool
 	lastDealDetail  *BarbuDealDetail
 	dealHistory     []*BarbuDealDetail // 完了した各ディールの得点内訳 (最大 BarbuTotalDeals 件)
-	actionLog       []*ActionLogEntry
+	actionLogBase
 }
 
 // NewBarbu はコンストラクタ。
@@ -441,17 +441,6 @@ func barbuSortHand(p *BarbuPlayer) {
 	}
 }
 
-// appendLog は棋譜にエントリを追加する。
-func (b *Barbu) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	b.actionLog = append(b.actionLog, &ActionLogEntry{
-		TurnNumber: len(b.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // barbuContractName はコントラクトの英語名を返す (ログ用)。
 func barbuContractName(c int) string {
 	switch c {
@@ -557,9 +546,6 @@ func (b *Barbu) GetConfig() BarbuConfig { return b.config }
 
 // SetConfig はローカルルール設定を変更する。
 func (b *Barbu) SetConfig(config BarbuConfig) { b.config = config }
-
-// GetActionLog は棋譜を返す。
-func (b *Barbu) GetActionLog() []*ActionLogEntry { return b.actionLog }
 
 // GetRoundWinners は (ゲーム終了時) 最高得点プレイヤーのリストを返す。
 func (b *Barbu) GetRoundWinners() []int {

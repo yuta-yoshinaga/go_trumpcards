@@ -165,7 +165,7 @@ type Ombre struct {
 	scored           bool                     // 当該ディールの得点計算済みか (RoundEnd 突入時に一度だけ)
 	gameEndFlag      bool
 	winnerPlayer     int // -1=未確定
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewOmbre コンストラクタ
@@ -997,17 +997,6 @@ func (g *Ombre) findHumanIdx() int {
 	return -1
 }
 
-// appendLog 棋譜にエントリを追加する。
-func (g *Ombre) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // --- CPU AI (play) ---
 
 // cpuSelectPlayCard CPU がプレイするカードのインデックスを選ぶ。
@@ -1304,9 +1293,6 @@ func (g *Ombre) GetConfig() OmbreConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *Ombre) SetConfig(cfg OmbreConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *Ombre) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetPlayableIndices プレイ可能なカードのインデックス一覧を返す。
 func (g *Ombre) GetPlayableIndices(playerIdx int) []int {

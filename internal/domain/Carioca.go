@@ -103,9 +103,9 @@ type Carioca struct {
 	gameEndFlag      bool
 	winnerIdx        int
 	roundNumber      int
-	actionLog        []*ActionLogEntry
-	roundWinnerIdx   int // 直近ラウンドの勝者（上がったプレイヤー）。-1 は山切れ流局
-	startingPlayer   int // 当該ラウンドの先手
+	actionLogBase
+	roundWinnerIdx int // 直近ラウンドの勝者（上がったプレイヤー）。-1 は山切れ流局
+	startingPlayer int // 当該ラウンドの先手
 }
 
 // NewCarioca コンストラクタ
@@ -821,9 +821,6 @@ func (g *Carioca) GetConfig() CariocaConfig { return g.config }
 // SetConfig 設定変更
 func (g *Carioca) SetConfig(c CariocaConfig) { g.config = c }
 
-// GetActionLog 棋譜取得
-func (g *Carioca) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // GetRoundWinnerIdx 直近ラウンドの勝者
 func (g *Carioca) GetRoundWinnerIdx() int { return g.roundWinnerIdx }
 
@@ -861,16 +858,6 @@ func (g *Carioca) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-func (g *Carioca) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- Pure Carioca helpers (joker-aware) ---

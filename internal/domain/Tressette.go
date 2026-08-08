@@ -74,7 +74,7 @@ type Tressette struct {
 	teamRoundThirds  [TressetteTeamCnt]int // 現ラウンドで獲得した 1/3点 の合計
 	gameEndFlag      bool
 	winnerTeam       int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewTressette コンストラクタ
@@ -338,9 +338,6 @@ func (g *Tressette) GetConfig() TressetteConfig { return g.config }
 // SetConfig 設定変更
 func (g *Tressette) SetConfig(cfg TressetteConfig) { g.config = cfg }
 
-// GetActionLog 棋譜取得
-func (g *Tressette) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // GetPlayableIndices プレイ可能な (マストフォローを満たす) カードのインデックス一覧を返す。
 func (g *Tressette) GetPlayableIndices(playerIdx int) []int {
 	if playerIdx < 0 || playerIdx >= len(g.players) {
@@ -459,17 +456,6 @@ func teamName(team int) string {
 		return "A"
 	}
 	return "B"
-}
-
-// appendLog 棋譜にエントリを追加する
-func (g *Tressette) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- Card helpers ---

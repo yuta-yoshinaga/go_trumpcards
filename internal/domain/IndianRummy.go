@@ -110,7 +110,7 @@ type IndianRummy struct {
 	scored           bool // ラウンド終了スコアリングが完了したか（フェーズ再入時の二重加算防止）
 	declarerIdx      int  // 宣言したプレイヤー（-1 = 宣言なし／山切れ）
 	declarationValid bool // 直近の宣言が有効だったか
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewIndianRummy コンストラクタ
@@ -639,9 +639,6 @@ func (g *IndianRummy) SetDeclarerIdx(i int) { g.declarerIdx = i }
 // GetDeclarationValid 直近の宣言が有効だったか
 func (g *IndianRummy) GetDeclarationValid() bool { return g.declarationValid }
 
-// GetActionLog 棋譜取得
-func (g *IndianRummy) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // PlayerDeadwoodValue プレイヤー i のデッドウッド採点値（キャップ・ピュアシーケンス規則を含む）。
 func (g *IndianRummy) PlayerDeadwoodValue(i int) int {
 	p := g.GetPlayer(i)
@@ -689,16 +686,6 @@ func (g *IndianRummy) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-func (g *IndianRummy) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // indianRummyCollectCards プレイヤーの手札を []*Card で返す

@@ -116,7 +116,7 @@ type King struct {
 	lastTrickWinner int          // 直前トリックの勝者 (-1 = なし)
 	gameEndFlag     bool
 	lastDealDetail  *KingDealDetail
-	actionLog       []*ActionLogEntry
+	actionLogBase
 }
 
 // NewKing はコンストラクタ。
@@ -441,17 +441,6 @@ func kingSortHand(p *KingPlayer) {
 	}
 }
 
-// appendLog は棋譜にエントリを追加する。
-func (g *King) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // kingContractName はコントラクトの英語名を返す (ログ用)。
 func kingContractName(c int) string {
 	switch c {
@@ -576,9 +565,6 @@ func (g *King) GetConfig() KingConfig { return g.config }
 
 // SetConfig はローカルルール設定を変更する。
 func (g *King) SetConfig(config KingConfig) { g.config = config }
-
-// GetActionLog は棋譜を返す。
-func (g *King) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetPlayableIndices はプレイフェーズでプレイ可能な手札インデックスを返す。
 func (g *King) GetPlayableIndices(playerIdx int) []int {

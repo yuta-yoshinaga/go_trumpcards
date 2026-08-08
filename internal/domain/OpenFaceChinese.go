@@ -92,7 +92,7 @@ type OpenFaceChinese struct {
 	dealerIdx        int
 	gameEndFlag      bool
 	winnerIdx        int // -1=未確定/引き分け
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewOpenFaceChinese コンストラクタ
@@ -542,17 +542,6 @@ func (g *OpenFaceChinese) playerName(idx int) string {
 	return fmt.Sprintf("CPU %d", idx)
 }
 
-// appendLog 棋譜にエントリを追加する。
-func (g *OpenFaceChinese) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // --- Getters ---
 
 // GetPhase 現在のフェーズ取得
@@ -603,9 +592,6 @@ func (g *OpenFaceChinese) SetConfig(cfg OpenFaceChineseConfig) {
 		g.players = ofcBuildPlayers(cfg.PlayerCount)
 	}
 }
-
-// GetActionLog 棋譜取得
-func (g *OpenFaceChinese) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetCurrentCard 現在の手番プレイヤーが置こうとしている保留カードを返す（無ければ nil）。
 func (g *OpenFaceChinese) GetCurrentCard() *Card {

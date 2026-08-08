@@ -78,7 +78,7 @@ type Spoons struct {
 	roundNumber      int
 	gameEndFlag      bool
 	winnerIdx        int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 
 	// rng CPU グラブ抽選用 (テストで差し替え可能)
 	rng *rand.Rand
@@ -273,9 +273,6 @@ func (g *Spoons) GetRoundLoserIdx() int { return g.roundLoserIdx }
 
 // GetRoundNumber は現在のラウンド番号を返す。
 func (g *Spoons) GetRoundNumber() int { return g.roundNumber }
-
-// GetActionLog は棋譜を返す。
-func (g *Spoons) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // IsHumanTurn は現在パス/グラブの手番が人間かを返す。
 // パスフェーズでは currentPlayerIdx、グラブフェーズでは人間が未グラブなら true。
@@ -610,17 +607,6 @@ func (g *Spoons) nextActive(idx int) int {
 		}
 	}
 	return idx
-}
-
-// appendLog は棋譜にエントリを追加する。
-func (g *Spoons) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- JSON ---

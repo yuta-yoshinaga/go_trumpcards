@@ -52,7 +52,7 @@ type OhHell struct {
 	trumpSuit        int   // 切り札スート (-1 = 切り札なし)
 	gameEndFlag      bool
 	winnerIdx        int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewOhHell コンストラクタ
@@ -427,9 +427,6 @@ func (o *OhHell) GetConfig() OhHellConfig { return o.config }
 // SetConfig 設定変更
 func (o *OhHell) SetConfig(cfg OhHellConfig) { o.config = cfg }
 
-// GetActionLog 棋譜取得
-func (o *OhHell) GetActionLog() []*ActionLogEntry { return o.actionLog }
-
 // GetRestrictedBid ディーラーが選択できないビッド値を返す (-1 = 制限なし)
 func (o *OhHell) GetRestrictedBid() int {
 	if o.phase != OhHellPhaseBid {
@@ -658,17 +655,6 @@ func (o *OhHell) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (o *OhHell) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	o.actionLog = append(o.actionLog, &ActionLogEntry{
-		TurnNumber: len(o.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す

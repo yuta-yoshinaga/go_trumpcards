@@ -88,8 +88,8 @@ type Loo struct {
 	roundTricks      [LooPlayerCnt]int
 	gameEndFlag      bool
 	lastDealDetail   *LooDealDetail
-	actionLog        []*ActionLogEntry
-	scored           bool // 現ディールが精算済みか (二重精算防止)
+	actionLogBase
+	scored bool // 現ディールが精算済みか (二重精算防止)
 }
 
 // NewLoo はコンストラクタ。
@@ -655,16 +655,6 @@ func (g *Loo) playerName(idx int) string {
 	return fmt.Sprintf("CPU %d", idx)
 }
 
-func (g *Loo) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // indexOfPlayerInTrick は currentTrick 内で playerIdx の札の位置を返す (-1=なし)。
 func (g *Loo) indexOfPlayerInTrick(playerIdx int) int {
 	for i, tc := range g.currentTrick {
@@ -967,9 +957,6 @@ func (g *Loo) GetConfig() LooConfig { return g.config }
 
 // SetConfig はローカルルール設定を変更する。
 func (g *Loo) SetConfig(cfg LooConfig) { g.config = cfg }
-
-// GetActionLog は棋譜を返す。
-func (g *Loo) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetPlayableIndices はプレイフェーズでプレイ可能な手札インデックスを返す。
 func (g *Loo) GetPlayableIndices(playerIdx int) []int {

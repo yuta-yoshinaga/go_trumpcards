@@ -66,7 +66,7 @@ type MississippiStud struct {
 	antePayout        int                           // アンティ部分の配当
 	streetPayouts     [MississippiStudStreetCnt]int // ストリートベット部分の配当
 	totalPayout       int                           // 合計配当
-	actionLog         []*ActionLogEntry             // 棋譜
+	actionLogBase
 }
 
 // NewMississippiStud コンストラクタ
@@ -483,17 +483,6 @@ func mississippiStudPairTier(hand []*Card) int {
 	return MississippiStudPayLoss
 }
 
-// appendLog 棋譜にエントリを追加する
-func (m *MississippiStud) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	m.actionLog = append(m.actionLog, &ActionLogEntry{
-		TurnNumber: len(m.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // --- Getters ---
 
 // GetPlayerHand ホールカードを取得する。
@@ -555,9 +544,6 @@ func (m *MississippiStud) GetTotalPayout() int { return m.totalPayout }
 
 // GetChips チップ残高を取得する。
 func (m *MississippiStud) GetChips() int { return m.chips.GetChips() }
-
-// GetActionLog 棋譜を取得する。
-func (m *MississippiStud) GetActionLog() []*ActionLogEntry { return m.actionLog }
 
 // --- Test helpers ---
 

@@ -62,7 +62,7 @@ type OichoKabu struct {
 	gameEndFlag bool
 	result      OichoKabuResult
 	totalPayout int
-	actionLog   []*ActionLogEntry
+	actionLogBase
 }
 
 // NewOichoKabu コンストラクタ。40 枚のカブ札を組み立ててシャッフルする。
@@ -230,17 +230,6 @@ func (o *OichoKabu) playerRank() int { return oichoKabuHandRank(o.playerHand) }
 // bankerRank 親の目
 func (o *OichoKabu) bankerRank() int { return oichoKabuHandRank(o.bankerHand) }
 
-// appendLog 棋譜にエントリを追加する。
-func (o *OichoKabu) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	o.actionLog = append(o.actionLog, &ActionLogEntry{
-		TurnNumber: len(o.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // --- Getters ---
 
 // GetPlayerHand 子の手
@@ -272,9 +261,6 @@ func (o *OichoKabu) GetTotalPayout() int { return o.totalPayout }
 
 // GetChips チップ
 func (o *OichoKabu) GetChips() int { return o.chips.GetChips() }
-
-// GetActionLog 棋譜
-func (o *OichoKabu) GetActionLog() []*ActionLogEntry { return o.actionLog }
 
 // --- Test helpers ---
 

@@ -177,7 +177,7 @@ type Ulti struct {
 	scored           bool        // 当該ディールの得点計算済みか (RoundEnd 突入時に一度だけ)
 	gameEndFlag      bool
 	winnerPlayer     int // -1=未確定
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewUlti コンストラクタ
@@ -920,17 +920,6 @@ func (g *Ulti) findHumanIdx() int {
 	return -1
 }
 
-// appendLog 棋譜にエントリを追加する。
-func (g *Ulti) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // --- CPU AI (play) ---
 
 // cpuSelectPlayCard CPU がプレイするカードのインデックスを選ぶ。
@@ -1299,9 +1288,6 @@ func (g *Ulti) GetConfig() UltiConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *Ulti) SetConfig(cfg UltiConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *Ulti) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetPlayableIndices プレイ可能なカードのインデックス一覧を返す。
 func (g *Ulti) GetPlayableIndices(playerIdx int) []int {

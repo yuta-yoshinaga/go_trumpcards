@@ -59,7 +59,7 @@ type CallBreak struct {
 	bidPlayerIdx     int
 	gameEndFlag      bool
 	winnerIdx        int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewCallBreak コンストラクタ
@@ -415,9 +415,6 @@ func (cb *CallBreak) GetConfig() CallBreakConfig { return cb.config }
 // SetConfig 設定変更
 func (cb *CallBreak) SetConfig(cfg CallBreakConfig) { cb.config = cfg }
 
-// GetActionLog 棋譜取得
-func (cb *CallBreak) GetActionLog() []*ActionLogEntry { return cb.actionLog }
-
 // --- Private methods ---
 
 // findHumanIdx 人間プレイヤーのインデックスを返す (-1 = なし)
@@ -570,17 +567,6 @@ func (cb *CallBreak) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (cb *CallBreak) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	cb.actionLog = append(cb.actionLog, &ActionLogEntry{
-		TurnNumber: len(cb.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // GetHint ヒントを取得する

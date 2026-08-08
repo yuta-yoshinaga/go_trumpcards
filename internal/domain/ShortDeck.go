@@ -58,7 +58,7 @@ type ShortDeck struct {
 	tournamentBase  // handCount / rebuyCounts / addonUsed (issue #1463)
 	lastCpuError    error
 	rebuyPhaseType  int
-	actionLog       []*ActionLogEntry
+	actionLogBase
 	humanProfile    *BettingHumanProfile
 	lastHumanPlayMs int
 }
@@ -1207,20 +1207,6 @@ func (sd *ShortDeck) GetActedFlags() []bool {
 
 // GetHandCount ハンド数取得
 func (sd *ShortDeck) GetHandCount() int { return sd.handCount }
-
-// GetActionLog 棋譜を取得する
-func (sd *ShortDeck) GetActionLog() []*ActionLogEntry { return sd.actionLog }
-
-// appendLog 棋譜にエントリを追加する
-func (sd *ShortDeck) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	sd.actionLog = append(sd.actionLog, &ActionLogEntry{
-		TurnNumber: len(sd.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
 
 // logAction ベッティングアクションを棋譜に記録する
 func (sd *ShortDeck) logAction(playerIdx, action, amount int) {

@@ -66,7 +66,7 @@ type Omaha struct {
 	tournamentBase  // handCount / rebuyCounts / addonUsed (issue #1463)
 	lastCpuError    error
 	rebuyPhaseType  int
-	actionLog       []*ActionLogEntry
+	actionLogBase
 	humanProfile    *BettingHumanProfile
 	lastHumanPlayMs int
 }
@@ -1382,20 +1382,6 @@ func (o *Omaha) GetActedFlags() []bool {
 
 // GetHandCount ハンド数取得
 func (o *Omaha) GetHandCount() int { return o.handCount }
-
-// GetActionLog 棋譜を取得する
-func (o *Omaha) GetActionLog() []*ActionLogEntry { return o.actionLog }
-
-// appendLog 棋譜にエントリを追加する
-func (o *Omaha) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	o.actionLog = append(o.actionLog, &ActionLogEntry{
-		TurnNumber: len(o.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
 
 // logAction ベッティングアクションを棋譜に記録する
 func (o *Omaha) logAction(playerIdx, action, amount int) {

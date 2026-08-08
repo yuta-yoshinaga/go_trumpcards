@@ -80,7 +80,7 @@ type Kemps struct {
 	roundNumber      int
 	gameEndFlag      bool
 	winnerTeam       int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 
 	// rng CPU 判断用 (テストで差し替え可能)
 	rng *rand.Rand
@@ -287,9 +287,6 @@ func (g *Kemps) GetRoundWinnerTeam() int { return g.roundWinnerTeam }
 
 // GetRoundNumber は現在のラウンド番号を返す。
 func (g *Kemps) GetRoundNumber() int { return g.roundNumber }
-
-// GetActionLog は棋譜を返す。
-func (g *Kemps) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // IsPartnerSignaling は人間 (席 0) のチームにフォーオブアカインド保持者がいて、
 // 人間が宣言可能なシグナル状態かを返す (人間にだけ公開される情報)。
@@ -667,17 +664,6 @@ func (g *Kemps) endGame(winnerTeam int) {
 		}
 	}
 	g.appendLog(-1, "gameEnd", fmt.Sprintf("team %d wins", winnerTeam), nil)
-}
-
-// appendLog は棋譜にエントリを追加する。
-func (g *Kemps) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- テスト/復元用セッター ---

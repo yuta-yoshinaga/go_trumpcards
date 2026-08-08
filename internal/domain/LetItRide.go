@@ -39,23 +39,23 @@ const (
 
 // LetItRide レット・イット・ライドクラス
 type LetItRide struct {
-	trumpCards     *TrumpCards       // トランプカード
-	playerHand     []*Card           // プレイヤーハンド（3枚）
-	communityCards []*Card           // コミュニティカード（2枚）
-	chips          ChipHolder        // チップ
-	betAmount      int               // 1口あたりのベット額
-	bet1Active     bool              // ベット1（常にアクティブ）
-	bet2Active     bool              // ベット2（第2判断で取り下げ可能）
-	bet3Active     bool              // ベット3（第1判断で取り下げ可能）
-	phase          int               // 現在のフェーズ
-	gameEndFlag    bool              // ゲーム終了フラグ
-	result         GameResult        // ゲーム結果（Win/Lose）
-	handRank       int               // 最終ハンドランク
-	bet1Payout     int               // ベット1配当
-	bet2Payout     int               // ベット2配当
-	bet3Payout     int               // ベット3配当
-	totalPayout    int               // 合計配当
-	actionLog      []*ActionLogEntry // 棋譜
+	trumpCards     *TrumpCards // トランプカード
+	playerHand     []*Card     // プレイヤーハンド（3枚）
+	communityCards []*Card     // コミュニティカード（2枚）
+	chips          ChipHolder  // チップ
+	betAmount      int         // 1口あたりのベット額
+	bet1Active     bool        // ベット1（常にアクティブ）
+	bet2Active     bool        // ベット2（第2判断で取り下げ可能）
+	bet3Active     bool        // ベット3（第1判断で取り下げ可能）
+	phase          int         // 現在のフェーズ
+	gameEndFlag    bool        // ゲーム終了フラグ
+	result         GameResult  // ゲーム結果（Win/Lose）
+	handRank       int         // 最終ハンドランク
+	bet1Payout     int         // ベット1配当
+	bet2Payout     int         // ベット2配当
+	bet3Payout     int         // ベット3配当
+	totalPayout    int         // 合計配当
+	actionLogBase
 }
 
 // NewLetItRide コンストラクタ
@@ -294,17 +294,6 @@ func (lir *LetItRide) checkTensOrBetter() int {
 	return 0
 }
 
-// appendLog 棋譜にエントリを追加する
-func (lir *LetItRide) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	lir.actionLog = append(lir.actionLog, &ActionLogEntry{
-		TurnNumber: len(lir.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // --- Getters ---
 
 // GetPlayerHand プレイヤーハンド取得
@@ -351,9 +340,6 @@ func (lir *LetItRide) GetTotalPayout() int { return lir.totalPayout }
 
 // GetChips チップ
 func (lir *LetItRide) GetChips() int { return lir.chips.GetChips() }
-
-// GetActionLog 棋譜を取得する
-func (lir *LetItRide) GetActionLog() []*ActionLogEntry { return lir.actionLog }
 
 // --- Test helpers ---
 

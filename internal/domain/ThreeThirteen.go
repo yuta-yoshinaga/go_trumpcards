@@ -75,7 +75,7 @@ type ThreeThirteen struct {
 	gameEndFlag      bool
 	winnerIdx        int
 	turnCount        int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewThreeThirteen コンストラクタ
@@ -584,9 +584,6 @@ func (g *ThreeThirteen) GetConfig() ThreeThirteenConfig { return g.config }
 // SetConfig 設定変更
 func (g *ThreeThirteen) SetConfig(c ThreeThirteenConfig) { g.config = c }
 
-// GetActionLog 棋譜取得
-func (g *ThreeThirteen) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // GetPlayerDeadwoodValue プレイヤーの最善メルド分割でのデッドウッド点を返す（プレゼンター向け）。
 func (g *ThreeThirteen) GetPlayerDeadwoodValue(i int) int {
 	p := g.GetPlayer(i)
@@ -642,16 +639,6 @@ func (g *ThreeThirteen) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-func (g *ThreeThirteen) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // collectThreeThirteenCards プレイヤーの手札を []*Card で返す

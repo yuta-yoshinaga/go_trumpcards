@@ -67,7 +67,7 @@ type Bourre struct {
 	gameEndFlag      bool
 	winnerIdx        int
 	lastResults      []*BourreHandResult
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewBourre コンストラクタ
@@ -805,17 +805,6 @@ func (b *Bourre) playerName(idx int) string {
 	return fmt.Sprintf("CPU %d", idx)
 }
 
-// appendLog 棋譜にエントリを追加する
-func (b *Bourre) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	b.actionLog = append(b.actionLog, &ActionLogEntry{
-		TurnNumber: len(b.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // bourreRank カードのランクを返す (エース=14、それ以外は額面値)
 func bourreRank(c *Card) int {
 	if c.GetValue() == 1 {
@@ -920,9 +909,6 @@ func (b *Bourre) GetConfig() BourreConfig { return b.config }
 
 // SetConfig 設定変更
 func (b *Bourre) SetConfig(cfg BourreConfig) { b.config = cfg }
-
-// GetActionLog 棋譜取得
-func (b *Bourre) GetActionLog() []*ActionLogEntry { return b.actionLog }
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (b *Bourre) IsHumanTurn() bool {

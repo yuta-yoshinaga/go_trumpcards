@@ -43,7 +43,7 @@ type CrazyEights struct {
 	gameEndFlag      bool
 	winnerIdx        int
 	roundNumber      int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewCrazyEights コンストラクタ
@@ -436,9 +436,6 @@ func (g *CrazyEights) GetConfig() CrazyEightsConfig { return g.config }
 // SetConfig 設定変更
 func (g *CrazyEights) SetConfig(cfg CrazyEightsConfig) { g.config = cfg }
 
-// GetActionLog 棋譜取得
-func (g *CrazyEights) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // --- Private methods ---
 
 // isValidPlay カードがプレイ可能か判定
@@ -606,17 +603,6 @@ func (g *CrazyEights) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (g *CrazyEights) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- CPU AI ---

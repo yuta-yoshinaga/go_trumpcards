@@ -86,7 +86,7 @@ type NinetyNine struct {
 	trumpSuit        int // 切り札スート (CardDesignSpade..Diamond)
 	gameEndFlag      bool
 	winnerIdx        int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewNinetyNine コンストラクタ
@@ -463,9 +463,6 @@ func (o *NinetyNine) GetConfig() NinetyNineConfig { return o.config }
 // SetConfig 設定変更
 func (o *NinetyNine) SetConfig(cfg NinetyNineConfig) { o.config = cfg }
 
-// GetActionLog 棋譜取得
-func (o *NinetyNine) GetActionLog() []*ActionLogEntry { return o.actionLog }
-
 // GetValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (o *NinetyNine) GetValidPlayIndices(playerIdx int) []int {
 	return o.getValidPlayIndices(playerIdx)
@@ -674,17 +671,6 @@ func (o *NinetyNine) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (o *NinetyNine) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	o.actionLog = append(o.actionLog, &ActionLogEntry{
-		TurnNumber: len(o.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す

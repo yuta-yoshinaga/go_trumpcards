@@ -73,7 +73,7 @@ type Hearts struct {
 	leadPlayerIdx    int
 	gameEndFlag      bool
 	winnerIdx        int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewHearts コンストラクタ
@@ -483,9 +483,6 @@ func (h *Hearts) GetConfig() HeartsConfig { return h.config }
 
 // SetConfig 設定変更
 func (h *Hearts) SetConfig(cfg HeartsConfig) { h.config = cfg }
-
-// GetActionLog 棋譜取得
-func (h *Hearts) GetActionLog() []*ActionLogEntry { return h.actionLog }
 
 // GetPassReady パス準備状態取得
 func (h *Hearts) GetPassReady() [HeartsPlayerCnt]bool { return h.passReady }
@@ -1160,17 +1157,6 @@ func (h *Hearts) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (h *Hearts) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	h.actionLog = append(h.actionLog, &ActionLogEntry{
-		TurnNumber: len(h.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // heartsJSON is the JSON wire format for Hearts.

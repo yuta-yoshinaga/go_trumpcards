@@ -75,7 +75,7 @@ type SpoilFive struct {
 	roundWinnerIdx   int // 直近ラウンドの勝者 (-1=Spoil/未確定)
 	gameEndFlag      bool
 	winnerPlayer     int // -1=未確定
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewSpoilFive コンストラクタ
@@ -516,17 +516,6 @@ func (g *SpoilFive) findHumanIdx() int {
 	return -1
 }
 
-// appendLog 棋譜にエントリを追加する。
-func (g *SpoilFive) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // --- CPU AI ---
 
 // cpuSelectPlayCard CPU がプレイするカードのインデックスを選ぶ。
@@ -715,9 +704,6 @@ func (g *SpoilFive) GetConfig() SpoilFiveConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *SpoilFive) SetConfig(cfg SpoilFiveConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *SpoilFive) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetPlayableIndices プレイ可能なカードのインデックス一覧を返す。
 func (g *SpoilFive) GetPlayableIndices(playerIdx int) []int {

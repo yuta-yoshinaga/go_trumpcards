@@ -65,7 +65,7 @@ type Macau struct {
 	gameEndFlag      bool
 	winnerIdx        int
 	roundNumber      int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewMacau コンストラクタ
@@ -477,9 +477,6 @@ func (g *Macau) GetConfig() MacauConfig { return g.config }
 // SetConfig 設定変更
 func (g *Macau) SetConfig(cfg MacauConfig) { g.config = cfg }
 
-// GetActionLog 棋譜取得
-func (g *Macau) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // --- Private methods ---
 
 // IsValidPlay は現在の場状態 (捨て札トップ・宣言スート・ペナルティ連鎖) を踏まえ
@@ -722,17 +719,6 @@ func (g *Macau) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (g *Macau) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- CPU AI ---

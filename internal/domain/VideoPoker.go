@@ -36,8 +36,8 @@ type VideoPoker struct {
 	handRank    int
 	handName    string
 	handKey     string
-	actionLog   []*ActionLogEntry
-	config      *VideoPokerVariantConfig
+	actionLogBase
+	config *VideoPokerVariantConfig
 }
 
 // NewVideoPoker コンストラクタ
@@ -222,17 +222,6 @@ func videoPokerHandKey(handName string) string {
 	}
 }
 
-// appendLog 棋譜にエントリを追加する
-func (vp *VideoPoker) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	vp.actionLog = append(vp.actionLog, &ActionLogEntry{
-		TurnNumber: len(vp.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // --- Getters ---
 
 // GetHand ハンド取得
@@ -267,9 +256,6 @@ func (vp *VideoPoker) GetHandKey() string { return vp.handKey }
 
 // GetHeldIndices ホールドインデックス
 func (vp *VideoPoker) GetHeldIndices() [VideoPokerHandSize]bool { return vp.heldIndices }
-
-// GetActionLog 棋譜を取得する
-func (vp *VideoPoker) GetActionLog() []*ActionLogEntry { return vp.actionLog }
 
 // GetVariantName バリアント名を取得する
 func (vp *VideoPoker) GetVariantName() string { return vp.config.Name }

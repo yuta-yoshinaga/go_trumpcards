@@ -41,27 +41,27 @@ var PaiGowLowHandNames = []string{
 
 // PaiGow パイガオポーカークラス
 type PaiGow struct {
-	trumpCards     *TrumpCards       // トランプカード
-	playerCards    []*Card           // プレイヤーの7枚
-	dealerCards    []*Card           // ディーラーの7枚
-	playerHighHand []*Card           // プレイヤーハイハンド（5枚）
-	playerLowHand  []*Card           // プレイヤーローハンド（2枚）
-	dealerHighHand []*Card           // ディーラーハイハンド（5枚）
-	dealerLowHand  []*Card           // ディーラーローハンド（2枚）
-	chips          ChipHolder        // チップ
-	bet            int               // ベット額
-	phase          int               // 現在のフェーズ
-	gameEndFlag    bool              // ゲーム終了フラグ
-	result         GameResult        // ゲーム結果
-	highHandResult GameResult        // ハイハンド結果
-	lowHandResult  GameResult        // ローハンド結果
-	payout         int               // 配当
-	commission     int               // コミッション
-	playerHighRank int               // プレイヤーハイハンドランク
-	playerLowRank  int               // プレイヤーローハンドランク
-	dealerHighRank int               // ディーラーハイハンドランク
-	dealerLowRank  int               // ディーラーローハンドランク
-	actionLog      []*ActionLogEntry // 棋譜
+	trumpCards     *TrumpCards // トランプカード
+	playerCards    []*Card     // プレイヤーの7枚
+	dealerCards    []*Card     // ディーラーの7枚
+	playerHighHand []*Card     // プレイヤーハイハンド（5枚）
+	playerLowHand  []*Card     // プレイヤーローハンド（2枚）
+	dealerHighHand []*Card     // ディーラーハイハンド（5枚）
+	dealerLowHand  []*Card     // ディーラーローハンド（2枚）
+	chips          ChipHolder  // チップ
+	bet            int         // ベット額
+	phase          int         // 現在のフェーズ
+	gameEndFlag    bool        // ゲーム終了フラグ
+	result         GameResult  // ゲーム結果
+	highHandResult GameResult  // ハイハンド結果
+	lowHandResult  GameResult  // ローハンド結果
+	payout         int         // 配当
+	commission     int         // コミッション
+	playerHighRank int         // プレイヤーハイハンドランク
+	playerLowRank  int         // プレイヤーローハンドランク
+	dealerHighRank int         // ディーラーハイハンドランク
+	dealerLowRank  int         // ディーラーローハンドランク
+	actionLogBase
 }
 
 // NewPaiGow コンストラクタ
@@ -614,17 +614,6 @@ func paiGowHighHandSortedValues(cards []*Card) []int {
 	return vals
 }
 
-// appendLog 棋譜にエントリを追加する
-func (pg *PaiGow) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	pg.actionLog = append(pg.actionLog, &ActionLogEntry{
-		TurnNumber: len(pg.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // --- Getters ---
 
 // GetPlayerCards プレイヤーの7枚を取得
@@ -683,9 +672,6 @@ func (pg *PaiGow) GetDealerLowRank() int { return pg.dealerLowRank }
 
 // GetChips チップ
 func (pg *PaiGow) GetChips() int { return pg.chips.GetChips() }
-
-// GetActionLog 棋譜を取得する
-func (pg *PaiGow) GetActionLog() []*ActionLogEntry { return pg.actionLog }
 
 // --- Test helpers ---
 
