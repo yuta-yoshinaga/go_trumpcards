@@ -140,27 +140,6 @@ func cuiPokerHandName(rank int) string {
 	return i18n.T("pokerHandRank" + strconv.Itoa(rank))
 }
 
-// cuiShortDeckHandName returns the localized name for a Short Deck hand rank.
-//
-// **標準の役表を流用してはいけない。**36枚デッキではフラッシュがフルハウスの上に
-// 来るので (`domain.ShortDeckHandNames`)、`cuiPokerHandName` に渡すと 5=Full House を
-// 「フラッシュ」と表示する。訳されないより誤訳のほうが悪い (#4987)。
-func cuiShortDeckHandName(rank int) string {
-	if rank < 0 || rank >= len(domain.ShortDeckHandNames) {
-		return ""
-	}
-	return i18n.T("shortdeck.handRank" + strconv.Itoa(rank))
-}
-
-// cuiBadugiHandName returns the localized name for a Badugi hand size (1-4).
-// Badugi's names ("Badugi", "3-card", …) have no counterpart in the poker table.
-func cuiBadugiHandName(size int) string {
-	if size < 1 || size >= len(domain.BadugiHandNames) {
-		return i18n.T("badugi.handRankUnknown")
-	}
-	return i18n.T("badugi.handRank" + strconv.Itoa(size))
-}
-
 // cuiPlayerName returns the human-friendly display name for a player:
 // "You" / "あなた" for the human, "CPU N" for CPU opponents, or
 // "UNKNOWN" if the player is nil/zero. Locale-aware via i18n.T (issue
