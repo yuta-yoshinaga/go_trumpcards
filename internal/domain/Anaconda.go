@@ -145,7 +145,7 @@ type anacondaState struct {
 	result          AnacondaResult
 	gameEndFlag     bool
 	scored          bool // ラウンド結果を確定済みか (二重確定防止)
-	actionLog       []*ActionLogEntry
+	actionLogBase
 }
 
 // Anaconda はアナコンダの状態を保持する集約ルート。
@@ -166,7 +166,7 @@ func NewAnaconda(trumpCards *TrumpCards, players []*AnacondaPlayer, config Anaco
 			phase:          AnacondaPhasePass,
 			winnerIdx:      -1,
 			matchWinnerIdx: -1,
-			actionLog:      make([]*ActionLogEntry, 0),
+			actionLogBase:  actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 		},
 	}
 }
@@ -200,7 +200,7 @@ func (g *Anaconda) Reset() {
 		dealerIdx:      0,
 		winnerIdx:      -1,
 		matchWinnerIdx: -1,
-		actionLog:      make([]*ActionLogEntry, 0),
+		actionLogBase:  actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 	}
 	g.startRound()
 }
@@ -919,13 +919,7 @@ func anacondaValidateIndices(indices []int, want, handSize int) error {
 }
 
 func (g *Anaconda) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.state.actionLog = append(g.state.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.state.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.state.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // --- 公開カード ---
@@ -1290,7 +1284,7 @@ func (g *Anaconda) UnmarshalJSON(data []byte) error {
 		result:          j.Result,
 		gameEndFlag:     j.GameEndFlag,
 		scored:          j.Scored,
-		actionLog:       j.ActionLog,
+		actionLogBase:   actionLogBase{actionLog: j.ActionLog},
 	}
 	if g.state.actionLog == nil {
 		g.state.actionLog = make([]*ActionLogEntry, 0)

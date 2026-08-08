@@ -52,14 +52,14 @@ type CassinoAction struct {
 
 // cassinoRoundState はラウンドごとにリセットされる状態。
 type cassinoRoundState struct {
-	phase           string           // 現在のフェーズ
-	currentTurn     int              // 現在の手番
-	tableCards      []*Card          // 場の単独カード (ビルド除く)
-	builds          []*CassinoBuild  // 場のビルド
-	lastCaptureIdx  int              // 最後に捕獲したプレイヤー (-1 = なし)
-	humanAction     *CassinoAction   // 人間の最後の行動
-	cpuActions      []*CassinoAction // 人間ターン後の CPU 行動履歴
-	actionLog       []*ActionLogEntry
+	phase          string           // 現在のフェーズ
+	currentTurn    int              // 現在の手番
+	tableCards     []*Card          // 場の単独カード (ビルド除く)
+	builds         []*CassinoBuild  // 場のビルド
+	lastCaptureIdx int              // 最後に捕獲したプレイヤー (-1 = なし)
+	humanAction    *CassinoAction   // 人間の最後の行動
+	cpuActions     []*CassinoAction // 人間ターン後の CPU 行動履歴
+	actionLogBase
 	packsDealt      int  // これまでに配ったパック数 (1 回の配布 = 4 枚/人)
 	gameEndFlag     bool // ゲーム終了フラグ (TargetScore 到達)
 	roundWinners    []int
@@ -127,7 +127,7 @@ func (c *Cassino) Reset() {
 	c.round = cassinoRoundState{
 		phase:          CassinoPhaseDealing,
 		lastCaptureIdx: -1,
-		actionLog:      make([]*ActionLogEntry, 0),
+		actionLogBase:  actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 	}
 
 	c.startRound(true)
@@ -662,13 +662,7 @@ func (c *Cassino) removeBuildsByIndex(idxs []int) {
 
 // appendLog 棋譜にエントリを追加する。
 func (c *Cassino) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	c.round.actionLog = append(c.round.actionLog, &ActionLogEntry{
-		TurnNumber: len(c.round.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	c.round.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // --- 状態アクセサ ---
@@ -889,7 +883,7 @@ func (c *Cassino) UnmarshalJSON(data []byte) error {
 		lastCaptureIdx:  j.LastCaptureIdx,
 		humanAction:     j.HumanAction,
 		cpuActions:      j.CpuActions,
-		actionLog:       j.ActionLog,
+		actionLogBase:   actionLogBase{actionLog: j.ActionLog},
 		packsDealt:      j.PacksDealt,
 		gameEndFlag:     j.GameEndFlag,
 		roundWinners:    j.RoundWinners,

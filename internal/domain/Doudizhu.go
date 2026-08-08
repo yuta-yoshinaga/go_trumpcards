@@ -62,7 +62,7 @@ type doudizhuRoundState struct {
 	cpuActions    []*DoudizhuCpuAction
 	humanAction   *DoudizhuCpuAction
 	scores        [DoudizhuPlayerCnt]int
-	actionLog     []*ActionLogEntry
+	actionLogBase
 }
 
 // Doudizhu 斗地主ゲーム
@@ -461,13 +461,7 @@ func (d *Doudizhu) GetActionLog() []*ActionLogEntry { return d.round.actionLog }
 
 // appendLog 棋譜にエントリを追加する
 func (d *Doudizhu) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	d.round.actionLog = append(d.round.actionLog, &ActionLogEntry{
-		TurnNumber: len(d.round.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	d.round.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // --- JSON Serialization ---
@@ -622,7 +616,7 @@ func (d *Doudizhu) UnmarshalJSON(data []byte) error {
 		cpuActions:    j.CpuActions,
 		humanAction:   j.HumanAction,
 		scores:        j.Scores,
-		actionLog:     j.ActionLog,
+		actionLogBase: actionLogBase{actionLog: j.ActionLog},
 	}
 	if d.round.actionLog == nil {
 		d.round.actionLog = make([]*ActionLogEntry, 0)

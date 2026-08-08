@@ -26,15 +26,15 @@ type ZhengAction struct {
 
 // zhengRoundState ラウンドごとにリセットされる状態
 type zhengRoundState struct {
-	currentTurn       int               // 現在の手番プレイヤーインデックス
-	tableCards        []*Card           // 場に出されているカード (nil = 場はクリア)
-	tablePlayType     ZhengPlayType     // 場のプレイタイプ
-	lastPlayPlayerIdx int               // 最後にカードを出したプレイヤーインデックス (-1 = なし)
-	gameEndFlag       bool              // ゲーム終了フラグ
-	passCount         int               // 最後の出し以降の連続パス数
-	cpuActions        []*ZhengAction    // 人間ターン後のCPUの行動履歴
-	humanAction       *ZhengAction      // 人間の最後の行動
-	actionLog         []*ActionLogEntry // 棋譜
+	currentTurn       int            // 現在の手番プレイヤーインデックス
+	tableCards        []*Card        // 場に出されているカード (nil = 場はクリア)
+	tablePlayType     ZhengPlayType  // 場のプレイタイプ
+	lastPlayPlayerIdx int            // 最後にカードを出したプレイヤーインデックス (-1 = なし)
+	gameEndFlag       bool           // ゲーム終了フラグ
+	passCount         int            // 最後の出し以降の連続パス数
+	cpuActions        []*ZhengAction // 人間ターン後のCPUの行動履歴
+	humanAction       *ZhengAction   // 人間の最後の行動
+	actionLogBase
 }
 
 // Zheng 争上游ゲームクラス
@@ -53,7 +53,7 @@ func NewZheng(trumpCards *TrumpCards, players []*ZhengPlayer, config ZhengConfig
 		config:     config,
 		round: zhengRoundState{
 			lastPlayPlayerIdx: -1,
-			actionLog:         make([]*ActionLogEntry, 0),
+			actionLogBase:     actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 		},
 	}
 }
@@ -75,7 +75,7 @@ func NewDefaultZheng() *Zheng {
 func (z *Zheng) Reset() {
 	z.round = zhengRoundState{
 		lastPlayPlayerIdx: -1,
-		actionLog:         make([]*ActionLogEntry, 0),
+		actionLogBase:     actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 	}
 
 	z.trumpCards.Shuffle()
@@ -340,13 +340,7 @@ func (z *Zheng) GetActionLog() []*ActionLogEntry { return z.round.actionLog }
 
 // appendLog 棋譜にエントリを追加する
 func (z *Zheng) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	z.round.actionLog = append(z.round.actionLog, &ActionLogEntry{
-		TurnNumber: len(z.round.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	z.round.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // --- JSON Serialization ---
@@ -528,7 +522,7 @@ func (z *Zheng) UnmarshalJSON(data []byte) error {
 		passCount:         max(j.PassCount, 0),
 		cpuActions:        j.CpuActions,
 		humanAction:       j.HumanAction,
-		actionLog:         j.ActionLog,
+		actionLogBase:     actionLogBase{actionLog: j.ActionLog},
 	}
 	if z.round.actionLog == nil {
 		z.round.actionLog = make([]*ActionLogEntry, 0)

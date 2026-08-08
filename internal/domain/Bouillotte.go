@@ -119,7 +119,7 @@ type bouillotteState struct {
 	result          BouillotteResult
 	gameEndFlag     bool
 	scored          bool // ラウンド結果を確定済みか (二重確定防止)
-	actionLog       []*ActionLogEntry
+	actionLogBase
 }
 
 // Bouillotte はブイヨットの状態を保持する集約ルート。
@@ -140,7 +140,7 @@ func NewBouillotte(trumpCards *TrumpCards, players []*BouillottePlayer, config B
 			phase:          BouillottePhaseBetting,
 			winnerIdx:      -1,
 			matchWinnerIdx: -1,
-			actionLog:      make([]*ActionLogEntry, 0),
+			actionLogBase:  actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 		},
 	}
 }
@@ -191,7 +191,7 @@ func (g *Bouillotte) Reset() {
 		dealerIdx:      0,
 		winnerIdx:      -1,
 		matchWinnerIdx: -1,
-		actionLog:      make([]*ActionLogEntry, 0),
+		actionLogBase:  actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 	}
 	g.startRound()
 }
@@ -666,13 +666,7 @@ func (g *Bouillotte) playerName(idx int) string {
 }
 
 func (g *Bouillotte) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.state.actionLog = append(g.state.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.state.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.state.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // --- Hint ---
@@ -953,7 +947,7 @@ func (g *Bouillotte) UnmarshalJSON(data []byte) error {
 		result:          j.Result,
 		gameEndFlag:     j.GameEndFlag,
 		scored:          j.Scored,
-		actionLog:       j.ActionLog,
+		actionLogBase:   actionLogBase{actionLog: j.ActionLog},
 	}
 	if g.state.actionLog == nil {
 		g.state.actionLog = make([]*ActionLogEntry, 0)

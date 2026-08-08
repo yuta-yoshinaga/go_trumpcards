@@ -65,20 +65,20 @@ type BadugiCpuExchange struct {
 // badugiRoundState holds the mutable per-hand state. Kept separate so Reset
 // can recreate it cleanly without touching config / players.
 type badugiRoundState struct {
-	phase           int
-	drawIndex       int // 0 during initial deal bet, 1..3 during/after the n-th draw
-	pot             int
-	currentTurn     int
-	lastBet         int
-	minRaise        int
-	raiseCount      int
-	actedFlags      []bool
-	sidePots        []SidePot
-	startingChips   []int
-	roundResults    []BadugiResult
-	cpuActions      []BadugiCpuAction
-	cpuExchanges    []BadugiCpuExchange
-	actionLog       []*ActionLogEntry
+	phase         int
+	drawIndex     int // 0 during initial deal bet, 1..3 during/after the n-th draw
+	pot           int
+	currentTurn   int
+	lastBet       int
+	minRaise      int
+	raiseCount    int
+	actedFlags    []bool
+	sidePots      []SidePot
+	startingChips []int
+	roundResults  []BadugiResult
+	cpuActions    []BadugiCpuAction
+	cpuExchanges  []BadugiCpuExchange
+	actionLogBase
 	gameEndFlag     bool
 	lastCpuError    error
 	lastHumanPlayMs int
@@ -895,13 +895,7 @@ func (b *Badugi) ImportProfile(data []byte) error {
 func (b *Badugi) GetActionLog() []*ActionLogEntry { return b.round.actionLog }
 
 func (b *Badugi) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	b.round.actionLog = append(b.round.actionLog, &ActionLogEntry{
-		TurnNumber: len(b.round.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	b.round.appendLog(playerIdx, actionType, detail, cards)
 }
 
 func (b *Badugi) logBettingAction(playerIdx, action, _ int) {
@@ -1039,7 +1033,7 @@ func (b *Badugi) UnmarshalJSON(data []byte) error {
 		roundResults:    j.Round.RoundResults,
 		cpuActions:      j.Round.CpuActions,
 		cpuExchanges:    j.Round.CpuExchanges,
-		actionLog:       j.Round.ActionLog,
+		actionLogBase:   actionLogBase{actionLog: j.Round.ActionLog},
 		gameEndFlag:     j.Round.GameEndFlag,
 		lastHumanPlayMs: j.Round.LastHumanPlayMs,
 	}

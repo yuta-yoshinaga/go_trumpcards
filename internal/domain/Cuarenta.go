@@ -101,10 +101,10 @@ type cuarentaRoundState struct {
 	lastLaidCard   *Card           // 直前の手番が「置いた」カード (caída 判定用、捕獲時は nil)
 	humanAction    *CuarentaAction // 人間の最後の行動
 	cpuActions     []*CuarentaAction
-	actionLog      []*ActionLogEntry
-	gameEndFlag    bool
-	roundWinners   []int // ゲーム終了時の勝者チーム
-	lastDetail     *CuarentaRoundDetail
+	actionLogBase
+	gameEndFlag  bool
+	roundWinners []int // ゲーム終了時の勝者チーム
+	lastDetail   *CuarentaRoundDetail
 }
 
 // Cuarenta はクアレンタゲームの状態を保持する集約ルート。
@@ -154,7 +154,7 @@ func (g *Cuarenta) Reset() {
 	g.round = cuarentaRoundState{
 		phase:          CuarentaPhasePlay,
 		lastCaptureIdx: -1,
-		actionLog:      make([]*ActionLogEntry, 0),
+		actionLogBase:  actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 	}
 	g.startRound()
 }
@@ -441,13 +441,7 @@ func (g *Cuarenta) removeTableCardsByIndex(idxs []int) {
 
 // appendLog 棋譜にエントリを追加する。
 func (g *Cuarenta) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.round.actionLog = append(g.round.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.round.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.round.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // --- 状態アクセサ ---
@@ -695,7 +689,7 @@ func (g *Cuarenta) UnmarshalJSON(data []byte) error {
 		lastLaidCard:   j.LastLaidCard,
 		humanAction:    j.HumanAction,
 		cpuActions:     j.CpuActions,
-		actionLog:      j.ActionLog,
+		actionLogBase:  actionLogBase{actionLog: j.ActionLog},
 		gameEndFlag:    j.GameEndFlag,
 		roundWinners:   j.RoundWinners,
 		lastDetail:     j.LastDetail,

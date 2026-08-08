@@ -46,13 +46,13 @@ type ScopaAction struct {
 
 // scopaRoundState はラウンドごとにリセットされる状態。
 type scopaRoundState struct {
-	phase           string         // 現在のフェーズ
-	currentTurn     int            // 現在の手番
-	tableCards      []*Card        // 場札
-	lastCaptureIdx  int            // 最後に捕獲したプレイヤー (-1 = なし)
-	humanAction     *ScopaAction   // 人間の最後の行動
-	cpuActions      []*ScopaAction // 人間ターン後の CPU 行動履歴
-	actionLog       []*ActionLogEntry
+	phase          string         // 現在のフェーズ
+	currentTurn    int            // 現在の手番
+	tableCards     []*Card        // 場札
+	lastCaptureIdx int            // 最後に捕獲したプレイヤー (-1 = なし)
+	humanAction    *ScopaAction   // 人間の最後の行動
+	cpuActions     []*ScopaAction // 人間ターン後の CPU 行動履歴
+	actionLogBase
 	packsDealt      int  // これまでに配ったパック数 (1 回の配布 = 3 枚/人)
 	gameEndFlag     bool // ゲーム終了フラグ (TargetScore 到達)
 	roundWinners    []int
@@ -119,7 +119,7 @@ func (s *Scopa) Reset() {
 	s.round = scopaRoundState{
 		phase:          ScopaPhaseDealing,
 		lastCaptureIdx: -1,
-		actionLog:      make([]*ActionLogEntry, 0),
+		actionLogBase:  actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 	}
 
 	s.startRound()
@@ -455,13 +455,7 @@ func (s *Scopa) removeTableCardsByIndex(idxs []int) {
 
 // appendLog 棋譜にエントリを追加する。
 func (s *Scopa) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	s.round.actionLog = append(s.round.actionLog, &ActionLogEntry{
-		TurnNumber: len(s.round.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	s.round.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // --- 状態アクセサ ---
@@ -666,7 +660,7 @@ func (s *Scopa) UnmarshalJSON(data []byte) error {
 		lastCaptureIdx:  j.LastCaptureIdx,
 		humanAction:     j.HumanAction,
 		cpuActions:      j.CpuActions,
-		actionLog:       j.ActionLog,
+		actionLogBase:   actionLogBase{actionLog: j.ActionLog},
 		packsDealt:      j.PacksDealt,
 		gameEndFlag:     j.GameEndFlag,
 		roundWinners:    j.RoundWinners,

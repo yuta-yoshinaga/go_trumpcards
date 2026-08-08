@@ -117,7 +117,7 @@ type daifugoRoundState struct {
 	reverseDirection    bool                     // 9リバース: ターン方向が逆か
 	numberLocked        bool                     // 激シバ: 連番縛り発動中
 	sequenceLocked      bool                     // 階段縛り: 階段のみ出せる
-	actionLog           []*ActionLogEntry        // 棋譜
+	actionLogBase
 }
 
 // Daifugo 大富豪ゲームクラス
@@ -492,13 +492,7 @@ func (d *Daifugo) GetActionLog() []*ActionLogEntry { return d.round.actionLog }
 
 // appendLog 棋譜にエントリを追加する
 func (d *Daifugo) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	d.round.actionLog = append(d.round.actionLog, &ActionLogEntry{
-		TurnNumber: len(d.round.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	d.round.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // --- JSON Serialization ---
@@ -655,7 +649,7 @@ func (d *Daifugo) UnmarshalJSON(data []byte) error {
 		reverseDirection:    j.ReverseDirection,
 		numberLocked:        j.NumberLocked,
 		sequenceLocked:      j.SequenceLocked,
-		actionLog:           j.ActionLog,
+		actionLogBase:       actionLogBase{actionLog: j.ActionLog},
 	}
 	if d.round.actionLog == nil {
 		d.round.actionLog = make([]*ActionLogEntry, 0)

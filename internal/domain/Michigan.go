@@ -101,7 +101,7 @@ type michiganState struct {
 	result          MichiganResult
 	gameEndFlag     bool
 	scored          bool // ラウンド結果を確定済みか (二重確定防止)
-	actionLog       []*ActionLogEntry
+	actionLogBase
 }
 
 // Michigan はミシガンの状態を保持する集約ルート。
@@ -123,7 +123,7 @@ func NewMichigan(trumpCards *TrumpCards, players []*MichiganPlayer, config Michi
 			winnerIdx:      -1,
 			matchWinnerIdx: -1,
 			boodles:        newMichiganBoodles(),
-			actionLog:      make([]*ActionLogEntry, 0),
+			actionLogBase:  actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 		},
 	}
 }
@@ -158,7 +158,7 @@ func (g *Michigan) Reset() {
 		winnerIdx:      -1,
 		matchWinnerIdx: -1,
 		boodles:        newMichiganBoodles(),
-		actionLog:      make([]*ActionLogEntry, 0),
+		actionLogBase:  actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 	}
 	g.startRound()
 }
@@ -676,13 +676,7 @@ func michiganValidCard(c *Card) bool {
 }
 
 func (g *Michigan) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.state.actionLog = append(g.state.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.state.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.state.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // --- 状態アクセサ ---
@@ -1015,7 +1009,7 @@ func (g *Michigan) UnmarshalJSON(data []byte) error {
 		result:          j.Result,
 		gameEndFlag:     j.GameEndFlag,
 		scored:          j.Scored,
-		actionLog:       actionLog,
+		actionLogBase:   actionLogBase{actionLog: actionLog},
 	}
 	return nil
 }

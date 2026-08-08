@@ -129,7 +129,7 @@ type primeroState struct {
 	result          PrimeroResult
 	gameEndFlag     bool
 	scored          bool // ラウンド結果を確定済みか (二重確定防止)
-	actionLog       []*ActionLogEntry
+	actionLogBase
 }
 
 // Primero はプリメロの状態を保持する集約ルート。
@@ -150,7 +150,7 @@ func NewPrimero(trumpCards *TrumpCards, players []*PrimeroPlayer, config Primero
 			phase:          PrimeroPhaseBetting,
 			winnerIdx:      -1,
 			matchWinnerIdx: -1,
-			actionLog:      make([]*ActionLogEntry, 0),
+			actionLogBase:  actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 		},
 	}
 }
@@ -200,7 +200,7 @@ func (g *Primero) Reset() {
 		dealerIdx:      0,
 		winnerIdx:      -1,
 		matchWinnerIdx: -1,
-		actionLog:      make([]*ActionLogEntry, 0),
+		actionLogBase:  actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 	}
 	g.startRound()
 }
@@ -697,13 +697,7 @@ func (g *Primero) playerName(idx int) string {
 }
 
 func (g *Primero) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.state.actionLog = append(g.state.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.state.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.state.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // --- Hint ---
@@ -977,7 +971,7 @@ func (g *Primero) UnmarshalJSON(data []byte) error {
 		result:          j.Result,
 		gameEndFlag:     j.GameEndFlag,
 		scored:          j.Scored,
-		actionLog:       j.ActionLog,
+		actionLogBase:   actionLogBase{actionLog: j.ActionLog},
 	}
 	if g.state.actionLog == nil {
 		g.state.actionLog = make([]*ActionLogEntry, 0)

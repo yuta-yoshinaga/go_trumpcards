@@ -88,19 +88,19 @@ func findOpenEndedDraw(cards []straightDrawCardInfo, check func(remaining []int)
 
 // pokerRoundState ラウンドごとにリセットされる状態
 type pokerRoundState struct {
-	phase           int
-	pot             int
-	currentTurn     int
-	lastBet         int
-	minRaise        int
-	raiseCount      int
-	actedFlags      []bool
-	sidePots        []SidePot
-	startingChips   []int
-	roundResults    []PokerResult
-	cpuActions      []PokerCpuAction
-	cpuExchanges    []PokerCpuExchange
-	actionLog       []*ActionLogEntry
+	phase         int
+	pot           int
+	currentTurn   int
+	lastBet       int
+	minRaise      int
+	raiseCount    int
+	actedFlags    []bool
+	sidePots      []SidePot
+	startingChips []int
+	roundResults  []PokerResult
+	cpuActions    []PokerCpuAction
+	cpuExchanges  []PokerCpuExchange
+	actionLogBase
 	gameEndFlag     bool
 	lastCpuError    error // CPU行動エラーの最後のフォールバック記録 (テスト検出用)
 	lastHumanPlayMs int
@@ -1176,13 +1176,7 @@ func (p *Poker) GetActionLog() []*ActionLogEntry { return p.round.actionLog }
 
 // appendLog 棋譜にエントリを追加する
 func (p *Poker) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	p.round.actionLog = append(p.round.actionLog, &ActionLogEntry{
-		TurnNumber: len(p.round.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	p.round.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // pokerRoundStateJSON is the JSON wire format for pokerRoundState.
@@ -1288,7 +1282,7 @@ func (p *Poker) UnmarshalJSON(data []byte) error {
 		roundResults:    j.Round.RoundResults,
 		cpuActions:      j.Round.CpuActions,
 		cpuExchanges:    j.Round.CpuExchanges,
-		actionLog:       j.Round.ActionLog,
+		actionLogBase:   actionLogBase{actionLog: j.Round.ActionLog},
 		gameEndFlag:     j.Round.GameEndFlag,
 		lastHumanPlayMs: j.Round.LastHumanPlayMs,
 	}

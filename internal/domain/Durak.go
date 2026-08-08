@@ -66,7 +66,7 @@ type durakRoundState struct {
 	cpuActions  []*DurakCpuAction // CPU行動記録
 	humanAction *DurakCpuAction   // 人間の最後の行動
 	boutNumber  int               // バウト番号
-	actionLog   []*ActionLogEntry // 棋譜
+	actionLogBase
 }
 
 // Durak ドゥラークゲームクラス
@@ -784,13 +784,7 @@ func (d *Durak) sortAllHands() {
 
 // appendLog 棋譜にエントリを追加
 func (d *Durak) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	d.round.actionLog = append(d.round.actionLog, &ActionLogEntry{
-		TurnNumber: d.round.boutNumber,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	d.round.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // ---- 内部メソッド: CPU AI ----
