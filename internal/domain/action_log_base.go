@@ -25,8 +25,16 @@ func (b *actionLogBase) GetActionLog() []*ActionLogEntry { return b.actionLog }
 // appendLog records one action. TurnNumber is assigned from the number of
 // entries already present, so the first entry is turn 1.
 func (b *actionLogBase) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
+	b.appendLogAt(len(b.actionLog)+1, playerIdx, actionType, detail, cards)
+}
+
+// appendLogAt records one action under a caller-supplied turn number, for games
+// that number entries by something other than the entry count. The solitaires
+// number by move count, which lives on the game struct and so is not visible
+// from here — they pass it in rather than each keeping a copy of this body.
+func (b *actionLogBase) appendLogAt(turnNumber, playerIdx int, actionType, detail string, cards []*Card) {
 	b.actionLog = append(b.actionLog, &ActionLogEntry{
-		TurnNumber: len(b.actionLog) + 1,
+		TurnNumber: turnNumber,
 		PlayerIdx:  playerIdx,
 		ActionType: actionType,
 		Detail:     detail,
