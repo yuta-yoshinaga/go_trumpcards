@@ -1,6 +1,9 @@
 package domain
 
-import "sort"
+import (
+	"fmt"
+	"sort"
+)
 
 // handHolder is the minimal interface for a player whose hand can be sorted in
 // place: enumerate the cards, clear the hand, and re-add them.
@@ -49,6 +52,24 @@ func findHumanIdx[T humanReporter](players []T) int {
 		}
 	}
 	return -1
+}
+
+// playerName renders a seat for display: "You" for the human, "CPU <idx>" for
+// the rest, and "Player <idx>" when idx is outside the roster. 91 games spelled
+// this out identically.
+//
+// The out-of-range branch is not defensive padding -- action-log entries carry
+// a playerIdx of -1 for system events, and several presenters format a seat
+// before the roster is populated. Callers rely on getting a string back rather
+// than a panic. See issue #5185.
+func playerName[T humanReporter](players []T, idx int) string {
+	if idx < 0 || idx >= len(players) {
+		return fmt.Sprintf("Player %d", idx)
+	}
+	if players[idx].GetIsHuman() {
+		return "You"
+	}
+	return fmt.Sprintf("CPU %d", idx)
 }
 
 // nextActivePlayer performs a circular search for the next non-finished player.

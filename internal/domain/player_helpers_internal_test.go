@@ -195,3 +195,30 @@ func TestFindHumanIdx_AllCPU(t *testing.T) {
 func TestFindHumanIdx_FirstHumanWins(t *testing.T) {
 	assert.Equal(t, 1, findHumanIdx([]fakeSeat{{false}, {true}, {true}}))
 }
+
+func TestPlayerName(t *testing.T) {
+	seats := []fakeSeat{{true}, {false}, {false}}
+
+	assert.Equal(t, "You", playerName(seats, 0))
+	assert.Equal(t, "CPU 1", playerName(seats, 1))
+	assert.Equal(t, "CPU 2", playerName(seats, 2))
+}
+
+// Out-of-range is a real code path, not padding: action-log entries use -1 for
+// system events, and presenters format seats before the roster is filled.
+// Callers want a string, not a panic.
+func TestPlayerName_OutOfRange(t *testing.T) {
+	seats := []fakeSeat{{true}, {false}}
+
+	assert.Equal(t, "Player -1", playerName(seats, -1), "system events use -1")
+	assert.Equal(t, "Player 2", playerName(seats, 2), "one past the end")
+	assert.Equal(t, "Player 0", playerName([]fakeSeat{}, 0), "empty roster")
+}
+
+// Whichever seat is human gets "You" -- it is not assumed to be seat 0.
+func TestPlayerName_HumanNeedNotBeFirst(t *testing.T) {
+	seats := []fakeSeat{{false}, {false}, {true}}
+
+	assert.Equal(t, "CPU 0", playerName(seats, 0))
+	assert.Equal(t, "You", playerName(seats, 2))
+}
