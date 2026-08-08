@@ -292,8 +292,15 @@ func run() int {
 	if err := flag.CommandLine.Parse(os.Args[1:]); err != nil {
 		// NB: -h / --help are registered above so flag.Parse handles them
 		// itself and returns nil; flag.ErrHelp is therefore unreachable here.
+		//
+		// A one-line recovery hint, not the full help. Dumping all 103 lines
+		// pushed the error itself off a standard terminal, so the one thing
+		// the user needed — which flag was wrong — was the one thing they
+		// could not see. The other two usage-error paths already settled on
+		// this: the unknown-game path uses cliUnknownGameHint (#4305) and
+		// parseSubFlagsTo uses cliTryHelp (#4307). See issue #5180.
 		_, _ = fmt.Fprintln(os.Stderr, i18n.Tf("cliFlagError", "err", err.Error()))
-		_, _ = fmt.Fprint(os.Stderr, helpText)
+		_, _ = fmt.Fprintln(os.Stderr, i18n.T("cliTryHelpTop"))
 		return 2
 	}
 
