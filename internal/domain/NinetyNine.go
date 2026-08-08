@@ -261,7 +261,7 @@ func (o *NinetyNine) ResolveTrick() {
 
 	o.players[winnerIdx].AddTrick(trickCards)
 
-	winnerName := o.playerName(winnerIdx)
+	winnerName := playerName(o.players, winnerIdx)
 	o.appendLog(winnerIdx, "trick_win", fmt.Sprintf("%s wins trick %d", winnerName, o.trickNumber), trickCards)
 
 	o.leadPlayerIdx = winnerIdx
@@ -316,11 +316,11 @@ func (o *NinetyNine) ScoreRound() {
 		if tricks == bid {
 			p.SetRoundScore(10 + bid + bonus)
 			o.appendLog(i, "bid_success", fmt.Sprintf("%s declared %d, took %d: +%d (bonus +%d)",
-				o.playerName(i), bid, tricks, p.GetRoundScore(), bonus), nil)
+				playerName(o.players, i), bid, tricks, p.GetRoundScore(), bonus), nil)
 		} else {
 			p.SetRoundScore(0)
 			o.appendLog(i, "bid_fail", fmt.Sprintf("%s declared %d, took %d: 0",
-				o.playerName(i), bid, tricks), nil)
+				playerName(o.players, i), bid, tricks), nil)
 		}
 	}
 
@@ -330,7 +330,7 @@ func (o *NinetyNine) ScoreRound() {
 
 	for i := range NinetyNinePlayerCnt {
 		o.appendLog(i, "cumulative_score", fmt.Sprintf("%s: total=%d",
-			o.playerName(i), o.players[i].GetCumulativeScore()), nil)
+			playerName(o.players, i), o.players[i].GetCumulativeScore()), nil)
 	}
 
 	// ゲーム終了判定: いずれかが TargetScore 以上に達したら終了
@@ -528,7 +528,7 @@ func (o *NinetyNine) applyBury(playerIdx int, descIndices []int) {
 	}
 	player.SetBuried(buried)
 	player.SetBid(bid)
-	o.appendLog(playerIdx, "bid", fmt.Sprintf("%s buries 3 and declares %d", o.playerName(playerIdx), bid), buried)
+	o.appendLog(playerIdx, "bid", fmt.Sprintf("%s buries 3 and declares %d", playerName(o.players, playerIdx), bid), buried)
 }
 
 // advanceBid ビッドプレイヤーを次に進める
@@ -562,7 +562,7 @@ func (o *NinetyNine) playCard(playerIdx int, card *Card) {
 		Card:      card,
 	})
 
-	o.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", o.playerName(playerIdx), cardStr(card)), []*Card{card})
+	o.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(o.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(o.currentTrick) == NinetyNinePlayerCnt {
 		o.phase = NinetyNinePhaseTrickEnd
@@ -620,7 +620,7 @@ func (o *NinetyNine) determineWinner() {
 		}
 	}
 	o.winnerIdx = best
-	o.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", o.playerName(o.winnerIdx)), nil)
+	o.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(o.players, o.winnerIdx)), nil)
 }
 
 // ninetyNineBeats プレイヤー a がプレイヤー b に勝るか (タイブレーク込み)
@@ -650,17 +650,6 @@ func ninetyNineSortHand(p *NinetyNinePlayer) {
 		}
 		return ninetyNineRankValue(ci) < ninetyNineRankValue(cj)
 	})
-}
-
-// playerName プレイヤー名を返す
-func (o *NinetyNine) playerName(idx int) string {
-	if idx < 0 || idx >= len(o.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if o.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す

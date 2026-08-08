@@ -352,7 +352,7 @@ func (g *Mao) resolvePendingWord(playerIdx int, complied bool) {
 	g.awaitingWord = false
 	if complied {
 		g.playerCorrectCount++
-		g.appendLog(playerIdx, "rule_ok", fmt.Sprintf("%s follows the secret rule", g.playerName(playerIdx)), nil)
+		g.appendLog(playerIdx, "rule_ok", fmt.Sprintf("%s follows the secret rule", playerName(g.players, playerIdx)), nil)
 		if g.playerCorrectCount >= MaoHintThreshold {
 			g.hintUnlocked = true
 		}
@@ -366,7 +366,7 @@ func (g *Mao) applyRulePenalty(playerIdx int) {
 	g.playerCorrectCount = 0
 	g.rulePenaltyFlag = true
 	drawn := g.drawCards(playerIdx, MaoRulePenalty)
-	g.appendLog(playerIdx, "penalty", fmt.Sprintf("%s receives a penalty (+%d card)", g.playerName(playerIdx), drawn), nil)
+	g.appendLog(playerIdx, "penalty", fmt.Sprintf("%s receives a penalty (+%d card)", playerName(g.players, playerIdx), drawn), nil)
 	g.sortHand(playerIdx)
 }
 
@@ -387,7 +387,7 @@ func (g *Mao) PlayerChooseSuit(suit int) error {
 	}
 
 	g.chosenSuit = suit
-	g.appendLog(g.currentPlayerIdx, "choose_suit", fmt.Sprintf("%s chooses %s", g.playerName(g.currentPlayerIdx), suitName(suit)), nil)
+	g.appendLog(g.currentPlayerIdx, "choose_suit", fmt.Sprintf("%s chooses %s", playerName(g.players, g.currentPlayerIdx), suitName(suit)), nil)
 
 	g.finishTurn(g.currentPlayerIdx)
 	return nil
@@ -483,7 +483,7 @@ func (g *Mao) CpuChooseSuit() {
 
 	suit := g.cpuSelectSuit(g.currentPlayerIdx)
 	g.chosenSuit = suit
-	g.appendLog(g.currentPlayerIdx, "choose_suit", fmt.Sprintf("%s chooses %s", g.playerName(g.currentPlayerIdx), suitName(suit)), nil)
+	g.appendLog(g.currentPlayerIdx, "choose_suit", fmt.Sprintf("%s chooses %s", playerName(g.players, g.currentPlayerIdx), suitName(suit)), nil)
 	g.finishTurn(g.currentPlayerIdx)
 }
 
@@ -506,14 +506,14 @@ func (g *Mao) CpuDeclare() {
 // doDeclare 宣言処理の共通実装
 func (g *Mao) doDeclare(playerIdx int) {
 	g.players[playerIdx].SetHasDeclared(true)
-	g.appendLog(playerIdx, "declare", fmt.Sprintf("%s declares Mao!", g.playerName(playerIdx)), nil)
+	g.appendLog(playerIdx, "declare", fmt.Sprintf("%s declares Mao!", playerName(g.players, playerIdx)), nil)
 	g.advanceTurn()
 }
 
 // applyDeclarePenalty 宣言忘れペナルティとして規定枚数を引かせる
 func (g *Mao) applyDeclarePenalty(playerIdx int) {
 	drawn := g.drawCards(playerIdx, MaoForgotPenalty)
-	g.appendLog(playerIdx, "penalty", fmt.Sprintf("%s forgot to declare Mao! (+%d cards)", g.playerName(playerIdx), drawn), nil)
+	g.appendLog(playerIdx, "penalty", fmt.Sprintf("%s forgot to declare Mao! (+%d cards)", playerName(g.players, playerIdx), drawn), nil)
 	g.sortHand(playerIdx)
 	g.advanceTurn()
 }
@@ -546,11 +546,11 @@ func (g *Mao) ScoreRound() {
 			score += crazyEightsCardScore(p.GetCard(j))
 		}
 		totalScore += score
-		g.appendLog(i, "hand_score", fmt.Sprintf("%s: %d points remaining", g.playerName(i), score), nil)
+		g.appendLog(i, "hand_score", fmt.Sprintf("%s: %d points remaining", playerName(g.players, i), score), nil)
 	}
 
 	g.players[winnerIdx].roundScore = totalScore
-	g.appendLog(winnerIdx, "round_win", fmt.Sprintf("%s wins round %d (+%d points)", g.playerName(winnerIdx), g.roundNumber, totalScore), nil)
+	g.appendLog(winnerIdx, "round_win", fmt.Sprintf("%s wins round %d (+%d points)", playerName(g.players, winnerIdx), g.roundNumber, totalScore), nil)
 
 	g.players[winnerIdx].CommitRoundScore()
 
@@ -712,7 +712,7 @@ func (g *Mao) playCard(playerIdx int, card *Card) {
 	g.discardPile = append(g.discardPile, card)
 	g.chosenSuit = -1
 
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	// マジックカードの状態更新
 	switch card.GetValue() {
@@ -780,7 +780,7 @@ func (g *Mao) drawCard(playerIdx int) error {
 	if g.penaltyDrawCount > 0 {
 		drawn := g.drawCards(playerIdx, g.penaltyDrawCount)
 		g.penaltyDrawCount = 0
-		g.appendLog(playerIdx, "take_penalty", fmt.Sprintf("%s takes %d penalty cards", g.playerName(playerIdx), drawn), nil)
+		g.appendLog(playerIdx, "take_penalty", fmt.Sprintf("%s takes %d penalty cards", playerName(g.players, playerIdx), drawn), nil)
 		g.sortHand(playerIdx)
 		g.advanceTurn()
 		return nil
@@ -792,7 +792,7 @@ func (g *Mao) drawCard(playerIdx int) error {
 
 	if len(g.drawPile) == 0 {
 		// 引けるカードがない→パス
-		g.appendLog(playerIdx, "pass", fmt.Sprintf("%s passes (no cards to draw)", g.playerName(playerIdx)), nil)
+		g.appendLog(playerIdx, "pass", fmt.Sprintf("%s passes (no cards to draw)", playerName(g.players, playerIdx)), nil)
 		g.advanceTurn()
 		return nil
 	}
@@ -802,7 +802,7 @@ func (g *Mao) drawCard(playerIdx int) error {
 	g.players[playerIdx].AddCard(card)
 	g.sortHand(playerIdx)
 
-	g.appendLog(playerIdx, "draw", fmt.Sprintf("%s draws a card", g.playerName(playerIdx)), nil)
+	g.appendLog(playerIdx, "draw", fmt.Sprintf("%s draws a card", playerName(g.players, playerIdx)), nil)
 
 	// 引いたカードが出せないなら次へ
 	if !g.hasPlayableCard(playerIdx) {
@@ -884,7 +884,7 @@ func (g *Mao) checkGameEnd() {
 			g.winnerIdx = i
 		}
 	}
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", g.playerName(g.winnerIdx)), nil)
+	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, g.winnerIdx)), nil)
 }
 
 // sortAllHands 全プレイヤーの手札をソートする
@@ -903,17 +903,6 @@ func (g *Mao) sortHand(playerIdx int) {
 		}
 		return ci.GetValue() < cj.GetValue()
 	})
-}
-
-// playerName プレイヤー名を返す
-func (g *Mao) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // --- CPU AI ---

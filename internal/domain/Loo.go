@@ -248,9 +248,9 @@ func (g *Loo) applyDecide(idx int, play bool) {
 	g.players[idx].SetPlaying(play)
 	g.decideDone[idx] = true
 	if play {
-		g.appendLog(idx, "decide", fmt.Sprintf("%s plays", g.playerName(idx)), nil)
+		g.appendLog(idx, "decide", fmt.Sprintf("%s plays", playerName(g.players, idx)), nil)
 	} else {
-		g.appendLog(idx, "decide", fmt.Sprintf("%s passes", g.playerName(idx)), nil)
+		g.appendLog(idx, "decide", fmt.Sprintf("%s passes", playerName(g.players, idx)), nil)
 	}
 	for k := 1; k <= LooPlayerCnt; k++ {
 		ni := (idx + k) % LooPlayerCnt
@@ -274,7 +274,7 @@ func (g *Loo) resolveDecide() {
 	case 1:
 		// 1 人だけ参加: プレイせずにポットを総取り (トリックは戦われない)。
 		winner := active[0]
-		g.appendLog(winner, "walkover", fmt.Sprintf("%s is the only player and takes the pot", g.playerName(winner)), nil)
+		g.appendLog(winner, "walkover", fmt.Sprintf("%s is the only player and takes the pot", playerName(g.players, winner)), nil)
 		g.enterRoundEnd()
 	default:
 		g.startPlayPhase(active[0])
@@ -379,7 +379,7 @@ func (g *Loo) CpuPlay() {
 // playCard はカードをプレイする共通処理。
 func (g *Loo) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == len(g.activePlayers()) {
 		g.phase = LooPhaseTrickEnd
@@ -403,7 +403,7 @@ func (g *Loo) ResolveTrick() {
 	g.lastTrick = g.currentTrick
 	g.lastTrickWinner = winnerIdx
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", g.playerName(winnerIdx), g.trickNumber), trickCards)
+		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= LooTrickCount {
@@ -484,7 +484,7 @@ func (g *Loo) ScoreRound() {
 		winner := active[0]
 		g.players[winner].AddChips(g.pot)
 		gained[winner] += g.pot
-		g.appendLog(winner, "settle", fmt.Sprintf("%s takes the whole pot %d", g.playerName(winner), g.pot), nil)
+		g.appendLog(winner, "settle", fmt.Sprintf("%s takes the whole pot %d", playerName(g.players, winner), g.pot), nil)
 		g.pot = 0
 	default:
 		// 参加者でトリックに応じてポットを分配 (1 トリック = ポット/トリック数)。
@@ -510,7 +510,7 @@ func (g *Loo) ScoreRound() {
 				g.pot += penalty
 				looed = append(looed, idx)
 				g.appendLog(idx, "looed",
-					fmt.Sprintf("%s is looed and pays %d to the pot", g.playerName(idx), penalty), nil)
+					fmt.Sprintf("%s is looed and pays %d to the pot", playerName(g.players, idx), penalty), nil)
 			}
 		}
 	}
@@ -526,7 +526,7 @@ func (g *Loo) ScoreRound() {
 	}
 	for i := 0; i < LooPlayerCnt; i++ {
 		g.appendLog(i, "cumulative_chips",
-			fmt.Sprintf("%s: total=%d", g.playerName(i), g.players[i].GetChips()), nil)
+			fmt.Sprintf("%s: total=%d", playerName(g.players, i), g.players[i].GetChips()), nil)
 	}
 }
 
@@ -634,16 +634,6 @@ func looSortHand(p *LooPlayer) {
 	for _, c := range cards {
 		p.AddCard(c)
 	}
-}
-
-func (g *Loo) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // indexOfPlayerInTrick は currentTrick 内で playerIdx の札の位置を返す (-1=なし)。

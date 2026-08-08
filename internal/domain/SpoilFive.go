@@ -143,7 +143,7 @@ func (g *SpoilFive) startRound() {
 	g.phase = SpoilFivePhasePlay
 	g.appendLog(g.leadPlayerIdx, "round_start",
 		fmt.Sprintf("round %d: trump %d, pot %d, %s leads",
-			g.roundNumber, g.trumpSuit, g.pot, g.playerName(g.leadPlayerIdx)), nil)
+			g.roundNumber, g.trumpSuit, g.pot, playerName(g.players, g.leadPlayerIdx)), nil)
 }
 
 // deal 各プレイヤーへ 5 枚を配る。
@@ -205,7 +205,7 @@ func (g *SpoilFive) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *SpoilFive) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == SpoilFivePlayerCnt {
 		g.phase = SpoilFivePhaseTrickEnd
@@ -227,7 +227,7 @@ func (g *SpoilFive) ResolveTrick() {
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.players[winnerIdx].IncRoundTricks()
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", g.playerName(winnerIdx), g.trickNumber), trickCards)
+		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.players[winnerIdx].GetRoundTricks() >= SpoilFiveWinTricks {
@@ -262,7 +262,7 @@ func (g *SpoilFive) ScoreRound() {
 	if g.roundWinnerIdx >= 0 {
 		g.players[g.roundWinnerIdx].SetScore(g.players[g.roundWinnerIdx].GetScore() + g.pot)
 		g.appendLog(g.roundWinnerIdx, "round_win",
-			fmt.Sprintf("%s wins the pot of %d", g.playerName(g.roundWinnerIdx), g.pot), nil)
+			fmt.Sprintf("%s wins the pot of %d", playerName(g.players, g.roundWinnerIdx), g.pot), nil)
 		g.pot = 0
 		g.checkGameEnd()
 	} else {
@@ -283,7 +283,7 @@ func (g *SpoilFive) checkGameEnd() {
 		g.gameEndFlag = true
 		g.winnerPlayer = leader
 		g.phase = SpoilFivePhaseGameEnd
-		g.appendLog(leader, "game_end", fmt.Sprintf("%s wins the match!", g.playerName(leader)), nil)
+		g.appendLog(leader, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
 	}
 }
 
@@ -474,17 +474,6 @@ func (g *SpoilFive) spoilSortHand(p *SpoilFivePlayer) {
 	for _, c := range cards {
 		p.AddCard(c)
 	}
-}
-
-// playerName プレイヤー名を返す。
-func (g *SpoilFive) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // indexOfPlayerInTrick currentTrick 内で playerIdx の札の位置を返す (-1=なし)。

@@ -215,7 +215,7 @@ func (g *Sheepshead) resolvePick(playerIdx int, pick bool) {
 		return
 	}
 	g.passCount++
-	g.appendLog(playerIdx, "pass", fmt.Sprintf("%s passes", g.playerName(playerIdx)), nil)
+	g.appendLog(playerIdx, "pass", fmt.Sprintf("%s passes", playerName(g.players, playerIdx)), nil)
 	g.currentPlayerIdx = (g.currentPlayerIdx + 1) % SheepsheadPlayerCnt
 }
 
@@ -228,7 +228,7 @@ func (g *Sheepshead) becomePicker(playerIdx int) {
 	}
 	g.blind = nil
 	sheepsheadSortHand(picker)
-	g.appendLog(playerIdx, "pick", fmt.Sprintf("%s picks up the blind", g.playerName(playerIdx)), nil)
+	g.appendLog(playerIdx, "pick", fmt.Sprintf("%s picks up the blind", playerName(g.players, playerIdx)), nil)
 	g.currentPlayerIdx = playerIdx
 	g.phase = SheepsheadPhaseBury
 }
@@ -274,12 +274,12 @@ func (g *Sheepshead) validateBury(indices []int) error {
 func (g *Sheepshead) applyBury(indices []int) {
 	picker := g.players[g.pickerIdx]
 	g.buried = picker.RemoveCards(indices)
-	g.appendLog(g.pickerIdx, "bury", fmt.Sprintf("%s buries %d cards", g.playerName(g.pickerIdx), len(g.buried)), nil)
+	g.appendLog(g.pickerIdx, "bury", fmt.Sprintf("%s buries %d cards", playerName(g.players, g.pickerIdx), len(g.buried)), nil)
 
 	if len(g.callableSuits()) == 0 {
 		// 呼べる札がない: ピッカーは単独で戦う。
 		g.partnerIdx = -1
-		g.appendLog(g.pickerIdx, "alone", fmt.Sprintf("%s plays alone", g.playerName(g.pickerIdx)), nil)
+		g.appendLog(g.pickerIdx, "alone", fmt.Sprintf("%s plays alone", playerName(g.players, g.pickerIdx)), nil)
 		g.beginPlay()
 		return
 	}
@@ -309,7 +309,7 @@ func (g *Sheepshead) applyCall(suit int) {
 	g.calledSuit = suit
 	g.partnerIdx = g.holderOfCalledAce(suit)
 	g.appendLog(g.pickerIdx, "call",
-		fmt.Sprintf("%s calls the %s Ace", g.playerName(g.pickerIdx), suitStr(suit)), nil)
+		fmt.Sprintf("%s calls the %s Ace", playerName(g.players, g.pickerIdx), suitStr(suit)), nil)
 	g.beginPlay()
 }
 
@@ -390,14 +390,14 @@ func (g *Sheepshead) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Sheepshead) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	// 呼びカードがプレイされたら相棒が判明する。
 	if g.calledSuit != 0 && !g.partnerRevealed &&
 		card.GetValue() == 1 && card.GetDesign() == g.calledSuit && !sheepsheadIsTrump(card) {
 		g.partnerRevealed = true
 		g.appendLog(playerIdx, "partner_reveal",
-			fmt.Sprintf("%s is the picker's partner", g.playerName(playerIdx)), nil)
+			fmt.Sprintf("%s is the picker's partner", playerName(g.players, playerIdx)), nil)
 	}
 
 	if len(g.currentTrick) == SheepsheadPlayerCnt {
@@ -421,7 +421,7 @@ func (g *Sheepshead) ResolveTrick() {
 	}
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (%d pts)", g.playerName(winnerIdx), g.trickNumber, pts), trickCards)
+		fmt.Sprintf("%s wins trick %d (%d pts)", playerName(g.players, winnerIdx), g.trickNumber, pts), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	// Clear the resolved trick so a spurious second ResolveTrick call cannot
@@ -473,7 +473,7 @@ func (g *Sheepshead) ScoreRound() {
 		g.gameEndFlag = true
 		g.winnerIdx = w
 		g.phase = SheepsheadPhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", g.playerName(w)), nil)
+		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, w)), nil)
 	}
 }
 
@@ -675,17 +675,6 @@ func sheepsheadSortHand(p *SheepsheadPlayer) {
 		}
 		return sheepsheadStrength(ci) > sheepsheadStrength(cj)
 	})
-}
-
-// playerName プレイヤー名を返す。
-func (g *Sheepshead) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // indexOfPlayerInTrick currentTrick 内で playerIdx の札の位置を返す (-1=なし)。

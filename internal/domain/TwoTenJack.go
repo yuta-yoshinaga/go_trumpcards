@@ -158,7 +158,7 @@ func (t *TwoTenJack) PlayerDeclareTrump(suit int) error {
 	}
 
 	t.trumpSuit = suit
-	t.appendLog(t.declarerIdx, "declare_trump", fmt.Sprintf("%s declares trump: %s", t.playerName(t.declarerIdx), twoTenJackSuitName(suit)), nil)
+	t.appendLog(t.declarerIdx, "declare_trump", fmt.Sprintf("%s declares trump: %s", playerName(t.players, t.declarerIdx), twoTenJackSuitName(suit)), nil)
 	t.startPlayPhase()
 	return nil
 }
@@ -176,7 +176,7 @@ func (t *TwoTenJack) CpuDeclareTrump() {
 	}
 	suit := t.cpuSelectTrump(t.declarerIdx)
 	t.trumpSuit = suit
-	t.appendLog(t.declarerIdx, "declare_trump", fmt.Sprintf("%s declares trump: %s", t.playerName(t.declarerIdx), twoTenJackSuitName(suit)), nil)
+	t.appendLog(t.declarerIdx, "declare_trump", fmt.Sprintf("%s declares trump: %s", playerName(t.players, t.declarerIdx), twoTenJackSuitName(suit)), nil)
 	t.startPlayPhase()
 }
 
@@ -247,7 +247,7 @@ func (t *TwoTenJack) ResolveTrick() {
 
 	t.players[winnerIdx].AddTrick(trickCards)
 
-	winnerName := t.playerName(winnerIdx)
+	winnerName := playerName(t.players, winnerIdx)
 	t.appendLog(winnerIdx, "trick_win", fmt.Sprintf("%s wins trick %d", winnerName, t.trickNumber), trickCards)
 
 	t.leadPlayerIdx = winnerIdx
@@ -326,7 +326,7 @@ func (t *TwoTenJack) ScoreRound() {
 
 	for i := 0; i < TwoTenJackPlayerCnt; i++ {
 		t.appendLog(i, "cumulative_score", fmt.Sprintf("%s: total=%d",
-			t.playerName(i), t.players[i].GetCumulativeScore()), nil)
+			playerName(t.players, i), t.players[i].GetCumulativeScore()), nil)
 	}
 
 	t.checkGameEnd()
@@ -438,7 +438,7 @@ func (t *TwoTenJack) playCard(playerIdx int, card *Card) {
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
-	t.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", t.playerName(playerIdx), cardStr(card)), []*Card{card})
+	t.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(t.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(t.currentTrick) == TwoTenJackPlayerCnt {
 		t.phase = TwoTenJackPhaseTrickEnd
@@ -517,17 +517,6 @@ func twoTenJackSortHand(p *TwoTenJackPlayer) {
 		}
 		return ci.GetValue() < cj.GetValue()
 	})
-}
-
-// playerName プレイヤー名を返す
-func (t *TwoTenJack) playerName(idx int) string {
-	if idx < 0 || idx >= len(t.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if t.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // twoTenJackSuitName スート名を返す

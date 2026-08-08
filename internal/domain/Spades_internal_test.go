@@ -595,10 +595,10 @@ func TestSpades_cpuPlayHard_Follow_SpadeLeadSuit(t *testing.T) {
 
 func TestSpades_playerName(t *testing.T) {
 	s := newInternalTestSpades()
-	assert.Equal(t, "You", s.playerName(0))
-	assert.Equal(t, "CPU 1", s.playerName(1))
-	assert.Equal(t, "Player -1", s.playerName(-1))
-	assert.Equal(t, "Player 5", s.playerName(5))
+	assert.Equal(t, "You", playerName(s.players, 0))
+	assert.Equal(t, "CPU 1", playerName(s.players, 1))
+	assert.Equal(t, "Player -1", playerName(s.players, -1))
+	assert.Equal(t, "Player 5", playerName(s.players, 5))
 }
 
 func TestSpades_checkGameEnd_NoEnd(t *testing.T) {

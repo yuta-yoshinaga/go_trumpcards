@@ -269,7 +269,7 @@ func (g *Watten) doDeclare(playerIdx, rank, suit int) {
 	g.criticalSuit = suit
 	g.appendLog(playerIdx, "declare",
 		fmt.Sprintf("%s declares Schlag=%d critical=%s",
-			g.playerName(playerIdx), rank, suitStr(suit)), nil)
+			playerName(g.players, playerIdx), rank, suitStr(suit)), nil)
 	g.sortAllHands()
 	g.startPlayPhase()
 }
@@ -338,7 +338,7 @@ func (g *Watten) CpuPlay() {
 func (g *Watten) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	g.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+		fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == WattenPlayerCnt {
 		g.phase = WattenPhaseTrickEnd
@@ -362,7 +362,7 @@ func (g *Watten) ResolveTrick() {
 	g.teamTricks[winnerTeam]++
 	g.leadPlayerIdx = winnerIdx
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", g.playerName(winnerIdx), g.trickNumber), trickCards)
+		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), trickCards)
 
 	if g.trickNumber >= WattenHandSize {
 		g.enterRoundEnd(g.dealWinnerByTricks())
@@ -495,7 +495,7 @@ func (g *Watten) respond(responder int, hold bool) {
 		g.currentPlayerIdx = g.leadPlayerIdx
 		g.appendLog(responder, "hold",
 			fmt.Sprintf("%s holds (stake %d, team %d leads)",
-				g.playerName(responder), g.stake, raiser), nil)
+				playerName(g.players, responder), g.stake, raiser), nil)
 		return
 	}
 	// fold: レイズしたチームが直前の確定ステークでディールを取る。
@@ -505,7 +505,7 @@ func (g *Watten) respond(responder int, hold bool) {
 	g.responderIdx = -1
 	g.appendLog(responder, "fold",
 		fmt.Sprintf("%s folds; team %d wins deal (%d pt)",
-			g.playerName(responder), raiser, g.stake), nil)
+			playerName(g.players, responder), raiser, g.stake), nil)
 	g.enterRoundEnd(raiser)
 }
 
@@ -828,16 +828,6 @@ func (g *Watten) sortAllHands() {
 			p.AddCard(c)
 		}
 	}
-}
-
-func (g *Watten) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // --- CPU AI ---

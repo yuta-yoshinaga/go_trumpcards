@@ -252,11 +252,11 @@ func (g *Tysiac) applyBid(playerIdx int, raise bool) {
 	if raise {
 		g.currentBid += TysiacBidStep
 		g.appendLog(playerIdx, "bid",
-			fmt.Sprintf("%s bids %d", g.playerName(playerIdx), g.currentBid), nil)
+			fmt.Sprintf("%s bids %d", playerName(g.players, playerIdx), g.currentBid), nil)
 	} else {
 		g.bidPassed[playerIdx] = true
 		g.appendLog(playerIdx, "bid_pass",
-			fmt.Sprintf("%s passes", g.playerName(playerIdx)), nil)
+			fmt.Sprintf("%s passes", playerName(g.players, playerIdx)), nil)
 	}
 
 	if g.activeBidders() <= 1 {
@@ -294,7 +294,7 @@ func (g *Tysiac) finalizeAuction() {
 	g.declarerIdx = declarer
 	g.contract = g.currentBid
 	g.appendLog(declarer, "declarer",
-		fmt.Sprintf("%s is declarer with contract %d", g.playerName(declarer), g.contract), nil)
+		fmt.Sprintf("%s is declarer with contract %d", playerName(g.players, declarer), g.contract), nil)
 
 	g.startTalon()
 }
@@ -355,7 +355,7 @@ func (g *Tysiac) startTalon() {
 	g.talon = nil
 	tysiacSortHand(g.players[g.declarerIdx])
 	g.appendLog(g.declarerIdx, "talon_take",
-		fmt.Sprintf("%s takes the talon", g.playerName(g.declarerIdx)), nil)
+		fmt.Sprintf("%s takes the talon", playerName(g.players, g.declarerIdx)), nil)
 	g.discardCount = 0
 	g.currentPlayerIdx = g.declarerIdx
 
@@ -395,7 +395,7 @@ func (g *Tysiac) giveDiscard(cardIndex int) {
 	g.players[recipient].AddCard(card)
 	tysiacSortHand(g.players[recipient])
 	g.appendLog(g.declarerIdx, "discard",
-		fmt.Sprintf("%s gives a card to %s", g.playerName(g.declarerIdx), g.playerName(recipient)), nil)
+		fmt.Sprintf("%s gives a card to %s", playerName(g.players, g.declarerIdx), playerName(g.players, recipient)), nil)
 	g.discardCount++
 }
 
@@ -523,13 +523,13 @@ func (g *Tysiac) maybeDeclareMarriage(playerIdx int, card *Card) {
 	g.roundMarriage[playerIdx] += pts
 	g.appendLog(playerIdx, "marriage",
 		fmt.Sprintf("%s declares a %s marriage (+%d, trump=%s)",
-			g.playerName(playerIdx), tysiacSuitName(suit), pts, tysiacSuitName(suit)), nil)
+			playerName(g.players, playerIdx), tysiacSuitName(suit), pts, tysiacSuitName(suit)), nil)
 }
 
 // playCard カードをプレイする共通処理。
 func (g *Tysiac) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == TysiacPlayerCnt {
 		g.phase = TysiacPhaseTrickEnd
@@ -553,7 +553,7 @@ func (g *Tysiac) ResolveTrick() {
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.roundCardPts[winnerIdx] += pts
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (+%d)", g.playerName(winnerIdx), g.trickNumber, pts), trickCards)
+		fmt.Sprintf("%s wins trick %d (+%d)", playerName(g.players, winnerIdx), g.trickNumber, pts), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= TysiacTrickCount {
@@ -594,7 +594,7 @@ func (g *Tysiac) ScoreRound() {
 	}
 	g.appendLog(-1, "round_score",
 		fmt.Sprintf("round %d scored: declarer(%s) contract=%d",
-			g.roundNumber, g.playerName(g.declarerIdx), g.contract), nil)
+			g.roundNumber, playerName(g.players, g.declarerIdx), g.contract), nil)
 	g.checkGameEnd()
 }
 
@@ -616,7 +616,7 @@ func (g *Tysiac) checkGameEnd() {
 		g.gameEndFlag = true
 		g.winnerPlayer = leader
 		g.phase = TysiacPhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", g.playerName(leader)), nil)
+		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
 	}
 }
 
@@ -835,17 +835,6 @@ func tysiacSortHand(p *TysiacPlayer) {
 	for _, c := range cards {
 		p.AddCard(c)
 	}
-}
-
-// playerName プレイヤー名を返す。
-func (g *Tysiac) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // indexOfPlayerInTrick currentTrick 内で playerIdx の札の位置を返す (-1=なし)。

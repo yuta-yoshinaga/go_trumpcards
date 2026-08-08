@@ -185,7 +185,7 @@ func (e *Ecarte) startDeal() {
 		if e.trumpCard.GetValue() == 13 {
 			e.dealPoints[e.dealerIdx]++
 			e.appendLog(e.dealerIdx, "king_turn",
-				fmt.Sprintf("%s scores the turned King (+1)", e.playerName(e.dealerIdx)), nil)
+				fmt.Sprintf("%s scores the turned King (+1)", playerName(e.players, e.dealerIdx)), nil)
 		}
 	}
 	e.sortAllHands()
@@ -202,7 +202,7 @@ func (e *Ecarte) PlayerPropose() error {
 	if err := e.checkNeg(EcarteNegElderDecide); err != nil {
 		return err
 	}
-	e.appendLog(e.currentPlayerIdx, "propose", fmt.Sprintf("%s proposes", e.playerName(e.currentPlayerIdx)), nil)
+	e.appendLog(e.currentPlayerIdx, "propose", fmt.Sprintf("%s proposes", playerName(e.players, e.currentPlayerIdx)), nil)
 	e.negStep = EcarteNegDealerRespond
 	e.currentPlayerIdx = e.dealerIdx
 	return nil
@@ -213,7 +213,7 @@ func (e *Ecarte) PlayerStand() error {
 	if err := e.checkNeg(EcarteNegElderDecide); err != nil {
 		return err
 	}
-	e.appendLog(e.currentPlayerIdx, "stand", fmt.Sprintf("%s stands", e.playerName(e.currentPlayerIdx)), nil)
+	e.appendLog(e.currentPlayerIdx, "stand", fmt.Sprintf("%s stands", playerName(e.players, e.currentPlayerIdx)), nil)
 	e.startPlay()
 	return nil
 }
@@ -225,11 +225,11 @@ func (e *Ecarte) PlayerRespond(accept bool) error {
 	}
 	if !accept {
 		e.refusalByDealer = true
-		e.appendLog(e.currentPlayerIdx, "refuse", fmt.Sprintf("%s refuses", e.playerName(e.currentPlayerIdx)), nil)
+		e.appendLog(e.currentPlayerIdx, "refuse", fmt.Sprintf("%s refuses", playerName(e.players, e.currentPlayerIdx)), nil)
 		e.startPlay()
 		return nil
 	}
-	e.appendLog(e.currentPlayerIdx, "accept", fmt.Sprintf("%s accepts", e.playerName(e.currentPlayerIdx)), nil)
+	e.appendLog(e.currentPlayerIdx, "accept", fmt.Sprintf("%s accepts", playerName(e.players, e.currentPlayerIdx)), nil)
 	e.negStep = EcarteNegElderDiscard
 	e.currentPlayerIdx = e.elderIdx()
 	return nil
@@ -292,7 +292,7 @@ func (e *Ecarte) applyDiscard(playerIdx int, indices []int) error {
 	}
 	e.sortHand(p)
 	e.appendLog(playerIdx, "discard",
-		fmt.Sprintf("%s exchanges %d card(s)", e.playerName(playerIdx), n), nil)
+		fmt.Sprintf("%s exchanges %d card(s)", playerName(e.players, playerIdx), n), nil)
 
 	if e.negStep == EcarteNegElderDiscard {
 		e.negStep = EcarteNegDealerDiscard
@@ -314,7 +314,7 @@ func (e *Ecarte) startPlay() {
 	for i, p := range e.players {
 		if e.handHasTrumpKing(p) {
 			e.dealPoints[i]++
-			e.appendLog(i, "king", fmt.Sprintf("%s declares the King of trumps (+1)", e.playerName(i)), nil)
+			e.appendLog(i, "king", fmt.Sprintf("%s declares the King of trumps (+1)", playerName(e.players, i)), nil)
 		}
 	}
 	e.phase = EcartePhasePlay
@@ -395,17 +395,17 @@ func (e *Ecarte) CpuExchange() {
 		if e.cpuWantsExchange(idx) {
 			_ = e.PlayerProposeCPU()
 		} else {
-			e.appendLog(idx, "stand", fmt.Sprintf("%s stands", e.playerName(idx)), nil)
+			e.appendLog(idx, "stand", fmt.Sprintf("%s stands", playerName(e.players, idx)), nil)
 			e.startPlay()
 		}
 	case EcarteNegDealerRespond:
 		if e.cpuWantsExchange(idx) {
-			e.appendLog(idx, "accept", fmt.Sprintf("%s accepts", e.playerName(idx)), nil)
+			e.appendLog(idx, "accept", fmt.Sprintf("%s accepts", playerName(e.players, idx)), nil)
 			e.negStep = EcarteNegElderDiscard
 			e.currentPlayerIdx = e.elderIdx()
 		} else {
 			e.refusalByDealer = true
-			e.appendLog(idx, "refuse", fmt.Sprintf("%s refuses", e.playerName(idx)), nil)
+			e.appendLog(idx, "refuse", fmt.Sprintf("%s refuses", playerName(e.players, idx)), nil)
 			e.startPlay()
 		}
 	case EcarteNegElderDiscard, EcarteNegDealerDiscard:
@@ -415,7 +415,7 @@ func (e *Ecarte) CpuExchange() {
 
 // PlayerProposeCPU は CPU 用の propose 内部実装 (検証なし)。
 func (e *Ecarte) PlayerProposeCPU() error {
-	e.appendLog(e.currentPlayerIdx, "propose", fmt.Sprintf("%s proposes", e.playerName(e.currentPlayerIdx)), nil)
+	e.appendLog(e.currentPlayerIdx, "propose", fmt.Sprintf("%s proposes", playerName(e.players, e.currentPlayerIdx)), nil)
 	e.negStep = EcarteNegDealerRespond
 	e.currentPlayerIdx = e.dealerIdx
 	return nil
@@ -424,7 +424,7 @@ func (e *Ecarte) PlayerProposeCPU() error {
 // playCard カードをプレイする共通処理。2枚出そろったらトリックを解決する。
 func (e *Ecarte) playCard(playerIdx int, card *Card) {
 	e.currentTrick = append(e.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	e.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", e.playerName(playerIdx), cardStr(card)), []*Card{card})
+	e.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(e.players, playerIdx), cardStr(card)), []*Card{card})
 	if len(e.currentTrick) == EcartePlayerCnt {
 		e.resolveTrick()
 		return
@@ -442,7 +442,7 @@ func (e *Ecarte) resolveTrick() {
 	e.players[winnerIdx].AddTrick(trickCards)
 	e.leadPlayerIdx = winnerIdx
 	e.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", e.playerName(winnerIdx), e.trickNumber), trickCards)
+		fmt.Sprintf("%s wins trick %d", playerName(e.players, winnerIdx), e.trickNumber), trickCards)
 
 	if e.allHandsEmpty() {
 		e.scoreDeal()
@@ -813,16 +813,6 @@ func (e *Ecarte) sortHand(p *EcartePlayer) {
 		}
 		return EcarteRankOrder(ci) < EcarteRankOrder(cj)
 	})
-}
-
-func (e *Ecarte) playerName(idx int) string {
-	if idx < 0 || idx >= len(e.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if e.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 func (e *Ecarte) playHintReason(playerIdx, chosenIdx int) string {

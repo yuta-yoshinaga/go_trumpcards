@@ -237,7 +237,7 @@ func (p *Pitch) applyBid(playerIdx, bid int) {
 	if bid == PitchPassBid {
 		logBid = "pass"
 	}
-	p.appendLog(playerIdx, "bid", fmt.Sprintf("%s bids %s", p.playerName(playerIdx), logBid), nil)
+	p.appendLog(playerIdx, "bid", fmt.Sprintf("%s bids %s", playerName(p.players, playerIdx), logBid), nil)
 }
 
 // advanceBid 次のビッド手番へ進める。全員終わればプレイ開始 (stuck dealer も処理)
@@ -248,7 +248,7 @@ func (p *Pitch) advanceBid() {
 		// 親に到達し、かつ全員パス済みの場合 stuck 強制
 		if p.bidPlayerIdx == p.dealerIdx && p.currentBid == 0 && bidsDone == PitchPlayerCnt-1 {
 			p.applyBid(p.dealerIdx, PitchMinBid)
-			p.appendLog(p.dealerIdx, "stuck", fmt.Sprintf("%s is stuck with %d", p.playerName(p.dealerIdx), PitchMinBid), nil)
+			p.appendLog(p.dealerIdx, "stuck", fmt.Sprintf("%s is stuck with %d", playerName(p.players, p.dealerIdx), PitchMinBid), nil)
 			p.startPlayPhase()
 		}
 		return
@@ -281,7 +281,7 @@ func (p *Pitch) startPlayPhase() {
 	p.currentTrick = nil
 	p.phase = PitchPhasePlay
 	p.appendLog(p.bidWinnerIdx, "bid_won",
-		fmt.Sprintf("%s wins the bid at %d (will lead first card to set trump)", p.playerName(p.bidWinnerIdx), p.currentBid),
+		fmt.Sprintf("%s wins the bid at %d (will lead first card to set trump)", playerName(p.players, p.bidWinnerIdx), p.currentBid),
 		nil)
 }
 
@@ -342,7 +342,7 @@ func (p *Pitch) playCard(playerIdx int, card *Card) {
 		Card:      card,
 	})
 	p.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", p.playerName(playerIdx), cardStr(card)),
+		fmt.Sprintf("%s plays %s", playerName(p.players, playerIdx), cardStr(card)),
 		[]*Card{card})
 
 	if len(p.currentTrick) == PitchPlayerCnt {
@@ -395,7 +395,7 @@ func (p *Pitch) ResolveTrick() {
 	}
 	p.players[winnerIdx].AddTrick(trickCards)
 	p.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", p.playerName(winnerIdx), p.trickNumber),
+		fmt.Sprintf("%s wins trick %d", playerName(p.players, winnerIdx), p.trickNumber),
 		trickCards)
 	p.leadPlayerIdx = winnerIdx
 	if p.trickNumber >= PitchTotalTricks {
@@ -509,18 +509,18 @@ func (p *Pitch) ScoreRound() {
 				pl.SetRoundScore(-p.currentBid)
 				p.appendLog(i, "set_back",
 					fmt.Sprintf("%s set back: bid=%d earned=%d -> %d",
-						p.playerName(i), p.currentBid, points, -p.currentBid), nil)
+						playerName(p.players, i), p.currentBid, points, -p.currentBid), nil)
 			} else {
 				pl.SetRoundScore(points)
 				p.appendLog(i, "bid_made",
 					fmt.Sprintf("%s makes bid: bid=%d earned=%d -> +%d",
-						p.playerName(i), p.currentBid, points, points), nil)
+						playerName(p.players, i), p.currentBid, points, points), nil)
 			}
 		} else {
 			pl.SetRoundScore(points)
 			if points > 0 {
 				p.appendLog(i, "non_bidder_score",
-					fmt.Sprintf("%s scores %d", p.playerName(i), points), nil)
+					fmt.Sprintf("%s scores %d", playerName(p.players, i), points), nil)
 			}
 		}
 	}
@@ -529,7 +529,7 @@ func (p *Pitch) ScoreRound() {
 	}
 	for i := 0; i < PitchPlayerCnt; i++ {
 		p.appendLog(i, "cumulative_score",
-			fmt.Sprintf("%s: total=%d", p.playerName(i), p.players[i].GetCumulativeScore()), nil)
+			fmt.Sprintf("%s: total=%d", playerName(p.players, i), p.players[i].GetCumulativeScore()), nil)
 	}
 	p.checkGameEnd()
 }
@@ -572,17 +572,17 @@ func (p *Pitch) computeRoundPoints() []int {
 	if highPlayer >= 0 {
 		points[highPlayer]++
 		p.appendLog(highPlayer, "score_high",
-			fmt.Sprintf("%s scores High", p.playerName(highPlayer)), nil)
+			fmt.Sprintf("%s scores High", playerName(p.players, highPlayer)), nil)
 	}
 	if lowPlayer >= 0 {
 		points[lowPlayer]++
 		p.appendLog(lowPlayer, "score_low",
-			fmt.Sprintf("%s scores Low", p.playerName(lowPlayer)), nil)
+			fmt.Sprintf("%s scores Low", playerName(p.players, lowPlayer)), nil)
 	}
 	if jackPlayer >= 0 {
 		points[jackPlayer]++
 		p.appendLog(jackPlayer, "score_jack",
-			fmt.Sprintf("%s scores Jack", p.playerName(jackPlayer)), nil)
+			fmt.Sprintf("%s scores Jack", playerName(p.players, jackPlayer)), nil)
 	}
 	// Game ポイント: 全カードのピップ値合計, 最大が単独なら +1
 	gameTotals := make([]int, PitchPlayerCnt)
@@ -608,7 +608,7 @@ func (p *Pitch) computeRoundPoints() []int {
 	if !tied && gameWinner >= 0 && maxTotal > 0 {
 		points[gameWinner]++
 		p.appendLog(gameWinner, "score_game",
-			fmt.Sprintf("%s scores Game (%d pip)", p.playerName(gameWinner), maxTotal), nil)
+			fmt.Sprintf("%s scores Game (%d pip)", playerName(p.players, gameWinner), maxTotal), nil)
 	}
 	return points
 }
@@ -622,7 +622,7 @@ func (p *Pitch) checkGameEnd() {
 		p.phase = PitchPhaseGameEnd
 		p.winnerIdx = bidder
 		p.appendLog(-1, "game_end",
-			fmt.Sprintf("%s wins the game!", p.playerName(p.winnerIdx)), nil)
+			fmt.Sprintf("%s wins the game!", playerName(p.players, p.winnerIdx)), nil)
 		return
 	}
 	maxScore := -1 << 30
@@ -645,7 +645,7 @@ func (p *Pitch) checkGameEnd() {
 	p.phase = PitchPhaseGameEnd
 	p.winnerIdx = winner
 	p.appendLog(-1, "game_end",
-		fmt.Sprintf("%s wins the game!", p.playerName(p.winnerIdx)), nil)
+		fmt.Sprintf("%s wins the game!", playerName(p.players, p.winnerIdx)), nil)
 }
 
 // --- State getters / setters ---
@@ -775,16 +775,6 @@ func pitchSortHand(pl *PitchPlayer) {
 		}
 		return pitchRankValue(ci.GetValue()) < pitchRankValue(cj.GetValue())
 	})
-}
-
-func (p *Pitch) playerName(idx int) string {
-	if idx < 0 || idx >= len(p.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if p.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 func (p *Pitch) getValidPlayIndices(playerIdx int) []int {

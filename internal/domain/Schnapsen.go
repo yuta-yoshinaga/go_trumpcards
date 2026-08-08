@@ -263,7 +263,7 @@ func (s *Schnapsen) ResolveTrick() {
 	s.playerPoints[winnerIdx] += trickPoints
 
 	s.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (%d pt)", s.playerName(winnerIdx), s.trickNumber, trickPoints),
+		fmt.Sprintf("%s wins trick %d (%d pt)", playerName(s.players, winnerIdx), s.trickNumber, trickPoints),
 		trickCards)
 
 	s.leadPlayerIdx = winnerIdx
@@ -503,7 +503,7 @@ func (s *Schnapsen) declareMarriage(playerIdx, cardIndex int) error {
 	s.marriageDeclared[suit] = true
 	s.playerPoints[playerIdx] += bonus
 	s.appendLog(playerIdx, "marriage",
-		fmt.Sprintf("%s declares marriage in %s (+%d)", s.playerName(playerIdx), suitStr(suit), bonus), nil)
+		fmt.Sprintf("%s declares marriage in %s (+%d)", playerName(s.players, playerIdx), suitStr(suit), bonus), nil)
 
 	// 宣言だけで 66 点に達したら即ラウンド終了 (カードは出さない)
 	if s.playerPoints[playerIdx] >= SchnapsenWinThreshold {
@@ -546,7 +546,7 @@ func (s *Schnapsen) playCard(playerIdx int, card *Card) {
 		Card:      card,
 	})
 	s.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", s.playerName(playerIdx), cardStr(card)),
+		fmt.Sprintf("%s plays %s", playerName(s.players, playerIdx), cardStr(card)),
 		[]*Card{card})
 
 	if len(s.currentTrick) == SchnapsenPlayerCnt {
@@ -774,17 +774,6 @@ func (s *Schnapsen) sortHand(p *SchnapsenPlayer) {
 		}
 		return SchnapsenRankOrder(ci) < SchnapsenRankOrder(cj)
 	})
-}
-
-// playerName プレイヤー名を返す (ログ用)
-func (s *Schnapsen) playerName(idx int) string {
-	if idx < 0 || idx >= len(s.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if s.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // playHintReason ヒント理由キーを判定する

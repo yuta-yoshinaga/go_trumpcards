@@ -162,7 +162,7 @@ func (c *CourtPiece) startRound() {
 	courtPieceSortHand(caller)
 
 	c.appendLog(c.callerIdx, "deal",
-		fmt.Sprintf("%s peeks at the first %d cards", c.playerName(c.callerIdx), CourtPiecePeekSize), nil)
+		fmt.Sprintf("%s peeks at the first %d cards", playerName(c.players, c.callerIdx), CourtPiecePeekSize), nil)
 	c.currentPlayerIdx = c.callerIdx
 	c.phase = CourtPiecePhaseTrumpDeclaration
 }
@@ -223,7 +223,7 @@ func (c *CourtPiece) CpuDeclareTrump() {
 func (c *CourtPiece) applyTrumpDeclaration(suit int) {
 	c.trumpSuit = suit
 	c.appendLog(c.callerIdx, "trump",
-		fmt.Sprintf("%s declares %s as trump", c.playerName(c.callerIdx), suitName(suit)), nil)
+		fmt.Sprintf("%s declares %s as trump", playerName(c.players, c.callerIdx), suitName(suit)), nil)
 
 	// Stage 2: 残りのカードを配り切る。
 	c.dealRemaining()
@@ -295,7 +295,7 @@ func (c *CourtPiece) ResolveTrick() {
 	}
 	c.players[winnerIdx].AddTrick(trickCards)
 	c.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", c.playerName(winnerIdx), c.trickNumber), trickCards)
+		fmt.Sprintf("%s wins trick %d", playerName(c.players, winnerIdx), c.trickNumber), trickCards)
 
 	c.leadPlayerIdx = winnerIdx
 	if c.trickNumber >= CourtPieceHandSize {
@@ -549,7 +549,7 @@ func (c *CourtPiece) playCard(playerIdx int, card *Card) {
 		Card:      card,
 	})
 	c.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", c.playerName(playerIdx), cardStr(card)), []*Card{card})
+		fmt.Sprintf("%s plays %s", playerName(c.players, playerIdx), cardStr(card)), []*Card{card})
 	if len(c.currentTrick) == CourtPiecePlayerCnt {
 		c.phase = CourtPiecePhaseTrickEnd
 		return
@@ -631,17 +631,6 @@ func courtPieceSortHand(p *CourtPiecePlayer) {
 		}
 		return courtPieceRank(ci.GetValue()) < courtPieceRank(cj.GetValue())
 	})
-}
-
-// playerName プレイヤー名を返す
-func (c *CourtPiece) playerName(idx int) string {
-	if idx < 0 || idx >= len(c.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if c.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // playHintReason プレイヒントの理由キー

@@ -237,9 +237,9 @@ func (g *FortyFives) applyBid(idx int, bid FortyFivesBid) error {
 	g.bids[idx] = bid
 	g.bidDone[idx] = true
 	if bid != FortyFivesBidPass {
-		g.appendLog(idx, "bid", fmt.Sprintf("%s bids %d", g.playerName(idx), int(bid)), nil)
+		g.appendLog(idx, "bid", fmt.Sprintf("%s bids %d", playerName(g.players, idx), int(bid)), nil)
 	} else {
-		g.appendLog(idx, "bid", fmt.Sprintf("%s passes", g.playerName(idx)), nil)
+		g.appendLog(idx, "bid", fmt.Sprintf("%s passes", playerName(g.players, idx)), nil)
 	}
 	for k := 1; k <= FortyFivesPlayerCnt; k++ {
 		ni := (idx + k) % FortyFivesPlayerCnt
@@ -265,7 +265,7 @@ func (g *FortyFives) resolveBidding() {
 	g.contract = bid
 	g.trumpSuit = g.longestSuit(idx)
 	g.appendLog(idx, "contract",
-		fmt.Sprintf("%s (team %s) bids %d, trump %d", g.playerName(idx), fortyFivesTeamName(FortyFivesTeamOf(idx)), int(bid), g.trumpSuit), nil)
+		fmt.Sprintf("%s (team %s) bids %d, trump %d", playerName(g.players, idx), fortyFivesTeamName(FortyFivesTeamOf(idx)), int(bid), g.trumpSuit), nil)
 	g.leadPlayerIdx = idx // declarer leads
 	g.currentPlayerIdx = g.leadPlayerIdx
 	g.phase = FortyFivesPhasePlay
@@ -365,7 +365,7 @@ func (g *FortyFives) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *FortyFives) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == FortyFivesPlayerCnt {
 		g.phase = FortyFivesPhaseTrickEnd
@@ -388,7 +388,7 @@ func (g *FortyFives) ResolveTrick() {
 	g.players[winnerIdx].IncRoundTricks()
 	g.roundTeamPts[FortyFivesTeamOf(winnerIdx)] += FortyFivesPointsPerTrick
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (+%d)", g.playerName(winnerIdx), g.trickNumber, FortyFivesPointsPerTrick), trickCards)
+		fmt.Sprintf("%s wins trick %d (+%d)", playerName(g.players, winnerIdx), g.trickNumber, FortyFivesPointsPerTrick), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= FortyFivesTrickCount {
@@ -610,17 +610,6 @@ func (g *FortyFives) fortyFivesSortHand(p *FortyFivesPlayer) {
 	for _, c := range cards {
 		p.AddCard(c)
 	}
-}
-
-// playerName プレイヤー名を返す。
-func (g *FortyFives) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // indexOfPlayerInTrick currentTrick 内で playerIdx の札の位置を返す (-1=なし)。

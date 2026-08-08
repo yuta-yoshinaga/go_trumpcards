@@ -219,7 +219,7 @@ func (t *Tarneeb) applyBid(playerIdx, bid int) {
 		t.highestBid = bid
 		t.bidWinnerIdx = playerIdx
 	}
-	t.appendLog(playerIdx, "bid", fmt.Sprintf("%s bids %s", t.playerName(playerIdx), bidLabel), nil)
+	t.appendLog(playerIdx, "bid", fmt.Sprintf("%s bids %s", playerName(t.players, playerIdx), bidLabel), nil)
 
 	t.bidPlayerIdx = (t.bidPlayerIdx + 1) % TarneebPlayerCnt
 	// 4人ビッドし終えたらディーラーの左隣に戻り、フェーズ遷移を判定する。
@@ -240,7 +240,7 @@ func (t *Tarneeb) finishBidPhase() {
 		return
 	}
 	t.appendLog(t.bidWinnerIdx, "bid_win",
-		fmt.Sprintf("%s wins the auction with %d", t.playerName(t.bidWinnerIdx), t.highestBid), nil)
+		fmt.Sprintf("%s wins the auction with %d", playerName(t.players, t.bidWinnerIdx), t.highestBid), nil)
 	t.phase = TarneebPhaseTrumpDeclaration
 }
 
@@ -278,7 +278,7 @@ func (t *Tarneeb) CpuDeclareTrump() {
 func (t *Tarneeb) applyTrumpDeclaration(suit int) {
 	t.trumpSuit = suit
 	t.appendLog(t.bidWinnerIdx, "trump",
-		fmt.Sprintf("%s declares %s as trump", t.playerName(t.bidWinnerIdx), suitName(suit)), nil)
+		fmt.Sprintf("%s declares %s as trump", playerName(t.players, t.bidWinnerIdx), suitName(suit)), nil)
 	t.leadPlayerIdx = t.bidWinnerIdx
 	t.currentPlayerIdx = t.bidWinnerIdx
 	t.trickNumber = 1
@@ -345,7 +345,7 @@ func (t *Tarneeb) ResolveTrick() {
 	}
 	t.players[winnerIdx].AddTrick(trickCards)
 	t.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", t.playerName(winnerIdx), t.trickNumber), trickCards)
+		fmt.Sprintf("%s wins trick %d", playerName(t.players, winnerIdx), t.trickNumber), trickCards)
 
 	t.leadPlayerIdx = winnerIdx
 	if t.trickNumber >= TarneebHandSize {
@@ -622,7 +622,7 @@ func (t *Tarneeb) playCard(playerIdx int, card *Card) {
 		Card:      card,
 	})
 	t.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", t.playerName(playerIdx), cardStr(card)), []*Card{card})
+		fmt.Sprintf("%s plays %s", playerName(t.players, playerIdx), cardStr(card)), []*Card{card})
 	if len(t.currentTrick) == TarneebPlayerCnt {
 		t.phase = TarneebPhaseTrickEnd
 		return
@@ -691,17 +691,6 @@ func tarneebSortHand(p *TarneebPlayer) {
 		// A > K > … ranking.
 		return tarneebRank(ci.GetValue()) < tarneebRank(cj.GetValue())
 	})
-}
-
-// playerName プレイヤー名を返す
-func (t *Tarneeb) playerName(idx int) string {
-	if idx < 0 || idx >= len(t.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if t.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // isValidSuit 4スートのうちいずれかか

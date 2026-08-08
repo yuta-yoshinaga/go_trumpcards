@@ -240,7 +240,7 @@ func (g *Tute) applyMarriage(playerIdx, suit int) {
 	team := TuteTeamOf(playerIdx)
 	g.roundTeamPts[team] += pts
 	g.appendLog(playerIdx, "marriage",
-		fmt.Sprintf("%s declares a %s marriage (+%d)", g.playerName(playerIdx), suitStr(suit), pts), nil)
+		fmt.Sprintf("%s declares a %s marriage (+%d)", playerName(g.players, playerIdx), suitStr(suit), pts), nil)
 }
 
 // hasTute プレイヤーが 4 枚の K または 4 枚の Q を持つか。
@@ -255,7 +255,7 @@ func (g *Tute) applyTute(playerIdx int) {
 	g.winnerTeam = team
 	g.phase = TutePhaseGameEnd
 	g.appendLog(playerIdx, "tute",
-		fmt.Sprintf("%s declares TUTE! Team %s wins the game!", g.playerName(playerIdx), teamName(team)), nil)
+		fmt.Sprintf("%s declares TUTE! Team %s wins the game!", playerName(g.players, playerIdx), teamName(team)), nil)
 }
 
 // CpuPlay 現在の手番が CPU の場合に 1 ターン実行する。
@@ -291,7 +291,7 @@ func (g *Tute) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Tute) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == TutePlayerCnt {
 		g.phase = TutePhaseTrickEnd
@@ -321,7 +321,7 @@ func (g *Tute) ResolveTrick() {
 		bonus = fmt.Sprintf(" +%d last", TuteLastTrickBonus)
 	}
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (+%d%s)", g.playerName(winnerIdx), g.trickNumber, pts, bonus), trickCards)
+		fmt.Sprintf("%s wins trick %d (+%d%s)", playerName(g.players, winnerIdx), g.trickNumber, pts, bonus), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	// Keep currentTrick intact through TrickEnd so the resolved trick stays
@@ -527,17 +527,6 @@ func tuteSortHand(p *TutePlayer) {
 	for _, c := range cards {
 		p.AddCard(c)
 	}
-}
-
-// playerName プレイヤー名を返す。
-func (g *Tute) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // indexOfPlayerInTrick currentTrick 内で playerIdx の札の位置を返す (-1=なし)。

@@ -364,7 +364,7 @@ func (g *Gaigel) declareMarriage(playerIdx, cardIndex int) error {
 	g.roundMarriage[team] += bonus
 	g.appendLog(playerIdx, "marriage",
 		fmt.Sprintf("%s declares marriage in %s (+%d for team %d)",
-			g.playerName(playerIdx), suitStr(suit), bonus, team), nil)
+			playerName(g.players, playerIdx), suitStr(suit), bonus, team), nil)
 
 	played := player.RemoveCard(cardIndex)
 	g.playCard(playerIdx, played)
@@ -401,7 +401,7 @@ func (g *Gaigel) playCard(playerIdx int, card *Card) {
 		Card:      card,
 	})
 	g.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)),
+		fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)),
 		[]*Card{card})
 
 	if len(g.currentTrick) == GaigelPlayerCnt {
@@ -429,7 +429,7 @@ func (g *Gaigel) ResolveTrick() {
 	g.roundPoints[g.players[winnerIdx].GetTeam()] += trickPoints
 
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (%d pt)", g.playerName(winnerIdx), g.trickNumber, trickPoints),
+		fmt.Sprintf("%s wins trick %d (%d pt)", playerName(g.players, winnerIdx), g.trickNumber, trickPoints),
 		trickCards)
 
 	g.leadPlayerIdx = winnerIdx
@@ -1031,16 +1031,6 @@ func (g *Gaigel) sortHand(p *GaigelPlayer) {
 		}
 		return GaigelRankOrder(ci) < GaigelRankOrder(cj)
 	})
-}
-
-func (g *Gaigel) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // --- Test-only helpers ---

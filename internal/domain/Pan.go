@@ -256,7 +256,7 @@ func (g *Pan) drawFromStock() error {
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", g.playerName(g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, g.currentPlayerIdx)), nil)
 	g.phase = PanPhasePlay
 	return nil
 }
@@ -270,7 +270,7 @@ func (g *Pan) drawFromDiscard() error {
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s draws %s from discard", g.playerName(g.currentPlayerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s draws %s from discard", playerName(g.players, g.currentPlayerIdx), cardStr(card)), []*Card{card})
 	g.phase = PanPhasePlay
 	return nil
 }
@@ -321,7 +321,7 @@ func (g *Pan) executeMeld(playerIdx int, cardIndices []int) error {
 
 	cardsCopy := make([]*Card, len(meld))
 	copy(cardsCopy, meld)
-	g.appendLog(playerIdx, "meld", fmt.Sprintf("%s melds %s", g.playerName(playerIdx), formatCards(meld)), cardsCopy)
+	g.appendLog(playerIdx, "meld", fmt.Sprintf("%s melds %s", playerName(g.players, playerIdx), formatCards(meld)), cardsCopy)
 
 	g.payChipConditions(playerIdx, meld)
 	g.checkPanDeclaration(playerIdx)
@@ -359,7 +359,7 @@ func (g *Pan) executeLayoff(playerIdx, meldOwner, meldIdx, cardIndex int) error 
 	owner.AppendToLaidMeld(meldIdx, card)
 	player.RemoveCard(cardIndex)
 
-	g.appendLog(playerIdx, "layoff", fmt.Sprintf("%s lays off %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "layoff", fmt.Sprintf("%s lays off %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	// レイオフ先の所有者が 11 枚に到達したらその所有者があがる。
 	g.checkPanDeclaration(meldOwner)
@@ -382,7 +382,7 @@ func (g *Pan) payChipConditions(playerIdx int, meld []*Card) {
 		}
 	}
 	g.players[playerIdx].AddChips(units * opponents)
-	g.appendLog(playerIdx, "chips", fmt.Sprintf("%s collects %d chip(s) from each opponent", g.playerName(playerIdx), units), nil)
+	g.appendLog(playerIdx, "chips", fmt.Sprintf("%s collects %d chip(s) from each opponent", playerName(g.players, playerIdx), units), nil)
 }
 
 // checkPanDeclaration playerIdx が 11 枚を場に出していれば「パン」あがりとしてラウンドを終える。
@@ -395,7 +395,7 @@ func (g *Pan) checkPanDeclaration(playerIdx int) {
 	}
 	g.panDeclarerIdx = playerIdx
 	g.players[playerIdx].SetIsFinished(true)
-	g.appendLog(playerIdx, "pan", fmt.Sprintf("%s declares Pan!", g.playerName(playerIdx)), nil)
+	g.appendLog(playerIdx, "pan", fmt.Sprintf("%s declares Pan!", playerName(g.players, playerIdx)), nil)
 	g.enterRoundEnd()
 }
 
@@ -416,7 +416,7 @@ func (g *Pan) applyDiscard(cardIndex int) error {
 	}
 	discarded := player.RemoveCard(cardIndex)
 	g.discardPile = append(g.discardPile, discarded)
-	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", g.playerName(g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
 	g.advanceTurn()
 	return nil
 }
@@ -609,7 +609,7 @@ func (g *Pan) scoreRound() {
 	}
 
 	if g.panDeclarerIdx >= 0 {
-		g.appendLog(g.panDeclarerIdx, "round_win", fmt.Sprintf("%s wins the round with Pan", g.playerName(g.panDeclarerIdx)), nil)
+		g.appendLog(g.panDeclarerIdx, "round_win", fmt.Sprintf("%s wins the round with Pan", playerName(g.players, g.panDeclarerIdx)), nil)
 	}
 
 	for i := range g.players {
@@ -630,7 +630,7 @@ func (g *Pan) finalizeGameEnd() {
 			g.winnerIdx = i
 		}
 	}
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game with %d points!", g.playerName(g.winnerIdx), minScore), nil)
+	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game with %d points!", playerName(g.players, g.winnerIdx), minScore), nil)
 }
 
 // --- Getters / Setters ---
@@ -742,16 +742,6 @@ func (g *Pan) sortHand(playerIdx int) {
 		}
 		return ci.GetValue() < cj.GetValue()
 	})
-}
-
-func (g *Pan) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // --- Scoring / meld helpers ---

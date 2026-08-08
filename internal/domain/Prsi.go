@@ -305,7 +305,7 @@ func (g *Prsi) isValidPlay(card *Card) bool {
 func (g *Prsi) playCard(playerIdx int, card *Card) {
 	g.discardPile = append(g.discardPile, card)
 
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	// アクションカードの状態更新
 	switch card.GetValue() {
@@ -326,7 +326,7 @@ func (g *Prsi) playCard(playerIdx int, card *Card) {
 		g.winnerIdx = playerIdx
 		g.gameEndFlag = true
 		g.phase = PrsiPhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", g.playerName(playerIdx)), nil)
+		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, playerIdx)), nil)
 		return
 	}
 
@@ -345,7 +345,7 @@ func (g *Prsi) advanceTurn() {
 func (g *Prsi) drawCard(playerIdx int) error {
 	if g.penaltyDrawCount > 0 {
 		drawn := g.drawCards(playerIdx, g.penaltyDrawCount)
-		g.appendLog(playerIdx, "take_penalty", fmt.Sprintf("%s takes %d penalty cards", g.playerName(playerIdx), drawn), nil)
+		g.appendLog(playerIdx, "take_penalty", fmt.Sprintf("%s takes %d penalty cards", playerName(g.players, playerIdx), drawn), nil)
 		g.penaltyDrawCount = 0
 		g.sortHand(playerIdx)
 		g.advanceTurn()
@@ -358,7 +358,7 @@ func (g *Prsi) drawCard(playerIdx int) error {
 
 	if len(g.drawPile) == 0 {
 		// 引けるカードがない→パス
-		g.appendLog(playerIdx, "pass", fmt.Sprintf("%s passes (no cards to draw)", g.playerName(playerIdx)), nil)
+		g.appendLog(playerIdx, "pass", fmt.Sprintf("%s passes (no cards to draw)", playerName(g.players, playerIdx)), nil)
 		g.advanceTurn()
 		return nil
 	}
@@ -368,7 +368,7 @@ func (g *Prsi) drawCard(playerIdx int) error {
 	g.players[playerIdx].AddCard(card)
 	g.sortHand(playerIdx)
 
-	g.appendLog(playerIdx, "draw", fmt.Sprintf("%s draws a card", g.playerName(playerIdx)), nil)
+	g.appendLog(playerIdx, "draw", fmt.Sprintf("%s draws a card", playerName(g.players, playerIdx)), nil)
 
 	// プルシーでは引いたら手番終了 (引いたカードを即座に出すことはできない)
 	g.advanceTurn()
@@ -446,17 +446,6 @@ func (g *Prsi) sortHand(playerIdx int) {
 		}
 		return ci.GetValue() < cj.GetValue()
 	})
-}
-
-// playerName プレイヤー名を返す
-func (g *Prsi) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // --- CPU AI ---

@@ -440,14 +440,14 @@ func (g *Koenigrufen) CpuBid() {
 func (g *Koenigrufen) applyBid(idx int, bid KoenigrufenBid) {
 	g.highestBid = bid
 	g.highestBidder = idx
-	g.appendLog(idx, "bid", fmt.Sprintf("%s bids %s", g.playerName(idx), koenigrufenBidName(bid)), nil)
+	g.appendLog(idx, "bid", fmt.Sprintf("%s bids %s", playerName(g.players, idx), koenigrufenBidName(bid)), nil)
 	g.advanceBid()
 }
 
 // applyPass パスを適用する。
 func (g *Koenigrufen) applyPass(idx int) {
 	g.passed[idx] = true
-	g.appendLog(idx, "pass", fmt.Sprintf("%s passes", g.playerName(idx)), nil)
+	g.appendLog(idx, "pass", fmt.Sprintf("%s passes", playerName(g.players, idx)), nil)
 	g.advanceBid()
 }
 
@@ -468,12 +468,12 @@ func (g *Koenigrufen) finalizeBid() {
 		g.declarerIdx = (g.dealerIdx + 1) % KoenigrufenPlayerCnt
 		g.contract = KoenigrufenBidRufer
 		g.appendLog(g.declarerIdx, "forced",
-			fmt.Sprintf("all passed — %s is forced to take Rufer", g.playerName(g.declarerIdx)), nil)
+			fmt.Sprintf("all passed — %s is forced to take Rufer", playerName(g.players, g.declarerIdx)), nil)
 	} else {
 		g.declarerIdx = g.highestBidder
 		g.contract = g.highestBid
 		g.appendLog(g.declarerIdx, "win_bid",
-			fmt.Sprintf("%s takes the contract %s", g.playerName(g.declarerIdx), koenigrufenBidName(g.contract)), nil)
+			fmt.Sprintf("%s takes the contract %s", playerName(g.players, g.declarerIdx), koenigrufenBidName(g.contract)), nil)
 	}
 	g.enterCallOrSolo()
 }
@@ -485,7 +485,7 @@ func (g *Koenigrufen) enterCallOrSolo() {
 		g.calledKing = -1
 		g.partnerIdx = -1
 		g.appendLog(g.declarerIdx, "solo",
-			fmt.Sprintf("%s holds all four kings and plays solo", g.playerName(g.declarerIdx)), nil)
+			fmt.Sprintf("%s holds all four kings and plays solo", playerName(g.players, g.declarerIdx)), nil)
 		g.finalizeCall()
 		return
 	}
@@ -534,7 +534,7 @@ func (g *Koenigrufen) applyCallKing(suit int) {
 	g.partnerIdx = g.findKingHolder(suit)
 	// ログにはパートナーの正体を書かず、呼んだキングのみを記録する。
 	g.appendLog(g.declarerIdx, "call_king",
-		fmt.Sprintf("%s calls the King of suit %d", g.playerName(g.declarerIdx), suit), nil)
+		fmt.Sprintf("%s calls the King of suit %d", playerName(g.players, g.declarerIdx), suit), nil)
 	g.finalizeCall()
 }
 
@@ -654,7 +654,7 @@ func (g *Koenigrufen) doDiscard(cardIndices []int) error {
 	g.stash = discarded
 	g.stashOwner = 0
 	g.appendLog(g.declarerIdx, "discard",
-		fmt.Sprintf("%s discards %d cards to the talon", g.playerName(g.declarerIdx), len(discarded)), discarded)
+		fmt.Sprintf("%s discards %d cards to the talon", playerName(g.players, g.declarerIdx), len(discarded)), discarded)
 	g.sortAllHands()
 	g.startPlay()
 	return nil
@@ -755,7 +755,7 @@ func (g *Koenigrufen) playCard(playerIdx int, card *Card) {
 	if koenigrufenIsCalledKing(card, g.calledKing) {
 		g.partnerRevealed = true
 	}
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), koenigrufenCardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), koenigrufenCardStr(card)), []*Card{card})
 	if len(g.currentTrick) == KoenigrufenPlayerCnt {
 		g.phase = KoenigrufenPhaseTrickEnd
 	} else {
@@ -776,7 +776,7 @@ func (g *Koenigrufen) ResolveTrick() {
 	}
 	g.players[winnerIdx].AddTrick(allCards)
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", g.playerName(winnerIdx), g.trickNumber), allCards)
+		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), allCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= KoenigrufenTrickCount {
@@ -834,7 +834,7 @@ func (g *Koenigrufen) enterRoundEnd() {
 	}
 	g.appendLog(-1, "round_score",
 		fmt.Sprintf("deal %d: declarer(%s) %s teamPts=%d/%d won=%t base=%d",
-			g.roundNumber, g.playerName(g.declarerIdx), koenigrufenBidName(g.contract),
+			g.roundNumber, playerName(g.players, g.declarerIdx), koenigrufenBidName(g.contract),
 			bd.TeamPoints, KoenigrufenTotalPoints, bd.Won, bd.Base), nil)
 	g.checkGameEnd()
 }
@@ -897,7 +897,7 @@ func (g *Koenigrufen) checkGameEnd() {
 		g.appendLog(-1, "game_end", "the match ends in a draw", nil)
 	} else {
 		g.winnerPlayer = leader
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", g.playerName(leader)), nil)
+		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
 	}
 }
 
@@ -1523,17 +1523,6 @@ func koenigrufenSortHand(p *KoenigrufenPlayer) {
 	for _, c := range cards {
 		p.AddCard(c)
 	}
-}
-
-// playerName プレイヤー名を返す。
-func (g *Koenigrufen) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // isHumanBidTurn 現在の入札手番が人間か。

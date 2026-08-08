@@ -477,7 +477,7 @@ func (g *Basra) applyPlay(playerIdx, handIdx int, tableIdxs []int) {
 	if len(tableIdxs) == 0 {
 		// トレイル: 場に置く。
 		g.state.tableCards = append(g.state.tableCards, card)
-		g.appendLog(playerIdx, "trail", fmt.Sprintf("%s trails %s", g.playerName(playerIdx), cardStr(card)),
+		g.appendLog(playerIdx, "trail", fmt.Sprintf("%s trails %s", playerName(g.players, playerIdx), cardStr(card)),
 			[]*Card{card})
 		g.advanceTurn()
 		return
@@ -498,15 +498,15 @@ func (g *Basra) applyPlay(playerIdx, handIdx int, tableIdxs []int) {
 	if isBasra {
 		player.IncrementBasra()
 		g.appendLog(playerIdx, "basra",
-			fmt.Sprintf("%s scores a Basra! captured %d card(s)", g.playerName(playerIdx), len(captured)-1),
+			fmt.Sprintf("%s scores a Basra! captured %d card(s)", playerName(g.players, playerIdx), len(captured)-1),
 			captured)
 	} else if basraIsJack(card) {
 		g.appendLog(playerIdx, "sweep",
-			fmt.Sprintf("%s sweeps %d card(s) with a Jack", g.playerName(playerIdx), len(captured)-1),
+			fmt.Sprintf("%s sweeps %d card(s) with a Jack", playerName(g.players, playerIdx), len(captured)-1),
 			captured)
 	} else {
 		g.appendLog(playerIdx, "capture",
-			fmt.Sprintf("%s captures %d card(s)", g.playerName(playerIdx), len(captured)-1),
+			fmt.Sprintf("%s captures %d card(s)", playerName(g.players, playerIdx), len(captured)-1),
 			captured)
 	}
 	g.advanceTurn()
@@ -814,16 +814,6 @@ func (g *Basra) sortHumanHand() {
 			p.AddCard(c)
 		}
 	}
-}
-
-func (g *Basra) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 func (g *Basra) appendLog(playerIdx int, actionType, detail string, cards []*Card) {

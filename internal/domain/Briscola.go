@@ -216,7 +216,7 @@ func (b *Briscola) ResolveTrick() {
 	b.playerPoints[winnerIdx] += trickPoints
 
 	b.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (%d pt)", b.playerName(winnerIdx), b.trickNumber, trickPoints),
+		fmt.Sprintf("%s wins trick %d (%d pt)", playerName(b.players, winnerIdx), b.trickNumber, trickPoints),
 		trickCards)
 
 	b.leadPlayerIdx = winnerIdx
@@ -411,7 +411,7 @@ func (b *Briscola) playCard(playerIdx int, card *Card) {
 		Card:      card,
 	})
 	b.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", b.playerName(playerIdx), cardStr(card)),
+		fmt.Sprintf("%s plays %s", playerName(b.players, playerIdx), cardStr(card)),
 		[]*Card{card})
 
 	if len(b.currentTrick) == BriscolaPlayerCnt {
@@ -557,17 +557,6 @@ func (b *Briscola) sortHand(p *BriscolaPlayer) {
 		}
 		return BriscolaRankOrder(ci) < BriscolaRankOrder(cj)
 	})
-}
-
-// playerName プレイヤー名を返す (ログ用)
-func (b *Briscola) playerName(idx int) string {
-	if idx < 0 || idx >= len(b.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if b.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // playHintReason ヒント理由キーを判定する

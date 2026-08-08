@@ -329,7 +329,7 @@ func (b *Bezique) PlayerSkipMeld() error {
 	if !b.players[b.currentPlayerIdx].GetIsHuman() {
 		return ErrNotHumanTurn
 	}
-	b.appendLog(b.currentPlayerIdx, "meld_skip", fmt.Sprintf("%s declares no meld", b.playerName(b.currentPlayerIdx)), nil)
+	b.appendLog(b.currentPlayerIdx, "meld_skip", fmt.Sprintf("%s declares no meld", playerName(b.players, b.currentPlayerIdx)), nil)
 	b.afterMeld()
 	return nil
 }
@@ -345,7 +345,7 @@ func (b *Bezique) CpuMeld() {
 	}
 	melds := b.availableMelds(idx)
 	if len(melds) == 0 {
-		b.appendLog(idx, "meld_skip", fmt.Sprintf("%s declares no meld", b.playerName(idx)), nil)
+		b.appendLog(idx, "meld_skip", fmt.Sprintf("%s declares no meld", playerName(b.players, idx)), nil)
 		b.afterMeld()
 		return
 	}
@@ -544,7 +544,7 @@ func (b *Bezique) GetHint() *BeziqueHint {
 // playCard カードをプレイする共通処理。2枚出そろったらトリックを解決する。
 func (b *Bezique) playCard(playerIdx int, card *Card) {
 	b.currentTrick = append(b.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	b.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", b.playerName(playerIdx), cardStr(card)), []*Card{card})
+	b.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(b.players, playerIdx), cardStr(card)), []*Card{card})
 	if len(b.currentTrick) == BeziquePlayerCnt {
 		b.resolveTrick()
 		return
@@ -566,14 +566,14 @@ func (b *Bezique) resolveTrick() {
 	b.leadPlayerIdx = winnerIdx
 	b.currentPlayerIdx = winnerIdx
 	b.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (%d pt)", b.playerName(winnerIdx), b.trickNumber, trickPoints), trickCards)
+		fmt.Sprintf("%s wins trick %d (%d pt)", playerName(b.players, winnerIdx), b.trickNumber, trickPoints), trickCards)
 
 	if b.IsEndgame() {
 		// 第2フェーズ: 役宣言・補充なし。
 		if b.allHandsEmpty() {
 			b.dealPoints[winnerIdx] += BeziqueLastTrickBonus
 			b.appendLog(winnerIdx, "last_trick",
-				fmt.Sprintf("%s takes the last trick (+%d)", b.playerName(winnerIdx), BeziqueLastTrickBonus), nil)
+				fmt.Sprintf("%s takes the last trick (+%d)", playerName(b.players, winnerIdx), BeziqueLastTrickBonus), nil)
 			b.scoreDeal()
 			return
 		}
@@ -837,7 +837,7 @@ func (b *Bezique) applyMeld(playerIdx int, m BeziqueMeld) {
 	b.dealPoints[playerIdx] += m.Points
 	b.dealMeldPoints[playerIdx] += m.Points
 	b.appendLog(playerIdx, "meld",
-		fmt.Sprintf("%s declares %s (+%d)", b.playerName(playerIdx), beziqueMeldName(m), m.Points), nil)
+		fmt.Sprintf("%s declares %s (+%d)", playerName(b.players, playerIdx), beziqueMeldName(m), m.Points), nil)
 }
 
 // beziqueMeldBit メルドの宣言済みビット位置を返す。
@@ -924,17 +924,6 @@ func (b *Bezique) sortHand(p *BeziquePlayer) {
 		}
 		return BeziqueRankOrder(ci) < BeziqueRankOrder(cj)
 	})
-}
-
-// playerName プレイヤー名を返す (ログ用)
-func (b *Bezique) playerName(idx int) string {
-	if idx < 0 || idx >= len(b.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if b.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // playHintReason ヒント理由キーを判定する

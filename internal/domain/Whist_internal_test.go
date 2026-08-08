@@ -178,9 +178,9 @@ func TestWhist_findHumanIdx(t *testing.T) {
 
 func TestWhist_playerName(t *testing.T) {
 	w := newInternalTestWhist()
-	assert.Equal(t, "You", w.playerName(0))
-	assert.Equal(t, "CPU 1", w.playerName(1))
-	assert.Contains(t, w.playerName(-1), "Player")
+	assert.Equal(t, "You", playerName(w.players, 0))
+	assert.Equal(t, "CPU 1", playerName(w.players, 1))
+	assert.Contains(t, playerName(w.players, -1), "Player")
 }
 
 // TestWhist_cpuPlayHard_Follow_OverCardLowest pins the follow-to-win branch:

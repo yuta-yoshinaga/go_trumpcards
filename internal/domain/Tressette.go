@@ -212,7 +212,7 @@ func (g *Tressette) ResolveTrick() {
 		bonus = " +ultima"
 	}
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (+%d/3%s)", g.playerName(winnerIdx), g.trickNumber, thirds, bonus),
+		fmt.Sprintf("%s wins trick %d (+%d/3%s)", playerName(g.players, winnerIdx), g.trickNumber, thirds, bonus),
 		trickCards)
 
 	g.leadPlayerIdx = winnerIdx
@@ -354,7 +354,7 @@ func (g *Tressette) playCard(playerIdx int, card *Card) {
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == TressettePlayerCnt {
 		g.phase = TressettePhaseTrickEnd
@@ -427,17 +427,6 @@ func tressetteSortHand(p *TressettePlayer) {
 		}
 		return tressetteStrength(ci.GetValue()) < tressetteStrength(cj.GetValue())
 	})
-}
-
-// playerName プレイヤー名を返す
-func (g *Tressette) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // teamName チーム表示名 (0=A, 1=B)

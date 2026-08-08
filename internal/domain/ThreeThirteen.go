@@ -246,7 +246,7 @@ func (g *ThreeThirteen) drawFromStock() error {
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", g.playerName(g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, g.currentPlayerIdx)), nil)
 	g.phase = ThreeThirteenPhaseDiscard
 	return nil
 }
@@ -260,7 +260,7 @@ func (g *ThreeThirteen) drawFromDiscard() error {
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s draws %s from discard", g.playerName(g.currentPlayerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s draws %s from discard", playerName(g.players, g.currentPlayerIdx), cardStr(card)), []*Card{card})
 	g.phase = ThreeThirteenPhaseDiscard
 	return nil
 }
@@ -329,13 +329,13 @@ func (g *ThreeThirteen) applyDiscard(cardIndex int, knock bool) error {
 
 	discarded := player.RemoveCard(cardIndex)
 	g.discardPile = append(g.discardPile, discarded)
-	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", g.playerName(g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
 
 	if knock {
 		g.knockerIdx = g.currentPlayerIdx
 		player.SetIsFinished(true)
 		g.finalTurnsLeft = len(g.players) - 1
-		g.appendLog(g.currentPlayerIdx, "knock", fmt.Sprintf("%s knocks!", g.playerName(g.currentPlayerIdx)), nil)
+		g.appendLog(g.currentPlayerIdx, "knock", fmt.Sprintf("%s knocks!", playerName(g.players, g.currentPlayerIdx)), nil)
 	}
 
 	g.advanceTurn()
@@ -485,7 +485,7 @@ func (g *ThreeThirteen) finishRound() {
 		g.players[i].CommitRoundScore()
 	}
 	if g.knockerIdx >= 0 {
-		g.appendLog(g.knockerIdx, "round_end", fmt.Sprintf("Round %d ends (%s knocked)", g.round, g.playerName(g.knockerIdx)), nil)
+		g.appendLog(g.knockerIdx, "round_end", fmt.Sprintf("Round %d ends (%s knocked)", g.round, playerName(g.players, g.knockerIdx)), nil)
 	} else {
 		g.appendLog(-1, "round_end", fmt.Sprintf("Round %d ends (stock out)", g.round), nil)
 	}
@@ -509,7 +509,7 @@ func (g *ThreeThirteen) finalizeGameEnd() {
 			g.winnerIdx = i
 		}
 	}
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", g.playerName(g.winnerIdx)), nil)
+	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, g.winnerIdx)), nil)
 }
 
 // --- Getters / Setters ---
@@ -629,16 +629,6 @@ func (g *ThreeThirteen) sortHand(playerIdx int) {
 	for _, c := range cards {
 		p.AddCard(c)
 	}
-}
-
-func (g *ThreeThirteen) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // collectThreeThirteenCards プレイヤーの手札を []*Card で返す

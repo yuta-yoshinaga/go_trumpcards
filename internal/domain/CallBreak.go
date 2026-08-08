@@ -163,7 +163,7 @@ func (cb *CallBreak) PlayerBid(bid int) error {
 	}
 
 	cb.players[humanIdx].SetBid(bid)
-	cb.appendLog(humanIdx, "bid", fmt.Sprintf("%s bids %d", cb.playerName(humanIdx), bid), nil)
+	cb.appendLog(humanIdx, "bid", fmt.Sprintf("%s bids %d", playerName(cb.players, humanIdx), bid), nil)
 
 	cb.bidPlayerIdx++
 	cb.checkBidComplete()
@@ -184,7 +184,7 @@ func (cb *CallBreak) CpuBid() {
 
 	bid := cb.cpuSelectBid(cb.bidPlayerIdx)
 	cb.players[cb.bidPlayerIdx].SetBid(bid)
-	cb.appendLog(cb.bidPlayerIdx, "bid", fmt.Sprintf("%s bids %d", cb.playerName(cb.bidPlayerIdx), bid), nil)
+	cb.appendLog(cb.bidPlayerIdx, "bid", fmt.Sprintf("%s bids %d", playerName(cb.players, cb.bidPlayerIdx), bid), nil)
 
 	cb.bidPlayerIdx++
 	cb.checkBidComplete()
@@ -251,7 +251,7 @@ func (cb *CallBreak) ResolveTrick() {
 	}
 
 	cb.players[winnerIdx].AddTrick(trickCards)
-	cb.appendLog(winnerIdx, "trick_win", fmt.Sprintf("%s wins trick %d", cb.playerName(winnerIdx), cb.trickNumber), trickCards)
+	cb.appendLog(winnerIdx, "trick_win", fmt.Sprintf("%s wins trick %d", playerName(cb.players, winnerIdx), cb.trickNumber), trickCards)
 
 	cb.leadPlayerIdx = winnerIdx
 
@@ -299,7 +299,7 @@ func (cb *CallBreak) ScoreRound() {
 		p.SetRoundScore(score)
 
 		cb.appendLog(i, "round_score", fmt.Sprintf("%s: bid=%d tricks=%d round=%s",
-			cb.playerName(i), bid, tricks, FormatCallBreakScore(score)), nil)
+			playerName(cb.players, i), bid, tricks, FormatCallBreakScore(score)), nil)
 	}
 
 	// 累積スコアに加算
@@ -310,7 +310,7 @@ func (cb *CallBreak) ScoreRound() {
 	// スコアログ
 	for i := 0; i < CallBreakPlayerCnt; i++ {
 		cb.appendLog(i, "cumulative_score", fmt.Sprintf("%s: total=%s",
-			cb.playerName(i), FormatCallBreakScore(cb.players[i].GetCumulativeScore())), nil)
+			playerName(cb.players, i), FormatCallBreakScore(cb.players[i].GetCumulativeScore())), nil)
 	}
 
 	cb.checkGameEnd()
@@ -444,7 +444,7 @@ func (cb *CallBreak) playCard(playerIdx int, card *Card) {
 		cb.spadesBroken = true
 	}
 
-	cb.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", cb.playerName(playerIdx), cardStr(card)), []*Card{card})
+	cb.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(cb.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(cb.currentTrick) == CallBreakPlayerCnt {
 		cb.phase = CallBreakPhaseTrickEnd
@@ -528,7 +528,7 @@ func (cb *CallBreak) checkGameEnd() {
 			cb.winnerIdx = i
 		}
 	}
-	cb.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", cb.playerName(cb.winnerIdx)), nil)
+	cb.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(cb.players, cb.winnerIdx)), nil)
 }
 
 // sortAllHands 全プレイヤーの手札をソートする (スート → 値)
@@ -546,17 +546,6 @@ func callBreakSortHand(p *CallBreakPlayer) {
 		}
 		return ci.GetValue() < cj.GetValue()
 	})
-}
-
-// playerName プレイヤー名を返す
-func (cb *CallBreak) playerName(idx int) string {
-	if idx < 0 || idx >= len(cb.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if cb.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // GetHint ヒントを取得する

@@ -185,10 +185,10 @@ func TestTTJInternal_StartPlayPhase(t *testing.T) {
 
 func TestTTJInternal_PlayerName(t *testing.T) {
 	ttj := newInternalTTJ()
-	assert.Equal(t, "You", ttj.playerName(0))
-	assert.Equal(t, "CPU 1", ttj.playerName(1))
-	assert.Equal(t, "Player -1", ttj.playerName(-1))
-	assert.Equal(t, "Player 99", ttj.playerName(99))
+	assert.Equal(t, "You", playerName(ttj.players, 0))
+	assert.Equal(t, "CPU 1", playerName(ttj.players, 1))
+	assert.Equal(t, "Player -1", playerName(ttj.players, -1))
+	assert.Equal(t, "Player 99", playerName(ttj.players, 99))
 }
 
 func TestTTJInternal_SortAllHands_StableOrder(t *testing.T) {

@@ -245,7 +245,7 @@ func (g *CatchTen) ResolveTrick() {
 		winner.SetRoundScore(winner.GetRoundScore() + honor)
 	}
 
-	winnerName := g.playerName(winnerIdx)
+	winnerName := playerName(g.players, winnerIdx)
 	g.appendLog(winnerIdx, "trick_win",
 		fmt.Sprintf("%s wins trick %d (honors: %d)", winnerName, g.trickNumber, honor), trickCards)
 
@@ -441,7 +441,7 @@ func (g *CatchTen) playCard(playerIdx int, card *Card) {
 		Card:      card,
 	})
 
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == CatchTenPlayerCnt {
 		g.phase = CatchTenPhaseTrickEnd
@@ -561,17 +561,6 @@ func catchTenSortHand(p *CatchTenPlayer) {
 		}
 		return ci.GetValue() < cj.GetValue()
 	})
-}
-
-// playerName プレイヤー名を返す
-func (g *CatchTen) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // playHintReason プレイヒントの理由を判定する

@@ -269,9 +269,9 @@ func TestTarneeb_UnmarshalJSON_OversizedArray(t *testing.T) {
 func TestTarneeb_PlayerName_OutOfRange(t *testing.T) {
 	tn := newCov(TarneebCpuDifficultyNormal)
 	tn.Reset()
-	assert.Contains(t, tn.playerName(-1), "Player")
-	assert.Equal(t, "You", tn.playerName(0))
-	assert.Contains(t, tn.playerName(1), "CPU")
+	assert.Contains(t, playerName(tn.players, -1), "Player")
+	assert.Equal(t, "You", playerName(tn.players, 0))
+	assert.Contains(t, playerName(tn.players, 1), "CPU")
 }
 
 func TestTarneeb_TrickWinner_AllTrumps(t *testing.T) {

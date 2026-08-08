@@ -52,8 +52,8 @@ func TestHearts_passDirectionStr_DefaultCase(t *testing.T) {
 
 func TestHearts_playerName_OutOfBounds(t *testing.T) {
 	h := newInternalTestHearts()
-	assert.Equal(t, "Player -1", h.playerName(-1))
-	assert.Equal(t, "Player 10", h.playerName(10))
+	assert.Equal(t, "Player -1", playerName(h.players, -1))
+	assert.Equal(t, "Player 10", playerName(h.players, 10))
 }
 
 func TestHearts_startPlayPhase_NotFirstTrick(t *testing.T) {

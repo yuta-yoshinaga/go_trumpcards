@@ -207,7 +207,7 @@ func (g *OpenFaceChinese) place(playerIdx, row int) error {
 	if err := p.placeCard(row); err != nil {
 		return err
 	}
-	g.appendLog(playerIdx, "place", fmt.Sprintf("%s places %s on row %d", g.playerName(playerIdx), cardStr(card), row), []*Card{card})
+	g.appendLog(playerIdx, "place", fmt.Sprintf("%s places %s on row %d", playerName(g.players, playerIdx), cardStr(card), row), []*Card{card})
 	g.afterPlace(playerIdx)
 	return nil
 }
@@ -530,17 +530,6 @@ func ofcHintReason(card *Card, row int) string {
 }
 
 // --- Misc ---
-
-// playerName プレイヤー表示名を返す。
-func (g *OpenFaceChinese) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
 
 // --- Getters ---
 

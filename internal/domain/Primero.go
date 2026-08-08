@@ -334,7 +334,7 @@ func (g *Primero) applyCall(idx int) {
 	}
 	g.state.actedSinceRaise++
 	g.state.actionCount++
-	g.appendLog(idx, "call", fmt.Sprintf("%s calls %d (pot %d)", g.playerName(idx), need, g.state.pot), nil)
+	g.appendLog(idx, "call", fmt.Sprintf("%s calls %d (pot %d)", playerName(g.players, idx), need, g.state.pot), nil)
 	g.advanceOrClose(idx)
 }
 
@@ -356,7 +356,7 @@ func (g *Primero) applyRaise(idx int) {
 	// レイズ後は本人を含め 1 人がアクション済み。他のアクティブは応答が必要。
 	g.state.actedSinceRaise = 1
 	g.state.actionCount++
-	g.appendLog(idx, "raise", fmt.Sprintf("%s raises to %d, pays %d (pot %d)", g.playerName(idx), newBet, need, g.state.pot), nil)
+	g.appendLog(idx, "raise", fmt.Sprintf("%s raises to %d, pays %d (pot %d)", playerName(g.players, idx), newBet, need, g.state.pot), nil)
 	g.advanceOrClose(idx)
 }
 
@@ -364,7 +364,7 @@ func (g *Primero) applyRaise(idx int) {
 func (g *Primero) applyFold(idx int) {
 	g.players[idx].SetFolded(true)
 	g.state.actionCount++
-	g.appendLog(idx, "fold", fmt.Sprintf("%s folds", g.playerName(idx)), nil)
+	g.appendLog(idx, "fold", fmt.Sprintf("%s folds", playerName(g.players, idx)), nil)
 	g.advanceOrClose(idx)
 }
 
@@ -399,7 +399,7 @@ func (g *Primero) resolveRound() {
 	if winner >= 0 {
 		g.players[winner].AddChips(g.state.pot)
 		g.appendLog(winner, "win",
-			fmt.Sprintf("%s wins the pot (%d)", g.playerName(winner), g.state.pot), nil)
+			fmt.Sprintf("%s wins the pot (%d)", playerName(g.players, winner), g.state.pot), nil)
 	}
 	g.setHumanResult(winner)
 	g.state.pot = 0
@@ -436,7 +436,7 @@ func (g *Primero) endGame() {
 	g.state.phase = PrimeroPhaseResult
 	g.state.matchWinnerIdx = g.richestIdx()
 	g.appendLog(g.state.matchWinnerIdx, "game_end",
-		fmt.Sprintf("%s wins the game", g.playerName(g.state.matchWinnerIdx)), nil)
+		fmt.Sprintf("%s wins the game", playerName(g.players, g.state.matchWinnerIdx)), nil)
 }
 
 // --- CPU ---
@@ -683,17 +683,6 @@ func (g *Primero) richestIdx() int {
 		}
 	}
 	return best
-}
-
-// playerName は表示用のプレイヤー名を返す。
-func (g *Primero) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 func (g *Primero) appendLog(playerIdx int, actionType, detail string, cards []*Card) {

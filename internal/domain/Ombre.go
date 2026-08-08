@@ -342,11 +342,11 @@ func (g *Ombre) applyBid(playerIdx int, bid OmbreBid, trumpSuit int) {
 	if bid == OmbreBidNone {
 		g.bidTrump[playerIdx] = -1
 		g.appendLog(playerIdx, "bid_pass",
-			fmt.Sprintf("%s passes", g.playerName(playerIdx)), nil)
+			fmt.Sprintf("%s passes", playerName(g.players, playerIdx)), nil)
 	} else {
 		g.bidTrump[playerIdx] = trumpSuit
 		g.appendLog(playerIdx, "bid",
-			fmt.Sprintf("%s bids %s (trump %s)", g.playerName(playerIdx), ombreBidName(bid), ombreSuitName(trumpSuit)), nil)
+			fmt.Sprintf("%s bids %s (trump %s)", playerName(g.players, playerIdx), ombreBidName(bid), ombreSuitName(trumpSuit)), nil)
 	}
 
 	if g.allBidsActed() {
@@ -405,7 +405,7 @@ func (g *Ombre) finalizeAuction() {
 		g.trumpSuit = g.cpuChooseTrump(ombre)
 	}
 	g.appendLog(ombre, "ombre",
-		fmt.Sprintf("%s is Ombre with %s (trump %s)", g.playerName(ombre), ombreBidName(best), ombreSuitName(g.trumpSuit)), nil)
+		fmt.Sprintf("%s is Ombre with %s (trump %s)", playerName(g.players, ombre), ombreBidName(best), ombreSuitName(g.trumpSuit)), nil)
 	g.startPlay()
 }
 
@@ -518,7 +518,7 @@ func (g *Ombre) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Ombre) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == OmbrePlayerCnt {
 		g.phase = OmbrePhaseTrickEnd
@@ -539,7 +539,7 @@ func (g *Ombre) ResolveTrick() {
 	}
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", g.playerName(winnerIdx), g.trickNumber), trickCards)
+		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= OmbreTrickCount {
@@ -576,7 +576,7 @@ func (g *Ombre) enterRoundEnd() {
 	}
 	g.appendLog(-1, "round_score",
 		fmt.Sprintf("round %d: Ombre(%s) %s (stake=%d)",
-			g.roundNumber, g.playerName(g.ombreIdx), ombreOutcomeName(g.outcome), stake), nil)
+			g.roundNumber, playerName(g.players, g.ombreIdx), ombreOutcomeName(g.outcome), stake), nil)
 	g.checkGameEnd()
 }
 
@@ -644,7 +644,7 @@ func (g *Ombre) checkGameEnd() {
 	g.winnerPlayer = leader
 	g.phase = OmbrePhaseGameEnd
 	g.result = g.humanResult(leader, tie)
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", g.playerName(leader)), nil)
+	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
 }
 
 // humanResult 人間 (seat 0) の視点でマッチ結果を返す。単独トップなら Win、トップ同点なら None、他は Lose。
@@ -917,17 +917,6 @@ func ombreSortHand(p *OmbrePlayer, trump int) {
 	for _, c := range cards {
 		p.AddCard(c)
 	}
-}
-
-// playerName プレイヤー名を返す。
-func (g *Ombre) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // ombreBidName ビッドの表示名を返す。

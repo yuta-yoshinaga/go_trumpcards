@@ -339,7 +339,7 @@ func (g *Scarto) doScarto(cardIndices []int) error {
 	discarded := player.RemoveCards(cardIndices)
 	g.scarto = discarded
 	g.appendLog(g.dealerIdx, "scarto",
-		fmt.Sprintf("%s discards %d cards (scarto)", g.playerName(g.dealerIdx), len(discarded)), discarded)
+		fmt.Sprintf("%s discards %d cards (scarto)", playerName(g.players, g.dealerIdx), len(discarded)), discarded)
 	g.sortAllHands()
 	g.startPlay()
 	return nil
@@ -446,7 +446,7 @@ func (g *Scarto) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Scarto) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), scartoCardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), scartoCardStr(card)), []*Card{card})
 	if len(g.currentTrick) == ScartoPlayerCnt {
 		g.phase = ScartoPhaseTrickEnd
 	} else {
@@ -482,7 +482,7 @@ func (g *Scarto) ResolveTrick() {
 		g.players[excuseOwner].AddTrick([]*Card{excuseCard})
 	}
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", g.playerName(winnerIdx), g.trickNumber), allCards)
+		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), allCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= ScartoTrickCount {
@@ -592,7 +592,7 @@ func (g *Scarto) checkGameEnd() {
 		g.appendLog(-1, "game_end", "the match ends in a draw", nil)
 	} else {
 		g.winnerPlayer = leader
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", g.playerName(leader)), nil)
+		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
 	}
 }
 
@@ -1094,17 +1094,6 @@ func scartoSortHand(p *ScartoPlayer) {
 	for _, c := range cards {
 		p.AddCard(c)
 	}
-}
-
-// playerName プレイヤー名を返す。
-func (g *Scarto) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // isHumanScartoTurn 現在のスカルト手番が人間 (=人間が親) か。

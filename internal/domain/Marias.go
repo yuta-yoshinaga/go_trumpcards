@@ -189,7 +189,7 @@ func (g *Marias) detectMarriages() {
 		}
 		if pts > 0 {
 			g.roundMarriage[i] += pts
-			g.appendLog(i, "marriage", fmt.Sprintf("%s declares marriages worth %d", g.playerName(i), pts), nil)
+			g.appendLog(i, "marriage", fmt.Sprintf("%s declares marriages worth %d", playerName(g.players, i), pts), nil)
 		}
 	}
 }
@@ -253,7 +253,7 @@ func (g *Marias) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Marias) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == MariasPlayerCnt {
 		g.phase = MariasPhaseTrickEnd
@@ -277,7 +277,7 @@ func (g *Marias) ResolveTrick() {
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.roundCardPts[winnerIdx] += pts
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (+%d)", g.playerName(winnerIdx), g.trickNumber, pts), trickCards)
+		fmt.Sprintf("%s wins trick %d (+%d)", playerName(g.players, winnerIdx), g.trickNumber, pts), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= MariasTrickCount {
@@ -320,7 +320,7 @@ func (g *Marias) ScoreRound() {
 	}
 	g.appendLog(-1, "round_score",
 		fmt.Sprintf("round %d: soloist(%s)=%d defense=%d -> %s",
-			g.roundNumber, g.playerName(g.soloistIdx), soloistTotal, defenseTotal,
+			g.roundNumber, playerName(g.players, g.soloistIdx), soloistTotal, defenseTotal,
 			map[bool]string{true: "soloist wins", false: "defense wins"}[soloistWon]), nil)
 
 	g.checkGameEnd()
@@ -353,7 +353,7 @@ func (g *Marias) checkGameEnd() {
 		g.gameEndFlag = true
 		g.winnerPlayer = leader
 		g.phase = MariasPhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", g.playerName(leader)), nil)
+		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
 	}
 }
 
@@ -488,17 +488,6 @@ func mariasSortHand(p *MariasPlayer) {
 	for _, c := range cards {
 		p.AddCard(c)
 	}
-}
-
-// playerName プレイヤー名を返す。
-func (g *Marias) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // indexOfPlayerInTrick currentTrick 内で playerIdx の札の位置を返す (-1=なし)。

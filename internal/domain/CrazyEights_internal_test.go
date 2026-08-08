@@ -437,14 +437,14 @@ func TestCrazyEights_suitName(t *testing.T) {
 func TestCrazyEights_playerName(t *testing.T) {
 	g := newInternalTestCrazyEights()
 
-	assert.Equal(t, "You", g.playerName(0))
-	assert.Equal(t, "CPU 1", g.playerName(1))
-	assert.Equal(t, "CPU 2", g.playerName(2))
-	assert.Equal(t, "CPU 3", g.playerName(3))
+	assert.Equal(t, "You", playerName(g.players, 0))
+	assert.Equal(t, "CPU 1", playerName(g.players, 1))
+	assert.Equal(t, "CPU 2", playerName(g.players, 2))
+	assert.Equal(t, "CPU 3", playerName(g.players, 3))
 
 	// Out of range
-	assert.Equal(t, "Player -1", g.playerName(-1))
-	assert.Equal(t, "Player 4", g.playerName(4))
+	assert.Equal(t, "Player -1", playerName(g.players, -1))
+	assert.Equal(t, "Player 4", playerName(g.players, 4))
 }
 
 // --- crazyEightsCardScore ---

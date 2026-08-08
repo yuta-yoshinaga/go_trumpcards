@@ -320,7 +320,7 @@ func (g *FiveHundred) applyBid(idx int, bid FiveHundredBid) {
 	g.players[idx].SetBid(&b)
 	g.highestBid = &b
 	g.highestBidder = idx
-	g.appendLog(idx, "bid", fmt.Sprintf("%s bids %s", g.playerName(idx), fiveHundredBidLabel(b)), nil)
+	g.appendLog(idx, "bid", fmt.Sprintf("%s bids %s", playerName(g.players, idx), fiveHundredBidLabel(b)), nil)
 	g.advanceBid()
 }
 
@@ -328,7 +328,7 @@ func (g *FiveHundred) applyBid(idx int, bid FiveHundredBid) {
 func (g *FiveHundred) applyPass(idx int) {
 	g.passed[idx] = true
 	g.players[idx].SetPassed(true)
-	g.appendLog(idx, "pass", fmt.Sprintf("%s passes", g.playerName(idx)), nil)
+	g.appendLog(idx, "pass", fmt.Sprintf("%s passes", playerName(g.players, idx)), nil)
 	g.advanceBid()
 }
 
@@ -384,7 +384,7 @@ func (g *FiveHundred) finalizeBid() {
 	}
 	g.kitty = nil
 	g.appendLog(g.declarerIdx, "win_bid",
-		fmt.Sprintf("%s wins the contract: %s", g.playerName(g.declarerIdx), fiveHundredBidLabel(g.contract)), nil)
+		fmt.Sprintf("%s wins the contract: %s", playerName(g.players, g.declarerIdx), fiveHundredBidLabel(g.contract)), nil)
 	g.sortAllHands()
 	g.phase = FiveHundredPhaseKittyExchange
 	g.currentPlayerIdx = g.declarerIdx
@@ -436,7 +436,7 @@ func (g *FiveHundred) doExchange(discardIndices []int) error {
 	discarded := player.RemoveCards(discardIndices)
 	g.kitty = discarded
 	g.appendLog(g.declarerIdx, "exchange",
-		fmt.Sprintf("%s discards %d cards", g.playerName(g.declarerIdx), len(discarded)), discarded)
+		fmt.Sprintf("%s discards %d cards", playerName(g.players, g.declarerIdx), len(discarded)), discarded)
 	g.sortAllHands()
 	g.startPlayPhase()
 	return nil
@@ -518,7 +518,7 @@ func (g *FiveHundred) playCard(playerIdx int, card *Card, jokerSuit int) {
 	}
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	g.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", g.playerName(playerIdx), fiveHundredCardLabel(card)), []*Card{card})
+		fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), fiveHundredCardLabel(card)), []*Card{card})
 	if len(g.currentTrick) == g.activePlayerCount() {
 		g.phase = FiveHundredPhaseTrickEnd
 	} else {
@@ -538,7 +538,7 @@ func (g *FiveHundred) ResolveTrick() {
 	}
 	g.players[winnerIdx].AddTrick(cards)
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", g.playerName(winnerIdx), g.trickNumber), cards)
+		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), cards)
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= FiveHundredTrickCnt {
 		g.phase = FiveHundredPhaseRoundEnd
@@ -1315,17 +1315,6 @@ func (g *FiveHundred) sortHand(p *FiveHundredPlayer) {
 	for _, c := range cards {
 		p.AddCard(c)
 	}
-}
-
-// playerName プレイヤー名を返す
-func (g *FiveHundred) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // fiveHundredCardLabel カードのログ表示文字列 (ジョーカー対応)

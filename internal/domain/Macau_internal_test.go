@@ -470,10 +470,10 @@ func TestMacau_countSuits(t *testing.T) {
 
 func TestMacau_playerName(t *testing.T) {
 	g := newInternalTestMacau()
-	assert.Equal(t, "You", g.playerName(0))
-	assert.Equal(t, "CPU 1", g.playerName(1))
-	assert.Equal(t, "Player -1", g.playerName(-1))
-	assert.Equal(t, "Player 4", g.playerName(4))
+	assert.Equal(t, "You", playerName(g.players, 0))
+	assert.Equal(t, "CPU 1", playerName(g.players, 1))
+	assert.Equal(t, "Player -1", playerName(g.players, -1))
+	assert.Equal(t, "Player 4", playerName(g.players, 4))
 }
 
 // --- checkGameEnd ---

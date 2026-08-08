@@ -227,7 +227,7 @@ func (g *Machiavelli) drawFromStock() error {
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw", fmt.Sprintf("%s draws from stock", g.playerName(g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "draw", fmt.Sprintf("%s draws from stock", playerName(g.players, g.currentPlayerIdx)), nil)
 	g.advanceTurn()
 	return nil
 }
@@ -334,7 +334,7 @@ func (g *Machiavelli) applyPlay(newTable [][]*Card, handIndices []int) error {
 	}
 	g.table = newTable
 
-	g.appendLog(g.currentPlayerIdx, "play", fmt.Sprintf("%s plays %d card(s) to the table", g.playerName(g.currentPlayerIdx), len(handIndices)), playedCards)
+	g.appendLog(g.currentPlayerIdx, "play", fmt.Sprintf("%s plays %d card(s) to the table", playerName(g.players, g.currentPlayerIdx), len(handIndices)), playedCards)
 
 	if player.GetCardsSize() == 0 {
 		g.finishRound(g.currentPlayerIdx)
@@ -542,7 +542,7 @@ func (g *Machiavelli) finishRound(winnerIdx int) {
 	}
 
 	if winnerIdx >= 0 {
-		g.appendLog(winnerIdx, "round_win", fmt.Sprintf("%s goes out (round %d)", g.playerName(winnerIdx), g.roundNumber), nil)
+		g.appendLog(winnerIdx, "round_win", fmt.Sprintf("%s goes out (round %d)", playerName(g.players, winnerIdx), g.roundNumber), nil)
 	} else {
 		g.appendLog(-1, "draw", "Round ends (stock exhausted)", nil)
 	}
@@ -576,7 +576,7 @@ func (g *Machiavelli) finalizeGameEnd() {
 			g.winnerIdx = i
 		}
 	}
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game with %d points!", g.playerName(g.winnerIdx), minScore), nil)
+	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game with %d points!", playerName(g.players, g.winnerIdx), minScore), nil)
 }
 
 // --- Getters / Setters ---
@@ -671,16 +671,6 @@ func (g *Machiavelli) sortHand(playerIdx int) {
 	for _, c := range cards {
 		p.AddCard(c)
 	}
-}
-
-func (g *Machiavelli) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // machiavelliCollectCards プレイヤーの手札を []*Card で返す

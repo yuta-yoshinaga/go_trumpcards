@@ -195,7 +195,7 @@ func (g *Sedma) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Sedma) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == SedmaPlayerCnt {
 		g.phase = SedmaPhaseTrickEnd
@@ -225,7 +225,7 @@ func (g *Sedma) ResolveTrick() {
 		bonus = fmt.Sprintf(" +%d last", SedmaLastTrickBonus)
 	}
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s captures trick %d (+%d%s)", g.playerName(winnerIdx), g.trickNumber, pts, bonus), trickCards)
+		fmt.Sprintf("%s captures trick %d (+%d%s)", playerName(g.players, winnerIdx), g.trickNumber, pts, bonus), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= SedmaTrickCount {
@@ -343,17 +343,6 @@ func sedmaSortRank(value int) int {
 		return 14 // Ace high for display
 	}
 	return value
-}
-
-// playerName プレイヤー名を返す。
-func (g *Sedma) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
 }
 
 // --- CPU AI ---
