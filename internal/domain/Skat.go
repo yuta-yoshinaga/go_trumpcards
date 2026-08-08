@@ -128,7 +128,7 @@ type skatRoundState struct {
 	defendersCardPts int
 	winnerSide       int // SkatWinner*
 	gameEndFlag      bool
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // Skat game class
@@ -1301,13 +1301,7 @@ func skatSuitName(suit int) string {
 
 // appendLog appends an entry to the round action log.
 func (s *Skat) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	s.round.actionLog = append(s.round.actionLog, &ActionLogEntry{
-		TurnNumber: len(s.round.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	s.round.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // sortAllHands sorts every player's hand.

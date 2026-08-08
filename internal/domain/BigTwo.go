@@ -20,16 +20,16 @@ type BigTwoAction struct {
 
 // bigTwoRoundState ラウンドごとにリセットされる状態
 type bigTwoRoundState struct {
-	currentTurn       int               // 現在の手番プレイヤーインデックス
-	tableCards        []*Card           // 場に出されているカード (nil = 場はクリア)
-	tablePlayType     BigTwoPlayType    // 場のプレイタイプ
-	lastPlayPlayerIdx int               // 最後にカードを出したプレイヤーインデックス (-1 = なし)
-	firstPlayDone     bool              // 最初のプレイ（♦3必須）が完了したか
-	gameEndFlag       bool              // ゲーム終了フラグ
-	passCount         int               // 最後の出し以降の連続パス数
-	cpuActions        []*BigTwoAction   // 人間ターン後のCPUの行動履歴
-	humanAction       *BigTwoAction     // 人間の最後の行動
-	actionLog         []*ActionLogEntry // 棋譜
+	currentTurn       int             // 現在の手番プレイヤーインデックス
+	tableCards        []*Card         // 場に出されているカード (nil = 場はクリア)
+	tablePlayType     BigTwoPlayType  // 場のプレイタイプ
+	lastPlayPlayerIdx int             // 最後にカードを出したプレイヤーインデックス (-1 = なし)
+	firstPlayDone     bool            // 最初のプレイ（♦3必須）が完了したか
+	gameEndFlag       bool            // ゲーム終了フラグ
+	passCount         int             // 最後の出し以降の連続パス数
+	cpuActions        []*BigTwoAction // 人間ターン後のCPUの行動履歴
+	humanAction       *BigTwoAction   // 人間の最後の行動
+	actionLogBase
 }
 
 // BigTwo Big Twoゲームクラス
@@ -48,7 +48,7 @@ func NewBigTwo(trumpCards *TrumpCards, players []*BigTwoPlayer, config BigTwoCon
 		config:     config,
 		round: bigTwoRoundState{
 			lastPlayPlayerIdx: -1,
-			actionLog:         make([]*ActionLogEntry, 0),
+			actionLogBase:     actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 		},
 	}
 }
@@ -69,7 +69,7 @@ func NewDefaultBigTwo() *BigTwo {
 func (bt *BigTwo) Reset() {
 	bt.round = bigTwoRoundState{
 		lastPlayPlayerIdx: -1,
-		actionLog:         make([]*ActionLogEntry, 0),
+		actionLogBase:     actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 	}
 
 	bt.trumpCards.Shuffle()
@@ -335,13 +335,7 @@ func (bt *BigTwo) GetActionLog() []*ActionLogEntry { return bt.round.actionLog }
 
 // appendLog 棋譜にエントリを追加する
 func (bt *BigTwo) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	bt.round.actionLog = append(bt.round.actionLog, &ActionLogEntry{
-		TurnNumber: len(bt.round.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	bt.round.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // --- JSON Serialization ---
@@ -439,7 +433,7 @@ func (bt *BigTwo) UnmarshalJSON(data []byte) error {
 		passCount:         j.PassCount,
 		cpuActions:        j.CpuActions,
 		humanAction:       j.HumanAction,
-		actionLog:         j.ActionLog,
+		actionLogBase:     actionLogBase{actionLog: j.ActionLog},
 	}
 	if bt.round.actionLog == nil {
 		bt.round.actionLog = make([]*ActionLogEntry, 0)

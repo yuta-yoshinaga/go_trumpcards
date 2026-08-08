@@ -83,7 +83,7 @@ type pishtiState struct {
 	lastCaptureIdx int     // 最後に捕獲したプレイヤー (-1 = なし)
 	gameEndFlag    bool
 	winners        []int
-	actionLog      []*ActionLogEntry
+	actionLogBase
 }
 
 // Pishti は Pişti ゲームの状態を保持する集約ルート。
@@ -139,7 +139,7 @@ func (g *Pishti) Reset() {
 		phase:          PishtiPhasePlay,
 		currentTurn:    0,
 		lastCaptureIdx: -1,
-		actionLog:      make([]*ActionLogEntry, 0),
+		actionLogBase:  actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 	}
 	g.dealHands()
 	g.dealInitialPile()
@@ -525,13 +525,7 @@ func (g *Pishti) lowestValueCardIdx(player *PishtiPlayer) int {
 
 // appendLog は棋譜にエントリを追加する。
 func (g *Pishti) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.state.actionLog = append(g.state.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.state.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.state.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // --- 状態アクセサ ---
@@ -686,7 +680,7 @@ func (g *Pishti) UnmarshalJSON(data []byte) error {
 		lastCaptureIdx: j.LastCaptureIdx,
 		gameEndFlag:    j.GameEndFlag,
 		winners:        j.Winners,
-		actionLog:      j.ActionLog,
+		actionLogBase:  actionLogBase{actionLog: j.ActionLog},
 	}
 	if g.state.pile == nil {
 		g.state.pile = make([]*Card, 0)

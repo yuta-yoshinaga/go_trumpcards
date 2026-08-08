@@ -378,7 +378,7 @@ type hachihachiState struct {
 	gameEndFlag     bool
 	winner          int // 終局時の勝者 (-1 = 引き分け)
 	lastRoundResult *HachiHachiRoundResult
-	actionLog       []*ActionLogEntry
+	actionLogBase
 }
 
 // HachiHachi は八八ゲームの状態を保持する集約ルート。
@@ -431,11 +431,11 @@ func (g *HachiHachi) Reset() {
 		p.ResetScore()
 	}
 	g.state = hachihachiState{
-		phase:        HachiHachiPhasePlay,
-		lastCapturer: -1,
-		winner:       -1,
-		roundNumber:  1,
-		actionLog:    make([]*ActionLogEntry, 0),
+		phase:         HachiHachiPhasePlay,
+		lastCapturer:  -1,
+		winner:        -1,
+		roundNumber:   1,
+		actionLogBase: actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 	}
 	g.startRound()
 }
@@ -855,13 +855,7 @@ func (g *HachiHachi) playerName(idx int) string {
 }
 
 func (g *HachiHachi) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.state.actionLog = append(g.state.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.state.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.state.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // hachihachiCardStr は札を "松·光" のように表す (ログ/デバッグ用)。
@@ -1175,7 +1169,7 @@ func (g *HachiHachi) UnmarshalJSON(data []byte) error {
 		gameEndFlag:     j.GameEndFlag,
 		winner:          j.Winner,
 		lastRoundResult: j.LastRoundResult,
-		actionLog:       j.ActionLog,
+		actionLogBase:   actionLogBase{actionLog: j.ActionLog},
 	}
 	if g.state.fieldCards == nil {
 		g.state.fieldCards = make([]*Card, 0)

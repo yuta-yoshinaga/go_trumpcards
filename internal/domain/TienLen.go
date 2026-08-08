@@ -22,16 +22,16 @@ type TienLenAction struct {
 
 // tienLenRoundState ラウンドごとにリセットされる状態
 type tienLenRoundState struct {
-	currentTurn       int               // 現在の手番プレイヤーインデックス
-	tableCards        []*Card           // 場に出されているカード (nil = 場はクリア)
-	tablePlayType     TienLenPlayType   // 場のプレイタイプ
-	lastPlayPlayerIdx int               // 最後にカードを出したプレイヤーインデックス (-1 = なし)
-	firstPlayDone     bool              // 最初のプレイ（♠3必須）が完了したか
-	gameEndFlag       bool              // ゲーム終了フラグ
-	passCount         int               // 最後の出し以降の連続パス数
-	cpuActions        []*TienLenAction  // 人間ターン後のCPUの行動履歴
-	humanAction       *TienLenAction    // 人間の最後の行動
-	actionLog         []*ActionLogEntry // 棋譜
+	currentTurn       int              // 現在の手番プレイヤーインデックス
+	tableCards        []*Card          // 場に出されているカード (nil = 場はクリア)
+	tablePlayType     TienLenPlayType  // 場のプレイタイプ
+	lastPlayPlayerIdx int              // 最後にカードを出したプレイヤーインデックス (-1 = なし)
+	firstPlayDone     bool             // 最初のプレイ（♠3必須）が完了したか
+	gameEndFlag       bool             // ゲーム終了フラグ
+	passCount         int              // 最後の出し以降の連続パス数
+	cpuActions        []*TienLenAction // 人間ターン後のCPUの行動履歴
+	humanAction       *TienLenAction   // 人間の最後の行動
+	actionLogBase
 }
 
 // TienLen Tien Lenゲームクラス
@@ -50,7 +50,7 @@ func NewTienLen(trumpCards *TrumpCards, players []*TienLenPlayer, config TienLen
 		config:     config,
 		round: tienLenRoundState{
 			lastPlayPlayerIdx: -1,
-			actionLog:         make([]*ActionLogEntry, 0),
+			actionLogBase:     actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 		},
 	}
 }
@@ -71,7 +71,7 @@ func NewDefaultTienLen() *TienLen {
 func (tl *TienLen) Reset() {
 	tl.round = tienLenRoundState{
 		lastPlayPlayerIdx: -1,
-		actionLog:         make([]*ActionLogEntry, 0),
+		actionLogBase:     actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 	}
 
 	tl.trumpCards.Shuffle()
@@ -351,13 +351,7 @@ func (tl *TienLen) GetActionLog() []*ActionLogEntry { return tl.round.actionLog 
 
 // appendLog 棋譜にエントリを追加する
 func (tl *TienLen) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	tl.round.actionLog = append(tl.round.actionLog, &ActionLogEntry{
-		TurnNumber: len(tl.round.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	tl.round.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // --- JSON Serialization ---
@@ -455,7 +449,7 @@ func (tl *TienLen) UnmarshalJSON(data []byte) error {
 		passCount:         j.PassCount,
 		cpuActions:        j.CpuActions,
 		humanAction:       j.HumanAction,
-		actionLog:         j.ActionLog,
+		actionLogBase:     actionLogBase{actionLog: j.ActionLog},
 	}
 	if tl.round.actionLog == nil {
 		tl.round.actionLog = make([]*ActionLogEntry, 0)

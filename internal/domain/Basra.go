@@ -117,7 +117,7 @@ type basraState struct {
 	scored         bool // 最終得点を確定済みか (二重確定防止)
 	winners        []int
 	lastDealDetail *BasraScoreDetail
-	actionLog      []*ActionLogEntry
+	actionLogBase
 }
 
 // Basra はバスラゲームの状態を保持する集約ルート。
@@ -175,7 +175,7 @@ func (g *Basra) Reset() {
 		phase:          BasraPhasePlay,
 		currentTurn:    0,
 		lastCaptureIdx: -1,
-		actionLog:      make([]*ActionLogEntry, 0),
+		actionLogBase:  actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 	}
 	g.dealHands()
 	g.dealInitialTable()
@@ -836,13 +836,7 @@ func (g *Basra) playerName(idx int) string {
 }
 
 func (g *Basra) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.state.actionLog = append(g.state.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.state.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.state.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // --- 状態アクセサ ---
@@ -1055,7 +1049,7 @@ func (g *Basra) UnmarshalJSON(data []byte) error {
 		scored:         j.Scored,
 		winners:        j.Winners,
 		lastDealDetail: j.LastDealDetail,
-		actionLog:      j.ActionLog,
+		actionLogBase:  actionLogBase{actionLog: j.ActionLog},
 	}
 	if g.state.tableCards == nil {
 		g.state.tableCards = make([]*Card, 0)

@@ -107,7 +107,7 @@ type mightyRoundState struct {
 	jokerPlayed       bool    // ジョーカーがこのラウンドで既にプレイされたか (ジョーカーコール抑止用)
 	gameEndFlag       bool
 	winnerTeam        int // MightyWinnerUndecided / MightyWinnerDeclarer / MightyWinnerOpposition
-	actionLog         []*ActionLogEntry
+	actionLogBase
 }
 
 // Mighty マイティ (韓国式マイティ) ゲームクラス
@@ -1407,13 +1407,7 @@ func (m *Mighty) playerName(idx int) string {
 
 // appendLog 棋譜にエントリを追加する
 func (m *Mighty) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	m.round.actionLog = append(m.round.actionLog, &ActionLogEntry{
-		TurnNumber: len(m.round.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	m.round.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // mightyCardStr カードの文字列表現 (ジョーカー対応)
@@ -2335,7 +2329,7 @@ func (m *Mighty) UnmarshalJSON(data []byte) error {
 		jokerPlayed:       j.JokerPlayed,
 		gameEndFlag:       j.GameEndFlag,
 		winnerTeam:        j.WinnerTeam,
-		actionLog:         j.ActionLog,
+		actionLogBase:     actionLogBase{actionLog: j.ActionLog},
 	}
 	if m.round.actionLog == nil {
 		m.round.actionLog = make([]*ActionLogEntry, 0)

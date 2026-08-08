@@ -65,20 +65,20 @@ type DeuceToSevenCpuExchange struct {
 // deuceToSevenRoundState holds the mutable per-hand state. Kept separate so
 // Reset can recreate it cleanly without touching config / players.
 type deuceToSevenRoundState struct {
-	phase           int
-	drawIndex       int // 0 during initial deal bet, 1..3 during/after the n-th draw
-	pot             int
-	currentTurn     int
-	lastBet         int
-	minRaise        int
-	raiseCount      int
-	actedFlags      []bool
-	sidePots        []SidePot
-	startingChips   []int
-	roundResults    []DeuceToSevenResult
-	cpuActions      []DeuceToSevenCpuAction
-	cpuExchanges    []DeuceToSevenCpuExchange
-	actionLog       []*ActionLogEntry
+	phase         int
+	drawIndex     int // 0 during initial deal bet, 1..3 during/after the n-th draw
+	pot           int
+	currentTurn   int
+	lastBet       int
+	minRaise      int
+	raiseCount    int
+	actedFlags    []bool
+	sidePots      []SidePot
+	startingChips []int
+	roundResults  []DeuceToSevenResult
+	cpuActions    []DeuceToSevenCpuAction
+	cpuExchanges  []DeuceToSevenCpuExchange
+	actionLogBase
 	gameEndFlag     bool
 	lastCpuError    error
 	lastHumanPlayMs int
@@ -977,13 +977,7 @@ func (d *DeuceToSeven) ImportProfile(data []byte) error {
 func (d *DeuceToSeven) GetActionLog() []*ActionLogEntry { return d.round.actionLog }
 
 func (d *DeuceToSeven) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	d.round.actionLog = append(d.round.actionLog, &ActionLogEntry{
-		TurnNumber: len(d.round.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	d.round.appendLog(playerIdx, actionType, detail, cards)
 }
 
 func (d *DeuceToSeven) logBettingAction(playerIdx, action, _ int) {
@@ -1121,7 +1115,7 @@ func (d *DeuceToSeven) UnmarshalJSON(data []byte) error {
 		roundResults:    j.Round.RoundResults,
 		cpuActions:      j.Round.CpuActions,
 		cpuExchanges:    j.Round.CpuExchanges,
-		actionLog:       j.Round.ActionLog,
+		actionLogBase:   actionLogBase{actionLog: j.Round.ActionLog},
 		gameEndFlag:     j.Round.GameEndFlag,
 		lastHumanPlayMs: j.Round.LastHumanPlayMs,
 	}

@@ -57,7 +57,7 @@ type tichuRoundState struct {
 	bombCount   int
 	cpuActions  []*TichuCpuAction
 	humanAction *TichuCpuAction
-	actionLog   []*ActionLogEntry
+	actionLogBase
 }
 
 // Tichu ティチューゲーム
@@ -609,13 +609,7 @@ func (t *Tichu) GetActionLog() []*ActionLogEntry { return t.round.actionLog }
 
 // appendLog 棋譜にエントリを追加する
 func (t *Tichu) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	t.round.actionLog = append(t.round.actionLog, &ActionLogEntry{
-		TurnNumber: len(t.round.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	t.round.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // --- JSON Serialization ---
@@ -767,23 +761,23 @@ func (t *Tichu) UnmarshalJSON(data []byte) error {
 	}
 	t.config = j.Config
 	t.round = tichuRoundState{
-		phase:       j.Phase,
-		currentTurn: j.CurrentTurn,
-		tableCombo:  j.TableCombo,
-		lastPlayIdx: j.LastPlayIdx,
-		trickCards:  j.TrickCards,
-		passCount:   j.PassCount,
-		declCount:   j.DeclCount,
-		dragonOnTop: j.DragonOnTop,
-		gameEndFlag: j.GameEndFlag,
-		oneTwo:      j.OneTwo,
-		startLeader: j.StartLeader,
-		finishOrder: j.FinishOrder,
-		scores:      j.Scores,
-		bombCount:   j.BombCount,
-		cpuActions:  j.CpuActions,
-		humanAction: j.HumanAction,
-		actionLog:   j.ActionLog,
+		phase:         j.Phase,
+		currentTurn:   j.CurrentTurn,
+		tableCombo:    j.TableCombo,
+		lastPlayIdx:   j.LastPlayIdx,
+		trickCards:    j.TrickCards,
+		passCount:     j.PassCount,
+		declCount:     j.DeclCount,
+		dragonOnTop:   j.DragonOnTop,
+		gameEndFlag:   j.GameEndFlag,
+		oneTwo:        j.OneTwo,
+		startLeader:   j.StartLeader,
+		finishOrder:   j.FinishOrder,
+		scores:        j.Scores,
+		bombCount:     j.BombCount,
+		cpuActions:    j.CpuActions,
+		humanAction:   j.HumanAction,
+		actionLogBase: actionLogBase{actionLog: j.ActionLog},
 	}
 	if t.round.actionLog == nil {
 		t.round.actionLog = make([]*ActionLogEntry, 0)

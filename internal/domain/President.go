@@ -53,7 +53,7 @@ type presidentRoundState struct {
 	humanAction       *PresidentCpuAction        // 人間の最後の行動
 	revolutionActive  bool                       // 革命フラグ
 	exchangeActions   []*PresidentExchangeAction // カード交換記録
-	actionLog         []*ActionLogEntry          // 棋譜
+	actionLogBase
 }
 
 // President プレジデント (President / Scum) ゲームクラス
@@ -371,13 +371,7 @@ func dedupSortedInts(in []int) []int {
 
 // appendLog 棋譜にエントリを追加する
 func (p *President) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	p.round.actionLog = append(p.round.actionLog, &ActionLogEntry{
-		TurnNumber: len(p.round.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	p.round.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // --- 状態アクセサ ---
@@ -558,7 +552,7 @@ func (p *President) UnmarshalJSON(data []byte) error {
 		humanAction:       j.HumanAction,
 		revolutionActive:  j.RevolutionActive,
 		exchangeActions:   j.ExchangeActions,
-		actionLog:         j.ActionLog,
+		actionLogBase:     actionLogBase{actionLog: j.ActionLog},
 	}
 	if p.round.actionLog == nil {
 		p.round.actionLog = make([]*ActionLogEntry, 0)

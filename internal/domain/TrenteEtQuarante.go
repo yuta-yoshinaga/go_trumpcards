@@ -130,7 +130,7 @@ type trenteEtQuaranteState struct {
 	roundNumber  int
 	gameEndFlag  bool
 	scored       bool // ラウンド結果を確定済みか (二重確定防止)
-	actionLog    []*ActionLogEntry
+	actionLogBase
 }
 
 // TrenteEtQuarante はトラント・エ・カラントの状態を保持する集約ルート。
@@ -148,10 +148,10 @@ func NewTrenteEtQuarante(trumpCards *TrumpCards, player *TrenteEtQuarantePlayer,
 		player:     player,
 		config:     config,
 		state: trenteEtQuaranteState{
-			phase:      TrenteEtQuarantePhaseBet,
-			currentBet: config.DefaultBet,
-			winningRow: TrenteEtQuaranteRowNone,
-			actionLog:  make([]*ActionLogEntry, 0),
+			phase:         TrenteEtQuarantePhaseBet,
+			currentBet:    config.DefaultBet,
+			winningRow:    TrenteEtQuaranteRowNone,
+			actionLogBase: actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 		},
 	}
 	return g
@@ -190,10 +190,10 @@ func (g *TrenteEtQuarante) Reset() {
 	g.trumpCards = newTrenteEtQuaranteShoe()
 	g.trumpCards.Shuffle()
 	g.state = trenteEtQuaranteState{
-		phase:      TrenteEtQuarantePhaseBet,
-		currentBet: g.config.DefaultBet,
-		winningRow: TrenteEtQuaranteRowNone,
-		actionLog:  make([]*ActionLogEntry, 0),
+		phase:         TrenteEtQuarantePhaseBet,
+		currentBet:    g.config.DefaultBet,
+		winningRow:    TrenteEtQuaranteRowNone,
+		actionLogBase: actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 	}
 }
 
@@ -203,11 +203,11 @@ func (g *TrenteEtQuarante) NextRound() {
 	round := g.state.roundNumber
 	log := g.state.actionLog
 	g.state = trenteEtQuaranteState{
-		phase:       TrenteEtQuarantePhaseBet,
-		currentBet:  g.config.DefaultBet,
-		winningRow:  TrenteEtQuaranteRowNone,
-		roundNumber: round,
-		actionLog:   log,
+		phase:         TrenteEtQuarantePhaseBet,
+		currentBet:    g.config.DefaultBet,
+		winningRow:    TrenteEtQuaranteRowNone,
+		roundNumber:   round,
+		actionLogBase: actionLogBase{actionLog: log},
 	}
 }
 
@@ -413,13 +413,7 @@ func (g *TrenteEtQuarante) GetHint() *TrenteEtQuaranteHint {
 // --- ヘルパー ---
 
 func (g *TrenteEtQuarante) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.state.actionLog = append(g.state.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.state.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.state.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // --- 状態アクセサ ---
@@ -639,22 +633,22 @@ func (g *TrenteEtQuarante) UnmarshalJSON(data []byte) error {
 	}
 	g.config = j.Config
 	g.state = trenteEtQuaranteState{
-		phase:        j.Phase,
-		currentBet:   j.CurrentBet,
-		stake:        j.Stake,
-		noirRow:      j.NoirRow,
-		rougeRow:     j.RougeRow,
-		noirTotal:    j.NoirTotal,
-		rougeTotal:   j.RougeTotal,
-		winningRow:   j.WinningRow,
-		firstCardRed: j.FirstCardRed,
-		refait:       j.Refait,
-		result:       j.Result,
-		payout:       j.Payout,
-		roundNumber:  j.RoundNumber,
-		gameEndFlag:  j.GameEndFlag,
-		scored:       j.Scored,
-		actionLog:    j.ActionLog,
+		phase:         j.Phase,
+		currentBet:    j.CurrentBet,
+		stake:         j.Stake,
+		noirRow:       j.NoirRow,
+		rougeRow:      j.RougeRow,
+		noirTotal:     j.NoirTotal,
+		rougeTotal:    j.RougeTotal,
+		winningRow:    j.WinningRow,
+		firstCardRed:  j.FirstCardRed,
+		refait:        j.Refait,
+		result:        j.Result,
+		payout:        j.Payout,
+		roundNumber:   j.RoundNumber,
+		gameEndFlag:   j.GameEndFlag,
+		scored:        j.Scored,
+		actionLogBase: actionLogBase{actionLog: j.ActionLog},
 	}
 	if g.state.noirRow == nil {
 		g.state.noirRow = make([]*Card, 0)

@@ -98,7 +98,7 @@ type napoleonRoundState struct {
 	passCount        int     // パスしたプレイヤー数
 	gameEndFlag      bool
 	winnerTeam       int // NapoleonWinnerUndecided / NapoleonWinnerNapoleon / NapoleonWinnerAllied
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // Napoleon ナポレオンゲームクラス
@@ -1075,13 +1075,7 @@ func (n *Napoleon) playerName(idx int) string {
 
 // appendLog 棋譜にエントリを追加する
 func (n *Napoleon) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	n.round.actionLog = append(n.round.actionLog, &ActionLogEntry{
-		TurnNumber: len(n.round.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	n.round.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // napoleonCardStr カードの文字列表現 (ジョーカー対応)
@@ -1890,7 +1884,7 @@ func (n *Napoleon) UnmarshalJSON(data []byte) error {
 		passCount:        j.PassCount,
 		gameEndFlag:      j.GameEndFlag,
 		winnerTeam:       j.WinnerTeam,
-		actionLog:        j.ActionLog,
+		actionLogBase:    actionLogBase{actionLog: j.ActionLog},
 	}
 	if n.round.actionLog == nil {
 		n.round.actionLog = make([]*ActionLogEntry, 0)

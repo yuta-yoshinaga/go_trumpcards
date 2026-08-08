@@ -426,7 +426,7 @@ type gostopState struct {
 	lastRoundResult  *GoStopRoundResult
 	pendingBreakdown *GoStopBreakdown
 	pendingPoints    int // 決断フェーズのカテゴリ合計
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // GoStop はゴーストップゲームの状態を保持する集約ルート。
@@ -478,11 +478,11 @@ func (g *GoStop) Reset() {
 		p.ResetScore()
 	}
 	g.state = gostopState{
-		phase:       GoStopPhasePlay,
-		roundWinner: -1,
-		winner:      -1,
-		roundNumber: 1,
-		actionLog:   make([]*ActionLogEntry, 0),
+		phase:         GoStopPhasePlay,
+		roundWinner:   -1,
+		winner:        -1,
+		roundNumber:   1,
+		actionLogBase: actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 	}
 	g.startRound()
 }
@@ -1003,13 +1003,7 @@ func (g *GoStop) playerName(idx int) string {
 }
 
 func (g *GoStop) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.state.actionLog = append(g.state.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.state.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.state.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // gostopCardStr は札を "松·光" のように表す (ログ/デバッグ用)。
@@ -1310,7 +1304,7 @@ func (g *GoStop) UnmarshalJSON(data []byte) error {
 		lastRoundResult:  j.LastRoundResult,
 		pendingBreakdown: j.PendingBreakdown,
 		pendingPoints:    j.PendingPoints,
-		actionLog:        j.ActionLog,
+		actionLogBase:    actionLogBase{actionLog: j.ActionLog},
 	}
 	if g.state.fieldCards == nil {
 		g.state.fieldCards = make([]*Card, 0)

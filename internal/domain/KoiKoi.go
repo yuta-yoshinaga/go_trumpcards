@@ -364,7 +364,7 @@ type koikoiState struct {
 	lastRoundResult *KoiKoiRoundResult
 	pendingYaku     []KoiKoiYaku // 決断フェーズで表示する役
 	pendingPoints   int          // 決断フェーズの役合計
-	actionLog       []*ActionLogEntry
+	actionLogBase
 }
 
 // KoiKoi はこいこいゲームの状態を保持する集約ルート。
@@ -416,11 +416,11 @@ func (g *KoiKoi) Reset() {
 		p.ResetScore()
 	}
 	g.state = koikoiState{
-		phase:       KoiKoiPhasePlay,
-		roundWinner: -1,
-		winner:      -1,
-		roundNumber: 1,
-		actionLog:   make([]*ActionLogEntry, 0),
+		phase:         KoiKoiPhasePlay,
+		roundWinner:   -1,
+		winner:        -1,
+		roundNumber:   1,
+		actionLogBase: actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 	}
 	g.startRound()
 }
@@ -928,13 +928,7 @@ func (g *KoiKoi) playerName(idx int) string {
 }
 
 func (g *KoiKoi) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.state.actionLog = append(g.state.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.state.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.state.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // koikoiCardStr は札を "松·光" のように表す (ログ/デバッグ用)。
@@ -1229,7 +1223,7 @@ func (g *KoiKoi) UnmarshalJSON(data []byte) error {
 		lastRoundResult: j.LastRoundResult,
 		pendingYaku:     j.PendingYaku,
 		pendingPoints:   j.PendingPoints,
-		actionLog:       j.ActionLog,
+		actionLogBase:   actionLogBase{actionLog: j.ActionLog},
 	}
 	if g.state.fieldCards == nil {
 		g.state.fieldCards = make([]*Card, 0)
