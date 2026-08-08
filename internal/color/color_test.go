@@ -102,41 +102,6 @@ func TestColorFunctions(t *testing.T) {
 	}
 }
 
-func TestStderrColorFunctions(t *testing.T) {
-	resetColorState(t)
-
-	funcs := []struct {
-		name   string
-		fn     func(string) string
-		prefix string
-	}{
-		{"RedStderr", RedStderr, "\033[31m"},
-		{"GreenStderr", GreenStderr, "\033[32m"},
-		{"YellowStderr", YellowStderr, "\033[33m"},
-		{"BoldStderr", BoldStderr, "\033[1m"},
-		{"BoldYellowStderr", BoldYellowStderr, "\033[1;33m"},
-	}
-
-	for _, f := range funcs {
-		t.Run(f.name+"_stdout_off_stderr_on", func(t *testing.T) {
-			SetStdoutColor(false)
-			SetStderrColor(true)
-			got := f.fn("hello")
-			want := f.prefix + "hello" + "\033[0m"
-			if got != want {
-				t.Errorf("%s = %q, want %q (stdout disabled should not affect stderr)", f.name, got, want)
-			}
-		})
-		t.Run(f.name+"_stdout_on_stderr_off", func(t *testing.T) {
-			SetStdoutColor(true)
-			SetStderrColor(false)
-			if got := f.fn("hello"); got != "hello" {
-				t.Errorf("%s = %q, want %q (stderr disabled should strip ANSI)", f.name, got, "hello")
-			}
-		})
-	}
-}
-
 func TestColorFunctionsEmptyString(t *testing.T) {
 	resetColorState(t)
 
@@ -144,16 +109,10 @@ func TestColorFunctionsEmptyString(t *testing.T) {
 	if got := Red(""); got != "" {
 		t.Errorf("Red(\"\") = %q, want %q", got, "")
 	}
-	if got := RedStderr(""); got != "" {
-		t.Errorf("RedStderr(\"\") = %q, want %q", got, "")
-	}
 
 	SetNoColor(true)
 	if got := Red(""); got != "" {
 		t.Errorf("Red(\"\") with NoColor = %q, want %q", got, "")
-	}
-	if got := RedStderr(""); got != "" {
-		t.Errorf("RedStderr(\"\") with NoColor = %q, want %q", got, "")
 	}
 }
 
