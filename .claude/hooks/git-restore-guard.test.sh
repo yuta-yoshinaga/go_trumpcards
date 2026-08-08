@@ -18,6 +18,7 @@ git config user.name test
 
 printf 'clean\n' > clean.txt
 printf 'dirty\n' > dirty.txt
+printf 'spaced\n' > 'has space.txt'
 printf 'staged\n' > staged.txt
 mkdir -p docs
 printf 'nested\n' > docs/nested.txt
@@ -28,6 +29,7 @@ git commit -qm init
 printf 'dirty edited\n' > dirty.txt
 printf 'staged edited\n' > staged.txt && git add staged.txt
 printf 'nested edited\n' > docs/nested.txt
+printf 'spaced edited\n' > 'has space.txt'
 
 fail=0
 # run <expect: block|pass> <description> <command>
@@ -62,6 +64,17 @@ run block 'a dirty path among clean ones'   'git checkout -- clean.txt dirty.txt
 
 # A staged-only change is still overwritten by `git checkout --`, so it counts.
 run block 'checkout -- <staged-only file>'  'git checkout -- staged.txt'
+
+# --- quoted paths -------------------------------------------------------
+# Plain word splitting turns "has space.txt" into two tokens that match nothing,
+# so git reports both clean and the guard fails OPEN on a genuinely dirty file.
+run block 'checkout -- "<dirty path with space>"'  'git checkout -- "has space.txt"'
+run block "checkout -- '<dirty path with space>'"  "git checkout -- 'has space.txt'"
+run block 'restore "<dirty path with space>"'      'git restore "has space.txt"'
+run block 'quoted dirty path alongside a clean one' 'git checkout -- clean.txt "has space.txt"'
+
+# Unparseable input must fail closed, not silently allow.
+run block 'unbalanced quote'                       'git checkout -- "has space.txt'
 
 # --- the same commands where nothing would be lost -----------------------
 run pass 'checkout -- <clean file>'         'git checkout -- clean.txt'

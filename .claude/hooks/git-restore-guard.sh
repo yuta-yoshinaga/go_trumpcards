@@ -29,13 +29,25 @@ set -uo pipefail
 payload=$(cat)
 cmd=$(printf '%s' "$payload" | jq -r '.tool_input.command // ""')
 
+# Split a command fragment into arguments the way a shell would quote them, without
+# evaluating anything. Plain word splitting loses `"docs/my file.md"` to two bogus
+# tokens, neither of which matches a real path, so `git status` comes back clean for
+# both and the guard waves the command through -- failing OPEN, which is the one
+# way a guard must never fail. xargs honours quotes and backslashes and performs no
+# substitution, so nothing in the command string can execute here.
+split_args() {
+  printf '%s' "$1" | xargs -n1 2>/dev/null
+}
+
 # Collect the paths a restoring command would overwrite. Empty = not our business.
 paths=()
+parse_failed=0
 case "$cmd" in
   # `git checkout ... -- <paths>` (with or without a ref before the --)
   *git\ checkout\ *--\ *)
     after_sep=${cmd#*--\ }
-    read -r -a paths <<<"$after_sep"
+    mapfile -t paths < <(split_args "$after_sep")
+    [ -n "$after_sep" ] && [ ${#paths[@]} -eq 0 ] && parse_failed=1
     ;;
   # `git restore <paths>`, unless it only touches the index.
   *git\ restore\ *)
@@ -46,7 +58,9 @@ case "$cmd" in
         ;;
     esac
     rest=${cmd#*git restore }
-    for tok in $rest; do
+    mapfile -t tokens < <(split_args "$rest")
+    [ -n "$rest" ] && [ ${#tokens[@]} -eq 0 ] && parse_failed=1
+    for tok in "${tokens[@]}"; do
       case "$tok" in -*) continue ;; esac
       paths+=("$tok")
     done
@@ -55,6 +69,19 @@ case "$cmd" in
     echo '{}'; exit 0
     ;;
 esac
+
+# Unbalanced quotes and the like leave xargs with nothing. Refuse rather than guess:
+# this is a data-loss guard, so an unparseable restore is exactly the case where
+# waving it through is worst.
+if [ "$parse_failed" -eq 1 ]; then
+  jq -nc '{
+    continue: false,
+    stopReason: ("Blocked: could not parse the paths out of this restore command (unbalanced quotes?), " +
+                 "so it cannot be checked for uncommitted work. Refusing to guess -- rerun with simple " +
+                 "quoting, or use `git stash push -- <paths>` which is recoverable either way.")
+  }'
+  exit 0
+fi
 
 [ ${#paths[@]} -eq 0 ] && { echo '{}'; exit 0; }
 

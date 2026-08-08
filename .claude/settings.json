@@ -17,7 +17,7 @@
             "type": "command",
             "command": "hook=.claude/hooks/git-restore-guard.sh; if [ -f \"$hook\" ]; then bash \"$hook\"; else echo \"{}\"; fi",
             "timeout": 15,
-            "statusMessage": "Checking staged content for conflict markers..."
+            "statusMessage": "Checking for uncommitted changes a restore would discard..."
           },
           {
             "type": "command",
