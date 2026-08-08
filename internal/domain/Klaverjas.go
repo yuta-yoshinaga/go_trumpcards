@@ -649,7 +649,7 @@ func (g *Klaverjas) cpuSelectPlayCard(playerIdx int) int {
 func (g *Klaverjas) cpuPlaySmart(playerIdx int, valid []int) int {
 	player := g.players[playerIdx]
 	if len(g.currentTrick) == 0 {
-		return g.minBy(player, valid, func(c *Card) int {
+		return pickLowest(player, valid, func(c *Card) int {
 			return g.cardPoints(c)*100 + g.klaverjasRank(c)
 		})
 	}
@@ -665,42 +665,16 @@ func (g *Klaverjas) cpuPlaySmart(playerIdx int, valid []int) int {
 		// 味方が勝っている: 得点の高い札を渡す (勝ち札以外があればそれ)。
 		nonWinners := klaverjasFilter(valid, func(idx int) bool { return g.klaverjasRank(player.GetCard(idx)) < topRank })
 		if len(nonWinners) > 0 {
-			return g.maxBy(player, nonWinners, func(c *Card) int { return g.cardPoints(c) })
+			return pickHighest(player, nonWinners, func(c *Card) int { return g.cardPoints(c) })
 		}
-		return g.minBy(player, valid, func(c *Card) int { return g.klaverjasRank(c) })
+		return pickLowest(player, valid, func(c *Card) int { return g.klaverjasRank(c) })
 	}
 	if trickPts > 0 && len(winners) > 0 {
-		return g.minBy(player, winners, func(c *Card) int { return g.klaverjasRank(c) })
+		return pickLowest(player, winners, func(c *Card) int { return g.klaverjasRank(c) })
 	}
-	return g.minBy(player, valid, func(c *Card) int {
+	return pickLowest(player, valid, func(c *Card) int {
 		return g.cardPoints(c)*100 + g.klaverjasRank(c)
 	})
-}
-
-// minBy score が最小となるインデックスを返す。
-func (g *Klaverjas) minBy(player *KlaverjasPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s < bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
-}
-
-// maxBy score が最大となるインデックスを返す。
-func (g *Klaverjas) maxBy(player *KlaverjasPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s > bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
 }
 
 // klaverjasFilter 述語を満たすインデックスを抽出する。

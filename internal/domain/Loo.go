@@ -727,41 +727,17 @@ func (g *Loo) cpuPlaySmart(playerIdx int, valid []int) int {
 	player := g.players[playerIdx]
 	if len(g.currentTrick) == 0 {
 		// リード: 高い札で主導権を握る。
-		return g.maxBy(player, valid, func(c *Card) int { return g.looRank(c) })
+		return pickHighest(player, valid, func(c *Card) int { return g.looRank(c) })
 	}
 	winnerIdx := g.trickWinner()
 	top := g.trickTopRank(winnerIdx)
 	winners := looFilter(valid, func(idx int) bool { return g.looRank(player.GetCard(idx)) > top })
 	if len(winners) > 0 {
 		// 勝てるなら最小の勝ち札で勝つ。
-		return g.minBy(player, winners, func(c *Card) int { return g.looRank(c) })
+		return pickLowest(player, winners, func(c *Card) int { return g.looRank(c) })
 	}
 	// 勝てない: 最小の札を捨てる。
-	return g.minBy(player, valid, func(c *Card) int { return g.looRank(c) })
-}
-
-func (g *Loo) minBy(player *LooPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s < bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
-}
-
-func (g *Loo) maxBy(player *LooPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s > bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
+	return pickLowest(player, valid, func(c *Card) int { return g.looRank(c) })
 }
 
 func looFilter(indices []int, pred func(int) bool) []int {

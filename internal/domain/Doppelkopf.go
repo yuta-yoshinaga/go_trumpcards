@@ -864,7 +864,7 @@ func (g *Doppelkopf) cpuPlaySmart(playerIdx int, valid []int) int {
 	player := g.players[playerIdx]
 
 	if len(g.currentTrick) == 0 {
-		return g.minBy(player, valid, func(c *Card) int {
+		return pickLowest(player, valid, func(c *Card) int {
 			return dkCardPoints(c.GetValue())*100 + dkStrength(c)
 		})
 	}
@@ -887,14 +887,14 @@ func (g *Doppelkopf) cpuPlaySmart(playerIdx int, valid []int) int {
 
 	if len(follows) == 0 {
 		if partnerWinning {
-			return g.maxBy(player, valid, func(c *Card) int {
+			return pickHighest(player, valid, func(c *Card) int {
 				if dkIsTrump(c) {
 					return -dkStrength(c)
 				}
 				return dkCardPoints(c.GetValue())*100 - dkStrength(c)
 			})
 		}
-		return g.minBy(player, valid, func(c *Card) int {
+		return pickLowest(player, valid, func(c *Card) int {
 			return dkCardPoints(c.GetValue())*100 + dkStrength(c)
 		})
 	}
@@ -908,45 +908,19 @@ func (g *Doppelkopf) cpuPlaySmart(playerIdx int, valid []int) int {
 			return dkStrength(player.GetCard(idx)) < topStrength
 		})
 		if len(nonWinners) > 0 {
-			return g.maxBy(player, nonWinners, func(c *Card) int {
+			return pickHighest(player, nonWinners, func(c *Card) int {
 				return dkCardPoints(c.GetValue())*100 - dkStrength(c)
 			})
 		}
-		return g.minBy(player, follows, func(c *Card) int { return dkStrength(c) })
+		return pickLowest(player, follows, func(c *Card) int { return dkStrength(c) })
 	}
 
 	if trickPts > 0 && len(winners) > 0 {
-		return g.minBy(player, winners, func(c *Card) int { return dkStrength(c) })
+		return pickLowest(player, winners, func(c *Card) int { return dkStrength(c) })
 	}
-	return g.minBy(player, follows, func(c *Card) int {
+	return pickLowest(player, follows, func(c *Card) int {
 		return dkCardPoints(c.GetValue())*100 + dkStrength(c)
 	})
-}
-
-// minBy score が最小となるインデックスを返す。
-func (g *Doppelkopf) minBy(player *DoppelkopfPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s < bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
-}
-
-// maxBy score が最大となるインデックスを返す。
-func (g *Doppelkopf) maxBy(player *DoppelkopfPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s > bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
 }
 
 // dkFilter 述語を満たすインデックスを抽出する。

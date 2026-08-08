@@ -388,7 +388,7 @@ func (g *Sedma) cpuPlaySmart(playerIdx int, valid []int) int {
 	player := g.players[playerIdx]
 	// リード時: 7 とポイント札を温存し、価値の低い札を出す。
 	if len(g.currentTrick) == 0 {
-		return g.minBy(player, valid, func(c *Card) int { return sedmaLeadCost(c) })
+		return pickLowest(player, valid, func(c *Card) int { return sedmaLeadCost(c) })
 	}
 	leadRank := g.currentTrick[0].Card.GetValue()
 	trickPts := 0
@@ -403,7 +403,7 @@ func (g *Sedma) cpuPlaySmart(playerIdx int, valid []int) int {
 	})
 	// 味方が奪取中ならポイント札を渡して温存。
 	if partnerWinning {
-		return g.maxBy(player, valid, func(c *Card) int { return sedmaCardPoints(c) })
+		return pickHighest(player, valid, func(c *Card) int { return sedmaCardPoints(c) })
 	}
 	// ポイントがあり奪取できるなら、まず同ランク、無ければ 7 で奪取。
 	if trickPts > 0 && len(captures) > 0 {
@@ -414,7 +414,7 @@ func (g *Sedma) cpuPlaySmart(playerIdx int, valid []int) int {
 		return captures[0]
 	}
 	// 奪取しない: 価値の低い非ポイント・非 7 札を捨てる。
-	return g.minBy(player, valid, func(c *Card) int { return sedmaLeadCost(c) })
+	return pickLowest(player, valid, func(c *Card) int { return sedmaLeadCost(c) })
 }
 
 // sedmaLeadCost リード/ディスカード時の温存コスト (低いほど捨ててよい)。
@@ -423,32 +423,6 @@ func sedmaLeadCost(c *Card) int {
 		return 100 // 7 は最後まで温存
 	}
 	return sedmaCardPoints(c)*10 + sedmaSortRank(c.GetValue())
-}
-
-// minBy score が最小となるインデックスを返す。
-func (g *Sedma) minBy(player *SedmaPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s < bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
-}
-
-// maxBy score が最大となるインデックスを返す。
-func (g *Sedma) maxBy(player *SedmaPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s > bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
 }
 
 // sedmaFilter 述語を満たすインデックスを抽出する。

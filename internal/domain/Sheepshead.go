@@ -1113,7 +1113,7 @@ func (g *Sheepshead) cpuPlaySmart(playerIdx int, valid []int) int {
 
 	// リード: 得点・強さの低い札を出して温存する。
 	if len(g.currentTrick) == 0 {
-		return g.minBy(player, valid, func(c *Card) int {
+		return pickLowest(player, valid, func(c *Card) int {
 			return sheepsheadCardPoints(c.GetValue())*100 + sheepsheadStrength(c)
 		})
 	}
@@ -1137,14 +1137,14 @@ func (g *Sheepshead) cpuPlaySmart(playerIdx int, valid []int) int {
 	if len(follows) == 0 {
 		// ボイド: 味方が勝っていれば得点札を渡し、そうでなければ低得点札を捨てる。
 		if partnerWinning {
-			return g.maxBy(player, valid, func(c *Card) int {
+			return pickHighest(player, valid, func(c *Card) int {
 				if sheepsheadIsTrump(c) {
 					return -sheepsheadStrength(c) // 切り札は温存
 				}
 				return sheepsheadCardPoints(c.GetValue())*100 - sheepsheadStrength(c)
 			})
 		}
-		return g.minBy(player, valid, func(c *Card) int {
+		return pickLowest(player, valid, func(c *Card) int {
 			return sheepsheadCardPoints(c.GetValue())*100 + sheepsheadStrength(c)
 		})
 	}
@@ -1158,17 +1158,17 @@ func (g *Sheepshead) cpuPlaySmart(playerIdx int, valid []int) int {
 			return sheepsheadStrength(player.GetCard(idx)) < topStrength
 		})
 		if len(nonWinners) > 0 {
-			return g.maxBy(player, nonWinners, func(c *Card) int {
+			return pickHighest(player, nonWinners, func(c *Card) int {
 				return sheepsheadCardPoints(c.GetValue())*100 - sheepsheadStrength(c)
 			})
 		}
-		return g.minBy(player, follows, func(c *Card) int { return sheepsheadStrength(c) })
+		return pickLowest(player, follows, func(c *Card) int { return sheepsheadStrength(c) })
 	}
 
 	if trickPts > 0 && len(winners) > 0 {
-		return g.minBy(player, winners, func(c *Card) int { return sheepsheadStrength(c) })
+		return pickLowest(player, winners, func(c *Card) int { return sheepsheadStrength(c) })
 	}
-	return g.minBy(player, follows, func(c *Card) int {
+	return pickLowest(player, follows, func(c *Card) int {
 		return sheepsheadCardPoints(c.GetValue())*100 + sheepsheadStrength(c)
 	})
 }
@@ -1177,32 +1177,6 @@ func (g *Sheepshead) cpuPlaySmart(playerIdx int, valid []int) int {
 // CPU はチーム構成を把握しているものとして扱う (簡易 AI)。
 func (g *Sheepshead) cpuSameTeam(a, b int) bool {
 	return g.isPickerTeam(a) == g.isPickerTeam(b)
-}
-
-// minBy score が最小となるインデックスを返す。
-func (g *Sheepshead) minBy(player *SheepsheadPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s < bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
-}
-
-// maxBy score が最大となるインデックスを返す。
-func (g *Sheepshead) maxBy(player *SheepsheadPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s > bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
 }
 
 // sheepsheadFilter 述語を満たすインデックスを抽出する。

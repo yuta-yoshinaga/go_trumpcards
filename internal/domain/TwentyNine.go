@@ -653,7 +653,7 @@ func (g *TwentyNine) cpuSelectPlayCard(playerIdx int) int {
 func (g *TwentyNine) cpuPlaySmart(playerIdx int, valid []int) int {
 	player := g.players[playerIdx]
 	if len(g.currentTrick) == 0 {
-		return g.minBy(player, valid, func(c *Card) int { return twentyNineCardPoints(c)*100 + g.twentyNineRank(c) })
+		return pickLowest(player, valid, func(c *Card) int { return twentyNineCardPoints(c)*100 + g.twentyNineRank(c) })
 	}
 	winnerIdx := g.trickWinner()
 	topRank := g.trickTopRank(winnerIdx)
@@ -661,38 +661,12 @@ func (g *TwentyNine) cpuPlaySmart(playerIdx int, valid []int) int {
 	winners := twentyNineFilter(valid, func(idx int) bool { return g.twentyNineRank(player.GetCard(idx)) > topRank })
 	if partnerWinning {
 		// 味方が勝っている: 得点札を渡す。
-		return g.maxBy(player, valid, func(c *Card) int { return twentyNineCardPoints(c) })
+		return pickHighest(player, valid, func(c *Card) int { return twentyNineCardPoints(c) })
 	}
 	if len(winners) > 0 {
-		return g.minBy(player, winners, func(c *Card) int { return g.twentyNineRank(c) })
+		return pickLowest(player, winners, func(c *Card) int { return g.twentyNineRank(c) })
 	}
-	return g.minBy(player, valid, func(c *Card) int { return twentyNineCardPoints(c)*100 + g.twentyNineRank(c) })
-}
-
-// minBy score が最小となるインデックスを返す。
-func (g *TwentyNine) minBy(player *TwentyNinePlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s < bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
-}
-
-// maxBy score が最大となるインデックスを返す。
-func (g *TwentyNine) maxBy(player *TwentyNinePlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s > bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
+	return pickLowest(player, valid, func(c *Card) int { return twentyNineCardPoints(c)*100 + g.twentyNineRank(c) })
 }
 
 // twentyNineFilter 述語を満たすインデックスを抽出する。

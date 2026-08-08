@@ -618,9 +618,9 @@ func (g *Nap) cpuPlaySmart(playerIdx int, valid []int) int {
 	isDeclarer := playerIdx == g.declarerIdx
 	if len(g.currentTrick) == 0 {
 		if isDeclarer {
-			return g.maxBy(player, valid, func(c *Card) int { return g.napRank(c) })
+			return pickHighest(player, valid, func(c *Card) int { return g.napRank(c) })
 		}
-		return g.minBy(player, valid, func(c *Card) int { return g.napRank(c) })
+		return pickLowest(player, valid, func(c *Card) int { return g.napRank(c) })
 	}
 	winnerIdx := g.trickWinner()
 	topRank := g.trickTopRank(winnerIdx)
@@ -629,35 +629,9 @@ func (g *Nap) cpuPlaySmart(playerIdx int, valid []int) int {
 	declarerWinning := winnerIdx == g.declarerIdx
 	wantWin := isDeclarer || !declarerWinning
 	if wantWin && len(winners) > 0 {
-		return g.minBy(player, winners, func(c *Card) int { return g.napRank(c) })
+		return pickLowest(player, winners, func(c *Card) int { return g.napRank(c) })
 	}
-	return g.minBy(player, valid, func(c *Card) int { return g.napRank(c) })
-}
-
-// minBy score が最小となるインデックスを返す。
-func (g *Nap) minBy(player *NapPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s < bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
-}
-
-// maxBy score が最大となるインデックスを返す。
-func (g *Nap) maxBy(player *NapPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s > bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
+	return pickLowest(player, valid, func(c *Card) int { return g.napRank(c) })
 }
 
 // napFilter 述語を満たすインデックスを抽出する。

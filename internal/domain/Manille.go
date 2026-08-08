@@ -488,7 +488,7 @@ func (g *Manille) cpuSelectPlayCard(playerIdx int) int {
 func (g *Manille) cpuPlaySmart(playerIdx int, valid []int) int {
 	player := g.players[playerIdx]
 	if len(g.currentTrick) == 0 {
-		return g.minBy(player, valid, func(c *Card) int {
+		return pickLowest(player, valid, func(c *Card) int {
 			return manilleCardPoints(c)*100 + g.manilleRank(c)
 		})
 	}
@@ -504,42 +504,16 @@ func (g *Manille) cpuPlaySmart(playerIdx int, valid []int) int {
 		// 味方が勝っている: 得点の高い札を渡す。
 		nonWinners := manilleFilter(valid, func(idx int) bool { return g.manilleRank(player.GetCard(idx)) < topRank })
 		if len(nonWinners) > 0 {
-			return g.maxBy(player, nonWinners, func(c *Card) int { return manilleCardPoints(c) })
+			return pickHighest(player, nonWinners, func(c *Card) int { return manilleCardPoints(c) })
 		}
-		return g.minBy(player, valid, func(c *Card) int { return g.manilleRank(c) })
+		return pickLowest(player, valid, func(c *Card) int { return g.manilleRank(c) })
 	}
 	if trickPts > 0 && len(winners) > 0 {
-		return g.minBy(player, winners, func(c *Card) int { return g.manilleRank(c) })
+		return pickLowest(player, winners, func(c *Card) int { return g.manilleRank(c) })
 	}
-	return g.minBy(player, valid, func(c *Card) int {
+	return pickLowest(player, valid, func(c *Card) int {
 		return manilleCardPoints(c)*100 + g.manilleRank(c)
 	})
-}
-
-// minBy score が最小となるインデックスを返す。
-func (g *Manille) minBy(player *ManillePlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s < bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
-}
-
-// maxBy score が最大となるインデックスを返す。
-func (g *Manille) maxBy(player *ManillePlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s > bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
 }
 
 // manilleFilter 述語を満たすインデックスを抽出する。

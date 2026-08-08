@@ -813,7 +813,7 @@ func (g *Calabresella) cpuPlaySmart(playerIdx int, valid []int) int {
 
 	// リード: 得点・強さの低い札を出して温存する。
 	if len(g.currentTrick) == 0 {
-		return g.minBy(player, valid, func(c *Card) int {
+		return pickLowest(player, valid, func(c *Card) int {
 			return calabresellaThirds(c.GetValue())*100 + calabresellaStrength(c.GetValue())
 		})
 	}
@@ -836,7 +836,7 @@ func (g *Calabresella) cpuPlaySmart(playerIdx int, valid []int) int {
 
 	if len(follows) == 0 {
 		// ボイド: 得点・強さの低い札を捨てて温存する。
-		return g.minBy(player, valid, func(c *Card) int {
+		return pickLowest(player, valid, func(c *Card) int {
 			return calabresellaThirds(c.GetValue())*100 + calabresellaStrength(c.GetValue())
 		})
 	}
@@ -851,47 +851,21 @@ func (g *Calabresella) cpuPlaySmart(playerIdx int, valid []int) int {
 			return calabresellaStrength(player.GetCard(idx).GetValue()) < topStrength
 		})
 		if len(nonWinners) > 0 {
-			return g.maxBy(player, nonWinners, func(c *Card) int {
+			return pickHighest(player, nonWinners, func(c *Card) int {
 				return calabresellaThirds(c.GetValue())*100 - calabresellaStrength(c.GetValue())
 			})
 		}
-		return g.minBy(player, follows, func(c *Card) int { return calabresellaStrength(c.GetValue()) })
+		return pickLowest(player, follows, func(c *Card) int { return calabresellaStrength(c.GetValue()) })
 	}
 
 	// 相手が勝っている: 得点があり勝てるなら最小限の札で取りに行く。
 	if trickThirds > 0 && len(winners) > 0 {
-		return g.minBy(player, winners, func(c *Card) int { return calabresellaStrength(c.GetValue()) })
+		return pickLowest(player, winners, func(c *Card) int { return calabresellaStrength(c.GetValue()) })
 	}
 	// 取れない/取る価値がない: 得点・強さの低い札でダックする。
-	return g.minBy(player, follows, func(c *Card) int {
+	return pickLowest(player, follows, func(c *Card) int {
 		return calabresellaThirds(c.GetValue())*100 + calabresellaStrength(c.GetValue())
 	})
-}
-
-// minBy score が最小となるインデックスを返す。
-func (g *Calabresella) minBy(player *CalabresellaPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s < bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
-}
-
-// maxBy score が最大となるインデックスを返す。
-func (g *Calabresella) maxBy(player *CalabresellaPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s > bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
 }
 
 // calabresellaFilter 述語を満たすインデックスを抽出する。
