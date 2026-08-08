@@ -199,6 +199,76 @@ describe('TutorialOverlay', () => {
     expect(overlayRect).toHaveAttribute('fill', 'rgba(0,0,0,0.75)');
   });
 
+  // Advancing a step used to throw focus out of the overlay: the effect that
+  // tracks `step.target` restored focus to the trigger in its cleanup, so it
+  // fired on every step change, while the focus-trap effect had `[]` deps and
+  // never put focus back. From step 2 on, focus sat outside an `aria-modal`
+  // dialog and the element-level Tab/Escape handlers stopped firing entirely.
+  // The two steps must use different targets, or the effect does not re-run
+  // and the bug is not reached. See issue #5184.
+  describe('advancing a step', () => {
+    let secondTarget: HTMLDivElement;
+    const stepTwo: TutorialStep = { ...step, target: '[data-tutorial="second-target"]' };
+
+    beforeEach(() => {
+      secondTarget = document.createElement('div');
+      secondTarget.setAttribute('data-tutorial', 'second-target');
+      secondTarget.getBoundingClientRect = vi.fn().mockReturnValue({
+        top: 200,
+        left: 60,
+        width: 120,
+        height: 30,
+        right: 180,
+        bottom: 230,
+      });
+      document.body.appendChild(secondTarget);
+    });
+
+    afterEach(() => {
+      secondTarget.remove();
+    });
+
+    it('keeps focus inside the overlay', () => {
+      const outside = document.createElement('button');
+      document.body.appendChild(outside);
+      outside.focus();
+
+      const { rerender } = render(<TutorialOverlay {...defaultProps} />);
+      expect(screen.getByRole('dialog').contains(document.activeElement)).toBe(true);
+
+      rerender(<TutorialOverlay {...defaultProps} step={stepTwo} stepIndex={1} />);
+      expect(screen.getByRole('dialog').contains(document.activeElement)).toBe(true);
+      expect(document.activeElement).not.toBe(outside);
+
+      outside.remove();
+    });
+
+    it('still skips on Escape', () => {
+      const onSkip = vi.fn();
+      const { rerender } = render(<TutorialOverlay {...defaultProps} onSkip={onSkip} />);
+      rerender(<TutorialOverlay {...defaultProps} onSkip={onSkip} step={stepTwo} stepIndex={1} />);
+
+      fireEvent.keyDown(document, { key: 'Escape' });
+      expect(onSkip).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not restore focus to the trigger mid-tutorial', () => {
+      const outside = document.createElement('button');
+      document.body.appendChild(outside);
+      outside.focus();
+
+      const { rerender, unmount } = render(<TutorialOverlay {...defaultProps} />);
+      rerender(<TutorialOverlay {...defaultProps} step={stepTwo} stepIndex={1} />);
+      expect(document.activeElement).not.toBe(outside);
+
+      // Only finishing the tutorial hands focus back.
+      unmount();
+      expect(document.activeElement).toBe(outside);
+
+      outside.remove();
+    });
+  });
+
   it('restores focus on unmount', () => {
     const triggerButton = document.createElement('button');
     document.body.appendChild(triggerButton);
