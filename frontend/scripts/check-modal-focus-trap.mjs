@@ -23,6 +23,13 @@
 // this guard does not look at it. So the guard says "claim modality ⇒ trap", not
 // "trap everywhere".
 //
+// Known limitation: the two checks below are file-level, not scoped to the
+// element that declares aria-modal. A file holding two dialogs — one correctly
+// on <Modal>, one hand-rolled that also sets aria-modal — would pass. Scoping it
+// properly needs an AST, which is a lot of machinery for a codebase that keeps
+// one dialog per file; if that convention ever breaks, tighten this rather than
+// trusting it. Raised in review on PR #5195.
+//
 // Usage: check-modal-focus-trap.mjs [srcDir]
 
 import { readdir, readFile } from 'node:fs/promises';
