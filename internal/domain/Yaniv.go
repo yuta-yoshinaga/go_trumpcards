@@ -783,10 +783,7 @@ func (g *Yaniv) GetPlayer(i int) *YanivPlayer {
 
 // IsHumanTurn 現在の手番が人間かを返す
 func (g *Yaniv) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // GetCallerIdx Yaniv を宣言したプレイヤーインデックスを取得する (-1 = なし)

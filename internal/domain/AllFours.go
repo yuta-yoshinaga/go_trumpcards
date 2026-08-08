@@ -687,10 +687,7 @@ func (a *AllFours) GetPlayer(i int) *AllFoursPlayer {
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (a *AllFours) IsHumanTurn() bool {
-	if a.currentPlayerIdx < 0 || a.currentPlayerIdx >= len(a.players) {
-		return false
-	}
-	return a.players[a.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(a.players, a.currentPlayerIdx)
 }
 
 // GetConfig 設定取得

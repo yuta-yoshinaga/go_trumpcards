@@ -741,10 +741,7 @@ func (e *Ecarte) GetStockRemaining() int { return e.trumpCards.GetRemainingCount
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (e *Ecarte) IsHumanTurn() bool {
-	if e.currentPlayerIdx < 0 || e.currentPlayerIdx >= len(e.players) {
-		return false
-	}
-	return e.players[e.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(e.players, e.currentPlayerIdx)
 }
 
 // GetConfig 設定取得

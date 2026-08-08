@@ -791,10 +791,7 @@ func (g *TwentyNine) GetPlayer(i int) *TwentyNinePlayer {
 
 // IsHumanTurn 現在の手番が人間か (プレイフェーズ)。
 func (g *TwentyNine) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // GetConfig 設定取得

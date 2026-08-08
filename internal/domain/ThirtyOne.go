@@ -682,10 +682,7 @@ func (g *ThirtyOne) GetPlayer(i int) *ThirtyOnePlayer {
 
 // IsHumanTurn 現在の手番が人間かを返す
 func (g *ThirtyOne) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // GetKnockerIdx ノックしたプレイヤーインデックスを取得する (-1 = 未ノック)

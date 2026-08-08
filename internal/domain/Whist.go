@@ -326,10 +326,7 @@ func (w *Whist) SetTeamScore(team, score int) {
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (w *Whist) IsHumanTurn() bool {
-	if w.currentPlayerIdx < 0 || w.currentPlayerIdx >= len(w.players) {
-		return false
-	}
-	return w.players[w.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(w.players, w.currentPlayerIdx)
 }
 
 // GetConfig 設定取得

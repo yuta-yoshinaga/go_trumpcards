@@ -401,10 +401,7 @@ func (t *TwoTenJack) GetPlayer(i int) *TwoTenJackPlayer {
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (t *TwoTenJack) IsHumanTurn() bool {
-	if t.currentPlayerIdx < 0 || t.currentPlayerIdx >= len(t.players) {
-		return false
-	}
-	return t.players[t.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(t.players, t.currentPlayerIdx)
 }
 
 // IsHumanDeclareTurn 現在の宣言手番が人間かどうか

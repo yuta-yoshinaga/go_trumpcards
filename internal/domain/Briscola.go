@@ -336,10 +336,7 @@ func (b *Briscola) GetStockRemaining() int {
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (b *Briscola) IsHumanTurn() bool {
-	if b.currentPlayerIdx < 0 || b.currentPlayerIdx >= len(b.players) {
-		return false
-	}
-	return b.players[b.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(b.players, b.currentPlayerIdx)
 }
 
 // GetConfig 設定取得

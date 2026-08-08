@@ -737,10 +737,7 @@ func (g *Chinchon) GetPlayer(i int) *ChinchonPlayer {
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (g *Chinchon) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // GetPlayerDeadwoodValue はプレイヤーの手札を最善メルド分割したときのデッドウッド点を返す（プレゼンター向け）。

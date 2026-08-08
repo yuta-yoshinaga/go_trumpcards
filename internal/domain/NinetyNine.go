@@ -443,10 +443,7 @@ func (o *NinetyNine) GetTargetScore() int { return o.config.TargetScore }
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (o *NinetyNine) IsHumanTurn() bool {
-	if o.currentPlayerIdx < 0 || o.currentPlayerIdx >= len(o.players) {
-		return false
-	}
-	return o.players[o.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(o.players, o.currentPlayerIdx)
 }
 
 // IsHumanBidTurn 現在のビッド手番が人間かどうか

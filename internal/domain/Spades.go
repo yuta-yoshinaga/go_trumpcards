@@ -403,10 +403,7 @@ func (s *Spades) SetBidPlayerIdx(idx int) { s.bidPlayerIdx = idx }
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (s *Spades) IsHumanTurn() bool {
-	if s.currentPlayerIdx < 0 || s.currentPlayerIdx >= len(s.players) {
-		return false
-	}
-	return s.players[s.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(s.players, s.currentPlayerIdx)
 }
 
 // IsHumanBidTurn 現在のビッド手番が人間かどうか

@@ -531,10 +531,7 @@ func (g *ContractRummy) advanceTurn() {
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (g *ContractRummy) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // CpuPlay 現在の手番が CPU の場合にターンを実行する

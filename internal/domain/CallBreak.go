@@ -395,10 +395,7 @@ func (cb *CallBreak) SetBidPlayerIdx(idx int) { cb.bidPlayerIdx = idx }
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (cb *CallBreak) IsHumanTurn() bool {
-	if cb.currentPlayerIdx < 0 || cb.currentPlayerIdx >= len(cb.players) {
-		return false
-	}
-	return cb.players[cb.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(cb.players, cb.currentPlayerIdx)
 }
 
 // IsHumanBidTurn 現在のビッド手番が人間かどうか

@@ -407,10 +407,7 @@ func (o *OhHell) SetBidPlayerIdx(idx int) { o.bidPlayerIdx = idx }
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (o *OhHell) IsHumanTurn() bool {
-	if o.currentPlayerIdx < 0 || o.currentPlayerIdx >= len(o.players) {
-		return false
-	}
-	return o.players[o.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(o.players, o.currentPlayerIdx)
 }
 
 // IsHumanBidTurn 現在のビッド手番が人間かどうか

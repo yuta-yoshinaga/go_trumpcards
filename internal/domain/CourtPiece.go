@@ -494,10 +494,7 @@ func (c *CourtPiece) SetConfig(cfg CourtPieceConfig) { c.config = cfg }
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (c *CourtPiece) IsHumanTurn() bool {
-	if c.currentPlayerIdx < 0 || c.currentPlayerIdx >= len(c.players) {
-		return false
-	}
-	return c.players[c.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(c.players, c.currentPlayerIdx)
 }
 
 // IsHumanTrumpTurn 現在のトランプ宣言手番が人間かどうか

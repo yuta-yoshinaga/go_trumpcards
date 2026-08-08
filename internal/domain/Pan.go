@@ -443,10 +443,7 @@ func (g *Pan) guardHumanAction(want PanPhase) error {
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (g *Pan) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // --- CPU ---

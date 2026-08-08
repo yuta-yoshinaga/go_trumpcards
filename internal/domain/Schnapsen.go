@@ -392,10 +392,7 @@ func (s *Schnapsen) IsEndgame() bool {
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (s *Schnapsen) IsHumanTurn() bool {
-	if s.currentPlayerIdx < 0 || s.currentPlayerIdx >= len(s.players) {
-		return false
-	}
-	return s.players[s.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(s.players, s.currentPlayerIdx)
 }
 
 // GetConfig 設定取得

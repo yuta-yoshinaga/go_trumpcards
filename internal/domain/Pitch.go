@@ -735,10 +735,7 @@ func (p *Pitch) GetPlayer(i int) *PitchPlayer {
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (p *Pitch) IsHumanTurn() bool {
-	if p.currentPlayerIdx < 0 || p.currentPlayerIdx >= len(p.players) {
-		return false
-	}
-	return p.players[p.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(p.players, p.currentPlayerIdx)
 }
 
 // IsHumanBidTurn 現在のビッド手番が人間かどうか

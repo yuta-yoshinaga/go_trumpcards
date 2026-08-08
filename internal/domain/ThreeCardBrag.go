@@ -686,10 +686,7 @@ func (g *ThreeCardBrag) SetConfig(cfg ThreeCardBragConfig) { g.config = cfg }
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (g *ThreeCardBrag) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // CanShow 現在の手番プレイヤーが Show を要求できるか (Web/CUI 用)。

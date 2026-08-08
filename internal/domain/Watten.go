@@ -1178,10 +1178,7 @@ func (g *Watten) GetPlayer(i int) *WattenPlayer {
 
 // IsHumanTurn 現在のプレイ手番が人間かどうか
 func (g *Watten) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // IsHumanDeclareTurn 現在の宣言手番 (ディーラー) が人間かどうか
