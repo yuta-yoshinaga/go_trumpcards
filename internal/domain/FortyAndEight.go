@@ -47,14 +47,14 @@ type FortyAndEightConfig struct{}
 
 // FortyAndEight フォーティ・アンド・エイトゲームクラス
 type FortyAndEight struct {
-	trumpCards  *TrumpCards
-	tableau     [FortyAndEightTableauCnt][]*FortyAndEightTableauCard
-	stock       []*Card
-	waste       []*Card
-	foundation  [FortyAndEightFoundationCnt][]*Card
-	phase       FortyAndEightPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	tableau    [FortyAndEightTableauCnt][]*FortyAndEightTableauCard
+	stock      []*Card
+	waste      []*Card
+	foundation [FortyAndEightFoundationCnt][]*Card
+	phase      FortyAndEightPhase
+	moveCount  int
+	actionLogBase
 	history     []*fortyAndEightSnapshot
 	isStalemate bool
 	redealUsed  bool
@@ -445,9 +445,6 @@ func (ft *FortyAndEight) GetTableau() [FortyAndEightTableauCnt][]*FortyAndEightT
 // GetFoundation ファンデーション取得
 func (ft *FortyAndEight) GetFoundation() [FortyAndEightFoundationCnt][]*Card { return ft.foundation }
 
-// GetActionLog 棋譜取得
-func (ft *FortyAndEight) GetActionLog() []*ActionLogEntry { return ft.actionLog }
-
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (ft *FortyAndEight) GetGameEndFlag() bool { return ft.phase != FortyAndEightPhasePlaying }
 
@@ -644,13 +641,7 @@ func (ft *FortyAndEight) restoreSnapshot(snap *fortyAndEightSnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (ft *FortyAndEight) appendLog(actionType, detail string, cards []*Card) {
-	ft.actionLog = append(ft.actionLog, &ActionLogEntry{
-		TurnNumber: ft.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	ft.appendLogAt(ft.moveCount, 0, actionType, detail, cards)
 }
 
 // fortyAndEightJSON is the JSON wire format for FortyAndEight.

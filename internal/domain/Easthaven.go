@@ -40,13 +40,13 @@ type EasthavenHint struct {
 
 // Easthaven イーストヘイブンゲームクラス
 type Easthaven struct {
-	trumpCards  *TrumpCards
-	tableau     [EasthavenTableauCnt][]*KlondikeTableauCard
-	stock       []*Card
-	foundation  [EasthavenFoundationCnt][]*Card
-	phase       EasthavenPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	tableau    [EasthavenTableauCnt][]*KlondikeTableauCard
+	stock      []*Card
+	foundation [EasthavenFoundationCnt][]*Card
+	phase      EasthavenPhase
+	moveCount  int
+	actionLogBase
 	history     []*easthavenSnapshot
 	isStalemate bool
 }
@@ -384,9 +384,6 @@ func (e *Easthaven) GetTableau() [EasthavenTableauCnt][]*KlondikeTableauCard { r
 // GetFoundation ファンデーション取得
 func (e *Easthaven) GetFoundation() [EasthavenFoundationCnt][]*Card { return e.foundation }
 
-// GetActionLog 棋譜取得
-func (e *Easthaven) GetActionLog() []*ActionLogEntry { return e.actionLog }
-
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (e *Easthaven) GetGameEndFlag() bool { return e.phase != EasthavenPhasePlaying }
 
@@ -596,13 +593,7 @@ func (e *Easthaven) restoreSnapshot(snap *easthavenSnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (e *Easthaven) appendLog(actionType, detail string, cards []*Card) {
-	e.actionLog = append(e.actionLog, &ActionLogEntry{
-		TurnNumber: e.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	e.appendLogAt(e.moveCount, 0, actionType, detail, cards)
 }
 
 // easthavenMaxSliceLen caps slice sizes during deserialisation.

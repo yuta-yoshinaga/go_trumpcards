@@ -97,19 +97,19 @@ type BraidHint struct {
 //   - **カードは基礎札にしか動かせない**（issue は触れていない）
 //   - 基礎札は**同スート**で積む（issue は触れていない）
 type Braid struct {
-	trumpCards  *TrumpCards
-	braid       []*Card
-	fields      [BraidFieldCnt]*Card
-	helpers     [BraidHelperCnt]*Card
-	foundation  [BraidFoundationCnt][]*Card
-	stock       []*Card
-	waste       []*Card
-	baseRank    int
-	direction   BraidDirection
-	passesUsed  int
-	phase       BraidPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	braid      []*Card
+	fields     [BraidFieldCnt]*Card
+	helpers    [BraidHelperCnt]*Card
+	foundation [BraidFoundationCnt][]*Card
+	stock      []*Card
+	waste      []*Card
+	baseRank   int
+	direction  BraidDirection
+	passesUsed int
+	phase      BraidPhase
+	moveCount  int
+	actionLogBase
 	history     []*braidSnapshot
 	isStalemate bool
 }
@@ -555,9 +555,6 @@ func (b *Braid) GetFoundation() [BraidFoundationCnt][]*Card { return b.foundatio
 // GetPassesUsed 山札を通した回数
 func (b *Braid) GetPassesUsed() int { return b.passesUsed }
 
-// GetActionLog 棋譜取得
-func (b *Braid) GetActionLog() []*ActionLogEntry { return b.actionLog }
-
 // GetGameEndFlag ゲーム終了フラグ
 func (b *Braid) GetGameEndFlag() bool { return b.phase != BraidPhasePlaying }
 
@@ -743,13 +740,7 @@ func (b *Braid) takeSnapshot() {
 
 // appendLog 棋譜エントリを追加
 func (b *Braid) appendLog(actionType, detail string, cards []*Card) {
-	b.actionLog = append(b.actionLog, &ActionLogEntry{
-		TurnNumber: b.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	b.appendLogAt(b.moveCount, 0, actionType, detail, cards)
 }
 
 // braidSnapshotJSON is the wire format for a single undo snapshot.

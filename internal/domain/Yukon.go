@@ -37,12 +37,12 @@ type YukonHint struct {
 
 // Yukon ユーコンゲームクラス
 type Yukon struct {
-	trumpCards  *TrumpCards
-	tableau     [YukonTableauCnt][]*KlondikeTableauCard
-	foundation  [YukonFoundationCnt][]*Card
-	phase       YukonPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	tableau    [YukonTableauCnt][]*KlondikeTableauCard
+	foundation [YukonFoundationCnt][]*Card
+	phase      YukonPhase
+	moveCount  int
+	actionLogBase
 	history     []*yukonSnapshot
 	isStalemate bool
 }
@@ -346,9 +346,6 @@ func (y *Yukon) GetTableau() [YukonTableauCnt][]*KlondikeTableauCard { return y.
 // GetFoundation ファンデーション取得
 func (y *Yukon) GetFoundation() [YukonFoundationCnt][]*Card { return y.foundation }
 
-// GetActionLog 棋譜取得
-func (y *Yukon) GetActionLog() []*ActionLogEntry { return y.actionLog }
-
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (y *Yukon) GetGameEndFlag() bool { return y.phase != YukonPhasePlaying }
 
@@ -511,13 +508,7 @@ func (y *Yukon) restoreSnapshot(snap *yukonSnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (y *Yukon) appendLog(actionType, detail string, cards []*Card) {
-	y.actionLog = append(y.actionLog, &ActionLogEntry{
-		TurnNumber: y.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	y.appendLogAt(y.moveCount, 0, actionType, detail, cards)
 }
 
 // yukonJSON is the JSON wire format for Yukon.

@@ -47,14 +47,14 @@ type FortyThievesConfig struct{}
 
 // FortyThieves フォーティシーブスゲームクラス
 type FortyThieves struct {
-	trumpCards  *TrumpCards
-	tableau     [FortyThievesTableauCnt][]*FortyThievesTableauCard
-	stock       []*Card
-	waste       []*Card
-	foundation  [FortyThievesFoundationCnt][]*Card
-	phase       FortyThievesPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	tableau    [FortyThievesTableauCnt][]*FortyThievesTableauCard
+	stock      []*Card
+	waste      []*Card
+	foundation [FortyThievesFoundationCnt][]*Card
+	phase      FortyThievesPhase
+	moveCount  int
+	actionLogBase
 	history     []*fortyThievesSnapshot
 	isStalemate bool
 }
@@ -413,9 +413,6 @@ func (ft *FortyThieves) GetTableau() [FortyThievesTableauCnt][]*FortyThievesTabl
 // GetFoundation ファンデーション取得
 func (ft *FortyThieves) GetFoundation() [FortyThievesFoundationCnt][]*Card { return ft.foundation }
 
-// GetActionLog 棋譜取得
-func (ft *FortyThieves) GetActionLog() []*ActionLogEntry { return ft.actionLog }
-
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (ft *FortyThieves) GetGameEndFlag() bool { return ft.phase != FortyThievesPhasePlaying }
 
@@ -595,13 +592,7 @@ func (ft *FortyThieves) restoreSnapshot(snap *fortyThievesSnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (ft *FortyThieves) appendLog(actionType, detail string, cards []*Card) {
-	ft.actionLog = append(ft.actionLog, &ActionLogEntry{
-		TurnNumber: ft.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	ft.appendLogAt(ft.moveCount, 0, actionType, detail, cards)
 }
 
 // fortyThievesJSON is the JSON wire format for FortyThieves.

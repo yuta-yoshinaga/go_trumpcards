@@ -46,12 +46,12 @@ type BakersDozenConfig struct{}
 
 // BakersDozen ベーカーズダズンゲームクラス
 type BakersDozen struct {
-	trumpCards  *TrumpCards
-	tableau     [BakersDozenTableauCnt][]*BakersDozenTableauCard
-	foundation  [BakersDozenFoundationCnt][]*Card
-	phase       BakersDozenPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	tableau    [BakersDozenTableauCnt][]*BakersDozenTableauCard
+	foundation [BakersDozenFoundationCnt][]*Card
+	phase      BakersDozenPhase
+	moveCount  int
+	actionLogBase
 	history     []*bakersDozenSnapshot
 	isStalemate bool
 }
@@ -294,9 +294,6 @@ func (bd *BakersDozen) GetTableau() [BakersDozenTableauCnt][]*BakersDozenTableau
 // GetFoundation ファンデーション取得
 func (bd *BakersDozen) GetFoundation() [BakersDozenFoundationCnt][]*Card { return bd.foundation }
 
-// GetActionLog 棋譜取得
-func (bd *BakersDozen) GetActionLog() []*ActionLogEntry { return bd.actionLog }
-
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (bd *BakersDozen) GetGameEndFlag() bool { return bd.phase != BakersDozenPhasePlaying }
 
@@ -445,13 +442,7 @@ func (bd *BakersDozen) restoreSnapshot(snap *bakersDozenSnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (bd *BakersDozen) appendLog(actionType, detail string, cards []*Card) {
-	bd.actionLog = append(bd.actionLog, &ActionLogEntry{
-		TurnNumber: bd.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	bd.appendLogAt(bd.moveCount, 0, actionType, detail, cards)
 }
 
 // bakersDozenJSON is the JSON wire format for BakersDozen.

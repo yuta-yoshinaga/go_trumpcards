@@ -53,8 +53,8 @@ type Osmosis struct {
 	baseRank   int
 	phase      OsmosisPhase
 	moveCount  int
-	actionLog  []*ActionLogEntry
-	history    []*osmosisSnapshot
+	actionLogBase
+	history []*osmosisSnapshot
 }
 
 // osmosisSnapshot アンドゥ用スナップショット
@@ -335,9 +335,6 @@ func (o *Osmosis) GetReserve() [OsmosisReserveCnt][]*Card { return o.reserve }
 // GetFoundation ファンデーション取得
 func (o *Osmosis) GetFoundation() [OsmosisFoundationCnt][]*Card { return o.foundation }
 
-// GetActionLog 棋譜取得
-func (o *Osmosis) GetActionLog() []*ActionLogEntry { return o.actionLog }
-
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (o *Osmosis) GetGameEndFlag() bool { return o.phase != OsmosisPhasePlaying }
 
@@ -499,13 +496,7 @@ func (o *Osmosis) restoreSnapshot(snap *osmosisSnapshot) {
 }
 
 func (o *Osmosis) appendLog(actionType, detail string, cards []*Card) {
-	o.actionLog = append(o.actionLog, &ActionLogEntry{
-		TurnNumber: o.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	o.appendLogAt(o.moveCount, 0, actionType, detail, cards)
 }
 
 // osmosisJSON is the JSON wire format for Osmosis.

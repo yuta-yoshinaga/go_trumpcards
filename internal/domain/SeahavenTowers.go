@@ -48,13 +48,13 @@ type SeahavenTowersHint struct {
 //   - 空列には King のみ置ける (FreeCell は任意のカードを置ける)
 //   - 配り: タブロー 10 列 × 5 枚 + 上部リザーブセル 2 枚 (合計 52 枚)
 type SeahavenTowers struct {
-	trumpCards  *TrumpCards
-	tableau     [SeahavenTowersTableauCnt][]*Card
-	freeCells   [SeahavenTowersCellCnt]*Card
-	foundation  [SeahavenTowersFoundationCnt][]*Card
-	phase       SeahavenTowersPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	tableau    [SeahavenTowersTableauCnt][]*Card
+	freeCells  [SeahavenTowersCellCnt]*Card
+	foundation [SeahavenTowersFoundationCnt][]*Card
+	phase      SeahavenTowersPhase
+	moveCount  int
+	actionLogBase
 	history     []*seahavenTowersSnapshot
 	isStalemate bool
 }
@@ -512,9 +512,6 @@ func (s *SeahavenTowers) GetFreeCells() [SeahavenTowersCellCnt]*Card { return s.
 // GetFoundation ファンデーション取得
 func (s *SeahavenTowers) GetFoundation() [SeahavenTowersFoundationCnt][]*Card { return s.foundation }
 
-// GetActionLog 棋譜取得
-func (s *SeahavenTowers) GetActionLog() []*ActionLogEntry { return s.actionLog }
-
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (s *SeahavenTowers) GetGameEndFlag() bool { return s.phase != SeahavenTowersPhasePlaying }
 
@@ -638,13 +635,7 @@ func (s *SeahavenTowers) checkStalemate() {
 
 // appendLog 棋譜エントリを追加
 func (s *SeahavenTowers) appendLog(actionType, detail string, cards []*Card) {
-	s.actionLog = append(s.actionLog, &ActionLogEntry{
-		TurnNumber: s.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	s.appendLogAt(s.moveCount, 0, actionType, detail, cards)
 }
 
 // seahavenTowersJSON is the JSON wire format for SeahavenTowers.

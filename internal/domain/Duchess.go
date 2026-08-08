@@ -88,16 +88,16 @@ type DuchessHint struct {
 // いないものの実際の規則と違うため、実ゲームに合わせた。issue が触れていない
 // 「空き列はリザーブ優先」も本来の規則なので実装している。
 type Duchess struct {
-	trumpCards  *TrumpCards
-	reserve     [DuchessReserveCnt][]*Card
-	tableau     [DuchessTableauCnt][]*DuchessTableauCard
-	foundation  [DuchessFoundationCnt][]*Card
-	stock       []*Card
-	waste       []*Card
-	baseRank    int
-	phase       DuchessPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	reserve    [DuchessReserveCnt][]*Card
+	tableau    [DuchessTableauCnt][]*DuchessTableauCard
+	foundation [DuchessFoundationCnt][]*Card
+	stock      []*Card
+	waste      []*Card
+	baseRank   int
+	phase      DuchessPhase
+	moveCount  int
+	actionLogBase
 	history     []*duchessSnapshot
 	isStalemate bool
 }
@@ -603,9 +603,6 @@ func (d *Duchess) GetTableau() [DuchessTableauCnt][]*DuchessTableauCard { return
 // GetFoundation 基礎札を取得
 func (d *Duchess) GetFoundation() [DuchessFoundationCnt][]*Card { return d.foundation }
 
-// GetActionLog 棋譜取得
-func (d *Duchess) GetActionLog() []*ActionLogEntry { return d.actionLog }
-
 // GetGameEndFlag ゲーム終了フラグ
 func (d *Duchess) GetGameEndFlag() bool { return d.phase != DuchessPhasePlaying }
 
@@ -823,13 +820,7 @@ func (d *Duchess) takeSnapshot() {
 
 // appendLog 棋譜エントリを追加
 func (d *Duchess) appendLog(actionType, detail string, cards []*Card) {
-	d.actionLog = append(d.actionLog, &ActionLogEntry{
-		TurnNumber: d.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	d.appendLogAt(d.moveCount, 0, actionType, detail, cards)
 }
 
 // duchessMaxSliceLen caps slice sizes during deserialisation.

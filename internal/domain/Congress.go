@@ -78,14 +78,14 @@ type CongressHint struct {
 //     前者は 32 枚にしかならず 104 枚を吸収できない
 //   - **空き山は山札か捨て札から埋める**（issue は触れていない）
 type Congress struct {
-	trumpCards  *TrumpCards
-	tableau     [CongressTableauCnt][]*Card
-	foundation  [CongressFoundationCnt][]*Card
-	stock       []*Card
-	waste       []*Card
-	phase       CongressPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	tableau    [CongressTableauCnt][]*Card
+	foundation [CongressFoundationCnt][]*Card
+	stock      []*Card
+	waste      []*Card
+	phase      CongressPhase
+	moveCount  int
+	actionLogBase
 	history     []*congressSnapshot
 	isStalemate bool
 }
@@ -470,9 +470,6 @@ func (c *Congress) GetTableau() [CongressTableauCnt][]*Card { return c.tableau }
 // GetFoundation 基礎札を取得
 func (c *Congress) GetFoundation() [CongressFoundationCnt][]*Card { return c.foundation }
 
-// GetActionLog 棋譜取得
-func (c *Congress) GetActionLog() []*ActionLogEntry { return c.actionLog }
-
 // GetGameEndFlag ゲーム終了フラグ
 func (c *Congress) GetGameEndFlag() bool { return c.phase != CongressPhasePlaying }
 
@@ -617,13 +614,7 @@ func (c *Congress) takeSnapshot() {
 
 // appendLog 棋譜エントリを追加
 func (c *Congress) appendLog(actionType, detail string, cards []*Card) {
-	c.actionLog = append(c.actionLog, &ActionLogEntry{
-		TurnNumber: c.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	c.appendLogAt(c.moveCount, 0, actionType, detail, cards)
 }
 
 // congressSnapshotJSON is the wire format for a single undo snapshot.

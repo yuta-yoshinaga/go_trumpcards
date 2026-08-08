@@ -63,9 +63,9 @@ type Wasp struct {
 	completedSuits int
 	phase          WaspPhase
 	moveCount      int
-	actionLog      []*ActionLogEntry
-	history        []*waspSnapshot
-	isStalemate    bool
+	actionLogBase
+	history     []*waspSnapshot
+	isStalemate bool
 }
 
 // waspSnapshot アンドゥ用スナップショット
@@ -394,9 +394,6 @@ func (s *Wasp) GetTableau() [WaspTableauCnt][]*KlondikeTableauCard { return s.ta
 // GetCompletedSuits 完成スート数取得
 func (s *Wasp) GetCompletedSuits() int { return s.completedSuits }
 
-// GetActionLog 棋譜取得
-func (s *Wasp) GetActionLog() []*ActionLogEntry { return s.actionLog }
-
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (s *Wasp) GetGameEndFlag() bool { return s.phase != WaspPhasePlaying }
 
@@ -525,13 +522,7 @@ func (s *Wasp) restoreSnapshot(snap *waspSnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (s *Wasp) appendLog(actionType, detail string, cards []*Card) {
-	s.actionLog = append(s.actionLog, &ActionLogEntry{
-		TurnNumber: s.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	s.appendLogAt(s.moveCount, 0, actionType, detail, cards)
 }
 
 // waspJSON is the JSON wire format for Wasp.

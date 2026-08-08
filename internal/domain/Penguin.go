@@ -44,14 +44,14 @@ type PenguinHint struct {
 
 // Penguin ペンギンゲームクラス
 type Penguin struct {
-	trumpCards  *TrumpCards
-	tableau     [PenguinTableauCnt][]*Card
-	freeCells   [PenguinCellCnt]*Card
-	foundation  [PenguinFoundationCnt][]*Card
-	baseRank    int
-	phase       PenguinPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	tableau    [PenguinTableauCnt][]*Card
+	freeCells  [PenguinCellCnt]*Card
+	foundation [PenguinFoundationCnt][]*Card
+	baseRank   int
+	phase      PenguinPhase
+	moveCount  int
+	actionLogBase
 	history     []*penguinSnapshot
 	isStalemate bool
 }
@@ -541,9 +541,6 @@ func (p *Penguin) GetBaseRank() int { return p.baseRank }
 // SetBaseRank ベースランク設定 (テスト用)
 func (p *Penguin) SetBaseRank(r int) { p.baseRank = r }
 
-// GetActionLog 棋譜取得
-func (p *Penguin) GetActionLog() []*ActionLogEntry { return p.actionLog }
-
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (p *Penguin) GetGameEndFlag() bool { return p.phase != PenguinPhasePlaying }
 
@@ -698,13 +695,7 @@ func (p *Penguin) checkStalemate() {
 
 // appendLog 棋譜エントリを追加
 func (p *Penguin) appendLog(actionType, detail string, cards []*Card) {
-	p.actionLog = append(p.actionLog, &ActionLogEntry{
-		TurnNumber: p.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	p.appendLogAt(p.moveCount, 0, actionType, detail, cards)
 }
 
 // penguinJSON is the JSON wire format for Penguin.

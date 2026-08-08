@@ -99,17 +99,17 @@ type AmericanToadHint struct {
 // 主要な実装と bvssolitaire の記述に合わせ、任意の連番グループを動かせるものとした。
 // このリポジトリの他のソリティアとも操作感が揃う。
 type AmericanToad struct {
-	trumpCards  *TrumpCards
-	reserve     []*Card
-	tableau     [AmericanToadTableauCnt][]*AmericanToadTableauCard
-	foundation  [AmericanToadFoundationCnt][]*Card
-	stock       []*Card
-	waste       []*Card
-	baseRank    int
-	passesUsed  int
-	phase       AmericanToadPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	reserve    []*Card
+	tableau    [AmericanToadTableauCnt][]*AmericanToadTableauCard
+	foundation [AmericanToadFoundationCnt][]*Card
+	stock      []*Card
+	waste      []*Card
+	baseRank   int
+	passesUsed int
+	phase      AmericanToadPhase
+	moveCount  int
+	actionLogBase
 	history     []*americanToadSnapshot
 	isStalemate bool
 }
@@ -590,9 +590,6 @@ func (at *AmericanToad) CanRedeal() bool {
 		len(at.stock) == 0 && len(at.waste) > 0 && at.passesUsed < AmericanToadMaxPasses-1
 }
 
-// GetActionLog 棋譜取得
-func (at *AmericanToad) GetActionLog() []*ActionLogEntry { return at.actionLog }
-
 // GetGameEndFlag ゲーム終了フラグ
 func (at *AmericanToad) GetGameEndFlag() bool { return at.phase != AmericanToadPhasePlaying }
 
@@ -815,13 +812,7 @@ func (at *AmericanToad) takeSnapshot() {
 
 // appendLog 棋譜エントリを追加
 func (at *AmericanToad) appendLog(actionType, detail string, cards []*Card) {
-	at.actionLog = append(at.actionLog, &ActionLogEntry{
-		TurnNumber: at.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	at.appendLogAt(at.moveCount, 0, actionType, detail, cards)
 }
 
 // americanToadJSON is the JSON wire format for AmericanToad.

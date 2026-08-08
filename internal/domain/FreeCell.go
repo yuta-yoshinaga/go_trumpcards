@@ -41,13 +41,13 @@ type FreeCellHint struct {
 
 // FreeCell フリーセルゲームクラス
 type FreeCell struct {
-	trumpCards  *TrumpCards
-	tableau     [FreeCellTableauCnt][]*Card
-	freeCells   [FreeCellCellCnt]*Card
-	foundation  [FreeCellFoundationCnt][]*Card
-	phase       FreeCellPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	tableau    [FreeCellTableauCnt][]*Card
+	freeCells  [FreeCellCellCnt]*Card
+	foundation [FreeCellFoundationCnt][]*Card
+	phase      FreeCellPhase
+	moveCount  int
+	actionLogBase
 	history     []*freeCellSnapshot
 	isStalemate bool
 	// sameSuit が true のときタブロー積み上げ条件を「同じスートの降順」にする
@@ -605,9 +605,6 @@ func (f *FreeCell) GetFreeCells() [FreeCellCellCnt]*Card { return f.freeCells }
 // GetFoundation ファンデーション取得
 func (f *FreeCell) GetFoundation() [FreeCellFoundationCnt][]*Card { return f.foundation }
 
-// GetActionLog 棋譜取得
-func (f *FreeCell) GetActionLog() []*ActionLogEntry { return f.actionLog }
-
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (f *FreeCell) GetGameEndFlag() bool { return f.phase != FreeCellPhasePlaying }
 
@@ -776,13 +773,7 @@ func (f *FreeCell) checkStalemate() {
 
 // appendLog 棋譜エントリを追加
 func (f *FreeCell) appendLog(actionType, detail string, cards []*Card) {
-	f.actionLog = append(f.actionLog, &ActionLogEntry{
-		TurnNumber: f.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	f.appendLogAt(f.moveCount, 0, actionType, detail, cards)
 }
 
 // freeCellJSON is the JSON wire format for FreeCell.

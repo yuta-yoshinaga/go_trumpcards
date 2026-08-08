@@ -45,7 +45,7 @@ type Calculation struct {
 	stock       []*Card
 	phase       CalculationPhase
 	moveCount   int
-	actionLog   []*ActionLogEntry
+	actionLogBase
 	history     []*calculationSnapshot
 	isStalemate bool
 }
@@ -316,9 +316,6 @@ func (c *Calculation) GetWastes() [CalculationWasteCnt][]*Card { return c.wastes
 // GetFoundations ファンデーション取得
 func (c *Calculation) GetFoundations() [CalculationFoundationCnt][]*Card { return c.foundations }
 
-// GetActionLog 棋譜取得
-func (c *Calculation) GetActionLog() []*ActionLogEntry { return c.actionLog }
-
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (c *Calculation) GetGameEndFlag() bool { return c.phase != CalculationPhasePlaying }
 
@@ -448,13 +445,7 @@ func (c *Calculation) restoreSnapshot(snap *calculationSnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (c *Calculation) appendLog(actionType, detail string, cards []*Card) {
-	c.actionLog = append(c.actionLog, &ActionLogEntry{
-		TurnNumber: c.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	c.appendLogAt(c.moveCount, 0, actionType, detail, cards)
 }
 
 // calculationJSON is the JSON wire format for Calculation.

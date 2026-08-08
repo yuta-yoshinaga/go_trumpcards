@@ -44,12 +44,12 @@ type CruelHint struct {
 // 残り48枚を12列×4枚のタブローに表向きで配る。カード移動は同スートの降順のみ、
 // 空の列にはカードを置けない。手詰まりのときは Shift で盤面を再構築できる。
 type Cruel struct {
-	trumpCards  *TrumpCards
-	tableau     [CruelTableauCnt][]*KlondikeTableauCard
-	foundation  [CruelFoundationCnt][]*Card
-	phase       CruelPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	tableau    [CruelTableauCnt][]*KlondikeTableauCard
+	foundation [CruelFoundationCnt][]*Card
+	phase      CruelPhase
+	moveCount  int
+	actionLogBase
 	history     []*cruelSnapshot
 	isStalemate bool
 }
@@ -356,9 +356,6 @@ func (c *Cruel) GetFoundation() [CruelFoundationCnt][]*Card {
 	return c.foundation
 }
 
-// GetActionLog 棋譜取得
-func (c *Cruel) GetActionLog() []*ActionLogEntry { return c.actionLog }
-
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (c *Cruel) GetGameEndFlag() bool { return c.phase != CruelPhasePlaying }
 
@@ -500,13 +497,7 @@ func (c *Cruel) restoreSnapshot(snap *cruelSnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (c *Cruel) appendLog(actionType, detail string, cards []*Card) {
-	c.actionLog = append(c.actionLog, &ActionLogEntry{
-		TurnNumber: c.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	c.appendLogAt(c.moveCount, 0, actionType, detail, cards)
 }
 
 // cruelJSON is the JSON wire format for Cruel.

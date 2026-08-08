@@ -44,13 +44,13 @@ type GolfHint struct {
 
 // Golf ゴルフソリティアゲームクラス
 type Golf struct {
-	trumpCards  *TrumpCards
-	layout      [GolfColCnt][GolfRowCnt]*GolfCard
-	stock       []*Card
-	waste       []*Card
-	phase       GolfPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	layout     [GolfColCnt][GolfRowCnt]*GolfCard
+	stock      []*Card
+	waste      []*Card
+	phase      GolfPhase
+	moveCount  int
+	actionLogBase
 	history     []*golfSnapshot
 	isStalemate bool
 }
@@ -275,9 +275,6 @@ func (g *Golf) GetLayout() [GolfColCnt][GolfRowCnt]*GolfCard {
 	return g.layout
 }
 
-// GetActionLog 棋譜取得
-func (g *Golf) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (g *Golf) GetGameEndFlag() bool { return g.phase != GolfPhasePlaying }
 
@@ -422,13 +419,7 @@ func (g *Golf) restoreSnapshot(snap *golfSnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (g *Golf) appendLog(actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: g.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.appendLogAt(g.moveCount, 0, actionType, detail, cards)
 }
 
 // golfJSON is the JSON wire format for Golf.

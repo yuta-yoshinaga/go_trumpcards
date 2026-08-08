@@ -41,11 +41,11 @@ type AccordionHint struct {
 
 // Accordion アコーディオンゲームクラス
 type Accordion struct {
-	trumpCards  *TrumpCards
-	piles       [][]*Card
-	phase       AccordionPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	piles      [][]*Card
+	phase      AccordionPhase
+	moveCount  int
+	actionLogBase
 	history     []*accordionSnapshot
 	isStalemate bool
 }
@@ -240,9 +240,6 @@ func (a *Accordion) GetPiles() [][]*Card { return a.piles }
 // GetPileCount 残りパイル数取得
 func (a *Accordion) GetPileCount() int { return len(a.piles) }
 
-// GetActionLog 棋譜取得
-func (a *Accordion) GetActionLog() []*ActionLogEntry { return a.actionLog }
-
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (a *Accordion) GetGameEndFlag() bool { return a.phase != AccordionPhasePlaying }
 
@@ -319,13 +316,7 @@ func (a *Accordion) restoreSnapshot(snap *accordionSnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (a *Accordion) appendLog(actionType, detail string, cards []*Card) {
-	a.actionLog = append(a.actionLog, &ActionLogEntry{
-		TurnNumber: a.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	a.appendLogAt(a.moveCount, 0, actionType, detail, cards)
 }
 
 // accordionJSON is the JSON wire format for Accordion.

@@ -54,7 +54,7 @@ type Gaps struct {
 	phase       GapsPhase
 	moveCount   int
 	redealsUsed int
-	actionLog   []*ActionLogEntry
+	actionLogBase
 	history     []*gapsSnapshot
 	isStalemate bool
 }
@@ -472,13 +472,7 @@ func (g *Gaps) restoreSnapshot(snap *gapsSnapshot) {
 
 // appendLog はアクションログにエントリを追加する。
 func (g *Gaps) appendLog(actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: g.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.appendLogAt(g.moveCount, 0, actionType, detail, cards)
 }
 
 // --- Getters / setters ---
@@ -510,9 +504,6 @@ func (g *Gaps) SetRedealsUsed(n int) { g.redealsUsed = n }
 
 // GetRedealsRemaining は残りの再配り回数を返す。
 func (g *Gaps) GetRedealsRemaining() int { return GapsMaxRedeals - g.redealsUsed }
-
-// GetActionLog はアクションログを返す。
-func (g *Gaps) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetGameEndFlag は終了状態かどうかを返す。
 func (g *Gaps) GetGameEndFlag() bool { return g.phase != GapsPhasePlaying }

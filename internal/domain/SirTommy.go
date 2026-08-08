@@ -52,7 +52,7 @@ type SirTommy struct {
 	stock       []*Card
 	phase       SirTommyPhase
 	moveCount   int
-	actionLog   []*ActionLogEntry
+	actionLogBase
 	history     []*sirTommySnapshot
 	isStalemate bool
 }
@@ -305,9 +305,6 @@ func (s *SirTommy) GetWastes() [SirTommyWasteCnt][]*Card { return s.wastes }
 // GetFoundations ファンデーション取得
 func (s *SirTommy) GetFoundations() [SirTommyFoundationCnt][]*Card { return s.foundations }
 
-// GetActionLog 棋譜取得
-func (s *SirTommy) GetActionLog() []*ActionLogEntry { return s.actionLog }
-
 // GetGameEndFlag ゲーム終了フラグ
 func (s *SirTommy) GetGameEndFlag() bool { return s.phase != SirTommyPhasePlaying }
 
@@ -402,13 +399,7 @@ func (s *SirTommy) restoreSnapshot(snap *sirTommySnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (s *SirTommy) appendLog(actionType, detail string, cards []*Card) {
-	s.actionLog = append(s.actionLog, &ActionLogEntry{
-		TurnNumber: s.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	s.appendLogAt(s.moveCount, 0, actionType, detail, cards)
 }
 
 // sirTommyMaxSliceLen caps slice sizes during deserialisation.

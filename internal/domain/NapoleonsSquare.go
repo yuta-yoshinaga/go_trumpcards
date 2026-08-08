@@ -71,14 +71,14 @@ type NapoleonsSquareHint struct {
 // しているが 12×4 = 48 であって 96 ではない。列構成の方が実際のルールと一致する
 // ため、48 枚をタブローに配り残り 48 枚を山札としている。
 type NapoleonsSquare struct {
-	trumpCards  *TrumpCards
-	tableau     [NapoleonsSquareTableauCnt][]*NapoleonsSquareTableauCard
-	stock       []*Card
-	waste       []*Card
-	foundation  [NapoleonsSquareFoundationCnt][]*Card
-	phase       NapoleonsSquarePhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	tableau    [NapoleonsSquareTableauCnt][]*NapoleonsSquareTableauCard
+	stock      []*Card
+	waste      []*Card
+	foundation [NapoleonsSquareFoundationCnt][]*Card
+	phase      NapoleonsSquarePhase
+	moveCount  int
+	actionLogBase
 	history     []*napoleonsSquareSnapshot
 	isStalemate bool
 }
@@ -485,9 +485,6 @@ func (ns *NapoleonsSquare) GetFoundation() [NapoleonsSquareFoundationCnt][]*Card
 	return ns.foundation
 }
 
-// GetActionLog 棋譜取得
-func (ns *NapoleonsSquare) GetActionLog() []*ActionLogEntry { return ns.actionLog }
-
 // GetGameEndFlag ゲーム終了フラグ
 func (ns *NapoleonsSquare) GetGameEndFlag() bool { return ns.phase != NapoleonsSquarePhasePlaying }
 
@@ -609,13 +606,7 @@ func (ns *NapoleonsSquare) takeSnapshot() {
 
 // appendLog 棋譜エントリを追加
 func (ns *NapoleonsSquare) appendLog(actionType, detail string, cards []*Card) {
-	ns.actionLog = append(ns.actionLog, &ActionLogEntry{
-		TurnNumber: ns.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	ns.appendLogAt(ns.moveCount, 0, actionType, detail, cards)
 }
 
 // napoleonsSquareMaxSliceLen caps slice sizes during deserialisation.

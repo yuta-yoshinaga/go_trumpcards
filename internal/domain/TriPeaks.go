@@ -45,13 +45,13 @@ type TriPeaksHint struct {
 
 // TriPeaks トリピークスソリティアゲームクラス
 type TriPeaks struct {
-	trumpCards  *TrumpCards
-	layout      [TriPeaksRowCnt][TriPeaksColCnt]*TriPeaksCard
-	stock       []*Card
-	waste       []*Card
-	phase       TriPeaksPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	layout     [TriPeaksRowCnt][TriPeaksColCnt]*TriPeaksCard
+	stock      []*Card
+	waste      []*Card
+	phase      TriPeaksPhase
+	moveCount  int
+	actionLogBase
 	history     []*triPeaksSnapshot
 	isStalemate bool
 }
@@ -334,9 +334,6 @@ func (t *TriPeaks) GetLayout() [TriPeaksRowCnt][TriPeaksColCnt]*TriPeaksCard {
 	return t.layout
 }
 
-// GetActionLog 棋譜取得
-func (t *TriPeaks) GetActionLog() []*ActionLogEntry { return t.actionLog }
-
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (t *TriPeaks) GetGameEndFlag() bool { return t.phase != TriPeaksPhasePlaying }
 
@@ -495,13 +492,7 @@ func (t *TriPeaks) restoreSnapshot(snap *triPeaksSnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (t *TriPeaks) appendLog(actionType, detail string, cards []*Card) {
-	t.actionLog = append(t.actionLog, &ActionLogEntry{
-		TurnNumber: t.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	t.appendLogAt(t.moveCount, 0, actionType, detail, cards)
 }
 
 // triPeaksJSON is the JSON wire format for TriPeaks.

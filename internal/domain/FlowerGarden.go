@@ -55,13 +55,13 @@ type FlowerGardenConfig struct{}
 
 // FlowerGarden ゲームクラス
 type FlowerGarden struct {
-	trumpCards  *TrumpCards
-	tableau     [FlowerGardenTableauCnt][]*FlowerGardenTableauCard
-	reserve     []*Card // 16 slots; nil entries mark depleted cells (one-way)
-	foundation  [FlowerGardenFoundationCnt][]*Card
-	phase       FlowerGardenPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	tableau    [FlowerGardenTableauCnt][]*FlowerGardenTableauCard
+	reserve    []*Card // 16 slots; nil entries mark depleted cells (one-way)
+	foundation [FlowerGardenFoundationCnt][]*Card
+	phase      FlowerGardenPhase
+	moveCount  int
+	actionLogBase
 	history     []*flowerGardenSnapshot
 	isStalemate bool
 }
@@ -467,9 +467,6 @@ func (fg *FlowerGarden) GetFoundation() [FlowerGardenFoundationCnt][]*Card {
 	return fg.foundation
 }
 
-// GetActionLog 棋譜取得
-func (fg *FlowerGarden) GetActionLog() []*ActionLogEntry { return fg.actionLog }
-
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (fg *FlowerGarden) GetGameEndFlag() bool { return fg.phase != FlowerGardenPhasePlaying }
 
@@ -626,13 +623,7 @@ func (fg *FlowerGarden) restoreSnapshot(snap *flowerGardenSnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (fg *FlowerGarden) appendLog(actionType, detail string, cards []*Card) {
-	fg.actionLog = append(fg.actionLog, &ActionLogEntry{
-		TurnNumber: fg.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	fg.appendLogAt(fg.moveCount, 0, actionType, detail, cards)
 }
 
 // flowerGardenJSON is the JSON wire format for FlowerGarden.
