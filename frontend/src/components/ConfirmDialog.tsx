@@ -2,9 +2,6 @@ import { useId } from 'react';
 import { btnDanger, btnSecondary } from '../styles/buttonStyles';
 import { Modal } from './common/Modal';
 
-// Re-export for backward compatibility with existing imports
-export { getFocusableElements } from '../utils/dom';
-
 /** Props for the ConfirmDialog component. */
 export interface ConfirmDialogProps {
   open: boolean;

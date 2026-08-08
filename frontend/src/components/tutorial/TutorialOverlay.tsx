@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 import type { TutorialStep } from '../../types/tutorial';
-import { getFocusableElements } from '../ConfirmDialog';
 import { TutorialTooltip } from './TutorialTooltip';
 
 /** Rect representing position and size of an element. */
@@ -69,15 +69,17 @@ function getTooltipStyle(rect: SpotlightRect | null, placement: TutorialStep['pl
 export function TutorialOverlay({ step, stepIndex, totalSteps, onNext, onSkip, reducedMotion }: TutorialOverlayProps) {
   const maskId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<Element | null>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const [spotlightRect, setSpotlightRect] = useState<SpotlightRect | null>(null);
 
   useBodyScrollLock(true);
 
-  // Find and observe the target element
+  // Track the spotlight target. This re-runs on every step, so it must not
+  // touch focus: restoring focus here fired on each step change and threw it
+  // out of the overlay for the rest of the tutorial (issue #5184). Focus is
+  // owned by useFocusTrap below, whose deps are stable so it neither re-steals
+  // focus per step nor hands it back before the tutorial ends.
   useEffect(() => {
-    triggerRef.current = document.activeElement;
     const targetEl = document.querySelector(step.target);
     setSpotlightRect(getSpotlightRect(targetEl));
 
@@ -88,12 +90,7 @@ export function TutorialOverlay({ step, stepIndex, totalSteps, onNext, onSkip, r
     });
     ro.observe(targetEl);
 
-    return () => {
-      ro.disconnect();
-      if (triggerRef.current instanceof HTMLElement) {
-        triggerRef.current.focus();
-      }
-    };
+    return () => ro.disconnect();
   }, [step.target]);
 
   // Listen for click on target when advanceOn is 'click'.
@@ -109,45 +106,19 @@ export function TutorialOverlay({ step, stepIndex, totalSteps, onNext, onSkip, r
     return () => targetEl.removeEventListener('click', handler);
   }, [step.target, step.advanceOn, onNext]);
 
-  // Focus trap
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
+  // Focus trap, Escape, and focus restore, from the shared hook: it listens on
+  // `document` (so it keeps working if focus ever does leave) and re-queries
+  // focusable children on each Tab, unlike the copy this replaces.
+  useFocusTrap(dialogRef, true, onSkip);
 
-    const focusable = getFocusableElements(dialog);
-    if (focusable.length > 0) {
-      focusable[0].focus();
-    }
-
-    const handleTab = (e: KeyboardEvent) => {
-      if (e.key !== 'Tab') return;
-      const currentFocusable = getFocusableElements(dialog);
-      if (currentFocusable.length === 0) return;
-      const first = currentFocusable[0];
-      const last = currentFocusable[currentFocusable.length - 1];
-      if (e.shiftKey) {
-        if (document.activeElement === first) {
-          e.preventDefault();
-          last.focus();
-        }
-      } else {
-        if (document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
-        }
-      }
-    };
-
-    dialog.addEventListener('keydown', handleTab);
-    return () => dialog.removeEventListener('keydown', handleTab);
-  }, []);
-
+  // Escape is handled by useFocusTrap. Handling it here as well would call
+  // onSkip twice for a single keypress, since this synthetic handler and the
+  // hook's document listener both see the same event.
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === 'Enter') onNext();
-      if (e.key === 'Escape') onSkip();
     },
-    [onNext, onSkip],
+    [onNext],
   );
 
   const tooltipStyle = getTooltipStyle(spotlightRect, step.placement);
