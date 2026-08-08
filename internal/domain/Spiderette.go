@@ -56,9 +56,9 @@ type Spiderette struct {
 	phase          SpiderettePhase
 	moveCount      int
 	score          int
-	actionLog      []*ActionLogEntry
-	history        []*spideretteSnapshot
-	isStalemate    bool
+	actionLogBase
+	history     []*spideretteSnapshot
+	isStalemate bool
 }
 
 // spideretteSnapshot アンドゥ用スナップショット
@@ -388,9 +388,6 @@ func (s *Spiderette) GetTableau() [SpideretteTableauCnt][]*SpideretteTableauCard
 // GetCompletedSuits 完成スート数取得
 func (s *Spiderette) GetCompletedSuits() int { return s.completedSuits }
 
-// GetActionLog 棋譜取得
-func (s *Spiderette) GetActionLog() []*ActionLogEntry { return s.actionLog }
-
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (s *Spiderette) GetGameEndFlag() bool { return s.phase != SpiderettePhasePlaying }
 
@@ -566,13 +563,7 @@ func (s *Spiderette) restoreSnapshot(snap *spideretteSnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (s *Spiderette) appendLog(actionType, detail string, cards []*Card) {
-	s.actionLog = append(s.actionLog, &ActionLogEntry{
-		TurnNumber: s.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	s.appendLogAt(s.moveCount, 0, actionType, detail, cards)
 }
 
 // spideretteJSON is the JSON wire format for Spiderette.

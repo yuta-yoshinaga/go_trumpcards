@@ -44,13 +44,13 @@ type EightOffHint struct {
 
 // EightOff エイトオフゲームクラス
 type EightOff struct {
-	trumpCards  *TrumpCards
-	tableau     [EightOffTableauCnt][]*Card
-	freeCells   [EightOffCellCnt]*Card
-	foundation  [EightOffFoundationCnt][]*Card
-	phase       EightOffPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	tableau    [EightOffTableauCnt][]*Card
+	freeCells  [EightOffCellCnt]*Card
+	foundation [EightOffFoundationCnt][]*Card
+	phase      EightOffPhase
+	moveCount  int
+	actionLogBase
 	history     []*eightOffSnapshot
 	isStalemate bool
 }
@@ -517,9 +517,6 @@ func (e *EightOff) GetFreeCells() [EightOffCellCnt]*Card { return e.freeCells }
 // GetFoundation ファンデーション取得
 func (e *EightOff) GetFoundation() [EightOffFoundationCnt][]*Card { return e.foundation }
 
-// GetActionLog 棋譜取得
-func (e *EightOff) GetActionLog() []*ActionLogEntry { return e.actionLog }
-
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (e *EightOff) GetGameEndFlag() bool { return e.phase != EightOffPhasePlaying }
 
@@ -646,13 +643,7 @@ func (e *EightOff) checkStalemate() {
 
 // appendLog 棋譜エントリを追加
 func (e *EightOff) appendLog(actionType, detail string, cards []*Card) {
-	e.actionLog = append(e.actionLog, &ActionLogEntry{
-		TurnNumber: e.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	e.appendLogAt(e.moveCount, 0, actionType, detail, cards)
 }
 
 // eightOffJSON is the JSON wire format for EightOff.

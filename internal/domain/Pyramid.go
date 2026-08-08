@@ -47,13 +47,13 @@ type PyramidHint struct {
 
 // Pyramid ピラミッドソリティアゲームクラス
 type Pyramid struct {
-	trumpCards  *TrumpCards
-	pyramid     [PyramidRowCnt][]*PyramidCard
-	stock       []*Card
-	waste       []*Card
-	phase       PyramidPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	pyramid    [PyramidRowCnt][]*PyramidCard
+	stock      []*Card
+	waste      []*Card
+	phase      PyramidPhase
+	moveCount  int
+	actionLogBase
 	history     []*pyramidSnapshot
 	isStalemate bool
 }
@@ -412,9 +412,6 @@ func (p *Pyramid) GetWaste() []*Card { return p.waste }
 // GetPyramid ピラミッド取得
 func (p *Pyramid) GetPyramid() [PyramidRowCnt][]*PyramidCard { return p.pyramid }
 
-// GetActionLog 棋譜取得
-func (p *Pyramid) GetActionLog() []*ActionLogEntry { return p.actionLog }
-
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (p *Pyramid) GetGameEndFlag() bool { return p.phase != PyramidPhasePlaying }
 
@@ -554,13 +551,7 @@ func (p *Pyramid) restoreSnapshot(snap *pyramidSnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (p *Pyramid) appendLog(actionType, detail string, cards []*Card) {
-	p.actionLog = append(p.actionLog, &ActionLogEntry{
-		TurnNumber: p.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	p.appendLogAt(p.moveCount, 0, actionType, detail, cards)
 }
 
 // pyramidJSON is the JSON wire format for Pyramid.

@@ -51,8 +51,8 @@ type Agnes struct {
 	baseRank   int
 	phase      AgnesPhase
 	moveCount  int
-	actionLog  []*ActionLogEntry
-	history    []*agnesSnapshot
+	actionLogBase
+	history []*agnesSnapshot
 }
 
 // agnesSnapshot アンドゥ用スナップショット
@@ -298,9 +298,6 @@ func (a *Agnes) GetTableau() [AgnesTableauCnt][]*AgnesTableauCard { return a.tab
 // GetFoundation ファンデーション取得
 func (a *Agnes) GetFoundation() [AgnesFoundationCnt][]*Card { return a.foundation }
 
-// GetActionLog 棋譜取得
-func (a *Agnes) GetActionLog() []*ActionLogEntry { return a.actionLog }
-
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (a *Agnes) GetGameEndFlag() bool { return a.phase != AgnesPhasePlaying }
 
@@ -429,13 +426,7 @@ func (a *Agnes) restoreSnapshot(snap *agnesSnapshot) {
 }
 
 func (a *Agnes) appendLog(actionType, detail string, cards []*Card) {
-	a.actionLog = append(a.actionLog, &ActionLogEntry{
-		TurnNumber: a.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	a.appendLogAt(a.moveCount, 0, actionType, detail, cards)
 }
 
 // agnesJSON is the JSON wire format for Agnes.

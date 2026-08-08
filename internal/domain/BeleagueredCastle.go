@@ -49,12 +49,12 @@ type BeleagueredCastleConfig struct{}
 
 // BeleagueredCastle ゲームクラス
 type BeleagueredCastle struct {
-	trumpCards  *TrumpCards
-	tableau     [BeleagueredCastleTableauCnt][]*BeleagueredCastleTableauCard
-	foundation  [BeleagueredCastleFoundationCnt][]*Card
-	phase       BeleagueredCastlePhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	tableau    [BeleagueredCastleTableauCnt][]*BeleagueredCastleTableauCard
+	foundation [BeleagueredCastleFoundationCnt][]*Card
+	phase      BeleagueredCastlePhase
+	moveCount  int
+	actionLogBase
 	history     []*beleagueredCastleSnapshot
 	isStalemate bool
 }
@@ -318,9 +318,6 @@ func (bc *BeleagueredCastle) GetFoundation() [BeleagueredCastleFoundationCnt][]*
 	return bc.foundation
 }
 
-// GetActionLog 棋譜取得
-func (bc *BeleagueredCastle) GetActionLog() []*ActionLogEntry { return bc.actionLog }
-
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (bc *BeleagueredCastle) GetGameEndFlag() bool { return bc.phase != BeleagueredCastlePhasePlaying }
 
@@ -471,13 +468,7 @@ func (bc *BeleagueredCastle) restoreSnapshot(snap *beleagueredCastleSnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (bc *BeleagueredCastle) appendLog(actionType, detail string, cards []*Card) {
-	bc.actionLog = append(bc.actionLog, &ActionLogEntry{
-		TurnNumber: bc.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	bc.appendLogAt(bc.moveCount, 0, actionType, detail, cards)
 }
 
 // beleagueredCastleJSON is the JSON wire format for BeleagueredCastle.

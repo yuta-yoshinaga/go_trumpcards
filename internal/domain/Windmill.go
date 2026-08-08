@@ -82,9 +82,9 @@ type Windmill struct {
 	transferBlocked bool
 	phase           WindmillPhase
 	moveCount       int
-	actionLog       []*ActionLogEntry
-	history         []*windmillSnapshot
-	isStalemate     bool
+	actionLogBase
+	history     []*windmillSnapshot
+	isStalemate bool
 }
 
 // windmillSnapshot アンドゥ用スナップショット
@@ -466,9 +466,6 @@ func (w *Windmill) GetCorners() [WindmillCornerCnt][]*Card { return w.corners }
 // 直前にその手を打った直後だけ真になる。
 func (w *Windmill) IsTransferBlocked() bool { return w.transferBlocked }
 
-// GetActionLog 棋譜取得
-func (w *Windmill) GetActionLog() []*ActionLogEntry { return w.actionLog }
-
 // GetGameEndFlag ゲーム終了フラグ
 func (w *Windmill) GetGameEndFlag() bool { return w.phase != WindmillPhasePlaying }
 
@@ -643,13 +640,7 @@ func (w *Windmill) takeSnapshot() {
 
 // appendLog 棋譜エントリを追加
 func (w *Windmill) appendLog(actionType, detail string, cards []*Card) {
-	w.actionLog = append(w.actionLog, &ActionLogEntry{
-		TurnNumber: w.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	w.appendLogAt(w.moveCount, 0, actionType, detail, cards)
 }
 
 // windmillMaxSliceLen caps slice sizes during deserialisation.

@@ -37,12 +37,12 @@ type RussianSolitaireHint struct {
 
 // RussianSolitaire ロシアンソリティアゲームクラス
 type RussianSolitaire struct {
-	trumpCards  *TrumpCards
-	tableau     [RussianSolitaireTableauCnt][]*KlondikeTableauCard
-	foundation  [RussianSolitaireFoundationCnt][]*Card
-	phase       RussianSolitairePhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	tableau    [RussianSolitaireTableauCnt][]*KlondikeTableauCard
+	foundation [RussianSolitaireFoundationCnt][]*Card
+	phase      RussianSolitairePhase
+	moveCount  int
+	actionLogBase
 	history     []*russianSolitaireSnapshot
 	isStalemate bool
 }
@@ -350,9 +350,6 @@ func (y *RussianSolitaire) GetFoundation() [RussianSolitaireFoundationCnt][]*Car
 	return y.foundation
 }
 
-// GetActionLog 棋譜取得
-func (y *RussianSolitaire) GetActionLog() []*ActionLogEntry { return y.actionLog }
-
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (y *RussianSolitaire) GetGameEndFlag() bool { return y.phase != RussianSolitairePhasePlaying }
 
@@ -505,13 +502,7 @@ func (y *RussianSolitaire) restoreSnapshot(snap *russianSolitaireSnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (y *RussianSolitaire) appendLog(actionType, detail string, cards []*Card) {
-	y.actionLog = append(y.actionLog, &ActionLogEntry{
-		TurnNumber: y.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	y.appendLogAt(y.moveCount, 0, actionType, detail, cards)
 }
 
 // russianSolitaireJSON is the JSON wire format for RussianSolitaire.

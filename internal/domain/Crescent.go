@@ -66,9 +66,9 @@ type Crescent struct {
 	phase            CrescentPhase
 	moveCount        int
 	redealsRemaining int
-	actionLog        []*ActionLogEntry
-	history          []*crescentSnapshot
-	isStalemate      bool
+	actionLogBase
+	history     []*crescentSnapshot
+	isStalemate bool
 }
 
 // crescentSnapshot アンドゥ用スナップショット。
@@ -349,9 +349,6 @@ func (cr *Crescent) GetTableau() [CrescentTableauCnt][]*CrescentTableauCard { re
 // GetFoundation ファンデーションを返す。
 func (cr *Crescent) GetFoundation() [CrescentFoundationCnt][]*Card { return cr.foundation }
 
-// GetActionLog 棋譜を返す。
-func (cr *Crescent) GetActionLog() []*ActionLogEntry { return cr.actionLog }
-
 // GetGameEndFlag プレイ中でなくなったかを返す。
 func (cr *Crescent) GetGameEndFlag() bool { return cr.phase != CrescentPhasePlaying }
 
@@ -574,13 +571,7 @@ func (cr *Crescent) restoreSnapshot(snap *crescentSnapshot) {
 
 // appendLog 棋譜エントリを追加。
 func (cr *Crescent) appendLog(actionType, detail string, cards []*Card) {
-	cr.actionLog = append(cr.actionLog, &ActionLogEntry{
-		TurnNumber: cr.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	cr.appendLogAt(cr.moveCount, 0, actionType, detail, cards)
 }
 
 // crescentJSON Crescent の永続化用ワイヤーフォーマット。

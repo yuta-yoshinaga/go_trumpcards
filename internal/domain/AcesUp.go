@@ -40,13 +40,13 @@ type AcesUpHint struct {
 
 // AcesUp エースアップ（四つ葉のクローバー）ゲームクラス
 type AcesUp struct {
-	trumpCards  *TrumpCards
-	columns     [AcesUpColCnt][]*Card
-	stock       []*Card
-	discard     []*Card
-	phase       AcesUpPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	columns    [AcesUpColCnt][]*Card
+	stock      []*Card
+	discard    []*Card
+	phase      AcesUpPhase
+	moveCount  int
+	actionLogBase
 	history     []*acesUpSnapshot
 	isStalemate bool
 }
@@ -284,9 +284,6 @@ func (a *AcesUp) GetDiscardTop() *Card {
 
 // GetColumns 場札の列を取得
 func (a *AcesUp) GetColumns() [AcesUpColCnt][]*Card { return a.columns }
-
-// GetActionLog 棋譜取得
-func (a *AcesUp) GetActionLog() []*ActionLogEntry { return a.actionLog }
 
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (a *AcesUp) GetGameEndFlag() bool { return a.phase != AcesUpPhasePlaying }
@@ -542,13 +539,7 @@ func cloneCards(src []*Card) []*Card {
 
 // appendLog 棋譜エントリを追加
 func (a *AcesUp) appendLog(actionType, detail string, cards []*Card) {
-	a.actionLog = append(a.actionLog, &ActionLogEntry{
-		TurnNumber: a.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	a.appendLogAt(a.moveCount, 0, actionType, detail, cards)
 }
 
 // acesUpJSON is the JSON wire format for AcesUp.

@@ -61,8 +61,8 @@ type Bristol struct {
 	foundation [BristolFoundationCnt][]*Card
 	phase      BristolPhase
 	moveCount  int
-	actionLog  []*ActionLogEntry
-	history    []*bristolSnapshot
+	actionLogBase
+	history []*bristolSnapshot
 }
 
 // bristolSnapshot アンドゥ用スナップショット
@@ -387,9 +387,6 @@ func (b *Bristol) GetFan() [BristolFanCnt][]*Card { return b.fan }
 // GetFoundation ファウンデーション取得
 func (b *Bristol) GetFoundation() [BristolFoundationCnt][]*Card { return b.foundation }
 
-// GetActionLog 棋譜取得
-func (b *Bristol) GetActionLog() []*ActionLogEntry { return b.actionLog }
-
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (b *Bristol) GetGameEndFlag() bool { return b.phase != BristolPhasePlaying }
 
@@ -552,13 +549,7 @@ func (b *Bristol) restoreSnapshot(snap *bristolSnapshot) {
 }
 
 func (b *Bristol) appendLog(actionType, detail string, cards []*Card) {
-	b.actionLog = append(b.actionLog, &ActionLogEntry{
-		TurnNumber: b.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	b.appendLogAt(b.moveCount, 0, actionType, detail, cards)
 }
 
 // bristolJSON is the JSON wire format for Bristol.

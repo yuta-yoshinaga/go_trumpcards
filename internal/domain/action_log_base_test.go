@@ -50,3 +50,34 @@ func TestActionLogBase_PromotedFieldStaysAssignable(t *testing.T) {
 	g.appendLog(1, "c", "d", nil)
 	assert.Equal(t, 1, g.GetActionLog()[0].TurnNumber, "numbering restarts after a clear")
 }
+
+// appendLogAt is what lets the solitaires share this base: they number entries
+// by move count, not by how many entries exist, so the turn number has to come
+// from the caller. Pinning it separately from appendLog because the two now
+// share a body and a regression in the shared half would be easy to miss.
+func TestActionLogBase_AppendLogAtUsesCallerTurnNumber(t *testing.T) {
+	var b actionLogBase
+
+	b.appendLogAt(7, 0, "move", "t1->f0", nil)
+	b.appendLogAt(7, 0, "move", "same turn again", nil)
+	b.appendLogAt(9, 3, "draw", "later", nil)
+
+	got := b.GetActionLog()
+	assert.Len(t, got, 3)
+	assert.Equal(t, 7, got[0].TurnNumber)
+	assert.Equal(t, 7, got[1].TurnNumber, "the caller's number is used verbatim, not incremented")
+	assert.Equal(t, 9, got[2].TurnNumber, "gaps are preserved")
+	assert.Equal(t, 3, got[2].PlayerIdx)
+}
+
+// appendLog must keep numbering from the entry count even though it now
+// delegates -- that is the contract the 122 phase-1 games depend on.
+func TestActionLogBase_AppendLogStillNumbersByCount(t *testing.T) {
+	var b actionLogBase
+	b.appendLogAt(99, 0, "seed", "", nil)
+	b.appendLog(0, "next", "", nil)
+
+	got := b.GetActionLog()
+	assert.Equal(t, 99, got[0].TurnNumber)
+	assert.Equal(t, 2, got[1].TurnNumber, "appendLog counts entries, ignoring the seeded number")
+}

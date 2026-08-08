@@ -63,9 +63,9 @@ type Scorpion struct {
 	completedSuits int
 	phase          ScorpionPhase
 	moveCount      int
-	actionLog      []*ActionLogEntry
-	history        []*scorpionSnapshot
-	isStalemate    bool
+	actionLogBase
+	history     []*scorpionSnapshot
+	isStalemate bool
 }
 
 // scorpionSnapshot アンドゥ用スナップショット
@@ -394,9 +394,6 @@ func (s *Scorpion) GetTableau() [ScorpionTableauCnt][]*KlondikeTableauCard { ret
 // GetCompletedSuits 完成スート数取得
 func (s *Scorpion) GetCompletedSuits() int { return s.completedSuits }
 
-// GetActionLog 棋譜取得
-func (s *Scorpion) GetActionLog() []*ActionLogEntry { return s.actionLog }
-
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (s *Scorpion) GetGameEndFlag() bool { return s.phase != ScorpionPhasePlaying }
 
@@ -524,13 +521,7 @@ func (s *Scorpion) restoreSnapshot(snap *scorpionSnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (s *Scorpion) appendLog(actionType, detail string, cards []*Card) {
-	s.actionLog = append(s.actionLog, &ActionLogEntry{
-		TurnNumber: s.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	s.appendLogAt(s.moveCount, 0, actionType, detail, cards)
 }
 
 // scorpionJSON is the JSON wire format for Scorpion.

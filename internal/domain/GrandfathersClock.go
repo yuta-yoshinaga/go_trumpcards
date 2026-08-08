@@ -89,12 +89,12 @@ type GrandfathersClockHint struct {
 // するランクに達したら完成で、それ以上は受け付けない。タブローはスートを無視
 // して降順に 1 枚ずつ動かせ、空き列には任意の札を置ける。
 type GrandfathersClock struct {
-	trumpCards  *TrumpCards
-	foundation  [GrandfathersClockFoundationCnt][]*Card
-	tableau     [GrandfathersClockTableauCnt][]*GrandfathersClockTableauCard
-	phase       GrandfathersClockPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	foundation [GrandfathersClockFoundationCnt][]*Card
+	tableau    [GrandfathersClockTableauCnt][]*GrandfathersClockTableauCard
+	phase      GrandfathersClockPhase
+	moveCount  int
+	actionLogBase
 	history     []*grandfathersClockSnapshot
 	isStalemate bool
 }
@@ -380,9 +380,6 @@ func (gc *GrandfathersClock) GetTableau() [GrandfathersClockTableauCnt][]*Grandf
 	return gc.tableau
 }
 
-// GetActionLog 棋譜取得
-func (gc *GrandfathersClock) GetActionLog() []*ActionLogEntry { return gc.actionLog }
-
 // GetGameEndFlag ゲーム終了フラグ
 func (gc *GrandfathersClock) GetGameEndFlag() bool {
 	return gc.phase != GrandfathersClockPhasePlaying
@@ -528,13 +525,7 @@ func (gc *GrandfathersClock) takeSnapshot() {
 
 // appendLog 棋譜エントリを追加
 func (gc *GrandfathersClock) appendLog(actionType, detail string, cards []*Card) {
-	gc.actionLog = append(gc.actionLog, &ActionLogEntry{
-		TurnNumber: gc.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	gc.appendLogAt(gc.moveCount, 0, actionType, detail, cards)
 }
 
 // grandfathersClockMaxSliceLen caps slice sizes during deserialisation.

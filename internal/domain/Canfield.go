@@ -58,8 +58,8 @@ type Canfield struct {
 	baseRank   int
 	phase      CanfieldPhase
 	moveCount  int
-	actionLog  []*ActionLogEntry
-	history    []*canfieldSnapshot
+	actionLogBase
+	history []*canfieldSnapshot
 }
 
 // canfieldSnapshot アンドゥ用スナップショット
@@ -445,9 +445,6 @@ func (c *Canfield) GetTableau() [CanfieldTableauCnt][]*CanfieldTableauCard { ret
 // GetFoundation ファンデーション取得
 func (c *Canfield) GetFoundation() [CanfieldFoundationCnt][]*Card { return c.foundation }
 
-// GetActionLog 棋譜取得
-func (c *Canfield) GetActionLog() []*ActionLogEntry { return c.actionLog }
-
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (c *Canfield) GetGameEndFlag() bool { return c.phase != CanfieldPhasePlaying }
 
@@ -595,13 +592,7 @@ func (c *Canfield) restoreSnapshot(snap *canfieldSnapshot) {
 }
 
 func (c *Canfield) appendLog(actionType, detail string, cards []*Card) {
-	c.actionLog = append(c.actionLog, &ActionLogEntry{
-		TurnNumber: c.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	c.appendLogAt(c.moveCount, 0, actionType, detail, cards)
 }
 
 // canfieldJSON is the JSON wire format for Canfield.

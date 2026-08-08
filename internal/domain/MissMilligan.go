@@ -70,14 +70,14 @@ type MissMilliganHint struct {
 // ミス・ミリガンに捨て札は無く、山札は 8 枚単位で配り足す。実際の規則を採った。
 // また issue が触れていない「空き列はキングのみ」も本来の規則なので実装している。
 type MissMilligan struct {
-	trumpCards  *TrumpCards
-	tableau     [MissMilliganTableauCnt][]*MissMilliganTableauCard
-	stock       []*Card
-	foundation  [MissMilliganFoundationCnt][]*Card
-	waived      []*Card
-	phase       MissMilliganPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	tableau    [MissMilliganTableauCnt][]*MissMilliganTableauCard
+	stock      []*Card
+	foundation [MissMilliganFoundationCnt][]*Card
+	waived     []*Card
+	phase      MissMilliganPhase
+	moveCount  int
+	actionLogBase
 	history     []*missMilliganSnapshot
 	isStalemate bool
 }
@@ -524,9 +524,6 @@ func (mm *MissMilligan) GetTableau() [MissMilliganTableauCnt][]*MissMilliganTabl
 // GetFoundation 基礎札を取得
 func (mm *MissMilligan) GetFoundation() [MissMilliganFoundationCnt][]*Card { return mm.foundation }
 
-// GetActionLog 棋譜取得
-func (mm *MissMilligan) GetActionLog() []*ActionLogEntry { return mm.actionLog }
-
 // GetGameEndFlag ゲーム終了フラグ
 func (mm *MissMilligan) GetGameEndFlag() bool { return mm.phase != MissMilliganPhasePlaying }
 
@@ -688,13 +685,7 @@ func (mm *MissMilligan) takeSnapshot() {
 
 // appendLog 棋譜エントリを追加
 func (mm *MissMilligan) appendLog(actionType, detail string, cards []*Card) {
-	mm.actionLog = append(mm.actionLog, &ActionLogEntry{
-		TurnNumber: mm.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	mm.appendLogAt(mm.moveCount, 0, actionType, detail, cards)
 }
 
 // missMilliganMaxSliceLen caps slice sizes during deserialisation.

@@ -63,12 +63,12 @@ type StreetsAndAlleysConfig struct{}
 
 // StreetsAndAlleys ゲームクラス
 type StreetsAndAlleys struct {
-	trumpCards  *TrumpCards
-	tableau     [StreetsAndAlleysTableauCnt][]*StreetsAndAlleysTableauCard
-	foundation  [StreetsAndAlleysFoundationCnt][]*Card
-	phase       StreetsAndAlleysPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	tableau    [StreetsAndAlleysTableauCnt][]*StreetsAndAlleysTableauCard
+	foundation [StreetsAndAlleysFoundationCnt][]*Card
+	phase      StreetsAndAlleysPhase
+	moveCount  int
+	actionLogBase
 	history     []*streetsAndAlleysSnapshot
 	isStalemate bool
 }
@@ -313,9 +313,6 @@ func (sa *StreetsAndAlleys) GetFoundation() [StreetsAndAlleysFoundationCnt][]*Ca
 	return sa.foundation
 }
 
-// GetActionLog 棋譜取得
-func (sa *StreetsAndAlleys) GetActionLog() []*ActionLogEntry { return sa.actionLog }
-
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (sa *StreetsAndAlleys) GetGameEndFlag() bool { return sa.phase != StreetsAndAlleysPhasePlaying }
 
@@ -466,13 +463,7 @@ func (sa *StreetsAndAlleys) restoreSnapshot(snap *streetsAndAlleysSnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (sa *StreetsAndAlleys) appendLog(actionType, detail string, cards []*Card) {
-	sa.actionLog = append(sa.actionLog, &ActionLogEntry{
-		TurnNumber: sa.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	sa.appendLogAt(sa.moveCount, 0, actionType, detail, cards)
 }
 
 // streetsAndAlleysJSON is the JSON wire format for StreetsAndAlleys.

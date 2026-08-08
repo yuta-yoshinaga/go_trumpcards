@@ -78,9 +78,9 @@ type Bisley struct {
 	tableau         [BisleyTableauCnt][]*BisleyTableauCard
 	phase           BisleyPhase
 	moveCount       int
-	actionLog       []*ActionLogEntry
-	history         []*bisleySnapshot
-	isStalemate     bool
+	actionLogBase
+	history     []*bisleySnapshot
+	isStalemate bool
 }
 
 // bisleySnapshot アンドゥ用スナップショット
@@ -371,9 +371,6 @@ func (b *Bisley) GetKingFoundations() [BisleyFoundationCnt][]*Card { return b.ki
 // GetTableau タブローを取得
 func (b *Bisley) GetTableau() [BisleyTableauCnt][]*BisleyTableauCard { return b.tableau }
 
-// GetActionLog 棋譜取得
-func (b *Bisley) GetActionLog() []*ActionLogEntry { return b.actionLog }
-
 // GetGameEndFlag ゲーム終了フラグ
 func (b *Bisley) GetGameEndFlag() bool { return b.phase != BisleyPhasePlaying }
 
@@ -484,13 +481,7 @@ func (b *Bisley) takeSnapshot() {
 
 // appendLog 棋譜エントリを追加
 func (b *Bisley) appendLog(actionType, detail string, cards []*Card) {
-	b.actionLog = append(b.actionLog, &ActionLogEntry{
-		TurnNumber: b.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	b.appendLogAt(b.moveCount, 0, actionType, detail, cards)
 }
 
 // bisleyMaxSliceLen caps slice sizes during deserialisation.

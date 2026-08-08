@@ -61,14 +61,14 @@ const (
 
 // Klondike クロンダイクゲームクラス
 type Klondike struct {
-	trumpCards           *TrumpCards
-	tableau              [KlondikeTableauCnt][]*KlondikeTableauCard
-	stock                []*Card
-	waste                []*Card
-	foundation           [KlondikeFoundationCnt][]*Card
-	phase                KlondikePhase
-	moveCount            int
-	actionLog            []*ActionLogEntry
+	trumpCards *TrumpCards
+	tableau    [KlondikeTableauCnt][]*KlondikeTableauCard
+	stock      []*Card
+	waste      []*Card
+	foundation [KlondikeFoundationCnt][]*Card
+	phase      KlondikePhase
+	moveCount  int
+	actionLogBase
 	drawCount            int
 	history              []*klondikeSnapshot
 	scoringMode          KlondikeScoringMode
@@ -526,9 +526,6 @@ func (k *Klondike) GetTableau() [KlondikeTableauCnt][]*KlondikeTableauCard { ret
 // GetFoundation ファンデーション取得
 func (k *Klondike) GetFoundation() [KlondikeFoundationCnt][]*Card { return k.foundation }
 
-// GetActionLog 棋譜取得
-func (k *Klondike) GetActionLog() []*ActionLogEntry { return k.actionLog }
-
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (k *Klondike) GetGameEndFlag() bool { return k.phase != KlondikePhasePlaying }
 
@@ -716,13 +713,7 @@ func (k *Klondike) restoreSnapshot(snap *klondikeSnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (k *Klondike) appendLog(actionType, detail string, cards []*Card) {
-	k.actionLog = append(k.actionLog, &ActionLogEntry{
-		TurnNumber: k.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	k.appendLogAt(k.moveCount, 0, actionType, detail, cards)
 }
 
 // klondikeJSON is the JSON wire format for Klondike.

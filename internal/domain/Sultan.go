@@ -48,14 +48,14 @@ type SultanConfig struct{}
 
 // Sultan スルタンゲームクラス
 type Sultan struct {
-	trumpCards  *TrumpCards
-	foundation  [SultanFoundationCnt][]*Card
-	divan       []*Card // 8 スロット。プレイ済みでストックが空のスロットは nil。
-	stock       []*Card
-	waste       []*Card
-	phase       SultanPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	foundation [SultanFoundationCnt][]*Card
+	divan      []*Card // 8 スロット。プレイ済みでストックが空のスロットは nil。
+	stock      []*Card
+	waste      []*Card
+	phase      SultanPhase
+	moveCount  int
+	actionLogBase
 	history     []*sultanSnapshot
 	isStalemate bool
 	redealCount int
@@ -338,9 +338,6 @@ func (su *Sultan) GetDivan() []*Card { return su.divan }
 // GetFoundation ファンデーション取得
 func (su *Sultan) GetFoundation() [SultanFoundationCnt][]*Card { return su.foundation }
 
-// GetActionLog 棋譜取得
-func (su *Sultan) GetActionLog() []*ActionLogEntry { return su.actionLog }
-
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (su *Sultan) GetGameEndFlag() bool { return su.phase != SultanPhasePlaying }
 
@@ -523,13 +520,7 @@ func (su *Sultan) restoreSnapshot(snap *sultanSnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (su *Sultan) appendLog(actionType, detail string, cards []*Card) {
-	su.actionLog = append(su.actionLog, &ActionLogEntry{
-		TurnNumber: su.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	su.appendLogAt(su.moveCount, 0, actionType, detail, cards)
 }
 
 // sultanJSON is the JSON wire format for Sultan.

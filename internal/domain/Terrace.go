@@ -77,16 +77,16 @@ type TerraceHint struct {
 //     テラスは減る一方で補充されない
 //   - タブローは 9 山（issue は数に触れていない）
 type Terrace struct {
-	trumpCards  *TrumpCards
-	reserve     []*Card
-	tableau     [TerraceTableauCnt][]*Card
-	foundation  [TerraceFoundationCnt][]*Card
-	stock       []*Card
-	waste       []*Card
-	baseRank    int
-	phase       TerracePhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	reserve    []*Card
+	tableau    [TerraceTableauCnt][]*Card
+	foundation [TerraceFoundationCnt][]*Card
+	stock      []*Card
+	waste      []*Card
+	baseRank   int
+	phase      TerracePhase
+	moveCount  int
+	actionLogBase
 	history     []*terraceSnapshot
 	isStalemate bool
 }
@@ -497,9 +497,6 @@ func (t *Terrace) GetTableau() [TerraceTableauCnt][]*Card { return t.tableau }
 // GetFoundation 基礎札を取得
 func (t *Terrace) GetFoundation() [TerraceFoundationCnt][]*Card { return t.foundation }
 
-// GetActionLog 棋譜取得
-func (t *Terrace) GetActionLog() []*ActionLogEntry { return t.actionLog }
-
 // GetGameEndFlag ゲーム終了フラグ
 func (t *Terrace) GetGameEndFlag() bool { return t.phase != TerracePhasePlaying }
 
@@ -721,13 +718,7 @@ func (t *Terrace) takeSnapshot() {
 
 // appendLog 棋譜エントリを追加
 func (t *Terrace) appendLog(actionType, detail string, cards []*Card) {
-	t.actionLog = append(t.actionLog, &ActionLogEntry{
-		TurnNumber: t.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	t.appendLogAt(t.moveCount, 0, actionType, detail, cards)
 }
 
 // terraceSnapshotJSON is the wire format for a single undo snapshot.

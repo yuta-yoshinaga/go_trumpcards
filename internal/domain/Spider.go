@@ -52,10 +52,10 @@ type Spider struct {
 	phase          SpiderPhase
 	moveCount      int
 	score          int
-	actionLog      []*ActionLogEntry
-	history        []*spiderSnapshot
-	difficulty     SpiderDifficulty
-	isStalemate    bool
+	actionLogBase
+	history     []*spiderSnapshot
+	difficulty  SpiderDifficulty
+	isStalemate bool
 }
 
 // spiderSnapshot アンドゥ用スナップショット
@@ -412,9 +412,6 @@ func (s *Spider) GetTableau() [SpiderTableauCnt][]*SpiderTableauCard { return s.
 // GetCompletedSuits 完成スート数取得
 func (s *Spider) GetCompletedSuits() int { return s.completedSuits }
 
-// GetActionLog 棋譜取得
-func (s *Spider) GetActionLog() []*ActionLogEntry { return s.actionLog }
-
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (s *Spider) GetGameEndFlag() bool { return s.phase != SpiderPhasePlaying }
 
@@ -603,13 +600,7 @@ func (s *Spider) restoreSnapshot(snap *spiderSnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (s *Spider) appendLog(actionType, detail string, cards []*Card) {
-	s.actionLog = append(s.actionLog, &ActionLogEntry{
-		TurnNumber: s.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	s.appendLogAt(s.moveCount, 0, actionType, detail, cards)
 }
 
 // spiderJSON is the JSON wire format for Spider.
