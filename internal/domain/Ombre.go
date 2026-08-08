@@ -1250,10 +1250,7 @@ func (g *Ombre) GetPlayer(i int) *OmbrePlayer {
 
 // IsHumanTurn 現在の手番 (プレイ) が人間か。
 func (g *Ombre) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // IsHumanBidTurn 現在のビッド手番が人間か。

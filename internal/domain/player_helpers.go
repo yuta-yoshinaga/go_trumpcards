@@ -54,6 +54,18 @@ func findHumanIdx[T humanReporter](players []T) int {
 	return -1
 }
 
+// isHumanTurn reports whether the seat at idx is the human, returning false
+// rather than panicking when idx is outside the roster. 68 games had this exact
+// body; another 81 differ for real reasons -- some omit the bounds check (and so
+// panic where this returns false), and several gate on game state such as
+// `phase == XPhasePlay` or `!gameEndFlag`. Those keep their own. See issue #5185.
+func isHumanTurn[T humanReporter](players []T, idx int) bool {
+	if idx < 0 || idx >= len(players) {
+		return false
+	}
+	return players[idx].GetIsHuman()
+}
+
 // playerName renders a seat for display: "You" for the human, "CPU <idx>" for
 // the rest, and "Player <idx>" when idx is outside the roster. 91 games spelled
 // this out identically.

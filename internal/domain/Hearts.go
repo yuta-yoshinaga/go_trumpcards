@@ -472,10 +472,7 @@ func (h *Hearts) SetLeadPlayerIdx(idx int) { h.leadPlayerIdx = idx }
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (h *Hearts) IsHumanTurn() bool {
-	if h.currentPlayerIdx < 0 || h.currentPlayerIdx >= len(h.players) {
-		return false
-	}
-	return h.players[h.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(h.players, h.currentPlayerIdx)
 }
 
 // GetConfig 設定取得

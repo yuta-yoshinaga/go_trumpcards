@@ -646,10 +646,7 @@ func (g *SpoilFive) GetPlayer(i int) *SpoilFivePlayer {
 
 // IsHumanTurn 現在の手番が人間か。
 func (g *SpoilFive) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // GetConfig 設定取得

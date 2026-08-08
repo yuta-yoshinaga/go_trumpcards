@@ -546,10 +546,7 @@ func (t *Tarneeb) SetConfig(cfg TarneebConfig) { t.config = cfg }
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (t *Tarneeb) IsHumanTurn() bool {
-	if t.currentPlayerIdx < 0 || t.currentPlayerIdx >= len(t.players) {
-		return false
-	}
-	return t.players[t.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(t.players, t.currentPlayerIdx)
 }
 
 // IsHumanBidTurn 現在のビッド手番が人間かどうか

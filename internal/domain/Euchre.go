@@ -656,10 +656,7 @@ func (e *Euchre) GetKitty() []*Card { return e.kitty }
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (e *Euchre) IsHumanTurn() bool {
-	if e.currentPlayerIdx < 0 || e.currentPlayerIdx >= len(e.players) {
-		return false
-	}
-	return e.players[e.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(e.players, e.currentPlayerIdx)
 }
 
 // IsHumanBidTurn 現在のビッド手番が人間かどうか
