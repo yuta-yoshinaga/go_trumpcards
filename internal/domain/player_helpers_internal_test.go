@@ -543,3 +543,51 @@ func TestBySuitThenValue(t *testing.T) {
 	assert.True(t, bySuitThenValue(NewCard(1, 3, false), NewCard(1, 5, false)), "same suit falls back to value")
 	assert.False(t, bySuitThenValue(NewCard(1, 5, false), NewCard(1, 3, false)))
 }
+
+type fakeSeatHand struct {
+	human bool
+	cards []*Card
+}
+
+func (h *fakeSeatHand) GetIsHuman() bool    { return h.human }
+func (h *fakeSeatHand) GetCardsSize() int   { return len(h.cards) }
+func (h *fakeSeatHand) GetCard(i int) *Card { return h.cards[i] }
+func (h *fakeSeatHand) Reset()              { h.cards = nil }
+func (h *fakeSeatHand) AddCard(c *Card)     { h.cards = append(h.cards, c) }
+
+func TestSortHumanHands(t *testing.T) {
+	human := &fakeSeatHand{human: true, cards: []*Card{
+		NewCard(2, 5, false), NewCard(1, 9, false), NewCard(1, 3, false),
+	}}
+	cpu := &fakeSeatHand{cards: []*Card{NewCard(2, 5, false), NewCard(1, 9, false)}}
+
+	sortHumanHands([]*fakeSeatHand{cpu, human})
+
+	assert.Equal(t, []int{1, 1, 2}, []int{
+		human.GetCard(0).GetDesign(), human.GetCard(1).GetDesign(), human.GetCard(2).GetDesign(),
+	}, "human hand sorted by suit")
+	assert.Equal(t, 3, human.GetCard(0).GetValue(), "then by value within a suit")
+
+	// CPU hands are deliberately left alone -- the 5 games only sorted the human's.
+	assert.Equal(t, 2, cpu.GetCard(0).GetDesign(), "cpu hand must not be reordered")
+}
+
+func TestLongestSuit(t *testing.T) {
+	h := &fakeHand{cards: []*Card{
+		NewCard(CardDesignHeart, 2, false),
+		NewCard(CardDesignHeart, 5, false),
+		NewCard(CardDesignSpade, 7, false),
+	}}
+	assert.Equal(t, CardDesignHeart, longestSuit(h))
+}
+
+// Ties go to the first suit in spade/clover/heart/diamond order, and an empty
+// hand yields spade -- both match the 7 hand-written bodies.
+func TestLongestSuit_TiesAndEmpty(t *testing.T) {
+	tie := &fakeHand{cards: []*Card{
+		NewCard(CardDesignDiamond, 2, false),
+		NewCard(CardDesignClover, 3, false),
+	}}
+	assert.Equal(t, CardDesignClover, longestSuit(tie), "clover precedes diamond")
+	assert.Equal(t, CardDesignSpade, longestSuit(&fakeHand{}), "empty hand")
+}

@@ -309,3 +309,45 @@ func bySuitThenValue(ci, cj *Card) bool {
 	}
 	return ci.GetValue() < cj.GetValue()
 }
+
+// humanHandHolder is a seat whose hand can be sorted and which knows whether a
+// human is sitting in it.
+type humanHandHolder interface {
+	handHolder
+	GetIsHuman() bool
+}
+
+// sortHumanHands sorts the human seat's hand by suit then rank, leaving CPU
+// hands untouched. 5 games had this written out.
+//
+// Those bodies used sort.SliceStable where sortPlayerHand uses sort.Slice.
+// That is not a behaviour change here: stability is only observable when two
+// cards compare equal, i.e. share a (design, value), and no deck in this
+// repository produces that -- including the hanafuda games among these five,
+// whose cards are built as NewCard(month, index) and measured as 0 duplicate
+// pairs. See issue #5185.
+func sortHumanHands[P humanHandHolder](players []P) {
+	for _, p := range players {
+		if p.GetIsHuman() {
+			sortPlayerHand(p, bySuitThenValue)
+		}
+	}
+}
+
+// longestSuit returns the suit p holds most of, breaking ties in
+// spade/clover/heart/diamond order and returning spade for an empty hand.
+// 7 games had this written out.
+func longestSuit[P handReader](p P) int {
+	counts := map[int]int{}
+	for i := 0; i < p.GetCardsSize(); i++ {
+		counts[p.GetCard(i).GetDesign()]++
+	}
+	bestSuit, bestCnt := CardDesignSpade, -1
+	for _, suit := range []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond} {
+		if counts[suit] > bestCnt {
+			bestCnt = counts[suit]
+			bestSuit = suit
+		}
+	}
+	return bestSuit
+}
