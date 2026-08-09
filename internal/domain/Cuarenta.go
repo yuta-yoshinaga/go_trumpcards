@@ -424,14 +424,7 @@ func (g *Cuarenta) scoreRound() *CuarentaRoundDetail {
 
 // removeTableCardsByIndex は降順に並び替えてから tableCards を削除する。
 func (g *Cuarenta) removeTableCardsByIndex(idxs []int) {
-	if len(idxs) == 0 {
-		return
-	}
-	for _, idx := range sortIndicesDescending(idxs) {
-		if idx >= 0 && idx < len(g.round.tableCards) {
-			g.round.tableCards = append(g.round.tableCards[:idx], g.round.tableCards[idx+1:]...)
-		}
-	}
+	g.round.tableCards = removeIndices(g.round.tableCards, idxs)
 }
 
 // appendLog 棋譜にエントリを追加する。

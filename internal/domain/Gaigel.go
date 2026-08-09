@@ -509,16 +509,7 @@ func (g *Gaigel) IsEndgame() bool {
 // validatePlay カードのプレイがルール上有効かを検証する。
 // 第1フェーズ・リード時は常に有効。第2フェーズの追随時のみマストフォローを課す。
 func (g *Gaigel) validatePlay(playerIdx int, card *Card) error {
-	if card == nil {
-		return NewDomainError(ErrInvalidCard, "カードが nil です")
-	}
-	if !g.IsEndgame() || len(g.currentTrick) == 0 {
-		return nil
-	}
-	if !g.cardSatisfiesFollow(playerIdx, card) {
-		return NewDomainError(ErrInvalidCard, "第2フェーズではフォロールールに従う必要があります")
-	}
-	return nil
+	return validateEndgameFollow(g.currentTrick, g, playerIdx, card)
 }
 
 // cardSatisfiesFollow 第2フェーズの追随時に card が合法かを返す。

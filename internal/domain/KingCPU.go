@@ -149,17 +149,7 @@ func (g *King) getValidTrickIndices(playerIdx int) []int {
 
 // currentWinningCard は進行中トリックで現在勝っているカードを返す (空なら nil)。
 func (g *King) currentWinningCard() *Card {
-	if len(g.currentTrick) == 0 {
-		return nil
-	}
-	leadSuit := g.currentTrick[0].Card.GetDesign()
-	winner := g.currentTrick[0].Card
-	for _, tc := range g.currentTrick[1:] {
-		if g.cardBeats(tc.Card, winner, leadSuit) {
-			winner = tc.Card
-		}
-	}
-	return winner
+	return currentTrickWinnerCard(g.currentTrick, g)
 }
 
 // cpuSelectTrickCard は CPU がプレイするトリックカードのインデックスを返す。

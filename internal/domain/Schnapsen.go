@@ -553,16 +553,7 @@ func (s *Schnapsen) playCard(playerIdx int, card *Card) {
 // validatePlay カードのプレイがルール上有効かを検証する。
 // 第1フェーズ・リード時は常に有効。第2フェーズの追随時のみマストフォローを課す。
 func (s *Schnapsen) validatePlay(playerIdx int, card *Card) error {
-	if card == nil {
-		return NewDomainError(ErrInvalidCard, "カードが nil です")
-	}
-	if !s.IsEndgame() || len(s.currentTrick) == 0 {
-		return nil
-	}
-	if !s.cardSatisfiesFollow(playerIdx, card) {
-		return NewDomainError(ErrInvalidCard, "第2フェーズではフォロールールに従う必要があります")
-	}
-	return nil
+	return validateEndgameFollow(s.currentTrick, s, playerIdx, card)
 }
 
 // cardSatisfiesFollow 第2フェーズの追随時に card が合法かを返す。

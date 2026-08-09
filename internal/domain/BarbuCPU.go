@@ -147,17 +147,7 @@ func (b *Barbu) getValidTrickIndices(playerIdx int) []int {
 
 // currentWinningCard は進行中トリックで現在勝っているカードを返す (空なら nil)。
 func (b *Barbu) currentWinningCard() *Card {
-	if len(b.currentTrick) == 0 {
-		return nil
-	}
-	leadSuit := b.currentTrick[0].Card.GetDesign()
-	winner := b.currentTrick[0].Card
-	for _, tc := range b.currentTrick[1:] {
-		if b.cardBeats(tc.Card, winner, leadSuit) {
-			winner = tc.Card
-		}
-	}
-	return winner
+	return currentTrickWinnerCard(b.currentTrick, b)
 }
 
 // cpuSelectTrickCard は CPU がプレイするトリックカードのインデックスを返す。

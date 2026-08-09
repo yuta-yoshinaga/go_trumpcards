@@ -438,14 +438,7 @@ func ScopaCategoryWinners(det *ScopaScoreDetail) []ScopaCategoryWinner {
 
 // removeTableCardsByIndex は降順に並び替えてから tableCards を削除する。
 func (s *Scopa) removeTableCardsByIndex(idxs []int) {
-	if len(idxs) == 0 {
-		return
-	}
-	for _, idx := range sortIndicesDescending(idxs) {
-		if idx >= 0 && idx < len(s.round.tableCards) {
-			s.round.tableCards = append(s.round.tableCards[:idx], s.round.tableCards[idx+1:]...)
-		}
-	}
+	s.round.tableCards = removeIndices(s.round.tableCards, idxs)
 }
 
 // appendLog 棋譜にエントリを追加する。

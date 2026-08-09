@@ -653,16 +653,7 @@ func (b *Bezique) allHandsEmpty() bool {
 
 // validatePlay カードのプレイがルール上有効かを検証する。
 func (b *Bezique) validatePlay(playerIdx int, card *Card) error {
-	if card == nil {
-		return NewDomainError(ErrInvalidCard, "カードが nil です")
-	}
-	if !b.IsEndgame() || len(b.currentTrick) == 0 {
-		return nil
-	}
-	if !b.cardSatisfiesFollow(playerIdx, card) {
-		return NewDomainError(ErrInvalidCard, "第2フェーズではフォロールールに従う必要があります")
-	}
-	return nil
+	return validateEndgameFollow(b.currentTrick, b, playerIdx, card)
 }
 
 // cardSatisfiesFollow 第2フェーズの追随時に card が合法かを返す。
