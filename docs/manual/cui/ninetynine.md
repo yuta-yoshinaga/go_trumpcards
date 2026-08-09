@@ -30,7 +30,7 @@ go run ./cmd/trumpcards --lang en ninetynine  # 英語モード
 
 - **Easy**: ランダム / **Normal**: 基本戦略（デフォルト）/ **Hard**: 戦略的
 
-## コマンド
+## コマンド一覧
 
 | コマンド | 説明 |
 |---------|------|

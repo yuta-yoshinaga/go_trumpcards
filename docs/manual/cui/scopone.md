@@ -1,6 +1,6 @@
 # スコポーネ（CUI版）遊び方
 
-## 1. ゲームの目的
+## ゲーム概要
 
 スコパ (Scopa) を4人2チームで行うイタリア発祥の数合わせゲームです。座席0+2 対 座席1+3 の2チームに分かれ、手札を1枚ずつ出して場札を取り合います。獲得したカードでチーム単位の得点を競い、先に目標点に到達したチームの勝ちです。
 
@@ -17,24 +17,24 @@ go run ./cmd/trumpcards scopone
 
 英語表示で起動する場合は `go run ./cmd/trumpcards --lang en scopone` を実行します。
 
-## 2. 画面の見かた
+## ゲームの流れ
 
+```mermaid
+flowchart TD
+  A[ゲーム開始] --> B[40枚を4人へ10枚ずつ配る]
+  B --> C{自分の番}
+  C -->|p tbl指定| E[場札を獲得]
+  C -->|p tbl指定なし| G[手札を場に置く]
+  E --> H{全40枚プレイ済み?}
+  G --> H
+  H -->|いいえ| C
+  H -->|はい| J[チームごとに得点計算]
+  J --> K{目標点到達?}
+  K -->|いいえ| B
+  K -->|はい| L[ゲーム終了]
 ```
-Phase: playerTurn / Turn: Player 0
-P0 (You) team0: hand=10 captured=0 scopas=0
-P1 team1: hand=10 captured=0 scopas=0
-P2 team0: hand=10 captured=0 scopas=0
-P3 team1: hand=10 captured=0 scopas=0
-Table: (empty)
-Team0: 0  Team1: 0
-```
 
-- **Phase**: 現在のフェーズ（`playerTurn` / `roundEnd` / `gameEnd`）。
-- **P0〜P3**: 各プレイヤーの所属チーム・手札枚数（hand）・獲得枚数（captured）・スコパ数（scopas）。あなたは P0（team0）です。
-- **Table**: 場札。手番ではこのカードを取る対象にします（初手は `(empty)`）。
-- **Team0 / Team1**: チームごとの累計得点。
-
-## 3. コマンド一覧
+## コマンド一覧
 
 | コマンド | 短縮形 | 説明 |
 |----------|--------|------|
@@ -56,24 +56,24 @@ Team0: 0  Team1: 0
 
 カードの値: A=1、2〜7はそのまま、J=8、Q=9、K=10。同じ値の単札があるときは必ずその単札を取ります（取れる場札があるのに置くことはできません）。場札をすべて取り切ると「スコパ」で+1点になります（ただし最後の1手は対象外）。
 
-## 5. ゲームの流れ
+## 画面の見方
 
-```mermaid
-flowchart TD
-  A[ゲーム開始] --> B[40枚を4人へ10枚ずつ配る]
-  B --> C{自分の番}
-  C -->|p tbl指定| E[場札を獲得]
-  C -->|p tbl指定なし| G[手札を場に置く]
-  E --> H{全40枚プレイ済み?}
-  G --> H
-  H -->|いいえ| C
-  H -->|はい| J[チームごとに得点計算]
-  J --> K{目標点到達?}
-  K -->|いいえ| B
-  K -->|はい| L[ゲーム終了]
+```
+Phase: playerTurn / Turn: Player 0
+P0 (You) team0: hand=10 captured=0 scopas=0
+P1 team1: hand=10 captured=0 scopas=0
+P2 team0: hand=10 captured=0 scopas=0
+P3 team1: hand=10 captured=0 scopas=0
+Table: (empty)
+Team0: 0  Team1: 0
 ```
 
-## 6. 遊び方のコツ
+- **Phase**: 現在のフェーズ（`playerTurn` / `roundEnd` / `gameEnd`）。
+- **P0〜P3**: 各プレイヤーの所属チーム・手札枚数（hand）・獲得枚数（captured）・スコパ数（scopas）。あなたは P0（team0）です。
+- **Table**: 場札。手番ではこのカードを取る対象にします（初手は `(empty)`）。
+- **Team0 / Team1**: チームごとの累計得点。
+
+## 遊び方のコツ
 
 - **7とダイヤを意識する**: 最多の7・最多ダイヤ（denari）・7♦（セッテベッロ）はいずれも1点です。特に 7♦ は単独で1点になるため、出させない・取り返す意識が大切です。
 - **パートナーと協調する**: 得点はチーム集計です。自分が取れない局面でも、次のパートナーが取りやすい場札を残すと有利になります。

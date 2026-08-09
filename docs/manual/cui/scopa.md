@@ -1,6 +1,6 @@
 # スコパ（CUI版）遊び方
 
-## 1. ゲームの目的
+## ゲーム概要
 
 手札を1枚出して場札を取り合う、イタリア発祥の数合わせゲームです。獲得したカードで得点を競い、先に目標点に到達したプレイヤーの勝ちです。
 
@@ -12,16 +12,27 @@ go run ./cmd/trumpcards scopa
 
 英語表示で起動する場合は `go run ./cmd/trumpcards --lang en scopa` を実行します。
 
-## 2. 画面の見かた
+## ゲームの流れ
 
-```
-Phase: playerTurn / Turn: Player 0
-You: hand=3 captured=0 scopas=0 score=0
-CPU1: hand=3 captured=0 scopas=0 score=0
-Table: 2♠ 5♥ 7♦ K♣
+```mermaid
+flowchart TD
+  A[ゲーム開始] --> B[場札4枚公開]
+  B --> C[手札を配る]
+  C --> D{自分の番}
+  D -->|p tbl指定| E[場札を獲得]
+  D -->|p tbl指定なし| G[手札を場に置く]
+  E --> H{手札切れ?}
+  G --> H
+  H -->|いいえ| D
+  H -->|はい| I{山札切れ?}
+  I -->|いいえ| C
+  I -->|はい| J[得点計算]
+  J --> K{目標点到達?}
+  K -->|いいえ| B
+  K -->|はい| L[ゲーム終了]
 ```
 
-## 3. コマンド一覧
+## コマンド一覧
 
 | コマンド | 説明 |
 |----------|------|
@@ -41,24 +52,13 @@ Table: 2♠ 5♥ 7♦ K♣
 
 カードの値: A=1、2〜7はそのまま、J=8、Q=9、K=10。同じ値の単札があるときは必ずその単札を取ります。
 
-## 5. ゲームの流れ
+## 画面の見方
 
-```mermaid
-flowchart TD
-  A[ゲーム開始] --> B[場札4枚公開]
-  B --> C[手札を配る]
-  C --> D{自分の番}
-  D -->|p tbl指定| E[場札を獲得]
-  D -->|p tbl指定なし| G[手札を場に置く]
-  E --> H{手札切れ?}
-  G --> H
-  H -->|いいえ| D
-  H -->|はい| I{山札切れ?}
-  I -->|いいえ| C
-  I -->|はい| J[得点計算]
-  J --> K{目標点到達?}
-  K -->|いいえ| B
-  K -->|はい| L[ゲーム終了]
+```
+Phase: playerTurn / Turn: Player 0
+You: hand=3 captured=0 scopas=0 score=0
+CPU1: hand=3 captured=0 scopas=0 score=0
+Table: 2♠ 5♥ 7♦ K♣
 ```
 
 ## 6. 困ったときは
