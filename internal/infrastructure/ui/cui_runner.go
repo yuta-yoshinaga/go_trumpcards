@@ -9,6 +9,7 @@ import (
 	"syscall"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
@@ -220,7 +221,7 @@ func RunInteractiveCuiLoop(manager *GameManager) int {
 // printResult writes res to stdout, or to stderr when marked as an error.
 func printResult(res string) {
 	if body, isErr := i18n.StripErrorPrefix(res); isErr {
-		fmt.Fprintln(os.Stderr, body)
+		fmt.Fprintln(os.Stderr, color.RedStderr(body))
 		return
 	}
 	fmt.Println(res)
