@@ -5,11 +5,16 @@
  *
  * Why it exists: the template contract was prose only. `TestPerGameManualsMatchRegistry`
  * checks that a manual *exists* for each registered game and nothing about what
- * is inside it, so 136 CUI and 135 Web manuals had drifted — missing the
- * mandatory Mermaid flowchart, missing whole sections, or carrying a
- * two-column command table that omitted the short forms players actually type.
- * The manuals are rendered in the Web GUI (frontend/src/constants/{cui,}manualTexts.ts),
- * so those gaps are user-facing.
+ * is inside it, so 380 of the 528 manuals had drifted when this script first
+ * ran — 110 CUI command tables never mentioned `help`, 106 Web manuals omitted
+ * `go run ./cmd/server`, and 12 CUI manuals still told the reader to run
+ * `go run ./cmd/cli <game>`, a binary this repo does not have. The manuals are
+ * rendered in the Web GUI (frontend/src/constants/{cui,}manualTexts.ts), so
+ * those gaps are user-facing.
+ *
+ * Report totals move as the rules below are tightened or relaxed; the counts
+ * above are what this script reported on its first run, and the classes are
+ * what matters. Trust a fresh run over any number written in prose.
  *
  * This script is the human-facing worklist. The commit gate is the Go test
  * `TestPerGameManualsFollowTemplate` in internal/infrastructure/games/
