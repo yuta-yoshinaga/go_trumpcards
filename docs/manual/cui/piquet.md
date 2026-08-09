@@ -22,14 +22,13 @@ Webマニュアル ([../web/piquet.md](../web/piquet.md)) と同じ。簡潔に�
 ## ゲームの流れ
 
 ```mermaid
-stateDiagram-v2
-    [*] --> Exchange
-    Exchange --> Declaration: Younger 交換完了
-    Declaration --> Play: 3宣言完了
-    Play --> Score: 12トリック完了
-    Score --> Exchange: NextDeal (deal < 6)
-    Score --> GameEnd: NextDeal (deal == 6)
-    GameEnd --> [*]
+flowchart TD
+    A["交換: Elder が上位5枚から1〜5枚 → Younger が下位3枚から0〜3枚"] --> B["宣言: Point → Sequence → Set を自動比較"]
+    B --> C["12トリックをプレイ"]
+    C --> D["ディール集計（cards +10 / capot +40）"]
+    D --> E{"6ディール目?"}
+    E -- いいえ --> A
+    E -- はい --> F["パルティ判定（ルビコン含む）・ゲーム終了"]
 ```
 
 ## コマンド一覧
