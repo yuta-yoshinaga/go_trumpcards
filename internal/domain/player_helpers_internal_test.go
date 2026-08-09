@@ -1003,3 +1003,29 @@ func TestDealerQualifies(t *testing.T) {
 	assert.False(t, dealerQualifies(0, []*Card{NewCard(1, 1, false)}), "ace alone does not")
 	assert.False(t, dealerQualifies(0, []*Card{NewCard(1, 13, false)}), "king alone does not")
 }
+
+func TestBestSuitFrom(t *testing.T) {
+	assert.Equal(t, CardDesignHeart, bestSuitFrom(map[int]int{CardDesignHeart: 3, CardDesignSpade: 1}))
+	assert.Equal(t, CardDesignSpade, bestSuitFrom(map[int]int{}), "no cards defaults to spade")
+	assert.Equal(t, CardDesignClover, bestSuitFrom(map[int]int{CardDesignClover: 2, CardDesignDiamond: 2}),
+		"ties resolve in spade/clover/heart/diamond order")
+}
+
+func TestDealUpTo(t *testing.T) {
+	tc := NewTrumpCards(0)
+	tc.Shuffle()
+	cards := []*Card{}
+
+	dealUpTo(&cards, tc, 5)
+	assert.Len(t, cards, 5)
+
+	// Already at target: nothing more is drawn.
+	dealUpTo(&cards, tc, 5)
+	assert.Len(t, cards, 5)
+}
+
+func TestPotBet(t *testing.T) {
+	assert.Equal(t, 50, potBet(100, 50, 10, 0), "half pot")
+	assert.Equal(t, 10, potBet(4, 50, 10, 0), "floored by the big blind")
+	assert.Equal(t, 30, potBet(100, 10, 10, 30), "floored by the minimum raise")
+}

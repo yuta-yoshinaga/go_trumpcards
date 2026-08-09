@@ -574,3 +574,16 @@ func addonAvailable[P humanChipHolder](enabled bool, handCount, afterHand int, p
 	}
 	return false
 }
+
+// potBet sizes a CPU bet as a percentage of the pot, floored by the big blind
+// and by any outstanding minimum raise. 4 games had this written out.
+func potBet(pot, potPct, bigBlind, minRaise int) int {
+	bet := pot * potPct / 100
+	if bet < bigBlind {
+		bet = bigBlind
+	}
+	if bet < minRaise {
+		bet = minRaise
+	}
+	return bet
+}

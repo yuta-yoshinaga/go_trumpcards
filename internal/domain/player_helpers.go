@@ -643,3 +643,33 @@ func drawFromPile[P interface{ AddCard(*Card) }](pile *[]*Card, to P, n int, rec
 	}
 	return drawn
 }
+
+// bestSuitFrom returns the suit with the highest count, breaking ties in
+// spade/clover/heart/diamond order and defaulting to spade when every count is
+// zero. 3 games had this scan written out over a precomputed tally.
+//
+// Unlike longestSuit, which counts a hand itself, this takes the tally the
+// caller already built.
+func bestSuitFrom(counts map[int]int) int {
+	bestSuit := CardDesignSpade
+	bestCount := 0
+	for suit := CardDesignSpade; suit <= CardDesignDiamond; suit++ {
+		if counts[suit] > bestCount {
+			bestCount = counts[suit]
+			bestSuit = suit
+		}
+	}
+	return bestSuit
+}
+
+// dealUpTo appends cards from the deck until the slice holds target cards or
+// the deck runs out. 4 games had this written out for the community cards.
+func dealUpTo(cards *[]*Card, deck *TrumpCards, target int) {
+	for len(*cards) < target {
+		card := deck.DrawCard()
+		if card == nil {
+			break
+		}
+		*cards = append(*cards, card)
+	}
+}
