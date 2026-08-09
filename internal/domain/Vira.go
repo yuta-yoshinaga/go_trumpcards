@@ -850,10 +850,7 @@ func (g *Vira) SetConfig(c ViraConfig) { g.config = c }
 
 // GetActionLog 棋譜。
 func (g *Vira) GetActionLog() []*ActionLogEntry {
-	if g.actionLog == nil {
-		return []*ActionLogEntry{}
-	}
-	return g.actionLog
+	return sliceOrEmpty(g.actionLog)
 }
 
 // ForcePassForTest 指定席を強制的にパスさせる (テスト用)。

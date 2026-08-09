@@ -19,9 +19,7 @@ func NewIndianRummyPlayer(isHuman bool) *IndianRummyPlayer {
 
 // ResetRound ラウンドをリセット（手札・スコア・終了状態を初期化）
 func (p *IndianRummyPlayer) ResetRound() {
-	p.SetRoundScore(0)
-	p.Reset()
-	p.SetIsFinished(false)
+	resetRoundScored(p)
 }
 
 // indianRummyPlayerJSON は IndianRummyPlayer の JSON 表現。

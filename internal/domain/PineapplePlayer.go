@@ -4,7 +4,6 @@ package domain
 
 import (
 	"encoding/json"
-	"fmt"
 )
 
 // PineapplePlayer パイナップルポーカープレイヤークラス
@@ -106,13 +105,7 @@ func (pp *PineapplePlayer) IncrementPostFlopCall() { pp.postFlopCall++ }
 
 // GetAFDisplay AF表示文字列取得 ("-"=アクションなし, "∞"=コールなし, "X.X"=通常)
 func (pp *PineapplePlayer) GetAFDisplay() string {
-	if pp.postFlopBetRaise == 0 && pp.postFlopCall == 0 {
-		return "-"
-	}
-	if pp.postFlopCall == 0 {
-		return "∞"
-	}
-	return fmt.Sprintf("%.1f", float64(pp.postFlopBetRaise)/float64(pp.postFlopCall))
+	return afDisplay(pp.postFlopBetRaise, pp.postFlopCall)
 }
 
 // GetComparisonCards ハンド比較用カード取得 (BettingPlayerインターフェース)

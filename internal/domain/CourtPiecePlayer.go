@@ -33,10 +33,7 @@ func (p *CourtPiecePlayer) GetTeam() int { return p.team }
 
 // ResetRound ラウンド単位の状態をリセット
 func (p *CourtPiecePlayer) ResetRound() {
-	p.SetRoundScore(0)
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetRoundWithTricks(p)
 }
 
 // courtPiecePlayerJSON is the JSON wire format for CourtPiecePlayer.

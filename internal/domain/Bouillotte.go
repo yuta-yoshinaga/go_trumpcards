@@ -749,10 +749,7 @@ func (g *Bouillotte) GetPlayer(i int) *BouillottePlayer {
 
 // GetChips は人間 (seat 0) の保有チップを返す。
 func (g *Bouillotte) GetChips() int {
-	if len(g.players) == 0 {
-		return 0
-	}
-	return g.players[0].GetChips()
+	return chipsOfFirst(g.players)
 }
 
 // IsHumanTurn は現在の手番が人間 (seat 0) かどうかを返す。

@@ -4,7 +4,6 @@ package domain
 
 import (
 	"encoding/json"
-	"fmt"
 	"sort"
 )
 
@@ -107,13 +106,7 @@ func (hp *HoldemPlayer) IncrementPostFlopCall() { hp.postFlopCall++ }
 
 // GetAFDisplay AF表示文字列取得 ("-"=アクションなし, "∞"=コールなし, "X.X"=通常)
 func (hp *HoldemPlayer) GetAFDisplay() string {
-	if hp.postFlopBetRaise == 0 && hp.postFlopCall == 0 {
-		return "-"
-	}
-	if hp.postFlopCall == 0 {
-		return "∞"
-	}
-	return fmt.Sprintf("%.1f", float64(hp.postFlopBetRaise)/float64(hp.postFlopCall))
+	return afDisplay(hp.postFlopBetRaise, hp.postFlopCall)
 }
 
 // GetComparisonCards ハンド比較用カード取得 (BettingPlayerインターフェース)

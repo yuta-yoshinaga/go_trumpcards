@@ -749,10 +749,7 @@ func (g *Ganjifa) SetConfig(c GanjifaConfig) { g.config = c }
 
 // GetActionLog 棋譜。
 func (g *Ganjifa) GetActionLog() []*ActionLogEntry {
-	if g.actionLog == nil {
-		return []*ActionLogEntry{}
-	}
-	return g.actionLog
+	return sliceOrEmpty(g.actionLog)
 }
 
 // GetHint 人間プレイヤーへのヒント。手番でなければ nil。

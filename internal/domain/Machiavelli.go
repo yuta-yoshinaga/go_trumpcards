@@ -656,16 +656,7 @@ func (g *Machiavelli) sortAllHands() {
 }
 
 func (g *Machiavelli) sortHand(playerIdx int) {
-	p := g.players[playerIdx]
-	cards := make([]*Card, p.GetCardsSize())
-	for i := 0; i < p.GetCardsSize(); i++ {
-		cards[i] = p.GetCard(i)
-	}
-	sortCards(cards)
-	p.Reset()
-	for _, c := range cards {
-		p.AddCard(c)
-	}
+	sortHandInPlace(g.players[playerIdx], sortCards)
 }
 
 // machiavelliCollectCards プレイヤーの手札を []*Card で返す

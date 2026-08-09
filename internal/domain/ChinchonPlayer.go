@@ -30,9 +30,7 @@ func (p *ChinchonPlayer) SetEliminated(v bool) { p.eliminated = v }
 
 // ResetRound ラウンドをリセットする (手札・ラウンド点・終了状態を初期化、累積点と脱落状態は維持)。
 func (p *ChinchonPlayer) ResetRound() {
-	p.SetRoundScore(0)
-	p.Reset()
-	p.SetIsFinished(false)
+	resetRoundScored(p)
 }
 
 // chinchonPlayerJSON is the JSON wire format for ChinchonPlayer.

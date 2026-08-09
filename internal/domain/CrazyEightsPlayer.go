@@ -17,9 +17,7 @@ func NewCrazyEightsPlayer(isHuman bool) *CrazyEightsPlayer {
 
 // ResetRound ラウンドをリセット（手札・スコア・終了状態を初期化）
 func (p *CrazyEightsPlayer) ResetRound() {
-	p.SetRoundScore(0)
-	p.Reset()
-	p.SetIsFinished(false)
+	resetRoundScored(p)
 }
 
 // crazyEightsPlayerJSON is the JSON wire format for CrazyEightsPlayer.

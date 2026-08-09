@@ -840,13 +840,7 @@ func (g *Mao) recycleDrawPile() {
 
 // hasPlayableCard プレイヤーが出せるカードを持っているか
 func (g *Mao) hasPlayableCard(playerIdx int) bool {
-	player := g.players[playerIdx]
-	for i := 0; i < player.GetCardsSize(); i++ {
-		if g.isValidPlay(player.GetCard(i)) {
-			return true
-		}
-	}
-	return false
+	return handHasAny(g.players[playerIdx], g.isValidPlay)
 }
 
 // checkGameEnd ゲーム終了判定

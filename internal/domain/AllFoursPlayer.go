@@ -18,10 +18,7 @@ func NewAllFoursPlayer(isHuman bool) *AllFoursPlayer {
 
 // ResetRound ラウンドをリセット (得点・トリック・手札・終了状態を初期化)
 func (p *AllFoursPlayer) ResetRound() {
-	p.SetRoundScore(0)
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetRoundWithTricks(p)
 }
 
 // allFoursPlayerJSON is the JSON wire format for AllFoursPlayer.

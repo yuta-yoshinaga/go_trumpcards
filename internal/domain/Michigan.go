@@ -730,10 +730,7 @@ func (g *Michigan) GetPlayer(i int) *MichiganPlayer {
 
 // GetChips は人間 (seat 0) の保有チップを返す。
 func (g *Michigan) GetChips() int {
-	if len(g.players) == 0 {
-		return 0
-	}
-	return g.players[0].GetChips()
+	return chipsOfFirst(g.players)
 }
 
 // IsHumanTurn は現在人間 (seat 0) の入力待ちかどうかを返す。

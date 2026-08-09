@@ -4,7 +4,6 @@ package domain
 
 import (
 	"encoding/json"
-	"fmt"
 )
 
 // OmahaPlayer オマハホールデムプレイヤークラス
@@ -108,13 +107,7 @@ func (op *OmahaPlayer) IncrementPostFlopCall() { op.postFlopCall++ }
 
 // GetAFDisplay AF表示文字列取得 ("-"=アクションなし, "∞"=コールなし, "X.X"=通常)
 func (op *OmahaPlayer) GetAFDisplay() string {
-	if op.postFlopBetRaise == 0 && op.postFlopCall == 0 {
-		return "-"
-	}
-	if op.postFlopCall == 0 {
-		return "∞"
-	}
-	return fmt.Sprintf("%.1f", float64(op.postFlopBetRaise)/float64(op.postFlopCall))
+	return afDisplay(op.postFlopBetRaise, op.postFlopCall)
 }
 
 // GetComparisonCards ハンド比較用カード取得 (BettingPlayerインターフェース)

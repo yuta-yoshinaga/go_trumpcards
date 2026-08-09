@@ -4,7 +4,6 @@ package domain
 
 import (
 	"encoding/json"
-	"fmt"
 	"sort"
 )
 
@@ -142,13 +141,7 @@ func (p *FiveCardStudPlayer) IncrementPostFlopCall() { p.postFlopCall++ }
 
 // GetAFDisplay AF表示文字列取得 ("-"=アクションなし, "∞"=コールなし, "X.X"=通常)
 func (p *FiveCardStudPlayer) GetAFDisplay() string {
-	if p.postFlopBetRaise == 0 && p.postFlopCall == 0 {
-		return "-"
-	}
-	if p.postFlopCall == 0 {
-		return "∞"
-	}
-	return fmt.Sprintf("%.1f", float64(p.postFlopBetRaise)/float64(p.postFlopCall))
+	return afDisplay(p.postFlopBetRaise, p.postFlopCall)
 }
 
 // GetComparisonCards ハンド比較用カード取得 (BettingPlayerインターフェース)

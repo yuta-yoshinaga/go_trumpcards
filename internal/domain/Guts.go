@@ -535,10 +535,7 @@ func (g *Guts) GetPlayer(i int) *GutsPlayer {
 
 // GetChips は人間 (seat 0) の保有チップを返す。
 func (g *Guts) GetChips() int {
-	if len(g.players) == 0 {
-		return 0
-	}
-	return g.players[0].GetChips()
+	return chipsOfFirst(g.players)
 }
 
 // GetConfig はローカルルール設定を返す。

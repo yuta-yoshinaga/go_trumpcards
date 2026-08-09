@@ -1657,10 +1657,7 @@ func (g *Cego) SetConfig(cfg CegoConfig) { g.config = cfg }
 
 // GetActionLog 棋譜取得
 func (g *Cego) GetActionLog() []*ActionLogEntry {
-	if g.actionLog == nil {
-		return []*ActionLogEntry{}
-	}
-	return g.actionLog
+	return sliceOrEmpty(g.actionLog)
 }
 
 // GetPlayableIndices プレイ可能なカードのインデックス一覧を返す。

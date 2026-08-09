@@ -4,7 +4,6 @@ package domain
 
 import (
 	"encoding/json"
-	"fmt"
 )
 
 // ShortDeckPlayer ショートデックホールデムプレイヤークラス
@@ -106,13 +105,7 @@ func (sp *ShortDeckPlayer) IncrementPostFlopCall() { sp.postFlopCall++ }
 
 // GetAFDisplay AF表示文字列取得 ("-"=アクションなし, "∞"=コールなし, "X.X"=通常)
 func (sp *ShortDeckPlayer) GetAFDisplay() string {
-	if sp.postFlopBetRaise == 0 && sp.postFlopCall == 0 {
-		return "-"
-	}
-	if sp.postFlopCall == 0 {
-		return "∞"
-	}
-	return fmt.Sprintf("%.1f", float64(sp.postFlopBetRaise)/float64(sp.postFlopCall))
+	return afDisplay(sp.postFlopBetRaise, sp.postFlopCall)
 }
 
 // GetComparisonCards ハンド比較用カード取得 (BettingPlayerインターフェース)
