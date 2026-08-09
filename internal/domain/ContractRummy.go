@@ -790,10 +790,7 @@ func (g *ContractRummy) SetDiscardPile(p []*Card) { g.discardPile = p }
 
 // GetDiscardTop 捨て札トップ
 func (g *ContractRummy) GetDiscardTop() *Card {
-	if len(g.discardPile) == 0 {
-		return nil
-	}
-	return g.discardPile[len(g.discardPile)-1]
+	return discardTop(g.discardPile)
 }
 
 // GetDrawPileCount 山札残り枚数

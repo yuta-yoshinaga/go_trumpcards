@@ -806,10 +806,7 @@ func (g *SixCardGolf) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetDiscardTop 捨て札トップ
 func (g *SixCardGolf) GetDiscardTop() *Card {
-	if len(g.discardPile) == 0 {
-		return nil
-	}
-	return g.discardPile[len(g.discardPile)-1]
+	return discardTop(g.discardPile)
 }
 
 // GetDrawPileCount 山札枚数

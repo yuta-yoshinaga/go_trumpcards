@@ -705,10 +705,7 @@ func (t *Tarneeb) playHintReason(playerIdx, chosenIdx int) string {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリスト
 func (t *Tarneeb) getValidPlayIndices(playerIdx int) []int {
-	player := t.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return t.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(t.players[playerIdx], func(c *Card) bool { return t.validatePlay(playerIdx, c) == nil })
 }
 
 // --- CPU AI ---

@@ -837,10 +837,7 @@ func (t *TwoTenJack) teamOf(playerIdx int) int {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (t *TwoTenJack) getValidPlayIndices(playerIdx int) []int {
-	player := t.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return t.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(t.players[playerIdx], func(c *Card) bool { return t.validatePlay(playerIdx, c) == nil })
 }
 
 // GetValidPlayIndices プレイ可能なカードのインデックスリストを返す (Web用)

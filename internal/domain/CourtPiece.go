@@ -640,10 +640,7 @@ func (c *CourtPiece) playHintReason(playerIdx, chosenIdx int) string {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリスト
 func (c *CourtPiece) getValidPlayIndices(playerIdx int) []int {
-	player := c.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return c.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(c.players[playerIdx], func(card *Card) bool { return c.validatePlay(playerIdx, card) == nil })
 }
 
 // --- CPU AI ---

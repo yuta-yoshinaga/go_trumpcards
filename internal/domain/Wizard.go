@@ -767,10 +767,7 @@ func wizardCardStr(card *Card) string {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (o *Wizard) getValidPlayIndices(playerIdx int) []int {
-	player := o.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return o.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(o.players[playerIdx], func(c *Card) bool { return o.validatePlay(playerIdx, c) == nil })
 }
 
 // GetHint ヒントを取得する

@@ -712,10 +712,7 @@ func (w *Whist) isPartnerWinning(playerIdx int) bool {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (w *Whist) getValidPlayIndices(playerIdx int) []int {
-	player := w.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return w.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(w.players[playerIdx], func(c *Card) bool { return w.validatePlay(playerIdx, c) == nil })
 }
 
 // whistJSON is the JSON wire format for Whist.

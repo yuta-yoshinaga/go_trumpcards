@@ -766,10 +766,7 @@ func pitchSortHand(pl *PitchPlayer) {
 }
 
 func (p *Pitch) getValidPlayIndices(playerIdx int) []int {
-	player := p.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return p.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(p.players[playerIdx], func(c *Card) bool { return p.validatePlay(playerIdx, c) == nil })
 }
 
 // --- CPU AI ---

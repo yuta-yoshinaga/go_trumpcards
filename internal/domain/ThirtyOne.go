@@ -648,10 +648,7 @@ func (g *ThirtyOne) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetDiscardTop 捨て札の一番上を取得する (空なら nil)
 func (g *ThirtyOne) GetDiscardTop() *Card {
-	if len(g.discardPile) == 0 {
-		return nil
-	}
-	return g.discardPile[len(g.discardPile)-1]
+	return discardTop(g.discardPile)
 }
 
 // SetDiscardPile 捨て札を設定する (テスト用)

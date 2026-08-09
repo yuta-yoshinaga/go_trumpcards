@@ -387,10 +387,7 @@ func (g *CrazyEights) SetDiscardPile(pile []*Card) { g.discardPile = pile }
 
 // GetDiscardTop 捨て札の一番上を取得
 func (g *CrazyEights) GetDiscardTop() *Card {
-	if len(g.discardPile) == 0 {
-		return nil
-	}
-	return g.discardPile[len(g.discardPile)-1]
+	return discardTop(g.discardPile)
 }
 
 // GetDrawPileCount 山札の残り枚数取得
@@ -734,10 +731,7 @@ func (g *CrazyEights) countSuits(playerIdx int) map[int]int {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (g *CrazyEights) getValidPlayIndices(playerIdx int) []int {
-	player := g.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return g.isValidPlay(player.GetCard(i))
-	})
+	return validPlayIndices(g.players[playerIdx], func(c *Card) bool { return g.isValidPlay(c) })
 }
 
 // GetValidPlayIndices プレイ可能なカードのインデックスリストを返す (Web用)

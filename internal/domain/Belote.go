@@ -1024,10 +1024,7 @@ func (b *Belote) GetValidPlayIndices(playerIdx int) []int {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (b *Belote) getValidPlayIndices(playerIdx int) []int {
-	player := b.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return b.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(b.players[playerIdx], func(c *Card) bool { return b.validatePlay(playerIdx, c) == nil })
 }
 
 // --- Game end + bookkeeping ---

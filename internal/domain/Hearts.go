@@ -1120,10 +1120,7 @@ func (h *Hearts) cpuPlayHard(playerIdx int, validIndices []int) int {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (h *Hearts) getValidPlayIndices(playerIdx int) []int {
-	player := h.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return h.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(h.players[playerIdx], func(c *Card) bool { return h.validatePlay(playerIdx, c) == nil })
 }
 
 // heartsJSON is the JSON wire format for Hearts.

@@ -905,10 +905,7 @@ func (g *GongZhu) cpuDiscard(player *GongZhuPlayer, validIndices []int) int {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (g *GongZhu) getValidPlayIndices(playerIdx int) []int {
-	player := g.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return g.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(g.players[playerIdx], func(c *Card) bool { return g.validatePlay(playerIdx, c) == nil })
 }
 
 // gzLeadDanger リード時のカード危険度（低いほど安全）
