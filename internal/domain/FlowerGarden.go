@@ -516,12 +516,7 @@ func (fg *FlowerGarden) UndoToEscape() int {
 
 // UndoN n回連続でアンドゥを実行する。
 func (fg *FlowerGarden) UndoN(n int) error {
-	for i := range n {
-		if err := fg.Undo(); err != nil {
-			return fmt.Errorf("undo step %d failed: %w", i+1, err)
-		}
-	}
-	return nil
+	return undoN(fg, n)
 }
 
 // --- Private helpers ---

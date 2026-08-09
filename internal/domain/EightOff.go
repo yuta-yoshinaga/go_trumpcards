@@ -481,12 +481,7 @@ func (e *EightOff) UndoToEscape() int {
 
 // UndoN n回連続でアンドゥを実行する。
 func (e *EightOff) UndoN(n int) error {
-	for i := 0; i < n; i++ {
-		if err := e.Undo(); err != nil {
-			return fmt.Errorf("undo step %d failed: %w", i+1, err)
-		}
-	}
-	return nil
+	return undoN(e, n)
 }
 
 // --- State getters/setters ---

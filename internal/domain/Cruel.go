@@ -402,12 +402,7 @@ func (c *Cruel) UndoToEscape() int {
 
 // UndoN n回連続でアンドゥを実行する。
 func (c *Cruel) UndoN(n int) error {
-	for i := range n {
-		if err := c.Undo(); err != nil {
-			return fmt.Errorf("undo step %d failed: %w", i+1, err)
-		}
-	}
-	return nil
+	return undoN(c, n)
 }
 
 // --- Private helpers ---

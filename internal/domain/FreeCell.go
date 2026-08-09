@@ -569,12 +569,7 @@ func (f *FreeCell) UndoToEscape() int {
 
 // UndoN n回連続でアンドゥを実行する。
 func (f *FreeCell) UndoN(n int) error {
-	for i := 0; i < n; i++ {
-		if err := f.Undo(); err != nil {
-			return fmt.Errorf("undo step %d failed: %w", i+1, err)
-		}
-	}
-	return nil
+	return undoN(f, n)
 }
 
 // --- State getters/setters ---

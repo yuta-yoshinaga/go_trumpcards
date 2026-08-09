@@ -401,12 +401,7 @@ func (cr *Crescent) UndoToEscape() int {
 
 // UndoN n 回アンドゥする。
 func (cr *Crescent) UndoN(n int) error {
-	for i := range n {
-		if err := cr.Undo(); err != nil {
-			return fmt.Errorf("undo step %d failed: %w", i+1, err)
-		}
-	}
-	return nil
+	return undoN(cr, n)
 }
 
 // --- Private helpers ---

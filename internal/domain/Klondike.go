@@ -583,12 +583,7 @@ func (k *Klondike) UndoToEscape() int {
 
 // UndoN n回連続でアンドゥを実行する。
 func (k *Klondike) UndoN(n int) error {
-	for i := 0; i < n; i++ {
-		if err := k.Undo(); err != nil {
-			return fmt.Errorf("undo step %d failed: %w", i+1, err)
-		}
-	}
-	return nil
+	return undoN(k, n)
 }
 
 // GetScore スコア取得 (ベガス式: -52 + 5 * ファンデーション枚数)

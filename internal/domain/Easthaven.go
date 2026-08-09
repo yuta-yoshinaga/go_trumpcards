@@ -432,12 +432,7 @@ func (e *Easthaven) UndoToEscape() int {
 
 // UndoN n回連続でアンドゥを実行する。
 func (e *Easthaven) UndoN(n int) error {
-	for i := range n {
-		if err := e.Undo(); err != nil {
-			return fmt.Errorf("undo step %d failed: %w", i+1, err)
-		}
-	}
-	return nil
+	return undoN(e, n)
 }
 
 // --- Private helpers ---

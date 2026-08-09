@@ -391,12 +391,7 @@ func (y *Yukon) UndoToEscape() int {
 
 // UndoN n回連続でアンドゥを実行する。
 func (y *Yukon) UndoN(n int) error {
-	for i := 0; i < n; i++ {
-		if err := y.Undo(); err != nil {
-			return fmt.Errorf("undo step %d failed: %w", i+1, err)
-		}
-	}
-	return nil
+	return undoN(y, n)
 }
 
 // --- Private helpers ---
