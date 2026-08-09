@@ -35,3 +35,12 @@ var PokerHandNames = []string{
 	"Royal Flush",
 	"Five of a Kind",
 }
+
+// pokerHandName returns the display name for a hand rank, or "Unknown" when the
+// rank is outside the table. 5 betting games had this written out.
+func pokerHandName(rank int) string {
+	if rank >= 0 && rank < len(PokerHandNames) {
+		return PokerHandNames[rank]
+	}
+	return "Unknown"
+}

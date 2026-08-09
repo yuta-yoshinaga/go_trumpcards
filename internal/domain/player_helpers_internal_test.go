@@ -708,3 +708,67 @@ type fakeBettor struct {
 
 func (b *fakeBettor) GetFolded() bool { return b.folded }
 func (b *fakeBettor) GetAllIn() bool  { return b.allIn }
+
+func TestCopyOf(t *testing.T) {
+	orig := []int{1, 2, 3}
+	got := copyOf(orig)
+
+	assert.Equal(t, orig, got)
+	got[0] = 99
+	assert.Equal(t, 1, orig[0], "the copy must not alias the original")
+}
+
+func TestCopyOf_EmptyAndNil(t *testing.T) {
+	assert.Empty(t, copyOf([]bool{}))
+	assert.Empty(t, copyOf[[]*Card](nil))
+}
+
+func TestPercentOf(t *testing.T) {
+	assert.Equal(t, 50, percentOf(1, 2))
+	assert.Equal(t, 33, percentOf(1, 3), "integer division, matching the bodies replaced")
+	assert.Equal(t, 100, percentOf(7, 7))
+}
+
+// A zero total yields 0 rather than dividing by zero.
+func TestPercentOf_ZeroTotal(t *testing.T) {
+	assert.Equal(t, 0, percentOf(5, 0))
+	assert.Equal(t, 0, percentOf(0, 0))
+}
+
+func TestElemAt(t *testing.T) {
+	s := []int{10, 20}
+	assert.Equal(t, 10, elemAt(s, 0))
+	assert.Equal(t, 20, elemAt(s, 1))
+}
+
+// Out of range yields the zero value, which is what the bodies returned.
+func TestElemAt_OutOfRange(t *testing.T) {
+	s := []int{10}
+	assert.Equal(t, 0, elemAt(s, -1))
+	assert.Equal(t, 0, elemAt(s, 1))
+	assert.Equal(t, 0, elemAt([]int{}, 0))
+}
+
+func TestDropLast(t *testing.T) {
+	assert.Equal(t, []int{1, 2}, dropLast([]int{1, 2, 3}))
+	assert.Empty(t, dropLast([]int{1}))
+	assert.Empty(t, dropLast([]int{}), "already empty stays empty rather than panicking")
+}
+
+func TestMaxIndexBy(t *testing.T) {
+	assert.Equal(t, 1, maxIndexBy([]int{3, 9, 4}, func(v int) int { return v }))
+	assert.Equal(t, 0, maxIndexBy([]int{5}, func(v int) int { return v }))
+}
+
+// Ties keep the earliest index, and an empty slice yields 0 -- both match the
+// bodies replaced, which seeded best := 0 and used a strict >.
+func TestMaxIndexBy_TiesAndEmpty(t *testing.T) {
+	assert.Equal(t, 0, maxIndexBy([]int{7, 7}, func(v int) int { return v }))
+	assert.Equal(t, 0, maxIndexBy([]int{}, func(v int) int { return v }))
+}
+
+func TestPokerHandName(t *testing.T) {
+	assert.Equal(t, PokerHandNames[0], pokerHandName(0))
+	assert.Equal(t, "Unknown", pokerHandName(-1))
+	assert.Equal(t, "Unknown", pokerHandName(len(PokerHandNames)))
+}

@@ -65,11 +65,7 @@ type finishable interface {
 // Constrained by `any` rather than an interface: the games' player types share
 // no method this needs, and the helper only indexes. See issue #5185.
 func getPlayer[T any](players []T, idx int) T {
-	if idx < 0 || idx >= len(players) {
-		var zero T
-		return zero
-	}
-	return players[idx]
+	return elemAt(players, idx)
 }
 
 // humanReporter is the minimal view needed to tell the human player apart from
@@ -451,4 +447,11 @@ func validateFollowSuit[P handReader](trick []*TrickCard, players []P, playerIdx
 		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
 	}
 	return nil
+}
+
+// resetPlayer clears a player's hand and finished flag, for games whose reset
+// does not also clear tricks. 9 player types had these two calls written out.
+func resetPlayer[P resettable](p P) {
+	p.Reset()
+	p.SetIsFinished(false)
 }

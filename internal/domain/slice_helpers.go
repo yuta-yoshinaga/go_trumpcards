@@ -43,3 +43,51 @@ func discardTop(pile []*Card) *Card {
 	}
 	return pile[len(pile)-1]
 }
+
+// copyOf returns a copy of s, so callers can hand out a slice without exposing
+// the backing array. Four accessors had make+copy written out.
+func copyOf[T any](s []T) []T {
+	out := make([]T, len(s))
+	copy(out, s)
+	return out
+}
+
+// elemAt returns s[i], or the zero value when i is outside the slice. Callers
+// treat the zero value as "absent" rather than checking bounds themselves.
+func elemAt[T any](s []T, i int) T {
+	var zero T
+	if i < 0 || i >= len(s) {
+		return zero
+	}
+	return s[i]
+}
+
+// dropLast returns s without its final element, or s unchanged when empty.
+func dropLast[T any](s []T) []T {
+	if len(s) == 0 {
+		return s
+	}
+	return s[:len(s)-1]
+}
+
+// maxIndexBy returns the index of the highest-scoring element, keeping the
+// earliest on a tie and returning 0 for an empty slice -- the behaviour of the
+// bodies it replaces, which seeded best := 0 and compared with a strict >.
+func maxIndexBy[T any](s []T, score func(T) int) int {
+	best := 0
+	for i := range s {
+		if i > 0 && score(s[i]) > score(s[best]) {
+			best = i
+		}
+	}
+	return best
+}
+
+// percentOf returns count as an integer percentage of total, or 0 when total is
+// zero. Three betting statistics had this written out.
+func percentOf(count, total int) int {
+	if total == 0 {
+		return 0
+	}
+	return count * 100 / total
+}
