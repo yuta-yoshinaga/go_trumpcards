@@ -32,6 +32,27 @@ func sortPlayerHand[T handHolder](p T, less func(ci, cj *Card) bool) {
 
 // finishable is the minimal interface satisfied by OldMaidPlayer,
 // SevensPlayer, DaifugoPlayer, etc.
+// undoToEscape reports how many undos are needed to leave a stalemate: 0 when
+// not stalemated, the distance back to the most recent non-stalemate snapshot
+// otherwise, and -1 when every snapshot in history is also a stalemate.
+//
+// 40 solitaires had this loop written out. The predicate is passed in because
+// each game's snapshot type is its own struct with an unexported isStalemate
+// field, and Go constraints cannot require a field -- only a method. The part
+// worth sharing is the walk and the `len(history) - i` distance, not the field
+// access. See issue #5185.
+func undoToEscape[T any](isStalemate bool, history []T, wasStalemate func(T) bool) int {
+	if !isStalemate {
+		return 0
+	}
+	for i := len(history) - 1; i >= 0; i-- {
+		if !wasStalemate(history[i]) {
+			return len(history) - i
+		}
+	}
+	return -1
+}
+
 type finishable interface {
 	GetIsFinished() bool
 }
