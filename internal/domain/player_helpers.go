@@ -309,3 +309,74 @@ func bySuitThenValue(ci, cj *Card) bool {
 	}
 	return ci.GetValue() < cj.GetValue()
 }
+
+// humanHandHolder is a seat whose hand can be sorted and which knows whether a
+// human is sitting in it.
+type humanHandHolder interface {
+	handHolder
+	GetIsHuman() bool
+}
+
+// sortHumanHands sorts the human seat's hand by suit then rank, leaving CPU
+// hands untouched. 5 games had this written out.
+//
+// Those bodies used sort.SliceStable where sortPlayerHand uses sort.Slice.
+// That is not a behaviour change here: stability is only observable when two
+// cards compare equal, i.e. share a (design, value), and no deck in this
+// repository produces that -- including the hanafuda games among these five,
+// whose cards are built as NewCard(month, index) and measured as 0 duplicate
+// pairs. See issue #5185.
+func sortHumanHands[P humanHandHolder](players []P) {
+	for _, p := range players {
+		if p.GetIsHuman() {
+			sortPlayerHand(p, bySuitThenValue)
+		}
+	}
+}
+
+// longestSuit returns the suit p holds most of, breaking ties in
+// spade/clover/heart/diamond order and returning spade for an empty hand.
+// 7 games had this written out.
+func longestSuit[P handReader](p P) int {
+	counts := map[int]int{}
+	for i := 0; i < p.GetCardsSize(); i++ {
+		counts[p.GetCard(i).GetDesign()]++
+	}
+	bestSuit, bestCnt := CardDesignSpade, -1
+	for _, suit := range []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond} {
+		if counts[suit] > bestCnt {
+			bestCnt = counts[suit]
+			bestSuit = suit
+		}
+	}
+	return bestSuit
+}
+
+// handWriter is a seat whose hand can be emptied and refilled.
+type handWriter interface {
+	GetCardsSize() int
+	RemoveCard(int) *Card
+	AddCard(*Card)
+}
+
+// setHandForTest replaces a seat's hand outright. 9 games had this written out
+// behind their exported SetHandForTest.
+//
+// The constraint is spelled `*T` rather than plain handWriter so that a nil
+// player can be detected: GetPlayer returns a typed nil for an out-of-range
+// index, and a typed nil stored in an interface is not itself nil, so an
+// interface parameter would turn the guard into a panic. See issue #5185.
+func setHandForTest[T any, P interface {
+	*T
+	handWriter
+}](p P, cards []*Card) {
+	if p == nil {
+		return
+	}
+	for p.GetCardsSize() > 0 {
+		p.RemoveCard(0)
+	}
+	for _, c := range cards {
+		p.AddCard(c)
+	}
+}

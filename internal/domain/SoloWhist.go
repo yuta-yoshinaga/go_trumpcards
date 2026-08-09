@@ -280,19 +280,7 @@ func (g *SoloWhist) resolveBidding() {
 
 // longestSuit プレイヤーが最も多く持つスートを返す。
 func (g *SoloWhist) longestSuit(playerIdx int) int {
-	counts := map[int]int{}
-	p := g.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		counts[p.GetCard(i).GetDesign()]++
-	}
-	bestSuit, bestCnt := CardDesignSpade, -1
-	for _, suit := range []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond} {
-		if counts[suit] > bestCnt {
-			bestCnt = counts[suit]
-			bestSuit = suit
-		}
-	}
-	return bestSuit
+	return longestSuit(g.players[playerIdx])
 }
 
 // cpuChooseBid CPU の入札を選ぶ。最長スートが長ければ Solo、極端に弱ければ Misère。

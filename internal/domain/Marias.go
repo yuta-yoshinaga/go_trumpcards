@@ -159,19 +159,7 @@ func (g *Marias) deal() {
 
 // longestSuit プレイヤーが最も多く持つスートを返す (同数ならスート番号が小さい方)。
 func (g *Marias) longestSuit(playerIdx int) int {
-	counts := map[int]int{}
-	p := g.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		counts[p.GetCard(i).GetDesign()]++
-	}
-	bestSuit, bestCnt := CardDesignSpade, -1
-	for _, suit := range []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond} {
-		if counts[suit] > bestCnt {
-			bestCnt = counts[suit]
-			bestSuit = suit
-		}
-	}
-	return bestSuit
+	return longestSuit(g.players[playerIdx])
 }
 
 // detectMarriages 各プレイヤーの初手から結婚 (同スート K+Q) を検出し加点する。

@@ -942,16 +942,7 @@ func (k *Kaiser) SetPhaseForTest(p KaiserPhase) { k.phase = p }
 
 // SetHandForTest はテスト用に手札を差し替える。
 func (k *Kaiser) SetHandForTest(idx int, cards []*Card) {
-	p := k.GetPlayer(idx)
-	if p == nil {
-		return
-	}
-	for p.GetCardsSize() > 0 {
-		p.RemoveCard(0)
-	}
-	for _, c := range cards {
-		p.AddCard(c)
-	}
+	setHandForTest(k.GetPlayer(idx), cards)
 }
 
 // SetContractForTest はテスト用に契約を設定する。

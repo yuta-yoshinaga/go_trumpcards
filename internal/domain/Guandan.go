@@ -1244,16 +1244,7 @@ func (g *Guandan) SetPhaseForTest(p GuandanPhase) { g.phase = p }
 
 // SetHandForTest は手札を差し替える (テスト専用)。
 func (g *Guandan) SetHandForTest(idx int, cards []*Card) {
-	p := g.GetPlayer(idx)
-	if p == nil {
-		return
-	}
-	for p.GetCardsSize() > 0 {
-		p.RemoveCard(0)
-	}
-	for _, c := range cards {
-		p.AddCard(c)
-	}
+	setHandForTest(g.GetPlayer(idx), cards)
 }
 
 // SetLevelForTest は基準レベルを差し替える (テスト専用)。

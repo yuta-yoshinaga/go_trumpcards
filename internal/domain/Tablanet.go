@@ -805,25 +805,7 @@ func (g *Tablanet) GetHint() *TablanetHint {
 
 // sortHumanHand は人間の手札を表示用にスート→ランク順で並べ替える。
 func (g *Tablanet) sortHumanHand() {
-	for _, p := range g.players {
-		if !p.GetIsHuman() {
-			continue
-		}
-		cards := make([]*Card, p.GetCardsSize())
-		for i := 0; i < p.GetCardsSize(); i++ {
-			cards[i] = p.GetCard(i)
-		}
-		sort.SliceStable(cards, func(i, j int) bool {
-			if cards[i].GetDesign() != cards[j].GetDesign() {
-				return cards[i].GetDesign() < cards[j].GetDesign()
-			}
-			return cards[i].GetValue() < cards[j].GetValue()
-		})
-		p.Reset()
-		for _, c := range cards {
-			p.AddCard(c)
-		}
-	}
+	sortHumanHands(g.players)
 }
 
 func (g *Tablanet) appendLog(playerIdx int, actionType, detail string, cards []*Card) {

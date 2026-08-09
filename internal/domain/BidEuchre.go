@@ -939,16 +939,7 @@ func (b *BidEuchre) SetPhaseForTest(p BidEuchrePhase) { b.phase = p }
 
 // SetHandForTest はテスト用に手札を差し替える。
 func (b *BidEuchre) SetHandForTest(idx int, cards []*Card) {
-	p := b.GetPlayer(idx)
-	if p == nil {
-		return
-	}
-	for p.GetCardsSize() > 0 {
-		p.RemoveCard(0)
-	}
-	for _, c := range cards {
-		p.AddCard(c)
-	}
+	setHandForTest(b.GetPlayer(idx), cards)
 }
 
 // SetContractForTest はテスト用に契約を設定する。
