@@ -444,15 +444,7 @@ func (s *Spades) startPlayPhase() {
 
 // findTwoOfClubs 2♣を持つプレイヤーのインデックスを返す
 func (s *Spades) findTwoOfClubs() int {
-	for i, p := range s.players {
-		for j := 0; j < p.GetCardsSize(); j++ {
-			card := p.GetCard(j)
-			if card.GetDesign() == CardDesignClover && card.GetValue() == 2 {
-				return i
-			}
-		}
-	}
-	return -1
+	return seatHoldingCard(s.players, func(c *Card) bool { return c.GetDesign() == CardDesignClover && c.GetValue() == 2 })
 }
 
 // playCard カードをプレイする共通処理
