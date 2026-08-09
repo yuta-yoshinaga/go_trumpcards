@@ -440,22 +440,6 @@ func drawFromDeck(deck []*Card, drawn *int) *Card {
 	return card
 }
 
-// importBettingProfile decodes a saved human profile, returning nil for empty
-// input so callers can leave their existing profile untouched. 8 betting games
-// had this written out.
-func importBettingProfile(data []byte) (*BettingHumanProfile, error) {
-	if len(data) == 0 {
-		return nil, nil
-	}
-	d, err := ImportBettingHumanProfileJSON(data)
-	if err != nil {
-		return nil, err
-	}
-	p := &BettingHumanProfile{}
-	p.Import(d)
-	return p, nil
-}
-
 // validateFollowSuit enforces following the led suit when the seat can. 8 games
 // had this written out.
 func validateFollowSuit[P handReader](trick []*TrickCard, players []P, playerIdx int, card *Card) error {
