@@ -585,13 +585,7 @@ func (c *CourtPiece) GetPlayableIndices(playerIdx int) []int {
 
 // playerHasSuit プレイヤーが特定のスートを持っているか
 func (c *CourtPiece) playerHasSuit(playerIdx, design int) bool {
-	p := c.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return handHasSuit(c.players[playerIdx], design)
 }
 
 // courtPieceRank converts a raw `Card.GetValue()` (1-13, where 1 = Ace) to

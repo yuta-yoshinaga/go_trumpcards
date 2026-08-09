@@ -639,13 +639,7 @@ func (t *Tarneeb) validatePlay(playerIdx int, card *Card) error {
 
 // playerHasSuit プレイヤーが特定のスートを持っているか
 func (t *Tarneeb) playerHasSuit(playerIdx, design int) bool {
-	p := t.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return handHasSuit(t.players[playerIdx], design)
 }
 
 // tarneebRank converts a raw `Card.GetValue()` (1-13, where 1 = Ace) to

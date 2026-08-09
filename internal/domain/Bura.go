@@ -700,12 +700,7 @@ func clampPlayerIdx(idx, n int) int {
 
 // allHandsEmpty 全プレイヤーの手札が尽きているかを返す。
 func (b *Bura) allHandsEmpty() bool {
-	for _, p := range b.players {
-		if p.GetCardsSize() > 0 {
-			return false
-		}
-	}
-	return true
+	return allHandsEmpty(b.players)
 }
 
 // ---- CPU ----

@@ -440,12 +440,7 @@ func (z *Zwicker) advance() {
 
 // allHandsEmpty は全員の手札が空かを返す。
 func (z *Zwicker) allHandsEmpty() bool {
-	for _, p := range z.players {
-		if p.GetCardsSize() > 0 {
-			return false
-		}
-	}
-	return true
+	return allHandsEmpty(z.players)
 }
 
 // finishRound はディールを精算する。

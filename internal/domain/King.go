@@ -318,13 +318,7 @@ func (g *King) validateTrickPlay(playerIdx int, card *Card) error {
 
 // playerHasSuit はプレイヤーが指定スートを持っているか。
 func (g *King) playerHasSuit(playerIdx, design int) bool {
-	p := g.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return handHasSuit(g.players[playerIdx], design)
 }
 
 // resolveTrick は完成したトリックの勝者を決定し、次トリックへ進める。

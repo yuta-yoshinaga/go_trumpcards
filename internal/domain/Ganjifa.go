@@ -507,13 +507,7 @@ func (g *Ganjifa) validatePlay(playerIdx int, card *Card) error {
 
 // playerHasSuit プレイヤーが指定スートを持っているか。
 func (g *Ganjifa) playerHasSuit(playerIdx, design int) bool {
-	p := g.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return handHasSuit(g.players[playerIdx], design)
 }
 
 // GetValidPlayIndices 出せる手札の位置を返す。

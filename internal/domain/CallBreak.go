@@ -480,13 +480,7 @@ func (cb *CallBreak) validatePlay(playerIdx int, card *Card) error {
 
 // playerHasSuit プレイヤーが特定のスートを持っているか
 func (cb *CallBreak) playerHasSuit(playerIdx, design int) bool {
-	p := cb.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return handHasSuit(cb.players[playerIdx], design)
 }
 
 // playerHasNonSpade プレイヤーがスペード以外のカードを持っているか

@@ -374,13 +374,7 @@ func (p *Pitch) validatePlay(playerIdx int, card *Card) error {
 
 // playerHasSuit プレイヤーが特定のスートを持っているか
 func (p *Pitch) playerHasSuit(playerIdx, design int) bool {
-	pl := p.players[playerIdx]
-	for i := 0; i < pl.GetCardsSize(); i++ {
-		if pl.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return handHasSuit(p.players[playerIdx], design)
 }
 
 // ResolveTrick トリックを解決して勝者を決定する

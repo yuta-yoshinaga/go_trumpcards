@@ -506,12 +506,7 @@ func (e *Ecarte) finishGame() {
 
 // allHandsEmpty 全プレイヤーの手札が空かを返す
 func (e *Ecarte) allHandsEmpty() bool {
-	for _, p := range e.players {
-		if p.GetCardsSize() > 0 {
-			return false
-		}
-	}
-	return true
+	return allHandsEmpty(e.players)
 }
 
 // validatePlay マストフォロー (フォロー→勝てるなら勝つ→出せないなら切り札) を検証する。

@@ -984,14 +984,7 @@ func (n *Napoleon) checkAdjutantReveal(playerIdx int, card *Card) {
 
 // playerHasSuit プレイヤーが特定のスートを持っているか (ジョーカーは除外)
 func (n *Napoleon) playerHasSuit(playerIdx int, design int) bool {
-	p := n.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		c := p.GetCard(i)
-		if c.GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return handHasSuit(n.players[playerIdx], design)
 }
 
 // checkGameEnd ゲーム終了判定

@@ -473,13 +473,7 @@ func (g *Nap) validatePlay(playerIdx int, card *Card) error {
 
 // playerHasSuit プレイヤーが指定スートのカードを持っているか。
 func (g *Nap) playerHasSuit(playerIdx, design int) bool {
-	p := g.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return handHasSuit(g.players[playerIdx], design)
 }
 
 // trickWinner トリックの勝者を決定する。切り札があれば最強切り札、なければ

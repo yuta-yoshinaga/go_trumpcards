@@ -464,13 +464,7 @@ func (g *CatchTen) validatePlay(playerIdx int, card *Card) error {
 
 // playerHasSuit プレイヤーが特定のスートを持っているか
 func (g *CatchTen) playerHasSuit(playerIdx int, design int) bool {
-	p := g.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return handHasSuit(g.players[playerIdx], design)
 }
 
 // cardStrength はカードのトリック内での強さ (大きいほど強い) を返す。

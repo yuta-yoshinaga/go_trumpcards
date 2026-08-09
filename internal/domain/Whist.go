@@ -413,13 +413,7 @@ func (w *Whist) validatePlay(playerIdx int, card *Card) error {
 
 // playerHasSuit プレイヤーが特定のスートを持っているか
 func (w *Whist) playerHasSuit(playerIdx int, design int) bool {
-	p := w.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return handHasSuit(w.players[playerIdx], design)
 }
 
 // trickWinner トリックの勝者を決定する

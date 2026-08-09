@@ -209,12 +209,7 @@ func (g *Pishti) pileTop() *Card {
 
 // allHandsEmpty は全員の手札が空かどうか。
 func (g *Pishti) allHandsEmpty() bool {
-	for _, p := range g.players {
-		if p.GetCardsSize() > 0 {
-			return false
-		}
-	}
-	return true
+	return allHandsEmpty(g.players)
 }
 
 // PlayerPlay は人間プレイヤーが手札 cardIndex を場へ出す。

@@ -193,12 +193,7 @@ func (c *Cassino) dealNextPack() {
 
 // allHandsEmpty は全員の手札が空か。
 func (c *Cassino) allHandsEmpty() bool {
-	for _, p := range c.players {
-		if p.GetCardsSize() > 0 {
-			return false
-		}
-	}
-	return true
+	return allHandsEmpty(c.players)
 }
 
 // PlayerTake は人間プレイヤーが take を実行する。

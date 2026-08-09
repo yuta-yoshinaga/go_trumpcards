@@ -500,12 +500,7 @@ func (b *Briscola) drawOne() *Card {
 
 // allHandsEmpty 全プレイヤーの手札が空かを返す
 func (b *Briscola) allHandsEmpty() bool {
-	for _, p := range b.players {
-		if p.GetCardsSize() > 0 {
-			return false
-		}
-	}
-	return true
+	return allHandsEmpty(b.players)
 }
 
 // finishGame ゲームを終了させ、勝者を決定する

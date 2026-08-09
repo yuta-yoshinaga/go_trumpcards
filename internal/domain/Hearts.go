@@ -601,13 +601,7 @@ func (h *Hearts) playerHasCard(playerIdx int, design, value int) bool {
 
 // playerHasSuit プレイヤーが特定のスートを持っているか
 func (h *Hearts) playerHasSuit(playerIdx int, design int) bool {
-	p := h.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return handHasSuit(h.players[playerIdx], design)
 }
 
 // playerHasNonHeart プレイヤーがハート以外のカードを持っているか

@@ -182,12 +182,7 @@ func (s *Scopa) dealNextPack() {
 
 // allHandsEmpty は全員の手札が空か。
 func (s *Scopa) allHandsEmpty() bool {
-	for _, p := range s.players {
-		if p.GetCardsSize() > 0 {
-			return false
-		}
-	}
-	return true
+	return allHandsEmpty(s.players)
 }
 
 // PlayerPlay は人間プレイヤーが手札 handIdx を出す。

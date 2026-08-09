@@ -656,12 +656,7 @@ func (b *Bezique) finishGame() {
 
 // allHandsEmpty 全プレイヤーの手札が空かを返す
 func (b *Bezique) allHandsEmpty() bool {
-	for _, p := range b.players {
-		if p.GetCardsSize() > 0 {
-			return false
-		}
-	}
-	return true
+	return allHandsEmpty(b.players)
 }
 
 // validatePlay カードのプレイがルール上有効かを検証する。

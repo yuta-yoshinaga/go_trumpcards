@@ -629,13 +629,7 @@ func (g *GongZhu) GetPlayableIndices(playerIdx int) []int {
 
 // playerHasSuit プレイヤーが特定のスートを持っているか
 func (g *GongZhu) playerHasSuit(playerIdx int, design int) bool {
-	p := g.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return handHasSuit(g.players[playerIdx], design)
 }
 
 // playerHasNonHeart プレイヤーがハート以外のカードを持っているか

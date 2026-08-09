@@ -225,12 +225,7 @@ func (g *Tablanet) dealInitialTable() {
 
 // allHandsEmpty は全員の手札が空かどうか。
 func (g *Tablanet) allHandsEmpty() bool {
-	for _, p := range g.players {
-		if p.GetCardsSize() > 0 {
-			return false
-		}
-	}
-	return true
+	return allHandsEmpty(g.players)
 }
 
 // --- 捕獲ロジック (インライン) ---
