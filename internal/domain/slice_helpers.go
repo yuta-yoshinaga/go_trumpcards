@@ -30,3 +30,16 @@ func sliceOrEmpty[T any](s []T) []T {
 	}
 	return s
 }
+
+// discardTop returns the card most recently added to a discard pile, or nil
+// when the pile is empty.
+//
+// 22 games had this written out. Like indexOfPlayerInTrick it needs no type
+// parameter -- every discard pile is a []*Card -- so it adds no monomorphised
+// copies. See issue #5185.
+func discardTop(pile []*Card) *Card {
+	if len(pile) == 0 {
+		return nil
+	}
+	return pile[len(pile)-1]
+}

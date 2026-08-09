@@ -347,3 +347,17 @@ func TestIndexOfPlayerInTrick_FirstMatchWins(t *testing.T) {
 
 	assert.Equal(t, 0, indexOfPlayerInTrick(trick, 5))
 }
+
+func TestDiscardTop(t *testing.T) {
+	a, b := NewCard(1, 5, false), NewCard(2, 9, false)
+
+	assert.Same(t, b, discardTop([]*Card{a, b}), "the top is the last card added")
+	assert.Same(t, a, discardTop([]*Card{a}))
+}
+
+// nil rather than a panic on an empty pile: callers nil-check, and every one of
+// the 22 hand-written bodies returned nil here.
+func TestDiscardTop_EmptyPile(t *testing.T) {
+	assert.Nil(t, discardTop([]*Card{}))
+	assert.Nil(t, discardTop(nil))
+}
