@@ -145,7 +145,7 @@ type ChineseTen struct {
 	scores      []int
 	gameEndFlag bool
 	winnerIdx   int
-	actionLog   []*ActionLogEntry
+	actionLogBase
 }
 
 // NewChineseTen はコンストラクタ。
@@ -354,13 +354,7 @@ func (c *ChineseTen) finishGame() {
 
 // addLog は棋譜へ 1 行追加する。
 func (c *ChineseTen) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	c.actionLog = append(c.actionLog, &ActionLogEntry{
-		TurnNumber: len(c.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	c.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // ---- CPU ----
@@ -486,9 +480,6 @@ func (c *ChineseTen) GetConfig() ChineseTenConfig { return c.config }
 
 // SetConfig はゲーム設定を差し替える。
 func (c *ChineseTen) SetConfig(cfg ChineseTenConfig) { c.config = cfg }
-
-// GetActionLog は棋譜を返す。
-func (c *ChineseTen) GetActionLog() []*ActionLogEntry { return c.actionLog }
 
 // ---- JSON ----
 

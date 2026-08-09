@@ -146,7 +146,7 @@ type Klaberjass struct {
 	gameEndFlag bool
 	winnerIdx   int
 
-	actionLog []*ActionLogEntry
+	actionLogBase
 }
 
 // NewKlaberjass コンストラクタ
@@ -1154,9 +1154,6 @@ func (k *Klaberjass) GetConfig() KlaberjassConfig { return k.config }
 // SetConfig は設定をセットする。
 func (k *Klaberjass) SetConfig(c KlaberjassConfig) { k.config = c }
 
-// GetActionLog は棋譜を返す。
-func (k *Klaberjass) GetActionLog() []*ActionLogEntry { return k.actionLog }
-
 // SetPhaseForTest はテスト用にフェーズを設定する。
 func (k *Klaberjass) SetPhaseForTest(p KlaberjassPhase) { k.phase = p }
 
@@ -1214,13 +1211,7 @@ func (k *Klaberjass) FindBelaForTest() { k.findBela() }
 
 // addLog は棋譜を 1 行足す。
 func (k *Klaberjass) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	k.actionLog = append(k.actionLog, &ActionLogEntry{
-		TurnNumber: len(k.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	k.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // klaberjassJSON is the JSON wire format for Klaberjass.

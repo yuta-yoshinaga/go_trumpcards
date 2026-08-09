@@ -679,12 +679,7 @@ func sheepsheadSortHand(p *SheepsheadPlayer) {
 
 // indexOfPlayerInTrick currentTrick 内で playerIdx の札の位置を返す (-1=なし)。
 func (g *Sheepshead) indexOfPlayerInTrick(playerIdx int) int {
-	for i, tc := range g.currentTrick {
-		if tc.PlayerIdx == playerIdx {
-			return i
-		}
-	}
-	return -1
+	return indexOfPlayerInTrick(g.currentTrick, playerIdx)
 }
 
 // trickTopStrength 現在のトリック勝者 winnerIdx の札の強さを返す。防御的に、

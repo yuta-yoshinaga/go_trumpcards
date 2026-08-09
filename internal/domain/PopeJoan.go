@@ -141,7 +141,7 @@ type PopeJoan struct {
 	dealWinner  int
 	gameEndFlag bool
 	winnerIdx   int
-	actionLog   []*ActionLogEntry
+	actionLogBase
 }
 
 // NewPopeJoan はコンストラクタ。
@@ -590,9 +590,6 @@ func (p *PopeJoan) GetConfig() PopeJoanConfig { return p.config }
 // SetConfig はゲーム設定をセットする。
 func (p *PopeJoan) SetConfig(c PopeJoanConfig) { p.config = c }
 
-// GetActionLog は棋譜を返す。
-func (p *PopeJoan) GetActionLog() []*ActionLogEntry { return p.actionLog }
-
 // SetPhaseForTest はテスト用にフェーズを差し替える。
 func (p *PopeJoan) SetPhaseForTest(ph PopeJoanPhase) { p.phase = ph }
 
@@ -619,13 +616,7 @@ func (p *PopeJoan) ResolveTurnUpForTest() { p.resolveTurnUp() }
 
 // addLog は棋譜に 1 件追加する。
 func (p *PopeJoan) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	p.actionLog = append(p.actionLog, &ActionLogEntry{
-		TurnNumber: len(p.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	p.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // popeJoanJSON is the JSON wire format for PopeJoan.

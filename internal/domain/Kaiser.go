@@ -208,7 +208,7 @@ type Kaiser struct {
 	gameEndFlag bool
 	winnerTeam  int
 
-	actionLog []*ActionLogEntry
+	actionLogBase
 }
 
 // NewKaiser コンストラクタ
@@ -932,18 +932,9 @@ func (k *Kaiser) GetConfig() KaiserConfig { return k.config }
 // SetConfig は設定をセットする。
 func (k *Kaiser) SetConfig(c KaiserConfig) { k.config = c }
 
-// GetActionLog は棋譜を返す。
-func (k *Kaiser) GetActionLog() []*ActionLogEntry { return k.actionLog }
-
 // addLog は棋譜を 1 行足す。
 func (k *Kaiser) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	k.actionLog = append(k.actionLog, &ActionLogEntry{
-		TurnNumber: len(k.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	k.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // SetPhaseForTest はテスト用にフェーズを設定する。

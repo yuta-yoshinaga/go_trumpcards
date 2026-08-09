@@ -182,7 +182,7 @@ type Trex struct {
 	dealScores []int
 
 	gameEndFlag bool
-	actionLog   []*ActionLogEntry
+	actionLogBase
 }
 
 // NewTrex はコンストラクタ。
@@ -800,9 +800,6 @@ func (t *Trex) GetConfig() TrexConfig { return t.config }
 // SetConfig はゲーム設定をセットする。
 func (t *Trex) SetConfig(c TrexConfig) { t.config = c }
 
-// GetActionLog は棋譜を返す。
-func (t *Trex) GetActionLog() []*ActionLogEntry { return t.actionLog }
-
 // SetPhaseForTest はテスト用にフェーズを差し替える。
 func (t *Trex) SetPhaseForTest(p TrexPhase) { t.phase = p }
 
@@ -820,13 +817,7 @@ func (t *Trex) SetDealNumberForTest(n int) { t.dealNo = n }
 
 // addLog は棋譜に 1 件追加する。
 func (t *Trex) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	t.actionLog = append(t.actionLog, &ActionLogEntry{
-		TurnNumber: len(t.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	t.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // trexTrickCardJSON is the JSON wire format for TrexTrickCard.

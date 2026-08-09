@@ -506,12 +506,7 @@ func (g *Tressette) playHintReason(playerIdx, chosenIdx int) string {
 
 // indexOfPlayerInTrick currentTrick 内で playerIdx が出したカードの位置を返す (-1=なし)
 func (g *Tressette) indexOfPlayerInTrick(playerIdx int) int {
-	for i, tc := range g.currentTrick {
-		if tc.PlayerIdx == playerIdx {
-			return i
-		}
-	}
-	return -1
+	return indexOfPlayerInTrick(g.currentTrick, playerIdx)
 }
 
 // --- CPU AI ---

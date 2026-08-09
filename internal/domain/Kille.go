@@ -87,7 +87,7 @@ type Kille struct {
 
 	gameEndFlag bool
 	winnerIdx   int
-	actionLog   []*ActionLogEntry
+	actionLogBase
 }
 
 // NewKille はコンストラクタ。
@@ -606,9 +606,6 @@ func (k *Kille) GetConfig() KilleConfig { return k.config }
 // SetConfig はゲーム設定をセットする。
 func (k *Kille) SetConfig(c KilleConfig) { k.config = c }
 
-// GetActionLog は棋譜を返す。
-func (k *Kille) GetActionLog() []*ActionLogEntry { return k.actionLog }
-
 // SetPhaseForTest はテスト用にフェーズを差し替える。
 func (k *Kille) SetPhaseForTest(p KillePhase) { k.phase = p }
 
@@ -634,13 +631,7 @@ func (k *Kille) SetStockForTest(cards []*Card) { k.stock = cards }
 
 // addLog は棋譜に 1 件追加する。
 func (k *Kille) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	k.actionLog = append(k.actionLog, &ActionLogEntry{
-		TurnNumber: len(k.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	k.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // killeJSON is the JSON wire format for Kille.

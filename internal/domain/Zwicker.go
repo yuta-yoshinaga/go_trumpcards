@@ -132,7 +132,7 @@ type Zwicker struct {
 
 	gameEndFlag bool
 	winnerTeam  int
-	actionLog   []*ActionLogEntry
+	actionLogBase
 }
 
 // NewZwicker はコンストラクタ。
@@ -668,9 +668,6 @@ func (z *Zwicker) GetConfig() ZwickerConfig { return z.config }
 // SetConfig はゲーム設定をセットする。
 func (z *Zwicker) SetConfig(c ZwickerConfig) { z.config = c }
 
-// GetActionLog は棋譜を返す。
-func (z *Zwicker) GetActionLog() []*ActionLogEntry { return z.actionLog }
-
 // SetPhaseForTest はテスト用にフェーズを差し替える。
 func (z *Zwicker) SetPhaseForTest(p ZwickerPhase) { z.phase = p }
 
@@ -688,13 +685,7 @@ func (z *Zwicker) SetDealStageForTest(stage int) { z.dealStage = stage }
 
 // addLog は棋譜に 1 件追加する。
 func (z *Zwicker) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	z.actionLog = append(z.actionLog, &ActionLogEntry{
-		TurnNumber: len(z.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	z.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // zwickerJSON is the JSON wire format for Zwicker.

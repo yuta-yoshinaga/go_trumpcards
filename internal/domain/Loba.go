@@ -246,7 +246,7 @@ type Loba struct {
 
 	gameEndFlag bool
 	winnerIdx   int
-	actionLog   []*ActionLogEntry
+	actionLogBase
 }
 
 // NewLoba はコンストラクタ。
@@ -858,9 +858,6 @@ func (l *Loba) GetConfig() LobaConfig { return l.config }
 // SetConfig はゲーム設定をセットする。
 func (l *Loba) SetConfig(c LobaConfig) { l.config = c }
 
-// GetActionLog は棋譜を返す。
-func (l *Loba) GetActionLog() []*ActionLogEntry { return l.actionLog }
-
 // SetPhaseForTest はテスト用にフェーズを差し替える。
 func (l *Loba) SetPhaseForTest(p LobaPhase) { l.phase = p }
 
@@ -881,13 +878,7 @@ func (l *Loba) SetHasMeldedForTest(idx int, v bool) { l.hasMelded[idx] = v }
 
 // addLog は棋譜に 1 件追加する。
 func (l *Loba) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	l.actionLog = append(l.actionLog, &ActionLogEntry{
-		TurnNumber: len(l.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	l.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // lobaJSON is the JSON wire format for Loba.
