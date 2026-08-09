@@ -24,9 +24,7 @@ func (p *BridgePlayer) GetTeam() int { return p.team }
 
 // ResetRound ラウンドをリセット（トリック・手札・終了状態を初期化）
 func (p *BridgePlayer) ResetRound() {
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayerRound(p)
 }
 
 // bridgePlayerJSON is the JSON wire format for BridgePlayer.

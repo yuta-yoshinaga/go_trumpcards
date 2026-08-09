@@ -659,9 +659,7 @@ func (g *Rummy500) GetRoundEnderIdx() int { return g.roundEnderIdx }
 // --- Private helpers ---
 
 func (g *Rummy500) sortAllHands() {
-	for i := range g.players {
-		g.sortHand(i)
-	}
+	sortHands(len(g.players), g)
 }
 
 func (g *Rummy500) sortHand(playerIdx int) {

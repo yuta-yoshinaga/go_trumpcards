@@ -702,9 +702,7 @@ func (g *Kalooki) GetOpeningThreshold() int { return g.config.OpeningThreshold }
 // --- Private helpers ---
 
 func (g *Kalooki) sortAllHands() {
-	for i := range g.players {
-		g.sortHand(i)
-	}
+	sortHands(len(g.players), g)
 }
 
 func (g *Kalooki) sortHand(playerIdx int) {

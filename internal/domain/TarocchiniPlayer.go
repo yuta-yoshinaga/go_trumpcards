@@ -18,9 +18,7 @@ func NewTarocchiniPlayer(isHuman bool) *TarocchiniPlayer {
 
 // ResetRound ラウンドをリセット (トリック・手札・終了状態を初期化)
 func (p *TarocchiniPlayer) ResetRound() {
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayerRound(p)
 }
 
 // tarocchiniPlayerJSON is the JSON wire format for TarocchiniPlayer.

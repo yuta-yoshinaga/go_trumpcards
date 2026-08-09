@@ -945,9 +945,7 @@ func (g *SevenBridge) GetClaimedThisTurn() bool { return g.claimedThisTurn }
 // --- Private helpers ---
 
 func (g *SevenBridge) sortAllHands() {
-	for i := range g.players {
-		g.sortHand(i)
-	}
+	sortHands(len(g.players), g)
 }
 
 func (g *SevenBridge) sortHand(playerIdx int) {

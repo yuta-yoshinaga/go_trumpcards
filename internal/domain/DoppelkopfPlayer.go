@@ -25,9 +25,7 @@ func NewDoppelkopfPlayer(isHuman bool, startChips int) *DoppelkopfPlayer {
 // ResetRound ラウンドをリセット（トリック・手札・終了状態を初期化）。チップは
 // 累積するためリセットしない。
 func (p *DoppelkopfPlayer) ResetRound() {
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayerRound(p)
 }
 
 // doppelkopfPlayerJSON is the JSON wire format for DoppelkopfPlayer.

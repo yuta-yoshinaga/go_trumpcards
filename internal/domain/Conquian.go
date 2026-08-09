@@ -912,9 +912,7 @@ func (g *Conquian) GetTookDiscard() bool { return g.tookDiscard }
 
 // sortAllHands 全プレイヤーの手札をソートする
 func (g *Conquian) sortAllHands() {
-	for i := range g.players {
-		g.sortHand(i)
-	}
+	sortHands(len(g.players), g)
 }
 
 // sortHand プレイヤーの手札をスート→ラン位置の順にソートする

@@ -715,9 +715,7 @@ func (g *Tonk) GetIsUndercut() bool { return g.isUndercut }
 
 // sortAllHands 全プレイヤーの手札をソートする
 func (g *Tonk) sortAllHands() {
-	for i := range g.players {
-		g.sortHand(i)
-	}
+	sortHands(len(g.players), g)
 }
 
 // sortHand プレイヤーの手札をスート→値の順にソートする

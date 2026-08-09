@@ -1335,9 +1335,7 @@ func (g *HandAndFoot) GetDrewFromDiscard() bool { return g.drewFromDiscard }
 
 // sortAllHands 全プレイヤーの手札をソートする
 func (g *HandAndFoot) sortAllHands() {
-	for i := range g.players {
-		g.sortHand(i)
-	}
+	sortHands(len(g.players), g)
 }
 
 // sortHand プレイヤーの手札をスート→値の順にソートする

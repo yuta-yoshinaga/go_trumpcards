@@ -18,9 +18,7 @@ func NewNapPlayer(isHuman bool) *NapPlayer {
 
 // ResetRound ラウンドをリセット（トリック・手札・終了状態を初期化）
 func (p *NapPlayer) ResetRound() {
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayerRound(p)
 }
 
 // napPlayerJSON is the JSON wire format for NapPlayer.

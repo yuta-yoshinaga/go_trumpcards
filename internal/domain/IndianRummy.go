@@ -651,9 +651,7 @@ func (g *IndianRummy) PlayerHasPureSequence(i int) bool {
 // --- Private helpers ---
 
 func (g *IndianRummy) sortAllHands() {
-	for i := range g.players {
-		g.sortHand(i)
-	}
+	sortHands(len(g.players), g)
 }
 
 func (g *IndianRummy) sortHand(playerIdx int) {

@@ -825,9 +825,7 @@ func (g *GinRummy) SetIsGin(isGin bool) { g.isGin = isGin }
 
 // sortAllHands 全プレイヤーの手札をソートする
 func (g *GinRummy) sortAllHands() {
-	for i := range g.players {
-		g.sortHand(i)
-	}
+	sortHands(len(g.players), g)
 }
 
 // sortHand プレイヤーの手札をスート→値の順にソートする

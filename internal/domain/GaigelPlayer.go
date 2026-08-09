@@ -24,9 +24,7 @@ func (p *GaigelPlayer) GetTeam() int { return p.team }
 
 // ResetRound ラウンドをリセット（トリック・手札・終了状態を初期化）
 func (p *GaigelPlayer) ResetRound() {
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayerRound(p)
 }
 
 // gaigelPlayerJSON is the JSON wire format for GaigelPlayer.

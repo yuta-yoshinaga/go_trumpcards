@@ -823,9 +823,7 @@ func (g *Carioca) GetCurrentContract() Contract {
 // --- Private helpers ---
 
 func (g *Carioca) sortAllHands() {
-	for i := range g.players {
-		g.sortHand(i)
-	}
+	sortHands(len(g.players), g)
 }
 
 func (g *Carioca) sortHand(playerIdx int) {

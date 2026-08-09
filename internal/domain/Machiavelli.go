@@ -652,9 +652,7 @@ func (g *Machiavelli) PlayerDeadwoodValue(i int) int {
 // --- Private helpers ---
 
 func (g *Machiavelli) sortAllHands() {
-	for i := range g.players {
-		g.sortHand(i)
-	}
+	sortHands(len(g.players), g)
 }
 
 func (g *Machiavelli) sortHand(playerIdx int) {

@@ -18,9 +18,7 @@ func NewManillePlayer(isHuman bool) *ManillePlayer {
 
 // ResetRound ラウンドをリセット（トリック・手札・終了状態を初期化）
 func (p *ManillePlayer) ResetRound() {
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayerRound(p)
 }
 
 // manillePlayerJSON is the JSON wire format for ManillePlayer.

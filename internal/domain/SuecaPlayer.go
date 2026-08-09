@@ -18,9 +18,7 @@ func NewSuecaPlayer(isHuman bool) *SuecaPlayer {
 
 // ResetRound ラウンドをリセット（トリック・手札・終了状態を初期化）
 func (p *SuecaPlayer) ResetRound() {
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayerRound(p)
 }
 
 // suecaPlayerJSON is the JSON wire format for SuecaPlayer.

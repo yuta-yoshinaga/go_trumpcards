@@ -720,9 +720,7 @@ func (g *Pan) PlayerMeldedCount(i int) int {
 // --- Private helpers ---
 
 func (g *Pan) sortAllHands() {
-	for i := range g.players {
-		g.sortHand(i)
-	}
+	sortHands(len(g.players), g)
 }
 
 func (g *Pan) sortHand(playerIdx int) {

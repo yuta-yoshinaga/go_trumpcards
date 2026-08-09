@@ -205,3 +205,40 @@ func validPlayIndices[P handReader](p P, ok func(*Card) bool) []int {
 		return ok(p.GetCard(i))
 	})
 }
+
+// roundResettable is a player that can be returned to its start-of-round state.
+type roundResettable interface {
+	ResetTricks()
+	Reset()
+	SetIsFinished(bool)
+}
+
+// resetPlayerRound clears a player's tricks, hand and finished flag. 32 player
+// types had these three calls written out.
+//
+// Type parameter rather than interface parameter, which is measured rather than
+// assumed: an interface parameter compiles to one function but makes TinyGo emit
+// an itab and type descriptor per implementing type, and for a body this small
+// that metadata costs more than the duplicated code. Measured at +2,038 bytes as
+// interfaces versus this form. See issue #5185.
+func resetPlayerRound[P roundResettable](p P) {
+	p.ResetTricks()
+	p.Reset()
+	p.SetIsFinished(false)
+}
+
+// handSorter is a game that can sort one seat's hand by index.
+type handSorter interface {
+	sortHand(int)
+}
+
+// sortHands sorts every seat's hand, for the 22 games that looped over their
+// players to do it. Takes the seat count separately because the rosters are
+// each a different []*XPlayer, which no single interface can name.
+//
+// Type parameter for the same measured reason as resetPlayerRound above.
+func sortHands[G handSorter](seats int, g G) {
+	for i := range seats {
+		g.sortHand(i)
+	}
+}

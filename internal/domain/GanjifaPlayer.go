@@ -18,9 +18,7 @@ func NewGanjifaPlayer(isHuman bool) *GanjifaPlayer {
 
 // ResetRound ラウンドをリセット（トリック・手札・終了状態を初期化）
 func (p *GanjifaPlayer) ResetRound() {
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayerRound(p)
 }
 
 // ganjifaPlayerJSON is the JSON wire format for GanjifaPlayer.
