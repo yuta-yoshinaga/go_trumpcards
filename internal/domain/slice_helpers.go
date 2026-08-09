@@ -108,3 +108,17 @@ func recycleDiscardToDraw(discard, draw *[]*Card) {
 	rand.Shuffle(len(recycled), func(i, j int) { recycled[i], recycled[j] = recycled[j], recycled[i] })
 	*draw = recycled
 }
+
+// nextIndexWhere returns the first index after from, wrapping, whose element
+// satisfies ok -- or from itself when none does. Callers index with the result,
+// so it never returns -1. Two "next active seat" variants shared this shape.
+func nextIndexWhere[T any](s []T, from int, ok func(T) bool) int {
+	n := len(s)
+	for i := 1; i <= n; i++ {
+		idx := (from + i) % n
+		if ok(s[idx]) {
+			return idx
+		}
+	}
+	return from
+}

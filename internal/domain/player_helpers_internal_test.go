@@ -1029,3 +1029,40 @@ func TestPotBet(t *testing.T) {
 	assert.Equal(t, 10, potBet(4, 50, 10, 0), "floored by the big blind")
 	assert.Equal(t, 30, potBet(100, 10, 10, 30), "floored by the minimum raise")
 }
+
+func TestNextIndexWhere(t *testing.T) {
+	s := []bool{false, true, false, true}
+	ok := func(v bool) bool { return v }
+
+	assert.Equal(t, 1, nextIndexWhere(s, 0, ok))
+	assert.Equal(t, 3, nextIndexWhere(s, 1, ok), "starts after from")
+	assert.Equal(t, 1, nextIndexWhere(s, 3, ok), "wraps around")
+}
+
+// With nobody eligible it returns from rather than -1, because callers index
+// with the result. An empty slice must not divide by zero.
+func TestNextIndexWhere_NoneAndEmpty(t *testing.T) {
+	assert.Equal(t, 2, nextIndexWhere([]bool{false, false, false}, 2, func(v bool) bool { return v }))
+	assert.NotPanics(t, func() { nextIndexWhere([]bool{}, 0, func(bool) bool { return true }) })
+}
+
+func TestDrawOrTakeTrump(t *testing.T) {
+	deck := NewTrumpCards(0)
+	deck.Shuffle()
+	var trump *Card
+
+	assert.NotNil(t, drawOrTakeTrump(deck, &trump), "comes off the deck while it lasts")
+}
+
+func TestDrawOrTakeTrump_FallsBackToTrumpThenNil(t *testing.T) {
+	deck := NewTrumpCards(0)
+	deck.Shuffle()
+	for deck.DrawCard() != nil { //nolint:revive // drain the deck
+	}
+	held := NewCard(1, 5, false)
+	trump := held
+
+	assert.Same(t, held, drawOrTakeTrump(deck, &trump), "the trump card is dealt once the deck runs out")
+	assert.Nil(t, trump, "and is consumed")
+	assert.Nil(t, drawOrTakeTrump(deck, &trump), "nothing left")
+}

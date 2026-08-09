@@ -673,3 +673,17 @@ func dealUpTo(cards *[]*Card, deck *TrumpCards, target int) {
 		*cards = append(*cards, card)
 	}
 }
+
+// drawOrTakeTrump draws from the deck, falling back to the face-up trump card
+// once the deck is empty and consuming it. 3 games had this written out.
+func drawOrTakeTrump(deck *TrumpCards, trump **Card) *Card {
+	if c := deck.DrawCard(); c != nil {
+		return c
+	}
+	if *trump != nil {
+		c := *trump
+		*trump = nil
+		return c
+	}
+	return nil
+}
