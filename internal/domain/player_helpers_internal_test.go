@@ -591,3 +591,38 @@ func TestLongestSuit_TiesAndEmpty(t *testing.T) {
 	assert.Equal(t, CardDesignClover, longestSuit(tie), "clover precedes diamond")
 	assert.Equal(t, CardDesignSpade, longestSuit(&fakeHand{}), "empty hand")
 }
+
+type fakeWritableHand struct{ cards []*Card }
+
+func (h *fakeWritableHand) GetCardsSize() int { return len(h.cards) }
+func (h *fakeWritableHand) AddCard(c *Card)   { h.cards = append(h.cards, c) }
+func (h *fakeWritableHand) RemoveCard(i int) *Card {
+	c := h.cards[i]
+	h.cards = append(h.cards[:i], h.cards[i+1:]...)
+	return c
+}
+
+func TestSetHandForTest(t *testing.T) {
+	h := &fakeWritableHand{cards: []*Card{NewCard(1, 1, false), NewCard(2, 2, false)}}
+
+	setHandForTest(h, []*Card{NewCard(3, 7, false)})
+
+	require.Equal(t, 1, h.GetCardsSize(), "the old hand is replaced, not appended to")
+	assert.Equal(t, 7, h.cards[0].GetValue())
+}
+
+func TestSetHandForTest_EmptyClearsTheHand(t *testing.T) {
+	h := &fakeWritableHand{cards: []*Card{NewCard(1, 1, false)}}
+
+	setHandForTest(h, nil)
+
+	assert.Equal(t, 0, h.GetCardsSize())
+}
+
+// GetPlayer returns a typed nil for an out-of-range seat. A typed nil inside an
+// interface is not nil, so this guard only works because the constraint is *T.
+func TestSetHandForTest_NilPlayerIsIgnored(t *testing.T) {
+	var missing *fakeWritableHand
+
+	assert.NotPanics(t, func() { setHandForTest(missing, []*Card{NewCard(1, 1, false)}) })
+}

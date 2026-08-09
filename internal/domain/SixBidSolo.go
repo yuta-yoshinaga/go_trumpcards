@@ -1239,16 +1239,7 @@ func (s *SixBidSolo) SetPhaseForTest(p SixBidSoloPhase) { s.phase = p }
 
 // SetHandForTest は手札を差し替える (テスト専用)。
 func (s *SixBidSolo) SetHandForTest(idx int, cards []*Card) {
-	p := s.GetPlayer(idx)
-	if p == nil {
-		return
-	}
-	for p.GetCardsSize() > 0 {
-		p.RemoveCard(0)
-	}
-	for _, c := range cards {
-		p.AddCard(c)
-	}
+	setHandForTest(s.GetPlayer(idx), cards)
 }
 
 // SetWidowForTest はウィドウを差し替える (テスト専用)。

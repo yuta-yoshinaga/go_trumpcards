@@ -876,16 +876,7 @@ func (l *Literature) SetPhaseForTest(p LiteraturePhase) { l.phase = p }
 
 // SetHandForTest は手札を差し替える (テスト専用)。
 func (l *Literature) SetHandForTest(idx int, cards []*Card) {
-	p := l.GetPlayer(idx)
-	if p == nil {
-		return
-	}
-	for p.GetCardsSize() > 0 {
-		p.RemoveCard(0)
-	}
-	for _, c := range cards {
-		p.AddCard(c)
-	}
+	setHandForTest(l.GetPlayer(idx), cards)
 }
 
 // SetCurrentPlayerForTest は手番を差し替える (テスト専用)。

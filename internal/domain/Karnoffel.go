@@ -753,16 +753,7 @@ func (k *Karnoffel) SetPhaseForTest(p KarnoffelPhase) { k.phase = p }
 
 // SetHandForTest は手札を差し替える (テスト専用)。
 func (k *Karnoffel) SetHandForTest(idx int, cards []*Card) {
-	p := k.GetPlayer(idx)
-	if p == nil {
-		return
-	}
-	for p.GetCardsSize() > 0 {
-		p.RemoveCard(0)
-	}
-	for _, c := range cards {
-		p.AddCard(c)
-	}
+	setHandForTest(k.GetPlayer(idx), cards)
 }
 
 // SetChosenSuitForTest は選ばれたスートを差し替える (テスト専用)。

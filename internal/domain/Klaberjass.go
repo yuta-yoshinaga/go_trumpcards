@@ -1171,16 +1171,7 @@ func (k *Klaberjass) SetTrickLeaderForTest(idx int) { k.trickLeader = idx }
 
 // SetHandForTest はテスト用に手札を差し替える。
 func (k *Klaberjass) SetHandForTest(idx int, cards []*Card) {
-	p := k.GetPlayer(idx)
-	if p == nil {
-		return
-	}
-	for p.GetCardsSize() > 0 {
-		p.RemoveCard(0)
-	}
-	for _, c := range cards {
-		p.AddCard(c)
-	}
+	setHandForTest(k.GetPlayer(idx), cards)
 }
 
 // SetHandPointsForTest はテスト用にディール中の得点を設定する。
