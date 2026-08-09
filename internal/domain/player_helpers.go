@@ -205,3 +205,38 @@ func validPlayIndices[P handReader](p P, ok func(*Card) bool) []int {
 		return ok(p.GetCard(i))
 	})
 }
+
+// roundResettable is a player that can be returned to its start-of-round state.
+type roundResettable interface {
+	ResetTricks()
+	Reset()
+	SetIsFinished(bool)
+}
+
+// resetPlayerRound clears a player's tricks, hand and finished flag. 32 player
+// types had these three calls written out.
+//
+// This takes an interface rather than a type parameter on purpose: a type
+// parameter would be instantiated once per player type, whereas one interface
+// value compiles to a single function. #5210 measured that distinction as the
+// thing that matters for the Worker binaries. See issue #5185.
+func resetPlayerRound(p roundResettable) {
+	p.ResetTricks()
+	p.Reset()
+	p.SetIsFinished(false)
+}
+
+// handSorter is a game that can sort one seat's hand by index.
+type handSorter interface {
+	sortHand(int)
+}
+
+// sortHands sorts every seat's hand, for the 22 games that looped over their
+// players to do it. Takes the seat count separately because the rosters are
+// each a different []*XPlayer, which no single interface can name -- and,
+// like resetPlayerRound, avoids a type parameter so this stays one function.
+func sortHands(seats int, g handSorter) {
+	for i := range seats {
+		g.sortHand(i)
+	}
+}

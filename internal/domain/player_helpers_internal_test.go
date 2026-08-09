@@ -394,3 +394,51 @@ func TestValidPlayIndices_PredicateSeesEveryCard(t *testing.T) {
 	})
 	assert.Equal(t, []int{4, 5, 6}, seen)
 }
+
+type fakeRoundPlayer struct {
+	tricksReset bool
+	handReset   bool
+	finished    bool
+	order       []string
+}
+
+func (p *fakeRoundPlayer) ResetTricks() { p.tricksReset = true; p.order = append(p.order, "tricks") }
+func (p *fakeRoundPlayer) Reset()       { p.handReset = true; p.order = append(p.order, "hand") }
+func (p *fakeRoundPlayer) SetIsFinished(v bool) {
+	p.finished = v
+	p.order = append(p.order, "finished")
+}
+
+func TestResetPlayerRound(t *testing.T) {
+	p := &fakeRoundPlayer{finished: true}
+
+	resetPlayerRound(p)
+
+	assert.True(t, p.tricksReset, "tricks must be cleared")
+	assert.True(t, p.handReset, "hand must be cleared")
+	assert.False(t, p.finished, "the finished flag must be cleared, not merely set")
+	// Order is pinned because the 32 hand-written bodies all did tricks, then
+	// hand, then flag -- a player whose Reset depends on that order would break
+	// silently otherwise.
+	assert.Equal(t, []string{"tricks", "hand", "finished"}, p.order)
+}
+
+type fakeHandSorter struct{ sorted []int }
+
+func (g *fakeHandSorter) sortHand(i int) { g.sorted = append(g.sorted, i) }
+
+func TestSortHands(t *testing.T) {
+	g := &fakeHandSorter{}
+
+	sortHands(3, g)
+
+	assert.Equal(t, []int{0, 1, 2}, g.sorted, "every seat, in order")
+}
+
+func TestSortHands_NoSeats(t *testing.T) {
+	g := &fakeHandSorter{}
+
+	sortHands(0, g)
+
+	assert.Empty(t, g.sorted)
+}
