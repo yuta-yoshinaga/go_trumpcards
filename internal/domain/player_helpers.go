@@ -30,8 +30,6 @@ func sortPlayerHand[T handHolder](p T, less func(ci, cj *Card) bool) {
 	}
 }
 
-// finishable is the minimal interface satisfied by OldMaidPlayer,
-// SevensPlayer, DaifugoPlayer, etc.
 // undoToEscape reports how many undos are needed to leave a stalemate: 0 when
 // not stalemated, the distance back to the most recent non-stalemate snapshot
 // otherwise, and -1 when every snapshot in history is also a stalemate.
@@ -53,6 +51,8 @@ func undoToEscape[T any](isStalemate bool, history []T, wasStalemate func(T) boo
 	return -1
 }
 
+// finishable is the minimal interface satisfied by OldMaidPlayer,
+// SevensPlayer, DaifugoPlayer, etc.
 type finishable interface {
 	GetIsFinished() bool
 }
