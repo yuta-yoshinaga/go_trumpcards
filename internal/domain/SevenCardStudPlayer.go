@@ -96,18 +96,12 @@ func (p *SevenCardStudPlayer) GetPFRCount() int { return p.pfrCount }
 
 // GetVPIP VPIP%取得 (0 if totalHands==0)
 func (p *SevenCardStudPlayer) GetVPIP() int {
-	if p.totalHands == 0 {
-		return 0
-	}
-	return p.vpipCount * 100 / p.totalHands
+	return percentOf(p.vpipCount, p.totalHands)
 }
 
 // GetPFR PFR%取得 (0 if totalHands==0)
 func (p *SevenCardStudPlayer) GetPFR() int {
-	if p.totalHands == 0 {
-		return 0
-	}
-	return p.pfrCount * 100 / p.totalHands
+	return percentOf(p.pfrCount, p.totalHands)
 }
 
 // IncrementTotalHands 総ハンド数をインクリメント
@@ -127,10 +121,7 @@ func (p *SevenCardStudPlayer) GetThreeBetCount() int { return p.threeBetCount }
 
 // GetThreeBet 3Bet%取得 (0 if threeBetOpportunity==0)
 func (p *SevenCardStudPlayer) GetThreeBet() int {
-	if p.threeBetOpportunity == 0 {
-		return 0
-	}
-	return p.threeBetCount * 100 / p.threeBetOpportunity
+	return percentOf(p.threeBetCount, p.threeBetOpportunity)
 }
 
 // IncrementThreeBetOpportunity 3Bet機会数をインクリメント
@@ -164,9 +155,7 @@ func (p *SevenCardStudPlayer) GetAFDisplay() string {
 
 // GetComparisonCards ハンド比較用カード取得 (BettingPlayerインターフェース)
 func (p *SevenCardStudPlayer) GetComparisonCards() []*Card {
-	cards := make([]*Card, len(p.bestHand))
-	copy(cards, p.bestHand)
-	return cards
+	return copyOf(p.bestHand)
 }
 
 // PeekBestHand は現在の持ち札から最善の 5 枚役を求めて返す。**状態を変えない。**

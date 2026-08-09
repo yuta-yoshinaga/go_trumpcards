@@ -735,10 +735,7 @@ func (s *FiveCardStud) IsMuckAvailable() bool {
 
 // getHandName ハンドランクから名前を返す
 func (s *FiveCardStud) getHandName(rank int) string {
-	if rank >= 0 && rank < len(PokerHandNames) {
-		return PokerHandNames[rank]
-	}
-	return "Unknown"
+	return pokerHandName(rank)
 }
 
 // --- 棋譜 ---
@@ -853,9 +850,7 @@ func (s *FiveCardStud) IsHumanTurn() bool {
 
 // GetActedFlags actedフラグ取得
 func (s *FiveCardStud) GetActedFlags() []bool {
-	result := make([]bool, len(s.actedFlags))
-	copy(result, s.actedFlags)
-	return result
+	return copyOf(s.actedFlags)
 }
 
 // GetHandCount ハンド数取得

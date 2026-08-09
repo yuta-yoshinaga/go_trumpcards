@@ -18,8 +18,7 @@ func NewBuraPlayer(isHuman bool) *BuraPlayer {
 
 // ResetGame ゲームをリセット (手札と上がり状態を初期化)
 func (p *BuraPlayer) ResetGame() {
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayer(p)
 }
 
 // buraPlayerJSON is the JSON wire format for BuraPlayer.

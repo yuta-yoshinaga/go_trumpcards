@@ -604,17 +604,12 @@ func (b *Braid) braidTail() *Card {
 
 // wasteTop 捨て札の一番上（空なら nil）
 func (b *Braid) wasteTop() *Card {
-	if len(b.waste) == 0 {
-		return nil
-	}
-	return b.waste[len(b.waste)-1]
+	return discardTop(b.waste)
 }
 
 // popWaste 捨て札の一番上を取り除く
 func (b *Braid) popWaste() {
-	if len(b.waste) > 0 {
-		b.waste = b.waste[:len(b.waste)-1]
-	}
+	b.waste = dropLast(b.waste)
 }
 
 // canPlaceOnFoundation 基礎札に置けるか（同スート、選んだ向きに 1 つずつ）

@@ -899,10 +899,7 @@ func (s *SevenCardStud) IsMuckAvailable() bool {
 
 // getHandName ハンドランクから名前を返す
 func (s *SevenCardStud) getHandName(rank int) string {
-	if rank >= 0 && rank < len(PokerHandNames) {
-		return PokerHandNames[rank]
-	}
-	return "Unknown"
+	return pokerHandName(rank)
 }
 
 // getRazzHandName Razz用ハンド名を返す (例: "8-Low", "Wheel", "One Pair")
@@ -1049,9 +1046,7 @@ func (s *SevenCardStud) IsHumanTurn() bool {
 
 // GetActedFlags actedフラグ取得
 func (s *SevenCardStud) GetActedFlags() []bool {
-	result := make([]bool, len(s.actedFlags))
-	copy(result, s.actedFlags)
-	return result
+	return copyOf(s.actedFlags)
 }
 
 // GetHandCount ハンド数取得

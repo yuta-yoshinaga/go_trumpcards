@@ -721,9 +721,7 @@ func (ip *IndianPoker) IsHumanTurn() bool {
 
 // GetActedFlags actedフラグ取得
 func (ip *IndianPoker) GetActedFlags() []bool {
-	result := make([]bool, len(ip.actedFlags))
-	copy(result, ip.actedFlags)
-	return result
+	return copyOf(ip.actedFlags)
 }
 
 // GetHandCount ハンド数取得

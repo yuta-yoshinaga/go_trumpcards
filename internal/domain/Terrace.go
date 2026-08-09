@@ -540,17 +540,12 @@ func (t *Terrace) popReserve() {
 
 // wasteTop 捨て札の一番上（空なら nil）
 func (t *Terrace) wasteTop() *Card {
-	if len(t.waste) == 0 {
-		return nil
-	}
-	return t.waste[len(t.waste)-1]
+	return discardTop(t.waste)
 }
 
 // popWaste 捨て札の一番上を取り除く
 func (t *Terrace) popWaste() {
-	if len(t.waste) > 0 {
-		t.waste = t.waste[:len(t.waste)-1]
-	}
+	t.waste = dropLast(t.waste)
 }
 
 // tableauTop 山の一番上（空なら nil）

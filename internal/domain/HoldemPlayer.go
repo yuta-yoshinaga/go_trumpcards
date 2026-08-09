@@ -59,18 +59,12 @@ func (hp *HoldemPlayer) GetPFRCount() int { return hp.pfrCount }
 
 // GetVPIP VPIP%取得 (0 if totalHands==0)
 func (hp *HoldemPlayer) GetVPIP() int {
-	if hp.totalHands == 0 {
-		return 0
-	}
-	return hp.vpipCount * 100 / hp.totalHands
+	return percentOf(hp.vpipCount, hp.totalHands)
 }
 
 // GetPFR PFR%取得 (0 if totalHands==0)
 func (hp *HoldemPlayer) GetPFR() int {
-	if hp.totalHands == 0 {
-		return 0
-	}
-	return hp.pfrCount * 100 / hp.totalHands
+	return percentOf(hp.pfrCount, hp.totalHands)
 }
 
 // IncrementTotalHands 総ハンド数をインクリメント
@@ -90,10 +84,7 @@ func (hp *HoldemPlayer) GetThreeBetCount() int { return hp.threeBetCount }
 
 // GetThreeBet 3Bet%取得 (0 if threeBetOpportunity==0)
 func (hp *HoldemPlayer) GetThreeBet() int {
-	if hp.threeBetOpportunity == 0 {
-		return 0
-	}
-	return hp.threeBetCount * 100 / hp.threeBetOpportunity
+	return percentOf(hp.threeBetCount, hp.threeBetOpportunity)
 }
 
 // IncrementThreeBetOpportunity 3Bet機会数をインクリメント
@@ -127,9 +118,7 @@ func (hp *HoldemPlayer) GetAFDisplay() string {
 
 // GetComparisonCards ハンド比較用カード取得 (BettingPlayerインターフェース)
 func (hp *HoldemPlayer) GetComparisonCards() []*Card {
-	cards := make([]*Card, len(hp.bestHand))
-	copy(cards, hp.bestHand)
-	return cards
+	return copyOf(hp.bestHand)
 }
 
 // holdemPlayerJSON is the JSON wire format for HoldemPlayer.

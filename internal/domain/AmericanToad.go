@@ -633,17 +633,12 @@ func (at *AmericanToad) popReserve() {
 
 // wasteTop 捨て札の一番上（空なら nil）
 func (at *AmericanToad) wasteTop() *Card {
-	if len(at.waste) == 0 {
-		return nil
-	}
-	return at.waste[len(at.waste)-1]
+	return discardTop(at.waste)
 }
 
 // popWaste 捨て札の一番上を取り除く
 func (at *AmericanToad) popWaste() {
-	if len(at.waste) > 0 {
-		at.waste = at.waste[:len(at.waste)-1]
-	}
+	at.waste = dropLast(at.waste)
 }
 
 // tableauTop 列の一番上（空なら nil）

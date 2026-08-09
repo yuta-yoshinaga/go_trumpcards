@@ -639,13 +639,7 @@ func (g *Bouillotte) solventCount() int {
 
 // richestIdx はチップが最多のプレイヤーのインデックスを返す (同数は座席番号の小さい方)。
 func (g *Bouillotte) richestIdx() int {
-	best := 0
-	for i, p := range g.players {
-		if p.GetChips() > g.players[best].GetChips() {
-			best = i
-		}
-	}
-	return best
+	return maxIndexBy(g.players, func(p *BouillottePlayer) int { return p.GetChips() })
 }
 
 func (g *Bouillotte) appendLog(playerIdx int, actionType, detail string, cards []*Card) {

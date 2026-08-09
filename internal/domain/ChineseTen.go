@@ -438,10 +438,7 @@ func (c *ChineseTen) GetCaptured(idx int) []*Card {
 
 // GetScore は idx の得点を返す。
 func (c *ChineseTen) GetScore(idx int) int {
-	if idx < 0 || idx >= len(c.scores) {
-		return 0
-	}
-	return c.scores[idx]
+	return elemAt(c.scores, idx)
 }
 
 // SetScore は idx の得点を設定する (テスト用)。

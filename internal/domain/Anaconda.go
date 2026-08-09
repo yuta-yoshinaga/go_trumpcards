@@ -874,13 +874,7 @@ func (g *Anaconda) solventCount() int {
 
 // richestIdx はチップが最多のプレイヤーのインデックスを返す (同数は座席番号の小さい方)。
 func (g *Anaconda) richestIdx() int {
-	best := 0
-	for i, p := range g.players {
-		if p.GetChips() > g.players[best].GetChips() {
-			best = i
-		}
-	}
-	return best
+	return maxIndexBy(g.players, func(p *AnacondaPlayer) int { return p.GetChips() })
 }
 
 // anacondaValidateIndices はカードインデックス列の妥当性 (枚数・範囲・重複なし) を検証する。

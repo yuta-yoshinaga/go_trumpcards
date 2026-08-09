@@ -16,8 +16,7 @@ func NewLobaPlayer(isHuman bool) *LobaPlayer {
 
 // ResetGame は手札と上がり状態を初期化する。
 func (p *LobaPlayer) ResetGame() {
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayer(p)
 }
 
 // lobaPlayerJSON is the JSON wire format for LobaPlayer.

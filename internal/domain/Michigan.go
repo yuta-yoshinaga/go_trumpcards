@@ -599,13 +599,7 @@ func (g *Michigan) endGame() {
 
 // richestIdx はチップが最多のプレイヤーのインデックスを返す (同数は座席番号の小さい方)。
 func (g *Michigan) richestIdx() int {
-	best := 0
-	for i, p := range g.players {
-		if p.GetChips() > g.players[best].GetChips() {
-			best = i
-		}
-	}
-	return best
+	return maxIndexBy(g.players, func(p *MichiganPlayer) int { return p.GetChips() })
 }
 
 // --- Hint ---

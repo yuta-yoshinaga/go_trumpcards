@@ -682,10 +682,7 @@ func (o *Omaha) IsMuckAvailable() bool {
 
 // getHandName ハンドランクから名前を返す
 func (o *Omaha) getHandName(rank int) string {
-	if rank >= 0 && rank < len(PokerHandNames) {
-		return PokerHandNames[rank]
-	}
-	return "Unknown"
+	return pokerHandName(rank)
 }
 
 // runCpuActions CPUプレイヤーのアクションを実行
@@ -1200,16 +1197,12 @@ func (o *Omaha) IsAddonAvailable() bool {
 
 // GetRebuyCounts プレイヤーごとのリバイ回数取得
 func (o *Omaha) GetRebuyCounts() []int {
-	result := make([]int, len(o.rebuyCounts))
-	copy(result, o.rebuyCounts)
-	return result
+	return copyOf(o.rebuyCounts)
 }
 
 // GetAddonUsed プレイヤーごとのアドオン使用フラグ取得
 func (o *Omaha) GetAddonUsed() []bool {
-	result := make([]bool, len(o.addonUsed))
-	copy(result, o.addonUsed)
-	return result
+	return copyOf(o.addonUsed)
 }
 
 // GetRebuyPhaseType リバイフェーズ種別取得
@@ -1356,9 +1349,7 @@ func (o *Omaha) IsHumanTurn() bool {
 
 // GetActedFlags actedフラグ取得
 func (o *Omaha) GetActedFlags() []bool {
-	result := make([]bool, len(o.actedFlags))
-	copy(result, o.actedFlags)
-	return result
+	return copyOf(o.actedFlags)
 }
 
 // GetHandCount ハンド数取得

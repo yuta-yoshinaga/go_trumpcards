@@ -811,10 +811,7 @@ func (p *Pineapple) IsMuckAvailable() bool {
 
 // getHandName ハンドランクから名前を返す
 func (p *Pineapple) getHandName(rank int) string {
-	if rank >= 0 && rank < len(PokerHandNames) {
-		return PokerHandNames[rank]
-	}
-	return "Unknown"
+	return pokerHandName(rank)
 }
 
 // bettingLimits ベッティングリミット設定からmaxRaisesとmaxBetAmountを計算
@@ -1111,16 +1108,12 @@ func (p *Pineapple) IsAddonAvailable() bool {
 
 // GetRebuyCounts プレイヤーごとのリバイ回数取得
 func (p *Pineapple) GetRebuyCounts() []int {
-	result := make([]int, len(p.rebuyCounts))
-	copy(result, p.rebuyCounts)
-	return result
+	return copyOf(p.rebuyCounts)
 }
 
 // GetAddonUsed プレイヤーごとのアドオン使用フラグ取得
 func (p *Pineapple) GetAddonUsed() []bool {
-	result := make([]bool, len(p.addonUsed))
-	copy(result, p.addonUsed)
-	return result
+	return copyOf(p.addonUsed)
 }
 
 // GetRebuyPhaseType リバイフェーズ種別取得
@@ -1219,9 +1212,7 @@ func (p *Pineapple) IsHumanTurn() bool {
 
 // GetActedFlags actedフラグ取得
 func (p *Pineapple) GetActedFlags() []bool {
-	result := make([]bool, len(p.actedFlags))
-	copy(result, p.actedFlags)
-	return result
+	return copyOf(p.actedFlags)
 }
 
 // GetHandCount ハンド数取得

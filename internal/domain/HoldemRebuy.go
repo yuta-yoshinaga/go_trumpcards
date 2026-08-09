@@ -120,16 +120,12 @@ func (h *Holdem) IsAddonAvailable() bool {
 
 // GetRebuyCounts プレイヤーごとのリバイ回数取得
 func (h *Holdem) GetRebuyCounts() []int {
-	result := make([]int, len(h.rebuyCounts))
-	copy(result, h.rebuyCounts)
-	return result
+	return copyOf(h.rebuyCounts)
 }
 
 // GetAddonUsed プレイヤーごとのアドオン使用フラグ取得
 func (h *Holdem) GetAddonUsed() []bool {
-	result := make([]bool, len(h.addonUsed))
-	copy(result, h.addonUsed)
-	return result
+	return copyOf(h.addonUsed)
 }
 
 // GetRebuyPhaseType リバイフェーズ種別取得

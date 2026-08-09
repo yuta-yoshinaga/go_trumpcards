@@ -1025,16 +1025,12 @@ func (sd *ShortDeck) IsAddonAvailable() bool {
 
 // GetRebuyCounts プレイヤーごとのリバイ回数取得
 func (sd *ShortDeck) GetRebuyCounts() []int {
-	result := make([]int, len(sd.rebuyCounts))
-	copy(result, sd.rebuyCounts)
-	return result
+	return copyOf(sd.rebuyCounts)
 }
 
 // GetAddonUsed プレイヤーごとのアドオン使用フラグ取得
 func (sd *ShortDeck) GetAddonUsed() []bool {
-	result := make([]bool, len(sd.addonUsed))
-	copy(result, sd.addonUsed)
-	return result
+	return copyOf(sd.addonUsed)
 }
 
 // GetRebuyPhaseType リバイフェーズ種別取得
@@ -1181,9 +1177,7 @@ func (sd *ShortDeck) IsHumanTurn() bool {
 
 // GetActedFlags actedフラグ取得
 func (sd *ShortDeck) GetActedFlags() []bool {
-	result := make([]bool, len(sd.actedFlags))
-	copy(result, sd.actedFlags)
-	return result
+	return copyOf(sd.actedFlags)
 }
 
 // GetHandCount ハンド数取得

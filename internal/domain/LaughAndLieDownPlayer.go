@@ -16,8 +16,7 @@ func NewLaughAndLieDownPlayer(isHuman bool) *LaughAndLieDownPlayer {
 
 // ResetGame は手札と上がり状態を初期化する。
 func (p *LaughAndLieDownPlayer) ResetGame() {
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayer(p)
 }
 
 // laughAndLieDownPlayerJSON is the JSON wire format for LaughAndLieDownPlayer.

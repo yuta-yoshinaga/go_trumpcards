@@ -528,17 +528,12 @@ func (w *Windmill) cornerTop(cornerIdx int) *Card {
 
 // wasteTop 捨て札の一番上（空なら nil）
 func (w *Windmill) wasteTop() *Card {
-	if len(w.waste) == 0 {
-		return nil
-	}
-	return w.waste[len(w.waste)-1]
+	return discardTop(w.waste)
 }
 
 // popWaste 捨て札の一番上を取り除く
 func (w *Windmill) popWaste() {
-	if len(w.waste) > 0 {
-		w.waste = w.waste[:len(w.waste)-1]
-	}
+	w.waste = dropLast(w.waste)
 }
 
 // pushCenter 帆・捨て札から中央へ置く。引き戻しの禁止を解除するのはこの経路だけ。

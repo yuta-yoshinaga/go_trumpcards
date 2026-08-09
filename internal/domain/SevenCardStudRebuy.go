@@ -117,16 +117,12 @@ func (s *SevenCardStud) IsAddonAvailable() bool {
 
 // GetRebuyCounts プレイヤーごとのリバイ回数取得
 func (s *SevenCardStud) GetRebuyCounts() []int {
-	result := make([]int, len(s.rebuyCounts))
-	copy(result, s.rebuyCounts)
-	return result
+	return copyOf(s.rebuyCounts)
 }
 
 // GetAddonUsed プレイヤーごとのアドオン使用フラグ取得
 func (s *SevenCardStud) GetAddonUsed() []bool {
-	result := make([]bool, len(s.addonUsed))
-	copy(result, s.addonUsed)
-	return result
+	return copyOf(s.addonUsed)
 }
 
 // GetRebuyPhaseType リバイフェーズ種別取得

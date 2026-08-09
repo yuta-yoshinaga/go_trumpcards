@@ -94,18 +94,12 @@ func (p *FiveCardStudPlayer) GetPFRCount() int { return p.pfrCount }
 
 // GetVPIP VPIP%取得 (0 if totalHands==0)
 func (p *FiveCardStudPlayer) GetVPIP() int {
-	if p.totalHands == 0 {
-		return 0
-	}
-	return p.vpipCount * 100 / p.totalHands
+	return percentOf(p.vpipCount, p.totalHands)
 }
 
 // GetPFR PFR%取得 (0 if totalHands==0)
 func (p *FiveCardStudPlayer) GetPFR() int {
-	if p.totalHands == 0 {
-		return 0
-	}
-	return p.pfrCount * 100 / p.totalHands
+	return percentOf(p.pfrCount, p.totalHands)
 }
 
 // IncrementTotalHands 総ハンド数をインクリメント
@@ -125,10 +119,7 @@ func (p *FiveCardStudPlayer) GetThreeBetCount() int { return p.threeBetCount }
 
 // GetThreeBet 3Bet%取得 (0 if threeBetOpportunity==0)
 func (p *FiveCardStudPlayer) GetThreeBet() int {
-	if p.threeBetOpportunity == 0 {
-		return 0
-	}
-	return p.threeBetCount * 100 / p.threeBetOpportunity
+	return percentOf(p.threeBetCount, p.threeBetOpportunity)
 }
 
 // IncrementThreeBetOpportunity 3Bet機会数をインクリメント
@@ -162,9 +153,7 @@ func (p *FiveCardStudPlayer) GetAFDisplay() string {
 
 // GetComparisonCards ハンド比較用カード取得 (BettingPlayerインターフェース)
 func (p *FiveCardStudPlayer) GetComparisonCards() []*Card {
-	cards := make([]*Card, len(p.bestHand))
-	copy(cards, p.bestHand)
-	return cards
+	return copyOf(p.bestHand)
 }
 
 // EvalBestHand 全カード (最大5枚) からベスト5枚を評価

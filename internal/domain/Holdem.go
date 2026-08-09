@@ -676,9 +676,7 @@ func (h *Holdem) IsHumanTurn() bool {
 
 // GetActedFlags actedフラグ取得
 func (h *Holdem) GetActedFlags() []bool {
-	result := make([]bool, len(h.actedFlags))
-	copy(result, h.actedFlags)
-	return result
+	return copyOf(h.actedFlags)
 }
 
 // GetHandCount ハンド数取得
