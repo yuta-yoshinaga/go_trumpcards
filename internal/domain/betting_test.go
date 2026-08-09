@@ -1223,3 +1223,73 @@ func TestFindPotWinnersRazz_SingleEligible(t *testing.T) {
 	winners := FindPotWinnersRazz(players, []int{0})
 	assert.Equal(t, []int{0}, winners)
 }
+
+type fakeBlindSeat struct {
+	chips int
+	bet   int
+	allIn bool
+}
+
+func (p *fakeBlindSeat) GetChips() int               { return p.chips }
+func (p *fakeBlindSeat) SubtractChips(n int) bool    { p.chips -= n; return true }
+func (p *fakeBlindSeat) AddChips(n int)              { p.chips += n }
+func (p *fakeBlindSeat) GetCurrentBet() int          { return p.bet }
+func (p *fakeBlindSeat) SetCurrentBet(n int)         { p.bet = n }
+func (p *fakeBlindSeat) GetFolded() bool             { return false }
+func (p *fakeBlindSeat) SetFolded(bool)              {}
+func (p *fakeBlindSeat) GetAllIn() bool              { return p.allIn }
+func (p *fakeBlindSeat) SetAllIn(v bool)             { p.allIn = v }
+func (p *fakeBlindSeat) GetHandRank() int            { return 0 }
+func (p *fakeBlindSeat) GetComparisonCards() []*Card { return nil }
+
+type fakeBlindLogger struct{ details []string }
+
+func (g *fakeBlindLogger) appendLog(_ int, _, detail string, _ []*Card) {
+	g.details = append(g.details, detail)
+}
+
+func TestPostBlindsFor(t *testing.T) {
+	seats := []*fakeBlindSeat{{chips: 100}, {chips: 100}, {chips: 100}}
+	pot, lastBet := 0, 0
+	acted := make([]bool, 3)
+	g := &fakeBlindLogger{}
+
+	// Dealer at 0, so seat 1 posts the small blind and seat 2 the big blind.
+	postBlindsFor(seats, 0, 5, 10, &pot, &lastBet, acted, g)
+
+	assert.Equal(t, 95, seats[1].chips)
+	assert.Equal(t, 90, seats[2].chips)
+	assert.Equal(t, 15, pot)
+	assert.Equal(t, 10, lastBet, "lastBet is the big blind")
+	assert.Equal(t, []string{"posts small blind 5", "posts big blind 10"}, g.details)
+}
+
+// A seat too short for the blind posts what it has and is marked all-in, with
+// its acted flag set so the round does not wait on it.
+func TestPostBlindsFor_ShortStackGoesAllIn(t *testing.T) {
+	seats := []*fakeBlindSeat{{chips: 100}, {chips: 3}, {chips: 100}}
+	pot, lastBet := 0, 0
+	acted := make([]bool, 3)
+	g := &fakeBlindLogger{}
+
+	postBlindsFor(seats, 0, 5, 10, &pot, &lastBet, acted, g)
+
+	assert.Equal(t, 0, seats[1].chips)
+	assert.True(t, seats[1].allIn)
+	assert.True(t, acted[1])
+	assert.Equal(t, 13, pot, "only what the short stack had")
+	assert.Equal(t, "posts small blind 3", g.details[0], "the log shows the capped amount")
+	assert.False(t, seats[2].allIn, "the full stack is not all-in")
+}
+
+// The blinds wrap around the table.
+func TestPostBlindsFor_WrapsAroundFromTheDealer(t *testing.T) {
+	seats := []*fakeBlindSeat{{chips: 100}, {chips: 100}, {chips: 100}}
+	pot, lastBet := 0, 0
+	acted := make([]bool, 3)
+
+	postBlindsFor(seats, 2, 5, 10, &pot, &lastBet, acted, &fakeBlindLogger{})
+
+	assert.Equal(t, 95, seats[0].chips, "small blind wraps to seat 0")
+	assert.Equal(t, 90, seats[1].chips, "big blind to seat 1")
+}
