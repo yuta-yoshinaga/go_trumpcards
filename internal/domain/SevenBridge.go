@@ -897,10 +897,7 @@ func (g *SevenBridge) SetDiscardPile(pile []*Card) { g.discardPile = pile }
 
 // GetDiscardTop 捨て札トップ
 func (g *SevenBridge) GetDiscardTop() *Card {
-	if len(g.discardPile) == 0 {
-		return nil
-	}
-	return g.discardPile[len(g.discardPile)-1]
+	return discardTop(g.discardPile)
 }
 
 // popDiscardTop 捨て札トップを取り出して返す

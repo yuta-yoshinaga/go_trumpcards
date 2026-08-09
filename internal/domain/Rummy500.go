@@ -619,10 +619,7 @@ func (g *Rummy500) SetDiscardPile(pile []*Card) { g.discardPile = pile }
 
 // GetDiscardTop 捨て札の一番上を取得
 func (g *Rummy500) GetDiscardTop() *Card {
-	if len(g.discardPile) == 0 {
-		return nil
-	}
-	return g.discardPile[len(g.discardPile)-1]
+	return discardTop(g.discardPile)
 }
 
 // GetDrawPileCount 山札の残り枚数取得

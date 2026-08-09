@@ -863,10 +863,7 @@ func (g *Conquian) SetDiscardPile(pile []*Card) {
 
 // GetDiscardTop 捨て札の一番上を取得
 func (g *Conquian) GetDiscardTop() *Card {
-	if len(g.discardPile) == 0 {
-		return nil
-	}
-	return g.discardPile[len(g.discardPile)-1]
+	return discardTop(g.discardPile)
 }
 
 // GetDrawPileCount 山札の残り枚数取得
