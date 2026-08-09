@@ -543,19 +543,7 @@ func (b *Barbu) GetRoundWinners() []int {
 	if !b.gameEndFlag {
 		return nil
 	}
-	best := b.players[0].GetTotalScore()
-	for _, p := range b.players[1:] {
-		if p.GetTotalScore() > best {
-			best = p.GetTotalScore()
-		}
-	}
-	winners := make([]int, 0)
-	for i, p := range b.players {
-		if p.GetTotalScore() == best {
-			winners = append(winners, i)
-		}
-	}
-	return winners
+	return topScorers(b.players)
 }
 
 // --- JSON Serialization ---

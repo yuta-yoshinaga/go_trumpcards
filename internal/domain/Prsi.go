@@ -369,20 +369,7 @@ func (g *Prsi) drawCard(playerIdx int) error {
 
 // drawCards 指定枚数を引く (山札が尽きたら捨て札を再利用)。実際に引けた枚数を返す。
 func (g *Prsi) drawCards(playerIdx, n int) int {
-	drawn := 0
-	for i := 0; i < n; i++ {
-		if len(g.drawPile) == 0 {
-			g.recycleDrawPile()
-		}
-		if len(g.drawPile) == 0 {
-			break
-		}
-		card := g.drawPile[len(g.drawPile)-1]
-		g.drawPile = g.drawPile[:len(g.drawPile)-1]
-		g.players[playerIdx].AddCard(card)
-		drawn++
-	}
-	return drawn
+	return drawFromPile(&g.drawPile, g.players[playerIdx], n, g.recycleDrawPile)
 }
 
 // recycleDrawPile 捨て札から山札を再構築する

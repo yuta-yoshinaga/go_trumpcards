@@ -235,20 +235,7 @@ func (cs *CaribbeanStud) compareHands() int {
 
 // checkDealerQualifies ディーラークオリファイ条件: ペア以上、または A-K ハイ
 func (cs *CaribbeanStud) checkDealerQualifies() bool {
-	if cs.dealerHandRank >= PokerHandOnePair {
-		return true
-	}
-	hasAce := false
-	hasKing := false
-	for _, c := range cs.dealerHand {
-		switch c.GetValue() {
-		case 1:
-			hasAce = true
-		case 13:
-			hasKing = true
-		}
-	}
-	return hasAce && hasKing
+	return dealerQualifies(cs.dealerHandRank, cs.dealerHand)
 }
 
 // calculatePayouts アンテ／プレイの配当計算
