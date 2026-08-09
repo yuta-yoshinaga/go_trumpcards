@@ -44,6 +44,15 @@ func wrap(code, s string, off bool) string {
 	return code + s + reset
 }
 
+// RedStderr wraps s with red ANSI color code, honouring the stderr color
+// setting rather than the stdout one.
+//
+// stderr has its own setting because a run can have one stream on a terminal
+// and the other redirected; `--color=auto` detects each independently. This is
+// the only stderr-targeted colour the CLI needs -- errors routed to stderr by
+// printResult. See issue #5194.
+func RedStderr(s string) string { return wrap("\033[31m", s, noColorStderr.Load()) }
+
 // Red wraps s with red ANSI color code (stdout-targeted).
 func Red(s string) string { return wrap("\033[31m", s, noColorStdout.Load()) }
 

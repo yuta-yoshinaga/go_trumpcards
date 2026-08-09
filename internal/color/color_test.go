@@ -131,3 +131,48 @@ func TestStdoutColorFuncsIgnoreStderrFlag(t *testing.T) {
 		t.Errorf("Red should follow stdout flag (off); got %q", got)
 	}
 }
+
+// RedStderr must follow the stderr setting, not the stdout one: a run can have
+// stdout piped and stderr on a terminal, which is what --color=auto detects per
+// stream. Both directions are covered -- a test that only checked "plain when
+// disabled" would pass for a function that never colours, and one that only
+// checked "coloured when enabled" would pass for one that always does.
+func TestRedStderrFollowsTheStderrSetting(t *testing.T) {
+	resetColorState(t)
+
+	SetStderrColor(true)
+	if got, want := RedStderr("boom"), "\033[31mboom"+reset; got != want {
+		t.Errorf("with stderr colour on: RedStderr() = %q, want %q", got, want)
+	}
+
+	SetStderrColor(false)
+	if got := RedStderr("boom"); got != "boom" {
+		t.Errorf("with stderr colour off: RedStderr() = %q, want %q", got, "boom")
+	}
+}
+
+// The streams are independent: silencing stdout must not silence stderr. That
+// independence is the whole point of the per-stream detection, and it was
+// unobservable in production until this function existed (#5194).
+func TestRedStderrIsIndependentOfStdout(t *testing.T) {
+	resetColorState(t)
+
+	SetStdoutColor(false)
+	SetStderrColor(true)
+
+	if got := Red("boom"); got != "boom" {
+		t.Errorf("stdout should be plain: Red() = %q", got)
+	}
+	if got, want := RedStderr("boom"), "\033[31mboom"+reset; got != want {
+		t.Errorf("stderr should still be coloured: RedStderr() = %q, want %q", got, want)
+	}
+}
+
+func TestRedStderrLeavesAnEmptyStringAlone(t *testing.T) {
+	resetColorState(t)
+
+	SetStderrColor(true)
+	if got := RedStderr(""); got != "" {
+		t.Errorf("RedStderr(%q) = %q, want no escape codes", "", got)
+	}
+}
