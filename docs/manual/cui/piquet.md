@@ -19,20 +19,6 @@ Webマニュアル ([../web/piquet.md](../web/piquet.md)) と同じ。簡潔に�
 - Carte blanche +10、Repique +60、Pique +30、Cards +10、Capot +40。
 - 6ディールのパルティ。ルビコン: 敗者 < 100 → 勝者 += 100 + W + L。
 
-## コマンド
-
-| コマンド | 説明 |
-|----------|------|
-| `e <i,j,k>` | Elder交換 (1..5枚) |
-| `y <i,j,k>` | Younger交換 (0..3枚)。`y` 単独で0枚交換 (パス) |
-| `d`, `declare` | 次の宣言を1ステップ進める |
-| `p <i>` | 手札 i 番目をプレイ |
-| `nd`, `nextdeal` | 次ディールへ |
-| `h`, `hint` | ヒント |
-| `l`, `log` | アクションログ |
-| `r`, `reset` | リセット |
-| `q`, `quit` | 終了 |
-
 ## ゲームの流れ
 
 ```mermaid
@@ -45,3 +31,17 @@ stateDiagram-v2
     Score --> GameEnd: NextDeal (deal == 6)
     GameEnd --> [*]
 ```
+
+## コマンド一覧
+
+| コマンド | 説明 |
+|----------|------|
+| `e <i,j,k>` | Elder交換 (1..5枚) |
+| `y <i,j,k>` | Younger交換 (0..3枚)。`y` 単独で0枚交換 (パス) |
+| `d`, `declare` | 次の宣言を1ステップ進める |
+| `p <i>` | 手札 i 番目をプレイ |
+| `nd`, `nextdeal` | 次ディールへ |
+| `h`, `hint` | ヒント |
+| `l`, `log` | アクションログ |
+| `r`, `reset` | リセット |
+| `q`, `quit` | 終了 |

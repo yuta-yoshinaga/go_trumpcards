@@ -58,7 +58,7 @@ flowchart TD
     NextDeal -- Yes --> Partie[パルティ判定]
 ```
 
-## 操作方法
+## 画面の操作方法
 
 ### 交換フェーズ
 

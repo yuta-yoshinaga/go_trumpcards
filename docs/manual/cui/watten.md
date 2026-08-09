@@ -47,7 +47,7 @@ go run ./cmd/trumpcards --lang en watten  # 英語モード
 - 5トリック中3トリック以上を取ったチームがそのディールのステークを得点。
 - 先に15点（変更可）に達したチームがマッチ勝利。
 
-## コマンド
+## コマンド一覧
 
 ```
 d <rank> <suit>   宣言 (rank=a|7|8|9|10|j|q|k, suit=s|c|h|d) 例: d k h
