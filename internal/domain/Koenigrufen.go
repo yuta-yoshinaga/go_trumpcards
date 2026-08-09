@@ -1057,14 +1057,7 @@ func (g *Koenigrufen) highestTrumpInTrick() int {
 
 // validatePlay マストフォロー + 切り札義務 + オーバートランプ義務を検証する。
 func (g *Koenigrufen) validatePlay(playerIdx int, card *Card) error {
-	valid := g.getValidPlayIndices(playerIdx)
-	player := g.players[playerIdx]
-	for _, idx := range valid {
-		if player.GetCard(idx) == card {
-			return nil
-		}
-	}
-	return NewDomainError(ErrInvalidPlay, "フォロー義務・切り札義務・オーバートランプ義務に反しています")
+	return validateCardIsPlayable(g.getValidPlayIndices(playerIdx), g.players[playerIdx], card)
 }
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す。

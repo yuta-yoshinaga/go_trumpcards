@@ -57,8 +57,8 @@ type DoubleKlondike struct {
 	foundation [DoubleKlondikeFoundationCnt][]*Card
 	phase      DoubleKlondikePhase
 	moveCount  int
-	actionLog  []*ActionLogEntry
-	history    []*doubleKlondikeSnapshot
+	actionLogBase
+	history []*doubleKlondikeSnapshot
 }
 
 // doubleKlondikeSnapshot Undo 用スナップショット。
@@ -439,13 +439,7 @@ func (g *DoubleKlondike) GetHint() *DoubleKlondikeHint {
 }
 
 func (g *DoubleKlondike) appendLog(action, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: g.moveCount,
-		PlayerIdx:  0,
-		ActionType: action,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.appendLogAt(g.moveCount, 0, action, detail, cards)
 }
 
 // --- undo ---

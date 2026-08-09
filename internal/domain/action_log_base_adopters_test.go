@@ -15,7 +15,7 @@ type logReader interface {
 	GetActionLog() []*ActionLogEntry
 }
 
-// These 30 games moved their action log from an own `actionLog` field to the
+// These 37 games moved their action log from an own `actionLog` field to the
 // embedded actionLogBase. Promotion keeps `g.actionLog` compiling in their
 // MarshalJSON/UnmarshalJSON pairs, so nothing in them had to change -- which is
 // exactly why a mistake here would be quiet. The log is persisted to KV for the
@@ -187,9 +187,51 @@ func TestActionLogBaseAdopters_LogSurvivesAKVRoundTrip(t *testing.T) {
 			g.addLog(1, "act", "detail", nil)
 			return g, NewDefaultSixBidSolo()
 		}},
+		{"Aluette", func() (any, any) {
+			g := NewDefaultAluette()
+			g.Reset()
+			g.appendLog(1, "act", "detail", nil)
+			return g, NewDefaultAluette()
+		}},
+		{"Minchiate", func() (any, any) {
+			g := NewDefaultMinchiate()
+			g.Reset()
+			g.appendLog(1, "act", "detail", nil)
+			return g, NewDefaultMinchiate()
+		}},
+		{"Tarocchini", func() (any, any) {
+			g := NewDefaultTarocchini()
+			g.Reset()
+			g.appendLog(1, "act", "detail", nil)
+			return g, NewDefaultTarocchini()
+		}},
+		{"BlackHole", func() (any, any) {
+			g := NewDefaultBlackHole()
+			g.Reset()
+			g.appendLog("act", "detail", nil)
+			return g, NewDefaultBlackHole()
+		}},
+		{"DoubleKlondike", func() (any, any) {
+			g := NewDefaultDoubleKlondike()
+			g.Reset()
+			g.appendLog("act", "detail", nil)
+			return g, NewDefaultDoubleKlondike()
+		}},
+		{"LaBelleLucie", func() (any, any) {
+			g := NewDefaultLaBelleLucie()
+			g.Reset()
+			g.appendLog("act", "detail", nil)
+			return g, NewDefaultLaBelleLucie()
+		}},
+		{"SimpleSimon", func() (any, any) {
+			g := NewDefaultSimpleSimon()
+			g.Reset()
+			g.appendLog("act", "detail", nil)
+			return g, NewDefaultSimpleSimon()
+		}},
 	}
 
-	assert.Len(t, adopters, 30, "every game embedding actionLogBase via addLog/appendLog must be listed")
+	assert.Len(t, adopters, 37, "every game embedding actionLogBase via addLog/appendLog must be listed")
 
 	for _, a := range adopters {
 		t.Run(a.name, func(t *testing.T) {

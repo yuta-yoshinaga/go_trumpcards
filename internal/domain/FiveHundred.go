@@ -797,19 +797,7 @@ func (g *FiveHundred) trickScore(c *Card, leadSuit int) int {
 
 // trickWinner トリックの勝者を決定する
 func (g *FiveHundred) trickWinner() int {
-	if len(g.currentTrick) == 0 {
-		return 0
-	}
-	ls := g.leadSuit()
-	winnerIdx := g.currentTrick[0].PlayerIdx
-	winnerScore := g.trickScore(g.currentTrick[0].Card, ls)
-	for _, tc := range g.currentTrick[1:] {
-		if s := g.trickScore(tc.Card, ls); s > winnerScore {
-			winnerScore = s
-			winnerIdx = tc.PlayerIdx
-		}
-	}
-	return winnerIdx
+	return trickWinnerByScore(g.currentTrick, g)
 }
 
 // validatePlay カードのプレイが有効か検証する

@@ -570,19 +570,7 @@ func (g *King) GetRoundWinners() []int {
 	if !g.gameEndFlag {
 		return nil
 	}
-	best := g.players[0].GetTotalScore()
-	for _, p := range g.players[1:] {
-		if p.GetTotalScore() > best {
-			best = p.GetTotalScore()
-		}
-	}
-	winners := make([]int, 0)
-	for i, p := range g.players {
-		if p.GetTotalScore() == best {
-			winners = append(winners, i)
-		}
-	}
-	return winners
+	return topScorers(g.players)
 }
 
 // --- JSON Serialization ---

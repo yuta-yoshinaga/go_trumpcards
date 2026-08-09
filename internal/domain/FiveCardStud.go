@@ -424,15 +424,7 @@ func (s *FiveCardStud) advanceTurn() {
 
 // isBettingRoundComplete ベッティングラウンドが完了したかチェック
 func (s *FiveCardStud) isBettingRoundComplete() bool {
-	for i, p := range s.players {
-		if p.GetFolded() || p.GetAllIn() {
-			continue
-		}
-		if !s.actedFlags[i] {
-			return false
-		}
-	}
-	return true
+	return bettingRoundComplete(s.players, s.actedFlags)
 }
 
 // advancePhase 次のフェーズに進める

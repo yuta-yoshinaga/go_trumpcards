@@ -610,15 +610,7 @@ func (b *Bezique) drawReplenish() {
 
 // drawOne 山札 → 切り札表示カード の順に 1 枚引く。
 func (b *Bezique) drawOne() *Card {
-	if c := b.trumpCards.DrawCard(); c != nil {
-		return c
-	}
-	if b.trumpCard != nil {
-		c := b.trumpCard
-		b.trumpCard = nil
-		return c
-	}
-	return nil
+	return drawOrTakeTrump(b.trumpCards, &b.trumpCard)
 }
 
 // scoreDeal ディールを集計して累積し、ゲーム終了を判定する。
@@ -661,16 +653,7 @@ func (b *Bezique) allHandsEmpty() bool {
 
 // validatePlay カードのプレイがルール上有効かを検証する。
 func (b *Bezique) validatePlay(playerIdx int, card *Card) error {
-	if card == nil {
-		return NewDomainError(ErrInvalidCard, "カードが nil です")
-	}
-	if !b.IsEndgame() || len(b.currentTrick) == 0 {
-		return nil
-	}
-	if !b.cardSatisfiesFollow(playerIdx, card) {
-		return NewDomainError(ErrInvalidCard, "第2フェーズではフォロールールに従う必要があります")
-	}
-	return nil
+	return validateEndgameFollow(b.currentTrick, b, playerIdx, card)
 }
 
 // cardSatisfiesFollow 第2フェーズの追随時に card が合法かを返す。
@@ -696,14 +679,7 @@ func (b *Bezique) cardSatisfiesFollow(playerIdx int, card *Card) bool {
 
 // legalPlayIndices validatePlay を満たすカードのインデックス集合を返す。
 func (b *Bezique) legalPlayIndices(playerIdx int) []int {
-	p := b.players[playerIdx]
-	out := make([]int, 0, p.GetCardsSize())
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if b.validatePlay(playerIdx, p.GetCard(i)) == nil {
-			out = append(out, i)
-		}
-	}
-	return out
+	return validPlayIndices(b.players[playerIdx], func(c *Card) bool { return b.validatePlay(playerIdx, c) == nil })
 }
 
 // beziquePlayerHasSuit プレイヤーが指定スートのカードを持つか

@@ -49,8 +49,8 @@ type LaBelleLucie struct {
 	redealsLeft int
 	phase       LaBelleLuciePhase
 	moveCount   int
-	actionLog   []*ActionLogEntry
-	history     []*laBelleLucieSnapshot
+	actionLogBase
+	history []*laBelleLucieSnapshot
 }
 
 // laBelleLucieSnapshot Undo 用スナップショット。
@@ -367,13 +367,7 @@ func (g *LaBelleLucie) UndoN(n int) error {
 }
 
 func (g *LaBelleLucie) appendLog(action, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: g.moveCount,
-		PlayerIdx:  0,
-		ActionType: action,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.appendLogAt(g.moveCount, 0, action, detail, cards)
 }
 
 // --- accessors ---

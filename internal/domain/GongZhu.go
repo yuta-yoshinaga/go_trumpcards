@@ -558,15 +558,7 @@ func (g *GongZhu) startPlayPhase() {
 
 // findTwoOfClubs ♣2を持つプレイヤーのインデックスを返す
 func (g *GongZhu) findTwoOfClubs() int {
-	for i, p := range g.players {
-		for j := 0; j < p.GetCardsSize(); j++ {
-			card := p.GetCard(j)
-			if card.GetDesign() == CardDesignClover && card.GetValue() == 2 {
-				return i
-			}
-		}
-	}
-	return -1
+	return seatHoldingCard(g.players, func(c *Card) bool { return c.GetDesign() == CardDesignClover && c.GetValue() == 2 })
 }
 
 // playCard カードをプレイする共通処理

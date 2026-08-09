@@ -18,9 +18,7 @@ func NewPageOnePlayer(isHuman bool) *PageOnePlayer {
 
 // ResetRound ラウンドをリセット（手札・スコア・終了状態・宣言フラグを初期化）
 func (p *PageOnePlayer) ResetRound() {
-	p.SetRoundScore(0)
-	p.Reset()
-	p.SetIsFinished(false)
+	resetRoundScored(p)
 	p.hasDeclared = false
 }
 

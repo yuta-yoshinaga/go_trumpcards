@@ -280,15 +280,7 @@ func (ip *IndianPoker) advanceTurn() {
 
 // isBettingRoundComplete ベッティングラウンドが完了したかチェック
 func (ip *IndianPoker) isBettingRoundComplete() bool {
-	for i, p := range ip.players {
-		if p.GetFolded() || p.GetAllIn() {
-			continue
-		}
-		if !ip.actedFlags[i] {
-			return false
-		}
-	}
-	return true
+	return bettingRoundComplete(ip.players, ip.actedFlags)
 }
 
 // bettingLimits ベッティングリミット設定からmaxRaisesとmaxBetAmountを計算

@@ -57,9 +57,7 @@ func (p *SevenBridgePlayer) ClearMelds() { p.melds = nil }
 
 // ResetRound ラウンドをリセット（手札・スコア・メルド・終了状態を初期化）
 func (p *SevenBridgePlayer) ResetRound() {
-	p.SetRoundScore(0)
-	p.Reset()
-	p.SetIsFinished(false)
+	resetRoundScored(p)
 	p.ClearMelds()
 }
 

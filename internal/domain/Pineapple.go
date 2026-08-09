@@ -270,37 +270,7 @@ func (p *Pineapple) continueReset() error {
 
 // postBlinds ブラインド投入
 func (p *Pineapple) postBlinds() {
-	sbIdx := (p.dealerIdx + 1) % len(p.players)
-	bbIdx := (p.dealerIdx + 2) % len(p.players)
-
-	sbAmount := p.config.SmallBlind
-	if p.players[sbIdx].GetChips() < sbAmount {
-		sbAmount = p.players[sbIdx].GetChips()
-	}
-	p.players[sbIdx].SubtractChips(sbAmount)
-	p.players[sbIdx].SetCurrentBet(sbAmount)
-	p.pot += sbAmount
-	p.appendLog(sbIdx, "blind", fmt.Sprintf("posts small blind %d", sbAmount), nil)
-
-	bbAmount := p.config.BigBlind
-	if p.players[bbIdx].GetChips() < bbAmount {
-		bbAmount = p.players[bbIdx].GetChips()
-	}
-	p.players[bbIdx].SubtractChips(bbAmount)
-	p.players[bbIdx].SetCurrentBet(bbAmount)
-	p.pot += bbAmount
-	p.appendLog(bbIdx, "blind", fmt.Sprintf("posts big blind %d", bbAmount), nil)
-
-	p.lastBet = bbAmount
-
-	if p.players[sbIdx].GetChips() == 0 {
-		p.players[sbIdx].SetAllIn(true)
-		p.actedFlags[sbIdx] = true
-	}
-	if p.players[bbIdx].GetChips() == 0 {
-		p.players[bbIdx].SetAllIn(true)
-		p.actedFlags[bbIdx] = true
-	}
+	postBlindsFor(p.players, p.dealerIdx, p.config.SmallBlind, p.config.BigBlind, &p.pot, &p.lastBet, p.actedFlags, p)
 }
 
 // PlayerAction 人間プレイヤーのアクション実行
@@ -683,13 +653,7 @@ func (p *Pineapple) IsDiscardPhase() bool {
 
 // dealRemainingCommunity 残りのコミュニティカードを全て配る
 func (p *Pineapple) dealRemainingCommunity() {
-	for len(p.communityCards) < 5 {
-		card := p.trumpCards.DrawCard()
-		if card == nil {
-			break
-		}
-		p.communityCards = append(p.communityCards, card)
-	}
+	dealUpTo(&p.communityCards, p.trumpCards, 5)
 }
 
 // findNextActive 指定インデックスの次のアクティブプレイヤーを探す
@@ -699,13 +663,7 @@ func (p *Pineapple) findNextActive(fromIdx int) int {
 
 // countActivePlayers フォールドしていないプレイヤー数を返す
 func (p *Pineapple) countActivePlayers() int {
-	cnt := 0
-	for _, pl := range p.players {
-		if !pl.GetFolded() {
-			cnt++
-		}
-	}
-	return cnt
+	return countPlayers(p.players, func(pl *PineapplePlayer) bool { return !pl.GetFolded() })
 }
 
 // resolveLastPlayer 全員フォールドで最後のプレイヤーが勝利

@@ -202,7 +202,7 @@ type Tarocchini struct {
 	roundTricks      [TarocchiniPlayerCnt]int
 	gameEndFlag      bool
 	winnerTeam       int // -1 = 未確定 (同点)
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // tarocchiniTeamCnt チーム数。
@@ -352,13 +352,7 @@ func (g *Tarocchini) finishMatch() {
 
 // appendLog 棋譜に 1 件追加する。
 func (g *Tarocchini) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: g.trickNumber,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.appendLogAt(g.trickNumber, playerIdx, actionType, detail, cards)
 }
 
 // --- スカルト (ディーラーの捨て札) ---

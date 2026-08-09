@@ -207,37 +207,7 @@ func (sd *ShortDeck) continueReset() error {
 
 // postBlinds ブラインド投入
 func (sd *ShortDeck) postBlinds() {
-	sbIdx := (sd.dealerIdx + 1) % len(sd.players)
-	bbIdx := (sd.dealerIdx + 2) % len(sd.players)
-
-	sbAmount := sd.config.SmallBlind
-	if sd.players[sbIdx].GetChips() < sbAmount {
-		sbAmount = sd.players[sbIdx].GetChips()
-	}
-	sd.players[sbIdx].SubtractChips(sbAmount)
-	sd.players[sbIdx].SetCurrentBet(sbAmount)
-	sd.pot += sbAmount
-	sd.appendLog(sbIdx, "blind", fmt.Sprintf("posts small blind %d", sbAmount), nil)
-
-	bbAmount := sd.config.BigBlind
-	if sd.players[bbIdx].GetChips() < bbAmount {
-		bbAmount = sd.players[bbIdx].GetChips()
-	}
-	sd.players[bbIdx].SubtractChips(bbAmount)
-	sd.players[bbIdx].SetCurrentBet(bbAmount)
-	sd.pot += bbAmount
-	sd.appendLog(bbIdx, "blind", fmt.Sprintf("posts big blind %d", bbAmount), nil)
-
-	sd.lastBet = bbAmount
-
-	if sd.players[sbIdx].GetChips() == 0 {
-		sd.players[sbIdx].SetAllIn(true)
-		sd.actedFlags[sbIdx] = true
-	}
-	if sd.players[bbIdx].GetChips() == 0 {
-		sd.players[bbIdx].SetAllIn(true)
-		sd.actedFlags[bbIdx] = true
-	}
+	postBlindsFor(sd.players, sd.dealerIdx, sd.config.SmallBlind, sd.config.BigBlind, &sd.pot, &sd.lastBet, sd.actedFlags, sd)
 }
 
 // PlayerAction 人間プレイヤーのアクション実行
@@ -430,13 +400,7 @@ func (sd *ShortDeck) advancePhase() {
 
 // dealRemainingCommunity 残りのコミュニティカードを全て配る
 func (sd *ShortDeck) dealRemainingCommunity() {
-	for len(sd.communityCards) < 5 {
-		card := sd.trumpCards.DrawCard()
-		if card == nil {
-			break
-		}
-		sd.communityCards = append(sd.communityCards, card)
-	}
+	dealUpTo(&sd.communityCards, sd.trumpCards, 5)
 }
 
 // findNextActive 指定インデックスの次のアクティブプレイヤーを探す
@@ -713,14 +677,7 @@ func (sd *ShortDeck) cpuBetOrAllIn(p *ShortDeckPlayer, betAmt int) (int, int) {
 
 // cpuPotBet ポット比率ベースのベット額を計算
 func (sd *ShortDeck) cpuPotBet(potPct int) int {
-	bet := sd.pot * potPct / 100
-	if bet < sd.config.BigBlind {
-		bet = sd.config.BigBlind
-	}
-	if bet < sd.minRaise {
-		bet = sd.minRaise
-	}
-	return bet
+	return potBet(sd.pot, potPct, sd.config.BigBlind, sd.minRaise)
 }
 
 // cpuDecidePreFlop プリフロップのCPU意思決定

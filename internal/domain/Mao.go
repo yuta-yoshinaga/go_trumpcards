@@ -805,37 +805,12 @@ func (g *Mao) drawCard(playerIdx int) error {
 
 // drawCards 指定枚数を引く (山札が尽きたら捨て札を再利用)。実際に引けた枚数を返す。
 func (g *Mao) drawCards(playerIdx, n int) int {
-	drawn := 0
-	for i := 0; i < n; i++ {
-		if len(g.drawPile) == 0 {
-			g.recycleDrawPile()
-		}
-		if len(g.drawPile) == 0 {
-			break
-		}
-		card := g.drawPile[len(g.drawPile)-1]
-		g.drawPile = g.drawPile[:len(g.drawPile)-1]
-		g.players[playerIdx].AddCard(card)
-		drawn++
-	}
-	return drawn
+	return drawFromPile(&g.drawPile, g.players[playerIdx], n, g.recycleDrawPile)
 }
 
 // recycleDrawPile 捨て札から山札を再構築する
 func (g *Mao) recycleDrawPile() {
-	if len(g.discardPile) <= 1 {
-		return
-	}
-
-	top := g.discardPile[len(g.discardPile)-1]
-	recycled := g.discardPile[:len(g.discardPile)-1]
-	g.discardPile = []*Card{top}
-
-	rand.Shuffle(len(recycled), func(i, j int) {
-		recycled[i], recycled[j] = recycled[j], recycled[i]
-	})
-
-	g.drawPile = recycled
+	recycleDiscardToDraw(&g.discardPile, &g.drawPile)
 }
 
 // hasPlayableCard プレイヤーが出せるカードを持っているか
@@ -996,17 +971,7 @@ func (g *Mao) cpuSelectSuitRandom() int {
 
 // cpuSelectSuitSmart 手札で最も多いスートを選択
 func (g *Mao) cpuSelectSuitSmart(playerIdx int) int {
-	suitCount := g.countSuits(playerIdx)
-
-	bestSuit := CardDesignSpade
-	bestCount := 0
-	for suit := CardDesignSpade; suit <= CardDesignDiamond; suit++ {
-		if suitCount[suit] > bestCount {
-			bestCount = suitCount[suit]
-			bestSuit = suit
-		}
-	}
-	return bestSuit
+	return bestSuitFrom(g.countSuits(playerIdx))
 }
 
 // countSuits プレイヤーの手札のスート別枚数をカウント (8は除外)

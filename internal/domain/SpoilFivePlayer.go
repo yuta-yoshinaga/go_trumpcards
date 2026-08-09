@@ -21,9 +21,7 @@ func NewSpoilFivePlayer(isHuman bool) *SpoilFivePlayer {
 // ResetRound ラウンドをリセット（トリック・手札・ラウンドトリック数を初期化）。
 // 累積得点はラウンドをまたいで保持する。
 func (p *SpoilFivePlayer) ResetRound() {
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayerRound(p)
 	p.roundTricks = 0
 }
 

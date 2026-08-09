@@ -285,20 +285,7 @@ func (op *OasisPoker) compareHands() int {
 
 // checkDealerQualifies ディーラークオリファイ条件: ペア以上、または A-K ハイ
 func (op *OasisPoker) checkDealerQualifies() bool {
-	if op.dealerHandRank >= PokerHandOnePair {
-		return true
-	}
-	hasAce := false
-	hasKing := false
-	for _, c := range op.dealerHand {
-		switch c.GetValue() {
-		case 1:
-			hasAce = true
-		case 13:
-			hasKing = true
-		}
-	}
-	return hasAce && hasKing
+	return dealerQualifies(op.dealerHandRank, op.dealerHand)
 }
 
 // calculatePayouts アンテ／プレイの配当計算

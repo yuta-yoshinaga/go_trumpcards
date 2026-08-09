@@ -481,13 +481,7 @@ func (d *DeuceToSeven) findNextActive(fromIdx int) int {
 }
 
 func (d *DeuceToSeven) countActivePlayers() int {
-	cnt := 0
-	for _, pl := range d.players {
-		if !pl.GetFolded() {
-			cnt++
-		}
-	}
-	return cnt
+	return countPlayers(d.players, func(p *DeuceToSevenPlayer) bool { return !p.GetFolded() })
 }
 
 // resolveLastPlayer awards the pot to the sole surviving player (everyone else

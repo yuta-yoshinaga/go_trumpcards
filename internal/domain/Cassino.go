@@ -633,14 +633,7 @@ func sortIndicesDescending(idxs []int) []int {
 
 // removeTableCardsByIndex は降順に並び替えてから tableCards を削除する。
 func (c *Cassino) removeTableCardsByIndex(idxs []int) {
-	if len(idxs) == 0 {
-		return
-	}
-	for _, idx := range sortIndicesDescending(idxs) {
-		if idx >= 0 && idx < len(c.round.tableCards) {
-			c.round.tableCards = append(c.round.tableCards[:idx], c.round.tableCards[idx+1:]...)
-		}
-	}
+	c.round.tableCards = removeIndices(c.round.tableCards, idxs)
 }
 
 // removeBuildsByIndex は降順に並び替えてから builds を削除する。

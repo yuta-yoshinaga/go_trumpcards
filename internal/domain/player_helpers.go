@@ -545,3 +545,198 @@ func recycleDiscardIntoStock(discard, draw *[]*Card, g stockRecycler) bool {
 	g.appendLog(-1, "recycle", fmt.Sprintf("Discard pile recycled into stock (%d cards)", len(rest)), nil)
 	return true
 }
+
+// seatHoldingCard returns the index of the first seat holding a card that
+// satisfies want, or -1 when nobody does. 3 games looked for the two of clubs
+// this way.
+func seatHoldingCard[P handReader](players []P, want func(*Card) bool) int {
+	for i, p := range players {
+		if handHasAny(p, want) {
+			return i
+		}
+	}
+	return -1
+}
+
+// bettingRoundComplete reports whether every seat still in the hand has acted.
+// 3 games had this written out. Reuses the bettor constraint rather than
+// declaring a second interface with the same two methods.
+func bettingRoundComplete[P bettor](players []P, acted []bool) bool {
+	for i, p := range players {
+		if p.GetFolded() || p.GetAllIn() {
+			continue
+		}
+		if !acted[i] {
+			return false
+		}
+	}
+	return true
+}
+
+// totalScorer is a seat with a running game score.
+type totalScorer interface {
+	GetTotalScore() int
+}
+
+// topScorers returns the indices of every seat tied for the highest total
+// score. 3 games had this two-pass scan written out.
+func topScorers[P totalScorer](players []P) []int {
+	if len(players) == 0 {
+		return []int{}
+	}
+	best := players[0].GetTotalScore()
+	for _, p := range players[1:] {
+		if p.GetTotalScore() > best {
+			best = p.GetTotalScore()
+		}
+	}
+	winners := make([]int, 0)
+	for i, p := range players {
+		if p.GetTotalScore() == best {
+			winners = append(winners, i)
+		}
+	}
+	return winners
+}
+
+// trickScorer is a game that can rank the cards in the current trick.
+type trickScorer interface {
+	leadSuit() int
+	trickScore(*Card, int) int
+}
+
+// trickWinnerByScore returns the seat that played the highest-scoring card in
+// the trick, or 0 when no card has been played. Ties keep the earliest play,
+// matching the bodies replaced, which compared with a strict >.
+func trickWinnerByScore(trick []*TrickCard, g trickScorer) int {
+	if len(trick) == 0 {
+		return 0
+	}
+	ls := g.leadSuit()
+	winnerIdx := trick[0].PlayerIdx
+	winnerScore := g.trickScore(trick[0].Card, ls)
+	for _, tc := range trick[1:] {
+		if s := g.trickScore(tc.Card, ls); s > winnerScore {
+			winnerScore = s
+			winnerIdx = tc.PlayerIdx
+		}
+	}
+	return winnerIdx
+}
+
+// drawFromPile deals up to n cards off the end of pile into to, recycling once
+// the pile runs dry and stopping when recycling cannot refill it. Returns how
+// many were actually dealt. 3 games had this written out.
+func drawFromPile[P interface{ AddCard(*Card) }](pile *[]*Card, to P, n int, recycle func()) int {
+	drawn := 0
+	for i := 0; i < n; i++ {
+		if len(*pile) == 0 {
+			recycle()
+		}
+		if len(*pile) == 0 {
+			break
+		}
+		card := (*pile)[len(*pile)-1]
+		*pile = (*pile)[:len(*pile)-1]
+		to.AddCard(card)
+		drawn++
+	}
+	return drawn
+}
+
+// bestSuitFrom returns the suit with the highest count, breaking ties in
+// spade/clover/heart/diamond order and defaulting to spade when every count is
+// zero. 3 games had this scan written out over a precomputed tally.
+//
+// Unlike longestSuit, which counts a hand itself, this takes the tally the
+// caller already built.
+func bestSuitFrom(counts map[int]int) int {
+	bestSuit := CardDesignSpade
+	bestCount := 0
+	for suit := CardDesignSpade; suit <= CardDesignDiamond; suit++ {
+		if counts[suit] > bestCount {
+			bestCount = counts[suit]
+			bestSuit = suit
+		}
+	}
+	return bestSuit
+}
+
+// dealUpTo appends cards from the deck until the slice holds target cards or
+// the deck runs out. 4 games had this written out for the community cards.
+func dealUpTo(cards *[]*Card, deck *TrumpCards, target int) {
+	for len(*cards) < target {
+		card := deck.DrawCard()
+		if card == nil {
+			break
+		}
+		*cards = append(*cards, card)
+	}
+}
+
+// drawOrTakeTrump draws from the deck, falling back to the face-up trump card
+// once the deck is empty and consuming it. 3 games had this written out.
+func drawOrTakeTrump(deck *TrumpCards, trump **Card) *Card {
+	if c := deck.DrawCard(); c != nil {
+		return c
+	}
+	if *trump != nil {
+		c := *trump
+		*trump = nil
+		return c
+	}
+	return nil
+}
+
+// cardComparer is a game that can rank two cards against the led suit.
+type cardComparer interface {
+	cardBeats(a, b *Card, leadSuit int) bool
+}
+
+// currentTrickWinnerCard returns the card currently winning the trick, or nil
+// when nothing has been played. 3 games had this written out.
+func currentTrickWinnerCard(trick []*TrickCard, g cardComparer) *Card {
+	if len(trick) == 0 {
+		return nil
+	}
+	leadSuit := trick[0].Card.GetDesign()
+	winner := trick[0].Card
+	for _, tc := range trick[1:] {
+		if g.cardBeats(tc.Card, winner, leadSuit) {
+			winner = tc.Card
+		}
+	}
+	return winner
+}
+
+// validateCardIsPlayable checks that card is one of the seat's legal plays,
+// comparing by identity as the 4 bodies it replaces did. See issue #5185.
+func validateCardIsPlayable[P handReader](valid []int, p P, card *Card) error {
+	for _, idx := range valid {
+		if p.GetCard(idx) == card {
+			return nil
+		}
+	}
+	return NewDomainError(ErrInvalidPlay, "フォロー義務・切り札義務・オーバートランプ義務に反しています")
+}
+
+// endgameFollower is a game whose follow rules only apply in its second phase.
+type endgameFollower interface {
+	IsEndgame() bool
+	cardSatisfiesFollow(playerIdx int, card *Card) bool
+}
+
+// validateEndgameFollow enforces following suit once the endgame has started
+// and a trick is under way. 3 games had this written out.
+func validateEndgameFollow(trick []*TrickCard, g endgameFollower, playerIdx int, card *Card) error {
+	if card == nil {
+		return NewDomainError(ErrInvalidCard, "カードが nil です")
+	}
+	if !g.IsEndgame() || len(trick) == 0 {
+		return nil
+	}
+	if !g.cardSatisfiesFollow(playerIdx, card) {
+		return NewDomainError(ErrInvalidCard, "第2フェーズではフォロールールに従う必要があります")
+	}
+	return nil
+}

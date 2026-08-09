@@ -593,10 +593,7 @@ func (n *Napoleon) SetPassCount(cnt int) { n.round.passCount = cnt }
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (n *Napoleon) IsHumanTurn() bool {
-	if n.round.currentPlayerIdx < 0 || n.round.currentPlayerIdx >= len(n.players) {
-		return false
-	}
-	return n.players[n.round.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(n.players, n.round.currentPlayerIdx)
 }
 
 // IsHumanBidTurn 現在のビッド手番が人間かどうか

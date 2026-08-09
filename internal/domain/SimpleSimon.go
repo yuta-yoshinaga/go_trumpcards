@@ -47,8 +47,8 @@ type SimpleSimon struct {
 	completedSuits int
 	phase          SimpleSimonPhase
 	moveCount      int
-	actionLog      []*ActionLogEntry
-	history        []*simpleSimonSnapshot
+	actionLogBase
+	history []*simpleSimonSnapshot
 }
 
 // simpleSimonSnapshot Undo 用スナップショット。
@@ -240,13 +240,7 @@ func (g *SimpleSimon) GetHint() *SimpleSimonHint {
 }
 
 func (g *SimpleSimon) appendLog(action, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: g.moveCount,
-		PlayerIdx:  0,
-		ActionType: action,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.appendLogAt(g.moveCount, 0, action, detail, cards)
 }
 
 // --- undo ---

@@ -491,15 +491,7 @@ func (g *Gaigel) drawReplenish() {
 
 // drawOne 山札または切り札表示カードから 1 枚引く。優先順位は山札 → 切り札表示カード。
 func (g *Gaigel) drawOne() *Card {
-	if c := g.trumpCards.DrawCard(); c != nil {
-		return c
-	}
-	if g.trumpCard != nil {
-		c := g.trumpCard
-		g.trumpCard = nil
-		return c
-	}
-	return nil
+	return drawOrTakeTrump(g.trumpCards, &g.trumpCard)
 }
 
 // allHandsEmpty 全プレイヤーの手札が空かを返す
@@ -517,16 +509,7 @@ func (g *Gaigel) IsEndgame() bool {
 // validatePlay カードのプレイがルール上有効かを検証する。
 // 第1フェーズ・リード時は常に有効。第2フェーズの追随時のみマストフォローを課す。
 func (g *Gaigel) validatePlay(playerIdx int, card *Card) error {
-	if card == nil {
-		return NewDomainError(ErrInvalidCard, "カードが nil です")
-	}
-	if !g.IsEndgame() || len(g.currentTrick) == 0 {
-		return nil
-	}
-	if !g.cardSatisfiesFollow(playerIdx, card) {
-		return NewDomainError(ErrInvalidCard, "第2フェーズではフォロールールに従う必要があります")
-	}
-	return nil
+	return validateEndgameFollow(g.currentTrick, g, playerIdx, card)
 }
 
 // cardSatisfiesFollow 第2フェーズの追随時に card が合法かを返す。
@@ -548,14 +531,7 @@ func (g *Gaigel) cardSatisfiesFollow(playerIdx int, card *Card) bool {
 
 // legalPlayIndices validatePlay を満たすカードのインデックス集合を返す。
 func (g *Gaigel) legalPlayIndices(playerIdx int) []int {
-	p := g.players[playerIdx]
-	out := make([]int, 0, p.GetCardsSize())
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if g.validatePlay(playerIdx, p.GetCard(i)) == nil {
-			out = append(out, i)
-		}
-	}
-	return out
+	return validPlayIndices(g.players[playerIdx], func(c *Card) bool { return g.validatePlay(playerIdx, c) == nil })
 }
 
 // gaigelPlayerHasSuit プレイヤーが指定スートのカードを持つか

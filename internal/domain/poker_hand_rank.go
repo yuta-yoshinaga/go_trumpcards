@@ -44,3 +44,22 @@ func pokerHandName(rank int) string {
 	}
 	return "Unknown"
 }
+
+// dealerQualifies reports whether the dealer's hand meets the usual
+// ace-king-or-better qualification. 3 casino games had this written out.
+func dealerQualifies(handRank int, hand []*Card) bool {
+	if handRank >= PokerHandOnePair {
+		return true
+	}
+	hasAce := false
+	hasKing := false
+	for _, c := range hand {
+		switch c.GetValue() {
+		case 1:
+			hasAce = true
+		case 13:
+			hasKing = true
+		}
+	}
+	return hasAce && hasKing
+}

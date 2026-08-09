@@ -372,20 +372,7 @@ func (rp *RussianPoker) compareHands() int {
 
 // checkDealerQualifies ディーラークオリファイ条件: ペア以上、または A-K ハイ
 func (rp *RussianPoker) checkDealerQualifies() bool {
-	if rp.dealerHandRank >= PokerHandOnePair {
-		return true
-	}
-	hasAce := false
-	hasKing := false
-	for _, c := range rp.dealerHand {
-		switch c.GetValue() {
-		case 1:
-			hasAce = true
-		case 13:
-			hasKing = true
-		}
-	}
-	return hasAce && hasKing
+	return dealerQualifies(rp.dealerHandRank, rp.dealerHand)
 }
 
 // calculatePayouts アンテ／プレイの配当計算

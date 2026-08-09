@@ -513,15 +513,7 @@ func (h *Hearts) startPlayPhase() {
 
 // findTwoOfClubs 2♣を持つプレイヤーのインデックスを返す
 func (h *Hearts) findTwoOfClubs() int {
-	for i, p := range h.players {
-		for j := 0; j < p.GetCardsSize(); j++ {
-			card := p.GetCard(j)
-			if card.GetDesign() == CardDesignClover && card.GetValue() == 2 {
-				return i
-			}
-		}
-	}
-	return -1
+	return seatHoldingCard(h.players, func(c *Card) bool { return c.GetDesign() == CardDesignClover && c.GetValue() == 2 })
 }
 
 // playCard カードをプレイする共通処理

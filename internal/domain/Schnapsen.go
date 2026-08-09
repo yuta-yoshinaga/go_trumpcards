@@ -553,16 +553,7 @@ func (s *Schnapsen) playCard(playerIdx int, card *Card) {
 // validatePlay カードのプレイがルール上有効かを検証する。
 // 第1フェーズ・リード時は常に有効。第2フェーズの追随時のみマストフォローを課す。
 func (s *Schnapsen) validatePlay(playerIdx int, card *Card) error {
-	if card == nil {
-		return NewDomainError(ErrInvalidCard, "カードが nil です")
-	}
-	if !s.IsEndgame() || len(s.currentTrick) == 0 {
-		return nil
-	}
-	if !s.cardSatisfiesFollow(playerIdx, card) {
-		return NewDomainError(ErrInvalidCard, "第2フェーズではフォロールールに従う必要があります")
-	}
-	return nil
+	return validateEndgameFollow(s.currentTrick, s, playerIdx, card)
 }
 
 // cardSatisfiesFollow 第2フェーズの追随時に card が合法かを返す。
@@ -592,14 +583,7 @@ func (s *Schnapsen) cardSatisfiesFollow(playerIdx int, card *Card) bool {
 
 // legalPlayIndices validatePlay を満たすカードのインデックス集合を返す。
 func (s *Schnapsen) legalPlayIndices(playerIdx int) []int {
-	p := s.players[playerIdx]
-	out := make([]int, 0, p.GetCardsSize())
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if s.validatePlay(playerIdx, p.GetCard(i)) == nil {
-			out = append(out, i)
-		}
-	}
-	return out
+	return validPlayIndices(s.players[playerIdx], func(c *Card) bool { return s.validatePlay(playerIdx, c) == nil })
 }
 
 // playerHasSuitWinner プレイヤーが同スートで leadCard に勝てるカードを持つか
@@ -678,15 +662,7 @@ func (s *Schnapsen) drawReplenish() {
 
 // drawOne 山札または切り札表示カードから 1 枚引く。優先順位は山札 → 切り札表示カード。
 func (s *Schnapsen) drawOne() *Card {
-	if c := s.trumpCards.DrawCard(); c != nil {
-		return c
-	}
-	if s.trumpCard != nil {
-		c := s.trumpCard
-		s.trumpCard = nil
-		return c
-	}
-	return nil
+	return drawOrTakeTrump(s.trumpCards, &s.trumpCard)
 }
 
 // allHandsEmpty 全プレイヤーの手札が空かを返す

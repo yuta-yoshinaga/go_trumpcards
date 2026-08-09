@@ -1170,10 +1170,7 @@ func (s *Skat) findIndex(p *SkatPlayer) int {
 
 // IsHumanTurn reports whether the current player is human (play phase).
 func (s *Skat) IsHumanTurn() bool {
-	if s.round.currentPlayerIdx < 0 || s.round.currentPlayerIdx >= len(s.players) {
-		return false
-	}
-	return s.players[s.round.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(s.players, s.round.currentPlayerIdx)
 }
 
 // IsHumanDeclarerTurn reports whether the declarer is human (used for skat
