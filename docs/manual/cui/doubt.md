@@ -7,7 +7,8 @@
 ## 起動方法
 
 ```sh
-go run ./cmd/cli doubt
+go run ./cmd/trumpcards doubt
+go run ./cmd/trumpcards --lang en doubt  # 英語モード
 ```
 
 ## ルール

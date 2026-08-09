@@ -9,7 +9,8 @@ HUD統計（VPIP%/PFR%）が全プレイヤーに表示され、CPUのベット�
 ## 起動方法
 
 ```sh
-go run ./cmd/cli shortdeck
+go run ./cmd/trumpcards shortdeck
+go run ./cmd/trumpcards --lang en shortdeck  # 英語モード
 ```
 
 ## ルール

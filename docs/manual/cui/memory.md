@@ -7,7 +7,8 @@
 ## 起動方法
 
 ```sh
-go run ./cmd/cli memory
+go run ./cmd/trumpcards memory
+go run ./cmd/trumpcards --lang en memory  # 英語モード
 ```
 
 ## ルール

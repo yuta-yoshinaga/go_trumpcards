@@ -7,7 +7,8 @@
 ## 起動方法
 
 ```sh
-go run ./cmd/cli sevens
+go run ./cmd/trumpcards sevens
+go run ./cmd/trumpcards --lang en sevens  # 英語モード
 ```
 
 ## ルール

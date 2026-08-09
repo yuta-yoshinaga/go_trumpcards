@@ -9,7 +9,8 @@ HUD統計（VPIP%/PFR%）が全プレイヤーに表示され、CPUのベット�
 ## 起動方法
 
 ```sh
-go run ./cmd/cli holdem
+go run ./cmd/trumpcards holdem
+go run ./cmd/trumpcards --lang en holdem  # 英語モード
 ```
 
 ## ルール

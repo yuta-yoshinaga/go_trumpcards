@@ -7,7 +7,8 @@
 ## 起動方法
 
 ```sh
-go run ./cmd/cli blackjack
+go run ./cmd/trumpcards blackjack
+go run ./cmd/trumpcards --lang en blackjack  # 英語モード
 ```
 
 ## ルール

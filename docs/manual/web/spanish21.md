@@ -7,11 +7,12 @@ Spanish 21（スパニッシュ21）は、ブラックジャックのバリア�
 ## 起動方法
 
 ```sh
-cd frontend && bun run dev   # 開発モード
-go run ./cmd/trumpcards web  # Goサーバー経由
+go run ./cmd/trumpcards web  # CLI経由でWebサーバーを起動
+go run ./cmd/server          # 直接Webサーバーを起動
 ```
 
-ブラウザで `http://localhost:5173/spanish21` を開く。NavBarからは「テーブルゲーム」カテゴリの「🇪🇸 スパニッシュ21」を選択。
+ブラウザで `http://localhost:8080` にアクセスし、ナビゲーションバーから「スパニッシュ21」を選択します。
+ナビバーのJA/ENボタンで日本語・英語を切り替えられます。
 
 ## ルール
 
