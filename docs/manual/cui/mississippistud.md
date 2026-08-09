@@ -1,4 +1,4 @@
-# Mississippi Stud（CUI版）遊び方
+# ミシシッピ・スタッド（CUI版）遊び方
 
 ## ゲーム概要
 

@@ -1,4 +1,4 @@
-# Calabresella / Terziglio カラブレセッラ（テルツィリオ）（CUI版）遊び方
+# カラブレセッラ（CUI版）遊び方
 
 ## ゲーム概要
 

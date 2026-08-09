@@ -1,4 +1,4 @@
-# Ultimate Texas Hold'em（CUI版）遊び方
+# アルティメット・テキサスホールデム（CUI版）遊び方
 
 ## ゲーム概要
 
