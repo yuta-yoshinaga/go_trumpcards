@@ -194,3 +194,14 @@ func handHasSuit[P handReader](p P, design int) bool {
 	}
 	return false
 }
+
+// validPlayIndices returns the hand positions of p whose card satisfies ok.
+//
+// 41 games had this written out: fetch the seat, then feed
+// collectValidIndices a closure that indexes back into the same hand. Only the
+// predicate differs between them, so that is what is passed in. See issue #5185.
+func validPlayIndices[P handReader](p P, ok func(*Card) bool) []int {
+	return collectValidIndices(p.GetCardsSize(), func(i int) bool {
+		return ok(p.GetCard(i))
+	})
+}

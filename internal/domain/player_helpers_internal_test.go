@@ -361,3 +361,36 @@ func TestDiscardTop_EmptyPile(t *testing.T) {
 	assert.Nil(t, discardTop([]*Card{}))
 	assert.Nil(t, discardTop(nil))
 }
+
+func TestValidPlayIndices(t *testing.T) {
+	hand := &fakeHand{cards: []*Card{
+		NewCard(1, 2, false),
+		NewCard(2, 7, false),
+		NewCard(1, 9, false),
+	}}
+
+	// Only the cards of design 1 are playable.
+	got := validPlayIndices(hand, func(c *Card) bool { return c.GetDesign() == 1 })
+	assert.Equal(t, []int{0, 2}, got)
+}
+
+func TestValidPlayIndices_NoneAndAll(t *testing.T) {
+	hand := &fakeHand{cards: []*Card{NewCard(1, 2, false), NewCard(1, 3, false)}}
+
+	assert.Empty(t, validPlayIndices(hand, func(*Card) bool { return false }))
+	assert.Equal(t, []int{0, 1}, validPlayIndices(hand, func(*Card) bool { return true }))
+	assert.Empty(t, validPlayIndices(&fakeHand{}, func(*Card) bool { return true }), "empty hand")
+}
+
+// The predicate must see each card, not just the first -- a helper that passed
+// the same card every time would still return a plausible-looking slice.
+func TestValidPlayIndices_PredicateSeesEveryCard(t *testing.T) {
+	hand := &fakeHand{cards: []*Card{NewCard(1, 4, false), NewCard(2, 5, false), NewCard(3, 6, false)}}
+
+	var seen []int
+	validPlayIndices(hand, func(c *Card) bool {
+		seen = append(seen, c.GetValue())
+		return true
+	})
+	assert.Equal(t, []int{4, 5, 6}, seen)
+}
