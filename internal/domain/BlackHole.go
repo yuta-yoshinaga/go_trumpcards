@@ -44,8 +44,8 @@ type BlackHole struct {
 	blackHole  []*Card
 	phase      BlackHolePhase
 	moveCount  int
-	actionLog  []*ActionLogEntry
-	history    []*blackHoleSnapshot
+	actionLogBase
+	history []*blackHoleSnapshot
 }
 
 // blackHoleSnapshot Undo 用スナップショット。
@@ -322,11 +322,5 @@ func (g *BlackHole) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // appendLog アクションログを追加する。
 func (g *BlackHole) appendLog(action, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: g.moveCount,
-		PlayerIdx:  0,
-		ActionType: action,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.appendLogAt(g.moveCount, 0, action, detail, cards)
 }

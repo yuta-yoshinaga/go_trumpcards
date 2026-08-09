@@ -23,9 +23,7 @@ func NewKnockoutWhistPlayer(isHuman bool) *KnockoutWhistPlayer {
 // ResetRound ラウンドをリセット（トリック・手札・ラウンドトリック数を初期化）。
 // 脱落状態と Dogbone 残数はラウンドをまたいで保持する。
 func (p *KnockoutWhistPlayer) ResetRound() {
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayerRound(p)
 	p.roundTricks = 0
 }
 

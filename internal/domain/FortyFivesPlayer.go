@@ -20,9 +20,7 @@ func NewFortyFivesPlayer(isHuman bool) *FortyFivesPlayer {
 
 // ResetRound ラウンドをリセット（トリック・手札・ラウンドトリック数を初期化）
 func (p *FortyFivesPlayer) ResetRound() {
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayerRound(p)
 	p.roundTricks = 0
 }
 

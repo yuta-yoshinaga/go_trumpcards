@@ -83,9 +83,7 @@ func (p *CariocaPlayer) SetContractIndex(idx []int) {
 
 // ResetRound ラウンドをリセット（手札・スコア・メルド・終了状態を初期化）
 func (p *CariocaPlayer) ResetRound() {
-	p.SetRoundScore(0)
-	p.Reset()
-	p.SetIsFinished(false)
+	resetRoundScored(p)
 	p.ClearMelds()
 }
 

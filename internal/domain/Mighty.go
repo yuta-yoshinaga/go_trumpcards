@@ -734,10 +734,7 @@ func (m *Mighty) SetJokerPlayed(v bool) { m.round.jokerPlayed = v }
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (m *Mighty) IsHumanTurn() bool {
-	if m.round.currentPlayerIdx < 0 || m.round.currentPlayerIdx >= len(m.players) {
-		return false
-	}
-	return m.players[m.round.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(m.players, m.round.currentPlayerIdx)
 }
 
 // IsHumanBidTurn 現在のビッド手番が人間かどうか

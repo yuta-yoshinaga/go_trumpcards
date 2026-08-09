@@ -224,7 +224,7 @@ type Aluette struct {
 	roundTricks      [AluettePlayerCnt]int
 	gameEndFlag      bool
 	winnerTeam       int // -1 = 未確定 (同点)
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewAluette コンストラクタ。
@@ -369,13 +369,7 @@ func (g *Aluette) finishMatch() {
 
 // appendLog 棋譜に 1 件追加する。
 func (g *Aluette) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: g.trickNumber,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.appendLogAt(g.trickNumber, playerIdx, actionType, detail, cards)
 }
 
 // --- トリックプレイ ---

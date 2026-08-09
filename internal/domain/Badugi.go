@@ -481,13 +481,7 @@ func (b *Badugi) findNextActive(fromIdx int) int {
 }
 
 func (b *Badugi) countActivePlayers() int {
-	cnt := 0
-	for _, pl := range b.players {
-		if !pl.GetFolded() {
-			cnt++
-		}
-	}
-	return cnt
+	return countPlayers(b.players, func(p *BadugiPlayer) bool { return !p.GetFolded() })
 }
 
 // resolveLastPlayer awards the pot to the sole surviving player (everyone

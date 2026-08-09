@@ -699,13 +699,7 @@ func (p *Pineapple) findNextActive(fromIdx int) int {
 
 // countActivePlayers フォールドしていないプレイヤー数を返す
 func (p *Pineapple) countActivePlayers() int {
-	cnt := 0
-	for _, pl := range p.players {
-		if !pl.GetFolded() {
-			cnt++
-		}
-	}
-	return cnt
+	return countPlayers(p.players, func(pl *PineapplePlayer) bool { return !pl.GetFolded() })
 }
 
 // resolveLastPlayer 全員フォールドで最後のプレイヤーが勝利

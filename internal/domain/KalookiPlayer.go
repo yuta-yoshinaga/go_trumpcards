@@ -67,9 +67,7 @@ func (p *KalookiPlayer) SetHasOpened(opened bool) { p.hasOpened = opened }
 
 // ResetRound ラウンドをリセット（手札・スコア・メルド・終了状態を初期化）
 func (p *KalookiPlayer) ResetRound() {
-	p.SetRoundScore(0)
-	p.Reset()
-	p.SetIsFinished(false)
+	resetRoundScored(p)
 	p.ClearMelds()
 }
 
