@@ -1,5 +1,6 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { settleUntil } from '../../test/settleUntil';
 import { BjEndPhaseControls, type BjEndPhaseControlsProps } from './BjEndPhaseControls';
 
 function defaultProps(overrides?: Partial<BjEndPhaseControlsProps>): BjEndPhaseControlsProps {
@@ -78,10 +79,10 @@ describe('BjEndPhaseControls', () => {
       expect(screen.getByRole('button', { name: '次のゲーム (3s)' })).toBeInTheDocument();
 
       vi.advanceTimersByTime(1000);
-      await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム (2s)' })).toBeInTheDocument());
+      await settleUntil(() => expect(screen.getByRole('button', { name: '次のゲーム (2s)' })).toBeInTheDocument());
 
       vi.advanceTimersByTime(1000);
-      await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム (1s)' })).toBeInTheDocument());
+      await settleUntil(() => expect(screen.getByRole('button', { name: '次のゲーム (1s)' })).toBeInTheDocument());
     });
 
     it('calls onReset when countdown reaches 0', async () => {
@@ -89,7 +90,7 @@ describe('BjEndPhaseControls', () => {
       render(<BjEndPhaseControls {...defaultProps({ onReset, autoAdvanceSeconds: 2 })} />);
 
       vi.advanceTimersByTime(2000);
-      await waitFor(() => expect(onReset).toHaveBeenCalled());
+      await settleUntil(() => expect(onReset).toHaveBeenCalled());
     });
 
     it('auto-advance fires onReset directly, bypassing onRequestReset', async () => {
@@ -98,7 +99,7 @@ describe('BjEndPhaseControls', () => {
       render(<BjEndPhaseControls {...defaultProps({ onReset, onRequestReset, autoAdvanceSeconds: 2 })} />);
 
       vi.advanceTimersByTime(2000);
-      await waitFor(() => expect(onReset).toHaveBeenCalled());
+      await settleUntil(() => expect(onReset).toHaveBeenCalled());
       // The confirmation path is skipped for auto-advance.
       expect(onRequestReset).not.toHaveBeenCalled();
     });
@@ -108,7 +109,7 @@ describe('BjEndPhaseControls', () => {
       render(<BjEndPhaseControls {...defaultProps({ onReset, autoAdvanceSeconds: 1 })} />);
 
       vi.advanceTimersByTime(1000);
-      await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+      await settleUntil(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
     });
   });
 });

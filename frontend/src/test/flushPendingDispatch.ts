@@ -31,7 +31,9 @@ import { vi } from 'vitest';
  * hypothetical, it stalled all 24 of `PokerPage.test.tsx`'s fake-timer tests for
  * 10s each. So the timer is advanced explicitly when they are installed.
  *
- * Positive assertions do not need this — `waitFor` already retries.
+ * Positive assertions usually do not need this — `waitFor` already retries.
+ * The exception is a test that fakes `setInterval`, where `waitFor` cannot
+ * retry at all; use {@link settleUntil} there.
  */
 export async function flushPendingDispatch(): Promise<void> {
   if (vi.isFakeTimers()) {
