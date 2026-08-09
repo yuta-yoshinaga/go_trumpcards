@@ -15,6 +15,7 @@
 | Change frontend tooling or scripts | [`frontend/README.md`](../frontend/README.md) (Scripts, Tooling) |
 | Change game rules or game flow logic | `docs/manual/cui/<game>.md` and `docs/manual/web/<game>.md` for the affected game (follow `docs/manual/cui_template.md` / `docs/manual/web_template.md` format) |
 | Add a new game manual | Copy `docs/manual/cui_template.md` → `docs/manual/cui/<game>.md`, `docs/manual/web_template.md` → `docs/manual/web/<game>.md` and fill in game-specific content. Also import in `frontend/src/constants/manualTexts.ts` and add route mapping |
+| Edit any per-game manual | The template structure is enforced by `TestPerGameManualsFollowTemplate` (`internal/infrastructure/games/manual_template_test.go`): H1 exactly `# <ja nav label>（CUI版\|Web版）遊び方`, the required H2s in template order, a Mermaid `flowchart` under `## ゲームの流れ`, the documented launch commands, and (CUI) a three-column command table with `reset`/`quit`/`help`. Run `bun scripts/audit-manual-template.mjs` for a worklist grouped by issue class |
 | Change Go testing policy or mock patterns | Update Testing section in [`CLAUDE.md`](../CLAUDE.md) and [`internal/CLAUDE.md`](../internal/CLAUDE.md) |
 | Make an architectural decision that passes the ADR litmus test (see Workflow section in [`CLAUDE.md`](../CLAUDE.md#workflow--principles)) | Add or update an ADR in [`docs/adr/`](adr/) (written in Japanese) and update the index in [`docs/adr/README.md`](adr/README.md) |
 | Add/modify exported Go symbol | Ensure GoDoc comment (`// SymbolName description`) is present |

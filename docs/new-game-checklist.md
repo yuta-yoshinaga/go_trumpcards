@@ -54,9 +54,16 @@ When adding a new game, follow this checklist to avoid post-feat fix commits. Co
     at something, and that they point at the RIGHT something.
     **The file is CRLF** -- anything that rewrites it must preserve the line endings or the diff becomes every line.
 22. **`docs/manual/cui/<game>.md`** and **`docs/manual/web/<game>.md`**: Create from the templates below and **include every required section**:
-    - CUI (`docs/manual/cui_template.md`): `## ゲーム概要` / `## 起動方法` / `## ルール` / `## ゲームの流れ` (Mermaid flowchart — **mandatory**) / `## コマンド一覧` / `## 画面の見方` / `## 遊び方のコツ`
-    - Web (`docs/manual/web_template.md`): `## ゲーム概要` / `## 起動方法` / `## ルール` / `## ゲームの流れ` (Mermaid flowchart — **mandatory**) / `## 画面の操作方法` / `## 画面構成` / `## 遊び方のコツ`
-    - Do not skip sections even if short; a brief stub is preferable to a missing section so future readers can rely on a consistent structure.
+    - CUI (`docs/manual/cui_template.md`): `## ゲーム概要` / `## 起動方法` / `## ルール` / `## ゲームの流れ` (Mermaid flowchart — **mandatory**) / `## コマンド一覧` / `## 画面の見方`, plus the optional `## 遊び方のコツ`
+    - Web (`docs/manual/web_template.md`): `## ゲーム概要` / `## 起動方法` / `## ルール` / `## ゲームの流れ` (Mermaid flowchart — **mandatory**) / `## 画面の操作方法` / `## 画面構成`, plus the optional `## 遊び方のコツ`
+    - Do not skip the required sections even if short; a brief stub is preferable to a missing section so future readers can rely on a consistent structure.
+    - The H1 must be exactly `# <ja nav label>（CUI版|Web版）遊び方`, where the label is `nav.<game>` in
+      `frontend/src/i18n/locales/ja/common.json` — the same string the Web GUI's navigation shows.
+    - The CUI `## コマンド一覧` table needs all three columns (`| コマンド | 短縮形 | 説明 |`) and rows for
+      `reset` / `quit` / `help`, which every game accepts via `execCuiCommand`.
+    - **All of this is enforced** by `TestPerGameManualsFollowTemplate`
+      (`internal/infrastructure/games/manual_template_test.go`); run
+      `bun scripts/audit-manual-template.mjs` for a worklist grouped by issue class.
 23. **`frontend/src/constants/manualTexts.ts`**: Import the **Web** manual and add route mapping entry
 24. **`frontend/src/constants/cuiManualTexts.ts`**: Import the **CUI** manual and add route mapping entry (this is the manual displayed when CLI mode is active — easy to forget)
 
@@ -72,8 +79,9 @@ When adding a new game, follow this checklist to avoid post-feat fix commits. Co
 
 Run through this cross-check for the new `<game>`:
 
-- [ ] `docs/manual/cui/<game>.md` exists and contains every section listed in item 22 (including the Mermaid flowchart)
-- [ ] `docs/manual/web/<game>.md` exists and contains every section listed in item 22 (including the Mermaid flowchart)
+- [ ] `docs/manual/cui/<game>.md` exists and contains every required section from item 22 (including the Mermaid flowchart)
+- [ ] `docs/manual/web/<game>.md` exists and contains every required section from item 22 (including the Mermaid flowchart)
+- [ ] `bun scripts/audit-manual-template.mjs` reports OK
 - [ ] `frontend/src/constants/manualTexts.ts` has both the `import` and the route mapping for `<game>`
 - [ ] `frontend/src/constants/cuiManualTexts.ts` has both the `import` and the route mapping for `<game>`
 - [ ] `frontend/src/utils/hints/<game>Hint.ts` exists (real implementation or documented `null` stub)

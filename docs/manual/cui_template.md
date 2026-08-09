@@ -4,6 +4,9 @@
 <!-- ＜ゲーム名＞を実際のゲーム名に置き換えてください -->
 <!-- 各セクションのガイドラインに従い、ゲーム固有の内容を記載してください -->
 <!-- ゲーム固有のセクション（例: 特殊ルール）を追加しても構いません -->
+<!-- この構成は internal/infrastructure/games/manual_template_test.go の -->
+<!-- TestPerGameManualsFollowTemplate が検査します。見出し名・順序・Mermaid flowchart・ -->
+<!-- 起動コマンドが合わないと CI が落ちます。worklist は bun scripts/audit-manual-template.mjs -->
 
 ## ゲーム概要
 
@@ -57,4 +60,4 @@ flowchart TD
 
 ## 遊び方のコツ
 
-<!-- 任意セクション。戦略やヒントを箇条書きで記載 -->
+<!-- 任意セクション（ガードは必須にしていません）。戦略やヒントを箇条書きで記載 -->
