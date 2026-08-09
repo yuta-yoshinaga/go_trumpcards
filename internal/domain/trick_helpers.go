@@ -65,3 +65,19 @@ func ResolveTrickWinner(trick []*TrickCard, trumpSuit int, rank func(*Card) int)
 	}
 	return winnerIdx
 }
+
+// indexOfPlayerInTrick returns the position at which playerIdx played into the
+// current trick, or -1 when that seat has not played yet. Position is play
+// order, not seat order.
+//
+// 20 games had this loop written out. It needs no type parameter: every one of
+// them holds its trick as []*TrickCard, so this is a plain function and adds no
+// monomorphised copies. See issue #5185.
+func indexOfPlayerInTrick(trick []*TrickCard, playerIdx int) int {
+	for i, tc := range trick {
+		if tc.PlayerIdx == playerIdx {
+			return i
+		}
+	}
+	return -1
+}

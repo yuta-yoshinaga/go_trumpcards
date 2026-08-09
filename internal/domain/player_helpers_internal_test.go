@@ -318,3 +318,32 @@ func TestHandHasSuit(t *testing.T) {
 	assert.True(t, handHasSuit(seats[1], 3))
 	assert.False(t, handHasSuit(seats[2], 1), "empty hand holds no suit")
 }
+
+func TestIndexOfPlayerInTrick(t *testing.T) {
+	trick := []*TrickCard{
+		{PlayerIdx: 2},
+		{PlayerIdx: 0},
+		{PlayerIdx: 3},
+	}
+
+	assert.Equal(t, 0, indexOfPlayerInTrick(trick, 2), "play order, not seat order")
+	assert.Equal(t, 1, indexOfPlayerInTrick(trick, 0))
+	assert.Equal(t, 2, indexOfPlayerInTrick(trick, 3))
+}
+
+// -1 rather than 0: callers compare against -1, and a valid-looking 0 would
+// silently claim the seat led the trick.
+func TestIndexOfPlayerInTrick_Absent(t *testing.T) {
+	trick := []*TrickCard{{PlayerIdx: 1}}
+
+	assert.Equal(t, -1, indexOfPlayerInTrick(trick, 9))
+	assert.Equal(t, -1, indexOfPlayerInTrick(nil, 1), "no trick in progress")
+}
+
+// The first entry wins if a seat somehow appears twice, matching the 20
+// hand-written loops.
+func TestIndexOfPlayerInTrick_FirstMatchWins(t *testing.T) {
+	trick := []*TrickCard{{PlayerIdx: 5}, {PlayerIdx: 5}}
+
+	assert.Equal(t, 0, indexOfPlayerInTrick(trick, 5))
+}
