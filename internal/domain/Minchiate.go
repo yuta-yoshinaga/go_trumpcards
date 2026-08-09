@@ -783,10 +783,7 @@ func (g *Minchiate) GetPlayerCnt() int { return MinchiatePlayerCnt }
 
 // GetPlayer 指定席のプレイヤー。
 func (g *Minchiate) GetPlayer(i int) *MinchiatePlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetPlayers 全プレイヤー。

@@ -424,10 +424,7 @@ func (d *Daifugo) GetLastPlayPlayerIdx() int { return d.round.lastPlayPlayerIdx 
 
 // GetPlayer プレイヤー取得
 func (d *Daifugo) GetPlayer(idx int) *DaifugoPlayer {
-	if idx < 0 || idx >= len(d.players) {
-		return nil
-	}
-	return d.players[idx]
+	return getPlayer(d.players, idx)
 }
 
 // GetPlayerCnt プレイヤー数取得

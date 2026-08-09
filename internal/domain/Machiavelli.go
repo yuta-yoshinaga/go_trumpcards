@@ -628,10 +628,7 @@ func (g *Machiavelli) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *Machiavelli) GetPlayer(i int) *MachiavelliPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetConfig 設定取得

@@ -465,10 +465,7 @@ func (g *Cuarenta) GetTableCards() []*Card { return g.round.tableCards }
 
 // GetPlayer プレイヤー取得。
 func (g *Cuarenta) GetPlayer(idx int) *CuarentaPlayer {
-	if idx < 0 || idx >= len(g.players) {
-		return nil
-	}
-	return g.players[idx]
+	return getPlayer(g.players, idx)
 }
 
 // GetPlayerCnt プレイヤー数取得。

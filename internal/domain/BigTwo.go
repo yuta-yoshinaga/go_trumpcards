@@ -306,10 +306,7 @@ func (bt *BigTwo) GetLastPlayPlayerIdx() int { return bt.round.lastPlayPlayerIdx
 
 // GetPlayer プレイヤー取得
 func (bt *BigTwo) GetPlayer(idx int) *BigTwoPlayer {
-	if idx < 0 || idx >= len(bt.players) {
-		return nil
-	}
-	return bt.players[idx]
+	return getPlayer(bt.players, idx)
 }
 
 // GetPlayerCnt プレイヤー数取得

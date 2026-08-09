@@ -393,10 +393,7 @@ func (t *TwoTenJack) GetPlayerCnt() int { return len(t.players) }
 
 // GetPlayer プレイヤー取得
 func (t *TwoTenJack) GetPlayer(i int) *TwoTenJackPlayer {
-	if i < 0 || i >= len(t.players) {
-		return nil
-	}
-	return t.players[i]
+	return getPlayer(t.players, i)
 }
 
 // IsHumanTurn 現在の手番が人間かどうか

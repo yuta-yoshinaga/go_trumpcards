@@ -307,10 +307,7 @@ func (pt *PigsTail) GetPlayerCnt() int { return len(pt.players) }
 
 // GetPlayer 指定インデックスのプレイヤーを取得する
 func (pt *PigsTail) GetPlayer(i int) *PigsTailPlayer {
-	if i < 0 || i >= len(pt.players) {
-		return nil
-	}
-	return pt.players[i]
+	return getPlayer(pt.players, i)
 }
 
 // GetCurrentTurn 現在の手番プレイヤーインデックスを取得する

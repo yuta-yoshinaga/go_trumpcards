@@ -660,10 +660,7 @@ func (o *OldMaid) GetLoserIdx() int {
 
 // GetPlayer プレイヤー取得
 func (o *OldMaid) GetPlayer(idx int) *OldMaidPlayer {
-	if idx < 0 || idx >= len(o.players) {
-		return nil
-	}
-	return o.players[idx]
+	return getPlayer(o.players, idx)
 }
 
 // GetPlayerCnt プレイヤー数取得

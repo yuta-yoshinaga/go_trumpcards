@@ -1170,10 +1170,7 @@ func (g *Watten) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *Watten) GetPlayer(i int) *WattenPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // IsHumanTurn 現在のプレイ手番が人間かどうか

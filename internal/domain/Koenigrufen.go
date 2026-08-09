@@ -1725,10 +1725,7 @@ func (g *Koenigrufen) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *Koenigrufen) GetPlayer(i int) *KoenigrufenPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // IsHumanTurn 現在の手番 (Play) が人間か。

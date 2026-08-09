@@ -675,10 +675,7 @@ func (m *Mighty) GetPlayerCnt() int { return len(m.players) }
 
 // GetPlayer プレイヤー取得
 func (m *Mighty) GetPlayer(i int) *MightyPlayer {
-	if i < 0 || i >= len(m.players) {
-		return nil
-	}
-	return m.players[i]
+	return getPlayer(m.players, i)
 }
 
 // GetPlayers 全プレイヤーを取得

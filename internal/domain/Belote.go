@@ -604,10 +604,7 @@ func (b *Belote) GetPlayerCnt() int { return len(b.players) }
 
 // GetPlayer プレイヤー取得
 func (b *Belote) GetPlayer(i int) *BelotePlayer {
-	if i < 0 || i >= len(b.players) {
-		return nil
-	}
-	return b.players[i]
+	return getPlayer(b.players, i)
 }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得

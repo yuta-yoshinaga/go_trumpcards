@@ -635,10 +635,7 @@ func (g *GoFish) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer 指定インデックスのプレイヤーを取得する
 func (g *GoFish) GetPlayer(i int) *GoFishPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetDeckRemaining 山札の残り枚数を取得する

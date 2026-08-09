@@ -1099,10 +1099,7 @@ func (s *Sevens) GetTableMaxVals() [5]int {
 
 // GetPlayer プレイヤー取得
 func (s *Sevens) GetPlayer(idx int) *SevensPlayer {
-	if idx < 0 || idx >= len(s.players) {
-		return nil
-	}
-	return s.players[idx]
+	return getPlayer(s.players, idx)
 }
 
 // GetPlayerCnt プレイヤー数取得

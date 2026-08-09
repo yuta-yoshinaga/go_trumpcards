@@ -542,10 +542,7 @@ func (p *PopeJoan) GetPlayers() []*PopeJoanPlayer { return p.players }
 
 // GetPlayer は idx のプレイヤーを返す。
 func (p *PopeJoan) GetPlayer(idx int) *PopeJoanPlayer {
-	if idx < 0 || idx >= len(p.players) {
-		return nil
-	}
-	return p.players[idx]
+	return getPlayer(p.players, idx)
 }
 
 // GetPhase は現在のフェーズを返す。

@@ -632,10 +632,7 @@ func (z *Zwicker) GetPlayers() []*ZwickerPlayer { return z.players }
 
 // GetPlayer は idx のプレイヤーを返す。
 func (z *Zwicker) GetPlayer(idx int) *ZwickerPlayer {
-	if idx < 0 || idx >= len(z.players) {
-		return nil
-	}
-	return z.players[idx]
+	return getPlayer(z.players, idx)
 }
 
 // GetPhase は現在のフェーズを返す。

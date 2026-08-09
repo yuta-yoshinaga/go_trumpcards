@@ -1168,10 +1168,7 @@ func (g *Guandan) GetPlayers() []*GuandanPlayer { return g.players }
 
 // GetPlayer は指定インデックスのプレイヤーを返す。
 func (g *Guandan) GetPlayer(idx int) *GuandanPlayer {
-	if idx < 0 || idx >= len(g.players) {
-		return nil
-	}
-	return g.players[idx]
+	return getPlayer(g.players, idx)
 }
 
 // GetPhase は現在のフェーズを返す。

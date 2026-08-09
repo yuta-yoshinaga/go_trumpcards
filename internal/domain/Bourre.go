@@ -832,10 +832,7 @@ func (b *Bourre) GetPlayerCnt() int { return len(b.players) }
 
 // GetPlayer プレイヤー取得
 func (b *Bourre) GetPlayer(i int) *BourrePlayer {
-	if i < 0 || i >= len(b.players) {
-		return nil
-	}
-	return b.players[i]
+	return getPlayer(b.players, i)
 }
 
 // GetCurrentPlayerIdx 現在の手番プレイヤーインデックス取得

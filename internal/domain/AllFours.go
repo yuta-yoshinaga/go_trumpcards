@@ -679,10 +679,7 @@ func (a *AllFours) GetPlayerCnt() int { return len(a.players) }
 
 // GetPlayer プレイヤー取得
 func (a *AllFours) GetPlayer(i int) *AllFoursPlayer {
-	if i < 0 || i >= len(a.players) {
-		return nil
-	}
-	return a.players[i]
+	return getPlayer(a.players, i)
 }
 
 // IsHumanTurn 現在の手番が人間かどうか

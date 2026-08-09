@@ -656,10 +656,7 @@ func (d *Desmoche) GetPlayers() []*DesmochePlayer { return d.players }
 
 // GetPlayer は idx のプレイヤーを返す。
 func (d *Desmoche) GetPlayer(idx int) *DesmochePlayer {
-	if idx < 0 || idx >= len(d.players) {
-		return nil
-	}
-	return d.players[idx]
+	return getPlayer(d.players, idx)
 }
 
 // GetPhase は現在のフェーズを返す。

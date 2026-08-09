@@ -438,10 +438,7 @@ func (l *LaughAndLieDown) GetPlayers() []*LaughAndLieDownPlayer { return l.playe
 
 // GetPlayer は idx のプレイヤーを返す。
 func (l *LaughAndLieDown) GetPlayer(idx int) *LaughAndLieDownPlayer {
-	if idx < 0 || idx >= len(l.players) {
-		return nil
-	}
-	return l.players[idx]
+	return getPlayer(l.players, idx)
 }
 
 // GetPhase は現在のフェーズを返す。

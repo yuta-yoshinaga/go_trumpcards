@@ -294,10 +294,7 @@ func (m *Memory) GetPlayerCnt() int { return len(m.players) }
 
 // GetPlayer プレイヤーを取得
 func (m *Memory) GetPlayer(i int) *MemoryPlayer {
-	if i < 0 || i >= len(m.players) {
-		return nil
-	}
-	return m.players[i]
+	return getPlayer(m.players, i)
 }
 
 // GetBoard ボードカードを取得

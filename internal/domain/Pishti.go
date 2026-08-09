@@ -558,10 +558,7 @@ func (g *Pishti) GetLastCaptureIdx() int { return g.state.lastCaptureIdx }
 
 // GetPlayer は指定インデックスのプレイヤーを返す。
 func (g *Pishti) GetPlayer(idx int) *PishtiPlayer {
-	if idx < 0 || idx >= len(g.players) {
-		return nil
-	}
-	return g.players[idx]
+	return getPlayer(g.players, idx)
 }
 
 // GetPlayerCnt はプレイヤー数を返す。

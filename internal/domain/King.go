@@ -494,10 +494,7 @@ func (g *King) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer は指定インデックスのプレイヤーを返す。
 func (g *King) GetPlayer(i int) *KingPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetCurrentTurn は現在の手番プレイヤーインデックスを返す。

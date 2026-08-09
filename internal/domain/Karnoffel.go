@@ -664,10 +664,7 @@ func (k *Karnoffel) GetPlayers() []*KarnoffelPlayer { return k.players }
 
 // GetPlayer は指定インデックスのプレイヤーを返す。
 func (k *Karnoffel) GetPlayer(idx int) *KarnoffelPlayer {
-	if idx < 0 || idx >= len(k.players) {
-		return nil
-	}
-	return k.players[idx]
+	return getPlayer(k.players, idx)
 }
 
 // GetPhase は現在のフェーズを返す。

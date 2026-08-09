@@ -768,10 +768,7 @@ func (g *Tarocchini) GetPlayerCnt() int { return TarocchiniPlayerCnt }
 
 // GetPlayer 指定席のプレイヤー。
 func (g *Tarocchini) GetPlayer(i int) *TarocchiniPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetPlayers 全プレイヤー。

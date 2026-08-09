@@ -394,10 +394,7 @@ func (t *Truco) GetPlayerCnt() int { return len(t.players) }
 
 // GetPlayer プレイヤー取得
 func (t *Truco) GetPlayer(i int) *TrucoPlayer {
-	if i < 0 || i >= len(t.players) {
-		return nil
-	}
-	return t.players[i]
+	return getPlayer(t.players, i)
 }
 
 // GetConfig 設定取得

@@ -1058,10 +1058,7 @@ func (k *Klaberjass) GetPlayers() []*KlaberjassPlayer { return k.players }
 
 // GetPlayer は idx のプレイヤーを返す。
 func (k *Klaberjass) GetPlayer(idx int) *KlaberjassPlayer {
-	if idx < 0 || idx >= len(k.players) {
-		return nil
-	}
-	return k.players[idx]
+	return getPlayer(k.players, idx)
 }
 
 // GetPhase は現在のフェーズを返す。

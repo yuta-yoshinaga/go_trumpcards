@@ -383,10 +383,7 @@ func (s *Spades) GetPlayerCnt() int { return len(s.players) }
 
 // GetPlayer プレイヤー取得
 func (s *Spades) GetPlayer(i int) *SpadesPlayer {
-	if i < 0 || i >= len(s.players) {
-		return nil
-	}
-	return s.players[i]
+	return getPlayer(s.players, i)
 }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得

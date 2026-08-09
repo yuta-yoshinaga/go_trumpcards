@@ -996,10 +996,7 @@ func (s *ShengJi) GetPlayers() []*ShengJiPlayer { return s.players }
 
 // GetPlayer は指定インデックスのプレイヤーを返す。
 func (s *ShengJi) GetPlayer(idx int) *ShengJiPlayer {
-	if idx < 0 || idx >= len(s.players) {
-		return nil
-	}
-	return s.players[idx]
+	return getPlayer(s.players, idx)
 }
 
 // GetPhase は現在のフェーズを返す。

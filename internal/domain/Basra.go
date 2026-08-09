@@ -856,10 +856,7 @@ func (g *Basra) GetLastCaptureIdx() int { return g.state.lastCaptureIdx }
 
 // GetPlayer は指定インデックスのプレイヤーを返す。
 func (g *Basra) GetPlayer(i int) *BasraPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetPlayerCnt はプレイヤー数を返す。

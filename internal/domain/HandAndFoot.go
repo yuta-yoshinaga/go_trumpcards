@@ -1285,10 +1285,7 @@ func (g *HandAndFoot) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *HandAndFoot) GetPlayer(i int) *HandAndFootPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetTeamMelds 指定チームのメルドを取得
