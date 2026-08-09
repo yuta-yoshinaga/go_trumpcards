@@ -219,11 +219,7 @@ func (ip *IndianPoker) PlayerAction(action, amount, humanPlayMs int) error {
 
 // bettingPlayers BettingPlayerスライスを生成
 func (ip *IndianPoker) bettingPlayers() []BettingPlayer {
-	bp := make([]BettingPlayer, len(ip.players))
-	for i, pl := range ip.players {
-		bp[i] = pl
-	}
-	return bp
+	return toBettingPlayers(ip.players)
 }
 
 // executeAction 指定プレイヤーのアクション実行
@@ -302,13 +298,7 @@ func (ip *IndianPoker) bettingLimits() (maxRaises, maxBetAmount int) {
 
 // countActivePlayers フォールドしていないプレイヤー数を返す
 func (ip *IndianPoker) countActivePlayers() int {
-	cnt := 0
-	for _, p := range ip.players {
-		if !p.GetFolded() {
-			cnt++
-		}
-	}
-	return cnt
+	return countPlayers(ip.players, func(p *IndianPokerPlayer) bool { return !p.GetFolded() })
 }
 
 // resolveLastPlayer 最後の1人が残った場合のポット配分
@@ -726,10 +716,7 @@ func (ip *IndianPoker) SetConfig(cfg IndianPokerConfig) { ip.config = cfg }
 
 // IsHumanTurn 人間のターンかチェック
 func (ip *IndianPoker) IsHumanTurn() bool {
-	if ip.currentTurn >= 0 && ip.currentTurn < len(ip.players) {
-		return ip.players[ip.currentTurn].GetIsHuman()
-	}
-	return false
+	return isHumanTurn(ip.players, ip.currentTurn)
 }
 
 // GetActedFlags actedフラグ取得

@@ -846,13 +846,7 @@ func (g *Anaconda) activeSeats() []int {
 
 // activeCount は未フォールド・非脱落プレイヤー数を返す。
 func (g *Anaconda) activeCount() int {
-	n := 0
-	for _, p := range g.players {
-		if !p.GetOut() && !p.GetFolded() {
-			n++
-		}
-	}
-	return n
+	return countPlayers(g.players, func(p *AnacondaPlayer) bool { return !p.GetOut() && !p.GetFolded() })
 }
 
 // nextActive は from の次の未フォールド・非脱落プレイヤーを返す。

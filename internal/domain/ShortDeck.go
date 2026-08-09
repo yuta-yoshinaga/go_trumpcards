@@ -446,13 +446,7 @@ func (sd *ShortDeck) findNextActive(fromIdx int) int {
 
 // countActivePlayers フォールドしていないプレイヤー数を返す
 func (sd *ShortDeck) countActivePlayers() int {
-	cnt := 0
-	for _, p := range sd.players {
-		if !p.GetFolded() {
-			cnt++
-		}
-	}
-	return cnt
+	return countPlayers(sd.players, func(p *ShortDeckPlayer) bool { return !p.GetFolded() })
 }
 
 // resolveLastPlayer 全員フォールドで最後のプレイヤーが勝利
@@ -1182,10 +1176,7 @@ func (sd *ShortDeck) SetConfig(cfg ShortDeckConfig) { sd.config = cfg }
 
 // IsHumanTurn 人間のターンかチェック
 func (sd *ShortDeck) IsHumanTurn() bool {
-	if sd.currentTurn >= 0 && sd.currentTurn < len(sd.players) {
-		return sd.players[sd.currentTurn].GetIsHuman()
-	}
-	return false
+	return isHumanTurn(sd.players, sd.currentTurn)
 }
 
 // GetActedFlags actedフラグ取得

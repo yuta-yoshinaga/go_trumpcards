@@ -1214,10 +1214,7 @@ func (p *Pineapple) SetConfig(cfg PineappleConfig) { p.config = cfg }
 
 // IsHumanTurn 人間のターンかチェック
 func (p *Pineapple) IsHumanTurn() bool {
-	if p.currentTurn >= 0 && p.currentTurn < len(p.players) {
-		return p.players[p.currentTurn].GetIsHuman()
-	}
-	return false
+	return isHumanTurn(p.players, p.currentTurn)
 }
 
 // GetActedFlags actedフラグ取得

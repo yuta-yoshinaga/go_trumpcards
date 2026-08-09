@@ -378,19 +378,7 @@ func (g *KnockoutWhist) mostTricksPlayer() int {
 
 // validatePlay マストフォローを検証する。
 func (g *KnockoutWhist) validatePlay(playerIdx int, card *Card) error {
-	if len(g.currentTrick) == 0 {
-		return nil
-	}
-	leadSuit := g.currentTrick[0].Card.GetDesign()
-	if g.playerHasSuit(playerIdx, leadSuit) && card.GetDesign() != leadSuit {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
-	}
-	return nil
-}
-
-// playerHasSuit プレイヤーが指定スートのカードを持っているか。
-func (g *KnockoutWhist) playerHasSuit(playerIdx, design int) bool {
-	return handHasSuit(g.players[playerIdx], design)
+	return validateFollowSuit(g.currentTrick, g.players, playerIdx, card)
 }
 
 // trickWinner トリックの勝者を決定する。切り札があれば最強切り札、なければ

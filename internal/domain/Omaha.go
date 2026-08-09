@@ -485,13 +485,7 @@ func (o *Omaha) findNextActive(fromIdx int) int {
 
 // countActivePlayers フォールドしていないプレイヤー数を返す
 func (o *Omaha) countActivePlayers() int {
-	cnt := 0
-	for _, p := range o.players {
-		if !p.GetFolded() {
-			cnt++
-		}
-	}
-	return cnt
+	return countPlayers(o.players, func(p *OmahaPlayer) bool { return !p.GetFolded() })
 }
 
 // resolveLastPlayer 全員フォールドで最後のプレイヤーが勝利
@@ -1357,10 +1351,7 @@ func (o *Omaha) SetConfig(cfg OmahaConfig) { o.config = cfg }
 
 // IsHumanTurn 人間のターンかチェック
 func (o *Omaha) IsHumanTurn() bool {
-	if o.currentTurn >= 0 && o.currentTurn < len(o.players) {
-		return o.players[o.currentTurn].GetIsHuman()
-	}
-	return false
+	return isHumanTurn(o.players, o.currentTurn)
 }
 
 // GetActedFlags actedフラグ取得

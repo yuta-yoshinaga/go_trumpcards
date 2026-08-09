@@ -420,11 +420,7 @@ func (s *SevenCardStud) PlayerAction(action, amount, humanPlayMs int) error {
 
 // bettingPlayers BettingPlayerスライスを生成
 func (s *SevenCardStud) bettingPlayers() []BettingPlayer {
-	bp := make([]BettingPlayer, len(s.players))
-	for i, pl := range s.players {
-		bp[i] = pl
-	}
-	return bp
+	return toBettingPlayers(s.players)
 }
 
 // executeAction 指定プレイヤーのアクション実行
@@ -647,13 +643,7 @@ func (s *SevenCardStud) determineBettingLeader() int {
 
 // countActivePlayers フォールドしていないプレイヤー数を返す
 func (s *SevenCardStud) countActivePlayers() int {
-	cnt := 0
-	for _, p := range s.players {
-		if !p.GetFolded() {
-			cnt++
-		}
-	}
-	return cnt
+	return countPlayers(s.players, func(p *SevenCardStudPlayer) bool { return !p.GetFolded() })
 }
 
 // bettingLimits ベッティングリミット設定
@@ -1054,10 +1044,7 @@ func (s *SevenCardStud) SetConfig(cfg SevenCardStudConfig) { s.config = cfg }
 
 // IsHumanTurn 人間のターンかチェック
 func (s *SevenCardStud) IsHumanTurn() bool {
-	if s.currentTurn >= 0 && s.currentTurn < len(s.players) {
-		return s.players[s.currentTurn].GetIsHuman()
-	}
-	return false
+	return isHumanTurn(s.players, s.currentTurn)
 }
 
 // GetActedFlags actedフラグ取得
