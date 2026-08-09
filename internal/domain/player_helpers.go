@@ -572,3 +572,74 @@ func bettingRoundComplete[P bettor](players []P, acted []bool) bool {
 	}
 	return true
 }
+
+// totalScorer is a seat with a running game score.
+type totalScorer interface {
+	GetTotalScore() int
+}
+
+// topScorers returns the indices of every seat tied for the highest total
+// score. 3 games had this two-pass scan written out.
+func topScorers[P totalScorer](players []P) []int {
+	if len(players) == 0 {
+		return []int{}
+	}
+	best := players[0].GetTotalScore()
+	for _, p := range players[1:] {
+		if p.GetTotalScore() > best {
+			best = p.GetTotalScore()
+		}
+	}
+	winners := make([]int, 0)
+	for i, p := range players {
+		if p.GetTotalScore() == best {
+			winners = append(winners, i)
+		}
+	}
+	return winners
+}
+
+// trickScorer is a game that can rank the cards in the current trick.
+type trickScorer interface {
+	leadSuit() int
+	trickScore(*Card, int) int
+}
+
+// trickWinnerByScore returns the seat that played the highest-scoring card in
+// the trick, or 0 when no card has been played. Ties keep the earliest play,
+// matching the bodies replaced, which compared with a strict >.
+func trickWinnerByScore(trick []*TrickCard, g trickScorer) int {
+	if len(trick) == 0 {
+		return 0
+	}
+	ls := g.leadSuit()
+	winnerIdx := trick[0].PlayerIdx
+	winnerScore := g.trickScore(trick[0].Card, ls)
+	for _, tc := range trick[1:] {
+		if s := g.trickScore(tc.Card, ls); s > winnerScore {
+			winnerScore = s
+			winnerIdx = tc.PlayerIdx
+		}
+	}
+	return winnerIdx
+}
+
+// drawFromPile deals up to n cards off the end of pile into to, recycling once
+// the pile runs dry and stopping when recycling cannot refill it. Returns how
+// many were actually dealt. 3 games had this written out.
+func drawFromPile[P interface{ AddCard(*Card) }](pile *[]*Card, to P, n int, recycle func()) int {
+	drawn := 0
+	for i := 0; i < n; i++ {
+		if len(*pile) == 0 {
+			recycle()
+		}
+		if len(*pile) == 0 {
+			break
+		}
+		card := (*pile)[len(*pile)-1]
+		*pile = (*pile)[:len(*pile)-1]
+		to.AddCard(card)
+		drawn++
+	}
+	return drawn
+}

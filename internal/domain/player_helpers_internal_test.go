@@ -924,3 +924,82 @@ func TestBettingRoundComplete(t *testing.T) {
 func TestBettingRoundComplete_NoSeats(t *testing.T) {
 	assert.True(t, bettingRoundComplete([]*fakeBettor{}, nil), "nothing outstanding is complete")
 }
+
+type fakeScorer struct{ total int }
+
+func (p *fakeScorer) GetTotalScore() int { return p.total }
+
+func TestTopScorers(t *testing.T) {
+	assert.Equal(t, []int{1}, topScorers([]*fakeScorer{{3}, {9}, {4}}))
+	assert.Equal(t, []int{0, 2}, topScorers([]*fakeScorer{{9}, {3}, {9}}), "every seat tied for the top")
+	assert.Equal(t, []int{}, topScorers([]*fakeScorer{}), "empty roster yields an empty slice, not nil")
+}
+
+// Negative totals must not be beaten by the zero value -- seeding best from
+// players[0] rather than 0 is what makes that work.
+func TestTopScorers_AllNegative(t *testing.T) {
+	assert.Equal(t, []int{1}, topScorers([]*fakeScorer{{-9}, {-2}, {-5}}))
+}
+
+type fakeTrickScorer struct{ lead int }
+
+func (g *fakeTrickScorer) leadSuit() int { return g.lead }
+func (g *fakeTrickScorer) trickScore(c *Card, lead int) int {
+	if c.GetDesign() != lead {
+		return 0
+	}
+	return c.GetValue()
+}
+
+func TestTrickWinnerByScore(t *testing.T) {
+	g := &fakeTrickScorer{lead: 1}
+	trick := []*TrickCard{
+		{PlayerIdx: 2, Card: NewCard(1, 5, false)},
+		{PlayerIdx: 0, Card: NewCard(2, 13, false)}, // off-suit, scores 0
+		{PlayerIdx: 3, Card: NewCard(1, 9, false)},
+	}
+	assert.Equal(t, 3, trickWinnerByScore(trick, g))
+	assert.Equal(t, 0, trickWinnerByScore(nil, g), "no cards played")
+}
+
+// A tie keeps the earliest play, which is what a strict > gives.
+func TestTrickWinnerByScore_TieKeepsEarliest(t *testing.T) {
+	g := &fakeTrickScorer{lead: 1}
+	trick := []*TrickCard{
+		{PlayerIdx: 2, Card: NewCard(1, 7, false)},
+		{PlayerIdx: 1, Card: NewCard(1, 7, false)},
+	}
+	assert.Equal(t, 2, trickWinnerByScore(trick, g))
+}
+
+func TestDrawFromPile(t *testing.T) {
+	pile := []*Card{NewCard(1, 1, false), NewCard(1, 2, false), NewCard(1, 3, false)}
+	hand := &fakeSeatHand{}
+
+	assert.Equal(t, 2, drawFromPile(&pile, hand, 2, func() {}))
+	assert.Equal(t, 2, hand.GetCardsSize())
+	assert.Len(t, pile, 1, "cards come off the end")
+}
+
+// The recycle hook is called when the pile empties, and the draw stops if it
+// cannot refill -- otherwise this would loop forever on an exhausted deck.
+func TestDrawFromPile_RecyclesThenGivesUp(t *testing.T) {
+	pile := []*Card{NewCard(1, 1, false)}
+	hand := &fakeSeatHand{}
+	recycled := 0
+
+	got := drawFromPile(&pile, hand, 5, func() { recycled++ })
+
+	assert.Equal(t, 1, got, "only what was available")
+	assert.Equal(t, 1, recycled, "recycle attempted once, then the loop stops")
+}
+
+func TestDealerQualifies(t *testing.T) {
+	// A made hand qualifies regardless of the cards.
+	assert.True(t, dealerQualifies(PokerHandOnePair, nil))
+
+	ak := []*Card{NewCard(1, 1, false), NewCard(2, 13, false)}
+	assert.True(t, dealerQualifies(0, ak), "ace-king qualifies below one pair")
+	assert.False(t, dealerQualifies(0, []*Card{NewCard(1, 1, false)}), "ace alone does not")
+	assert.False(t, dealerQualifies(0, []*Card{NewCard(1, 13, false)}), "king alone does not")
+}
