@@ -683,13 +683,7 @@ func (p *Pineapple) IsDiscardPhase() bool {
 
 // dealRemainingCommunity 残りのコミュニティカードを全て配る
 func (p *Pineapple) dealRemainingCommunity() {
-	for len(p.communityCards) < 5 {
-		card := p.trumpCards.DrawCard()
-		if card == nil {
-			break
-		}
-		p.communityCards = append(p.communityCards, card)
-	}
+	dealUpTo(&p.communityCards, p.trumpCards, 5)
 }
 
 // findNextActive 指定インデックスの次のアクティブプレイヤーを探す

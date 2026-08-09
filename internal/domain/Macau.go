@@ -776,17 +776,7 @@ func (g *Macau) cpuSelectSuitRandom() int {
 
 // cpuSelectSuitSmart 手札で最も多いスートを選択
 func (g *Macau) cpuSelectSuitSmart(playerIdx int) int {
-	suitCount := g.countSuits(playerIdx)
-
-	bestSuit := CardDesignSpade
-	bestCount := 0
-	for suit := CardDesignSpade; suit <= CardDesignDiamond; suit++ {
-		if suitCount[suit] > bestCount {
-			bestCount = suitCount[suit]
-			bestSuit = suit
-		}
-	}
-	return bestSuit
+	return bestSuitFrom(g.countSuits(playerIdx))
 }
 
 // countSuits プレイヤーの手札のスート別枚数をカウント (8は除外)

@@ -424,13 +424,7 @@ func (h *Holdem) advancePhase() {
 
 // dealRemainingCommunity 残りのコミュニティカードを全て配る
 func (h *Holdem) dealRemainingCommunity() {
-	for len(h.communityCards) < 5 {
-		card := h.trumpCards.DrawCard()
-		if card == nil {
-			break
-		}
-		h.communityCards = append(h.communityCards, card)
-	}
+	dealUpTo(&h.communityCards, h.trumpCards, 5)
 }
 
 // findNextActive 指定インデックスの次のアクティブ (フォールド・オールインでない) プレイヤーを探す

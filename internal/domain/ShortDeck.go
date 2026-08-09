@@ -430,13 +430,7 @@ func (sd *ShortDeck) advancePhase() {
 
 // dealRemainingCommunity 残りのコミュニティカードを全て配る
 func (sd *ShortDeck) dealRemainingCommunity() {
-	for len(sd.communityCards) < 5 {
-		card := sd.trumpCards.DrawCard()
-		if card == nil {
-			break
-		}
-		sd.communityCards = append(sd.communityCards, card)
-	}
+	dealUpTo(&sd.communityCards, sd.trumpCards, 5)
 }
 
 // findNextActive 指定インデックスの次のアクティブプレイヤーを探す
@@ -713,14 +707,7 @@ func (sd *ShortDeck) cpuBetOrAllIn(p *ShortDeckPlayer, betAmt int) (int, int) {
 
 // cpuPotBet ポット比率ベースのベット額を計算
 func (sd *ShortDeck) cpuPotBet(potPct int) int {
-	bet := sd.pot * potPct / 100
-	if bet < sd.config.BigBlind {
-		bet = sd.config.BigBlind
-	}
-	if bet < sd.minRaise {
-		bet = sd.minRaise
-	}
-	return bet
+	return potBet(sd.pot, potPct, sd.config.BigBlind, sd.minRaise)
 }
 
 // cpuDecidePreFlop プリフロップのCPU意思決定

@@ -469,13 +469,7 @@ func (o *Omaha) advancePhase() {
 
 // dealRemainingCommunity 残りのコミュニティカードを全て配る
 func (o *Omaha) dealRemainingCommunity() {
-	for len(o.communityCards) < 5 {
-		card := o.trumpCards.DrawCard()
-		if card == nil {
-			break
-		}
-		o.communityCards = append(o.communityCards, card)
-	}
+	dealUpTo(&o.communityCards, o.trumpCards, 5)
 }
 
 // findNextActive 指定インデックスの次のアクティブプレイヤーを探す
@@ -840,14 +834,7 @@ func (o *Omaha) cpuBetOrAllIn(p *OmahaPlayer, betAmt int) (int, int) {
 
 // cpuPotBet ポット比率ベースのベット額を計算
 func (o *Omaha) cpuPotBet(potPct int) int {
-	bet := o.pot * potPct / 100
-	if bet < o.config.BigBlind {
-		bet = o.config.BigBlind
-	}
-	if bet < o.minRaise {
-		bet = o.minRaise
-	}
-	return bet
+	return potBet(o.pot, potPct, o.config.BigBlind, o.minRaise)
 }
 
 // cpuDecidePreFlop プリフロップのCPU意思決定

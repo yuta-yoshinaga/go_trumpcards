@@ -158,14 +158,7 @@ func (p *Pineapple) cpuBetOrAllIn(pl *PineapplePlayer, betAmt int) (int, int) {
 
 // cpuPotBet ポット比率ベースのベット額を計算
 func (p *Pineapple) cpuPotBet(potPct int) int {
-	bet := p.pot * potPct / 100
-	if bet < p.config.BigBlind {
-		bet = p.config.BigBlind
-	}
-	if bet < p.minRaise {
-		bet = p.minRaise
-	}
-	return bet
+	return potBet(p.pot, potPct, p.config.BigBlind, p.minRaise)
 }
 
 // cpuDecidePreFlop プリフロップのCPU意思決定

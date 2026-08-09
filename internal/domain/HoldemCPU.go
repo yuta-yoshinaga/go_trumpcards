@@ -377,14 +377,7 @@ func (h *Holdem) cpuBetOrAllIn(p *HoldemPlayer, betAmt int) (int, int) {
 
 // cpuPotBet ポット比率ベースのベット額を計算 (最低BB, 最低minRaise)
 func (h *Holdem) cpuPotBet(potPct int) int {
-	bet := h.pot * potPct / 100
-	if bet < h.config.BigBlind {
-		bet = h.config.BigBlind
-	}
-	if bet < h.minRaise {
-		bet = h.minRaise
-	}
-	return bet
+	return potBet(h.pot, potPct, h.config.BigBlind, h.minRaise)
 }
 
 // cpuDecidePreFlop プリフロップのCPU意思決定
