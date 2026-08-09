@@ -1268,9 +1268,7 @@ func (g *FiveHundred) EffectiveSuitPublic(card *Card) int { return g.effectiveSu
 
 // sortAllHands 全プレイヤーの手札をソートする
 func (g *FiveHundred) sortAllHands() {
-	for _, p := range g.players {
-		g.sortHand(p)
-	}
+	sortEachHand(g.players, g.sortHand)
 }
 
 // sortHand プレイヤーの手札を実効スート→ランク順にソートする

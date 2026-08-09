@@ -1142,9 +1142,7 @@ func (g *Rook) CardPointsPublic(card *Card) int { return rookCardPoints(card) }
 
 // sortAllHands 全プレイヤーの手札をソートする
 func (g *Rook) sortAllHands() {
-	for _, p := range g.players {
-		g.sortHand(p)
-	}
+	sortEachHand(g.players, g.sortHand)
 }
 
 // sortHand プレイヤーの手札を色→強さ順にソートする

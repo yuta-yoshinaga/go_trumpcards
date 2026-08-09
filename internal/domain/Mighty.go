@@ -1362,9 +1362,7 @@ func (m *Mighty) checkGameEnd() {
 
 // sortAllHands 全プレイヤーの手札をソートする
 func (m *Mighty) sortAllHands() {
-	for _, p := range m.players {
-		m.sortHand(p)
-	}
+	sortEachHand(m.players, m.sortHand)
 }
 
 // sortHand プレイヤーの手札をスート→値の順にソートする

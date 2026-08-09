@@ -16,8 +16,7 @@ func NewSixBidSoloPlayer(isHuman bool) *SixBidSoloPlayer {
 
 // ResetRound は局開始時に手札を初期化する。
 func (p *SixBidSoloPlayer) ResetRound() {
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayer(p)
 }
 
 // sixBidSoloPlayerJSON is the JSON wire format for SixBidSoloPlayer.

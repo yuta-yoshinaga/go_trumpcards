@@ -19,8 +19,7 @@ func (p *VintPlayer) GetTeam(seat int) int { return VintTeamOf(seat) }
 
 // ResetRound は局開始時に手札を初期化する。
 func (p *VintPlayer) ResetRound() {
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayer(p)
 }
 
 // vintPlayerJSON is the JSON wire format for VintPlayer.

@@ -17,8 +17,7 @@ func NewMusPlayer(isHuman bool) *MusPlayer {
 
 // ResetRound ラウンドをリセット（手札・終了状態を初期化）
 func (p *MusPlayer) ResetRound() {
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayer(p)
 }
 
 // musPlayerJSON is the JSON wire format for MusPlayer.

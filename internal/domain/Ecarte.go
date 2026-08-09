@@ -777,9 +777,7 @@ func (e *Ecarte) GetHint() *EcarteHint {
 // --- Sorting / helpers ---
 
 func (e *Ecarte) sortAllHands() {
-	for _, p := range e.players {
-		e.sortHand(p)
-	}
+	sortEachHand(e.players, e.sortHand)
 }
 
 func (e *Ecarte) sortHand(p *EcartePlayer) {

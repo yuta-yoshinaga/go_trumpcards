@@ -1023,9 +1023,7 @@ func (n *Napoleon) checkGameEnd() {
 
 // sortAllHands 全プレイヤーの手札をソートする
 func (n *Napoleon) sortAllHands() {
-	for _, p := range n.players {
-		n.sortHand(p)
-	}
+	sortEachHand(n.players, n.sortHand)
 }
 
 // sortHand プレイヤーの手札をスート→値の順にソートする

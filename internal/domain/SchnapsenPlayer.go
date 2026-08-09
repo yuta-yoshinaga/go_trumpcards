@@ -19,9 +19,7 @@ func NewSchnapsenPlayer(isHuman bool) *SchnapsenPlayer {
 
 // ResetGame ゲームをリセット (手札/トリック/上がり状態を初期化)
 func (p *SchnapsenPlayer) ResetGame() {
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayerRound(p)
 }
 
 // schnapsenPlayerJSON is the JSON wire format for SchnapsenPlayer.

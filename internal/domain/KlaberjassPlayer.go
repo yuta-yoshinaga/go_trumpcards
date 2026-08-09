@@ -16,8 +16,7 @@ func NewKlaberjassPlayer(isHuman bool) *KlaberjassPlayer {
 
 // ResetRound はディール開始時に手札を初期化する。
 func (p *KlaberjassPlayer) ResetRound() {
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayer(p)
 }
 
 // klaberjassPlayerJSON is the JSON wire format for KlaberjassPlayer.

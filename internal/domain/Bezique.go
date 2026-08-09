@@ -870,9 +870,7 @@ func beziqueCountValue(p *BeziquePlayer, value int) int {
 
 // sortAllHands 全プレイヤーの手札をソートする
 func (b *Bezique) sortAllHands() {
-	for _, p := range b.players {
-		b.sortHand(p)
-	}
+	sortEachHand(b.players, b.sortHand)
 }
 
 // sortHand プレイヤーの手札をスート (トランプ最後) → ランク でソートする

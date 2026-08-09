@@ -614,12 +614,7 @@ func (g *ThirtyOne) nextActiveIdx(from int) int {
 
 // humanIdx 人間プレイヤーのインデックスを返す (-1 = 不在)
 func (g *ThirtyOne) humanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
+	return findHumanIdx(g.players)
 }
 
 // --- Getters ---

@@ -1275,12 +1275,7 @@ func (g *FrenchTarot) cpuPlaySmart(playerIdx int, valid []int) int {
 
 // indexInTrick currentTrick 内で playerIdx の位置を返す (-1=なし)。
 func (g *FrenchTarot) indexInTrick(playerIdx int) int {
-	for i, tc := range g.currentTrick {
-		if tc.PlayerIdx == playerIdx {
-			return i
-		}
-	}
-	return -1
+	return indexOfPlayerInTrick(g.currentTrick, playerIdx)
 }
 
 // maxByRank 勝敗ランク最大の札を返す。
@@ -1451,10 +1446,7 @@ func frenchTarotSortHand(p *FrenchTarotPlayer) {
 
 // isHumanBidTurn 現在の入札手番が人間か。
 func (g *FrenchTarot) isHumanBidTurn() bool {
-	if g.bidPlayerIdx < 0 || g.bidPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.bidPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.bidPlayerIdx)
 }
 
 // appendLog 棋譜にエントリを追加する。

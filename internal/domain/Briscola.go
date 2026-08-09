@@ -519,9 +519,7 @@ func BriscolaDetermineWinner(p0, p1 int) int {
 
 // sortAllHands 全プレイヤーの手札をソートする
 func (b *Briscola) sortAllHands() {
-	for _, p := range b.players {
-		b.sortHand(p)
-	}
+	sortEachHand(b.players, b.sortHand)
 }
 
 // sortHand プレイヤーの手札をスート (トランプ最後) → ブリスコラ順位 でソートする
