@@ -747,14 +747,7 @@ func (d *Duchess) findFoundation(card *Card) int {
 
 // afterMove 手数・棋譜・終了判定をまとめて進める
 func (d *Duchess) afterMove(actionType, detail string, card *Card) {
-	d.moveCount++
-	var cards []*Card
-	if card != nil {
-		cards = []*Card{card}
-	}
-	d.appendLog(actionType, detail, cards)
-	d.checkGameClear()
-	d.checkStalemate()
+	afterMove(&d.moveCount, d, actionType, detail, card)
 }
 
 // checkGameClear 4 つの基礎札がすべて 13 枚（開始ランクから一周）になったか

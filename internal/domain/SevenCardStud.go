@@ -1038,15 +1038,11 @@ func (s *SevenCardStud) ExportProfile() interface{} {
 
 // ImportProfile JSONバイトからメタAIプロファイルをインポートする
 func (s *SevenCardStud) ImportProfile(data []byte) error {
-	if len(data) == 0 {
-		return nil
-	}
-	d, err := ImportBettingHumanProfileJSON(data)
-	if err != nil {
+	p, err := importBettingProfile(data)
+	if err != nil || p == nil {
 		return err
 	}
-	s.humanProfile = &BettingHumanProfile{}
-	s.humanProfile.Import(d)
+	s.humanProfile = p
 	return nil
 }
 

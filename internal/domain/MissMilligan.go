@@ -596,14 +596,7 @@ func (mm *MissMilligan) findFoundation(card *Card) int {
 
 // afterMove 手数・棋譜・終了判定をまとめて進める
 func (mm *MissMilligan) afterMove(actionType, detail string, card *Card) {
-	mm.moveCount++
-	var cards []*Card
-	if card != nil {
-		cards = []*Card{card}
-	}
-	mm.appendLog(actionType, detail, cards)
-	mm.checkGameClear()
-	mm.checkStalemate()
+	afterMove(&mm.moveCount, mm, actionType, detail, card)
 }
 
 // checkGameClear 8 つの基礎札すべてが K まで積み上がったか

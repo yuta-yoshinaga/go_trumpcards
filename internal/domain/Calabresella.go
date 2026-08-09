@@ -622,19 +622,7 @@ func (g *Calabresella) checkGameEnd() {
 
 // validatePlay マストフォロー (切り札なし) を検証する。
 func (g *Calabresella) validatePlay(playerIdx int, card *Card) error {
-	if len(g.currentTrick) == 0 {
-		return nil
-	}
-	leadSuit := g.currentTrick[0].Card.GetDesign()
-	if card.GetDesign() != leadSuit && g.playerHasSuit(playerIdx, leadSuit) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
-	}
-	return nil
-}
-
-// playerHasSuit プレイヤーが指定スートのカードを持っているか。
-func (g *Calabresella) playerHasSuit(playerIdx, design int) bool {
-	return handHasSuit(g.players[playerIdx], design)
+	return validateFollowSuit(g.currentTrick, g.players, playerIdx, card)
 }
 
 // trickWinner トリックの勝者を決定する。切り札がないため、リードスートの最強札が勝つ。

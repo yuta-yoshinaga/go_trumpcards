@@ -740,14 +740,7 @@ func (at *AmericanToad) fillEmptyColumnsFromReserve() {
 
 // afterMove 手数・棋譜・終了判定をまとめて進める
 func (at *AmericanToad) afterMove(actionType, detail string, card *Card) {
-	at.moveCount++
-	var cards []*Card
-	if card != nil {
-		cards = []*Card{card}
-	}
-	at.appendLog(actionType, detail, cards)
-	at.checkGameClear()
-	at.checkStalemate()
+	afterMove(&at.moveCount, at, actionType, detail, card)
 }
 
 // checkGameClear 8 つの基礎札がすべて 13 枚になったか

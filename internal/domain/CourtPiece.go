@@ -554,14 +554,7 @@ func (c *CourtPiece) playCard(playerIdx int, card *Card) {
 // validatePlay カードのプレイがルール上有効か検証する。
 // Court Piece はリードスート必従のみ。ボイドなら任意 (トランプ or 捨て札)。
 func (c *CourtPiece) validatePlay(playerIdx int, card *Card) error {
-	if len(c.currentTrick) == 0 {
-		return nil
-	}
-	leadSuit := c.currentTrick[0].Card.GetDesign()
-	if card.GetDesign() != leadSuit && c.playerHasSuit(playerIdx, leadSuit) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
-	}
-	return nil
+	return validateFollowSuit(c.currentTrick, c.players, playerIdx, card)
 }
 
 // GetPlayableIndices は指定プレイヤーがいま出せる手札の位置を返す。
@@ -581,11 +574,6 @@ func (c *CourtPiece) GetPlayableIndices(playerIdx int) []int {
 		}
 	}
 	return out
-}
-
-// playerHasSuit プレイヤーが特定のスートを持っているか
-func (c *CourtPiece) playerHasSuit(playerIdx, design int) bool {
-	return handHasSuit(c.players[playerIdx], design)
 }
 
 // courtPieceRank converts a raw `Card.GetValue()` (1-13, where 1 = Ace) to

@@ -647,14 +647,7 @@ func (t *Terrace) fillEmptyColumns() {
 
 // afterMove 手数・棋譜・終了判定をまとめて進める
 func (t *Terrace) afterMove(actionType, detail string, card *Card) {
-	t.moveCount++
-	var cards []*Card
-	if card != nil {
-		cards = []*Card{card}
-	}
-	t.appendLog(actionType, detail, cards)
-	t.checkGameClear()
-	t.checkStalemate()
+	afterMove(&t.moveCount, t, actionType, detail, card)
 }
 
 // checkGameClear 8 つの基礎札がすべて 13 枚になったか

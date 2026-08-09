@@ -443,19 +443,7 @@ func (t *TwoTenJack) playCard(playerIdx int, card *Card) {
 
 // validatePlay カードのプレイが有効か検証する
 func (t *TwoTenJack) validatePlay(playerIdx int, card *Card) error {
-	if len(t.currentTrick) == 0 {
-		return nil
-	}
-	leadSuit := t.currentTrick[0].Card.GetDesign()
-	if card.GetDesign() != leadSuit && t.playerHasSuit(playerIdx, leadSuit) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
-	}
-	return nil
-}
-
-// playerHasSuit プレイヤーが特定のスートを持っているか
-func (t *TwoTenJack) playerHasSuit(playerIdx int, design int) bool {
-	return handHasSuit(t.players[playerIdx], design)
+	return validateFollowSuit(t.currentTrick, t.players, playerIdx, card)
 }
 
 // trickWinner トリックの勝者を決定する

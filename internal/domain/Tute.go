@@ -372,19 +372,7 @@ func (g *Tute) ScoreRound() {
 
 // validatePlay マストフォロー (リードスートに従う) を検証する。
 func (g *Tute) validatePlay(playerIdx int, card *Card) error {
-	if len(g.currentTrick) == 0 {
-		return nil
-	}
-	leadSuit := g.currentTrick[0].Card.GetDesign()
-	if card.GetDesign() != leadSuit && g.playerHasSuit(playerIdx, leadSuit) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
-	}
-	return nil
-}
-
-// playerHasSuit プレイヤーが指定スートのカードを持っているか。
-func (g *Tute) playerHasSuit(playerIdx, design int) bool {
-	return handHasSuit(g.players[playerIdx], design)
+	return validateFollowSuit(g.currentTrick, g.players, playerIdx, card)
 }
 
 // trickWinner トリックの勝者を決定する。切り札があれば最強切り札、なければ

@@ -214,13 +214,7 @@ func (g *Rook) dealRound() {
 
 // drawCard デッキから1枚配る (尽きたら nil)
 func (g *Rook) drawCard() *Card {
-	if g.deckDrawCnt >= len(g.deck) {
-		return nil
-	}
-	card := g.deck[g.deckDrawCnt]
-	card.SetDraw(true)
-	g.deckDrawCnt++
-	return card
+	return drawFromDeck(g.deck, &g.deckDrawCnt)
 }
 
 // --- Bidding ---

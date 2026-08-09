@@ -307,13 +307,7 @@ func (g *Minchiate) shuffle() {
 
 // drawCard デッキから 1 枚配る (尽きたら nil)。
 func (g *Minchiate) drawCard() *Card {
-	if g.deckDrawCnt >= len(g.deck) {
-		return nil
-	}
-	card := g.deck[g.deckDrawCnt]
-	card.SetDraw(true)
-	g.deckDrawCnt++
-	return card
+	return drawFromDeck(g.deck, &g.deckDrawCnt)
 }
 
 // sortAllHands 全員の手札をデザイン・値の順に整列する。

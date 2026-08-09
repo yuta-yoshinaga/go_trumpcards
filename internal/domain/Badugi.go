@@ -481,13 +481,7 @@ func (b *Badugi) resetBettingRound() {
 // findNextActive returns the next seat after fromIdx that is not folded /
 // all-in. Used to select the first actor in a round.
 func (b *Badugi) findNextActive(fromIdx int) int {
-	for i := 1; i <= len(b.players); i++ {
-		next := (fromIdx + i) % len(b.players)
-		if !b.players[next].GetFolded() && !b.players[next].GetAllIn() {
-			return next
-		}
-	}
-	return (fromIdx + 1) % len(b.players)
+	return findNextActive(b.players, fromIdx)
 }
 
 func (b *Badugi) countActivePlayers() int {
@@ -879,15 +873,11 @@ func (b *Badugi) ExportProfile() any {
 
 // ImportProfile loads a profile from JSON bytes (no-op on empty input).
 func (b *Badugi) ImportProfile(data []byte) error {
-	if len(data) == 0 {
-		return nil
-	}
-	d, err := ImportBettingHumanProfileJSON(data)
-	if err != nil {
+	p, err := importBettingProfile(data)
+	if err != nil || p == nil {
 		return err
 	}
-	b.humanProfile = &BettingHumanProfile{}
-	b.humanProfile.Import(d)
+	b.humanProfile = p
 	return nil
 }
 

@@ -568,14 +568,7 @@ func (w *Windmill) refillSails() {
 
 // afterMove 手数・棋譜・終了判定をまとめて進める
 func (w *Windmill) afterMove(actionType, detail string, card *Card) {
-	w.moveCount++
-	var cards []*Card
-	if card != nil {
-		cards = []*Card{card}
-	}
-	w.appendLog(actionType, detail, cards)
-	w.checkGameClear()
-	w.checkStalemate()
+	afterMove(&w.moveCount, w, actionType, detail, card)
 }
 
 // checkGameClear 中央 52 枚と四隅 13 枚×4 がすべて揃ったか

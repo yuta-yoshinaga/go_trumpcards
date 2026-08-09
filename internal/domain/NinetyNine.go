@@ -564,19 +564,7 @@ func (o *NinetyNine) playCard(playerIdx int, card *Card) {
 
 // validatePlay カードのプレイが有効か検証する (must-follow)
 func (o *NinetyNine) validatePlay(playerIdx int, card *Card) error {
-	if len(o.currentTrick) == 0 {
-		return nil
-	}
-	leadSuit := o.currentTrick[0].Card.GetDesign()
-	if card.GetDesign() != leadSuit && o.playerHasSuit(playerIdx, leadSuit) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
-	}
-	return nil
-}
-
-// playerHasSuit プレイヤーが特定のスートを持っているか
-func (o *NinetyNine) playerHasSuit(playerIdx int, design int) bool {
-	return handHasSuit(o.players[playerIdx], design)
+	return validateFollowSuit(o.currentTrick, o.players, playerIdx, card)
 }
 
 // trickWinner トリックの勝者を決定する

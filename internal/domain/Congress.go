@@ -545,14 +545,7 @@ func (c *Congress) findFoundation(card *Card) int {
 
 // afterMove 手数・棋譜・終了判定をまとめて進める
 func (c *Congress) afterMove(actionType, detail string, card *Card) {
-	c.moveCount++
-	var cards []*Card
-	if card != nil {
-		cards = []*Card{card}
-	}
-	c.appendLog(actionType, detail, cards)
-	c.checkGameClear()
-	c.checkStalemate()
+	afterMove(&c.moveCount, c, actionType, detail, card)
 }
 
 // checkGameClear 8 つの基礎札がすべて K まで積まれたか

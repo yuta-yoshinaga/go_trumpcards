@@ -371,13 +371,7 @@ func (g *Koenigrufen) deal() {
 
 // drawCard デッキから 1 枚配る (尽きたら nil)。
 func (g *Koenigrufen) drawCard() *Card {
-	if g.deckDrawCnt >= len(g.deck) {
-		return nil
-	}
-	card := g.deck[g.deckDrawCnt]
-	card.SetDraw(true)
-	g.deckDrawCnt++
-	return card
+	return drawFromDeck(g.deck, &g.deckDrawCnt)
 }
 
 // --- Bidding ---

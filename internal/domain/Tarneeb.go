@@ -624,19 +624,7 @@ func (t *Tarneeb) playCard(playerIdx int, card *Card) {
 // validatePlay カードのプレイがルール上有効か検証する。
 // Tarneeb はリードスート必従のみ。ボイドなら任意 (トランプ or 捨て札)。
 func (t *Tarneeb) validatePlay(playerIdx int, card *Card) error {
-	if len(t.currentTrick) == 0 {
-		return nil
-	}
-	leadSuit := t.currentTrick[0].Card.GetDesign()
-	if card.GetDesign() != leadSuit && t.playerHasSuit(playerIdx, leadSuit) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
-	}
-	return nil
-}
-
-// playerHasSuit プレイヤーが特定のスートを持っているか
-func (t *Tarneeb) playerHasSuit(playerIdx, design int) bool {
-	return handHasSuit(t.players[playerIdx], design)
+	return validateFollowSuit(t.currentTrick, t.players, playerIdx, card)
 }
 
 // tarneebRank converts a raw `Card.GetValue()` (1-13, where 1 = Ace) to

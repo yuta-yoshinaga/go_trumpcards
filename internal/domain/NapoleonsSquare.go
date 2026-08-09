@@ -537,14 +537,7 @@ func (ns *NapoleonsSquare) findFoundation(card *Card) int {
 
 // afterMove 手数・棋譜・終了判定をまとめて進める
 func (ns *NapoleonsSquare) afterMove(actionType, detail string, card *Card) {
-	ns.moveCount++
-	var cards []*Card
-	if card != nil {
-		cards = []*Card{card}
-	}
-	ns.appendLog(actionType, detail, cards)
-	ns.checkGameClear()
-	ns.checkStalemate()
+	afterMove(&ns.moveCount, ns, actionType, detail, card)
 }
 
 // checkGameClear 8 つの基礎札がすべて K まで積み上がったか
