@@ -898,3 +898,29 @@ func TestRecycleDiscardToDraw_NothingToRecycle(t *testing.T) {
 		assert.Len(t, draw, 1, "n=%d: draw pile untouched", n)
 	}
 }
+
+func TestSeatHoldingCard(t *testing.T) {
+	seats := []*fakeHand{
+		{cards: []*Card{NewCard(1, 5, false)}},
+		{cards: []*Card{NewCard(CardDesignClover, 2, false)}},
+	}
+	isTwoOfClubs := func(c *Card) bool {
+		return c.GetDesign() == CardDesignClover && c.GetValue() == 2
+	}
+
+	assert.Equal(t, 1, seatHoldingCard(seats, isTwoOfClubs))
+	assert.Equal(t, -1, seatHoldingCard([]*fakeHand{{}}, isTwoOfClubs), "nobody holding yields -1, not 0")
+}
+
+func TestBettingRoundComplete(t *testing.T) {
+	seats := []*fakeBettor{{}, {folded: true}, {allIn: true}}
+
+	// Seat 0 is the only one that must act; folded and all-in seats are skipped
+	// even though their acted flags are false.
+	assert.True(t, bettingRoundComplete(seats, []bool{true, false, false}))
+	assert.False(t, bettingRoundComplete(seats, []bool{false, true, true}))
+}
+
+func TestBettingRoundComplete_NoSeats(t *testing.T) {
+	assert.True(t, bettingRoundComplete([]*fakeBettor{}, nil), "nothing outstanding is complete")
+}

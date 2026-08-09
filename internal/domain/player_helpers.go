@@ -545,3 +545,30 @@ func recycleDiscardIntoStock(discard, draw *[]*Card, g stockRecycler) bool {
 	g.appendLog(-1, "recycle", fmt.Sprintf("Discard pile recycled into stock (%d cards)", len(rest)), nil)
 	return true
 }
+
+// seatHoldingCard returns the index of the first seat holding a card that
+// satisfies want, or -1 when nobody does. 3 games looked for the two of clubs
+// this way.
+func seatHoldingCard[P handReader](players []P, want func(*Card) bool) int {
+	for i, p := range players {
+		if handHasAny(p, want) {
+			return i
+		}
+	}
+	return -1
+}
+
+// bettingRoundComplete reports whether every seat still in the hand has acted.
+// 3 games had this written out. Reuses the bettor constraint rather than
+// declaring a second interface with the same two methods.
+func bettingRoundComplete[P bettor](players []P, acted []bool) bool {
+	for i, p := range players {
+		if p.GetFolded() || p.GetAllIn() {
+			continue
+		}
+		if !acted[i] {
+			return false
+		}
+	}
+	return true
+}
