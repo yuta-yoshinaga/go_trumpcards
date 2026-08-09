@@ -287,3 +287,34 @@ func TestGetPlayer_OutOfRangeIsZero(t *testing.T) {
 	assert.Nil(t, getPlayer(seats, 1))
 	assert.Nil(t, getPlayer([]*fakeSeat{}, 0))
 }
+
+type fakeHand struct{ cards []*Card }
+
+func (h *fakeHand) GetCardsSize() int   { return len(h.cards) }
+func (h *fakeHand) GetCard(i int) *Card { return h.cards[i] }
+
+func TestAllHandsEmpty(t *testing.T) {
+	empty := &fakeHand{}
+	held := &fakeHand{cards: []*Card{NewCard(1, 5, false)}}
+
+	assert.True(t, allHandsEmpty([]*fakeHand{empty, empty}))
+	assert.True(t, allHandsEmpty([]*fakeHand{}), "no seats means no cards outstanding")
+	assert.False(t, allHandsEmpty([]*fakeHand{empty, held}), "one seat still holding is enough")
+	assert.False(t, allHandsEmpty([]*fakeHand{held, empty}), "position must not matter")
+}
+
+func TestHandHasSuit(t *testing.T) {
+	// design is the suit; value is deliberately varied so a body that compares
+	// the wrong field fails rather than coincidentally passing.
+	seats := []*fakeHand{
+		{cards: []*Card{NewCard(1, 3, false), NewCard(2, 7, false)}},
+		{cards: []*Card{NewCard(3, 1, false)}},
+		{},
+	}
+
+	assert.True(t, handHasSuit(seats[0], 1))
+	assert.True(t, handHasSuit(seats[0], 2), "not just the first card")
+	assert.False(t, handHasSuit(seats[0], 3))
+	assert.True(t, handHasSuit(seats[1], 3))
+	assert.False(t, handHasSuit(seats[2], 1), "empty hand holds no suit")
+}

@@ -162,3 +162,35 @@ func countPlayers[T any](players []T, pred func(T) bool) int {
 	}
 	return cnt
 }
+
+// handReader is the read-only view of a player's hand: how many cards it holds
+// and what each one is. Deliberately narrower than handHolder, which also
+// requires Reset/AddCard -- the predicates below never mutate a hand.
+type handReader interface {
+	GetCardsSize() int
+	GetCard(int) *Card
+}
+
+// allHandsEmpty reports whether every seat has run out of cards. 18 games had
+// this loop written out. An empty roster counts as empty: no seat is holding.
+func allHandsEmpty[P handReader](players []P) bool {
+	for _, p := range players {
+		if p.GetCardsSize() > 0 {
+			return false
+		}
+	}
+	return true
+}
+
+// handHasSuit reports whether p holds a card of the given design. 30 games had
+// this loop written out as a playerHasSuit method, and Schnapsen had a 31st as
+// a free function taking the player directly -- which is why this takes the
+// player rather than (players, idx): that shape serves both. See issue #5185.
+func handHasSuit[P handReader](p P, design int) bool {
+	for i := 0; i < p.GetCardsSize(); i++ {
+		if p.GetCard(i).GetDesign() == design {
+			return true
+		}
+	}
+	return false
+}
