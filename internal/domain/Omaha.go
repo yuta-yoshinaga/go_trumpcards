@@ -246,37 +246,7 @@ func (o *Omaha) continueReset() error {
 
 // postBlinds ブラインド投入
 func (o *Omaha) postBlinds() {
-	sbIdx := (o.dealerIdx + 1) % len(o.players)
-	bbIdx := (o.dealerIdx + 2) % len(o.players)
-
-	sbAmount := o.config.SmallBlind
-	if o.players[sbIdx].GetChips() < sbAmount {
-		sbAmount = o.players[sbIdx].GetChips()
-	}
-	o.players[sbIdx].SubtractChips(sbAmount)
-	o.players[sbIdx].SetCurrentBet(sbAmount)
-	o.pot += sbAmount
-	o.appendLog(sbIdx, "blind", fmt.Sprintf("posts small blind %d", sbAmount), nil)
-
-	bbAmount := o.config.BigBlind
-	if o.players[bbIdx].GetChips() < bbAmount {
-		bbAmount = o.players[bbIdx].GetChips()
-	}
-	o.players[bbIdx].SubtractChips(bbAmount)
-	o.players[bbIdx].SetCurrentBet(bbAmount)
-	o.pot += bbAmount
-	o.appendLog(bbIdx, "blind", fmt.Sprintf("posts big blind %d", bbAmount), nil)
-
-	o.lastBet = bbAmount
-
-	if o.players[sbIdx].GetChips() == 0 {
-		o.players[sbIdx].SetAllIn(true)
-		o.actedFlags[sbIdx] = true
-	}
-	if o.players[bbIdx].GetChips() == 0 {
-		o.players[bbIdx].SetAllIn(true)
-		o.actedFlags[bbIdx] = true
-	}
+	postBlindsFor(o.players, o.dealerIdx, o.config.SmallBlind, o.config.BigBlind, &o.pot, &o.lastBet, o.actedFlags, o)
 }
 
 // PlayerAction 人間プレイヤーのアクション実行

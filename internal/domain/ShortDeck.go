@@ -207,37 +207,7 @@ func (sd *ShortDeck) continueReset() error {
 
 // postBlinds ブラインド投入
 func (sd *ShortDeck) postBlinds() {
-	sbIdx := (sd.dealerIdx + 1) % len(sd.players)
-	bbIdx := (sd.dealerIdx + 2) % len(sd.players)
-
-	sbAmount := sd.config.SmallBlind
-	if sd.players[sbIdx].GetChips() < sbAmount {
-		sbAmount = sd.players[sbIdx].GetChips()
-	}
-	sd.players[sbIdx].SubtractChips(sbAmount)
-	sd.players[sbIdx].SetCurrentBet(sbAmount)
-	sd.pot += sbAmount
-	sd.appendLog(sbIdx, "blind", fmt.Sprintf("posts small blind %d", sbAmount), nil)
-
-	bbAmount := sd.config.BigBlind
-	if sd.players[bbIdx].GetChips() < bbAmount {
-		bbAmount = sd.players[bbIdx].GetChips()
-	}
-	sd.players[bbIdx].SubtractChips(bbAmount)
-	sd.players[bbIdx].SetCurrentBet(bbAmount)
-	sd.pot += bbAmount
-	sd.appendLog(bbIdx, "blind", fmt.Sprintf("posts big blind %d", bbAmount), nil)
-
-	sd.lastBet = bbAmount
-
-	if sd.players[sbIdx].GetChips() == 0 {
-		sd.players[sbIdx].SetAllIn(true)
-		sd.actedFlags[sbIdx] = true
-	}
-	if sd.players[bbIdx].GetChips() == 0 {
-		sd.players[bbIdx].SetAllIn(true)
-		sd.actedFlags[bbIdx] = true
-	}
+	postBlindsFor(sd.players, sd.dealerIdx, sd.config.SmallBlind, sd.config.BigBlind, &sd.pot, &sd.lastBet, sd.actedFlags, sd)
 }
 
 // PlayerAction 人間プレイヤーのアクション実行
