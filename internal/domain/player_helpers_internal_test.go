@@ -626,3 +626,85 @@ func TestSetHandForTest_NilPlayerIsIgnored(t *testing.T) {
 
 	assert.NotPanics(t, func() { setHandForTest(missing, []*Card{NewCard(1, 1, false)}) })
 }
+
+type fakeMover struct {
+	loggedTurn []int
+	moveCount  *int
+	cleared    int
+	stalemated int
+	lastCards  []*Card
+}
+
+func (m *fakeMover) appendLog(_, _ string, cards []*Card) {
+	// Records the move count as seen from inside appendLog, which is what the
+	// solitaires use as the entry's TurnNumber.
+	m.loggedTurn = append(m.loggedTurn, *m.moveCount)
+	m.lastCards = cards
+}
+func (m *fakeMover) checkGameClear() { m.cleared++ }
+func (m *fakeMover) checkStalemate() { m.stalemated++ }
+
+// The increment must happen before appendLog: these games pass moveCount as the
+// log entry's TurnNumber, so reordering would silently number every entry one
+// behind.
+func TestAfterMove_IncrementsBeforeLogging(t *testing.T) {
+	n := 4
+	m := &fakeMover{moveCount: &n}
+
+	afterMove(&n, m, "play", "detail", nil)
+
+	assert.Equal(t, 5, n)
+	assert.Equal(t, []int{5}, m.loggedTurn, "appendLog must see the incremented count")
+	assert.Equal(t, 1, m.cleared)
+	assert.Equal(t, 1, m.stalemated)
+}
+
+func TestAfterMove_WrapsTheCard(t *testing.T) {
+	n := 0
+	m := &fakeMover{moveCount: &n}
+	c := NewCard(1, 5, false)
+
+	afterMove(&n, m, "play", "d", c)
+	require.Len(t, m.lastCards, 1)
+	assert.Same(t, c, m.lastCards[0])
+
+	afterMove(&n, m, "play", "d", nil)
+	assert.Nil(t, m.lastCards, "a nil card logs no cards, not a one-element slice of nil")
+}
+
+func TestFindNextActiveHelper(t *testing.T) {
+	seats := []*fakeBettor{{}, {folded: true}, {}, {allIn: true}}
+
+	assert.Equal(t, 2, findNextActive(seats, 0), "skips folded and all-in")
+	assert.Equal(t, 0, findNextActive(seats, 2), "wraps around")
+}
+
+// With nobody active it returns the next seat rather than -1, matching the 7
+// hand-written bodies -- callers index with the result.
+func TestFindNextActiveHelper_NoneActive(t *testing.T) {
+	seats := []*fakeBettor{{folded: true}, {folded: true}}
+	assert.Equal(t, 1, findNextActive(seats, 0))
+}
+
+func TestDrawFromDeck(t *testing.T) {
+	deck := []*Card{NewCard(1, 1, false), NewCard(1, 2, false)}
+	drawn := 0
+
+	c := drawFromDeck(deck, &drawn)
+	require.NotNil(t, c)
+	assert.Equal(t, 1, c.GetValue())
+	assert.True(t, c.GetDraw(), "the card is marked drawn")
+	assert.Equal(t, 1, drawn, "the cursor advances")
+
+	require.NotNil(t, drawFromDeck(deck, &drawn))
+	assert.Nil(t, drawFromDeck(deck, &drawn), "exhausted deck yields nil")
+	assert.Equal(t, 2, drawn, "the cursor does not run past the deck")
+}
+
+type fakeBettor struct {
+	folded bool
+	allIn  bool
+}
+
+func (b *fakeBettor) GetFolded() bool { return b.folded }
+func (b *fakeBettor) GetAllIn() bool  { return b.allIn }
