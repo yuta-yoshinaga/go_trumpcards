@@ -380,3 +380,75 @@ func setHandForTest[T any, P interface {
 		p.AddCard(c)
 	}
 }
+
+// moveFinisher is a solitaire that records a move and re-evaluates the board.
+type moveFinisher interface {
+	appendLog(actionType, detail string, cards []*Card)
+	checkGameClear()
+	checkStalemate()
+}
+
+// afterMove completes one solitaire move: count it, log it, then re-check for a
+// win and for a stalemate. 8 games had this written out.
+//
+// moveCount is passed as a pointer because these games use it as the log
+// entry's TurnNumber, so the increment has to happen before appendLog runs --
+// an order the tests pin rather than leave to reading.
+func afterMove(moveCount *int, g moveFinisher, actionType, detail string, card *Card) {
+	*moveCount++
+	var cards []*Card
+	if card != nil {
+		cards = []*Card{card}
+	}
+	g.appendLog(actionType, detail, cards)
+	g.checkGameClear()
+	g.checkStalemate()
+}
+
+// bettor is a seat that can be out of the betting for this hand. Deliberately
+// narrower than the existing BettingPlayer, which names twelve methods: these
+// helpers only ask whether a seat is still in, and the narrow form is the same
+// choice made for handReader above.
+type bettor interface {
+	GetFolded() bool
+	GetAllIn() bool
+}
+
+// findNextActive returns the next seat after fromIdx that is still betting,
+// falling back to the immediate next seat when nobody qualifies -- callers
+// index with the result, so this never returns -1. 7 games had this written out.
+func findNextActive[P bettor](players []P, fromIdx int) int {
+	for i := 1; i <= len(players); i++ {
+		next := (fromIdx + i) % len(players)
+		if !players[next].GetFolded() && !players[next].GetAllIn() {
+			return next
+		}
+	}
+	return (fromIdx + 1) % len(players)
+}
+
+// drawFromDeck takes the next card from deck, advancing the cursor and marking
+// the card drawn, or returns nil once the deck is exhausted. 8 games had this
+// written out. Needs no type parameter -- every deck is a []*Card.
+func drawFromDeck(deck []*Card, drawn *int) *Card {
+	if *drawn >= len(deck) {
+		return nil
+	}
+	card := deck[*drawn]
+	card.SetDraw(true)
+	*drawn++
+	return card
+}
+
+// validateFollowSuit enforces following the led suit when the seat can. 8 games
+// had this written out.
+func validateFollowSuit[P handReader](trick []*TrickCard, players []P, playerIdx int, card *Card) error {
+	if len(trick) == 0 {
+		return nil
+	}
+	leadSuit := trick[0].Card.GetDesign()
+	if card.GetDesign() != leadSuit && handHasSuit(players[playerIdx], leadSuit) {
+		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+	}
+	return nil
+}

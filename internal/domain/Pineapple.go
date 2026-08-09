@@ -694,13 +694,7 @@ func (p *Pineapple) dealRemainingCommunity() {
 
 // findNextActive 指定インデックスの次のアクティブプレイヤーを探す
 func (p *Pineapple) findNextActive(fromIdx int) int {
-	for i := 1; i <= len(p.players); i++ {
-		next := (fromIdx + i) % len(p.players)
-		if !p.players[next].GetFolded() && !p.players[next].GetAllIn() {
-			return next
-		}
-	}
-	return (fromIdx + 1) % len(p.players)
+	return findNextActive(p.players, fromIdx)
 }
 
 // countActivePlayers フォールドしていないプレイヤー数を返す
@@ -1204,15 +1198,11 @@ func (p *Pineapple) ExportProfile() interface{} {
 
 // ImportProfile JSONバイトからメタAIプロファイルをインポートする
 func (p *Pineapple) ImportProfile(data []byte) error {
-	if len(data) == 0 {
-		return nil
-	}
-	d, err := ImportBettingHumanProfileJSON(data)
-	if err != nil {
+	prof, err := importBettingProfile(data)
+	if err != nil || prof == nil {
 		return err
 	}
-	p.humanProfile = &BettingHumanProfile{}
-	p.humanProfile.Import(d)
+	p.humanProfile = prof
 	return nil
 }
 

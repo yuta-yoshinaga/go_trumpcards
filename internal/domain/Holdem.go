@@ -435,13 +435,7 @@ func (h *Holdem) dealRemainingCommunity() {
 
 // findNextActive 指定インデックスの次のアクティブ (フォールド・オールインでない) プレイヤーを探す
 func (h *Holdem) findNextActive(fromIdx int) int {
-	for i := 1; i <= len(h.players); i++ {
-		next := (fromIdx + i) % len(h.players)
-		if !h.players[next].GetFolded() && !h.players[next].GetAllIn() {
-			return next
-		}
-	}
-	return (fromIdx + 1) % len(h.players)
+	return findNextActive(h.players, fromIdx)
 }
 
 // countActivePlayers フォールドしていないプレイヤー数を返す
@@ -667,15 +661,11 @@ func (h *Holdem) ExportProfile() interface{} {
 
 // ImportProfile JSONバイトからメタAIプロファイルをインポートする
 func (h *Holdem) ImportProfile(data []byte) error {
-	if len(data) == 0 {
-		return nil
-	}
-	d, err := ImportBettingHumanProfileJSON(data)
-	if err != nil {
+	p, err := importBettingProfile(data)
+	if err != nil || p == nil {
 		return err
 	}
-	h.humanProfile = &BettingHumanProfile{}
-	h.humanProfile.Import(d)
+	h.humanProfile = p
 	return nil
 }
 

@@ -441,13 +441,7 @@ func (sd *ShortDeck) dealRemainingCommunity() {
 
 // findNextActive 指定インデックスの次のアクティブプレイヤーを探す
 func (sd *ShortDeck) findNextActive(fromIdx int) int {
-	for i := 1; i <= len(sd.players); i++ {
-		next := (fromIdx + i) % len(sd.players)
-		if !sd.players[next].GetFolded() && !sd.players[next].GetAllIn() {
-			return next
-		}
-	}
-	return (fromIdx + 1) % len(sd.players)
+	return findNextActive(sd.players, fromIdx)
 }
 
 // countActivePlayers フォールドしていないプレイヤー数を返す
@@ -1172,15 +1166,11 @@ func (sd *ShortDeck) ExportProfile() interface{} {
 
 // ImportProfile JSONバイトからメタAIプロファイルをインポートする
 func (sd *ShortDeck) ImportProfile(data []byte) error {
-	if len(data) == 0 {
-		return nil
-	}
-	d, err := ImportBettingHumanProfileJSON(data)
-	if err != nil {
+	p, err := importBettingProfile(data)
+	if err != nil || p == nil {
 		return err
 	}
-	sd.humanProfile = &BettingHumanProfile{}
-	sd.humanProfile.Import(d)
+	sd.humanProfile = p
 	return nil
 }
 

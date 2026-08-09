@@ -668,14 +668,7 @@ func (b *Braid) refillFields() {
 
 // afterMove 手数・棋譜・終了判定をまとめて進める
 func (b *Braid) afterMove(actionType, detail string, card *Card) {
-	b.moveCount++
-	var cards []*Card
-	if card != nil {
-		cards = []*Card{card}
-	}
-	b.appendLog(actionType, detail, cards)
-	b.checkGameClear()
-	b.checkStalemate()
+	afterMove(&b.moveCount, b, actionType, detail, card)
 }
 
 // checkGameClear 8 つの基礎札がすべて 13 枚になったか

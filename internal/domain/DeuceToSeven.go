@@ -481,13 +481,7 @@ func (d *DeuceToSeven) resetBettingRound() {
 // findNextActive returns the next seat after fromIdx that is not folded /
 // all-in. Used to select the first actor in a round.
 func (d *DeuceToSeven) findNextActive(fromIdx int) int {
-	for i := 1; i <= len(d.players); i++ {
-		next := (fromIdx + i) % len(d.players)
-		if !d.players[next].GetFolded() && !d.players[next].GetAllIn() {
-			return next
-		}
-	}
-	return (fromIdx + 1) % len(d.players)
+	return findNextActive(d.players, fromIdx)
 }
 
 func (d *DeuceToSeven) countActivePlayers() int {

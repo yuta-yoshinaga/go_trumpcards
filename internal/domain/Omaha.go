@@ -480,13 +480,7 @@ func (o *Omaha) dealRemainingCommunity() {
 
 // findNextActive 指定インデックスの次のアクティブプレイヤーを探す
 func (o *Omaha) findNextActive(fromIdx int) int {
-	for i := 1; i <= len(o.players); i++ {
-		next := (fromIdx + i) % len(o.players)
-		if !o.players[next].GetFolded() && !o.players[next].GetAllIn() {
-			return next
-		}
-	}
-	return (fromIdx + 1) % len(o.players)
+	return findNextActive(o.players, fromIdx)
 }
 
 // countActivePlayers フォールドしていないプレイヤー数を返す
@@ -1347,15 +1341,11 @@ func (o *Omaha) ExportProfile() interface{} {
 
 // ImportProfile JSONバイトからメタAIプロファイルをインポートする
 func (o *Omaha) ImportProfile(data []byte) error {
-	if len(data) == 0 {
-		return nil
-	}
-	d, err := ImportBettingHumanProfileJSON(data)
-	if err != nil {
+	p, err := importBettingProfile(data)
+	if err != nil || p == nil {
 		return err
 	}
-	o.humanProfile = &BettingHumanProfile{}
-	o.humanProfile.Import(d)
+	o.humanProfile = p
 	return nil
 }
 

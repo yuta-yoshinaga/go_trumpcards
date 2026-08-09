@@ -318,13 +318,7 @@ func (g *Aluette) shuffle() {
 
 // drawCard デッキから 1 枚配る (尽きたら nil)。
 func (g *Aluette) drawCard() *Card {
-	if g.deckDrawCnt >= len(g.deck) {
-		return nil
-	}
-	card := g.deck[g.deckDrawCnt]
-	card.SetDraw(true)
-	g.deckDrawCnt++
-	return card
+	return drawFromDeck(g.deck, &g.deckDrawCnt)
 }
 
 // sortAllHands 手札を強い順に整列する。
