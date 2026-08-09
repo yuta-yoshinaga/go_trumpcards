@@ -459,15 +459,7 @@ func (ft *FortyThieves) CanUndo() bool {
 
 // UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。膠着状態でなければ0、脱出不可なら-1。
 func (ft *FortyThieves) UndoToEscape() int {
-	if !ft.isStalemate {
-		return 0
-	}
-	for i := len(ft.history) - 1; i >= 0; i-- {
-		if !ft.history[i].isStalemate {
-			return len(ft.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(ft.isStalemate, ft.history, func(s *fortyThievesSnapshot) bool { return s.isStalemate })
 }
 
 // UndoN n回連続でアンドゥを実行する。

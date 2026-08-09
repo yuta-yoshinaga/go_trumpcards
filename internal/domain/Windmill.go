@@ -427,15 +427,7 @@ func (w *Windmill) UndoN(n int) error {
 
 // UndoToEscape 膠着状態から抜けるのに必要なアンドゥ回数（膠着でなければ 0、不可なら -1）
 func (w *Windmill) UndoToEscape() int {
-	if !w.isStalemate {
-		return 0
-	}
-	for i := len(w.history) - 1; i >= 0; i-- {
-		if !w.history[i].isStalemate {
-			return len(w.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(w.isStalemate, w.history, func(s *windmillSnapshot) bool { return s.isStalemate })
 }
 
 // AllFaceUp 常に全札が表向き

@@ -350,15 +350,7 @@ func (gc *GrandfathersClock) UndoN(n int) error {
 
 // UndoToEscape 膠着状態から抜けるのに必要なアンドゥ回数（膠着でなければ 0、不可なら -1）
 func (gc *GrandfathersClock) UndoToEscape() int {
-	if !gc.isStalemate {
-		return 0
-	}
-	for i := len(gc.history) - 1; i >= 0; i-- {
-		if !gc.history[i].isStalemate {
-			return len(gc.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(gc.isStalemate, gc.history, func(s *grandfathersClockSnapshot) bool { return s.isStalemate })
 }
 
 // AllFaceUp 常に全札が表向き

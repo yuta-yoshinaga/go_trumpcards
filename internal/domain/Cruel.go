@@ -397,15 +397,7 @@ func (c *Cruel) CanUndo() bool {
 // UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。
 // 膠着状態でなければ 0、脱出不可なら -1。
 func (c *Cruel) UndoToEscape() int {
-	if !c.isStalemate {
-		return 0
-	}
-	for i := len(c.history) - 1; i >= 0; i-- {
-		if !c.history[i].isStalemate {
-			return len(c.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(c.isStalemate, c.history, func(s *cruelSnapshot) bool { return s.isStalemate })
 }
 
 // UndoN n回連続でアンドゥを実行する。

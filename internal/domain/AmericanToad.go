@@ -541,15 +541,7 @@ func (at *AmericanToad) UndoN(n int) error {
 
 // UndoToEscape 膠着状態から抜けるのに必要なアンドゥ回数（膠着でなければ 0、不可なら -1）
 func (at *AmericanToad) UndoToEscape() int {
-	if !at.isStalemate {
-		return 0
-	}
-	for i := len(at.history) - 1; i >= 0; i-- {
-		if !at.history[i].isStalemate {
-			return len(at.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(at.isStalemate, at.history, func(s *americanToadSnapshot) bool { return s.isStalemate })
 }
 
 // AllFaceUp 常に全札が表向き

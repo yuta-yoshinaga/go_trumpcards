@@ -243,6 +243,33 @@ func TestIsHumanTurn_OutOfRangeIsFalseNotPanic(t *testing.T) {
 	assert.False(t, isHumanTurn([]fakeSeat{}, 0))
 }
 
+type snap struct{ stale bool }
+
+func staleOf(s snap) bool { return s.stale }
+
+func TestUndoToEscape_NotStalematedNeedsNoUndo(t *testing.T) {
+	assert.Equal(t, 0, undoToEscape(false, []snap{{true}, {true}}, staleOf),
+		"not stalemated: nothing to undo, regardless of history")
+}
+
+// The distance is counted from the end, so the most recent non-stalemate
+// snapshot one step back is 1 undo away.
+func TestUndoToEscape_DistanceToLastGoodSnapshot(t *testing.T) {
+	assert.Equal(t, 1, undoToEscape(true, []snap{{false}}, staleOf))
+	assert.Equal(t, 2, undoToEscape(true, []snap{{false}, {true}}, staleOf))
+	assert.Equal(t, 3, undoToEscape(true, []snap{{false}, {true}, {true}}, staleOf))
+}
+
+// The most recent non-stalemate wins, not the earliest.
+func TestUndoToEscape_PicksTheNearestEscape(t *testing.T) {
+	assert.Equal(t, 2, undoToEscape(true, []snap{{false}, {false}, {true}}, staleOf))
+}
+
+func TestUndoToEscape_NoEscapeAnywhere(t *testing.T) {
+	assert.Equal(t, -1, undoToEscape(true, []snap{{true}, {true}}, staleOf))
+	assert.Equal(t, -1, undoToEscape(true, []snap{}, staleOf), "empty history cannot escape")
+}
+
 func TestGetPlayer(t *testing.T) {
 	a, b := &fakeSeat{true}, &fakeSeat{false}
 	seats := []*fakeSeat{a, b}

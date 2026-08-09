@@ -259,15 +259,7 @@ func (s *SirTommy) CanUndo() bool { return len(s.history) > 0 }
 // UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。
 // 膠着状態でなければ 0、履歴を遡っても抜けられなければ -1。
 func (s *SirTommy) UndoToEscape() int {
-	if !s.isStalemate {
-		return 0
-	}
-	for i := len(s.history) - 1; i >= 0; i-- {
-		if !s.history[i].isStalemate {
-			return len(s.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(s.isStalemate, s.history, func(s *sirTommySnapshot) bool { return s.isStalemate })
 }
 
 // AllFaceUp すべてのカードが見えているか。

@@ -371,15 +371,7 @@ func (p *Pyramid) CanUndo() bool {
 
 // UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。膠着状態でなければ0、脱出不可なら-1。
 func (p *Pyramid) UndoToEscape() int {
-	if !p.isStalemate {
-		return 0
-	}
-	for i := len(p.history) - 1; i >= 0; i-- {
-		if !p.history[i].isStalemate {
-			return len(p.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(p.isStalemate, p.history, func(s *pyramidSnapshot) bool { return s.isStalemate })
 }
 
 // UndoN n回連続でアンドゥを実行する。

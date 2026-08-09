@@ -564,15 +564,7 @@ func (f *FreeCell) CanUndo() bool {
 
 // UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。膠着状態でなければ0、脱出不可なら-1。
 func (f *FreeCell) UndoToEscape() int {
-	if !f.isStalemate {
-		return 0
-	}
-	for i := len(f.history) - 1; i >= 0; i-- {
-		if !f.history[i].isStalemate {
-			return len(f.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(f.isStalemate, f.history, func(s *freeCellSnapshot) bool { return s.isStalemate })
 }
 
 // UndoN n回連続でアンドゥを実行する。

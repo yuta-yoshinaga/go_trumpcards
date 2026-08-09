@@ -396,15 +396,7 @@ func (cr *Crescent) CanUndo() bool {
 
 // UndoToEscape 手詰まりから脱出するためのアンドゥ回数。手詰まりでなければ 0、脱出不可なら -1。
 func (cr *Crescent) UndoToEscape() int {
-	if !cr.isStalemate {
-		return 0
-	}
-	for i := len(cr.history) - 1; i >= 0; i-- {
-		if !cr.history[i].isStalemate {
-			return len(cr.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(cr.isStalemate, cr.history, func(s *crescentSnapshot) bool { return s.isStalemate })
 }
 
 // UndoN n 回アンドゥする。

@@ -291,15 +291,7 @@ func (t *TriPeaks) CanUndo() bool {
 
 // UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。膠着状態でなければ0、脱出不可なら-1。
 func (t *TriPeaks) UndoToEscape() int {
-	if !t.isStalemate {
-		return 0
-	}
-	for i := len(t.history) - 1; i >= 0; i-- {
-		if !t.history[i].isStalemate {
-			return len(t.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(t.isStalemate, t.history, func(s *triPeaksSnapshot) bool { return s.isStalemate })
 }
 
 // UndoN n回連続でアンドゥを実行する。

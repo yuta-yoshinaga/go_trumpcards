@@ -514,15 +514,7 @@ func (b *Braid) UndoN(n int) error {
 
 // UndoToEscape 膠着状態から抜けるのに必要なアンドゥ回数（膠着でなければ 0、不可なら -1）
 func (b *Braid) UndoToEscape() int {
-	if !b.isStalemate {
-		return 0
-	}
-	for i := len(b.history) - 1; i >= 0; i-- {
-		if !b.history[i].isStalemate {
-			return len(b.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(b.isStalemate, b.history, func(s *braidSnapshot) bool { return s.isStalemate })
 }
 
 // AllFaceUp 常に全札が表向き

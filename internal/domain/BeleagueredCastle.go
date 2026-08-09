@@ -359,15 +359,7 @@ func (bc *BeleagueredCastle) CanUndo() bool {
 // UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。
 // 膠着状態でなければ0、脱出不可なら-1。
 func (bc *BeleagueredCastle) UndoToEscape() int {
-	if !bc.isStalemate {
-		return 0
-	}
-	for i := len(bc.history) - 1; i >= 0; i-- {
-		if !bc.history[i].isStalemate {
-			return len(bc.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(bc.isStalemate, bc.history, func(s *beleagueredCastleSnapshot) bool { return s.isStalemate })
 }
 
 // UndoN n回連続でアンドゥを実行する。
