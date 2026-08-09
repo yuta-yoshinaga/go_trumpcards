@@ -387,10 +387,7 @@ func (o *OhHell) GetPlayerCnt() int { return len(o.players) }
 
 // GetPlayer プレイヤー取得
 func (o *OhHell) GetPlayer(i int) *OhHellPlayer {
-	if i < 0 || i >= len(o.players) {
-		return nil
-	}
-	return o.players[i]
+	return getPlayer(o.players, i)
 }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得

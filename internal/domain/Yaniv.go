@@ -775,10 +775,7 @@ func (g *Yaniv) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer 指定インデックスのプレイヤーを取得する
 func (g *Yaniv) GetPlayer(i int) *YanivPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // IsHumanTurn 現在の手番が人間かを返す

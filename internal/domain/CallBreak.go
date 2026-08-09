@@ -375,10 +375,7 @@ func (cb *CallBreak) GetPlayerCnt() int { return len(cb.players) }
 
 // GetPlayer プレイヤー取得
 func (cb *CallBreak) GetPlayer(i int) *CallBreakPlayer {
-	if i < 0 || i >= len(cb.players) {
-		return nil
-	}
-	return cb.players[i]
+	return getPlayer(cb.players, i)
 }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得

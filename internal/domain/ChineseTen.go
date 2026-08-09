@@ -425,10 +425,7 @@ func (c *ChineseTen) GetPlayers() []*ChineseTenPlayer { return c.players }
 
 // GetPlayer は idx のプレイヤーを返す。範囲外は nil。
 func (c *ChineseTen) GetPlayer(idx int) *ChineseTenPlayer {
-	if idx < 0 || idx >= len(c.players) {
-		return nil
-	}
-	return c.players[idx]
+	return getPlayer(c.players, idx)
 }
 
 // GetLayout は場札を返す。

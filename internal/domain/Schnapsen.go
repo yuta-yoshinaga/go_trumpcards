@@ -346,10 +346,7 @@ func (s *Schnapsen) GetPlayerCnt() int { return len(s.players) }
 
 // GetPlayer プレイヤー取得
 func (s *Schnapsen) GetPlayer(i int) *SchnapsenPlayer {
-	if i < 0 || i >= len(s.players) {
-		return nil
-	}
-	return s.players[i]
+	return getPlayer(s.players, i)
 }
 
 // GetPlayerPoints プレイヤーの累積得点取得 (カード点 + マリアージュボーナス)

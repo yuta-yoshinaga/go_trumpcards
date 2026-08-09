@@ -669,10 +669,7 @@ func (g *Aluette) GetPlayerCnt() int { return AluettePlayerCnt }
 
 // GetPlayer 指定席のプレイヤー。
 func (g *Aluette) GetPlayer(i int) *AluettePlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetPlayers 全プレイヤー。

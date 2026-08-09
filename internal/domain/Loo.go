@@ -885,10 +885,7 @@ func (g *Loo) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer は指定インデックスのプレイヤーを返す。
 func (g *Loo) GetPlayer(i int) *LooPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetLastDealDetail は直前ディールの精算内訳を返す (nil の場合もある)。

@@ -612,10 +612,7 @@ func (g *IndianRummy) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *IndianRummy) GetPlayer(i int) *IndianRummyPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetConfig 設定取得

@@ -538,10 +538,7 @@ func (b *Bura) GetPlayers() []*BuraPlayer { return b.players }
 
 // GetPlayer idx のプレイヤーを返す。範囲外は nil。
 func (b *Bura) GetPlayer(idx int) *BuraPlayer {
-	if idx < 0 || idx >= len(b.players) {
-		return nil
-	}
-	return b.players[idx]
+	return getPlayer(b.players, idx)
 }
 
 // GetStock 山札 (切札指示カードを含まない) を返す。

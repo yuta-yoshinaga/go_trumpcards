@@ -242,3 +242,21 @@ func TestIsHumanTurn_OutOfRangeIsFalseNotPanic(t *testing.T) {
 	assert.False(t, isHumanTurn(seats, 1))
 	assert.False(t, isHumanTurn([]fakeSeat{}, 0))
 }
+
+func TestGetPlayer(t *testing.T) {
+	a, b := &fakeSeat{true}, &fakeSeat{false}
+	seats := []*fakeSeat{a, b}
+
+	assert.Same(t, a, getPlayer(seats, 0))
+	assert.Same(t, b, getPlayer(seats, 1))
+}
+
+// Out of range yields the zero value -- nil for the pointer types every game
+// uses -- rather than panicking. Callers nil-check, so this is the contract.
+func TestGetPlayer_OutOfRangeIsZero(t *testing.T) {
+	seats := []*fakeSeat{{true}}
+
+	assert.Nil(t, getPlayer(seats, -1))
+	assert.Nil(t, getPlayer(seats, 1))
+	assert.Nil(t, getPlayer([]*fakeSeat{}, 0))
+}

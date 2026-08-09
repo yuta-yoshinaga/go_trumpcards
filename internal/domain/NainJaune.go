@@ -403,10 +403,7 @@ func (n *NainJaune) GetPlayers() []*NainJaunePlayer { return n.players }
 
 // GetPlayer は idx のプレイヤーを返す。
 func (n *NainJaune) GetPlayer(idx int) *NainJaunePlayer {
-	if idx < 0 || idx >= len(n.players) {
-		return nil
-	}
-	return n.players[idx]
+	return getPlayer(n.players, idx)
 }
 
 // GetPhase は現在のフェーズを返す。

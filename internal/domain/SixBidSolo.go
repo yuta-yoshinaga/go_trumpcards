@@ -1093,10 +1093,7 @@ func (s *SixBidSolo) GetPlayers() []*SixBidSoloPlayer { return s.players }
 
 // GetPlayer は指定インデックスのプレイヤーを返す。
 func (s *SixBidSolo) GetPlayer(idx int) *SixBidSoloPlayer {
-	if idx < 0 || idx >= len(s.players) {
-		return nil
-	}
-	return s.players[idx]
+	return getPlayer(s.players, idx)
 }
 
 // GetPhase は現在のフェーズを返す。

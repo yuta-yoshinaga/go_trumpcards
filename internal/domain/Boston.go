@@ -686,10 +686,7 @@ func (b *Boston) GetPlayers() []*BostonPlayer { return b.players }
 
 // GetPlayer は idx のプレイヤーを返す。
 func (b *Boston) GetPlayer(idx int) *BostonPlayer {
-	if idx < 0 || idx >= len(b.players) {
-		return nil
-	}
-	return b.players[idx]
+	return getPlayer(b.players, idx)
 }
 
 // GetPhase は現在のフェーズを返す。

@@ -1125,10 +1125,7 @@ func (g *GoStop) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer は指定インデックスのプレイヤーを返す。
 func (g *GoStop) GetPlayer(i int) *GoStopPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetConfig はローカルルール設定を返す。

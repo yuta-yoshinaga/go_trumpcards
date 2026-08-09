@@ -567,10 +567,7 @@ func (k *Kille) GetPlayers() []*KillePlayer { return k.players }
 
 // GetPlayer は idx のプレイヤーを返す。
 func (k *Kille) GetPlayer(idx int) *KillePlayer {
-	if idx < 0 || idx >= len(k.players) {
-		return nil
-	}
-	return k.players[idx]
+	return getPlayer(k.players, idx)
 }
 
 // GetPhase は現在のフェーズを返す。

@@ -419,10 +419,7 @@ func (s *Scopone) GetPlayerCnt() int { return len(s.players) }
 
 // GetPlayer プレイヤー取得
 func (s *Scopone) GetPlayer(i int) *ScopaPlayer {
-	if i < 0 || i >= len(s.players) {
-		return nil
-	}
-	return s.players[i]
+	return getPlayer(s.players, i)
 }
 
 // GetConfig 設定取得

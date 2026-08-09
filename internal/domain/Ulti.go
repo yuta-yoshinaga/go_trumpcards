@@ -1227,10 +1227,7 @@ func (g *Ulti) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *Ulti) GetPlayer(i int) *UltiPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // IsHumanTurn 現在の手番 (Bid/Discard/Play) が人間か。

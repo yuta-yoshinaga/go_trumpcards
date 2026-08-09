@@ -291,10 +291,7 @@ func (w *Whist) GetPlayerCnt() int { return len(w.players) }
 
 // GetPlayer プレイヤー取得
 func (w *Whist) GetPlayer(i int) *WhistPlayer {
-	if i < 0 || i >= len(w.players) {
-		return nil
-	}
-	return w.players[i]
+	return getPlayer(w.players, i)
 }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得

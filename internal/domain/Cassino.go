@@ -689,10 +689,7 @@ func (c *Cassino) GetBuilds() []*CassinoBuild { return c.round.builds }
 
 // GetPlayer プレイヤー取得
 func (c *Cassino) GetPlayer(idx int) *CassinoPlayer {
-	if idx < 0 || idx >= len(c.players) {
-		return nil
-	}
-	return c.players[idx]
+	return getPlayer(c.players, idx)
 }
 
 // GetPlayerCnt プレイヤー数取得

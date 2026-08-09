@@ -311,10 +311,7 @@ func (z *Zheng) GetLastPlayPlayerIdx() int { return z.round.lastPlayPlayerIdx }
 
 // GetPlayer プレイヤー取得
 func (z *Zheng) GetPlayer(idx int) *ZhengPlayer {
-	if idx < 0 || idx >= len(z.players) {
-		return nil
-	}
-	return z.players[idx]
+	return getPlayer(z.players, idx)
 }
 
 // GetPlayerCnt プレイヤー数取得

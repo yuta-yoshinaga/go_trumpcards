@@ -295,10 +295,7 @@ func (b *Briscola) GetPlayerCnt() int { return len(b.players) }
 
 // GetPlayer プレイヤー取得
 func (b *Briscola) GetPlayer(i int) *BriscolaPlayer {
-	if i < 0 || i >= len(b.players) {
-		return nil
-	}
-	return b.players[i]
+	return getPlayer(b.players, i)
 }
 
 // GetPlayerPoints プレイヤーの累積得点取得

@@ -184,10 +184,7 @@ func (g *RussianBank) GetPlayers() []*RussianBankPlayer { return g.players }
 
 // GetPlayer seat のプレイヤーを返す (範囲外は nil)。
 func (g *RussianBank) GetPlayer(seat int) *RussianBankPlayer {
-	if seat < 0 || seat >= len(g.players) {
-		return nil
-	}
-	return g.players[seat]
+	return getPlayer(g.players, seat)
 }
 
 // GetTableau 共有タブローを返す。

@@ -567,10 +567,7 @@ func (d *Doubt) GetPlayerCnt() int { return len(d.players) }
 
 // GetPlayer プレイヤー取得
 func (d *Doubt) GetPlayer(i int) *DoubtPlayer {
-	if i < 0 || i >= len(d.players) {
-		return nil
-	}
-	return d.players[i]
+	return getPlayer(d.players, i)
 }
 
 // GetTableCardCount テーブルカード枚数取得

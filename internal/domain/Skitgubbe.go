@@ -541,10 +541,7 @@ func (s *Skitgubbe) GetPlayers() []*SkitgubbePlayer { return s.players }
 
 // GetPlayer は idx のプレイヤーを返す。範囲外は nil。
 func (s *Skitgubbe) GetPlayer(idx int) *SkitgubbePlayer {
-	if idx < 0 || idx >= len(s.players) {
-		return nil
-	}
-	return s.players[idx]
+	return getPlayer(s.players, idx)
 }
 
 // GetPhase は現在のフェーズを返す。

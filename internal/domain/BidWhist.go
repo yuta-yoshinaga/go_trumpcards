@@ -1057,10 +1057,7 @@ func (g *BidWhist) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *BidWhist) GetPlayer(i int) *BidWhistPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得

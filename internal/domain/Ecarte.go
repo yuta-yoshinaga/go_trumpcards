@@ -730,10 +730,7 @@ func (e *Ecarte) GetPlayerCnt() int { return len(e.players) }
 
 // GetPlayer プレイヤー取得
 func (e *Ecarte) GetPlayer(i int) *EcartePlayer {
-	if i < 0 || i >= len(e.players) {
-		return nil
-	}
-	return e.players[i]
+	return getPlayer(e.players, i)
 }
 
 // GetStockRemaining 山札の残り枚数

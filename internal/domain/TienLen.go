@@ -322,10 +322,7 @@ func (tl *TienLen) GetLastPlayPlayerIdx() int { return tl.round.lastPlayPlayerId
 
 // GetPlayer プレイヤー取得
 func (tl *TienLen) GetPlayer(idx int) *TienLenPlayer {
-	if idx < 0 || idx >= len(tl.players) {
-		return nil
-	}
-	return tl.players[idx]
+	return getPlayer(tl.players, idx)
 }
 
 // GetPlayerCnt プレイヤー数取得

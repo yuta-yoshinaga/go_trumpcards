@@ -693,10 +693,7 @@ func (v *Vint) GetPlayers() []*VintPlayer { return v.players }
 
 // GetPlayer は idx のプレイヤーを返す。
 func (v *Vint) GetPlayer(idx int) *VintPlayer {
-	if idx < 0 || idx >= len(v.players) {
-		return nil
-	}
-	return v.players[idx]
+	return getPlayer(v.players, idx)
 }
 
 // GetPhase は現在のフェーズを返す。

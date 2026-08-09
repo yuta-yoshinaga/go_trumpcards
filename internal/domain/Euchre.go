@@ -582,10 +582,7 @@ func (e *Euchre) GetPlayerCnt() int { return len(e.players) }
 
 // GetPlayer プレイヤー取得
 func (e *Euchre) GetPlayer(i int) *EuchrePlayer {
-	if i < 0 || i >= len(e.players) {
-		return nil
-	}
-	return e.players[i]
+	return getPlayer(e.players, i)
 }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得

@@ -471,10 +471,7 @@ func (e *Escoba) GetPlayerCnt() int { return len(e.players) }
 
 // GetPlayer プレイヤー取得
 func (e *Escoba) GetPlayer(i int) *ScopaPlayer {
-	if i < 0 || i >= len(e.players) {
-		return nil
-	}
-	return e.players[i]
+	return getPlayer(e.players, i)
 }
 
 // GetConfig 設定取得

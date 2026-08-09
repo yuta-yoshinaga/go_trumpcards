@@ -826,10 +826,7 @@ func (g *Cribbage) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetPlayer プレイヤー取得
 func (g *Cribbage) GetPlayer(idx int) *CribbagePlayer {
-	if idx < 0 || idx >= len(g.players) {
-		return nil
-	}
-	return g.players[idx]
+	return getPlayer(g.players, idx)
 }
 
 // GetConfig 設定取得

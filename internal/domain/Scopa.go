@@ -479,10 +479,7 @@ func (s *Scopa) GetTableCards() []*Card { return s.round.tableCards }
 
 // GetPlayer プレイヤー取得
 func (s *Scopa) GetPlayer(idx int) *ScopaPlayer {
-	if idx < 0 || idx >= len(s.players) {
-		return nil
-	}
-	return s.players[idx]
+	return getPlayer(s.players, idx)
 }
 
 // GetPlayerCnt プレイヤー数取得

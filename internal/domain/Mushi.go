@@ -671,10 +671,7 @@ func (m *Mushi) GetPlayers() []*MushiPlayer { return m.players }
 
 // GetPlayer は idx のプレイヤーを返す。範囲外は nil。
 func (m *Mushi) GetPlayer(idx int) *MushiPlayer {
-	if idx < 0 || idx >= len(m.players) {
-		return nil
-	}
-	return m.players[idx]
+	return getPlayer(m.players, idx)
 }
 
 // GetField は場札を返す。

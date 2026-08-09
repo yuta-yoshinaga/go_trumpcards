@@ -491,10 +491,7 @@ func (b *Barbu) GetPlayerCnt() int { return len(b.players) }
 
 // GetPlayer は指定インデックスのプレイヤーを返す。
 func (b *Barbu) GetPlayer(i int) *BarbuPlayer {
-	if i < 0 || i >= len(b.players) {
-		return nil
-	}
-	return b.players[i]
+	return getPlayer(b.players, i)
 }
 
 // GetCurrentTurn は現在の手番プレイヤーインデックスを返す。

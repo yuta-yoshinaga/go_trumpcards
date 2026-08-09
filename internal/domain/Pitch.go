@@ -727,10 +727,7 @@ func (p *Pitch) GetPlayerCnt() int { return len(p.players) }
 
 // GetPlayer プレイヤー取得
 func (p *Pitch) GetPlayer(i int) *PitchPlayer {
-	if i < 0 || i >= len(p.players) {
-		return nil
-	}
-	return p.players[i]
+	return getPlayer(p.players, i)
 }
 
 // IsHumanTurn 現在の手番が人間かどうか

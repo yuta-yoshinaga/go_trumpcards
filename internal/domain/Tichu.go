@@ -565,10 +565,7 @@ func (t *Tichu) GetFinishOrder() []int { return t.round.finishOrder }
 
 // GetPlayer プレイヤー取得
 func (t *Tichu) GetPlayer(idx int) *TichuPlayer {
-	if idx < 0 || idx >= len(t.players) {
-		return nil
-	}
-	return t.players[idx]
+	return getPlayer(t.players, idx)
 }
 
 // GetPlayerCnt プレイヤー数取得

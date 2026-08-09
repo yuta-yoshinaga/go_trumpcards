@@ -1087,10 +1087,7 @@ func (g *Tysiac) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *Tysiac) GetPlayer(i int) *TysiacPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // IsHumanTurn 現在の手番 (プレイ) が人間か。

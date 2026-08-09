@@ -669,10 +669,7 @@ func (p *Poch) GetPlayers() []*PochPlayer { return p.players }
 
 // GetPlayer は idx のプレイヤーを返す。
 func (p *Poch) GetPlayer(idx int) *PochPlayer {
-	if idx < 0 || idx >= len(p.players) {
-		return nil
-	}
-	return p.players[idx]
+	return getPlayer(p.players, idx)
 }
 
 // GetPhase は現在のフェーズを返す。

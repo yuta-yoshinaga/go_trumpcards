@@ -1579,10 +1579,7 @@ func (g *Samba) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *Samba) GetPlayer(i int) *SambaPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetTeamCount チーム数取得
