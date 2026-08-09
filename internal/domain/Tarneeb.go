@@ -548,10 +548,7 @@ func (t *Tarneeb) IsHumanTurn() bool {
 
 // IsHumanBidTurn 現在のビッド手番が人間かどうか
 func (t *Tarneeb) IsHumanBidTurn() bool {
-	if t.bidPlayerIdx < 0 || t.bidPlayerIdx >= len(t.players) {
-		return false
-	}
-	return t.players[t.bidPlayerIdx].GetIsHuman()
+	return isHumanTurn(t.players, t.bidPlayerIdx)
 }
 
 // IsHumanTrumpTurn 現在のトランプ宣言手番が人間かどうか

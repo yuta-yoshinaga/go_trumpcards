@@ -379,12 +379,7 @@ func (sa *StreetsAndAlleys) canPlaceOnTableau(card *Card, col int) bool {
 
 // canPlaceOnFoundation ファンデーションにカードを置けるか判定
 func (sa *StreetsAndAlleys) canPlaceOnFoundation(card *Card, fIdx int) bool {
-	pile := sa.foundation[fIdx]
-	if len(pile) == 0 {
-		return card.GetValue() == 1
-	}
-	topCard := pile[len(pile)-1]
-	return card.GetDesign() == topCard.GetDesign() && card.GetValue() == topCard.GetValue()+1
+	return canPlaceOnFoundationPile(sa.foundation[fIdx], card)
 }
 
 // findFoundation カードを置けるファンデーションのインデックスを探す（見つからない場合-1）

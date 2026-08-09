@@ -446,18 +446,7 @@ func (t *Terrace) CanUndo() bool { return len(t.history) > 0 }
 
 // UndoN n 手戻す
 func (t *Terrace) UndoN(n int) error {
-	if n <= 0 {
-		return errors.New("n must be positive")
-	}
-	if n > len(t.history) {
-		return errors.New("not enough history")
-	}
-	for range n {
-		if err := t.Undo(); err != nil {
-			return err
-		}
-	}
-	return nil
+	return undoNChecked(t, n, len(t.history))
 }
 
 // UndoToEscape 膠着状態から抜けるのに必要なアンドゥ回数（膠着でなければ 0、不可なら -1）

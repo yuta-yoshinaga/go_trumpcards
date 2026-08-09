@@ -539,12 +539,7 @@ func (e *EightOff) canPlaceOnTableau(card *Card, col int) bool {
 
 // canPlaceOnFoundation ファンデーションにカードを置けるか判定
 func (e *EightOff) canPlaceOnFoundation(card *Card, fIdx int) bool {
-	pile := e.foundation[fIdx]
-	if len(pile) == 0 {
-		return card.GetValue() == 1
-	}
-	topCard := pile[len(pile)-1]
-	return card.GetDesign() == topCard.GetDesign() && card.GetValue() == topCard.GetValue()+1
+	return canPlaceOnFoundationPile(e.foundation[fIdx], card)
 }
 
 // isSameSuit 同じスートかどうか判定

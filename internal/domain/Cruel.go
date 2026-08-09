@@ -421,12 +421,7 @@ func (c *Cruel) canPlaceOnTableau(card *Card, col int) bool {
 // canPlaceOnFoundation ファウンデーションにカードを置けるか判定。
 // Reset() で各ファウンデーションに A を1枚配置済みなので、空のケースは通常発生しない。
 func (c *Cruel) canPlaceOnFoundation(card *Card, fIdx int) bool {
-	pile := c.foundation[fIdx]
-	if len(pile) == 0 {
-		return card.GetValue() == 1
-	}
-	topCard := pile[len(pile)-1]
-	return card.GetDesign() == topCard.GetDesign() && card.GetValue() == topCard.GetValue()+1
+	return canPlaceOnFoundationPile(c.foundation[fIdx], card)
 }
 
 // checkGameClear ゲームクリア判定

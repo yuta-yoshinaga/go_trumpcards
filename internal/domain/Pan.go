@@ -724,13 +724,7 @@ func (g *Pan) sortAllHands() {
 }
 
 func (g *Pan) sortHand(playerIdx int) {
-	p := g.players[playerIdx]
-	sortPlayerHand(p, func(ci, cj *Card) bool {
-		if ci.GetDesign() != cj.GetDesign() {
-			return ci.GetDesign() < cj.GetDesign()
-		}
-		return ci.GetValue() < cj.GetValue()
-	})
+	sortPlayerHand(g.players[playerIdx], bySuitThenValue)
 }
 
 // --- Scoring / meld helpers ---

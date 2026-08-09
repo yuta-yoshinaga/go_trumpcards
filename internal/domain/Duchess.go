@@ -552,18 +552,7 @@ func (d *Duchess) CanUndo() bool { return len(d.history) > 0 }
 
 // UndoN n 手戻す
 func (d *Duchess) UndoN(n int) error {
-	if n <= 0 {
-		return errors.New("n must be positive")
-	}
-	if n > len(d.history) {
-		return errors.New("not enough history")
-	}
-	for range n {
-		if err := d.Undo(); err != nil {
-			return err
-		}
-	}
-	return nil
+	return undoNChecked(d, n, len(d.history))
 }
 
 // UndoToEscape 膠着状態から抜けるのに必要なアンドゥ回数（膠着でなければ 0、不可なら -1）

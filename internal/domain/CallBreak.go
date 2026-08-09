@@ -397,10 +397,7 @@ func (cb *CallBreak) IsHumanTurn() bool {
 
 // IsHumanBidTurn 現在のビッド手番が人間かどうか
 func (cb *CallBreak) IsHumanBidTurn() bool {
-	if cb.bidPlayerIdx < 0 || cb.bidPlayerIdx >= len(cb.players) {
-		return false
-	}
-	return cb.players[cb.bidPlayerIdx].GetIsHuman()
+	return isHumanTurn(cb.players, cb.bidPlayerIdx)
 }
 
 // GetConfig 設定取得

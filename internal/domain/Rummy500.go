@@ -663,13 +663,7 @@ func (g *Rummy500) sortAllHands() {
 }
 
 func (g *Rummy500) sortHand(playerIdx int) {
-	p := g.players[playerIdx]
-	sortPlayerHand(p, func(ci, cj *Card) bool {
-		if ci.GetDesign() != cj.GetDesign() {
-			return ci.GetDesign() < cj.GetDesign()
-		}
-		return ci.GetValue() < cj.GetValue()
-	})
+	sortPlayerHand(g.players[playerIdx], bySuitThenValue)
 }
 
 // --- Meld / Run / Set / Layoff helpers ---
