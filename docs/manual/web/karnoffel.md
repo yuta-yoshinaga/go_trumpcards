@@ -84,6 +84,18 @@ flowchart TD
     M -->|はい| N[ゲーム終了]
 ```
 
+## ゲームの流れ
+
+ゲームの進行は `internal/domain/Karnoffel.go` のフェーズ機械そのものです。各ノードは同ファイルの `KarnoffelPhase` 定数、矢印ラベルはその遷移を行うメソッド名です。
+
+```mermaid
+flowchart TD
+    S(["リセット"]) --> P0
+    P0["プレイ"] --> P1["局終了"]
+    P1["局終了"] --> P2["ゲーム終了"]
+    P1 -->|beginHand| P0
+```
+
 ## 画面の操作方法
 
 | 操作 | 説明 |

@@ -92,6 +92,16 @@ flowchart TD
     N -->|まだ| B
 ```
 
+## ゲームの流れ
+
+ゲームの進行は `internal/domain/Literature.go` のフェーズ機械そのものです。各ノードは同ファイルの `LiteraturePhase` 定数、矢印ラベルはその遷移を行うメソッド名です。
+
+```mermaid
+flowchart TD
+    S(["リセット"]) --> P0
+    P0["進行中"] --> P1["ゲーム終了"]
+```
+
 ## 画面の操作方法
 
 | 操作 | 説明 |

@@ -30,6 +30,21 @@ go run ./cmd/trumpcards --lang en ninetynine  # 英語モード
 
 - **Easy**: ランダム / **Normal**: 基本戦略（デフォルト）/ **Hard**: 戦略的
 
+## ゲームの流れ
+
+ゲームの進行は `internal/domain/NinetyNine.go` のフェーズ機械そのものです。各ノードは同ファイルの `NinetyNinePhase` 定数、矢印ラベルはその遷移を行うメソッド名です。
+
+```mermaid
+flowchart TD
+    S(["リセット"]) --> P0
+    P0["埋める"] --> P1["プレイ"]
+    P1["プレイ"] --> P2["トリック終了"]
+    P2["トリック終了"] --> P3["ラウンド終了"]
+    P3["ラウンド終了"] --> P4["ゲーム終了"]
+    P3 -->|NextRound| P0
+    P2 -->|NextTrick| P1
+```
+
 ## コマンド一覧
 
 | コマンド | 短縮形 | 説明 |

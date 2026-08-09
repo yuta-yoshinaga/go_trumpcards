@@ -36,6 +36,20 @@ go run ./cmd/trumpcards --lang en gaigel  # 英語モード
 
 各ラウンドのカード点＋マリッジ点を累計し、先に101点（変更可）に達したチームが勝利。
 
+## ゲームの流れ
+
+ゲームの進行は `internal/domain/Gaigel.go` のフェーズ機械そのものです。各ノードは同ファイルの `GaigelPhase` 定数、矢印ラベルはその遷移を行うメソッド名です。
+
+```mermaid
+flowchart TD
+    S(["リセット"]) --> P0
+    P0["プレイ"] --> P1["トリック終了"]
+    P1["トリック終了"] --> P2["ラウンド終了"]
+    P2["ラウンド終了"] --> P3["ゲーム終了"]
+    P1 -->|NextTrick| P0
+    P2 -->|startPlayPhase| P0
+```
+
 ## コマンド一覧
 
 
