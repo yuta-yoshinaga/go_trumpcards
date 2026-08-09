@@ -487,15 +487,7 @@ func (b *Briscola) drawReplenish() {
 
 // drawOne 山札またはトランプカードから 1 枚引く。優先順位は山札 → トランプカード。
 func (b *Briscola) drawOne() *Card {
-	if c := b.trumpCards.DrawCard(); c != nil {
-		return c
-	}
-	if b.trumpCard != nil {
-		c := b.trumpCard
-		b.trumpCard = nil
-		return c
-	}
-	return nil
+	return drawOrTakeTrump(b.trumpCards, &b.trumpCard)
 }
 
 // allHandsEmpty 全プレイヤーの手札が空かを返す

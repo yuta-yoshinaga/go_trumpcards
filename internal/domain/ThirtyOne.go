@@ -609,14 +609,7 @@ func (g *ThirtyOne) firstActiveIdx() int {
 
 // nextActiveIdx from の次のアクティブプレイヤーのインデックスを返す
 func (g *ThirtyOne) nextActiveIdx(from int) int {
-	n := len(g.players)
-	for step := 1; step <= n; step++ {
-		idx := (from + step) % n
-		if !g.players[idx].IsEliminated() {
-			return idx
-		}
-	}
-	return from
+	return nextIndexWhere(g.players, from, func(p *ThirtyOnePlayer) bool { return !p.IsEliminated() })
 }
 
 // humanIdx 人間プレイヤーのインデックスを返す (-1 = 不在)

@@ -610,15 +610,7 @@ func (b *Bezique) drawReplenish() {
 
 // drawOne 山札 → 切り札表示カード の順に 1 枚引く。
 func (b *Bezique) drawOne() *Card {
-	if c := b.trumpCards.DrawCard(); c != nil {
-		return c
-	}
-	if b.trumpCard != nil {
-		c := b.trumpCard
-		b.trumpCard = nil
-		return c
-	}
-	return nil
+	return drawOrTakeTrump(b.trumpCards, &b.trumpCard)
 }
 
 // scoreDeal ディールを集計して累積し、ゲーム終了を判定する。

@@ -835,13 +835,7 @@ func (g *Anaconda) participantSeats() []int {
 
 // activeSeats は未フォールド・非脱落プレイヤーのインデックス列 (昇順) を返す。
 func (g *Anaconda) activeSeats() []int {
-	out := make([]int, 0, len(g.players))
-	for i, p := range g.players {
-		if !p.GetOut() && !p.GetFolded() {
-			out = append(out, i)
-		}
-	}
-	return out
+	return collectValidIndices(len(g.players), func(i int) bool { p := g.players[i]; return !p.GetOut() && !p.GetFolded() })
 }
 
 // activeCount は未フォールド・非脱落プレイヤー数を返す。
@@ -851,14 +845,7 @@ func (g *Anaconda) activeCount() int {
 
 // nextActive は from の次の未フォールド・非脱落プレイヤーを返す。
 func (g *Anaconda) nextActive(from int) int {
-	n := len(g.players)
-	for i := 1; i <= n; i++ {
-		idx := (from + i) % n
-		if !g.players[idx].GetOut() && !g.players[idx].GetFolded() {
-			return idx
-		}
-	}
-	return from
+	return nextIndexWhere(g.players, from, func(p *AnacondaPlayer) bool { return !p.GetOut() && !p.GetFolded() })
 }
 
 // solventCount はアンティを払える (非脱落かつチップ >= アンティ) プレイヤー数を返す。

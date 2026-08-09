@@ -491,15 +491,7 @@ func (g *Gaigel) drawReplenish() {
 
 // drawOne 山札または切り札表示カードから 1 枚引く。優先順位は山札 → 切り札表示カード。
 func (g *Gaigel) drawOne() *Card {
-	if c := g.trumpCards.DrawCard(); c != nil {
-		return c
-	}
-	if g.trumpCard != nil {
-		c := g.trumpCard
-		g.trumpCard = nil
-		return c
-	}
-	return nil
+	return drawOrTakeTrump(g.trumpCards, &g.trumpCard)
 }
 
 // allHandsEmpty 全プレイヤーの手札が空かを返す
