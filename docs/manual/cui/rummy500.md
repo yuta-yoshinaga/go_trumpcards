@@ -43,20 +43,23 @@ flowchart TD
 
 ## コマンド一覧
 
-```
-ds                     山札から1枚引く
-dd [idx]               捨て札のインデックス（省略で一番上）以上をすべて引く
-m <idx,idx,...>        手札のカードを場に出してメルドを作る
-lo <owner> <meld> <card>  既存メルドにレイオフ（owner: プレイヤーID、meld: メルドIdx、card: 手札Idx）
-d <idx>                カードを捨ててターン終了
-nr                     ラウンド終了後、次のラウンドへ進む
-sd <0-2>               CPU難易度を変更 (0=Easy, 1=Normal, 2=Hard) してリセット
-sl <n>                 目標スコアを変更してリセット
-l / log                棋譜を表示（ラウンド/ゲーム終了後のみ）
-r / reset              ゲームをリセット
-q / quit               終了
-? / help               ヘルプ表示
-```
+
+
+| コマンド | 短縮形 | 説明 |
+|----------|--------|------|
+| `drawstock` | `ds` | 山札から引く |
+| `drawdiscard [idx]` | `dd` | 捨て札から引く（指定インデックス以上すべて） |
+| `meld <idx,idx,...>` | `m` | メルドを場に出す |
+| `layoff <owner,meld,card> 既存メルドにレイオフ` | `lo` |  |
+| `discard <idx>` | `d` | カードを捨ててターン終了 |
+| `nextround` | `nr` | 次のラウンドへ |
+| `log` | `l` | action log |
+| `setdifficulty [0-2]` | `sd` | CPU難易度 (0=Easy, 1=Normal, 2=Hard) |
+| `setlimit <n>` | `sl` | ポイント上限 |
+| `hint` | `h` | ヒントを表示 |
+| `reset` | `r` | 新しいゲームを開始 |
+| `quit` | `q` | ゲーム終了（`exit` も同じ） |
+| `help` | `?` | コマンド一覧を表示 |
 
 ## 画面の見方
 

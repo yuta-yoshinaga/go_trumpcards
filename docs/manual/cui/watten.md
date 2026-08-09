@@ -49,17 +49,19 @@ go run ./cmd/trumpcards --lang en watten  # 英語モード
 
 ## コマンド一覧
 
-```
-d <rank> <suit>   宣言 (rank=a|7|8|9|10|j|q|k, suit=s|c|h|d) 例: d k h
-p <idx>           カードをプレイ
-rz / raise        ステークをレイズ（リード時）
-hold              レイズを受ける (hold)
-fold              レイズを降りる (fold)
-nr                次のディールへ
-sd <0-2>          CPU難易度
-st <n>            目標スコア (デフォルト15)
-h                 ヒント
-l / log           棋譜
-r                 リセット
-q                 終了
-```
+
+
+| コマンド | 短縮形 | 説明 |
+|----------|--------|------|
+| `declare <r> <s>` | `d` | 宣言 (Schlagランク + 切り札スート 1=S,2=C,3=H,4=D) |
+| `play <idx>` | `p` | カードをプレイ |
+| `raise` | `rz` | ステークを引き上げる (レイズ) |
+| `respond <h\|f>` | `resp` | レイズに応答 (h=hold, f=fold) |
+| `nextround` | `nr` | 次のディールへ |
+| `log` | `l` | action log |
+| `setdifficulty [0-2]` | `sd` | CPU難易度 (0=Easy, 1=Normal, 2=Hard) |
+| `settarget <n>` | `st` | 目標スコア (デフォルト15) |
+| `hint` | `h` | ヒントを表示 |
+| `reset` | `r` | 新しいゲームを開始 |
+| `quit` | `q` | ゲーム終了（`exit` も同じ） |
+| `help` | `?` | コマンド一覧を表示 |

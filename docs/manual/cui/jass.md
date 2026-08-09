@@ -49,16 +49,19 @@ go run ./cmd/trumpcards --lang en jass  # 英語モード
 
 ## コマンド一覧
 
-```
-c <suit>   切り札を選ぶ (1=S,2=C,3=H,4=D)
-sc         シーベン（パートナーへ委譲）
-p <idx>    カードをプレイ
-n          次のトリックへ
-nr         次のラウンドへ
-sd <0-2>   CPU難易度
-st <n>     目標スコア (デフォルト1000)
-h          ヒント
-l / log    棋譜
-r          リセット
-q          終了
-```
+
+
+| コマンド | 短縮形 | 説明 |
+|----------|--------|------|
+| `call <suit>` | `c` | 切り札を選ぶ (1=S,2=C,3=H,4=D) |
+| `schieben` | `sc` | シーベン (パートナーへ委譲) |
+| `play <idx>` | `p` | カードをプレイ |
+| `next` | `n` | 次のトリックへ |
+| `nextround` | `nr` | 次のラウンドへ |
+| `log` | `l` | action log |
+| `setdifficulty [0-2]` | `sd` | CPU難易度 (0=Easy, 1=Normal, 2=Hard) |
+| `settarget <n>` | `st` | 目標スコア (デフォルト1000) |
+| `hint` | `h` | ヒントを表示 |
+| `reset` | `r` | 新しいゲームを開始 |
+| `quit` | `q` | ゲーム終了（`exit` も同じ） |
+| `help` | `?` | コマンド一覧を表示 |

@@ -51,14 +51,15 @@ go run ./cmd/trumpcards --lang en frenchtarot  # 英語モード
 
 ## コマンド一覧
 
-| コマンド | 説明 |
-| --- | --- |
-| `bid petite` / `bid garde` / `bid gardesans` / `bid gardecontre` | コントラクトを宣言 |
-| `pass` | オークションでパス |
-| `discard <i1> <i2> <i3> <i4> <i5> <i6>` | エカルトで6枚を捨てる |
-| `p <idx>` / `play <idx>` | カードをプレイ |
-| `n` / `next` | 次のトリックへ |
-| `nr` / `nextround` | 次のディールへ |
-| `h` / `hint` | ヒントを表示 |
-| `r` / `reset` | ゲームをリセット |
-| `q` / `quit` | 終了 |
+| コマンド | 短縮形 | 説明 |
+|----------|--------|------|
+| `bid petite` |  | コントラクトを宣言 |
+| `pass` |  | オークションでパス |
+| `discard <i1> <i2> <i3> <i4> <i5> <i6>` |  | エカルトで6枚を捨てる |
+| `play <idx>` | `p` | カードをプレイ |
+| `next` | `n` | 次のトリックへ |
+| `nextround` | `nr` | 次のディールへ |
+| `hint` | `h` | ヒントを表示 |
+| `reset` | `r` | ゲームをリセット |
+| `quit` | `q` | 終了 |
+| `help` | `?` | コマンド一覧を表示 |

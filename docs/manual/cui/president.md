@@ -77,6 +77,7 @@ flowchart TD
 | `setrule <rule> <0\|1>` | `sr <rule> <0\|1>` | ルール切替（`sr list` で一覧表示） |
 | `log` | `l` | 棋譜を表示 |
 | `quit` | `q` | ゲーム終了 |
+| `help` | `?` | コマンド一覧を表示 |
 
 ### ルールキー
 
