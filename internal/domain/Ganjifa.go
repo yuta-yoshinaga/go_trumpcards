@@ -744,10 +744,7 @@ func (g *Ganjifa) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer 指定席のプレイヤー。範囲外は nil。
 func (g *Ganjifa) GetPlayer(idx int) *GanjifaPlayer {
-	if idx < 0 || idx >= len(g.players) {
-		return nil
-	}
-	return g.players[idx]
+	return getPlayer(g.players, idx)
 }
 
 // GetConfig 設定。

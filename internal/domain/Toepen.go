@@ -624,10 +624,7 @@ func (t *Toepen) GetPlayers() []*ToepenPlayer { return t.players }
 
 // GetPlayer は idx のプレイヤーを返す。範囲外は nil。
 func (t *Toepen) GetPlayer(idx int) *ToepenPlayer {
-	if idx < 0 || idx >= len(t.players) {
-		return nil
-	}
-	return t.players[idx]
+	return getPlayer(t.players, idx)
 }
 
 // GetLives は idx の累計失点を返す。

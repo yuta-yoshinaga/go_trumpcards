@@ -784,10 +784,7 @@ func (s *Sjavs) GetPlayers() []*SjavsPlayer { return s.players }
 
 // GetPlayer は idx のプレイヤーを返す。
 func (s *Sjavs) GetPlayer(idx int) *SjavsPlayer {
-	if idx < 0 || idx >= len(s.players) {
-		return nil
-	}
-	return s.players[idx]
+	return getPlayer(s.players, idx)
 }
 
 // GetPhase は現在のフェーズを返す。

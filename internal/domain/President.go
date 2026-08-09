@@ -395,10 +395,7 @@ func (p *President) GetLastPlayPlayerIdx() int { return p.round.lastPlayPlayerId
 
 // GetPlayer プレイヤー取得
 func (p *President) GetPlayer(idx int) *PresidentPlayer {
-	if idx < 0 || idx >= len(p.players) {
-		return nil
-	}
-	return p.players[idx]
+	return getPlayer(p.players, idx)
 }
 
 // GetPlayerCnt プレイヤー数取得

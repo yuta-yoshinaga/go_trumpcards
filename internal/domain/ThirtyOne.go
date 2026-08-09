@@ -674,10 +674,7 @@ func (g *ThirtyOne) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer 指定インデックスのプレイヤーを取得する
 func (g *ThirtyOne) GetPlayer(i int) *ThirtyOnePlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // IsHumanTurn 現在の手番が人間かを返す

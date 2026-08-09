@@ -546,10 +546,7 @@ func (fo *FiftyOne) GetPlayerCnt() int { return len(fo.players) }
 
 // GetPlayer 指定インデックスのプレイヤー
 func (fo *FiftyOne) GetPlayer(i int) *FiftyOnePlayer {
-	if i < 0 || i >= len(fo.players) {
-		return nil
-	}
-	return fo.players[i]
+	return getPlayer(fo.players, i)
 }
 
 // GetWinnerIdx 勝者インデックス (-1 = 未確定)

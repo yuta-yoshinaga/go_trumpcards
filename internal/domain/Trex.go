@@ -706,10 +706,7 @@ func (t *Trex) GetPlayers() []*TrexPlayer { return t.players }
 
 // GetPlayer は idx のプレイヤーを返す。
 func (t *Trex) GetPlayer(idx int) *TrexPlayer {
-	if idx < 0 || idx >= len(t.players) {
-		return nil
-	}
-	return t.players[idx]
+	return getPlayer(t.players, idx)
 }
 
 // GetPhase は現在のフェーズを返す。

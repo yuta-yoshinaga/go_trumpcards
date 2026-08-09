@@ -458,10 +458,7 @@ func (h *Hearts) GetPlayerCnt() int { return len(h.players) }
 
 // GetPlayer プレイヤー取得
 func (h *Hearts) GetPlayer(i int) *HeartsPlayer {
-	if i < 0 || i >= len(h.players) {
-		return nil
-	}
-	return h.players[i]
+	return getPlayer(h.players, i)
 }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得

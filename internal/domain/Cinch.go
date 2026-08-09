@@ -926,10 +926,7 @@ func (g *Cinch) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer は指定インデックスのプレイヤーを返す。
 func (g *Cinch) GetPlayer(i int) *CinchPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetLastDealDetail は直前ディールの得点内訳を返す (nil の場合もある)。

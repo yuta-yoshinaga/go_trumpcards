@@ -871,10 +871,7 @@ func (g *Tablanet) GetLastCaptureIdx() int { return g.state.lastCaptureIdx }
 
 // GetPlayer は指定インデックスのプレイヤーを返す。
 func (g *Tablanet) GetPlayer(i int) *TablanetPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetPlayerCnt はプレイヤー数を返す。

@@ -1082,10 +1082,7 @@ func (g *Anaconda) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer は指定インデックスのプレイヤーを返す。
 func (g *Anaconda) GetPlayer(i int) *AnacondaPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetChips は人間 (seat 0) の保有チップを返す。

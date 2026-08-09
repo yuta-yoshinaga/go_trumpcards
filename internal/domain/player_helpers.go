@@ -57,6 +57,20 @@ type finishable interface {
 	GetIsFinished() bool
 }
 
+// getPlayer returns the seat at idx, or the zero value (nil for the pointer
+// types every game uses) when idx is outside the roster. 152 games had this
+// exact body.
+//
+// Constrained by `any` rather than an interface: the games' player types share
+// no method this needs, and the helper only indexes. See issue #5185.
+func getPlayer[T any](players []T, idx int) T {
+	if idx < 0 || idx >= len(players) {
+		var zero T
+		return zero
+	}
+	return players[idx]
+}
+
 // humanReporter is the minimal view needed to tell the human player apart from
 // the CPUs.
 type humanReporter interface {

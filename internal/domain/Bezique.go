@@ -414,10 +414,7 @@ func (b *Bezique) GetPlayerCnt() int { return len(b.players) }
 
 // GetPlayer プレイヤー取得
 func (b *Bezique) GetPlayer(i int) *BeziquePlayer {
-	if i < 0 || i >= len(b.players) {
-		return nil
-	}
-	return b.players[i]
+	return getPlayer(b.players, i)
 }
 
 // GetDealPoints プレイヤーの当ディール得点取得

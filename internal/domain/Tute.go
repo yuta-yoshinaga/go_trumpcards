@@ -763,10 +763,7 @@ func (g *Tute) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *Tute) GetPlayer(i int) *TutePlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // IsHumanTurn 現在の手番が人間か。

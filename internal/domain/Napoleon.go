@@ -552,10 +552,7 @@ func (n *Napoleon) GetPlayerCnt() int { return len(n.players) }
 
 // GetPlayer プレイヤー取得
 func (n *Napoleon) GetPlayer(i int) *NapoleonPlayer {
-	if i < 0 || i >= len(n.players) {
-		return nil
-	}
-	return n.players[i]
+	return getPlayer(n.players, i)
 }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得

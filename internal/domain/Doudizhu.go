@@ -411,10 +411,7 @@ func (d *Doudizhu) GetLastPlayIdx() int { return d.round.lastPlayIdx }
 
 // GetPlayer プレイヤー取得
 func (d *Doudizhu) GetPlayer(idx int) *DoudizhuPlayer {
-	if idx < 0 || idx >= len(d.players) {
-		return nil
-	}
-	return d.players[idx]
+	return getPlayer(d.players, idx)
 }
 
 // GetPlayerCnt プレイヤー数取得

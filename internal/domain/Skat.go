@@ -1384,10 +1384,7 @@ func (s *Skat) GetPlayerCnt() int { return len(s.players) }
 
 // GetPlayer returns the i-th player (nil if out of range).
 func (s *Skat) GetPlayer(i int) *SkatPlayer {
-	if i < 0 || i >= len(s.players) {
-		return nil
-	}
-	return s.players[i]
+	return getPlayer(s.players, i)
 }
 
 // GetLeadPlayerIdx returns the lead player index.

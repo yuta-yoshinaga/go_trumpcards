@@ -409,10 +409,7 @@ func (o *Wizard) GetPlayerCnt() int { return len(o.players) }
 
 // GetPlayer プレイヤー取得
 func (o *Wizard) GetPlayer(i int) *WizardPlayer {
-	if i < 0 || i >= len(o.players) {
-		return nil
-	}
-	return o.players[i]
+	return getPlayer(o.players, i)
 }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得

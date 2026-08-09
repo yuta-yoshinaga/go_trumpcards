@@ -930,10 +930,7 @@ func (g *SevenBridge) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *SevenBridge) GetPlayer(i int) *SevenBridgePlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetConfig 設定取得

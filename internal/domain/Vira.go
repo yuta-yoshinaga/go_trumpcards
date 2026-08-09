@@ -841,10 +841,7 @@ func (g *Vira) GetPlayers() []*ViraPlayer { return g.players }
 
 // GetPlayer 指定席のプレイヤー。範囲外は nil。
 func (g *Vira) GetPlayer(idx int) *ViraPlayer {
-	if idx < 0 || idx >= len(g.players) {
-		return nil
-	}
-	return g.players[idx]
+	return getPlayer(g.players, idx)
 }
 
 // GetConfig 設定。

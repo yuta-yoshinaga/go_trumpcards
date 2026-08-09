@@ -649,10 +649,7 @@ func (g *KnockoutWhist) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *KnockoutWhist) GetPlayer(i int) *KnockoutWhistPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetActiveCount 残存プレイヤー数を返す。

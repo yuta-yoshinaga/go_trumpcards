@@ -1424,10 +1424,7 @@ func (g *Canasta) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *Canasta) GetPlayer(i int) *CanastaPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // IsHumanTurn 現在の手番が人間かどうか

@@ -565,10 +565,7 @@ func (g *OpenFaceChinese) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *OpenFaceChinese) GetPlayer(i int) *OpenFaceChinesePlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetConfig 設定取得

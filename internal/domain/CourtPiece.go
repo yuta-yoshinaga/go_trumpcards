@@ -480,10 +480,7 @@ func (c *CourtPiece) GetPlayerCnt() int { return len(c.players) }
 
 // GetPlayer プレイヤー取得
 func (c *CourtPiece) GetPlayer(i int) *CourtPiecePlayer {
-	if i < 0 || i >= len(c.players) {
-		return nil
-	}
-	return c.players[i]
+	return getPlayer(c.players, i)
 }
 
 // GetConfig 設定取得
