@@ -6,7 +6,13 @@ Call Break は 4 人プレイのトリックテイキングゲームで、Spades
 
 ## 起動方法
 
-ヘッダーの「コールブレイク」または `/#/callbreak` ルートからアクセスします。
+```sh
+go run ./cmd/trumpcards web  # CLI経由でWebサーバーを起動
+go run ./cmd/server          # 直接Webサーバーを起動
+```
+
+ブラウザで `http://localhost:8080` にアクセスし、ナビゲーションバーから「コールブレイク」を選択します。
+ナビバーのJA/ENボタンで日本語・英語を切り替えられます。
 
 ## ルール
 

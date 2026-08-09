@@ -7,7 +7,8 @@
 ## 起動方法
 
 ```sh
-go run ./cmd/cli poker
+go run ./cmd/trumpcards poker
+go run ./cmd/trumpcards --lang en poker  # 英語モード
 ```
 
 ## ルール

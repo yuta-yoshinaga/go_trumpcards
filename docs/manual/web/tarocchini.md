@@ -9,11 +9,13 @@ Tarocchini（タロッキーニ、別名オットチェント）はイタリア�
 ## 起動方法
 
 ```sh
-go run ./cmd/trumpcards web        # サーバーを起動
-go run ./cmd/trumpcards web --open # サーバー起動 + ブラウザを開く
+go run ./cmd/trumpcards web         # CLI経由でWebサーバーを起動
+go run ./cmd/trumpcards web --open  # サーバー起動 + ブラウザを開く
+go run ./cmd/server                 # 直接Webサーバーを起動
 ```
 
-ブラウザで `http://localhost:8080/tarocchini` を開きます。
+ブラウザで `http://localhost:8080` にアクセスし、ナビゲーションバーから「タロッキーニ」を選択します。
+ナビバーのJA/ENボタンで日本語・英語を切り替えられます。
 
 ## ルール
 

@@ -7,7 +7,8 @@
 ## 起動方法
 
 ```sh
-go run ./cmd/cli daifugo
+go run ./cmd/trumpcards daifugo
+go run ./cmd/trumpcards --lang en daifugo  # 英語モード
 ```
 
 ## ルール

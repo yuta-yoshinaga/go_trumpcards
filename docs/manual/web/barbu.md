@@ -6,12 +6,13 @@ Barbu（バルブ／ひげおじさん）はフランス発祥のコンペンデ
 
 ## 起動方法
 
-Web サーバーを起動し、ブラウザで `/barbu` を開きます。
-
 ```sh
-go run ./cmd/trumpcards web
-# ブラウザで http://localhost:8080/barbu を開く
+go run ./cmd/trumpcards web  # CLI経由でWebサーバーを起動
+go run ./cmd/server          # 直接Webサーバーを起動
 ```
+
+ブラウザで `http://localhost:8080` にアクセスし、ナビゲーションバーから「バルブ」を選択します。
+ナビバーのJA/ENボタンで日本語・英語を切り替えられます。
 
 ## ルール
 
