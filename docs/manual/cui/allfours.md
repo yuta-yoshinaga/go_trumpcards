@@ -1,4 +1,4 @@
-# All Fours / Seven Up (CUI版) 遊び方
+# オールフォーズ（CUI版）遊び方
 
 ## ゲーム概要
 

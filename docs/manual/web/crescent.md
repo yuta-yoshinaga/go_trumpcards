@@ -1,4 +1,4 @@
-# Crescent Solitaire（Web版）遊び方
+# クレセント・ソリティア（Web版）遊び方
 
 ## ゲーム概要
 

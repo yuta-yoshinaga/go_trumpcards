@@ -1,4 +1,4 @@
-# Court Piece / Rang コートピース（Web版）遊び方
+# コートピース (Rang)（Web版）遊び方
 
 ## ゲーム概要
 

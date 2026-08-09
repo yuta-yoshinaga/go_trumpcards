@@ -1,4 +1,4 @@
-# Ultimate Texas Hold'em（Web版）遊び方
+# アルティメット・テキサスホールデム（Web版）遊び方
 
 ## ゲーム概要
 

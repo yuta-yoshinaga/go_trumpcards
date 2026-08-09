@@ -1,4 +1,4 @@
-# Russian Solitaire（CUI版）遊び方
+# ロシアンソリティア（CUI版）遊び方
 
 ## ゲーム概要
 

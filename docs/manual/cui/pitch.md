@@ -1,4 +1,4 @@
-# Pitch / Setback (CUI版) 遊び方
+# ピッチ（CUI版）遊び方
 
 ## ゲーム概要
 

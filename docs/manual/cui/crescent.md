@@ -1,4 +1,4 @@
-# Crescent Solitaire（CUI版）遊び方
+# クレセント・ソリティア（CUI版）遊び方
 
 ## ゲーム概要
 
