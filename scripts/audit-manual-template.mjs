@@ -40,15 +40,23 @@ const NAV_JA = join(REPO_ROOT, 'frontend/src/i18n/locales/ja/common.json');
  */
 const MIN_MANUALS = 250;
 
-/** Section contract per manual kind, in the order the template lays them out. */
+/**
+ * Section contract per manual kind, in the order the template lays them out.
+ *
+ * 遊び方のコツ is deliberately absent: both templates mark it
+ * `<!-- 任意セクション -->`. docs/new-game-checklist.md lists it alongside the
+ * required ones, which is the doc to correct -- requiring it here would buy
+ * conformance by adding 41 sections of filler strategy prose, which is worse
+ * for a reader than an honestly absent section.
+ */
 const SPEC = {
   cui: {
     suffix: '（CUI版）遊び方',
-    sections: ['ゲーム概要', '起動方法', 'ルール', 'ゲームの流れ', 'コマンド一覧', '画面の見方', '遊び方のコツ'],
+    sections: ['ゲーム概要', '起動方法', 'ルール', 'ゲームの流れ', 'コマンド一覧', '画面の見方'],
   },
   web: {
     suffix: '（Web版）遊び方',
-    sections: ['ゲーム概要', '起動方法', 'ルール', 'ゲームの流れ', '画面の操作方法', '画面構成', '遊び方のコツ'],
+    sections: ['ゲーム概要', '起動方法', 'ルール', 'ゲームの流れ', '画面の操作方法', '画面構成'],
   },
 };
 
