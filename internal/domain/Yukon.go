@@ -425,10 +425,7 @@ func (y *Yukon) isBlack(card *Card) bool {
 
 // autoFlipTableau タブローの最上部の裏カードを自動フリップ
 func (y *Yukon) autoFlipTableau(col int) {
-	cards := y.tableau[col]
-	if len(cards) > 0 && !cards[len(cards)-1].FaceUp {
-		cards[len(cards)-1].FaceUp = true
-	}
+	autoFlipTopCard(y.tableau[col])
 }
 
 // checkGameClear ゲームクリア判定

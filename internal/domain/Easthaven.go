@@ -504,10 +504,7 @@ func (e *Easthaven) isBlack(card *Card) bool {
 
 // autoFlipTableau タブローの最上部の裏カードを自動フリップ
 func (e *Easthaven) autoFlipTableau(col int) {
-	cards := e.tableau[col]
-	if len(cards) > 0 && !cards[len(cards)-1].FaceUp {
-		cards[len(cards)-1].FaceUp = true
-	}
+	autoFlipTopCard(e.tableau[col])
 }
 
 // checkGameClear ゲームクリア判定
