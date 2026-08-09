@@ -538,3 +538,39 @@ func afDisplay(betRaise, call int) string {
 	}
 	return fmt.Sprintf("%.1f", float64(betRaise)/float64(call))
 }
+
+// humanChipHolder is a seat that can be identified as the human and asked for
+// its chip count.
+type humanChipHolder interface {
+	GetIsHuman() bool
+	GetChips() int
+}
+
+// rebuyAvailable reports whether the human may still rebuy: the option must be
+// enabled, the rebuy period not yet past, and the human broke with rebuys left.
+// 5 games had this written out.
+func rebuyAvailable[P humanChipHolder](enabled bool, handCount, periodHands int, players []P, counts []int, maxCount int) bool {
+	if !enabled || handCount > periodHands {
+		return false
+	}
+	for i, p := range players {
+		if p.GetIsHuman() && p.GetChips() <= 0 && counts[i] < maxCount {
+			return true
+		}
+	}
+	return false
+}
+
+// addonAvailable reports whether the human may take the add-on, which is
+// offered on exactly one hand and only once. 5 games had this written out.
+func addonAvailable[P humanChipHolder](enabled bool, handCount, afterHand int, players []P, used []bool) bool {
+	if !enabled || handCount != afterHand {
+		return false
+	}
+	for i, p := range players {
+		if p.GetIsHuman() && !used[i] {
+			return true
+		}
+	}
+	return false
+}

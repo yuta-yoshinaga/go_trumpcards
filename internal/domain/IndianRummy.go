@@ -396,12 +396,7 @@ func (g *IndianRummy) CpuPlay() {
 
 // cpuDraw CPU の引き処理。捨て札トップが役を進めるなら拾い、そうでなければ山札から引く。
 func (g *IndianRummy) cpuDraw() {
-	top := g.GetDiscardTop()
-	if top != nil && g.cpuShouldTakeDiscard(top) {
-		_ = g.drawFromDiscard()
-		return
-	}
-	_ = g.drawFromStock()
+	cpuDrawTurn(g)
 }
 
 // cpuShouldTakeDiscard 捨て札トップを拾うべきかを返す

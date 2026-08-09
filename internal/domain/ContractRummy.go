@@ -544,12 +544,7 @@ func (g *ContractRummy) CpuPlay() {
 
 // cpuDraw CPU の引き処理。捨て札トップが手役を進めるなら拾い、そうでなければ山札から引く
 func (g *ContractRummy) cpuDraw() {
-	top := g.GetDiscardTop()
-	if top != nil && g.cpuShouldTakeDiscard(top) {
-		_ = g.drawFromDiscard()
-		return
-	}
-	_ = g.drawFromStock()
+	cpuDrawTurn(g)
 }
 
 // cpuShouldTakeDiscard 捨て札トップを拾うべきかを返す
@@ -1471,4 +1466,25 @@ func (g *ContractRummy) UnmarshalJSON(data []byte) error {
 	g.roundWinnerIdx = j.RoundWinnerIdx
 	g.startingPlayer = j.StartingPlayer
 	return nil
+}
+
+// discardDrawer is a rummy-style game that chooses between the discard pile and
+// the stock on the CPU's turn.
+type discardDrawer interface {
+	GetDiscardTop() *Card
+	cpuShouldTakeDiscard(*Card) bool
+	drawFromDiscard() error
+	drawFromStock() error
+}
+
+// cpuDrawTurn takes the discard when the CPU wants it and the stock otherwise.
+// 5 games had this written out. Lives here rather than player_helpers.go
+// because all five callers are `extra`-tagged, as is this file.
+func cpuDrawTurn(g discardDrawer) {
+	top := g.GetDiscardTop()
+	if top != nil && g.cpuShouldTakeDiscard(top) {
+		_ = g.drawFromDiscard()
+		return
+	}
+	_ = g.drawFromStock()
 }

@@ -245,7 +245,7 @@ type FrenchTarot struct {
 	scored          bool
 	gameEndFlag     bool
 	winnerPlayer    int
-	actionLog       []*ActionLogEntry
+	actionLogBase
 }
 
 // NewFrenchTarot コンストラクタ
@@ -1466,13 +1466,7 @@ func (g *FrenchTarot) isHumanBidTurn() bool {
 
 // appendLog 棋譜にエントリを追加する。
 func (g *FrenchTarot) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.appendLogAt(len(g.actionLog)+1, playerIdx, actionType, detail, cards)
 }
 
 // frenchTarotBidName 入札の表示名を返す。

@@ -15,7 +15,7 @@ type logReader interface {
 	GetActionLog() []*ActionLogEntry
 }
 
-// These 19 games moved their action log from an own `actionLog` field to the
+// These 30 games moved their action log from an own `actionLog` field to the
 // embedded actionLogBase. Promotion keeps `g.actionLog` compiling in their
 // MarshalJSON/UnmarshalJSON pairs, so nothing in them had to change -- which is
 // exactly why a mistake here would be quiet. The log is persisted to KV for the
@@ -124,27 +124,93 @@ func TestActionLogBaseAdopters_LogSurvivesAKVRoundTrip(t *testing.T) {
 			g.addLog(1, "act", "detail", nil)
 			return g, NewDefaultZwicker()
 		}},
+		{"Cego", func() (any, any) {
+			g := NewDefaultCego()
+			g.appendLog(1, "act", "detail", nil)
+			return g, NewDefaultCego()
+		}},
+		{"FrenchTarot", func() (any, any) {
+			g := NewDefaultFrenchTarot()
+			g.appendLog(1, "act", "detail", nil)
+			return g, NewDefaultFrenchTarot()
+		}},
+		{"Ganjifa", func() (any, any) {
+			g := NewDefaultGanjifa()
+			// Unlike the others, this game's UnmarshalJSON validates the state and
+			// rejects a never-Reset game ("invalid state values in json"), so the
+			// fixture has to be a dealt one.
+			g.Reset()
+			g.appendLog(1, "act", "detail", nil)
+			return g, NewDefaultGanjifa()
+		}},
+		{"Koenigrufen", func() (any, any) {
+			g := NewDefaultKoenigrufen()
+			g.appendLog(1, "act", "detail", nil)
+			return g, NewDefaultKoenigrufen()
+		}},
+		{"Scarto", func() (any, any) {
+			g := NewDefaultScarto()
+			g.appendLog(1, "act", "detail", nil)
+			return g, NewDefaultScarto()
+		}},
+		{"Vira", func() (any, any) {
+			g := NewDefaultVira()
+			// Unlike the others, this game's UnmarshalJSON validates the state and
+			// rejects a never-Reset game ("invalid state values in json"), so the
+			// fixture has to be a dealt one.
+			g.Reset()
+			g.appendLog(1, "act", "detail", nil)
+			return g, NewDefaultVira()
+		}},
+		{"Guandan", func() (any, any) {
+			g := NewDefaultGuandan()
+			g.addLog(1, "act", "detail", nil)
+			return g, NewDefaultGuandan()
+		}},
+		{"Karnoffel", func() (any, any) {
+			g := NewDefaultKarnoffel()
+			g.addLog(1, "act", "detail", nil)
+			return g, NewDefaultKarnoffel()
+		}},
+		{"Literature", func() (any, any) {
+			g := NewDefaultLiterature()
+			g.addLog(1, "act", "detail", nil)
+			return g, NewDefaultLiterature()
+		}},
+		{"ShengJi", func() (any, any) {
+			g := NewDefaultShengJi()
+			g.addLog(1, "act", "detail", nil)
+			return g, NewDefaultShengJi()
+		}},
+		{"SixBidSolo", func() (any, any) {
+			g := NewDefaultSixBidSolo()
+			g.addLog(1, "act", "detail", nil)
+			return g, NewDefaultSixBidSolo()
+		}},
 	}
 
-	assert.Len(t, adopters, 19, "every game delegating addLog to appendLog must be listed")
+	assert.Len(t, adopters, 30, "every game embedding actionLogBase via addLog/appendLog must be listed")
 
 	for _, a := range adopters {
 		t.Run(a.name, func(t *testing.T) {
 			saved, restored := a.build()
 
 			before := saved.(logReader).GetActionLog()
-			require.Len(t, before, 1, "fixture must actually record an entry")
+			require.NotEmpty(t, before, "fixture must actually record an entry")
 
 			data, err := json.Marshal(saved)
 			require.NoError(t, err)
 			require.NoError(t, json.Unmarshal(data, restored))
 
 			after := restored.(logReader).GetActionLog()
-			require.Len(t, after, 1, "the action log did not survive the round trip")
-			assert.Equal(t, before[0].TurnNumber, after[0].TurnNumber)
-			assert.Equal(t, before[0].PlayerIdx, after[0].PlayerIdx)
-			assert.Equal(t, before[0].ActionType, after[0].ActionType)
-			assert.Equal(t, before[0].Detail, after[0].Detail)
+			require.Len(t, after, len(before), "the action log did not survive the round trip")
+			// Compare the entry the fixture appended, which is the last one --
+			// some games log during Reset, so it is not always the only one.
+			b, a := before[len(before)-1], after[len(after)-1]
+			assert.Equal(t, b.TurnNumber, a.TurnNumber)
+			assert.Equal(t, b.PlayerIdx, a.PlayerIdx)
+			assert.Equal(t, b.ActionType, a.ActionType)
+			assert.Equal(t, b.Detail, a.Detail)
 		})
 	}
 }

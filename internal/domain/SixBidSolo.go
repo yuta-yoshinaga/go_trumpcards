@@ -290,7 +290,7 @@ type SixBidSolo struct {
 	handNumber  int
 	gameEndFlag bool
 	winnerIdx   int
-	actionLog   []*ActionLogEntry
+	actionLogBase
 }
 
 // NewSixBidSolo コンストラクタ
@@ -1190,12 +1190,7 @@ func (s *SixBidSolo) GetActionLog() []*ActionLogEntry { return s.actionLog }
 
 // addLog は棋譜を 1 件追加する。
 func (s *SixBidSolo) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	s.actionLog = append(s.actionLog, &ActionLogEntry{
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	s.appendLogAt(0, playerIdx, actionType, detail, cards)
 }
 
 // sixBidSoloBidName はビッドの内部名を返す (棋譜用)。

@@ -211,7 +211,7 @@ type Guandan struct {
 	handNumber       int
 	gameEndFlag      bool
 	winnerTeam       int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // GuandanTribute は 1 件の進貢の記録。
@@ -1229,12 +1229,7 @@ func (g *Guandan) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // addLog は棋譜を 1 件追加する。
 func (g *Guandan) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.appendLogAt(0, playerIdx, actionType, detail, cards)
 }
 
 // ---- テスト用 ----

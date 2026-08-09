@@ -170,7 +170,7 @@ type Scarto struct {
 	scored          bool
 	gameEndFlag     bool
 	winnerPlayer    int
-	actionLog       []*ActionLogEntry
+	actionLogBase
 }
 
 // NewScarto コンストラクタ
@@ -1100,13 +1100,7 @@ func (g *Scarto) isHumanScartoTurn() bool {
 
 // appendLog 棋譜にエントリを追加する。
 func (g *Scarto) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.appendLogAt(len(g.actionLog)+1, playerIdx, actionType, detail, cards)
 }
 
 // scartoCardStr カードのログ表示文字列 (切り札・エクスキューズ対応)。

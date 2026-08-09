@@ -1171,28 +1171,12 @@ func (o *Omaha) SkipAddon() error {
 
 // IsRebuyAvailable 人間プレイヤーがリバイ可能かどうか
 func (o *Omaha) IsRebuyAvailable() bool {
-	if !o.config.RebuyEnabled || o.handCount > o.config.RebuyPeriodHands {
-		return false
-	}
-	for i, p := range o.players {
-		if p.GetIsHuman() && p.GetChips() <= 0 && o.rebuyCounts[i] < o.config.RebuyMaxCount {
-			return true
-		}
-	}
-	return false
+	return rebuyAvailable(o.config.RebuyEnabled, o.handCount, o.config.RebuyPeriodHands, o.players, o.rebuyCounts, o.config.RebuyMaxCount)
 }
 
 // IsAddonAvailable 人間プレイヤーがアドオン可能かどうか
 func (o *Omaha) IsAddonAvailable() bool {
-	if !o.config.AddonEnabled || o.handCount != o.config.AddonAfterHand {
-		return false
-	}
-	for i, p := range o.players {
-		if p.GetIsHuman() && !o.addonUsed[i] {
-			return true
-		}
-	}
-	return false
+	return addonAvailable(o.config.AddonEnabled, o.handCount, o.config.AddonAfterHand, o.players, o.addonUsed)
 }
 
 // GetRebuyCounts プレイヤーごとのリバイ回数取得

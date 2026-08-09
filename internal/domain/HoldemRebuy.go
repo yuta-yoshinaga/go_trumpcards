@@ -94,28 +94,12 @@ func (h *Holdem) SkipAddon() error {
 
 // IsRebuyAvailable 人間プレイヤーがリバイ可能かどうか
 func (h *Holdem) IsRebuyAvailable() bool {
-	if !h.config.RebuyEnabled || h.handCount > h.config.RebuyPeriodHands {
-		return false
-	}
-	for i, p := range h.players {
-		if p.GetIsHuman() && p.GetChips() <= 0 && h.rebuyCounts[i] < h.config.RebuyMaxCount {
-			return true
-		}
-	}
-	return false
+	return rebuyAvailable(h.config.RebuyEnabled, h.handCount, h.config.RebuyPeriodHands, h.players, h.rebuyCounts, h.config.RebuyMaxCount)
 }
 
 // IsAddonAvailable 人間プレイヤーがアドオン可能かどうか
 func (h *Holdem) IsAddonAvailable() bool {
-	if !h.config.AddonEnabled || h.handCount != h.config.AddonAfterHand {
-		return false
-	}
-	for i, p := range h.players {
-		if p.GetIsHuman() && !h.addonUsed[i] {
-			return true
-		}
-	}
-	return false
+	return addonAvailable(h.config.AddonEnabled, h.handCount, h.config.AddonAfterHand, h.players, h.addonUsed)
 }
 
 // GetRebuyCounts プレイヤーごとのリバイ回数取得

@@ -999,28 +999,12 @@ func (sd *ShortDeck) SkipAddon() error {
 
 // IsRebuyAvailable 人間プレイヤーがリバイ可能かどうか
 func (sd *ShortDeck) IsRebuyAvailable() bool {
-	if !sd.config.RebuyEnabled || sd.handCount > sd.config.RebuyPeriodHands {
-		return false
-	}
-	for i, p := range sd.players {
-		if p.GetIsHuman() && p.GetChips() <= 0 && sd.rebuyCounts[i] < sd.config.RebuyMaxCount {
-			return true
-		}
-	}
-	return false
+	return rebuyAvailable(sd.config.RebuyEnabled, sd.handCount, sd.config.RebuyPeriodHands, sd.players, sd.rebuyCounts, sd.config.RebuyMaxCount)
 }
 
 // IsAddonAvailable 人間プレイヤーがアドオン可能かどうか
 func (sd *ShortDeck) IsAddonAvailable() bool {
-	if !sd.config.AddonEnabled || sd.handCount != sd.config.AddonAfterHand {
-		return false
-	}
-	for i, p := range sd.players {
-		if p.GetIsHuman() && !sd.addonUsed[i] {
-			return true
-		}
-	}
-	return false
+	return addonAvailable(sd.config.AddonEnabled, sd.handCount, sd.config.AddonAfterHand, sd.players, sd.addonUsed)
 }
 
 // GetRebuyCounts プレイヤーごとのリバイ回数取得

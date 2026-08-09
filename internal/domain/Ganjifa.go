@@ -132,7 +132,7 @@ type Ganjifa struct {
 	playerScores     [GanjifaPlayerCnt]int
 	gameEndFlag      bool
 	winnerPlayer     int // -1 = 未確定 (同点)
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // ganjifaJSON is the JSON wire format for Ganjifa.
@@ -412,13 +412,7 @@ func (g *Ganjifa) sortAllHands() {
 
 // appendLog 棋譜に 1 行追加する。
 func (g *Ganjifa) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.appendLogAt(len(g.actionLog)+1, playerIdx, actionType, detail, cards)
 }
 
 // finishMatch マッチを終え、獲得トリック数の累計が最大のプレイヤーを勝者にする。

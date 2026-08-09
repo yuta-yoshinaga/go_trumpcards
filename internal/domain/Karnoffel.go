@@ -275,7 +275,7 @@ type Karnoffel struct {
 	handNumber  int
 	gameEndFlag bool
 	winnerTeam  int
-	actionLog   []*ActionLogEntry
+	actionLogBase
 }
 
 // NewKarnoffel コンストラクタ
@@ -738,12 +738,7 @@ func (k *Karnoffel) GetActionLog() []*ActionLogEntry { return k.actionLog }
 
 // addLog は棋譜を 1 件追加する。
 func (k *Karnoffel) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	k.actionLog = append(k.actionLog, &ActionLogEntry{
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	k.appendLogAt(0, playerIdx, actionType, detail, cards)
 }
 
 // ---- テスト用 ----

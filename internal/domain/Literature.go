@@ -179,7 +179,7 @@ type Literature struct {
 	lastClaim   *LiteratureClaimResult
 	gameEndFlag bool
 	winnerTeam  int
-	actionLog   []*ActionLogEntry
+	actionLogBase
 }
 
 // NewLiterature コンストラクタ
@@ -853,12 +853,7 @@ func (l *Literature) GetActionLog() []*ActionLogEntry { return l.actionLog }
 
 // addLog は棋譜を 1 件追加する。
 func (l *Literature) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	l.actionLog = append(l.actionLog, &ActionLogEntry{
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	l.appendLogAt(0, playerIdx, actionType, detail, cards)
 }
 
 // literatureCardName は札の内部名を返す (棋譜用)。
