@@ -206,8 +206,19 @@ func checkManual(t *testing.T, spec manualSpec, game, navLabel, src, rel string)
 		t.Errorf("%s: required sections are %v, want exactly %v in that order (docs/manual/%s_template.md)",
 			rel, got, spec.sections, strings.ToLower(spec.kind))
 	}
+	// Counted by exact equality, not by substring. A NUL-delimited
+	// strings.Count matched any permitted heading that merely starts with a
+	// required name -- `## ルール一覧` beside `## ルール` would have been
+	// reported as a duplicate. It also diverged from the JS twin, which counts
+	// with a plain equality filter.
 	for _, s := range spec.sections {
-		if n := strings.Count("\x00"+strings.Join(h2, "\x00"), "\x00"+s); n > 1 {
+		n := 0
+		for _, h := range h2 {
+			if h == s {
+				n++
+			}
+		}
+		if n > 1 {
 			t.Errorf("%s: section %q appears %d times, want once", rel, s, n)
 		}
 	}
@@ -436,6 +447,20 @@ func TestManualTemplateGuardChecksTheWebSpecifics(t *testing.T) {
 				t.Errorf("the guard stayed silent on %q", c.name)
 			}
 		})
+	}
+}
+
+// A permitted extra heading that merely starts with a required section's name
+// must not read as a duplicate of it. The check used to count NUL-delimited
+// substrings, so `## ルール一覧` beside `## ルール` would have failed a manual
+// that is perfectly legal -- the templates explicitly allow game-specific
+// sections.
+func TestManualTemplateGuardAllowsHeadingsPrefixedByARequiredName(t *testing.T) {
+	src := strings.Replace(conformingManual, "## ルール\n", "## ルール\n\n無し。\n\n## ルール一覧\n", 1)
+	fake := &testing.T{}
+	checkManual(fake, cuiSpec, "testgame", "テスト", src, "docs/manual/cui/testgame.md")
+	if fake.Failed() {
+		t.Error("the guard rejected a manual whose extra heading merely shares a prefix with a required one")
 	}
 }
 
