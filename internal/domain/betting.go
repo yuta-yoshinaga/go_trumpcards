@@ -2,7 +2,10 @@
 
 package domain
 
-import "sort"
+import (
+	"fmt"
+	"sort"
+)
 
 // BettingLimitType ベッティングリミットタイプ
 type BettingLimitType int
@@ -521,4 +524,17 @@ func CpuRaiseOrBet(chips, callAmount, raiseAmt int) (int, int) {
 		return bettingActionRaise, raiseAmt
 	}
 	return bettingActionBet, raiseAmt
+}
+
+// afDisplay renders the aggression factor: "-" when the player has neither bet
+// nor called, "∞" when they have been aggressive but never called, and the
+// ratio otherwise. 6 betting games had this written out.
+func afDisplay(betRaise, call int) string {
+	if betRaise == 0 && call == 0 {
+		return "-"
+	}
+	if call == 0 {
+		return "∞"
+	}
+	return fmt.Sprintf("%.1f", float64(betRaise)/float64(call))
 }
