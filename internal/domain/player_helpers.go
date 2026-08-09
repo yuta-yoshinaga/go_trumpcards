@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 )
@@ -264,4 +265,47 @@ func undoN(g undoer, n int) error {
 		}
 	}
 	return nil
+}
+
+// undoNChecked undoes n moves after validating the request against the history
+// length, so a bad n is rejected before the game is half-rewound. 10 solitaires
+// had this written out.
+//
+// The history is passed as a length rather than a slice because each game's
+// snapshot type is its own struct. Interface parameter for the same reason as
+// undoN above: it keeps one copy of the shared body. See issue #5185.
+func undoNChecked(g undoer, n, historyLen int) error {
+	if n <= 0 {
+		return errors.New("n must be positive")
+	}
+	if n > historyLen {
+		return errors.New("not enough history")
+	}
+	for range n {
+		if err := g.Undo(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// canPlaceOnFoundationPile reports whether card may go on a foundation pile:
+// an ace onto an empty pile, otherwise the next rank up in the same suit.
+// 9 solitaires had this written out. Needs no type parameter -- every
+// foundation is a [][]*Card. See issue #5185.
+func canPlaceOnFoundationPile(pile []*Card, card *Card) bool {
+	if len(pile) == 0 {
+		return card.GetValue() == 1
+	}
+	top := pile[len(pile)-1]
+	return card.GetDesign() == top.GetDesign() && card.GetValue() == top.GetValue()+1
+}
+
+// bySuitThenValue orders cards by suit, then by rank within a suit. 13 games
+// passed this exact comparator to sortPlayerHand.
+func bySuitThenValue(ci, cj *Card) bool {
+	if ci.GetDesign() != cj.GetDesign() {
+		return ci.GetDesign() < cj.GetDesign()
+	}
+	return ci.GetValue() < cj.GetValue()
 }

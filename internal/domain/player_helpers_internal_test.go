@@ -487,3 +487,59 @@ func TestUndoN_StopsAtTheFailingStep(t *testing.T) {
 	assert.Contains(t, err.Error(), "undo step 2 failed")
 	assert.ErrorIs(t, err, assert.AnError, "the cause must stay wrapped")
 }
+
+func TestUndoNChecked(t *testing.T) {
+	u := &fakeUndoer{}
+
+	require.NoError(t, undoNChecked(u, 2, 5))
+	assert.Equal(t, 2, u.calls)
+}
+
+// n and the history length are both rejected before any Undo runs, so a bad
+// request cannot leave the game half-rewound.
+func TestUndoNChecked_RejectsBeforeUndoing(t *testing.T) {
+	for _, tc := range []struct {
+		name       string
+		n, history int
+		want       string
+	}{
+		{"zero", 0, 5, "n must be positive"},
+		{"negative", -1, 5, "n must be positive"},
+		{"beyond history", 6, 5, "not enough history"},
+		{"empty history", 1, 0, "not enough history"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			u := &fakeUndoer{}
+			err := undoNChecked(u, tc.n, tc.history)
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), tc.want)
+			assert.Equal(t, 0, u.calls, "must not undo anything")
+		})
+	}
+}
+
+func TestUndoNChecked_StopsOnFailure(t *testing.T) {
+	u := &fakeUndoer{failAt: 2}
+
+	require.Error(t, undoNChecked(u, 4, 9))
+	assert.Equal(t, 2, u.calls)
+}
+
+func TestCanPlaceOnFoundationPile(t *testing.T) {
+	// An empty foundation takes only an ace.
+	assert.True(t, canPlaceOnFoundationPile(nil, NewCard(1, 1, false)))
+	assert.False(t, canPlaceOnFoundationPile(nil, NewCard(1, 2, false)))
+
+	pile := []*Card{NewCard(1, 1, false)}
+	assert.True(t, canPlaceOnFoundationPile(pile, NewCard(1, 2, false)), "same suit, next rank")
+	assert.False(t, canPlaceOnFoundationPile(pile, NewCard(2, 2, false)), "wrong suit")
+	assert.False(t, canPlaceOnFoundationPile(pile, NewCard(1, 3, false)), "skips a rank")
+	assert.False(t, canPlaceOnFoundationPile(pile, NewCard(1, 1, false)), "same rank")
+}
+
+func TestBySuitThenValue(t *testing.T) {
+	assert.True(t, bySuitThenValue(NewCard(1, 9, false), NewCard(2, 2, false)), "suit wins over value")
+	assert.False(t, bySuitThenValue(NewCard(2, 2, false), NewCard(1, 9, false)))
+	assert.True(t, bySuitThenValue(NewCard(1, 3, false), NewCard(1, 5, false)), "same suit falls back to value")
+	assert.False(t, bySuitThenValue(NewCard(1, 5, false), NewCard(1, 3, false)))
+}
