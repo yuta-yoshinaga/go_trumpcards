@@ -469,18 +469,7 @@ func (mm *MissMilligan) CanUndo() bool { return len(mm.history) > 0 }
 
 // UndoN n 手戻す
 func (mm *MissMilligan) UndoN(n int) error {
-	if n <= 0 {
-		return errors.New("n must be positive")
-	}
-	if n > len(mm.history) {
-		return errors.New("not enough history")
-	}
-	for range n {
-		if err := mm.Undo(); err != nil {
-			return err
-		}
-	}
-	return nil
+	return undoNChecked(mm, n, len(mm.history))
 }
 
 // UndoToEscape 膠着状態から抜けるのに必要なアンドゥ回数（膠着でなければ 0、不可なら -1）

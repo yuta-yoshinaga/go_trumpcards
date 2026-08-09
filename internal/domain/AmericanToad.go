@@ -525,18 +525,7 @@ func (at *AmericanToad) CanUndo() bool { return len(at.history) > 0 }
 
 // UndoN n 手戻す
 func (at *AmericanToad) UndoN(n int) error {
-	if n <= 0 {
-		return errors.New("n must be positive")
-	}
-	if n > len(at.history) {
-		return errors.New("not enough history")
-	}
-	for range n {
-		if err := at.Undo(); err != nil {
-			return err
-		}
-	}
-	return nil
+	return undoNChecked(at, n, len(at.history))
 }
 
 // UndoToEscape 膠着状態から抜けるのに必要なアンドゥ回数（膠着でなければ 0、不可なら -1）

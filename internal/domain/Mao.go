@@ -885,13 +885,7 @@ func (g *Mao) sortAllHands() {
 
 // sortHand プレイヤーの手札をスート→値の順にソートする
 func (g *Mao) sortHand(playerIdx int) {
-	p := g.players[playerIdx]
-	sortPlayerHand(p, func(ci, cj *Card) bool {
-		if ci.GetDesign() != cj.GetDesign() {
-			return ci.GetDesign() < cj.GetDesign()
-		}
-		return ci.GetValue() < cj.GetValue()
-	})
+	sortPlayerHand(g.players[playerIdx], bySuitThenValue)
 }
 
 // --- CPU AI ---

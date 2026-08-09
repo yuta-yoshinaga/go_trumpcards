@@ -409,10 +409,7 @@ func (o *OhHell) IsHumanTurn() bool {
 
 // IsHumanBidTurn 現在のビッド手番が人間かどうか
 func (o *OhHell) IsHumanBidTurn() bool {
-	if o.bidPlayerIdx < 0 || o.bidPlayerIdx >= len(o.players) {
-		return false
-	}
-	return o.players[o.bidPlayerIdx].GetIsHuman()
+	return isHumanTurn(o.players, o.bidPlayerIdx)
 }
 
 // GetConfig 設定取得

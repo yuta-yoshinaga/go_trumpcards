@@ -334,18 +334,7 @@ func (gc *GrandfathersClock) CanUndo() bool { return len(gc.history) > 0 }
 
 // UndoN n 手戻す
 func (gc *GrandfathersClock) UndoN(n int) error {
-	if n <= 0 {
-		return errors.New("n must be positive")
-	}
-	if n > len(gc.history) {
-		return errors.New("not enough history")
-	}
-	for range n {
-		if err := gc.Undo(); err != nil {
-			return err
-		}
-	}
-	return nil
+	return undoNChecked(gc, n, len(gc.history))
 }
 
 // UndoToEscape 膠着状態から抜けるのに必要なアンドゥ回数（膠着でなければ 0、不可なら -1）

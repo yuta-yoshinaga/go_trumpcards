@@ -1171,10 +1171,7 @@ func (g *BidWhist) IsHumanTurn() bool {
 
 // IsHumanBidTurn 現在のビッド手番が人間かどうか
 func (g *BidWhist) IsHumanBidTurn() bool {
-	if g.bidPlayerIdx < 0 || g.bidPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.bidPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.bidPlayerIdx)
 }
 
 // IsHumanDeclarerTurn 現在の落札者(切り札宣言/キティ交換手番)が人間かどうか

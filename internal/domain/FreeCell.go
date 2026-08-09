@@ -640,12 +640,7 @@ func (f *FreeCell) tableauStackable(upper, lower *Card) bool {
 
 // canPlaceOnFoundation ファンデーションにカードを置けるか判定
 func (f *FreeCell) canPlaceOnFoundation(card *Card, fIdx int) bool {
-	pile := f.foundation[fIdx]
-	if len(pile) == 0 {
-		return card.GetValue() == 1
-	}
-	topCard := pile[len(pile)-1]
-	return card.GetDesign() == topCard.GetDesign() && card.GetValue() == topCard.GetValue()+1
+	return canPlaceOnFoundationPile(f.foundation[fIdx], card)
 }
 
 // isAlternateColor 交互の色かどうか判定

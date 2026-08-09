@@ -1005,10 +1005,7 @@ func (b *Bridge) IsHumanTurn() bool {
 
 // IsHumanBidTurn 現在のビッド手番が人間かどうか
 func (b *Bridge) IsHumanBidTurn() bool {
-	if b.bidPlayerIdx < 0 || b.bidPlayerIdx >= len(b.players) {
-		return false
-	}
-	return b.players[b.bidPlayerIdx].GetIsHuman()
+	return isHumanTurn(b.players, b.bidPlayerIdx)
 }
 
 // GetConfig 設定取得

@@ -433,18 +433,7 @@ func (ns *NapoleonsSquare) CanUndo() bool { return len(ns.history) > 0 }
 
 // UndoN n 手戻す
 func (ns *NapoleonsSquare) UndoN(n int) error {
-	if n <= 0 {
-		return errors.New("n must be positive")
-	}
-	if n > len(ns.history) {
-		return errors.New("not enough history")
-	}
-	for range n {
-		if err := ns.Undo(); err != nil {
-			return err
-		}
-	}
-	return nil
+	return undoNChecked(ns, n, len(ns.history))
 }
 
 // UndoToEscape 膠着状態から抜けるのに必要なアンドゥ回数（膠着でなければ 0、不可なら -1）
