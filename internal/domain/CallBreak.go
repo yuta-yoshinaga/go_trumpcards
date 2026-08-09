@@ -826,10 +826,7 @@ func (cb *CallBreak) summariseTrick(leadSuit int) (highestSpade int, hasSpade bo
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (cb *CallBreak) getValidPlayIndices(playerIdx int) []int {
-	player := cb.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return cb.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(cb.players[playerIdx], func(c *Card) bool { return cb.validatePlay(playerIdx, c) == nil })
 }
 
 // GetValidPlayIndices プレイ可能なカードのインデックスリストを返す (Web 用)

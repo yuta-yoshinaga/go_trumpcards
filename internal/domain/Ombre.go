@@ -718,10 +718,7 @@ func (g *Ombre) trickWinner() int {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す。
 func (g *Ombre) getValidPlayIndices(playerIdx int) []int {
-	player := g.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return g.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(g.players[playerIdx], func(c *Card) bool { return g.validatePlay(playerIdx, c) == nil })
 }
 
 // isCoalition playerIdx が連合 (非オンブル) 側か。

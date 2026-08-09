@@ -843,10 +843,7 @@ func (g *Macau) countSuits(playerIdx int) map[int]int {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (g *Macau) getValidPlayIndices(playerIdx int) []int {
-	player := g.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return g.isValidPlay(player.GetCard(i))
-	})
+	return validPlayIndices(g.players[playerIdx], func(c *Card) bool { return g.isValidPlay(c) })
 }
 
 // GetValidPlayIndices プレイ可能なカードのインデックスリストを返す (Web用)

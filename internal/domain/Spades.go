@@ -983,10 +983,7 @@ func (s *Spades) cpuPlayHard(playerIdx int, validIndices []int) int {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (s *Spades) getValidPlayIndices(playerIdx int) []int {
-	player := s.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return s.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(s.players[playerIdx], func(c *Card) bool { return s.validatePlay(playerIdx, c) == nil })
 }
 
 // GetValidPlayIndices プレイ可能なカードのインデックスリストを返す (Web用)
