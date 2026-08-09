@@ -195,7 +195,7 @@ type Desmoche struct {
 
 	gameEndFlag bool
 	winnerIdx   int
-	actionLog   []*ActionLogEntry
+	actionLogBase
 }
 
 // NewDesmoche はコンストラクタ。
@@ -711,9 +711,6 @@ func (d *Desmoche) GetConfig() DesmocheConfig { return d.config }
 // SetConfig はゲーム設定をセットする。
 func (d *Desmoche) SetConfig(c DesmocheConfig) { d.config = c }
 
-// GetActionLog は棋譜を返す。
-func (d *Desmoche) GetActionLog() []*ActionLogEntry { return d.actionLog }
-
 // SetPhaseForTest はテスト用にフェーズを差し替える。
 func (d *Desmoche) SetPhaseForTest(p DesmochePhase) { d.phase = p }
 
@@ -731,13 +728,7 @@ func (d *Desmoche) SetRoundNumberForTest(n int) { d.roundNo = n }
 
 // addLog は棋譜に 1 件追加する。
 func (d *Desmoche) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	d.actionLog = append(d.actionLog, &ActionLogEntry{
-		TurnNumber: len(d.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	d.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // desmocheJSON is the JSON wire format for Desmoche.

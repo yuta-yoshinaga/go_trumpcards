@@ -173,7 +173,7 @@ type Poch struct {
 	dealWinner  int
 	gameEndFlag bool
 	winnerIdx   int
-	actionLog   []*ActionLogEntry
+	actionLogBase
 }
 
 // NewPoch はコンストラクタ。
@@ -726,9 +726,6 @@ func (p *Poch) GetConfig() PochConfig { return p.config }
 // SetConfig はゲーム設定をセットする。
 func (p *Poch) SetConfig(c PochConfig) { p.config = c }
 
-// GetActionLog は棋譜を返す。
-func (p *Poch) GetActionLog() []*ActionLogEntry { return p.actionLog }
-
 // SetPhaseForTest はテスト用にフェーズを差し替える。
 func (p *Poch) SetPhaseForTest(ph PochPhase) { p.phase = ph }
 
@@ -752,13 +749,7 @@ func (p *Poch) ResolveStakingForTest() { p.resolveStaking() }
 
 // addLog は棋譜に 1 件追加する。
 func (p *Poch) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	p.actionLog = append(p.actionLog, &ActionLogEntry{
-		TurnNumber: len(p.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	p.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // pochJSON is the JSON wire format for Poch.

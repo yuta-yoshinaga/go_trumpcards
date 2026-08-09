@@ -254,7 +254,7 @@ type Bura struct {
 	gameEndFlag      bool
 	winnerIdx        int // -1: 未確定または引き分け
 	drawFlag         bool
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewBura コンストラクタ
@@ -522,13 +522,7 @@ func (b *Bura) nextPlayer(idx int) int {
 
 // addLog アクションログへ 1 行追加する。
 func (b *Bura) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	b.actionLog = append(b.actionLog, &ActionLogEntry{
-		TurnNumber: len(b.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	b.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // ---- 公開アクセサ ----
@@ -595,9 +589,6 @@ func (b *Bura) GetConfig() BuraConfig { return b.config }
 
 // SetConfig ゲーム設定を差し替える。
 func (b *Bura) SetConfig(c BuraConfig) { b.config = c }
-
-// GetActionLog アクションログを返す。
-func (b *Bura) GetActionLog() []*ActionLogEntry { return b.actionLog }
 
 // ---- JSON ----
 

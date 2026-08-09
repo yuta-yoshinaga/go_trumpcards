@@ -101,7 +101,7 @@ type Boston struct {
 	gameEndFlag bool
 	winnerIdx   int
 
-	actionLog []*ActionLogEntry
+	actionLogBase
 }
 
 // NewBoston コンストラクタ
@@ -765,18 +765,9 @@ func (b *Boston) GetConfig() BostonConfig { return b.config }
 // SetConfig は設定をセットする。
 func (b *Boston) SetConfig(c BostonConfig) { b.config = c }
 
-// GetActionLog は棋譜を返す。
-func (b *Boston) GetActionLog() []*ActionLogEntry { return b.actionLog }
-
 // addLog は棋譜を 1 行足す。
 func (b *Boston) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	b.actionLog = append(b.actionLog, &ActionLogEntry{
-		TurnNumber: len(b.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	b.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // SetPhaseForTest はテスト用にフェーズを設定する。

@@ -114,7 +114,7 @@ type NainJaune struct {
 	dealWinner  int
 	gameEndFlag bool
 	winnerIdx   int
-	actionLog   []*ActionLogEntry
+	actionLogBase
 }
 
 // NewNainJaune はコンストラクタ。
@@ -445,9 +445,6 @@ func (n *NainJaune) GetConfig() NainJauneConfig { return n.config }
 // SetConfig はゲーム設定をセットする。
 func (n *NainJaune) SetConfig(c NainJauneConfig) { n.config = c }
 
-// GetActionLog は棋譜を返す。
-func (n *NainJaune) GetActionLog() []*ActionLogEntry { return n.actionLog }
-
 // SetPhaseForTest はテスト用にフェーズを差し替える。
 func (n *NainJaune) SetPhaseForTest(p NainJaunePhase) { n.phase = p }
 
@@ -465,13 +462,7 @@ func (n *NainJaune) SetDealNumberForTest(d int) { n.dealNo = d }
 
 // addLog は棋譜に 1 件追加する。
 func (n *NainJaune) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	n.actionLog = append(n.actionLog, &ActionLogEntry{
-		TurnNumber: len(n.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	n.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // nainJauneJSON is the JSON wire format for NainJaune.

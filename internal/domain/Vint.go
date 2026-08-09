@@ -130,7 +130,7 @@ type Vint struct {
 	gameEndFlag bool
 	winnerTeam  int
 
-	actionLog []*ActionLogEntry
+	actionLogBase
 }
 
 // NewVint コンストラクタ
@@ -779,18 +779,9 @@ func (v *Vint) GetConfig() VintConfig { return v.config }
 // SetConfig は設定をセットする。
 func (v *Vint) SetConfig(c VintConfig) { v.config = c }
 
-// GetActionLog は棋譜を返す。
-func (v *Vint) GetActionLog() []*ActionLogEntry { return v.actionLog }
-
 // addLog は棋譜を 1 行足す。
 func (v *Vint) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	v.actionLog = append(v.actionLog, &ActionLogEntry{
-		TurnNumber: len(v.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	v.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // SetPhaseForTest はテスト用にフェーズを設定する。

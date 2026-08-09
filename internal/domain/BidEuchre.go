@@ -263,7 +263,7 @@ type BidEuchre struct {
 	gameEndFlag bool
 	winnerTeam  int
 
-	actionLog []*ActionLogEntry
+	actionLogBase
 }
 
 // NewBidEuchre コンストラクタ
@@ -929,18 +929,9 @@ func (b *BidEuchre) GetConfig() BidEuchreConfig { return b.config }
 // SetConfig は設定をセットする。
 func (b *BidEuchre) SetConfig(c BidEuchreConfig) { b.config = c }
 
-// GetActionLog は棋譜を返す。
-func (b *BidEuchre) GetActionLog() []*ActionLogEntry { return b.actionLog }
-
 // addLog は棋譜を 1 行足す。
 func (b *BidEuchre) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	b.actionLog = append(b.actionLog, &ActionLogEntry{
-		TurnNumber: len(b.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	b.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // SetPhaseForTest はテスト用にフェーズを設定する。

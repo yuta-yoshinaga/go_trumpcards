@@ -163,7 +163,7 @@ type Toepen struct {
 	handNumber   int
 	gameEndFlag  bool
 	winnerIdx    int
-	actionLog    []*ActionLogEntry
+	actionLogBase
 }
 
 // NewToepen はコンストラクタ。
@@ -608,13 +608,7 @@ func (t *Toepen) nextSeat(idx int) int {
 
 // addLog は棋譜へ 1 行追加する。
 func (t *Toepen) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	t.actionLog = append(t.actionLog, &ActionLogEntry{
-		TurnNumber: len(t.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	t.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // ---- 公開アクセサ ----
@@ -700,9 +694,6 @@ func (t *Toepen) GetConfig() ToepenConfig { return t.config }
 
 // SetConfig はゲーム設定を差し替える。
 func (t *Toepen) SetConfig(c ToepenConfig) { t.config = c }
-
-// GetActionLog は棋譜を返す。
-func (t *Toepen) GetActionLog() []*ActionLogEntry { return t.actionLog }
 
 // ---- JSON ----
 
