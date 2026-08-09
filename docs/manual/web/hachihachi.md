@@ -64,9 +64,12 @@ go run ./cmd/server                 # 直接Webサーバーを起動
 ```mermaid
 flowchart TD
     S(["リセット"]) --> P0
-    P0["プレイ"] --> P1["ラウンド終了"]
-    P1["ラウンド終了"] --> P2["ゲーム終了"]
+    P0["プレイ"]
+    P1["ラウンド終了"]
+    P2["ゲーム終了"]
     P1 -->|startRound| P0
+    P0 -->|endRound| P1
+    P1 -->|finishGame| P2
 ```
 
 ## 画面の操作方法

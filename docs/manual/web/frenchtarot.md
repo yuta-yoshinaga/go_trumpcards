@@ -75,13 +75,21 @@ Web版では、捨てられない札は選択できないよう淡色表示に�
 ```mermaid
 flowchart TD
     S(["リセット"]) --> P0
-    P0["オークション"] --> P1["シアン交換"]
-    P1["シアン交換"] --> P2["プレイ"]
-    P2["プレイ"] --> P3["トリック終了"]
-    P3["トリック終了"] --> P4["ディール終了"]
-    P4["ディール終了"] --> P5["ゲーム終了"]
-    P3 -->|NextTrick| P2
+    P0["オークション"]
+    P1["シアン交換"]
+    P2["プレイ"]
+    P3["トリック終了"]
+    P4["ディール終了"]
+    P5["ゲーム終了"]
     P4 -->|startRound| P0
+    P1 -->|startPlay| P2
+    P2 -->|playCard| P3
+    P3 -->|ResolveTrick| P4
+    P3 -->|NextTrick| P2
+    P4 -->|checkGameEnd| P5
+    P3 -->|checkGameEnd| P5
+    P0 -->|finalizeBid| P1
+    P0 -->|finalizeBid| P2
 ```
 
 ## 画面の操作方法

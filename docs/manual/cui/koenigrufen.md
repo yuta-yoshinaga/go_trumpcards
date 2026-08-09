@@ -53,14 +53,23 @@ go run ./cmd/trumpcards --lang en koenigrufen  # 英語モード
 ```mermaid
 flowchart TD
     S(["リセット"]) --> P0
-    P0["オークション"] --> P1["王呼び"]
-    P1["王呼び"] --> P2["場札交換"]
-    P2["場札交換"] --> P3["プレイ"]
-    P3["プレイ"] --> P4["トリック終了"]
-    P4["トリック終了"] --> P5["ディール終了"]
-    P5["ディール終了"] --> P6["ゲーム終了"]
-    P4 -->|NextTrick| P3
+    P0["オークション"]
+    P1["王呼び"]
+    P2["場札交換"]
+    P3["プレイ"]
+    P4["トリック終了"]
+    P5["ディール終了"]
+    P6["ゲーム終了"]
     P5 -->|startRound| P0
+    P1 -->|finalizeCall| P2
+    P2 -->|startPlay| P3
+    P3 -->|playCard| P4
+    P4 -->|ResolveTrick| P5
+    P4 -->|NextTrick| P3
+    P5 -->|checkGameEnd| P6
+    P4 -->|checkGameEnd| P6
+    P0 -->|enterCallOrSolo| P1
+    P0 -->|enterCallOrSolo| P2
 ```
 
 ## コマンド一覧

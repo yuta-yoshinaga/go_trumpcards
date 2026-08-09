@@ -54,13 +54,20 @@ go run ./cmd/trumpcards --lang en jass  # 英語モード
 ```mermaid
 flowchart TD
     S(["リセット"]) --> P0
-    P0["切り札を選ぶ"] --> P1["パートナーが切り札を選ぶ"]
-    P1["パートナーが切り札を選ぶ"] --> P2["プレイ"]
-    P2["プレイ"] --> P3["トリック終了"]
-    P3["トリック終了"] --> P4["ラウンド終了"]
-    P4["ラウンド終了"] --> P5["ゲーム終了"]
-    P3 -->|NextTrick| P2
+    P0["切り札を選ぶ"]
+    P1["パートナーが切り札を選ぶ"]
+    P2["プレイ"]
+    P3["トリック終了"]
+    P4["ラウンド終了"]
+    P5["ゲーム終了"]
     P4 -->|beginRound| P0
+    P0 -->|doSchieben| P1
+    P3 -->|ResolveTrick| P4
+    P3 -->|NextTrick| P2
+    P1 -->|startPlayPhase| P2
+    P0 -->|startPlayPhase| P2
+    P2 -->|playCard| P3
+    P4 -->|checkGameEnd| P5
 ```
 
 ## コマンド一覧

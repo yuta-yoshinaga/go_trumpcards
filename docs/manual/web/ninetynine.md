@@ -42,12 +42,17 @@ go run ./cmd/server          # 直接Webサーバーを起動
 ```mermaid
 flowchart TD
     S(["リセット"]) --> P0
-    P0["埋める"] --> P1["プレイ"]
-    P1["プレイ"] --> P2["トリック終了"]
-    P2["トリック終了"] --> P3["ラウンド終了"]
-    P3["ラウンド終了"] --> P4["ゲーム終了"]
+    P0["埋める"]
+    P1["プレイ"]
+    P2["トリック終了"]
+    P3["ラウンド終了"]
+    P4["ゲーム終了"]
     P3 -->|NextRound| P0
+    P2 -->|ResolveTrick| P3
     P2 -->|NextTrick| P1
+    P3 -->|ScoreRound| P4
+    P0 -->|advanceBid| P1
+    P1 -->|playCard| P2
 ```
 
 ## 画面の操作方法

@@ -28,24 +28,14 @@ go run ./cmd/trumpcards --lang en oasispoker   # 英語モード
 
 ```mermaid
 flowchart TD
-    A[ゲーム開始 - reset] --> B[ベットフェーズ]
-    B --> C[b アンテ額 ジャックポット額]
-    C --> D[5枚ずつ配る]
-    D --> E[交換フェーズ]
-    E -->|e idx ...| F[手数料 = アンテ × 交換枚数を徴収]
-    E -->|s stand| G[交換せず次へ]
-    F --> H{コール or フォールド?}
-    G --> H
-    H -->|play| I[プレイベット = アンテ × 2]
-    H -->|fold| J[アンテ・交換手数料を放棄]
-    I --> K[ディーラーの手札公開]
-    K --> L{ディーラー資格あり?}
-    L -->|A-K以上| M[勝敗判定]
-    L -->|A-K未満| N[アンテ1:1, プレイ返却]
-    M --> O[結果表示]
-    N --> O
-    J --> O
-    O -->|reset| B
+    S(["リセット"]) --> P0
+    P0["ベット"]
+    P1["カード交換"]
+    P2["コール/フォールド"]
+    P3["結果"]
+    P0 -->|Bet| P1
+    P1 -->|Exchange| P2
+    P2 -->|Fold| P3
 ```
 
 ### 手札ランキング（強い順）
@@ -126,7 +116,6 @@ flowchart TD
 ```
 ----------
 チップ: 900
-フェーズ: EXCHANGE
 フェーズ: EXCHANGE
 --- PLAYER ---
 HEART 4,CLOVER 4,HEART 12,CLOVER 8,DIAMOND 8

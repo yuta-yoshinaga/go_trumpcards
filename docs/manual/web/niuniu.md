@@ -29,7 +29,9 @@ go run ./cmd/server          # 直接Webサーバーを起動
 ```mermaid
 flowchart TD
     S(["リセット"]) --> P0
-    P0["ベット"] --> P1["精算"]
+    P0["ベット"]
+    P1["精算"]
+    P0 -->|settle| P1
 ```
 
 ## 画面の操作方法

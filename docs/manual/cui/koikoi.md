@@ -50,10 +50,15 @@ go run ./cmd/trumpcards --lang en koikoi  # 英語モード
 ```mermaid
 flowchart TD
     S(["リセット"]) --> P0
-    P0["プレイ"] --> P1["こいこい決断"]
-    P1["こいこい決断"] --> P2["ラウンド終了"]
-    P2["ラウンド終了"] --> P3["ゲーム終了"]
+    P0["プレイ"]
+    P1["こいこい決断"]
+    P2["ラウンド終了"]
+    P3["ゲーム終了"]
     P2 -->|startRound| P0
+    P0 -->|applyTurn| P1
+    P1 -->|applyDecision| P0
+    P1 -->|endRound| P2
+    P2 -->|finishGame| P3
 ```
 
 ## コマンド一覧

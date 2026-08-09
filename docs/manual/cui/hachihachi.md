@@ -46,9 +46,12 @@ go run ./cmd/trumpcards --lang en hachihachi  # 英語モード
 ```mermaid
 flowchart TD
     S(["リセット"]) --> P0
-    P0["プレイ"] --> P1["ラウンド終了"]
-    P1["ラウンド終了"] --> P2["ゲーム終了"]
+    P0["プレイ"]
+    P1["ラウンド終了"]
+    P2["ゲーム終了"]
     P1 -->|startRound| P0
+    P0 -->|endRound| P1
+    P1 -->|finishGame| P2
 ```
 
 ## コマンド一覧

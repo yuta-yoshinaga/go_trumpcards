@@ -50,13 +50,19 @@ go run ./cmd/trumpcards --lang en rook  # 英語モード
 ```mermaid
 flowchart TD
     S(["リセット"]) --> P0
-    P0["ビッド"] --> P1["ネスト交換"]
-    P1["ネスト交換"] --> P2["プレイ"]
-    P2["プレイ"] --> P3["トリック終了"]
-    P3["トリック終了"] --> P4["ラウンド終了"]
-    P4["ラウンド終了"] --> P5["ゲーム終了"]
-    P3 -->|NextTrick| P2
+    P0["ビッド"]
+    P1["ネスト交換"]
+    P2["プレイ"]
+    P3["トリック終了"]
+    P4["ラウンド終了"]
+    P5["ゲーム終了"]
     P4 -->|startRound| P0
+    P1 -->|startPlayPhase| P2
+    P2 -->|playCard| P3
+    P3 -->|ResolveTrick| P4
+    P3 -->|NextTrick| P2
+    P4 -->|endGame| P5
+    P0 -->|finalizeBid| P1
 ```
 
 ## コマンド一覧

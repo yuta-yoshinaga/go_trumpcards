@@ -54,13 +54,21 @@ go run ./cmd/trumpcards --lang en watten  # 英語モード
 ```mermaid
 flowchart TD
     S(["リセット"]) --> P0
-    P0["宣言"] --> P1["プレイ"]
-    P1["プレイ"] --> P2["応答"]
-    P2["応答"] --> P3["トリック終了"]
-    P3["トリック終了"] --> P4["ディール終了"]
-    P4["ディール終了"] --> P5["ゲーム終了"]
-    P3 -->|NextTrick| P1
+    P0["宣言"]
+    P1["プレイ"]
+    P2["応答"]
+    P3["トリック終了"]
+    P4["ディール終了"]
+    P5["ゲーム終了"]
     P4 -->|beginRound| P0
+    P0 -->|startPlayPhase| P1
+    P1 -->|playCard| P3
+    P3 -->|NextTrick| P1
+    P1 -->|callRaise| P2
+    P2 -->|respond| P1
+    P2 -->|enterRoundEnd| P4
+    P3 -->|enterRoundEnd| P4
+    P4 -->|checkGameEnd| P5
 ```
 
 ## コマンド一覧
