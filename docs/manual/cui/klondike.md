@@ -7,7 +7,8 @@
 ## 起動方法
 
 ```sh
-go run ./cmd/cli klondike
+go run ./cmd/trumpcards klondike
+go run ./cmd/trumpcards --lang en klondike  # 英語モード
 ```
 
 ## ルール

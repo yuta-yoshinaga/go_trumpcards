@@ -80,14 +80,23 @@ function headings(text) {
   };
 }
 
-/** The body of one H2 section, fences included — null when the section is absent. */
+/**
+ * The body of one H2 section, fences included — null when the section is absent.
+ *
+ * The section boundary is found on the fence-masked view, then sliced out of
+ * the real lines. Searching the raw text instead ended the 起動方法 section of
+ * four manuals at a `# または` comment inside their ```sh block, hiding the
+ * `go run ./cmd/server` line that came after it and reporting four conforming
+ * files as broken.
+ */
 function sectionBody(text, name) {
   const lines = text.split('\n');
-  const start = lines.findIndex((l) => l.trim() === `## ${name}`);
+  const masked = linesOutsideFences(text);
+  const start = masked.findIndex((l) => l.trim() === `## ${name}`);
   if (start === -1) return null;
-  const rest = lines.slice(start + 1);
-  const end = rest.findIndex((l) => /^##?\s/.test(l));
-  return (end === -1 ? rest : rest.slice(0, end)).join('\n');
+  const rest = masked.slice(start + 1);
+  const end = rest.findIndex((l) => l.startsWith('## '));
+  return lines.slice(start + 1, end === -1 ? lines.length : start + 1 + end).join('\n');
 }
 
 /**

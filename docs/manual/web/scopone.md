@@ -8,13 +8,13 @@
 
 ## 起動方法
 
-Web GUI サーバーを起動し、ブラウザでゲーム一覧から「スコポーネ (Scopone)」を選びます。
-
 ```sh
-go run ./cmd/trumpcards web
+go run ./cmd/trumpcards web  # CLI経由でWebサーバーを起動
+go run ./cmd/server          # 直接Webサーバーを起動
 ```
 
-ブラウザで [http://localhost:8080](http://localhost:8080) を開いてください。
+ブラウザで `http://localhost:8080` にアクセスし、ナビゲーションバーから「スコポーネ」を選択します。
+ナビバーのJA/ENボタンで日本語・英語を切り替えられます。
 
 ## 2. 画面の見かた
 

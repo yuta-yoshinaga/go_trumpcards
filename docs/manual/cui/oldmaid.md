@@ -7,7 +7,8 @@
 ## 起動方法
 
 ```sh
-go run ./cmd/cli oldmaid
+go run ./cmd/trumpcards oldmaid
+go run ./cmd/trumpcards --lang en oldmaid  # 英語モード
 ```
 
 ## ルール
