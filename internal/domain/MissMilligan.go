@@ -485,15 +485,7 @@ func (mm *MissMilligan) UndoN(n int) error {
 
 // UndoToEscape 膠着状態から抜けるのに必要なアンドゥ回数（膠着でなければ 0、不可なら -1）
 func (mm *MissMilligan) UndoToEscape() int {
-	if !mm.isStalemate {
-		return 0
-	}
-	for i := len(mm.history) - 1; i >= 0; i-- {
-		if !mm.history[i].isStalemate {
-			return len(mm.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(mm.isStalemate, mm.history, func(s *missMilliganSnapshot) bool { return s.isStalemate })
 }
 
 // AllFaceUp 常に全札が表向き

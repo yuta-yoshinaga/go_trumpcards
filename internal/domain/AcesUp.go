@@ -236,15 +236,7 @@ func (a *AcesUp) CanUndo() bool {
 
 // UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。膠着状態でなければ0、脱出不可なら-1。
 func (a *AcesUp) UndoToEscape() int {
-	if !a.isStalemate {
-		return 0
-	}
-	for i := len(a.history) - 1; i >= 0; i-- {
-		if !a.history[i].isStalemate {
-			return len(a.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(a.isStalemate, a.history, func(s *acesUpSnapshot) bool { return s.isStalemate })
 }
 
 // UndoN n回連続でアンドゥを実行する。

@@ -449,15 +449,7 @@ func (ns *NapoleonsSquare) UndoN(n int) error {
 
 // UndoToEscape 膠着状態から抜けるのに必要なアンドゥ回数（膠着でなければ 0、不可なら -1）
 func (ns *NapoleonsSquare) UndoToEscape() int {
-	if !ns.isStalemate {
-		return 0
-	}
-	for i := len(ns.history) - 1; i >= 0; i-- {
-		if !ns.history[i].isStalemate {
-			return len(ns.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(ns.isStalemate, ns.history, func(s *napoleonsSquareSnapshot) bool { return s.isStalemate })
 }
 
 // AllFaceUp ナポレオンズ・スクエアは常に全札が表向き

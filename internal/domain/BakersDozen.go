@@ -335,15 +335,7 @@ func (bd *BakersDozen) CanUndo() bool {
 // UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。
 // 膠着状態でなければ0、脱出不可なら-1。
 func (bd *BakersDozen) UndoToEscape() int {
-	if !bd.isStalemate {
-		return 0
-	}
-	for i := len(bd.history) - 1; i >= 0; i-- {
-		if !bd.history[i].isStalemate {
-			return len(bd.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(bd.isStalemate, bd.history, func(s *bakersDozenSnapshot) bool { return s.isStalemate })
 }
 
 // UndoN n回連続でアンドゥを実行する。

@@ -578,15 +578,7 @@ func (k *Klondike) CanUndo() bool {
 
 // UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。膠着状態でなければ0、脱出不可なら-1。
 func (k *Klondike) UndoToEscape() int {
-	if !k.isStalemate {
-		return 0
-	}
-	for i := len(k.history) - 1; i >= 0; i-- {
-		if !k.history[i].isStalemate {
-			return len(k.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(k.isStalemate, k.history, func(s *klondikeSnapshot) bool { return s.isStalemate })
 }
 
 // UndoN n回連続でアンドゥを実行する。

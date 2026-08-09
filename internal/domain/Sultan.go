@@ -394,15 +394,7 @@ func (su *Sultan) CanUndo() bool {
 
 // UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。膠着状態でなければ0、脱出不可なら-1。
 func (su *Sultan) UndoToEscape() int {
-	if !su.isStalemate {
-		return 0
-	}
-	for i := len(su.history) - 1; i >= 0; i-- {
-		if !su.history[i].isStalemate {
-			return len(su.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(su.isStalemate, su.history, func(s *sultanSnapshot) bool { return s.isStalemate })
 }
 
 // UndoN n回連続でアンドゥを実行する。

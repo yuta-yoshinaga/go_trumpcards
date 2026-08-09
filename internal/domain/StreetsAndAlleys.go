@@ -354,15 +354,7 @@ func (sa *StreetsAndAlleys) CanUndo() bool {
 // UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。
 // 膠着状態でなければ0、脱出不可なら-1。
 func (sa *StreetsAndAlleys) UndoToEscape() int {
-	if !sa.isStalemate {
-		return 0
-	}
-	for i := len(sa.history) - 1; i >= 0; i-- {
-		if !sa.history[i].isStalemate {
-			return len(sa.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(sa.isStalemate, sa.history, func(s *streetsAndAlleysSnapshot) bool { return s.isStalemate })
 }
 
 // UndoN n回連続でアンドゥを実行する。

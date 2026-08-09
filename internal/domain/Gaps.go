@@ -318,15 +318,7 @@ func (g *Gaps) CanUndo() bool {
 // UndoToEscape は手詰まりから抜けるために必要なUndo回数を返す。
 // 手詰まりでなければ0、脱出不能なら-1。
 func (g *Gaps) UndoToEscape() int {
-	if !g.isStalemate {
-		return 0
-	}
-	for i := len(g.history) - 1; i >= 0; i-- {
-		if !g.history[i].isStalemate {
-			return len(g.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(g.isStalemate, g.history, func(s *gapsSnapshot) bool { return s.isStalemate })
 }
 
 // UndoN はn回連続でUndoを試みる。n<=0なら何もしない。

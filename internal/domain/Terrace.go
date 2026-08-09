@@ -462,15 +462,7 @@ func (t *Terrace) UndoN(n int) error {
 
 // UndoToEscape 膠着状態から抜けるのに必要なアンドゥ回数（膠着でなければ 0、不可なら -1）
 func (t *Terrace) UndoToEscape() int {
-	if !t.isStalemate {
-		return 0
-	}
-	for i := len(t.history) - 1; i >= 0; i-- {
-		if !t.history[i].isStalemate {
-			return len(t.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(t.isStalemate, t.history, func(s *terraceSnapshot) bool { return s.isStalemate })
 }
 
 // AllFaceUp 常に全札が表向き

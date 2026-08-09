@@ -511,15 +511,7 @@ func (fg *FlowerGarden) CanUndo() bool {
 // UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。
 // 膠着状態でなければ0、脱出不可なら-1。
 func (fg *FlowerGarden) UndoToEscape() int {
-	if !fg.isStalemate {
-		return 0
-	}
-	for i := len(fg.history) - 1; i >= 0; i-- {
-		if !fg.history[i].isStalemate {
-			return len(fg.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(fg.isStalemate, fg.history, func(s *flowerGardenSnapshot) bool { return s.isStalemate })
 }
 
 // UndoN n回連続でアンドゥを実行する。

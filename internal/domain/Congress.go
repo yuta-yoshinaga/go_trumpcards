@@ -438,15 +438,7 @@ func (c *Congress) UndoN(n int) error {
 
 // UndoToEscape 膠着状態から抜けるのに必要なアンドゥ回数（膠着でなければ 0、不可なら -1）
 func (c *Congress) UndoToEscape() int {
-	if !c.isStalemate {
-		return 0
-	}
-	for i := len(c.history) - 1; i >= 0; i-- {
-		if !c.history[i].isStalemate {
-			return len(c.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(c.isStalemate, c.history, func(s *congressSnapshot) bool { return s.isStalemate })
 }
 
 // AllFaceUp 常に全札が表向き

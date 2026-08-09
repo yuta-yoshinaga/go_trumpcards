@@ -390,15 +390,7 @@ func (y *RussianSolitaire) CanUndo() bool {
 
 // UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。膠着状態でなければ0、脱出不可なら-1。
 func (y *RussianSolitaire) UndoToEscape() int {
-	if !y.isStalemate {
-		return 0
-	}
-	for i := len(y.history) - 1; i >= 0; i-- {
-		if !y.history[i].isStalemate {
-			return len(y.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(y.isStalemate, y.history, func(s *russianSolitaireSnapshot) bool { return s.isStalemate })
 }
 
 // UndoN n回連続でアンドゥを実行する。
