@@ -446,13 +446,7 @@ func (sd *ShortDeck) findNextActive(fromIdx int) int {
 
 // countActivePlayers フォールドしていないプレイヤー数を返す
 func (sd *ShortDeck) countActivePlayers() int {
-	cnt := 0
-	for _, p := range sd.players {
-		if !p.GetFolded() {
-			cnt++
-		}
-	}
-	return cnt
+	return countPlayers(sd.players, func(p *ShortDeckPlayer) bool { return !p.GetFolded() })
 }
 
 // resolveLastPlayer 全員フォールドで最後のプレイヤーが勝利
@@ -1005,42 +999,22 @@ func (sd *ShortDeck) SkipAddon() error {
 
 // IsRebuyAvailable 人間プレイヤーがリバイ可能かどうか
 func (sd *ShortDeck) IsRebuyAvailable() bool {
-	if !sd.config.RebuyEnabled || sd.handCount > sd.config.RebuyPeriodHands {
-		return false
-	}
-	for i, p := range sd.players {
-		if p.GetIsHuman() && p.GetChips() <= 0 && sd.rebuyCounts[i] < sd.config.RebuyMaxCount {
-			return true
-		}
-	}
-	return false
+	return rebuyAvailable(sd.config.RebuyEnabled, sd.handCount, sd.config.RebuyPeriodHands, sd.players, sd.rebuyCounts, sd.config.RebuyMaxCount)
 }
 
 // IsAddonAvailable 人間プレイヤーがアドオン可能かどうか
 func (sd *ShortDeck) IsAddonAvailable() bool {
-	if !sd.config.AddonEnabled || sd.handCount != sd.config.AddonAfterHand {
-		return false
-	}
-	for i, p := range sd.players {
-		if p.GetIsHuman() && !sd.addonUsed[i] {
-			return true
-		}
-	}
-	return false
+	return addonAvailable(sd.config.AddonEnabled, sd.handCount, sd.config.AddonAfterHand, sd.players, sd.addonUsed)
 }
 
 // GetRebuyCounts プレイヤーごとのリバイ回数取得
 func (sd *ShortDeck) GetRebuyCounts() []int {
-	result := make([]int, len(sd.rebuyCounts))
-	copy(result, sd.rebuyCounts)
-	return result
+	return copyOf(sd.rebuyCounts)
 }
 
 // GetAddonUsed プレイヤーごとのアドオン使用フラグ取得
 func (sd *ShortDeck) GetAddonUsed() []bool {
-	result := make([]bool, len(sd.addonUsed))
-	copy(result, sd.addonUsed)
-	return result
+	return copyOf(sd.addonUsed)
 }
 
 // GetRebuyPhaseType リバイフェーズ種別取得
@@ -1182,17 +1156,12 @@ func (sd *ShortDeck) SetConfig(cfg ShortDeckConfig) { sd.config = cfg }
 
 // IsHumanTurn 人間のターンかチェック
 func (sd *ShortDeck) IsHumanTurn() bool {
-	if sd.currentTurn >= 0 && sd.currentTurn < len(sd.players) {
-		return sd.players[sd.currentTurn].GetIsHuman()
-	}
-	return false
+	return isHumanTurn(sd.players, sd.currentTurn)
 }
 
 // GetActedFlags actedフラグ取得
 func (sd *ShortDeck) GetActedFlags() []bool {
-	result := make([]bool, len(sd.actedFlags))
-	copy(result, sd.actedFlags)
-	return result
+	return copyOf(sd.actedFlags)
 }
 
 // GetHandCount ハンド数取得

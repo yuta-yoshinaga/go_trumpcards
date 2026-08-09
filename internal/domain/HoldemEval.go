@@ -160,8 +160,5 @@ func (h *Holdem) IsMuckAvailable() bool {
 
 // getHandName ハンドランクから名前を返す
 func (h *Holdem) getHandName(rank int) string {
-	if rank >= 0 && rank < len(PokerHandNames) {
-		return PokerHandNames[rank]
-	}
-	return "Unknown"
+	return pokerHandName(rank)
 }

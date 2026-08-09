@@ -91,42 +91,22 @@ func (s *SevenCardStud) SkipAddon() error {
 
 // IsRebuyAvailable 人間プレイヤーがリバイ可能かどうか
 func (s *SevenCardStud) IsRebuyAvailable() bool {
-	if !s.config.RebuyEnabled || s.handCount > s.config.RebuyPeriodHands {
-		return false
-	}
-	for i, p := range s.players {
-		if p.GetIsHuman() && p.GetChips() <= 0 && s.rebuyCounts[i] < s.config.RebuyMaxCount {
-			return true
-		}
-	}
-	return false
+	return rebuyAvailable(s.config.RebuyEnabled, s.handCount, s.config.RebuyPeriodHands, s.players, s.rebuyCounts, s.config.RebuyMaxCount)
 }
 
 // IsAddonAvailable 人間プレイヤーがアドオン可能かどうか
 func (s *SevenCardStud) IsAddonAvailable() bool {
-	if !s.config.AddonEnabled || s.handCount != s.config.AddonAfterHand {
-		return false
-	}
-	for i, p := range s.players {
-		if p.GetIsHuman() && !s.addonUsed[i] {
-			return true
-		}
-	}
-	return false
+	return addonAvailable(s.config.AddonEnabled, s.handCount, s.config.AddonAfterHand, s.players, s.addonUsed)
 }
 
 // GetRebuyCounts プレイヤーごとのリバイ回数取得
 func (s *SevenCardStud) GetRebuyCounts() []int {
-	result := make([]int, len(s.rebuyCounts))
-	copy(result, s.rebuyCounts)
-	return result
+	return copyOf(s.rebuyCounts)
 }
 
 // GetAddonUsed プレイヤーごとのアドオン使用フラグ取得
 func (s *SevenCardStud) GetAddonUsed() []bool {
-	result := make([]bool, len(s.addonUsed))
-	copy(result, s.addonUsed)
-	return result
+	return copyOf(s.addonUsed)
 }
 
 // GetRebuyPhaseType リバイフェーズ種別取得

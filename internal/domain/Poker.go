@@ -341,11 +341,7 @@ func (p *Poker) PlayerStand() error {
 
 // bettingPlayers BettingPlayerスライスを生成
 func (p *Poker) bettingPlayers() []BettingPlayer {
-	bp := make([]BettingPlayer, len(p.players))
-	for i, pl := range p.players {
-		bp[i] = pl
-	}
-	return bp
+	return toBettingPlayers(p.players)
 }
 
 // executeAction 指定プレイヤーのアクション実行

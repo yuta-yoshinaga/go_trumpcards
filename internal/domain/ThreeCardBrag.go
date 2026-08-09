@@ -559,13 +559,7 @@ func (g *ThreeCardBrag) canShow(idx int) bool {
 
 // activeCount 未フォールド・非脱落のプレイヤー数。
 func (g *ThreeCardBrag) activeCount() int {
-	n := 0
-	for _, p := range g.players {
-		if !p.GetOut() && !p.GetFolded() {
-			n++
-		}
-	}
-	return n
+	return countPlayers(g.players, func(p *ThreeCardBragPlayer) bool { return !p.GetOut() && !p.GetFolded() })
 }
 
 // firstActive 最初の未フォールド・非脱落プレイヤー。

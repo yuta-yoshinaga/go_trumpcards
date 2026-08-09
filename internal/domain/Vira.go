@@ -139,8 +139,8 @@ type Vira struct {
 	lastRoundMade    bool
 	gameEndFlag      bool
 	winnerPlayer     int // -1 = 未確定 (同点)
-	actionLog        []*ActionLogEntry
-	shuffled         []*Card // rng 差し替え時の並べ替え済み山
+	actionLogBase
+	shuffled []*Card // rng 差し替え時の並べ替え済み山
 }
 
 // NewVira コンストラクタ。
@@ -474,13 +474,7 @@ func (g *Vira) longestSuit(playerIdx int) int {
 
 // appendLog 棋譜に 1 行追加する。
 func (g *Vira) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.appendLogAt(len(g.actionLog)+1, playerIdx, actionType, detail, cards)
 }
 
 // finishMatch マッチを終え、持ち点最大のプレイヤーを勝者にする。
@@ -850,10 +844,7 @@ func (g *Vira) SetConfig(c ViraConfig) { g.config = c }
 
 // GetActionLog 棋譜。
 func (g *Vira) GetActionLog() []*ActionLogEntry {
-	if g.actionLog == nil {
-		return []*ActionLogEntry{}
-	}
-	return g.actionLog
+	return sliceOrEmpty(g.actionLog)
 }
 
 // ForcePassForTest 指定席を強制的にパスさせる (テスト用)。

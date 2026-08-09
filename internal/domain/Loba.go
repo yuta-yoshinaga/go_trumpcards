@@ -823,10 +823,7 @@ func (l *Loba) HasMelded(idx int) bool {
 
 // GetScore は idx の累計失点を返す。
 func (l *Loba) GetScore(idx int) int {
-	if idx < 0 || idx >= len(l.scores) {
-		return 0
-	}
-	return l.scores[idx]
+	return elemAt(l.scores, idx)
 }
 
 // IsEliminated は idx が脱落しているかを返す。

@@ -360,11 +360,7 @@ func (s *FiveCardStud) PlayerAction(action, amount, humanPlayMs int) error {
 
 // bettingPlayers BettingPlayerスライスを生成
 func (s *FiveCardStud) bettingPlayers() []BettingPlayer {
-	bp := make([]BettingPlayer, len(s.players))
-	for i, pl := range s.players {
-		bp[i] = pl
-	}
-	return bp
+	return toBettingPlayers(s.players)
 }
 
 // executeAction 指定プレイヤーのアクション実行
@@ -573,13 +569,7 @@ func (s *FiveCardStud) determineBettingLeader() int {
 
 // countActivePlayers フォールドしていないプレイヤー数を返す
 func (s *FiveCardStud) countActivePlayers() int {
-	cnt := 0
-	for _, p := range s.players {
-		if !p.GetFolded() {
-			cnt++
-		}
-	}
-	return cnt
+	return countPlayers(s.players, func(p *FiveCardStudPlayer) bool { return !p.GetFolded() })
 }
 
 // bettingLimits ベッティングリミット設定
@@ -745,10 +735,7 @@ func (s *FiveCardStud) IsMuckAvailable() bool {
 
 // getHandName ハンドランクから名前を返す
 func (s *FiveCardStud) getHandName(rank int) string {
-	if rank >= 0 && rank < len(PokerHandNames) {
-		return PokerHandNames[rank]
-	}
-	return "Unknown"
+	return pokerHandName(rank)
 }
 
 // --- 棋譜 ---
@@ -858,17 +845,12 @@ func (s *FiveCardStud) SetConfig(cfg FiveCardStudConfig) { s.config = cfg }
 
 // IsHumanTurn 人間のターンかチェック
 func (s *FiveCardStud) IsHumanTurn() bool {
-	if s.currentTurn >= 0 && s.currentTurn < len(s.players) {
-		return s.players[s.currentTurn].GetIsHuman()
-	}
-	return false
+	return isHumanTurn(s.players, s.currentTurn)
 }
 
 // GetActedFlags actedフラグ取得
 func (s *FiveCardStud) GetActedFlags() []bool {
-	result := make([]bool, len(s.actedFlags))
-	copy(result, s.actedFlags)
-	return result
+	return copyOf(s.actedFlags)
 }
 
 // GetHandCount ハンド数取得

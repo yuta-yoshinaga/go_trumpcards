@@ -485,17 +485,12 @@ func (c *Congress) tableauTop(pile int) *Card {
 
 // wasteTop 捨て札の一番上（空なら nil）
 func (c *Congress) wasteTop() *Card {
-	if len(c.waste) == 0 {
-		return nil
-	}
-	return c.waste[len(c.waste)-1]
+	return discardTop(c.waste)
 }
 
 // popWaste 捨て札の一番上を取り除く
 func (c *Congress) popWaste() {
-	if len(c.waste) > 0 {
-		c.waste = c.waste[:len(c.waste)-1]
-	}
+	c.waste = dropLast(c.waste)
 }
 
 // canPlaceOnTableau タブローに置けるか（スート無視の降順、A の下には何も置けない）。

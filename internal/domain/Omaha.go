@@ -485,13 +485,7 @@ func (o *Omaha) findNextActive(fromIdx int) int {
 
 // countActivePlayers フォールドしていないプレイヤー数を返す
 func (o *Omaha) countActivePlayers() int {
-	cnt := 0
-	for _, p := range o.players {
-		if !p.GetFolded() {
-			cnt++
-		}
-	}
-	return cnt
+	return countPlayers(o.players, func(p *OmahaPlayer) bool { return !p.GetFolded() })
 }
 
 // resolveLastPlayer 全員フォールドで最後のプレイヤーが勝利
@@ -688,10 +682,7 @@ func (o *Omaha) IsMuckAvailable() bool {
 
 // getHandName ハンドランクから名前を返す
 func (o *Omaha) getHandName(rank int) string {
-	if rank >= 0 && rank < len(PokerHandNames) {
-		return PokerHandNames[rank]
-	}
-	return "Unknown"
+	return pokerHandName(rank)
 }
 
 // runCpuActions CPUプレイヤーのアクションを実行
@@ -1180,42 +1171,22 @@ func (o *Omaha) SkipAddon() error {
 
 // IsRebuyAvailable 人間プレイヤーがリバイ可能かどうか
 func (o *Omaha) IsRebuyAvailable() bool {
-	if !o.config.RebuyEnabled || o.handCount > o.config.RebuyPeriodHands {
-		return false
-	}
-	for i, p := range o.players {
-		if p.GetIsHuman() && p.GetChips() <= 0 && o.rebuyCounts[i] < o.config.RebuyMaxCount {
-			return true
-		}
-	}
-	return false
+	return rebuyAvailable(o.config.RebuyEnabled, o.handCount, o.config.RebuyPeriodHands, o.players, o.rebuyCounts, o.config.RebuyMaxCount)
 }
 
 // IsAddonAvailable 人間プレイヤーがアドオン可能かどうか
 func (o *Omaha) IsAddonAvailable() bool {
-	if !o.config.AddonEnabled || o.handCount != o.config.AddonAfterHand {
-		return false
-	}
-	for i, p := range o.players {
-		if p.GetIsHuman() && !o.addonUsed[i] {
-			return true
-		}
-	}
-	return false
+	return addonAvailable(o.config.AddonEnabled, o.handCount, o.config.AddonAfterHand, o.players, o.addonUsed)
 }
 
 // GetRebuyCounts プレイヤーごとのリバイ回数取得
 func (o *Omaha) GetRebuyCounts() []int {
-	result := make([]int, len(o.rebuyCounts))
-	copy(result, o.rebuyCounts)
-	return result
+	return copyOf(o.rebuyCounts)
 }
 
 // GetAddonUsed プレイヤーごとのアドオン使用フラグ取得
 func (o *Omaha) GetAddonUsed() []bool {
-	result := make([]bool, len(o.addonUsed))
-	copy(result, o.addonUsed)
-	return result
+	return copyOf(o.addonUsed)
 }
 
 // GetRebuyPhaseType リバイフェーズ種別取得
@@ -1357,17 +1328,12 @@ func (o *Omaha) SetConfig(cfg OmahaConfig) { o.config = cfg }
 
 // IsHumanTurn 人間のターンかチェック
 func (o *Omaha) IsHumanTurn() bool {
-	if o.currentTurn >= 0 && o.currentTurn < len(o.players) {
-		return o.players[o.currentTurn].GetIsHuman()
-	}
-	return false
+	return isHumanTurn(o.players, o.currentTurn)
 }
 
 // GetActedFlags actedフラグ取得
 func (o *Omaha) GetActedFlags() []bool {
-	result := make([]bool, len(o.actedFlags))
-	copy(result, o.actedFlags)
-	return result
+	return copyOf(o.actedFlags)
 }
 
 // GetHandCount ハンド数取得

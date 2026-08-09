@@ -16,8 +16,7 @@ func NewSjavsPlayer(isHuman bool) *SjavsPlayer {
 
 // ResetGame は手札と上がり状態を初期化する。
 func (p *SjavsPlayer) ResetGame() {
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayer(p)
 }
 
 // sjavsPlayerJSON is the JSON wire format for SjavsPlayer.

@@ -316,11 +316,7 @@ func (b *Badugi) applyExchange(playerIdx int, indices []int) {
 // bettingPlayers adapts the concrete player slice to the BettingPlayer
 // interface slice consumed by the shared betting helpers.
 func (b *Badugi) bettingPlayers() []BettingPlayer {
-	bp := make([]BettingPlayer, len(b.players))
-	for i, pl := range b.players {
-		bp[i] = pl
-	}
-	return bp
+	return toBettingPlayers(b.players)
 }
 
 // executeAction runs a single betting action for playerIdx.

@@ -3,6 +3,7 @@ package domain
 import (
 	"errors"
 	"fmt"
+	"math/rand"
 	"sort"
 )
 
@@ -65,11 +66,7 @@ type finishable interface {
 // Constrained by `any` rather than an interface: the games' player types share
 // no method this needs, and the helper only indexes. See issue #5185.
 func getPlayer[T any](players []T, idx int) T {
-	if idx < 0 || idx >= len(players) {
-		var zero T
-		return zero
-	}
-	return players[idx]
+	return elemAt(players, idx)
 }
 
 // humanReporter is the minimal view needed to tell the human player apart from
@@ -451,4 +448,100 @@ func validateFollowSuit[P handReader](trick []*TrickCard, players []P, playerIdx
 		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
 	}
 	return nil
+}
+
+// resetPlayer clears a player's hand and finished flag, for games whose reset
+// does not also clear tricks. 9 player types had these two calls written out.
+func resetPlayer[P resettable](p P) {
+	p.Reset()
+	p.SetIsFinished(false)
+}
+
+// sortHandInPlace reorders a seat's hand with a whole-slice sorter, for games
+// whose ordering is expressed as a sort over []*Card rather than a comparator.
+// 6 games had the extract/sort/Reset/re-add round trip written out.
+func sortHandInPlace[P handHolder](p P, sortFn func([]*Card)) {
+	cards := make([]*Card, p.GetCardsSize())
+	for i := 0; i < p.GetCardsSize(); i++ {
+		cards[i] = p.GetCard(i)
+	}
+	sortFn(cards)
+	p.Reset()
+	for _, c := range cards {
+		p.AddCard(c)
+	}
+}
+
+// handHasAny reports whether any card in p satisfies ok. 5 games had this loop
+// written out.
+func handHasAny[P handReader](p P, ok func(*Card) bool) bool {
+	for i := 0; i < p.GetCardsSize(); i++ {
+		if ok(p.GetCard(i)) {
+			return true
+		}
+	}
+	return false
+}
+
+// chipsOfFirst returns the first seat's chip count, or 0 when there are no
+// seats. 5 games had this written out.
+func chipsOfFirst[P interface{ GetChips() int }](players []P) int {
+	if len(players) == 0 {
+		return 0
+	}
+	return players[0].GetChips()
+}
+
+// roundScorable is a player whose per-round score can be cleared along with the
+// rest of its round state.
+type roundScorable interface {
+	resettable
+	SetRoundScore(int)
+}
+
+// resetRoundScored clears a player's round score, hand and finished flag.
+func resetRoundScored[P roundScorable](p P) {
+	p.SetRoundScore(0)
+	p.Reset()
+	p.SetIsFinished(false)
+}
+
+// trickRoundScorable additionally tracks tricks taken.
+type trickRoundScorable interface {
+	roundScorable
+	ResetTricks()
+}
+
+// resetRoundWithTricks clears a player's round score, tricks, hand and finished
+// flag, in that order -- the order the bodies it replaces used.
+func resetRoundWithTricks[P trickRoundScorable](p P) {
+	p.SetRoundScore(0)
+	p.ResetTricks()
+	p.Reset()
+	p.SetIsFinished(false)
+}
+
+// stockRecycler is a game that can record recycling the discard pile.
+type stockRecycler interface {
+	appendLog(playerIdx int, actionType, detail string, cards []*Card)
+}
+
+// recycleDiscardIntoStock moves everything but the top discard back under the
+// draw pile, shuffled, and logs it. Returns false when there is nothing to
+// recycle. 5 games had this written out.
+//
+// The piles are passed by pointer because the helper rewrites both. Keeping the
+// fmt.Sprintf here rather than at each call site means one copy of it instead
+// of five.
+func recycleDiscardIntoStock(discard, draw *[]*Card, g stockRecycler) bool {
+	if len(*discard) <= 1 {
+		return false
+	}
+	top := (*discard)[len(*discard)-1]
+	rest := (*discard)[:len(*discard)-1]
+	*discard = []*Card{top}
+	rand.Shuffle(len(rest), func(i, j int) { rest[i], rest[j] = rest[j], rest[i] })
+	*draw = append(*draw, rest...)
+	g.appendLog(-1, "recycle", fmt.Sprintf("Discard pile recycled into stock (%d cards)", len(rest)), nil)
+	return true
 }

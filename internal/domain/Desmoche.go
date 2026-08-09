@@ -684,10 +684,7 @@ func (d *Desmoche) GetPot() int { return d.pot }
 
 // GetScore は idx の収支を返す。
 func (d *Desmoche) GetScore(idx int) int {
-	if idx < 0 || idx >= len(d.scores) {
-		return 0
-	}
-	return d.scores[idx]
+	return elemAt(d.scores, idx)
 }
 
 // GetRoundNumber は完了したラウンド数を返す。

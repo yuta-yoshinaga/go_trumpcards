@@ -708,3 +708,164 @@ type fakeBettor struct {
 
 func (b *fakeBettor) GetFolded() bool { return b.folded }
 func (b *fakeBettor) GetAllIn() bool  { return b.allIn }
+
+func TestCopyOf(t *testing.T) {
+	orig := []int{1, 2, 3}
+	got := copyOf(orig)
+
+	assert.Equal(t, orig, got)
+	got[0] = 99
+	assert.Equal(t, 1, orig[0], "the copy must not alias the original")
+}
+
+func TestCopyOf_EmptyAndNil(t *testing.T) {
+	assert.Empty(t, copyOf([]bool{}))
+	assert.Empty(t, copyOf[[]*Card](nil))
+}
+
+func TestPercentOf(t *testing.T) {
+	assert.Equal(t, 50, percentOf(1, 2))
+	assert.Equal(t, 33, percentOf(1, 3), "integer division, matching the bodies replaced")
+	assert.Equal(t, 100, percentOf(7, 7))
+}
+
+// A zero total yields 0 rather than dividing by zero.
+func TestPercentOf_ZeroTotal(t *testing.T) {
+	assert.Equal(t, 0, percentOf(5, 0))
+	assert.Equal(t, 0, percentOf(0, 0))
+}
+
+func TestElemAt(t *testing.T) {
+	s := []int{10, 20}
+	assert.Equal(t, 10, elemAt(s, 0))
+	assert.Equal(t, 20, elemAt(s, 1))
+}
+
+// Out of range yields the zero value, which is what the bodies returned.
+func TestElemAt_OutOfRange(t *testing.T) {
+	s := []int{10}
+	assert.Equal(t, 0, elemAt(s, -1))
+	assert.Equal(t, 0, elemAt(s, 1))
+	assert.Equal(t, 0, elemAt([]int{}, 0))
+}
+
+func TestDropLast(t *testing.T) {
+	assert.Equal(t, []int{1, 2}, dropLast([]int{1, 2, 3}))
+	assert.Empty(t, dropLast([]int{1}))
+	assert.Empty(t, dropLast([]int{}), "already empty stays empty rather than panicking")
+}
+
+func TestMaxIndexBy(t *testing.T) {
+	assert.Equal(t, 1, maxIndexBy([]int{3, 9, 4}, func(v int) int { return v }))
+	assert.Equal(t, 0, maxIndexBy([]int{5}, func(v int) int { return v }))
+}
+
+// Ties keep the earliest index, and an empty slice yields 0 -- both match the
+// bodies replaced, which seeded best := 0 and used a strict >.
+func TestMaxIndexBy_TiesAndEmpty(t *testing.T) {
+	assert.Equal(t, 0, maxIndexBy([]int{7, 7}, func(v int) int { return v }))
+	assert.Equal(t, 0, maxIndexBy([]int{}, func(v int) int { return v }))
+}
+
+func TestPokerHandName(t *testing.T) {
+	assert.Equal(t, PokerHandNames[0], pokerHandName(0))
+	assert.Equal(t, "Unknown", pokerHandName(-1))
+	assert.Equal(t, "Unknown", pokerHandName(len(PokerHandNames)))
+}
+
+func TestSortHandInPlace(t *testing.T) {
+	h := &fakeSeatHand{cards: []*Card{NewCard(2, 9, false), NewCard(1, 3, false)}}
+
+	sortHandInPlace(h, func(cards []*Card) {
+		if cards[0].GetValue() > cards[1].GetValue() {
+			cards[0], cards[1] = cards[1], cards[0]
+		}
+	})
+
+	require.Equal(t, 2, h.GetCardsSize(), "no cards lost in the Reset/re-add round trip")
+	assert.Equal(t, 3, h.GetCard(0).GetValue())
+}
+
+func TestHandHasAny(t *testing.T) {
+	h := &fakeHand{cards: []*Card{NewCard(1, 2, false), NewCard(2, 7, false)}}
+
+	assert.True(t, handHasAny(h, func(c *Card) bool { return c.GetValue() == 7 }), "not just the first card")
+	assert.False(t, handHasAny(h, func(c *Card) bool { return c.GetValue() == 9 }))
+	assert.False(t, handHasAny(&fakeHand{}, func(*Card) bool { return true }), "empty hand")
+}
+
+func TestAFDisplay(t *testing.T) {
+	assert.Equal(t, "-", afDisplay(0, 0), "no aggression and no calls is undefined, not zero")
+	assert.Equal(t, "∞", afDisplay(3, 0), "aggression with no calls is infinite")
+	assert.Equal(t, "1.5", afDisplay(3, 2))
+	assert.Equal(t, "0.0", afDisplay(0, 4))
+}
+
+func TestChipsOfFirst(t *testing.T) {
+	assert.Equal(t, 250, chipsOfFirst([]*fakeChipHolder{{chips: 250}, {chips: 10}}))
+	assert.Equal(t, 0, chipsOfFirst([]*fakeChipHolder{}), "no seats yields zero, not a panic")
+}
+
+type fakeChipHolder struct{ chips int }
+
+func (c *fakeChipHolder) GetChips() int { return c.chips }
+
+type fakeRoundScorer struct {
+	order []string
+	score int
+}
+
+func (p *fakeRoundScorer) SetRoundScore(v int)  { p.score = v; p.order = append(p.order, "score") }
+func (p *fakeRoundScorer) ResetTricks()         { p.order = append(p.order, "tricks") }
+func (p *fakeRoundScorer) Reset()               { p.order = append(p.order, "hand") }
+func (p *fakeRoundScorer) SetIsFinished(_ bool) { p.order = append(p.order, "finished") }
+
+func TestResetRoundScored(t *testing.T) {
+	p := &fakeRoundScorer{score: 7}
+	resetRoundScored(p)
+	assert.Equal(t, 0, p.score)
+	assert.Equal(t, []string{"score", "hand", "finished"}, p.order)
+}
+
+func TestResetRoundWithTricks(t *testing.T) {
+	p := &fakeRoundScorer{score: 7}
+	resetRoundWithTricks(p)
+	assert.Equal(t, []string{"score", "tricks", "hand", "finished"}, p.order,
+		"tricks are cleared between the score and the hand")
+}
+
+type fakeRecycleLogger struct{ logged int }
+
+func (g *fakeRecycleLogger) appendLog(_ int, _, _ string, _ []*Card) { g.logged++ }
+
+func TestRecycleDiscardIntoStock(t *testing.T) {
+	discard := []*Card{NewCard(1, 1, false), NewCard(1, 2, false), NewCard(1, 3, false)}
+	draw := []*Card{NewCard(2, 9, false)}
+	top := discard[len(discard)-1]
+	g := &fakeRecycleLogger{}
+
+	require.True(t, recycleDiscardIntoStock(&discard, &draw, g))
+
+	require.Len(t, discard, 1)
+	assert.Same(t, top, discard[0], "the visible top card stays on the discard pile")
+	assert.Len(t, draw, 3, "the rest goes under the draw pile")
+	assert.Equal(t, 1, g.logged)
+}
+
+// One card or none is not recyclable: taking the top would leave nothing to
+// move, so the piles must be untouched and nothing logged.
+func TestRecycleDiscardIntoStock_NothingToRecycle(t *testing.T) {
+	for _, n := range []int{0, 1} {
+		discard := make([]*Card, n)
+		for i := range discard {
+			discard[i] = NewCard(1, i+1, false)
+		}
+		draw := []*Card{}
+		g := &fakeRecycleLogger{}
+
+		assert.False(t, recycleDiscardIntoStock(&discard, &draw, g), "n=%d", n)
+		assert.Len(t, discard, n, "n=%d: discard untouched", n)
+		assert.Empty(t, draw, "n=%d: draw untouched", n)
+		assert.Equal(t, 0, g.logged, "n=%d: nothing logged", n)
+	}
+}

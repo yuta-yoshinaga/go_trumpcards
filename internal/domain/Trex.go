@@ -740,10 +740,7 @@ func (t *Trex) GetTricksWon(idx int) int {
 
 // GetScore は idx の累計得点を返す。
 func (t *Trex) GetScore(idx int) int {
-	if idx < 0 || idx >= len(t.scores) {
-		return 0
-	}
-	return t.scores[idx]
+	return elemAt(t.scores, idx)
 }
 
 // GetDealScore は idx の今ディールの得点を返す。

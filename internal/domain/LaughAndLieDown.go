@@ -468,10 +468,7 @@ func (l *LaughAndLieDown) IsLaidDown(idx int) bool {
 
 // GetScore は idx の収支を返す。
 func (l *LaughAndLieDown) GetScore(idx int) int {
-	if idx < 0 || idx >= len(l.scores) {
-		return 0
-	}
-	return l.scores[idx]
+	return elemAt(l.scores, idx)
 }
 
 // GetDealerIdx は親の添字を返す。

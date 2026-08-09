@@ -483,14 +483,7 @@ func (ft *FortyThieves) canPlaceOnTableau(card *Card, col int) bool {
 
 // canPlaceOnFoundation ファンデーションにカードを置けるか判定
 func (ft *FortyThieves) canPlaceOnFoundation(card *Card, fIdx int) bool {
-	pile := ft.foundation[fIdx]
-	if len(pile) == 0 {
-		// 空のファンデーションにはAのみ置ける
-		return card.GetValue() == 1
-	}
-	topCard := pile[len(pile)-1]
-	// 同じスートで昇順
-	return card.GetDesign() == topCard.GetDesign() && card.GetValue() == topCard.GetValue()+1
+	return canPlaceOnFoundationPile(ft.foundation[fIdx], card)
 }
 
 // findFoundation カードを置けるファンデーションのインデックスを探す（見つからない場合-1）

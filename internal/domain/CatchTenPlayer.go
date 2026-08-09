@@ -29,10 +29,7 @@ func (p *CatchTenPlayer) GetTeam() int { return p.team }
 
 // ResetRound ラウンドをリセット（トリック・手札・終了状態を初期化）
 func (p *CatchTenPlayer) ResetRound() {
-	p.SetRoundScore(0)
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetRoundWithTricks(p)
 }
 
 // catchTenPlayerJSON is the JSON wire format for CatchTenPlayer.

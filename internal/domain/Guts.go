@@ -440,13 +440,7 @@ func (g *Guts) solventCount() int {
 
 // richestIdx はチップが最多のプレイヤーのインデックスを返す (同数は座席番号の小さい方)。
 func (g *Guts) richestIdx() int {
-	best := 0
-	for i, p := range g.players {
-		if p.GetChips() > g.players[best].GetChips() {
-			best = i
-		}
-	}
-	return best
+	return maxIndexBy(g.players, func(p *GutsPlayer) int { return p.GetChips() })
 }
 
 // gutsDeclareText は宣言の棋譜テキストを返す。
@@ -541,10 +535,7 @@ func (g *Guts) GetPlayer(i int) *GutsPlayer {
 
 // GetChips は人間 (seat 0) の保有チップを返す。
 func (g *Guts) GetChips() int {
-	if len(g.players) == 0 {
-		return 0
-	}
-	return g.players[0].GetChips()
+	return chipsOfFirst(g.players)
 }
 
 // GetConfig はローカルルール設定を返す。

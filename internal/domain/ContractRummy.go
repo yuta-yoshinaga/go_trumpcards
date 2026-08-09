@@ -282,16 +282,7 @@ func (g *ContractRummy) drawFromDiscard() error {
 // recycleDiscardIntoStock 山札が空のとき捨て札トップ 1 枚を残して残りを山札へ戻しシャッフルする。
 // 戻り値は補充できたかどうか（捨て札も枯渇していれば false）。
 func (g *ContractRummy) recycleDiscardIntoStock() bool {
-	if len(g.discardPile) <= 1 {
-		return false
-	}
-	top := g.discardPile[len(g.discardPile)-1]
-	rest := g.discardPile[:len(g.discardPile)-1]
-	g.discardPile = []*Card{top}
-	rand.Shuffle(len(rest), func(i, j int) { rest[i], rest[j] = rest[j], rest[i] })
-	g.drawPile = append(g.drawPile, rest...)
-	g.appendLog(-1, "recycle", fmt.Sprintf("Discard pile recycled into stock (%d cards)", len(rest)), nil)
-	return true
+	return recycleDiscardIntoStock(&g.discardPile, &g.drawPile, g)
 }
 
 // PlayerMeldContract 人間プレイヤーがコントラクトを達成する。
@@ -553,12 +544,7 @@ func (g *ContractRummy) CpuPlay() {
 
 // cpuDraw CPU の引き処理。捨て札トップが手役を進めるなら拾い、そうでなければ山札から引く
 func (g *ContractRummy) cpuDraw() {
-	top := g.GetDiscardTop()
-	if top != nil && g.cpuShouldTakeDiscard(top) {
-		_ = g.drawFromDiscard()
-		return
-	}
-	_ = g.drawFromStock()
+	cpuDrawTurn(g)
 }
 
 // cpuShouldTakeDiscard 捨て札トップを拾うべきかを返す
@@ -834,16 +820,7 @@ func (g *ContractRummy) sortAllHands() {
 }
 
 func (g *ContractRummy) sortHand(playerIdx int) {
-	p := g.players[playerIdx]
-	cards := make([]*Card, p.GetCardsSize())
-	for i := 0; i < p.GetCardsSize(); i++ {
-		cards[i] = p.GetCard(i)
-	}
-	sortCards(cards)
-	p.Reset()
-	for _, c := range cards {
-		p.AddCard(c)
-	}
+	sortHandInPlace(g.players[playerIdx], sortCards)
 }
 
 // --- Pure helpers ---
@@ -1489,4 +1466,25 @@ func (g *ContractRummy) UnmarshalJSON(data []byte) error {
 	g.roundWinnerIdx = j.RoundWinnerIdx
 	g.startingPlayer = j.StartingPlayer
 	return nil
+}
+
+// discardDrawer is a rummy-style game that chooses between the discard pile and
+// the stock on the CPU's turn.
+type discardDrawer interface {
+	GetDiscardTop() *Card
+	cpuShouldTakeDiscard(*Card) bool
+	drawFromDiscard() error
+	drawFromStock() error
+}
+
+// cpuDrawTurn takes the discard when the CPU wants it and the stock otherwise.
+// 5 games had this written out. Lives here rather than player_helpers.go
+// because all five callers are `extra`-tagged, as is this file.
+func cpuDrawTurn(g discardDrawer) {
+	top := g.GetDiscardTop()
+	if top != nil && g.cpuShouldTakeDiscard(top) {
+		_ = g.drawFromDiscard()
+		return
+	}
+	_ = g.drawFromStock()
 }

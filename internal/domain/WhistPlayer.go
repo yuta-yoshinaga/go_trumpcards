@@ -29,10 +29,7 @@ func (p *WhistPlayer) GetTeam() int { return p.team }
 
 // ResetRound ラウンドをリセット（トリック・手札・終了状態を初期化）
 func (p *WhistPlayer) ResetRound() {
-	p.SetRoundScore(0)
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetRoundWithTricks(p)
 }
 
 // whistPlayerJSON is the JSON wire format for WhistPlayer.

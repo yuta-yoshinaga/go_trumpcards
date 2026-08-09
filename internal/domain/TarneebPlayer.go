@@ -43,10 +43,7 @@ func (p *TarneebPlayer) SetBid(bid int) { p.bid = bid }
 // ResetRound ラウンド単位の状態をリセット
 func (p *TarneebPlayer) ResetRound() {
 	p.bid = -1
-	p.SetRoundScore(0)
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetRoundWithTricks(p)
 }
 
 // tarneebPlayerJSON is the JSON wire format for TarneebPlayer.

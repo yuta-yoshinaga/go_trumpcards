@@ -696,10 +696,7 @@ func (m *Mushi) GetRoundNumber() int { return m.roundNumber }
 
 // GetScore は idx の累計得点を返す。
 func (m *Mushi) GetScore(idx int) int {
-	if idx < 0 || idx >= len(m.scores) {
-		return 0
-	}
-	return m.scores[idx]
+	return elemAt(m.scores, idx)
 }
 
 // SetScore は idx の累計得点を設定する (テスト用)。

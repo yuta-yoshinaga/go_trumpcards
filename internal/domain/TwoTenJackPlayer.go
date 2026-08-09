@@ -18,10 +18,7 @@ func NewTwoTenJackPlayer(isHuman bool) *TwoTenJackPlayer {
 
 // ResetRound ラウンドをリセット
 func (p *TwoTenJackPlayer) ResetRound() {
-	p.SetRoundScore(0)
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetRoundWithTricks(p)
 }
 
 // GetCapturedPointCards 獲得した点札の合計得点 (A=1, 10=10, J=1)

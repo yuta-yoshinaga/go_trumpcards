@@ -4,7 +4,6 @@ package domain
 
 import (
 	"encoding/json"
-	"fmt"
 )
 
 // OmahaPlayer オマハホールデムプレイヤークラス
@@ -60,18 +59,12 @@ func (op *OmahaPlayer) GetPFRCount() int { return op.pfrCount }
 
 // GetVPIP VPIP%取得 (0 if totalHands==0)
 func (op *OmahaPlayer) GetVPIP() int {
-	if op.totalHands == 0 {
-		return 0
-	}
-	return op.vpipCount * 100 / op.totalHands
+	return percentOf(op.vpipCount, op.totalHands)
 }
 
 // GetPFR PFR%取得 (0 if totalHands==0)
 func (op *OmahaPlayer) GetPFR() int {
-	if op.totalHands == 0 {
-		return 0
-	}
-	return op.pfrCount * 100 / op.totalHands
+	return percentOf(op.pfrCount, op.totalHands)
 }
 
 // IncrementTotalHands 総ハンド数をインクリメント
@@ -91,10 +84,7 @@ func (op *OmahaPlayer) GetThreeBetCount() int { return op.threeBetCount }
 
 // GetThreeBet 3Bet%取得 (0 if threeBetOpportunity==0)
 func (op *OmahaPlayer) GetThreeBet() int {
-	if op.threeBetOpportunity == 0 {
-		return 0
-	}
-	return op.threeBetCount * 100 / op.threeBetOpportunity
+	return percentOf(op.threeBetCount, op.threeBetOpportunity)
 }
 
 // IncrementThreeBetOpportunity 3Bet機会数をインクリメント
@@ -117,20 +107,12 @@ func (op *OmahaPlayer) IncrementPostFlopCall() { op.postFlopCall++ }
 
 // GetAFDisplay AF表示文字列取得 ("-"=アクションなし, "∞"=コールなし, "X.X"=通常)
 func (op *OmahaPlayer) GetAFDisplay() string {
-	if op.postFlopBetRaise == 0 && op.postFlopCall == 0 {
-		return "-"
-	}
-	if op.postFlopCall == 0 {
-		return "∞"
-	}
-	return fmt.Sprintf("%.1f", float64(op.postFlopBetRaise)/float64(op.postFlopCall))
+	return afDisplay(op.postFlopBetRaise, op.postFlopCall)
 }
 
 // GetComparisonCards ハンド比較用カード取得 (BettingPlayerインターフェース)
 func (op *OmahaPlayer) GetComparisonCards() []*Card {
-	cards := make([]*Card, len(op.bestHand))
-	copy(cards, op.bestHand)
-	return cards
+	return copyOf(op.bestHand)
 }
 
 // GetLowBestHand Hi-Lo用ローベスト5枚取得 (未評価/不成立時はnil)

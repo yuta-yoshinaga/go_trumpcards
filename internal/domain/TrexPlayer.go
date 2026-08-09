@@ -16,8 +16,7 @@ func NewTrexPlayer(isHuman bool) *TrexPlayer {
 
 // ResetGame は手札と上がり状態を初期化する。
 func (p *TrexPlayer) ResetGame() {
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayer(p)
 }
 
 // trexPlayerJSON is the JSON wire format for TrexPlayer.

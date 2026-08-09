@@ -599,13 +599,7 @@ func (g *Michigan) endGame() {
 
 // richestIdx はチップが最多のプレイヤーのインデックスを返す (同数は座席番号の小さい方)。
 func (g *Michigan) richestIdx() int {
-	best := 0
-	for i, p := range g.players {
-		if p.GetChips() > g.players[best].GetChips() {
-			best = i
-		}
-	}
-	return best
+	return maxIndexBy(g.players, func(p *MichiganPlayer) int { return p.GetChips() })
 }
 
 // --- Hint ---
@@ -736,10 +730,7 @@ func (g *Michigan) GetPlayer(i int) *MichiganPlayer {
 
 // GetChips は人間 (seat 0) の保有チップを返す。
 func (g *Michigan) GetChips() int {
-	if len(g.players) == 0 {
-		return 0
-	}
-	return g.players[0].GetChips()
+	return chipsOfFirst(g.players)
 }
 
 // IsHumanTurn は現在人間 (seat 0) の入力待ちかどうかを返す。

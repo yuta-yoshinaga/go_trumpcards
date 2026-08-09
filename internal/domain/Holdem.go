@@ -440,13 +440,7 @@ func (h *Holdem) findNextActive(fromIdx int) int {
 
 // countActivePlayers フォールドしていないプレイヤー数を返す
 func (h *Holdem) countActivePlayers() int {
-	cnt := 0
-	for _, p := range h.players {
-		if !p.GetFolded() {
-			cnt++
-		}
-	}
-	return cnt
+	return countPlayers(h.players, func(p *HoldemPlayer) bool { return !p.GetFolded() })
 }
 
 // bettingLimits ベッティングリミット設定からmaxRaisesとmaxBetAmountを計算
@@ -677,17 +671,12 @@ func (h *Holdem) SetConfig(cfg HoldemConfig) { h.config = cfg }
 
 // IsHumanTurn 人間のターンかチェック
 func (h *Holdem) IsHumanTurn() bool {
-	if h.currentTurn >= 0 && h.currentTurn < len(h.players) {
-		return h.players[h.currentTurn].GetIsHuman()
-	}
-	return false
+	return isHumanTurn(h.players, h.currentTurn)
 }
 
 // GetActedFlags actedフラグ取得
 func (h *Holdem) GetActedFlags() []bool {
-	result := make([]bool, len(h.actedFlags))
-	copy(result, h.actedFlags)
-	return result
+	return copyOf(h.actedFlags)
 }
 
 // GetHandCount ハンド数取得

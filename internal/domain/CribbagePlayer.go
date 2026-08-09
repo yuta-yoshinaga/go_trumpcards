@@ -50,7 +50,5 @@ func NewCribbagePlayer(isHuman bool) *CribbagePlayer {
 
 // ResetRound ラウンドをリセット（手札・スコア・終了状態を初期化）
 func (p *CribbagePlayer) ResetRound() {
-	p.SetRoundScore(0)
-	p.Reset()
-	p.SetIsFinished(false)
+	resetRoundScored(p)
 }

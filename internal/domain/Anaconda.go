@@ -846,13 +846,7 @@ func (g *Anaconda) activeSeats() []int {
 
 // activeCount は未フォールド・非脱落プレイヤー数を返す。
 func (g *Anaconda) activeCount() int {
-	n := 0
-	for _, p := range g.players {
-		if !p.GetOut() && !p.GetFolded() {
-			n++
-		}
-	}
-	return n
+	return countPlayers(g.players, func(p *AnacondaPlayer) bool { return !p.GetOut() && !p.GetFolded() })
 }
 
 // nextActive は from の次の未フォールド・非脱落プレイヤーを返す。
@@ -880,13 +874,7 @@ func (g *Anaconda) solventCount() int {
 
 // richestIdx はチップが最多のプレイヤーのインデックスを返す (同数は座席番号の小さい方)。
 func (g *Anaconda) richestIdx() int {
-	best := 0
-	for i, p := range g.players {
-		if p.GetChips() > g.players[best].GetChips() {
-			best = i
-		}
-	}
-	return best
+	return maxIndexBy(g.players, func(p *AnacondaPlayer) int { return p.GetChips() })
 }
 
 // anacondaValidateIndices はカードインデックス列の妥当性 (枚数・範囲・重複なし) を検証する。
@@ -1087,10 +1075,7 @@ func (g *Anaconda) GetPlayer(i int) *AnacondaPlayer {
 
 // GetChips は人間 (seat 0) の保有チップを返す。
 func (g *Anaconda) GetChips() int {
-	if len(g.players) == 0 {
-		return 0
-	}
-	return g.players[0].GetChips()
+	return chipsOfFirst(g.players)
 }
 
 // IsHumanTurn は現在がロールフェーズの人間 (seat 0) 手番かどうかを返す。

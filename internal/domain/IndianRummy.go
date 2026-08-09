@@ -301,16 +301,7 @@ func (g *IndianRummy) drawFromDiscard() error {
 
 // recycleDiscardIntoStock 山札が空のとき捨て札トップ 1 枚を残して残りを山札へ戻しシャッフルする。
 func (g *IndianRummy) recycleDiscardIntoStock() bool {
-	if len(g.discardPile) <= 1 {
-		return false
-	}
-	top := g.discardPile[len(g.discardPile)-1]
-	rest := g.discardPile[:len(g.discardPile)-1]
-	g.discardPile = []*Card{top}
-	rand.Shuffle(len(rest), func(i, j int) { rest[i], rest[j] = rest[j], rest[i] })
-	g.drawPile = append(g.drawPile, rest...)
-	g.appendLog(-1, "recycle", fmt.Sprintf("Discard pile recycled into stock (%d cards)", len(rest)), nil)
-	return true
+	return recycleDiscardIntoStock(&g.discardPile, &g.drawPile, g)
 }
 
 // PlayerDiscard 人間プレイヤーが手札 1 枚を捨ててターンを終了する
@@ -405,12 +396,7 @@ func (g *IndianRummy) CpuPlay() {
 
 // cpuDraw CPU の引き処理。捨て札トップが役を進めるなら拾い、そうでなければ山札から引く。
 func (g *IndianRummy) cpuDraw() {
-	top := g.GetDiscardTop()
-	if top != nil && g.cpuShouldTakeDiscard(top) {
-		_ = g.drawFromDiscard()
-		return
-	}
-	_ = g.drawFromStock()
+	cpuDrawTurn(g)
 }
 
 // cpuShouldTakeDiscard 捨て札トップを拾うべきかを返す
@@ -655,16 +641,7 @@ func (g *IndianRummy) sortAllHands() {
 }
 
 func (g *IndianRummy) sortHand(playerIdx int) {
-	p := g.players[playerIdx]
-	cards := make([]*Card, p.GetCardsSize())
-	for i := 0; i < p.GetCardsSize(); i++ {
-		cards[i] = p.GetCard(i)
-	}
-	sortCards(cards)
-	p.Reset()
-	for _, c := range cards {
-		p.AddCard(c)
-	}
+	sortHandInPlace(g.players[playerIdx], sortCards)
 }
 
 // indianRummyCollectCards プレイヤーの手札を []*Card で返す

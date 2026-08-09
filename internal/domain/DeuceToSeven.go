@@ -316,11 +316,7 @@ func (d *DeuceToSeven) applyExchange(playerIdx int, indices []int) {
 // bettingPlayers adapts the concrete player slice to the BettingPlayer
 // interface slice consumed by the shared betting helpers.
 func (d *DeuceToSeven) bettingPlayers() []BettingPlayer {
-	bp := make([]BettingPlayer, len(d.players))
-	for i, pl := range d.players {
-		bp[i] = pl
-	}
-	return bp
+	return toBettingPlayers(d.players)
 }
 
 // executeAction runs a single betting action for playerIdx.

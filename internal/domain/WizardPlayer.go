@@ -27,10 +27,7 @@ func (p *WizardPlayer) SetBid(bid int) { p.bid = bid }
 // ResetRound ラウンドをリセット（ビッド・トリック・手札・終了状態を初期化）
 func (p *WizardPlayer) ResetRound() {
 	p.bid = -1
-	p.SetRoundScore(0)
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetRoundWithTricks(p)
 }
 
 // wizardPlayerJSON is the JSON wire format for WizardPlayer.

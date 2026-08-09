@@ -4,7 +4,6 @@ package domain
 
 import (
 	"encoding/json"
-	"fmt"
 )
 
 // PineapplePlayer パイナップルポーカープレイヤークラス
@@ -58,18 +57,12 @@ func (pp *PineapplePlayer) GetPFRCount() int { return pp.pfrCount }
 
 // GetVPIP VPIP%取得 (0 if totalHands==0)
 func (pp *PineapplePlayer) GetVPIP() int {
-	if pp.totalHands == 0 {
-		return 0
-	}
-	return pp.vpipCount * 100 / pp.totalHands
+	return percentOf(pp.vpipCount, pp.totalHands)
 }
 
 // GetPFR PFR%取得 (0 if totalHands==0)
 func (pp *PineapplePlayer) GetPFR() int {
-	if pp.totalHands == 0 {
-		return 0
-	}
-	return pp.pfrCount * 100 / pp.totalHands
+	return percentOf(pp.pfrCount, pp.totalHands)
 }
 
 // IncrementTotalHands 総ハンド数をインクリメント
@@ -89,10 +82,7 @@ func (pp *PineapplePlayer) GetThreeBetCount() int { return pp.threeBetCount }
 
 // GetThreeBet 3Bet%取得 (0 if threeBetOpportunity==0)
 func (pp *PineapplePlayer) GetThreeBet() int {
-	if pp.threeBetOpportunity == 0 {
-		return 0
-	}
-	return pp.threeBetCount * 100 / pp.threeBetOpportunity
+	return percentOf(pp.threeBetCount, pp.threeBetOpportunity)
 }
 
 // IncrementThreeBetOpportunity 3Bet機会数をインクリメント
@@ -115,20 +105,12 @@ func (pp *PineapplePlayer) IncrementPostFlopCall() { pp.postFlopCall++ }
 
 // GetAFDisplay AF表示文字列取得 ("-"=アクションなし, "∞"=コールなし, "X.X"=通常)
 func (pp *PineapplePlayer) GetAFDisplay() string {
-	if pp.postFlopBetRaise == 0 && pp.postFlopCall == 0 {
-		return "-"
-	}
-	if pp.postFlopCall == 0 {
-		return "∞"
-	}
-	return fmt.Sprintf("%.1f", float64(pp.postFlopBetRaise)/float64(pp.postFlopCall))
+	return afDisplay(pp.postFlopBetRaise, pp.postFlopCall)
 }
 
 // GetComparisonCards ハンド比較用カード取得 (BettingPlayerインターフェース)
 func (pp *PineapplePlayer) GetComparisonCards() []*Card {
-	cards := make([]*Card, len(pp.bestHand))
-	copy(cards, pp.bestHand)
-	return cards
+	return copyOf(pp.bestHand)
 }
 
 // EvalBestHand コミュニティカードとホールカードからベスト5枚を評価
