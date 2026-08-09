@@ -687,3 +687,56 @@ func drawOrTakeTrump(deck *TrumpCards, trump **Card) *Card {
 	}
 	return nil
 }
+
+// cardComparer is a game that can rank two cards against the led suit.
+type cardComparer interface {
+	cardBeats(a, b *Card, leadSuit int) bool
+}
+
+// currentTrickWinnerCard returns the card currently winning the trick, or nil
+// when nothing has been played. 3 games had this written out.
+func currentTrickWinnerCard(trick []*TrickCard, g cardComparer) *Card {
+	if len(trick) == 0 {
+		return nil
+	}
+	leadSuit := trick[0].Card.GetDesign()
+	winner := trick[0].Card
+	for _, tc := range trick[1:] {
+		if g.cardBeats(tc.Card, winner, leadSuit) {
+			winner = tc.Card
+		}
+	}
+	return winner
+}
+
+// validateCardIsPlayable checks that card is one of the seat's legal plays,
+// comparing by identity as the 4 bodies it replaces did. See issue #5185.
+func validateCardIsPlayable[P handReader](valid []int, p P, card *Card) error {
+	for _, idx := range valid {
+		if p.GetCard(idx) == card {
+			return nil
+		}
+	}
+	return NewDomainError(ErrInvalidPlay, "フォロー義務・切り札義務・オーバートランプ義務に反しています")
+}
+
+// endgameFollower is a game whose follow rules only apply in its second phase.
+type endgameFollower interface {
+	IsEndgame() bool
+	cardSatisfiesFollow(playerIdx int, card *Card) bool
+}
+
+// validateEndgameFollow enforces following suit once the endgame has started
+// and a trick is under way. 3 games had this written out.
+func validateEndgameFollow(trick []*TrickCard, g endgameFollower, playerIdx int, card *Card) error {
+	if card == nil {
+		return NewDomainError(ErrInvalidCard, "カードが nil です")
+	}
+	if !g.IsEndgame() || len(trick) == 0 {
+		return nil
+	}
+	if !g.cardSatisfiesFollow(playerIdx, card) {
+		return NewDomainError(ErrInvalidCard, "第2フェーズではフォロールールに従う必要があります")
+	}
+	return nil
+}

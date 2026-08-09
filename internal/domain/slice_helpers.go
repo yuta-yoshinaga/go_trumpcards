@@ -122,3 +122,18 @@ func nextIndexWhere[T any](s []T, from int, ok func(T) bool) int {
 	}
 	return from
 }
+
+// removeIndices returns s without the elements at the given indices. Removal
+// runs highest-first so earlier indices stay valid, and out-of-range entries are
+// ignored. 3 games had this written out.
+func removeIndices[T any](s []T, idxs []int) []T {
+	if len(idxs) == 0 {
+		return s
+	}
+	for _, idx := range sortIndicesDescending(idxs) {
+		if idx >= 0 && idx < len(s) {
+			s = append(s[:idx], s[idx+1:]...)
+		}
+	}
+	return s
+}

@@ -1066,3 +1066,71 @@ func TestDrawOrTakeTrump_FallsBackToTrumpThenNil(t *testing.T) {
 	assert.Nil(t, trump, "and is consumed")
 	assert.Nil(t, drawOrTakeTrump(deck, &trump), "nothing left")
 }
+
+type fakeBeater struct{}
+
+// Higher value wins, but only among cards of the led suit.
+func (fakeBeater) cardBeats(a, b *Card, leadSuit int) bool {
+	if a.GetDesign() != leadSuit {
+		return false
+	}
+	if b.GetDesign() != leadSuit {
+		return true
+	}
+	return a.GetValue() > b.GetValue()
+}
+
+func TestCurrentTrickWinnerCard(t *testing.T) {
+	high := NewCard(1, 9, false)
+	trick := []*TrickCard{
+		{PlayerIdx: 0, Card: NewCard(1, 4, false)},
+		{PlayerIdx: 1, Card: NewCard(2, 13, false)}, // off-suit
+		{PlayerIdx: 2, Card: high},
+	}
+	assert.Same(t, high, currentTrickWinnerCard(trick, fakeBeater{}))
+	assert.Nil(t, currentTrickWinnerCard(nil, fakeBeater{}))
+}
+
+func TestValidateCardIsPlayable(t *testing.T) {
+	a, b := NewCard(1, 2, false), NewCard(1, 3, false)
+	h := &fakeHand{cards: []*Card{a, b}}
+
+	require.NoError(t, validateCardIsPlayable([]int{0}, h, a))
+	// Identity, not equality: an identical-looking card that is not in the hand
+	// is rejected, which is what the bodies replaced did.
+	assert.Error(t, validateCardIsPlayable([]int{0}, h, NewCard(1, 2, false)))
+	assert.Error(t, validateCardIsPlayable([]int{0}, h, b), "b is in the hand but not among the valid indices")
+	assert.Error(t, validateCardIsPlayable(nil, h, a), "nothing is playable")
+}
+
+type fakeEndgame struct {
+	endgame   bool
+	satisfies bool
+}
+
+func (g fakeEndgame) IsEndgame() bool                         { return g.endgame }
+func (g fakeEndgame) cardSatisfiesFollow(_ int, _ *Card) bool { return g.satisfies }
+
+func TestValidateEndgameFollow(t *testing.T) {
+	trick := []*TrickCard{{PlayerIdx: 0, Card: NewCard(1, 5, false)}}
+	card := NewCard(1, 2, false)
+
+	assert.Error(t, validateEndgameFollow(trick, fakeEndgame{}, 0, nil), "a nil card is rejected first")
+	require.NoError(t, validateEndgameFollow(trick, fakeEndgame{endgame: false}, 0, card), "no rule before the endgame")
+	require.NoError(t, validateEndgameFollow(nil, fakeEndgame{endgame: true}, 0, card), "no rule when leading")
+	assert.Error(t, validateEndgameFollow(trick, fakeEndgame{endgame: true, satisfies: false}, 0, card))
+	require.NoError(t, validateEndgameFollow(trick, fakeEndgame{endgame: true, satisfies: true}, 0, card))
+}
+
+func TestRemoveIndices(t *testing.T) {
+	assert.Equal(t, []int{1, 3}, removeIndices([]int{1, 2, 3, 4}, []int{1, 3}))
+	assert.Equal(t, []int{1, 2}, removeIndices([]int{1, 2}, nil), "no indices leaves the slice alone")
+	assert.Equal(t, []int{1, 2}, removeIndices([]int{1, 2}, []int{5, -1}), "out-of-range indices are ignored")
+}
+
+// Removal must run highest-first; ascending order would shift the later
+// indices and delete the wrong elements.
+func TestRemoveIndices_OrderIndependent(t *testing.T) {
+	assert.Equal(t, []int{20}, removeIndices([]int{10, 20, 30}, []int{0, 2}))
+	assert.Equal(t, []int{20}, removeIndices([]int{10, 20, 30}, []int{2, 0}), "input order must not matter")
+}
