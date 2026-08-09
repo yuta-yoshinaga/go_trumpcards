@@ -359,12 +359,7 @@ func (sa *StreetsAndAlleys) UndoToEscape() int {
 
 // UndoN n回連続でアンドゥを実行する。
 func (sa *StreetsAndAlleys) UndoN(n int) error {
-	for i := range n {
-		if err := sa.Undo(); err != nil {
-			return fmt.Errorf("undo step %d failed: %w", i+1, err)
-		}
-	}
-	return nil
+	return undoN(sa, n)
 }
 
 // --- Private helpers ---

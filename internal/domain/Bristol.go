@@ -423,12 +423,7 @@ func (b *Bristol) CanUndo() bool {
 
 // UndoN n回連続アンドゥ
 func (b *Bristol) UndoN(n int) error {
-	for i := 0; i < n; i++ {
-		if err := b.Undo(); err != nil {
-			return fmt.Errorf("undo step %d failed: %w", i+1, err)
-		}
-	}
-	return nil
+	return undoN(b, n)
 }
 
 // --- Private helpers ---

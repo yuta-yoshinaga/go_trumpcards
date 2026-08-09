@@ -464,12 +464,7 @@ func (ft *FortyThieves) UndoToEscape() int {
 
 // UndoN n回連続でアンドゥを実行する。
 func (ft *FortyThieves) UndoN(n int) error {
-	for i := range n {
-		if err := ft.Undo(); err != nil {
-			return fmt.Errorf("undo step %d failed: %w", i+1, err)
-		}
-	}
-	return nil
+	return undoN(ft, n)
 }
 
 // --- Private helpers ---

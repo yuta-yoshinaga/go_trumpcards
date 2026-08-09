@@ -377,12 +377,7 @@ func (o *Osmosis) CanUndo() bool {
 
 // UndoN n回連続アンドゥ
 func (o *Osmosis) UndoN(n int) error {
-	for i := 0; i < n; i++ {
-		if err := o.Undo(); err != nil {
-			return fmt.Errorf("undo step %d failed: %w", i+1, err)
-		}
-	}
-	return nil
+	return undoN(o, n)
 }
 
 // --- Private helpers ---

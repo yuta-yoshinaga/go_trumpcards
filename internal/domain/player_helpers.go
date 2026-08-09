@@ -242,3 +242,26 @@ func sortHands[G handSorter](seats int, g G) {
 		g.sortHand(i)
 	}
 }
+
+// undoer is a game that can step one move backwards.
+type undoer interface {
+	Undo() error
+}
+
+// undoN undoes n moves, stopping at the first failure and reporting which step
+// failed with the cause wrapped. 31 solitaires had this loop written out.
+//
+// Interface parameter rather than a type parameter, which is the opposite
+// choice from resetPlayerRound above and for a measured reason: this body
+// contains a fmt.Errorf, and fmt is the one thing that is genuinely expensive
+// to duplicate per type (#5202 measured +4,801 bytes for that shape). Those 31
+// copies already exist, so collapsing them to one shared body is a saving,
+// whereas a type parameter would keep them. See issue #5185.
+func undoN(g undoer, n int) error {
+	for i := range n {
+		if err := g.Undo(); err != nil {
+			return fmt.Errorf("undo step %d failed: %w", i+1, err)
+		}
+	}
+	return nil
+}

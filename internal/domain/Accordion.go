@@ -207,12 +207,7 @@ func (a *Accordion) UndoToEscape() int {
 
 // UndoN n回連続でアンドゥを実行する
 func (a *Accordion) UndoN(n int) error {
-	for i := range n {
-		if err := a.Undo(); err != nil {
-			return fmt.Errorf("undo step %d failed: %w", i+1, err)
-		}
-	}
-	return nil
+	return undoN(a, n)
 }
 
 // --- State getters/setters ---

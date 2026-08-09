@@ -490,12 +490,7 @@ func (c *Canfield) CanUndo() bool {
 
 // UndoN n回連続アンドゥ
 func (c *Canfield) UndoN(n int) error {
-	for i := 0; i < n; i++ {
-		if err := c.Undo(); err != nil {
-			return fmt.Errorf("undo step %d failed: %w", i+1, err)
-		}
-	}
-	return nil
+	return undoN(c, n)
 }
 
 // --- Private helpers ---

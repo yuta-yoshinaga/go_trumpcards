@@ -364,12 +364,7 @@ func (bc *BeleagueredCastle) UndoToEscape() int {
 
 // UndoN n回連続でアンドゥを実行する。
 func (bc *BeleagueredCastle) UndoN(n int) error {
-	for i := range n {
-		if err := bc.Undo(); err != nil {
-			return fmt.Errorf("undo step %d failed: %w", i+1, err)
-		}
-	}
-	return nil
+	return undoN(bc, n)
 }
 
 // --- Private helpers ---

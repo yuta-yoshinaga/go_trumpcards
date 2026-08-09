@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // --- nextActivePlayer tests ---
@@ -441,4 +442,48 @@ func TestSortHands_NoSeats(t *testing.T) {
 	sortHands(0, g)
 
 	assert.Empty(t, g.sorted)
+}
+
+type fakeUndoer struct {
+	calls  int
+	failAt int // 1-based step that returns an error; 0 never fails
+}
+
+func (u *fakeUndoer) Undo() error {
+	u.calls++
+	if u.failAt != 0 && u.calls == u.failAt {
+		return assert.AnError
+	}
+	return nil
+}
+
+func TestUndoN(t *testing.T) {
+	u := &fakeUndoer{}
+
+	require.NoError(t, undoN(u, 3))
+	assert.Equal(t, 3, u.calls, "exactly n steps")
+}
+
+// Zero and negative are both no-ops. `for i := range n` iterates zero times for
+// a negative n, matching the `for i := 0; i < n; i++` bodies this replaces --
+// Gaps has a test pinning that a negative count undoes nothing.
+func TestUndoN_ZeroOrNegativeIsNoop(t *testing.T) {
+	u := &fakeUndoer{}
+
+	require.NoError(t, undoN(u, 0))
+	require.NoError(t, undoN(u, -3))
+	assert.Equal(t, 0, u.calls)
+}
+
+// The failing step number appears in the message and the cause is wrapped, so
+// callers can still errors.Is the original.
+func TestUndoN_StopsAtTheFailingStep(t *testing.T) {
+	u := &fakeUndoer{failAt: 2}
+
+	err := undoN(u, 5)
+
+	require.Error(t, err)
+	assert.Equal(t, 2, u.calls, "must stop, not run all 5")
+	assert.Contains(t, err.Error(), "undo step 2 failed")
+	assert.ErrorIs(t, err, assert.AnError, "the cause must stay wrapped")
 }

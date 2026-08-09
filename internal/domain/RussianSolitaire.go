@@ -395,12 +395,7 @@ func (y *RussianSolitaire) UndoToEscape() int {
 
 // UndoN n回連続でアンドゥを実行する。
 func (y *RussianSolitaire) UndoN(n int) error {
-	for i := range n {
-		if err := y.Undo(); err != nil {
-			return fmt.Errorf("undo step %d failed: %w", i+1, err)
-		}
-	}
-	return nil
+	return undoN(y, n)
 }
 
 // --- Private helpers ---
