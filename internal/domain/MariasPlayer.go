@@ -18,9 +18,7 @@ func NewMariasPlayer(isHuman bool) *MariasPlayer {
 
 // ResetRound ラウンドをリセット（トリック・手札・終了状態を初期化）
 func (p *MariasPlayer) ResetRound() {
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayerRound(p)
 }
 
 // mariasPlayerJSON is the JSON wire format for MariasPlayer.

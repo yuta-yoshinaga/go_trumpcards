@@ -423,9 +423,7 @@ func (g *Prsi) HasPlayableCard(playerIdx int) bool {
 
 // sortAllHands 全プレイヤーの手札をソートする
 func (g *Prsi) sortAllHands() {
-	for i := range g.players {
-		g.sortHand(i)
-	}
+	sortHands(len(g.players), g)
 }
 
 // sortHand プレイヤーの手札をスート→値の順にソートする

@@ -25,9 +25,7 @@ func NewSheepsheadPlayer(isHuman bool, startChips int) *SheepsheadPlayer {
 // ResetRound ラウンドをリセット（トリック・手札・終了状態を初期化）。チップは
 // 累積するためリセットしない。
 func (p *SheepsheadPlayer) ResetRound() {
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayerRound(p)
 }
 
 // sheepsheadPlayerJSON is the JSON wire format for SheepsheadPlayer.

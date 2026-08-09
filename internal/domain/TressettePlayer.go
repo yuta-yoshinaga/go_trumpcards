@@ -21,9 +21,7 @@ func NewTressettePlayer(isHuman bool) *TressettePlayer {
 
 // ResetRound ラウンドをリセット（トリック・手札・終了状態を初期化）
 func (p *TressettePlayer) ResetRound() {
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayerRound(p)
 }
 
 // tressettePlayerJSON is the JSON wire format for TressettePlayer.

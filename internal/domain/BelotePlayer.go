@@ -24,9 +24,7 @@ func (p *BelotePlayer) GetTeam() int { return p.team }
 
 // ResetRound ラウンドをリセット（トリック・手札・終了状態を初期化）
 func (p *BelotePlayer) ResetRound() {
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayerRound(p)
 }
 
 // belotePlayerJSON is the JSON wire format for BelotePlayer.

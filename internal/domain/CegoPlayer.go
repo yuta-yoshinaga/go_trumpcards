@@ -18,9 +18,7 @@ func NewCegoPlayer(isHuman bool) *CegoPlayer {
 
 // ResetRound ラウンドをリセット (トリック・手札・終了状態を初期化)
 func (p *CegoPlayer) ResetRound() {
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayerRound(p)
 }
 
 // cegoPlayerJSON is the JSON wire format for CegoPlayer.

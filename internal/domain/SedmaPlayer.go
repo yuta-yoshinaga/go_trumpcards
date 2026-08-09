@@ -18,9 +18,7 @@ func NewSedmaPlayer(isHuman bool) *SedmaPlayer {
 
 // ResetRound ラウンドをリセット（トリック・手札・終了状態を初期化）
 func (p *SedmaPlayer) ResetRound() {
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayerRound(p)
 }
 
 // sedmaPlayerJSON is the JSON wire format for SedmaPlayer.

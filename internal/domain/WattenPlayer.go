@@ -24,9 +24,7 @@ func (p *WattenPlayer) GetTeam() int { return p.team }
 
 // ResetRound ラウンドをリセット（トリック・手札・終了状態を初期化）
 func (p *WattenPlayer) ResetRound() {
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayerRound(p)
 }
 
 // wattenPlayerJSON is the JSON wire format for WattenPlayer.

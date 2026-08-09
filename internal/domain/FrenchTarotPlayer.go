@@ -18,9 +18,7 @@ func NewFrenchTarotPlayer(isHuman bool) *FrenchTarotPlayer {
 
 // ResetRound ラウンドをリセット (トリック・手札・終了状態を初期化)
 func (p *FrenchTarotPlayer) ResetRound() {
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayerRound(p)
 }
 
 // frenchTarotPlayerJSON is the JSON wire format for FrenchTarotPlayer.

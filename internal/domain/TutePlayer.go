@@ -18,9 +18,7 @@ func NewTutePlayer(isHuman bool) *TutePlayer {
 
 // ResetRound ラウンドをリセット（トリック・手札・終了状態を初期化）
 func (p *TutePlayer) ResetRound() {
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayerRound(p)
 }
 
 // tutePlayerJSON is the JSON wire format for TutePlayer.

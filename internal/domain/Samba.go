@@ -1615,9 +1615,7 @@ func (g *Samba) GetDrewFromDiscard() bool { return g.drewFromDiscard }
 
 // sortAllHands 全プレイヤーの手札をソートする
 func (g *Samba) sortAllHands() {
-	for i := range g.players {
-		g.sortHand(i)
-	}
+	sortHands(len(g.players), g)
 }
 
 // sortHand プレイヤーの手札をスート→値の順にソートする

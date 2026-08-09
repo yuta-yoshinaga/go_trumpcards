@@ -830,9 +830,7 @@ func (g *ContractRummy) GetCurrentContract() Contract {
 // --- Private helpers ---
 
 func (g *ContractRummy) sortAllHands() {
-	for i := range g.players {
-		g.sortHand(i)
-	}
+	sortHands(len(g.players), g)
 }
 
 func (g *ContractRummy) sortHand(playerIdx int) {

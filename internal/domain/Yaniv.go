@@ -808,9 +808,7 @@ func (g *Yaniv) SetConfig(cfg YanivConfig) { g.config = cfg }
 
 // sortAllHands 全プレイヤーの手札をソートする
 func (g *Yaniv) sortAllHands() {
-	for i := range g.players {
-		g.sortHand(i)
-	}
+	sortHands(len(g.players), g)
 }
 
 // sortHand プレイヤーの手札をスート→数値順にソートする

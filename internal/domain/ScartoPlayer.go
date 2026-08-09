@@ -18,9 +18,7 @@ func NewScartoPlayer(isHuman bool) *ScartoPlayer {
 
 // ResetRound ラウンドをリセット (トリック・手札・終了状態を初期化)
 func (p *ScartoPlayer) ResetRound() {
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayerRound(p)
 }
 
 // scartoPlayerJSON is the JSON wire format for ScartoPlayer.
