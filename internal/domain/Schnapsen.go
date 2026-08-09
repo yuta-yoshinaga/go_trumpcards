@@ -592,14 +592,7 @@ func (s *Schnapsen) cardSatisfiesFollow(playerIdx int, card *Card) bool {
 
 // legalPlayIndices validatePlay を満たすカードのインデックス集合を返す。
 func (s *Schnapsen) legalPlayIndices(playerIdx int) []int {
-	p := s.players[playerIdx]
-	out := make([]int, 0, p.GetCardsSize())
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if s.validatePlay(playerIdx, p.GetCard(i)) == nil {
-			out = append(out, i)
-		}
-	}
-	return out
+	return validPlayIndices(s.players[playerIdx], func(c *Card) bool { return s.validatePlay(playerIdx, c) == nil })
 }
 
 // playerHasSuitWinner プレイヤーが同スートで leadCard に勝てるカードを持つか

@@ -546,14 +546,7 @@ func (e *Ecarte) cardSatisfiesFollow(playerIdx int, card *Card) bool {
 
 // legalPlayIndices validatePlay を満たすカードのインデックス集合を返す。
 func (e *Ecarte) legalPlayIndices(playerIdx int) []int {
-	p := e.players[playerIdx]
-	out := make([]int, 0, p.GetCardsSize())
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if e.validatePlay(playerIdx, p.GetCard(i)) == nil {
-			out = append(out, i)
-		}
-	}
-	return out
+	return validPlayIndices(e.players[playerIdx], func(c *Card) bool { return e.validatePlay(playerIdx, c) == nil })
 }
 
 func ecartePlayerHasSuit(player *EcartePlayer, suit int) bool {

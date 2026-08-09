@@ -659,13 +659,7 @@ func (g *Primero) nextActive(from int) int {
 
 // solventCount はアンティを払える (非脱落かつチップ >= アンティ) プレイヤー数を返す。
 func (g *Primero) solventCount() int {
-	n := 0
-	for _, p := range g.players {
-		if !p.GetOut() && p.GetChips() >= g.config.Ante {
-			n++
-		}
-	}
-	return n
+	return countPlayers(g.players, func(p *PrimeroPlayer) bool { return !p.GetOut() && p.GetChips() >= g.config.Ante })
 }
 
 // richestIdx はチップが最多のプレイヤーのインデックスを返す (同数は座席番号の小さい方)。

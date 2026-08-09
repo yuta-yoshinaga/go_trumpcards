@@ -7,6 +7,8 @@
 // rebucketing any game that used it to another worker).
 package domain
 
+import "math/rand"
+
 // collectValidIndices returns the indices in [0, size) for which ok reports
 // true. It factors out the "scan a hand and keep the playable card indices"
 // loop duplicated across dozens of trick-taking / shedding games (issue #4299):
@@ -90,4 +92,19 @@ func percentOf(count, total int) int {
 		return 0
 	}
 	return count * 100 / total
+}
+
+// recycleDiscardToDraw moves everything but the top discard into the draw pile,
+// shuffled, replacing whatever the draw pile held. 4 games had this written out.
+// Unlike recycleDiscardIntoStock it neither logs nor keeps the old draw pile,
+// which is why the two are separate.
+func recycleDiscardToDraw(discard, draw *[]*Card) {
+	if len(*discard) <= 1 {
+		return
+	}
+	top := (*discard)[len(*discard)-1]
+	recycled := (*discard)[:len(*discard)-1]
+	*discard = []*Card{top}
+	rand.Shuffle(len(recycled), func(i, j int) { recycled[i], recycled[j] = recycled[j], recycled[i] })
+	*draw = recycled
 }

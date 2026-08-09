@@ -696,14 +696,7 @@ func (b *Bezique) cardSatisfiesFollow(playerIdx int, card *Card) bool {
 
 // legalPlayIndices validatePlay を満たすカードのインデックス集合を返す。
 func (b *Bezique) legalPlayIndices(playerIdx int) []int {
-	p := b.players[playerIdx]
-	out := make([]int, 0, p.GetCardsSize())
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if b.validatePlay(playerIdx, p.GetCard(i)) == nil {
-			out = append(out, i)
-		}
-	}
-	return out
+	return validPlayIndices(b.players[playerIdx], func(c *Card) bool { return b.validatePlay(playerIdx, c) == nil })
 }
 
 // beziquePlayerHasSuit プレイヤーが指定スートのカードを持つか

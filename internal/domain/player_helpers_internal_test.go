@@ -869,3 +869,32 @@ func TestRecycleDiscardIntoStock_NothingToRecycle(t *testing.T) {
 		assert.Equal(t, 0, g.logged, "n=%d: nothing logged", n)
 	}
 }
+
+func TestRecycleDiscardToDraw(t *testing.T) {
+	discard := []*Card{NewCard(1, 1, false), NewCard(1, 2, false), NewCard(1, 3, false)}
+	draw := []*Card{NewCard(2, 9, false)}
+	top := discard[len(discard)-1]
+
+	recycleDiscardToDraw(&discard, &draw)
+
+	require.Len(t, discard, 1)
+	assert.Same(t, top, discard[0], "the visible top card stays")
+	// Unlike recycleDiscardIntoStock this replaces the draw pile rather than
+	// appending to it -- the four bodies it folds in did exactly that.
+	assert.Len(t, draw, 2, "the old draw pile is replaced, not extended")
+}
+
+func TestRecycleDiscardToDraw_NothingToRecycle(t *testing.T) {
+	for _, n := range []int{0, 1} {
+		discard := make([]*Card, n)
+		for i := range discard {
+			discard[i] = NewCard(1, i+1, false)
+		}
+		draw := []*Card{NewCard(3, 3, false)}
+
+		recycleDiscardToDraw(&discard, &draw)
+
+		assert.Len(t, discard, n, "n=%d", n)
+		assert.Len(t, draw, 1, "n=%d: draw pile untouched", n)
+	}
+}

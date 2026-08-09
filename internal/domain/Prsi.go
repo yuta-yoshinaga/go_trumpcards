@@ -387,19 +387,7 @@ func (g *Prsi) drawCards(playerIdx, n int) int {
 
 // recycleDrawPile 捨て札から山札を再構築する
 func (g *Prsi) recycleDrawPile() {
-	if len(g.discardPile) <= 1 {
-		return
-	}
-
-	top := g.discardPile[len(g.discardPile)-1]
-	recycled := g.discardPile[:len(g.discardPile)-1]
-	g.discardPile = []*Card{top}
-
-	rand.Shuffle(len(recycled), func(i, j int) {
-		recycled[i], recycled[j] = recycled[j], recycled[i]
-	})
-
-	g.drawPile = recycled
+	recycleDiscardToDraw(&g.discardPile, &g.drawPile)
 }
 
 // hasPlayableCard プレイヤーが出せるカードを持っているか
