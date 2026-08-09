@@ -211,12 +211,7 @@ func (g *Cuarenta) dealNextPack() {
 
 // allHandsEmpty は全員の手札が空か。
 func (g *Cuarenta) allHandsEmpty() bool {
-	for _, p := range g.players {
-		if p.GetCardsSize() > 0 {
-			return false
-		}
-	}
-	return true
+	return allHandsEmpty(g.players)
 }
 
 // PlayerPlay は人間プレイヤーが手札 handIdx を出す。

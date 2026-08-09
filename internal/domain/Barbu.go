@@ -317,13 +317,7 @@ func (b *Barbu) validateTrickPlay(playerIdx int, card *Card) error {
 
 // playerHasSuit はプレイヤーが指定スートを持っているか。
 func (b *Barbu) playerHasSuit(playerIdx, design int) bool {
-	p := b.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return handHasSuit(b.players[playerIdx], design)
 }
 
 // resolveTrick は完成したトリックの勝者を決定し、次トリックへ進める。

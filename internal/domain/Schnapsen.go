@@ -574,7 +574,7 @@ func (s *Schnapsen) cardSatisfiesFollow(playerIdx int, card *Card) bool {
 	leadCard := s.currentTrick[0].Card
 	leadSuit := leadCard.GetDesign()
 
-	if playerHasSuit(player, leadSuit) {
+	if handHasSuit(player, leadSuit) {
 		if card.GetDesign() != leadSuit {
 			return false
 		}
@@ -584,7 +584,7 @@ func (s *Schnapsen) cardSatisfiesFollow(playerIdx int, card *Card) bool {
 		}
 		return true
 	}
-	if playerHasSuit(player, s.trumpSuit) {
+	if handHasSuit(player, s.trumpSuit) {
 		return card.GetDesign() == s.trumpSuit
 	}
 	return true
@@ -600,16 +600,6 @@ func (s *Schnapsen) legalPlayIndices(playerIdx int) []int {
 		}
 	}
 	return out
-}
-
-// playerHasSuit プレイヤーが指定スートのカードを持つか
-func playerHasSuit(player *SchnapsenPlayer, suit int) bool {
-	for i := 0; i < player.GetCardsSize(); i++ {
-		if player.GetCard(i).GetDesign() == suit {
-			return true
-		}
-	}
-	return false
 }
 
 // playerHasSuitWinner プレイヤーが同スートで leadCard に勝てるカードを持つか
@@ -701,12 +691,7 @@ func (s *Schnapsen) drawOne() *Card {
 
 // allHandsEmpty 全プレイヤーの手札が空かを返す
 func (s *Schnapsen) allHandsEmpty() bool {
-	for _, p := range s.players {
-		if p.GetCardsSize() > 0 {
-			return false
-		}
-	}
-	return true
+	return allHandsEmpty(s.players)
 }
 
 // finishGame ゲームを終了させ、勝者を決定する

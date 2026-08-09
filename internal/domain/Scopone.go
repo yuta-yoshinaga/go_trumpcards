@@ -316,12 +316,7 @@ func (s *Scopone) removeTableCardsByIndex(idxs []int) {
 
 // allHandsEmpty 全プレイヤーの手札が空か。
 func (s *Scopone) allHandsEmpty() bool {
-	for _, p := range s.players {
-		if p.GetCardsSize() > 0 {
-			return false
-		}
-	}
-	return true
+	return allHandsEmpty(s.players)
 }
 
 // --- CPU ---

@@ -525,13 +525,7 @@ func (s *Spades) playerHasCard(playerIdx int, design, value int) bool {
 
 // playerHasSuit プレイヤーが特定のスートを持っているか
 func (s *Spades) playerHasSuit(playerIdx int, design int) bool {
-	p := s.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return handHasSuit(s.players[playerIdx], design)
 }
 
 // playerHasNonSpade プレイヤーがスペード以外のカードを持っているか

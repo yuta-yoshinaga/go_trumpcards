@@ -586,13 +586,7 @@ func (o *OhHell) validatePlay(playerIdx int, card *Card) error {
 
 // playerHasSuit プレイヤーが特定のスートを持っているか
 func (o *OhHell) playerHasSuit(playerIdx int, design int) bool {
-	p := o.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return handHasSuit(o.players[playerIdx], design)
 }
 
 // trickWinner トリックの勝者を決定する

@@ -504,12 +504,7 @@ func (g *Gaigel) drawOne() *Card {
 
 // allHandsEmpty 全プレイヤーの手札が空かを返す
 func (g *Gaigel) allHandsEmpty() bool {
-	for _, p := range g.players {
-		if p.GetCardsSize() > 0 {
-			return false
-		}
-	}
-	return true
+	return allHandsEmpty(g.players)
 }
 
 // IsEndgame 第2フェーズ (山札と切り札表示カードが尽きてマストフォローになる) かを返す
