@@ -19,8 +19,7 @@ func (p *KaiserPlayer) GetTeam(seat int) int { return KaiserTeamOf(seat) }
 
 // ResetRound は局開始時に手札を初期化する。
 func (p *KaiserPlayer) ResetRound() {
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayer(p)
 }
 
 // kaiserPlayerJSON is the JSON wire format for KaiserPlayer.

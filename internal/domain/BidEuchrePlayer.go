@@ -19,8 +19,7 @@ func (p *BidEuchrePlayer) GetTeam(seat int) int { return BidEuchreTeamOf(seat) }
 
 // ResetRound は局開始時に手札を初期化する。
 func (p *BidEuchrePlayer) ResetRound() {
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayer(p)
 }
 
 // bidEuchrePlayerJSON is the JSON wire format for BidEuchrePlayer.

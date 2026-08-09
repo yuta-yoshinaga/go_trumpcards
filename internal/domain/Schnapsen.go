@@ -710,9 +710,7 @@ func SchnapsenDetermineWinner(p0, p1, lastTrickWinner int) int {
 
 // sortAllHands 全プレイヤーの手札をソートする
 func (s *Schnapsen) sortAllHands() {
-	for _, p := range s.players {
-		s.sortHand(p)
-	}
+	sortEachHand(s.players, s.sortHand)
 }
 
 // sortHand プレイヤーの手札をスート (トランプ最後) → ランク でソートする

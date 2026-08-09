@@ -632,10 +632,7 @@ func (k *Klondike) isBlack(card *Card) bool {
 
 // autoFlipTableau タブローの最上部の裏カードを自動フリップ
 func (k *Klondike) autoFlipTableau(col int) {
-	cards := k.tableau[col]
-	if len(cards) > 0 && !cards[len(cards)-1].FaceUp {
-		cards[len(cards)-1].FaceUp = true
-	}
+	autoFlipTopCard(k.tableau[col])
 }
 
 // checkGameClear ゲームクリア判定
@@ -861,4 +858,18 @@ func (k *Klondike) UnmarshalJSON(data []byte) error {
 	k.noProgressCycles = j.NoProgressCycles
 	k.progressSinceRecycle = j.ProgressSinceRecycle
 	return nil
+}
+
+// autoFlipTopCard turns the top card of a tableau column face up when it is
+// not already -- the last-added card, which is what every call site's own
+// comment calls タブローの最上部. 6 solitaires sharing KlondikeTableauCard had
+// this written out.
+//
+// Lives here beside the type rather than in player_helpers.go: the other four
+// games with this body use their own tableau card types, which Go's type
+// constraints cannot reach because FaceUp is a field, not a method.
+func autoFlipTopCard(cards []*KlondikeTableauCard) {
+	if len(cards) > 0 && !cards[len(cards)-1].FaceUp {
+		cards[len(cards)-1].FaceUp = true
+	}
 }

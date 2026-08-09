@@ -419,10 +419,7 @@ func (y *RussianSolitaire) canPlaceOnFoundation(card *Card, fIdx int) bool {
 
 // autoFlipTableau タブローの最上部の裏カードを自動フリップ
 func (y *RussianSolitaire) autoFlipTableau(col int) {
-	cards := y.tableau[col]
-	if len(cards) > 0 && !cards[len(cards)-1].FaceUp {
-		cards[len(cards)-1].FaceUp = true
-	}
+	autoFlipTopCard(y.tableau[col])
 }
 
 // checkGameClear ゲームクリア判定

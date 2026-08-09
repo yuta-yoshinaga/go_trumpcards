@@ -19,8 +19,7 @@ func (p *GuandanPlayer) GetTeam(seat int) int { return GuandanTeamOf(seat) }
 
 // ResetRound は局開始時に手札を初期化する。
 func (p *GuandanPlayer) ResetRound() {
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayer(p)
 }
 
 // guandanPlayerJSON is the JSON wire format for GuandanPlayer.

@@ -20,8 +20,7 @@ func NewDesmochePlayer(isHuman bool) *DesmochePlayer {
 
 // ResetRound ラウンド開始時に手札を空にする
 func (p *DesmochePlayer) ResetRound() {
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayer(p)
 }
 
 // desmochePlayerJSON is the JSON wire format for DesmochePlayer.

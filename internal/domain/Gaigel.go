@@ -977,9 +977,7 @@ func (g *Gaigel) legalAllowsDump(playerIdx int, legal []int) bool {
 
 // sortAllHands 全プレイヤーの手札をソートする
 func (g *Gaigel) sortAllHands() {
-	for _, p := range g.players {
-		g.sortHand(p)
-	}
+	sortEachHand(g.players, g.sortHand)
 }
 
 // sortHand プレイヤーの手札をスート (トランプ最後) → ランク でソートする

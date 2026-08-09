@@ -1282,9 +1282,7 @@ func (s *Skat) appendLog(playerIdx int, actionType, detail string, cards []*Card
 
 // sortAllHands sorts every player's hand.
 func (s *Skat) sortAllHands() {
-	for _, p := range s.players {
-		s.sortHand(p)
-	}
+	sortEachHand(s.players, s.sortHand)
 }
 
 // sortHand sorts the player's hand by suit then value.

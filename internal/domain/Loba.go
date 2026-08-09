@@ -804,10 +804,7 @@ func (l *Loba) GetStockCount() int { return len(l.stock) }
 
 // GetDiscardTop は捨て札の一番上を返す (無ければ nil)。
 func (l *Loba) GetDiscardTop() *Card {
-	if len(l.discard) == 0 {
-		return nil
-	}
-	return l.discard[len(l.discard)-1]
+	return discardTop(l.discard)
 }
 
 // GetMelds は場のメルドを返す。

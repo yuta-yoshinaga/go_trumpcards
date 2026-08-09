@@ -18,9 +18,7 @@ func NewTrucoPlayer(isHuman bool) *TrucoPlayer {
 
 // ResetGame 手札とバサ獲得状態を初期化する (新しいマノの配り直し用)。
 func (p *TrucoPlayer) ResetGame() {
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayerRound(p)
 }
 
 // trucoPlayerJSON is the JSON wire format for TrucoPlayer.

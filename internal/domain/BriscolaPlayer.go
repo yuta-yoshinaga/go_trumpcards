@@ -17,9 +17,7 @@ func NewBriscolaPlayer(isHuman bool) *BriscolaPlayer {
 
 // ResetGame ゲームをリセット (手札/トリック/上がり状態を初期化)
 func (p *BriscolaPlayer) ResetGame() {
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayerRound(p)
 }
 
 // briscolaPlayerJSON is the JSON wire format for BriscolaPlayer.

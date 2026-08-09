@@ -453,10 +453,7 @@ func (s *Wasp) checkAndRemoveCompletedSuit(col int) bool {
 
 // autoFlipTableau タブローの最上部の裏カードを自動フリップ
 func (s *Wasp) autoFlipTableau(col int) {
-	cards := s.tableau[col]
-	if len(cards) > 0 && !cards[len(cards)-1].FaceUp {
-		cards[len(cards)-1].FaceUp = true
-	}
+	autoFlipTopCard(s.tableau[col])
 }
 
 // checkGameClear ゲームクリア判定

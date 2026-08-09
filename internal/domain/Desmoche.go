@@ -670,10 +670,7 @@ func (d *Desmoche) GetStockCount() int { return len(d.stock) }
 
 // GetDiscardTop は捨て札の一番上を返す (無ければ nil)。
 func (d *Desmoche) GetDiscardTop() *Card {
-	if len(d.discard) == 0 {
-		return nil
-	}
-	return d.discard[len(d.discard)-1]
+	return discardTop(d.discard)
 }
 
 // GetMelds は場のメルドを返す。

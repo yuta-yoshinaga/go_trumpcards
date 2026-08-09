@@ -1186,9 +1186,7 @@ func (g *BidWhist) EffectiveSuitPublic(card *Card) int { return g.effectiveSuit(
 
 // sortAllHands 全プレイヤーの手札をソートする
 func (g *BidWhist) sortAllHands() {
-	for _, p := range g.players {
-		g.sortHand(p)
-	}
+	sortEachHand(g.players, g.sortHand)
 }
 
 // sortHand プレイヤーの手札を実効スート→ランク順にソートする

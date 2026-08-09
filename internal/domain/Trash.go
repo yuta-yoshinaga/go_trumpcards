@@ -239,10 +239,7 @@ func (t *Trash) GetStockSize() int { return len(t.stock) }
 
 // GetDiscardTop 捨て札の一番上
 func (t *Trash) GetDiscardTop() *Card {
-	if len(t.discard) == 0 {
-		return nil
-	}
-	return t.discard[len(t.discard)-1]
+	return discardTop(t.discard)
 }
 
 // GetDiscardSize 捨て札の枚数

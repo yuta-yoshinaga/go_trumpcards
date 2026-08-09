@@ -53,7 +53,6 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
-	"sort"
 )
 
 // HachiHachiPlayerCnt は八八のプレイヤー数 (固定 3)。
@@ -562,13 +561,7 @@ func (g *HachiHachi) hachihachiPlaceCard(playerIdx int, card *Card, chosen int) 
 
 // removeFieldByIndex は降順に並べ替えてから場札を削除する。
 func (g *HachiHachi) removeFieldByIndex(idxs []int) {
-	sorted := append([]int(nil), idxs...)
-	sort.Sort(sort.Reverse(sort.IntSlice(sorted)))
-	for _, idx := range sorted {
-		if idx >= 0 && idx < len(g.state.fieldCards) {
-			g.state.fieldCards = append(g.state.fieldCards[:idx], g.state.fieldCards[idx+1:]...)
-		}
-	}
+	g.state.fieldCards = removeIndices(g.state.fieldCards, idxs)
 }
 
 // --- Play ---

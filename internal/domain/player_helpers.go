@@ -740,3 +740,12 @@ func validateEndgameFollow(trick []*TrickCard, g endgameFollower, playerIdx int,
 	}
 	return nil
 }
+
+// sortEachHand sorts every seat's hand with a per-game sorter that takes the
+// player itself. 11 games looped over their roster to do this; the sortHands
+// helper above serves the games whose sorter takes an index instead.
+func sortEachHand[P any](players []P, sortHand func(P)) {
+	for _, p := range players {
+		sortHand(p)
+	}
+}
