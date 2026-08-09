@@ -17,8 +17,9 @@
  * what matters. Trust a fresh run over any number written in prose.
  *
  * This script is the human-facing worklist. The commit gate is the Go test
- * `TestPerGameManualsFollowTemplate` in internal/infrastructure/games/
- * docs_consistency_test.go, which asserts the same rules — keep the two in sync.
+ * `TestPerGameManualsFollowTemplate` in
+ * internal/infrastructure/games/manual_template_test.go, which asserts the
+ * same rules — keep the two in sync.
  *
  * Usage:
  *   bun scripts/audit-manual-template.mjs           # grouped report
