@@ -860,8 +860,10 @@ func (k *Klondike) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// autoFlipTopCard turns the bottom card of a tableau column face up when it is
-// not already. 6 solitaires sharing KlondikeTableauCard had this written out.
+// autoFlipTopCard turns the top card of a tableau column face up when it is
+// not already -- the last-added card, which is what every call site's own
+// comment calls タブローの最上部. 6 solitaires sharing KlondikeTableauCard had
+// this written out.
 //
 // Lives here beside the type rather than in player_helpers.go: the other four
 // games with this body use their own tableau card types, which Go's type
