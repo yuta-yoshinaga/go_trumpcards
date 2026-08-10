@@ -155,6 +155,9 @@ func TestArchitectureDocEndpointCountMatchesRegistry(t *testing.T) {
 // catches both a missing manual for a freshly added game and an orphan manual
 // left behind by a rename or removal. Template files live at
 // docs/manual/{cui,web}_template.md (outside these dirs) and are not counted.
+//
+// This checks only that a manual exists. Its structure is checked by
+// TestPerGameManualsFollowTemplate in manual_template_test.go.
 func TestPerGameManualsMatchRegistry(t *testing.T) {
 	all := games.All()
 	names := make(map[string]bool, len(all))
