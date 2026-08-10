@@ -58,6 +58,11 @@ var sokoHandNames = []string{
 	"Royal Flush",
 }
 
+// SokoHandName returns the display name for a Soko rank, or "Unknown" when the
+// rank is outside the table. Exported for the presenters: they render hand names
+// and must not index PokerHandNames with a Soko rank (the scales collide).
+func SokoHandName(rank int) string { return sokoHandName(rank) }
+
 // sokoHandName returns the display name for a Soko rank, or "Unknown" when the
 // rank is outside the table.
 func sokoHandName(rank int) string {

@@ -193,9 +193,7 @@ func (p *FiveCardStudPlayer) EvalBestHand() int {
 
 	p.handRank = bestRank
 	p.bestHand = bestCards
-	// キッカー用は常に標準スケールで持つ。Soko でもグループ（ペア/トリップス/クアッズ）の
-	// 判定自体は標準の役と同じなので、そのランクで正しいキッカーが取れる。
-	p.kickerRank = evalFiveCardHand(bestCards)
+	p.kickerRank = kickerRankFor(p.sokoMode, bestRank, bestCards)
 	return p.handRank
 }
 
@@ -207,6 +205,21 @@ func (p *FiveCardStudPlayer) evalHand(cards []*Card) int {
 		return evalSokoHand(cards)
 	}
 	return evalFiveCardHand(cards)
+}
+
+// kickerRankFor は ExtractKickers に渡す**標準スケール**のランクを決める。
+//
+// 通常は5枚の標準評価そのもの。Soko で4枚役が勝ったときだけ HighCard を返して
+// キッカーを消す: 4枚ストレート/4枚フラッシュには「グループ」が無いので
+// キッカーという概念が無いが、その手にペアが**共存**していることがある
+// （ペアがあると異なるランクが4つ残るので、その4枚が同スート/連続になりうる）。
+// 素直に標準評価を渡すと、役名は「4枚フラッシュ」なのに偶発的なペア由来の
+// キッカーが並ぶ。表示される役と噛み合わないので、ここで断つ。
+func kickerRankFor(sokoMode bool, sokoRank int, bestCards []*Card) int {
+	if sokoMode && (sokoRank == SokoHandFourStraight || sokoRank == SokoHandFourFlush) {
+		return PokerHandHighCard
+	}
+	return evalFiveCardHand(bestCards)
 }
 
 // EvalVisibleHand 表向き札のみからハンドを評価 (ベッティング順序決定用)

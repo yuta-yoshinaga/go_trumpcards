@@ -260,3 +260,41 @@ func TestFiveCardStud_Showdown_KickersUnchangedWithoutSoko(t *testing.T) {
 	assert.Equal(t, PokerHandTwoPair, r.HandRank)
 	assert.Equal(t, []int{13}, r.Kickers)
 }
+
+// The PR's own worked example: a four-card flush that ALSO contains a pair.
+// The hand is displayed as a four-card flush, so it must not carry kickers
+// derived from the incidental pair — otherwise the rank and the kicker list
+// describe two different hands.
+func TestSoko_Showdown_FourCardHandWithCoexistingPairHasNoKickers(t *testing.T) {
+	t.Run("four-card flush over a pair of kings", func(t *testing.T) {
+		results := sokoShowdown(t,
+			sp(2), []*Card{sp(5), sp(9), sp(13), he(13)}, // ♠2 ♠5 ♠9 ♠K ♥K
+			cl(3), []*Card{he(4), di(6), cl(8), di(10)},
+		)
+		r := sokoResultFor(t, results, 0)
+		assert.Equal(t, SokoHandFourFlush, r.HandRank)
+		assert.Equal(t, "Four-Card Flush", r.HandName)
+		assert.Nil(t, r.Kickers, "the coexisting pair must not leak kickers into a four-card hand")
+	})
+	t.Run("four-card straight over a pair", func(t *testing.T) {
+		results := sokoShowdown(t,
+			sp(5), []*Card{he(6), di(7), cl(8), he(8)}, // 5-6-7-8 plus a paired 8
+			cl(3), []*Card{he(4), di(9), cl(11), di(2)},
+		)
+		r := sokoResultFor(t, results, 0)
+		assert.Equal(t, SokoHandFourStraight, r.HandRank)
+		assert.Nil(t, r.Kickers)
+	})
+}
+
+// Negative control for the rule above: a Soko hand that IS pair-based must keep
+// its kickers. Blanking them unconditionally would pass every assertion above.
+func TestSoko_Showdown_PairBasedHandsStillHaveKickers(t *testing.T) {
+	results := sokoShowdown(t,
+		sp(5), []*Card{he(5), di(9), cl(12), sp(13)}, // one pair, no four-card hand
+		cl(3), []*Card{he(4), di(6), cl(8), di(10)},
+	)
+	r := sokoResultFor(t, results, 0)
+	assert.Equal(t, SokoHandOnePair, r.HandRank)
+	assert.Equal(t, []int{13, 12, 9}, r.Kickers)
+}

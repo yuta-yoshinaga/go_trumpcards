@@ -126,7 +126,7 @@ func (p *FiveCardStudWebPresenter) buildPlayersOutput(s interfaces.FiveCardStudG
 		// ショーダウン時のハンド情報
 		if isShowdown && !player.GetFolded() {
 			pObj.HandRank = player.GetHandRank()
-			pObj.HandName = p.getHandName(player.GetHandRank())
+			pObj.HandName = p.getHandName(s, player.GetHandRank())
 			pObj.BestHand = cardsToOutput(player.GetBestHand())
 		} else {
 			pObj.BestHand = make([]*controller.WebOutputCard, 0)
@@ -227,8 +227,14 @@ func (p *FiveCardStudWebPresenter) ActionLogOutput(s interfaces.FiveCardStudGame
 	return actionLogOutputJSON(s)
 }
 
-// getHandName ハンドランクから名前を返す
-func (p *FiveCardStudWebPresenter) getHandName(rank int) string {
+// getHandName ハンドランクから名前を返す。
+// **ゲームを受け取るのは Soko のため。** Soko はランクスケールが違うので、
+// PokerHandNames をそのまま引くと別の役名が出る（Soko の 4 はツーペアだが
+// 標準の 4 はストレート）。
+func (p *FiveCardStudWebPresenter) getHandName(s interfaces.FiveCardStudGame, rank int) string {
+	if s.GetIsSoko() {
+		return domain.SokoHandName(rank)
+	}
 	if rank >= 0 && rank < len(domain.PokerHandNames) {
 		return domain.PokerHandNames[rank]
 	}
