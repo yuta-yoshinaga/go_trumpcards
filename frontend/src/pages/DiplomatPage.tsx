@@ -31,7 +31,7 @@ import type { DiplomatMoveZone, DiplomatResponse } from '../types/card';
 import { DiplomatPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
-import { CONGRESS_HELP, parseDiplomatCommand } from '../utils/cli/commands/diplomatCommands';
+import { DIPLOMAT_HELP, parseDiplomatCommand } from '../utils/cli/commands/diplomatCommands';
 import { formatDiplomatState } from '../utils/cli/formatters/diplomatFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -93,7 +93,7 @@ function DiplomatPageContent() {
       gameName: 'diplomat',
       parseCommand: parseDiplomatCommand,
       formatResponse: formatDiplomatState,
-      helpText: CONGRESS_HELP,
+      helpText: DIPLOMAT_HELP,
     }),
     [],
   );
@@ -195,7 +195,7 @@ function DiplomatPageContent() {
                 style={{ height: dims.ch }}
                 className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center bg-transparent ${focusRingWhite}`}
               >
-                {t('stockOrWaste')}
+                {t('emptyColumn')}
               </button>
             ) : (
               cards.map((card, cardIdx) => {

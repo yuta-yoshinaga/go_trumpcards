@@ -17,8 +17,9 @@ export function formatDiplomatState(state: DiplomatResponse): string {
   for (let pile = 0; pile < state.tableau.length; pile++) {
     const cards = state.tableau[pile];
     if (cards.length === 0) {
-      // An empty pile takes only a stock or waste card, so say so.
-      lines.push(`t${pile}: [empty] (stock or waste only)`);
+      // An empty column takes another column's top or the waste card -- never
+      // the stock directly. Congress is the other way round.
+      lines.push(`t${pile}: [empty] (tableau or waste only)`);
       continue;
     }
     lines.push(`t${pile}: ${cards.map((c, i) => `[${i}]${formatCard(c)}`).join(' ')}`);

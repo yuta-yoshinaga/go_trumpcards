@@ -99,13 +99,12 @@ function parseMoveCommand(args: string[]): CliParseResult<DiplomatArgs> {
 }
 
 /** Help text for Diplomat CLI mode. */
-export const CONGRESS_HELP: string[] = [
+export const DIPLOMAT_HELP: string[] = [
   'd/draw          - Turn one card from the stock (no redeal)',
   'm t<p> f        - Tableau top to a foundation',
-  'm t<p> t<p>     - Move one card between piles',
+  'm t<p> t<p>     - Move one card between columns (an empty one too)',
   'm w f           - Waste to a foundation',
-  'm w t<p>        - Waste to a tableau pile',
-  'm s t<p>        - Stock straight into an empty pile',
+  'm w t<p>        - Waste to a column (an empty one too)',
   'ac/autocomplete - Auto-complete to the foundations',
   'u/undo          - Undo last move',
   'h/hint          - Show suggested move',

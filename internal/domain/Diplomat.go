@@ -243,7 +243,7 @@ func (c *Diplomat) MoveWasteToFoundation() error {
 	return nil
 }
 
-// MoveWasteToTableau 捨て札の一番上をタブローへ送る。空き山も埋められる。
+// MoveWasteToTableau 捨て札の一番上をタブローへ送る。空いた列も埋められる。
 func (c *Diplomat) MoveWasteToTableau(pile int) error {
 	if err := c.requirePlaying(); err != nil {
 		return err

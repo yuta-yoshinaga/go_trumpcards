@@ -18,7 +18,6 @@
   "stockAriaLabel": "山札 残り{{count}}枚",
   "emptyStockAriaLabel": "山札は空です（めくり直しはありません）",
   "emptyWasteAriaLabel": "捨て札は空です",
-  "stockOrWaste": "空き列",
   "landscapeBanner": "横画面での表示を推奨します",
   "hint": "ヒント",
   "autoComplete": "自動完成",
@@ -48,5 +47,6 @@
     "toFoundation": "このカードを組札に上げると場が1枚軽くなります",
     "toTableau": "示唆された列への移動で、下に埋もれた札を掘り出しましょう",
     "draw": "動かせる札が無いので、山札をめくって手を増やしましょう"
-  }
+  },
+  "emptyColumn": "空き列"
 }

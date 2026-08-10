@@ -18,7 +18,6 @@
   "stockAriaLabel": "Stock, {{count}} cards left",
   "emptyStockAriaLabel": "The stock is empty (there is no redeal)",
   "emptyWasteAriaLabel": "The waste is empty",
-  "stockOrWaste": "empty",
   "landscapeBanner": "Landscape orientation is recommended",
   "hint": "Hint",
   "autoComplete": "Auto-complete",
@@ -48,5 +47,6 @@
     "toFoundation": "Sending this card to a foundation frees up the board",
     "toTableau": "Take the suggested tableau move to dig out the pile",
     "draw": "Nothing can move, so turn a card from the stock"
-  }
+  },
+  "emptyColumn": "empty"
 }

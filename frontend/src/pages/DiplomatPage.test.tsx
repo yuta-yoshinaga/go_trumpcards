@@ -89,8 +89,8 @@ describe('DiplomatPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
   });
 
-  // An empty pile takes only a stock or waste card, so the label says so and a
-  // tableau selection must not be droppable there.
+  // An empty column takes any card from another column or the waste, so the
+  // label says so and a tableau selection must be droppable there.
   it('labels an empty column as taking any card', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<DiplomatPage />);

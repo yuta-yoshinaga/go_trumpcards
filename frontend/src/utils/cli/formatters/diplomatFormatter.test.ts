@@ -6,7 +6,7 @@ function makeState(overrides?: Partial<DiplomatResponse>): DiplomatResponse {
   return {
     tableau: Array.from({ length: 8 }, () => []),
     foundation: Array.from({ length: 8 }, () => []),
-    stockCount: 96,
+    stockCount: 72,
     waste: [],
     phase: 0,
     moveCount: 0,
@@ -22,14 +22,17 @@ describe('formatDiplomatState', () => {
     const result = formatDiplomatState(makeState());
     expect(result).toContain('Diplomat');
     expect(result).toContain('foundations:');
-    expect(result).toContain('stock: 96');
+    expect(result).toContain('stock: 72');
     expect(result).toContain('t0: [empty]');
     expect(result).toContain('t7: [empty]');
   });
 
   // An empty pile behaves differently here, so it says where a card may come from.
-  it('says an empty pile takes stock or waste only', () => {
-    expect(formatDiplomatState(makeState())).toContain('stock or waste only');
+  it('says an empty column takes a tableau or waste card', () => {
+    const out = formatDiplomatState(makeState());
+    expect(out).toContain('tableau or waste only');
+    // The stock is draw-only here; Congress is the game that fills gaps from it.
+    expect(out).not.toContain('stock or waste only');
   });
 
   it('renders cards in a pile', () => {

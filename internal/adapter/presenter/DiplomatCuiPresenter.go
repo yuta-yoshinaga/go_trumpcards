@@ -61,7 +61,7 @@ func (p *DiplomatCuiPresenter) Output(c interfaces.DiplomatGame, lastErr error) 
 			cards := tableau[pile]
 			b.WriteString(i18n.Tf("diplomat.pileLabel", "pile", strconv.Itoa(pile)))
 			if len(cards) == 0 {
-				// 空き山は山札か捨て札からしか埋められないので、その旨を添える。
+				// 空き列にはどのカードでも置けるので、その旨を添える。
 				b.WriteString(" " + i18n.T("diplomat.emptyPile"))
 			} else {
 				b.WriteString(diplomatPileStr(cards))

@@ -115,15 +115,16 @@ describe('useDiplomatGame', () => {
     expect(result.current.selectedSource).toBeNull();
   });
 
-  // The stock is a move source too, not only the draw button.
-  it('handleSelectSource toggles the stock and the waste', async () => {
+  // The stock is draw-only in Diplomat, so the two sources are the tableau and
+  // the waste. (Congress also lets the stock be a source; this one does not.)
+  it('handleSelectSource toggles a column and the waste', async () => {
     const { result } = renderHook(() => useDiplomatGame(), { wrapper: makeWrapper() });
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
 
-    act(() => result.current.handleSelectSource({ zone: 'stock' }));
-    expect(result.current.selectedSource).toEqual({ zone: 'stock' });
+    act(() => result.current.handleSelectSource({ zone: 'tableau', col: 0 }));
+    expect(result.current.selectedSource).toEqual({ zone: 'tableau', col: 0 });
 
-    act(() => result.current.handleSelectSource({ zone: 'stock' }));
+    act(() => result.current.handleSelectSource({ zone: 'tableau', col: 0 }));
     expect(result.current.selectedSource).toBeNull();
 
     act(() => result.current.handleSelectSource({ zone: 'waste' }));
@@ -140,15 +141,19 @@ describe('useDiplomatGame', () => {
     expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 
-  it('handleSelectTarget fills a gap from the stock through the move API', async () => {
+  // A column into an empty column is the move Diplomat adds and Congress
+  // forbids, so it is the one worth pinning here.
+  it('handleSelectTarget moves a column top into another column', async () => {
     const { result } = renderHook(() => useDiplomatGame(), { wrapper: makeWrapper() });
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     mockExec.mockClear();
 
-    act(() => result.current.handleSelectSource({ zone: 'stock' }));
+    act(() => result.current.handleSelectSource({ zone: 'tableau', col: 0 }));
     act(() => result.current.handleSelectTarget({ zone: 'tableau', col: 3 }));
 
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', { zone: 'stock' }, { zone: 'tableau', col: 3 }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 0 }, { zone: 'tableau', col: 3 }),
+    );
     expect(result.current.selectedSource).toBeNull();
   });
 });
