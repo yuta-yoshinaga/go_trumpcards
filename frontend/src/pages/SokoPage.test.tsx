@@ -93,8 +93,10 @@ describe('SokoPage', () => {
 
   it('renders the Soko heading rather than Five Card Stud', async () => {
     renderWithProviders(<SokoPage />);
-    await waitFor(() => expect(screen.getByText('ソッコ')).toBeInTheDocument());
-    expect(screen.queryByText('ファイブカードスタッド')).not.toBeInTheDocument();
+    // Heading role, matching the e2e spec: this render has no NavBar so plain
+    // text would pass, but the assertion should say the same thing in both.
+    await waitFor(() => expect(screen.getByRole('heading', { name: 'ソッコ' })).toBeInTheDocument());
+    expect(screen.queryByRole('heading', { name: 'ファイブカードスタッド' })).not.toBeInTheDocument();
   });
 
   // The Soko-only ranks are resolved server-side into handName, so the page's

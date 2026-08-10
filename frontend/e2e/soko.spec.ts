@@ -52,8 +52,11 @@ test.describe('Soko E2E', () => {
   // that /soko really renders Soko rather than silently driving the other game.
   test('renders as Soko, not as Five Card Stud', async ({ page }) => {
     await navigateTo(page, '/soko');
-    await expect(page.getByText('ソッコ').first()).toBeVisible({ timeout: TIMEOUT_TRANSITION });
-    await expect(page.getByText('ファイブカードスタッド')).toHaveCount(0);
+    // Scoped to the heading role on purpose: the NavBar lists every game, so an
+    // unscoped getByText('ファイブカードスタッド') matches its link and this test
+    // fails on a correct page. The page's own title is an h1 (sr-only).
+    await expect(page.getByRole('heading', { name: 'ソッコ' })).toBeVisible({ timeout: TIMEOUT_TRANSITION });
+    await expect(page.getByRole('heading', { name: 'ファイブカードスタッド' })).toHaveCount(0);
     // Shared controls are present -- proof the reuse actually mounted.
     await expect(page.getByTestId('five-card-stud-kbd-shortcuts')).toBeVisible({ timeout: TIMEOUT_TRANSITION });
   });
