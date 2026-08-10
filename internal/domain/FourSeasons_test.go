@@ -514,3 +514,28 @@ func TestFourSeasons_UnmarshalJSON_RejectsOverlongFoundation(t *testing.T) {
 	f := NewFourSeasons(NewTrumpCards(0))
 	assert.Error(t, json.Unmarshal([]byte(data), f))
 }
+
+// The restore path rebuilds state from a KV blob on every Worker request, so
+// every array has to be bounded — not just the ones an honest client sends.
+func TestFourSeasons_UnmarshalJSON_RejectsOversizedLiveArrays(t *testing.T) {
+	big := func() string {
+		out := ""
+		for i := range fourSeasonsMaxSliceLen + 1 {
+			if i > 0 {
+				out += ","
+			}
+			out += `{"design":1,"value":1}`
+		}
+		return out
+	}()
+	for _, tt := range []struct{ name, data string }{
+		{"stock", `{"ps":0,"mc":0,"br":1,"st":[` + big + `]}`},
+		{"waste", `{"ps":0,"mc":0,"br":1,"wa":[` + big + `]}`},
+		{"tableau pile", `{"ps":0,"mc":0,"br":1,"tb":[[` + big + `],[],[],[],[]]}`},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			f := NewFourSeasons(NewTrumpCards(0))
+			assert.Error(t, json.Unmarshal([]byte(tt.data), f))
+		})
+	}
+}

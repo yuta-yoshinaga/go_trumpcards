@@ -532,8 +532,18 @@ func (f *FourSeasons) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
 	}
-	if len(j.ActionLog) > fourSeasonsMaxSliceLen || len(j.History) > fourSeasonsMaxSliceLen {
+	// **生きている山も含めて全部に上限をかける。** ここは Worker が KV から毎
+	// リクエスト復元する経路なので、壊れた／細工されたスナップショットの
+	// 巨大配列がそのまま通る。ActionLog と History だけ見ていたのでは、
+	// st / wa / tb が素通りする（Canfield.UnmarshalJSON は5つとも見ている）。
+	if len(j.ActionLog) > fourSeasonsMaxSliceLen || len(j.History) > fourSeasonsMaxSliceLen ||
+		len(j.Stock) > fourSeasonsMaxSliceLen || len(j.Waste) > fourSeasonsMaxSliceLen {
 		return errors.New("fourseasons: input array exceeds maximum allowed size")
+	}
+	for i := range FourSeasonsTableauCnt {
+		if len(j.Tableau[i]) > fourSeasonsMaxSliceLen {
+			return fmt.Errorf("tableau %d exceeds maximum allowed size", i)
+		}
 	}
 	if j.Phase < FourSeasonsPhasePlaying || j.Phase > FourSeasonsPhaseGameOver {
 		return fmt.Errorf("invalid phase: %d", j.Phase)
