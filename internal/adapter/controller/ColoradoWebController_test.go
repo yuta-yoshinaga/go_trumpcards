@@ -70,11 +70,11 @@ func TestColoradoWebController_Method(t *testing.T) {
 		{"undo u", `{"command":"u","sessionId":"s1"}`},
 		{"undo_n", `{"command":"undo_n","sessionId":"s1","n":2}`},
 		{"log", `{"command":"log","sessionId":"s1"}`},
-		{"tableau to foundation", `{"command":"m","sessionId":"s1","from":{"zone":"tableau","col":1},"to":{"zone":"foundation"}}`},
+		{"tableau to foundation", `{"command":"m","sessionId":"s1","from":{"zone":"tableau","idx":1},"to":{"zone":"foundation"}}`},
 		{"waste to foundation", `{"command":"m","sessionId":"s1","from":{"zone":"waste"},"to":{"zone":"foundation"}}`},
-		{"waste to tableau", `{"command":"m","sessionId":"s1","from":{"zone":"waste"},"to":{"zone":"tableau","col":2}}`},
+		{"waste to tableau", `{"command":"m","sessionId":"s1","from":{"zone":"waste"},"to":{"zone":"tableau","idx":2}}`},
 		// The stock fills a gap directly, without spending a turn on the waste.
-		{"stock to tableau", `{"command":"m","sessionId":"s1","from":{"zone":"stock"},"to":{"zone":"tableau","col":3}}`},
+		{"stock to tableau", `{"command":"m","sessionId":"s1","from":{"zone":"stock"},"to":{"zone":"tableau","idx":3}}`},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			r := exec(t, tc.body)
@@ -86,13 +86,13 @@ func TestColoradoWebController_Method(t *testing.T) {
 	for _, tc := range []struct{ name, body string }{
 		{"undo_n missing n", `{"command":"undo_n","sessionId":"s1"}`},
 		{"move missing from/to", `{"command":"m","sessionId":"s1"}`},
-		{"move invalid zones", `{"command":"m","sessionId":"s1","from":{"zone":"foundation"},"to":{"zone":"tableau","col":0}}`},
+		{"move invalid zones", `{"command":"m","sessionId":"s1","from":{"zone":"foundation"},"to":{"zone":"tableau","idx":0}}`},
 		// A tableau card has exactly one legal destination: a foundation.
-		{"tableau to tableau", `{"command":"m","sessionId":"s1","from":{"zone":"tableau","col":0},"to":{"zone":"tableau","col":5}}`},
+		{"tableau to tableau", `{"command":"m","sessionId":"s1","from":{"zone":"tableau","idx":0},"to":{"zone":"tableau","idx":5}}`},
 		// The stock never reaches a foundation directly.
 		{"stock to foundation is not a move", `{"command":"m","sessionId":"s1","from":{"zone":"stock"},"to":{"zone":"foundation"}}`},
 		{"tableau to foundation missing from.col", `{"command":"m","sessionId":"s1","from":{"zone":"tableau"},"to":{"zone":"foundation"}}`},
-		{"tableau to tableau missing to.col", `{"command":"m","sessionId":"s1","from":{"zone":"tableau","col":0},"to":{"zone":"tableau"}}`},
+		{"tableau to tableau missing to.idx", `{"command":"m","sessionId":"s1","from":{"zone":"tableau","idx":0},"to":{"zone":"tableau"}}`},
 		{"waste to tableau missing to.col", `{"command":"m","sessionId":"s1","from":{"zone":"waste"},"to":{"zone":"tableau"}}`},
 		{"stock to tableau missing to.col", `{"command":"m","sessionId":"s1","from":{"zone":"stock"},"to":{"zone":"tableau"}}`},
 	} {

@@ -18,8 +18,12 @@ type ColoradoWebInput struct {
 // ColoradoWebZone ゾーン指定。Zone は "tableau" / "waste" / "stock" / "foundation"。
 type ColoradoWebZone struct {
 	Zone string `json:"zone"`
-	// Col はタブロー山（0..19）。捨て札・山札・基礎札では不要。
-	Col *int `json:"col,omitempty"`
+	// Idx はタブロー山（0..19）。捨て札・山札・基礎札では不要。
+	//
+	// フロントエンド (`ColoradoMoveZone`)、CLI パーサ、openapi.yaml がすべて
+	// `idx` を送るので、ここも `idx` でなければならない。Congress 系は `col`
+	// を使っており、雛形からコピーするとここだけ食い違う。
+	Idx *int `json:"idx,omitempty"`
 }
 
 // ColoradoWebOutputHint ヒント出力
@@ -95,24 +99,24 @@ func coloradoMoveDispatch(bc *baseController, w http.ResponseWriter, ci usecase.
 
 	switch {
 	case fromZone == "tableau" && toZone == "foundation":
-		if !requireParam(bc, w, newDefault, param.From.Col == nil, "param error: from.col is required.") {
+		if !requireParam(bc, w, newDefault, param.From.Idx == nil, "param error: from.idx is required.") {
 			return true
 		}
-		bc.writePresenterResponse(w, ci.MoveTableauToFoundation(*param.From.Col))
+		bc.writePresenterResponse(w, ci.MoveTableauToFoundation(*param.From.Idx))
 	case fromZone == "waste" && toZone == "foundation":
 		bc.writePresenterResponse(w, ci.MoveWasteToFoundation())
 	case fromZone == "waste" && toZone == "tableau":
-		if !requireParam(bc, w, newDefault, param.To.Col == nil, "param error: to.col is required.") {
+		if !requireParam(bc, w, newDefault, param.To.Idx == nil, "param error: to.idx is required.") {
 			return true
 		}
-		bc.writePresenterResponse(w, ci.MoveWasteToTableau(*param.To.Col))
+		bc.writePresenterResponse(w, ci.MoveWasteToTableau(*param.To.Idx))
 	// The stock can fill a gap without going through the waste, which matters
 	// because the single pass makes every turned card expensive.
 	case fromZone == "stock" && toZone == "tableau":
-		if !requireParam(bc, w, newDefault, param.To.Col == nil, "param error: to.col is required.") {
+		if !requireParam(bc, w, newDefault, param.To.Idx == nil, "param error: to.idx is required.") {
 			return true
 		}
-		bc.writePresenterResponse(w, ci.MoveStockToTableau(*param.To.Col))
+		bc.writePresenterResponse(w, ci.MoveStockToTableau(*param.To.Idx))
 	default:
 		bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: invalid move zones."))
 	}
