@@ -25,6 +25,12 @@ type FiveCardStudPlayer struct {
 	postFlopBetRaise    int                   // ポストフロップ ベット+レイズ回数
 	postFlopCall        int                   // ポストフロップ コール回数
 	sokoMode            bool                  // Soko の役序列で評価する (Canadian Stud)
+	// kickerRank は ExtractKickers に渡すための**標準スケール**のランク。
+	// 通常は handRank と同じだが、Soko モードでは handRank が Soko スケールになり、
+	// kicker.go は標準スケールの PokerHand* で switch するため、両者の整数が衝突する
+	// （SokoHandFourFlush(3) == PokerHandThreeOfAKind(3) など）。片方だけ渡すと
+	// キッカーが黙って nil になったり無意味な値になったりするので、別に持つ。
+	kickerRank int
 }
 
 // SetSokoMode は Soko (Canadian Stud) の役序列で評価するかを設定する。
@@ -33,6 +39,10 @@ func (p *FiveCardStudPlayer) SetSokoMode(v bool) { p.sokoMode = v }
 
 // GetSokoMode は Soko モードかを返す。
 func (p *FiveCardStudPlayer) GetSokoMode() bool { return p.sokoMode }
+
+// GetKickerRank は ExtractKickers に渡すための標準スケールのランクを返す。
+// handRank をそのまま渡してはいけない: Soko モードではスケールが違う。
+func (p *FiveCardStudPlayer) GetKickerRank() int { return p.kickerRank }
 
 // NewFiveCardStudPlayer コンストラクタ
 func NewFiveCardStudPlayer(isHuman bool, style FiveCardStudPlayStyle) *FiveCardStudPlayer {
@@ -163,6 +173,7 @@ func (p *FiveCardStudPlayer) EvalBestHand() int {
 
 	if len(all) < 5 {
 		p.handRank = PokerHandHighCard
+		p.kickerRank = PokerHandHighCard
 		p.bestHand = nil
 		return p.handRank
 	}
@@ -182,6 +193,9 @@ func (p *FiveCardStudPlayer) EvalBestHand() int {
 
 	p.handRank = bestRank
 	p.bestHand = bestCards
+	// キッカー用は常に標準スケールで持つ。Soko でもグループ（ペア/トリップス/クアッズ）の
+	// 判定自体は標準の役と同じなので、そのランクで正しいキッカーが取れる。
+	p.kickerRank = evalFiveCardHand(bestCards)
 	return p.handRank
 }
 

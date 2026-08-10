@@ -700,7 +700,9 @@ func (s *FiveCardStud) resolveShowdown() {
 			HandRank:  p.GetHandRank(),
 			HandName:  s.getHandName(p.GetHandRank()),
 			BestHand:  p.GetBestHand(),
-			Kickers:   ExtractKickers(p.GetBestHand(), p.GetHandRank()),
+			// **GetHandRank ではなく GetKickerRank。** Soko では前者が Soko スケールで、
+			// kicker.go の switch は標準スケールなので、渡すと衝突する。
+			Kickers:   ExtractKickers(p.GetBestHand(), p.GetKickerRank()),
 			WonAmount: wonAmounts[i],
 		}
 		s.roundResults = append(s.roundResults, result)
