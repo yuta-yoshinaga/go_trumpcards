@@ -97,7 +97,7 @@ flowchart TD
 └──────────────────────────────────────────────────┘
 ```
 
-- **3段**: フロント **3枚**・ミドル **5枚**・バック **5枚** の計 **13枚**（`OpenFaceChineseFrontSize` / `MiddleSize` / `BackSize` / `HandSize`）
+- **3段**: フロント **3枚**・ミドル **5枚**・バック **5枚** の計 **13枚**（`OpenFaceChineseFrontSize` / `OpenFaceChineseMiddleSize` / `OpenFaceChineseBackSize` / `OpenFaceChineseHandSize`）
 - **初回配布**: 最初の **5枚**（`OpenFaceChineseInitialDeal`）をまとめて置き、以降は1枚ずつ配られます
 - **置いたカードは動かせません**。**バック ≧ ミドル ≧ フロント** の強さを崩すとファウルになり、そのラウンドを失います
 - **配られたカード**: 置く段のボタンを押して配置します
