@@ -70,6 +70,7 @@ flowchart TD
     P4 -->|checkGameEnd| P5
     P3 -->|checkGameEnd| P5
     P0 -->|finalizeBid| P1
+    P0 -->|redeal| P0
     P0 -->|finalizeBid| P2
 ```
 

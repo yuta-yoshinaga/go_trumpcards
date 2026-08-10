@@ -63,6 +63,7 @@ flowchart TD
     P3 -->|NextTrick| P2
     P4 -->|endGame| P5
     P0 -->|finalizeBid| P1
+    P0 -->|redeal| P0
 ```
 
 ## コマンド一覧
