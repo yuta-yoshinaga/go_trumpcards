@@ -4228,6 +4228,23 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),
+	BindCuiFor("auldlangsyne",
+		func() usecase.AuldLangSyneInteractorIF {
+			return usecase.NewAuldLangSyneInteractor(domain.NewDefaultAuldLangSyne(), new(presenter.AuldLangSyneCuiPresenter))
+		},
+		controller.NewAuldLangSyneCuiController,
+		CuiHelpSpec{
+			TitleKey: "auldlangsyne.helpTitle",
+			CommandKeys: []string{
+				"auldlangsyne.helpDeal",
+				"auldlangsyne.helpWasteToFoundation",
+				"auldlangsyne.helpGiveUp",
+				"auldlangsyne.helpHint",
+				"auldlangsyne.helpAutoComplete",
+				"auldlangsyne.helpUndo",
+			},
+			ExtraCommandLines: []string{"  l                        action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

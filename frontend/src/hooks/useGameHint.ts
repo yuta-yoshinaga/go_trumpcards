@@ -8,6 +8,7 @@ import type {
   AluetteResponse,
   AmericanToadResponse,
   AnacondaResponse,
+  AuldLangSyneResponse,
   BaccaratResponse,
   BadugiResponse,
   BakersDozenResponse,
@@ -263,6 +264,7 @@ import { getAllFoursHint } from '../utils/hints/allfoursHint';
 import { getAluetteHint } from '../utils/hints/aluetteHint';
 import { getAmericanToadHint } from '../utils/hints/americantoadHint';
 import { getAnacondaHint } from '../utils/hints/anacondaHint';
+import { getAuldLangSyneHint } from '../utils/hints/auldlangsyneHint';
 import { getBaccaratHint } from '../utils/hints/baccaratHint';
 import { getBadugiHint } from '../utils/hints/badugiHint';
 import { getBakersdozenHint } from '../utils/hints/bakersdozenHint';
@@ -682,6 +684,7 @@ export const hintFactories = {
   doubleklondike: (s) => getDoubleKlondikeHint(s as DoubleKlondikeResponse),
   calculation: (s) => getCalculationHint(s as CalculationResponse),
   sirtommy: (s) => getSirTommyHint(s as SirTommyResponse),
+  auldlangsyne: (s) => getAuldLangSyneHint(s as AuldLangSyneResponse),
   bisley: (s) => getBisleyHint(s as BisleyResponse),
   napoleonssquare: (s) => getNapoleonsSquareHint(s as NapoleonsSquareResponse),
   grandfathersclock: (s) => getGrandfathersClockHint(s as GrandfathersClockResponse),

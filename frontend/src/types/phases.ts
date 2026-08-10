@@ -1407,6 +1407,13 @@ export const CalculationPhase = {
 } as const;
 
 /** Sir Tommy phase constants (sync: internal/domain/SirTommy.go). */
+/** Auld Lang Syne phase constants (sync: internal/domain/AuldLangSyne.go). */
+export const AuldLangSynePhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 export const SirTommyPhase = {
   PLAYING: 0,
   GAME_CLEAR: 1,

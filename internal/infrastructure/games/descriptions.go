@@ -90,6 +90,7 @@ var gameDescriptions = map[string]string{
 	"spanish21":           "Spanish 21 (スパニッシュ21)",
 	"calculation":         "Calculation (カルキュレーション)",
 	"sirtommy":            "サー・トミー（最古級のペイシェンス）",
+	"auldlangsyne":        "オールド・ラング・サイン（4列へ強制配りの古典ソリティア）",
 	"bisley":              "ビズリー（昇降2組の基礎札ソリティア）",
 	"napoleonssquare":     "ナポレオンズ・スクエア（2デッキの正方形ソリティア）",
 	"grandfathersclock":   "グランドファーザーズ・クロック（時計盤ソリティア）",

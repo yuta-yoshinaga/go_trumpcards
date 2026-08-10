@@ -1,0 +1,49 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
+  "title": "オールド・ラング・サイン",
+  "stock": "山札",
+  "waste": "ウェイスト",
+  "foundation": "ファンデーション",
+  "foundations": "ファンデーション",
+  "moveCount": "手数",
+  "stockCount": "残り",
+  "deal": "配る",
+  "dealsLeft": "あと{{count}}回配れます",
+  "giveup": "ギブアップ",
+  "hint": "ヒント",
+  "undo": "元に戻す",
+  "autoComplete": "オートコンプリート",
+  "selectSource": "移動元を選択してください",
+  "selectTarget": "移動先を選択してください",
+  "deselect": "キャンセル",
+  "empty": "空",
+  "nextRankBadge": "次:{{rank}}",
+  "nextRankAria": "次に置くべきカード {{rank}}",
+  "upcomingRanksTooltip": "今後の必要カード: {{sequence}}",
+  "wasteRanksTooltip": "ウェイスト{{idx}}（上3枚）: {{ranks}}",
+  "wasteEmptyAria": "ウェイスト{{idx}}: 空",
+  "foundationCompleteAria": "完成",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "playing": "プレイ中",
+  "noHint": "ヒントはありません",
+  "hintAvailable": "ヒントがあります",
+  "stalemate": "手詰まりです",
+  "landscapeBanner": "横向き画面推奨",
+  "frontendHint": {
+    "auldlangsyneWaste": "ウェイストのカードをファンデーションに置けます"
+  },
+  "tutorial": {
+    "foundations": "上段の4つがファンデーション。4枚のエースが最初から据えられており、スートを問わずA→2→3…→K(13)へ1ずつ積み上げます。",
+    "stockWaste": "「配る」を押すと山札から4つのウェイストへ1枚ずつ配られます。置き先は選べません。動かせるのは各ウェイストの一番上のカードだけです。",
+    "controls": "操作ボタン。配る・ヒント・ギブアップ・元に戻すなどが行えます。",
+    "resetButton": "新しいゲームを始めるボタンです。"
+  },
+  "nav": {
+    "auldlangsyne": "オールド・ラング・サイン"
+  }
+}

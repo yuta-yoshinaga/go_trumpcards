@@ -67,6 +67,7 @@ export const workerUrl: Record<string, string> = {
   openfacechinese: WORKER_CASINO,
   calculation: WORKER_SOLO,
   sirtommy: WORKER_EXTRA2,
+  auldlangsyne: WORKER_EXTRA2,
   bisley: WORKER_EXTRA2,
   napoleonssquare: WORKER_EXTRA2,
   grandfathersclock: WORKER_EXTRA2,

@@ -191,6 +191,8 @@ tags:
     description: Calculation (カルキュレーション) game - arithmetic-progression solitaire where 4 foundations (A,2,3,4) build up mod-13 with step sizes +1/+2/+3/+4
   - name: sirtommy
     description: Sir Tommy game
+  - name: auldlangsyne
+    description: Auld Lang Syne (オールド・ラング・サイン) game - forced four-way deal patience
   - name: bisley
     description: Bisley (ビズリー) game - fully open solitaire with two foundation sets, four ascending (A→K, dealt with the Aces) and four descending (K→A, opened by playing a King)
   - name: napoleonssquare
@@ -10372,6 +10374,109 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SirTommyResponse'
+
+  /auldlangsyne/exec:
+    post:
+      tags:
+        - auldlangsyne
+      summary: Execute an Auld Lang Syne game command
+      description: |
+        Send a command to advance the Auld Lang Syne (オールド・ラング・サイン)
+        game session identified by `sessionId`. Auld Lang Syne is a classic
+        English single-player patience played with a standard 52-card deck.
+
+        The four Aces are **removed from the deck and set out as the
+        foundations**; the remaining 48 cards form the stock. A `deal` puts one
+        card onto each of the four waste piles at once - the player does **not**
+        choose where they land, which is the whole difference from Sir Tommy.
+        Foundations build up one rank at a time, A to K, **ignoring suit**. Only
+        a waste pile's **top** card may move to a foundation; piles are never
+        reordered and cards never move between wastes. 48 is a multiple of four,
+        so there are exactly 12 deals in a game.
+
+        The game proceeds through these phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Playing    | `0`   | Game in progress |
+        | GameClear  | `1`   | All 52 cards are on the foundations |
+        | GameOver   | `2`   | Player gave up |
+
+        | Command        | Aliases     | Description |
+        |----------------|-------------|-------------|
+        | `reset`        | `r`         | Start / restart a game |
+        | `deal`         | `d`         | Deal one card onto each of the four wastes |
+        | `move`         | `m`         | Move a card (requires `from` and `to` zones) |
+        | `giveup`       | `g`         | Give up the current game |
+        | `hint`         | `h`         | Return a hint (waste to foundation), if any |
+        | `autocomplete` | `ac`        | Auto-play every legal move once the stock is empty |
+        | `undo`         | `u`         | Undo the last action |
+        | `undo_n`       | -           | Undo the last `n` actions |
+        | `log`          | `l`         | View action log |
+
+        Move zones:
+        * `from`: `{zone: "waste", idx: 0..3}`
+        * `to`: `{zone: "foundation", idx: 0..3}`
+
+      operationId: auldlangsyneExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, deal, d, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, undo_n, log, l]
+                sessionId:
+                  type: string
+                from:
+                  $ref: '#/components/schemas/AuldLangSyneMoveZone'
+                to:
+                  $ref: '#/components/schemas/AuldLangSyneMoveZone'
+                n:
+                  type: integer
+                  description: Number of moves to undo (for `undo_n` command)
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              deal:
+                summary: Deal one card onto each waste
+                value:
+                  command: deal
+                  sessionId: my-session-001
+              moveWasteToFoundation:
+                summary: Play waste 1 top to foundation 3
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from:
+                    zone: waste
+                    idx: 1
+                  to:
+                    zone: foundation
+                    idx: 3
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuldLangSyneResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuldLangSyneResponse'
+
 
   /bisley/exec:
     post:
@@ -42476,6 +42581,74 @@ components:
           type: object
           additionalProperties:
             type: string
+
+    AuldLangSyneMoveZone:
+      type: object
+      description: Source or target zone for an Auld Lang Syne card move
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          description: Zone identifier (waste, foundation)
+          enum: [waste, foundation]
+        idx:
+          type: integer
+          description: Pile index (0..3)
+    AuldLangSyneHint:
+      type: object
+      description: Recommended move for Auld Lang Syne
+      properties:
+        wasteIdx:
+          type: integer
+          description: Source waste pile index (0..3)
+        foundationIdx:
+          type: integer
+          description: Target foundation index (0..3)
+    AuldLangSyneResponse:
+      type: object
+      description: Response payload for /auldlangsyne/exec
+      properties:
+        foundations:
+          type: array
+          description: Four foundation piles indexed 0..3, each building A to K ignoring suit.
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        wastes:
+          type: array
+          description: Four waste piles indexed 0..3. Only the last element of each is playable.
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        stockCount:
+          type: integer
+          description: Cards left in the stock. Always a multiple of four, so stockCount/4 deals remain.
+        phase:
+          type: integer
+          description: "0=Playing, 1=GameClear, 2=GameOver"
+        moveCount:
+          type: integer
+        canUndo:
+          type: boolean
+        isStalemate:
+          type: boolean
+        undoToEscape:
+          type: integer
+          description: Number of undos needed to escape stalemate (0 = not stalemate, -1 = unreachable)
+        hint:
+          $ref: '#/components/schemas/AuldLangSyneHint'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
 
     # -------------------------------------------------------------------------
     # Spite and Malice

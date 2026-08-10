@@ -221,6 +221,14 @@ func init() {
 			return usecase.RestoreSirTommyInteractor(data, new(presenter.SirTommyWebPresenter))
 		},
 		controller.NewSirTommyWebControllerWithProvider)
+	games.RegisterKVGame("auldlangsyne", games.CategoryExtra2,
+		func() usecase.AuldLangSyneInteractorIF {
+			return usecase.NewAuldLangSyneInteractor(domain.NewDefaultAuldLangSyne(), new(presenter.AuldLangSyneWebPresenter))
+		},
+		func(data []byte) (usecase.AuldLangSyneInteractorIF, error) {
+			return usecase.RestoreAuldLangSyneInteractor(data, new(presenter.AuldLangSyneWebPresenter))
+		},
+		controller.NewAuldLangSyneWebControllerWithProvider)
 	games.RegisterKVGame("bisley", games.CategoryExtra2,
 		func() usecase.BisleyInteractorIF {
 			return usecase.NewBisleyInteractor(domain.NewDefaultBisley(), new(presenter.BisleyWebPresenter))

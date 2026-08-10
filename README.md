@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した264種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した265種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -110,6 +110,7 @@ Go + Clean Architecture で実装した264種類のトランプゲーム。CLI �
 | スパニッシュ21 (Spanish 21) | `spanish21` | [CUI](docs/manual/cui/spanish21.md) / [Web](docs/manual/web/spanish21.md) |
 | カルキュレーション (Calculation) | `calculation` | [CUI](docs/manual/cui/calculation.md) / [Web](docs/manual/web/calculation.md) |
 | サー・トミー (Sir Tommy) | `sirtommy` | [CUI](docs/manual/cui/sirtommy.md) / [Web](docs/manual/web/sirtommy.md) |
+| オールド・ラング・サイン (Auld Lang Syne) | `auldlangsyne` | [CUI](docs/manual/cui/auldlangsyne.md) / [Web](docs/manual/web/auldlangsyne.md) |
 | ビズリー (Bisley) | `bisley` | [CUI](docs/manual/cui/bisley.md) / [Web](docs/manual/web/bisley.md) |
 | ナポレオンズ・スクエア (Napoleon's Square) | `napoleonssquare` | [CUI](docs/manual/cui/napoleonssquare.md) / [Web](docs/manual/web/napoleonssquare.md) |
 | グランドファーザーズ・クロック (Grandfather's Clock) | `grandfathersclock` | [CUI](docs/manual/cui/grandfathersclock.md) / [Web](docs/manual/web/grandfathersclock.md) |
