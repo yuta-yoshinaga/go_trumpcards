@@ -112,6 +112,25 @@ See [`docs/new-game-checklist.md`](docs/new-game-checklist.md) for the full chec
 - **`master`**: Triggers automatic version bump, git tag, and GitHub Release.
 - **PR Summary**: When creating a PR, if there is an associated issue, the PR description must explicitly close the issue (e.g., `Closes #123`).
 
+## Autonomous Merge Policy
+
+`land-pr`, `improve-issue` and `new-game` are model-invocable, which means Claude can
+run branch → PR → squash-merge without a slash command. That is deliberate, and this is
+the authorisation it rests on — stated here rather than assumed, so it is discoverable
+by any session and any contributor.
+
+Claude may squash-merge a PR itself, without asking again, only when **all** of these hold:
+
+1. the work was started by an explicit human invocation (`/improve-batch`, `/improve-issue`,
+   `/new-game`, or a loop the user authorised in that session), **and**
+2. `land-pr`'s gate passes in full — head-SHA match, zero pending, zero failing, and the
+   check count above the floor (an empty check array satisfies every "all green" test), **and**
+3. every review finding has been read and either fixed or answered in the PR.
+
+Anything outside that needs a fresh go-ahead: a PR Claude did not open, a gate that is red
+or still pending, an unaddressed review finding, or a merge into `master` (which triggers the
+version bump, tag and release).
+
 ## Commit Message Format
 
 All commit messages must follow [Conventional Commits](https://www.conventionalcommits.org/):
