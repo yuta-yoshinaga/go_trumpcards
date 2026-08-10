@@ -16,6 +16,7 @@ export * from './games/allfours';
 export * from './games/aluette';
 export * from './games/americantoad';
 export * from './games/anaconda';
+export * from './games/auldlangsyne';
 export * from './games/baccarat';
 export * from './games/badugi';
 export * from './games/bakersdozen';
@@ -351,6 +352,7 @@ export const games = [
   'fortythieves',
   'calculation',
   'sirtommy',
+  'auldlangsyne',
   'bisley',
   'napoleonssquare',
   'grandfathersclock',

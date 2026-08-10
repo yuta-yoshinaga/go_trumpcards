@@ -842,6 +842,13 @@ var registry = []*Game{
 	// 10s and kings (200 in the pack); the declarers win by holding them
 	// under 80. Climbing stops at the ace, which must then be held to win.
 	{Name: "shengji", Category: CategoryClassic},
+	// Auld Lang Syne is the luck-heavy end of the patience family: the four Aces
+	// are set out as foundations, the other 48 cards are dealt four at a time
+	// onto four wastes, and only a waste's top card may be built up A->K with
+	// suit ignored. Sir Tommy shares the shape but lets the player CHOOSE which
+	// waste each card lands on; here the deal is forced, which is what strips
+	// the game down to "when to deal" and "which playable card first".
+	{Name: "auldlangsyne", Category: CategoryExtra2},
 }
 
 // All returns a value-level copy of the registry in canonical order.

@@ -420,6 +420,11 @@ func init() {
 			return usecase.NewSirTommyInteractor(domain.NewDefaultSirTommy(), new(presenter.SirTommyWebPresenter))
 		},
 		controller.NewSirTommyWebController)
+	BindWebControllerFor("auldlangsyne",
+		func() usecase.AuldLangSyneInteractorIF {
+			return usecase.NewAuldLangSyneInteractor(domain.NewDefaultAuldLangSyne(), new(presenter.AuldLangSyneWebPresenter))
+		},
+		controller.NewAuldLangSyneWebController)
 	BindWebControllerFor("bisley",
 		func() usecase.BisleyInteractorIF {
 			return usecase.NewBisleyInteractor(domain.NewDefaultBisley(), new(presenter.BisleyWebPresenter))

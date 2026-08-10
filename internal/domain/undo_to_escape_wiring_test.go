@@ -41,6 +41,13 @@ func TestUndoToEscape_ClosureReadsEachGamesOwnSnapshot(t *testing.T) {
 			}
 			return g.UndoToEscape()
 		}},
+		{"AuldLangSyne", func(stale []bool) int {
+			g := &AuldLangSyne{isStalemate: true}
+			for _, s := range stale {
+				g.history = append(g.history, &auldLangSyneSnapshot{isStalemate: s})
+			}
+			return g.UndoToEscape()
+		}},
 		{"BakersDozen", func(stale []bool) int {
 			g := &BakersDozen{isStalemate: true}
 			for _, s := range stale {
@@ -315,7 +322,7 @@ func TestUndoToEscape_ClosureReadsEachGamesOwnSnapshot(t *testing.T) {
 		{"no escape anywhere", []bool{true, true}, -1},
 	}
 
-	assert.Len(t, games, 40, "every game delegating to undoToEscape must be listed")
+	assert.Len(t, games, 41, "every game delegating to undoToEscape must be listed")
 
 	for _, g := range games {
 		for _, sc := range scenarios {

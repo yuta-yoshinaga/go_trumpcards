@@ -210,6 +210,7 @@ export type GameKey =
   | 'montecarlo'
   | 'calculation'
   | 'sirtommy'
+  | 'auldlangsyne'
   | 'bisley'
   | 'napoleonssquare'
   | 'grandfathersclock'
@@ -727,6 +728,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   montecarlo: CASINO,
   calculation: CASINO,
   sirtommy: CASINO,
+  auldlangsyne: CASINO,
   bisley: CASINO,
   napoleonssquare: CASINO,
   grandfathersclock: CASINO,

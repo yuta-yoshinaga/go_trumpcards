@@ -1,0 +1,49 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "title": "Auld Lang Syne",
+  "stock": "Stock",
+  "waste": "Waste",
+  "foundation": "Foundation",
+  "foundations": "Foundations",
+  "moveCount": "Moves",
+  "stockCount": "Left",
+  "deal": "Deal",
+  "dealsLeft": "{{count}} deals left",
+  "giveup": "Give up",
+  "hint": "Hint",
+  "undo": "Undo",
+  "autoComplete": "Auto-complete",
+  "selectSource": "Select a source",
+  "selectTarget": "Select a target",
+  "deselect": "Cancel",
+  "empty": "Empty",
+  "nextRankBadge": "next:{{rank}}",
+  "nextRankAria": "next required card {{rank}}",
+  "upcomingRanksTooltip": "Upcoming cards: {{sequence}}",
+  "wasteRanksTooltip": "Waste {{idx}} (top 3): {{ranks}}",
+  "wasteEmptyAria": "Waste {{idx}}: empty",
+  "foundationCompleteAria": "complete",
+  "gameClear": "Game Clear! Moves: {{moveCount}}",
+  "gameOver": "Game Over",
+  "playing": "Playing",
+  "noHint": "No hint",
+  "hintAvailable": "Hint available",
+  "stalemate": "Stalemate",
+  "landscapeBanner": "Landscape orientation recommended",
+  "frontendHint": {
+    "auldlangsyneWaste": "A waste pile top can be played to a foundation"
+  },
+  "tutorial": {
+    "foundations": "The four piles on top are the foundations. All four Aces are placed for you; build each up A-2-3...K(13) one rank at a time, ignoring suit.",
+    "stockWaste": "Press Deal to put one card from the stock onto each of the four wastes. You do not choose where they land, and only the top card of each waste can be moved.",
+    "controls": "Controls: deal, hint, give up, undo and more.",
+    "resetButton": "Start a new game."
+  },
+  "nav": {
+    "auldlangsyne": "Auld Lang Syne"
+  }
+}

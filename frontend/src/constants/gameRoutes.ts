@@ -1776,6 +1776,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [5, 1, 4, 2], skill: [2, 3, 4, 1], social: [5, 1, 0, 2, 4], theme: [3, 3, 3, 1, 3, 3] },
       },
       {
+        path: '/auldlangsyne',
+        labelKey: 'nav.auldlangsyne',
+        icon: '🕰️',
+        page: 'AuldLangSyne',
+        profile: { mood: [5, 1, 5, 2], skill: [1, 2, 5, 1], social: [5, 1, 0, 2, 4], theme: [3, 3, 3, 1, 3, 3] },
+      },
+      {
         path: '/crescent',
         labelKey: 'nav.crescent',
         icon: '🌙',
