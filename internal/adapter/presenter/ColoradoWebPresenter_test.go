@@ -20,7 +20,7 @@ func setupColoradoWebMockDefaults(g *interfaces.MockColoradoGame) {
 	g.On("CanUndo").Return(false).Maybe()
 	g.On("IsStalemate").Return(false).Maybe()
 	g.On("UndoToEscape").Return(0).Maybe()
-	g.On("GetStockCount").Return(96).Maybe()
+	g.On("GetStockCount").Return(84).Maybe()
 	g.On("GetWaste").Return([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 9, true)}).Maybe()
 
 	var tableau [domain.ColoradoTableauCnt][]*domain.Card
@@ -62,7 +62,7 @@ func TestColoradoWebPresenter_Output(t *testing.T) {
 
 		result := parseColoradoOutput(t, new(ColoradoWebPresenter).Output(g, nil))
 		assert.Equal(t, 0, result.Phase)
-		assert.Equal(t, 96, result.StockCount)
+		assert.Equal(t, 84, result.StockCount)
 		assert.Len(t, result.Tableau, domain.ColoradoTableauCnt)
 		assert.Len(t, result.Foundation, domain.ColoradoFoundationCnt)
 		// The build direction has to be on the wire: the page cannot label the

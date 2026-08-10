@@ -18,7 +18,7 @@ func setupColoradoCuiMockDefaults(g *interfaces.MockColoradoGame) {
 	g.On("GetPhase").Return(domain.ColoradoPhasePlaying).Maybe()
 	g.On("GetMoveCount").Return(0).Maybe()
 	g.On("IsStalemate").Return(false).Maybe()
-	g.On("GetStockCount").Return(96).Maybe()
+	g.On("GetStockCount").Return(84).Maybe()
 	g.On("GetWaste").Return([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 9, true)}).Maybe()
 
 	var tableau [domain.ColoradoTableauCnt][]*domain.Card
@@ -52,7 +52,7 @@ func TestColoradoCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "山19:", "all twenty piles are rendered")
 		assert.Contains(t, result, "↑", "ascending foundations are marked")
 		assert.Contains(t, result, "↓", "descending foundations are marked")
-		assert.Contains(t, result, "96")
+		assert.Contains(t, result, "84", "the stock count is rendered")
 		assert.Contains(t, result, "手数: 0")
 	})
 

@@ -7,6 +7,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	mockusecase "github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func newMockColoradoInteractor() *mockusecase.MockColoradoInteractor {
@@ -64,7 +65,9 @@ func TestColoradoCuiControllerMoves(t *testing.T) {
 	t.Run("tableau to a tableau is rejected", func(t *testing.T) {
 		ci := newMockColoradoInteractor()
 		c := NewColoradoCuiController(ci)
-		assert.Contains(t, c.Exec("m t 0 t 5"), "t")
+		// 1 文字の Contains は本文がほぼ何であっても通ってしまうので、
+		// 実際に出る文言そのものを見る。
+		assert.Equal(t, i18n.Tf("colorado.invalidToZone", "val", "t"), c.Exec("m t 0 t 5"))
 		ci.AssertNotCalled(t, "MoveTableauToFoundation", 0)
 	})
 
@@ -91,8 +94,10 @@ func TestColoradoCuiControllerMoves(t *testing.T) {
 
 	// The stock can only fill a gap; it never goes straight to a foundation.
 	t.Run("rejects the stock to a foundation", func(t *testing.T) {
-		c := NewColoradoCuiController(newMockColoradoInteractor())
-		assert.Contains(t, c.Exec("m s f"), "f")
+		ci := newMockColoradoInteractor()
+		c := NewColoradoCuiController(ci)
+		assert.Equal(t, i18n.Tf("colorado.invalidToZone", "val", "f"), c.Exec("m s f"))
+		ci.AssertNotCalled(t, "MoveStockToTableau", 0)
 	})
 }
 
@@ -106,18 +111,22 @@ func TestColoradoCuiControllerPrompts(t *testing.T) {
 }
 
 func TestColoradoCuiControllerErrors(t *testing.T) {
-	for _, tc := range []struct{ cmd, contains string }{
-		{"m x f", "x"},
-		{"m t abc f", "abc"},
-		{"m t 0 z", "z"},
-		{"m t 0 t", "t"},
-		{"m w z", "z"},
-		{"m w t abc", "abc"},
-		{"m s t abc", "abc"},
+	// 期待値は完全一致で持つ。部分一致だと "t" のような 1 文字が
+	// 「たまたま含まれている」だけで通り、壊れても気付けない。
+	for _, tc := range []struct{ cmd, want string }{
+		{"m x f", i18n.Tf("colorado.invalidFromZone", "val", "x")},
+		{"m t abc f", i18n.Tf("colorado.invalidPile", "val", "abc")},
+		{"m t 0 z", i18n.Tf("colorado.invalidToZone", "val", "z")},
+		{"m t 0 t", i18n.Tf("colorado.invalidToZone", "val", "t")},
+		{"m w z", i18n.Tf("colorado.invalidToZone", "val", "z")},
+		{"m w t abc", i18n.Tf("colorado.invalidPile", "val", "abc")},
+		{"m s t abc", i18n.Tf("colorado.invalidPile", "val", "abc")},
 	} {
 		t.Run(tc.cmd, func(t *testing.T) {
-			c := NewColoradoCuiController(newMockColoradoInteractor())
-			assert.Contains(t, c.Exec(tc.cmd), tc.contains)
+			ci := newMockColoradoInteractor()
+			c := NewColoradoCuiController(ci)
+			assert.Equal(t, tc.want, c.Exec(tc.cmd))
+			ci.AssertExpectations(t)
 		})
 	}
 }
