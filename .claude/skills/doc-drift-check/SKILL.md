@@ -1,7 +1,8 @@
 ---
 name: doc-drift-check
 description: Check all project documentation for discrepancies with the actual codebase and report findings
-disable-model-invocation: true
+# Model-invocable: reports drift (it holds no Write/Edit tool, so even --fix cannot
+# rewrite files directly). Useful unprompted after any change that touches docs.
 allowed-tools: Read, Grep, Glob, Bash, Agent
 argument-hint: "[--fix]"
 ---
