@@ -1,0 +1,49 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "title": "Four Seasons",
+  "stock": "Stock",
+  "waste": "Waste",
+  "cross": "Cross",
+  "foundation": "Foundation",
+  "foundations": "Foundations (corners)",
+  "moveCount": "Moves",
+  "baseRank": "Base rank",
+  "draw": "Draw",
+  "drawAria": "Turn one card from the stock",
+  "giveup": "Give up",
+  "hint": "Hint",
+  "undo": "Undo",
+  "autoComplete": "Auto-complete",
+  "selectTarget": "Select a target",
+  "deselect": "Cancel",
+  "empty": "Empty",
+  "nextRankBadge": "next:{{rank}}",
+  "nextRankAria": "next required card {{rank}}",
+  "foundationCompleteAria": "complete",
+  "acceptsTooltip": "Accepts {{rank}}",
+  "acceptsAny": "Accepts any card",
+  "gameClear": "Game Clear! Moves: {{moveCount}}",
+  "gameOver": "Game Over",
+  "playing": "Playing",
+  "noHint": "No hint",
+  "hintAvailable": "Hint available",
+  "landscapeBanner": "Landscape orientation recommended",
+  "frontendHint": {
+    "fourseasonsWaste": "The waste card can be played to a corner",
+    "fourseasonsTableau": "A cross pile top can be played to a corner"
+  },
+  "tutorial": {
+    "baseRank": "This deal's base rank. All four corner foundations start here — not necessarily at an Ace.",
+    "foundations": "The four corner foundations. They build up in suit, and wrap: an Ace follows a King.",
+    "cross": "The five cross piles. They build down ignoring suit, and wrap: a King goes under an Ace. Only the top card moves, and an emptied space accepts any card.",
+    "controls": "Controls: draw, hint, undo and more.",
+    "resetButton": "Start a new game."
+  },
+  "nav": {
+    "fourseasons": "Four Seasons"
+  }
+}

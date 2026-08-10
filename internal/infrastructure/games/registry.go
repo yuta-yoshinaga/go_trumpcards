@@ -857,6 +857,13 @@ var registry = []*Game{
 	// below is authoritative, and it must match wherever FiveCardStud and
 	// betting.go are compiled.
 	{Name: "soko", Category: CategoryCasino},
+	// Four Seasons (Corners) deals a five-card cross plus four corner
+	// foundations. The foundations start from whatever rank the first card was
+	// and build up in suit; the cross builds down ignoring suit. Both wrap, so
+	// an Ace follows a King and a King goes under an Ace. An emptied cross space
+	// takes any card. Canfield shares the deal-decides-the-base-rank idea but
+	// alternates colour on its tableau and does not wrap there.
+	{Name: "fourseasons", Category: CategorySolo},
 }
 
 // All returns a value-level copy of the registry in canonical order.

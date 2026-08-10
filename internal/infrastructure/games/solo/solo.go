@@ -129,6 +129,14 @@ func init() {
 			return usecase.RestoreFortyThievesInteractor(data, new(presenter.FortyThievesWebPresenter))
 		},
 		controller.NewFortyThievesWebControllerWithProvider)
+	games.RegisterKVGame("fourseasons", games.CategorySolo,
+		func() usecase.FourSeasonsInteractorIF {
+			return usecase.NewFourSeasonsInteractor(domain.NewDefaultFourSeasons(), new(presenter.FourSeasonsWebPresenter))
+		},
+		func(data []byte) (usecase.FourSeasonsInteractorIF, error) {
+			return usecase.RestoreFourSeasonsInteractor(data, new(presenter.FourSeasonsWebPresenter))
+		},
+		controller.NewFourSeasonsWebControllerWithProvider)
 	games.RegisterKVGame("canfield", games.CategorySolo,
 		func() usecase.CanfieldInteractorIF {
 			return usecase.NewCanfieldInteractor(domain.NewDefaultCanfield(), new(presenter.CanfieldWebPresenter))

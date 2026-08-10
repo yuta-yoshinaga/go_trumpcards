@@ -1,0 +1,49 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
+  "title": "フォーシーズンズ",
+  "stock": "山札",
+  "waste": "捨て札",
+  "cross": "十字",
+  "foundation": "組札",
+  "foundations": "組札（四隅）",
+  "moveCount": "手数",
+  "baseRank": "ベースランク",
+  "draw": "めくる",
+  "drawAria": "山札から1枚めくる",
+  "giveup": "ギブアップ",
+  "hint": "ヒント",
+  "undo": "元に戻す",
+  "autoComplete": "オートコンプリート",
+  "selectTarget": "移動先を選択してください",
+  "deselect": "キャンセル",
+  "empty": "空",
+  "nextRankBadge": "次:{{rank}}",
+  "nextRankAria": "次に置くべきカード {{rank}}",
+  "foundationCompleteAria": "完成",
+  "acceptsTooltip": "置けるのは {{rank}}",
+  "acceptsAny": "どのカードでも置けます",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "playing": "プレイ中",
+  "noHint": "ヒントはありません",
+  "hintAvailable": "ヒントがあります",
+  "landscapeBanner": "横向き画面推奨",
+  "frontendHint": {
+    "fourseasonsWaste": "捨て札のカードを組札に置けます",
+    "fourseasonsTableau": "十字のカードを組札に置けます"
+  },
+  "tutorial": {
+    "baseRank": "この配りの「ベースランク」です。四隅の組札はすべてこのランクから始まります。A とは限りません。",
+    "foundations": "四隅の組札。同じスートで昇順に積みます。K の次は A に戻ります（ラップアラウンド）。",
+    "cross": "十字の5列。スートを問わず降順に積みます。A の下には K を置けます。動かせるのは各列の一番上の1枚だけで、空いたマスにはどのカードでも置けます。",
+    "controls": "操作ボタン。めくる・ヒント・元に戻すなどが行えます。",
+    "resetButton": "新しいゲームを始めるボタンです。"
+  },
+  "nav": {
+    "fourseasons": "フォーシーズンズ"
+  }
+}

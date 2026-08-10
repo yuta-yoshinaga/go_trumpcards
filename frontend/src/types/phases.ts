@@ -1414,6 +1414,13 @@ export const AuldLangSynePhase = {
 } as const;
 
 /** Sir Tommy phase constants (sync: internal/domain/SirTommy.go). */
+/** Four Seasons phase constants (sync: internal/domain/FourSeasons.go). */
+export const FourSeasonsPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 export const SirTommyPhase = {
   PLAYING: 0,
   GAME_CLEAR: 1,

@@ -92,6 +92,7 @@ var gameDescriptions = map[string]string{
 	"sirtommy":            "サー・トミー（最古級のペイシェンス）",
 	"auldlangsyne":        "オールド・ラング・サイン（4列へ強制配りの古典ソリティア）",
 	"soko":                "ソッコ（4枚役を足したカナディアンスタッド）",
+	"fourseasons":         "フォーシーズンズ（十字と四隅のラップアラウンド・ソリティア）",
 	"bisley":              "ビズリー（昇降2組の基礎札ソリティア）",
 	"napoleonssquare":     "ナポレオンズ・スクエア（2デッキの正方形ソリティア）",
 	"grandfathersclock":   "グランドファーザーズ・クロック（時計盤ソリティア）",

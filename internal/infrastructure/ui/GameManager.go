@@ -4265,6 +4265,24 @@ var gameRegistry = []GameRegistryEntry{
 				"fivecardstud.helpTournament",
 			},
 		}),
+	BindCuiFor("fourseasons",
+		func() usecase.FourSeasonsInteractorIF {
+			return usecase.NewFourSeasonsInteractor(domain.NewDefaultFourSeasons(), new(presenter.FourSeasonsCuiPresenter))
+		},
+		controller.NewFourSeasonsCuiController,
+		CuiHelpSpec{
+			TitleKey: "fourseasons.helpTitle",
+			CommandKeys: []string{
+				"fourseasons.helpDraw",
+				"fourseasons.helpMoveWaste",
+				"fourseasons.helpMoveTableau",
+				"fourseasons.helpGiveUp",
+				"fourseasons.helpHint",
+				"fourseasons.helpAutoComplete",
+				"fourseasons.helpUndo",
+			},
+			ExtraCommandLines: []string{"  l                        action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全266ゲーム)](#12-ゲームドメイン-全266ゲーム)
+  - [1.2 ゲームドメイン (全267ゲーム)](#12-ゲームドメイン-全267ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -153,7 +153,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全266ゲーム)
+### 1.2 ゲームドメイン (全267ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -1683,7 +1683,7 @@ classDiagram
     note for GamePresenter "各ゲームの Presenter は\nGamePresenter[G] の型エイリアス\nまたは拡張インターフェース"
 ```
 
-**Interactor パターン (全266ゲーム共通)**
+**Interactor パターン (全267ゲーム共通)**
 
 ```mermaid
 classDiagram
@@ -1757,8 +1757,8 @@ classDiagram
     GameCuiPresenter ..|> GamePresenter : implements
     GameWebPresenter ..|> GamePresenter : implements
 
-    note for GameCuiController "266ゲーム × CUI/Web = 532 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
-    note for GameCuiPresenter "266ゲーム × CUI/Web = 532 Presenter 実装"
+    note for GameCuiController "267ゲーム × CUI/Web = 534 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
+    note for GameCuiPresenter "267ゲーム × CUI/Web = 534 Presenter 実装"
 ```
 
 ### 1.5 インフラストラクチャ層
@@ -1797,8 +1797,8 @@ classDiagram
     }
 
     TrumpCardsWeb --> "*" gameEntry : registerAll() over games.All()
-    gameEntry --> GameWebController : holds 266 controllers
-    GameManager --> "*" CuiExecer : holds 266 games
+    gameEntry --> GameWebController : holds 267 controllers
+    GameManager --> "*" CuiExecer : holds 267 games
     GameCui ..|> CuiExecer : implements
     GameCui --> GameCuiController : delegates
 ```
