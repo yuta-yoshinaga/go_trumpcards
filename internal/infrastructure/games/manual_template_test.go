@@ -492,6 +492,9 @@ func TestManualHeadingsIgnoresFencedCode(t *testing.T) {
 	}
 }
 
+// manualBacktickRe matches one backtick-quoted span inside a table cell.
+var manualBacktickRe = regexp.MustCompile("`([^`]+)`")
+
 // manualGoStringRe matches a Go interpreted string literal, honouring escapes.
 //
 // The escape handling is load-bearing in both directions. `"[^"]*"` swallows an
@@ -611,7 +614,7 @@ func manualDocumentedCommands(body string) []string {
 			if i > 1 {
 				break
 			}
-			for _, span := range regexp.MustCompile("`([^`]+)`").FindAllStringSubmatch(cell, -1) {
+			for _, span := range manualBacktickRe.FindAllStringSubmatch(cell, -1) {
 				fields := strings.Fields(span[1])
 				if len(fields) == 0 {
 					continue
