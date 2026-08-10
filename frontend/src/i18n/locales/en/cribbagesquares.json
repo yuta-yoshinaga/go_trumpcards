@@ -1,0 +1,48 @@
+{
+  "title": "Cribbage Squares",
+  "phase": {
+    "playing": "Playing",
+    "complete": "Complete"
+  },
+  "label": {
+    "currentCard": "Card to place",
+    "starter": "Starter",
+    "starterHidden": "face down until all 16 are placed",
+    "totalScore": "Total score",
+    "placedCount": "Placed",
+    "row": "Row",
+    "col": "Col",
+    "empty": "Empty",
+    "win": "Cleared!",
+    "lose": "Short"
+  },
+  "part": {
+    "fifteens": "15s {{n}}",
+    "pairs": "pairs {{n}}",
+    "runs": "runs {{n}}",
+    "flush": "flush {{n}}",
+    "nobs": "nobs {{n}}"
+  },
+  "button": {
+    "reset": "Reset",
+    "undo": "Undo",
+    "giveup": "Give Up",
+    "hint": "Hint"
+  },
+  "settings": {
+    "title": "Settings"
+  },
+  "tutorial": {
+    "currentCard": "The card to place. Any empty cell will take it, and once placed it never moves.",
+    "starter": "The 17th card. It is turned only after all 16 are placed, and then joins every one of the eight hands as their fifth card. Until then you cannot know it.",
+    "board": "Click a cell on the 4x4 grid to place the card. All four rows and all four columns are scored.",
+    "scores": "The score for each row and column. They stay at zero until the starter is turned, because four cards alone do not score what the hand is worth.",
+    "controls": "Undo takes back the last placement; Give Up ends the game."
+  },
+  "hint": {
+    "placeSynergy": "Suggests a cell that makes fifteens, pairs or runs",
+    "placeAny": "Any empty cell will do",
+    "synergy": "Suggested: ({{row}},{{col}}) — +{{score}} across its row and column",
+    "plain": "Suggested: ({{row}},{{col}}) — nothing combines yet"
+  }
+}

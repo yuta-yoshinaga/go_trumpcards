@@ -288,7 +288,8 @@
     "shengji": "Sheng Ji",
     "vira": "Vira",
     "legal": "Trademarks & Credits",
-    "colorado": "Colorado"
+    "colorado": "Colorado",
+    "cribbagesquares": "Cribbage Squares"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1442,7 +1443,12 @@
     "russianbank.stopAvailable": "The CPU missed a forced move — call Stop to penalise it",
     "paigow.hintNone": "No hint is available now.",
     "pokersquares.hintAvailable": "Here is a hint",
-    "pokersquares.noHint": "No hint is available right now"
+    "pokersquares.noHint": "No hint is available right now",
+    "cribbagesquares.playing": "Playing",
+    "cribbagesquares.win": "Cleared! Total score: {{totalScore}} (target {{winScore}})",
+    "cribbagesquares.lose": "Game over. Total score: {{totalScore}} (target {{winScore}})",
+    "cribbagesquares.hintAvailable": "Hint available",
+    "cribbagesquares.noHint": "No hint available"
   },
   "manual": {
     "ariaLabel": "Game Manual",

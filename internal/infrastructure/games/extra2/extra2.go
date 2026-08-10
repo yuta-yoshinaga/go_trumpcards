@@ -373,4 +373,12 @@ func init() {
 			return usecase.RestoreAluetteInteractor(data, new(presenter.AluetteWebPresenter))
 		},
 		controller.NewAluetteWebControllerWithProvider)
+	games.RegisterKVGame("cribbagesquares", games.CategoryExtra2,
+		func() usecase.CribbageSquaresInteractorIF {
+			return usecase.NewCribbageSquaresInteractor(domain.NewDefaultCribbageSquares(), new(presenter.CribbageSquaresWebPresenter))
+		},
+		func(data []byte) (usecase.CribbageSquaresInteractorIF, error) {
+			return usecase.RestoreCribbageSquaresInteractor(data, new(presenter.CribbageSquaresWebPresenter))
+		},
+		controller.NewCribbageSquaresWebControllerWithProvider)
 }

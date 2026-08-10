@@ -65,6 +65,7 @@ export * from './games/courtpiece';
 export * from './games/crazyeights';
 export * from './games/crescent';
 export * from './games/cribbage';
+export * from './games/cribbagesquares';
 export * from './games/cruel';
 export * from './games/cuarenta';
 export * from './games/cuckoo';
