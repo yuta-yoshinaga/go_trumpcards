@@ -223,10 +223,20 @@ func checkManual(t *testing.T, spec manualSpec, game, navLabel, src, rel string)
 		}
 	}
 
-	if flow, ok := manualSection(src, "ゲームの流れ"); ok && !hasMermaidFlowchart(flow) {
-		t.Errorf("%s: ゲームの流れ has no ```mermaid block starting with `flowchart`. "+
-			"Both templates mark the flowchart mandatory. (Diagram validity is "+
-			"frontend/scripts/check-mermaid.mjs's job — do not add a parser here.)", rel)
+	if flow, ok := manualSection(src, "ゲームの流れ"); ok {
+		if !hasMermaidFlowchart(flow) {
+			t.Errorf("%s: ゲームの流れ has no ```mermaid block starting with `flowchart`. "+
+				"Both templates mark the flowchart mandatory. (Diagram validity is "+
+				"frontend/scripts/check-mermaid.mjs's job — do not add a parser here.)", rel)
+		}
+		// Exactly one. Twelve manuals briefly carried two: they already had a
+		// hand-written diagram under ルール, an authoring pass added a second
+		// derived one here, and a later pass then rewrote whichever came first
+		// in the file. A reader cannot tell which of two diagrams is current.
+		if n := strings.Count(flow, "```mermaid"); n > 1 {
+			t.Errorf("%s: ゲームの流れ has %d ```mermaid blocks, want exactly one — "+
+				"a second diagram leaves the reader guessing which one is current", rel, n)
+		}
 	}
 
 	launch, _ := manualSection(src, "起動方法")
@@ -382,6 +392,10 @@ func TestManualTemplateGuardCatchesEachViolation(t *testing.T) {
 		{"duplicate section", func(s string) string { return s + "\n## ルール\n\nふたつめ。\n" }},
 		{"mermaid replaced by a state diagram", func(s string) string {
 			return strings.Replace(s, "flowchart TD", "stateDiagram-v2", 1)
+		}},
+		{"a second diagram in ゲームの流れ", func(s string) string {
+			return strings.Replace(s, "```mermaid\nflowchart TD\n    A[開始] --> B[終了]\n```",
+				"```mermaid\nflowchart TD\n    A[開始] --> B[終了]\n```\n\n```mermaid\nflowchart TD\n    X[古い図] --> Y[終了]\n```", 1)
 		}},
 		{"mermaid block removed", func(s string) string {
 			return strings.Replace(s, "```mermaid", "```text", 1)
