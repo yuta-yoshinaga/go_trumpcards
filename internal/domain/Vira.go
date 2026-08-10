@@ -139,8 +139,8 @@ type Vira struct {
 	lastRoundMade    bool
 	gameEndFlag      bool
 	winnerPlayer     int // -1 = 未確定 (同点)
-	actionLog        []*ActionLogEntry
-	shuffled         []*Card // rng 差し替え時の並べ替え済み山
+	actionLogBase
+	shuffled []*Card // rng 差し替え時の並べ替え済み山
 }
 
 // NewVira コンストラクタ。
@@ -474,13 +474,7 @@ func (g *Vira) longestSuit(playerIdx int) int {
 
 // appendLog 棋譜に 1 行追加する。
 func (g *Vira) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.appendLogAt(len(g.actionLog)+1, playerIdx, actionType, detail, cards)
 }
 
 // finishMatch マッチを終え、持ち点最大のプレイヤーを勝者にする。
@@ -570,13 +564,7 @@ func (g *Vira) validatePlay(playerIdx int, card *Card) error {
 
 // playerHasSuit プレイヤーが指定スートを持っているか。
 func (g *Vira) playerHasSuit(playerIdx, design int) bool {
-	p := g.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return handHasSuit(g.players[playerIdx], design)
 }
 
 // GetValidPlayIndices 出せる手札の位置を返す。
@@ -841,10 +829,7 @@ func (g *Vira) GetPlayers() []*ViraPlayer { return g.players }
 
 // GetPlayer 指定席のプレイヤー。範囲外は nil。
 func (g *Vira) GetPlayer(idx int) *ViraPlayer {
-	if idx < 0 || idx >= len(g.players) {
-		return nil
-	}
-	return g.players[idx]
+	return getPlayer(g.players, idx)
 }
 
 // GetConfig 設定。
@@ -859,10 +844,7 @@ func (g *Vira) SetConfig(c ViraConfig) { g.config = c }
 
 // GetActionLog 棋譜。
 func (g *Vira) GetActionLog() []*ActionLogEntry {
-	if g.actionLog == nil {
-		return []*ActionLogEntry{}
-	}
-	return g.actionLog
+	return sliceOrEmpty(g.actionLog)
 }
 
 // ForcePassForTest 指定席を強制的にパスさせる (テスト用)。
@@ -1058,19 +1040,9 @@ func (g *Vira) GetPlayableIndices(playerIdx int) []int {
 	return g.GetValidPlayIndices(playerIdx)
 }
 
-// findHumanIdx 人間プレイヤーの席。いなければ -1。
-func (g *Vira) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 // GetHint 人間プレイヤーへのヒント。手番でなければ nil。
 func (g *Vira) GetHint() *ViraHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 || g.phase != ViraPhasePlay || g.currentPlayerIdx != human {
 		return nil
 	}

@@ -32,6 +32,9 @@ const SuecaHandSize = 10
 // SuecaTrickCount 1 ラウンドのトリック数
 const SuecaTrickCount = 10
 
+// SuecaWinPoints ラウンドを取るのに必要なカード得点 (全 120 点の過半数)。
+const SuecaWinPoints = 61
+
 // SuecaPhase ゲームフェーズ
 type SuecaPhase int
 
@@ -72,7 +75,7 @@ type Sueca struct {
 	roundGamePts     int               // 直近ラウンドで勝者が得たゲームポイント
 	gameEndFlag      bool
 	winnerTeam       int // -1=未確定
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewSueca コンストラクタ
@@ -198,7 +201,7 @@ func (g *Sueca) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Sueca) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == SuecaPlayerCnt {
 		g.phase = SuecaPhaseTrickEnd
@@ -222,7 +225,7 @@ func (g *Sueca) ResolveTrick() {
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.roundCardPts[SuecaTeamOf(winnerIdx)] += pts
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (+%d)", g.playerName(winnerIdx), g.trickNumber, pts), trickCards)
+		fmt.Sprintf("%s wins trick %d (+%d)", playerName(g.players, winnerIdx), g.trickNumber, pts), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	// Keep currentTrick intact through TrickEnd so the resolved trick stays
@@ -306,25 +309,7 @@ func suecaTeamLabel(team int) string {
 
 // validatePlay マストフォロー (リードスートに従う) を検証する。
 func (g *Sueca) validatePlay(playerIdx int, card *Card) error {
-	if len(g.currentTrick) == 0 {
-		return nil
-	}
-	leadSuit := g.currentTrick[0].Card.GetDesign()
-	if card.GetDesign() != leadSuit && g.playerHasSuit(playerIdx, leadSuit) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
-	}
-	return nil
-}
-
-// playerHasSuit プレイヤーが指定スートのカードを持っているか。
-func (g *Sueca) playerHasSuit(playerIdx, design int) bool {
-	p := g.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return validateFollowSuit(g.currentTrick, g.players, playerIdx, card)
 }
 
 // trickWinner トリックの勝者を決定する。切り札があれば最強切り札、なければ
@@ -360,10 +345,7 @@ func (g *Sueca) suecaRank(card *Card) int {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す。
 func (g *Sueca) getValidPlayIndices(playerIdx int) []int {
-	player := g.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return g.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(g.players[playerIdx], func(c *Card) bool { return g.validatePlay(playerIdx, c) == nil })
 }
 
 // --- Card helpers ---
@@ -439,25 +421,9 @@ func suecaSortHand(p *SuecaPlayer) {
 	}
 }
 
-// playerName プレイヤー名を返す。
-func (g *Sueca) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
 // indexOfPlayerInTrick currentTrick 内で playerIdx の札の位置を返す (-1=なし)。
 func (g *Sueca) indexOfPlayerInTrick(playerIdx int) int {
-	for i, tc := range g.currentTrick {
-		if tc.PlayerIdx == playerIdx {
-			return i
-		}
-	}
-	return -1
+	return indexOfPlayerInTrick(g.currentTrick, playerIdx)
 }
 
 // trickTopRank 現在のトリック勝者の札のランクを返す。見つからない場合は極小値。
@@ -467,27 +433,6 @@ func (g *Sueca) trickTopRank(winnerIdx int) int {
 		return -1 << 30
 	}
 	return g.suecaRank(g.currentTrick[idx].Card)
-}
-
-// findHumanIdx 人間プレイヤーのインデックス (-1=なし)。
-func (g *Sueca) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
-// appendLog 棋譜にエントリを追加する。
-func (g *Sueca) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- CPU AI ---
@@ -511,7 +456,7 @@ func (g *Sueca) cpuSelectPlayCard(playerIdx int) int {
 func (g *Sueca) cpuPlaySmart(playerIdx int, valid []int) int {
 	player := g.players[playerIdx]
 	if len(g.currentTrick) == 0 {
-		return g.minBy(player, valid, func(c *Card) int {
+		return pickLowest(player, valid, func(c *Card) int {
 			return suecaCardPoints(c.GetValue())*100 + suecaStrength(c.GetValue())
 		})
 	}
@@ -531,14 +476,14 @@ func (g *Sueca) cpuPlaySmart(playerIdx int, valid []int) int {
 	}
 	if len(follows) == 0 {
 		if partnerWinning {
-			return g.maxBy(player, valid, func(c *Card) int {
+			return pickHighest(player, valid, func(c *Card) int {
 				if c.GetDesign() == g.trumpSuit {
 					return -suecaStrength(c.GetValue())
 				}
 				return suecaCardPoints(c.GetValue())*100 - suecaStrength(c.GetValue())
 			})
 		}
-		return g.minBy(player, valid, func(c *Card) int {
+		return pickLowest(player, valid, func(c *Card) int {
 			return suecaCardPoints(c.GetValue())*100 + suecaStrength(c.GetValue())
 		})
 	}
@@ -546,44 +491,18 @@ func (g *Sueca) cpuPlaySmart(playerIdx int, valid []int) int {
 	if partnerWinning {
 		nonWinners := suecaFilter(follows, func(idx int) bool { return g.suecaRank(player.GetCard(idx)) < topRank })
 		if len(nonWinners) > 0 {
-			return g.maxBy(player, nonWinners, func(c *Card) int {
+			return pickHighest(player, nonWinners, func(c *Card) int {
 				return suecaCardPoints(c.GetValue())*100 - suecaStrength(c.GetValue())
 			})
 		}
-		return g.minBy(player, follows, func(c *Card) int { return suecaStrength(c.GetValue()) })
+		return pickLowest(player, follows, func(c *Card) int { return suecaStrength(c.GetValue()) })
 	}
 	if trickPts > 0 && len(winners) > 0 {
-		return g.minBy(player, winners, func(c *Card) int { return suecaStrength(c.GetValue()) })
+		return pickLowest(player, winners, func(c *Card) int { return suecaStrength(c.GetValue()) })
 	}
-	return g.minBy(player, follows, func(c *Card) int {
+	return pickLowest(player, follows, func(c *Card) int {
 		return suecaCardPoints(c.GetValue())*100 + suecaStrength(c.GetValue())
 	})
-}
-
-// minBy score が最小となるインデックスを返す。
-func (g *Sueca) minBy(player *SuecaPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s < bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
-}
-
-// maxBy score が最大となるインデックスを返す。
-func (g *Sueca) maxBy(player *SuecaPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s > bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
 }
 
 // suecaFilter 述語を満たすインデックスを抽出する。
@@ -601,7 +520,7 @@ func suecaFilter(indices []int, pred func(int) bool) []int {
 
 // GetHint 人間プレイヤーの手番における推奨プレイを返す。
 func (g *Sueca) GetHint() *SuecaHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 || g.phase != SuecaPhasePlay || g.currentPlayerIdx != human {
 		return nil
 	}
@@ -706,18 +625,12 @@ func (g *Sueca) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *Sueca) GetPlayer(i int) *SuecaPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // IsHumanTurn 現在の手番が人間か。
 func (g *Sueca) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -725,9 +638,6 @@ func (g *Sueca) GetConfig() SuecaConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *Sueca) SetConfig(cfg SuecaConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *Sueca) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetPlayableIndices プレイ可能なカードのインデックス一覧を返す。
 func (g *Sueca) GetPlayableIndices(playerIdx int) []int {

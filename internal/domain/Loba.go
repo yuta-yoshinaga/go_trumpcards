@@ -246,7 +246,7 @@ type Loba struct {
 
 	gameEndFlag bool
 	winnerIdx   int
-	actionLog   []*ActionLogEntry
+	actionLogBase
 }
 
 // NewLoba はコンストラクタ。
@@ -790,10 +790,7 @@ func (l *Loba) GetPlayers() []*LobaPlayer { return l.players }
 
 // GetPlayer は idx のプレイヤーを返す。
 func (l *Loba) GetPlayer(idx int) *LobaPlayer {
-	if idx < 0 || idx >= len(l.players) {
-		return nil
-	}
-	return l.players[idx]
+	return getPlayer(l.players, idx)
 }
 
 // GetPhase は現在のフェーズを返す。
@@ -807,10 +804,7 @@ func (l *Loba) GetStockCount() int { return len(l.stock) }
 
 // GetDiscardTop は捨て札の一番上を返す (無ければ nil)。
 func (l *Loba) GetDiscardTop() *Card {
-	if len(l.discard) == 0 {
-		return nil
-	}
-	return l.discard[len(l.discard)-1]
+	return discardTop(l.discard)
 }
 
 // GetMelds は場のメルドを返す。
@@ -826,10 +820,7 @@ func (l *Loba) HasMelded(idx int) bool {
 
 // GetScore は idx の累計失点を返す。
 func (l *Loba) GetScore(idx int) int {
-	if idx < 0 || idx >= len(l.scores) {
-		return 0
-	}
-	return l.scores[idx]
+	return elemAt(l.scores, idx)
 }
 
 // IsEliminated は idx が脱落しているかを返す。
@@ -861,9 +852,6 @@ func (l *Loba) GetConfig() LobaConfig { return l.config }
 // SetConfig はゲーム設定をセットする。
 func (l *Loba) SetConfig(c LobaConfig) { l.config = c }
 
-// GetActionLog は棋譜を返す。
-func (l *Loba) GetActionLog() []*ActionLogEntry { return l.actionLog }
-
 // SetPhaseForTest はテスト用にフェーズを差し替える。
 func (l *Loba) SetPhaseForTest(p LobaPhase) { l.phase = p }
 
@@ -884,13 +872,7 @@ func (l *Loba) SetHasMeldedForTest(idx int, v bool) { l.hasMelded[idx] = v }
 
 // addLog は棋譜に 1 件追加する。
 func (l *Loba) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	l.actionLog = append(l.actionLog, &ActionLogEntry{
-		TurnNumber: len(l.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	l.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // lobaJSON is the JSON wire format for Loba.

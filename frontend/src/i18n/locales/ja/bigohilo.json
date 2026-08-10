@@ -92,5 +92,14 @@
     "lpTooltip": "Loose Passive：参加多めだがコール中心",
     "balanced": "BAL",
     "balancedTooltip": "バランス型のスタイル"
+  },
+  "boardLow": {
+    "label": "ロー",
+    "live": "成立圏",
+    "possible": "成立可能",
+    "impossible": "不成立確定",
+    "ariaLive": "ボードに8以下が3ランクあり、ロー成立圏です",
+    "ariaPossible": "ロー成立まであと{{needed}}ランク（8以下）が必要です",
+    "ariaImpossible": "ボードの8以下が3ランク未満のため、ローは不成立確定です"
   }
 }

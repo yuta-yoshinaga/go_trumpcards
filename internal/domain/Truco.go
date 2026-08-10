@@ -147,7 +147,7 @@ type Truco struct {
 	handWinnerIdx     int // 直近マノの勝者 (-1: 未確定)
 	gameEndFlag       bool
 	winnerIdx         int // マッチ勝者 (-1: 未確定)
-	actionLog         []*ActionLogEntry
+	actionLogBase
 }
 
 // NewTruco コンストラクタ
@@ -394,10 +394,7 @@ func (t *Truco) GetPlayerCnt() int { return len(t.players) }
 
 // GetPlayer プレイヤー取得
 func (t *Truco) GetPlayer(i int) *TrucoPlayer {
-	if i < 0 || i >= len(t.players) {
-		return nil
-	}
-	return t.players[i]
+	return getPlayer(t.players, i)
 }
 
 // GetConfig 設定取得
@@ -405,9 +402,6 @@ func (t *Truco) GetConfig() TrucoConfig { return t.config }
 
 // SetConfig 設定変更
 func (t *Truco) SetConfig(cfg TrucoConfig) { t.config = cfg }
-
-// GetActionLog 棋譜取得
-func (t *Truco) GetActionLog() []*ActionLogEntry { return t.actionLog }
 
 // IsHumanTurn 現在の手番 (プレイまたは応答) が人間かどうか
 func (t *Truco) IsHumanTurn() bool {
@@ -516,7 +510,7 @@ func (t *Truco) callTruco(caller int) {
 	t.responderIdx = 1 - caller
 	t.phase = TrucoPhaseRespond
 	t.appendLog(caller, "truco",
-		fmt.Sprintf("%s calls %s", t.playerName(caller), trucoLevelName(t.pendingLevel)), nil)
+		fmt.Sprintf("%s calls %s", playerName(t.players, caller), trucoLevelName(t.pendingLevel)), nil)
 }
 
 // respond responder が宣言に応答する。
@@ -529,7 +523,7 @@ func (t *Truco) respond(responder int, accept bool) {
 		t.responderIdx = -1
 		t.phase = TrucoPhasePlay
 		t.appendLog(responder, "accept",
-			fmt.Sprintf("%s accepts (stake %d)", t.playerName(responder), t.handStake), nil)
+			fmt.Sprintf("%s accepts (stake %d)", playerName(t.players, responder), t.handStake), nil)
 		return
 	}
 	// 拒否: 宣言者が直前の確定点でマノを取る
@@ -541,7 +535,7 @@ func (t *Truco) respond(responder int, accept bool) {
 	t.phase = TrucoPhaseHandEnd
 	t.appendLog(responder, "decline",
 		fmt.Sprintf("%s declines; %s wins hand (%d pt)",
-			t.playerName(responder), t.playerName(caller), t.handStake), nil)
+			playerName(t.players, responder), playerName(t.players, caller), t.handStake), nil)
 }
 
 // --- Private: trick / hand progression ---
@@ -550,7 +544,7 @@ func (t *Truco) respond(responder int, accept bool) {
 func (t *Truco) playCard(playerIdx int, card *Card) {
 	t.currentTrick = append(t.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	t.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", t.playerName(playerIdx), cardStr(card)), []*Card{card})
+		fmt.Sprintf("%s plays %s", playerName(t.players, playerIdx), cardStr(card)), []*Card{card})
 	if len(t.currentTrick) == TrucoPlayerCnt {
 		t.finishBaza()
 	} else {
@@ -569,7 +563,7 @@ func (t *Truco) finishBaza() {
 	} else {
 		t.leadPlayerIdx = result
 		t.appendLog(result, "baza_win",
-			fmt.Sprintf("%s wins baza %d", t.playerName(result), t.trickNumber), cards)
+			fmt.Sprintf("%s wins baza %d", playerName(t.players, result), t.trickNumber), cards)
 	}
 	t.phase = TrucoPhaseTrickEnd
 }
@@ -595,7 +589,7 @@ func (t *Truco) advanceHand() {
 	}
 	t.appendLog(t.handWinnerIdx, "hand_end",
 		fmt.Sprintf("Hand %d: %s +%d (match %d-%d)", t.handNumber,
-			t.playerName(t.handWinnerIdx), t.handStake,
+			playerName(t.players, t.handWinnerIdx), t.handStake,
 			t.playerMatchPoints[0], t.playerMatchPoints[1]), nil)
 
 	if t.playerMatchPoints[t.handWinnerIdx] >= t.matchTarget {
@@ -642,7 +636,7 @@ func (t *Truco) dealHand() {
 	t.currentPlayerIdx = t.manoIdx
 	t.phase = TrucoPhasePlay
 	t.appendLog(-1, "deal", fmt.Sprintf("Hand %d dealt (dealer=%s)",
-		t.handNumber, t.playerName(t.dealerIdx)), nil)
+		t.handNumber, playerName(t.players, t.dealerIdx)), nil)
 }
 
 // --- Pure rule helpers ---
@@ -747,17 +741,6 @@ func (t *Truco) sortAllHands() {
 	}
 }
 
-// playerName プレイヤー名を返す (ログ用)。
-func (t *Truco) playerName(idx int) string {
-	if idx < 0 || idx >= len(t.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if t.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
 // trucoLevelName ベッティングレベルの表示名を返す。
 func trucoLevelName(level int) string {
 	switch level {
@@ -770,17 +753,6 @@ func trucoLevelName(level int) string {
 	default:
 		return "Truco"
 	}
-}
-
-// appendLog 棋譜エントリを追加する。
-func (t *Truco) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	t.actionLog = append(t.actionLog, &ActionLogEntry{
-		TurnNumber: len(t.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // playHintReason プレイ推奨の理由キーを判定する。

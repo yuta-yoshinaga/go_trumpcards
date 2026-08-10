@@ -4,7 +4,6 @@ package domain
 
 import (
 	"encoding/json"
-	"fmt"
 	"sort"
 )
 
@@ -96,18 +95,12 @@ func (p *SevenCardStudPlayer) GetPFRCount() int { return p.pfrCount }
 
 // GetVPIP VPIP%取得 (0 if totalHands==0)
 func (p *SevenCardStudPlayer) GetVPIP() int {
-	if p.totalHands == 0 {
-		return 0
-	}
-	return p.vpipCount * 100 / p.totalHands
+	return percentOf(p.vpipCount, p.totalHands)
 }
 
 // GetPFR PFR%取得 (0 if totalHands==0)
 func (p *SevenCardStudPlayer) GetPFR() int {
-	if p.totalHands == 0 {
-		return 0
-	}
-	return p.pfrCount * 100 / p.totalHands
+	return percentOf(p.pfrCount, p.totalHands)
 }
 
 // IncrementTotalHands 総ハンド数をインクリメント
@@ -127,10 +120,7 @@ func (p *SevenCardStudPlayer) GetThreeBetCount() int { return p.threeBetCount }
 
 // GetThreeBet 3Bet%取得 (0 if threeBetOpportunity==0)
 func (p *SevenCardStudPlayer) GetThreeBet() int {
-	if p.threeBetOpportunity == 0 {
-		return 0
-	}
-	return p.threeBetCount * 100 / p.threeBetOpportunity
+	return percentOf(p.threeBetCount, p.threeBetOpportunity)
 }
 
 // IncrementThreeBetOpportunity 3Bet機会数をインクリメント
@@ -153,47 +143,43 @@ func (p *SevenCardStudPlayer) IncrementPostFlopCall() { p.postFlopCall++ }
 
 // GetAFDisplay AF表示文字列取得 ("-"=アクションなし, "∞"=コールなし, "X.X"=通常)
 func (p *SevenCardStudPlayer) GetAFDisplay() string {
-	if p.postFlopBetRaise == 0 && p.postFlopCall == 0 {
-		return "-"
-	}
-	if p.postFlopCall == 0 {
-		return "∞"
-	}
-	return fmt.Sprintf("%.1f", float64(p.postFlopBetRaise)/float64(p.postFlopCall))
+	return afDisplay(p.postFlopBetRaise, p.postFlopCall)
 }
 
 // GetComparisonCards ハンド比較用カード取得 (BettingPlayerインターフェース)
 func (p *SevenCardStudPlayer) GetComparisonCards() []*Card {
-	cards := make([]*Card, len(p.bestHand))
-	copy(cards, p.bestHand)
-	return cards
+	return copyOf(p.bestHand)
 }
 
-// EvalBestHand 全7枚からベスト5枚を評価
-func (p *SevenCardStudPlayer) EvalBestHand() int {
+// PeekBestHand は現在の持ち札から最善の 5 枚役を求めて返す。**状態を変えない。**
+//
+// 表示だけのために EvalBestHand を呼ぶと、描画のたびに handRank / bestHand を
+// 書き換えてしまう。CUI の途中経過表示はこちらを使う (#4695)。5 枚未満のときは
+// ハイカード扱いで、確定した組は返さない。
+func (p *SevenCardStudPlayer) PeekBestHand() (rank int, best []*Card) {
 	all := p.GetAllCards()
-
 	if len(all) < 5 {
-		p.handRank = PokerHandHighCard
-		p.bestHand = nil
-		return p.handRank
+		return PokerHandHighCard, nil
 	}
 
-	combos := combinations(all, 5)
 	bestRank := -1
 	var bestCards []*Card
-
-	for _, combo := range combos {
-		rank := evalFiveCardHand(combo)
-		if rank > bestRank || (rank == bestRank && compareHighCardsSlice(combo, bestCards) > 0) {
-			bestRank = rank
+	for _, combo := range combinations(all, 5) {
+		r := evalFiveCardHand(combo)
+		if r > bestRank || (r == bestRank && compareHighCardsSlice(combo, bestCards) > 0) {
+			bestRank = r
 			bestCards = make([]*Card, 5)
 			copy(bestCards, combo)
 		}
 	}
+	return bestRank, bestCards
+}
 
-	p.handRank = bestRank
-	p.bestHand = bestCards
+// EvalBestHand 全7枚からベスト5枚を評価し、結果をプレイヤーに記録する。
+func (p *SevenCardStudPlayer) EvalBestHand() int {
+	// **判定は PeekBestHand が唯一の出どころ。**同じ探索を2つ持つと、片方だけ
+	// 直したときに「表示とショーダウンで役が違う」ずれになる。
+	p.handRank, p.bestHand = p.PeekBestHand()
 	return p.handRank
 }
 

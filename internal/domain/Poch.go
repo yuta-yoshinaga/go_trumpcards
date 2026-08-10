@@ -173,7 +173,7 @@ type Poch struct {
 	dealWinner  int
 	gameEndFlag bool
 	winnerIdx   int
-	actionLog   []*ActionLogEntry
+	actionLogBase
 }
 
 // NewPoch はコンストラクタ。
@@ -485,6 +485,27 @@ func (p *Poch) playable(card *Card) bool {
 	return card.GetDesign() == p.stopsSuit && pochRankOrder(card.GetValue()) == p.stopsRank+1
 }
 
+// PochValidPlays は player が今出せる手札インデックスを返す。
+//
+// **判定は playable をそのまま呼ぶ。**規則を書き写すと、示した手が拒否される
+// ようになる (#4933)。ストップス以外・手番でない場合は nil。
+func (p *Poch) PochValidPlays(player int) []int {
+	if p.phase != PochPhaseStops || player != p.currentIdx {
+		return nil
+	}
+	pl := p.GetPlayer(player)
+	if pl == nil {
+		return nil
+	}
+	out := make([]int, 0, pl.GetCardsSize())
+	for i := range pl.GetCardsSize() {
+		if p.playable(pl.GetCard(i)) {
+			out = append(out, i)
+		}
+	}
+	return out
+}
+
 // advanceStops は次に出せる人へ手番を回す。誰も次を持っていなければ stop で、
 // **最後に最高札を出した人**が好きな札から再開する。
 func (p *Poch) advanceStops(lastPlayer int) {
@@ -648,10 +669,7 @@ func (p *Poch) GetPlayers() []*PochPlayer { return p.players }
 
 // GetPlayer は idx のプレイヤーを返す。
 func (p *Poch) GetPlayer(idx int) *PochPlayer {
-	if idx < 0 || idx >= len(p.players) {
-		return nil
-	}
-	return p.players[idx]
+	return getPlayer(p.players, idx)
 }
 
 // GetPhase は現在のフェーズを返す。
@@ -708,9 +726,6 @@ func (p *Poch) GetConfig() PochConfig { return p.config }
 // SetConfig はゲーム設定をセットする。
 func (p *Poch) SetConfig(c PochConfig) { p.config = c }
 
-// GetActionLog は棋譜を返す。
-func (p *Poch) GetActionLog() []*ActionLogEntry { return p.actionLog }
-
 // SetPhaseForTest はテスト用にフェーズを差し替える。
 func (p *Poch) SetPhaseForTest(ph PochPhase) { p.phase = ph }
 
@@ -734,13 +749,7 @@ func (p *Poch) ResolveStakingForTest() { p.resolveStaking() }
 
 // addLog は棋譜に 1 件追加する。
 func (p *Poch) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	p.actionLog = append(p.actionLog, &ActionLogEntry{
-		TurnNumber: len(p.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	p.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // pochJSON is the JSON wire format for Poch.

@@ -27,7 +27,7 @@ func (pgc *PaiGowCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
 		func(_ []string) string { return pgc.pi.Reset() },
-		[]string{"b", "bet", "s", "set", "log", "l"},
+		[]string{"b", "bet", "s", "set", "a", "auto", "h", "hint", "log", "l"},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bet":
@@ -49,6 +49,10 @@ func (pgc *PaiGowCuiController) Exec(command string) string {
 					return errMsg, true
 				}
 				return pgc.pi.SetHands(low0, low1), true
+			case "a", "auto":
+				return pgc.pi.AutoSetHands(), true
+			case "h", "hint":
+				return pgc.pi.Hint(), true
 			default:
 				return handleCuiLog(cmd, pgc.pi.ActionLog)
 			}

@@ -57,6 +57,17 @@ func (p *BeloteCuiPresenter) Output(b interfaces.BeloteGame, lastErr error) stri
 			"t0", strconv.Itoa(b.GetTeamScore(0)),
 			"t1", strconv.Itoa(b.GetTeamScore(1))) + "\n")
 
+		// **20 点規模のボーナスに気づけない。**Web は専用バッジと読み上げまで
+		// 用意しているのに、CUI は累計点しか出しておらず、Belote/Rebelote が
+		// 成立したこと自体が伝わっていなかった (#4913)。
+		for team := range domain.BeloteTeamCnt {
+			if bonus := b.GetRoundBeloteBonus(team); bonus > 0 {
+				out.WriteString(i18n.Tf("belote.beloteBonusLine",
+					"team", strconv.Itoa(team),
+					"points", strconv.Itoa(bonus)) + "\n")
+			}
+		}
+
 		for i := 0; i < b.GetPlayerCnt(); i++ {
 			out.WriteString(belotePlayerStr(b.GetPlayer(i), i))
 		}

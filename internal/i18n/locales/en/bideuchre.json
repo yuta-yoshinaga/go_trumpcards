@@ -20,6 +20,8 @@
   "trumpMenuTitle": "Trump choices:",
   "gameEnd": "Game over! Team {{team}} wins!",
   "promptBid": "Bidding: {{name}}",
+  "bidRange": "Legal bids: {{min}}-{{max}}",
+  "bidRangeNone": "No higher bid is possible; pass only",
   "promptBidHelp": "b <3-6> ... bid (three is the floor; you must beat the standing bid, but THE DEALER MAY EQUAL IT) / ps ... pass",
   "promptTrump": "Naming trump: {{name}}",
   "promptTrumpHelp": "t <0-5> ... name trump (AT NT LOW THE RANKING REVERSES and the nine is highest)",

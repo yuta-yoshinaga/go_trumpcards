@@ -45,7 +45,11 @@
     "selectTwo": "Select 2 natural cards from your hand matching the top discard",
     "frozen": "Frozen: wild cards cannot substitute for naturals",
     "selectOneMore": "Select one more card",
-    "tooMany": "Select at most 2 cards"
+    "tooMany": "Select at most 2 cards",
+    "wildInPair": "Wild cards (jokers and twos) cannot be used — pick two natural cards",
+    "rankMismatch": "Both cards must match the rank on top of the discard pile",
+    "pileEmpty": "The discard pile is empty",
+    "blackThreeTop": "A black three on top blocks taking the pile"
   },
   "frozenIndicator": "❄️ Frozen",
   "selectMeld": "Select cards to meld",

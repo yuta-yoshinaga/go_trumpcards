@@ -9,6 +9,8 @@
   "waste": "Waste",
   "moveCount": "Moves",
   "score": "Score",
+  "playableSummary": "Playable now: {{count}}",
+  "drawRecommended": "Draw recommended",
   "bestScore": "Best",
   "newBest": "New best! {{score}} pts",
   "clears": "Clears {{wins}}/{{plays}}",

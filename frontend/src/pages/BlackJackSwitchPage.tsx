@@ -10,14 +10,17 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { KbdBadge } from '../components/KbdBadge';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { badgeErrorColors, badgeSuccessColors, badgeWarningColors } from '../styles/badgeStyles';
@@ -49,6 +52,9 @@ function BlackJackSwitchPageContent() {
   const [alwaysPreview, setAlwaysPreview] = useState(false);
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec: execApi, retry } = useGameApi(blackjackswitchApi.exec);
+  // **ヒントは前から算出されていたが、ページが一度も読んでいなかった (#4708)。**
+  // useGameHint に blackjackswitch の factory は登録済みで、結果を捨てていた。
+  const { hint, hintEnabled, setHintEnabled } = useGameHint('blackjackswitch', state);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('blackjackswitch');
   const cliConfig: CliGameConfig<BlackJackSwitchResponse, Parameters<typeof blackjackswitchApi.exec>> = useMemo(
@@ -106,13 +112,7 @@ function BlackJackSwitchPageContent() {
   );
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading });
 
-  if (!state) {
-    return (
-      <div className={`flex-1 flex items-center justify-center ${gameTheme.blackjackswitch.bg}`}>
-        <div className="text-ds-text-primary">Loading...</div>
-      </div>
-    );
-  }
+  if (!state) return <GameSkeleton gameKey="blackjackswitch" layout={{ kind: 'casino-table', sections: [5, 2, 2] }} />;
 
   const phaseName = isBetPhase
     ? t('phase.bet')
@@ -163,6 +163,13 @@ function BlackJackSwitchPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+
+            <label className="flex items-center gap-1 text-ds-text-primary text-xs justify-center mb-2 cursor-pointer min-h-[44px]">
+              <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
+              {tc('hint.toggle', { ns: 'tutorial' })}
+            </label>
+
+            {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
 
             {isBetPhase && <p className="text-ds-text-muted text-center text-sm py-3">{t('guide.bet')}</p>}
             {isSwitchPhase && <p className="text-ds-text-muted text-center text-sm py-2">{t('guide.switch')}</p>}

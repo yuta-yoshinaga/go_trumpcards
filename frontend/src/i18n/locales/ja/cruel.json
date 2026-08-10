@@ -57,5 +57,6 @@
       "usageMove": "使い方: m <移動元列> <移動先列|f>",
       "unknownCommand": "不明なコマンド: {{cmd}}"
     }
-  }
+  },
+  "foundationProgress": "進捗: {{total}}/52"
 }

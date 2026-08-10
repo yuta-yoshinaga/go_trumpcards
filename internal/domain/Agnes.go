@@ -51,8 +51,8 @@ type Agnes struct {
 	baseRank   int
 	phase      AgnesPhase
 	moveCount  int
-	actionLog  []*ActionLogEntry
-	history    []*agnesSnapshot
+	actionLogBase
+	history []*agnesSnapshot
 }
 
 // agnesSnapshot アンドゥ用スナップショット
@@ -263,6 +263,21 @@ func (a *Agnes) GetHint() *AgnesHint {
 	return nil
 }
 
+// IsStalemate は合法手が 1 つも無いかを返す。ストックが残っていれば false。
+//
+// **判定は GetHint をそのまま使う。**ヒントが探す手（タブロー→ファンデーション、
+// タブロー→タブロー）が合法手の全てなので、別のスキャンを書くと「手詰まり」と
+// 言いながらヒントが手を返す状態が作れる (#4830)。
+func (a *Agnes) IsStalemate() bool {
+	if a.phase != AgnesPhasePlaying {
+		return false
+	}
+	if len(a.stock) > 0 {
+		return false
+	}
+	return a.GetHint() == nil
+}
+
 // --- Getters / Setters ---
 
 // GetPhase フェーズ取得
@@ -282,9 +297,6 @@ func (a *Agnes) GetTableau() [AgnesTableauCnt][]*AgnesTableauCard { return a.tab
 
 // GetFoundation ファンデーション取得
 func (a *Agnes) GetFoundation() [AgnesFoundationCnt][]*Card { return a.foundation }
-
-// GetActionLog 棋譜取得
-func (a *Agnes) GetActionLog() []*ActionLogEntry { return a.actionLog }
 
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (a *Agnes) GetGameEndFlag() bool { return a.phase != AgnesPhasePlaying }
@@ -325,12 +337,7 @@ func (a *Agnes) CanUndo() bool {
 
 // UndoN n回連続アンドゥ
 func (a *Agnes) UndoN(n int) error {
-	for i := 0; i < n; i++ {
-		if err := a.Undo(); err != nil {
-			return fmt.Errorf("undo step %d failed: %w", i+1, err)
-		}
-	}
-	return nil
+	return undoN(a, n)
 }
 
 // --- Private helpers ---
@@ -414,13 +421,7 @@ func (a *Agnes) restoreSnapshot(snap *agnesSnapshot) {
 }
 
 func (a *Agnes) appendLog(actionType, detail string, cards []*Card) {
-	a.actionLog = append(a.actionLog, &ActionLogEntry{
-		TurnNumber: a.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	a.appendLogAt(a.moveCount, 0, actionType, detail, cards)
 }
 
 // agnesJSON is the JSON wire format for Agnes.

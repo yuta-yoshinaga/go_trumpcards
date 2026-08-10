@@ -67,6 +67,12 @@ func (_m *MockDurakInteractor) ActionLog() string {
 	return ret.Get(0).(string)
 }
 
+// Hint モック
+func (_m *MockDurakInteractor) Hint() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
 // Snapshot モック
 func (_m *MockDurakInteractor) Snapshot() ([]byte, error) {
 	ret := _m.Called()

@@ -41,13 +41,13 @@ type FreeCellHint struct {
 
 // FreeCell フリーセルゲームクラス
 type FreeCell struct {
-	trumpCards  *TrumpCards
-	tableau     [FreeCellTableauCnt][]*Card
-	freeCells   [FreeCellCellCnt]*Card
-	foundation  [FreeCellFoundationCnt][]*Card
-	phase       FreeCellPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	tableau    [FreeCellTableauCnt][]*Card
+	freeCells  [FreeCellCellCnt]*Card
+	foundation [FreeCellFoundationCnt][]*Card
+	phase      FreeCellPhase
+	moveCount  int
+	actionLogBase
 	history     []*freeCellSnapshot
 	isStalemate bool
 	// sameSuit が true のときタブロー積み上げ条件を「同じスートの降順」にする
@@ -564,25 +564,12 @@ func (f *FreeCell) CanUndo() bool {
 
 // UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。膠着状態でなければ0、脱出不可なら-1。
 func (f *FreeCell) UndoToEscape() int {
-	if !f.isStalemate {
-		return 0
-	}
-	for i := len(f.history) - 1; i >= 0; i-- {
-		if !f.history[i].isStalemate {
-			return len(f.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(f.isStalemate, f.history, func(s *freeCellSnapshot) bool { return s.isStalemate })
 }
 
 // UndoN n回連続でアンドゥを実行する。
 func (f *FreeCell) UndoN(n int) error {
-	for i := 0; i < n; i++ {
-		if err := f.Undo(); err != nil {
-			return fmt.Errorf("undo step %d failed: %w", i+1, err)
-		}
-	}
-	return nil
+	return undoN(f, n)
 }
 
 // --- State getters/setters ---
@@ -604,9 +591,6 @@ func (f *FreeCell) GetFreeCells() [FreeCellCellCnt]*Card { return f.freeCells }
 
 // GetFoundation ファンデーション取得
 func (f *FreeCell) GetFoundation() [FreeCellFoundationCnt][]*Card { return f.foundation }
-
-// GetActionLog 棋譜取得
-func (f *FreeCell) GetActionLog() []*ActionLogEntry { return f.actionLog }
 
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (f *FreeCell) GetGameEndFlag() bool { return f.phase != FreeCellPhasePlaying }
@@ -656,12 +640,7 @@ func (f *FreeCell) tableauStackable(upper, lower *Card) bool {
 
 // canPlaceOnFoundation ファンデーションにカードを置けるか判定
 func (f *FreeCell) canPlaceOnFoundation(card *Card, fIdx int) bool {
-	pile := f.foundation[fIdx]
-	if len(pile) == 0 {
-		return card.GetValue() == 1
-	}
-	topCard := pile[len(pile)-1]
-	return card.GetDesign() == topCard.GetDesign() && card.GetValue() == topCard.GetValue()+1
+	return canPlaceOnFoundationPile(f.foundation[fIdx], card)
 }
 
 // isAlternateColor 交互の色かどうか判定
@@ -683,6 +662,26 @@ func (f *FreeCell) isValidTableauSequence(cards []*Card) bool {
 		}
 	}
 	return true
+}
+
+// GetMaxMovableCards はいま一度に動かせる最大枚数を返す (#4777)。
+//
+// **空き列を移動先にすると上限は下がる。**その列自身は「経由地」に使えない
+// ため。移動先を選ぶ前の一般的な上限がこちらで、空き列に置くときの上限は
+// GetMaxMovableCardsToEmptyColumn。
+func (f *FreeCell) GetMaxMovableCards() int {
+	return f.maxMovableCards(-1)
+}
+
+// GetMaxMovableCardsToEmptyColumn は空き列へ動かすときの上限を返す。
+// 空き列が無いときは 0。
+func (f *FreeCell) GetMaxMovableCardsToEmptyColumn() int {
+	for i := 0; i < FreeCellTableauCnt; i++ {
+		if len(f.tableau[i]) == 0 {
+			return f.maxMovableCards(i)
+		}
+	}
+	return 0
 }
 
 // maxMovableCards 移動可能な最大カード枚数を計算
@@ -756,13 +755,7 @@ func (f *FreeCell) checkStalemate() {
 
 // appendLog 棋譜エントリを追加
 func (f *FreeCell) appendLog(actionType, detail string, cards []*Card) {
-	f.actionLog = append(f.actionLog, &ActionLogEntry{
-		TurnNumber: f.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	f.appendLogAt(f.moveCount, 0, actionType, detail, cards)
 }
 
 // freeCellJSON is the JSON wire format for FreeCell.

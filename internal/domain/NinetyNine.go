@@ -86,7 +86,7 @@ type NinetyNine struct {
 	trumpSuit        int // 切り札スート (CardDesignSpade..Diamond)
 	gameEndFlag      bool
 	winnerIdx        int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewNinetyNine コンストラクタ
@@ -164,7 +164,7 @@ func (o *NinetyNine) PlayerBid(buryIndices []int) error {
 		return ErrWrongPhase
 	}
 
-	humanIdx := o.findHumanIdx()
+	humanIdx := findHumanIdx(o.players)
 	if humanIdx < 0 || o.bidPlayerIdx != humanIdx {
 		return ErrNotHumanTurn
 	}
@@ -261,7 +261,7 @@ func (o *NinetyNine) ResolveTrick() {
 
 	o.players[winnerIdx].AddTrick(trickCards)
 
-	winnerName := o.playerName(winnerIdx)
+	winnerName := playerName(o.players, winnerIdx)
 	o.appendLog(winnerIdx, "trick_win", fmt.Sprintf("%s wins trick %d", winnerName, o.trickNumber), trickCards)
 
 	o.leadPlayerIdx = winnerIdx
@@ -316,11 +316,11 @@ func (o *NinetyNine) ScoreRound() {
 		if tricks == bid {
 			p.SetRoundScore(10 + bid + bonus)
 			o.appendLog(i, "bid_success", fmt.Sprintf("%s declared %d, took %d: +%d (bonus +%d)",
-				o.playerName(i), bid, tricks, p.GetRoundScore(), bonus), nil)
+				playerName(o.players, i), bid, tricks, p.GetRoundScore(), bonus), nil)
 		} else {
 			p.SetRoundScore(0)
 			o.appendLog(i, "bid_fail", fmt.Sprintf("%s declared %d, took %d: 0",
-				o.playerName(i), bid, tricks), nil)
+				playerName(o.players, i), bid, tricks), nil)
 		}
 	}
 
@@ -330,7 +330,7 @@ func (o *NinetyNine) ScoreRound() {
 
 	for i := range NinetyNinePlayerCnt {
 		o.appendLog(i, "cumulative_score", fmt.Sprintf("%s: total=%d",
-			o.playerName(i), o.players[i].GetCumulativeScore()), nil)
+			playerName(o.players, i), o.players[i].GetCumulativeScore()), nil)
 	}
 
 	// ゲーム終了判定: いずれかが TargetScore 以上に達したら終了
@@ -420,10 +420,7 @@ func (o *NinetyNine) GetPlayerCnt() int { return len(o.players) }
 
 // GetPlayer プレイヤー取得
 func (o *NinetyNine) GetPlayer(i int) *NinetyNinePlayer {
-	if i < 0 || i >= len(o.players) {
-		return nil
-	}
-	return o.players[i]
+	return getPlayer(o.players, i)
 }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
@@ -443,18 +440,12 @@ func (o *NinetyNine) GetTargetScore() int { return o.config.TargetScore }
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (o *NinetyNine) IsHumanTurn() bool {
-	if o.currentPlayerIdx < 0 || o.currentPlayerIdx >= len(o.players) {
-		return false
-	}
-	return o.players[o.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(o.players, o.currentPlayerIdx)
 }
 
 // IsHumanBidTurn 現在のビッド手番が人間かどうか
 func (o *NinetyNine) IsHumanBidTurn() bool {
-	if o.bidPlayerIdx < 0 || o.bidPlayerIdx >= len(o.players) {
-		return false
-	}
-	return o.players[o.bidPlayerIdx].GetIsHuman()
+	return isHumanTurn(o.players, o.bidPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -463,25 +454,12 @@ func (o *NinetyNine) GetConfig() NinetyNineConfig { return o.config }
 // SetConfig 設定変更
 func (o *NinetyNine) SetConfig(cfg NinetyNineConfig) { o.config = cfg }
 
-// GetActionLog 棋譜取得
-func (o *NinetyNine) GetActionLog() []*ActionLogEntry { return o.actionLog }
-
 // GetValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (o *NinetyNine) GetValidPlayIndices(playerIdx int) []int {
 	return o.getValidPlayIndices(playerIdx)
 }
 
 // --- Private methods ---
-
-// findHumanIdx 人間プレイヤーのインデックスを返す (-1=なし)
-func (o *NinetyNine) findHumanIdx() int {
-	for i, p := range o.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
 
 // deal カードを配り、切り札を決める
 func (o *NinetyNine) deal() {
@@ -541,7 +519,7 @@ func (o *NinetyNine) applyBury(playerIdx int, descIndices []int) {
 	}
 	player.SetBuried(buried)
 	player.SetBid(bid)
-	o.appendLog(playerIdx, "bid", fmt.Sprintf("%s buries 3 and declares %d", o.playerName(playerIdx), bid), buried)
+	o.appendLog(playerIdx, "bid", fmt.Sprintf("%s buries 3 and declares %d", playerName(o.players, playerIdx), bid), buried)
 }
 
 // advanceBid ビッドプレイヤーを次に進める
@@ -575,7 +553,7 @@ func (o *NinetyNine) playCard(playerIdx int, card *Card) {
 		Card:      card,
 	})
 
-	o.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", o.playerName(playerIdx), cardStr(card)), []*Card{card})
+	o.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(o.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(o.currentTrick) == NinetyNinePlayerCnt {
 		o.phase = NinetyNinePhaseTrickEnd
@@ -586,25 +564,7 @@ func (o *NinetyNine) playCard(playerIdx int, card *Card) {
 
 // validatePlay カードのプレイが有効か検証する (must-follow)
 func (o *NinetyNine) validatePlay(playerIdx int, card *Card) error {
-	if len(o.currentTrick) == 0 {
-		return nil
-	}
-	leadSuit := o.currentTrick[0].Card.GetDesign()
-	if card.GetDesign() != leadSuit && o.playerHasSuit(playerIdx, leadSuit) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
-	}
-	return nil
-}
-
-// playerHasSuit プレイヤーが特定のスートを持っているか
-func (o *NinetyNine) playerHasSuit(playerIdx int, design int) bool {
-	p := o.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return validateFollowSuit(o.currentTrick, o.players, playerIdx, card)
 }
 
 // trickWinner トリックの勝者を決定する
@@ -633,7 +593,7 @@ func (o *NinetyNine) determineWinner() {
 		}
 	}
 	o.winnerIdx = best
-	o.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", o.playerName(o.winnerIdx)), nil)
+	o.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(o.players, o.winnerIdx)), nil)
 }
 
 // ninetyNineBeats プレイヤー a がプレイヤー b に勝るか (タイブレーク込み)
@@ -665,39 +625,14 @@ func ninetyNineSortHand(p *NinetyNinePlayer) {
 	})
 }
 
-// playerName プレイヤー名を返す
-func (o *NinetyNine) playerName(idx int) string {
-	if idx < 0 || idx >= len(o.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if o.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (o *NinetyNine) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	o.actionLog = append(o.actionLog, &ActionLogEntry{
-		TurnNumber: len(o.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (o *NinetyNine) getValidPlayIndices(playerIdx int) []int {
-	player := o.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return o.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(o.players[playerIdx], func(c *Card) bool { return o.validatePlay(playerIdx, c) == nil })
 }
 
 // GetHint ヒントを取得する
 func (o *NinetyNine) GetHint() *NinetyNineHint {
-	humanIdx := o.findHumanIdx()
+	humanIdx := findHumanIdx(o.players)
 	if humanIdx < 0 {
 		return nil
 	}

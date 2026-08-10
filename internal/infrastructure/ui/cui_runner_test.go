@@ -1,8 +1,14 @@
 package ui
 
 import (
+	"bytes"
+	"os"
+	"strings"
 	"syscall"
 	"testing"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // closeSpyReader is a LineReader whose Close records that it ran, so tests can
@@ -58,5 +64,62 @@ func TestRunSignalWatcher_NormalExitDoesNotRunCleanup(t *testing.T) {
 	stop()
 	if reader.closed != 0 {
 		t.Errorf("cleanup ran on normal exit (%d times); it should only run on a signal", reader.closed)
+	}
+}
+
+// captureStderr runs fn with os.Stderr redirected and returns what it wrote.
+func captureStderr(t *testing.T, fn func()) string {
+	t.Helper()
+	r, w, err := os.Pipe()
+	if err != nil {
+		t.Fatalf("os.Pipe: %v", err)
+	}
+	orig := os.Stderr
+	os.Stderr = w
+	defer func() { os.Stderr = orig }()
+
+	fn()
+	_ = w.Close()
+
+	var buf bytes.Buffer
+	if _, err := buf.ReadFrom(r); err != nil {
+		t.Fatalf("read: %v", err)
+	}
+	return buf.String()
+}
+
+// printResult must actually apply the stderr colour. The colour package's own
+// tests prove RedStderr colours; only this proves printResult calls it, which
+// is the wiring that was missing entirely (#5194).
+func TestPrintResult_ColoursErrorsOnStderr(t *testing.T) {
+	origStderr := color.NoColorStderr()
+	t.Cleanup(func() { color.SetStderrColor(!origStderr) })
+
+	color.SetStderrColor(true)
+	got := captureStderr(t, func() { printResult(i18n.MarkError("bad command")) })
+
+	if !strings.Contains(got, "\033[31m") {
+		t.Errorf("stderr output should carry the red escape code, got %q", got)
+	}
+	if !strings.Contains(got, "bad command") {
+		t.Errorf("stderr output should contain the message, got %q", got)
+	}
+}
+
+// With colour disabled the same path must emit no escape codes at all -- the
+// other half of the gate, so neither "always plain" nor "always coloured" can
+// pass unnoticed.
+func TestPrintResult_PlainErrorsWhenColourDisabled(t *testing.T) {
+	origStderr := color.NoColorStderr()
+	t.Cleanup(func() { color.SetStderrColor(!origStderr) })
+
+	color.SetStderrColor(false)
+	got := captureStderr(t, func() { printResult(i18n.MarkError("bad command")) })
+
+	if strings.Contains(got, "\033[") {
+		t.Errorf("stderr output should carry no escape codes, got %q", got)
+	}
+	if !strings.Contains(got, "bad command") {
+		t.Errorf("stderr output should still contain the message, got %q", got)
 	}
 }

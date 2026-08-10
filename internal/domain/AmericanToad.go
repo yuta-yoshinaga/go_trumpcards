@@ -99,17 +99,17 @@ type AmericanToadHint struct {
 // 主要な実装と bvssolitaire の記述に合わせ、任意の連番グループを動かせるものとした。
 // このリポジトリの他のソリティアとも操作感が揃う。
 type AmericanToad struct {
-	trumpCards  *TrumpCards
-	reserve     []*Card
-	tableau     [AmericanToadTableauCnt][]*AmericanToadTableauCard
-	foundation  [AmericanToadFoundationCnt][]*Card
-	stock       []*Card
-	waste       []*Card
-	baseRank    int
-	passesUsed  int
-	phase       AmericanToadPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	reserve    []*Card
+	tableau    [AmericanToadTableauCnt][]*AmericanToadTableauCard
+	foundation [AmericanToadFoundationCnt][]*Card
+	stock      []*Card
+	waste      []*Card
+	baseRank   int
+	passesUsed int
+	phase      AmericanToadPhase
+	moveCount  int
+	actionLogBase
 	history     []*americanToadSnapshot
 	isStalemate bool
 }
@@ -525,31 +525,12 @@ func (at *AmericanToad) CanUndo() bool { return len(at.history) > 0 }
 
 // UndoN n 手戻す
 func (at *AmericanToad) UndoN(n int) error {
-	if n <= 0 {
-		return errors.New("n must be positive")
-	}
-	if n > len(at.history) {
-		return errors.New("not enough history")
-	}
-	for range n {
-		if err := at.Undo(); err != nil {
-			return err
-		}
-	}
-	return nil
+	return undoNChecked(at, n, len(at.history))
 }
 
 // UndoToEscape 膠着状態から抜けるのに必要なアンドゥ回数（膠着でなければ 0、不可なら -1）
 func (at *AmericanToad) UndoToEscape() int {
-	if !at.isStalemate {
-		return 0
-	}
-	for i := len(at.history) - 1; i >= 0; i-- {
-		if !at.history[i].isStalemate {
-			return len(at.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(at.isStalemate, at.history, func(s *americanToadSnapshot) bool { return s.isStalemate })
 }
 
 // AllFaceUp 常に全札が表向き
@@ -589,9 +570,6 @@ func (at *AmericanToad) CanRedeal() bool {
 	return at.phase == AmericanToadPhasePlaying &&
 		len(at.stock) == 0 && len(at.waste) > 0 && at.passesUsed < AmericanToadMaxPasses-1
 }
-
-// GetActionLog 棋譜取得
-func (at *AmericanToad) GetActionLog() []*ActionLogEntry { return at.actionLog }
 
 // GetGameEndFlag ゲーム終了フラグ
 func (at *AmericanToad) GetGameEndFlag() bool { return at.phase != AmericanToadPhasePlaying }
@@ -655,17 +633,12 @@ func (at *AmericanToad) popReserve() {
 
 // wasteTop 捨て札の一番上（空なら nil）
 func (at *AmericanToad) wasteTop() *Card {
-	if len(at.waste) == 0 {
-		return nil
-	}
-	return at.waste[len(at.waste)-1]
+	return discardTop(at.waste)
 }
 
 // popWaste 捨て札の一番上を取り除く
 func (at *AmericanToad) popWaste() {
-	if len(at.waste) > 0 {
-		at.waste = at.waste[:len(at.waste)-1]
-	}
+	at.waste = dropLast(at.waste)
 }
 
 // tableauTop 列の一番上（空なら nil）
@@ -762,14 +735,7 @@ func (at *AmericanToad) fillEmptyColumnsFromReserve() {
 
 // afterMove 手数・棋譜・終了判定をまとめて進める
 func (at *AmericanToad) afterMove(actionType, detail string, card *Card) {
-	at.moveCount++
-	var cards []*Card
-	if card != nil {
-		cards = []*Card{card}
-	}
-	at.appendLog(actionType, detail, cards)
-	at.checkGameClear()
-	at.checkStalemate()
+	afterMove(&at.moveCount, at, actionType, detail, card)
 }
 
 // checkGameClear 8 つの基礎札がすべて 13 枚になったか
@@ -815,13 +781,7 @@ func (at *AmericanToad) takeSnapshot() {
 
 // appendLog 棋譜エントリを追加
 func (at *AmericanToad) appendLog(actionType, detail string, cards []*Card) {
-	at.actionLog = append(at.actionLog, &ActionLogEntry{
-		TurnNumber: at.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	at.appendLogAt(at.moveCount, 0, actionType, detail, cards)
 }
 
 // americanToadJSON is the JSON wire format for AmericanToad.

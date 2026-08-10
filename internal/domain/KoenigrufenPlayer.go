@@ -18,9 +18,7 @@ func NewKoenigrufenPlayer(isHuman bool) *KoenigrufenPlayer {
 
 // ResetRound ラウンドをリセット (トリック・手札・終了状態を初期化)
 func (p *KoenigrufenPlayer) ResetRound() {
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayerRound(p)
 }
 
 // koenigrufenPlayerJSON is the JSON wire format for KoenigrufenPlayer.

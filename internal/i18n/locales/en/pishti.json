@@ -13,5 +13,7 @@
   "scoreEntry": "  {{name}}: {{score}} pts",
   "promptCurrentTurn": "Turn: {{name}}",
   "promptHelp": "p <hand> to play a card (capture the pile by matching rank or with a Jack)",
-  "result.scores": "Game over. Scores: {{scores}}"
+  "result.scores": "Game over. Scores: {{scores}}",
+  "provisional": "{{name}} provisional: {{score}}",
+  "provisionalNote": "Provisional totals count only pisti bonuses and most-cards (+3); card points are added at scoring"
 }

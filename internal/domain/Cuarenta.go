@@ -58,6 +58,20 @@ const (
 // CuarentaTeamOf 席インデックスからチーム番号を返す (i % 2)。
 func CuarentaTeamOf(i int) int { return i % 2 }
 
+// GetTeamCapturedCount はチームの捕獲枚数合計を返す。
+//
+// **合算は 1 箇所に置く。**精算・CUI・Web で別々に足すと、席とチームの対応を
+// 変えたときに片方だけ古いままになる (#4893)。
+func (g *Cuarenta) GetTeamCapturedCount(team int) int {
+	total := 0
+	for i, p := range g.players {
+		if p != nil && CuarentaTeamOf(i) == team {
+			total += p.CapturedCount()
+		}
+	}
+	return total
+}
+
 // CuarentaAction はプレイヤー 1 ターン分の行動記録。
 type CuarentaAction struct {
 	PlayerIdx     int     // 行動したプレイヤーインデックス
@@ -87,10 +101,10 @@ type cuarentaRoundState struct {
 	lastLaidCard   *Card           // 直前の手番が「置いた」カード (caída 判定用、捕獲時は nil)
 	humanAction    *CuarentaAction // 人間の最後の行動
 	cpuActions     []*CuarentaAction
-	actionLog      []*ActionLogEntry
-	gameEndFlag    bool
-	roundWinners   []int // ゲーム終了時の勝者チーム
-	lastDetail     *CuarentaRoundDetail
+	actionLogBase
+	gameEndFlag  bool
+	roundWinners []int // ゲーム終了時の勝者チーム
+	lastDetail   *CuarentaRoundDetail
 }
 
 // Cuarenta はクアレンタゲームの状態を保持する集約ルート。
@@ -140,7 +154,7 @@ func (g *Cuarenta) Reset() {
 	g.round = cuarentaRoundState{
 		phase:          CuarentaPhasePlay,
 		lastCaptureIdx: -1,
-		actionLog:      make([]*ActionLogEntry, 0),
+		actionLogBase:  actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 	}
 	g.startRound()
 }
@@ -197,12 +211,7 @@ func (g *Cuarenta) dealNextPack() {
 
 // allHandsEmpty は全員の手札が空か。
 func (g *Cuarenta) allHandsEmpty() bool {
-	for _, p := range g.players {
-		if p.GetCardsSize() > 0 {
-			return false
-		}
-	}
-	return true
+	return allHandsEmpty(g.players)
 }
 
 // PlayerPlay は人間プレイヤーが手札 handIdx を出す。
@@ -395,8 +404,8 @@ func (g *Cuarenta) scoreRound() *CuarentaRoundDetail {
 		Gained:        make(map[int]int),
 		MostCards:     -1,
 	}
-	for i, p := range g.players {
-		det.CapturedCount[CuarentaTeamOf(i)] += p.CapturedCount()
+	for t := 0; t < CuarentaTeamCnt; t++ {
+		det.CapturedCount[t] = g.GetTeamCapturedCount(t)
 	}
 	// 即時加点の内訳をログ用に再構成 (humanAction + cpuActions では網羅できないため
 	// 表示は概算。Gained は最多取りボーナスのみを担当する)。
@@ -415,25 +424,12 @@ func (g *Cuarenta) scoreRound() *CuarentaRoundDetail {
 
 // removeTableCardsByIndex は降順に並び替えてから tableCards を削除する。
 func (g *Cuarenta) removeTableCardsByIndex(idxs []int) {
-	if len(idxs) == 0 {
-		return
-	}
-	for _, idx := range sortIndicesDescending(idxs) {
-		if idx >= 0 && idx < len(g.round.tableCards) {
-			g.round.tableCards = append(g.round.tableCards[:idx], g.round.tableCards[idx+1:]...)
-		}
-	}
+	g.round.tableCards = removeIndices(g.round.tableCards, idxs)
 }
 
 // appendLog 棋譜にエントリを追加する。
 func (g *Cuarenta) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.round.actionLog = append(g.round.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.round.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.round.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // --- 状態アクセサ ---
@@ -457,10 +453,7 @@ func (g *Cuarenta) GetTableCards() []*Card { return g.round.tableCards }
 
 // GetPlayer プレイヤー取得。
 func (g *Cuarenta) GetPlayer(idx int) *CuarentaPlayer {
-	if idx < 0 || idx >= len(g.players) {
-		return nil
-	}
-	return g.players[idx]
+	return getPlayer(g.players, idx)
 }
 
 // GetPlayerCnt プレイヤー数取得。
@@ -681,7 +674,7 @@ func (g *Cuarenta) UnmarshalJSON(data []byte) error {
 		lastLaidCard:   j.LastLaidCard,
 		humanAction:    j.HumanAction,
 		cpuActions:     j.CpuActions,
-		actionLog:      j.ActionLog,
+		actionLogBase:  actionLogBase{actionLog: j.ActionLog},
 		gameEndFlag:    j.GameEndFlag,
 		roundWinners:   j.RoundWinners,
 		lastDetail:     j.LastDetail,

@@ -91,7 +91,7 @@ type Nap struct {
 	roundTricks      [NapPlayerCnt]int
 	gameEndFlag      bool
 	winnerPlayer     int // -1=未確定
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewNap コンストラクタ
@@ -219,9 +219,9 @@ func (g *Nap) applyBid(idx int, bid NapBid) error {
 	g.bids[idx] = bid
 	g.bidDone[idx] = true
 	if bid != NapBidPass {
-		g.appendLog(idx, "bid", fmt.Sprintf("%s bids %s", g.playerName(idx), napBidName(bid)), nil)
+		g.appendLog(idx, "bid", fmt.Sprintf("%s bids %s", playerName(g.players, idx), napBidName(bid)), nil)
 	} else {
-		g.appendLog(idx, "bid", fmt.Sprintf("%s passes", g.playerName(idx)), nil)
+		g.appendLog(idx, "bid", fmt.Sprintf("%s passes", playerName(g.players, idx)), nil)
 	}
 	for k := 1; k <= NapPlayerCnt; k++ {
 		ni := (idx + k) % NapPlayerCnt
@@ -247,7 +247,7 @@ func (g *Nap) resolveBidding() {
 	g.contract = bid
 	g.trumpSuit = g.longestSuit(idx)
 	g.appendLog(idx, "contract",
-		fmt.Sprintf("%s declares %s (trump %d)", g.playerName(idx), napBidName(bid), g.trumpSuit), nil)
+		fmt.Sprintf("%s declares %s (trump %d)", playerName(g.players, idx), napBidName(bid), g.trumpSuit), nil)
 	g.leadPlayerIdx = idx // declarer leads in Nap
 	g.currentPlayerIdx = g.leadPlayerIdx
 	g.phase = NapPhasePlay
@@ -255,19 +255,7 @@ func (g *Nap) resolveBidding() {
 
 // longestSuit プレイヤーが最も多く持つスートを返す。
 func (g *Nap) longestSuit(playerIdx int) int {
-	counts := map[int]int{}
-	p := g.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		counts[p.GetCard(i).GetDesign()]++
-	}
-	bestSuit, bestCnt := CardDesignSpade, -1
-	for _, suit := range []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond} {
-		if counts[suit] > bestCnt {
-			bestCnt = counts[suit]
-			bestSuit = suit
-		}
-	}
-	return bestSuit
+	return longestSuit(g.players[playerIdx])
 }
 
 // cpuChooseBid CPU の入札を選ぶ。高位札と最長スートの長さから目標トリック数を見積もる。
@@ -350,7 +338,7 @@ func (g *Nap) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Nap) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == NapPlayerCnt {
 		g.phase = NapPhaseTrickEnd
@@ -372,7 +360,7 @@ func (g *Nap) ResolveTrick() {
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.roundTricks[winnerIdx]++
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", g.playerName(winnerIdx), g.trickNumber), trickCards)
+		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= NapTrickCount {
@@ -453,7 +441,7 @@ func (g *Nap) checkGameEnd() {
 		g.gameEndFlag = true
 		g.winnerPlayer = leader
 		g.phase = NapPhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", g.playerName(leader)), nil)
+		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
 	}
 }
 
@@ -461,25 +449,7 @@ func (g *Nap) checkGameEnd() {
 
 // validatePlay マストフォローを検証する。
 func (g *Nap) validatePlay(playerIdx int, card *Card) error {
-	if len(g.currentTrick) == 0 {
-		return nil
-	}
-	leadSuit := g.currentTrick[0].Card.GetDesign()
-	if g.playerHasSuit(playerIdx, leadSuit) && card.GetDesign() != leadSuit {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
-	}
-	return nil
-}
-
-// playerHasSuit プレイヤーが指定スートのカードを持っているか。
-func (g *Nap) playerHasSuit(playerIdx, design int) bool {
-	p := g.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return validateFollowSuit(g.currentTrick, g.players, playerIdx, card)
 }
 
 // trickWinner トリックの勝者を決定する。切り札があれば最強切り札、なければ
@@ -522,10 +492,7 @@ func napCardStrength(value int) int {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す。
 func (g *Nap) getValidPlayIndices(playerIdx int) []int {
-	player := g.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return g.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(g.players[playerIdx], func(c *Card) bool { return g.validatePlay(playerIdx, c) == nil })
 }
 
 // --- Misc helpers ---
@@ -555,25 +522,9 @@ func napSortHand(p *NapPlayer) {
 	}
 }
 
-// playerName プレイヤー名を返す。
-func (g *Nap) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
 // indexOfPlayerInTrick currentTrick 内で playerIdx の札の位置を返す (-1=なし)。
 func (g *Nap) indexOfPlayerInTrick(playerIdx int) int {
-	for i, tc := range g.currentTrick {
-		if tc.PlayerIdx == playerIdx {
-			return i
-		}
-	}
-	return -1
+	return indexOfPlayerInTrick(g.currentTrick, playerIdx)
 }
 
 // trickTopRank 現在のトリック勝者の札のランクを返す。見つからない場合は極小値。
@@ -583,27 +534,6 @@ func (g *Nap) trickTopRank(winnerIdx int) int {
 		return -1 << 30
 	}
 	return g.napRank(g.currentTrick[idx].Card)
-}
-
-// findHumanIdx 人間プレイヤーのインデックス (-1=なし)。
-func (g *Nap) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
-// appendLog 棋譜にエントリを追加する。
-func (g *Nap) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- CPU AI ---
@@ -629,9 +559,9 @@ func (g *Nap) cpuPlaySmart(playerIdx int, valid []int) int {
 	isDeclarer := playerIdx == g.declarerIdx
 	if len(g.currentTrick) == 0 {
 		if isDeclarer {
-			return g.maxBy(player, valid, func(c *Card) int { return g.napRank(c) })
+			return pickHighest(player, valid, func(c *Card) int { return g.napRank(c) })
 		}
-		return g.minBy(player, valid, func(c *Card) int { return g.napRank(c) })
+		return pickLowest(player, valid, func(c *Card) int { return g.napRank(c) })
 	}
 	winnerIdx := g.trickWinner()
 	topRank := g.trickTopRank(winnerIdx)
@@ -640,35 +570,9 @@ func (g *Nap) cpuPlaySmart(playerIdx int, valid []int) int {
 	declarerWinning := winnerIdx == g.declarerIdx
 	wantWin := isDeclarer || !declarerWinning
 	if wantWin && len(winners) > 0 {
-		return g.minBy(player, winners, func(c *Card) int { return g.napRank(c) })
+		return pickLowest(player, winners, func(c *Card) int { return g.napRank(c) })
 	}
-	return g.minBy(player, valid, func(c *Card) int { return g.napRank(c) })
-}
-
-// minBy score が最小となるインデックスを返す。
-func (g *Nap) minBy(player *NapPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s < bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
-}
-
-// maxBy score が最大となるインデックスを返す。
-func (g *Nap) maxBy(player *NapPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s > bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
+	return pickLowest(player, valid, func(c *Card) int { return g.napRank(c) })
 }
 
 // napFilter 述語を満たすインデックスを抽出する。
@@ -686,7 +590,7 @@ func napFilter(indices []int, pred func(int) bool) []int {
 
 // GetHint 人間プレイヤーの手番における推奨プレイを返す。
 func (g *Nap) GetHint() *NapHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 || g.phase != NapPhasePlay || g.currentPlayerIdx != human {
 		return nil
 	}
@@ -756,6 +660,51 @@ func (g *Nap) SetLeadPlayerIdx(idx int) { g.leadPlayerIdx = idx }
 // GetDealerIdx ディーラーインデックス取得
 func (g *Nap) GetDealerIdx() int { return g.dealerIdx }
 
+// NapDeclarerProgress は宣言者の契約達成状況。
+type NapDeclarerProgress struct {
+	// Won は宣言者がこれまでに取ったトリック数。
+	Won int
+	// Needed は契約に必要なトリック数。
+	Needed int
+	// Remaining は残りのトリック数。
+	Remaining int
+	// Unreachable はもう契約に届かないことが確定したか。
+	Unreachable bool
+}
+
+// GetDeclarerProgress は宣言者の契約達成状況を返す。宣言者が決まっていない、
+// またはプレイ中/トリック終了以外のフェーズでは nil。
+//
+// **CUI は宣言者が何トリック取ったかを一切知らせていなかった (#4763)。**
+// Web は nap-declarer-progress で常時出している。CLI プレイヤーは自分で
+// トリック数を数えるしかなかった。
+//
+// Nap は1ラウンド5トリックで、契約値 (2/3/4/5) がそのまま必要トリック数。
+func (g *Nap) GetDeclarerProgress() *NapDeclarerProgress {
+	if g.phase != NapPhasePlay && g.phase != NapPhaseTrickEnd {
+		return nil
+	}
+	if g.declarerIdx < 0 || g.declarerIdx >= len(g.players) {
+		return nil
+	}
+	played := 0
+	for _, p := range g.players {
+		played += p.GetTrickCount()
+	}
+	remaining := NapTrickCount - played
+	if remaining < 0 {
+		remaining = 0
+	}
+	won := g.players[g.declarerIdx].GetTrickCount()
+	needed := int(g.contract)
+	return &NapDeclarerProgress{
+		Won: won, Needed: needed, Remaining: remaining,
+		// **「もう届かない」は残りを全部取っても足りないときだけ。**早すぎる
+		// 判定は、まだ勝てるラウンドを投げさせる。
+		Unreachable: needed-won > remaining,
+	}
+}
+
 // GetDeclarerIdx 宣言者インデックス取得 (-1=未確定)
 func (g *Nap) GetDeclarerIdx() int { return g.declarerIdx }
 
@@ -800,18 +749,12 @@ func (g *Nap) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *Nap) GetPlayer(i int) *NapPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // IsHumanTurn 現在の手番が人間か (プレイフェーズ)。
 func (g *Nap) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -819,9 +762,6 @@ func (g *Nap) GetConfig() NapConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *Nap) SetConfig(cfg NapConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *Nap) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetPlayableIndices プレイ可能なカードのインデックス一覧を返す。
 func (g *Nap) GetPlayableIndices(playerIdx int) []int {

@@ -67,7 +67,7 @@ type KnockoutWhist struct {
 	roundWinnerIdx   int // 直近ラウンドの勝者 (次ラウンドのリード/切り札決定者)
 	gameEndFlag      bool
 	winnerPlayer     int // -1=未確定
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewKnockoutWhist コンストラクタ
@@ -174,7 +174,7 @@ func (g *KnockoutWhist) startRound() {
 		g.phase = KnockoutWhistPhaseTrumpSelect
 		g.appendLog(g.leadPlayerIdx, "trump_select",
 			fmt.Sprintf("round %d: %d cards each, %s chooses trump",
-				g.roundNumber, g.handSize, g.playerName(g.leadPlayerIdx)), nil)
+				g.roundNumber, g.handSize, playerName(g.players, g.leadPlayerIdx)), nil)
 		return
 	}
 
@@ -182,7 +182,7 @@ func (g *KnockoutWhist) startRound() {
 	g.phase = KnockoutWhistPhasePlay
 	g.appendLog(g.leadPlayerIdx, "round_start",
 		fmt.Sprintf("round %d: %d cards each, trump %d, %s leads",
-			g.roundNumber, g.handSize, g.trumpSuit, g.playerName(g.leadPlayerIdx)), nil)
+			g.roundNumber, g.handSize, g.trumpSuit, playerName(g.players, g.leadPlayerIdx)), nil)
 }
 
 // PlayerSelectTrump 人間のラウンド勝者が次ラウンドの切り札スートを選択する (1-4)。
@@ -203,7 +203,7 @@ func (g *KnockoutWhist) PlayerSelectTrump(suit int) error {
 	g.phase = KnockoutWhistPhasePlay
 	g.appendLog(g.leadPlayerIdx, "round_start",
 		fmt.Sprintf("round %d: %d cards each, trump %d, %s leads",
-			g.roundNumber, g.handSize, g.trumpSuit, g.playerName(g.leadPlayerIdx)), nil)
+			g.roundNumber, g.handSize, g.trumpSuit, playerName(g.players, g.leadPlayerIdx)), nil)
 	return nil
 }
 
@@ -224,19 +224,7 @@ func (g *KnockoutWhist) deal() {
 
 // longestSuit プレイヤーが最も多く持つスートを返す。
 func (g *KnockoutWhist) longestSuit(playerIdx int) int {
-	counts := map[int]int{}
-	p := g.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		counts[p.GetCard(i).GetDesign()]++
-	}
-	bestSuit, bestCnt := CardDesignSpade, -1
-	for _, suit := range []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond} {
-		if counts[suit] > bestCnt {
-			bestCnt = counts[suit]
-			bestSuit = suit
-		}
-	}
-	return bestSuit
+	return longestSuit(g.players[playerIdx])
 }
 
 // PlayerPlay 人間プレイヤーがカードをプレイする。
@@ -286,7 +274,7 @@ func (g *KnockoutWhist) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *KnockoutWhist) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) >= g.activeCount() {
 		g.phase = KnockoutWhistPhaseTrickEnd
@@ -308,7 +296,7 @@ func (g *KnockoutWhist) ResolveTrick() {
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.players[winnerIdx].IncRoundTricks()
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", g.playerName(winnerIdx), g.trickNumber), trickCards)
+		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= g.handSize {
@@ -346,10 +334,10 @@ func (g *KnockoutWhist) ScoreRound() {
 		if p.GetRoundTricks() == 0 {
 			if p.GetDogbones() > 0 {
 				p.SetDogbones(p.GetDogbones() - 1)
-				g.appendLog(i, "dogbone", fmt.Sprintf("%s spends a dogbone to survive", g.playerName(i)), nil)
+				g.appendLog(i, "dogbone", fmt.Sprintf("%s spends a dogbone to survive", playerName(g.players, i)), nil)
 			} else {
 				p.SetEliminated(true)
-				g.appendLog(i, "eliminated", fmt.Sprintf("%s is knocked out", g.playerName(i)), nil)
+				g.appendLog(i, "eliminated", fmt.Sprintf("%s is knocked out", playerName(g.players, i)), nil)
 			}
 		}
 	}
@@ -364,7 +352,7 @@ func (g *KnockoutWhist) ScoreRound() {
 			// 全滅 (同時 0 トリック) や最終ラウンド到達時はラウンド勝者を優勝とする。
 			g.winnerPlayer = g.roundWinnerIdx
 		}
-		g.appendLog(g.winnerPlayer, "game_end", fmt.Sprintf("%s wins the match!", g.playerName(g.winnerPlayer)), nil)
+		g.appendLog(g.winnerPlayer, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, g.winnerPlayer)), nil)
 	}
 }
 
@@ -390,25 +378,7 @@ func (g *KnockoutWhist) mostTricksPlayer() int {
 
 // validatePlay マストフォローを検証する。
 func (g *KnockoutWhist) validatePlay(playerIdx int, card *Card) error {
-	if len(g.currentTrick) == 0 {
-		return nil
-	}
-	leadSuit := g.currentTrick[0].Card.GetDesign()
-	if g.playerHasSuit(playerIdx, leadSuit) && card.GetDesign() != leadSuit {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
-	}
-	return nil
-}
-
-// playerHasSuit プレイヤーが指定スートのカードを持っているか。
-func (g *KnockoutWhist) playerHasSuit(playerIdx, design int) bool {
-	p := g.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return validateFollowSuit(g.currentTrick, g.players, playerIdx, card)
 }
 
 // trickWinner トリックの勝者を決定する。切り札があれば最強切り札、なければ
@@ -451,10 +421,7 @@ func knockoutCardStrength(value int) int {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す。
 func (g *KnockoutWhist) getValidPlayIndices(playerIdx int) []int {
-	player := g.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return g.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(g.players[playerIdx], func(c *Card) bool { return g.validatePlay(playerIdx, c) == nil })
 }
 
 // --- Misc helpers ---
@@ -484,25 +451,9 @@ func knockoutSortHand(p *KnockoutWhistPlayer) {
 	}
 }
 
-// playerName プレイヤー名を返す。
-func (g *KnockoutWhist) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
 // indexOfPlayerInTrick currentTrick 内で playerIdx の札の位置を返す (-1=なし)。
 func (g *KnockoutWhist) indexOfPlayerInTrick(playerIdx int) int {
-	for i, tc := range g.currentTrick {
-		if tc.PlayerIdx == playerIdx {
-			return i
-		}
-	}
-	return -1
+	return indexOfPlayerInTrick(g.currentTrick, playerIdx)
 }
 
 // trickTopRank 現在のトリック勝者の札のランクを返す。見つからない場合は極小値。
@@ -512,27 +463,6 @@ func (g *KnockoutWhist) trickTopRank(winnerIdx int) int {
 		return -1 << 30
 	}
 	return g.knockoutRank(g.currentTrick[idx].Card)
-}
-
-// findHumanIdx 人間プレイヤーのインデックス (-1=なし)。
-func (g *KnockoutWhist) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
-// appendLog 棋譜にエントリを追加する。
-func (g *KnockoutWhist) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- CPU AI ---
@@ -557,43 +487,17 @@ func (g *KnockoutWhist) cpuPlaySmart(playerIdx int, valid []int) int {
 	player := g.players[playerIdx]
 	if len(g.currentTrick) == 0 {
 		// リード: 強い札で主導権を取る。
-		return g.maxBy(player, valid, func(c *Card) int { return g.knockoutRank(c) })
+		return pickHighest(player, valid, func(c *Card) int { return g.knockoutRank(c) })
 	}
 	winnerIdx := g.trickWinner()
 	topRank := g.trickTopRank(winnerIdx)
 	winners := knockoutFilter(valid, func(idx int) bool { return g.knockoutRank(player.GetCard(idx)) > topRank })
 	if len(winners) > 0 {
 		// 最小コストで勝てる札。
-		return g.minBy(player, winners, func(c *Card) int { return g.knockoutRank(c) })
+		return pickLowest(player, winners, func(c *Card) int { return g.knockoutRank(c) })
 	}
 	// 勝てない: 最弱札を捨てる。
-	return g.minBy(player, valid, func(c *Card) int { return g.knockoutRank(c) })
-}
-
-// minBy score が最小となるインデックスを返す。
-func (g *KnockoutWhist) minBy(player *KnockoutWhistPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s < bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
-}
-
-// maxBy score が最大となるインデックスを返す。
-func (g *KnockoutWhist) maxBy(player *KnockoutWhistPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s > bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
+	return pickLowest(player, valid, func(c *Card) int { return g.knockoutRank(c) })
 }
 
 // knockoutFilter 述語を満たすインデックスを抽出する。
@@ -611,7 +515,7 @@ func knockoutFilter(indices []int, pred func(int) bool) []int {
 
 // GetHint 人間プレイヤーの手番における推奨プレイを返す。
 func (g *KnockoutWhist) GetHint() *KnockoutWhistHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 || g.phase != KnockoutWhistPhasePlay || g.currentPlayerIdx != human {
 		return nil
 	}
@@ -707,10 +611,7 @@ func (g *KnockoutWhist) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *KnockoutWhist) GetPlayer(i int) *KnockoutWhistPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetActiveCount 残存プレイヤー数を返す。
@@ -718,10 +619,7 @@ func (g *KnockoutWhist) GetActiveCount() int { return g.activeCount() }
 
 // IsHumanTurn 現在の手番が人間か。
 func (g *KnockoutWhist) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -729,9 +627,6 @@ func (g *KnockoutWhist) GetConfig() KnockoutWhistConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *KnockoutWhist) SetConfig(cfg KnockoutWhistConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *KnockoutWhist) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetPlayableIndices プレイ可能なカードのインデックス一覧を返す。
 func (g *KnockoutWhist) GetPlayableIndices(playerIdx int) []int {

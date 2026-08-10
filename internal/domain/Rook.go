@@ -103,7 +103,7 @@ type Rook struct {
 	teamScores  [RookTeamCnt]int
 	gameEndFlag bool
 	winnerTeam  int // 勝利チーム (-1 = 未確定)
-	actionLog   []*ActionLogEntry
+	actionLogBase
 }
 
 // NewRook コンストラクタ
@@ -214,13 +214,7 @@ func (g *Rook) dealRound() {
 
 // drawCard デッキから1枚配る (尽きたら nil)
 func (g *Rook) drawCard() *Card {
-	if g.deckDrawCnt >= len(g.deck) {
-		return nil
-	}
-	card := g.deck[g.deckDrawCnt]
-	card.SetDraw(true)
-	g.deckDrawCnt++
-	return card
+	return drawFromDeck(g.deck, &g.deckDrawCnt)
 }
 
 // --- Bidding ---
@@ -233,7 +227,7 @@ func (g *Rook) PlayerBid(bid int) error {
 	if g.phase != RookPhaseBid {
 		return ErrWrongPhase
 	}
-	humanIdx := g.findHumanIdx()
+	humanIdx := findHumanIdx(g.players)
 	if humanIdx < 0 || g.bidPlayerIdx != humanIdx {
 		return ErrNotHumanTurn
 	}
@@ -260,7 +254,7 @@ func (g *Rook) PlayerPass() error {
 	if g.phase != RookPhaseBid {
 		return ErrWrongPhase
 	}
-	humanIdx := g.findHumanIdx()
+	humanIdx := findHumanIdx(g.players)
 	if humanIdx < 0 || g.bidPlayerIdx != humanIdx {
 		return ErrNotHumanTurn
 	}
@@ -291,7 +285,7 @@ func (g *Rook) applyBid(idx, bid int) {
 	g.players[idx].SetBid(bid)
 	g.highestBid = bid
 	g.highestBidder = idx
-	g.appendLog(idx, "bid", fmt.Sprintf("%s bids %d", g.playerName(idx), bid), nil)
+	g.appendLog(idx, "bid", fmt.Sprintf("%s bids %d", playerName(g.players, idx), bid), nil)
 	g.advanceBid()
 }
 
@@ -299,7 +293,7 @@ func (g *Rook) applyBid(idx, bid int) {
 func (g *Rook) applyPass(idx int) {
 	g.passed[idx] = true
 	g.players[idx].SetPassed(true)
-	g.appendLog(idx, "pass", fmt.Sprintf("%s passes", g.playerName(idx)), nil)
+	g.appendLog(idx, "pass", fmt.Sprintf("%s passes", playerName(g.players, idx)), nil)
 	g.advanceBid()
 }
 
@@ -350,7 +344,7 @@ func (g *Rook) finalizeBid() {
 	}
 	g.nest = nil
 	g.appendLog(g.declarerIdx, "win_bid",
-		fmt.Sprintf("%s wins the auction for %d", g.playerName(g.declarerIdx), g.contractBid), nil)
+		fmt.Sprintf("%s wins the auction for %d", playerName(g.players, g.declarerIdx), g.contractBid), nil)
 	g.sortAllHands()
 	g.phase = RookPhaseNestExchange
 	g.currentPlayerIdx = g.declarerIdx
@@ -413,7 +407,7 @@ func (g *Rook) doExchange(discardIndices []int, trumpColor int) error {
 	}
 	g.trumpColor = trumpColor
 	g.appendLog(g.declarerIdx, "exchange",
-		fmt.Sprintf("%s discards %d cards, trump=%s", g.playerName(g.declarerIdx), len(discarded), rookColorName(trumpColor)), discarded)
+		fmt.Sprintf("%s discards %d cards, trump=%s", playerName(g.players, g.declarerIdx), len(discarded), rookColorName(trumpColor)), discarded)
 	g.sortAllHands()
 	g.startPlayPhase()
 	return nil
@@ -477,7 +471,7 @@ func (g *Rook) CpuPlay() {
 func (g *Rook) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	g.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", g.playerName(playerIdx), rookCardLabel(card)), []*Card{card})
+		fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), rookCardLabel(card)), []*Card{card})
 	if len(g.currentTrick) == RookPlayerCnt {
 		g.phase = RookPhaseTrickEnd
 	} else {
@@ -503,13 +497,13 @@ func (g *Rook) ResolveTrick() {
 	if g.trickNumber >= RookTrickCnt {
 		g.players[winnerIdx].AddPoints(g.nestPoints)
 		g.appendLog(winnerIdx, "trick_win",
-			fmt.Sprintf("%s wins the last trick %d (+%d nest)", g.playerName(winnerIdx), g.trickNumber, g.nestPoints), cards)
+			fmt.Sprintf("%s wins the last trick %d (+%d nest)", playerName(g.players, winnerIdx), g.trickNumber, g.nestPoints), cards)
 		g.leadPlayerIdx = winnerIdx
 		g.phase = RookPhaseRoundEnd
 		return
 	}
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (+%d)", g.playerName(winnerIdx), g.trickNumber, trickPts), cards)
+		fmt.Sprintf("%s wins trick %d (+%d)", playerName(g.players, winnerIdx), g.trickNumber, trickPts), cards)
 	g.leadPlayerIdx = winnerIdx
 	g.phase = RookPhaseTrickEnd
 }
@@ -665,19 +659,7 @@ func (g *Rook) trickScore(c *Card, leadSuit int) int {
 
 // trickWinner トリックの勝者を決定する
 func (g *Rook) trickWinner() int {
-	if len(g.currentTrick) == 0 {
-		return 0
-	}
-	ls := g.leadSuit()
-	winnerIdx := g.currentTrick[0].PlayerIdx
-	winnerScore := g.trickScore(g.currentTrick[0].Card, ls)
-	for _, tc := range g.currentTrick[1:] {
-		if s := g.trickScore(tc.Card, ls); s > winnerScore {
-			winnerScore = s
-			winnerIdx = tc.PlayerIdx
-		}
-	}
-	return winnerIdx
+	return trickWinnerByScore(g.currentTrick, g)
 }
 
 // validatePlay カードのプレイが有効か検証する。ルーク鳥はいつでもプレイ可能。
@@ -693,6 +675,27 @@ func (g *Rook) validatePlay(playerIdx int, card *Card) error {
 		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
 	}
 	return nil
+}
+
+// GetPlayableIndices はプレイフェーズで出せる手札のインデックス一覧を返す。
+//
+// **判定は validatePlay と同じ経路を通す。**別に書き写すと、片方だけ直したときに
+// 「出せる」と示した札が拒否される (#4928)。プレイフェーズ以外では nil。
+func (g *Rook) GetPlayableIndices(playerIdx int) []int {
+	if playerIdx < 0 || playerIdx >= len(g.players) {
+		return nil
+	}
+	if g.phase != RookPhasePlay {
+		return nil
+	}
+	p := g.players[playerIdx]
+	out := make([]int, 0, p.GetCardsSize())
+	for i := range p.GetCardsSize() {
+		if g.validatePlay(playerIdx, p.GetCard(i)) == nil {
+			out = append(out, i)
+		}
+	}
+	return out
 }
 
 // playerHasSuit プレイヤーが実効スートのカードを持っているか (ルーク鳥は除く)
@@ -919,17 +922,14 @@ func (g *Rook) GetValidPlayIndices(playerIdx int) []int {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (g *Rook) getValidPlayIndices(playerIdx int) []int {
-	player := g.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return g.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(g.players[playerIdx], func(c *Card) bool { return g.validatePlay(playerIdx, c) == nil })
 }
 
 // --- Hint ---
 
 // GetHint 現在の人間の手番に対するヒントを返す
 func (g *Rook) GetHint() *RookHint {
-	humanIdx := g.findHumanIdx()
+	humanIdx := findHumanIdx(g.players)
 	if humanIdx < 0 || g.gameEndFlag {
 		return nil
 	}
@@ -1022,10 +1022,7 @@ func (g *Rook) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *Rook) GetPlayer(i int) *RookPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
@@ -1118,18 +1115,12 @@ func (g *Rook) GetTeamPoints(team int) int {
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (g *Rook) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // IsHumanBidTurn 現在のビッド手番が人間かどうか
 func (g *Rook) IsHumanBidTurn() bool {
-	if g.bidPlayerIdx < 0 || g.bidPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.bidPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.bidPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -1137,9 +1128,6 @@ func (g *Rook) GetConfig() RookConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *Rook) SetConfig(cfg RookConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *Rook) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // CardRankPublic カードランク取得 (テスト用)
 func (g *Rook) CardRankPublic(card *Card) int { return g.cardRank(card) }
@@ -1152,21 +1140,9 @@ func (g *Rook) CardPointsPublic(card *Card) int { return rookCardPoints(card) }
 
 // --- Private helpers ---
 
-// findHumanIdx 人間プレイヤーのインデックスを返す (-1=なし)
-func (g *Rook) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 // sortAllHands 全プレイヤーの手札をソートする
 func (g *Rook) sortAllHands() {
-	for _, p := range g.players {
-		g.sortHand(p)
-	}
+	sortEachHand(g.players, g.sortHand)
 }
 
 // sortHand プレイヤーの手札を色→強さ順にソートする
@@ -1187,28 +1163,6 @@ func (g *Rook) sortHand(p *RookPlayer) {
 	for _, c := range cards {
 		p.AddCard(c)
 	}
-}
-
-// playerName プレイヤー名を返す
-func (g *Rook) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (g *Rook) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // rookColorName 色番号を英字ラベルにする (ログ用)

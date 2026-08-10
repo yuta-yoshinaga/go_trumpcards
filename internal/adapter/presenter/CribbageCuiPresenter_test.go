@@ -76,6 +76,20 @@ func TestCribbageCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "スターター: HEART 7")
+		// J でなければ His Heels は出ない。
+		assert.NotContains(t, result, "His Heels")
+	})
+
+	// **スターターが J ならディーラーに 2 点。**Web は専用バッジで出すのに CUI は
+	// 黙っており、ディーラーの点が唐突に 2 増える理由が分からなかった (#4902)。
+	t.Run("his heels announced when the starter is a jack", func(t *testing.T) {
+		m, _ := setupCribbageCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetStarter")
+		m.On("GetStarter").Return(domain.NewCard(domain.CardDesignSpade, domain.CribbageJackValue, false))
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "His Heels")
+		assert.Contains(t, result, "ディーラーに2点")
 	})
 
 	t.Run("starter nil hides section", func(t *testing.T) {

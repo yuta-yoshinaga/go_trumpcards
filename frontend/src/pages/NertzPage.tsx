@@ -639,7 +639,9 @@ function NertzPageContent() {
             />
           </div>
 
-          {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
+          {hintEnabled && hint && (
+            <HintTooltip reason={t(hint.reason, hint.reasonParams)} confidence={hint.confidence} />
+          )}
 
           <GameFooter className={`${gameTheme.nertz.footer} px-4 py-2.5`}>
             <div className="flex flex-wrap gap-2 items-center">

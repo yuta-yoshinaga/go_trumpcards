@@ -81,9 +81,9 @@ type Conquian struct {
 	winnerIdx        int // ラウンド勝者 (-1 = 未確定/引き分け)
 	matchWinnerIdx   int // マッチ全体の勝者 (-1 = 未確定)
 	roundNumber      int
-	actionLog        []*ActionLogEntry
-	tookDiscard      bool // 今ターン、捨て札を取って必ずメルドに使う必要があるか
-	pendingCard      *Card
+	actionLogBase
+	tookDiscard bool // 今ターン、捨て札を取って必ずメルドに使う必要があるか
+	pendingCard *Card
 }
 
 // NewConquian コンストラクタ
@@ -267,7 +267,7 @@ func (g *Conquian) PlayerDrawFromStock() error {
 	g.tookDiscard = false
 	g.pendingCard = nil
 
-	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", g.playerName(g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, g.currentPlayerIdx)), nil)
 	g.phase = ConquianPhaseMeld
 	return nil
 }
@@ -298,7 +298,7 @@ func (g *Conquian) PlayerDrawFromDiscard() error {
 	g.tookDiscard = true
 	g.pendingCard = card
 
-	g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s draws %s from discard", g.playerName(g.currentPlayerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s draws %s from discard", playerName(g.players, g.currentPlayerIdx), cardStr(card)), []*Card{card})
 	g.phase = ConquianPhaseMeld
 	return nil
 }
@@ -311,6 +311,16 @@ func (g *Conquian) PlayerDrawFromDiscard() error {
 //
 // のいずれかとして解釈される。空スライスを渡すと「メルドなし」として扱われる。
 func (g *Conquian) PlayerMeld(meldGroups [][]int) error {
+	return g.PlayerMeldWithTargets(meldGroups, nil)
+}
+
+// PlayerMeldWithTargets は PlayerMeld に「1 枚グループをどのメルドへ足すか」の
+// 指定を加えたもの。extendTargets[i] は meldGroups[i] の延長先メルド番号で、
+// 負値または範囲外なら従来どおり最初に延長できるメルドを選ぶ。
+//
+// **延長先が一意とは限らない。**♠5 は「5 のセット」も「♠6-7-8 のラン」も延長できる。
+// 先頭一致で決め打つと、プレイヤーが意図した側を選べない (#4837)。
+func (g *Conquian) PlayerMeldWithTargets(meldGroups [][]int, extendTargets []int) error {
 	if g.gameEndFlag {
 		return ErrGameEnded
 	}
@@ -350,7 +360,7 @@ func (g *Conquian) PlayerMeld(meldGroups [][]int) error {
 		extendIdx int // -1 = 新メルド、>=0 = 既存メルドへの追加
 	}
 	var pending []pendingMeld
-	for _, group := range meldGroups {
+	for gi, group := range meldGroups {
 		cards := make([]*Card, 0, len(group))
 		for _, idx := range group {
 			cards = append(cards, player.GetCard(idx))
@@ -361,6 +371,11 @@ func (g *Conquian) PlayerMeld(meldGroups [][]int) error {
 		}
 		if len(cards) == 1 {
 			ext := g.findExtendableMeld(g.currentPlayerIdx, cards[0])
+			if t := conquianTargetAt(extendTargets, gi); t >= 0 &&
+				t < len(g.players[g.currentPlayerIdx].melds) &&
+				conquianCanExtendMeld(g.players[g.currentPlayerIdx].melds[t], cards[0]) {
+				ext = t
+			}
 			if ext >= 0 {
 				pending = append(pending, pendingMeld{cards: cards, extendIdx: ext})
 				continue
@@ -393,11 +408,11 @@ func (g *Conquian) PlayerMeld(meldGroups [][]int) error {
 	for _, pm := range pending {
 		if pm.extendIdx >= 0 {
 			player.melds[pm.extendIdx] = append(player.melds[pm.extendIdx], pm.cards[0])
-			g.appendLog(g.currentPlayerIdx, "extend", fmt.Sprintf("%s extends a meld with %s", g.playerName(g.currentPlayerIdx), cardStr(pm.cards[0])), pm.cards)
+			g.appendLog(g.currentPlayerIdx, "extend", fmt.Sprintf("%s extends a meld with %s", playerName(g.players, g.currentPlayerIdx), cardStr(pm.cards[0])), pm.cards)
 		} else {
 			meldCopy := append([]*Card{}, pm.cards...)
 			player.AddMeld(meldCopy)
-			g.appendLog(g.currentPlayerIdx, "meld", fmt.Sprintf("%s lays a meld", g.playerName(g.currentPlayerIdx)), meldCopy)
+			g.appendLog(g.currentPlayerIdx, "meld", fmt.Sprintf("%s lays a meld", playerName(g.players, g.currentPlayerIdx)), meldCopy)
 		}
 	}
 
@@ -438,7 +453,7 @@ func (g *Conquian) PlayerDiscard(cardIndex int) error {
 
 	discarded := player.RemoveCard(cardIndex)
 	g.discardPile = append(g.discardPile, discarded)
-	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", g.playerName(g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
 
 	g.advanceTurn()
 	return nil
@@ -527,6 +542,29 @@ func (g *Conquian) findExtendableMeld(playerIdx int, card *Card) int {
 	return -1
 }
 
+// conquianTargetAt は extendTargets の i 番目を返す (無ければ -1)。
+func conquianTargetAt(targets []int, i int) int {
+	if i < 0 || i >= len(targets) {
+		return -1
+	}
+	return targets[i]
+}
+
+// GetExtendableMeldIndices は指定プレイヤーの盤面で、その札を足せるメルドの番号を
+// すべて返す。UI が延長先の候補を示すために使う (#4837)。
+func (g *Conquian) GetExtendableMeldIndices(playerIdx int, card *Card) []int {
+	if playerIdx < 0 || playerIdx >= len(g.players) || card == nil {
+		return nil
+	}
+	var out []int
+	for i, meld := range g.players[playerIdx].melds {
+		if conquianCanExtendMeld(meld, card) {
+			out = append(out, i)
+		}
+	}
+	return out
+}
+
 // CpuPlay 現在の手番がCPUの場合にターンを実行する
 func (g *Conquian) CpuPlay() {
 	if g.gameEndFlag {
@@ -555,7 +593,7 @@ func (g *Conquian) cpuDraw() {
 			g.sortHand(idx)
 			g.tookDiscard = true
 			g.pendingCard = top
-			g.appendLog(idx, "draw_discard", fmt.Sprintf("%s draws %s from discard", g.playerName(idx), cardStr(top)), []*Card{top})
+			g.appendLog(idx, "draw_discard", fmt.Sprintf("%s draws %s from discard", playerName(g.players, idx), cardStr(top)), []*Card{top})
 			g.phase = ConquianPhaseMeld
 			return
 		}
@@ -570,7 +608,7 @@ func (g *Conquian) cpuDraw() {
 	g.sortHand(idx)
 	g.tookDiscard = false
 	g.pendingCard = nil
-	g.appendLog(idx, "draw_stock", fmt.Sprintf("%s draws from stock", g.playerName(idx)), nil)
+	g.appendLog(idx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, idx)), nil)
 	g.phase = ConquianPhaseMeld
 }
 
@@ -600,7 +638,7 @@ func (g *Conquian) cpuMeldAndDiscard() {
 	}
 	discarded := player.RemoveCard(discardIdx)
 	g.discardPile = append(g.discardPile, discarded)
-	g.appendLog(idx, "discard", fmt.Sprintf("%s discards %s", g.playerName(idx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(idx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, idx), cardStr(discarded)), []*Card{discarded})
 	g.advanceTurn()
 }
 
@@ -628,7 +666,7 @@ func (g *Conquian) cpuLayMelds(idx int) {
 			}
 		}
 		player.AddMeld(append([]*Card{}, meld...))
-		g.appendLog(idx, "meld", fmt.Sprintf("%s lays a meld", g.playerName(idx)), meld)
+		g.appendLog(idx, "meld", fmt.Sprintf("%s lays a meld", playerName(g.players, idx)), meld)
 		sort.Sort(sort.Reverse(sort.IntSlice(removeIdx)))
 		for _, ri := range removeIdx {
 			player.RemoveCard(ri)
@@ -642,7 +680,7 @@ func (g *Conquian) cpuLayMelds(idx int) {
 			ext := g.findExtendableMeld(idx, card)
 			if ext >= 0 {
 				player.melds[ext] = append(player.melds[ext], card)
-				g.appendLog(idx, "extend", fmt.Sprintf("%s extends a meld with %s", g.playerName(idx), cardStr(card)), []*Card{card})
+				g.appendLog(idx, "extend", fmt.Sprintf("%s extends a meld with %s", playerName(g.players, idx), cardStr(card)), []*Card{card})
 				player.RemoveCard(i)
 				extended = true
 				break
@@ -731,7 +769,7 @@ func (g *Conquian) winRound(playerIdx int) {
 	g.winnerIdx = playerIdx
 	g.players[playerIdx].AddWin()
 	g.players[playerIdx].SetIsFinished(true)
-	g.appendLog(playerIdx, "round_win", fmt.Sprintf("%s goes out and wins the round!", g.playerName(playerIdx)), nil)
+	g.appendLog(playerIdx, "round_win", fmt.Sprintf("%s goes out and wins the round!", playerName(g.players, playerIdx)), nil)
 	g.checkMatchEnd()
 	if !g.gameEndFlag {
 		g.phase = ConquianPhaseRoundEnd
@@ -778,7 +816,7 @@ func (g *Conquian) checkMatchEnd() {
 			g.gameEndFlag = true
 			g.matchWinnerIdx = i
 			g.phase = ConquianPhaseGameEnd
-			g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", g.playerName(i)), nil)
+			g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, i)), nil)
 			return
 		}
 	}
@@ -825,10 +863,7 @@ func (g *Conquian) SetDiscardPile(pile []*Card) {
 
 // GetDiscardTop 捨て札の一番上を取得
 func (g *Conquian) GetDiscardTop() *Card {
-	if len(g.discardPile) == 0 {
-		return nil
-	}
-	return g.discardPile[len(g.discardPile)-1]
+	return discardTop(g.discardPile)
 }
 
 // GetDrawPileCount 山札の残り枚数取得
@@ -856,18 +891,12 @@ func (g *Conquian) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *Conquian) GetPlayer(i int) *ConquianPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (g *Conquian) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -876,9 +905,6 @@ func (g *Conquian) GetConfig() ConquianConfig { return g.config }
 // SetConfig 設定変更
 func (g *Conquian) SetConfig(cfg ConquianConfig) { g.config = cfg }
 
-// GetActionLog 棋譜取得
-func (g *Conquian) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // GetTookDiscard 今ターンに捨て札を取ったか (強制使用待ち) を返す
 func (g *Conquian) GetTookDiscard() bool { return g.tookDiscard }
 
@@ -886,9 +912,7 @@ func (g *Conquian) GetTookDiscard() bool { return g.tookDiscard }
 
 // sortAllHands 全プレイヤーの手札をソートする
 func (g *Conquian) sortAllHands() {
-	for i := range g.players {
-		g.sortHand(i)
-	}
+	sortHands(len(g.players), g)
 }
 
 // sortHand プレイヤーの手札をスート→ラン位置の順にソートする
@@ -908,28 +932,6 @@ func (g *Conquian) sortHand(playerIdx int) {
 	for _, c := range cards {
 		p.AddCard(c)
 	}
-}
-
-// playerName プレイヤー名を返す
-func (g *Conquian) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (g *Conquian) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- JSON ---

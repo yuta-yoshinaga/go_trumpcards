@@ -588,3 +588,30 @@ func TestWatten_Unmarshal_Validation(t *testing.T) {
 	// Valid declare-phase state (undeclared allowed).
 	assert.NoError(t, json.Unmarshal([]byte(`{"ph":0,"sr":0,"cs":0,"di":0,"cp":0,"pl":[{},{},{},{}]}`), &g))
 }
+
+// **Web の wattenTrumpCards と同じ分類。**Max/Belli/Spitz は宣言に関わらず切り札
+// なので、スート別・ランク別の「増える枚数」には数えない (#4848)。
+func TestWattenPreviewTrumps(t *testing.T) {
+	pv := domain.WattenPreviewTrumps([]*domain.Card{
+		domain.NewCard(domain.CardDesignHeart, 13, false),   // Max
+		domain.NewCard(domain.CardDesignDiamond, 13, false), // Belli
+		domain.NewCard(domain.CardDesignDiamond, 7, false),  // Spitz
+		domain.NewCard(domain.CardDesignSpade, 1, false),
+		domain.NewCard(domain.CardDesignSpade, 10, false),
+		domain.NewCard(domain.CardDesignClover, 10, false),
+		nil,
+	})
+	assert.Equal(t, 3, pv.Permanent)
+	assert.Equal(t, 2, pv.BySuit[domain.CardDesignSpade])
+	assert.Equal(t, 1, pv.BySuit[domain.CardDesignClover])
+	// ♥K/♦K/♦7 は常時側なので、スート別には残らない。
+	assert.Equal(t, 0, pv.BySuit[domain.CardDesignHeart])
+	assert.Equal(t, 0, pv.BySuit[domain.CardDesignDiamond])
+	assert.Equal(t, 2, pv.ByRank[10])
+	assert.Equal(t, 1, pv.ByRank[1])
+	assert.NotContains(t, pv.ByRank, 13, "♥K/♦K は常時側なので K は増えない")
+
+	empty := domain.WattenPreviewTrumps(nil)
+	assert.Equal(t, 0, empty.Permanent)
+	assert.Empty(t, empty.ByRank)
+}

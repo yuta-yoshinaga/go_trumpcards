@@ -76,7 +76,7 @@ type Klaverjas struct {
 	roundRoem        [KlaverjasTeamCnt]int // 現ラウンドの Roem 点
 	gameEndFlag      bool
 	winnerTeam       int // -1=未確定
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewKlaverjas コンストラクタ
@@ -171,7 +171,7 @@ func (g *Klaverjas) detectRoem() {
 		roem := klaverjasHandRoem(g.players[i])
 		if roem > 0 {
 			g.roundRoem[KlaverjasTeamOf(i)] += roem
-			g.appendLog(i, "roem", fmt.Sprintf("%s scores %d roem", g.playerName(i), roem), nil)
+			g.appendLog(i, "roem", fmt.Sprintf("%s scores %d roem", playerName(g.players, i), roem), nil)
 		}
 	}
 }
@@ -223,7 +223,7 @@ func (g *Klaverjas) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Klaverjas) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == KlaverjasPlayerCnt {
 		g.phase = KlaverjasPhaseTrickEnd
@@ -253,7 +253,7 @@ func (g *Klaverjas) ResolveTrick() {
 		bonus = fmt.Sprintf(" +%d last", KlaverjasLastTrickBonus)
 	}
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (+%d%s)", g.playerName(winnerIdx), g.trickNumber, pts, bonus), trickCards)
+		fmt.Sprintf("%s wins trick %d (+%d%s)", playerName(g.players, winnerIdx), g.trickNumber, pts, bonus), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= KlaverjasTrickCount {
@@ -354,13 +354,7 @@ func (g *Klaverjas) canOvertrump(playerIdx, strength int) bool {
 
 // playerHasSuit プレイヤーが指定スートのカードを持っているか。
 func (g *Klaverjas) playerHasSuit(playerIdx, design int) bool {
-	p := g.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return handHasSuit(g.players[playerIdx], design)
 }
 
 // trickWinner トリックの勝者を決定する。切り札があれば最強切り札、なければ
@@ -474,10 +468,7 @@ func (g *Klaverjas) cardPoints(card *Card) int {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す。
 func (g *Klaverjas) getValidPlayIndices(playerIdx int) []int {
-	player := g.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return g.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(g.players[playerIdx], func(c *Card) bool { return g.validatePlay(playerIdx, c) == nil })
 }
 
 // --- Roem detection ---
@@ -588,25 +579,9 @@ func klaverjasSortHand(p *KlaverjasPlayer) {
 	}
 }
 
-// playerName プレイヤー名を返す。
-func (g *Klaverjas) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
 // indexOfPlayerInTrick currentTrick 内で playerIdx の札の位置を返す (-1=なし)。
 func (g *Klaverjas) indexOfPlayerInTrick(playerIdx int) int {
-	for i, tc := range g.currentTrick {
-		if tc.PlayerIdx == playerIdx {
-			return i
-		}
-	}
-	return -1
+	return indexOfPlayerInTrick(g.currentTrick, playerIdx)
 }
 
 // trickTopRank 現在のトリック勝者の札のランクを返す。見つからない場合は極小値。
@@ -616,27 +591,6 @@ func (g *Klaverjas) trickTopRank(winnerIdx int) int {
 		return -1 << 30
 	}
 	return g.klaverjasRank(g.currentTrick[idx].Card)
-}
-
-// findHumanIdx 人間プレイヤーのインデックス (-1=なし)。
-func (g *Klaverjas) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
-// appendLog 棋譜にエントリを追加する。
-func (g *Klaverjas) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- CPU AI ---
@@ -660,7 +614,7 @@ func (g *Klaverjas) cpuSelectPlayCard(playerIdx int) int {
 func (g *Klaverjas) cpuPlaySmart(playerIdx int, valid []int) int {
 	player := g.players[playerIdx]
 	if len(g.currentTrick) == 0 {
-		return g.minBy(player, valid, func(c *Card) int {
+		return pickLowest(player, valid, func(c *Card) int {
 			return g.cardPoints(c)*100 + g.klaverjasRank(c)
 		})
 	}
@@ -676,42 +630,16 @@ func (g *Klaverjas) cpuPlaySmart(playerIdx int, valid []int) int {
 		// 味方が勝っている: 得点の高い札を渡す (勝ち札以外があればそれ)。
 		nonWinners := klaverjasFilter(valid, func(idx int) bool { return g.klaverjasRank(player.GetCard(idx)) < topRank })
 		if len(nonWinners) > 0 {
-			return g.maxBy(player, nonWinners, func(c *Card) int { return g.cardPoints(c) })
+			return pickHighest(player, nonWinners, func(c *Card) int { return g.cardPoints(c) })
 		}
-		return g.minBy(player, valid, func(c *Card) int { return g.klaverjasRank(c) })
+		return pickLowest(player, valid, func(c *Card) int { return g.klaverjasRank(c) })
 	}
 	if trickPts > 0 && len(winners) > 0 {
-		return g.minBy(player, winners, func(c *Card) int { return g.klaverjasRank(c) })
+		return pickLowest(player, winners, func(c *Card) int { return g.klaverjasRank(c) })
 	}
-	return g.minBy(player, valid, func(c *Card) int {
+	return pickLowest(player, valid, func(c *Card) int {
 		return g.cardPoints(c)*100 + g.klaverjasRank(c)
 	})
-}
-
-// minBy score が最小となるインデックスを返す。
-func (g *Klaverjas) minBy(player *KlaverjasPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s < bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
-}
-
-// maxBy score が最大となるインデックスを返す。
-func (g *Klaverjas) maxBy(player *KlaverjasPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s > bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
 }
 
 // klaverjasFilter 述語を満たすインデックスを抽出する。
@@ -729,7 +657,7 @@ func klaverjasFilter(indices []int, pred func(int) bool) []int {
 
 // GetHint 人間プレイヤーの手番における推奨プレイを返す。
 func (g *Klaverjas) GetHint() *KlaverjasHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 || g.phase != KlaverjasPhasePlay || g.currentPlayerIdx != human {
 		return nil
 	}
@@ -831,18 +759,12 @@ func (g *Klaverjas) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *Klaverjas) GetPlayer(i int) *KlaverjasPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // IsHumanTurn 現在の手番が人間か。
 func (g *Klaverjas) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -850,9 +772,6 @@ func (g *Klaverjas) GetConfig() KlaverjasConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *Klaverjas) SetConfig(cfg KlaverjasConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *Klaverjas) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetPlayableIndices プレイ可能なカードのインデックス一覧を返す。
 func (g *Klaverjas) GetPlayableIndices(playerIdx int) []int {

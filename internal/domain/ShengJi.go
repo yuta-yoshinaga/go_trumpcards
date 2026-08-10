@@ -178,7 +178,7 @@ type ShengJi struct {
 	handNumber     int
 	gameEndFlag    bool
 	winnerTeam     int
-	actionLog      []*ActionLogEntry
+	actionLogBase
 }
 
 // NewShengJi コンストラクタ
@@ -996,10 +996,7 @@ func (s *ShengJi) GetPlayers() []*ShengJiPlayer { return s.players }
 
 // GetPlayer は指定インデックスのプレイヤーを返す。
 func (s *ShengJi) GetPlayer(idx int) *ShengJiPlayer {
-	if idx < 0 || idx >= len(s.players) {
-		return nil
-	}
-	return s.players[idx]
+	return getPlayer(s.players, idx)
 }
 
 // GetPhase は現在のフェーズを返す。
@@ -1085,12 +1082,7 @@ func (s *ShengJi) GetActionLog() []*ActionLogEntry { return s.actionLog }
 
 // addLog は棋譜に 1 件追加する。
 func (s *ShengJi) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	s.actionLog = append(s.actionLog, &ActionLogEntry{
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	s.appendLogAt(0, playerIdx, actionType, detail, cards)
 }
 
 // IsHumanTurn は現在の手番が人間かを返す。

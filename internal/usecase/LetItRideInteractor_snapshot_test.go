@@ -23,6 +23,10 @@ func (s *stubLetItRidePresenter) ActionLogOutput(_ interfaces.LetItRideGame) str
 	return `{"log":[]}`
 }
 
+func (s *stubLetItRidePresenter) PullConfirmOutput(_ interfaces.LetItRideGame) string {
+	return `{}`
+}
+
 func TestLetItRideInteractor_SnapshotRestore(t *testing.T) {
 	lir := domain.NewDefaultLetItRide()
 	li := NewLetItRideInteractor(lir, new(stubLetItRidePresenter))

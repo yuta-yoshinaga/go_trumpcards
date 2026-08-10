@@ -711,4 +711,63 @@ describe('OhHellPage', () => {
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
     }
   });
+
+  // **ヒントは数字をテキストで言うだけで、どのボタンを押せばよいか視覚的に
+  // 示していなかった (#4738)。**同じコードベースの TwoTenJack はヒント札を
+  // 光らせている。
+  it('highlights the bid button the hint recommends', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<OhHellPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+    // hint はフックが 'hint' コマンドの応答から取る。要求して初めて出る。
+    mockExec.mockResolvedValue({ ...bidPhaseState, hint: { bid: 2, reason: 'bid' } });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    await waitFor(() => expect(document.querySelectorAll('[data-hint-suggested="true"]')).toHaveLength(1));
+    expect(screen.getByRole('button', { name: /2/ })).toHaveAttribute('data-hint-suggested', 'true');
+  });
+
+  // **制限ビッドとは別状態。**ディーラーが選べないビッドを推奨として光らせると、
+  // 押せないボタンを勧めることになる。
+  it('does not highlight a restricted bid even if the hint names it', async () => {
+    mockExec.mockResolvedValue({ ...bidPhaseState, restrictedBid: 2 });
+    renderWithProviders(<OhHellPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+    mockExec.mockResolvedValue({ ...bidPhaseState, restrictedBid: 2, hint: { bid: 2, reason: 'bid' } });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+    expect(document.querySelectorAll('[data-hint-suggested="true"]')).toHaveLength(0);
+  });
+
+  it('highlights no bid button before a hint arrives', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<OhHellPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(document.querySelectorAll('[data-hint-suggested="true"]')).toHaveLength(0);
+  });
+
+  // **カード側のハイライトも踏む。**ビッドボタンだけ確かめて満足すると、
+  // 同じ PR で足したもう一方が未検証のまま残る (codecov が partial として検出)。
+  it('highlights the recommended card during the play phase', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<OhHellPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+    mockExec.mockResolvedValue({ ...playPhaseState, hint: { cardIndex: 1, reason: 'follow_suit' } });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    await waitFor(() => expect(document.querySelectorAll('[data-hint-suggested="true"]')).toHaveLength(1));
+  });
+
+  it('highlights no card before a play hint arrives', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<OhHellPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(document.querySelectorAll('[data-hint-suggested="true"]')).toHaveLength(0);
+  });
 });

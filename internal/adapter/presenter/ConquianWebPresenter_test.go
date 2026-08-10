@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
@@ -20,6 +21,7 @@ func setupConquianWebMock(phase domain.ConquianPhase, ended bool, winner, roundW
 	m := new(interfaces.MockConquianGame)
 	players := makeConquianPlayers()
 	m.On("GetRoundNumber").Return(1)
+	m.On("GetExtendableMeldIndices", mock.Anything, mock.Anything).Return(([]int)(nil)).Maybe()
 	m.On("GetDrawPileCount").Return(20)
 	m.On("GetDiscardTop").Return((*domain.Card)(nil))
 	m.On("GetGameEndFlag").Return(ended)
@@ -34,6 +36,36 @@ func setupConquianWebMock(phase domain.ConquianPhase, ended bool, winner, roundW
 	m.On("GetPlayer", 0).Return(players[0])
 	m.On("GetPlayer", 1).Return(players[1])
 	return m, players
+}
+
+// **押せる先だけを押せるように。**♠5 は「5 のセット」も「♠4-6-7 のラン」も
+// 延長できる。画面が「どれでも押せる」ように見せると、押した先と実際に足される
+// 先が食い違う (#4837)。
+func TestConquianWebPresenter_LayoffTargets(t *testing.T) {
+	m, players := setupConquianWebMock(domain.ConquianPhaseMeld, false, -1, -1)
+	players[0].SetMelds([][]*domain.Card{
+		{
+			domain.NewCard(domain.CardDesignHeart, 5, false),
+			domain.NewCard(domain.CardDesignClover, 5, false),
+			domain.NewCard(domain.CardDesignDiamond, 5, false),
+		},
+	})
+	for players[0].GetCardsSize() > 0 {
+		players[0].RemoveCard(0)
+	}
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetExtendableMeldIndices")
+	m.On("GetExtendableMeldIndices", 0, mock.MatchedBy(func(c *domain.Card) bool {
+		return c != nil && c.GetValue() == 5
+	})).Return([]int{0})
+	m.On("GetExtendableMeldIndices", mock.Anything, mock.Anything).Return(([]int)(nil))
+
+	var out controller.ConquianWebOutput
+	require.NoError(t, json.Unmarshal([]byte(new(presenter.ConquianWebPresenter).Output(m, nil)), &out))
+
+	// 5 は延長できる。2 はできない — 空配列であって null ではない。
+	assert.Equal(t, [][]int{{0}, {}}, out.LayoffTargets)
 }
 
 func TestConquianWebPresenter_Output(t *testing.T) {

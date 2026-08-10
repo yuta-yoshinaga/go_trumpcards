@@ -97,19 +97,19 @@ type BraidHint struct {
 //   - **カードは基礎札にしか動かせない**（issue は触れていない）
 //   - 基礎札は**同スート**で積む（issue は触れていない）
 type Braid struct {
-	trumpCards  *TrumpCards
-	braid       []*Card
-	fields      [BraidFieldCnt]*Card
-	helpers     [BraidHelperCnt]*Card
-	foundation  [BraidFoundationCnt][]*Card
-	stock       []*Card
-	waste       []*Card
-	baseRank    int
-	direction   BraidDirection
-	passesUsed  int
-	phase       BraidPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	braid      []*Card
+	fields     [BraidFieldCnt]*Card
+	helpers    [BraidHelperCnt]*Card
+	foundation [BraidFoundationCnt][]*Card
+	stock      []*Card
+	waste      []*Card
+	baseRank   int
+	direction  BraidDirection
+	passesUsed int
+	phase      BraidPhase
+	moveCount  int
+	actionLogBase
 	history     []*braidSnapshot
 	isStalemate bool
 }
@@ -498,31 +498,12 @@ func (b *Braid) CanUndo() bool { return len(b.history) > 0 }
 
 // UndoN n 手戻す
 func (b *Braid) UndoN(n int) error {
-	if n <= 0 {
-		return errors.New("n must be positive")
-	}
-	if n > len(b.history) {
-		return errors.New("not enough history")
-	}
-	for range n {
-		if err := b.Undo(); err != nil {
-			return err
-		}
-	}
-	return nil
+	return undoNChecked(b, n, len(b.history))
 }
 
 // UndoToEscape 膠着状態から抜けるのに必要なアンドゥ回数（膠着でなければ 0、不可なら -1）
 func (b *Braid) UndoToEscape() int {
-	if !b.isStalemate {
-		return 0
-	}
-	for i := len(b.history) - 1; i >= 0; i-- {
-		if !b.history[i].isStalemate {
-			return len(b.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(b.isStalemate, b.history, func(s *braidSnapshot) bool { return s.isStalemate })
 }
 
 // AllFaceUp 常に全札が表向き
@@ -554,9 +535,6 @@ func (b *Braid) GetFoundation() [BraidFoundationCnt][]*Card { return b.foundatio
 
 // GetPassesUsed 山札を通した回数
 func (b *Braid) GetPassesUsed() int { return b.passesUsed }
-
-// GetActionLog 棋譜取得
-func (b *Braid) GetActionLog() []*ActionLogEntry { return b.actionLog }
 
 // GetGameEndFlag ゲーム終了フラグ
 func (b *Braid) GetGameEndFlag() bool { return b.phase != BraidPhasePlaying }
@@ -626,17 +604,12 @@ func (b *Braid) braidTail() *Card {
 
 // wasteTop 捨て札の一番上（空なら nil）
 func (b *Braid) wasteTop() *Card {
-	if len(b.waste) == 0 {
-		return nil
-	}
-	return b.waste[len(b.waste)-1]
+	return discardTop(b.waste)
 }
 
 // popWaste 捨て札の一番上を取り除く
 func (b *Braid) popWaste() {
-	if len(b.waste) > 0 {
-		b.waste = b.waste[:len(b.waste)-1]
-	}
+	b.waste = dropLast(b.waste)
 }
 
 // canPlaceOnFoundation 基礎札に置けるか（同スート、選んだ向きに 1 つずつ）
@@ -690,14 +663,7 @@ func (b *Braid) refillFields() {
 
 // afterMove 手数・棋譜・終了判定をまとめて進める
 func (b *Braid) afterMove(actionType, detail string, card *Card) {
-	b.moveCount++
-	var cards []*Card
-	if card != nil {
-		cards = []*Card{card}
-	}
-	b.appendLog(actionType, detail, cards)
-	b.checkGameClear()
-	b.checkStalemate()
+	afterMove(&b.moveCount, b, actionType, detail, card)
 }
 
 // checkGameClear 8 つの基礎札がすべて 13 枚になったか
@@ -743,13 +709,7 @@ func (b *Braid) takeSnapshot() {
 
 // appendLog 棋譜エントリを追加
 func (b *Braid) appendLog(actionType, detail string, cards []*Card) {
-	b.actionLog = append(b.actionLog, &ActionLogEntry{
-		TurnNumber: b.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	b.appendLogAt(b.moveCount, 0, actionType, detail, cards)
 }
 
 // braidSnapshotJSON is the wire format for a single undo snapshot.

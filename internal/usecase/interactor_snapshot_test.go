@@ -115,13 +115,16 @@ type stubSevensPresenter struct{}
 func (s *stubSevensPresenter) Output(_ interfaces.SevensGame, _ error) string { return `{}` }
 func (s *stubSevensPresenter) ActionLogOutput(_ interfaces.SevensGame) string { return `{}` }
 
-// stubCrazyEightsPresenter implements presenter.CrazyEightsPresenter (= GamePresenter[interfaces.CrazyEightsGame])
+// stubCrazyEightsPresenter implements presenter.CrazyEightsPresenter
 type stubCrazyEightsPresenter struct{}
 
 func (s *stubCrazyEightsPresenter) Output(_ interfaces.CrazyEightsGame, _ error) string {
 	return `{}`
 }
 func (s *stubCrazyEightsPresenter) ActionLogOutput(_ interfaces.CrazyEightsGame) string {
+	return `{}`
+}
+func (s *stubCrazyEightsPresenter) HintOutput(_ interfaces.CrazyEightsGame) string {
 	return `{}`
 }
 
@@ -179,11 +182,12 @@ func (s *stubCribbagePresenter) Output(_ interfaces.CribbageGame, _ error) strin
 func (s *stubCribbagePresenter) ActionLogOutput(_ interfaces.CribbageGame) string { return `{}` }
 func (s *stubCribbagePresenter) HintOutput(_ interfaces.CribbageGame) string      { return `{}` }
 
-// stubPaiGowPresenter implements presenter.PaiGowPresenter (= GamePresenter[interfaces.PaiGowGame])
+// stubPaiGowPresenter implements presenter.PaiGowPresenter
 type stubPaiGowPresenter struct{}
 
 func (s *stubPaiGowPresenter) Output(_ interfaces.PaiGowGame, _ error) string { return `{}` }
 func (s *stubPaiGowPresenter) ActionLogOutput(_ interfaces.PaiGowGame) string { return `{}` }
+func (s *stubPaiGowPresenter) HintOutput(_ interfaces.PaiGowGame) string      { return `{}` }
 
 // --- tests ---
 

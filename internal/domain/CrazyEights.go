@@ -43,7 +43,7 @@ type CrazyEights struct {
 	gameEndFlag      bool
 	winnerIdx        int
 	roundNumber      int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewCrazyEights コンストラクタ
@@ -199,7 +199,7 @@ func (g *CrazyEights) PlayerChooseSuit(suit int) error {
 	}
 
 	g.chosenSuit = suit
-	g.appendLog(g.currentPlayerIdx, "choose_suit", fmt.Sprintf("%s chooses %s", g.playerName(g.currentPlayerIdx), suitName(suit)), nil)
+	g.appendLog(g.currentPlayerIdx, "choose_suit", fmt.Sprintf("%s chooses %s", playerName(g.players, g.currentPlayerIdx), suitName(suit)), nil)
 
 	g.advanceTurn()
 	return nil
@@ -257,7 +257,7 @@ func (g *CrazyEights) CpuChooseSuit() {
 
 	suit := g.cpuSelectSuit(g.currentPlayerIdx)
 	g.chosenSuit = suit
-	g.appendLog(g.currentPlayerIdx, "choose_suit", fmt.Sprintf("%s chooses %s", g.playerName(g.currentPlayerIdx), suitName(suit)), nil)
+	g.appendLog(g.currentPlayerIdx, "choose_suit", fmt.Sprintf("%s chooses %s", playerName(g.players, g.currentPlayerIdx), suitName(suit)), nil)
 	g.advanceTurn()
 }
 
@@ -291,11 +291,11 @@ func (g *CrazyEights) ScoreRound() {
 			score += crazyEightsCardScore(p.GetCard(j))
 		}
 		totalScore += score
-		g.appendLog(i, "hand_score", fmt.Sprintf("%s: %d points remaining", g.playerName(i), score), nil)
+		g.appendLog(i, "hand_score", fmt.Sprintf("%s: %d points remaining", playerName(g.players, i), score), nil)
 	}
 
 	g.players[winnerIdx].roundScore = totalScore
-	g.appendLog(winnerIdx, "round_win", fmt.Sprintf("%s wins round %d (+%d points)", g.playerName(winnerIdx), g.roundNumber, totalScore), nil)
+	g.appendLog(winnerIdx, "round_win", fmt.Sprintf("%s wins round %d (+%d points)", playerName(g.players, winnerIdx), g.roundNumber, totalScore), nil)
 
 	// 累積スコアに加算
 	g.players[winnerIdx].CommitRoundScore()
@@ -307,6 +307,61 @@ func (g *CrazyEights) ScoreRound() {
 // --- State getters ---
 
 // GetPhase 現在のフェーズ取得
+// CrazyEightsHint はサーバーが計算した推奨手。
+type CrazyEightsHint struct {
+	// CardIndex は推奨する手札の位置。スート選択フェーズでは nil。
+	CardIndex *int
+	// Suit は 8 を出した後に指名すべきスート。プレイフェーズでは nil。
+	Suit *int
+	// Reason は理由キー (i18n で引く)。
+	Reason string
+}
+
+// GetHint は人間の手番での推奨手を返す。手番でない・出せる札が無いときは nil。
+//
+// **Hearts / Spades は HintOutput でサーバー計算の理由付きヒントを返すのに、
+// CrazyEights にはドメインの GetHint すら無く、全ゲーム共通の簡易ヒューリスティック
+// (FrontendHintTooltip) しか支援が無かった。**推奨手は CPU の最善手選択
+// (cpuPlayHard / cpuChooseSuit) をそのまま使う。別ロジックを書くと「CPU は選ばない
+// 手を人間に勧める」ことになる。
+func (g *CrazyEights) GetHint() *CrazyEightsHint {
+	if g.gameEndFlag || g.currentPlayerIdx != 0 || !g.players[0].GetIsHuman() {
+		return nil
+	}
+
+	if g.phase == CrazyEightsPhaseChooseSuit {
+		suit := g.cpuSelectSuit(0)
+		return &CrazyEightsHint{Suit: &suit, Reason: "choose_longest_suit"}
+	}
+
+	if g.phase != CrazyEightsPhasePlay {
+		return nil
+	}
+	valid := g.getValidPlayIndices(0)
+	if len(valid) == 0 {
+		// 出せる札が無い = 引くしかない。推奨する札が無いのでヒントを出さない。
+		return nil
+	}
+	idx := g.cpuPlayHard(0, valid)
+	return &CrazyEightsHint{CardIndex: &idx, Reason: g.playHintReason(idx)}
+}
+
+// playHintReason は推奨札を選んだ理由キーを返す。
+func (g *CrazyEights) playHintReason(idx int) string {
+	card := g.players[0].GetCard(idx)
+	if card == nil {
+		return "play_valid"
+	}
+	if card.GetValue() == CrazyEightsWildValue {
+		return "play_wild"
+	}
+	top := g.GetDiscardTop()
+	if top != nil && card.GetValue() == top.GetValue() {
+		return "match_rank"
+	}
+	return "match_suit"
+}
+
 func (g *CrazyEights) GetPhase() CrazyEightsPhase { return g.phase }
 
 // SetPhase フェーズ設定 (テスト用)
@@ -332,10 +387,7 @@ func (g *CrazyEights) SetDiscardPile(pile []*Card) { g.discardPile = pile }
 
 // GetDiscardTop 捨て札の一番上を取得
 func (g *CrazyEights) GetDiscardTop() *Card {
-	if len(g.discardPile) == 0 {
-		return nil
-	}
-	return g.discardPile[len(g.discardPile)-1]
+	return discardTop(g.discardPile)
 }
 
 // GetDrawPileCount 山札の残り枚数取得
@@ -361,18 +413,12 @@ func (g *CrazyEights) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *CrazyEights) GetPlayer(i int) *CrazyEightsPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (g *CrazyEights) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -380,9 +426,6 @@ func (g *CrazyEights) GetConfig() CrazyEightsConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *CrazyEights) SetConfig(cfg CrazyEightsConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *CrazyEights) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // --- Private methods ---
 
@@ -412,7 +455,7 @@ func (g *CrazyEights) playCard(playerIdx int, card *Card) {
 	g.discardPile = append(g.discardPile, card)
 	g.chosenSuit = -1
 
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	// 手札が空になったらラウンド終了
 	if g.players[playerIdx].GetCardsSize() == 0 {
@@ -444,7 +487,7 @@ func (g *CrazyEights) drawCard(playerIdx int) error {
 
 	if len(g.drawPile) == 0 {
 		// 引けるカードがない→パス
-		g.appendLog(playerIdx, "pass", fmt.Sprintf("%s passes (no cards to draw)", g.playerName(playerIdx)), nil)
+		g.appendLog(playerIdx, "pass", fmt.Sprintf("%s passes (no cards to draw)", playerName(g.players, playerIdx)), nil)
 		g.advanceTurn()
 		return nil
 	}
@@ -454,7 +497,7 @@ func (g *CrazyEights) drawCard(playerIdx int) error {
 	g.players[playerIdx].AddCard(card)
 	g.sortHand(playerIdx)
 
-	g.appendLog(playerIdx, "draw", fmt.Sprintf("%s draws a card", g.playerName(playerIdx)), nil)
+	g.appendLog(playerIdx, "draw", fmt.Sprintf("%s draws a card", playerName(g.players, playerIdx)), nil)
 
 	// 引いたカードが出せるなら手番を保持 (プレイヤーが次に出す)
 	// 出せないなら次へ
@@ -486,13 +529,7 @@ func (g *CrazyEights) recycleDrawPile() {
 
 // hasPlayableCard プレイヤーが出せるカードを持っているか
 func (g *CrazyEights) hasPlayableCard(playerIdx int) bool {
-	player := g.players[playerIdx]
-	for i := 0; i < player.GetCardsSize(); i++ {
-		if g.isValidPlay(player.GetCard(i)) {
-			return true
-		}
-	}
-	return false
+	return handHasAny(g.players[playerIdx], g.isValidPlay)
 }
 
 // checkGameEnd ゲーム終了判定
@@ -521,47 +558,17 @@ func (g *CrazyEights) checkGameEnd() {
 			g.winnerIdx = i
 		}
 	}
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", g.playerName(g.winnerIdx)), nil)
+	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, g.winnerIdx)), nil)
 }
 
 // sortAllHands 全プレイヤーの手札をソートする
 func (g *CrazyEights) sortAllHands() {
-	for i := range g.players {
-		g.sortHand(i)
-	}
+	sortHands(len(g.players), g)
 }
 
 // sortHand プレイヤーの手札をスート→値の順にソートする
 func (g *CrazyEights) sortHand(playerIdx int) {
-	p := g.players[playerIdx]
-	sortPlayerHand(p, func(ci, cj *Card) bool {
-		if ci.GetDesign() != cj.GetDesign() {
-			return ci.GetDesign() < cj.GetDesign()
-		}
-		return ci.GetValue() < cj.GetValue()
-	})
-}
-
-// playerName プレイヤー名を返す
-func (g *CrazyEights) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (g *CrazyEights) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	sortPlayerHand(g.players[playerIdx], bySuitThenValue)
 }
 
 // --- CPU AI ---
@@ -682,17 +689,7 @@ func (g *CrazyEights) cpuSelectSuitRandom() int {
 
 // cpuSelectSuitSmart 手札で最も多いスートを選択
 func (g *CrazyEights) cpuSelectSuitSmart(playerIdx int) int {
-	suitCount := g.countSuits(playerIdx)
-
-	bestSuit := CardDesignSpade
-	bestCount := 0
-	for suit := CardDesignSpade; suit <= CardDesignDiamond; suit++ {
-		if suitCount[suit] > bestCount {
-			bestCount = suitCount[suit]
-			bestSuit = suit
-		}
-	}
-	return bestSuit
+	return bestSuitFrom(g.countSuits(playerIdx))
 }
 
 // countSuits プレイヤーの手札のスート別枚数をカウント (8は除外)
@@ -710,10 +707,7 @@ func (g *CrazyEights) countSuits(playerIdx int) map[int]int {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (g *CrazyEights) getValidPlayIndices(playerIdx int) []int {
-	player := g.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return g.isValidPlay(player.GetCard(i))
-	})
+	return validPlayIndices(g.players[playerIdx], func(c *Card) bool { return g.isValidPlay(c) })
 }
 
 // GetValidPlayIndices プレイ可能なカードのインデックスリストを返す (Web用)

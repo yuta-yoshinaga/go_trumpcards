@@ -801,3 +801,41 @@ func TestPopeJoanIntrigueNeedsBothFromOneHand(t *testing.T) {
 		t.Errorf("intrigue = %d, want it left standing when J and Q come from different hands", got)
 	}
 }
+
+// **並びに従う義務がある。**さらに自由リードでも「自分の最も低い札」に限られる
+// ので、全部出せるわけではない (#4934)。
+func TestPopeJoan_PopeJoanValidPlays(t *testing.T) {
+	g := NewDefaultPopeJoan()
+	g.Reset()
+	g.SetCurrentPlayerForTest(0)
+
+	p := g.GetPlayer(0)
+	p.Reset()
+	p.AddCard(pjCard(CardDesignSpade, 5))
+	p.AddCard(pjCard(CardDesignHeart, 9))
+	p.AddCard(pjCard(CardDesignSpade, 6))
+
+	// **自由リードでも最も低い札だけ。**issue は「全部選択可能」と書いているが、
+	// ドメインは新しい並びを最低札で始めることを要求する。
+	g.SetRunForTest(-1, 0)
+	if got := g.PopeJoanValidPlays(0); len(got) != 1 || got[0] != 0 {
+		t.Fatalf("a new run must be led with the lowest card, got %v", got)
+	}
+
+	// ♠5 の次は ♠6 だけ。♥9 はスート違い。
+	g.SetRunForTest(CardDesignSpade, popeJoanRankOrder(5))
+	if got := g.PopeJoanValidPlays(0); len(got) != 1 || got[0] != 2 {
+		t.Fatalf("only the next higher card of the run suit is legal, got %v", got)
+	}
+
+	// 続けられる札が無ければ空。
+	g.SetRunForTest(CardDesignClover, popeJoanRankOrder(2))
+	if got := g.PopeJoanValidPlays(0); len(got) != 0 {
+		t.Fatalf("nothing should be playable, got %v", got)
+	}
+
+	// 手番でなければ nil。
+	if got := g.PopeJoanValidPlays(1); got != nil {
+		t.Fatalf("off-turn must be nil, got %v", got)
+	}
+}

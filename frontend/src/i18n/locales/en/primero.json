@@ -68,5 +68,8 @@
     "resetButton": "Reset the game and start over."
   },
   "hintRequested": "Hint available",
-  "noHint": "No hint available"
+  "noHint": "No hint available",
+  "raiseCount": "Raises {{count}}/{{max}}",
+  "raiseCapReached": "Raise cap reached ({{max}})",
+  "raiseNoChips": "Not enough chips to raise ({{cost}} needed)"
 }

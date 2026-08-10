@@ -100,3 +100,9 @@ func (p *ThirtyOneWebPresenter) buildMessage(g interfaces.ThirtyOneGame, lastErr
 func (p *ThirtyOneWebPresenter) ActionLogOutput(g interfaces.ThirtyOneGame) string {
 	return actionLogOutputJSON(g)
 }
+
+// HintOutput はヒントを返す。Web ではクライアント側でヒントを算出するため、
+// 状態出力にフォールバックする (CUI プレゼンターのみが専用ヒントを返す)。
+func (p *ThirtyOneWebPresenter) HintOutput(g interfaces.ThirtyOneGame) string {
+	return p.Output(g, nil)
+}

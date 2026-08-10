@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -19,6 +20,7 @@ func setupCanastaCuiMock() *interfaces.MockCanastaGame {
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetDrawPileCount").Return(54)
 	m.On("GetDiscardPileCount").Return(0)
+	m.On("GetDiscardPile").Return(([]*domain.Card)(nil)).Maybe()
 	m.On("GetIsFrozen").Return(false)
 	m.On("GetDiscardTop").Return((*domain.Card)(nil))
 	m.On("GetGameEndFlag").Return(false)
@@ -36,6 +38,48 @@ func setupCanastaCuiMockWithPlayers() (*interfaces.MockCanastaGame, []*domain.Ca
 	m.On("GetPlayer", 0).Return(players[0])
 	m.On("GetPlayer", 1).Return(players[1])
 	return m, players
+}
+
+// **山ごと取るゲームなので捨て札の中身は公開情報 (#5043)。**Burraco (#4833) と
+// 同じ制限が残っていた。
+func TestCanastaCuiPresenter_ListsTheDiscardPile(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.CanastaCuiPresenter)
+
+	withPile := func(n int) *interfaces.MockCanastaGame {
+		m, _ := setupCanastaCuiMockWithPlayers()
+		pile := make([]*domain.Card, 0, n)
+		for i := 0; i < n; i++ {
+			pile = append(pile, domain.NewCard(domain.CardDesignHeart, i%13+1, false))
+		}
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDiscardTop")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDiscardPile")
+		if n > 0 {
+			m.On("GetDiscardTop").Return(pile[len(pile)-1])
+		} else {
+			m.On("GetDiscardTop").Return((*domain.Card)(nil))
+		}
+		m.On("GetDiscardPile").Return(pile)
+		return m
+	}
+
+	t.Run("lists every card with its index", func(t *testing.T) {
+		out := p.Output(withPile(3), nil)
+		assert.Contains(t, out, "山の中身:")
+		assert.Contains(t, out, "[0]HEART 1")
+		assert.Contains(t, out, "[2]HEART 3")
+	})
+
+	t.Run("wraps a long pile over several lines", func(t *testing.T) {
+		out := p.Output(withPile(20), nil)
+		assert.Equal(t, 3, strings.Count(out, "山の中身:"), "8 枚ごとに折り返す")
+	})
+
+	t.Run("says nothing when the pile is empty", func(t *testing.T) {
+		assert.NotContains(t, p.Output(withPile(0), nil), "山の中身:")
+	})
 }
 
 func TestCanastaCuiPresenter_Output(t *testing.T) {

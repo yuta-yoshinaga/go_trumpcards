@@ -306,4 +306,77 @@ describe('GuandanPage', () => {
     fireEvent.click(toggle);
     expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
   });
+  // 役プレビュー (#4901)。出す前に成立しているかを見せる。
+  describe('combo preview', () => {
+    it('shows nothing until a card is picked', async () => {
+      mockExec.mockResolvedValue(makeState());
+      renderWithProviders(<GuandanPage />);
+      await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+
+      expect(screen.queryByTestId('guandan-combo-preview')).not.toBeInTheDocument();
+    });
+
+    it('names the combo the selection forms', async () => {
+      mockExec.mockResolvedValue(makeState());
+      renderWithProviders(<GuandanPage />);
+      await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+
+      fireEvent.click(screen.getByTestId('hand-card-0'));
+
+      const preview = screen.getByTestId('guandan-combo-preview');
+      expect(preview).toHaveTextContent('シングル (1)');
+      expect(screen.queryByTestId('guandan-combo-invalid')).not.toBeInTheDocument();
+    });
+
+    // **役にならない組はここで分かる。**出して初めてサーバに拒否される、では遅い。
+    it('warns when the selection is not a combo at all', async () => {
+      mockExec.mockResolvedValue(makeState());
+      renderWithProviders(<GuandanPage />);
+      await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+
+      // ♠2 と ♣K。同ランクでも階段でもない。
+      fireEvent.click(screen.getByTestId('hand-card-0'));
+      fireEvent.click(screen.getByTestId('hand-card-2'));
+
+      expect(screen.getByTestId('guandan-combo-invalid')).toHaveTextContent('役になりません');
+      expect(screen.getByTestId('guandan-combo-preview')).not.toHaveTextContent('選択中');
+    });
+
+    it('marks a bomb as beating every ordinary combo', async () => {
+      const hand = [card('SPADE', 7), card('HEART', 7), card('DIAMOND', 7), card('CLOVER', 7)];
+      mockExec.mockResolvedValue(
+        makeState({ players: [seat(0, true, { cards: hand }), seat(1, false), seat(2, false), seat(3, false)] }),
+      );
+      renderWithProviders(<GuandanPage />);
+      await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+
+      for (const i of [0, 1, 2]) fireEvent.click(screen.getByTestId(`hand-card-${i}`));
+      // 3 枚ではまだスリーカード。爆弾の強調は出ない。
+      expect(screen.getByTestId('guandan-combo-preview')).toHaveTextContent('スリーカード (3)');
+      expect(screen.queryByTestId('guandan-combo-bomb')).not.toBeInTheDocument();
+
+      fireEvent.click(screen.getByTestId('hand-card-3'));
+      expect(screen.getByTestId('guandan-combo-preview')).toHaveTextContent('ボム (4)');
+      expect(screen.getByTestId('guandan-combo-bomb')).toHaveTextContent('通常役をすべて上回ります');
+    });
+
+    it('reads the level card in hearts as a wild', async () => {
+      // レベル 5 の ♥5 はワイルド。♠7 と合わせてペアになる。
+      const hand = [card('SPADE', 7), card('HEART', 5)];
+      mockExec.mockResolvedValue(
+        makeState({
+          level: 5,
+          teamLevels: [5, 5],
+          players: [seat(0, true, { cards: hand }), seat(1, false), seat(2, false), seat(3, false)],
+        }),
+      );
+      renderWithProviders(<GuandanPage />);
+      await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+
+      fireEvent.click(screen.getByTestId('hand-card-0'));
+      fireEvent.click(screen.getByTestId('hand-card-1'));
+
+      expect(screen.getByTestId('guandan-combo-preview')).toHaveTextContent('ペア (2)');
+    });
+  });
 });

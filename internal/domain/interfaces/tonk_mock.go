@@ -41,6 +41,13 @@ func (m *MockTonkGame) GetPlayerCnt() int     { return m.Called().Int(0) }
 func (m *MockTonkGame) GetPlayer(i int) *domain.TonkPlayer {
 	return m.Called(i).Get(0).(*domain.TonkPlayer)
 }
+
+// GetBestDeadwood は1枚捨てて到達できる最小デッドウッドを返すモック。
+func (m *MockTonkGame) GetBestDeadwood(playerIdx int) (int, int) {
+	ret := m.Called(playerIdx)
+	return ret.Int(0), ret.Int(1)
+}
+
 func (m *MockTonkGame) GetActionLog() []*domain.ActionLogEntry {
 	return m.Called().Get(0).([]*domain.ActionLogEntry)
 }

@@ -143,6 +143,26 @@ func TestBidWhistWebPresenter_Hint(t *testing.T) {
 	if !strings.Contains(out, "hint") {
 		t.Errorf("expected hint in output: %s", out)
 	}
+	// **押したことを messageCode で伝える。**フロントの isRequestedHint はこれを
+	// 待つので、無いと「押したときだけ出す」表示が永遠に出ない (#4814)。
+	if !strings.Contains(out, "bidwhist.hintRequested") {
+		t.Errorf("expected the hintRequested message code: %s", out)
+	}
+}
+
+// ヒントが無い局面 (CPU の手番) では noHint を返す。押したのに何も言わない、を避ける。
+func TestBidWhistWebPresenter_HintNone(t *testing.T) {
+	g := newBidWhistGame()
+	g.SetPhase(domain.BidWhistPhasePlay)
+	g.SetCurrentPlayerIdx(1)
+
+	out := (&presenter.BidWhistWebPresenter{}).HintOutput(g)
+	if !strings.Contains(out, "bidwhist.noHint") {
+		t.Errorf("expected the noHint message code: %s", out)
+	}
+	if strings.Contains(out, "bidwhist.hintRequested") {
+		t.Errorf("did not expect hintRequested: %s", out)
+	}
 }
 
 func TestBidWhistWebPresenter_ActionLog(t *testing.T) {

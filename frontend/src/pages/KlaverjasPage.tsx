@@ -37,6 +37,37 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 /** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 unused). */
 const SUIT_SYMBOLS = ['', '♠', '♣', '♥', '♦'] as const;
 
+/**
+ * Card strength and points, strongest first (sync: `Klaverjas.trumpStrength` /
+ * `klaverjasPlainStrength` / `cardPoints`).
+ *
+ * **切り札と非切り札で順序が完全に違う。**切り札は J > 9 > A > 10 …、非切り札は
+ * A > 10 > K …。姉妹ゲームの Manille には早見表があるのに、より覚えにくいこちら
+ * には無かった (#4757)。
+ */
+const KLAVERJAS_TRUMP_ROWS: ReadonlyArray<{ face: string; points: number; nameKey?: string }> = [
+  { face: 'J', points: 20, nameKey: 'strengthLegend.jas' },
+  { face: '9', points: 14, nameKey: 'strengthLegend.nel' },
+  { face: 'A', points: 11 },
+  { face: '10', points: 10 },
+  { face: 'K', points: 4 },
+  { face: 'Q', points: 3 },
+  { face: '8', points: 0 },
+  { face: '7', points: 0 },
+];
+
+/** Non-trump strength and points, strongest first. */
+const KLAVERJAS_PLAIN_ROWS: ReadonlyArray<{ face: string; points: number }> = [
+  { face: 'A', points: 11 },
+  { face: '10', points: 10 },
+  { face: 'K', points: 4 },
+  { face: 'Q', points: 3 },
+  { face: 'J', points: 2 },
+  { face: '9', points: 0 },
+  { face: '8', points: 0 },
+  { face: '7', points: 0 },
+];
+
 /** Klaverjas tutorial step definitions. */
 const KLAVERJAS_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -291,6 +322,50 @@ function KlaverjasPageContent() {
                     ))}
                   </div>
                 )}
+
+                {/* **切り札と非切り札で強さの順序が完全に違う (#4757)。**切り札は
+                    J > 9 > A > 10、非切り札は A > 10 > K。姉妹ゲームの Manille には
+                    早見表があるのに、より覚えにくいこちらには無かった。 */}
+                <details className="mb-2 p-2 rounded bg-black/30" data-testid="klaverjas-strength-legend">
+                  <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
+                    {t('strengthLegend.title')}
+                  </summary>
+                  <div className="mt-1 text-ds-text-muted text-xs">
+                    {(
+                      [
+                        ['trumpCol', KLAVERJAS_TRUMP_ROWS],
+                        ['plainCol', KLAVERJAS_PLAIN_ROWS],
+                      ] as const
+                    ).map(([headKey, rows]) => (
+                      <table className="w-full mb-1" key={headKey}>
+                        <caption className="text-left">{t(`strengthLegend.${headKey}`)}</caption>
+                        <thead>
+                          <tr>
+                            <th scope="col" className="text-left font-normal">
+                              {t('strengthLegend.rankCol')}
+                            </th>
+                            <th scope="col" className="text-left font-normal">
+                              {t('strengthLegend.cardCol')}
+                            </th>
+                            <th scope="col" className="text-right font-normal">
+                              {t('strengthLegend.pointCol')}
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {rows.map((row, i) => (
+                            <tr key={row.face}>
+                              <td>{i + 1}</td>
+                              <td>{'nameKey' in row && row.nameKey ? `${row.face} (${t(row.nameKey)})` : row.face}</td>
+                              <td className="text-right">{row.points}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    ))}
+                    <div className="mt-1">{t('strengthLegend.note')}</div>
+                  </div>
+                </details>
 
                 {/* Round result */}
                 {(isRoundEnd || isGameEnd) && (

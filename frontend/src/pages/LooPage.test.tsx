@@ -103,13 +103,16 @@ describe('LooPage', () => {
   });
 
   it('shows the pot reward and loo risk at the decide phase', async () => {
-    // Default deal pot/potStart = 12 → win up to +12 (+2 per trick), loo penalty -12.
+    // Default deal pot/potStart = 12 → 2 per trick, so a sweep pays 10, not 12:
+    // the remainder stays in the pot. The penalty is the full 12 (#4921).
     mockExec.mockResolvedValue(decidePhaseState);
     renderWithProviders(<LooPage />);
     const potRisk = await screen.findByTestId('loo-pot-risk');
-    expect(potRisk).toHaveTextContent('+12');
+    expect(potRisk).toHaveTextContent('+10');
     expect(potRisk).toHaveTextContent('+2');
     expect(potRisk).toHaveTextContent('-12');
+    // **ポット全額は入らない。**「最大 +12」は実際より多く見せることになる。
+    expect(potRisk).not.toHaveTextContent('+12');
   });
 
   it('does not show the pot-risk block outside the human decide turn', async () => {

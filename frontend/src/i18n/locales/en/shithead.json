@@ -53,5 +53,17 @@
     "burnTen": "Burn the pile with 10 to seize the initiative.",
     "resetTwo": "Reset with 2 to escape pressure from a high top card.",
     "playLowest": "Play the lowest card that beats or matches the top."
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU difficulty",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard",
+    "magicTwo": "Magic 2 (reset)",
+    "magicSeven": "Magic 7 (play under)",
+    "magicEight": "Magic 8 (skip)",
+    "magicTen": "Magic 10 (burn)",
+    "fourOfAKindBurn": "Four of a kind burns the pile"
   }
 }

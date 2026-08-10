@@ -2,7 +2,10 @@
 
 package domain
 
-import "sort"
+import (
+	"fmt"
+	"sort"
+)
 
 // BettingLimitType ベッティングリミットタイプ
 type BettingLimitType int
@@ -521,4 +524,104 @@ func CpuRaiseOrBet(chips, callAmount, raiseAmt int) (int, int) {
 		return bettingActionRaise, raiseAmt
 	}
 	return bettingActionBet, raiseAmt
+}
+
+// afDisplay renders the aggression factor: "-" when the player has neither bet
+// nor called, "∞" when they have been aggressive but never called, and the
+// ratio otherwise. 6 betting games had this written out.
+func afDisplay(betRaise, call int) string {
+	if betRaise == 0 && call == 0 {
+		return "-"
+	}
+	if call == 0 {
+		return "∞"
+	}
+	return fmt.Sprintf("%.1f", float64(betRaise)/float64(call))
+}
+
+// humanChipHolder is a seat that can be identified as the human and asked for
+// its chip count.
+type humanChipHolder interface {
+	GetIsHuman() bool
+	GetChips() int
+}
+
+// rebuyAvailable reports whether the human may still rebuy: the option must be
+// enabled, the rebuy period not yet past, and the human broke with rebuys left.
+// 5 games had this written out.
+func rebuyAvailable[P humanChipHolder](enabled bool, handCount, periodHands int, players []P, counts []int, maxCount int) bool {
+	if !enabled || handCount > periodHands {
+		return false
+	}
+	for i, p := range players {
+		if p.GetIsHuman() && p.GetChips() <= 0 && counts[i] < maxCount {
+			return true
+		}
+	}
+	return false
+}
+
+// addonAvailable reports whether the human may take the add-on, which is
+// offered on exactly one hand and only once. 5 games had this written out.
+func addonAvailable[P humanChipHolder](enabled bool, handCount, afterHand int, players []P, used []bool) bool {
+	if !enabled || handCount != afterHand {
+		return false
+	}
+	for i, p := range players {
+		if p.GetIsHuman() && !used[i] {
+			return true
+		}
+	}
+	return false
+}
+
+// potBet sizes a CPU bet as a percentage of the pot, floored by the big blind
+// and by any outstanding minimum raise. 4 games had this written out.
+func potBet(pot, potPct, bigBlind, minRaise int) int {
+	bet := pot * potPct / 100
+	if bet < bigBlind {
+		bet = bigBlind
+	}
+	if bet < minRaise {
+		bet = minRaise
+	}
+	return bet
+}
+
+// blindLogger records the blinds as they are posted.
+type blindLogger interface {
+	appendLog(playerIdx int, actionType, detail string, cards []*Card)
+}
+
+// postBlindsFor takes the small and big blinds from the two seats after the
+// dealer, capping each at what the seat actually has and marking it all-in when
+// that empties its stack. lastBet ends up at the big blind. 3 games had this
+// written out.
+//
+// pot, lastBet and actedFlags are passed directly because the helper writes all
+// three; keeping the fmt.Sprintf here means one copy rather than one per game.
+func postBlindsFor[P BettingPlayer](players []P, dealerIdx, smallBlind, bigBlind int,
+	pot, lastBet *int, actedFlags []bool, g blindLogger,
+) {
+	// Returns what was actually posted, which is less than asked for when the
+	// seat is too short to cover the blind.
+	post := func(idx, want int, label string) int {
+		amount := want
+		if players[idx].GetChips() < amount {
+			amount = players[idx].GetChips()
+		}
+		players[idx].SubtractChips(amount)
+		players[idx].SetCurrentBet(amount)
+		*pot += amount
+		g.appendLog(idx, "blind", fmt.Sprintf("posts %s %d", label, amount), nil)
+		if players[idx].GetChips() == 0 {
+			players[idx].SetAllIn(true)
+			actedFlags[idx] = true
+		}
+		return amount
+	}
+	sbIdx := (dealerIdx + 1) % len(players)
+	bbIdx := (dealerIdx + 2) % len(players)
+	post(sbIdx, smallBlind, "small blind")
+	*lastBet = post(bbIdx, bigBlind, "big blind")
 }

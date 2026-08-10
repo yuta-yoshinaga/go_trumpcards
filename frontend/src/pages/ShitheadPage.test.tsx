@@ -375,4 +375,41 @@ describe('ShitheadPage', () => {
     await waitFor(() => expect(screen.getAllByAltText('ジョーカー').length).toBeGreaterThan(0));
     expect(screen.queryByText(/\?0/)).not.toBeInTheDocument();
   });
+
+  // **フックは設定機構を全部エクスポートしていたのに、ページが一切使っておらず
+  // 常に既定値固定だった (#4747)。**マジックカードの有無はゲーム性そのものを
+  // 変えるのに、Web からは touch できなかった。
+  it('lets the player turn a magic card off, and reshuffles with the new rules', async () => {
+    renderWithProviders(<ShitheadPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    const toggle = screen.getByLabelText(/10 のマジック/);
+    expect(toggle).toBeChecked();
+
+    mockExec.mockClear();
+    fireEvent.click(toggle);
+
+    // 配りが変わるので、設定変更は即リセットを伴う。
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith(
+        'reset',
+        expect.objectContaining({ config: expect.objectContaining({ magicTen: false }) }),
+      ),
+    );
+  });
+
+  it('lets the player change the CPU difficulty', async () => {
+    renderWithProviders(<ShitheadPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    mockExec.mockClear();
+    fireEvent.change(screen.getByLabelText('CPU難易度'), { target: { value: '2' } });
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith(
+        'reset',
+        expect.objectContaining({ config: expect.objectContaining({ cpuDifficulty: 2 }) }),
+      ),
+    );
+  });
 });

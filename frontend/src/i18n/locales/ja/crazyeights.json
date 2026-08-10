@@ -67,5 +67,14 @@
     "original": "元の順",
     "rank": "ランク順",
     "suit": "スート順"
+  },
+  "hintCard": "おすすめ: [{{idx}}] のカード",
+  "hintSuit": "おすすめのスート: {{suit}}",
+  "hintReason": {
+    "match_suit": "スートが合う",
+    "match_rank": "数字が合う",
+    "play_wild": "8 でスートを変えられる",
+    "play_valid": "出せる札",
+    "choose_longest_suit": "手札に一番多いスート"
   }
 }

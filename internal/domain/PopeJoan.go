@@ -141,7 +141,7 @@ type PopeJoan struct {
 	dealWinner  int
 	gameEndFlag bool
 	winnerIdx   int
-	actionLog   []*ActionLogEntry
+	actionLogBase
 }
 
 // NewPopeJoan はコンストラクタ。
@@ -304,6 +304,28 @@ func (p *PopeJoan) Play(player, handIdx int) error {
 	}
 	p.advance(player)
 	return nil
+}
+
+// PopeJoanValidPlays は player が今出せる手札インデックスを返す。
+//
+// **判定は checkPlayable をそのまま呼ぶ。**規則を書き写すと、示した手が拒否
+// されるようになる (#4934)。**自由リードでも全部が出せるわけではない** —
+// 新しい並びは自分の最も低い札で始めなければならない。手番でない場合は nil。
+func (p *PopeJoan) PopeJoanValidPlays(player int) []int {
+	if player != p.currentIdx {
+		return nil
+	}
+	pl := p.GetPlayer(player)
+	if pl == nil {
+		return nil
+	}
+	out := make([]int, 0, pl.GetCardsSize())
+	for i := range pl.GetCardsSize() {
+		if p.checkPlayable(player, pl.GetCard(i)) == nil {
+			out = append(out, i)
+		}
+	}
+	return out
 }
 
 // checkPlayable は card が今出せるかを確かめる。
@@ -520,10 +542,7 @@ func (p *PopeJoan) GetPlayers() []*PopeJoanPlayer { return p.players }
 
 // GetPlayer は idx のプレイヤーを返す。
 func (p *PopeJoan) GetPlayer(idx int) *PopeJoanPlayer {
-	if idx < 0 || idx >= len(p.players) {
-		return nil
-	}
-	return p.players[idx]
+	return getPlayer(p.players, idx)
 }
 
 // GetPhase は現在のフェーズを返す。
@@ -571,9 +590,6 @@ func (p *PopeJoan) GetConfig() PopeJoanConfig { return p.config }
 // SetConfig はゲーム設定をセットする。
 func (p *PopeJoan) SetConfig(c PopeJoanConfig) { p.config = c }
 
-// GetActionLog は棋譜を返す。
-func (p *PopeJoan) GetActionLog() []*ActionLogEntry { return p.actionLog }
-
 // SetPhaseForTest はテスト用にフェーズを差し替える。
 func (p *PopeJoan) SetPhaseForTest(ph PopeJoanPhase) { p.phase = ph }
 
@@ -600,13 +616,7 @@ func (p *PopeJoan) ResolveTurnUpForTest() { p.resolveTurnUp() }
 
 // addLog は棋譜に 1 件追加する。
 func (p *PopeJoan) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	p.actionLog = append(p.actionLog, &ActionLogEntry{
-		TurnNumber: len(p.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	p.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // popeJoanJSON is the JSON wire format for PopeJoan.

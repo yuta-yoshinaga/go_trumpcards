@@ -1,29 +1,39 @@
 {
+  "autoComplete": "Auto Complete",
+  "autoCompleteNotReady": "Available once a foundation builds past its ace",
+  "empty": "Empty",
+  "emptyFoundationAriaLabel": "Empty foundation ({{suit}})",
+  "emptyReserveSlot": "Empty reserve slot {{idx}}",
+  "foundation": "Foundation",
+  "foundationAriaLabel": "{{suit}} foundation {{count}} cards",
+  "frontendHint": {
+    "tableau": "Flower bed {{col}}",
+    "reserve": "Bouquet {{col}}",
+    "foundation": "Foundation"
+  },
+  "gameClear": "Game Clear! Moves: {{moveCount}}",
+  "gameOver": "Game Over",
+  "gameOverSummary": "Reached {{count}}/52 cards on the foundations ({{percent}}%)",
+  "giveup": "Give Up",
+  "hint": "Hint",
+  "hintAvailable": "Hint available",
+  "hintReason": {
+    "toFoundation": "Send this card to the foundation to free up the flower bed.",
+    "toTableau": "Apply the suggested flower-bed move to unlock buried cards."
+  },
+  "landscapeBanner": "Landscape mode recommended",
+  "moveCount": "Moves",
+  "noHint": "No hint available",
   "phase": {
     "playing": "Playing",
     "gameClear": "Game Clear",
     "gameOver": "Game Over"
   },
-  "foundation": "Foundation",
-  "tableau": "Flower bed",
-  "reserve": "Bouquet",
-  "moveCount": "Moves",
-  "giveup": "Give Up",
-  "empty": "Empty",
-  "foundationAriaLabel": "{{suit}} foundation {{count}} cards",
-  "emptyFoundationAriaLabel": "Empty foundation ({{suit}})",
-  "landscapeBanner": "Landscape mode recommended",
-  "hint": "Hint",
-  "autoComplete": "Auto Complete",
-  "autoCompleteNotReady": "Available once a foundation builds past its ace",
-  "undo": "Undo",
-  "stalemate": "Stalemate",
   "playing": "Move cards to build foundations",
-  "gameClear": "Game Clear! Moves: {{moveCount}}",
-  "gameOver": "Game Over",
-  "gameOverSummary": "Reached {{count}}/52 cards on the foundations ({{percent}}%)",
-  "hintAvailable": "Hint available",
-  "noHint": "No hint available",
+  "reserve": "Bouquet",
+  "reserveCardAriaLabel": "{{card}} (reserve slot {{idx}})",
+  "stalemate": "Stalemate",
+  "tableau": "Flower bed",
   "tutorial": {
     "foundation": "Four empty foundations sit beside the bouquet. Build each pile by suit from Ace to King.",
     "reserve": "The bouquet holds sixteen single face-up cards. They can leave for the flower beds or a foundation, but nothing ever moves back into the bouquet.",
@@ -31,13 +41,5 @@
     "moves": "Pack the flower beds in descending rank, suit ignored (any card on the next-higher rank). Empty beds accept any card.",
     "controls": "Use hint, undo, and auto-complete buttons."
   },
-  "frontendHint": {
-    "tableau": "Flower bed {{col}}",
-    "reserve": "Bouquet {{col}}",
-    "foundation": "Foundation"
-  },
-  "hintReason": {
-    "toFoundation": "Send this card to the foundation to free up the flower bed.",
-    "toTableau": "Apply the suggested flower-bed move to unlock buried cards."
-  }
+  "undo": "Undo"
 }

@@ -30,5 +30,7 @@
   "winnerCpu": "CPU {{idx}}の勝利",
   "hintNone": "現在ヒントはありません。",
   "hintMeld": "メルド候補: {{cands}}（m <idx...> で場に出す）",
-  "hintNoMeld": "メルドできる組み合わせがありません。d <idx> で捨て札を検討してください。"
+  "hintNoMeld": "メルドできる組み合わせがありません。d <idx> で捨て札を検討してください。",
+  "hintLayoff": "レイオフ候補: {{cands}}",
+  "hintLayoffEntry": "{{card}} -> {{name}} の [{{meld}}]"
 }

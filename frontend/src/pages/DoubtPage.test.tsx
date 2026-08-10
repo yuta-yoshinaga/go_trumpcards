@@ -4,6 +4,7 @@ import { actionLogApi, doubtApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
+import { settleUntil } from '../test/settleUntil';
 import type { DoubtConfig, DoubtResponse } from '../types/card';
 import { DoubtPage } from './DoubtPage';
 
@@ -508,7 +509,15 @@ describe('DoubtPage', () => {
 
   describe('countdown timer', () => {
     beforeEach(() => {
-      // Only fake setInterval/clearInterval; leave setTimeout for waitFor retries
+      // Fake only setInterval/clearInterval so the countdown can be advanced.
+      //
+      // NOTE: `waitFor` does not work in this block. @testing-library only
+      // recognises fake timers under Jest (it tests `typeof jest`), so under
+      // Vitest it always takes the real-timer path: it polls through
+      // `setInterval` -- faked here, so the poll never fires -- while its
+      // deadline stays on the real clock. A DOM condition survives on
+      // MutationObserver alone and a non-DOM one cannot retry at all. Use
+      // `settleUntil()`, which retries by advancing the clock instead.
       vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
     });
     afterEach(() => {
@@ -521,7 +530,7 @@ describe('DoubtPage', () => {
       renderWithProviders(<DoubtPage />);
       // The countdown text appears in both the visible (aria-hidden) node and the
       // throttled sr timer at the 10s mark, so assert at least one is present.
-      await waitFor(() => expect(screen.getAllByText(/残り 10 秒/).length).toBeGreaterThan(0));
+      await settleUntil(() => expect(screen.getAllByText(/残り 10 秒/).length).toBeGreaterThan(0));
     });
 
     it('clears the countdown interval when the page unmounts', async () => {
@@ -533,7 +542,7 @@ describe('DoubtPage', () => {
       // added tests shifted shard timing on CI.
       mockExec.mockResolvedValue(doubtPhaseCpuPlayedState);
       const { unmount } = renderWithProviders(<DoubtPage />);
-      await waitFor(() => expect(screen.getAllByText(/残り 10 秒/).length).toBeGreaterThan(0));
+      await settleUntil(() => expect(screen.getAllByText(/残り 10 秒/).length).toBeGreaterThan(0));
 
       const cleared = vi.spyOn(globalThis, 'clearInterval');
       unmount();
@@ -544,7 +553,7 @@ describe('DoubtPage', () => {
     it('exposes the countdown as a throttled polite role=timer region', async () => {
       mockExec.mockResolvedValue(doubtPhaseCpuPlayedState);
       renderWithProviders(<DoubtPage />);
-      await waitFor(() => expect(screen.getByTestId('countdown-sr-timer')).toBeInTheDocument());
+      await settleUntil(() => expect(screen.getByTestId('countdown-sr-timer')).toBeInTheDocument());
       const timer = screen.getByTestId('countdown-sr-timer');
       expect(timer).toHaveAttribute('role', 'timer');
       expect(timer).toHaveAttribute('aria-live', 'polite');
@@ -554,7 +563,8 @@ describe('DoubtPage', () => {
     it('announces the doubt-window opening via an assertive role=alert region', async () => {
       mockExec.mockResolvedValue(doubtPhaseCpuPlayedState);
       renderWithProviders(<DoubtPage />);
-      const alert = await screen.findByTestId('doubt-window-alert');
+      await settleUntil(() => expect(screen.getByTestId('doubt-window-alert')).toBeInTheDocument());
+      const alert = screen.getByTestId('doubt-window-alert');
       expect(alert).toHaveAttribute('role', 'alert');
       // Stable prompt text (uses the fixed window length, not the live countdown).
       expect(alert.textContent).toMatch(/ダウトしますか|自動スキップ/);
@@ -563,7 +573,7 @@ describe('DoubtPage', () => {
     it('decrements countdown each second', async () => {
       mockExec.mockResolvedValue(doubtPhaseCpuPlayedState);
       renderWithProviders(<DoubtPage />);
-      await waitFor(() => expect(screen.getAllByText(/残り 10 秒/)[0]).toBeInTheDocument());
+      await settleUntil(() => expect(screen.getAllByText(/残り 10 秒/)[0]).toBeInTheDocument());
 
       act(() => {
         vi.advanceTimersByTime(1000);
@@ -576,7 +586,7 @@ describe('DoubtPage', () => {
         .mockResolvedValueOnce(doubtPhaseCpuPlayedState) // initial reset
         .mockResolvedValueOnce(humanTurnState); // skip response → leave doubt phase
       renderWithProviders(<DoubtPage />);
-      await waitFor(() => expect(screen.getAllByText(/残り 10 秒/)[0]).toBeInTheDocument());
+      await settleUntil(() => expect(screen.getAllByText(/残り 10 秒/)[0]).toBeInTheDocument());
 
       act(() => {
         vi.advanceTimersByTime(10000);
@@ -585,33 +595,31 @@ describe('DoubtPage', () => {
       expect(screen.queryByText(/残り/)).not.toBeInTheDocument();
 
       // Auto-skip is called with the correct doubters
-      await waitFor(() => {
-        expect(mockExec).toHaveBeenCalledWith('skip', undefined, undefined, []);
-      });
+      await settleUntil(() => expect(mockExec).toHaveBeenCalledWith('skip', undefined, undefined, []));
     });
 
     it('stops countdown when ダウト！ is clicked', async () => {
       mockExec.mockResolvedValue(doubtPhaseCpuPlayedState);
       renderWithProviders(<DoubtPage />);
-      await waitFor(() => expect(screen.getAllByText(/残り 10 秒/)[0]).toBeInTheDocument());
+      await settleUntil(() => expect(screen.getAllByText(/残り 10 秒/)[0]).toBeInTheDocument());
 
       mockExec.mockResolvedValue(humanTurnState);
       act(() => {
         fireEvent.click(screen.getByRole('button', { name: 'ダウト！' }));
       });
-      await waitFor(() => expect(screen.queryByText(/残り/)).not.toBeInTheDocument());
+      await settleUntil(() => expect(screen.queryByText(/残り/)).not.toBeInTheDocument());
     });
 
     it('stops countdown when スルー is clicked', async () => {
       mockExec.mockResolvedValue(doubtPhaseCpuPlayedState);
       renderWithProviders(<DoubtPage />);
-      await waitFor(() => expect(screen.getAllByText(/残り 10 秒/)[0]).toBeInTheDocument());
+      await settleUntil(() => expect(screen.getAllByText(/残り 10 秒/)[0]).toBeInTheDocument());
 
       mockExec.mockResolvedValue(humanTurnState);
       act(() => {
         fireEvent.click(screen.getByRole('button', { name: 'スルー' }));
       });
-      await waitFor(() => expect(screen.queryByText(/残り/)).not.toBeInTheDocument());
+      await settleUntil(() => expect(screen.queryByText(/残り/)).not.toBeInTheDocument());
     });
   });
 
@@ -1157,7 +1165,7 @@ describe('DoubtPage', () => {
       };
       mockExec.mockResolvedValue(shortState);
       renderWithProviders(<DoubtPage />);
-      await waitFor(() => expect(screen.getAllByText(/残り 3 秒/)[0]).toBeInTheDocument());
+      await settleUntil(() => expect(screen.getAllByText(/残り 3 秒/)[0]).toBeInTheDocument());
     });
 
     it('uses state.doubtWindowSec for countdown (5s)', async () => {
@@ -1167,7 +1175,7 @@ describe('DoubtPage', () => {
       };
       mockExec.mockResolvedValue(midState);
       renderWithProviders(<DoubtPage />);
-      await waitFor(() => expect(screen.getAllByText(/残り 5 秒/)[0]).toBeInTheDocument());
+      await settleUntil(() => expect(screen.getAllByText(/残り 5 秒/)[0]).toBeInTheDocument());
     });
   });
 

@@ -72,7 +72,7 @@ type Sedma struct {
 	roundCardPts     [SedmaTeamCnt]int // 現ラウンドのカード得点
 	gameEndFlag      bool
 	winnerTeam       int // -1=未確定
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewSedma コンストラクタ
@@ -195,7 +195,7 @@ func (g *Sedma) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Sedma) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == SedmaPlayerCnt {
 		g.phase = SedmaPhaseTrickEnd
@@ -225,7 +225,7 @@ func (g *Sedma) ResolveTrick() {
 		bonus = fmt.Sprintf(" +%d last", SedmaLastTrickBonus)
 	}
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s captures trick %d (+%d%s)", g.playerName(winnerIdx), g.trickNumber, pts, bonus), trickCards)
+		fmt.Sprintf("%s captures trick %d (+%d%s)", playerName(g.players, winnerIdx), g.trickNumber, pts, bonus), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= SedmaTrickCount {
@@ -345,38 +345,6 @@ func sedmaSortRank(value int) int {
 	return value
 }
 
-// playerName プレイヤー名を返す。
-func (g *Sedma) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-// findHumanIdx 人間プレイヤーのインデックス (-1=なし)。
-func (g *Sedma) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
-// appendLog 棋譜にエントリを追加する。
-func (g *Sedma) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // --- CPU AI ---
 
 // cpuSelectPlayCard CPU がプレイするカードのインデックスを選ぶ。
@@ -399,7 +367,7 @@ func (g *Sedma) cpuPlaySmart(playerIdx int, valid []int) int {
 	player := g.players[playerIdx]
 	// リード時: 7 とポイント札を温存し、価値の低い札を出す。
 	if len(g.currentTrick) == 0 {
-		return g.minBy(player, valid, func(c *Card) int { return sedmaLeadCost(c) })
+		return pickLowest(player, valid, func(c *Card) int { return sedmaLeadCost(c) })
 	}
 	leadRank := g.currentTrick[0].Card.GetValue()
 	trickPts := 0
@@ -414,7 +382,7 @@ func (g *Sedma) cpuPlaySmart(playerIdx int, valid []int) int {
 	})
 	// 味方が奪取中ならポイント札を渡して温存。
 	if partnerWinning {
-		return g.maxBy(player, valid, func(c *Card) int { return sedmaCardPoints(c) })
+		return pickHighest(player, valid, func(c *Card) int { return sedmaCardPoints(c) })
 	}
 	// ポイントがあり奪取できるなら、まず同ランク、無ければ 7 で奪取。
 	if trickPts > 0 && len(captures) > 0 {
@@ -425,7 +393,7 @@ func (g *Sedma) cpuPlaySmart(playerIdx int, valid []int) int {
 		return captures[0]
 	}
 	// 奪取しない: 価値の低い非ポイント・非 7 札を捨てる。
-	return g.minBy(player, valid, func(c *Card) int { return sedmaLeadCost(c) })
+	return pickLowest(player, valid, func(c *Card) int { return sedmaLeadCost(c) })
 }
 
 // sedmaLeadCost リード/ディスカード時の温存コスト (低いほど捨ててよい)。
@@ -434,32 +402,6 @@ func sedmaLeadCost(c *Card) int {
 		return 100 // 7 は最後まで温存
 	}
 	return sedmaCardPoints(c)*10 + sedmaSortRank(c.GetValue())
-}
-
-// minBy score が最小となるインデックスを返す。
-func (g *Sedma) minBy(player *SedmaPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s < bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
-}
-
-// maxBy score が最大となるインデックスを返す。
-func (g *Sedma) maxBy(player *SedmaPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s > bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
 }
 
 // sedmaFilter 述語を満たすインデックスを抽出する。
@@ -477,7 +419,7 @@ func sedmaFilter(indices []int, pred func(int) bool) []int {
 
 // GetHint 人間プレイヤーの手番における推奨プレイを返す。
 func (g *Sedma) GetHint() *SedmaHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 || g.phase != SedmaPhasePlay || g.currentPlayerIdx != human {
 		return nil
 	}
@@ -566,18 +508,12 @@ func (g *Sedma) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *Sedma) GetPlayer(i int) *SedmaPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // IsHumanTurn 現在の手番が人間か。
 func (g *Sedma) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -585,9 +521,6 @@ func (g *Sedma) GetConfig() SedmaConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *Sedma) SetConfig(cfg SedmaConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *Sedma) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetPlayableIndices プレイ可能なカードのインデックス一覧を返す。
 func (g *Sedma) GetPlayableIndices(playerIdx int) []int {

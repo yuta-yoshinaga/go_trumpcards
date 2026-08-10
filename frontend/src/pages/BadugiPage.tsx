@@ -35,6 +35,7 @@ import type { BadugiResponse } from '../types/card';
 import { BadugiPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { badugiBestSubsetIndices } from '../utils/badugiBestSubset';
+import { badugiHandName } from '../utils/badugiHandName';
 import { isCompleteBadugiHand } from '../utils/badugiUtils';
 import { cardAlt } from '../utils/cardAlt';
 import { BADUGI_HELP, parseBadugiCommand } from '../utils/cli/commands/badugiCommands';
@@ -167,9 +168,14 @@ function BadugiPageContent() {
   // Set of card indices belonging to the current best Badugi subset. Only computed during the draw
   // phase — outside of that window the lift / dim visuals would distract more than help, since the
   // player can't act on "dead weight" until the next exchange opens.
+  // Gated on the hint setting as well as the phase: the lift/dim is a hint in
+  // everything but name, so turning hints off has to silence it too (#4701/#4702).
+  // Hoisted so the empty case is a real state (no human seat) rather than an
+  // unreachable fallback inside the guard: canExchange already implies a seat.
+  const humanCards = humanPlayer?.cards ?? [];
   const subsetIndices = useMemo(
-    () => (canExchange ? new Set(badugiBestSubsetIndices(humanPlayer?.cards ?? [])) : null),
-    [canExchange, humanPlayer?.cards],
+    () => (canExchange && hintEnabled ? new Set(badugiBestSubsetIndices(humanCards)) : null),
+    [canExchange, hintEnabled, humanCards],
   );
 
   useCardKeyboardNav({
@@ -244,7 +250,7 @@ function BadugiPageContent() {
                     currentBet: p.currentBet,
                     folded: p.folded,
                     allIn: p.allIn,
-                    handName: p.handName,
+                    handName: badugiHandName(p.handSize, t),
                     cards: p.cards,
                   }}
                   showCards={isEnd}
@@ -294,9 +300,12 @@ function BadugiPageContent() {
                   )}
                   {humanPlayer.folded && <span className="ml-2 text-ds-error text-xs">[{tc('status.folded')}]</span>}
                   {humanPlayer.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
-                  {isEnd && !humanPlayer.folded && humanPlayer.handName && (
-                    <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
-                      {humanPlayer.handName}
+                  {isEnd && !humanPlayer.folded && humanPlayer.handSize > 0 && (
+                    <span
+                      data-testid="bg-hand-name"
+                      className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}
+                    >
+                      {badugiHandName(humanPlayer.handSize, t)}
                     </span>
                   )}
                 </div>

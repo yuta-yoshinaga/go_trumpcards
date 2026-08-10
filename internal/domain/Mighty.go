@@ -107,7 +107,7 @@ type mightyRoundState struct {
 	jokerPlayed       bool    // ジョーカーがこのラウンドで既にプレイされたか (ジョーカーコール抑止用)
 	gameEndFlag       bool
 	winnerTeam        int // MightyWinnerUndecided / MightyWinnerDeclarer / MightyWinnerOpposition
-	actionLog         []*ActionLogEntry
+	actionLogBase
 }
 
 // Mighty マイティ (韓国式マイティ) ゲームクラス
@@ -217,7 +217,7 @@ func (m *Mighty) PlayerBid(bid int, noTrump bool) error {
 		return ErrWrongPhase
 	}
 
-	humanIdx := m.findHumanIdx()
+	humanIdx := findHumanIdx(m.players)
 	if humanIdx < 0 || m.round.bidPlayerIdx != humanIdx {
 		return ErrNotHumanTurn
 	}
@@ -482,7 +482,7 @@ func (m *Mighty) ResolveTrick() {
 	pointCount := m.countPointCards(trickCards)
 	m.players[winnerIdx].pointCards += pointCount
 
-	winnerName := m.playerName(winnerIdx)
+	winnerName := playerName(m.players, winnerIdx)
 	s := fmt.Sprintf("%s wins trick %d", winnerName, m.round.trickNumber)
 	if pointCount > 0 {
 		s += fmt.Sprintf(" (+%d point cards)", pointCount)
@@ -581,7 +581,7 @@ func (m *Mighty) ScoreRound() {
 			}
 		}
 		p.roundScore = score
-		m.appendLog(i, "round_score", fmt.Sprintf("%s: round=%d", m.playerName(i), p.roundScore), nil)
+		m.appendLog(i, "round_score", fmt.Sprintf("%s: round=%d", playerName(m.players, i), p.roundScore), nil)
 	}
 
 	// 累積スコアに加算
@@ -592,7 +592,7 @@ func (m *Mighty) ScoreRound() {
 	// 累積スコアログ
 	for i := range MightyPlayerCnt {
 		m.appendLog(i, "cumulative_score", fmt.Sprintf("%s: total=%d",
-			m.playerName(i), m.players[i].cumulativeScore), nil)
+			playerName(m.players, i), m.players[i].cumulativeScore), nil)
 	}
 
 	// ゲーム終了判定
@@ -675,10 +675,7 @@ func (m *Mighty) GetPlayerCnt() int { return len(m.players) }
 
 // GetPlayer プレイヤー取得
 func (m *Mighty) GetPlayer(i int) *MightyPlayer {
-	if i < 0 || i >= len(m.players) {
-		return nil
-	}
-	return m.players[i]
+	return getPlayer(m.players, i)
 }
 
 // GetPlayers 全プレイヤーを取得
@@ -737,10 +734,7 @@ func (m *Mighty) SetJokerPlayed(v bool) { m.round.jokerPlayed = v }
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (m *Mighty) IsHumanTurn() bool {
-	if m.round.currentPlayerIdx < 0 || m.round.currentPlayerIdx >= len(m.players) {
-		return false
-	}
-	return m.players[m.round.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(m.players, m.round.currentPlayerIdx)
 }
 
 // IsHumanBidTurn 現在のビッド手番が人間かどうか
@@ -783,7 +777,7 @@ func (m *Mighty) GetValidPlayIndices(playerIdx int) []int {
 
 // GetHint ヒントを取得する
 func (m *Mighty) GetHint() *MightyHint {
-	humanIdx := m.findHumanIdx()
+	humanIdx := findHumanIdx(m.players)
 	if humanIdx < 0 {
 		return nil
 	}
@@ -836,16 +830,6 @@ func (m *Mighty) GetHint() *MightyHint {
 
 // --- Private methods ---
 
-// findHumanIdx 人間プレイヤーのインデックスを返す (-1=なし)
-func (m *Mighty) findHumanIdx() int {
-	for i, p := range m.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 // dealCards 53枚を配る: 10枚×5人 + 場札3枚
 func (m *Mighty) dealCards() {
 	m.trumpCards.Shuffle()
@@ -875,10 +859,10 @@ func (m *Mighty) applyBid(playerIdx int, bid int, noTrump bool) {
 	m.players[playerIdx].SetBidNoTrump(noTrump)
 
 	if bid == 0 {
-		m.appendLog(playerIdx, "bid", fmt.Sprintf("%s passes", m.playerName(playerIdx)), nil)
+		m.appendLog(playerIdx, "bid", fmt.Sprintf("%s passes", playerName(m.players, playerIdx)), nil)
 		m.round.passCount++
 	} else {
-		desc := fmt.Sprintf("%s bids %d", m.playerName(playerIdx), bid)
+		desc := fmt.Sprintf("%s bids %d", playerName(m.players, playerIdx), bid)
 		if noTrump {
 			desc += " (no trump)"
 		}
@@ -906,13 +890,13 @@ func (m *Mighty) checkBidComplete() {
 		m.players[0].SetBid(m.config.MinBid)
 		m.players[0].SetBidNoTrump(false)
 		m.appendLog(0, "forced_bid",
-			fmt.Sprintf("%s is forced to bid %d (all pass)", m.playerName(0), m.config.MinBid), nil)
+			fmt.Sprintf("%s is forced to bid %d (all pass)", playerName(m.players, 0), m.config.MinBid), nil)
 	}
 
 	m.round.declarerIdx = m.round.highestBidder
 	m.players[m.round.declarerIdx].SetIsDeclarer(true)
 	m.appendLog(m.round.declarerIdx, "declarer",
-		fmt.Sprintf("%s becomes Declarer (bid %d)", m.playerName(m.round.declarerIdx), m.round.highestBid), nil)
+		fmt.Sprintf("%s becomes Declarer (bid %d)", playerName(m.players, m.round.declarerIdx), m.round.highestBid), nil)
 
 	m.round.phase = MightyPhaseTrumpAndFriend
 }
@@ -929,13 +913,13 @@ func (m *Mighty) applyDeclareTrumpAndFriend(suit int, partnerSuit int, partnerVa
 	}
 	if suit == MightyTrumpNone {
 		m.appendLog(m.round.declarerIdx, "declare_trump",
-			fmt.Sprintf("%s declares No-Trump", m.playerName(m.round.declarerIdx)), nil)
+			fmt.Sprintf("%s declares No-Trump", playerName(m.players, m.round.declarerIdx)), nil)
 	} else {
 		m.appendLog(m.round.declarerIdx, "declare_trump",
-			fmt.Sprintf("%s declares %s as trump", m.playerName(m.round.declarerIdx), suitNames[suit]), nil)
+			fmt.Sprintf("%s declares %s as trump", playerName(m.players, m.round.declarerIdx), suitNames[suit]), nil)
 	}
 	m.appendLog(m.round.declarerIdx, "declare_partner",
-		fmt.Sprintf("%s names %s as partner card", m.playerName(m.round.declarerIdx), mightyCardStr(m.round.partnerCard)), nil)
+		fmt.Sprintf("%s names %s as partner card", playerName(m.players, m.round.declarerIdx), mightyCardStr(m.round.partnerCard)), nil)
 
 	// パートナーを特定 (手札中)
 	holder := m.findPartnerHolder()
@@ -947,7 +931,7 @@ func (m *Mighty) applyDeclareTrumpAndFriend(suit int, partnerSuit int, partnerVa
 			m.round.partnerRevealed = true
 			m.players[holder].SetPartnerRevealed(true)
 			m.appendLog(holder, "partner_self",
-				fmt.Sprintf("%s holds the partner card themselves (solo declarer)", m.playerName(holder)), nil)
+				fmt.Sprintf("%s holds the partner card themselves (solo declarer)", playerName(m.players, holder)), nil)
 		}
 	} else {
 		// 場札にある可能性 → 場札交換後に再判定
@@ -978,7 +962,7 @@ func (m *Mighty) applyExchangeKitty(discardIndices []int) {
 	player.AddTrick(discarded)
 
 	m.appendLog(m.round.declarerIdx, "exchange",
-		fmt.Sprintf("%s discards %d kitty cards", m.playerName(m.round.declarerIdx), len(discarded)), discarded)
+		fmt.Sprintf("%s discards %d kitty cards", playerName(m.players, m.round.declarerIdx), len(discarded)), discarded)
 
 	// 場札交換後、パートナー保有者がまだ不明 (= 場札に居た) なら再特定
 	if m.round.partnerIdx < 0 && m.round.partnerCard != nil {
@@ -990,7 +974,7 @@ func (m *Mighty) applyExchangeKitty(discardIndices []int) {
 				m.round.partnerRevealed = true
 				m.players[m.round.declarerIdx].SetPartnerRevealed(true)
 				m.appendLog(m.round.declarerIdx, "partner_self",
-					fmt.Sprintf("%s discards the partner card (solo declarer)", m.playerName(m.round.declarerIdx)), nil)
+					fmt.Sprintf("%s discards the partner card (solo declarer)", playerName(m.players, m.round.declarerIdx)), nil)
 				break
 			}
 		}
@@ -1030,7 +1014,7 @@ func (m *Mighty) playCard(playerIdx int, card *Card, isJokerLead bool, demandSui
 		LeadDemandSuit: demandSuit,
 	})
 
-	desc := fmt.Sprintf("%s plays %s", m.playerName(playerIdx), mightyCardStr(card))
+	desc := fmt.Sprintf("%s plays %s", playerName(m.players, playerIdx), mightyCardStr(card))
 	if isJokerLead {
 		suitNames := map[int]string{
 			CardDesignSpade: "Spade", CardDesignClover: "Club",
@@ -1302,7 +1286,7 @@ func (m *Mighty) checkPartnerReveal(playerIdx int, card *Card) {
 			m.players[playerIdx].SetIsPartner(true)
 		}
 		m.appendLog(playerIdx, "partner_reveal",
-			fmt.Sprintf("%s is revealed as the partner!", m.playerName(playerIdx)), []*Card{card})
+			fmt.Sprintf("%s is revealed as the partner!", playerName(m.players, playerIdx)), []*Card{card})
 	}
 }
 
@@ -1373,14 +1357,12 @@ func (m *Mighty) checkGameEnd() {
 			winnerIdx = i
 		}
 	}
-	m.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", m.playerName(winnerIdx)), nil)
+	m.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(m.players, winnerIdx)), nil)
 }
 
 // sortAllHands 全プレイヤーの手札をソートする
 func (m *Mighty) sortAllHands() {
-	for _, p := range m.players {
-		m.sortHand(p)
-	}
+	sortEachHand(m.players, m.sortHand)
 }
 
 // sortHand プレイヤーの手札をスート→値の順にソートする
@@ -1394,26 +1376,9 @@ func (m *Mighty) sortHand(p *MightyPlayer) {
 	})
 }
 
-// playerName プレイヤー名を返す
-func (m *Mighty) playerName(idx int) string {
-	if idx < 0 || idx >= len(m.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if m.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
 // appendLog 棋譜にエントリを追加する
 func (m *Mighty) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	m.round.actionLog = append(m.round.actionLog, &ActionLogEntry{
-		TurnNumber: len(m.round.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	m.round.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // mightyCardStr カードの文字列表現 (ジョーカー対応)
@@ -1429,7 +1394,7 @@ func mightyCardStr(card *Card) string {
 
 // playHintReason プレイヒントの理由を判定する
 func (m *Mighty) playHintReason(chosenIdx int) string {
-	humanIdx := m.findHumanIdx()
+	humanIdx := findHumanIdx(m.players)
 	if humanIdx < 0 {
 		return ""
 	}
@@ -2335,7 +2300,7 @@ func (m *Mighty) UnmarshalJSON(data []byte) error {
 		jokerPlayed:       j.JokerPlayed,
 		gameEndFlag:       j.GameEndFlag,
 		winnerTeam:        j.WinnerTeam,
-		actionLog:         j.ActionLog,
+		actionLogBase:     actionLogBase{actionLog: j.ActionLog},
 	}
 	if m.round.actionLog == nil {
 		m.round.actionLog = make([]*ActionLogEntry, 0)

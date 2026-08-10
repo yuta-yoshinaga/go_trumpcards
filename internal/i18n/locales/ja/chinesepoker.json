@@ -21,5 +21,11 @@
   "dealerWins": "ディーラーの勝ち！",
   "dealerScoop": "ディーラーのスクープ勝ち！",
   "payoutLine": "払戻し: {{payout}}",
-  "royaltyLine": "ロイヤリティ: プレイヤー={{player}} / ディーラー={{dealer}}"
+  "royaltyLine": "ロイヤリティ: プレイヤー={{player}} / ディーラー={{dealer}}",
+  "hintNone": "いまはヒントを出せません。",
+  "hintRowFront": "前列(3枚): {{cards}}",
+  "hintRowMiddle": "中列(5枚): {{cards}}",
+  "hintRowBack": "後列(5枚): {{cards}}",
+  "hintSplitOk": "この分け方ならファウルにならない",
+  "hintFoulRisk": "注意: この分け方はファウルになる。前列/中列を組み替えること"
 }

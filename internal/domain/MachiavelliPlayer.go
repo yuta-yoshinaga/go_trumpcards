@@ -19,9 +19,7 @@ func NewMachiavelliPlayer(isHuman bool) *MachiavelliPlayer {
 
 // ResetRound ラウンドをリセット（手札・スコア・終了状態を初期化）
 func (p *MachiavelliPlayer) ResetRound() {
-	p.SetRoundScore(0)
-	p.Reset()
-	p.SetIsFinished(false)
+	resetRoundScored(p)
 }
 
 // machiavelliPlayerJSON は MachiavelliPlayer の JSON 表現。

@@ -1,16 +1,22 @@
 {
+  "autoplay": "オートプレイ",
+  "center": "中央(K)",
+  "currentCard": "手持ちカード",
+  "gameClear": "ゲームクリア！ ステップ数: {{stepCount}}",
+  "gameOver": "ゲームオーバー",
+  "hint": {
+    "firstStep": "中央パイルからカードをめくってスタートしましょう",
+    "continueStep": "現在のカードに対応する位置のパイルにめくり続けます"
+  },
+  "landscapeBanner": "横向きにすると操作しやすくなります",
   "phase": {
     "playing": "プレイ中",
     "gameClear": "ゲームクリア",
     "gameOver": "ゲームオーバー"
   },
-  "title": "クロックソリティア",
-  "stepCount": "ステップ数",
-  "step": "ステップ",
-  "autoplay": "オートプレイ",
-  "stopAutoplay": "停止",
-  "undo": "元に戻す",
-  "currentCard": "手持ちカード",
+  "placementHint": "{{hour}}時の山へ",
+  "placementKing": "中央（K）の山へ",
+  "playing": "プレイ中",
   "settings": {
     "speed": "演出速度",
     "speedHelp": "オートプレイ中に1手ごとの着地演出をどれくらいの速さで再生するかを選びます。速いほど一気に配置が進みます。",
@@ -18,19 +24,15 @@
     "speedNormal": "普通",
     "speedFast": "高速"
   },
-  "center": "中央(K)",
-  "playing": "プレイ中",
-  "gameClear": "ゲームクリア！ ステップ数: {{stepCount}}",
-  "gameOver": "ゲームオーバー",
+  "step": "ステップ",
+  "stepCount": "ステップ数",
+  "stopAutoplay": "停止",
+  "title": "クロックソリティア",
   "tutorial": {
     "clockFace": "時計の文字盤の位置にカードが並んでいます。",
     "centerPile": "中央はKのパイルです。",
     "controls": "ステップで1枚ずつ、オートプレイで自動進行します。",
     "resetButton": "リセットボタンで新しいゲームを始められます。"
   },
-  "hint": {
-    "firstStep": "中央パイルからカードをめくってスタートしましょう",
-    "continueStep": "現在のカードに対応する位置のパイルにめくり続けます"
-  },
-  "landscapeBanner": "横向きにすると操作しやすくなります"
+  "undo": "元に戻す"
 }

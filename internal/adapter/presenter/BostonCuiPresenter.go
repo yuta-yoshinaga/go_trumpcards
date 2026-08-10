@@ -153,6 +153,15 @@ func bostonLadderLine() string {
 			b.WriteString(" < ")
 		}
 		b.WriteString(strconv.Itoa(int(l)) + ":" + bostonBidLabel(l))
+		// **どの段が手札を晒し、どの段で味方を呼べるかまで見せる。**段の名前
+		// だけでは、自分の宣言が第 1 トリックのあとに手札を公開する羽目になるか
+		// も、単独で戦うことになるかも分からないまま競らせることになる (#4939)。
+		if domain.BostonBidIsExposed(l) {
+			b.WriteString(i18n.T("boston.ladderExposedTag"))
+		}
+		if domain.BostonBidCanCallPartner(l) {
+			b.WriteString(i18n.T("boston.ladderPartnerTag"))
+		}
 	}
 	return b.String()
 }

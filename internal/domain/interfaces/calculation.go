@@ -31,6 +31,8 @@ type CalculationGame interface {
 	GetWastes() [domain.CalculationWasteCnt][]*domain.Card
 	// GetFoundations ファンデーション一覧を取得する
 	GetFoundations() [domain.CalculationFoundationCnt][]*domain.Card
+	// GetNextFoundationRank そのファンデーションに次に置けるランクを取得する (0=置けない)
+	GetNextFoundationRank(fIdx int) int
 	// IsStalemate 手詰まり状態を取得する
 	IsStalemate() bool
 }

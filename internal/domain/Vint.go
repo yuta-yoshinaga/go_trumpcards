@@ -130,7 +130,7 @@ type Vint struct {
 	gameEndFlag bool
 	winnerTeam  int
 
-	actionLog []*ActionLogEntry
+	actionLogBase
 }
 
 // NewVint コンストラクタ
@@ -693,10 +693,7 @@ func (v *Vint) GetPlayers() []*VintPlayer { return v.players }
 
 // GetPlayer は idx のプレイヤーを返す。
 func (v *Vint) GetPlayer(idx int) *VintPlayer {
-	if idx < 0 || idx >= len(v.players) {
-		return nil
-	}
-	return v.players[idx]
+	return getPlayer(v.players, idx)
 }
 
 // GetPhase は現在のフェーズを返す。
@@ -782,18 +779,9 @@ func (v *Vint) GetConfig() VintConfig { return v.config }
 // SetConfig は設定をセットする。
 func (v *Vint) SetConfig(c VintConfig) { v.config = c }
 
-// GetActionLog は棋譜を返す。
-func (v *Vint) GetActionLog() []*ActionLogEntry { return v.actionLog }
-
 // addLog は棋譜を 1 行足す。
 func (v *Vint) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	v.actionLog = append(v.actionLog, &ActionLogEntry{
-		TurnNumber: len(v.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	v.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // SetPhaseForTest はテスト用にフェーズを設定する。
@@ -801,16 +789,7 @@ func (v *Vint) SetPhaseForTest(p VintPhase) { v.phase = p }
 
 // SetHandForTest はテスト用に手札を差し替える。
 func (v *Vint) SetHandForTest(idx int, cards []*Card) {
-	p := v.GetPlayer(idx)
-	if p == nil {
-		return
-	}
-	for p.GetCardsSize() > 0 {
-		p.RemoveCard(0)
-	}
-	for _, c := range cards {
-		p.AddCard(c)
-	}
+	setHandForTest(v.GetPlayer(idx), cards)
 }
 
 // SetContractForTest はテスト用に契約を設定する。

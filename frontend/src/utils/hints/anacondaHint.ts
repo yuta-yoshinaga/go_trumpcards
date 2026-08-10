@@ -20,5 +20,7 @@ export function getAnacondaHint(state: AnacondaResponse): HintResult | null {
     targetAction: hint.action,
     reason: `hint.${hint.reason}`,
     confidence: hint.reason === 'strong_hand' ? 'strong' : 'moderate',
+    // pass/keep のときだけ backend が入れてくる。call/raise/fold では nil (#4851)。
+    ...(hint.cardIndices && hint.cardIndices.length > 0 ? { targetIndices: hint.cardIndices } : {}),
   };
 }

@@ -30,8 +30,32 @@ func threeThirteenPlayerStr(g interfaces.ThreeThirteenGame, player *domain.Three
 		"deadwood", deadwoodStr) + "\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
 		b.WriteString(cuiIndexedCardListStr(player) + "\n")
+		if line := threeThirteenDiscardPreview(g, player, i); line != "" {
+			b.WriteString(line + "\n")
+		}
 	}
 	return b.String()
+}
+
+// threeThirteenDiscardPreview lists the deadwood the human would be left with
+// for each possible discard. Web は 1 枚選ぶたびに同じ値を出している (#4840)。
+// ディスカードフェーズ以外では出さない — 捨てられない場面の予測は意味がない。
+func threeThirteenDiscardPreview(g interfaces.ThreeThirteenGame, player *domain.ThreeThirteenPlayer, idx int) string {
+	if g.GetPhase() != domain.ThreeThirteenPhaseDiscard || g.GetCurrentPlayerIdx() != idx {
+		return ""
+	}
+	parts := make([]string, 0, player.GetCardsSize())
+	for i := 0; i < player.GetCardsSize(); i++ {
+		after := g.GetDeadwoodAfterDiscard(idx, i)
+		if after < 0 {
+			continue
+		}
+		parts = append(parts, "["+strconv.Itoa(i)+"]"+strconv.Itoa(after))
+	}
+	if len(parts) == 0 {
+		return ""
+	}
+	return i18n.Tf("threethirteen.discardPreview", "values", strings.Join(parts, "  "))
 }
 
 // ThreeThirteenCuiPresenter renders the Three Thirteen CUI view.

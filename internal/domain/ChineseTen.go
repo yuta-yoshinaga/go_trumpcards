@@ -145,7 +145,7 @@ type ChineseTen struct {
 	scores      []int
 	gameEndFlag bool
 	winnerIdx   int
-	actionLog   []*ActionLogEntry
+	actionLogBase
 }
 
 // NewChineseTen はコンストラクタ。
@@ -354,13 +354,7 @@ func (c *ChineseTen) finishGame() {
 
 // addLog は棋譜へ 1 行追加する。
 func (c *ChineseTen) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	c.actionLog = append(c.actionLog, &ActionLogEntry{
-		TurnNumber: len(c.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	c.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // ---- CPU ----
@@ -425,10 +419,7 @@ func (c *ChineseTen) GetPlayers() []*ChineseTenPlayer { return c.players }
 
 // GetPlayer は idx のプレイヤーを返す。範囲外は nil。
 func (c *ChineseTen) GetPlayer(idx int) *ChineseTenPlayer {
-	if idx < 0 || idx >= len(c.players) {
-		return nil
-	}
-	return c.players[idx]
+	return getPlayer(c.players, idx)
 }
 
 // GetLayout は場札を返す。
@@ -447,10 +438,7 @@ func (c *ChineseTen) GetCaptured(idx int) []*Card {
 
 // GetScore は idx の得点を返す。
 func (c *ChineseTen) GetScore(idx int) int {
-	if idx < 0 || idx >= len(c.scores) {
-		return 0
-	}
-	return c.scores[idx]
+	return elemAt(c.scores, idx)
 }
 
 // SetScore は idx の得点を設定する (テスト用)。
@@ -489,9 +477,6 @@ func (c *ChineseTen) GetConfig() ChineseTenConfig { return c.config }
 
 // SetConfig はゲーム設定を差し替える。
 func (c *ChineseTen) SetConfig(cfg ChineseTenConfig) { c.config = cfg }
-
-// GetActionLog は棋譜を返す。
-func (c *ChineseTen) GetActionLog() []*ActionLogEntry { return c.actionLog }
 
 // ---- JSON ----
 

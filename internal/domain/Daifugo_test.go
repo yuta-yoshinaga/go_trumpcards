@@ -7884,3 +7884,96 @@ func TestDaifugo_SetSequenceLocked(t *testing.T) {
 	dg.SetSequenceLocked(false)
 	assert.False(t, dg.GetSequenceLocked())
 }
+
+// **CUI はどの手札が出せるかを自力で計算させていた (#4733)。**革命・11バック・
+// スートロック・階段縛りで場ごとに条件が変わるのに、CrazyEights にはある
+// 「出せる札に印」が大富豪には無かった。
+func TestDaifugo_GetPlayableCardIndices(t *testing.T) {
+	newGame := func(hand []*domain.Card) *domain.Daifugo {
+		players := []*domain.DaifugoPlayer{
+			domain.NewDaifugoPlayer(true),
+			domain.NewDaifugoPlayer(false),
+			domain.NewDaifugoPlayer(false),
+			domain.NewDaifugoPlayer(false),
+		}
+		d := domain.NewDaifugo(domain.NewTrumpCards(0), players, domain.DefaultDaifugoConfig())
+		d.SetCurrentTurn(0)
+		for _, c := range hand {
+			players[0].AddCard(c)
+		}
+		return d
+	}
+	card := func(design, value int) *domain.Card { return domain.NewCard(design, value, false) }
+
+	t.Run("every card is playable onto an empty table", func(t *testing.T) {
+		d := newGame([]*domain.Card{
+			card(domain.CardDesignSpade, 3), card(domain.CardDesignHeart, 9),
+		})
+		assert.Equal(t, []int{0, 1}, d.GetPlayableCardIndices())
+	})
+
+	// **枚数が一致し、かつ場より強い札だけ。**単に枚数が合うだけでは出せない。
+	t.Run("only cards stronger than a single on the table", func(t *testing.T) {
+		d := newGame([]*domain.Card{
+			card(domain.CardDesignSpade, 5), card(domain.CardDesignHeart, 12),
+		})
+		d.SetTableCards([]*domain.Card{card(domain.CardDesignClover, 9)})
+		assert.Equal(t, []int{1}, d.GetPlayableCardIndices(), "9 より弱い 5 に印は付かない")
+	})
+
+	// **革命中は強弱が逆転する。**同じ手札・同じ場でも印の付く札が入れ替わる。
+	t.Run("a revolution flips which cards are playable", func(t *testing.T) {
+		hand := []*domain.Card{card(domain.CardDesignSpade, 5), card(domain.CardDesignHeart, 12)}
+		table := []*domain.Card{card(domain.CardDesignClover, 9)}
+
+		normal := newGame(hand)
+		normal.SetTableCards(table)
+		revolution := newGame(hand)
+		revolution.SetTableCards(table)
+		revolution.SetRevolutionActive(true)
+
+		assert.Equal(t, []int{1}, normal.GetPlayableCardIndices())
+		assert.Equal(t, []int{0}, revolution.GetPlayableCardIndices(),
+			"革命中は 5 のほうが 9 より強い")
+	})
+
+	// **2枚出しの場には2枚組しか出せない。**ペアを作れない札には印を付けない。
+	t.Run("marks only the cards that can form a legal pair", func(t *testing.T) {
+		d := newGame([]*domain.Card{
+			card(domain.CardDesignSpade, 12), card(domain.CardDesignHeart, 12),
+			card(domain.CardDesignClover, 4),
+		})
+		d.SetTableCards([]*domain.Card{
+			card(domain.CardDesignSpade, 9), card(domain.CardDesignHeart, 9),
+		})
+		assert.Equal(t, []int{0, 1}, d.GetPlayableCardIndices(), "ペアを作れない 4 は対象外")
+	})
+
+	t.Run("nothing is marked when no card can be played", func(t *testing.T) {
+		d := newGame([]*domain.Card{
+			card(domain.CardDesignSpade, 4), card(domain.CardDesignHeart, 5),
+		})
+		d.SetTableCards([]*domain.Card{card(domain.CardDesignClover, 13)})
+		assert.Nil(t, d.GetPlayableCardIndices())
+	})
+
+	// **CPU の手番では何も返さない。**手番プレイヤーの手札で計算した
+	// インデックスを人間の手札に当てると、無関係な札に印が付く。
+	// (CPU にも手札を持たせないと「手札0枚だから nil」で素通りする。)
+	t.Run("nothing is marked on a CPU turn", func(t *testing.T) {
+		d := newGame([]*domain.Card{card(domain.CardDesignSpade, 3)})
+		d.GetPlayer(1).AddCard(card(domain.CardDesignHeart, 8))
+		d.SetCurrentTurn(1)
+		assert.Nil(t, d.GetPlayableCardIndices())
+	})
+
+	// 階段縛り + 場が空は数え上げが爆発するので、印を付けずに従来どおりにする。
+	t.Run("nothing is marked while a sequence lock holds an empty table", func(t *testing.T) {
+		d := newGame([]*domain.Card{
+			card(domain.CardDesignSpade, 3), card(domain.CardDesignSpade, 4),
+			card(domain.CardDesignSpade, 5),
+		})
+		d.SetSequenceLocked(true)
+		assert.Nil(t, d.GetPlayableCardIndices())
+	})
+}

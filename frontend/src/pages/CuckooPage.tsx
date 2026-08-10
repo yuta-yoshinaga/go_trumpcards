@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { cuckooApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -22,6 +22,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { useSound } from '../providers/SoundProvider';
 import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -151,6 +152,29 @@ function CuckooPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('cuckoo', state);
 
+  // **山場が全部無音だった。**CPU の手番が自動で進むテンポの速いゲームなので、
+  // バッジだけだとライフ喪失やキング公開を見落とす (#4891)。
+  // **フックは早期 return より上。**下に置くと初回だけフック数が変わる。
+  const { playSound } = useSound();
+  const humanLives = state?.players.find((p) => p.isHuman)?.lives ?? null;
+  const prevLivesRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (humanLives !== null && prevLivesRef.current !== null && humanLives < prevLivesRef.current) {
+      playSound('lossThud');
+    }
+    prevLivesRef.current = humanLives;
+  }, [humanLives, playSound]);
+
+  // キング公開は席ごとのフラグ。誰かが新たに公開した瞬間が山場 (スワップ拒否)。
+  const kingRevealed = state?.players.some((p) => p.kingRevealed) ?? false;
+  const prevKingRef = useRef(false);
+  useEffect(() => {
+    if (kingRevealed && !prevKingRef.current) {
+      playSound('cardFlip', { pitchVariation: 0.1 });
+    }
+    prevKingRef.current = kingRevealed;
+  }, [kingRevealed, playSound]);
+
   if (!state)
     return <GameSkeleton gameKey="cuckoo" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 1 }} />;
 
@@ -184,6 +208,8 @@ function CuckooPageContent() {
       gamePath="/cuckoo"
       gameEndFlag={isGameEnd}
       winShow={humanWon}
+      // 勝敗の効果音は GamePageShell が持つ設計。ページ側で鳴らすと二重になる。
+      lossShow={isGameEnd && !humanWon}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

@@ -11,6 +11,8 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // erroringByteReader returns a fixed non-EOF error after streaming zero
@@ -91,6 +93,81 @@ func TestSlapjackRealtimeKeyMap_HasExpectedKeys(t *testing.T) {
 	assert.Equal(t, "r", SlapjackRealtimeKeyMap['r'])
 	assert.Equal(t, "q", SlapjackRealtimeKeyMap['q'])
 	assert.Equal(t, "log", SlapjackRealtimeKeyMap['l'])
+}
+
+// The legend and the key map must describe each other exactly. `log`/`l` was
+// mapped for months while the hand-written banner never mentioned it, and the
+// banner named commands (`j`, `tick`, `sd <n>`) that no key produced. Checking
+// only one direction would have missed one of those two failures, so both are
+// asserted here. See issue #5179.
+func TestRealtimeLegendCoversKeyMap(t *testing.T) {
+	t.Parallel()
+
+	// Every command reachable from the key map has a label...
+	for key, cmd := range SlapjackRealtimeKeyMap {
+		_, ok := realtimeCommandLabelKeys[cmd]
+		assert.Truef(t, ok, "key %q maps to command %q which has no label key", string(key), cmd)
+	}
+	// ...and every label is reachable from the key map.
+	reachable := make(map[string]bool, len(SlapjackRealtimeKeyMap))
+	for _, cmd := range SlapjackRealtimeKeyMap {
+		reachable[cmd] = true
+	}
+	for cmd := range realtimeCommandLabelKeys {
+		assert.Truef(t, reachable[cmd], "command %q has a label but no key maps to it", cmd)
+	}
+
+	// And the rendered legend actually mentions each key.
+	legend := strings.Join(realtimeLegendLines(SlapjackRealtimeKeyMap), "\n")
+	for key := range SlapjackRealtimeKeyMap {
+		assert.Containsf(t, legend, realtimeKeyLabel(key), "legend omits key %q", string(key))
+	}
+}
+
+// Negative control for the round-trip above: a key added without a label must
+// fail, otherwise the guard proves nothing.
+func TestRealtimeLegendCoversKeyMap_CatchesUnlabelledKey(t *testing.T) {
+	t.Parallel()
+	rogue := map[rune]string{'z': "totally-new-command"}
+	_, ok := realtimeCommandLabelKeys[rogue['z']]
+	assert.False(t, ok, "fixture must be an unlabelled command for this control to mean anything")
+	// realtimeLegendLines skips it rather than rendering a bogus line...
+	legend := strings.Join(realtimeLegendLines(rogue), "\n")
+	assert.NotContains(t, legend, "totally-new-command")
+	// ...which is exactly what the round-trip assertion above would catch.
+}
+
+// The help key must never be dispatched to the controller: it is a loop
+// concern, and "\x00help" is not a command any controller understands.
+func TestRealtimeCuiCore_HelpKeyPrintsLegendWithoutDispatching(t *testing.T) {
+	t.Parallel()
+	keys := make(chan rune, 2)
+	keys <- 'h'
+	keys <- 'q'
+	close(keys)
+	var buf bytes.Buffer
+	me := &realtimeMockExecer{response: map[string]string{"r": "fresh"}}
+	realtimeCuiCore(me, keys, nil, neverQuit(), &buf, SlapjackRealtimeKeyMap)
+
+	assert.Equal(t, []string{"r"}, me.calls, "help must not reach the controller")
+	assert.Contains(t, buf.String(), i18n.T("realtime.labelSlap"))
+	assert.Contains(t, buf.String(), i18n.T("realtime.labelLog"))
+}
+
+// The difficulty keys carry an argument, so they must arrive at the controller
+// as a full "sd <n>" command string.
+func TestRealtimeCuiCore_DifficultyKeysDispatchWithArgument(t *testing.T) {
+	t.Parallel()
+	keys := make(chan rune, 4)
+	for _, k := range []rune{'1', '2', '3'} {
+		keys <- k
+	}
+	close(keys)
+	var buf bytes.Buffer
+	me := &realtimeMockExecer{response: map[string]string{"r": "fresh"}}
+	realtimeCuiCore(me, keys, nil, neverQuit(), &buf, SlapjackRealtimeKeyMap)
+
+	assert.Equal(t, []string{"r", "sd 0", "sd 1", "sd 2"}, me.calls)
 }
 
 func TestRealtimeCuiCore_PrintsInitialResetOnStart(t *testing.T) {

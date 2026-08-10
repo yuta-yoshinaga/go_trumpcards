@@ -146,7 +146,7 @@ type Klaberjass struct {
 	gameEndFlag bool
 	winnerIdx   int
 
-	actionLog []*ActionLogEntry
+	actionLogBase
 }
 
 // NewKlaberjass コンストラクタ
@@ -1058,10 +1058,7 @@ func (k *Klaberjass) GetPlayers() []*KlaberjassPlayer { return k.players }
 
 // GetPlayer は idx のプレイヤーを返す。
 func (k *Klaberjass) GetPlayer(idx int) *KlaberjassPlayer {
-	if idx < 0 || idx >= len(k.players) {
-		return nil
-	}
-	return k.players[idx]
+	return getPlayer(k.players, idx)
 }
 
 // GetPhase は現在のフェーズを返す。
@@ -1113,6 +1110,12 @@ func (k *Klaberjass) GetSequences(idx int) []*KlaberjassSequence {
 // GetSequenceWinner はシーケンス勝負に勝った席を返す (-1 なら得点なし)。
 func (k *Klaberjass) GetSequenceWinner() int { return k.sequenceWinner }
 
+// GetLastTrickWinner は最終トリックを取った席を返す (-1 ならまだ)。
+//
+// **10 点のボーナスが付く。**画面に出さないと、ベラや宣言点を足しても
+// handPoints と合わない理由が説明できない (#4937)。
+func (k *Klaberjass) GetLastTrickWinner() int { return k.lastTrickWinner }
+
 // GetBelaHolder は切札 K+Q を持っていた席を返す (-1 ならなし)。
 func (k *Klaberjass) GetBelaHolder() int { return k.belaHolder }
 
@@ -1151,9 +1154,6 @@ func (k *Klaberjass) GetConfig() KlaberjassConfig { return k.config }
 // SetConfig は設定をセットする。
 func (k *Klaberjass) SetConfig(c KlaberjassConfig) { k.config = c }
 
-// GetActionLog は棋譜を返す。
-func (k *Klaberjass) GetActionLog() []*ActionLogEntry { return k.actionLog }
-
 // SetPhaseForTest はテスト用にフェーズを設定する。
 func (k *Klaberjass) SetPhaseForTest(p KlaberjassPhase) { k.phase = p }
 
@@ -1171,16 +1171,7 @@ func (k *Klaberjass) SetTrickLeaderForTest(idx int) { k.trickLeader = idx }
 
 // SetHandForTest はテスト用に手札を差し替える。
 func (k *Klaberjass) SetHandForTest(idx int, cards []*Card) {
-	p := k.GetPlayer(idx)
-	if p == nil {
-		return
-	}
-	for p.GetCardsSize() > 0 {
-		p.RemoveCard(0)
-	}
-	for _, c := range cards {
-		p.AddCard(c)
-	}
+	setHandForTest(k.GetPlayer(idx), cards)
 }
 
 // SetHandPointsForTest はテスト用にディール中の得点を設定する。
@@ -1211,13 +1202,7 @@ func (k *Klaberjass) FindBelaForTest() { k.findBela() }
 
 // addLog は棋譜を 1 行足す。
 func (k *Klaberjass) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	k.actionLog = append(k.actionLog, &ActionLogEntry{
-		TurnNumber: len(k.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	k.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // klaberjassJSON is the JSON wire format for Klaberjass.

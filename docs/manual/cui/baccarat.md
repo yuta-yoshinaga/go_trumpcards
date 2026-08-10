@@ -7,7 +7,8 @@
 ## 起動方法
 
 ```sh
-go run ./cmd/cli baccarat
+go run ./cmd/trumpcards baccarat
+go run ./cmd/trumpcards --lang en baccarat  # 英語モード
 ```
 
 ## ルール

@@ -46,23 +46,23 @@ const (
 
 // CaribbeanStud カリビアンスタッドポーカークラス
 type CaribbeanStud struct {
-	trumpCards      *TrumpCards       // トランプカード
-	playerHand      []*Card           // プレイヤーハンド
-	dealerHand      []*Card           // ディーラーハンド
-	chips           ChipHolder        // チップ
-	anteBet         int               // アンテベット額
-	jackpotBet      int               // ジャックポットサイドベット額
-	playBet         int               // プレイ（コール）ベット額
-	phase           int               // 現在のフェーズ
-	gameEndFlag     bool              // ゲーム終了フラグ
-	result          GameResult        // ゲーム結果
-	antePayout      int               // アンテ配当
-	playPayout      int               // プレイ配当
-	jackpotPayout   int               // ジャックポット配当
-	dealerQualified bool              // ディーラークオリファイフラグ
-	playerHandRank  int               // プレイヤーハンドランク
-	dealerHandRank  int               // ディーラーハンドランク
-	actionLog       []*ActionLogEntry // 棋譜
+	trumpCards      *TrumpCards // トランプカード
+	playerHand      []*Card     // プレイヤーハンド
+	dealerHand      []*Card     // ディーラーハンド
+	chips           ChipHolder  // チップ
+	anteBet         int         // アンテベット額
+	jackpotBet      int         // ジャックポットサイドベット額
+	playBet         int         // プレイ（コール）ベット額
+	phase           int         // 現在のフェーズ
+	gameEndFlag     bool        // ゲーム終了フラグ
+	result          GameResult  // ゲーム結果
+	antePayout      int         // アンテ配当
+	playPayout      int         // プレイ配当
+	jackpotPayout   int         // ジャックポット配当
+	dealerQualified bool        // ディーラークオリファイフラグ
+	playerHandRank  int         // プレイヤーハンドランク
+	dealerHandRank  int         // ディーラーハンドランク
+	actionLogBase
 }
 
 // NewCaribbeanStud コンストラクタ
@@ -235,20 +235,7 @@ func (cs *CaribbeanStud) compareHands() int {
 
 // checkDealerQualifies ディーラークオリファイ条件: ペア以上、または A-K ハイ
 func (cs *CaribbeanStud) checkDealerQualifies() bool {
-	if cs.dealerHandRank >= PokerHandOnePair {
-		return true
-	}
-	hasAce := false
-	hasKing := false
-	for _, c := range cs.dealerHand {
-		switch c.GetValue() {
-		case 1:
-			hasAce = true
-		case 13:
-			hasKing = true
-		}
-	}
-	return hasAce && hasKing
+	return dealerQualifies(cs.dealerHandRank, cs.dealerHand)
 }
 
 // calculatePayouts アンテ／プレイの配当計算
@@ -316,17 +303,6 @@ func (cs *CaribbeanStud) evaluateJackpot() {
 	}
 }
 
-// appendLog 棋譜にエントリを追加する
-func (cs *CaribbeanStud) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	cs.actionLog = append(cs.actionLog, &ActionLogEntry{
-		TurnNumber: len(cs.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // --- Getters ---
 
 // GetPlayerHand プレイヤーハンド取得
@@ -378,9 +354,6 @@ func (cs *CaribbeanStud) GetDealerHandRank() int { return cs.dealerHandRank }
 
 // GetChips チップ
 func (cs *CaribbeanStud) GetChips() int { return cs.chips.GetChips() }
-
-// GetActionLog 棋譜を取得する
-func (cs *CaribbeanStud) GetActionLog() []*ActionLogEntry { return cs.actionLog }
 
 // --- Test helpers ---
 

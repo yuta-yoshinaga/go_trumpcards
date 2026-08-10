@@ -20,9 +20,7 @@ func NewMacauPlayer(isHuman bool) *MacauPlayer {
 
 // ResetRound ラウンドをリセット（手札・スコア・終了状態・宣言フラグを初期化）
 func (p *MacauPlayer) ResetRound() {
-	p.SetRoundScore(0)
-	p.Reset()
-	p.SetIsFinished(false)
+	resetRoundScored(p)
 	p.hasDeclared = false
 }
 

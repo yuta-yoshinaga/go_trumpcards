@@ -63,6 +63,8 @@ type KlaberjassGame interface {
 	GetSequences(idx int) []*domain.KlaberjassSequence
 	// GetSequenceWinner シーケンス勝負に勝った席を取得する
 	GetSequenceWinner() int
+	// GetLastTrickWinner 最終トリックを取った席を取得する (-1 ならまだ)
+	GetLastTrickWinner() int
 	// GetBelaHolder 切札 K+Q を持っていた席を取得する
 	GetBelaHolder() int
 	// IsBelaScored ベラが成立したかを取得する

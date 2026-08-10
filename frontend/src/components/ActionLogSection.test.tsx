@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
+import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import type { ActionLogEntry } from '../types/card';
 import { ActionLogSection } from './ActionLogSection';
@@ -64,5 +65,50 @@ describe('ActionLogSection', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: 'close' }));
     expect(hideActionLog).toHaveBeenCalledTimes(1);
+  });
+
+  // Opening the panel unmounts the trigger (it is gated on `!actionLog`), and
+  // closing remounts it as a different element. ActionLogPanel's own restore
+  // therefore cannot reach it, so this component owns the restore. Driven
+  // through real state rather than fixed props, because the bug only exists
+  // across the open -> close transition. See issue #5183.
+  it('returns focus to the trigger after the panel closes', () => {
+    function Harness() {
+      const [log, setLog] = useState<ActionLogEntry[] | null>(null);
+      return (
+        <ActionLogSection
+          isEndPhase={true}
+          actionLog={log}
+          showActionLog={() => setLog([entry])}
+          hideActionLog={() => setLog(null)}
+        />
+      );
+    }
+    render(<Harness />);
+
+    const trigger = screen.getByRole('button', { name: '棋譜を見る' });
+    trigger.focus();
+    fireEvent.click(trigger);
+
+    // The trigger really is gone while the panel is open — this is what makes
+    // the panel-side restore insufficient.
+    expect(trigger.isConnected).toBe(false);
+
+    fireEvent.click(screen.getByRole('button', { name: 'close' }));
+
+    const remounted = screen.getByRole('button', { name: '棋譜を見る' });
+    expect(remounted).not.toBe(trigger);
+    expect(document.activeElement).toBe(remounted);
+  });
+
+  it('does not steal focus on the initial render', () => {
+    const outside = document.createElement('button');
+    document.body.appendChild(outside);
+    outside.focus();
+
+    render(<ActionLogSection isEndPhase={true} actionLog={null} showActionLog={vi.fn()} hideActionLog={vi.fn()} />);
+
+    expect(document.activeElement).toBe(outside);
+    document.body.removeChild(outside);
   });
 });

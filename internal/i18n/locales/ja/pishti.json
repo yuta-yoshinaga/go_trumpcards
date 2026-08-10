@@ -13,5 +13,7 @@
   "scoreEntry": "  {{name}}: {{score}}点",
   "promptCurrentTurn": "手番: {{name}}",
   "promptHelp": "p <hand> で手札を場に出す (同ランクまたはJで場札を捕獲)",
-  "result.scores": "ゲーム終了。スコア: {{scores}}"
+  "result.scores": "ゲーム終了。スコア: {{scores}}",
+  "provisional": "{{name}} 暫定: {{score}}点",
+  "provisionalNote": "※ 暫定点はピシュティ賞と最多捕獲(+3)のみ。カード点は集計時に加算されます"
 }

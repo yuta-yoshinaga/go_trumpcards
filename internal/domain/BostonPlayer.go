@@ -16,8 +16,7 @@ func NewBostonPlayer(isHuman bool) *BostonPlayer {
 
 // ResetRound は局開始時に手札を初期化する。
 func (p *BostonPlayer) ResetRound() {
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayer(p)
 }
 
 // bostonPlayerJSON is the JSON wire format for BostonPlayer.

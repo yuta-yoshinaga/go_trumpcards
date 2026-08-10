@@ -98,11 +98,17 @@ type TeenPattiWebOutput struct {
 	CanRequestSideShow bool                        `json:"canRequestSideShow"`
 	SideShowRequester  int                         `json:"sideShowRequester"`
 	SideShowTarget     int                         `json:"sideShowTarget"`
-	GameEndFlag        bool                        `json:"gameEndFlag"`
-	IsHumanTurn        bool                        `json:"isHumanTurn"`
-	Hint               *TeenPattiWebOutputHint     `json:"hint,omitempty"`
-	LastSideShow       *TeenPattiWebOutputSideShow `json:"lastSideShow,omitempty"`
-	Config             TeenPattiWebOutputConfig    `json:"config"`
+	// MinRaise / MaxRaise は人間がいまレイズできる額の範囲。CanRaise が false の
+	// ときは意味を持たない。**上限が無いせいで Web からは払えない額を送信でき、
+	// サーバーエラーで初めて気づく状態だった (#4729)。**
+	MinRaise     int                         `json:"minRaise"`
+	MaxRaise     int                         `json:"maxRaise"`
+	CanRaise     bool                        `json:"canRaise"`
+	GameEndFlag  bool                        `json:"gameEndFlag"`
+	IsHumanTurn  bool                        `json:"isHumanTurn"`
+	Hint         *TeenPattiWebOutputHint     `json:"hint,omitempty"`
+	LastSideShow *TeenPattiWebOutputSideShow `json:"lastSideShow,omitempty"`
+	Config       TeenPattiWebOutputConfig    `json:"config"`
 	WebOutputBase
 }
 

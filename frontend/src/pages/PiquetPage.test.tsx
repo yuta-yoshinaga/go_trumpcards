@@ -1,4 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
+import i18n from 'i18next';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, piquetApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -333,5 +334,25 @@ describe('PiquetPage', () => {
     renderWithProviders(<PiquetPage />);
     await screen.findByRole('checkbox', { name: 'ヒント表示' });
     expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
+  });
+
+  it('takes the declaration-kind label from the i18n bundle', async () => {
+    // A sentinel proves the label is looked up: the old hardcoded 'Point' ignores it.
+    const original = i18n.getResourceBundle('ja', 'piquet') as Record<string, unknown>;
+    i18n.addResourceBundle('ja', 'piquet', { declKindPoint: '__POINT__' }, true, true);
+    try {
+      mockExec.mockResolvedValue(makeState({ phase: PiquetPhase.DECLARATION, declStage: PiquetDeclarationKind.POINT }));
+      renderWithProviders(<PiquetPage />);
+      await waitFor(() => expect(screen.getByText('次の宣言: __POINT__')).toBeInTheDocument());
+    } finally {
+      i18n.removeResourceBundle('ja', 'piquet');
+      i18n.addResourceBundle('ja', 'piquet', original, true, true);
+    }
+  });
+
+  it('falls back to ? for an unknown declaration kind', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: PiquetPhase.DECLARATION, declStage: 99 }));
+    renderWithProviders(<PiquetPage />);
+    await waitFor(() => expect(screen.getByText('次の宣言: ?')).toBeInTheDocument());
   });
 });

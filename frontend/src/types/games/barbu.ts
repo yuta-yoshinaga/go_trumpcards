@@ -49,6 +49,13 @@ export interface BarbuResponse extends BaseGameResponse {
   lastTrickWinner: number;
   tablePlaced: number[];
   dominoPlayable: number[];
+  /**
+   * トリック契約でいま出せる手札の位置（フォロー義務を反映）。
+   *
+   * ドミノ契約以外では可視化が無く、リード色を持っていても全カードが押せて、
+   * サーバーに弾かれて初めて分かる状態だった (#4804)。人間の手番でないときは空。
+   */
+  playableIndices: number[];
   usedContracts: boolean[];
   gameEndFlag: boolean;
   config: BarbuConfig;

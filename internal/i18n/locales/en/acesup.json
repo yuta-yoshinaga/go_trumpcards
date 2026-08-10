@@ -14,5 +14,6 @@
   "hintMove": "Hint: move column {{col}} to an empty column",
   "hintDraw": "Hint: deal a card to each column",
   "hintUnknown": "Hint: unknown",
-  "markerLegend": "Markers: * = removable / > = movable to an empty column"
+  "markerLegend": "Markers: * = removable / > = movable to an empty column",
+  "usageCol": "Usage: {{cmd}} <col>"
 }

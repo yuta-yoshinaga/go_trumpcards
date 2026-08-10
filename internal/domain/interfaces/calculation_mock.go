@@ -73,6 +73,11 @@ func (_m *MockCalculationGame) GetFoundations() [domain.CalculationFoundationCnt
 	return _m.Called().Get(0).([domain.CalculationFoundationCnt][]*domain.Card)
 }
 
+func (_m *MockCalculationGame) GetNextFoundationRank(fIdx int) int {
+	args := _m.Called(fIdx)
+	return args.Int(0)
+}
+
 func (_m *MockCalculationGame) IsStalemate() bool { return _m.Called().Bool(0) }
 
 func (_m *MockCalculationGame) GetActionLog() []*domain.ActionLogEntry {

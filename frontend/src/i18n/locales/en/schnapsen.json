@@ -13,7 +13,8 @@
     "trumpNone": "Trump: stock exhausted",
     "tricks": "Tricks",
     "phase1": "Phase 1 (follow optional)",
-    "phase2": "Phase 2 (must follow)"
+    "phase2": "Phase 2 (must follow)",
+    "trumpNoneWithSuit": "Trump: {{suit}} (stock empty)"
   },
   "phase": {
     "play": "Play",

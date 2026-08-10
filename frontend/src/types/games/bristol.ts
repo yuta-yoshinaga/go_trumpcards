@@ -17,6 +17,13 @@ export interface BristolResponse extends BaseGameResponse {
   fan: Card[][];
   stockCount: number;
   foundation: Card[][];
+  /**
+   * 移動元ごとの合法な移動先。キーは `"tableau-0"` / `"fan-2"`。
+   *
+   * 選択中は全ての移動先が同じ見た目で強調されていて、押すまで合法か
+   * 分からなかった (#4813)。
+   */
+  legalTargets: Record<string, { tableau: number[]; foundation: number[] }>;
   phase: number;
   moveCount: number;
   canUndo: boolean;

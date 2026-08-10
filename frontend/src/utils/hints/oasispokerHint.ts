@@ -11,6 +11,34 @@ const ACE_VALUE = 1;
 /** Card value representing a King. */
 const KING_VALUE = 13;
 
+/** Lowest value counted as a high card to hold (Jack). */
+const JACK_VALUE = 11;
+
+/**
+ * Hand indices worth swapping out: cards that are neither part of a pair nor a
+ * high card (J/Q/K/A).
+ *
+ * Sync: `oasisPokerExchangeIndices` in `OasisPokerCuiPresenter.go`, which the
+ * CUI already prints as `[1]♠5 [3]♣2`. The Web hint only said "exchange" and
+ * left the player to work out which of the five to click (#4711).
+ *
+ * **An Ace is `value === 1`,** so a plain "is it big?" comparison throws away
+ * the best card in the hand.
+ */
+function exchangeIndices(hand: readonly Card[]): number[] {
+  const rankCount = new Map<number, number>();
+  for (const c of hand) {
+    rankCount.set(c.value, (rankCount.get(c.value) ?? 0) + 1);
+  }
+  const out: number[] = [];
+  hand.forEach((c, i) => {
+    const isPair = (rankCount.get(c.value) ?? 0) >= 2;
+    const isHigh = c.value === ACE_VALUE || c.value >= JACK_VALUE;
+    if (!isPair && !isHigh) out.push(i);
+  });
+  return out;
+}
+
 /**
  * Returns an Oasis Poker hint for the exchange and action phases.
  *
@@ -26,10 +54,19 @@ export function getOasisPokerHint(state: OasisPokerResponse): HintResult | null 
   if (!state.playerHand || state.playerHand.length === 0) return null;
 
   if (state.phase === OasisPokerPhase.EXCHANGE) {
-    if (state.playerHandRank >= RANK_ONE_PAIR) {
+    const toSwap = exchangeIndices(state.playerHand);
+    // **交換するものが無いときだけ stand。**低いペアがあるからと「そのまま」
+    // と言うと、残り3枚を引き直す機会を捨てさせる。CUI は ex が空のときだけ
+    // hintStand を出している。
+    if (toSwap.length === 0) {
       return { targetAction: 'stand', reason: 'hint.exchangeKeep', confidence: 'strong' };
     }
-    return { targetAction: 'exchange', reason: 'hint.exchangeImprove', confidence: 'moderate' };
+    return {
+      targetAction: 'exchange',
+      reason: 'hint.exchangeImprove',
+      confidence: state.playerHandRank >= RANK_ONE_PAIR ? 'strong' : 'moderate',
+      targetIndices: toSwap,
+    };
   }
 
   if (state.phase === OasisPokerPhase.ACTION) {

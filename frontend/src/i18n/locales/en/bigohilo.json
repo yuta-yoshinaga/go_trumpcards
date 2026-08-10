@@ -92,5 +92,14 @@
     "lpTooltip": "Loose Passive: plays many hands but rarely raises",
     "balanced": "BAL",
     "balancedTooltip": "Balanced style"
+  },
+  "boardLow": {
+    "label": "Low",
+    "live": "Live",
+    "possible": "Possible",
+    "impossible": "No low",
+    "ariaLive": "The board shows 3 distinct low ranks (8 or lower); a low is live",
+    "ariaPossible": "{{needed}} more distinct low rank(s) of 8 or lower are needed for a low",
+    "ariaImpossible": "Fewer than 3 distinct low ranks on the board; no low is possible"
   }
 }

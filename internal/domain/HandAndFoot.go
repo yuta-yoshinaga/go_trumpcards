@@ -78,9 +78,9 @@ type HandAndFoot struct {
 	gameEndFlag      bool
 	winnerTeam       int
 	roundNumber      int
-	actionLog        []*ActionLogEntry
-	drewFromDiscard  bool
-	drawnCard        *Card
+	actionLogBase
+	drewFromDiscard bool
+	drawnCard       *Card
 }
 
 // NewHandAndFoot コンストラクタ
@@ -233,7 +233,7 @@ func (g *HandAndFoot) autoLayRed3s(playerIdx int) {
 			if CanastaIsRed3(card) {
 				player.RemoveCard(i)
 				g.teamRed3s[team] = append(g.teamRed3s[team], card)
-				g.appendLog(playerIdx, "red3", fmt.Sprintf("%s lays down red 3: %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+				g.appendLog(playerIdx, "red3", fmt.Sprintf("%s lays down red 3: %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 				if len(g.drawPile) > 0 {
 					replacement := g.drawPile[len(g.drawPile)-1]
 					g.drawPile = g.drawPile[:len(g.drawPile)-1]
@@ -261,7 +261,7 @@ func (g *HandAndFoot) enterFootIfEmpty(playerIdx int) bool {
 	}
 	player.SetFoot(make([]*Card, 0))
 	player.SetInFoot(true)
-	g.appendLog(playerIdx, "foot", fmt.Sprintf("%s picks up the foot (%d cards)", g.playerName(playerIdx), len(foot)), nil)
+	g.appendLog(playerIdx, "foot", fmt.Sprintf("%s picks up the foot (%d cards)", playerName(g.players, playerIdx), len(foot)), nil)
 	g.autoLayRed3s(playerIdx)
 	g.sortHand(playerIdx)
 	return true
@@ -282,15 +282,58 @@ func (g *HandAndFoot) teamCanastaCounts(team int) (red, black int) {
 	return red, black
 }
 
-// canGoOut 上がり条件を満たすか。
-func (g *HandAndFoot) canGoOut(playerIdx int) bool {
-	p := g.players[playerIdx]
-	if !p.GetInFoot() {
-		return false
+// CanastaMinMeld はキャナスタ系の初回メルド最低点を累積得点から返す。
+// Web の canastaMinMeld と同じ帯 (マイナス 15 / 1500 未満 50 / 3000 未満 90 /
+// それ以上 120)。表示専用で、ドメインはこの最低点を強制しない。
+func CanastaMinMeld(cumulativeScore int) int {
+	switch {
+	case cumulativeScore < 0:
+		return 15
+	case cumulativeScore < 1500:
+		return 50
+	case cumulativeScore < 3000:
+		return 90
+	default:
+		return 120
 	}
-	team := HandAndFootTeamOf(playerIdx)
-	red, black := g.teamCanastaCounts(team)
-	return red >= g.config.RedCanastasToGoOut && black >= g.config.BlackCanastasToGoOut
+}
+
+// HandAndFootGoOutStatus は上がり条件の充足状況。UI が「なぜ今上がれないか」を
+// 説明するために使う (#4836)。
+type HandAndFootGoOutStatus struct {
+	InFoot       bool
+	RedCanastas  int
+	RedRequired  int
+	BlackCanasta int
+	BlackReq     int
+}
+
+// CanGoOut は 3 条件をすべて満たしているかを返す。
+func (s HandAndFootGoOutStatus) CanGoOut() bool {
+	return s.InFoot && s.RedCanastas >= s.RedRequired && s.BlackCanasta >= s.BlackReq
+}
+
+// GetGoOutStatus は指定プレイヤーの上がり条件の内訳を返す。canGoOut と同じ判定を
+// 使うので、「条件を満たしている」表示と実際に上がれるかがずれない。
+func (g *HandAndFoot) GetGoOutStatus(playerIdx int) HandAndFootGoOutStatus {
+	if playerIdx < 0 || playerIdx >= len(g.players) {
+		return HandAndFootGoOutStatus{}
+	}
+	red, black := g.teamCanastaCounts(HandAndFootTeamOf(playerIdx))
+	return HandAndFootGoOutStatus{
+		InFoot:       g.players[playerIdx].GetInFoot(),
+		RedCanastas:  red,
+		RedRequired:  g.config.RedCanastasToGoOut,
+		BlackCanasta: black,
+		BlackReq:     g.config.BlackCanastasToGoOut,
+	}
+}
+
+// canGoOut 上がり条件を満たすか。表示側と同じ材料で判定するため
+// GetGoOutStatus に委譲する — 2 つの実装が並ぶと「上がれます」と出しながら
+// サーバーに拒否される状態が作れてしまう。
+func (g *HandAndFoot) canGoOut(playerIdx int) bool {
+	return g.GetGoOutStatus(playerIdx).CanGoOut()
 }
 
 // PlayerDrawFromStock 人間プレイヤーが山札から2枚引く
@@ -320,7 +363,7 @@ func (g *HandAndFoot) PlayerDrawFromStock() error {
 			g.autoLayRed3s(g.currentPlayerIdx)
 		}
 	}
-	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws 2 from stock", g.playerName(g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws 2 from stock", playerName(g.players, g.currentPlayerIdx)), nil)
 
 	g.drewFromDiscard = false
 	g.drawnCard = nil
@@ -387,7 +430,7 @@ func (g *HandAndFoot) PlayerDrawFromDiscard(naturalPairIndices []int) error {
 	}
 	g.isFrozen = false
 
-	g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s picks up %d cards from the discard pile", g.playerName(g.currentPlayerIdx), len(taken)), []*Card{topCard})
+	g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s picks up %d cards from the discard pile", playerName(g.players, g.currentPlayerIdx), len(taken)), []*Card{topCard})
 
 	g.autoLayRed3s(g.currentPlayerIdx)
 	g.sortHand(g.currentPlayerIdx)
@@ -517,7 +560,7 @@ func (g *HandAndFoot) PlayerMeld(meldGroups [][]int) error {
 			}
 			meld := &CanastaMeld{Cards: action.cards, IsNatural: isNatural}
 			g.teamMelds[team] = append(g.teamMelds[team], meld)
-			g.appendLog(g.currentPlayerIdx, "meld", fmt.Sprintf("%s melds %d cards (rank %d)", g.playerName(g.currentPlayerIdx), len(action.cards), meld.GetRank()), action.cards)
+			g.appendLog(g.currentPlayerIdx, "meld", fmt.Sprintf("%s melds %d cards (rank %d)", playerName(g.players, g.currentPlayerIdx), len(action.cards), meld.GetRank()), action.cards)
 		} else {
 			existing := g.teamMelds[team][action.existingIdx]
 			for _, c := range action.cards {
@@ -526,7 +569,7 @@ func (g *HandAndFoot) PlayerMeld(meldGroups [][]int) error {
 					existing.IsNatural = false
 				}
 			}
-			g.appendLog(g.currentPlayerIdx, "meld_add", fmt.Sprintf("%s adds %d cards to meld (rank %d)", g.playerName(g.currentPlayerIdx), len(action.cards), existing.GetRank()), action.cards)
+			g.appendLog(g.currentPlayerIdx, "meld_add", fmt.Sprintf("%s adds %d cards to meld (rank %d)", playerName(g.players, g.currentPlayerIdx), len(action.cards), existing.GetRank()), action.cards)
 		}
 	}
 
@@ -539,7 +582,7 @@ func (g *HandAndFoot) PlayerMeld(meldGroups [][]int) error {
 
 	for _, m := range g.teamMelds[team] {
 		if m.IsCanasta() {
-			g.appendLog(g.currentPlayerIdx, "canasta", fmt.Sprintf("%s completes a %s canasta!", g.playerName(g.currentPlayerIdx), canastaTypeStr(m.IsNatural)), nil)
+			g.appendLog(g.currentPlayerIdx, "canasta", fmt.Sprintf("%s completes a %s canasta!", playerName(g.players, g.currentPlayerIdx), canastaTypeStr(m.IsNatural)), nil)
 		}
 	}
 
@@ -598,7 +641,7 @@ func (g *HandAndFoot) PlayerDiscard(cardIndex int) error {
 	if CanastaIsWild(discarded) {
 		g.isFrozen = true
 	}
-	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", g.playerName(g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
 
 	// 捨て札で手札を出し切ったらフットを取り込む
 	g.enterFootIfEmpty(g.currentPlayerIdx)
@@ -634,7 +677,7 @@ func (g *HandAndFoot) PlayerGoOut() error {
 		if CanastaIsWild(discarded) {
 			g.isFrozen = true
 		}
-		g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", g.playerName(g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+		g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
 	} else if player.GetCardsSize() > 1 {
 		return NewDomainError(ErrInvalidPlay, "上がるには手札が0枚または1枚でなければなりません")
 	}
@@ -645,7 +688,7 @@ func (g *HandAndFoot) PlayerGoOut() error {
 
 // goOut 上がり処理
 func (g *HandAndFoot) goOut(playerIdx int) {
-	g.appendLog(playerIdx, "go_out", fmt.Sprintf("%s goes out! (bonus: %d)", g.playerName(playerIdx), HandAndFootGoingOutBonus), nil)
+	g.appendLog(playerIdx, "go_out", fmt.Sprintf("%s goes out! (bonus: %d)", playerName(g.players, playerIdx), HandAndFootGoingOutBonus), nil)
 	g.scoreRound(HandAndFootTeamOf(playerIdx))
 }
 
@@ -693,7 +736,7 @@ func (g *HandAndFoot) cpuDraw() {
 					player.AddCard(c)
 				}
 				g.isFrozen = false
-				g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s picks up %d cards from the discard pile", g.playerName(g.currentPlayerIdx), len(taken)), []*Card{topCard})
+				g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s picks up %d cards from the discard pile", playerName(g.players, g.currentPlayerIdx), len(taken)), []*Card{topCard})
 				g.autoLayRed3s(g.currentPlayerIdx)
 				g.sortHand(g.currentPlayerIdx)
 				g.phase = HandAndFootPhaseMeld
@@ -715,7 +758,7 @@ func (g *HandAndFoot) cpuDraw() {
 			g.autoLayRed3s(g.currentPlayerIdx)
 		}
 	}
-	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws 2 from stock", g.playerName(g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws 2 from stock", playerName(g.players, g.currentPlayerIdx)), nil)
 
 	g.drewFromDiscard = false
 	g.drawnCard = nil
@@ -746,7 +789,7 @@ func (g *HandAndFoot) cpuMeld() {
 					existing.IsNatural = false
 				}
 			}
-			g.appendLog(g.currentPlayerIdx, "meld_add", fmt.Sprintf("%s adds %d cards to meld (rank %d)", g.playerName(g.currentPlayerIdx), len(group), existing.GetRank()), group)
+			g.appendLog(g.currentPlayerIdx, "meld_add", fmt.Sprintf("%s adds %d cards to meld (rank %d)", playerName(g.players, g.currentPlayerIdx), len(group), existing.GetRank()), group)
 		} else {
 			isNatural := true
 			for _, c := range group {
@@ -757,7 +800,7 @@ func (g *HandAndFoot) cpuMeld() {
 			}
 			meld := &CanastaMeld{Cards: group, IsNatural: isNatural}
 			g.teamMelds[team] = append(g.teamMelds[team], meld)
-			g.appendLog(g.currentPlayerIdx, "meld", fmt.Sprintf("%s melds %d cards (rank %d)", g.playerName(g.currentPlayerIdx), len(group), meld.GetRank()), group)
+			g.appendLog(g.currentPlayerIdx, "meld", fmt.Sprintf("%s melds %d cards (rank %d)", playerName(g.players, g.currentPlayerIdx), len(group), meld.GetRank()), group)
 		}
 
 		for _, c := range group {
@@ -807,7 +850,7 @@ func (g *HandAndFoot) cpuDiscard() {
 			if CanastaIsWild(discarded) {
 				g.isFrozen = true
 			}
-			g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", g.playerName(g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+			g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
 			g.goOut(g.currentPlayerIdx)
 			return
 		}
@@ -819,7 +862,7 @@ func (g *HandAndFoot) cpuDiscard() {
 	if CanastaIsWild(discarded) {
 		g.isFrozen = true
 	}
-	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", g.playerName(g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
 
 	g.enterFootIfEmpty(g.currentPlayerIdx)
 	g.advanceTurn()
@@ -1193,10 +1236,7 @@ func (g *HandAndFoot) SetDiscardPile(pile []*Card) { g.discardPile = pile }
 
 // GetDiscardTop 捨て札の一番上を取得
 func (g *HandAndFoot) GetDiscardTop() *Card {
-	if len(g.discardPile) == 0 {
-		return nil
-	}
-	return g.discardPile[len(g.discardPile)-1]
+	return discardTop(g.discardPile)
 }
 
 // GetDrawPileCount 山札の残り枚数取得
@@ -1242,10 +1282,7 @@ func (g *HandAndFoot) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *HandAndFoot) GetPlayer(i int) *HandAndFootPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetTeamMelds 指定チームのメルドを取得
@@ -1282,10 +1319,7 @@ func (g *HandAndFoot) SetTeamRed3s(team int, red3s []*Card) {
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (g *HandAndFoot) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -1294,9 +1328,6 @@ func (g *HandAndFoot) GetConfig() HandAndFootConfig { return g.config }
 // SetConfig 設定変更
 func (g *HandAndFoot) SetConfig(cfg HandAndFootConfig) { g.config = cfg }
 
-// GetActionLog 棋譜取得
-func (g *HandAndFoot) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // GetDrewFromDiscard 捨て札から引いたか取得
 func (g *HandAndFoot) GetDrewFromDiscard() bool { return g.drewFromDiscard }
 
@@ -1304,42 +1335,12 @@ func (g *HandAndFoot) GetDrewFromDiscard() bool { return g.drewFromDiscard }
 
 // sortAllHands 全プレイヤーの手札をソートする
 func (g *HandAndFoot) sortAllHands() {
-	for i := range g.players {
-		g.sortHand(i)
-	}
+	sortHands(len(g.players), g)
 }
 
 // sortHand プレイヤーの手札をスート→値の順にソートする
 func (g *HandAndFoot) sortHand(playerIdx int) {
-	p := g.players[playerIdx]
-	sortPlayerHand(p, func(ci, cj *Card) bool {
-		if ci.GetDesign() != cj.GetDesign() {
-			return ci.GetDesign() < cj.GetDesign()
-		}
-		return ci.GetValue() < cj.GetValue()
-	})
-}
-
-// playerName プレイヤー名を返す
-func (g *HandAndFoot) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (g *HandAndFoot) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	sortPlayerHand(g.players[playerIdx], bySuitThenValue)
 }
 
 // --- JSON serialization ---

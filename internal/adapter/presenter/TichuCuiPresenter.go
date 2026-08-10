@@ -40,6 +40,21 @@ func (p *TichuCuiPresenter) Output(tg interfaces.TichuGame, lastErr error) strin
 			}
 		}
 
+		// **得点差もボムの使用状況も終局まで分からなかった。**Web は常時
+		// スコアバーに出している (#4888)。終局時は下でもう一度出すので、
+		// ここは進行中だけ。
+		if phase != domain.TichuPhaseEnd {
+			scores := tg.GetScores()
+			fmt.Fprintf(b, "%s (P0/P2): %d  %s (P1/P3): %d\n",
+				i18n.T("tichu.teamA"), scores[0], i18n.T("tichu.teamB"), scores[1])
+			if n := tg.GetBombCount(); n > 0 {
+				b.WriteString(i18n.Tf("tichu.bombCount", "count", strconv.Itoa(n)) + "\n")
+			}
+			if tg.GetIsOneTwo() {
+				b.WriteString(color.BoldYellow(i18n.T("tichu.oneTwo")) + "\n")
+			}
+		}
+
 		if phase == domain.TichuPhaseEnd {
 			scores := tg.GetScores()
 			b.WriteString(color.BoldYellow(i18n.T("tichu.gameEnd")) + "\n")

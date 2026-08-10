@@ -20,6 +20,8 @@ type MississippiStudInteractorIF interface {
 	Play(multiplier int) string
 	// Fold フォールド
 	Fold() string
+	// Hint ヒント取得
+	Hint() string
 	// ActionLog 棋譜を出力する
 	ActionLog() string
 }
@@ -57,6 +59,11 @@ func (mi *MississippiStudInteractor) Play(multiplier int) string {
 // Fold フォールド
 func (mi *MississippiStudInteractor) Fold() string {
 	return execAndPresent(mi.Game, mi.cp, mi.Game.Fold)
+}
+
+// Hint ヒント取得
+func (mi *MississippiStudInteractor) Hint() string {
+	return mi.cp.HintOutput(mi.Game)
 }
 
 // ActionLog 棋譜を出力する

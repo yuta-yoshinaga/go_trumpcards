@@ -30,6 +30,14 @@ export interface MacauResponse extends BaseGameResponse {
   drawPileCount: number;
   chosenSuit: number;
   penaltyDrawCount: number;
+  /**
+   * いま出せる手札の位置。
+   *
+   * マジックカード (2/7/8/J) やチョウズドスートが絡む合法判定を、CUI は
+   * HintOutput で全部並べているのに Web は都度クリックで確かめるしかなかった
+   * (#4805)。自分の手番でないときは空。
+   */
+  playableIndices: number[];
   direction: number;
   gameEndFlag: boolean;
   winnerIdx: number;

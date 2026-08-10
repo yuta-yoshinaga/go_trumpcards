@@ -34,6 +34,8 @@ type AgnesGame interface {
 	GetMoveCount() int
 	// GetStockCount ストック残枚数
 	GetStockCount() int
+	// IsStalemate 合法手が無い状態か
+	IsStalemate() bool
 	// GetTableau タブロー取得
 	GetTableau() [domain.AgnesTableauCnt][]*domain.AgnesTableauCard
 	// GetFoundation ファンデーション取得

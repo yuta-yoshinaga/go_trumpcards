@@ -25,6 +25,15 @@ func (fp *FaroCuiPresenter) Output(f interfaces.FaroGame, lastErr error) string 
 	sb.WriteString(i18n.Tf("faro.turnsLine", "played", strconv.Itoa(f.GetTurnsPlayed()), "total", strconv.Itoa(f.GetTurnsTotal())) + "\n")
 	sb.WriteString(i18n.Tf("faro.remainingLine", "count", strconv.Itoa(f.GetRemainingCount())) + "\n")
 
+	// **ケースキーパーはこのゲームの中核。**Web はランク別の残数を常時出すのに、
+	// CUI は総枚数しか出しておらず、勘だけで賭けることになっていた (#4894)。
+	remaining := f.GetRemainingByRank()
+	parts := make([]string, 0, domain.FaroMaxRank)
+	for r := domain.FaroMinRank; r <= domain.FaroMaxRank; r++ {
+		parts = append(parts, cuiRankLabel(r)+":"+strconv.Itoa(remaining[r]))
+	}
+	sb.WriteString(i18n.Tf("faro.caseKeeper", "counts", strings.Join(parts, " ")) + "\n")
+
 	ranks := f.GetBetRanks()
 	bets := f.GetBets()
 	if len(ranks) > 0 {

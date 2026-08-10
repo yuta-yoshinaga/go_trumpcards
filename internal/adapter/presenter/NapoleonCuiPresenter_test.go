@@ -454,12 +454,43 @@ func TestNapoleonCuiPresenter_HintOutput(t *testing.T) {
 		player.AddCard(domain.NewCard(domain.CardDesignDiamond, 10, false))
 		player.AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
 		m.On("GetPlayer", 0).Return(player)
+		m.On("GetHumanIdx").Return(0)
 
 		p := new(presenter.NapoleonCuiPresenter)
 		result := p.HintOutput(m)
 		assert.Contains(t, result, "HINT")
 		assert.Contains(t, result, "を捨てる")
 		assert.Contains(t, result, "戦略的な捨て")
+	})
+
+	// **人間が席 0 とは限らない。**ヒントの数値自体はドメインが findHumanIdx で
+	// 解決しているのに、表示だけが GetPlayer(0) を決め打ちしていた (#4689)。
+	// コンストラクタは任意の並び順を受け付けるので、席がずれると別人の手札を
+	// 見て「これを捨てろ」と言うことになる。
+	t.Run("resolves the human seat instead of assuming index 0", func(t *testing.T) {
+		idx := 1
+		m := new(interfaces.MockNapoleonGame)
+		m.On("GetHint").Return(&domain.NapoleonHint{DiscardIndex: &idx, Reason: "strategic_discard"})
+
+		// 席 2 が人間。席 0 には別人の手札を置く。
+		human := domain.NewNapoleonPlayer(true)
+		human.Reset()
+		human.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		human.AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+
+		other := domain.NewNapoleonPlayer(false)
+		other.Reset()
+		other.AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		other.AddCard(domain.NewCard(domain.CardDesignDiamond, 4, false))
+
+		m.On("GetHumanIdx").Return(2)
+		m.On("GetPlayer", 2).Return(human)
+		m.On("GetPlayer", 0).Return(other).Maybe()
+
+		result := new(presenter.NapoleonCuiPresenter).HintOutput(m)
+		// 人間の index 1 は ♥7。席 0 を見ていると ♦4 と言ってしまう。
+		assert.Contains(t, result, "7")
+		assert.NotContains(t, result, "♦4")
 	})
 
 	t.Run("play hint", func(t *testing.T) {
@@ -474,6 +505,7 @@ func TestNapoleonCuiPresenter_HintOutput(t *testing.T) {
 		player.AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
 		player.AddCard(domain.NewCard(domain.CardDesignDiamond, 10, false))
 		m.On("GetPlayer", 0).Return(player)
+		m.On("GetHumanIdx").Return(0)
 
 		p := new(presenter.NapoleonCuiPresenter)
 		result := p.HintOutput(m)
@@ -512,6 +544,7 @@ func TestNapoleonCuiPresenter_HintOutput(t *testing.T) {
 			player.Reset()
 			player.AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
 			m.On("GetPlayer", 0).Return(player)
+			m.On("GetHumanIdx").Return(0)
 
 			p := new(presenter.NapoleonCuiPresenter)
 			result := p.HintOutput(m)

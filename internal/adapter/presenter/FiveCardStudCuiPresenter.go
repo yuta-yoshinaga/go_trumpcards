@@ -127,7 +127,7 @@ func (p *FiveCardStudCuiPresenter) Output(s interfaces.FiveCardStudGame, lastErr
 				case r.HandName != "":
 					b.WriteString(i18n.Tf("fivecardstud.resultHand",
 						"name", name,
-						"hand", r.HandName,
+						"hand", cuiPokerHandName(r.HandRank),
 						"kickers", kickers))
 				default:
 					b.WriteString(i18n.Tf("fivecardstud.resultName", "name", name))

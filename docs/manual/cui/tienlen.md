@@ -1,4 +1,4 @@
-# Tien Len (ティエンレン) — CUI版マニュアル
+# ティエンレン（CUI版）遊び方
 
 ## ゲーム概要
 
@@ -25,36 +25,31 @@ go run ./cmd/trumpcards --lang en tienlen  # 英語モード
 ## ゲームの流れ
 
 ```mermaid
-stateDiagram-v2
-    [*] --> Deal
-    Deal --> FirstPlay
-    FirstPlay --> Play
-    Play --> Play
-    Play --> PassClear
-    PassClear --> Play
-    Play --> Finish
-    Finish --> GameEnd
-    Finish --> Play
-    GameEnd --> [*]
-
-    Deal: カード配布
-    FirstPlay: 先攻 (♠3必須)
-    Play: カードを出す or パス
-    PassClear: 全員パス→場クリア
-    Finish: プレイヤー上がり
-    GameEnd: ゲーム終了
+flowchart TD
+    A["カード配布（13枚ずつ）"] --> B["先攻（♠3を含む組を出す）"]
+    B --> C["カードを出す or パス"]
+    C --> D{"全員がパスした?"}
+    D -- はい --> E["場をクリアして最後に出した人が先手"]
+    E --> C
+    D -- いいえ --> F{"手札が尽きた?"}
+    F -- いいえ --> C
+    F -- はい --> G["プレイヤー上がり（ランク確定）"]
+    G --> H{"残り1人?"}
+    H -- いいえ --> C
+    H -- はい --> I["ゲーム終了（順位発表）"]
 ```
 
 ## コマンド一覧
 
-| コマンド | 説明 |
-|---------|------|
-| `p <idx...>` | 指定インデックスのカードを出す（例: `p 0 2 4`） |
-| `p` | パス（場が空でない場合） |
-| `r` / `reset` | ゲームリセット |
-| `sd <0-2>` | CPU難易度変更 (0=Normal, 1=Easy, 2=Hard) |
-| `log` / `l` | 棋譜表示 |
-| `q` | 終了 |
+| コマンド | 短縮形 | 説明 |
+|----------|--------|------|
+| `play <idx...>` | `p` | 指定インデックスのカードを出す（例: `p 0 2 4`） |
+| `play` | `p` | パス（場が空でない場合） |
+| `reset` | `r` | ゲームリセット |
+| `setdifficulty <0-2>` | `sd` | CPU難易度変更 (0=Normal, 1=Easy, 2=Hard) |
+| `log` | `l` | 棋譜表示 |
+| `quit` | `q` | 終了 |
+| `help` | `?` | コマンド一覧を表示 |
 
 ## 画面の見方
 

@@ -14,6 +14,8 @@ type ChinesePokerGame interface {
 	// SetHands フロント3枚・ミドル5枚を指定してハンドを分割する
 	SetHands(frontIndices []int, middleIndices []int) error
 
+	// GetSuggestedArrangement 推奨する13枚の分け方を取得する
+	GetSuggestedArrangement() *domain.ChinesePokerSuggestedArrangement
 	// GetPlayerCards プレイヤーの13枚を取得する
 	GetPlayerCards() []*domain.Card
 	// GetDealerCards ディーラーの13枚を取得する

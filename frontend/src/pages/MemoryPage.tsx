@@ -29,7 +29,7 @@ import {
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { MemoryResponse } from '../types/card';
+import type { Card, MemoryResponse } from '../types/card';
 import { MemoryPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
@@ -37,6 +37,8 @@ import { MEMORY_HELP, parseMemoryCommand } from '../utils/cli/commands/memoryCom
 import { formatMemoryState } from '../utils/cli/formatters/memoryFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { type GridDir, moveFocus } from '../utils/gridNav';
+import { getMemoryHint } from '../utils/hints/memoryHint';
+import { memoryKnownMatch } from '../utils/memoryKnownMatch';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -116,11 +118,7 @@ function MemoryPageContent() {
     handleFlip,
     handleNext,
   } = useMemoryGame();
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('memory', state);
+  const { hintEnabled: frontendHintEnabled, setHintEnabled: setFrontendHintEnabled } = useGameHint('memory', state);
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('memory');
   const cliConfig: CliGameConfig<MemoryResponse, Parameters<typeof memoryApi.exec>> = useMemo(
@@ -148,7 +146,11 @@ function MemoryPageContent() {
 
   const phaseNames = usePhaseNames('memory', MEMORY_PHASE_KEYS);
 
-  const [visited, setVisited] = useState<Set<number>>(() => new Set());
+  // **見た「位置」ではなく見た「札」を覚える。**目のマークは「前に見た」としか
+  // 言わず、そこに何があったかを思い出す助けにはならなかった (#4775)。
+  // サーバは裏返った札の値を送らない (不正防止として正しい) ので、これは
+  // プレイヤー自身が画面で見た情報の記録であって、追加の情報ではない。
+  const [seen, setSeen] = useState<ReadonlyMap<number, Card>>(() => new Map());
 
   // Captured-pairs panel is expanded on desktop and collapsed on mobile so the
   // board grid keeps its full height on small screens (#3028).
@@ -158,12 +160,12 @@ function MemoryPageContent() {
 
   useEffect(() => {
     if (!state) return;
-    setVisited((prev) => {
+    setSeen((prev) => {
       let changed = false;
-      const next = new Set(prev);
+      const next = new Map(prev);
       state.board.forEach((bc, idx) => {
-        if (bc.faceUp && !next.has(idx)) {
-          next.add(idx);
+        if (bc.faceUp && bc.card && !next.has(idx)) {
+          next.set(idx, bc.card);
           changed = true;
         }
       });
@@ -227,9 +229,18 @@ function MemoryPageContent() {
     });
   }, [state, t]);
 
+  // 1枚めくった時点で、既に見て覚えている一致先があればその位置を指す。
+  // レジストリの hintFactories は state しか受け取れないので、記憶を渡せる
+  // ここで getMemoryHint を呼ぶ。**ヒントもハイライトも同じ位置を読む。**
+  const knownMatchIdx = useMemo(() => (state ? memoryKnownMatch(state.board, seen) : null), [state, seen]);
+  const frontendHint = useMemo(
+    () => (frontendHintEnabled && state ? getMemoryHint(state, knownMatchIdx) : null),
+    [frontendHintEnabled, state, knownMatchIdx],
+  );
+
   const handleManualReset = useCallback(() => {
     hideActionLog();
-    setVisited(new Set());
+    setSeen(new Map());
     void exec('reset', undefined, { cpuDifficulty: memoryConfig.cpuDifficulty, pairCount: memoryConfig.pairCount });
   }, [exec, hideActionLog, memoryConfig.cpuDifficulty, memoryConfig.pairCount]);
 
@@ -305,7 +316,7 @@ function MemoryPageContent() {
                       const pairs = Number(v);
                       handleConfigChange('pairCount', v);
                       hideActionLog();
-                      setVisited(new Set());
+                      setSeen(new Map());
                       void exec('reset', undefined, { cpuDifficulty: memoryConfig.cpuDifficulty, pairCount: pairs });
                     },
                   },
@@ -396,7 +407,8 @@ function MemoryPageContent() {
                 className="grid grid-cols-7 gap-0.5 sm:gap-1 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-13 lg:grid-rows-4 lg:h-full"
               >
                 {state.board.map((bc, idx) => {
-                  const wasVisited = !bc.faceUp && !bc.taken && visited.has(idx);
+                  const wasVisited = !bc.faceUp && !bc.taken && seen.has(idx);
+                  const isKnownMatch = frontendHintEnabled && idx === knownMatchIdx;
                   return (
                     <button
                       type="button"
@@ -405,9 +417,14 @@ function MemoryPageContent() {
                       aria-label={
                         bc.faceUp && bc.card
                           ? cardAlt(bc.card)
-                          : wasVisited
-                            ? `${t('cardFaceDown', { position: idx + 1 })} (${t('visitedMark')})`
-                            : t('cardFaceDown', { position: idx + 1 })
+                          : // 目のマークを読み上げるなら、より強い「一致がある」も読み上げる。
+                            // 見ただけの印だけ伝えて一致を伏せると、スクリーンリーダー利用者だけが
+                            // 情報の少ない側に置かれる。
+                            isKnownMatch
+                            ? `${t('cardFaceDown', { position: idx + 1 })} (${t('knownMatchMark')})`
+                            : wasVisited
+                              ? `${t('cardFaceDown', { position: idx + 1 })} (${t('visitedMark')})`
+                              : t('cardFaceDown', { position: idx + 1 })
                       }
                       disabled={loading || !isHumanTurn || bc.taken || bc.faceUp}
                       tabIndex={idx === focusedIdx ? 0 : -1}
@@ -417,10 +434,13 @@ function MemoryPageContent() {
                           ? 'hidden'
                           : bc.faceUp
                             ? 'bg-white ring-2 ring-ds-warning shadow-lg shadow-ds-warning/30'
-                            : wasVisited
-                              ? 'bg-ds-info border border-white/10 ring-1 ring-ds-accent hover:ring-ds-warning'
-                              : 'bg-ds-info border border-white/10 hover:ring-1 hover:ring-ds-warning'
+                            : isKnownMatch
+                              ? 'bg-ds-info border border-white/10 ring-2 ring-ds-success motion-safe:animate-pulse'
+                              : wasVisited
+                                ? 'bg-ds-info border border-white/10 ring-1 ring-ds-accent hover:ring-ds-warning'
+                                : 'bg-ds-info border border-white/10 hover:ring-1 hover:ring-ds-warning'
                       } transition-all`}
+                      data-known-match={isKnownMatch || undefined}
                     >
                       <div className={`memory-card-inner${bc.faceUp ? ' flipped' : ''}`}>
                         <div className="memory-card-back">

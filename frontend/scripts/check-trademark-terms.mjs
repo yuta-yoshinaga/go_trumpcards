@@ -27,6 +27,7 @@
 
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { extname, join, relative } from 'node:path';
+import { assertFloor } from './lib/floor.mjs';
 
 /** Repository root — this file lives at frontend/scripts/. */
 const REPO_ROOT = new URL('../../', import.meta.url).pathname;
@@ -36,8 +37,13 @@ const TRADEMARKS_MD = join(REPO_ROOT, 'TRADEMARKS.md');
  * Sanity floor for scanned files. A walk that silently matches nothing exits 0
  * and reads exactly like a clean tree, which is how a license scanner fooled us
  * earlier in the same audit. Fail loudly instead.
+ *
+ * Raised from 200 to 4000: the walk covers 6212 files, so 200 was low enough that
+ * losing `internal/` entirely — 5000-odd Go files, where most display strings
+ * live — would still have cleared it. A floor has to sit under the real number,
+ * not under zero.
  */
-const MIN_FILES = 200;
+const MIN_FILES = 4000;
 
 /** Directories scanned, each with the extensions that carry display strings. */
 const TARGETS = [
@@ -127,13 +133,7 @@ for (const { dir, exts } of TARGETS) {
   }
 }
 
-if (scanned < MIN_FILES) {
-  console.error(
-    `check-trademark-terms: only ${scanned} files scanned (expected >= ${MIN_FILES}).\n` +
-      'The walk is broken, not the tree clean.',
-  );
-  process.exit(1);
-}
+assertFloor('trademark-terms', scanned, MIN_FILES, 'files scanned');
 
 if (violations.length > 0) {
   console.error(`check-trademark-terms: ${violations.length} user-visible use(s) of a retired trademark:`);

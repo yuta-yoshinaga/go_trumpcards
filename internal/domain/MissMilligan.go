@@ -70,14 +70,14 @@ type MissMilliganHint struct {
 // ミス・ミリガンに捨て札は無く、山札は 8 枚単位で配り足す。実際の規則を採った。
 // また issue が触れていない「空き列はキングのみ」も本来の規則なので実装している。
 type MissMilligan struct {
-	trumpCards  *TrumpCards
-	tableau     [MissMilliganTableauCnt][]*MissMilliganTableauCard
-	stock       []*Card
-	foundation  [MissMilliganFoundationCnt][]*Card
-	waived      []*Card
-	phase       MissMilliganPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	tableau    [MissMilliganTableauCnt][]*MissMilliganTableauCard
+	stock      []*Card
+	foundation [MissMilliganFoundationCnt][]*Card
+	waived     []*Card
+	phase      MissMilliganPhase
+	moveCount  int
+	actionLogBase
 	history     []*missMilliganSnapshot
 	isStalemate bool
 }
@@ -469,31 +469,12 @@ func (mm *MissMilligan) CanUndo() bool { return len(mm.history) > 0 }
 
 // UndoN n 手戻す
 func (mm *MissMilligan) UndoN(n int) error {
-	if n <= 0 {
-		return errors.New("n must be positive")
-	}
-	if n > len(mm.history) {
-		return errors.New("not enough history")
-	}
-	for range n {
-		if err := mm.Undo(); err != nil {
-			return err
-		}
-	}
-	return nil
+	return undoNChecked(mm, n, len(mm.history))
 }
 
 // UndoToEscape 膠着状態から抜けるのに必要なアンドゥ回数（膠着でなければ 0、不可なら -1）
 func (mm *MissMilligan) UndoToEscape() int {
-	if !mm.isStalemate {
-		return 0
-	}
-	for i := len(mm.history) - 1; i >= 0; i-- {
-		if !mm.history[i].isStalemate {
-			return len(mm.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(mm.isStalemate, mm.history, func(s *missMilliganSnapshot) bool { return s.isStalemate })
 }
 
 // AllFaceUp 常に全札が表向き
@@ -523,9 +504,6 @@ func (mm *MissMilligan) GetTableau() [MissMilliganTableauCnt][]*MissMilliganTabl
 
 // GetFoundation 基礎札を取得
 func (mm *MissMilligan) GetFoundation() [MissMilliganFoundationCnt][]*Card { return mm.foundation }
-
-// GetActionLog 棋譜取得
-func (mm *MissMilligan) GetActionLog() []*ActionLogEntry { return mm.actionLog }
 
 // GetGameEndFlag ゲーム終了フラグ
 func (mm *MissMilligan) GetGameEndFlag() bool { return mm.phase != MissMilliganPhasePlaying }
@@ -618,14 +596,7 @@ func (mm *MissMilligan) findFoundation(card *Card) int {
 
 // afterMove 手数・棋譜・終了判定をまとめて進める
 func (mm *MissMilligan) afterMove(actionType, detail string, card *Card) {
-	mm.moveCount++
-	var cards []*Card
-	if card != nil {
-		cards = []*Card{card}
-	}
-	mm.appendLog(actionType, detail, cards)
-	mm.checkGameClear()
-	mm.checkStalemate()
+	afterMove(&mm.moveCount, mm, actionType, detail, card)
 }
 
 // checkGameClear 8 つの基礎札すべてが K まで積み上がったか
@@ -688,13 +659,7 @@ func (mm *MissMilligan) takeSnapshot() {
 
 // appendLog 棋譜エントリを追加
 func (mm *MissMilligan) appendLog(actionType, detail string, cards []*Card) {
-	mm.actionLog = append(mm.actionLog, &ActionLogEntry{
-		TurnNumber: mm.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	mm.appendLogAt(mm.moveCount, 0, actionType, detail, cards)
 }
 
 // missMilliganMaxSliceLen caps slice sizes during deserialisation.

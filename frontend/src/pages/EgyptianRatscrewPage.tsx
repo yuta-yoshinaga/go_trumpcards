@@ -22,6 +22,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { useReflexShortcuts } from '../hooks/useReflexShortcuts';
+import { useSound } from '../providers/SoundProvider';
 import { badgeWarningColors } from '../styles/badgeStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { EgyptianRatscrewResponse } from '../types/card';
@@ -73,6 +74,7 @@ function EgyptianRatscrewPageContent() {
     useGamePageSetup('egyptianratscrew');
   const { state, loading, error, exec: execApi, retry } = useGameApi(egyptianRatscrewApi.exec);
   const { cardWidth } = useCardDimensions();
+  const { playSound } = useSound();
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -125,9 +127,16 @@ function EgyptianRatscrewPageContent() {
       } else {
         setSlapAnnounce(t('egyptianratscrew.slapAnnounce.wrong', { player: slapper }));
       }
+      // **人間自身のスラップのときだけ鳴らす (#4749)。**姉妹ゲームの Slapjack と
+      // 同じ扱い。CPU の成功でファンファーレが鳴ったり、CPU のミスでブザーが
+      // 鳴って人間が責められたように感じたりしないため。ミュートは
+      // SoundProvider が全体で見る。
+      if (player === 0) {
+        playSound(outcome === 'correct' ? 'winFanfare' : 'errorBuzz');
+      }
       prevSlapEventRef.current = { kind, player };
     }
-  }, [state, t, tc]);
+  }, [state, t, tc, playSound]);
 
   useMountReset(execApi);
 

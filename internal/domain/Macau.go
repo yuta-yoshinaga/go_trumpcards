@@ -65,7 +65,7 @@ type Macau struct {
 	gameEndFlag      bool
 	winnerIdx        int
 	roundNumber      int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewMacau コンストラクタ
@@ -226,7 +226,7 @@ func (g *Macau) PlayerChooseSuit(suit int) error {
 	}
 
 	g.chosenSuit = suit
-	g.appendLog(g.currentPlayerIdx, "choose_suit", fmt.Sprintf("%s chooses %s", g.playerName(g.currentPlayerIdx), suitName(suit)), nil)
+	g.appendLog(g.currentPlayerIdx, "choose_suit", fmt.Sprintf("%s chooses %s", playerName(g.players, g.currentPlayerIdx), suitName(suit)), nil)
 
 	g.finishTurn(g.currentPlayerIdx)
 	return nil
@@ -314,7 +314,7 @@ func (g *Macau) CpuChooseSuit() {
 
 	suit := g.cpuSelectSuit(g.currentPlayerIdx)
 	g.chosenSuit = suit
-	g.appendLog(g.currentPlayerIdx, "choose_suit", fmt.Sprintf("%s chooses %s", g.playerName(g.currentPlayerIdx), suitName(suit)), nil)
+	g.appendLog(g.currentPlayerIdx, "choose_suit", fmt.Sprintf("%s chooses %s", playerName(g.players, g.currentPlayerIdx), suitName(suit)), nil)
 	g.finishTurn(g.currentPlayerIdx)
 }
 
@@ -337,14 +337,14 @@ func (g *Macau) CpuDeclare() {
 // doDeclare 宣言処理の共通実装
 func (g *Macau) doDeclare(playerIdx int) {
 	g.players[playerIdx].SetHasDeclared(true)
-	g.appendLog(playerIdx, "declare", fmt.Sprintf("%s declares Macau!", g.playerName(playerIdx)), nil)
+	g.appendLog(playerIdx, "declare", fmt.Sprintf("%s declares Macau!", playerName(g.players, playerIdx)), nil)
 	g.advanceTurn()
 }
 
 // applyDeclarePenalty 宣言忘れペナルティとして規定枚数を引かせる
 func (g *Macau) applyDeclarePenalty(playerIdx int) {
 	drawn := g.drawCards(playerIdx, MacauForgotPenalty)
-	g.appendLog(playerIdx, "penalty", fmt.Sprintf("%s forgot to declare Macau! (+%d cards)", g.playerName(playerIdx), drawn), nil)
+	g.appendLog(playerIdx, "penalty", fmt.Sprintf("%s forgot to declare Macau! (+%d cards)", playerName(g.players, playerIdx), drawn), nil)
 	g.sortHand(playerIdx)
 	g.advanceTurn()
 }
@@ -377,11 +377,11 @@ func (g *Macau) ScoreRound() {
 			score += crazyEightsCardScore(p.GetCard(j))
 		}
 		totalScore += score
-		g.appendLog(i, "hand_score", fmt.Sprintf("%s: %d points remaining", g.playerName(i), score), nil)
+		g.appendLog(i, "hand_score", fmt.Sprintf("%s: %d points remaining", playerName(g.players, i), score), nil)
 	}
 
 	g.players[winnerIdx].roundScore = totalScore
-	g.appendLog(winnerIdx, "round_win", fmt.Sprintf("%s wins round %d (+%d points)", g.playerName(winnerIdx), g.roundNumber, totalScore), nil)
+	g.appendLog(winnerIdx, "round_win", fmt.Sprintf("%s wins round %d (+%d points)", playerName(g.players, winnerIdx), g.roundNumber, totalScore), nil)
 
 	g.players[winnerIdx].CommitRoundScore()
 
@@ -416,10 +416,7 @@ func (g *Macau) SetDiscardPile(pile []*Card) { g.discardPile = pile }
 
 // GetDiscardTop 捨て札の一番上を取得
 func (g *Macau) GetDiscardTop() *Card {
-	if len(g.discardPile) == 0 {
-		return nil
-	}
-	return g.discardPile[len(g.discardPile)-1]
+	return discardTop(g.discardPile)
 }
 
 // GetDrawPileCount 山札の残り枚数取得
@@ -457,18 +454,12 @@ func (g *Macau) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *Macau) GetPlayer(i int) *MacauPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (g *Macau) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -476,9 +467,6 @@ func (g *Macau) GetConfig() MacauConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *Macau) SetConfig(cfg MacauConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *Macau) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // --- Private methods ---
 
@@ -517,7 +505,7 @@ func (g *Macau) playCard(playerIdx int, card *Card) {
 	g.discardPile = append(g.discardPile, card)
 	g.chosenSuit = -1
 
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	// マジックカードの状態更新
 	switch card.GetValue() {
@@ -588,7 +576,7 @@ func (g *Macau) drawCard(playerIdx int) error {
 	if g.penaltyDrawCount > 0 {
 		drawn := g.drawCards(playerIdx, g.penaltyDrawCount)
 		g.penaltyDrawCount = 0
-		g.appendLog(playerIdx, "take_penalty", fmt.Sprintf("%s takes %d penalty cards", g.playerName(playerIdx), drawn), nil)
+		g.appendLog(playerIdx, "take_penalty", fmt.Sprintf("%s takes %d penalty cards", playerName(g.players, playerIdx), drawn), nil)
 		g.sortHand(playerIdx)
 		g.advanceTurn()
 		return nil
@@ -600,7 +588,7 @@ func (g *Macau) drawCard(playerIdx int) error {
 
 	if len(g.drawPile) == 0 {
 		// 引けるカードがない→パス
-		g.appendLog(playerIdx, "pass", fmt.Sprintf("%s passes (no cards to draw)", g.playerName(playerIdx)), nil)
+		g.appendLog(playerIdx, "pass", fmt.Sprintf("%s passes (no cards to draw)", playerName(g.players, playerIdx)), nil)
 		g.advanceTurn()
 		return nil
 	}
@@ -610,7 +598,7 @@ func (g *Macau) drawCard(playerIdx int) error {
 	g.players[playerIdx].AddCard(card)
 	g.sortHand(playerIdx)
 
-	g.appendLog(playerIdx, "draw", fmt.Sprintf("%s draws a card", g.playerName(playerIdx)), nil)
+	g.appendLog(playerIdx, "draw", fmt.Sprintf("%s draws a card", playerName(g.players, playerIdx)), nil)
 
 	// 引いたカードが出せないなら次へ
 	if !g.hasPlayableCard(playerIdx) {
@@ -622,48 +610,17 @@ func (g *Macau) drawCard(playerIdx int) error {
 
 // drawCards 指定枚数を引く (山札が尽きたら捨て札を再利用)。実際に引けた枚数を返す。
 func (g *Macau) drawCards(playerIdx, n int) int {
-	drawn := 0
-	for i := 0; i < n; i++ {
-		if len(g.drawPile) == 0 {
-			g.recycleDrawPile()
-		}
-		if len(g.drawPile) == 0 {
-			break
-		}
-		card := g.drawPile[len(g.drawPile)-1]
-		g.drawPile = g.drawPile[:len(g.drawPile)-1]
-		g.players[playerIdx].AddCard(card)
-		drawn++
-	}
-	return drawn
+	return drawFromPile(&g.drawPile, g.players[playerIdx], n, g.recycleDrawPile)
 }
 
 // recycleDrawPile 捨て札から山札を再構築する
 func (g *Macau) recycleDrawPile() {
-	if len(g.discardPile) <= 1 {
-		return
-	}
-
-	top := g.discardPile[len(g.discardPile)-1]
-	recycled := g.discardPile[:len(g.discardPile)-1]
-	g.discardPile = []*Card{top}
-
-	rand.Shuffle(len(recycled), func(i, j int) {
-		recycled[i], recycled[j] = recycled[j], recycled[i]
-	})
-
-	g.drawPile = recycled
+	recycleDiscardToDraw(&g.discardPile, &g.drawPile)
 }
 
 // hasPlayableCard プレイヤーが出せるカードを持っているか
 func (g *Macau) hasPlayableCard(playerIdx int) bool {
-	player := g.players[playerIdx]
-	for i := 0; i < player.GetCardsSize(); i++ {
-		if g.isValidPlay(player.GetCard(i)) {
-			return true
-		}
-	}
-	return false
+	return handHasAny(g.players[playerIdx], g.isValidPlay)
 }
 
 // checkGameEnd ゲーム終了判定
@@ -692,47 +649,17 @@ func (g *Macau) checkGameEnd() {
 			g.winnerIdx = i
 		}
 	}
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", g.playerName(g.winnerIdx)), nil)
+	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, g.winnerIdx)), nil)
 }
 
 // sortAllHands 全プレイヤーの手札をソートする
 func (g *Macau) sortAllHands() {
-	for i := range g.players {
-		g.sortHand(i)
-	}
+	sortHands(len(g.players), g)
 }
 
 // sortHand プレイヤーの手札をスート→値の順にソートする
 func (g *Macau) sortHand(playerIdx int) {
-	p := g.players[playerIdx]
-	sortPlayerHand(p, func(ci, cj *Card) bool {
-		if ci.GetDesign() != cj.GetDesign() {
-			return ci.GetDesign() < cj.GetDesign()
-		}
-		return ci.GetValue() < cj.GetValue()
-	})
-}
-
-// playerName プレイヤー名を返す
-func (g *Macau) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (g *Macau) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	sortPlayerHand(g.players[playerIdx], bySuitThenValue)
 }
 
 // --- CPU AI ---
@@ -849,17 +776,7 @@ func (g *Macau) cpuSelectSuitRandom() int {
 
 // cpuSelectSuitSmart 手札で最も多いスートを選択
 func (g *Macau) cpuSelectSuitSmart(playerIdx int) int {
-	suitCount := g.countSuits(playerIdx)
-
-	bestSuit := CardDesignSpade
-	bestCount := 0
-	for suit := CardDesignSpade; suit <= CardDesignDiamond; suit++ {
-		if suitCount[suit] > bestCount {
-			bestCount = suitCount[suit]
-			bestSuit = suit
-		}
-	}
-	return bestSuit
+	return bestSuitFrom(g.countSuits(playerIdx))
 }
 
 // countSuits プレイヤーの手札のスート別枚数をカウント (8は除外)
@@ -877,10 +794,7 @@ func (g *Macau) countSuits(playerIdx int) map[int]int {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (g *Macau) getValidPlayIndices(playerIdx int) []int {
-	player := g.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return g.isValidPlay(player.GetCard(i))
-	})
+	return validPlayIndices(g.players[playerIdx], func(c *Card) bool { return g.isValidPlay(c) })
 }
 
 // GetValidPlayIndices プレイ可能なカードのインデックスリストを返す (Web用)

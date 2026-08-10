@@ -138,7 +138,7 @@ type Mus struct {
 	// 終了
 	gameEndFlag bool
 	winnerTeam  int // -1=未確定
-	actionLog   []*ActionLogEntry
+	actionLogBase
 }
 
 // NewMus コンストラクタ
@@ -247,11 +247,11 @@ func (g *Mus) resolveMus(mus bool) {
 		mus = false
 	}
 	if !mus {
-		g.appendLog(g.musTurn, "corte", fmt.Sprintf("%s cuts (no mus)", g.playerName(g.musTurn)), nil)
+		g.appendLog(g.musTurn, "corte", fmt.Sprintf("%s cuts (no mus)", playerName(g.players, g.musTurn)), nil)
 		g.beginBetting()
 		return
 	}
-	g.appendLog(g.musTurn, "mus", fmt.Sprintf("%s wants mus", g.playerName(g.musTurn)), nil)
+	g.appendLog(g.musTurn, "mus", fmt.Sprintf("%s wants mus", playerName(g.players, g.musTurn)), nil)
 	g.musAgreed++
 	if g.musAgreed >= MusPlayerCnt {
 		// 全員合意 → 交換フェーズ。
@@ -313,7 +313,7 @@ func (g *Mus) applyDiscard(indices []int) {
 		musSortHand(p)
 	}
 	g.appendLog(g.discardTurn, "discard",
-		fmt.Sprintf("%s exchanges %d cards", g.playerName(g.discardTurn), len(indices)), nil)
+		fmt.Sprintf("%s exchanges %d cards", playerName(g.players, g.discardTurn), len(indices)), nil)
 
 	if g.discardTurn == (g.manoIdx+MusPlayerCnt-1)%MusPlayerCnt {
 		// 全員交換完了 → 再び Mus 宣言へ。
@@ -783,16 +783,6 @@ func (g *Mus) humanTeam() int {
 	return -1
 }
 
-// findHumanIdx 人間プレイヤーのインデックス (-1=なし)。
-func (g *Mus) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 // sortAllHands 全プレイヤーの手札をソートする。
 func (g *Mus) sortAllHands() {
 	for _, p := range g.players {
@@ -815,17 +805,6 @@ func musSortHand(p *MusPlayer) {
 	}
 }
 
-// playerName プレイヤー名。
-func (g *Mus) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
 // musRoundName ラウンド名。
 func musRoundName(ri int) string {
 	switch ri {
@@ -840,17 +819,6 @@ func musRoundName(ri int) string {
 	default:
 		return "?"
 	}
-}
-
-// appendLog 棋譜にエントリを追加する。
-func (g *Mus) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- CPU ---
@@ -964,7 +932,7 @@ func (g *Mus) teamStrength(team, ri int) int {
 
 // GetHint 人間の手番における推奨アクションを返す。
 func (g *Mus) GetHint() *MusHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 {
 		return nil
 	}
@@ -1088,10 +1056,7 @@ func (g *Mus) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *Mus) GetPlayer(i int) *MusPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // IsHumanTurn 現在の手番が人間か。
@@ -1113,9 +1078,6 @@ func (g *Mus) GetConfig() MusConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *Mus) SetConfig(cfg MusConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *Mus) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // --- JSON ---
 

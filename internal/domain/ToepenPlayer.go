@@ -16,8 +16,7 @@ func NewToepenPlayer(isHuman bool) *ToepenPlayer {
 
 // ResetGame は手札と上がり状態を初期化する。
 func (p *ToepenPlayer) ResetGame() {
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayer(p)
 }
 
 // toepenPlayerJSON is the JSON wire format for ToepenPlayer.

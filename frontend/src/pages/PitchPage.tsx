@@ -13,6 +13,7 @@ import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { KbdBadge } from '../components/KbdBadge';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -245,13 +246,8 @@ function PitchPageContent() {
   );
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!state });
 
-  if (!state) {
-    return (
-      <div className={`flex-1 flex items-center justify-center ${gameTheme.pitch.bg}`}>
-        <div className="text-ds-text-primary">Loading...</div>
-      </div>
-    );
-  }
+  if (!state)
+    return <GameSkeleton gameKey="pitch" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 6 }} />;
 
   const phaseName = t(`phase.${PHASE_KEYS[state.phase] ?? 'bid'}`);
 

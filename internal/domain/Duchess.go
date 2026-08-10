@@ -88,16 +88,16 @@ type DuchessHint struct {
 // いないものの実際の規則と違うため、実ゲームに合わせた。issue が触れていない
 // 「空き列はリザーブ優先」も本来の規則なので実装している。
 type Duchess struct {
-	trumpCards  *TrumpCards
-	reserve     [DuchessReserveCnt][]*Card
-	tableau     [DuchessTableauCnt][]*DuchessTableauCard
-	foundation  [DuchessFoundationCnt][]*Card
-	stock       []*Card
-	waste       []*Card
-	baseRank    int
-	phase       DuchessPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	reserve    [DuchessReserveCnt][]*Card
+	tableau    [DuchessTableauCnt][]*DuchessTableauCard
+	foundation [DuchessFoundationCnt][]*Card
+	stock      []*Card
+	waste      []*Card
+	baseRank   int
+	phase      DuchessPhase
+	moveCount  int
+	actionLogBase
 	history     []*duchessSnapshot
 	isStalemate bool
 }
@@ -552,31 +552,12 @@ func (d *Duchess) CanUndo() bool { return len(d.history) > 0 }
 
 // UndoN n 手戻す
 func (d *Duchess) UndoN(n int) error {
-	if n <= 0 {
-		return errors.New("n must be positive")
-	}
-	if n > len(d.history) {
-		return errors.New("not enough history")
-	}
-	for range n {
-		if err := d.Undo(); err != nil {
-			return err
-		}
-	}
-	return nil
+	return undoNChecked(d, n, len(d.history))
 }
 
 // UndoToEscape 膠着状態から抜けるのに必要なアンドゥ回数（膠着でなければ 0、不可なら -1）
 func (d *Duchess) UndoToEscape() int {
-	if !d.isStalemate {
-		return 0
-	}
-	for i := len(d.history) - 1; i >= 0; i-- {
-		if !d.history[i].isStalemate {
-			return len(d.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(d.isStalemate, d.history, func(s *duchessSnapshot) bool { return s.isStalemate })
 }
 
 // AllFaceUp 常に全札が表向き
@@ -602,9 +583,6 @@ func (d *Duchess) GetTableau() [DuchessTableauCnt][]*DuchessTableauCard { return
 
 // GetFoundation 基礎札を取得
 func (d *Duchess) GetFoundation() [DuchessFoundationCnt][]*Card { return d.foundation }
-
-// GetActionLog 棋譜取得
-func (d *Duchess) GetActionLog() []*ActionLogEntry { return d.actionLog }
 
 // GetGameEndFlag ゲーム終了フラグ
 func (d *Duchess) GetGameEndFlag() bool { return d.phase != DuchessPhasePlaying }
@@ -769,14 +747,7 @@ func (d *Duchess) findFoundation(card *Card) int {
 
 // afterMove 手数・棋譜・終了判定をまとめて進める
 func (d *Duchess) afterMove(actionType, detail string, card *Card) {
-	d.moveCount++
-	var cards []*Card
-	if card != nil {
-		cards = []*Card{card}
-	}
-	d.appendLog(actionType, detail, cards)
-	d.checkGameClear()
-	d.checkStalemate()
+	afterMove(&d.moveCount, d, actionType, detail, card)
 }
 
 // checkGameClear 4 つの基礎札がすべて 13 枚（開始ランクから一周）になったか
@@ -823,13 +794,7 @@ func (d *Duchess) takeSnapshot() {
 
 // appendLog 棋譜エントリを追加
 func (d *Duchess) appendLog(actionType, detail string, cards []*Card) {
-	d.actionLog = append(d.actionLog, &ActionLogEntry{
-		TurnNumber: d.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	d.appendLogAt(d.moveCount, 0, actionType, detail, cards)
 }
 
 // duchessMaxSliceLen caps slice sizes during deserialisation.

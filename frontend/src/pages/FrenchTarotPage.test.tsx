@@ -143,8 +143,6 @@ describe('FrenchTarotPage', () => {
     expect(screen.getByTestId('frenchtarot-bout-twentyOne')).toBeInTheDocument();
     expect(screen.getByTestId('frenchtarot-bout-excuse')).toBeInTheDocument();
     expect(screen.queryByTestId('frenchtarot-bout-petit')).not.toBeInTheDocument();
-    // 2 bouts → target 41.
-    expect(panel).toHaveTextContent('41');
   });
 
   it('shows no bouts when the hand holds none', async () => {
@@ -176,9 +174,9 @@ describe('FrenchTarotPage', () => {
     const panel = await screen.findByTestId('frenchtarot-bouts');
     expect(panel).toHaveTextContent('保有ブー（0/3）');
     expect(panel).toHaveTextContent('なし');
+    // The target only speaks to a bid, so it is not offered mid-play (#4857).
+    expect(screen.queryByTestId('frenchtarot-bouts-target')).not.toBeInTheDocument();
     expect(screen.queryByTestId('frenchtarot-bout-twentyOne')).not.toBeInTheDocument();
-    // 0 bouts → target 56.
-    expect(panel).toHaveTextContent('56');
   });
 
   it('renders the bid phase with Pass and the four contract buttons', async () => {
@@ -357,5 +355,57 @@ describe('FrenchTarotPage', () => {
     renderWithProviders(<FrenchTarotPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.queryByText(/\[0\], \[2\]/)).not.toBeInTheDocument();
+  });
+
+  it('computes the bid-phase target from the bouts held (2 bouts → 41)', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<FrenchTarotPage />);
+    await waitFor(() => expect(screen.getByTestId('frenchtarot-bouts-target')).toHaveTextContent('41'));
+  });
+
+  it('computes the bid-phase target for an empty bout list (0 bouts → 56)', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(
+      makeFrenchTarotState({
+        phase: 0,
+        isHumanBidTurn: true,
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            cardCount: 1,
+            cards: [{ design: 'HEART' as const, value: 13, glyph: '♥', label: 'D', color: 'red', deck: 'tarot' }],
+            trickCount: 0,
+            cardPoints: 0,
+            score: 0,
+            isDeclarer: false,
+          },
+          { id: 1, isHuman: false, cardCount: 1, cards: [], trickCount: 0, cardPoints: 0, score: 0, isDeclarer: false },
+          { id: 2, isHuman: false, cardCount: 1, cards: [], trickCount: 0, cardPoints: 0, score: 0, isDeclarer: false },
+          { id: 3, isHuman: false, cardCount: 1, cards: [], trickCount: 0, cardPoints: 0, score: 0, isDeclarer: false },
+        ],
+      }),
+    );
+    renderWithProviders(<FrenchTarotPage />);
+    await waitFor(() => expect(screen.getByTestId('frenchtarot-bouts-target')).toHaveTextContent('56'));
+  });
+
+  it('offers the bout target while bidding and withdraws it afterwards', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(bidPhaseState);
+    const { unmount } = renderWithProviders(<FrenchTarotPage />);
+    await waitFor(() => expect(screen.getByTestId('frenchtarot-bouts-target')).toBeInTheDocument());
+    unmount();
+
+    // In play the held bouts drain as they are played, and for a defender the
+    // number never described the contract at all.
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<FrenchTarotPage />);
+    await waitFor(() => expect(screen.getByTestId('frenchtarot-bouts-note')).toBeInTheDocument());
+    expect(screen.queryByTestId('frenchtarot-bouts-target')).not.toBeInTheDocument();
   });
 });

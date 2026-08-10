@@ -19,5 +19,11 @@
   "dealerWins": "Dealer wins!",
   "push": "Push!",
   "payoutLine": "payout: {{payout}}",
-  "payoutWithCommissionLine": "payout: {{payout}} (commission: {{commission}})"
+  "payoutWithCommissionLine": "payout: {{payout}} (commission: {{commission}})",
+  "helpAuto": "  a                    auto-split using the house way",
+  "helpHint": "  h                    show the recommended split",
+  "hintNone": "No hint is available now.",
+  "hintSplit": "Recommended: put [{{idx0}}] [{{idx1}}] ({{cards}}) in the low hand - {{reason}}",
+  "hintReasonPair": "the strongest split where a pair in the low hand still does not foul",
+  "hintReasonHigh": "maximises the low hand without fouling"
 }

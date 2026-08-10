@@ -516,7 +516,12 @@ function OhHellPageContent() {
                       onClick={() => toggleCard(idx)}
                       aria-label={cardAlt(card)}
                       aria-pressed={selectedCardIndices.includes(idx)}
-                      className={`transition-transform ${focusRingCard}`}
+                      // プレイヒントの [N] もテキストだけだった。TwoTenJack と
+                      // 同じく、該当する札を光らせる。
+                      className={`transition-transform ${focusRingCard}${
+                        isHumanTurn && hint?.cardIndex === idx ? ' rounded-lg ring-2 ring-ds-warning' : ''
+                      }`}
+                      data-hint-suggested={isHumanTurn && hint?.cardIndex === idx ? 'true' : undefined}
                       style={{
                         background: 'none',
                         padding: 0,
@@ -561,9 +566,12 @@ function OhHellPageContent() {
                         // Mirrors the Cribbage pegRestricted / Call Break pattern.
                         // Neutralize btnPrimary's interactive feedback (press-scale,
                         // hover shadow) when restricted so it doesn't feel clickable.
+                        // **ヒントは数字をテキストで言うだけで、どのボタンを
+                        // 押せばよいか視覚的に示していなかった。**制限ビッドとは
+                        // 別状態なので、強調は制限が無いときだけ付ける。
                         className={`${btnPrimary}${
                           isRestricted ? ' opacity-50 cursor-not-allowed active:scale-100 hover:shadow-none' : ''
-                        }`}
+                        }${!isRestricted && hint?.bid === i ? ' ring-2 ring-ds-warning' : ''}`}
                         onClick={() => {
                           if (!isRestricted) handleBid(i);
                         }}
@@ -572,6 +580,7 @@ function OhHellPageContent() {
                         title={isRestricted ? t('restrictedBidTooltip') : undefined}
                         aria-label={isRestricted ? t('restrictedBidAria', { n: i }) : t('bid', { n: i })}
                         data-testid={isRestricted ? 'ohhell-restricted-bid' : undefined}
+                        data-hint-suggested={!isRestricted && hint?.bid === i ? 'true' : undefined}
                       >
                         {i}
                       </button>

@@ -1,4 +1,4 @@
-# Sueca スエカ（Web版）遊び方
+# スエカ（Web版）遊び方
 
 ## ゲーム概要
 
@@ -7,11 +7,13 @@ Sueca（スエカ）はポルトガル・ブラジルで広く親しまれてい
 ## 起動方法
 
 ```sh
-go run ./cmd/trumpcards web        # REST API + Web GUI サーバを起動
-go run ./cmd/trumpcards web --open # 起動してブラウザを開く
+go run ./cmd/trumpcards web         # CLI経由でWebサーバーを起動
+go run ./cmd/trumpcards web --open  # サーバー起動 + ブラウザを開く
+go run ./cmd/server                 # 直接Webサーバーを起動
 ```
 
-ブラウザで `/sueca` にアクセスします。
+ブラウザで `http://localhost:8080` にアクセスし、ナビゲーションバーから「スエカ」を選択します。
+ナビバーのJA/ENボタンで日本語・英語を切り替えられます。
 
 ## ルール
 

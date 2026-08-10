@@ -166,6 +166,18 @@ describe('ToepenPage', () => {
     await waitFor(() => expect(screen.getByText('あなたの勝ちです')).toBeInTheDocument());
     expect(screen.getByText('10/10')).toBeInTheDocument();
   });
+
+  it('explains why a card cannot be played', async () => {
+    mockExec.mockResolvedValue(makeState({ validPlayIndices: [1] }));
+    renderWithProviders(<ToepenPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    const buttons = screen.getAllByTestId(/^toepen-hand-/);
+    const blocked = buttons[0] as HTMLElement;
+    const allowed = buttons[1] as HTMLElement;
+    expect(blocked).toHaveAttribute('title', expect.stringContaining('スート'));
+    expect(blocked.getAttribute('aria-label')).toMatch(/スート/);
+    expect(allowed).not.toHaveAttribute('title');
+  });
 });
 
 describe('ToepenPage redeal', () => {

@@ -43,6 +43,8 @@ type SpiteAndMaliceGame interface {
 	GetFoundations() [domain.SpiteAndMaliceFoundationCnt][]*domain.Card
 	// GetFoundationTopValue ファウンデーションのトップ値を取得する
 	GetFoundationTopValue(foundationIdx int) int
+	// IsGoalTopPlayable ゴール札の一番上が今どれかの基礎札に出せるかを返す
+	IsGoalTopPlayable(playerIdx int) bool
 	// GetPlayer プレイヤー状態を取得する
 	GetPlayer(idx int) *domain.SpiteAndMalicePlayer
 	// GetConfig 設定を取得する

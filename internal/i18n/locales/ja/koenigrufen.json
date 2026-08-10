@@ -33,7 +33,7 @@
   "promptRoundEndHelp": "nr / nextround ... 次のディールへ",
   "hintNone": "ヒントはありません。",
   "hintCard": "[ヒント: {{cards}} ({{reason}})]",
-  "hintCallSuit": "スート {{suit}} のキングを呼ぶ",
+  "hintCallSuit": "{{suit}} のキングを呼ぶ",
   "hintReasonBidTake": "強い手札 — コントラクトを取りに行く",
   "hintReasonBidPass": "弱い手札 — パス",
   "hintReasonCallKing": "自分の持たないキングを呼んで秘密のパートナーを得る",

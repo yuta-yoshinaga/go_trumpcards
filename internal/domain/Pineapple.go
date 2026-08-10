@@ -59,7 +59,7 @@ type Pineapple struct {
 	tournamentBase  // handCount / rebuyCounts / addonUsed (issue #1463)
 	lastCpuError    error
 	rebuyPhaseType  int
-	actionLog       []*ActionLogEntry
+	actionLogBase
 	humanProfile    *BettingHumanProfile
 	lastHumanPlayMs int
 	discardDone     []bool // ディスカード済みフラグ
@@ -270,37 +270,7 @@ func (p *Pineapple) continueReset() error {
 
 // postBlinds ブラインド投入
 func (p *Pineapple) postBlinds() {
-	sbIdx := (p.dealerIdx + 1) % len(p.players)
-	bbIdx := (p.dealerIdx + 2) % len(p.players)
-
-	sbAmount := p.config.SmallBlind
-	if p.players[sbIdx].GetChips() < sbAmount {
-		sbAmount = p.players[sbIdx].GetChips()
-	}
-	p.players[sbIdx].SubtractChips(sbAmount)
-	p.players[sbIdx].SetCurrentBet(sbAmount)
-	p.pot += sbAmount
-	p.appendLog(sbIdx, "blind", fmt.Sprintf("posts small blind %d", sbAmount), nil)
-
-	bbAmount := p.config.BigBlind
-	if p.players[bbIdx].GetChips() < bbAmount {
-		bbAmount = p.players[bbIdx].GetChips()
-	}
-	p.players[bbIdx].SubtractChips(bbAmount)
-	p.players[bbIdx].SetCurrentBet(bbAmount)
-	p.pot += bbAmount
-	p.appendLog(bbIdx, "blind", fmt.Sprintf("posts big blind %d", bbAmount), nil)
-
-	p.lastBet = bbAmount
-
-	if p.players[sbIdx].GetChips() == 0 {
-		p.players[sbIdx].SetAllIn(true)
-		p.actedFlags[sbIdx] = true
-	}
-	if p.players[bbIdx].GetChips() == 0 {
-		p.players[bbIdx].SetAllIn(true)
-		p.actedFlags[bbIdx] = true
-	}
+	postBlindsFor(p.players, p.dealerIdx, p.config.SmallBlind, p.config.BigBlind, &p.pot, &p.lastBet, p.actedFlags, p)
 }
 
 // PlayerAction 人間プレイヤーのアクション実行
@@ -683,35 +653,17 @@ func (p *Pineapple) IsDiscardPhase() bool {
 
 // dealRemainingCommunity 残りのコミュニティカードを全て配る
 func (p *Pineapple) dealRemainingCommunity() {
-	for len(p.communityCards) < 5 {
-		card := p.trumpCards.DrawCard()
-		if card == nil {
-			break
-		}
-		p.communityCards = append(p.communityCards, card)
-	}
+	dealUpTo(&p.communityCards, p.trumpCards, 5)
 }
 
 // findNextActive 指定インデックスの次のアクティブプレイヤーを探す
 func (p *Pineapple) findNextActive(fromIdx int) int {
-	for i := 1; i <= len(p.players); i++ {
-		next := (fromIdx + i) % len(p.players)
-		if !p.players[next].GetFolded() && !p.players[next].GetAllIn() {
-			return next
-		}
-	}
-	return (fromIdx + 1) % len(p.players)
+	return findNextActive(p.players, fromIdx)
 }
 
 // countActivePlayers フォールドしていないプレイヤー数を返す
 func (p *Pineapple) countActivePlayers() int {
-	cnt := 0
-	for _, pl := range p.players {
-		if !pl.GetFolded() {
-			cnt++
-		}
-	}
-	return cnt
+	return countPlayers(p.players, func(pl *PineapplePlayer) bool { return !pl.GetFolded() })
 }
 
 // resolveLastPlayer 全員フォールドで最後のプレイヤーが勝利
@@ -817,10 +769,7 @@ func (p *Pineapple) IsMuckAvailable() bool {
 
 // getHandName ハンドランクから名前を返す
 func (p *Pineapple) getHandName(rank int) string {
-	if rank >= 0 && rank < len(PokerHandNames) {
-		return PokerHandNames[rank]
-	}
-	return "Unknown"
+	return pokerHandName(rank)
 }
 
 // bettingLimits ベッティングリミット設定からmaxRaisesとmaxBetAmountを計算
@@ -855,6 +804,131 @@ func (p *Pineapple) GetEquity() *HoldemEquityResult {
 	}
 	result := CalcEquity(humanCards, p.communityCards, activePlayers, holdemEquitySimulations, nil)
 	return &result
+}
+
+// PineappleDiscardPreview は捨て札候補1枚ぶんの「これを捨てたら残る手」。
+type PineappleDiscardPreview struct {
+	// CardIdx はホールカードのインデックス (0 始まり)。
+	CardIdx int
+	// HandRank はこの札を捨てたときに残る5枚の役 (PokerHand*)。
+	HandRank int
+	// Recommended は最も強い役が残る捨て札に付く。同点なら全部に付く。
+	Recommended bool
+}
+
+// GetHumanDiscardPreviews は人間の3枚のホールカードそれぞれについて、
+// 「その1枚を捨てたら残る2枚がボードと作る最強の役」を返す。Crazy Pineapple の
+// 「3枚のうちどれを捨てるか」を横並びで比べられるようにするためのもの (#4686)。
+//
+// **ボードを見て役を名乗れるときしか返さない。**
+//   - プレーンな Pineapple のディスカードはフロップ前なので nil。残る2枚だけでは
+//     役が決まらない。代わりにスーテッド/コネクターの手掛かりが出る (#4685)。
+//   - Irish Poker は2枚捨てなので「1枚捨てたら残る手」の前提が成り立たず nil。
+//
+// 判定は CPU の捨て方 (cpuDiscard) と同じ bestRankWithBoard を通す。別実装に
+// すると、CPU 自身が選ばない捨て方を人間に勧めることになる。
+func (p *Pineapple) GetHumanDiscardPreviews() []PineappleDiscardPreview {
+	if p.phase != PineapplePhaseDiscard {
+		return nil
+	}
+	var human *PineapplePlayer
+	for _, pl := range p.players {
+		if pl.GetIsHuman() {
+			human = pl
+			break
+		}
+	}
+	// 手札3枚ちょうどのときだけ。捨て終わった後は2枚なのでここで弾かれる。
+	if human == nil || human.GetFolded() || human.GetCardsSize() != 3 {
+		return nil
+	}
+	if len(p.communityCards) < 3 {
+		return nil
+	}
+
+	previews := make([]PineappleDiscardPreview, human.GetCardsSize())
+	best := -1
+	for k := range previews {
+		keep := make([]*Card, 0, len(previews)-1)
+		for i := 0; i < human.GetCardsSize(); i++ {
+			if i != k {
+				keep = append(keep, human.GetCard(i))
+			}
+		}
+		rank := p.bestRankWithBoard(keep)
+		previews[k] = PineappleDiscardPreview{CardIdx: k, HandRank: rank}
+		if rank > best {
+			best = rank
+		}
+	}
+	for i := range previews {
+		previews[i].Recommended = previews[i].HandRank == best
+	}
+	return previews
+}
+
+// PineappleDiscardPairPreview は「この2枚を捨てたら残る手」。
+// Irish Poker のように2枚まとめて捨てる変種で使う。
+type PineappleDiscardPairPreview struct {
+	// DiscardIdx0 / DiscardIdx1 は捨てるホールカードのインデックス。
+	DiscardIdx0 int
+	DiscardIdx1 int
+	// HandRank は残る2枚がボードと作る最強の役 (PokerHand*)。
+	HandRank int
+	// Recommended は最も強い役が残る組み合わせに付く。同点なら全部に付く。
+	Recommended bool
+}
+
+// GetHumanDiscardPairPreviews は4枚配りで「どの2枚を捨てるか」の C(4,2)=6 通りを
+// すべて評価して返す (#4687)。
+//
+// **Web は1枚目を選んだ後の3択しか出せない**（残り3択の絞り込み表示）。CUI には
+// 選択途中という状態が無いので、代わりに6通りを最初から並べる。暗算の負荷を
+// 消すという目的は同じで、情報量はこちらが多い。
+//
+// 3枚配り (Pineapple / Crazy Pineapple) では nil。そちらは1枚捨てなので
+// GetHumanDiscardPreviews の担当。
+func (p *Pineapple) GetHumanDiscardPairPreviews() []PineappleDiscardPairPreview {
+	if p.phase != PineapplePhaseDiscard {
+		return nil
+	}
+	var human *PineapplePlayer
+	for _, pl := range p.players {
+		if pl.GetIsHuman() {
+			human = pl
+			break
+		}
+	}
+	if human == nil || human.GetFolded() || human.GetCardsSize() != 4 {
+		return nil
+	}
+	if len(p.communityCards) < 3 {
+		return nil
+	}
+
+	previews := make([]PineappleDiscardPairPreview, 0, 6)
+	best := -1
+	for i := 0; i < human.GetCardsSize(); i++ {
+		for j := i + 1; j < human.GetCardsSize(); j++ {
+			keep := make([]*Card, 0, 2)
+			for k := 0; k < human.GetCardsSize(); k++ {
+				if k != i && k != j {
+					keep = append(keep, human.GetCard(k))
+				}
+			}
+			rank := p.bestRankWithBoard(keep)
+			previews = append(previews, PineappleDiscardPairPreview{
+				DiscardIdx0: i, DiscardIdx1: j, HandRank: rank,
+			})
+			if rank > best {
+				best = rank
+			}
+		}
+	}
+	for i := range previews {
+		previews[i].Recommended = previews[i].HandRank == best
+	}
+	return previews
 }
 
 // GetPotOdds ポットオッズを返す
@@ -992,16 +1066,12 @@ func (p *Pineapple) IsAddonAvailable() bool {
 
 // GetRebuyCounts プレイヤーごとのリバイ回数取得
 func (p *Pineapple) GetRebuyCounts() []int {
-	result := make([]int, len(p.rebuyCounts))
-	copy(result, p.rebuyCounts)
-	return result
+	return copyOf(p.rebuyCounts)
 }
 
 // GetAddonUsed プレイヤーごとのアドオン使用フラグ取得
 func (p *Pineapple) GetAddonUsed() []bool {
-	result := make([]bool, len(p.addonUsed))
-	copy(result, p.addonUsed)
-	return result
+	return copyOf(p.addonUsed)
 }
 
 // GetRebuyPhaseType リバイフェーズ種別取得
@@ -1079,15 +1149,11 @@ func (p *Pineapple) ExportProfile() interface{} {
 
 // ImportProfile JSONバイトからメタAIプロファイルをインポートする
 func (p *Pineapple) ImportProfile(data []byte) error {
-	if len(data) == 0 {
-		return nil
-	}
-	d, err := ImportBettingHumanProfileJSON(data)
-	if err != nil {
+	prof, err := importBettingProfile(data)
+	if err != nil || prof == nil {
 		return err
 	}
-	p.humanProfile = &BettingHumanProfile{}
-	p.humanProfile.Import(d)
+	p.humanProfile = prof
 	return nil
 }
 
@@ -1099,41 +1165,22 @@ func (p *Pineapple) SetConfig(cfg PineappleConfig) { p.config = cfg }
 
 // IsHumanTurn 人間のターンかチェック
 func (p *Pineapple) IsHumanTurn() bool {
-	if p.currentTurn >= 0 && p.currentTurn < len(p.players) {
-		return p.players[p.currentTurn].GetIsHuman()
-	}
-	return false
+	return isHumanTurn(p.players, p.currentTurn)
 }
 
 // GetActedFlags actedフラグ取得
 func (p *Pineapple) GetActedFlags() []bool {
-	result := make([]bool, len(p.actedFlags))
-	copy(result, p.actedFlags)
-	return result
+	return copyOf(p.actedFlags)
 }
 
 // GetHandCount ハンド数取得
 func (p *Pineapple) GetHandCount() int { return p.handCount }
-
-// GetActionLog 棋譜を取得する
-func (p *Pineapple) GetActionLog() []*ActionLogEntry { return p.actionLog }
 
 // GetDiscardDone ディスカード済みフラグ取得
 func (p *Pineapple) GetDiscardDone() []bool {
 	result := make([]bool, len(p.discardDone))
 	copy(result, p.discardDone)
 	return result
-}
-
-// appendLog 棋譜にエントリを追加する
-func (p *Pineapple) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	p.actionLog = append(p.actionLog, &ActionLogEntry{
-		TurnNumber: len(p.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // logAction ベッティングアクションを棋譜に記録する

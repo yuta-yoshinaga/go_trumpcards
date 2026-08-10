@@ -71,6 +71,13 @@ func (p *PrsiCuiPresenter) Output(g interfaces.PrsiGame, lastErr error) string {
 				b.WriteString(i18n.Tf("prsi.penaltyDraw",
 					"count", strconv.Itoa(g.GetPenaltyDrawCount())))
 			}
+			// **スキップも重ねられる (#4772)。**7 の累積ペナルティは出して
+			// いたのに、エース/ジャックの累積は CUI にも Web にも出ていな
+			// かった。2以上なら複数人が連続で飛ばされる。
+			if g.GetPendingSkips() > 0 {
+				b.WriteString(i18n.Tf("prsi.pendingSkips",
+					"count", strconv.Itoa(g.GetPendingSkips())))
+			}
 			b.WriteString("\n")
 		}
 

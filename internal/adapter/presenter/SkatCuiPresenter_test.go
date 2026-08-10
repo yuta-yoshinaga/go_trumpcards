@@ -377,3 +377,43 @@ func TestSkatCuiPresenter_HintOutput_Localized(t *testing.T) {
 
 	i18n.SetLang("ja")
 }
+
+// **どこまで受けて安全かの目安を出す。**Web は常時表示しているのに CUI には
+// 無く、オーバービッドの危険を測れなかった (#4905)。
+func TestSkatCuiPresenter_ShowsTheHandBidEstimate(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	i18n.SetLang("en")
+	defer i18n.SetLang("ja")
+
+	build := func(currentBid int, hand []*domain.Card) *interfaces.MockSkatGame {
+		m := setupSkatCuiMock()
+		human := domain.NewSkatPlayer(true)
+		for _, c := range hand {
+			human.AddCard(c)
+		}
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPlayer")
+		m.On("GetPlayer", 0).Return(human)
+		for i := 1; i < 3; i++ {
+			m.On("GetPlayer", i).Return(domain.NewSkatPlayer(false))
+		}
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentBid")
+		m.On("GetCurrentBid").Return(currentBid)
+		return m
+	}
+	p := new(presenter.SkatCuiPresenter)
+
+	// ♣J のみ = with 1 → グランドで (1+1)×24 = 48。
+	hand := []*domain.Card{domain.NewCard(domain.CardDesignClover, 11, false)}
+	out := p.Output(build(0, hand), nil)
+	assert.Contains(t, out, "Hand estimate: up to 48")
+	assert.NotContains(t, out, "above your hand estimate")
+
+	// 目安ちょうどでは警告しない。超えたときだけ。
+	assert.NotContains(t, p.Output(build(48, hand), nil), "above your hand estimate")
+	assert.Contains(t, p.Output(build(59, hand), nil), "above your hand estimate")
+
+	// 手札が無い局面では出さない。
+	assert.NotContains(t, p.Output(build(0, nil), nil), "Hand estimate")
+}

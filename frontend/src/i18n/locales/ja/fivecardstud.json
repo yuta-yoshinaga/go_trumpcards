@@ -59,5 +59,17 @@
     "fivecardstudCallHigh": "高い札があります。見に行く価値があります",
     "fivecardstudCheckFree": "まだ役がありません。ただで見られるならチェックしましょう",
     "fivecardstudFoldWeak": "役も高い札もなく、払う必要があります。降りるほうが無難です"
+  },
+  "style": {
+    "tag": "TAG",
+    "tagTooltip": "Tight Aggressive：参加少なめだが入ったら強気",
+    "lag": "LAG",
+    "lagTooltip": "Loose Aggressive：参加多くかつ攻め志向",
+    "tp": "TP",
+    "tpTooltip": "Tight Passive：参加少なめでコール中心",
+    "lp": "LP",
+    "lpTooltip": "Loose Passive：参加多めだがコール中心",
+    "balanced": "BAL",
+    "balancedTooltip": "バランス型のスタイル"
   }
 }

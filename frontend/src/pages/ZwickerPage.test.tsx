@@ -232,4 +232,40 @@ describe('ZwickerPage', () => {
       await waitFor(() => expect(screen.getAllByText(text).length).toBeGreaterThan(0));
     }
   });
+
+  it('highlights the table cards the hint says to take with the named card', async () => {
+    localStorage.clear();
+    // The lift/ring assist follows the hint setting, which defaults to off.
+    localStorage.setItem('hint_enabled_zwicker', 'true');
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(
+      makeState({
+        hint: { take: true, cardIndex: 0, value: 7, tableIndices: [1], reason: 'zwicker.hint.take' },
+        messageCode: 'zwicker.hintRequested',
+      }),
+    );
+    renderWithProviders(<ZwickerPage />);
+    await waitFor(() => expect(screen.getAllByTestId('zwicker-table-card').length).toBeGreaterThan(1));
+    // Naming the hand card alone left the multi-card capture unexplained.
+    const tableCards = screen.getAllByTestId('zwicker-table-card');
+    expect(tableCards[1]).toHaveAttribute('data-hinted-table');
+    expect(tableCards[0]).not.toHaveAttribute('data-hinted-table');
+  });
+
+  it('highlights nothing until the hint is actually requested', async () => {
+    localStorage.clear();
+    localStorage.setItem('hint_enabled_zwicker', 'true');
+    mockExec.mockReset();
+    // Every response has carried state.hint since #4483, so an ungated read
+    // lights the board up for a player who never pressed the button (#4605).
+    mockExec.mockResolvedValue(
+      makeState({
+        hint: { take: true, cardIndex: 0, value: 7, tableIndices: [1], reason: 'zwicker.hint.take' },
+        messageCode: 'zwicker.playing',
+      }),
+    );
+    renderWithProviders(<ZwickerPage />);
+    await waitFor(() => expect(screen.getAllByTestId('zwicker-table-card').length).toBeGreaterThan(1));
+    expect(document.querySelectorAll('[data-hinted-table]')).toHaveLength(0);
+  });
 });

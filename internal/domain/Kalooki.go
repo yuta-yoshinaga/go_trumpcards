@@ -68,7 +68,7 @@ type Kalooki struct {
 	winnerIdx        int
 	roundWinnerIdx   int // 上がったプレイヤー。-1 は山切れ流局
 	turnCount        int // 暴走防止用ターンカウンタ
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewKalooki コンストラクタ
@@ -213,7 +213,7 @@ func (g *Kalooki) drawFromStock() error {
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", g.playerName(g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, g.currentPlayerIdx)), nil)
 	g.phase = KalookiPhaseMeld
 	return nil
 }
@@ -227,23 +227,14 @@ func (g *Kalooki) drawFromDiscard() error {
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s draws %s from discard", g.playerName(g.currentPlayerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s draws %s from discard", playerName(g.players, g.currentPlayerIdx), cardStr(card)), []*Card{card})
 	g.phase = KalookiPhaseMeld
 	return nil
 }
 
 // recycleDiscardIntoStock 山札が空のとき捨て札トップ 1 枚を残して残りを山札へ戻しシャッフルする。
 func (g *Kalooki) recycleDiscardIntoStock() bool {
-	if len(g.discardPile) <= 1 {
-		return false
-	}
-	top := g.discardPile[len(g.discardPile)-1]
-	rest := g.discardPile[:len(g.discardPile)-1]
-	g.discardPile = []*Card{top}
-	rand.Shuffle(len(rest), func(i, j int) { rest[i], rest[j] = rest[j], rest[i] })
-	g.drawPile = append(g.drawPile, rest...)
-	g.appendLog(-1, "recycle", fmt.Sprintf("Discard pile recycled into stock (%d cards)", len(rest)), nil)
-	return true
+	return recycleDiscardIntoStock(&g.discardPile, &g.drawPile, g)
 }
 
 // PlayerMeld 人間プレイヤーがメルド群を場に出す。
@@ -322,7 +313,7 @@ func (g *Kalooki) applyMeld(meldGroups [][]int) error {
 		player.RemoveCard(idx)
 	}
 
-	g.appendLog(g.currentPlayerIdx, "meld", fmt.Sprintf("%s melds %d group(s)", g.playerName(g.currentPlayerIdx), len(groupCards)), nil)
+	g.appendLog(g.currentPlayerIdx, "meld", fmt.Sprintf("%s melds %d group(s)", playerName(g.players, g.currentPlayerIdx), len(groupCards)), nil)
 
 	if player.GetCardsSize() == 0 {
 		g.finishRound(g.currentPlayerIdx)
@@ -372,7 +363,7 @@ func (g *Kalooki) applyLayoff(targetPlayerIdx, meldIdx, cardIndex int) error {
 	target.AddCardToMeld(meldIdx, card)
 	current.RemoveCard(cardIndex)
 
-	g.appendLog(g.currentPlayerIdx, "layoff", fmt.Sprintf("%s lays off %s on player %d's meld", g.playerName(g.currentPlayerIdx), cardStr(card), targetPlayerIdx), []*Card{card})
+	g.appendLog(g.currentPlayerIdx, "layoff", fmt.Sprintf("%s lays off %s on player %d's meld", playerName(g.players, g.currentPlayerIdx), cardStr(card), targetPlayerIdx), []*Card{card})
 	if current.GetCardsSize() == 0 {
 		g.finishRound(g.currentPlayerIdx)
 	}
@@ -401,7 +392,7 @@ func (g *Kalooki) applyDiscard(cardIndex int) error {
 
 	discarded := player.RemoveCard(cardIndex)
 	g.discardPile = append(g.discardPile, discarded)
-	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", g.playerName(g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
 
 	if player.GetCardsSize() == 0 {
 		g.finishRound(g.currentPlayerIdx)
@@ -420,10 +411,7 @@ func (g *Kalooki) advanceTurn() {
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (g *Kalooki) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // CpuPlay 現在の手番が CPU の場合にターンを実行する
@@ -453,12 +441,7 @@ func (g *Kalooki) CpuPlay() {
 
 // cpuDraw CPU の引き処理。捨て札トップが手役を進めるなら拾い、そうでなければ山札から引く
 func (g *Kalooki) cpuDraw() {
-	top := g.GetDiscardTop()
-	if top != nil && g.cpuShouldTakeDiscard(top) {
-		_ = g.drawFromDiscard()
-		return
-	}
-	_ = g.drawFromStock()
+	cpuDrawTurn(g)
 }
 
 // cpuShouldTakeDiscard 捨て札トップを拾うべきかを返す
@@ -611,7 +594,7 @@ func (g *Kalooki) finishRound(winnerIdx int) {
 	}
 
 	if winnerIdx >= 0 {
-		g.appendLog(winnerIdx, "round_win", fmt.Sprintf("%s goes out!", g.playerName(winnerIdx)), nil)
+		g.appendLog(winnerIdx, "round_win", fmt.Sprintf("%s goes out!", playerName(g.players, winnerIdx)), nil)
 	} else {
 		g.appendLog(-1, "draw", "Round ends in a draw (stock empty)", nil)
 	}
@@ -642,7 +625,7 @@ func (g *Kalooki) finalizeGameEnd() {
 			}
 		}
 	}
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", g.playerName(g.winnerIdx)), nil)
+	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, g.winnerIdx)), nil)
 }
 
 // --- Getters / Setters ---
@@ -667,10 +650,7 @@ func (g *Kalooki) SetDiscardPile(p []*Card) { g.discardPile = p }
 
 // GetDiscardTop 捨て札トップ
 func (g *Kalooki) GetDiscardTop() *Card {
-	if len(g.discardPile) == 0 {
-		return nil
-	}
-	return g.discardPile[len(g.discardPile)-1]
+	return discardTop(g.discardPile)
 }
 
 // GetDrawPileCount 山札残り枚数
@@ -690,10 +670,7 @@ func (g *Kalooki) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *Kalooki) GetPlayer(i int) *KalookiPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetConfig 設定取得
@@ -701,9 +678,6 @@ func (g *Kalooki) GetConfig() KalookiConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *Kalooki) SetConfig(c KalookiConfig) { g.config = c }
-
-// GetActionLog 棋譜取得
-func (g *Kalooki) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetRoundWinnerIdx 直近ラウンドの勝者
 func (g *Kalooki) GetRoundWinnerIdx() int { return g.roundWinnerIdx }
@@ -714,42 +688,11 @@ func (g *Kalooki) GetOpeningThreshold() int { return g.config.OpeningThreshold }
 // --- Private helpers ---
 
 func (g *Kalooki) sortAllHands() {
-	for i := range g.players {
-		g.sortHand(i)
-	}
+	sortHands(len(g.players), g)
 }
 
 func (g *Kalooki) sortHand(playerIdx int) {
-	p := g.players[playerIdx]
-	cards := make([]*Card, p.GetCardsSize())
-	for i := 0; i < p.GetCardsSize(); i++ {
-		cards[i] = p.GetCard(i)
-	}
-	sortCards(cards)
-	p.Reset()
-	for _, c := range cards {
-		p.AddCard(c)
-	}
-}
-
-func (g *Kalooki) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-func (g *Kalooki) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	sortHandInPlace(g.players[playerIdx], sortCards)
 }
 
 // --- Pure card-evaluation helpers ---

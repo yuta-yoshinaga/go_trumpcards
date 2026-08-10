@@ -12,6 +12,15 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
+// cuiBadugiHandName returns the localized name for a Badugi hand size (1-4).
+// Badugi's names ("Badugi", "3-card", …) have no counterpart in the poker table.
+func cuiBadugiHandName(size int) string {
+	if size < 1 || size >= len(domain.BadugiHandNames) {
+		return i18n.T("badugi.handRankUnknown")
+	}
+	return i18n.T("badugi.handRank" + strconv.Itoa(size))
+}
+
 // BadugiCuiPresenter renders Badugi state for the CLI.
 type BadugiCuiPresenter struct{}
 
@@ -76,7 +85,7 @@ func (bcp *BadugiCuiPresenter) Output(g interfaces.BadugiGame, lastErr error) st
 				if isEnd {
 					b.WriteString(i18n.Tf("badugi.humanHandWithName",
 						"cards", handStr,
-						"name", pl.GetHandName()) + "\n")
+						"name", cuiBadugiHandName(pl.GetBestHand().Size)) + "\n")
 				} else {
 					b.WriteString(i18n.Tf("badugi.humanHand", "cards", handStr) + "\n")
 				}
@@ -84,7 +93,7 @@ func (bcp *BadugiCuiPresenter) Output(g interfaces.BadugiGame, lastErr error) st
 			if !pl.GetIsHuman() && isEnd && !pl.GetFolded() {
 				b.WriteString(i18n.Tf("badugi.humanHandWithName",
 					"cards", cuiCardListStrEmoji(pl),
-					"name", pl.GetHandName()) + "\n")
+					"name", cuiBadugiHandName(pl.GetBestHand().Size)) + "\n")
 			}
 		}
 

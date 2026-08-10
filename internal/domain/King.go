@@ -116,7 +116,7 @@ type King struct {
 	lastTrickWinner int          // 直前トリックの勝者 (-1 = なし)
 	gameEndFlag     bool
 	lastDealDetail  *KingDealDetail
-	actionLog       []*ActionLogEntry
+	actionLogBase
 }
 
 // NewKing はコンストラクタ。
@@ -318,13 +318,7 @@ func (g *King) validateTrickPlay(playerIdx int, card *Card) error {
 
 // playerHasSuit はプレイヤーが指定スートを持っているか。
 func (g *King) playerHasSuit(playerIdx, design int) bool {
-	p := g.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return handHasSuit(g.players[playerIdx], design)
 }
 
 // resolveTrick は完成したトリックの勝者を決定し、次トリックへ進める。
@@ -441,17 +435,6 @@ func kingSortHand(p *KingPlayer) {
 	}
 }
 
-// appendLog は棋譜にエントリを追加する。
-func (g *King) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // kingContractName はコントラクトの英語名を返す (ログ用)。
 func kingContractName(c int) string {
 	switch c {
@@ -505,10 +488,7 @@ func (g *King) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer は指定インデックスのプレイヤーを返す。
 func (g *King) GetPlayer(i int) *KingPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetCurrentTurn は現在の手番プレイヤーインデックスを返す。
@@ -577,9 +557,6 @@ func (g *King) GetConfig() KingConfig { return g.config }
 // SetConfig はローカルルール設定を変更する。
 func (g *King) SetConfig(config KingConfig) { g.config = config }
 
-// GetActionLog は棋譜を返す。
-func (g *King) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // GetPlayableIndices はプレイフェーズでプレイ可能な手札インデックスを返す。
 func (g *King) GetPlayableIndices(playerIdx int) []int {
 	if playerIdx < 0 || playerIdx >= len(g.players) || g.phase != KingPhasePlay {
@@ -593,19 +570,7 @@ func (g *King) GetRoundWinners() []int {
 	if !g.gameEndFlag {
 		return nil
 	}
-	best := g.players[0].GetTotalScore()
-	for _, p := range g.players[1:] {
-		if p.GetTotalScore() > best {
-			best = p.GetTotalScore()
-		}
-	}
-	winners := make([]int, 0)
-	for i, p := range g.players {
-		if p.GetTotalScore() == best {
-			winners = append(winners, i)
-		}
-	}
-	return winners
+	return topScorers(g.players)
 }
 
 // --- JSON Serialization ---

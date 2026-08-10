@@ -453,6 +453,10 @@ function GongZhuPageContent() {
                 highlightIndices={
                   isExposePhase && state.exposableIndices.length > 0 ? state.exposableIndices : undefined
                 }
+                // **マストフォローの可視化。**どのカードが出せるかを一切示して
+                // おらず、プレイヤーが自力で判断するしかなかった (#4812)。
+                // 姉妹ゲームの Minchiate / Tarocchini と同じ渡し方。
+                validIndices={isHumanTurn ? state.playableIndices : undefined}
               />
             )}
 

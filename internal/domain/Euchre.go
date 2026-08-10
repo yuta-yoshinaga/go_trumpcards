@@ -72,7 +72,7 @@ type Euchre struct {
 	bidPlayerIdx        int // 現在のビッド手番
 	gameEndFlag         bool
 	winnerTeam          int // 勝利チーム (-1 = 未確定)
-	actionLog           []*ActionLogEntry
+	actionLogBase
 }
 
 // NewEuchre コンストラクタ
@@ -190,7 +190,7 @@ func (e *Euchre) PlayerPickUp(orderUp bool, goAlone bool) error {
 	if e.phase != EuchrePhasePickUp {
 		return ErrWrongPhase
 	}
-	humanIdx := e.findHumanIdx()
+	humanIdx := findHumanIdx(e.players)
 	if humanIdx < 0 || e.bidPlayerIdx != humanIdx {
 		return ErrNotHumanTurn
 	}
@@ -198,7 +198,7 @@ func (e *Euchre) PlayerPickUp(orderUp bool, goAlone bool) error {
 	if orderUp {
 		e.doOrderUp(humanIdx, goAlone)
 	} else {
-		e.appendLog(humanIdx, "pass", fmt.Sprintf("%s passes", e.playerName(humanIdx)), nil)
+		e.appendLog(humanIdx, "pass", fmt.Sprintf("%s passes", playerName(e.players, humanIdx)), nil)
 		e.advanceBidPickUp()
 	}
 	return nil
@@ -220,7 +220,7 @@ func (e *Euchre) CpuPickUp() {
 	if orderUp {
 		e.doOrderUp(e.bidPlayerIdx, goAlone)
 	} else {
-		e.appendLog(e.bidPlayerIdx, "pass", fmt.Sprintf("%s passes", e.playerName(e.bidPlayerIdx)), nil)
+		e.appendLog(e.bidPlayerIdx, "pass", fmt.Sprintf("%s passes", playerName(e.players, e.bidPlayerIdx)), nil)
 		e.advanceBidPickUp()
 	}
 }
@@ -238,10 +238,10 @@ func (e *Euchre) doOrderUp(playerIdx int, goAlone bool) {
 		e.goingAlone = true
 		e.goingAlonePlayerIdx = playerIdx
 		e.appendLog(playerIdx, "order_up_alone",
-			fmt.Sprintf("%s orders up %s and goes alone", e.playerName(playerIdx), cardStr(e.faceUpCard)), []*Card{e.faceUpCard})
+			fmt.Sprintf("%s orders up %s and goes alone", playerName(e.players, playerIdx), cardStr(e.faceUpCard)), []*Card{e.faceUpCard})
 	} else {
 		e.appendLog(playerIdx, "order_up",
-			fmt.Sprintf("%s orders up %s", e.playerName(playerIdx), cardStr(e.faceUpCard)), []*Card{e.faceUpCard})
+			fmt.Sprintf("%s orders up %s", playerName(e.players, playerIdx), cardStr(e.faceUpCard)), []*Card{e.faceUpCard})
 	}
 
 	e.faceUpCard = nil
@@ -274,7 +274,7 @@ func (e *Euchre) PlayerCallTrump(suit int, goAlone bool) error {
 	if e.phase != EuchrePhaseCallTrump {
 		return ErrWrongPhase
 	}
-	humanIdx := e.findHumanIdx()
+	humanIdx := findHumanIdx(e.players)
 	if humanIdx < 0 || e.bidPlayerIdx != humanIdx {
 		return ErrNotHumanTurn
 	}
@@ -297,7 +297,7 @@ func (e *Euchre) PlayerPassCall() error {
 	if e.phase != EuchrePhaseCallTrump {
 		return ErrWrongPhase
 	}
-	humanIdx := e.findHumanIdx()
+	humanIdx := findHumanIdx(e.players)
 	if humanIdx < 0 || e.bidPlayerIdx != humanIdx {
 		return ErrNotHumanTurn
 	}
@@ -306,7 +306,7 @@ func (e *Euchre) PlayerPassCall() error {
 		return NewDomainError(ErrCannotPass, "ディーラーは必ずスートを選ばなければなりません")
 	}
 
-	e.appendLog(humanIdx, "pass", fmt.Sprintf("%s passes", e.playerName(humanIdx)), nil)
+	e.appendLog(humanIdx, "pass", fmt.Sprintf("%s passes", playerName(e.players, humanIdx)), nil)
 	e.advanceBidCallTrump()
 	return nil
 }
@@ -329,7 +329,7 @@ func (e *Euchre) CpuCallTrump() {
 			forcedSuit := e.cpuForceCallTrump(e.bidPlayerIdx)
 			e.doCallTrump(e.bidPlayerIdx, forcedSuit, false)
 		} else {
-			e.appendLog(e.bidPlayerIdx, "pass", fmt.Sprintf("%s passes", e.playerName(e.bidPlayerIdx)), nil)
+			e.appendLog(e.bidPlayerIdx, "pass", fmt.Sprintf("%s passes", playerName(e.players, e.bidPlayerIdx)), nil)
 			e.advanceBidCallTrump()
 		}
 	}
@@ -345,10 +345,10 @@ func (e *Euchre) doCallTrump(playerIdx int, suit int, goAlone bool) {
 		e.goingAlone = true
 		e.goingAlonePlayerIdx = playerIdx
 		e.appendLog(playerIdx, "call_trump_alone",
-			fmt.Sprintf("%s calls %s as trump and goes alone", e.playerName(playerIdx), suitName), nil)
+			fmt.Sprintf("%s calls %s as trump and goes alone", playerName(e.players, playerIdx), suitName), nil)
 	} else {
 		e.appendLog(playerIdx, "call_trump",
-			fmt.Sprintf("%s calls %s as trump", e.playerName(playerIdx), suitName), nil)
+			fmt.Sprintf("%s calls %s as trump", playerName(e.players, playerIdx), suitName), nil)
 	}
 
 	e.startPlayPhase()
@@ -380,7 +380,7 @@ func (e *Euchre) PlayerDiscard(cardIndex int) error {
 	}
 
 	discarded := player.RemoveCard(cardIndex)
-	e.appendLog(e.dealerIdx, "discard", fmt.Sprintf("%s discards a card", e.playerName(e.dealerIdx)), []*Card{discarded})
+	e.appendLog(e.dealerIdx, "discard", fmt.Sprintf("%s discards a card", playerName(e.players, e.dealerIdx)), []*Card{discarded})
 	e.sortAllHands()
 	e.startPlayPhase()
 	return nil
@@ -397,7 +397,7 @@ func (e *Euchre) CpuDiscard() {
 
 	idx := e.cpuSelectDiscard(e.dealerIdx)
 	discarded := e.players[e.dealerIdx].RemoveCard(idx)
-	e.appendLog(e.dealerIdx, "discard", fmt.Sprintf("%s discards a card", e.playerName(e.dealerIdx)), []*Card{discarded})
+	e.appendLog(e.dealerIdx, "discard", fmt.Sprintf("%s discards a card", playerName(e.players, e.dealerIdx)), []*Card{discarded})
 	e.sortAllHands()
 	e.startPlayPhase()
 }
@@ -467,7 +467,7 @@ func (e *Euchre) ResolveTrick() {
 
 	e.players[winnerIdx].AddTrick(trickCards)
 
-	winnerName := e.playerName(winnerIdx)
+	winnerName := playerName(e.players, winnerIdx)
 	e.appendLog(winnerIdx, "trick_win", fmt.Sprintf("%s wins trick %d", winnerName, e.trickNumber), trickCards)
 
 	e.leadPlayerIdx = winnerIdx
@@ -582,10 +582,7 @@ func (e *Euchre) GetPlayerCnt() int { return len(e.players) }
 
 // GetPlayer プレイヤー取得
 func (e *Euchre) GetPlayer(i int) *EuchrePlayer {
-	if i < 0 || i >= len(e.players) {
-		return nil
-	}
-	return e.players[i]
+	return getPlayer(e.players, i)
 }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
@@ -656,18 +653,12 @@ func (e *Euchre) GetKitty() []*Card { return e.kitty }
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (e *Euchre) IsHumanTurn() bool {
-	if e.currentPlayerIdx < 0 || e.currentPlayerIdx >= len(e.players) {
-		return false
-	}
-	return e.players[e.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(e.players, e.currentPlayerIdx)
 }
 
 // IsHumanBidTurn 現在のビッド手番が人間かどうか
 func (e *Euchre) IsHumanBidTurn() bool {
-	if e.bidPlayerIdx < 0 || e.bidPlayerIdx >= len(e.players) {
-		return false
-	}
-	return e.players[e.bidPlayerIdx].GetIsHuman()
+	return isHumanTurn(e.players, e.bidPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -675,9 +666,6 @@ func (e *Euchre) GetConfig() EuchreConfig { return e.config }
 
 // SetConfig 設定変更
 func (e *Euchre) SetConfig(cfg EuchreConfig) { e.config = cfg }
-
-// GetActionLog 棋譜取得
-func (e *Euchre) GetActionLog() []*ActionLogEntry { return e.actionLog }
 
 // CardRankPublic カードランク取得 (テスト用公開メソッド)
 func (e *Euchre) CardRankPublic(card *Card) int { return e.cardRank(card) }
@@ -745,16 +733,6 @@ func (e *Euchre) cardRank(card *Card) int {
 
 // --- Private methods ---
 
-// findHumanIdx 人間プレイヤーのインデックスを返す (-1=なし)
-func (e *Euchre) findHumanIdx() int {
-	for i, p := range e.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 // startPlayPhase プレイフェーズを開始する
 func (e *Euchre) startPlayPhase() {
 	e.trickNumber = 1
@@ -802,7 +780,7 @@ func (e *Euchre) playCard(playerIdx int, card *Card) {
 		Card:      card,
 	})
 
-	e.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", e.playerName(playerIdx), cardStr(card)), []*Card{card})
+	e.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(e.players, playerIdx), cardStr(card)), []*Card{card})
 
 	expectedCards := e.activePlayerCount()
 	if len(e.currentTrick) == expectedCards {
@@ -913,33 +891,11 @@ func euchreSortHand(p *EuchrePlayer, e *Euchre) {
 	})
 }
 
-// playerName プレイヤー名を返す
-func (e *Euchre) playerName(idx int) string {
-	if idx < 0 || idx >= len(e.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if e.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
 // suitStr スート名を返す
-
-// appendLog 棋譜にエントリを追加する
-func (e *Euchre) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	e.actionLog = append(e.actionLog, &ActionLogEntry{
-		TurnNumber: len(e.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
 
 // GetHint ヒントを取得する
 func (e *Euchre) GetHint() *EuchreHint {
-	humanIdx := e.findHumanIdx()
+	humanIdx := findHumanIdx(e.players)
 	if humanIdx < 0 {
 		return nil
 	}
@@ -986,7 +942,7 @@ func (e *Euchre) GetHint() *EuchreHint {
 
 // playHintReason プレイヒントの理由を判定する
 func (e *Euchre) playHintReason(chosenIdx int) string {
-	player := e.players[e.findHumanIdx()]
+	player := e.players[findHumanIdx(e.players)]
 	card := player.GetCard(chosenIdx)
 
 	if len(e.currentTrick) == 0 {
@@ -1013,10 +969,7 @@ func (e *Euchre) GetValidPlayIndices(playerIdx int) []int {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (e *Euchre) getValidPlayIndices(playerIdx int) []int {
-	player := e.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return e.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(e.players[playerIdx], func(c *Card) bool { return e.validatePlay(playerIdx, c) == nil })
 }
 
 // --- CPU AI ---

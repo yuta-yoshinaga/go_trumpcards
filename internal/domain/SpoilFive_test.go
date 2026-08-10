@@ -5,6 +5,9 @@ package domain
 import (
 	"encoding/json"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func sfCard(design, value int) *Card { return NewCard(design, value, false) }
@@ -282,4 +285,78 @@ func TestSpoilFive_UnmarshalErrors(t *testing.T) {
 	if err := g.UnmarshalJSON([]byte(`{"ps":[null,null,null,null,null]}`)); err == nil {
 		t.Error("expected nil-player error")
 	}
+}
+
+// **固定序列が Spoil Five の核心ルール (#4765)。**5 > J > ♥A > 切り札A > K > Q。
+// Web は折りたたみパネルで常時出しているのに、CUI には無かった。
+func TestSpoilFive_GetTopTrumps(t *testing.T) {
+	label := func(cards []*Card) []string {
+		out := make([]string, len(cards))
+		for i, c := range cards {
+			out[i] = string(rune('0'+c.GetDesign())) + ":" + string(rune('0'+c.GetValue()))
+		}
+		return out
+	}
+	game := func(trump int) *SpoilFive {
+		g := NewDefaultSpoilFive()
+		g.Reset()
+		g.SetTrumpSuit(trump)
+		return g
+	}
+
+	t.Run("orders the six named cards strongest first", func(t *testing.T) {
+		tops := game(CardDesignSpade).GetTopTrumps()
+		require.Len(t, tops, 6)
+		want := [][2]int{
+			{CardDesignSpade, 5}, {CardDesignSpade, 11}, {CardDesignHeart, 1},
+			{CardDesignSpade, 1}, {CardDesignSpade, 13}, {CardDesignSpade, 12},
+		}
+		for i, w := range want {
+			assert.Equal(t, w[0], tops[i].GetDesign(), "位置 %d のスート", i)
+			assert.Equal(t, w[1], tops[i].GetValue(), "位置 %d の値", i)
+		}
+	})
+
+	// **♥A は切り札でなくても常に3番目。**普通のトリックテイキングの直感
+	// (切り札が全部上) とは違う。
+	t.Run("keeps the heart ace third even when hearts are not trump", func(t *testing.T) {
+		tops := game(CardDesignClover).GetTopTrumps()
+		require.Len(t, tops, 6)
+		assert.Equal(t, CardDesignHeart, tops[2].GetDesign())
+		assert.Equal(t, 1, tops[2].GetValue())
+		assert.Equal(t, CardDesignClover, tops[3].GetDesign(), "4番目は切り札のA")
+	})
+
+	// **ハートが切り札のときは重複させない。**そのとき ♥A は切り札の A その
+	// ものなので、2度並べると6枚あるように見える。
+	t.Run("does not list the heart ace twice when hearts are trump", func(t *testing.T) {
+		tops := game(CardDesignHeart).GetTopTrumps()
+		assert.Len(t, tops, 5)
+		assert.Len(t, label(tops), len(uniqueStrings(label(tops))), "同じ札が2度出ている")
+	})
+
+	// 並びは spoilRank から導く。手で書き写した順序だとランクを直したときに
+	// 説明だけ古くなる。
+	t.Run("the order agrees with spoilRank", func(t *testing.T) {
+		g := game(CardDesignDiamond)
+		tops := g.GetTopTrumps()
+		for i := 1; i < len(tops); i++ {
+			assert.Greater(t, g.spoilRank(tops[i-1]), g.spoilRank(tops[i]),
+				"位置 %d と %d の順序が逆", i-1, i)
+		}
+	})
+}
+
+// uniqueStrings は重複を除いた文字列スライスを返す (テスト用)。
+func uniqueStrings(in []string) []string {
+	seen := map[string]bool{}
+	out := make([]string, 0, len(in))
+	for _, s := range in {
+		if seen[s] {
+			continue
+		}
+		seen[s] = true
+		out = append(out, s)
+	}
+	return out
 }

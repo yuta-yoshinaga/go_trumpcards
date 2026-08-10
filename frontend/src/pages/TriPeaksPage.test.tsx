@@ -91,6 +91,39 @@ beforeEach(() => {
   mockPlaySound.mockClear();
 });
 
+describe('TriPeaksPage playable summary', () => {
+  // CUI は playableSummary / drawRecommended を毎回出していたのに、Web は
+  // 個々のリングだけで合計が無かった (#4783)。
+  it('shows how many cards are playable, and rings exactly that many', async () => {
+    renderWithProviders(<TriPeaksPage />);
+    // 捨て札トップは ♣4。露出している ♠5 だけが出せる。
+    await waitFor(() => expect(screen.getByTestId('tp-playable')).toHaveTextContent('今出せるカード: 1枚'));
+    expect(document.querySelectorAll('.ring-ds-success\\/70')).toHaveLength(1);
+    expect(screen.getByTestId('tp-playable')).not.toHaveTextContent('ドロー推奨');
+  });
+
+  it('recommends a draw when nothing is playable and the stock still has cards', async () => {
+    mockExec.mockResolvedValue({ ...playingState, waste: [card('CLOVER', 9)] });
+    renderWithProviders(<TriPeaksPage />);
+    await waitFor(() => expect(screen.getByTestId('tp-playable')).toHaveTextContent('今出せるカード: 0枚'));
+    expect(screen.getByTestId('tp-playable')).toHaveTextContent('ドロー推奨');
+  });
+
+  // **山札が尽きていれば勧めない。**この枝を踏まないと、常に推奨する実装でも通る。
+  it('does not recommend a draw once the stock is empty', async () => {
+    mockExec.mockResolvedValue({ ...playingState, waste: [card('CLOVER', 9)], stockCount: 0 });
+    renderWithProviders(<TriPeaksPage />);
+    await waitFor(() => expect(screen.getByTestId('tp-playable')).toHaveTextContent('今出せるカード: 0枚'));
+    expect(screen.getByTestId('tp-playable')).not.toHaveTextContent('ドロー推奨');
+  });
+
+  it('hides the summary once the game has ended', async () => {
+    mockExec.mockResolvedValue(gameClearState);
+    renderWithProviders(<TriPeaksPage />);
+    await waitFor(() => expect(screen.queryByTestId('tp-playable')).not.toBeInTheDocument());
+  });
+});
+
 describe('TriPeaksPage', () => {
   it('rings exposed cards adjacent to the waste top during play', async () => {
     renderWithProviders(<TriPeaksPage />);

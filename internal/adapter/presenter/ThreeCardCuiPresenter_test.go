@@ -120,7 +120,10 @@ func TestThreeCardCuiPresenter_Output_ActionPhase(t *testing.T) {
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "フェーズ: ACTION")
 	assert.Contains(t, result, "PLAYER")
-	assert.Contains(t, result, "High Card")
+	// 役名は日本語ロケールで日本語。以前は英語の表示名配列をそのまま
+	// 埋めていて、このテストがその挙動を固定していた (#4694)。
+	assert.Contains(t, result, "ハイカード")
+	assert.NotContains(t, result, "High Card")
 }
 
 func TestThreeCardCuiPresenter_Output_EndPhase_PlayerWins(t *testing.T) {
@@ -195,6 +198,12 @@ func TestThreeCardCuiPresenter_Output_EndPhase_PayoutBreakdown(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
+	// **役名も日本語で出す。**`domain.ThreeCardHandNames` は英語の表示名配列で、
+	// そのまま埋めていたので日本語ロケールでも Straight Flush と出ていた (#4694)。
+	assert.Contains(t, result, "ストレートフラッシュ")
+	assert.Contains(t, result, "ハイカード")
+	assert.NotContains(t, result, "Straight Flush")
+	assert.NotContains(t, result, "High Card")
 	assert.Contains(t, result, "アンテボーナス配当: 500")
 	assert.Contains(t, result, "ペアプラス配当: 4000")
 	assert.Contains(t, result, "合計払戻し: 4900")

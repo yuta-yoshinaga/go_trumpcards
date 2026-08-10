@@ -55,5 +55,7 @@
   "frontendHint": {
     "literatureAskHeldSuit": "You may only ask for a half-suit you already hold a card of",
     "literatureMustClaim": "Every half-suit you hold is settled — a claim is all that is left"
-  }
+  },
+  "claimConfirmTitle": "Confirm the claim",
+  "claimConfirmMessage": "A single wrong seat voids the set or hands it to the opposing team. Claim with these answers?"
 }

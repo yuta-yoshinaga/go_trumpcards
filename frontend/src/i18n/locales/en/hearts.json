@@ -83,5 +83,6 @@
     "playHighest": "Play your highest card"
   },
   "hintRequested": "Hint available",
-  "noHint": "No hint available"
+  "noHint": "No hint available",
+  "limitNear": "Close to the {{limit}}-point limit — the game ends as soon as someone reaches it"
 }

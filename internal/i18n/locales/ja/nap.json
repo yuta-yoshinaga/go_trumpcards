@@ -39,5 +39,7 @@
   "roundEnd": "ラウンド終了",
   "result.humanWin": "ゲーム終了！ あなたの勝ち！",
   "result.cpuWin": "ゲーム終了！ プレイヤー{{player}}の勝ち！",
-  "promptBidHolder": "現在の最高入札者: {{name}}"
+  "promptBidHolder": "現在の最高入札者: {{name}}",
+  "declarerProgress": "宣言者: {{won}}/{{needed}} トリック (残り{{remaining}})",
+  "contractUnreachable": " — 達成不可能が確定"
 }

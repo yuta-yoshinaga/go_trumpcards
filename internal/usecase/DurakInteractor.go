@@ -28,6 +28,8 @@ type DurakInteractorIF interface {
 	Sort(mode domain.DurakSortMode) string
 	// ActionLog 棋譜を出力する
 	ActionLog() string
+	// Hint サーバー計算の推奨手を出力する
+	Hint() string
 }
 
 // DurakInteractor ドゥラークインタラクタークラス
@@ -118,6 +120,11 @@ func (di *DurakInteractor) Sort(mode domain.DurakSortMode) string {
 // ActionLog 棋譜を出力する
 func (di *DurakInteractor) ActionLog() string {
 	return di.dp.ActionLogOutput(di.Game)
+}
+
+// Hint サーバー計算の推奨手を出力する
+func (di *DurakInteractor) Hint() string {
+	return di.dp.HintOutput(di.Game)
 }
 
 // runCpuTurns ゲームが終わるか人間の手番になるまでCPUターンを実行

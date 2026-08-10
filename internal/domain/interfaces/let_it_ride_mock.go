@@ -27,6 +27,14 @@ func (m *MockLetItRideGame) Pull() error {
 	return args.Error(0)
 }
 
+func (m *MockLetItRideGame) GetPullPreview() *domain.LetItRidePullPreview {
+	args := m.Called()
+	if args.Get(0) == nil {
+		return nil
+	}
+	return args.Get(0).(*domain.LetItRidePullPreview)
+}
+
 func (m *MockLetItRideGame) LetItRideAction() error {
 	args := m.Called()
 	return args.Error(0)

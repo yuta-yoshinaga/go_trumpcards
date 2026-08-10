@@ -5,5 +5,8 @@
   "helpGiveUp": "  g / giveup           give up",
   "blackHoleLabel": "Black Hole:",
   "fanLabel": "Fan {{idx}}:",
-  "hintLine": "[HINT: fan {{fan}} can be played]"
+  "hintLine": "[HINT: fan {{fan}} can be played]",
+  "acceptableRanks": "Accepted ranks: {{ranks}}",
+  "acceptableRanksNone": "Accepted ranks: none",
+  "legalMoveCount": "Legal moves: {{count}}"
 }

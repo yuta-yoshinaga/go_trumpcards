@@ -132,6 +132,9 @@ function CrazyEightsPageContent() {
     handleDraw,
     handleChooseSuit,
     handleNextRound,
+    hint: serverHint,
+    hintError,
+    handleHint,
   } = useCrazyEightsGame();
   const {
     hint: frontendHint,
@@ -448,8 +451,30 @@ function CrazyEightsPageContent() {
                   <button type="button" className={btnPrimary} onClick={handleDraw} disabled={loading}>
                     {t('drawButton')}
                   </button>
+                  {/* **Hearts / Spades はサーバー計算の理由付きヒントを返すのに、
+                      CrazyEights には無く、全ゲーム共通の簡易ヒューリスティック
+                      しか支援が無かった (#4737)。** */}
+                  <button
+                    type="button"
+                    className={btnSuccess}
+                    onClick={handleHint}
+                    disabled={loading}
+                    data-testid="ce-hint-button"
+                  >
+                    {tc('button.hint')}
+                  </button>
                 </div>
               )}
+              {serverHint && (
+                <p className="mt-2 text-sm text-ds-accent" data-testid="ce-server-hint">
+                  {serverHint.suit !== undefined
+                    ? t('hintSuit', { suit: SUIT_SYMBOLS[serverHint.suit] ?? '?' })
+                    : t('hintCard', { idx: serverHint.cardIndex })}{' '}
+                  ({t(`hintReason.${serverHint.reason}`)})
+                </p>
+              )}
+              <ErrorAlert message={hintError} onRetry={undefined} />
+
               {isChooseSuit && (
                 <div className="flex gap-1" data-tutorial="ce-suit-choice">
                   {SUIT_BUTTONS.map(({ suit, key }) => (

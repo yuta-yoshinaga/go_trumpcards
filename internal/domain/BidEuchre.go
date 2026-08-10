@@ -263,7 +263,7 @@ type BidEuchre struct {
 	gameEndFlag bool
 	winnerTeam  int
 
-	actionLog []*ActionLogEntry
+	actionLogBase
 }
 
 // NewBidEuchre コンストラクタ
@@ -378,6 +378,19 @@ func (b *BidEuchre) BidEuchreCanBid(player, value int) bool {
 		return value >= b.highBid.Value
 	}
 	return value > b.highBid.Value
+}
+
+// BidEuchreMinLegalBid は player が通せる最も低い宣言を返す。無ければ ok=false。
+//
+// **判定は BidEuchreCanBid をそのまま試す。**規則を書き写すと、案内した額が
+// 拒否されることになる (#4899)。
+func (b *BidEuchre) BidEuchreMinLegalBid(player int) (int, bool) {
+	for v := BidEuchreMinBid; v <= BidEuchreMaxBid; v++ {
+		if b.BidEuchreCanBid(player, v) {
+			return v, true
+		}
+	}
+	return 0, false
 }
 
 // Bid はトリック数を宣言する。
@@ -840,10 +853,7 @@ func (b *BidEuchre) GetPlayers() []*BidEuchrePlayer { return b.players }
 
 // GetPlayer は idx のプレイヤーを返す。
 func (b *BidEuchre) GetPlayer(idx int) *BidEuchrePlayer {
-	if idx < 0 || idx >= len(b.players) {
-		return nil
-	}
-	return b.players[idx]
+	return getPlayer(b.players, idx)
 }
 
 // GetPhase は現在のフェーズを返す。
@@ -919,18 +929,9 @@ func (b *BidEuchre) GetConfig() BidEuchreConfig { return b.config }
 // SetConfig は設定をセットする。
 func (b *BidEuchre) SetConfig(c BidEuchreConfig) { b.config = c }
 
-// GetActionLog は棋譜を返す。
-func (b *BidEuchre) GetActionLog() []*ActionLogEntry { return b.actionLog }
-
 // addLog は棋譜を 1 行足す。
 func (b *BidEuchre) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	b.actionLog = append(b.actionLog, &ActionLogEntry{
-		TurnNumber: len(b.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	b.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // SetPhaseForTest はテスト用にフェーズを設定する。
@@ -938,16 +939,7 @@ func (b *BidEuchre) SetPhaseForTest(p BidEuchrePhase) { b.phase = p }
 
 // SetHandForTest はテスト用に手札を差し替える。
 func (b *BidEuchre) SetHandForTest(idx int, cards []*Card) {
-	p := b.GetPlayer(idx)
-	if p == nil {
-		return
-	}
-	for p.GetCardsSize() > 0 {
-		p.RemoveCard(0)
-	}
-	for _, c := range cards {
-		p.AddCard(c)
-	}
+	setHandForTest(b.GetPlayer(idx), cards)
 }
 
 // SetContractForTest はテスト用に契約を設定する。

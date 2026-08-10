@@ -113,6 +113,15 @@ func (p *OmahaCuiPresenter) Output(o interfaces.OmahaGame, lastErr error) string
 
 			if player.GetIsHuman() && !player.GetFolded() {
 				b.WriteString(i18n.Tf("omaha.humanHand", "cards", cuiCardListStrEmoji(player)) + "\n")
+				// **Web は omaha-live-besthand で暫定ベストを常時出しているのに、
+				// CUI は「2枚使用」の注意書きだけで実際の役を出していなかった
+				// (#4680)。**手札4枚から必ず2枚という特殊ルールがあるぶん、
+				// 暫定表示はミスを防ぐ補助になる。PeekBestHand は状態を変えない。
+				if rank, best := player.PeekBestHand(cc); len(best) > 0 {
+					b.WriteString(i18n.Tf("omaha.currentBestHand",
+						"hand", cuiPokerHandName(rank),
+						"cards", cuiCardSliceStrEmoji(best)) + "\n")
+				}
 			}
 		}
 
@@ -143,7 +152,7 @@ func (p *OmahaCuiPresenter) Output(o interfaces.OmahaGame, lastErr error) string
 				case r.Mucked:
 					b.WriteString(i18n.Tf("omaha.resultMucked", "name", name))
 				case r.HandName != "":
-					b.WriteString(i18n.Tf("omaha.resultHand", "name", name, "hand", r.HandName, "kickers", kickers))
+					b.WriteString(i18n.Tf("omaha.resultHand", "name", name, "hand", cuiPokerHandName(r.HandRank), "kickers", kickers))
 				default:
 					b.WriteString(i18n.Tf("omaha.resultPlayerOnly", "name", name))
 				}

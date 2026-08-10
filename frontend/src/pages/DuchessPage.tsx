@@ -227,7 +227,7 @@ function DuchessPageContent() {
                           }
                         }}
                         disabled={!isPlaying || loading}
-                        aria-label={cardAlt(tc2.card)}
+                        aria-label={t('cardPosAria', { card: cardAlt(tc2.card), col: colIdx, pos: cardIdx + 1 })}
                         aria-pressed={isSelected}
                         draggable={isPlaying && !loading}
                         onDragStart={dnd.handleDragStart(cardZone)}
@@ -285,7 +285,11 @@ function DuchessPageContent() {
           type="button"
           onClick={() => (selecting ? game.handleChooseBase(fanIdx) : game.handleSelectSource(fanZone))}
           disabled={!isPlaying || loading}
-          aria-label={selecting ? t('chooseBaseAriaLabel', { idx: fanIdx }) : cardAlt(top)}
+          aria-label={
+            selecting
+              ? t('chooseBaseAriaLabel', { idx: fanIdx })
+              : t('fanTopAriaLabel', { card: cardAlt(top), idx: fanIdx })
+          }
           aria-pressed={selecting ? undefined : isSourceSelected('reserve', fanIdx, undefined)}
           draggable={isPlaying && !loading && !selecting}
           onDragStart={dnd.handleDragStart(fanZone)}

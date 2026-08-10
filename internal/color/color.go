@@ -25,7 +25,8 @@ func SetStdoutColor(enabled bool) { noColorStdout.Store(!enabled) }
 func SetStderrColor(enabled bool) { noColorStderr.Store(!enabled) }
 
 // NoColor reports whether stdout color output is disabled.
-// Retained for backward compatibility; prefer NoColorStdout / NoColorStderr.
+// Kept as the reader half of SetNoColor, which CUI presenter tests use to save
+// and restore color state; prefer NoColorStdout / NoColorStderr in new code.
 func NoColor() bool { return noColorStdout.Load() }
 
 // NoColorStdout reports whether color output is disabled for stdout.
@@ -43,6 +44,15 @@ func wrap(code, s string, off bool) string {
 	return code + s + reset
 }
 
+// RedStderr wraps s with red ANSI color code, honouring the stderr color
+// setting rather than the stdout one.
+//
+// stderr has its own setting because a run can have one stream on a terminal
+// and the other redirected; `--color=auto` detects each independently. This is
+// the only stderr-targeted colour the CLI needs -- errors routed to stderr by
+// printResult. See issue #5194.
+func RedStderr(s string) string { return wrap("\033[31m", s, noColorStderr.Load()) }
+
 // Red wraps s with red ANSI color code (stdout-targeted).
 func Red(s string) string { return wrap("\033[31m", s, noColorStdout.Load()) }
 
@@ -57,18 +67,3 @@ func Bold(s string) string { return wrap("\033[1m", s, noColorStdout.Load()) }
 
 // BoldYellow wraps s with bold yellow ANSI code (stdout-targeted).
 func BoldYellow(s string) string { return wrap("\033[1;33m", s, noColorStdout.Load()) }
-
-// RedStderr wraps s with red ANSI color code honoring the stderr color flag.
-func RedStderr(s string) string { return wrap("\033[31m", s, noColorStderr.Load()) }
-
-// GreenStderr wraps s with green ANSI color code honoring the stderr color flag.
-func GreenStderr(s string) string { return wrap("\033[32m", s, noColorStderr.Load()) }
-
-// YellowStderr wraps s with yellow ANSI color code honoring the stderr color flag.
-func YellowStderr(s string) string { return wrap("\033[33m", s, noColorStderr.Load()) }
-
-// BoldStderr wraps s with bold ANSI code honoring the stderr color flag.
-func BoldStderr(s string) string { return wrap("\033[1m", s, noColorStderr.Load()) }
-
-// BoldYellowStderr wraps s with bold yellow ANSI code honoring the stderr color flag.
-func BoldYellowStderr(s string) string { return wrap("\033[1;33m", s, noColorStderr.Load()) }

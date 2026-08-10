@@ -7,7 +7,8 @@
 ## 起動方法
 
 ```sh
-go run ./cmd/cli blackjack
+go run ./cmd/trumpcards blackjack
+go run ./cmd/trumpcards --lang en blackjack  # 英語モード
 ```
 
 ## ルール
@@ -232,6 +233,7 @@ HEART 8,DIAMOND 7
 - `chips`: プレイヤーとディーラーの所持チップ、デッキ数、ソフト17ルール
 - `count (システム名): RC=N TC=N`: ランニングカウント / トゥルーカウント（カウンティングON時のみ、KOシステムでは `TC=N/A`）
 - `phase`: 現在のフェーズ（BET / INSURANCE / ACTION / END / EARLY_SURRENDER）
+- **配当表**: ベットフェーズのあいだだけ、ブラックジャック 3:2 / 通常勝利 1:1 / インシュランス 2:1 / プッシュ / サレンダー / バストの一覧が出ます（Web の配当表と同じ内容）。Spanish 21 ではボーナス配当（5・6・7 枚で 21、6-7-8、7-7-7）も並びます
 - `dealer score`: ディーラーの手札（ゲーム中は裏札が非表示）
 - `cpuN score N bet=M chips=C`: CPUプレイヤーの手札情報（CPUプレイヤーがいる場合のみ）
 - `player (*) score N bet=M`: プレイヤーの手札情報（`(*)` はアクティブなハンド）

@@ -138,7 +138,7 @@ type BidWhist struct {
 	teamScores  [BidWhistTeamCnt]int
 	gameEndFlag bool
 	winnerTeam  int
-	actionLog   []*ActionLogEntry
+	actionLogBase
 }
 
 // NewBidWhist コンストラクタ
@@ -240,7 +240,7 @@ func (g *BidWhist) PlayerBid(tricks, direction int) error {
 	if g.phase != BidWhistPhaseBid {
 		return ErrWrongPhase
 	}
-	humanIdx := g.findHumanIdx()
+	humanIdx := findHumanIdx(g.players)
 	if humanIdx < 0 || g.bidPlayerIdx != humanIdx {
 		return ErrNotHumanTurn
 	}
@@ -263,7 +263,7 @@ func (g *BidWhist) PlayerPass() error {
 	if g.phase != BidWhistPhaseBid {
 		return ErrWrongPhase
 	}
-	humanIdx := g.findHumanIdx()
+	humanIdx := findHumanIdx(g.players)
 	if humanIdx < 0 || g.bidPlayerIdx != humanIdx {
 		return ErrNotHumanTurn
 	}
@@ -717,19 +717,7 @@ func (g *BidWhist) trickScore(c *Card, ls int) int {
 
 // trickWinner トリックの勝者を決定する
 func (g *BidWhist) trickWinner() int {
-	if len(g.currentTrick) == 0 {
-		return 0
-	}
-	ls := g.leadSuit()
-	winnerIdx := g.currentTrick[0].PlayerIdx
-	winnerScore := g.trickScore(g.currentTrick[0].Card, ls)
-	for _, tc := range g.currentTrick[1:] {
-		if s := g.trickScore(tc.Card, ls); s > winnerScore {
-			winnerScore = s
-			winnerIdx = tc.PlayerIdx
-		}
-	}
-	return winnerIdx
+	return trickWinnerByScore(g.currentTrick, g)
 }
 
 // validatePlay カードのプレイが有効か検証する
@@ -766,10 +754,7 @@ func (g *BidWhist) GetValidPlayIndices(playerIdx int) []int {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (g *BidWhist) getValidPlayIndices(playerIdx int) []int {
-	player := g.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return g.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(g.players[playerIdx], func(c *Card) bool { return g.validatePlay(playerIdx, c) == nil })
 }
 
 // --- CPU AI ---
@@ -958,7 +943,7 @@ func (g *BidWhist) currentWinnerScore(ls int) int {
 
 // GetHint 現在の人間の手番に対するヒントを返す
 func (g *BidWhist) GetHint() *BidWhistHint {
-	humanIdx := g.findHumanIdx()
+	humanIdx := findHumanIdx(g.players)
 	if humanIdx < 0 || g.gameEndFlag {
 		return nil
 	}
@@ -1057,10 +1042,7 @@ func (g *BidWhist) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *BidWhist) GetPlayer(i int) *BidWhistPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
@@ -1172,18 +1154,12 @@ func (g *BidWhist) SetTeamScore(team, score int) {
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (g *BidWhist) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // IsHumanBidTurn 現在のビッド手番が人間かどうか
 func (g *BidWhist) IsHumanBidTurn() bool {
-	if g.bidPlayerIdx < 0 || g.bidPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.bidPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.bidPlayerIdx)
 }
 
 // IsHumanDeclarerTurn 現在の落札者(切り札宣言/キティ交換手番)が人間かどうか
@@ -1200,9 +1176,6 @@ func (g *BidWhist) GetConfig() BidWhistConfig { return g.config }
 // SetConfig 設定変更
 func (g *BidWhist) SetConfig(cfg BidWhistConfig) { g.config = cfg }
 
-// GetActionLog 棋譜取得
-func (g *BidWhist) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // CardRankPublic カードランク取得 (テスト用)
 func (g *BidWhist) CardRankPublic(card *Card) int { return g.cardRank(card) }
 
@@ -1211,21 +1184,9 @@ func (g *BidWhist) EffectiveSuitPublic(card *Card) int { return g.effectiveSuit(
 
 // --- Private helpers ---
 
-// findHumanIdx 人間プレイヤーのインデックスを返す (-1=なし)
-func (g *BidWhist) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 // sortAllHands 全プレイヤーの手札をソートする
 func (g *BidWhist) sortAllHands() {
-	for _, p := range g.players {
-		g.sortHand(p)
-	}
+	sortEachHand(g.players, g.sortHand)
 }
 
 // sortHand プレイヤーの手札を実効スート→ランク順にソートする
@@ -1260,17 +1221,6 @@ func (g *BidWhist) playerName(idx int) string {
 		return "You"
 	}
 	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (g *BidWhist) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // bidWhistValidSuit 4スートのうちいずれかか

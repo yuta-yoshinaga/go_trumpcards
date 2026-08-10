@@ -26,8 +26,21 @@ export interface Rummy500Config {
 }
 
 /** Full Rummy 500 game state returned from the API. */
+/** どこに置けるかを指す、既存メルドの場所。 */
+export interface Rummy500LayoffTarget {
+  owner: number;
+  meldIdx: number;
+}
+
 export interface Rummy500Response extends BaseGameResponse {
   players: Rummy500PlayerData[];
+  /**
+   * 手札のカードごとに、それを置ける既存メルドの場所。
+   *
+   * どのメルドのボタンも常に押せて、置けるかどうかはサーバー応答で初めて
+   * 分かる状態だった (#4832)。
+   */
+  layoffTargets: Rummy500LayoffTarget[][];
   phase: number;
   roundNumber: number;
   currentPlayerIdx: number;

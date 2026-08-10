@@ -112,7 +112,7 @@ type Bridge struct {
 	leadPlayerIdx    int
 	gameEndFlag      bool
 	winnerTeam       int // 勝利チーム (-1 = 未確定)
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewBridge コンストラクタ
@@ -225,7 +225,7 @@ func (b *Bridge) PlayerBid(bidType int, level int, suit int) error {
 	if b.phase != BridgePhaseBid {
 		return ErrWrongPhase
 	}
-	humanIdx := b.findHumanIdx()
+	humanIdx := findHumanIdx(b.players)
 	if humanIdx < 0 || b.bidPlayerIdx != humanIdx {
 		return ErrNotHumanTurn
 	}
@@ -291,6 +291,45 @@ func (b *Bridge) doBidPass(playerIdx int) error {
 
 	b.advanceBidPlayer()
 	return nil
+}
+
+// BridgeMinLegalBid は現在のコントラクトを上回る最も低いビッドを返す。
+// 7NT まで埋まっていれば ok=false。
+//
+// **判定は isHigherBid と同じ規則。**別に書くと、案内した組が拒否される (#4903)。
+func (b *Bridge) BridgeMinLegalBid() (level, suit int, ok bool) {
+	if b.contractLevel == 0 {
+		return 1, BridgeBidSuitClub, true
+	}
+	if b.contractSuit < BridgeBidSuitNT {
+		return b.contractLevel, b.contractSuit + 1, true
+	}
+	if b.contractLevel >= 7 {
+		return 0, 0, false
+	}
+	return b.contractLevel + 1, BridgeBidSuitClub, true
+}
+
+// BridgeCanDouble は今ダブルできるかを返す。doBidDouble の拒否条件の裏返し。
+func (b *Bridge) BridgeCanDouble(playerIdx int) bool {
+	if b.contractLevel == 0 || b.doubled != 0 {
+		return false
+	}
+	if playerIdx < 0 || playerIdx >= len(b.players) {
+		return false
+	}
+	return b.players[playerIdx].GetTeam() != b.lastBidTeam
+}
+
+// BridgeCanRedouble は今リダブルできるかを返す。doBidRedouble の拒否条件の裏返し。
+func (b *Bridge) BridgeCanRedouble(playerIdx int) bool {
+	if b.doubled != 1 {
+		return false
+	}
+	if playerIdx < 0 || playerIdx >= len(b.players) {
+		return false
+	}
+	return b.players[playerIdx].GetTeam() == b.lastBidTeam
 }
 
 // doBidNormal 通常ビッドする
@@ -451,7 +490,7 @@ func (b *Bridge) PlayerPlay(cardIndex int) error {
 
 	// デクレアラーはダミーのカードもプレイできる
 	actingPlayer := b.currentPlayerIdx
-	humanIdx := b.findHumanIdx()
+	humanIdx := findHumanIdx(b.players)
 	if humanIdx < 0 {
 		return ErrNotHumanTurn
 	}
@@ -828,10 +867,7 @@ func (b *Bridge) GetPlayerCnt() int { return len(b.players) }
 
 // GetPlayer プレイヤー取得
 func (b *Bridge) GetPlayer(i int) *BridgePlayer {
-	if i < 0 || i >= len(b.players) {
-		return nil
-	}
-	return b.players[i]
+	return getPlayer(b.players, i)
 }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
@@ -956,7 +992,7 @@ func (b *Bridge) IsHumanTurn() bool {
 	if b.phase != BridgePhasePlay {
 		return false
 	}
-	humanIdx := b.findHumanIdx()
+	humanIdx := findHumanIdx(b.players)
 	if humanIdx < 0 {
 		return false
 	}
@@ -969,10 +1005,7 @@ func (b *Bridge) IsHumanTurn() bool {
 
 // IsHumanBidTurn 現在のビッド手番が人間かどうか
 func (b *Bridge) IsHumanBidTurn() bool {
-	if b.bidPlayerIdx < 0 || b.bidPlayerIdx >= len(b.players) {
-		return false
-	}
-	return b.players[b.bidPlayerIdx].GetIsHuman()
+	return isHumanTurn(b.players, b.bidPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -980,9 +1013,6 @@ func (b *Bridge) GetConfig() BridgeConfig { return b.config }
 
 // SetConfig 設定変更
 func (b *Bridge) SetConfig(cfg BridgeConfig) { b.config = cfg }
-
-// GetActionLog 棋譜取得
-func (b *Bridge) GetActionLog() []*ActionLogEntry { return b.actionLog }
 
 // IsOpeningLeadDone オープニングリード完了か
 func (b *Bridge) IsOpeningLeadDone() bool { return b.openingLeadDone }
@@ -1007,7 +1037,7 @@ func (b *Bridge) GetValidPlayIndices(playerIdx int) []int {
 
 // GetHint ヒントを取得する
 func (b *Bridge) GetHint() *BridgeHint {
-	humanIdx := b.findHumanIdx()
+	humanIdx := findHumanIdx(b.players)
 	if humanIdx < 0 {
 		return nil
 	}
@@ -1040,16 +1070,6 @@ func (b *Bridge) GetHint() *BridgeHint {
 }
 
 // --- Private methods ---
-
-// findHumanIdx 人間プレイヤーのインデックスを返す (-1=なし)
-func (b *Bridge) findHumanIdx() int {
-	for i, p := range b.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
 
 // playCard カードをプレイする共通処理
 func (b *Bridge) playCard(playerIdx int, card *Card) {
@@ -1105,10 +1125,7 @@ func (b *Bridge) playerHasSuit(playerIdx int, suit int) bool {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (b *Bridge) getValidPlayIndices(playerIdx int) []int {
-	player := b.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return b.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(b.players[playerIdx], func(c *Card) bool { return b.validatePlay(playerIdx, c) == nil })
 }
 
 // trickWinner トリックの勝者を決定する
@@ -1231,17 +1248,6 @@ func (b *Bridge) playerName(idx int) string {
 		return fmt.Sprintf("You (%s)", positions[idx])
 	}
 	return fmt.Sprintf("CPU %d (%s)", idx, positions[idx])
-}
-
-// appendLog 棋譜にエントリを追加する
-func (b *Bridge) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	b.actionLog = append(b.actionLog, &ActionLogEntry{
-		TurnNumber: len(b.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // playHintReason プレイヒントの理由を判定する

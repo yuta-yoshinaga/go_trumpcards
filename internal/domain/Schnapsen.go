@@ -124,7 +124,7 @@ type Schnapsen struct {
 	marriageDeclared [CardDesignMax + 1]bool // suit -> 当ラウンドで宣言済か
 	gameEndFlag      bool
 	winnerIdx        int // -1: 未確定
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewSchnapsen コンストラクタ
@@ -263,7 +263,7 @@ func (s *Schnapsen) ResolveTrick() {
 	s.playerPoints[winnerIdx] += trickPoints
 
 	s.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (%d pt)", s.playerName(winnerIdx), s.trickNumber, trickPoints),
+		fmt.Sprintf("%s wins trick %d (%d pt)", playerName(s.players, winnerIdx), s.trickNumber, trickPoints),
 		trickCards)
 
 	s.leadPlayerIdx = winnerIdx
@@ -346,10 +346,7 @@ func (s *Schnapsen) GetPlayerCnt() int { return len(s.players) }
 
 // GetPlayer プレイヤー取得
 func (s *Schnapsen) GetPlayer(i int) *SchnapsenPlayer {
-	if i < 0 || i >= len(s.players) {
-		return nil
-	}
-	return s.players[i]
+	return getPlayer(s.players, i)
 }
 
 // GetPlayerPoints プレイヤーの累積得点取得 (カード点 + マリアージュボーナス)
@@ -392,10 +389,7 @@ func (s *Schnapsen) IsEndgame() bool {
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (s *Schnapsen) IsHumanTurn() bool {
-	if s.currentPlayerIdx < 0 || s.currentPlayerIdx >= len(s.players) {
-		return false
-	}
-	return s.players[s.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(s.players, s.currentPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -403,9 +397,6 @@ func (s *Schnapsen) GetConfig() SchnapsenConfig { return s.config }
 
 // SetConfig 設定変更
 func (s *Schnapsen) SetConfig(cfg SchnapsenConfig) { s.config = cfg }
-
-// GetActionLog 棋譜取得
-func (s *Schnapsen) GetActionLog() []*ActionLogEntry { return s.actionLog }
 
 // GetValidPlayIndices プレイ可能なカードのインデックスリストを返す。
 // 第1フェーズは制約なし。第2フェーズはマストフォロー (同スート優先 →
@@ -506,7 +497,7 @@ func (s *Schnapsen) declareMarriage(playerIdx, cardIndex int) error {
 	s.marriageDeclared[suit] = true
 	s.playerPoints[playerIdx] += bonus
 	s.appendLog(playerIdx, "marriage",
-		fmt.Sprintf("%s declares marriage in %s (+%d)", s.playerName(playerIdx), suitStr(suit), bonus), nil)
+		fmt.Sprintf("%s declares marriage in %s (+%d)", playerName(s.players, playerIdx), suitStr(suit), bonus), nil)
 
 	// 宣言だけで 66 点に達したら即ラウンド終了 (カードは出さない)
 	if s.playerPoints[playerIdx] >= SchnapsenWinThreshold {
@@ -549,7 +540,7 @@ func (s *Schnapsen) playCard(playerIdx int, card *Card) {
 		Card:      card,
 	})
 	s.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", s.playerName(playerIdx), cardStr(card)),
+		fmt.Sprintf("%s plays %s", playerName(s.players, playerIdx), cardStr(card)),
 		[]*Card{card})
 
 	if len(s.currentTrick) == SchnapsenPlayerCnt {
@@ -562,16 +553,7 @@ func (s *Schnapsen) playCard(playerIdx int, card *Card) {
 // validatePlay カードのプレイがルール上有効かを検証する。
 // 第1フェーズ・リード時は常に有効。第2フェーズの追随時のみマストフォローを課す。
 func (s *Schnapsen) validatePlay(playerIdx int, card *Card) error {
-	if card == nil {
-		return NewDomainError(ErrInvalidCard, "カードが nil です")
-	}
-	if !s.IsEndgame() || len(s.currentTrick) == 0 {
-		return nil
-	}
-	if !s.cardSatisfiesFollow(playerIdx, card) {
-		return NewDomainError(ErrInvalidCard, "第2フェーズではフォロールールに従う必要があります")
-	}
-	return nil
+	return validateEndgameFollow(s.currentTrick, s, playerIdx, card)
 }
 
 // cardSatisfiesFollow 第2フェーズの追随時に card が合法かを返す。
@@ -583,7 +565,7 @@ func (s *Schnapsen) cardSatisfiesFollow(playerIdx int, card *Card) bool {
 	leadCard := s.currentTrick[0].Card
 	leadSuit := leadCard.GetDesign()
 
-	if playerHasSuit(player, leadSuit) {
+	if handHasSuit(player, leadSuit) {
 		if card.GetDesign() != leadSuit {
 			return false
 		}
@@ -593,7 +575,7 @@ func (s *Schnapsen) cardSatisfiesFollow(playerIdx int, card *Card) bool {
 		}
 		return true
 	}
-	if playerHasSuit(player, s.trumpSuit) {
+	if handHasSuit(player, s.trumpSuit) {
 		return card.GetDesign() == s.trumpSuit
 	}
 	return true
@@ -601,24 +583,7 @@ func (s *Schnapsen) cardSatisfiesFollow(playerIdx int, card *Card) bool {
 
 // legalPlayIndices validatePlay を満たすカードのインデックス集合を返す。
 func (s *Schnapsen) legalPlayIndices(playerIdx int) []int {
-	p := s.players[playerIdx]
-	out := make([]int, 0, p.GetCardsSize())
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if s.validatePlay(playerIdx, p.GetCard(i)) == nil {
-			out = append(out, i)
-		}
-	}
-	return out
-}
-
-// playerHasSuit プレイヤーが指定スートのカードを持つか
-func playerHasSuit(player *SchnapsenPlayer, suit int) bool {
-	for i := 0; i < player.GetCardsSize(); i++ {
-		if player.GetCard(i).GetDesign() == suit {
-			return true
-		}
-	}
-	return false
+	return validPlayIndices(s.players[playerIdx], func(c *Card) bool { return s.validatePlay(playerIdx, c) == nil })
 }
 
 // playerHasSuitWinner プレイヤーが同スートで leadCard に勝てるカードを持つか
@@ -697,25 +662,12 @@ func (s *Schnapsen) drawReplenish() {
 
 // drawOne 山札または切り札表示カードから 1 枚引く。優先順位は山札 → 切り札表示カード。
 func (s *Schnapsen) drawOne() *Card {
-	if c := s.trumpCards.DrawCard(); c != nil {
-		return c
-	}
-	if s.trumpCard != nil {
-		c := s.trumpCard
-		s.trumpCard = nil
-		return c
-	}
-	return nil
+	return drawOrTakeTrump(s.trumpCards, &s.trumpCard)
 }
 
 // allHandsEmpty 全プレイヤーの手札が空かを返す
 func (s *Schnapsen) allHandsEmpty() bool {
-	for _, p := range s.players {
-		if p.GetCardsSize() > 0 {
-			return false
-		}
-	}
-	return true
+	return allHandsEmpty(s.players)
 }
 
 // finishGame ゲームを終了させ、勝者を決定する
@@ -758,9 +710,7 @@ func SchnapsenDetermineWinner(p0, p1, lastTrickWinner int) int {
 
 // sortAllHands 全プレイヤーの手札をソートする
 func (s *Schnapsen) sortAllHands() {
-	for _, p := range s.players {
-		s.sortHand(p)
-	}
+	sortEachHand(s.players, s.sortHand)
 }
 
 // sortHand プレイヤーの手札をスート (トランプ最後) → ランク でソートする
@@ -776,28 +726,6 @@ func (s *Schnapsen) sortHand(p *SchnapsenPlayer) {
 			return ci.GetDesign() < cj.GetDesign()
 		}
 		return SchnapsenRankOrder(ci) < SchnapsenRankOrder(cj)
-	})
-}
-
-// playerName プレイヤー名を返す (ログ用)
-func (s *Schnapsen) playerName(idx int) string {
-	if idx < 0 || idx >= len(s.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if s.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜エントリを追加する
-func (s *Schnapsen) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	s.actionLog = append(s.actionLog, &ActionLogEntry{
-		TurnNumber: len(s.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
 	})
 }
 

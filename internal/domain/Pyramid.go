@@ -47,13 +47,13 @@ type PyramidHint struct {
 
 // Pyramid ピラミッドソリティアゲームクラス
 type Pyramid struct {
-	trumpCards  *TrumpCards
-	pyramid     [PyramidRowCnt][]*PyramidCard
-	stock       []*Card
-	waste       []*Card
-	phase       PyramidPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	pyramid    [PyramidRowCnt][]*PyramidCard
+	stock      []*Card
+	waste      []*Card
+	phase      PyramidPhase
+	moveCount  int
+	actionLogBase
 	history     []*pyramidSnapshot
 	isStalemate bool
 }
@@ -170,6 +170,31 @@ func (p *Pyramid) RemovePair(row1, col1, row2, col2 int) error {
 	p.checkGameClear()
 	p.checkStalemate()
 	return nil
+}
+
+// IsRemovableKing は (row, col) のカードが「いま単独で除去できるキング」かを返す。
+//
+// **RemoveKing が通る条件と同じものを見る (#4782)。**キングは相方が要らず
+// クリックだけで消せるので、Web は常時ハイライトしている。印を付ける条件と
+// 実際に通る条件が別々だと、消せない札に印が付く。
+func (p *Pyramid) IsRemovableKing(row, col int) bool {
+	if p.phase != PyramidPhasePlaying {
+		return false
+	}
+	if err := p.validatePyramidPos(row, col); err != nil {
+		return false
+	}
+	// isExposed が除去済みを弾くので、ここで Removed を見直さない
+	// (見ても常に同じ結果になる分岐が増えるだけ)。
+	return p.isExposed(row, col) && p.pyramid[row][col].Card.GetValue() == PyramidTargetSum
+}
+
+// IsWasteKingRemovable はウェイストのトップが単独で除去できるキングかを返す。
+func (p *Pyramid) IsWasteKingRemovable() bool {
+	if p.phase != PyramidPhasePlaying || len(p.waste) == 0 {
+		return false
+	}
+	return p.waste[len(p.waste)-1].GetValue() == PyramidTargetSum
 }
 
 // RemoveKing ピラミッド上のKを単独で除去
@@ -346,25 +371,12 @@ func (p *Pyramid) CanUndo() bool {
 
 // UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。膠着状態でなければ0、脱出不可なら-1。
 func (p *Pyramid) UndoToEscape() int {
-	if !p.isStalemate {
-		return 0
-	}
-	for i := len(p.history) - 1; i >= 0; i-- {
-		if !p.history[i].isStalemate {
-			return len(p.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(p.isStalemate, p.history, func(s *pyramidSnapshot) bool { return s.isStalemate })
 }
 
 // UndoN n回連続でアンドゥを実行する。
 func (p *Pyramid) UndoN(n int) error {
-	for i := 0; i < n; i++ {
-		if err := p.Undo(); err != nil {
-			return fmt.Errorf("undo step %d failed: %w", i+1, err)
-		}
-	}
-	return nil
+	return undoN(p, n)
 }
 
 // --- State getters/setters ---
@@ -386,9 +398,6 @@ func (p *Pyramid) GetWaste() []*Card { return p.waste }
 
 // GetPyramid ピラミッド取得
 func (p *Pyramid) GetPyramid() [PyramidRowCnt][]*PyramidCard { return p.pyramid }
-
-// GetActionLog 棋譜取得
-func (p *Pyramid) GetActionLog() []*ActionLogEntry { return p.actionLog }
 
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (p *Pyramid) GetGameEndFlag() bool { return p.phase != PyramidPhasePlaying }
@@ -529,13 +538,7 @@ func (p *Pyramid) restoreSnapshot(snap *pyramidSnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (p *Pyramid) appendLog(actionType, detail string, cards []*Card) {
-	p.actionLog = append(p.actionLog, &ActionLogEntry{
-		TurnNumber: p.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	p.appendLogAt(p.moveCount, 0, actionType, detail, cards)
 }
 
 // pyramidJSON is the JSON wire format for Pyramid.

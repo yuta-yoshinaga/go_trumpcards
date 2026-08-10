@@ -51,8 +51,8 @@ type Yaniv struct {
 	asafWinnerIdx    int   // アサフで宣言者を下回ったプレイヤー (-1 = なし)
 	isAsaf           bool  // 直近の宣言がアサフだったか
 	roundScores      []int // 直近ラウンドで各プレイヤーが加算された失点
-	actionLog        []*ActionLogEntry
-	rng              *rand.Rand
+	actionLogBase
+	rng *rand.Rand
 }
 
 // NewYaniv コンストラクタ
@@ -253,7 +253,7 @@ func (g *Yaniv) discard(idx int, cardIndices []int) error {
 	sortCardsForDiscard(removed)
 	g.pendingDiscard = removed
 
-	g.appendLog(idx, "discard", fmt.Sprintf("%s discards %s", g.playerName(idx), cardsStr(removed)), removed)
+	g.appendLog(idx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, idx), cardsStr(removed)), removed)
 	g.phase = YanivPhaseDraw
 	return nil
 }
@@ -288,7 +288,7 @@ func (g *Yaniv) drawFromStock(idx int) {
 	g.drawPile = g.drawPile[:len(g.drawPile)-1]
 	g.players[idx].AddCard(card)
 	g.sortHand(idx)
-	g.appendLog(idx, "draw_stock", fmt.Sprintf("%s draws from stock", g.playerName(idx)), nil)
+	g.appendLog(idx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, idx)), nil)
 	g.finalizeDraw(-1)
 }
 
@@ -301,7 +301,7 @@ func (g *Yaniv) drawFromPickup(idx, end int) {
 	card := g.pickupCards[takenIdx]
 	g.players[idx].AddCard(card)
 	g.sortHand(idx)
-	g.appendLog(idx, "draw_pickup", fmt.Sprintf("%s takes %s from the discard", g.playerName(idx), cardStr(card)), []*Card{card})
+	g.appendLog(idx, "draw_pickup", fmt.Sprintf("%s takes %s from the discard", playerName(g.players, idx), cardStr(card)), []*Card{card})
 	g.finalizeDraw(takenIdx)
 }
 
@@ -462,7 +462,7 @@ func (g *Yaniv) resolveYaniv(callerIdx int) {
 		g.asafWinnerIdx = asafWinner
 		scores[callerIdx] = YanivAsafPenalty
 		g.appendLog(callerIdx, "asaf", fmt.Sprintf("%s calls Yaniv (%d) but is undercut by %s (%d)! +%d penalty",
-			g.playerName(callerIdx), callerTotal, g.playerName(asafWinner), minOpp, YanivAsafPenalty), nil)
+			playerName(g.players, callerIdx), callerTotal, playerName(g.players, asafWinner), minOpp, YanivAsafPenalty), nil)
 		for i, p := range g.players {
 			if i == callerIdx || p.IsEliminated() || i == asafWinner {
 				continue
@@ -471,7 +471,7 @@ func (g *Yaniv) resolveYaniv(callerIdx int) {
 		}
 	} else {
 		scores[callerIdx] = 0
-		g.appendLog(callerIdx, "yaniv", fmt.Sprintf("%s calls Yaniv with %d and wins the round!", g.playerName(callerIdx), callerTotal), nil)
+		g.appendLog(callerIdx, "yaniv", fmt.Sprintf("%s calls Yaniv with %d and wins the round!", playerName(g.players, callerIdx), callerTotal), nil)
 		for i, p := range g.players {
 			if i == callerIdx || p.IsEliminated() {
 				continue
@@ -488,7 +488,7 @@ func (g *Yaniv) resolveYaniv(callerIdx int) {
 	for i, p := range g.players {
 		if !p.IsEliminated() && p.GetScore() > g.config.ScoreLimit {
 			p.SetEliminated(true)
-			g.appendLog(i, "eliminate", fmt.Sprintf("%s is eliminated (score: %d)", g.playerName(i), p.GetScore()), nil)
+			g.appendLog(i, "eliminate", fmt.Sprintf("%s is eliminated (score: %d)", playerName(g.players, i), p.GetScore()), nil)
 		}
 	}
 
@@ -529,7 +529,7 @@ func (g *Yaniv) checkGameEnd() {
 	g.gameEndFlag = true
 	g.phase = YanivPhaseGameEnd
 	g.winnerIdx = g.leaderIdx()
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", g.playerName(g.winnerIdx)), nil)
+	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, g.winnerIdx)), nil)
 }
 
 // leaderIdx 生存者のうち最も失点が少ないプレイヤー (同点は若いインデックス) を返す
@@ -572,24 +572,12 @@ func (g *Yaniv) firstActiveIdx() int {
 
 // nextActiveIdx from の次のアクティブプレイヤーのインデックスを返す
 func (g *Yaniv) nextActiveIdx(from int) int {
-	n := len(g.players)
-	for step := 1; step <= n; step++ {
-		idx := (from + step) % n
-		if !g.players[idx].IsEliminated() {
-			return idx
-		}
-	}
-	return from
+	return nextIndexWhere(g.players, from, func(p *YanivPlayer) bool { return !p.IsEliminated() })
 }
 
 // humanIdx 人間プレイヤーのインデックスを返す (-1 = 不在)
 func (g *Yaniv) humanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
+	return findHumanIdx(g.players)
 }
 
 // --- Combo validation ---
@@ -775,18 +763,12 @@ func (g *Yaniv) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer 指定インデックスのプレイヤーを取得する
 func (g *Yaniv) GetPlayer(i int) *YanivPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // IsHumanTurn 現在の手番が人間かを返す
 func (g *Yaniv) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // GetCallerIdx Yaniv を宣言したプレイヤーインデックスを取得する (-1 = なし)
@@ -810,16 +792,11 @@ func (g *Yaniv) GetConfig() YanivConfig { return g.config }
 // SetConfig ゲーム設定を設定する
 func (g *Yaniv) SetConfig(cfg YanivConfig) { g.config = cfg }
 
-// GetActionLog 棋譜を取得する
-func (g *Yaniv) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // --- Private helpers ---
 
 // sortAllHands 全プレイヤーの手札をソートする
 func (g *Yaniv) sortAllHands() {
-	for i := range g.players {
-		g.sortHand(i)
-	}
+	sortHands(len(g.players), g)
 }
 
 // sortHand プレイヤーの手札をスート→数値順にソートする
@@ -839,28 +816,6 @@ func (g *Yaniv) sortHand(playerIdx int) {
 	for _, c := range cards {
 		p.AddCard(c)
 	}
-}
-
-// playerName プレイヤー名を返す
-func (g *Yaniv) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (g *Yaniv) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // cardsStr 複数カードを空白区切りの文字列にする

@@ -18,5 +18,13 @@
   "promptChooseSuit": "Choose-suit phase",
   "promptChooseSuitHelp": "suit <1-4>: choose suit (1=♠, 2=♣, 3=♥, 4=♦)",
   "promptRoundEnd": "Round complete",
-  "promptRoundEndHelp": "nr / nextround: advance to next round"
+  "promptRoundEndHelp": "nr / nextround: advance to next round",
+  "hintNone": "No hint available",
+  "hintCard": "Suggested: [{{idx}}] {{card}} ({{reason}})",
+  "hintSuit": "Suggested suit: {{suit}} ({{reason}})",
+  "hintReasonMatchSuit": "matches the suit",
+  "hintReasonMatchRank": "matches the rank",
+  "hintReasonPlayWild": "an 8 lets you change the suit",
+  "hintReasonPlayValid": "a legal play",
+  "hintReasonChooseLongestSuit": "your longest suit"
 }

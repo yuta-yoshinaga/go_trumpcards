@@ -40,7 +40,7 @@ Shared building blocks:
 
 **TDD cycle (Red-Green-Refactor):**
 
-1. **Red** -- Write a failing test (`bun run test -- --run TestName` confirms failure)
+1. **Red** -- Write a failing test (`bunx vitest run <file> -t "<test name>"` confirms failure; a bare argument filters by filename, not by test name)
 2. **Green** -- Write the minimum code to pass the test
 3. **Refactor** -- Clean up while keeping all tests green (`bun run test`)
 
@@ -96,7 +96,7 @@ bun run e2e:ui       # Run with Playwright UI
 The Web GUI supports Japanese (ja) and English (en) via **react-i18next** with **i18next-browser-languagedetector**.
 
 - **Config**: `src/i18n/index.ts`
-- **Translation files**: `src/i18n/locales/{ja,en}/<game>.json` (each game name + `common.json`, `tutorial.json`)
+- **Translation files**: `src/i18n/locales/{ja,en}/<game>.json` (each game name + `common.json`, `tutorial.json`, `discover.json`)
 - **In components**: use the `useTranslation()` hook
 - **In non-component files** (e.g., `playerUtils.ts`, `messages.ts`, `gameConstants.ts`): import the `i18n` instance directly
 - **Tests**: i18n is initialized in `src/test/setup.ts` with ja translations loaded
@@ -118,6 +118,39 @@ All exported symbols (types, interfaces, functions, components, constants, hooks
 ```sh
 bun run build && bun run check && bun run test
 ```
+
+## Guard scripts (`scripts/check-*.mjs`)
+
+`bun run check` is Biome plus fourteen guard scripts, each pinning down an invariant that no
+type or test covers (design tokens, discover blurbs, message codes, hint coverage, markdown
+tables, mermaid diagrams, design-doc identifiers, dependency licences, trademark terms,
+asset provenance, …).
+
+**Every guard that reports a discovered count must assert a floor under it.** A guard walks
+something and then reports on what it found; when the walk breaks, it finds nothing, nothing
+has no violations in it, and the script exits 0 with a line that reads exactly like coverage.
+`check-dependency-licenses.mjs` once inspected 341 packages and reported 1, and the run looked
+perfect.
+
+```js
+import { assertFloor } from './lib/floor.mjs';
+
+const files = await walk(SRC_DIR);
+assertFloor('my-guard', files.length, 1200, 'source files scanned');   // <- before reporting
+console.log(`my-guard: OK (${files.length} source files scanned).`);
+```
+
+`check-guard-floors.mjs` enforces this and runs first in the chain: a guard with three counted
+`console.log` lines needs three `assertFloor` calls, and a floor of `0` is rejected outright
+(it holds for every input, including a walk that found nothing).
+
+Set the floor well below today's real number — enough that ordinary churn never trips it, and
+a walk that found a fraction of the truth does. Roughly two thirds of the current count works.
+
+Guard tests live next to the guard as `scripts/*.test.mjs` and run in the normal Vitest suite.
+Each must cover **both** directions: input the guard rejects, and correct input it must not
+flag. A guard tested only on the failing case is indistinguishable from one that fails
+everything.
 
 ## Type checking
 

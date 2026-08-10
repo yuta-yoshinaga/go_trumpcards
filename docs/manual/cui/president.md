@@ -1,4 +1,4 @@
-# President / プレジデント（CUI版）遊び方
+# プレジデント（CUI版）遊び方
 
 ## ゲーム概要
 
@@ -51,7 +51,7 @@ go run ./cmd/trumpcards --lang en president   # 英語モード
 ```mermaid
 flowchart TD
     A[ゲーム開始 - reset] --> B{手番は自分?}
-    B -- はい --> C[p [idx...] でカードを出す]
+    B -- はい --> C["p [idx...] でカードを出す"]
     C --> D{出せる?}
     D -- はい --> E[次の手番へ]
     D -- いいえ --> F[エラー]
@@ -77,6 +77,7 @@ flowchart TD
 | `setrule <rule> <0\|1>` | `sr <rule> <0\|1>` | ルール切替（`sr list` で一覧表示） |
 | `log` | `l` | 棋譜を表示 |
 | `quit` | `q` | ゲーム終了 |
+| `help` | `?` | コマンド一覧を表示 |
 
 ### ルールキー
 

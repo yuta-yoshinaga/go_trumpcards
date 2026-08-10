@@ -49,6 +49,8 @@ type ThirtyOneGame interface {
 	GetPlayer(i int) *domain.ThirtyOnePlayer
 	// GetKnockerIdx ノックしたプレイヤーインデックスを取得する
 	GetKnockerIdx() int
+	// GetHint 現在の局面での推奨手を取得する (人間の手番でなければ nil)
+	GetHint() *domain.ThirtyOneHint
 	// GetThirtyOneIdx 31を達成したプレイヤーインデックスを取得する
 	GetThirtyOneIdx() int
 	// GetRoundWinnerIdx 直近ラウンドの勝者インデックスを取得する

@@ -38,6 +38,24 @@ func TestYukonCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "Yukon")
 		assert.Contains(t, result, "Foundation")
 		assert.Contains(t, result, "列0:")
+		// **Yukon 固有の一括移動ルールを常時出す (#4788)。**盤面は Klondike と
+		// 見分けが付かないので、Klondike の感覚だと「揃った並びしか動かせない」
+		// と思い込んだままになる。
+		assert.Contains(t, result, "順序に関係なく")
+	})
+
+	t.Run("does not advertise the block-move rule once the game has ended", func(t *testing.T) {
+		yg := new(interfaces.MockYukonGame)
+		yg.On("GetPhase").Return(domain.YukonPhaseGameClear).Maybe()
+		yg.On("GetMoveCount").Return(42).Maybe()
+		yg.On("IsStalemate").Return(false).Maybe()
+		var tableau [domain.YukonTableauCnt][]*domain.KlondikeTableauCard
+		yg.On("GetTableau").Return(tableau).Maybe()
+		var foundation [domain.YukonFoundationCnt][]*domain.Card
+		yg.On("GetFoundation").Return(foundation).Maybe()
+
+		p := new(YukonCuiPresenter)
+		assert.NotContains(t, p.Output(yg, nil), "順序に関係なく")
 	})
 
 	t.Run("with error", func(t *testing.T) {

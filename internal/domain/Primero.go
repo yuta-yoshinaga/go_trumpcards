@@ -129,7 +129,7 @@ type primeroState struct {
 	result          PrimeroResult
 	gameEndFlag     bool
 	scored          bool // ラウンド結果を確定済みか (二重確定防止)
-	actionLog       []*ActionLogEntry
+	actionLogBase
 }
 
 // Primero はプリメロの状態を保持する集約ルート。
@@ -150,7 +150,7 @@ func NewPrimero(trumpCards *TrumpCards, players []*PrimeroPlayer, config Primero
 			phase:          PrimeroPhaseBetting,
 			winnerIdx:      -1,
 			matchWinnerIdx: -1,
-			actionLog:      make([]*ActionLogEntry, 0),
+			actionLogBase:  actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 		},
 	}
 }
@@ -200,7 +200,7 @@ func (g *Primero) Reset() {
 		dealerIdx:      0,
 		winnerIdx:      -1,
 		matchWinnerIdx: -1,
-		actionLog:      make([]*ActionLogEntry, 0),
+		actionLogBase:  actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 	}
 	g.startRound()
 }
@@ -334,7 +334,7 @@ func (g *Primero) applyCall(idx int) {
 	}
 	g.state.actedSinceRaise++
 	g.state.actionCount++
-	g.appendLog(idx, "call", fmt.Sprintf("%s calls %d (pot %d)", g.playerName(idx), need, g.state.pot), nil)
+	g.appendLog(idx, "call", fmt.Sprintf("%s calls %d (pot %d)", playerName(g.players, idx), need, g.state.pot), nil)
 	g.advanceOrClose(idx)
 }
 
@@ -356,7 +356,7 @@ func (g *Primero) applyRaise(idx int) {
 	// レイズ後は本人を含め 1 人がアクション済み。他のアクティブは応答が必要。
 	g.state.actedSinceRaise = 1
 	g.state.actionCount++
-	g.appendLog(idx, "raise", fmt.Sprintf("%s raises to %d, pays %d (pot %d)", g.playerName(idx), newBet, need, g.state.pot), nil)
+	g.appendLog(idx, "raise", fmt.Sprintf("%s raises to %d, pays %d (pot %d)", playerName(g.players, idx), newBet, need, g.state.pot), nil)
 	g.advanceOrClose(idx)
 }
 
@@ -364,7 +364,7 @@ func (g *Primero) applyRaise(idx int) {
 func (g *Primero) applyFold(idx int) {
 	g.players[idx].SetFolded(true)
 	g.state.actionCount++
-	g.appendLog(idx, "fold", fmt.Sprintf("%s folds", g.playerName(idx)), nil)
+	g.appendLog(idx, "fold", fmt.Sprintf("%s folds", playerName(g.players, idx)), nil)
 	g.advanceOrClose(idx)
 }
 
@@ -399,7 +399,7 @@ func (g *Primero) resolveRound() {
 	if winner >= 0 {
 		g.players[winner].AddChips(g.state.pot)
 		g.appendLog(winner, "win",
-			fmt.Sprintf("%s wins the pot (%d)", g.playerName(winner), g.state.pot), nil)
+			fmt.Sprintf("%s wins the pot (%d)", playerName(g.players, winner), g.state.pot), nil)
 	}
 	g.setHumanResult(winner)
 	g.state.pot = 0
@@ -436,7 +436,7 @@ func (g *Primero) endGame() {
 	g.state.phase = PrimeroPhaseResult
 	g.state.matchWinnerIdx = g.richestIdx()
 	g.appendLog(g.state.matchWinnerIdx, "game_end",
-		fmt.Sprintf("%s wins the game", g.playerName(g.state.matchWinnerIdx)), nil)
+		fmt.Sprintf("%s wins the game", playerName(g.players, g.state.matchWinnerIdx)), nil)
 }
 
 // --- CPU ---
@@ -631,79 +631,31 @@ func (g *Primero) bestHand(seats []int) int {
 
 // activeSeats は未フォールド・非脱落プレイヤーのインデックス列 (昇順) を返す。
 func (g *Primero) activeSeats() []int {
-	out := make([]int, 0, len(g.players))
-	for i, p := range g.players {
-		if !p.GetOut() && !p.GetFolded() {
-			out = append(out, i)
-		}
-	}
-	return out
+	return collectValidIndices(len(g.players), func(i int) bool { p := g.players[i]; return !p.GetOut() && !p.GetFolded() })
 }
 
 // activeCount は未フォールド・非脱落プレイヤー数を返す。
 func (g *Primero) activeCount() int {
-	n := 0
-	for _, p := range g.players {
-		if !p.GetOut() && !p.GetFolded() {
-			n++
-		}
-	}
-	return n
+	return countPlayers(g.players, func(p *PrimeroPlayer) bool { return !p.GetOut() && !p.GetFolded() })
 }
 
 // nextActive は from の次の未フォールド・非脱落プレイヤーを返す。
 func (g *Primero) nextActive(from int) int {
-	n := len(g.players)
-	for i := 1; i <= n; i++ {
-		idx := (from + i) % n
-		if !g.players[idx].GetOut() && !g.players[idx].GetFolded() {
-			return idx
-		}
-	}
-	return from
+	return nextIndexWhere(g.players, from, func(p *PrimeroPlayer) bool { return !p.GetOut() && !p.GetFolded() })
 }
 
 // solventCount はアンティを払える (非脱落かつチップ >= アンティ) プレイヤー数を返す。
 func (g *Primero) solventCount() int {
-	n := 0
-	for _, p := range g.players {
-		if !p.GetOut() && p.GetChips() >= g.config.Ante {
-			n++
-		}
-	}
-	return n
+	return countPlayers(g.players, func(p *PrimeroPlayer) bool { return !p.GetOut() && p.GetChips() >= g.config.Ante })
 }
 
 // richestIdx はチップが最多のプレイヤーのインデックスを返す (同数は座席番号の小さい方)。
 func (g *Primero) richestIdx() int {
-	best := 0
-	for i, p := range g.players {
-		if p.GetChips() > g.players[best].GetChips() {
-			best = i
-		}
-	}
-	return best
-}
-
-// playerName は表示用のプレイヤー名を返す。
-func (g *Primero) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
+	return maxIndexBy(g.players, func(p *PrimeroPlayer) int { return p.GetChips() })
 }
 
 func (g *Primero) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.state.actionLog = append(g.state.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.state.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.state.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // --- Hint ---
@@ -800,18 +752,12 @@ func (g *Primero) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer は指定インデックスのプレイヤーを返す。
 func (g *Primero) GetPlayer(i int) *PrimeroPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetChips は人間 (seat 0) の保有チップを返す。
 func (g *Primero) GetChips() int {
-	if len(g.players) == 0 {
-		return 0
-	}
-	return g.players[0].GetChips()
+	return chipsOfFirst(g.players)
 }
 
 // IsHumanTurn は現在の手番が人間 (seat 0) かどうかを返す。
@@ -977,7 +923,7 @@ func (g *Primero) UnmarshalJSON(data []byte) error {
 		result:          j.Result,
 		gameEndFlag:     j.GameEndFlag,
 		scored:          j.Scored,
-		actionLog:       j.ActionLog,
+		actionLogBase:   actionLogBase{actionLog: j.ActionLog},
 	}
 	if g.state.actionLog == nil {
 		g.state.actionLog = make([]*ActionLogEntry, 0)

@@ -292,8 +292,15 @@ func run() int {
 	if err := flag.CommandLine.Parse(os.Args[1:]); err != nil {
 		// NB: -h / --help are registered above so flag.Parse handles them
 		// itself and returns nil; flag.ErrHelp is therefore unreachable here.
+		//
+		// A one-line recovery hint, not the full help. Dumping all 103 lines
+		// pushed the error itself off a standard terminal, so the one thing
+		// the user needed — which flag was wrong — was the one thing they
+		// could not see. The other two usage-error paths already settled on
+		// this: the unknown-game path uses cliUnknownGameHint (#4305) and
+		// parseSubFlagsTo uses cliTryHelp (#4307). See issue #5180.
 		_, _ = fmt.Fprintln(os.Stderr, i18n.Tf("cliFlagError", "err", err.Error()))
-		_, _ = fmt.Fprint(os.Stderr, helpText)
+		_, _ = fmt.Fprintln(os.Stderr, i18n.T("cliTryHelpTop"))
 		return 2
 	}
 
@@ -718,6 +725,22 @@ func splitHelpLines(text string) []string {
 // positional arguments after the game name are warned about and ignored,
 // matching the behavior of other subcommands.
 func runHelpCommand(args []string, helpText string, stdout, stderr io.Writer) int {
+	// `help --help` / `help -h`: the other five subcommands get this from
+	// parseSubFlagsTo's flag.ErrHelp branch, but `help` never builds a FlagSet
+	// (its argument is a name, not a flag), so the flag would otherwise be
+	// looked up as a game and rejected with "unknown game". Answer with the
+	// same text `help help` already produced. Only args[0] is inspected: Go's
+	// flag package stops parsing at the first non-flag argument, so a trailing
+	// `--help` after a positional stays an extra arg here exactly as it does
+	// for `games extra --help`. See issue #5181.
+	if len(args) > 0 && hasHelpFlag(args[:1]) {
+		if lines, ok := subcommandHelp("help"); ok {
+			for _, line := range lines {
+				_, _ = fmt.Fprintln(stdout, line)
+			}
+		}
+		return 0
+	}
 	if len(args) > 1 {
 		_, _ = fmt.Fprintln(stderr, i18n.Tf("cliExtraArgsWarning", "args", strings.Join(args[1:], " ")))
 	}

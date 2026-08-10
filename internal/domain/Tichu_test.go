@@ -5,6 +5,8 @@ package domain
 import (
 	"encoding/json"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func newAllCpuTichu() *Tichu {
@@ -244,4 +246,15 @@ func TestTichuConfigValidate(t *testing.T) {
 	if err := json.Unmarshal(data, &c); err != nil {
 		t.Fatalf("config unmarshal: %v", err)
 	}
+}
+
+// テスト用セッターが効くこと。presenter からしか呼ばないとドメインの
+// カバレッジに乗らない。
+func TestTichu_TestSetters(t *testing.T) {
+	g := newAllCpuTichu()
+	g.Reset()
+	g.SetBombCountForTest(3)
+	assert.Equal(t, 3, g.GetBombCount())
+	g.SetIsOneTwoForTest(true)
+	assert.True(t, g.GetIsOneTwo())
 }

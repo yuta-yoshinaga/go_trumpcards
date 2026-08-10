@@ -32,6 +32,10 @@ type BlackHoleGame interface {
 	GetMoveCount() int
 	// GetFans 扇の一覧を取得する。
 	GetFans() [][]*domain.Card
+	// AcceptableRanks いまブラックホールが受け付けるランク
+	AcceptableRanks() []int
+	// PlayableFans いま積める扇の番号
+	PlayableFans() []int
 	// GetBlackHole ブラックホールの積み上げを取得する。
 	GetBlackHole() []*domain.Card
 }

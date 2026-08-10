@@ -45,13 +45,13 @@ type TriPeaksHint struct {
 
 // TriPeaks トリピークスソリティアゲームクラス
 type TriPeaks struct {
-	trumpCards  *TrumpCards
-	layout      [TriPeaksRowCnt][TriPeaksColCnt]*TriPeaksCard
-	stock       []*Card
-	waste       []*Card
-	phase       TriPeaksPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	layout     [TriPeaksRowCnt][TriPeaksColCnt]*TriPeaksCard
+	stock      []*Card
+	waste      []*Card
+	phase      TriPeaksPhase
+	moveCount  int
+	actionLogBase
 	history     []*triPeaksSnapshot
 	isStalemate bool
 }
@@ -291,15 +291,7 @@ func (t *TriPeaks) CanUndo() bool {
 
 // UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。膠着状態でなければ0、脱出不可なら-1。
 func (t *TriPeaks) UndoToEscape() int {
-	if !t.isStalemate {
-		return 0
-	}
-	for i := len(t.history) - 1; i >= 0; i-- {
-		if !t.history[i].isStalemate {
-			return len(t.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(t.isStalemate, t.history, func(s *triPeaksSnapshot) bool { return s.isStalemate })
 }
 
 // UndoN n回連続でアンドゥを実行する。
@@ -333,9 +325,6 @@ func (t *TriPeaks) GetWaste() []*Card { return t.waste }
 func (t *TriPeaks) GetLayout() [TriPeaksRowCnt][TriPeaksColCnt]*TriPeaksCard {
 	return t.layout
 }
-
-// GetActionLog 棋譜取得
-func (t *TriPeaks) GetActionLog() []*ActionLogEntry { return t.actionLog }
 
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (t *TriPeaks) GetGameEndFlag() bool { return t.phase != TriPeaksPhasePlaying }
@@ -495,13 +484,7 @@ func (t *TriPeaks) restoreSnapshot(snap *triPeaksSnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (t *TriPeaks) appendLog(actionType, detail string, cards []*Card) {
-	t.actionLog = append(t.actionLog, &ActionLogEntry{
-		TurnNumber: t.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	t.appendLogAt(t.moveCount, 0, actionType, detail, cards)
 }
 
 // triPeaksJSON is the JSON wire format for TriPeaks.

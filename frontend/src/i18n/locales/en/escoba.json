@@ -21,7 +21,9 @@
     "stockRemaining": "Stock {{count}} left",
     "cpuStats": "Hand {{cards}} / Captured {{captured}} / Escoba {{escoba}}",
     "humanStats": "Hand {{cards}} / Captured {{captured}} / Escoba {{escoba}}",
-    "playerScore": "P{{id}}: {{score}} pt"
+    "playerScore": "P{{id}}: {{score}} pt",
+    "escobaBadge": "Escoba!",
+    "escobaBadgeOwn": "Escoba! You"
   },
   "captured": {
     "title": "Captured cards",

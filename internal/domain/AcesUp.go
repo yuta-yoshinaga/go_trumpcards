@@ -40,13 +40,13 @@ type AcesUpHint struct {
 
 // AcesUp エースアップ（四つ葉のクローバー）ゲームクラス
 type AcesUp struct {
-	trumpCards  *TrumpCards
-	columns     [AcesUpColCnt][]*Card
-	stock       []*Card
-	discard     []*Card
-	phase       AcesUpPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	columns    [AcesUpColCnt][]*Card
+	stock      []*Card
+	discard    []*Card
+	phase      AcesUpPhase
+	moveCount  int
+	actionLogBase
 	history     []*acesUpSnapshot
 	isStalemate bool
 }
@@ -236,25 +236,12 @@ func (a *AcesUp) CanUndo() bool {
 
 // UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。膠着状態でなければ0、脱出不可なら-1。
 func (a *AcesUp) UndoToEscape() int {
-	if !a.isStalemate {
-		return 0
-	}
-	for i := len(a.history) - 1; i >= 0; i-- {
-		if !a.history[i].isStalemate {
-			return len(a.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(a.isStalemate, a.history, func(s *acesUpSnapshot) bool { return s.isStalemate })
 }
 
 // UndoN n回連続でアンドゥを実行する。
 func (a *AcesUp) UndoN(n int) error {
-	for i := 0; i < n; i++ {
-		if err := a.Undo(); err != nil {
-			return fmt.Errorf("undo step %d failed: %w", i+1, err)
-		}
-	}
-	return nil
+	return undoN(a, n)
 }
 
 // --- State getters/setters ---
@@ -276,17 +263,11 @@ func (a *AcesUp) GetDiscardCount() int { return len(a.discard) }
 
 // GetDiscardTop 捨て札の一番上（直近に除去した札）を返す。捨て札が空なら nil。
 func (a *AcesUp) GetDiscardTop() *Card {
-	if len(a.discard) == 0 {
-		return nil
-	}
-	return a.discard[len(a.discard)-1]
+	return discardTop(a.discard)
 }
 
 // GetColumns 場札の列を取得
 func (a *AcesUp) GetColumns() [AcesUpColCnt][]*Card { return a.columns }
-
-// GetActionLog 棋譜取得
-func (a *AcesUp) GetActionLog() []*ActionLogEntry { return a.actionLog }
 
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (a *AcesUp) GetGameEndFlag() bool { return a.phase != AcesUpPhasePlaying }
@@ -542,13 +523,7 @@ func cloneCards(src []*Card) []*Card {
 
 // appendLog 棋譜エントリを追加
 func (a *AcesUp) appendLog(actionType, detail string, cards []*Card) {
-	a.actionLog = append(a.actionLog, &ActionLogEntry{
-		TurnNumber: a.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	a.appendLogAt(a.moveCount, 0, actionType, detail, cards)
 }
 
 // acesUpJSON is the JSON wire format for AcesUp.

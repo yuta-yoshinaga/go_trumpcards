@@ -45,25 +45,25 @@ type IndianPokerCpuAction struct {
 
 // IndianPoker インディアンポーカークラス
 type IndianPoker struct {
-	trumpCards      *TrumpCards
-	players         []*IndianPokerPlayer
-	pot             int
-	sidePots        []SidePot
-	dealerIdx       int
-	currentTurn     int
-	phase           int
-	config          IndianPokerConfig
-	gameEndFlag     bool
-	lastBet         int
-	minRaise        int
-	raiseCount      int
-	actedFlags      []bool
-	roundResults    []IndianPokerResult
-	cpuActions      []IndianPokerCpuAction
-	startingChips   []int
-	handCount       int
-	lastCpuError    error
-	actionLog       []*ActionLogEntry
+	trumpCards    *TrumpCards
+	players       []*IndianPokerPlayer
+	pot           int
+	sidePots      []SidePot
+	dealerIdx     int
+	currentTurn   int
+	phase         int
+	config        IndianPokerConfig
+	gameEndFlag   bool
+	lastBet       int
+	minRaise      int
+	raiseCount    int
+	actedFlags    []bool
+	roundResults  []IndianPokerResult
+	cpuActions    []IndianPokerCpuAction
+	startingChips []int
+	handCount     int
+	lastCpuError  error
+	actionLogBase
 	humanProfile    *IndianPokerHumanProfile
 	lastHumanPlayMs int
 }
@@ -219,11 +219,7 @@ func (ip *IndianPoker) PlayerAction(action, amount, humanPlayMs int) error {
 
 // bettingPlayers BettingPlayerスライスを生成
 func (ip *IndianPoker) bettingPlayers() []BettingPlayer {
-	bp := make([]BettingPlayer, len(ip.players))
-	for i, pl := range ip.players {
-		bp[i] = pl
-	}
-	return bp
+	return toBettingPlayers(ip.players)
 }
 
 // executeAction 指定プレイヤーのアクション実行
@@ -284,15 +280,7 @@ func (ip *IndianPoker) advanceTurn() {
 
 // isBettingRoundComplete ベッティングラウンドが完了したかチェック
 func (ip *IndianPoker) isBettingRoundComplete() bool {
-	for i, p := range ip.players {
-		if p.GetFolded() || p.GetAllIn() {
-			continue
-		}
-		if !ip.actedFlags[i] {
-			return false
-		}
-	}
-	return true
+	return bettingRoundComplete(ip.players, ip.actedFlags)
 }
 
 // bettingLimits ベッティングリミット設定からmaxRaisesとmaxBetAmountを計算
@@ -302,13 +290,7 @@ func (ip *IndianPoker) bettingLimits() (maxRaises, maxBetAmount int) {
 
 // countActivePlayers フォールドしていないプレイヤー数を返す
 func (ip *IndianPoker) countActivePlayers() int {
-	cnt := 0
-	for _, p := range ip.players {
-		if !p.GetFolded() {
-			cnt++
-		}
-	}
-	return cnt
+	return countPlayers(ip.players, func(p *IndianPokerPlayer) bool { return !p.GetFolded() })
 }
 
 // resolveLastPlayer 最後の1人が残った場合のポット配分
@@ -539,7 +521,7 @@ func (ip *IndianPoker) cpuDecide(idx int) (int, int) {
 	if ip.config.CpuMetaAI && ip.humanProfile != nil && ip.lastHumanPlayMs > 0 {
 		if action == IndianPokerActionFold && callAmount > 0 {
 			// CPUは人間のカードが見える → 人間のカードランクブラケットで判定
-			humanIdx := ip.findHumanIdx()
+			humanIdx := findHumanIdx(ip.players)
 			if humanIdx >= 0 && ip.players[humanIdx].GetCardsSize() > 0 {
 				humanCardRank := indianPokerCardRank(ip.players[humanIdx].GetCard(0))
 				bracket := indianPokerCardBracket(humanCardRank)
@@ -624,16 +606,6 @@ func (ip *IndianPoker) estimateOwnStrength(idx int) int {
 
 	strength := min(cardsAbove*100/totalRemaining, 100)
 	return strength
-}
-
-// findHumanIdx 人間プレイヤーのインデックスを返す (-1 = 見つからない)
-func (ip *IndianPoker) findHumanIdx() int {
-	for i, p := range ip.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
 }
 
 // cpuPotBet ポット比率ベースのベット額を計算 (最低Ante, 最低minRaise)
@@ -736,35 +708,16 @@ func (ip *IndianPoker) SetConfig(cfg IndianPokerConfig) { ip.config = cfg }
 
 // IsHumanTurn 人間のターンかチェック
 func (ip *IndianPoker) IsHumanTurn() bool {
-	if ip.currentTurn >= 0 && ip.currentTurn < len(ip.players) {
-		return ip.players[ip.currentTurn].GetIsHuman()
-	}
-	return false
+	return isHumanTurn(ip.players, ip.currentTurn)
 }
 
 // GetActedFlags actedフラグ取得
 func (ip *IndianPoker) GetActedFlags() []bool {
-	result := make([]bool, len(ip.actedFlags))
-	copy(result, ip.actedFlags)
-	return result
+	return copyOf(ip.actedFlags)
 }
 
 // GetHandCount ハンド数取得
 func (ip *IndianPoker) GetHandCount() int { return ip.handCount }
-
-// GetActionLog 棋譜を取得する
-func (ip *IndianPoker) GetActionLog() []*ActionLogEntry { return ip.actionLog }
-
-// appendLog 棋譜にエントリを追加する
-func (ip *IndianPoker) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	ip.actionLog = append(ip.actionLog, &ActionLogEntry{
-		TurnNumber: len(ip.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
 
 // logAction ベッティングアクションを棋譜に記録する
 func (ip *IndianPoker) logAction(playerIdx, action, amount int) {

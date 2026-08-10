@@ -64,5 +64,6 @@
     "klaberjassBela": "You hold the trump K and Q. Declare on the second one for 20 points",
     "klaberjassTakeTurnUp": "Your hand is strong in the turn-up suit — take it",
     "klaberjassPassTurnUp": "Your hand is thin in the turn-up suit — pass"
-  }
+  },
+  "lastTrickBonus": "Last trick: +{{points}} to {{name}}"
 }

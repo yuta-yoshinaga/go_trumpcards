@@ -1,4 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
+import i18n from 'i18next';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { yanivApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -263,5 +264,18 @@ describe('YanivPage', () => {
     mockExec.mockResolvedValue(makeState({ phase: YanivPhase.DRAW }));
     fireEvent.click(retry);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawstock'));
+  });
+
+  it('renders CPU difficulty labels from the i18n bundle rather than literals', async () => {
+    // A sentinel proves the label is *looked up*: a hardcoded 'Easy' would ignore it.
+    const original = i18n.getResourceBundle('ja', 'yaniv') as Record<string, unknown>;
+    i18n.addResourceBundle('ja', 'yaniv', { settings: { easy: '__EASY__' } }, true, true);
+    try {
+      renderWithProviders(<YanivPage />);
+      await waitFor(() => expect(screen.getByRole('option', { name: '__EASY__' })).toBeInTheDocument());
+    } finally {
+      i18n.removeResourceBundle('ja', 'yaniv');
+      i18n.addResourceBundle('ja', 'yaniv', original, true, true);
+    }
   });
 });

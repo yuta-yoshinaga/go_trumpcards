@@ -224,7 +224,7 @@ type Aluette struct {
 	roundTricks      [AluettePlayerCnt]int
 	gameEndFlag      bool
 	winnerTeam       int // -1 = 未確定 (同点)
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewAluette コンストラクタ。
@@ -318,13 +318,7 @@ func (g *Aluette) shuffle() {
 
 // drawCard デッキから 1 枚配る (尽きたら nil)。
 func (g *Aluette) drawCard() *Card {
-	if g.deckDrawCnt >= len(g.deck) {
-		return nil
-	}
-	card := g.deck[g.deckDrawCnt]
-	card.SetDraw(true)
-	g.deckDrawCnt++
-	return card
+	return drawFromDeck(g.deck, &g.deckDrawCnt)
 }
 
 // sortAllHands 手札を強い順に整列する。
@@ -375,13 +369,7 @@ func (g *Aluette) finishMatch() {
 
 // appendLog 棋譜に 1 件追加する。
 func (g *Aluette) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: g.trickNumber,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.appendLogAt(g.trickNumber, playerIdx, actionType, detail, cards)
 }
 
 // --- トリックプレイ ---
@@ -669,10 +657,7 @@ func (g *Aluette) GetPlayerCnt() int { return AluettePlayerCnt }
 
 // GetPlayer 指定席のプレイヤー。
 func (g *Aluette) GetPlayer(i int) *AluettePlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetPlayers 全プレイヤー。
@@ -693,19 +678,9 @@ type AluetteHint struct {
 	Reason      string // ヒント理由キー
 }
 
-// findHumanIdx 人間の席を返す (居なければ -1)。
-func (g *Aluette) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 // GetHint 人間プレイヤーへのヒント。手番でなければ nil。
 func (g *Aluette) GetHint() *AluetteHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 || g.phase != AluettePhasePlay || g.currentPlayerIdx != human {
 		return nil
 	}

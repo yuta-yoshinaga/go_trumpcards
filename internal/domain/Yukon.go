@@ -37,12 +37,12 @@ type YukonHint struct {
 
 // Yukon ユーコンゲームクラス
 type Yukon struct {
-	trumpCards  *TrumpCards
-	tableau     [YukonTableauCnt][]*KlondikeTableauCard
-	foundation  [YukonFoundationCnt][]*Card
-	phase       YukonPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	tableau    [YukonTableauCnt][]*KlondikeTableauCard
+	foundation [YukonFoundationCnt][]*Card
+	phase      YukonPhase
+	moveCount  int
+	actionLogBase
 	history     []*yukonSnapshot
 	isStalemate bool
 }
@@ -346,9 +346,6 @@ func (y *Yukon) GetTableau() [YukonTableauCnt][]*KlondikeTableauCard { return y.
 // GetFoundation ファンデーション取得
 func (y *Yukon) GetFoundation() [YukonFoundationCnt][]*Card { return y.foundation }
 
-// GetActionLog 棋譜取得
-func (y *Yukon) GetActionLog() []*ActionLogEntry { return y.actionLog }
-
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (y *Yukon) GetGameEndFlag() bool { return y.phase != YukonPhasePlaying }
 
@@ -389,25 +386,12 @@ func (y *Yukon) CanUndo() bool {
 
 // UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。膠着状態でなければ0、脱出不可なら-1。
 func (y *Yukon) UndoToEscape() int {
-	if !y.isStalemate {
-		return 0
-	}
-	for i := len(y.history) - 1; i >= 0; i-- {
-		if !y.history[i].isStalemate {
-			return len(y.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(y.isStalemate, y.history, func(s *yukonSnapshot) bool { return s.isStalemate })
 }
 
 // UndoN n回連続でアンドゥを実行する。
 func (y *Yukon) UndoN(n int) error {
-	for i := 0; i < n; i++ {
-		if err := y.Undo(); err != nil {
-			return fmt.Errorf("undo step %d failed: %w", i+1, err)
-		}
-	}
-	return nil
+	return undoN(y, n)
 }
 
 // --- Private helpers ---
@@ -426,14 +410,7 @@ func (y *Yukon) canPlaceOnTableau(card *Card, col int) bool {
 
 // canPlaceOnFoundation ファンデーションにカードを置けるか判定
 func (y *Yukon) canPlaceOnFoundation(card *Card, fIdx int) bool {
-	pile := y.foundation[fIdx]
-	if len(pile) == 0 {
-		// 空のファンデーションにはAのみ置ける
-		return card.GetValue() == 1
-	}
-	topCard := pile[len(pile)-1]
-	// 同じスートで昇順
-	return card.GetDesign() == topCard.GetDesign() && card.GetValue() == topCard.GetValue()+1
+	return canPlaceOnFoundationPile(y.foundation[fIdx], card)
 }
 
 // isAlternateColor 交互の色かどうか判定
@@ -448,10 +425,7 @@ func (y *Yukon) isBlack(card *Card) bool {
 
 // autoFlipTableau タブローの最上部の裏カードを自動フリップ
 func (y *Yukon) autoFlipTableau(col int) {
-	cards := y.tableau[col]
-	if len(cards) > 0 && !cards[len(cards)-1].FaceUp {
-		cards[len(cards)-1].FaceUp = true
-	}
+	autoFlipTopCard(y.tableau[col])
 }
 
 // checkGameClear ゲームクリア判定
@@ -511,13 +485,7 @@ func (y *Yukon) restoreSnapshot(snap *yukonSnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (y *Yukon) appendLog(actionType, detail string, cards []*Card) {
-	y.actionLog = append(y.actionLog, &ActionLogEntry{
-		TurnNumber: y.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	y.appendLogAt(y.moveCount, 0, actionType, detail, cards)
 }
 
 // yukonJSON is the JSON wire format for Yukon.

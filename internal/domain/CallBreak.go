@@ -59,7 +59,7 @@ type CallBreak struct {
 	bidPlayerIdx     int
 	gameEndFlag      bool
 	winnerIdx        int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewCallBreak コンストラクタ
@@ -151,7 +151,7 @@ func (cb *CallBreak) PlayerBid(bid int) error {
 		return ErrWrongPhase
 	}
 
-	humanIdx := cb.findHumanIdx()
+	humanIdx := findHumanIdx(cb.players)
 	if humanIdx < 0 {
 		return ErrNotHumanTurn
 	}
@@ -163,7 +163,7 @@ func (cb *CallBreak) PlayerBid(bid int) error {
 	}
 
 	cb.players[humanIdx].SetBid(bid)
-	cb.appendLog(humanIdx, "bid", fmt.Sprintf("%s bids %d", cb.playerName(humanIdx), bid), nil)
+	cb.appendLog(humanIdx, "bid", fmt.Sprintf("%s bids %d", playerName(cb.players, humanIdx), bid), nil)
 
 	cb.bidPlayerIdx++
 	cb.checkBidComplete()
@@ -184,7 +184,7 @@ func (cb *CallBreak) CpuBid() {
 
 	bid := cb.cpuSelectBid(cb.bidPlayerIdx)
 	cb.players[cb.bidPlayerIdx].SetBid(bid)
-	cb.appendLog(cb.bidPlayerIdx, "bid", fmt.Sprintf("%s bids %d", cb.playerName(cb.bidPlayerIdx), bid), nil)
+	cb.appendLog(cb.bidPlayerIdx, "bid", fmt.Sprintf("%s bids %d", playerName(cb.players, cb.bidPlayerIdx), bid), nil)
 
 	cb.bidPlayerIdx++
 	cb.checkBidComplete()
@@ -251,7 +251,7 @@ func (cb *CallBreak) ResolveTrick() {
 	}
 
 	cb.players[winnerIdx].AddTrick(trickCards)
-	cb.appendLog(winnerIdx, "trick_win", fmt.Sprintf("%s wins trick %d", cb.playerName(winnerIdx), cb.trickNumber), trickCards)
+	cb.appendLog(winnerIdx, "trick_win", fmt.Sprintf("%s wins trick %d", playerName(cb.players, winnerIdx), cb.trickNumber), trickCards)
 
 	cb.leadPlayerIdx = winnerIdx
 
@@ -299,7 +299,7 @@ func (cb *CallBreak) ScoreRound() {
 		p.SetRoundScore(score)
 
 		cb.appendLog(i, "round_score", fmt.Sprintf("%s: bid=%d tricks=%d round=%s",
-			cb.playerName(i), bid, tricks, FormatCallBreakScore(score)), nil)
+			playerName(cb.players, i), bid, tricks, FormatCallBreakScore(score)), nil)
 	}
 
 	// 累積スコアに加算
@@ -310,7 +310,7 @@ func (cb *CallBreak) ScoreRound() {
 	// スコアログ
 	for i := 0; i < CallBreakPlayerCnt; i++ {
 		cb.appendLog(i, "cumulative_score", fmt.Sprintf("%s: total=%s",
-			cb.playerName(i), FormatCallBreakScore(cb.players[i].GetCumulativeScore())), nil)
+			playerName(cb.players, i), FormatCallBreakScore(cb.players[i].GetCumulativeScore())), nil)
 	}
 
 	cb.checkGameEnd()
@@ -375,10 +375,7 @@ func (cb *CallBreak) GetPlayerCnt() int { return len(cb.players) }
 
 // GetPlayer プレイヤー取得
 func (cb *CallBreak) GetPlayer(i int) *CallBreakPlayer {
-	if i < 0 || i >= len(cb.players) {
-		return nil
-	}
-	return cb.players[i]
+	return getPlayer(cb.players, i)
 }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
@@ -395,18 +392,12 @@ func (cb *CallBreak) SetBidPlayerIdx(idx int) { cb.bidPlayerIdx = idx }
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (cb *CallBreak) IsHumanTurn() bool {
-	if cb.currentPlayerIdx < 0 || cb.currentPlayerIdx >= len(cb.players) {
-		return false
-	}
-	return cb.players[cb.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(cb.players, cb.currentPlayerIdx)
 }
 
 // IsHumanBidTurn 現在のビッド手番が人間かどうか
 func (cb *CallBreak) IsHumanBidTurn() bool {
-	if cb.bidPlayerIdx < 0 || cb.bidPlayerIdx >= len(cb.players) {
-		return false
-	}
-	return cb.players[cb.bidPlayerIdx].GetIsHuman()
+	return isHumanTurn(cb.players, cb.bidPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -415,20 +406,7 @@ func (cb *CallBreak) GetConfig() CallBreakConfig { return cb.config }
 // SetConfig 設定変更
 func (cb *CallBreak) SetConfig(cfg CallBreakConfig) { cb.config = cfg }
 
-// GetActionLog 棋譜取得
-func (cb *CallBreak) GetActionLog() []*ActionLogEntry { return cb.actionLog }
-
 // --- Private methods ---
-
-// findHumanIdx 人間プレイヤーのインデックスを返す (-1 = なし)
-func (cb *CallBreak) findHumanIdx() int {
-	for i, p := range cb.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
 
 // checkBidComplete 全員がビッドしたかチェックし、プレイフェーズに移行
 func (cb *CallBreak) checkBidComplete() {
@@ -457,7 +435,7 @@ func (cb *CallBreak) playCard(playerIdx int, card *Card) {
 		cb.spadesBroken = true
 	}
 
-	cb.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", cb.playerName(playerIdx), cardStr(card)), []*Card{card})
+	cb.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(cb.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(cb.currentTrick) == CallBreakPlayerCnt {
 		cb.phase = CallBreakPhaseTrickEnd
@@ -499,13 +477,7 @@ func (cb *CallBreak) validatePlay(playerIdx int, card *Card) error {
 
 // playerHasSuit プレイヤーが特定のスートを持っているか
 func (cb *CallBreak) playerHasSuit(playerIdx, design int) bool {
-	p := cb.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return handHasSuit(cb.players[playerIdx], design)
 }
 
 // playerHasNonSpade プレイヤーがスペード以外のカードを持っているか
@@ -541,7 +513,7 @@ func (cb *CallBreak) checkGameEnd() {
 			cb.winnerIdx = i
 		}
 	}
-	cb.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", cb.playerName(cb.winnerIdx)), nil)
+	cb.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(cb.players, cb.winnerIdx)), nil)
 }
 
 // sortAllHands 全プレイヤーの手札をソートする (スート → 値)
@@ -558,28 +530,6 @@ func callBreakSortHand(p *CallBreakPlayer) {
 			return ci.GetDesign() < cj.GetDesign()
 		}
 		return ci.GetValue() < cj.GetValue()
-	})
-}
-
-// playerName プレイヤー名を返す
-func (cb *CallBreak) playerName(idx int) string {
-	if idx < 0 || idx >= len(cb.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if cb.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (cb *CallBreak) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	cb.actionLog = append(cb.actionLog, &ActionLogEntry{
-		TurnNumber: len(cb.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
 	})
 }
 
@@ -873,10 +823,7 @@ func (cb *CallBreak) summariseTrick(leadSuit int) (highestSpade int, hasSpade bo
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (cb *CallBreak) getValidPlayIndices(playerIdx int) []int {
-	player := cb.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return cb.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(cb.players[playerIdx], func(c *Card) bool { return cb.validatePlay(playerIdx, c) == nil })
 }
 
 // GetValidPlayIndices プレイ可能なカードのインデックスリストを返す (Web 用)

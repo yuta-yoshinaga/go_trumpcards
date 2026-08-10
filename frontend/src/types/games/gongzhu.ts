@@ -53,6 +53,8 @@ export interface GongZhuResponse extends BaseGameResponse {
   heartsBroken: boolean;
   exposed: GongZhuExposure;
   exposableIndices: number[];
+  /** いま出せる手札の位置（マストフォローの可視化。#4812）。 */
+  playableIndices: number[];
   gameEndFlag: boolean;
   winnerIdx: number;
   leadPlayerIdx: number;

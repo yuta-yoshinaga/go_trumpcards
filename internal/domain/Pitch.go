@@ -70,7 +70,7 @@ type Pitch struct {
 	trumpSuit        int // 切り札スート (PitchTrumpUnset=未確定)
 	gameEndFlag      bool
 	winnerIdx        int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewPitch コンストラクタ
@@ -179,7 +179,7 @@ func (p *Pitch) PlayerBid(bid int) error {
 	if p.phase != PitchPhaseBid {
 		return ErrWrongPhase
 	}
-	humanIdx := p.findHumanIdx()
+	humanIdx := findHumanIdx(p.players)
 	if humanIdx < 0 || p.bidPlayerIdx != humanIdx {
 		return ErrNotHumanTurn
 	}
@@ -237,7 +237,7 @@ func (p *Pitch) applyBid(playerIdx, bid int) {
 	if bid == PitchPassBid {
 		logBid = "pass"
 	}
-	p.appendLog(playerIdx, "bid", fmt.Sprintf("%s bids %s", p.playerName(playerIdx), logBid), nil)
+	p.appendLog(playerIdx, "bid", fmt.Sprintf("%s bids %s", playerName(p.players, playerIdx), logBid), nil)
 }
 
 // advanceBid 次のビッド手番へ進める。全員終わればプレイ開始 (stuck dealer も処理)
@@ -248,7 +248,7 @@ func (p *Pitch) advanceBid() {
 		// 親に到達し、かつ全員パス済みの場合 stuck 強制
 		if p.bidPlayerIdx == p.dealerIdx && p.currentBid == 0 && bidsDone == PitchPlayerCnt-1 {
 			p.applyBid(p.dealerIdx, PitchMinBid)
-			p.appendLog(p.dealerIdx, "stuck", fmt.Sprintf("%s is stuck with %d", p.playerName(p.dealerIdx), PitchMinBid), nil)
+			p.appendLog(p.dealerIdx, "stuck", fmt.Sprintf("%s is stuck with %d", playerName(p.players, p.dealerIdx), PitchMinBid), nil)
 			p.startPlayPhase()
 		}
 		return
@@ -281,7 +281,7 @@ func (p *Pitch) startPlayPhase() {
 	p.currentTrick = nil
 	p.phase = PitchPhasePlay
 	p.appendLog(p.bidWinnerIdx, "bid_won",
-		fmt.Sprintf("%s wins the bid at %d (will lead first card to set trump)", p.playerName(p.bidWinnerIdx), p.currentBid),
+		fmt.Sprintf("%s wins the bid at %d (will lead first card to set trump)", playerName(p.players, p.bidWinnerIdx), p.currentBid),
 		nil)
 }
 
@@ -342,7 +342,7 @@ func (p *Pitch) playCard(playerIdx int, card *Card) {
 		Card:      card,
 	})
 	p.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", p.playerName(playerIdx), cardStr(card)),
+		fmt.Sprintf("%s plays %s", playerName(p.players, playerIdx), cardStr(card)),
 		[]*Card{card})
 
 	if len(p.currentTrick) == PitchPlayerCnt {
@@ -374,13 +374,7 @@ func (p *Pitch) validatePlay(playerIdx int, card *Card) error {
 
 // playerHasSuit プレイヤーが特定のスートを持っているか
 func (p *Pitch) playerHasSuit(playerIdx, design int) bool {
-	pl := p.players[playerIdx]
-	for i := 0; i < pl.GetCardsSize(); i++ {
-		if pl.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return handHasSuit(p.players[playerIdx], design)
 }
 
 // ResolveTrick トリックを解決して勝者を決定する
@@ -395,7 +389,7 @@ func (p *Pitch) ResolveTrick() {
 	}
 	p.players[winnerIdx].AddTrick(trickCards)
 	p.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", p.playerName(winnerIdx), p.trickNumber),
+		fmt.Sprintf("%s wins trick %d", playerName(p.players, winnerIdx), p.trickNumber),
 		trickCards)
 	p.leadPlayerIdx = winnerIdx
 	if p.trickNumber >= PitchTotalTricks {
@@ -459,6 +453,24 @@ func pitchRankValue(v int) int {
 	return v
 }
 
+// PitchHandPips は手札のゲームピップ合計を返す。
+//
+// **CUI は入札前に手札の得点価値を暗算させていた (#4751)。**Web は入札中に
+// バッジと内訳ポップオーバーを出している。
+//
+// 集計は Game ポイントの計算そのものと同じ pitchPipValue を通す。**別実装に
+// すると、プレビューした値と実際に数えられる値がずれる。**
+func PitchHandPips(cards []*Card) int {
+	total := 0
+	for _, c := range cards {
+		if c == nil {
+			continue
+		}
+		total += pitchPipValue(c.GetValue())
+	}
+	return total
+}
+
 // pitchPipValue Game ポイント計算用のピップ値: A=4 K=3 Q=2 J=1 10=10 他=0
 func pitchPipValue(v int) int {
 	switch v {
@@ -491,18 +503,18 @@ func (p *Pitch) ScoreRound() {
 				pl.SetRoundScore(-p.currentBid)
 				p.appendLog(i, "set_back",
 					fmt.Sprintf("%s set back: bid=%d earned=%d -> %d",
-						p.playerName(i), p.currentBid, points, -p.currentBid), nil)
+						playerName(p.players, i), p.currentBid, points, -p.currentBid), nil)
 			} else {
 				pl.SetRoundScore(points)
 				p.appendLog(i, "bid_made",
 					fmt.Sprintf("%s makes bid: bid=%d earned=%d -> +%d",
-						p.playerName(i), p.currentBid, points, points), nil)
+						playerName(p.players, i), p.currentBid, points, points), nil)
 			}
 		} else {
 			pl.SetRoundScore(points)
 			if points > 0 {
 				p.appendLog(i, "non_bidder_score",
-					fmt.Sprintf("%s scores %d", p.playerName(i), points), nil)
+					fmt.Sprintf("%s scores %d", playerName(p.players, i), points), nil)
 			}
 		}
 	}
@@ -511,7 +523,7 @@ func (p *Pitch) ScoreRound() {
 	}
 	for i := 0; i < PitchPlayerCnt; i++ {
 		p.appendLog(i, "cumulative_score",
-			fmt.Sprintf("%s: total=%d", p.playerName(i), p.players[i].GetCumulativeScore()), nil)
+			fmt.Sprintf("%s: total=%d", playerName(p.players, i), p.players[i].GetCumulativeScore()), nil)
 	}
 	p.checkGameEnd()
 }
@@ -554,17 +566,17 @@ func (p *Pitch) computeRoundPoints() []int {
 	if highPlayer >= 0 {
 		points[highPlayer]++
 		p.appendLog(highPlayer, "score_high",
-			fmt.Sprintf("%s scores High", p.playerName(highPlayer)), nil)
+			fmt.Sprintf("%s scores High", playerName(p.players, highPlayer)), nil)
 	}
 	if lowPlayer >= 0 {
 		points[lowPlayer]++
 		p.appendLog(lowPlayer, "score_low",
-			fmt.Sprintf("%s scores Low", p.playerName(lowPlayer)), nil)
+			fmt.Sprintf("%s scores Low", playerName(p.players, lowPlayer)), nil)
 	}
 	if jackPlayer >= 0 {
 		points[jackPlayer]++
 		p.appendLog(jackPlayer, "score_jack",
-			fmt.Sprintf("%s scores Jack", p.playerName(jackPlayer)), nil)
+			fmt.Sprintf("%s scores Jack", playerName(p.players, jackPlayer)), nil)
 	}
 	// Game ポイント: 全カードのピップ値合計, 最大が単独なら +1
 	gameTotals := make([]int, PitchPlayerCnt)
@@ -590,7 +602,7 @@ func (p *Pitch) computeRoundPoints() []int {
 	if !tied && gameWinner >= 0 && maxTotal > 0 {
 		points[gameWinner]++
 		p.appendLog(gameWinner, "score_game",
-			fmt.Sprintf("%s scores Game (%d pip)", p.playerName(gameWinner), maxTotal), nil)
+			fmt.Sprintf("%s scores Game (%d pip)", playerName(p.players, gameWinner), maxTotal), nil)
 	}
 	return points
 }
@@ -604,7 +616,7 @@ func (p *Pitch) checkGameEnd() {
 		p.phase = PitchPhaseGameEnd
 		p.winnerIdx = bidder
 		p.appendLog(-1, "game_end",
-			fmt.Sprintf("%s wins the game!", p.playerName(p.winnerIdx)), nil)
+			fmt.Sprintf("%s wins the game!", playerName(p.players, p.winnerIdx)), nil)
 		return
 	}
 	maxScore := -1 << 30
@@ -627,7 +639,7 @@ func (p *Pitch) checkGameEnd() {
 	p.phase = PitchPhaseGameEnd
 	p.winnerIdx = winner
 	p.appendLog(-1, "game_end",
-		fmt.Sprintf("%s wins the game!", p.playerName(p.winnerIdx)), nil)
+		fmt.Sprintf("%s wins the game!", playerName(p.players, p.winnerIdx)), nil)
 }
 
 // --- State getters / setters ---
@@ -709,26 +721,17 @@ func (p *Pitch) GetPlayerCnt() int { return len(p.players) }
 
 // GetPlayer プレイヤー取得
 func (p *Pitch) GetPlayer(i int) *PitchPlayer {
-	if i < 0 || i >= len(p.players) {
-		return nil
-	}
-	return p.players[i]
+	return getPlayer(p.players, i)
 }
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (p *Pitch) IsHumanTurn() bool {
-	if p.currentPlayerIdx < 0 || p.currentPlayerIdx >= len(p.players) {
-		return false
-	}
-	return p.players[p.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(p.players, p.currentPlayerIdx)
 }
 
 // IsHumanBidTurn 現在のビッド手番が人間かどうか
 func (p *Pitch) IsHumanBidTurn() bool {
-	if p.bidPlayerIdx < 0 || p.bidPlayerIdx >= len(p.players) {
-		return false
-	}
-	return p.players[p.bidPlayerIdx].GetIsHuman()
+	return isHumanTurn(p.players, p.bidPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -737,24 +740,12 @@ func (p *Pitch) GetConfig() PitchConfig { return p.config }
 // SetConfig 設定変更
 func (p *Pitch) SetConfig(cfg PitchConfig) { p.config = cfg }
 
-// GetActionLog 棋譜取得
-func (p *Pitch) GetActionLog() []*ActionLogEntry { return p.actionLog }
-
 // GetValidPlayIndices プレイ可能なカードのインデックスリストを返す (Web用)
 func (p *Pitch) GetValidPlayIndices(playerIdx int) []int {
 	return p.getValidPlayIndices(playerIdx)
 }
 
 // --- private helpers ---
-
-func (p *Pitch) findHumanIdx() int {
-	for i, pl := range p.players {
-		if pl.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
 
 func (p *Pitch) sortAllHands() {
 	for _, pl := range p.players {
@@ -771,31 +762,8 @@ func pitchSortHand(pl *PitchPlayer) {
 	})
 }
 
-func (p *Pitch) playerName(idx int) string {
-	if idx < 0 || idx >= len(p.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if p.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-func (p *Pitch) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	p.actionLog = append(p.actionLog, &ActionLogEntry{
-		TurnNumber: len(p.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 func (p *Pitch) getValidPlayIndices(playerIdx int) []int {
-	player := p.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return p.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(p.players[playerIdx], func(c *Card) bool { return p.validatePlay(playerIdx, c) == nil })
 }
 
 // --- CPU AI ---
@@ -1124,7 +1092,7 @@ func pickLowestNonTrumpFollow(pl *PitchPlayer, validIndices []int, leadSuit, tru
 
 // GetHint ヒントを取得する
 func (p *Pitch) GetHint() *PitchHint {
-	humanIdx := p.findHumanIdx()
+	humanIdx := findHumanIdx(p.players)
 	if humanIdx < 0 {
 		return nil
 	}

@@ -545,4 +545,60 @@ describe('MachiavelliPage', () => {
       expect(screen.queryByTestId('machiavelli-rearrange-panel')).not.toBeInTheDocument();
     });
   });
+
+  it('rings the cards that form the meld the hint recommends', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(turnState);
+    const { unmount } = renderWithProviders(<MachiavelliPage />);
+    await waitFor(() => expect(screen.getAllByRole('button').length).toBeGreaterThan(0));
+    // The assist follows the hint setting, which defaults to off.
+    expect(document.querySelectorAll('[data-meld-hint]')).toHaveLength(0);
+    unmount();
+
+    // Three sevens form a set, so with hints on the three cards must ring.
+    localStorage.setItem('hint_enabled_machiavelli', 'true');
+    mockExec.mockResolvedValue({
+      ...turnState,
+      players: [
+        {
+          ...turnState.players[0],
+          cards: [
+            { design: 'SPADE', value: 7 },
+            { design: 'HEART', value: 7 },
+            { design: 'CLOVER', value: 7 },
+          ],
+        },
+        ...turnState.players.slice(1),
+      ],
+    });
+    renderWithProviders(<MachiavelliPage />);
+    await waitFor(() => expect(document.querySelectorAll('[data-meld-hint]')).toHaveLength(3));
+  });
+
+  it('does not ring a meld while it is not the human turn', async () => {
+    localStorage.clear();
+    localStorage.setItem('hint_enabled_machiavelli', 'true');
+    mockExec.mockReset();
+    // Same three sevens, but the CPU is to act — there is no meld to make yet,
+    // so the ring must follow the tooltip's gating rather than the hand alone.
+    mockExec.mockResolvedValue({
+      ...turnState,
+      currentPlayerIdx: 1,
+      players: [
+        {
+          ...turnState.players[0],
+          cards: [
+            { design: 'SPADE', value: 7 },
+            { design: 'HEART', value: 7 },
+            { design: 'CLOVER', value: 7 },
+          ],
+        },
+        ...turnState.players.slice(1),
+      ],
+    });
+    renderWithProviders(<MachiavelliPage />);
+    await waitFor(() => expect(screen.getAllByRole('button').length).toBeGreaterThan(0));
+    expect(document.querySelectorAll('[data-meld-hint]')).toHaveLength(0);
+  });
 });

@@ -182,7 +182,39 @@ func TestSevenBridgeCuiPresenter_HintOutput(t *testing.T) {
 	t.Run("declines outside the human's play phase", func(t *testing.T) {
 		m := new(interfaces.MockSevenBridgeGame)
 		m.On("GetPhase").Return(domain.SevenBridgePhaseDraw)
+		// **ドローフェーズでも人間の手番でなければ断る。**手番のときは
+		// ポン・チーを案内するようになった (#4904)。
+		m.On("IsHumanTurn").Return(false)
 		assert.Contains(t, p.HintOutput(m), "プレイフェーズではありません")
+	})
+
+	// **ドローフェーズこそ一番迷う。**ポン・チーの判断を無支援にしていた (#4904)。
+	t.Run("advises pon, chi or drawing during the draw phase", func(t *testing.T) {
+		build := func(pon, chi []int) *interfaces.MockSevenBridgeGame {
+			m := new(interfaces.MockSevenBridgeGame)
+			m.On("GetPhase").Return(domain.SevenBridgePhaseDraw)
+			m.On("IsHumanTurn").Return(true)
+			m.On("GetCurrentPlayerIdx").Return(0)
+			human := domain.NewSevenBridgePlayer(true)
+			human.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+			human.AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+			m.On("GetPlayer", 0).Return(human)
+			m.On("SuggestPon", 0).Return(pon)
+			m.On("SuggestChi", 0).Return(chi)
+			return m
+		}
+
+		// **ポンが先。**同ランク 3 枚は連番より確実に面子になる。
+		both := p.HintOutput(build([]int{0, 1}, []int{0, 1}))
+		assert.Contains(t, both, "ポンできます")
+		assert.NotContains(t, both, "チーできます")
+
+		assert.Contains(t, p.HintOutput(build(nil, []int{0, 1})), "チーできます")
+
+		// どちらも無ければ山札を勧める。黙らない。
+		none := p.HintOutput(build(nil, nil))
+		assert.Contains(t, none, "山札から引きましょう")
+		assert.NotContains(t, none, "プレイフェーズではありません")
 	})
 }
 

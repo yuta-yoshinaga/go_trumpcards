@@ -120,6 +120,39 @@ func (pp *ChinesePokerCuiPresenter) Output(cp interfaces.ChinesePokerGame, lastE
 	return sb.String()
 }
 
+// HintOutput は13枚の推奨分割とファウル警告を出力する (#4717)。
+//
+// **Web にはファウル警告 (cp-foul-warning) も列プレビューもあるのに、CUI は
+// 13枚を自力で 3/5/5 に分けるしかなく、ファウルしても無警告だった。**
+func (cp *ChinesePokerCuiPresenter) HintOutput(g interfaces.ChinesePokerGame) string {
+	arr := g.GetSuggestedArrangement()
+	if arr == nil {
+		return i18n.T("chinesepoker.hintNone") + "\n"
+	}
+	cards := g.GetPlayerCards()
+	row := func(indices []int) string {
+		parts := make([]string, 0, len(indices))
+		for _, i := range indices {
+			if i < 0 || i >= len(cards) {
+				continue
+			}
+			parts = append(parts, "["+strconv.Itoa(i)+"]"+cuiCardStr(cards[i]))
+		}
+		return strings.Join(parts, " ")
+	}
+	var b strings.Builder
+	b.WriteString(i18n.Tf("chinesepoker.hintRowFront", "cards", row(arr.Front)) + "\n")
+	b.WriteString(i18n.Tf("chinesepoker.hintRowMiddle", "cards", row(arr.Middle)) + "\n")
+	b.WriteString(i18n.Tf("chinesepoker.hintRowBack", "cards", row(arr.Back)) + "\n")
+	// **ランク順に切るだけでは合法とは限らない。**そのまま置かせない。
+	if arr.Foul {
+		b.WriteString(color.BoldYellow(i18n.T("chinesepoker.hintFoulRisk")) + "\n")
+	} else {
+		b.WriteString(color.Yellow(i18n.T("chinesepoker.hintSplitOk")) + "\n")
+	}
+	return b.String()
+}
+
 // ActionLogOutput 棋譜をテキスト出力
 func (pp *ChinesePokerCuiPresenter) ActionLogOutput(cp interfaces.ChinesePokerGame) string {
 	return actionLogOutputText(cp)
@@ -141,8 +174,10 @@ func (pp *ChinesePokerCuiPresenter) phaseStr(phase int) string {
 
 // frontRankStr フロントハンドランク文字列（3枚ポーカー）
 func (pp *ChinesePokerCuiPresenter) frontRankStr(rank int) string {
+	// 3 枚役の名前はスリーカードポーカーと同じ表を引く。英語の
+	// `ThreeCardHandNames` を直接返すと日本語ロケールでも英語で出る。
 	if rank >= 0 && rank < len(domain.ThreeCardHandNames) {
-		return domain.ThreeCardHandNames[rank]
+		return threeCardHandName(rank)
 	}
 	return i18n.T("chinesepoker.rankUnknown")
 }

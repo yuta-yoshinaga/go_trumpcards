@@ -1524,4 +1524,29 @@ describe('PokerPage', () => {
     await screen.findByRole('button', { name: 'ベット' });
     expect(screen.queryByTestId('pk-lowball-reference')).not.toBeInTheDocument();
   });
+
+  // **Holdem 系は EquityDisplay を持つのに、5カードドローには仕組み自体が
+  // 無く、2巡目ベットで call/raise/fold を判断する材料が交換確率パネルしか
+  // 無かった (#4678)。**
+  it('shows the equity display during a betting round', async () => {
+    mockExec.mockResolvedValue({
+      ...secondBetState,
+      equity: { winProbability: 0.62, handOdds: [] },
+      potOdds: 25,
+    });
+    renderWithProviders(<PokerPage />);
+
+    await waitFor(() => expect(screen.getByTestId('equity-display')).toBeInTheDocument());
+  });
+
+  // **サーバーが送らないフェーズでは出さない。**交換中はまだ手が変わるので、
+  // 確定した勝率として読まれると誤解を招く。ページ側でフェーズを再判定せず、
+  // 値の有無だけで決める。
+  it('shows no equity display when the server sends none', async () => {
+    mockExec.mockResolvedValue(secondBetState);
+    renderWithProviders(<PokerPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('equity-display')).not.toBeInTheDocument();
+  });
 });

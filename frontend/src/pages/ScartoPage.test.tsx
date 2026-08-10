@@ -245,6 +245,20 @@ describe('ScartoPage', () => {
     expect(screen.getByTestId('scarto-result')).toHaveTextContent('+28');
   });
 
+  // 上段の dealScores と内訳の平均差が N 倍で結び付くことを固定する (#4930)。
+  it('spells out that the change is the average difference times the player count', async () => {
+    mockExec.mockResolvedValue(settlementState);
+    renderWithProviders(<ScartoPage />);
+    const breakdown = await screen.findByTestId('scarto-breakdown');
+
+    expect(screen.getByTestId('scarto-formula')).toHaveTextContent('平均差 × プレイヤー数（3人）');
+    // 70 - 60.666… = +9.3、×3 で +28。上の行の dealScores と一致する。
+    expect(breakdown).toHaveTextContent('平均差 +9.3');
+    expect(breakdown).toHaveTextContent('変動 +28.0');
+    // 負の側も出る。52 - 60.666… = -8.7、×3 で -26。
+    expect(breakdown).toHaveTextContent('平均差 -8.7');
+  });
+
   it('dispatches nextround from round end', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<ScartoPage />);

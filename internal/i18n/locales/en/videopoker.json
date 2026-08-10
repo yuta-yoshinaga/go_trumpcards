@@ -41,5 +41,6 @@
   "ptThreeOfAKind": "Three of a Kind",
   "ptTwoPair": "Two Pair",
   "ptJacksOrBetter": "Jacks or Better",
-  "ptKingsOrBetter": "Kings or Better"
+  "ptKingsOrBetter": "Kings or Better",
+  "holdRoyalDraw": "Hold four to a royal flush"
 }

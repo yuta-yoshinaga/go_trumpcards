@@ -17,6 +17,7 @@ function makeState(overrides: Partial<CallBreakResponse> = {}): CallBreakRespons
         roundScore: 0,
         cumulativeScore: 0,
         trickCount: 0,
+        bags: 0,
       },
       {
         id: 1,
@@ -27,6 +28,7 @@ function makeState(overrides: Partial<CallBreakResponse> = {}): CallBreakRespons
         roundScore: 0,
         cumulativeScore: 0,
         trickCount: 0,
+        bags: 0,
       },
       {
         id: 2,
@@ -37,6 +39,7 @@ function makeState(overrides: Partial<CallBreakResponse> = {}): CallBreakRespons
         roundScore: 0,
         cumulativeScore: 0,
         trickCount: 0,
+        bags: 0,
       },
       {
         id: 3,
@@ -47,6 +50,7 @@ function makeState(overrides: Partial<CallBreakResponse> = {}): CallBreakRespons
         roundScore: 0,
         cumulativeScore: 0,
         trickCount: 0,
+        bags: 0,
       },
     ],
     phase: CallBreakPhase.BID,

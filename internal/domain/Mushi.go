@@ -347,7 +347,7 @@ type Mushi struct {
 	roundResults []int
 	gameEndFlag  bool
 	winnerIdx    int
-	actionLog    []*ActionLogEntry
+	actionLogBase
 }
 
 // NewMushi はコンストラクタ。
@@ -655,13 +655,7 @@ func (m *Mushi) finishGame() {
 
 // addLog は棋譜へ 1 行追加する。
 func (m *Mushi) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	m.actionLog = append(m.actionLog, &ActionLogEntry{
-		TurnNumber: len(m.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	m.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // ---- 公開アクセサ ----
@@ -671,10 +665,7 @@ func (m *Mushi) GetPlayers() []*MushiPlayer { return m.players }
 
 // GetPlayer は idx のプレイヤーを返す。範囲外は nil。
 func (m *Mushi) GetPlayer(idx int) *MushiPlayer {
-	if idx < 0 || idx >= len(m.players) {
-		return nil
-	}
-	return m.players[idx]
+	return getPlayer(m.players, idx)
 }
 
 // GetField は場札を返す。
@@ -705,10 +696,7 @@ func (m *Mushi) GetRoundNumber() int { return m.roundNumber }
 
 // GetScore は idx の累計得点を返す。
 func (m *Mushi) GetScore(idx int) int {
-	if idx < 0 || idx >= len(m.scores) {
-		return 0
-	}
-	return m.scores[idx]
+	return elemAt(m.scores, idx)
 }
 
 // SetScore は idx の累計得点を設定する (テスト用)。
@@ -756,9 +744,6 @@ func (m *Mushi) GetConfig() MushiConfig { return m.config }
 
 // SetConfig はゲーム設定を差し替える。
 func (m *Mushi) SetConfig(c MushiConfig) { m.config = c }
-
-// GetActionLog は棋譜を返す。
-func (m *Mushi) GetActionLog() []*ActionLogEntry { return m.actionLog }
 
 // ---- JSON ----
 

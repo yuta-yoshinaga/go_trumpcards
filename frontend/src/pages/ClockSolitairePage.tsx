@@ -230,12 +230,20 @@ function ClockSolitairePageContent() {
   // Resolve the same text GameMessageBox shows so it can also be announced in a
   // dedicated live region (the visible box is not guaranteed to be a live region).
   const liveMessage = (() => {
+    const parts: string[] = [];
     if (state.messageCode) {
       const key = `messageCode.${state.messageCode}`;
       const translated = tc(key, state.messageParams ?? {});
-      if (translated !== key) return translated;
+      parts.push(translated === key ? (state.message ?? '') : translated);
+    } else {
+      parts.push(state.message ?? '');
     }
-    return state.message ?? '';
+    // The pulsing ring on the destination pile is visual only. The CUI presenter
+    // already spells the same thing out every turn, so mirror it here (#4785).
+    const value = state.currentCard?.value ?? 0;
+    if (value >= 1 && value <= 12) parts.push(t('placementHint', { hour: value }));
+    else if (value === 13) parts.push(t('placementKing'));
+    return parts.filter(Boolean).join(' ');
   })();
 
   return (

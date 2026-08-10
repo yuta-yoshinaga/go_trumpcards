@@ -1,4 +1,4 @@
-# セブンブリッジ（Seven Bridge・CUI版）遊び方
+# セブンブリッジ（CUI版）遊び方
 
 ## ゲーム概要
 
@@ -72,6 +72,7 @@ flowchart TD
 | `setdifficulty <0-2>` | `sd` | CPU 難易度を Easy / Normal / Hard に変更 |
 | `setlimit <n>` | `sl` | 目標得点を変更 |
 | `log` | `l` | 直近の棋譜を出力 |
+| `help` | `?` | コマンド一覧を表示 |
 
 ## 画面の見方
 

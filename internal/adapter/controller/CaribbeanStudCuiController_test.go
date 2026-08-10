@@ -19,6 +19,7 @@ func newMockCaribbeanStudInteractor() *usecase.MockCaribbeanStudInteractor {
 	m.On("Play").Return("play result")
 	m.On("Fold").Return("fold result")
 	m.On("ActionLog").Return("action log result")
+	m.On("Hint").Return("hint result")
 	return m
 }
 
@@ -123,4 +124,13 @@ func TestCaribbeanStudCuiController_Empty(t *testing.T) {
 
 	result := c.Exec("")
 	assert.Contains(t, result, "'help' でコマンド一覧を表示します。")
+}
+
+// **カリビアンスタッドだけ CUI に戦略アシストが無かった (#4697)。**
+func TestCaribbeanStudCuiController_Hint(t *testing.T) {
+	m := newMockCaribbeanStudInteractor()
+	c := controller.NewCaribbeanStudCuiController(m)
+
+	assert.Equal(t, "hint result", c.Exec("h"))
+	assert.Equal(t, "hint result", c.Exec("hint"))
 }

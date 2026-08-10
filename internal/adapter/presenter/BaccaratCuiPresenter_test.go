@@ -28,6 +28,23 @@ func setupBaccaratCuiMockDefaults(m *interfaces.MockBaccaratGame) {
 	m.On("GetSideBetResults").Return(([]*domain.BacSideBetResult)(nil)).Maybe()
 }
 
+// baccaratStreakMock は履歴だけを差し替えた最小のモックを返す。
+func baccaratStreakMock(t *testing.T, history []int) *interfaces.MockBaccaratGame {
+	t.Helper()
+	m := new(interfaces.MockBaccaratGame)
+	m.On("GetPhase").Return(domain.BaccaratPhaseBet).Maybe()
+	m.On("GetChips").Return(1000).Maybe()
+	m.On("GetBetType").Return(domain.BaccaratBetPlayer).Maybe()
+	m.On("GetBetAmount").Return(0).Maybe()
+	m.On("GetPlayerHand").Return(([]*domain.Card)(nil)).Maybe()
+	m.On("GetBankerHand").Return(([]*domain.Card)(nil)).Maybe()
+	m.On("GetPlayerHandValue").Return(0).Maybe()
+	m.On("GetBankerHandValue").Return(0).Maybe()
+	m.On("GetGameEndFlag").Return(false).Maybe()
+	m.On("GetHistory").Return(history).Maybe()
+	return m
+}
+
 func TestBaccaratCuiPresenter_Output_BetPhase(t *testing.T) {
 	origNoColor := color.NoColor()
 	color.SetNoColor(true)
@@ -64,6 +81,43 @@ func TestBaccaratCuiPresenter_Output_History(t *testing.T) {
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "履歴: P B T")
 		assert.Contains(t, result, "集計: P:1 B:1 T:1")
+	})
+
+	// **Web の ShoeStatsPanel は連勝数も出しているのに CUI には無かった (#4688)。**
+	// ロードマップと並んでシューの流れを読む材料になる。
+	t.Run("reports the current streak", func(t *testing.T) {
+		m := baccaratStreakMock(t, []int{
+			domain.BaccaratResultPlayer,
+			domain.BaccaratResultBanker,
+			domain.BaccaratResultBanker,
+		})
+		assert.Contains(t, p.Output(m, nil), "バンカー が 2 連勝中")
+	})
+
+	// **タイは連勝を切らない。**フロントの computeBaccaratShoeStats と同じ規則。
+	// ここがずれると同じ履歴で CUI と Web が違う連勝数を出す。
+	t.Run("a tie does not break the streak", func(t *testing.T) {
+		m := baccaratStreakMock(t, []int{
+			domain.BaccaratResultBanker,
+			domain.BaccaratResultTie,
+			domain.BaccaratResultBanker,
+		})
+		assert.Contains(t, p.Output(m, nil), "バンカー が 2 連勝中")
+	})
+
+	t.Run("the opposite side ends the streak", func(t *testing.T) {
+		m := baccaratStreakMock(t, []int{
+			domain.BaccaratResultBanker,
+			domain.BaccaratResultBanker,
+			domain.BaccaratResultPlayer,
+		})
+		assert.Contains(t, p.Output(m, nil), "プレイヤー が 1 連勝中")
+	})
+
+	// タイだけの履歴には連勝が無い。行ごと出さない。
+	t.Run("ties only means no streak line", func(t *testing.T) {
+		m := baccaratStreakMock(t, []int{domain.BaccaratResultTie, domain.BaccaratResultTie})
+		assert.NotContains(t, p.Output(m, nil), "連勝中")
 	})
 
 	t.Run("omits the history line when empty", func(t *testing.T) {

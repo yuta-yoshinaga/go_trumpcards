@@ -63,7 +63,6 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
-	"sort"
 )
 
 // GoStopPlayerCnt はゴーストップのプレイヤー数 (固定 2)。
@@ -426,7 +425,7 @@ type gostopState struct {
 	lastRoundResult  *GoStopRoundResult
 	pendingBreakdown *GoStopBreakdown
 	pendingPoints    int // 決断フェーズのカテゴリ合計
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // GoStop はゴーストップゲームの状態を保持する集約ルート。
@@ -478,11 +477,11 @@ func (g *GoStop) Reset() {
 		p.ResetScore()
 	}
 	g.state = gostopState{
-		phase:       GoStopPhasePlay,
-		roundWinner: -1,
-		winner:      -1,
-		roundNumber: 1,
-		actionLog:   make([]*ActionLogEntry, 0),
+		phase:         GoStopPhasePlay,
+		roundWinner:   -1,
+		winner:        -1,
+		roundNumber:   1,
+		actionLogBase: actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 	}
 	g.startRound()
 }
@@ -535,12 +534,7 @@ func (g *GoStop) startRound() {
 
 // allHandsEmpty は全員の手札が空かどうか。
 func (g *GoStop) allHandsEmpty() bool {
-	for _, p := range g.players {
-		if p.GetCardsSize() > 0 {
-			return false
-		}
-	}
-	return true
+	return allHandsEmpty(g.players)
 }
 
 // --- 捕獲ロジック (Koi-Koi と同一) ---
@@ -627,13 +621,7 @@ func (g *GoStop) gostopPlaceCard(playerIdx int, card *Card, chosen int) {
 
 // removeFieldByIndex は降順に並べ替えてから場札を削除する。
 func (g *GoStop) removeFieldByIndex(idxs []int) {
-	sorted := append([]int(nil), idxs...)
-	sort.Sort(sort.Reverse(sort.IntSlice(sorted)))
-	for _, idx := range sorted {
-		if idx >= 0 && idx < len(g.state.fieldCards) {
-			g.state.fieldCards = append(g.state.fieldCards[:idx], g.state.fieldCards[idx+1:]...)
-		}
-	}
+	g.state.fieldCards = removeIndices(g.state.fieldCards, idxs)
 }
 
 // --- Play ---
@@ -933,7 +921,7 @@ func (g *GoStop) GetHint() *GoStopHint {
 	if g.state.gameEndFlag {
 		return nil
 	}
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 || g.state.currentTurn != human {
 		return nil
 	}
@@ -960,36 +948,9 @@ func (g *GoStop) GetHint() *GoStopHint {
 
 // --- ヘルパー ---
 
-func (g *GoStop) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 // sortHumanHand は人間の手札を月→インデックス順に並べ替える。
 func (g *GoStop) sortHumanHand() {
-	for _, p := range g.players {
-		if !p.GetIsHuman() {
-			continue
-		}
-		cards := make([]*Card, p.GetCardsSize())
-		for i := 0; i < p.GetCardsSize(); i++ {
-			cards[i] = p.GetCard(i)
-		}
-		sort.SliceStable(cards, func(i, j int) bool {
-			if cards[i].GetDesign() != cards[j].GetDesign() {
-				return cards[i].GetDesign() < cards[j].GetDesign()
-			}
-			return cards[i].GetValue() < cards[j].GetValue()
-		})
-		p.Reset()
-		for _, c := range cards {
-			p.AddCard(c)
-		}
-	}
+	sortHumanHands(g.players)
 }
 
 func (g *GoStop) playerName(idx int) string {
@@ -1003,13 +964,7 @@ func (g *GoStop) playerName(idx int) string {
 }
 
 func (g *GoStop) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.state.actionLog = append(g.state.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.state.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.state.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // gostopCardStr は札を "松·光" のように表す (ログ/デバッグ用)。
@@ -1124,7 +1079,7 @@ func (g *GoStop) GetResult() GoStopResult {
 	if !g.state.gameEndFlag {
 		return GoStopResultNone
 	}
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	switch {
 	case g.state.winner < 0:
 		return GoStopResultDraw
@@ -1140,10 +1095,7 @@ func (g *GoStop) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer は指定インデックスのプレイヤーを返す。
 func (g *GoStop) GetPlayer(i int) *GoStopPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetConfig はローカルルール設定を返す。
@@ -1310,7 +1262,7 @@ func (g *GoStop) UnmarshalJSON(data []byte) error {
 		lastRoundResult:  j.LastRoundResult,
 		pendingBreakdown: j.PendingBreakdown,
 		pendingPoints:    j.PendingPoints,
-		actionLog:        j.ActionLog,
+		actionLogBase:    actionLogBase{actionLog: j.ActionLog},
 	}
 	if g.state.fieldCards == nil {
 		g.state.fieldCards = make([]*Card, 0)

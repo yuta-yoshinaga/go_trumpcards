@@ -41,27 +41,27 @@ var PaiGowLowHandNames = []string{
 
 // PaiGow パイガオポーカークラス
 type PaiGow struct {
-	trumpCards     *TrumpCards       // トランプカード
-	playerCards    []*Card           // プレイヤーの7枚
-	dealerCards    []*Card           // ディーラーの7枚
-	playerHighHand []*Card           // プレイヤーハイハンド（5枚）
-	playerLowHand  []*Card           // プレイヤーローハンド（2枚）
-	dealerHighHand []*Card           // ディーラーハイハンド（5枚）
-	dealerLowHand  []*Card           // ディーラーローハンド（2枚）
-	chips          ChipHolder        // チップ
-	bet            int               // ベット額
-	phase          int               // 現在のフェーズ
-	gameEndFlag    bool              // ゲーム終了フラグ
-	result         GameResult        // ゲーム結果
-	highHandResult GameResult        // ハイハンド結果
-	lowHandResult  GameResult        // ローハンド結果
-	payout         int               // 配当
-	commission     int               // コミッション
-	playerHighRank int               // プレイヤーハイハンドランク
-	playerLowRank  int               // プレイヤーローハンドランク
-	dealerHighRank int               // ディーラーハイハンドランク
-	dealerLowRank  int               // ディーラーローハンドランク
-	actionLog      []*ActionLogEntry // 棋譜
+	trumpCards     *TrumpCards // トランプカード
+	playerCards    []*Card     // プレイヤーの7枚
+	dealerCards    []*Card     // ディーラーの7枚
+	playerHighHand []*Card     // プレイヤーハイハンド（5枚）
+	playerLowHand  []*Card     // プレイヤーローハンド（2枚）
+	dealerHighHand []*Card     // ディーラーハイハンド（5枚）
+	dealerLowHand  []*Card     // ディーラーローハンド（2枚）
+	chips          ChipHolder  // チップ
+	bet            int         // ベット額
+	phase          int         // 現在のフェーズ
+	gameEndFlag    bool        // ゲーム終了フラグ
+	result         GameResult  // ゲーム結果
+	highHandResult GameResult  // ハイハンド結果
+	lowHandResult  GameResult  // ローハンド結果
+	payout         int         // 配当
+	commission     int         // コミッション
+	playerHighRank int         // プレイヤーハイハンドランク
+	playerLowRank  int         // プレイヤーローハンドランク
+	dealerHighRank int         // ディーラーハイハンドランク
+	dealerLowRank  int         // ディーラーローハンドランク
+	actionLogBase
 }
 
 // NewPaiGow コンストラクタ
@@ -166,6 +166,53 @@ func (pg *PaiGow) SetHands(lowIdx0, lowIdx1 int) error {
 
 	pg.resolve()
 	return nil
+}
+
+// PaiGowHint はセットハンドフェーズでの推奨分割。
+type PaiGowHint struct {
+	// LowIdx0 / LowIdx1 はローハンドに回す2枚の手札インデックス。
+	LowIdx0 int
+	LowIdx1 int
+	// LowIsPair はローハンドがペアになるかどうか (推奨理由の出し分け用)。
+	LowIsPair bool
+	// Reason はヒント理由キー。
+	Reason string
+}
+
+// GetHint はセットハンドフェーズでの推奨分割を返す。それ以外では nil。
+//
+// **ディーラーのハウスウェイと同じ経路を通す** (paiGowHouseWayIndices)。
+// ハイハンドがローハンドを上回る分割しか候補にしないので、
+// この通りに置けば必ず反則 (foul) を回避できる。
+func (pg *PaiGow) GetHint() *PaiGowHint {
+	if pg.phase != PaiGowPhaseSetHands {
+		return nil
+	}
+	i, j, ok := paiGowHouseWayIndices(pg.playerCards)
+	if !ok {
+		return nil
+	}
+	lowIsPair := evalPaiGowLowHand([]*Card{pg.playerCards[i], pg.playerCards[j]}) == PaiGowLowHandPair
+	reason := "house_way_high"
+	if lowIsPair {
+		reason = "house_way_pair"
+	}
+	return &PaiGowHint{LowIdx0: i, LowIdx1: j, LowIsPair: lowIsPair, Reason: reason}
+}
+
+// AutoSetHands はハウスウェイの分割をそのまま適用する。
+//
+// 手作業の SetHands と同じ検証を通す (自前で分割を書き込まない) ので、
+// **自動でも反則ハンドが成立する抜け道にはならない。**
+func (pg *PaiGow) AutoSetHands() error {
+	if pg.phase != PaiGowPhaseSetHands {
+		return NewDomainError(ErrWrongPhase, "SetHands is only allowed during the set hands phase.")
+	}
+	i, j, ok := paiGowHouseWayIndices(pg.playerCards)
+	if !ok {
+		return NewDomainError(ErrInvalidPlay, "No legal split is available for this hand.")
+	}
+	return pg.SetHands(i, j)
 }
 
 // deal 7枚ずつ配る
@@ -438,13 +485,35 @@ func paiGowHighBeatsLow(highRank int, highHand []*Card, lowRank int, lowHand []*
 
 // paiGowHouseWay ディーラーのハウスウェイ（自動カード分割）
 func paiGowHouseWay(cards []*Card) (high []*Card, low []*Card) {
-	if len(cards) != PaiGowHandSize {
+	i, j, ok := paiGowHouseWayIndices(cards)
+	if !ok {
 		return cards, nil
+	}
+	low = []*Card{cards[i], cards[j]}
+	high = make([]*Card, 0, PaiGowHighHandSize)
+	for k, c := range cards {
+		if k != i && k != j {
+			high = append(high, c)
+		}
+	}
+	return high, low
+}
+
+// paiGowHouseWayIndices はハウスウェイが選ぶローハンド2枚の**インデックス**を返す。
+//
+// ディーラーの分割 (paiGowHouseWay) と人間への推奨 (GetHint / AutoSetHands) は
+// ここを共有する。**別実装にすると、ディーラー自身がやらない分割を人間に
+// 勧めることになる。**
+//
+// ok=false は7枚でないとき、および合法な分割が1つも無いとき。
+func paiGowHouseWayIndices(cards []*Card) (lowIdx0, lowIdx1 int, ok bool) {
+	if len(cards) != PaiGowHandSize {
+		return 0, 0, false
 	}
 
 	// 全組み合わせから最適な分割を探す（2枚選択 = C(7,2) = 21通り）
-	bestHigh := make([]*Card, 0)
-	bestLow := make([]*Card, 0)
+	bestI, bestJ := 0, 0
+	found := false
 	bestHighRank := -1
 	bestLowRank := -1
 	bestHighVals := []int{}
@@ -474,8 +543,8 @@ func paiGowHouseWay(cards []*Card) (high []*Card, low []*Card) {
 			// ハウスウェイ: ローハンドを最大化しつつハイハンドを維持
 			if paiGowBetterSplit(highRank, highVals, lowRank, lowVals,
 				bestHighRank, bestHighVals, bestLowRank, bestLowVals) {
-				bestHigh = highCandidate
-				bestLow = lowCandidate
+				bestI, bestJ = i, j
+				found = true
 				bestHighRank = highRank
 				bestLowRank = lowRank
 				bestHighVals = highVals
@@ -484,7 +553,7 @@ func paiGowHouseWay(cards []*Card) (high []*Card, low []*Card) {
 		}
 	}
 
-	return bestHigh, bestLow
+	return bestI, bestJ, found
 }
 
 // paiGowBetterSplit 新しい分割が現在のベストより良いか判定（ハウスウェイ基準）
@@ -545,17 +614,6 @@ func paiGowHighHandSortedValues(cards []*Card) []int {
 	return vals
 }
 
-// appendLog 棋譜にエントリを追加する
-func (pg *PaiGow) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	pg.actionLog = append(pg.actionLog, &ActionLogEntry{
-		TurnNumber: len(pg.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // --- Getters ---
 
 // GetPlayerCards プレイヤーの7枚を取得
@@ -614,9 +672,6 @@ func (pg *PaiGow) GetDealerLowRank() int { return pg.dealerLowRank }
 
 // GetChips チップ
 func (pg *PaiGow) GetChips() int { return pg.chips.GetChips() }
-
-// GetActionLog 棋譜を取得する
-func (pg *PaiGow) GetActionLog() []*ActionLogEntry { return pg.actionLog }
 
 // --- Test helpers ---
 

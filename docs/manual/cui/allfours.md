@@ -1,4 +1,4 @@
-# All Fours / Seven Up (CUI版) 遊び方
+# オールフォーズ（CUI版）遊び方
 
 ## ゲーム概要
 
@@ -102,6 +102,7 @@ flowchart TD
 | `setlimit <n>` | `sl <n>` | ポイント上限設定 |
 | `hint` | `h` | ヒント表示 |
 | `log` | `l` | 棋譜表示 |
+| `help` | `?` | コマンド一覧を表示 |
 
 ## 画面の見方
 

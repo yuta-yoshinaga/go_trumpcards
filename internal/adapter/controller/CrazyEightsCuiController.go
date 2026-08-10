@@ -43,7 +43,7 @@ func (c *CrazyEightsCuiController) Exec(command string) string {
 		[]string{
 			"p", "play", "d", "draw", "s", "suit",
 			"nr", "nextround",
-			"sd", "setdifficulty", "sl", "setlimit", "log", "l",
+			"sd", "setdifficulty", "sl", "setlimit", "h", "hint", "log", "l",
 		},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
@@ -68,7 +68,7 @@ func (c *CrazyEightsCuiController) Exec(command string) string {
 					return c.ci.ResetWithConfig(cfg)
 				})
 			default:
-				return handleCuiLog(cmd, c.ci.ActionLog)
+				return handleCuiHintAndLog(cmd, c.ci.Hint, c.ci.ActionLog)
 			}
 		},
 	)

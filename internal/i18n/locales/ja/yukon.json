@@ -11,6 +11,7 @@
   "invalidFromZone": "無効な移動元です: {{.val}} (t のみ有効)",
   "moveUsage": "使用法: m t <列> <カードID> t <列> または m t <列> f",
   "playing": "カードを移動してください",
+  "blockMoveRule": "ヒント: 表向きのカードならどれでも掴めます。その上に乗っているカードは順序に関係なくまとめて動きます（置ける条件は一番下のカードだけ）。",
   "gameClear": "ゲームクリア！ 手数: {{.moveCount}}",
   "gameOver": "ゲームオーバー",
   "stalemate": "手詰まりです",

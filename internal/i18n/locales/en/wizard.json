@@ -17,6 +17,7 @@
   "promptBidHelp": "b <n> — declare a bid (0–handSize)",
   "promptPlay": "Turn: {{name}}",
   "promptPlayHelp": "play <idx> — play a card",
+  "legalMark": "Cards marked * may be played into the current trick.",
   "promptTrickEnd": "Trick ended",
   "promptTrickEndHelp": "next — advance to the next trick",
   "promptRoundEnd": "Round ended",

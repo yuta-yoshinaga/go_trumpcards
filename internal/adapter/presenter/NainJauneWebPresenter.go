@@ -50,6 +50,11 @@ func (p *NainJauneWebPresenter) Output(c interfaces.NainJauneGame, lastErr error
 func (p *NainJauneWebPresenter) buildBase(c interfaces.NainJauneGame) *controller.NainJauneWebOutput {
 	resObj := new(controller.NainJauneWebOutput)
 	resObj.Phase = int(c.GetPhase())
+	// 人間の手番でないときは null ではなく空スライス。
+	resObj.ValidPlays = c.NainJauneValidPlays(0)
+	if resObj.ValidPlays == nil {
+		resObj.ValidPlays = make([]int, 0)
+	}
 	resObj.CurrentPlayerIdx = c.GetCurrentPlayerIdx()
 	resObj.TalonCount = c.GetTalonCount()
 	resObj.RunRank = c.GetRunRank()

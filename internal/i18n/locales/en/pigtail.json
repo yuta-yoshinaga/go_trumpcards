@@ -4,6 +4,8 @@
   "header": "Stock: {{stock}} / center: {{center}}",
   "topCardLine": "Center top: {{card}}",
   "playerLine": "{{name}}: {{cards}} cards",
+  "lastDrawSafe": "Last card drawn: {{card}} → safe",
+  "lastDrawPenalty": "Last card drawn: {{card}} → penalty! took the whole centre pile",
   "cpuActionsHeader": "[CPU actions]",
   "cpuActionPenalty": "{{name}} drew → penalty! Picks up {{count}} cards",
   "cpuActionSafe": "{{name}} drew → safe",

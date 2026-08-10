@@ -125,7 +125,7 @@ type Calabresella struct {
 	lastTrickWinner  int                                    // 最終トリック勝者 (-1=未確定)
 	gameEndFlag      bool
 	winnerPlayer     int // -1=未確定
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewCalabresella コンストラクタ
@@ -284,10 +284,10 @@ func (g *Calabresella) applyBid(playerIdx int, bid CalabresellaBid) {
 	g.bidActed[playerIdx] = true
 	if bid == CalabresellaBidNone {
 		g.appendLog(playerIdx, "bid_pass",
-			fmt.Sprintf("%s passes", g.playerName(playerIdx)), nil)
+			fmt.Sprintf("%s passes", playerName(g.players, playerIdx)), nil)
 	} else {
 		g.appendLog(playerIdx, "bid",
-			fmt.Sprintf("%s bids %s", g.playerName(playerIdx), calabresellaBidName(bid)), nil)
+			fmt.Sprintf("%s bids %s", playerName(g.players, playerIdx), calabresellaBidName(bid)), nil)
 	}
 
 	if g.allBidsActed() {
@@ -340,7 +340,7 @@ func (g *Calabresella) finalizeAuction() {
 	g.soloistIdx = soloist
 	g.winningBid = best
 	g.appendLog(soloist, "soloist",
-		fmt.Sprintf("%s is soloist with %s", g.playerName(soloist), calabresellaBidName(best)), nil)
+		fmt.Sprintf("%s is soloist with %s", playerName(g.players, soloist), calabresellaBidName(best)), nil)
 
 	g.startDiscard()
 }
@@ -387,7 +387,7 @@ func (g *Calabresella) startDiscard() {
 	g.monte = nil
 	calabresellaSortHand(g.players[g.soloistIdx])
 	g.appendLog(g.soloistIdx, "monte_take",
-		fmt.Sprintf("%s takes the monte", g.playerName(g.soloistIdx)), revealed)
+		fmt.Sprintf("%s takes the monte", playerName(g.players, g.soloistIdx)), revealed)
 	g.discardCount = 0
 	g.currentPlayerIdx = g.soloistIdx
 
@@ -425,7 +425,7 @@ func (g *Calabresella) discardOne(cardIndex int) {
 	g.players[g.soloistIdx].AddTrick([]*Card{card})
 	g.roundThirds[g.soloistIdx] += calabresellaThirds(card.GetValue())
 	g.appendLog(g.soloistIdx, "discard",
-		fmt.Sprintf("%s discards %s", g.playerName(g.soloistIdx), cardStr(card)), []*Card{card})
+		fmt.Sprintf("%s discards %s", playerName(g.players, g.soloistIdx), cardStr(card)), []*Card{card})
 	g.discardCount++
 }
 
@@ -512,7 +512,7 @@ func (g *Calabresella) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Calabresella) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == CalabresellaPlayerCnt {
 		g.phase = CalabresellaPhaseTrickEnd
@@ -541,7 +541,7 @@ func (g *Calabresella) ResolveTrick() {
 	}
 	g.roundThirds[winnerIdx] += thirds
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (+%d/3%s)", g.playerName(winnerIdx), g.trickNumber, thirds, bonus), trickCards)
+		fmt.Sprintf("%s wins trick %d (+%d/3%s)", playerName(g.players, winnerIdx), g.trickNumber, thirds, bonus), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= CalabresellaTrickCount {
@@ -597,7 +597,7 @@ func (g *Calabresella) ScoreRound() {
 	}
 	g.appendLog(-1, "round_score",
 		fmt.Sprintf("round %d: soloist(%s) %s (%d/3, stake=%d)",
-			g.roundNumber, g.playerName(g.soloistIdx), result, soloistThirds, stake), nil)
+			g.roundNumber, playerName(g.players, g.soloistIdx), result, soloistThirds, stake), nil)
 	g.checkGameEnd()
 }
 
@@ -614,7 +614,7 @@ func (g *Calabresella) checkGameEnd() {
 		g.gameEndFlag = true
 		g.winnerPlayer = leader
 		g.phase = CalabresellaPhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", g.playerName(leader)), nil)
+		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
 	}
 }
 
@@ -622,25 +622,7 @@ func (g *Calabresella) checkGameEnd() {
 
 // validatePlay マストフォロー (切り札なし) を検証する。
 func (g *Calabresella) validatePlay(playerIdx int, card *Card) error {
-	if len(g.currentTrick) == 0 {
-		return nil
-	}
-	leadSuit := g.currentTrick[0].Card.GetDesign()
-	if card.GetDesign() != leadSuit && g.playerHasSuit(playerIdx, leadSuit) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
-	}
-	return nil
-}
-
-// playerHasSuit プレイヤーが指定スートのカードを持っているか。
-func (g *Calabresella) playerHasSuit(playerIdx, design int) bool {
-	p := g.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return validateFollowSuit(g.currentTrick, g.players, playerIdx, card)
 }
 
 // trickWinner トリックの勝者を決定する。切り札がないため、リードスートの最強札が勝つ。
@@ -662,10 +644,7 @@ func (g *Calabresella) trickWinner() int {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す。
 func (g *Calabresella) getValidPlayIndices(playerIdx int) []int {
-	player := g.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return g.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(g.players[playerIdx], func(c *Card) bool { return g.validatePlay(playerIdx, c) == nil })
 }
 
 // isCoalition playerIdx が連合 (非ソリスト) 側か。
@@ -747,17 +726,6 @@ func calabresellaSortHand(p *CalabresellaPlayer) {
 	}
 }
 
-// playerName プレイヤー名を返す。
-func (g *Calabresella) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
 // calabresellaBidName ビッドの表示名を返す。
 func calabresellaBidName(bid CalabresellaBid) string {
 	switch bid {
@@ -772,33 +740,7 @@ func calabresellaBidName(bid CalabresellaBid) string {
 
 // indexOfPlayerInTrick currentTrick 内で playerIdx の札の位置を返す (-1=なし)。
 func (g *Calabresella) indexOfPlayerInTrick(playerIdx int) int {
-	for i, tc := range g.currentTrick {
-		if tc.PlayerIdx == playerIdx {
-			return i
-		}
-	}
-	return -1
-}
-
-// findHumanIdx 人間プレイヤーのインデックス (-1=なし)。
-func (g *Calabresella) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
-// appendLog 棋譜にエントリを追加する。
-func (g *Calabresella) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	return indexOfPlayerInTrick(g.currentTrick, playerIdx)
 }
 
 // --- CPU AI (play) ---
@@ -824,7 +766,7 @@ func (g *Calabresella) cpuPlaySmart(playerIdx int, valid []int) int {
 
 	// リード: 得点・強さの低い札を出して温存する。
 	if len(g.currentTrick) == 0 {
-		return g.minBy(player, valid, func(c *Card) int {
+		return pickLowest(player, valid, func(c *Card) int {
 			return calabresellaThirds(c.GetValue())*100 + calabresellaStrength(c.GetValue())
 		})
 	}
@@ -847,7 +789,7 @@ func (g *Calabresella) cpuPlaySmart(playerIdx int, valid []int) int {
 
 	if len(follows) == 0 {
 		// ボイド: 得点・強さの低い札を捨てて温存する。
-		return g.minBy(player, valid, func(c *Card) int {
+		return pickLowest(player, valid, func(c *Card) int {
 			return calabresellaThirds(c.GetValue())*100 + calabresellaStrength(c.GetValue())
 		})
 	}
@@ -862,47 +804,21 @@ func (g *Calabresella) cpuPlaySmart(playerIdx int, valid []int) int {
 			return calabresellaStrength(player.GetCard(idx).GetValue()) < topStrength
 		})
 		if len(nonWinners) > 0 {
-			return g.maxBy(player, nonWinners, func(c *Card) int {
+			return pickHighest(player, nonWinners, func(c *Card) int {
 				return calabresellaThirds(c.GetValue())*100 - calabresellaStrength(c.GetValue())
 			})
 		}
-		return g.minBy(player, follows, func(c *Card) int { return calabresellaStrength(c.GetValue()) })
+		return pickLowest(player, follows, func(c *Card) int { return calabresellaStrength(c.GetValue()) })
 	}
 
 	// 相手が勝っている: 得点があり勝てるなら最小限の札で取りに行く。
 	if trickThirds > 0 && len(winners) > 0 {
-		return g.minBy(player, winners, func(c *Card) int { return calabresellaStrength(c.GetValue()) })
+		return pickLowest(player, winners, func(c *Card) int { return calabresellaStrength(c.GetValue()) })
 	}
 	// 取れない/取る価値がない: 得点・強さの低い札でダックする。
-	return g.minBy(player, follows, func(c *Card) int {
+	return pickLowest(player, follows, func(c *Card) int {
 		return calabresellaThirds(c.GetValue())*100 + calabresellaStrength(c.GetValue())
 	})
-}
-
-// minBy score が最小となるインデックスを返す。
-func (g *Calabresella) minBy(player *CalabresellaPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s < bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
-}
-
-// maxBy score が最大となるインデックスを返す。
-func (g *Calabresella) maxBy(player *CalabresellaPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s > bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
 }
 
 // calabresellaFilter 述語を満たすインデックスを抽出する。
@@ -920,7 +836,7 @@ func calabresellaFilter(indices []int, pred func(int) bool) []int {
 
 // GetHint 人間プレイヤーの手番における推奨アクションを返す。
 func (g *Calabresella) GetHint() *CalabresellaHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 {
 		return nil
 	}
@@ -1079,18 +995,12 @@ func (g *Calabresella) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *Calabresella) GetPlayer(i int) *CalabresellaPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // IsHumanTurn 現在の手番 (プレイ) が人間か。
 func (g *Calabresella) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // IsHumanBidTurn 現在のビッド手番が人間か。
@@ -1109,9 +1019,6 @@ func (g *Calabresella) GetConfig() CalabresellaConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *Calabresella) SetConfig(cfg CalabresellaConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *Calabresella) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetPlayableIndices プレイ可能なカードのインデックス一覧を返す。
 func (g *Calabresella) GetPlayableIndices(playerIdx int) []int {

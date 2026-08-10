@@ -53,5 +53,6 @@
   },
   "hintRequested": "A hint is available",
   "noHint": "No hint available",
-  "trumpCountNote": "40 trumps -- including the 12 zodiac signs, the four elements and the virtues; tracking what is still above you is the skill"
+  "trumpCountNote": "40 trumps -- including the 12 zodiac signs, the four elements and the virtues; tracking what is still above you is the skill",
+  "hintButton": "Hint"
 }

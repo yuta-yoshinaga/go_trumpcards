@@ -71,7 +71,15 @@ func twentyNinePlayerStr(g interfaces.TwentyNineGame, idx int) string {
 	))
 	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
-		b.WriteString(cuiIndexedCardListStr(player) + "\n")
+		// **Web は playableIndices をリング表示しているのに、CUI は素の一覧だけで、
+		// 番号を入力してエラーを踏むまで合法手が分からなかった (#4725)。**
+		// 目印を出すのはプレイフェーズでこのプレイヤーの手番のときだけ -- ビッド中や
+		// 相手の手番では制限そのものが決まっていない。
+		var playable []int
+		if g.GetPhase() == domain.TwentyNinePhasePlay && g.GetCurrentPlayerIdx() == idx {
+			playable = g.GetPlayableIndices(idx)
+		}
+		b.WriteString(cuiPlayableMarkedCardListStr(player, playable) + "\n")
 	}
 	return b.String()
 }

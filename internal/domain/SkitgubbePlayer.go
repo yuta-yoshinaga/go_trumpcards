@@ -16,8 +16,7 @@ func NewSkitgubbePlayer(isHuman bool) *SkitgubbePlayer {
 
 // ResetGame は手札と上がり状態を初期化する。
 func (p *SkitgubbePlayer) ResetGame() {
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayer(p)
 }
 
 // skitgubbePlayerJSON is the JSON wire format for SkitgubbePlayer.

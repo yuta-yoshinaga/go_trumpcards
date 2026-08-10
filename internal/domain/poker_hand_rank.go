@@ -35,3 +35,31 @@ var PokerHandNames = []string{
 	"Royal Flush",
 	"Five of a Kind",
 }
+
+// pokerHandName returns the display name for a hand rank, or "Unknown" when the
+// rank is outside the table. 5 betting games had this written out.
+func pokerHandName(rank int) string {
+	if rank >= 0 && rank < len(PokerHandNames) {
+		return PokerHandNames[rank]
+	}
+	return "Unknown"
+}
+
+// dealerQualifies reports whether the dealer's hand meets the usual
+// ace-king-or-better qualification. 3 casino games had this written out.
+func dealerQualifies(handRank int, hand []*Card) bool {
+	if handRank >= PokerHandOnePair {
+		return true
+	}
+	hasAce := false
+	hasKing := false
+	for _, c := range hand {
+		switch c.GetValue() {
+		case 1:
+			hasAce = true
+		case 13:
+			hasKing = true
+		}
+	}
+	return hasAce && hasKing
+}

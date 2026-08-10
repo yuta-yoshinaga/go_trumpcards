@@ -81,7 +81,7 @@ type Marias struct {
 	lastTrickWinner  int                  // 最終トリック勝者 (-1=未確定)
 	gameEndFlag      bool
 	winnerPlayer     int // -1=未確定
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewMarias コンストラクタ
@@ -159,19 +159,7 @@ func (g *Marias) deal() {
 
 // longestSuit プレイヤーが最も多く持つスートを返す (同数ならスート番号が小さい方)。
 func (g *Marias) longestSuit(playerIdx int) int {
-	counts := map[int]int{}
-	p := g.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		counts[p.GetCard(i).GetDesign()]++
-	}
-	bestSuit, bestCnt := CardDesignSpade, -1
-	for _, suit := range []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond} {
-		if counts[suit] > bestCnt {
-			bestCnt = counts[suit]
-			bestSuit = suit
-		}
-	}
-	return bestSuit
+	return longestSuit(g.players[playerIdx])
 }
 
 // detectMarriages 各プレイヤーの初手から結婚 (同スート K+Q) を検出し加点する。
@@ -189,7 +177,7 @@ func (g *Marias) detectMarriages() {
 		}
 		if pts > 0 {
 			g.roundMarriage[i] += pts
-			g.appendLog(i, "marriage", fmt.Sprintf("%s declares marriages worth %d", g.playerName(i), pts), nil)
+			g.appendLog(i, "marriage", fmt.Sprintf("%s declares marriages worth %d", playerName(g.players, i), pts), nil)
 		}
 	}
 }
@@ -253,7 +241,7 @@ func (g *Marias) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Marias) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == MariasPlayerCnt {
 		g.phase = MariasPhaseTrickEnd
@@ -277,7 +265,7 @@ func (g *Marias) ResolveTrick() {
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.roundCardPts[winnerIdx] += pts
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (+%d)", g.playerName(winnerIdx), g.trickNumber, pts), trickCards)
+		fmt.Sprintf("%s wins trick %d (+%d)", playerName(g.players, winnerIdx), g.trickNumber, pts), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= MariasTrickCount {
@@ -320,7 +308,7 @@ func (g *Marias) ScoreRound() {
 	}
 	g.appendLog(-1, "round_score",
 		fmt.Sprintf("round %d: soloist(%s)=%d defense=%d -> %s",
-			g.roundNumber, g.playerName(g.soloistIdx), soloistTotal, defenseTotal,
+			g.roundNumber, playerName(g.players, g.soloistIdx), soloistTotal, defenseTotal,
 			map[bool]string{true: "soloist wins", false: "defense wins"}[soloistWon]), nil)
 
 	g.checkGameEnd()
@@ -353,7 +341,7 @@ func (g *Marias) checkGameEnd() {
 		g.gameEndFlag = true
 		g.winnerPlayer = leader
 		g.phase = MariasPhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", g.playerName(leader)), nil)
+		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
 	}
 }
 
@@ -377,13 +365,7 @@ func (g *Marias) validatePlay(playerIdx int, card *Card) error {
 
 // playerHasSuit プレイヤーが指定スートのカードを持っているか。
 func (g *Marias) playerHasSuit(playerIdx, design int) bool {
-	p := g.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return handHasSuit(g.players[playerIdx], design)
 }
 
 // trickWinner トリックの勝者を決定する。切り札があれば最強切り札、なければ
@@ -457,10 +439,7 @@ func mariasCardPoints(card *Card) int {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す。
 func (g *Marias) getValidPlayIndices(playerIdx int) []int {
-	player := g.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return g.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(g.players[playerIdx], func(c *Card) bool { return g.validatePlay(playerIdx, c) == nil })
 }
 
 // --- Misc helpers ---
@@ -490,25 +469,9 @@ func mariasSortHand(p *MariasPlayer) {
 	}
 }
 
-// playerName プレイヤー名を返す。
-func (g *Marias) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
 // indexOfPlayerInTrick currentTrick 内で playerIdx の札の位置を返す (-1=なし)。
 func (g *Marias) indexOfPlayerInTrick(playerIdx int) int {
-	for i, tc := range g.currentTrick {
-		if tc.PlayerIdx == playerIdx {
-			return i
-		}
-	}
-	return -1
+	return indexOfPlayerInTrick(g.currentTrick, playerIdx)
 }
 
 // trickTopRank 現在のトリック勝者の札のランクを返す。見つからない場合は極小値。
@@ -518,27 +481,6 @@ func (g *Marias) trickTopRank(winnerIdx int) int {
 		return -1 << 30
 	}
 	return g.mariasRank(g.currentTrick[idx].Card)
-}
-
-// findHumanIdx 人間プレイヤーのインデックス (-1=なし)。
-func (g *Marias) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
-// appendLog 棋譜にエントリを追加する。
-func (g *Marias) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- CPU AI ---
@@ -562,7 +504,7 @@ func (g *Marias) cpuSelectPlayCard(playerIdx int) int {
 func (g *Marias) cpuPlaySmart(playerIdx int, valid []int) int {
 	player := g.players[playerIdx]
 	if len(g.currentTrick) == 0 {
-		return g.minBy(player, valid, func(c *Card) int {
+		return pickLowest(player, valid, func(c *Card) int {
 			return mariasCardPoints(c)*100 + g.mariasRank(c)
 		})
 	}
@@ -574,24 +516,11 @@ func (g *Marias) cpuPlaySmart(playerIdx int, valid []int) int {
 	}
 	winners := mariasFilter(valid, func(idx int) bool { return g.mariasRank(player.GetCard(idx)) > topRank })
 	if trickPts > 0 && len(winners) > 0 {
-		return g.minBy(player, winners, func(c *Card) int { return g.mariasRank(c) })
+		return pickLowest(player, winners, func(c *Card) int { return g.mariasRank(c) })
 	}
-	return g.minBy(player, valid, func(c *Card) int {
+	return pickLowest(player, valid, func(c *Card) int {
 		return mariasCardPoints(c)*100 + g.mariasRank(c)
 	})
-}
-
-// minBy score が最小となるインデックスを返す。
-func (g *Marias) minBy(player *MariasPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s < bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
 }
 
 // mariasFilter 述語を満たすインデックスを抽出する。
@@ -609,7 +538,7 @@ func mariasFilter(indices []int, pred func(int) bool) []int {
 
 // GetHint 人間プレイヤーの手番における推奨プレイを返す。
 func (g *Marias) GetHint() *MariasHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 || g.phase != MariasPhasePlay || g.currentPlayerIdx != human {
 		return nil
 	}
@@ -720,18 +649,12 @@ func (g *Marias) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *Marias) GetPlayer(i int) *MariasPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // IsHumanTurn 現在の手番が人間か。
 func (g *Marias) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -739,9 +662,6 @@ func (g *Marias) GetConfig() MariasConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *Marias) SetConfig(cfg MariasConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *Marias) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetPlayableIndices プレイ可能なカードのインデックス一覧を返す。
 func (g *Marias) GetPlayableIndices(playerIdx int) []int {

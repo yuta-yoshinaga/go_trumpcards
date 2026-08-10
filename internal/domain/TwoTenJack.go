@@ -57,7 +57,7 @@ type TwoTenJack struct {
 	trumpSuit        int // -1 = 未宣言
 	gameEndFlag      bool
 	winnerTeam       int // -1 = 未確定, 0 = (0,2), 1 = (1,3)
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewTwoTenJack コンストラクタ
@@ -158,7 +158,7 @@ func (t *TwoTenJack) PlayerDeclareTrump(suit int) error {
 	}
 
 	t.trumpSuit = suit
-	t.appendLog(t.declarerIdx, "declare_trump", fmt.Sprintf("%s declares trump: %s", t.playerName(t.declarerIdx), twoTenJackSuitName(suit)), nil)
+	t.appendLog(t.declarerIdx, "declare_trump", fmt.Sprintf("%s declares trump: %s", playerName(t.players, t.declarerIdx), twoTenJackSuitName(suit)), nil)
 	t.startPlayPhase()
 	return nil
 }
@@ -176,7 +176,7 @@ func (t *TwoTenJack) CpuDeclareTrump() {
 	}
 	suit := t.cpuSelectTrump(t.declarerIdx)
 	t.trumpSuit = suit
-	t.appendLog(t.declarerIdx, "declare_trump", fmt.Sprintf("%s declares trump: %s", t.playerName(t.declarerIdx), twoTenJackSuitName(suit)), nil)
+	t.appendLog(t.declarerIdx, "declare_trump", fmt.Sprintf("%s declares trump: %s", playerName(t.players, t.declarerIdx), twoTenJackSuitName(suit)), nil)
 	t.startPlayPhase()
 }
 
@@ -247,7 +247,7 @@ func (t *TwoTenJack) ResolveTrick() {
 
 	t.players[winnerIdx].AddTrick(trickCards)
 
-	winnerName := t.playerName(winnerIdx)
+	winnerName := playerName(t.players, winnerIdx)
 	t.appendLog(winnerIdx, "trick_win", fmt.Sprintf("%s wins trick %d", winnerName, t.trickNumber), trickCards)
 
 	t.leadPlayerIdx = winnerIdx
@@ -326,7 +326,7 @@ func (t *TwoTenJack) ScoreRound() {
 
 	for i := 0; i < TwoTenJackPlayerCnt; i++ {
 		t.appendLog(i, "cumulative_score", fmt.Sprintf("%s: total=%d",
-			t.playerName(i), t.players[i].GetCumulativeScore()), nil)
+			playerName(t.players, i), t.players[i].GetCumulativeScore()), nil)
 	}
 
 	t.checkGameEnd()
@@ -393,18 +393,12 @@ func (t *TwoTenJack) GetPlayerCnt() int { return len(t.players) }
 
 // GetPlayer プレイヤー取得
 func (t *TwoTenJack) GetPlayer(i int) *TwoTenJackPlayer {
-	if i < 0 || i >= len(t.players) {
-		return nil
-	}
-	return t.players[i]
+	return getPlayer(t.players, i)
 }
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (t *TwoTenJack) IsHumanTurn() bool {
-	if t.currentPlayerIdx < 0 || t.currentPlayerIdx >= len(t.players) {
-		return false
-	}
-	return t.players[t.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(t.players, t.currentPlayerIdx)
 }
 
 // IsHumanDeclareTurn 現在の宣言手番が人間かどうか
@@ -420,9 +414,6 @@ func (t *TwoTenJack) GetConfig() TwoTenJackConfig { return t.config }
 
 // SetConfig 設定変更
 func (t *TwoTenJack) SetConfig(cfg TwoTenJackConfig) { t.config = cfg }
-
-// GetActionLog 棋譜取得
-func (t *TwoTenJack) GetActionLog() []*ActionLogEntry { return t.actionLog }
 
 // --- Private methods ---
 
@@ -441,7 +432,7 @@ func (t *TwoTenJack) playCard(playerIdx int, card *Card) {
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
-	t.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", t.playerName(playerIdx), cardStr(card)), []*Card{card})
+	t.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(t.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(t.currentTrick) == TwoTenJackPlayerCnt {
 		t.phase = TwoTenJackPhaseTrickEnd
@@ -452,25 +443,7 @@ func (t *TwoTenJack) playCard(playerIdx int, card *Card) {
 
 // validatePlay カードのプレイが有効か検証する
 func (t *TwoTenJack) validatePlay(playerIdx int, card *Card) error {
-	if len(t.currentTrick) == 0 {
-		return nil
-	}
-	leadSuit := t.currentTrick[0].Card.GetDesign()
-	if card.GetDesign() != leadSuit && t.playerHasSuit(playerIdx, leadSuit) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
-	}
-	return nil
-}
-
-// playerHasSuit プレイヤーが特定のスートを持っているか
-func (t *TwoTenJack) playerHasSuit(playerIdx int, design int) bool {
-	p := t.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return validateFollowSuit(t.currentTrick, t.players, playerIdx, card)
 }
 
 // trickWinner トリックの勝者を決定する
@@ -519,28 +492,6 @@ func twoTenJackSortHand(p *TwoTenJackPlayer) {
 			return ci.GetDesign() < cj.GetDesign()
 		}
 		return ci.GetValue() < cj.GetValue()
-	})
-}
-
-// playerName プレイヤー名を返す
-func (t *TwoTenJack) playerName(idx int) string {
-	if idx < 0 || idx >= len(t.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if t.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (t *TwoTenJack) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	t.actionLog = append(t.actionLog, &ActionLogEntry{
-		TurnNumber: len(t.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
 	})
 }
 
@@ -874,10 +825,7 @@ func (t *TwoTenJack) teamOf(playerIdx int) int {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (t *TwoTenJack) getValidPlayIndices(playerIdx int) []int {
-	player := t.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return t.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(t.players[playerIdx], func(c *Card) bool { return t.validatePlay(playerIdx, c) == nil })
 }
 
 // GetValidPlayIndices プレイ可能なカードのインデックスリストを返す (Web用)

@@ -18,6 +18,8 @@ type LetItRideInteractorIF interface {
 	Bet(amount int) string
 	// Pull ベットを取り下げる
 	Pull() string
+	// PullConfirm Pull 実行前の確認内容を出力する
+	PullConfirm() string
 	// LetItRide ベットをそのままにする
 	LetItRide() string
 	// ActionLog 棋譜を出力する
@@ -52,6 +54,11 @@ func (li *LetItRideInteractor) Bet(amount int) string {
 // Pull ベットを取り下げる
 func (li *LetItRideInteractor) Pull() string {
 	return execAndPresent(li.Game, li.cp, li.Game.Pull)
+}
+
+// PullConfirm Pull 実行前の確認内容を出力する
+func (li *LetItRideInteractor) PullConfirm() string {
+	return li.cp.PullConfirmOutput(li.Game)
 }
 
 // LetItRide ベットをそのままにする

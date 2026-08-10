@@ -116,7 +116,7 @@ type Cinch struct {
 	gameEndFlag      bool
 	winnerIdx        int
 	lastDealDetail   *CinchDealDetail
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewCinch はコンストラクタ。
@@ -252,6 +252,35 @@ func cinchPointValue(c *Card, trumpSuit int) int {
 	}
 }
 
+// CinchHandPointsBySuit returns, for each candidate trump suit (1..4, indexed by
+// the CardDesign constants), how many of the 14 deal points the hand already
+// holds. Index 0 is unused.
+//
+// Holding a point card is not the same as capturing it, so this is a bidding
+// guide, not a promise. The Web GUI has shown the same table since the game
+// shipped; the CUI showed only the current high bid (#4845).
+func CinchHandPointsBySuit(cards []*Card) [CardDesignDiamond + 1]int {
+	var points [CardDesignDiamond + 1]int
+	for suit := CardDesignSpade; suit <= CardDesignDiamond; suit++ {
+		for _, c := range cards {
+			points[suit] += cinchPointValue(c, suit)
+		}
+	}
+	return points
+}
+
+// CinchBestTrumpSuit returns the suit holding the most points, the lowest suit
+// index winning ties (same rule as the Web GUI's estimateCinchBidStrength).
+func CinchBestTrumpSuit(points [CardDesignDiamond + 1]int) int {
+	best := CardDesignSpade
+	for suit := CardDesignSpade; suit <= CardDesignDiamond; suit++ {
+		if points[suit] > points[best] {
+			best = suit
+		}
+	}
+	return best
+}
+
 // --- ゲーム進行 ---
 
 // Reset は新しいゲームを開始する。累計得点もクリアする。
@@ -337,7 +366,7 @@ func (g *Cinch) PlayerBid(bid int) error {
 	if g.phase != CinchPhaseBid {
 		return ErrWrongPhase
 	}
-	humanIdx := g.findHumanIdx()
+	humanIdx := findHumanIdx(g.players)
 	if humanIdx < 0 || g.bidPlayerIdx != humanIdx {
 		return ErrNotHumanTurn
 	}
@@ -394,7 +423,7 @@ func (g *Cinch) applyBid(playerIdx, bid int) {
 	if bid == CinchPassBid {
 		logBid = "pass"
 	}
-	g.appendLog(playerIdx, "bid", fmt.Sprintf("%s bids %s", g.playerName(playerIdx), logBid), nil)
+	g.appendLog(playerIdx, "bid", fmt.Sprintf("%s bids %s", playerName(g.players, playerIdx), logBid), nil)
 }
 
 // advanceBid は次のビッド手番へ進める。全員終わればトランプ宣言へ移る (stuck dealer も処理)。
@@ -405,7 +434,7 @@ func (g *Cinch) advanceBid() {
 		// 親に到達し、かつ全員パス済みの場合 stuck 強制。
 		if g.bidPlayerIdx == g.dealerIdx && g.currentBid == 0 && bidsDone == CinchPlayerCnt-1 {
 			g.applyBid(g.dealerIdx, CinchMinBid)
-			g.appendLog(g.dealerIdx, "stuck", fmt.Sprintf("%s is stuck with %d", g.playerName(g.dealerIdx), CinchMinBid), nil)
+			g.appendLog(g.dealerIdx, "stuck", fmt.Sprintf("%s is stuck with %d", playerName(g.players, g.dealerIdx), CinchMinBid), nil)
 			g.startNameTrump()
 		}
 		return
@@ -434,7 +463,7 @@ func (g *Cinch) startNameTrump() {
 	}
 	g.phase = CinchPhaseNameTrump
 	g.appendLog(g.bidWinnerIdx, "bid_won",
-		fmt.Sprintf("%s wins the bid at %d and will name trump", g.playerName(g.bidWinnerIdx), g.currentBid), nil)
+		fmt.Sprintf("%s wins the bid at %d and will name trump", playerName(g.players, g.bidWinnerIdx), g.currentBid), nil)
 }
 
 // NameTrump は人間のビッド勝者が切り札スートを宣言する。
@@ -529,7 +558,7 @@ func (g *Cinch) CpuPlay() {
 // playCard はカードをプレイする共通処理。
 func (g *Cinch) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == CinchPlayerCnt {
 		g.phase = CinchPhaseTrickEnd
@@ -609,7 +638,7 @@ func (g *Cinch) ResolveTrick() {
 	g.lastTrick = g.currentTrick
 	g.lastTrickWinner = winnerIdx
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", g.playerName(winnerIdx), g.trickNumber), trickCards)
+		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), trickCards)
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= CinchTotalTricks {
 		g.phase = CinchPhaseRoundEnd
@@ -687,17 +716,17 @@ func (g *Cinch) ScoreRound() {
 				setBack = true
 				g.appendLog(i, "set_back",
 					fmt.Sprintf("%s set back: bid=%d earned=%d -> %d",
-						g.playerName(i), g.currentBid, pts, -g.currentBid), nil)
+						playerName(g.players, i), g.currentBid, pts, -g.currentBid), nil)
 			} else {
 				gained[i] = pts
 				g.appendLog(i, "bid_made",
 					fmt.Sprintf("%s makes bid: bid=%d earned=%d -> +%d",
-						g.playerName(i), g.currentBid, pts, pts), nil)
+						playerName(g.players, i), g.currentBid, pts, pts), nil)
 			}
 		} else {
 			gained[i] = pts
 			if pts > 0 {
-				g.appendLog(i, "non_bidder_score", fmt.Sprintf("%s scores %d", g.playerName(i), pts), nil)
+				g.appendLog(i, "non_bidder_score", fmt.Sprintf("%s scores %d", playerName(g.players, i), pts), nil)
 			}
 		}
 	}
@@ -714,7 +743,7 @@ func (g *Cinch) ScoreRound() {
 	}
 	for i := 0; i < CinchPlayerCnt; i++ {
 		g.appendLog(i, "cumulative_score",
-			fmt.Sprintf("%s: total=%d", g.playerName(i), g.players[i].GetTotalScore()), nil)
+			fmt.Sprintf("%s: total=%d", playerName(g.players, i), g.players[i].GetTotalScore()), nil)
 	}
 	g.checkGameEnd()
 }
@@ -736,7 +765,7 @@ func (g *Cinch) computeRoundPoints() map[int]int {
 				if pv := cinchPointValue(card, g.trumpSuit); pv > 0 {
 					points[playerIdx] += pv
 					g.appendLog(playerIdx, "score_point",
-						fmt.Sprintf("%s captures %s (%d pt)", g.playerName(playerIdx), cardStr(card), pv), nil)
+						fmt.Sprintf("%s captures %s (%d pt)", playerName(g.players, playerIdx), cardStr(card), pv), nil)
 				}
 			}
 		}
@@ -776,19 +805,10 @@ func (g *Cinch) finishGame(winner int) {
 	g.gameEndFlag = true
 	g.phase = CinchPhaseGameEnd
 	g.winnerIdx = winner
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", g.playerName(winner)), nil)
+	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, winner)), nil)
 }
 
 // --- ヘルパー ---
-
-func (g *Cinch) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
 
 func (g *Cinch) sortAllHands() {
 	for _, p := range g.players {
@@ -814,31 +834,8 @@ func cinchSortHand(p *CinchPlayer) {
 	}
 }
 
-func (g *Cinch) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-func (g *Cinch) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 func (g *Cinch) getValidPlayIndices(playerIdx int) []int {
-	player := g.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return g.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(g.players[playerIdx], func(c *Card) bool { return g.validatePlay(playerIdx, c) == nil })
 }
 
 // --- 状態アクセサ ---
@@ -926,10 +923,7 @@ func (g *Cinch) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer は指定インデックスのプレイヤーを返す。
 func (g *Cinch) GetPlayer(i int) *CinchPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetLastDealDetail は直前ディールの得点内訳を返す (nil の場合もある)。
@@ -958,9 +952,6 @@ func (g *Cinch) GetConfig() CinchConfig { return g.config }
 // SetConfig はローカルルール設定を変更する。
 func (g *Cinch) SetConfig(cfg CinchConfig) { g.config = cfg }
 
-// GetActionLog は棋譜を返す。
-func (g *Cinch) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // GetPlayableIndices はプレイフェーズでプレイ可能な手札インデックスを返す。
 func (g *Cinch) GetPlayableIndices(playerIdx int) []int {
 	if playerIdx < 0 || playerIdx >= len(g.players) || g.phase != CinchPhasePlay {
@@ -974,19 +965,7 @@ func (g *Cinch) GetRoundWinners() []int {
 	if !g.gameEndFlag {
 		return nil
 	}
-	best := g.players[0].GetTotalScore()
-	for _, p := range g.players[1:] {
-		if p.GetTotalScore() > best {
-			best = p.GetTotalScore()
-		}
-	}
-	winners := make([]int, 0)
-	for i, p := range g.players {
-		if p.GetTotalScore() == best {
-			winners = append(winners, i)
-		}
-	}
-	return winners
+	return topScorers(g.players)
 }
 
 // --- JSON Serialization ---

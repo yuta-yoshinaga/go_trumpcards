@@ -87,7 +87,7 @@ type Faro struct {
 	phase       int
 	gameEndFlag bool
 	totalPayout int // 直近のラウンドのプレイヤー純損益（正=利得）。
-	actionLog   []*ActionLogEntry
+	actionLogBase
 }
 
 // NewFaro はトランプデッキを受け取りファロを生成する。
@@ -386,17 +386,6 @@ func ranksEqual(a, b []int) bool {
 	return true
 }
 
-// appendLog は棋譜にエントリを追加する。
-func (f *Faro) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	f.actionLog = append(f.actionLog, &ActionLogEntry{
-		TurnNumber: len(f.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // --- Getters ---
 
 // GetPhase は現在のフェーズを返す。
@@ -407,6 +396,29 @@ func (f *Faro) GetGameEndFlag() bool { return f.gameEndFlag }
 
 // GetChips は現在のチップ数を返す。
 func (f *Faro) GetChips() int { return f.chips.GetChips() }
+
+// GetRemainingByRank は各ランクの残り枚数を返す (index 1..13 が A..K)。
+//
+// **未配の山札から直接数える。**公開済みカードを別に蓄えると、リセットの
+// 取りこぼしや二重計上でケースキーパーが嘘をつく (#4894)。ソーダも配った
+// 時点で山札から抜けているので、自動的に除かれる。
+func (f *Faro) GetRemainingByRank() [FaroMaxRank + 1]int {
+	var out [FaroMaxRank + 1]int
+	if f.trumpCards == nil {
+		return out
+	}
+	// 同じ package なので山札を直接見る。TrumpCards に新しい公開 API は要らない。
+	for _, c := range f.trumpCards.deck {
+		if c == nil || c.GetDraw() {
+			continue
+		}
+		v := c.GetValue()
+		if v >= FaroMinRank && v <= FaroMaxRank {
+			out[v]++
+		}
+	}
+	return out
+}
 
 // GetTurnsPlayed は消化済みターン数を返す。
 func (f *Faro) GetTurnsPlayed() int { return f.turnsPlayed }
@@ -450,9 +462,6 @@ func (f *Faro) GetBetRanks() []int {
 
 // GetConfig は設定を返す。
 func (f *Faro) GetConfig() FaroConfig { return f.config }
-
-// GetActionLog は棋譜を返す。
-func (f *Faro) GetActionLog() []*ActionLogEntry { return f.actionLog }
 
 // --- Test helpers ---
 

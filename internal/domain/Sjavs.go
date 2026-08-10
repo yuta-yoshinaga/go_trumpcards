@@ -226,7 +226,7 @@ type Sjavs struct {
 
 	gameEndFlag bool
 	winnerTeam  int
-	actionLog   []*ActionLogEntry
+	actionLogBase
 }
 
 // SjavsHandResult は 1 ハンドの精算結果。
@@ -784,10 +784,7 @@ func (s *Sjavs) GetPlayers() []*SjavsPlayer { return s.players }
 
 // GetPlayer は idx のプレイヤーを返す。
 func (s *Sjavs) GetPlayer(idx int) *SjavsPlayer {
-	if idx < 0 || idx >= len(s.players) {
-		return nil
-	}
-	return s.players[idx]
+	return getPlayer(s.players, idx)
 }
 
 // GetPhase は現在のフェーズを返す。
@@ -867,9 +864,6 @@ func (s *Sjavs) GetConfig() SjavsConfig { return s.config }
 // SetConfig はゲーム設定をセットする。
 func (s *Sjavs) SetConfig(c SjavsConfig) { s.config = c }
 
-// GetActionLog は棋譜を返す。
-func (s *Sjavs) GetActionLog() []*ActionLogEntry { return s.actionLog }
-
 // SetTrumpSuitForTest はテスト用に切札を差し替える。
 func (s *Sjavs) SetTrumpSuitForTest(suit int) { s.trumpSuit = suit }
 
@@ -896,13 +890,7 @@ func (s *Sjavs) SettleHandForTest() { s.settleHand() }
 
 // addLog は棋譜に 1 件追加する。
 func (s *Sjavs) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	s.actionLog = append(s.actionLog, &ActionLogEntry{
-		TurnNumber: len(s.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	s.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // sjavsTrickCardJSON is the JSON wire format for SjavsTrickCard.

@@ -132,7 +132,7 @@ type Ganjifa struct {
 	playerScores     [GanjifaPlayerCnt]int
 	gameEndFlag      bool
 	winnerPlayer     int // -1 = 未確定 (同点)
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // ganjifaJSON is the JSON wire format for Ganjifa.
@@ -412,13 +412,7 @@ func (g *Ganjifa) sortAllHands() {
 
 // appendLog 棋譜に 1 行追加する。
 func (g *Ganjifa) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.appendLogAt(len(g.actionLog)+1, playerIdx, actionType, detail, cards)
 }
 
 // finishMatch マッチを終え、獲得トリック数の累計が最大のプレイヤーを勝者にする。
@@ -507,13 +501,7 @@ func (g *Ganjifa) validatePlay(playerIdx int, card *Card) error {
 
 // playerHasSuit プレイヤーが指定スートを持っているか。
 func (g *Ganjifa) playerHasSuit(playerIdx, design int) bool {
-	p := g.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return handHasSuit(g.players[playerIdx], design)
 }
 
 // GetValidPlayIndices 出せる手札の位置を返す。
@@ -744,10 +732,7 @@ func (g *Ganjifa) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer 指定席のプレイヤー。範囲外は nil。
 func (g *Ganjifa) GetPlayer(idx int) *GanjifaPlayer {
-	if idx < 0 || idx >= len(g.players) {
-		return nil
-	}
-	return g.players[idx]
+	return getPlayer(g.players, idx)
 }
 
 // GetConfig 設定。
@@ -758,25 +743,12 @@ func (g *Ganjifa) SetConfig(c GanjifaConfig) { g.config = c }
 
 // GetActionLog 棋譜。
 func (g *Ganjifa) GetActionLog() []*ActionLogEntry {
-	if g.actionLog == nil {
-		return []*ActionLogEntry{}
-	}
-	return g.actionLog
-}
-
-// findHumanIdx 人間プレイヤーの席。いなければ -1。
-func (g *Ganjifa) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
+	return sliceOrEmpty(g.actionLog)
 }
 
 // GetHint 人間プレイヤーへのヒント。手番でなければ nil。
 func (g *Ganjifa) GetHint() *GanjifaHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 || g.phase != GanjifaPhasePlay || g.currentPlayerIdx != human {
 		return nil
 	}

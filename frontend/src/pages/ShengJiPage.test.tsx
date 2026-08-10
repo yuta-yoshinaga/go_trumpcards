@@ -322,3 +322,21 @@ describe('ShengJiPage', () => {
     await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeDisabled());
   });
 });
+
+// **ヒントは前から算出されていたのに、ページが一度も読んでいなかった (#4774)。**
+// getShengJiHint も hintFactories への登録もあるのに、画面にトグルもツール
+// チップも無かった。check-hint-coverage はファクトリの有無しか見ないので
+// CI をすり抜けていた。
+describe('ShengJiPage hint', () => {
+  it('shows the hint once the toggle is enabled', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: ShengJiPhase.DECLARE, declarableSuits: { '3': 2 } }));
+    renderWithProviders(<ShengJiPage />);
+    await waitFor(() => expect(screen.getByLabelText('ヒント表示')).toBeInTheDocument());
+
+    // トグルを入れるまでは出さない。
+    expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByLabelText('ヒント表示'));
+    expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument();
+  });
+});

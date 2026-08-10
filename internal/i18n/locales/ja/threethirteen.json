@@ -9,6 +9,7 @@
   "helpSetPlayers": "  sp [2-4]             プレイヤー数",
   "header": "ラウンド {{round}}/11  ワイルド: {{wild}}  山札: {{stock}}枚",
   "discardLine": "捨て札: {{card}}",
+  "discardPreview": "  捨てた後のデッドウッド: {{values}}",
   "playerLine": "{{name}}: 累積{{cum}}点 ラウンド{{round}}点 {{cards}}枚 デッドウッド{{deadwood}}",
   "gameEnd": "ゲーム終了！ {{name}}の勝利です！",
   "drawPhase": "山札または捨て札から1枚引いてください",

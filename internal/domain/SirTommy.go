@@ -52,7 +52,7 @@ type SirTommy struct {
 	stock       []*Card
 	phase       SirTommyPhase
 	moveCount   int
-	actionLog   []*ActionLogEntry
+	actionLogBase
 	history     []*sirTommySnapshot
 	isStalemate bool
 }
@@ -259,15 +259,7 @@ func (s *SirTommy) CanUndo() bool { return len(s.history) > 0 }
 // UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。
 // 膠着状態でなければ 0、履歴を遡っても抜けられなければ -1。
 func (s *SirTommy) UndoToEscape() int {
-	if !s.isStalemate {
-		return 0
-	}
-	for i := len(s.history) - 1; i >= 0; i-- {
-		if !s.history[i].isStalemate {
-			return len(s.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(s.isStalemate, s.history, func(s *sirTommySnapshot) bool { return s.isStalemate })
 }
 
 // AllFaceUp すべてのカードが見えているか。
@@ -304,9 +296,6 @@ func (s *SirTommy) GetWastes() [SirTommyWasteCnt][]*Card { return s.wastes }
 
 // GetFoundations ファンデーション取得
 func (s *SirTommy) GetFoundations() [SirTommyFoundationCnt][]*Card { return s.foundations }
-
-// GetActionLog 棋譜取得
-func (s *SirTommy) GetActionLog() []*ActionLogEntry { return s.actionLog }
 
 // GetGameEndFlag ゲーム終了フラグ
 func (s *SirTommy) GetGameEndFlag() bool { return s.phase != SirTommyPhasePlaying }
@@ -402,13 +391,7 @@ func (s *SirTommy) restoreSnapshot(snap *sirTommySnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (s *SirTommy) appendLog(actionType, detail string, cards []*Card) {
-	s.actionLog = append(s.actionLog, &ActionLogEntry{
-		TurnNumber: s.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	s.appendLogAt(s.moveCount, 0, actionType, detail, cards)
 }
 
 // sirTommyMaxSliceLen caps slice sizes during deserialisation.

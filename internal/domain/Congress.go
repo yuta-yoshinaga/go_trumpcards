@@ -78,14 +78,14 @@ type CongressHint struct {
 //     前者は 32 枚にしかならず 104 枚を吸収できない
 //   - **空き山は山札か捨て札から埋める**（issue は触れていない）
 type Congress struct {
-	trumpCards  *TrumpCards
-	tableau     [CongressTableauCnt][]*Card
-	foundation  [CongressFoundationCnt][]*Card
-	stock       []*Card
-	waste       []*Card
-	phase       CongressPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	tableau    [CongressTableauCnt][]*Card
+	foundation [CongressFoundationCnt][]*Card
+	stock      []*Card
+	waste      []*Card
+	phase      CongressPhase
+	moveCount  int
+	actionLogBase
 	history     []*congressSnapshot
 	isStalemate bool
 }
@@ -422,31 +422,12 @@ func (c *Congress) CanUndo() bool { return len(c.history) > 0 }
 
 // UndoN n 手戻す
 func (c *Congress) UndoN(n int) error {
-	if n <= 0 {
-		return errors.New("n must be positive")
-	}
-	if n > len(c.history) {
-		return errors.New("not enough history")
-	}
-	for range n {
-		if err := c.Undo(); err != nil {
-			return err
-		}
-	}
-	return nil
+	return undoNChecked(c, n, len(c.history))
 }
 
 // UndoToEscape 膠着状態から抜けるのに必要なアンドゥ回数（膠着でなければ 0、不可なら -1）
 func (c *Congress) UndoToEscape() int {
-	if !c.isStalemate {
-		return 0
-	}
-	for i := len(c.history) - 1; i >= 0; i-- {
-		if !c.history[i].isStalemate {
-			return len(c.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(c.isStalemate, c.history, func(s *congressSnapshot) bool { return s.isStalemate })
 }
 
 // AllFaceUp 常に全札が表向き
@@ -469,9 +450,6 @@ func (c *Congress) GetTableau() [CongressTableauCnt][]*Card { return c.tableau }
 
 // GetFoundation 基礎札を取得
 func (c *Congress) GetFoundation() [CongressFoundationCnt][]*Card { return c.foundation }
-
-// GetActionLog 棋譜取得
-func (c *Congress) GetActionLog() []*ActionLogEntry { return c.actionLog }
 
 // GetGameEndFlag ゲーム終了フラグ
 func (c *Congress) GetGameEndFlag() bool { return c.phase != CongressPhasePlaying }
@@ -507,17 +485,12 @@ func (c *Congress) tableauTop(pile int) *Card {
 
 // wasteTop 捨て札の一番上（空なら nil）
 func (c *Congress) wasteTop() *Card {
-	if len(c.waste) == 0 {
-		return nil
-	}
-	return c.waste[len(c.waste)-1]
+	return discardTop(c.waste)
 }
 
 // popWaste 捨て札の一番上を取り除く
 func (c *Congress) popWaste() {
-	if len(c.waste) > 0 {
-		c.waste = c.waste[:len(c.waste)-1]
-	}
+	c.waste = dropLast(c.waste)
 }
 
 // canPlaceOnTableau タブローに置けるか（スート無視の降順、A の下には何も置けない）。
@@ -567,14 +540,7 @@ func (c *Congress) findFoundation(card *Card) int {
 
 // afterMove 手数・棋譜・終了判定をまとめて進める
 func (c *Congress) afterMove(actionType, detail string, card *Card) {
-	c.moveCount++
-	var cards []*Card
-	if card != nil {
-		cards = []*Card{card}
-	}
-	c.appendLog(actionType, detail, cards)
-	c.checkGameClear()
-	c.checkStalemate()
+	afterMove(&c.moveCount, c, actionType, detail, card)
 }
 
 // checkGameClear 8 つの基礎札がすべて K まで積まれたか
@@ -617,13 +583,7 @@ func (c *Congress) takeSnapshot() {
 
 // appendLog 棋譜エントリを追加
 func (c *Congress) appendLog(actionType, detail string, cards []*Card) {
-	c.actionLog = append(c.actionLog, &ActionLogEntry{
-		TurnNumber: c.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	c.appendLogAt(c.moveCount, 0, actionType, detail, cards)
 }
 
 // congressSnapshotJSON is the wire format for a single undo snapshot.

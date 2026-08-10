@@ -6,7 +6,7 @@ Go implementations of 264 trump card game algorithms (blackjack, poker, hearts, 
 
 | Tool | Version |
 |------|---------|
-| [Go](https://go.dev/) | 1.26.x |
+| [Go](https://go.dev/) | 1.26.x (`go.mod` declares `go 1.25.8` so TinyGo 0.40.1 can build the Workers; `toolchain go1.26.0`) |
 | [Node.js](https://nodejs.org/) | 24.x |
 | [Bun](https://bun.sh/) | 1.3.10 |
 | [jq](https://jqlang.github.io/jq/) | any (required by the `.claude/settings.json` commit-gate hooks — they silently no-op without it) |
@@ -45,7 +45,7 @@ go test -tags test ./...                                              # Run all 
 go test -tags test -coverprofile=coverage.out -covermode=set ./...    # Coverage report
 
 # Format
-goimports -w ./...           # Format and organize imports (use goimports, not gofmt)
+goimports -w .               # Format and organize imports (use goimports, not gofmt; `./...` is a go tool pattern goimports does not accept)
 
 # Lint
 golangci-lint run ./...      # Run Go linter (must pass before commit)
@@ -100,7 +100,7 @@ When making code changes, update the relevant documentation **in the same commit
 
 ## Cloudflare Workers (WASM)
 
-Games ship to six Cloudflare Workers (`casino`, `classic`, `solo`, `extra`, `extra2`, `extra3`) as TinyGo WASM binaries, split purely to keep each binary under the 1 MB gzipped free-tier limit ([ADR-0032](docs/adr/0032-fourth-worker-capacity.md) added the fourth, [ADR-0036](docs/adr/0036-fifth-sixth-worker-capacity.md) the fifth and sixth). The `Category` in the registry is a binary-size bucket, **not** a user-facing taxonomy, and there is no overflow bucket: **put a new game in whichever worker currently has the most headroom, measured rather than assumed.** `.claude/skills/rebucket-game/scripts/measure.sh` reports every worker's gzip size, and a recent CI run's `tinygo-build` logs give the same figures without a local TinyGo. Adding/modifying a game touches 5 registration points (registry, `games_server.go`, the category sub-package, the `gameRegistry` CLI wiring in `internal/infrastructure/ui/GameManager.go`, and `gameApi.ts`) plus the per-category count assertions in `registry_test.go`. Full per-worker game list, the build-tag split rationale, and build commands: [`docs/cloudflare-workers.md`](docs/cloudflare-workers.md).
+Games ship to six Cloudflare Workers (`casino`, `classic`, `solo`, `extra`, `extra2`, `extra3`) as TinyGo WASM binaries, split purely to keep each binary under the 1 MB gzipped free-tier limit ([ADR-0032](docs/adr/0032-fourth-worker-capacity.md) added the fourth, [ADR-0036](docs/adr/0036-fifth-sixth-worker-capacity.md) the fifth and sixth). The `Category` in the registry is a binary-size bucket, **not** a user-facing taxonomy, and there is no overflow bucket: **put a new game in whichever worker currently has the most headroom, measured rather than assumed.** `.claude/skills/rebucket-game/scripts/measure.sh` reports every worker's gzip size, and a recent CI run's `tinygo-build` logs give the same figures without a local TinyGo. Adding/modifying a game touches 5 registration points (registry, `games_server.go`, the category sub-package, the `gameRegistry` CLI wiring in `internal/infrastructure/ui/GameManager.go`, and `gameApi.ts`) plus the per-category count assertions in `registry_test.go`. Skipping the doc updates now fails CI rather than only review: the README game table, `docs/games.md` and `api/openapi.yaml`'s root `tags:` block are each asserted against the registry. Full per-worker game list, the build-tag split rationale, and build commands: [`docs/cloudflare-workers.md`](docs/cloudflare-workers.md).
 
 ## New Game Addition Checklist
 
@@ -205,5 +205,12 @@ Key routing rules:
 - Code quality, health check → invoke health
 - Per-game improvement proposals → GitHub issues ("各ゲームの改善提案", "全ゲームのissueを作って") → invoke game-improve
 - New-game candidates → GitHub issues ("追加した方が良いゲームを提案", "新規ゲーム候補をissueに") → invoke propose-games
+- Add a new game end-to-end ("ゲームを追加", "add a new game", "implement <game>") → invoke new-game (explicit `/new-game <name> <category>`) — it drives the New Game Addition Checklist so no registration point or hardcoded count is missed
+- Merge a PR ("マージして", "land it", "merge #NNNN") → invoke land-pr (explicit `/land-pr <#>`) — a green tick alone is not the gate; it also checks the head SHA still matches and that the checks actually ran
+- Docs out of sync with the code ("ドキュメントの乖離", "docs are stale") → invoke doc-drift-check (explicit `/doc-drift-check [--fix]`)
+- Coverage of only this branch's changes, before pushing → invoke coverage-gate
+- A test failed and you suspect a flake → invoke flake-ledger
+- Move a game between worker size buckets → invoke rebucket-game
+- DRY/KISS/YAGNI 観点のソース解析を issue 化 → invoke make-issue; CUI 側だけなら invoke make-issue-cli, Web GUI 側だけなら invoke make-issue-web
 - Implement a single GitHub issue end-to-end ("issueに着手して", "#NNNN を対応して", "implement issue #N") → invoke improve-issue (explicit `/improve-issue <#>`)
 - Clear a whole batch of improvement issues, lowest-effort first ("issueバッチを片付けて", "#NNNN〜#MMMM を全部対応", "残りの改善issueを全部やって") → invoke improve-batch (explicit `/improve-batch <range>`)

@@ -159,10 +159,9 @@ func gostopRoundResultStr(g interfaces.GoStopGame) string {
 	if res == nil || res.Winner < 0 {
 		return i18n.T("gostop.roundDraw")
 	}
-	name := "CPU"
-	if p := g.GetPlayer(res.Winner); p != nil && p.GetIsHuman() {
-		name = i18n.T("cuiPlayerYou")
-	}
+	// 人間側だけ i18n を通していて、CPU は英語リテラルのままだった。
+	// 名前の組み立ては他の表示と同じ cuiPlayerName に任せる (#4855)。
+	name := cuiPlayerName(g.GetPlayer(res.Winner), res.Winner)
 	bak := gostopBakStr(res)
 	return i18n.Tf("gostop.roundWin",
 		"name", name,

@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -31,6 +32,9 @@ func setupBridgeCuiMock() *interfaces.MockBridgeGame {
 	m.On("GetContractLevel").Return(1)
 	m.On("GetContractSuit").Return(3)
 	m.On("GetDoubled").Return(0)
+	m.On("BridgeMinLegalBid").Return(1, 1, true).Maybe()
+	m.On("BridgeCanDouble", mock.Anything).Return(false).Maybe()
+	m.On("BridgeCanRedouble", mock.Anything).Return(false).Maybe()
 	m.On("GetDeclarerIdx").Return(0)
 	m.On("GetDummyIdx").Return(2)
 	m.On("GetBidHistory").Return([]*domain.BridgeBidEntry(nil))
@@ -578,4 +582,41 @@ func TestBridgeCuiPresenter_English(t *testing.T) {
 		result := p.HintOutput(m)
 		assert.Contains(t, result, "strategic bid")
 	})
+}
+
+// **どこから上回れるか・ダブルできるかを出す。**Web はボタンを無効化して理由まで
+// 出すのに、CUI は打って拒否されるまで分からなかった (#4903)。
+func TestBridgeCuiPresenter_GuidesTheBidding(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.BridgeCuiPresenter)
+
+	build := func(minOK bool, canDouble, canRedouble bool) *interfaces.MockBridgeGame {
+		m, _ := setupBridgeCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.BridgePhaseBid)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "BridgeMinLegalBid")
+		m.On("BridgeMinLegalBid").Return(3, domain.BridgeBidSuitClub+1, minOK)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "BridgeCanDouble")
+		m.On("BridgeCanDouble", mock.Anything).Return(canDouble)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "BridgeCanRedouble")
+		m.On("BridgeCanRedouble", mock.Anything).Return(canRedouble)
+		return m
+	}
+
+	out := p.Output(build(true, false, false), nil)
+	assert.Contains(t, out, "上回るには")
+	assert.NotContains(t, out, "ダブルできます")
+	assert.NotContains(t, out, "7NT まで埋まっています")
+
+	// 7NT まで埋まったら上は無いと言う。
+	assert.Contains(t, p.Output(build(false, false, false), nil), "7NT まで埋まっています")
+
+	assert.Contains(t, p.Output(build(true, true, false), nil), "ダブルできます")
+
+	// **リダブルできるならリダブルだけを出す。**両方出すと矛盾して読める。
+	both := p.Output(build(true, true, true), nil)
+	assert.Contains(t, both, "リダブルできます")
+	assert.NotContains(t, both, "相手のコントラクトにダブルできます")
 }

@@ -54,8 +54,8 @@ type shitheadRoundState struct {
 	cpuActions  []*ShitheadCpuAction // 人間ターン後のCPU行動履歴
 	humanAction *ShitheadCpuAction   // 人間の最後の行動
 	nextRank    int                  // 次に上がったプレイヤーに付与するランク
-	actionLog   []*ActionLogEntry    // 棋譜
-	turnNumber  int                  // 内部ターン番号 (棋譜用)
+	actionLogBase
+	turnNumber int // 内部ターン番号 (棋譜用)
 }
 
 // Shithead シットヘッドゲームクラス
@@ -179,10 +179,7 @@ func (s *Shithead) GetPlayerCnt() int { return len(s.players) }
 
 // GetPlayer 指定インデックスのプレイヤーを返す
 func (s *Shithead) GetPlayer(i int) *ShitheadPlayer {
-	if i < 0 || i >= len(s.players) {
-		return nil
-	}
-	return s.players[i]
+	return getPlayer(s.players, i)
 }
 
 // GetCurrentTurn 現在の手番プレイヤーインデックス
@@ -736,13 +733,7 @@ func (s *Shithead) recordAction(_ int, action *ShitheadCpuAction, isHuman bool) 
 
 // appendLog adds an entry to the action log.
 func (s *Shithead) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	s.round.actionLog = append(s.round.actionLog, &ActionLogEntry{
-		TurnNumber: s.round.turnNumber,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	s.round.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // buildPlayDetail constructs a human-readable description of a play.
@@ -851,17 +842,17 @@ func (s *Shithead) UnmarshalJSON(data []byte) error {
 	s.players = j.Players
 	s.config = j.Config
 	s.round = shitheadRoundState{
-		currentTurn: j.Round.CurrentTurn,
-		discardPile: j.Round.DiscardPile,
-		stockPile:   j.Round.StockPile,
-		skipNext:    j.Round.SkipNext,
-		sevenActive: j.Round.SevenActive,
-		gameEndFlag: j.Round.GameEndFlag,
-		cpuActions:  j.Round.CpuActions,
-		humanAction: j.Round.HumanAction,
-		nextRank:    j.Round.NextRank,
-		actionLog:   j.Round.ActionLog,
-		turnNumber:  j.Round.TurnNumber,
+		currentTurn:   j.Round.CurrentTurn,
+		discardPile:   j.Round.DiscardPile,
+		stockPile:     j.Round.StockPile,
+		skipNext:      j.Round.SkipNext,
+		sevenActive:   j.Round.SevenActive,
+		gameEndFlag:   j.Round.GameEndFlag,
+		cpuActions:    j.Round.CpuActions,
+		humanAction:   j.Round.HumanAction,
+		nextRank:      j.Round.NextRank,
+		actionLogBase: actionLogBase{actionLog: j.Round.ActionLog},
+		turnNumber:    j.Round.TurnNumber,
 	}
 	if s.round.discardPile == nil {
 		s.round.discardPile = make([]*Card, 0)

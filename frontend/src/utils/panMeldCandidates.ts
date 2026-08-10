@@ -201,3 +201,21 @@ function panCanLayoff(meld: Card[], card: Card): boolean {
   if (panIsValidSet(meld)) return panIsValidSet(candidate);
   return panIsValidRun(candidate);
 }
+
+/**
+ * Ranks whose sets pay a chip to every player — a "valle" (バジェ). Mirrors the
+ * domain's `panValleRanks`.
+ */
+const PAN_VALLE_RANKS: readonly number[] = [3, 5, 7];
+
+/**
+ * True when the cards form a valle: a set (3+ of the same rank) of 3s, 5s or 7s.
+ * Mirrors the domain's `PanIsValleMeld`. Laying one moves every player's chip
+ * count, and neither UI said which meld caused it (#4853).
+ */
+export function isPanValleMeld(cards: readonly Card[]): boolean {
+  if (cards.length < PAN_MELD_MIN) return false;
+  const value = cards[0].value;
+  if (!PAN_VALLE_RANKS.includes(value)) return false;
+  return cards.every((c) => c.value === value);
+}

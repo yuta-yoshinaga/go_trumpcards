@@ -44,5 +44,8 @@
   "hintDecision": "[HINT: {{action}} を推奨 ({{reason}})]",
   "hintActionEntrar": "エントラール",
   "hintActionSolo": "ソロ",
-  "hintActionPass": "パス"
+  "hintActionPass": "パス",
+  "matadorSpadille": "スパディーユ",
+  "matadorManille": "マニーユ",
+  "matadorBasto": "バスト"
 }

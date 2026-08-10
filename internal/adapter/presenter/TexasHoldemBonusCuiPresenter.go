@@ -24,6 +24,20 @@ func (tp *TexasHoldemBonusCuiPresenter) Output(g interfaces.TexasHoldemBonusGame
 	fmt.Fprintf(&sb, "%s\n", i18n.Tf("texasholdembonus.chipsLine", "chips", strconv.Itoa(g.GetChips())))
 	fmt.Fprintf(&sb, "%s\n", i18n.Tf("texasholdembonus.phaseLine", "phase", tp.phaseStr(g.GetPhase())))
 
+	// **アクション中はアンテ額も実コストも画面に無かった (#4698)。**Web は
+	// Play/Raise ボタンに ante×倍率をラベル表示している。CUI 側はアンテを
+	// 暗記して暗算するしかなかった。END の anteLine は結果表示なので別。
+	if cost := g.GetNextBetCost(); cost > 0 {
+		action := i18n.T("texasholdembonus.costRaise")
+		if g.GetPhase() == domain.TexasHoldemBonusPhasePreFlop {
+			action = i18n.T("texasholdembonus.costPlay")
+		}
+		fmt.Fprintf(&sb, "%s\n", i18n.Tf("texasholdembonus.betCostLine",
+			"ante", strconv.Itoa(g.GetAnteBet()),
+			"action", action,
+			"cost", strconv.Itoa(cost)))
+	}
+
 	if community := g.GetCommunity(); len(community) > 0 {
 		sb.WriteString("--- " + color.Bold(i18n.T("texasholdembonus.boardHeader")) + " ---\n")
 		parts := make([]string, len(community))

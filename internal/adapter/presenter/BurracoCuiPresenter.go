@@ -76,6 +76,10 @@ func (p *BurracoCuiPresenter) Output(g interfaces.BurracoGame, lastErr error) st
 		// Top of discard
 		if top := g.GetDiscardTop(); top != nil {
 			b.WriteString(i18n.Tf("burraco.discardLine", "card", cuiCardStr(top)) + "\n")
+			// **山ごと取れるゲームなので中身は公開情報。**Web は details で全部
+			// 見せているのに、CUI は一番上の 1 枚しか出しておらず、「山全体を取る」
+			// 判断を一番上だけで迫っていた (#4833)。
+			b.WriteString(cuiDiscardPileLines(g.GetDiscardPile(), "burraco.discardPileLine"))
 		}
 
 		// Players

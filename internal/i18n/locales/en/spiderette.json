@@ -9,5 +9,6 @@
   "header": "Completed: {{completed}}/{{total}} | Stock: {{stock}} | Score: {{score}}",
   "columnLabel": "Column {{col}}:",
   "gameClearLine": "Game clear! Moves: {{moves}} Score: {{score}}",
-  "hintLine": "Hint: tableau column {{fromCol}}[{{idx}}] → tableau column {{toCol}}"
+  "hintLine": "Hint: tableau column {{fromCol}}[{{idx}}] → tableau column {{toCol}}",
+  "dealsRemaining": " | Deals left: {{count}}"
 }

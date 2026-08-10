@@ -40,13 +40,13 @@ type EasthavenHint struct {
 
 // Easthaven イーストヘイブンゲームクラス
 type Easthaven struct {
-	trumpCards  *TrumpCards
-	tableau     [EasthavenTableauCnt][]*KlondikeTableauCard
-	stock       []*Card
-	foundation  [EasthavenFoundationCnt][]*Card
-	phase       EasthavenPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	tableau    [EasthavenTableauCnt][]*KlondikeTableauCard
+	stock      []*Card
+	foundation [EasthavenFoundationCnt][]*Card
+	phase      EasthavenPhase
+	moveCount  int
+	actionLogBase
 	history     []*easthavenSnapshot
 	isStalemate bool
 }
@@ -384,9 +384,6 @@ func (e *Easthaven) GetTableau() [EasthavenTableauCnt][]*KlondikeTableauCard { r
 // GetFoundation ファンデーション取得
 func (e *Easthaven) GetFoundation() [EasthavenFoundationCnt][]*Card { return e.foundation }
 
-// GetActionLog 棋譜取得
-func (e *Easthaven) GetActionLog() []*ActionLogEntry { return e.actionLog }
-
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (e *Easthaven) GetGameEndFlag() bool { return e.phase != EasthavenPhasePlaying }
 
@@ -430,25 +427,12 @@ func (e *Easthaven) CanUndo() bool {
 
 // UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。膠着状態でなければ0、脱出不可なら-1。
 func (e *Easthaven) UndoToEscape() int {
-	if !e.isStalemate {
-		return 0
-	}
-	for i := len(e.history) - 1; i >= 0; i-- {
-		if !e.history[i].isStalemate {
-			return len(e.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(e.isStalemate, e.history, func(s *easthavenSnapshot) bool { return s.isStalemate })
 }
 
 // UndoN n回連続でアンドゥを実行する。
 func (e *Easthaven) UndoN(n int) error {
-	for i := range n {
-		if err := e.Undo(); err != nil {
-			return fmt.Errorf("undo step %d failed: %w", i+1, err)
-		}
-	}
-	return nil
+	return undoN(e, n)
 }
 
 // --- Private helpers ---
@@ -520,10 +504,7 @@ func (e *Easthaven) isBlack(card *Card) bool {
 
 // autoFlipTableau タブローの最上部の裏カードを自動フリップ
 func (e *Easthaven) autoFlipTableau(col int) {
-	cards := e.tableau[col]
-	if len(cards) > 0 && !cards[len(cards)-1].FaceUp {
-		cards[len(cards)-1].FaceUp = true
-	}
+	autoFlipTopCard(e.tableau[col])
 }
 
 // checkGameClear ゲームクリア判定
@@ -596,13 +577,7 @@ func (e *Easthaven) restoreSnapshot(snap *easthavenSnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (e *Easthaven) appendLog(actionType, detail string, cards []*Card) {
-	e.actionLog = append(e.actionLog, &ActionLogEntry{
-		TurnNumber: e.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	e.appendLogAt(e.moveCount, 0, actionType, detail, cards)
 }
 
 // easthavenMaxSliceLen caps slice sizes during deserialisation.

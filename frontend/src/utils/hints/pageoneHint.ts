@@ -34,7 +34,7 @@ export function getPageOneHint(state: PageOneResponse): HintResult | null {
   if (state.currentPlayerIdx !== humanIdx) return null;
   if (!state.discardTop) return null;
 
-  const playable = human.cards.filter((c) => isPlayable(c, state.discardTop));
+  const playable = human.cards.filter((c) => isPageOnePlayable(c, state.discardTop));
   if (playable.length === 0) {
     return { targetAction: 'draw', reason: 'hint.drawCard', confidence: 'strong' };
   }
@@ -47,8 +47,19 @@ export function getPageOneHint(state: PageOneResponse): HintResult | null {
   };
 }
 
-/** Returns true when `card` matches the discard top by suit or value. */
-function isPlayable(card: Card, top: Card | null): boolean {
-  if (!top) return false;
+/**
+ * True when `card` matches the discard top by suit or value.
+ *
+ * Exported so the page highlights exactly what the hint engine (and the CUI's
+ * IsValidPlay) consider legal, rather than a second copy free to drift (#4744).
+ * @param card - The candidate card.
+ * @param top - The current discard top, if any.
+ * @returns Whether the card may be played.
+ */
+export function isPageOnePlayable(card: Card, top: Card | null): boolean {
+  // An empty discard accepts anything, matching PageOne.isValidPlay. Start()
+  // always seeds the pile so this cannot happen in a live game, but the two
+  // implementations are now compared directly and must not disagree.
+  if (!top) return true;
   return card.design === top.design || card.value === top.value;
 }

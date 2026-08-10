@@ -55,13 +55,13 @@ type KingAlbertConfig struct{}
 
 // KingAlbert ゲームクラス
 type KingAlbert struct {
-	trumpCards  *TrumpCards
-	tableau     [KingAlbertTableauCnt][]*KingAlbertTableauCard
-	reserve     []*Card // 7 slots; nil entries mark depleted cells (one-way)
-	foundation  [KingAlbertFoundationCnt][]*Card
-	phase       KingAlbertPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	tableau    [KingAlbertTableauCnt][]*KingAlbertTableauCard
+	reserve    []*Card // 7 slots; nil entries mark depleted cells (one-way)
+	foundation [KingAlbertFoundationCnt][]*Card
+	phase      KingAlbertPhase
+	moveCount  int
+	actionLogBase
 	history     []*kingAlbertSnapshot
 	isStalemate bool
 }
@@ -467,9 +467,6 @@ func (ka *KingAlbert) GetFoundation() [KingAlbertFoundationCnt][]*Card {
 	return ka.foundation
 }
 
-// GetActionLog 棋譜取得
-func (ka *KingAlbert) GetActionLog() []*ActionLogEntry { return ka.actionLog }
-
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (ka *KingAlbert) GetGameEndFlag() bool { return ka.phase != KingAlbertPhasePlaying }
 
@@ -514,25 +511,12 @@ func (ka *KingAlbert) CanUndo() bool {
 // UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。
 // 膠着状態でなければ0、脱出不可なら-1。
 func (ka *KingAlbert) UndoToEscape() int {
-	if !ka.isStalemate {
-		return 0
-	}
-	for i := len(ka.history) - 1; i >= 0; i-- {
-		if !ka.history[i].isStalemate {
-			return len(ka.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(ka.isStalemate, ka.history, func(s *kingAlbertSnapshot) bool { return s.isStalemate })
 }
 
 // UndoN n回連続でアンドゥを実行する。
 func (ka *KingAlbert) UndoN(n int) error {
-	for i := range n {
-		if err := ka.Undo(); err != nil {
-			return fmt.Errorf("undo step %d failed: %w", i+1, err)
-		}
-	}
-	return nil
+	return undoN(ka, n)
 }
 
 // --- Private helpers ---
@@ -562,12 +546,7 @@ func (ka *KingAlbert) isBlack(card *Card) bool {
 
 // canPlaceOnFoundation ファンデーションにカードを置けるか判定（Aceから同スートで昇順）
 func (ka *KingAlbert) canPlaceOnFoundation(card *Card, fIdx int) bool {
-	pile := ka.foundation[fIdx]
-	if len(pile) == 0 {
-		return card.GetValue() == 1
-	}
-	topCard := pile[len(pile)-1]
-	return card.GetDesign() == topCard.GetDesign() && card.GetValue() == topCard.GetValue()+1
+	return canPlaceOnFoundationPile(ka.foundation[fIdx], card)
 }
 
 // findFoundation カードを置けるファンデーションのインデックスを探す（見つからない場合-1）
@@ -636,13 +615,7 @@ func (ka *KingAlbert) restoreSnapshot(snap *kingAlbertSnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (ka *KingAlbert) appendLog(actionType, detail string, cards []*Card) {
-	ka.actionLog = append(ka.actionLog, &ActionLogEntry{
-		TurnNumber: ka.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	ka.appendLogAt(ka.moveCount, 0, actionType, detail, cards)
 }
 
 // kingAlbertJSON is the JSON wire format for KingAlbert.

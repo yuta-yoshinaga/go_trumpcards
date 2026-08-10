@@ -71,14 +71,14 @@ type NapoleonsSquareHint struct {
 // しているが 12×4 = 48 であって 96 ではない。列構成の方が実際のルールと一致する
 // ため、48 枚をタブローに配り残り 48 枚を山札としている。
 type NapoleonsSquare struct {
-	trumpCards  *TrumpCards
-	tableau     [NapoleonsSquareTableauCnt][]*NapoleonsSquareTableauCard
-	stock       []*Card
-	waste       []*Card
-	foundation  [NapoleonsSquareFoundationCnt][]*Card
-	phase       NapoleonsSquarePhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	tableau    [NapoleonsSquareTableauCnt][]*NapoleonsSquareTableauCard
+	stock      []*Card
+	waste      []*Card
+	foundation [NapoleonsSquareFoundationCnt][]*Card
+	phase      NapoleonsSquarePhase
+	moveCount  int
+	actionLogBase
 	history     []*napoleonsSquareSnapshot
 	isStalemate bool
 }
@@ -433,31 +433,12 @@ func (ns *NapoleonsSquare) CanUndo() bool { return len(ns.history) > 0 }
 
 // UndoN n 手戻す
 func (ns *NapoleonsSquare) UndoN(n int) error {
-	if n <= 0 {
-		return errors.New("n must be positive")
-	}
-	if n > len(ns.history) {
-		return errors.New("not enough history")
-	}
-	for range n {
-		if err := ns.Undo(); err != nil {
-			return err
-		}
-	}
-	return nil
+	return undoNChecked(ns, n, len(ns.history))
 }
 
 // UndoToEscape 膠着状態から抜けるのに必要なアンドゥ回数（膠着でなければ 0、不可なら -1）
 func (ns *NapoleonsSquare) UndoToEscape() int {
-	if !ns.isStalemate {
-		return 0
-	}
-	for i := len(ns.history) - 1; i >= 0; i-- {
-		if !ns.history[i].isStalemate {
-			return len(ns.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(ns.isStalemate, ns.history, func(s *napoleonsSquareSnapshot) bool { return s.isStalemate })
 }
 
 // AllFaceUp ナポレオンズ・スクエアは常に全札が表向き
@@ -484,9 +465,6 @@ func (ns *NapoleonsSquare) GetTableau() [NapoleonsSquareTableauCnt][]*NapoleonsS
 func (ns *NapoleonsSquare) GetFoundation() [NapoleonsSquareFoundationCnt][]*Card {
 	return ns.foundation
 }
-
-// GetActionLog 棋譜取得
-func (ns *NapoleonsSquare) GetActionLog() []*ActionLogEntry { return ns.actionLog }
 
 // GetGameEndFlag ゲーム終了フラグ
 func (ns *NapoleonsSquare) GetGameEndFlag() bool { return ns.phase != NapoleonsSquarePhasePlaying }
@@ -559,14 +537,7 @@ func (ns *NapoleonsSquare) findFoundation(card *Card) int {
 
 // afterMove 手数・棋譜・終了判定をまとめて進める
 func (ns *NapoleonsSquare) afterMove(actionType, detail string, card *Card) {
-	ns.moveCount++
-	var cards []*Card
-	if card != nil {
-		cards = []*Card{card}
-	}
-	ns.appendLog(actionType, detail, cards)
-	ns.checkGameClear()
-	ns.checkStalemate()
+	afterMove(&ns.moveCount, ns, actionType, detail, card)
 }
 
 // checkGameClear 8 つの基礎札がすべて K まで積み上がったか
@@ -609,13 +580,7 @@ func (ns *NapoleonsSquare) takeSnapshot() {
 
 // appendLog 棋譜エントリを追加
 func (ns *NapoleonsSquare) appendLog(actionType, detail string, cards []*Card) {
-	ns.actionLog = append(ns.actionLog, &ActionLogEntry{
-		TurnNumber: ns.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	ns.appendLogAt(ns.moveCount, 0, actionType, detail, cards)
 }
 
 // napoleonsSquareMaxSliceLen caps slice sizes during deserialisation.

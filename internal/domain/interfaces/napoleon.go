@@ -89,4 +89,6 @@ type NapoleonGame interface {
 	GetValidPlayIndices(playerIdx int) []int
 	// GetHint ヒントを取得する
 	GetHint() *domain.NapoleonHint
+	// GetHumanIdx 人間プレイヤーのインデックスを返す (-1=なし)
+	GetHumanIdx() int
 }

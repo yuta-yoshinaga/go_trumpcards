@@ -76,6 +76,11 @@ func (p *OsmosisCuiPresenter) Output(o interfaces.OsmosisGame, lastErr error) st
 
 		switch o.GetPhase() {
 		case domain.OsmosisPhasePlaying:
+			// 手詰まりでもフェーズは Playing のままなので、明示しないと
+			// プレイヤーは自力で気づくまで無駄にめくり続ける (#4808)。
+			if o.IsStalemate() {
+				b.WriteString(color.Red(i18n.T("cuiSolitaireStalemate")) + "\n")
+			}
 			b.WriteString(i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(o.GetMoveCount())) + "\n")
 		case domain.OsmosisPhaseGameClear:
 			b.WriteString(color.Green(i18n.T("cuiSolitaireGameClear")) + " " +

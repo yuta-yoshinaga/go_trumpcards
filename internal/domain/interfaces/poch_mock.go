@@ -106,3 +106,12 @@ func (_m *MockPochGame) GetActionLog() []*domain.ActionLogEntry {
 	}
 	return nil
 }
+
+// PochValidPlays モック
+func (_m *MockPochGame) PochValidPlays(player int) []int {
+	ret := _m.Called(player)
+	if v, ok := ret.Get(0).([]int); ok {
+		return v
+	}
+	return nil
+}

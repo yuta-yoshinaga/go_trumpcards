@@ -31,6 +31,8 @@ type CatchTenGame interface {
 	GetPhase() domain.CatchTenPhase
 	// IsHumanTurn 現在の手番が人間かを返す
 	IsHumanTurn() bool
+	// GetValidPlayIndices プレイ可能なカードのインデックスを返す
+	GetValidPlayIndices(playerIdx int) []int
 	// GetRoundNumber 現在のラウンド番号を取得する
 	GetRoundNumber() int
 	// GetTrickNumber 現在のトリック番号を取得する

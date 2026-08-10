@@ -21,5 +21,15 @@
   "phaseGameEnd": "Phase: game over",
   "gameEndDraw": "Draw!",
   "gameEndHumanLost": "You are the durak (loser)!",
-  "gameEndCpuLost": "CPU {{idx}} is the durak (loser)!"
+  "gameEndCpuLost": "CPU {{idx}} is the durak (loser)!",
+  "hintNone": "No hint available",
+  "hintCard": "Suggested: [{{idx}}] {{card}} ({{reason}})",
+  "hintDefend": "Suggested: beat attack #{{atk}} with [{{idx}}] {{card}} ({{reason}})",
+  "hintTake": "Suggested: pick up the cards ({{reason}})",
+  "hintPass": "Suggested: pass ({{reason}})",
+  "hintReasonAttackWeakest": "lead your weakest non-trump",
+  "hintReasonAttackAdditional": "you can pile on the same rank",
+  "hintReasonDefendBeat": "this card beats it",
+  "hintReasonTakeCannotBeat": "nothing in hand beats it",
+  "hintReasonPassNoAddition": "nothing left to pile on"
 }

@@ -49,12 +49,12 @@ type BeleagueredCastleConfig struct{}
 
 // BeleagueredCastle ゲームクラス
 type BeleagueredCastle struct {
-	trumpCards  *TrumpCards
-	tableau     [BeleagueredCastleTableauCnt][]*BeleagueredCastleTableauCard
-	foundation  [BeleagueredCastleFoundationCnt][]*Card
-	phase       BeleagueredCastlePhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	tableau    [BeleagueredCastleTableauCnt][]*BeleagueredCastleTableauCard
+	foundation [BeleagueredCastleFoundationCnt][]*Card
+	phase      BeleagueredCastlePhase
+	moveCount  int
+	actionLogBase
 	history     []*beleagueredCastleSnapshot
 	isStalemate bool
 }
@@ -318,9 +318,6 @@ func (bc *BeleagueredCastle) GetFoundation() [BeleagueredCastleFoundationCnt][]*
 	return bc.foundation
 }
 
-// GetActionLog 棋譜取得
-func (bc *BeleagueredCastle) GetActionLog() []*ActionLogEntry { return bc.actionLog }
-
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (bc *BeleagueredCastle) GetGameEndFlag() bool { return bc.phase != BeleagueredCastlePhasePlaying }
 
@@ -362,25 +359,12 @@ func (bc *BeleagueredCastle) CanUndo() bool {
 // UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。
 // 膠着状態でなければ0、脱出不可なら-1。
 func (bc *BeleagueredCastle) UndoToEscape() int {
-	if !bc.isStalemate {
-		return 0
-	}
-	for i := len(bc.history) - 1; i >= 0; i-- {
-		if !bc.history[i].isStalemate {
-			return len(bc.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(bc.isStalemate, bc.history, func(s *beleagueredCastleSnapshot) bool { return s.isStalemate })
 }
 
 // UndoN n回連続でアンドゥを実行する。
 func (bc *BeleagueredCastle) UndoN(n int) error {
-	for i := range n {
-		if err := bc.Undo(); err != nil {
-			return fmt.Errorf("undo step %d failed: %w", i+1, err)
-		}
-	}
-	return nil
+	return undoN(bc, n)
 }
 
 // --- Private helpers ---
@@ -400,12 +384,7 @@ func (bc *BeleagueredCastle) canPlaceOnTableau(card *Card, col int) bool {
 
 // canPlaceOnFoundation ファンデーションにカードを置けるか判定
 func (bc *BeleagueredCastle) canPlaceOnFoundation(card *Card, fIdx int) bool {
-	pile := bc.foundation[fIdx]
-	if len(pile) == 0 {
-		return card.GetValue() == 1
-	}
-	topCard := pile[len(pile)-1]
-	return card.GetDesign() == topCard.GetDesign() && card.GetValue() == topCard.GetValue()+1
+	return canPlaceOnFoundationPile(bc.foundation[fIdx], card)
 }
 
 // findFoundation カードを置けるファンデーションのインデックスを探す（見つからない場合-1）
@@ -471,13 +450,7 @@ func (bc *BeleagueredCastle) restoreSnapshot(snap *beleagueredCastleSnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (bc *BeleagueredCastle) appendLog(actionType, detail string, cards []*Card) {
-	bc.actionLog = append(bc.actionLog, &ActionLogEntry{
-		TurnNumber: bc.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	bc.appendLogAt(bc.moveCount, 0, actionType, detail, cards)
 }
 
 // beleagueredCastleJSON is the JSON wire format for BeleagueredCastle.

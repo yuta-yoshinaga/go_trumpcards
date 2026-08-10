@@ -104,6 +104,14 @@ func (p *SevenCardStudCuiPresenter) Output(s interfaces.SevenCardStudGame, lastE
 						}
 						b.WriteString(i18n.Tf(key, "cards", cuiCardSliceStrEmoji(low)) + "\n")
 					}
+				} else if rank, best := player.PeekBestHand(); len(best) > 0 {
+					// **Web は常時「いまの最善役」を出しているのに、ハイ戦の CUI は
+					// ショーダウンまで役名を一切出していなかった (#4695)。**3rd〜7th
+					// street の間ずっと自分の手が何に達しているか分からない。
+					// PeekBestHand は状態を変えないので、描画から呼んで安全。
+					b.WriteString(i18n.Tf("sevencardstud.currentBestHand",
+						"hand", cuiPokerHandName(rank),
+						"cards", cuiCardSliceStrEmoji(best)) + "\n")
 				}
 			}
 		}
@@ -161,7 +169,7 @@ func (p *SevenCardStudCuiPresenter) Output(s interfaces.SevenCardStudGame, lastE
 				case r.HandName != "":
 					b.WriteString(i18n.Tf("sevencardstud.resultHand",
 						"name", name,
-						"hand", r.HandName,
+						"hand", cuiPokerHandName(r.HandRank),
 						"kickers", kickers))
 				default:
 					b.WriteString(i18n.Tf("sevencardstud.resultName", "name", name))
@@ -268,11 +276,65 @@ func sevenCardStudThirdStreetAdvice(cards []*domain.Card) (cont bool, reasonKey 
 	return false, "sevencardstud.hintReasonFold"
 }
 
-// HintOutput advises continue/fold on third street using basic starting-hand
-// strategy. It applies to the high game only (Razz inverts hand strength, and
-// already surfaces the best low), and to the human's turn on third street.
+// razzLowCardMax はラズで「ロー札」と数える上限 (A-8)。フロントの
+// razzHint.ts の LOW_CARD_MAX と同じ。
+const razzLowCardMax = 8
+
+// razzBettingPhases はラズのヒントを出すストリート。
+//
+// **ハイの助言と違って全ストリートで出す。**フロントの getRazzHint が
+// そうなっている。ラズは引くたびにロー札の枚数が変わるので、3rd だけでは
+// 足りない。
+var razzBettingPhases = map[int]bool{
+	domain.SevenCardStudPhaseThirdStreet:   true,
+	domain.SevenCardStudPhaseFourthStreet:  true,
+	domain.SevenCardStudPhaseFifthStreet:   true,
+	domain.SevenCardStudPhaseSixthStreet:   true,
+	domain.SevenCardStudPhaseSeventhStreet: true,
+}
+
+// razzAdvice はラズの助言を返す。判定はフロントの getRazzHint と同じ規則:
+// ペアがあれば降りる、ロー札が十分あればレイズ、そこそこならコール。
+//
+// **ラズは役の強弱が逆。**ハイの基本戦略 (ペアがあれば続行) をそのまま
+// 当てると、最悪の手で押すことになる。
+func razzAdvice(cards []*domain.Card) (actionKey, reasonKey string) {
+	seen := map[int]bool{}
+	low := 0
+	for _, c := range cards {
+		v := c.GetValue()
+		if seen[v] {
+			return "sevencardstud.hintFold", "sevencardstud.hintReasonRazzPair"
+		}
+		seen[v] = true
+		if v <= razzLowCardMax {
+			low++
+		}
+	}
+	total := len(cards)
+	if low >= min(5, total) {
+		return "sevencardstud.hintRaise", "sevencardstud.hintReasonRazzStrong"
+	}
+	if low >= min(4, total-1) {
+		return "sevencardstud.hintCall", "sevencardstud.hintReasonRazzDecent"
+	}
+	return "sevencardstud.hintFold", "sevencardstud.hintReasonRazzWeak"
+}
+
+// HintOutput advises on the human's turn. The high game uses basic
+// starting-hand strategy on third street; Razz inverts hand strength, so it
+// gets its own fold/call/raise advice on every betting street (#4703).
 func (p *SevenCardStudCuiPresenter) HintOutput(s interfaces.SevenCardStudGame) string {
-	if s.GetIsLowball() || !s.IsHumanTurn() || s.GetPhase() != domain.SevenCardStudPhaseThirdStreet {
+	if !s.IsHumanTurn() {
+		return i18n.T("sevencardstud.hintNone") + "\n"
+	}
+	if s.GetIsLowball() {
+		return razzHintOutput(s)
+	}
+	if s.GetIsHiLo() {
+		return sevenCardStudHiLoHintOutput(s)
+	}
+	if s.GetPhase() != domain.SevenCardStudPhaseThirdStreet {
 		return i18n.T("sevencardstud.hintNone") + "\n"
 	}
 	player := s.GetPlayer(s.GetCurrentTurn())
@@ -286,4 +348,90 @@ func (p *SevenCardStudCuiPresenter) HintOutput(s interfaces.SevenCardStudGame) s
 	}
 	return color.Yellow(i18n.Tf("sevencardstud.hint",
 		"action", action, "reason", i18n.T(reasonKey))) + "\n"
+}
+
+// sevenCardStudLowQualifier は Hi-Lo でローに数える上限 (8 or Better)。
+const sevenCardStudLowQualifier = 8
+
+// sevenCardStudLowCardsNeeded はロー成立に必要な枚数。
+const sevenCardStudLowCardsNeeded = 5
+
+// sevenCardStudHiLoHintOutput は Hi-Lo (8 or Better) 向けのヒント行を返す。
+//
+// **ハイ専用の基本戦略をそのまま当てない (#4704)。**Hi-Lo はポットの半分が
+// ローに行くので、ハイとしては弱くてもロー札がそろっていれば続ける価値がある。
+// ハイ用の判定 (ペア/3フラッシュ/3ストレート/3ハイカード) だけで見ると、
+// 勝ち目のある手を降ろすことになる。
+//
+// **ハイと違って全ストリートで出す。**ロー札は5枚必要なので、3枚しか無い
+// 3rd street ではロー分岐に永遠に届かない。フロントの getSevenCardStudHint も
+// 全ベッティングストリートで判定している。
+func sevenCardStudHiLoHintOutput(s interfaces.SevenCardStudGame) string {
+	if !razzBettingPhases[s.GetPhase()] {
+		return i18n.T("sevencardstud.hintNone") + "\n"
+	}
+	player := s.GetPlayer(s.GetCurrentTurn())
+	if player == nil || player.GetFolded() || len(player.GetAllCards()) == 0 {
+		return i18n.T("sevencardstud.hintNone") + "\n"
+	}
+	cards := player.GetAllCards()
+	action, reasonKey := i18n.T("sevencardstud.hintFold"), "sevencardstud.hintReasonFold"
+	switch {
+	case sevenCardStudHasPair(cards):
+		action, reasonKey = i18n.T("sevencardstud.hintContinue"), "sevencardstud.hintReasonPair"
+	case sevenCardStudLowCards(cards) >= sevenCardStudLowCardsNeeded:
+		action, reasonKey = i18n.T("sevencardstud.hintContinue"), "sevencardstud.hintReasonHiLoLow"
+	case sevenCardStudHasHighCard(cards):
+		action, reasonKey = i18n.T("sevencardstud.hintContinue"), "sevencardstud.hintReasonHigh"
+	}
+	return color.Yellow(i18n.Tf("sevencardstud.hint",
+		"action", action, "reason", i18n.T(reasonKey))) + "\n"
+}
+
+// sevenCardStudHasPair は同じランクが2枚以上あるかを返す。
+func sevenCardStudHasPair(cards []*domain.Card) bool {
+	seen := map[int]bool{}
+	for _, c := range cards {
+		if seen[c.GetValue()] {
+			return true
+		}
+		seen[c.GetValue()] = true
+	}
+	return false
+}
+
+// sevenCardStudLowCards は8以下の札の枚数を返す。**エースはローの最強札**
+// なので 1 のまま数えて問題ない。
+func sevenCardStudLowCards(cards []*domain.Card) int {
+	n := 0
+	for _, c := range cards {
+		if c.GetValue() <= sevenCardStudLowQualifier {
+			n++
+		}
+	}
+	return n
+}
+
+// sevenCardStudHasHighCard は 10 以上またはエースを持っているかを返す。
+func sevenCardStudHasHighCard(cards []*domain.Card) bool {
+	for _, c := range cards {
+		if v := c.GetValue(); v == 1 || v >= 10 {
+			return true
+		}
+	}
+	return false
+}
+
+// razzHintOutput はラズ (Lowball) 向けのヒント行を返す。
+func razzHintOutput(s interfaces.SevenCardStudGame) string {
+	if !razzBettingPhases[s.GetPhase()] {
+		return i18n.T("sevencardstud.hintNone") + "\n"
+	}
+	player := s.GetPlayer(s.GetCurrentTurn())
+	if player == nil || player.GetFolded() || len(player.GetAllCards()) == 0 {
+		return i18n.T("sevencardstud.hintNone") + "\n"
+	}
+	actionKey, reasonKey := razzAdvice(player.GetAllCards())
+	return color.Yellow(i18n.Tf("sevencardstud.hint",
+		"action", i18n.T(actionKey), "reason", i18n.T(reasonKey))) + "\n"
 }

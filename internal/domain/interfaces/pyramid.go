@@ -48,6 +48,10 @@ type PyramidGame interface {
 	IsExposed(row, col int) bool
 	// AllRemoved 全ピラミッドカードが除去されたかを返す
 	AllRemoved() bool
+	// IsRemovableKing いま単独で除去できるキングかを返す
+	IsRemovableKing(row, col int) bool
+	// IsWasteKingRemovable ウェイストのトップが単独で除去できるキングかを返す
+	IsWasteKingRemovable() bool
 	// IsStalemate 手詰まり状態を取得する
 	IsStalemate() bool
 }

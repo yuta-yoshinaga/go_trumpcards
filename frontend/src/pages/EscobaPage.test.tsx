@@ -299,6 +299,41 @@ describe('EscobaPage', () => {
     expect(counter).toHaveTextContent('16 / 15');
     expect(counter.className).toContain('text-ds-error');
   });
+
+  it('does not show the escoba badge on initial load', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(makeEscobaState());
+    renderWithProviders(<EscobaPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    expect(screen.queryByTestId('escoba-celebration')).not.toBeInTheDocument();
+  });
+
+  it('flashes the badge when a sweep lands, and clears it when the round resets', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(makeEscobaState());
+    renderWithProviders(<EscobaPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+
+    // The human sweeps: escobaCount rises from 0 to 1.
+    const swept = makeEscobaState();
+    swept.players = swept.players.map((p) => (p.isHuman ? { ...p, escobaCount: 1 } : p));
+    mockExec.mockResolvedValue(swept);
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    fireEvent.click(screen.getByTestId('table-card-0'));
+    fireEvent.click(screen.getByTestId('take-button'));
+    const badge = await screen.findByTestId('escoba-celebration');
+    // Escoba has no teams, so the emphasised label is the human's own sweep.
+    expect(badge).toHaveTextContent('エスコバ！ あなた');
+
+    // A new round drops the count back to 0; the badge must not linger or re-fire.
+    mockExec.mockResolvedValue(makeEscobaState());
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    fireEvent.click(screen.getByTestId('table-card-0'));
+    fireEvent.click(screen.getByTestId('take-button'));
+    await waitFor(() => expect(screen.queryByTestId('escoba-celebration')).not.toBeInTheDocument());
+  });
 });
 
 describe('escoba capture-sum helpers', () => {

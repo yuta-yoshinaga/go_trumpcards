@@ -104,7 +104,7 @@ type Tysiac struct {
 	lastTrickWinner  int                   // 最終トリック勝者 (-1=未確定)
 	gameEndFlag      bool
 	winnerPlayer     int // -1=未確定
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewTysiac コンストラクタ
@@ -252,11 +252,11 @@ func (g *Tysiac) applyBid(playerIdx int, raise bool) {
 	if raise {
 		g.currentBid += TysiacBidStep
 		g.appendLog(playerIdx, "bid",
-			fmt.Sprintf("%s bids %d", g.playerName(playerIdx), g.currentBid), nil)
+			fmt.Sprintf("%s bids %d", playerName(g.players, playerIdx), g.currentBid), nil)
 	} else {
 		g.bidPassed[playerIdx] = true
 		g.appendLog(playerIdx, "bid_pass",
-			fmt.Sprintf("%s passes", g.playerName(playerIdx)), nil)
+			fmt.Sprintf("%s passes", playerName(g.players, playerIdx)), nil)
 	}
 
 	if g.activeBidders() <= 1 {
@@ -294,7 +294,7 @@ func (g *Tysiac) finalizeAuction() {
 	g.declarerIdx = declarer
 	g.contract = g.currentBid
 	g.appendLog(declarer, "declarer",
-		fmt.Sprintf("%s is declarer with contract %d", g.playerName(declarer), g.contract), nil)
+		fmt.Sprintf("%s is declarer with contract %d", playerName(g.players, declarer), g.contract), nil)
 
 	g.startTalon()
 }
@@ -355,7 +355,7 @@ func (g *Tysiac) startTalon() {
 	g.talon = nil
 	tysiacSortHand(g.players[g.declarerIdx])
 	g.appendLog(g.declarerIdx, "talon_take",
-		fmt.Sprintf("%s takes the talon", g.playerName(g.declarerIdx)), nil)
+		fmt.Sprintf("%s takes the talon", playerName(g.players, g.declarerIdx)), nil)
 	g.discardCount = 0
 	g.currentPlayerIdx = g.declarerIdx
 
@@ -395,7 +395,7 @@ func (g *Tysiac) giveDiscard(cardIndex int) {
 	g.players[recipient].AddCard(card)
 	tysiacSortHand(g.players[recipient])
 	g.appendLog(g.declarerIdx, "discard",
-		fmt.Sprintf("%s gives a card to %s", g.playerName(g.declarerIdx), g.playerName(recipient)), nil)
+		fmt.Sprintf("%s gives a card to %s", playerName(g.players, g.declarerIdx), playerName(g.players, recipient)), nil)
 	g.discardCount++
 }
 
@@ -523,13 +523,13 @@ func (g *Tysiac) maybeDeclareMarriage(playerIdx int, card *Card) {
 	g.roundMarriage[playerIdx] += pts
 	g.appendLog(playerIdx, "marriage",
 		fmt.Sprintf("%s declares a %s marriage (+%d, trump=%s)",
-			g.playerName(playerIdx), tysiacSuitName(suit), pts, tysiacSuitName(suit)), nil)
+			playerName(g.players, playerIdx), tysiacSuitName(suit), pts, tysiacSuitName(suit)), nil)
 }
 
 // playCard カードをプレイする共通処理。
 func (g *Tysiac) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == TysiacPlayerCnt {
 		g.phase = TysiacPhaseTrickEnd
@@ -553,7 +553,7 @@ func (g *Tysiac) ResolveTrick() {
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.roundCardPts[winnerIdx] += pts
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (+%d)", g.playerName(winnerIdx), g.trickNumber, pts), trickCards)
+		fmt.Sprintf("%s wins trick %d (+%d)", playerName(g.players, winnerIdx), g.trickNumber, pts), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= TysiacTrickCount {
@@ -594,7 +594,7 @@ func (g *Tysiac) ScoreRound() {
 	}
 	g.appendLog(-1, "round_score",
 		fmt.Sprintf("round %d scored: declarer(%s) contract=%d",
-			g.roundNumber, g.playerName(g.declarerIdx), g.contract), nil)
+			g.roundNumber, playerName(g.players, g.declarerIdx), g.contract), nil)
 	g.checkGameEnd()
 }
 
@@ -616,7 +616,7 @@ func (g *Tysiac) checkGameEnd() {
 		g.gameEndFlag = true
 		g.winnerPlayer = leader
 		g.phase = TysiacPhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", g.playerName(leader)), nil)
+		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
 	}
 }
 
@@ -677,13 +677,7 @@ func (g *Tysiac) canOvertrump(playerIdx, rank int) bool {
 
 // playerHasSuit プレイヤーが指定スートのカードを持っているか。
 func (g *Tysiac) playerHasSuit(playerIdx, design int) bool {
-	p := g.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return handHasSuit(g.players[playerIdx], design)
 }
 
 // playerHasCard プレイヤーが指定スート・ランクの札を持っているか。
@@ -804,10 +798,7 @@ func tysiacSuitName(suit int) string {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す。
 func (g *Tysiac) getValidPlayIndices(playerIdx int) []int {
-	player := g.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return g.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(g.players[playerIdx], func(c *Card) bool { return g.validatePlay(playerIdx, c) == nil })
 }
 
 // --- Misc helpers ---
@@ -837,25 +828,9 @@ func tysiacSortHand(p *TysiacPlayer) {
 	}
 }
 
-// playerName プレイヤー名を返す。
-func (g *Tysiac) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
 // indexOfPlayerInTrick currentTrick 内で playerIdx の札の位置を返す (-1=なし)。
 func (g *Tysiac) indexOfPlayerInTrick(playerIdx int) int {
-	for i, tc := range g.currentTrick {
-		if tc.PlayerIdx == playerIdx {
-			return i
-		}
-	}
-	return -1
+	return indexOfPlayerInTrick(g.currentTrick, playerIdx)
 }
 
 // trickTopRank 現在のトリック勝者の札のランクを返す。見つからない場合は極小値。
@@ -865,27 +840,6 @@ func (g *Tysiac) trickTopRank(winnerIdx int) int {
 		return -1 << 30
 	}
 	return g.tysiacRank(g.currentTrick[idx].Card)
-}
-
-// findHumanIdx 人間プレイヤーのインデックス (-1=なし)。
-func (g *Tysiac) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
-// appendLog 棋譜にエントリを追加する。
-func (g *Tysiac) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- CPU AI (play) ---
@@ -913,7 +867,7 @@ func (g *Tysiac) cpuPlaySmart(playerIdx int, valid []int) int {
 		if idx := g.cpuMarriageLead(playerIdx, valid); idx >= 0 {
 			return idx
 		}
-		return g.minBy(player, valid, func(c *Card) int {
+		return pickLowest(player, valid, func(c *Card) int {
 			return tysiacCardPoints(c)*100 + g.tysiacRank(c)
 		})
 	}
@@ -925,9 +879,9 @@ func (g *Tysiac) cpuPlaySmart(playerIdx int, valid []int) int {
 	}
 	winners := tysiacFilter(valid, func(idx int) bool { return g.tysiacRank(player.GetCard(idx)) > topRank })
 	if trickPts > 0 && len(winners) > 0 {
-		return g.minBy(player, winners, func(c *Card) int { return g.tysiacRank(c) })
+		return pickLowest(player, winners, func(c *Card) int { return g.tysiacRank(c) })
 	}
-	return g.minBy(player, valid, func(c *Card) int {
+	return pickLowest(player, valid, func(c *Card) int {
 		return tysiacCardPoints(c)*100 + g.tysiacRank(c)
 	})
 }
@@ -954,19 +908,6 @@ func (g *Tysiac) cpuMarriageLead(playerIdx int, valid []int) int {
 	return best
 }
 
-// minBy score が最小となるインデックスを返す。
-func (g *Tysiac) minBy(player *TysiacPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s < bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
-}
-
 // tysiacFilter 述語を満たすインデックスを抽出する。
 func tysiacFilter(indices []int, pred func(int) bool) []int {
 	var out []int
@@ -982,7 +923,7 @@ func tysiacFilter(indices []int, pred func(int) bool) []int {
 
 // GetHint 人間プレイヤーの手番における推奨アクションを返す。
 func (g *Tysiac) GetHint() *TysiacHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 {
 		return nil
 	}
@@ -1132,18 +1073,12 @@ func (g *Tysiac) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *Tysiac) GetPlayer(i int) *TysiacPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // IsHumanTurn 現在の手番 (プレイ) が人間か。
 func (g *Tysiac) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // IsHumanBidTurn 現在のビッド手番が人間か。
@@ -1162,9 +1097,6 @@ func (g *Tysiac) GetConfig() TysiacConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *Tysiac) SetConfig(cfg TysiacConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *Tysiac) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetPlayableIndices プレイ可能なカードのインデックス一覧を返す。
 func (g *Tysiac) GetPlayableIndices(playerIdx int) []int {

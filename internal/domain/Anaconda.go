@@ -145,7 +145,7 @@ type anacondaState struct {
 	result          AnacondaResult
 	gameEndFlag     bool
 	scored          bool // ラウンド結果を確定済みか (二重確定防止)
-	actionLog       []*ActionLogEntry
+	actionLogBase
 }
 
 // Anaconda はアナコンダの状態を保持する集約ルート。
@@ -166,7 +166,7 @@ func NewAnaconda(trumpCards *TrumpCards, players []*AnacondaPlayer, config Anaco
 			phase:          AnacondaPhasePass,
 			winnerIdx:      -1,
 			matchWinnerIdx: -1,
-			actionLog:      make([]*ActionLogEntry, 0),
+			actionLogBase:  actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 		},
 	}
 }
@@ -200,7 +200,7 @@ func (g *Anaconda) Reset() {
 		dealerIdx:      0,
 		winnerIdx:      -1,
 		matchWinnerIdx: -1,
-		actionLog:      make([]*ActionLogEntry, 0),
+		actionLogBase:  actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 	}
 	g.startRound()
 }
@@ -303,7 +303,7 @@ func (g *Anaconda) executePass(humanIndices []int) {
 		}
 		outgoing[k] = p.RemoveCards(idxs)
 		g.appendLog(seat, "pass",
-			fmt.Sprintf("%s passes %d card(s) left", g.playerName(seat), len(outgoing[k])), append([]*Card(nil), outgoing[k]...))
+			fmt.Sprintf("%s passes %d card(s) left", playerName(g.players, seat), len(outgoing[k])), append([]*Card(nil), outgoing[k]...))
 	}
 	for k := range participants {
 		recipient := participants[(k+1)%n]
@@ -378,7 +378,7 @@ func (g *Anaconda) applyKeep(seat int, keep []int) {
 	}
 	removed := p.RemoveCards(discard)
 	g.appendLog(seat, "keep",
-		fmt.Sprintf("%s discards %d card(s)", g.playerName(seat), len(removed)), append([]*Card(nil), removed...))
+		fmt.Sprintf("%s discards %d card(s)", playerName(g.players, seat), len(removed)), append([]*Card(nil), removed...))
 }
 
 // cpuBestKeepIndices は 7 枚から最良の 5 枚を残すインデックス列を返す (捨てる 2 枚を総当り)。
@@ -497,7 +497,7 @@ func (g *Anaconda) applyCall(idx int) {
 	}
 	g.state.actedSinceRaise++
 	g.state.actionCount++
-	g.appendLog(idx, "call", fmt.Sprintf("%s calls %d (pot %d)", g.playerName(idx), need, g.state.pot), nil)
+	g.appendLog(idx, "call", fmt.Sprintf("%s calls %d (pot %d)", playerName(g.players, idx), need, g.state.pot), nil)
 	g.advanceOrClose(idx)
 }
 
@@ -518,7 +518,7 @@ func (g *Anaconda) applyRaise(idx int) {
 	g.state.pot += need
 	g.state.actedSinceRaise = 1
 	g.state.actionCount++
-	g.appendLog(idx, "raise", fmt.Sprintf("%s raises to %d, pays %d (pot %d)", g.playerName(idx), newBet, need, g.state.pot), nil)
+	g.appendLog(idx, "raise", fmt.Sprintf("%s raises to %d, pays %d (pot %d)", playerName(g.players, idx), newBet, need, g.state.pot), nil)
 	g.advanceOrClose(idx)
 }
 
@@ -526,7 +526,7 @@ func (g *Anaconda) applyRaise(idx int) {
 func (g *Anaconda) applyFold(idx int) {
 	g.players[idx].SetFolded(true)
 	g.state.actionCount++
-	g.appendLog(idx, "fold", fmt.Sprintf("%s folds", g.playerName(idx)), nil)
+	g.appendLog(idx, "fold", fmt.Sprintf("%s folds", playerName(g.players, idx)), nil)
 	g.advanceOrClose(idx)
 }
 
@@ -568,7 +568,7 @@ func (g *Anaconda) resolveShowdown() {
 	if winner >= 0 {
 		g.players[winner].AddChips(g.state.pot)
 		g.appendLog(winner, "win",
-			fmt.Sprintf("%s wins the pot (%d)", g.playerName(winner), g.state.pot), nil)
+			fmt.Sprintf("%s wins the pot (%d)", playerName(g.players, winner), g.state.pot), nil)
 	}
 	g.setHumanResult(winner)
 	g.state.pot = 0
@@ -605,7 +605,7 @@ func (g *Anaconda) endGame() {
 	g.state.phase = AnacondaPhaseResult
 	g.state.matchWinnerIdx = g.richestIdx()
 	g.appendLog(g.state.matchWinnerIdx, "game_end",
-		fmt.Sprintf("%s wins the game", g.playerName(g.state.matchWinnerIdx)), nil)
+		fmt.Sprintf("%s wins the game", playerName(g.players, g.state.matchWinnerIdx)), nil)
 }
 
 // --- CPU ---
@@ -835,69 +835,27 @@ func (g *Anaconda) participantSeats() []int {
 
 // activeSeats は未フォールド・非脱落プレイヤーのインデックス列 (昇順) を返す。
 func (g *Anaconda) activeSeats() []int {
-	out := make([]int, 0, len(g.players))
-	for i, p := range g.players {
-		if !p.GetOut() && !p.GetFolded() {
-			out = append(out, i)
-		}
-	}
-	return out
+	return collectValidIndices(len(g.players), func(i int) bool { p := g.players[i]; return !p.GetOut() && !p.GetFolded() })
 }
 
 // activeCount は未フォールド・非脱落プレイヤー数を返す。
 func (g *Anaconda) activeCount() int {
-	n := 0
-	for _, p := range g.players {
-		if !p.GetOut() && !p.GetFolded() {
-			n++
-		}
-	}
-	return n
+	return countPlayers(g.players, func(p *AnacondaPlayer) bool { return !p.GetOut() && !p.GetFolded() })
 }
 
 // nextActive は from の次の未フォールド・非脱落プレイヤーを返す。
 func (g *Anaconda) nextActive(from int) int {
-	n := len(g.players)
-	for i := 1; i <= n; i++ {
-		idx := (from + i) % n
-		if !g.players[idx].GetOut() && !g.players[idx].GetFolded() {
-			return idx
-		}
-	}
-	return from
+	return nextIndexWhere(g.players, from, func(p *AnacondaPlayer) bool { return !p.GetOut() && !p.GetFolded() })
 }
 
 // solventCount はアンティを払える (非脱落かつチップ >= アンティ) プレイヤー数を返す。
 func (g *Anaconda) solventCount() int {
-	n := 0
-	for _, p := range g.players {
-		if !p.GetOut() && p.GetChips() >= g.config.Ante {
-			n++
-		}
-	}
-	return n
+	return countPlayers(g.players, func(p *AnacondaPlayer) bool { return !p.GetOut() && p.GetChips() >= g.config.Ante })
 }
 
 // richestIdx はチップが最多のプレイヤーのインデックスを返す (同数は座席番号の小さい方)。
 func (g *Anaconda) richestIdx() int {
-	best := 0
-	for i, p := range g.players {
-		if p.GetChips() > g.players[best].GetChips() {
-			best = i
-		}
-	}
-	return best
-}
-
-// playerName は表示用のプレイヤー名を返す。
-func (g *Anaconda) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
+	return maxIndexBy(g.players, func(p *AnacondaPlayer) int { return p.GetChips() })
 }
 
 // anacondaValidateIndices はカードインデックス列の妥当性 (枚数・範囲・重複なし) を検証する。
@@ -919,13 +877,7 @@ func anacondaValidateIndices(indices []int, want, handSize int) error {
 }
 
 func (g *Anaconda) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.state.actionLog = append(g.state.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.state.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.state.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // --- 公開カード ---
@@ -1099,18 +1051,12 @@ func (g *Anaconda) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer は指定インデックスのプレイヤーを返す。
 func (g *Anaconda) GetPlayer(i int) *AnacondaPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetChips は人間 (seat 0) の保有チップを返す。
 func (g *Anaconda) GetChips() int {
-	if len(g.players) == 0 {
-		return 0
-	}
-	return g.players[0].GetChips()
+	return chipsOfFirst(g.players)
 }
 
 // IsHumanTurn は現在がロールフェーズの人間 (seat 0) 手番かどうかを返す。
@@ -1290,7 +1236,7 @@ func (g *Anaconda) UnmarshalJSON(data []byte) error {
 		result:          j.Result,
 		gameEndFlag:     j.GameEndFlag,
 		scored:          j.Scored,
-		actionLog:       j.ActionLog,
+		actionLogBase:   actionLogBase{actionLog: j.ActionLog},
 	}
 	if g.state.actionLog == nil {
 		g.state.actionLog = make([]*ActionLogEntry, 0)

@@ -10,6 +10,7 @@
   "bidPass": "pass",
   "gameEnd": "Game over! Final scores:",
   "scoreEntry": "  {{name}}: {{score}} pts",
+  "bidStrength": "  Points held: {{points}} (best: {{best}} with {{max}} of {{total}})",
   "promptBid": "{{name}}'s turn to bid (current high bid: {{bid}})",
   "promptTrump": "{{name}} names the trump suit (t <1-4>)",
   "promptPlay": "Turn: {{name}}",

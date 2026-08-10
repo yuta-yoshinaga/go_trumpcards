@@ -67,5 +67,13 @@
   "hintReasonFlush": "3枚同スート（フラッシュの目）",
   "hintReasonStraight": "3枚連続（ストレートの目）",
   "hintReasonHigh": "3枚とも高札",
-  "hintReasonFold": "続行条件を満たしません"
+  "hintReasonFold": "続行条件を満たしません",
+  "currentBestHand": "現在の最善役: {{hand}} ({{cards}})",
+  "hintCall": "コール",
+  "hintRaise": "レイズ",
+  "hintReasonRazzPair": "ペアがあり、ローとしては弱い",
+  "hintReasonRazzStrong": "ロー札が十分そろっている",
+  "hintReasonRazzDecent": "ロー札はそこそこある",
+  "hintReasonRazzWeak": "ロー札が足りない",
+  "hintReasonHiLoLow": "ロー役が狙える (8以下が5枚)"
 }

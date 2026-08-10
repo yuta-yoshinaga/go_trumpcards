@@ -8,5 +8,17 @@
   "bonus.678.spade": "6-7-8 (all spades)",
   "bonus.777.mixed": "7-7-7 (mixed suits)",
   "bonus.777.samesuit": "7-7-7 (same suit)",
-  "bonus.777.spade": "7-7-7 (all spades)"
+  "bonus.777.spade": "7-7-7 (all spades)",
+  "payoutRef.title": "Payouts",
+  "payoutRef.blackjack": "Blackjack (3:2)",
+  "payoutRef.win": "Win (1:1); player 21 always wins",
+  "payoutRef.insurance": "Insurance (2:1)",
+  "payoutRef.push": "Push (tie: bet returned)",
+  "payoutRef.surrender": "Surrender (half the bet returned)",
+  "payoutRef.bust": "Bust (over 21: lose)",
+  "payoutRef.bonusFiveCard21": "5-card 21 (3:2)",
+  "payoutRef.bonusSixCard21": "6-card 21 (2:1)",
+  "payoutRef.bonusSevenCard21": "7+ card 21 (3:1)",
+  "payoutRef.bonus678": "6-7-8 (3:2 / same suit 2:1 / all spades 3:1)",
+  "payoutRef.bonus777": "7-7-7 (3:2 / same suit 2:1 / all spades 3:1)"
 }

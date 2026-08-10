@@ -437,7 +437,7 @@ classDiagram
         +object messageParams
     }
 
-    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全219ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
+    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全264ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
 ```
 
 **フェーズ定数 (全ゲーム)**
@@ -829,108 +829,108 @@ classDiagram
         +gameExec~T~(game, body) Promise~T~
     }
 
-    class BlackJackApi {
+    class blackjackApi {
         +exec(cmd, args?, config?) Promise~BlackJackResponse~
     }
 
-    class PokerApi {
+    class pokerApi {
         +exec(cmd, args?, config?) Promise~PokerResponse~
     }
 
-    class HeartsApi {
+    class heartsApi {
         +exec(cmd, args?, config?) Promise~HeartsResponse~
     }
 
-    class KlondikeApi {
+    class klondikeApi {
         +exec(cmd, args?, config?) Promise~KlondikeResponse~
     }
 
-    class PyramidApi {
-        +run(cmd, card1?, card2?) Promise~PyramidResponse~
+    class pyramidApi {
+        +exec(cmd, card1?, card2?) Promise~PyramidResponse~
     }
 
-    class TriPeaksApi {
-        +run(cmd, row?, col?) Promise~TriPeaksResponse~
+    class tripeaksApi {
+        +exec(cmd, row?, col?) Promise~TriPeaksResponse~
     }
 
-    class GolfApi {
-        +run(cmd, col?) Promise~GolfResponse~
+    class golfApi {
+        +exec(cmd, col?) Promise~GolfResponse~
     }
 
-    class ClockSolitaireApi {
-        +run(cmd) Promise~ClockSolitaireResponse~
+    class clocksolitaireApi {
+        +exec(cmd) Promise~ClockSolitaireResponse~
     }
 
-    class CribbageApi {
-        +run(cmd, args?, config?) Promise~CribbageResponse~
+    class cribbageApi {
+        +exec(cmd, args?, config?) Promise~CribbageResponse~
     }
 
     class actionLogApi {
         +blackjack() Promise~ActionLogResponse~
         +poker() Promise~ActionLogResponse~
-        ...全219ゲーム()
+        ...全264ゲーム()
     }
 
-    BlackJackApi --> gameApi : uses postJson/gameExec
-    PokerApi --> gameApi : uses postJson/gameExec
-    HeartsApi --> gameApi : uses postJson/gameExec
-    KlondikeApi --> gameApi : uses postJson/gameExec
-    PyramidApi --> gameApi : uses postJson/gameExec
-    TriPeaksApi --> gameApi : uses postJson/gameExec
-    ClockSolitaireApi --> gameApi : uses postJson/gameExec
-    CribbageApi --> gameApi : uses postJson/gameExec
+    blackjackApi --> gameApi : uses postJson/gameExec
+    pokerApi --> gameApi : uses postJson/gameExec
+    heartsApi --> gameApi : uses postJson/gameExec
+    klondikeApi --> gameApi : uses postJson/gameExec
+    pyramidApi --> gameApi : uses postJson/gameExec
+    tripeaksApi --> gameApi : uses postJson/gameExec
+    clocksolitaireApi --> gameApi : uses postJson/gameExec
+    cribbageApi --> gameApi : uses postJson/gameExec
     actionLogApi --> gameApi : uses gameExec
 
-    class SpeedApi {
-        +run(cmd, args?) Promise~SpeedResponse~
+    class speedApi {
+        +exec(cmd, args?) Promise~SpeedResponse~
     }
 
-    SpeedApi --> gameApi : uses postJson/gameExec
+    speedApi --> gameApi : uses postJson/gameExec
 
-    class GoFishApi {
-        +run(cmd, args?) Promise~GoFishResponse~
+    class goFishApi {
+        +exec(cmd, args?) Promise~GoFishResponse~
     }
 
-    GoFishApi --> gameApi : uses postJson/gameExec
+    goFishApi --> gameApi : uses postJson/gameExec
 
-    class CanastaApi {
-        +run(cmd, args?) Promise~CanastaResponse~
+    class canastaApi {
+        +exec(cmd, args?) Promise~CanastaResponse~
     }
 
-    CanastaApi --> gameApi : uses postJson/gameExec
+    canastaApi --> gameApi : uses postJson/gameExec
 
-    class DurakApi {
-        +run(cmd, args?) Promise~DurakResponse~
+    class durakApi {
+        +exec(cmd, args?) Promise~DurakResponse~
     }
 
-    DurakApi --> gameApi : uses postJson/gameExec
+    durakApi --> gameApi : uses postJson/gameExec
 
-    class PigsTailApi {
-        +run(cmd) Promise~PigsTailResponse~
+    class pigtailApi {
+        +exec(cmd) Promise~PigsTailResponse~
     }
 
-    PigsTailApi --> gameApi : uses postJson/gameExec
+    pigtailApi --> gameApi : uses postJson/gameExec
 
     note for gameApi "全APIリクエストにsessionIdを自動付与\n各ゲームAPIは cmd ベースの統一形式"
-    class FortyThievesApi {
-        +run(cmd, args?) Promise~FortyThievesResponse~
+    class fortyThievesApi {
+        +exec(cmd, args?) Promise~FortyThievesResponse~
     }
 
-    FortyThievesApi --> gameApi : uses postJson/gameExec
+    fortyThievesApi --> gameApi : uses postJson/gameExec
 
-    class PaiGowApi {
-        +run(cmd, args?) Promise~PaiGowResponse~
+    class paigowApi {
+        +exec(cmd, args?) Promise~PaiGowResponse~
     }
 
-    PaiGowApi --> gameApi : uses postJson/gameExec
+    paigowApi --> gameApi : uses postJson/gameExec
 
-    class RedDogApi {
-        +run(cmd, amount?) Promise~RedDogResponse~
+    class reddogApi {
+        +exec(cmd, amount?) Promise~RedDogResponse~
     }
 
-    RedDogApi --> gameApi : uses postJson/gameExec
+    reddogApi --> gameApi : uses postJson/gameExec
 
-    note for BlackJackApi "全219ゲーム分のAPI Objectが存在\n(ゲーム一覧の SSoT は internal/infrastructure/games/registry.go。\nfrontend/src/api/gameApi.ts の games 配列と1:1対応)"
+    note for blackjackApi "全264ゲーム分のAPI Objectが存在\n(ゲーム一覧の SSoT は internal/infrastructure/games/registry.go。\nfrontend/src/api/gameApi.ts の games 配列と1:1対応)"
 ```
 
 ### 1.3 Hook 層 (共通Hook)
@@ -973,10 +973,9 @@ classDiagram
     }
 
     class useActionLog {
-        +ActionLogEntry[] entries
-        +boolean isOpen
-        +Function show
-        +Function hide
+        +ActionLogEntry[] actionLog
+        +Function showActionLog
+        +Function hideActionLog
     }
 
     class useConfirmDialog {
@@ -1009,11 +1008,14 @@ classDiagram
         +(cardCount, onToggle, onConfirm, ...) void
     }
 
-    class useGameSound {
+    class useSound {
         +Function playSound
-        +boolean enabled
-        +Function toggle
+        +boolean muted
+        +Function toggleMute
+        +Function claimExecSound
+        +Function consumeExecClaim
     }
+    note for useSound "SoundProvider の SoundContextValue を返す。\nProvider 外では throw。Provider 任意の場合は\nuseOptionalSound() が null を返す"
 
     class useReducedMotion {
         +boolean prefersReducedMotion
@@ -1055,20 +1057,16 @@ classDiagram
         +Function setValue
     }
 
-    class useCardGesture {
-        +Function onSwipe
-        +Function onTap
+    class useCardSwipeSelection {
+        +(selected, toggle, enabled?) UseCardSwipeSelectionParams
+        +Function onPointerDown
     }
-
-    class useHaptics {
-        +Function vibrate
-    }
+    note for useCardSwipeSelection "引数は selected / toggle / enabled? のオブジェクト。\nカードボタンは data-card-index 属性が必須"
 
     class useKlondikeTimer {
-        +number elapsed
-        +Function start
-        +Function stop
-        +Function reset
+        +number elapsedSeconds
+        +Function resetTimer
+        +Function timeBonus
     }
 
     class useProfilePersistence {
@@ -1078,14 +1076,14 @@ classDiagram
 
     class useFavoriteGames {
         +string[] favorites
-        +Function toggle
+        +Function toggleFavorite
         +Function isFavorite
     }
 
     class useRecentGames {
-        +string[] recentGames
-        +Function addRecent
+        +(pathname: string) string[]
     }
+    note for useRecentGames "戻り値は最近遊んだパスの配列そのもの。\n記録は pathname を渡した副作用で行う (最大5件)"
 
     class useCliMode {
         +boolean cliEnabled
@@ -1115,38 +1113,25 @@ classDiagram
 
 ```mermaid
 classDiagram
-    class useBlackJackGame {
-        +BlackJackResponse state
-        +Function handleBet
-        +Function handleHit
-        +Function handleStand
-        +Function handleDoubleDown
-        +Function handleSplit
-        +Function handleInsurance
-        +Function handleSurrender
-        +Function handleReset
-    }
-
     class useHeartsGame {
         +HeartsResponse state
-        +number[] selectedCards
+        +number[] selectedCardIndices
         +Function handlePass
         +Function handlePlay
         +Function handleNextTrick
         +Function handleNextRound
         +Function handleHint
-        +Function handleReset
     }
 
     class useKlondikeGame {
         +KlondikeResponse state
-        +MoveZone source
-        +MoveZone target
+        +MoveZone selectedSource
         +Function handleDraw
-        +Function handleMove
+        +Function handleSelectSource
+        +Function handleSelectTarget
         +Function handleHint
         +Function handleUndo
-        +Function handleAutocomplete
+        +Function handleAutoComplete
         +Function handleReset
     }
 
@@ -1154,26 +1139,23 @@ classDiagram
         +MemoryResponse state
         +Function handleFlip
         +Function handleNext
-        +Function handleReset
     }
 
     class useDoubtGame {
         +DoubtResponse state
         +number countdown
-        +number[] selectedCards
+        +number[] selectedCardIndices
         +Function handlePlay
         +Function handleDoubt
         +Function handleSkip
-        +Function handleReset
     }
 
-    useBlackJackGame --> useGameApi : uses
     useHeartsGame --> useGameApi : uses
     useHeartsGame --> useCardSelection : uses
     class usePyramidGame {
         +PyramidResponse state
         +Function handleDraw
-        +Function handleRemove
+        +Function handleSelectCard
         +Function handleHint
         +Function handleUndo
         +Function handleReset
@@ -1182,7 +1164,7 @@ classDiagram
     class useTriPeaksGame {
         +TriPeaksResponse state
         +Function handleDraw
-        +Function handleRemove
+        +Function handleSelectCard
         +Function handleHint
         +Function handleUndo
         +Function handleReset
@@ -1197,27 +1179,12 @@ classDiagram
         +Function handleReset
     }
 
-    class useClockSolitaireGame {
-        +ClockSolitaireResponse state
-        +Function handleStep
-        +Function handleAutoPlay
-        +Function handleReset
-    }
-
     class useDurakGame {
         +DurakResponse state
         +Function handleAttack
         +Function handleDefend
-        +Function handlePickUp
-        +Function handleDone
+        +Function handleTake
         +Function handlePass
-        +Function handleReset
-    }
-
-    class usePigsTailGame {
-        +PigsTailResponse state
-        +Function handleDraw
-        +Function handleReset
     }
 
     class useCribbageGame {
@@ -1227,13 +1194,13 @@ classDiagram
         +Function handleGo
         +Function handleShowNext
         +Function handleNextRound
-        +Function handleReset
     }
 
     class useFortyThievesGame {
         +FortyThievesResponse state
         +Function handleDraw
-        +Function handleMove
+        +Function handleSelectSource
+        +Function handleSelectTarget
         +Function handleHint
         +Function handleUndo
         +Function handleAutoComplete
@@ -1245,19 +1212,9 @@ classDiagram
     usePyramidGame --> useGameApi : uses
     useTriPeaksGame --> useGameApi : uses
     useGolfGame --> useGameApi : uses
-    useClockSolitaireGame --> useGameApi : uses
     useFortyThievesGame --> useGameApi : uses
 
-    class usePaiGowGame {
-        +PaiGowResponse state
-        +Function handleBet
-        +Function handleSet
-        +Function handleReset
-    }
-
-    usePaiGowGame --> useGameApi : uses
     useDurakGame --> useGameApi : uses
-    usePigsTailGame --> useGameApi : uses
     useCribbageGame --> useGameApi : uses
     useMemoryGame --> useGameApi : uses
     useDoubtGame --> useGameApi : uses
@@ -1265,13 +1222,12 @@ classDiagram
 
     class useOhHellGame {
         +OhHellResponse state
-        +number[] selectedCards
+        +number[] selectedCardIndices
         +Function handleBid
         +Function handlePlay
         +Function handleNextTrick
         +Function handleNextRound
         +Function handleHint
-        +Function handleReset
     }
 
     useOhHellGame --> useGameApi : uses
@@ -1282,7 +1238,6 @@ classDiagram
         +Function handlePlay
         +Function handleFlip
         +Function handleHint
-        +Function handleReset
     }
 
     useSpeedGame --> useGameApi : uses
@@ -1290,7 +1245,6 @@ classDiagram
     class useGoFishGame {
         +GoFishResponse state
         +Function handleAsk
-        +Function handleReset
     }
 
     useGoFishGame --> useGameApi : uses
@@ -1304,12 +1258,11 @@ classDiagram
         +Function handleDiscard
         +Function handleGoOut
         +Function handleNextRound
-        +Function handleReset
     }
 
     useCanastaGame --> useGameApi : uses
 
-    note for useBlackJackGame "主要ゲームに固有Hookが存在 (現在131ファイル)\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
+    note for useHeartsGame "主要ゲームに固有Hookが存在 (現在131ファイル)\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
 ```
 
 ### 1.5 コンポーネント層
@@ -1908,7 +1861,7 @@ classDiagram
     GamePage --> PokerTableLayout : renders (Hold'em/Omaha/BigO/ShortDeck/Pineapple/SevenCardStud/Razz)
     PokerTableLayout --> CpuPlayerCard : wraps
 
-    note for GamePage "全219ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
+    note for GamePage "全264ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
 ```
 
 ### 1.7 i18n・プロバイダー・ルーティング
@@ -1931,7 +1884,7 @@ classDiagram
         +HashRouter
         +ErrorBoundary
         +NavBar
-        +Routes (219ゲーム)
+        +Routes (264ゲーム)
     }
 
     class gameCategories {
@@ -1942,7 +1895,7 @@ classDiagram
         +solitaire
         +rummy
     }
-    note for gameCategories "6カテゴリの各メンバー構成 (全219ゲーム) は\nfrontend/src/constants/gameRoutes.ts が SSoT。\n個別の所属はそこで定義される"
+    note for gameCategories "6カテゴリの各メンバー構成 (全264ゲーム) は\nfrontend/src/constants/gameRoutes.ts が SSoT。\n個別の所属はそこで定義される"
 
     class TutorialProvider {
         +TutorialConfig config
@@ -1955,11 +1908,11 @@ classDiagram
     App --> i18n : initializes
     App --> gameCategories : routes from
     App --> NavBar : renders
-    App --> GamePage : routes to 221 pages
+    App --> GamePage : routes to 264 game pages
     GamePage --> TutorialProvider : wraps (per-game)
     TutorialProvider --> TutorialOverlay : renders when active
 
-    note for i18n "222名前空間: common + 219ゲーム固有 + tutorial + discover\n翻訳ファイル: locales/{ja,en}/game.json"
+    note for i18n "267名前空間: common + 264ゲーム固有 + tutorial + discover\n翻訳ファイル: locales/{ja,en}/<game>.json"
 ```
 
 ### 1.8 AI Game Concierge (/discover)
@@ -1969,16 +1922,23 @@ classDiagram
 ```mermaid
 classDiagram
     class AxisDef {
-        +number questionCount
         +string labelI18nKey
-        +string[] questionI18nKeys
-        +AxisOption[] options
+        +number profileLength
+        +SubQuestion[2] questions
     }
 
-    class AxisOption {
+    class SubQuestion {
+        +string questionI18nKey
+        +SubQuestionOption[] options
+    }
+
+    class SubQuestionOption {
         +string key
         +string i18nKey
+        +number profileIdx
+        +number polarity
     }
+    note for SubQuestionOption "polarity は任意 (-1 のみ)。\n省略時は score = profile[profileIdx]/PROFILE_MAX"
 
     class AXES {
         <<const>>
@@ -2096,7 +2056,8 @@ classDiagram
     }
 
     AXES *-- AxisDef : 4 axes
-    AxisDef *-- AxisOption : options
+    AxisDef *-- SubQuestion : questions (2)
+    SubQuestion *-- SubQuestionOption : options
     GameRoute --> GameProfile : profile
     GameProfile ..> AXES : index aligned with options
     recommendationScoring ..> AXES : reads weights / SOCIAL_SOLO_IDX
@@ -2203,14 +2164,13 @@ sequenceDiagram
     Setup->>Setup: useActionLog() 初期化
     Setup->>Setup: useConfirmDialog() 初期化
 
-    Page->>Hook: useBlackJackGame()
-    Hook->>Hook: useGameApi() 初期化
-    Hook->>Hook: useGameConfig() 初期化
+    Page->>Hook: useGameApi(blackjackApi.exec, {onSuccess})
+    Hook->>Hook: useMutation / mountedRef 初期化
 
-    Note over Hook: useEffect → 初回 Reset
-    Hook->>API: exec("reset", null, config)
+    Note over Hook: useMountReset(exec) → 初回 Reset
+    Hook->>API: exec("reset")
     API-->>Hook: BlackJackResponse (初期状態)
-    Hook->>Hook: setState(response)
+    Hook->>Hook: setState(response) → onSuccess(res) でルール設定を反映
     Hook-->>Page: 再レンダリング
 
     Page-->>Browser: ゲーム画面表示
@@ -2558,7 +2518,7 @@ sequenceDiagram
 sequenceDiagram
     participant User as ユーザー
     participant Page as PigsTailPage
-    participant Hook as usePigsTailGame
+    participant Hook as useGameApi(pigtailApi.exec)
     participant API as gameApi
 
     Note over User,API: プレイフェーズ (phase=0) - ドロー
@@ -2640,8 +2600,8 @@ sequenceDiagram
 
     Note over User,API: ピックアップ (防御放棄)
     User->>Page: ピックアップボタンクリック
-    Page->>Hook: handlePickUp()
-    Hook->>API: gameExec("pickup")
+    Page->>Hook: handleTake()
+    Hook->>API: gameExec("take")
     API-->>Hook: DurakResponse (phase=0)
     Hook-->>Page: 再レンダリング → 次のバウトUI
 
@@ -2693,7 +2653,7 @@ sequenceDiagram
 sequenceDiagram
     participant User as ユーザー
     participant Page as PaiGowPage
-    participant Hook as usePaiGowGame
+    participant Hook as useGameApi(paigowApi.exec)
     participant API as gameApi
 
     Note over User,API: ベットフェーズ (phase=1)

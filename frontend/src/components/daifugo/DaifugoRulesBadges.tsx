@@ -1,9 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 import { useIsMobile } from '../../hooks/useCardDimensions';
 import type { DaifugoResponse } from '../../types/card';
-import { getFocusableElements } from '../../utils/dom';
+import { Modal } from '../common/Modal';
 
 const badgeClass = 'inline-block rounded-[6px] px-2.5 py-0.5 mr-1.5 mb-1 text-xs font-bold';
 
@@ -89,88 +88,41 @@ function RulesBadgeModal({
   summaryLabel: string;
   closeLabel: string;
 }) {
-  const dialogRef = useRef<HTMLDivElement>(null);
-
-  useBodyScrollLock(true);
-
-  useEffect(() => {
-    const previousFocus = document.activeElement as HTMLElement;
-    const dialog = dialogRef.current as HTMLElement;
-    const focusable = getFocusableElements(dialog);
-    if (focusable.length > 0) focusable[0].focus();
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-        return;
-      }
-      // Focus trap
-      if (e.key !== 'Tab' || focusable.length === 0) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (e.shiftKey) {
-        if (document.activeElement === first) {
-          e.preventDefault();
-          last.focus();
-        }
-      } else {
-        if (document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
-        }
-      }
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      previousFocus?.focus();
-    };
-  }, [onClose]);
-
   return (
-    // biome-ignore lint/a11y/noStaticElementInteractions: overlay backdrop dismisses on click
-    <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50"
-      onClick={onClose}
-      role="presentation"
+    <Modal
+      open
+      onClose={onClose}
+      ariaLabelledBy="rules-modal-title"
+      panelClassName="glass-panel rounded-t-lg sm:rounded-lg shadow-xl p-4 w-full sm:max-w-sm sm:mx-4 max-h-[70vh] overflow-y-auto"
+      backdropClassName="items-end sm:items-center justify-center bg-black/50"
     >
-      {/* biome-ignore lint/a11y/useKeyWithClickEvents: keyboard events handled at document level */}
-      <div
-        ref={dialogRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="rules-modal-title"
-        className="glass-panel rounded-t-lg sm:rounded-lg shadow-xl p-4 w-full sm:max-w-sm sm:mx-4 max-h-[70vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex justify-between items-center mb-3">
-          <h2 id="rules-modal-title" className="text-sm font-bold text-ds-text-primary">
-            {summaryLabel}
-          </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-ds-text-primary/60 hover:text-ds-text-primary text-lg leading-none"
-            aria-label={closeLabel}
-          >
-            ✕
-          </button>
-        </div>
-        <ul className="space-y-2">
-          {badges.map((b) => (
-            <li key={b.label} className="flex items-start gap-2">
-              <span
-                className="shrink-0 rounded px-2 py-0.5 text-xs font-bold"
-                style={{ background: b.bg, color: b.color }}
-              >
-                {b.label}
-              </span>
-              <span className="text-xs text-ds-text-primary/80">{b.description}</span>
-            </li>
-          ))}
-        </ul>
+      <div className="flex justify-between items-center mb-3">
+        <h2 id="rules-modal-title" className="text-sm font-bold text-ds-text-primary">
+          {summaryLabel}
+        </h2>
+        <button
+          type="button"
+          onClick={onClose}
+          className="text-ds-text-primary/60 hover:text-ds-text-primary text-lg leading-none"
+          aria-label={closeLabel}
+        >
+          ✕
+        </button>
       </div>
-    </div>
+      <ul className="space-y-2">
+        {badges.map((b) => (
+          <li key={b.label} className="flex items-start gap-2">
+            <span
+              className="shrink-0 rounded px-2 py-0.5 text-xs font-bold"
+              style={{ background: b.bg, color: b.color }}
+            >
+              {b.label}
+            </span>
+            <span className="text-xs text-ds-text-primary/80">{b.description}</span>
+          </li>
+        ))}
+      </ul>
+    </Modal>
   );
 }
 

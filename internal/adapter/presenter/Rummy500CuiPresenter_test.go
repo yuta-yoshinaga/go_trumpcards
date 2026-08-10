@@ -164,6 +164,40 @@ func TestRummy500CuiPresenter_HintOutput(t *testing.T) {
 		assert.Contains(t, p.HintOutput(m), i18n.T("rummy500.hintNoMeld"))
 	})
 
+	// **レイオフだけ支援から取り残されていた (#4832)。**新規メルドの候補は出るのに、
+	// 既存メルドへ 1 枚足せるかはサーバーに送るまで分からなかった。
+	t.Run("lists layoff candidates", func(t *testing.T) {
+		m, players := playPhase()
+		// CPU 1 が 7 のセットを場に出している。手札の 7 はそこへ足せる。
+		players[1].SetLaidMelds([][]*domain.Card{{
+			domain.NewCard(domain.CardDesignSpade, 7, false),
+			domain.NewCard(domain.CardDesignHeart, 7, false),
+			domain.NewCard(domain.CardDesignClover, 7, false),
+		}})
+		players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		out := p.HintOutput(m)
+		layoffPrefix := strings.SplitN(i18n.T("rummy500.hintLayoff"), "{{", 2)[0]
+		assert.Contains(t, out, layoffPrefix)
+		assert.Contains(t, out, "DIAMOND 7")
+		// 足せない札は挙がらない。
+		assert.NotContains(t, out, "HEART 2")
+	})
+
+	t.Run("says nothing about layoffs when none is legal", func(t *testing.T) {
+		m, players := playPhase()
+		players[1].SetLaidMelds([][]*domain.Card{{
+			domain.NewCard(domain.CardDesignSpade, 7, false),
+			domain.NewCard(domain.CardDesignHeart, 7, false),
+			domain.NewCard(domain.CardDesignClover, 7, false),
+		}})
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		layoffPrefix := strings.SplitN(i18n.T("rummy500.hintLayoff"), "{{", 2)[0]
+		assert.NotContains(t, p.HintOutput(m), layoffPrefix)
+	})
+
 	t.Run("no hint during the draw phase", func(t *testing.T) {
 		m, _ := setupRummy500CuiMockWithPlayers()
 		m.On("IsHumanTurn").Return(true)

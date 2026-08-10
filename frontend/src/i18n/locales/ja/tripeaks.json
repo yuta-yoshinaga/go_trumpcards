@@ -9,6 +9,8 @@
   "waste": "捨て札",
   "moveCount": "手数",
   "score": "スコア",
+  "playableSummary": "今出せるカード: {{count}}枚",
+  "drawRecommended": "ドロー推奨",
   "bestScore": "ベスト",
   "newBest": "自己ベスト更新！ {{score}} 点",
   "clears": "クリア {{wins}}/{{plays}}",

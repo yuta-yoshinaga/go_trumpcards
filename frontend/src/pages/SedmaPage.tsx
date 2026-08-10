@@ -223,7 +223,9 @@ function SedmaPageContent() {
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
             <div className="text-ds-text-primary text-center mb-2">
               <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
-              <span>{t('trick', { n: state.trickNumber })}</span>
+              <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
+              {/* The value that decides the match was only visible in the panel. */}
+              <span data-testid="sedma-target">{t('target', { points: state.config.targetPoints })}</span>
             </div>
 
             <div className={lgTwoColGrid}>

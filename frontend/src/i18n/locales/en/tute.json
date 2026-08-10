@@ -45,7 +45,8 @@
   "roundResult": {
     "title": "Round Result",
     "teamA": "Team A points: {{points}}",
-    "teamB": "Team B points: {{points}}"
+    "teamB": "Team B points: {{points}}",
+    "runningTitle": "Points this round"
   },
   "declaredMarriages": {
     "title": "Declared marriages",

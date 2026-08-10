@@ -158,8 +158,8 @@ function GoFishPageContent() {
     [kbdHumanRanks, selectedRank, handleSelectRank, t],
   );
   const askBindings = useMemo(() => {
-    // Annotated so the pushes below can carry labelKey; inference from the map
-    // alone would fix the element type to exactly these three properties.
+    // Annotated so the pushes below can carry `label`; inference from the map
+    // alone would fix the element type to exactly the properties it sets.
     const bindings: ActionBinding[] = kbdCpuPlayers.map((p, i) => ({
       key: String(i + 1),
       action: () => {
@@ -167,7 +167,10 @@ function GoFishPageContent() {
         setKbdAnnounce(t('a11y.targetSelected', { name: playerName(p.id, false) }));
       },
       enabled: kbdIsHumanTurn,
-      label: 'selectTarget',
+      // 相手ごとに別のキーなので、一覧も相手ごとに別の文言にする。全部
+      // 「対象のプレイヤーを選ぶ」だと、どのキーが誰なのか読み取れない (#4862)。
+      label: 'selectTargetNamed',
+      labelParams: { name: playerName(p.id, false) },
     }));
     bindings.push({ key: 'ArrowRight', action: () => cycleRank(1), enabled: kbdIsHumanTurn, label: 'nextRank' });
     bindings.push({ key: 'ArrowLeft', action: () => cycleRank(-1), enabled: kbdIsHumanTurn, label: 'prevRank' });

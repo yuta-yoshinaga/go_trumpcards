@@ -78,5 +78,6 @@
     "hand": "Your 3 cards. Looking at your hand (See) turns you from Blind to Seen, after which your bets cost double. Hand ranking is Prial > Running Flush > Run > Flush > Pair > High Card.",
     "bet": "On your turn choose See (look at your hand), Bet (call the stake), Raise (increase the stake), or Fold. When two players remain a Seen player can Show to force a showdown.",
     "resetButton": "Reset the game and start over from the beginning."
-  }
+  },
+  "hintRequested": "A hint is available"
 }

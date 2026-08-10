@@ -67,7 +67,7 @@ type OasisPoker struct {
 	dealerQualified bool
 	playerHandRank  int
 	dealerHandRank  int
-	actionLog       []*ActionLogEntry
+	actionLogBase
 }
 
 // NewOasisPoker コンストラクタ
@@ -285,20 +285,7 @@ func (op *OasisPoker) compareHands() int {
 
 // checkDealerQualifies ディーラークオリファイ条件: ペア以上、または A-K ハイ
 func (op *OasisPoker) checkDealerQualifies() bool {
-	if op.dealerHandRank >= PokerHandOnePair {
-		return true
-	}
-	hasAce := false
-	hasKing := false
-	for _, c := range op.dealerHand {
-		switch c.GetValue() {
-		case 1:
-			hasAce = true
-		case 13:
-			hasKing = true
-		}
-	}
-	return hasAce && hasKing
+	return dealerQualifies(op.dealerHandRank, op.dealerHand)
 }
 
 // calculatePayouts アンテ／プレイの配当計算
@@ -364,17 +351,6 @@ func (op *OasisPoker) evaluateJackpot() {
 	case PokerHandFlush:
 		op.jackpotPayout = op.jackpotBet * OasisPokerJackpotFlush
 	}
-}
-
-// appendLog 棋譜にエントリを追加する
-func (op *OasisPoker) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	op.actionLog = append(op.actionLog, &ActionLogEntry{
-		TurnNumber: len(op.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- Getters ---
@@ -451,9 +427,6 @@ func (op *OasisPoker) GetDealerHandRank() int { return op.dealerHandRank }
 
 // GetChips チップ
 func (op *OasisPoker) GetChips() int { return op.chips.GetChips() }
-
-// GetActionLog 棋譜を取得する
-func (op *OasisPoker) GetActionLog() []*ActionLogEntry { return op.actionLog }
 
 // --- Test helpers ---
 

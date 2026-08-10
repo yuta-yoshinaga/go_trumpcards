@@ -101,7 +101,7 @@ type Boston struct {
 	gameEndFlag bool
 	winnerIdx   int
 
-	actionLog []*ActionLogEntry
+	actionLogBase
 }
 
 // NewBoston コンストラクタ
@@ -686,10 +686,7 @@ func (b *Boston) GetPlayers() []*BostonPlayer { return b.players }
 
 // GetPlayer は idx のプレイヤーを返す。
 func (b *Boston) GetPlayer(idx int) *BostonPlayer {
-	if idx < 0 || idx >= len(b.players) {
-		return nil
-	}
-	return b.players[idx]
+	return getPlayer(b.players, idx)
 }
 
 // GetPhase は現在のフェーズを返す。
@@ -768,18 +765,9 @@ func (b *Boston) GetConfig() BostonConfig { return b.config }
 // SetConfig は設定をセットする。
 func (b *Boston) SetConfig(c BostonConfig) { b.config = c }
 
-// GetActionLog は棋譜を返す。
-func (b *Boston) GetActionLog() []*ActionLogEntry { return b.actionLog }
-
 // addLog は棋譜を 1 行足す。
 func (b *Boston) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	b.actionLog = append(b.actionLog, &ActionLogEntry{
-		TurnNumber: len(b.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	b.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // SetPhaseForTest はテスト用にフェーズを設定する。
@@ -787,16 +775,7 @@ func (b *Boston) SetPhaseForTest(p BostonPhase) { b.phase = p }
 
 // SetHandForTest はテスト用に手札を差し替える。
 func (b *Boston) SetHandForTest(idx int, cards []*Card) {
-	p := b.GetPlayer(idx)
-	if p == nil {
-		return
-	}
-	for p.GetCardsSize() > 0 {
-		p.RemoveCard(0)
-	}
-	for _, c := range cards {
-		p.AddCard(c)
-	}
+	setHandForTest(b.GetPlayer(idx), cards)
 }
 
 // SetContractForTest はテスト用に契約を設定する。

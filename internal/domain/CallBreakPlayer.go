@@ -27,13 +27,25 @@ func (p *CallBreakPlayer) GetBid() int { return p.bid }
 // SetBid ビッド設定
 func (p *CallBreakPlayer) SetBid(bid int) { p.bid = bid }
 
+// GetBags はビッドを超えて取った余剰トリック数 (バッグ) を返す。
+//
+// Call Break ではバッグの蓄積が将来のペナルティに直結するため、CUI と Web の
+// 両方がこの数を出す。**式を各表示層に置くと片方だけ直して食い違うので、
+// 判定はここに1つだけ置く (#4752)。**未ビッド (-1) は 0 として扱う。
+func (p *CallBreakPlayer) GetBags() int {
+	if p.bid < 0 {
+		return 0
+	}
+	if bags := p.GetTrickCount() - p.bid; bags > 0 {
+		return bags
+	}
+	return 0
+}
+
 // ResetRound ラウンドをリセット（ビッド・トリック・手札・終了状態を初期化）
 func (p *CallBreakPlayer) ResetRound() {
 	p.bid = -1
-	p.SetRoundScore(0)
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetRoundWithTricks(p)
 }
 
 // callBreakPlayerJSON is the JSON wire format for CallBreakPlayer.

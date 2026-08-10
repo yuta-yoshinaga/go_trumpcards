@@ -14,6 +14,7 @@ import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { KbdBadge } from '../components/KbdBadge';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { RoadmapTrendBar } from '../components/RoadmapTrendBar';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -116,13 +117,7 @@ function DragonTigerPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('dragontiger', state);
 
-  if (!state) {
-    return (
-      <div className={`flex-1 flex items-center justify-center ${gameTheme.dragontiger.bg}`}>
-        <div className="text-ds-text-primary">Loading...</div>
-      </div>
-    );
-  }
+  if (!state) return <GameSkeleton gameKey="dragontiger" layout={{ kind: 'casino-table', sections: [1, 1] }} />;
 
   const handleReset = () => execApi('reset');
   const handleClearHistory = () => execApi('clear');
@@ -295,24 +290,30 @@ function DragonTigerPageContent() {
                     className={btnWarning}
                     onClick={() => handleBet(DragonTigerBetType.DRAGON)}
                     disabled={loading}
+                    aria-keyshortcuts="d"
                   >
                     {t('button.betDragon')}
+                    <KbdBadge label={t('kbd.betDragon')} />
                   </button>
                   <button
                     type="button"
                     className={btnSuccess}
                     onClick={() => handleBet(DragonTigerBetType.TIGER)}
                     disabled={loading}
+                    aria-keyshortcuts="t"
                   >
                     {t('button.betTiger')}
+                    <KbdBadge label={t('kbd.betTiger')} />
                   </button>
                   <button
                     type="button"
                     className={btnPrimary}
                     onClick={() => handleBet(DragonTigerBetType.TIE)}
                     disabled={loading}
+                    aria-keyshortcuts="e"
                   >
                     {t('button.betTie')}
+                    <KbdBadge label={t('kbd.betTie')} />
                   </button>
                 </div>
               </div>

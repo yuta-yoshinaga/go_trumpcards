@@ -35,5 +35,6 @@
     "useFreeCells": "フリーセルにカードを移動して手を広げましょう"
   },
   "emptyTableauColumnLabel": "任意",
-  "emptyTableauColumnAriaLabel": "空のタブロー列 {{idx}}（任意のカードを置けます）"
+  "emptyTableauColumnAriaLabel": "空のタブロー列 {{idx}}（任意のカードを置けます）",
+  "tableauRule": "タブローは【同じスートの降順】でのみ積めます（フリーセルとの違い）"
 }

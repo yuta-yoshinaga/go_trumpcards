@@ -1,4 +1,4 @@
-# ショートデック / 6+ホールデム（CUI版）遊び方
+# ショートデック（CUI版）遊び方
 
 ## ゲーム概要
 
@@ -9,7 +9,8 @@ HUD統計（VPIP%/PFR%）が全プレイヤーに表示され、CPUのベット�
 ## 起動方法
 
 ```sh
-go run ./cmd/cli shortdeck
+go run ./cmd/trumpcards shortdeck
+go run ./cmd/trumpcards --lang en shortdeck  # 英語モード
 ```
 
 ## ルール

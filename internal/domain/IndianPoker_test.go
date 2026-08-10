@@ -1643,7 +1643,7 @@ func TestIndianPokerFindHumanIdx(t *testing.T) {
 	t.Run("returns human index", func(t *testing.T) {
 		cfg := defaultTestConfig()
 		ip, _ := newIndianPokerTestGame(cfg)
-		assert.Equal(t, 0, ip.findHumanIdx())
+		assert.Equal(t, 0, findHumanIdx(ip.players))
 	})
 
 	t.Run("returns -1 when no human", func(t *testing.T) {
@@ -1654,6 +1654,6 @@ func TestIndianPokerFindHumanIdx(t *testing.T) {
 			NewIndianPokerPlayer(false, HoldemStyleLAP),
 		}
 		ip := NewIndianPoker(tc, players, cfg)
-		assert.Equal(t, -1, ip.findHumanIdx())
+		assert.Equal(t, -1, findHumanIdx(ip.players))
 	})
 }

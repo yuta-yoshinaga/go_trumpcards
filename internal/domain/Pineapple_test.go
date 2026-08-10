@@ -569,3 +569,172 @@ func TestPineapple_DiscardCards(t *testing.T) {
 		assert.False(t, p.discardDone[0])
 	})
 }
+
+// pineappleDiscardFixture は「フロップ後のディスカード」局面を作る。
+// Reset() を通さないのは、配り次第で決まる属性 (ボード・手札) を固定するため。
+func pineappleDiscardFixture(t *testing.T, hole, board []*Card) *Pineapple {
+	t.Helper()
+	p := newTestPineapple()
+	p.discardAfterFlopBetting = true
+	p.phase = PineapplePhaseDiscard
+	p.communityCards = board
+	p.discardDone = make([]bool, len(p.players))
+	for i := 1; i < len(p.players); i++ {
+		p.discardDone[i] = true
+	}
+	p.players[0].Reset()
+	for _, c := range hole {
+		p.players[0].AddCard(c)
+	}
+	return p
+}
+
+func TestPineapple_GetHumanDiscardPreviews(t *testing.T) {
+	// ♠A ♠K ♥2 / ボード ♠2 ♠3 ♠4。
+	// ♥2 を捨てると ♠A ♠K が残ってスペード5枚 = フラッシュ。
+	// ♠A / ♠K を捨てるとどちらも 2 のワンペアにしかならない。
+	spadeFlushHole := []*Card{
+		NewCard(CardDesignSpade, 1, false),
+		NewCard(CardDesignSpade, 13, false),
+		NewCard(CardDesignHeart, 2, false),
+	}
+	spadeBoard := []*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignSpade, 3, false),
+		NewCard(CardDesignSpade, 4, false),
+	}
+
+	t.Run("ranks each discard by the hand the other two would make", func(t *testing.T) {
+		p := pineappleDiscardFixture(t, spadeFlushHole, spadeBoard)
+		previews := p.GetHumanDiscardPreviews()
+		require.Len(t, previews, 3)
+		assert.Equal(t, []int{0, 1, 2}, []int{previews[0].CardIdx, previews[1].CardIdx, previews[2].CardIdx})
+		assert.Equal(t, PokerHandOnePair, previews[0].HandRank)
+		assert.Equal(t, PokerHandOnePair, previews[1].HandRank)
+		assert.Equal(t, PokerHandFlush, previews[2].HandRank)
+	})
+
+	t.Run("recommends only the discard that leaves the strongest hand", func(t *testing.T) {
+		p := pineappleDiscardFixture(t, spadeFlushHole, spadeBoard)
+		previews := p.GetHumanDiscardPreviews()
+		require.Len(t, previews, 3)
+		assert.False(t, previews[0].Recommended)
+		assert.False(t, previews[1].Recommended)
+		assert.True(t, previews[2].Recommended, "捨てるとフラッシュが残る札が推奨されるべき")
+	})
+
+	t.Run("recommends every discard that ties for the best hand", func(t *testing.T) {
+		// ♠A ♥A ♦A / ボード ♣K ♥K ♦2。どの1枚を捨てても A のペア + K のペアで
+		// ツーペア。**同点は全部に推奨が付く** (どれを選んでも損しない)。
+		p := pineappleDiscardFixture(t, []*Card{
+			NewCard(CardDesignSpade, 1, false),
+			NewCard(CardDesignHeart, 1, false),
+			NewCard(CardDesignDiamond, 1, false),
+		}, []*Card{
+			NewCard(CardDesignClover, 13, false),
+			NewCard(CardDesignHeart, 13, false),
+			NewCard(CardDesignDiamond, 2, false),
+		})
+		previews := p.GetHumanDiscardPreviews()
+		require.Len(t, previews, 3)
+		for i, pv := range previews {
+			assert.True(t, pv.Recommended, "index %d も同点なので推奨されるべき", i)
+		}
+	})
+
+	// **推奨は CPU の捨て方と同じ規則でなければならない。**別々に実装すると
+	// 「CPU がやらない手」を人間に勧めることになる。
+	t.Run("agrees with the CPU's own discard choice", func(t *testing.T) {
+		p := pineappleDiscardFixture(t, spadeFlushHole, spadeBoard)
+		previews := p.GetHumanDiscardPreviews()
+		require.Len(t, previews, 3)
+		cpuPick := p.cpuDiscard(0)
+		assert.True(t, previews[cpuPick].Recommended,
+			"CPU が捨てる札 (index %d) は推奨に含まれるべき", cpuPick)
+	})
+
+	t.Run("returns nothing before the flop is on the table", func(t *testing.T) {
+		// プレーンな Pineapple はフロップ前に捨てる。残る2枚だけでは役を
+		// 名指しできないので、ここは何も返さない (#4685 の性質表示が出る)。
+		p := pineappleDiscardFixture(t, spadeFlushHole, nil)
+		assert.Nil(t, p.GetHumanDiscardPreviews())
+	})
+
+	t.Run("returns nothing for a four-card deal", func(t *testing.T) {
+		// Irish Poker は2枚捨てなので「1枚捨てたら残る手」の前提が崩れる。
+		p := pineappleDiscardFixture(t, append(append([]*Card{}, spadeFlushHole...),
+			NewCard(CardDesignClover, 9, false)), spadeBoard)
+		assert.Nil(t, p.GetHumanDiscardPreviews())
+	})
+
+	t.Run("returns nothing outside the discard phase", func(t *testing.T) {
+		p := pineappleDiscardFixture(t, spadeFlushHole, spadeBoard)
+		p.phase = PineapplePhaseFlop
+		assert.Nil(t, p.GetHumanDiscardPreviews())
+	})
+
+	t.Run("returns nothing when the human has folded", func(t *testing.T) {
+		p := pineappleDiscardFixture(t, spadeFlushHole, spadeBoard)
+		p.players[0].SetFolded(true)
+		assert.Nil(t, p.GetHumanDiscardPreviews())
+	})
+}
+
+func TestPineapple_GetHumanDiscardPairPreviews(t *testing.T) {
+	// ♠A ♠K ♥2 ♣2 / ボード ♠2 ♠3 ♠4。
+	// [2][3] (♥2 ♣2) を捨てると ♠A ♠K が残ってスペード5枚 = フラッシュ。
+	irishHole := []*Card{
+		NewCard(CardDesignSpade, 1, false),
+		NewCard(CardDesignSpade, 13, false),
+		NewCard(CardDesignHeart, 2, false),
+		NewCard(CardDesignClover, 2, false),
+	}
+	spadeBoard := []*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignSpade, 3, false),
+		NewCard(CardDesignSpade, 4, false),
+	}
+
+	// **6通り全部返す。**一部だけだと「載っていない組み合わせは弱い」と
+	// 読めてしまう。
+	t.Run("covers every one of the six discard pairs", func(t *testing.T) {
+		p := pineappleDiscardFixture(t, irishHole, spadeBoard)
+		previews := p.GetHumanDiscardPairPreviews()
+		require.Len(t, previews, 6)
+		seen := map[[2]int]bool{}
+		for _, pv := range previews {
+			seen[[2]int{pv.DiscardIdx0, pv.DiscardIdx1}] = true
+		}
+		assert.Len(t, seen, 6, "同じ組み合わせが重複していないこと")
+	})
+
+	t.Run("recommends the pair that leaves the strongest hand", func(t *testing.T) {
+		p := pineappleDiscardFixture(t, irishHole, spadeBoard)
+		for _, pv := range p.GetHumanDiscardPairPreviews() {
+			if pv.DiscardIdx0 == 2 && pv.DiscardIdx1 == 3 {
+				assert.Equal(t, PokerHandFlush, pv.HandRank)
+				assert.True(t, pv.Recommended)
+			} else {
+				assert.False(t, pv.Recommended,
+					"[%d][%d] は最強ではない", pv.DiscardIdx0, pv.DiscardIdx1)
+			}
+		}
+	})
+
+	// 3枚配りは1枚捨てなので GetHumanDiscardPreviews の担当。両方出すと重複する。
+	t.Run("returns nothing for a three-card deal", func(t *testing.T) {
+		p := pineappleDiscardFixture(t, irishHole[:3], spadeBoard)
+		assert.Nil(t, p.GetHumanDiscardPairPreviews())
+	})
+
+	t.Run("returns nothing before the flop is on the table", func(t *testing.T) {
+		p := pineappleDiscardFixture(t, irishHole, nil)
+		assert.Nil(t, p.GetHumanDiscardPairPreviews())
+	})
+
+	t.Run("returns nothing outside the discard phase", func(t *testing.T) {
+		p := pineappleDiscardFixture(t, irishHole, spadeBoard)
+		p.phase = PineapplePhaseFlop
+		assert.Nil(t, p.GetHumanDiscardPairPreviews())
+	})
+}

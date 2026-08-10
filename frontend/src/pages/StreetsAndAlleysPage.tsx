@@ -328,7 +328,12 @@ function StreetsAndAlleysPageContent() {
                               suit: FOUNDATION_SUITS[idx],
                               count: pile.length,
                             })}
-                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
+                            // Foundations accept the selection just as tableau tops do,
+                            // but only the tableau said so (#4827).
+                            data-target-candidate={selectedSource ? true : undefined}
+                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
+                              selectedSource ? 'ring-1 ring-ds-info motion-safe:hover:ring-2 focus:ring-2' : ''
+                            }`}
                           >
                             <AnimatedCard
                               card={pile[pile.length - 1]}

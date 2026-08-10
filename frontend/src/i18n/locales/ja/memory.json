@@ -23,6 +23,7 @@
   "scores": "スコア",
   "cardFaceDown": "{{position}}枚目のカード（裏向き）",
   "visitedMark": "一度めくったカード",
+  "knownMatchMark": "ここで同じカードを見ています",
   "scoreLine": "{{name}}: {{count}}",
   "capturedPairs": "獲得ペア",
   "noCapturedPairs": "なし",
@@ -43,6 +44,7 @@
   },
   "frontendHint": {
     "flipAny": "カードを選んでめくりましょう — これまで見た位置を思い出して",
-    "findMatch": "ペアになるカードを探しましょう — 以前めくった位置を思い出して"
+    "findMatch": "ペアになるカードを探しましょう — 以前めくった位置を思い出して",
+    "knownMatch": "マス{{position}}で同じカードを見ています — そこをめくればペアです"
   }
 }

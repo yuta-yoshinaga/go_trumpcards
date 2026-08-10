@@ -69,7 +69,7 @@ type Escoba struct {
 	gameEndFlag     bool
 	winnerIdx       int // -1: 未確定
 	lastRoundDetail *EscobaScoreDetail
-	actionLog       []*ActionLogEntry
+	actionLogBase
 }
 
 // NewEscoba コンストラクタ
@@ -388,12 +388,7 @@ func (e *Escoba) removeTableCardsByIndex(idxs []int) {
 
 // allHandsEmpty 全プレイヤーの手札が空か。
 func (e *Escoba) allHandsEmpty() bool {
-	for _, p := range e.players {
-		if p.GetCardsSize() > 0 {
-			return false
-		}
-	}
-	return true
+	return allHandsEmpty(e.players)
 }
 
 // chooseCpuPlay は CPU の手を選ぶ。15 で捕獲できるなら最大枚数 (エスコバ優先)、無ければ最大値を置く。
@@ -471,10 +466,7 @@ func (e *Escoba) GetPlayerCnt() int { return len(e.players) }
 
 // GetPlayer プレイヤー取得
 func (e *Escoba) GetPlayer(i int) *ScopaPlayer {
-	if i < 0 || i >= len(e.players) {
-		return nil
-	}
-	return e.players[i]
+	return getPlayer(e.players, i)
 }
 
 // GetConfig 設定取得
@@ -482,9 +474,6 @@ func (e *Escoba) GetConfig() EscobaConfig { return e.config }
 
 // SetConfig 設定変更
 func (e *Escoba) SetConfig(cfg EscobaConfig) { e.config = cfg }
-
-// GetActionLog 棋譜取得
-func (e *Escoba) GetActionLog() []*ActionLogEntry { return e.actionLog }
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (e *Escoba) IsHumanTurn() bool {
@@ -504,16 +493,6 @@ func (e *Escoba) GetValidCaptures(handIdx int) [][]int {
 		return nil
 	}
 	return EscobaCaptures(p.GetCard(handIdx), e.tableCards)
-}
-
-func (e *Escoba) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	e.actionLog = append(e.actionLog, &ActionLogEntry{
-		TurnNumber: len(e.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- JSON ---

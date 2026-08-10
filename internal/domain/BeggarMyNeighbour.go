@@ -56,7 +56,7 @@ type BeggarMyNeighbour struct {
 	gameEndFlag      bool
 	winnerIdx        int
 	roundsPlayed     int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewBeggarMyNeighbour コンストラクタ
@@ -273,17 +273,6 @@ func (g *BeggarMyNeighbour) finishByTotal() {
 	}
 }
 
-// appendLog 棋譜にエントリを追加する
-func (g *BeggarMyNeighbour) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // --- Getters ---
 
 // GetPhase フェーズ取得
@@ -330,8 +319,8 @@ func (g *BeggarMyNeighbour) GetConfig() BeggarMyNeighbourConfig { return g.confi
 // SetConfig 設定更新
 func (g *BeggarMyNeighbour) SetConfig(cfg BeggarMyNeighbourConfig) { g.config = cfg }
 
-// GetActionLog 棋譜取得
-func (g *BeggarMyNeighbour) GetActionLog() []*ActionLogEntry { return g.actionLog }
+// SetRoundsPlayedForTest はテスト用に消化ラウンド数を設定する。
+func (g *BeggarMyNeighbour) SetRoundsPlayedForTest(n int) { g.roundsPlayed = n }
 
 // IsHumanTurn 常に人間入力待ち
 func (g *BeggarMyNeighbour) IsHumanTurn() bool { return !g.gameEndFlag }

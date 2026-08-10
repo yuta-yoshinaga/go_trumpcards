@@ -32,6 +32,9 @@ func setupSpadesWebMock() *interfaces.MockSpadesGame {
 	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
 	// **base だけに置く。**removeMockCall は最初の 1 件しか外さない。
 	m.On("GetHint").Return(nil).Maybe()
+	// validPlayIndices を出すようになった。既定は「人間の手番でない」= 制限なし。
+	m.On("IsHumanTurn").Return(false).Maybe()
+	m.On("GetValidPlayIndices", 0).Return([]int(nil)).Maybe()
 
 	return m
 }
@@ -399,6 +402,50 @@ func TestSpadesWebPresenter_ActionLogOutput(t *testing.T) {
 		result := p.ActionLogOutput(m)
 		assert.Contains(t, result, `"entries":[]`)
 		m.AssertExpectations(t)
+	})
+}
+
+// ドメインは validatePlay / GetValidPlayIndices でフォロースートとスペード
+// ブレイク前のリード制限を判定済みなのに、Web に送っていなかった。違反札を
+// クリックしてサーバーのエラーが返って初めて出せないと分かる状態だった。
+func TestSpadesWebPresenter_ValidPlayIndices(t *testing.T) {
+	p := new(presenter.SpadesWebPresenter)
+
+	decode := func(t *testing.T, m *interfaces.MockSpadesGame) controller.SpadesWebOutput {
+		t.Helper()
+		var out controller.SpadesWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, nil)), &out))
+		return out
+	}
+
+	t.Run("human play turn carries the domain's answer", func(t *testing.T) {
+		m, _ := setupSpadesWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "IsHumanTurn")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+		m.On("IsHumanTurn").Return(true)
+		m.On("GetValidPlayIndices", 0).Return([]int{0, 2})
+
+		assert.Equal(t, []int{0, 2}, decode(t, m).ValidPlayIndices)
+	})
+
+	// スペードブレイク前は「スペードしか無い」局面で合法手が消えうる。
+	// 空を「制限なし」と読まないことの根拠。
+	t.Run("no legal card still reports empty", func(t *testing.T) {
+		m, _ := setupSpadesWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "IsHumanTurn")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+		m.On("IsHumanTurn").Return(true)
+		m.On("GetValidPlayIndices", 0).Return([]int{})
+
+		assert.Empty(t, decode(t, m).ValidPlayIndices)
+	})
+
+	t.Run("cpu turn reports nothing", func(t *testing.T) {
+		m, _ := setupSpadesWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+		m.On("GetValidPlayIndices", 0).Return([]int{0, 2})
+
+		assert.Empty(t, decode(t, m).ValidPlayIndices)
 	})
 }
 

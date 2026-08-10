@@ -23,6 +23,8 @@ type SpideretteGame interface {
 	GetMoveCount() int
 	// GetStockCount 山札の残り枚数を取得する
 	GetStockCount() int
+	// GetDealsRemaining 「配る」をあと何回押せるかを取得する
+	GetDealsRemaining() int
 	// GetTableau タブローを取得する
 	GetTableau() [domain.SpideretteTableauCnt][]*domain.SpideretteTableauCard
 	// GetCompletedSuits 完成スート数を取得する

@@ -10,6 +10,7 @@
   "bidPass": "パス",
   "gameEnd": "ゲーム終了！ 最終得点:",
   "scoreEntry": "  {{name}}: {{score}}点",
+  "bidStrength": "  手札の点数: {{points}}（最有力: {{best}} で {{max}} 点／{{total}} 点中）",
   "promptBid": "{{name}} のビッド番です（現在の最高ビッド: {{bid}}）",
   "promptTrump": "{{name}} が切り札を宣言します（t <1-4>）",
   "promptPlay": "手番: {{name}}",

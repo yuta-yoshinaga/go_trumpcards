@@ -121,6 +121,79 @@ func TestRunHelpCommandExtraArgs(t *testing.T) {
 	}
 }
 
+// `trumpcards help --help` must print the help subcommand's own help, not an
+// "unknown game" error. Every other subcommand gets this from parseSubFlagsTo's
+// flag.ErrHelp branch; `help` never reaches a FlagSet, so runHelpCommand has to
+// recognise the flag itself. All four spellings Go's flag package treats as
+// equivalent are covered. See issue #5181.
+func TestRunHelpCommandHelpFlag(t *testing.T) {
+	want, ok := subcommandHelp("help")
+	if !ok {
+		t.Fatal("subcommandHelp(\"help\") missing; the help subcommand must have help text")
+	}
+	wantOut := strings.Join(want, "\n") + "\n"
+
+	for _, args := range [][]string{
+		{"--help"},
+		{"-h"},
+		{"-help"},
+		{"--h"},
+	} {
+		t.Run(strings.Join(args, " "), func(t *testing.T) {
+			var stdout, stderr bytes.Buffer
+			code := runHelpCommand(args, buildHelpText(), &stdout, &stderr)
+			if code != 0 {
+				t.Fatalf("runHelpCommand(%v) exit = %d, want 0", args, code)
+			}
+			if stderr.Len() != 0 {
+				t.Errorf("runHelpCommand(%v) stderr = %q, want empty", args, stderr.String())
+			}
+			if got := stdout.String(); got != wantOut {
+				t.Errorf("runHelpCommand(%v) stdout = %q, want %q", args, got, wantOut)
+			}
+		})
+	}
+}
+
+// Negative control for TestRunHelpCommandHelpFlag: a help flag AFTER a
+// positional is not a help request. Go's flag package stops parsing at the
+// first non-flag argument, so `trumpcards games extra --help` prints the game
+// list with an extra-args warning rather than the games help. `help` must
+// behave the same way, otherwise the help subcommand becomes the one place
+// where a trailing --help means something different. See issue #5181.
+func TestRunHelpCommandHelpFlagAfterPositionalIsExtraArg(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	code := runHelpCommand([]string{"blackjack", "--help"}, buildHelpText(), &stdout, &stderr)
+	if code != 0 {
+		t.Fatalf("runHelpCommand(blackjack --help) exit = %d, want 0", code)
+	}
+	if !strings.Contains(stderr.String(), "--help") {
+		t.Errorf("expected an extra-args warning naming --help; got stderr %q", stderr.String())
+	}
+	// Blackjack's help, NOT the help subcommand's help.
+	if strings.Contains(stdout.String(), "trumpcards help [game|command]") {
+		t.Errorf("expected blackjack help, got the help subcommand's own help: %q", stdout.String())
+	}
+	if stdout.Len() == 0 {
+		t.Error("expected blackjack help on stdout")
+	}
+}
+
+// The two entry points to the help subcommand's own help must converge:
+// `help help` already worked before #5181, `help --help` did not.
+func TestRunHelpCommandHelpFlagMatchesHelpHelp(t *testing.T) {
+	var flagOut, wordOut, stderr bytes.Buffer
+	if code := runHelpCommand([]string{"--help"}, buildHelpText(), &flagOut, &stderr); code != 0 {
+		t.Fatalf("runHelpCommand(--help) exit = %d, want 0", code)
+	}
+	if code := runHelpCommand([]string{"help"}, buildHelpText(), &wordOut, &stderr); code != 0 {
+		t.Fatalf("runHelpCommand(help) exit = %d, want 0", code)
+	}
+	if flagOut.String() != wordOut.String() {
+		t.Errorf("`help --help` and `help help` diverged:\n--help: %q\nhelp:   %q", flagOut.String(), wordOut.String())
+	}
+}
+
 func TestRunHelpCommandUnknownGame(t *testing.T) {
 	var stdout, stderr bytes.Buffer
 	helpText := buildHelpText()
@@ -934,6 +1007,7 @@ func TestRunUnknownTopLevelFlagIsI18nError(t *testing.T) {
 		wantExit    int
 		wantPrefix  string
 		wantInclude string
+		wantHint    string
 	}{
 		{
 			name:        "ja locale wraps error in cliFlagError",
@@ -941,6 +1015,7 @@ func TestRunUnknownTopLevelFlagIsI18nError(t *testing.T) {
 			wantExit:    2,
 			wantPrefix:  "エラー: 不明なオプション",
 			wantInclude: "-bogus",
+			wantHint:    "trumpcards --help",
 		},
 		{
 			name:        "en locale wraps error in cliFlagError",
@@ -948,6 +1023,7 @@ func TestRunUnknownTopLevelFlagIsI18nError(t *testing.T) {
 			wantExit:    2,
 			wantPrefix:  "Error: invalid option",
 			wantInclude: "-bogus",
+			wantHint:    "trumpcards --help",
 		},
 	}
 	for _, tc := range cases {
@@ -985,10 +1061,22 @@ func TestRunUnknownTopLevelFlagIsI18nError(t *testing.T) {
 			if !strings.Contains(errStr, tc.wantInclude) {
 				t.Errorf("stderr should include offending flag %q; got: %q", tc.wantInclude, firstLine(errStr))
 			}
-			// Count a locale-independent USAGE command line rather than the
-			// now-localized "USAGE:" heading.
-			if n := strings.Count(errStr, "trumpcards [--lang ja|en] [game]"); n != 1 {
-				t.Errorf("help text should be printed exactly once; got %d usage-line markers", n)
+			// The full help must NOT be dumped: it buries the error line that
+			// says what was actually wrong. Counted via a locale-independent
+			// USAGE command line rather than the localized "USAGE:" heading.
+			// See issue #5180.
+			if n := strings.Count(errStr, "trumpcards [--lang ja|en] [game]"); n != 0 {
+				t.Errorf("full help must not be dumped on a flag error; got %d usage-line markers", n)
+			}
+			// A one-line recovery hint replaces it, matching the unknown-game
+			// path (cliUnknownGameHint) and the subcommand path (cliTryHelp).
+			if !strings.Contains(errStr, tc.wantHint) {
+				t.Errorf("stderr should carry the recovery hint %q; got: %q", tc.wantHint, errStr)
+			}
+			// Error line + hint, nothing more. Guards against a future change
+			// re-introducing a multi-line dump under a different heading.
+			if n := len(strings.Split(strings.TrimSuffix(errStr, "\n"), "\n")); n != 2 {
+				t.Errorf("expected exactly 2 stderr lines (error + hint); got %d:\n%s", n, errStr)
 			}
 		})
 	}

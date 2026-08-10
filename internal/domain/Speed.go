@@ -43,7 +43,7 @@ type Speed struct {
 	centerPiles [SpeedCenterPileCnt]*Card // 各台札のトップカード
 	gameEndFlag bool
 	winnerIdx   int
-	actionLog   []*ActionLogEntry
+	actionLogBase
 }
 
 // NewSpeed コンストラクタ
@@ -469,26 +469,12 @@ func (s *Speed) GetConfig() SpeedConfig { return s.config }
 // SetConfig 設定更新
 func (s *Speed) SetConfig(cfg SpeedConfig) { s.config = cfg }
 
-// GetActionLog 棋譜取得
-func (s *Speed) GetActionLog() []*ActionLogEntry { return s.actionLog }
-
 // IsHumanTurn Speedでは常に人間のターン (同時プレイ)
 func (s *Speed) IsHumanTurn() bool { return s.phase == SpeedPhasePlay }
 
 // UpdatePhase 外部からフェーズ更新 (Interactor用)
 func (s *Speed) UpdatePhase() {
 	s.updatePhase()
-}
-
-// appendLog 棋譜にエントリを追加する
-func (s *Speed) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	s.actionLog = append(s.actionLog, &ActionLogEntry{
-		TurnNumber: len(s.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- JSON ---

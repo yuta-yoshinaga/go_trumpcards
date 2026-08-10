@@ -34,10 +34,7 @@ func (p *SpadesPlayer) SetBags(bags int) { p.bags = bags }
 // ResetRound ラウンドをリセット（ビッド・トリック・手札・終了状態を初期化）
 func (p *SpadesPlayer) ResetRound() {
 	p.bid = -1
-	p.SetRoundScore(0)
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetRoundWithTricks(p)
 }
 
 // spadesPlayerJSON is the JSON wire format for SpadesPlayer.

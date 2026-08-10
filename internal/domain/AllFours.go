@@ -72,7 +72,7 @@ type AllFours struct {
 	giftAward        int   // gift で 1 点を得たプレイヤー (-1=gift なし)
 	gameEndFlag      bool
 	winnerIdx        int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewAllFours コンストラクタ
@@ -134,7 +134,7 @@ func (a *AllFours) startDeal() {
 	a.sortAllHands()
 	a.phase = AllFoursPhaseBeg
 	a.appendLog(AllFoursNonDealerIdx, "beg_phase",
-		fmt.Sprintf("%s to stand or beg", a.playerName(AllFoursNonDealerIdx)), nil)
+		fmt.Sprintf("%s to stand or beg", playerName(a.players, AllFoursNonDealerIdx)), nil)
 }
 
 // dealHands 各プレイヤーへ n 枚配る
@@ -189,12 +189,12 @@ func (a *AllFours) CpuBeg() {
 func (a *AllFours) applyBeg(beg bool) {
 	if !beg {
 		a.appendLog(AllFoursNonDealerIdx, "stand",
-			fmt.Sprintf("%s stands", a.playerName(AllFoursNonDealerIdx)), nil)
+			fmt.Sprintf("%s stands", playerName(a.players, AllFoursNonDealerIdx)), nil)
 		a.startPlay()
 		return
 	}
 	a.appendLog(AllFoursNonDealerIdx, "beg",
-		fmt.Sprintf("%s begs", a.playerName(AllFoursNonDealerIdx)), nil)
+		fmt.Sprintf("%s begs", playerName(a.players, AllFoursNonDealerIdx)), nil)
 	a.phase = AllFoursPhaseGift
 	// 親がCPUの場合は即応答 (デフォルト構成)。人間親なら respond を待つ。
 	if !a.players[AllFoursDealerIdx].GetIsHuman() {
@@ -227,7 +227,7 @@ func (a *AllFours) applyGiftResponse(run bool) {
 		a.giftAward = AllFoursNonDealerIdx
 		a.appendLog(AllFoursNonDealerIdx, "gift",
 			fmt.Sprintf("%s gifts 1 point to %s (take-it)",
-				a.playerName(AllFoursDealerIdx), a.playerName(AllFoursNonDealerIdx)), nil)
+				playerName(a.players, AllFoursDealerIdx), playerName(a.players, AllFoursNonDealerIdx)), nil)
 		a.startPlay()
 		return
 	}
@@ -292,7 +292,7 @@ func (a *AllFours) redeal() {
 	a.sortAllHands()
 	a.phase = AllFoursPhaseBeg
 	a.appendLog(AllFoursNonDealerIdx, "beg_phase",
-		fmt.Sprintf("%s to stand or beg (re-deal)", a.playerName(AllFoursNonDealerIdx)), nil)
+		fmt.Sprintf("%s to stand or beg (re-deal)", playerName(a.players, AllFoursNonDealerIdx)), nil)
 }
 
 // startPlay プレイフェーズを開始する。非親 (elder hand) が最初にリードする。
@@ -304,7 +304,7 @@ func (a *AllFours) startPlay() {
 	a.phase = AllFoursPhasePlay
 	a.appendLog(AllFoursNonDealerIdx, "play_start",
 		fmt.Sprintf("Trump is %s. %s leads.",
-			allFoursSuitGlyph(a.trumpSuit), a.playerName(AllFoursNonDealerIdx)), nil)
+			allFoursSuitGlyph(a.trumpSuit), playerName(a.players, AllFoursNonDealerIdx)), nil)
 }
 
 // PlayerPlay 人間プレイヤーがカードをプレイする
@@ -355,7 +355,7 @@ func (a *AllFours) CpuPlay() {
 func (a *AllFours) playCard(playerIdx int, card *Card) {
 	a.currentTrick = append(a.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	a.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", a.playerName(playerIdx), cardStr(card)), []*Card{card})
+		fmt.Sprintf("%s plays %s", playerName(a.players, playerIdx), cardStr(card)), []*Card{card})
 	if len(a.currentTrick) == AllFoursPlayerCnt {
 		a.phase = AllFoursPhaseTrickEnd
 	} else {
@@ -385,13 +385,7 @@ func (a *AllFours) validatePlay(playerIdx int, card *Card) error {
 
 // playerHasSuit プレイヤーが特定のスートを持っているか
 func (a *AllFours) playerHasSuit(playerIdx, design int) bool {
-	pl := a.players[playerIdx]
-	for i := 0; i < pl.GetCardsSize(); i++ {
-		if pl.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return handHasSuit(a.players[playerIdx], design)
 }
 
 // ResolveTrick トリックを解決して勝者を決定する
@@ -406,7 +400,7 @@ func (a *AllFours) ResolveTrick() {
 	}
 	a.players[winnerIdx].AddTrick(trickCards)
 	a.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", a.playerName(winnerIdx), a.trickNumber), trickCards)
+		fmt.Sprintf("%s wins trick %d", playerName(a.players, winnerIdx), a.trickNumber), trickCards)
 	a.leadPlayerIdx = winnerIdx
 	if a.players[AllFoursNonDealerIdx].GetCardsSize() == 0 &&
 		a.players[AllFoursDealerIdx].GetCardsSize() == 0 {
@@ -506,7 +500,7 @@ func (a *AllFours) ScoreRound() {
 		base[aw.player]++
 		a.players[aw.player].SetRoundScore(a.players[aw.player].GetRoundScore() + 1)
 		a.appendLog(aw.player, "score_"+aw.kind,
-			fmt.Sprintf("%s scores %s", a.playerName(aw.player), aw.kind), nil)
+			fmt.Sprintf("%s scores %s", playerName(a.players, aw.player), aw.kind), nil)
 		if winner < 0 && base[aw.player] >= limit {
 			winner = aw.player
 		}
@@ -515,14 +509,14 @@ func (a *AllFours) ScoreRound() {
 	for i := 0; i < AllFoursPlayerCnt; i++ {
 		a.players[i].CommitRoundScore()
 		a.appendLog(i, "cumulative_score",
-			fmt.Sprintf("%s: total=%d", a.playerName(i), a.players[i].GetCumulativeScore()), nil)
+			fmt.Sprintf("%s: total=%d", playerName(a.players, i), a.players[i].GetCumulativeScore()), nil)
 	}
 
 	if winner >= 0 {
 		a.gameEndFlag = true
 		a.phase = AllFoursPhaseGameEnd
 		a.winnerIdx = winner
-		a.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", a.playerName(winner)), nil)
+		a.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(a.players, winner)), nil)
 	}
 }
 
@@ -679,18 +673,12 @@ func (a *AllFours) GetPlayerCnt() int { return len(a.players) }
 
 // GetPlayer プレイヤー取得
 func (a *AllFours) GetPlayer(i int) *AllFoursPlayer {
-	if i < 0 || i >= len(a.players) {
-		return nil
-	}
-	return a.players[i]
+	return getPlayer(a.players, i)
 }
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (a *AllFours) IsHumanTurn() bool {
-	if a.currentPlayerIdx < 0 || a.currentPlayerIdx >= len(a.players) {
-		return false
-	}
-	return a.players[a.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(a.players, a.currentPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -698,9 +686,6 @@ func (a *AllFours) GetConfig() AllFoursConfig { return a.config }
 
 // SetConfig 設定変更
 func (a *AllFours) SetConfig(cfg AllFoursConfig) { a.config = cfg }
-
-// GetActionLog 棋譜取得
-func (a *AllFours) GetActionLog() []*ActionLogEntry { return a.actionLog }
 
 // GetValidPlayIndices プレイ可能なカードのインデックスリストを返す (Web用)
 func (a *AllFours) GetValidPlayIndices(playerIdx int) []int {
@@ -728,26 +713,6 @@ func allFoursSortHand(pl *AllFoursPlayer) {
 			return ci.GetDesign() < cj.GetDesign()
 		}
 		return allFoursRankValue(ci.GetValue()) < allFoursRankValue(cj.GetValue())
-	})
-}
-
-func (a *AllFours) playerName(idx int) string {
-	if idx < 0 || idx >= len(a.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if a.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-func (a *AllFours) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	a.actionLog = append(a.actionLog, &ActionLogEntry{
-		TurnNumber: len(a.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
 	})
 }
 

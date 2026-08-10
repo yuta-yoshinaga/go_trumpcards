@@ -1,5 +1,48 @@
 {
+  "cards": "{{count}} cards",
+  "discardButton": "Discard",
+  "discardPhase": "Discard a card or go out.",
+  "discardPile": "Discard: {{count}} cards",
   "discardTop": "Discard",
+  "drawDiscardButton": "Pick up discard",
+  "drawDiscardReason": {
+    "selectTwo": "Select 2 natural cards from your hand matching the top discard",
+    "frozen": "Frozen: wild cards cannot substitute for naturals",
+    "selectOneMore": "Select one more card",
+    "tooMany": "Select at most 2 cards"
+  },
+  "drawPhase": "Draw a card from the stock or pick up the discard pile.",
+  "drawPile": "Stock: {{count}} cards",
+  "drawStockButton": "Draw from stock",
+  "frozen": "Frozen",
+  "frozenAnnounceOff": "The discard pile is no longer frozen.",
+  "frozenAnnounceOn": "The discard pile is frozen. Taking it now needs two matching natural cards.",
+  "frozenIndicator": "❄️ Frozen",
+  "goOutButton": "Go out",
+  "hint": {
+    "drawStock": "Draw from the stock pile",
+    "takeDiscardPile": "Consider taking the discard pile",
+    "meldInitial": "Make your initial meld to open",
+    "buildSamba": "Build a 7-card same-suit sequence for a samba",
+    "meldExtend": "Extend an existing meld for more points",
+    "discardHighSafe": "Discard a high-rank card the opponent cannot use"
+  },
+  "meldButton": "Meld",
+  "meldPhase": "Meld cards or skip.",
+  "meldPoints": {
+    "initial": "Min initial meld: {{min}} / selected: {{points}}",
+    "selected": "Selected: {{points}}"
+  },
+  "meldProgress": {
+    "toCanasta": "{{n}} more for Canasta",
+    "toSamba": "{{n}} more for Samba",
+    "canastaComplete": "Canasta complete!",
+    "sambaComplete": "Samba complete!"
+  },
+  "melds": "Melds",
+  "mixedCanasta": "Mixed Canasta",
+  "naturalCanasta": "Natural Canasta",
+  "nextRound": "Next round",
   "phase": {
     "draw": "Draw",
     "meld": "Meld",
@@ -7,10 +50,22 @@
     "roundEnd": "Round End",
     "gameEnd": "Game End"
   },
-  "drawPhase": "Draw a card from the stock or pick up the discard pile.",
-  "meldPhase": "Meld cards or skip.",
-  "discardPhase": "Discard a card or go out.",
+  "red3s": "Red 3s",
+  "result": {
+    "humanWin": "Your team wins!",
+    "cpuWin": "The CPU team wins!"
+  },
+  "round": "Round {{n}}",
   "roundEnd": "Round over. Proceed to the next round.",
+  "samba": "Samba",
+  "score": {
+    "cumulative": "Total",
+    "round": "Round",
+    "team": "Team"
+  },
+  "selectMeld": "Select cards to meld",
+  "selectPair": "Select a pair (2 natural cards matching the top discard)",
+  "sequence": "Sequence",
   "settings": {
     "title": "Settings",
     "cpuDifficulty": "CPU Difficulty",
@@ -19,67 +74,13 @@
     "normal": "Normal",
     "hard": "Hard"
   },
-  "round": "Round {{n}}",
-  "drawPile": "Stock: {{count}} cards",
-  "discardPile": "Discard: {{count}} cards",
-  "frozen": "Frozen",
-  "teamScores": "Team 0: {{a}} / Team 1: {{b}}",
-  "teamLabel": "Team {{n}}",
-  "melds": "Melds",
-  "red3s": "Red 3s",
-  "naturalCanasta": "Natural Canasta",
-  "mixedCanasta": "Mixed Canasta",
-  "samba": "Samba",
-  "sequence": "Sequence",
-  "meldProgress": {
-    "toCanasta": "{{n}} more for Canasta",
-    "toSamba": "{{n}} more for Samba",
-    "canastaComplete": "Canasta complete!",
-    "sambaComplete": "Samba complete!"
-  },
-  "drawStockButton": "Draw from stock",
-  "drawDiscardButton": "Pick up discard",
-  "meldButton": "Meld",
-  "meldPoints": {
-    "initial": "Min initial meld: {{min}} / selected: {{points}}",
-    "selected": "Selected: {{points}}"
-  },
   "skipMeldButton": "Skip",
-  "discardButton": "Discard",
-  "goOutButton": "Go out",
-  "nextRound": "Next round",
-  "selectPair": "Select a pair (2 natural cards matching the top discard)",
-  "drawDiscardReason": {
-    "selectTwo": "Select 2 natural cards from your hand matching the top discard",
-    "frozen": "Frozen: wild cards cannot substitute for naturals",
-    "selectOneMore": "Select one more card",
-    "tooMany": "Select at most 2 cards"
-  },
-  "frozenIndicator": "❄️ Frozen",
-  "frozenAnnounceOn": "The discard pile is frozen. Taking it now needs two matching natural cards.",
-  "frozenAnnounceOff": "The discard pile is no longer frozen.",
-  "selectMeld": "Select cards to meld",
-  "result": {
-    "humanWin": "Your team wins!",
-    "cpuWin": "The CPU team wins!"
-  },
-  "score": {
-    "cumulative": "Total",
-    "round": "Round",
-    "team": "Team"
-  },
+  "teamLabel": "Team {{n}}",
+  "teamScores": "Team 0: {{a}} / Team 1: {{b}}",
   "tutorial": {
     "drawArea": "The stock and discard area. Draw cards from here.",
     "playerHand": "Your hand. Select cards to meld or discard.",
     "meldArea": "The meld area. Your completed melds are shown here.",
     "actionButtons": "Action buttons. Perform actions based on the current phase."
-  },
-  "hint": {
-    "drawStock": "Draw from the stock pile",
-    "takeDiscardPile": "Consider taking the discard pile",
-    "meldInitial": "Make your initial meld to open",
-    "buildSamba": "Build a 7-card same-suit sequence for a samba",
-    "meldExtend": "Extend an existing meld for more points",
-    "discardHighSafe": "Discard a high-rank card the opponent cannot use"
   }
 }

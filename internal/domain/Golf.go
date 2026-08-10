@@ -44,13 +44,13 @@ type GolfHint struct {
 
 // Golf ゴルフソリティアゲームクラス
 type Golf struct {
-	trumpCards  *TrumpCards
-	layout      [GolfColCnt][GolfRowCnt]*GolfCard
-	stock       []*Card
-	waste       []*Card
-	phase       GolfPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	layout     [GolfColCnt][GolfRowCnt]*GolfCard
+	stock      []*Card
+	waste      []*Card
+	phase      GolfPhase
+	moveCount  int
+	actionLogBase
 	history     []*golfSnapshot
 	isStalemate bool
 }
@@ -232,25 +232,12 @@ func (g *Golf) CanUndo() bool {
 
 // UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。膠着状態でなければ0、脱出不可なら-1。
 func (g *Golf) UndoToEscape() int {
-	if !g.isStalemate {
-		return 0
-	}
-	for i := len(g.history) - 1; i >= 0; i-- {
-		if !g.history[i].isStalemate {
-			return len(g.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(g.isStalemate, g.history, func(s *golfSnapshot) bool { return s.isStalemate })
 }
 
 // UndoN n回連続でアンドゥを実行する。
 func (g *Golf) UndoN(n int) error {
-	for i := 0; i < n; i++ {
-		if err := g.Undo(); err != nil {
-			return fmt.Errorf("undo step %d failed: %w", i+1, err)
-		}
-	}
-	return nil
+	return undoN(g, n)
 }
 
 // --- State getters/setters ---
@@ -274,9 +261,6 @@ func (g *Golf) GetWaste() []*Card { return g.waste }
 func (g *Golf) GetLayout() [GolfColCnt][GolfRowCnt]*GolfCard {
 	return g.layout
 }
-
-// GetActionLog 棋譜取得
-func (g *Golf) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (g *Golf) GetGameEndFlag() bool { return g.phase != GolfPhasePlaying }
@@ -422,13 +406,7 @@ func (g *Golf) restoreSnapshot(snap *golfSnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (g *Golf) appendLog(actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: g.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.appendLogAt(g.moveCount, 0, actionType, detail, cards)
 }
 
 // golfJSON is the JSON wire format for Golf.

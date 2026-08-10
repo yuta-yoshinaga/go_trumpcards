@@ -1,4 +1,4 @@
-# カッシーノ（Cassino）（Web版）遊び方
+# カッシーノ（Web版）遊び方
 
 ## ゲーム概要
 
@@ -7,11 +7,12 @@
 ## 起動方法
 
 ```sh
-go run ./cmd/trumpcards web
-cd frontend && bun run dev
+go run ./cmd/trumpcards web  # CLI経由でWebサーバーを起動
+go run ./cmd/server          # 直接Webサーバーを起動
 ```
 
-ブラウザで `http://localhost:5173/cassino` を開きます。
+ブラウザで `http://localhost:8080` にアクセスし、ナビゲーションバーから「カッシーノ」を選択します。
+ナビバーのJA/ENボタンで日本語・英語を切り替えられます。
 
 ## ルール
 

@@ -66,6 +66,7 @@ func (p *GutsWebPresenter) buildBase(g interfaces.GutsGame) *controller.GutsWebO
 	resObj.RoundNumber = g.GetRoundNumber()
 	resObj.Pot = g.GetPot()
 	resObj.CarryPot = g.GetCarryPot()
+	resObj.CarryCount = g.GetCarryCount()
 	resObj.Ante = g.GetAnte()
 	resObj.Chips = g.GetChips()
 	resObj.WinnerIdx = g.GetWinnerIdx()

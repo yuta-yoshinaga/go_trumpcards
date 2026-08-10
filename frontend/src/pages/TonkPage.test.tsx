@@ -43,6 +43,8 @@ function makeState(overrides: Partial<TonkResponse> = {}): TonkResponse {
     opponentDeadwood: [],
     isTonk: false,
     isUndercut: false,
+    bestDeadwood: -1,
+    knockThreshold: 5,
     message: '',
     config: { cpuDifficulty: 1, pointLimit: 250 },
     ...overrides,
@@ -226,5 +228,36 @@ describe('TonkPage', () => {
       expect(screen.getByRole('button', { name: /ノック/ })).not.toHaveAttribute('data-undercut-risk'),
     );
     expect(screen.queryByTestId('tonk-undercut-warning')).not.toBeInTheDocument();
+  });
+
+  // **CUI は毎ターン「ノック可能/不可」を出しているのに、Web はプレイヤーの
+  // 手計算に任せていた (#4750)。**ノックボタンは1枚選択されていれば常に活性化
+  // するので、実際に押すまで合法かどうか分からなかった。
+  it('says whether the hand can knock right now', async () => {
+    mockExec.mockResolvedValue(makeState({ bestDeadwood: 3, knockThreshold: 5 }));
+    renderWithProviders(<TonkPage />);
+
+    const badge = await screen.findByTestId('tonk-deadwood');
+    expect(badge).toHaveTextContent('3');
+    expect(badge).toHaveAttribute('data-knockable', 'true');
+  });
+
+  it('says when the hand cannot knock yet', async () => {
+    mockExec.mockResolvedValue(makeState({ bestDeadwood: 9, knockThreshold: 5 }));
+    renderWithProviders(<TonkPage />);
+
+    const badge = await screen.findByTestId('tonk-deadwood');
+    expect(badge).toHaveTextContent('9');
+    expect(badge).not.toHaveAttribute('data-knockable');
+  });
+
+  // **-1 は「まだ聞くべき場面でない」印。**0 と混同すると、ドローフェーズで
+  // 「デッドウッド0 = ノック可能」と誤って案内してしまう。
+  it('shows nothing outside the human discard turn', async () => {
+    mockExec.mockResolvedValue(makeState({ bestDeadwood: -1, knockThreshold: 5 }));
+    renderWithProviders(<TonkPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('tonk-deadwood')).not.toBeInTheDocument();
   });
 });

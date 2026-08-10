@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { omahaHiLoApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { BettingControls } from '../components/BettingControls';
+import { BoardLowBadge } from '../components/BoardLowBadge';
 import { CpuAccordion } from '../components/CpuAccordion';
 import { CpuActionLog } from '../components/CpuActionLog';
 import { CpuActionToast } from '../components/CpuActionToast';
@@ -23,7 +24,7 @@ import { RoundResults } from '../components/RoundResults';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCommunityPokerGame } from '../hooks/useCommunityPokerGame';
-import { badgeInfoColors, badgeSuccessColors } from '../styles/badgeStyles';
+import { badgeInfoColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { placeholderCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
@@ -35,8 +36,9 @@ import type { TutorialStep } from '../types/tutorial';
 import { valueName } from '../utils/cardUtils';
 import { OMAHA_HELP, parseOmahaCommand } from '../utils/cli/commands/omahaCommands';
 import { formatOmahaState } from '../utils/cli/formatters/omahaFormatter';
+import { omahaLivePreviewKey } from '../utils/livePokerPreview';
 import { omahaBestFive } from '../utils/omahaBestFive';
-import { type BoardLowStatus, boardLowPossibility, lowCardIndexSets } from '../utils/omahaLowCards';
+import { lowCardIndexSets } from '../utils/omahaLowCards';
 import { findPlayerName } from '../utils/playerUtils';
 
 /** Omaha Hi-Lo (8 or Better) tutorial step definitions. */
@@ -147,44 +149,6 @@ function OmahaLoCard({
   );
 }
 
-/** Design-system token classes per board-low status (live=success, possible=info, impossible=muted). */
-const BOARD_LOW_STATUS_CLASS: Readonly<Record<BoardLowStatus, string>> = {
-  live: badgeSuccessColors,
-  possible: badgeInfoColors,
-  impossible: 'border-ds-border bg-ds-surface text-ds-text-muted',
-};
-
-/** Additive badge showing whether the community board can still make a qualifying
- * Omaha Hi-Lo low (8-or-better): 3+ distinct low ranks on board = live, still
- * reachable = possible, mathematically out = impossible. Inspects the board only. */
-function BoardLowBadge({
-  communityCards,
-  t,
-}: {
-  communityCards: Card[];
-  t: (key: string, opts?: Record<string, unknown>) => string;
-}) {
-  const { status, needed } = boardLowPossibility(communityCards);
-  const aria =
-    status === 'live'
-      ? t('boardLow.ariaLive')
-      : status === 'possible'
-        ? t('boardLow.ariaPossible', { needed })
-        : t('boardLow.ariaImpossible');
-  return (
-    <span
-      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold ${BOARD_LOW_STATUS_CLASS[status]}`}
-      data-testid="omahahilo-board-low-badge"
-      data-status={status}
-      title={aria}
-    >
-      <span aria-hidden="true">{t('boardLow.label')}:</span>
-      <span aria-hidden="true">{t(`boardLow.${status}`)}</span>
-      <span className="sr-only">{aria}</span>
-    </span>
-  );
-}
-
 /** Renders the Omaha Hi-Lo (8 or Better) game page with community cards,
  * betting, and split-pot showdown. */
 export const OmahaHiLoPage = withTutorial(OmahaHiLoPageContent, 'omahahilo', OHL_TUTORIAL_STEPS);
@@ -225,6 +189,7 @@ function OmahaHiLoPageContent() {
     handleCommand,
     handleManualReset,
     phase,
+    isActive,
     isShowdown,
     humanPlayer,
     canAct,
@@ -250,6 +215,14 @@ function OmahaHiLoPageContent() {
     if (!best) return empty;
     return { holeSet: new Set(best.holeIdx), boardSet: new Set(best.boardIdx) };
   }, [isShowdown, humanPlayer, state?.communityCards]);
+
+  // Preview the hand the player currently holds under the must-use-exactly-2
+  // rule. Big O deals five hole cards — ten pairings to weigh by eye — so the
+  // preview matters more here than in plain Omaha, which already had it (#4681/#4682).
+  const liveBestHandKey = useMemo(
+    () => omahaLivePreviewKey(humanPlayer, state?.communityCards ?? [], { isActive, isShowdown }),
+    [isActive, isShowdown, humanPlayer, state?.communityCards],
+  );
   // At showdown, highlight the human's qualifying low cards (hole + board), if any.
   const humanLowBestHand = isShowdown
     ? state?.roundResults?.find((r) => r.playerIdx === humanPlayer?.id)?.lowBestHand
@@ -490,6 +463,17 @@ function OmahaHiLoPageContent() {
                   <span aria-hidden="true">🎯</span>
                   {t('mandatoryRule')}
                 </div>
+                {liveBestHandKey && (
+                  <div className="mb-1" data-testid="omahahilo-live-besthand">
+                    <span className="text-ds-text-primary text-xs">{t('livePreview')}</span>
+                    <span
+                      className={`inline-block ml-1.5 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}
+                      data-testid="omahahilo-live-besthand-name"
+                    >
+                      {t(`hand.${liveBestHandKey}`)}
+                    </span>
+                  </div>
+                )}
                 <div className="flex flex-wrap gap-1.5 mb-2" data-tutorial="ohl-combination-rule">
                   {humanPlayer.cards?.length
                     ? humanPlayer.cards.map((card, idx) => {

@@ -4,6 +4,9 @@ package domain
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // newSkatForTest sets up a Skat game with the human at index 0. Reset()
@@ -561,4 +564,40 @@ func TestSkatGetterDefaults(t *testing.T) {
 	if g.GetCurrentPlayerIdx() != 2 {
 		t.Fatal("SetCurrentPlayerIdx did not apply")
 	}
+}
+
+// **CUI にも安全ビッド上限が要る。**Web は `skatBidEstimate.ts` で常時出すのに、
+// Go 側には対応するものが無かった (#4905)。
+func TestSkat_BidEstimates(t *testing.T) {
+	card := func(d, v int) *Card { return NewCard(d, v, false) }
+
+	// ♣J だけ持つ = with 1。どの契約でも matadors 1 → (1+1)×base。
+	hand := []*Card{card(CardDesignClover, 11)}
+	est := SkatBidEstimates(hand)
+	require.Len(t, est, 5)
+	for _, e := range est {
+		assert.Equal(t, 1, e.Matadors, "holding only the top trump is with 1")
+		assert.Equal(t, (e.Matadors+1)*e.Base, e.Value)
+	}
+	// グランドが基礎点 24 で最大。
+	best := SkatBestBidEstimate(hand)
+	assert.Equal(t, SkatGameGrand, best.GameType)
+	assert.Equal(t, 24, best.Base)
+	assert.Equal(t, 48, best.Value)
+
+	// **♣J を持たない = without。**次に何枚欠けているかで数える。
+	// ♠J だけの手札は ♣J が無いので without 1。
+	without := []*Card{card(CardDesignSpade, 11)}
+	for _, e := range SkatBidEstimates(without) {
+		assert.Equal(t, 1, e.Matadors, "missing only the top trump is without 1")
+	}
+
+	// ♣J ♠J ♥J を持つ = with 3。♦J が無いのでそこで止まる。
+	three := []*Card{
+		card(CardDesignClover, 11), card(CardDesignSpade, 11), card(CardDesignHeart, 11),
+	}
+	assert.Equal(t, 4*24, SkatBestBidEstimate(three).Value, "with 3 on grand is (3+1)x24")
+
+	// 空の手札でも壊れない。ジャックを 1 枚も持たないので without 4 以上。
+	assert.Positive(t, SkatBestBidEstimate(nil).Value)
 }

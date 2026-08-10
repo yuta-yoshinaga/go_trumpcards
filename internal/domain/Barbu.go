@@ -91,7 +91,7 @@ type Barbu struct {
 	gameEndFlag     bool
 	lastDealDetail  *BarbuDealDetail
 	dealHistory     []*BarbuDealDetail // 完了した各ディールの得点内訳 (最大 BarbuTotalDeals 件)
-	actionLog       []*ActionLogEntry
+	actionLogBase
 }
 
 // NewBarbu はコンストラクタ。
@@ -284,6 +284,25 @@ func (b *Barbu) applyTrickPlay(playerIdx, handIdx int) error {
 	return nil
 }
 
+// GetPlayableIndices はそのプレイヤーがいま出せる手札の位置を返す。
+//
+// **判定は validateTrickPlay をそのまま通す。**別のスキャンを書くと「出せる」と
+// 見えた札がサーバーに弾かれる。Web はドミノ契約以外でフォロー義務を可視化して
+// いなかった (#4804)。
+func (b *Barbu) GetPlayableIndices(playerIdx int) []int {
+	if playerIdx < 0 || playerIdx >= len(b.players) {
+		return nil
+	}
+	p := b.players[playerIdx]
+	out := make([]int, 0, p.GetCardsSize())
+	for i := 0; i < p.GetCardsSize(); i++ {
+		if b.validateTrickPlay(playerIdx, p.GetCard(i)) == nil {
+			out = append(out, i)
+		}
+	}
+	return out
+}
+
 // validateTrickPlay はトリックプレイの合法性 (フォロースート) を検証する。
 func (b *Barbu) validateTrickPlay(playerIdx int, card *Card) error {
 	if len(b.currentTrick) == 0 {
@@ -298,13 +317,7 @@ func (b *Barbu) validateTrickPlay(playerIdx int, card *Card) error {
 
 // playerHasSuit はプレイヤーが指定スートを持っているか。
 func (b *Barbu) playerHasSuit(playerIdx, design int) bool {
-	p := b.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return handHasSuit(b.players[playerIdx], design)
 }
 
 // resolveTrick は完成したトリックの勝者を決定し、次トリックへ進める。
@@ -422,17 +435,6 @@ func barbuSortHand(p *BarbuPlayer) {
 	}
 }
 
-// appendLog は棋譜にエントリを追加する。
-func (b *Barbu) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	b.actionLog = append(b.actionLog, &ActionLogEntry{
-		TurnNumber: len(b.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // barbuContractName はコントラクトの英語名を返す (ログ用)。
 func barbuContractName(c int) string {
 	switch c {
@@ -483,10 +485,7 @@ func (b *Barbu) GetPlayerCnt() int { return len(b.players) }
 
 // GetPlayer は指定インデックスのプレイヤーを返す。
 func (b *Barbu) GetPlayer(i int) *BarbuPlayer {
-	if i < 0 || i >= len(b.players) {
-		return nil
-	}
-	return b.players[i]
+	return getPlayer(b.players, i)
 }
 
 // GetCurrentTurn は現在の手番プレイヤーインデックスを返す。
@@ -539,27 +538,12 @@ func (b *Barbu) GetConfig() BarbuConfig { return b.config }
 // SetConfig はローカルルール設定を変更する。
 func (b *Barbu) SetConfig(config BarbuConfig) { b.config = config }
 
-// GetActionLog は棋譜を返す。
-func (b *Barbu) GetActionLog() []*ActionLogEntry { return b.actionLog }
-
 // GetRoundWinners は (ゲーム終了時) 最高得点プレイヤーのリストを返す。
 func (b *Barbu) GetRoundWinners() []int {
 	if !b.gameEndFlag {
 		return nil
 	}
-	best := b.players[0].GetTotalScore()
-	for _, p := range b.players[1:] {
-		if p.GetTotalScore() > best {
-			best = p.GetTotalScore()
-		}
-	}
-	winners := make([]int, 0)
-	for i, p := range b.players {
-		if p.GetTotalScore() == best {
-			winners = append(winners, i)
-		}
-	}
-	return winners
+	return topScorers(b.players)
 }
 
 // --- JSON Serialization ---

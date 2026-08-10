@@ -414,6 +414,8 @@ function TressettePageContent() {
                 cardWidth={cardWidth}
                 isMobile={isMobile}
                 dataTutorialPrefix="tr"
+                validIndices={isHumanTurn ? state.playableIndices : undefined}
+                restrictedTooltip={t('playButton')}
               />
             )}
 

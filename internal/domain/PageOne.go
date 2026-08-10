@@ -42,7 +42,7 @@ type PageOne struct {
 	gameEndFlag      bool
 	winnerIdx        int
 	roundNumber      int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewPageOne コンストラクタ
@@ -263,13 +263,13 @@ func (g *PageOne) CpuDeclare() {
 // doDeclare 宣言処理の共通実装
 func (g *PageOne) doDeclare(playerIdx int) {
 	g.players[playerIdx].SetHasDeclared(true)
-	g.appendLog(playerIdx, "declare", fmt.Sprintf("%s declares Page One!", g.playerName(playerIdx)), nil)
+	g.appendLog(playerIdx, "declare", fmt.Sprintf("%s declares Page One!", playerName(g.players, playerIdx)), nil)
 	g.advanceTurn()
 }
 
 // applyDeclarePenalty 宣言忘れペナルティとして2枚引かせる
 func (g *PageOne) applyDeclarePenalty(playerIdx int) {
-	g.appendLog(playerIdx, "penalty", fmt.Sprintf("%s forgot to declare Page One! (+%d cards)", g.playerName(playerIdx), PageOnePenaltyDraw), nil)
+	g.appendLog(playerIdx, "penalty", fmt.Sprintf("%s forgot to declare Page One! (+%d cards)", playerName(g.players, playerIdx), PageOnePenaltyDraw), nil)
 	for i := 0; i < PageOnePenaltyDraw; i++ {
 		if len(g.drawPile) == 0 {
 			g.recycleDrawPile()
@@ -313,11 +313,11 @@ func (g *PageOne) ScoreRound() {
 			score += pageOneCardScore(p.GetCard(j))
 		}
 		totalScore += score
-		g.appendLog(i, "hand_score", fmt.Sprintf("%s: %d points remaining", g.playerName(i), score), nil)
+		g.appendLog(i, "hand_score", fmt.Sprintf("%s: %d points remaining", playerName(g.players, i), score), nil)
 	}
 
 	g.players[winnerIdx].roundScore = totalScore
-	g.appendLog(winnerIdx, "round_win", fmt.Sprintf("%s wins round %d (+%d points)", g.playerName(winnerIdx), g.roundNumber, totalScore), nil)
+	g.appendLog(winnerIdx, "round_win", fmt.Sprintf("%s wins round %d (+%d points)", playerName(g.players, winnerIdx), g.roundNumber, totalScore), nil)
 
 	g.players[winnerIdx].CommitRoundScore()
 
@@ -352,10 +352,7 @@ func (g *PageOne) SetDiscardPile(pile []*Card) { g.discardPile = pile }
 
 // GetDiscardTop 捨て札の一番上を取得
 func (g *PageOne) GetDiscardTop() *Card {
-	if len(g.discardPile) == 0 {
-		return nil
-	}
-	return g.discardPile[len(g.discardPile)-1]
+	return discardTop(g.discardPile)
 }
 
 // GetDrawPileCount 山札の残り枚数取得
@@ -375,18 +372,12 @@ func (g *PageOne) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *PageOne) GetPlayer(i int) *PageOnePlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (g *PageOne) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -394,9 +385,6 @@ func (g *PageOne) GetConfig() PageOneConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *PageOne) SetConfig(cfg PageOneConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *PageOne) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (g *PageOne) GetValidPlayIndices(playerIdx int) []int {
@@ -421,7 +409,7 @@ func (g *PageOne) isValidPlay(card *Card) bool {
 func (g *PageOne) playCard(playerIdx int, card *Card) {
 	g.discardPile = append(g.discardPile, card)
 
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	remaining := g.players[playerIdx].GetCardsSize()
 
@@ -458,7 +446,7 @@ func (g *PageOne) drawCard(playerIdx int) error {
 	}
 
 	if len(g.drawPile) == 0 {
-		g.appendLog(playerIdx, "pass", fmt.Sprintf("%s passes (no cards to draw)", g.playerName(playerIdx)), nil)
+		g.appendLog(playerIdx, "pass", fmt.Sprintf("%s passes (no cards to draw)", playerName(g.players, playerIdx)), nil)
 		g.advanceTurn()
 		return nil
 	}
@@ -468,7 +456,7 @@ func (g *PageOne) drawCard(playerIdx int) error {
 	g.players[playerIdx].AddCard(card)
 	g.sortHand(playerIdx)
 
-	g.appendLog(playerIdx, "draw", fmt.Sprintf("%s draws a card", g.playerName(playerIdx)), nil)
+	g.appendLog(playerIdx, "draw", fmt.Sprintf("%s draws a card", playerName(g.players, playerIdx)), nil)
 
 	if !g.hasPlayableCard(playerIdx) {
 		g.advanceTurn()
@@ -479,30 +467,12 @@ func (g *PageOne) drawCard(playerIdx int) error {
 
 // recycleDrawPile 捨て札から山札を再構築する
 func (g *PageOne) recycleDrawPile() {
-	if len(g.discardPile) <= 1 {
-		return
-	}
-
-	top := g.discardPile[len(g.discardPile)-1]
-	recycled := g.discardPile[:len(g.discardPile)-1]
-	g.discardPile = []*Card{top}
-
-	rand.Shuffle(len(recycled), func(i, j int) {
-		recycled[i], recycled[j] = recycled[j], recycled[i]
-	})
-
-	g.drawPile = recycled
+	recycleDiscardToDraw(&g.discardPile, &g.drawPile)
 }
 
 // hasPlayableCard プレイヤーが出せるカードを持っているか
 func (g *PageOne) hasPlayableCard(playerIdx int) bool {
-	player := g.players[playerIdx]
-	for i := 0; i < player.GetCardsSize(); i++ {
-		if g.isValidPlay(player.GetCard(i)) {
-			return true
-		}
-	}
-	return false
+	return handHasAny(g.players[playerIdx], g.isValidPlay)
 }
 
 // checkGameEnd ゲーム終了判定
@@ -530,47 +500,17 @@ func (g *PageOne) checkGameEnd() {
 			g.winnerIdx = i
 		}
 	}
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", g.playerName(g.winnerIdx)), nil)
+	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, g.winnerIdx)), nil)
 }
 
 // sortAllHands 全プレイヤーの手札をソートする
 func (g *PageOne) sortAllHands() {
-	for i := range g.players {
-		g.sortHand(i)
-	}
+	sortHands(len(g.players), g)
 }
 
 // sortHand プレイヤーの手札をスート→値の順にソートする
 func (g *PageOne) sortHand(playerIdx int) {
-	p := g.players[playerIdx]
-	sortPlayerHand(p, func(ci, cj *Card) bool {
-		if ci.GetDesign() != cj.GetDesign() {
-			return ci.GetDesign() < cj.GetDesign()
-		}
-		return ci.GetValue() < cj.GetValue()
-	})
-}
-
-// playerName プレイヤー名を返す
-func (g *PageOne) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (g *PageOne) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	sortPlayerHand(g.players[playerIdx], bySuitThenValue)
 }
 
 // --- CPU AI ---
@@ -646,10 +586,7 @@ func (g *PageOne) countSuits(playerIdx int) map[int]int {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (g *PageOne) getValidPlayIndices(playerIdx int) []int {
-	player := g.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return g.isValidPlay(player.GetCard(i))
-	})
+	return validPlayIndices(g.players[playerIdx], func(c *Card) bool { return g.isValidPlay(c) })
 }
 
 // pageOneCardScore カードのスコアを計算する

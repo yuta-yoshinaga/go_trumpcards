@@ -46,8 +46,8 @@ type Rummy500 struct {
 	gameEndFlag      bool
 	winnerIdx        int
 	roundNumber      int
-	actionLog        []*ActionLogEntry
-	roundEnderIdx    int // ラウンド終了を引き起こしたプレイヤー（-1 = 山切れ）
+	actionLogBase
+	roundEnderIdx int // ラウンド終了を引き起こしたプレイヤー（-1 = 山切れ）
 }
 
 // NewRummy500 コンストラクタ
@@ -180,7 +180,7 @@ func (g *Rummy500) PlayerDrawFromStock() error {
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", g.playerName(g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, g.currentPlayerIdx)), nil)
 
 	g.phase = Rummy500PhasePlay
 	return nil
@@ -216,7 +216,7 @@ func (g *Rummy500) PlayerDrawFromDiscard(idx int) error {
 	g.sortHand(g.currentPlayerIdx)
 
 	first := taken[0]
-	detail := fmt.Sprintf("%s draws %s from discard (+%d card(s))", g.playerName(g.currentPlayerIdx), cardStr(first), len(taken)-1)
+	detail := fmt.Sprintf("%s draws %s from discard (+%d card(s))", playerName(g.players, g.currentPlayerIdx), cardStr(first), len(taken)-1)
 	g.appendLog(g.currentPlayerIdx, "draw_discard", detail, taken)
 
 	g.phase = Rummy500PhasePlay
@@ -277,7 +277,7 @@ func (g *Rummy500) executeMeld(playerIdx int, cardIndices []int) error {
 	cardsCopy := make([]*Card, len(meld))
 	copy(cardsCopy, meld)
 	g.appendLog(playerIdx, "meld",
-		fmt.Sprintf("%s melds %s", g.playerName(playerIdx), formatCards(meld)), cardsCopy)
+		fmt.Sprintf("%s melds %s", playerName(g.players, playerIdx), formatCards(meld)), cardsCopy)
 
 	return nil
 }
@@ -320,7 +320,7 @@ func (g *Rummy500) executeLayoff(playerIdx, meldOwner, meldIdx, cardIndex int) e
 	player.RemoveCard(cardIndex)
 
 	g.appendLog(playerIdx, "layoff",
-		fmt.Sprintf("%s lays off %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+		fmt.Sprintf("%s lays off %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 	return nil
 }
 
@@ -345,13 +345,13 @@ func (g *Rummy500) PlayerDiscard(cardIndex int) error {
 	g.discardPile = append(g.discardPile, discarded)
 
 	g.appendLog(g.currentPlayerIdx, "discard",
-		fmt.Sprintf("%s discards %s", g.playerName(g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+		fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
 
 	if player.GetCardsSize() == 0 {
 		// あがり
 		g.roundEnderIdx = g.currentPlayerIdx
 		g.appendLog(g.currentPlayerIdx, "go_out",
-			fmt.Sprintf("%s goes out!", g.playerName(g.currentPlayerIdx)), nil)
+			fmt.Sprintf("%s goes out!", playerName(g.players, g.currentPlayerIdx)), nil)
 		g.scoreRound()
 		return nil
 	}
@@ -385,7 +385,7 @@ func (g *Rummy500) cpuDraw() {
 		g.drawPile = g.drawPile[:len(g.drawPile)-1]
 		g.players[g.currentPlayerIdx].AddCard(card)
 		g.sortHand(g.currentPlayerIdx)
-		g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", g.playerName(g.currentPlayerIdx)), nil)
+		g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, g.currentPlayerIdx)), nil)
 		g.phase = Rummy500PhasePlay
 		return
 	}
@@ -396,7 +396,7 @@ func (g *Rummy500) cpuDraw() {
 		g.players[g.currentPlayerIdx].AddCard(top)
 		g.sortHand(g.currentPlayerIdx)
 		g.appendLog(g.currentPlayerIdx, "draw_discard",
-			fmt.Sprintf("%s draws %s from discard", g.playerName(g.currentPlayerIdx), cardStr(top)), []*Card{top})
+			fmt.Sprintf("%s draws %s from discard", playerName(g.players, g.currentPlayerIdx), cardStr(top)), []*Card{top})
 		g.phase = Rummy500PhasePlay
 		return
 	}
@@ -429,7 +429,7 @@ func (g *Rummy500) cpuPlayMelds() {
 		// → ラウンド終了（あがり扱い）
 		g.roundEnderIdx = idx
 		g.appendLog(idx, "go_out",
-			fmt.Sprintf("%s goes out!", g.playerName(idx)), nil)
+			fmt.Sprintf("%s goes out!", playerName(g.players, idx)), nil)
 		g.scoreRound()
 		return
 	}
@@ -439,12 +439,12 @@ func (g *Rummy500) cpuPlayMelds() {
 	discarded := player.RemoveCard(discardIdx)
 	g.discardPile = append(g.discardPile, discarded)
 	g.appendLog(idx, "discard",
-		fmt.Sprintf("%s discards %s", g.playerName(idx), cardStr(discarded)), []*Card{discarded})
+		fmt.Sprintf("%s discards %s", playerName(g.players, idx), cardStr(discarded)), []*Card{discarded})
 
 	if player.GetCardsSize() == 0 {
 		g.roundEnderIdx = idx
 		g.appendLog(idx, "go_out",
-			fmt.Sprintf("%s goes out!", g.playerName(idx)), nil)
+			fmt.Sprintf("%s goes out!", playerName(g.players, idx)), nil)
 		g.scoreRound()
 		return
 	}
@@ -533,7 +533,7 @@ func (g *Rummy500) scoreRound() {
 		round := meldScore - handPenalty
 		p.SetRoundScore(round)
 		g.appendLog(i, "score",
-			fmt.Sprintf("%s scores %d (melds %d - hand %d)", g.playerName(i), round, meldScore, handPenalty), nil)
+			fmt.Sprintf("%s scores %d (melds %d - hand %d)", playerName(g.players, i), round, meldScore, handPenalty), nil)
 	}
 
 	for i := range g.players {
@@ -588,7 +588,7 @@ func (g *Rummy500) checkGameEnd() {
 			g.winnerIdx = i
 		}
 	}
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", g.playerName(g.winnerIdx)), nil)
+	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, g.winnerIdx)), nil)
 }
 
 // --- State getters ---
@@ -619,10 +619,7 @@ func (g *Rummy500) SetDiscardPile(pile []*Card) { g.discardPile = pile }
 
 // GetDiscardTop 捨て札の一番上を取得
 func (g *Rummy500) GetDiscardTop() *Card {
-	if len(g.discardPile) == 0 {
-		return nil
-	}
-	return g.discardPile[len(g.discardPile)-1]
+	return discardTop(g.discardPile)
 }
 
 // GetDrawPileCount 山札の残り枚数取得
@@ -642,18 +639,12 @@ func (g *Rummy500) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *Rummy500) GetPlayer(i int) *Rummy500Player {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (g *Rummy500) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -662,48 +653,17 @@ func (g *Rummy500) GetConfig() Rummy500Config { return g.config }
 // SetConfig 設定変更
 func (g *Rummy500) SetConfig(cfg Rummy500Config) { g.config = cfg }
 
-// GetActionLog 棋譜取得
-func (g *Rummy500) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // GetRoundEnderIdx ラウンドを終わらせたプレイヤーのインデックス（-1=山切れ）
 func (g *Rummy500) GetRoundEnderIdx() int { return g.roundEnderIdx }
 
 // --- Private helpers ---
 
 func (g *Rummy500) sortAllHands() {
-	for i := range g.players {
-		g.sortHand(i)
-	}
+	sortHands(len(g.players), g)
 }
 
 func (g *Rummy500) sortHand(playerIdx int) {
-	p := g.players[playerIdx]
-	sortPlayerHand(p, func(ci, cj *Card) bool {
-		if ci.GetDesign() != cj.GetDesign() {
-			return ci.GetDesign() < cj.GetDesign()
-		}
-		return ci.GetValue() < cj.GetValue()
-	})
-}
-
-func (g *Rummy500) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-func (g *Rummy500) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	sortPlayerHand(g.players[playerIdx], bySuitThenValue)
 }
 
 // --- Meld / Run / Set / Layoff helpers ---

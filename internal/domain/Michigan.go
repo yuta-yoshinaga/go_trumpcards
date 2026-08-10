@@ -101,7 +101,7 @@ type michiganState struct {
 	result          MichiganResult
 	gameEndFlag     bool
 	scored          bool // ラウンド結果を確定済みか (二重確定防止)
-	actionLog       []*ActionLogEntry
+	actionLogBase
 }
 
 // Michigan はミシガンの状態を保持する集約ルート。
@@ -123,7 +123,7 @@ func NewMichigan(trumpCards *TrumpCards, players []*MichiganPlayer, config Michi
 			winnerIdx:      -1,
 			matchWinnerIdx: -1,
 			boodles:        newMichiganBoodles(),
-			actionLog:      make([]*ActionLogEntry, 0),
+			actionLogBase:  actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 		},
 	}
 }
@@ -158,7 +158,7 @@ func (g *Michigan) Reset() {
 		winnerIdx:      -1,
 		matchWinnerIdx: -1,
 		boodles:        newMichiganBoodles(),
-		actionLog:      make([]*ActionLogEntry, 0),
+		actionLogBase:  actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 	}
 	g.startRound()
 }
@@ -264,7 +264,7 @@ func (g *Michigan) applyBet(seat int, dist []int) {
 		total += amt
 	}
 	p.AddRoundBet(total)
-	g.appendLog(seat, "bet", fmt.Sprintf("%s bets %d across boodles", g.playerName(seat), total), nil)
+	g.appendLog(seat, "bet", fmt.Sprintf("%s bets %d across boodles", playerName(g.players, seat), total), nil)
 }
 
 // PlaceHumanBet は人間 (seat 0) のブードル賭けを適用する。bets は 4 要素、各非負、
@@ -405,14 +405,14 @@ func (g *Michigan) doPlay(seat, idx int) {
 			if won > 0 {
 				p.AddChips(won)
 			}
-			g.appendLog(seat, "boodle", fmt.Sprintf("%s hits a boodle and collects %d", g.playerName(seat), won), []*Card{removed})
+			g.appendLog(seat, "boodle", fmt.Sprintf("%s hits a boodle and collects %d", playerName(g.players, seat), won), []*Card{removed})
 		}
 	}
 	// シーケンス更新。
 	g.state.seqSuit = removed.GetDesign()
 	g.state.seqHighValue = removed.GetValue()
 	g.state.lastPlayerIdx = seat
-	g.appendLog(seat, "play", fmt.Sprintf("%s plays %s", g.playerName(seat), michiganCardStr(removed)), []*Card{removed})
+	g.appendLog(seat, "play", fmt.Sprintf("%s plays %s", playerName(g.players, seat), michiganCardStr(removed)), []*Card{removed})
 	// 手札を出し切ったらラウンド終了。
 	if p.GetCardsSize() == 0 {
 		g.enterRoundEnd(seat)
@@ -559,7 +559,7 @@ func (g *Michigan) enterRoundEnd(goOutSeat int) {
 	g.state.winnerIdx = goOutSeat
 	g.state.result = g.computeHumanResult()
 	g.state.scored = true
-	g.appendLog(goOutSeat, "round_end", fmt.Sprintf("%s empties their hand; round over", g.playerName(goOutSeat)), nil)
+	g.appendLog(goOutSeat, "round_end", fmt.Sprintf("%s empties their hand; round over", playerName(g.players, goOutSeat)), nil)
 	g.checkGameEnd()
 }
 
@@ -594,18 +594,12 @@ func (g *Michigan) endGame() {
 	g.state.phase = MichiganPhaseResult
 	g.state.matchWinnerIdx = g.richestIdx()
 	g.appendLog(g.state.matchWinnerIdx, "game_end",
-		fmt.Sprintf("%s wins the game", g.playerName(g.state.matchWinnerIdx)), nil)
+		fmt.Sprintf("%s wins the game", playerName(g.players, g.state.matchWinnerIdx)), nil)
 }
 
 // richestIdx はチップが最多のプレイヤーのインデックスを返す (同数は座席番号の小さい方)。
 func (g *Michigan) richestIdx() int {
-	best := 0
-	for i, p := range g.players {
-		if p.GetChips() > g.players[best].GetChips() {
-			best = i
-		}
-	}
-	return best
+	return maxIndexBy(g.players, func(p *MichiganPlayer) int { return p.GetChips() })
 }
 
 // --- Hint ---
@@ -640,17 +634,6 @@ func (g *Michigan) GetHint() *MichiganHint {
 
 // --- ヘルパー ---
 
-// playerName は表示用のプレイヤー名を返す。
-func (g *Michigan) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
 // michiganCardStr はカードを棋譜用文字列に変換する。
 func michiganCardStr(c *Card) string {
 	if c == nil {
@@ -676,13 +659,7 @@ func michiganValidCard(c *Card) bool {
 }
 
 func (g *Michigan) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.state.actionLog = append(g.state.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.state.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.state.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // --- 状態アクセサ ---
@@ -748,18 +725,12 @@ func (g *Michigan) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer は指定インデックスのプレイヤーを返す。
 func (g *Michigan) GetPlayer(i int) *MichiganPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetChips は人間 (seat 0) の保有チップを返す。
 func (g *Michigan) GetChips() int {
-	if len(g.players) == 0 {
-		return 0
-	}
-	return g.players[0].GetChips()
+	return chipsOfFirst(g.players)
 }
 
 // IsHumanTurn は現在人間 (seat 0) の入力待ちかどうかを返す。
@@ -1015,7 +986,7 @@ func (g *Michigan) UnmarshalJSON(data []byte) error {
 		result:          j.Result,
 		gameEndFlag:     j.GameEndFlag,
 		scored:          j.Scored,
-		actionLog:       actionLog,
+		actionLogBase:   actionLogBase{actionLog: actionLog},
 	}
 	return nil
 }

@@ -51,6 +51,12 @@ func (lp *LetItRideWebPresenter) Output(lir interfaces.LetItRideGame, lastErr er
 	return marshalOrError(resObj)
 }
 
+// PullConfirmOutput は Pull 実行前の確認内容を JSON 出力する。
+// Web は自前のダイアログで確認するため、ここは状態をそのまま返す。
+func (lp *LetItRideWebPresenter) PullConfirmOutput(lir interfaces.LetItRideGame) string {
+	return lp.Output(lir, nil)
+}
+
 // ActionLogOutput 棋譜をJSON出力
 func (lp *LetItRideWebPresenter) ActionLogOutput(lir interfaces.LetItRideGame) string {
 	return actionLogOutputJSON(lir)

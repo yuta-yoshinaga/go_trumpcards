@@ -76,7 +76,7 @@ type CourtPiece struct {
 	lastRoundCourt   bool
 	gameEndFlag      bool
 	winnerTeam       int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewCourtPiece コンストラクタ
@@ -162,7 +162,7 @@ func (c *CourtPiece) startRound() {
 	courtPieceSortHand(caller)
 
 	c.appendLog(c.callerIdx, "deal",
-		fmt.Sprintf("%s peeks at the first %d cards", c.playerName(c.callerIdx), CourtPiecePeekSize), nil)
+		fmt.Sprintf("%s peeks at the first %d cards", playerName(c.players, c.callerIdx), CourtPiecePeekSize), nil)
 	c.currentPlayerIdx = c.callerIdx
 	c.phase = CourtPiecePhaseTrumpDeclaration
 }
@@ -223,7 +223,7 @@ func (c *CourtPiece) CpuDeclareTrump() {
 func (c *CourtPiece) applyTrumpDeclaration(suit int) {
 	c.trumpSuit = suit
 	c.appendLog(c.callerIdx, "trump",
-		fmt.Sprintf("%s declares %s as trump", c.playerName(c.callerIdx), suitName(suit)), nil)
+		fmt.Sprintf("%s declares %s as trump", playerName(c.players, c.callerIdx), suitName(suit)), nil)
 
 	// Stage 2: 残りのカードを配り切る。
 	c.dealRemaining()
@@ -295,7 +295,7 @@ func (c *CourtPiece) ResolveTrick() {
 	}
 	c.players[winnerIdx].AddTrick(trickCards)
 	c.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", c.playerName(winnerIdx), c.trickNumber), trickCards)
+		fmt.Sprintf("%s wins trick %d", playerName(c.players, winnerIdx), c.trickNumber), trickCards)
 
 	c.leadPlayerIdx = winnerIdx
 	if c.trickNumber >= CourtPieceHandSize {
@@ -480,10 +480,7 @@ func (c *CourtPiece) GetPlayerCnt() int { return len(c.players) }
 
 // GetPlayer プレイヤー取得
 func (c *CourtPiece) GetPlayer(i int) *CourtPiecePlayer {
-	if i < 0 || i >= len(c.players) {
-		return nil
-	}
-	return c.players[i]
+	return getPlayer(c.players, i)
 }
 
 // GetConfig 設定取得
@@ -492,15 +489,9 @@ func (c *CourtPiece) GetConfig() CourtPieceConfig { return c.config }
 // SetConfig 設定変更
 func (c *CourtPiece) SetConfig(cfg CourtPieceConfig) { c.config = cfg }
 
-// GetActionLog 棋譜取得
-func (c *CourtPiece) GetActionLog() []*ActionLogEntry { return c.actionLog }
-
 // IsHumanTurn 現在の手番が人間かどうか
 func (c *CourtPiece) IsHumanTurn() bool {
-	if c.currentPlayerIdx < 0 || c.currentPlayerIdx >= len(c.players) {
-		return false
-	}
-	return c.players[c.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(c.players, c.currentPlayerIdx)
 }
 
 // IsHumanTrumpTurn 現在のトランプ宣言手番が人間かどうか
@@ -518,7 +509,7 @@ func (c *CourtPiece) GetValidPlayIndices(playerIdx int) []int {
 
 // GetHint ヒントを取得する
 func (c *CourtPiece) GetHint() *CourtPieceHint {
-	humanIdx := c.findHumanIdx()
+	humanIdx := findHumanIdx(c.players)
 	if humanIdx < 0 {
 		return nil
 	}
@@ -545,16 +536,6 @@ func (c *CourtPiece) GetHint() *CourtPieceHint {
 
 // --- Private helpers ---
 
-// findHumanIdx 人間プレイヤーのインデックス (-1 = なし)
-func (c *CourtPiece) findHumanIdx() int {
-	for i, p := range c.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 // playCard カードをプレイする共通処理
 func (c *CourtPiece) playCard(playerIdx int, card *Card) {
 	c.currentTrick = append(c.currentTrick, &TrickCard{
@@ -562,7 +543,7 @@ func (c *CourtPiece) playCard(playerIdx int, card *Card) {
 		Card:      card,
 	})
 	c.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", c.playerName(playerIdx), cardStr(card)), []*Card{card})
+		fmt.Sprintf("%s plays %s", playerName(c.players, playerIdx), cardStr(card)), []*Card{card})
 	if len(c.currentTrick) == CourtPiecePlayerCnt {
 		c.phase = CourtPiecePhaseTrickEnd
 		return
@@ -573,25 +554,26 @@ func (c *CourtPiece) playCard(playerIdx int, card *Card) {
 // validatePlay カードのプレイがルール上有効か検証する。
 // Court Piece はリードスート必従のみ。ボイドなら任意 (トランプ or 捨て札)。
 func (c *CourtPiece) validatePlay(playerIdx int, card *Card) error {
-	if len(c.currentTrick) == 0 {
-		return nil
-	}
-	leadSuit := c.currentTrick[0].Card.GetDesign()
-	if card.GetDesign() != leadSuit && c.playerHasSuit(playerIdx, leadSuit) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
-	}
-	return nil
+	return validateFollowSuit(c.currentTrick, c.players, playerIdx, card)
 }
 
-// playerHasSuit プレイヤーが特定のスートを持っているか
-func (c *CourtPiece) playerHasSuit(playerIdx, design int) bool {
+// GetPlayableIndices は指定プレイヤーがいま出せる手札の位置を返す。
+//
+// **判定は validatePlay をそのまま使う。**マストフォローの規則をここで書き直すと、
+// 「出せると表示したのにエラーになる」ずれが生まれる。プレイフェーズ以外や範囲外の
+// プレイヤーでは空を返す。
+func (c *CourtPiece) GetPlayableIndices(playerIdx int) []int {
+	if c.phase != CourtPiecePhasePlay || playerIdx < 0 || playerIdx >= len(c.players) {
+		return []int{}
+	}
 	p := c.players[playerIdx]
+	out := make([]int, 0, p.GetCardsSize())
 	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
+		if c.validatePlay(playerIdx, p.GetCard(i)) == nil {
+			out = append(out, i)
 		}
 	}
-	return false
+	return out
 }
 
 // courtPieceRank converts a raw `Card.GetValue()` (1-13, where 1 = Ace) to
@@ -627,28 +609,6 @@ func courtPieceSortHand(p *CourtPiecePlayer) {
 	})
 }
 
-// playerName プレイヤー名を返す
-func (c *CourtPiece) playerName(idx int) string {
-	if idx < 0 || idx >= len(c.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if c.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (c *CourtPiece) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	c.actionLog = append(c.actionLog, &ActionLogEntry{
-		TurnNumber: len(c.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // playHintReason プレイヒントの理由キー
 func (c *CourtPiece) playHintReason(playerIdx, chosenIdx int) string {
 	player := c.players[playerIdx]
@@ -668,10 +628,7 @@ func (c *CourtPiece) playHintReason(playerIdx, chosenIdx int) string {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリスト
 func (c *CourtPiece) getValidPlayIndices(playerIdx int) []int {
-	player := c.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return c.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(c.players[playerIdx], func(card *Card) bool { return c.validatePlay(playerIdx, card) == nil })
 }
 
 // --- CPU AI ---

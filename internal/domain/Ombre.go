@@ -165,7 +165,7 @@ type Ombre struct {
 	scored           bool                     // 当該ディールの得点計算済みか (RoundEnd 突入時に一度だけ)
 	gameEndFlag      bool
 	winnerPlayer     int // -1=未確定
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewOmbre コンストラクタ
@@ -342,11 +342,11 @@ func (g *Ombre) applyBid(playerIdx int, bid OmbreBid, trumpSuit int) {
 	if bid == OmbreBidNone {
 		g.bidTrump[playerIdx] = -1
 		g.appendLog(playerIdx, "bid_pass",
-			fmt.Sprintf("%s passes", g.playerName(playerIdx)), nil)
+			fmt.Sprintf("%s passes", playerName(g.players, playerIdx)), nil)
 	} else {
 		g.bidTrump[playerIdx] = trumpSuit
 		g.appendLog(playerIdx, "bid",
-			fmt.Sprintf("%s bids %s (trump %s)", g.playerName(playerIdx), ombreBidName(bid), ombreSuitName(trumpSuit)), nil)
+			fmt.Sprintf("%s bids %s (trump %s)", playerName(g.players, playerIdx), ombreBidName(bid), ombreSuitName(trumpSuit)), nil)
 	}
 
 	if g.allBidsActed() {
@@ -405,7 +405,7 @@ func (g *Ombre) finalizeAuction() {
 		g.trumpSuit = g.cpuChooseTrump(ombre)
 	}
 	g.appendLog(ombre, "ombre",
-		fmt.Sprintf("%s is Ombre with %s (trump %s)", g.playerName(ombre), ombreBidName(best), ombreSuitName(g.trumpSuit)), nil)
+		fmt.Sprintf("%s is Ombre with %s (trump %s)", playerName(g.players, ombre), ombreBidName(best), ombreSuitName(g.trumpSuit)), nil)
 	g.startPlay()
 }
 
@@ -518,7 +518,7 @@ func (g *Ombre) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Ombre) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == OmbrePlayerCnt {
 		g.phase = OmbrePhaseTrickEnd
@@ -539,7 +539,7 @@ func (g *Ombre) ResolveTrick() {
 	}
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", g.playerName(winnerIdx), g.trickNumber), trickCards)
+		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= OmbreTrickCount {
@@ -576,7 +576,7 @@ func (g *Ombre) enterRoundEnd() {
 	}
 	g.appendLog(-1, "round_score",
 		fmt.Sprintf("round %d: Ombre(%s) %s (stake=%d)",
-			g.roundNumber, g.playerName(g.ombreIdx), ombreOutcomeName(g.outcome), stake), nil)
+			g.roundNumber, playerName(g.players, g.ombreIdx), ombreOutcomeName(g.outcome), stake), nil)
 	g.checkGameEnd()
 }
 
@@ -644,12 +644,12 @@ func (g *Ombre) checkGameEnd() {
 	g.winnerPlayer = leader
 	g.phase = OmbrePhaseGameEnd
 	g.result = g.humanResult(leader, tie)
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", g.playerName(leader)), nil)
+	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
 }
 
 // humanResult 人間 (seat 0) の視点でマッチ結果を返す。単独トップなら Win、トップ同点なら None、他は Lose。
 func (g *Ombre) humanResult(leader int, tie bool) OmbreResult {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 {
 		return OmbreResultNone
 	}
@@ -718,10 +718,7 @@ func (g *Ombre) trickWinner() int {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す。
 func (g *Ombre) getValidPlayIndices(playerIdx int) []int {
-	player := g.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return g.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(g.players[playerIdx], func(c *Card) bool { return g.validatePlay(playerIdx, c) == nil })
 }
 
 // isCoalition playerIdx が連合 (非オンブル) 側か。
@@ -786,6 +783,29 @@ func ombreCardStrength(c *Card, trump int) int {
 		return ombreTrumpSuitRank(v)
 	}
 	return ombrePlainRank(d, v)
+}
+
+// OmbreMatadorRank は札が三大マタドールのどれかを返す。
+//
+// 1 = スパディーユ (♠A)、2 = マニーユ (切り札の 7)、3 = バスト (♣A)、
+// 0 = マタドールでない。**切り札が未確定なら 0。**マニーユは切り札スート
+// 次第で決まるので、確定前に一部だけ示すと不揃いな案内になる。
+//
+// **判定は ombreCardStrength をそのまま読む。**別に条件を書くと、序列を
+// 変えたときに表示だけ古いままになる。
+func OmbreMatadorRank(c *Card, trump int) int {
+	if c == nil || !ombreValidSuit(trump) {
+		return 0
+	}
+	switch ombreCardStrength(c, trump) {
+	case ombreStrSpadille:
+		return 1
+	case ombreStrManille:
+		return 2
+	case ombreStrBasto:
+		return 3
+	}
+	return 0
 }
 
 // ombreTrumpSuitRank 切り札スートの残り札 K>Q>J>6>5>4>3>2 の強さ。
@@ -896,17 +916,6 @@ func ombreSortHand(p *OmbrePlayer, trump int) {
 	}
 }
 
-// playerName プレイヤー名を返す。
-func (g *Ombre) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
 // ombreBidName ビッドの表示名を返す。
 func ombreBidName(bid OmbreBid) string {
 	switch bid {
@@ -956,33 +965,7 @@ func ombreValidSuit(suit int) bool {
 
 // indexOfPlayerInTrick currentTrick 内で playerIdx の札の位置を返す (-1=なし)。
 func (g *Ombre) indexOfPlayerInTrick(playerIdx int) int {
-	for i, tc := range g.currentTrick {
-		if tc.PlayerIdx == playerIdx {
-			return i
-		}
-	}
-	return -1
-}
-
-// findHumanIdx 人間プレイヤーのインデックス (-1=なし)。
-func (g *Ombre) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
-// appendLog 棋譜にエントリを追加する。
-func (g *Ombre) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	return indexOfPlayerInTrick(g.currentTrick, playerIdx)
 }
 
 // --- CPU AI (play) ---
@@ -1088,7 +1071,7 @@ func ombreFilter(indices []int, pred func(int) bool) []int {
 
 // GetHint 人間プレイヤーの手番における推奨アクションを返す。
 func (g *Ombre) GetHint() *OmbreHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 {
 		return nil
 	}
@@ -1251,18 +1234,12 @@ func (g *Ombre) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *Ombre) GetPlayer(i int) *OmbrePlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // IsHumanTurn 現在の手番 (プレイ) が人間か。
 func (g *Ombre) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // IsHumanBidTurn 現在のビッド手番が人間か。
@@ -1281,9 +1258,6 @@ func (g *Ombre) GetConfig() OmbreConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *Ombre) SetConfig(cfg OmbreConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *Ombre) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetPlayableIndices プレイ可能なカードのインデックス一覧を返す。
 func (g *Ombre) GetPlayableIndices(playerIdx int) []int {

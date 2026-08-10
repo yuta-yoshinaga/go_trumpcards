@@ -36,6 +36,24 @@ func (p *TarneebWebPresenter) Output(t interfaces.TarneebGame, lastErr error) st
 }
 
 // buildBase 共通フィールドを構築
+// validPlayIndices は人間がいま出せる手札の位置を返す。
+//
+// **判定はドメインの GetValidPlayIndices をそのまま呼ぶ。**マストフォローの
+// 規則をフロントに複製すると、ドメインだけ直したときに黙って食い違う。
+// プレイフェーズで人間の手番でなければ空 -- そもそも制限が決まっていない
+// 状態と「1枚も出せない」を混同しないため、呼び出し側は空を「制限なし」とは
+// 解釈せず、手番かどうかで先に分岐する (#4713)。
+func (p *TarneebWebPresenter) validPlayIndices(t interfaces.TarneebGame) []int {
+	if t.GetPhase() != domain.TarneebPhasePlay || !t.IsHumanTurn() {
+		return make([]int, 0)
+	}
+	idx := t.GetValidPlayIndices(t.GetCurrentPlayerIdx())
+	if idx == nil {
+		return make([]int, 0)
+	}
+	return idx
+}
+
 func (p *TarneebWebPresenter) buildBase(t interfaces.TarneebGame) *controller.TarneebWebOutput {
 	resObj := new(controller.TarneebWebOutput)
 	resObj.Phase = int(t.GetPhase())
@@ -49,6 +67,7 @@ func (p *TarneebWebPresenter) buildBase(t interfaces.TarneebGame) *controller.Ta
 	resObj.RedealCount = t.GetRedealCount()
 	resObj.DealerIdx = t.GetDealerIdx()
 	resObj.GameEndFlag = t.GetGameEndFlag()
+	resObj.ValidPlayIndices = p.validPlayIndices(t)
 	resObj.WinnerTeam = t.GetWinnerTeam()
 	resObj.LeadPlayerIdx = t.GetLeadPlayerIdx()
 

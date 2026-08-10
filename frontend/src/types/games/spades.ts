@@ -50,6 +50,15 @@ export interface SpadesResponse extends BaseGameResponse {
   gameEndFlag: boolean;
   winnerIdx: number;
   leadPlayerIdx: number;
+  /**
+   * 人間がいま出せる手札の位置。
+   *
+   * フォロースートとスペードブレイク前のリード制限はドメインの
+   * `GetValidPlayIndices` が判定済み。フロントで組み立て直すと片方だけ直した
+   * ときに黙って食い違う。プレイフェーズで人間の手番でなければ空 —
+   * **空を「制限なし」と読まないこと**（スペードしか無い局面で実際に空になる）。
+   */
+  validPlayIndices: number[];
   config: SpadesConfig;
   hint?: SpadesHint;
 }

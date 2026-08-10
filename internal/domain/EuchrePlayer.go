@@ -24,9 +24,7 @@ func (p *EuchrePlayer) GetTeam() int { return p.team }
 
 // ResetRound ラウンドをリセット（トリック・手札・終了状態を初期化）
 func (p *EuchrePlayer) ResetRound() {
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayerRound(p)
 }
 
 // euchrePlayerJSON is the JSON wire format for EuchrePlayer.

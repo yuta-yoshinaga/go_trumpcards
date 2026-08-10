@@ -68,24 +68,24 @@ type PigsTail struct {
 	cpuActions   []*PigsTailCpuAction // CPUターンの行動履歴
 	humanAction  *PigsTailCpuAction   // 人間プレイヤーの最後の行動記録
 	config       PigsTailConfig       // ゲーム設定
-	actionLog    []*ActionLogEntry    // 棋譜
+	actionLogBase
 }
 
 // NewPigsTail コンストラクタ
 func NewPigsTail(trumpCards *TrumpCards, players []*PigsTailPlayer) *PigsTail {
 	return &PigsTail{
-		trumpCards:   trumpCards,
-		center:       make([]*Card, 0),
-		players:      players,
-		currentTurn:  0,
-		gameEndFlag:  false,
-		loserIdx:     -1,
-		lastDrawCard: nil,
-		lastPenalty:  false,
-		cpuActions:   nil,
-		humanAction:  nil,
-		config:       DefaultPigsTailConfig(),
-		actionLog:    nil,
+		trumpCards:    trumpCards,
+		center:        make([]*Card, 0),
+		players:       players,
+		currentTurn:   0,
+		gameEndFlag:   false,
+		loserIdx:      -1,
+		lastDrawCard:  nil,
+		lastPenalty:   false,
+		cpuActions:    nil,
+		humanAction:   nil,
+		config:        DefaultPigsTailConfig(),
+		actionLogBase: actionLogBase{actionLog: nil},
 	}
 }
 
@@ -307,10 +307,7 @@ func (pt *PigsTail) GetPlayerCnt() int { return len(pt.players) }
 
 // GetPlayer 指定インデックスのプレイヤーを取得する
 func (pt *PigsTail) GetPlayer(i int) *PigsTailPlayer {
-	if i < 0 || i >= len(pt.players) {
-		return nil
-	}
-	return pt.players[i]
+	return getPlayer(pt.players, i)
 }
 
 // GetCurrentTurn 現在の手番プレイヤーインデックスを取得する
@@ -330,20 +327,6 @@ func (pt *PigsTail) GetCpuActions() []*PigsTailCpuAction { return pt.cpuActions 
 
 // GetHumanAction 人間の最後の行動記録を取得する
 func (pt *PigsTail) GetHumanAction() *PigsTailCpuAction { return pt.humanAction }
-
-// GetActionLog 棋譜を取得する
-func (pt *PigsTail) GetActionLog() []*ActionLogEntry { return pt.actionLog }
-
-// appendLog 棋譜にエントリを追加する
-func (pt *PigsTail) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	pt.actionLog = append(pt.actionLog, &ActionLogEntry{
-		TurnNumber: len(pt.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
 
 // cardShortStr カードの短い文字列表現を返す
 func cardShortStr(c *Card) string {

@@ -44,7 +44,6 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
-	"sort"
 )
 
 // KoiKoiPlayerCnt はこいこいのプレイヤー数 (固定 2)。
@@ -364,7 +363,7 @@ type koikoiState struct {
 	lastRoundResult *KoiKoiRoundResult
 	pendingYaku     []KoiKoiYaku // 決断フェーズで表示する役
 	pendingPoints   int          // 決断フェーズの役合計
-	actionLog       []*ActionLogEntry
+	actionLogBase
 }
 
 // KoiKoi はこいこいゲームの状態を保持する集約ルート。
@@ -416,11 +415,11 @@ func (g *KoiKoi) Reset() {
 		p.ResetScore()
 	}
 	g.state = koikoiState{
-		phase:       KoiKoiPhasePlay,
-		roundWinner: -1,
-		winner:      -1,
-		roundNumber: 1,
-		actionLog:   make([]*ActionLogEntry, 0),
+		phase:         KoiKoiPhasePlay,
+		roundWinner:   -1,
+		winner:        -1,
+		roundNumber:   1,
+		actionLogBase: actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 	}
 	g.startRound()
 }
@@ -474,12 +473,7 @@ func (g *KoiKoi) startRound() {
 
 // allHandsEmpty は全員の手札が空かどうか。
 func (g *KoiKoi) allHandsEmpty() bool {
-	for _, p := range g.players {
-		if p.GetCardsSize() > 0 {
-			return false
-		}
-	}
-	return true
+	return allHandsEmpty(g.players)
 }
 
 // --- 捕獲ロジック ---
@@ -568,13 +562,7 @@ func (g *KoiKoi) koikoiPlaceCard(playerIdx int, card *Card, chosen int) {
 
 // removeFieldByIndex は降順に並べ替えてから場札を削除する。
 func (g *KoiKoi) removeFieldByIndex(idxs []int) {
-	sorted := append([]int(nil), idxs...)
-	sort.Sort(sort.Reverse(sort.IntSlice(sorted)))
-	for _, idx := range sorted {
-		if idx >= 0 && idx < len(g.state.fieldCards) {
-			g.state.fieldCards = append(g.state.fieldCards[:idx], g.state.fieldCards[idx+1:]...)
-		}
-	}
+	g.state.fieldCards = removeIndices(g.state.fieldCards, idxs)
 }
 
 // --- Play ---
@@ -858,7 +846,7 @@ func (g *KoiKoi) GetHint() *KoiKoiHint {
 	if g.state.gameEndFlag {
 		return nil
 	}
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 || g.state.currentTurn != human {
 		return nil
 	}
@@ -885,36 +873,9 @@ func (g *KoiKoi) GetHint() *KoiKoiHint {
 
 // --- ヘルパー ---
 
-func (g *KoiKoi) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 // sortHumanHand は人間の手札を月→インデックス順に並べ替える。
 func (g *KoiKoi) sortHumanHand() {
-	for _, p := range g.players {
-		if !p.GetIsHuman() {
-			continue
-		}
-		cards := make([]*Card, p.GetCardsSize())
-		for i := 0; i < p.GetCardsSize(); i++ {
-			cards[i] = p.GetCard(i)
-		}
-		sort.SliceStable(cards, func(i, j int) bool {
-			if cards[i].GetDesign() != cards[j].GetDesign() {
-				return cards[i].GetDesign() < cards[j].GetDesign()
-			}
-			return cards[i].GetValue() < cards[j].GetValue()
-		})
-		p.Reset()
-		for _, c := range cards {
-			p.AddCard(c)
-		}
-	}
+	sortHumanHands(g.players)
 }
 
 func (g *KoiKoi) playerName(idx int) string {
@@ -928,13 +889,7 @@ func (g *KoiKoi) playerName(idx int) string {
 }
 
 func (g *KoiKoi) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.state.actionLog = append(g.state.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.state.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.state.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // koikoiCardStr は札を "松·光" のように表す (ログ/デバッグ用)。
@@ -1055,10 +1010,7 @@ func (g *KoiKoi) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer は指定インデックスのプレイヤーを返す。
 func (g *KoiKoi) GetPlayer(i int) *KoiKoiPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetConfig はローカルルール設定を返す。
@@ -1229,7 +1181,7 @@ func (g *KoiKoi) UnmarshalJSON(data []byte) error {
 		lastRoundResult: j.LastRoundResult,
 		pendingYaku:     j.PendingYaku,
 		pendingPoints:   j.PendingPoints,
-		actionLog:       j.ActionLog,
+		actionLogBase:   actionLogBase{actionLog: j.ActionLog},
 	}
 	if g.state.fieldCards == nil {
 		g.state.fieldCards = make([]*Card, 0)

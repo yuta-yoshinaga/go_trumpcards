@@ -1013,3 +1013,39 @@ func TestBlackJackCuiPresenter_ActionLogOutput(t *testing.T) {
 		mockGame.AssertExpectations(t)
 	})
 }
+
+// **ベット前に配当を見せる (#4677)。**Web はベットフェーズに配当表を出しているのに、
+// CUI はチップ・デッキ・ルールしか出していなかった。
+func TestBlackJackCuiPresenter_PayoutTable(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	bjp := new(presenter.BlackJackCuiPresenter)
+
+	t.Run("listed during the bet phase", func(t *testing.T) {
+		bj, _ := setupBJCuiTest(1000, 1000)
+		bj.Reset()
+		out := bjp.Output(bj, nil)
+		assert.Contains(t, out, "配当表")
+		assert.Contains(t, out, "ブラックジャック (3:2)")
+		assert.Contains(t, out, "サレンダー (ベットの半額返金)")
+		// 標準ルールにボーナスは無い。
+		assert.NotContains(t, out, "5枚で21")
+	})
+
+	t.Run("spanish 21 adds the bonus payouts", func(t *testing.T) {
+		bj := domain.NewSpanish21BlackJack()
+		bj.Reset()
+		out := bjp.Output(bj, nil)
+		assert.Contains(t, out, "5枚で21 (3:2)")
+		assert.Contains(t, out, "7-7-7")
+		assert.Contains(t, out, "プレイヤー21は常に勝利")
+	})
+
+	t.Run("not listed once the hand is dealt", func(t *testing.T) {
+		bj, _ := setupBJCuiTest(1000, 1000)
+		bj.Reset()
+		_ = bj.PlayerBet(10, 0, 0, 1)
+		assert.NotContains(t, bjp.Output(bj, nil), "配当表")
+	})
+}

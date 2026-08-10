@@ -29,6 +29,8 @@ func setupJassCuiMock() *interfaces.MockJassGame {
 	m.On("GetWinnerTeam").Return(-1)
 	m.On("GetLeadPlayerIdx").Return(0)
 	m.On("GetConfig").Return(domain.DefaultJassConfig())
+	m.On("GetRoundWeisPoints", 0).Return(0)
+	m.On("GetRoundWeisPoints", 1).Return(0)
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	return m
 }
@@ -51,6 +53,45 @@ func setupJassCuiMockWithPlayers() (*interfaces.MockJassGame, []*domain.JassPlay
 	m.On("GetPlayer", 2).Return(players[2])
 	m.On("GetPlayer", 3).Return(players[3])
 	return m, players
+}
+
+// **Weis の内訳が無いとラウンド得点が説明できない。**Web は専用パネルを出すのに、
+// CUI は Weis で加点があったことすら伝えていなかった (#4918)。
+func TestJassCuiPresenter_ShowsTheRoundWeisPoints(t *testing.T) {
+	p := new(presenter.JassCuiPresenter)
+
+	weisMock := func(w0, w1 int, enable bool) *interfaces.MockJassGame {
+		m, _ := setupJassCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundWeisPoints")
+		m.On("GetRoundWeisPoints", 0).Return(w0)
+		m.On("GetRoundWeisPoints", 1).Return(w1)
+		if !enable {
+			cfg := domain.DefaultJassConfig()
+			cfg.EnableWeis = false
+			m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetConfig")
+			m.On("GetConfig").Return(cfg)
+		}
+		return m
+	}
+
+	t.Run("shows both teams so the zero side is explained too", func(t *testing.T) {
+		out := p.Output(weisMock(150, 0, true), nil)
+		assert.Contains(t, out, "当ラウンドの Weis:")
+		assert.Contains(t, out, "チーム0 150点")
+		assert.Contains(t, out, "チーム1 0点")
+		// **総取りの規則を書かないと、0 点の側が理由不明になる。**
+		assert.Contains(t, out, "総取り")
+	})
+
+	// 誰も Weis を宣言していないラウンドでは行そのものを出さない。
+	t.Run("no line when neither team declared anything", func(t *testing.T) {
+		assert.NotContains(t, p.Output(weisMock(0, 0, true), nil), "当ラウンドの Weis")
+	})
+
+	// enableWeis が無効なら、点があっても出さない (受け入れ条件2)。
+	t.Run("no line when weis is disabled", func(t *testing.T) {
+		assert.NotContains(t, p.Output(weisMock(150, 0, false), nil), "当ラウンドの Weis")
+	})
 }
 
 func TestJassCuiPresenter_Output(t *testing.T) {

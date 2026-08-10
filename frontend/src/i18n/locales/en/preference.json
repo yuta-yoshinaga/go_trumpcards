@@ -75,7 +75,7 @@
     "hand": "This is your hand. During play, click a playable card and press Play.",
     "actions": "In the bidding phase, buttons appear for Pass / Six (6 tricks) / Misère (0 tricks, no trump) / Seven (7 tricks) / Eight (8 tricks). Bids rank Pass < Six < Misère < Seven < Eight, and only a bid higher than the current highest is selectable. The highest bidder becomes the declarer and plays against the other 2 defenders."
   },
-  "bidHighest": "Highest bid: {{name}}",
+  "bidHighest": "Highest bid: {{bid}} ({{player}})",
   "bidNone": "none",
   "bidTooLow": "Must exceed the current highest bid",
   "misereBadge": "Special",

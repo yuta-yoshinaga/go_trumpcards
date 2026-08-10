@@ -16,6 +16,8 @@
   "gameOver": "ゲーム終了！",
   "biddingTurn": "ビッド: {{name}} の番",
   "promptBid": "b 0/1 - パス(0) またはアクティブなビッドを受諾(1)",
+  "bidEstimate": "手札の目安: {{value}}点まで（{{game}}・マタドール{{matadors}}）",
+  "bidExceedsHand": "⚠ 現在のビッドは手札の目安（{{value}}点）を超えています",
   "skatPickup": "スカート取得: 宣言者が決定",
   "promptPickup": "ps 0/1 - 見送る(0) またはスカートを拾う(1)",
   "discardPrompt": "2枚のカードをスカートに捨てる",

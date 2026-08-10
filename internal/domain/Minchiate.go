@@ -204,7 +204,7 @@ type Minchiate struct {
 	roundTricks      [MinchiatePlayerCnt]int
 	gameEndFlag      bool
 	winnerTeam       int // -1 = 未確定 (同点)
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewMinchiate コンストラクタ。
@@ -307,13 +307,7 @@ func (g *Minchiate) shuffle() {
 
 // drawCard デッキから 1 枚配る (尽きたら nil)。
 func (g *Minchiate) drawCard() *Card {
-	if g.deckDrawCnt >= len(g.deck) {
-		return nil
-	}
-	card := g.deck[g.deckDrawCnt]
-	card.SetDraw(true)
-	g.deckDrawCnt++
-	return card
+	return drawFromDeck(g.deck, &g.deckDrawCnt)
 }
 
 // sortAllHands 全員の手札をデザイン・値の順に整列する。
@@ -354,13 +348,7 @@ func (g *Minchiate) finishMatch() {
 
 // appendLog 棋譜に 1 件追加する。
 func (g *Minchiate) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: g.trickNumber,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.appendLogAt(g.trickNumber, playerIdx, actionType, detail, cards)
 }
 
 // --- スカルト (ディーラーの捨て札) ---
@@ -783,10 +771,7 @@ func (g *Minchiate) GetPlayerCnt() int { return MinchiatePlayerCnt }
 
 // GetPlayer 指定席のプレイヤー。
 func (g *Minchiate) GetPlayer(i int) *MinchiatePlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetPlayers 全プレイヤー。
@@ -807,19 +792,9 @@ type MinchiateHint struct {
 	Reason      string // ヒント理由キー
 }
 
-// findHumanIdx 人間の席を返す (居なければ -1)。
-func (g *Minchiate) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 // GetHint 人間プレイヤーへのヒント。手番でなければ nil。
 func (g *Minchiate) GetHint() *MinchiateHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 || g.phase != MinchiatePhasePlay || g.currentPlayerIdx != human {
 		return nil
 	}

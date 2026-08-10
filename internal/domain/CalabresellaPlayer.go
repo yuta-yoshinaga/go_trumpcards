@@ -18,9 +18,7 @@ func NewCalabresellaPlayer(isHuman bool) *CalabresellaPlayer {
 
 // ResetRound ラウンドをリセット (トリック・手札・終了状態を初期化)
 func (p *CalabresellaPlayer) ResetRound() {
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayerRound(p)
 }
 
 // calabresellaPlayerJSON is the JSON wire format for CalabresellaPlayer.

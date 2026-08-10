@@ -19,5 +19,6 @@
   "hintReasonFollowWin": "Points on the table — win the trick",
   "hintReasonFollowDuck": "Cannot/should not win — duck",
   "hintReasonDiscardLow": "Cannot follow suit — discard a low card",
-  "trickWinner": "{{name}} (Team {{team}}) won the trick"
+  "trickWinner": "{{name}} (Team {{team}}) won the trick",
+  "roundPoints": "Card points -- Team A: {{ptsA}} / Team B: {{ptsB}} (win at {{win}})"
 }

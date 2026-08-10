@@ -88,8 +88,8 @@ type Loo struct {
 	roundTricks      [LooPlayerCnt]int
 	gameEndFlag      bool
 	lastDealDetail   *LooDealDetail
-	actionLog        []*ActionLogEntry
-	scored           bool // 現ディールが精算済みか (二重精算防止)
+	actionLogBase
+	scored bool // 現ディールが精算済みか (二重精算防止)
 }
 
 // NewLoo はコンストラクタ。
@@ -248,9 +248,9 @@ func (g *Loo) applyDecide(idx int, play bool) {
 	g.players[idx].SetPlaying(play)
 	g.decideDone[idx] = true
 	if play {
-		g.appendLog(idx, "decide", fmt.Sprintf("%s plays", g.playerName(idx)), nil)
+		g.appendLog(idx, "decide", fmt.Sprintf("%s plays", playerName(g.players, idx)), nil)
 	} else {
-		g.appendLog(idx, "decide", fmt.Sprintf("%s passes", g.playerName(idx)), nil)
+		g.appendLog(idx, "decide", fmt.Sprintf("%s passes", playerName(g.players, idx)), nil)
 	}
 	for k := 1; k <= LooPlayerCnt; k++ {
 		ni := (idx + k) % LooPlayerCnt
@@ -274,7 +274,7 @@ func (g *Loo) resolveDecide() {
 	case 1:
 		// 1 人だけ参加: プレイせずにポットを総取り (トリックは戦われない)。
 		winner := active[0]
-		g.appendLog(winner, "walkover", fmt.Sprintf("%s is the only player and takes the pot", g.playerName(winner)), nil)
+		g.appendLog(winner, "walkover", fmt.Sprintf("%s is the only player and takes the pot", playerName(g.players, winner)), nil)
 		g.enterRoundEnd()
 	default:
 		g.startPlayPhase(active[0])
@@ -379,7 +379,7 @@ func (g *Loo) CpuPlay() {
 // playCard はカードをプレイする共通処理。
 func (g *Loo) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == len(g.activePlayers()) {
 		g.phase = LooPhaseTrickEnd
@@ -403,7 +403,7 @@ func (g *Loo) ResolveTrick() {
 	g.lastTrick = g.currentTrick
 	g.lastTrickWinner = winnerIdx
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", g.playerName(winnerIdx), g.trickNumber), trickCards)
+		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= LooTrickCount {
@@ -484,11 +484,11 @@ func (g *Loo) ScoreRound() {
 		winner := active[0]
 		g.players[winner].AddChips(g.pot)
 		gained[winner] += g.pot
-		g.appendLog(winner, "settle", fmt.Sprintf("%s takes the whole pot %d", g.playerName(winner), g.pot), nil)
+		g.appendLog(winner, "settle", fmt.Sprintf("%s takes the whole pot %d", playerName(g.players, winner), g.pot), nil)
 		g.pot = 0
 	default:
 		// 参加者でトリックに応じてポットを分配 (1 トリック = ポット/トリック数)。
-		share := potStart / LooTrickCount
+		share := LooPerTrickShare(potStart)
 		distributed := 0
 		for _, idx := range active {
 			win := g.roundTricks[idx] * share
@@ -510,7 +510,7 @@ func (g *Loo) ScoreRound() {
 				g.pot += penalty
 				looed = append(looed, idx)
 				g.appendLog(idx, "looed",
-					fmt.Sprintf("%s is looed and pays %d to the pot", g.playerName(idx), penalty), nil)
+					fmt.Sprintf("%s is looed and pays %d to the pot", playerName(g.players, idx), penalty), nil)
 			}
 		}
 	}
@@ -526,7 +526,7 @@ func (g *Loo) ScoreRound() {
 	}
 	for i := 0; i < LooPlayerCnt; i++ {
 		g.appendLog(i, "cumulative_chips",
-			fmt.Sprintf("%s: total=%d", g.playerName(i), g.players[i].GetChips()), nil)
+			fmt.Sprintf("%s: total=%d", playerName(g.players, i), g.players[i].GetChips()), nil)
 	}
 }
 
@@ -604,22 +604,10 @@ func (g *Loo) playerHasSuit(playerIdx, suit int) bool {
 
 // getValidPlayIndices はプレイ可能なカードのインデックスリストを返す。
 func (g *Loo) getValidPlayIndices(playerIdx int) []int {
-	player := g.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return g.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(g.players[playerIdx], func(c *Card) bool { return g.validatePlay(playerIdx, c) == nil })
 }
 
 // --- ヘルパー ---
-
-func (g *Loo) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
 
 func (g *Loo) sortAllHands() {
 	for _, p := range g.players {
@@ -645,34 +633,9 @@ func looSortHand(p *LooPlayer) {
 	}
 }
 
-func (g *Loo) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-func (g *Loo) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // indexOfPlayerInTrick は currentTrick 内で playerIdx の札の位置を返す (-1=なし)。
 func (g *Loo) indexOfPlayerInTrick(playerIdx int) int {
-	for i, tc := range g.currentTrick {
-		if tc.PlayerIdx == playerIdx {
-			return i
-		}
-	}
-	return -1
+	return indexOfPlayerInTrick(g.currentTrick, playerIdx)
 }
 
 // trickTopRank は現在のトリック勝者の札のランクを返す。見つからない場合は極小値。
@@ -737,41 +700,17 @@ func (g *Loo) cpuPlaySmart(playerIdx int, valid []int) int {
 	player := g.players[playerIdx]
 	if len(g.currentTrick) == 0 {
 		// リード: 高い札で主導権を握る。
-		return g.maxBy(player, valid, func(c *Card) int { return g.looRank(c) })
+		return pickHighest(player, valid, func(c *Card) int { return g.looRank(c) })
 	}
 	winnerIdx := g.trickWinner()
 	top := g.trickTopRank(winnerIdx)
 	winners := looFilter(valid, func(idx int) bool { return g.looRank(player.GetCard(idx)) > top })
 	if len(winners) > 0 {
 		// 勝てるなら最小の勝ち札で勝つ。
-		return g.minBy(player, winners, func(c *Card) int { return g.looRank(c) })
+		return pickLowest(player, winners, func(c *Card) int { return g.looRank(c) })
 	}
 	// 勝てない: 最小の札を捨てる。
-	return g.minBy(player, valid, func(c *Card) int { return g.looRank(c) })
-}
-
-func (g *Loo) minBy(player *LooPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s < bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
-}
-
-func (g *Loo) maxBy(player *LooPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s > bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
+	return pickLowest(player, valid, func(c *Card) int { return g.looRank(c) })
 }
 
 func looFilter(indices []int, pred func(int) bool) []int {
@@ -788,7 +727,7 @@ func looFilter(indices []int, pred func(int) bool) []int {
 
 // GetHint は人間プレイヤーの手番における推奨を返す (decide / play フェーズ)。
 func (g *Loo) GetHint() *LooHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 {
 		return nil
 	}
@@ -906,6 +845,24 @@ func (g *Loo) SetPot(v int) { g.pot = v }
 // GetPotStart は現ディール開始時のポット額を返す。
 func (g *Loo) GetPotStart() int { return g.potStart }
 
+// LooPerTrickShare は 1 トリックあたりの取り分を返す。
+//
+// **端数はポットに残る。**5 で割り切れないディールでは、全トリック取っても
+// ポット全額は入らない (37 なら 7×5 = 35)。表示側もこの関数を通すこと —
+// 別に割ると、表示より少ない額しか入らない案内になる (#4921)。
+func LooPerTrickShare(potStart int) int {
+	if potStart <= 0 {
+		return 0
+	}
+	return potStart / LooTrickCount
+}
+
+// LooMaxWin は全トリック取ったときに実際に入る額を返す。
+func LooMaxWin(potStart int) int { return LooPerTrickShare(potStart) * LooTrickCount }
+
+// SetPotStart は現ディール開始時のポット額を設定する (テスト用)。
+func (g *Loo) SetPotStart(v int) { g.potStart = v }
+
 // GetRoundTricks は現ディールの獲得トリック数を返す。
 func (g *Loo) GetRoundTricks() [LooPlayerCnt]int { return g.roundTricks }
 
@@ -920,10 +877,7 @@ func (g *Loo) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer は指定インデックスのプレイヤーを返す。
 func (g *Loo) GetPlayer(i int) *LooPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetLastDealDetail は直前ディールの精算内訳を返す (nil の場合もある)。
@@ -949,9 +903,6 @@ func (g *Loo) GetConfig() LooConfig { return g.config }
 
 // SetConfig はローカルルール設定を変更する。
 func (g *Loo) SetConfig(cfg LooConfig) { g.config = cfg }
-
-// GetActionLog は棋譜を返す。
-func (g *Loo) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetPlayableIndices はプレイフェーズでプレイ可能な手札インデックスを返す。
 func (g *Loo) GetPlayableIndices(playerIdx int) []int {

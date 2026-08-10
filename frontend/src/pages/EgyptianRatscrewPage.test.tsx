@@ -26,6 +26,22 @@ vi.mock('../api/gameApi', () => ({
   actionLogApi: { egyptianratscrew: vi.fn() },
 }));
 
+const mockPlaySound = vi.fn();
+const mockSoundValue = {
+  playSound: mockPlaySound,
+  muted: false,
+  toggleMute: vi.fn(),
+  claimExecSound: vi.fn(),
+  consumeExecClaim: () => false,
+};
+vi.mock('../providers/SoundProvider', () => ({
+  SoundProvider: ({ children }: { children: React.ReactNode }) => children,
+  useSound: () => mockSoundValue,
+  // AnimatedCard と中央のタップ (useGameApi / GamePageShell) は useOptionalSound を
+  // 使う。同じスパイに向けて、音の名前で絞って検証する。
+  useOptionalSound: () => mockSoundValue,
+}));
+
 const mockExec = vi.mocked(egyptianRatscrewApi.exec);
 
 const baseState: EgyptianRatscrewResponse = {
@@ -83,6 +99,9 @@ const gameEndState: EgyptianRatscrewResponse = {
 };
 
 beforeEach(() => {
+  // **音のスパイはテストごとに消す。**残ると、前のテストで鳴った音を
+  // 「CPU のスラップで鳴った」と誤検知する。
+  mockPlaySound.mockClear();
   mockExec.mockResolvedValue(baseState);
   mockUseCliMode.mockReturnValue({
     cliEnabled: false,
@@ -276,5 +295,46 @@ describe('EgyptianRatscrewPage', () => {
     mockExec.mockClear();
     fireEvent.keyDown(window, { key: 'Enter' });
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('step'));
+  });
+});
+
+// **姉妹ゲームの Slapjack には正誤の音があるのに、ERS は完全に無音だった
+// (#4749)。**視覚 (SlapBurst) と読み上げ (aria-live) はほぼ同じ実装なのに、
+// 音のフィードバックだけ欠けていた。
+describe('EgyptianRatscrewPage slap sounds', () => {
+  it('plays a fanfare on the human’s correct slap', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      lastEventKind: EgyptianRatscrewEventKind.SLAP_CORRECT,
+      lastEventPlayerIdx: 0,
+      lastSlapReason: EgyptianRatscrewSlapReason.PAIR,
+    });
+    renderWithProviders(<EgyptianRatscrewPage />);
+    await waitFor(() => expect(mockPlaySound).toHaveBeenCalledWith('winFanfare'));
+  });
+
+  it('plays an error buzz on the human’s false slap', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      lastEventKind: EgyptianRatscrewEventKind.SLAP_WRONG,
+      lastEventPlayerIdx: 0,
+    });
+    renderWithProviders(<EgyptianRatscrewPage />);
+    await waitFor(() => expect(mockPlaySound).toHaveBeenCalledWith('errorBuzz'));
+  });
+
+  // **CPU のスラップでは鳴らさない。**CPU の成功でファンファーレが鳴ったり、
+  // CPU のミスでブザーが鳴って人間が責められたように感じたりしないため。
+  it('stays silent for a CPU slap', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      lastEventKind: EgyptianRatscrewEventKind.SLAP_CORRECT,
+      lastEventPlayerIdx: 1,
+      lastSlapReason: EgyptianRatscrewSlapReason.PAIR,
+    });
+    renderWithProviders(<EgyptianRatscrewPage />);
+    await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
+    expect(mockPlaySound).not.toHaveBeenCalledWith('winFanfare');
+    expect(mockPlaySound).not.toHaveBeenCalledWith('errorBuzz');
   });
 });

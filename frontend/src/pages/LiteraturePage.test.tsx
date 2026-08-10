@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { literatureApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { CardDesign, LiteraturePlayer, LiteratureResponse } from '../types/card';
 import { LiteraturePhase } from '../types/phases';
@@ -164,6 +165,7 @@ describe('LiteraturePage', () => {
     fireEvent.change(holderSelects[0], { target: { value: '2' } });
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: '宣言する' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('claim', { halfSuit: 0, holders: [2, 0, 0, 0, 0, 0] }));
   });
 
@@ -188,6 +190,7 @@ describe('LiteraturePage', () => {
     // 送られるのも初期値。
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: '宣言する' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('claim', { halfSuit: 2, holders: [0, 0, 0, 0, 0, 0] }));
   });
 
@@ -279,5 +282,22 @@ describe('LiteraturePage', () => {
 
     fireEvent.click(toggle);
     expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
+  });
+
+  it('confirms before sending a claim', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<LiteraturePage />);
+    const claim = await screen.findByRole('button', { name: '宣言する' });
+    mockExec.mockClear();
+    fireEvent.click(claim);
+    // One wrong seat voids the set, so the click must not send anything yet.
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+    expect(screen.getByText('所在宣言の確認')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
   });
 });

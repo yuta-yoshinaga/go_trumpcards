@@ -5,6 +5,8 @@ package domain
 import (
 	"encoding/json"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func napCard(design, value int) *Card { return NewCard(design, value, false) }
@@ -297,4 +299,69 @@ func TestNap_UnmarshalErrors(t *testing.T) {
 	if err := g.UnmarshalJSON([]byte(`{"ps":[null,null,null,null]}`)); err == nil {
 		t.Error("expected nil-player error")
 	}
+}
+
+// **CUI は宣言者が何トリック取ったかを一切知らせていなかった (#4763)。**
+// Web は nap-declarer-progress で常時出している。
+func TestNap_GetDeclarerProgress(t *testing.T) {
+	card := func(v int) *Card { return NewCard(CardDesignSpade, v, false) }
+	// declarer が won トリック、他プレイヤーが others トリック取った局面。
+	setup := func(contract NapBid, won, others int) *Nap {
+		g := NewDefaultNap()
+		g.Reset()
+		g.SetPhase(NapPhasePlay)
+		g.SetDeclarerIdx(0)
+		g.SetContract(contract)
+		for i := 0; i < won; i++ {
+			g.GetPlayer(0).AddTrick([]*Card{card(2)})
+		}
+		for i := 0; i < others; i++ {
+			g.GetPlayer(1).AddTrick([]*Card{card(3)})
+		}
+		return g
+	}
+
+	t.Run("nothing to report before a declarer is settled", func(t *testing.T) {
+		g := setup(NapBidThree, 0, 0)
+		g.SetDeclarerIdx(-1)
+		assert.Nil(t, g.GetDeclarerProgress())
+	})
+
+	t.Run("nothing to report outside the play phases", func(t *testing.T) {
+		g := setup(NapBidThree, 1, 1)
+		g.SetPhase(NapPhaseRoundEnd)
+		assert.Nil(t, g.GetDeclarerProgress())
+	})
+
+	t.Run("counts the declarer's tricks and what is left", func(t *testing.T) {
+		pr := setup(NapBidThree, 1, 1).GetDeclarerProgress()
+		if assert.NotNil(t, pr) {
+			assert.Equal(t, 1, pr.Won)
+			assert.Equal(t, 3, pr.Needed)
+			assert.Equal(t, NapTrickCount-2, pr.Remaining, "全員のトリックを引く")
+			assert.False(t, pr.Unreachable)
+		}
+	})
+
+	// **「もう届かない」は残りを全部取っても足りないときだけ。**早すぎる判定は
+	// まだ勝てるラウンドを投げさせる。
+	t.Run("declares failure only when even every remaining trick falls short", func(t *testing.T) {
+		// 契約5、宣言者0勝ち、相手1勝ち → 残り4。5-0=5 > 4 で不可能。
+		unreachable := setup(NapBidNap, 0, 1).GetDeclarerProgress()
+		if assert.NotNil(t, unreachable) {
+			assert.True(t, unreachable.Unreachable)
+		}
+		// 契約5、まだ誰も取っていない → 残り5。ちょうど届く見込みがある。
+		alive := setup(NapBidNap, 0, 0).GetDeclarerProgress()
+		if assert.NotNil(t, alive) {
+			assert.False(t, alive.Unreachable, "ちょうど届くうちは不可能にしない")
+		}
+	})
+
+	t.Run("stays reachable once the contract is already made", func(t *testing.T) {
+		pr := setup(NapBidThree, 3, 1).GetDeclarerProgress()
+		if assert.NotNil(t, pr) {
+			assert.False(t, pr.Unreachable)
+		}
+	})
 }

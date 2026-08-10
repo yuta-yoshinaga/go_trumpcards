@@ -128,6 +128,15 @@ func (pp *PineappleCuiPresenter) Output(p interfaces.PineappleGame, lastErr erro
 			}
 		}
 
+		// **Crazy Pineapple / Irish Poker は捨てるのがフロップベットの「後」。**
+		// Web は cp-discard-upcoming-banner で事前告知しているのに CUI は無言で、
+		// 捨てる前提を知らないままベット額を決めることになっていた (#4686)。
+		if p.IsDiscardAfterFlopBetting() && p.GetPhase() == domain.PineapplePhaseFlop {
+			b.WriteString("----------\n")
+			b.WriteString(i18n.Tf("pineapple.discardUpcoming",
+				"count", strconv.Itoa(p.GetInitialDealCount()-2)) + "\n")
+		}
+
 		if p.GetPhase() == domain.PineapplePhaseDiscard {
 			b.WriteString("----------\n")
 			b.WriteString(i18n.T("pineapple.discardHeader") + "\n")
@@ -135,6 +144,43 @@ func (pp *PineappleCuiPresenter) Output(p interfaces.PineappleGame, lastErr erro
 			// 2 of 3, Irish Poker keeps 2 of 4), so derive it from the deal count.
 			discardCount := p.GetInitialDealCount() - 2
 			b.WriteString(i18n.Tf("pineapple.discardPrompt", "count", strconv.Itoa(discardCount)) + "\n")
+
+			// **ボードがあるかどうかで出す手掛かりが変わる。**フロップ後に捨てる
+			// Crazy Pineapple では残る2枚の完成役を名指しできる (#4686) が、
+			// フロップ前に捨てるプレーンな Pineapple ではまだ役が決まらないので、
+			// スーテッド/コネクターといった性質を出すしかない (#4685)。
+			// Web も variant でこの2つを出し分けている。
+			// **4枚配り (Irish) は2枚まとめて捨てるので、候補は C(4,2)=6 通り。**
+			// Web は1枚目を選んだ後の3択しか出せないが、CUI には選択途中という
+			// 状態が無いので6通りを最初から並べる (#4687)。
+			if pairs := p.GetHumanDiscardPairPreviews(); len(pairs) > 0 {
+				for _, pv := range pairs {
+					line := i18n.Tf("pineapple.discardCandidatePair",
+						"idx0", strconv.Itoa(pv.DiscardIdx0),
+						"idx1", strconv.Itoa(pv.DiscardIdx1),
+						"hand", cuiPokerHandName(pv.HandRank))
+					if pv.Recommended {
+						line += color.BoldYellow(i18n.T("pineapple.discardRecommended"))
+					}
+					b.WriteString(line + "\n")
+				}
+			} else if previews := p.GetHumanDiscardPreviews(); len(previews) > 0 {
+				for _, pv := range previews {
+					line := i18n.Tf("pineapple.discardCandidate",
+						"idx", strconv.Itoa(pv.CardIdx),
+						"hand", cuiPokerHandName(pv.HandRank))
+					if pv.Recommended {
+						line += color.BoldYellow(i18n.T("pineapple.discardRecommended"))
+					}
+					b.WriteString(line + "\n")
+				}
+			} else if !p.IsDiscardAfterFlopBetting() {
+				if human := pineappleHumanPlayer(p); human != nil {
+					for _, line := range pineappleKeepFeatureLines(human) {
+						b.WriteString(line + "\n")
+					}
+				}
+			}
 		}
 
 		results := p.GetRoundResults()
@@ -153,7 +199,7 @@ func (pp *PineappleCuiPresenter) Output(p interfaces.PineappleGame, lastErr erro
 				case r.HandName != "":
 					b.WriteString(i18n.Tf("pineapple.resultHand",
 						"name", name,
-						"hand", r.HandName,
+						"hand", cuiPokerHandName(r.HandRank),
 						"kickers", kickers))
 				default:
 					b.WriteString(i18n.Tf("pineapple.resultName", "name", name))
@@ -199,4 +245,82 @@ func (pp *PineappleCuiPresenter) Output(p interfaces.PineappleGame, lastErr erro
 			b.WriteString(i18n.T("pineapple.gameEnd") + "\n")
 		}
 	})
+}
+
+// pineappleHumanPlayer は人間プレイヤーを返す (見つからなければ nil)。
+func pineappleHumanPlayer(p interfaces.PineappleGame) *domain.PineapplePlayer {
+	for i := 0; i < p.GetPlayerCnt(); i++ {
+		if pl := p.GetPlayer(i); pl != nil && pl.GetIsHuman() {
+			return pl
+		}
+	}
+	return nil
+}
+
+// pineappleKeepFeatureLines は「この札を捨てたら残る2枚はどういう手か」を
+// 候補ごとに1行で返す。手札が3枚でないときは何も返さない。
+//
+// **判定はフロントの pineappleKeepFeatures と同じ規則。**ペアなら即ペア、
+// そうでなければスーテッド/コネクターを並べ、どちらでもなければハイカード。
+// ここがずれると同じ手札で CUI と Web が違う助言を出す。
+func pineappleKeepFeatureLines(pl *domain.PineapplePlayer) []string {
+	n := pl.GetCardsSize()
+	if n != 3 {
+		// 捨てて2枚残る形でなければ助言できない (Irish は4枚から2枚捨て)。
+		return nil
+	}
+	out := make([]string, 0, n)
+	for i := 0; i < n; i++ {
+		var keep []*domain.Card
+		for j := 0; j < n; j++ {
+			if j != i {
+				keep = append(keep, pl.GetCard(j))
+			}
+		}
+		out = append(out, i18n.Tf("pineapple.discardKeepFeature",
+			"idx", strconv.Itoa(i),
+			"card", cuiCardStrEmoji(pl.GetCard(i)),
+			"keep", cuiCardSliceStrEmoji(keep),
+			"feature", pineappleKeepFeatureLabel(keep[0], keep[1])))
+	}
+	return out
+}
+
+// pineappleKeepFeatureLabel は残る2枚の性質ラベルを返す。
+func pineappleKeepFeatureLabel(a, b *domain.Card) string {
+	if a.GetValue() == b.GetValue() {
+		return i18n.T("pineapple.keepFeaturePair")
+	}
+	labels := make([]string, 0, 2)
+	if a.GetDesign() == b.GetDesign() {
+		labels = append(labels, i18n.T("pineapple.keepFeatureSuited"))
+	}
+	if pineappleIsConnector(a.GetValue(), b.GetValue()) {
+		labels = append(labels, i18n.T("pineapple.keepFeatureConnector"))
+	}
+	if len(labels) == 0 {
+		return i18n.T("pineapple.keepFeatureHighCard")
+	}
+	return strings.Join(labels, "/")
+}
+
+// pineappleIsConnector は2枚が連番かを返す。
+//
+// **エースは 1 と 14 の両方で数える。**A-2 も A-K もコネクター。フロントの
+// isConnector と同じ扱いで、片方だけ直すと助言が食い違う。
+func pineappleIsConnector(v1, v2 int) bool {
+	expand := func(v int) []int {
+		if v == 1 {
+			return []int{1, 14}
+		}
+		return []int{v}
+	}
+	for _, a := range expand(v1) {
+		for _, b := range expand(v2) {
+			if a-b == 1 || b-a == 1 {
+				return true
+			}
+		}
+	}
+	return false
 }

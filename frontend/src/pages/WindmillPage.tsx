@@ -172,7 +172,7 @@ function WindmillPageContent() {
             type="button"
             onClick={() => game.handleSelectSource(sailZone)}
             disabled={!isPlaying || loading}
-            aria-label={cardAlt(card)}
+            aria-label={t('sailAriaLabel', { card: cardAlt(card), idx })}
             aria-pressed={isSourceSelected('sail', idx)}
             draggable={isPlaying && !loading}
             onDragStart={dnd.handleDragStart(sailZone)}

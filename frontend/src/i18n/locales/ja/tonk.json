@@ -58,5 +58,10 @@
     "tonkDrawStock": "捨て札は組にならない。山札から引こう",
     "tonkKnock": "1 枚捨てれば端札が5点以下。ノックできる",
     "tonkDiscardHeavy": "端札が一番減る札を捨てよう"
+  },
+  "deadwood": {
+    "current": "最小デッドウッド(1枚捨て後): {{value}}",
+    "knockable": "ノック可能",
+    "notKnockable": "ノック不可（{{threshold}}点以下が必要）"
   }
 }

@@ -52,10 +52,10 @@ type Spider struct {
 	phase          SpiderPhase
 	moveCount      int
 	score          int
-	actionLog      []*ActionLogEntry
-	history        []*spiderSnapshot
-	difficulty     SpiderDifficulty
-	isStalemate    bool
+	actionLogBase
+	history     []*spiderSnapshot
+	difficulty  SpiderDifficulty
+	isStalemate bool
 }
 
 // spiderSnapshot アンドゥ用スナップショット
@@ -371,25 +371,12 @@ func (s *Spider) CanUndo() bool {
 
 // UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。膠着状態でなければ0、脱出不可なら-1。
 func (s *Spider) UndoToEscape() int {
-	if !s.isStalemate {
-		return 0
-	}
-	for i := len(s.history) - 1; i >= 0; i-- {
-		if !s.history[i].isStalemate {
-			return len(s.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(s.isStalemate, s.history, func(s *spiderSnapshot) bool { return s.isStalemate })
 }
 
 // UndoN n回連続でアンドゥを実行する。
 func (s *Spider) UndoN(n int) error {
-	for i := 0; i < n; i++ {
-		if err := s.Undo(); err != nil {
-			return fmt.Errorf("undo step %d failed: %w", i+1, err)
-		}
-	}
-	return nil
+	return undoN(s, n)
 }
 
 // --- State getters/setters ---
@@ -411,9 +398,6 @@ func (s *Spider) GetTableau() [SpiderTableauCnt][]*SpiderTableauCard { return s.
 
 // GetCompletedSuits 完成スート数取得
 func (s *Spider) GetCompletedSuits() int { return s.completedSuits }
-
-// GetActionLog 棋譜取得
-func (s *Spider) GetActionLog() []*ActionLogEntry { return s.actionLog }
 
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (s *Spider) GetGameEndFlag() bool { return s.phase != SpiderPhasePlaying }
@@ -603,13 +587,7 @@ func (s *Spider) restoreSnapshot(snap *spiderSnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (s *Spider) appendLog(actionType, detail string, cards []*Card) {
-	s.actionLog = append(s.actionLog, &ActionLogEntry{
-		TurnNumber: s.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	s.appendLogAt(s.moveCount, 0, actionType, detail, cards)
 }
 
 // spiderJSON is the JSON wire format for Spider.

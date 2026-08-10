@@ -433,6 +433,8 @@ function WhistPageContent() {
                 isMobile={isMobile}
                 dataTutorialPrefix="wh"
                 highlightIndices={isHumanTurn && hint?.cardIndex !== undefined ? [hint.cardIndex] : undefined}
+                validIndices={isHumanTurn ? state.validPlayIndices : undefined}
+                restrictedTooltip={t('restrictedCard')}
               />
             )}
 

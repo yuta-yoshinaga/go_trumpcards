@@ -47,8 +47,8 @@ flowchart TD
 | コマンド | 短縮形 | 説明 |
 |----------|--------|------|
 | `bet <rank> <amount> [c]` | `b` | ランク（1=A..13=K）にチップを置く。`c`でカッパー（負けに賭ける） |
-| `clearBet <rank>` | `cb` | 指定ランクのベットを外す |
-| `clearAll` | `ca` | すべてのベットを外す |
+| `cb <rank>` |  | 指定ランクのベットを外す |
+| `ca` |  | すべてのベットを外す |
 | `deal` | `d` | 1ターン（2枚）めくる |
 | `call <r1> <r2> <r3>` | | 最後の3枚の順序を予想（引数なしでスキップ） |
 | `next` | `n` | 次のディールへ |
@@ -64,7 +64,8 @@ flowchart TD
 chips: 1000
 phase: BETTING
 turns: 0/25
-cards left: 52
+cards left: 51
+Case keeper (remaining of 4 per rank): A:3 2:4 3:4 4:4 5:4 6:4 7:4 8:4 9:4 10:4 J:4 Q:4 K:4
 --- BETS ---
   rank 7: 100
   rank 13: 50 (copper)
@@ -73,6 +74,8 @@ cards left: 52
 
 - `chips` … 残りチップ
 - `phase` … 現在のフェーズ（BETTING / TURN / CALL / ROUND END / GAME END）
+- `cards left` … 山札の残り枚数
+- `Case keeper` … **ランクごとの残り枚数（各 4 枚中）**。カードカウンティングがこのゲームの核なので常時表示されます。出尽くしたランクも `A:0` のように 0 で残ります
 - `BETS` … 現在のベット一覧（`(copper)`はカッパー）
 
 ## 遊び方のコツ

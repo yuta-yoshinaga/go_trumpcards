@@ -128,3 +128,42 @@ func (p *DurakCuiPresenter) Output(dg interfaces.DurakGame, lastErr error) strin
 func (p *DurakCuiPresenter) ActionLogOutput(dg interfaces.DurakGame) string {
 	return actionLogOutputText(dg)
 }
+
+// HintOutput emits the current Durak hint.
+//
+// **他のトリック系はサーバー計算の理由付きヒントを持つのに、Durak は CUI に
+// hint コマンドすら無かった (#4740)。**
+func (p *DurakCuiPresenter) HintOutput(g interfaces.DurakGame) string {
+	hint := g.GetHint()
+	if hint == nil {
+		return i18n.T("durak.hintNone") + "\n"
+	}
+	reason := hintReasonStr(hint.Reason, durakHintReasonKeys)
+	if hint.TakeCards {
+		return color.Yellow(i18n.Tf("durak.hintTake", "reason", reason)) + "\n"
+	}
+	if hint.CardIndex == nil {
+		return color.Yellow(i18n.Tf("durak.hintPass", "reason", reason)) + "\n"
+	}
+	card := g.GetPlayer(g.GetCurrentTurn()).GetCard(*hint.CardIndex)
+	if hint.AttackIdx != nil {
+		return color.Yellow(i18n.Tf("durak.hintDefend",
+			"idx", strconv.Itoa(*hint.CardIndex),
+			"card", cuiCardStr(card),
+			"atk", strconv.Itoa(*hint.AttackIdx),
+			"reason", reason)) + "\n"
+	}
+	return color.Yellow(i18n.Tf("durak.hintCard",
+		"idx", strconv.Itoa(*hint.CardIndex),
+		"card", cuiCardStr(card),
+		"reason", reason)) + "\n"
+}
+
+// durakHintReasonKeys maps hint-reason identifiers to their i18n keys.
+var durakHintReasonKeys = map[string]string{
+	"attack_weakest":    "durak.hintReasonAttackWeakest",
+	"attack_additional": "durak.hintReasonAttackAdditional",
+	"defend_beat":       "durak.hintReasonDefendBeat",
+	"take_cannot_beat":  "durak.hintReasonTakeCannotBeat",
+	"pass_no_addition":  "durak.hintReasonPassNoAddition",
+}

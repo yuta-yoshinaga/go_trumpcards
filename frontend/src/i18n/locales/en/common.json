@@ -1005,6 +1005,7 @@
     "ninetynine.result.humanWin": "Game over! You win!",
     "ninetynine.roundEnd": "Round complete",
     "ninetynine.trickEnd": "Trick complete",
+    "osmosis.stalemate": "Dead end — no card can reach a foundation any more.",
     "oasispoker.result.dealerNotQualified": "Dealer does not qualify!",
     "oasispoker.result.dealerWins": "Dealer wins!",
     "oasispoker.result.fold": "Folded",
@@ -1431,7 +1432,13 @@
     "yukon.stalemateWithEscape": "Stalemate. Undo {{count}} moves to find another play.",
     "zheng.result.rankings": "Game Over! {{rankings}}",
     "zwicker.lose": "The other team wins",
-    "zwicker.win": "Your team wins"
+    "zwicker.win": "Your team wins",
+    "bidwhist.hintRequested": "Hint available",
+    "bidwhist.noHint": "No hint available",
+    "russianbank.stopAvailable": "The CPU missed a forced move — call Stop to penalise it",
+    "paigow.hintNone": "No hint is available now.",
+    "pokersquares.hintAvailable": "Here is a hint",
+    "pokersquares.noHint": "No hint is available right now"
   },
   "manual": {
     "ariaLabel": "Game Manual",
@@ -1515,6 +1522,7 @@
       "reset": "Restart the game",
       "selectNertzPile": "Select the Nertz pile",
       "selectTarget": "Select the target player",
+      "selectTargetNamed": "Select {{name}}",
       "selectWastePile": "Select the waste pile",
       "setHands": "Confirm the hands",
       "shift": "Shift a column",

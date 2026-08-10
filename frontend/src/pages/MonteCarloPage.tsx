@@ -167,7 +167,13 @@ function MonteCarloPageContent() {
   // How many removable (adjacent, same-rank) pairs currently sit on the board.
   // Derived client-side from the board grid — 0 means it's time to Deal.
   const removablePairs = useMemo(() => (state ? countRemovablePairs(state.board) : 0), [state]);
-  const noRemovablePairs = isPlaying && removablePairs === 0;
+  // **山札が尽きたら「配る」は押せない (#4796)。**姉妹の Wasp / Spiderette は
+  // stockCount === 0 を明示的にガードしている。ドメインも「隣接ペアなし かつ
+  // 山札0 かつ 圧縮の余地なし」で手詰まりと判定するので、この状態は実際に起きる。
+  const canDeal = isPlaying && (state?.stockCount ?? 0) > 0;
+  // **山札が0なら警告リングも点けない。**無効な操作を「押せ」と誘導することに
+  // なるため。
+  const noRemovablePairs = isPlaying && removablePairs === 0 && canDeal;
 
   return (
     <GamePageShell
@@ -347,7 +353,7 @@ function MonteCarloPageContent() {
                     data-tutorial="mc-deal"
                     className={`${btnPrimary} ${dealHintActive || noRemovablePairs ? 'ring-2 ring-ds-warning' : ''}`}
                     onClick={handleDeal}
-                    disabled={loading}
+                    disabled={loading || !canDeal}
                   >
                     {t('button.deal')}
                   </button>

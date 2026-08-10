@@ -58,8 +58,15 @@ func (p *LaBelleLucieCuiPresenter) Output(g interfaces.LaBelleLucieGame, lastErr
 			sb.WriteString(i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(g.GetMoveCount())) + "\n")
 			// No legal move but redeals remain -> recommend a redeal, mirroring the
 			// web stuck banner.
-			if !g.HasAnyLegalMove() && g.GetRedealsLeft() > 0 {
-				sb.WriteString(color.Yellow(i18n.T("labellelucie.redealRecommended")) + "\n")
+			if !g.HasAnyLegalMove() {
+				// **再配札が尽きた真の手詰まりは別物 (#4769)。**Web は
+				// ll-deadlock-banner を出して giveup を点滅させるのに、CUI は
+				// 何も言わず、合法手が無いまま延々と手を探させていた。
+				if g.GetRedealsLeft() > 0 {
+					sb.WriteString(color.Yellow(i18n.T("labellelucie.redealRecommended")) + "\n")
+				} else {
+					sb.WriteString(color.Red(i18n.T("labellelucie.stuckDeadlock")) + "\n")
+				}
 			}
 		case domain.LaBelleLuciePhaseGameClear:
 			sb.WriteString(color.Green(i18n.T("cuiSolitaireGameClear")) + " " +

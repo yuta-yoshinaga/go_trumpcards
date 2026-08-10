@@ -29,6 +29,10 @@ type FreeCellGame interface {
 	GetMoveCount() int
 	// GetTableau タブローを取得する
 	GetTableau() [domain.FreeCellTableauCnt][]*domain.Card
+	// GetMaxMovableCards いま一度に動かせる最大枚数を取得する
+	GetMaxMovableCards() int
+	// GetMaxMovableCardsToEmptyColumn 空き列へ動かすときの上限を取得する
+	GetMaxMovableCardsToEmptyColumn() int
 	// GetFreeCells フリーセルを取得する
 	GetFreeCells() [domain.FreeCellCellCnt]*domain.Card
 	// GetFoundation ファンデーションを取得する

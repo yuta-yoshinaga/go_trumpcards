@@ -394,3 +394,17 @@ func TestKemps_PlayerJSONRoundTrip(t *testing.T) {
 	require.NoError(t, json.Unmarshal([]byte(`{}`), &empty))
 	assert.NotNil(t, empty.GamePlayer)
 }
+
+// テスト用セッターが実際にフラグを立てること。presenter 側からしか呼ばれないと
+// ドメインのカバレッジに乗らない。
+func TestKemps_SetGameEndFlagForTest(t *testing.T) {
+	g := NewDefaultKemps()
+	g.Reset()
+	if g.GetGameEndFlag() {
+		t.Fatal("a fresh game must not be over")
+	}
+	g.SetGameEndFlagForTest(true)
+	if !g.GetGameEndFlag() {
+		t.Fatal("the setter did not take effect")
+	}
+}

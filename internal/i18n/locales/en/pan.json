@@ -12,6 +12,7 @@
   "header": "Round: {{round}}/{{total}}  Stock: {{stock}}",
   "discardLine": "Discard: {{card}}",
   "playerLine": "{{name}}: cumulative {{cum}} round {{round}} chips {{chips}} melded {{melded}} hand {{cards}}",
+  "valleTag": "★valle",
   "meldLine": "  meld[{{idx}}]: {{cards}}",
   "gameEnd": "Game over! {{name}} wins!",
   "promptDraw": "{{name}} to act (draw phase)",

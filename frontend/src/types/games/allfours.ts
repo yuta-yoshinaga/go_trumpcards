@@ -55,6 +55,14 @@ export interface AllFoursRoundBreakdown {
   jack: { winnerIdx: number };
   /** Game point (most card pips): winner (-1 on tie/zero) and per-player pip totals. */
   game: { winnerIdx: number; points: number[] };
+  /**
+   * Whether these are mid-round provisional values rather than the settled result.
+   *
+   * **High and Low are decided by the trumps that appear over the whole round,**
+   * so a trump still in someone's hand can take either away. The page labels a
+   * provisional table so it is not read as final (#4771).
+   */
+  provisional: boolean;
 }
 
 /** Full All Fours game state returned from the API. */
@@ -78,6 +86,7 @@ export interface AllFoursResponse extends BaseGameResponse {
   leadPlayerIdx: number;
   validPlayIndices: number[];
   /** Present only at ROUND_END / GAME_END: the High/Low/Jack/Game point breakdown. */
+  /** Present during PLAY (provisional) and at ROUND_END / GAME_END (settled). */
   roundBreakdown?: AllFoursRoundBreakdown;
   config: AllFoursConfig;
   hint?: AllFoursHint;

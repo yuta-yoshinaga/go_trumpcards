@@ -32,6 +32,10 @@ func setupWhistWebMock() *interfaces.MockWhistGame {
 	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
 	// **base だけに置く。**removeMockCall は最初の 1 件しか外さない。
 	m.On("GetHint").Return(nil).Maybe()
+	// #4742 で validPlayIndices を出すようになった。既定は「人間の手番でない」
+	// = 制限なし。合法手を確かめるテストは自分で上書きする。
+	m.On("IsHumanTurn").Return(false).Maybe()
+	m.On("GetValidPlayIndices", 0).Return([]int(nil)).Maybe()
 
 	return m
 }
@@ -204,6 +208,63 @@ func TestWhistWebPresenter_Output(t *testing.T) {
 		_ = json.Unmarshal([]byte(result), &resObj)
 
 		assert.Equal(t, "whist.roundEnd", resObj.MessageCode)
+	})
+}
+
+// **ドメインは合法手を判定済みなのに Web に送っていなかった (#4742)。**
+// 違反札をクリックしてサーバーのエラーが返って初めて出せないと分かる状態だった。
+func TestWhistWebPresenter_ValidPlayIndices(t *testing.T) {
+	p := new(presenter.WhistWebPresenter)
+
+	decode := func(t *testing.T, m *interfaces.MockWhistGame) controller.WhistWebOutput {
+		t.Helper()
+		var out controller.WhistWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, nil)), &out))
+		return out
+	}
+
+	t.Run("human play turn carries the domain's answer", func(t *testing.T) {
+		m, _ := setupWhistWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "IsHumanTurn")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+		m.On("IsHumanTurn").Return(true)
+		m.On("GetValidPlayIndices", 0).Return([]int{1, 3})
+
+		assert.Equal(t, []int{1, 3}, decode(t, m).ValidPlayIndices)
+	})
+
+	// **合法手が1枚も無い局面も空で返る。**呼び出し側はこれを「制限なし」と
+	// 読んではいけない。長さで判定すると、この局面で全札が出せるように見える。
+	t.Run("no legal card still reports empty", func(t *testing.T) {
+		m, _ := setupWhistWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "IsHumanTurn")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+		m.On("IsHumanTurn").Return(true)
+		m.On("GetValidPlayIndices", 0).Return([]int{})
+
+		assert.Empty(t, decode(t, m).ValidPlayIndices)
+	})
+
+	t.Run("cpu turn reports nothing", func(t *testing.T) {
+		m, _ := setupWhistWebMockWithPlayers()
+		// 既定 (IsHumanTurn=false) のまま。ドメインが合法手を返しても送らない。
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+		m.On("GetValidPlayIndices", 0).Return([]int{1, 3})
+
+		assert.Empty(t, decode(t, m).ValidPlayIndices)
+	})
+
+	// **プレイフェーズ以外も踏む。**トリック終了中は制限が決まっていない。
+	t.Run("trick end reports nothing", func(t *testing.T) {
+		m, _ := setupWhistWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "IsHumanTurn")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+		m.On("GetPhase").Return(domain.WhistPhaseTrickEnd)
+		m.On("IsHumanTurn").Return(true)
+		m.On("GetValidPlayIndices", 0).Return([]int{1, 3})
+
+		assert.Empty(t, decode(t, m).ValidPlayIndices)
 	})
 }
 

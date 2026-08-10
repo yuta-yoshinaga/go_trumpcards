@@ -263,7 +263,7 @@ func (g *Cribbage) doCut() {
 	g.addLog(-1, "cut", "スターターカード公開", []*Card{g.starter})
 
 	// His Heels: スターターがJなら、ディーラーに2点
-	if g.starter != nil && g.starter.GetValue() == 11 {
+	if g.starter != nil && g.starter.GetValue() == CribbageJackValue {
 		g.addScore(g.dealerIdx, 2, "His Heels (スターターがJ)")
 		if g.checkWin() {
 			return
@@ -826,10 +826,7 @@ func (g *Cribbage) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetPlayer プレイヤー取得
 func (g *Cribbage) GetPlayer(idx int) *CribbagePlayer {
-	if idx < 0 || idx >= len(g.players) {
-		return nil
-	}
-	return g.players[idx]
+	return getPlayer(g.players, idx)
 }
 
 // GetConfig 設定取得

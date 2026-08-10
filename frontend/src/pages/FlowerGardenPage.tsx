@@ -283,7 +283,7 @@ function FlowerGardenPageContent() {
             type="button"
             onClick={() => game.handleSelectSource(reserveZone)}
             disabled={!isPlaying || loading}
-            aria-label={cardAlt(reserveCard)}
+            aria-label={t('reserveCardAriaLabel', { card: cardAlt(reserveCard), idx: cellIdx })}
             aria-pressed={isSourceSelected('reserve', cellIdx)}
             draggable={isPlaying && !loading}
             onDragStart={dnd.handleDragStart(reserveZone)}
@@ -293,7 +293,12 @@ function FlowerGardenPageContent() {
             <AnimatedCard card={reserveCard} width={dims.cw} draggable={false} />
           </button>
         ) : (
-          <div className="rounded border border-dashed border-white/10" style={{ width: dims.cw, height: dims.ch }} />
+          <div
+            role="img"
+            aria-label={t('emptyReserveSlot', { idx: cellIdx })}
+            className="rounded border border-dashed border-white/10"
+            style={{ width: dims.cw, height: dims.ch }}
+          />
         )}
         <span className="text-xs text-ds-text-muted mt-0.5" aria-hidden="true">
           #{cellIdx}

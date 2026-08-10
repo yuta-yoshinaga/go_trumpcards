@@ -287,6 +287,21 @@ describe('MaoPage', () => {
     expect(await screen.findByTestId('rule-hint')).toHaveTextContent('be polite');
   });
 
+  // **コードが来たら訳す。**サーバの i18n 言語はプロセス全体で 1 つなので、
+  // ruleHint をそのまま出すと英語ロケールでも日本語のままになる (#4917)。
+  it('translates the rule hint code instead of the server string', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      hintUnlocked: true,
+      ruleHint: 'A word is required when a certain suit is played.',
+      ruleHintCode: 'hintSuit',
+    });
+    renderWithProviders(<MaoPage />);
+    const hint = await screen.findByTestId('rule-hint');
+    expect(hint).toHaveTextContent('あるスートを出したときに言葉が必要です。');
+    expect(hint).not.toHaveTextContent('hintSuit');
+  });
+
   it('hides the rule hint when not unlocked', async () => {
     renderWithProviders(<MaoPage />);
     await waitFor(() => expect(screen.getByTestId('mao-rule-panel')).toBeInTheDocument());

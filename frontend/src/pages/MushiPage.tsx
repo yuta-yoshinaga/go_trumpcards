@@ -162,6 +162,12 @@ function MushiPageContent() {
                   ? t('choosePrompt', { card: t(`category.${state.pendingCard.category}`) })
                   : t('field')}
               </div>
+              {/* The wild's one exception decides most mistakes, and lived only in
+                  the first-visit tutorial. Sjavs/Loba/ChineseTen all keep their
+                  trickiest rule permanently on screen. */}
+              <div className="text-ds-text-muted text-[11px] mb-1 text-center" data-testid="mushi-wild-rule">
+                {t('wildRule')}
+              </div>
               <div className="flex gap-1 justify-center flex-wrap">
                 {state.field.map((card, i) => {
                   const canTake = choosing && isHumanTurn && selectable.has(i);

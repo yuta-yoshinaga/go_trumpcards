@@ -87,7 +87,7 @@ type Holdem struct {
 	threeBetTracked []bool // 当該ハンドで3Bet追跡済みかどうか
 	lastCpuError    error  // CPU行動エラーの最後のフォールバック記録 (テスト検出用)
 	rebuyPhaseType  int    // 0=none, 1=rebuy pending, 2=addon pending
-	actionLog       []*ActionLogEntry
+	actionLogBase
 	humanProfile    *BettingHumanProfile
 	lastHumanPlayMs int
 }
@@ -424,35 +424,17 @@ func (h *Holdem) advancePhase() {
 
 // dealRemainingCommunity 残りのコミュニティカードを全て配る
 func (h *Holdem) dealRemainingCommunity() {
-	for len(h.communityCards) < 5 {
-		card := h.trumpCards.DrawCard()
-		if card == nil {
-			break
-		}
-		h.communityCards = append(h.communityCards, card)
-	}
+	dealUpTo(&h.communityCards, h.trumpCards, 5)
 }
 
 // findNextActive 指定インデックスの次のアクティブ (フォールド・オールインでない) プレイヤーを探す
 func (h *Holdem) findNextActive(fromIdx int) int {
-	for i := 1; i <= len(h.players); i++ {
-		next := (fromIdx + i) % len(h.players)
-		if !h.players[next].GetFolded() && !h.players[next].GetAllIn() {
-			return next
-		}
-	}
-	return (fromIdx + 1) % len(h.players)
+	return findNextActive(h.players, fromIdx)
 }
 
 // countActivePlayers フォールドしていないプレイヤー数を返す
 func (h *Holdem) countActivePlayers() int {
-	cnt := 0
-	for _, p := range h.players {
-		if !p.GetFolded() {
-			cnt++
-		}
-	}
-	return cnt
+	return countPlayers(h.players, func(p *HoldemPlayer) bool { return !p.GetFolded() })
 }
 
 // bettingLimits ベッティングリミット設定からmaxRaisesとmaxBetAmountを計算
@@ -667,15 +649,11 @@ func (h *Holdem) ExportProfile() interface{} {
 
 // ImportProfile JSONバイトからメタAIプロファイルをインポートする
 func (h *Holdem) ImportProfile(data []byte) error {
-	if len(data) == 0 {
-		return nil
-	}
-	d, err := ImportBettingHumanProfileJSON(data)
-	if err != nil {
+	p, err := importBettingProfile(data)
+	if err != nil || p == nil {
 		return err
 	}
-	h.humanProfile = &BettingHumanProfile{}
-	h.humanProfile.Import(d)
+	h.humanProfile = p
 	return nil
 }
 
@@ -687,35 +665,16 @@ func (h *Holdem) SetConfig(cfg HoldemConfig) { h.config = cfg }
 
 // IsHumanTurn 人間のターンかチェック
 func (h *Holdem) IsHumanTurn() bool {
-	if h.currentTurn >= 0 && h.currentTurn < len(h.players) {
-		return h.players[h.currentTurn].GetIsHuman()
-	}
-	return false
+	return isHumanTurn(h.players, h.currentTurn)
 }
 
 // GetActedFlags actedフラグ取得
 func (h *Holdem) GetActedFlags() []bool {
-	result := make([]bool, len(h.actedFlags))
-	copy(result, h.actedFlags)
-	return result
+	return copyOf(h.actedFlags)
 }
 
 // GetHandCount ハンド数取得
 func (h *Holdem) GetHandCount() int { return h.handCount }
-
-// GetActionLog 棋譜を取得する
-func (h *Holdem) GetActionLog() []*ActionLogEntry { return h.actionLog }
-
-// appendLog 棋譜にエントリを追加する
-func (h *Holdem) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	h.actionLog = append(h.actionLog, &ActionLogEntry{
-		TurnNumber: len(h.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
 
 // logAction ベッティングアクションを棋譜に記録する
 func (h *Holdem) logAction(playerIdx, action, amount int) {

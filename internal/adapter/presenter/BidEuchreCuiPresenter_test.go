@@ -4,10 +4,12 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -36,6 +38,7 @@ func setupBidEuchreCuiMock(o bidEuchreMockOpts) *interfaces.MockBidEuchreGame {
 	m.On("GetGameEndFlag").Return(o.gameEnd)
 	m.On("GetWinnerTeam").Return(o.winner)
 	m.On("GetHighBid").Return(o.highBid)
+	m.On("BidEuchreMinLegalBid", mock.Anything).Return(domain.BidEuchreMinBid, true).Maybe()
 	m.On("GetLastResult").Return(o.result)
 	m.On("GetPlayers").Return(players)
 	m.On("IsHumanTurn").Return(true)
@@ -195,4 +198,31 @@ func TestBidEuchreCuiPresenter_ActionLogOutput(t *testing.T) {
 	m := setupBidEuchreCuiMock(defaultBidEuchreOpts())
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{})
 	assert.NotNil(t, new(presenter.BidEuchreCuiPresenter).ActionLogOutput(m))
+}
+
+// **「立っている宣言＋1、親なら同額」を毎回暗算させない** (#4899)。
+func TestBidEuchreCuiPresenter_ShowsTheLegalBidRange(t *testing.T) {
+	p := new(presenter.BidEuchreCuiPresenter)
+
+	// **判定そのものはドメインでテストする** (TestBidEuchre_MinLegalBid)。
+	// ここは「返ってきた下限をそのまま出す / 無ければパスのみと言う」だけを見る。
+	build := func(floor int, ok bool, bidder int) string {
+		o := defaultBidEuchreOpts()
+		o.phase = domain.BidEuchrePhaseBid
+		m := setupBidEuchreCuiMock(o)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetBidPlayerIdx")
+		m.On("GetBidPlayerIdx").Return(bidder)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "BidEuchreMinLegalBid")
+		m.On("BidEuchreMinLegalBid", bidder).Return(floor, ok)
+		return p.Output(m, nil)
+	}
+
+	assert.Contains(t, build(domain.BidEuchreMinBid, true, 1),
+		"有効な入札: "+strconv.Itoa(domain.BidEuchreMinBid)+"〜"+strconv.Itoa(domain.BidEuchreMaxBid))
+	assert.Contains(t, build(5, true, 1), "有効な入札: 5〜")
+
+	// 選べる値が無ければ、範囲を出さずにパスのみと言う。
+	top := build(0, false, 1)
+	assert.Contains(t, top, "これ以上の入札はできません")
+	assert.NotContains(t, top, "有効な入札:")
 }

@@ -142,8 +142,34 @@ func TestAllFoursWebPresenter_RoundBreakdown(t *testing.T) {
 		return resObj.RoundBreakdown
 	}
 
-	t.Run("nil breakdown while playing", func(t *testing.T) {
+	// **プレイ中も出す (#4771)。**High / Low / Jack / Game はトリックが進むたびに
+	// 途中経過が確定していくのに、ラウンド終了まで隠れていた。この t.Run は
+	// その挙動を「仕様」として固定していたので、中身を入れ替えた。
+	t.Run("breakdown is present during play, flagged provisional", func(t *testing.T) {
 		m, _ := setupAllFoursWebMockWithPlayers()
+		var resObj controller.AllFoursWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, nil)), &resObj))
+		if assert.NotNil(t, resObj.RoundBreakdown) {
+			assert.True(t, resObj.RoundBreakdown.Provisional,
+				"途中の値を確定値として渡してはいけない")
+		}
+	})
+
+	t.Run("the settled breakdown is not provisional", func(t *testing.T) {
+		m := setupRoundEnd(domain.CardDesignSpade, [][][]*domain.Card{
+			{{domain.NewCard(domain.CardDesignSpade, 1, false)}},
+			{{domain.NewCard(domain.CardDesignSpade, 2, false)}},
+		})
+		bd := decode(m)
+		if assert.NotNil(t, bd) {
+			assert.False(t, bd.Provisional)
+		}
+	})
+
+	t.Run("no breakdown before the trick play starts", func(t *testing.T) {
+		m, _ := setupAllFoursWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.AllFoursPhaseBeg)
 		var resObj controller.AllFoursWebOutput
 		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, nil)), &resObj))
 		assert.Nil(t, resObj.RoundBreakdown)

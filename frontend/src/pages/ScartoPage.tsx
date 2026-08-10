@@ -327,12 +327,17 @@ function ScartoPageContent() {
                     {/* Average-difference breakdown: each seat's captured points vs. the table mean. */}
                     <div className="mt-1 pt-1 border-t border-white/10" data-testid="scarto-breakdown">
                       <div>{t('roundResult.average', { avg: formatPoints(averageCardPoints) })}</div>
+                      {/* **平均差と実際の変動は N 倍ちがう。**式を書かないと、同じ
+                          箱の中で「+15」と「平均差 +5」が並んで計算が合わないように
+                          見える (#4930)。 */}
+                      <div data-testid="scarto-formula">{t('roundResult.formula', { n: state.players.length })}</div>
                       {state.players.map((p) => (
                         <div key={p.id}>
                           {t('roundResult.earnedLine', {
                             name: playerName(p.id, p.isHuman),
                             points: p.cardPoints,
                             diff: formatSigned(p.cardPoints - averageCardPoints),
+                            scaled: formatSigned((p.cardPoints - averageCardPoints) * state.players.length),
                           })}
                         </div>
                       ))}

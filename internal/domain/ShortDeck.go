@@ -58,7 +58,7 @@ type ShortDeck struct {
 	tournamentBase  // handCount / rebuyCounts / addonUsed (issue #1463)
 	lastCpuError    error
 	rebuyPhaseType  int
-	actionLog       []*ActionLogEntry
+	actionLogBase
 	humanProfile    *BettingHumanProfile
 	lastHumanPlayMs int
 }
@@ -207,37 +207,7 @@ func (sd *ShortDeck) continueReset() error {
 
 // postBlinds ブラインド投入
 func (sd *ShortDeck) postBlinds() {
-	sbIdx := (sd.dealerIdx + 1) % len(sd.players)
-	bbIdx := (sd.dealerIdx + 2) % len(sd.players)
-
-	sbAmount := sd.config.SmallBlind
-	if sd.players[sbIdx].GetChips() < sbAmount {
-		sbAmount = sd.players[sbIdx].GetChips()
-	}
-	sd.players[sbIdx].SubtractChips(sbAmount)
-	sd.players[sbIdx].SetCurrentBet(sbAmount)
-	sd.pot += sbAmount
-	sd.appendLog(sbIdx, "blind", fmt.Sprintf("posts small blind %d", sbAmount), nil)
-
-	bbAmount := sd.config.BigBlind
-	if sd.players[bbIdx].GetChips() < bbAmount {
-		bbAmount = sd.players[bbIdx].GetChips()
-	}
-	sd.players[bbIdx].SubtractChips(bbAmount)
-	sd.players[bbIdx].SetCurrentBet(bbAmount)
-	sd.pot += bbAmount
-	sd.appendLog(bbIdx, "blind", fmt.Sprintf("posts big blind %d", bbAmount), nil)
-
-	sd.lastBet = bbAmount
-
-	if sd.players[sbIdx].GetChips() == 0 {
-		sd.players[sbIdx].SetAllIn(true)
-		sd.actedFlags[sbIdx] = true
-	}
-	if sd.players[bbIdx].GetChips() == 0 {
-		sd.players[bbIdx].SetAllIn(true)
-		sd.actedFlags[bbIdx] = true
-	}
+	postBlindsFor(sd.players, sd.dealerIdx, sd.config.SmallBlind, sd.config.BigBlind, &sd.pot, &sd.lastBet, sd.actedFlags, sd)
 }
 
 // PlayerAction 人間プレイヤーのアクション実行
@@ -430,35 +400,17 @@ func (sd *ShortDeck) advancePhase() {
 
 // dealRemainingCommunity 残りのコミュニティカードを全て配る
 func (sd *ShortDeck) dealRemainingCommunity() {
-	for len(sd.communityCards) < 5 {
-		card := sd.trumpCards.DrawCard()
-		if card == nil {
-			break
-		}
-		sd.communityCards = append(sd.communityCards, card)
-	}
+	dealUpTo(&sd.communityCards, sd.trumpCards, 5)
 }
 
 // findNextActive 指定インデックスの次のアクティブプレイヤーを探す
 func (sd *ShortDeck) findNextActive(fromIdx int) int {
-	for i := 1; i <= len(sd.players); i++ {
-		next := (fromIdx + i) % len(sd.players)
-		if !sd.players[next].GetFolded() && !sd.players[next].GetAllIn() {
-			return next
-		}
-	}
-	return (fromIdx + 1) % len(sd.players)
+	return findNextActive(sd.players, fromIdx)
 }
 
 // countActivePlayers フォールドしていないプレイヤー数を返す
 func (sd *ShortDeck) countActivePlayers() int {
-	cnt := 0
-	for _, p := range sd.players {
-		if !p.GetFolded() {
-			cnt++
-		}
-	}
-	return cnt
+	return countPlayers(sd.players, func(p *ShortDeckPlayer) bool { return !p.GetFolded() })
 }
 
 // resolveLastPlayer 全員フォールドで最後のプレイヤーが勝利
@@ -725,14 +677,7 @@ func (sd *ShortDeck) cpuBetOrAllIn(p *ShortDeckPlayer, betAmt int) (int, int) {
 
 // cpuPotBet ポット比率ベースのベット額を計算
 func (sd *ShortDeck) cpuPotBet(potPct int) int {
-	bet := sd.pot * potPct / 100
-	if bet < sd.config.BigBlind {
-		bet = sd.config.BigBlind
-	}
-	if bet < sd.minRaise {
-		bet = sd.minRaise
-	}
-	return bet
+	return potBet(sd.pot, potPct, sd.config.BigBlind, sd.minRaise)
 }
 
 // cpuDecidePreFlop プリフロップのCPU意思決定
@@ -1011,42 +956,22 @@ func (sd *ShortDeck) SkipAddon() error {
 
 // IsRebuyAvailable 人間プレイヤーがリバイ可能かどうか
 func (sd *ShortDeck) IsRebuyAvailable() bool {
-	if !sd.config.RebuyEnabled || sd.handCount > sd.config.RebuyPeriodHands {
-		return false
-	}
-	for i, p := range sd.players {
-		if p.GetIsHuman() && p.GetChips() <= 0 && sd.rebuyCounts[i] < sd.config.RebuyMaxCount {
-			return true
-		}
-	}
-	return false
+	return rebuyAvailable(sd.config.RebuyEnabled, sd.handCount, sd.config.RebuyPeriodHands, sd.players, sd.rebuyCounts, sd.config.RebuyMaxCount)
 }
 
 // IsAddonAvailable 人間プレイヤーがアドオン可能かどうか
 func (sd *ShortDeck) IsAddonAvailable() bool {
-	if !sd.config.AddonEnabled || sd.handCount != sd.config.AddonAfterHand {
-		return false
-	}
-	for i, p := range sd.players {
-		if p.GetIsHuman() && !sd.addonUsed[i] {
-			return true
-		}
-	}
-	return false
+	return addonAvailable(sd.config.AddonEnabled, sd.handCount, sd.config.AddonAfterHand, sd.players, sd.addonUsed)
 }
 
 // GetRebuyCounts プレイヤーごとのリバイ回数取得
 func (sd *ShortDeck) GetRebuyCounts() []int {
-	result := make([]int, len(sd.rebuyCounts))
-	copy(result, sd.rebuyCounts)
-	return result
+	return copyOf(sd.rebuyCounts)
 }
 
 // GetAddonUsed プレイヤーごとのアドオン使用フラグ取得
 func (sd *ShortDeck) GetAddonUsed() []bool {
-	result := make([]bool, len(sd.addonUsed))
-	copy(result, sd.addonUsed)
-	return result
+	return copyOf(sd.addonUsed)
 }
 
 // GetRebuyPhaseType リバイフェーズ種別取得
@@ -1172,15 +1097,11 @@ func (sd *ShortDeck) ExportProfile() interface{} {
 
 // ImportProfile JSONバイトからメタAIプロファイルをインポートする
 func (sd *ShortDeck) ImportProfile(data []byte) error {
-	if len(data) == 0 {
-		return nil
-	}
-	d, err := ImportBettingHumanProfileJSON(data)
-	if err != nil {
+	p, err := importBettingProfile(data)
+	if err != nil || p == nil {
 		return err
 	}
-	sd.humanProfile = &BettingHumanProfile{}
-	sd.humanProfile.Import(d)
+	sd.humanProfile = p
 	return nil
 }
 
@@ -1192,35 +1113,16 @@ func (sd *ShortDeck) SetConfig(cfg ShortDeckConfig) { sd.config = cfg }
 
 // IsHumanTurn 人間のターンかチェック
 func (sd *ShortDeck) IsHumanTurn() bool {
-	if sd.currentTurn >= 0 && sd.currentTurn < len(sd.players) {
-		return sd.players[sd.currentTurn].GetIsHuman()
-	}
-	return false
+	return isHumanTurn(sd.players, sd.currentTurn)
 }
 
 // GetActedFlags actedフラグ取得
 func (sd *ShortDeck) GetActedFlags() []bool {
-	result := make([]bool, len(sd.actedFlags))
-	copy(result, sd.actedFlags)
-	return result
+	return copyOf(sd.actedFlags)
 }
 
 // GetHandCount ハンド数取得
 func (sd *ShortDeck) GetHandCount() int { return sd.handCount }
-
-// GetActionLog 棋譜を取得する
-func (sd *ShortDeck) GetActionLog() []*ActionLogEntry { return sd.actionLog }
-
-// appendLog 棋譜にエントリを追加する
-func (sd *ShortDeck) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	sd.actionLog = append(sd.actionLog, &ActionLogEntry{
-		TurnNumber: len(sd.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
 
 // logAction ベッティングアクションを棋譜に記録する
 func (sd *ShortDeck) logAction(playerIdx, action, amount int) {

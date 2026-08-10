@@ -402,3 +402,30 @@ func TestThreeThirteen_GetPlayerDeadwoodValue(t *testing.T) {
 	assert.Equal(t, 0, g.GetPlayerDeadwoodValue(0))
 	assert.Equal(t, 0, g.GetPlayerDeadwoodValue(99), "out of range → 0")
 }
+
+// **捨てる前の予測。**Web の bestThreeThirteenDeadwoodValue と同じ値になること。
+// ワイルドを残すと 20 点なので、ワイルドを捨てる手が有利になる場面がある (#4840)。
+func TestThreeThirteen_GetDeadwoodAfterDiscard(t *testing.T) {
+	g := NewDefaultThreeThirteen()
+	g.Reset()
+	p := g.GetPlayer(0)
+	for p.GetCardsSize() > 0 {
+		p.RemoveCard(0)
+	}
+	// ラウンド 1 のワイルドは 3。メルドにならない手札を作る。
+	p.AddCard(NewCard(CardDesignSpade, 9, false))
+	p.AddCard(NewCard(CardDesignHeart, 5, false))
+	p.AddCard(NewCard(CardDesignClover, 3, false)) // ワイルド (残すと 20 点)
+
+	assert.Equal(t, 3, g.WildRank())
+	// 全部残すと 9 + 5 + 20 = 34。
+	assert.Equal(t, 34, g.GetPlayerDeadwoodValue(0))
+	// 9 を捨てると 5 + 20 = 25。
+	assert.Equal(t, 25, g.GetDeadwoodAfterDiscard(0, 0))
+	// ワイルドを捨てると 9 + 5 = 14 — いちばん減る。
+	assert.Equal(t, 14, g.GetDeadwoodAfterDiscard(0, 2))
+	// 範囲外は -1。
+	assert.Equal(t, -1, g.GetDeadwoodAfterDiscard(0, 99))
+	assert.Equal(t, -1, g.GetDeadwoodAfterDiscard(0, -1))
+	assert.Equal(t, -1, g.GetDeadwoodAfterDiscard(99, 0))
+}

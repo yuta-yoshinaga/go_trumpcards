@@ -75,7 +75,7 @@ type SpoilFive struct {
 	roundWinnerIdx   int // 直近ラウンドの勝者 (-1=Spoil/未確定)
 	gameEndFlag      bool
 	winnerPlayer     int // -1=未確定
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewSpoilFive コンストラクタ
@@ -143,7 +143,7 @@ func (g *SpoilFive) startRound() {
 	g.phase = SpoilFivePhasePlay
 	g.appendLog(g.leadPlayerIdx, "round_start",
 		fmt.Sprintf("round %d: trump %d, pot %d, %s leads",
-			g.roundNumber, g.trumpSuit, g.pot, g.playerName(g.leadPlayerIdx)), nil)
+			g.roundNumber, g.trumpSuit, g.pot, playerName(g.players, g.leadPlayerIdx)), nil)
 }
 
 // deal 各プレイヤーへ 5 枚を配る。
@@ -205,7 +205,7 @@ func (g *SpoilFive) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *SpoilFive) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == SpoilFivePlayerCnt {
 		g.phase = SpoilFivePhaseTrickEnd
@@ -227,7 +227,7 @@ func (g *SpoilFive) ResolveTrick() {
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.players[winnerIdx].IncRoundTricks()
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", g.playerName(winnerIdx), g.trickNumber), trickCards)
+		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.players[winnerIdx].GetRoundTricks() >= SpoilFiveWinTricks {
@@ -262,7 +262,7 @@ func (g *SpoilFive) ScoreRound() {
 	if g.roundWinnerIdx >= 0 {
 		g.players[g.roundWinnerIdx].SetScore(g.players[g.roundWinnerIdx].GetScore() + g.pot)
 		g.appendLog(g.roundWinnerIdx, "round_win",
-			fmt.Sprintf("%s wins the pot of %d", g.playerName(g.roundWinnerIdx), g.pot), nil)
+			fmt.Sprintf("%s wins the pot of %d", playerName(g.players, g.roundWinnerIdx), g.pot), nil)
 		g.pot = 0
 		g.checkGameEnd()
 	} else {
@@ -283,7 +283,7 @@ func (g *SpoilFive) checkGameEnd() {
 		g.gameEndFlag = true
 		g.winnerPlayer = leader
 		g.phase = SpoilFivePhaseGameEnd
-		g.appendLog(leader, "game_end", fmt.Sprintf("%s wins the match!", g.playerName(leader)), nil)
+		g.appendLog(leader, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
 	}
 }
 
@@ -368,6 +368,43 @@ func (g *SpoilFive) trickWinner() int {
 	return winnerIdx
 }
 
+// GetTopTrumps は固定序列の上位札を強い順に返す (#4765)。
+//
+// **この序列が Spoil Five の核心ルール。**5 > J > ♥A > 切り札A > K > Q で、
+// ♥A は切り札でなくても常に3番目に強い。Web は折りたたみパネルで常時出して
+// いるのに、CUI は切り札スートの記号を出すだけで、CLI プレイヤーは
+// 「なぜこのカードで負けたか」をルールブック無しに理解できなかった。
+//
+// **ハートが切り札のときは ♥A を重複させない。**そのとき ♥A は切り札の A
+// そのものなので、2度並べると6枚あるように見える。
+//
+// 並びは spoilRank そのものから導く。順序を手で書き写すと、ランクを直した
+// ときに説明だけ古くなる。
+func (g *SpoilFive) GetTopTrumps() []*Card {
+	candidates := []*Card{
+		NewCard(g.trumpSuit, 5, false),
+		NewCard(g.trumpSuit, 11, false),
+		NewCard(CardDesignHeart, 1, false),
+		NewCard(g.trumpSuit, 1, false),
+		NewCard(g.trumpSuit, 13, false),
+		NewCard(g.trumpSuit, 12, false),
+	}
+	out := make([]*Card, 0, len(candidates))
+	seen := map[[2]int]bool{}
+	for _, c := range candidates {
+		key := [2]int{c.GetDesign(), c.GetValue()}
+		if seen[key] {
+			continue
+		}
+		seen[key] = true
+		out = append(out, c)
+	}
+	sort.SliceStable(out, func(i, j int) bool {
+		return g.spoilRank(out[i]) > g.spoilRank(out[j])
+	})
+	return out
+}
+
 // spoilRank Spoil Five の固定ランクを返す (高いほど強い)。
 func (g *SpoilFive) spoilRank(card *Card) int {
 	d, v := card.GetDesign(), card.GetValue()
@@ -409,10 +446,7 @@ func spoilPlainStrength(v int) int {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す。
 func (g *SpoilFive) getValidPlayIndices(playerIdx int) []int {
-	player := g.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return g.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(g.players[playerIdx], func(c *Card) bool { return g.validatePlay(playerIdx, c) == nil })
 }
 
 // --- Misc helpers ---
@@ -439,25 +473,9 @@ func (g *SpoilFive) spoilSortHand(p *SpoilFivePlayer) {
 	}
 }
 
-// playerName プレイヤー名を返す。
-func (g *SpoilFive) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
 // indexOfPlayerInTrick currentTrick 内で playerIdx の札の位置を返す (-1=なし)。
 func (g *SpoilFive) indexOfPlayerInTrick(playerIdx int) int {
-	for i, tc := range g.currentTrick {
-		if tc.PlayerIdx == playerIdx {
-			return i
-		}
-	}
-	return -1
+	return indexOfPlayerInTrick(g.currentTrick, playerIdx)
 }
 
 // trickTopRank 現在のトリック勝者の札のランクを返す。見つからない場合は極小値。
@@ -467,27 +485,6 @@ func (g *SpoilFive) trickTopRank(winnerIdx int) int {
 		return -1 << 30
 	}
 	return g.spoilRank(g.currentTrick[idx].Card)
-}
-
-// findHumanIdx 人間プレイヤーのインデックス (-1=なし)。
-func (g *SpoilFive) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
-// appendLog 棋譜にエントリを追加する。
-func (g *SpoilFive) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- CPU AI ---
@@ -512,43 +509,17 @@ func (g *SpoilFive) cpuPlaySmart(playerIdx int, valid []int) int {
 	player := g.players[playerIdx]
 	if len(g.currentTrick) == 0 {
 		// リード: 強い札で取りに行く。
-		return g.maxBy(player, valid, func(c *Card) int { return g.spoilRank(c) })
+		return pickHighest(player, valid, func(c *Card) int { return g.spoilRank(c) })
 	}
 	winnerIdx := g.trickWinner()
 	topRank := g.trickTopRank(winnerIdx)
 	winners := spoilFilter(valid, func(idx int) bool { return g.spoilRank(player.GetCard(idx)) > topRank })
 	if len(winners) > 0 {
 		// 最小コストで勝てる札。
-		return g.minBy(player, winners, func(c *Card) int { return g.spoilRank(c) })
+		return pickLowest(player, winners, func(c *Card) int { return g.spoilRank(c) })
 	}
 	// 勝てない: 最弱札を捨てる。
-	return g.minBy(player, valid, func(c *Card) int { return g.spoilRank(c) })
-}
-
-// minBy score が最小となるインデックスを返す。
-func (g *SpoilFive) minBy(player *SpoilFivePlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s < bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
-}
-
-// maxBy score が最大となるインデックスを返す。
-func (g *SpoilFive) maxBy(player *SpoilFivePlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s > bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
+	return pickLowest(player, valid, func(c *Card) int { return g.spoilRank(c) })
 }
 
 // spoilFilter 述語を満たすインデックスを抽出する。
@@ -566,7 +537,7 @@ func spoilFilter(indices []int, pred func(int) bool) []int {
 
 // GetHint 人間プレイヤーの手番における推奨プレイを返す。
 func (g *SpoilFive) GetHint() *SpoilFiveHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 || g.phase != SpoilFivePhasePlay || g.currentPlayerIdx != human {
 		return nil
 	}
@@ -659,18 +630,12 @@ func (g *SpoilFive) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *SpoilFive) GetPlayer(i int) *SpoilFivePlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // IsHumanTurn 現在の手番が人間か。
 func (g *SpoilFive) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -678,9 +643,6 @@ func (g *SpoilFive) GetConfig() SpoilFiveConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *SpoilFive) SetConfig(cfg SpoilFiveConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *SpoilFive) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetPlayableIndices プレイ可能なカードのインデックス一覧を返す。
 func (g *SpoilFive) GetPlayableIndices(playerIdx int) []int {

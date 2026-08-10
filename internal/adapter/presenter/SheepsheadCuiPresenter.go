@@ -120,6 +120,20 @@ func (p *SheepsheadCuiPresenter) Output(g interfaces.SheepsheadGame, lastErr err
 			pickerIdx := g.GetPickerIdx()
 			b.WriteString(i18n.Tf("sheepshead.promptCall",
 				"name", cuiPlayerName(g.GetPlayer(pickerIdx), pickerIdx)) + "\n")
+			// **どのスートを呼べるかを出す。**Web は呼べるスートだけボタンを
+			// 描くのに、CUI はコマンド構文しか示さず試行錯誤させていた (#4916)。
+			if suits := g.GetCallableSuits(); len(suits) > 0 {
+				labels := make([]string, len(suits))
+				for i, s := range suits {
+					// 番号を添える。c コマンドが取るのは記号ではなく数字。
+					labels[i] = strconv.Itoa(s) + "=" + sheepsheadSuitLabel(s)
+				}
+				b.WriteString(i18n.Tf("sheepshead.callableSuits",
+					"suits", strings.Join(labels, " ")) + "\n")
+			} else {
+				// 呼べるスートが 1 つも無い局面もある (フェイル A を全部持っている等)。
+				b.WriteString(i18n.T("sheepshead.callableNone") + "\n")
+			}
 			b.WriteString(i18n.T("sheepshead.promptCallHelp") + "\n")
 		case domain.SheepsheadPhasePlay:
 			currentIdx := g.GetCurrentPlayerIdx()

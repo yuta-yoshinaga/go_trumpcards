@@ -7,6 +7,8 @@ import (
 	"io"
 	"os"
 	"os/signal"
+	"sort"
+	"strings"
 	"syscall"
 	"time"
 
@@ -32,27 +34,115 @@ const realtimeTickCommand = "tick"
 // human reaction time without flooding the terminal with redraws.
 const SlapjackRealtimeTickInterval = 200 * time.Millisecond
 
+// realtimeHelpCommand is the pseudo-command produced by the help key. Like
+// realtimeQuitCommand it is handled by the loop rather than dispatched to the
+// controller — redisplaying the key legend is not a game action. The value is
+// not a real controller command, so it must never reach Exec.
+const realtimeHelpCommand = "\x00help"
+
 // SlapjackRealtimeKeyMap maps single-keystroke input to the controller
 // command the realtime CUI runner should execute. Used by Slapjack and
 // Egyptian Ratscrew (their controllers share the same command surface).
 //
-//   - space → "j" (slap) — the headline real-time action
-//   - s/S   → "s" (step) — flip your top card to the pile
-//   - r/R   → "r" (reset) — start a fresh game
-//   - q/Q   → "q" (quit) — exit the realtime loop
-//   - l/L   → "log" (action log)
+// Every entry must also appear in realtimeCommandLabelKeys, which is what the
+// on-screen legend is built from — TestRealtimeLegendCoversKeyMap checks both
+// directions. The `log` key sat here undocumented for months because the
+// legend was hand-written prose (issue #5179).
 var SlapjackRealtimeKeyMap = map[rune]string{
-	' ':  "j",
-	's':  "s",
-	'S':  "s",
-	'r':  "r",
-	'R':  "r",
-	'q':  realtimeQuitCommand,
-	'Q':  realtimeQuitCommand,
-	'l':  "log",
-	'L':  "log",
+	' ': "j",
+	's': "s",
+	'S': "s",
+	'r': "r",
+	'R': "r",
+	'q': realtimeQuitCommand,
+	'Q': realtimeQuitCommand,
+	'l': "log",
+	'L': "log",
+	'h': realtimeHelpCommand,
+	'H': realtimeHelpCommand,
+	'?': realtimeHelpCommand,
+	// `sd <n>` cannot be typed one byte at a time, so the three difficulties get
+	// their own keys. 1/2/3 rather than 0/1/2 so the keys read as
+	// easy/normal/hard; the argument stays the domain's 0-based value.
+	'1':  "sd 0",
+	'2':  "sd 1",
+	'3':  "sd 2",
 	0x03: realtimeQuitCommand, // Ctrl+C
 	0x04: realtimeQuitCommand, // Ctrl+D
+}
+
+// realtimeCommandLabelKeys maps each command reachable from a realtime key map
+// to the i18n key describing it. The legend is rendered from this plus the key
+// map, so a key added to one without the other fails the round-trip test rather
+// than silently shipping an undocumented command.
+var realtimeCommandLabelKeys = map[string]string{
+	"j":                 "realtime.labelSlap",
+	"s":                 "realtime.labelStep",
+	"r":                 "realtime.labelReset",
+	"log":               "realtime.labelLog",
+	"sd 0":              "realtime.labelEasy",
+	"sd 1":              "realtime.labelNormal",
+	"sd 2":              "realtime.labelHard",
+	realtimeHelpCommand: "realtime.labelHelp",
+	realtimeQuitCommand: "realtime.labelQuit",
+}
+
+// realtimeKeyLabel renders a key for display: space and the control codes have
+// no printable form, so they get spelled out.
+func realtimeKeyLabel(k rune) string {
+	switch k {
+	case ' ':
+		return i18n.T("realtime.keySpace")
+	case 0x03:
+		return "Ctrl+C"
+	case 0x04:
+		return "Ctrl+D"
+	}
+	return string(k)
+}
+
+// realtimeLegendLines renders the key legend from mapping: one line per
+// command, listing every key bound to it in a stable order. Generated rather
+// than written so it cannot drift from the key map.
+func realtimeLegendLines(mapping map[rune]string) []string {
+	keysByCommand := make(map[string][]rune, len(mapping))
+	for k, cmd := range mapping {
+		keysByCommand[cmd] = append(keysByCommand[cmd], k)
+	}
+	// Commands in a fixed display order; anything unlisted is appended sorted so
+	// a new command still shows up (the round-trip test keeps the list honest).
+	order := []string{"j", "s", "r", "sd 0", "sd 1", "sd 2", "log", realtimeHelpCommand, realtimeQuitCommand}
+	seen := make(map[string]bool, len(order))
+	for _, c := range order {
+		seen[c] = true
+	}
+	rest := make([]string, 0, len(keysByCommand))
+	for c := range keysByCommand {
+		if !seen[c] {
+			rest = append(rest, c)
+		}
+	}
+	sort.Strings(rest)
+
+	lines := make([]string, 0, len(keysByCommand)+1)
+	lines = append(lines, i18n.T("realtime.banner"))
+	for _, cmd := range append(order, rest...) {
+		keys := keysByCommand[cmd]
+		if len(keys) == 0 {
+			continue
+		}
+		sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
+		labels := make([]string, 0, len(keys))
+		for _, k := range keys {
+			labels = append(labels, realtimeKeyLabel(k))
+		}
+		labelKey, ok := realtimeCommandLabelKeys[cmd]
+		if !ok {
+			continue // guarded by TestRealtimeLegendCoversKeyMap
+		}
+		lines = append(lines, fmt.Sprintf("  %-14s %s", strings.Join(labels, ", "), i18n.T(labelKey)))
+	}
+	return lines
 }
 
 // realtimeCuiCore drives the realtime CUI loop without touching the
@@ -79,6 +169,15 @@ func realtimeCuiCore(execer CuiExecer, keys <-chan rune, ticks <-chan struct{}, 
 			}
 			if cmd == realtimeQuitCommand {
 				return
+			}
+			if cmd == realtimeHelpCommand {
+				// Loop-level, not a game action: the 200 ms tick scrolls the
+				// legend off screen within seconds and there was no way to get
+				// it back (issue #5179).
+				for _, line := range realtimeLegendLines(mapping) {
+					writeRealtimeOutput(w, line)
+				}
+				continue
 			}
 			writeRealtimeOutput(w, execer.Exec(cmd))
 		case _, ok := <-ticks:
@@ -133,8 +232,12 @@ func RunRealtimeCuiLoop(gameName string, controller CuiExecer, helpLines []strin
 	}
 	defer func() { _ = term.Restore(stdinFd, state) }()
 
-	fmt.Println(i18n.T("realtime.banner"))
-	for _, line := range helpLines {
+	// The line-mode helpLines are NOT shown here. They document `j`, `tick` and
+	// `sd <n>`, none of which can be typed one byte at a time -- pressing `j`
+	// did nothing at all, because unmapped keys are silently dropped. The
+	// legend below is generated from the key map instead, so it can only ever
+	// list keys that actually work. See issue #5179.
+	for _, line := range realtimeLegendLines(SlapjackRealtimeKeyMap) {
 		fmt.Println(line)
 	}
 

@@ -49,5 +49,14 @@
     "karnoffelForced": "This is the only legal card",
     "karnoffelOneAway": "One more trick takes this hand",
     "karnoffelChoose": "Several cards are legal — pick from the highlighted ones"
+  },
+  "rankBadge": {
+    "karnoffel": "Karnöffel",
+    "devil": "Devil",
+    "pope": "Pope",
+    "kaiser": "Kaiser",
+    "oberstecher": "Ober",
+    "unterstecher": "Unter",
+    "farbenstecher": "Farben"
   }
 }

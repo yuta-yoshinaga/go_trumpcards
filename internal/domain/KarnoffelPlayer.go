@@ -19,8 +19,7 @@ func (p *KarnoffelPlayer) GetTeam(seat int) int { return KarnoffelTeamOf(seat) }
 
 // ResetRound は局開始時に手札を初期化する。
 func (p *KarnoffelPlayer) ResetRound() {
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayer(p)
 }
 
 // karnoffelPlayerJSON is the JSON wire format for KarnoffelPlayer.

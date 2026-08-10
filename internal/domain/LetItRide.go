@@ -39,23 +39,23 @@ const (
 
 // LetItRide レット・イット・ライドクラス
 type LetItRide struct {
-	trumpCards     *TrumpCards       // トランプカード
-	playerHand     []*Card           // プレイヤーハンド（3枚）
-	communityCards []*Card           // コミュニティカード（2枚）
-	chips          ChipHolder        // チップ
-	betAmount      int               // 1口あたりのベット額
-	bet1Active     bool              // ベット1（常にアクティブ）
-	bet2Active     bool              // ベット2（第2判断で取り下げ可能）
-	bet3Active     bool              // ベット3（第1判断で取り下げ可能）
-	phase          int               // 現在のフェーズ
-	gameEndFlag    bool              // ゲーム終了フラグ
-	result         GameResult        // ゲーム結果（Win/Lose）
-	handRank       int               // 最終ハンドランク
-	bet1Payout     int               // ベット1配当
-	bet2Payout     int               // ベット2配当
-	bet3Payout     int               // ベット3配当
-	totalPayout    int               // 合計配当
-	actionLog      []*ActionLogEntry // 棋譜
+	trumpCards     *TrumpCards // トランプカード
+	playerHand     []*Card     // プレイヤーハンド（3枚）
+	communityCards []*Card     // コミュニティカード（2枚）
+	chips          ChipHolder  // チップ
+	betAmount      int         // 1口あたりのベット額
+	bet1Active     bool        // ベット1（常にアクティブ）
+	bet2Active     bool        // ベット2（第2判断で取り下げ可能）
+	bet3Active     bool        // ベット3（第1判断で取り下げ可能）
+	phase          int         // 現在のフェーズ
+	gameEndFlag    bool        // ゲーム終了フラグ
+	result         GameResult  // ゲーム結果（Win/Lose）
+	handRank       int         // 最終ハンドランク
+	bet1Payout     int         // ベット1配当
+	bet2Payout     int         // ベット2配当
+	bet3Payout     int         // ベット3配当
+	totalPayout    int         // 合計配当
+	actionLogBase
 }
 
 // NewLetItRide コンストラクタ
@@ -141,6 +141,38 @@ func (lir *LetItRide) Pull() error {
 	default:
 		return NewDomainError(ErrWrongPhase, "Pull is only allowed during decision phases.")
 	}
+}
+
+// LetItRidePullPreview は Pull を実行したときの掛け金の動き。
+type LetItRidePullPreview struct {
+	// Returned は手元に戻る額 (1口分)。
+	Returned int
+	// RiskBefore / RiskAfter は場に残る総額の前後。
+	RiskBefore int
+	RiskAfter  int
+}
+
+// GetPullPreview は Pull を実行したときに戻る額とリスクの増減を返す。
+// 判断フェーズ以外では nil。
+//
+// **Pull はリスクを「下げる」操作。**1口ぶん取り下げて手元に戻すので、
+// 負ける額も勝てる額も減る。取り消せないのはそこで、危険だからではない。
+func (lir *LetItRide) GetPullPreview() *LetItRidePullPreview {
+	if lir.phase != LetItRidePhaseFirstDecision && lir.phase != LetItRidePhaseSecondDecision {
+		return nil
+	}
+	active := 0
+	for _, on := range []bool{lir.bet1Active, lir.bet2Active, lir.bet3Active} {
+		if on {
+			active++
+		}
+	}
+	before := lir.betAmount * active
+	after := before - lir.betAmount
+	if after < 0 {
+		after = 0
+	}
+	return &LetItRidePullPreview{Returned: lir.betAmount, RiskBefore: before, RiskAfter: after}
 }
 
 // LetItRideAction ベットをそのままにする（Let It Ride）。
@@ -262,17 +294,6 @@ func (lir *LetItRide) checkTensOrBetter() int {
 	return 0
 }
 
-// appendLog 棋譜にエントリを追加する
-func (lir *LetItRide) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	lir.actionLog = append(lir.actionLog, &ActionLogEntry{
-		TurnNumber: len(lir.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // --- Getters ---
 
 // GetPlayerHand プレイヤーハンド取得
@@ -319,9 +340,6 @@ func (lir *LetItRide) GetTotalPayout() int { return lir.totalPayout }
 
 // GetChips チップ
 func (lir *LetItRide) GetChips() int { return lir.chips.GetChips() }
-
-// GetActionLog 棋譜を取得する
-func (lir *LetItRide) GetActionLog() []*ActionLogEntry { return lir.actionLog }
 
 // --- Test helpers ---
 

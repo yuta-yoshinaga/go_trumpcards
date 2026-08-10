@@ -241,4 +241,25 @@ describe('KillePage', () => {
     fireEvent.click(toggle);
     expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
   });
+
+  it('announces round events as they arrive', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ events: [{ kind: 'cuckoo', actor: 1, target: 2 }] } as Partial<KilleResponse>),
+    );
+    renderWithProviders(<KillePage />);
+    const events = await screen.findByTestId('kille-events');
+    expect(events).toHaveAttribute('aria-live', 'polite');
+    expect(events).toHaveAttribute('role', 'status');
+    expect(events).toHaveTextContent(/./);
+  });
+
+  it('mounts the event live region before any event arrives', async () => {
+    // A live region created in the same paint as its first text is not
+    // reliably announced, so it must already exist while events are empty.
+    mockExec.mockResolvedValue(makeState({ events: [] }));
+    renderWithProviders(<KillePage />);
+    const events = await screen.findByTestId('kille-events');
+    expect(events).toHaveAttribute('aria-live', 'polite');
+    expect(events).toBeEmptyDOMElement();
+  });
 });

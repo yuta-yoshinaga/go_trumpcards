@@ -269,3 +269,56 @@ func TestPenguinCuiPresenterActionLogGameOver(t *testing.T) {
 
 	assert.Contains(t, result, "棋譜")
 }
+
+// **上限が出ておらず、拒否されたコマンドで初めて気づく形だった (#4802)。**
+// 姉妹の Eight Off は supermoveLine を毎ターン出し、Web も pg-supermove-badge を
+// 常設している。
+func TestPenguinCuiPresenterOutput_SupermoveLine(t *testing.T) {
+	p := new(PenguinCuiPresenter)
+	card := func(v int) *domain.Card { return domain.NewCard(domain.CardDesignSpade, v, false) }
+	board := func(filledCells, filledCols int) *domain.Penguin {
+		g := domain.NewPenguin(domain.NewTrumpCards(0))
+		g.Reset()
+		g.SetPhase(domain.PenguinPhasePlaying)
+		var cells [domain.PenguinCellCnt]*domain.Card
+		for i := 0; i < filledCells && i < domain.PenguinCellCnt; i++ {
+			cells[i] = card(i + 2)
+		}
+		g.SetFreeCells(cells)
+		var tableau [domain.PenguinTableauCnt][]*domain.Card
+		for i := 0; i < domain.PenguinTableauCnt; i++ {
+			if i < filledCols {
+				tableau[i] = []*domain.Card{card(5)}
+			}
+		}
+		g.SetTableau(tableau)
+		return g
+	}
+
+	t.Run("names the limit and what it is made of", func(t *testing.T) {
+		out := p.Output(board(0, domain.PenguinTableauCnt), nil)
+		assert.Contains(t, out, "一括移動")
+		assert.Contains(t, out, "空きセル")
+		assert.Contains(t, out, "空き列0")
+	})
+
+	// **空き列があるときだけ、そこへ置く上限も出す。**同じ数だと嘘になる。
+	t.Run("adds the lower empty-column limit when one exists", func(t *testing.T) {
+		assert.Contains(t, p.Output(board(0, domain.PenguinTableauCnt-1), nil), "空き列へは")
+	})
+
+	t.Run("omits the empty-column limit when no column is empty", func(t *testing.T) {
+		assert.NotContains(t, p.Output(board(0, domain.PenguinTableauCnt), nil), "空き列へは")
+	})
+
+	t.Run("shows a limit of one when the board is packed", func(t *testing.T) {
+		out := p.Output(board(domain.PenguinCellCnt, domain.PenguinTableauCnt), nil)
+		assert.Contains(t, out, "最大1枚")
+	})
+
+	t.Run("shows nothing once the game is cleared", func(t *testing.T) {
+		g := board(0, domain.PenguinTableauCnt)
+		g.SetPhase(domain.PenguinPhaseGameClear)
+		assert.NotContains(t, p.Output(g, nil), "一括移動")
+	})
+}

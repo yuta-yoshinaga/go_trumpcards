@@ -228,6 +228,26 @@ describe('SetteEMezzoPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /CLI/i }));
     await waitFor(() => expect(screen.queryByRole('button', { name: '引く' })).not.toBeInTheDocument());
   });
+
+  it('marks the chosen matta value as pressed', async () => {
+    // Earlier tests queue one-shot resolutions and can leave CLI mode persisted.
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(
+      makeState({
+        canSetMatta: true,
+        seats: [
+          { name: 'あなた', isCpu: false, hand: hand({ mattaHalves: 4, hasMatta: true }) },
+          { name: 'CPU1', isCpu: true },
+          { name: 'CPU2', isCpu: true, hand: hand({ bet: 20 }) },
+        ],
+      }),
+    );
+    renderWithProviders(<SetteEMezzoPage />);
+    const pressed = await screen.findByTestId('matta-4');
+    expect(pressed).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('matta-2')).toHaveAttribute('aria-pressed', 'false');
+  });
 });
 
 // Keyboard shortcuts are bound by useActionKeyboardNav and advertised by

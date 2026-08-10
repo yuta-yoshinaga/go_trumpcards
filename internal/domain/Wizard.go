@@ -66,7 +66,7 @@ type Wizard struct {
 	trumpSuit        int   // 切り札スート (-1 = 切り札なし)
 	gameEndFlag      bool
 	winnerIdx        int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewWizard コンストラクタ
@@ -169,7 +169,7 @@ func (o *Wizard) PlayerBid(bid int) error {
 		return ErrWrongPhase
 	}
 
-	humanIdx := o.findHumanIdx()
+	humanIdx := findHumanIdx(o.players)
 	if humanIdx < 0 {
 		return ErrNotHumanTurn
 	}
@@ -182,7 +182,7 @@ func (o *Wizard) PlayerBid(bid int) error {
 	// Wizardはフックルール（合計制限）を持たない: 合計ビッド≠トリック数を許容する。
 
 	o.players[humanIdx].SetBid(bid)
-	o.appendLog(humanIdx, "bid", fmt.Sprintf("%s bids %d", o.playerName(humanIdx), bid), nil)
+	o.appendLog(humanIdx, "bid", fmt.Sprintf("%s bids %d", playerName(o.players, humanIdx), bid), nil)
 
 	o.advanceBid()
 	return nil
@@ -202,7 +202,7 @@ func (o *Wizard) CpuBid() {
 
 	bid := o.cpuSelectBid(o.bidPlayerIdx)
 	o.players[o.bidPlayerIdx].SetBid(bid)
-	o.appendLog(o.bidPlayerIdx, "bid", fmt.Sprintf("%s bids %d", o.playerName(o.bidPlayerIdx), bid), nil)
+	o.appendLog(o.bidPlayerIdx, "bid", fmt.Sprintf("%s bids %d", playerName(o.players, o.bidPlayerIdx), bid), nil)
 
 	o.advanceBid()
 }
@@ -269,7 +269,7 @@ func (o *Wizard) ResolveTrick() {
 
 	o.players[winnerIdx].AddTrick(trickCards)
 
-	winnerName := o.playerName(winnerIdx)
+	winnerName := playerName(o.players, winnerIdx)
 	o.appendLog(winnerIdx, "trick_win", fmt.Sprintf("%s wins trick %d", winnerName, o.trickNumber), trickCards)
 
 	o.leadPlayerIdx = winnerIdx
@@ -307,7 +307,7 @@ func (o *Wizard) ScoreRound() {
 			// ビッド的中: 20 + 10×bid ポイント
 			p.roundScore = 20 + 10*bid
 			o.appendLog(i, "bid_success", fmt.Sprintf("%s bid %d, took %d: +%d",
-				o.playerName(i), bid, tricks, p.roundScore), nil)
+				playerName(o.players, i), bid, tricks, p.roundScore), nil)
 		} else {
 			// 外れ: -10×|トリック数 - ビッド|
 			diff := tricks - bid
@@ -316,7 +316,7 @@ func (o *Wizard) ScoreRound() {
 			}
 			p.roundScore = -10 * diff
 			o.appendLog(i, "bid_fail", fmt.Sprintf("%s bid %d, took %d: %d",
-				o.playerName(i), bid, tricks, p.roundScore), nil)
+				playerName(o.players, i), bid, tricks, p.roundScore), nil)
 		}
 	}
 
@@ -328,7 +328,7 @@ func (o *Wizard) ScoreRound() {
 	// スコアログ
 	for i := range WizardPlayerCnt {
 		o.appendLog(i, "cumulative_score", fmt.Sprintf("%s: total=%d",
-			o.playerName(i), o.players[i].cumulativeScore), nil)
+			playerName(o.players, i), o.players[i].cumulativeScore), nil)
 	}
 
 	// ゲーム終了判定
@@ -409,10 +409,7 @@ func (o *Wizard) GetPlayerCnt() int { return len(o.players) }
 
 // GetPlayer プレイヤー取得
 func (o *Wizard) GetPlayer(i int) *WizardPlayer {
-	if i < 0 || i >= len(o.players) {
-		return nil
-	}
-	return o.players[i]
+	return getPlayer(o.players, i)
 }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
@@ -429,18 +426,12 @@ func (o *Wizard) SetBidPlayerIdx(idx int) { o.bidPlayerIdx = idx }
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (o *Wizard) IsHumanTurn() bool {
-	if o.currentPlayerIdx < 0 || o.currentPlayerIdx >= len(o.players) {
-		return false
-	}
-	return o.players[o.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(o.players, o.currentPlayerIdx)
 }
 
 // IsHumanBidTurn 現在のビッド手番が人間かどうか
 func (o *Wizard) IsHumanBidTurn() bool {
-	if o.bidPlayerIdx < 0 || o.bidPlayerIdx >= len(o.players) {
-		return false
-	}
-	return o.players[o.bidPlayerIdx].GetIsHuman()
+	return isHumanTurn(o.players, o.bidPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -448,9 +439,6 @@ func (o *Wizard) GetConfig() WizardConfig { return o.config }
 
 // SetConfig 設定変更
 func (o *Wizard) SetConfig(cfg WizardConfig) { o.config = cfg }
-
-// GetActionLog 棋譜取得
-func (o *Wizard) GetActionLog() []*ActionLogEntry { return o.actionLog }
 
 // GetRestrictedBid ディーラーのビッド制限値を返す。
 // Wizardはフックルールを持たないため常に -1 (制限なし)。
@@ -463,16 +451,6 @@ func (o *Wizard) GetValidPlayIndices(playerIdx int) []int {
 }
 
 // --- Private methods ---
-
-// findHumanIdx 人間プレイヤーのインデックスを返す (-1=なし)
-func (o *Wizard) findHumanIdx() int {
-	for i, p := range o.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
 
 // calcTotalRounds 総ラウンド数を計算する (60枚 / 4人 = 15ラウンド、昇順のみ)。
 func (o *Wizard) calcTotalRounds() int {
@@ -601,7 +579,7 @@ func (o *Wizard) playCard(playerIdx int, card *Card) {
 		Card:      card,
 	})
 
-	o.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", o.playerName(playerIdx), wizardCardStr(card)), []*Card{card})
+	o.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(o.players, playerIdx), wizardCardStr(card)), []*Card{card})
 
 	if len(o.currentTrick) == WizardPlayerCnt {
 		o.phase = WizardPhaseTrickEnd
@@ -614,7 +592,13 @@ func (o *Wizard) playCard(playerIdx int, card *Card) {
 // 先頭から順に見て、ウィザードが最初に出ていればリードスートなし、
 // ジェスターは読み飛ばし、最初のスート札 (design 1..4) をリードスートとする。
 func (o *Wizard) leadSuitOfTrick() int {
-	for _, tc := range o.currentTrick {
+	return WizardLeadSuitOfTrick(o.currentTrick)
+}
+
+// WizardLeadSuitOfTrick はトリックのリードスートを返す (-1 = 未確定)。
+// ウィザードがリードすればスートは立たず、ジェスターは読み飛ばす。
+func WizardLeadSuitOfTrick(trick []*TrickCard) int {
+	for _, tc := range trick {
 		d := tc.Card.GetDesign()
 		if d == WizardDesignWizard {
 			return -1
@@ -629,38 +613,46 @@ func (o *Wizard) leadSuitOfTrick() int {
 
 // validatePlay カードのプレイが有効か検証する
 func (o *Wizard) validatePlay(playerIdx int, card *Card) error {
-	if len(o.currentTrick) == 0 {
-		// リード: ウィザード/ジェスターを含め何でもリード可能。
+	if WizardIsLegalPlay(card, o.currentTrick, o.players[playerIdx]) {
 		return nil
+	}
+	return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+}
+
+// WizardIsLegalPlay は card を現在のトリックに出せるかを返す。
+//
+// リードなら何でも出せる。ウィザード/ジェスターはフォロー義務を免除される。
+// リードスートが確定していて、そのスートをまだ持っているなら従わねばならない。
+//
+// **判定はここ 1 箇所に置く。**presenter が「出せる札」を印付けするのに
+// 同じ規則を書き写すと、片方だけ直したときに嘘の案内になる (#4927)。
+func WizardIsLegalPlay(card *Card, trick []*TrickCard, hand *WizardPlayer) bool {
+	if len(trick) == 0 {
+		// リード: ウィザード/ジェスターを含め何でもリード可能。
+		return true
 	}
 
 	d := card.GetDesign()
 	// ウィザード/ジェスターはいつでもプレイ可能 (フォロー義務の免除)。
 	if d == WizardDesignWizard || d == WizardDesignJester {
-		return nil
+		return true
 	}
 
-	leadSuit := o.leadSuitOfTrick()
+	leadSuit := WizardLeadSuitOfTrick(trick)
 	if leadSuit < 0 {
 		// リードスートが未確定 (ウィザードがリード、または全てジェスター)。
-		return nil
+		return true
 	}
-	if d != leadSuit && o.playerHasSuit(playerIdx, leadSuit) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+	if d == leadSuit {
+		return true
 	}
-
-	return nil
-}
-
-// playerHasSuit プレイヤーが特定のスートを持っているか
-func (o *Wizard) playerHasSuit(playerIdx int, design int) bool {
-	p := o.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
+	// リードスートを持っていなければ何を出してもよい。
+	for i := 0; i < hand.GetCardsSize(); i++ {
+		if c := hand.GetCard(i); c != nil && c.GetDesign() == leadSuit {
+			return false
 		}
 	}
-	return false
+	return true
 }
 
 // trickWinner トリックの勝者を決定する
@@ -736,7 +728,7 @@ func (o *Wizard) determineWinner() {
 			o.winnerIdx = i
 		}
 	}
-	o.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", o.playerName(o.winnerIdx)), nil)
+	o.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(o.players, o.winnerIdx)), nil)
 }
 
 // sortAllHands 全プレイヤーの手札をソートする
@@ -770,39 +762,14 @@ func wizardCardStr(card *Card) string {
 	return cardStr(card)
 }
 
-// playerName プレイヤー名を返す
-func (o *Wizard) playerName(idx int) string {
-	if idx < 0 || idx >= len(o.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if o.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (o *Wizard) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	o.actionLog = append(o.actionLog, &ActionLogEntry{
-		TurnNumber: len(o.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (o *Wizard) getValidPlayIndices(playerIdx int) []int {
-	player := o.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return o.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(o.players[playerIdx], func(c *Card) bool { return o.validatePlay(playerIdx, c) == nil })
 }
 
 // GetHint ヒントを取得する
 func (o *Wizard) GetHint() *WizardHint {
-	humanIdx := o.findHumanIdx()
+	humanIdx := findHumanIdx(o.players)
 	if humanIdx < 0 {
 		return nil
 	}

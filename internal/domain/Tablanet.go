@@ -124,7 +124,7 @@ type tablanetState struct {
 	scored         bool // 最終得点を確定済みか (二重確定防止)
 	winners        []int
 	lastDealDetail *TablanetScoreDetail
-	actionLog      []*ActionLogEntry
+	actionLogBase
 }
 
 // Tablanet はタブラネットゲームの状態を保持する集約ルート。
@@ -182,7 +182,7 @@ func (g *Tablanet) Reset() {
 		phase:          TablanetPhasePlay,
 		currentTurn:    0,
 		lastCaptureIdx: -1,
-		actionLog:      make([]*ActionLogEntry, 0),
+		actionLogBase:  actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 	}
 	g.dealHands()
 	g.dealInitialTable()
@@ -225,12 +225,7 @@ func (g *Tablanet) dealInitialTable() {
 
 // allHandsEmpty は全員の手札が空かどうか。
 func (g *Tablanet) allHandsEmpty() bool {
-	for _, p := range g.players {
-		if p.GetCardsSize() > 0 {
-			return false
-		}
-	}
-	return true
+	return allHandsEmpty(g.players)
 }
 
 // --- 捕獲ロジック (インライン) ---
@@ -484,7 +479,7 @@ func (g *Tablanet) applyPlay(playerIdx, handIdx int, tableIdxs []int) {
 	if len(tableIdxs) == 0 {
 		// トレイル: 場に置く。
 		g.state.tableCards = append(g.state.tableCards, card)
-		g.appendLog(playerIdx, "trail", fmt.Sprintf("%s trails %s", g.playerName(playerIdx), cardStr(card)),
+		g.appendLog(playerIdx, "trail", fmt.Sprintf("%s trails %s", playerName(g.players, playerIdx), cardStr(card)),
 			[]*Card{card})
 		g.advanceTurn()
 		return
@@ -505,15 +500,15 @@ func (g *Tablanet) applyPlay(playerIdx, handIdx int, tableIdxs []int) {
 	if isTabla {
 		player.IncrementTabla()
 		g.appendLog(playerIdx, "tabla",
-			fmt.Sprintf("%s scores a Tabla! captured %d card(s)", g.playerName(playerIdx), len(captured)-1),
+			fmt.Sprintf("%s scores a Tabla! captured %d card(s)", playerName(g.players, playerIdx), len(captured)-1),
 			captured)
 	} else if tablanetIsJack(card) {
 		g.appendLog(playerIdx, "sweep",
-			fmt.Sprintf("%s sweeps %d card(s) with a Jack", g.playerName(playerIdx), len(captured)-1),
+			fmt.Sprintf("%s sweeps %d card(s) with a Jack", playerName(g.players, playerIdx), len(captured)-1),
 			captured)
 	} else {
 		g.appendLog(playerIdx, "capture",
-			fmt.Sprintf("%s captures %d card(s)", g.playerName(playerIdx), len(captured)-1),
+			fmt.Sprintf("%s captures %d card(s)", playerName(g.players, playerIdx), len(captured)-1),
 			captured)
 	}
 	g.advanceTurn()
@@ -769,7 +764,7 @@ func (g *Tablanet) GetHint() *TablanetHint {
 	if g.state.gameEndFlag || g.state.phase != TablanetPhasePlay {
 		return nil
 	}
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 || g.state.currentTurn != human {
 		return nil
 	}
@@ -808,56 +803,13 @@ func (g *Tablanet) GetHint() *TablanetHint {
 
 // --- ヘルパー ---
 
-func (g *Tablanet) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 // sortHumanHand は人間の手札を表示用にスート→ランク順で並べ替える。
 func (g *Tablanet) sortHumanHand() {
-	for _, p := range g.players {
-		if !p.GetIsHuman() {
-			continue
-		}
-		cards := make([]*Card, p.GetCardsSize())
-		for i := 0; i < p.GetCardsSize(); i++ {
-			cards[i] = p.GetCard(i)
-		}
-		sort.SliceStable(cards, func(i, j int) bool {
-			if cards[i].GetDesign() != cards[j].GetDesign() {
-				return cards[i].GetDesign() < cards[j].GetDesign()
-			}
-			return cards[i].GetValue() < cards[j].GetValue()
-		})
-		p.Reset()
-		for _, c := range cards {
-			p.AddCard(c)
-		}
-	}
-}
-
-func (g *Tablanet) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
+	sortHumanHands(g.players)
 }
 
 func (g *Tablanet) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.state.actionLog = append(g.state.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.state.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.state.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // --- 状態アクセサ ---
@@ -896,10 +848,7 @@ func (g *Tablanet) GetLastCaptureIdx() int { return g.state.lastCaptureIdx }
 
 // GetPlayer は指定インデックスのプレイヤーを返す。
 func (g *Tablanet) GetPlayer(i int) *TablanetPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetPlayerCnt はプレイヤー数を返す。
@@ -1070,7 +1019,7 @@ func (g *Tablanet) UnmarshalJSON(data []byte) error {
 		scored:         j.Scored,
 		winners:        j.Winners,
 		lastDealDetail: j.LastDealDetail,
-		actionLog:      j.ActionLog,
+		actionLogBase:  actionLogBase{actionLog: j.ActionLog},
 	}
 	if g.state.tableCards == nil {
 		g.state.tableCards = make([]*Card, 0)

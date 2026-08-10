@@ -1,4 +1,4 @@
-# オマハ ハイロー / 8 or Better（CUI版）遊び方
+# オマハ ハイロー（CUI版）遊び方
 
 ## ゲーム概要
 
@@ -75,27 +75,28 @@ flowchart TD
 
 ## コマンド一覧
 
-| コマンド | 別名 | 説明 |
-|---------|------|------|
-| `f` | `fold` | フォールド |
-| `ck` | `check` | チェック |
-| `c` | `call` | コール |
-| `b <amount>` | `bet <amount>` | ベット |
-| `ra <amount>` | `raise <amount>` | レイズ |
-| `a` | `allin` | オールイン |
-| `m` | `muck` | マック（負け時に手札を伏せる） |
-| `sh` | `show` | ショー（手札を公開） |
-| `rb` | `rebuy` | リバイ |
-| `sr` | `skiprebuy` | リバイ拒否 |
-| `ad` | `addon` | アドオン |
-| `sa` | `skipaddon` | アドオン拒否 |
-| `bl <0-2>` | `bettinglimit` | リミット切替（0=Fixed/1=PotLimit/2=NoLimit） |
-| `tm <0-1>` | `tournament` | トーナメントモード |
-| `sb <amount>` | `smallblind` | スモールブラインド |
-| `bb <amount>` | `bigblind` | ビッグブラインド |
-| `ts <4\|6\|9>` | `tablesize` | テーブルサイズ |
-| `r` | `reset` | ゲーム初期化 |
-| `q` | `quit` / `exit` | 終了 |
+| コマンド | 短縮形 | 説明 |
+|----------|--------|------|
+| `fold` | `f` | フォールド |
+| `check` | `ck` | チェック |
+| `call` | `c` | コール |
+| `bet <amount>` | `b` | ベット |
+| `raise <amount>` | `ra` | レイズ |
+| `allin` | `a` | オールイン |
+| `muck` | `m` | マック（負け時に手札を伏せる） |
+| `show` | `sh` | ショー（手札を公開） |
+| `rebuy` | `rb` | リバイ |
+| `skiprebuy` | `sr` | リバイ拒否 |
+| `addon` | `ad` | アドオン |
+| `skipaddon` | `sa` | アドオン拒否 |
+| `bettinglimit <0-2>` | `bl` | リミット切替（0=Fixed/1=PotLimit/2=NoLimit） |
+| `tournament <0-1>` | `tm` | トーナメントモード |
+| `smallblind <amount>` | `sb` | スモールブラインド |
+| `bigblind <amount>` | `bb` | ビッグブラインド |
+| `tablesize <4\|6\|9>` | `ts` | テーブルサイズ |
+| `reset` | `r` | ゲーム初期化 |
+| `quit` | `q` | 終了（`exit` も同じ） |
+| `help` | `?` | コマンド一覧を表示 |
 
 ## 画面の見方
 

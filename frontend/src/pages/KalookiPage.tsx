@@ -30,6 +30,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { KALOOKI_HELP, parseKalookiCommand } from '../utils/cli/commands/kalookiCommands';
 import { formatKalookiState } from '../utils/cli/formatters/kalookiFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { kalookiOpeningPoints } from '../utils/kalookiScore';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Phase identifiers for Kalooki (sync: internal/domain/Kalooki.go). */
@@ -112,11 +113,21 @@ function KalookiPageContent() {
   const [selectedCards, setSelectedCards] = useState<number[]>([]);
   // Meld groups being assembled (one card-index group per meld).
   const [meldGroups, setMeldGroups] = useState<number[][]>([]);
+
   // Layoff target: { playerIdx, meldIdx }.
   const [layoffTarget, setLayoffTarget] = useState<{ playerIdx: number; meldIdx: number } | null>(null);
 
   const humanIdx = 0;
   const humanPlayer = state?.players[humanIdx];
+  // Points the staged groups are worth toward the opening requirement. Hand and
+  // Foot shows the same readout; Kalooki only stated the target (#4839).
+  const openingPoints = useMemo(
+    () =>
+      kalookiOpeningPoints(
+        meldGroups.map((g) => g.map((i) => humanPlayer?.cards[i]).filter((card): card is Card => card !== undefined)),
+      ),
+    [meldGroups, humanPlayer],
+  );
   const isHumanTurn = state?.currentPlayerIdx === humanIdx && !state?.gameEndFlag;
   const isDrawPhase = isHumanTurn && state?.phase === KALOOKI_PHASE.DRAW;
   const isMeldPhase = isHumanTurn && state?.phase === KALOOKI_PHASE.MELD;
@@ -312,8 +323,20 @@ function KalookiPageContent() {
             </section>
 
             {isMeldPhase && humanPlayer && !humanPlayer.hasOpened && (
-              <section className="px-4 py-1 text-sm text-ds-warning" data-testid="kalooki-opening-hint">
-                {t('openingHint', { n: state.openingThreshold })}
+              <section className="px-4 py-1 text-sm" data-testid="kalooki-opening-hint">
+                <span className="text-ds-warning">{t('openingHint', { n: state.openingThreshold })}</span>{' '}
+                {/* The joker bonus applies per meld, so the running total is not
+                    the sum of the card values a player can add up by eye (#4839). */}
+                <span
+                  role="status"
+                  aria-live="polite"
+                  data-testid="kalooki-opening-progress"
+                  className={`font-bold ${
+                    openingPoints >= state.openingThreshold ? 'text-ds-success' : 'text-ds-text-muted'
+                  }`}
+                >
+                  {t('openingProgress', { points: openingPoints, threshold: state.openingThreshold })}
+                </span>
               </section>
             )}
 

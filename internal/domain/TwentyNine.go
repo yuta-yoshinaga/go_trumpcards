@@ -96,7 +96,7 @@ type TwentyNine struct {
 	roundTeamPts     [TwentyNineTeamCnt]int // 現ラウンドのチーム別カード得点
 	gameEndFlag      bool
 	winnerTeam       int // -1=未確定
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewTwentyNine コンストラクタ
@@ -242,9 +242,9 @@ func (g *TwentyNine) applyBid(idx int, bid TwentyNineBid) error {
 	g.bids[idx] = bid
 	g.bidDone[idx] = true
 	if bid != TwentyNineBidPass {
-		g.appendLog(idx, "bid", fmt.Sprintf("%s bids %d", g.playerName(idx), int(bid)), nil)
+		g.appendLog(idx, "bid", fmt.Sprintf("%s bids %d", playerName(g.players, idx), int(bid)), nil)
 	} else {
-		g.appendLog(idx, "bid", fmt.Sprintf("%s passes", g.playerName(idx)), nil)
+		g.appendLog(idx, "bid", fmt.Sprintf("%s passes", playerName(g.players, idx)), nil)
 	}
 	for k := 1; k <= TwentyNinePlayerCnt; k++ {
 		ni := (idx + k) % TwentyNinePlayerCnt
@@ -271,7 +271,7 @@ func (g *TwentyNine) resolveBidding() {
 	g.trumpSuit = g.longestSuit(idx)
 	g.trumpRevealed = false
 	g.appendLog(idx, "contract",
-		fmt.Sprintf("%s (team %s) bids %d with a hidden trump", g.playerName(idx), twentyNineTeamName(TwentyNineTeamOf(idx)), int(bid)), nil)
+		fmt.Sprintf("%s (team %s) bids %d with a hidden trump", playerName(g.players, idx), twentyNineTeamName(TwentyNineTeamOf(idx)), int(bid)), nil)
 	g.leadPlayerIdx = idx
 	g.currentPlayerIdx = g.leadPlayerIdx
 	g.phase = TwentyNinePhasePlay
@@ -279,19 +279,7 @@ func (g *TwentyNine) resolveBidding() {
 
 // longestSuit プレイヤーが最も多く持つスートを返す。
 func (g *TwentyNine) longestSuit(playerIdx int) int {
-	counts := map[int]int{}
-	p := g.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		counts[p.GetCard(i).GetDesign()]++
-	}
-	bestSuit, bestCnt := CardDesignSpade, -1
-	for _, suit := range []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond} {
-		if counts[suit] > bestCnt {
-			bestCnt = counts[suit]
-			bestSuit = suit
-		}
-	}
-	return bestSuit
+	return longestSuit(g.players[playerIdx])
 }
 
 // cpuChooseBid CPU の入札を選ぶ。得点札と最長スートから見積もる。
@@ -377,7 +365,7 @@ func (g *TwentyNine) playCard(playerIdx int, card *Card) {
 		}
 	}
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == TwentyNinePlayerCnt {
 		g.phase = TwentyNinePhaseTrickEnd
@@ -407,7 +395,7 @@ func (g *TwentyNine) ResolveTrick() {
 		bonus = " +1 last"
 	}
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (+%d%s)", g.playerName(winnerIdx), g.trickNumber, pts, bonus), trickCards)
+		fmt.Sprintf("%s wins trick %d (+%d%s)", playerName(g.players, winnerIdx), g.trickNumber, pts, bonus), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= TwentyNineTrickCount {
@@ -471,25 +459,7 @@ func (g *TwentyNine) checkGameEnd() {
 
 // validatePlay マストフォローを検証する。
 func (g *TwentyNine) validatePlay(playerIdx int, card *Card) error {
-	if len(g.currentTrick) == 0 {
-		return nil
-	}
-	leadSuit := g.currentTrick[0].Card.GetDesign()
-	if g.playerHasSuit(playerIdx, leadSuit) && card.GetDesign() != leadSuit {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
-	}
-	return nil
-}
-
-// playerHasSuit プレイヤーが指定スートのカードを持っているか。
-func (g *TwentyNine) playerHasSuit(playerIdx, design int) bool {
-	p := g.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return validateFollowSuit(g.currentTrick, g.players, playerIdx, card)
 }
 
 // trickWinner トリックの勝者を決定する。切り札があれば最強切り札、なければ
@@ -559,10 +529,7 @@ func twentyNineCardPoints(card *Card) int {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す。
 func (g *TwentyNine) getValidPlayIndices(playerIdx int) []int {
-	player := g.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return g.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(g.players[playerIdx], func(c *Card) bool { return g.validatePlay(playerIdx, c) == nil })
 }
 
 // --- Misc helpers ---
@@ -592,25 +559,9 @@ func twentyNineSortHand(p *TwentyNinePlayer) {
 	}
 }
 
-// playerName プレイヤー名を返す。
-func (g *TwentyNine) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
 // indexOfPlayerInTrick currentTrick 内で playerIdx の札の位置を返す (-1=なし)。
 func (g *TwentyNine) indexOfPlayerInTrick(playerIdx int) int {
-	for i, tc := range g.currentTrick {
-		if tc.PlayerIdx == playerIdx {
-			return i
-		}
-	}
-	return -1
+	return indexOfPlayerInTrick(g.currentTrick, playerIdx)
 }
 
 // trickTopRank 現在のトリック勝者の札のランクを返す。見つからない場合は極小値。
@@ -620,27 +571,6 @@ func (g *TwentyNine) trickTopRank(winnerIdx int) int {
 		return -1 << 30
 	}
 	return g.twentyNineRank(g.currentTrick[idx].Card)
-}
-
-// findHumanIdx 人間プレイヤーのインデックス (-1=なし)。
-func (g *TwentyNine) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
-// appendLog 棋譜にエントリを追加する。
-func (g *TwentyNine) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- CPU AI ---
@@ -664,7 +594,7 @@ func (g *TwentyNine) cpuSelectPlayCard(playerIdx int) int {
 func (g *TwentyNine) cpuPlaySmart(playerIdx int, valid []int) int {
 	player := g.players[playerIdx]
 	if len(g.currentTrick) == 0 {
-		return g.minBy(player, valid, func(c *Card) int { return twentyNineCardPoints(c)*100 + g.twentyNineRank(c) })
+		return pickLowest(player, valid, func(c *Card) int { return twentyNineCardPoints(c)*100 + g.twentyNineRank(c) })
 	}
 	winnerIdx := g.trickWinner()
 	topRank := g.trickTopRank(winnerIdx)
@@ -672,38 +602,12 @@ func (g *TwentyNine) cpuPlaySmart(playerIdx int, valid []int) int {
 	winners := twentyNineFilter(valid, func(idx int) bool { return g.twentyNineRank(player.GetCard(idx)) > topRank })
 	if partnerWinning {
 		// 味方が勝っている: 得点札を渡す。
-		return g.maxBy(player, valid, func(c *Card) int { return twentyNineCardPoints(c) })
+		return pickHighest(player, valid, func(c *Card) int { return twentyNineCardPoints(c) })
 	}
 	if len(winners) > 0 {
-		return g.minBy(player, winners, func(c *Card) int { return g.twentyNineRank(c) })
+		return pickLowest(player, winners, func(c *Card) int { return g.twentyNineRank(c) })
 	}
-	return g.minBy(player, valid, func(c *Card) int { return twentyNineCardPoints(c)*100 + g.twentyNineRank(c) })
-}
-
-// minBy score が最小となるインデックスを返す。
-func (g *TwentyNine) minBy(player *TwentyNinePlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s < bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
-}
-
-// maxBy score が最大となるインデックスを返す。
-func (g *TwentyNine) maxBy(player *TwentyNinePlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s > bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
+	return pickLowest(player, valid, func(c *Card) int { return twentyNineCardPoints(c)*100 + g.twentyNineRank(c) })
 }
 
 // twentyNineFilter 述語を満たすインデックスを抽出する。
@@ -721,7 +625,7 @@ func twentyNineFilter(indices []int, pred func(int) bool) []int {
 
 // GetHint 人間プレイヤーの手番における推奨プレイを返す。
 func (g *TwentyNine) GetHint() *TwentyNineHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 || g.phase != TwentyNinePhasePlay || g.currentPlayerIdx != human {
 		return nil
 	}
@@ -841,18 +745,12 @@ func (g *TwentyNine) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *TwentyNine) GetPlayer(i int) *TwentyNinePlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // IsHumanTurn 現在の手番が人間か (プレイフェーズ)。
 func (g *TwentyNine) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -860,9 +758,6 @@ func (g *TwentyNine) GetConfig() TwentyNineConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *TwentyNine) SetConfig(cfg TwentyNineConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *TwentyNine) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetPlayableIndices プレイ可能なカードのインデックス一覧を返す。
 func (g *TwentyNine) GetPlayableIndices(playerIdx int) []int {

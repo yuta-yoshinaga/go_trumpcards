@@ -48,27 +48,27 @@ const (
 
 // TexasHoldemBonus テキサスホールデムボーナスポーカークラス
 type TexasHoldemBonus struct {
-	trumpCards     *TrumpCards       // トランプカード
-	playerHand     []*Card           // プレイヤーホールカード
-	dealerHand     []*Card           // ディーラーホールカード
-	community      []*Card           // コミュニティカード
-	chips          ChipHolder        // チップ
-	anteBet        int               // アンテベット額
-	bonusBet       int               // ボーナスサイドベット額
-	flopBet        int               // フロップベット額（プリフロップで2×アンテ）
-	turnBet        int               // ターンベット額（フロップ後で1×アンテ）
-	riverBet       int               // リバーベット額（ターン後で1×アンテ）
-	phase          int               // 現在のフェーズ
-	gameEndFlag    bool              // ゲーム終了フラグ
-	result         GameResult        // ゲーム結果
-	antePayout     int               // アンテ＋アンテボーナス配当
-	playPayout     int               // プレイベット配当合計（フロップ＋ターン＋リバー）
-	bonusPayout    int               // ボーナスサイドベット配当
-	playerHandRank int               // プレイヤー最良5枚ランク
-	dealerHandRank int               // ディーラー最良5枚ランク
-	playerBest     []*Card           // プレイヤー最良5枚
-	dealerBest     []*Card           // ディーラー最良5枚
-	actionLog      []*ActionLogEntry // 棋譜
+	trumpCards     *TrumpCards // トランプカード
+	playerHand     []*Card     // プレイヤーホールカード
+	dealerHand     []*Card     // ディーラーホールカード
+	community      []*Card     // コミュニティカード
+	chips          ChipHolder  // チップ
+	anteBet        int         // アンテベット額
+	bonusBet       int         // ボーナスサイドベット額
+	flopBet        int         // フロップベット額（プリフロップで2×アンテ）
+	turnBet        int         // ターンベット額（フロップ後で1×アンテ）
+	riverBet       int         // リバーベット額（ターン後で1×アンテ）
+	phase          int         // 現在のフェーズ
+	gameEndFlag    bool        // ゲーム終了フラグ
+	result         GameResult  // ゲーム結果
+	antePayout     int         // アンテ＋アンテボーナス配当
+	playPayout     int         // プレイベット配当合計（フロップ＋ターン＋リバー）
+	bonusPayout    int         // ボーナスサイドベット配当
+	playerHandRank int         // プレイヤー最良5枚ランク
+	dealerHandRank int         // ディーラー最良5枚ランク
+	playerBest     []*Card     // プレイヤー最良5枚
+	dealerBest     []*Card     // ディーラー最良5枚
+	actionLogBase
 }
 
 // NewTexasHoldemBonus コンストラクタ
@@ -149,7 +149,7 @@ func (t *TexasHoldemBonus) Play() error {
 	if t.phase != TexasHoldemBonusPhasePreFlop {
 		return NewDomainError(ErrWrongPhase, "Play is only allowed during the pre-flop phase.")
 	}
-	bet := t.anteBet * 2
+	bet := t.GetNextBetCost()
 	if !t.chips.SubtractChips(bet) {
 		return NewDomainError(ErrInsufficientChips, "Insufficient chips for flop bet.")
 	}
@@ -199,7 +199,7 @@ func (t *TexasHoldemBonus) Check() error {
 
 // Raise フロップ後またはターン後に1×アンテを置いて次フェーズへ進む。
 func (t *TexasHoldemBonus) Raise() error {
-	bet := t.anteBet
+	bet := t.GetNextBetCost()
 	switch t.phase {
 	case TexasHoldemBonusPhaseFlop:
 		if !t.chips.SubtractChips(bet) {
@@ -221,6 +221,30 @@ func (t *TexasHoldemBonus) Raise() error {
 		return nil
 	default:
 		return NewDomainError(ErrWrongPhase, "Raise is only allowed during the flop or turn phase.")
+	}
+}
+
+// アクションで置く額はアンテの何倍か。
+const (
+	// TexasHoldemBonusFlopMultiplier プリフロップの Play は 2×アンテ。
+	TexasHoldemBonusFlopMultiplier = 2
+	// TexasHoldemBonusRaiseMultiplier フロップ/ターンの Raise は 1×アンテ。
+	TexasHoldemBonusRaiseMultiplier = 1
+)
+
+// GetNextBetCost は現在のフェーズで Play / Raise に必要なチップ額を返す。
+// アクションフェーズ以外では 0。
+//
+// **Play() と Raise() が実際に引く額もここから取る。**別々に計算すると、
+// 画面に出す額と引かれる額がずれる余地が残る。
+func (t *TexasHoldemBonus) GetNextBetCost() int {
+	switch t.phase {
+	case TexasHoldemBonusPhasePreFlop:
+		return t.anteBet * TexasHoldemBonusFlopMultiplier
+	case TexasHoldemBonusPhaseFlop, TexasHoldemBonusPhaseTurn:
+		return t.anteBet * TexasHoldemBonusRaiseMultiplier
+	default:
+		return 0
 	}
 }
 
@@ -430,17 +454,6 @@ func bonusMultiplier(a, b *Card) int {
 	return 0
 }
 
-// appendLog 棋譜にエントリを追加する
-func (t *TexasHoldemBonus) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	t.actionLog = append(t.actionLog, &ActionLogEntry{
-		TurnNumber: len(t.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // --- Getters ---
 
 // GetPlayerHand プレイヤーホールカード取得
@@ -507,9 +520,6 @@ func (t *TexasHoldemBonus) GetDealerBest() []*Card { return t.dealerBest }
 
 // GetChips チップ
 func (t *TexasHoldemBonus) GetChips() int { return t.chips.GetChips() }
-
-// GetActionLog 棋譜を取得する
-func (t *TexasHoldemBonus) GetActionLog() []*ActionLogEntry { return t.actionLog }
 
 // --- Test helpers ---
 

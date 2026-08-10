@@ -4,7 +4,6 @@ package domain
 
 import (
 	"encoding/json"
-	"fmt"
 	"sort"
 )
 
@@ -59,18 +58,12 @@ func (hp *HoldemPlayer) GetPFRCount() int { return hp.pfrCount }
 
 // GetVPIP VPIP%取得 (0 if totalHands==0)
 func (hp *HoldemPlayer) GetVPIP() int {
-	if hp.totalHands == 0 {
-		return 0
-	}
-	return hp.vpipCount * 100 / hp.totalHands
+	return percentOf(hp.vpipCount, hp.totalHands)
 }
 
 // GetPFR PFR%取得 (0 if totalHands==0)
 func (hp *HoldemPlayer) GetPFR() int {
-	if hp.totalHands == 0 {
-		return 0
-	}
-	return hp.pfrCount * 100 / hp.totalHands
+	return percentOf(hp.pfrCount, hp.totalHands)
 }
 
 // IncrementTotalHands 総ハンド数をインクリメント
@@ -90,10 +83,7 @@ func (hp *HoldemPlayer) GetThreeBetCount() int { return hp.threeBetCount }
 
 // GetThreeBet 3Bet%取得 (0 if threeBetOpportunity==0)
 func (hp *HoldemPlayer) GetThreeBet() int {
-	if hp.threeBetOpportunity == 0 {
-		return 0
-	}
-	return hp.threeBetCount * 100 / hp.threeBetOpportunity
+	return percentOf(hp.threeBetCount, hp.threeBetOpportunity)
 }
 
 // IncrementThreeBetOpportunity 3Bet機会数をインクリメント
@@ -116,20 +106,12 @@ func (hp *HoldemPlayer) IncrementPostFlopCall() { hp.postFlopCall++ }
 
 // GetAFDisplay AF表示文字列取得 ("-"=アクションなし, "∞"=コールなし, "X.X"=通常)
 func (hp *HoldemPlayer) GetAFDisplay() string {
-	if hp.postFlopBetRaise == 0 && hp.postFlopCall == 0 {
-		return "-"
-	}
-	if hp.postFlopCall == 0 {
-		return "∞"
-	}
-	return fmt.Sprintf("%.1f", float64(hp.postFlopBetRaise)/float64(hp.postFlopCall))
+	return afDisplay(hp.postFlopBetRaise, hp.postFlopCall)
 }
 
 // GetComparisonCards ハンド比較用カード取得 (BettingPlayerインターフェース)
 func (hp *HoldemPlayer) GetComparisonCards() []*Card {
-	cards := make([]*Card, len(hp.bestHand))
-	copy(cards, hp.bestHand)
-	return cards
+	return copyOf(hp.bestHand)
 }
 
 // holdemPlayerJSON is the JSON wire format for HoldemPlayer.

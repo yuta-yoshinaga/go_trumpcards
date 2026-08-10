@@ -449,8 +449,12 @@ function TwoTenJackPageContent() {
                   <button
                     key={suit.key}
                     type="button"
-                    className={btnPrimary}
+                    // **プレイフェーズは既にヒント札を光らせているのに、宣言
+                    // フェーズはテキストで「♠」と言うだけだった。**同じページ内で
+                    // 非対称なので、推奨スートのボタンにも同じ強調を付ける。
+                    className={hint?.trumpSuit === suit.value ? `${btnPrimary} ring-2 ring-ds-warning` : btnPrimary}
                     aria-label={t(`suit.${suit.key}`)}
+                    data-hint-suggested={hint?.trumpSuit === suit.value ? 'true' : undefined}
                     onClick={() => handleDeclare(suit.value)}
                     disabled={loading}
                   >

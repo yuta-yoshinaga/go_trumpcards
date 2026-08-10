@@ -13,6 +13,28 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
+// freeCellEmptyCells は空いているフリーセルの数を返す。
+func freeCellEmptyCells(f interfaces.FreeCellGame) int {
+	n := 0
+	for _, c := range f.GetFreeCells() {
+		if c == nil {
+			n++
+		}
+	}
+	return n
+}
+
+// freeCellEmptyColumns は空いているタブロー列の数を返す。
+func freeCellEmptyColumns(f interfaces.FreeCellGame) int {
+	n := 0
+	for _, col := range f.GetTableau() {
+		if len(col) == 0 {
+			n++
+		}
+	}
+	return n
+}
+
 // FreeCellCuiPresenter renders the FreeCell Solitaire CUI view.
 type FreeCellCuiPresenter struct{}
 
@@ -76,6 +98,21 @@ func (p *FreeCellCuiPresenter) Output(f interfaces.FreeCellGame, lastErr error) 
 			if f.IsStalemate() {
 				b.WriteString(color.Red(i18n.T("cuiSolitaireStalemate")) + "\n")
 			}
+			// **何枚まとめて動かせるかは CUI に出ていなかった (#4777)。**Web は
+			// fc-supermove-limit で常時出し、上限を超える列には赤いリングまで
+			// 付けている。CUI は空きフリーセル数と空き列数から暗算するか、
+			// 実際に動かしてエラーになるまで分からなかった。
+			b.WriteString(i18n.Tf("freecell.supermoveLine",
+				"limit", strconv.Itoa(f.GetMaxMovableCards()),
+				"cells", strconv.Itoa(freeCellEmptyCells(f)),
+				"cols", strconv.Itoa(freeCellEmptyColumns(f))))
+			// **空き列を移動先にすると上限は下がる。**その列自身を経由地に
+			// 使えないため。空き列があるときだけ出す。
+			if toEmpty := f.GetMaxMovableCardsToEmptyColumn(); toEmpty > 0 {
+				b.WriteString(i18n.Tf("freecell.supermoveToEmpty",
+					"limit", strconv.Itoa(toEmpty)))
+			}
+			b.WriteString("\n")
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
 				"count", strconv.Itoa(f.GetMoveCount())) + "\n")
 		case domain.FreeCellPhaseGameClear:

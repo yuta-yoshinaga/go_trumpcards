@@ -145,6 +145,8 @@ function KoiKoiPageContent() {
 
   const isPlayPhase = state.phase === KoiKoiPhase.PLAY;
   const isDecisionPhase = state.phase === KoiKoiPhase.KOIKOI_DECISION;
+  // **こいこいを一度でも宣言していれば確定点は 2 倍** (KoiKoi.endRound と同じ)。
+  const decisionMultiplier = state.koikoiCount >= 1 ? 2 : 1;
   const isRoundEnd = state.phase === KoiKoiPhase.ROUND_END;
   const isGameEnd = state.phase === KoiKoiPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = state.isHumanTurn && !isGameEnd;
@@ -324,8 +326,13 @@ function KoiKoiPageContent() {
                 data-testid="koikoi-decision"
               >
                 <div className="text-ds-text-primary font-semibold mb-1">{t('decision.title')}</div>
-                <div className="text-ds-warning text-sm mb-2">
-                  {yakuList(state.pendingYaku)} = {t('decision.points', { points: state.pendingPoints })}
+                <div className="text-ds-warning text-sm mb-2" data-testid="koikoi-decision-points">
+                  {/* **こいこい 1 回以降は倍。**生の pendingPoints を出すと、
+                      実際より低い「今止めた場合の点数」を見せることになる
+                      (#4929)。CUI は koikoiDecisionInfoStr で倍率を掛けている。 */}
+                  {yakuList(state.pendingYaku)} ={' '}
+                  {t('decision.points', { points: state.pendingPoints * decisionMultiplier })}
+                  {decisionMultiplier > 1 && ` ${t('decision.multiplier', { mult: decisionMultiplier })}`}
                 </div>
                 <div className="flex gap-3 justify-center">
                   <button type="button" className={btnWarning} onClick={callKoiKoi} disabled={loading}>

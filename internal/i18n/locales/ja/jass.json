@@ -12,6 +12,7 @@
   "trumpLine": "切り札: {{suit}} (メイカー: チーム{{team}})",
   "trumpUndecided": "切り札: 未決定",
   "teamScoreLine": "チーム0: {{t0}}点  チーム1: {{t1}}点",
+  "weisLine": "当ラウンドの Weis: チーム0 {{t0}}点  チーム1 {{t1}}点（最も強い Weis を宣言したチームだけが自陣の Weis を総取りします）",
   "playerLine": "{{name}}: チーム{{team}} 獲得{{tricks}}トリック {{cards}}枚",
   "gameEnd": "ゲーム終了！ チーム{{team}}の勝利です！",
   "promptBidTrump": "切り札ビッド: {{name}}が選択",

@@ -286,12 +286,12 @@ func TestGinRummy_findAllPossibleMelds(t *testing.T) {
 func TestGinRummy_playerName(t *testing.T) {
 	g := newInternalTestGinRummy()
 
-	assert.Equal(t, "You", g.playerName(0))
-	assert.Equal(t, "CPU 1", g.playerName(1))
+	assert.Equal(t, "You", playerName(g.players, 0))
+	assert.Equal(t, "CPU 1", playerName(g.players, 1))
 
 	// Out of range
-	assert.Equal(t, "Player -1", g.playerName(-1))
-	assert.Equal(t, "Player 2", g.playerName(2))
+	assert.Equal(t, "Player -1", playerName(g.players, -1))
+	assert.Equal(t, "Player 2", playerName(g.players, 2))
 }
 
 // --- appendLog ---

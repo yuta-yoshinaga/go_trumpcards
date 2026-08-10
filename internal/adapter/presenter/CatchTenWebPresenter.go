@@ -30,6 +30,23 @@ func (p *CatchTenWebPresenter) Output(g interfaces.CatchTenGame, lastErr error) 
 }
 
 // buildBase 共通フィールドを構築
+// validPlayIndices は人間がいま出せる手札の位置を返す。
+//
+// 判定はドメインの GetValidPlayIndices をそのまま呼ぶ。フォロースートの規則を
+// フロントに複製すると、ドメインだけ直したときに黙って食い違う。プレイフェーズで
+// 人間の手番でなければ空 -- 呼び出し側は空を「制限なし」とは解釈せず、手番かどうかで
+// 先に分岐する。
+func (p *CatchTenWebPresenter) validPlayIndices(g interfaces.CatchTenGame) []int {
+	if g.GetPhase() != domain.CatchTenPhasePlay || !g.IsHumanTurn() {
+		return make([]int, 0)
+	}
+	idx := g.GetValidPlayIndices(g.GetCurrentPlayerIdx())
+	if idx == nil {
+		return make([]int, 0)
+	}
+	return idx
+}
+
 func (p *CatchTenWebPresenter) buildBase(g interfaces.CatchTenGame) *controller.CatchTenWebOutput {
 	resObj := new(controller.CatchTenWebOutput)
 	resObj.Phase = int(g.GetPhase())
@@ -42,6 +59,7 @@ func (p *CatchTenWebPresenter) buildBase(g interfaces.CatchTenGame) *controller.
 	resObj.GameEndFlag = g.GetGameEndFlag()
 	resObj.WinnerTeam = g.GetWinnerTeam()
 	resObj.LeadPlayerIdx = g.GetLeadPlayerIdx()
+	resObj.ValidPlayIndices = p.validPlayIndices(g)
 
 	cfg := g.GetConfig()
 	resObj.Config = controller.CatchTenWebOutputConfig{

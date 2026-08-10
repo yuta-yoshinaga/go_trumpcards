@@ -122,7 +122,7 @@ type Pan struct {
 	roundNumber      int
 	scored           bool // ラウンド終了スコアリングが完了したか（フェーズ再入時の二重加算防止）
 	panDeclarerIdx   int  // 「パン」を宣言したプレイヤー（-1 = 宣言なし／山切れ）
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewPan コンストラクタ
@@ -256,7 +256,7 @@ func (g *Pan) drawFromStock() error {
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", g.playerName(g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, g.currentPlayerIdx)), nil)
 	g.phase = PanPhasePlay
 	return nil
 }
@@ -270,7 +270,7 @@ func (g *Pan) drawFromDiscard() error {
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s draws %s from discard", g.playerName(g.currentPlayerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s draws %s from discard", playerName(g.players, g.currentPlayerIdx), cardStr(card)), []*Card{card})
 	g.phase = PanPhasePlay
 	return nil
 }
@@ -321,7 +321,7 @@ func (g *Pan) executeMeld(playerIdx int, cardIndices []int) error {
 
 	cardsCopy := make([]*Card, len(meld))
 	copy(cardsCopy, meld)
-	g.appendLog(playerIdx, "meld", fmt.Sprintf("%s melds %s", g.playerName(playerIdx), formatCards(meld)), cardsCopy)
+	g.appendLog(playerIdx, "meld", fmt.Sprintf("%s melds %s", playerName(g.players, playerIdx), formatCards(meld)), cardsCopy)
 
 	g.payChipConditions(playerIdx, meld)
 	g.checkPanDeclaration(playerIdx)
@@ -359,7 +359,7 @@ func (g *Pan) executeLayoff(playerIdx, meldOwner, meldIdx, cardIndex int) error 
 	owner.AppendToLaidMeld(meldIdx, card)
 	player.RemoveCard(cardIndex)
 
-	g.appendLog(playerIdx, "layoff", fmt.Sprintf("%s lays off %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "layoff", fmt.Sprintf("%s lays off %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	// レイオフ先の所有者が 11 枚に到達したらその所有者があがる。
 	g.checkPanDeclaration(meldOwner)
@@ -382,7 +382,7 @@ func (g *Pan) payChipConditions(playerIdx int, meld []*Card) {
 		}
 	}
 	g.players[playerIdx].AddChips(units * opponents)
-	g.appendLog(playerIdx, "chips", fmt.Sprintf("%s collects %d chip(s) from each opponent", g.playerName(playerIdx), units), nil)
+	g.appendLog(playerIdx, "chips", fmt.Sprintf("%s collects %d chip(s) from each opponent", playerName(g.players, playerIdx), units), nil)
 }
 
 // checkPanDeclaration playerIdx が 11 枚を場に出していれば「パン」あがりとしてラウンドを終える。
@@ -395,7 +395,7 @@ func (g *Pan) checkPanDeclaration(playerIdx int) {
 	}
 	g.panDeclarerIdx = playerIdx
 	g.players[playerIdx].SetIsFinished(true)
-	g.appendLog(playerIdx, "pan", fmt.Sprintf("%s declares Pan!", g.playerName(playerIdx)), nil)
+	g.appendLog(playerIdx, "pan", fmt.Sprintf("%s declares Pan!", playerName(g.players, playerIdx)), nil)
 	g.enterRoundEnd()
 }
 
@@ -416,7 +416,7 @@ func (g *Pan) applyDiscard(cardIndex int) error {
 	}
 	discarded := player.RemoveCard(cardIndex)
 	g.discardPile = append(g.discardPile, discarded)
-	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", g.playerName(g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
 	g.advanceTurn()
 	return nil
 }
@@ -443,10 +443,7 @@ func (g *Pan) guardHumanAction(want PanPhase) error {
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (g *Pan) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // --- CPU ---
@@ -609,7 +606,7 @@ func (g *Pan) scoreRound() {
 	}
 
 	if g.panDeclarerIdx >= 0 {
-		g.appendLog(g.panDeclarerIdx, "round_win", fmt.Sprintf("%s wins the round with Pan", g.playerName(g.panDeclarerIdx)), nil)
+		g.appendLog(g.panDeclarerIdx, "round_win", fmt.Sprintf("%s wins the round with Pan", playerName(g.players, g.panDeclarerIdx)), nil)
 	}
 
 	for i := range g.players {
@@ -630,7 +627,7 @@ func (g *Pan) finalizeGameEnd() {
 			g.winnerIdx = i
 		}
 	}
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game with %d points!", g.playerName(g.winnerIdx), minScore), nil)
+	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game with %d points!", playerName(g.players, g.winnerIdx), minScore), nil)
 }
 
 // --- Getters / Setters ---
@@ -664,10 +661,7 @@ func (g *Pan) SetDiscardPile(p []*Card) { g.discardPile = p }
 
 // GetDiscardTop 捨て札トップ
 func (g *Pan) GetDiscardTop() *Card {
-	if len(g.discardPile) == 0 {
-		return nil
-	}
-	return g.discardPile[len(g.discardPile)-1]
+	return discardTop(g.discardPile)
 }
 
 // GetDrawPileCount 山札残り枚数
@@ -687,10 +681,7 @@ func (g *Pan) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *Pan) GetPlayer(i int) *PanPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetConfig 設定取得
@@ -707,9 +698,6 @@ func (g *Pan) GetPanDeclarerIdx() int { return g.panDeclarerIdx }
 
 // SetPanDeclarerIdx 宣言プレイヤー設定（テスト用）
 func (g *Pan) SetPanDeclarerIdx(i int) { g.panDeclarerIdx = i }
-
-// GetActionLog 棋譜取得
-func (g *Pan) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // PlayerHandPoints プレイヤー i の手札ピップ点。
 func (g *Pan) PlayerHandPoints(i int) int {
@@ -732,39 +720,11 @@ func (g *Pan) PlayerMeldedCount(i int) int {
 // --- Private helpers ---
 
 func (g *Pan) sortAllHands() {
-	for i := range g.players {
-		g.sortHand(i)
-	}
+	sortHands(len(g.players), g)
 }
 
 func (g *Pan) sortHand(playerIdx int) {
-	p := g.players[playerIdx]
-	sortPlayerHand(p, func(ci, cj *Card) bool {
-		if ci.GetDesign() != cj.GetDesign() {
-			return ci.GetDesign() < cj.GetDesign()
-		}
-		return ci.GetValue() < cj.GetValue()
-	})
-}
-
-func (g *Pan) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-func (g *Pan) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	sortPlayerHand(g.players[playerIdx], bySuitThenValue)
 }
 
 // --- Scoring / meld helpers ---
@@ -884,6 +844,14 @@ func PanCanLayoff(meld []*Card, card *Card) bool {
 	return panIsValidRun(candidate)
 }
 
+// PanIsValleMeld reports whether the meld is a valle (バジェ): a set of 3s, 5s
+// or 7s. Laying one pays every player a chip, but neither UI said which meld on
+// the table caused the chip column to move (#4853).
+func PanIsValleMeld(meld []*Card) bool {
+	// panIsValidSet が真なら PanIsValidMeld も真 (set か run の OR) なので重ねない。
+	return panIsValidSet(meld) && panValleRanks[meld[0].GetValue()]
+}
+
 // PanMeldChipUnits メルドが満たすチップ条件の数を返す（0〜2）。
 //   - バジェランク（3,5,7）のセット → +1
 //   - ラン、または 4 枚以上のセット   → +1
@@ -893,7 +861,7 @@ func PanMeldChipUnits(meld []*Card) int {
 	}
 	units := 0
 	isSetMeld := panIsValidSet(meld)
-	if isSetMeld && panValleRanks[meld[0].GetValue()] {
+	if PanIsValleMeld(meld) {
 		units++
 	}
 	if !isSetMeld || len(meld) >= 4 {

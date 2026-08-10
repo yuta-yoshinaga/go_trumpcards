@@ -49,4 +49,6 @@ type CrazyEightsGame interface {
 	GetPlayerCnt() int
 	// GetPlayer 指定インデックスのプレイヤーを取得する
 	GetPlayer(i int) *domain.CrazyEightsPlayer
+	// GetHint サーバー計算の推奨手を返す (手番でなければ nil)
+	GetHint() *domain.CrazyEightsHint
 }

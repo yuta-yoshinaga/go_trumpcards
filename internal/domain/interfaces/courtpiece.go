@@ -37,6 +37,8 @@ type CourtPieceGame interface {
 	GetPhase() domain.CourtPiecePhase
 	// IsHumanTurn 現在の手番が人間かを返す
 	IsHumanTurn() bool
+	// GetPlayableIndices プレイ可能なカードのインデックスを返す
+	GetPlayableIndices(playerIdx int) []int
 	// IsHumanTrumpTurn 現在のトランプ宣言手番が人間かを返す
 	IsHumanTrumpTurn() bool
 	// GetRoundNumber 現在のラウンド番号を取得する

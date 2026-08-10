@@ -1,4 +1,4 @@
-# Spanish 21（CUI版）遊び方
+# スパニッシュ21（CUI版）遊び方
 
 ## ゲーム概要
 
@@ -80,8 +80,8 @@ flowchart TD
 | `hit` | `h` | カードを1枚引く |
 | `stand` | `s` | スタンド |
 | `doubledown` | `d` | ダブルダウン |
-| `split` | `p` | スプリット |
-| `surrender` | `u` | サレンダー（半額返金） |
+| `split` | `sp` | スプリット |
+| `surrender` | `sur` | サレンダー（半額返金） |
 | `insurance` / `declineinsurance` | `i` / `di` | インシュランス受諾/辞退 |
 | `quit` | `q` | ゲーム終了 |
 | `help` | `?` | コマンド一覧を表示 |

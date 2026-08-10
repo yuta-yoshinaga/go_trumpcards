@@ -80,6 +80,7 @@
   },
   "hint": {
     "pairOrBetter": "Pair or better — recommend Call",
-    "weakHand": "Weak hand — consider Fold"
+    "weakHand": "Weak hand — consider Fold",
+    "aceKingHigh": "You hold an Ace or a King — call"
   }
 }

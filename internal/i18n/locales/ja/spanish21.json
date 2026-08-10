@@ -8,5 +8,17 @@
   "bonus.678.spade": "6-7-8 (全スペード)",
   "bonus.777.mixed": "7-7-7 (異なるスート)",
   "bonus.777.samesuit": "7-7-7 (同一スート)",
-  "bonus.777.spade": "7-7-7 (全スペード)"
+  "bonus.777.spade": "7-7-7 (全スペード)",
+  "payoutRef.title": "配当表",
+  "payoutRef.blackjack": "ブラックジャック (3:2)",
+  "payoutRef.win": "通常勝利 (1:1)、プレイヤー21は常に勝利",
+  "payoutRef.insurance": "インシュランス (2:1)",
+  "payoutRef.push": "プッシュ (引き分け: 返金)",
+  "payoutRef.surrender": "サレンダー (ベットの半額返金)",
+  "payoutRef.bust": "バスト (21超過: 負け)",
+  "payoutRef.bonusFiveCard21": "5枚で21 (3:2)",
+  "payoutRef.bonusSixCard21": "6枚で21 (2:1)",
+  "payoutRef.bonusSevenCard21": "7枚以上で21 (3:1)",
+  "payoutRef.bonus678": "6-7-8 (3:2 / 同スート 2:1 / 全スペード 3:1)",
+  "payoutRef.bonus777": "7-7-7 (3:2 / 同スート 2:1 / 全スペード 3:1)"
 }

@@ -22,6 +22,7 @@
   "betHintHeader": "推奨: 該当札を持つブードルに厚めに →",
   "betHintHold": "{{card}}(boodle{{idx}})",
   "betHintNone": "推奨: ブードル札は手札に無し。予算を均等に配分するのが無難。",
+  "betHintClaimed": "注意: {{boodles}} は獲得済み。ここに賭けても回収できません。",
   "promptPlay": "カードを出してください: p <n>（出せる: {{indices}}）",
   "promptWait": "他のプレイヤーの手番です…",
   "promptResult": "ラウンド終了。n で次のラウンドへ。",

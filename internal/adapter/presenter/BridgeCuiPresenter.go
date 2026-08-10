@@ -156,6 +156,20 @@ func (p *BridgeCuiPresenter) Output(b interfaces.BridgeGame, lastErr error) stri
 			bidIdx := b.GetBidPlayerIdx()
 			sb.WriteString(i18n.Tf("bridge.promptBid",
 				"name", cuiPlayerName(b.GetPlayer(bidIdx), bidIdx)) + "\n")
+			// **どこから上回れるか・ダブルできるかを出す。**Web はボタンを無効化して
+			// 理由まで出すのに、CUI は打って拒否されるまで分からなかった (#4903)。
+			if lv, st, ok := b.BridgeMinLegalBid(); ok {
+				sb.WriteString(i18n.Tf("bridge.minLegalBid",
+					"bid", strconv.Itoa(lv)+bridgeBidSuitName(st)) + "\n")
+			} else {
+				sb.WriteString(i18n.T("bridge.noHigherBid") + "\n")
+			}
+			switch {
+			case b.BridgeCanRedouble(bidIdx):
+				sb.WriteString(i18n.T("bridge.canRedouble") + "\n")
+			case b.BridgeCanDouble(bidIdx):
+				sb.WriteString(i18n.T("bridge.canDouble") + "\n")
+			}
 			sb.WriteString(i18n.T("bridge.promptBidHelp") + "\n")
 		case domain.BridgePhasePlay:
 			currentIdx := b.GetCurrentPlayerIdx()

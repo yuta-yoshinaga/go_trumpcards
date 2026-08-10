@@ -26,5 +26,12 @@
   "dealerWins": "Dealer wins!",
   "playerFolded": "Player folded.",
   "push": "Push!",
-  "totalPayoutLine": "Total payout: {{payout}}"
+  "totalPayoutLine": "Total payout: {{payout}}",
+  "hintNone": "No hint is available now.",
+  "hintPlay4x": "Recommended: play 4x (strong starting hand)",
+  "hintPlay3x": "Recommended: play 3x (decent starting hand)",
+  "hintPlay2x": "Recommended: play 2x (one pair or better)",
+  "hintPlay1x": "Recommended: play 1x (you have a made hand)",
+  "hintCheck": "Recommended: check (wait for the next card)",
+  "hintFold": "Recommended: fold (no made hand)"
 }

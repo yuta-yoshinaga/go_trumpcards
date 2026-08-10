@@ -213,3 +213,24 @@ func TestThreeCardBragWebPresenterOutputCarriesTheHint(t *testing.T) {
 	result := new(presenter.ThreeCardBragWebPresenter).Output(tcbg, nil)
 	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
 }
+
+// **要求したヒントかどうかを画面が見分けられるようにする (#4728)。**Output() は
+// 受動ヒントとして常に hint を詰めるので、これが無いとページは要求の有無を
+// 区別できず、頼んでいないヒントを常時表示してしまう。
+func TestThreeCardBragWebPresenter_HintOutputMarksTheRequest(t *testing.T) {
+	m, _ := tcbSetupWebMockWithPlayers()
+	// **skip で済ませない。**ヒントが出ない配りを引くと何も検証しないまま緑になる。
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
+	m.On("GetHint").Return(&domain.ThreeCardBragHint{Action: "raise", Reason: "strong_hand"})
+
+	var out controller.ThreeCardBragWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(new(presenter.ThreeCardBragWebPresenter).HintOutput(m)), &out))
+	assert.NotNil(t, out.Hint, "ヒントが載る")
+	assert.Equal(t, "threecardbrag.hintRequested", out.MessageCode)
+
+	// **Output() 側では出さない。**受動ヒントに要求フラグを付けると、ページが
+	// 頼んでいないヒントを常時表示することになる。
+	var passive controller.ThreeCardBragWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(new(presenter.ThreeCardBragWebPresenter).Output(m, nil)), &passive))
+	assert.NotEqual(t, "threecardbrag.hintRequested", passive.MessageCode)
+}

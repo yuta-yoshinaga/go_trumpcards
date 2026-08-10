@@ -32,6 +32,7 @@ const baseState: ConquianResponse = {
       wins: 0,
     },
   ],
+  layoffTargets: [],
   phase: 1,
   roundNumber: 2,
   currentPlayerIdx: 0,

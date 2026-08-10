@@ -48,13 +48,13 @@ type SeahavenTowersHint struct {
 //   - 空列には King のみ置ける (FreeCell は任意のカードを置ける)
 //   - 配り: タブロー 10 列 × 5 枚 + 上部リザーブセル 2 枚 (合計 52 枚)
 type SeahavenTowers struct {
-	trumpCards  *TrumpCards
-	tableau     [SeahavenTowersTableauCnt][]*Card
-	freeCells   [SeahavenTowersCellCnt]*Card
-	foundation  [SeahavenTowersFoundationCnt][]*Card
-	phase       SeahavenTowersPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	tableau    [SeahavenTowersTableauCnt][]*Card
+	freeCells  [SeahavenTowersCellCnt]*Card
+	foundation [SeahavenTowersFoundationCnt][]*Card
+	phase      SeahavenTowersPhase
+	moveCount  int
+	actionLogBase
 	history     []*seahavenTowersSnapshot
 	isStalemate bool
 }
@@ -471,25 +471,12 @@ func (s *SeahavenTowers) CanUndo() bool {
 
 // UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。膠着状態でなければ0、脱出不可なら-1。
 func (s *SeahavenTowers) UndoToEscape() int {
-	if !s.isStalemate {
-		return 0
-	}
-	for i := len(s.history) - 1; i >= 0; i-- {
-		if !s.history[i].isStalemate {
-			return len(s.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(s.isStalemate, s.history, func(s *seahavenTowersSnapshot) bool { return s.isStalemate })
 }
 
 // UndoN n回連続でアンドゥを実行する。
 func (s *SeahavenTowers) UndoN(n int) error {
-	for i := 0; i < n; i++ {
-		if err := s.Undo(); err != nil {
-			return fmt.Errorf("undo step %d failed: %w", i+1, err)
-		}
-	}
-	return nil
+	return undoN(s, n)
 }
 
 // --- State getters/setters ---
@@ -511,9 +498,6 @@ func (s *SeahavenTowers) GetFreeCells() [SeahavenTowersCellCnt]*Card { return s.
 
 // GetFoundation ファンデーション取得
 func (s *SeahavenTowers) GetFoundation() [SeahavenTowersFoundationCnt][]*Card { return s.foundation }
-
-// GetActionLog 棋譜取得
-func (s *SeahavenTowers) GetActionLog() []*ActionLogEntry { return s.actionLog }
 
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (s *SeahavenTowers) GetGameEndFlag() bool { return s.phase != SeahavenTowersPhasePlaying }
@@ -552,12 +536,7 @@ func (s *SeahavenTowers) canPlaceOnTableau(card *Card, col int) bool {
 
 // canPlaceOnFoundation ファンデーションにカードを置けるか判定
 func (s *SeahavenTowers) canPlaceOnFoundation(card *Card, fIdx int) bool {
-	pile := s.foundation[fIdx]
-	if len(pile) == 0 {
-		return card.GetValue() == 1
-	}
-	topCard := pile[len(pile)-1]
-	return card.GetDesign() == topCard.GetDesign() && card.GetValue() == topCard.GetValue()+1
+	return canPlaceOnFoundationPile(s.foundation[fIdx], card)
 }
 
 // isSameSuitDescending lower が upper の上に積めるか判定 (同スートで lower.value == upper.value - 1)
@@ -638,13 +617,7 @@ func (s *SeahavenTowers) checkStalemate() {
 
 // appendLog 棋譜エントリを追加
 func (s *SeahavenTowers) appendLog(actionType, detail string, cards []*Card) {
-	s.actionLog = append(s.actionLog, &ActionLogEntry{
-		TurnNumber: s.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	s.appendLogAt(s.moveCount, 0, actionType, detail, cards)
 }
 
 // seahavenTowersJSON is the JSON wire format for SeahavenTowers.

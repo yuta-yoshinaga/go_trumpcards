@@ -49,7 +49,7 @@ type Whist struct {
 	teamScores       [WhistTeamCnt]int
 	gameEndFlag      bool
 	winnerTeam       int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewWhist コンストラクタ
@@ -190,7 +190,7 @@ func (w *Whist) ResolveTrick() {
 
 	w.players[winnerIdx].AddTrick(trickCards)
 
-	winnerName := w.playerName(winnerIdx)
+	winnerName := playerName(w.players, winnerIdx)
 	w.appendLog(winnerIdx, "trick_win", fmt.Sprintf("%s wins trick %d", winnerName, w.trickNumber), trickCards)
 
 	w.leadPlayerIdx = winnerIdx
@@ -291,10 +291,7 @@ func (w *Whist) GetPlayerCnt() int { return len(w.players) }
 
 // GetPlayer プレイヤー取得
 func (w *Whist) GetPlayer(i int) *WhistPlayer {
-	if i < 0 || i >= len(w.players) {
-		return nil
-	}
-	return w.players[i]
+	return getPlayer(w.players, i)
 }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
@@ -326,10 +323,7 @@ func (w *Whist) SetTeamScore(team, score int) {
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (w *Whist) IsHumanTurn() bool {
-	if w.currentPlayerIdx < 0 || w.currentPlayerIdx >= len(w.players) {
-		return false
-	}
-	return w.players[w.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(w.players, w.currentPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -337,9 +331,6 @@ func (w *Whist) GetConfig() WhistConfig { return w.config }
 
 // SetConfig 設定変更
 func (w *Whist) SetConfig(cfg WhistConfig) { w.config = cfg }
-
-// GetActionLog 棋譜取得
-func (w *Whist) GetActionLog() []*ActionLogEntry { return w.actionLog }
 
 // GetValidPlayIndices プレイ可能なカードのインデックスリストを返す (Web用)
 func (w *Whist) GetValidPlayIndices(playerIdx int) []int {
@@ -360,16 +351,6 @@ func (w *Whist) GetHint() *WhistHint {
 }
 
 // --- Private methods ---
-
-// findHumanIdx 人間プレイヤーのインデックスを返す (-1=なし)
-func (w *Whist) findHumanIdx() int {
-	for i, p := range w.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
 
 // dealAndSetTrump カードを配布し、ディーラーの最後のカードのスートをトランプに設定する
 func (w *Whist) dealAndSetTrump() {
@@ -403,7 +384,7 @@ func (w *Whist) playCard(playerIdx int, card *Card) {
 		Card:      card,
 	})
 
-	w.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", w.playerName(playerIdx), cardStr(card)), []*Card{card})
+	w.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(w.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(w.currentTrick) == WhistPlayerCnt {
 		w.phase = WhistPhaseTrickEnd
@@ -432,13 +413,7 @@ func (w *Whist) validatePlay(playerIdx int, card *Card) error {
 
 // playerHasSuit プレイヤーが特定のスートを持っているか
 func (w *Whist) playerHasSuit(playerIdx int, design int) bool {
-	p := w.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return handHasSuit(w.players[playerIdx], design)
 }
 
 // trickWinner トリックの勝者を決定する
@@ -486,28 +461,6 @@ func whistSortHand(p *WhistPlayer) {
 			return ci.GetDesign() < cj.GetDesign()
 		}
 		return ci.GetValue() < cj.GetValue()
-	})
-}
-
-// playerName プレイヤー名を返す
-func (w *Whist) playerName(idx int) string {
-	if idx < 0 || idx >= len(w.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if w.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (w *Whist) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	w.actionLog = append(w.actionLog, &ActionLogEntry{
-		TurnNumber: len(w.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
 	})
 }
 
@@ -759,10 +712,7 @@ func (w *Whist) isPartnerWinning(playerIdx int) bool {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (w *Whist) getValidPlayIndices(playerIdx int) []int {
-	player := w.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return w.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(w.players[playerIdx], func(c *Card) bool { return w.validatePlay(playerIdx, c) == nil })
 }
 
 // whistJSON is the JSON wire format for Whist.

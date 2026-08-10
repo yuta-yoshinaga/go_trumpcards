@@ -128,9 +128,9 @@ func TestGetBasicStrategyAction_SoftHands(t *testing.T) {
 	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(s18, domain.NewCard(domain.CardDesignClover, 7, false), false))
 	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(s18, domain.NewCard(domain.CardDesignClover, 9, false), false))
 
-	// Soft 19 (A+8): stand vs most, Ds (double-else-stand) vs 6
+	// Soft 19 (A+8): S17 では常にスタンド。6 に対するダブルは H17 のときだけ (#4705)。
 	s19 := mkSoft(1, 8)
-	assert.Equal(t, domain.BJSuggestDoubleStand, domain.GetBasicStrategyAction(s19, domain.NewCard(domain.CardDesignClover, 6, false), false))
+	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(s19, domain.NewCard(domain.CardDesignClover, 6, false), false))
 	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(s19, domain.NewCard(domain.CardDesignClover, 7, false), false))
 
 	// Soft 20 (A+9): always stand
@@ -371,16 +371,17 @@ func TestGetBasicStrategyAction_H17Overrides(t *testing.T) {
 			"H17: hard 17 vs A should be Surrender")
 	})
 
-	t.Run("soft 19 vs 6: S17=DoubleStand, H17=DoubleStand", func(t *testing.T) {
+	// **両側が同じ override テストは、override が死んでいても通る。**
+	// 以前はここが S17=Ds / H17=Ds で、基本表が既に Ds だったため
+	// softH17Override は何も変えていなかった (#4705)。S17 は S、H17 は Ds が正しい。
+	t.Run("soft 19 vs 6: S17=Stand, H17=DoubleStand", func(t *testing.T) {
 		h := domain.NewBlackJackHand()
 		h.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
 		h.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false)) // soft 19
 		upcard6 := domain.NewCard(domain.CardDesignClover, 6, false)
 
-		// S17: soft 19 vs 6 → DoubleStand (from table)
-		assert.Equal(t, domain.BJSuggestDoubleStand, domain.GetBasicStrategyAction(h, upcard6, false),
-			"S17: soft 19 vs 6 should be DoubleStand")
-		// H17: soft 19 vs 6 → DoubleStand (override confirms)
+		assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(h, upcard6, false),
+			"S17: soft 19 vs 6 should be Stand")
 		assert.Equal(t, domain.BJSuggestDoubleStand, domain.GetBasicStrategyAction(h, upcard6, true),
 			"H17: soft 19 vs 6 should be DoubleStand")
 	})

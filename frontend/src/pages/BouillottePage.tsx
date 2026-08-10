@@ -37,6 +37,7 @@ import { analyzeRetourneMatch } from '../utils/bouillotteRetourne';
 import { BOUILLOTTE_HELP, parseBouillotteCommand } from '../utils/cli/commands/bouillotteCommands';
 import { formatBouillotteState } from '../utils/cli/formatters/bouillotteFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { raiseAvailability, raiseCost } from '../utils/raiseAvailability';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Bouillotte tutorial step definitions. */
@@ -124,12 +125,23 @@ function BouillottePageContent() {
     return <GameSkeleton gameKey="bouillotte" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 3 }} />;
 
   const humanPlayer = state.players.find((p) => p.isHuman);
+  // **レイズが消えた理由は 2 つある。**上限と枚数不足を区別しないと、
+  // 「レイズ 1/3回」がボタンの無い画面で「まだできる」と読めてしまう。
+  const raiseInput = {
+    raiseCount: state.raiseCount,
+    maxRaises: state.maxRaises,
+    chips: humanPlayer?.chips ?? 0,
+    currentBet: state.currentBet,
+    roundBet: humanPlayer?.roundBet ?? 0,
+    ante: state.ante,
+  };
+  const raiseBlock = raiseAvailability(raiseInput);
+  const raiseNeeded = raiseCost(raiseInput);
   const humanIdx = state.players.findIndex((p) => p.isHuman);
 
   // Pot odds and chip costs facing the human at the Call/Raise/Fold decision.
   const humanRoundBet = humanPlayer?.roundBet ?? 0;
   const potOdds = computeBouillottePotOdds(state.pot, state.currentBet, humanRoundBet);
-  const raiseCost = Math.max(0, state.currentBet + state.ante - humanRoundBet);
 
   // Which of the human's cards share the retourne's rank, and any combo it completes.
   const retourneMatch = analyzeRetourneMatch(humanPlayer?.cards ?? [], state.retourne);
@@ -363,9 +375,18 @@ function BouillottePageContent() {
                   <button type="button" className={btnPrimary} onClick={handleCall} disabled={loading}>
                     {potOdds.isFree ? t('callButton') : t('callButtonAmount', { amount: potOdds.callAmount })}
                   </button>
+                  {/* **レイズが消えた理由を書く。**回数上限とチップ不足を
+                      区別できないと、突然選択肢を奪われたように見える (#4924)。 */}
+                  <span className="text-ds-text-muted text-xs" data-testid="bouillotte-raise-count">
+                    {raiseBlock === 'cap'
+                      ? t('raiseCapReached', { max: state.maxRaises })
+                      : raiseBlock === 'chips'
+                        ? t('raiseNoChips', { cost: raiseNeeded })
+                        : t('raiseCount', { count: state.raiseCount, max: state.maxRaises })}
+                  </span>
                   {state.canRaise && (
                     <button type="button" className={btnSuccess} onClick={handleRaise} disabled={loading}>
-                      {t('raiseButtonAmount', { amount: raiseCost })}
+                      {t('raiseButtonAmount', { amount: raiseNeeded })}
                     </button>
                   )}
                   <button type="button" className={btnDanger} onClick={handleFold} disabled={loading}>

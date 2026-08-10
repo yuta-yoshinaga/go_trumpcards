@@ -415,6 +415,26 @@ func (s *SpiteAndMalice) assertPlayable() error {
 	return nil
 }
 
+// IsGoalTopPlayable reports whether the given player's goal-pile top can go
+// onto any foundation right now. Emptying the goal pile is how the game is won,
+// so both UIs surface this every turn — the Web GUI rings the pile, the CUI
+// marks the goal line (#4876).
+func (s *SpiteAndMalice) IsGoalTopPlayable(playerIdx int) bool {
+	if playerIdx < 0 || playerIdx >= len(s.players) {
+		return false
+	}
+	top := s.players[playerIdx].GoalTop()
+	if top == nil {
+		return false
+	}
+	for i := range SpiteAndMaliceFoundationCnt {
+		if s.canPlaceOnFoundation(top, i) {
+			return true
+		}
+	}
+	return false
+}
+
 func (s *SpiteAndMalice) canPlaceOnFoundation(card *Card, foundationIdx int) bool {
 	if card == nil {
 		return false

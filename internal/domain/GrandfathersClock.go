@@ -89,12 +89,12 @@ type GrandfathersClockHint struct {
 // するランクに達したら完成で、それ以上は受け付けない。タブローはスートを無視
 // して降順に 1 枚ずつ動かせ、空き列には任意の札を置ける。
 type GrandfathersClock struct {
-	trumpCards  *TrumpCards
-	foundation  [GrandfathersClockFoundationCnt][]*Card
-	tableau     [GrandfathersClockTableauCnt][]*GrandfathersClockTableauCard
-	phase       GrandfathersClockPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	foundation [GrandfathersClockFoundationCnt][]*Card
+	tableau    [GrandfathersClockTableauCnt][]*GrandfathersClockTableauCard
+	phase      GrandfathersClockPhase
+	moveCount  int
+	actionLogBase
 	history     []*grandfathersClockSnapshot
 	isStalemate bool
 }
@@ -334,31 +334,12 @@ func (gc *GrandfathersClock) CanUndo() bool { return len(gc.history) > 0 }
 
 // UndoN n 手戻す
 func (gc *GrandfathersClock) UndoN(n int) error {
-	if n <= 0 {
-		return errors.New("n must be positive")
-	}
-	if n > len(gc.history) {
-		return errors.New("not enough history")
-	}
-	for range n {
-		if err := gc.Undo(); err != nil {
-			return err
-		}
-	}
-	return nil
+	return undoNChecked(gc, n, len(gc.history))
 }
 
 // UndoToEscape 膠着状態から抜けるのに必要なアンドゥ回数（膠着でなければ 0、不可なら -1）
 func (gc *GrandfathersClock) UndoToEscape() int {
-	if !gc.isStalemate {
-		return 0
-	}
-	for i := len(gc.history) - 1; i >= 0; i-- {
-		if !gc.history[i].isStalemate {
-			return len(gc.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(gc.isStalemate, gc.history, func(s *grandfathersClockSnapshot) bool { return s.isStalemate })
 }
 
 // AllFaceUp 常に全札が表向き
@@ -379,9 +360,6 @@ func (gc *GrandfathersClock) GetFoundation() [GrandfathersClockFoundationCnt][]*
 func (gc *GrandfathersClock) GetTableau() [GrandfathersClockTableauCnt][]*GrandfathersClockTableauCard {
 	return gc.tableau
 }
-
-// GetActionLog 棋譜取得
-func (gc *GrandfathersClock) GetActionLog() []*ActionLogEntry { return gc.actionLog }
 
 // GetGameEndFlag ゲーム終了フラグ
 func (gc *GrandfathersClock) GetGameEndFlag() bool {
@@ -528,13 +506,7 @@ func (gc *GrandfathersClock) takeSnapshot() {
 
 // appendLog 棋譜エントリを追加
 func (gc *GrandfathersClock) appendLog(actionType, detail string, cards []*Card) {
-	gc.actionLog = append(gc.actionLog, &ActionLogEntry{
-		TurnNumber: gc.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	gc.appendLogAt(gc.moveCount, 0, actionType, detail, cards)
 }
 
 // grandfathersClockMaxSliceLen caps slice sizes during deserialisation.

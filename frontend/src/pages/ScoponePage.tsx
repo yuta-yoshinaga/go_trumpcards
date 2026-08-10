@@ -29,7 +29,9 @@ import {
   type ScoponeCliArgs,
 } from '../utils/cli/commands/scoponeCommands';
 import type { CliGameConfig } from '../utils/cli/types';
+import { scoponeSelectionSum } from '../utils/scoponeSelectionSum';
 import { hintCheckboxItem } from '../utils/settingsItems';
+import { sweepCelebration } from '../utils/sweepCelebration';
 
 const DIFFICULTY_OPTIONS = [
   { value: '0', label: 'Easy' },
@@ -120,29 +122,12 @@ function ScoponePageContent() {
     const current = state.players.map((p) => p.scopaCount);
     const prev = prevScopaRef.current;
     prevScopaRef.current = current;
-    if (prev === null || prev.length !== current.length) {
-      // First render or a player-count change: seed the baseline without firing.
-      if (prev !== null) setScopaCelebration(null);
-      return;
-    }
     const humanTeam = state.players.find((p) => p.isHuman)?.team ?? -1;
-    let gain = false;
-    let own = false;
-    let dropped = false;
-    for (let i = 0; i < current.length; i++) {
-      const delta = current[i] - prev[i];
-      if (delta > 0) {
-        gain = true;
-        if (state.players[i].team === humanTeam) own = true;
-      } else if (delta < 0) {
-        dropped = true;
-      }
-    }
-    if (gain) {
-      setScopaCelebration((c) => ({ key: (c?.key ?? 0) + 1, own }));
+    const action = sweepCelebration(prev, current, (i) => state.players[i]?.team === humanTeam);
+    if (action.kind === 'fire') {
+      setScopaCelebration((c) => ({ key: (c?.key ?? 0) + 1, own: action.own }));
       playSound('chipClick', { pitchVariation: 0.1 });
-    } else if (dropped) {
-      // A reset / next round drops scopaCount back to 0; clear the stale badge.
+    } else if (action.kind === 'clear') {
       setScopaCelebration(null);
     }
   }, [state, playSound]);
@@ -191,6 +176,13 @@ function ScoponePageContent() {
     handIndex !== null && isHumanTurn ? captureCandidateIndices(state.handCaptures, handIndex) : new Set<number>();
   const canTake = isHumanTurn && handIndex !== null && tableIndices.length > 0;
   const canLay = isHumanTurn && handIndex !== null && tableIndices.length === 0;
+  // Scopone's target moves with the chosen hand card, so the mental arithmetic is
+  // heavier than Escoba's fixed 15 — yet only Escoba showed a running total (#4767).
+  const selection = scoponeSelectionSum(
+    handIndex === null ? null : human.cards[handIndex],
+    state.tableCards,
+    tableIndices,
+  );
   const phaseName = isGameEnd ? t('phase.gameEnd') : t(`phase.${state.phase}`, t('phase.play'));
   const detail = state.lastRoundDetail;
 
@@ -267,6 +259,22 @@ function ScoponePageContent() {
                   >
                     {scopaCelebration.own ? t('label.scopaBadgeOwn') : t('label.scopaBadge')}
                   </span>
+                </div>
+              )}
+              {selection !== null && tableIndices.length > 0 && (
+                <div
+                  role="status"
+                  aria-live="polite"
+                  data-testid="scopone-sum-indicator"
+                  className={`text-center text-sm font-bold mb-1 ${
+                    selection.sum === selection.target
+                      ? 'text-ds-success'
+                      : selection.sum > selection.target
+                        ? 'text-ds-error'
+                        : 'text-ds-text-muted'
+                  }`}
+                >
+                  {t('sumIndicator', { sum: selection.sum, target: selection.target })}
                 </div>
               )}
               <div className="text-center text-xs text-ds-text-muted mb-2">{t('label.tableCards')}</div>

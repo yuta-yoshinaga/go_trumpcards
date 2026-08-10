@@ -137,3 +137,37 @@ func suitDisplayName(suit int) string {
 		return "?"
 	}
 }
+
+// HintOutput emits the current Crazy Eights hint.
+//
+// **Hearts / Spades はサーバー計算の理由付きヒントを返すのに、CrazyEights には
+// これが無く、全ゲーム共通の簡易ヒューリスティックしか支援が無かった (#4737)。**
+func (p *CrazyEightsCuiPresenter) HintOutput(g interfaces.CrazyEightsGame) string {
+	hint := g.GetHint()
+	if hint == nil {
+		return i18n.T("crazyeights.hintNone") + "\n"
+	}
+	reason := hintReasonStr(hint.Reason, crazyEightsHintReasonKeys)
+	if hint.Suit != nil {
+		return color.Yellow(i18n.Tf("crazyeights.hintSuit",
+			"suit", cuiSuitName(*hint.Suit),
+			"reason", reason)) + "\n"
+	}
+	if hint.CardIndex == nil {
+		return i18n.T("crazyeights.hintNone") + "\n"
+	}
+	card := g.GetPlayer(0).GetCard(*hint.CardIndex)
+	return color.Yellow(i18n.Tf("crazyeights.hintCard",
+		"idx", strconv.Itoa(*hint.CardIndex),
+		"card", cuiCardStr(card),
+		"reason", reason)) + "\n"
+}
+
+// crazyEightsHintReasonKeys maps hint-reason identifiers to their i18n keys.
+var crazyEightsHintReasonKeys = map[string]string{
+	"match_suit":          "crazyeights.hintReasonMatchSuit",
+	"match_rank":          "crazyeights.hintReasonMatchRank",
+	"play_wild":           "crazyeights.hintReasonPlayWild",
+	"play_valid":          "crazyeights.hintReasonPlayValid",
+	"choose_longest_suit": "crazyeights.hintReasonChooseLongestSuit",
+}

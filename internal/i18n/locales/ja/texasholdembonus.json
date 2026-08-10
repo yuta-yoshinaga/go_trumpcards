@@ -24,5 +24,8 @@
   "dealerWins": "ディーラーの勝ち！",
   "playerFolded": "プレイヤーがフォールド。",
   "push": "プッシュ！",
-  "totalPayoutLine": "合計払戻し: {{payout}}"
+  "totalPayoutLine": "合計払戻し: {{payout}}",
+  "betCostLine": "アンテ: {{ante}} / {{action}}: {{cost}} チップ",
+  "costPlay": "プレイ",
+  "costRaise": "レイズ"
 }

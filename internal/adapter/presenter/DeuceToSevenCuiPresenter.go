@@ -60,7 +60,7 @@ func (dcp *DeuceToSevenCuiPresenter) Output(g interfaces.DeuceToSevenGame, lastE
 				if isEnd {
 					b.WriteString(i18n.Tf("deucetoseven.humanHandWithName",
 						"cards", handStr,
-						"name", pl.GetHandName()) + "\n")
+						"name", cuiPokerHandName(pl.GetHandRank())) + "\n")
 				} else {
 					b.WriteString(i18n.Tf("deucetoseven.humanHand", "cards", handStr) + "\n")
 				}
@@ -68,7 +68,7 @@ func (dcp *DeuceToSevenCuiPresenter) Output(g interfaces.DeuceToSevenGame, lastE
 			if !pl.GetIsHuman() && isEnd && !pl.GetFolded() {
 				b.WriteString(i18n.Tf("deucetoseven.humanHandWithName",
 					"cards", cuiCardListStrEmoji(pl),
-					"name", pl.GetHandName()) + "\n")
+					"name", cuiPokerHandName(pl.GetHandRank())) + "\n")
 			}
 		}
 
@@ -109,7 +109,7 @@ func (dcp *DeuceToSevenCuiPresenter) Output(g interfaces.DeuceToSevenGame, lastE
 				if r.HandName != "" {
 					b.WriteString(i18n.Tf("deucetoseven.resultHand",
 						"name", name,
-						"hand", r.HandName))
+						"hand", cuiPokerHandName(r.HandRank)))
 				} else {
 					b.WriteString(i18n.Tf("deucetoseven.resultName", "name", name))
 				}

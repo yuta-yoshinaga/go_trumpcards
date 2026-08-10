@@ -73,6 +73,11 @@ type TarneebWebOutput struct {
 	WinnerTeam       int                       `json:"winnerTeam"`
 	LeadPlayerIdx    int                       `json:"leadPlayerIdx"`
 	Hint             *TarneebWebOutputHint     `json:"hint,omitempty"`
+	// ValidPlayIndices は人間がいま出せる手札の位置。**ドメインの
+	// GetValidPlayIndices がマストフォローを判定済みなのに、Web には送って
+	// おらず、違反札をクリックしてエラーで確かめるしかなかった (#4713)。**
+	// プレイフェーズで人間の手番のときだけ埋まり、それ以外は空。
+	ValidPlayIndices []int `json:"validPlayIndices"`
 	WebOutputBase
 	Config TarneebWebOutputConfig `json:"config"`
 }

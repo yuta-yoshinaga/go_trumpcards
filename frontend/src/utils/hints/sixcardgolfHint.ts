@@ -48,18 +48,33 @@ export function getSixcardgolfHint(state: SixCardGolfResponse): HintResult | nul
     // Check column match opportunity: if drawn card matches a visible card in the same column
     const columnMatchIdx = findColumnMatchSwap(human.grid, state.drawnCard.value);
     if (columnMatchIdx !== -1) {
-      return { targetAction: 'swap', reason: 'hintReason.columnMatch', confidence: 'strong' };
+      return {
+        targetAction: 'swap',
+        reason: 'hintReason.columnMatch',
+        confidence: 'strong',
+        targetPos: columnMatchIdx,
+      };
     }
 
     // Low drawn card: suggest swapping with highest visible or face-down
     if (LOW_VALUES.has(drawnValue)) {
       const highVisibleIdx = findHighestVisibleCard(human.grid);
       if (highVisibleIdx !== -1) {
-        return { targetAction: 'swap', reason: 'hintReason.swapHigh', confidence: 'strong' };
+        return {
+          targetAction: 'swap',
+          reason: 'hintReason.swapHigh',
+          confidence: 'strong',
+          targetPos: highVisibleIdx,
+        };
       }
       const faceDownIdx = human.grid.findIndex((s) => !s.faceUp);
       if (faceDownIdx !== -1) {
-        return { targetAction: 'swap', reason: 'hintReason.swapFaceDown', confidence: 'moderate' };
+        return {
+          targetAction: 'swap',
+          reason: 'hintReason.swapFaceDown',
+          confidence: 'moderate',
+          targetPos: faceDownIdx,
+        };
       }
     }
 
@@ -71,7 +86,12 @@ export function getSixcardgolfHint(state: SixCardGolfResponse): HintResult | nul
     // Medium value: suggest swapping with face-down if available
     const faceDownIdx = human.grid.findIndex((s) => !s.faceUp);
     if (faceDownIdx !== -1) {
-      return { targetAction: 'swap', reason: 'hintReason.swapFaceDown', confidence: 'moderate' };
+      return {
+        targetAction: 'swap',
+        reason: 'hintReason.swapFaceDown',
+        confidence: 'moderate',
+        targetPos: faceDownIdx,
+      };
     }
 
     return { targetAction: 'discard', reason: 'hintReason.discardHigh', confidence: 'moderate' };

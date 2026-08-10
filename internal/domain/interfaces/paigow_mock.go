@@ -27,6 +27,19 @@ func (m *MockPaiGowGame) SetHands(lowIdx0, lowIdx1 int) error {
 	return args.Error(0)
 }
 
+func (m *MockPaiGowGame) AutoSetHands() error {
+	args := m.Called()
+	return args.Error(0)
+}
+
+func (m *MockPaiGowGame) GetHint() *domain.PaiGowHint {
+	args := m.Called()
+	if args.Get(0) == nil {
+		return nil
+	}
+	return args.Get(0).(*domain.PaiGowHint)
+}
+
 func (m *MockPaiGowGame) GetPlayerCards() []*domain.Card {
 	args := m.Called()
 	if args.Get(0) == nil {

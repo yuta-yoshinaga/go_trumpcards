@@ -599,3 +599,35 @@ func TestBarbuNextDeal_RotatesDealer(t *testing.T) {
 	b.NextDeal()
 	assert.Equal(t, 1, b.GetDealNumber())
 }
+
+// **フォロー義務は validateTrickPlay が持つ (#4804)。**GetPlayableIndices が
+// それと同じ判定を返すこと。別のスキャンだと「出せる」と見えた札が弾かれる。
+func TestBarbu_GetPlayableIndices(t *testing.T) {
+	b := domain.BarbuTestNew(domain.DefaultBarbuConfig())
+	b.BarbuTestSetContract(domain.BarbuContractNoTricks, -1)
+	b.BarbuTestSetPhase(domain.BarbuPhasePlay)
+	b.BarbuTestSetCurrentPlayer(0)
+	b.BarbuTestSetHand(0, []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 7, false),
+		domain.NewCard(domain.CardDesignHeart, 2, false),
+		domain.NewCard(domain.CardDesignSpade, 3, false),
+	})
+
+	// リードは任意。
+	assert.Equal(t, []int{0, 1, 2}, b.GetPlayableIndices(0))
+
+	// ♠ リードに追従できるなら ♠ だけ。
+	b.BarbuTestSetCurrentTrick([]*domain.TrickCard{
+		{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignSpade, 13, false)},
+	})
+	assert.Equal(t, []int{0, 2}, b.GetPlayableIndices(0))
+
+	// 追従できないスートのリードなら全部。
+	b.BarbuTestSetCurrentTrick([]*domain.TrickCard{
+		{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignClover, 9, false)},
+	})
+	assert.Equal(t, []int{0, 1, 2}, b.GetPlayableIndices(0))
+
+	// 範囲外は nil。
+	assert.Nil(t, b.GetPlayableIndices(99))
+}

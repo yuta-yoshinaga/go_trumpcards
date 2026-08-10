@@ -104,7 +104,7 @@ type Machiavelli struct {
 	roundNumber      int
 	scored           bool // ラウンド終了スコアリングが完了したか（フェーズ再入時の二重加算防止）
 	roundWinnerIdx   int  // 直近ラウンドの勝者（-1 = 山切れ流局）
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewMachiavelli コンストラクタ
@@ -227,7 +227,7 @@ func (g *Machiavelli) drawFromStock() error {
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw", fmt.Sprintf("%s draws from stock", g.playerName(g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "draw", fmt.Sprintf("%s draws from stock", playerName(g.players, g.currentPlayerIdx)), nil)
 	g.advanceTurn()
 	return nil
 }
@@ -334,7 +334,7 @@ func (g *Machiavelli) applyPlay(newTable [][]*Card, handIndices []int) error {
 	}
 	g.table = newTable
 
-	g.appendLog(g.currentPlayerIdx, "play", fmt.Sprintf("%s plays %d card(s) to the table", g.playerName(g.currentPlayerIdx), len(handIndices)), playedCards)
+	g.appendLog(g.currentPlayerIdx, "play", fmt.Sprintf("%s plays %d card(s) to the table", playerName(g.players, g.currentPlayerIdx), len(handIndices)), playedCards)
 
 	if player.GetCardsSize() == 0 {
 		g.finishRound(g.currentPlayerIdx)
@@ -542,7 +542,7 @@ func (g *Machiavelli) finishRound(winnerIdx int) {
 	}
 
 	if winnerIdx >= 0 {
-		g.appendLog(winnerIdx, "round_win", fmt.Sprintf("%s goes out (round %d)", g.playerName(winnerIdx), g.roundNumber), nil)
+		g.appendLog(winnerIdx, "round_win", fmt.Sprintf("%s goes out (round %d)", playerName(g.players, winnerIdx), g.roundNumber), nil)
 	} else {
 		g.appendLog(-1, "draw", "Round ends (stock exhausted)", nil)
 	}
@@ -576,7 +576,7 @@ func (g *Machiavelli) finalizeGameEnd() {
 			g.winnerIdx = i
 		}
 	}
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game with %d points!", g.playerName(g.winnerIdx), minScore), nil)
+	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game with %d points!", playerName(g.players, g.winnerIdx), minScore), nil)
 }
 
 // --- Getters / Setters ---
@@ -628,10 +628,7 @@ func (g *Machiavelli) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *Machiavelli) GetPlayer(i int) *MachiavelliPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetConfig 設定取得
@@ -642,9 +639,6 @@ func (g *Machiavelli) SetConfig(c MachiavelliConfig) { g.config = c }
 
 // GetTargetRounds ゲーム終了までのラウンド数
 func (g *Machiavelli) GetTargetRounds() int { return g.config.TargetRounds }
-
-// GetActionLog 棋譜取得
-func (g *Machiavelli) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // PlayerDeadwoodValue プレイヤー i の手札デッドウッド点。
 func (g *Machiavelli) PlayerDeadwoodValue(i int) int {
@@ -658,42 +652,11 @@ func (g *Machiavelli) PlayerDeadwoodValue(i int) int {
 // --- Private helpers ---
 
 func (g *Machiavelli) sortAllHands() {
-	for i := range g.players {
-		g.sortHand(i)
-	}
+	sortHands(len(g.players), g)
 }
 
 func (g *Machiavelli) sortHand(playerIdx int) {
-	p := g.players[playerIdx]
-	cards := make([]*Card, p.GetCardsSize())
-	for i := 0; i < p.GetCardsSize(); i++ {
-		cards[i] = p.GetCard(i)
-	}
-	sortCards(cards)
-	p.Reset()
-	for _, c := range cards {
-		p.AddCard(c)
-	}
-}
-
-func (g *Machiavelli) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-func (g *Machiavelli) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	sortHandInPlace(g.players[playerIdx], sortCards)
 }
 
 // machiavelliCollectCards プレイヤーの手札を []*Card で返す

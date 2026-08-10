@@ -145,4 +145,43 @@ describe('GanjifaPage', () => {
     renderWithProviders(<GanjifaPage />);
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
   });
+
+  // **勝者が分からないまま 4 枚を見比べさせていた。**共通の TrickDisplay は
+  // winnerIdx を受け取れるのに、Ganjifa だけ渡していなかった (#4834)。
+  it('marks the trick winner during the trick-end phase', async () => {
+    mockExec.mockResolvedValue(
+      makeGanjifaState({
+        phase: 1,
+        isHumanTurn: false,
+        playableIndices: [],
+        leadPlayerIdx: 2,
+        currentTrick: [
+          { playerIdx: 0, card: { design: 'SPADE', value: 5 } },
+          { playerIdx: 1, card: { design: 'SPADE', value: 7 } },
+          { playerIdx: 2, card: { design: 'SPADE', value: 11 } },
+        ],
+      }),
+    );
+    renderWithProviders(<GanjifaPage />);
+
+    await waitFor(() => expect(screen.getByTestId('trick-winner-badge')).toBeInTheDocument());
+    expect(document.querySelectorAll('[data-trick-winner]')).toHaveLength(1);
+  });
+
+  it('does not mark a winner while the trick is still being played', async () => {
+    mockExec.mockResolvedValue(
+      makeGanjifaState({
+        phase: 0,
+        leadPlayerIdx: 2,
+        currentTrick: [
+          { playerIdx: 0, card: { design: 'SPADE', value: 5 } },
+          { playerIdx: 1, card: { design: 'SPADE', value: 7 } },
+        ],
+      }),
+    );
+    renderWithProviders(<GanjifaPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument();
+  });
 });

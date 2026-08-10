@@ -44,5 +44,8 @@
   "hintDecision": "[HINT: recommend {{action}} ({{reason}})]",
   "hintActionEntrar": "Entrar",
   "hintActionSolo": "Solo",
-  "hintActionPass": "Pass"
+  "hintActionPass": "Pass",
+  "matadorSpadille": "Spadille",
+  "matadorManille": "Manille",
+  "matadorBasto": "Basto"
 }

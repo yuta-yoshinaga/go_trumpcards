@@ -63,9 +63,17 @@ jobs:
         run: go test -tags test -coverprofile=coverage.out -covermode=set ./...
 
       - name: Upload backend coverage to Codecov
+        # **テストが落ちてもアップロードする。**codecov.yml の after_n_builds は
+        # 5 本そろうのを待つので、失敗ジョブが黙って投げないと 5 本目が永久に来ず、
+        # codecov のステータスが pending のまま張り付く (#4991)。
+        if: ${{ !cancelled() }}
         uses: codecov/codecov-action@v6
         with:
           files: coverage.out
+          # frontend 側と揃える。コンパイルエラーなどで coverage.out が
+          # 生成されなかったとき、ここで job を落とすと 5 本目が届かず
+          # ステータスが pending のまま張り付く (#4991)。
+          fail_ci_if_error: false
           flags: backend
           token: ${{ secrets.CODECOV_TOKEN }}
 
@@ -184,6 +192,8 @@ jobs:
         run: bun run test:coverage -- --shard=${{ matrix.shard }}/4
 
       - name: Upload frontend coverage to Codecov
+        # 落ちたシャードも部分カバレッジを投げる。理由は backend 側と同じ (#4991)。
+        if: ${{ !cancelled() }}
         uses: codecov/codecov-action@v6
         with:
           files: frontend/coverage/lcov.info

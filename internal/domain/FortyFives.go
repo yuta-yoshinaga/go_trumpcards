@@ -98,7 +98,7 @@ type FortyFives struct {
 	roundTeamPts     [FortyFivesTeamCnt]int // 現ラウンドのチーム別トリック得点
 	gameEndFlag      bool
 	winnerTeam       int // -1=未確定
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewFortyFives コンストラクタ
@@ -237,9 +237,9 @@ func (g *FortyFives) applyBid(idx int, bid FortyFivesBid) error {
 	g.bids[idx] = bid
 	g.bidDone[idx] = true
 	if bid != FortyFivesBidPass {
-		g.appendLog(idx, "bid", fmt.Sprintf("%s bids %d", g.playerName(idx), int(bid)), nil)
+		g.appendLog(idx, "bid", fmt.Sprintf("%s bids %d", playerName(g.players, idx), int(bid)), nil)
 	} else {
-		g.appendLog(idx, "bid", fmt.Sprintf("%s passes", g.playerName(idx)), nil)
+		g.appendLog(idx, "bid", fmt.Sprintf("%s passes", playerName(g.players, idx)), nil)
 	}
 	for k := 1; k <= FortyFivesPlayerCnt; k++ {
 		ni := (idx + k) % FortyFivesPlayerCnt
@@ -265,7 +265,7 @@ func (g *FortyFives) resolveBidding() {
 	g.contract = bid
 	g.trumpSuit = g.longestSuit(idx)
 	g.appendLog(idx, "contract",
-		fmt.Sprintf("%s (team %s) bids %d, trump %d", g.playerName(idx), fortyFivesTeamName(FortyFivesTeamOf(idx)), int(bid), g.trumpSuit), nil)
+		fmt.Sprintf("%s (team %s) bids %d, trump %d", playerName(g.players, idx), fortyFivesTeamName(FortyFivesTeamOf(idx)), int(bid), g.trumpSuit), nil)
 	g.leadPlayerIdx = idx // declarer leads
 	g.currentPlayerIdx = g.leadPlayerIdx
 	g.phase = FortyFivesPhasePlay
@@ -273,19 +273,7 @@ func (g *FortyFives) resolveBidding() {
 
 // longestSuit プレイヤーが最も多く持つスートを返す。
 func (g *FortyFives) longestSuit(playerIdx int) int {
-	counts := map[int]int{}
-	p := g.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		counts[p.GetCard(i).GetDesign()]++
-	}
-	bestSuit, bestCnt := CardDesignSpade, -1
-	for _, suit := range []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond} {
-		if counts[suit] > bestCnt {
-			bestCnt = counts[suit]
-			bestSuit = suit
-		}
-	}
-	return bestSuit
+	return longestSuit(g.players[playerIdx])
 }
 
 // cpuChooseBid CPU の入札を選ぶ。高位札と最長スートから見積もる。
@@ -365,7 +353,7 @@ func (g *FortyFives) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *FortyFives) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == FortyFivesPlayerCnt {
 		g.phase = FortyFivesPhaseTrickEnd
@@ -388,7 +376,7 @@ func (g *FortyFives) ResolveTrick() {
 	g.players[winnerIdx].IncRoundTricks()
 	g.roundTeamPts[FortyFivesTeamOf(winnerIdx)] += FortyFivesPointsPerTrick
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (+%d)", g.playerName(winnerIdx), g.trickNumber, FortyFivesPointsPerTrick), trickCards)
+		fmt.Sprintf("%s wins trick %d (+%d)", playerName(g.players, winnerIdx), g.trickNumber, FortyFivesPointsPerTrick), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= FortyFivesTrickCount {
@@ -582,10 +570,7 @@ func fortyFivesPip(v int) int {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す。
 func (g *FortyFives) getValidPlayIndices(playerIdx int) []int {
-	player := g.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return g.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(g.players[playerIdx], func(c *Card) bool { return g.validatePlay(playerIdx, c) == nil })
 }
 
 // --- Misc helpers ---
@@ -612,25 +597,9 @@ func (g *FortyFives) fortyFivesSortHand(p *FortyFivesPlayer) {
 	}
 }
 
-// playerName プレイヤー名を返す。
-func (g *FortyFives) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
 // indexOfPlayerInTrick currentTrick 内で playerIdx の札の位置を返す (-1=なし)。
 func (g *FortyFives) indexOfPlayerInTrick(playerIdx int) int {
-	for i, tc := range g.currentTrick {
-		if tc.PlayerIdx == playerIdx {
-			return i
-		}
-	}
-	return -1
+	return indexOfPlayerInTrick(g.currentTrick, playerIdx)
 }
 
 // trickTopRank 現在のトリック勝者の札のランクを返す。見つからない場合は極小値。
@@ -640,27 +609,6 @@ func (g *FortyFives) trickTopRank(winnerIdx int) int {
 		return -1 << 30
 	}
 	return g.fortyFivesRank(g.currentTrick[idx].Card)
-}
-
-// findHumanIdx 人間プレイヤーのインデックス (-1=なし)。
-func (g *FortyFives) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
-// appendLog 棋譜にエントリを追加する。
-func (g *FortyFives) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- CPU AI ---
@@ -684,7 +632,7 @@ func (g *FortyFives) cpuSelectPlayCard(playerIdx int) int {
 func (g *FortyFives) cpuPlaySmart(playerIdx int, valid []int) int {
 	player := g.players[playerIdx]
 	if len(g.currentTrick) == 0 {
-		return g.maxBy(player, valid, func(c *Card) int { return g.fortyFivesRank(c) })
+		return pickHighest(player, valid, func(c *Card) int { return g.fortyFivesRank(c) })
 	}
 	winnerIdx := g.trickWinner()
 	topRank := g.trickTopRank(winnerIdx)
@@ -692,38 +640,12 @@ func (g *FortyFives) cpuPlaySmart(playerIdx int, valid []int) int {
 	winners := fortyFivesFilter(valid, func(idx int) bool { return g.fortyFivesRank(player.GetCard(idx)) > topRank })
 	if partnerWinning {
 		// 味方が勝っている: 最弱札を温存・捨てる。
-		return g.minBy(player, valid, func(c *Card) int { return g.fortyFivesRank(c) })
+		return pickLowest(player, valid, func(c *Card) int { return g.fortyFivesRank(c) })
 	}
 	if len(winners) > 0 {
-		return g.minBy(player, winners, func(c *Card) int { return g.fortyFivesRank(c) })
+		return pickLowest(player, winners, func(c *Card) int { return g.fortyFivesRank(c) })
 	}
-	return g.minBy(player, valid, func(c *Card) int { return g.fortyFivesRank(c) })
-}
-
-// minBy score が最小となるインデックスを返す。
-func (g *FortyFives) minBy(player *FortyFivesPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s < bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
-}
-
-// maxBy score が最大となるインデックスを返す。
-func (g *FortyFives) maxBy(player *FortyFivesPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s > bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
+	return pickLowest(player, valid, func(c *Card) int { return g.fortyFivesRank(c) })
 }
 
 // fortyFivesFilter 述語を満たすインデックスを抽出する。
@@ -741,7 +663,7 @@ func fortyFivesFilter(indices []int, pred func(int) bool) []int {
 
 // GetHint 人間プレイヤーの手番における推奨プレイを返す。
 func (g *FortyFives) GetHint() *FortyFivesHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 || g.phase != FortyFivesPhasePlay || g.currentPlayerIdx != human {
 		return nil
 	}
@@ -839,6 +761,74 @@ func (g *FortyFives) GetTeamScores() [FortyFivesTeamCnt]int { return g.teamScore
 // SetTeamScores チーム別累積点設定 (テスト用)
 func (g *FortyFives) SetTeamScores(s [FortyFivesTeamCnt]int) { g.teamScores = s }
 
+// 契約の進捗 (#4724)。
+const (
+	// FortyFivesContractMade 契約成立 (すでに必要点に届いている)。
+	FortyFivesContractMade = "made"
+	// FortyFivesContractFailed 契約不成立が確定 (残りトリックを全部取っても届かない)。
+	FortyFivesContractFailed = "failed"
+	// FortyFivesContractNeedMore まだ足りないが、届く可能性が残っている。
+	FortyFivesContractNeedMore = "needMore"
+)
+
+// FortyFivesContractProgress は落札チームの契約達成見込み。
+type FortyFivesContractProgress struct {
+	// DeclarerTeam は落札チーム (0 or 1)。
+	DeclarerTeam int
+	// Points は落札チームの現在の得点。
+	Points int
+	// Contract は達成すべき点数。
+	Contract int
+	// Remaining はあと何点必要か (成立済みなら 0)。
+	Remaining int
+	// Status は FortyFivesContract* のいずれか。
+	Status string
+}
+
+// GetContractProgress は落札チームが契約に届くかどうかを返す。落札が
+// 決まっていない、または契約が無いときは nil。
+//
+// **CUI はラウンドが終わるまで契約の進捗を一切出していなかった (#4724)。**
+// Web は ff-contract-progress に「あと何点必要か」を色分きで常時出している。
+//
+// 「もう届かない」は**残りトリックを全部取っても足りない**ときに確定する。
+// 得点の合計から消化済みトリック数が分かるので、残りは
+// (全トリック - 消化済み) × 1トリックの点。
+func (g *FortyFives) GetContractProgress() *FortyFivesContractProgress {
+	if g.declarerIdx < 0 || g.contract <= 0 {
+		return nil
+	}
+	team := g.declarerIdx % FortyFivesTeamCnt
+	points := g.roundTeamPts[team]
+	contract := int(g.contract)
+
+	resolved := 0
+	for _, p := range g.roundTeamPts {
+		resolved += p
+	}
+	remainingTricks := FortyFivesTrickCount - resolved/FortyFivesPointsPerTrick
+	if remainingTricks < 0 {
+		remainingTricks = 0
+	}
+	available := remainingTricks * FortyFivesPointsPerTrick
+
+	status := FortyFivesContractNeedMore
+	switch {
+	case points >= contract:
+		status = FortyFivesContractMade
+	case points+available < contract:
+		status = FortyFivesContractFailed
+	}
+	remaining := contract - points
+	if remaining < 0 {
+		remaining = 0
+	}
+	return &FortyFivesContractProgress{
+		DeclarerTeam: team, Points: points, Contract: contract,
+		Remaining: remaining, Status: status,
+	}
+}
+
 // GetRoundTeamPoints 現ラウンドのチーム別得点取得
 func (g *FortyFives) GetRoundTeamPoints() [FortyFivesTeamCnt]int { return g.roundTeamPts }
 
@@ -856,18 +846,12 @@ func (g *FortyFives) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *FortyFives) GetPlayer(i int) *FortyFivesPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // IsHumanTurn 現在の手番が人間か (プレイフェーズ)。
 func (g *FortyFives) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -875,9 +859,6 @@ func (g *FortyFives) GetConfig() FortyFivesConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *FortyFives) SetConfig(cfg FortyFivesConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *FortyFives) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetPlayableIndices プレイ可能なカードのインデックス一覧を返す。
 func (g *FortyFives) GetPlayableIndices(playerIdx int) []int {

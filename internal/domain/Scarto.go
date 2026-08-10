@@ -170,7 +170,7 @@ type Scarto struct {
 	scored          bool
 	gameEndFlag     bool
 	winnerPlayer    int
-	actionLog       []*ActionLogEntry
+	actionLogBase
 }
 
 // NewScarto コンストラクタ
@@ -281,13 +281,7 @@ func (g *Scarto) deal() {
 
 // drawCard デッキから 1 枚配る (尽きたら nil)。
 func (g *Scarto) drawCard() *Card {
-	if g.deckDrawCnt >= len(g.deck) {
-		return nil
-	}
-	card := g.deck[g.deckDrawCnt]
-	card.SetDraw(true)
-	g.deckDrawCnt++
-	return card
+	return drawFromDeck(g.deck, &g.deckDrawCnt)
 }
 
 // --- Scarto (dealer discard) ---
@@ -339,7 +333,7 @@ func (g *Scarto) doScarto(cardIndices []int) error {
 	discarded := player.RemoveCards(cardIndices)
 	g.scarto = discarded
 	g.appendLog(g.dealerIdx, "scarto",
-		fmt.Sprintf("%s discards %d cards (scarto)", g.playerName(g.dealerIdx), len(discarded)), discarded)
+		fmt.Sprintf("%s discards %d cards (scarto)", playerName(g.players, g.dealerIdx), len(discarded)), discarded)
 	g.sortAllHands()
 	g.startPlay()
 	return nil
@@ -446,7 +440,7 @@ func (g *Scarto) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Scarto) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), scartoCardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), scartoCardStr(card)), []*Card{card})
 	if len(g.currentTrick) == ScartoPlayerCnt {
 		g.phase = ScartoPhaseTrickEnd
 	} else {
@@ -482,7 +476,7 @@ func (g *Scarto) ResolveTrick() {
 		g.players[excuseOwner].AddTrick([]*Card{excuseCard})
 	}
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", g.playerName(winnerIdx), g.trickNumber), allCards)
+		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), allCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= ScartoTrickCount {
@@ -554,7 +548,7 @@ func (g *Scarto) capturedHalfPoints() [ScartoPlayerCnt]int {
 
 // humanOutcome 人間の deal 精算符号から結果を返す。
 func (g *Scarto) humanOutcome() ScartoOutcome {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 {
 		return ScartoOutcomeNone
 	}
@@ -592,13 +586,13 @@ func (g *Scarto) checkGameEnd() {
 		g.appendLog(-1, "game_end", "the match ends in a draw", nil)
 	} else {
 		g.winnerPlayer = leader
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", g.playerName(leader)), nil)
+		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
 	}
 }
 
 // humanResult 人間 (seat 0) 視点でマッチ結果を返す。単独トップなら Win、トップ同点なら None。
 func (g *Scarto) humanResult(leader int, tie bool) ScartoResult {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 {
 		return ScartoResultNone
 	}
@@ -708,14 +702,7 @@ func (g *Scarto) highestTrumpInTrick() int {
 
 // validatePlay マストフォロー + 切り札義務 + オーバートランプ義務を検証する。
 func (g *Scarto) validatePlay(playerIdx int, card *Card) error {
-	valid := g.getValidPlayIndices(playerIdx)
-	player := g.players[playerIdx]
-	for _, idx := range valid {
-		if player.GetCard(idx) == card {
-			return nil
-		}
-	}
-	return NewDomainError(ErrInvalidPlay, "フォロー義務・切り札義務・オーバートランプ義務に反しています")
+	return validateCardIsPlayable(g.getValidPlayIndices(playerIdx), g.players[playerIdx], card)
 }
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す。
@@ -1022,7 +1009,7 @@ func scartoPlayRank(c *Card, led int) int {
 
 // GetHint 人間プレイヤーの手番における推奨アクションを返す。
 func (g *Scarto) GetHint() *ScartoHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 || g.gameEndFlag {
 		return nil
 	}
@@ -1096,27 +1083,6 @@ func scartoSortHand(p *ScartoPlayer) {
 	}
 }
 
-// playerName プレイヤー名を返す。
-func (g *Scarto) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-// findHumanIdx 人間プレイヤーのインデックス (-1=なし)。
-func (g *Scarto) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 // isHumanScartoTurn 現在のスカルト手番が人間 (=人間が親) か。
 func (g *Scarto) isHumanScartoTurn() bool {
 	if g.dealerIdx < 0 || g.dealerIdx >= len(g.players) {
@@ -1127,13 +1093,7 @@ func (g *Scarto) isHumanScartoTurn() bool {
 
 // appendLog 棋譜にエントリを追加する。
 func (g *Scarto) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.appendLogAt(len(g.actionLog)+1, playerIdx, actionType, detail, cards)
 }
 
 // scartoCardStr カードのログ表示文字列 (切り札・エクスキューズ対応)。
@@ -1280,10 +1240,7 @@ func (g *Scarto) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *Scarto) GetPlayer(i int) *ScartoPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // IsHumanTurn 現在の手番 (Play) が人間か。
@@ -1313,10 +1270,7 @@ func (g *Scarto) SetConfig(cfg ScartoConfig) { g.config = cfg }
 
 // GetActionLog 棋譜取得
 func (g *Scarto) GetActionLog() []*ActionLogEntry {
-	if g.actionLog == nil {
-		return []*ActionLogEntry{}
-	}
-	return g.actionLog
+	return sliceOrEmpty(g.actionLog)
 }
 
 // GetPlayableIndices プレイ可能なカードのインデックス一覧を返す。

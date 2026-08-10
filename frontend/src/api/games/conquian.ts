@@ -17,11 +17,17 @@ export const conquianApi = {
     cardIndex?: number,
     config?: ConquianConfigInput,
     meldGroups?: number[][],
+    /**
+     * どのテーブルメルドへ足すかの指定 (meldGroups と同じ並び)。省略すると
+     * バックエンドは従来どおり最初に延長できるメルドを選ぶ (#4837)。
+     */
+    extendTargets?: number[],
   ) =>
     gameExec<ConquianResponse>('conquian', {
       command,
       cardIndex,
       config,
       meldGroups,
+      extendTargets,
     }),
 };

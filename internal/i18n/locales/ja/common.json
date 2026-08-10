@@ -59,6 +59,7 @@
   "cliGamesJSONIgnoredFlags": "警告: --json モードでは --short / --aliases は無視されます (JSON スキーマは固定)",
   "cliSubcommandFlagError": "エラー: trumpcards {{cmd}}: {{err}}",
   "cliTryHelp": "使い方は 'trumpcards help {{cmd}}' を実行してください。",
+  "cliTryHelpTop": "使い方は 'trumpcards --help' を実行してください。",
   "cliFlagError": "エラー: 不明なオプションです ({{err}})",
   "cliInvalidColorMode": "エラー: 無効な --color モード「{{mode}}」です (対応: auto, always, never)",
   "metaAIRequired": "メタAI設定が必要です (0=オフ, 1=オン)。",
@@ -126,5 +127,15 @@
   "stud.helpBigBet": "  bb <amount>          ビッグベット (>=1)",
   "stud.helpLevelUpHands": "  lh <hands>           アンテレベルアップ手数 (>=1)",
   "stud.helpTableSize": "  ts [2-7]             テーブルサイズ",
-  "realtime.banner": "リアルタイムモード: スペース=スラップ、s=ステップ、r=リセット、q=終了 (Ctrl+C でも終了)。"
+  "realtime.banner": "リアルタイムモード (キーを押すだけ、Enter 不要):",
+  "realtime.keySpace": "Space",
+  "realtime.labelSlap": "スラップ",
+  "realtime.labelStep": "カードをめくる",
+  "realtime.labelReset": "リセット",
+  "realtime.labelLog": "棋譜を表示",
+  "realtime.labelEasy": "CPU難易度 Easy にしてリセット",
+  "realtime.labelNormal": "CPU難易度 Normal にしてリセット",
+  "realtime.labelHard": "CPU難易度 Hard にしてリセット",
+  "realtime.labelHelp": "このキー一覧を再表示",
+  "realtime.labelQuit": "終了"
 }

@@ -71,7 +71,7 @@ type Manille struct {
 	roundCardPts     [ManilleTeamCnt]int // 現ラウンドのカード得点
 	gameEndFlag      bool
 	winnerTeam       int // -1=未確定
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewManille コンストラクタ
@@ -203,7 +203,7 @@ func (g *Manille) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Manille) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == ManillePlayerCnt {
 		g.phase = ManillePhaseTrickEnd
@@ -228,7 +228,7 @@ func (g *Manille) ResolveTrick() {
 	team := ManilleTeamOf(winnerIdx)
 	g.roundCardPts[team] += pts
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (+%d)", g.playerName(winnerIdx), g.trickNumber, pts), trickCards)
+		fmt.Sprintf("%s wins trick %d (+%d)", playerName(g.players, winnerIdx), g.trickNumber, pts), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= ManilleTrickCount {
@@ -314,13 +314,7 @@ func (g *Manille) partnerWinning(playerIdx int) bool {
 
 // playerHasSuit プレイヤーが指定スートのカードを持っているか。
 func (g *Manille) playerHasSuit(playerIdx, design int) bool {
-	p := g.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return handHasSuit(g.players[playerIdx], design)
 }
 
 // trickWinner トリックの勝者を決定する。切り札があれば最強切り札、なければ
@@ -394,10 +388,7 @@ func manilleCardPoints(card *Card) int {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す。
 func (g *Manille) getValidPlayIndices(playerIdx int) []int {
-	player := g.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return g.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(g.players[playerIdx], func(c *Card) bool { return g.validatePlay(playerIdx, c) == nil })
 }
 
 // --- Misc helpers ---
@@ -427,25 +418,9 @@ func manilleSortHand(p *ManillePlayer) {
 	}
 }
 
-// playerName プレイヤー名を返す。
-func (g *Manille) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
 // indexOfPlayerInTrick currentTrick 内で playerIdx の札の位置を返す (-1=なし)。
 func (g *Manille) indexOfPlayerInTrick(playerIdx int) int {
-	for i, tc := range g.currentTrick {
-		if tc.PlayerIdx == playerIdx {
-			return i
-		}
-	}
-	return -1
+	return indexOfPlayerInTrick(g.currentTrick, playerIdx)
 }
 
 // trickTopRank 現在のトリック勝者の札のランクを返す。見つからない場合は極小値。
@@ -455,27 +430,6 @@ func (g *Manille) trickTopRank(winnerIdx int) int {
 		return -1 << 30
 	}
 	return g.manilleRank(g.currentTrick[idx].Card)
-}
-
-// findHumanIdx 人間プレイヤーのインデックス (-1=なし)。
-func (g *Manille) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
-// appendLog 棋譜にエントリを追加する。
-func (g *Manille) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- CPU AI ---
@@ -499,7 +453,7 @@ func (g *Manille) cpuSelectPlayCard(playerIdx int) int {
 func (g *Manille) cpuPlaySmart(playerIdx int, valid []int) int {
 	player := g.players[playerIdx]
 	if len(g.currentTrick) == 0 {
-		return g.minBy(player, valid, func(c *Card) int {
+		return pickLowest(player, valid, func(c *Card) int {
 			return manilleCardPoints(c)*100 + g.manilleRank(c)
 		})
 	}
@@ -515,42 +469,16 @@ func (g *Manille) cpuPlaySmart(playerIdx int, valid []int) int {
 		// 味方が勝っている: 得点の高い札を渡す。
 		nonWinners := manilleFilter(valid, func(idx int) bool { return g.manilleRank(player.GetCard(idx)) < topRank })
 		if len(nonWinners) > 0 {
-			return g.maxBy(player, nonWinners, func(c *Card) int { return manilleCardPoints(c) })
+			return pickHighest(player, nonWinners, func(c *Card) int { return manilleCardPoints(c) })
 		}
-		return g.minBy(player, valid, func(c *Card) int { return g.manilleRank(c) })
+		return pickLowest(player, valid, func(c *Card) int { return g.manilleRank(c) })
 	}
 	if trickPts > 0 && len(winners) > 0 {
-		return g.minBy(player, winners, func(c *Card) int { return g.manilleRank(c) })
+		return pickLowest(player, winners, func(c *Card) int { return g.manilleRank(c) })
 	}
-	return g.minBy(player, valid, func(c *Card) int {
+	return pickLowest(player, valid, func(c *Card) int {
 		return manilleCardPoints(c)*100 + g.manilleRank(c)
 	})
-}
-
-// minBy score が最小となるインデックスを返す。
-func (g *Manille) minBy(player *ManillePlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s < bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
-}
-
-// maxBy score が最大となるインデックスを返す。
-func (g *Manille) maxBy(player *ManillePlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s > bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
 }
 
 // manilleFilter 述語を満たすインデックスを抽出する。
@@ -568,7 +496,7 @@ func manilleFilter(indices []int, pred func(int) bool) []int {
 
 // GetHint 人間プレイヤーの手番における推奨プレイを返す。
 func (g *Manille) GetHint() *ManilleHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 || g.phase != ManillePhasePlay || g.currentPlayerIdx != human {
 		return nil
 	}
@@ -667,18 +595,12 @@ func (g *Manille) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *Manille) GetPlayer(i int) *ManillePlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // IsHumanTurn 現在の手番が人間か。
 func (g *Manille) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -686,9 +608,6 @@ func (g *Manille) GetConfig() ManilleConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *Manille) SetConfig(cfg ManilleConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *Manille) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetPlayableIndices プレイ可能なカードのインデックス一覧を返す。
 func (g *Manille) GetPlayableIndices(playerIdx int) []int {

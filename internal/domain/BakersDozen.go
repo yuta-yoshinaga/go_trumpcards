@@ -46,12 +46,12 @@ type BakersDozenConfig struct{}
 
 // BakersDozen ベーカーズダズンゲームクラス
 type BakersDozen struct {
-	trumpCards  *TrumpCards
-	tableau     [BakersDozenTableauCnt][]*BakersDozenTableauCard
-	foundation  [BakersDozenFoundationCnt][]*Card
-	phase       BakersDozenPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	tableau    [BakersDozenTableauCnt][]*BakersDozenTableauCard
+	foundation [BakersDozenFoundationCnt][]*Card
+	phase      BakersDozenPhase
+	moveCount  int
+	actionLogBase
 	history     []*bakersDozenSnapshot
 	isStalemate bool
 }
@@ -294,9 +294,6 @@ func (bd *BakersDozen) GetTableau() [BakersDozenTableauCnt][]*BakersDozenTableau
 // GetFoundation ファンデーション取得
 func (bd *BakersDozen) GetFoundation() [BakersDozenFoundationCnt][]*Card { return bd.foundation }
 
-// GetActionLog 棋譜取得
-func (bd *BakersDozen) GetActionLog() []*ActionLogEntry { return bd.actionLog }
-
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (bd *BakersDozen) GetGameEndFlag() bool { return bd.phase != BakersDozenPhasePlaying }
 
@@ -338,25 +335,12 @@ func (bd *BakersDozen) CanUndo() bool {
 // UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。
 // 膠着状態でなければ0、脱出不可なら-1。
 func (bd *BakersDozen) UndoToEscape() int {
-	if !bd.isStalemate {
-		return 0
-	}
-	for i := len(bd.history) - 1; i >= 0; i-- {
-		if !bd.history[i].isStalemate {
-			return len(bd.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(bd.isStalemate, bd.history, func(s *bakersDozenSnapshot) bool { return s.isStalemate })
 }
 
 // UndoN n回連続でアンドゥを実行する。
 func (bd *BakersDozen) UndoN(n int) error {
-	for i := range n {
-		if err := bd.Undo(); err != nil {
-			return fmt.Errorf("undo step %d failed: %w", i+1, err)
-		}
-	}
-	return nil
+	return undoN(bd, n)
 }
 
 // --- Private helpers ---
@@ -374,12 +358,7 @@ func (bd *BakersDozen) canPlaceOnTableau(card *Card, col int) bool {
 
 // canPlaceOnFoundation ファンデーションにカードを置けるか判定
 func (bd *BakersDozen) canPlaceOnFoundation(card *Card, fIdx int) bool {
-	pile := bd.foundation[fIdx]
-	if len(pile) == 0 {
-		return card.GetValue() == 1
-	}
-	topCard := pile[len(pile)-1]
-	return card.GetDesign() == topCard.GetDesign() && card.GetValue() == topCard.GetValue()+1
+	return canPlaceOnFoundationPile(bd.foundation[fIdx], card)
 }
 
 // findFoundation カードを置けるファンデーションのインデックスを探す（見つからない場合-1）
@@ -445,13 +424,7 @@ func (bd *BakersDozen) restoreSnapshot(snap *bakersDozenSnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (bd *BakersDozen) appendLog(actionType, detail string, cards []*Card) {
-	bd.actionLog = append(bd.actionLog, &ActionLogEntry{
-		TurnNumber: bd.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	bd.appendLogAt(bd.moveCount, 0, actionType, detail, cards)
 }
 
 // bakersDozenJSON is the JSON wire format for BakersDozen.

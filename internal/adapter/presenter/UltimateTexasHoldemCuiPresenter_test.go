@@ -205,3 +205,41 @@ func TestUltimateTexasHoldemCuiPresenter_ActionLogOutput(t *testing.T) {
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, "bet")
 }
+
+// **CUI に 4x/3x/2x/1x/check/fold を選ぶ材料が何も無かった (#4709)。**
+func TestUltimateTexasHoldemCuiPresenter_HintOutput(t *testing.T) {
+	p := new(UltimateTexasHoldemCuiPresenter)
+	game := func(rec string) *interfaces.MockUltimateTexasHoldemGame {
+		m := new(interfaces.MockUltimateTexasHoldemGame)
+		m.On("RecommendPlay").Return(rec)
+		return m
+	}
+
+	// **倍率ごとに違う文言。**同じ文なら「レイズしろ」までしか伝わらない。
+	t.Run("each multiplier gets its own line", func(t *testing.T) {
+		seen := map[string]bool{}
+		for _, rec := range []string{
+			domain.UTHRecommendPlay4x, domain.UTHRecommendPlay3x,
+			domain.UTHRecommendPlay2x, domain.UTHRecommendPlay1x,
+			domain.UTHRecommendCheck, domain.UTHRecommendFold,
+		} {
+			out := p.HintOutput(game(rec))
+			assert.False(t, seen[out], "%s の文言が他と重複している", rec)
+			seen[out] = true
+			assert.NotContains(t, out, i18n.T("ultimatetexasholdem.hintNone"))
+		}
+		assert.Len(t, seen, 6)
+	})
+
+	t.Run("names the 4x multiplier", func(t *testing.T) {
+		assert.Contains(t, p.HintOutput(game(domain.UTHRecommendPlay4x)), "4倍")
+	})
+
+	t.Run("names the 2x multiplier", func(t *testing.T) {
+		assert.Contains(t, p.HintOutput(game(domain.UTHRecommendPlay2x)), "2倍")
+	})
+
+	t.Run("says so when there is no decision to make", func(t *testing.T) {
+		assert.Contains(t, p.HintOutput(game("")), i18n.T("ultimatetexasholdem.hintNone"))
+	})
+}

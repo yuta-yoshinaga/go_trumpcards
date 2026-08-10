@@ -64,5 +64,6 @@
     "scoponeScopa": "場の札を全部さらえます。スコパで 1 点です",
     "scoponeCaptureMost": "一番多く取れる札です",
     "scoponeLayLow": "取れる組み合わせがありません。一番小さい札を置きましょう"
-  }
+  },
+  "sumIndicator": "合計 {{sum}} / {{target}}"
 }

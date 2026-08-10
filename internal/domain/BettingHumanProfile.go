@@ -167,3 +167,25 @@ func (p *BettingHumanProfile) AdjustedCallChance(base float64, bracket int, hesi
 func (p *BettingHumanProfile) AdjustedBluffChance(base float64) float64 {
 	return base * (1.0 + (p.FoldRate()-0.5)*p.AdaptStrength())
 }
+
+// importBettingProfile decodes a saved human profile, returning nil for empty
+// input so callers can leave their existing profile untouched. 8 betting games
+// had this written out.
+//
+// Lives here rather than in player_helpers.go because that file is compiled
+// into every Worker, while this one is tagged `!js || !wasm || casino` -- the
+// split that lets TinyGo drop the betting games from the other five binaries.
+// A helper naming BettingHumanProfile from an untagged file breaks those
+// builds, which `go test ./...` cannot show because it compiles everything.
+func importBettingProfile(data []byte) (*BettingHumanProfile, error) {
+	if len(data) == 0 {
+		return nil, nil
+	}
+	d, err := ImportBettingHumanProfileJSON(data)
+	if err != nil {
+		return nil, err
+	}
+	p := &BettingHumanProfile{}
+	p.Import(d)
+	return p, nil
+}

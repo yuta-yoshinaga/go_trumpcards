@@ -215,7 +215,10 @@ function KingAlbertPageContent() {
                 onClick={() => game.handleSelectTarget(tableauColZone)}
                 disabled={!isPlaying || loading || !selectedSource}
                 style={{ height: dims.ch }}
-                className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center bg-transparent ${focusRingWhite}`}
+                data-target-candidate={selectedSource ? true : undefined}
+                className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center bg-transparent ${focusRingWhite} ${
+                  selectedSource ? 'ring-1 ring-ds-info' : ''
+                }`}
               >
                 {t('empty')}
               </button>
@@ -227,6 +230,7 @@ function KingAlbertPageContent() {
                   cardIndex: cardIdx,
                 };
                 const isTop = cardIdx === col.length - 1;
+                const isTargetCandidate = !!selectedSource && isTop && !isSourceSelected('tableau', colIdx, cardIdx);
                 return (
                   <div
                     key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
@@ -249,7 +253,10 @@ function KingAlbertPageContent() {
                         draggable={isPlaying && !loading && isTop}
                         onDragStart={dnd.handleDragStart(cardZone)}
                         onDragEnd={dnd.handleDragEnd}
-                        className={`p-0 border-0 bg-transparent w-full rounded ${focusRingWhite} ${isTop ? 'cursor-pointer' : 'cursor-default'} ${isSourceSelected('tableau', colIdx, cardIdx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
+                        // With a card in hand every top card is a possible
+                        // destination; only the source said so before (#4828).
+                        data-target-candidate={isTargetCandidate || undefined}
+                        className={`p-0 border-0 bg-transparent w-full rounded ${focusRingWhite} ${isTop ? 'cursor-pointer' : 'cursor-default'} ${isSourceSelected('tableau', colIdx, cardIdx) ? 'ring-2 ring-ds-warning' : ''} ${isTargetCandidate ? 'ring-1 ring-ds-info motion-safe:hover:ring-2 focus:ring-2' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
                       >
                         <AnimatedCard
                           card={tc.card}
@@ -375,7 +382,10 @@ function KingAlbertPageContent() {
                               suit: FOUNDATION_SUITS[idx],
                               count: pile.length,
                             })}
-                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
+                            data-target-candidate={selectedSource ? true : undefined}
+                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
+                              selectedSource ? 'ring-1 ring-ds-info motion-safe:hover:ring-2 focus:ring-2' : ''
+                            }`}
                           >
                             <AnimatedCard
                               card={pile[pile.length - 1]}

@@ -26,6 +26,8 @@ type CrazyEightsInteractorIF interface {
 	GetConfig() domain.CrazyEightsConfig
 	// ActionLog 棋譜を出力する
 	ActionLog() string
+	// Hint サーバー計算の推奨手を出力する
+	Hint() string
 	// IsHumanChooseSuitTurn reports whether the human just played an 8 and the
 	// game is now waiting for them to pick a suit. Used by the CUI controller
 	// to issue an inline suit prompt instead of forcing the user to type 's'
@@ -115,6 +117,11 @@ func (ci *CrazyEightsInteractor) GetConfig() domain.CrazyEightsConfig {
 // ActionLog 棋譜を出力する
 func (ci *CrazyEightsInteractor) ActionLog() string {
 	return ci.gp.ActionLogOutput(ci.Game)
+}
+
+// Hint サーバー計算の推奨手を出力する
+func (ci *CrazyEightsInteractor) Hint() string {
+	return ci.gp.HintOutput(ci.Game)
 }
 
 // IsHumanChooseSuitTurn reports whether the game is currently waiting for the

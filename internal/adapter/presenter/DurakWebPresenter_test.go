@@ -122,3 +122,14 @@ func TestDurakWebPresenter_ActionLogOutput(t *testing.T) {
 	result := p.ActionLogOutput(gameMock)
 	assert.NotEmpty(t, result)
 }
+
+// **`command: "hint"` 専用のレスポンスも返す (#4740)。**Web はクライアント側でも
+// 簡易ヒントを出すが、これはサーバー計算のもの。
+func TestDurakWebPresenter_HintOutput(t *testing.T) {
+	d := domain.NewDefaultDurak()
+	d.Reset()
+
+	out := new(presenter.DurakWebPresenter).HintOutput(d)
+	assert.True(t, json.Valid([]byte(out)), "JSON として妥当")
+	assert.Contains(t, out, `"players"`, "状態も一緒に返る")
+}

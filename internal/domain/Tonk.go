@@ -54,7 +54,7 @@ type Tonk struct {
 	gameEndFlag      bool
 	winnerIdx        int
 	roundNumber      int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 	knockerIdx       int       // ノック/Tonkしたプレイヤーのインデックス (-1 = 未確定)
 	knockerMelds     [][]*Card // ノッカーのメルド
 	knockerDeadwood  []*Card   // ノッカーのデッドウッド
@@ -199,7 +199,7 @@ func (g *Tonk) checkTonkOnDeal() {
 		if total == TonkOnDealLow || total == TonkOnDealHigh {
 			g.isTonk = true
 			g.knockerIdx = i
-			g.appendLog(i, "tonk_on_deal", fmt.Sprintf("%s declares Tonk on deal! (hand value: %d)", g.playerName(i), total), nil)
+			g.appendLog(i, "tonk_on_deal", fmt.Sprintf("%s declares Tonk on deal! (hand value: %d)", playerName(g.players, i), total), nil)
 			g.scoreTonk(total)
 			return
 		}
@@ -228,7 +228,7 @@ func (g *Tonk) PlayerDrawFromStock() error {
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", g.playerName(g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, g.currentPlayerIdx)), nil)
 
 	g.phase = TonkPhaseDiscard
 	return nil
@@ -255,7 +255,7 @@ func (g *Tonk) PlayerDrawFromDiscard() error {
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s draws %s from discard", g.playerName(g.currentPlayerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s draws %s from discard", playerName(g.players, g.currentPlayerIdx), cardStr(card)), []*Card{card})
 
 	g.phase = TonkPhaseDiscard
 	return nil
@@ -281,7 +281,7 @@ func (g *Tonk) PlayerDiscard(cardIndex int) error {
 	discarded := player.RemoveCard(cardIndex)
 	g.discardPile = append(g.discardPile, discarded)
 
-	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", g.playerName(g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
 
 	g.advanceTurn()
 	return nil
@@ -325,7 +325,7 @@ func (g *Tonk) PlayerKnock(cardIndex int) error {
 	g.knockerMelds = melds
 	g.knockerDeadwood = deadwood
 
-	g.appendLog(g.currentPlayerIdx, "knock", fmt.Sprintf("%s knocks (deadwood: %d)", g.playerName(g.currentPlayerIdx), deadwoodValue), []*Card{discarded})
+	g.appendLog(g.currentPlayerIdx, "knock", fmt.Sprintf("%s knocks (deadwood: %d)", playerName(g.players, g.currentPlayerIdx), deadwoodValue), []*Card{discarded})
 
 	g.scoreRound()
 	return nil
@@ -388,7 +388,7 @@ func (g *Tonk) cpuDraw() {
 			g.discardPile = g.discardPile[:len(g.discardPile)-1]
 			g.players[g.currentPlayerIdx].AddCard(card)
 			g.sortHand(g.currentPlayerIdx)
-			g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s draws %s from discard", g.playerName(g.currentPlayerIdx), cardStr(card)), []*Card{card})
+			g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s draws %s from discard", playerName(g.players, g.currentPlayerIdx), cardStr(card)), []*Card{card})
 			g.phase = TonkPhaseDiscard
 			return
 		}
@@ -403,7 +403,7 @@ func (g *Tonk) cpuDraw() {
 	g.drawPile = g.drawPile[:len(g.drawPile)-1]
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
-	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", g.playerName(g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, g.currentPlayerIdx)), nil)
 	g.phase = TonkPhaseDiscard
 }
 
@@ -411,23 +411,9 @@ func (g *Tonk) cpuDraw() {
 func (g *Tonk) cpuDiscardOrKnock() {
 	player := g.players[g.currentPlayerIdx]
 
-	bestDiscardIdx := 0
-	bestDeadwood := -1
-
-	for i := 0; i < player.GetCardsSize(); i++ {
-		testCards := make([]*Card, 0, player.GetCardsSize()-1)
-		for j := 0; j < player.GetCardsSize(); j++ {
-			if j != i {
-				testCards = append(testCards, player.GetCard(j))
-			}
-		}
-		_, dw := FindBestMelds(testCards)
-		dwVal := CalcDeadwoodValue(dw)
-
-		if bestDeadwood < 0 || dwVal < bestDeadwood {
-			bestDeadwood = dwVal
-			bestDiscardIdx = i
-		}
+	bestDeadwood, bestDiscardIdx := g.GetBestDeadwood(g.currentPlayerIdx)
+	if bestDiscardIdx < 0 {
+		bestDiscardIdx = 0
 	}
 
 	if bestDeadwood <= TonkKnockThreshold {
@@ -458,7 +444,7 @@ func (g *Tonk) cpuDiscardOrKnock() {
 			g.knockerMelds = melds
 			g.knockerDeadwood = deadwood
 
-			g.appendLog(g.currentPlayerIdx, "knock", fmt.Sprintf("%s knocks (deadwood: %d)", g.playerName(g.currentPlayerIdx), deadwoodValue), []*Card{discarded})
+			g.appendLog(g.currentPlayerIdx, "knock", fmt.Sprintf("%s knocks (deadwood: %d)", playerName(g.players, g.currentPlayerIdx), deadwoodValue), []*Card{discarded})
 
 			g.scoreRound()
 			return
@@ -467,7 +453,7 @@ func (g *Tonk) cpuDiscardOrKnock() {
 
 	discarded := player.RemoveCard(bestDiscardIdx)
 	g.discardPile = append(g.discardPile, discarded)
-	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", g.playerName(g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
 	g.advanceTurn()
 }
 
@@ -494,11 +480,11 @@ func (g *Tonk) scoreRound() {
 		g.isUndercut = true
 		score := knockerDeadwoodValue - opponentDeadwoodValue + TonkUndercutPenalty
 		g.players[opponentIdx].SetRoundScore(score)
-		g.appendLog(opponentIdx, "undercut", fmt.Sprintf("%s undercuts! Scores %d (penalty %d + difference %d)", g.playerName(opponentIdx), score, TonkUndercutPenalty, knockerDeadwoodValue-opponentDeadwoodValue), nil)
+		g.appendLog(opponentIdx, "undercut", fmt.Sprintf("%s undercuts! Scores %d (penalty %d + difference %d)", playerName(g.players, opponentIdx), score, TonkUndercutPenalty, knockerDeadwoodValue-opponentDeadwoodValue), nil)
 	} else {
 		score := opponentDeadwoodValue - knockerDeadwoodValue
 		g.players[knockerIdx].SetRoundScore(score)
-		g.appendLog(knockerIdx, "score", fmt.Sprintf("%s scores %d (deadwood difference)", g.playerName(knockerIdx), score), nil)
+		g.appendLog(knockerIdx, "score", fmt.Sprintf("%s scores %d (deadwood difference)", playerName(g.players, knockerIdx), score), nil)
 	}
 
 	for i := range g.players {
@@ -535,7 +521,7 @@ func (g *Tonk) scoreTonk(handValue int) {
 
 	score := TonkBonus + handValue
 	g.players[knockerIdx].SetRoundScore(score)
-	g.appendLog(knockerIdx, "tonk_score", fmt.Sprintf("%s scores %d (Tonk bonus %d + hand %d)", g.playerName(knockerIdx), score, TonkBonus, handValue), nil)
+	g.appendLog(knockerIdx, "tonk_score", fmt.Sprintf("%s scores %d (Tonk bonus %d + hand %d)", playerName(g.players, knockerIdx), score, TonkBonus, handValue), nil)
 
 	for i := range g.players {
 		g.players[i].CommitRoundScore()
@@ -595,12 +581,44 @@ func (g *Tonk) checkGameEnd() {
 			g.winnerIdx = i
 		}
 	}
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", g.playerName(g.winnerIdx)), nil)
+	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, g.winnerIdx)), nil)
 }
 
 // --- State getters ---
 
 // GetPhase 現在のフェーズ取得
+// GetBestDeadwood は1枚捨てたときに到達できる最小デッドウッド値と、その捨て札の
+// 位置を返す。手札が空なら (0, -1)。
+//
+// **この計算は元々3箇所に散る寸前だった。**CPU の判断 (cpuDiscardOrKnock) と
+// CUI の表示 (tonkBestDeadwood) が別々に同じループを持っており、Web にも
+// 3つ目を書くところだった。TonkKnockThreshold と比べる値なので、実装が割れると
+// 「ノック可能と表示したのに弾かれる」ずれになる。
+func (g *Tonk) GetBestDeadwood(playerIdx int) (best int, discardIdx int) {
+	if playerIdx < 0 || playerIdx >= len(g.players) {
+		return 0, -1
+	}
+	player := g.players[playerIdx]
+	n := player.GetCardsSize()
+	best, discardIdx = -1, -1
+	for i := 0; i < n; i++ {
+		sub := make([]*Card, 0, n-1)
+		for j := 0; j < n; j++ {
+			if j != i {
+				sub = append(sub, player.GetCard(j))
+			}
+		}
+		_, dw := FindBestMelds(sub)
+		if v := CalcDeadwoodValue(dw); best < 0 || v < best {
+			best, discardIdx = v, i
+		}
+	}
+	if best < 0 {
+		return 0, -1
+	}
+	return best, discardIdx
+}
+
 func (g *Tonk) GetPhase() TonkPhase { return g.phase }
 
 // SetPhase フェーズ設定 (テスト用)
@@ -626,10 +644,7 @@ func (g *Tonk) SetDiscardPile(pile []*Card) { g.discardPile = pile }
 
 // GetDiscardTop 捨て札の一番上を取得
 func (g *Tonk) GetDiscardTop() *Card {
-	if len(g.discardPile) == 0 {
-		return nil
-	}
-	return g.discardPile[len(g.discardPile)-1]
+	return discardTop(g.discardPile)
 }
 
 // GetDrawPileCount 山札の残り枚数取得
@@ -649,18 +664,12 @@ func (g *Tonk) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *Tonk) GetPlayer(i int) *TonkPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (g *Tonk) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -668,9 +677,6 @@ func (g *Tonk) GetConfig() TonkConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *Tonk) SetConfig(cfg TonkConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *Tonk) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetKnockerIdx ノッカーのインデックス取得
 func (g *Tonk) GetKnockerIdx() int { return g.knockerIdx }
@@ -709,42 +715,12 @@ func (g *Tonk) GetIsUndercut() bool { return g.isUndercut }
 
 // sortAllHands 全プレイヤーの手札をソートする
 func (g *Tonk) sortAllHands() {
-	for i := range g.players {
-		g.sortHand(i)
-	}
+	sortHands(len(g.players), g)
 }
 
 // sortHand プレイヤーの手札をスート→値の順にソートする
 func (g *Tonk) sortHand(playerIdx int) {
-	p := g.players[playerIdx]
-	sortPlayerHand(p, func(ci, cj *Card) bool {
-		if ci.GetDesign() != cj.GetDesign() {
-			return ci.GetDesign() < cj.GetDesign()
-		}
-		return ci.GetValue() < cj.GetValue()
-	})
-}
-
-// playerName プレイヤー名を返す
-func (g *Tonk) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (g *Tonk) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	sortPlayerHand(g.players[playerIdx], bySuitThenValue)
 }
 
 // tonkJSON is the JSON wire format for Tonk.

@@ -155,4 +155,31 @@ describe('TressettePage', () => {
     expect(legend).toHaveTextContent('+1/3点');
     expect(legend).toHaveTextContent('0点');
   });
+
+  // **合法手はサーバーが計算済みなのに画面が使っていなかった (#4718)。**
+  // マストフォローに反する札もクリックできてしまい、エラーが返って初めて分かる。
+  // Tute/Sueca と同じ validIndices 配線に揃える。
+  it('dims the cards that must-follow forbids on the human turn', async () => {
+    mockExec.mockResolvedValue(makeTressetteState({ playableIndices: [1] }));
+    renderWithProviders(<TressettePage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    // 手札は SPADE 3 (index 0) と DIAMOND 13 (index 1)。合法なのは index 1 だけ。
+    const cards = screen.getAllByRole('button').filter((b) => b.hasAttribute('aria-pressed'));
+    expect(cards).toHaveLength(2);
+    expect(cards[0]).toHaveAttribute('aria-disabled', 'true');
+    expect(cards[1]).not.toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('leaves every card enabled when it is not the human turn', async () => {
+    mockExec.mockResolvedValue(makeTressetteState({ currentPlayerIdx: 1, playableIndices: [] }));
+    renderWithProviders(<TressettePage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    const cards = screen.getAllByRole('button').filter((b) => b.hasAttribute('aria-pressed'));
+    expect(cards).toHaveLength(2);
+    for (const card of cards) {
+      expect(card).not.toHaveAttribute('aria-disabled', 'true');
+    }
+  });
 });

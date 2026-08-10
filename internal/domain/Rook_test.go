@@ -515,3 +515,52 @@ func TestRookNextRoundGuards(t *testing.T) {
 	g.SetBidPlayerIdx(0)
 	_ = g.GetHint()
 }
+
+// **追随は強制。**出せる札を先に示さないと、出して拒否されるまで気づけない (#4928)。
+func TestRook_GetPlayableIndices(t *testing.T) {
+	g := rookNewGame()
+	g.SetPhase(domain.RookPhasePlay)
+	g.SetTrumpColor(2)
+
+	p := g.GetPlayer(1)
+	p.Reset()
+	p.AddCard(rookCard(4, 5))  // 黒
+	p.AddCard(rookCard(3, 9))  // 緑
+	p.AddCard(rookCard(4, 12)) // 黒
+
+	// 黒がリード。黒を持っているので黒しか出せない。
+	g.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 0, Card: rookCard(4, 10)}})
+	assert.Equal(t, []int{0, 2}, g.GetPlayableIndices(1))
+
+	// リードスートを持たなければ何でも出せる。
+	g.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 0, Card: rookCard(1, 10)}})
+	assert.Equal(t, []int{0, 1, 2}, g.GetPlayableIndices(1))
+
+	// リード (トリックが空) は自由。
+	g.SetCurrentTrick(nil)
+	assert.Equal(t, []int{0, 1, 2}, g.GetPlayableIndices(1))
+
+	// プレイフェーズ以外と範囲外は nil。
+	g.SetPhase(domain.RookPhaseBid)
+	assert.Nil(t, g.GetPlayableIndices(1))
+	g.SetPhase(domain.RookPhasePlay)
+	assert.Nil(t, g.GetPlayableIndices(99))
+	assert.Nil(t, g.GetPlayableIndices(-1))
+}
+
+// ルーク鳥は切り札色の最高札で、いつでも出せる。
+func TestRook_GetPlayableIndicesAlwaysAllowsTheRookBird(t *testing.T) {
+	g := rookNewGame()
+	g.SetPhase(domain.RookPhasePlay)
+	g.SetTrumpColor(2)
+
+	p := g.GetPlayer(1)
+	p.Reset()
+	p.AddCard(rookCard(4, 5))
+	p.AddCard(rookCard(3, 9))
+	p.AddCard(rookBird())
+
+	g.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 0, Card: rookCard(4, 10)}})
+	// 黒を持っているので黒とルーク鳥だけ。緑は出せない。
+	assert.Equal(t, []int{0, 2}, g.GetPlayableIndices(1))
+}

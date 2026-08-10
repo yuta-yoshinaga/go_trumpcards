@@ -110,3 +110,61 @@ describe('getBlackjackswitchHint', () => {
     expect(getBlackjackswitchHint(s)?.targetAction).toBe('hit');
   });
 });
+
+// **入れ替え後のスコアを引き算で作ってはいけない (#4708)。**エースは
+// 21 を超えると 11 → 1 に落ちるので、`score - 自分の2枚目 + 相手の2枚目`
+// は実際の点数と一致しない。判定は blackjackSwitchPreviewScores と同じ
+// 「手札を組み直して数え直す」やり方に揃える。
+describe('getBlackjackswitchHint — switch decision (sync: blackjackSwitchPreviewScores)', () => {
+  const switchState = (a: BlackJackSwitchHand, b: BlackJackSwitchHand): BlackJackSwitchResponse =>
+    base({ phase: BlackJackSwitchPhase.SWITCH, hands: [a, b] });
+
+  const handOf = (first: Card, second: Card, score: number): BlackJackSwitchHand =>
+    ({
+      cards: [first, second],
+      score,
+      bet: 10,
+      stood: false,
+      doubled: false,
+      busted: false,
+      isBJ: false,
+      result: 0,
+      payout: 0,
+    }) as BlackJackSwitchHand;
+
+  // ♠A ♥A (=12) と ♣9 ♦8 (=17)。2枚目を入れ替えると ♠A ♦8 (=19) と
+  // ♣9 ♥A (=20) で、**両手とも使える形になる**。
+  // 引き算で作ると 12 - 11 + 8 = 9 になり、この入れ替えを見逃す。
+  it('recommends switching a soft hand the subtraction shortcut would miss', () => {
+    const hint = getBlackjackswitchHint(
+      switchState(handOf(card('SPADE', 1), card('HEART', 1), 12), handOf(card('CLOVER', 9), card('DIAMOND', 8), 17)),
+    );
+    expect(hint?.targetAction).toBe('switch');
+  });
+
+  it('recommends keeping when the swap makes both hands worse', () => {
+    // ♠10 ♥9 (=19) と ♣10 ♦8 (=18)。入れ替えると 18 と 19 で改善しない。
+    const hint = getBlackjackswitchHint(
+      switchState(handOf(card('SPADE', 10), card('HEART', 9), 19), handOf(card('CLOVER', 10), card('DIAMOND', 8), 18)),
+    );
+    expect(hint?.targetAction).toBe('keep');
+  });
+
+  // ♠10 ♥10 (=20, 使える) と ♣7 ♦7 (=14, 使えない) → 入れ替えると 17 と 17 で
+  // **両手とも使える形になる**。使える手が 1 → 2 に増えるので入れ替える。
+  it('recommends switching when it turns one usable hand into two', () => {
+    const hint = getBlackjackswitchHint(
+      switchState(handOf(card('SPADE', 10), card('HEART', 10), 20), handOf(card('CLOVER', 7), card('DIAMOND', 7), 14)),
+    );
+    expect(hint?.targetAction).toBe('switch');
+  });
+
+  // **片方を強くして片方を潰す入れ替えは勧めない。**♠10 ♥2 (=12) と
+  // ♣9 ♦9 (=18) は入れ替えると 19 と 11 で、使える手の数は 1 のまま。
+  it('does not recommend a swap that just moves the problem', () => {
+    const hint = getBlackjackswitchHint(
+      switchState(handOf(card('SPADE', 10), card('HEART', 2), 12), handOf(card('CLOVER', 9), card('DIAMOND', 9), 18)),
+    );
+    expect(hint?.targetAction).toBe('keep');
+  });
+});

@@ -35,7 +35,7 @@ type Sevens struct {
 	humanAction *SevensCpuAction   // 人間の最後の行動
 	jokerPlaced [5]uint16          // jokerPlaced[suit] = ジョーカーが配置されたポジションのビットマスク
 	jokerCards  []*Card            // ボード上のジョーカーカードオブジェクト (回収用)
-	actionLog   []*ActionLogEntry  // 棋譜
+	actionLogBase
 }
 
 // NewSevens コンストラクタ
@@ -1099,10 +1099,7 @@ func (s *Sevens) GetTableMaxVals() [5]int {
 
 // GetPlayer プレイヤー取得
 func (s *Sevens) GetPlayer(idx int) *SevensPlayer {
-	if idx < 0 || idx >= len(s.players) {
-		return nil
-	}
-	return s.players[idx]
+	return getPlayer(s.players, idx)
 }
 
 // GetPlayerCnt プレイヤー数取得
@@ -1159,20 +1156,6 @@ func cardLogStr(card *Card) string {
 		return "joker"
 	}
 	return fmt.Sprintf("%s %d", suitLogStr(card.GetDesign()), card.GetValue())
-}
-
-// GetActionLog 棋譜を取得する
-func (s *Sevens) GetActionLog() []*ActionLogEntry { return s.actionLog }
-
-// appendLog 棋譜にエントリを追加する
-func (s *Sevens) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	s.actionLog = append(s.actionLog, &ActionLogEntry{
-		TurnNumber: len(s.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // sevensJSON is the JSON wire format for Sevens.

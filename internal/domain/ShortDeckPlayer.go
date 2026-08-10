@@ -4,7 +4,6 @@ package domain
 
 import (
 	"encoding/json"
-	"fmt"
 )
 
 // ShortDeckPlayer ショートデックホールデムプレイヤークラス
@@ -58,18 +57,12 @@ func (sp *ShortDeckPlayer) GetPFRCount() int { return sp.pfrCount }
 
 // GetVPIP VPIP%取得 (0 if totalHands==0)
 func (sp *ShortDeckPlayer) GetVPIP() int {
-	if sp.totalHands == 0 {
-		return 0
-	}
-	return sp.vpipCount * 100 / sp.totalHands
+	return percentOf(sp.vpipCount, sp.totalHands)
 }
 
 // GetPFR PFR%取得 (0 if totalHands==0)
 func (sp *ShortDeckPlayer) GetPFR() int {
-	if sp.totalHands == 0 {
-		return 0
-	}
-	return sp.pfrCount * 100 / sp.totalHands
+	return percentOf(sp.pfrCount, sp.totalHands)
 }
 
 // IncrementTotalHands 総ハンド数をインクリメント
@@ -89,10 +82,7 @@ func (sp *ShortDeckPlayer) GetThreeBetCount() int { return sp.threeBetCount }
 
 // GetThreeBet 3Bet%取得 (0 if threeBetOpportunity==0)
 func (sp *ShortDeckPlayer) GetThreeBet() int {
-	if sp.threeBetOpportunity == 0 {
-		return 0
-	}
-	return sp.threeBetCount * 100 / sp.threeBetOpportunity
+	return percentOf(sp.threeBetCount, sp.threeBetOpportunity)
 }
 
 // IncrementThreeBetOpportunity 3Bet機会数をインクリメント
@@ -115,20 +105,12 @@ func (sp *ShortDeckPlayer) IncrementPostFlopCall() { sp.postFlopCall++ }
 
 // GetAFDisplay AF表示文字列取得 ("-"=アクションなし, "∞"=コールなし, "X.X"=通常)
 func (sp *ShortDeckPlayer) GetAFDisplay() string {
-	if sp.postFlopBetRaise == 0 && sp.postFlopCall == 0 {
-		return "-"
-	}
-	if sp.postFlopCall == 0 {
-		return "∞"
-	}
-	return fmt.Sprintf("%.1f", float64(sp.postFlopBetRaise)/float64(sp.postFlopCall))
+	return afDisplay(sp.postFlopBetRaise, sp.postFlopCall)
 }
 
 // GetComparisonCards ハンド比較用カード取得 (BettingPlayerインターフェース)
 func (sp *ShortDeckPlayer) GetComparisonCards() []*Card {
-	cards := make([]*Card, len(sp.bestHand))
-	copy(cards, sp.bestHand)
-	return cards
+	return copyOf(sp.bestHand)
 }
 
 // shortDeckPlayerJSON is the JSON wire format for ShortDeckPlayer.

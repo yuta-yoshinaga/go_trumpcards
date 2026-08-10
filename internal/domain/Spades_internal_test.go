@@ -20,7 +20,7 @@ func newInternalTestSpades() *Spades {
 
 func TestSpades_findHumanIdx(t *testing.T) {
 	s := newInternalTestSpades()
-	assert.Equal(t, 0, s.findHumanIdx())
+	assert.Equal(t, 0, findHumanIdx(s.players))
 
 	// All CPU
 	allCpu := []*SpadesPlayer{
@@ -30,7 +30,7 @@ func TestSpades_findHumanIdx(t *testing.T) {
 		NewSpadesPlayer(false),
 	}
 	s2 := NewSpades(NewTrumpCards(0), allCpu, DefaultSpadesConfig())
-	assert.Equal(t, -1, s2.findHumanIdx())
+	assert.Equal(t, -1, findHumanIdx(s2.players))
 }
 
 func TestSpades_findTwoOfClubs(t *testing.T) {
@@ -595,10 +595,10 @@ func TestSpades_cpuPlayHard_Follow_SpadeLeadSuit(t *testing.T) {
 
 func TestSpades_playerName(t *testing.T) {
 	s := newInternalTestSpades()
-	assert.Equal(t, "You", s.playerName(0))
-	assert.Equal(t, "CPU 1", s.playerName(1))
-	assert.Equal(t, "Player -1", s.playerName(-1))
-	assert.Equal(t, "Player 5", s.playerName(5))
+	assert.Equal(t, "You", playerName(s.players, 0))
+	assert.Equal(t, "CPU 1", playerName(s.players, 1))
+	assert.Equal(t, "Player -1", playerName(s.players, -1))
+	assert.Equal(t, "Player 5", playerName(s.players, 5))
 }
 
 func TestSpades_checkGameEnd_NoEnd(t *testing.T) {

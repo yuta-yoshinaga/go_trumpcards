@@ -200,6 +200,51 @@ describe('BeleagueredCastlePage', () => {
     fireEvent.click(sourceBtn);
     await waitFor(() => expect(sourceBtn).toHaveAttribute('aria-pressed', 'true'));
   });
+
+  // 合法な移動先のリング表示 (#4799)。「選ぶまで光らない」側も踏まないと、
+  // 常時全部を光らせる実装でも通ってしまう。
+  describe('legal target highlighting', () => {
+    /** リングが付いた列の見出し (`#0` など)。ファンデーションは見出しを持たない。 */
+    const markedColumns = () =>
+      [...document.querySelectorAll('[data-legal-target="true"]')]
+        .map((el) => el.querySelector('[aria-hidden="true"]')?.textContent ?? '')
+        .filter((label) => label.startsWith('#'));
+
+    it('marks nothing until a card is selected', async () => {
+      mockExec.mockResolvedValue(playingState);
+      renderWithProviders(<BeleagueredCastlePage />);
+      await screen.findByRole('button', { name: '♠ 5' });
+      expect(document.querySelectorAll('[data-legal-target="true"]')).toHaveLength(0);
+    });
+
+    // ♠5 は ♥6 の上 (スート不問) と、空き列すべてに置ける。自分の列 #0 は
+    // 相手が ♠5 自身なので置けない。
+    it('marks the ranks-down column and every empty column, but not the source column', async () => {
+      mockExec.mockResolvedValue(playingState);
+      renderWithProviders(<BeleagueredCastlePage />);
+      fireEvent.click(await screen.findByRole('button', { name: '♠ 5' }));
+      await waitFor(() => expect(markedColumns()).toContain('#1'));
+      expect(markedColumns().sort()).toEqual(['#1', '#2', '#3', '#4', '#5', '#6', '#7']);
+    });
+
+    // ファンデーションは A の上に同スートの 2 だけ。♠5 では光らない。
+    it('marks a foundation only for the card that continues it', async () => {
+      mockExec.mockResolvedValue(playingState);
+      const { unmount } = renderWithProviders(<BeleagueredCastlePage />);
+      fireEvent.click(await screen.findByRole('button', { name: '♠ 5' }));
+      await waitFor(() => expect(markedColumns()).toContain('#1'));
+      expect(document.querySelectorAll('[data-legal-target="true"]')).toHaveLength(7);
+      unmount();
+
+      mockExec.mockResolvedValue({
+        ...playingState,
+        tableau: makeTableau([[{ card: card('SPADE', 2), faceUp: true }]]),
+      });
+      renderWithProviders(<BeleagueredCastlePage />);
+      fireEvent.click(await screen.findByRole('button', { name: '♠ 2' }));
+      await waitFor(() => expect(document.querySelectorAll('[data-legal-target="true"]').length).toBeGreaterThan(7));
+    });
+  });
 });
 
 // Keyboard shortcuts are bound by useActionKeyboardNav and advertised by

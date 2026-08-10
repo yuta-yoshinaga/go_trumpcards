@@ -29,7 +29,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { CONTRACTRUMMY_HELP, parseContractRummyCommand } from '../utils/cli/commands/contractrummyCommands';
 import { formatContractRummyState } from '../utils/cli/formatters/contractrummyFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { evaluateContractSlot } from '../utils/contractRummyUtils';
+import { evaluateContractSlot, isContractRummyMeld } from '../utils/contractRummyUtils';
 
 /** Phase identifiers for Contract Rummy. */
 const CR_PHASE = {
@@ -113,6 +113,15 @@ function ContractRummyPageContent() {
 
   const humanIdx = 0;
   const humanPlayer = state?.players[humanIdx];
+  // The contract slots are pre-validated with the same set/run predicate the
+  // server uses; the extra meld only counted cards, so an invalid combination
+  // looked ready and came back as a server error (#4826).
+  const extraMeldCards = useMemo(
+    () => selectedCards.map((i) => humanPlayer?.cards[i]).filter((c): c is Card => c !== undefined),
+    [selectedCards, humanPlayer],
+  );
+  const extraMeldValid = isContractRummyMeld(extraMeldCards);
+
   const isHumanTurn = state?.currentPlayerIdx === humanIdx && !state?.gameEndFlag;
   const isDrawPhase = isHumanTurn && state?.phase === CR_PHASE.DRAW;
   const isPlayPhase = isHumanTurn && state?.phase === CR_PHASE.PLAY;
@@ -175,10 +184,10 @@ function ContractRummyPageContent() {
   }, [execApi, contractSlots, clearSelection]);
 
   const handleMeldExtra = useCallback(() => {
-    if (selectedCards.length < 3) return;
+    if (!extraMeldValid) return;
     void execApi('meldextra', { cardIndices: selectedCards });
     clearSelection();
-  }, [execApi, selectedCards, clearSelection]);
+  }, [execApi, selectedCards, clearSelection, extraMeldValid]);
 
   const handleLayoff = useCallback(() => {
     if (selectedCards.length !== 1 || !layoffTarget) return;
@@ -472,12 +481,16 @@ function ContractRummyPageContent() {
             )}
             {isPlayPhase && humanPlayer?.contractMet && (
               <>
-                <button
-                  type="button"
-                  onClick={handleMeldExtra}
-                  disabled={selectedCards.length < 3}
-                  className={btnOutline}
-                >
+                {selectedCards.length >= 3 && !extraMeldValid && (
+                  <p
+                    role="status"
+                    data-testid="cr-invalid-extra-meld"
+                    className="w-full text-center text-xs text-ds-warning"
+                  >
+                    {t('invalidExtraMeld')}
+                  </p>
+                )}
+                <button type="button" onClick={handleMeldExtra} disabled={!extraMeldValid} className={btnOutline}>
                   {t('meldExtra')}
                 </button>
                 <button

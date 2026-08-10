@@ -107,6 +107,8 @@ describe('BadugiPage', () => {
   });
 
   it('annotates card aria-labels with best-subset / exchange-candidate hints during the draw phase', async () => {
+    // The lift/dim assist follows the hint setting, which defaults to off.
+    localStorage.setItem('hint_enabled_badugi', 'true');
     // S1,H2,D3 form the best 3-card subset (lowest sum); the duplicate-suit S5
     // is the exchange candidate.
     mockExec.mockResolvedValue(
@@ -145,6 +147,50 @@ describe('BadugiPage', () => {
     );
     renderWithProviders(<BadugiPage />);
     await waitFor(() => expect(screen.getByText('あなたの勝ちです。')).toBeInTheDocument());
+  });
+
+  // **サーバの handName は英語の生値。**バドゥーギの役名はポーカー役表と対応
+  // しないので共通の訳表が無く、Web だけ英語のまま残っていた (#4987 の続き)。
+  it('shows the localized hand name at showdown, not the raw English one', async () => {
+    mockExec.mockResolvedValue(
+      baseState({
+        phase: BadugiPhase.END,
+        gameEndFlag: true,
+        players: [humanPlayer({ handSize: 4, handName: 'Badugi' }), cpuPlayer(1), cpuPlayer(2)],
+      }),
+    );
+    renderWithProviders(<BadugiPage />);
+    await waitFor(() => expect(screen.getByTestId('bg-hand-name')).toHaveTextContent('バドゥーギ'));
+    // 生の英語名がどこにも漏れていないこと。
+    expect(screen.queryByText('Badugi')).not.toBeInTheDocument();
+  });
+
+  // CPU 側も同じ経路を通す。人間の席だけ直しても、相手の役名が英語のまま残る。
+  it('localizes the CPU hand names at showdown as well', async () => {
+    mockExec.mockResolvedValue(
+      baseState({
+        phase: BadugiPhase.END,
+        gameEndFlag: true,
+        players: [
+          humanPlayer({ handSize: 4, handName: 'Badugi' }),
+          { ...cpuPlayer(1), handSize: 3, handName: '3-card' },
+          { ...cpuPlayer(2), handSize: 2, handName: '2-card' },
+        ],
+      }),
+    );
+    renderWithProviders(<BadugiPage />);
+    await waitFor(() => expect(screen.getByText('3カード')).toBeInTheDocument());
+    expect(screen.getByText('2カード')).toBeInTheDocument();
+    expect(screen.queryByText('3-card')).not.toBeInTheDocument();
+    expect(screen.queryByText('2-card')).not.toBeInTheDocument();
+  });
+
+  // 未評価 (handSize 0) の席には役名を出さない。
+  it('shows no hand name before the hand has been evaluated', async () => {
+    mockExec.mockResolvedValue(baseState({ phase: BadugiPhase.END, gameEndFlag: true }));
+    renderWithProviders(<BadugiPage />);
+    await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+    expect(screen.queryByTestId('bg-hand-name')).not.toBeInTheDocument();
   });
 
   it('wires betting buttons during the human turn', async () => {
@@ -284,6 +330,8 @@ describe('BadugiPage', () => {
   });
 
   it('marks every card with data-badugi-subset during the draw phase when the hand is a perfect Badugi', async () => {
+    // The lift/dim assist follows the hint setting, which defaults to off.
+    localStorage.setItem('hint_enabled_badugi', 'true');
     mockExec.mockResolvedValue(baseState({ phase: BadugiPhase.DRAW, drawIndex: 1, currentTurn: 0 }));
     renderWithProviders(<BadugiPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '交換' })).toBeInTheDocument());
@@ -298,6 +346,8 @@ describe('BadugiPage', () => {
   });
 
   it('dims duplicate-suit cards in the draw phase and omits data-badugi-subset on them', async () => {
+    // The lift/dim assist follows the hint setting, which defaults to off.
+    localStorage.setItem('hint_enabled_badugi', 'true');
     // Force a duplicate suit so one card falls out of the best subset (lowball: keep the lower ♠).
     mockExec.mockResolvedValue(
       baseState({
@@ -342,5 +392,46 @@ describe('BadugiPage', () => {
       expect(btn.className).not.toContain('opacity-50');
       expect(btn.className).not.toContain('-translate-y-1');
     }
+  });
+
+  it('renders the draw without a seated human', async () => {
+    // Spectator-shaped state: no human seat, so there is no hand to advise on.
+    localStorage.clear();
+    localStorage.setItem('hint_enabled_badugi', 'true');
+    mockExec.mockReset();
+    const spectator = baseState({ phase: BadugiPhase.DRAW, drawIndex: 1 });
+    mockExec.mockResolvedValue({ ...spectator, players: spectator.players.filter((p) => !p.isHuman) });
+    renderWithProviders(<BadugiPage />);
+    await waitFor(() => expect(screen.getAllByRole('button').length).toBeGreaterThan(0));
+    expect(document.querySelectorAll('.-translate-y-1, .opacity-50').length).toBe(0);
+  });
+
+  it('keeps the exchange lift/dim off outside the exchange window even with hints on', async () => {
+    // Outside the draw the player cannot act on "keep these" advice, so the
+    // assist stays off however the hint setting is configured.
+    localStorage.clear();
+    localStorage.setItem('hint_enabled_badugi', 'true');
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(baseState({ phase: BadugiPhase.SHOWDOWN, currentTurn: 0 }));
+    renderWithProviders(<BadugiPage />);
+    await waitFor(() => expect(screen.getAllByRole('button').length).toBeGreaterThan(0));
+    expect(document.querySelectorAll('.-translate-y-1, .opacity-50').length).toBe(0);
+  });
+
+  it('keeps the exchange lift/dim off until hints are switched on', async () => {
+    // The assist is a hint in all but name, so it follows the hint setting —
+    // which defaults to off (#4701/#4702).
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(baseState({ phase: BadugiPhase.DRAW, drawIndex: 1, currentTurn: 0 }));
+    const { unmount } = renderWithProviders(<BadugiPage />);
+    await waitFor(() => expect(screen.getAllByRole('button').length).toBeGreaterThan(0));
+    expect(document.querySelectorAll('.-translate-y-1, .opacity-50').length).toBe(0);
+    unmount();
+
+    localStorage.setItem('hint_enabled_badugi', 'true');
+    mockExec.mockResolvedValue(baseState({ phase: BadugiPhase.DRAW, drawIndex: 1, currentTurn: 0 }));
+    renderWithProviders(<BadugiPage />);
+    await waitFor(() => expect(document.querySelectorAll('.-translate-y-1, .opacity-50').length).toBeGreaterThan(0));
   });
 });

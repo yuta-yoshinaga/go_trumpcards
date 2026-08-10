@@ -5,6 +5,7 @@ import { getNainJauneHint } from './nainjauneHint';
 const base = {
   players: [],
   phase: 0,
+  validPlays: [],
   currentPlayerIdx: 0,
   boxes: [],
   talonCount: 4,

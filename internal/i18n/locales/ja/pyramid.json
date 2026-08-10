@@ -16,5 +16,7 @@
   "hintPair": "ヒント: ペア除去: ({{row1}},{{col1}})+({{row2}},{{col2}})",
   "hintWasteKing": "ヒント: ウェイストのキング除去",
   "hintWastePair": "ヒント: ウェイスト+ピラミッド({{row}},{{col}})",
-  "hintUnknown": "ヒント: 不明"
+  "hintUnknown": "ヒント: 不明",
+  "exposedKing": "({{row}},{{col}}){{card}}[K]",
+  "wasteKing": " | Waste: {{card}}[K]"
 }

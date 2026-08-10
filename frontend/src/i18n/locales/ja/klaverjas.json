@@ -56,5 +56,16 @@
     "resetButton": "リセットボタンで新しいゲームを始められます。"
   },
   "hintRequested": "ヒントがあります",
-  "noHint": "ヒントはありません"
+  "noHint": "ヒントはありません",
+  "strengthLegend": {
+    "title": "カードの強さと得点",
+    "trumpCol": "切り札 (J>9>A>10>K>Q>8>7)",
+    "plainCol": "切り札以外 (A>10>K>Q>J>9>8>7)",
+    "rankCol": "順位",
+    "cardCol": "カード",
+    "pointCol": "点",
+    "jas": "ヤス",
+    "nel": "ネル",
+    "note": "切り札と切り札以外で順序が入れ替わります。合計162点 + 最終トリック10点。"
+  }
 }

@@ -55,6 +55,14 @@ export interface TarneebResponse extends BaseGameResponse {
   gameEndFlag: boolean;
   winnerTeam: number;
   leadPlayerIdx: number;
+  /**
+   * 人間がいま出せる手札の位置。
+   *
+   * マストフォローの判定はドメインの `GetValidPlayIndices` が持っており、
+   * フロントで組み立て直すと片方だけ直したときに黙って食い違う (#4713)。
+   * プレイフェーズで人間の手番でなければ空 — **空を「制限なし」と読まないこと**。
+   */
+  validPlayIndices: number[];
   config: TarneebConfig;
   hint?: TarneebHint;
 }

@@ -74,6 +74,18 @@ func TestDurakInteractor_Methods(t *testing.T) {
 	})
 }
 
+// **CUI に hint コマンドすら無かった (#4740)。**interactor が presenter へ
+// 委譲する経路を踏む。
+func TestDurakInteractor_Hint(t *testing.T) {
+	dpMock := new(presenter.MockDurakPresenter)
+	gameMock := new(interfaces.MockDurakGame)
+	dpMock.On("HintOutput", gameMock).Return(`{"hint":{"reason":"attack_weakest"}}`)
+
+	di := usecase.NewDurakInteractor(gameMock, dpMock)
+	assert.Equal(t, `{"hint":{"reason":"attack_weakest"}}`, di.Hint())
+	dpMock.AssertExpectations(t)
+}
+
 func TestDurakInteractor_ActionLog(t *testing.T) {
 	dpMock := new(presenter.MockDurakPresenter)
 	gameMock := new(interfaces.MockDurakGame)

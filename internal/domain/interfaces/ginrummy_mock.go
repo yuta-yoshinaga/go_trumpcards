@@ -48,6 +48,11 @@ func (m *MockGinRummyGame) GetActionLog() []*domain.ActionLogEntry {
 	return m.Called().Get(0).([]*domain.ActionLogEntry)
 }
 func (m *MockGinRummyGame) GetKnockerIdx() int { return m.Called().Int(0) }
+func (m *MockGinRummyGame) LayoffTargets(card *domain.Card) []int {
+	out, _ := m.Called(card).Get(0).([]int)
+	return out
+}
+
 func (m *MockGinRummyGame) GetKnockerMelds() [][]*domain.Card {
 	return m.Called().Get(0).([][]*domain.Card)
 }

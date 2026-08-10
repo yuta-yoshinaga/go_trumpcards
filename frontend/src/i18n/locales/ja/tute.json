@@ -45,7 +45,8 @@
   "roundResult": {
     "title": "ラウンド結果",
     "teamA": "チームAの獲得点: {{points}}",
-    "teamB": "チームBの獲得点: {{points}}"
+    "teamB": "チームBの獲得点: {{points}}",
+    "runningTitle": "今ラウンドの獲得点"
   },
   "declaredMarriages": {
     "title": "宣言済みマリッジ",

@@ -21,6 +21,7 @@
   "labelCpu": "CPU",
   "playerHeader": "[P{{idx}} {{label}}] ",
   "goalLine": "ゴール: {{card}} (残 {{count}})",
+  "goalPlayable": " ← 今出せます！",
   "goalEmpty": "ゴール: (empty)",
   "humanHandLabel": "  手札: ",
   "humanHandEmpty": "(empty)",

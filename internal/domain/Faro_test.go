@@ -472,3 +472,59 @@ func TestFaro_DealTurn_DeckGuard(t *testing.T) {
 		t.Error("dealing past the last turn should error")
 	}
 }
+
+// **ケースキーパーはこのゲームの中核。**未配の山札から直接数えるので、
+// 公開済みカードの蓄積漏れや二重計上で嘘をつくことがない (#4894)。
+func TestFaro_RemainingByRank(t *testing.T) {
+	f := newFaroForTest()
+
+	// リセット直後: ソーダ 1 枚だけが抜けている。
+	start := f.GetRemainingByRank()
+	total := 0
+	for r := FaroMinRank; r <= FaroMaxRank; r++ {
+		if start[r] < 0 || start[r] > 4 {
+			t.Fatalf("rank %d = %d, want 0..4", r, start[r])
+		}
+		total += start[r]
+	}
+	if total != f.GetRemainingCount() {
+		t.Fatalf("per-rank total = %d, deck remaining = %d", total, f.GetRemainingCount())
+	}
+	// ソーダの分だけ 51。
+	if total != 51 {
+		t.Fatalf("after the soda burn the deck should hold 51, got %d", total)
+	}
+
+	// **ターンを重ねると減る。**2 枚めくるので合計は 2 減る。
+	if err := f.PlayerPlaceBet(1, 10, false); err != nil {
+		t.Fatalf("bet: %v", err)
+	}
+	if err := f.PlayerDealTurn(); err != nil {
+		t.Fatalf("deal: %v", err)
+	}
+	after := f.GetRemainingByRank()
+	sum := 0
+	for r := FaroMinRank; r <= FaroMaxRank; r++ {
+		if after[r] > start[r] {
+			t.Fatalf("rank %d went up: %d -> %d", r, start[r], after[r])
+		}
+		sum += after[r]
+	}
+	if sum != total-2 {
+		t.Fatalf("after one turn the deck should be 2 smaller: %d -> %d", total, sum)
+	}
+	if sum != f.GetRemainingCount() {
+		t.Fatalf("per-rank total = %d, deck remaining = %d", sum, f.GetRemainingCount())
+	}
+
+	// **リセットで元に戻る。**蓄積を持たないので取りこぼしようがない。
+	f.Reset()
+	again := f.GetRemainingByRank()
+	back := 0
+	for r := FaroMinRank; r <= FaroMaxRank; r++ {
+		back += again[r]
+	}
+	if back != 51 {
+		t.Fatalf("after a reset the deck should hold 51 again, got %d", back)
+	}
+}

@@ -303,3 +303,51 @@ describe('isOfcRowFull', () => {
     localStorage.removeItem('hint_enabled_openfacechinese');
   });
 });
+
+// **反則になる置き方でも、これまでは fouled バッジがラウンド終了後に出るだけで
+// 置く前の警告が無かった (#4731)。**
+describe('OpenFaceChinesePage foul-risk warning', () => {
+  /** フロントに ♣A を置くと ♠A ♥A ♣A のスリーカードになり、ハイカードの
+   *  ミドルを上回って反則が確定する局面。 */
+  const aboutToFoul = makeState({
+    currentCard: card('CLOVER', 1),
+    players: [
+      makePlayer({
+        front: [card('SPADE', 1), card('HEART', 1)],
+        middle: [card('SPADE', 9), card('HEART', 7), card('CLOVER', 5), card('DIAMOND', 4), card('SPADE', 3)],
+        back: [card('HEART', 13), card('CLOVER', 11), card('DIAMOND', 8), card('SPADE', 6), card('HEART', 2)],
+      }),
+      makePlayer({ id: 1, isHuman: false }),
+    ],
+  });
+
+  it('marks the row that would foul and leaves the others alone', async () => {
+    mockExec.mockResolvedValue(aboutToFoul);
+    renderWithProviders(<OpenFaceChinesePage />);
+    const front = await screen.findByTestId('place-front');
+
+    expect(front).toHaveAttribute('data-foul-risk', 'true');
+    // **付かないことも確かめる。**全部に印を付ける実装でも「付く」だけなら通る。
+    expect(screen.getByTestId('place-middle')).not.toHaveAttribute('data-foul-risk');
+    expect(screen.getByTestId('place-back')).not.toHaveAttribute('data-foul-risk');
+  });
+
+  // **色は SR に届かない。**文言でも知らせる。
+  it('announces the risk in a live region', async () => {
+    mockExec.mockResolvedValue(aboutToFoul);
+    renderWithProviders(<OpenFaceChinesePage />);
+    const warning = await screen.findByTestId('ofc-foul-risk-warning');
+
+    expect(warning).toHaveAttribute('aria-live', 'polite');
+    expect(warning).toHaveTextContent('反則');
+  });
+
+  it('says nothing while no placement would foul', async () => {
+    mockExec.mockResolvedValue(placingState);
+    renderWithProviders(<OpenFaceChinesePage />);
+    await waitFor(() => expect(screen.getByTestId('place-front')).toBeInTheDocument());
+
+    expect(screen.getByTestId('place-front')).not.toHaveAttribute('data-foul-risk');
+    expect(screen.getByTestId('ofc-foul-risk-warning')).toHaveTextContent('');
+  });
+});

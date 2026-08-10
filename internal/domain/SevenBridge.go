@@ -51,9 +51,9 @@ type SevenBridge struct {
 	gameEndFlag      bool
 	winnerIdx        int
 	roundNumber      int
-	actionLog        []*ActionLogEntry
-	roundWinnerIdx   int  // ラウンド勝者（上がったプレイヤー）。-1 は山切れ流局
-	claimedThisTurn  bool // 直前のターンで discard を pon/chi で取得したか
+	actionLogBase
+	roundWinnerIdx  int  // ラウンド勝者（上がったプレイヤー）。-1 は山切れ流局
+	claimedThisTurn bool // 直前のターンで discard を pon/chi で取得したか
 }
 
 // NewSevenBridge コンストラクタ
@@ -228,7 +228,7 @@ func (g *SevenBridge) drawFromStock() error {
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", g.playerName(g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, g.currentPlayerIdx)), nil)
 	g.claimedThisTurn = false
 	g.phase = SevenBridgePhasePlay
 	return nil
@@ -296,7 +296,7 @@ func (g *SevenBridge) applyPonClaim(cardIndices []int) error {
 		player.RemoveCard(idx)
 	}
 
-	g.appendLog(g.currentPlayerIdx, "pon", fmt.Sprintf("%s calls Pon on %s", g.playerName(g.currentPlayerIdx), cardStr(claimed)), []*Card{claimed, c1, c2})
+	g.appendLog(g.currentPlayerIdx, "pon", fmt.Sprintf("%s calls Pon on %s", playerName(g.players, g.currentPlayerIdx), cardStr(claimed)), []*Card{claimed, c1, c2})
 	g.claimedThisTurn = true
 	if player.GetCardsSize() == 0 {
 		g.finishRound(g.currentPlayerIdx)
@@ -343,7 +343,7 @@ func (g *SevenBridge) applyChiClaim(cardIndices []int) error {
 		player.RemoveCard(idx)
 	}
 
-	g.appendLog(g.currentPlayerIdx, "chi", fmt.Sprintf("%s calls Chi on %s", g.playerName(g.currentPlayerIdx), cardStr(claimed)), []*Card{claimed, c1, c2})
+	g.appendLog(g.currentPlayerIdx, "chi", fmt.Sprintf("%s calls Chi on %s", playerName(g.players, g.currentPlayerIdx), cardStr(claimed)), []*Card{claimed, c1, c2})
 	g.claimedThisTurn = true
 	if player.GetCardsSize() == 0 {
 		g.finishRound(g.currentPlayerIdx)
@@ -402,7 +402,7 @@ func (g *SevenBridge) applyMeld(cardIndices []int) error {
 		player.RemoveCard(idx)
 	}
 
-	g.appendLog(g.currentPlayerIdx, "meld", fmt.Sprintf("%s melds %d cards", g.playerName(g.currentPlayerIdx), len(cards)), cards)
+	g.appendLog(g.currentPlayerIdx, "meld", fmt.Sprintf("%s melds %d cards", playerName(g.players, g.currentPlayerIdx), len(cards)), cards)
 	if player.GetCardsSize() == 0 {
 		g.finishRound(g.currentPlayerIdx)
 	}
@@ -447,7 +447,7 @@ func (g *SevenBridge) applyLayoff(targetPlayerIdx, meldIdx, cardIndex int) error
 	target.AddCardToMeld(meldIdx, card)
 	player.RemoveCard(cardIndex)
 
-	g.appendLog(g.currentPlayerIdx, "layoff", fmt.Sprintf("%s lays off %s", g.playerName(g.currentPlayerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(g.currentPlayerIdx, "layoff", fmt.Sprintf("%s lays off %s", playerName(g.players, g.currentPlayerIdx), cardStr(card)), []*Card{card})
 	if player.GetCardsSize() == 0 {
 		g.finishRound(g.currentPlayerIdx)
 	}
@@ -491,7 +491,7 @@ func (g *SevenBridge) applyDiscard(cardIndex int) error {
 
 	discarded := player.RemoveCard(cardIndex)
 	g.discardPile = append(g.discardPile, discarded)
-	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", g.playerName(g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
 
 	// 上がり判定（手札 0）
 	if player.GetCardsSize() == 0 && player.GetMeldCount() > 0 {
@@ -512,10 +512,7 @@ func (g *SevenBridge) advanceTurn() {
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (g *SevenBridge) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // CpuPlay 現在の手番が CPU の場合にターンを実行
@@ -692,6 +689,35 @@ func (g *SevenBridge) findChiIndices(playerIdx int, top *Card) ([]int, bool) {
 	return nil, false
 }
 
+// SuggestPon は playerIdx が捨て札の上札でポンできる手札インデックスを返す。
+// できなければ nil。**判定は claim 経路と同じ findPonIndices を通す** — 別に
+// 書くと、案内した組が拒否されることになる (#4904)。
+func (g *SevenBridge) SuggestPon(playerIdx int) []int {
+	top := g.GetDiscardTop()
+	if top == nil || playerIdx < 0 || playerIdx >= len(g.players) {
+		return nil
+	}
+	idx, ok := g.findPonIndices(playerIdx, top)
+	if !ok {
+		return nil
+	}
+	return idx
+}
+
+// SuggestChi は playerIdx が捨て札の上札でチーできる手札インデックスを返す。
+// できなければ nil。
+func (g *SevenBridge) SuggestChi(playerIdx int) []int {
+	top := g.GetDiscardTop()
+	if top == nil || playerIdx < 0 || playerIdx >= len(g.players) {
+		return nil
+	}
+	idx, ok := g.findChiIndices(playerIdx, top)
+	if !ok {
+		return nil
+	}
+	return idx
+}
+
 // findBestMeldIndices プレイヤーの手札から最大のメルド（3 枚以上）を探す
 // SuggestMeld は playerIdx の最善メルド (手札インデックス) を返す。メルドできる組が
 // 無ければ nil。CUI ヒント用に findBestMeldIndices を公開する薄いラッパー。
@@ -787,7 +813,7 @@ func (g *SevenBridge) finishRound(winnerIdx int) {
 		}
 		// 勝者のラウンドスコア = 相手のペナルティ
 		g.players[winnerIdx].SetRoundScore(loserTotal)
-		g.appendLog(winnerIdx, "round_win", fmt.Sprintf("%s goes out! Opponent penalty: %d", g.playerName(winnerIdx), loserTotal), nil)
+		g.appendLog(winnerIdx, "round_win", fmt.Sprintf("%s goes out! Opponent penalty: %d", playerName(g.players, winnerIdx), loserTotal), nil)
 	} else {
 		g.appendLog(-1, "draw", "Round ends in a draw (stock empty)", nil)
 	}
@@ -830,7 +856,7 @@ func (g *SevenBridge) checkGameEnd() {
 			g.winnerIdx = i
 		}
 	}
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", g.playerName(g.winnerIdx)), nil)
+	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, g.winnerIdx)), nil)
 }
 
 // hasAnyLegalDiscard 手札に top に対して合法な捨て札があるか
@@ -871,10 +897,7 @@ func (g *SevenBridge) SetDiscardPile(pile []*Card) { g.discardPile = pile }
 
 // GetDiscardTop 捨て札トップ
 func (g *SevenBridge) GetDiscardTop() *Card {
-	if len(g.discardPile) == 0 {
-		return nil
-	}
-	return g.discardPile[len(g.discardPile)-1]
+	return discardTop(g.discardPile)
 }
 
 // popDiscardTop 捨て札トップを取り出して返す
@@ -904,10 +927,7 @@ func (g *SevenBridge) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *SevenBridge) GetPlayer(i int) *SevenBridgePlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetConfig 設定取得
@@ -915,9 +935,6 @@ func (g *SevenBridge) GetConfig() SevenBridgeConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *SevenBridge) SetConfig(cfg SevenBridgeConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *SevenBridge) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetRoundWinnerIdx 直近ラウンドの勝者
 func (g *SevenBridge) GetRoundWinnerIdx() int { return g.roundWinnerIdx }
@@ -928,39 +945,11 @@ func (g *SevenBridge) GetClaimedThisTurn() bool { return g.claimedThisTurn }
 // --- Private helpers ---
 
 func (g *SevenBridge) sortAllHands() {
-	for i := range g.players {
-		g.sortHand(i)
-	}
+	sortHands(len(g.players), g)
 }
 
 func (g *SevenBridge) sortHand(playerIdx int) {
-	p := g.players[playerIdx]
-	sortPlayerHand(p, func(ci, cj *Card) bool {
-		if ci.GetDesign() != cj.GetDesign() {
-			return ci.GetDesign() < cj.GetDesign()
-		}
-		return ci.GetValue() < cj.GetValue()
-	})
-}
-
-func (g *SevenBridge) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-func (g *SevenBridge) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	sortPlayerHand(g.players[playerIdx], bySuitThenValue)
 }
 
 // --- Pure helpers ---

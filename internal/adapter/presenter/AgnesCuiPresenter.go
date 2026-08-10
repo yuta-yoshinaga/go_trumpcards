@@ -75,6 +75,11 @@ func (p *AgnesCuiPresenter) Output(c interfaces.AgnesGame, lastErr error) string
 
 		switch c.GetPhase() {
 		case domain.AgnesPhasePlaying:
+			// Web は ag-stalemate-banner で毎レンダー手詰まりを知らせているのに、
+			// CUI は手数しか出しておらず、詰んでいても分からなかった (#4830)。
+			if c.IsStalemate() {
+				b.WriteString(color.Red(i18n.T("cuiSolitaireStalemate")) + "\n")
+			}
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
 				"count", strconv.Itoa(c.GetMoveCount())) + "\n")
 		case domain.AgnesPhaseGameClear:

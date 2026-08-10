@@ -208,3 +208,48 @@ func TestMississippiStudCuiPresenter_ActionLogOutput(t *testing.T) {
 	result := p.ActionLogOutput(m)
 	assert.NotEmpty(t, result)
 }
+
+// **CUI には役評価も配当対象判定も推奨倍率も無かった (#4710)。**
+func TestMississippiStudCuiPresenter_HintOutput(t *testing.T) {
+	p := new(MississippiStudCuiPresenter)
+	game := func(rec string, made *domain.MississippiStudMadeHand) *interfaces.MockMississippiStudGame {
+		m := new(interfaces.MockMississippiStudGame)
+		m.On("RecommendBet").Return(rec)
+		m.On("GetCurrentMadeHand").Return(made).Maybe()
+		return m
+	}
+
+	t.Run("names the hand and that it pays", func(t *testing.T) {
+		out := p.HintOutput(game(domain.MSRecommendPlay3x,
+			&domain.MississippiStudMadeHand{Rank: domain.PokerHandOnePair, PaytableEligible: true}))
+		assert.Contains(t, out, "ワンペア")
+		assert.Contains(t, out, "配当あり")
+	})
+
+	// **役名だけでは足りない。**2 のペアは「ワンペア」でも配当が付かない。
+	t.Run("says when a made hand does not pay", func(t *testing.T) {
+		out := p.HintOutput(game(domain.MSRecommendFold,
+			&domain.MississippiStudMadeHand{Rank: domain.PokerHandOnePair, PaytableEligible: false}))
+		assert.Contains(t, out, "配当なし")
+		assert.NotContains(t, out, "配当あり")
+	})
+
+	t.Run("each recommendation gets its own line", func(t *testing.T) {
+		seen := map[string]bool{}
+		for _, rec := range []string{domain.MSRecommendPlay3x, domain.MSRecommendPlay1x, domain.MSRecommendFold} {
+			out := p.HintOutput(game(rec, nil))
+			assert.False(t, seen[out], "%s の文言が他と重複している", rec)
+			seen[out] = true
+		}
+		assert.Len(t, seen, 3)
+	})
+
+	t.Run("omits the made-hand line when nothing is made", func(t *testing.T) {
+		out := p.HintOutput(game(domain.MSRecommendPlay1x, nil))
+		assert.NotContains(t, out, "現在の役")
+	})
+
+	t.Run("says so outside the betting streets", func(t *testing.T) {
+		assert.Contains(t, p.HintOutput(game("", nil)), i18n.T("mississippistud.hintNone"))
+	})
+}

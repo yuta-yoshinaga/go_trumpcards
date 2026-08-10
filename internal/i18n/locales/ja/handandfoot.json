@@ -41,5 +41,11 @@
   "result.cpuWin": "ゲーム終了！ CPUチームの勝ち！",
   "hintMeld": "[HINT: メルド候補 {{melds}}]",
   "hintNone": "いま出せるメルドはありません。",
-  "hintNotYourTurn": "今はあなたの番ではありません。"
+  "hintNotYourTurn": "今はあなたの番ではありません。",
+  "minMeldLine": "  初回メルド最低点: {{points}}点 (累積 {{score}}点)",
+  "goOutReady": "  上がれます (go out 可)",
+  "goOutBlocked": "  まだ上がれません: {{reasons}}",
+  "goOutNeedFoot": "フット未突入",
+  "goOutNeedRed": "赤キャナスタ {{have}}/{{need}}",
+  "goOutNeedBlack": "黒キャナスタ {{have}}/{{need}}"
 }

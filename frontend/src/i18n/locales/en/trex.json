@@ -34,5 +34,6 @@
   "tutorial.contracts": "There are five contracts and the king picks one they have not played yet. Four are penalties; only the dominoes pay out.",
   "tutorial.kingdom": "Whoever is dealt the seven of hearts is the first king. After five contracts the kingdom passes on, and the game runs twenty deals.",
   "tutorial.dominoes": "The dominoes build out from the JACK, not the seven, one run per suit. If you cannot play you pass, and going out first pays +200/+150/+100/+50.",
-  "tutorial.score": "The 500 in penalties and the 500 the dominoes pay out cancel, so all four scores sum to zero. The highest total wins."
+  "tutorial.score": "The 500 in penalties and the 500 the dominoes pay out cancel, so all four scores sum to zero. The highest total wins.",
+  "penaltyCard": "Costs points under this contract"
 }

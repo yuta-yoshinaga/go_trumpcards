@@ -91,7 +91,7 @@ type Sheepshead struct {
 	roundPickerWon   bool    // 直近ラウンドでピッカー組が勝ったか
 	gameEndFlag      bool
 	winnerIdx        int // ゲーム勝者 (-1 = 未確定)
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewSheepshead コンストラクタ
@@ -215,7 +215,7 @@ func (g *Sheepshead) resolvePick(playerIdx int, pick bool) {
 		return
 	}
 	g.passCount++
-	g.appendLog(playerIdx, "pass", fmt.Sprintf("%s passes", g.playerName(playerIdx)), nil)
+	g.appendLog(playerIdx, "pass", fmt.Sprintf("%s passes", playerName(g.players, playerIdx)), nil)
 	g.currentPlayerIdx = (g.currentPlayerIdx + 1) % SheepsheadPlayerCnt
 }
 
@@ -228,7 +228,7 @@ func (g *Sheepshead) becomePicker(playerIdx int) {
 	}
 	g.blind = nil
 	sheepsheadSortHand(picker)
-	g.appendLog(playerIdx, "pick", fmt.Sprintf("%s picks up the blind", g.playerName(playerIdx)), nil)
+	g.appendLog(playerIdx, "pick", fmt.Sprintf("%s picks up the blind", playerName(g.players, playerIdx)), nil)
 	g.currentPlayerIdx = playerIdx
 	g.phase = SheepsheadPhaseBury
 }
@@ -274,12 +274,12 @@ func (g *Sheepshead) validateBury(indices []int) error {
 func (g *Sheepshead) applyBury(indices []int) {
 	picker := g.players[g.pickerIdx]
 	g.buried = picker.RemoveCards(indices)
-	g.appendLog(g.pickerIdx, "bury", fmt.Sprintf("%s buries %d cards", g.playerName(g.pickerIdx), len(g.buried)), nil)
+	g.appendLog(g.pickerIdx, "bury", fmt.Sprintf("%s buries %d cards", playerName(g.players, g.pickerIdx), len(g.buried)), nil)
 
 	if len(g.callableSuits()) == 0 {
 		// 呼べる札がない: ピッカーは単独で戦う。
 		g.partnerIdx = -1
-		g.appendLog(g.pickerIdx, "alone", fmt.Sprintf("%s plays alone", g.playerName(g.pickerIdx)), nil)
+		g.appendLog(g.pickerIdx, "alone", fmt.Sprintf("%s plays alone", playerName(g.players, g.pickerIdx)), nil)
 		g.beginPlay()
 		return
 	}
@@ -309,7 +309,7 @@ func (g *Sheepshead) applyCall(suit int) {
 	g.calledSuit = suit
 	g.partnerIdx = g.holderOfCalledAce(suit)
 	g.appendLog(g.pickerIdx, "call",
-		fmt.Sprintf("%s calls the %s Ace", g.playerName(g.pickerIdx), suitStr(suit)), nil)
+		fmt.Sprintf("%s calls the %s Ace", playerName(g.players, g.pickerIdx), suitStr(suit)), nil)
 	g.beginPlay()
 }
 
@@ -390,14 +390,14 @@ func (g *Sheepshead) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Sheepshead) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	// 呼びカードがプレイされたら相棒が判明する。
 	if g.calledSuit != 0 && !g.partnerRevealed &&
 		card.GetValue() == 1 && card.GetDesign() == g.calledSuit && !sheepsheadIsTrump(card) {
 		g.partnerRevealed = true
 		g.appendLog(playerIdx, "partner_reveal",
-			fmt.Sprintf("%s is the picker's partner", g.playerName(playerIdx)), nil)
+			fmt.Sprintf("%s is the picker's partner", playerName(g.players, playerIdx)), nil)
 	}
 
 	if len(g.currentTrick) == SheepsheadPlayerCnt {
@@ -421,7 +421,7 @@ func (g *Sheepshead) ResolveTrick() {
 	}
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (%d pts)", g.playerName(winnerIdx), g.trickNumber, pts), trickCards)
+		fmt.Sprintf("%s wins trick %d (%d pts)", playerName(g.players, winnerIdx), g.trickNumber, pts), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	// Clear the resolved trick so a spurious second ResolveTrick call cannot
@@ -473,7 +473,7 @@ func (g *Sheepshead) ScoreRound() {
 		g.gameEndFlag = true
 		g.winnerIdx = w
 		g.phase = SheepsheadPhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", g.playerName(w)), nil)
+		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, w)), nil)
 	}
 }
 
@@ -596,10 +596,7 @@ func (g *Sheepshead) trickWinner() int {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す。
 func (g *Sheepshead) getValidPlayIndices(playerIdx int) []int {
-	player := g.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return g.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(g.players[playerIdx], func(c *Card) bool { return g.validatePlay(playerIdx, c) == nil })
 }
 
 // --- Call helpers ---
@@ -677,36 +674,9 @@ func sheepsheadSortHand(p *SheepsheadPlayer) {
 	})
 }
 
-// playerName プレイヤー名を返す。
-func (g *Sheepshead) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する。
-func (g *Sheepshead) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // indexOfPlayerInTrick currentTrick 内で playerIdx の札の位置を返す (-1=なし)。
 func (g *Sheepshead) indexOfPlayerInTrick(playerIdx int) int {
-	for i, tc := range g.currentTrick {
-		if tc.PlayerIdx == playerIdx {
-			return i
-		}
-	}
-	return -1
+	return indexOfPlayerInTrick(g.currentTrick, playerIdx)
 }
 
 // trickTopStrength 現在のトリック勝者 winnerIdx の札の強さを返す。防御的に、
@@ -930,10 +900,7 @@ func (g *Sheepshead) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *Sheepshead) GetPlayer(i int) *SheepsheadPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // IsHumanTurn 現在の手番が人間かどうか。
@@ -953,9 +920,6 @@ func (g *Sheepshead) GetConfig() SheepsheadConfig { return g.config }
 // SetConfig 設定変更
 func (g *Sheepshead) SetConfig(cfg SheepsheadConfig) { g.config = cfg }
 
-// GetActionLog 棋譜取得
-func (g *Sheepshead) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // GetPlayableIndices プレイ可能なカードのインデックス一覧を返す。
 func (g *Sheepshead) GetPlayableIndices(playerIdx int) []int {
 	if playerIdx < 0 || playerIdx >= len(g.players) {
@@ -974,7 +938,7 @@ func (g *Sheepshead) GetCallableSuits() []int { return g.callableSuits() }
 
 // GetHint 人間プレイヤーの手番における推奨アクションを返す。
 func (g *Sheepshead) GetHint() *SheepsheadHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 {
 		return nil
 	}
@@ -1012,16 +976,6 @@ func (g *Sheepshead) GetHint() *SheepsheadHint {
 	default:
 		return nil
 	}
-}
-
-// findHumanIdx 人間プレイヤーのインデックスを返す (-1=なし)。
-func (g *Sheepshead) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
 }
 
 // playHintReason プレイヒントの理由キーを判定する。
@@ -1127,7 +1081,7 @@ func (g *Sheepshead) cpuPlaySmart(playerIdx int, valid []int) int {
 
 	// リード: 得点・強さの低い札を出して温存する。
 	if len(g.currentTrick) == 0 {
-		return g.minBy(player, valid, func(c *Card) int {
+		return pickLowest(player, valid, func(c *Card) int {
 			return sheepsheadCardPoints(c.GetValue())*100 + sheepsheadStrength(c)
 		})
 	}
@@ -1151,14 +1105,14 @@ func (g *Sheepshead) cpuPlaySmart(playerIdx int, valid []int) int {
 	if len(follows) == 0 {
 		// ボイド: 味方が勝っていれば得点札を渡し、そうでなければ低得点札を捨てる。
 		if partnerWinning {
-			return g.maxBy(player, valid, func(c *Card) int {
+			return pickHighest(player, valid, func(c *Card) int {
 				if sheepsheadIsTrump(c) {
 					return -sheepsheadStrength(c) // 切り札は温存
 				}
 				return sheepsheadCardPoints(c.GetValue())*100 - sheepsheadStrength(c)
 			})
 		}
-		return g.minBy(player, valid, func(c *Card) int {
+		return pickLowest(player, valid, func(c *Card) int {
 			return sheepsheadCardPoints(c.GetValue())*100 + sheepsheadStrength(c)
 		})
 	}
@@ -1172,17 +1126,17 @@ func (g *Sheepshead) cpuPlaySmart(playerIdx int, valid []int) int {
 			return sheepsheadStrength(player.GetCard(idx)) < topStrength
 		})
 		if len(nonWinners) > 0 {
-			return g.maxBy(player, nonWinners, func(c *Card) int {
+			return pickHighest(player, nonWinners, func(c *Card) int {
 				return sheepsheadCardPoints(c.GetValue())*100 - sheepsheadStrength(c)
 			})
 		}
-		return g.minBy(player, follows, func(c *Card) int { return sheepsheadStrength(c) })
+		return pickLowest(player, follows, func(c *Card) int { return sheepsheadStrength(c) })
 	}
 
 	if trickPts > 0 && len(winners) > 0 {
-		return g.minBy(player, winners, func(c *Card) int { return sheepsheadStrength(c) })
+		return pickLowest(player, winners, func(c *Card) int { return sheepsheadStrength(c) })
 	}
-	return g.minBy(player, follows, func(c *Card) int {
+	return pickLowest(player, follows, func(c *Card) int {
 		return sheepsheadCardPoints(c.GetValue())*100 + sheepsheadStrength(c)
 	})
 }
@@ -1191,32 +1145,6 @@ func (g *Sheepshead) cpuPlaySmart(playerIdx int, valid []int) int {
 // CPU はチーム構成を把握しているものとして扱う (簡易 AI)。
 func (g *Sheepshead) cpuSameTeam(a, b int) bool {
 	return g.isPickerTeam(a) == g.isPickerTeam(b)
-}
-
-// minBy score が最小となるインデックスを返す。
-func (g *Sheepshead) minBy(player *SheepsheadPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s < bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
-}
-
-// maxBy score が最大となるインデックスを返す。
-func (g *Sheepshead) maxBy(player *SheepsheadPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s > bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
 }
 
 // sheepsheadFilter 述語を満たすインデックスを抽出する。

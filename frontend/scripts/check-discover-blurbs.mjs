@@ -19,6 +19,7 @@
 import { readFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { assertFloor } from './lib/floor.mjs';
 
 const FRONTEND = fileURLToPath(new URL('..', import.meta.url));
 const REPO = join(FRONTEND, '..');
@@ -43,10 +44,10 @@ async function registeredGames() {
 }
 
 const games = await registeredGames();
-if (games.size === 0) {
-  console.error(`discover-blurbs: found no game pages in ${relative(REPO, ROUTES)} — the regex has drifted.`);
-  process.exit(1);
-}
+// 264 games are registered today. A regex that has drifted usually still matches *some*
+// entries, so `> 0` is not the interesting boundary -- checking 12 games and declaring all
+// blurbs present is the failure this floor exists to catch.
+assertFloor('discover-blurbs', games.size, 200, `game pages in ${relative(REPO, ROUTES)}`);
 
 const gaps = [];
 const empties = [];

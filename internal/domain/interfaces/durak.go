@@ -60,4 +60,6 @@ type DurakGame interface {
 	GetHumanAction() *domain.DurakCpuAction
 	// GetBoutNumber バウト番号を取得する
 	GetBoutNumber() int
+	// GetHint サーバー計算の推奨手を返す (手番でなければ nil)
+	GetHint() *domain.DurakHint
 }

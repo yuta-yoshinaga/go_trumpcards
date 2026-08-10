@@ -1,4 +1,4 @@
-# 2-7 トリプルドロー（CUI版）遊び方
+# デューストゥセブン（CUI版）遊び方
 
 ## ゲーム概要
 
@@ -60,22 +60,23 @@ flowchart TD
 
 ## コマンド一覧
 
-| コマンド | 別名 | 説明 |
-|----------|------|------|
-| `r` | `reset` | 新しいハンドを開始 |
-| `b [amount]` | `bet` | 指定額をベット |
-| `c` | `call` | 現在のベット額にコール |
-| `ra [amount]` | `raise` | 指定額にレイズ |
-| `ck` | `check` | チェック |
-| `f` | `fold` | フォールド |
-| `a` | `allin` | オールイン |
-| `e [indices]` | `exchange` | カード交換（例: `e 0 2 4`） |
-| `s` | `stand` | 交換なし（スタンドパット） |
-| `bl <n>` | `bettinglimit` | リミット設定（0=Fixed, 1=PotLimit, 2=NoLimit） |
-| `scc <n>` | `setcpucount` | CPU人数（1〜3） |
-| `mai <0\|1>` | `metaai` | メタAIの有効/無効 |
-| `log` / `l` | — | 棋譜表示 |
-| `q` | `quit` | 終了 |
+| コマンド | 短縮形 | 説明 |
+|----------|--------|------|
+| `reset` | `r` | 新しいハンドを開始 |
+| `bet [amount]` | `b` | 指定額をベット |
+| `call` | `c` | 現在のベット額にコール |
+| `raise [amount]` | `ra` | 指定額にレイズ |
+| `check` | `ck` | チェック |
+| `fold` | `f` | フォールド |
+| `allin` | `a` | オールイン |
+| `exchange [indices]` | `e` | カード交換（例: `e 0 2 4`） |
+| `stand` | `s` | 交換なし（スタンドパット） |
+| `bettinglimit <n>` | `bl` | リミット設定（0=Fixed, 1=PotLimit, 2=NoLimit） |
+| `setcpucount <n>` | `scc` | CPU人数（1〜3） |
+| `metaai <0\|1>` | `mai` | メタAIの有効/無効 |
+| `log` | `l` | 棋譜表示 |
+| `quit` | `q` | 終了 |
+| `help` | `?` | コマンド一覧を表示 |
 
 カード位置は `0` 〜 `4` で指定します（手札は左から 0, 1, 2, 3, 4）。
 

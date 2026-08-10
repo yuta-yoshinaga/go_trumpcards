@@ -67,7 +67,7 @@ type Bourre struct {
 	gameEndFlag      bool
 	winnerIdx        int
 	lastResults      []*BourreHandResult
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewBourre コンストラクタ
@@ -143,7 +143,7 @@ func (b *Bourre) startHand() {
 		ante := min(BourreAnte, p.GetChips())
 		p.SubtractChips(ante)
 		b.pot += ante
-		b.appendLog(i, "ante", fmt.Sprintf("%s antes %d", b.playerName(i), ante), nil)
+		b.appendLog(i, "ante", fmt.Sprintf("%s antes %d", playerName(b.players, i), ante), nil)
 	}
 
 	// 配札 (ディーラーの左から、ディーラーが最後)
@@ -226,10 +226,10 @@ func (b *Bourre) applyDecide(idx int, play bool) {
 	p.SetDecided(true)
 	p.SetFolded(!play)
 	action := "play"
-	detail := fmt.Sprintf("%s plays", b.playerName(idx))
+	detail := fmt.Sprintf("%s plays", playerName(b.players, idx))
 	if !play {
 		action = "fold"
-		detail = fmt.Sprintf("%s folds", b.playerName(idx))
+		detail = fmt.Sprintf("%s folds", playerName(b.players, idx))
 	}
 	b.appendLog(idx, action, detail, nil)
 	b.advanceDecide()
@@ -323,7 +323,7 @@ func (b *Bourre) applyDraw(idx int, indices []int) {
 	}
 	b.sortHand(p)
 	p.SetDrawn(true)
-	b.appendLog(idx, "draw", fmt.Sprintf("%s draws %d", b.playerName(idx), len(removed)), nil)
+	b.appendLog(idx, "draw", fmt.Sprintf("%s draws %d", playerName(b.players, idx), len(removed)), nil)
 	b.advanceDraw()
 }
 
@@ -415,7 +415,7 @@ func (b *Bourre) CpuPlay() {
 // playCard カードをトリックに加える共通処理
 func (b *Bourre) playCard(playerIdx int, card *Card) {
 	b.currentTrick = append(b.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	b.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", b.playerName(playerIdx), cardStr(card)), []*Card{card})
+	b.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(b.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(b.currentTrick) == b.activeCount() {
 		b.resolveTrick()
@@ -432,7 +432,7 @@ func (b *Bourre) resolveTrick() {
 		trickCards[i] = tc.Card
 	}
 	b.players[winner].AddTrick(trickCards)
-	b.appendLog(winner, "trick_win", fmt.Sprintf("%s wins trick %d", b.playerName(winner), b.trickNumber), trickCards)
+	b.appendLog(winner, "trick_win", fmt.Sprintf("%s wins trick %d", playerName(b.players, winner), b.trickNumber), trickCards)
 
 	b.leadPlayerIdx = winner
 	b.lastTrick = b.currentTrick
@@ -499,7 +499,7 @@ func (b *Bourre) resolveNoContest() {
 	}
 	if soleWinner >= 0 {
 		b.players[soleWinner].AddChips(potValue)
-		b.appendLog(soleWinner, "pot_win", fmt.Sprintf("%s takes the pot (%d) uncontested", b.playerName(soleWinner), potValue), nil)
+		b.appendLog(soleWinner, "pot_win", fmt.Sprintf("%s takes the pot (%d) uncontested", playerName(b.players, soleWinner), potValue), nil)
 	} else {
 		b.carryPot += potValue
 		b.appendLog(-1, "pot_carry", fmt.Sprintf("All folded — pot of %d carries over", potValue), nil)
@@ -534,7 +534,7 @@ func (b *Bourre) scoreHand() {
 			pen := min(potValue, b.players[i].GetChips())
 			b.players[i].SubtractChips(pen)
 			b.carryPot += pen
-			b.appendLog(i, "bourre", fmt.Sprintf("%s is bourréd! pays %d penalty", b.playerName(i), pen), nil)
+			b.appendLog(i, "bourre", fmt.Sprintf("%s is bourréd! pays %d penalty", playerName(b.players, i), pen), nil)
 		}
 	}
 
@@ -542,7 +542,7 @@ func (b *Bourre) scoreHand() {
 	if len(winners) == 1 {
 		winnerIdx = winners[0]
 		b.players[winnerIdx].AddChips(potValue)
-		b.appendLog(winnerIdx, "pot_win", fmt.Sprintf("%s wins the pot (%d) with %d tricks", b.playerName(winnerIdx), potValue, maxTricks), nil)
+		b.appendLog(winnerIdx, "pot_win", fmt.Sprintf("%s wins the pot (%d) with %d tricks", playerName(b.players, winnerIdx), potValue, maxTricks), nil)
 	} else {
 		b.carryPot += potValue
 		b.appendLog(-1, "pot_carry", fmt.Sprintf("Tie for most tricks — pot of %d carries over", potValue), nil)
@@ -594,7 +594,7 @@ func (b *Bourre) checkGameEnd() {
 			solvent++
 		}
 	}
-	humanIdx := b.findHumanIdx()
+	humanIdx := findHumanIdx(b.players)
 	humanBroke := humanIdx >= 0 && b.players[humanIdx].GetChips() <= 0
 	if solvent > 1 && !humanBroke {
 		return
@@ -607,7 +607,7 @@ func (b *Bourre) checkGameEnd() {
 			b.winnerIdx = i
 		}
 	}
-	b.appendLog(b.winnerIdx, "game_end", fmt.Sprintf("%s wins the game with %d chips!", b.playerName(b.winnerIdx), b.players[b.winnerIdx].GetChips()), nil)
+	b.appendLog(b.winnerIdx, "game_end", fmt.Sprintf("%s wins the game with %d chips!", playerName(b.players, b.winnerIdx), b.players[b.winnerIdx].GetChips()), nil)
 }
 
 // --- 補助 ---
@@ -670,16 +670,6 @@ func (b *Bourre) activeCount() int {
 		}
 	}
 	return cnt
-}
-
-// findHumanIdx 人間プレイヤーのインデックス (-1 = なし)
-func (b *Bourre) findHumanIdx() int {
-	for i, p := range b.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
 }
 
 // isLegalPlay card のプレイが合法か (legalPlays への所属で判定)
@@ -794,28 +784,6 @@ func (b *Bourre) sortHand(p *BourrePlayer) {
 	}
 }
 
-// playerName プレイヤー表示名
-func (b *Bourre) playerName(idx int) string {
-	if idx < 0 || idx >= len(b.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if b.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (b *Bourre) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	b.actionLog = append(b.actionLog, &ActionLogEntry{
-		TurnNumber: len(b.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // bourreRank カードのランクを返す (エース=14、それ以外は額面値)
 func bourreRank(c *Card) int {
 	if c.GetValue() == 1 {
@@ -864,10 +832,7 @@ func (b *Bourre) GetPlayerCnt() int { return len(b.players) }
 
 // GetPlayer プレイヤー取得
 func (b *Bourre) GetPlayer(i int) *BourrePlayer {
-	if i < 0 || i >= len(b.players) {
-		return nil
-	}
-	return b.players[i]
+	return getPlayer(b.players, i)
 }
 
 // GetCurrentPlayerIdx 現在の手番プレイヤーインデックス取得
@@ -920,9 +885,6 @@ func (b *Bourre) GetConfig() BourreConfig { return b.config }
 
 // SetConfig 設定変更
 func (b *Bourre) SetConfig(cfg BourreConfig) { b.config = cfg }
-
-// GetActionLog 棋譜取得
-func (b *Bourre) GetActionLog() []*ActionLogEntry { return b.actionLog }
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (b *Bourre) IsHumanTurn() bool {

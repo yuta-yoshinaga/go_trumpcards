@@ -301,7 +301,7 @@ function GaigelPageContent() {
 
         {hint && (
           <div className="text-ds-warning text-sm mb-2">
-            {`${t('hintPlay')}: [${hint.cardIndex ?? '-'}] (${hint.reason})`}
+            {`${t('hintPlay')}: [${hint.cardIndex ?? '-'}] (${t(`hintReason.${hint.reason}`, { defaultValue: hint.reason })})`}
           </div>
         )}
 

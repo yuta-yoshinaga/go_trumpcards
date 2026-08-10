@@ -44,4 +44,8 @@ type PishtiGame interface {
 	GetWinners() []int
 	// GetFinalScores 各プレイヤーの最終得点を取得する
 	GetFinalScores() []int
+	// GetProvisionalScores 対局中の暫定スコアを取得する
+	GetProvisionalScores() []int
+	// GetProvisionalLeader 暫定の最多捕獲リーダーの席を取得する (同数なら -1)
+	GetProvisionalLeader() int
 }

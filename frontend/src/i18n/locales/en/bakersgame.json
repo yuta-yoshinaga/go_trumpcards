@@ -35,5 +35,6 @@
     "useFreeCells": "Consider moving a card to a free cell to open up moves"
   },
   "emptyTableauColumnLabel": "Any",
-  "emptyTableauColumnAriaLabel": "Empty tableau column {{idx}} (any card can be placed)"
+  "emptyTableauColumnAriaLabel": "Empty tableau column {{idx}} (any card can be placed)",
+  "tableauRule": "Tableau stacks descend in the SAME suit — the Free Cell difference"
 }

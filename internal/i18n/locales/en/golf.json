@@ -9,6 +9,8 @@
   "stockLine": "Stock: {{count}}",
   "wasteCard": " | Waste: {{card}}",
   "wasteEmpty": " | Waste: [empty]",
+  "holeScore": "Hole {{hole}}/{{holes}}  this deal: {{score}}  total: {{total}}",
+  "roundComplete": "Round complete — {{total}} strokes over {{holes}} holes",
   "hintRemove": "Hint: remove column {{col}}",
   "hintDraw": "Hint: draw from stock",
   "hintUnknown": "Hint: unknown"

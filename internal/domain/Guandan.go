@@ -211,7 +211,7 @@ type Guandan struct {
 	handNumber       int
 	gameEndFlag      bool
 	winnerTeam       int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // GuandanTribute は 1 件の進貢の記録。
@@ -1168,10 +1168,7 @@ func (g *Guandan) GetPlayers() []*GuandanPlayer { return g.players }
 
 // GetPlayer は指定インデックスのプレイヤーを返す。
 func (g *Guandan) GetPlayer(idx int) *GuandanPlayer {
-	if idx < 0 || idx >= len(g.players) {
-		return nil
-	}
-	return g.players[idx]
+	return getPlayer(g.players, idx)
 }
 
 // GetPhase は現在のフェーズを返す。
@@ -1232,12 +1229,7 @@ func (g *Guandan) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // addLog は棋譜を 1 件追加する。
 func (g *Guandan) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.appendLogAt(0, playerIdx, actionType, detail, cards)
 }
 
 // ---- テスト用 ----
@@ -1247,16 +1239,7 @@ func (g *Guandan) SetPhaseForTest(p GuandanPhase) { g.phase = p }
 
 // SetHandForTest は手札を差し替える (テスト専用)。
 func (g *Guandan) SetHandForTest(idx int, cards []*Card) {
-	p := g.GetPlayer(idx)
-	if p == nil {
-		return
-	}
-	for p.GetCardsSize() > 0 {
-		p.RemoveCard(0)
-	}
-	for _, c := range cards {
-		p.AddCard(c)
-	}
+	setHandForTest(g.GetPlayer(idx), cards)
 }
 
 // SetLevelForTest は基準レベルを差し替える (テスト専用)。

@@ -13,6 +13,7 @@ import (
 )
 
 func setupOsmosisCuiMockDefaults(og *interfaces.MockOsmosisGame) {
+	og.On("IsStalemate").Return(false).Maybe()
 	og.On("GetPhase").Return(domain.OsmosisPhasePlaying).Maybe()
 	og.On("GetMoveCount").Return(0).Maybe()
 	og.On("GetStockCount").Return(34).Maybe()
@@ -34,6 +35,24 @@ func TestOsmosisCuiPresenter_Output(t *testing.T) {
 	origNoColor := color.NoColor()
 	color.SetNoColor(true)
 	defer color.SetNoColor(origNoColor)
+
+	// **手詰まりでもフェーズは Playing のまま (#4808)。**明示しないとプレイヤーは
+	// 自力で気づくまで無駄にめくり続ける。出る側と出ない側の両方を踏む。
+	t.Run("announces the dead end while still in the playing phase", func(t *testing.T) {
+		og := new(interfaces.MockOsmosisGame)
+		// 先に登録した期待が勝つ。defaults の IsStalemate(false) より前に置く。
+		og.On("IsStalemate").Return(true)
+		setupOsmosisCuiMockDefaults(og)
+		p := new(OsmosisCuiPresenter)
+		assert.Contains(t, p.Output(og, nil), "手詰まり")
+	})
+
+	t.Run("stays quiet while a move is still available", func(t *testing.T) {
+		og := new(interfaces.MockOsmosisGame)
+		setupOsmosisCuiMockDefaults(og)
+		p := new(OsmosisCuiPresenter)
+		assert.NotContains(t, p.Output(og, nil), "手詰まり")
+	})
 
 	t.Run("initial state", func(t *testing.T) {
 		og := new(interfaces.MockOsmosisGame)

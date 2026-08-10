@@ -15,6 +15,8 @@ type AccordionGame interface {
 	Move(fromIdx, toIdx int) error
 	// GiveUp ギブアップする
 	GiveUp()
+	// AutoComplete ヒントが示す手を尽きるまで繰り返す
+	AutoComplete() error
 	// GetHint ヒントを取得する
 	GetHint() *domain.AccordionHint
 	// Undo 操作を元に戻す

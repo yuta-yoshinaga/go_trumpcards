@@ -8,7 +8,7 @@ export interface FrontendHintTooltipProps {
   /** Whether the frontend-hint toggle is enabled. */
   enabled: boolean;
   /** Game-namespace translation function used to resolve the hint reason key. */
-  t: (key: string) => string;
+  t: (key: string, params?: Record<string, string | number>) => string;
 }
 
 /**
@@ -22,5 +22,5 @@ export function FrontendHintTooltip({ hint, enabled, t }: FrontendHintTooltipPro
   if (!enabled || !hint) {
     return null;
   }
-  return <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />;
+  return <HintTooltip reason={t(hint.reason, hint.reasonParams)} confidence={hint.confidence} />;
 }

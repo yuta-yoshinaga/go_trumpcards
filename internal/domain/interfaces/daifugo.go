@@ -46,6 +46,8 @@ type DaifugoGame interface {
 	GetHumanAction() *domain.DaifugoCpuAction
 	// GetCpuActions CPU行動記録一覧を取得する
 	GetCpuActions() []*domain.DaifugoCpuAction
+	// GetPlayableCardIndices いま出せる組み合わせに含まれる手札インデックスを取得する
+	GetPlayableCardIndices() []int
 	// GetCurrentTurn 現在の手番プレイヤーインデックスを取得する
 	GetCurrentTurn() int
 	// GetConfig ゲーム設定を取得する

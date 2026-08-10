@@ -83,7 +83,7 @@ type pishtiState struct {
 	lastCaptureIdx int     // 最後に捕獲したプレイヤー (-1 = なし)
 	gameEndFlag    bool
 	winners        []int
-	actionLog      []*ActionLogEntry
+	actionLogBase
 }
 
 // Pishti は Pişti ゲームの状態を保持する集約ルート。
@@ -139,7 +139,7 @@ func (g *Pishti) Reset() {
 		phase:          PishtiPhasePlay,
 		currentTurn:    0,
 		lastCaptureIdx: -1,
-		actionLog:      make([]*ActionLogEntry, 0),
+		actionLogBase:  actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 	}
 	g.dealHands()
 	g.dealInitialPile()
@@ -209,12 +209,7 @@ func (g *Pishti) pileTop() *Card {
 
 // allHandsEmpty は全員の手札が空かどうか。
 func (g *Pishti) allHandsEmpty() bool {
-	for _, p := range g.players {
-		if p.GetCardsSize() > 0 {
-			return false
-		}
-	}
-	return true
+	return allHandsEmpty(g.players)
 }
 
 // PlayerPlay は人間プレイヤーが手札 cardIndex を場へ出す。
@@ -349,19 +344,14 @@ func (g *Pishti) calcFinalScore() []int {
 	cardCounts := make([]int, n)
 
 	// 最多枚数判定 (同点なら誰ももらえない)。
-	mostIdx := -1
-	mostVal := 0
-	tie := false
+	mostIdx := g.mostCapturedSeat()
 	for i, p := range g.players {
-		cnt := p.CapturedCount()
-		cardCounts[i] = cnt
-		if mostIdx == -1 || cnt > mostVal {
-			mostIdx = i
-			mostVal = cnt
-			tie = false
-		} else if cnt == mostVal {
-			tie = true
-		}
+		cardCounts[i] = p.CapturedCount()
+	}
+	tie := mostIdx < 0
+	mostVal := 0
+	if mostIdx >= 0 {
+		mostVal = g.players[mostIdx].CapturedCount()
 	}
 
 	for i, p := range g.players {
@@ -377,6 +367,44 @@ func (g *Pishti) calcFinalScore() []int {
 	}
 	return scores
 }
+
+// mostCapturedSeat は最多捕獲の単独リーダーの席を返す。同数、または誰も
+// 捕獲していなければ -1。
+func (g *Pishti) mostCapturedSeat() int {
+	best, bestSeat, tie := 0, -1, false
+	for i, p := range g.players {
+		cnt := p.CapturedCount()
+		if bestSeat == -1 || cnt > best {
+			best, bestSeat, tie = cnt, i, false
+		} else if cnt == best {
+			tie = true
+		}
+	}
+	if tie || best == 0 {
+		return -1
+	}
+	return bestSeat
+}
+
+// GetProvisionalScores は対局中の暫定スコアを返す。
+//
+// **カード点は含まない。**捕獲札の点数配分は最後に数えるので、途中で確実に
+// 分かるのはピシュティ賞と最多捕獲の +3 だけ。近似であることは呼び出し側が
+// 明示する (#4892)。**同数なら誰にも +3 は付かない。**
+func (g *Pishti) GetProvisionalScores() []int {
+	out := make([]int, len(g.players))
+	leader := g.mostCapturedSeat()
+	for i, p := range g.players {
+		out[i] = p.GetPistiBonus()
+		if i == leader {
+			out[i] += PishtiScoreMostCards
+		}
+	}
+	return out
+}
+
+// GetProvisionalLeader は暫定の最多捕獲リーダーの席を返す (同数なら -1)。
+func (g *Pishti) GetProvisionalLeader() int { return g.mostCapturedSeat() }
 
 // pishtiCardPoints は 1 枚のカードの基本得点を返す。
 //
@@ -492,13 +520,7 @@ func (g *Pishti) lowestValueCardIdx(player *PishtiPlayer) int {
 
 // appendLog は棋譜にエントリを追加する。
 func (g *Pishti) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.state.actionLog = append(g.state.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.state.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.state.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // --- 状態アクセサ ---
@@ -531,10 +553,7 @@ func (g *Pishti) GetLastCaptureIdx() int { return g.state.lastCaptureIdx }
 
 // GetPlayer は指定インデックスのプレイヤーを返す。
 func (g *Pishti) GetPlayer(idx int) *PishtiPlayer {
-	if idx < 0 || idx >= len(g.players) {
-		return nil
-	}
-	return g.players[idx]
+	return getPlayer(g.players, idx)
 }
 
 // GetPlayerCnt はプレイヤー数を返す。
@@ -548,6 +567,9 @@ func (g *Pishti) GetConfig() PishtiConfig { return g.config }
 
 // SetConfig は設定を変更する。
 func (g *Pishti) SetConfig(config PishtiConfig) { g.config = config }
+
+// SetGameEndFlagForTest はテスト用に終了フラグを設定する。
+func (g *Pishti) SetGameEndFlagForTest(v bool) { g.state.gameEndFlag = v }
 
 // GetActionLog は棋譜を返す。
 func (g *Pishti) GetActionLog() []*ActionLogEntry { return g.state.actionLog }
@@ -650,7 +672,7 @@ func (g *Pishti) UnmarshalJSON(data []byte) error {
 		lastCaptureIdx: j.LastCaptureIdx,
 		gameEndFlag:    j.GameEndFlag,
 		winners:        j.Winners,
-		actionLog:      j.ActionLog,
+		actionLogBase:  actionLogBase{actionLog: j.ActionLog},
 	}
 	if g.state.pile == nil {
 		g.state.pile = make([]*Card, 0)

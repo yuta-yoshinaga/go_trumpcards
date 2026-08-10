@@ -88,19 +88,19 @@ func findOpenEndedDraw(cards []straightDrawCardInfo, check func(remaining []int)
 
 // pokerRoundState ラウンドごとにリセットされる状態
 type pokerRoundState struct {
-	phase           int
-	pot             int
-	currentTurn     int
-	lastBet         int
-	minRaise        int
-	raiseCount      int
-	actedFlags      []bool
-	sidePots        []SidePot
-	startingChips   []int
-	roundResults    []PokerResult
-	cpuActions      []PokerCpuAction
-	cpuExchanges    []PokerCpuExchange
-	actionLog       []*ActionLogEntry
+	phase         int
+	pot           int
+	currentTurn   int
+	lastBet       int
+	minRaise      int
+	raiseCount    int
+	actedFlags    []bool
+	sidePots      []SidePot
+	startingChips []int
+	roundResults  []PokerResult
+	cpuActions    []PokerCpuAction
+	cpuExchanges  []PokerCpuExchange
+	actionLogBase
 	gameEndFlag     bool
 	lastCpuError    error // CPU行動エラーの最後のフォールバック記録 (テスト検出用)
 	lastHumanPlayMs int
@@ -341,11 +341,7 @@ func (p *Poker) PlayerStand() error {
 
 // bettingPlayers BettingPlayerスライスを生成
 func (p *Poker) bettingPlayers() []BettingPlayer {
-	bp := make([]BettingPlayer, len(p.players))
-	for i, pl := range p.players {
-		bp[i] = pl
-	}
-	return bp
+	return toBettingPlayers(p.players)
 }
 
 // executeAction 指定プレイヤーのアクション実行
@@ -496,24 +492,12 @@ func (p *Poker) startSecondBettingRound() {
 
 // findNextActive 指定インデックスの次のアクティブプレイヤーを探す
 func (p *Poker) findNextActive(fromIdx int) int {
-	for i := 1; i <= len(p.players); i++ {
-		next := (fromIdx + i) % len(p.players)
-		if !p.players[next].GetFolded() && !p.players[next].GetAllIn() {
-			return next
-		}
-	}
-	return (fromIdx + 1) % len(p.players)
+	return findNextActive(p.players, fromIdx)
 }
 
 // countActivePlayers フォールドしていないプレイヤー数を返す
 func (p *Poker) countActivePlayers() int {
-	cnt := 0
-	for _, pl := range p.players {
-		if !pl.GetFolded() {
-			cnt++
-		}
-	}
-	return cnt
+	return countPlayers(p.players, func(pl *PokerPlayer) bool { return !pl.GetFolded() })
 }
 
 // resolveLastPlayer 全員フォールドで最後のプレイヤーが勝利
@@ -1036,6 +1020,62 @@ func (p *Poker) findStraightDrawDiscard(playerIdx int) int {
 // --- ゲッター ---
 
 // GetPhase フェーズ取得
+// pokerEquitySimulations はエクイティ計算のモンテカルロ試行回数。
+const pokerEquitySimulations = 2000
+
+// GetEquity はベッティングフェーズでの人間の勝率を返す。それ以外では nil。
+//
+// **Holdem 系は EquityDisplay でこれを出しているのに、5 カードドローには
+// 仕組み自体が無く、2巡目ベットで call/raise/fold を判断する材料が
+// 交換確率パネルしか無かった (#4678)。**
+func (p *Poker) GetEquity() *HoldemEquityResult {
+	if p.round.phase != PokerPhaseDeal && p.round.phase != PokerPhaseSecondBet {
+		return nil
+	}
+	human := p.findHumanPlayer()
+	if human == nil || human.GetFolded() {
+		return nil
+	}
+	cards := make([]*Card, human.GetCardsSize())
+	for i := range cards {
+		cards[i] = human.GetCard(i)
+	}
+	active := 0
+	for _, pl := range p.players {
+		if !pl.GetIsHuman() && !pl.GetFolded() {
+			active++
+		}
+	}
+	result := CalcPokerEquity(cards, active, pokerEquitySimulations, nil)
+	return &result
+}
+
+// GetPotOdds はコールに必要な額に対するポットオッズを返す (0-100)。
+func (p *Poker) GetPotOdds() float64 {
+	if p.round.phase != PokerPhaseDeal && p.round.phase != PokerPhaseSecondBet {
+		return 0.0
+	}
+	human := p.findHumanPlayer()
+	if human == nil {
+		return 0.0
+	}
+	callAmount := p.round.lastBet - human.GetCurrentBet()
+	if callAmount < 0 {
+		callAmount = 0
+	}
+	return CalcPotOdds(p.round.pot, callAmount)
+}
+
+// findHumanPlayer は人間プレイヤーを返す (見つからなければ nil)。
+func (p *Poker) findHumanPlayer() *PokerPlayer {
+	for _, pl := range p.players {
+		if pl.GetIsHuman() {
+			return pl
+		}
+	}
+	return nil
+}
+
 func (p *Poker) GetPhase() int { return p.round.phase }
 
 // GetPlayers プレイヤー一覧取得
@@ -1103,15 +1143,11 @@ func (p *Poker) ExportProfile() interface{} {
 
 // ImportProfile JSONバイトからメタAIプロファイルをインポートする
 func (p *Poker) ImportProfile(data []byte) error {
-	if len(data) == 0 {
-		return nil
-	}
-	d, err := ImportBettingHumanProfileJSON(data)
-	if err != nil {
+	prof, err := importBettingProfile(data)
+	if err != nil || prof == nil {
 		return err
 	}
-	p.humanProfile = &BettingHumanProfile{}
-	p.humanProfile.Import(d)
+	p.humanProfile = prof
 	return nil
 }
 
@@ -1120,13 +1156,7 @@ func (p *Poker) GetActionLog() []*ActionLogEntry { return p.round.actionLog }
 
 // appendLog 棋譜にエントリを追加する
 func (p *Poker) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	p.round.actionLog = append(p.round.actionLog, &ActionLogEntry{
-		TurnNumber: len(p.round.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	p.round.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // pokerRoundStateJSON is the JSON wire format for pokerRoundState.
@@ -1232,7 +1262,7 @@ func (p *Poker) UnmarshalJSON(data []byte) error {
 		roundResults:    j.Round.RoundResults,
 		cpuActions:      j.Round.CpuActions,
 		cpuExchanges:    j.Round.CpuExchanges,
-		actionLog:       j.Round.ActionLog,
+		actionLogBase:   actionLogBase{actionLog: j.Round.ActionLog},
 		gameEndFlag:     j.Round.GameEndFlag,
 		lastHumanPlayMs: j.Round.LastHumanPlayMs,
 	}

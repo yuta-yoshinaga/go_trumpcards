@@ -43,6 +43,8 @@ type RookGame interface {
 	GetPhase() domain.RookPhase
 	// IsHumanTurn 現在の手番が人間かを返す
 	IsHumanTurn() bool
+	// GetPlayableIndices プレイ可能なカードのインデックスを取得する
+	GetPlayableIndices(playerIdx int) []int
 	// IsHumanBidTurn 現在のビッド手番が人間かを返す
 	IsHumanBidTurn() bool
 	// GetRoundNumber 現在のラウンド番号を取得する

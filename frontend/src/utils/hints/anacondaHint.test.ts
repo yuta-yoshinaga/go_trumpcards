@@ -15,10 +15,12 @@ describe('getAnacondaHint', () => {
 
   it('maps a pass suggestion to the pass action with a moderate confidence', () => {
     const state = makeAnacondaState({ hint: { action: 'pass', cardIndices: [4, 5, 6], reason: 'pass_weakest' } });
+    // **どの札かまで返す。**バックエンドは計算済みなのに捨てていた (#4851)。
     expect(getAnacondaHint(state)).toEqual({
       targetAction: 'pass',
       reason: 'hint.pass_weakest',
       confidence: 'moderate',
+      targetIndices: [4, 5, 6],
     });
   });
 
@@ -28,6 +30,7 @@ describe('getAnacondaHint', () => {
       targetAction: 'keep',
       reason: 'hint.keep_best',
       confidence: 'moderate',
+      targetIndices: [0, 1, 2, 3, 4],
     });
   });
 
@@ -47,5 +50,18 @@ describe('getAnacondaHint', () => {
       reason: 'hint.weak_hand',
       confidence: 'moderate',
     });
+  });
+
+  // call/raise/fold では backend が cardIndices を入れないので、キー自体を持たない。
+  it('omits targetIndices when the suggestion is a betting action', () => {
+    for (const action of ['raise', 'call', 'fold']) {
+      const r = getAnacondaHint(makeAnacondaState({ hint: { action, reason: 'medium_hand' } }));
+      expect(r).not.toHaveProperty('targetIndices');
+    }
+    // 空配列でも付けない (リングを 0 個描くだけの無駄な差分を避ける)。
+    const empty = getAnacondaHint(
+      makeAnacondaState({ hint: { action: 'pass', cardIndices: [], reason: 'weak_hand' } }),
+    );
+    expect(empty).not.toHaveProperty('targetIndices');
   });
 });

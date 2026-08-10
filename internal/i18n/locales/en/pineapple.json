@@ -53,5 +53,14 @@
   "muckPrompt": "Muck? (m=muck / sh=show)",
   "rebuyPrompt": "Rebuy? ({{chips}} chips, used {{used}}/{{max}}) (rb=rebuy / sr=skip)",
   "addonPrompt": "Add-on? ({{chips}} chips) (ad=addon / sa=skip)",
-  "gameEnd": "Game over"
+  "gameEnd": "Game over",
+  "discardKeepFeature": "  discard [{{idx}}]{{card}} → keep {{keep}} ({{feature}})",
+  "keepFeaturePair": "pair",
+  "keepFeatureSuited": "suited",
+  "keepFeatureConnector": "connector",
+  "keepFeatureHighCard": "high card",
+  "discardUpcoming": "You will discard {{count}} card(s) after the flop betting round",
+  "discardCandidate": "  [{{idx}}] discard this and you keep: {{hand}}",
+  "discardRecommended": " <- recommended",
+  "discardCandidatePair": "  discard [{{idx0}}] [{{idx1}}] and you keep: {{hand}}"
 }

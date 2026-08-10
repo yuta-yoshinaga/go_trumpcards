@@ -155,3 +155,12 @@ func (p *KaiserWebPresenter) buildMessage(g interfaces.KaiserGame, lastErr error
 func (p *KaiserWebPresenter) ActionLogOutput(g interfaces.KaiserGame) string {
 	return actionLogOutputJSON(g)
 }
+
+// HintOutput ヒント情報を出力する。
+//
+// **Web のヒントはフロント側が組み立てる** (`utils/hints/kaiserHint.ts`)。
+// サーバがもう一つ別の助言を載せると二重になるので、ここは通常の状態出力を
+// そのまま返す。CUI のヒントは KaiserCuiPresenter.HintOutput にある (#4938)。
+func (p *KaiserWebPresenter) HintOutput(g interfaces.KaiserGame) string {
+	return p.Output(g, nil)
+}

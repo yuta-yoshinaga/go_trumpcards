@@ -90,7 +90,7 @@ type Gaigel struct {
 	lastTrickWinner  int
 	gameEndFlag      bool
 	winnerTeam       int // -1: 未確定
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewGaigel コンストラクタ
@@ -364,7 +364,7 @@ func (g *Gaigel) declareMarriage(playerIdx, cardIndex int) error {
 	g.roundMarriage[team] += bonus
 	g.appendLog(playerIdx, "marriage",
 		fmt.Sprintf("%s declares marriage in %s (+%d for team %d)",
-			g.playerName(playerIdx), suitStr(suit), bonus, team), nil)
+			playerName(g.players, playerIdx), suitStr(suit), bonus, team), nil)
 
 	played := player.RemoveCard(cardIndex)
 	g.playCard(playerIdx, played)
@@ -401,7 +401,7 @@ func (g *Gaigel) playCard(playerIdx int, card *Card) {
 		Card:      card,
 	})
 	g.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)),
+		fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)),
 		[]*Card{card})
 
 	if len(g.currentTrick) == GaigelPlayerCnt {
@@ -429,7 +429,7 @@ func (g *Gaigel) ResolveTrick() {
 	g.roundPoints[g.players[winnerIdx].GetTeam()] += trickPoints
 
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (%d pt)", g.playerName(winnerIdx), g.trickNumber, trickPoints),
+		fmt.Sprintf("%s wins trick %d (%d pt)", playerName(g.players, winnerIdx), g.trickNumber, trickPoints),
 		trickCards)
 
 	g.leadPlayerIdx = winnerIdx
@@ -491,25 +491,12 @@ func (g *Gaigel) drawReplenish() {
 
 // drawOne 山札または切り札表示カードから 1 枚引く。優先順位は山札 → 切り札表示カード。
 func (g *Gaigel) drawOne() *Card {
-	if c := g.trumpCards.DrawCard(); c != nil {
-		return c
-	}
-	if g.trumpCard != nil {
-		c := g.trumpCard
-		g.trumpCard = nil
-		return c
-	}
-	return nil
+	return drawOrTakeTrump(g.trumpCards, &g.trumpCard)
 }
 
 // allHandsEmpty 全プレイヤーの手札が空かを返す
 func (g *Gaigel) allHandsEmpty() bool {
-	for _, p := range g.players {
-		if p.GetCardsSize() > 0 {
-			return false
-		}
-	}
-	return true
+	return allHandsEmpty(g.players)
 }
 
 // IsEndgame 第2フェーズ (山札と切り札表示カードが尽きてマストフォローになる) かを返す
@@ -522,16 +509,7 @@ func (g *Gaigel) IsEndgame() bool {
 // validatePlay カードのプレイがルール上有効かを検証する。
 // 第1フェーズ・リード時は常に有効。第2フェーズの追随時のみマストフォローを課す。
 func (g *Gaigel) validatePlay(playerIdx int, card *Card) error {
-	if card == nil {
-		return NewDomainError(ErrInvalidCard, "カードが nil です")
-	}
-	if !g.IsEndgame() || len(g.currentTrick) == 0 {
-		return nil
-	}
-	if !g.cardSatisfiesFollow(playerIdx, card) {
-		return NewDomainError(ErrInvalidCard, "第2フェーズではフォロールールに従う必要があります")
-	}
-	return nil
+	return validateEndgameFollow(g.currentTrick, g, playerIdx, card)
 }
 
 // cardSatisfiesFollow 第2フェーズの追随時に card が合法かを返す。
@@ -553,14 +531,7 @@ func (g *Gaigel) cardSatisfiesFollow(playerIdx int, card *Card) bool {
 
 // legalPlayIndices validatePlay を満たすカードのインデックス集合を返す。
 func (g *Gaigel) legalPlayIndices(playerIdx int) []int {
-	p := g.players[playerIdx]
-	out := make([]int, 0, p.GetCardsSize())
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if g.validatePlay(playerIdx, p.GetCard(i)) == nil {
-			out = append(out, i)
-		}
-	}
-	return out
+	return validPlayIndices(g.players[playerIdx], func(c *Card) bool { return g.validatePlay(playerIdx, c) == nil })
 }
 
 // gaigelPlayerHasSuit プレイヤーが指定スートのカードを持つか
@@ -693,10 +664,7 @@ func (g *Gaigel) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *Gaigel) GetPlayer(i int) *GaigelPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
@@ -750,10 +718,7 @@ func (g *Gaigel) GetStockRemaining() int {
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (g *Gaigel) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -761,9 +726,6 @@ func (g *Gaigel) GetConfig() GaigelConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *Gaigel) SetConfig(cfg GaigelConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *Gaigel) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetValidPlayIndices プレイ可能なカードのインデックスリストを返す。
 // 第1フェーズは制約なし。第2フェーズはマストフォローを適用する。
@@ -1015,9 +977,7 @@ func (g *Gaigel) legalAllowsDump(playerIdx int, legal []int) bool {
 
 // sortAllHands 全プレイヤーの手札をソートする
 func (g *Gaigel) sortAllHands() {
-	for _, p := range g.players {
-		g.sortHand(p)
-	}
+	sortEachHand(g.players, g.sortHand)
 }
 
 // sortHand プレイヤーの手札をスート (トランプ最後) → ランク でソートする
@@ -1033,26 +993,6 @@ func (g *Gaigel) sortHand(p *GaigelPlayer) {
 			return ci.GetDesign() < cj.GetDesign()
 		}
 		return GaigelRankOrder(ci) < GaigelRankOrder(cj)
-	})
-}
-
-func (g *Gaigel) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-func (g *Gaigel) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
 	})
 }
 

@@ -33,6 +33,7 @@ import { OmahaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { OMAHA_HELP, parseOmahaCommand } from '../utils/cli/commands/omahaCommands';
 import { formatOmahaState } from '../utils/cli/formatters/omahaFormatter';
+import { omahaLivePreviewKey } from '../utils/livePokerPreview';
 import { omahaBestFive } from '../utils/omahaBestFive';
 import { findPlayerName } from '../utils/playerUtils';
 
@@ -132,6 +133,7 @@ function BigOPageContent() {
     handleCommand,
     handleManualReset,
     phase,
+    isActive,
     isShowdown,
     humanPlayer,
     canAct,
@@ -158,6 +160,14 @@ function BigOPageContent() {
     if (!best) return empty;
     return { holeSet: new Set(best.holeIdx), boardSet: new Set(best.boardIdx) };
   }, [isShowdown, humanPlayer, state?.communityCards]);
+
+  // Preview the hand the player currently holds under the must-use-exactly-2
+  // rule. Big O deals five hole cards — ten pairings to weigh by eye — so the
+  // preview matters more here than in plain Omaha, which already had it (#4681/#4682).
+  const liveBestHandKey = useMemo(
+    () => omahaLivePreviewKey(humanPlayer, state?.communityCards ?? [], { isActive, isShowdown }),
+    [isActive, isShowdown, humanPlayer, state?.communityCards],
+  );
 
   if (!state)
     return (
@@ -343,6 +353,17 @@ function BigOPageContent() {
                   <span aria-hidden="true">🎯</span>
                   {t('mandatoryRule')}
                 </div>
+                {liveBestHandKey && (
+                  <div className="mb-1" data-testid="bigo-live-besthand">
+                    <span className="text-ds-text-primary text-xs">{t('livePreview')}</span>
+                    <span
+                      className={`inline-block ml-1.5 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}
+                      data-testid="bigo-live-besthand-name"
+                    >
+                      {t(`hand.${liveBestHandKey}`)}
+                    </span>
+                  </div>
+                )}
                 {/* Big O deals 5 hole cards; on mobile keep them on a single
                     scrollable row (never wrap) so all 5 stay visible with
                     full-size tap targets. Desktop keeps the wrapping layout. */}

@@ -275,7 +275,7 @@ type Karnoffel struct {
 	handNumber  int
 	gameEndFlag bool
 	winnerTeam  int
-	actionLog   []*ActionLogEntry
+	actionLogBase
 }
 
 // NewKarnoffel コンストラクタ
@@ -664,10 +664,7 @@ func (k *Karnoffel) GetPlayers() []*KarnoffelPlayer { return k.players }
 
 // GetPlayer は指定インデックスのプレイヤーを返す。
 func (k *Karnoffel) GetPlayer(idx int) *KarnoffelPlayer {
-	if idx < 0 || idx >= len(k.players) {
-		return nil
-	}
-	return k.players[idx]
+	return getPlayer(k.players, idx)
 }
 
 // GetPhase は現在のフェーズを返す。
@@ -741,12 +738,7 @@ func (k *Karnoffel) GetActionLog() []*ActionLogEntry { return k.actionLog }
 
 // addLog は棋譜を 1 件追加する。
 func (k *Karnoffel) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	k.actionLog = append(k.actionLog, &ActionLogEntry{
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	k.appendLogAt(0, playerIdx, actionType, detail, cards)
 }
 
 // ---- テスト用 ----
@@ -756,16 +748,7 @@ func (k *Karnoffel) SetPhaseForTest(p KarnoffelPhase) { k.phase = p }
 
 // SetHandForTest は手札を差し替える (テスト専用)。
 func (k *Karnoffel) SetHandForTest(idx int, cards []*Card) {
-	p := k.GetPlayer(idx)
-	if p == nil {
-		return
-	}
-	for p.GetCardsSize() > 0 {
-		p.RemoveCard(0)
-	}
-	for _, c := range cards {
-		p.AddCard(c)
-	}
+	setHandForTest(k.GetPlayer(idx), cards)
 }
 
 // SetChosenSuitForTest は選ばれたスートを差し替える (テスト専用)。

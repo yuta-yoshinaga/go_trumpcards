@@ -740,3 +740,122 @@ func TestDurak_NotAttackerTurn(t *testing.T) {
 	err := d.PlayerAttack(0)
 	assert.ErrorIs(t, err, domain.ErrWrongPhase)
 }
+
+// **他のトリック系はサーバー計算の理由付きヒントを持つのに、Durak は CUI に
+// hint コマンドすら無かった (#4740)。**推奨手は CPU の選択ロジックをそのまま使う。
+//
+// 配りに賭けず、既存の setupDurakForHuman* で局面を作って全分岐を踏む。
+func TestDurak_GetHint(t *testing.T) {
+	t.Run("initial attack recommends a playable card", func(t *testing.T) {
+		d := setupDurakForHumanAttack()
+		hint := d.GetHint()
+		if hint == nil || hint.CardIndex == nil {
+			t.Fatal("初回攻撃では推奨カードが出る")
+		}
+		if hint.Reason != "attack_weakest" {
+			t.Errorf("Reason = %q, want attack_weakest", hint.Reason)
+		}
+		// **勧めた手が本番の入口を通ること。**別ロジックで選ぶと出せない札を勧める。
+		if err := d.PlayerAttack(*hint.CardIndex); err != nil {
+			t.Errorf("推奨札 (index %d) が実際には出せなかった: %v", *hint.CardIndex, err)
+		}
+	})
+
+	// 追撃: テーブルに札があるとき。手札に同じ数字があれば追撃、無ければパス。
+	t.Run("additional attack or pass depending on the hand", func(t *testing.T) {
+		d := setupDurakForHumanAttack()
+		human := d.GetPlayer(0)
+		for human.GetCardsSize() > 0 {
+			human.RemoveCard(0)
+		}
+		// テーブルに 7 が出ている状態で、手札にも 7 を持たせる → 追撃できる。
+		//
+		// **切り札を渡してはいけない。**Normal 難易度の追撃は
+		// cpuFindMatchingCard(..., includeTrumps=false) で切り札を除外するため、
+		// 渡した 7 がたまたま切り札スートだと追撃されず pass になる。切り札は
+		// 配りごとにランダムなので、固定スートだと実測 36/200 (18%) で落ちた。
+		follow := domain.CardDesignHeart
+		if d.GetTrumpSuit() == follow {
+			follow = domain.CardDesignSpade
+		}
+		d.SetTablePairs([]*domain.DurakTablePair{
+			{Attack: domain.NewCard(domain.CardDesignClover, 7, false)},
+		})
+		human.AddCard(domain.NewCard(follow, 7, false))
+
+		hint := d.GetHint()
+		if hint == nil || hint.CardIndex == nil || hint.Reason != "attack_additional" {
+			t.Fatalf("同じ数字を持っていれば追撃を勧める: %+v", hint)
+		}
+
+		// 手札を無関係な札だけにすると、追撃できずパスになる。
+		for human.GetCardsSize() > 0 {
+			human.RemoveCard(0)
+		}
+		// 追撃できない札。こちらも切り札だと「切り札は除外」以前に数字が
+		// 合わないので pass になるが、意図を明示するため非切り札にする。
+		noMatch := domain.CardDesignSpade
+		if d.GetTrumpSuit() == noMatch {
+			noMatch = domain.CardDesignHeart
+		}
+		human.AddCard(domain.NewCard(noMatch, 3, false))
+		hint = d.GetHint()
+		if hint == nil || hint.CardIndex != nil || hint.Reason != "pass_no_addition" {
+			t.Fatalf("追撃できなければパスを勧める: %+v", hint)
+		}
+	})
+
+	t.Run("defend recommends a card that beats the attack", func(t *testing.T) {
+		d := setupDurakForHumanDefend()
+		human := d.GetPlayer(0)
+		for human.GetCardsSize() > 0 {
+			human.RemoveCard(0)
+		}
+		// 場は CLOVER 7。同スートの上位で返せる。
+		human.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+
+		hint := d.GetHint()
+		if hint == nil || hint.CardIndex == nil || hint.AttackIdx == nil {
+			t.Fatalf("防御できる札があれば札と対象を示す: %+v", hint)
+		}
+		if hint.Reason != "defend_beat" {
+			t.Errorf("Reason = %q, want defend_beat", hint.Reason)
+		}
+		if err := d.PlayerDefend(*hint.AttackIdx, *hint.CardIndex); err != nil {
+			t.Errorf("推奨した防御が実際には通らなかった: %v", err)
+		}
+	})
+
+	// **「引き取る」も助言のうち。**返せる札が無い局面で黙ると、プレイヤーは
+	// 手が無いのか判断が付かない。
+	t.Run("advises taking the cards when nothing beats the attack", func(t *testing.T) {
+		d := setupDurakForHumanDefend()
+		human := d.GetPlayer(0)
+		for human.GetCardsSize() > 0 {
+			human.RemoveCard(0)
+		}
+		// 場は CLOVER 7。同スートの下位・切り札でない札しか持たない。
+		human.AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+
+		hint := d.GetHint()
+		if hint == nil || !hint.TakeCards || hint.Reason != "take_cannot_beat" {
+			t.Fatalf("返せなければ引き取りを勧める: %+v", hint)
+		}
+	})
+
+	t.Run("no hint on a CPU turn", func(t *testing.T) {
+		d := setupDurakForHumanAttack()
+		d.SetCurrentTurn(1)
+		if d.GetHint() != nil {
+			t.Error("CPU の手番ではヒントを出さない")
+		}
+	})
+
+	t.Run("no hint once the game has ended", func(t *testing.T) {
+		d := setupDurakForHumanAttack()
+		d.SetPhase(domain.DurakPhaseGameEnd)
+		if d.GetHint() != nil {
+			t.Error("ゲーム終了フェーズではヒントを出さない")
+		}
+	})
+}

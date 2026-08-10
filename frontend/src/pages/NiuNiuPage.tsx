@@ -222,8 +222,17 @@ function NiuNiuPageContent() {
                       className={btnPrimary}
                       onClick={() => game.handleBet(amount)}
                       // The loss can be `maxMultiplier` times the stake, so the
-                      // stack has to cover that, not just the stake itself.
+                      // stack has to cover that, not just the stake itself — and
+                      // greying the button out never said so (#4908).
                       disabled={loading || amount * state.maxMultiplier > state.chips}
+                      title={
+                        amount * state.maxMultiplier > state.chips
+                          ? t('betTooHigh', {
+                              multiplier: state.maxMultiplier,
+                              needed: amount * state.maxMultiplier,
+                            })
+                          : undefined
+                      }
                     >
                       {t('betAmount', { amount })}
                     </button>

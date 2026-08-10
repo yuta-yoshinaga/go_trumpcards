@@ -932,10 +932,49 @@ func TestDoubt_MetaAI_CpuUsesAdjustedDoubtChance(t *testing.T) {
 	})
 }
 
+// doubtUniformHandValue is the rank every card in the CPU's hand gets in the
+// meta-AI bluff test. Any rank works; it only has to be a single one.
+const doubtUniformHandValue = 7
+
+// setUniformDoubtHand replaces a player's whole hand with n cards of one rank.
+//
+// This is what makes the meta-AI bluff test measure what it claims to. The meta
+// profile scales `intentBluff` (Doubt.go: AdjustedBluffChance), but the recorded
+// `IsBluff` is `isActuallyBluff` -- "did the declared value differ from the cards
+// played" -- and those two come apart on the honest path: an honest CPU playing
+// several cards declares only played[0]'s rank while dumping the rest of the
+// front of its hand, so with a mixed hand it is recorded as bluffing even though
+// it never intended to. With 26 cards of mixed ranks that path swallowed ~96% of
+// plays, both arms measured ~94.9%, and the strict `assert.Less` came down to
+// binomial noise -- it tied at 18980 vs 18980 in CI (issue #5177).
+//
+// A single-rank hand collapses the difference: every honest play (plain or the
+// mixed-bluff branch, which falls back to the first n cards when it cannot find a
+// non-matching one) declares that rank and plays only that rank, so it is not a
+// bluff; an intentional bluff declares a random rank and mismatches 12/13 of the
+// time. `IsBluff` then tracks intent, which is the thing under test.
+func setUniformDoubtHand(p *domain.DoubtPlayer, value, n int) {
+	if size := p.GetCardsSize(); size > 0 {
+		indices := make([]int, size)
+		for i := range indices {
+			indices[i] = i
+		}
+		p.RemoveCards(indices)
+	}
+	for i := 0; i < n; i++ {
+		p.AddCard(domain.NewCard(domain.CardDesignSpade, value, false))
+	}
+}
+
 func TestDoubt_MetaAI_CpuUsesAdjustedBluffChance(t *testing.T) {
 	// When human has high doubt accuracy, CPU should bluff less
 	t.Run("CPU bluffs less when human has high doubt accuracy", func(t *testing.T) {
 		trials := 20000
+		// numCards is Uniform{1..handSize}, and calcBluffChance falls back to its
+		// last-card special case when handSize-numCards <= 1 -- that is numCards
+		// 25 or 26, so 2/26 (~7.7%) of plays. The other ~92% exercise the normal
+		// base, which is the path the meta-AI adjustment matters on.
+		const handSize = 26
 
 		// Count bluffs WITHOUT meta-AI
 		baselineBluffs := 0
@@ -943,9 +982,7 @@ func TestDoubt_MetaAI_CpuUsesAdjustedBluffChance(t *testing.T) {
 			game, players := makeDoubtGame()
 			game.SetConfig(domain.DoubtConfig{DoubtWindowSec: 10, CpuMetaAI: false})
 			advanceToCpuTurn(game)
-			for v := 1; v <= 13; v++ {
-				players[1].AddCard(domain.NewCard(domain.CardDesignSpade, v, false))
-			}
+			setUniformDoubtHand(players[1], doubtUniformHandValue, handSize)
 			game.CpuPlay()
 			cpuActions := game.GetCpuActions()
 			if len(cpuActions) > 0 && cpuActions[0].IsBluff {
@@ -958,13 +995,12 @@ func TestDoubt_MetaAI_CpuUsesAdjustedBluffChance(t *testing.T) {
 		for i := 0; i < trials; i++ {
 			game, players := makeDoubtGame()
 			game.SetConfig(domain.DoubtConfig{DoubtWindowSec: 10, CpuMetaAI: true})
-			// High doubt accuracy: 95%, max adapt
+			// High doubt accuracy: 95%, max adapt (AdaptStrength caps at 0.2, so
+			// the adjustment is base x (1 - 0.95*0.2) = base x 0.81).
 			profile := &domain.DoubtHumanProfile{GamesPlayed: 5, DoubtCorrect: 19, DoubtTotal: 20}
 			game.SetHumanProfile(profile)
 			advanceToCpuTurn(game)
-			for v := 1; v <= 13; v++ {
-				players[1].AddCard(domain.NewCard(domain.CardDesignSpade, v, false))
-			}
+			setUniformDoubtHand(players[1], doubtUniformHandValue, handSize)
 			game.CpuPlay()
 			cpuActions := game.GetCpuActions()
 			if len(cpuActions) > 0 && cpuActions[0].IsBluff {
@@ -972,7 +1008,15 @@ func TestDoubt_MetaAI_CpuUsesAdjustedBluffChance(t *testing.T) {
 			}
 		}
 
-		// Meta-AI with high doubt accuracy should produce fewer bluffs than baseline
+		// Both arms must actually bluff sometimes, otherwise "meta < baseline"
+		// could be satisfied by a code path that stopped bluffing entirely.
+		assert.Positive(t, metaBluffs, "meta arm recorded no bluffs at all -- the measurement is broken, not the AI")
+		assert.Positive(t, baselineBluffs, "baseline arm recorded no bluffs at all -- the measurement is broken, not the AI")
+
+		// Meta-AI with high doubt accuracy should produce fewer bluffs than baseline.
+		// The expected gap is ~19% of the baseline (AdjustedBluffChance x 0.81) against
+		// a binomial sigma of ~90 at these counts, so this is a many-sigma margin
+		// rather than the coin-flip it used to be.
 		assert.Less(t, metaBluffs, baselineBluffs,
 			"meta-AI with high doubt accuracy should cause CPU to bluff less (meta=%d, baseline=%d)", metaBluffs, baselineBluffs)
 	})
@@ -1155,4 +1199,12 @@ func TestDoubt_ActionLog_Reset(t *testing.T) {
 
 	game.Reset()
 	assert.Nil(t, game.GetActionLog())
+}
+
+// **Web の honestValue と同じ式であること。**両方が (値 % 13) + 1、開始直後は A。
+func TestDoubtHonestClaimValue(t *testing.T) {
+	assert.Equal(t, 1, domain.DoubtHonestClaimValue(nil))
+	assert.Equal(t, 2, domain.DoubtHonestClaimValue(&domain.DoubtAction{ClaimedValue: 1}))
+	assert.Equal(t, 8, domain.DoubtHonestClaimValue(&domain.DoubtAction{ClaimedValue: 7}))
+	assert.Equal(t, 1, domain.DoubtHonestClaimValue(&domain.DoubtAction{ClaimedValue: 13}))
 }

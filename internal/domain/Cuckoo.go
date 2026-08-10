@@ -80,8 +80,8 @@ type Cuckoo struct {
 	roundNumber      int
 	roundLowest      int   // 直近ラウンドの最低カード値 (-1=未確定)
 	roundLosers      []int // 直近ラウンドでライフを失ったプレイヤー
-	actionLog        []*ActionLogEntry
-	rng              *rand.Rand
+	actionLogBase
+	rng *rand.Rand
 }
 
 // NewCuckoo コンストラクタ
@@ -259,7 +259,7 @@ func (g *Cuckoo) guardHumanTurn() error {
 
 // keep 手札を保持してターンを進める
 func (g *Cuckoo) keep(idx int) {
-	g.appendLog(idx, "keep", fmt.Sprintf("%s keeps", g.playerName(idx)), nil)
+	g.appendLog(idx, "keep", fmt.Sprintf("%s keeps", playerName(g.players, idx)), nil)
 	g.advanceTurn()
 }
 
@@ -300,13 +300,13 @@ func (g *Cuckoo) performSwap(a, b int) {
 	cb := g.players[b].Card()
 	g.players[a].SetCard(cb)
 	g.players[b].SetCard(ca)
-	g.appendLog(a, "swap", fmt.Sprintf("%s swaps with %s", g.playerName(a), g.playerName(b)), nil)
+	g.appendLog(a, "swap", fmt.Sprintf("%s swaps with %s", playerName(g.players, a), playerName(g.players, b)), nil)
 }
 
 // swapWithStock ディーラーが山札から新しいカードを引いて交換する
 func (g *Cuckoo) swapWithStock(idx int) {
 	if len(g.stock) == 0 {
-		g.appendLog(idx, "keep", fmt.Sprintf("%s keeps (stock empty)", g.playerName(idx)), nil)
+		g.appendLog(idx, "keep", fmt.Sprintf("%s keeps (stock empty)", playerName(g.players, idx)), nil)
 		return
 	}
 	newCard := g.stock[len(g.stock)-1]
@@ -316,7 +316,7 @@ func (g *Cuckoo) swapWithStock(idx int) {
 	if old != nil {
 		g.stock = append([]*Card{old}, g.stock...)
 	}
-	g.appendLog(idx, "swap_stock", fmt.Sprintf("%s swaps with the stock", g.playerName(idx)), nil)
+	g.appendLog(idx, "swap_stock", fmt.Sprintf("%s swaps with the stock", playerName(g.players, idx)), nil)
 }
 
 // resolveRefuse 拒否フェーズを解決する。refused=true なら King 公開で交換は不成立、
@@ -328,7 +328,7 @@ func (g *Cuckoo) resolveRefuse(refused bool) {
 		if to >= 0 && to < len(g.revealedKings) {
 			g.revealedKings[to] = true
 		}
-		g.appendLog(to, "refuse", fmt.Sprintf("%s reveals a King and refuses", g.playerName(to)), nil)
+		g.appendLog(to, "refuse", fmt.Sprintf("%s reveals a King and refuses", playerName(g.players, to)), nil)
 	} else {
 		g.performSwap(from, to)
 	}
@@ -425,7 +425,7 @@ func (g *Cuckoo) endRound() {
 		if p.CardValue() == lowest {
 			p.LoseLife()
 			g.roundLosers = append(g.roundLosers, i)
-			g.appendLog(i, "lose_life", fmt.Sprintf("%s loses a life (lowest: %d)", g.playerName(i), lowest), nil)
+			g.appendLog(i, "lose_life", fmt.Sprintf("%s loses a life (lowest: %d)", playerName(g.players, i), lowest), nil)
 		}
 	}
 
@@ -441,7 +441,7 @@ func (g *Cuckoo) endRound() {
 			}
 		}
 		g.players[survivor].SetLives(1)
-		g.appendLog(survivor, "survive", fmt.Sprintf("%s survives the tie-break", g.playerName(survivor)), nil)
+		g.appendLog(survivor, "survive", fmt.Sprintf("%s survives the tie-break", playerName(g.players, survivor)), nil)
 	}
 
 	g.finishRound()
@@ -468,7 +468,7 @@ func (g *Cuckoo) checkGameEnd() {
 	g.gameEndFlag = true
 	g.phase = CuckooPhaseGameEnd
 	g.winnerIdx = g.leaderIdx()
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", g.playerName(g.winnerIdx)), nil)
+	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, g.winnerIdx)), nil)
 }
 
 // forceGameEnd 防御的なラウンド上限到達時に強制終了する
@@ -516,24 +516,12 @@ func (g *Cuckoo) firstActiveFrom(from int) int {
 
 // nextActiveIdx from の次のアクティブプレイヤーのインデックスを返す
 func (g *Cuckoo) nextActiveIdx(from int) int {
-	n := len(g.players)
-	for step := 1; step <= n; step++ {
-		idx := (from + step) % n
-		if !g.players[idx].IsEliminated() {
-			return idx
-		}
-	}
-	return from
+	return nextIndexWhere(g.players, from, func(p *CuckooPlayer) bool { return !p.IsEliminated() })
 }
 
 // humanIdx 人間プレイヤーのインデックスを返す (-1 = 不在)
 func (g *Cuckoo) humanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
+	return findHumanIdx(g.players)
 }
 
 // --- Getters ---
@@ -570,10 +558,7 @@ func (g *Cuckoo) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer 指定インデックスのプレイヤーを取得する
 func (g *Cuckoo) GetPlayer(i int) *CuckooPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // IsHumanTurn 現在の手番が人間かを返す (ターン or 拒否フェーズ)
@@ -619,31 +604,6 @@ func (g *Cuckoo) GetConfig() CuckooConfig { return g.config }
 
 // SetConfig ゲーム設定を設定する
 func (g *Cuckoo) SetConfig(cfg CuckooConfig) { g.config = cfg }
-
-// GetActionLog 棋譜を取得する
-func (g *Cuckoo) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
-// playerName プレイヤー名を返す
-func (g *Cuckoo) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (g *Cuckoo) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
 
 // --- JSON ---
 

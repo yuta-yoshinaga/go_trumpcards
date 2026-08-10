@@ -75,6 +75,8 @@ export interface GutsResponse extends BaseGameResponse {
   pot: number;
   /** Chips carried over from rounds where nobody stayed. */
   carryPot: number;
+  /** How many rounds in a row the pot has carried. */
+  carryCount: number;
   /** Chips each player antes at the start of a round. */
   ante: number;
   /** The human's remaining chip stack. */

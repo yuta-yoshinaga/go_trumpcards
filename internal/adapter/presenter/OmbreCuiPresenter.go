@@ -60,9 +60,34 @@ func ombrePlayerStr(g interfaces.OmbreGame, idx int) string {
 	))
 	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
-		b.WriteString(cuiIndexedCardListStr(player) + "\n")
+		b.WriteString(ombreIndexedHandStr(player, g.GetTrumpSuit()) + "\n")
 	}
 	return b.String()
+}
+
+// ombreMatadorKeys はマタドールの序列と表示名キーの対応。
+var ombreMatadorKeys = map[int]string{
+	1: "ombre.matadorSpadille",
+	2: "ombre.matadorManille",
+	3: "ombre.matadorBasto",
+}
+
+// ombreIndexedHandStr は手札をインデックス付きで並べ、マタドールに注記を付ける。
+//
+// **マタドールは常にトリックに勝つ。**Web はバッジで示すのに、CUI は素の
+// 一覧しか出しておらず、序列を覚えていないと気づけなかった (#4919)。
+// 切り札が未確定なら注記は付かない。
+//
+// 索引と区切りは他ゲームと同じ formatCardList に任せる。自前で並べると
+// 区切り幅が揃わない。
+func ombreIndexedHandStr(player cuiCardList, trump int) string {
+	return formatCardList(player, func(c *domain.Card) string {
+		s := cuiCardStr(c)
+		if key := ombreMatadorKeys[domain.OmbreMatadorRank(c, trump)]; key != "" {
+			s += "(" + i18n.T(key) + ")"
+		}
+		return s
+	}, "  ", true)
 }
 
 // OmbreCuiPresenter renders the Ombre CUI view.

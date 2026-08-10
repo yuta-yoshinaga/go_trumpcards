@@ -191,6 +191,8 @@ const baseGongZhuState: GongZhuResponse = {
   heartsBroken: false,
   exposed: { pig: false, sheep: false, ace: false, doubler: false },
   exposableIndices: [],
+  // 既定は「手札 2 枚とも出せる」。空にすると全ページテストの play が黙って死ぬ。
+  playableIndices: [0, 1],
   gameEndFlag: false,
   winnerIdx: -1,
   leadPlayerIdx: 0,
@@ -273,6 +275,7 @@ const baseSpadesState: SpadesResponse = {
   gameEndFlag: false,
   winnerIdx: -1,
   leadPlayerIdx: 0,
+  validPlayIndices: [0, 1],
   message: '',
   config: { cpuDifficulty: 1, pointLimit: 500, nilBonus: 100, bagPenaltyThreshold: 10 },
 };
@@ -302,6 +305,7 @@ const callBreakPlayers: CallBreakResponse['players'] = [
     roundScore: 0,
     cumulativeScore: 0,
     trickCount: 0,
+    bags: 0,
   },
   {
     id: 1,
@@ -312,6 +316,7 @@ const callBreakPlayers: CallBreakResponse['players'] = [
     roundScore: 0,
     cumulativeScore: 41,
     trickCount: 1,
+    bags: 0,
   },
   {
     id: 2,
@@ -322,6 +327,7 @@ const callBreakPlayers: CallBreakResponse['players'] = [
     roundScore: 0,
     cumulativeScore: 30,
     trickCount: 2,
+    bags: 0,
   },
   {
     id: 3,
@@ -331,7 +337,10 @@ const callBreakPlayers: CallBreakResponse['players'] = [
     bid: 2,
     roundScore: 0,
     cumulativeScore: -20,
-    trickCount: 0,
+    // **既定を全部 0 にしない。**バッグ表示のテストが「0 が出ている」だけで
+    // 通ってしまい、サーバー値を読まなくなっても気づけなくなる (#4752)。
+    trickCount: 5,
+    bags: 3,
   },
 ];
 
@@ -2346,6 +2355,7 @@ const baseCourtPieceState: CourtPieceResponse = {
   gameEndFlag: false,
   winnerTeam: -1,
   leadPlayerIdx: 0,
+  playableIndices: [0, 1],
   hint: null,
   message: '',
   config: { cpuDifficulty: 1, pointLimit: 7 },
@@ -2553,6 +2563,9 @@ const baseTeenPattiState: TeenPattiResponse = {
   canRequestSideShow: false,
   sideShowRequester: -1,
   sideShowTarget: -1,
+  minRaise: 2,
+  maxRaise: 30,
+  canRaise: true,
   gameEndFlag: false,
   isHumanTurn: true,
   hint: null,
@@ -3108,6 +3121,7 @@ const baseGutsState: GutsResponse = {
   roundNumber: 1,
   pot: 40,
   carryPot: 0,
+  carryCount: 0,
   ante: 10,
   chips: 200,
   winnerIdx: -1,

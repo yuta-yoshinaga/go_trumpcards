@@ -229,6 +229,32 @@ describe('PontoonPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /CLI/i }));
     await waitFor(() => expect(screen.queryByRole('button', { name: 'ツイスト' })).not.toBeInTheDocument());
   });
+
+  it('offers every legal buy stake, up to twice the current bet', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(makeState({ canBuy: true }));
+    renderWithProviders(<PontoonPage />);
+    const select = (await screen.findByTestId('pontoon-buy-amount')) as HTMLSelectElement;
+    // Pontoon.Buy accepts PontoonMinBet..bet*2; the stake here is 100.
+    const offered = Array.from(select.options).map((o) => Number(o.value));
+    expect(offered[0]).toBe(10);
+    expect(offered[offered.length - 1]).toBe(200);
+    // The default is the current stake, which is what the page always sent.
+    expect(Number(select.value)).toBe(100);
+  });
+
+  it('buys for the chosen stake rather than always the minimum', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(makeState({ canBuy: true }));
+    renderWithProviders(<PontoonPage />);
+    const select = await screen.findByTestId('pontoon-buy-amount');
+    fireEvent.change(select, { target: { value: '150' } });
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'バイ' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('buy', 150));
+  });
 });
 
 // Keyboard shortcuts are bound by useActionKeyboardNav and advertised by

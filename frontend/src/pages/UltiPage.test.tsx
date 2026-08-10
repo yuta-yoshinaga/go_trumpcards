@@ -281,4 +281,15 @@ describe('UltiPage', () => {
     renderWithProviders(<UltiPage />);
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
   });
+
+  it('states each contract win condition, including Ulti', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<UltiPage />);
+    const betli = await screen.findByRole('button', { name: 'ベトリ' });
+    expect(betli).toHaveAttribute('title', expect.stringContaining('1トリックも取らなければ'));
+    // The contract the game is named after had no explanation on the web at all.
+    expect(document.getElementById('ulti-bid-desc-ulti')?.textContent).toMatch(/切り札の7/);
+  });
 });

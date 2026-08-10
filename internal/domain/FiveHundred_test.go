@@ -224,6 +224,85 @@ func TestFiveHundred_ScoreRound_SuitContract(t *testing.T) {
 	}
 }
 
+// **内訳を読める形で返す (#4809)。**画面が「成立/セット」「必要トリック数」
+// 「増減点」を言えるようにする。ScoreRound と同じ計算を共有しているので、表示と
+// 実際の加算がずれることはない。
+func TestFiveHundred_GetRoundResult(t *testing.T) {
+	tests := []struct {
+		name       string
+		contract   domain.FiveHundredContractKind
+		bidTricks  int
+		declTricks int
+		wantMade   bool
+		wantSlam   bool
+		wantNeed   int
+	}{
+		{"made", domain.FiveHundredContractSuit, 7, 7, true, false, 7},
+		{"set", domain.FiveHundredContractSuit, 7, 5, false, false, 7},
+		{"slam", domain.FiveHundredContractSuit, 6, 10, true, true, 6},
+		{"misere made", domain.FiveHundredContractMisere, 0, 0, true, false, 0},
+		{"misere failed", domain.FiveHundredContractMisere, 0, 1, false, false, 0},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := newFiveHundredForTest()
+			g.SetContract(tt.contract, tt.bidTricks, domain.CardDesignSpade)
+			g.SetDeclarerIdx(0)
+			for i := 0; i < tt.declTricks; i++ {
+				g.GetPlayer(i % 2 * 2).AddTrick([]*domain.Card{nil})
+			}
+			for i := 0; i < domain.FiveHundredTrickCnt-tt.declTricks; i++ {
+				g.GetPlayer(1).AddTrick([]*domain.Card{nil})
+			}
+			g.SetPhase(domain.FiveHundredPhaseRoundEnd)
+
+			r := g.GetRoundResult()
+			if r == nil {
+				t.Fatal("ラウンド終了フェーズでは内訳が返る")
+			}
+			if r.Made != tt.wantMade {
+				t.Errorf("Made = %v, want %v", r.Made, tt.wantMade)
+			}
+			if r.Slam != tt.wantSlam {
+				t.Errorf("Slam = %v, want %v", r.Slam, tt.wantSlam)
+			}
+			if r.NeedTricks != tt.wantNeed {
+				t.Errorf("NeedTricks = %d, want %d", r.NeedTricks, tt.wantNeed)
+			}
+			if r.DeclarerTricks != tt.declTricks {
+				t.Errorf("DeclarerTricks = %d, want %d", r.DeclarerTricks, tt.declTricks)
+			}
+			if r.DeclarerTeam == r.DefenderTeam {
+				t.Errorf("宣言側と守備側が同じチーム: %d", r.DeclarerTeam)
+			}
+
+			// 表示した増減が、実際に加算される値と一致する。
+			before := [2]int{g.GetTeamScore(0), g.GetTeamScore(1)}
+			g.ScoreRound()
+			if got := g.GetTeamScore(r.DeclarerTeam); got != before[r.DeclarerTeam]+r.DeclarerDelta {
+				t.Errorf("declarer score = %d, want %d", got, before[r.DeclarerTeam]+r.DeclarerDelta)
+			}
+			if got := g.GetTeamScore(r.DefenderTeam); got != before[r.DefenderTeam]+r.DefenderDelta {
+				t.Errorf("defender score = %d, want %d", got, before[r.DefenderTeam]+r.DefenderDelta)
+			}
+		})
+	}
+
+	// ラウンド終了フェーズ以外、および契約が決まっていないときは nil。
+	g := newFiveHundredForTest()
+	g.SetContract(domain.FiveHundredContractSuit, 7, domain.CardDesignSpade)
+	g.SetDeclarerIdx(0)
+	g.SetPhase(domain.FiveHundredPhasePlay)
+	if g.GetRoundResult() != nil {
+		t.Error("プレイ中は内訳を返さない")
+	}
+	g2 := newFiveHundredForTest()
+	g2.SetPhase(domain.FiveHundredPhaseRoundEnd)
+	if g2.GetRoundResult() != nil {
+		t.Error("落札者がいなければ内訳はない")
+	}
+}
+
 func TestFiveHundred_ScoreRound_Misere(t *testing.T) {
 	// Made: declarer takes 0 tricks → +250.
 	g := newFiveHundredForTest()

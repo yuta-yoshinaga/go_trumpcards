@@ -315,4 +315,11 @@ describe('PitchPage', () => {
     renderWithProviders(<PitchPage />);
     await waitFor(() => expect(screen.getByTestId('pt-previous-trick-empty')).toBeInTheDocument());
   });
+
+  it('renders the i18n skeleton instead of a hardcoded Loading label before state loads', () => {
+    mockApi.mockReturnValue(new Promise(() => {}));
+    renderWithProviders(<PitchPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+    expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
+  });
 });

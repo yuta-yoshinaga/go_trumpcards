@@ -37,12 +37,12 @@ type RussianSolitaireHint struct {
 
 // RussianSolitaire ロシアンソリティアゲームクラス
 type RussianSolitaire struct {
-	trumpCards  *TrumpCards
-	tableau     [RussianSolitaireTableauCnt][]*KlondikeTableauCard
-	foundation  [RussianSolitaireFoundationCnt][]*Card
-	phase       RussianSolitairePhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	tableau    [RussianSolitaireTableauCnt][]*KlondikeTableauCard
+	foundation [RussianSolitaireFoundationCnt][]*Card
+	phase      RussianSolitairePhase
+	moveCount  int
+	actionLogBase
 	history     []*russianSolitaireSnapshot
 	isStalemate bool
 }
@@ -350,9 +350,6 @@ func (y *RussianSolitaire) GetFoundation() [RussianSolitaireFoundationCnt][]*Car
 	return y.foundation
 }
 
-// GetActionLog 棋譜取得
-func (y *RussianSolitaire) GetActionLog() []*ActionLogEntry { return y.actionLog }
-
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (y *RussianSolitaire) GetGameEndFlag() bool { return y.phase != RussianSolitairePhasePlaying }
 
@@ -393,25 +390,12 @@ func (y *RussianSolitaire) CanUndo() bool {
 
 // UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。膠着状態でなければ0、脱出不可なら-1。
 func (y *RussianSolitaire) UndoToEscape() int {
-	if !y.isStalemate {
-		return 0
-	}
-	for i := len(y.history) - 1; i >= 0; i-- {
-		if !y.history[i].isStalemate {
-			return len(y.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(y.isStalemate, y.history, func(s *russianSolitaireSnapshot) bool { return s.isStalemate })
 }
 
 // UndoN n回連続でアンドゥを実行する。
 func (y *RussianSolitaire) UndoN(n int) error {
-	for i := range n {
-		if err := y.Undo(); err != nil {
-			return fmt.Errorf("undo step %d failed: %w", i+1, err)
-		}
-	}
-	return nil
+	return undoN(y, n)
 }
 
 // --- Private helpers ---
@@ -430,22 +414,12 @@ func (y *RussianSolitaire) canPlaceOnTableau(card *Card, col int) bool {
 
 // canPlaceOnFoundation ファンデーションにカードを置けるか判定
 func (y *RussianSolitaire) canPlaceOnFoundation(card *Card, fIdx int) bool {
-	pile := y.foundation[fIdx]
-	if len(pile) == 0 {
-		// 空のファンデーションにはAのみ置ける
-		return card.GetValue() == 1
-	}
-	topCard := pile[len(pile)-1]
-	// 同じスートで昇順
-	return card.GetDesign() == topCard.GetDesign() && card.GetValue() == topCard.GetValue()+1
+	return canPlaceOnFoundationPile(y.foundation[fIdx], card)
 }
 
 // autoFlipTableau タブローの最上部の裏カードを自動フリップ
 func (y *RussianSolitaire) autoFlipTableau(col int) {
-	cards := y.tableau[col]
-	if len(cards) > 0 && !cards[len(cards)-1].FaceUp {
-		cards[len(cards)-1].FaceUp = true
-	}
+	autoFlipTopCard(y.tableau[col])
 }
 
 // checkGameClear ゲームクリア判定
@@ -505,13 +479,7 @@ func (y *RussianSolitaire) restoreSnapshot(snap *russianSolitaireSnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (y *RussianSolitaire) appendLog(actionType, detail string, cards []*Card) {
-	y.actionLog = append(y.actionLog, &ActionLogEntry{
-		TurnNumber: y.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	y.appendLogAt(y.moveCount, 0, actionType, detail, cards)
 }
 
 // russianSolitaireJSON is the JSON wire format for RussianSolitaire.

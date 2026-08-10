@@ -29,6 +29,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { CanastaResponse, Card } from '../types/card';
 import { CanastaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { canastaDrawDiscardProblem } from '../utils/canastaDrawDiscard';
 import { canastaMinMeld, canastaSelectionPoints } from '../utils/canastaScore';
 import { cardAlt } from '../utils/cardAlt';
 import { CANASTA_HELP, parseCanastaCommand } from '../utils/cli/commands/canastaCommands';
@@ -116,17 +117,26 @@ function CanastaPageContent() {
   const isRoundEnd = state?.phase === CanastaPhase.ROUND_END;
   const isGameEnd = state?.phase === CanastaPhase.GAME_END || !!state?.gameEndFlag;
 
+  // Two cards used to be enough to enable the button, whatever they were, while
+  // PlayerDrawFromDiscard demands two *natural* cards of the discard top's rank —
+  // always, not only while frozen. The pair is now checked before sending (#4825).
+  const drawDiscardProblem = useMemo(() => {
+    if (!isDrawPhase || !humanPlayer) return null;
+    const selected = selectedCardIndices
+      .map((i) => humanPlayer.cards[i])
+      .filter((card): card is Card => card !== undefined);
+    return canastaDrawDiscardProblem(selected, state?.discardTop);
+  }, [isDrawPhase, humanPlayer, selectedCardIndices, state?.discardTop]);
+
   const drawDiscardReason = useMemo(() => {
     if (!isDrawPhase) return '';
-    const n = selectedCardIndices.length;
-    if (n > 2) return t('drawDiscardReason.tooMany');
-    if (n === 2) return '';
-    // Frozen takes priority while the player is still picking — the wildcard restriction
-    // is the load-bearing rule players forget; surface it whether they've picked 0 or 1 cards.
-    if (state?.isFrozen) return t('drawDiscardReason.frozen');
-    if (n === 1) return t('drawDiscardReason.selectOneMore');
-    return t('drawDiscardReason.selectTwo');
-  }, [isDrawPhase, selectedCardIndices.length, state?.isFrozen, t]);
+    // Frozen is advice rather than a rejection, so it keeps priority while the
+    // selection is still incomplete — at 0 or 1 cards, as it did before.
+    if (state?.isFrozen && (drawDiscardProblem === 'selectTwo' || drawDiscardProblem === 'selectOneMore')) {
+      return t('drawDiscardReason.frozen');
+    }
+    return drawDiscardProblem === null ? '' : t(`drawDiscardReason.${drawDiscardProblem}`);
+  }, [isDrawPhase, state?.isFrozen, drawDiscardProblem, t]);
 
   // Meld phase: surface the initial-meld minimum (by score band) and the
   // selected cards' running point total so the player can tell if they qualify.
@@ -429,7 +439,7 @@ function CanastaPageContent() {
                       type="button"
                       className={btnPrimary}
                       onClick={handleDrawDiscard}
-                      disabled={loading || selectedCardIndices.length !== 2}
+                      disabled={loading || drawDiscardProblem !== null}
                       title={drawDiscardReason || undefined}
                       aria-describedby={drawDiscardReason ? 'ca-draw-discard-reason' : undefined}
                     >

@@ -63,12 +63,12 @@ type StreetsAndAlleysConfig struct{}
 
 // StreetsAndAlleys ゲームクラス
 type StreetsAndAlleys struct {
-	trumpCards  *TrumpCards
-	tableau     [StreetsAndAlleysTableauCnt][]*StreetsAndAlleysTableauCard
-	foundation  [StreetsAndAlleysFoundationCnt][]*Card
-	phase       StreetsAndAlleysPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	tableau    [StreetsAndAlleysTableauCnt][]*StreetsAndAlleysTableauCard
+	foundation [StreetsAndAlleysFoundationCnt][]*Card
+	phase      StreetsAndAlleysPhase
+	moveCount  int
+	actionLogBase
 	history     []*streetsAndAlleysSnapshot
 	isStalemate bool
 }
@@ -313,9 +313,6 @@ func (sa *StreetsAndAlleys) GetFoundation() [StreetsAndAlleysFoundationCnt][]*Ca
 	return sa.foundation
 }
 
-// GetActionLog 棋譜取得
-func (sa *StreetsAndAlleys) GetActionLog() []*ActionLogEntry { return sa.actionLog }
-
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (sa *StreetsAndAlleys) GetGameEndFlag() bool { return sa.phase != StreetsAndAlleysPhasePlaying }
 
@@ -357,25 +354,12 @@ func (sa *StreetsAndAlleys) CanUndo() bool {
 // UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。
 // 膠着状態でなければ0、脱出不可なら-1。
 func (sa *StreetsAndAlleys) UndoToEscape() int {
-	if !sa.isStalemate {
-		return 0
-	}
-	for i := len(sa.history) - 1; i >= 0; i-- {
-		if !sa.history[i].isStalemate {
-			return len(sa.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(sa.isStalemate, sa.history, func(s *streetsAndAlleysSnapshot) bool { return s.isStalemate })
 }
 
 // UndoN n回連続でアンドゥを実行する。
 func (sa *StreetsAndAlleys) UndoN(n int) error {
-	for i := range n {
-		if err := sa.Undo(); err != nil {
-			return fmt.Errorf("undo step %d failed: %w", i+1, err)
-		}
-	}
-	return nil
+	return undoN(sa, n)
 }
 
 // --- Private helpers ---
@@ -395,12 +379,7 @@ func (sa *StreetsAndAlleys) canPlaceOnTableau(card *Card, col int) bool {
 
 // canPlaceOnFoundation ファンデーションにカードを置けるか判定
 func (sa *StreetsAndAlleys) canPlaceOnFoundation(card *Card, fIdx int) bool {
-	pile := sa.foundation[fIdx]
-	if len(pile) == 0 {
-		return card.GetValue() == 1
-	}
-	topCard := pile[len(pile)-1]
-	return card.GetDesign() == topCard.GetDesign() && card.GetValue() == topCard.GetValue()+1
+	return canPlaceOnFoundationPile(sa.foundation[fIdx], card)
 }
 
 // findFoundation カードを置けるファンデーションのインデックスを探す（見つからない場合-1）
@@ -466,13 +445,7 @@ func (sa *StreetsAndAlleys) restoreSnapshot(snap *streetsAndAlleysSnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (sa *StreetsAndAlleys) appendLog(actionType, detail string, cards []*Card) {
-	sa.actionLog = append(sa.actionLog, &ActionLogEntry{
-		TurnNumber: sa.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	sa.appendLogAt(sa.moveCount, 0, actionType, detail, cards)
 }
 
 // streetsAndAlleysJSON is the JSON wire format for StreetsAndAlleys.

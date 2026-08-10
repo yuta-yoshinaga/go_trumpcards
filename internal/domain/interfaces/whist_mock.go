@@ -135,6 +135,12 @@ func (m *MockWhistGame) GetHint() *domain.WhistHint {
 	return nil
 }
 
+// GetValidPlayIndices はプレイ可能なカードのインデックスを返すモック。
+func (m *MockWhistGame) GetValidPlayIndices(playerIdx int) []int {
+	out, _ := m.Called(playerIdx).Get(0).([]int)
+	return out
+}
+
 func (m *MockWhistGame) GetActionLog() []*domain.ActionLogEntry {
 	args := m.Called()
 	if v := args.Get(0); v != nil {

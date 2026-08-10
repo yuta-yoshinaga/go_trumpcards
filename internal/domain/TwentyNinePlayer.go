@@ -18,9 +18,7 @@ func NewTwentyNinePlayer(isHuman bool) *TwentyNinePlayer {
 
 // ResetRound ラウンドをリセット（トリック・手札・終了状態を初期化）
 func (p *TwentyNinePlayer) ResetRound() {
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayerRound(p)
 }
 
 // twentyNinePlayerJSON is the JSON wire format for TwentyNinePlayer.

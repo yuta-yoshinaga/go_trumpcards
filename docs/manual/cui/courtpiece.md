@@ -1,4 +1,4 @@
-# Court Piece / Rang コートピース（CUI版）遊び方
+# コートピース (Rang)（CUI版）遊び方
 
 ## ゲーム概要
 

@@ -100,6 +100,11 @@ func (_m *MockOsmosisGame) GetBaseRank() int {
 	return ret.Int(0)
 }
 
+func (_m *MockOsmosisGame) IsStalemate() bool {
+	ret := _m.Called()
+	return ret.Bool(0)
+}
+
 func (_m *MockOsmosisGame) GetActionLog() []*domain.ActionLogEntry {
 	ret := _m.Called()
 	v := ret.Get(0)

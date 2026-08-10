@@ -253,6 +253,36 @@ Go + Clean Architecture で実装した264種類のトランプゲーム。CLI �
 | スカルト (Scarto) | `scarto` | [CUI](docs/manual/cui/scarto.md) / [Web](docs/manual/web/scarto.md) |
 | チェゴ (Cego) | `cego` | [CUI](docs/manual/cui/cego.md) / [Web](docs/manual/web/cego.md) |
 | 争上游 (Zheng Shangyou) | `zheng` | [CUI](docs/manual/cui/zheng.md) / [Web](docs/manual/web/zheng.md) |
+| セブンカードスタッド・ハイロー (Seven Card Stud Hi-Lo) | `sevencardstudhilo` | [CUI](docs/manual/cui/sevencardstudhilo.md) / [Web](docs/manual/web/sevencardstudhilo.md) |
+| ブラ (Bura) | `bura` | [CUI](docs/manual/cui/bura.md) / [Web](docs/manual/web/bura.md) |
+| 虫 (Mushi) | `mushi` | [CUI](docs/manual/cui/mushi.md) / [Web](docs/manual/web/mushi.md) |
+| トゥーペン (Toepen) | `toepen` | [CUI](docs/manual/cui/toepen.md) / [Web](docs/manual/web/toepen.md) |
+| 撿紅點 (Chinese Ten) | `chineseten` | [CUI](docs/manual/cui/chineseten.md) / [Web](docs/manual/web/chineseten.md) |
+| トリックス (Trex) | `trex` | [CUI](docs/manual/cui/trex.md) / [Web](docs/manual/web/trex.md) |
+| シートグッベ (Skitgubbe) | `skitgubbe` | [CUI](docs/manual/cui/skitgubbe.md) / [Web](docs/manual/web/skitgubbe.md) |
+| ロバ (Loba de Menos) | `loba` | [CUI](docs/manual/cui/loba.md) / [Web](docs/manual/web/loba.md) |
+| シャウス (Sjavs) | `sjavs` | [CUI](docs/manual/cui/sjavs.md) / [Web](docs/manual/web/sjavs.md) |
+| ラフ・アンド・ライダウン (Laugh and Lie Down) | `laughandliedown` | [CUI](docs/manual/cui/laughandliedown.md) / [Web](docs/manual/web/laughandliedown.md) |
+| ヴィーラ (Vira) | `vira` | [CUI](docs/manual/cui/vira.md) / [Web](docs/manual/web/vira.md) |
+| アリュエット (Aluette) | `aluette` | [CUI](docs/manual/cui/aluette.md) / [Web](docs/manual/web/aluette.md) |
+| ミンキアーテ (Minchiate) | `minchiate` | [CUI](docs/manual/cui/minchiate.md) / [Web](docs/manual/web/minchiate.md) |
+| タロッキーニ (Tarocchini) | `tarocchini` | [CUI](docs/manual/cui/tarocchini.md) / [Web](docs/manual/web/tarocchini.md) |
+| デスモチェ (Desmoche) | `desmoche` | [CUI](docs/manual/cui/desmoche.md) / [Web](docs/manual/web/desmoche.md) |
+| ツヴィッカー (Zwicker) | `zwicker` | [CUI](docs/manual/cui/zwicker.md) / [Web](docs/manual/web/zwicker.md) |
+| ポッホ (Poch) | `poch` | [CUI](docs/manual/cui/poch.md) / [Web](docs/manual/web/poch.md) |
+| ポープ・ジョーン (Pope Joan) | `popejoan` | [CUI](docs/manual/cui/popejoan.md) / [Web](docs/manual/web/popejoan.md) |
+| ル・ナン・ジョーヌ (Le Nain Jaune) | `nainjaune` | [CUI](docs/manual/cui/nainjaune.md) / [Web](docs/manual/web/nainjaune.md) |
+| キッレ (Kille) | `kille` | [CUI](docs/manual/cui/kille.md) / [Web](docs/manual/web/kille.md) |
+| クラバーヤス (Klaberjass) | `klaberjass` | [CUI](docs/manual/cui/klaberjass.md) / [Web](docs/manual/web/klaberjass.md) |
+| カイザー (Kaiser) | `kaiser` | [CUI](docs/manual/cui/kaiser.md) / [Web](docs/manual/web/kaiser.md) |
+| ボストン (Boston) | `boston` | [CUI](docs/manual/cui/boston.md) / [Web](docs/manual/web/boston.md) |
+| ヴィント (Vint) | `vint` | [CUI](docs/manual/cui/vint.md) / [Web](docs/manual/web/vint.md) |
+| ビッド・ユーカー (Bid Euchre) | `bideuchre` | [CUI](docs/manual/cui/bideuchre.md) / [Web](docs/manual/web/bideuchre.md) |
+| シックスビッド・ソロ (Six-Bid Solo) | `sixbidsolo` | [CUI](docs/manual/cui/sixbidsolo.md) / [Web](docs/manual/web/sixbidsolo.md) |
+| カルニッフェル (Karnöffel) | `karnoffel` | [CUI](docs/manual/cui/karnoffel.md) / [Web](docs/manual/web/karnoffel.md) |
+| リテラチャー (Literature) | `literature` | [CUI](docs/manual/cui/literature.md) / [Web](docs/manual/web/literature.md) |
+| 掼蛋 (Guandan) | `guandan` | [CUI](docs/manual/cui/guandan.md) / [Web](docs/manual/web/guandan.md) |
+| 升级 / 拖拉机 (Sheng Ji) | `shengji` | [CUI](docs/manual/cui/shengji.md) / [Web](docs/manual/web/shengji.md) |
 
 ## Demo
 
@@ -394,6 +424,7 @@ Clean Architecture を採用。依存の方向は外側から内側への一方�
 cmd/
   trumpcards/         # CLIエントリーポイント（全ゲーム + Webサーバー）
   server/             # Webサーバー専用エントリーポイント
+  workers/            # Cloudflare Workers (WASM) エントリーポイント x6
 internal/
   domain/             # コアビジネスロジック（最内層）
   usecase/            # アプリケーションビジネスルール

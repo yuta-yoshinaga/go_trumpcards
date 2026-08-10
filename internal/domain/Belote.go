@@ -84,7 +84,7 @@ type Belote struct {
 	bidPassCount      int // 連続パス数 (両ラウンド合計; 8で再配布)
 	gameEndFlag       bool
 	winnerTeam        int // 勝利チーム (-1 = 未確定)
-	actionLog         []*ActionLogEntry
+	actionLogBase
 }
 
 // NewBelote コンストラクタ
@@ -254,7 +254,7 @@ func (b *Belote) PlayerPickUp(orderUp bool) error {
 	if b.phase != BelotePhaseBidPickUp {
 		return ErrWrongPhase
 	}
-	humanIdx := b.findHumanIdx()
+	humanIdx := findHumanIdx(b.players)
 	if humanIdx < 0 || b.bidPlayerIdx != humanIdx {
 		return ErrNotHumanTurn
 	}
@@ -262,7 +262,7 @@ func (b *Belote) PlayerPickUp(orderUp bool) error {
 	if orderUp {
 		b.doOrderUp(humanIdx)
 	} else {
-		b.appendLog(humanIdx, "pass", fmt.Sprintf("%s passes", b.playerName(humanIdx)), nil)
+		b.appendLog(humanIdx, "pass", fmt.Sprintf("%s passes", playerName(b.players, humanIdx)), nil)
 		b.advanceBidPickUp()
 	}
 	return nil
@@ -283,7 +283,7 @@ func (b *Belote) CpuPickUp() {
 	if b.cpuSelectPickUp(b.bidPlayerIdx) {
 		b.doOrderUp(b.bidPlayerIdx)
 	} else {
-		b.appendLog(b.bidPlayerIdx, "pass", fmt.Sprintf("%s passes", b.playerName(b.bidPlayerIdx)), nil)
+		b.appendLog(b.bidPlayerIdx, "pass", fmt.Sprintf("%s passes", playerName(b.players, b.bidPlayerIdx)), nil)
 		b.advanceBidPickUp()
 	}
 }
@@ -294,7 +294,7 @@ func (b *Belote) doOrderUp(playerIdx int) {
 	b.makerTeam = b.players[playerIdx].GetTeam()
 	b.makerPlayerIdx = playerIdx
 	b.appendLog(playerIdx, "order_up",
-		fmt.Sprintf("%s takes %s as trump", b.playerName(playerIdx), cardStr(b.faceUpCard)),
+		fmt.Sprintf("%s takes %s as trump", playerName(b.players, playerIdx), cardStr(b.faceUpCard)),
 		[]*Card{b.faceUpCard})
 
 	b.dealRemainder(playerIdx)
@@ -322,7 +322,7 @@ func (b *Belote) PlayerCallTrump(suit int) error {
 	if b.phase != BelotePhaseBidCallTrump {
 		return ErrWrongPhase
 	}
-	humanIdx := b.findHumanIdx()
+	humanIdx := findHumanIdx(b.players)
 	if humanIdx < 0 || b.bidPlayerIdx != humanIdx {
 		return ErrNotHumanTurn
 	}
@@ -344,11 +344,11 @@ func (b *Belote) PlayerPassCall() error {
 	if b.phase != BelotePhaseBidCallTrump {
 		return ErrWrongPhase
 	}
-	humanIdx := b.findHumanIdx()
+	humanIdx := findHumanIdx(b.players)
 	if humanIdx < 0 || b.bidPlayerIdx != humanIdx {
 		return ErrNotHumanTurn
 	}
-	b.appendLog(humanIdx, "pass", fmt.Sprintf("%s passes", b.playerName(humanIdx)), nil)
+	b.appendLog(humanIdx, "pass", fmt.Sprintf("%s passes", playerName(b.players, humanIdx)), nil)
 	b.advanceBidCallTrump()
 	return nil
 }
@@ -366,7 +366,7 @@ func (b *Belote) CpuCallTrump() {
 	if suit > 0 {
 		b.doCallTrump(b.bidPlayerIdx, suit)
 	} else {
-		b.appendLog(b.bidPlayerIdx, "pass", fmt.Sprintf("%s passes", b.playerName(b.bidPlayerIdx)), nil)
+		b.appendLog(b.bidPlayerIdx, "pass", fmt.Sprintf("%s passes", playerName(b.players, b.bidPlayerIdx)), nil)
 		b.advanceBidCallTrump()
 	}
 }
@@ -378,7 +378,7 @@ func (b *Belote) doCallTrump(playerIdx int, suit int) {
 	b.makerPlayerIdx = playerIdx
 	suitName := suitStr(suit)
 	b.appendLog(playerIdx, "call_trump",
-		fmt.Sprintf("%s calls %s as trump", b.playerName(playerIdx), suitName), nil)
+		fmt.Sprintf("%s calls %s as trump", playerName(b.players, playerIdx), suitName), nil)
 
 	b.dealRemainder(playerIdx)
 	b.startPlayPhase()
@@ -469,7 +469,7 @@ func (b *Belote) ResolveTrick() {
 	b.players[winnerIdx].AddTrick(trickCards)
 	b.roundPoints[b.players[winnerIdx].GetTeam()] += trickPoints
 
-	winnerName := b.playerName(winnerIdx)
+	winnerName := playerName(b.players, winnerIdx)
 	b.appendLog(winnerIdx, "trick_win",
 		fmt.Sprintf("%s wins trick %d (%d pts)", winnerName, b.trickNumber, trickPoints),
 		trickCards)
@@ -604,10 +604,7 @@ func (b *Belote) GetPlayerCnt() int { return len(b.players) }
 
 // GetPlayer プレイヤー取得
 func (b *Belote) GetPlayer(i int) *BelotePlayer {
-	if i < 0 || i >= len(b.players) {
-		return nil
-	}
-	return b.players[i]
+	return getPlayer(b.players, i)
 }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
@@ -686,18 +683,12 @@ func (b *Belote) GetRoundBeloteBonus(team int) int {
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (b *Belote) IsHumanTurn() bool {
-	if b.currentPlayerIdx < 0 || b.currentPlayerIdx >= len(b.players) {
-		return false
-	}
-	return b.players[b.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(b.players, b.currentPlayerIdx)
 }
 
 // IsHumanBidTurn 現在のビッド手番が人間かどうか
 func (b *Belote) IsHumanBidTurn() bool {
-	if b.bidPlayerIdx < 0 || b.bidPlayerIdx >= len(b.players) {
-		return false
-	}
-	return b.players[b.bidPlayerIdx].GetIsHuman()
+	return isHumanTurn(b.players, b.bidPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -705,9 +696,6 @@ func (b *Belote) GetConfig() BeloteConfig { return b.config }
 
 // SetConfig 設定変更
 func (b *Belote) SetConfig(cfg BeloteConfig) { b.config = cfg }
-
-// GetActionLog 棋譜取得
-func (b *Belote) GetActionLog() []*ActionLogEntry { return b.actionLog }
 
 // CardRankPublic カードランク取得 (テスト用公開メソッド)
 func (b *Belote) CardRankPublic(card *Card) int { return b.cardRank(card) }
@@ -832,7 +820,7 @@ func (b *Belote) playCard(playerIdx int, card *Card) {
 	})
 	b.maybeDeclareBeloteRebelote(playerIdx, card)
 	b.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", b.playerName(playerIdx), cardStr(card)), []*Card{card})
+		fmt.Sprintf("%s plays %s", playerName(b.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(b.currentTrick) == BelotePlayerCnt {
 		b.phase = BelotePhaseTrickEnd
@@ -866,7 +854,7 @@ func (b *Belote) maybeDeclareBeloteRebelote(playerIdx int, card *Card) {
 		b.beloteDeclared = true
 		b.appendLog(playerIdx, "belote_rebelote",
 			fmt.Sprintf("%s declares Belote/Rebelote (+%d)",
-				b.playerName(playerIdx), BeloteRebeloteBonus), nil)
+				playerName(b.players, playerIdx), BeloteRebeloteBonus), nil)
 	}
 }
 
@@ -1033,10 +1021,7 @@ func (b *Belote) GetValidPlayIndices(playerIdx int) []int {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (b *Belote) getValidPlayIndices(playerIdx int) []int {
-	player := b.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return b.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(b.players[playerIdx], func(c *Card) bool { return b.validatePlay(playerIdx, c) == nil })
 }
 
 // --- Game end + bookkeeping ---
@@ -1079,40 +1064,11 @@ func beloteSortHand(p *BelotePlayer, b *Belote) {
 	})
 }
 
-func (b *Belote) findHumanIdx() int {
-	for i, p := range b.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
-func (b *Belote) playerName(idx int) string {
-	if idx < 0 || idx >= len(b.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if b.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-func (b *Belote) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	b.actionLog = append(b.actionLog, &ActionLogEntry{
-		TurnNumber: len(b.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // --- Hints ---
 
 // GetHint 現フェーズのヒントを返す (人間プレイヤー視点)
 func (b *Belote) GetHint() *BeloteHint {
-	humanIdx := b.findHumanIdx()
+	humanIdx := findHumanIdx(b.players)
 	if humanIdx < 0 {
 		return nil
 	}
@@ -1147,7 +1103,7 @@ func (b *Belote) GetHint() *BeloteHint {
 }
 
 func (b *Belote) playHintReason(chosenIdx int) string {
-	humanIdx := b.findHumanIdx()
+	humanIdx := findHumanIdx(b.players)
 	if humanIdx < 0 {
 		return ""
 	}

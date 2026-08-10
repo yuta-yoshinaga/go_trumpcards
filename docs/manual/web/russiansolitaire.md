@@ -1,4 +1,4 @@
-# Russian Solitaire（Web版）遊び方
+# ロシアンソリティア（Web版）遊び方
 
 ## ゲーム概要
 

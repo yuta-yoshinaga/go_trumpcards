@@ -158,3 +158,52 @@ func TestPitchCuiPresenter_ActionLogOutput(t *testing.T) {
 	out := p.ActionLogOutput(m)
 	assert.Contains(t, out, "You bid 3")
 }
+
+// **入札前に手札の得点価値を暗算させていた (#4751)。**Web は入札中にゲーム
+// 得点バッジと内訳ポップオーバーを出している。
+func TestPitchCuiPresenter_HandPips(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.PitchCuiPresenter)
+
+	withHand := func(values ...int) *interfaces.MockPitchGame {
+		m, players := setupPitchCuiMockWithPlayers()
+		players[0].Reset()
+		for _, v := range values {
+			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, v, false))
+		}
+		return m
+	}
+
+	t.Run("totals the game pips in the human hand", func(t *testing.T) {
+		// ♠10(10) ♠A(4) ♠K(3) ♠7(0) = 17
+		out := p.Output(withHand(10, 1, 13, 7), nil)
+		assert.Contains(t, out, "手札のゲーム得点: 17")
+	})
+
+	// **0点の札も内訳に並べる。**並べないと「見落とし」なのか「0点」なのか
+	// 区別が付かない。
+	t.Run("lists worthless cards in the breakdown too", func(t *testing.T) {
+		out := p.Output(withHand(10, 7), nil)
+		assert.Contains(t, out, "=10")
+		assert.Contains(t, out, "=0")
+	})
+
+	// **人間の手札だけを見る。**手札を持っている最初の席を拾う実装だと、
+	// 人間が配り終える前に CPU の手札を人間の得点として出してしまう。
+	t.Run("shows nothing when only a CPU holds cards", func(t *testing.T) {
+		m, players := setupPitchCuiMockWithPlayers()
+		players[0].Reset()
+		players[1].Reset()
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		assert.NotContains(t, p.Output(m, nil), "手札のゲーム得点")
+	})
+
+	t.Run("shows nothing outside the bid phase", func(t *testing.T) {
+		m := withHand(10, 1)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.PitchPhasePlay)
+		assert.NotContains(t, p.Output(m, nil), "手札のゲーム得点")
+	})
+}

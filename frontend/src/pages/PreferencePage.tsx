@@ -205,6 +205,10 @@ function PreferencePageContent() {
 
   // The current highest (non-pass) bid; a new non-pass bid must beat it.
   const highestBid = Math.max(0, ...state.bids);
+  // Who is being outbid matters as much as the contract; Nap and Solo Whist
+  // already name them (#4764).
+  const highestBidder = highestBid > 0 ? state.players[state.bids.indexOf(highestBid)] : undefined;
+  const highestBidderName = highestBidder ? playerName(highestBidder.id, highestBidder.isHuman) : '';
 
   const contractName =
     state.declarerIdx >= 0 ? t(`contractName.${CONTRACT_KEYS[state.contract] ?? 'pass'}`) : t('contractUndecided');
@@ -421,9 +425,9 @@ function PreferencePageContent() {
                     className="text-xs font-semibold text-ds-text-primary self-center mr-1"
                     data-testid="preference-highest-bid"
                   >
-                    {t('bidHighest', {
-                      name: highestBid > 0 ? t(`bid.${CONTRACT_KEYS[highestBid]}`) : t('bidNone'),
-                    })}
+                    {highestBid > 0
+                      ? t('bidHighest', { bid: t(`bid.${CONTRACT_KEYS[highestBid]}`), player: highestBidderName })
+                      : t('bidNone')}
                   </span>
                   {BIDS.map((b) => {
                     // Pass (0) is always allowed; a non-pass bid must beat the current highest.

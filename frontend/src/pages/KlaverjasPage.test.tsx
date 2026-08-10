@@ -189,3 +189,31 @@ describe('KlaverjasPage', () => {
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
   });
 });
+
+// **切り札と非切り札で強さの順序が完全に違う (#4757)。**切り札は J > 9 > A > 10、
+// 非切り札は A > 10 > K。姉妹ゲームの Manille には早見表があるのに、より覚え
+// にくいこちらには無かった。
+describe('KlaverjasPage strength legend', () => {
+  it('shows both orders in the legend panel', async () => {
+    renderWithProviders(<KlaverjasPage />);
+    const legend = await screen.findByTestId('klaverjas-strength-legend');
+    expect(legend).toHaveTextContent('J>9>A>10>K>Q>8>7');
+    expect(legend).toHaveTextContent('A>10>K>Q>J>9>8>7');
+  });
+
+  // **点数まで出す。**順序だけ分かっても、どの札を取りに行くべきかは分からない。
+  it('lists the trump Jack at twenty points', async () => {
+    renderWithProviders(<KlaverjasPage />);
+    const legend = await screen.findByTestId('klaverjas-strength-legend');
+    expect(legend).toHaveTextContent('20');
+    expect(legend).toHaveTextContent('ヤス');
+    expect(legend).toHaveTextContent('ネル');
+  });
+
+  // **たたんだ状態で置く。**常時開いていると盤面を押し出す。
+  it('keeps the panel collapsed by default', async () => {
+    renderWithProviders(<KlaverjasPage />);
+    const legend = await screen.findByTestId('klaverjas-strength-legend');
+    expect(legend).not.toHaveAttribute('open');
+  });
+});

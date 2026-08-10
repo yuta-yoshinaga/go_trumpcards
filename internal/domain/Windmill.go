@@ -82,9 +82,9 @@ type Windmill struct {
 	transferBlocked bool
 	phase           WindmillPhase
 	moveCount       int
-	actionLog       []*ActionLogEntry
-	history         []*windmillSnapshot
-	isStalemate     bool
+	actionLogBase
+	history     []*windmillSnapshot
+	isStalemate bool
 }
 
 // windmillSnapshot アンドゥ用スナップショット
@@ -411,31 +411,12 @@ func (w *Windmill) CanUndo() bool { return len(w.history) > 0 }
 
 // UndoN n 手戻す
 func (w *Windmill) UndoN(n int) error {
-	if n <= 0 {
-		return errors.New("n must be positive")
-	}
-	if n > len(w.history) {
-		return errors.New("not enough history")
-	}
-	for range n {
-		if err := w.Undo(); err != nil {
-			return err
-		}
-	}
-	return nil
+	return undoNChecked(w, n, len(w.history))
 }
 
 // UndoToEscape 膠着状態から抜けるのに必要なアンドゥ回数（膠着でなければ 0、不可なら -1）
 func (w *Windmill) UndoToEscape() int {
-	if !w.isStalemate {
-		return 0
-	}
-	for i := len(w.history) - 1; i >= 0; i-- {
-		if !w.history[i].isStalemate {
-			return len(w.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(w.isStalemate, w.history, func(s *windmillSnapshot) bool { return s.isStalemate })
 }
 
 // AllFaceUp 常に全札が表向き
@@ -465,9 +446,6 @@ func (w *Windmill) GetCorners() [WindmillCornerCnt][]*Card { return w.corners }
 // IsTransferBlocked 四隅→中央の引き戻しが今は禁じられているか。
 // 直前にその手を打った直後だけ真になる。
 func (w *Windmill) IsTransferBlocked() bool { return w.transferBlocked }
-
-// GetActionLog 棋譜取得
-func (w *Windmill) GetActionLog() []*ActionLogEntry { return w.actionLog }
 
 // GetGameEndFlag ゲーム終了フラグ
 func (w *Windmill) GetGameEndFlag() bool { return w.phase != WindmillPhasePlaying }
@@ -550,17 +528,12 @@ func (w *Windmill) cornerTop(cornerIdx int) *Card {
 
 // wasteTop 捨て札の一番上（空なら nil）
 func (w *Windmill) wasteTop() *Card {
-	if len(w.waste) == 0 {
-		return nil
-	}
-	return w.waste[len(w.waste)-1]
+	return discardTop(w.waste)
 }
 
 // popWaste 捨て札の一番上を取り除く
 func (w *Windmill) popWaste() {
-	if len(w.waste) > 0 {
-		w.waste = w.waste[:len(w.waste)-1]
-	}
+	w.waste = dropLast(w.waste)
 }
 
 // pushCenter 帆・捨て札から中央へ置く。引き戻しの禁止を解除するのはこの経路だけ。
@@ -590,14 +563,7 @@ func (w *Windmill) refillSails() {
 
 // afterMove 手数・棋譜・終了判定をまとめて進める
 func (w *Windmill) afterMove(actionType, detail string, card *Card) {
-	w.moveCount++
-	var cards []*Card
-	if card != nil {
-		cards = []*Card{card}
-	}
-	w.appendLog(actionType, detail, cards)
-	w.checkGameClear()
-	w.checkStalemate()
+	afterMove(&w.moveCount, w, actionType, detail, card)
 }
 
 // checkGameClear 中央 52 枚と四隅 13 枚×4 がすべて揃ったか
@@ -643,13 +609,7 @@ func (w *Windmill) takeSnapshot() {
 
 // appendLog 棋譜エントリを追加
 func (w *Windmill) appendLog(actionType, detail string, cards []*Card) {
-	w.actionLog = append(w.actionLog, &ActionLogEntry{
-		TurnNumber: w.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	w.appendLogAt(w.moveCount, 0, actionType, detail, cards)
 }
 
 // windmillMaxSliceLen caps slice sizes during deserialisation.

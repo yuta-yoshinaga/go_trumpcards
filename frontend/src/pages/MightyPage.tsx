@@ -579,6 +579,10 @@ function MightyPageContent() {
                 <div className="flex flex-wrap gap-1 mb-2" data-tutorial="mighty-player-hand">
                   {humanPlayer.cards.map((card, idx) => {
                     const badge = roleBadgeFor(idx);
+                    // The hint named an index and left the player counting cards;
+                    // every sibling game rings the card itself (#4886).
+                    const hinted =
+                      hint != null && (hint.cardIndex === idx || (hint.discardIndices?.includes(idx) ?? false));
                     return (
                       <button
                         type="button"
@@ -586,7 +590,10 @@ function MightyPageContent() {
                         onClick={() => toggleCard(idx)}
                         aria-label={cardAlt(card)}
                         aria-pressed={selectedCardIndices.includes(idx)}
-                        className={`transition-transform ${focusRingCard} relative`}
+                        data-hinted={hinted || undefined}
+                        className={`transition-transform ${focusRingCard} relative ${
+                          hinted ? 'ring-2 ring-ds-warning rounded' : ''
+                        }`}
                         style={{
                           background: 'none',
                           padding: 0,

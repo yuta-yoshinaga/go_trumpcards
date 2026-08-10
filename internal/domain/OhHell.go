@@ -52,7 +52,7 @@ type OhHell struct {
 	trumpSuit        int   // 切り札スート (-1 = 切り札なし)
 	gameEndFlag      bool
 	winnerIdx        int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewOhHell コンストラクタ
@@ -139,7 +139,7 @@ func (o *OhHell) PlayerBid(bid int) error {
 		return ErrWrongPhase
 	}
 
-	humanIdx := o.findHumanIdx()
+	humanIdx := findHumanIdx(o.players)
 	if humanIdx < 0 {
 		return ErrNotHumanTurn
 	}
@@ -154,7 +154,7 @@ func (o *OhHell) PlayerBid(bid int) error {
 	}
 
 	o.players[humanIdx].SetBid(bid)
-	o.appendLog(humanIdx, "bid", fmt.Sprintf("%s bids %d", o.playerName(humanIdx), bid), nil)
+	o.appendLog(humanIdx, "bid", fmt.Sprintf("%s bids %d", playerName(o.players, humanIdx), bid), nil)
 
 	o.advanceBid()
 	return nil
@@ -174,7 +174,7 @@ func (o *OhHell) CpuBid() {
 
 	bid := o.cpuSelectBid(o.bidPlayerIdx)
 	o.players[o.bidPlayerIdx].SetBid(bid)
-	o.appendLog(o.bidPlayerIdx, "bid", fmt.Sprintf("%s bids %d", o.playerName(o.bidPlayerIdx), bid), nil)
+	o.appendLog(o.bidPlayerIdx, "bid", fmt.Sprintf("%s bids %d", playerName(o.players, o.bidPlayerIdx), bid), nil)
 
 	o.advanceBid()
 }
@@ -241,7 +241,7 @@ func (o *OhHell) ResolveTrick() {
 
 	o.players[winnerIdx].AddTrick(trickCards)
 
-	winnerName := o.playerName(winnerIdx)
+	winnerName := playerName(o.players, winnerIdx)
 	o.appendLog(winnerIdx, "trick_win", fmt.Sprintf("%s wins trick %d", winnerName, o.trickNumber), trickCards)
 
 	o.leadPlayerIdx = winnerIdx
@@ -279,7 +279,7 @@ func (o *OhHell) ScoreRound() {
 			// ビッド的中: 10 + bid ポイント
 			p.roundScore = 10 + bid
 			o.appendLog(i, "bid_success", fmt.Sprintf("%s bid %d, took %d: +%d",
-				o.playerName(i), bid, tricks, p.roundScore), nil)
+				playerName(o.players, i), bid, tricks, p.roundScore), nil)
 		} else {
 			switch o.config.ScoringVariant {
 			case OhHellScoringPenalty:
@@ -289,11 +289,11 @@ func (o *OhHell) ScoreRound() {
 				}
 				p.roundScore = -diff
 				o.appendLog(i, "bid_fail", fmt.Sprintf("%s bid %d, took %d: %d",
-					o.playerName(i), bid, tricks, p.roundScore), nil)
+					playerName(o.players, i), bid, tricks, p.roundScore), nil)
 			default:
 				p.roundScore = 0
 				o.appendLog(i, "bid_fail", fmt.Sprintf("%s bid %d, took %d: 0",
-					o.playerName(i), bid, tricks), nil)
+					playerName(o.players, i), bid, tricks), nil)
 			}
 		}
 	}
@@ -306,7 +306,7 @@ func (o *OhHell) ScoreRound() {
 	// スコアログ
 	for i := range OhHellPlayerCnt {
 		o.appendLog(i, "cumulative_score", fmt.Sprintf("%s: total=%d",
-			o.playerName(i), o.players[i].cumulativeScore), nil)
+			playerName(o.players, i), o.players[i].cumulativeScore), nil)
 	}
 
 	// ゲーム終了判定
@@ -387,10 +387,7 @@ func (o *OhHell) GetPlayerCnt() int { return len(o.players) }
 
 // GetPlayer プレイヤー取得
 func (o *OhHell) GetPlayer(i int) *OhHellPlayer {
-	if i < 0 || i >= len(o.players) {
-		return nil
-	}
-	return o.players[i]
+	return getPlayer(o.players, i)
 }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
@@ -407,18 +404,12 @@ func (o *OhHell) SetBidPlayerIdx(idx int) { o.bidPlayerIdx = idx }
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (o *OhHell) IsHumanTurn() bool {
-	if o.currentPlayerIdx < 0 || o.currentPlayerIdx >= len(o.players) {
-		return false
-	}
-	return o.players[o.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(o.players, o.currentPlayerIdx)
 }
 
 // IsHumanBidTurn 現在のビッド手番が人間かどうか
 func (o *OhHell) IsHumanBidTurn() bool {
-	if o.bidPlayerIdx < 0 || o.bidPlayerIdx >= len(o.players) {
-		return false
-	}
-	return o.players[o.bidPlayerIdx].GetIsHuman()
+	return isHumanTurn(o.players, o.bidPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -426,9 +417,6 @@ func (o *OhHell) GetConfig() OhHellConfig { return o.config }
 
 // SetConfig 設定変更
 func (o *OhHell) SetConfig(cfg OhHellConfig) { o.config = cfg }
-
-// GetActionLog 棋譜取得
-func (o *OhHell) GetActionLog() []*ActionLogEntry { return o.actionLog }
 
 // GetRestrictedBid ディーラーが選択できないビッド値を返す (-1 = 制限なし)
 func (o *OhHell) GetRestrictedBid() int {
@@ -458,16 +446,6 @@ func (o *OhHell) GetValidPlayIndices(playerIdx int) []int {
 }
 
 // --- Private methods ---
-
-// findHumanIdx 人間プレイヤーのインデックスを返す (-1=なし)
-func (o *OhHell) findHumanIdx() int {
-	for i, p := range o.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
 
 // calcTotalRounds 総ラウンド数を計算する
 func (o *OhHell) calcTotalRounds() int {
@@ -576,7 +554,7 @@ func (o *OhHell) playCard(playerIdx int, card *Card) {
 		Card:      card,
 	})
 
-	o.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", o.playerName(playerIdx), cardStr(card)), []*Card{card})
+	o.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(o.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(o.currentTrick) == OhHellPlayerCnt {
 		o.phase = OhHellPhaseTrickEnd
@@ -605,13 +583,7 @@ func (o *OhHell) validatePlay(playerIdx int, card *Card) error {
 
 // playerHasSuit プレイヤーが特定のスートを持っているか
 func (o *OhHell) playerHasSuit(playerIdx int, design int) bool {
-	p := o.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return handHasSuit(o.players[playerIdx], design)
 }
 
 // trickWinner トリックの勝者を決定する
@@ -629,7 +601,7 @@ func (o *OhHell) determineWinner() {
 			o.winnerIdx = i
 		}
 	}
-	o.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", o.playerName(o.winnerIdx)), nil)
+	o.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(o.players, o.winnerIdx)), nil)
 }
 
 // sortAllHands 全プレイヤーの手札をソートする
@@ -649,39 +621,14 @@ func ohHellSortHand(p *OhHellPlayer) {
 	})
 }
 
-// playerName ���レイヤー名を返す
-func (o *OhHell) playerName(idx int) string {
-	if idx < 0 || idx >= len(o.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if o.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (o *OhHell) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	o.actionLog = append(o.actionLog, &ActionLogEntry{
-		TurnNumber: len(o.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (o *OhHell) getValidPlayIndices(playerIdx int) []int {
-	player := o.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return o.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(o.players[playerIdx], func(c *Card) bool { return o.validatePlay(playerIdx, c) == nil })
 }
 
 // GetHint ヒントを取得する
 func (o *OhHell) GetHint() *OhHellHint {
-	humanIdx := o.findHumanIdx()
+	humanIdx := findHumanIdx(o.players)
 	if humanIdx < 0 {
 		return nil
 	}

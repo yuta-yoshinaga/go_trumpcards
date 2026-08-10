@@ -54,5 +54,6 @@
     "actions": "The heart of this game is that **the four papi rank equal and the later-played one wins**. If you carry over the usual \"only a strictly stronger card takes the trick\" instinct, you will expect the first papa to win. Note they are a middle group: a higher ordinary trump still beats them. As dealer you also bury 2 surplus cards, and buried cards score for your team."
   },
   "hintRequested": "A hint is available",
-  "noHint": "No hint available"
+  "noHint": "No hint available",
+  "hintButton": "Hint"
 }

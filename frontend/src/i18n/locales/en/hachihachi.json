@@ -1,31 +1,29 @@
 {
-  "title": "Hachi-Hachi",
+  "cancelFieldPick": "Cancel the field pick",
+  "captured": "Captured: {{count}}",
+  "cpu": "CPU{{n}}",
+  "deck": "Stock: {{count}}",
+  "field": "Field",
+  "fieldEmpty": "(empty)",
+  "hint": {
+    "capture": "Capture a high-value field card",
+    "discard_low": "Discard a low-value card"
+  },
+  "newGame": "New Game",
+  "nextRound": "Next Round",
   "phase": {
     "play": "Play",
     "roundEnd": "Round End",
     "gameEnd": "Game End"
   },
-  "settings": {
-    "title": "Settings",
-    "cpuDifficulty": "CPU Difficulty",
-    "easy": "Easy",
-    "normal": "Normal",
-    "hard": "Hard",
-    "targetRounds": "Rounds"
+  "pickField": "Pick the field card to capture (two cards match).",
+  "rawScore": "Raw: {{raw}}",
+  "result": {
+    "title": "Final Scores",
+    "winner": "Winner: {{name}}",
+    "score": "{{name}}: {{score}}"
   },
   "round": "Round {{n}} / {{total}}",
-  "deck": "Stock: {{count}}",
-  "scoringNote": "Card points: Bright 20 / Animal 10 / Ribbon 5 / Chaff 1. Three players settle against the 88 baseline — the winner collects the raw-score difference from the losers.",
-  "field": "Field",
-  "fieldEmpty": "(empty)",
-  "pickField": "Pick the field card to capture (two cards match).",
-  "you": "You",
-  "cpu": "CPU{{n}}",
-  "captured": "Captured: {{count}}",
-  "rawScore": "Raw: {{raw}}",
-  "score": "Total: {{score}}",
-  "turnYours": "Your turn — play a hand card to capture a field card.",
-  "turnCpu": "CPU is playing…",
   "roundResult": {
     "title": "Round settlement (delta from the 88 baseline)",
     "player": "Player",
@@ -38,13 +36,25 @@
     "deltaGain": "gained {{n}}",
     "deltaLoss": "lost {{n}}"
   },
-  "result": {
-    "title": "Final Scores",
-    "winner": "Winner: {{name}}",
-    "score": "{{name}}: {{score}}"
+  "score": "Total: {{score}}",
+  "scoringNote": "Card points: Bright 20 / Animal 10 / Ribbon 5 / Chaff 1. Three players settle against the 88 baseline — the winner collects the raw-score difference from the losers.",
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard",
+    "targetRounds": "Rounds"
   },
-  "nextRound": "Next Round",
-  "newGame": "New Game",
+  "title": "Hachi-Hachi",
+  "turnCpu": "CPU is playing…",
+  "turnYours": "Your turn — play a hand card to capture a field card.",
+  "tutorial": {
+    "field": "The field cards. Play a hand card of the same month (flower) to capture a matching field card. When two match, choose which to take.",
+    "hand": "Your hand. Select a card to capture a field card of the same month, then draw one card from the stock.",
+    "info": "Hachi-Hachi is a 3-player hanafuda capture game on the 48-card flower deck. When every hand is exhausted, captured piles are scored by card points (Bright 20 / Animal 10 / Ribbon 5 / Chaff 1) plus yaku bonuses, and each player settles against the 88 baseline. After the set number of rounds, the highest cumulative score wins.",
+    "resetButton": "Use the reset button to start a new game."
+  },
   "yaku": {
     "goko": "Five Brights",
     "shiko": "Four Brights",
@@ -54,14 +64,5 @@
     "akatan": "Red Ribbons",
     "aotan": "Blue Ribbons"
   },
-  "hint": {
-    "capture": "Capture a high-value field card",
-    "discard_low": "Discard a low-value card"
-  },
-  "tutorial": {
-    "field": "The field cards. Play a hand card of the same month (flower) to capture a matching field card. When two match, choose which to take.",
-    "hand": "Your hand. Select a card to capture a field card of the same month, then draw one card from the stock.",
-    "info": "Hachi-Hachi is a 3-player hanafuda capture game on the 48-card flower deck. When every hand is exhausted, captured piles are scored by card points (Bright 20 / Animal 10 / Ribbon 5 / Chaff 1) plus yaku bonuses, and each player settles against the 88 baseline. After the set number of rounds, the highest cumulative score wins.",
-    "resetButton": "Use the reset button to start a new game."
-  }
+  "you": "You"
 }

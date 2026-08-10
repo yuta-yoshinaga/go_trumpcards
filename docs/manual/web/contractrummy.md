@@ -1,4 +1,4 @@
-# Contract Rummy（コントラクトラミー）（Web版）遊び方
+# コントラクトラミー（Web版）遊び方
 
 ## ゲーム概要
 
@@ -6,8 +6,14 @@
 
 ## 起動方法
 
-1. プロジェクトルートで `go run ./cmd/trumpcards web --open` を実行する。
-2. ブラウザで「コントラクトラミー」を選択する（サイドバー → 🍸 ラミー → 📜）。
+```sh
+go run ./cmd/trumpcards web         # CLI経由でWebサーバーを起動
+go run ./cmd/trumpcards web --open  # サーバー起動 + ブラウザを開く
+go run ./cmd/server                 # 直接Webサーバーを起動
+```
+
+ブラウザで `http://localhost:8080` にアクセスし、ナビゲーションバーから「コントラクトラミー」を選択します。
+ナビバーのJA/ENボタンで日本語・英語を切り替えられます。
 
 ## ルール
 

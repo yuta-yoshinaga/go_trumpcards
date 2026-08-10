@@ -45,7 +45,7 @@ type Calculation struct {
 	stock       []*Card
 	phase       CalculationPhase
 	moveCount   int
-	actionLog   []*ActionLogEntry
+	actionLogBase
 	history     []*calculationSnapshot
 	isStalemate bool
 }
@@ -278,25 +278,12 @@ func (c *Calculation) CanUndo() bool {
 
 // UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。膠着状態でなければ0、脱出不可なら-1。
 func (c *Calculation) UndoToEscape() int {
-	if !c.isStalemate {
-		return 0
-	}
-	for i := len(c.history) - 1; i >= 0; i-- {
-		if !c.history[i].isStalemate {
-			return len(c.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(c.isStalemate, c.history, func(s *calculationSnapshot) bool { return s.isStalemate })
 }
 
 // UndoN n回連続でアンドゥを実行する
 func (c *Calculation) UndoN(n int) error {
-	for i := range n {
-		if err := c.Undo(); err != nil {
-			return fmt.Errorf("undo step %d failed: %w", i+1, err)
-		}
-	}
-	return nil
+	return undoN(c, n)
 }
 
 // --- Getters ---
@@ -315,9 +302,6 @@ func (c *Calculation) GetWastes() [CalculationWasteCnt][]*Card { return c.wastes
 
 // GetFoundations ファンデーション取得
 func (c *Calculation) GetFoundations() [CalculationFoundationCnt][]*Card { return c.foundations }
-
-// GetActionLog 棋譜取得
-func (c *Calculation) GetActionLog() []*ActionLogEntry { return c.actionLog }
 
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (c *Calculation) GetGameEndFlag() bool { return c.phase != CalculationPhasePlaying }
@@ -346,6 +330,26 @@ func (c *Calculation) canPlaceOnFoundation(card *Card, fIdx int) bool {
 	}
 	topCard := pile[len(pile)-1]
 	return card.GetValue() == calculationNextValue(topCard.GetValue(), fIdx+1)
+}
+
+// GetNextFoundationRank は fIdx のファンデーションに次に置けるランクを返す。
+// もう置けない (山が空 / 13枚そろった) ときは 0。
+//
+// **各列が +1/+2/+3/+4 ずつ 13 を法として進む (#4794)。**Web はバッジと
+// 「次のカード列」で常時出しているのに、CUI は現在の一番上の札しか出さず、
+// 毎手この暗算を強いていた。
+//
+// 判定は配置の検証 canPlaceOnFoundation が使う calculationNextValue を通す。
+// **別実装にすると、案内したランクが実際には置けないことが起きる。**
+func (c *Calculation) GetNextFoundationRank(fIdx int) int {
+	if fIdx < 0 || fIdx >= len(c.foundations) {
+		return 0
+	}
+	pile := c.foundations[fIdx]
+	if len(pile) == 0 || len(pile) >= CardValueMax {
+		return 0
+	}
+	return calculationNextValue(pile[len(pile)-1].GetValue(), fIdx+1)
 }
 
 // calculationNextValue ファンデーションの次に置くべき値を返す（step は 1..4、V は 1..13）。
@@ -428,13 +432,7 @@ func (c *Calculation) restoreSnapshot(snap *calculationSnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (c *Calculation) appendLog(actionType, detail string, cards []*Card) {
-	c.actionLog = append(c.actionLog, &ActionLogEntry{
-		TurnNumber: c.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	c.appendLogAt(c.moveCount, 0, actionType, detail, cards)
 }
 
 // calculationJSON is the JSON wire format for Calculation.

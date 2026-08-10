@@ -116,9 +116,15 @@ function CongressPageContent() {
 
   const dispatchMove = useCallback(
     (source: CongressMoveZone, target: CongressMoveZone) => {
+      // **空き山はタブローからは埋められない** (`MoveTableauToTableau` が拒否)。
+      // クリック経路はボタンを無効化して防いでいるが、**ドラッグ経路はここを
+      // 通る**ので、同じ規則をここでも見る (#4906)。
+      const targetIsEmptyPile =
+        target.zone === 'tableau' && target.col !== undefined && (state?.tableau[target.col]?.length ?? 0) === 0;
+      if (targetIsEmptyPile && source.zone === 'tableau') return;
       void game.exec('move', source, target);
     },
-    [game],
+    [game, state],
   );
   const dnd = useSolitaireDragDrop<CongressMoveZone>({
     onMove: dispatchMove,
@@ -189,7 +195,10 @@ function CongressPageContent() {
               <button
                 type="button"
                 onClick={() => game.handleSelectTarget(pileZone)}
-                disabled={!isPlaying || loading || !selectedSource}
+                // **空き山はタブローからは埋められない。**山札か捨て札からだけ
+                // (`MoveTableauToTableau` が明示的に拒否する)。押せてしまうと
+                // サーバに弾かれるまで気づけない (#4906)。
+                disabled={!isPlaying || loading || !selectedSource || selectedSource.zone === 'tableau'}
                 aria-label={t('emptyPileAriaLabel', { pile: pileIdx })}
                 style={{ height: dims.ch }}
                 className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center bg-transparent ${focusRingWhite}`}

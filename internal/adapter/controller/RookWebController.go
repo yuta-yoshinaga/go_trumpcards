@@ -68,11 +68,15 @@ type RookWebOutput struct {
 	NestCount        int                    `json:"nestCount"`
 	Nest             []*WebOutputCard       `json:"nest"`
 	CurrentTrick     []*WebOutputTrickCard  `json:"currentTrick"`
-	TeamScores       [2]int                 `json:"teamScores"`
-	TeamPoints       [2]int                 `json:"teamPoints"`
-	GameEndFlag      bool                   `json:"gameEndFlag"`
-	WinnerTeam       int                    `json:"winnerTeam"`
-	Hint             *RookWebOutputHint     `json:"hint,omitempty"`
+	// PlayableIndices は人間の手番でのみ埋まる、出せる手札のインデックス。
+	// **リードスート追随は強制**なので、出す前に示さないと拒否されて初めて
+	// 分かることになる (#4928)。
+	PlayableIndices []int              `json:"playableIndices"`
+	TeamScores      [2]int             `json:"teamScores"`
+	TeamPoints      [2]int             `json:"teamPoints"`
+	GameEndFlag     bool               `json:"gameEndFlag"`
+	WinnerTeam      int                `json:"winnerTeam"`
+	Hint            *RookWebOutputHint `json:"hint,omitempty"`
 	WebOutputBase
 	Config RookWebOutputConfig `json:"config"`
 }

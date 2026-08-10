@@ -1,4 +1,4 @@
-# 撿紅點 (Chinese Ten) — Web マニュアル
+# 撿紅點（Web版）遊び方
 
 ## ゲーム概要
 
@@ -6,9 +6,13 @@
 
 ## 起動方法
 
-1. `go run ./cmd/trumpcards web` でサーバーを起動します
-2. ブラウザで `http://localhost:8080` を開きます
-3. ゲーム一覧から **撿紅點** を選ぶか、`/chineseten` へ直接アクセスします
+```sh
+go run ./cmd/trumpcards web  # CLI経由でWebサーバーを起動
+go run ./cmd/server          # 直接Webサーバーを起動
+```
+
+ブラウザで `http://localhost:8080` にアクセスし、ナビゲーションバーから「撿紅點」を選択します。
+ナビバーのJA/ENボタンで日本語・英語を切り替えられます。
 
 ## ルール
 

@@ -618,3 +618,47 @@ func TestLetItRide_FullFlow_PullThenRide(t *testing.T) {
 	assert.Equal(t, 0, lir.GetBet3Payout())
 	assert.Equal(t, 1800, lir.GetTotalPayout())
 }
+
+// **Pull はリスクを「下げる」操作。**issue #4699 は「掛け金を1つ引き上げる」と
+// 書いているが、ドメインは1口ぶん取り下げて手元に戻す。取り消せないのはそこで、
+// 危険だからではない。
+func TestLetItRide_GetPullPreview(t *testing.T) {
+	newDecisionGame := func(t *testing.T) *domain.LetItRide {
+		t.Helper()
+		lir := domain.NewDefaultLetItRide()
+		lir.Reset()
+		require.NoError(t, lir.Bet(100))
+		return lir
+	}
+
+	t.Run("returns nothing before any bet is placed", func(t *testing.T) {
+		lir := domain.NewDefaultLetItRide()
+		lir.Reset()
+		assert.Nil(t, lir.GetPullPreview())
+	})
+
+	t.Run("first decision returns one bet and lowers the stake", func(t *testing.T) {
+		lir := newDecisionGame(t)
+		pv := lir.GetPullPreview()
+		require.NotNil(t, pv)
+		assert.Equal(t, 100, pv.Returned)
+		assert.Equal(t, 300, pv.RiskBefore)
+		assert.Equal(t, 200, pv.RiskAfter, "リスクは下がる (上がらない)")
+	})
+
+	t.Run("second decision reflects the bet already pulled", func(t *testing.T) {
+		lir := newDecisionGame(t)
+		require.NoError(t, lir.Pull())
+		pv := lir.GetPullPreview()
+		require.NotNil(t, pv)
+		assert.Equal(t, 200, pv.RiskBefore, "1口取り下げた後の残りを見ていること")
+		assert.Equal(t, 100, pv.RiskAfter)
+	})
+
+	t.Run("returns nothing once the round is resolved", func(t *testing.T) {
+		lir := newDecisionGame(t)
+		require.NoError(t, lir.Pull())
+		require.NoError(t, lir.Pull())
+		assert.Nil(t, lir.GetPullPreview())
+	})
+}

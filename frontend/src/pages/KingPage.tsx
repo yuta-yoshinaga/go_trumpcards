@@ -378,6 +378,11 @@ function KingPageContent() {
                         onClick={() => handleContractClick(contract)}
                         disabled={loading || used}
                         title={t(`contractDesc.${contract}`)}
+                        // The badge below is aria-hidden (it is icon + colour), so
+                        // the achieve/avoid distinction has to be restated here or a
+                        // screen reader hears only the contract's name (#4844).
+                        aria-label={`${t(`contracts.${contract}`)} — ${t(`contractType.${isAchieve ? 'achieve' : 'avoid'}`)}`}
+                        aria-describedby={`king-contract-desc-${contract}`}
                         data-testid={`king-contract-${contract}`}
                       >
                         <span className={used ? 'line-through opacity-60' : ''}>{t(`contracts.${contract}`)}</span>
@@ -390,6 +395,9 @@ function KingPageContent() {
                             {t(`contractType.${isAchieve ? 'achieve' : 'avoid'}`)}
                           </span>
                           <span>{t(`contractIcon.${contract}`)}</span>
+                        </span>
+                        <span id={`king-contract-desc-${contract}`} className="sr-only">
+                          {t(`contractDesc.${contract}`)}
                         </span>
                       </button>
                     );

@@ -56,9 +56,9 @@ type Spiderette struct {
 	phase          SpiderettePhase
 	moveCount      int
 	score          int
-	actionLog      []*ActionLogEntry
-	history        []*spideretteSnapshot
-	isStalemate    bool
+	actionLogBase
+	history     []*spideretteSnapshot
+	isStalemate bool
 }
 
 // spideretteSnapshot アンドゥ用スナップショット
@@ -123,6 +123,22 @@ func (s *Spiderette) Reset() {
 // Deal ストックからタブローに1枚ずつ配る。空列がある場合は配れない。
 // 山札が SpideretteDealCnt 未満の場合は残り全カードを左の列から配る
 // (標準 Spiderette ルール) ので、最後の3枚も到達可能。
+// GetDealsRemaining は「配る」をあと何回押せるかを返す (#4798)。
+//
+// **生の残り枚数だけでは分からない。**1回の配布は最大 SpideretteDealCnt 枚で、
+// 端数 (1〜6枚) の最終配布も1回として数える。Web は同じ切り上げをバッジに
+// 出しているのに、CUI は7で割って切り上げる暗算を強いていた。
+//
+// 空き列があると Deal は弾かれるが、それは一時的な状態なのでここでは見ない
+// (回数そのものは変わらない)。
+func (s *Spiderette) GetDealsRemaining() int {
+	n := len(s.stock)
+	if n <= 0 {
+		return 0
+	}
+	return (n + SpideretteDealCnt - 1) / SpideretteDealCnt
+}
+
 func (s *Spiderette) Deal() error {
 	if s.phase != SpiderettePhasePlaying {
 		return errors.New("game is not in playing phase")
@@ -331,25 +347,12 @@ func (s *Spiderette) CanUndo() bool {
 
 // UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数。膠着でなければ0、脱出不可なら-1。
 func (s *Spiderette) UndoToEscape() int {
-	if !s.isStalemate {
-		return 0
-	}
-	for i := len(s.history) - 1; i >= 0; i-- {
-		if !s.history[i].isStalemate {
-			return len(s.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(s.isStalemate, s.history, func(s *spideretteSnapshot) bool { return s.isStalemate })
 }
 
 // UndoN n回連続でアンドゥを実行する。
 func (s *Spiderette) UndoN(n int) error {
-	for i := 0; i < n; i++ {
-		if err := s.Undo(); err != nil {
-			return fmt.Errorf("undo step %d failed: %w", i+1, err)
-		}
-	}
-	return nil
+	return undoN(s, n)
 }
 
 // --- State getters/setters ---
@@ -371,9 +374,6 @@ func (s *Spiderette) GetTableau() [SpideretteTableauCnt][]*SpideretteTableauCard
 
 // GetCompletedSuits 完成スート数取得
 func (s *Spiderette) GetCompletedSuits() int { return s.completedSuits }
-
-// GetActionLog 棋譜取得
-func (s *Spiderette) GetActionLog() []*ActionLogEntry { return s.actionLog }
 
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (s *Spiderette) GetGameEndFlag() bool { return s.phase != SpiderettePhasePlaying }
@@ -550,13 +550,7 @@ func (s *Spiderette) restoreSnapshot(snap *spideretteSnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (s *Spiderette) appendLog(actionType, detail string, cards []*Card) {
-	s.actionLog = append(s.actionLog, &ActionLogEntry{
-		TurnNumber: s.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	s.appendLogAt(s.moveCount, 0, actionType, detail, cards)
 }
 
 // spideretteJSON is the JSON wire format for Spiderette.

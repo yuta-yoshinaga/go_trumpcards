@@ -19,8 +19,7 @@ func (p *ShengJiPlayer) GetTeam(seat int) int { return ShengJiTeamOf(seat) }
 
 // ResetRound は局開始時に手札を初期化する。
 func (p *ShengJiPlayer) ResetRound() {
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayer(p)
 }
 
 // shengJiPlayerJSON is the JSON wire format for ShengJiPlayer.

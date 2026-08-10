@@ -114,6 +114,17 @@ function TeenPattiPageContent() {
   // Raise stake amount (local UI state).
   const [raiseStake, setRaiseStake] = useState(2);
 
+  // **サーバーが送る範囲に追従させる。**CPU がレイズすると minRaise が上がるが、
+  // ローカルの raiseStake は据え置きなので、下限を割った額を送信できてしまう
+  // (上限を塞いだのと同じ穴が下側に残っていた)。範囲が動くたびに畳み込む。
+  // state は読み込み前 null になり得るが、フックは条件付きで呼べない。
+  const minRaise = state?.minRaise ?? 0;
+  const maxRaise = state?.maxRaise ?? 0;
+  useEffect(() => {
+    if (minRaise <= 0) return; // まだ状態が来ていない
+    setRaiseStake((a) => Math.min(Math.max(a, minRaise), Math.max(minRaise, maxRaise)));
+  }, [minRaise, maxRaise]);
+
   // Fetch a fresh game on mount.
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset is stable per render of the hook; run once on mount.
   useEffect(() => {
@@ -423,8 +434,8 @@ function TeenPattiPageContent() {
                     <button
                       type="button"
                       className={btnSecondary}
-                      onClick={() => setRaiseStake((a) => Math.max(state.stake + 1, a - 1))}
-                      disabled={loading}
+                      onClick={() => setRaiseStake((a) => Math.max(state.minRaise, a - 1))}
+                      disabled={loading || raiseStake <= state.minRaise}
                       aria-label="-"
                     >
                       −
@@ -435,8 +446,11 @@ function TeenPattiPageContent() {
                     <button
                       type="button"
                       className={btnSecondary}
-                      onClick={() => setRaiseStake((a) => a + 1)}
-                      disabled={loading}
+                      // **上限はサーバーが送る値でクランプする (#4729)。**以前は
+                      // 上限が無く、払えない額を送信できてサーバーエラーで初めて
+                      // 気づいた。
+                      onClick={() => setRaiseStake((a) => Math.min(state.maxRaise, a + 1))}
+                      disabled={loading || raiseStake >= state.maxRaise}
                       aria-label="+"
                     >
                       ＋
@@ -445,7 +459,9 @@ function TeenPattiPageContent() {
                       type="button"
                       className={btnWarning}
                       onClick={() => handleRaise(raiseStake)}
-                      disabled={loading}
+                      disabled={loading || !state.canRaise}
+                      title={state.canRaise ? undefined : t('raiseUnavailable')}
+                      data-testid="tp-raise-button"
                     >
                       {t('raiseButton', { amount: raiseStake })}
                     </button>

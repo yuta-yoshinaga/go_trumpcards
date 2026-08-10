@@ -17,6 +17,8 @@ type AccordionInteractorIF interface {
 	// Move パイルを重ねる
 	Move(fromIdx, toIdx int) string
 	// GiveUp ギブアップ
+	// AutoComplete ヒントが示す手を尽きるまで繰り返す
+	AutoComplete() string
 	GiveUp() string
 	// Hint ヒント取得
 	Hint() string
@@ -50,6 +52,11 @@ func (ai *AccordionInteractor) Move(fromIdx, toIdx int) string {
 	return execAndPresent(ai.Game, ai.ap, func() error {
 		return ai.Game.Move(fromIdx, toIdx)
 	})
+}
+
+// AutoComplete ヒントが示す手を尽きるまで繰り返す
+func (ai *AccordionInteractor) AutoComplete() string {
+	return execAndPresent(ai.Game, ai.ap, ai.Game.AutoComplete)
 }
 
 // GiveUp ギブアップ

@@ -7,7 +7,8 @@
 ## 起動方法
 
 ```sh
-go run ./cmd/cli hearts
+go run ./cmd/trumpcards hearts
+go run ./cmd/trumpcards --lang en hearts  # 英語モード
 ```
 
 ## ルール

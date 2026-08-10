@@ -25,6 +25,36 @@ func makeDoubtGameForPresenter() (*domain.Doubt, []*domain.DoubtPlayer) {
 	return game, players
 }
 
+// **正直な申告値を出す。**Web は該当ボタンを緑のリングで囲み、手番が来ると
+// 自動で選ぶのに、CUI は直前の申告値しか出さず毎回暗算させていた (#4860)。
+func TestDoubtCuiPresenter_ShowsHonestClaimValue(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.DoubtCuiPresenter)
+
+	t.Run("start of the game", func(t *testing.T) {
+		game, _ := makeDoubtGameForPresenter()
+		assert.Contains(t, p.Output(game, nil), "正直に申告するなら: 1")
+	})
+
+	t.Run("follows the previous claim", func(t *testing.T) {
+		game, _ := makeDoubtGameForPresenter()
+		game.SetLastAction(&domain.DoubtAction{PlayerIdx: 3, ClaimedValue: 7, CardCount: 1})
+		result := p.Output(game, nil)
+		assert.Contains(t, result, "正直に申告するなら: 8")
+		assert.NotContains(t, result, "正直に申告するなら: 7")
+	})
+
+	t.Run("wraps K back to A", func(t *testing.T) {
+		game, _ := makeDoubtGameForPresenter()
+		game.SetLastAction(&domain.DoubtAction{PlayerIdx: 3, ClaimedValue: 13, CardCount: 1})
+		result := p.Output(game, nil)
+		assert.Contains(t, result, "正直に申告するなら: 1")
+		assert.NotContains(t, result, "正直に申告するなら: 14")
+	})
+}
+
 func TestDoubtCuiPresenter_Output(t *testing.T) {
 	origNoColor := color.NoColor()
 	color.SetNoColor(true)

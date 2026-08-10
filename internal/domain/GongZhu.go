@@ -63,7 +63,7 @@ type GongZhu struct {
 	leadPlayerIdx    int
 	gameEndFlag      bool
 	winnerIdx        int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewGongZhu コンストラクタ
@@ -154,7 +154,7 @@ func (g *GongZhu) PlayerExpose(cardIndices []int) error {
 		return ErrWrongPhase
 	}
 
-	humanIdx := g.findHumanIdx()
+	humanIdx := findHumanIdx(g.players)
 	if humanIdx < 0 {
 		return ErrNotHumanTurn
 	}
@@ -275,7 +275,7 @@ func (g *GongZhu) ResolveTrick() {
 	for _, c := range trickCards {
 		rawPts += gzCardRawPoints(c)
 	}
-	g.appendLog(winnerIdx, "trick_win", fmt.Sprintf("%s wins trick %d (raw %+d)", g.playerName(winnerIdx), g.trickNumber, rawPts), trickCards)
+	g.appendLog(winnerIdx, "trick_win", fmt.Sprintf("%s wins trick %d (raw %+d)", playerName(g.players, winnerIdx), g.trickNumber, rawPts), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= GongZhuHandSize {
@@ -304,7 +304,7 @@ func (g *GongZhu) ScoreRound() {
 
 	for i := 0; i < GongZhuPlayerCnt; i++ {
 		if g.playerHeartCount(i) == GongZhuHandSize {
-			g.appendLog(i, "all_hearts", fmt.Sprintf("%s collected all hearts!", g.playerName(i)), nil)
+			g.appendLog(i, "all_hearts", fmt.Sprintf("%s collected all hearts!", playerName(g.players, i)), nil)
 		}
 		g.players[i].SetRoundScore(g.scoreForPlayer(i))
 	}
@@ -315,7 +315,7 @@ func (g *GongZhu) ScoreRound() {
 
 	for i := 0; i < GongZhuPlayerCnt; i++ {
 		g.appendLog(i, "round_score", fmt.Sprintf("%s: round=%+d, total=%+d",
-			g.playerName(i), g.players[i].GetRoundScore(), g.players[i].GetCumulativeScore()), nil)
+			playerName(g.players, i), g.players[i].GetRoundScore(), g.players[i].GetCumulativeScore()), nil)
 	}
 
 	ended := false
@@ -338,7 +338,7 @@ func (g *GongZhu) ScoreRound() {
 				g.winnerIdx = i
 			}
 		}
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", g.playerName(g.winnerIdx)), nil)
+		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, g.winnerIdx)), nil)
 	}
 }
 
@@ -468,10 +468,7 @@ func (g *GongZhu) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *GongZhu) GetPlayer(i int) *GongZhuPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
@@ -482,10 +479,7 @@ func (g *GongZhu) SetLeadPlayerIdx(idx int) { g.leadPlayerIdx = idx }
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (g *GongZhu) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -494,9 +488,6 @@ func (g *GongZhu) GetConfig() GongZhuConfig { return g.config }
 // SetConfig 設定変更
 func (g *GongZhu) SetConfig(cfg GongZhuConfig) { g.config = cfg }
 
-// GetActionLog 棋譜取得
-func (g *GongZhu) GetActionLog() []*ActionLogEntry { return g.actionLog }
-
 // SetRoundNumber ラウンド番号設定 (テスト用)
 func (g *GongZhu) SetRoundNumber(n int) { g.roundNumber = n }
 
@@ -504,16 +495,6 @@ func (g *GongZhu) SetRoundNumber(n int) { g.roundNumber = n }
 func (g *GongZhu) SetTrickNumber(n int) { g.trickNumber = n }
 
 // --- Private methods ---
-
-// findHumanIdx 人間プレイヤーのインデックスを返す (-1=なし)
-func (g *GongZhu) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
 
 // markExposed 公開対象カードに応じて公開フラグを立てる
 func (g *GongZhu) markExposed(c *Card) {
@@ -577,15 +558,7 @@ func (g *GongZhu) startPlayPhase() {
 
 // findTwoOfClubs ♣2を持つプレイヤーのインデックスを返す
 func (g *GongZhu) findTwoOfClubs() int {
-	for i, p := range g.players {
-		for j := 0; j < p.GetCardsSize(); j++ {
-			card := p.GetCard(j)
-			if card.GetDesign() == CardDesignClover && card.GetValue() == 2 {
-				return i
-			}
-		}
-	}
-	return -1
+	return seatHoldingCard(g.players, func(c *Card) bool { return c.GetDesign() == CardDesignClover && c.GetValue() == 2 })
 }
 
 // playCard カードをプレイする共通処理
@@ -599,7 +572,7 @@ func (g *GongZhu) playCard(playerIdx int, card *Card) {
 		g.heartsBroken = true
 	}
 
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == GongZhuPlayerCnt {
 		g.phase = GongZhuPhaseTrickEnd
@@ -628,15 +601,27 @@ func (g *GongZhu) validatePlay(playerIdx int, card *Card) error {
 	return nil
 }
 
-// playerHasSuit プレイヤーが特定のスートを持っているか
-func (g *GongZhu) playerHasSuit(playerIdx int, design int) bool {
+// GetPlayableIndices はそのプレイヤーがいま出せる手札の位置を返す。
+//
+// **判定は validatePlay をそのまま通す。**別のスキャンを書くと「出せる」と光った
+// 札がサーバーに弾かれる。Web はマストフォローの可視化を持っていなかった (#4812)。
+func (g *GongZhu) GetPlayableIndices(playerIdx int) []int {
+	if playerIdx < 0 || playerIdx >= len(g.players) {
+		return nil
+	}
 	p := g.players[playerIdx]
+	out := make([]int, 0, p.GetCardsSize())
 	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
+		if g.validatePlay(playerIdx, p.GetCard(i)) == nil {
+			out = append(out, i)
 		}
 	}
-	return false
+	return out
+}
+
+// playerHasSuit プレイヤーが特定のスートを持っているか
+func (g *GongZhu) playerHasSuit(playerIdx int, design int) bool {
+	return handHasSuit(g.players[playerIdx], design)
 }
 
 // playerHasNonHeart プレイヤーがハート以外のカードを持っているか
@@ -695,28 +680,6 @@ func gzSortHand(p *GongZhuPlayer) {
 			return ci.GetDesign() < cj.GetDesign()
 		}
 		return ci.GetValue() < cj.GetValue()
-	})
-}
-
-// playerName プレイヤー名を返す
-func (g *GongZhu) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (g *GongZhu) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
 	})
 }
 
@@ -783,7 +746,7 @@ func gzRankValue(c *Card) int {
 
 // GetHint ヒントを取得する
 func (g *GongZhu) GetHint() *GongZhuHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 {
 		return nil
 	}
@@ -934,10 +897,7 @@ func (g *GongZhu) cpuDiscard(player *GongZhuPlayer, validIndices []int) int {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (g *GongZhu) getValidPlayIndices(playerIdx int) []int {
-	player := g.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return g.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(g.players[playerIdx], func(c *Card) bool { return g.validatePlay(playerIdx, c) == nil })
 }
 
 // gzLeadDanger リード時のカード危険度（低いほど安全）

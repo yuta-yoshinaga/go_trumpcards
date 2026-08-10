@@ -161,7 +161,7 @@ type FiveHundred struct {
 	teamScores  [FiveHundredTeamCnt]int
 	gameEndFlag bool
 	winnerTeam  int // 勝利チーム (-1 = 未確定)
-	actionLog   []*ActionLogEntry
+	actionLogBase
 }
 
 // NewFiveHundred コンストラクタ
@@ -265,7 +265,7 @@ func (g *FiveHundred) PlayerBid(kind FiveHundredContractKind, tricks, suit int) 
 	if g.phase != FiveHundredPhaseBid {
 		return ErrWrongPhase
 	}
-	humanIdx := g.findHumanIdx()
+	humanIdx := findHumanIdx(g.players)
 	if humanIdx < 0 || g.bidPlayerIdx != humanIdx {
 		return ErrNotHumanTurn
 	}
@@ -288,7 +288,7 @@ func (g *FiveHundred) PlayerPass() error {
 	if g.phase != FiveHundredPhaseBid {
 		return ErrWrongPhase
 	}
-	humanIdx := g.findHumanIdx()
+	humanIdx := findHumanIdx(g.players)
 	if humanIdx < 0 || g.bidPlayerIdx != humanIdx {
 		return ErrNotHumanTurn
 	}
@@ -320,7 +320,7 @@ func (g *FiveHundred) applyBid(idx int, bid FiveHundredBid) {
 	g.players[idx].SetBid(&b)
 	g.highestBid = &b
 	g.highestBidder = idx
-	g.appendLog(idx, "bid", fmt.Sprintf("%s bids %s", g.playerName(idx), fiveHundredBidLabel(b)), nil)
+	g.appendLog(idx, "bid", fmt.Sprintf("%s bids %s", playerName(g.players, idx), fiveHundredBidLabel(b)), nil)
 	g.advanceBid()
 }
 
@@ -328,7 +328,7 @@ func (g *FiveHundred) applyBid(idx int, bid FiveHundredBid) {
 func (g *FiveHundred) applyPass(idx int) {
 	g.passed[idx] = true
 	g.players[idx].SetPassed(true)
-	g.appendLog(idx, "pass", fmt.Sprintf("%s passes", g.playerName(idx)), nil)
+	g.appendLog(idx, "pass", fmt.Sprintf("%s passes", playerName(g.players, idx)), nil)
 	g.advanceBid()
 }
 
@@ -384,7 +384,7 @@ func (g *FiveHundred) finalizeBid() {
 	}
 	g.kitty = nil
 	g.appendLog(g.declarerIdx, "win_bid",
-		fmt.Sprintf("%s wins the contract: %s", g.playerName(g.declarerIdx), fiveHundredBidLabel(g.contract)), nil)
+		fmt.Sprintf("%s wins the contract: %s", playerName(g.players, g.declarerIdx), fiveHundredBidLabel(g.contract)), nil)
 	g.sortAllHands()
 	g.phase = FiveHundredPhaseKittyExchange
 	g.currentPlayerIdx = g.declarerIdx
@@ -436,7 +436,7 @@ func (g *FiveHundred) doExchange(discardIndices []int) error {
 	discarded := player.RemoveCards(discardIndices)
 	g.kitty = discarded
 	g.appendLog(g.declarerIdx, "exchange",
-		fmt.Sprintf("%s discards %d cards", g.playerName(g.declarerIdx), len(discarded)), discarded)
+		fmt.Sprintf("%s discards %d cards", playerName(g.players, g.declarerIdx), len(discarded)), discarded)
 	g.sortAllHands()
 	g.startPlayPhase()
 	return nil
@@ -518,7 +518,7 @@ func (g *FiveHundred) playCard(playerIdx int, card *Card, jokerSuit int) {
 	}
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	g.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", g.playerName(playerIdx), fiveHundredCardLabel(card)), []*Card{card})
+		fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), fiveHundredCardLabel(card)), []*Card{card})
 	if len(g.currentTrick) == g.activePlayerCount() {
 		g.phase = FiveHundredPhaseTrickEnd
 	} else {
@@ -538,7 +538,7 @@ func (g *FiveHundred) ResolveTrick() {
 	}
 	g.players[winnerIdx].AddTrick(cards)
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", g.playerName(winnerIdx), g.trickNumber), cards)
+		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), cards)
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= FiveHundredTrickCnt {
 		g.phase = FiveHundredPhaseRoundEnd
@@ -559,11 +559,41 @@ func (g *FiveHundred) NextTrick() {
 	g.phase = FiveHundredPhasePlay
 }
 
-// ScoreRound ラウンドのスコアを確定し、ゲーム終了判定を行う
-func (g *FiveHundred) ScoreRound() {
-	if g.phase != FiveHundredPhaseRoundEnd {
-		return
+// FiveHundredRoundResult はラウンド終了時の内訳。
+//
+// **「何点動いたか」を画面が言えるようにする。**ラウンド終了バナーは定型文
+// しか出しておらず、成否も増減もヘッダーの数字を前後で見比べるしかなかった
+// (#4809)。ScoreRound はこの結果をそのまま適用するので、表示と実際の加算が
+// ずれない。
+type FiveHundredRoundResult struct {
+	DeclarerTeam  int
+	DefenderTeam  int
+	ContractValue int
+	// NeedTricks は成立に必要なトリック数 (ミゼールでは 0)。
+	NeedTricks int
+	// DeclarerTricks はミゼールなら宣言者本人、それ以外は宣言側チームの獲得数。
+	DeclarerTricks int
+	DefenderTricks int
+	Misere         bool
+	Made           bool
+	// Slam は全トリック獲得によるボーナス (250 点) が適用されたか。
+	Slam bool
+	// DeclarerDelta / DefenderDelta は各チームの得点増減。
+	DeclarerDelta int
+	DefenderDelta int
+}
+
+// GetRoundResult はラウンド終了フェーズでの内訳を返す (それ以外は nil)。
+// 計算のみで状態は変えないので、ScoreRound の前に何度呼んでも安全。
+func (g *FiveHundred) GetRoundResult() *FiveHundredRoundResult {
+	if g.phase != FiveHundredPhaseRoundEnd || g.declarerIdx < 0 {
+		return nil
 	}
+	return g.computeRoundResult()
+}
+
+// computeRoundResult はラウンドの得点内訳を計算する (状態は変えない)。
+func (g *FiveHundred) computeRoundResult() *FiveHundredRoundResult {
 	declTeam := g.players[g.declarerIdx].GetTeam()
 	defTeam := 1 - declTeam
 	teamTricks := [FiveHundredTeamCnt]int{}
@@ -571,43 +601,69 @@ func (g *FiveHundred) ScoreRound() {
 		teamTricks[p.GetTeam()] += p.GetTrickCount()
 	}
 	bidVal := g.contract.Value()
+	r := &FiveHundredRoundResult{
+		DeclarerTeam:   declTeam,
+		DefenderTeam:   defTeam,
+		ContractValue:  bidVal,
+		DefenderTricks: teamTricks[defTeam],
+		Misere:         g.isMisere(),
+	}
+	if r.Misere {
+		r.DeclarerTricks = g.players[g.declarerIdx].GetTrickCount()
+		r.Made = r.DeclarerTricks == 0
+		if r.Made {
+			r.DeclarerDelta = bidVal
+		} else {
+			r.DeclarerDelta = -bidVal
+		}
+		return r
+	}
+	r.DeclarerTricks = teamTricks[declTeam]
+	r.NeedTricks = g.contract.Tricks
+	r.Made = r.DeclarerTricks >= r.NeedTricks
+	switch {
+	case r.Made && r.DeclarerTricks == FiveHundredTrickCnt && bidVal < 250:
+		r.Slam = true
+		r.DeclarerDelta = 250 // 全トリック獲得のスラムボーナス
+	case r.Made:
+		r.DeclarerDelta = bidVal
+	default:
+		r.DeclarerDelta = -bidVal
+	}
+	// 守備側は獲得トリック1つにつき10点
+	r.DefenderDelta = 10 * teamTricks[defTeam]
+	return r
+}
 
-	if g.isMisere() {
-		declTricks := g.players[g.declarerIdx].GetTrickCount()
-		if declTricks == 0 {
-			g.teamScores[declTeam] += bidVal
-			g.appendLog(-1, "misere_made",
-				fmt.Sprintf("Team %d makes misere! +%d", declTeam, bidVal), nil)
-		} else {
-			g.teamScores[declTeam] -= bidVal
-			g.appendLog(-1, "misere_failed",
-				fmt.Sprintf("Team %d fails misere (%d tricks). -%d", declTeam, declTricks, bidVal), nil)
-		}
-	} else {
-		declTricks := teamTricks[declTeam]
-		need := g.contract.Tricks
-		if declTricks >= need {
-			gain := bidVal
-			if declTricks == FiveHundredTrickCnt && bidVal < 250 {
-				gain = 250 // 全トリック獲得のスラムボーナス
-			}
-			g.teamScores[declTeam] += gain
-			g.appendLog(-1, "contract_made",
-				fmt.Sprintf("Team %d makes the contract (%d tricks). +%d", declTeam, declTricks, gain), nil)
-		} else {
-			g.teamScores[declTeam] -= bidVal
-			g.appendLog(-1, "contract_failed",
-				fmt.Sprintf("Team %d is set (%d/%d tricks). -%d", declTeam, declTricks, need, bidVal), nil)
-		}
-		// 守備側は獲得トリック1つにつき10点
-		g.teamScores[defTeam] += 10 * teamTricks[defTeam]
+// ScoreRound ラウンドのスコアを確定し、ゲーム終了判定を行う
+func (g *FiveHundred) ScoreRound() {
+	if g.phase != FiveHundredPhaseRoundEnd {
+		return
+	}
+	r := g.computeRoundResult()
+	g.teamScores[r.DeclarerTeam] += r.DeclarerDelta
+	g.teamScores[r.DefenderTeam] += r.DefenderDelta
+
+	switch {
+	case r.Misere && r.Made:
+		g.appendLog(-1, "misere_made",
+			fmt.Sprintf("Team %d makes misere! +%d", r.DeclarerTeam, r.ContractValue), nil)
+	case r.Misere:
+		g.appendLog(-1, "misere_failed",
+			fmt.Sprintf("Team %d fails misere (%d tricks). -%d", r.DeclarerTeam, r.DeclarerTricks, r.ContractValue), nil)
+	case r.Made:
+		g.appendLog(-1, "contract_made",
+			fmt.Sprintf("Team %d makes the contract (%d tricks). +%d", r.DeclarerTeam, r.DeclarerTricks, r.DeclarerDelta), nil)
+	default:
+		g.appendLog(-1, "contract_failed",
+			fmt.Sprintf("Team %d is set (%d/%d tricks). -%d", r.DeclarerTeam, r.DeclarerTricks, r.NeedTricks, r.ContractValue), nil)
 	}
 
 	for ti := range FiveHundredTeamCnt {
 		g.appendLog(-1, "team_score",
 			fmt.Sprintf("Team %d: %d points", ti, g.teamScores[ti]), nil)
 	}
-	g.checkGameEnd(declTeam)
+	g.checkGameEnd(r.DeclarerTeam)
 }
 
 // checkGameEnd ゲーム終了判定。先に TargetScore に到達したチームが勝利、
@@ -741,19 +797,7 @@ func (g *FiveHundred) trickScore(c *Card, leadSuit int) int {
 
 // trickWinner トリックの勝者を決定する
 func (g *FiveHundred) trickWinner() int {
-	if len(g.currentTrick) == 0 {
-		return 0
-	}
-	ls := g.leadSuit()
-	winnerIdx := g.currentTrick[0].PlayerIdx
-	winnerScore := g.trickScore(g.currentTrick[0].Card, ls)
-	for _, tc := range g.currentTrick[1:] {
-		if s := g.trickScore(tc.Card, ls); s > winnerScore {
-			winnerScore = s
-			winnerIdx = tc.PlayerIdx
-		}
-	}
-	return winnerIdx
+	return trickWinnerByScore(g.currentTrick, g)
 }
 
 // validatePlay カードのプレイが有効か検証する
@@ -1013,17 +1057,14 @@ func (g *FiveHundred) GetValidPlayIndices(playerIdx int) []int {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (g *FiveHundred) getValidPlayIndices(playerIdx int) []int {
-	player := g.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return g.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(g.players[playerIdx], func(c *Card) bool { return g.validatePlay(playerIdx, c) == nil })
 }
 
 // --- Hint ---
 
 // GetHint 現在の人間の手番に対するヒントを返す
 func (g *FiveHundred) GetHint() *FiveHundredHint {
-	humanIdx := g.findHumanIdx()
+	humanIdx := findHumanIdx(g.players)
 	if humanIdx < 0 || g.gameEndFlag {
 		return nil
 	}
@@ -1122,10 +1163,7 @@ func (g *FiveHundred) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *FiveHundred) GetPlayer(i int) *FiveHundredPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
@@ -1206,18 +1244,12 @@ func (g *FiveHundred) SetTeamScore(team, score int) {
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (g *FiveHundred) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // IsHumanBidTurn 現在のビッド手番が人間かどうか
 func (g *FiveHundred) IsHumanBidTurn() bool {
-	if g.bidPlayerIdx < 0 || g.bidPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.bidPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.bidPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -1225,9 +1257,6 @@ func (g *FiveHundred) GetConfig() FiveHundredConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *FiveHundred) SetConfig(cfg FiveHundredConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *FiveHundred) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // CardRankPublic カードランク取得 (テスト用)
 func (g *FiveHundred) CardRankPublic(card *Card) int { return g.cardRank(card) }
@@ -1237,21 +1266,9 @@ func (g *FiveHundred) EffectiveSuitPublic(card *Card) int { return g.effectiveSu
 
 // --- Private helpers ---
 
-// findHumanIdx 人間プレイヤーのインデックスを返す (-1=なし)
-func (g *FiveHundred) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 // sortAllHands 全プレイヤーの手札をソートする
 func (g *FiveHundred) sortAllHands() {
-	for _, p := range g.players {
-		g.sortHand(p)
-	}
+	sortEachHand(g.players, g.sortHand)
 }
 
 // sortHand プレイヤーの手札を実効スート→ランク順にソートする
@@ -1272,28 +1289,6 @@ func (g *FiveHundred) sortHand(p *FiveHundredPlayer) {
 	for _, c := range cards {
 		p.AddCard(c)
 	}
-}
-
-// playerName プレイヤー名を返す
-func (g *FiveHundred) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (g *FiveHundred) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // fiveHundredCardLabel カードのログ表示文字列 (ジョーカー対応)

@@ -36,6 +36,13 @@ func (p *CalculationCuiPresenter) Output(g interfaces.CalculationGame, lastErr e
 					"count", strconv.Itoa(len(pile)),
 					"max", maxStr))
 			}
+			// **各列が +1/+2/+3/+4 ずつ 13 を法として進む (#4794)。**Web は
+			// 次に置けるランクをバッジで常時出しているのに、CUI は一番上の札
+			// しか出さず、毎手この暗算を強いていた。
+			if next := g.GetNextFoundationRank(i); next > 0 {
+				b.WriteString(i18n.Tf("calculation.nextRank",
+					"rank", strconv.Itoa(next)))
+			}
 			b.WriteString("\n")
 		}
 		b.WriteString("----------\n")

@@ -62,6 +62,14 @@ export interface KlaberjassResponse extends BaseGameResponse {
   validPlays: number[];
   /** Seat that won the sequence contest; -1 when nobody scored. */
   sequenceWinner: number;
+  /**
+   * Seat that took the last trick and its 10-point bonus, or -1 before the
+   * hand ends. Without it the settlement panel cannot explain why the hand
+   * points do not add up from the declarations alone (#4937).
+   */
+  lastTrickWinner: number;
+  /** Points the last trick is worth, sent by the server so the two sides cannot drift. */
+  lastTrickBonus: number;
   /** Seat holding trump K+Q; -1 when neither does. */
   belaHolder: number;
   belaScored: boolean;

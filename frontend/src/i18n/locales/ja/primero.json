@@ -68,5 +68,8 @@
     "resetButton": "ゲームをリセットして最初からやり直します。"
   },
   "hintRequested": "ヒントがあります",
-  "noHint": "ヒントはありません"
+  "noHint": "ヒントはありません",
+  "raiseCount": "レイズ {{count}}/{{max}}回",
+  "raiseCapReached": "レイズ上限（{{max}}回）に達しました",
+  "raiseNoChips": "チップが足りません（レイズに {{cost}} 必要）"
 }

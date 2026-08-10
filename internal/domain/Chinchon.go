@@ -109,11 +109,11 @@ type Chinchon struct {
 	gameEndFlag      bool
 	winnerIdx        int // マッチ勝者 (-1 = 未確定)
 	roundNumber      int
-	actionLog        []*ActionLogEntry
-	knockerIdx       int       // ノックしたプレイヤー (-1 = ノックなし)
-	knockerMelds     [][]*Card // ノッカーのメルド (レイオフ用)
-	knockerDeadwood  []*Card   // ノッカーのデッドウッド
-	layoffQueue      []int     // 残りのレイオフ対象プレイヤー (順番)
+	actionLogBase
+	knockerIdx      int       // ノックしたプレイヤー (-1 = ノックなし)
+	knockerMelds    [][]*Card // ノッカーのメルド (レイオフ用)
+	knockerDeadwood []*Card   // ノッカーのデッドウッド
+	layoffQueue     []int     // 残りのレイオフ対象プレイヤー (順番)
 }
 
 // NewChinchon コンストラクタ
@@ -284,7 +284,7 @@ func (g *Chinchon) doDrawStock(idx int) {
 	g.drawPile = g.drawPile[:len(g.drawPile)-1]
 	g.players[idx].AddCard(card)
 	g.sortHand(idx)
-	g.appendLog(idx, "draw_stock", fmt.Sprintf("%s draws from stock", g.playerName(idx)), nil)
+	g.appendLog(idx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, idx)), nil)
 	g.phase = ChinchonPhaseDiscard
 }
 
@@ -294,7 +294,7 @@ func (g *Chinchon) doDrawDiscard(idx int) {
 	g.discardPile = g.discardPile[:len(g.discardPile)-1]
 	g.players[idx].AddCard(card)
 	g.sortHand(idx)
-	g.appendLog(idx, "draw_discard", fmt.Sprintf("%s draws %s from discard", g.playerName(idx), cardStr(card)), []*Card{card})
+	g.appendLog(idx, "draw_discard", fmt.Sprintf("%s draws %s from discard", playerName(g.players, idx), cardStr(card)), []*Card{card})
 	g.phase = ChinchonPhaseDiscard
 }
 
@@ -316,7 +316,7 @@ func (g *Chinchon) PlayerDiscard(cardIndex int) error {
 
 	discarded := player.RemoveCard(cardIndex)
 	g.discardPile = append(g.discardPile, discarded)
-	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", g.playerName(g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
 	// 捨てた後に7枚同スート連続が残ればチンチョン (即時ゲーム勝利)。
 	if g.checkChinchon(g.currentPlayerIdx) {
 		return nil
@@ -368,7 +368,7 @@ func (g *Chinchon) executeKnock(idx, cardIndex int) {
 	g.knockerIdx = idx
 	g.knockerMelds = melds
 	g.knockerDeadwood = deadwood
-	g.appendLog(idx, "knock", fmt.Sprintf("%s knocks (deadwood: %d)", g.playerName(idx), deadwoodValue), []*Card{discarded})
+	g.appendLog(idx, "knock", fmt.Sprintf("%s knocks (deadwood: %d)", playerName(g.players, idx), deadwoodValue), []*Card{discarded})
 
 	// レイオフ対象はノッカー以外のアクティブプレイヤー (席順)。
 	g.layoffQueue = g.layoffQueue[:0]
@@ -420,7 +420,7 @@ func (g *Chinchon) PlayerLayoff(cardIndices []int) error {
 		card := player.GetCard(idx)
 		g.layoffCard(card)
 		player.RemoveCard(idx)
-		g.appendLog(g.currentPlayerIdx, "layoff", fmt.Sprintf("%s lays off %s", g.playerName(g.currentPlayerIdx), cardStr(card)), []*Card{card})
+		g.appendLog(g.currentPlayerIdx, "layoff", fmt.Sprintf("%s lays off %s", playerName(g.players, g.currentPlayerIdx), cardStr(card)), []*Card{card})
 	}
 
 	g.advanceLayoff()
@@ -477,14 +477,14 @@ func (g *Chinchon) scoreRound() {
 		}
 		p.SetRoundScore(deadwoodValue)
 		p.CommitRoundScore()
-		g.appendLog(i, "score", fmt.Sprintf("%s scores %d (total %d)", g.playerName(i), deadwoodValue, p.GetCumulativeScore()), nil)
+		g.appendLog(i, "score", fmt.Sprintf("%s scores %d (total %d)", playerName(g.players, i), deadwoodValue, p.GetCumulativeScore()), nil)
 	}
 
 	// 脱落判定
 	for i, p := range g.players {
 		if !p.GetEliminated() && p.GetCumulativeScore() > g.config.EliminationLimit {
 			p.SetEliminated(true)
-			g.appendLog(i, "eliminate", fmt.Sprintf("%s is eliminated (%d)", g.playerName(i), p.GetCumulativeScore()), nil)
+			g.appendLog(i, "eliminate", fmt.Sprintf("%s is eliminated (%d)", playerName(g.players, i), p.GetCumulativeScore()), nil)
 		}
 	}
 
@@ -521,7 +521,7 @@ func (g *Chinchon) checkChinchon(idx int) bool {
 		return false
 	}
 	if hasChinchon(handCards(p)) {
-		g.appendLog(idx, "chinchon", fmt.Sprintf("%s declares Chinchón and wins the game!", g.playerName(idx)), nil)
+		g.appendLog(idx, "chinchon", fmt.Sprintf("%s declares Chinchón and wins the game!", playerName(g.players, idx)), nil)
 		g.winnerIdx = idx
 		g.gameEndFlag = true
 		g.phase = ChinchonPhaseGameEnd
@@ -543,7 +543,7 @@ func (g *Chinchon) checkMatchEnd() {
 		g.phase = ChinchonPhaseGameEnd
 		if len(active) == 1 {
 			g.winnerIdx = active[0]
-			g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", g.playerName(g.winnerIdx)), nil)
+			g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, g.winnerIdx)), nil)
 		} else {
 			g.winnerIdx = -1
 			g.appendLog(-1, "game_end", "Match ends with no survivor", nil)
@@ -639,7 +639,7 @@ func (g *Chinchon) cpuDiscardOrKnock() {
 
 	discarded := player.RemoveCard(bestDiscardIdx)
 	g.discardPile = append(g.discardPile, discarded)
-	g.appendLog(idx, "discard", fmt.Sprintf("%s discards %s", g.playerName(idx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(idx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, idx), cardStr(discarded)), []*Card{discarded})
 	if g.checkChinchon(idx) {
 		return
 	}
@@ -656,7 +656,7 @@ func (g *Chinchon) cpuLayoff() {
 			if g.canLayoff(card) {
 				g.layoffCard(card)
 				player.RemoveCard(i)
-				g.appendLog(g.currentPlayerIdx, "layoff", fmt.Sprintf("%s lays off %s", g.playerName(g.currentPlayerIdx), cardStr(card)), []*Card{card})
+				g.appendLog(g.currentPlayerIdx, "layoff", fmt.Sprintf("%s lays off %s", playerName(g.players, g.currentPlayerIdx), cardStr(card)), []*Card{card})
 				found = true
 				break
 			}
@@ -701,10 +701,7 @@ func (g *Chinchon) SetDiscardPile(pile []*Card) {
 
 // GetDiscardTop 捨て札の一番上を取得
 func (g *Chinchon) GetDiscardTop() *Card {
-	if len(g.discardPile) == 0 {
-		return nil
-	}
-	return g.discardPile[len(g.discardPile)-1]
+	return discardTop(g.discardPile)
 }
 
 // GetDrawPileCount 山札の残り枚数取得
@@ -729,18 +726,12 @@ func (g *Chinchon) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *Chinchon) GetPlayer(i int) *ChinchonPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (g *Chinchon) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // GetPlayerDeadwoodValue はプレイヤーの手札を最善メルド分割したときのデッドウッド点を返す（プレゼンター向け）。
@@ -753,6 +744,20 @@ func (g *Chinchon) GetPlayerDeadwoodValue(i int) int {
 	return CalcDeadwoodValue(dead)
 }
 
+// GetPlayerMeldSplit はプレイヤーの手札を最善のメルド群と残りのデッドウッドに
+// 分けて返す。GetPlayerDeadwoodValue と同じ分割なので、デッドウッドの合計は
+// 必ずその値に一致する。
+//
+// **どの札が成立しているかは捨て札選びの前提。**Web は緑/破線で色分けし内訳まで
+// 出しているのに、CUI は合計点しか出していなかった (#4838)。
+func (g *Chinchon) GetPlayerMeldSplit(i int) (melds [][]*Card, deadwood []*Card) {
+	p := g.GetPlayer(i)
+	if p == nil {
+		return nil, nil
+	}
+	return chinchonFindBestMelds(handCards(p))
+}
+
 // GetKnockThreshold はノック可能なデッドウッド点の上限（この値以下でノック可）を返す。
 func (g *Chinchon) GetKnockThreshold() int { return g.config.KnockThreshold }
 
@@ -761,9 +766,6 @@ func (g *Chinchon) GetConfig() ChinchonConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *Chinchon) SetConfig(cfg ChinchonConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *Chinchon) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetKnockerIdx ノッカーのインデックス取得 (-1 = ノックなし)
 func (g *Chinchon) GetKnockerIdx() int { return g.knockerIdx }
@@ -807,9 +809,7 @@ func handCards(player *ChinchonPlayer) []*Card {
 
 // sortAllHands 全プレイヤーの手札をソートする
 func (g *Chinchon) sortAllHands() {
-	for i := range g.players {
-		g.sortHand(i)
-	}
+	sortHands(len(g.players), g)
 }
 
 // sortHand プレイヤーの手札をスート→ラン位置の順にソートする
@@ -826,28 +826,6 @@ func (g *Chinchon) sortHand(playerIdx int) {
 	for _, c := range cards {
 		p.AddCard(c)
 	}
-}
-
-// playerName プレイヤー名を返す
-func (g *Chinchon) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (g *Chinchon) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- JSON ---

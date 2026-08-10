@@ -44,14 +44,14 @@ type PenguinHint struct {
 
 // Penguin ペンギンゲームクラス
 type Penguin struct {
-	trumpCards  *TrumpCards
-	tableau     [PenguinTableauCnt][]*Card
-	freeCells   [PenguinCellCnt]*Card
-	foundation  [PenguinFoundationCnt][]*Card
-	baseRank    int
-	phase       PenguinPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	tableau    [PenguinTableauCnt][]*Card
+	freeCells  [PenguinCellCnt]*Card
+	foundation [PenguinFoundationCnt][]*Card
+	baseRank   int
+	phase      PenguinPhase
+	moveCount  int
+	actionLogBase
 	history     []*penguinSnapshot
 	isStalemate bool
 }
@@ -494,25 +494,12 @@ func (p *Penguin) CanUndo() bool {
 
 // UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す
 func (p *Penguin) UndoToEscape() int {
-	if !p.isStalemate {
-		return 0
-	}
-	for i := len(p.history) - 1; i >= 0; i-- {
-		if !p.history[i].isStalemate {
-			return len(p.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(p.isStalemate, p.history, func(s *penguinSnapshot) bool { return s.isStalemate })
 }
 
 // UndoN n回連続でアンドゥを実行する
 func (p *Penguin) UndoN(n int) error {
-	for i := 0; i < n; i++ {
-		if err := p.Undo(); err != nil {
-			return fmt.Errorf("undo step %d failed: %w", i+1, err)
-		}
-	}
-	return nil
+	return undoN(p, n)
 }
 
 // --- State getters/setters ---
@@ -540,9 +527,6 @@ func (p *Penguin) GetBaseRank() int { return p.baseRank }
 
 // SetBaseRank ベースランク設定 (テスト用)
 func (p *Penguin) SetBaseRank(r int) { p.baseRank = r }
-
-// GetActionLog 棋譜取得
-func (p *Penguin) GetActionLog() []*ActionLogEntry { return p.actionLog }
 
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (p *Penguin) GetGameEndFlag() bool { return p.phase != PenguinPhasePlaying }
@@ -607,6 +591,26 @@ func (p *Penguin) isValidTableauSequence(cards []*Card) bool {
 		}
 	}
 	return true
+}
+
+// GetMaxMovableCards はいま一度に動かせる最大枚数を返す (#4802)。
+//
+// **空き列を移動先にすると上限は下がる。**その列自身を経由地に使えないため。
+// 移動先を選ぶ前の一般的な上限がこちらで、空き列に置くときの上限は
+// GetMaxMovableCardsToEmptyColumn。
+func (p *Penguin) GetMaxMovableCards() int {
+	return p.maxMovableCards(-1)
+}
+
+// GetMaxMovableCardsToEmptyColumn は空き列へ動かすときの上限を返す。
+// 空き列が無いときは 0。
+func (p *Penguin) GetMaxMovableCardsToEmptyColumn() int {
+	for i := 0; i < PenguinTableauCnt; i++ {
+		if len(p.tableau[i]) == 0 {
+			return p.maxMovableCards(i)
+		}
+	}
+	return 0
 }
 
 // maxMovableCards 移動可能な最大カード枚数を計算
@@ -678,13 +682,7 @@ func (p *Penguin) checkStalemate() {
 
 // appendLog 棋譜エントリを追加
 func (p *Penguin) appendLog(actionType, detail string, cards []*Card) {
-	p.actionLog = append(p.actionLog, &ActionLogEntry{
-		TurnNumber: p.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	p.appendLogAt(p.moveCount, 0, actionType, detail, cards)
 }
 
 // penguinJSON is the JSON wire format for Penguin.

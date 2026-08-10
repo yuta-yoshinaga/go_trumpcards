@@ -44,13 +44,13 @@ type EightOffHint struct {
 
 // EightOff エイトオフゲームクラス
 type EightOff struct {
-	trumpCards  *TrumpCards
-	tableau     [EightOffTableauCnt][]*Card
-	freeCells   [EightOffCellCnt]*Card
-	foundation  [EightOffFoundationCnt][]*Card
-	phase       EightOffPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	tableau    [EightOffTableauCnt][]*Card
+	freeCells  [EightOffCellCnt]*Card
+	foundation [EightOffFoundationCnt][]*Card
+	phase      EightOffPhase
+	moveCount  int
+	actionLogBase
 	history     []*eightOffSnapshot
 	isStalemate bool
 }
@@ -476,25 +476,12 @@ func (e *EightOff) CanUndo() bool {
 
 // UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。膠着状態でなければ0、脱出不可なら-1。
 func (e *EightOff) UndoToEscape() int {
-	if !e.isStalemate {
-		return 0
-	}
-	for i := len(e.history) - 1; i >= 0; i-- {
-		if !e.history[i].isStalemate {
-			return len(e.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(e.isStalemate, e.history, func(s *eightOffSnapshot) bool { return s.isStalemate })
 }
 
 // UndoN n回連続でアンドゥを実行する。
 func (e *EightOff) UndoN(n int) error {
-	for i := 0; i < n; i++ {
-		if err := e.Undo(); err != nil {
-			return fmt.Errorf("undo step %d failed: %w", i+1, err)
-		}
-	}
-	return nil
+	return undoN(e, n)
 }
 
 // --- State getters/setters ---
@@ -516,9 +503,6 @@ func (e *EightOff) GetFreeCells() [EightOffCellCnt]*Card { return e.freeCells }
 
 // GetFoundation ファンデーション取得
 func (e *EightOff) GetFoundation() [EightOffFoundationCnt][]*Card { return e.foundation }
-
-// GetActionLog 棋譜取得
-func (e *EightOff) GetActionLog() []*ActionLogEntry { return e.actionLog }
 
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (e *EightOff) GetGameEndFlag() bool { return e.phase != EightOffPhasePlaying }
@@ -555,12 +539,7 @@ func (e *EightOff) canPlaceOnTableau(card *Card, col int) bool {
 
 // canPlaceOnFoundation ファンデーションにカードを置けるか判定
 func (e *EightOff) canPlaceOnFoundation(card *Card, fIdx int) bool {
-	pile := e.foundation[fIdx]
-	if len(pile) == 0 {
-		return card.GetValue() == 1
-	}
-	topCard := pile[len(pile)-1]
-	return card.GetDesign() == topCard.GetDesign() && card.GetValue() == topCard.GetValue()+1
+	return canPlaceOnFoundationPile(e.foundation[fIdx], card)
 }
 
 // isSameSuit 同じスートかどうか判定
@@ -646,13 +625,7 @@ func (e *EightOff) checkStalemate() {
 
 // appendLog 棋譜エントリを追加
 func (e *EightOff) appendLog(actionType, detail string, cards []*Card) {
-	e.actionLog = append(e.actionLog, &ActionLogEntry{
-		TurnNumber: e.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	e.appendLogAt(e.moveCount, 0, actionType, detail, cards)
 }
 
 // eightOffJSON is the JSON wire format for EightOff.

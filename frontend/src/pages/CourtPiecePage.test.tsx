@@ -273,4 +273,28 @@ describe('CourtPiecePage', () => {
     renderWithProviders(<CourtPiecePage />);
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
   });
+
+  // **合法手の判定はドメインが唯一の出どころ (#4726)。**以前はこのページが
+  // validatePlay を TypeScript に写して再計算しており、ルールを変えたら片方だけ
+  // 直してずれる状態だった。ここで確かめるのは「サーバーの値をそのまま使う」こと。
+  it('rings the legal cards the server reported, without recomputing them', async () => {
+    // 手札の内容と矛盾する playableIndices を送り、再計算していないことを踏む。
+    mockExec.mockResolvedValue(makeCourtPieceState({ phase: 1, currentPlayerIdx: 0, playableIndices: [1] }));
+    renderWithProviders(<CourtPiecePage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    const legal = document.querySelectorAll('[data-legal="true"]');
+    expect(legal).toHaveLength(1);
+  });
+
+  // **空配列で確かめない。**CPU 手番で playableIndices が空だと、canPlay の
+  // ガードを外しても結果が変わらず、この一本が何も確かめなくなる。サーバーが
+  // 値を送っていても手番でなければ光らせないことを踏む。
+  it('rings nothing when it is not the human turn', async () => {
+    mockExec.mockResolvedValue(makeCourtPieceState({ phase: 1, currentPlayerIdx: 1, playableIndices: [0, 1] }));
+    renderWithProviders(<CourtPiecePage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(document.querySelectorAll('[data-legal="true"]')).toHaveLength(0);
+  });
 });

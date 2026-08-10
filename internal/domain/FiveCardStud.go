@@ -60,30 +60,30 @@ var errFiveCardStudInvalid = fmt.Errorf("fivecardstud: invalid game state")
 
 // FiveCardStud ファイブカードスタッド
 type FiveCardStud struct {
-	trumpCards       *TrumpCards
-	players          []*FiveCardStudPlayer
-	communityCard    *Card // カード不足時の共有カード
-	pot              int
-	sidePots         []SidePot
-	dealerIdx        int
-	currentTurn      int
-	phase            int
-	config           FiveCardStudConfig
-	gameEndFlag      bool
-	lastBet          int
-	minRaise         int
-	raiseCount       int
-	actedFlags       []bool
-	roundResults     []FiveCardStudResult
-	cpuActions       []FiveCardStudCpuAction
-	startingChips    []int
-	vpipTracked      []bool
-	pfrTracked       []bool
-	threeBetTracked  []bool
-	tournamentBase   // handCount / rebuyCounts / addonUsed (issue #1463)
-	lastCpuError     error
-	rebuyPhaseType   int
-	actionLog        []*ActionLogEntry
+	trumpCards      *TrumpCards
+	players         []*FiveCardStudPlayer
+	communityCard   *Card // カード不足時の共有カード
+	pot             int
+	sidePots        []SidePot
+	dealerIdx       int
+	currentTurn     int
+	phase           int
+	config          FiveCardStudConfig
+	gameEndFlag     bool
+	lastBet         int
+	minRaise        int
+	raiseCount      int
+	actedFlags      []bool
+	roundResults    []FiveCardStudResult
+	cpuActions      []FiveCardStudCpuAction
+	startingChips   []int
+	vpipTracked     []bool
+	pfrTracked      []bool
+	threeBetTracked []bool
+	tournamentBase  // handCount / rebuyCounts / addonUsed (issue #1463)
+	lastCpuError    error
+	rebuyPhaseType  int
+	actionLogBase
 	humanProfile     *BettingHumanProfile
 	lastHumanPlayMs  int
 	bringInPlayerIdx int // ブリングインプレイヤーインデックス
@@ -360,11 +360,7 @@ func (s *FiveCardStud) PlayerAction(action, amount, humanPlayMs int) error {
 
 // bettingPlayers BettingPlayerスライスを生成
 func (s *FiveCardStud) bettingPlayers() []BettingPlayer {
-	bp := make([]BettingPlayer, len(s.players))
-	for i, pl := range s.players {
-		bp[i] = pl
-	}
-	return bp
+	return toBettingPlayers(s.players)
 }
 
 // executeAction 指定プレイヤーのアクション実行
@@ -428,15 +424,7 @@ func (s *FiveCardStud) advanceTurn() {
 
 // isBettingRoundComplete ベッティングラウンドが完了したかチェック
 func (s *FiveCardStud) isBettingRoundComplete() bool {
-	for i, p := range s.players {
-		if p.GetFolded() || p.GetAllIn() {
-			continue
-		}
-		if !s.actedFlags[i] {
-			return false
-		}
-	}
-	return true
+	return bettingRoundComplete(s.players, s.actedFlags)
 }
 
 // advancePhase 次のフェーズに進める
@@ -573,13 +561,7 @@ func (s *FiveCardStud) determineBettingLeader() int {
 
 // countActivePlayers フォールドしていないプレイヤー数を返す
 func (s *FiveCardStud) countActivePlayers() int {
-	cnt := 0
-	for _, p := range s.players {
-		if !p.GetFolded() {
-			cnt++
-		}
-	}
-	return cnt
+	return countPlayers(s.players, func(p *FiveCardStudPlayer) bool { return !p.GetFolded() })
 }
 
 // bettingLimits ベッティングリミット設定
@@ -745,23 +727,10 @@ func (s *FiveCardStud) IsMuckAvailable() bool {
 
 // getHandName ハンドランクから名前を返す
 func (s *FiveCardStud) getHandName(rank int) string {
-	if rank >= 0 && rank < len(PokerHandNames) {
-		return PokerHandNames[rank]
-	}
-	return "Unknown"
+	return pokerHandName(rank)
 }
 
 // --- 棋譜 ---
-
-func (s *FiveCardStud) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	s.actionLog = append(s.actionLog, &ActionLogEntry{
-		TurnNumber: len(s.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
 
 func (s *FiveCardStud) logAction(playerIdx, action, amount int) {
 	switch action {
@@ -852,15 +821,11 @@ func (s *FiveCardStud) ExportProfile() interface{} {
 
 // ImportProfile JSONバイトからメタAIプロファイルをインポートする
 func (s *FiveCardStud) ImportProfile(data []byte) error {
-	if len(data) == 0 {
-		return nil
-	}
-	d, err := ImportBettingHumanProfileJSON(data)
-	if err != nil {
+	p, err := importBettingProfile(data)
+	if err != nil || p == nil {
 		return err
 	}
-	s.humanProfile = &BettingHumanProfile{}
-	s.humanProfile.Import(d)
+	s.humanProfile = p
 	return nil
 }
 
@@ -872,24 +837,16 @@ func (s *FiveCardStud) SetConfig(cfg FiveCardStudConfig) { s.config = cfg }
 
 // IsHumanTurn 人間のターンかチェック
 func (s *FiveCardStud) IsHumanTurn() bool {
-	if s.currentTurn >= 0 && s.currentTurn < len(s.players) {
-		return s.players[s.currentTurn].GetIsHuman()
-	}
-	return false
+	return isHumanTurn(s.players, s.currentTurn)
 }
 
 // GetActedFlags actedフラグ取得
 func (s *FiveCardStud) GetActedFlags() []bool {
-	result := make([]bool, len(s.actedFlags))
-	copy(result, s.actedFlags)
-	return result
+	return copyOf(s.actedFlags)
 }
 
 // GetHandCount ハンド数取得
 func (s *FiveCardStud) GetHandCount() int { return s.handCount }
-
-// GetActionLog 棋譜を取得する
-func (s *FiveCardStud) GetActionLog() []*ActionLogEntry { return s.actionLog }
 
 // GetBringInPlayerIdx ブリングインプレイヤーインデックス取得
 func (s *FiveCardStud) GetBringInPlayerIdx() int { return s.bringInPlayerIdx }

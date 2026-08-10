@@ -91,6 +91,11 @@ func (p *RussianBankWebPresenter) buildMessage(g interfaces.RussianBankGame, las
 	if g.GetGameEndFlag() {
 		return p.winnerMessage(g)
 	}
+	// **なぜボタンが増えたのかを言う。**CUI は同じ状態を黄色で明示しているのに、
+	// Web は無言で Stop ボタンが現れるだけだった (#4817)。
+	if g.CanCallStop() {
+		return "", "russianbank.stopAvailable", nil
+	}
 	return "", "russianbank.playing", nil
 }
 

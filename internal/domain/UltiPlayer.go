@@ -18,9 +18,7 @@ func NewUltiPlayer(isHuman bool) *UltiPlayer {
 
 // ResetRound ラウンドをリセット (トリック・手札・終了状態を初期化)
 func (p *UltiPlayer) ResetRound() {
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayerRound(p)
 }
 
 // ultiPlayerJSON is the JSON wire format for UltiPlayer.

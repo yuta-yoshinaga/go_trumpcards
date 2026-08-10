@@ -19,6 +19,19 @@ func (p *BeggarMyNeighbourCuiPresenter) Output(g interfaces.BeggarMyNeighbourGam
 		cpu := g.GetPlayer(1)
 		human := g.GetPlayer(0)
 
+		// **引き分け打ち切りがいつ来るかを出す。**上限は設定で大きく変えられ
+		// (BeggarMyNeighbourMinMaxRounds〜MaxMaxRounds)、しかも自動進行する
+		// ゲームなので、あとどれだけかが分からないと待つほかない (#4896)。
+		// Web は進捗バーを常時出している。
+		rounds, maxRounds := g.GetRoundsPlayed(), g.GetConfig().MaxRounds
+		line := i18n.Tf("beggarmyneighbour.roundProgress",
+			"played", strconv.Itoa(rounds), "max", strconv.Itoa(maxRounds))
+		// 9 割を超えたら強調する。打ち切りが目前だと分かる必要がある。
+		if maxRounds > 0 && rounds*10 >= maxRounds*9 {
+			line = color.Yellow(line)
+		}
+		b.WriteString(line + "\n")
+
 		b.WriteString(i18n.Tf("beggarmyneighbour.cpuStats",
 			"draw", strconv.Itoa(cpu.GetDrawPileSize()),
 			"discard", strconv.Itoa(cpu.GetDiscardPileSize()),

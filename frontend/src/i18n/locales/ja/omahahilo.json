@@ -99,5 +99,18 @@
     "lpTooltip": "Loose Passive：参加多めだがコール中心",
     "balanced": "BAL",
     "balancedTooltip": "バランス型のスタイル"
+  },
+  "livePreview": "現在の役:",
+  "hand": {
+    "highCard": "ハイカード",
+    "onePair": "ワンペア",
+    "twoPair": "ツーペア",
+    "threeOfAKind": "スリーカード",
+    "straight": "ストレート",
+    "flush": "フラッシュ",
+    "fullHouse": "フルハウス",
+    "fourOfAKind": "フォーカード",
+    "straightFlush": "ストレートフラッシュ",
+    "royalFlush": "ロイヤルフラッシュ"
   }
 }

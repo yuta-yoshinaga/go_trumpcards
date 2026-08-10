@@ -18,9 +18,7 @@ func NewKlaverjasPlayer(isHuman bool) *KlaverjasPlayer {
 
 // ResetRound ラウンドをリセット（トリック・手札・終了状態を初期化）
 func (p *KlaverjasPlayer) ResetRound() {
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayerRound(p)
 }
 
 // klaverjasPlayerJSON is the JSON wire format for KlaverjasPlayer.

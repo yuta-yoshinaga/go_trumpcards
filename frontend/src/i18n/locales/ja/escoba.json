@@ -21,7 +21,9 @@
     "stockRemaining": "山札残り{{count}}枚",
     "cpuStats": "手札{{cards}}枚 / 捕獲{{captured}}枚 / エスコバ{{escoba}}",
     "humanStats": "手札{{cards}}枚 / 捕獲{{captured}}枚 / エスコバ{{escoba}}",
-    "playerScore": "P{{id}}: {{score}}pt"
+    "playerScore": "P{{id}}: {{score}}pt",
+    "escobaBadge": "エスコバ！",
+    "escobaBadgeOwn": "エスコバ！ あなた"
   },
   "captured": {
     "title": "獲得した札",

@@ -182,7 +182,7 @@ type Trex struct {
 	dealScores []int
 
 	gameEndFlag bool
-	actionLog   []*ActionLogEntry
+	actionLogBase
 }
 
 // NewTrex はコンストラクタ。
@@ -706,10 +706,7 @@ func (t *Trex) GetPlayers() []*TrexPlayer { return t.players }
 
 // GetPlayer は idx のプレイヤーを返す。
 func (t *Trex) GetPlayer(idx int) *TrexPlayer {
-	if idx < 0 || idx >= len(t.players) {
-		return nil
-	}
-	return t.players[idx]
+	return getPlayer(t.players, idx)
 }
 
 // GetPhase は現在のフェーズを返す。
@@ -743,10 +740,7 @@ func (t *Trex) GetTricksWon(idx int) int {
 
 // GetScore は idx の累計得点を返す。
 func (t *Trex) GetScore(idx int) int {
-	if idx < 0 || idx >= len(t.scores) {
-		return 0
-	}
-	return t.scores[idx]
+	return elemAt(t.scores, idx)
 }
 
 // GetDealScore は idx の今ディールの得点を返す。
@@ -803,9 +797,6 @@ func (t *Trex) GetConfig() TrexConfig { return t.config }
 // SetConfig はゲーム設定をセットする。
 func (t *Trex) SetConfig(c TrexConfig) { t.config = c }
 
-// GetActionLog は棋譜を返す。
-func (t *Trex) GetActionLog() []*ActionLogEntry { return t.actionLog }
-
 // SetPhaseForTest はテスト用にフェーズを差し替える。
 func (t *Trex) SetPhaseForTest(p TrexPhase) { t.phase = p }
 
@@ -823,13 +814,7 @@ func (t *Trex) SetDealNumberForTest(n int) { t.dealNo = n }
 
 // addLog は棋譜に 1 件追加する。
 func (t *Trex) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	t.actionLog = append(t.actionLog, &ActionLogEntry{
-		TurnNumber: len(t.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	t.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // trexTrickCardJSON is the JSON wire format for TrexTrickCard.

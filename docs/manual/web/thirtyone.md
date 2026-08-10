@@ -1,4 +1,4 @@
-# サーティワン (Thirty-One / Scat) — Web マニュアル
+# サーティワン（Web版）遊び方
 
 ## ゲーム概要
 
@@ -11,11 +11,13 @@
 ## 起動方法
 
 ```sh
-# Web サーバーを起動
-go run ./cmd/trumpcards web --open
+go run ./cmd/trumpcards web         # CLI経由でWebサーバーを起動
+go run ./cmd/trumpcards web --open  # サーバー起動 + ブラウザを開く
+go run ./cmd/server                 # 直接Webサーバーを起動
 ```
 
-ブラウザでナビゲーションから「サーティワン」を選択するか、`/thirtyone` を開きます。
+ブラウザで `http://localhost:8080` にアクセスし、ナビゲーションバーから「サーティワン」を選択します。
+ナビバーのJA/ENボタンで日本語・英語を切り替えられます。
 
 ## ルール
 

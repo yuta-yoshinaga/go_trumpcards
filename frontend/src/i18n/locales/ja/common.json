@@ -1005,6 +1005,7 @@
     "ninetynine.result.humanWin": "ゲーム終了！ あなたの勝ち！",
     "ninetynine.roundEnd": "ラウンド終了",
     "ninetynine.trickEnd": "トリック終了",
+    "osmosis.stalemate": "手詰まりです。置けるカードがもうありません。",
     "oasispoker.result.dealerNotQualified": "ディーラー未クオリファイ！",
     "oasispoker.result.dealerWins": "ディーラー勝利！",
     "oasispoker.result.fold": "フォールド",
@@ -1431,7 +1432,13 @@
     "yukon.stalemateWithEscape": "手詰まりです。{{count}}手戻ると別の手が打てます。",
     "zheng.result.rankings": "ゲーム終了！ {{rankings}}",
     "zwicker.lose": "負けました",
-    "zwicker.win": "勝ちました"
+    "zwicker.win": "勝ちました",
+    "bidwhist.hintRequested": "ヒントがあります",
+    "bidwhist.noHint": "ヒントはありません",
+    "russianbank.stopAvailable": "CPU が強制手を取りこぼしています。「ストップ」で咎められます",
+    "paigow.hintNone": "いまはヒントを出せません。",
+    "pokersquares.hintAvailable": "ヒントを表示しました",
+    "pokersquares.noHint": "いま出せるヒントはありません"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",
@@ -1515,6 +1522,7 @@
       "reset": "ゲームをやり直す",
       "selectNertzPile": "ナーツの山を選ぶ",
       "selectTarget": "対象のプレイヤーを選ぶ",
+      "selectTargetNamed": "{{name}} を選ぶ",
       "selectWastePile": "廃棄の山を選ぶ",
       "setHands": "手役を確定する",
       "shift": "列をずらす",

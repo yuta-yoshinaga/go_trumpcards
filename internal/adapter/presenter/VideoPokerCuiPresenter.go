@@ -102,15 +102,22 @@ func (vpp *VideoPokerCuiPresenter) paytableStr(variantName string) string {
 	return sb.String()
 }
 
-// handNameForWin は勝利行に表示する役名を返す。Deuces Wild は安定キー
-// (GetHandKey) 経由で "deuceswild.hand.<key>" を翻訳し、ja/en それぞれの
-// ロケールで役名を表示する。他バリアント (videopoker / jokerpoker) は従来通り
-// 英語の GetHandName をそのまま返し、後方互換を保つ。
+// handNameForWin は勝利行に表示する役名を返す。
+//
+// **役名はバリアントに依らず共通。**以前は Deuces Wild だけ安定キー
+// (GetHandKey) 経由で翻訳し、Joker Poker と Video Poker は英語の GetHandName に
+// フォールバックしていたため、日本語ロケールでも勝敗行だけ英語で出ていた
+// (#4693)。翻訳表は 3 バリアント共通の `pokerhand` に置いてある。
+//
+// キーが無い、または訳が無い場合だけ英語名に落とす。
 func (vpp *VideoPokerCuiPresenter) handNameForWin(vp interfaces.VideoPokerGame) string {
-	if vp.GetVariantName() == "deuceswild" {
-		if key := vp.GetHandKey(); key != "" {
-			return i18n.T("deuceswild.hand." + key)
-		}
+	key := vp.GetHandKey()
+	if key == "" {
+		return vp.GetHandName()
+	}
+	full := "pokerhand." + key
+	if name := i18n.T(full); name != full {
+		return name
 	}
 	return vp.GetHandName()
 }
@@ -198,7 +205,20 @@ func videoPokerHold(hand []*domain.Card, variant string) ([]bool, string) {
 			}
 		}
 	}
-	if len(groupIdx) > 0 {
+	// **配当のつくペアかどうかで扱いが変わる。**Jacks or Better では J 未満の
+	// ペア単体には配当が無い。以前はこの分岐が無条件に最初へ来ていたため、
+	// 4枚ロイヤルや4枚フラッシュが同居していても常に弱いペアを勧めていた (#4691)。
+	paying := maxCount >= 3
+	if maxCount == 2 {
+		for v, idxs := range groups {
+			if len(idxs) >= 2 && (v == 1 || v >= videoPokerHighCardThreshold) {
+				paying = true
+				break
+			}
+		}
+	}
+
+	if len(groupIdx) > 0 && paying {
 		for _, i := range groupIdx {
 			hold[i] = true
 		}
@@ -212,12 +232,29 @@ func videoPokerHold(hand []*domain.Card, variant string) ([]bool, string) {
 		}
 	}
 
-	// Four-card flush draw.
+	// **4枚ロイヤルは低ペアより遥かに強い。**標準戦略ではフルハウスより上に来る。
+	if rd := videoPokerRoyalDraw(hand); rd != nil {
+		for _, i := range rd {
+			hold[i] = true
+		}
+		return hold, "holdRoyalDraw"
+	}
+
+	// Four-card flush draw -- 標準戦略で低ペアより上。
 	if fd := videoPokerFlushDraw(hand); fd != nil {
 		for _, i := range fd {
 			hold[i] = true
 		}
 		return hold, "holdFlushDraw"
+	}
+
+	// **低ペアは4枚ストレートより上。**ここを「ドロー優先」で一括りにすると、
+	// 標準戦略から外れる方向に壊れる。
+	if len(groupIdx) > 0 {
+		for _, i := range groupIdx {
+			hold[i] = true
+		}
+		return hold, "holdPair"
 	}
 
 	// Four-card straight draw.
@@ -266,6 +303,35 @@ func videoPokerGroupIndices(hand []*domain.Card, variant string) []int {
 
 // videoPokerFlushDraw returns the indices of four or more same-suit cards, or
 // nil if none.
+// videoPokerRoyalDraw は同一スートで 10-J-Q-K-A のうち 4 枚そろっていれば
+// その位置を返す。同じランクの重複はロイヤルを構成しないので除く。
+func videoPokerRoyalDraw(hand []*domain.Card) []int {
+	bySuit := map[int]map[int]int{}
+	for i, c := range hand {
+		v := c.GetValue()
+		if v != 1 && v < 10 {
+			continue
+		}
+		d := c.GetDesign()
+		if bySuit[d] == nil {
+			bySuit[d] = map[int]int{}
+		}
+		bySuit[d][v] = i
+	}
+	for _, byRank := range bySuit {
+		if len(byRank) < videoPokerDrawCount {
+			continue
+		}
+		out := make([]int, 0, len(byRank))
+		for _, i := range byRank {
+			out = append(out, i)
+		}
+		sort.Ints(out)
+		return out
+	}
+	return nil
+}
+
 func videoPokerFlushDraw(hand []*domain.Card) []int {
 	suits := map[int][]int{}
 	for i, c := range hand {

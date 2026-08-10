@@ -61,7 +61,7 @@ type RussianPoker struct {
 	dealerQualified  bool
 	playerHandRank   int
 	dealerHandRank   int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewRussianPoker コンストラクタ
@@ -372,20 +372,7 @@ func (rp *RussianPoker) compareHands() int {
 
 // checkDealerQualifies ディーラークオリファイ条件: ペア以上、または A-K ハイ
 func (rp *RussianPoker) checkDealerQualifies() bool {
-	if rp.dealerHandRank >= PokerHandOnePair {
-		return true
-	}
-	hasAce := false
-	hasKing := false
-	for _, c := range rp.dealerHand {
-		switch c.GetValue() {
-		case 1:
-			hasAce = true
-		case 13:
-			hasKing = true
-		}
-	}
-	return hasAce && hasKing
+	return dealerQualifies(rp.dealerHandRank, rp.dealerHand)
 }
 
 // calculatePayouts アンテ／プレイの配当計算
@@ -448,17 +435,6 @@ func cardSortValue(c *Card) int {
 		return 14
 	}
 	return c.GetValue()
-}
-
-// appendLog 棋譜にエントリを追加する
-func (rp *RussianPoker) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	rp.actionLog = append(rp.actionLog, &ActionLogEntry{
-		TurnNumber: len(rp.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- Getters ---
@@ -524,9 +500,6 @@ func (rp *RussianPoker) GetDealerHandRank() int { return rp.dealerHandRank }
 
 // GetChips チップ
 func (rp *RussianPoker) GetChips() int { return rp.chips.GetChips() }
-
-// GetActionLog 棋譜を取得する
-func (rp *RussianPoker) GetActionLog() []*ActionLogEntry { return rp.actionLog }
 
 // --- Test helpers ---
 

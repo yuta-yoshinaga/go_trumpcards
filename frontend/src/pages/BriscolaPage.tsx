@@ -126,6 +126,12 @@ function BriscolaPageContent() {
   const isGameEnd = state.phase === BriscolaPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
 
+  // 要求済みのサーバーヒント (hint コマンドの結果)。要求していなければ null。
+  // 下の FrontendHintTooltip とは排他 -- どちらも同じ state.hint を出すので、
+  // 要求したときは具体的なバナーだけを残す。
+  // (真偽値ではなく値にしているのは、null チェックで state.hint を絞るため。)
+  const serverHint = state.hint && isRequestedHint(state) ? state.hint : null;
+
   const phaseName = isGameEnd ? t('phase.gameEnd') : isTrickEnd ? t('phase.trickEnd') : t('phase.play');
 
   const resultBanner = (() => {
@@ -272,10 +278,10 @@ function BriscolaPageContent() {
         )}
 
         {/* Server hint text (populated by the hint command). */}
-        {state.hint && isRequestedHint(state) && (
+        {serverHint && (
           <p className="mt-3 text-sm text-ds-accent" data-testid="briscola-hint">
-            {t('hint.available')}: {t(`hint.${state.hint.reason}`)}
-            {state.hint.cardIndex !== undefined && ` ${t('hint.card', { index: state.hint.cardIndex })}`}
+            {t('hint.available')}: {t(`hint.${serverHint.reason}`)}
+            {serverHint.cardIndex !== undefined && ` ${t('hint.card', { index: serverHint.cardIndex })}`}
           </p>
         )}
 
@@ -297,7 +303,14 @@ function BriscolaPageContent() {
         </div>
       </div>
 
-      <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+      {/*
+       * Single hint surface: the server hint (requested with the `hint` command and
+       * evaluated against the real game state) and the frontend heuristic tooltip are
+       * mutually exclusive. When the player has explicitly asked the backend, that
+       * answer supersedes the local approximation so the two can never contradict
+       * each other on screen (#4753 -- CassinoPage.tsx uses the same pattern).
+       */}
+      {!serverHint && <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />}
 
       <SettingsPanel
         title={tc('settings.title')}

@@ -134,6 +134,10 @@ func (p *DoubtCuiPresenter) Output(d interfaces.DoubtGame, lastErr error) string
 		}
 		b.WriteString(i18n.Tf("doubt.promptCurrentPlayer",
 			"name", cuiPlayerName(d.GetPlayer(currentTurn), currentTurn)) + "\n")
+		// Web は正直な申告値のボタンを緑のリングで囲み、手番が来ると自動で選ぶ。
+		// CUI は直前の申告値しか出しておらず、毎回 (値 % 13) + 1 を暗算させていた (#4860)。
+		b.WriteString(i18n.Tf("doubt.promptHonestValue",
+			"value", strconv.Itoa(domain.DoubtHonestClaimValue(d.GetLastAction()))) + "\n")
 		b.WriteString(i18n.T("doubt.promptPlayHelp") + "\n")
 	})
 }

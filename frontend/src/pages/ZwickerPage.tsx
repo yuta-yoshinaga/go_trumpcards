@@ -29,6 +29,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { parseZwickerCommand, ZWICKER_HELP } from '../utils/cli/commands/zwickerCommands';
 import { formatZwickerState } from '../utils/cli/formatters/zwickerFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isRequestedHint } from '../utils/hintRequest';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const ZW_TUTORIAL_STEPS: TutorialStep[] = [
@@ -72,6 +73,9 @@ function ZwickerPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('zwicker', state);
+  // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回ヒントを
+  // 載せるので、`state.hint` を直接読むと常時ハイライトになる (#4605)。
+  const showServerHint = frontendHintEnabled && state !== null && isRequestedHint(state);
 
   if (!state) {
     return <GameSkeleton gameKey="zwicker" layout={{ kind: 'tableau', topRow: 3, tableau: 4 }} />;
@@ -182,24 +186,32 @@ function ZwickerPageContent() {
                 <div className="text-center text-game-text-muted text-xs">{t('emptyTable')}</div>
               ) : (
                 <div className="flex gap-1 justify-center flex-wrap">
-                  {state.tableCards.map((card, i) => (
-                    <button
-                      key={`tbl-${i.toString()}`}
-                      type="button"
-                      data-testid="zwicker-table-card"
-                      aria-pressed={tableSel.includes(i)}
-                      aria-disabled={!isHumanTurn}
-                      onClick={() => isHumanTurn && toggle(tableSel, setTableSel, i)}
-                      className={[
-                        'rounded min-h-11 flex flex-col items-center',
-                        tableSel.includes(i) ? 'ring-2 ring-ds-accent' : '',
-                      ].join(' ')}
-                    >
-                      <AnimatedCard card={card} width={cardWidth} draggable={false} />
-                      {/* 値を出さないと何と取れるか判らない。 */}
-                      <span className="text-[10px] text-ds-text-muted">{card.values.join('/')}</span>
-                    </button>
-                  ))}
+                  {state.tableCards.map((card, i) => {
+                    const isHinted = showServerHint && state.hint?.tableIndices?.includes(i) === true;
+                    return (
+                      <button
+                        key={`tbl-${i.toString()}`}
+                        type="button"
+                        data-testid="zwicker-table-card"
+                        aria-pressed={tableSel.includes(i)}
+                        aria-disabled={!isHumanTurn}
+                        onClick={() => isHumanTurn && toggle(tableSel, setTableSel, i)}
+                        // The hint says which table cards to take with the card it
+                        // names; only the hand card was ever highlighted, leaving the
+                        // multi-card capture for the player to work out (#4898).
+                        data-hinted-table={isHinted || undefined}
+                        className={[
+                          'rounded min-h-11 flex flex-col items-center',
+                          tableSel.includes(i) ? 'ring-2 ring-ds-accent' : '',
+                          isHinted ? 'ring-2 ring-ds-warning' : '',
+                        ].join(' ')}
+                      >
+                        <AnimatedCard card={card} width={cardWidth} draggable={false} />
+                        {/* 値を出さないと何と取れるか判らない。 */}
+                        <span className="text-[10px] text-ds-text-muted">{card.values.join('/')}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               )}
 
@@ -265,7 +277,7 @@ function ZwickerPageContent() {
                       'rounded transition-transform flex flex-col items-center',
                       isHumanTurn ? 'hover:-translate-y-2' : 'opacity-60',
                       handIdx === i ? 'ring-2 ring-ds-accent -translate-y-2' : '',
-                      frontendHintEnabled && state.hint?.cardIndex === i ? 'ring-2 ring-ds-warning' : '',
+                      showServerHint && state.hint?.cardIndex === i ? 'ring-2 ring-ds-warning' : '',
                     ].join(' ')}
                   >
                     <AnimatedCard card={card} width={cardWidth} draggable={false} />

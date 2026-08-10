@@ -28,5 +28,8 @@
   "hintMeld": "Suggestion: meld hand [{{idxs}}] ({{cards}}) with m {{idxs}}",
   "hintDiscard": "Suggestion: discard hand {{idx}} ({{card}}) with d {{idx}}",
   "hintNoMove": "No move can be recommended.",
-  "hintNotYourTurn": "It is not your play phase right now."
+  "hintNotYourTurn": "It is not your play phase right now.",
+  "hintPon": "You can pon with {{idxs}} ({{cards}})",
+  "hintChi": "You can chi with {{idxs}} ({{cards}})",
+  "hintDraw": "The discard is no use here; draw from the stock."
 }

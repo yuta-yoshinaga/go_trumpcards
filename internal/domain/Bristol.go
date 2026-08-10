@@ -61,8 +61,8 @@ type Bristol struct {
 	foundation [BristolFoundationCnt][]*Card
 	phase      BristolPhase
 	moveCount  int
-	actionLog  []*ActionLogEntry
-	history    []*bristolSnapshot
+	actionLogBase
+	history []*bristolSnapshot
 }
 
 // bristolSnapshot アンドゥ用スナップショット
@@ -387,9 +387,6 @@ func (b *Bristol) GetFan() [BristolFanCnt][]*Card { return b.fan }
 // GetFoundation ファウンデーション取得
 func (b *Bristol) GetFoundation() [BristolFoundationCnt][]*Card { return b.foundation }
 
-// GetActionLog 棋譜取得
-func (b *Bristol) GetActionLog() []*ActionLogEntry { return b.actionLog }
-
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (b *Bristol) GetGameEndFlag() bool { return b.phase != BristolPhasePlaying }
 
@@ -426,12 +423,7 @@ func (b *Bristol) CanUndo() bool {
 
 // UndoN n回連続アンドゥ
 func (b *Bristol) UndoN(n int) error {
-	for i := 0; i < n; i++ {
-		if err := b.Undo(); err != nil {
-			return fmt.Errorf("undo step %d failed: %w", i+1, err)
-		}
-	}
-	return nil
+	return undoN(b, n)
 }
 
 // --- Private helpers ---
@@ -458,6 +450,46 @@ func (b *Bristol) canPlaceOnFoundation(card *Card, fIdx int) bool {
 	}
 	top := pile[len(pile)-1]
 	return card.GetValue() == top.GetValue()+1
+}
+
+// LegalTargets は指定した移動元の一番上の札を置ける先を返す。
+// tableau は列番号、foundation はファウンデーション番号。
+//
+// **選んだ札で実際に動かせる先だけを示すため。**画面は選択中に全ての移動先を
+// 同じ見た目で強調していて、押すまで合法か分からなかった (#4813)。判定は
+// canPlaceOnTableau / canPlaceOnFoundation をそのまま使う。
+func (b *Bristol) LegalTargets(fromZone string, fromCol int) (tableau []int, foundation []int) {
+	var card *Card
+	switch fromZone {
+	case "tableau":
+		if fromCol < 0 || fromCol >= BristolTableauCnt || len(b.tableau[fromCol]) == 0 {
+			return nil, nil
+		}
+		card = b.tableau[fromCol][len(b.tableau[fromCol])-1]
+	case "fan":
+		if fromCol < 0 || fromCol >= BristolFanCnt || len(b.fan[fromCol]) == 0 {
+			return nil, nil
+		}
+		card = b.fan[fromCol][len(b.fan[fromCol])-1]
+	default:
+		return nil, nil
+	}
+	for col := 0; col < BristolTableauCnt; col++ {
+		// 自分の列は canPlaceOnTableau が既に弾く (自分自身の 1 つ下にはならない)。
+		// それでも明示するのは、読み手が「同じ列が候補に出るのでは」と疑わずに済むため。
+		if col == fromCol && fromZone == "tableau" {
+			continue
+		}
+		if b.canPlaceOnTableau(card, col) {
+			tableau = append(tableau, col)
+		}
+	}
+	for f := 0; f < BristolFoundationCnt; f++ {
+		if b.canPlaceOnFoundation(card, f) {
+			foundation = append(foundation, f)
+		}
+	}
+	return tableau, foundation
 }
 
 // findFoundation はカードを置けるファウンデーションのインデックスを返す（無ければ -1）。
@@ -512,13 +544,7 @@ func (b *Bristol) restoreSnapshot(snap *bristolSnapshot) {
 }
 
 func (b *Bristol) appendLog(actionType, detail string, cards []*Card) {
-	b.actionLog = append(b.actionLog, &ActionLogEntry{
-		TurnNumber: b.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	b.appendLogAt(b.moveCount, 0, actionType, detail, cards)
 }
 
 // bristolJSON is the JSON wire format for Bristol.

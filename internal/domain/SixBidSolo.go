@@ -290,7 +290,7 @@ type SixBidSolo struct {
 	handNumber  int
 	gameEndFlag bool
 	winnerIdx   int
-	actionLog   []*ActionLogEntry
+	actionLogBase
 }
 
 // NewSixBidSolo コンストラクタ
@@ -1093,10 +1093,7 @@ func (s *SixBidSolo) GetPlayers() []*SixBidSoloPlayer { return s.players }
 
 // GetPlayer は指定インデックスのプレイヤーを返す。
 func (s *SixBidSolo) GetPlayer(idx int) *SixBidSoloPlayer {
-	if idx < 0 || idx >= len(s.players) {
-		return nil
-	}
-	return s.players[idx]
+	return getPlayer(s.players, idx)
 }
 
 // GetPhase は現在のフェーズを返す。
@@ -1193,12 +1190,7 @@ func (s *SixBidSolo) GetActionLog() []*ActionLogEntry { return s.actionLog }
 
 // addLog は棋譜を 1 件追加する。
 func (s *SixBidSolo) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	s.actionLog = append(s.actionLog, &ActionLogEntry{
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	s.appendLogAt(0, playerIdx, actionType, detail, cards)
 }
 
 // sixBidSoloBidName はビッドの内部名を返す (棋譜用)。
@@ -1242,16 +1234,7 @@ func (s *SixBidSolo) SetPhaseForTest(p SixBidSoloPhase) { s.phase = p }
 
 // SetHandForTest は手札を差し替える (テスト専用)。
 func (s *SixBidSolo) SetHandForTest(idx int, cards []*Card) {
-	p := s.GetPlayer(idx)
-	if p == nil {
-		return
-	}
-	for p.GetCardsSize() > 0 {
-		p.RemoveCard(0)
-	}
-	for _, c := range cards {
-		p.AddCard(c)
-	}
+	setHandForTest(s.GetPlayer(idx), cards)
 }
 
 // SetWidowForTest はウィドウを差し替える (テスト専用)。

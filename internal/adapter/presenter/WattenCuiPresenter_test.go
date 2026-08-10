@@ -193,3 +193,31 @@ func TestWattenCuiPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.WattenCuiPresenter)
 	assert.NotNil(t, p.ActionLogOutput(m))
 }
+
+// **宣言はディール全体の主導権を決める。**Web は選択中の Schlag/スートに対して
+// 手札の何枚が切り札になるかを常時出しているのに、CUI はコマンド構文だけだった (#4848)。
+func TestWattenCuiPresenter_DeclarePreview(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.WattenCuiPresenter)
+
+	m, players := setupWattenCuiMockWithPlayers()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+	m.On("GetPhase").Return(domain.WattenPhaseDeclare)
+	// ♥K (Max) / ♦7 (Spitz) は常時切り札。残りは ♠A, ♠10, ♣10。
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 13, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+
+	out := p.Output(m, nil)
+	// ♠ を切り札にすると 2 枚増える。♥K/♦7 は常時側に入るので二重計上しない。
+	assert.Contains(t, out, "SPADE 2  CLOVER 1  HEART 0  DIAMOND 0")
+	assert.Contains(t, out, "常時切り札の保持: 2 枚")
+	// Schlag 10 なら 2 枚 (♠10, ♣10)、A なら 1 枚。
+	assert.Contains(t, out, "A 1  10 2")
+	// コマンド構文の案内は残す。
+	assert.Contains(t, out, "d <rank> <suit>")
+}

@@ -255,4 +255,18 @@ describe('StreetsAndAlleysPage', () => {
     fireEvent.click(sourceBtn);
     await waitFor(() => expect(sourceBtn).toHaveAttribute('aria-pressed', 'true'));
   });
+
+  it('rings every zone that can accept the selected card', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<StreetsAndAlleysPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(document.querySelectorAll('[data-target-candidate]')).toHaveLength(0);
+
+    // ♠5 is the top of column 0 — the page's own tests use it as the source.
+    fireEvent.click(screen.getByRole('button', { name: '♠ 5' }));
+    // Foundations accept the card as readily as the tableau does.
+    await waitFor(() => expect(document.querySelectorAll('[data-target-candidate]').length).toBeGreaterThan(1));
+  });
 });

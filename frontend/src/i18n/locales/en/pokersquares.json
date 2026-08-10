@@ -15,7 +15,8 @@
   "button": {
     "reset": "Reset",
     "undo": "Undo",
-    "giveup": "Give up"
+    "giveup": "Give up",
+    "hint": "Hint"
   },
   "settings": {
     "title": "Settings"
@@ -28,7 +29,9 @@
   },
   "hint": {
     "placeSynergy": "Place here to build toward a stronger poker hand",
-    "placeAny": "Place in any empty cell"
+    "placeAny": "Place in any empty cell",
+    "synergy": "Suggested: ({{row}},{{col}}) - works with the cards already there (+{{score}})",
+    "plain": "Suggested: ({{row}},{{col}}) - no synergy available"
   },
   "hand": {
     "highCard": "High Card",

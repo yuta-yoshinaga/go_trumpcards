@@ -47,8 +47,13 @@ function getStandardHint(hand: Card[]): HintResult {
     .filter((indices) => indices.length >= 2)
     .flat();
 
-  if (allGroupIndices.length > 0) {
-    const maxCount = Math.max(...Array.from(groups.values()).map((g) => g.length));
+  const maxCount = allGroupIndices.length > 0 ? Math.max(...Array.from(groups.values()).map((g) => g.length)) : 0;
+  // **配当のつくペアかどうかで扱いが変わる。**Jacks or Better では J 未満の
+  // ペア単体には配当が無い。以前はこの分岐が無条件に最初へ来ていたため、
+  // 4枚ロイヤルや4枚フラッシュが同居していても常に弱いペアを勧めていた (#4691)。
+  const isPayingGroup = maxCount >= 3 || (maxCount === 2 && hasPayingPair(groups));
+
+  if (allGroupIndices.length > 0 && isPayingGroup) {
     const reason = maxCount >= 4 ? 'hint.holdQuads' : maxCount >= 3 ? 'hint.holdTrips' : 'hint.holdPair';
     return {
       targetAction: formatHoldAction(allGroupIndices, []),
@@ -57,10 +62,26 @@ function getStandardHint(hand: Card[]): HintResult {
     };
   }
 
-  // Check flush draw (4+ same suit)
+  // **4枚ロイヤルは低ペアより遥かに強い。**標準戦略ではフルハウスより上に来る。
+  const royalDraw = findRoyalDraw(hand);
+  if (royalDraw) {
+    return { targetAction: formatHoldAction(royalDraw, []), reason: 'hint.holdRoyalDraw', confidence: 'strong' };
+  }
+
+  // Check flush draw (4+ same suit) -- 標準戦略で低ペアより上。
   const flushDraw = findFlushDraw(hand);
   if (flushDraw) {
     return { targetAction: formatHoldAction(flushDraw, []), reason: 'hint.holdFlushDraw', confidence: 'moderate' };
+  }
+
+  // **低ペアは4枚ストレートより上。**ここを「ドロー優先」で一括りにすると、
+  // 標準戦略から外れる方向に壊れる。
+  if (allGroupIndices.length > 0) {
+    return {
+      targetAction: formatHoldAction(allGroupIndices, []),
+      reason: 'hint.holdPair',
+      confidence: 'moderate',
+    };
   }
 
   // Check straight draw (4+ sequential)
@@ -95,6 +116,41 @@ function groupByValue(hand: Card[]): Map<number, number[]> {
 }
 
 /** Find 4+ cards of the same suit (flush draw). */
+/**
+ * 配当のつくペア (J 以上、またはエース) を含むかどうか。
+ *
+ * `groupByValue` はカードの値をキーにするので、キーをそのまま見れば足りる。
+ * エースは実装によって 1 と 14 のどちらでも来るため両方を受ける。
+ */
+function hasPayingPair(groups: Map<number, number[]>): boolean {
+  for (const [value, indices] of groups) {
+    if (indices.length >= 2 && (value >= HIGH_CARD_THRESHOLD || value === 1 || value === ACE_HIGH)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/** 同一スートで 10-J-Q-K-A のうち 4 枚そろっているか。 */
+function findRoyalDraw(hand: Card[]): number[] | null {
+  const bySuit = new Map<string, number[]>();
+  for (let i = 0; i < hand.length; i++) {
+    const v = hand[i].value;
+    const isRoyalRank = v >= 10 || v === 1 || v === ACE_HIGH;
+    if (!isRoyalRank) continue;
+    const arr = bySuit.get(hand[i].design) ?? [];
+    arr.push(i);
+    bySuit.set(hand[i].design, arr);
+  }
+  for (const indices of bySuit.values()) {
+    // 同じランクの重複は royal を構成しない。
+    const uniq = new Map<number, number>();
+    for (const i of indices) uniq.set(hand[i].value, i);
+    if (uniq.size >= FLUSH_DRAW_COUNT) return Array.from(uniq.values()).sort((a, b) => a - b);
+  }
+  return null;
+}
+
 function findFlushDraw(hand: Card[]): number[] | null {
   const suits = new Map<string, number[]>();
   for (let i = 0; i < hand.length; i++) {

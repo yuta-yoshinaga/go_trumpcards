@@ -178,6 +178,35 @@ func cuiIndexedCardListStr(hand cuiCardList) string {
 	return formatCardList(hand, cuiCardStr, "  ", true)
 }
 
+// CuiLegalMark は「この札は今出せる」ことを示す印。CrazyEights / Wizard /
+// Mushi / GoFish が以前から使っている後置の "*" に合わせている。
+const CuiLegalMark = "*"
+
+// cuiPlayableMarkedCardListStr returns an indexed card list where the cards at
+// the given indices are suffixed with CuiLegalMark.
+//
+// **CUI プレイヤーだけが「どれを出せるか」を番号入力とエラーで学ぶしかなかった。**
+// Web は validIndices でリング表示しているので、同じ情報をテキストでも出す。
+// playable が nil または空のときは目印を付けない -- ビッド中や CPU の手番など、
+// そもそも制限を出していない状態と区別するため (#4725)。
+func cuiPlayableMarkedCardListStr(hand cuiCardList, playable []int) string {
+	if len(playable) == 0 {
+		return cuiIndexedCardListStr(hand)
+	}
+	marked := make(map[int]bool, len(playable))
+	for _, i := range playable {
+		marked[i] = true
+	}
+	parts := make([]string, hand.GetCardsSize())
+	for i := range parts {
+		parts[i] = fmt.Sprintf("[%d]%s", i, cuiCardStr(hand.GetCard(i)))
+		if marked[i] {
+			parts[i] += CuiLegalMark
+		}
+	}
+	return strings.Join(parts, "  ")
+}
+
 // cuiCardListStrEmoji returns a double-space separated emoji card string (no index).
 // e.g. "♠5  ♥3"
 func cuiCardListStrEmoji(hand cuiCardList) string {
@@ -201,3 +230,59 @@ func cuiCardSliceStr(cards []*domain.Card) string {
 func cuiCardSliceStrEmoji(cards []*domain.Card) string {
 	return formatCardSlice(cards, cuiCardStrEmoji, "  ")
 }
+
+// cuiCaptureHintLine annotates each hand card with the table cards it can
+// capture, e.g. `[0]♠5 → 場[1][3]`.
+//
+// Shared by the fishing games (Basra, Tablanet), which all get the pairing from
+// the domain's own `GetCaptureOptions`. **Recomputing it per presenter is how
+// the note starts disagreeing with what the server will accept** (#4922).
+// Cards that capture nothing get no note; an empty result means no line at all.
+func cuiCaptureHintLine(hand cuiCardList, opts map[int][]int, key string) string {
+	if len(opts) == 0 {
+		return ""
+	}
+	notes := make([]string, 0, hand.GetCardsSize())
+	for h := range hand.GetCardsSize() {
+		tableIdxs := opts[h]
+		if len(tableIdxs) == 0 {
+			continue
+		}
+		marks := make([]string, len(tableIdxs))
+		for j, ti := range tableIdxs {
+			marks[j] = "[" + strconv.Itoa(ti) + "]"
+		}
+		notes = append(notes, i18n.Tf(key,
+			"hand", "["+strconv.Itoa(h)+"]"+cuiCardStr(hand.GetCard(h)),
+			"table", strings.Join(marks, "")))
+	}
+	if len(notes) == 0 {
+		return ""
+	}
+	return strings.Join(notes, "  ")
+}
+
+// cuiDiscardPileLines lists a whole discard pile, oldest first, in indexed form
+// ("[0]SPADE 5 [1]HEART 9"), wrapped every cuiDiscardPerLine cards. Returns ""
+// for an empty pile.
+//
+// **山ごと取るゲームでは捨て札の中身は公開情報。**Canasta/Burraco は一番上しか
+// 出しておらず、「山全体を取る」判断を 1 枚で迫っていた (#4833, #5043)。
+func cuiDiscardPileLines(pile []*domain.Card, key string) string {
+	// 空の山は 1 行も出さない。長さ 0 なら下のループが回らないので、専用のガードは
+	// 置かない (置いても分岐が到達不能になるだけ)。
+	parts := make([]string, 0, len(pile))
+	for i, c := range pile {
+		parts = append(parts, "["+strconv.Itoa(i)+"]"+cuiCardStr(c))
+	}
+	var b strings.Builder
+	for i := 0; i < len(parts); i += cuiDiscardPerLine {
+		end := min(i+cuiDiscardPerLine, len(parts))
+		b.WriteString(i18n.Tf(key, "cards", strings.Join(parts[i:end], " ")) + "\n")
+	}
+	return b.String()
+}
+
+// cuiDiscardPerLine は捨て札一覧の 1 行あたりの枚数。20 枚超の山を 1 行に並べると
+// 折り返しで読めなくなる。
+const cuiDiscardPerLine = 8

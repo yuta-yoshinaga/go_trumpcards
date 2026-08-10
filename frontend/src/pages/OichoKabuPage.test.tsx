@@ -260,4 +260,11 @@ describe('OichoKabuPage', () => {
     await waitFor(() => expect(input.value).toBe('300'));
     await waitFor(() => expect(screen.queryByTestId('ok-previous-bet')).not.toBeInTheDocument());
   });
+
+  it('renders the i18n skeleton instead of a hardcoded Loading label before state loads', () => {
+    mockApi.mockReturnValue(new Promise(() => {}));
+    renderWithProviders(<OichoKabuPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+    expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
+  });
 });

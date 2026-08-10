@@ -54,11 +54,11 @@ type GinRummy struct {
 	gameEndFlag      bool
 	winnerIdx        int
 	roundNumber      int
-	actionLog        []*ActionLogEntry
-	knockerIdx       int       // ノックしたプレイヤーのインデックス (-1 = ノックなし)
-	knockerMelds     [][]*Card // ノッカーのメルド (レイオフ用)
-	knockerDeadwood  []*Card   // ノッカーのデッドウッド
-	isGin            bool      // ジンかどうか
+	actionLogBase
+	knockerIdx      int       // ノックしたプレイヤーのインデックス (-1 = ノックなし)
+	knockerMelds    [][]*Card // ノッカーのメルド (レイオフ用)
+	knockerDeadwood []*Card   // ノッカーのデッドウッド
+	isGin           bool      // ジンかどうか
 }
 
 // NewGinRummy コンストラクタ
@@ -195,7 +195,7 @@ func (g *GinRummy) PlayerDrawFromStock() error {
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", g.playerName(g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, g.currentPlayerIdx)), nil)
 
 	g.phase = GinRummyPhaseDiscard
 	return nil
@@ -222,7 +222,7 @@ func (g *GinRummy) PlayerDrawFromDiscard() error {
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s draws %s from discard", g.playerName(g.currentPlayerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s draws %s from discard", playerName(g.players, g.currentPlayerIdx), cardStr(card)), []*Card{card})
 
 	g.phase = GinRummyPhaseDiscard
 	return nil
@@ -248,7 +248,7 @@ func (g *GinRummy) PlayerDiscard(cardIndex int) error {
 	discarded := player.RemoveCard(cardIndex)
 	g.discardPile = append(g.discardPile, discarded)
 
-	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", g.playerName(g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
 
 	g.advanceTurn()
 	return nil
@@ -294,11 +294,11 @@ func (g *GinRummy) PlayerKnock(cardIndex int) error {
 	g.knockerDeadwood = deadwood
 	g.isGin = deadwoodValue == 0
 
-	g.appendLog(g.currentPlayerIdx, "knock", fmt.Sprintf("%s knocks (deadwood: %d)", g.playerName(g.currentPlayerIdx), deadwoodValue), []*Card{discarded})
+	g.appendLog(g.currentPlayerIdx, "knock", fmt.Sprintf("%s knocks (deadwood: %d)", playerName(g.players, g.currentPlayerIdx), deadwoodValue), []*Card{discarded})
 
 	if g.isGin {
 		// ジン → レイオフなしでスコアリング
-		g.appendLog(g.currentPlayerIdx, "gin", fmt.Sprintf("%s has Gin!", g.playerName(g.currentPlayerIdx)), nil)
+		g.appendLog(g.currentPlayerIdx, "gin", fmt.Sprintf("%s has Gin!", playerName(g.players, g.currentPlayerIdx)), nil)
 		g.scoreRound()
 	} else {
 		// 相手のレイオフフェーズへ
@@ -358,21 +358,34 @@ func (g *GinRummy) PlayerLayoff(cardIndices []int) error {
 		card := player.GetCard(idx)
 		g.layoffCard(card)
 		player.RemoveCard(idx)
-		g.appendLog(g.currentPlayerIdx, "layoff", fmt.Sprintf("%s lays off %s", g.playerName(g.currentPlayerIdx), cardStr(card)), []*Card{card})
+		g.appendLog(g.currentPlayerIdx, "layoff", fmt.Sprintf("%s lays off %s", playerName(g.players, g.currentPlayerIdx), cardStr(card)), []*Card{card})
 	}
 
 	g.scoreRound()
 	return nil
 }
 
-// canLayoff カードがノッカーのメルドにレイオフ可能か
-func (g *GinRummy) canLayoff(card *Card) bool {
-	for _, meld := range g.knockerMelds {
+// LayoffTargets はその札を足せるノッカーのメルド番号をすべて返す。
+//
+// **レイオフフェーズの主題は「どのメルドに付け足せるか」。**画面はその補助を
+// 一切持たず、押してサーバーの応答で初めて成否が分かる状態だった (#4823)。
+func (g *GinRummy) LayoffTargets(card *Card) []int {
+	if card == nil {
+		return nil
+	}
+	var out []int
+	for i, meld := range g.knockerMelds {
 		if canAddToMeld(meld, card) {
-			return true
+			out = append(out, i)
 		}
 	}
-	return false
+	return out
+}
+
+// canLayoff カードがノッカーのメルドにレイオフ可能か
+func (g *GinRummy) canLayoff(card *Card) bool {
+	// 表示側と同じ判定を使う。2 本置くと「置ける」と出しながら拒否される状態が作れる。
+	return len(g.LayoffTargets(card)) > 0
 }
 
 // layoffCard カードをノッカーのメルドに追加する
@@ -499,7 +512,7 @@ func (g *GinRummy) cpuDraw() {
 			g.discardPile = g.discardPile[:len(g.discardPile)-1]
 			g.players[g.currentPlayerIdx].AddCard(card)
 			g.sortHand(g.currentPlayerIdx)
-			g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s draws %s from discard", g.playerName(g.currentPlayerIdx), cardStr(card)), []*Card{card})
+			g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s draws %s from discard", playerName(g.players, g.currentPlayerIdx), cardStr(card)), []*Card{card})
 			g.phase = GinRummyPhaseDiscard
 			return
 		}
@@ -515,7 +528,7 @@ func (g *GinRummy) cpuDraw() {
 	g.drawPile = g.drawPile[:len(g.drawPile)-1]
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
-	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", g.playerName(g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, g.currentPlayerIdx)), nil)
 	g.phase = GinRummyPhaseDiscard
 }
 
@@ -580,10 +593,10 @@ func (g *GinRummy) cpuDiscardOrKnock() {
 			g.knockerDeadwood = deadwood
 			g.isGin = deadwoodValue == 0
 
-			g.appendLog(g.currentPlayerIdx, "knock", fmt.Sprintf("%s knocks (deadwood: %d)", g.playerName(g.currentPlayerIdx), deadwoodValue), []*Card{discarded})
+			g.appendLog(g.currentPlayerIdx, "knock", fmt.Sprintf("%s knocks (deadwood: %d)", playerName(g.players, g.currentPlayerIdx), deadwoodValue), []*Card{discarded})
 
 			if g.isGin {
-				g.appendLog(g.currentPlayerIdx, "gin", fmt.Sprintf("%s has Gin!", g.playerName(g.currentPlayerIdx)), nil)
+				g.appendLog(g.currentPlayerIdx, "gin", fmt.Sprintf("%s has Gin!", playerName(g.players, g.currentPlayerIdx)), nil)
 				g.scoreRound()
 			} else {
 				g.phase = GinRummyPhaseLayoff
@@ -596,7 +609,7 @@ func (g *GinRummy) cpuDiscardOrKnock() {
 	// 通常のディスカード
 	discarded := player.RemoveCard(bestDiscardIdx)
 	g.discardPile = append(g.discardPile, discarded)
-	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", g.playerName(g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
 	g.advanceTurn()
 }
 
@@ -612,7 +625,7 @@ func (g *GinRummy) cpuLayoff() {
 			if g.canLayoff(card) {
 				g.layoffCard(card)
 				player.RemoveCard(i)
-				g.appendLog(g.currentPlayerIdx, "layoff", fmt.Sprintf("%s lays off %s", g.playerName(g.currentPlayerIdx), cardStr(card)), []*Card{card})
+				g.appendLog(g.currentPlayerIdx, "layoff", fmt.Sprintf("%s lays off %s", playerName(g.players, g.currentPlayerIdx), cardStr(card)), []*Card{card})
 				found = true
 				break // re-iterate from start since indices shifted
 			}
@@ -646,17 +659,17 @@ func (g *GinRummy) scoreRound() {
 		// ジン: ノッカーが相手のデッドウッド + ボーナスを獲得
 		score := opponentDeadwoodValue + GinRummyGinBonus
 		g.players[knockerIdx].roundScore = score
-		g.appendLog(knockerIdx, "score", fmt.Sprintf("%s scores %d (Gin bonus %d + deadwood %d)", g.playerName(knockerIdx), score, GinRummyGinBonus, opponentDeadwoodValue), nil)
+		g.appendLog(knockerIdx, "score", fmt.Sprintf("%s scores %d (Gin bonus %d + deadwood %d)", playerName(g.players, knockerIdx), score, GinRummyGinBonus, opponentDeadwoodValue), nil)
 	} else if opponentDeadwoodValue <= knockerDeadwoodValue {
 		// アンダーカット: 相手がデッドウッド差 + ボーナスを獲得
 		score := knockerDeadwoodValue - opponentDeadwoodValue + GinRummyUndercutBonus
 		g.players[opponentIdx].roundScore = score
-		g.appendLog(opponentIdx, "undercut", fmt.Sprintf("%s undercuts! Scores %d (bonus %d + difference %d)", g.playerName(opponentIdx), score, GinRummyUndercutBonus, knockerDeadwoodValue-opponentDeadwoodValue), nil)
+		g.appendLog(opponentIdx, "undercut", fmt.Sprintf("%s undercuts! Scores %d (bonus %d + difference %d)", playerName(g.players, opponentIdx), score, GinRummyUndercutBonus, knockerDeadwoodValue-opponentDeadwoodValue), nil)
 	} else {
 		// 通常ノック: ノッカーがデッドウッド差を獲得
 		score := opponentDeadwoodValue - knockerDeadwoodValue
 		g.players[knockerIdx].roundScore = score
-		g.appendLog(knockerIdx, "score", fmt.Sprintf("%s scores %d (deadwood difference)", g.playerName(knockerIdx), score), nil)
+		g.appendLog(knockerIdx, "score", fmt.Sprintf("%s scores %d (deadwood difference)", playerName(g.players, knockerIdx), score), nil)
 	}
 
 	// 累積スコアに加算
@@ -719,7 +732,7 @@ func (g *GinRummy) checkGameEnd() {
 			g.winnerIdx = i
 		}
 	}
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", g.playerName(g.winnerIdx)), nil)
+	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, g.winnerIdx)), nil)
 }
 
 // --- State getters ---
@@ -750,10 +763,7 @@ func (g *GinRummy) SetDiscardPile(pile []*Card) { g.discardPile = pile }
 
 // GetDiscardTop 捨て札の一番上を取得
 func (g *GinRummy) GetDiscardTop() *Card {
-	if len(g.discardPile) == 0 {
-		return nil
-	}
-	return g.discardPile[len(g.discardPile)-1]
+	return discardTop(g.discardPile)
 }
 
 // GetDrawPileCount 山札の残り枚数取得
@@ -773,18 +783,12 @@ func (g *GinRummy) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *GinRummy) GetPlayer(i int) *GinRummyPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (g *GinRummy) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -792,9 +796,6 @@ func (g *GinRummy) GetConfig() GinRummyConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *GinRummy) SetConfig(cfg GinRummyConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *GinRummy) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetKnockerIdx ノッカーのインデックス取得
 func (g *GinRummy) GetKnockerIdx() int { return g.knockerIdx }
@@ -824,42 +825,12 @@ func (g *GinRummy) SetIsGin(isGin bool) { g.isGin = isGin }
 
 // sortAllHands 全プレイヤーの手札をソートする
 func (g *GinRummy) sortAllHands() {
-	for i := range g.players {
-		g.sortHand(i)
-	}
+	sortHands(len(g.players), g)
 }
 
 // sortHand プレイヤーの手札をスート→値の順にソートする
 func (g *GinRummy) sortHand(playerIdx int) {
-	p := g.players[playerIdx]
-	sortPlayerHand(p, func(ci, cj *Card) bool {
-		if ci.GetDesign() != cj.GetDesign() {
-			return ci.GetDesign() < cj.GetDesign()
-		}
-		return ci.GetValue() < cj.GetValue()
-	})
-}
-
-// playerName プレイヤー名を返す
-func (g *GinRummy) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (g *GinRummy) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	sortPlayerHand(g.players[playerIdx], bySuitThenValue)
 }
 
 // --- Meld Detection ---

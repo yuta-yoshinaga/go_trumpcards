@@ -133,25 +133,36 @@ describe('FortyThievesPage', () => {
     expect(screen.getAllByText('空').length).toBeGreaterThanOrEqual(1);
   });
 
-  it('renders foundation piles with suit symbols', async () => {
+  // **空の組札にスートを断定しない (#4786)。**宛先インデックスはサーバに届かず
+  // findFoundation が置ける最初の山を選ぶので、固定ラベルは何も保証しなかった。
+  it('labels empty foundations neutrally instead of asserting a suit', async () => {
     renderWithProviders(<FortyThievesPage />);
-    await waitFor(() => expect(screen.getAllByText('♠').length).toBeGreaterThanOrEqual(1));
-    expect(screen.getAllByText('♣').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText('♥').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText('♦').length).toBeGreaterThanOrEqual(1);
+    await waitFor(() => expect(screen.getAllByText('—').length).toBe(8));
+    expect(screen.queryByText('♠')).not.toBeInTheDocument();
+    expect(screen.queryByText('♦')).not.toBeInTheDocument();
+  });
+
+  it('labels a populated foundation with the suit actually sitting on it', async () => {
+    mockExec.mockResolvedValue(withFoundationState);
+    renderWithProviders(<FortyThievesPage />);
+    // 山0 は ♠A、山2 は ♥A→♥2。残り6つは空のまま。
+    await waitFor(() => expect(screen.getAllByText('—').length).toBe(6));
+    expect(screen.getByText('♠')).toBeInTheDocument();
+    expect(screen.getByText('♥')).toBeInTheDocument();
+    expect(screen.queryByText('♣')).not.toBeInTheDocument();
   });
 
   it('renders foundation with cards', async () => {
     mockExec.mockResolvedValue(withFoundationState);
     renderWithProviders(<FortyThievesPage />);
-    await waitFor(() => expect(screen.getAllByText('♠').length).toBeGreaterThanOrEqual(1));
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
     const imgs = screen.getAllByRole('img');
     expect(imgs.length).toBeGreaterThanOrEqual(1);
   });
 
   it('renders empty foundation placeholder with A', async () => {
     renderWithProviders(<FortyThievesPage />);
-    await waitFor(() => expect(screen.getAllByText('♠').length).toBeGreaterThanOrEqual(1));
+    await waitFor(() => expect(screen.getAllByText('—').length).toBe(8));
     const aElements = screen.getAllByText('A');
     expect(aElements.length).toBeGreaterThanOrEqual(1);
   });
@@ -369,7 +380,7 @@ describe('FortyThievesPage', () => {
   it('foundation with cards is clickable when source selected', async () => {
     mockExec.mockResolvedValue(withFoundationState);
     renderWithProviders(<FortyThievesPage />);
-    await waitFor(() => expect(screen.getAllByText('♠').length).toBeGreaterThanOrEqual(1));
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
 
     // Select waste as source first
     const wasteImg = screen.getByAltText('♣ 3');
@@ -389,7 +400,7 @@ describe('FortyThievesPage', () => {
 
   it('foundation disabled when no source selected', async () => {
     renderWithProviders(<FortyThievesPage />);
-    await waitFor(() => expect(screen.getAllByText('♠').length).toBeGreaterThanOrEqual(1));
+    await waitFor(() => expect(screen.getAllByText('—').length).toBe(8));
 
     // Empty foundation buttons should be disabled when no source selected
     const aButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'A');

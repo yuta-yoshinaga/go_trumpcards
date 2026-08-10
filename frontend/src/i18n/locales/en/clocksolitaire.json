@@ -1,16 +1,22 @@
 {
+  "autoplay": "Auto Play",
+  "center": "Center(K)",
+  "currentCard": "Current Card",
+  "gameClear": "Game Clear! Steps: {{stepCount}}",
+  "gameOver": "Game Over",
+  "hint": {
+    "firstStep": "Step from the center pile to start.",
+    "continueStep": "Keep stepping the current card onto its clock-position pile."
+  },
+  "landscapeBanner": "Rotate to landscape for a better experience",
   "phase": {
     "playing": "Playing",
     "gameClear": "Game Clear",
     "gameOver": "Game Over"
   },
-  "title": "Clock Solitaire",
-  "stepCount": "Steps",
-  "step": "Step",
-  "autoplay": "Auto Play",
-  "stopAutoplay": "Stop",
-  "undo": "Undo",
-  "currentCard": "Current Card",
+  "placementHint": "goes to the {{hour}} o’clock pile",
+  "placementKing": "goes to the centre (K) pile",
+  "playing": "Playing",
   "settings": {
     "speed": "Animation Speed",
     "speedHelp": "Choose how fast each card's landing animation plays during auto play. Faster races through the placements.",
@@ -18,19 +24,15 @@
     "speedNormal": "Normal",
     "speedFast": "Fast"
   },
-  "center": "Center(K)",
-  "playing": "Playing",
-  "gameClear": "Game Clear! Steps: {{stepCount}}",
-  "gameOver": "Game Over",
+  "step": "Step",
+  "stepCount": "Steps",
+  "stopAutoplay": "Stop",
+  "title": "Clock Solitaire",
   "tutorial": {
     "clockFace": "Cards are arranged in clock positions.",
     "centerPile": "The center pile is for Kings.",
     "controls": "Step advances one card, Auto Play runs to completion.",
     "resetButton": "Press Reset to start a new game."
   },
-  "hint": {
-    "firstStep": "Step from the center pile to start.",
-    "continueStep": "Keep stepping the current card onto its clock-position pile."
-  },
-  "landscapeBanner": "Rotate to landscape for a better experience"
+  "undo": "Undo"
 }

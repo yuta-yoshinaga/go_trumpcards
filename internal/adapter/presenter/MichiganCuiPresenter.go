@@ -79,25 +79,39 @@ func michiganBetHintStr(g interfaces.MichiganGame) string {
 	}
 	player := g.GetPlayer(human)
 	held := make([]string, 0, g.GetBoodleCnt())
+	claimed := make([]string, 0, g.GetBoodleCnt())
 	for i := 0; i < g.GetBoodleCnt(); i++ {
 		bd := g.GetBoodle(i)
 		if bd == nil || bd.GetCard() == nil {
 			continue
 		}
 		bc := bd.GetCard()
+		label := i18n.Tf("michigan.betHintHold", "card", cuiCardStr(bc), "idx", strconv.Itoa(i))
+		// **獲得済みのブードルに積んでも戻ってこない。**Web は betClaimedWarning で
+		// これを警告しているのに、CUI のベットヒントは黙っていた (#4926)。
+		if bd.GetClaimedBy() >= 0 {
+			claimed = append(claimed, label)
+			continue
+		}
 		for j := 0; j < player.GetCardsSize(); j++ {
 			hc := player.GetCard(j)
 			if hc != nil && hc.GetDesign() == bc.GetDesign() && hc.GetValue() == bc.GetValue() {
-				held = append(held, i18n.Tf("michigan.betHintHold",
-					"card", cuiCardStr(bc), "idx", strconv.Itoa(i)))
+				held = append(held, label)
 				break
 			}
 		}
 	}
-	if len(held) == 0 {
-		return i18n.T("michigan.betHintNone")
+
+	lines := make([]string, 0, 2)
+	if len(claimed) > 0 {
+		lines = append(lines, i18n.Tf("michigan.betHintClaimed", "boodles", strings.Join(claimed, ", ")))
 	}
-	return i18n.T("michigan.betHintHeader") + " " + strings.Join(held, ", ")
+	if len(held) == 0 {
+		lines = append(lines, i18n.T("michigan.betHintNone"))
+	} else {
+		lines = append(lines, i18n.T("michigan.betHintHeader")+" "+strings.Join(held, ", "))
+	}
+	return strings.Join(lines, "\n")
 }
 
 // Output renders the current game state for the active locale.

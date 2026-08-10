@@ -304,3 +304,44 @@ describe('CruelPage keyboard shortcuts', () => {
     expect(mockExec).not.toHaveBeenCalled();
   });
 });
+
+// **52枚すべてを組札に収めることが唯一の勝利条件 (#4779)。**CUI は
+// foundationProgress で合計を常に出しているのに、Web は各組札を個別に描くだけで、
+// あと何枚かを知るには目で数えるしかなかった。
+describe('CruelPage foundation progress', () => {
+  it('shows the total across all four foundations', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [
+        [
+          { design: 'SPADE', value: 1 },
+          { design: 'SPADE', value: 2 },
+        ],
+        [{ design: 'HEART', value: 1 }],
+        [],
+        [],
+      ],
+    });
+    renderWithProviders(<CruelPage />);
+    expect(await screen.findByTestId('cruel-foundation-progress')).toHaveTextContent('3/52');
+  });
+
+  // **1山だけ数えない。**合計でないと「あと何枚か」の見通しにならない。
+  it('sums every pile rather than only the first', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [[], [], [], [{ design: 'DIAMOND', value: 1 }]],
+    });
+    renderWithProviders(<CruelPage />);
+    expect(await screen.findByTestId('cruel-foundation-progress')).toHaveTextContent('1/52');
+  });
+
+  it('starts at zero on an empty foundation', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [[], [], [], []],
+    });
+    renderWithProviders(<CruelPage />);
+    expect(await screen.findByTestId('cruel-foundation-progress')).toHaveTextContent('0/52');
+  });
+});

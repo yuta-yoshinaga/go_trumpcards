@@ -66,7 +66,7 @@ type Omaha struct {
 	tournamentBase  // handCount / rebuyCounts / addonUsed (issue #1463)
 	lastCpuError    error
 	rebuyPhaseType  int
-	actionLog       []*ActionLogEntry
+	actionLogBase
 	humanProfile    *BettingHumanProfile
 	lastHumanPlayMs int
 }
@@ -246,37 +246,7 @@ func (o *Omaha) continueReset() error {
 
 // postBlinds ブラインド投入
 func (o *Omaha) postBlinds() {
-	sbIdx := (o.dealerIdx + 1) % len(o.players)
-	bbIdx := (o.dealerIdx + 2) % len(o.players)
-
-	sbAmount := o.config.SmallBlind
-	if o.players[sbIdx].GetChips() < sbAmount {
-		sbAmount = o.players[sbIdx].GetChips()
-	}
-	o.players[sbIdx].SubtractChips(sbAmount)
-	o.players[sbIdx].SetCurrentBet(sbAmount)
-	o.pot += sbAmount
-	o.appendLog(sbIdx, "blind", fmt.Sprintf("posts small blind %d", sbAmount), nil)
-
-	bbAmount := o.config.BigBlind
-	if o.players[bbIdx].GetChips() < bbAmount {
-		bbAmount = o.players[bbIdx].GetChips()
-	}
-	o.players[bbIdx].SubtractChips(bbAmount)
-	o.players[bbIdx].SetCurrentBet(bbAmount)
-	o.pot += bbAmount
-	o.appendLog(bbIdx, "blind", fmt.Sprintf("posts big blind %d", bbAmount), nil)
-
-	o.lastBet = bbAmount
-
-	if o.players[sbIdx].GetChips() == 0 {
-		o.players[sbIdx].SetAllIn(true)
-		o.actedFlags[sbIdx] = true
-	}
-	if o.players[bbIdx].GetChips() == 0 {
-		o.players[bbIdx].SetAllIn(true)
-		o.actedFlags[bbIdx] = true
-	}
+	postBlindsFor(o.players, o.dealerIdx, o.config.SmallBlind, o.config.BigBlind, &o.pot, &o.lastBet, o.actedFlags, o)
 }
 
 // PlayerAction 人間プレイヤーのアクション実行
@@ -469,35 +439,17 @@ func (o *Omaha) advancePhase() {
 
 // dealRemainingCommunity 残りのコミュニティカードを全て配る
 func (o *Omaha) dealRemainingCommunity() {
-	for len(o.communityCards) < 5 {
-		card := o.trumpCards.DrawCard()
-		if card == nil {
-			break
-		}
-		o.communityCards = append(o.communityCards, card)
-	}
+	dealUpTo(&o.communityCards, o.trumpCards, 5)
 }
 
 // findNextActive 指定インデックスの次のアクティブプレイヤーを探す
 func (o *Omaha) findNextActive(fromIdx int) int {
-	for i := 1; i <= len(o.players); i++ {
-		next := (fromIdx + i) % len(o.players)
-		if !o.players[next].GetFolded() && !o.players[next].GetAllIn() {
-			return next
-		}
-	}
-	return (fromIdx + 1) % len(o.players)
+	return findNextActive(o.players, fromIdx)
 }
 
 // countActivePlayers フォールドしていないプレイヤー数を返す
 func (o *Omaha) countActivePlayers() int {
-	cnt := 0
-	for _, p := range o.players {
-		if !p.GetFolded() {
-			cnt++
-		}
-	}
-	return cnt
+	return countPlayers(o.players, func(p *OmahaPlayer) bool { return !p.GetFolded() })
 }
 
 // resolveLastPlayer 全員フォールドで最後のプレイヤーが勝利
@@ -694,10 +646,7 @@ func (o *Omaha) IsMuckAvailable() bool {
 
 // getHandName ハンドランクから名前を返す
 func (o *Omaha) getHandName(rank int) string {
-	if rank >= 0 && rank < len(PokerHandNames) {
-		return PokerHandNames[rank]
-	}
-	return "Unknown"
+	return pokerHandName(rank)
 }
 
 // runCpuActions CPUプレイヤーのアクションを実行
@@ -855,14 +804,7 @@ func (o *Omaha) cpuBetOrAllIn(p *OmahaPlayer, betAmt int) (int, int) {
 
 // cpuPotBet ポット比率ベースのベット額を計算
 func (o *Omaha) cpuPotBet(potPct int) int {
-	bet := o.pot * potPct / 100
-	if bet < o.config.BigBlind {
-		bet = o.config.BigBlind
-	}
-	if bet < o.minRaise {
-		bet = o.minRaise
-	}
-	return bet
+	return potBet(o.pot, potPct, o.config.BigBlind, o.minRaise)
 }
 
 // cpuDecidePreFlop プリフロップのCPU意思決定
@@ -1186,42 +1128,22 @@ func (o *Omaha) SkipAddon() error {
 
 // IsRebuyAvailable 人間プレイヤーがリバイ可能かどうか
 func (o *Omaha) IsRebuyAvailable() bool {
-	if !o.config.RebuyEnabled || o.handCount > o.config.RebuyPeriodHands {
-		return false
-	}
-	for i, p := range o.players {
-		if p.GetIsHuman() && p.GetChips() <= 0 && o.rebuyCounts[i] < o.config.RebuyMaxCount {
-			return true
-		}
-	}
-	return false
+	return rebuyAvailable(o.config.RebuyEnabled, o.handCount, o.config.RebuyPeriodHands, o.players, o.rebuyCounts, o.config.RebuyMaxCount)
 }
 
 // IsAddonAvailable 人間プレイヤーがアドオン可能かどうか
 func (o *Omaha) IsAddonAvailable() bool {
-	if !o.config.AddonEnabled || o.handCount != o.config.AddonAfterHand {
-		return false
-	}
-	for i, p := range o.players {
-		if p.GetIsHuman() && !o.addonUsed[i] {
-			return true
-		}
-	}
-	return false
+	return addonAvailable(o.config.AddonEnabled, o.handCount, o.config.AddonAfterHand, o.players, o.addonUsed)
 }
 
 // GetRebuyCounts プレイヤーごとのリバイ回数取得
 func (o *Omaha) GetRebuyCounts() []int {
-	result := make([]int, len(o.rebuyCounts))
-	copy(result, o.rebuyCounts)
-	return result
+	return copyOf(o.rebuyCounts)
 }
 
 // GetAddonUsed プレイヤーごとのアドオン使用フラグ取得
 func (o *Omaha) GetAddonUsed() []bool {
-	result := make([]bool, len(o.addonUsed))
-	copy(result, o.addonUsed)
-	return result
+	return copyOf(o.addonUsed)
 }
 
 // GetRebuyPhaseType リバイフェーズ種別取得
@@ -1347,15 +1269,11 @@ func (o *Omaha) ExportProfile() interface{} {
 
 // ImportProfile JSONバイトからメタAIプロファイルをインポートする
 func (o *Omaha) ImportProfile(data []byte) error {
-	if len(data) == 0 {
-		return nil
-	}
-	d, err := ImportBettingHumanProfileJSON(data)
-	if err != nil {
+	p, err := importBettingProfile(data)
+	if err != nil || p == nil {
 		return err
 	}
-	o.humanProfile = &BettingHumanProfile{}
-	o.humanProfile.Import(d)
+	o.humanProfile = p
 	return nil
 }
 
@@ -1367,35 +1285,16 @@ func (o *Omaha) SetConfig(cfg OmahaConfig) { o.config = cfg }
 
 // IsHumanTurn 人間のターンかチェック
 func (o *Omaha) IsHumanTurn() bool {
-	if o.currentTurn >= 0 && o.currentTurn < len(o.players) {
-		return o.players[o.currentTurn].GetIsHuman()
-	}
-	return false
+	return isHumanTurn(o.players, o.currentTurn)
 }
 
 // GetActedFlags actedフラグ取得
 func (o *Omaha) GetActedFlags() []bool {
-	result := make([]bool, len(o.actedFlags))
-	copy(result, o.actedFlags)
-	return result
+	return copyOf(o.actedFlags)
 }
 
 // GetHandCount ハンド数取得
 func (o *Omaha) GetHandCount() int { return o.handCount }
-
-// GetActionLog 棋譜を取得する
-func (o *Omaha) GetActionLog() []*ActionLogEntry { return o.actionLog }
-
-// appendLog 棋譜にエントリを追加する
-func (o *Omaha) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	o.actionLog = append(o.actionLog, &ActionLogEntry{
-		TurnNumber: len(o.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
 
 // logAction ベッティングアクションを棋譜に記録する
 func (o *Omaha) logAction(playerIdx, action, amount int) {

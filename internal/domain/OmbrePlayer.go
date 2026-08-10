@@ -18,9 +18,7 @@ func NewOmbrePlayer(isHuman bool) *OmbrePlayer {
 
 // ResetRound ラウンドをリセット (トリック・手札・終了状態を初期化)
 func (p *OmbrePlayer) ResetRound() {
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayerRound(p)
 }
 
 // ombrePlayerJSON is the JSON wire format for OmbrePlayer.

@@ -19,9 +19,7 @@ func NewThreeThirteenPlayer(isHuman bool) *ThreeThirteenPlayer {
 
 // ResetRound ラウンドをリセット（手札・ラウンドスコア・終了状態を初期化）
 func (p *ThreeThirteenPlayer) ResetRound() {
-	p.SetRoundScore(0)
-	p.Reset()
-	p.SetIsFinished(false)
+	resetRoundScored(p)
 }
 
 // threeThirteenPlayerJSON は ThreeThirteenPlayer の JSON 表現。

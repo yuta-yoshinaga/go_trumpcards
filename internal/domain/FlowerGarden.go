@@ -55,13 +55,13 @@ type FlowerGardenConfig struct{}
 
 // FlowerGarden ゲームクラス
 type FlowerGarden struct {
-	trumpCards  *TrumpCards
-	tableau     [FlowerGardenTableauCnt][]*FlowerGardenTableauCard
-	reserve     []*Card // 16 slots; nil entries mark depleted cells (one-way)
-	foundation  [FlowerGardenFoundationCnt][]*Card
-	phase       FlowerGardenPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	tableau    [FlowerGardenTableauCnt][]*FlowerGardenTableauCard
+	reserve    []*Card // 16 slots; nil entries mark depleted cells (one-way)
+	foundation [FlowerGardenFoundationCnt][]*Card
+	phase      FlowerGardenPhase
+	moveCount  int
+	actionLogBase
 	history     []*flowerGardenSnapshot
 	isStalemate bool
 }
@@ -467,9 +467,6 @@ func (fg *FlowerGarden) GetFoundation() [FlowerGardenFoundationCnt][]*Card {
 	return fg.foundation
 }
 
-// GetActionLog 棋譜取得
-func (fg *FlowerGarden) GetActionLog() []*ActionLogEntry { return fg.actionLog }
-
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (fg *FlowerGarden) GetGameEndFlag() bool { return fg.phase != FlowerGardenPhasePlaying }
 
@@ -514,25 +511,12 @@ func (fg *FlowerGarden) CanUndo() bool {
 // UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。
 // 膠着状態でなければ0、脱出不可なら-1。
 func (fg *FlowerGarden) UndoToEscape() int {
-	if !fg.isStalemate {
-		return 0
-	}
-	for i := len(fg.history) - 1; i >= 0; i-- {
-		if !fg.history[i].isStalemate {
-			return len(fg.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(fg.isStalemate, fg.history, func(s *flowerGardenSnapshot) bool { return s.isStalemate })
 }
 
 // UndoN n回連続でアンドゥを実行する。
 func (fg *FlowerGarden) UndoN(n int) error {
-	for i := range n {
-		if err := fg.Undo(); err != nil {
-			return fmt.Errorf("undo step %d failed: %w", i+1, err)
-		}
-	}
-	return nil
+	return undoN(fg, n)
 }
 
 // --- Private helpers ---
@@ -552,12 +536,7 @@ func (fg *FlowerGarden) canPlaceOnTableau(card *Card, col int) bool {
 
 // canPlaceOnFoundation ファンデーションにカードを置けるか判定（Aceから同スートで昇順）
 func (fg *FlowerGarden) canPlaceOnFoundation(card *Card, fIdx int) bool {
-	pile := fg.foundation[fIdx]
-	if len(pile) == 0 {
-		return card.GetValue() == 1
-	}
-	topCard := pile[len(pile)-1]
-	return card.GetDesign() == topCard.GetDesign() && card.GetValue() == topCard.GetValue()+1
+	return canPlaceOnFoundationPile(fg.foundation[fIdx], card)
 }
 
 // findFoundation カードを置けるファンデーションのインデックスを探す（見つからない場合-1）
@@ -626,13 +605,7 @@ func (fg *FlowerGarden) restoreSnapshot(snap *flowerGardenSnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (fg *FlowerGarden) appendLog(actionType, detail string, cards []*Card) {
-	fg.actionLog = append(fg.actionLog, &ActionLogEntry{
-		TurnNumber: fg.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	fg.appendLogAt(fg.moveCount, 0, actionType, detail, cards)
 }
 
 // flowerGardenJSON is the JSON wire format for FlowerGarden.

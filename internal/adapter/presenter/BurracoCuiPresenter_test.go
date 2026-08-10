@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -27,6 +28,7 @@ func setupBurracoCuiMock() *interfaces.MockBurracoGame {
 	m.On("GetCurrentPlayerIdx").Return(0)
 	m.On("GetWinnerIdx").Return(-1)
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	m.On("GetDiscardPile").Return(([]*domain.Card)(nil)).Maybe()
 	return m
 }
 
@@ -37,6 +39,47 @@ func setupBurracoCuiMockWithPlayers() (*interfaces.MockBurracoGame, []*domain.Bu
 	m.On("GetPlayer", 0).Return(players[0])
 	m.On("GetPlayer", 1).Return(players[1])
 	return m, players
+}
+
+// **山ごと取れるゲームなので捨て札の中身は公開情報。**Web は details で全部
+// 見せているのに、CUI は一番上の 1 枚しか出していなかった (#4833)。
+func TestBurracoCuiPresenter_ListsTheDiscardPile(t *testing.T) {
+	p := new(presenter.BurracoCuiPresenter)
+
+	withPile := func(n int) *interfaces.MockBurracoGame {
+		m, _ := setupBurracoCuiMockWithPlayers()
+		pile := make([]*domain.Card, 0, n)
+		for i := 0; i < n; i++ {
+			pile = append(pile, domain.NewCard(domain.CardDesignSpade, i%13+1, false))
+		}
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDiscardTop")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDiscardPile")
+		if n > 0 {
+			m.On("GetDiscardTop").Return(pile[len(pile)-1])
+		} else {
+			m.On("GetDiscardTop").Return((*domain.Card)(nil))
+		}
+		m.On("GetDiscardPile").Return(pile)
+		return m
+	}
+
+	t.Run("lists every card with its index", func(t *testing.T) {
+		out := p.Output(withPile(3), nil)
+		assert.Contains(t, out, "山の中身:")
+		assert.Contains(t, out, "[0]SPADE 1")
+		assert.Contains(t, out, "[2]SPADE 3")
+	})
+
+	t.Run("wraps a long pile over several lines", func(t *testing.T) {
+		out := p.Output(withPile(20), nil)
+		assert.Equal(t, 3, strings.Count(out, "山の中身:"), "8 枚ごとに折り返す")
+		assert.Contains(t, out, "[19]")
+	})
+
+	t.Run("says nothing when the pile is empty", func(t *testing.T) {
+		out := p.Output(withPile(0), nil)
+		assert.NotContains(t, out, "山の中身:")
+	})
 }
 
 func TestBurracoCuiPresenter_Output(t *testing.T) {

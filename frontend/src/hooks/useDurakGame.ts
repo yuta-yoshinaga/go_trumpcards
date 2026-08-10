@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { durakApi } from '../api/gameApi';
-import type { DurakConfig } from '../types/card';
+import type { DurakConfig, DurakHint } from '../types/card';
 import { useGameApi } from './useGameApi';
 import { useGameConfig } from './useGameConfig';
+import { useHintRequest } from './useHintRequest';
 
 /** Default Durak game configuration. */
 export const DEFAULT_DURAK_CONFIG: DurakConfig = {
@@ -34,6 +35,17 @@ export function useDurakGame() {
   }, []);
 
   const { state, loading, error, exec: gameExec, retry } = useGameApi(durakApi.exec, { onSuccess });
+
+  // **他のトリック系はサーバー計算の理由付きヒントを持つのに、Durak は
+  // クライアント完結の簡易ヒューリスティックだけだった (#4740)。**
+  const [hint, setHint] = useState<DurakHint | null>(null);
+  const [hintError, setHintError] = useState<string | null>(null);
+  const handleHint = useHintRequest({
+    fetchHint: () => durakApi.exec('hint'),
+    selectHint: (res) => res.hint ?? null,
+    setHint,
+    setHintError,
+  });
 
   useEffect(() => {
     gameExec('reset', undefined, undefined, DEFAULT_DURAK_CONFIG);
@@ -82,5 +94,8 @@ export function useDurakGame() {
     handlePass,
     handleTake,
     handleSort,
+    hint,
+    hintError,
+    handleHint,
   };
 }

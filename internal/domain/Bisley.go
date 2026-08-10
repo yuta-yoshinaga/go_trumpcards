@@ -78,9 +78,9 @@ type Bisley struct {
 	tableau         [BisleyTableauCnt][]*BisleyTableauCard
 	phase           BisleyPhase
 	moveCount       int
-	actionLog       []*ActionLogEntry
-	history         []*bisleySnapshot
-	isStalemate     bool
+	actionLogBase
+	history     []*bisleySnapshot
+	isStalemate bool
 }
 
 // bisleySnapshot アンドゥ用スナップショット
@@ -326,31 +326,12 @@ func (b *Bisley) CanUndo() bool { return len(b.history) > 0 }
 
 // UndoN n 手戻す
 func (b *Bisley) UndoN(n int) error {
-	if n <= 0 {
-		return errors.New("n must be positive")
-	}
-	if n > len(b.history) {
-		return errors.New("not enough history")
-	}
-	for range n {
-		if err := b.Undo(); err != nil {
-			return err
-		}
-	}
-	return nil
+	return undoNChecked(b, n, len(b.history))
 }
 
 // UndoToEscape 膠着状態から抜けるのに必要なアンドゥ回数（膠着でなければ 0、不可なら -1）
 func (b *Bisley) UndoToEscape() int {
-	if !b.isStalemate {
-		return 0
-	}
-	for i := len(b.history) - 1; i >= 0; i-- {
-		if !b.history[i].isStalemate {
-			return len(b.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(b.isStalemate, b.history, func(s *bisleySnapshot) bool { return s.isStalemate })
 }
 
 // AllFaceUp ビズリーは常に全札が表向き
@@ -370,9 +351,6 @@ func (b *Bisley) GetKingFoundations() [BisleyFoundationCnt][]*Card { return b.ki
 
 // GetTableau タブローを取得
 func (b *Bisley) GetTableau() [BisleyTableauCnt][]*BisleyTableauCard { return b.tableau }
-
-// GetActionLog 棋譜取得
-func (b *Bisley) GetActionLog() []*ActionLogEntry { return b.actionLog }
 
 // GetGameEndFlag ゲーム終了フラグ
 func (b *Bisley) GetGameEndFlag() bool { return b.phase != BisleyPhasePlaying }
@@ -484,13 +462,7 @@ func (b *Bisley) takeSnapshot() {
 
 // appendLog 棋譜エントリを追加
 func (b *Bisley) appendLog(actionType, detail string, cards []*Card) {
-	b.actionLog = append(b.actionLog, &ActionLogEntry{
-		TurnNumber: b.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	b.appendLogAt(b.moveCount, 0, actionType, detail, cards)
 }
 
 // bisleyMaxSliceLen caps slice sizes during deserialisation.

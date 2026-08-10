@@ -75,6 +75,10 @@ function SetteEMezzoPageContent() {
   const { cardWidth } = useCardDimensions();
 
   const isPlayerTurn = state?.phase === SetteEMezzoPhase.PLAYER_TURN;
+  // The matta currently set on the seat being played, or null when none is set.
+  const activeMattaHalves = state?.seats[state.activeSeat]?.hand?.hasMatta
+    ? (state.seats[state.activeSeat]?.hand?.mattaHalves ?? null)
+    : null;
 
   const actionBindings = useMemo(
     () => [
@@ -294,6 +298,10 @@ function SetteEMezzoPageContent() {
                       className={btnPrimary}
                       onClick={() => game.handleMatta(halves)}
                       disabled={loading}
+                      // Matta can be re-set until the hand stands, so the buttons
+                      // are a toggle group: without aria-pressed the current value
+                      // lives only in the hand readout (#4879).
+                      aria-pressed={activeMattaHalves === halves}
                       data-testid={`matta-${halves.toString()}`}
                     >
                       {halvesToLabel(halves)}

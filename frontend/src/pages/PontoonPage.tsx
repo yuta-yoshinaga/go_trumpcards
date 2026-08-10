@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { pontoonApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -30,6 +30,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { PONTOON_HELP, parsePontoonCommand } from '../utils/cli/commands/pontoonCommands';
 import { formatPontoonState } from '../utils/cli/formatters/pontoonFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { PONTOON_MIN_BET, pontoonBuyChoices, pontoonClampBuy, pontoonMaxBuy } from '../utils/pontoonBet';
 
 const BET_OPTIONS = [10, 50, 100, 500];
 
@@ -74,13 +75,20 @@ function PontoonPageContent() {
 
   const isPlayerTurn = state?.phase === PontoonPhase.PLAYER_TURN;
 
-  // Buy raises by the current bet, which is the smallest legal raise. The
-  // backend accepts anything from the minimum up to twice the stake; offering
-  // one sensible amount keeps the control simple.
+  // Pontoon.Buy accepts anything from PontoonMinBet up to twice the current
+  // stake, and the CUI's `buy <amount>` has always exposed that. The web page
+  // sent the minimum every time, so the choice existed only in the CUI (#4878).
+  const activeBet = state?.seats[0]?.hands[state.activeHand]?.bet ?? PONTOON_MIN_BET;
+  // Null means "follow the stake", which is what the page always sent before, so
+  // the default action is unchanged and the range is purely additive. A chosen
+  // stake persists across hands (as bet controls elsewhere do) but is clamped,
+  // so it can never become illegal when the next hand's stake differs.
+  const [buyAmount, setBuyAmount] = useState<number | null>(null);
+  const clampedBuy = pontoonClampBuy(buyAmount, activeBet);
+
   const handleBuyOnce = useCallback(() => {
-    const hand = state?.seats[0]?.hands[state.activeHand];
-    game.handleBuy(hand?.bet ?? 10);
-  }, [game, state]);
+    game.handleBuy(clampedBuy);
+  }, [game, clampedBuy]);
 
   const actionBindings = useMemo(
     () => [
@@ -310,6 +318,24 @@ function PontoonPageContent() {
                 >
                   {t('actions.twist')}
                 </button>
+              )}
+              {isPlayerTurn && state.canBuy && (
+                <label className="flex items-center gap-1 text-xs text-ds-text-muted">
+                  <span>{t('actions.buyAmount')}</span>
+                  <select
+                    className="rounded bg-ds-surface-elevated text-ds-text-primary px-1 py-0.5 min-h-11"
+                    value={clampedBuy}
+                    onChange={(e) => setBuyAmount(Number(e.target.value))}
+                    data-testid="pontoon-buy-amount"
+                    aria-label={t('actions.buyRange', { min: PONTOON_MIN_BET, max: pontoonMaxBuy(activeBet) })}
+                  >
+                    {pontoonBuyChoices(activeBet).map((v) => (
+                      <option key={v} value={v}>
+                        {v}
+                      </option>
+                    ))}
+                  </select>
+                </label>
               )}
               {isPlayerTurn && state.canBuy && (
                 <button

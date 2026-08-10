@@ -41,17 +41,17 @@ const (
 
 // Baccarat バカラクラス
 type Baccarat struct {
-	trumpCards     *TrumpCards         // トランプカード
-	playerHand     []*Card             // プレイヤーハンド
-	bankerHand     []*Card             // バンカーハンド
-	chips          ChipHolder          // チップ
-	betAmount      int                 // ベット額
-	betType        int                 // ベットタイプ
-	phase          int                 // 現在のフェーズ
-	gameEndFlag    bool                // ゲーム終了フラグ
-	result         GameResult          // ゲーム結果
-	payout         int                 // 配当金額
-	actionLog      []*ActionLogEntry   // 棋譜
+	trumpCards  *TrumpCards // トランプカード
+	playerHand  []*Card     // プレイヤーハンド
+	bankerHand  []*Card     // バンカーハンド
+	chips       ChipHolder  // チップ
+	betAmount   int         // ベット額
+	betType     int         // ベットタイプ
+	phase       int         // 現在のフェーズ
+	gameEndFlag bool        // ゲーム終了フラグ
+	result      GameResult  // ゲーム結果
+	payout      int         // 配当金額
+	actionLogBase
 	history        []int               // 罫線（Big Road）履歴
 	playerPairBet  int                 // プレイヤーペアベット額
 	bankerPairBet  int                 // バンカーペアベット額
@@ -312,17 +312,6 @@ func betTypeName(betType int) string {
 	}
 }
 
-// appendLog 棋譜にエントリを追加する
-func (b *Baccarat) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	b.actionLog = append(b.actionLog, &ActionLogEntry{
-		TurnNumber: len(b.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // evaluateSideBets サイドベットを評価し、当選時はチップに加算する
 func (b *Baccarat) evaluateSideBets() {
 	b.sideBetResults = nil
@@ -392,9 +381,6 @@ func (b *Baccarat) GetPlayerHandValue() int { return b.CalculateHandValue(b.play
 
 // GetBankerHandValue バンカーハンド合計値
 func (b *Baccarat) GetBankerHandValue() int { return b.CalculateHandValue(b.bankerHand) }
-
-// GetActionLog 棋譜を取得する
-func (b *Baccarat) GetActionLog() []*ActionLogEntry { return b.actionLog }
 
 // GetHistory 罫線履歴を取得する
 func (b *Baccarat) GetHistory() []int { return b.history }

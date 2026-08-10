@@ -110,7 +110,7 @@ type Skitgubbe struct {
 	finished    []bool
 	loserIdx    int
 	gameEndFlag bool
-	actionLog   []*ActionLogEntry
+	actionLogBase
 }
 
 // NewSkitgubbe はコンストラクタ。
@@ -465,13 +465,7 @@ func (s *Skitgubbe) checkShedEnd() {
 
 // addLog は棋譜へ 1 行追加する。
 func (s *Skitgubbe) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	s.actionLog = append(s.actionLog, &ActionLogEntry{
-		TurnNumber: len(s.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	s.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // ---- CPU ----
@@ -541,10 +535,7 @@ func (s *Skitgubbe) GetPlayers() []*SkitgubbePlayer { return s.players }
 
 // GetPlayer は idx のプレイヤーを返す。範囲外は nil。
 func (s *Skitgubbe) GetPlayer(idx int) *SkitgubbePlayer {
-	if idx < 0 || idx >= len(s.players) {
-		return nil
-	}
-	return s.players[idx]
+	return getPlayer(s.players, idx)
 }
 
 // GetPhase は現在のフェーズを返す。
@@ -592,9 +583,6 @@ func (s *Skitgubbe) GetConfig() SkitgubbeConfig { return s.config }
 
 // SetConfig はゲーム設定を差し替える。
 func (s *Skitgubbe) SetConfig(c SkitgubbeConfig) { s.config = c }
-
-// GetActionLog は棋譜を返す。
-func (s *Skitgubbe) GetActionLog() []*ActionLogEntry { return s.actionLog }
 
 // SetTrumpSuitForTest は切札を設定する (テスト用)。
 func (s *Skitgubbe) SetTrumpSuitForTest(suit int) { s.trumpSuit = suit }

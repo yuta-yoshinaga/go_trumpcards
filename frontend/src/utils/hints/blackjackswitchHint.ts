@@ -1,6 +1,7 @@
 import type { BlackJackSwitchResponse } from '../../types/card';
 import type { HintResult } from '../../types/hint';
 import { BlackJackSwitchPhase } from '../../types/phases';
+import { blackjackSwitchPreviewScores } from '../blackjackSwitchPreview';
 
 /** ディーラーが 17 で止まる境目。ソフト 17 は引く (`BJSwitchDealerHitsSoft17`)。 */
 const DEALER_STANDS = 17;
@@ -74,26 +75,22 @@ function dealerUpcard(state: BlackJackSwitchResponse): number {
  *
  * 判定は素朴に「両手が 17 以上になる方を選ぶ」。片方を強くして片方を潰す入れ替えは
  * 合計では得しないので、**両手が使える形かどうか**で見る。
+ *
+ * **入れ替え後の点数は引き算で作らない。**エースは 21 を超えると 11 → 1 に
+ * 落ちるので、`score - 自分の2枚目 + 相手の2枚目` は実際の点数と一致しない
+ * (♠A ♥A は 12 で、♥A を 8 に替えれば 19 だが、引き算では 9 になる)。
+ * ページのホバープレビューと同じ blackjackSwitchPreviewScores に通して、
+ * 手札を組み直して数え直す (#4708)。
  */
 function switchImproves(state: BlackJackSwitchResponse): boolean {
   const [a, b] = state.hands;
   if (!a || !b) return false;
-  const now = usable(a.score) + usable(b.score);
-  // 2 枚目を入れ替えた後のスコアは (合計 - 自分の 2 枚目 + 相手の 2 枚目)。
-  const aSecond = cardValue(a.cards[1]);
-  const bSecond = cardValue(b.cards[1]);
-  const after = usable(a.score - aSecond + bSecond) + usable(b.score - bSecond + aSecond);
-  return after > now;
+  const after = blackjackSwitchPreviewScores(a.cards, b.cards);
+  if (after === null) return false;
+  return usable(after.a) + usable(after.b) > usable(a.score) + usable(b.score);
 }
 
 /** 17 以上 21 以下なら 1、それ以外は 0。 */
 function usable(score: number): number {
   return score >= DEALER_STANDS && score <= 21 ? 1 : 0;
-}
-
-/** 札の値。A は 11、絵札は 10。null は 0。 */
-function cardValue(c: { value: number } | null | undefined): number {
-  if (!c) return 0;
-  if (c.value === 1) return 11;
-  return Math.min(c.value, 10);
 }

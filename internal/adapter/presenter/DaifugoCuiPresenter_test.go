@@ -479,3 +479,74 @@ func TestDaifugoCuiPresenter_ActionLogOutput(t *testing.T) {
 		mockGame.AssertExpectations(t)
 	})
 }
+
+// **どの手札が出せるかを自力で計算させていた (#4733)。**CrazyEights は
+// 出せる札に "*" を付けているのに、遥かにルールが複雑な大富豪には無かった。
+func TestDaifugoCuiPresenter_MarksPlayableCards(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	tdp := new(presenter.DaifugoCuiPresenter)
+
+	newGame := func(hand ...*domain.Card) (*domain.Daifugo, []*domain.DaifugoPlayer) {
+		players := makeDaifugoPlayersForPresenter()
+		dg := domain.NewDaifugo(domain.NewTrumpCards(0), players, domain.DefaultDaifugoConfig())
+		dg.SetCurrentTurn(0)
+		for _, c := range hand {
+			players[0].AddCard(c)
+		}
+		for i := 1; i < len(players); i++ {
+			players[i].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		}
+		return dg, players
+	}
+	card := func(design, value int) *domain.Card { return domain.NewCard(design, value, false) }
+
+	t.Run("stars the card that beats the table and leaves the other bare", func(t *testing.T) {
+		dg, _ := newGame(card(domain.CardDesignSpade, 5), card(domain.CardDesignHeart, 12))
+		dg.SetTableCards([]*domain.Card{card(domain.CardDesignClover, 9)})
+
+		result := tdp.Output(dg, nil)
+		assert.Contains(t, result, "[1]HEART 12*")
+		// **付かないことも確かめる。**全部に星が付く実装でも「付く」だけなら通る。
+		assert.NotContains(t, result, "[0]SPADE 5*")
+	})
+
+	t.Run("stars every card when the table is empty", func(t *testing.T) {
+		dg, _ := newGame(card(domain.CardDesignSpade, 5), card(domain.CardDesignHeart, 12))
+
+		result := tdp.Output(dg, nil)
+		assert.Contains(t, result, "[0]SPADE 5*")
+		assert.Contains(t, result, "[1]HEART 12*")
+	})
+
+	t.Run("stars nothing when no card can be played", func(t *testing.T) {
+		dg, _ := newGame(card(domain.CardDesignSpade, 4), card(domain.CardDesignHeart, 5))
+		dg.SetTableCards([]*domain.Card{card(domain.CardDesignClover, 13)})
+
+		assert.NotContains(t, tdp.Output(dg, nil), "*")
+	})
+
+	// **CPU の手番では人間の手札に印を付けない。**手番プレイヤーの手札で
+	// 計算したインデックスをそのまま人間の手札に当てると、出せない札に
+	// 印が付く。
+	t.Run("stars nothing while a CPU is to act", func(t *testing.T) {
+		dg, _ := newGame(card(domain.CardDesignSpade, 4), card(domain.CardDesignHeart, 5))
+		dg.SetTableCards([]*domain.Card{card(domain.CardDesignClover, 13)})
+		dg.SetCurrentTurn(1)
+
+		assert.NotContains(t, tdp.Output(dg, nil), "*")
+	})
+
+	// **革命中は印の付く札が入れ替わる。**場の状態を見ていない実装だと
+	// ここで通らない。
+	t.Run("a revolution moves the star to the weaker card", func(t *testing.T) {
+		dg, _ := newGame(card(domain.CardDesignSpade, 5), card(domain.CardDesignHeart, 12))
+		dg.SetTableCards([]*domain.Card{card(domain.CardDesignClover, 9)})
+		dg.SetRevolutionActive(true)
+
+		result := tdp.Output(dg, nil)
+		assert.Contains(t, result, "[0]SPADE 5*")
+		assert.NotContains(t, result, "[1]HEART 12*")
+	})
+}

@@ -27,7 +27,9 @@ func (pr *GapsCuiPresenter) Output(g interfaces.GapsGame, lastErr error) string 
 				}
 				cell := grid[r][c]
 				if cell == nil {
-					b.WriteString("[ . ]")
+					// **どのカードが入るかも詰みかも分からなかった (#4800)。**
+					// Web はゴーストカードと 🚫 で常時プレビューしている。
+					b.WriteString(gapsGapCell(g, r, c))
 				} else {
 					b.WriteString(i18n.Tf("gaps.gridCard",
 						"row", strconv.Itoa(r),
@@ -84,4 +86,23 @@ func (pr *GapsCuiPresenter) ActionLogOutput(g interfaces.GapsGame) string {
 		return actionLogToText(nil)
 	}
 	return actionLogToText(g.GetActionLog())
+}
+
+// gapsGapCell は空きマスの表示を返す。何が入るか決まらないときは従来どおり
+// [ . ] のまま。**決まらないものを決まったように見せない。**
+func gapsGapCell(g interfaces.GapsGame, row, col int) string {
+	need := g.GetGapNeed(row, col)
+	if need == nil {
+		return "[ . ]"
+	}
+	switch need.Kind {
+	case domain.GapsNeedBlocked:
+		return i18n.T("gaps.gapBlocked")
+	case domain.GapsNeedAnySuit:
+		return i18n.Tf("gaps.gapAnySuit", "rank", strconv.Itoa(need.Value))
+	case domain.GapsNeedCard:
+		return i18n.Tf("gaps.gapNeeded",
+			"card", cuiCardStr(domain.NewCard(need.Design, need.Value, false)))
+	}
+	return "[ . ]"
 }

@@ -105,6 +105,9 @@ func (p *PitchCuiPresenter) Output(s interfaces.PitchGame, lastErr error) string
 			bidIdx := s.GetBidPlayerIdx()
 			b.WriteString(i18n.Tf("pitch.promptBid",
 				"name", cuiPlayerName(s.GetPlayer(bidIdx), bidIdx)) + "\n")
+			// **入札前に手札の得点価値を暗算させていた (#4751)。**Web は入札中に
+			// ゲーム得点バッジと内訳を出している。強気に入札してよいかの判断材料。
+			writePitchHandPips(b, s)
 			b.WriteString(i18n.T("pitch.promptBidHelp") + "\n")
 		case domain.PitchPhasePlay:
 			currentIdx := s.GetCurrentPlayerIdx()
@@ -166,4 +169,28 @@ var pitchHintReasonKeys = map[string]string{
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *PitchCuiPresenter) ActionLogOutput(s interfaces.PitchGame) string {
 	return actionLogOutputText(s)
+}
+
+// writePitchHandPips は人間の手札のゲームピップ合計と内訳を書く。
+// 人間が見つからない、または手札が空なら何も書かない。
+func writePitchHandPips(b *strings.Builder, s interfaces.PitchGame) {
+	for i := 0; i < s.GetPlayerCnt(); i++ {
+		pl := s.GetPlayer(i)
+		if pl == nil || !pl.GetIsHuman() || pl.GetCardsSize() == 0 {
+			continue
+		}
+		cards := make([]*domain.Card, 0, pl.GetCardsSize())
+		// **0点の札も内訳に並べる。**並べないと「見落としている札がある」
+		// のか「その札が0点」なのか区別が付かない。
+		parts := make([]string, 0, pl.GetCardsSize())
+		for j := 0; j < pl.GetCardsSize(); j++ {
+			c := pl.GetCard(j)
+			cards = append(cards, c)
+			parts = append(parts, cuiCardStr(c)+"="+strconv.Itoa(domain.PitchHandPips([]*domain.Card{c})))
+		}
+		b.WriteString(i18n.Tf("pitch.handPips",
+			"total", strconv.Itoa(domain.PitchHandPips(cards)),
+			"breakdown", strings.Join(parts, " ")) + "\n")
+		return
+	}
 }

@@ -117,7 +117,7 @@ type Watten struct {
 	gameEndFlag      bool
 	winnerTeam       int          // マッチ勝者チーム (-1 = 未確定)
 	result           WattenResult // 人間 (チーム 0) 視点の結果
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewWatten コンストラクタ
@@ -269,7 +269,7 @@ func (g *Watten) doDeclare(playerIdx, rank, suit int) {
 	g.criticalSuit = suit
 	g.appendLog(playerIdx, "declare",
 		fmt.Sprintf("%s declares Schlag=%d critical=%s",
-			g.playerName(playerIdx), rank, suitStr(suit)), nil)
+			playerName(g.players, playerIdx), rank, suitStr(suit)), nil)
 	g.sortAllHands()
 	g.startPlayPhase()
 }
@@ -338,7 +338,7 @@ func (g *Watten) CpuPlay() {
 func (g *Watten) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	g.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+		fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == WattenPlayerCnt {
 		g.phase = WattenPhaseTrickEnd
@@ -362,7 +362,7 @@ func (g *Watten) ResolveTrick() {
 	g.teamTricks[winnerTeam]++
 	g.leadPlayerIdx = winnerIdx
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", g.playerName(winnerIdx), g.trickNumber), trickCards)
+		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), trickCards)
 
 	if g.trickNumber >= WattenHandSize {
 		g.enterRoundEnd(g.dealWinnerByTricks())
@@ -495,7 +495,7 @@ func (g *Watten) respond(responder int, hold bool) {
 		g.currentPlayerIdx = g.leadPlayerIdx
 		g.appendLog(responder, "hold",
 			fmt.Sprintf("%s holds (stake %d, team %d leads)",
-				g.playerName(responder), g.stake, raiser), nil)
+				playerName(g.players, responder), g.stake, raiser), nil)
 		return
 	}
 	// fold: レイズしたチームが直前の確定ステークでディールを取る。
@@ -505,7 +505,7 @@ func (g *Watten) respond(responder int, hold bool) {
 	g.responderIdx = -1
 	g.appendLog(responder, "fold",
 		fmt.Sprintf("%s folds; team %d wins deal (%d pt)",
-			g.playerName(responder), raiser, g.stake), nil)
+			playerName(g.players, responder), raiser, g.stake), nil)
 	g.enterRoundEnd(raiser)
 }
 
@@ -599,6 +599,40 @@ func (g *Watten) isTrump(c *Card) bool {
 		return true
 	}
 	return false
+}
+
+// WattenTrumpPreview counts, for a hand, how many cards would become trumps for
+// each candidate declaration. `Permanent` is the number of Max/Belli/Spitz held
+// (trumps whatever is declared), `BySuit` counts the extra cards a critical
+// suit would add, and `ByRank` the extra cards a Schlag rank would add — extra
+// meaning "not already counted as permanent", so the three never double-count.
+//
+// The Web GUI previews the same thing live while the dealer picks (#4848); the
+// CUI prompt showed only the command syntax, and the declaration decides who
+// holds the initiative for the whole deal.
+type WattenTrumpPreview struct {
+	Permanent int
+	BySuit    [CardDesignDiamond + 1]int
+	ByRank    map[int]int
+}
+
+// WattenPreviewTrumps builds a WattenTrumpPreview for the given hand.
+func WattenPreviewTrumps(cards []*Card) WattenTrumpPreview {
+	pv := WattenTrumpPreview{ByRank: map[int]int{}}
+	for _, c := range cards {
+		if c == nil {
+			continue
+		}
+		if isMax(c) || isBelli(c) || isSpitz(c) {
+			pv.Permanent++
+			continue
+		}
+		if d := c.GetDesign(); d >= CardDesignSpade && d <= CardDesignDiamond {
+			pv.BySuit[d]++
+		}
+		pv.ByRank[c.GetValue()]++
+	}
+	return pv
 }
 
 // IsTrumpPublic テスト用公開ラッパー。
@@ -796,35 +830,6 @@ func (g *Watten) sortAllHands() {
 	}
 }
 
-func (g *Watten) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
-func (g *Watten) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-func (g *Watten) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // --- CPU AI ---
 
 // cpuBestDeclaration CPU の宣言: 最頻スートを T, 最頻ランクを R とする。
@@ -998,7 +1003,7 @@ func (g *Watten) cpuWantsToHold(playerIdx int) bool {
 
 // GetHint 現フェーズのヒントを返す (人間プレイヤー視点)。
 func (g *Watten) GetHint() *WattenHint {
-	humanIdx := g.findHumanIdx()
+	humanIdx := findHumanIdx(g.players)
 	if humanIdx < 0 {
 		return nil
 	}
@@ -1165,18 +1170,12 @@ func (g *Watten) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *Watten) GetPlayer(i int) *WattenPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // IsHumanTurn 現在のプレイ手番が人間かどうか
 func (g *Watten) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // IsHumanDeclareTurn 現在の宣言手番 (ディーラー) が人間かどうか
@@ -1200,9 +1199,6 @@ func (g *Watten) GetConfig() WattenConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *Watten) SetConfig(cfg WattenConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *Watten) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // --- Test-only helpers ---
 

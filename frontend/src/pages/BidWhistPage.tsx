@@ -28,6 +28,7 @@ import {
   parseBidWhistCommand,
 } from '../utils/cli/commands/bidwhistCommands';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isRequestedHint } from '../utils/hintRequest';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const CPU_DIFFICULTY_SELECT = [
@@ -93,6 +94,7 @@ function BidWhistPageContent() {
     play,
     nextTrick,
     nextRound,
+    requestHint,
     reset,
   } = useBidWhistGame();
   const { cardWidth } = useCardDimensions();
@@ -335,6 +337,17 @@ function BidWhistPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+            {/* サーバーのヒント。押したときだけ出す (#4814)。isRequestedHint は
+                HintOutput が付ける `hintRequested` を待つので、常時表示にはならない。 */}
+            {state.hint && isRequestedHint(state) && (
+              <div className="text-ds-warning text-sm mb-2" data-testid="bidwhist-hint-line">
+                {t('hintRequested')}: {t(`hint.${state.hint.reason}`)}
+                {state.hint.cardIndex != null && state.hint.cardIndex >= 0 && ` [${state.hint.cardIndex}]`}
+                {state.hint.discardIndices != null &&
+                  state.hint.discardIndices.length > 0 &&
+                  ` (${state.hint.discardIndices.map((i) => `[${i}]`).join(', ')})`}
+              </div>
+            )}
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
           </div>
 
@@ -475,6 +488,20 @@ function BidWhistPageContent() {
                   data-testid="play-button"
                 >
                   {t('playButton')}
+                </button>
+              )}
+
+              {/* CUI には HintOutput があるのに、Web からも CLI からも到達できず
+                  事実上のデッドコードだった (#4814)。 */}
+              {isHumanTurn && (
+                <button
+                  type="button"
+                  onClick={requestHint}
+                  disabled={loading}
+                  className="px-4 py-2 rounded-lg bg-ds-success text-white text-sm disabled:opacity-40"
+                  data-testid="bidwhist-hint-button"
+                >
+                  {t('hintButton')}
                 </button>
               )}
 

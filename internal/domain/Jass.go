@@ -77,7 +77,7 @@ type Jass struct {
 	bidPlayerIdx     int
 	gameEndFlag      bool
 	winnerTeam       int // 勝利チーム (-1 = 未確定)
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewJass コンストラクタ
@@ -261,7 +261,7 @@ func (g *Jass) CpuBid() {
 func (g *Jass) doSchieben(playerIdx int) {
 	g.schieben = true
 	g.appendLog(playerIdx, "schieben",
-		fmt.Sprintf("%s schiebt (passes to partner)", g.playerName(playerIdx)), nil)
+		fmt.Sprintf("%s schiebt (passes to partner)", playerName(g.players, playerIdx)), nil)
 	g.bidPlayerIdx = (playerIdx + 2) % JassPlayerCnt
 	g.phase = JassPhaseBidPartner
 }
@@ -272,7 +272,7 @@ func (g *Jass) doChooseTrump(playerIdx, suit int) {
 	g.makerTeam = g.players[playerIdx].GetTeam()
 	g.makerPlayerIdx = playerIdx
 	g.appendLog(playerIdx, "choose_trump",
-		fmt.Sprintf("%s chooses %s as trump", g.playerName(playerIdx), suitStr(suit)), nil)
+		fmt.Sprintf("%s chooses %s as trump", playerName(g.players, playerIdx), suitStr(suit)), nil)
 
 	g.sortAllHands()
 	g.resolveWeis()
@@ -347,7 +347,7 @@ func (g *Jass) ResolveTrick() {
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.roundPoints[g.players[winnerIdx].GetTeam()] += trickPoints
 
-	winnerName := g.playerName(winnerIdx)
+	winnerName := playerName(g.players, winnerIdx)
 	g.appendLog(winnerIdx, "trick_win",
 		fmt.Sprintf("%s wins trick %d (%d pts)", winnerName, g.trickNumber, trickPoints),
 		trickCards)
@@ -438,10 +438,7 @@ func (g *Jass) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *Jass) GetPlayer(i int) *JassPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
@@ -524,18 +521,12 @@ func (g *Jass) GetRoundStockPoints(team int) int {
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (g *Jass) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // IsHumanBidTurn 現在のビッド手番が人間かどうか
 func (g *Jass) IsHumanBidTurn() bool {
-	if g.bidPlayerIdx < 0 || g.bidPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.bidPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.bidPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -543,9 +534,6 @@ func (g *Jass) GetConfig() JassConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *Jass) SetConfig(cfg JassConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *Jass) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // CardRankPublic カードランク取得 (テスト用公開メソッド)
 func (g *Jass) CardRankPublic(card *Card) int { return g.cardRank(card) }
@@ -903,7 +891,7 @@ func (g *Jass) resolveStock() {
 			g.roundStockPoints[team] += JassStockBonus
 			g.appendLog(i, "stock",
 				fmt.Sprintf("%s has Stöck (+%d for team %d)",
-					g.playerName(i), JassStockBonus, team), nil)
+					playerName(g.players, i), JassStockBonus, team), nil)
 		}
 	}
 }
@@ -926,7 +914,7 @@ func (g *Jass) playCard(playerIdx int, card *Card) {
 		Card:      card,
 	})
 	g.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+		fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == JassPlayerCnt {
 		g.phase = JassPhaseTrickEnd
@@ -1042,10 +1030,7 @@ func (g *Jass) GetValidPlayIndices(playerIdx int) []int {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (g *Jass) getValidPlayIndices(playerIdx int) []int {
-	player := g.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return g.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(g.players[playerIdx], func(c *Card) bool { return g.validatePlay(playerIdx, c) == nil })
 }
 
 // --- Game end + bookkeeping ---
@@ -1085,40 +1070,11 @@ func jassSortHand(p *JassPlayer, g *Jass) {
 	})
 }
 
-func (g *Jass) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
-func (g *Jass) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-func (g *Jass) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // --- Hints ---
 
 // GetHint 現フェーズのヒントを返す (人間プレイヤー視点)
 func (g *Jass) GetHint() *JassHint {
-	humanIdx := g.findHumanIdx()
+	humanIdx := findHumanIdx(g.players)
 	if humanIdx < 0 {
 		return nil
 	}
@@ -1154,7 +1110,7 @@ func (g *Jass) GetHint() *JassHint {
 }
 
 func (g *Jass) playHintReason(chosenIdx int) string {
-	humanIdx := g.findHumanIdx()
+	humanIdx := findHumanIdx(g.players)
 	if humanIdx < 0 {
 		return ""
 	}

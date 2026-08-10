@@ -38,6 +38,64 @@ func TestSevenCardStudCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "♣5")
 	})
 
+	// **Web は常時「いまの最善役」を出しているのに、ハイ戦の CUI はショーダウン
+	// まで役名を一切出していなかった (#4695)。**3rd〜7th street の間ずっと
+	// 自分の手が何に達しているか分からない。
+	t.Run("high game shows the human's current best hand", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := []*domain.SevenCardStudPlayer{
+			domain.NewSevenCardStudPlayer(true, domain.HoldemStyleTAG),
+			domain.NewSevenCardStudPlayer(false, domain.HoldemStyleLAP),
+		}
+		s := domain.NewSevenCardStud(tc, players, domain.DefaultSevenCardStudConfig())
+		s.SetPhase(domain.SevenCardStudPhaseFifthStreet)
+		// フラッシュ: ♠2 ♠5 ♠7 ♠9 ♠13
+		players[0].AddHoleCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		players[0].AddHoleCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignSpade, 13, false))
+
+		result := p.Output(s, nil)
+		assert.Contains(t, result, "現在の最善役")
+		assert.Contains(t, result, "フラッシュ")
+	})
+
+	// **5枚に満たないうちは出さない。**3rd street は3枚しかなく、そこで
+	// 「ハイカード」と出しても情報が無い。
+	t.Run("high game shows nothing before five cards", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := []*domain.SevenCardStudPlayer{
+			domain.NewSevenCardStudPlayer(true, domain.HoldemStyleTAG),
+			domain.NewSevenCardStudPlayer(false, domain.HoldemStyleLAP),
+		}
+		s := domain.NewSevenCardStud(tc, players, domain.DefaultSevenCardStudConfig())
+		s.SetPhase(domain.SevenCardStudPhaseThirdStreet)
+		players[0].AddHoleCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		players[0].AddHoleCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignClover, 7, false))
+
+		assert.NotContains(t, p.Output(s, nil), "現在の最善役")
+	})
+
+	// **Razz では出さない。**ロー狙いなのにハイ役を出すと逆の助言になる。
+	t.Run("razz does not show the high-hand line", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := []*domain.SevenCardStudPlayer{
+			domain.NewSevenCardStudPlayer(true, domain.HoldemStyleTAG),
+			domain.NewSevenCardStudPlayer(false, domain.HoldemStyleLAP),
+		}
+		s := domain.NewRazz(tc, players, domain.DefaultSevenCardStudConfig())
+		s.SetPhase(domain.SevenCardStudPhaseFifthStreet)
+		players[0].AddHoleCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		players[0].AddHoleCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignSpade, 13, false))
+
+		assert.NotContains(t, p.Output(s, nil), "現在の最善役")
+	})
+
 	t.Run("razz mode shows the human's current best low", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := []*domain.SevenCardStudPlayer{
@@ -198,7 +256,7 @@ func TestSevenCardStudCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(s, nil)
 		assert.Contains(t, result, "[結果]")
-		assert.Contains(t, result, "あなた: Flush")
+		assert.Contains(t, result, "あなた: フラッシュ")
 		assert.Contains(t, result, "100チップ獲得")
 	})
 
@@ -210,7 +268,7 @@ func TestSevenCardStudCuiPresenter_Output(t *testing.T) {
 		})
 
 		result := p.Output(s, nil)
-		assert.Contains(t, result, "あなた: One Pair (キッカー: A, Q, 10)")
+		assert.Contains(t, result, "あなた: ワンペア (キッカー: A, Q, 10)")
 	})
 
 	t.Run("showdown results with CPU winner", func(t *testing.T) {
@@ -221,14 +279,14 @@ func TestSevenCardStudCuiPresenter_Output(t *testing.T) {
 		})
 
 		result := p.Output(s, nil)
-		assert.Contains(t, result, "CPU 1: One Pair (キッカー: K, Q, J)")
+		assert.Contains(t, result, "CPU 1: ワンペア (キッカー: K, Q, J)")
 	})
 
 	t.Run("results not shown in non-end phase", func(t *testing.T) {
 		s, _ := makeSevenCardStudForPresenter()
 		s.SetPhase(domain.SevenCardStudPhaseThirdStreet)
 		s.SetRoundResults([]domain.SevenCardStudResult{
-			{PlayerIdx: 0, HandName: "Flush", WonAmount: 100},
+			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100},
 		})
 
 		result := p.Output(s, nil)
@@ -255,13 +313,13 @@ func TestSevenCardStudCuiPresenter_Output(t *testing.T) {
 		s, _ := makeSevenCardStudForPresenter()
 		s.SetPhase(domain.SevenCardStudPhaseEnd)
 		s.SetRoundResults([]domain.SevenCardStudResult{
-			{PlayerIdx: 0, HandName: "One Pair", WonAmount: 0, Mucked: true},
+			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", WonAmount: 0, Mucked: true},
 			{PlayerIdx: 1, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100},
 		})
 
 		result := p.Output(s, nil)
 		assert.Contains(t, result, "あなた: マック")
-		assert.NotContains(t, result, "あなた: One Pair")
+		assert.NotContains(t, result, "あなた: ワンペア")
 	})
 
 	t.Run("results shown in showdown phase", func(t *testing.T) {
@@ -273,7 +331,7 @@ func TestSevenCardStudCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(s, nil)
 		assert.Contains(t, result, "[結果]")
-		assert.Contains(t, result, "あなた: Flush")
+		assert.Contains(t, result, "あなた: フラッシュ")
 	})
 
 	t.Run("HUD stats shown when totalHands > 0", func(t *testing.T) {
@@ -562,18 +620,123 @@ func TestSevenCardStudCuiPresenter_HintOutput(t *testing.T) {
 		assert.Contains(t, p.HintOutput(s), i18n.T("sevencardstud.hintNone"))
 	})
 
-	t.Run("no hint in Razz (lowball)", func(t *testing.T) {
-		tc := domain.NewTrumpCards(0)
+	// **ラズは以前ここで常に「ヒントなし」だった (#4703)。**Web は razzHint.ts で
+	// fold/call/raise を助言しているのに、CUI だけ黙っていた。この t.Run は
+	// その挙動を「仕様」として固定してしまっていたので、中身を入れ替えた。
+	newRazz := func(cards ...*domain.Card) *domain.SevenCardStud {
 		players := []*domain.SevenCardStudPlayer{
 			domain.NewSevenCardStudPlayer(true, domain.HoldemStyleTAG),
 			domain.NewSevenCardStudPlayer(false, domain.HoldemStyleLAP),
 		}
-		s := domain.NewRazz(tc, players, domain.DefaultSevenCardStudConfig())
+		s := domain.NewRazz(domain.NewTrumpCards(0), players, domain.DefaultSevenCardStudConfig())
 		s.SetPhase(domain.SevenCardStudPhaseThirdStreet)
 		s.SetCurrentTurn(0)
-		players[0].AddHoleCard(domain.NewCard(domain.CardDesignSpade, 8, false))
-		players[0].AddHoleCard(domain.NewCard(domain.CardDesignHeart, 8, false))
-		players[0].AddDoorCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		for i, c := range cards {
+			if i < 2 {
+				players[0].AddHoleCard(c)
+			} else {
+				players[0].AddDoorCard(c)
+			}
+		}
+		return s
+	}
+	card := func(design, value int) *domain.Card { return domain.NewCard(design, value, false) }
+
+	// **ラズは役の強弱が逆。**ペアはハイなら続行材料だが、ローでは弱い。
+	t.Run("Razz folds a pair instead of continuing on it", func(t *testing.T) {
+		out := p.HintOutput(newRazz(
+			card(domain.CardDesignSpade, 8), card(domain.CardDesignHeart, 8),
+			card(domain.CardDesignClover, 2)))
+		assert.Contains(t, out, i18n.T("sevencardstud.hintFold"))
+		assert.Contains(t, out, i18n.T("sevencardstud.hintReasonRazzPair"))
+		assert.NotContains(t, out, i18n.T("sevencardstud.hintNone"))
+	})
+
+	t.Run("Razz raises on three low cards", func(t *testing.T) {
+		out := p.HintOutput(newRazz(
+			card(domain.CardDesignSpade, 1), card(domain.CardDesignHeart, 3),
+			card(domain.CardDesignClover, 5)))
+		assert.Contains(t, out, i18n.T("sevencardstud.hintRaise"))
+	})
+
+	t.Run("Razz folds a hand made of high cards", func(t *testing.T) {
+		out := p.HintOutput(newRazz(
+			card(domain.CardDesignSpade, 12), card(domain.CardDesignHeart, 11),
+			card(domain.CardDesignClover, 9)))
+		assert.Contains(t, out, i18n.T("sevencardstud.hintFold"))
+		assert.Contains(t, out, i18n.T("sevencardstud.hintReasonRazzWeak"))
+	})
+
+	// **ハイと違って全ストリートで出す。**引くたびにロー札の枚数が変わる。
+	t.Run("Razz still advises on fifth street", func(t *testing.T) {
+		s := newRazz(
+			card(domain.CardDesignSpade, 1), card(domain.CardDesignHeart, 3),
+			card(domain.CardDesignClover, 5), card(domain.CardDesignDiamond, 7))
+		s.SetPhase(domain.SevenCardStudPhaseFifthStreet)
+		assert.NotContains(t, p.HintOutput(s), i18n.T("sevencardstud.hintNone"))
+	})
+
+	// **Hi-Lo にハイ専用の基本戦略をそのまま当てていた (#4704)。**ポットの
+	// 半分がローに行くので、ハイとして弱くてもロー札がそろっていれば続ける
+	// 価値がある。
+	newHiLo := func(cards ...*domain.Card) *domain.SevenCardStud {
+		players := []*domain.SevenCardStudPlayer{
+			domain.NewSevenCardStudPlayer(true, domain.HoldemStyleTAG),
+			domain.NewSevenCardStudPlayer(false, domain.HoldemStyleLAP),
+		}
+		s := domain.NewSevenCardStudHiLo(domain.NewTrumpCards(0), players, domain.DefaultSevenCardStudConfig())
+		s.SetPhase(domain.SevenCardStudPhaseFifthStreet)
+		s.SetCurrentTurn(0)
+		for i, c := range cards {
+			if i < 2 {
+				players[0].AddHoleCard(c)
+			} else {
+				players[0].AddDoorCard(c)
+			}
+		}
+		return s
+	}
+
+	t.Run("Hi-Lo keeps going on five low cards a high-only read would fold", func(t *testing.T) {
+		// 2 3 4 6 8: ハイとしてはハイカードすら無い (ハイ専用判定なら降りる)。
+		out := p.HintOutput(newHiLo(
+			card(domain.CardDesignSpade, 2), card(domain.CardDesignHeart, 3),
+			card(domain.CardDesignClover, 4), card(domain.CardDesignDiamond, 6),
+			card(domain.CardDesignSpade, 8)))
+		assert.Contains(t, out, i18n.T("sevencardstud.hintContinue"))
+		assert.Contains(t, out, i18n.T("sevencardstud.hintReasonHiLoLow"))
+	})
+
+	// **ロー札が4枚では足りない。**5枚そろって初めてローが成立する。
+	t.Run("Hi-Lo does not claim a low on four low cards", func(t *testing.T) {
+		out := p.HintOutput(newHiLo(
+			card(domain.CardDesignSpade, 2), card(domain.CardDesignHeart, 3),
+			card(domain.CardDesignClover, 4), card(domain.CardDesignDiamond, 6),
+			card(domain.CardDesignSpade, 9)))
+		assert.NotContains(t, out, i18n.T("sevencardstud.hintReasonHiLoLow"))
+	})
+
+	t.Run("Hi-Lo still leads with a pair", func(t *testing.T) {
+		out := p.HintOutput(newHiLo(
+			card(domain.CardDesignSpade, 7), card(domain.CardDesignHeart, 7),
+			card(domain.CardDesignClover, 4), card(domain.CardDesignDiamond, 6),
+			card(domain.CardDesignSpade, 8)))
+		assert.Contains(t, out, i18n.T("sevencardstud.hintReasonPair"))
+	})
+
+	t.Run("Hi-Lo folds a hand with neither a low nor a high card", func(t *testing.T) {
+		out := p.HintOutput(newHiLo(
+			card(domain.CardDesignSpade, 2), card(domain.CardDesignHeart, 4),
+			card(domain.CardDesignClover, 6), card(domain.CardDesignDiamond, 9),
+			card(domain.CardDesignSpade, 3)))
+		assert.Contains(t, out, i18n.T("sevencardstud.hintFold"))
+	})
+
+	t.Run("Razz gives no hint at showdown", func(t *testing.T) {
+		s := newRazz(
+			card(domain.CardDesignSpade, 1), card(domain.CardDesignHeart, 3),
+			card(domain.CardDesignClover, 5))
+		s.SetPhase(domain.SevenCardStudPhaseShowdown)
 		assert.Contains(t, p.HintOutput(s), i18n.T("sevencardstud.hintNone"))
 	})
 }

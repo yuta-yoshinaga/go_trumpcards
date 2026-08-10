@@ -169,13 +169,13 @@ describe('AmericanToadPage', () => {
   it('lets a buried card be selected as the head of a run', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<AmericanToadPage />);
-    const buried = await screen.findByRole('button', { name: '♠ 9' });
+    const buried = await screen.findByRole('button', { name: /^♠ 9（/ });
     expect(buried).toBeEnabled();
     fireEvent.click(buried);
     await waitFor(() => expect(buried).toHaveAttribute('aria-pressed', 'true'));
     mockExec.mockClear();
 
-    fireEvent.click(screen.getByRole('button', { name: '♣ 4' }));
+    fireEvent.click(screen.getByRole('button', { name: /^♣ 4（/ }));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith(
         'move',
@@ -271,6 +271,16 @@ describe('AmericanToadPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /CLI/i }));
     await waitFor(() => expect(screen.queryByText('#0')).not.toBeInTheDocument());
+  });
+
+  it('names each tableau card with its position for screen readers', async () => {
+    // Earlier tests in this file queue one-shot resolutions and can leave CLI
+    // mode persisted in localStorage; reset both so the board actually renders.
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<AmericanToadPage />);
+    await waitFor(() => expect(screen.getAllByLabelText(/列\d+・上から\d+枚目/).length).toBeGreaterThan(0));
   });
 });
 

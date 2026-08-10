@@ -54,7 +54,7 @@ type Spades struct {
 	bidPlayerIdx     int
 	gameEndFlag      bool
 	winnerIdx        int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewSpades コンストラクタ
@@ -145,7 +145,7 @@ func (s *Spades) PlayerBid(bid int) error {
 		return ErrWrongPhase
 	}
 
-	humanIdx := s.findHumanIdx()
+	humanIdx := findHumanIdx(s.players)
 	if humanIdx < 0 {
 		return ErrNotHumanTurn
 	}
@@ -161,7 +161,7 @@ func (s *Spades) PlayerBid(bid int) error {
 	if bid == 0 {
 		bidStr = "Nil"
 	}
-	s.appendLog(humanIdx, "bid", fmt.Sprintf("%s bids %s", s.playerName(humanIdx), bidStr), nil)
+	s.appendLog(humanIdx, "bid", fmt.Sprintf("%s bids %s", playerName(s.players, humanIdx), bidStr), nil)
 
 	s.bidPlayerIdx++
 	s.checkBidComplete()
@@ -186,7 +186,7 @@ func (s *Spades) CpuBid() {
 	if bid == 0 {
 		bidStr = "Nil"
 	}
-	s.appendLog(s.bidPlayerIdx, "bid", fmt.Sprintf("%s bids %s", s.playerName(s.bidPlayerIdx), bidStr), nil)
+	s.appendLog(s.bidPlayerIdx, "bid", fmt.Sprintf("%s bids %s", playerName(s.players, s.bidPlayerIdx), bidStr), nil)
 
 	s.bidPlayerIdx++
 	s.checkBidComplete()
@@ -254,7 +254,7 @@ func (s *Spades) ResolveTrick() {
 
 	s.players[winnerIdx].AddTrick(trickCards)
 
-	winnerName := s.playerName(winnerIdx)
+	winnerName := playerName(s.players, winnerIdx)
 	s.appendLog(winnerIdx, "trick_win", fmt.Sprintf("%s wins trick %d", winnerName, s.trickNumber), trickCards)
 
 	s.leadPlayerIdx = winnerIdx
@@ -292,10 +292,10 @@ func (s *Spades) ScoreRound() {
 			// ニルビッド
 			if tricks == 0 {
 				p.roundScore = s.config.NilBonus
-				s.appendLog(i, "nil_success", fmt.Sprintf("%s nil success! +%d", s.playerName(i), s.config.NilBonus), nil)
+				s.appendLog(i, "nil_success", fmt.Sprintf("%s nil success! +%d", playerName(s.players, i), s.config.NilBonus), nil)
 			} else {
 				p.roundScore = -s.config.NilBonus
-				s.appendLog(i, "nil_fail", fmt.Sprintf("%s nil failed! -%d (%d tricks taken)", s.playerName(i), s.config.NilBonus, tricks), nil)
+				s.appendLog(i, "nil_fail", fmt.Sprintf("%s nil failed! -%d (%d tricks taken)", playerName(s.players, i), s.config.NilBonus, tricks), nil)
 			}
 		} else if tricks >= bid {
 			// ビッド成功
@@ -308,7 +308,7 @@ func (s *Spades) ScoreRound() {
 				penalty := (p.bags / s.config.BagPenaltyThreshold) * 100
 				p.roundScore -= penalty
 				p.bags %= s.config.BagPenaltyThreshold
-				s.appendLog(i, "bag_penalty", fmt.Sprintf("%s bag penalty! -%d", s.playerName(i), penalty), nil)
+				s.appendLog(i, "bag_penalty", fmt.Sprintf("%s bag penalty! -%d", playerName(s.players, i), penalty), nil)
 			}
 		} else {
 			// ビッド失敗
@@ -316,7 +316,7 @@ func (s *Spades) ScoreRound() {
 		}
 
 		s.appendLog(i, "round_score", fmt.Sprintf("%s: bid=%d tricks=%d round=%d bags=%d",
-			s.playerName(i), bid, tricks, p.roundScore, p.bags), nil)
+			playerName(s.players, i), bid, tricks, p.roundScore, p.bags), nil)
 	}
 
 	// 累積スコアに加算
@@ -327,7 +327,7 @@ func (s *Spades) ScoreRound() {
 	// スコアログ
 	for i := 0; i < SpadesPlayerCnt; i++ {
 		s.appendLog(i, "cumulative_score", fmt.Sprintf("%s: total=%d",
-			s.playerName(i), s.players[i].cumulativeScore), nil)
+			playerName(s.players, i), s.players[i].cumulativeScore), nil)
 	}
 
 	// ゲーム終了判定
@@ -383,10 +383,7 @@ func (s *Spades) GetPlayerCnt() int { return len(s.players) }
 
 // GetPlayer プレイヤー取得
 func (s *Spades) GetPlayer(i int) *SpadesPlayer {
-	if i < 0 || i >= len(s.players) {
-		return nil
-	}
-	return s.players[i]
+	return getPlayer(s.players, i)
 }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
@@ -403,18 +400,12 @@ func (s *Spades) SetBidPlayerIdx(idx int) { s.bidPlayerIdx = idx }
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (s *Spades) IsHumanTurn() bool {
-	if s.currentPlayerIdx < 0 || s.currentPlayerIdx >= len(s.players) {
-		return false
-	}
-	return s.players[s.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(s.players, s.currentPlayerIdx)
 }
 
 // IsHumanBidTurn 現在のビッド手番が人間かどうか
 func (s *Spades) IsHumanBidTurn() bool {
-	if s.bidPlayerIdx < 0 || s.bidPlayerIdx >= len(s.players) {
-		return false
-	}
-	return s.players[s.bidPlayerIdx].GetIsHuman()
+	return isHumanTurn(s.players, s.bidPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -423,20 +414,7 @@ func (s *Spades) GetConfig() SpadesConfig { return s.config }
 // SetConfig 設定変更
 func (s *Spades) SetConfig(cfg SpadesConfig) { s.config = cfg }
 
-// GetActionLog 棋譜取得
-func (s *Spades) GetActionLog() []*ActionLogEntry { return s.actionLog }
-
 // --- Private methods ---
-
-// findHumanIdx 人間プレイヤーのインデックスを返す (-1=なし)
-func (s *Spades) findHumanIdx() int {
-	for i, p := range s.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
 
 // checkBidComplete 全員がビッドしたかチェックし、プレイフェーズに移行
 func (s *Spades) checkBidComplete() {
@@ -466,15 +444,7 @@ func (s *Spades) startPlayPhase() {
 
 // findTwoOfClubs 2♣を持つプレイヤーのインデックスを返す
 func (s *Spades) findTwoOfClubs() int {
-	for i, p := range s.players {
-		for j := 0; j < p.GetCardsSize(); j++ {
-			card := p.GetCard(j)
-			if card.GetDesign() == CardDesignClover && card.GetValue() == 2 {
-				return i
-			}
-		}
-	}
-	return -1
+	return seatHoldingCard(s.players, func(c *Card) bool { return c.GetDesign() == CardDesignClover && c.GetValue() == 2 })
 }
 
 // playCard カードをプレイする共通処理
@@ -489,7 +459,7 @@ func (s *Spades) playCard(playerIdx int, card *Card) {
 		s.spadesBroken = true
 	}
 
-	s.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", s.playerName(playerIdx), cardStr(card)), []*Card{card})
+	s.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(s.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(s.currentTrick) == SpadesPlayerCnt {
 		s.phase = SpadesPhaseTrickEnd
@@ -544,13 +514,7 @@ func (s *Spades) playerHasCard(playerIdx int, design, value int) bool {
 
 // playerHasSuit プレイヤーが特定のスートを持っているか
 func (s *Spades) playerHasSuit(playerIdx int, design int) bool {
-	p := s.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return handHasSuit(s.players[playerIdx], design)
 }
 
 // playerHasNonSpade プレイヤーがスペード以外のカードを持っているか
@@ -605,7 +569,7 @@ func (s *Spades) checkGameEnd() {
 			s.winnerIdx = i
 		}
 	}
-	s.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", s.playerName(s.winnerIdx)), nil)
+	s.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(s.players, s.winnerIdx)), nil)
 }
 
 // sortAllHands 全プレイヤーの手札をソートする
@@ -622,28 +586,6 @@ func spadeSortHand(p *SpadesPlayer) {
 			return ci.GetDesign() < cj.GetDesign()
 		}
 		return ci.GetValue() < cj.GetValue()
-	})
-}
-
-// playerName プレイヤー名を返す
-func (s *Spades) playerName(idx int) string {
-	if idx < 0 || idx >= len(s.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if s.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (s *Spades) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	s.actionLog = append(s.actionLog, &ActionLogEntry{
-		TurnNumber: len(s.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
 	})
 }
 
@@ -1030,10 +972,7 @@ func (s *Spades) cpuPlayHard(playerIdx int, validIndices []int) int {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (s *Spades) getValidPlayIndices(playerIdx int) []int {
-	player := s.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return s.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(s.players[playerIdx], func(c *Card) bool { return s.validatePlay(playerIdx, c) == nil })
 }
 
 // GetValidPlayIndices プレイ可能なカードのインデックスリストを返す (Web用)

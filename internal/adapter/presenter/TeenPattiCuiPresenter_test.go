@@ -39,6 +39,9 @@ func tpSetupBaseMock() *interfaces.MockTeenPattiGame {
 	m.On("GetSideShowRequester").Return(-1)
 	m.On("GetSideShowTarget").Return(-1)
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// #4729: レイズ可能域をドメインから引くようになった。
+	m.On("GetRaiseRange", 0).Return(2, 100, true).Maybe()
+
 	return m
 }
 
@@ -72,7 +75,12 @@ func TestTeenPattiCuiPresenter_Output(t *testing.T) {
 	t.Run("betting raise range: blind human sees full-chip ceiling", func(t *testing.T) {
 		m, players := tpSetupMockWithPlayers()
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
-		// Blind, 30 chips, stake 1 → min 2, max 30.
+		// **計算はドメインの仕事になった (#4729)。**ここで確かめるのは
+		// 「返ってきた範囲をそのまま出すこと」だけ。Seen で上限が半分になる等の
+		// 式の正しさは TestTeenPatti_GetRaiseRange が実際のプレイヤーで見ている。
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRaiseRange")
+		m.On("GetRaiseRange", 0).Return(2, 30, true)
+
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "レイズ可能額: 2〜30")
 	})
@@ -81,7 +89,9 @@ func TestTeenPattiCuiPresenter_Output(t *testing.T) {
 		m, players := tpSetupMockWithPlayers()
 		players[0].SetSeen(true)
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
-		// Seen pays double, so 30 chips → max 15.
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRaiseRange")
+		m.On("GetRaiseRange", 0).Return(2, 15, true)
+
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "レイズ可能額: 2〜15")
 	})
@@ -94,6 +104,11 @@ func TestTeenPattiCuiPresenter_Output(t *testing.T) {
 		for i, pl := range players {
 			m.On("GetPlayer", i).Return(pl)
 		}
+		// **base の .Maybe() より先に評価されない。**testify は最初に一致した
+		// 登録を使うので、tpSetupBaseMock 側の既定を外してから入れ直す。
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRaiseRange")
+		m.On("GetRaiseRange", 0).Return(2, 1, false)
+
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "チップ不足のためレイズできません")
 	})

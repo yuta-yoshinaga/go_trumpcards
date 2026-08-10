@@ -40,6 +40,12 @@ func basraPlayerStr(g interfaces.BasraGame, idx int) string {
 		"basra", strconv.Itoa(player.GetBasraCount())) + "\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
 		b.WriteString(cuiIndexedCardListStr(player) + "\n")
+		// **どの札で何を取れるかを見せる。**Web は選択中の札が捕獲できる場札を
+		// リングとチェックで示すのに、CUI はヒントを叩かない限り分からなかった
+		// (#4922)。判定はドメインの GetCaptureOptions をそのまま使う。
+		if line := cuiCaptureHintLine(player, g.GetCaptureOptions(idx), "basra.captureHint"); line != "" {
+			b.WriteString(line + "\n")
+		}
 	}
 	return b.String()
 }

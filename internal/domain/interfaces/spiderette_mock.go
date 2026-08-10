@@ -93,6 +93,11 @@ func (_m *MockSpideretteGame) GetStockCount() int {
 	return ret.Int(0)
 }
 
+func (_m *MockSpideretteGame) GetDealsRemaining() int {
+	args := _m.Called()
+	return args.Int(0)
+}
+
 // GetTableau mocks the GetTableau call.
 func (_m *MockSpideretteGame) GetTableau() [domain.SpideretteTableauCnt][]*domain.SpideretteTableauCard {
 	ret := _m.Called()

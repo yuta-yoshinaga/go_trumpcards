@@ -16,8 +16,7 @@ func NewChineseTenPlayer(isHuman bool) *ChineseTenPlayer {
 
 // ResetGame は手札と上がり状態を初期化する。
 func (p *ChineseTenPlayer) ResetGame() {
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayer(p)
 }
 
 // chineseTenPlayerJSON is the JSON wire format for ChineseTenPlayer.

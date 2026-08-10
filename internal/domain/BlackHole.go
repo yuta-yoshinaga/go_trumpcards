@@ -44,8 +44,8 @@ type BlackHole struct {
 	blackHole  []*Card
 	phase      BlackHolePhase
 	moveCount  int
-	actionLog  []*ActionLogEntry
-	history    []*blackHoleSnapshot
+	actionLogBase
+	history []*blackHoleSnapshot
 }
 
 // blackHoleSnapshot Undo 用スナップショット。
@@ -146,6 +146,35 @@ func (g *BlackHole) fanTop(idx int) *Card {
 // canPlay 扇 idx のトップをブラックホールへ積めるか。
 func (g *BlackHole) canPlay(idx int) bool {
 	return blackHoleAdjacent(g.fanTop(idx), g.blackHoleTop())
+}
+
+// AcceptableRanks はいまブラックホールが受け付けるランクを昇順で返す。
+// 穴のトップの ±1（K-A ラップなし、1..13 でクランプ）。穴が空なら nil。
+//
+// **CUI は穴のトップしか出しておらず、±1 を毎回暗算させていた (#4818)。**
+func (g *BlackHole) AcceptableRanks() []int {
+	top := g.blackHoleTop()
+	if top == nil {
+		return nil
+	}
+	var out []int
+	for _, v := range []int{top.GetValue() - 1, top.GetValue() + 1} {
+		if v >= 1 && v <= CardValueMax {
+			out = append(out, v)
+		}
+	}
+	return out
+}
+
+// PlayableFans はいま積める扇の番号を返す。canPlay と同じ判定を使う。
+func (g *BlackHole) PlayableFans() []int {
+	var out []int
+	for i := range g.fans {
+		if g.canPlay(i) {
+			out = append(out, i)
+		}
+	}
+	return out
 }
 
 // --- public actions ---
@@ -293,11 +322,5 @@ func (g *BlackHole) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // appendLog アクションログを追加する。
 func (g *BlackHole) appendLog(action, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: g.moveCount,
-		PlayerIdx:  0,
-		ActionType: action,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.appendLogAt(g.moveCount, 0, action, detail, cards)
 }

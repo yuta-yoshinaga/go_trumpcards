@@ -82,7 +82,7 @@ flowchart TD
 | `bet <amount>` | `b <amount>` | 3つの同額ベットを置く（金額を指定） |
 | `pull` | `p` | 現在のベットを引く（Pull） |
 | `letitride` | `l` | 現在のベットを残す（Let It Ride） |
-| `log` | `lg` | アクションログ（棋譜）を表示 |
+| `log` |  | アクションログ（棋譜）を表示 |
 | `quit` | `q` | ゲーム終了 |
 | `help` | `?` | コマンド一覧を表示 |
 

@@ -119,7 +119,7 @@ type Preference struct {
 	roundTricks      [PreferencePlayerCnt]int
 	gameEndFlag      bool
 	winnerPlayer     int // -1=未確定
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewPreference コンストラクタ
@@ -247,9 +247,9 @@ func (g *Preference) applyBid(idx int, bid PreferenceBid) error {
 	g.bids[idx] = bid
 	g.bidDone[idx] = true
 	if bid != PreferenceBidPass {
-		g.appendLog(idx, "bid", fmt.Sprintf("%s bids %s", g.playerName(idx), preferenceBidName(bid)), nil)
+		g.appendLog(idx, "bid", fmt.Sprintf("%s bids %s", playerName(g.players, idx), preferenceBidName(bid)), nil)
 	} else {
-		g.appendLog(idx, "bid", fmt.Sprintf("%s passes", g.playerName(idx)), nil)
+		g.appendLog(idx, "bid", fmt.Sprintf("%s passes", playerName(g.players, idx)), nil)
 	}
 	for k := 1; k <= PreferencePlayerCnt; k++ {
 		ni := (idx + k) % PreferencePlayerCnt
@@ -279,7 +279,7 @@ func (g *Preference) resolveBidding() {
 		g.trumpSuit = g.longestSuit(idx)
 	}
 	g.appendLog(idx, "contract",
-		fmt.Sprintf("%s declares %s (trump %d)", g.playerName(idx), preferenceBidName(bid), g.trumpSuit), nil)
+		fmt.Sprintf("%s declares %s (trump %d)", playerName(g.players, idx), preferenceBidName(bid), g.trumpSuit), nil)
 	g.leadPlayerIdx = (g.dealerIdx + 1) % PreferencePlayerCnt
 	g.currentPlayerIdx = g.leadPlayerIdx
 	g.phase = PreferencePhasePlay
@@ -287,19 +287,7 @@ func (g *Preference) resolveBidding() {
 
 // longestSuit プレイヤーが最も多く持つスートを返す。
 func (g *Preference) longestSuit(playerIdx int) int {
-	counts := map[int]int{}
-	p := g.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		counts[p.GetCard(i).GetDesign()]++
-	}
-	bestSuit, bestCnt := CardDesignSpade, -1
-	for _, suit := range []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond} {
-		if counts[suit] > bestCnt {
-			bestCnt = counts[suit]
-			bestSuit = suit
-		}
-	}
-	return bestSuit
+	return longestSuit(g.players[playerIdx])
 }
 
 // cpuChooseBid CPU の入札を選ぶ。高位札と最長スートの長さから見積もる。
@@ -382,7 +370,7 @@ func (g *Preference) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Preference) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == PreferencePlayerCnt {
 		g.phase = PreferencePhaseTrickEnd
@@ -404,7 +392,7 @@ func (g *Preference) ResolveTrick() {
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.roundTricks[winnerIdx]++
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", g.playerName(winnerIdx), g.trickNumber), trickCards)
+		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= PreferenceTrickCount {
@@ -473,7 +461,7 @@ func (g *Preference) checkGameEnd() {
 		g.gameEndFlag = true
 		g.winnerPlayer = leader
 		g.phase = PreferencePhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", g.playerName(leader)), nil)
+		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
 	}
 }
 
@@ -481,25 +469,7 @@ func (g *Preference) checkGameEnd() {
 
 // validatePlay マストフォローを検証する。
 func (g *Preference) validatePlay(playerIdx int, card *Card) error {
-	if len(g.currentTrick) == 0 {
-		return nil
-	}
-	leadSuit := g.currentTrick[0].Card.GetDesign()
-	if g.playerHasSuit(playerIdx, leadSuit) && card.GetDesign() != leadSuit {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
-	}
-	return nil
-}
-
-// playerHasSuit プレイヤーが指定スートのカードを持っているか。
-func (g *Preference) playerHasSuit(playerIdx, design int) bool {
-	p := g.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return validateFollowSuit(g.currentTrick, g.players, playerIdx, card)
 }
 
 // trickWinner トリックの勝者を決定する。切り札があれば最強切り札、なければ
@@ -545,10 +515,7 @@ func preferenceCardStrength(value int) int {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す。
 func (g *Preference) getValidPlayIndices(playerIdx int) []int {
-	player := g.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return g.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(g.players[playerIdx], func(c *Card) bool { return g.validatePlay(playerIdx, c) == nil })
 }
 
 // --- Misc helpers ---
@@ -578,25 +545,9 @@ func preferenceSortHand(p *PreferencePlayer) {
 	}
 }
 
-// playerName プレイヤー名を返す。
-func (g *Preference) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
 // indexOfPlayerInTrick currentTrick 内で playerIdx の札の位置を返す (-1=なし)。
 func (g *Preference) indexOfPlayerInTrick(playerIdx int) int {
-	for i, tc := range g.currentTrick {
-		if tc.PlayerIdx == playerIdx {
-			return i
-		}
-	}
-	return -1
+	return indexOfPlayerInTrick(g.currentTrick, playerIdx)
 }
 
 // trickTopRank 現在のトリック勝者の札のランクを返す。見つからない場合は極小値。
@@ -606,27 +557,6 @@ func (g *Preference) trickTopRank(winnerIdx int) int {
 		return -1 << 30
 	}
 	return g.preferenceRank(g.currentTrick[idx].Card)
-}
-
-// findHumanIdx 人間プレイヤーのインデックス (-1=なし)。
-func (g *Preference) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
-// appendLog 棋譜にエントリを追加する。
-func (g *Preference) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- CPU AI ---
@@ -652,48 +582,22 @@ func (g *Preference) cpuPlaySmart(playerIdx int, valid []int) int {
 	isDeclarer := playerIdx == g.declarerIdx
 	misere := g.contract == PreferenceBidMisere
 	if isDeclarer && misere {
-		return g.minBy(player, valid, func(c *Card) int { return g.preferenceRank(c) })
+		return pickLowest(player, valid, func(c *Card) int { return g.preferenceRank(c) })
 	}
 	if len(g.currentTrick) == 0 {
 		if isDeclarer {
-			return g.maxBy(player, valid, func(c *Card) int { return g.preferenceRank(c) })
+			return pickHighest(player, valid, func(c *Card) int { return g.preferenceRank(c) })
 		}
-		return g.minBy(player, valid, func(c *Card) int { return g.preferenceRank(c) })
+		return pickLowest(player, valid, func(c *Card) int { return g.preferenceRank(c) })
 	}
 	winnerIdx := g.trickWinner()
 	topRank := g.trickTopRank(winnerIdx)
 	winners := preferenceFilter(valid, func(idx int) bool { return g.preferenceRank(player.GetCard(idx)) > topRank })
 	wantWin := isDeclarer != misere
 	if wantWin && len(winners) > 0 {
-		return g.minBy(player, winners, func(c *Card) int { return g.preferenceRank(c) })
+		return pickLowest(player, winners, func(c *Card) int { return g.preferenceRank(c) })
 	}
-	return g.minBy(player, valid, func(c *Card) int { return g.preferenceRank(c) })
-}
-
-// minBy score が最小となるインデックスを返す。
-func (g *Preference) minBy(player *PreferencePlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s < bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
-}
-
-// maxBy score が最大となるインデックスを返す。
-func (g *Preference) maxBy(player *PreferencePlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s > bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
+	return pickLowest(player, valid, func(c *Card) int { return g.preferenceRank(c) })
 }
 
 // preferenceFilter 述語を満たすインデックスを抽出する。
@@ -711,7 +615,7 @@ func preferenceFilter(indices []int, pred func(int) bool) []int {
 
 // GetHint 人間プレイヤーの手番における推奨プレイを返す。
 func (g *Preference) GetHint() *PreferenceHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 || g.phase != PreferencePhasePlay || g.currentPlayerIdx != human {
 		return nil
 	}
@@ -829,18 +733,12 @@ func (g *Preference) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *Preference) GetPlayer(i int) *PreferencePlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // IsHumanTurn 現在の手番が人間か (プレイフェーズ)。
 func (g *Preference) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -848,9 +746,6 @@ func (g *Preference) GetConfig() PreferenceConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *Preference) SetConfig(cfg PreferenceConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *Preference) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetPlayableIndices プレイ可能なカードのインデックス一覧を返す。
 func (g *Preference) GetPlayableIndices(playerIdx int) []int {

@@ -47,6 +47,8 @@ type BidEuchreGame interface {
 	GetBids() []*domain.BidEuchreBid
 	// GetHighBid 現在の最高宣言を取得する
 	GetHighBid() *domain.BidEuchreBid
+	// BidEuchreMinLegalBid player が通せる最も低い宣言を返す (無ければ ok=false)
+	BidEuchreMinLegalBid(player int) (int, bool)
 	// GetDeclarerIdx 落札者を取得する
 	GetDeclarerIdx() int
 	// GetTrump 切札の宣言内容を取得する

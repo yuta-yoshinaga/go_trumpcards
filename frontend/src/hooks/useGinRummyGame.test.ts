@@ -25,6 +25,7 @@ const defaultState: GinRummyResponse = {
     { id: 0, isHuman: true, cardCount: 10, cards: [{ design: 'SPADE', value: 8 }], roundScore: 0, cumulativeScore: 0 },
     { id: 1, isHuman: false, cardCount: 10, cards: [], roundScore: 0, cumulativeScore: 0 },
   ],
+  layoffTargets: [],
   phase: 0,
   roundNumber: 1,
   currentPlayerIdx: 0,

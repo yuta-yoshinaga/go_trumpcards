@@ -68,5 +68,9 @@
     "common": "Common cards",
     "commonOrder": "3 > 2 > 1 > K > Q > J > 7 > 6 > 5 > 4",
     "note": "The four matadores always rank highest. The plain 1s and 7s exclude the matadores. 8/9/10 are not used."
+  },
+  "settings": {
+    "title": "Settings",
+    "matchTarget": "Match target"
   }
 }

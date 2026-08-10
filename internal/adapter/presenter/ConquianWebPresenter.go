@@ -34,9 +34,38 @@ func (p *ConquianWebPresenter) Output(g interfaces.ConquianGame, lastErr error) 
 	}
 
 	resObj.Players = p.buildPlayersOutput(g)
+	resObj.LayoffTargets = p.buildLayoffTargets(g)
 	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(g, lastErr)
 
 	return marshalOrError(resObj)
+}
+
+// buildLayoffTargets は人間の手札 1 枚ごとに、足せる自分のメルド番号を返す。
+//
+// **延長先は一意とは限らない。**♠5 は「5 のセット」も「♠4-6-7 のラン」も延長でき、
+// 画面が「どれでも押せる」ように見せると、押した先と実際に足される先が食い違う
+// (#4837)。判定はドメインの GetExtendableMeldIndices をそのまま使う。
+func (p *ConquianWebPresenter) buildLayoffTargets(g interfaces.ConquianGame) [][]int {
+	human := -1
+	for i := 0; i < g.GetPlayerCnt(); i++ {
+		if pl := g.GetPlayer(i); pl != nil && pl.GetIsHuman() {
+			human = i
+			break
+		}
+	}
+	if human < 0 {
+		return nil
+	}
+	pl := g.GetPlayer(human)
+	out := make([][]int, 0, pl.GetCardsSize())
+	for i := 0; i < pl.GetCardsSize(); i++ {
+		targets := g.GetExtendableMeldIndices(human, pl.GetCard(i))
+		if targets == nil {
+			targets = []int{}
+		}
+		out = append(out, targets)
+	}
+	return out
 }
 
 // buildPlayersOutput プレイヤー情報を構築

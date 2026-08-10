@@ -40,6 +40,10 @@ func tpSetupWebMock() *interfaces.MockTeenPattiGame {
 	// wrapper にも入れると HintOutput テストの実物が食われる。
 	m.On("GetHint").Return(nil).Maybe()
 
+	// #4729: レイズ可能域をドメインから引くようになった。IsHumanTurn は
+	// 上で既に true 登録済みなので触らない。
+	m.On("GetRaiseRange", 0).Return(2, 30, true).Maybe()
+
 	return m
 }
 
@@ -248,6 +252,53 @@ func TestTeenPattiWebPresenter_HintOutput(t *testing.T) {
 		var resObj controller.TeenPattiWebOutput
 		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
 		assert.Nil(t, resObj.Hint)
+	})
+}
+
+// **Web には上限が無く、払えない額を送信できてサーバーエラーで初めて気づく
+// 状態だった (#4729)。**範囲はドメインが唯一の出どころで、フロントは chips/2 を
+// 組み立て直さない (Seen の扱いが割れる)。
+func TestTeenPattiWebPresenter_RaiseRange(t *testing.T) {
+	p := new(presenter.TeenPattiWebPresenter)
+
+	decode := func(t *testing.T, m *interfaces.MockTeenPattiGame) controller.TeenPattiWebOutput {
+		t.Helper()
+		var out controller.TeenPattiWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, nil)), &out))
+		return out
+	}
+
+	t.Run("human turn carries the domain's range", func(t *testing.T) {
+		m, _ := tpSetupWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "IsHumanTurn")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRaiseRange")
+		m.On("IsHumanTurn").Return(true)
+		m.On("GetRaiseRange", 0).Return(2, 15, true)
+
+		out := decode(t, m)
+		assert.True(t, out.CanRaise)
+		assert.Equal(t, 2, out.MinRaise)
+		assert.Equal(t, 15, out.MaxRaise)
+	})
+
+	// チップ不足でレイズできない局面。**CanRaise が false のとき、フロントは
+	// ボタンを無効化する**ので、ここが true に化けると払えない額を送れてしまう。
+	t.Run("not enough chips reports canRaise false", func(t *testing.T) {
+		m, _ := tpSetupWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "IsHumanTurn")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRaiseRange")
+		m.On("IsHumanTurn").Return(true)
+		m.On("GetRaiseRange", 0).Return(2, 1, false)
+
+		assert.False(t, decode(t, m).CanRaise)
+	})
+
+	t.Run("cpu turn reports canRaise false", func(t *testing.T) {
+		m, _ := tpSetupWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "IsHumanTurn")
+		m.On("IsHumanTurn").Return(false)
+
+		assert.False(t, decode(t, m).CanRaise)
 	})
 }
 

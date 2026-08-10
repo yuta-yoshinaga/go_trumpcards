@@ -54,6 +54,7 @@ function makeState(overrides: Partial<RookResponse> = {}): RookResponse {
     nestCount: 5,
     nest: [],
     currentTrick: [],
+    playableIndices: [],
     teamScores: [0, 0],
     teamPoints: [0, 0],
     gameEndFlag: false,
@@ -266,5 +267,53 @@ describe('RookPage', () => {
     renderWithProviders(<RookPage />);
     fireEvent.click(await screen.findByTestId('nextround-button'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
+  });
+});
+
+// **追随は強制。**出せない札を押せてしまうと、拒否されて初めて義務に気づく (#4928)。
+describe('follow-suit restriction', () => {
+  it('dims and disables the cards that cannot legally be played', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 2, currentPlayerIdx: 0, playableIndices: [0, 2] }));
+    renderWithProviders(<RookPage />);
+
+    const playable = await screen.findByTestId('hand-card-0');
+    const blocked = screen.getByTestId('hand-card-1');
+    expect(playable).not.toBeDisabled();
+    expect(playable).not.toHaveAttribute('data-unplayable');
+    expect(blocked).toBeDisabled();
+    expect(blocked).toHaveAttribute('data-unplayable', 'true');
+    expect(screen.getByTestId('hand-card-2')).not.toBeDisabled();
+  });
+
+  it('leaves every card playable when the hand is void in the led suit', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 2, currentPlayerIdx: 0, playableIndices: [0, 1, 2] }));
+    renderWithProviders(<RookPage />);
+
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    for (const i of [0, 1, 2]) {
+      expect(screen.getByTestId(`hand-card-${i}`)).not.toBeDisabled();
+      expect(screen.getByTestId(`hand-card-${i}`)).not.toHaveAttribute('data-unplayable');
+    }
+  });
+
+  // **空リストは「一枚も出せない」ではなく「情報が無い」。**手番のプレイヤー
+  // には必ず合法手があるので、空で全部塞ぐと盤面が操作不能になる。
+  it('does not restrict anything when the server sent no list', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 2, currentPlayerIdx: 0, playableIndices: [] }));
+    renderWithProviders(<RookPage />);
+
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    for (const i of [0, 1, 2]) {
+      expect(screen.getByTestId(`hand-card-${i}`)).not.toBeDisabled();
+    }
+  });
+
+  // 交換フェーズは別の話。捨て札は自由に選べる。
+  it('does not restrict the exchange phase', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 1, currentPlayerIdx: 0, declarerIdx: 0, playableIndices: [] }));
+    renderWithProviders(<RookPage />);
+
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    expect(screen.getByTestId('hand-card-1')).not.toBeDisabled();
   });
 });

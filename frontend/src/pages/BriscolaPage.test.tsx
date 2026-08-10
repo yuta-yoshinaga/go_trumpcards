@@ -46,6 +46,10 @@ function makeState(overrides: Partial<BriscolaResponse> = {}): BriscolaResponse 
 }
 
 beforeEach(() => {
+  // ヒントのオン/オフは localStorage に残る。消さないと前のテストの状態を
+  // 引き継いで、以降のアサーションが何も確かめなくなる。
+  // (clear() だと初回訪問フラグまで消え、チュートリアル案内ダイアログが出る。)
+  localStorage.removeItem('hint_enabled_briscola');
   mockExec.mockResolvedValue(makeState());
 });
 
@@ -234,5 +238,32 @@ describe('BriscolaPage', () => {
     renderWithProviders(<BriscolaPage />);
     const hint = await screen.findByTestId('briscola-hint');
     expect(hint).toHaveTextContent('切り札でリードして主導権を握りましょう');
+  });
+
+  // **ヒントの窓口は1つ (#4753)。**バナーとツールチップはどちらも同じ
+  // `state.hint` から出ている (getBriscolaHint がそれを読んでいる) ので矛盾は
+  // しないが、要求すると同じ助言が2箇所に重複して出ていた。Cassino と同じく、
+  // 明示的に要求したサーバー側の答えを優先して片方に畳む。
+  it('hides the frontend hint tooltip while the server hint is shown', async () => {
+    localStorage.setItem('hint_enabled_briscola', 'true');
+    mockExec.mockResolvedValue(
+      makeState({ hint: { cardIndex: 2, reason: 'lead_trump' }, messageCode: 'briscola.hintRequested' }),
+    );
+    renderWithProviders(<BriscolaPage />);
+
+    await screen.findByTestId('briscola-hint');
+    expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
+  });
+
+  // 逆側。**同じ state.hint** を積んだまま messageCode だけ外すと、バナーは
+  // 出ずツールチップだけが残る -- 排他が「常にツールチップを消す」に退化して
+  // いないことを確かめる。
+  it('still shows the frontend hint tooltip when no server hint was requested', async () => {
+    localStorage.setItem('hint_enabled_briscola', 'true');
+    mockExec.mockResolvedValue(makeState({ hint: { cardIndex: 2, reason: 'lead_trump' } }));
+    renderWithProviders(<BriscolaPage />);
+
+    await screen.findByTestId('hint-tooltip');
+    expect(screen.queryByTestId('briscola-hint')).not.toBeInTheDocument();
   });
 });

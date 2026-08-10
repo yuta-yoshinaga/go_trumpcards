@@ -140,6 +140,13 @@ function TutePageContent() {
   const isGameEnd = state.phase === TutePhase.GAME_END || state.gameEndFlag;
 
   const canPlay = isPlayPhase && isHumanTurn;
+  // Rendered both during play (so a marriage is seen to score) and at round end.
+  const teamPointLines = (
+    <>
+      <div>{t('roundResult.teamA', { points: state.roundTeamPoints[0] })}</div>
+      <div>{t('roundResult.teamB', { points: state.roundTeamPoints[1] })}</div>
+    </>
+  );
   const humanTeam = humanIdx % 2;
   const trumpSymbol = SUIT_SYMBOLS[state.trumpSuit] ?? '?';
 
@@ -272,12 +279,26 @@ function TutePageContent() {
                   </div>
                 )}
 
+                {/* A marriage scores the moment it is declared, and the button even
+                    announces how much — but the total only appeared at round end,
+                    so the player could not see it land (#4722). */}
+                {(isPlayPhase || isTrickEnd) && (
+                  <div
+                    className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                    data-testid="tute-running-points"
+                    role="status"
+                    aria-live="polite"
+                  >
+                    <div className="mb-1 text-ds-text-primary">{t('roundResult.runningTitle')}</div>
+                    {teamPointLines}
+                  </div>
+                )}
+
                 {/* Round result */}
                 {(isRoundEnd || isGameEnd) && (
                   <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
                     <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
-                    <div>{t('roundResult.teamA', { points: state.roundTeamPoints[0] ?? 0 })}</div>
-                    <div>{t('roundResult.teamB', { points: state.roundTeamPoints[1] ?? 0 })}</div>
+                    {teamPointLines}
                   </div>
                 )}
               </div>

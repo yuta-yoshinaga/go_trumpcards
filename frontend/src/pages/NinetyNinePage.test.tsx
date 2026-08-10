@@ -378,6 +378,27 @@ describe('NinetyNinePage', () => {
     expect(screen.getByTestId('nn-server-hint')).toHaveTextContent('推奨カード: [1] (リードスートに追随)');
   });
 
+  // **埋めヒントには「適用」があるのに、プレイヒントは数字を出すだけだった
+  // (#4739)。**プレイヤーは [N] を見て手札から目視で探す必要があり、同じヒント
+  // なのに体験が非対称だった。
+  it('play-phase hint Apply selects the recommended card', async () => {
+    renderWithProviders(<NinetyNinePage />);
+    await waitFor(() => expect(screen.getByTestId('nn-hint-button')).toBeInTheDocument());
+
+    mockExec.mockResolvedValueOnce({ ...playPhaseState, hint: { cardIndex: 1, reason: 'follow_suit' } });
+    fireEvent.click(screen.getByTestId('nn-hint-button'));
+    await waitFor(() => expect(screen.getByTestId('nn-hint-apply-play')).toBeInTheDocument());
+
+    // 適用前は何も選択されていない = 出すボタンは押せない。
+    const play = screen.getByRole('button', { name: 'カードを出す' });
+    expect(play).toBeDisabled();
+
+    fireEvent.click(screen.getByTestId('nn-hint-apply-play'));
+
+    // 適用すると推奨カードが選択され、そのまま出せる状態になる。
+    expect(play).not.toBeDisabled();
+  });
+
   it('bid-phase hint shows the bury recommendation and Apply selects those three cards', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<NinetyNinePage />);

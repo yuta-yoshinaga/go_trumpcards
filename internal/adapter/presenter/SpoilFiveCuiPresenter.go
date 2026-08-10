@@ -92,6 +92,10 @@ func (p *SpoilFiveCuiPresenter) Output(g interfaces.SpoilFiveGame, lastErr error
 			b.WriteString(i18n.Tf("spoilfive.promptPlay",
 				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
 			b.WriteString(i18n.T("spoilfive.promptPlayHelp") + "\n")
+			// **固定序列が Spoil Five の核心ルール (#4765)。**Web は折りたたみ
+			// パネルで常時出しているのに、CUI は切り札の記号を出すだけで、
+			// 「なぜこのカードで負けたか」がルールブック無しには分からなかった。
+			writeSpoilFiveTopTrumps(b, g)
 		case domain.SpoilFivePhaseTrickEnd:
 			b.WriteString(i18n.T("spoilfive.promptTrickEnd") + "\n")
 			b.WriteString(i18n.T("spoilfive.promptTrickEndHelp") + "\n")
@@ -147,4 +151,18 @@ var spoilFiveHintReasonKeys = map[string]string{
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *SpoilFiveCuiPresenter) ActionLogOutput(g interfaces.SpoilFiveGame) string {
 	return actionLogOutputText(g)
+}
+
+// writeSpoilFiveTopTrumps は固定序列を強い順に1行で書く。
+func writeSpoilFiveTopTrumps(b *strings.Builder, g interfaces.SpoilFiveGame) {
+	tops := g.GetTopTrumps()
+	if len(tops) == 0 {
+		return
+	}
+	parts := make([]string, len(tops))
+	for i, c := range tops {
+		parts[i] = cuiCardStr(c)
+	}
+	b.WriteString(i18n.Tf("spoilfive.topTrumpLine",
+		"cards", strings.Join(parts, " > ")) + "\n")
 }

@@ -958,4 +958,14 @@ describe('BakersGamePage', () => {
       expect(cardButton).toHaveAttribute('aria-pressed', 'true');
     });
   });
+
+  it('states the same-suit tableau rule outside the tutorial', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BakersGamePage />);
+    // Anyone who skipped the tutorial would otherwise play it as Free Cell.
+    const rule = await screen.findByTestId('bg-tableau-rule');
+    expect(rule.textContent).toMatch(/同じスート/);
+  });
 });

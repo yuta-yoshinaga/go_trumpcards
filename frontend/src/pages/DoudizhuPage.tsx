@@ -335,7 +335,14 @@ function DoudizhuPageContent() {
               )}
               {phase === 'play' && isHumanTurn && (
                 <div className="flex justify-center gap-2 mt-2">
-                  <button type="button" className={btnPrimary} onClick={handlePlay} disabled={selectedCards.size === 0}>
+                  {/* selectionHint has already decided this selection is illegal, so
+                      sending it only to be rejected wastes a round trip (#4754). */}
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handlePlay}
+                    disabled={selectedCards.size === 0 || selectionHint?.reason != null}
+                  >
                     {t('button.play')}
                   </button>
                   {state.tableCards.length > 0 && (

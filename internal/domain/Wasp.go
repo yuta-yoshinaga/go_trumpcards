@@ -63,9 +63,9 @@ type Wasp struct {
 	completedSuits int
 	phase          WaspPhase
 	moveCount      int
-	actionLog      []*ActionLogEntry
-	history        []*waspSnapshot
-	isStalemate    bool
+	actionLogBase
+	history     []*waspSnapshot
+	isStalemate bool
 }
 
 // waspSnapshot アンドゥ用スナップショット
@@ -353,25 +353,12 @@ func (s *Wasp) CanUndo() bool {
 
 // UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。膠着状態でなければ0、脱出不可なら-1。
 func (s *Wasp) UndoToEscape() int {
-	if !s.isStalemate {
-		return 0
-	}
-	for i := len(s.history) - 1; i >= 0; i-- {
-		if !s.history[i].isStalemate {
-			return len(s.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(s.isStalemate, s.history, func(s *waspSnapshot) bool { return s.isStalemate })
 }
 
 // UndoN n回連続でアンドゥを実行する。
 func (s *Wasp) UndoN(n int) error {
-	for i := range n {
-		if err := s.Undo(); err != nil {
-			return fmt.Errorf("undo step %d failed: %w", i+1, err)
-		}
-	}
-	return nil
+	return undoN(s, n)
 }
 
 // --- State getters/setters ---
@@ -393,9 +380,6 @@ func (s *Wasp) GetTableau() [WaspTableauCnt][]*KlondikeTableauCard { return s.ta
 
 // GetCompletedSuits 完成スート数取得
 func (s *Wasp) GetCompletedSuits() int { return s.completedSuits }
-
-// GetActionLog 棋譜取得
-func (s *Wasp) GetActionLog() []*ActionLogEntry { return s.actionLog }
 
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (s *Wasp) GetGameEndFlag() bool { return s.phase != WaspPhasePlaying }
@@ -469,10 +453,7 @@ func (s *Wasp) checkAndRemoveCompletedSuit(col int) bool {
 
 // autoFlipTableau タブローの最上部の裏カードを自動フリップ
 func (s *Wasp) autoFlipTableau(col int) {
-	cards := s.tableau[col]
-	if len(cards) > 0 && !cards[len(cards)-1].FaceUp {
-		cards[len(cards)-1].FaceUp = true
-	}
+	autoFlipTopCard(s.tableau[col])
 }
 
 // checkGameClear ゲームクリア判定
@@ -525,13 +506,7 @@ func (s *Wasp) restoreSnapshot(snap *waspSnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (s *Wasp) appendLog(actionType, detail string, cards []*Card) {
-	s.actionLog = append(s.actionLog, &ActionLogEntry{
-		TurnNumber: s.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	s.appendLogAt(s.moveCount, 0, actionType, detail, cards)
 }
 
 // waspJSON is the JSON wire format for Wasp.

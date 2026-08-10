@@ -21,6 +21,10 @@ func (_m *MockAccordionInteractor) Move(fromIdx, toIdx int) string {
 	return ret.Get(0).(string)
 }
 
+func (_m *MockAccordionInteractor) AutoComplete() string {
+	return _m.Called().String(0)
+}
+
 func (_m *MockAccordionInteractor) GiveUp() string {
 	ret := _m.Called()
 	return ret.Get(0).(string)

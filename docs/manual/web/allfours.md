@@ -1,4 +1,4 @@
-# All Fours / Seven Up (Web版) 遊び方
+# オールフォーズ（Web版）遊び方
 
 ## ゲーム概要
 

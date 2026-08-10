@@ -65,7 +65,7 @@ type Scopone struct {
 	gameEndFlag     bool
 	winnerTeam      int // -1: 未確定
 	lastRoundDetail *ScoponeScoreDetail
-	actionLog       []*ActionLogEntry
+	actionLogBase
 }
 
 // NewScopone コンストラクタ
@@ -316,12 +316,7 @@ func (s *Scopone) removeTableCardsByIndex(idxs []int) {
 
 // allHandsEmpty 全プレイヤーの手札が空か。
 func (s *Scopone) allHandsEmpty() bool {
-	for _, p := range s.players {
-		if p.GetCardsSize() > 0 {
-			return false
-		}
-	}
-	return true
+	return allHandsEmpty(s.players)
 }
 
 // --- CPU ---
@@ -419,10 +414,7 @@ func (s *Scopone) GetPlayerCnt() int { return len(s.players) }
 
 // GetPlayer プレイヤー取得
 func (s *Scopone) GetPlayer(i int) *ScopaPlayer {
-	if i < 0 || i >= len(s.players) {
-		return nil
-	}
-	return s.players[i]
+	return getPlayer(s.players, i)
 }
 
 // GetConfig 設定取得
@@ -430,9 +422,6 @@ func (s *Scopone) GetConfig() ScoponeConfig { return s.config }
 
 // SetConfig 設定変更
 func (s *Scopone) SetConfig(cfg ScoponeConfig) { s.config = cfg }
-
-// GetActionLog 棋譜取得
-func (s *Scopone) GetActionLog() []*ActionLogEntry { return s.actionLog }
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (s *Scopone) IsHumanTurn() bool {
@@ -452,16 +441,6 @@ func (s *Scopone) GetValidCaptures(handIdx int) [][]int {
 		return nil
 	}
 	return EnumerateScopaCaptures(p.GetCard(handIdx), s.tableCards)
-}
-
-func (s *Scopone) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	s.actionLog = append(s.actionLog, &ActionLogEntry{
-		TurnNumber: len(s.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- JSON ---

@@ -206,6 +206,7 @@ function SixCardGolfPageContent() {
                     faceDownLabel={t('gridSlotFaceDownAria', { pos: sIdx + 1 })}
                     cardWidth={cardWidth}
                     isHumanGrid={player.isHuman}
+                    hinted={hintEnabled && player.isHuman && hint?.targetPos === sIdx}
                     phase={phase}
                     canFlip={state.canFlip}
                     isHumanTurn={isHumanTurn}
@@ -339,6 +340,7 @@ function GridSlotButton({
   faceDownLabel,
   cardWidth,
   isHumanGrid,
+  hinted,
   phase,
   canFlip,
   isHumanTurn,
@@ -351,6 +353,7 @@ function GridSlotButton({
   faceDownLabel: string;
   cardWidth: number;
   isHumanGrid: boolean;
+  hinted: boolean;
   phase: number;
   canFlip: boolean;
   isHumanTurn: boolean;
@@ -377,11 +380,15 @@ function GridSlotButton({
   return (
     <button
       type="button"
-      className={`relative flex items-center justify-center rounded transition-all ${
+      className={[
+        'relative flex items-center justify-center rounded transition-all',
         clickable
           ? `cursor-pointer ring-2 ring-ds-warning hover:ring-ds-warning-hover ${focusRingWhite}`
-          : 'cursor-default'
-      }`}
+          : 'cursor-default',
+        // 押せる枠より強い印にする。
+        hinted ? 'ring-4 ring-ds-accent' : '',
+      ].join(' ')}
+      data-hinted={hinted ? 'true' : undefined}
       style={{ width: cardWidth + 8 }}
       onClick={handleClick}
       disabled={!clickable}

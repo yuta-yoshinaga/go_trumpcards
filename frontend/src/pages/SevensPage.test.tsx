@@ -1748,4 +1748,14 @@ describe('SevensPage', () => {
     const btn = await screen.findByRole('button', { name: 'パス' });
     expect(btn.textContent).toBe('パス');
   });
+
+  it('names each board cell with its suit and slot state', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(humanTurnState);
+    renderWithProviders(<SevensPage />);
+    // Suit naming follows the board's existing placeAriaLabel (suitName, not the glyph).
+    await waitFor(() => expect(screen.getAllByLabelText(/^SPADE \S+ (空き|配置済み)$/).length).toBeGreaterThan(0));
+    expect(screen.getAllByLabelText(/^SPADE の列$/).length).toBe(1);
+  });
 });

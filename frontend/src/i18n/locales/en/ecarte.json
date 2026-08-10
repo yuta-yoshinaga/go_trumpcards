@@ -82,5 +82,10 @@
     "actions": "In the Exchange phase the elder (non-dealer) chooses Propose or Stand; if proposed, the dealer Accepts or Refuses. After accepting, each player discards any number of cards and draws replacements, repeating until the stock empties. Then 5 tricks are played: 3+ tricks scores 1 point, all 5 (Vole) scores 2. Press Next Deal between deals and games."
   },
   "hintRequested": "Hint available",
-  "noHint": "No hint available"
+  "noHint": "No hint available",
+  "action.propose": "propose exchange",
+  "action.stand": "play it out",
+  "action.accept": "accept the proposal",
+  "action.refuse": "refuse the proposal",
+  "action.discard": "choose cards to discard"
 }

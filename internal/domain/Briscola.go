@@ -102,7 +102,7 @@ type Briscola struct {
 	playerPoints     []int
 	gameEndFlag      bool
 	winnerIdx        int // -1: 未確定または引き分け
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewBriscola コンストラクタ
@@ -216,7 +216,7 @@ func (b *Briscola) ResolveTrick() {
 	b.playerPoints[winnerIdx] += trickPoints
 
 	b.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (%d pt)", b.playerName(winnerIdx), b.trickNumber, trickPoints),
+		fmt.Sprintf("%s wins trick %d (%d pt)", playerName(b.players, winnerIdx), b.trickNumber, trickPoints),
 		trickCards)
 
 	b.leadPlayerIdx = winnerIdx
@@ -295,10 +295,7 @@ func (b *Briscola) GetPlayerCnt() int { return len(b.players) }
 
 // GetPlayer プレイヤー取得
 func (b *Briscola) GetPlayer(i int) *BriscolaPlayer {
-	if i < 0 || i >= len(b.players) {
-		return nil
-	}
-	return b.players[i]
+	return getPlayer(b.players, i)
 }
 
 // GetPlayerPoints プレイヤーの累積得点取得
@@ -336,10 +333,7 @@ func (b *Briscola) GetStockRemaining() int {
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (b *Briscola) IsHumanTurn() bool {
-	if b.currentPlayerIdx < 0 || b.currentPlayerIdx >= len(b.players) {
-		return false
-	}
-	return b.players[b.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(b.players, b.currentPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -347,9 +341,6 @@ func (b *Briscola) GetConfig() BriscolaConfig { return b.config }
 
 // SetConfig 設定変更
 func (b *Briscola) SetConfig(cfg BriscolaConfig) { b.config = cfg }
-
-// GetActionLog 棋譜取得
-func (b *Briscola) GetActionLog() []*ActionLogEntry { return b.actionLog }
 
 // GetValidPlayIndices プレイ可能なカードのインデックスリストを返す。
 // Briscola には must-follow 制約がないため、現在の手札全てが対象。
@@ -414,7 +405,7 @@ func (b *Briscola) playCard(playerIdx int, card *Card) {
 		Card:      card,
 	})
 	b.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", b.playerName(playerIdx), cardStr(card)),
+		fmt.Sprintf("%s plays %s", playerName(b.players, playerIdx), cardStr(card)),
 		[]*Card{card})
 
 	if len(b.currentTrick) == BriscolaPlayerCnt {
@@ -496,25 +487,12 @@ func (b *Briscola) drawReplenish() {
 
 // drawOne 山札またはトランプカードから 1 枚引く。優先順位は山札 → トランプカード。
 func (b *Briscola) drawOne() *Card {
-	if c := b.trumpCards.DrawCard(); c != nil {
-		return c
-	}
-	if b.trumpCard != nil {
-		c := b.trumpCard
-		b.trumpCard = nil
-		return c
-	}
-	return nil
+	return drawOrTakeTrump(b.trumpCards, &b.trumpCard)
 }
 
 // allHandsEmpty 全プレイヤーの手札が空かを返す
 func (b *Briscola) allHandsEmpty() bool {
-	for _, p := range b.players {
-		if p.GetCardsSize() > 0 {
-			return false
-		}
-	}
-	return true
+	return allHandsEmpty(b.players)
 }
 
 // finishGame ゲームを終了させ、勝者を決定する
@@ -541,9 +519,7 @@ func BriscolaDetermineWinner(p0, p1 int) int {
 
 // sortAllHands 全プレイヤーの手札をソートする
 func (b *Briscola) sortAllHands() {
-	for _, p := range b.players {
-		b.sortHand(p)
-	}
+	sortEachHand(b.players, b.sortHand)
 }
 
 // sortHand プレイヤーの手札をスート (トランプ最後) → ブリスコラ順位 でソートする
@@ -559,28 +535,6 @@ func (b *Briscola) sortHand(p *BriscolaPlayer) {
 			return ci.GetDesign() < cj.GetDesign()
 		}
 		return BriscolaRankOrder(ci) < BriscolaRankOrder(cj)
-	})
-}
-
-// playerName プレイヤー名を返す (ログ用)
-func (b *Briscola) playerName(idx int) string {
-	if idx < 0 || idx >= len(b.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if b.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜エントリを追加する
-func (b *Briscola) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	b.actionLog = append(b.actionLog, &ActionLogEntry{
-		TurnNumber: len(b.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
 	})
 }
 

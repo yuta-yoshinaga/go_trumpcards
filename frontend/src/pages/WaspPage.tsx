@@ -31,7 +31,7 @@ import { useMountReset } from '../hooks/useMountReset';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnOutline, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { WaspResponse } from '../types/card';
+import type { KlondikeTableauCard, WaspResponse } from '../types/card';
 import { WaspPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
@@ -79,8 +79,49 @@ const SCORPION_HELP = [
   'h              Hint',
   'ac             Auto-complete',
   'u              Undo',
+  "legal <col>    List the columns that column's top card may move onto",
   'r              Reset',
 ];
+
+/**
+ * Answer `legal <col>` from the state the page already holds (#4792).
+ *
+ * The native CUI has this command; the CLI terminal rejected it as unknown.
+ * **空き列も移動先として並べる。**Wasp では空き列はどのカードでも受け入れる
+ * ので、ページのハイライト用 `waspLegalTargets` (空き列を除く) をそのまま
+ * 流用すると、実際には打てる手を「無い」と答えてしまう。
+ */
+function waspLegalCommand(input: string, tableau: KlondikeTableauCard[][] | undefined): string | null {
+  const parts = input.trim().split(/\s+/);
+  if (parts[0]?.toLowerCase() !== 'legal') return null;
+  if (!tableau) return 'No game in progress';
+  const col = Number.parseInt(parts[1] ?? '', 10);
+  if (Number.isNaN(col) || col < 0 || col >= tableau.length) return 'Usage: legal <col>';
+
+  const from = tableau[col];
+  const top = from?.[from.length - 1];
+  if (!top?.faceUp || !top.card) return `Column ${col} has no movable card`;
+
+  const targets: string[] = [];
+  tableau.forEach((other, idx) => {
+    if (idx === col) return;
+    if (other.length === 0) {
+      targets.push(`${idx} (empty)`);
+      return;
+    }
+    const otherTop = other[other.length - 1];
+    if (
+      otherTop?.faceUp &&
+      otherTop.card &&
+      otherTop.card.design === top.card?.design &&
+      otherTop.card.value === (top.card?.value ?? 0) + 1
+    ) {
+      targets.push(`${idx}`);
+    }
+  });
+  if (targets.length === 0) return `No legal target for column ${col}`;
+  return `Column ${col} can move onto: ${targets.join(', ')}`;
+}
 
 /** Parse a Wasp CLI command into API call arguments. */
 function parseWaspCommand(input: string): { args: Parameters<typeof waspApi.exec> } | { error: string } {
@@ -193,8 +234,11 @@ function WaspPageContent() {
       parseCommand: parseWaspCommand,
       formatResponse: formatWaspState,
       helpText: SCORPION_HELP,
+      localCommand: (input: string) => waspLegalCommand(input, state?.tableau),
     }),
-    [],
+    // **state を deps に入れる。**`[]` のままだと初回レンダーの state
+    // (undefined) を掴んだままになり、legal がいつまでも盤面を見られない。
+    [state],
   );
   const { handleCommand } = useCliGame(apiCall, waspCliConfig, state, { addInput, addOutput, addError, clearLog });
 
@@ -417,11 +461,13 @@ function WaspPageContent() {
                         const isDragSrc = dnd.isDragSource(zone);
                         const isLast = cardIdx === col.length - 1;
 
-                        const hintFrom =
-                          state.hint && state.hint.fromCol === colIdx && state.hint.cardIndex === cardIdx;
                         // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回
                         // ヒントを載せるので、`state.hint` を直接読むと常時ハイライトになる (#4605)。
+                        // 移動元も同じゲートを通す — 通していなかったので #4605 が片側だけ
+                        // 再発していた (#4791)。
                         const requestedHint = isRequestedHint(state) ? state.hint : undefined;
+                        const hintFrom =
+                          requestedHint && requestedHint.fromCol === colIdx && requestedHint.cardIndex === cardIdx;
                         const hintTo = requestedHint && requestedHint.toCol === colIdx && isLast;
 
                         return (

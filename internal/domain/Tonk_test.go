@@ -809,3 +809,71 @@ func TestTonk_Setters(t *testing.T) {
 	g.SetKnockerIdx(0)
 	assert.Equal(t, 0, g.GetKnockerIdx())
 }
+
+// **計算を1箇所に寄せた (#4750)。**CPU の判断 (cpuDiscardOrKnock) と CUI の表示
+// (tonkBestDeadwood) が別々に同じループを持っており、Web にも3つ目を書く寸前だった。
+// TonkKnockThreshold と比べる値なので、実装が割れると「ノック可能と表示したのに
+// 弾かれる」ずれになる。
+func TestTonk_GetBestDeadwood(t *testing.T) {
+	newGame := func(t *testing.T, cards []*domain.Card) *domain.Tonk {
+		t.Helper()
+		g := domain.NewDefaultTonk()
+		g.Reset()
+		p := g.GetPlayer(0)
+		for p.GetCardsSize() > 0 {
+			p.RemoveCard(0)
+		}
+		for _, c := range cards {
+			p.AddCard(c)
+		}
+		return g
+	}
+
+	t.Run("a run plus one stray discards the stray for zero deadwood", func(t *testing.T) {
+		g := newGame(t, []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 1, false),
+			domain.NewCard(domain.CardDesignSpade, 2, false),
+			domain.NewCard(domain.CardDesignSpade, 3, false),
+			domain.NewCard(domain.CardDesignDiamond, 4, false),
+		})
+		best, idx := g.GetBestDeadwood(0)
+		if best != 0 {
+			t.Errorf("best = %d, want 0 (ランを残して端を捨てる)", best)
+		}
+		if idx != 3 {
+			t.Errorf("discardIdx = %d, want 3 (捨てるべきは孤立札)", idx)
+		}
+		if best > domain.TonkKnockThreshold {
+			t.Errorf("この手はノック可能のはず")
+		}
+	})
+
+	t.Run("scattered high cards stay above the knock threshold", func(t *testing.T) {
+		g := newGame(t, []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 13, false),
+			domain.NewCard(domain.CardDesignHeart, 11, false),
+			domain.NewCard(domain.CardDesignClover, 9, false),
+			domain.NewCard(domain.CardDesignDiamond, 7, false),
+		})
+		best, _ := g.GetBestDeadwood(0)
+		if best <= domain.TonkKnockThreshold {
+			t.Errorf("best = %d: 役なしの高札なので閾値 %d を超えるはず",
+				best, domain.TonkKnockThreshold)
+		}
+	})
+
+	t.Run("an empty hand is zero, not negative", func(t *testing.T) {
+		g := newGame(t, nil)
+		best, idx := g.GetBestDeadwood(0)
+		if best != 0 || idx != -1 {
+			t.Errorf("GetBestDeadwood = (%d, %d), want (0, -1)", best, idx)
+		}
+	})
+
+	t.Run("an out-of-range player does not panic", func(t *testing.T) {
+		g := newGame(t, nil)
+		if best, idx := g.GetBestDeadwood(99); best != 0 || idx != -1 {
+			t.Errorf("GetBestDeadwood(99) = (%d, %d), want (0, -1)", best, idx)
+		}
+	})
+}

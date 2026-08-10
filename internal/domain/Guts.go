@@ -109,7 +109,7 @@ type gutsState struct {
 	result         GutsResult
 	gameEndFlag    bool
 	scored         bool // ラウンド結果を確定済みか (二重確定防止)
-	actionLog      []*ActionLogEntry
+	actionLogBase
 }
 
 // Guts はガッツの状態を保持する集約ルート。
@@ -131,7 +131,7 @@ func NewGuts(trumpCards *TrumpCards, players []*GutsPlayer, config GutsConfig) *
 			winnerIdx:      -1,
 			matchWinnerIdx: -1,
 			matchers:       make([]int, 0),
-			actionLog:      make([]*ActionLogEntry, 0),
+			actionLogBase:  actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 		},
 	}
 }
@@ -166,7 +166,7 @@ func (g *Guts) Reset() {
 		winnerIdx:      -1,
 		matchWinnerIdx: -1,
 		matchers:       make([]int, 0),
-		actionLog:      make([]*ActionLogEntry, 0),
+		actionLogBase:  actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 	}
 	g.startRound()
 }
@@ -289,7 +289,7 @@ func (g *Guts) settle() {
 		g.state.carryCount = 0
 		g.players[winner].AddChips(g.state.pot)
 		g.appendLog(winner, "win",
-			fmt.Sprintf("%s wins the pot (%d)", g.playerName(winner), g.state.pot), nil)
+			fmt.Sprintf("%s wins the pot (%d)", playerName(g.players, winner), g.state.pot), nil)
 		// 勝者以外の「イン」プレイヤーはポット額をマッチして次ラウンドの種銭に積む。
 		for _, idx := range inPlayers {
 			if idx == winner {
@@ -301,7 +301,7 @@ func (g *Guts) settle() {
 			g.state.carryPot += pay
 			g.state.matchers = append(g.state.matchers, idx)
 			g.appendLog(idx, "match",
-				fmt.Sprintf("%s matches the pot (pays %d)", g.playerName(idx), pay), nil)
+				fmt.Sprintf("%s matches the pot (pays %d)", playerName(g.players, idx), pay), nil)
 		}
 		g.setHumanResult(winner)
 	}
@@ -340,7 +340,7 @@ func (g *Guts) endGame() {
 	g.state.phase = GutsPhaseResult
 	g.state.matchWinnerIdx = g.richestIdx()
 	g.appendLog(g.state.matchWinnerIdx, "game_end",
-		fmt.Sprintf("%s wins the game", g.playerName(g.state.matchWinnerIdx)), nil)
+		fmt.Sprintf("%s wins the game", playerName(g.players, g.state.matchWinnerIdx)), nil)
 }
 
 // --- 手役評価 (インライン) ---
@@ -429,35 +429,12 @@ func (g *Guts) inPlayers() []int {
 
 // solventCount はアンティを払える (非脱落かつチップ >= アンティ) プレイヤー数を返す。
 func (g *Guts) solventCount() int {
-	n := 0
-	for _, p := range g.players {
-		if !p.GetOut() && p.GetChips() >= g.config.Ante {
-			n++
-		}
-	}
-	return n
+	return countPlayers(g.players, func(p *GutsPlayer) bool { return !p.GetOut() && p.GetChips() >= g.config.Ante })
 }
 
 // richestIdx はチップが最多のプレイヤーのインデックスを返す (同数は座席番号の小さい方)。
 func (g *Guts) richestIdx() int {
-	best := 0
-	for i, p := range g.players {
-		if p.GetChips() > g.players[best].GetChips() {
-			best = i
-		}
-	}
-	return best
-}
-
-// playerName は表示用のプレイヤー名を返す。
-func (g *Guts) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
+	return maxIndexBy(g.players, func(p *GutsPlayer) int { return p.GetChips() })
 }
 
 // gutsDeclareText は宣言の棋譜テキストを返す。
@@ -470,13 +447,7 @@ func gutsDeclareText(idx int, stay bool) string {
 }
 
 func (g *Guts) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.state.actionLog = append(g.state.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.state.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.state.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // --- Hint ---
@@ -553,18 +524,12 @@ func (g *Guts) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer は指定インデックスのプレイヤーを返す。
 func (g *Guts) GetPlayer(i int) *GutsPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetChips は人間 (seat 0) の保有チップを返す。
 func (g *Guts) GetChips() int {
-	if len(g.players) == 0 {
-		return 0
-	}
-	return g.players[0].GetChips()
+	return chipsOfFirst(g.players)
 }
 
 // GetConfig はローカルルール設定を返す。
@@ -687,7 +652,7 @@ func (g *Guts) UnmarshalJSON(data []byte) error {
 		result:         j.Result,
 		gameEndFlag:    j.GameEndFlag,
 		scored:         j.Scored,
-		actionLog:      j.ActionLog,
+		actionLogBase:  actionLogBase{actionLog: j.ActionLog},
 	}
 	if g.state.matchers == nil {
 		g.state.matchers = make([]int, 0)

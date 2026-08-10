@@ -42,6 +42,7 @@ function makeState(overrides: Partial<CatchTenResponse> = {}): CatchTenResponse 
     gameEndFlag: false,
     winnerTeam: -1,
     leadPlayerIdx: 0,
+    validPlayIndices: [],
     message: '',
     config: { cpuDifficulty: 1, pointLimit: 41 },
     ...overrides,
@@ -184,5 +185,34 @@ describe('CatchTenPage', () => {
     mockExec.mockResolvedValueOnce(makeState({ hint: { cardIndex: 0, reason: 'lead_strong' } }));
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
     await waitFor(() => expect(screen.getByText(/♠ A/)).toBeInTheDocument());
+  });
+
+  // ドメインは合法手を判定済み (GetValidPlayIndices は「Web用」と明記) なのに、
+  // 画面が使っていなかった。フォロースートに反する札もクリックでき、サーバーの
+  // エラーが返って初めて出せないと分かる状態だった。
+  it('dims the cards that follow-suit forbids on the human play turn', async () => {
+    // 手札は SPADE A / HEART 5 / DIAMOND 9。合法なのは index 1 だけ。
+    mockExec.mockResolvedValue(makeState({ phase: 0, currentPlayerIdx: 0, validPlayIndices: [1] }));
+    renderWithProviders(<CatchTenPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    const cards = screen.getAllByRole('button').filter((b) => b.hasAttribute('aria-pressed'));
+    expect(cards).toHaveLength(3);
+    expect(cards[0]).toHaveAttribute('aria-disabled', 'true');
+    expect(cards[1]).not.toHaveAttribute('aria-disabled', 'true');
+    expect(cards[2]).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  // 空を「制限なし」と読まない。CPU の手番では制限そのものを送っていない。
+  it('leaves every card enabled when it is not the human turn', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 0, currentPlayerIdx: 1, validPlayIndices: [] }));
+    renderWithProviders(<CatchTenPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    const cards = screen.getAllByRole('button').filter((b) => b.hasAttribute('aria-pressed'));
+    expect(cards).toHaveLength(3);
+    for (const c of cards) {
+      expect(c).not.toHaveAttribute('aria-disabled', 'true');
+    }
   });
 });

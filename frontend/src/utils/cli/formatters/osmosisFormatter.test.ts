@@ -4,6 +4,7 @@ import { formatOsmosisState } from './osmosisFormatter';
 
 function makeState(overrides?: Partial<OsmosisResponse>): OsmosisResponse {
   return {
+    isStalemate: false,
     reserve: [[], [], [], []],
     stockCount: 0,
     waste: [],

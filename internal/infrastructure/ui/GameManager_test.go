@@ -354,3 +354,32 @@ func TestGameRegistry_AllConstructorsNonNil(t *testing.T) {
 		assert.NotNil(t, entry.NewCui, "NewCui must not be nil for %q", entry.Name)
 	}
 }
+
+// BindCuiFor must not build the interactor until the game is actually started.
+// gameRegistry is a package-level var, so an eager call would construct all 264
+// games' domain state at process start rather than when one is played. See #5187.
+func TestBindCuiFor_DoesNotBuildInteractorUntilNewCui(t *testing.T) {
+	built := 0
+	entry := BindCuiFor("probe",
+		func() CuiExecer {
+			built++
+			return stubExecer{}
+		},
+		func(e CuiExecer) CuiExecer { return e },
+		CuiHelpSpec{Body: []string{"help"}},
+	)
+
+	assert.Equal(t, "probe", entry.Name)
+	assert.Equal(t, 0, built, "registration must not construct the interactor")
+
+	g := entry.NewCui()
+	assert.Equal(t, 1, built, "NewCui must construct it exactly once")
+	assert.Equal(t, []string{"help"}, g.HelpLines())
+
+	entry.NewCui()
+	assert.Equal(t, 2, built, "each NewCui call gets a fresh game")
+}
+
+type stubExecer struct{}
+
+func (stubExecer) Exec(string) string { return "" }

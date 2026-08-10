@@ -81,7 +81,7 @@ type Tute struct {
 	roundTeamPts     [TuteTeamCnt]int        // 現ラウンドの得点 (カード+結婚+最終)
 	gameEndFlag      bool
 	winnerTeam       int // -1=未確定
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewTute コンストラクタ
@@ -240,7 +240,7 @@ func (g *Tute) applyMarriage(playerIdx, suit int) {
 	team := TuteTeamOf(playerIdx)
 	g.roundTeamPts[team] += pts
 	g.appendLog(playerIdx, "marriage",
-		fmt.Sprintf("%s declares a %s marriage (+%d)", g.playerName(playerIdx), suitStr(suit), pts), nil)
+		fmt.Sprintf("%s declares a %s marriage (+%d)", playerName(g.players, playerIdx), suitStr(suit), pts), nil)
 }
 
 // hasTute プレイヤーが 4 枚の K または 4 枚の Q を持つか。
@@ -255,7 +255,7 @@ func (g *Tute) applyTute(playerIdx int) {
 	g.winnerTeam = team
 	g.phase = TutePhaseGameEnd
 	g.appendLog(playerIdx, "tute",
-		fmt.Sprintf("%s declares TUTE! Team %s wins the game!", g.playerName(playerIdx), teamName(team)), nil)
+		fmt.Sprintf("%s declares TUTE! Team %s wins the game!", playerName(g.players, playerIdx), teamName(team)), nil)
 }
 
 // CpuPlay 現在の手番が CPU の場合に 1 ターン実行する。
@@ -291,7 +291,7 @@ func (g *Tute) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Tute) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == TutePlayerCnt {
 		g.phase = TutePhaseTrickEnd
@@ -321,7 +321,7 @@ func (g *Tute) ResolveTrick() {
 		bonus = fmt.Sprintf(" +%d last", TuteLastTrickBonus)
 	}
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (+%d%s)", g.playerName(winnerIdx), g.trickNumber, pts, bonus), trickCards)
+		fmt.Sprintf("%s wins trick %d (+%d%s)", playerName(g.players, winnerIdx), g.trickNumber, pts, bonus), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	// Keep currentTrick intact through TrickEnd so the resolved trick stays
@@ -372,25 +372,7 @@ func (g *Tute) ScoreRound() {
 
 // validatePlay マストフォロー (リードスートに従う) を検証する。
 func (g *Tute) validatePlay(playerIdx int, card *Card) error {
-	if len(g.currentTrick) == 0 {
-		return nil
-	}
-	leadSuit := g.currentTrick[0].Card.GetDesign()
-	if card.GetDesign() != leadSuit && g.playerHasSuit(playerIdx, leadSuit) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
-	}
-	return nil
-}
-
-// playerHasSuit プレイヤーが指定スートのカードを持っているか。
-func (g *Tute) playerHasSuit(playerIdx, design int) bool {
-	p := g.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return validateFollowSuit(g.currentTrick, g.players, playerIdx, card)
 }
 
 // trickWinner トリックの勝者を決定する。切り札があれば最強切り札、なければ
@@ -426,10 +408,7 @@ func (g *Tute) tuteRank(card *Card) int {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す。
 func (g *Tute) getValidPlayIndices(playerIdx int) []int {
-	player := g.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return g.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(g.players[playerIdx], func(c *Card) bool { return g.validatePlay(playerIdx, c) == nil })
 }
 
 // --- Card helpers ---
@@ -529,25 +508,9 @@ func tuteSortHand(p *TutePlayer) {
 	}
 }
 
-// playerName プレイヤー名を返す。
-func (g *Tute) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
 // indexOfPlayerInTrick currentTrick 内で playerIdx の札の位置を返す (-1=なし)。
 func (g *Tute) indexOfPlayerInTrick(playerIdx int) int {
-	for i, tc := range g.currentTrick {
-		if tc.PlayerIdx == playerIdx {
-			return i
-		}
-	}
-	return -1
+	return indexOfPlayerInTrick(g.currentTrick, playerIdx)
 }
 
 // trickTopRank 現在のトリック勝者 winnerIdx の札のランクを返す。見つからない場合は極小値。
@@ -557,27 +520,6 @@ func (g *Tute) trickTopRank(winnerIdx int) int {
 		return -1 << 30
 	}
 	return g.tuteRank(g.currentTrick[idx].Card)
-}
-
-// findHumanIdx 人間プレイヤーのインデックス (-1=なし)。
-func (g *Tute) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
-// appendLog 棋譜にエントリを追加する。
-func (g *Tute) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- CPU AI ---
@@ -616,7 +558,7 @@ func (g *Tute) cpuPlaySmart(playerIdx int, valid []int) int {
 	player := g.players[playerIdx]
 	if len(g.currentTrick) == 0 {
 		// リード: 得点・強さの低い札を温存。
-		return g.minBy(player, valid, func(c *Card) int {
+		return pickLowest(player, valid, func(c *Card) int {
 			return tuteCardPoints(c.GetValue())*100 + tuteStrength(c.GetValue())
 		})
 	}
@@ -638,14 +580,14 @@ func (g *Tute) cpuPlaySmart(playerIdx int, valid []int) int {
 	if len(follows) == 0 {
 		if partnerWinning {
 			// 味方が勝っている: 得点札を渡す (切り札は温存)。
-			return g.maxBy(player, valid, func(c *Card) int {
+			return pickHighest(player, valid, func(c *Card) int {
 				if c.GetDesign() == g.trumpSuit {
 					return -tuteStrength(c.GetValue())
 				}
 				return tuteCardPoints(c.GetValue())*100 - tuteStrength(c.GetValue())
 			})
 		}
-		return g.minBy(player, valid, func(c *Card) int {
+		return pickLowest(player, valid, func(c *Card) int {
 			return tuteCardPoints(c.GetValue())*100 + tuteStrength(c.GetValue())
 		})
 	}
@@ -653,44 +595,18 @@ func (g *Tute) cpuPlaySmart(playerIdx int, valid []int) int {
 	if partnerWinning {
 		nonWinners := tuteFilter(follows, func(idx int) bool { return g.tuteRank(player.GetCard(idx)) < topRank })
 		if len(nonWinners) > 0 {
-			return g.maxBy(player, nonWinners, func(c *Card) int {
+			return pickHighest(player, nonWinners, func(c *Card) int {
 				return tuteCardPoints(c.GetValue())*100 - tuteStrength(c.GetValue())
 			})
 		}
-		return g.minBy(player, follows, func(c *Card) int { return tuteStrength(c.GetValue()) })
+		return pickLowest(player, follows, func(c *Card) int { return tuteStrength(c.GetValue()) })
 	}
 	if trickPts > 0 && len(winners) > 0 {
-		return g.minBy(player, winners, func(c *Card) int { return tuteStrength(c.GetValue()) })
+		return pickLowest(player, winners, func(c *Card) int { return tuteStrength(c.GetValue()) })
 	}
-	return g.minBy(player, follows, func(c *Card) int {
+	return pickLowest(player, follows, func(c *Card) int {
 		return tuteCardPoints(c.GetValue())*100 + tuteStrength(c.GetValue())
 	})
-}
-
-// minBy score が最小となるインデックスを返す。
-func (g *Tute) minBy(player *TutePlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s < bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
-}
-
-// maxBy score が最大となるインデックスを返す。
-func (g *Tute) maxBy(player *TutePlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s > bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
 }
 
 // tuteFilter 述語を満たすインデックスを抽出する。
@@ -708,7 +624,7 @@ func tuteFilter(indices []int, pred func(int) bool) []int {
 
 // GetHint 人間プレイヤーの手番における推奨アクションを返す。
 func (g *Tute) GetHint() *TuteHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 || g.phase != TutePhasePlay || g.currentPlayerIdx != human {
 		return nil
 	}
@@ -821,23 +737,17 @@ func (g *Tute) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *Tute) GetPlayer(i int) *TutePlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // IsHumanTurn 現在の手番が人間か。
 func (g *Tute) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // CanHumanDeclareMarriage 人間が今いずれかのスートで結婚宣言できるか。
 func (g *Tute) CanHumanDeclareMarriage() bool {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 || g.currentPlayerIdx != human {
 		return false
 	}
@@ -848,7 +758,7 @@ func (g *Tute) CanHumanDeclareMarriage() bool {
 // the human may currently declare a K+Q marriage — the human leads and holds an
 // unclaimed suit's King and Queen. Empty when no declaration is possible now.
 func (g *Tute) GetHumanDeclarableMarriageSuits() []int {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 {
 		return nil
 	}
@@ -863,7 +773,7 @@ func (g *Tute) GetHumanDeclarableMarriageSuits() []int {
 
 // CanHumanDeclareTute 人間が今 Tute を宣言できるか。
 func (g *Tute) CanHumanDeclareTute() bool {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	return human >= 0 && g.currentPlayerIdx == human && len(g.currentTrick) == 0 && g.hasTute(human)
 }
 
@@ -872,9 +782,6 @@ func (g *Tute) GetConfig() TuteConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *Tute) SetConfig(cfg TuteConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *Tute) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetPlayableIndices プレイ可能なカードのインデックス一覧を返す。
 func (g *Tute) GetPlayableIndices(playerIdx int) []int {

@@ -73,7 +73,7 @@ type Tarneeb struct {
 	teamScores       [TarneebTeamCnt]int
 	gameEndFlag      bool
 	winnerTeam       int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewTarneeb コンストラクタ
@@ -219,7 +219,7 @@ func (t *Tarneeb) applyBid(playerIdx, bid int) {
 		t.highestBid = bid
 		t.bidWinnerIdx = playerIdx
 	}
-	t.appendLog(playerIdx, "bid", fmt.Sprintf("%s bids %s", t.playerName(playerIdx), bidLabel), nil)
+	t.appendLog(playerIdx, "bid", fmt.Sprintf("%s bids %s", playerName(t.players, playerIdx), bidLabel), nil)
 
 	t.bidPlayerIdx = (t.bidPlayerIdx + 1) % TarneebPlayerCnt
 	// 4人ビッドし終えたらディーラーの左隣に戻り、フェーズ遷移を判定する。
@@ -240,7 +240,7 @@ func (t *Tarneeb) finishBidPhase() {
 		return
 	}
 	t.appendLog(t.bidWinnerIdx, "bid_win",
-		fmt.Sprintf("%s wins the auction with %d", t.playerName(t.bidWinnerIdx), t.highestBid), nil)
+		fmt.Sprintf("%s wins the auction with %d", playerName(t.players, t.bidWinnerIdx), t.highestBid), nil)
 	t.phase = TarneebPhaseTrumpDeclaration
 }
 
@@ -278,7 +278,7 @@ func (t *Tarneeb) CpuDeclareTrump() {
 func (t *Tarneeb) applyTrumpDeclaration(suit int) {
 	t.trumpSuit = suit
 	t.appendLog(t.bidWinnerIdx, "trump",
-		fmt.Sprintf("%s declares %s as trump", t.playerName(t.bidWinnerIdx), suitName(suit)), nil)
+		fmt.Sprintf("%s declares %s as trump", playerName(t.players, t.bidWinnerIdx), suitName(suit)), nil)
 	t.leadPlayerIdx = t.bidWinnerIdx
 	t.currentPlayerIdx = t.bidWinnerIdx
 	t.trickNumber = 1
@@ -345,7 +345,7 @@ func (t *Tarneeb) ResolveTrick() {
 	}
 	t.players[winnerIdx].AddTrick(trickCards)
 	t.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", t.playerName(winnerIdx), t.trickNumber), trickCards)
+		fmt.Sprintf("%s wins trick %d", playerName(t.players, winnerIdx), t.trickNumber), trickCards)
 
 	t.leadPlayerIdx = winnerIdx
 	if t.trickNumber >= TarneebHandSize {
@@ -532,10 +532,7 @@ func (t *Tarneeb) GetPlayerCnt() int { return len(t.players) }
 
 // GetPlayer プレイヤー取得
 func (t *Tarneeb) GetPlayer(i int) *TarneebPlayer {
-	if i < 0 || i >= len(t.players) {
-		return nil
-	}
-	return t.players[i]
+	return getPlayer(t.players, i)
 }
 
 // GetConfig 設定取得
@@ -544,23 +541,14 @@ func (t *Tarneeb) GetConfig() TarneebConfig { return t.config }
 // SetConfig 設定変更
 func (t *Tarneeb) SetConfig(cfg TarneebConfig) { t.config = cfg }
 
-// GetActionLog 棋譜取得
-func (t *Tarneeb) GetActionLog() []*ActionLogEntry { return t.actionLog }
-
 // IsHumanTurn 現在の手番が人間かどうか
 func (t *Tarneeb) IsHumanTurn() bool {
-	if t.currentPlayerIdx < 0 || t.currentPlayerIdx >= len(t.players) {
-		return false
-	}
-	return t.players[t.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(t.players, t.currentPlayerIdx)
 }
 
 // IsHumanBidTurn 現在のビッド手番が人間かどうか
 func (t *Tarneeb) IsHumanBidTurn() bool {
-	if t.bidPlayerIdx < 0 || t.bidPlayerIdx >= len(t.players) {
-		return false
-	}
-	return t.players[t.bidPlayerIdx].GetIsHuman()
+	return isHumanTurn(t.players, t.bidPlayerIdx)
 }
 
 // IsHumanTrumpTurn 現在のトランプ宣言手番が人間かどうか
@@ -578,7 +566,7 @@ func (t *Tarneeb) GetValidPlayIndices(playerIdx int) []int {
 
 // GetHint ヒントを取得する
 func (t *Tarneeb) GetHint() *TarneebHint {
-	humanIdx := t.findHumanIdx()
+	humanIdx := findHumanIdx(t.players)
 	if humanIdx < 0 {
 		return nil
 	}
@@ -618,16 +606,6 @@ func hintBidReason(bid int) string {
 	return "bid_estimate"
 }
 
-// findHumanIdx 人間プレイヤーのインデックス (-1 = なし)
-func (t *Tarneeb) findHumanIdx() int {
-	for i, p := range t.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 // playCard カードをプレイする共通処理
 func (t *Tarneeb) playCard(playerIdx int, card *Card) {
 	t.currentTrick = append(t.currentTrick, &TrickCard{
@@ -635,7 +613,7 @@ func (t *Tarneeb) playCard(playerIdx int, card *Card) {
 		Card:      card,
 	})
 	t.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", t.playerName(playerIdx), cardStr(card)), []*Card{card})
+		fmt.Sprintf("%s plays %s", playerName(t.players, playerIdx), cardStr(card)), []*Card{card})
 	if len(t.currentTrick) == TarneebPlayerCnt {
 		t.phase = TarneebPhaseTrickEnd
 		return
@@ -646,25 +624,7 @@ func (t *Tarneeb) playCard(playerIdx int, card *Card) {
 // validatePlay カードのプレイがルール上有効か検証する。
 // Tarneeb はリードスート必従のみ。ボイドなら任意 (トランプ or 捨て札)。
 func (t *Tarneeb) validatePlay(playerIdx int, card *Card) error {
-	if len(t.currentTrick) == 0 {
-		return nil
-	}
-	leadSuit := t.currentTrick[0].Card.GetDesign()
-	if card.GetDesign() != leadSuit && t.playerHasSuit(playerIdx, leadSuit) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
-	}
-	return nil
-}
-
-// playerHasSuit プレイヤーが特定のスートを持っているか
-func (t *Tarneeb) playerHasSuit(playerIdx, design int) bool {
-	p := t.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return validateFollowSuit(t.currentTrick, t.players, playerIdx, card)
 }
 
 // tarneebRank converts a raw `Card.GetValue()` (1-13, where 1 = Ace) to
@@ -706,28 +666,6 @@ func tarneebSortHand(p *TarneebPlayer) {
 	})
 }
 
-// playerName プレイヤー名を返す
-func (t *Tarneeb) playerName(idx int) string {
-	if idx < 0 || idx >= len(t.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if t.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (t *Tarneeb) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	t.actionLog = append(t.actionLog, &ActionLogEntry{
-		TurnNumber: len(t.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // isValidSuit 4スートのうちいずれかか
 func isValidSuit(suit int) bool {
 	return suit >= CardDesignSpade && suit <= CardDesignDiamond
@@ -752,10 +690,7 @@ func (t *Tarneeb) playHintReason(playerIdx, chosenIdx int) string {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリスト
 func (t *Tarneeb) getValidPlayIndices(playerIdx int) []int {
-	player := t.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return t.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(t.players[playerIdx], func(c *Card) bool { return t.validatePlay(playerIdx, c) == nil })
 }
 
 // --- CPU AI ---

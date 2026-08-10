@@ -208,7 +208,7 @@ type Kaiser struct {
 	gameEndFlag bool
 	winnerTeam  int
 
-	actionLog []*ActionLogEntry
+	actionLogBase
 }
 
 // NewKaiser コンストラクタ
@@ -847,10 +847,7 @@ func (k *Kaiser) GetPlayers() []*KaiserPlayer { return k.players }
 
 // GetPlayer は idx のプレイヤーを返す。
 func (k *Kaiser) GetPlayer(idx int) *KaiserPlayer {
-	if idx < 0 || idx >= len(k.players) {
-		return nil
-	}
-	return k.players[idx]
+	return getPlayer(k.players, idx)
 }
 
 // GetPhase は現在のフェーズを返す。
@@ -935,18 +932,9 @@ func (k *Kaiser) GetConfig() KaiserConfig { return k.config }
 // SetConfig は設定をセットする。
 func (k *Kaiser) SetConfig(c KaiserConfig) { k.config = c }
 
-// GetActionLog は棋譜を返す。
-func (k *Kaiser) GetActionLog() []*ActionLogEntry { return k.actionLog }
-
 // addLog は棋譜を 1 行足す。
 func (k *Kaiser) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	k.actionLog = append(k.actionLog, &ActionLogEntry{
-		TurnNumber: len(k.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	k.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // SetPhaseForTest はテスト用にフェーズを設定する。
@@ -954,16 +942,7 @@ func (k *Kaiser) SetPhaseForTest(p KaiserPhase) { k.phase = p }
 
 // SetHandForTest はテスト用に手札を差し替える。
 func (k *Kaiser) SetHandForTest(idx int, cards []*Card) {
-	p := k.GetPlayer(idx)
-	if p == nil {
-		return
-	}
-	for p.GetCardsSize() > 0 {
-		p.RemoveCard(0)
-	}
-	for _, c := range cards {
-		p.AddCard(c)
-	}
+	setHandForTest(k.GetPlayer(idx), cards)
 }
 
 // SetContractForTest はテスト用に契約を設定する。

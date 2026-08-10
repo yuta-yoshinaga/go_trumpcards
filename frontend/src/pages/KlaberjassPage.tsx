@@ -307,6 +307,16 @@ function KlaberjassPageContent() {
                   <div>{t('belaLine', { name: playerLabel(state.belaHolder, state.belaHolder === 0) })}</div>
                 )}
                 {state.dixUsed && <div>{t('dixLine')}</div>}
+                {/* **最終トリックには 10 点が付く。**書かないと、ベラや宣言点を
+                    足しても handPoints と合わない理由が説明できない (#4937)。 */}
+                {state.lastTrickWinner >= 0 && (
+                  <div data-testid="klaberjass-last-trick-bonus">
+                    {t('lastTrickBonus', {
+                      name: playerLabel(state.lastTrickWinner, state.lastTrickWinner === 0),
+                      points: state.lastTrickBonus,
+                    })}
+                  </div>
+                )}
               </div>
             )}
 

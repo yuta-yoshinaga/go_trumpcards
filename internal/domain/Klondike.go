@@ -61,14 +61,14 @@ const (
 
 // Klondike クロンダイクゲームクラス
 type Klondike struct {
-	trumpCards           *TrumpCards
-	tableau              [KlondikeTableauCnt][]*KlondikeTableauCard
-	stock                []*Card
-	waste                []*Card
-	foundation           [KlondikeFoundationCnt][]*Card
-	phase                KlondikePhase
-	moveCount            int
-	actionLog            []*ActionLogEntry
+	trumpCards *TrumpCards
+	tableau    [KlondikeTableauCnt][]*KlondikeTableauCard
+	stock      []*Card
+	waste      []*Card
+	foundation [KlondikeFoundationCnt][]*Card
+	phase      KlondikePhase
+	moveCount  int
+	actionLogBase
 	drawCount            int
 	history              []*klondikeSnapshot
 	scoringMode          KlondikeScoringMode
@@ -479,6 +479,15 @@ func (k *Klondike) AutoComplete() error {
 	return nil
 }
 
+// CanAutoComplete はいまオートコンプリートが実行できるかを返す (#4776)。
+//
+// **AutoComplete が通る条件と同じものを見る。**Web は条件が揃うとボタンを
+// 光らせてバッジも出すのに、CUI は ac コマンドがあること自体もいま使えるかも
+// 出していなかった。表示と実行が別条件だと、光っているのに動かない。
+func (k *Klondike) CanAutoComplete() bool {
+	return k.phase == KlondikePhasePlaying && k.AllFaceUp()
+}
+
 // AllFaceUp 全カードが表向きかどうか（ストックとウェイストも含む）
 func (k *Klondike) AllFaceUp() bool {
 	if len(k.stock) > 0 {
@@ -516,9 +525,6 @@ func (k *Klondike) GetTableau() [KlondikeTableauCnt][]*KlondikeTableauCard { ret
 
 // GetFoundation ファンデーション取得
 func (k *Klondike) GetFoundation() [KlondikeFoundationCnt][]*Card { return k.foundation }
-
-// GetActionLog 棋譜取得
-func (k *Klondike) GetActionLog() []*ActionLogEntry { return k.actionLog }
 
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (k *Klondike) GetGameEndFlag() bool { return k.phase != KlondikePhasePlaying }
@@ -572,25 +578,12 @@ func (k *Klondike) CanUndo() bool {
 
 // UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。膠着状態でなければ0、脱出不可なら-1。
 func (k *Klondike) UndoToEscape() int {
-	if !k.isStalemate {
-		return 0
-	}
-	for i := len(k.history) - 1; i >= 0; i-- {
-		if !k.history[i].isStalemate {
-			return len(k.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(k.isStalemate, k.history, func(s *klondikeSnapshot) bool { return s.isStalemate })
 }
 
 // UndoN n回連続でアンドゥを実行する。
 func (k *Klondike) UndoN(n int) error {
-	for i := 0; i < n; i++ {
-		if err := k.Undo(); err != nil {
-			return fmt.Errorf("undo step %d failed: %w", i+1, err)
-		}
-	}
-	return nil
+	return undoN(k, n)
 }
 
 // GetScore スコア取得 (ベガス式: -52 + 5 * ファンデーション枚数)
@@ -624,14 +617,7 @@ func (k *Klondike) canPlaceOnTableau(card *Card, col int) bool {
 
 // canPlaceOnFoundation ファンデーションにカードを置けるか判定
 func (k *Klondike) canPlaceOnFoundation(card *Card, fIdx int) bool {
-	pile := k.foundation[fIdx]
-	if len(pile) == 0 {
-		// 空のファンデーションにはAのみ置ける
-		return card.GetValue() == 1
-	}
-	topCard := pile[len(pile)-1]
-	// 同じスートで昇順
-	return card.GetDesign() == topCard.GetDesign() && card.GetValue() == topCard.GetValue()+1
+	return canPlaceOnFoundationPile(k.foundation[fIdx], card)
 }
 
 // isAlternateColor 交互の色かどうか判定
@@ -646,10 +632,7 @@ func (k *Klondike) isBlack(card *Card) bool {
 
 // autoFlipTableau タブローの最上部の裏カードを自動フリップ
 func (k *Klondike) autoFlipTableau(col int) {
-	cards := k.tableau[col]
-	if len(cards) > 0 && !cards[len(cards)-1].FaceUp {
-		cards[len(cards)-1].FaceUp = true
-	}
+	autoFlipTopCard(k.tableau[col])
 }
 
 // checkGameClear ゲームクリア判定
@@ -707,13 +690,7 @@ func (k *Klondike) restoreSnapshot(snap *klondikeSnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (k *Klondike) appendLog(actionType, detail string, cards []*Card) {
-	k.actionLog = append(k.actionLog, &ActionLogEntry{
-		TurnNumber: k.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	k.appendLogAt(k.moveCount, 0, actionType, detail, cards)
 }
 
 // klondikeJSON is the JSON wire format for Klondike.
@@ -881,4 +858,18 @@ func (k *Klondike) UnmarshalJSON(data []byte) error {
 	k.noProgressCycles = j.NoProgressCycles
 	k.progressSinceRecycle = j.ProgressSinceRecycle
 	return nil
+}
+
+// autoFlipTopCard turns the top card of a tableau column face up when it is
+// not already -- the last-added card, which is what every call site's own
+// comment calls タブローの最上部. 6 solitaires sharing KlondikeTableauCard had
+// this written out.
+//
+// Lives here beside the type rather than in player_helpers.go: the other four
+// games with this body use their own tableau card types, which Go's type
+// constraints cannot reach because FaceUp is a field, not a method.
+func autoFlipTopCard(cards []*KlondikeTableauCard) {
+	if len(cards) > 0 && !cards[len(cards)-1].FaceUp {
+		cards[len(cards)-1].FaceUp = true
+	}
 }

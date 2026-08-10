@@ -45,6 +45,8 @@ type GongZhuGame interface {
 	GetCurrentPlayerIdx() int
 	// GetCurrentTrick 現在のトリックを取得する
 	GetCurrentTrick() []*domain.TrickCard
+	// GetPlayableIndices いま出せる手札の位置
+	GetPlayableIndices(playerIdx int) []int
 	// GetHeartsBroken ハーツブレイク済みかを返す
 	GetHeartsBroken() bool
 	// GetExposure 公開状態を取得する

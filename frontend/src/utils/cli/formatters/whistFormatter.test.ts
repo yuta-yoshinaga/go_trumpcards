@@ -30,6 +30,7 @@ function makeState(overrides?: Partial<WhistResponse>): WhistResponse {
     gameEndFlag: false,
     winnerTeam: -1,
     leadPlayerIdx: 0,
+    validPlayIndices: [],
     config: { cpuDifficulty: 1, pointLimit: 5 },
     message: '',
     ...overrides,

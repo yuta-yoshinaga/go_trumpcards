@@ -171,7 +171,7 @@ type Bezique struct {
 	meldsDeclared    []int // プレイヤー毎の宣言済みメルドビットマスク
 	gameEndFlag      bool
 	winnerIdx        int // -1: 未確定
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewBezique コンストラクタ
@@ -329,7 +329,7 @@ func (b *Bezique) PlayerSkipMeld() error {
 	if !b.players[b.currentPlayerIdx].GetIsHuman() {
 		return ErrNotHumanTurn
 	}
-	b.appendLog(b.currentPlayerIdx, "meld_skip", fmt.Sprintf("%s declares no meld", b.playerName(b.currentPlayerIdx)), nil)
+	b.appendLog(b.currentPlayerIdx, "meld_skip", fmt.Sprintf("%s declares no meld", playerName(b.players, b.currentPlayerIdx)), nil)
 	b.afterMeld()
 	return nil
 }
@@ -345,7 +345,7 @@ func (b *Bezique) CpuMeld() {
 	}
 	melds := b.availableMelds(idx)
 	if len(melds) == 0 {
-		b.appendLog(idx, "meld_skip", fmt.Sprintf("%s declares no meld", b.playerName(idx)), nil)
+		b.appendLog(idx, "meld_skip", fmt.Sprintf("%s declares no meld", playerName(b.players, idx)), nil)
 		b.afterMeld()
 		return
 	}
@@ -414,10 +414,7 @@ func (b *Bezique) GetPlayerCnt() int { return len(b.players) }
 
 // GetPlayer プレイヤー取得
 func (b *Bezique) GetPlayer(i int) *BeziquePlayer {
-	if i < 0 || i >= len(b.players) {
-		return nil
-	}
-	return b.players[i]
+	return getPlayer(b.players, i)
 }
 
 // GetDealPoints プレイヤーの当ディール得点取得
@@ -481,10 +478,7 @@ func (b *Bezique) IsEndgame() bool {
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (b *Bezique) IsHumanTurn() bool {
-	if b.currentPlayerIdx < 0 || b.currentPlayerIdx >= len(b.players) {
-		return false
-	}
-	return b.players[b.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(b.players, b.currentPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -492,9 +486,6 @@ func (b *Bezique) GetConfig() BeziqueConfig { return b.config }
 
 // SetConfig 設定変更
 func (b *Bezique) SetConfig(cfg BeziqueConfig) { b.config = cfg }
-
-// GetActionLog 棋譜取得
-func (b *Bezique) GetActionLog() []*ActionLogEntry { return b.actionLog }
 
 // GetValidPlayIndices プレイ可能なカードのインデックスリストを返す。
 func (b *Bezique) GetValidPlayIndices(playerIdx int) []int {
@@ -547,7 +538,7 @@ func (b *Bezique) GetHint() *BeziqueHint {
 // playCard カードをプレイする共通処理。2枚出そろったらトリックを解決する。
 func (b *Bezique) playCard(playerIdx int, card *Card) {
 	b.currentTrick = append(b.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	b.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", b.playerName(playerIdx), cardStr(card)), []*Card{card})
+	b.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(b.players, playerIdx), cardStr(card)), []*Card{card})
 	if len(b.currentTrick) == BeziquePlayerCnt {
 		b.resolveTrick()
 		return
@@ -569,14 +560,14 @@ func (b *Bezique) resolveTrick() {
 	b.leadPlayerIdx = winnerIdx
 	b.currentPlayerIdx = winnerIdx
 	b.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (%d pt)", b.playerName(winnerIdx), b.trickNumber, trickPoints), trickCards)
+		fmt.Sprintf("%s wins trick %d (%d pt)", playerName(b.players, winnerIdx), b.trickNumber, trickPoints), trickCards)
 
 	if b.IsEndgame() {
 		// 第2フェーズ: 役宣言・補充なし。
 		if b.allHandsEmpty() {
 			b.dealPoints[winnerIdx] += BeziqueLastTrickBonus
 			b.appendLog(winnerIdx, "last_trick",
-				fmt.Sprintf("%s takes the last trick (+%d)", b.playerName(winnerIdx), BeziqueLastTrickBonus), nil)
+				fmt.Sprintf("%s takes the last trick (+%d)", playerName(b.players, winnerIdx), BeziqueLastTrickBonus), nil)
 			b.scoreDeal()
 			return
 		}
@@ -619,15 +610,7 @@ func (b *Bezique) drawReplenish() {
 
 // drawOne 山札 → 切り札表示カード の順に 1 枚引く。
 func (b *Bezique) drawOne() *Card {
-	if c := b.trumpCards.DrawCard(); c != nil {
-		return c
-	}
-	if b.trumpCard != nil {
-		c := b.trumpCard
-		b.trumpCard = nil
-		return c
-	}
-	return nil
+	return drawOrTakeTrump(b.trumpCards, &b.trumpCard)
 }
 
 // scoreDeal ディールを集計して累積し、ゲーム終了を判定する。
@@ -665,26 +648,12 @@ func (b *Bezique) finishGame() {
 
 // allHandsEmpty 全プレイヤーの手札が空かを返す
 func (b *Bezique) allHandsEmpty() bool {
-	for _, p := range b.players {
-		if p.GetCardsSize() > 0 {
-			return false
-		}
-	}
-	return true
+	return allHandsEmpty(b.players)
 }
 
 // validatePlay カードのプレイがルール上有効かを検証する。
 func (b *Bezique) validatePlay(playerIdx int, card *Card) error {
-	if card == nil {
-		return NewDomainError(ErrInvalidCard, "カードが nil です")
-	}
-	if !b.IsEndgame() || len(b.currentTrick) == 0 {
-		return nil
-	}
-	if !b.cardSatisfiesFollow(playerIdx, card) {
-		return NewDomainError(ErrInvalidCard, "第2フェーズではフォロールールに従う必要があります")
-	}
-	return nil
+	return validateEndgameFollow(b.currentTrick, b, playerIdx, card)
 }
 
 // cardSatisfiesFollow 第2フェーズの追随時に card が合法かを返す。
@@ -710,14 +679,7 @@ func (b *Bezique) cardSatisfiesFollow(playerIdx int, card *Card) bool {
 
 // legalPlayIndices validatePlay を満たすカードのインデックス集合を返す。
 func (b *Bezique) legalPlayIndices(playerIdx int) []int {
-	p := b.players[playerIdx]
-	out := make([]int, 0, p.GetCardsSize())
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if b.validatePlay(playerIdx, p.GetCard(i)) == nil {
-			out = append(out, i)
-		}
-	}
-	return out
+	return validPlayIndices(b.players[playerIdx], func(c *Card) bool { return b.validatePlay(playerIdx, c) == nil })
 }
 
 // beziquePlayerHasSuit プレイヤーが指定スートのカードを持つか
@@ -840,7 +802,7 @@ func (b *Bezique) applyMeld(playerIdx int, m BeziqueMeld) {
 	b.dealPoints[playerIdx] += m.Points
 	b.dealMeldPoints[playerIdx] += m.Points
 	b.appendLog(playerIdx, "meld",
-		fmt.Sprintf("%s declares %s (+%d)", b.playerName(playerIdx), beziqueMeldName(m), m.Points), nil)
+		fmt.Sprintf("%s declares %s (+%d)", playerName(b.players, playerIdx), beziqueMeldName(m), m.Points), nil)
 }
 
 // beziqueMeldBit メルドの宣言済みビット位置を返す。
@@ -908,9 +870,7 @@ func beziqueCountValue(p *BeziquePlayer, value int) int {
 
 // sortAllHands 全プレイヤーの手札をソートする
 func (b *Bezique) sortAllHands() {
-	for _, p := range b.players {
-		b.sortHand(p)
-	}
+	sortEachHand(b.players, b.sortHand)
 }
 
 // sortHand プレイヤーの手札をスート (トランプ最後) → ランク でソートする
@@ -926,28 +886,6 @@ func (b *Bezique) sortHand(p *BeziquePlayer) {
 			return ci.GetDesign() < cj.GetDesign()
 		}
 		return BeziqueRankOrder(ci) < BeziqueRankOrder(cj)
-	})
-}
-
-// playerName プレイヤー名を返す (ログ用)
-func (b *Bezique) playerName(idx int) string {
-	if idx < 0 || idx >= len(b.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if b.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜エントリを追加する
-func (b *Bezique) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	b.actionLog = append(b.actionLog, &ActionLogEntry{
-		TurnNumber: len(b.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
 	})
 }
 

@@ -36,7 +36,12 @@ func (p *SpideretteCuiPresenter) Output(s interfaces.SpideretteGame, lastErr err
 			"completed", strconv.Itoa(s.GetCompletedSuits()),
 			"total", strconv.Itoa(domain.SpideretteFoundationCnt),
 			"stock", strconv.Itoa(s.GetStockCount()),
-			"score", strconv.Itoa(s.GetScore())) + "\n")
+			"score", strconv.Itoa(s.GetScore())))
+		// **生の残り枚数だけでは「あと何回配れるか」が分からない (#4798)。**
+		// 1回の配布は最大7枚で、端数の最終配布も1回として数える。Web は同じ
+		// 切り上げをバッジに出しているのに、CUI は暗算を強いていた。
+		b.WriteString(i18n.Tf("spiderette.dealsRemaining",
+			"count", strconv.Itoa(s.GetDealsRemaining())) + "\n")
 
 		b.WriteString("----------\n")
 

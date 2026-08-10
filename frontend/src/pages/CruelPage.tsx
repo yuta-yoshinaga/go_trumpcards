@@ -275,6 +275,9 @@ function CruelPageContent() {
 
   if (!state) return <GameSkeleton gameKey="cruel" layout={{ kind: 'tableau', topRow: 4, tableau: 12 }} />;
 
+  // 4つの組札の合計。52枚すべてが収まればクリア。
+  const foundationTotal = state.foundation.reduce((sum, pile) => sum + pile.length, 0);
+
   const isPlaying = state.phase === CruelPhase.PLAYING;
   const isGameClear = state.phase === CruelPhase.GAME_CLEAR;
   const isGameOver = state.phase === CruelPhase.GAME_OVER;
@@ -310,6 +313,10 @@ function CruelPageContent() {
       cancelGiveUp={cancelGiveUp}
       headerExtra={
         <>
+          {/* **52枚すべてを組札に収めることが唯一の勝利条件 (#4779)。**CUI は
+              foundationProgress で合計を常に出しているのに、Web は各組札を
+              個別に描くだけで、あと何枚かを知るには目で数えるしかなかった。 */}
+          <span data-testid="cruel-foundation-progress">{t('foundationProgress', { total: foundationTotal })}</span>
           <span>
             {t('moveCount')}: {state.moveCount}
           </span>

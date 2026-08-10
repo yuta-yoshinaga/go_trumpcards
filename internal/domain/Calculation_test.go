@@ -535,3 +535,55 @@ func TestCalculation_FindFoundation_NotFound(t *testing.T) {
 	// J (11) fits nowhere at initial state (foundations need 2,4,6,8)
 	assert.Equal(t, -1, c.findFoundation(NewCard(CardDesignSpade, 11, false)))
 }
+
+// **各列が +1/+2/+3/+4 ずつ 13 を法として進む (#4794)。**Web は次に置ける
+// ランクをバッジで常時出しているのに、CUI は毎手この暗算を強いていた。
+func TestCalculation_GetNextFoundationRank(t *testing.T) {
+	c := newTestCalculation()
+
+	// 初期状態は各ファンデーションに A,2,3,4 が1枚ずつ。
+	// 列0 (+1) は A の次で 2、列1 (+2) は 2 の次で 4、列2 (+3) は 3 の次で 6、
+	// 列3 (+4) は 4 の次で 8。
+	t.Run("applies each pile's own step", func(t *testing.T) {
+		assert.Equal(t, 2, c.GetNextFoundationRank(0))
+		assert.Equal(t, 4, c.GetNextFoundationRank(1))
+		assert.Equal(t, 6, c.GetNextFoundationRank(2))
+		assert.Equal(t, 8, c.GetNextFoundationRank(3))
+	})
+
+	// **13 を超えたら折り返す。**単なる足し算だと 14 以上を案内してしまう。
+	t.Run("wraps past the king", func(t *testing.T) {
+		assert.Equal(t, calculationNextValue(13, 1), 1, "K の次は A (+1 列)")
+		assert.Equal(t, calculationNextValue(12, 4), 3, "Q の +4 は 3")
+	})
+
+	// **13枚そろった山に「次」は無い。**出すと、置けない札を案内することになる。
+	t.Run("reports nothing once a pile is complete", func(t *testing.T) {
+		full := newTestCalculation()
+		pile := make([]*Card, CardValueMax)
+		for i := range pile {
+			pile[i] = NewCard(CardDesignSpade, i+1, false)
+		}
+		full.foundations[0] = pile
+		assert.Equal(t, 0, full.GetNextFoundationRank(0))
+	})
+
+	t.Run("reports nothing for an out-of-range pile", func(t *testing.T) {
+		assert.Equal(t, 0, c.GetNextFoundationRank(-1))
+		assert.Equal(t, 0, c.GetNextFoundationRank(CalculationFoundationCnt))
+	})
+
+	// **案内したランクは実際に置ける。**別実装だと置けない札を案内する。
+	t.Run("the rank it names is the one canPlaceOnFoundation accepts", func(t *testing.T) {
+		for i := range CalculationFoundationCnt {
+			next := c.GetNextFoundationRank(i)
+			require.NotEqual(t, 0, next, "foundation %d", i)
+			assert.True(t, c.canPlaceOnFoundation(NewCard(CardDesignSpade, next, false), i),
+				"foundation %d に %d が置けない", i, next)
+			// ひとつ違うランクは弾かれる。
+			wrong := next%CardValueMax + 1
+			assert.False(t, c.canPlaceOnFoundation(NewCard(CardDesignSpade, wrong, false), i),
+				"foundation %d に %d が置けてしまう", i, wrong)
+		}
+	})
+}

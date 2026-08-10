@@ -85,8 +85,13 @@ func (p *KingAlbertCuiPresenter) Output(bc interfaces.KingAlbertGame, lastErr er
 				b.WriteString(color.Red(i18n.T("cuiSolitaireStalemate")) + "\n")
 				// Point the player at the concrete escape (how many undos are
 				// needed), matching the web StalemateEscapeButton.
-				b.WriteString(color.Yellow(i18n.Tf("kingalbert.stalemateEscape",
-					"count", strconv.Itoa(bc.UndoToEscape()))) + "\n")
+				//
+				// 0 以下は「戻れる局面が無い」。そのまま出すと「undo を -1 回
+				// 実行してください」になる (#5052)。
+				if n := bc.UndoToEscape(); n > 0 {
+					b.WriteString(color.Yellow(i18n.Tf("kingalbert.stalemateEscape",
+						"count", strconv.Itoa(n))) + "\n")
+				}
 			}
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
 				"count", strconv.Itoa(bc.GetMoveCount())) + "\n")

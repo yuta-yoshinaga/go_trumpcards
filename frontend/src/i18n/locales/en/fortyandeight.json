@@ -11,6 +11,7 @@
   "moveCount": "Moves",
   "draw": "Draw",
   "redeal": "Redeal",
+  "redealUsed": "Redeal used",
   "giveup": "Give Up",
   "empty": "Empty",
   "foundationAriaLabel": "{{suit}} foundation {{pile}}, {{count}} cards",

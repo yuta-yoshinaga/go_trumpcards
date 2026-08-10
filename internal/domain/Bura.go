@@ -254,7 +254,7 @@ type Bura struct {
 	gameEndFlag      bool
 	winnerIdx        int // -1: 未確定または引き分け
 	drawFlag         bool
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewBura コンストラクタ
@@ -522,13 +522,7 @@ func (b *Bura) nextPlayer(idx int) int {
 
 // addLog アクションログへ 1 行追加する。
 func (b *Bura) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	b.actionLog = append(b.actionLog, &ActionLogEntry{
-		TurnNumber: len(b.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	b.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // ---- 公開アクセサ ----
@@ -538,10 +532,7 @@ func (b *Bura) GetPlayers() []*BuraPlayer { return b.players }
 
 // GetPlayer idx のプレイヤーを返す。範囲外は nil。
 func (b *Bura) GetPlayer(idx int) *BuraPlayer {
-	if idx < 0 || idx >= len(b.players) {
-		return nil
-	}
-	return b.players[idx]
+	return getPlayer(b.players, idx)
 }
 
 // GetStock 山札 (切札指示カードを含まない) を返す。
@@ -598,9 +589,6 @@ func (b *Bura) GetConfig() BuraConfig { return b.config }
 
 // SetConfig ゲーム設定を差し替える。
 func (b *Bura) SetConfig(c BuraConfig) { b.config = c }
-
-// GetActionLog アクションログを返す。
-func (b *Bura) GetActionLog() []*ActionLogEntry { return b.actionLog }
 
 // ---- JSON ----
 
@@ -703,12 +691,7 @@ func clampPlayerIdx(idx, n int) int {
 
 // allHandsEmpty 全プレイヤーの手札が尽きているかを返す。
 func (b *Bura) allHandsEmpty() bool {
-	for _, p := range b.players {
-		if p.GetCardsSize() > 0 {
-			return false
-		}
-	}
-	return true
+	return allHandsEmpty(b.players)
 }
 
 // ---- CPU ----

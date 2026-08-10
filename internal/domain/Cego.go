@@ -254,7 +254,7 @@ type Cego struct {
 	scored          bool
 	gameEndFlag     bool
 	winnerPlayer    int
-	actionLog       []*ActionLogEntry
+	actionLogBase
 }
 
 // NewCego コンストラクタ
@@ -373,13 +373,7 @@ func (g *Cego) deal() {
 
 // drawCard デッキから 1 枚配る (尽きたら nil)。
 func (g *Cego) drawCard() *Card {
-	if g.deckDrawCnt >= len(g.deck) {
-		return nil
-	}
-	card := g.deck[g.deckDrawCnt]
-	card.SetDraw(true)
-	g.deckDrawCnt++
-	return card
+	return drawFromDeck(g.deck, &g.deckDrawCnt)
 }
 
 // --- Bidding ---
@@ -442,14 +436,14 @@ func (g *Cego) CpuBid() {
 func (g *Cego) applyBid(idx int, bid CegoBid) {
 	g.highestBid = bid
 	g.highestBidder = idx
-	g.appendLog(idx, "bid", fmt.Sprintf("%s bids %s", g.playerName(idx), cegoBidName(bid)), nil)
+	g.appendLog(idx, "bid", fmt.Sprintf("%s bids %s", playerName(g.players, idx), cegoBidName(bid)), nil)
 	g.advanceBid()
 }
 
 // applyPass パスを適用する。
 func (g *Cego) applyPass(idx int) {
 	g.passed[idx] = true
-	g.appendLog(idx, "pass", fmt.Sprintf("%s passes", g.playerName(idx)), nil)
+	g.appendLog(idx, "pass", fmt.Sprintf("%s passes", playerName(g.players, idx)), nil)
 	g.advanceBid()
 }
 
@@ -470,12 +464,12 @@ func (g *Cego) finalizeBid() {
 		g.declarerIdx = (g.dealerIdx + 1) % CegoPlayerCnt
 		g.contract = CegoBidPlay
 		g.appendLog(g.declarerIdx, "forced",
-			fmt.Sprintf("all passed — %s is forced to declare", g.playerName(g.declarerIdx)), nil)
+			fmt.Sprintf("all passed — %s is forced to declare", playerName(g.players, g.declarerIdx)), nil)
 	} else {
 		g.declarerIdx = g.highestBidder
 		g.contract = g.highestBid
 		g.appendLog(g.declarerIdx, "win_bid",
-			fmt.Sprintf("%s takes the declaration", g.playerName(g.declarerIdx)), nil)
+			fmt.Sprintf("%s takes the declaration", playerName(g.players, g.declarerIdx)), nil)
 	}
 	g.currentPlayerIdx = g.declarerIdx
 	g.phase = CegoPhaseContract
@@ -517,7 +511,7 @@ func (g *Cego) CpuChooseContract() {
 func (g *Cego) applyContract(ct CegoContract) {
 	g.contractType = ct
 	g.appendLog(g.declarerIdx, "contract",
-		fmt.Sprintf("%s chooses %s", g.playerName(g.declarerIdx), cegoContractName(ct)), nil)
+		fmt.Sprintf("%s chooses %s", playerName(g.players, g.declarerIdx), cegoContractName(ct)), nil)
 	if ct == CegoContractHandspiel {
 		// 場札は対戦側の得点山に渡る (伏せたまま公開しない)。
 		g.stash = g.blind
@@ -608,7 +602,7 @@ func (g *Cego) doExchange(keepIndices []int) error {
 	}
 	g.blind = make([]*Card, 0)
 	g.appendLog(g.declarerIdx, "exchange",
-		fmt.Sprintf("%s lays down %d cards and takes the Cego", g.playerName(g.declarerIdx), len(discarded)), discarded)
+		fmt.Sprintf("%s lays down %d cards and takes the Cego", playerName(g.players, g.declarerIdx), len(discarded)), discarded)
 	g.sortAllHands()
 	g.startPlay()
 	return nil
@@ -708,7 +702,7 @@ func (g *Cego) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Cego) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cegoCardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cegoCardStr(card)), []*Card{card})
 	if len(g.currentTrick) == CegoPlayerCnt {
 		g.phase = CegoPhaseTrickEnd
 	} else {
@@ -729,7 +723,7 @@ func (g *Cego) ResolveTrick() {
 	}
 	g.players[winnerIdx].AddTrick(allCards)
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", g.playerName(winnerIdx), g.trickNumber), allCards)
+		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), allCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= CegoTrickCount {
@@ -782,7 +776,7 @@ func (g *Cego) enterRoundEnd() {
 	}
 	g.appendLog(-1, "round_score",
 		fmt.Sprintf("deal %d: declarer(%s) %s declPts=%d/%d won=%t base=%d",
-			g.roundNumber, g.playerName(g.declarerIdx), cegoContractName(g.contractType),
+			g.roundNumber, playerName(g.players, g.declarerIdx), cegoContractName(g.contractType),
 			bd.DeclarerPoints, CegoTotalPoints, bd.Won, bd.Base), nil)
 	g.checkGameEnd()
 }
@@ -842,13 +836,13 @@ func (g *Cego) checkGameEnd() {
 		g.appendLog(-1, "game_end", "the match ends in a draw", nil)
 	} else {
 		g.winnerPlayer = leader
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", g.playerName(leader)), nil)
+		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
 	}
 }
 
 // humanResult 人間 (seat 0) 視点でマッチ結果を返す。単独トップなら Win、トップ同点なら None。
 func (g *Cego) humanResult(leader int, tie bool) CegoResult {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 {
 		return CegoResultNone
 	}
@@ -994,14 +988,7 @@ func (g *Cego) highestTrumpInTrick() int {
 
 // validatePlay マストフォロー + 切り札義務 + オーバートランプ義務を検証する。
 func (g *Cego) validatePlay(playerIdx int, card *Card) error {
-	valid := g.getValidPlayIndices(playerIdx)
-	player := g.players[playerIdx]
-	for _, idx := range valid {
-		if player.GetCard(idx) == card {
-			return nil
-		}
-	}
-	return NewDomainError(ErrInvalidPlay, "フォロー義務・切り札義務・オーバートランプ義務に反しています")
+	return validateCardIsPlayable(g.getValidPlayIndices(playerIdx), g.players[playerIdx], card)
 }
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す。
@@ -1233,12 +1220,7 @@ func (g *Cego) isDeclarerSide(playerIdx int) bool {
 
 // indexInTrick currentTrick 内で playerIdx の位置を返す (-1=なし)。
 func (g *Cego) indexInTrick(playerIdx int) int {
-	for i, tc := range g.currentTrick {
-		if tc.PlayerIdx == playerIdx {
-			return i
-		}
-	}
-	return -1
+	return indexOfPlayerInTrick(g.currentTrick, playerIdx)
 }
 
 // maxByRank 勝敗ランク最大の札を返す。
@@ -1317,7 +1299,7 @@ func cegoPlayRank(c *Card, led int) int {
 
 // GetHint 人間プレイヤーの手番における推奨アクションを返す。
 func (g *Cego) GetHint() *CegoHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 || g.gameEndFlag {
 		return nil
 	}
@@ -1409,44 +1391,14 @@ func cegoSortHand(p *CegoPlayer) {
 	}
 }
 
-// playerName プレイヤー名を返す。
-func (g *Cego) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-// findHumanIdx 人間プレイヤーのインデックス (-1=なし)。
-func (g *Cego) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 // isHumanBidTurn 現在の入札手番が人間か。
 func (g *Cego) isHumanBidTurn() bool {
-	if g.bidPlayerIdx < 0 || g.bidPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.bidPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.bidPlayerIdx)
 }
 
 // appendLog 棋譜にエントリを追加する。
 func (g *Cego) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.appendLogAt(len(g.actionLog)+1, playerIdx, actionType, detail, cards)
 }
 
 // cegoBidName 入札の表示名を返す。
@@ -1638,10 +1590,7 @@ func (g *Cego) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *Cego) GetPlayer(i int) *CegoPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // IsHumanTurn 現在の手番 (Play) が人間か。
@@ -1687,10 +1636,7 @@ func (g *Cego) SetConfig(cfg CegoConfig) { g.config = cfg }
 
 // GetActionLog 棋譜取得
 func (g *Cego) GetActionLog() []*ActionLogEntry {
-	if g.actionLog == nil {
-		return []*ActionLogEntry{}
-	}
-	return g.actionLog
+	return sliceOrEmpty(g.actionLog)
 }
 
 // GetPlayableIndices プレイ可能なカードのインデックス一覧を返す。

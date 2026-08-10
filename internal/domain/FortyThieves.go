@@ -47,14 +47,14 @@ type FortyThievesConfig struct{}
 
 // FortyThieves フォーティシーブスゲームクラス
 type FortyThieves struct {
-	trumpCards  *TrumpCards
-	tableau     [FortyThievesTableauCnt][]*FortyThievesTableauCard
-	stock       []*Card
-	waste       []*Card
-	foundation  [FortyThievesFoundationCnt][]*Card
-	phase       FortyThievesPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	tableau    [FortyThievesTableauCnt][]*FortyThievesTableauCard
+	stock      []*Card
+	waste      []*Card
+	foundation [FortyThievesFoundationCnt][]*Card
+	phase      FortyThievesPhase
+	moveCount  int
+	actionLogBase
 	history     []*fortyThievesSnapshot
 	isStalemate bool
 }
@@ -413,9 +413,6 @@ func (ft *FortyThieves) GetTableau() [FortyThievesTableauCnt][]*FortyThievesTabl
 // GetFoundation ファンデーション取得
 func (ft *FortyThieves) GetFoundation() [FortyThievesFoundationCnt][]*Card { return ft.foundation }
 
-// GetActionLog 棋譜取得
-func (ft *FortyThieves) GetActionLog() []*ActionLogEntry { return ft.actionLog }
-
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (ft *FortyThieves) GetGameEndFlag() bool { return ft.phase != FortyThievesPhasePlaying }
 
@@ -462,25 +459,12 @@ func (ft *FortyThieves) CanUndo() bool {
 
 // UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。膠着状態でなければ0、脱出不可なら-1。
 func (ft *FortyThieves) UndoToEscape() int {
-	if !ft.isStalemate {
-		return 0
-	}
-	for i := len(ft.history) - 1; i >= 0; i-- {
-		if !ft.history[i].isStalemate {
-			return len(ft.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(ft.isStalemate, ft.history, func(s *fortyThievesSnapshot) bool { return s.isStalemate })
 }
 
 // UndoN n回連続でアンドゥを実行する。
 func (ft *FortyThieves) UndoN(n int) error {
-	for i := range n {
-		if err := ft.Undo(); err != nil {
-			return fmt.Errorf("undo step %d failed: %w", i+1, err)
-		}
-	}
-	return nil
+	return undoN(ft, n)
 }
 
 // --- Private helpers ---
@@ -499,14 +483,7 @@ func (ft *FortyThieves) canPlaceOnTableau(card *Card, col int) bool {
 
 // canPlaceOnFoundation ファンデーションにカードを置けるか判定
 func (ft *FortyThieves) canPlaceOnFoundation(card *Card, fIdx int) bool {
-	pile := ft.foundation[fIdx]
-	if len(pile) == 0 {
-		// 空のファンデーションにはAのみ置ける
-		return card.GetValue() == 1
-	}
-	topCard := pile[len(pile)-1]
-	// 同じスートで昇順
-	return card.GetDesign() == topCard.GetDesign() && card.GetValue() == topCard.GetValue()+1
+	return canPlaceOnFoundationPile(ft.foundation[fIdx], card)
 }
 
 // findFoundation カードを置けるファンデーションのインデックスを探す（見つからない場合-1）
@@ -595,13 +572,7 @@ func (ft *FortyThieves) restoreSnapshot(snap *fortyThievesSnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (ft *FortyThieves) appendLog(actionType, detail string, cards []*Card) {
-	ft.actionLog = append(ft.actionLog, &ActionLogEntry{
-		TurnNumber: ft.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	ft.appendLogAt(ft.moveCount, 0, actionType, detail, cards)
 }
 
 // fortyThievesJSON is the JSON wire format for FortyThieves.

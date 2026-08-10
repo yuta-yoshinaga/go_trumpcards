@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import type { ActionLogEntry } from '../types/card';
 import { cardLabel } from '../utils/cardUtils';
@@ -19,20 +20,11 @@ function formatEntry(entry: ActionLogEntry, t: (key: string, opts?: Record<strin
   return line;
 }
 
-function getFocusableElements(container: HTMLElement): HTMLElement[] {
-  return Array.from(
-    container.querySelectorAll<HTMLElement>(
-      'a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])',
-    ),
-  ).filter((el) => !el.hasAttribute('disabled'));
-}
-
 /** Renders a panel displaying game action log entries with copy and download. */
 export function ActionLogPanel({ entries, onClose }: ActionLogPanelProps) {
   const { t } = useTranslation('common');
   const [copied, setCopied] = useState(false);
   const dialogRef = useRef<HTMLElement>(null);
-  const triggerRef = useRef<Element | null>(null);
   const titleId = useId();
 
   const textContent = entries.length === 0 ? t('actionLog.empty') : entries.map((e) => formatEntry(e, t)).join('\n');
@@ -43,46 +35,17 @@ export function ActionLogPanel({ entries, onClose }: ActionLogPanelProps) {
     return () => clearTimeout(timer);
   }, [copied]);
 
-  useEffect(() => {
-    triggerRef.current = document.activeElement;
-
-    const dialog = dialogRef.current as HTMLElement;
-    const focusable = getFocusableElements(dialog);
-    if (focusable.length === 0) return;
-
-    focusable[0].focus();
-    const first = focusable[0];
-    const last = focusable[focusable.length - 1];
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key !== 'Tab') return;
-      if (e.shiftKey) {
-        if (document.activeElement === first) {
-          e.preventDefault();
-          last.focus();
-        }
-      } else {
-        if (document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
-        }
-      }
-    };
-
-    dialog.addEventListener('keydown', handleKeyDown);
-    return () => dialog.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  // Landmark `role="region"`, not a dialog: no `aria-modal`, the game behind it
+  // stays live, and it exists to be read alongside the board. So Tab is NOT
+  // cycled — that would be a WCAG 2.1.2 keyboard trap with no way out but
+  // finding the close button by sight (issue #5183). Everything else the hook
+  // provides is still wanted: focus in on open, Escape to leave, and restore on
+  // any unmount path (game reset, route change), not just the close button.
+  useFocusTrap(dialogRef, true, onClose, { trap: false });
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(textContent);
     setCopied(true);
-  };
-
-  const handleClose = () => {
-    onClose();
-    if (triggerRef.current instanceof HTMLElement) {
-      triggerRef.current.focus();
-    }
   };
 
   const handleDownload = () => {
@@ -114,7 +77,7 @@ export function ActionLogPanel({ entries, onClose }: ActionLogPanelProps) {
           <button type="button" className={btnSecondary} onClick={handleDownload}>
             {t('actionLog.download')}
           </button>
-          <button type="button" className={btnPrimary} onClick={handleClose}>
+          <button type="button" className={btnPrimary} onClick={onClose}>
             {t('actionLog.close')}
           </button>
         </div>

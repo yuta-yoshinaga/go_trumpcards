@@ -64,6 +64,13 @@ func (up *UltimateTexasHoldemWebPresenter) Output(g interfaces.UltimateTexasHold
 	return marshalOrError(resObj)
 }
 
+// HintOutput ヒントを出力する。Web ではヒントはクライアント側 (useGameHint) で
+// 算出するため、通常の状態出力を返す。UltimateTexasHoldemPresenter インタフェースを
+// 満たすための実装。
+func (up *UltimateTexasHoldemWebPresenter) HintOutput(g interfaces.UltimateTexasHoldemGame) string {
+	return up.Output(g, nil)
+}
+
 // ActionLogOutput 棋譜をJSON出力
 func (up *UltimateTexasHoldemWebPresenter) ActionLogOutput(g interfaces.UltimateTexasHoldemGame) string {
 	return actionLogOutputJSON(g)

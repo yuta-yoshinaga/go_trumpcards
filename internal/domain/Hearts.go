@@ -73,7 +73,7 @@ type Hearts struct {
 	leadPlayerIdx    int
 	gameEndFlag      bool
 	winnerIdx        int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewHearts コンストラクタ
@@ -174,7 +174,7 @@ func (h *Hearts) PlayerPass(cardIndices []int) error {
 		return ErrWrongPhase
 	}
 
-	humanIdx := h.findHumanIdx()
+	humanIdx := findHumanIdx(h.players)
 	if humanIdx < 0 {
 		return ErrNotHumanTurn
 	}
@@ -316,7 +316,7 @@ func (h *Hearts) ResolveTrick() {
 	}
 	h.players[winnerIdx].roundScore += points
 
-	winnerName := h.playerName(winnerIdx)
+	winnerName := playerName(h.players, winnerIdx)
 	h.appendLog(winnerIdx, "trick_win", fmt.Sprintf("%s wins trick %d (%+d pts)", winnerName, h.trickNumber, points), trickCards)
 
 	h.leadPlayerIdx = winnerIdx
@@ -365,7 +365,7 @@ func (h *Hearts) ScoreRound() {
 	}
 
 	if moonShooter >= 0 {
-		h.appendLog(moonShooter, "shoot_moon", fmt.Sprintf("%s shot the moon!", h.playerName(moonShooter)), nil)
+		h.appendLog(moonShooter, "shoot_moon", fmt.Sprintf("%s shot the moon!", playerName(h.players, moonShooter)), nil)
 		h.players[moonShooter].roundScore = 0
 		for i := 0; i < HeartsPlayerCnt; i++ {
 			if i != moonShooter {
@@ -382,7 +382,7 @@ func (h *Hearts) ScoreRound() {
 	// スコアログ
 	for i := 0; i < HeartsPlayerCnt; i++ {
 		h.appendLog(i, "round_score", fmt.Sprintf("%s: round=%d, total=%d",
-			h.playerName(i), h.players[i].roundScore, h.players[i].cumulativeScore), nil)
+			playerName(h.players, i), h.players[i].roundScore, h.players[i].cumulativeScore), nil)
 	}
 
 	// ゲーム終了判定
@@ -406,7 +406,7 @@ func (h *Hearts) ScoreRound() {
 				h.winnerIdx = i
 			}
 		}
-		h.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", h.playerName(h.winnerIdx)), nil)
+		h.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(h.players, h.winnerIdx)), nil)
 	}
 }
 
@@ -458,10 +458,7 @@ func (h *Hearts) GetPlayerCnt() int { return len(h.players) }
 
 // GetPlayer プレイヤー取得
 func (h *Hearts) GetPlayer(i int) *HeartsPlayer {
-	if i < 0 || i >= len(h.players) {
-		return nil
-	}
-	return h.players[i]
+	return getPlayer(h.players, i)
 }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
@@ -472,10 +469,7 @@ func (h *Hearts) SetLeadPlayerIdx(idx int) { h.leadPlayerIdx = idx }
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (h *Hearts) IsHumanTurn() bool {
-	if h.currentPlayerIdx < 0 || h.currentPlayerIdx >= len(h.players) {
-		return false
-	}
-	return h.players[h.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(h.players, h.currentPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -483,9 +477,6 @@ func (h *Hearts) GetConfig() HeartsConfig { return h.config }
 
 // SetConfig 設定変更
 func (h *Hearts) SetConfig(cfg HeartsConfig) { h.config = cfg }
-
-// GetActionLog 棋譜取得
-func (h *Hearts) GetActionLog() []*ActionLogEntry { return h.actionLog }
 
 // GetPassReady パス準備状態取得
 func (h *Hearts) GetPassReady() [HeartsPlayerCnt]bool { return h.passReady }
@@ -500,16 +491,6 @@ func (h *Hearts) SetRoundNumber(n int) { h.roundNumber = n }
 func (h *Hearts) SetTrickNumber(n int) { h.trickNumber = n }
 
 // --- Private methods ---
-
-// findHumanIdx 人間プレイヤーのインデックスを返す (-1=なし)
-func (h *Hearts) findHumanIdx() int {
-	for i, p := range h.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
 
 // startPlayPhase プレイフェーズ開始: 2♣を持つプレイヤーをリードに設定
 func (h *Hearts) startPlayPhase() {
@@ -532,15 +513,7 @@ func (h *Hearts) startPlayPhase() {
 
 // findTwoOfClubs 2♣を持つプレイヤーのインデックスを返す
 func (h *Hearts) findTwoOfClubs() int {
-	for i, p := range h.players {
-		for j := 0; j < p.GetCardsSize(); j++ {
-			card := p.GetCard(j)
-			if card.GetDesign() == CardDesignClover && card.GetValue() == 2 {
-				return i
-			}
-		}
-	}
-	return -1
+	return seatHoldingCard(h.players, func(c *Card) bool { return c.GetDesign() == CardDesignClover && c.GetValue() == 2 })
 }
 
 // playCard カードをプレイする共通処理
@@ -555,7 +528,7 @@ func (h *Hearts) playCard(playerIdx int, card *Card) {
 		h.heartsBroken = true
 	}
 
-	h.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", h.playerName(playerIdx), cardStr(card)), []*Card{card})
+	h.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(h.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(h.currentTrick) == HeartsPlayerCnt {
 		h.phase = HeartsPhaseTrickEnd
@@ -620,13 +593,7 @@ func (h *Hearts) playerHasCard(playerIdx int, design, value int) bool {
 
 // playerHasSuit プレイヤーが特定のスートを持っているか
 func (h *Hearts) playerHasSuit(playerIdx int, design int) bool {
-	p := h.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return handHasSuit(h.players[playerIdx], design)
 }
 
 // playerHasNonHeart プレイヤーがハート以外のカードを持っているか
@@ -1145,32 +1112,7 @@ func (h *Hearts) cpuPlayHard(playerIdx int, validIndices []int) int {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (h *Hearts) getValidPlayIndices(playerIdx int) []int {
-	player := h.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return h.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
-}
-
-// playerName プレイヤー名を返す
-func (h *Hearts) playerName(idx int) string {
-	if idx < 0 || idx >= len(h.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if h.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (h *Hearts) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	h.actionLog = append(h.actionLog, &ActionLogEntry{
-		TurnNumber: len(h.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	return validPlayIndices(h.players[playerIdx], func(c *Card) bool { return h.validatePlay(playerIdx, c) == nil })
 }
 
 // heartsJSON is the JSON wire format for Hearts.

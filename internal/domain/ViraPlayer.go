@@ -18,9 +18,7 @@ func NewViraPlayer(isHuman bool) *ViraPlayer {
 
 // ResetRound ラウンドをリセット（トリック・手札・終了状態を初期化）
 func (p *ViraPlayer) ResetRound() {
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayerRound(p)
 }
 
 // viraPlayerJSON is the JSON wire format for ViraPlayer.

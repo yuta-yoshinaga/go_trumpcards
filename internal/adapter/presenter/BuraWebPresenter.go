@@ -138,7 +138,12 @@ func buraHint(b interfaces.BuraGame) ([]int, string) {
 	action := b.BuraCpuDecide(0)
 	switch {
 	case action.Declare:
-		return nil, "bura.hint.declare"
+		// **役はどれも手札 3 枚すべてで成る。**ブラ(全部切札)・モスクワ(全部 A)・
+		// 小モスクワ(全部 6 + 切札の 6)・モロトカ(全部同スート) はいずれも
+		// `BuraDetectCombination` が手札全体を見て判定しており、一部の札で
+		// 成立することはない。だから「どの 3 枚か」は常に全部で、検出器を
+		// 拡張する必要はない。**一番重要な瞬間だけ何も光らない**のを直す (#4909)。
+		return buraWholeHandIndices(b), "bura.hint.declare"
 	case action.Claim:
 		return nil, "bura.hint.claim"
 	case len(b.GetCurrentLead()) > 0:
@@ -146,4 +151,17 @@ func buraHint(b interfaces.BuraGame) ([]int, string) {
 	default:
 		return action.Indices, "bura.hint.lead"
 	}
+}
+
+// buraWholeHandIndices は人間の手札すべてのインデックスを返す。
+func buraWholeHandIndices(b interfaces.BuraGame) []int {
+	p := b.GetPlayer(0)
+	if p == nil {
+		return nil
+	}
+	out := make([]int, 0, p.GetCardsSize())
+	for i := range p.GetCardsSize() {
+		out = append(out, i)
+	}
+	return out
 }

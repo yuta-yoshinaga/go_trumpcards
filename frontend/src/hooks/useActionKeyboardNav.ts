@@ -24,6 +24,13 @@ export interface ActionBinding {
    * which fails the build if one has no `kbd.action.*` entry in common.json.
    */
   label?: string;
+  /**
+   * Interpolation values for the `kbd.action.*` label. Go Fish binds one key per
+   * opponent and every row read "対象のプレイヤーを選ぶ", so the list could not
+   * say which key meant which player (#4862). A label that names the target
+   * needs the name, and the name is only known at binding time.
+   */
+  labelParams?: Record<string, string>;
 }
 
 /** Options for {@link useActionKeyboardNav}. */

@@ -74,7 +74,7 @@ type Tressette struct {
 	teamRoundThirds  [TressetteTeamCnt]int // 現ラウンドで獲得した 1/3点 の合計
 	gameEndFlag      bool
 	winnerTeam       int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewTressette コンストラクタ
@@ -212,7 +212,7 @@ func (g *Tressette) ResolveTrick() {
 		bonus = " +ultima"
 	}
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (+%d/3%s)", g.playerName(winnerIdx), g.trickNumber, thirds, bonus),
+		fmt.Sprintf("%s wins trick %d (+%d/3%s)", playerName(g.players, winnerIdx), g.trickNumber, thirds, bonus),
 		trickCards)
 
 	g.leadPlayerIdx = winnerIdx
@@ -318,18 +318,12 @@ func (g *Tressette) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *Tressette) GetPlayer(i int) *TressettePlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (g *Tressette) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -337,9 +331,6 @@ func (g *Tressette) GetConfig() TressetteConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *Tressette) SetConfig(cfg TressetteConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *Tressette) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetPlayableIndices プレイ可能な (マストフォローを満たす) カードのインデックス一覧を返す。
 func (g *Tressette) GetPlayableIndices(playerIdx int) []int {
@@ -351,23 +342,13 @@ func (g *Tressette) GetPlayableIndices(playerIdx int) []int {
 
 // --- Private methods ---
 
-// findHumanIdx 人間プレイヤーのインデックスを返す (-1=なし)
-func (g *Tressette) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 // playCard カードをプレイする共通処理
 func (g *Tressette) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == TressettePlayerCnt {
 		g.phase = TressettePhaseTrickEnd
@@ -378,25 +359,7 @@ func (g *Tressette) playCard(playerIdx int, card *Card) {
 
 // validatePlay カードのプレイが有効か検証する (マストフォロー)
 func (g *Tressette) validatePlay(playerIdx int, card *Card) error {
-	if len(g.currentTrick) == 0 {
-		return nil
-	}
-	leadSuit := g.currentTrick[0].Card.GetDesign()
-	if card.GetDesign() != leadSuit && g.playerHasSuit(playerIdx, leadSuit) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
-	}
-	return nil
-}
-
-// playerHasSuit プレイヤーが特定のスートを持っているか
-func (g *Tressette) playerHasSuit(playerIdx, design int) bool {
-	p := g.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return validateFollowSuit(g.currentTrick, g.players, playerIdx, card)
 }
 
 // trickWinner トリックの勝者を決定する。切り札がないため、リードスートの最強札が勝つ。
@@ -419,10 +382,7 @@ func (g *Tressette) trickWinner() int {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (g *Tressette) getValidPlayIndices(playerIdx int) []int {
-	player := g.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return g.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(g.players[playerIdx], func(c *Card) bool { return g.validatePlay(playerIdx, c) == nil })
 }
 
 // sortAllHands 全プレイヤーの手札をソートする
@@ -442,34 +402,12 @@ func tressetteSortHand(p *TressettePlayer) {
 	})
 }
 
-// playerName プレイヤー名を返す
-func (g *Tressette) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
 // teamName チーム表示名 (0=A, 1=B)
 func teamName(team int) string {
 	if team == 0 {
 		return "A"
 	}
 	return "B"
-}
-
-// appendLog 棋譜にエントリを追加する
-func (g *Tressette) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- Card helpers ---
@@ -518,7 +456,7 @@ func tressetteThirds(value int) int {
 
 // GetHint 人間プレイヤーの手番における推奨プレイを返す。
 func (g *Tressette) GetHint() *TressetteHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 || g.phase != TressettePhasePlay || g.currentPlayerIdx != human {
 		return nil
 	}
@@ -553,12 +491,7 @@ func (g *Tressette) playHintReason(playerIdx, chosenIdx int) string {
 
 // indexOfPlayerInTrick currentTrick 内で playerIdx が出したカードの位置を返す (-1=なし)
 func (g *Tressette) indexOfPlayerInTrick(playerIdx int) int {
-	for i, tc := range g.currentTrick {
-		if tc.PlayerIdx == playerIdx {
-			return i
-		}
-	}
-	return -1
+	return indexOfPlayerInTrick(g.currentTrick, playerIdx)
 }
 
 // --- CPU AI ---
@@ -584,7 +517,7 @@ func (g *Tressette) cpuPlaySmart(playerIdx int, valid []int) int {
 
 	// リード: 得点・強さの低いカードを出して温存する。
 	if len(g.currentTrick) == 0 {
-		return g.minBy(player, valid, func(c *Card) int {
+		return pickLowest(player, valid, func(c *Card) int {
 			return tressetteThirds(c.GetValue())*100 + tressetteStrength(c.GetValue())
 		})
 	}
@@ -607,7 +540,7 @@ func (g *Tressette) cpuPlaySmart(playerIdx int, valid []int) int {
 
 	if len(follows) == 0 {
 		// ボイド: 得点・強さの低いカードを捨てて温存する。
-		return g.minBy(player, valid, func(c *Card) int {
+		return pickLowest(player, valid, func(c *Card) int {
 			return tressetteThirds(c.GetValue())*100 + tressetteStrength(c.GetValue())
 		})
 	}
@@ -623,48 +556,22 @@ func (g *Tressette) cpuPlaySmart(playerIdx int, valid []int) int {
 		})
 		if len(nonWinners) > 0 {
 			// 勝ちを取らない範囲で最も得点の高い札を渡す。
-			return g.maxBy(player, nonWinners, func(c *Card) int {
+			return pickHighest(player, nonWinners, func(c *Card) int {
 				return tressetteThirds(c.GetValue())*100 - tressetteStrength(c.GetValue())
 			})
 		}
 		// 上書きせざるを得ない場合は最弱札で被害を抑える。
-		return g.minBy(player, follows, func(c *Card) int { return tressetteStrength(c.GetValue()) })
+		return pickLowest(player, follows, func(c *Card) int { return tressetteStrength(c.GetValue()) })
 	}
 
 	// 相手が勝っている: 得点があり勝てるなら最小限の札で取りに行く。
 	if trickThirds > 0 && len(winners) > 0 {
-		return g.minBy(player, winners, func(c *Card) int { return tressetteStrength(c.GetValue()) })
+		return pickLowest(player, winners, func(c *Card) int { return tressetteStrength(c.GetValue()) })
 	}
 	// 取れない/取る価値がない: 得点・強さの低い札でダックする。
-	return g.minBy(player, follows, func(c *Card) int {
+	return pickLowest(player, follows, func(c *Card) int {
 		return tressetteThirds(c.GetValue())*100 + tressetteStrength(c.GetValue())
 	})
-}
-
-// minBy score が最小となるインデックスを返す
-func (g *Tressette) minBy(player *TressettePlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s < bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
-}
-
-// maxBy score が最大となるインデックスを返す
-func (g *Tressette) maxBy(player *TressettePlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s > bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
 }
 
 // tressetteFilter 述語を満たすインデックスを抽出する

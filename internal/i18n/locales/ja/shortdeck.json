@@ -37,5 +37,15 @@
   "muckPrompt": "マックしますか? (m=マック / sh=ショー)",
   "rebuyPrompt": "リバイしますか? ({{chips}}チップ, {{used}}/{{max}}回使用済) (rb=リバイ / sr=スキップ)",
   "addonPrompt": "アドオンしますか? ({{chips}}チップ) (ad=アドオン / sa=スキップ)",
-  "gameEnd": "ゲーム終了"
+  "gameEnd": "ゲーム終了",
+  "handRank0": "ハイカード",
+  "handRank1": "ワンペア",
+  "handRank2": "ツーペア",
+  "handRank3": "スリーカード",
+  "handRank4": "ストレート",
+  "handRank5": "フルハウス",
+  "handRank6": "フラッシュ",
+  "handRank7": "フォーカード",
+  "handRank8": "ストレートフラッシュ",
+  "handRank9": "ロイヤルフラッシュ"
 }

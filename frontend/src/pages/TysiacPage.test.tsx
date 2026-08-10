@@ -257,4 +257,12 @@ describe('TysiacPage', () => {
     renderWithProviders(<TysiacPage />);
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
   });
+
+  it('says a marriage only scores when the K or Q is led', async () => {
+    // Holding the pair is not enough — the CUI has always said so, the web page
+    // only listed the pairs.
+    renderWithProviders(<TysiacPage />);
+    const banner = await screen.findByTestId('tysiac-marriage');
+    expect(banner.textContent).toMatch(/リード/);
+  });
 });

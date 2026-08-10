@@ -195,7 +195,7 @@ type Desmoche struct {
 
 	gameEndFlag bool
 	winnerIdx   int
-	actionLog   []*ActionLogEntry
+	actionLogBase
 }
 
 // NewDesmoche はコンストラクタ。
@@ -656,10 +656,7 @@ func (d *Desmoche) GetPlayers() []*DesmochePlayer { return d.players }
 
 // GetPlayer は idx のプレイヤーを返す。
 func (d *Desmoche) GetPlayer(idx int) *DesmochePlayer {
-	if idx < 0 || idx >= len(d.players) {
-		return nil
-	}
-	return d.players[idx]
+	return getPlayer(d.players, idx)
 }
 
 // GetPhase は現在のフェーズを返す。
@@ -673,10 +670,7 @@ func (d *Desmoche) GetStockCount() int { return len(d.stock) }
 
 // GetDiscardTop は捨て札の一番上を返す (無ければ nil)。
 func (d *Desmoche) GetDiscardTop() *Card {
-	if len(d.discard) == 0 {
-		return nil
-	}
-	return d.discard[len(d.discard)-1]
+	return discardTop(d.discard)
 }
 
 // GetMelds は場のメルドを返す。
@@ -687,10 +681,7 @@ func (d *Desmoche) GetPot() int { return d.pot }
 
 // GetScore は idx の収支を返す。
 func (d *Desmoche) GetScore(idx int) int {
-	if idx < 0 || idx >= len(d.scores) {
-		return 0
-	}
-	return d.scores[idx]
+	return elemAt(d.scores, idx)
 }
 
 // GetRoundNumber は完了したラウンド数を返す。
@@ -714,9 +705,6 @@ func (d *Desmoche) GetConfig() DesmocheConfig { return d.config }
 // SetConfig はゲーム設定をセットする。
 func (d *Desmoche) SetConfig(c DesmocheConfig) { d.config = c }
 
-// GetActionLog は棋譜を返す。
-func (d *Desmoche) GetActionLog() []*ActionLogEntry { return d.actionLog }
-
 // SetPhaseForTest はテスト用にフェーズを差し替える。
 func (d *Desmoche) SetPhaseForTest(p DesmochePhase) { d.phase = p }
 
@@ -734,13 +722,7 @@ func (d *Desmoche) SetRoundNumberForTest(n int) { d.roundNo = n }
 
 // addLog は棋譜に 1 件追加する。
 func (d *Desmoche) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	d.actionLog = append(d.actionLog, &ActionLogEntry{
-		TurnNumber: len(d.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	d.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // desmocheJSON is the JSON wire format for Desmoche.

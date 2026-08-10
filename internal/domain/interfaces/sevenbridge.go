@@ -25,6 +25,10 @@ type SevenBridgeGame interface {
 	PlayerDiscard(cardIndex int) error
 	// SuggestMeld playerIdx の最善メルド (手札インデックス) を返す。無ければ nil
 	SuggestMeld(playerIdx int) []int
+	// SuggestPon playerIdx がポンできる手札インデックスを返す。無ければ nil
+	SuggestPon(playerIdx int) []int
+	// SuggestChi playerIdx がチーできる手札インデックスを返す。無ければ nil
+	SuggestChi(playerIdx int) []int
 	// SuggestDiscard playerIdx の推奨ディスカード手札インデックスを返す。無ければ -1
 	SuggestDiscard(playerIdx int) int
 	// CpuPlay CPU プレイヤーが 1 ターン実行する

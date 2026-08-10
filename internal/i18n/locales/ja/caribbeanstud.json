@@ -20,5 +20,12 @@
   "dealerWins": "ディーラーの勝ち！",
   "playerFolded": "プレイヤーがフォールド。",
   "push": "プッシュ！",
-  "totalPayoutLine": "合計払戻し: {{payout}}"
+  "totalPayoutLine": "合計払戻し: {{payout}}",
+  "hintNone": "いまはヒントを出せません。",
+  "hintDecision": "推奨: {{action}} - {{reason}}",
+  "hintPlay": "プレイ (レイズ)",
+  "hintFold": "フォールド",
+  "hintPairOrBetter": "ワンペア以上ある",
+  "hintAceKingHigh": "役は無いが A と K を持っている",
+  "hintWeakHand": "役が無く A-K にも届かない"
 }

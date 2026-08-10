@@ -15,6 +15,17 @@ const MinClaimedValue = 1
 // MaxClaimedValue claimed value の最大値 (K)
 const MaxClaimedValue = 13
 
+// DoubtHonestClaimValue returns the value an honest play would claim next: the
+// previous claim plus one, wrapping K back to A, or A when nothing has been
+// played yet. Any value in range is legal — this is the value that is true
+// rather than a bluff, which is why both UIs offer it (#4860).
+func DoubtHonestClaimValue(lastAction *DoubtAction) int {
+	if lastAction == nil {
+		return MinClaimedValue
+	}
+	return (lastAction.ClaimedValue % MaxClaimedValue) + 1
+}
+
 // randomDoubtChance CPUがランダムにダウトを宣言する確率
 const randomDoubtChance = 0.3
 
@@ -122,7 +133,7 @@ type Doubt struct {
 	turnCounter     int
 	humanProfile    *DoubtHumanProfile
 	lastHumanPlayMs int
-	actionLog       []*ActionLogEntry
+	actionLogBase
 }
 
 // NewDoubt コンストラクタ
@@ -404,7 +415,7 @@ func (d *Doubt) decideCpuDoubters() {
 			d.cpuDoubters = append(d.cpuDoubters, i)
 		} else {
 			effectiveChance := randomDoubtChance
-			if d.config.CpuMetaAI && d.humanProfile != nil && cardPlayerIdx == d.findHumanIdx() {
+			if d.config.CpuMetaAI && d.humanProfile != nil && cardPlayerIdx == findHumanIdx(d.players) {
 				bracket := doubtHandSizeBracket(d.players[cardPlayerIdx].GetCardsSize())
 				effectiveChance = d.humanProfile.AdjustedDoubtChance(randomDoubtChance, bracket, d.lastHumanPlayMs)
 			}
@@ -464,7 +475,7 @@ func (d *Doubt) ResolveDoubt(doubterIndices []int) {
 
 	// メタAI: 人間がダウターの場合に結果を記録
 	if d.config.CpuMetaAI && d.humanProfile != nil {
-		humanIdx := d.findHumanIdx()
+		humanIdx := findHumanIdx(d.players)
 		for _, di := range doubterIndices {
 			if di == humanIdx {
 				d.humanProfile.RecordDoubt(wasLying)
@@ -556,10 +567,7 @@ func (d *Doubt) GetPlayerCnt() int { return len(d.players) }
 
 // GetPlayer プレイヤー取得
 func (d *Doubt) GetPlayer(i int) *DoubtPlayer {
-	if i < 0 || i >= len(d.players) {
-		return nil
-	}
-	return d.players[i]
+	return getPlayer(d.players, i)
 }
 
 // GetTableCardCount テーブルカード枚数取得
@@ -622,30 +630,6 @@ func (d *Doubt) ImportProfile(data []byte) error {
 	d.humanProfile = &DoubtHumanProfile{}
 	d.humanProfile.Import(pd)
 	return nil
-}
-
-// GetActionLog 棋譜を取得する
-func (d *Doubt) GetActionLog() []*ActionLogEntry { return d.actionLog }
-
-// appendLog 棋譜にエントリを追加する
-func (d *Doubt) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	d.actionLog = append(d.actionLog, &ActionLogEntry{
-		TurnNumber: len(d.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
-// findHumanIdx 人間プレイヤーのインデックスを返す (-1=なし)
-func (d *Doubt) findHumanIdx() int {
-	for i, p := range d.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
 }
 
 // memoryDecayRate 記憶力レベルに対応する記憶減衰率を返す

@@ -156,7 +156,41 @@ func (p *AnacondaCuiPresenter) HintOutput(g interfaces.AnacondaGame) string {
 	}
 	action := i18n.T("anaconda.action." + hint.Action)
 	reason := hintReasonStr(hint.Reason, anacondaHintReasonKeys)
-	return color.Yellow(i18n.Tf("anaconda.hint", "action", action, "reason", reason)) + "\n"
+	line := i18n.Tf("anaconda.hint", "action", action, "reason", reason)
+	// **どの札かまで出す。**ドメインは pass/keep の推奨インデックスを計算して
+	// 返しているのに、行は「3枚パス（弱いため）」で止まっていた (#4851)。
+	// call/raise/fold では CardIndices は nil なので、この行は付かない。
+	if cards := anacondaHintCards(g, hint.CardIndices); cards != "" {
+		line += " " + i18n.Tf("anaconda.hintCards", "cards", cards)
+	}
+	return color.Yellow(line) + "\n"
+}
+
+// anacondaHintCards renders the recommended indices as "[0]SPADE 5, [2]HEART 9",
+// or "" when the hint carries no indices.
+func anacondaHintCards(g interfaces.AnacondaGame, indices []int) string {
+	if len(indices) == 0 {
+		return ""
+	}
+	// 席順は固定でないので GetIsHuman で探す (このファイルの他の箇所と同じ)。
+	var human *domain.AnacondaPlayer
+	for i := 0; i < g.GetPlayerCnt(); i++ {
+		if p := g.GetPlayer(i); p != nil && p.GetIsHuman() {
+			human = p
+			break
+		}
+	}
+	if human == nil {
+		return ""
+	}
+	parts := make([]string, 0, len(indices))
+	for _, idx := range indices {
+		if idx < 0 || idx >= human.GetCardsSize() {
+			continue
+		}
+		parts = append(parts, "["+strconv.Itoa(idx)+"]"+cuiCardStr(human.GetCard(idx)))
+	}
+	return strings.Join(parts, ", ")
 }
 
 // anacondaHintReasonKeys maps hint-reason identifiers to i18n keys.

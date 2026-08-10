@@ -68,5 +68,8 @@
     "drewFrom": "← {{from}} から",
     "drewAndPaired": "← {{from}} から (ペア成立)"
   },
-  "keyHints": "D: 引く / S: シャッフル"
+  "keyHints": "D: 引く / S: シャッフル",
+  "metaAI": {
+    "status": "[メタAI] 適応中（ゲーム数: {{games}}、端ピック率: {{rate}}%）"
+  }
 }

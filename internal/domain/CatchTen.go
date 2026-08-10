@@ -46,7 +46,7 @@ type CatchTen struct {
 	teamScores       [CatchTenTeamCnt]int
 	gameEndFlag      bool
 	winnerTeam       int // -1 = 未確定 / -2 = 引き分け
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // CatchTenDrawTeam は両チームが同時にポイント上限へ到達した際の引き分けを表す。
@@ -245,7 +245,7 @@ func (g *CatchTen) ResolveTrick() {
 		winner.SetRoundScore(winner.GetRoundScore() + honor)
 	}
 
-	winnerName := g.playerName(winnerIdx)
+	winnerName := playerName(g.players, winnerIdx)
 	g.appendLog(winnerIdx, "trick_win",
 		fmt.Sprintf("%s wins trick %d (honors: %d)", winnerName, g.trickNumber, honor), trickCards)
 
@@ -342,10 +342,7 @@ func (g *CatchTen) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *CatchTen) GetPlayer(i int) *CatchTenPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
@@ -377,10 +374,7 @@ func (g *CatchTen) SetTeamScore(team, score int) {
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (g *CatchTen) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -388,9 +382,6 @@ func (g *CatchTen) GetConfig() CatchTenConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *CatchTen) SetConfig(cfg CatchTenConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *CatchTen) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetValidPlayIndices プレイ可能なカードのインデックスリストを返す (Web用)
 func (g *CatchTen) GetValidPlayIndices(playerIdx int) []int {
@@ -444,7 +435,7 @@ func (g *CatchTen) playCard(playerIdx int, card *Card) {
 		Card:      card,
 	})
 
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == CatchTenPlayerCnt {
 		g.phase = CatchTenPhaseTrickEnd
@@ -473,13 +464,7 @@ func (g *CatchTen) validatePlay(playerIdx int, card *Card) error {
 
 // playerHasSuit プレイヤーが特定のスートを持っているか
 func (g *CatchTen) playerHasSuit(playerIdx int, design int) bool {
-	p := g.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return handHasSuit(g.players[playerIdx], design)
 }
 
 // cardStrength はカードのトリック内での強さ (大きいほど強い) を返す。
@@ -563,28 +548,6 @@ func catchTenSortHand(p *CatchTenPlayer) {
 			return ci.GetDesign() < cj.GetDesign()
 		}
 		return ci.GetValue() < cj.GetValue()
-	})
-}
-
-// playerName プレイヤー名を返す
-func (g *CatchTen) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する
-func (g *CatchTen) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
 	})
 }
 
@@ -809,10 +772,7 @@ func (g *CatchTen) isPartnerWinning(playerIdx int) bool {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
 func (g *CatchTen) getValidPlayIndices(playerIdx int) []int {
-	player := g.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return g.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(g.players[playerIdx], func(c *Card) bool { return g.validatePlay(playerIdx, c) == nil })
 }
 
 // catchTenJSON is the JSON wire format for CatchTen.

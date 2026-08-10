@@ -86,6 +86,8 @@ func (p *CanastaCuiPresenter) Output(g interfaces.CanastaGame, lastErr error) st
 		// Top of discard
 		if top := g.GetDiscardTop(); top != nil {
 			b.WriteString(i18n.Tf("canasta.discardLine", "card", cuiCardStr(top)) + "\n")
+			// 山ごと取るゲームなので中身は公開情報 (#5043)。Burraco と同じ形。
+			b.WriteString(cuiDiscardPileLines(g.GetDiscardPile(), "canasta.discardPileLine"))
 		}
 
 		// Players

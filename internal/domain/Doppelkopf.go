@@ -33,6 +33,12 @@ const DoppelkopfTrickCount = 12
 // DoppelkopfTotalPoints 1 ラウンドのカードポイント合計
 const DoppelkopfTotalPoints = 240
 
+// DoppelkopfReWinPoints は Re チームが勝つのに必要なカード得点。
+//
+// 全 240 点の過半数。Kontra は 120 点で勝つ (引き分けが無いよう Re 側だけ
+// 1 点多く必要) ため、この非対称は仕様であって誤差ではない。
+const DoppelkopfReWinPoints = 121
+
 // DoppelkopfPhase ゲームフェーズ
 type DoppelkopfPhase int
 
@@ -76,7 +82,7 @@ type Doppelkopf struct {
 	roundGamePts     int                       // 直近ラウンドのゲームポイント (倍率込み)
 	gameEndFlag      bool
 	winnerIdx        int // ゲーム勝者 (-1 = 未確定)
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewDoppelkopf コンストラクタ
@@ -203,7 +209,7 @@ func (g *Doppelkopf) PlayerAnnounce() error {
 	if g.phase != DoppelkopfPhasePlay {
 		return ErrWrongPhase
 	}
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 {
 		return ErrNotHumanTurn
 	}
@@ -229,10 +235,10 @@ func (g *Doppelkopf) canAnnounce(playerIdx int) bool {
 func (g *Doppelkopf) applyAnnounce(playerIdx int) {
 	if g.reTeam[playerIdx] {
 		g.reAnnounced = true
-		g.appendLog(playerIdx, "announce_re", fmt.Sprintf("%s announces Re", g.playerName(playerIdx)), nil)
+		g.appendLog(playerIdx, "announce_re", fmt.Sprintf("%s announces Re", playerName(g.players, playerIdx)), nil)
 	} else {
 		g.kontraAnnounced = true
-		g.appendLog(playerIdx, "announce_kontra", fmt.Sprintf("%s announces Kontra", g.playerName(playerIdx)), nil)
+		g.appendLog(playerIdx, "announce_kontra", fmt.Sprintf("%s announces Kontra", playerName(g.players, playerIdx)), nil)
 	}
 }
 
@@ -264,7 +270,7 @@ func (g *Doppelkopf) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Doppelkopf) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == DoppelkopfPlayerCnt {
 		g.phase = DoppelkopfPhaseTrickEnd
@@ -287,7 +293,7 @@ func (g *Doppelkopf) ResolveTrick() {
 	}
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (%d pts)", g.playerName(winnerIdx), g.trickNumber, pts), trickCards)
+		fmt.Sprintf("%s wins trick %d (%d pts)", playerName(g.players, winnerIdx), g.trickNumber, pts), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	// Clear the resolved trick so a spurious second ResolveTrick call cannot
@@ -320,7 +326,7 @@ func (g *Doppelkopf) ScoreRound() {
 
 	rePts := g.teamPoints(true)
 	kontraPts := DoppelkopfTotalPoints - rePts
-	reWon := rePts >= 121 // Re は 121 点以上で勝利 (Kontra は 120 点で勝利)
+	reWon := rePts >= DoppelkopfReWinPoints
 	loserPts := kontraPts
 	if !reWon {
 		loserPts = rePts
@@ -340,7 +346,7 @@ func (g *Doppelkopf) ScoreRound() {
 		g.gameEndFlag = true
 		g.winnerIdx = w
 		g.phase = DoppelkopfPhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", g.playerName(w)), nil)
+		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, w)), nil)
 	}
 }
 
@@ -469,10 +475,7 @@ func (g *Doppelkopf) trickWinner() int {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す。
 func (g *Doppelkopf) getValidPlayIndices(playerIdx int) []int {
-	player := g.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return g.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(g.players[playerIdx], func(c *Card) bool { return g.validatePlay(playerIdx, c) == nil })
 }
 
 // --- Misc helpers ---
@@ -503,36 +506,9 @@ func dkSortHand(p *DoppelkopfPlayer) {
 	}
 }
 
-// playerName プレイヤー名を返す。
-func (g *Doppelkopf) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する。
-func (g *Doppelkopf) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // indexOfPlayerInTrick currentTrick 内で playerIdx の札の位置を返す (-1=なし)。
 func (g *Doppelkopf) indexOfPlayerInTrick(playerIdx int) int {
-	for i, tc := range g.currentTrick {
-		if tc.PlayerIdx == playerIdx {
-			return i
-		}
-	}
-	return -1
+	return indexOfPlayerInTrick(g.currentTrick, playerIdx)
 }
 
 // trickTopStrength 現在のトリック勝者 winnerIdx の札の強さを返す。防御的に、
@@ -543,16 +519,6 @@ func (g *Doppelkopf) trickTopStrength(winnerIdx int) int {
 		return -1 << 30
 	}
 	return dkStrength(g.currentTrick[idx].Card)
-}
-
-// findHumanIdx 人間プレイヤーのインデックスを返す (-1=なし)。
-func (g *Doppelkopf) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
 }
 
 // --- Card classification ---
@@ -746,7 +712,7 @@ func (g *Doppelkopf) IsKontraAnnounced() bool { return g.kontraAnnounced }
 
 // CanHumanAnnounce 人間プレイヤーが今宣言できるか
 func (g *Doppelkopf) CanHumanAnnounce() bool {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	return human >= 0 && g.canAnnounce(human)
 }
 
@@ -770,18 +736,12 @@ func (g *Doppelkopf) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *Doppelkopf) GetPlayer(i int) *DoppelkopfPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // IsHumanTurn 現在の手番が人間かどうか。
 func (g *Doppelkopf) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -789,9 +749,6 @@ func (g *Doppelkopf) GetConfig() DoppelkopfConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *Doppelkopf) SetConfig(cfg DoppelkopfConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *Doppelkopf) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetPlayableIndices プレイ可能なカードのインデックス一覧を返す。
 func (g *Doppelkopf) GetPlayableIndices(playerIdx int) []int {
@@ -805,7 +762,7 @@ func (g *Doppelkopf) GetPlayableIndices(playerIdx int) []int {
 
 // GetHint 人間プレイヤーの手番における推奨プレイを返す。
 func (g *Doppelkopf) GetHint() *DoppelkopfHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 || g.phase != DoppelkopfPhasePlay || g.currentPlayerIdx != human {
 		return nil
 	}
@@ -872,7 +829,7 @@ func (g *Doppelkopf) cpuPlaySmart(playerIdx int, valid []int) int {
 	player := g.players[playerIdx]
 
 	if len(g.currentTrick) == 0 {
-		return g.minBy(player, valid, func(c *Card) int {
+		return pickLowest(player, valid, func(c *Card) int {
 			return dkCardPoints(c.GetValue())*100 + dkStrength(c)
 		})
 	}
@@ -895,14 +852,14 @@ func (g *Doppelkopf) cpuPlaySmart(playerIdx int, valid []int) int {
 
 	if len(follows) == 0 {
 		if partnerWinning {
-			return g.maxBy(player, valid, func(c *Card) int {
+			return pickHighest(player, valid, func(c *Card) int {
 				if dkIsTrump(c) {
 					return -dkStrength(c)
 				}
 				return dkCardPoints(c.GetValue())*100 - dkStrength(c)
 			})
 		}
-		return g.minBy(player, valid, func(c *Card) int {
+		return pickLowest(player, valid, func(c *Card) int {
 			return dkCardPoints(c.GetValue())*100 + dkStrength(c)
 		})
 	}
@@ -916,45 +873,19 @@ func (g *Doppelkopf) cpuPlaySmart(playerIdx int, valid []int) int {
 			return dkStrength(player.GetCard(idx)) < topStrength
 		})
 		if len(nonWinners) > 0 {
-			return g.maxBy(player, nonWinners, func(c *Card) int {
+			return pickHighest(player, nonWinners, func(c *Card) int {
 				return dkCardPoints(c.GetValue())*100 - dkStrength(c)
 			})
 		}
-		return g.minBy(player, follows, func(c *Card) int { return dkStrength(c) })
+		return pickLowest(player, follows, func(c *Card) int { return dkStrength(c) })
 	}
 
 	if trickPts > 0 && len(winners) > 0 {
-		return g.minBy(player, winners, func(c *Card) int { return dkStrength(c) })
+		return pickLowest(player, winners, func(c *Card) int { return dkStrength(c) })
 	}
-	return g.minBy(player, follows, func(c *Card) int {
+	return pickLowest(player, follows, func(c *Card) int {
 		return dkCardPoints(c.GetValue())*100 + dkStrength(c)
 	})
-}
-
-// minBy score が最小となるインデックスを返す。
-func (g *Doppelkopf) minBy(player *DoppelkopfPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s < bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
-}
-
-// maxBy score が最大となるインデックスを返す。
-func (g *Doppelkopf) maxBy(player *DoppelkopfPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s > bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
 }
 
 // dkFilter 述語を満たすインデックスを抽出する。

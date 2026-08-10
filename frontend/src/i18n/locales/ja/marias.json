@@ -63,5 +63,6 @@
     "resetButton": "リセットボタンで新しいゲームを始められます。"
   },
   "hintRequested": "ヒントがあります",
-  "noHint": "ヒントはありません"
+  "noHint": "ヒントはありません",
+  "marriageEarned": "結婚ボーナス確定: +{{points}}（K・Qを出しても消えません）"
 }

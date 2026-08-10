@@ -75,7 +75,7 @@ type ThreeThirteen struct {
 	gameEndFlag      bool
 	winnerIdx        int
 	turnCount        int
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewThreeThirteen コンストラクタ
@@ -246,7 +246,7 @@ func (g *ThreeThirteen) drawFromStock() error {
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", g.playerName(g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, g.currentPlayerIdx)), nil)
 	g.phase = ThreeThirteenPhaseDiscard
 	return nil
 }
@@ -260,23 +260,14 @@ func (g *ThreeThirteen) drawFromDiscard() error {
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s draws %s from discard", g.playerName(g.currentPlayerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s draws %s from discard", playerName(g.players, g.currentPlayerIdx), cardStr(card)), []*Card{card})
 	g.phase = ThreeThirteenPhaseDiscard
 	return nil
 }
 
 // recycleDiscardIntoStock 山札が空のとき捨て札トップ 1 枚を残して残りを山札へ戻しシャッフルする。
 func (g *ThreeThirteen) recycleDiscardIntoStock() bool {
-	if len(g.discardPile) <= 1 {
-		return false
-	}
-	top := g.discardPile[len(g.discardPile)-1]
-	rest := g.discardPile[:len(g.discardPile)-1]
-	g.discardPile = []*Card{top}
-	rand.Shuffle(len(rest), func(i, j int) { rest[i], rest[j] = rest[j], rest[i] })
-	g.drawPile = append(g.drawPile, rest...)
-	g.appendLog(-1, "recycle", fmt.Sprintf("Discard pile recycled into stock (%d cards)", len(rest)), nil)
-	return true
+	return recycleDiscardIntoStock(&g.discardPile, &g.drawPile, g)
 }
 
 // PlayerDiscard 人間プレイヤーが手札 1 枚を捨ててターン終了する
@@ -329,13 +320,13 @@ func (g *ThreeThirteen) applyDiscard(cardIndex int, knock bool) error {
 
 	discarded := player.RemoveCard(cardIndex)
 	g.discardPile = append(g.discardPile, discarded)
-	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", g.playerName(g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
 
 	if knock {
 		g.knockerIdx = g.currentPlayerIdx
 		player.SetIsFinished(true)
 		g.finalTurnsLeft = len(g.players) - 1
-		g.appendLog(g.currentPlayerIdx, "knock", fmt.Sprintf("%s knocks!", g.playerName(g.currentPlayerIdx)), nil)
+		g.appendLog(g.currentPlayerIdx, "knock", fmt.Sprintf("%s knocks!", playerName(g.players, g.currentPlayerIdx)), nil)
 	}
 
 	g.advanceTurn()
@@ -362,10 +353,7 @@ func (g *ThreeThirteen) advanceTurn() {
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (g *ThreeThirteen) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // CpuPlay 現在の手番が CPU の場合にターンを実行する
@@ -398,12 +386,7 @@ func (g *ThreeThirteen) CpuPlay() {
 
 // cpuDraw CPU の引き処理。捨て札トップが手役のデッドウッドを減らすなら拾い、そうでなければ山札から引く。
 func (g *ThreeThirteen) cpuDraw() {
-	top := g.GetDiscardTop()
-	if top != nil && g.cpuShouldTakeDiscard(top) {
-		_ = g.drawFromDiscard()
-		return
-	}
-	_ = g.drawFromStock()
+	cpuDrawTurn(g)
 }
 
 // cpuShouldTakeDiscard 捨て札トップを拾うべきかを返す。
@@ -485,7 +468,7 @@ func (g *ThreeThirteen) finishRound() {
 		g.players[i].CommitRoundScore()
 	}
 	if g.knockerIdx >= 0 {
-		g.appendLog(g.knockerIdx, "round_end", fmt.Sprintf("Round %d ends (%s knocked)", g.round, g.playerName(g.knockerIdx)), nil)
+		g.appendLog(g.knockerIdx, "round_end", fmt.Sprintf("Round %d ends (%s knocked)", g.round, playerName(g.players, g.knockerIdx)), nil)
 	} else {
 		g.appendLog(-1, "round_end", fmt.Sprintf("Round %d ends (stock out)", g.round), nil)
 	}
@@ -509,7 +492,7 @@ func (g *ThreeThirteen) finalizeGameEnd() {
 			g.winnerIdx = i
 		}
 	}
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", g.playerName(g.winnerIdx)), nil)
+	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, g.winnerIdx)), nil)
 }
 
 // --- Getters / Setters ---
@@ -549,10 +532,7 @@ func (g *ThreeThirteen) SetDiscardPile(p []*Card) { g.discardPile = p }
 
 // GetDiscardTop 捨て札トップ
 func (g *ThreeThirteen) GetDiscardTop() *Card {
-	if len(g.discardPile) == 0 {
-		return nil
-	}
-	return g.discardPile[len(g.discardPile)-1]
+	return discardTop(g.discardPile)
 }
 
 // GetDrawPileCount 山札残り枚数
@@ -572,10 +552,7 @@ func (g *ThreeThirteen) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *ThreeThirteen) GetPlayer(i int) *ThreeThirteenPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetConfig 設定取得
@@ -583,9 +560,6 @@ func (g *ThreeThirteen) GetConfig() ThreeThirteenConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *ThreeThirteen) SetConfig(c ThreeThirteenConfig) { g.config = c }
-
-// GetActionLog 棋譜取得
-func (g *ThreeThirteen) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetPlayerDeadwoodValue プレイヤーの最善メルド分割でのデッドウッド点を返す（プレゼンター向け）。
 func (g *ThreeThirteen) GetPlayerDeadwoodValue(i int) int {
@@ -598,45 +572,29 @@ func (g *ThreeThirteen) GetPlayerDeadwoodValue(i int) int {
 	return threeThirteenDeadwoodValue(dead, g.WildRank())
 }
 
+// GetDeadwoodAfterDiscard returns the deadwood the player would be left with if
+// they discarded the card at cardIndex, or -1 when the index is out of range.
+//
+// **捨てる前に分かる情報。**Web は 1 枚選ぶたびに予測デッドウッドを出しているのに、
+// CUI は今の値しか出しておらず、どれを捨てると得かは実際に捨てるまで分からなかった
+// (#4840)。ワイルドランクは現在のラウンドのものを使う。
+func (g *ThreeThirteen) GetDeadwoodAfterDiscard(playerIdx, cardIndex int) int {
+	p := g.GetPlayer(playerIdx)
+	if p == nil || cardIndex < 0 || cardIndex >= p.GetCardsSize() {
+		return -1
+	}
+	_, dead := threeThirteenBestMelds(handWithout(p, cardIndex), g.WildRank())
+	return threeThirteenDeadwoodValue(dead, g.WildRank())
+}
+
 // --- Private helpers ---
 
 func (g *ThreeThirteen) sortAllHands() {
-	for i := range g.players {
-		g.sortHand(i)
-	}
+	sortHands(len(g.players), g)
 }
 
 func (g *ThreeThirteen) sortHand(playerIdx int) {
-	p := g.players[playerIdx]
-	cards := make([]*Card, p.GetCardsSize())
-	for i := 0; i < p.GetCardsSize(); i++ {
-		cards[i] = p.GetCard(i)
-	}
-	sortCards(cards)
-	p.Reset()
-	for _, c := range cards {
-		p.AddCard(c)
-	}
-}
-
-func (g *ThreeThirteen) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-func (g *ThreeThirteen) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	sortHandInPlace(g.players[playerIdx], sortCards)
 }
 
 // collectThreeThirteenCards プレイヤーの手札を []*Card で返す

@@ -447,4 +447,30 @@ describe('FiveCardStudPage keyboard shortcuts', () => {
     fireEvent.click(toggle);
     expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
   });
+
+  // **CUI は fivecardstud.playerStats で VPIP/PFR/3Bet/AF を全員分出しているのに、
+  // Web はプレイスタイル名しか出していなかった (#4730)。**同じレスポンスに乗って
+  // いる数字が Web だけ捨てられている状態だった。
+  it('shows the play-history statistics once hands have been played', async () => {
+    const stats = { totalHands: 40, vpip: 25, pfr: 12, threeBet: 5, af: '2.3' };
+    mockExec.mockResolvedValue({
+      ...secondStreetState,
+      players: [humanPlayer(stats), cpuPlayer(1, stats), cpuPlayer(2, stats), cpuPlayer(3, stats)],
+    });
+    renderWithProviders(<FiveCardStudPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    const badges = screen.getAllByTestId('hud-stats');
+    expect(badges.length).toBeGreaterThan(0);
+    expect(badges[0]).toHaveTextContent('25');
+  });
+
+  // 逆側。1ハンドも打っていないうちは出さない (既定は totalHands: 0)。
+  it('shows no statistics before any hand has been played', async () => {
+    mockExec.mockResolvedValue(secondStreetState);
+    renderWithProviders(<FiveCardStudPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryAllByTestId('hud-stats')).toHaveLength(0);
+  });
 });

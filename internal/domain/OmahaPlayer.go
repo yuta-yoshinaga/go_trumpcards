@@ -4,7 +4,6 @@ package domain
 
 import (
 	"encoding/json"
-	"fmt"
 )
 
 // OmahaPlayer オマハホールデムプレイヤークラス
@@ -60,18 +59,12 @@ func (op *OmahaPlayer) GetPFRCount() int { return op.pfrCount }
 
 // GetVPIP VPIP%取得 (0 if totalHands==0)
 func (op *OmahaPlayer) GetVPIP() int {
-	if op.totalHands == 0 {
-		return 0
-	}
-	return op.vpipCount * 100 / op.totalHands
+	return percentOf(op.vpipCount, op.totalHands)
 }
 
 // GetPFR PFR%取得 (0 if totalHands==0)
 func (op *OmahaPlayer) GetPFR() int {
-	if op.totalHands == 0 {
-		return 0
-	}
-	return op.pfrCount * 100 / op.totalHands
+	return percentOf(op.pfrCount, op.totalHands)
 }
 
 // IncrementTotalHands 総ハンド数をインクリメント
@@ -91,10 +84,7 @@ func (op *OmahaPlayer) GetThreeBetCount() int { return op.threeBetCount }
 
 // GetThreeBet 3Bet%取得 (0 if threeBetOpportunity==0)
 func (op *OmahaPlayer) GetThreeBet() int {
-	if op.threeBetOpportunity == 0 {
-		return 0
-	}
-	return op.threeBetCount * 100 / op.threeBetOpportunity
+	return percentOf(op.threeBetCount, op.threeBetOpportunity)
 }
 
 // IncrementThreeBetOpportunity 3Bet機会数をインクリメント
@@ -117,20 +107,12 @@ func (op *OmahaPlayer) IncrementPostFlopCall() { op.postFlopCall++ }
 
 // GetAFDisplay AF表示文字列取得 ("-"=アクションなし, "∞"=コールなし, "X.X"=通常)
 func (op *OmahaPlayer) GetAFDisplay() string {
-	if op.postFlopBetRaise == 0 && op.postFlopCall == 0 {
-		return "-"
-	}
-	if op.postFlopCall == 0 {
-		return "∞"
-	}
-	return fmt.Sprintf("%.1f", float64(op.postFlopBetRaise)/float64(op.postFlopCall))
+	return afDisplay(op.postFlopBetRaise, op.postFlopCall)
 }
 
 // GetComparisonCards ハンド比較用カード取得 (BettingPlayerインターフェース)
 func (op *OmahaPlayer) GetComparisonCards() []*Card {
-	cards := make([]*Card, len(op.bestHand))
-	copy(cards, op.bestHand)
-	return cards
+	return copyOf(op.bestHand)
 }
 
 // GetLowBestHand Hi-Lo用ローベスト5枚取得 (未評価/不成立時はnil)
@@ -218,11 +200,15 @@ func (op *OmahaPlayer) UnmarshalJSON(data []byte) error {
 
 // EvalBestHand コミュニティカードとホールカード(4枚)からベスト5枚を評価
 // オマハルール: ホールカードから必ず2枚、コミュニティカードから必ず3枚を使う
-func (op *OmahaPlayer) EvalBestHand(communityCards []*Card) int {
+// PeekBestHand は現在の手札とボードから最善の 5 枚役を求めて返す。**状態を
+// 変えない。**
+//
+// 表示だけのために EvalBestHand を呼ぶと、描画のたびに handRank / bestHand を
+// 書き換えてしまう。CUI の途中経過表示はこちらを使う (#4680)。手札 2 枚・
+// ボード 3 枚に満たないときはハイカード扱いで、確定した組は返さない。
+func (op *OmahaPlayer) PeekBestHand(communityCards []*Card) (rank int, best []*Card) {
 	if len(op.cards) < 2 || len(communityCards) < 3 {
-		op.handRank = PokerHandHighCard
-		op.bestHand = nil
-		return op.handRank
+		return PokerHandHighCard, nil
 	}
 
 	holePairs := combinations(op.cards, 2)         // C(4,2) = 6
@@ -230,23 +216,26 @@ func (op *OmahaPlayer) EvalBestHand(communityCards []*Card) int {
 
 	bestRank := -1
 	var bestCards []*Card
-
 	for _, pair := range holePairs {
 		for _, triple := range commTriples {
 			hand := make([]*Card, 0, 5)
 			hand = append(hand, pair...)
 			hand = append(hand, triple...)
-			rank := evalFiveCardHand(hand)
-			if rank > bestRank || (rank == bestRank && compareHighCardsSlice(hand, bestCards) > 0) {
-				bestRank = rank
+			r := evalFiveCardHand(hand)
+			if r > bestRank || (r == bestRank && compareHighCardsSlice(hand, bestCards) > 0) {
+				bestRank = r
 				bestCards = make([]*Card, 5)
 				copy(bestCards, hand)
 			}
 		}
 	}
+	return bestRank, bestCards
+}
 
-	op.handRank = bestRank
-	op.bestHand = bestCards
+func (op *OmahaPlayer) EvalBestHand(communityCards []*Card) int {
+	// **判定は PeekBestHand が唯一の出どころ。**同じ探索を2つ持つと、片方だけ
+	// 直したときに「表示とショーダウンで役が違う」ずれになる。
+	op.handRank, op.bestHand = op.PeekBestHand(communityCards)
 	return op.handRank
 }
 

@@ -28,7 +28,7 @@ import i18n from '../i18n';
 import { useSound } from '../providers/SoundProvider';
 import { gameTheme } from '../styles/gameTheme';
 import type { SlapjackResponse } from '../types/card';
-import { SlapjackEventKind, SlapjackPhase } from '../types/phases';
+import { SlapjackEventKind, SlapjackPendingKind, SlapjackPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { parseSlapjackCommand, slapjackHelp } from '../utils/cli/commands/slapjackCommands';
 import { formatSlapjackState } from '../utils/cli/formatters/slapjackFormatter';
@@ -130,15 +130,19 @@ function SlapjackPageContent() {
 
   useMountReset(execApi);
 
-  // CPU tick driver while the game is active.
+  // CPU tick driver: poll only while a CPU action is pending (#4748).
+  //
+  // **手番ではなく予約でゲートする。**CPU のスラップは人間の手番中にも予約される
+  // (SlapjackPendingSlap) ので、「CPU の手番中だけ」に絞ると CPU が J を叩かなくなる。
+  const isCpuPending = state?.pendingKind !== undefined && state.pendingKind !== SlapjackPendingKind.NONE;
+  const isGameRunning = !!state && !state.gameEndFlag;
   useEffect(() => {
-    if (!state) return;
-    if (state.gameEndFlag) return;
+    if (!isGameRunning || !isCpuPending) return;
     const id = window.setInterval(() => {
       void execApi('tick');
     }, SLAPJACK_TICK_INTERVAL_MS);
     return () => window.clearInterval(id);
-  }, [state, execApi]);
+  }, [isGameRunning, isCpuPending, execApi]);
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('slapjack');

@@ -219,17 +219,7 @@ func (g *Cinch) trickCarriesPoints() bool {
 
 // currentWinningCard は進行中トリックで現在勝っているカードを返す (空なら nil)。
 func (g *Cinch) currentWinningCard() *Card {
-	if len(g.currentTrick) == 0 {
-		return nil
-	}
-	leadSuit := g.currentTrick[0].Card.GetDesign()
-	winner := g.currentTrick[0].Card
-	for _, tc := range g.currentTrick[1:] {
-		if g.cardBeats(tc.Card, winner, leadSuit) {
-			winner = tc.Card
-		}
-	}
-	return winner
+	return currentTrickWinnerCard(g.currentTrick, g)
 }
 
 // cinchStrength はカードの絶対的な強さ (切り札は +100 でオフ切り札より必ず強い)。
@@ -278,7 +268,7 @@ func (g *Cinch) pickSafeDiscard(p *CinchPlayer, valid []int) int {
 
 // GetHint は人間プレイヤーの手番における推奨アクションを返す。
 func (g *Cinch) GetHint() *CinchHint {
-	humanIdx := g.findHumanIdx()
+	humanIdx := findHumanIdx(g.players)
 	if humanIdx < 0 {
 		return nil
 	}

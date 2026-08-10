@@ -6,6 +6,6 @@ import { gameExec } from '../gameExec';
 
 /** API client for the Poker Squares /pokersquares/exec endpoint. */
 export const pokersquaresApi = {
-  exec: (command: 'reset' | 'place' | 'undo' | 'giveup' | 'log', row?: number, col?: number) =>
+  exec: (command: 'reset' | 'place' | 'undo' | 'giveup' | 'hint' | 'log', row?: number, col?: number) =>
     gameExec<PokerSquaresResponse>('pokersquares', { command, row, col }),
 };

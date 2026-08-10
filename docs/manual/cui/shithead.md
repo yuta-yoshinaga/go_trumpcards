@@ -1,4 +1,4 @@
-# Shithead / Karma（CUI版）遊び方
+# シットヘッド（CUI版）遊び方
 
 ## ゲーム概要
 

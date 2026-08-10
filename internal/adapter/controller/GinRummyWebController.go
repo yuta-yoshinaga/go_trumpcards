@@ -51,8 +51,11 @@ type GinRummyWebOutput struct {
 	WinnerIdx        int                        `json:"winnerIdx"`
 	KnockerIdx       int                        `json:"knockerIdx"`
 	KnockerMelds     []*GinRummyWebOutputMeld   `json:"knockerMelds"`
-	KnockerDeadwood  []*WebOutputCard           `json:"knockerDeadwood"`
-	IsGin            bool                       `json:"isGin"`
+	// LayoffTargets[i] は人間の手札 i 番目を足せるノッカーのメルド番号一覧。
+	// レイオフフェーズで「どれを付け足せるか」を画面が示すために使う (#4823)。
+	LayoffTargets   [][]int          `json:"layoffTargets"`
+	KnockerDeadwood []*WebOutputCard `json:"knockerDeadwood"`
+	IsGin           bool             `json:"isGin"`
 	WebOutputBase
 	Config GinRummyWebOutputConfig `json:"config"`
 }

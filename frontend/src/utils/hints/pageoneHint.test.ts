@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Card, PageOnePlayerData, PageOneResponse } from '../../types/card';
 import { PageOnePhase } from '../../types/phases';
-import { getPageOneHint } from './pageoneHint';
+import { getPageOneHint, isPageOnePlayable } from './pageoneHint';
 
 const card = (design: Card['design'], value: number): Card => ({ design, value });
 
@@ -139,5 +139,27 @@ describe('getPageOneHint', () => {
       config: { cpuDifficulty: 1, pointLimit: 200 },
     };
     expect(getPageOneHint(state)).toBeNull();
+  });
+});
+
+describe('isPageOnePlayable', () => {
+  const top = { design: 'SPADE', value: 7 } as Card;
+
+  it('accepts a matching suit', () => {
+    expect(isPageOnePlayable({ design: 'SPADE', value: 3 } as Card, top)).toBe(true);
+  });
+
+  it('accepts a matching rank', () => {
+    expect(isPageOnePlayable({ design: 'HEART', value: 7 } as Card, top)).toBe(true);
+  });
+
+  it('rejects a card matching neither', () => {
+    expect(isPageOnePlayable({ design: 'HEART', value: 3 } as Card, top)).toBe(false);
+  });
+
+  it('accepts anything onto an empty discard, as the domain does', () => {
+    // PageOne.isValidPlay returns true with no top; Start() always seeds one,
+    // so this only matters if the two implementations are compared.
+    expect(isPageOnePlayable({ design: 'HEART', value: 3 } as Card, null)).toBe(true);
   });
 });

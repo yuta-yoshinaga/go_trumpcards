@@ -19,6 +19,8 @@
   "trick": "場: {{cards}}",
   "playable": "出せる札: {{indexes}}",
   "ladderTitle": "ビッドの序列:",
+  "ladderTaken": "[{{bid}}]",
+  "ladderNoneLeft": "（これ以上の段階はありません。パスのみ）",
   "bid.pass": "パス",
   "bid.solo": "ソロ",
   "bid.heartSolo": "ハート・ソロ",

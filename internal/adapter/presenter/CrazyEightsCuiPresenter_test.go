@@ -24,6 +24,9 @@ func setupCrazyEightsCuiMock() *interfaces.MockCrazyEightsGame {
 	m.On("GetCurrentPlayerIdx").Return(0)
 	m.On("GetWinnerIdx").Return(-1)
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// #4737: サーバー計算のヒントを返すようになった。既定は「ヒント無し」。
+	m.On("GetHint").Return((*domain.CrazyEightsHint)(nil)).Maybe()
+
 	return m
 }
 
@@ -297,5 +300,54 @@ func TestCrazyEightsCuiPresenter_ActionLogOutput(t *testing.T) {
 		result := p.ActionLogOutput(m)
 		assert.Contains(t, result, "棋譜はありません")
 		m.AssertExpectations(t)
+	})
+}
+
+// **Hearts / Spades はサーバー計算の理由付きヒントを返すのに、CrazyEights には
+// HintOutput が無く、全ゲーム共通の簡易ヒューリスティックしか支援が無かった (#4737)。**
+func TestCrazyEightsCuiPresenter_HintOutput(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.CrazyEightsCuiPresenter)
+
+	t.Run("card hint names the card and the reason", func(t *testing.T) {
+		m, players := setupCrazyEightsCuiMockWithPlayers()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		idx := 0
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
+		m.On("GetHint").Return(&domain.CrazyEightsHint{CardIndex: &idx, Reason: "match_suit"})
+
+		out := p.HintOutput(m)
+		assert.Contains(t, out, "SPADE 5")
+		assert.Contains(t, out, "スートが合う")
+	})
+
+	t.Run("suit hint names the suit", func(t *testing.T) {
+		m, _ := setupCrazyEightsCuiMockWithPlayers()
+		suit := domain.CardDesignHeart
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
+		m.On("GetHint").Return(&domain.CrazyEightsHint{Suit: &suit, Reason: "choose_longest_suit"})
+
+		out := p.HintOutput(m)
+		assert.Contains(t, out, "HEART")
+		assert.Contains(t, out, "手札に一番多いスート")
+	})
+
+	// CardIndex も Suit も無いヒント (ありえないが防御的な分岐) でも、
+	// 黙らずに「ヒントなし」と言うこと。
+	t.Run("a hint with neither a card nor a suit falls back to none", func(t *testing.T) {
+		m, _ := setupCrazyEightsCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
+		m.On("GetHint").Return(&domain.CrazyEightsHint{Reason: "play_valid"})
+
+		assert.Contains(t, p.HintOutput(m), "ヒントはありません")
+	})
+
+	// **ヒントが無い側も踏む。**nil を「空文字」で返すと、CUI に何も出ず
+	// プレイヤーはコマンドが効いたのか分からない。
+	t.Run("no hint says so explicitly", func(t *testing.T) {
+		m, _ := setupCrazyEightsCuiMockWithPlayers()
+		assert.Contains(t, p.HintOutput(m), "ヒントはありません")
 	})
 }

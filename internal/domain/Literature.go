@@ -179,7 +179,7 @@ type Literature struct {
 	lastClaim   *LiteratureClaimResult
 	gameEndFlag bool
 	winnerTeam  int
-	actionLog   []*ActionLogEntry
+	actionLogBase
 }
 
 // NewLiterature コンストラクタ
@@ -807,10 +807,7 @@ func (l *Literature) GetPlayers() []*LiteraturePlayer { return l.players }
 
 // GetPlayer は指定インデックスのプレイヤーを返す。
 func (l *Literature) GetPlayer(idx int) *LiteraturePlayer {
-	if idx < 0 || idx >= len(l.players) {
-		return nil
-	}
-	return l.players[idx]
+	return getPlayer(l.players, idx)
 }
 
 // GetPhase は現在のフェーズを返す。
@@ -856,12 +853,7 @@ func (l *Literature) GetActionLog() []*ActionLogEntry { return l.actionLog }
 
 // addLog は棋譜を 1 件追加する。
 func (l *Literature) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	l.actionLog = append(l.actionLog, &ActionLogEntry{
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	l.appendLogAt(0, playerIdx, actionType, detail, cards)
 }
 
 // literatureCardName は札の内部名を返す (棋譜用)。
@@ -879,16 +871,7 @@ func (l *Literature) SetPhaseForTest(p LiteraturePhase) { l.phase = p }
 
 // SetHandForTest は手札を差し替える (テスト専用)。
 func (l *Literature) SetHandForTest(idx int, cards []*Card) {
-	p := l.GetPlayer(idx)
-	if p == nil {
-		return
-	}
-	for p.GetCardsSize() > 0 {
-		p.RemoveCard(0)
-	}
-	for _, c := range cards {
-		p.AddCard(c)
-	}
+	setHandForTest(l.GetPlayer(idx), cards)
 }
 
 // SetCurrentPlayerForTest は手番を差し替える (テスト専用)。

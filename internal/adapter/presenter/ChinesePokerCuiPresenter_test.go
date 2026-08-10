@@ -131,3 +131,69 @@ func TestChinesePokerCuiPresenter_RankStr(t *testing.T) {
 	assert.NotEmpty(t, pp.fiveCardRankStr(domain.PokerHandFlush))
 	assert.NotEmpty(t, pp.fiveCardRankStr(99))
 }
+
+// **フロントの役名も日本語ロケールで日本語。**英語の ThreeCardHandNames を
+// そのまま返していた (#4985 レビュー指摘の follow-up)。
+func TestChinesePokerCuiPresenter_FrontRankIsTranslated(t *testing.T) {
+	pp := new(ChinesePokerCuiPresenter)
+	assert.Equal(t, "ハイカード", pp.frontRankStr(domain.ThreeCardHandHighCard))
+	assert.Equal(t, "ストレートフラッシュ", pp.frontRankStr(domain.ThreeCardHandStraightFlush))
+	assert.NotContains(t, pp.frontRankStr(domain.ThreeCardHandFlush), "Flush")
+	// 範囲外は未知ランクの文言に落ちる。キー文字列を出さない。
+	assert.NotContains(t, pp.frontRankStr(99), "pokerhand.")
+	assert.NotEmpty(t, pp.frontRankStr(99))
+}
+
+// **CUI には推奨分割もファウル警告も無かった (#4717)。**Web には
+// cp-foul-warning と列プレビューがある。
+func TestChinesePokerCuiPresenter_HintOutput(t *testing.T) {
+	p := new(ChinesePokerCuiPresenter)
+	card := func(design, value int) *domain.Card { return domain.NewCard(design, value, false) }
+	setHands := func(cards []*domain.Card) *domain.ChinesePoker {
+		cp := domain.NewDefaultChinesePoker()
+		cp.SetPhase(domain.ChinesePokerPhaseSetHands)
+		cp.SetPlayerCards(cards)
+		return cp
+	}
+	spread := []*domain.Card{
+		card(domain.CardDesignSpade, 1), card(domain.CardDesignHeart, 13), card(domain.CardDesignClover, 12),
+		card(domain.CardDesignDiamond, 11), card(domain.CardDesignSpade, 10), card(domain.CardDesignHeart, 9),
+		card(domain.CardDesignClover, 8), card(domain.CardDesignDiamond, 7), card(domain.CardDesignSpade, 6),
+		card(domain.CardDesignHeart, 5), card(domain.CardDesignClover, 4), card(domain.CardDesignDiamond, 3),
+		card(domain.CardDesignSpade, 2),
+	}
+
+	t.Run("prints all three rows with their indices", func(t *testing.T) {
+		out := p.HintOutput(setHands(spread))
+		assert.Contains(t, out, "前列(3枚)")
+		assert.Contains(t, out, "中列(5枚)")
+		assert.Contains(t, out, "後列(5枚)")
+		// **インデックスが要る。**set コマンドはインデックスで指定する。
+		assert.Contains(t, out, "[0]")
+	})
+
+	t.Run("says the split is safe when it does not foul", func(t *testing.T) {
+		out := p.HintOutput(setHands(spread))
+		assert.Contains(t, out, "ファウルにならない")
+	})
+
+	// **ランク順に切るだけでは合法とは限らない。**そのまま置かせない。
+	t.Run("warns when the rank-ordered split would foul", func(t *testing.T) {
+		fouling := []*domain.Card{
+			card(domain.CardDesignSpade, 1), card(domain.CardDesignHeart, 13), card(domain.CardDesignClover, 12),
+			card(domain.CardDesignDiamond, 11), card(domain.CardDesignSpade, 9), card(domain.CardDesignHeart, 8),
+			card(domain.CardDesignClover, 7), card(domain.CardDesignDiamond, 5), card(domain.CardDesignSpade, 4),
+			card(domain.CardDesignHeart, 3), card(domain.CardDesignClover, 2), card(domain.CardDesignDiamond, 2),
+			card(domain.CardDesignSpade, 2),
+		}
+		out := p.HintOutput(setHands(fouling))
+		assert.Contains(t, out, "ファウルになる")
+		assert.NotContains(t, out, "ファウルにならない")
+	})
+
+	t.Run("says so outside the set-hands phase", func(t *testing.T) {
+		cp := setHands(spread)
+		cp.SetPhase(domain.ChinesePokerPhaseBet)
+		assert.Contains(t, p.HintOutput(cp), "ヒントを出せません")
+	})
+}

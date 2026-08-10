@@ -22,5 +22,6 @@
   "hintReasonSetTrumpLead": "リードでトランプを宣言",
   "hintReasonTrumpCut": "トランプでカット",
   "hintReasonBidStrong": "強い手札なので入札",
-  "hintReasonBidPass": "弱い手札なのでパス"
+  "hintReasonBidPass": "弱い手札なのでパス",
+  "handPips": "手札のゲーム得点: {{total}} ({{breakdown}})"
 }

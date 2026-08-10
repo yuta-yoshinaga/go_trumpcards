@@ -421,3 +421,109 @@ func TestMississippiStud_ActionLog_Recorded(t *testing.T) {
 	assert.Contains(t, types, "fold")
 	assert.Contains(t, types, "result")
 }
+
+// **CUI には役評価も配当対象判定も推奨倍率も無かった (#4710)。**Web は
+// ms-made-hand に役と配当対象かを常時出している。
+func TestMississippiStud_CurrentMadeHandAndRecommendBet(t *testing.T) {
+	card := func(design, value int) *domain.Card { return domain.NewCard(design, value, false) }
+	street := func(phase int, hole []*domain.Card, community []*domain.Card, revealed [3]bool) *domain.MississippiStud {
+		m := domain.NewDefaultMississippiStud()
+		m.SetPhase(phase)
+		m.SetPlayerHand(hole)
+		m.SetCommunityCards(community)
+		m.SetCommunityRevealed(revealed)
+		return m
+	}
+	noBoard := []*domain.Card{
+		card(domain.CardDesignClover, 2), card(domain.CardDesignDiamond, 4), card(domain.CardDesignHeart, 9),
+	}
+	hidden := [3]bool{false, false, false}
+
+	t.Run("no made hand from two unpaired cards", func(t *testing.T) {
+		m := street(domain.MississippiStudPhaseThirdSt,
+			[]*domain.Card{card(domain.CardDesignSpade, 7), card(domain.CardDesignHeart, 3)}, noBoard, hidden)
+		assert.Nil(t, m.GetCurrentMadeHand())
+	})
+
+	// **2 のペアは「ワンペア」でも配当が付かない。**役名だけ出すと、
+	// 配当の付かない手で 3 倍を置かせる。
+	t.Run("a low pair is a made hand but does not pay", func(t *testing.T) {
+		m := street(domain.MississippiStudPhaseThirdSt,
+			[]*domain.Card{card(domain.CardDesignSpade, 2), card(domain.CardDesignHeart, 2)}, noBoard, hidden)
+		made := m.GetCurrentMadeHand()
+		if assert.NotNil(t, made) {
+			assert.Equal(t, domain.PokerHandOnePair, made.Rank)
+			assert.False(t, made.PaytableEligible)
+		}
+	})
+
+	t.Run("a pair of sixes pays", func(t *testing.T) {
+		m := street(domain.MississippiStudPhaseThirdSt,
+			[]*domain.Card{card(domain.CardDesignSpade, 6), card(domain.CardDesignHeart, 6)}, noBoard, hidden)
+		made := m.GetCurrentMadeHand()
+		if assert.NotNil(t, made) {
+			assert.True(t, made.PaytableEligible)
+		}
+		assert.Equal(t, domain.MSRecommendPlay3x, m.RecommendBet())
+	})
+
+	// **エースのペアも配当対象。**value が 1 なので「6以上」だけ見ると外れる。
+	t.Run("a pair of aces pays even though the value is 1", func(t *testing.T) {
+		m := street(domain.MississippiStudPhaseThirdSt,
+			[]*domain.Card{card(domain.CardDesignSpade, 1), card(domain.CardDesignHeart, 1)}, noBoard, hidden)
+		made := m.GetCurrentMadeHand()
+		if assert.NotNil(t, made) {
+			assert.True(t, made.PaytableEligible)
+		}
+	})
+
+	// **未公開のコミュニティカードは混ぜない。**プレイヤーがまだ見ていない
+	// 札を根拠にした助言になる。
+	t.Run("ignores community cards that are still face down", func(t *testing.T) {
+		hole := []*domain.Card{card(domain.CardDesignSpade, 7), card(domain.CardDesignHeart, 3)}
+		board := []*domain.Card{card(domain.CardDesignClover, 7), card(domain.CardDesignDiamond, 4), card(domain.CardDesignHeart, 9)}
+
+		assert.Nil(t, street(domain.MississippiStudPhaseThirdSt, hole, board, hidden).GetCurrentMadeHand())
+
+		shown := street(domain.MississippiStudPhaseFourthSt, hole, board, [3]bool{true, false, false})
+		made := shown.GetCurrentMadeHand()
+		if assert.NotNil(t, made) {
+			assert.Equal(t, domain.PokerHandOnePair, made.Rank, "公開された 7 でペアになる")
+		}
+	})
+
+	t.Run("bets 1x on a flush draw with nothing made", func(t *testing.T) {
+		m := street(domain.MississippiStudPhaseFourthSt,
+			[]*domain.Card{card(domain.CardDesignSpade, 2), card(domain.CardDesignSpade, 5)},
+			[]*domain.Card{card(domain.CardDesignSpade, 9), card(domain.CardDesignDiamond, 4), card(domain.CardDesignHeart, 11)},
+			[3]bool{true, false, false})
+		assert.Equal(t, domain.MSRecommendPlay1x, m.RecommendBet())
+	})
+
+	t.Run("folds a hand with nothing made and no draw", func(t *testing.T) {
+		m := street(domain.MississippiStudPhaseFourthSt,
+			[]*domain.Card{card(domain.CardDesignSpade, 2), card(domain.CardDesignHeart, 5)},
+			[]*domain.Card{card(domain.CardDesignClover, 9), card(domain.CardDesignDiamond, 4), card(domain.CardDesignHeart, 11)},
+			[3]bool{true, false, false})
+		assert.Equal(t, domain.MSRecommendFold, m.RecommendBet())
+	})
+
+	// **3rd street だけはハイカード2枚でも賭ける。**あと3枚めくれるので
+	// まだ伸びる。4th 以降で同じ手を賭けると、伸びない手に払い続ける。
+	t.Run("two high cards are worth 1x only on third street", func(t *testing.T) {
+		hole := []*domain.Card{card(domain.CardDesignSpade, 12), card(domain.CardDesignHeart, 11)}
+		third := street(domain.MississippiStudPhaseThirdSt, hole, noBoard, hidden)
+		assert.Equal(t, domain.MSRecommendPlay1x, third.RecommendBet())
+
+		fourth := street(domain.MississippiStudPhaseFourthSt, hole,
+			[]*domain.Card{card(domain.CardDesignClover, 2), card(domain.CardDesignDiamond, 4), card(domain.CardDesignHeart, 9)},
+			[3]bool{true, false, false})
+		assert.Equal(t, domain.MSRecommendFold, fourth.RecommendBet())
+	})
+
+	t.Run("no recommendation outside the betting streets", func(t *testing.T) {
+		m := street(domain.MississippiStudPhaseAnte,
+			[]*domain.Card{card(domain.CardDesignSpade, 6), card(domain.CardDesignHeart, 6)}, noBoard, hidden)
+		assert.Equal(t, "", m.RecommendBet())
+	})
+}

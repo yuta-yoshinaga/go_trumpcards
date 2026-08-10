@@ -13,9 +13,11 @@ import (
 // ConquianWebInput コンキャンWebインプット
 type ConquianWebInput struct {
 	BaseWebInput
-	CardIndex  *int               `json:"cardIndex,omitempty"`
-	MeldGroups [][]int            `json:"meldGroups,omitempty"`
-	Config     *ConquianWebConfig `json:"config,omitempty"`
+	CardIndex  *int    `json:"cardIndex,omitempty"`
+	MeldGroups [][]int `json:"meldGroups,omitempty"`
+	// ExtendTargets は meldGroups の各グループの延長先メルド番号 (省略可)。
+	ExtendTargets []int              `json:"extendTargets,omitempty"`
+	Config        *ConquianWebConfig `json:"config,omitempty"`
 }
 
 // ConquianWebConfig コンキャンWeb設定
@@ -41,16 +43,19 @@ type ConquianWebOutputPlayer struct {
 
 // ConquianWebOutput コンキャンWebアウトプット
 type ConquianWebOutput struct {
-	Players          []*ConquianWebOutputPlayer `json:"players"`
-	Phase            int                        `json:"phase"`
-	RoundNumber      int                        `json:"roundNumber"`
-	CurrentPlayerIdx int                        `json:"currentPlayerIdx"`
-	DiscardTop       *WebOutputCard             `json:"discardTop"`
-	DrawPileCount    int                        `json:"drawPileCount"`
-	GameEndFlag      bool                       `json:"gameEndFlag"`
-	WinnerIdx        int                        `json:"winnerIdx"`
-	RoundWinnerIdx   int                        `json:"roundWinnerIdx"`
-	TookDiscard      bool                       `json:"tookDiscard"`
+	Players []*ConquianWebOutputPlayer `json:"players"`
+	// LayoffTargets[i] は人間の手札 i 番目を足せる自分のメルド番号一覧。
+	// どのメルドが延長先になり得るかを画面が示すために使う (#4837)。
+	LayoffTargets    [][]int        `json:"layoffTargets"`
+	Phase            int            `json:"phase"`
+	RoundNumber      int            `json:"roundNumber"`
+	CurrentPlayerIdx int            `json:"currentPlayerIdx"`
+	DiscardTop       *WebOutputCard `json:"discardTop"`
+	DrawPileCount    int            `json:"drawPileCount"`
+	GameEndFlag      bool           `json:"gameEndFlag"`
+	WinnerIdx        int            `json:"winnerIdx"`
+	RoundWinnerIdx   int            `json:"roundWinnerIdx"`
+	TookDiscard      bool           `json:"tookDiscard"`
 	WebOutputBase
 	Config ConquianWebOutputConfig `json:"config"`
 }
@@ -100,7 +105,7 @@ func conquianDispatch(bc *baseController, w http.ResponseWriter, ci usecase.Conq
 	case "dd", "drawdiscard":
 		bc.writePresenterResponse(w, ci.DrawFromDiscard())
 	case "m", "meld":
-		bc.writePresenterResponse(w, ci.Meld(param.MeldGroups))
+		bc.writePresenterResponse(w, ci.MeldWithTargets(param.MeldGroups, param.ExtendTargets))
 	case "d", "discard":
 		if !requireParam(bc, w, newDefault, param.CardIndex == nil, "param error: cardIndex is required.") {
 			return true

@@ -10,6 +10,7 @@
   "phaseLine": "フェーズ: {{phase}}",
   "turnsLine": "ターン: {{played}}/{{total}}",
   "remainingLine": "山札残り: {{count}}",
+  "caseKeeper": "ケースキーパー（各ランクの残り／4枚中）: {{counts}}",
   "betsHeader": "ベット",
   "betLine": "  ランク {{rank}}: {{amount}}",
   "copperTag": "(カッパー)",

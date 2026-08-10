@@ -83,6 +83,7 @@ func (p *RookWebPresenter) buildBase(g interfaces.RookGame) *controller.RookWebO
 
 	resObj.Nest = p.buildNestOutput(g)
 	resObj.CurrentTrick = trickCardsToOutputWithFace(g.GetCurrentTrick(), rookFace)
+	resObj.PlayableIndices = p.playableIndices(g)
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
 }
@@ -172,4 +173,17 @@ func (p *RookWebPresenter) HintOutput(g interfaces.RookGame) string {
 // ActionLogOutput 棋譜をJSON出力
 func (p *RookWebPresenter) ActionLogOutput(g interfaces.RookGame) string {
 	return actionLogOutputJSON(g)
+}
+
+// playableIndices は人間が今出せる手札のインデックスを返す。
+// 手番でないときは空 (nil ではなく空スライス — JSON で null にしない)。
+func (p *RookWebPresenter) playableIndices(g interfaces.RookGame) []int {
+	if g.GetPhase() != domain.RookPhasePlay || !g.IsHumanTurn() {
+		return make([]int, 0)
+	}
+	idx := g.GetPlayableIndices(g.GetCurrentPlayerIdx())
+	if idx == nil {
+		return make([]int, 0)
+	}
+	return idx
 }

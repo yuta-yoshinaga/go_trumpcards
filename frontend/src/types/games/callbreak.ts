@@ -15,6 +15,13 @@ export interface CallBreakPlayerData {
   /** Cumulative score in internal int×10 form. */
   cumulativeScore: number;
   trickCount: number;
+  /**
+   * ビッドを超えて取った余剰トリック数 (バッグ)。
+   *
+   * ページ側で `trickCount - bid` を組み立てると CUI と式が二重化して黙って
+   * 食い違うので、ドメインの `GetBags()` の結果をそのまま受け取る (#4752)。
+   */
+  bags: number;
 }
 
 /** A card played in a Call Break trick. */

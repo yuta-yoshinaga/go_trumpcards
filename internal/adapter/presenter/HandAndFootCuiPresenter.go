@@ -118,6 +118,14 @@ func (p *HandAndFootCuiPresenter) Output(g interfaces.HandAndFootGame, lastErr e
 			currentIdx := g.GetCurrentPlayerIdx()
 			b.WriteString(i18n.Tf("handandfoot.promptMeld",
 				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
+			// **初回メルドの最低点。**Web は常時出しているのに、CUI は満たしていない
+			// ことをサーバーのエラーで初めて知る形だった (#4836)。
+			if human := g.GetPlayer(currentIdx); human != nil && human.GetIsHuman() {
+				score := human.GetCumulativeScore()
+				b.WriteString(i18n.Tf("handandfoot.minMeldLine",
+					"points", strconv.Itoa(domain.CanastaMinMeld(score)),
+					"score", strconv.Itoa(score)) + "\n")
+			}
 			b.WriteString(i18n.T("handandfoot.promptMeldHelp") + "\n")
 			b.WriteString(i18n.T("handandfoot.promptSkipMeld") + "\n")
 		case domain.HandAndFootPhaseDiscard:
@@ -125,12 +133,37 @@ func (p *HandAndFootCuiPresenter) Output(g interfaces.HandAndFootGame, lastErr e
 			b.WriteString(i18n.Tf("handandfoot.promptDiscard",
 				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
 			b.WriteString(i18n.T("handandfoot.promptDiscardHelp") + "\n")
+			b.WriteString(handAndFootGoOutLine(g, currentIdx))
 			b.WriteString(i18n.T("handandfoot.promptGoOutHelp") + "\n")
 		case domain.HandAndFootPhaseRoundEnd:
 			b.WriteString(i18n.T("handandfoot.promptRoundEnd") + "\n")
 			b.WriteString(i18n.T("handandfoot.promptRoundEndHelp") + "\n")
 		}
 	})
+}
+
+// handAndFootGoOutLine explains whether the player can go out and, when they
+// cannot, which of the three conditions is missing. The Web GUI puts the same
+// thing under the go-out button; the CUI let the server's error be the first
+// news of it (#4836).
+func handAndFootGoOutLine(g interfaces.HandAndFootGame, playerIdx int) string {
+	st := g.GetGoOutStatus(playerIdx)
+	if st.CanGoOut() {
+		return color.Green(i18n.T("handandfoot.goOutReady")) + "\n"
+	}
+	reasons := make([]string, 0, 3)
+	if !st.InFoot {
+		reasons = append(reasons, i18n.T("handandfoot.goOutNeedFoot"))
+	}
+	if st.RedCanastas < st.RedRequired {
+		reasons = append(reasons, i18n.Tf("handandfoot.goOutNeedRed",
+			"have", strconv.Itoa(st.RedCanastas), "need", strconv.Itoa(st.RedRequired)))
+	}
+	if st.BlackCanasta < st.BlackReq {
+		reasons = append(reasons, i18n.Tf("handandfoot.goOutNeedBlack",
+			"have", strconv.Itoa(st.BlackCanasta), "need", strconv.Itoa(st.BlackReq)))
+	}
+	return i18n.Tf("handandfoot.goOutBlocked", "reasons", strings.Join(reasons, " / ")) + "\n"
 }
 
 // HintOutput lists the meld groups the human can currently form, reusing the

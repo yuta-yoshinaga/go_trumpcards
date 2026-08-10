@@ -7,6 +7,7 @@
   "helpNextRound": "  nr                        次のラウンドへ",
   "helpSetDifficulty": "  sd [0-2]                  CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
   "round": "ラウンド: {{round}}  トリック: {{trick}}  ビッド: {{bid}}",
+  "monteLine": "モンテ（公開）: {{cards}}",
   "playerLine": "{{name}} ({{role}}): {{cards}}枚  得点: {{score}}  トリック: {{tricks}}",
   "roleSoloist": "ソリスト",
   "roleCoalition": "連合",

@@ -139,6 +139,12 @@ func (m *MockSpadesGame) GetHint() *domain.SpadesHint {
 	return nil
 }
 
+// GetValidPlayIndices はプレイ可能なカードのインデックスを返すモック。
+func (m *MockSpadesGame) GetValidPlayIndices(playerIdx int) []int {
+	out, _ := m.Called(playerIdx).Get(0).([]int)
+	return out
+}
+
 func (m *MockSpadesGame) GetActionLog() []*domain.ActionLogEntry {
 	args := m.Called()
 	return args.Get(0).([]*domain.ActionLogEntry)

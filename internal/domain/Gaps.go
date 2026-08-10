@@ -54,7 +54,7 @@ type Gaps struct {
 	phase       GapsPhase
 	moveCount   int
 	redealsUsed int
-	actionLog   []*ActionLogEntry
+	actionLogBase
 	history     []*gapsSnapshot
 	isStalemate bool
 }
@@ -138,6 +138,58 @@ func (g *Gaps) Move(fromRow, fromCol, toRow, toCol int) error {
 	g.checkGameClear()
 	g.checkStalemate()
 	return nil
+}
+
+// ギャップが受け入れる札の種類 (#4800)。
+const (
+	// GapsNeedAnySuit どのスートでもよい (0列目)。
+	GapsNeedAnySuit = "anySuit"
+	// GapsNeedCard 特定の1枚だけが入る。
+	GapsNeedCard = "needed"
+	// GapsNeedBlocked 何も置けない (左が K)。
+	GapsNeedBlocked = "blocked"
+)
+
+// GapsGapNeed はギャップが受け入れる札。
+type GapsGapNeed struct {
+	// Kind は GapsNeed* のいずれか。
+	Kind string
+	// Design は GapsNeedCard のときのスート。
+	Design int
+	// Value は GapsNeedAnySuit / GapsNeedCard のときのランク。
+	Value int
+}
+
+// GetGapNeed は (row, col) のギャップに何が入るかを返す。
+//
+// **各ギャップが受け入れる次ランクを追うのが Gaps の根幹戦略 (#4800)。**Web は
+// ゴーストカードと 🚫 で常時プレビューしているのに、CUI は空きマスを一律
+// [ . ] としか出さず、どのカードが入るかも詰みかも分からなかった。
+//
+// nil を返すのは、そのマスがギャップでないとき、座標が範囲外のとき、および
+// **左隣も空きで何が入るか決まらないとき**。決まらないものを決まったように
+// 見せない。
+//
+// 判定は移動の検証 isLegalMove と同じ条件を見る。**別実装にすると、案内した
+// 札が実際には置けない。**
+func (g *Gaps) GetGapNeed(row, col int) *GapsGapNeed {
+	if err := validateGapsPos(row, col); err != nil {
+		return nil
+	}
+	if g.grid[row][col] != nil {
+		return nil
+	}
+	if col == 0 {
+		return &GapsGapNeed{Kind: GapsNeedAnySuit, Value: GapsAnchorRank}
+	}
+	left := g.grid[row][col-1]
+	if left == nil {
+		return nil
+	}
+	if left.GetValue() == GapsKingRank {
+		return &GapsGapNeed{Kind: GapsNeedBlocked}
+	}
+	return &GapsGapNeed{Kind: GapsNeedCard, Design: left.GetDesign(), Value: left.GetValue() + 1}
 }
 
 // isLegalMove は (fromRow,fromCol) のカードが (toRow,toCol) の隙間へ置けるかを判定する。
@@ -266,15 +318,7 @@ func (g *Gaps) CanUndo() bool {
 // UndoToEscape は手詰まりから抜けるために必要なUndo回数を返す。
 // 手詰まりでなければ0、脱出不能なら-1。
 func (g *Gaps) UndoToEscape() int {
-	if !g.isStalemate {
-		return 0
-	}
-	for i := len(g.history) - 1; i >= 0; i-- {
-		if !g.history[i].isStalemate {
-			return len(g.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(g.isStalemate, g.history, func(s *gapsSnapshot) bool { return s.isStalemate })
 }
 
 // UndoN はn回連続でUndoを試みる。n<=0なら何もしない。
@@ -420,13 +464,7 @@ func (g *Gaps) restoreSnapshot(snap *gapsSnapshot) {
 
 // appendLog はアクションログにエントリを追加する。
 func (g *Gaps) appendLog(actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: g.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.appendLogAt(g.moveCount, 0, actionType, detail, cards)
 }
 
 // --- Getters / setters ---
@@ -458,9 +496,6 @@ func (g *Gaps) SetRedealsUsed(n int) { g.redealsUsed = n }
 
 // GetRedealsRemaining は残りの再配り回数を返す。
 func (g *Gaps) GetRedealsRemaining() int { return GapsMaxRedeals - g.redealsUsed }
-
-// GetActionLog はアクションログを返す。
-func (g *Gaps) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetGameEndFlag は終了状態かどうかを返す。
 func (g *Gaps) GetGameEndFlag() bool { return g.phase != GapsPhasePlaying }

@@ -14,7 +14,13 @@ import (
 
 // euchrePlayerStr returns the display string for a single Euchre player.
 // sittingOut appends a marker when this seat sits out a go-alone hand.
-func euchrePlayerStr(player *domain.EuchrePlayer, i int, sittingOut bool) string {
+// playable が非 nil のとき、そのインデックスの札に "*" を付ける。
+//
+// **レフトボーア (同色の別スートの J) が切り札扱いになる**という分かりにくい
+// ルールを含むので、CUI では自力でルールを再現するか、出せない札を選んで
+// エラーを受け取るまで気づけなかった (#4781)。Web は同じ判定で合法な札に
+// 枠線を付けている。
+func euchrePlayerStr(player *domain.EuchrePlayer, i int, sittingOut bool, playable []int) string {
 	var b strings.Builder
 	b.WriteString(i18n.Tf("euchre.playerLine",
 		"name", cuiPlayerName(player, i),
@@ -27,9 +33,46 @@ func euchrePlayerStr(player *domain.EuchrePlayer, i int, sittingOut bool) string
 	}
 	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
-		b.WriteString(cuiIndexedCardListStr(player) + "\n")
+		b.WriteString(euchreHandStr(player, playable) + "\n")
 	}
 	return b.String()
+}
+
+// euchreHandStr renders the hand as an indexed list, starring the cards that
+// may legally be played right now.
+func euchreHandStr(player *domain.EuchrePlayer, playable []int) string {
+	if len(playable) == 0 {
+		return cuiIndexedCardListStr(player)
+	}
+	mark := make(map[int]bool, len(playable))
+	for _, idx := range playable {
+		mark[idx] = true
+	}
+	parts := make([]string, player.GetCardsSize())
+	for i := 0; i < player.GetCardsSize(); i++ {
+		parts[i] = "[" + strconv.Itoa(i) + "]" + cuiCardStr(player.GetCard(i))
+		if mark[i] {
+			parts[i] += "*"
+		}
+	}
+	return strings.Join(parts, "  ")
+}
+
+// euchrePlayableIndices returns the human's legal plays, or nil when it is not
+// the human's turn to play a card.
+//
+// **手番でないときは印を付けない。**別のプレイヤーの合法手を人間の手札に
+// 当てると、出せない札に印が付く。
+func euchrePlayableIndices(e interfaces.EuchreGame) []int {
+	if e.GetPhase() != domain.EuchrePhasePlay {
+		return nil
+	}
+	idx := e.GetCurrentPlayerIdx()
+	p := e.GetPlayer(idx)
+	if p == nil || !p.GetIsHuman() {
+		return nil
+	}
+	return e.GetValidPlayIndices(idx)
 }
 
 // euchreSittingOutIdx returns the seat that sits out during a go-alone hand —
@@ -91,8 +134,9 @@ func (p *EuchreCuiPresenter) Output(e interfaces.EuchreGame, lastErr error) stri
 			"t1", strconv.Itoa(e.GetTeamScore(1))) + "\n")
 
 		sittingOutIdx := euchreSittingOutIdx(e)
+		playable := euchrePlayableIndices(e)
 		for i := 0; i < e.GetPlayerCnt(); i++ {
-			b.WriteString(euchrePlayerStr(e.GetPlayer(i), i, i == sittingOutIdx))
+			b.WriteString(euchrePlayerStr(e.GetPlayer(i), i, i == sittingOutIdx, playable))
 		}
 
 		b.WriteString("----------\n")

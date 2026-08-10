@@ -458,21 +458,34 @@ function SoloWhistPageContent() {
                     const tooLow = b.value !== SoloWhistContract.PASS && b.value <= highestBid;
                     const disabled = loading || tooLow;
                     const reason = tooLow ? t('bidTooLow') : undefined;
+                    // Misere wins by taking NO tricks — the opposite of every other
+                    // bid here — so it carries an explicit description rather than
+                    // relying on the player inferring it from the name (#4761).
+                    const isMisere = b.value === SoloWhistContract.MISERE;
                     // The title lives on the wrapping span: browsers suppress native tooltips on
                     // disabled buttons, so hovering the span still surfaces the reason.
                     return (
                       <span key={b.value} title={reason} data-testid={`bid-wrap-${b.value}`}>
                         <button
                           type="button"
-                          className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                          className={`px-3 py-2 rounded-lg text-white text-sm disabled:opacity-40 ${
+                            isMisere ? 'bg-ds-warning ring-1 ring-ds-warning' : 'bg-ds-info'
+                          }`}
                           onClick={() => handleBid(b.value)}
                           disabled={disabled}
                           aria-disabled={disabled}
                           aria-label={reason ? `${t(b.key)} — ${reason}` : undefined}
+                          aria-describedby={isMisere ? 'solowhist-misere-desc' : undefined}
                           data-testid={`bid-${b.value}`}
                         >
                           {t(b.key)}
+                          {isMisere && <span className="ml-1 text-[10px] opacity-80">{t('misereBadge')}</span>}
                         </button>
+                        {isMisere && (
+                          <span id="solowhist-misere-desc" className="sr-only">
+                            {t('misereDesc')}
+                          </span>
+                        )}
                       </span>
                     );
                   })}

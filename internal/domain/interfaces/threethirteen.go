@@ -57,4 +57,6 @@ type ThreeThirteenGame interface {
 	GetPlayer(i int) *domain.ThreeThirteenPlayer
 	// GetPlayerDeadwoodValue プレイヤーの最善メルド分割でのデッドウッド点
 	GetPlayerDeadwoodValue(i int) int
+	// GetDeadwoodAfterDiscard その札を捨てた後のデッドウッド点 (範囲外は -1)
+	GetDeadwoodAfterDiscard(playerIdx, cardIndex int) int
 }

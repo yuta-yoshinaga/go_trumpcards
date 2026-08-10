@@ -479,3 +479,21 @@ func TestLoo_Setters(t *testing.T) {
 	g.SetConfig(cfg)
 	assert.Equal(t, 5, g.GetConfig().Ante)
 }
+
+// **端数はポットに残る。**表示と精算で割り方が違うと、案内より少ない額しか入らない。
+func TestLoo_PerTrickShareAndMaxWin(t *testing.T) {
+	// 5 で割り切れる。
+	assert.Equal(t, 8, domain.LooPerTrickShare(40))
+	assert.Equal(t, 40, domain.LooMaxWin(40))
+
+	// 割り切れない。37 → 1 トリック 7、全部取っても 35。
+	assert.Equal(t, 7, domain.LooPerTrickShare(37))
+	assert.Equal(t, 35, domain.LooMaxWin(37))
+	assert.Less(t, domain.LooMaxWin(37), 37, "the remainder stays in the pot")
+
+	// 0 と負。
+	assert.Equal(t, 0, domain.LooPerTrickShare(0))
+	assert.Equal(t, 0, domain.LooMaxWin(0))
+	assert.Equal(t, 0, domain.LooPerTrickShare(-5))
+	assert.Equal(t, 0, domain.LooMaxWin(-5))
+}

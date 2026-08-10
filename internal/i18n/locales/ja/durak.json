@@ -21,5 +21,15 @@
   "phaseGameEnd": "フェーズ: ゲーム終了",
   "gameEndDraw": "引き分け！",
   "gameEndHumanLost": "あなたがドゥラーク（負け）です！",
-  "gameEndCpuLost": "CPU {{idx}} がドゥラーク（負け）です！"
+  "gameEndCpuLost": "CPU {{idx}} がドゥラーク（負け）です！",
+  "hintNone": "ヒントはありません",
+  "hintCard": "おすすめ: [{{idx}}] {{card}} ({{reason}})",
+  "hintDefend": "おすすめ: [{{idx}}] {{card}} で {{atk}} 番目の攻撃を防ぐ ({{reason}})",
+  "hintTake": "おすすめ: カードを引き取る ({{reason}})",
+  "hintPass": "おすすめ: パスする ({{reason}})",
+  "hintReasonAttackWeakest": "最弱の非切り札で攻める",
+  "hintReasonAttackAdditional": "同じ数字で追撃できる",
+  "hintReasonDefendBeat": "この札で返せる",
+  "hintReasonTakeCannotBeat": "返せる札が無い",
+  "hintReasonPassNoAddition": "追撃できる札が無い"
 }

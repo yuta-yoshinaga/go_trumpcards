@@ -652,6 +652,16 @@ func TestCasinoHoldem_RecommendCall(t *testing.T) {
 		assert.True(t, g.RecommendCall())
 	})
 
+	// **ボードの A / K も数える。**hole だけ見る実装に狭めると、
+	// フロント側の casinoholdemHint.ts と食い違う (#4712)。
+	t.Run("call when the king is on the board rather than in the hole", func(t *testing.T) {
+		g := newFlop(
+			makeHandCH(cd{domain.CardDesignSpade, 3}, cd{domain.CardDesignHeart, 7}),
+			makeHandCH(cd{domain.CardDesignClover, 13}, cd{domain.CardDesignDiamond, 11}, cd{domain.CardDesignSpade, 5}),
+		)
+		assert.True(t, g.RecommendCall())
+	})
+
 	t.Run("fold with junk", func(t *testing.T) {
 		g := newFlop(
 			makeHandCH(cd{domain.CardDesignSpade, 3}, cd{domain.CardDesignHeart, 7}),

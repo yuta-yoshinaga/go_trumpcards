@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -20,6 +21,7 @@ func setupKlaberjassCuiMock(phase domain.KlaberjassPhase, trump int, turnUp *dom
 		[]*domain.Card{kjTestCard(domain.CardDesignClover, 7), kjTestCard(domain.CardDesignClover, 8)},
 	)
 	m.On("GetPhase").Return(phase)
+	m.On("GetLastTrickWinner").Return(-1)
 	m.On("GetDealNumber").Return(1)
 	m.On("GetCurrentPlayerIdx").Return(0)
 	m.On("GetBidPlayerIdx").Return(1)
@@ -92,6 +94,7 @@ func TestKlaberjassCuiPresenter_NamesBete(t *testing.T) {
 	m := new(interfaces.MockKlaberjassGame)
 	players := makeKlaberjassPlayers([]*domain.Card{}, []*domain.Card{})
 	m.On("GetPhase").Return(domain.KlaberjassPhaseHandEnd)
+	m.On("GetLastTrickWinner").Return(1)
 	m.On("GetDealNumber").Return(1)
 	m.On("GetCurrentPlayerIdx").Return(0)
 	m.On("GetBidPlayerIdx").Return(1)
@@ -147,4 +150,43 @@ func TestKlaberjassCuiPresenter_ActionLogOutput(t *testing.T) {
 	m := setupKlaberjassCuiMock(domain.KlaberjassPhasePlay, domain.CardDesignSpade, nil)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{})
 	assert.NotNil(t, new(presenter.KlaberjassCuiPresenter).ActionLogOutput(m))
+}
+
+// **最終トリックには 10 点が付く。**書かないと、ベラや宣言点を足しても
+// handPoints と合わない理由が説明できない (#4937)。
+func TestKlaberjassCuiPresenter_NamesTheLastTrickBonus(t *testing.T) {
+	build := func(lastTrick int) *interfaces.MockKlaberjassGame {
+		m := new(interfaces.MockKlaberjassGame)
+		players := makeKlaberjassPlayers([]*domain.Card{}, []*domain.Card{})
+		m.On("GetPhase").Return(domain.KlaberjassPhaseHandEnd)
+		m.On("GetLastTrickWinner").Return(lastTrick)
+		m.On("GetDealNumber").Return(1)
+		m.On("GetCurrentPlayerIdx").Return(0)
+		m.On("GetBidPlayerIdx").Return(1)
+		m.On("GetDealerIdx").Return(0)
+		m.On("GetMakerIdx").Return(0)
+		m.On("GetTrumpSuit").Return(domain.CardDesignSpade)
+		m.On("GetTurnUpCard").Return((*domain.Card)(nil))
+		m.On("GetTrick").Return([]*domain.Card{})
+		m.On("GetGameEndFlag").Return(false)
+		m.On("GetWinnerIdx").Return(-1)
+		m.On("IsBete").Return(false)
+		m.On("GetConfig").Return(domain.DefaultKlaberjassConfig())
+		m.On("GetPlayers").Return(players)
+		m.On("IsHumanTurn").Return(false)
+		for i := range players {
+			m.On("GetPlayer", i).Return(players[i])
+			m.On("GetHandPoints", i).Return(0)
+			m.On("GetScore", i).Return(0)
+		}
+		return m
+	}
+	p := new(presenter.KlaberjassCuiPresenter)
+
+	out := p.Output(build(1), nil)
+	assert.Contains(t, out, "最終トリック")
+	assert.Contains(t, out, "+"+strconv.Itoa(domain.KlaberjassLastTrickBonus)+"点")
+
+	// まだ誰も取っていなければ出さない。
+	assert.NotContains(t, p.Output(build(-1), nil), "最終トリック")
 }

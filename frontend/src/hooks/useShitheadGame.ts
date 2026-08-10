@@ -25,7 +25,11 @@ export const CPU_DIFFICULTY_OPTIONS = [
 /** Hook that manages Shithead game state and player actions. */
 export function useShitheadGame() {
   const { selected: selectedCardIndices, toggle: toggleCard, clear: clearSelection } = useCardSelection();
-  const { config: shitheadConfig, handleConfigChange } = useGameConfig<ShitheadConfig>(DEFAULT_SHITHEAD_CONFIG);
+  const {
+    config: shitheadConfig,
+    handleConfigChange,
+    handleToggle: handleMagicToggle,
+  } = useGameConfig<ShitheadConfig>(DEFAULT_SHITHEAD_CONFIG);
 
   const onSuccess = useCallback(() => {
     clearSelection();
@@ -66,6 +70,7 @@ export function useShitheadGame() {
     toggleCard,
     clearSelection,
     handleConfigChange,
+    handleMagicToggle,
     handlePlay,
     handlePickup,
     handleResetWithConfig,

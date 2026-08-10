@@ -72,6 +72,13 @@ func (p *TeenPattiWebPresenter) buildBase(g interfaces.TeenPattiGame) *controlle
 	resObj := new(controller.TeenPattiWebOutput)
 	resObj.Pot = g.GetPot()
 	resObj.Stake = g.GetStake()
+
+	// **レイズ可能域はドメインが唯一の出どころ (#4729)。**フロントで
+	// chips/2 を組み立て直すと、Seen の扱いが割れて「入力できたのに弾かれる」
+	// ずれになる。人間の手番でなければ CanRaise=false。
+	if g.IsHumanTurn() {
+		resObj.MinRaise, resObj.MaxRaise, resObj.CanRaise = g.GetRaiseRange(g.GetCurrentPlayerIdx())
+	}
 	resObj.Phase = int(g.GetPhase())
 	resObj.RoundNumber = g.GetRoundNumber()
 	resObj.DealerIdx = g.GetDealerIdx()

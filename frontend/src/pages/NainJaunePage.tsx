@@ -203,24 +203,34 @@ function NainJaunePageContent() {
                 {t('yourPoints', { n: human?.points ?? 0 })}
               </div>
               <div className="flex gap-1 justify-center flex-wrap">
-                {(human?.cards ?? []).map((card, i) => (
-                  <button
-                    key={`hand-${i.toString()}`}
-                    type="button"
-                    data-hint-action="play"
-                    aria-pressed={handIdx === i}
-                    aria-disabled={!isHumanTurn}
-                    onClick={() => isHumanTurn && setHandIdx(handIdx === i ? null : i)}
-                    className={[
-                      'rounded transition-transform',
-                      isHumanTurn ? 'hover:-translate-y-2' : 'opacity-60',
-                      handIdx === i ? 'ring-2 ring-ds-accent -translate-y-2' : '',
-                      frontendHintEnabled && state.hint?.cardIndex === i ? 'ring-2 ring-ds-warning' : '',
-                    ].join(' ')}
-                  >
-                    <AnimatedCard card={card} width={cardWidth} draggable={false} />
-                  </button>
-                ))}
+                {(human?.cards ?? []).map((card, i) => {
+                  // **並びに従う義務がある。**出せない札を押せてしまうと、
+                  // サーバに弾かれて初めて分かる (#4935)。空リストは「情報が
+                  // 無い」なので制限しない。
+                  const restricting = isHumanTurn && (state.validPlays?.length ?? 0) > 0;
+                  const canPlay = !restricting || state.validPlays.includes(i);
+                  return (
+                    <button
+                      key={`hand-${i.toString()}`}
+                      type="button"
+                      data-hint-action="play"
+                      data-unplayable={restricting && !canPlay ? 'true' : undefined}
+                      aria-pressed={handIdx === i}
+                      disabled={restricting && !canPlay}
+                      aria-disabled={!isHumanTurn || !canPlay}
+                      onClick={() => isHumanTurn && canPlay && setHandIdx(handIdx === i ? null : i)}
+                      className={[
+                        'rounded transition-transform',
+                        restricting && !canPlay ? 'opacity-40' : '',
+                        isHumanTurn ? 'hover:-translate-y-2' : 'opacity-60',
+                        handIdx === i ? 'ring-2 ring-ds-accent -translate-y-2' : '',
+                        frontendHintEnabled && state.hint?.cardIndex === i ? 'ring-2 ring-ds-warning' : '',
+                      ].join(' ')}
+                    >
+                      <AnimatedCard card={card} width={cardWidth} draggable={false} />
+                    </button>
+                  );
+                })}
               </div>
               {isHumanTurn && (
                 <div className="text-[10px] text-ds-text-muted mt-1">

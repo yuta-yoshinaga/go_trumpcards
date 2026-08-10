@@ -89,7 +89,7 @@ describe('FlowerGardenPage', () => {
   it('renders a reserve card', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<FlowerGardenPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '♦ 7' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^♦ 7（リザーブ枠/ })).toBeInTheDocument());
   });
 
   it('labels all 16 bouquet slots with their 0-based index (matching hint text)', async () => {
@@ -121,7 +121,7 @@ describe('FlowerGardenPage', () => {
   it('selecting a reserve card marks it as selected', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<FlowerGardenPage />);
-    const reserveBtn = await screen.findByRole('button', { name: '♦ 7' });
+    const reserveBtn = await screen.findByRole('button', { name: /^♦ 7（リザーブ枠/ });
     fireEvent.click(reserveBtn);
     await waitFor(() => expect(reserveBtn).toHaveAttribute('aria-pressed', 'true'));
   });
@@ -176,6 +176,17 @@ describe('FlowerGardenPage', () => {
     mockExec.mockResolvedValue(stalemate);
     renderWithProviders(<FlowerGardenPage />);
     await waitFor(() => expect(screen.getByTestId('stalemate-escape-button')).toBeInTheDocument());
+  });
+
+  it('names every bouquet reserve slot, filled or empty', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<FlowerGardenPage />);
+    // Filled slots carry the card plus its slot number; empty slots announce
+    // the number alone, so no slot is a nameless blank to a screen reader.
+    await waitFor(() => expect(screen.getAllByLabelText(/リザーブ枠 \d+/).length).toBeGreaterThan(0));
+    expect(screen.getAllByLabelText(/空のリザーブ枠 \d+/).length).toBeGreaterThan(0);
   });
 });
 

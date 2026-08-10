@@ -54,5 +54,5 @@ func (m *MockMaoGame) GetActionLog() []*domain.ActionLogEntry {
 func (m *MockMaoGame) GetAwaitingWord() bool      { return m.Called().Bool(0) }
 func (m *MockMaoGame) GetPlayerCorrectCount() int { return m.Called().Int(0) }
 func (m *MockMaoGame) GetHintUnlocked() bool      { return m.Called().Bool(0) }
-func (m *MockMaoGame) GetRuleHint() string        { return m.Called().String(0) }
+func (m *MockMaoGame) GetRuleHintKey() string     { return m.Called().String(0) }
 func (m *MockMaoGame) GetRulePenaltyFlag() bool   { return m.Called().Bool(0) }

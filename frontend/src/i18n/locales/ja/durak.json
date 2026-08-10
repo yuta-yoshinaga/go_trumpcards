@@ -57,5 +57,15 @@
     "defendWithTrump": "切り札で防御推奨",
     "takeBout": "防御不能 — 引き取り推奨",
     "takeNothingToDefend": "防御対象なし"
+  },
+  "hintCard": "おすすめ: [{{idx}}] のカード",
+  "hintTake": "おすすめ: カードを引き取る",
+  "hintPass": "おすすめ: パスする",
+  "hintReason": {
+    "attack_weakest": "最弱の非切り札で攻める",
+    "attack_additional": "同じ数字で追撃できる",
+    "defend_beat": "この札で返せる",
+    "take_cannot_beat": "返せる札が無い",
+    "pass_no_addition": "追撃できる札が無い"
   }
 }

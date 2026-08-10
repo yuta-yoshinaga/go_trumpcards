@@ -33,5 +33,9 @@
     "presidentFollow": "場を超える中で一番弱い札を出そう",
     "presidentFollowRevolution": "革命中は強さが逆。今の並びで場を超える一番弱い札を出そう",
     "presidentPass": "場を超える札が無い。パスしよう"
+  },
+  "exchange": {
+    "title": "[カード交換]",
+    "entry": "{{from}} → {{to}}: {{cards}}"
   }
 }

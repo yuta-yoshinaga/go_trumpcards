@@ -174,4 +174,13 @@ describe('TutePage', () => {
     renderWithProviders(<TutePage />);
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
   });
+
+  it('shows the running round points during play, not only at round end', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<TutePage />);
+    // A marriage scores immediately, so the total has to be visible while playing.
+    await waitFor(() => expect(screen.getByTestId('tute-running-points')).toBeInTheDocument());
+  });
 });

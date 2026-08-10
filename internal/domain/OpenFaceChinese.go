@@ -92,7 +92,7 @@ type OpenFaceChinese struct {
 	dealerIdx        int
 	gameEndFlag      bool
 	winnerIdx        int // -1=未確定/引き分け
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewOpenFaceChinese コンストラクタ
@@ -207,7 +207,7 @@ func (g *OpenFaceChinese) place(playerIdx, row int) error {
 	if err := p.placeCard(row); err != nil {
 		return err
 	}
-	g.appendLog(playerIdx, "place", fmt.Sprintf("%s places %s on row %d", g.playerName(playerIdx), cardStr(card), row), []*Card{card})
+	g.appendLog(playerIdx, "place", fmt.Sprintf("%s places %s on row %d", playerName(g.players, playerIdx), cardStr(card), row), []*Card{card})
 	g.afterPlace(playerIdx)
 	return nil
 }
@@ -531,28 +531,6 @@ func ofcHintReason(card *Card, row int) string {
 
 // --- Misc ---
 
-// playerName プレイヤー表示名を返す。
-func (g *OpenFaceChinese) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-// appendLog 棋譜にエントリを追加する。
-func (g *OpenFaceChinese) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
-}
-
 // --- Getters ---
 
 // GetPhase 現在のフェーズ取得
@@ -587,10 +565,7 @@ func (g *OpenFaceChinese) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *OpenFaceChinese) GetPlayer(i int) *OpenFaceChinesePlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // GetConfig 設定取得
@@ -603,9 +578,6 @@ func (g *OpenFaceChinese) SetConfig(cfg OpenFaceChineseConfig) {
 		g.players = ofcBuildPlayers(cfg.PlayerCount)
 	}
 }
-
-// GetActionLog 棋譜取得
-func (g *OpenFaceChinese) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetCurrentCard 現在の手番プレイヤーが置こうとしている保留カードを返す（無ければ nil）。
 func (g *OpenFaceChinese) GetCurrentCard() *Card {

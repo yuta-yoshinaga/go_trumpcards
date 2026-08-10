@@ -44,12 +44,12 @@ type CruelHint struct {
 // 残り48枚を12列×4枚のタブローに表向きで配る。カード移動は同スートの降順のみ、
 // 空の列にはカードを置けない。手詰まりのときは Shift で盤面を再構築できる。
 type Cruel struct {
-	trumpCards  *TrumpCards
-	tableau     [CruelTableauCnt][]*KlondikeTableauCard
-	foundation  [CruelFoundationCnt][]*Card
-	phase       CruelPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	tableau    [CruelTableauCnt][]*KlondikeTableauCard
+	foundation [CruelFoundationCnt][]*Card
+	phase      CruelPhase
+	moveCount  int
+	actionLogBase
 	history     []*cruelSnapshot
 	isStalemate bool
 }
@@ -356,9 +356,6 @@ func (c *Cruel) GetFoundation() [CruelFoundationCnt][]*Card {
 	return c.foundation
 }
 
-// GetActionLog 棋譜取得
-func (c *Cruel) GetActionLog() []*ActionLogEntry { return c.actionLog }
-
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (c *Cruel) GetGameEndFlag() bool { return c.phase != CruelPhasePlaying }
 
@@ -400,25 +397,12 @@ func (c *Cruel) CanUndo() bool {
 // UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。
 // 膠着状態でなければ 0、脱出不可なら -1。
 func (c *Cruel) UndoToEscape() int {
-	if !c.isStalemate {
-		return 0
-	}
-	for i := len(c.history) - 1; i >= 0; i-- {
-		if !c.history[i].isStalemate {
-			return len(c.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(c.isStalemate, c.history, func(s *cruelSnapshot) bool { return s.isStalemate })
 }
 
 // UndoN n回連続でアンドゥを実行する。
 func (c *Cruel) UndoN(n int) error {
-	for i := range n {
-		if err := c.Undo(); err != nil {
-			return fmt.Errorf("undo step %d failed: %w", i+1, err)
-		}
-	}
-	return nil
+	return undoN(c, n)
 }
 
 // --- Private helpers ---
@@ -437,12 +421,7 @@ func (c *Cruel) canPlaceOnTableau(card *Card, col int) bool {
 // canPlaceOnFoundation ファウンデーションにカードを置けるか判定。
 // Reset() で各ファウンデーションに A を1枚配置済みなので、空のケースは通常発生しない。
 func (c *Cruel) canPlaceOnFoundation(card *Card, fIdx int) bool {
-	pile := c.foundation[fIdx]
-	if len(pile) == 0 {
-		return card.GetValue() == 1
-	}
-	topCard := pile[len(pile)-1]
-	return card.GetDesign() == topCard.GetDesign() && card.GetValue() == topCard.GetValue()+1
+	return canPlaceOnFoundationPile(c.foundation[fIdx], card)
 }
 
 // checkGameClear ゲームクリア判定
@@ -500,13 +479,7 @@ func (c *Cruel) restoreSnapshot(snap *cruelSnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (c *Cruel) appendLog(actionType, detail string, cards []*Card) {
-	c.actionLog = append(c.actionLog, &ActionLogEntry{
-		TurnNumber: c.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	c.appendLogAt(c.moveCount, 0, actionType, detail, cards)
 }
 
 // cruelJSON is the JSON wire format for Cruel.

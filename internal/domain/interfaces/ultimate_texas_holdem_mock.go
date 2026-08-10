@@ -136,6 +136,11 @@ func (m *MockUltimateTexasHoldemGame) GetPlayerHandRank() int {
 	return args.Int(0)
 }
 
+func (m *MockUltimateTexasHoldemGame) RecommendPlay() string {
+	args := m.Called()
+	return args.String(0)
+}
+
 func (m *MockUltimateTexasHoldemGame) GetDealerHandRank() int {
 	args := m.Called()
 	return args.Int(0)

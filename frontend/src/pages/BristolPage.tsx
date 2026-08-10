@@ -106,6 +106,13 @@ function BristolPageContent() {
   // Selected source card (a tableau column top or a fan top), or null.
   const [selected, setSelected] = useState<BristolMoveZone | null>(null);
 
+  // **押すまで合法か分からなかった。**選択中は全ての移動先が同じ見た目で強調されて
+  // いた (#4813)。判定はサーバー (ドメインの canPlaceOn*) が返す legalTargets を
+  // そのまま読む — ここで書き直すと画面とサーバーの言うことが食い違う。
+  const legalForSelected = selected ? state?.legalTargets?.[`${selected.zone}-${selected.col ?? 0}`] : undefined;
+  const legalTableau = new Set(legalForSelected?.tableau ?? []);
+  const legalFoundation = new Set(legalForSelected?.foundation ?? []);
+
   const handleReset = useCallback(() => {
     setSelected(null);
     execApi('reset');
@@ -281,10 +288,11 @@ function BristolPageContent() {
                             : t('foundationAriaEmpty', { num: i })
                         }
                         className={
-                          selected
-                            ? `rounded border p-0.5 ${focusRingWhite} border-ds-info`
+                          selected && legalFoundation.has(i)
+                            ? `rounded border p-0.5 ${focusRingWhite} border-ds-success`
                             : `rounded border p-0.5 ${focusRingWhite} border-white/30`
                         }
+                        data-testid={selected && legalFoundation.has(i) ? 'bristol-legal-target' : undefined}
                         style={{ width: cardWidth + 4, height: cardHeight + 4 }}
                       >
                         {pile.length > 0 ? (
@@ -331,8 +339,11 @@ function BristolPageContent() {
                         className={
                           isSelected(zone)
                             ? `relative w-full rounded border-2 bg-transparent p-0 ${focusRingWhite} border-ds-info`
-                            : `relative w-full rounded border-2 bg-transparent p-0 ${focusRingWhite} border-transparent`
+                            : selected && legalTableau.has(colIdx)
+                              ? `relative w-full rounded border-2 bg-transparent p-0 ${focusRingWhite} border-ds-success`
+                              : `relative w-full rounded border-2 bg-transparent p-0 ${focusRingWhite} border-transparent`
                         }
+                        data-testid={selected && legalTableau.has(colIdx) ? 'bristol-legal-target' : undefined}
                         style={{ height: colHeight }}
                       >
                         {col.length === 0 ? (

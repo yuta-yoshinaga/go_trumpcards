@@ -31,6 +31,7 @@ func (c *ThirtyOneCuiController) Exec(command string) string {
 			"k", "knock",
 			"nr", "nextround",
 			"sd", "setdifficulty", "sv", "setlives", "log", "l",
+			"h", "hint",
 		},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
@@ -42,6 +43,8 @@ func (c *ThirtyOneCuiController) Exec(command string) string {
 				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.ci.Discard)
 			case "k", "knock":
 				return c.ci.Knock(), true
+			case "h", "hint":
+				return c.ci.Hint(), true
 			case "nr", "nextround":
 				return c.ci.NextRound(), true
 			case "sd", "setdifficulty":

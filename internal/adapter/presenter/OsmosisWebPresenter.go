@@ -16,6 +16,9 @@ type OsmosisWebPresenter struct{}
 // Output ゲーム状態をJSON出力
 func (p *OsmosisWebPresenter) Output(o interfaces.OsmosisGame, lastErr error) string {
 	resObj := p.buildBaseOutput(o)
+	// 1回だけ数えて使い回す。3箇所で呼ぶと、将来 IsStalemate に副作用が入ったとき
+	// 判定同士が食い違いうる。
+	stalemate := resObj.IsStalemate
 
 	// ウェイスト
 	waste := o.GetWaste()
@@ -50,8 +53,8 @@ func (p *OsmosisWebPresenter) Output(o interfaces.OsmosisGame, lastErr error) st
 	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
 	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
 	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
-	// このゲームは手詰まり判定を持たないので、ゲートは進行中かどうかだけ。
-	if o.GetPhase() == domain.OsmosisPhasePlaying {
+	// 手詰まりならもう置ける札は無いので、ヒントを探しに行くだけ無駄になる。
+	if o.GetPhase() == domain.OsmosisPhasePlaying && !stalemate {
 		if hint := o.GetHint(); hint != nil {
 			resObj.Hint = &controller.OsmosisWebOutputHint{
 				FromZone: hint.FromZone,
@@ -66,7 +69,11 @@ func (p *OsmosisWebPresenter) Output(o interfaces.OsmosisGame, lastErr error) st
 	} else {
 		switch o.GetPhase() {
 		case domain.OsmosisPhasePlaying:
-			resObj.MessageCode = "osmosis.playing"
+			if stalemate {
+				resObj.MessageCode = "osmosis.stalemate"
+			} else {
+				resObj.MessageCode = "osmosis.playing"
+			}
 		case domain.OsmosisPhaseGameClear:
 			resObj.Message = fmt.Sprintf("ゲームクリア！ 手数: %d", o.GetMoveCount())
 			resObj.MessageCode = "osmosis.gameClear"
@@ -108,10 +115,11 @@ func (p *OsmosisWebPresenter) ActionLogOutput(o interfaces.OsmosisGame) string {
 
 func (p *OsmosisWebPresenter) buildBaseOutput(o interfaces.OsmosisGame) *controller.OsmosisWebOutput {
 	return &controller.OsmosisWebOutput{
-		BaseRank:   o.GetBaseRank(),
-		Phase:      int(o.GetPhase()),
-		MoveCount:  o.GetMoveCount(),
-		StockCount: o.GetStockCount(),
-		CanUndo:    o.CanUndo(),
+		BaseRank:    o.GetBaseRank(),
+		Phase:       int(o.GetPhase()),
+		MoveCount:   o.GetMoveCount(),
+		StockCount:  o.GetStockCount(),
+		CanUndo:     o.CanUndo(),
+		IsStalemate: o.IsStalemate(),
 	}
 }

@@ -24,6 +24,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { TablanetResponse } from '../types/card';
 import { TablanetPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { parseTablanetCommand, TABLANET_HELP } from '../utils/cli/commands/tablanetCommands';
 import { formatTablanetState } from '../utils/cli/formatters/tablanetFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -247,14 +248,24 @@ function TablanetPageContent() {
                 ) : (
                   state.tableCards.map((c, i) => {
                     const isCandidate = captureCandidates.has(i);
+                    const isSelected = tableIndices.includes(i);
+                    // Without a name these read as a bare "button"; Basra already
+                    // spells out the same three states (#4923).
+                    const ariaLabel = isSelected
+                      ? t('tableSelectedAria', { card: cardAlt(c) })
+                      : isCandidate
+                        ? t('tableCandidateAria', { card: cardAlt(c) })
+                        : cardAlt(c);
                     return (
                       <button
                         key={i}
                         type="button"
+                        aria-label={ariaLabel}
+                        aria-pressed={isSelected}
                         onClick={() => isHumanTurn && toggleTable(i)}
                         disabled={!isHumanTurn}
                         className={`rounded transition-all ${
-                          tableIndices.includes(i)
+                          isSelected
                             ? 'ring-2 ring-ds-warning -translate-y-1'
                             : isCandidate
                               ? 'ring-2 ring-ds-success motion-safe:animate-pulse'

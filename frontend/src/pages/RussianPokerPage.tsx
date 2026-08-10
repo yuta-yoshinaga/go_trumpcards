@@ -11,6 +11,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
@@ -21,6 +22,7 @@ import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
@@ -34,6 +36,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { parseRussianpokerCommand, RUSSIANPOKER_HELP } from '../utils/cli/commands/russianpokerCommands';
 import { formatRussianpokerState } from '../utils/cli/formatters/russianpokerFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Russian Poker tutorial step definitions. */
 const RUSSIAN_TUTORIAL_STEPS: TutorialStep[] = [
@@ -90,6 +93,15 @@ function RussianPokerPageContent() {
 
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec: execApi, retry } = useGameApi(russianpokerApi.exec);
+
+  // **ヒントロジックは実装済みで hintFactories にも登録されているのに、
+  // ページが useGameHint を import すらしておらず誰にも使われていなかった
+  // (#4716)。**5 フェーズの複雑な意思決定を持つゲームなのに支援が皆無だった。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('russianpoker', state);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('russianpoker');
   const cliConfig: CliGameConfig<RussianPokerResponse, Parameters<typeof russianpokerApi.exec>> = useMemo(
@@ -425,7 +437,11 @@ function RussianPokerPageContent() {
 
           <GameFooter className={`${gameTheme.russianpoker.footer} px-4 pt-3`}>
             <ErrorAlert message={error} onRetry={retry} />
-            <SettingsPanel title={t('settings.title')} groups={[]} />
+            <SettingsPanel
+              title={t('settings.title')}
+              groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
+            />
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
             {isBetPhase && (
               <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="russian-bet-controls">
                 <ChipBetInput

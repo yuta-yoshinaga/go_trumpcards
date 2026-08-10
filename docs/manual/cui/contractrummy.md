@@ -1,4 +1,4 @@
-# Contract Rummy（コントラクトラミー）（CUI版）遊び方
+# コントラクトラミー（CUI版）遊び方
 
 ## ゲーム概要
 
@@ -84,6 +84,7 @@ flowchart TD
 | `setdifficulty <0-2>` | `sd` | CPU難易度を変更 (0=Easy, 1=Normal, 2=Hard) |
 | `setpenalty <n>` | `sp` | コントラクト未達ペナルティを変更 |
 | `log` | `l` | 棋譜を表示 |
+| `help` | `?` | コマンド一覧を表示 |
 
 ## 画面の見方
 

@@ -41,11 +41,11 @@ type AccordionHint struct {
 
 // Accordion アコーディオンゲームクラス
 type Accordion struct {
-	trumpCards  *TrumpCards
-	piles       [][]*Card
-	phase       AccordionPhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
+	trumpCards *TrumpCards
+	piles      [][]*Card
+	phase      AccordionPhase
+	moveCount  int
+	actionLogBase
 	history     []*accordionSnapshot
 	isStalemate bool
 }
@@ -121,6 +121,40 @@ func (a *Accordion) Move(fromIdx, toIdx int) error {
 	return nil
 }
 
+// AutoComplete はヒントが示す手を、手が尽きるまで繰り返す (#4793)。
+//
+// **Web は同じことを1クリックでやっている**のに、ネイティブ CUI には
+// オートコンプリートが存在せず、同じ手を延々と打たされていた。姉妹の Wasp は
+// ac/autocomplete を公開している。
+//
+// **手を選ぶ規則は GetHint と共有する。**別実装だと、ヒントが勧める手と自動で
+// 打たれる手が食い違う。
+//
+// 1手も動かせなければエラー。押しても何も起きないより、押せない理由が返る
+// ほうがよい。
+func (a *Accordion) AutoComplete() error {
+	if a.phase != AccordionPhasePlaying {
+		return errors.New("game is not in playing phase")
+	}
+	moved := 0
+	// **上限を置く。**Move はパイルを1つ減らすので理屈の上では停まるが、
+	// 規則を変えたときに無限ループへ落ちない保険。
+	for range len(a.piles) {
+		hint := a.GetHint()
+		if hint == nil {
+			break
+		}
+		if err := a.Move(hint.FromIdx, hint.ToIdx); err != nil {
+			break
+		}
+		moved++
+	}
+	if moved == 0 {
+		return errors.New("no automatic move is available")
+	}
+	return nil
+}
+
 // GiveUp ギブアップ
 func (a *Accordion) GiveUp() {
 	if a.phase == AccordionPhasePlaying {
@@ -168,25 +202,12 @@ func (a *Accordion) CanUndo() bool {
 
 // UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。膠着状態でなければ0、脱出不可なら-1。
 func (a *Accordion) UndoToEscape() int {
-	if !a.isStalemate {
-		return 0
-	}
-	for i := len(a.history) - 1; i >= 0; i-- {
-		if !a.history[i].isStalemate {
-			return len(a.history) - i
-		}
-	}
-	return -1
+	return undoToEscape(a.isStalemate, a.history, func(s *accordionSnapshot) bool { return s.isStalemate })
 }
 
 // UndoN n回連続でアンドゥを実行する
 func (a *Accordion) UndoN(n int) error {
-	for i := range n {
-		if err := a.Undo(); err != nil {
-			return fmt.Errorf("undo step %d failed: %w", i+1, err)
-		}
-	}
-	return nil
+	return undoN(a, n)
 }
 
 // --- State getters/setters ---
@@ -205,9 +226,6 @@ func (a *Accordion) GetPiles() [][]*Card { return a.piles }
 
 // GetPileCount 残りパイル数取得
 func (a *Accordion) GetPileCount() int { return len(a.piles) }
-
-// GetActionLog 棋譜取得
-func (a *Accordion) GetActionLog() []*ActionLogEntry { return a.actionLog }
 
 // GetGameEndFlag returns true once the game has left the playing phase.
 func (a *Accordion) GetGameEndFlag() bool { return a.phase != AccordionPhasePlaying }
@@ -285,13 +303,7 @@ func (a *Accordion) restoreSnapshot(snap *accordionSnapshot) {
 
 // appendLog 棋譜エントリを追加
 func (a *Accordion) appendLog(actionType, detail string, cards []*Card) {
-	a.actionLog = append(a.actionLog, &ActionLogEntry{
-		TurnNumber: a.moveCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	a.appendLogAt(a.moveCount, 0, actionType, detail, cards)
 }
 
 // accordionJSON is the JSON wire format for Accordion.

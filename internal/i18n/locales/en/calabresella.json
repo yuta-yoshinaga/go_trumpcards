@@ -7,6 +7,7 @@
   "helpNextRound": "  nr                        go to next round",
   "helpSetDifficulty": "  sd [0-2]                  CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
   "round": "Round: {{round}}  Trick: {{trick}}  Bid: {{bid}}",
+  "monteLine": "Monte (revealed): {{cards}}",
   "playerLine": "{{name}} ({{role}}): {{cards}} cards  Score: {{score}}  Tricks: {{tricks}}",
   "roleSoloist": "Soloist",
   "roleCoalition": "Coalition",

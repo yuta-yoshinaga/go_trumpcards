@@ -23,6 +23,7 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { assertFloor } from './lib/floor.mjs';
 
 const FRONTEND = fileURLToPath(new URL('..', import.meta.url));
 const REPO = join(FRONTEND, '..');
@@ -109,6 +110,11 @@ async function emittedCodes() {
 }
 
 const emitted = await emittedCodes();
+// 774 codes today, parsed out of the presenter sources by regex. A parser change that stops
+// recognising most `return` forms would leave a handful of codes, all of them translated, and
+// this guard would announce full coverage of the codes it could still see.
+assertFloor('message-codes', emitted.size, 500, `codes emitted from ${relative(REPO, PRESENTER_DIR)}`);
+
 const ja = JSON.parse(await readFile(join(LOCALES, 'ja/common.json'), 'utf8')).messageCode ?? {};
 const en = JSON.parse(await readFile(join(LOCALES, 'en/common.json'), 'utf8')).messageCode ?? {};
 

@@ -201,3 +201,45 @@ func TestRookWebPresenterOutputCarriesTheHint(t *testing.T) {
 		t.Error("Output must carry the hint -- the frontend reads state.hint")
 	}
 }
+
+// **追随は強制。**出せる札を応答に載せないと、フロントは出して拒否されるまで
+// 違反を示せない (#4928)。
+func TestRookWebPresenter_PlayableIndices(t *testing.T) {
+	p := &presenter.RookWebPresenter{}
+	decode := func(g *domain.Rook) controller.RookWebOutput {
+		var parsed controller.RookWebOutput
+		if err := json.Unmarshal([]byte(p.Output(g, nil)), &parsed); err != nil {
+			t.Fatalf("unmarshal: %v", err)
+		}
+		return parsed
+	}
+
+	// 人間の手番でない (ビッドフェーズ) → 空。**null ではなく空配列。**
+	g := newRookGame()
+	g.Reset()
+	parsed := decode(g)
+	if parsed.PlayableIndices == nil {
+		t.Fatal("playableIndices must be [] rather than null")
+	}
+	if len(parsed.PlayableIndices) != 0 {
+		t.Errorf("playableIndices = %v, want empty outside the play phase", parsed.PlayableIndices)
+	}
+
+	// 人間の手番で黒がリード。黒を持っているので黒だけ。
+	g2 := newRookGame()
+	g2.Reset()
+	g2.SetPhase(domain.RookPhasePlay)
+	g2.SetTrumpColor(2)
+	g2.SetCurrentPlayerIdx(0)
+	human := g2.GetPlayer(0)
+	human.Reset()
+	human.AddCard(domain.NewCard(4, 5, false))
+	human.AddCard(domain.NewCard(3, 9, false))
+	human.AddCard(domain.NewCard(4, 12, false))
+	g2.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 1, Card: domain.NewCard(4, 10, false)}})
+
+	got := decode(g2).PlayableIndices
+	if len(got) != 2 || got[0] != 0 || got[1] != 2 {
+		t.Errorf("playableIndices = %v, want [0 2]", got)
+	}
+}

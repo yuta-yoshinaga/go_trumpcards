@@ -128,7 +128,7 @@ type skatRoundState struct {
 	defendersCardPts int
 	winnerSide       int // SkatWinner*
 	gameEndFlag      bool
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // Skat game class
@@ -228,7 +228,7 @@ func (s *Skat) startRound() {
 
 	s.round.phase = SkatPhaseBid
 
-	s.appendLog(-1, "round_start", fmt.Sprintf("Round %d: dealer=%s", s.round.roundNumber, s.playerName(s.round.dealerIdx)), nil)
+	s.appendLog(-1, "round_start", fmt.Sprintf("Round %d: dealer=%s", s.round.roundNumber, playerName(s.players, s.round.dealerIdx)), nil)
 }
 
 // NextRound advances to the next round.
@@ -284,7 +284,7 @@ func (s *Skat) PlayerBid(accept bool) error {
 	if s.round.phase != SkatPhaseBid {
 		return ErrWrongPhase
 	}
-	humanIdx := s.findHumanIdx()
+	humanIdx := findHumanIdx(s.players)
 	if humanIdx < 0 {
 		return ErrNotHumanTurn
 	}
@@ -352,14 +352,14 @@ func (s *Skat) applyBidStep(actorIdx int, accept bool) {
 		if accept {
 			s.round.currentBid = SkatBidLadder[0]
 			s.appendLog(actorIdx, "bid_call",
-				fmt.Sprintf("%s calls %d", s.playerName(actorIdx), s.round.currentBid), nil)
+				fmt.Sprintf("%s calls %d", playerName(s.players, actorIdx), s.round.currentBid), nil)
 			s.round.bidStep = 1
 			return
 		}
 		// Bidder passed without calling.
 		s.round.passedAtCall[actorIdx] = true
 		s.appendLog(actorIdx, "bid_pass",
-			fmt.Sprintf("%s passes", s.playerName(actorIdx)), nil)
+			fmt.Sprintf("%s passes", playerName(s.players, actorIdx)), nil)
 		s.bidderDroppedOut()
 		return
 	}
@@ -367,11 +367,11 @@ func (s *Skat) applyBidStep(actorIdx int, accept bool) {
 	// Responder turn.
 	if accept {
 		s.appendLog(actorIdx, "bid_yes",
-			fmt.Sprintf("%s answers yes at %d", s.playerName(actorIdx), s.round.currentBid), nil)
+			fmt.Sprintf("%s answers yes at %d", playerName(s.players, actorIdx), s.round.currentBid), nil)
 		if s.round.bidStep < len(SkatBidLadder) {
 			s.round.currentBid = SkatBidLadder[s.round.bidStep]
 			s.appendLog(s.round.bidderIdx, "bid_call",
-				fmt.Sprintf("%s calls %d", s.playerName(s.round.bidderIdx), s.round.currentBid), nil)
+				fmt.Sprintf("%s calls %d", playerName(s.players, s.round.bidderIdx), s.round.currentBid), nil)
 			s.round.bidStep++
 			return
 		}
@@ -383,7 +383,7 @@ func (s *Skat) applyBidStep(actorIdx int, accept bool) {
 	// Responder passes — bidder is round survivor.
 	s.round.passedAtCall[actorIdx] = true
 	s.appendLog(actorIdx, "bid_pass",
-		fmt.Sprintf("%s passes", s.playerName(actorIdx)), nil)
+		fmt.Sprintf("%s passes", playerName(s.players, actorIdx)), nil)
 	s.responderDroppedOut()
 }
 
@@ -440,7 +440,7 @@ func (s *Skat) declareDeclarer(idx int) {
 	s.players[idx].SetIsDeclarer(true)
 	s.players[idx].SetBid(s.round.currentBid)
 	s.appendLog(idx, "declarer",
-		fmt.Sprintf("%s wins the auction at %d", s.playerName(idx), s.round.currentBid), nil)
+		fmt.Sprintf("%s wins the auction at %d", playerName(s.players, idx), s.round.currentBid), nil)
 	s.round.phase = SkatPhaseSkatPickup
 }
 
@@ -483,7 +483,7 @@ func (s *Skat) applyPickSkat(pickup bool) {
 		}
 		s.sortHand(declarer)
 		s.appendLog(s.round.declarerIdx, "pick_skat",
-			fmt.Sprintf("%s picks up the skat", s.playerName(s.round.declarerIdx)), s.round.skat)
+			fmt.Sprintf("%s picks up the skat", playerName(s.players, s.round.declarerIdx)), s.round.skat)
 		s.round.skat = nil
 		s.round.phase = SkatPhaseDiscard
 		return
@@ -491,7 +491,7 @@ func (s *Skat) applyPickSkat(pickup bool) {
 
 	// Hand game — skat stays face-down; go straight to game declaration.
 	s.appendLog(s.round.declarerIdx, "hand_game",
-		fmt.Sprintf("%s plays a hand game", s.playerName(s.round.declarerIdx)), nil)
+		fmt.Sprintf("%s plays a hand game", playerName(s.players, s.round.declarerIdx)), nil)
 	s.round.phase = SkatPhaseGameDeclaration
 }
 
@@ -545,7 +545,7 @@ func (s *Skat) applyDiscard(idxA, idxB int) {
 	s.round.skat = []*Card{cardLo, cardHi}
 	s.sortHand(declarer)
 	s.appendLog(s.round.declarerIdx, "discard",
-		fmt.Sprintf("%s discards 2 cards into the skat", s.playerName(s.round.declarerIdx)),
+		fmt.Sprintf("%s discards 2 cards into the skat", playerName(s.players, s.round.declarerIdx)),
 		[]*Card{cardLo, cardHi})
 	s.round.phase = SkatPhaseGameDeclaration
 }
@@ -594,7 +594,7 @@ func (s *Skat) applyGameDeclaration(gt SkatGameType, trumpSuit int) {
 		s.round.trumpSuit = 0
 	}
 	s.appendLog(s.round.declarerIdx, "declare_game",
-		fmt.Sprintf("%s declares %s", s.playerName(s.round.declarerIdx), s.gameTypeName()), nil)
+		fmt.Sprintf("%s declares %s", playerName(s.players, s.round.declarerIdx), s.gameTypeName()), nil)
 	s.startPlay()
 }
 
@@ -664,7 +664,7 @@ func (s *Skat) CpuPlay() {
 func (s *Skat) playCard(playerIdx int, card *Card) {
 	s.round.currentTrick = append(s.round.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	s.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", s.playerName(playerIdx), cardStr(card)), []*Card{card})
+		fmt.Sprintf("%s plays %s", playerName(s.players, playerIdx), cardStr(card)), []*Card{card})
 	if len(s.round.currentTrick) == SkatPlayerCnt {
 		s.round.phase = SkatPhaseTrickEnd
 		return
@@ -687,7 +687,7 @@ func (s *Skat) ResolveTrick() {
 	s.players[winnerIdx].AddTrick(cards)
 	s.players[winnerIdx].SetCardPoints(s.players[winnerIdx].GetCardPoints() + pts)
 	s.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (%d card points)", s.playerName(winnerIdx), s.round.trickNumber, pts), cards)
+		fmt.Sprintf("%s wins trick %d (%d card points)", playerName(s.players, winnerIdx), s.round.trickNumber, pts), cards)
 	s.round.leadPlayerIdx = winnerIdx
 	if s.round.trickNumber >= SkatTricksPerRound {
 		s.round.phase = SkatPhaseRoundEnd
@@ -741,18 +741,18 @@ func (s *Skat) ScoreRound() {
 		declarer.SetRoundScore(gameValue)
 		declarer.IncRoundsWon()
 		s.appendLog(declarerIdx, "round_result",
-			fmt.Sprintf("%s wins (+%d)", s.playerName(declarerIdx), gameValue), nil)
+			fmt.Sprintf("%s wins (+%d)", playerName(s.players, declarerIdx), gameValue), nil)
 	} else {
 		s.round.winnerSide = SkatWinnerDefenders
 		declarer.SetRoundScore(-gameValue)
 		declarer.IncRoundsLost()
 		s.appendLog(declarerIdx, "round_result",
-			fmt.Sprintf("%s loses (-%d)", s.playerName(declarerIdx), gameValue), nil)
+			fmt.Sprintf("%s loses (-%d)", playerName(s.players, declarerIdx), gameValue), nil)
 	}
 
 	declarer.CommitRoundScore()
 	s.appendLog(declarerIdx, "cumulative_score",
-		fmt.Sprintf("%s total=%d", s.playerName(declarerIdx), declarer.GetCumulativeScore()), nil)
+		fmt.Sprintf("%s total=%d", playerName(s.players, declarerIdx), declarer.GetCumulativeScore()), nil)
 
 	s.checkGameEnd()
 }
@@ -804,9 +804,14 @@ func (s *Skat) computeRoundResult() (int, bool) {
 
 // gameBaseValue returns the base value for the game type.
 func (s *Skat) gameBaseValue() int {
-	switch s.round.gameType {
+	return skatBaseValueFor(s.round.gameType, s.round.trumpSuit)
+}
+
+// skatBaseValueFor は仮の契約に対する基礎点を返す。
+func skatBaseValueFor(gameType SkatGameType, trumpSuit int) int {
+	switch gameType {
 	case SkatGameSuit:
-		switch s.round.trumpSuit {
+		switch trumpSuit {
 		case CardDesignDiamond:
 			return 9
 		case CardDesignHeart:
@@ -839,7 +844,12 @@ func (s *Skat) gameMultiplier() int {
 // phase — we cannot read the live SkatPlayer hand here because matadors is
 // computed at scoring time, after every card has been played out.
 func (s *Skat) matadorsCount(cards []*Card) int {
-	order := s.trumpOrder()
+	return skatMatadorsFor(cards, s.round.gameType, s.round.trumpSuit)
+}
+
+// skatMatadorsFor は仮の契約に対するマタドール数を返す。
+func skatMatadorsFor(cards []*Card, gameType SkatGameType, trumpSuit int) int {
+	order := skatTrumpOrderFor(gameType, trumpSuit)
 	if len(order) == 0 {
 		return 0
 	}
@@ -883,7 +893,15 @@ type trumpOrderEntry struct {
 
 // trumpOrder returns the trump cards in descending strength.
 func (s *Skat) trumpOrder() []trumpOrderEntry {
-	switch s.round.gameType {
+	return skatTrumpOrderFor(s.round.gameType, s.round.trumpSuit)
+}
+
+// skatTrumpOrderFor は仮の契約に対する切札の序列を返す。
+//
+// **ビッド前の見積もりにも同じ序列が要る。**round の状態に縛られたままだと、
+// 「この手札ならどの契約でいくつまで受けられるか」を計算できない (#4905)。
+func skatTrumpOrderFor(gameType SkatGameType, trumpSuit int) []trumpOrderEntry {
+	switch gameType {
 	case SkatGameNull:
 		return nil
 	case SkatGameGrand:
@@ -901,7 +919,7 @@ func (s *Skat) trumpOrder() []trumpOrderEntry {
 			{CardDesignHeart, skatValueJack},
 			{CardDesignDiamond, skatValueJack},
 		}
-		ts := s.round.trumpSuit
+		ts := trumpSuit
 		// Then suit cards in standard high→low order: A, T, K, Q, 9, 8, 7.
 		order := []int{skatValueAce, skatValueTen, skatValueKing, skatValueQueen, skatValueNine, skatValueEight, skatValueSeven}
 		for _, v := range order {
@@ -1134,7 +1152,7 @@ func (s *Skat) checkGameEnd() {
 			s.round.gameEndFlag = true
 			s.round.phase = SkatPhaseGameEnd
 			s.appendLog(-1, "game_end",
-				fmt.Sprintf("%s reaches %d points and wins!", s.playerName(s.findIndex(p)), p.GetCumulativeScore()), nil)
+				fmt.Sprintf("%s reaches %d points and wins!", playerName(s.players, s.findIndex(p)), p.GetCumulativeScore()), nil)
 			return
 		}
 	}
@@ -1150,22 +1168,9 @@ func (s *Skat) findIndex(p *SkatPlayer) int {
 	return -1
 }
 
-// findHumanIdx returns the human player index (-1 if none).
-func (s *Skat) findHumanIdx() int {
-	for i, p := range s.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
 // IsHumanTurn reports whether the current player is human (play phase).
 func (s *Skat) IsHumanTurn() bool {
-	if s.round.currentPlayerIdx < 0 || s.round.currentPlayerIdx >= len(s.players) {
-		return false
-	}
-	return s.players[s.round.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(s.players, s.round.currentPlayerIdx)
 }
 
 // IsHumanDeclarerTurn reports whether the declarer is human (used for skat
@@ -1194,7 +1199,7 @@ func (s *Skat) GetValidPlayIndices(playerIdx int) []int {
 
 // GetHint returns a hint for the human player based on the current phase.
 func (s *Skat) GetHint() *SkatHint {
-	humanIdx := s.findHumanIdx()
+	humanIdx := findHumanIdx(s.players)
 	if humanIdx < 0 {
 		return nil
 	}
@@ -1242,17 +1247,6 @@ func (s *Skat) GetHint() *SkatHint {
 	return nil
 }
 
-// playerName returns the player display name.
-func (s *Skat) playerName(idx int) string {
-	if idx < 0 || idx >= len(s.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if s.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
 // gameTypeName returns the human-readable game type.
 func (s *Skat) gameTypeName() string {
 	switch s.round.gameType {
@@ -1283,20 +1277,12 @@ func skatSuitName(suit int) string {
 
 // appendLog appends an entry to the round action log.
 func (s *Skat) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	s.round.actionLog = append(s.round.actionLog, &ActionLogEntry{
-		TurnNumber: len(s.round.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	s.round.appendLog(playerIdx, actionType, detail, cards)
 }
 
 // sortAllHands sorts every player's hand.
 func (s *Skat) sortAllHands() {
-	for _, p := range s.players {
-		s.sortHand(p)
-	}
+	sortEachHand(s.players, s.sortHand)
 }
 
 // sortHand sorts the player's hand by suit then value.
@@ -1393,10 +1379,7 @@ func (s *Skat) GetPlayerCnt() int { return len(s.players) }
 
 // GetPlayer returns the i-th player (nil if out of range).
 func (s *Skat) GetPlayer(i int) *SkatPlayer {
-	if i < 0 || i >= len(s.players) {
-		return nil
-	}
-	return s.players[i]
+	return getPlayer(s.players, i)
 }
 
 // GetLeadPlayerIdx returns the lead player index.
@@ -1607,4 +1590,66 @@ func (s *Skat) cpuPickPlay(playerIdx int) int {
 		}
 	}
 	return worstIdx
+}
+
+// SkatBidEstimate は 1 つの契約について、手札から安全に受けられるビッド額を表す。
+type SkatBidEstimate struct {
+	// GameType は契約の種別 (スート戦 / グランド)。
+	GameType SkatGameType
+	// TrumpSuit はスート戦の切札 (グランドでは 0)。
+	TrumpSuit int
+	// Base は基礎点。
+	Base int
+	// Matadors はマタドール数 (with / without のうち成立するほう)。
+	Matadors int
+	// Value は (マタドール + 1) × 基礎点。**追加の宣言 (ハント / シュナイダー /
+	// シュヴァルツ / ウーヴェルト) を一切使わずに正当化できる上限**で、これを
+	// 超えて落札するとオーバービッドで失う危険がある。
+	Value int
+}
+
+// SkatBidEstimates は各契約についての安全ビッド上限を返す。
+//
+// **ヌル戦は含めない。**基礎点 23 が契約の種別だけで決まり、マタドールの
+// 連なりで伸びないので、マタドールに基づく見積もりには乗らない。
+func SkatBidEstimates(hand []*Card) []SkatBidEstimate {
+	type spec struct {
+		gameType SkatGameType
+		trump    int
+	}
+	specs := []spec{
+		{SkatGameSuit, CardDesignClover},
+		{SkatGameSuit, CardDesignSpade},
+		{SkatGameSuit, CardDesignHeart},
+		{SkatGameSuit, CardDesignDiamond},
+		{SkatGameGrand, 0},
+	}
+	out := make([]SkatBidEstimate, 0, len(specs))
+	for _, sp := range specs {
+		m := skatMatadorsFor(hand, sp.gameType, sp.trump)
+		base := skatBaseValueFor(sp.gameType, sp.trump)
+		out = append(out, SkatBidEstimate{
+			GameType:  sp.gameType,
+			TrumpSuit: sp.trump,
+			Base:      base,
+			Matadors:  m,
+			Value:     (m + 1) * base,
+		})
+	}
+	return out
+}
+
+// SkatBestBidEstimate は最も高い見積もりを返す。
+//
+// **手札が空でも 0 にはならない。**切札を 1 枚も持たないのは「without が最大」と
+// いうことなので、かえって大きな値が出る。配り終えた 10 枚の手札に対してだけ
+// 意味がある — 途中まで出したあとの手札に使ってはいけない。
+func SkatBestBidEstimate(hand []*Card) SkatBidEstimate {
+	best := SkatBidEstimate{}
+	for _, e := range SkatBidEstimates(hand) {
+		if e.Value > best.Value {
+			best = e
+		}
+	}
+	return best
 }

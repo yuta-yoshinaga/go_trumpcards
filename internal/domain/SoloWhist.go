@@ -112,7 +112,7 @@ type SoloWhist struct {
 	roundTricks      [SoloWhistPlayerCnt]int          // 現ラウンドの獲得トリック数
 	gameEndFlag      bool
 	winnerPlayer     int // -1=未確定
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewSoloWhist コンストラクタ
@@ -238,9 +238,9 @@ func (g *SoloWhist) applyBid(idx int, bid SoloWhistBid) error {
 	g.bids[idx] = bid
 	g.bidDone[idx] = true
 	if bid != SoloWhistBidPass {
-		g.appendLog(idx, "bid", fmt.Sprintf("%s bids %s", g.playerName(idx), soloWhistBidName(bid)), nil)
+		g.appendLog(idx, "bid", fmt.Sprintf("%s bids %s", playerName(g.players, idx), soloWhistBidName(bid)), nil)
 	} else {
-		g.appendLog(idx, "bid", fmt.Sprintf("%s passes", g.playerName(idx)), nil)
+		g.appendLog(idx, "bid", fmt.Sprintf("%s passes", playerName(g.players, idx)), nil)
 	}
 	// 次の未入札プレイヤーへ。
 	for k := 1; k <= SoloWhistPlayerCnt; k++ {
@@ -272,7 +272,7 @@ func (g *SoloWhist) resolveBidding() {
 		g.trumpSuit = g.longestSuit(idx)
 	}
 	g.appendLog(idx, "contract",
-		fmt.Sprintf("%s declares %s (trump %d)", g.playerName(idx), soloWhistBidName(bid), g.trumpSuit), nil)
+		fmt.Sprintf("%s declares %s (trump %d)", playerName(g.players, idx), soloWhistBidName(bid), g.trumpSuit), nil)
 	g.leadPlayerIdx = (g.dealerIdx + 1) % SoloWhistPlayerCnt
 	g.currentPlayerIdx = g.leadPlayerIdx
 	g.phase = SoloWhistPhasePlay
@@ -280,19 +280,7 @@ func (g *SoloWhist) resolveBidding() {
 
 // longestSuit プレイヤーが最も多く持つスートを返す。
 func (g *SoloWhist) longestSuit(playerIdx int) int {
-	counts := map[int]int{}
-	p := g.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		counts[p.GetCard(i).GetDesign()]++
-	}
-	bestSuit, bestCnt := CardDesignSpade, -1
-	for _, suit := range []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond} {
-		if counts[suit] > bestCnt {
-			bestCnt = counts[suit]
-			bestSuit = suit
-		}
-	}
-	return bestSuit
+	return longestSuit(g.players[playerIdx])
 }
 
 // cpuChooseBid CPU の入札を選ぶ。最長スートが長ければ Solo、極端に弱ければ Misère。
@@ -373,7 +361,7 @@ func (g *SoloWhist) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *SoloWhist) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == SoloWhistPlayerCnt {
 		g.phase = SoloWhistPhaseTrickEnd
@@ -395,7 +383,7 @@ func (g *SoloWhist) ResolveTrick() {
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.roundTricks[winnerIdx]++
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", g.playerName(winnerIdx), g.trickNumber), trickCards)
+		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= SoloWhistTrickCount {
@@ -469,7 +457,7 @@ func (g *SoloWhist) checkGameEnd() {
 		g.gameEndFlag = true
 		g.winnerPlayer = leader
 		g.phase = SoloWhistPhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", g.playerName(leader)), nil)
+		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
 	}
 }
 
@@ -477,25 +465,7 @@ func (g *SoloWhist) checkGameEnd() {
 
 // validatePlay マストフォローを検証する。
 func (g *SoloWhist) validatePlay(playerIdx int, card *Card) error {
-	if len(g.currentTrick) == 0 {
-		return nil
-	}
-	leadSuit := g.currentTrick[0].Card.GetDesign()
-	if g.playerHasSuit(playerIdx, leadSuit) && card.GetDesign() != leadSuit {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
-	}
-	return nil
-}
-
-// playerHasSuit プレイヤーが指定スートのカードを持っているか。
-func (g *SoloWhist) playerHasSuit(playerIdx, design int) bool {
-	p := g.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == design {
-			return true
-		}
-	}
-	return false
+	return validateFollowSuit(g.currentTrick, g.players, playerIdx, card)
 }
 
 // trickWinner トリックの勝者を決定する。切り札があれば最強切り札、なければ
@@ -541,10 +511,7 @@ func soloWhistCardStrength(value int) int {
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す。
 func (g *SoloWhist) getValidPlayIndices(playerIdx int) []int {
-	player := g.players[playerIdx]
-	return collectValidIndices(player.GetCardsSize(), func(i int) bool {
-		return g.validatePlay(playerIdx, player.GetCard(i)) == nil
-	})
+	return validPlayIndices(g.players[playerIdx], func(c *Card) bool { return g.validatePlay(playerIdx, c) == nil })
 }
 
 // --- Misc helpers ---
@@ -574,25 +541,9 @@ func soloWhistSortHand(p *SoloWhistPlayer) {
 	}
 }
 
-// playerName プレイヤー名を返す。
-func (g *SoloWhist) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
 // indexOfPlayerInTrick currentTrick 内で playerIdx の札の位置を返す (-1=なし)。
 func (g *SoloWhist) indexOfPlayerInTrick(playerIdx int) int {
-	for i, tc := range g.currentTrick {
-		if tc.PlayerIdx == playerIdx {
-			return i
-		}
-	}
-	return -1
+	return indexOfPlayerInTrick(g.currentTrick, playerIdx)
 }
 
 // trickTopRank 現在のトリック勝者の札のランクを返す。見つからない場合は極小値。
@@ -602,27 +553,6 @@ func (g *SoloWhist) trickTopRank(winnerIdx int) int {
 		return -1 << 30
 	}
 	return g.soloWhistRank(g.currentTrick[idx].Card)
-}
-
-// findHumanIdx 人間プレイヤーのインデックス (-1=なし)。
-func (g *SoloWhist) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
-// appendLog 棋譜にエントリを追加する。
-func (g *SoloWhist) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
 }
 
 // --- CPU AI ---
@@ -649,49 +579,23 @@ func (g *SoloWhist) cpuPlaySmart(playerIdx int, valid []int) int {
 	misere := g.contract == SoloWhistBidMisere
 	// Misère の宣言者は勝ちたくないので最も弱い札を出す。
 	if isDeclarer && misere {
-		return g.minBy(player, valid, func(c *Card) int { return g.soloWhistRank(c) })
+		return pickLowest(player, valid, func(c *Card) int { return g.soloWhistRank(c) })
 	}
 	if len(g.currentTrick) == 0 {
 		// リード: 宣言者は強い札、防御は弱い札。
 		if isDeclarer {
-			return g.maxBy(player, valid, func(c *Card) int { return g.soloWhistRank(c) })
+			return pickHighest(player, valid, func(c *Card) int { return g.soloWhistRank(c) })
 		}
-		return g.minBy(player, valid, func(c *Card) int { return g.soloWhistRank(c) })
+		return pickLowest(player, valid, func(c *Card) int { return g.soloWhistRank(c) })
 	}
 	winnerIdx := g.trickWinner()
 	topRank := g.trickTopRank(winnerIdx)
 	winners := soloWhistFilter(valid, func(idx int) bool { return g.soloWhistRank(player.GetCard(idx)) > topRank })
 	wantWin := isDeclarer != misere // 宣言者(非Misère)は勝ちたい; 防御は宣言者を負かしたい
 	if wantWin && len(winners) > 0 {
-		return g.minBy(player, winners, func(c *Card) int { return g.soloWhistRank(c) })
+		return pickLowest(player, winners, func(c *Card) int { return g.soloWhistRank(c) })
 	}
-	return g.minBy(player, valid, func(c *Card) int { return g.soloWhistRank(c) })
-}
-
-// minBy score が最小となるインデックスを返す。
-func (g *SoloWhist) minBy(player *SoloWhistPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s < bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
-}
-
-// maxBy score が最大となるインデックスを返す。
-func (g *SoloWhist) maxBy(player *SoloWhistPlayer, indices []int, score func(*Card) int) int {
-	best := indices[0]
-	bestScore := score(player.GetCard(best))
-	for _, idx := range indices[1:] {
-		if s := score(player.GetCard(idx)); s > bestScore {
-			bestScore = s
-			best = idx
-		}
-	}
-	return best
+	return pickLowest(player, valid, func(c *Card) int { return g.soloWhistRank(c) })
 }
 
 // soloWhistFilter 述語を満たすインデックスを抽出する。
@@ -709,7 +613,7 @@ func soloWhistFilter(indices []int, pred func(int) bool) []int {
 
 // GetHint 人間プレイヤーの手番における推奨プレイを返す。
 func (g *SoloWhist) GetHint() *SoloWhistHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 || g.phase != SoloWhistPhasePlay || g.currentPlayerIdx != human {
 		return nil
 	}
@@ -827,18 +731,12 @@ func (g *SoloWhist) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *SoloWhist) GetPlayer(i int) *SoloWhistPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // IsHumanTurn 現在の手番が人間か (プレイフェーズ)。
 func (g *SoloWhist) IsHumanTurn() bool {
-	if g.currentPlayerIdx < 0 || g.currentPlayerIdx >= len(g.players) {
-		return false
-	}
-	return g.players[g.currentPlayerIdx].GetIsHuman()
+	return isHumanTurn(g.players, g.currentPlayerIdx)
 }
 
 // GetConfig 設定取得
@@ -846,9 +744,6 @@ func (g *SoloWhist) GetConfig() SoloWhistConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *SoloWhist) SetConfig(cfg SoloWhistConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *SoloWhist) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetPlayableIndices プレイ可能なカードのインデックス一覧を返す。
 func (g *SoloWhist) GetPlayableIndices(playerIdx int) []int {

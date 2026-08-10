@@ -18,9 +18,7 @@ func NewPreferencePlayer(isHuman bool) *PreferencePlayer {
 
 // ResetRound ラウンドをリセット（トリック・手札・終了状態を初期化）
 func (p *PreferencePlayer) ResetRound() {
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetPlayerRound(p)
 }
 
 // preferencePlayerJSON is the JSON wire format for PreferencePlayer.

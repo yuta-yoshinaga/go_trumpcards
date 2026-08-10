@@ -288,4 +288,16 @@ describe('ScoponePage', () => {
     fireEvent.click(toggle);
     expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
   });
+
+  it('totals the selected table cards against the chosen hand card', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(makeScoponeState());
+    renderWithProviders(<ScoponePage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    expect(screen.queryByTestId('scopone-sum-indicator')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    fireEvent.click(screen.getByTestId('table-card-0'));
+    await waitFor(() => expect(screen.getByTestId('scopone-sum-indicator')).toBeInTheDocument());
+  });
 });

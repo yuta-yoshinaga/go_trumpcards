@@ -94,3 +94,12 @@ func (_m *MockPopeJoanGame) GetActionLog() []*domain.ActionLogEntry {
 	}
 	return nil
 }
+
+// PopeJoanValidPlays モック
+func (_m *MockPopeJoanGame) PopeJoanValidPlays(player int) []int {
+	ret := _m.Called(player)
+	if v, ok := ret.Get(0).([]int); ok {
+		return v
+	}
+	return nil
+}

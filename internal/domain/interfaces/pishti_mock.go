@@ -140,3 +140,15 @@ func (_m *MockPishtiGame) GetActionLog() []*domain.ActionLogEntry {
 	}
 	return nil
 }
+
+// GetProvisionalScores モック
+func (m *MockPishtiGame) GetProvisionalScores() []int {
+	ret := m.Called()
+	if v, ok := ret.Get(0).([]int); ok {
+		return v
+	}
+	return nil
+}
+
+// GetProvisionalLeader モック
+func (m *MockPishtiGame) GetProvisionalLeader() int { return m.Called().Int(0) }

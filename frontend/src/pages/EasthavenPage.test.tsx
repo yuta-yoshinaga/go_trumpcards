@@ -361,6 +361,17 @@ describe('EasthavenPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     expect(screen.getByRole('button', { name: 'ギブアップ' })).toBeInTheDocument();
   });
+
+  it('previews the movable block from the selection, not only from hover', async () => {
+    // Touch has no hover, so selecting has to reveal the block extent too.
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<EasthavenPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(document.querySelectorAll('[data-block-member]')).toHaveLength(0);
+    const cardButton = screen.getAllByRole('button').find((b) => b.querySelector('img')) as HTMLButtonElement;
+    fireEvent.click(cardButton);
+    await waitFor(() => expect(document.querySelectorAll('[data-block-member]').length).toBeGreaterThan(0));
+  });
 });
 
 // Keyboard shortcuts are bound by useActionKeyboardNav and advertised by

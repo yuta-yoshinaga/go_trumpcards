@@ -177,7 +177,7 @@ type Ulti struct {
 	scored           bool        // 当該ディールの得点計算済みか (RoundEnd 突入時に一度だけ)
 	gameEndFlag      bool
 	winnerPlayer     int // -1=未確定
-	actionLog        []*ActionLogEntry
+	actionLogBase
 }
 
 // NewUlti コンストラクタ
@@ -238,7 +238,7 @@ func (g *Ulti) startRound() {
 	g.trickNumber = 1
 	g.currentTrick = nil
 	g.lastTrickWinner = -1
-	g.declarerIdx = g.findHumanIdx()
+	g.declarerIdx = findHumanIdx(g.players)
 	if g.declarerIdx < 0 {
 		g.declarerIdx = 0
 	}
@@ -320,7 +320,7 @@ func (g *Ulti) applyBid(contract UltiContract, trumpSuit int) {
 	g.talonTaken = true
 	g.sortAllHands()
 	g.appendLog(g.declarerIdx, "bid",
-		fmt.Sprintf("%s declares %s (trump %s)", g.playerName(g.declarerIdx), ultiContractName(contract), ultiSuitName(g.trumpSuit)), nil)
+		fmt.Sprintf("%s declares %s (trump %s)", playerName(g.players, g.declarerIdx), ultiContractName(contract), ultiSuitName(g.trumpSuit)), nil)
 	g.phase = UltiPhaseDiscard
 }
 
@@ -359,7 +359,7 @@ func (g *Ulti) PlayerDiscard(cardIndices []int) error {
 		g.discards = append(g.discards, player.RemoveCard(idx))
 	}
 	g.appendLog(g.declarerIdx, "discard",
-		fmt.Sprintf("%s discards %d cards", g.playerName(g.declarerIdx), len(g.discards)), append([]*Card(nil), g.discards...))
+		fmt.Sprintf("%s discards %d cards", playerName(g.players, g.declarerIdx), len(g.discards)), append([]*Card(nil), g.discards...))
 	g.startPlay()
 	return nil
 }
@@ -423,7 +423,7 @@ func (g *Ulti) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Ulti) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", g.playerName(playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
 
 	if len(g.currentTrick) == UltiPlayerCnt {
 		g.phase = UltiPhaseTrickEnd
@@ -444,7 +444,7 @@ func (g *Ulti) ResolveTrick() {
 	}
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", g.playerName(winnerIdx), g.trickNumber), trickCards)
+		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= UltiTrickCount {
@@ -477,7 +477,7 @@ func (g *Ulti) enterRoundEnd() {
 	g.applyScores(g.outcome)
 	g.appendLog(-1, "round_score",
 		fmt.Sprintf("round %d: declarer(%s) %s %s",
-			g.roundNumber, g.playerName(g.declarerIdx), ultiContractName(g.contract), ultiOutcomeName(g.outcome)), nil)
+			g.roundNumber, playerName(g.players, g.declarerIdx), ultiContractName(g.contract), ultiOutcomeName(g.outcome)), nil)
 	g.checkGameEnd()
 }
 
@@ -588,12 +588,12 @@ func (g *Ulti) checkGameEnd() {
 	g.winnerPlayer = leader
 	g.phase = UltiPhaseGameEnd
 	g.result = g.humanResult(leader, tie)
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", g.playerName(leader)), nil)
+	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
 }
 
 // humanResult 人間 (seat 0) の視点でマッチ結果を返す。単独トップなら Win、トップ同点なら None、他は Lose。
 func (g *Ulti) humanResult(leader int, tie bool) UltiResult {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 {
 		return UltiResultNone
 	}
@@ -814,17 +814,6 @@ func ultiSortHand(p *UltiPlayer, trump int, contract UltiContract) {
 	}
 }
 
-// playerName プレイヤー名を返す。
-func (g *Ulti) playerName(idx int) string {
-	if idx < 0 || idx >= len(g.players) {
-		return fmt.Sprintf("Player %d", idx)
-	}
-	if g.players[idx].GetIsHuman() {
-		return "You"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
 // ultiContractName コントラクトの表示名を返す。
 func ultiContractName(contract UltiContract) string {
 	switch contract {
@@ -902,33 +891,7 @@ func ultiFilter(indices []int, pred func(int) bool) []int {
 
 // indexOfPlayerInTrick currentTrick 内で playerIdx の札の位置を返す (-1=なし)。
 func (g *Ulti) indexOfPlayerInTrick(playerIdx int) int {
-	for i, tc := range g.currentTrick {
-		if tc.PlayerIdx == playerIdx {
-			return i
-		}
-	}
-	return -1
-}
-
-// findHumanIdx 人間プレイヤーのインデックス (-1=なし)。
-func (g *Ulti) findHumanIdx() int {
-	for i, p := range g.players {
-		if p.GetIsHuman() {
-			return i
-		}
-	}
-	return -1
-}
-
-// appendLog 棋譜にエントリを追加する。
-func (g *Ulti) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: len(g.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	return indexOfPlayerInTrick(g.currentTrick, playerIdx)
 }
 
 // --- CPU AI (play) ---
@@ -1038,7 +1001,7 @@ func (g *Ulti) maxByStrength(playerIdx int, indices []int) int {
 
 // GetHint 人間プレイヤーの手番における推奨アクションを返す。
 func (g *Ulti) GetHint() *UltiHint {
-	human := g.findHumanIdx()
+	human := findHumanIdx(g.players)
 	if human < 0 {
 		return nil
 	}
@@ -1259,10 +1222,7 @@ func (g *Ulti) GetPlayerCnt() int { return len(g.players) }
 
 // GetPlayer プレイヤー取得
 func (g *Ulti) GetPlayer(i int) *UltiPlayer {
-	if i < 0 || i >= len(g.players) {
-		return nil
-	}
-	return g.players[i]
+	return getPlayer(g.players, i)
 }
 
 // IsHumanTurn 現在の手番 (Bid/Discard/Play) が人間か。
@@ -1299,9 +1259,6 @@ func (g *Ulti) GetConfig() UltiConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *Ulti) SetConfig(cfg UltiConfig) { g.config = cfg }
-
-// GetActionLog 棋譜取得
-func (g *Ulti) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetPlayableIndices プレイ可能なカードのインデックス一覧を返す。
 func (g *Ulti) GetPlayableIndices(playerIdx int) []int {
