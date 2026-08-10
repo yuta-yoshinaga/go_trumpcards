@@ -878,6 +878,12 @@ var registry = []*Game{
 	// the fifth card of every hand is the same unknown card, and it is not
 	// revealed until the last placement is committed.
 	{Name: "cribbagesquares", Category: CategoryExtra2},
+	// Diplomat deals 8 columns of 4 from two decks and builds the tableau down
+	// ignoring suit -- the concession that makes it the gentle member of the
+	// Forty Thieves family, which insists on same-suit runs. Congress shares
+	// the 104 cards, the eight foundations and the suit-blind descent, but
+	// deals one card per pile and cannot fill an empty pile from the tableau.
+	{Name: "diplomat", Category: CategoryExtra},
 }
 
 // All returns a value-level copy of the registry in canonical order.

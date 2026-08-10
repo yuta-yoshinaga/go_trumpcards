@@ -214,6 +214,7 @@ export type GameKey =
   | 'fourseasons'
   | 'colorado'
   | 'cribbagesquares'
+  | 'diplomat'
   | 'auldlangsyne'
   | 'bisley'
   | 'napoleonssquare'
@@ -736,6 +737,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   fourseasons: CASINO,
   colorado: CASINO,
   cribbagesquares: CASINO,
+  diplomat: CASINO,
   auldlangsyne: CASINO,
   bisley: CASINO,
   napoleonssquare: CASINO,

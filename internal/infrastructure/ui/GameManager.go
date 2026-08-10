@@ -4318,6 +4318,26 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),
+	BindCuiFor("diplomat",
+		func() usecase.DiplomatInteractorIF {
+			return usecase.NewDiplomatInteractor(domain.NewDefaultDiplomat(), new(presenter.DiplomatCuiPresenter))
+		},
+		controller.NewDiplomatCuiController,
+		CuiHelpSpec{
+			TitleKey: "diplomat.helpTitle",
+			CommandKeys: []string{
+				"diplomat.helpDraw",
+				"diplomat.helpMoveTF",
+				"diplomat.helpMoveTT",
+				"diplomat.helpMoveWF",
+				"diplomat.helpMoveWT",
+				"diplomat.helpGiveUp",
+				"diplomat.helpHint",
+				"diplomat.helpAutoComplete",
+				"diplomat.helpUndo",
+			},
+			ExtraCommandLines: []string{"  l                        action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

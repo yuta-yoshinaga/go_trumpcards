@@ -154,6 +154,8 @@ tags:
     description: Colorado (コロラド) game - two-deck solitaire with four ascending and four descending foundations
   - name: cribbagesquares
     description: Cribbage Squares (クリベッジ・スクエアズ) game - 4x4 grid scored as eight cribbage hands against a hidden starter
+  - name: diplomat
+    description: Diplomat (ディプロマット) game - two-deck solitaire whose tableau builds down ignoring suit
   - name: clocksolitaire
     description: Clock Solitaire (クロックソリティア) game
   - name: durak
@@ -6316,6 +6318,89 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CribbageSquaresResponse'
+  /diplomat/exec:
+    post:
+      tags:
+        - diplomat
+      summary: Execute a Diplomat game command
+      description: |
+        Send a command to advance the Diplomat (ディプロマット) game session
+        identified by `sessionId`. A single-player patience played with
+        **two 52-card decks (104 cards)**.
+
+        Eight columns get four cards each face up (32 in all) and the other 72
+        form the stock. There are **eight foundations**, each building up in
+        suit from the Ace.
+
+        The tableau builds **down ignoring suit**, one card at a time - the
+        concession that makes Diplomat the gentle member of the Forty Thieves
+        family, which requires same-suit runs. An **empty column takes any
+        single card** from another column or from the waste, but never straight
+        from the stock. The stock turns one card at a time with **no redeal**.
+
+        Move zones:
+
+        * `from`: `{zone: "tableau", col: 0..7}` or `{zone: "waste"}`
+        * `to`: `{zone: "foundation"}` (the server picks the pile) or
+          `{zone: "tableau", col: 0..7}`
+      operationId: diplomatExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, draw, d, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, undo_n, log, l]
+                sessionId:
+                  type: string
+                from:
+                  $ref: '#/components/schemas/DiplomatMoveZone'
+                to:
+                  $ref: '#/components/schemas/DiplomatMoveZone'
+                n:
+                  type: integer
+                  description: Number of moves to undo (for `undo_n` command)
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              draw:
+                summary: Turn one card from the stock
+                value:
+                  command: draw
+                  sessionId: my-session-001
+              moveBetweenColumns:
+                summary: Drop the top of column 0 onto column 5
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from:
+                    zone: tableau
+                    col: 0
+                  to:
+                    zone: tableau
+                    col: 5
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiplomatResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiplomatResponse'
   /clocksolitaire/exec:
     post:
       tags:
@@ -42976,6 +43061,80 @@ components:
           type: integer
         total:
           type: integer
+    DiplomatMoveZone:
+      type: object
+      description: Source or target zone for a Diplomat card move
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          description: Zone identifier (tableau, waste, foundation)
+          enum: [tableau, waste, foundation]
+        col:
+          type: integer
+          description: Column index (0..7); omitted for the waste and for a foundation (the server picks the pile)
+    DiplomatHint:
+      type: object
+      description: A suggested move in Diplomat
+      properties:
+        fromZone:
+          type: string
+          description: "tableau, waste or stock"
+        fromIdx:
+          type: integer
+          description: Column index, or -1 when the source is the waste or the stock
+        toZone:
+          type: string
+          description: "foundation, tableau or waste"
+        toIdx:
+          type: integer
+          description: Destination index, or -1 when the destination is the waste
+    DiplomatResponse:
+      type: object
+      description: Response payload for /diplomat/exec
+      properties:
+        tableau:
+          type: array
+          description: The eight columns. Only the last card of each is playable.
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        foundation:
+          type: array
+          description: The eight foundations, each building up in suit from the Ace.
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        stockCount:
+          type: integer
+        waste:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "0=Playing, 1=GameClear, 2=GameOver"
+        moveCount:
+          type: integer
+        canUndo:
+          type: boolean
+        isStalemate:
+          type: boolean
+        undoToEscape:
+          type: integer
+        hint:
+          $ref: '#/components/schemas/DiplomatHint'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
     CribbageSquaresHint:
       type: object
       description: The cell the server suggests for the card in hand

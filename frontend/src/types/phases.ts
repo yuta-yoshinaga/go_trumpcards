@@ -1434,6 +1434,13 @@ export const CribbageSquaresPhase = {
   COMPLETE: 1,
 } as const;
 
+/** Diplomat phase constants (sync: internal/domain/Diplomat.go). */
+export const DiplomatPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 export const SirTommyPhase = {
   PLAYING: 0,
   GAME_CLEAR: 1,
