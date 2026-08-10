@@ -75,6 +75,7 @@ var gameDescriptions = map[string]string{
 	"letitride":           "Let It Ride (レット・イット・ライド)",
 	"pokersquares":        "Poker Squares (ポーカー・スクエアズ)",
 	"cribbagesquares":     "クリベッジ・スクエアズ（4×4に置き、8手をクリベッジで採点）",
+	"diplomat":            "ディプロマット（104枚、8列×4枚、スート無視の降順）",
 	"pageone":             "Page One (ページワン)",
 	"reddog":              "Red Dog (レッドドッグ)",
 	"badugi":              "Badugi (バドゥーギ)",

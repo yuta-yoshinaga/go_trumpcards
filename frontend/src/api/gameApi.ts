@@ -79,6 +79,7 @@ export * from './games/daifugo';
 export * from './games/desmoche';
 export * from './games/deuceswild';
 export * from './games/deucetoseven';
+export * from './games/diplomat';
 export * from './games/doppelkopf';
 export * from './games/doubleklondike';
 export * from './games/doubt';
@@ -305,6 +306,7 @@ export const games = [
   'fourseasons',
   'colorado',
   'cribbagesquares',
+  'diplomat',
   'razz',
   'sevencardstudhilo',
   'badugi',

@@ -307,4 +307,12 @@ func init() {
 			return usecase.RestoreViraInteractor(data, new(presenter.ViraWebPresenter))
 		},
 		controller.NewViraWebControllerWithProvider)
+	games.RegisterKVGame("diplomat", games.CategoryExtra,
+		func() usecase.DiplomatInteractorIF {
+			return usecase.NewDiplomatInteractor(domain.NewDefaultDiplomat(), new(presenter.DiplomatWebPresenter))
+		},
+		func(data []byte) (usecase.DiplomatInteractorIF, error) {
+			return usecase.RestoreDiplomatInteractor(data, new(presenter.DiplomatWebPresenter))
+		},
+		controller.NewDiplomatWebControllerWithProvider)
 }

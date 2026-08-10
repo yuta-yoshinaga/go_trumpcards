@@ -435,6 +435,11 @@ func init() {
 			return usecase.NewCribbageSquaresInteractor(domain.NewDefaultCribbageSquares(), new(presenter.CribbageSquaresWebPresenter))
 		},
 		controller.NewCribbageSquaresWebController)
+	BindWebControllerFor("diplomat",
+		func() usecase.DiplomatInteractorIF {
+			return usecase.NewDiplomatInteractor(domain.NewDefaultDiplomat(), new(presenter.DiplomatWebPresenter))
+		},
+		controller.NewDiplomatWebController)
 	BindWebControllerFor("soko",
 		func() usecase.FiveCardStudInteractorIF {
 			return usecase.NewFiveCardStudInteractor(domain.NewDefaultSoko(), new(presenter.FiveCardStudWebPresenter))

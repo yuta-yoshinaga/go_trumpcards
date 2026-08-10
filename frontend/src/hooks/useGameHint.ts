@@ -66,6 +66,7 @@ import type {
   DaifugoResponse,
   DesmocheResponse,
   DeuceToSevenResponse,
+  DiplomatResponse,
   DoppelkopfResponse,
   DoubleKlondikeResponse,
   DoubtResponse,
@@ -327,6 +328,7 @@ import { getDaifugoHint } from '../utils/hints/daifugoHint';
 import { getDesmocheHint } from '../utils/hints/desmocheHint';
 import { getDeucesWildHint } from '../utils/hints/deuceswildHint';
 import { getDeuceToSevenHint } from '../utils/hints/deuceToSevenHint';
+import { getDiplomatHint } from '../utils/hints/diplomatHint';
 import { getDoppelkopfHint } from '../utils/hints/doppelkopfHint';
 import { getDoubleKlondikeHint } from '../utils/hints/doubleklondikeHint';
 import { getDoubtHint } from '../utils/hints/doubtHint';
@@ -578,6 +580,7 @@ export const hintFactories = {
   fourseasons: (s) => getFourSeasonsHint(s as FourSeasonsResponse),
   colorado: (s) => getColoradoHint(s as ColoradoResponse),
   cribbagesquares: (s) => getCribbageSquaresHint(s as CribbageSquaresResponse),
+  diplomat: (s) => getDiplomatHint(s as DiplomatResponse),
   fivehundred: (s) => getFiveHundredHint(s as FiveHundredResponse),
   rook: (s) => getRookHint(s as RookResponse),
   schnapsen: (s) => getSchnapsenHint(s as SchnapsenResponse),

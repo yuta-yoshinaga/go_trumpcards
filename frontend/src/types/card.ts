@@ -72,6 +72,7 @@ export * from './games/cuckoo';
 export * from './games/daifugo';
 export * from './games/desmoche';
 export * from './games/deucetoseven';
+export * from './games/diplomat';
 export * from './games/doppelkopf';
 export * from './games/doubleklondike';
 export * from './games/doubt';
