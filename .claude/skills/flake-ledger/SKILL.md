@@ -1,7 +1,8 @@
 ---
 name: flake-ledger
 description: Record a test failure and decide whether it is actually a flake, by counting sightings at the same location instead of trusting a green re-run. Use when a test fails and you are tempted to re-run it, when CI is red on a change that could not have caused it, or to review which failures have repeated ("this test is flaky, right?", "re-run CI").
-disable-model-invocation: true
+# Model-invocable: read-only bookkeeping. Its whole point is to fire at the moment a
+# test fails and a re-run is tempting — a human trigger arrives too late to help.
 allowed-tools: Read, Grep, Glob, Bash
 argument-hint: "[record|check|list] [test-id]"
 ---

@@ -1,7 +1,10 @@
 ---
 name: new-game
 description: Scaffold and wire a new card game across every backend, frontend, worker, doc, and count-assertion touchpoint. Use when the user wants to add a new game (e.g. "add a new game", "implement <game>", "/new-game <name> <category>"). Drives the full New Game Addition Checklist so no registration point or hardcoded count is missed.
-disable-model-invocation: true
+# Model-invocable: this is a STEP, not an entry point. The human starts the batch or
+# the standing new-game loop; blocking the step there does not prevent the commits and
+# PRs — it only removes the checklist that keeps them correct, and leaves the
+# orchestrator (improve-batch / the autonomous loop) unable to do the one thing it is for.
 ---
 
 # New Game
