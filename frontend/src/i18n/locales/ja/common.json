@@ -1445,7 +1445,6 @@
     "pokersquares.hintAvailable": "ヒントを表示しました",
     "pokersquares.noHint": "いま出せるヒントはありません",
     "cribbagesquares.playing": "プレイ中",
-    "cribbagesquares.complete": "ゲーム終了 合計得点: {{totalScore}}",
     "cribbagesquares.win": "クリア！ 合計得点: {{totalScore}}（{{winScore}}点以上）",
     "cribbagesquares.lose": "ゲーム終了 合計得点: {{totalScore}}（クリアは{{winScore}}点）",
     "cribbagesquares.hintAvailable": "ヒントがあります",

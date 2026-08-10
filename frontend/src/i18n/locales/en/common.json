@@ -1445,7 +1445,6 @@
     "pokersquares.hintAvailable": "Here is a hint",
     "pokersquares.noHint": "No hint is available right now",
     "cribbagesquares.playing": "Playing",
-    "cribbagesquares.complete": "Game over. Total score: {{totalScore}}",
     "cribbagesquares.win": "Cleared! Total score: {{totalScore}} (target {{winScore}})",
     "cribbagesquares.lose": "Game over. Total score: {{totalScore}} (target {{winScore}})",
     "cribbagesquares.hintAvailable": "Hint available",
