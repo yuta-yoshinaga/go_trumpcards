@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { fiveCardStudApi } from '../api/gameApi';
+import { fiveCardStudApi, sokoApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { BettingControls } from '../components/BettingControls';
@@ -88,28 +88,44 @@ const FCS_PHASE_KEYS: Readonly<Record<number, string>> = {
   [FiveCardStudPhase.REBUY]: 'rebuy',
 };
 
+/**
+ * Games served by this page. Soko (Canadian Stud) is Five Card Stud with two
+ * extra hand ranks -- the deal, the streets and the betting are the same game,
+ * and only the showdown ranking differs, which the server already resolves into
+ * `handName`. A second ~560-line copy would be duplication, not a feature.
+ */
+export type FcsPageGameKey = 'fivecardstud' | 'soko';
+
 /** Renders the Five Card Stud game page with door cards, betting, and showdown. */
-export const FiveCardStudPage = withTutorial(FiveCardStudPageContent, 'fivecardstud', FCS_TUTORIAL_STEPS);
+export const FiveCardStudPage = withTutorial(
+  () => <FiveCardStudPageContent gameKey="fivecardstud" />,
+  'fivecardstud',
+  FCS_TUTORIAL_STEPS,
+);
 /** Inner content of the Five Card Stud page, wrapped by TutorialProvider. */
-function FiveCardStudPageContent() {
+export function FiveCardStudPageContent({ gameKey }: { gameKey: FcsPageGameKey }) {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('fivecardstud');
-  const phaseNames = usePhaseNames('fivecardstud', FCS_PHASE_KEYS);
+    useGamePageSetup(gameKey);
+  const phaseNames = usePhaseNames(gameKey, FCS_PHASE_KEYS);
   const { cardWidth } = useCardDimensions();
   const isMobile = useIsMobile();
-  const { state, loading, error, exec: execApi, retry } = useGameApi(fiveCardStudApi.exec);
+  // Annotated rather than inferred: both clients are created from the same
+  // factory with the same generics, but a union of the two exec signatures
+  // widens the response to `{}` and every field read below fails to compile.
+  const api: typeof fiveCardStudApi = gameKey === 'soko' ? sokoApi : fiveCardStudApi;
+  const { state, loading, error, exec: execApi, retry } = useGameApi(api.exec);
 
   // CLI mode
-  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('fivecardstud');
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode(gameKey);
   type FcsArgs = Parameters<typeof fiveCardStudApi.exec>;
   const cliConfig: CliGameConfig<FiveCardStudResponse, FcsArgs> = useMemo(
     () => ({
-      gameName: 'fivecardstud',
+      gameName: gameKey,
       parseCommand: parseFiveCardStudCommand,
       formatResponse: (s: FiveCardStudResponse) => formatFiveCardStudState(s, phaseNames),
       helpText: FIVECARDSTUD_HELP,
     }),
-    [phaseNames],
+    [gameKey, phaseNames],
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
@@ -208,23 +224,23 @@ function FiveCardStudPageContent() {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('fivecardstud', state);
+  } = useGameHint(gameKey, state);
 
   if (!state)
     return (
       <GameSkeleton
-        gameKey="fivecardstud"
+        gameKey={gameKey}
         layout={{ kind: 'community-poker', community: 4, opponents: 3, opponentCards: 2, footerHandSize: 2 }}
       />
     );
 
   return (
     <GamePageShell
-      title={tc('nav.fivecardstud')}
-      gameThemeBg={gameTheme.fivecardstud.bg}
+      title={tc(`nav.${gameKey}`)}
+      gameThemeBg={gameTheme[gameKey].bg}
       phaseName={phaseNames[phase] ?? t('phase.init')}
       isHumanTurn={canAct}
-      gamePath="/fivecardstud"
+      gamePath={`/${gameKey}`}
       gameEndFlag={phase === FiveCardStudPhase.SHOWDOWN || phase === FiveCardStudPhase.END}
       winShow={humanWon}
       loading={loading}
@@ -266,7 +282,7 @@ function FiveCardStudPageContent() {
                     CPU {p.id}
                     <span className="ml-2 text-xs text-ds-text-muted">{p.playStyleName}</span>
                     {p.totalHands > 0 && (
-                      <HudStats vpip={p.vpip} pfr={p.pfr} threeBet={p.threeBet} af={p.af} namespace="fivecardstud" />
+                      <HudStats vpip={p.vpip} pfr={p.pfr} threeBet={p.threeBet} af={p.af} namespace={gameKey} />
                     )}
                     <span className="ml-2 text-xs">
                       {tc('betting.chips')} {p.chips}
@@ -362,7 +378,7 @@ function FiveCardStudPageContent() {
           />
 
           {/* Sticky footer: player hand + buttons */}
-          <GameFooter className={`${gameTheme.fivecardstud.footer} px-5 py-3`}>
+          <GameFooter className={`${gameTheme[gameKey].footer} px-5 py-3`}>
             {/* Human player */}
             {humanPlayer && (
               <div className="mb-2" data-tutorial="fcs-player-hand">
@@ -374,7 +390,7 @@ function FiveCardStudPageContent() {
                       pfr={humanPlayer.pfr}
                       threeBet={humanPlayer.threeBet}
                       af={humanPlayer.af}
-                      namespace="fivecardstud"
+                      namespace={gameKey}
                     />
                   )}
                   <span className="ml-3 text-xs">

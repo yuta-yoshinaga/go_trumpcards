@@ -69,6 +69,7 @@ type FiveCardStud struct {
 	currentTurn     int
 	phase           int
 	config          FiveCardStudConfig
+	soko            bool // Soko (Canadian Stud): 4枚ストレート/4枚フラッシュを役に加える
 	gameEndFlag     bool
 	lastBet         int
 	minRaise        int
@@ -119,8 +120,41 @@ func NewDefaultFiveCardStud() *FiveCardStud {
 	return NewFiveCardStud(NewTrumpCards(0), NewFiveCardStudPlayersForTable(cfg.TableSize), cfg)
 }
 
+// NewSoko returns Soko (Canadian Stud): Five Card Stud with two extra hand
+// ranks. The deal, the bring-in and the betting rounds are the same game --
+// only the showdown ranking differs -- so it reuses this whole implementation
+// the way Razz reuses SevenCardStud.
+func NewSoko(trumpCards *TrumpCards, players []*FiveCardStudPlayer, config FiveCardStudConfig) *FiveCardStud {
+	s := NewFiveCardStud(trumpCards, players, config)
+	s.soko = true
+	s.applySokoMode()
+	return s
+}
+
+// NewDefaultSoko returns Soko with the default table size and DefaultSokoConfig.
+// Used as the single source of truth for CUI, Web, and Worker construction sites.
+func NewDefaultSoko() *FiveCardStud {
+	cfg := DefaultSokoConfig()
+	return NewSoko(NewTrumpCards(0), NewFiveCardStudPlayersForTable(cfg.TableSize), cfg)
+}
+
+// GetIsSoko は Soko (Canadian Stud) モードかを返す。
+func (s *FiveCardStud) GetIsSoko() bool { return s.soko }
+
+// applySokoMode はゲームのモードを全プレイヤーへ伝播する。
+// 評価器はプレイヤー側にあるので、ここを忘れると Soko の卓で標準の役序列が使われ、
+// ビルドもテストも通ったまま4枚役だけが消える。
+func (s *FiveCardStud) applySokoMode() {
+	for _, p := range s.players {
+		p.SetSokoMode(s.soko)
+	}
+}
+
 // Reset ゲーム初期化
 func (s *FiveCardStud) Reset() error {
+	// 現状の Reset は同じプレイヤーオブジェクトを再利用するので厳密には不要だが、
+	// 卓サイズ変更などで将来ロスターを作り直したときにモードが落ちないよう毎回押し直す。
+	s.applySokoMode()
 	s.phase = FiveCardStudPhaseInit
 	s.pot = 0
 	s.sidePots = make([]SidePot, 0)
@@ -725,8 +759,13 @@ func (s *FiveCardStud) IsMuckAvailable() bool {
 	return false
 }
 
-// getHandName ハンドランクから名前を返す
+// getHandName ハンドランクから名前を返す。
+// Soko はランクのスケールが違うので名前表も切り替える（同じ 4 が Soko では
+// ツーペア、標準ではストレート）。
 func (s *FiveCardStud) getHandName(rank int) string {
+	if s.soko {
+		return sokoHandName(rank)
+	}
 	return pokerHandName(rank)
 }
 
@@ -875,6 +914,7 @@ type fiveCardStudJSON struct {
 	DealerIdx        int                      `json:"di"`
 	CurrentTurn      int                      `json:"ct"`
 	Phase            int                      `json:"ph"`
+	Soko             bool                     `json:"sk,omitempty"`
 	Config           FiveCardStudConfig       `json:"cf"`
 	GameEndFlag      bool                     `json:"ge"`
 	LastBet          int                      `json:"lb"`
@@ -910,6 +950,7 @@ func (s *FiveCardStud) MarshalJSON() ([]byte, error) {
 		DealerIdx:        s.dealerIdx,
 		CurrentTurn:      s.currentTurn,
 		Phase:            s.phase,
+		Soko:             s.soko,
 		Config:           s.config,
 		GameEndFlag:      s.gameEndFlag,
 		LastBet:          s.lastBet,
@@ -978,6 +1019,13 @@ func (s *FiveCardStud) UnmarshalJSON(data []byte) error {
 		s.currentTurn = 0
 	}
 	s.phase = j.Phase
+	s.soko = j.Soko
+	// **Push the mode back down to the players.** The evaluator lives on the
+	// player, and the Cloudflare Worker rebuilds the game from KV on every
+	// request -- restoring only the game-level flag would leave a Soko table
+	// silently evaluating standard poker, with no error anywhere (#4478 is the
+	// same shape of bug for the undo stack).
+	s.applySokoMode()
 	s.config = j.Config
 	s.gameEndFlag = j.GameEndFlag
 	s.lastBet = j.LastBet

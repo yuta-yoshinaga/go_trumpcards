@@ -66,6 +66,13 @@ func DefaultFiveCardStudConfig() FiveCardStudConfig {
 	}
 }
 
+// DefaultSokoConfig Soko (Canadian Stud) デフォルト設定。
+// ディール・ブリングイン・ベット構造は Five Card Stud と同一で、違うのは
+// ショウダウンの役序列だけなので設定値も同じ。
+func DefaultSokoConfig() FiveCardStudConfig {
+	return DefaultFiveCardStudConfig()
+}
+
 // Validate 設定値のドメインバリデーション
 func (c FiveCardStudConfig) Validate() error {
 	if err := ValidateRange("betting limit", int(c.BettingLimit), int(BettingLimitFixed), int(BettingLimitNoLimit)); err != nil {

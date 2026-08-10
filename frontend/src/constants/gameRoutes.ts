@@ -310,6 +310,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [2, 3, 5, 2], skill: [2, 4, 4, 2], social: [1, 3, 5, 2, 5], theme: [2, 1, 3, 1, 2, 1] },
       },
       {
+        path: '/soko',
+        labelKey: 'nav.soko',
+        icon: '🇫🇮',
+        page: 'Soko',
+        profile: { mood: [2, 3, 5, 2], skill: [3, 4, 4, 2], social: [1, 3, 5, 2, 5], theme: [2, 1, 3, 1, 2, 1] },
+      },
+      {
         path: '/razz',
         labelKey: 'nav.razz',
         icon: '🃏',

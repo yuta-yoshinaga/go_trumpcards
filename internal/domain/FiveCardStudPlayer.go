@@ -24,7 +24,15 @@ type FiveCardStudPlayer struct {
 	threeBetCount       int                   // 3Bet実行数
 	postFlopBetRaise    int                   // ポストフロップ ベット+レイズ回数
 	postFlopCall        int                   // ポストフロップ コール回数
+	sokoMode            bool                  // Soko の役序列で評価する (Canadian Stud)
 }
+
+// SetSokoMode は Soko (Canadian Stud) の役序列で評価するかを設定する。
+// ゲーム側 (FiveCardStud) が構築時とリセット時に伝播する。
+func (p *FiveCardStudPlayer) SetSokoMode(v bool) { p.sokoMode = v }
+
+// GetSokoMode は Soko モードかを返す。
+func (p *FiveCardStudPlayer) GetSokoMode() bool { return p.sokoMode }
 
 // NewFiveCardStudPlayer コンストラクタ
 func NewFiveCardStudPlayer(isHuman bool, style FiveCardStudPlayStyle) *FiveCardStudPlayer {
@@ -164,7 +172,7 @@ func (p *FiveCardStudPlayer) EvalBestHand() int {
 	var bestCards []*Card
 
 	for _, combo := range combos {
-		rank := evalFiveCardHand(combo)
+		rank := p.evalHand(combo)
 		if rank > bestRank || (rank == bestRank && compareHighCardsSlice(combo, bestCards) > 0) {
 			bestRank = rank
 			bestCards = make([]*Card, 5)
@@ -175,6 +183,16 @@ func (p *FiveCardStudPlayer) EvalBestHand() int {
 	p.handRank = bestRank
 	p.bestHand = bestCards
 	return p.handRank
+}
+
+// evalHand は5枚の役を評価する。Soko は4枚ストレート/4枚フラッシュを含む独自の
+// 序列を使うため、標準の評価器とは戻り値のスケールが違う（soko_hand_eval.go 参照）。
+// 両者を混ぜて比較してはいけないので、1ハンド内では必ず同じ側を使う。
+func (p *FiveCardStudPlayer) evalHand(cards []*Card) int {
+	if p.sokoMode {
+		return evalSokoHand(cards)
+	}
+	return evalFiveCardHand(cards)
 }
 
 // EvalVisibleHand 表向き札のみからハンドを評価 (ベッティング順序決定用)

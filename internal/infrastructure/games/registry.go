@@ -849,6 +849,14 @@ var registry = []*Game{
 	// waste each card lands on; here the deal is forced, which is what strips
 	// the game down to "when to deal" and "which playable card first".
 	{Name: "auldlangsyne", Category: CategoryExtra2},
+	// Soko (Canadian Stud) is Five Card Stud with two extra hand ranks: a
+	// four-card straight beats a pair and a four-card flush beats that, both
+	// ranking below two pair. The deal, the bring-in and the betting rounds are
+	// the same game, so it reuses the whole FiveCardStud stack the way razz
+	// reuses SevenCardStud. That reuse is what fixes its Category: the entry
+	// below is authoritative, and it must match wherever FiveCardStud and
+	// betting.go are compiled.
+	{Name: "soko", Category: CategoryCasino},
 }
 
 // All returns a value-level copy of the registry in canonical order.
