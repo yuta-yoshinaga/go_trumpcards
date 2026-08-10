@@ -106,7 +106,7 @@ flowchart TD
 | `next` | `n` | 次のトリックへ進む（トリック終了後） |
 | `nextround` | `nr` | チップ精算して次のラウンドへ |
 | `setdifficulty <0-2>` | `sd <0-2>` | CPU難易度設定（0=Easy, 1=Normal, 2=Hard） |
-| `setbasechips <n>` | `sb <n>` | ベースチップ数設定 |
+| `setchips <n>` | `sb <n>` | ベースチップ数設定 |
 | `log` | `l` | アクションログを表示 |
 | `reset` | `r` | 新しいゲームを開始（設定保持） |
 | `quit` | `q` | ゲーム終了 |

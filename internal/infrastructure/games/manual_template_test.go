@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -488,5 +489,207 @@ func TestManualHeadingsIgnoresFencedCode(t *testing.T) {
 	}
 	if slices.Contains(h2, "これは見出しではない") {
 		t.Errorf("a fenced `#` line was parsed as a heading: %v", h2)
+	}
+}
+
+// manualGoStringRe matches a Go interpreted string literal, honouring escapes.
+//
+// The escape handling is load-bearing in both directions. `"[^"]*"` swallows an
+// escaped quote; `"[^"\\]*"` desynchronises on the first literal containing a
+// backslash and then pairs the wrong quotes for the rest of the file, which
+// made a first pass report Cassino's `take` and `next` as undispatchable when
+// both are declared a few lines apart.
+var manualGoStringRe = regexp.MustCompile(`"(?:[^"\\]|\\.)*"`)
+
+// manualBindCuiRe pairs a registered game with the controller that serves it.
+var manualBindCuiRe = regexp.MustCompile(`BindCuiFor\("([a-z0-9]+)",(?s:.*?)controller\.New(\w+)CuiController`)
+
+// manualUniversalCommands are dispatched before any controller sees them --
+// execCuiCommand handles q/quit/exit and r/reset, handleCuiHintAndLog serves
+// h/hint and log/l, and GameManager.Exec takes help/?/switch/games. None of
+// them appears in a game's own source, so they are always documentable.
+var manualUniversalCommands = map[string]bool{
+	"r": true, "reset": true, "q": true, "quit": true, "exit": true,
+	"help": true, "?": true, "h": true, "hint": true, "log": true, "l": true,
+	"switch": true, "games": true,
+}
+
+// TestManualCommandsAreDispatchable asserts that every command a CUI manual
+// documents is one the game actually accepts.
+//
+// TestPerGameManualsFollowTemplate checks the shape of the command table -- its
+// three columns and the reset/quit/help rows -- and says nothing about whether
+// the tokens inside it work. 19 manuals documented 28 tokens the dispatcher
+// rejects (issue #5227): cego offered `p` where only `play` is accepted, kemps
+// and spoons documented a `setdifficulty` command that exists nowhere in the
+// game, and mighty's `pass` row described itself as equivalent to `bid 0` while
+// not being dispatched at all. A reader copying those gets a "did you mean"
+// suggestion, or in the several games that do not report unknown commands, a
+// silently redrawn board.
+//
+// A command reaches the dispatcher only by appearing as a string literal in its
+// controller, so literal membership is the test. That is deliberately loose --
+// a literal used for something else would pass -- because the alternative
+// (parsing each controller's switch) breaks on the games whose arguments are
+// matched in a nested switch.
+func TestManualCommandsAreDispatchable(t *testing.T) {
+	src, err := os.ReadFile(filepath.Join(repoRoot, "internal/infrastructure/ui/GameManager.go"))
+	if err != nil {
+		t.Fatalf("read GameManager.go: %v", err)
+	}
+	owner := map[string]string{}
+	for _, m := range manualBindCuiRe.FindAllStringSubmatch(string(src), -1) {
+		owner[m[1]] = m[2]
+	}
+	if len(owner) < len(games.All())-2 {
+		t.Fatalf("found %d CUI bindings for %d games — BindCuiFor's shape changed; "+
+			"fix manualBindCuiRe rather than trusting a clean run", len(owner), len(games.All()))
+	}
+
+	checked := 0
+	for _, g := range games.All() {
+		typ, ok := owner[g.Name]
+		if !ok {
+			continue
+		}
+		ctl, err := os.ReadFile(filepath.Join(repoRoot, "internal/adapter/controller", typ+"CuiController.go"))
+		if err != nil {
+			continue
+		}
+		literals := map[string]bool{}
+		for _, q := range manualGoStringRe.FindAllString(string(ctl), -1) {
+			if s, err := strconv.Unquote(q); err == nil {
+				literals[s] = true
+			}
+		}
+		rel := filepath.Join("docs/manual/cui", g.Name+".md")
+		data, err := os.ReadFile(filepath.Join(repoRoot, rel))
+		if err != nil {
+			continue
+		}
+		body, ok := manualSection(string(data), "コマンド一覧")
+		if !ok {
+			continue
+		}
+		checked++
+		for _, tok := range manualDocumentedCommands(body) {
+			if manualUniversalCommands[tok] || literals[tok] {
+				continue
+			}
+			t.Errorf("%s: documents `%s`, which %sCuiController never receives — "+
+				"a command reaches the dispatcher only as a string literal there. "+
+				"Correct the token or drop the row (issue #5227).", rel, tok, typ)
+		}
+	}
+	if checked < len(games.All())-5 {
+		t.Fatalf("only %d command tables were read for %d games — the walk broke", checked, len(games.All()))
+	}
+}
+
+// manualDocumentedCommands returns the head token of the コマンド and 短縮形
+// cells of every row in a command table.
+func manualDocumentedCommands(body string) []string {
+	var out []string
+	seen := map[string]bool{}
+	// Only the first contiguous run of table rows. Several sections follow the
+	// command table with a second table describing its arguments -- speed's
+	// `| idx | 出す手札のインデックス |`, sevens' `| cardIdx | ... |` -- and
+	// reading those made the guard demand that `idx` and `cardIdx` be
+	// dispatchable commands.
+	started := false
+	for _, line := range strings.Split(body, "\n") {
+		trimmed := strings.TrimSpace(line)
+		if !strings.HasPrefix(trimmed, "|") {
+			if started {
+				break
+			}
+			continue
+		}
+		started = true
+		cells := splitManualRow(trimmed)
+		for i, cell := range cells {
+			if i > 1 {
+				break
+			}
+			for _, span := range regexp.MustCompile("`([^`]+)`").FindAllStringSubmatch(cell, -1) {
+				fields := strings.Fields(span[1])
+				if len(fields) == 0 {
+					continue
+				}
+				tok := fields[0]
+				if tok == "コマンド" || tok == "短縮形" || seen[tok] {
+					continue
+				}
+				seen[tok] = true
+				out = append(out, tok)
+			}
+		}
+	}
+	return out
+}
+
+// splitManualRow splits a markdown table row, honouring `\|` escapes.
+func splitManualRow(line string) []string {
+	line = strings.TrimPrefix(line, "|")
+	line = strings.TrimSuffix(line, "|")
+	var cells []string
+	var cur strings.Builder
+	for i := 0; i < len(line); i++ {
+		if line[i] == '\\' && i+1 < len(line) && line[i+1] == '|' {
+			cur.WriteByte('|')
+			i++
+			continue
+		}
+		if line[i] == '|' {
+			cells = append(cells, strings.TrimSpace(cur.String()))
+			cur.Reset()
+			continue
+		}
+		cur.WriteByte(line[i])
+	}
+	cells = append(cells, strings.TrimSpace(cur.String()))
+	return cells
+}
+
+func TestManualDocumentedCommandsReadsOnlyTheCommandTable(t *testing.T) {
+	// The argument-description table that follows several command tables must
+	// not be read as more commands: speed documents `| idx | 出す手札の… |`
+	// right below its command table, and treating `idx` as a command made the
+	// guard demand that the controller dispatch it.
+	body := "\n| コマンド | 短縮形 | 説明 |\n|---|---|---|\n| `play idx pile` | `p idx pile` | 出す |\n" +
+		"\n`p idx pile` の各引数:\n\n| 引数 | 説明 |\n|---|---|\n| `idx` | 手札の位置 |\n| `pile` | 場札の位置 |\n"
+	got := manualDocumentedCommands(body)
+	if slices.Contains(got, "idx") || slices.Contains(got, "pile") {
+		t.Errorf("read the argument table as commands: %v", got)
+	}
+	if !slices.Contains(got, "play") || !slices.Contains(got, "p") {
+		t.Errorf("lost a real command: %v", got)
+	}
+}
+
+func TestSplitManualRowHonoursEscapedPipes(t *testing.T) {
+	// `bid entrar <s\|c\|h\|d>` is one cell, not four.
+	got := splitManualRow("| `bid entrar <s\\|c\\|h\\|d>` | `b` | 宣言 |")
+	if len(got) != 3 {
+		t.Fatalf("got %d cells %q, want 3 — an escaped pipe was treated as a separator", len(got), got)
+	}
+	if got[0] != "`bid entrar <s|c|h|d>`" {
+		t.Errorf("first cell is %q, want the unescaped command", got[0])
+	}
+}
+
+func TestManualGoStringReSurvivesEscapes(t *testing.T) {
+	// A literal containing a backslash must not desynchronise the ones after
+	// it. `"[^"\\]*"` does, which made a first pass believe Cassino never
+	// declares `take`.
+	src := `fmt.Sprintf("line\n")` + "\n" + `[]string{"take", "t"}`
+	var got []string
+	for _, q := range manualGoStringRe.FindAllString(src, -1) {
+		if s, err := strconv.Unquote(q); err == nil {
+			got = append(got, s)
+		}
+	}
+	if !slices.Contains(got, "take") || !slices.Contains(got, "t") {
+		t.Errorf("lost a literal after an escaped one: %v", got)
 	}
 }

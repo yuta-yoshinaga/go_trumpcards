@@ -83,7 +83,6 @@ flowchart TD
 | `kemps` | `k` | 「ケムプス！」と宣言する |
 | `counter <seat>` | `c` | 指定席に「カウンター・ケムプス！」を宣言する |
 | `next` | `n` | 次のラウンドへ進む |
-| `setdifficulty <0-2>` | `sd` | CPU難易度設定（0=Easy, 1=Normal, 2=Hard）。リセットされます |
 | `log` | `l` | アクションログを表示 |
 | `reset` | `r` | 新しいゲームを開始（設定保持） |
 | `quit` | `q` | ゲーム終了 |
