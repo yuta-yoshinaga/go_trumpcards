@@ -69,6 +69,7 @@ export const workerUrl: Record<string, string> = {
   sirtommy: WORKER_EXTRA2,
   auldlangsyne: WORKER_EXTRA2,
   soko: WORKER_CASINO,
+  fourseasons: WORKER_SOLO,
   bisley: WORKER_EXTRA2,
   napoleonssquare: WORKER_EXTRA2,
   grandfathersclock: WORKER_EXTRA2,

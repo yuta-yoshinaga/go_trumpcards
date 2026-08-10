@@ -148,6 +148,8 @@ tags:
     description: Five Card Stud (ファイブカード・スタッド) game
   - name: soko
     description: Soko / Canadian Stud (ソッコ) game - Five Card Stud with four-card straight and flush
+  - name: fourseasons
+    description: Four Seasons / Corners (フォーシーズンズ) game - cross tableau with wraparound foundations
   - name: clocksolitaire
     description: Clock Solitaire (クロックソリティア) game
   - name: durak
@@ -6033,6 +6035,115 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SevenCardStudResponse'
+
+
+  /fourseasons/exec:
+    post:
+      tags:
+        - fourseasons
+      summary: Execute a Four Seasons game command
+      description: |
+        Send a command to advance the Four Seasons (フォーシーズンズ) game
+        session identified by `sessionId`. Also called Corners, it is a
+        single-player patience played with a standard 52-card deck.
+
+        Five cards are dealt in a **cross** (the tableau) and one more opens the
+        first of four **corner foundations**. That card's rank becomes the
+        deal's **base rank**, returned as `baseRank` — the foundations do not
+        necessarily start at Ace, and every placement rule reads it.
+
+        | Pile | Builds | Suit | Wraps |
+        |------|--------|------|-------|
+        | Foundation (4 corners) | up from the base rank | same suit | yes (A follows K) |
+        | Cross (5 piles) | down | ignored | yes (K goes under A) |
+
+        Only the **top** card of a cross pile moves, one at a time, and an
+        emptied cross space accepts **any** card. The stock turns one card at a
+        time to the waste.
+
+        The game proceeds through these phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Playing    | `0`   | Game in progress |
+        | GameClear  | `1`   | All 52 cards are on the foundations |
+        | GameOver   | `2`   | Player gave up |
+
+        | Command        | Aliases     | Description |
+        |----------------|-------------|-------------|
+        | `reset`        | `r`         | Start / restart a game |
+        | `draw`         | `d`         | Turn one card from the stock to the waste |
+        | `move`         | `m`         | Move a card (requires `from` and `to` zones) |
+        | `giveup`       | `g`         | Give up the current game |
+        | `hint`         | `h`         | Return a hint, if any |
+        | `autocomplete` | `ac`        | Auto-play every legal move to the foundations |
+        | `undo`         | `u`         | Undo the last action |
+        | `undo_n`       | -           | Undo the last `n` actions |
+        | `log`          | `l`         | View action log |
+
+        Move zones. A foundation always needs `idx`: which corner opens is
+        decided by the order they are started, so the target cannot be implied.
+        * `from`: `{zone: "waste"}` or `{zone: "tableau", idx: 0..4}`
+        * `to`: `{zone: "foundation", idx: 0..3}` or `{zone: "tableau", idx: 0..4}`
+
+      operationId: fourseasonsExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, draw, d, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, undo_n, log, l]
+                sessionId:
+                  type: string
+                from:
+                  $ref: '#/components/schemas/FourSeasonsMoveZone'
+                to:
+                  $ref: '#/components/schemas/FourSeasonsMoveZone'
+                n:
+                  type: integer
+                  description: Number of moves to undo (for `undo_n` command)
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              draw:
+                summary: Turn one card from the stock
+                value:
+                  command: draw
+                  sessionId: my-session-001
+              moveTableauToFoundation:
+                summary: Play the top of cross pile 2 to corner 0
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from:
+                    zone: tableau
+                    idx: 2
+                  to:
+                    zone: foundation
+                    idx: 0
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FourSeasonsResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FourSeasonsResponse'
 
 
   /clocksolitaire/exec:
@@ -42652,6 +42763,81 @@ components:
           type: object
           additionalProperties:
             type: string
+
+    FourSeasonsMoveZone:
+      type: object
+      description: Source or target zone for a Four Seasons card move
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          description: Zone identifier (waste, tableau, foundation)
+          enum: [waste, tableau, foundation]
+        idx:
+          type: integer
+          description: Pile index (0..4 for the cross, 0..3 for the corners; omitted for the waste)
+    FourSeasonsHint:
+      type: object
+      description: Recommended move for Four Seasons
+      properties:
+        fromZone:
+          type: string
+          enum: [waste, tableau]
+        fromIdx:
+          type: integer
+          description: Cross pile index, or -1 when the source is the waste
+        toZone:
+          type: string
+          enum: [foundation]
+        toIdx:
+          type: integer
+          description: Target corner index (0..3)
+    FourSeasonsResponse:
+      type: object
+      description: Response payload for /fourseasons/exec
+      properties:
+        tableau:
+          type: array
+          description: The five cross piles. Only the last card of each is playable.
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        foundation:
+          type: array
+          description: The four corner foundations, each building up in suit from baseRank.
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        stockCount:
+          type: integer
+        waste:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        baseRank:
+          type: integer
+          description: The rank the foundations start from, fixed by the first card of this deal (1..13).
+        phase:
+          type: integer
+          description: "0=Playing, 1=GameClear, 2=GameOver"
+        moveCount:
+          type: integer
+        canUndo:
+          type: boolean
+        hint:
+          $ref: '#/components/schemas/FourSeasonsHint'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
 
     AuldLangSyneMoveZone:
       type: object

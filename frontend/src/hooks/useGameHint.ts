@@ -86,6 +86,7 @@ import type {
   FortyFivesResponse,
   FortyThievesResponse,
   FourCardPokerResponse,
+  FourSeasonsResponse,
   FreeCellResponse,
   FrenchTarotResponse,
   GaigelResponse,
@@ -344,6 +345,7 @@ import { getFortyAndEightHint } from '../utils/hints/fortyandeightHint';
 import { getFortyFivesHint } from '../utils/hints/fortyFivesHint';
 import { getFortyThievesHint } from '../utils/hints/fortythievesHint';
 import { getFourCardPokerHint } from '../utils/hints/fourcardpokerHint';
+import { getFourSeasonsHint } from '../utils/hints/fourseasonsHint';
 import { getFreeCellHint } from '../utils/hints/freecellHint';
 import { getFrenchTarotHint } from '../utils/hints/frenchtarotHint';
 import { getGaigelHint } from '../utils/hints/gaigelHint';
@@ -569,6 +571,7 @@ export const hintFactories = {
   zheng: (s) => getZhengHint(s as ZhengResponse),
   fivecardstud: (s) => getFiveCardStudHint(s as FiveCardStudResponse),
   soko: (s) => getSokoHint(s as FiveCardStudResponse),
+  fourseasons: (s) => getFourSeasonsHint(s as FourSeasonsResponse),
   fivehundred: (s) => getFiveHundredHint(s as FiveHundredResponse),
   rook: (s) => getRookHint(s as RookResponse),
   schnapsen: (s) => getSchnapsenHint(s as SchnapsenResponse),
