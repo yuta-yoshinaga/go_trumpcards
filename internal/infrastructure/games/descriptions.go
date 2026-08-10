@@ -74,6 +74,7 @@ var gameDescriptions = map[string]string{
 	"catchten":            "Catch the Ten (スコッチ・ホイスト)",
 	"letitride":           "Let It Ride (レット・イット・ライド)",
 	"pokersquares":        "Poker Squares (ポーカー・スクエアズ)",
+	"cribbagesquares":     "クリベッジ・スクエアズ（4×4に置き、8手をクリベッジで採点）",
 	"pageone":             "Page One (ページワン)",
 	"reddog":              "Red Dog (レッドドッグ)",
 	"badugi":              "Badugi (バドゥーギ)",

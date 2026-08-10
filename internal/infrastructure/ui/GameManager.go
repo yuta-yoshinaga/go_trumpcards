@@ -4303,6 +4303,21 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),
+	BindCuiFor("cribbagesquares",
+		func() usecase.CribbageSquaresInteractorIF {
+			return usecase.NewCribbageSquaresInteractor(domain.NewDefaultCribbageSquares(), new(presenter.CribbageSquaresCuiPresenter))
+		},
+		controller.NewCribbageSquaresCuiController,
+		CuiHelpSpec{
+			TitleKey: "cribbagesquares.helpTitle",
+			CommandKeys: []string{
+				"cribbagesquares.helpPlace",
+				"cribbagesquares.helpHint",
+				"cribbagesquares.helpUndo",
+				"cribbagesquares.helpGiveUp",
+			},
+			ExtraCommandLines: []string{"  l                        action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

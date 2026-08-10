@@ -59,6 +59,7 @@ import type {
   CrazyEightsResponse,
   CrescentResponse,
   CribbageResponse,
+  CribbageSquaresResponse,
   CruelResponse,
   CuarentaResponse,
   CuckooResponse,
@@ -318,6 +319,7 @@ import { getCrazyEightsHint } from '../utils/hints/crazyeightsHint';
 import { getCrazyPineappleHint } from '../utils/hints/crazyPineappleHint';
 import { getCrescentHint } from '../utils/hints/crescentHint';
 import { getCribbageHint } from '../utils/hints/cribbageHint';
+import { getCribbageSquaresHint } from '../utils/hints/cribbagesquaresHint';
 import { getCruelHint } from '../utils/hints/cruelHint';
 import { getCuarentaHint } from '../utils/hints/cuarentaHint';
 import { getCuckooHint } from '../utils/hints/cuckooHint';
@@ -575,6 +577,7 @@ export const hintFactories = {
   soko: (s) => getSokoHint(s as FiveCardStudResponse),
   fourseasons: (s) => getFourSeasonsHint(s as FourSeasonsResponse),
   colorado: (s) => getColoradoHint(s as ColoradoResponse),
+  cribbagesquares: (s) => getCribbageSquaresHint(s as CribbageSquaresResponse),
   fivehundred: (s) => getFiveHundredHint(s as FiveHundredResponse),
   rook: (s) => getRookHint(s as RookResponse),
   schnapsen: (s) => getSchnapsenHint(s as SchnapsenResponse),

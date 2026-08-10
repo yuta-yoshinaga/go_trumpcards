@@ -152,6 +152,8 @@ tags:
     description: Four Seasons / Corners (フォーシーズンズ) game - cross tableau with wraparound foundations
   - name: colorado
     description: Colorado (コロラド) game - two-deck solitaire with four ascending and four descending foundations
+  - name: cribbagesquares
+    description: Cribbage Squares (クリベッジ・スクエアズ) game - 4x4 grid scored as eight cribbage hands against a hidden starter
   - name: clocksolitaire
     description: Clock Solitaire (クロックソリティア) game
   - name: durak
@@ -6244,6 +6246,76 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ColoradoResponse'
+  /cribbagesquares/exec:
+    post:
+      tags:
+        - cribbagesquares
+      summary: Execute a Cribbage Squares game command
+      description: |
+        Send a command to advance the Cribbage Squares (クリベッジ・スクエアズ)
+        game session identified by `sessionId`. A single-player patience played
+        with a standard 52-card deck, of which 17 cards are used.
+
+        Cards are turned one at a time and placed into any empty cell of a
+        **4x4 grid**; a placed card never moves. Once all 16 are down, a
+        **17th card - the starter - is turned**, and each of the four rows and
+        four columns is scored as a cribbage hand of those four cards plus the
+        starter (fifteens, pairs, runs, flush, nobs). The eight hands are
+        summed and **61 points clears the game**.
+
+        The starter stays face down until the last placement is committed, so
+        `starter` is null for the whole of the playing phase and every hand is
+        built without knowing its own fifth card.
+
+        `place` needs `row` and `col`, both 0-based in 0..3.
+      operationId: cribbagesquaresExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, place, p, hint, h, undo, u, giveup, g, log, l]
+                sessionId:
+                  type: string
+                row:
+                  type: integer
+                  description: Row of the target cell (0..3), required for `place`
+                col:
+                  type: integer
+                  description: Column of the target cell (0..3), required for `place`
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              place:
+                summary: Put the card in hand into the middle of the grid
+                value:
+                  command: place
+                  sessionId: my-session-001
+                  row: 1
+                  col: 2
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CribbageSquaresResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CribbageSquaresResponse'
   /clocksolitaire/exec:
     post:
       tags:
@@ -42888,6 +42960,98 @@ components:
         idx:
           type: integer
           description: Tableau pile index (0..19); omitted for the waste, the stock, and for a foundation (the server picks the pile)
+    CribbageSquaresScore:
+      type: object
+      description: One hand's cribbage score breakdown
+      properties:
+        fifteens:
+          type: integer
+        pairs:
+          type: integer
+        runs:
+          type: integer
+        flush:
+          type: integer
+        nobs:
+          type: integer
+        total:
+          type: integer
+    CribbageSquaresHint:
+      type: object
+      description: The cell the server suggests for the card in hand
+      properties:
+        row:
+          type: integer
+          description: Suggested row (0..3)
+        col:
+          type: integer
+          description: Suggested column (0..3)
+        score:
+          type: integer
+          description: Points the placement adds to its row and column
+        synergy:
+          type: boolean
+          description: True when the placement scores anything at all
+    CribbageSquaresResponse:
+      type: object
+      description: Response payload for /cribbagesquares/exec
+      properties:
+        board:
+          type: array
+          description: The 4x4 grid, row-major. Each cell holds a card or null.
+          items:
+            type: array
+            items:
+              type: object
+              properties:
+                card:
+                  $ref: '#/components/schemas/Card'
+        currentCard:
+          $ref: '#/components/schemas/Card'
+        starter:
+          allOf:
+            - $ref: '#/components/schemas/Card'
+          description: The 17th card. Null until all 16 cells are filled.
+        placedCount:
+          type: integer
+        phase:
+          type: integer
+          description: "0=Playing, 1=Complete"
+        canUndo:
+          type: boolean
+        rowScores:
+          type: array
+          items:
+            type: integer
+        colScores:
+          type: array
+          items:
+            type: integer
+        rowDetails:
+          type: array
+          items:
+            $ref: '#/components/schemas/CribbageSquaresScore'
+        colDetails:
+          type: array
+          items:
+            $ref: '#/components/schemas/CribbageSquaresScore'
+        totalScore:
+          type: integer
+        winScore:
+          type: integer
+          description: The total needed to clear the game (61).
+        isWin:
+          type: boolean
+        hint:
+          $ref: '#/components/schemas/CribbageSquaresHint'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
     ColoradoHint:
       type: object
       description: A suggested move in Colorado

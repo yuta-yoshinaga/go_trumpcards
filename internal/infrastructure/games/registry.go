@@ -871,6 +871,13 @@ var registry = []*Game{
 	// card to bury. Congress shares the two-deck, eight-foundation shape but
 	// builds every foundation upward and lets the tableau be packed.
 	{Name: "colorado", Category: CategoryClassic},
+	// Cribbage Squares fills a 4x4 grid one card at a time, then turns a 17th
+	// card as the starter and scores all four rows and all four columns as
+	// cribbage hands against it. Poker Squares shares the place-and-score-the
+	// -lines shape but is 5x5, scores poker hands, and has no starter -- here
+	// the fifth card of every hand is the same unknown card, and it is not
+	// revealed until the last placement is committed.
+	{Name: "cribbagesquares", Category: CategoryExtra2},
 }
 
 // All returns a value-level copy of the registry in canonical order.

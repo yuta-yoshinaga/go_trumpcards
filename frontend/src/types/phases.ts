@@ -1428,6 +1428,12 @@ export const ColoradoPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Cribbage Squares phase constants (sync: internal/domain/CribbageSquares.go). */
+export const CribbageSquaresPhase = {
+  PLAYING: 0,
+  COMPLETE: 1,
+} as const;
+
 export const SirTommyPhase = {
   PLAYING: 0,
   GAME_CLEAR: 1,

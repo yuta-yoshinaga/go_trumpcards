@@ -288,7 +288,8 @@
     "shengji": "升级",
     "vira": "ヴィーラ",
     "legal": "商標とクレジット",
-    "colorado": "コロラド"
+    "colorado": "コロラド",
+    "cribbagesquares": "クリベッジ・スクエアズ"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1442,7 +1443,13 @@
     "russianbank.stopAvailable": "CPU が強制手を取りこぼしています。「ストップ」で咎められます",
     "paigow.hintNone": "いまはヒントを出せません。",
     "pokersquares.hintAvailable": "ヒントを表示しました",
-    "pokersquares.noHint": "いま出せるヒントはありません"
+    "pokersquares.noHint": "いま出せるヒントはありません",
+    "cribbagesquares.playing": "プレイ中",
+    "cribbagesquares.complete": "ゲーム終了 合計得点: {{totalScore}}",
+    "cribbagesquares.win": "クリア！ 合計得点: {{totalScore}}（{{winScore}}点以上）",
+    "cribbagesquares.lose": "ゲーム終了 合計得点: {{totalScore}}（クリアは{{winScore}}点）",
+    "cribbagesquares.hintAvailable": "ヒントがあります",
+    "cribbagesquares.noHint": "ヒントはありません"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",
