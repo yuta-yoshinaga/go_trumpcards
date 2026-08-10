@@ -51,12 +51,13 @@ flowchart TD
 | `m t <col> f` | — | タブローからファンデーションへ |
 | `m t <col> <idx> t <col>` | — | タブロー間移動 |
 | `g` / `giveup` | `g` | ギブアップ |
-| `h` / `hint` | `h` | ヒント |
+| `hint` | `h` | ヒント |
 | `ac` / `autocomplete` | `ac` | 自動完成 |
 | `u` / `undo` | `u` | 元に戻す |
-| `l` / `log` | `l` | 棋譜表示 |
-| `r` / `reset` | `r` | リセット |
-| `q` / `quit` | `q` | 終了 |
+| `log` | `l` | 棋譜表示 |
+| `reset` | `r` | リセット |
+| `quit` | `q` | 終了 |
+| `help` | `?` | コマンド一覧を表示 |
 
 ## 画面の見方
 

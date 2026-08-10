@@ -135,8 +135,10 @@ function auditManual(kind, game, text, navName) {
     if (!launch.includes(`go run ./cmd/trumpcards ${game}`)) issues.push('launch-cmd-missing');
     const cmds = sectionBody(text, 'コマンド一覧') ?? '';
     if (!/\|\s*コマンド\s*\|\s*短縮形\s*\|\s*説明\s*\|/.test(cmds)) issues.push('command-table-columns');
+    // The command may carry arguments -- spider documents `reset [1\|2\|4]` --
+    // so match the token, not a closing backtick right after it.
     for (const c of ['reset', 'quit', 'help']) {
-      if (!new RegExp(`\\|\\s*\`${c}\``).test(cmds)) issues.push(`command-row-missing:${c}`);
+      if (!new RegExp(`\\|\\s*\`${c}\\b`).test(cmds)) issues.push(`command-row-missing:${c}`);
     }
   } else {
     if (!launch.includes('go run ./cmd/trumpcards web')) issues.push('launch-cmd-missing');
