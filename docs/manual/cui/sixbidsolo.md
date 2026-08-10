@@ -67,6 +67,10 @@ go run ./cmd/trumpcards --lang en sixbidsolo   # 英語表示
 
 成功なら**各対戦者が宣言者にビッド額を支払い**、失敗なら**宣言者が各人に支払います**。3 人戦なので宣言者の増減は対戦者 2 人ぶんです。
 
+## ゲームの流れ
+
+ゲームの進行は `internal/domain/SixBidSolo.go` のフェーズ機械そのものです。各ノードは同ファイルの `SixBidSoloPhase` 定数、矢印ラベルはその遷移を行うメソッド名です。
+
 ```mermaid
 flowchart TD
     A[36枚を 4→3→ウィドウ3→4 で配る] --> B{6段階のビッド 上回る宣言だけが通る}

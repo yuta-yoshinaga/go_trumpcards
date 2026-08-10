@@ -67,6 +67,10 @@ go run ./cmd/trumpcards --lang en kille   # 英語表示
 
 残り 1 人になったらその人がポットを総取りして終わりです。
 
+## ゲームの流れ
+
+ゲームの進行は `internal/domain/Kille.go` のフェーズ機械そのものです。各ノードは同ファイルの `KillePhase` 定数、矢印ラベルはその遷移を行うメソッド名です。
+
 ```mermaid
 flowchart TD
     A[全員が掛け金を出す] --> B[各自1枚配る]

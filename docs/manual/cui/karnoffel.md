@@ -60,6 +60,10 @@ go run ./cmd/trumpcards --lang en karnoffel   # 英語表示
 
 規定局数（既定 3 局）を先に取ったチームの勝ちです。
 
+## ゲームの流れ
+
+ゲームの進行は `internal/domain/Karnoffel.go` のフェーズ機械そのものです。各ノードは同ファイルの `KarnoffelPhase` 定数、矢印ラベルはその遷移を行うメソッド名です。
+
 ```mermaid
 flowchart TD
     A[A抜き48枚から 1枚を表向き＋4枚を伏せて配る] --> B[表向きの4枚のうち最も低い札が選ばれたスートを決める]

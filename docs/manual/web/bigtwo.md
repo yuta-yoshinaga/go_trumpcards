@@ -27,24 +27,18 @@ go run ./cmd/server          # 直接Webサーバーを起動
 ## ゲームの流れ
 
 ```mermaid
-stateDiagram-v2
-    [*] --> Deal
-    Deal --> FirstPlay
-    FirstPlay --> Play
-    Play --> Play
-    Play --> PassClear
-    PassClear --> Play
-    Play --> Finish
-    Finish --> GameEnd
-    Finish --> Play
-    GameEnd --> [*]
-
-    Deal: カード配布\n13枚ずつ
-    FirstPlay: 先攻プレイ\n♦3を含むカードを出す
-    Play: カードを出す or パス
-    PassClear: 全員パス→場クリア
-    Finish: プレイヤー上がり\nランク確定
-    GameEnd: ゲーム終了\n順位発表
+flowchart TD
+    A["カード配布（13枚ずつ）"] --> B["先攻（♦3を含む組を出す）"]
+    B --> C["カードを出す or パス"]
+    C --> D{"全員がパスした?"}
+    D -- はい --> E["場をクリアして最後に出した人が先手"]
+    E --> C
+    D -- いいえ --> F{"手札が尽きた?"}
+    F -- いいえ --> C
+    F -- はい --> G["プレイヤー上がり（ランク確定）"]
+    G --> H{"残り1人?"}
+    H -- いいえ --> C
+    H -- はい --> I["ゲーム終了（順位発表）"]
 ```
 
 ## 画面の操作方法

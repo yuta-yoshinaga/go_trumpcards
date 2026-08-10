@@ -22,14 +22,13 @@ Webマニュアル ([../web/piquet.md](../web/piquet.md)) と同じ。簡潔に�
 ## ゲームの流れ
 
 ```mermaid
-stateDiagram-v2
-    [*] --> Exchange
-    Exchange --> Declaration: Younger 交換完了
-    Declaration --> Play: 3宣言完了
-    Play --> Score: 12トリック完了
-    Score --> Exchange: NextDeal (deal < 6)
-    Score --> GameEnd: NextDeal (deal == 6)
-    GameEnd --> [*]
+flowchart TD
+    A["交換: Elder が上位5枚から1〜5枚 → Younger が下位3枚から0〜3枚"] --> B["宣言: Point → Sequence → Set を自動比較"]
+    B --> C["12トリックをプレイ"]
+    C --> D["ディール集計（cards +10 / capot +40）"]
+    D --> E{"6ディール目?"}
+    E -- いいえ --> A
+    E -- はい --> F["パルティ判定（ルビコン含む）・ゲーム終了"]
 ```
 
 ## コマンド一覧
@@ -46,3 +45,27 @@ stateDiagram-v2
 | `reset` | `r` | リセット |
 | `quit` | `q` | 終了 |
 | `help` | `?` | コマンド一覧を表示 |
+
+## 画面の見方
+
+実際の出力例です。配りは毎回シャッフルされるので、カードの並びは実行ごとに変わります。
+
+```
+==========
+Piquet (ピケ)
+==========
+ディール 1 / 6
+Elder (あなた)  手札:12  獲得トリック:0  ラウンド:0  通算:0
+  [0]DIAMOND 9 [1]SPADE 1 [2]HEART 13 [3]CLOVER 7 [4]CLOVER 9 [5]DIAMOND 10 [6]HEART 10 [7]CLOVER 12 [8]CLOVER 1 [9]HEART 11 [10]HEART 1 [11]SPADE 9
+Younger (CPU)  手札:12  獲得トリック:0  ラウンド:0  通算:0
+----------
+[交換フェーズ]
+Elder の交換を待っています (1〜5枚)
+==========
+```
+
+- **1〜3行目**: ゲーム名の見出し
+- **ディール n / 6**: パルティは6ディール
+- **Elder / Younger 行**: 手札枚数、獲得トリック数、当ラウンド得点、通算得点。**Elder が先手**
+- **`[i]` 付きの行**: あなたの手札。交換・プレイともこの番号で指定する
+- **`----------` の下**: 現在のフェーズ（交換 → 宣言 → プレイ → 集計）と、何を待っているか

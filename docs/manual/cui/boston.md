@@ -65,6 +65,10 @@ go run ./cmd/trumpcards --lang en boston   # 英語表示
 
 規定局数を終えた時点で通算が最も多い人の勝ちです。
 
+## ゲームの流れ
+
+ゲームの進行は `internal/domain/Boston.go` のフェーズ機械そのものです。各ノードは同ファイルの `BostonPhase` 定数、矢印ラベルはその遷移を行うメソッド名です。
+
 ```mermaid
 flowchart TD
     A[4枚・4枚・5枚で13枚ずつ配る] --> B{宣言 15段}

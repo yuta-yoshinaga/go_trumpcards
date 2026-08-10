@@ -63,6 +63,10 @@ go run ./cmd/trumpcards --lang en bideuchre   # 英語表示
 
 **先に 32 点**に達したチームの勝ちです。同時に超えた場合は落札側の勝ちとします。
 
+## ゲームの流れ
+
+ゲームの進行は `internal/domain/BidEuchre.go` のフェーズ機械そのものです。各ノードは同ファイルの `BidEuchrePhase` 定数、矢印ラベルはその遷移を行うメソッド名です。
+
 ```mermaid
 flowchart TD
     A[24枚を6枚ずつ配り切る キティなし] --> B{競り 最低3トリック}

@@ -97,6 +97,10 @@ go run ./cmd/server          # 直接Webサーバーを起動
 
 先に **501 点**に届いた方の勝ちです。
 
+## ゲームの流れ
+
+ゲームの進行は `internal/domain/Klaberjass.go` のフェーズ機械そのものです。各ノードは同ファイルの `KlaberjassPhase` 定数、矢印ラベルはその遷移を行うメソッド名です。
+
 ```mermaid
 flowchart TD
     A[各自6枚 + 1枚表向き] --> B{非ディーラー}

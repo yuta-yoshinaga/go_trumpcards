@@ -65,6 +65,10 @@ go run ./cmd/trumpcards --lang en literature   # 英語表示
 
 自分の手番中に手札が無くなったら、**まだ手札のある味方に手番を渡します。**手札の尽きたプレイヤーには要求できません。
 
+## ゲームの流れ
+
+ゲームの進行は `internal/domain/Literature.go` のフェーズ機械そのものです。各ノードは同ファイルの `LiteraturePhase` 定数、矢印ラベルはその遷移を行うメソッド名です。
+
 ```mermaid
 flowchart TD
     A[8を抜いた48枚を6人に8枚ずつ] --> B[手番のプレイヤー]

@@ -98,6 +98,10 @@ go run ./cmd/trumpcards --lang en shengji   # 英語表示
 
 **A は飛び越えられません。**K から 3 段階でも A で止まり、**A の局を守りきって初めて勝ち**です（打 A）。
 
+## ゲームの流れ
+
+ゲームの進行は `internal/domain/ShengJi.go` のフェーズ機械そのものです。各ノードは同ファイルの `ShengJiPhase` 定数、矢印ラベルはその遷移を行うメソッド名です。
+
 ```mermaid
 flowchart TD
     A[108枚を25枚ずつ 底牌8枚を伏せる] --> B{レベル札を見せて亮牌するか}
