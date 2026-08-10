@@ -223,6 +223,7 @@ export * from './games/sjavs';
 export * from './games/skat';
 export * from './games/skitgubbe';
 export * from './games/slapjack';
+export * from './games/soko';
 export * from './games/solowhist';
 export * from './games/spades';
 export * from './games/spanish21';
@@ -297,6 +298,7 @@ export const games = [
   'irishpoker',
   'sevencardstud',
   'fivecardstud',
+  'soko',
   'razz',
   'sevencardstudhilo',
   'badugi',

@@ -11,6 +11,10 @@ type FiveCardStudGame interface {
 	Reset() error
 	// PlayerAction プレイヤーのベッティングアクションを実行する
 	PlayerAction(action, amount, humanPlayMs int) error
+	// GetIsSoko は Soko (Canadian Stud) モードかを返す。
+	// プレゼンターは役名の表を切り替えるためにこれを見る必要がある:
+	// Soko のランクスケールで PokerHandNames を引くと別の役名が出る。
+	GetIsSoko() bool
 	// GetPhase 現在のフェーズを取得する
 	GetPhase() int
 	// GetPlayers プレイヤー一覧を取得する

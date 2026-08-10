@@ -146,6 +146,8 @@ tags:
     description: Seven Card Stud (セブンカード・スタッド) game
   - name: fivecardstud
     description: Five Card Stud (ファイブカード・スタッド) game
+  - name: soko
+    description: Soko / Canadian Stud (ソッコ) game - Five Card Stud with four-card straight and flush
   - name: clocksolitaire
     description: Clock Solitaire (クロックソリティア) game
   - name: durak
@@ -5962,6 +5964,75 @@ paths:
                     roundResults: []
                     cpuActions: []
                     message: param error.
+
+
+  /soko/exec:
+    post:
+      tags:
+        - soko
+      summary: Execute a Soko game command
+      description: |
+        Send a command to advance the Soko (ソッコ) game session identified by
+        `sessionId`. Soko, also called Canadian Stud, is Five Card Stud with two
+        extra hand ranks. The deal, the bring-in and the betting rounds are
+        identical to Five Card Stud -- only the showdown ranking differs.
+
+        Two hands are inserted between one pair and two pair:
+
+        | Hand | Beats | Loses to |
+        |------|-------|----------|
+        | Four-card straight (exactly four cards in sequence) | One pair | Four-card flush |
+        | Four-card flush (exactly four cards of one suit) | Four-card straight | Two pair |
+
+        Both can occur alongside a pair, and Soko ranks them above it, so a hand
+        such as `S2 S5 S9 SK HK` plays as a four-card flush rather than a pair of
+        kings.
+
+        `handRank` in the response is on **Soko's own scale**, not the shared
+        poker scale the other games use: 0 high card, 1 one pair, 2 four-card
+        straight, 3 four-card flush, 4 two pair, 5 three of a kind, 6 straight,
+        7 flush, 8 full house, 9 four of a kind, 10 straight flush, 11 royal
+        flush. Do not compare it against another game's `handRank`.
+
+        The request and response payloads, the commands and the phases are shared
+        with Five Card Stud.
+      operationId: sokoExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SevenCardStudRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              call:
+                summary: Call
+                value:
+                  command: call
+                  sessionId: my-session-001
+              bet:
+                summary: Place a bet of 40
+                value:
+                  command: bet
+                  amount: 40
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SevenCardStudResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SevenCardStudResponse'
 
 
   /clocksolitaire/exec:

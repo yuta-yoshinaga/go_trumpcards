@@ -4245,6 +4245,26 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),
+	BindCuiFor("soko",
+		func() usecase.FiveCardStudInteractorIF {
+			return usecase.NewFiveCardStudInteractor(domain.NewDefaultSoko(), new(presenter.FiveCardStudCuiPresenter))
+		},
+		controller.NewFiveCardStudCuiController,
+		CuiHelpSpec{
+			TitleKey: "soko.helpTitle",
+			CommandKeys: []string{
+				"fivecardstud.helpFold",
+				"fivecardstud.helpCheck",
+				"fivecardstud.helpCall",
+				"fivecardstud.helpBet",
+				"fivecardstud.helpRaise",
+				"fivecardstud.helpAllIn",
+			},
+			SettingKeys: []string{
+				"fivecardstud.helpBettingLimit",
+				"fivecardstud.helpTournament",
+			},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

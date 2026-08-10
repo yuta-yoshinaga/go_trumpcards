@@ -35,5 +35,17 @@
   "pokerHandRank7": "Four of a Kind",
   "pokerHandRank8": "Straight Flush",
   "pokerHandRank9": "Royal Flush",
-  "pokerHandRank10": "Five of a Kind"
+  "pokerHandRank10": "Five of a Kind",
+  "sokoHandRank0": "High Card",
+  "sokoHandRank1": "One Pair",
+  "sokoHandRank2": "Four-Card Straight",
+  "sokoHandRank3": "Four-Card Flush",
+  "sokoHandRank4": "Two Pair",
+  "sokoHandRank5": "Three of a Kind",
+  "sokoHandRank6": "Straight",
+  "sokoHandRank7": "Flush",
+  "sokoHandRank8": "Full House",
+  "sokoHandRank9": "Four of a Kind",
+  "sokoHandRank10": "Straight Flush",
+  "sokoHandRank11": "Royal Flush"
 }
