@@ -150,6 +150,8 @@ tags:
     description: Soko / Canadian Stud (ソッコ) game - Five Card Stud with four-card straight and flush
   - name: fourseasons
     description: Four Seasons / Corners (フォーシーズンズ) game - cross tableau with wraparound foundations
+  - name: colorado
+    description: Colorado (コロラド) game - two-deck solitaire with four ascending and four descending foundations
   - name: clocksolitaire
     description: Clock Solitaire (クロックソリティア) game
   - name: durak
@@ -6146,6 +6148,102 @@ paths:
                 $ref: '#/components/schemas/FourSeasonsResponse'
 
 
+  /colorado/exec:
+    post:
+      tags:
+        - colorado
+      summary: Execute a Colorado game command
+      description: |
+        Send a command to advance the Colorado (コロラド) game session
+        identified by `sessionId`. A single-player patience played with
+        **two 52-card decks (104 cards)**.
+
+        Twenty tableau piles get one card each; the other 84 form the stock.
+        There are **eight foundations**: indices 0-3 build **up in suit from
+        the Ace**, indices 4-7 build **down in suit from the King**. Eight
+        piles of thirteen is exactly 104 cards, which is why the count cannot
+        be anything else.
+
+        The stock turns one card at a time to the waste and there is **no
+        redeal**. The waste top may go to a foundation, or onto **any** tableau
+        pile whatever its suit or rank -- which buries whatever was under it.
+        A tableau card can only go to a foundation; there are no
+        tableau-to-tableau moves. An empty pile may be filled straight from
+        the stock.
+
+        Move zones:
+
+        * `from`: `{zone: "waste"}`, `{zone: "tableau", idx: 0..19}` or `{zone: "stock"}`
+        * `to`: `{zone: "foundation"}` (the destination pile is chosen by the
+          server) or `{zone: "tableau", idx: 0..19}`
+
+      operationId: coloradoExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, draw, d, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, undo_n, log, l]
+                sessionId:
+                  type: string
+                from:
+                  $ref: '#/components/schemas/ColoradoMoveZone'
+                to:
+                  $ref: '#/components/schemas/ColoradoMoveZone'
+                n:
+                  type: integer
+                  description: Number of moves to undo (for `undo_n` command)
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              draw:
+                summary: Turn one card from the stock
+                value:
+                  command: draw
+                  sessionId: my-session-001
+              moveTableauToFoundation:
+                summary: Play the top of pile 2 to a foundation
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from:
+                    zone: tableau
+                    idx: 2
+                  to:
+                    zone: foundation
+              buryWasteOnAPile:
+                summary: Drop the waste card onto pile 7, burying what was there
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from:
+                    zone: waste
+                  to:
+                    zone: tableau
+                    idx: 7
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ColoradoResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ColoradoResponse'
   /clocksolitaire/exec:
     post:
       tags:
@@ -42777,6 +42875,81 @@ components:
         idx:
           type: integer
           description: Pile index (0..4 for the cross, 0..3 for the corners; omitted for the waste)
+    ColoradoMoveZone:
+      type: object
+      description: Source or target zone for a Colorado card move
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          description: Zone identifier (waste, tableau, foundation, stock)
+          enum: [waste, tableau, foundation, stock]
+        idx:
+          type: integer
+          description: Tableau pile index (0..19); omitted for the waste, the stock, and for a foundation (the server picks the pile)
+    ColoradoHint:
+      type: object
+      description: A suggested move in Colorado
+      properties:
+        fromZone:
+          type: string
+          description: "tableau, waste or stock"
+        fromIdx:
+          type: integer
+          description: Tableau pile index, or -1 when the source is the waste or the stock
+        toZone:
+          type: string
+          description: "foundation, tableau or waste"
+        toIdx:
+          type: integer
+          description: Destination index, or -1 when the destination is the waste
+    ColoradoResponse:
+      type: object
+      description: Response payload for /colorado/exec
+      properties:
+        tableau:
+          type: array
+          description: The twenty tableau piles. Only the last card of each is playable, and only to a foundation.
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        foundation:
+          type: array
+          description: The eight foundations. Indices 0-3 build up in suit from the Ace, 4-7 build down in suit from the King.
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        foundationAscending:
+          type: array
+          description: Per-foundation build direction; true builds up from the Ace, false builds down from the King.
+          items:
+            type: boolean
+        stockCount:
+          type: integer
+        waste:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "0=Playing, 1=GameClear, 2=GameOver"
+        moveCount:
+          type: integer
+        canUndo:
+          type: boolean
+        hint:
+          $ref: '#/components/schemas/ColoradoHint'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
     FourSeasonsHint:
       type: object
       description: Recommended move for Four Seasons

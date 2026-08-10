@@ -425,6 +425,11 @@ func init() {
 			return usecase.NewFourSeasonsInteractor(domain.NewDefaultFourSeasons(), new(presenter.FourSeasonsWebPresenter))
 		},
 		controller.NewFourSeasonsWebController)
+	BindWebControllerFor("colorado",
+		func() usecase.ColoradoInteractorIF {
+			return usecase.NewColoradoInteractor(domain.NewDefaultColorado(), new(presenter.ColoradoWebPresenter))
+		},
+		controller.NewColoradoWebController)
 	BindWebControllerFor("soko",
 		func() usecase.FiveCardStudInteractorIF {
 			return usecase.NewFiveCardStudInteractor(domain.NewDefaultSoko(), new(presenter.FiveCardStudWebPresenter))

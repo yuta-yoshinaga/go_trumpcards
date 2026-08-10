@@ -1421,6 +1421,13 @@ export const FourSeasonsPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Colorado phase constants (sync: internal/domain/Colorado.go). */
+export const ColoradoPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 export const SirTommyPhase = {
   PLAYING: 0,
   GAME_CLEAR: 1,

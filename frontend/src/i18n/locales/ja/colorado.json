@@ -1,0 +1,54 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
+  "title": "コロラド",
+  "stock": "山札",
+  "waste": "捨て札",
+  "tableau": "場札",
+  "foundation": "組札",
+  "foundations": "組札（↑=A→K、↓=K→A）",
+  "ascending": "昇順",
+  "descending": "降順",
+  "moveCount": "手数",
+  "draw": "めくる",
+  "drawAria": "山札から1枚めくる",
+  "fillGap": "空き山へ",
+  "giveup": "ギブアップ",
+  "hint": "ヒント",
+  "undo": "元に戻す",
+  "autoComplete": "オートコンプリート",
+  "selectTarget": "移動先を選択してください",
+  "deselect": "キャンセル",
+  "empty": "空",
+  "nextRankBadge": "次:{{rank}}",
+  "nextRankAria": "次に置くべきカード {{rank}}",
+  "foundationCompleteAria": "完成",
+  "emptyPileAria": "空き山。山札か捨て札から埋められます",
+  "pileCountAria": "{{count}}枚",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "playing": "プレイ中",
+  "stalemate": "手詰まりです",
+  "noHint": "ヒントはありません",
+  "hintAvailable": "ヒントがあります",
+  "landscapeBanner": "横向き画面推奨",
+  "frontendHint": {
+    "coloradoWaste": "捨て札のカードを組札に置けます",
+    "coloradoTableau": "場札のカードを組札に置けます",
+    "coloradoFillGap": "空き山を山札から直接埋められます",
+    "coloradoDraw": "山札をめくりましょう"
+  },
+  "tutorial": {
+    "foundations": "組札は8つ。左の4つは A から K へ昇順（↑）、右の4つは K から A へ降順（↓）に積みます。52枚2組=104枚がちょうど収まります。",
+    "stock": "山札は1枚ずつしかめくれず、めくり直しもありません。空き山は山札から直接埋められるので、1巡を無駄にせずに済みます。",
+    "tableau": "場札は20山。捨て札のカードは**スートも数字も問わずどの山にも置けます**が、下のカードを埋めてしまいます。場札から動かせるのは組札への1枚だけです。",
+    "controls": "操作ボタン。めくる・ヒント・元に戻すなどが行えます。",
+    "resetButton": "新しいゲームを始めるボタンです。"
+  },
+  "nav": {
+    "colorado": "コロラド"
+  }
+}

@@ -352,7 +352,8 @@
     "yaniv": "Shed cards to drop your hand to 5 or less, then call Yaniv — but beware the Asaf undercut.",
     "yukon": "A Klondike offshoot allowing column-crossing moves. Klondike-vet's next step.",
     "zheng": "Zheng Shangyou (争上游). The traditional Chinese climbing game that fathered Daifugo and Big Two. Four players split a 54-card deck (jokers included) and race to shed their hands, beating the table with singles, pairs, triples, straights, and pair runs — or passing. Strength runs 3<4<…<K<A<2<small joker<big joker, and suits never matter. A four-of-a-kind bomb tops any normal play, and the two-joker bomb beats everything. Finish order sets ranks 1st through 4th.",
-    "zwicker": "A north-German fishing game on 55 cards. Aces and court cards each carry two values and you pick which."
+    "zwicker": "A north-German fishing game on 55 cards. Aces and court cards each carry two values and you pick which.",
+    "colorado": "104 cards, 20 piles, and eight foundations — half of them building down from the King. The waste goes on any pile, burying what was under it."
   },
   "stretch_blurb": {
     "accordion": "Completion is rare; the journey itself is the joy.",
@@ -621,6 +622,7 @@
     "yaniv": "Addictive Israeli hand-reduction game — call Yaniv, dodge the Asaf penalty.",
     "yukon": "Klondike vets — your next step up.",
     "zheng": "The Chinese ancestor of Daifugo — suits never matter, and bombs or the joker bomb can flip the table.",
-    "zwicker": "Clearing the table is a \"Zwick\", worth 1. A deal pays exactly 30, and level card counts leave the majority three unawarded."
+    "zwicker": "Clearing the table is a \"Zwick\", worth 1. A deal pays exactly 30, and level card counts leave the majority three unawarded.",
+    "colorado": "A solitaire whose only decision is where to dump the waste card, feeding ascending and descending foundations at once."
   }
 }

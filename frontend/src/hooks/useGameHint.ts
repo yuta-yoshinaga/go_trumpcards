@@ -51,6 +51,7 @@ import type {
   ChineseTenResponse,
   CinchResponse,
   ClockSolitaireResponse,
+  ColoradoResponse,
   CongressResponse,
   ConquianResponse,
   ContractRummyResponse,
@@ -308,6 +309,7 @@ import { getChinesePokerHint } from '../utils/hints/chinesepokerHint';
 import { getChineseTenHint } from '../utils/hints/chinesetenHint';
 import { getCinchHint } from '../utils/hints/cinchHint';
 import { getClocksolitaireHint } from '../utils/hints/clocksolitaireHint';
+import { getColoradoHint } from '../utils/hints/coloradoHint';
 import { getCongressHint } from '../utils/hints/congressHint';
 import { getConquianHint } from '../utils/hints/conquianHint';
 import { getContractRummyHint } from '../utils/hints/contractrummyHint';
@@ -572,6 +574,7 @@ export const hintFactories = {
   fivecardstud: (s) => getFiveCardStudHint(s as FiveCardStudResponse),
   soko: (s) => getSokoHint(s as FiveCardStudResponse),
   fourseasons: (s) => getFourSeasonsHint(s as FourSeasonsResponse),
+  colorado: (s) => getColoradoHint(s as ColoradoResponse),
   fivehundred: (s) => getFiveHundredHint(s as FiveHundredResponse),
   rook: (s) => getRookHint(s as RookResponse),
   schnapsen: (s) => getSchnapsenHint(s as SchnapsenResponse),

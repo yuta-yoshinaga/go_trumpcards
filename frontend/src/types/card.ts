@@ -57,6 +57,7 @@ export * from './games/chinesepoker';
 export * from './games/chineseten';
 export * from './games/cinch';
 export * from './games/clocksolitaire';
+export * from './games/colorado';
 export * from './games/congress';
 export * from './games/conquian';
 export * from './games/contractrummy';
