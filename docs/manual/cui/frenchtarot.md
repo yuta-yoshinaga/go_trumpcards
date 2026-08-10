@@ -81,7 +81,7 @@ flowchart TD
 | `bid petite` |  | コントラクトを宣言 |
 | `pass` |  | オークションでパス |
 | `discard <i1> <i2> <i3> <i4> <i5> <i6>` |  | エカルトで6枚を捨てる |
-| `play <idx>` | `p` | カードをプレイ |
+| `play <idx>` |  | カードをプレイ |
 | `next` | `n` | 次のトリックへ |
 | `nextround` | `nr` | 次のディールへ |
 | `hint` | `h` | ヒントを表示 |
