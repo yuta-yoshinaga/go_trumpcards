@@ -4283,6 +4283,26 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),
+	BindCuiFor("colorado",
+		func() usecase.ColoradoInteractorIF {
+			return usecase.NewColoradoInteractor(domain.NewDefaultColorado(), new(presenter.ColoradoCuiPresenter))
+		},
+		controller.NewColoradoCuiController,
+		CuiHelpSpec{
+			TitleKey: "colorado.helpTitle",
+			CommandKeys: []string{
+				"colorado.helpDraw",
+				"colorado.helpMoveTF",
+				"colorado.helpMoveWF",
+				"colorado.helpMoveWT",
+				"colorado.helpMoveST",
+				"colorado.helpGiveUp",
+				"colorado.helpHint",
+				"colorado.helpAutoComplete",
+				"colorado.helpUndo",
+			},
+			ExtraCommandLines: []string{"  l                        action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

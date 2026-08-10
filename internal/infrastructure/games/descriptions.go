@@ -93,6 +93,7 @@ var gameDescriptions = map[string]string{
 	"auldlangsyne":        "オールド・ラング・サイン（4列へ強制配りの古典ソリティア）",
 	"soko":                "ソッコ（4枚役を足したカナディアンスタッド）",
 	"fourseasons":         "フォーシーズンズ（十字と四隅のラップアラウンド・ソリティア）",
+	"colorado":            "コロラド（104枚・20山、昇順4本と降順4本の組札）",
 	"bisley":              "ビズリー（昇降2組の基礎札ソリティア）",
 	"napoleonssquare":     "ナポレオンズ・スクエア（2デッキの正方形ソリティア）",
 	"grandfathersclock":   "グランドファーザーズ・クロック（時計盤ソリティア）",

@@ -864,6 +864,13 @@ var registry = []*Game{
 	// takes any card. Canfield shares the deal-decides-the-base-rank idea but
 	// alternates colour on its tableau and does not wrap there.
 	{Name: "fourseasons", Category: CategorySolo},
+	// Colorado spreads 20 single-card piles under eight foundations -- four
+	// building up from the Ace and four building down from the King, which is
+	// exactly the 104 cards of two decks. The waste card may be dropped on any
+	// pile whatever its suit or rank, so the only decision in the game is which
+	// card to bury. Congress shares the two-deck, eight-foundation shape but
+	// builds every foundation upward and lets the tableau be packed.
+	{Name: "colorado", Category: CategoryClassic},
 }
 
 // All returns a value-level copy of the registry in canonical order.

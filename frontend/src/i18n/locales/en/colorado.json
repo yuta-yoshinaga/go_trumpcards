@@ -1,0 +1,54 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "title": "Colorado",
+  "stock": "Stock",
+  "waste": "Waste",
+  "tableau": "Tableau",
+  "foundation": "Foundation",
+  "foundations": "Foundations (↑=A→K, ↓=K→A)",
+  "ascending": "ascending",
+  "descending": "descending",
+  "moveCount": "Moves",
+  "draw": "Draw",
+  "drawAria": "Turn one card from the stock",
+  "fillGap": "Fill a gap",
+  "giveup": "Give Up",
+  "hint": "Hint",
+  "undo": "Undo",
+  "autoComplete": "Auto Complete",
+  "selectTarget": "Choose a destination",
+  "deselect": "Cancel",
+  "empty": "Empty",
+  "nextRankBadge": "Next:{{rank}}",
+  "nextRankAria": "needs {{rank}} next",
+  "foundationCompleteAria": "complete",
+  "emptyPileAria": "empty pile, fill it from the stock or the waste",
+  "pileCountAria": "{{count}} cards",
+  "gameClear": "Game Clear! Moves: {{moveCount}}",
+  "gameOver": "Game Over",
+  "playing": "Playing",
+  "stalemate": "No moves left",
+  "noHint": "No hint available",
+  "hintAvailable": "Hint available",
+  "landscapeBanner": "Landscape orientation recommended",
+  "frontendHint": {
+    "coloradoWaste": "The waste card can go to a foundation",
+    "coloradoTableau": "A tableau card can go to a foundation",
+    "coloradoFillGap": "An empty pile can be filled straight from the stock",
+    "coloradoDraw": "Turn a card from the stock"
+  },
+  "tutorial": {
+    "foundations": "There are eight foundations. The four on the left build up from the Ace (↑) and the four on the right build down from the King (↓). Together they hold all 104 cards of the two decks.",
+    "stock": "The stock turns one card at a time and there is no redeal. An empty pile can be filled straight from the stock, which saves a card of the single pass.",
+    "tableau": "Twenty piles. The waste card goes onto **any** pile whatever its suit or rank — but it buries whatever was under it. A tableau card has exactly one legal move: onto a foundation.",
+    "controls": "The controls: draw, hint, undo and so on.",
+    "resetButton": "Start a new game."
+  },
+  "nav": {
+    "colorado": "Colorado"
+  }
+}

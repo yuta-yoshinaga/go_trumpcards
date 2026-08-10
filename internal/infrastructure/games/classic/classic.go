@@ -364,4 +364,12 @@ func init() {
 			return usecase.RestoreShengJiInteractor(data, new(presenter.ShengJiWebPresenter))
 		},
 		controller.NewShengJiWebControllerWithProvider)
+	games.RegisterKVGame("colorado", games.CategoryClassic,
+		func() usecase.ColoradoInteractorIF {
+			return usecase.NewColoradoInteractor(domain.NewDefaultColorado(), new(presenter.ColoradoWebPresenter))
+		},
+		func(data []byte) (usecase.ColoradoInteractorIF, error) {
+			return usecase.RestoreColoradoInteractor(data, new(presenter.ColoradoWebPresenter))
+		},
+		controller.NewColoradoWebControllerWithProvider)
 }
