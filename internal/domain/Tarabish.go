@@ -640,15 +640,26 @@ func tarabishBeats(challenger, currentBest *Card, leadSuit, trumpSuit int) bool 
 	return tarabishPlainRank(challenger) > tarabishPlainRank(currentBest)
 }
 
+// isTrump その札が切り札か
+func (t *Tarabish) isTrump(c *Card) bool {
+	return c != nil && c.GetDesign() == t.trumpSuit
+}
+
 // tarabishTrumpRank 切り札の強さ。**J(Jass) が最強、9(Menel) が次。**
+//
+// **10 を明示的に扱わないと K/Q に負ける。** 素の GetValue() に落とすと
+// 10 < 12 < 13 なので、点数表 (J20 > 9=14 > A11 > 10=10 > K4 > Q3) と序列が
+// 食い違う。Belote.go の beloteTrumpRank も同じ理由で 10 を特別扱いしている。
 func tarabishTrumpRank(c *Card) int {
 	switch c.GetValue() {
 	case 11: // J = Jass
 		return 100
 	case 9: // Menel
 		return 99
-	case 1:
+	case 1: // A
 		return 98
+	case 10:
+		return 97
 	}
 	return c.GetValue()
 }
@@ -670,11 +681,16 @@ func (t *Tarabish) chooseCpuCard(playerIdx int) int {
 	p := t.players[playerIdx]
 
 	if len(t.currentTrick) == 0 {
-		// リードは点の低い札から。切り札は温存する。
-		bestIdx, bestPts := valid[0], TarabishCardPoints(p.GetCard(valid[0]), t.trumpSuit)
+		// リードは点の低い札から。**切り札は同点でも後回しにする** —— 点だけで
+		// 選ぶと 0 点の切り札 8/7/6 が 0 点の非切り札より先に出てしまい、
+		// 「温存する」という意図と裏返る。
+		bestIdx := valid[0]
+		bestPts, bestTrump := TarabishCardPoints(p.GetCard(bestIdx), t.trumpSuit), t.isTrump(p.GetCard(bestIdx))
 		for _, i := range valid[1:] {
-			if pts := TarabishCardPoints(p.GetCard(i), t.trumpSuit); pts < bestPts {
-				bestIdx, bestPts = i, pts
+			c := p.GetCard(i)
+			pts, isTrump := TarabishCardPoints(c, t.trumpSuit), t.isTrump(c)
+			if pts < bestPts || (pts == bestPts && bestTrump && !isTrump) {
+				bestIdx, bestPts, bestTrump = i, pts, isTrump
 			}
 		}
 		return bestIdx
@@ -934,6 +950,9 @@ func (t *Tarabish) MarshalJSON() ([]byte, error) {
 func (t *Tarabish) UnmarshalJSON(data []byte) error {
 	var j tarabishJSON
 	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if err := j.Config.Validate(); err != nil {
 		return err
 	}
 	if j.Phase < TarabishPhaseBid || j.Phase > TarabishPhaseGameEnd {

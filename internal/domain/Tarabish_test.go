@@ -742,3 +742,63 @@ func TestTarabish_ActionLog(t *testing.T) {
 	tb := newTestTarabish(t)
 	assert.NotEmpty(t, tb.GetActionLog())
 }
+
+// **切り札の 10 は K/Q に勝つ。** 素の GetValue() に落とすと 10 < 12 < 13 で
+// 序列が点数表と食い違う（レビュー指摘 PR #5301）。
+func TestTarabish_TrumpTenBeatsKingAndQueen(t *testing.T) {
+	trump := CardDesignHeart
+	ten := NewCard(trump, 10, false)
+	king := NewCard(trump, 13, false)
+	queen := NewCard(trump, 12, false)
+
+	assert.True(t, tarabishBeats(ten, king, trump, trump))
+	assert.True(t, tarabishBeats(ten, queen, trump, trump))
+	assert.False(t, tarabishBeats(king, ten, trump, trump))
+	assert.False(t, tarabishBeats(queen, ten, trump, trump))
+}
+
+// 切り札の序列を端から端まで踏む。J>9>A>10>K>Q>8>7>6。
+func TestTarabish_FullTrumpOrder(t *testing.T) {
+	trump := CardDesignHeart
+	order := []int{11, 9, 1, 10, 13, 12, 8, 7, 6}
+	for i := 0; i < len(order)-1; i++ {
+		hi := NewCard(trump, order[i], false)
+		lo := NewCard(trump, order[i+1], false)
+		assert.True(t, tarabishBeats(hi, lo, trump, trump), "%d must beat %d", order[i], order[i+1])
+		assert.False(t, tarabishBeats(lo, hi, trump, trump), "%d must not beat %d", order[i+1], order[i])
+	}
+}
+
+// 壊れた設定のスナップショットは復元しない。
+func TestTarabish_UnmarshalRejectsInvalidConfig(t *testing.T) {
+	tb := newTestTarabish(t)
+	data, err := json.Marshal(tb)
+	require.NoError(t, err)
+
+	var raw map[string]any
+	require.NoError(t, json.Unmarshal(data, &raw))
+	raw["cf"] = map[string]any{"tg": 0}
+	broken, err := json.Marshal(raw)
+	require.NoError(t, err)
+
+	var got Tarabish
+	assert.Error(t, json.Unmarshal(broken, &got))
+
+	// 正のコントロール: 触っていないスナップショットは通る。
+	var ok Tarabish
+	assert.NoError(t, json.Unmarshal(data, &ok))
+}
+
+// **同じ 0 点なら切り札ではない方をリードする。** 点だけで選ぶと 0 点の切り札
+// 8/7/6 が先に出て「切り札は温存する」というコメントと裏返る（レビュー指摘 PR #5301）。
+func TestTarabish_CpuLeadPrefersNonTrumpOnTie(t *testing.T) {
+	tb := newTestTarabish(t)
+	tb.trumpSuit = CardDesignHeart
+	tb.phase = TarabishPhasePlay
+	tb.currentTrick = nil
+	handOf(tb, 1,
+		NewCard(CardDesignHeart, 7, false), // 0 点だが切り札
+		NewCard(CardDesignSpade, 8, false)) // 0 点の非切り札
+
+	assert.Equal(t, 1, tb.chooseCpuCard(1))
+}
