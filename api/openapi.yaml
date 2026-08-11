@@ -196,6 +196,8 @@ tags:
     description: Honeymoon Bridge (ハネムーンブリッジ) game endpoints -- bridge for two, where the first thirteen tricks score nothing and only draw you cards
   - name: minibridge
     description: Minibridge (ミニブリッジ) game endpoints -- bridge with the auction replaced by an open high-card-point count
+  - name: pasur
+    description: Pasur (パスール) game endpoints -- Iran's fishing game, where captures add to eleven and emptying the table doubles what you took
   - name: clocksolitaire
     description: Clock Solitaire (クロックソリティア) game
   - name: durak
@@ -8186,6 +8188,99 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MinibridgeResponse'
+  /pasur/exec:
+    post:
+      tags:
+        - pasur
+      summary: Execute a Pasur game command
+      description: |
+        Send a command to advance the Pasur (パスール) game session identified
+        by `sessionId`.
+
+        Iran's member of the fishing family, for two to four players. Four
+        cards go to the table first, which is what makes the deal work for
+        every table size: the remaining 48 divides evenly by 2, 3 and 4 players
+        at four cards apiece, dealt again whenever every hand empties.
+
+        **A numeral captures a set of table numerals that, with it, adds to
+        11** (ace 1 through ten 10), so one card alone never captures — nothing
+        is worth 11. **J, Q and K never join the sum**; they take only the same
+        rank from the table.
+
+        **Capturing is compulsory when a capture exists**, otherwise scoring
+        cards could be pushed onto the table beyond an opponent's reach. An
+        absent `table` therefore means "lay this card down", and the server
+        rejects it when the card could have captured.
+
+        **Emptying the table is a "soor" and those cards score double.**
+        Whatever remains on the table at the end goes to whoever captured last.
+        Scoring: each club 1, an extra 1 for 2♣, 3 for 10♦, 1 per ace — exactly
+        21 points per deck before any soor doubling.
+      operationId: execPasur
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, play, p, giveup, g, hint, h, log, l]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                  description: Index into your hand (required for `play`)
+                table:
+                  type: array
+                  description: >-
+                    Table indices to capture. **Omitting it lays the card down
+                    rather than being a missing parameter** -- but the server
+                    rejects that when the card could have captured.
+                  items:
+                    type: integer
+                config:
+                  type: object
+                  properties:
+                    playerCnt:
+                      type: integer
+                      description: Players at the table (2..4, default 4)
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              capture:
+                summary: Play your first card and take two table cards
+                value:
+                  command: play
+                  sessionId: my-session-001
+                  cardIndex: 0
+                  table: [1, 2]
+              trail:
+                summary: Lay a card down (only legal when it cannot capture)
+                value:
+                  command: play
+                  sessionId: my-session-001
+                  cardIndex: 1
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasurResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasurResponse'
   /clocksolitaire/exec:
     post:
       tags:
@@ -46673,6 +46768,111 @@ components:
           type: object
           properties:
             rounds:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    PasurHint:
+      type: object
+      description: >-
+        A suggestion. table names the table indices to take, and is empty when
+        the advice is to lay the card down instead.
+      properties:
+        cardIndex:
+          type: integer
+          description: Index into your hand.
+        reason:
+          type: string
+          description: pasurSoor, pasurCapture, or pasurTrail.
+        table:
+          type: array
+          description: Table indices to take. Empty for a lay-down.
+          items:
+            type: integer
+    PasurPlayer:
+      type: object
+      description: One seat at a Pasur table
+      properties:
+        id:
+          type: integer
+        isHuman:
+          type: boolean
+        cardCount:
+          type: integer
+          description: Hand size. The only hand information exposed for the CPU.
+        cards:
+          type: array
+          description: Populated for the human player only; empty for the CPU.
+          items:
+            $ref: '#/components/schemas/Card'
+        capturedCount:
+          type: integer
+          description: Cards taken so far, across both the normal and the soor pile.
+        soors:
+          type: integer
+          description: How many times this seat emptied the table. Those captures score double.
+        score:
+          type: integer
+    PasurResponse:
+      type: object
+      description: Response payload for /pasur/exec
+      properties:
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/PasurPlayer'
+        phase:
+          type: integer
+          description: "0=Play, 1=GameEnd"
+        table:
+          type: array
+          description: The cards face up on the table. Their positions are the `table` indices.
+          items:
+            $ref: '#/components/schemas/Card'
+        captureOptions:
+          type: array
+          description: >-
+            Per hand card, the sets of table indices it may take -- so a client
+            never has to rebuild "which subsets add to 11", which would drift
+            from the server. An empty array for a card means it can only be
+            laid down.
+          items:
+            type: array
+            items:
+              type: array
+              items:
+                type: integer
+        deckRemaining:
+          type: integer
+        packsDealt:
+          type: integer
+        lastCaptureIdx:
+          type: integer
+          description: >-
+            The seat that captured last, or -1. **Cards left on the table at
+            the end go to them.**
+        currentPlayerIdx:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        winners:
+          type: array
+          description: >-
+            Seats on the highest score. More than one entry means a tie; empty
+            until the game ends.
+          items:
+            type: integer
+        hint:
+          $ref: '#/components/schemas/PasurHint'
+        config:
+          type: object
+          properties:
+            playerCnt:
               type: integer
         message:
           type: string
