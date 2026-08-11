@@ -371,7 +371,8 @@
     "shelem": "What is bid is the score itself, not a number of tricks. With a widow exchange and an all-tricks Shelem call.",
     "mendikot": "India's 2v2. Neither points nor tricks decide it -- the four tens do.",
     "bhabhi": "India and Pakistan, 3-7 players. Miss the suit and take the pile; last one holding cards loses.",
-    "teendopaanch": "Northern India, three-handed. The seats owe 3, 2 and 5 tricks -- assigned, never bid."
+    "teendopaanch": "Northern India, three-handed. The seats owe 3, 2 and 5 tricks -- assigned, never bid.",
+    "hasenpfeffer": "A euchre variant from German-American country. The joker is the highest trump of all."
   },
   "stretch_blurb": {
     "accordion": "Completion is rare; the journey itself is the joy.",
@@ -659,6 +660,7 @@
     "shelem": "Only the A, 10 and 5 score, for exactly 100 a round — and the bidding starts at 100 for that same hundred.",
     "mendikot": "Nobody chooses trump. The first card that cannot follow suit sets it.",
     "bhabhi": "It names a loser, not a winner. Getting out early wins nothing -- only being last loses.",
-    "teendopaanch": "Overshooting scores nothing -- it buys an opponent's best cards next round instead."
+    "teendopaanch": "Overshooting scores nothing -- it buys an opponent's best cards next round instead.",
+    "hasenpfeffer": "Bidding is compulsory -- once three pass the dealer cannot, so no hand is thrown in."
   }
 }

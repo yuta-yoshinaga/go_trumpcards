@@ -341,4 +341,12 @@ func init() {
 			return usecase.RestoreTarabishInteractor(data, new(presenter.TarabishWebPresenter))
 		},
 		controller.NewTarabishWebControllerWithProvider)
+	games.RegisterKVGame("hasenpfeffer", games.CategoryExtra3,
+		func() usecase.HasenpfefferInteractorIF {
+			return usecase.NewHasenpfefferInteractor(domain.NewDefaultHasenpfeffer(), new(presenter.HasenpfefferWebPresenter))
+		},
+		func(data []byte) (usecase.HasenpfefferInteractorIF, error) {
+			return usecase.RestoreHasenpfefferInteractor(data, new(presenter.HasenpfefferWebPresenter))
+		},
+		controller.NewHasenpfefferWebControllerWithProvider)
 }

@@ -1,0 +1,61 @@
+{
+  "phase": {
+    "bid": "Bidding",
+    "discard": "Discard",
+    "play": "Playing",
+    "handEnd": "Hand over",
+    "gameEnd": "Finished"
+  },
+  "header": {
+    "hand": "Hand",
+    "target": "First to {{target}}",
+    "trump": "Trump: {{suit}}",
+    "trumpUndecided": "Trump: not named yet",
+    "blind": "Blind: {{n}} card (the declarer takes it and discards one)",
+    "rule": "The joker is the highest trump of all -- the Best Bower. The jack of trumps (Right Bower) and the jack of the same colour (Left Bower) come next. Bidding is compulsory: once three players pass, the dealer cannot.",
+    "score": "Score: your team {{t0}} - theirs {{t1}}",
+    "mustBid": "Everyone else passed. As dealer you cannot -- you must bid.",
+    "bidNone": "no bid",
+    "bidPassed": "passed",
+    "bidValue": "bid {{n}}",
+    "took": "{{n}} tricks",
+    "team": "T{{team}}",
+    "declarer": "[declarer]",
+    "you": "You",
+    "cpu": "CPU{{idx}}"
+  },
+  "currentTrick": "Current trick",
+  "handEnd": {
+    "made": "Contract {{contract}}, took {{took}}: made.",
+    "euchred": "Contract {{contract}}, took {{took}}: euchred ({{contract}} to the other team)."
+  },
+  "actions": {
+    "bid": "Bid {{n}}",
+    "pass": "Pass",
+    "discard": "Discard, trump {{suit}}",
+    "nextHand": "Next hand",
+    "reset": "Reset",
+    "giveUp": "Give up",
+    "playAria": "Play {{card}}",
+    "discardAria": "Choose {{card}} to discard"
+  },
+  "result": {
+    "youWin": "Your team wins! {{t0}} - {{t1}}",
+    "theyWin": "The other team wins. {{t0}} - {{t1}}",
+    "tie": "It's a tie. {{t0}} - {{t1}}"
+  },
+  "hint": {
+    "hasenpfefferBid": "This hand should get there -- make a bid.",
+    "hasenpfefferPass": "This hand will not get there. Pass.",
+    "hasenpfefferMustBid": "As dealer you cannot pass. Take it at the minimum.",
+    "hasenpfefferDiscard": "Throw the weakest card that is not a trump.",
+    "hasenpfefferWinTrick": "Go for this trick.",
+    "hasenpfefferFeedPartner": "Your partner is winning. Keep your strength."
+  },
+  "tutorial": {
+    "joker": "In Hasenpfeffer the **joker is the highest trump of all** -- the Best Bower. Next comes the jack of trumps (Right Bower), then the **jack of the same colour** (Left Bower), which counts as a trump rather than as its own suit.",
+    "bidding": "**Bidding is compulsory.** Once three players pass, **the dealer cannot** -- the pass button disappears in that case. Bids run from three to six tricks, and you must beat the standing bid to take the contract.",
+    "blind": "One of the 25 cards is dealt **face down**. Whoever wins the auction picks it up, making seven, then **discards one and names trump**.",
+    "hand": "Your hand. Playable cards get a green ring. While discarding, tapping a card marks it in yellow; choosing a suit then confirms it."
+  }
+}

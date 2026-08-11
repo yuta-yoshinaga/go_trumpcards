@@ -188,6 +188,8 @@ tags:
     description: Bhabhi (バービー) game endpoints -- India and Pakistan's 3-7 player avoidance game; it names a loser, not a winner
   - name: teendopaanch
     description: 3-2-5 (ティーン・ドー・パーンチ) game endpoints -- northern India's three-handed trick-taker where the 3/2/5 targets are assigned, never bid
+  - name: hasenpfeffer
+    description: Hasenpfeffer (ハーゼンプフェファー) game endpoints -- the German-American euchre variant where the joker is the highest trump and bidding is compulsory
   - name: clocksolitaire
     description: Clock Solitaire (クロックソリティア) game
   - name: durak
@@ -7758,6 +7760,114 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TeenDoPaanchResponse'
+  /hasenpfeffer/exec:
+    post:
+      tags:
+        - hasenpfeffer
+      summary: Execute a Hasenpfeffer game command
+      description: |
+        Send a command to advance the Hasenpfeffer (ハーゼンプフェファー) game
+        session identified by `sessionId`.
+
+        The euchre variant German immigrants carried to America: a **25-card
+        pack** (the 24-card euchre deck plus one joker) dealt **six each with
+        the odd card face down**, for **six tricks** — not euchre's five.
+
+        **The joker is the highest trump of all** — the Best Bower, above the
+        right bower (jack of trumps) and the left bower (jack of the same
+        colour). Like the left bower it counts as the trump suit, so a trump
+        lead obliges you to follow with it.
+
+        **Bidding is compulsory.** Bids run 3..6 and must beat the standing
+        one; `minBid` carries the lowest that would, and is **`0` when the
+        maximum is already standing** and nobody can outbid. Once three players
+        pass, `mustBid` is true for the dealer, who **cannot pass** — so no
+        hand is ever thrown in. Clients should hide the pass control rather
+        than offer a move the server refuses.
+
+        The declarer takes the face-down card, making seven, then **discards
+        one and names trump in a single `discard` command**.
+
+        Making the contract scores the tricks actually taken, so overshooting
+        is never wasted; being euchred hands the bid amount to the other side.
+      operationId: execHasenpfeffer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, bid, b, discard, d, play, p, next, n, giveup, g, hint, h, log, l]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                  description: Index into your hand (required for `play` and `discard`)
+                suit:
+                  type: integer
+                  description: Trump suit 1..4 (1=S 2=C 3=H 4=D); required for `discard`
+                bid:
+                  type: integer
+                  description: >-
+                    Tricks bid, 3..6, or 0 to pass. Required for `bid` -- a
+                    missing value is rejected rather than defaulted, because
+                    defaulting would pass for a player who never chose to.
+                config:
+                  type: object
+                  properties:
+                    target:
+                      type: integer
+                      description: Points needed to win (5..50, default 10)
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bid:
+                summary: Bid four tricks
+                value:
+                  command: bid
+                  sessionId: my-session-001
+                  bid: 4
+              pass:
+                summary: Pass
+                value:
+                  command: bid
+                  sessionId: my-session-001
+                  bid: 0
+              discard:
+                summary: Discard the third card and make hearts trump
+                value:
+                  command: discard
+                  sessionId: my-session-001
+                  cardIndex: 2
+                  suit: 3
+              play:
+                summary: Play the first card in hand
+                value:
+                  command: play
+                  sessionId: my-session-001
+                  cardIndex: 0
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HasenpfefferResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HasenpfefferResponse'
   /clocksolitaire/exec:
     post:
       tags:
@@ -45682,6 +45792,152 @@ components:
           type: object
           properties:
             rounds:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    HasenpfefferTrickCard:
+      type: object
+      description: A card played in the current trick
+      required:
+        - playerIdx
+        - card
+      properties:
+        playerIdx:
+          type: integer
+          description: Index of the player who played this card
+        card:
+          $ref: '#/components/schemas/Card'
+    HasenpfefferHint:
+      type: object
+      description: >-
+        A suggestion. While bidding it carries no cardIndex and puts the
+        recommended number in value; while discarding it names both a card and
+        the suit to make trump; during play it names a card.
+      properties:
+        cardIndex:
+          type: integer
+          description: Index into your hand. Absent while bidding.
+        reason:
+          type: string
+          description: >-
+            hasenpfefferBid / hasenpfefferPass / hasenpfefferMustBid while
+            bidding; hasenpfefferDiscard while sorting the blind;
+            hasenpfefferWinTrick or hasenpfefferFeedPartner during play.
+        value:
+          type: integer
+          description: Tricks to bid. 0 otherwise.
+        suit:
+          type: integer
+          description: Suit to make trump when discarding. 0 otherwise.
+    HasenpfefferPlayer:
+      type: object
+      description: One seat at a Hasenpfeffer table
+      properties:
+        id:
+          type: integer
+        isHuman:
+          type: boolean
+        team:
+          type: integer
+          description: "0 or 1. Seats 0+2 are one partnership, 1+3 the other."
+        cardCount:
+          type: integer
+          description: Hand size. The only hand information exposed for the CPU.
+        cards:
+          type: array
+          description: Populated for the human player only; empty for the CPU.
+          items:
+            $ref: '#/components/schemas/Card'
+        bid:
+          type: integer
+          description: "Tricks bid, 0 if this seat passed, or -1 before it answered"
+        trickCount:
+          type: integer
+    HasenpfefferResponse:
+      type: object
+      description: Response payload for /hasenpfeffer/exec
+      properties:
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/HasenpfefferPlayer'
+        phase:
+          type: integer
+          description: "0=Bid, 1=Discard, 2=Play, 3=HandEnd, 4=GameEnd"
+        handNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        trumpSuit:
+          type: integer
+          description: 0 until the declarer names it along with the discard.
+        declarerIdx:
+          type: integer
+          description: "Seat that won the bidding, or -1 while the auction runs"
+        contract:
+          type: integer
+          description: Tricks contracted for.
+        minBid:
+          type: integer
+          description: >-
+            Lowest bid that would beat the standing one. 0 means nobody can bid
+            any more -- the maximum is standing, so passing is the only move.
+        mustBid:
+          type: boolean
+          description: >-
+            You are the dealer and everybody else passed, so you cannot pass.
+            Bidding is compulsory; a hand never gets thrown in.
+        blindSize:
+          type: integer
+          description: Cards still face down; 0 once the declarer has taken the blind.
+        scores:
+          type: array
+          description: Running total per team, index 0 and 1.
+          items:
+            type: integer
+        teamTricks:
+          type: array
+          description: Tricks taken this hand per team, index 0 and 1.
+          items:
+            type: integer
+        lastHandEuchred:
+          type: boolean
+          description: The declaring side failed its contract in the hand just scored.
+        lastHandTricks:
+          type: integer
+          description: Tricks the declaring side took in the hand just scored.
+        currentPlayerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        currentTrick:
+          type: array
+          items:
+            $ref: '#/components/schemas/HasenpfefferTrickCard'
+        validPlays:
+          type: array
+          description: Hand indices you may legally play. Following suit is compulsory.
+          items:
+            type: integer
+        gameEndFlag:
+          type: boolean
+        winnerTeam:
+          type: integer
+          description: "-1 until decided, and -1 on a tie"
+        hint:
+          $ref: '#/components/schemas/HasenpfefferHint'
+        config:
+          type: object
+          properties:
+            target:
               type: integer
         message:
           type: string

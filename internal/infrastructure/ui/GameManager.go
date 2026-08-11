@@ -4592,6 +4592,23 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
 		}),
+	BindCuiFor("hasenpfeffer",
+		func() usecase.HasenpfefferInteractorIF {
+			return usecase.NewHasenpfefferInteractor(domain.NewDefaultHasenpfeffer(), new(presenter.HasenpfefferCuiPresenter))
+		},
+		controller.NewHasenpfefferCuiController,
+		CuiHelpSpec{
+			TitleKey: "hasenpfeffer.helpTitle",
+			CommandKeys: []string{
+				"hasenpfeffer.helpBid",
+				"hasenpfeffer.helpPass",
+				"hasenpfeffer.helpDiscard",
+				"hasenpfeffer.helpPlay",
+				"hasenpfeffer.helpNext",
+				"hasenpfeffer.helpGiveUp",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

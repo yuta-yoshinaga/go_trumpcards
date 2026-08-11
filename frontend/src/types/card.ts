@@ -116,6 +116,7 @@ export * from './games/guandan';
 export * from './games/guts';
 export * from './games/hachihachi';
 export * from './games/handandfoot';
+export * from './games/hasenpfeffer';
 export * from './games/hearts';
 export * from './games/highcardflush';
 export * from './games/hokm';
