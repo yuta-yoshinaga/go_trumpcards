@@ -699,19 +699,29 @@ func TestEstimation_UnmarshalRejectsInvalid(t *testing.T) {
 			Config:      DefaultEstimationConfig(),
 			Phase:       EstimationPhasePlay,
 			RoundNumber: 1,
+			TrumpSuit:   CardDesignSpade,
 			WinnerIdx:   -1,
 		}
 	}
 	cases := map[string]func(*estimationJSON){
-		"bad config":  func(j *estimationJSON) { j.Config.Rounds = 0 },
-		"bad phase":   func(j *estimationJSON) { j.Phase = EstimationPhase(99) },
-		"bad trick":   func(j *estimationJSON) { j.TrickNumber = EstimationTricksPerRound + 1 },
-		"bad round":   func(j *estimationJSON) { j.RoundNumber = 0 },
-		"bad current": func(j *estimationJSON) { j.CurrentPlayerIdx = EstimationPlayerCnt },
-		"bad bidder":  func(j *estimationJSON) { j.BidPlayerIdx = -1 },
-		"bad lead":    func(j *estimationJSON) { j.LeadPlayerIdx = -1 },
-		"bad dealer":  func(j *estimationJSON) { j.DealerIdx = EstimationPlayerCnt },
-		"bad winner":  func(j *estimationJSON) { j.WinnerIdx = EstimationPlayerCnt },
+		"bad config": func(j *estimationJSON) { j.Config.Rounds = 0 },
+		"bad phase":  func(j *estimationJSON) { j.Phase = EstimationPhase(99) },
+		"bad trick":  func(j *estimationJSON) { j.TrickNumber = EstimationTricksPerRound + 1 },
+		// **切り札はフェーズと整合していなければならない。** 両方向を踏む。
+		"trump before it was chosen": func(j *estimationJSON) {
+			j.Phase, j.TrumpSuit = EstimationPhaseTrump, CardDesignHeart
+		},
+		"no trump after it was chosen": func(j *estimationJSON) {
+			j.Phase, j.TrumpSuit = EstimationPhasePlay, 0
+		},
+		"bogus trump":    func(j *estimationJSON) { j.TrumpSuit = 99 },
+		"negative trump": func(j *estimationJSON) { j.TrumpSuit = -1 },
+		"bad round":      func(j *estimationJSON) { j.RoundNumber = 0 },
+		"bad current":    func(j *estimationJSON) { j.CurrentPlayerIdx = EstimationPlayerCnt },
+		"bad bidder":     func(j *estimationJSON) { j.BidPlayerIdx = -1 },
+		"bad lead":       func(j *estimationJSON) { j.LeadPlayerIdx = -1 },
+		"bad dealer":     func(j *estimationJSON) { j.DealerIdx = EstimationPlayerCnt },
+		"bad winner":     func(j *estimationJSON) { j.WinnerIdx = EstimationPlayerCnt },
 		"long trick": func(j *estimationJSON) {
 			j.CurrentTrick = make([]*TrickCard, EstimationPlayerCnt+1)
 		},
@@ -737,6 +747,15 @@ func TestEstimation_UnmarshalRejectsInvalid(t *testing.T) {
 	data, err := json.Marshal(valid())
 	require.NoError(t, err)
 	assert.NoError(t, json.Unmarshal(data, &got))
+	assert.Equal(t, CardDesignSpade, got.GetTrumpSuit())
+
+	// **切り札選択中の 0 も通る。** ガードが 0 を一律に弾いていないこと。
+	j := valid()
+	j.Phase, j.TrumpSuit = EstimationPhaseTrump, 0
+	pre, err := json.Marshal(j)
+	require.NoError(t, err)
+	var okPre Estimation
+	assert.NoError(t, json.Unmarshal(pre, &okPre))
 }
 
 func TestEstimation_ActionLog(t *testing.T) {

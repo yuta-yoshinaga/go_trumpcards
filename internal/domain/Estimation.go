@@ -816,6 +816,17 @@ func (e *Estimation) UnmarshalJSON(data []byte) error {
 	if j.Phase < EstimationPhaseTrump || j.Phase > EstimationPhaseGameEnd {
 		return fmt.Errorf("invalid phase: %d", j.Phase)
 	}
+	// **切り札はフェーズと整合していなければならない。** 切り札選択中はまだ 0、
+	// 決まったあとは実在するスート。素通しすると beats() がどの札も切り札と
+	// 見なさなくなり、トリックの勝敗が黙って変わる（レビュー指摘 PR #5303、
+	// PR #5302 の Baloot と同じ穴）。
+	if j.Phase == EstimationPhaseTrump {
+		if j.TrumpSuit != 0 {
+			return fmt.Errorf("trump suit %d before it was chosen", j.TrumpSuit)
+		}
+	} else if j.TrumpSuit < CardDesignSpade || j.TrumpSuit > CardDesignDiamond {
+		return fmt.Errorf("invalid trump suit: %d", j.TrumpSuit)
+	}
 	if j.TrickNumber < 0 || j.TrickNumber > EstimationTricksPerRound {
 		return fmt.Errorf("invalid trick number: %d", j.TrickNumber)
 	}
