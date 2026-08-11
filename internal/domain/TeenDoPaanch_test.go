@@ -585,6 +585,92 @@ func TestTeenDoPaanch_UnmarshalRejectsBrokenSnapshots(t *testing.T) {
 	assert.NoError(t, json.Unmarshal(data, &ok))
 }
 
+// **超過も不足も複数人いることがある。** 割り当てが決定的で、枚数が保存され、
+// 過不足を使い切ることを両方向で踏む（レビュー指摘 PR #5309）。
+func TestTeenDoPaanch_ExchangeHandlesManyToMany(t *testing.T) {
+	for _, tc := range []struct {
+		name    string
+		surplus []int
+		moved   int
+	}{
+		{"1 人が超過し 2 人が不足", []int{2, -1, -1}, 2},
+		{"2 人が超過し 1 人が不足", []int{1, -2, 1}, 2},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			g := newTestTeenDoPaanch(t)
+			g.SetPhaseForTest(TeenDoPaanchPhasePlay)
+			for i := range TeenDoPaanchPlayerCnt {
+				teenDoPaanchHandOf(g, i,
+					NewCard(CardDesignSpade, 8+i, false),
+					NewCard(CardDesignHeart, 10+i, false),
+					NewCard(CardDesignClover, 1, false))
+			}
+			g.SetSurplusForTest(append([]int(nil), tc.surplus...))
+
+			g.ExchangeForTest()
+
+			assert.Equal(t, tc.moved, g.GetLastExchange())
+			for i := range TeenDoPaanchPlayerCnt {
+				assert.Equal(t, 3, g.GetPlayer(i).GetCardsSize(), "席 %d の枚数は変わらない", i)
+			}
+			assert.Equal(t, []int{0, 0, 0}, g.GetSurplusForTest(), "過不足は使い切る")
+		})
+	}
+}
+
+// **同じ入力なら毎回同じ結果。** 不足側が複数いても席順で決まる。
+func TestTeenDoPaanch_ExchangeIsDeterministic(t *testing.T) {
+	run := func() []string {
+		g := newTestTeenDoPaanch(t)
+		g.SetPhaseForTest(TeenDoPaanchPhasePlay)
+		for i := range TeenDoPaanchPlayerCnt {
+			teenDoPaanchHandOf(g, i,
+				NewCard(CardDesignSpade, 8+i, false),
+				NewCard(CardDesignHeart, 10+i, false))
+		}
+		g.SetSurplusForTest([]int{2, -1, -1})
+		g.ExchangeForTest()
+
+		out := make([]string, 0, TeenDoPaanchPlayerCnt)
+		for i := range TeenDoPaanchPlayerCnt {
+			hand := ""
+			for k := range g.GetPlayer(i).GetCardsSize() {
+				hand += cardStr(g.GetPlayer(i).GetCard(k))
+			}
+			out = append(out, hand)
+		}
+		return out
+	}
+	first := run()
+	for range 5 {
+		assert.Equal(t, first, run())
+	}
+}
+
+// **ノルマと達成数は範囲外を弾く。** 勝敗そのものなので素通しさせない。
+func TestTeenDoPaanchPlayer_UnmarshalRejectsBrokenValues(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		body string
+	}{
+		{"target that is not 3, 2 or 5", `{"tg":4,"mt":0}`},
+		{"negative target", `{"tg":-1,"mt":0}`},
+		{"negative met", `{"tg":3,"mt":-1}`},
+		{"met above the round cap", `{"tg":3,"mt":999}`},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var p TeenDoPaanchPlayer
+			assert.Error(t, json.Unmarshal([]byte(tc.body), &p))
+		})
+	}
+
+	// **負のコントロール: 正しい値は通る。** 0 はラウンド開始前の正当な状態。
+	for _, body := range []string{`{"tg":0,"mt":0}`, `{"tg":3,"mt":1}`, `{"tg":2,"mt":0}`, `{"tg":5,"mt":30}`} {
+		var p TeenDoPaanchPlayer
+		assert.NoError(t, json.Unmarshal([]byte(body), &p), body)
+	}
+}
+
 func TestTeenDoPaanchConfig_Validate(t *testing.T) {
 	assert.NoError(t, DefaultTeenDoPaanchConfig().Validate())
 	assert.NoError(t, TeenDoPaanchConfig{Rounds: TeenDoPaanchRoundsMin}.Validate())

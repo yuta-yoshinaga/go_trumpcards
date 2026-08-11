@@ -2,7 +2,11 @@
 
 package domain
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+	"slices"
+)
 
 // TeenDoPaanchPlayer は 3-2-5 のプレイヤー。
 type TeenDoPaanchPlayer struct {
@@ -68,10 +72,22 @@ func (p *TeenDoPaanchPlayer) MarshalJSON() ([]byte, error) {
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
+//
+// **ノルマと達成数は勝敗そのものなので範囲を検証する** (レビュー指摘 PR #5309)。
+// 席インデックスだけ丁寧に見て、ゲーム固有の状態値を素通しするのがこの
+// リポジトリの再発パターン (#5302〜#5305)。target が {3,2,5} 以外だと
+// finishRound の達成判定が壊れ、met が壊れると finishGame の勝者が変わる。
 func (p *TeenDoPaanchPlayer) UnmarshalJSON(data []byte) error {
 	var j teenDoPaanchPlayerJSON
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
+	}
+	// 0 は「ラウンド開始前（ResetRound 直後）」の正当な値。
+	if j.Target != 0 && !slices.Contains(TeenDoPaanchTargets[:], j.Target) {
+		return fmt.Errorf("invalid target: %d", j.Target)
+	}
+	if j.Met < 0 || j.Met > TeenDoPaanchRoundsMax {
+		return fmt.Errorf("invalid met count: %d", j.Met)
 	}
 	if j.GamePlayer != nil {
 		p.GamePlayer = j.GamePlayer
