@@ -115,6 +115,7 @@ import type {
   HighCardFlushResponse,
   HokmResponse,
   HoldemResponse,
+  HoneymoonBridgeResponse,
   IndianPokerResponse,
   IndianRummyResponse,
   IsraeliWhistResponse,
@@ -395,6 +396,7 @@ import { getHeartsHint } from '../utils/hints/heartsHint';
 import { getHighCardFlushHint } from '../utils/hints/highcardflushHint';
 import { getHokmHint } from '../utils/hints/hokmHint';
 import { getHoldemHint } from '../utils/hints/holdemHint';
+import { getHoneymoonBridgeHint } from '../utils/hints/honeymoonbridgeHint';
 import { getIndianPokerHint } from '../utils/hints/indianpokerHint';
 import { getIndianRummyHint } from '../utils/hints/indianRummyHint';
 import { getIrishPokerHint } from '../utils/hints/irishPokerHint';
@@ -638,6 +640,7 @@ export const hintFactories = {
   teendopaanch: (s) => getTeenDoPaanchHint(s as TeenDoPaanchResponse),
   hasenpfeffer: (s) => getHasenpfefferHint(s as HasenpfefferResponse),
   sergeantmajor: (s) => getSergeantMajorHint(s as SergeantMajorResponse),
+  honeymoonbridge: (s) => getHoneymoonBridgeHint(s as HoneymoonBridgeResponse),
   faro: (s) => getFaroHint(s as FaroResponse),
   fiftyone: (s) => getFiftyOneHint(s as FiftyOneResponse),
   napoleon: (s) => getNapoleonHint(s as NapoleonResponse),

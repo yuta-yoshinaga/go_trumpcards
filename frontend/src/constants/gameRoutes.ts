@@ -1017,6 +1017,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [2, 4, 4, 3], skill: [4, 4, 2, 3], social: [1, 2, 5, 4, 3], theme: [2, 4, 1, 1, 2, 3] },
       },
       {
+        path: '/honeymoonbridge',
+        labelKey: 'nav.honeymoonbridge',
+        icon: '💍',
+        page: 'HoneymoonBridge',
+        profile: { mood: [2, 4, 4, 3], skill: [5, 4, 2, 4], social: [5, 1, 1, 1, 1], theme: [2, 4, 1, 1, 2, 3] },
+      },
+      {
         path: '/sergeantmajor',
         labelKey: 'nav.sergeantmajor',
         icon: '🎖️',

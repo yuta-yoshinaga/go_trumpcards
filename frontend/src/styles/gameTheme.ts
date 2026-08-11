@@ -139,6 +139,7 @@ export type GameKey =
   | 'teendopaanch'
   | 'hasenpfeffer'
   | 'sergeantmajor'
+  | 'honeymoonbridge'
   | 'skat'
   | 'belote'
   | 'jass'
@@ -688,6 +689,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   teendopaanch: BLUE,
   hasenpfeffer: BLUE,
   sergeantmajor: BLUE,
+  honeymoonbridge: BLUE,
   // Matching/Pass
   oldmaid: GREEN,
   doubt: GREEN,

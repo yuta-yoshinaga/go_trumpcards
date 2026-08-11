@@ -4625,6 +4625,22 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
 		}),
+	BindCuiFor("honeymoonbridge",
+		func() usecase.HoneymoonBridgeInteractorIF {
+			return usecase.NewHoneymoonBridgeInteractor(domain.NewDefaultHoneymoonBridge(), new(presenter.HoneymoonBridgeCuiPresenter))
+		},
+		controller.NewHoneymoonBridgeCuiController,
+		CuiHelpSpec{
+			TitleKey: "honeymoonbridge.helpTitle",
+			CommandKeys: []string{
+				"honeymoonbridge.helpBid",
+				"honeymoonbridge.helpPass",
+				"honeymoonbridge.helpPlay",
+				"honeymoonbridge.helpNext",
+				"honeymoonbridge.helpGiveUp",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

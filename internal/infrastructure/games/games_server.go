@@ -500,6 +500,11 @@ func init() {
 			return usecase.NewSergeantMajorInteractor(domain.NewDefaultSergeantMajor(), new(presenter.SergeantMajorWebPresenter))
 		},
 		controller.NewSergeantMajorWebController)
+	BindWebControllerFor("honeymoonbridge",
+		func() usecase.HoneymoonBridgeInteractorIF {
+			return usecase.NewHoneymoonBridgeInteractor(domain.NewDefaultHoneymoonBridge(), new(presenter.HoneymoonBridgeWebPresenter))
+		},
+		controller.NewHoneymoonBridgeWebController)
 	BindWebControllerFor("rams",
 		func() usecase.RamsInteractorIF {
 			return usecase.NewRamsInteractor(domain.NewDefaultRams(), new(presenter.RamsWebPresenter))

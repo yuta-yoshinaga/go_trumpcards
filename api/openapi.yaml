@@ -192,6 +192,8 @@ tags:
     description: Hasenpfeffer (ハーゼンプフェファー) game endpoints -- the German-American euchre variant where the joker is the highest trump and bidding is compulsory
   - name: sergeantmajor
     description: Sergeant Major / 8-5-3 (サージェントメジャー) game endpoints -- the British army's three-hander where the 8/5/3 targets are fixed by seat, never bid
+  - name: honeymoonbridge
+    description: Honeymoon Bridge (ハネムーンブリッジ) game endpoints -- bridge for two, where the first thirteen tricks score nothing and only draw you cards
   - name: clocksolitaire
     description: Clock Solitaire (クロックソリティア) game
   - name: durak
@@ -7969,6 +7971,111 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SergeantMajorResponse'
+  /honeymoonbridge/exec:
+    post:
+      tags:
+        - honeymoonbridge
+      summary: Execute a Honeymoon Bridge game command
+      description: |
+        Send a command to advance the Honeymoon Bridge (ハネムーンブリッジ) game
+        session identified by `sessionId`.
+
+        Bridge adapted for two, in two halves. Thirteen cards each leaves 26 in
+        the stock, and **the first thirteen tricks do not score**: they are
+        played without trumps purely so that the winner, then the loser, draws
+        a card after each one. 13 x 2 = 26 empties the stock exactly and both
+        hands are back to thirteen for the auction.
+
+        The auction runs over levels 1..7 across five denominations, and
+        **no-trump ranks above diamonds** (S < C < H < D < NT) — an order the
+        1..4 suit codes cannot express. A bid must outbid the table, and two
+        consecutive passes close the auction; if both pass immediately the deal
+        is thrown in.
+
+        A contract of level *n* needs `6 + n` tricks. Making it scores
+        `n * 10` plus 5 per overtrick; going down gives the opponent 10 per
+        trick short. `minBidLevel`/`minBidSuit` carry the lowest bid that still
+        outbids the table so a client never has to rederive that order — `0`
+        there means the contract is at 7NT and pass is the only move.
+      operationId: execHoneymoonBridge
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, bid, b, pass, play, p, next, n, giveup, g, hint, h, log, l]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                  description: Index into your hand (required for `play`)
+                level:
+                  type: integer
+                  description: Contract level 1..7; required for `bid`. Level n needs 6 + n tricks.
+                suit:
+                  type: integer
+                  description: >-
+                    Denomination 0..4 (0=NT 1=S 2=C 3=H 4=D); required for
+                    `bid`. **0 is no-trump, not an omission** — an omitted suit
+                    is rejected rather than defaulted, because defaulting it
+                    would buy a no-trump contract nobody named.
+                config:
+                  type: object
+                  properties:
+                    target:
+                      type: integer
+                      description: Points that end the game (50..500, default 100)
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bid:
+                summary: Bid three hearts
+                value:
+                  command: bid
+                  sessionId: my-session-001
+                  level: 3
+                  suit: 3
+              notrump:
+                summary: Bid two no-trump
+                value:
+                  command: bid
+                  sessionId: my-session-001
+                  level: 2
+                  suit: 0
+              pass:
+                summary: Drop out of the auction
+                value:
+                  command: pass
+                  sessionId: my-session-001
+              play:
+                summary: Play the third card in hand
+                value:
+                  command: play
+                  sessionId: my-session-001
+                  cardIndex: 2
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HoneymoonBridgeResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HoneymoonBridgeResponse'
   /clocksolitaire/exec:
     post:
       tags:
@@ -46168,6 +46275,148 @@ components:
           type: object
           properties:
             rounds:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    HoneymoonBridgeTrickCard:
+      type: object
+      description: A card played in the current trick
+      required:
+        - playerIdx
+        - card
+      properties:
+        playerIdx:
+          type: integer
+          description: Index of the player who played this card
+        card:
+          $ref: '#/components/schemas/Card'
+    HoneymoonBridgeHint:
+      type: object
+      description: >-
+        A suggestion. During the auction it names a contract in level/suit and
+        carries no cardIndex; while playing it names a card.
+      properties:
+        cardIndex:
+          type: integer
+          description: Index into your hand. Absent during the auction.
+        reason:
+          type: string
+          description: >-
+            honeymoonbridgeDraw in the draw phase (those tricks do not score);
+            honeymoonbridgeBid or honeymoonbridgePass during the auction;
+            honeymoonbridgeWinTrick while playing the contract.
+        level:
+          type: integer
+          description: Level to bid, 0 to pass. 0 outside the auction.
+        suit:
+          type: integer
+          description: Denomination to bid; 0 is no-trump.
+    HoneymoonBridgePlayer:
+      type: object
+      description: One of the two seats at a Honeymoon Bridge table
+      properties:
+        id:
+          type: integer
+        isHuman:
+          type: boolean
+        cardCount:
+          type: integer
+          description: Hand size. The only hand information exposed for the CPU.
+        cards:
+          type: array
+          description: Populated for the human player only; empty for the CPU.
+          items:
+            $ref: '#/components/schemas/Card'
+        bidLevel:
+          type: integer
+          description: "This seat's latest bid level, or 0 for a pass"
+        bidSuit:
+          type: integer
+          description: "This seat's latest bid denomination; 0 is no-trump"
+        trickCount:
+          type: integer
+        score:
+          type: integer
+    HoneymoonBridgeResponse:
+      type: object
+      description: Response payload for /honeymoonbridge/exec
+      properties:
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/HoneymoonBridgePlayer'
+        phase:
+          type: integer
+          description: "0=Draw, 1=Bid, 2=Play, 3=RoundEnd, 4=GameEnd"
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        stockSize:
+          type: integer
+          description: >-
+            Cards left in the stock: 26 at the deal, two fewer after each
+            draw-phase trick, and 0 from the auction onwards.
+        trumpSuit:
+          type: integer
+          description: 0 means no-trump -- during the draw phase and for a no-trump contract.
+        declarerIdx:
+          type: integer
+          description: "-1 until a contract is bought"
+        contractLevel:
+          type: integer
+          description: 0 until a contract is bought.
+        requiredTricks:
+          type: integer
+          description: Tricks the contract needs (6 + contractLevel). 0 before the auction.
+        minBidLevel:
+          type: integer
+          description: >-
+            The lowest bid that still outbids the table, so a client need not
+            rederive the auction's order (no-trump above diamonds). 0 when
+            nothing can outbid the table -- pass is the only move -- and 0
+            outside the auction.
+        minBidSuit:
+          type: integer
+          description: Denomination that goes with minBidLevel; 0 is no-trump.
+        lastMade:
+          type: boolean
+          description: Whether the last deal's contract was made.
+        lastTricks:
+          type: integer
+          description: Tricks the declarer took in the last deal.
+        currentPlayerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        currentTrick:
+          type: array
+          items:
+            $ref: '#/components/schemas/HoneymoonBridgeTrickCard'
+        validPlays:
+          type: array
+          description: Hand indices you may legally play. Following suit is compulsory.
+          items:
+            type: integer
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: "-1 until decided"
+        hint:
+          $ref: '#/components/schemas/HoneymoonBridgeHint'
+        config:
+          type: object
+          properties:
+            target:
               type: integer
         message:
           type: string
