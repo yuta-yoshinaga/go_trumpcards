@@ -396,4 +396,12 @@ func init() {
 			return usecase.RestoreSlobberhannesInteractor(data, new(presenter.SlobberhannesWebPresenter))
 		},
 		controller.NewSlobberhannesWebControllerWithProvider)
+	games.RegisterKVGame("reversis", games.CategoryClassic,
+		func() usecase.ReversisInteractorIF {
+			return usecase.NewReversisInteractor(domain.NewDefaultReversis(), new(presenter.ReversisWebPresenter))
+		},
+		func(data []byte) (usecase.ReversisInteractorIF, error) {
+			return usecase.RestoreReversisInteractor(data, new(presenter.ReversisWebPresenter))
+		},
+		controller.NewReversisWebControllerWithProvider)
 }

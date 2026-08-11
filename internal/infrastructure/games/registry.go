@@ -921,6 +921,15 @@ var registry = []*Game{
 	// it does not. **Lowest total wins**, the opposite sign to Slobberhannes;
 	// each follows its own traditional notation.
 	{Name: "polignac", Category: CategoryExtra2},
+	// Reversis is the 48-card French ancestor of the avoidance family (the pack
+	// is a standard 52 with the four 10s removed). Taking tricks costs
+	// A=4/K=3/Q=2/J=1 -- 40 points a round -- and two marked cards, the
+	// **Quinola (J of hearts)** and the **A of diamonds**, cost 5 more each AND
+	// 5 chips into the pool. Everyone antes each round and the fewest penalty
+	// points takes the pool whole; most chips at the end wins. Polignac and
+	// Slobberhannes score on paper, so this is the only avoidance game here
+	// where the stake itself moves during a trick.
+	{Name: "reversis", Category: CategoryClassic},
 }
 
 // All returns a value-level copy of the registry in canonical order.

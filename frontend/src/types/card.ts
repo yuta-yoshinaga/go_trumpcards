@@ -190,6 +190,7 @@ export * from './games/primero';
 export * from './games/prsi';
 export * from './games/pyramid';
 export * from './games/reddog';
+export * from './games/reversis';
 export * from './games/rook';
 export * from './games/royalcotillion';
 export * from './games/rummy500';

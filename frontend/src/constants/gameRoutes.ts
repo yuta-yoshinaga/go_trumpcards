@@ -960,6 +960,13 @@ export const gameCategories: readonly GameCategory[] = [
         page: 'Polignac',
         profile: { mood: [3, 4, 4, 3], skill: [4, 5, 3, 2], social: [1, 4, 4, 3, 3], theme: [2, 4, 1, 1, 3, 3] },
       },
+      {
+        path: '/reversis',
+        labelKey: 'nav.reversis',
+        icon: '💰',
+        page: 'Reversis',
+        profile: { mood: [3, 4, 4, 3], skill: [4, 5, 3, 3], social: [1, 4, 4, 3, 3], theme: [2, 4, 1, 1, 3, 4] },
+      },
     ],
   },
   {

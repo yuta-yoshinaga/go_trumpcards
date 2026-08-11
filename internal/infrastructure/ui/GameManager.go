@@ -4421,6 +4421,20 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
 		}),
+	BindCuiFor("reversis",
+		func() usecase.ReversisInteractorIF {
+			return usecase.NewReversisInteractor(domain.NewDefaultReversis(), new(presenter.ReversisCuiPresenter))
+		},
+		controller.NewReversisCuiController,
+		CuiHelpSpec{
+			TitleKey: "reversis.helpTitle",
+			CommandKeys: []string{
+				"reversis.helpPlay",
+				"reversis.helpNext",
+				"reversis.helpGiveUp",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

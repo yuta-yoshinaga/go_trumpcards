@@ -295,7 +295,8 @@
     "crazyquilt": "Crazy Quilt",
     "germanwhist": "German Whist",
     "slobberhannes": "Slobberhannes",
-    "polignac": "Polignac"
+    "polignac": "Polignac",
+    "reversis": "Reversis"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1182,6 +1183,10 @@
     "polignac.roundEnd": "Round {{round}} is over.",
     "polignac.result.winner": "Player {{idx}} wins with {{score}} penalty points.",
     "polignac.result.tie": "It's a tie.",
+    "reversis.play": "Avoid taking penalty cards. The pool stands at {{pool}} chips.",
+    "reversis.roundEnd": "Round {{round}} is over. The pool stands at {{pool}} chips.",
+    "reversis.result.winner": "Player {{idx}} wins with {{chips}} chips.",
+    "reversis.result.tie": "It's a tie.",
     "schnapsen.trickEnd": "Trick complete — continue.",
     "seahaventowers.gameClear": "Game Clear! Moves: {{moveCount}}",
     "seahaventowers.gameOver": "Game Over",

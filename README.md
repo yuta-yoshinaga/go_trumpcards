@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した275種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した276種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -89,6 +89,7 @@ Go + Clean Architecture で実装した275種類のトランプゲーム。CLI �
 | ジャーマンホイスト (German Whist) | `germanwhist` | [CUI](docs/manual/cui/germanwhist.md) / [Web](docs/manual/web/germanwhist.md) |
 | スロバーハンネス (Slobberhannes) | `slobberhannes` | [CUI](docs/manual/cui/slobberhannes.md) / [Web](docs/manual/web/slobberhannes.md) |
 | ポリニャック (Polignac) | `polignac` | [CUI](docs/manual/cui/polignac.md) / [Web](docs/manual/web/polignac.md) |
+| レヴェルシ (Reversis) | `reversis` | [CUI](docs/manual/cui/reversis.md) / [Web](docs/manual/web/reversis.md) |
 | クロックソリティア (Clock Solitaire) | `clocksolitaire` | [CUI](docs/manual/cui/clocksolitaire.md) / [Web](docs/manual/web/clocksolitaire.md) |
 | ドゥラーク (Durak) | `durak` | [CUI](docs/manual/cui/durak.md) / [Web](docs/manual/web/durak.md) |
 | フォーティシーブス (Forty Thieves) | `fortythieves` | [CUI](docs/manual/cui/fortythieves.md) / [Web](docs/manual/web/fortythieves.md) |

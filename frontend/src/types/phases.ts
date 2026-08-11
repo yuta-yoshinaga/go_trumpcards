@@ -1559,6 +1559,13 @@ export const SchnapsenPhase = {
   GAME_END: 2,
 } as const;
 
+/** Reversis phase constants (sync: internal/domain/Reversis.go). */
+export const ReversisPhase = {
+  PLAY: 0,
+  ROUND_END: 1,
+  GAME_END: 2,
+} as const;
+
 /** Polignac phase constants (sync: internal/domain/Polignac.go). */
 export const PolignacPhase = {
   /** Before play: the human may declare capot. */
