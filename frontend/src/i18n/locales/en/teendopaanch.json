@@ -1,0 +1,44 @@
+{
+  "phase": {
+    "trump": "Trump call",
+    "play": "Playing",
+    "roundEnd": "Round over",
+    "gameEnd": "Finished"
+  },
+  "header": {
+    "round": "Round {{round}}/{{total}}",
+    "trump": "Trump: {{suit}}",
+    "trumpUndecided": "Trump: undeclared (the 5-target seat chooses from its first five cards)",
+    "targets": "Targets are assigned, not bid. The three seats owe 3, 2 and 5 tricks; making your number or more counts. Taking extra scores nothing -- the surplus becomes the right to take that many of an opponent's best cards next round.",
+    "exchange": "{{n}} cards changed hands for last round's shortfall.",
+    "target": "target {{target}} / took {{took}}",
+    "met": "met {{n}}",
+    "declarer": "[declares trump]",
+    "you": "You",
+    "cpu": "CPU{{idx}}"
+  },
+  "currentTrick": "Current trick",
+  "actions": {
+    "trump": "Trump {{suit}}",
+    "nextRound": "Next round",
+    "reset": "Reset",
+    "giveUp": "Give up",
+    "playAria": "Play {{card}}"
+  },
+  "result": {
+    "you": "You win! You made your target most often.",
+    "cpu": "{{name}} wins.",
+    "tie": "It's a tie."
+  },
+  "hint": {
+    "teendopaanchSelectTrump": "Make your longest suit trump.",
+    "teendopaanchWinTrick": "You are short of your target. Go for this trick.",
+    "teendopaanchDuck": "You have made your target. Take no more."
+  },
+  "tutorial": {
+    "targets": "In 3-2-5 **nobody bids**. The three seats are handed targets of **3, 2 and 5** tricks, and the roles rotate each round. **Making your number or more counts**; falling short does not.",
+    "trump": "Only the **5-target seat** names trump, and it can see **just five of its cards**. Choosing before the hand is complete is where the gamble lives.",
+    "exchange": "**Extra tricks score nothing.** Instead, your surplus lets you take that many of a short player's **best cards** next round, giving back your worst. That is the only reason to overshoot.",
+    "hand": "Your hand. Playable cards get a green ring. Once you have made your target, play low and **stop taking tricks**."
+  }
+}

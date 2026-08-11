@@ -305,7 +305,8 @@
     "hokm": "ホクム",
     "shelem": "シェレム",
     "mendikot": "メンディコット",
-    "bhabhi": "バービー"
+    "bhabhi": "バービー",
+    "teendopaanch": "3-2-5"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1557,7 +1558,14 @@
     "bhabhi.result.you": "あなたが Bhabhi です。最後まで手札が残ってしまいました。",
     "bhabhi.result.cpu": "CPU{{idx}} が Bhabhi です。あなたは無事に抜けました。",
     "bhabhi.result.stalemateYou": "{{tricks}} トリックで膠着しました。手札がいちばん多いあなたが Bhabhi です。",
-    "bhabhi.result.stalemateCpu": "{{tricks}} トリックで膠着しました。手札がいちばん多い CPU{{idx}} が Bhabhi です。"
+    "bhabhi.result.stalemateCpu": "{{tricks}} トリックで膠着しました。手札がいちばん多い CPU{{idx}} が Bhabhi です。",
+    "teendopaanch.trump.choose": "あなたがノルマ5です。最初の{{seen}}枚だけを見て切り札を決めてください。",
+    "teendopaanch.trump.wait": "ノルマ5の席が、最初の{{seen}}枚だけを見て切り札を決めています。",
+    "teendopaanch.play": "あなたのノルマは {{target}} トリック、いま {{took}} 取っています。多く取っても得点は増えません。",
+    "teendopaanch.roundEnd": "ラウンド {{round}}/{{total}} が終了しました。届かなかった人の良い札が、超過した人へ移ります。",
+    "teendopaanch.result.you": "あなたの勝ちです。ノルマ達成回数がいちばん多いです。",
+    "teendopaanch.result.cpu": "CPU{{idx}} の勝ちです。",
+    "teendopaanch.result.tie": "同点です。"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",

@@ -186,6 +186,8 @@ tags:
     description: Mendikot (メンディコット) game endpoints -- India's 2v2 trick-taker decided by the four tens, with no trump-choosing phase
   - name: bhabhi
     description: Bhabhi (バービー) game endpoints -- India and Pakistan's 3-7 player avoidance game; it names a loser, not a winner
+  - name: teendopaanch
+    description: 3-2-5 (ティーン・ドー・パーンチ) game endpoints -- northern India's three-handed trick-taker where the 3/2/5 targets are assigned, never bid
   - name: clocksolitaire
     description: Clock Solitaire (クロックソリティア) game
   - name: durak
@@ -7668,6 +7670,94 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BhabhiResponse'
+  /teendopaanch/exec:
+    post:
+      tags:
+        - teendopaanch
+      summary: Execute a 3-2-5 game command
+      description: |
+        Send a command to advance the 3-2-5 (ティーン・ドー・パーンチ) game
+        session identified by `sessionId`.
+
+        Northern India's asymmetric three-handed trick-taker, played with a
+        **30-card pack**: eights through aces in all four suits (28) plus the
+        **♠7 and ♥7**. Ten cards each for ten tricks — 28 cards would be two
+        short, which is why the real game adds those two sevens.
+
+        **The targets are assigned, not bid.** The three seats owe **3, 2 and
+        5** tricks (3 + 2 + 5 = 10, so tricks divide exactly) and there is no
+        bidding phase at all. The roles rotate, so three rounds give every seat
+        one turn at each.
+
+        Only the five-target seat (`fivePlayerIdx`) names trump, and it does so
+        from **its first five cards**, before the rest are dealt.
+
+        Making your number *or more* counts as met. **Extra tricks score
+        nothing**: the surplus instead entitles you, at the next deal, to take
+        that many of a short player's **best cards** in exchange for your
+        worst. `lastExchange` reports how many cards moved, because nothing
+        else on the board would show it.
+
+        Most targets met over the configured rounds wins; ties have no winner.
+      operationId: execTeenDoPaanch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, trump, t, play, p, next, n, giveup, g, hint, h, log, l]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                  description: Index into your hand (required for `play`)
+                suit:
+                  type: integer
+                  description: Trump suit 1..4 (1=S 2=C 3=H 4=D); required for `trump`
+                config:
+                  type: object
+                  properties:
+                    rounds:
+                      type: integer
+                      description: Rounds to play (3..30, default 3 -- one turn each at 3, 2 and 5)
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              trump:
+                summary: Make hearts trump
+                value:
+                  command: trump
+                  sessionId: my-session-001
+                  suit: 3
+              play:
+                summary: Play the third card in hand
+                value:
+                  command: play
+                  sessionId: my-session-001
+                  cardIndex: 2
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeenDoPaanchResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeenDoPaanchResponse'
   /clocksolitaire/exec:
     post:
       tags:
@@ -45478,6 +45568,120 @@ components:
           type: object
           properties:
             playerCnt:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    TeenDoPaanchTrickCard:
+      type: object
+      description: A card played in the current trick
+      required:
+        - playerIdx
+        - card
+      properties:
+        playerIdx:
+          type: integer
+          description: Index of the player who played this card
+        card:
+          $ref: '#/components/schemas/Card'
+    TeenDoPaanchHint:
+      type: object
+      description: >-
+        A suggestion. While choosing trump it carries no cardIndex and puts the
+        recommended suit in suit; during play it names a card.
+      properties:
+        cardIndex:
+          type: integer
+          description: Index into your hand. Absent before play begins.
+        reason:
+          type: string
+          description: >-
+            teendopaanchSelectTrump before play; teendopaanchWinTrick or
+            teendopaanchDuck (you already have your target) during play.
+        suit:
+          type: integer
+          description: Suit to make trump. 0 during play.
+    TeenDoPaanchPlayer:
+      type: object
+      description: One seat at a 3-2-5 table
+      properties:
+        id:
+          type: integer
+        isHuman:
+          type: boolean
+        cardCount:
+          type: integer
+          description: Hand size. The only hand information exposed for the CPU.
+        cards:
+          type: array
+          description: Populated for the human player only; empty for the CPU.
+          items:
+            $ref: '#/components/schemas/Card'
+        target:
+          type: integer
+          description: >-
+            Tricks this seat owes this round: 3, 2 or 5. Assigned, not bid --
+            there is no bidding phase, and the targets rotate between rounds.
+        trickCount:
+          type: integer
+        met:
+          type: integer
+          description: Rounds in which this seat made its target. The game is decided on this.
+    TeenDoPaanchResponse:
+      type: object
+      description: Response payload for /teendopaanch/exec
+      properties:
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/TeenDoPaanchPlayer'
+        phase:
+          type: integer
+          description: "0=Trump, 1=Play, 2=RoundEnd, 3=GameEnd"
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        trumpSuit:
+          type: integer
+          description: 0 until the five-target seat has chosen.
+        fivePlayerIdx:
+          type: integer
+          description: Seat that owes 5 tricks. That seat, and only it, names trump.
+        lastExchange:
+          type: integer
+          description: >-
+            How many cards changed hands for last round's shortfall. Surplus
+            tricks buy an opponent's best cards; nothing else shows this.
+        currentPlayerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        currentTrick:
+          type: array
+          items:
+            $ref: '#/components/schemas/TeenDoPaanchTrickCard'
+        validPlays:
+          type: array
+          description: Hand indices you may legally play. Following suit is compulsory.
+          items:
+            type: integer
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: "-1 until decided, and -1 on a tie"
+        hint:
+          $ref: '#/components/schemas/TeenDoPaanchHint'
+        config:
+          type: object
+          properties:
+            rounds:
               type: integer
         message:
           type: string

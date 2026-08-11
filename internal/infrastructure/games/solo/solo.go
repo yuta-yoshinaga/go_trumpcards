@@ -435,4 +435,12 @@ func init() {
 			return usecase.RestoreCrazyQuiltInteractor(data, new(presenter.CrazyQuiltWebPresenter))
 		},
 		controller.NewCrazyQuiltWebControllerWithProvider)
+	games.RegisterKVGame("teendopaanch", games.CategorySolo,
+		func() usecase.TeenDoPaanchInteractorIF {
+			return usecase.NewTeenDoPaanchInteractor(domain.NewDefaultTeenDoPaanch(), new(presenter.TeenDoPaanchWebPresenter))
+		},
+		func(data []byte) (usecase.TeenDoPaanchInteractorIF, error) {
+			return usecase.RestoreTeenDoPaanchInteractor(data, new(presenter.TeenDoPaanchWebPresenter))
+		},
+		controller.NewTeenDoPaanchWebControllerWithProvider)
 }
