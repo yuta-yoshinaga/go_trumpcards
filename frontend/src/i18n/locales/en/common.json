@@ -296,7 +296,8 @@
     "germanwhist": "German Whist",
     "slobberhannes": "Slobberhannes",
     "polignac": "Polignac",
-    "reversis": "Reversis"
+    "reversis": "Reversis",
+    "rams": "Rams"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1187,6 +1188,12 @@
     "reversis.roundEnd": "Round {{round}} is over. The pool stands at {{pool}} chips.",
     "reversis.result.winner": "Player {{idx}} wins with {{chips}} chips.",
     "reversis.result.tie": "It's a tie.",
+    "rams.decidePhase": "Play this round? The pot stands at {{pot}} chips. Dropping costs only the ante.",
+    "rams.play": "Bank one trick and you avoid the extra payment. The pot stands at {{pot}} chips.",
+    "rams.watching": "You dropped out of this round. Watching it play out.",
+    "rams.roundEnd": "Round {{round}} is over. The pot stands at {{pot}} chips.",
+    "rams.result.winner": "Player {{idx}} wins with {{chips}} chips.",
+    "rams.result.tie": "It's a tie.",
     "schnapsen.trickEnd": "Trick complete — continue.",
     "seahaventowers.gameClear": "Game Clear! Moves: {{moveCount}}",
     "seahaventowers.gameOver": "Game Over",

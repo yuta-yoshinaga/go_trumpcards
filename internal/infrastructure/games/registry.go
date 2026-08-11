@@ -930,6 +930,14 @@ var registry = []*Game{
 	// Slobberhannes score on paper, so this is the only avoidance game here
 	// where the stake itself moves during a trick.
 	{Name: "reversis", Category: CategoryClassic},
+	// Rams is the pot game where **the table size itself varies (3-5)**, which is
+	// why its per-seat state is slices and not the fixed arrays Loo uses. Five
+	// cards each on a 32-card piquet pack, trump from the card turned after the
+	// deal. Each player chooses to play or drop; **playing and taking no trick at
+	// all costs an extra payment into the pot**, so a weak hand is worth dropping
+	// for the price of the ante alone. Loo has the same play/drop-and-pay shape at
+	// a fixed four seats.
+	{Name: "rams", Category: CategoryExtra2},
 }
 
 // All returns a value-level copy of the registry in canonical order.

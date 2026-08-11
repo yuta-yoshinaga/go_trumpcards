@@ -198,6 +198,7 @@ export * from './games/president';
 export * from './games/primero';
 export * from './games/prsi';
 export * from './games/pyramid';
+export * from './games/rams';
 export * from './games/razz';
 export * from './games/reddog';
 export * from './games/reversis';
@@ -319,6 +320,7 @@ export const games = [
   'slobberhannes',
   'polignac',
   'reversis',
+  'rams',
   'razz',
   'sevencardstudhilo',
   'badugi',

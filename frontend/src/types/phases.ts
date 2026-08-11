@@ -1559,6 +1559,15 @@ export const SchnapsenPhase = {
   GAME_END: 2,
 } as const;
 
+/** Rams phase constants (sync: internal/domain/Rams.go). */
+export const RamsPhase = {
+  /** Before play: each player chooses to enter the round or drop. */
+  DECIDE: 0,
+  PLAY: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Reversis phase constants (sync: internal/domain/Reversis.go). */
 export const ReversisPhase = {
   PLAY: 0,
