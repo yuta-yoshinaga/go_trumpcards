@@ -1585,6 +1585,30 @@ export const SchnapsenPhase = {
  * and the game ends the moment the deck runs out — so there is nothing between
  * playing and being finished.
  */
+/**
+ * Snap phase constants (sync: internal/domain/Snap.go).
+ */
+export const SnapPhase = {
+  PLAY: 0,
+  GAME_END: 1,
+} as const;
+
+/** Snap pending-action kinds (sync: internal/domain/Snap.go). */
+export const SnapPendingKind = {
+  NONE: 0,
+  SNAP: 1,
+  STEP: 2,
+} as const;
+
+/** Snap event kinds (sync: internal/domain/Snap.go). */
+export const SnapEventKind = {
+  NONE: 0,
+  STEP: 1,
+  SNAP_CORRECT: 2,
+  SNAP_WRONG: 3,
+  ELIMINATED: 4,
+} as const;
+
 export const PasurPhase = {
   PLAY: 0,
   GAME_END: 1,

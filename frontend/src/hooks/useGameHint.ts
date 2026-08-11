@@ -228,6 +228,7 @@ import type {
   SkitgubbeResponse,
   SlapjackResponse,
   SlobberhannesResponse,
+  SnapResponse,
   SoloWhistResponse,
   SpadesResponse,
   SpeedResponse,
@@ -515,6 +516,7 @@ import { getSkatHint } from '../utils/hints/skatHint';
 import { getSkitgubbeHint } from '../utils/hints/skitgubbeHint';
 import { getSlapjackHint } from '../utils/hints/slapjackHint';
 import { getSlobberhannesHint } from '../utils/hints/slobberhannesHint';
+import { getSnapHint } from '../utils/hints/snapHint';
 import { getSokoHint } from '../utils/hints/sokoHint';
 import { getSoloWhistHint } from '../utils/hints/soloWhistHint';
 import { getSpadesHint } from '../utils/hints/spadesHint';
@@ -647,6 +649,7 @@ export const hintFactories = {
   honeymoonbridge: (s) => getHoneymoonBridgeHint(s as HoneymoonBridgeResponse),
   minibridge: (s) => getMinibridgeHint(s as MinibridgeResponse),
   pasur: (s) => getPasurHint(s as PasurResponse),
+  snap: (s) => getSnapHint(s as SnapResponse),
   faro: (s) => getFaroHint(s as FaroResponse),
   fiftyone: (s) => getFiftyOneHint(s as FiftyOneResponse),
   napoleon: (s) => getNapoleonHint(s as NapoleonResponse),
