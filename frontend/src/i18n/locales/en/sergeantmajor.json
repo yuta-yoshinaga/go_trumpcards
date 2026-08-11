@@ -1,0 +1,48 @@
+{
+  "phase": {
+    "trump": "Trump call",
+    "discard": "Kitty",
+    "play": "Playing",
+    "roundEnd": "Round over",
+    "gameEnd": "Finished"
+  },
+  "header": {
+    "round": "Round {{round}}/{{total}}",
+    "trump": "Trump: {{suit}}",
+    "trumpUndecided": "Trump: undeclared (the dealer chooses, and takes the {{kitty}} left over)",
+    "rule": "Targets follow the seats: the dealer owes 8, the seat to their left 5, the next 3 -- and 8+5+3 = 16 matches the trick count. Nobody bids. Every trick past your target scores, and every one short is paid for next round in your best cards.",
+    "exchange": "{{n}} cards changed hands for last round's shortfall.",
+    "target": "target {{target}} / took {{took}}",
+    "score": "total {{n}}",
+    "dealer": "[dealer / target 8]",
+    "you": "You",
+    "cpu": "CPU{{idx}}"
+  },
+  "currentTrick": "Current trick",
+  "actions": {
+    "trump": "Trump {{suit}}",
+    "discard": "Discard ({{n}}/{{total}})",
+    "nextRound": "Next round",
+    "reset": "Reset",
+    "giveUp": "Give up",
+    "playAria": "Play {{card}}",
+    "discardAria": "Choose {{card}} to discard"
+  },
+  "result": {
+    "you": "You win! You finished with the most points.",
+    "cpu": "{{name}} wins.",
+    "tie": "It's a tie."
+  },
+  "hint": {
+    "sergeantmajorSelectTrump": "Make your strongest suit trump.",
+    "sergeantmajorDiscard": "Throw the weak cards that are not trumps.",
+    "sergeantmajorWinTrick": "You are short of your target. Go for this trick.",
+    "sergeantmajorPressOn": "Target met -- but every extra trick still scores."
+  },
+  "tutorial": {
+    "targets": "In 8-5-3 **nobody bids**. The **dealer owes 8, the seat to their left 5, the next 3** -- fixed by seat, and 8+5+3 = 16 matches the trick count. The deal rotates each round, so the targets rotate with it.",
+    "kitty": "52 cards do not divide by three. **Sixteen each leaves four over**, and those four (the kitty) go to **the dealer, who discards four**. The dealer also names trump.",
+    "exchange": "**Your score is simply tricks minus target.** Overshooting is pure profit, and **falling short costs you your best cards next round** -- they go to whoever went over, in exchange for their worst.",
+    "hand": "Your hand. Playable cards get a green ring. While sorting the kitty, pick four and the confirm button becomes available."
+  }
+}

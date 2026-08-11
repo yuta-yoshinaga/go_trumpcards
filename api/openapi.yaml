@@ -190,6 +190,8 @@ tags:
     description: 3-2-5 (ティーン・ドー・パーンチ) game endpoints -- northern India's three-handed trick-taker where the 3/2/5 targets are assigned, never bid
   - name: hasenpfeffer
     description: Hasenpfeffer (ハーゼンプフェファー) game endpoints -- the German-American euchre variant where the joker is the highest trump and bidding is compulsory
+  - name: sergeantmajor
+    description: Sergeant Major / 8-5-3 (サージェントメジャー) game endpoints -- the British army's three-hander where the 8/5/3 targets are fixed by seat, never bid
   - name: clocksolitaire
     description: Clock Solitaire (クロックソリティア) game
   - name: durak
@@ -7868,6 +7870,102 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HasenpfefferResponse'
+  /sergeantmajor/exec:
+    post:
+      tags:
+        - sergeantmajor
+      summary: Execute a Sergeant Major (8-5-3) game command
+      description: |
+        Send a command to advance the Sergeant Major / 8-5-3
+        (サージェントメジャー) game session identified by `sessionId`.
+
+        The British army's asymmetric three-hander: the standard 52-card pack
+        dealt **sixteen each, with the four left over going to the dealer as a
+        kitty**. 52 does not divide by three, which is exactly why the kitty
+        exists. Sixteen tricks per hand.
+
+        **The targets are fixed by seat, never bid.** The dealer owes **8**,
+        the seat to their left **5**, the next **3** — and 8 + 5 + 3 = 16
+        matches the trick count exactly. The deal rotates, so three rounds give
+        every seat one turn at each target. There is no bidding command.
+
+        Only the dealer names trump, and does so before taking the kitty and
+        **discarding `discardCount` cards**.
+
+        Scoring is simply tricks minus target, so **overshooting is pure
+        profit**. Falling short costs you that many of your **best cards** at
+        the next deal, in exchange for the overshooting player's worst;
+        `lastExchange` reports how many moved, because nothing else shows it.
+      operationId: execSergeantMajor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, trump, t, discard, d, play, p, next, n, giveup, g, hint, h, log, l]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                  description: Index into your hand (required for `play`)
+                suit:
+                  type: integer
+                  description: Trump suit 1..4 (1=S 2=C 3=H 4=D); required for `trump`
+                discards:
+                  type: array
+                  description: Exactly four hand indices; required for `discard`
+                  items:
+                    type: integer
+                config:
+                  type: object
+                  properties:
+                    rounds:
+                      type: integer
+                      description: Rounds to play (3..30, default 3 -- one turn each at 8, 5 and 3)
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              trump:
+                summary: Make hearts trump
+                value:
+                  command: trump
+                  sessionId: my-session-001
+                  suit: 3
+              discard:
+                summary: Discard four cards for the kitty
+                value:
+                  command: discard
+                  sessionId: my-session-001
+                  discards: [0, 2, 5, 7]
+              play:
+                summary: Play the third card in hand
+                value:
+                  command: play
+                  sessionId: my-session-001
+                  cardIndex: 2
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SergeantMajorResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SergeantMajorResponse'
   /clocksolitaire/exec:
     post:
       tags:
@@ -45938,6 +46036,135 @@ components:
           type: object
           properties:
             target:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    SergeantMajorTrickCard:
+      type: object
+      description: A card played in the current trick
+      required:
+        - playerIdx
+        - card
+      properties:
+        playerIdx:
+          type: integer
+          description: Index of the player who played this card
+        card:
+          $ref: '#/components/schemas/Card'
+    SergeantMajorHint:
+      type: object
+      description: >-
+        A suggestion. While choosing trump it names a suit; while discarding it
+        names several cards in indices; during play it names one card.
+      properties:
+        cardIndex:
+          type: integer
+          description: Index into your hand. Absent outside the play phase.
+        reason:
+          type: string
+          description: >-
+            sergeantmajorSelectTrump before play; sergeantmajorDiscard while
+            sorting the kitty; sergeantmajorWinTrick or sergeantmajorPressOn
+            (target already met) during play.
+        suit:
+          type: integer
+          description: Suit to make trump. 0 otherwise.
+        indices:
+          type: array
+          description: Cards to discard. Empty outside the discard phase.
+          items:
+            type: integer
+    SergeantMajorPlayer:
+      type: object
+      description: One seat at a Sergeant Major table
+      properties:
+        id:
+          type: integer
+        isHuman:
+          type: boolean
+        cardCount:
+          type: integer
+          description: Hand size. The only hand information exposed for the CPU.
+        cards:
+          type: array
+          description: Populated for the human player only; empty for the CPU.
+          items:
+            $ref: '#/components/schemas/Card'
+        target:
+          type: integer
+          description: >-
+            Tricks this seat owes this round: 8, 5 or 3. Fixed by seat, never
+            bid -- the dealer owes 8, the seat to their left 5, the next 3.
+        trickCount:
+          type: integer
+        score:
+          type: integer
+          description: Running total of (tricks - target). The game is decided on this.
+    SergeantMajorResponse:
+      type: object
+      description: Response payload for /sergeantmajor/exec
+      properties:
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/SergeantMajorPlayer'
+        phase:
+          type: integer
+          description: "0=Trump, 1=Discard, 2=Play, 3=RoundEnd, 4=GameEnd"
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        trumpSuit:
+          type: integer
+          description: 0 until the dealer has chosen.
+        kittySize:
+          type: integer
+          description: >-
+            Cards still face down. 52 does not divide by three, so the four
+            left over go to the dealer, who discards discardCount after naming
+            trump.
+        discardCount:
+          type: integer
+          description: How many cards the dealer must discard (4).
+        lastExchange:
+          type: integer
+          description: >-
+            How many cards changed hands for last round's shortfall. Falling
+            short of your target costs your best cards; nothing else shows it.
+        currentPlayerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+          description: The dealer. This seat owes 8 and names trump.
+        currentTrick:
+          type: array
+          items:
+            $ref: '#/components/schemas/SergeantMajorTrickCard'
+        validPlays:
+          type: array
+          description: Hand indices you may legally play. Following suit is compulsory.
+          items:
+            type: integer
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: "-1 until decided, and -1 on a tie"
+        hint:
+          $ref: '#/components/schemas/SergeantMajorHint'
+        config:
+          type: object
+          properties:
+            rounds:
               type: integer
         message:
           type: string
