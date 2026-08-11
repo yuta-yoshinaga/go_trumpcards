@@ -519,6 +519,13 @@ func TestBhabhi_UnmarshalRejectsBrokenSnapshots(t *testing.T) {
 		{"phase out of range", func(m map[string]any) { m["ph"] = 9 }},
 		{"led suit out of range", func(m map[string]any) { m["ls"] = 9 }},
 		{"led suit with an empty pile", func(m map[string]any) { m["ls"] = 3 }},
+		// **逆向きも弾く。** 場札があるのにリードスートが無いのは、フォロー
+		// 義務がどの札にも掛からない盤面——規則が黙って消える (レビュー指摘 PR #5308)。
+		{"a pile with no led suit", func(m map[string]any) {
+			m["pi"] = []any{map[string]any{"pi": 1, "c": map[string]any{"d": 1, "v": 5, "j": false}}}
+		}},
+		// **膠着は終局後にしか立たない。**
+		{"stalemate before the game ended", func(m map[string]any) { m["sm"] = true }},
 		{"current player out of range", func(m map[string]any) { m["ci"] = 99 }},
 		{"lead player out of range", func(m map[string]any) { m["li"] = -1 }},
 		{"bhabhi before the game ended", func(m map[string]any) { m["bi"] = 2 }},
