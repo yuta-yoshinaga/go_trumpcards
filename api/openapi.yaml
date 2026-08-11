@@ -174,6 +174,8 @@ tags:
     description: Tarabish (タラビッシュ) game endpoints -- 36-card Jass-family partnership game; trump J and 9 outrank the ace
   - name: baloot
     description: Baloot (バルート) game endpoints -- 32-card Gulf partnership game; the declared mode (Sun or Hokom) swaps the rank order itself
+  - name: estimation
+    description: Estimation (エスティメーション) game endpoints -- 4-player Oh Hell from the Gulf; only an exact call scores, and Dash/Risk calls swing wider
   - name: clocksolitaire
     description: Clock Solitaire (クロックソリティア) game
   - name: durak
@@ -7100,6 +7102,107 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BalootResponse'
+  /estimation/exec:
+    post:
+      tags:
+        - estimation
+      summary: Execute an Estimation game command
+      description: |
+        Send a command to advance the Estimation (エスティメーション) game
+        session identified by `sessionId`.
+
+        The Gulf's household member of the Oh Hell family: 52 cards, four
+        players each for themselves, thirteen cards apiece. The dealer names
+        trump, then each player calls the tricks they expect.
+
+        **Only an exact call scores.** Making it is worth `10 + call` and
+        missing it costs the same, so one short costs exactly as much as five
+        over -- the size of the call is the size of the bet. Two calls swing
+        wider:
+
+        - **Dash Call** -- calling 0, i.e. taking no trick with thirteen
+          cards. A flat ±23.
+        - **Risk** -- the highest call at the table, resolved to the earliest
+          caller on a tie. Doubles whatever the call was worth.
+
+        **The last caller may not make the total 13**, which would let everyone
+        make their call at once; `restrictedBid` carries that barred value so a
+        client can disable it rather than have the server reject it. Note this
+        is the same restriction `OhHell` already places on its dealer.
+      operationId: execEstimation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, trump, t, bid, b, play, p, next, n, giveup, g, hint, h, log, l]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                  description: Index into your hand (required for `play`)
+                suit:
+                  type: integer
+                  description: Trump suit 1..4 (1=S 2=C 3=H 4=D); required for `trump`
+                bid:
+                  type: integer
+                  description: Tricks called, 0..13; required for `bid`. 0 is a Dash Call, not an omission.
+                config:
+                  type: object
+                  properties:
+                    rounds:
+                      type: integer
+                      description: Rounds before the game ends (1..18, default 5)
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              trump:
+                summary: Make hearts trump
+                value:
+                  command: trump
+                  sessionId: my-session-001
+                  suit: 3
+              bid:
+                summary: Call four tricks
+                value:
+                  command: bid
+                  sessionId: my-session-001
+                  bid: 4
+              dash:
+                summary: Make a Dash Call
+                value:
+                  command: bid
+                  sessionId: my-session-001
+                  bid: 0
+              play:
+                summary: Play the third card in hand
+                value:
+                  command: play
+                  sessionId: my-session-001
+                  cardIndex: 2
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EstimationResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EstimationResponse'
   /clocksolitaire/exec:
     post:
       tags:
@@ -44115,6 +44218,126 @@ components:
           type: object
           properties:
             target:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    EstimationTrickCard:
+      type: object
+      description: A card played in the current trick
+      required:
+        - playerIdx
+        - card
+      properties:
+        playerIdx:
+          type: integer
+          description: Index of the player who played this card
+        card:
+          $ref: '#/components/schemas/Card'
+    EstimationHint:
+      type: object
+      description: >-
+        A suggestion. While choosing trump or calling it carries no cardIndex
+        and puts the recommended suit or number in value; during play it names
+        a card.
+      properties:
+        cardIndex:
+          type: integer
+          description: Index into your hand. Absent before play begins.
+        reason:
+          type: string
+          description: >-
+            estimationSelectTrump / estimationBid / estimationDashCall /
+            estimationAvoidRestricted before play; estimationWinTrick or
+            estimationDuck (you already have your call) during play.
+        value:
+          type: integer
+          description: Suit to make trump, or the number to call. 0 during play.
+    EstimationPlayer:
+      type: object
+      description: One seat at an Estimation table
+      properties:
+        id:
+          type: integer
+        isHuman:
+          type: boolean
+        cardCount:
+          type: integer
+          description: Hand size. The only hand information exposed for the CPU.
+        cards:
+          type: array
+          description: Populated for the human player only; empty for the CPU.
+          items:
+            $ref: '#/components/schemas/Card'
+        bid:
+          type: integer
+          description: "Tricks called, or -1 before this seat has called"
+        callType:
+          type: integer
+          description: "0=normal, 1=Dash Call (0), 2=Risk (the highest call)"
+        trickCount:
+          type: integer
+        roundScore:
+          type: integer
+          description: Change from the round just scored.
+        totalScore:
+          type: integer
+    EstimationResponse:
+      type: object
+      description: Response payload for /estimation/exec
+      properties:
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/EstimationPlayer'
+        phase:
+          type: integer
+          description: "0=Trump, 1=Bid, 2=Play, 3=RoundEnd, 4=GameEnd"
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        trumpSuit:
+          type: integer
+          description: 0 until the dealer has chosen.
+        restrictedBid:
+          type: integer
+          description: >-
+            The one call the last bidder may not make, because it would bring
+            the total to 13; -1 when nobody is under that restriction.
+        currentPlayerIdx:
+          type: integer
+        bidPlayerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        currentTrick:
+          type: array
+          items:
+            $ref: '#/components/schemas/EstimationTrickCard'
+        validPlays:
+          type: array
+          description: Hand indices you may legally play. Following suit is compulsory.
+          items:
+            type: integer
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: "-1 until decided, and -1 on a tie"
+        hint:
+          $ref: '#/components/schemas/EstimationHint'
+        config:
+          type: object
+          properties:
+            rounds:
               type: integer
         message:
           type: string

@@ -94,6 +94,7 @@ export * from './games/ecarte';
 export * from './games/egyptianratscrew';
 export * from './games/eightoff';
 export * from './games/escoba';
+export * from './games/estimation';
 export * from './games/euchre';
 export * from './games/faro';
 export * from './games/fiftyone';
@@ -325,6 +326,7 @@ export const games = [
   'rams',
   'tarabish',
   'baloot',
+  'estimation',
   'razz',
   'sevencardstudhilo',
   'badugi',

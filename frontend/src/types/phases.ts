@@ -1559,6 +1559,29 @@ export const SchnapsenPhase = {
   GAME_END: 2,
 } as const;
 
+/** Estimation phase constants (sync: internal/domain/Estimation.go). */
+export const EstimationPhase = {
+  /** The dealer chooses the trump suit before anyone calls. */
+  TRUMP: 0,
+  BID: 1,
+  PLAY: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
+/**
+ * Estimation call kinds (sync: internal/domain/EstimationPlayer.go).
+ *
+ * The kind decides how far the score swings: a Dash Call is a flat ±23 and
+ * Risk — the highest call at the table — doubles whatever it would otherwise
+ * have been worth.
+ */
+export const EstimationCall = {
+  NORMAL: 0,
+  DASH: 1,
+  RISK: 2,
+} as const;
+
 /** Baloot phase constants (sync: internal/domain/Baloot.go). */
 export const BalootPhase = {
   /** Before play: each player in turn declares Sun, Hokom, or passes. */

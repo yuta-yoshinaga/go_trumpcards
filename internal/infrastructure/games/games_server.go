@@ -455,6 +455,11 @@ func init() {
 			return usecase.NewBalootInteractor(domain.NewDefaultBaloot(), new(presenter.BalootWebPresenter))
 		},
 		controller.NewBalootWebController)
+	BindWebControllerFor("estimation",
+		func() usecase.EstimationInteractorIF {
+			return usecase.NewEstimationInteractor(domain.NewDefaultEstimation(), new(presenter.EstimationWebPresenter))
+		},
+		controller.NewEstimationWebController)
 	BindWebControllerFor("rams",
 		func() usecase.RamsInteractorIF {
 			return usecase.NewRamsInteractor(domain.NewDefaultRams(), new(presenter.RamsWebPresenter))

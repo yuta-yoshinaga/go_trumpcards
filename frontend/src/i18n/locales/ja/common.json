@@ -299,7 +299,8 @@
     "reversis": "レヴェルシ",
     "rams": "ラムス",
     "tarabish": "タラビッシュ",
-    "baloot": "バルート"
+    "baloot": "バルート",
+    "estimation": "エスティメーション"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1210,6 +1211,15 @@
     "baloot.result.team0": "あなたのチームの勝ちです（{{t0}} － {{t1}}）。",
     "baloot.result.team1": "相手チームの勝ちです（{{t0}} － {{t1}}）。",
     "baloot.result.tie": "同点です（{{t0}} － {{t1}}）。",
+    "estimation.trump.choose": "あなたが親です。切り札スートを決めてください。",
+    "estimation.trump.wait": "親が切り札を決めています。",
+    "estimation.bid.choose": "獲得予定トリック数を宣言してください。0 は Dash Call です。",
+    "estimation.bid.restricted": "あなたが最後の宣言者です。合計が13になるため {{n}} は選べません。",
+    "estimation.play": "宣言はぴたりと当てたときだけ加点されます。取りすぎにも注意。",
+    "estimation.roundEnd": "ラウンド{{round}}が終了しました（あなたは {{score}} 点）。",
+    "estimation.result.win": "あなたの勝ちです（{{score}}点）。",
+    "estimation.result.lose": "CPU{{idx}} の勝ちです。",
+    "estimation.result.tie": "同点です。",
     "schnapsen.trickEnd": "トリック終了 — 次へ進んでください。",
     "seahaventowers.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
     "seahaventowers.gameOver": "ゲームオーバー",

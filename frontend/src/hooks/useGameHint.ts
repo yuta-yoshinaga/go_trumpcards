@@ -81,6 +81,7 @@ import type {
   EgyptianRatscrewResponse,
   EightOffResponse,
   EscobaResponse,
+  EstimationResponse,
   EuchreResponse,
   FaroResponse,
   FiftyOneResponse,
@@ -352,6 +353,7 @@ import { getEcarteHint } from '../utils/hints/ecarteHint';
 import { getEgyptianRatscrewHint } from '../utils/hints/egyptianratscrewHint';
 import { getEightOffHint } from '../utils/hints/eightoffHint';
 import { getEscobaHint } from '../utils/hints/escobaHint';
+import { getEstimationHint } from '../utils/hints/estimationHint';
 import { getEuchreHint } from '../utils/hints/euchreHint';
 import { getFaroHint } from '../utils/hints/faroHint';
 import { getFiftyOneHint } from '../utils/hints/fiftyoneHint';
@@ -611,6 +613,7 @@ export const hintFactories = {
   rams: (s) => getRamsHint(s as RamsResponse),
   tarabish: (s) => getTarabishHint(s as TarabishResponse),
   baloot: (s) => getBalootHint(s as BalootResponse),
+  estimation: (s) => getEstimationHint(s as EstimationResponse),
   faro: (s) => getFaroHint(s as FaroResponse),
   fiftyone: (s) => getFiftyOneHint(s as FiftyOneResponse),
   napoleon: (s) => getNapoleonHint(s as NapoleonResponse),
