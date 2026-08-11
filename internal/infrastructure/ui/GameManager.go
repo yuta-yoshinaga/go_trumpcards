@@ -4641,6 +4641,21 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
 		}),
+	BindCuiFor("minibridge",
+		func() usecase.MinibridgeInteractorIF {
+			return usecase.NewMinibridgeInteractor(domain.NewDefaultMinibridge(), new(presenter.MinibridgeCuiPresenter))
+		},
+		controller.NewMinibridgeCuiController,
+		CuiHelpSpec{
+			TitleKey: "minibridge.helpTitle",
+			CommandKeys: []string{
+				"minibridge.helpContract",
+				"minibridge.helpPlay",
+				"minibridge.helpNext",
+				"minibridge.helpGiveUp",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

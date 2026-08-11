@@ -194,6 +194,8 @@ tags:
     description: Sergeant Major / 8-5-3 (サージェントメジャー) game endpoints -- the British army's three-hander where the 8/5/3 targets are fixed by seat, never bid
   - name: honeymoonbridge
     description: Honeymoon Bridge (ハネムーンブリッジ) game endpoints -- bridge for two, where the first thirteen tricks score nothing and only draw you cards
+  - name: minibridge
+    description: Minibridge (ミニブリッジ) game endpoints -- bridge with the auction replaced by an open high-card-point count
   - name: clocksolitaire
     description: Clock Solitaire (クロックソリティア) game
   - name: durak
@@ -8076,6 +8078,114 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HoneymoonBridgeResponse'
+  /minibridge/exec:
+    post:
+      tags:
+        - minibridge
+      summary: Execute a Minibridge game command
+      description: |
+        Send a command to advance the Minibridge (ミニブリッジ) game session
+        identified by `sessionId`.
+
+        The teaching variant of bridge: four players in two pairs, thirteen
+        cards each, and **no auction**. Every player announces their high-card
+        points (A=4, K=3, Q=2, J=1) and the pair holding more declares, the
+        seat holding more of it becoming declarer.
+
+        **The four hands always total exactly 40**, so the count can split
+        20-20 — that goes to the dealer's side — and the two seats of the
+        declaring pair can tie, which goes to the seat nearest the dealer.
+
+        The declarer then names a contract with nothing to outbid, their
+        partner's hand goes face up as the **dummy**, and **the declarer plays
+        both hands**: `validPlays` is reported for whichever seat is currently
+        being controlled, not always seat 0.
+
+        A contract of level *n* needs `6 + n` tricks. Making it scores the
+        contract points (20 per trick in a minor, 30 in a major, 40 + 30 in
+        no-trump) plus 300 when those reach 100 and 50 when they do not, plus
+        500 or 1000 at levels 6 and 7. Going down gives the opponents 50 per
+        trick short.
+      operationId: execMinibridge
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, contract, c, play, p, next, n, giveup, g, hint, h, log, l]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                  description: >-
+                    Index into the hand you are controlling (required for
+                    `play`) -- the dummy's hand when it is the dummy's turn and
+                    you are the declarer.
+                level:
+                  type: integer
+                  description: Contract level 1..7; required for `contract`. Level n needs 6 + n tricks.
+                suit:
+                  type: integer
+                  description: >-
+                    Denomination 0..4 (0=NT 1=S 2=C 3=H 4=D); required for
+                    `contract`. **0 is no-trump, not an omission** -- an
+                    omitted suit is rejected rather than defaulted.
+                config:
+                  type: object
+                  properties:
+                    rounds:
+                      type: integer
+                      description: >-
+                        Deals to play (4..20, default 4). Rounded down to a
+                        multiple of four so every seat deals equally -- the
+                        dealer's seat breaks HCP ties, so it has to come round
+                        evenly.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              contract:
+                summary: Choose three no-trump
+                value:
+                  command: contract
+                  sessionId: my-session-001
+                  level: 3
+                  suit: 0
+              major:
+                summary: Choose four hearts
+                value:
+                  command: contract
+                  sessionId: my-session-001
+                  level: 4
+                  suit: 3
+              play:
+                summary: Play the third card of the hand you control
+                value:
+                  command: play
+                  sessionId: my-session-001
+                  cardIndex: 2
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MinibridgeResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MinibridgeResponse'
   /clocksolitaire/exec:
     post:
       tags:
@@ -46417,6 +46527,152 @@ components:
           type: object
           properties:
             target:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    MinibridgeTrickCard:
+      type: object
+      description: A card played in the current trick
+      required:
+        - playerIdx
+        - card
+      properties:
+        playerIdx:
+          type: integer
+          description: Index of the player who played this card
+        card:
+          $ref: '#/components/schemas/Card'
+    MinibridgeHint:
+      type: object
+      description: >-
+        A suggestion. While choosing the contract it names one in level/suit
+        and carries no cardIndex; while playing it names a card.
+      properties:
+        cardIndex:
+          type: integer
+          description: Index into the hand being controlled. Absent before play begins.
+        reason:
+          type: string
+          description: >-
+            minibridgeContract before play; minibridgeWinTrick while playing
+            your own hand, minibridgeDummy when the card named is in the
+            dummy's.
+        level:
+          type: integer
+          description: Level to choose. 0 outside the contract phase.
+        suit:
+          type: integer
+          description: Denomination to choose; 0 is no-trump.
+    MinibridgePlayer:
+      type: object
+      description: One seat at a Minibridge table
+      properties:
+        id:
+          type: integer
+        isHuman:
+          type: boolean
+        cardCount:
+          type: integer
+          description: Hand size. Reported for every seat; the cards themselves are not.
+        cards:
+          type: array
+          description: >-
+            Populated for the human player, and for the dummy once the contract
+            is set. Empty otherwise.
+          items:
+            $ref: '#/components/schemas/Card'
+        hcp:
+          type: integer
+          description: >-
+            High-card points this seat announced. **With no auction this is the
+            game's only public information**, and the four seats always add up
+            to exactly 40.
+        team:
+          type: integer
+          description: "0 or 1. Seats 0 and 2 are one pair, 1 and 3 the other."
+        trickCount:
+          type: integer
+    MinibridgeResponse:
+      type: object
+      description: Response payload for /minibridge/exec
+      properties:
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/MinibridgePlayer'
+        phase:
+          type: integer
+          description: "0=Contract, 1=Play, 2=RoundEnd, 3=GameEnd"
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        contractLevel:
+          type: integer
+          description: 0 until the declarer has chosen.
+        contractSuit:
+          type: integer
+          description: 0 means no-trump, which is a choice rather than "unset".
+        requiredTricks:
+          type: integer
+          description: Tricks the contract needs (6 + contractLevel). 0 before it is chosen.
+        declarerIdx:
+          type: integer
+          description: Decided from the announced HCP as soon as the cards are dealt.
+        dummyIdx:
+          type: integer
+          description: The declarer's partner. Their hand goes face up once the contract is set.
+        dummyHand:
+          type: array
+          description: The dummy's hand. Empty until the contract is chosen.
+          items:
+            $ref: '#/components/schemas/Card'
+        lastMade:
+          type: boolean
+          description: Whether the last deal's contract was made.
+        lastTricks:
+          type: integer
+          description: Tricks the declaring side took in the last deal.
+        teamScores:
+          type: array
+          description: Running totals, indexed by team.
+          items:
+            type: integer
+        currentPlayerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        currentTrick:
+          type: array
+          items:
+            $ref: '#/components/schemas/MinibridgeTrickCard'
+        validPlays:
+          type: array
+          description: >-
+            Hand indices you may legally play, **for the seat you are
+            controlling** -- the dummy's when it is the dummy's turn and you
+            are the declarer. Following suit is compulsory.
+          items:
+            type: integer
+        gameEndFlag:
+          type: boolean
+        winnerTeam:
+          type: integer
+          description: "-1 until decided, and -1 on a tie"
+        hint:
+          $ref: '#/components/schemas/MinibridgeHint'
+        config:
+          type: object
+          properties:
+            rounds:
               type: integer
         message:
           type: string

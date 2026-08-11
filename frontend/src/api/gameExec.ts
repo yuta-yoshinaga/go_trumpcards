@@ -92,6 +92,7 @@ export const workerUrl: Record<string, string> = {
   hasenpfeffer: WORKER_EXTRA3,
   sergeantmajor: WORKER_EXTRA,
   honeymoonbridge: WORKER_SOLO,
+  minibridge: WORKER_EXTRA3,
   bisley: WORKER_EXTRA2,
   napoleonssquare: WORKER_EXTRA2,
   grandfathersclock: WORKER_EXTRA2,

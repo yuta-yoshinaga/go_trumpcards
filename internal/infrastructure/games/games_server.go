@@ -505,6 +505,11 @@ func init() {
 			return usecase.NewHoneymoonBridgeInteractor(domain.NewDefaultHoneymoonBridge(), new(presenter.HoneymoonBridgeWebPresenter))
 		},
 		controller.NewHoneymoonBridgeWebController)
+	BindWebControllerFor("minibridge",
+		func() usecase.MinibridgeInteractorIF {
+			return usecase.NewMinibridgeInteractor(domain.NewDefaultMinibridge(), new(presenter.MinibridgeWebPresenter))
+		},
+		controller.NewMinibridgeWebController)
 	BindWebControllerFor("rams",
 		func() usecase.RamsInteractorIF {
 			return usecase.NewRamsInteractor(domain.NewDefaultRams(), new(presenter.RamsWebPresenter))

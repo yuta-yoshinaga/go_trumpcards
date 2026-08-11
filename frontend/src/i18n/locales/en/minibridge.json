@@ -1,0 +1,55 @@
+{
+  "phase": {
+    "contract": "Contract",
+    "play": "Playing",
+    "roundEnd": "Deal over",
+    "gameEnd": "Finished"
+  },
+  "header": {
+    "round": "Deal {{round}}/{{total}}",
+    "rule": "There is no auction. Everyone announces their HCP (A=4 K=3 Q=2 J=1, always 40 in total) and the pair with more declares, the seat holding more of it becoming declarer. On a 20-20 tie the dealer's side declares; on a seat tie the seat nearest the dealer does. The declarer's partner is the dummy: once the contract is set their hand is face up and the declarer plays both.",
+    "contract": "Contract: {{level}}{{suit}} ({{name}}) / needs {{need}} tricks",
+    "contractUndecided": "Contract: not yet chosen",
+    "pairHcp": "Your pair's combined HCP: {{n}}",
+    "score": "Totals: your pair {{ours}} / their pair {{theirs}}",
+    "hcp": "HCP {{n}}",
+    "took": "tricks {{n}}",
+    "declarer": "[declarer]",
+    "dummy": "[dummy]",
+    "you": "You",
+    "cpu": "CPU{{idx}}",
+    "dummyHand": "Dummy's hand",
+    "yourTurn": "Your turn",
+    "dummyTurn": "The dummy's turn (you play it)"
+  },
+  "currentTrick": "Current trick",
+  "roundResult": {
+    "made": "Contract made: {{took}} of the {{need}} tricks needed.",
+    "down": "Contract down: only {{took}} of the {{need}} tricks needed."
+  },
+  "actions": {
+    "level": "Level",
+    "contract": "Contract {{level}}{{suit}}",
+    "nextRound": "Next deal",
+    "reset": "Reset",
+    "giveUp": "Give up",
+    "playAria": "Play {{card}}",
+    "playDummyAria": "Play {{card}} from the dummy"
+  },
+  "result": {
+    "you": "Your pair wins!",
+    "cpu": "Their pair wins.",
+    "tie": "It's a tie."
+  },
+  "hint": {
+    "minibridgeContract": "Sized from your pair's HCP and your longest suit.",
+    "minibridgeWinTrick": "Take this trick -- the contract needs it.",
+    "minibridgeDummy": "It is the dummy's turn, so play from that hand."
+  },
+  "tutorial": {
+    "hcp": "There is no auction. Instead **everyone announces their HCP** (A=4 K=3 Q=2 J=1). **They always total 40**, so a 20-20 split is possible — the dealer's side declares when that happens.",
+    "declarer": "Of the pair with more, **the seat holding more of it is the declarer**. Their partner is the **dummy**: once the contract is set that hand goes face up and **the declarer plays both**.",
+    "contract": "A contract needs **6 + level** tricks. Making it scores the contract points (NT is 40 + 30 each after), plus 300 if those reach 100 and 50 if they do not. Going down gives the opponents 50 per trick short.",
+    "hand": "Your hand. Cards you may legally play get a green ring. When it is the dummy's turn, the dummy's cards become the ones you can press."
+  }
+}

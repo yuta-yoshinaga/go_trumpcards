@@ -1572,6 +1572,19 @@ export const SchnapsenPhase = {
  * no-trump tricks are played that score nothing; each one just hands the
  * winner and then the loser a card from the stock.
  */
+/**
+ * Minibridge phase constants (sync: internal/domain/Minibridge.go).
+ *
+ * **There is no auction phase.** The declarer falls out of the HCP everyone
+ * announces at the deal, so the first decision is the contract itself.
+ */
+export const MinibridgePhase = {
+  CONTRACT: 0,
+  PLAY: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
 export const HoneymoonBridgePhase = {
   DRAW: 0,
   BID: 1,

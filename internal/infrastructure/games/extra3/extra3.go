@@ -349,4 +349,12 @@ func init() {
 			return usecase.RestoreHasenpfefferInteractor(data, new(presenter.HasenpfefferWebPresenter))
 		},
 		controller.NewHasenpfefferWebControllerWithProvider)
+	games.RegisterKVGame("minibridge", games.CategoryExtra3,
+		func() usecase.MinibridgeInteractorIF {
+			return usecase.NewMinibridgeInteractor(domain.NewDefaultMinibridge(), new(presenter.MinibridgeWebPresenter))
+		},
+		func(data []byte) (usecase.MinibridgeInteractorIF, error) {
+			return usecase.RestoreMinibridgeInteractor(data, new(presenter.MinibridgeWebPresenter))
+		},
+		controller.NewMinibridgeWebControllerWithProvider)
 }
