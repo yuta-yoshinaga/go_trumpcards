@@ -302,7 +302,8 @@
     "baloot": "Baloot",
     "estimation": "Estimation",
     "israeliwhist": "Israeli Whist",
-    "hokm": "Hokm"
+    "hokm": "Hokm",
+    "shelem": "Shelem"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1240,6 +1241,16 @@
     "hokm.result.team0": "Your team wins ({{t0}} - {{t1}}).",
     "hokm.result.team1": "The other team wins ({{t0}} - {{t1}}).",
     "hokm.result.tie": "It's a tie ({{t0}} - {{t1}}).",
+    "shelem.bid.choose": "Bid at least {{min}} (in fives, up to 100), or declare Shelem, or pass.",
+    "shelem.bid.wait": "The other players are bidding.",
+    "shelem.discard.choose": "You took the widow. Discard {{n}} cards and name trump (contract {{contract}}).",
+    "shelem.discard.wait": "The declarer is sorting out the widow.",
+    "shelem.play": "Only the A, the 10 and the 5 score; a round holds exactly 100.",
+    "shelem.roundEnd": "Round {{round}} is over (contract {{contract}}, took {{got}}).",
+    "shelem.roundEnd.shelem": "Round {{round}} is over (a Shelem was declared).",
+    "shelem.result.team0": "Your team wins ({{t0}} - {{t1}}).",
+    "shelem.result.team1": "The other team wins ({{t0}} - {{t1}}).",
+    "shelem.result.tie": "It's a tie ({{t0}} - {{t1}}).",
     "schnapsen.trickEnd": "Trick complete — continue.",
     "seahaventowers.gameClear": "Game Clear! Moves: {{moveCount}}",
     "seahaventowers.gameOver": "Game Over",

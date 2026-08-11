@@ -970,6 +970,13 @@ var registry = []*Game{
 	// first five cards alone, keeps the role while their team keeps winning,
 	// and a hand where the losers take nothing at all (Kot) is worth two.
 	{Name: "hokm", Category: CategoryClassic},
+	// Shelem is Iran's bridge-shaped bidder, and **what is bid is the score
+	// itself**, not a number of tricks: 100 upward in fives, over a hand that
+	// holds exactly 100 card points (A and 10 are 10, the 5 is 5, nothing else
+	// counts). The winner takes a four-card widow, discards four and names
+	// trump. Declaring **Shelem** replaces the number with a claim on every
+	// trick, and is settled the instant one is lost.
+	{Name: "shelem", Category: CategoryExtra2},
 }
 
 // All returns a value-level copy of the registry in canonical order.

@@ -335,17 +335,56 @@ func TestBaloot_BalootBonusOnlyInHokom(t *testing.T) {
 }
 
 // K だけ／Q だけでは成立しない。切り札以外の K+Q でも成立しない。
+// K だけ／Q だけでは成立しない。切り札以外の K+Q でも成立しない。
+//
+// **配りの上に手札を積んではいけない。** DeclareHokom は completeDeal で
+// 手札を 8 枚まで補充するので、わざと外した切り札の Q が山から来てしまい、
+// 11% ほどの確率で Baloot が成立して落ちる（[[feedback_fixture_on_top_of_reset]]）。
+// 8 枚ちょうどを組んでから markBaloot を直接呼ぶ。
 func TestBaloot_BalootNeedsBothTrumpHonours(t *testing.T) {
 	trump := CardDesignHeart
-	b := newTestBaloot(t)
-	b.currentPlayerIdx = 0
-	balootHandOf(b, 0,
-		NewCard(trump, 13, false),
-		NewCard(CardDesignSpade, 12, false), NewCard(CardDesignSpade, 13, false),
-		NewCard(CardDesignClover, 7, false), NewCard(CardDesignClover, 8, false))
+	for _, tc := range []struct {
+		name  string
+		cards []*Card
+	}{
+		{"only the trump king", []*Card{
+			NewCard(trump, 13, false), NewCard(trump, 7, false), NewCard(trump, 8, false),
+			NewCard(CardDesignSpade, 12, false), NewCard(CardDesignSpade, 13, false),
+			NewCard(CardDesignClover, 7, false), NewCard(CardDesignClover, 8, false),
+			NewCard(CardDesignDiamond, 7, false),
+		}},
+		{"only the trump queen", []*Card{
+			NewCard(trump, 12, false), NewCard(trump, 7, false), NewCard(trump, 8, false),
+			NewCard(CardDesignSpade, 12, false), NewCard(CardDesignSpade, 13, false),
+			NewCard(CardDesignClover, 7, false), NewCard(CardDesignClover, 8, false),
+			NewCard(CardDesignDiamond, 7, false),
+		}},
+		{"king and queen of another suit", []*Card{
+			NewCard(CardDesignSpade, 13, false), NewCard(CardDesignSpade, 12, false),
+			NewCard(trump, 7, false), NewCard(trump, 8, false), NewCard(trump, 9, false),
+			NewCard(CardDesignClover, 7, false), NewCard(CardDesignClover, 8, false),
+			NewCard(CardDesignDiamond, 7, false),
+		}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			b := newTestBaloot(t)
+			b.mode, b.trumpSuit = BalootModeHokom, trump
+			balootHandOf(b, 0, tc.cards...)
+			b.markBaloot()
+			assert.False(t, b.GetPlayer(0).GetHasBaloot())
+		})
+	}
 
-	require.NoError(t, b.DeclareHokom(trump))
-	assert.False(t, b.GetPlayer(0).GetHasBaloot())
+	// 負のコントロール: 切り札の K+Q が揃っていれば成立する。
+	b := newTestBaloot(t)
+	b.mode, b.trumpSuit = BalootModeHokom, trump
+	balootHandOf(b, 0,
+		NewCard(trump, 13, false), NewCard(trump, 12, false), NewCard(trump, 7, false),
+		NewCard(CardDesignSpade, 13, false), NewCard(CardDesignSpade, 12, false),
+		NewCard(CardDesignClover, 7, false), NewCard(CardDesignClover, 8, false),
+		NewCard(CardDesignDiamond, 7, false))
+	b.markBaloot()
+	assert.True(t, b.GetPlayer(0).GetHasBaloot())
 }
 
 // --- プレイ ---
