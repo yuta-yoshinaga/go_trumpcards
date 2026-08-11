@@ -299,7 +299,8 @@
     "reversis": "Reversis",
     "rams": "Rams",
     "tarabish": "Tarabish",
-    "baloot": "Baloot"
+    "baloot": "Baloot",
+    "estimation": "Estimation"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1210,6 +1211,15 @@
     "baloot.result.team0": "Your team wins ({{t0}} — {{t1}}).",
     "baloot.result.team1": "The other team wins ({{t0}} — {{t1}}).",
     "baloot.result.tie": "It's a tie ({{t0}} — {{t1}}).",
+    "estimation.trump.choose": "You are the dealer — choose the trump suit.",
+    "estimation.trump.wait": "The dealer is choosing the trump suit.",
+    "estimation.bid.choose": "Call the tricks you expect to take. 0 is a Dash Call.",
+    "estimation.bid.restricted": "You call last, so {{n}} is barred — it would make the total 13.",
+    "estimation.play": "Only an exact call scores, so taking too many hurts as much as too few.",
+    "estimation.roundEnd": "Round {{round}} is over (you scored {{score}}).",
+    "estimation.result.win": "You win with {{score}}.",
+    "estimation.result.lose": "CPU{{idx}} wins.",
+    "estimation.result.tie": "It's a tie.",
     "schnapsen.trickEnd": "Trick complete — continue.",
     "seahaventowers.gameClear": "Game Clear! Moves: {{moveCount}}",
     "seahaventowers.gameOver": "Game Over",

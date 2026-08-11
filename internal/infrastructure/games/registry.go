@@ -950,6 +950,13 @@ var registry = []*Game{
 	// trump suit J>9>A>10>K>Q>8>7 (152 a round). The same 32 cards therefore
 	// carry two orders and two point tables, decided fresh every round.
 	{Name: "baloot", Category: CategoryExtra2},
+	// Estimation is the Gulf's household Oh Hell: 4 players, 13 cards each, and
+	// **only an exact call scores** -- one short and five over lose the same
+	// amount, so the size of the call is the size of the bet. Two calls swing
+	// wider than the rest: a Dash Call (0) is worth a flat ±23, and Risk (the
+	// highest call at the table) doubles. The "total must not be 13" rule it is
+	// often credited with is the same one OhHell already enforces on its dealer.
+	{Name: "estimation", Category: CategoryClassic},
 }
 
 // All returns a value-level copy of the registry in canonical order.

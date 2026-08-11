@@ -4484,6 +4484,22 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
 		}),
+	BindCuiFor("estimation",
+		func() usecase.EstimationInteractorIF {
+			return usecase.NewEstimationInteractor(domain.NewDefaultEstimation(), new(presenter.EstimationCuiPresenter))
+		},
+		controller.NewEstimationCuiController,
+		CuiHelpSpec{
+			TitleKey: "estimation.helpTitle",
+			CommandKeys: []string{
+				"estimation.helpTrump",
+				"estimation.helpBid",
+				"estimation.helpPlay",
+				"estimation.helpNext",
+				"estimation.helpGiveUp",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

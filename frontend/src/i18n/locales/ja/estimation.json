@@ -1,0 +1,54 @@
+{
+  "phase": {
+    "trump": "切り札選択",
+    "bid": "宣言",
+    "play": "プレイ中",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "終了"
+  },
+  "header": {
+    "round": "ラウンド",
+    "trick": "トリック",
+    "trump": "切り札: {{suit}}",
+    "trumpUndecided": "切り札: 未定",
+    "scoreTable": "的中 +(10+宣言) / 外し -(10+宣言)。Dash Call（0宣言）は ±23、Risk（最高宣言）は2倍。多すぎても少なすぎても同じ減点です。",
+    "took": "獲得{{n}}",
+    "total": "累計{{n}}",
+    "you": "あなた",
+    "cpu": "CPU{{idx}}"
+  },
+  "bid": {
+    "none": "未宣言",
+    "normal": "宣言{{n}}",
+    "dash": "Dash(0)",
+    "risk": "Risk({{n}})"
+  },
+  "currentTrick": "現在のトリック",
+  "actions": {
+    "trump": "切り札 {{suit}}",
+    "dash": "Dash(0)",
+    "nextRound": "次のラウンドへ",
+    "reset": "リセット",
+    "giveUp": "投了",
+    "playAria": "{{card}} を出す"
+  },
+  "result": {
+    "win": "あなたの勝ち！ {{score}}点",
+    "lose": "CPU{{idx}} の勝ちです。",
+    "tie": "同点です。"
+  },
+  "hint": {
+    "estimationSelectTrump": "いちばん長いスートを切り札にしましょう。",
+    "estimationBid": "強い札の数から見積もった宣言です。",
+    "estimationDashCall": "強い札がありません。Dash Call（0宣言）が有利です。",
+    "estimationAvoidRestricted": "見積もりが禁止値なので1つずらしています。",
+    "estimationWinTrick": "宣言に足りません。このトリックを取りにいきましょう。",
+    "estimationDuck": "宣言ぶんは取れています。これ以上取らないようにしましょう。"
+  },
+  "tutorial": {
+    "score": "得点は**ぴたりと当てたときだけ**入ります。1つ足りなくても5つ多くても減点は同じなので、宣言を大きくするほど賭けが大きくなります。",
+    "call": "獲得予定トリック数を宣言します。**0宣言（Dash Call）は ±23**、最高宣言（Risk）は得点が2倍。最後に宣言する人は、合計が13になる数を選べません。",
+    "seats": "各プレイヤーの宣言・獲得数・累計得点です。相手が宣言を達成しそうかを見ながら打ちましょう。",
+    "hand": "あなたの手札です。出せる札には緑の枠が付きます。宣言ぶん取ったら、それ以上取らないよう逃げるのが定石です。"
+  }
+}

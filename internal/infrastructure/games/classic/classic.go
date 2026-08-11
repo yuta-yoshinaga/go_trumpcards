@@ -404,4 +404,12 @@ func init() {
 			return usecase.RestoreReversisInteractor(data, new(presenter.ReversisWebPresenter))
 		},
 		controller.NewReversisWebControllerWithProvider)
+	games.RegisterKVGame("estimation", games.CategoryClassic,
+		func() usecase.EstimationInteractorIF {
+			return usecase.NewEstimationInteractor(domain.NewDefaultEstimation(), new(presenter.EstimationWebPresenter))
+		},
+		func(data []byte) (usecase.EstimationInteractorIF, error) {
+			return usecase.RestoreEstimationInteractor(data, new(presenter.EstimationWebPresenter))
+		},
+		controller.NewEstimationWebControllerWithProvider)
 }
