@@ -28,6 +28,7 @@ export * from './games/beggarmyneighbour';
 export * from './games/beleagueredcastle';
 export * from './games/belote';
 export * from './games/bezique';
+export * from './games/bhabhi';
 export * from './games/bideuchre';
 export * from './games/bidwhist';
 export * from './games/bigo';
@@ -335,6 +336,7 @@ export const games = [
   'hokm',
   'shelem',
   'mendikot',
+  'bhabhi',
   'razz',
   'sevencardstudhilo',
   'badugi',

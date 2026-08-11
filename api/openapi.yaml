@@ -184,6 +184,8 @@ tags:
     description: Shelem (シェレム) game endpoints -- Iran's bridge-shaped bidder; what is bid is the score itself, with a widow exchange and an all-tricks Shelem call
   - name: mendikot
     description: Mendikot (メンディコット) game endpoints -- India's 2v2 trick-taker decided by the four tens, with no trump-choosing phase
+  - name: bhabhi
+    description: Bhabhi (バービー) game endpoints -- India and Pakistan's 3-7 player avoidance game; it names a loser, not a winner
   - name: clocksolitaire
     description: Clock Solitaire (クロックソリティア) game
   - name: durak
@@ -7575,6 +7577,97 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MendikotResponse'
+  /bhabhi/exec:
+    post:
+      tags:
+        - bhabhi
+      summary: Execute a Bhabhi game command
+      description: |
+        Send a command to advance the Bhabhi (バービー) game session identified
+        by `sessionId`.
+
+        India and Pakistan's household **avoidance** game: the whole 52-card
+        pack dealt among three to seven players, no trumps and no scoring.
+        52 does not divide evenly for 3/5/6/7 players, so hands differ by at
+        most one card and no stock remains.
+
+        **It names a loser, not a winner.** Players who empty their hand simply
+        drop out; the last one still holding cards is the **Bhabhi**. `rank`
+        records the order seats got out and carries no other meaning.
+
+        Following the led suit is compulsory. A player who cannot follow plays
+        anything and **takes every card on the table into hand** — including
+        the one they just played. **A trick everyone followed is discarded
+        instead**, which is the only way cards leave play.
+
+        **The player who picks up does not lead next** — the seat after them
+        does. Letting the picker lead sends a lone card of a suit nobody else
+        holds back and forth between two hands indefinitely.
+
+        Because cards only leave play on a fully-followed trick, a distribution
+        where somebody is always void can circulate forever. At
+        `stalemateTricks` tricks the game is called as deadlocked, `stalemate`
+        is set, and the seat holding the most cards becomes the Bhabhi. Games
+        that decide normally take far fewer tricks than that.
+
+        There is **no `next` command** — the game has no hand boundaries.
+      operationId: execBhabhi
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, play, p, giveup, g, hint, h, log, l]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                  description: Index into your hand (required for `play`)
+                config:
+                  type: object
+                  properties:
+                    playerCnt:
+                      type: integer
+                      description: How many seats play (3..7, default 4)
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              resetSixPlayers:
+                summary: Deal a six-player game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+                  config:
+                    playerCnt: 6
+              play:
+                summary: Play the third card in hand
+                value:
+                  command: play
+                  sessionId: my-session-001
+                  cardIndex: 2
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BhabhiResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BhabhiResponse'
   /clocksolitaire/exec:
     post:
       tags:
@@ -45266,6 +45359,125 @@ components:
           type: object
           properties:
             target:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    BhabhiTrickCard:
+      type: object
+      description: A card sitting on the table
+      required:
+        - playerIdx
+        - card
+      properties:
+        playerIdx:
+          type: integer
+          description: Index of the player who played this card
+        card:
+          $ref: '#/components/schemas/Card'
+    BhabhiHint:
+      type: object
+      description: A suggestion naming a card to play.
+      properties:
+        cardIndex:
+          type: integer
+          description: Index into your hand.
+        reason:
+          type: string
+          description: >-
+            bhabhiLead when starting a trick, bhabhiDuck when you can follow,
+            or bhabhiDumpHigh when you cannot and take the pile regardless.
+    BhabhiPlayer:
+      type: object
+      description: One seat at a Bhabhi table
+      properties:
+        id:
+          type: integer
+        isHuman:
+          type: boolean
+        cardCount:
+          type: integer
+          description: Hand size. The only hand information exposed for the CPU.
+        cards:
+          type: array
+          description: Populated for the human player only; empty for the CPU.
+          items:
+            $ref: '#/components/schemas/Card'
+        rank:
+          type: integer
+          description: >-
+            Order in which this seat emptied its hand, or -1 while still
+            holding cards. This is not a ranking by skill -- everyone who gets
+            out is safe, and only the last one holding cards loses.
+        pickups:
+          type: integer
+          description: How many times this seat has taken the pile into hand.
+    BhabhiResponse:
+      type: object
+      description: Response payload for /bhabhi/exec
+      properties:
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/BhabhiPlayer'
+        phase:
+          type: integer
+          description: "0=Play, 1=GameEnd. There are no hands to split the game into."
+        trickNumber:
+          type: integer
+          description: Tricks closed so far, by either a completed trick or a pickup.
+        leadSuit:
+          type: integer
+          description: 0 before anyone has led. Following this suit is compulsory.
+        pile:
+          type: array
+          description: Cards on the table. Whoever cannot follow takes all of them.
+          items:
+            $ref: '#/components/schemas/BhabhiTrickCard'
+        lastPickupIdx:
+          type: integer
+          description: "Seat that last took the pile, or -1 before the first pickup"
+        lastPickupSize:
+          type: integer
+          description: How many cards that pickup was worth.
+        currentPlayerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        validPlays:
+          type: array
+          description: Hand indices you may legally play. Following suit is compulsory.
+          items:
+            type: integer
+        aliveCount:
+          type: integer
+          description: How many seats still hold cards.
+        gameEndFlag:
+          type: boolean
+        bhabhiIdx:
+          type: integer
+          description: "The loser, or -1 until decided. This game names a loser, not a winner."
+        stalemate:
+          type: boolean
+          description: >-
+            The game was called as deadlocked rather than played out. Cards
+            only leave play on a trick everyone followed, so a distribution
+            where somebody is always void can circulate forever; at
+            stalemateTricks the seat holding the most cards becomes the Bhabhi.
+        stalemateTricks:
+          type: integer
+          description: The trick count at which a deadlock is called.
+        hint:
+          $ref: '#/components/schemas/BhabhiHint'
+        config:
+          type: object
+          properties:
+            playerCnt:
               type: integer
         message:
           type: string

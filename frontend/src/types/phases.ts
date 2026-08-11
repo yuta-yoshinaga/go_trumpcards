@@ -1560,6 +1560,18 @@ export const SchnapsenPhase = {
 } as const;
 
 /**
+ * Bhabhi phase constants (sync: internal/domain/Bhabhi.go).
+ *
+ * **There are no hands.** The whole deck is dealt once and play runs until
+ * only one player still holds cards, so there is nothing between PLAY and
+ * GAME_END.
+ */
+export const BhabhiPhase = {
+  PLAY: 0,
+  GAME_END: 1,
+} as const;
+
+/**
  * Mendikot phase constants (sync: internal/domain/Mendikot.go).
  *
  * **There is no trump phase.** Trump is set by whichever card the first player

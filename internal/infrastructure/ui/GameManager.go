@@ -4564,6 +4564,19 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
 		}),
+	BindCuiFor("bhabhi",
+		func() usecase.BhabhiInteractorIF {
+			return usecase.NewBhabhiInteractor(domain.NewDefaultBhabhi(), new(presenter.BhabhiCuiPresenter))
+		},
+		controller.NewBhabhiCuiController,
+		CuiHelpSpec{
+			TitleKey: "bhabhi.helpTitle",
+			CommandKeys: []string{
+				"bhabhi.helpPlay",
+				"bhabhi.helpGiveUp",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

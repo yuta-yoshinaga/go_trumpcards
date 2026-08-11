@@ -1,0 +1,45 @@
+{
+  "phase": {
+    "play": "Playing",
+    "gameEnd": "Finished"
+  },
+  "header": {
+    "goal": "The aim is not to win but to avoid being the Bhabhi. Players who empty their hand drop out; the last one still holding cards is the Bhabhi.",
+    "trick": "Trick",
+    "alive": "{{n}} of {{total}} still in",
+    "led": "Led: {{suit}} ({{n}} on the table -- fail to follow and you take them all)",
+    "noLead": "The table is empty. Lead whatever you like.",
+    "cards": "{{n}} cards",
+    "out": "out, {{rank}} to finish",
+    "pickups": "{{n}} pickups",
+    "you": "You",
+    "cpu": "CPU{{idx}}"
+  },
+  "pile": "The pile",
+  "lastPickup": "{{name}} just picked up {{n}} cards.",
+  "actions": {
+    "reset": "Reset",
+    "giveUp": "Give up",
+    "playAria": "Play {{card}}"
+  },
+  "settings": {
+    "playerCnt": "Players",
+    "playerCntHelp": "Three to seven. Changing it deals a fresh game for that many."
+  },
+  "result": {
+    "you": "You are the Bhabhi.",
+    "cpu": "{{name}} is the Bhabhi.",
+    "stalemate": "Deadlocked after {{tricks}} tricks. {{name}} holds the most cards and is the Bhabhi."
+  },
+  "hint": {
+    "bhabhiLead": "Lead from the suit you hold most of.",
+    "bhabhiDuck": "You can follow. Play low and let it go.",
+    "bhabhiDumpHigh": "You cannot follow, so you take the pile anyway -- dump a high card."
+  },
+  "tutorial": {
+    "goal": "Bhabhi names **a loser, not a winner**. Players who empty their hand drop out one by one, and **whoever is still holding cards at the end is the Bhabhi**. There is no prize for getting out early.",
+    "pile": "**Fail to follow the led suit and every card on the table goes into your hand.** The size of the pile is the size of the penalty. Only a trick everyone followed leaves play for good.",
+    "out": "**The player who picks up does not lead next.** Letting them lead would send the same card back and forth between two hands forever. Each seat shows how many times it has picked up.",
+    "hand": "Your hand. Playable cards get a green ring. When you cannot follow you are **taking the pile regardless**, so throw the high card you least want to be stuck with."
+  }
+}

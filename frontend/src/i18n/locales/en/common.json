@@ -304,7 +304,8 @@
     "israeliwhist": "Israeli Whist",
     "hokm": "Hokm",
     "shelem": "Shelem",
-    "mendikot": "Mendikot"
+    "mendikot": "Mendikot",
+    "bhabhi": "Bhabhi"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1550,7 +1551,13 @@
     "mendikot.handEnd.whitewash": "Hand over. Team {{team}} took all thirteen tricks -- a Whitewash, +3.",
     "mendikot.result.team0": "Your team wins ({{t0}} - {{t1}}).",
     "mendikot.result.team1": "The other team wins ({{t0}} - {{t1}}).",
-    "mendikot.result.tie": "It's a tie ({{t0}} - {{t1}})."
+    "mendikot.result.tie": "It's a tie ({{t0}} - {{t1}}).",
+    "bhabhi.play.lead": "The table is empty. Lead whatever you like.",
+    "bhabhi.play.pile": "{{n}} on the table. Fail to follow the led suit and all {{n}} go into your hand.",
+    "bhabhi.result.you": "You are the Bhabhi -- the last one still holding cards.",
+    "bhabhi.result.cpu": "CPU{{idx}} is the Bhabhi. You got out safely.",
+    "bhabhi.result.stalemateYou": "Deadlocked after {{tricks}} tricks. You hold the most cards, so you are the Bhabhi.",
+    "bhabhi.result.stalemateCpu": "Deadlocked after {{tricks}} tricks. CPU{{idx}} holds the most cards and is the Bhabhi."
   },
   "manual": {
     "ariaLabel": "Game Manual",

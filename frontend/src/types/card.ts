@@ -25,6 +25,7 @@ export * from './games/beggarmyneighbour';
 export * from './games/beleagueredcastle';
 export * from './games/belote';
 export * from './games/bezique';
+export * from './games/bhabhi';
 export * from './games/bideuchre';
 export * from './games/bidwhist';
 export * from './games/bigtwo';

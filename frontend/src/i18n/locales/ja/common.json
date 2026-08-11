@@ -304,7 +304,8 @@
     "israeliwhist": "イスラエリホイスト",
     "hokm": "ホクム",
     "shelem": "シェレム",
-    "mendikot": "メンディコット"
+    "mendikot": "メンディコット",
+    "bhabhi": "バービー"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1550,7 +1551,13 @@
     "mendikot.handEnd.whitewash": "ハンドが終了しました。チーム{{team}}が全13トリックを取りました。Whitewash で+3です。",
     "mendikot.result.team0": "あなたのチームの勝ちです（{{t0}} - {{t1}}）。",
     "mendikot.result.team1": "相手チームの勝ちです（{{t0}} - {{t1}}）。",
-    "mendikot.result.tie": "同点です（{{t0}} - {{t1}}）。"
+    "mendikot.result.tie": "同点です（{{t0}} - {{t1}}）。",
+    "bhabhi.play.lead": "場は空です。好きな札でリードできます。",
+    "bhabhi.play.pile": "場に {{n}} 枚。リードのスートにフォローできないと、この {{n}} 枚を全部手札に引き取ります。",
+    "bhabhi.result.you": "あなたが Bhabhi です。最後まで手札が残ってしまいました。",
+    "bhabhi.result.cpu": "CPU{{idx}} が Bhabhi です。あなたは無事に抜けました。",
+    "bhabhi.result.stalemateYou": "{{tricks}} トリックで膠着しました。手札がいちばん多いあなたが Bhabhi です。",
+    "bhabhi.result.stalemateCpu": "{{tricks}} トリックで膠着しました。手札がいちばん多い CPU{{idx}} が Bhabhi です。"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",
