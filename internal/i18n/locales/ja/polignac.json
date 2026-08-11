@@ -23,5 +23,6 @@
   "hintReasonAvoidJack": "ジャックが乗っているので取らない",
   "hintReasonDumpJack": "安全なうちにジャックを処分する",
   "hintReasonLeadSafe": "ジャック以外の低い札でリードする",
-  "hintReasonBlockCapot": "capot を潰すためにこのトリックを取る"
+  "hintReasonBlockCapot": "capot を潰すためにこのトリックを取る",
+  "hintReasonWinCapot": "自分の capot。全トリック取るしかないので、確実に取れる札を出す"
 }

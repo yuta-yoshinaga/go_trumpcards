@@ -25,6 +25,8 @@ describe('getPolignacHint', () => {
   it.each([
     ['polignacAvoidJack', 'strong'],
     ['polignacBlockCapot', 'strong'],
+    // 自分の capot 中は全トリック取るしかなく、選択の余地がほぼ無い。
+    ['polignacWinCapot', 'strong'],
     ['polignacDumpJack', 'moderate'],
     ['polignacLeadSafe', 'moderate'],
   ])('reports %s as %s confidence', (reason, confidence) => {

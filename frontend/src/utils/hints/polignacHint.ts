@@ -13,7 +13,9 @@ export function getPolignacHint(state: PolignacResponse): HintResult | null {
   const hint = state.hint;
   if (hint?.cardIndex === undefined) return null;
 
-  const forced = hint.reason === 'polignacAvoidJack' || hint.reason === 'polignacBlockCapot';
+  // 自分の capot 中は全トリック取るしかなく、選択の余地がほぼ無い。
+  const forced =
+    hint.reason === 'polignacAvoidJack' || hint.reason === 'polignacBlockCapot' || hint.reason === 'polignacWinCapot';
   return {
     targetAction: `card-${hint.cardIndex}`,
     reason: `hint.${hint.reason}`,

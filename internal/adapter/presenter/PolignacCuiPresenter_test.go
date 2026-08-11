@@ -134,6 +134,15 @@ func TestPolignacCuiPresenterHintReasons(t *testing.T) {
 	block.SetCapotIdxForTest(2)
 	block.SetCurrentTrickForTest(spadeTen)
 	assert.Contains(t, p.HintOutput(block), i18n.T("polignac.hintReasonBlockCapot"))
+
+	// 自分の capot は狙いが反転する。別の文言になっていること。
+	own := newPolignacForCui(t)
+	own.SetCurrentPlayerIdxForTest(0)
+	own.SetCapotIdxForTest(0)
+	own.SetCurrentTrickForTest(spadeTen)
+	out := p.HintOutput(own)
+	assert.Contains(t, out, i18n.T("polignac.hintReasonWinCapot"))
+	assert.NotContains(t, out, i18n.T("polignac.hintReasonBlockCapot"))
 }
 
 func TestPolignacCuiPresenterHintNoneAfterGameEnd(t *testing.T) {

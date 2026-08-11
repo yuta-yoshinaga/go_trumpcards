@@ -32,8 +32,9 @@ export interface PolignacHint {
   /**
    * Why that card: `polignacAvoidJack` (a jack is on the table),
    * `polignacDumpJack` (safe trick — shed a jack now), `polignacLeadSafe`
-   * (leading; play a low non-jack), or `polignacBlockCapot` (take this trick
-   * to break a declared capot).
+   * (leading; play a low non-jack), `polignacBlockCapot` (take this trick to
+   * break someone else's capot), or `polignacWinCapot` (you declared capot —
+   * take every trick).
    */
   reason: string;
 }

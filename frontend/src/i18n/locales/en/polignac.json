@@ -35,7 +35,8 @@
     "polignacAvoidJack": "A jack is on the table. Play low and let someone else take it.",
     "polignacDumpJack": "A safe trick — shed a jack while you can.",
     "polignacLeadSafe": "Lead a low card that isn't a jack.",
-    "polignacBlockCapot": "Take this trick to break the capot."
+    "polignacBlockCapot": "Take this trick to break the capot.",
+    "polignacWinCapot": "You declared capot — you must win every trick. Play a card that takes this one."
   },
   "tutorial": {
     "penalty": "Only the four jacks cost anything — and the J of spades (the Polignac) costs two. Exactly 5 points move every round.",

@@ -588,12 +588,88 @@ func TestPolignac_GetHint_Reasons(t *testing.T) {
 	})
 
 	// 誰かが capot を宣言していれば、狙いは失点回避より妨害に変わる。
-	t.Run("blocking a capot", func(t *testing.T) {
+	t.Run("blocking someone else's capot", func(t *testing.T) {
 		p := newTestPolignac(t)
 		p.SetCurrentPlayerIdxForTest(0)
 		p.SetCapotIdxForTest(2)
 		p.currentTrick = spadeTen
 		assert.Equal(t, "polignacBlockCapot", p.GetHint().Reason)
+	})
+
+	// **自分が宣言していたら狙いは丸ごと反転する。** 全トリック取るしかないので、
+	// 「取らないように」と助言してはいけない。リードでもフォローでも同じ。
+	t.Run("your own capot inverts the aim", func(t *testing.T) {
+		for _, tc := range []struct {
+			name  string
+			trick []*TrickCard
+		}{
+			{"leading", nil},
+			{"following", spadeTen},
+		} {
+			t.Run(tc.name, func(t *testing.T) {
+				p := newTestPolignac(t)
+				p.SetCurrentPlayerIdxForTest(0)
+				p.SetCapotIdxForTest(0)
+				p.currentTrick = tc.trick
+				assert.Equal(t, "polignacWinCapot", p.GetHint().Reason)
+			})
+		}
+	})
+}
+
+// capot 宣言者へのヒントは**実際に取りに行く札**を指す。理由キーだけ直して
+// 選ぶ札が回避のままでは意味がない。
+func TestPolignac_CapotDeclarerPlaysToWin(t *testing.T) {
+	t.Run("leads the strongest card", func(t *testing.T) {
+		p := newTestPolignac(t)
+		p.SetCurrentPlayerIdxForTest(0)
+		p.SetCapotIdxForTest(0)
+		p.currentTrick = nil
+		pl := p.GetPlayer(0)
+		pl.Reset()
+		pl.AddCard(NewCard(CardDesignSpade, 7, false))
+		pl.AddCard(NewCard(CardDesignSpade, 1, false)) // A が最強
+		pl.AddCard(NewCard(CardDesignSpade, 9, false))
+
+		h := p.GetHint()
+		require.NotNil(t, h)
+		require.NotNil(t, h.CardIndex)
+		assert.Equal(t, 1, *h.CardIndex, "A を出す")
+	})
+
+	// フォローでは「取れる中で一番安い札」。無駄に強い札を使わない。
+	t.Run("follows with the cheapest winner", func(t *testing.T) {
+		p := newTestPolignac(t)
+		p.SetCurrentPlayerIdxForTest(0)
+		p.SetCapotIdxForTest(0)
+		p.currentTrick = []*TrickCard{{PlayerIdx: 3, Card: NewCard(CardDesignSpade, 10, false)}}
+		pl := p.GetPlayer(0)
+		pl.Reset()
+		pl.AddCard(NewCard(CardDesignSpade, 7, false))  // 負ける
+		pl.AddCard(NewCard(CardDesignSpade, 12, false)) // 勝てる最安
+		pl.AddCard(NewCard(CardDesignSpade, 1, false))  // 勝てるが高い
+
+		h := p.GetHint()
+		require.NotNil(t, h)
+		require.NotNil(t, h.CardIndex)
+		assert.Equal(t, 1, *h.CardIndex, "Q で取る（A は温存）")
+	})
+
+	// 取れないなら一番弱い札を捨てる。そのトリックはどのみち落ちる。
+	t.Run("discards low when it cannot win", func(t *testing.T) {
+		p := newTestPolignac(t)
+		p.SetCurrentPlayerIdxForTest(0)
+		p.SetCapotIdxForTest(0)
+		p.currentTrick = []*TrickCard{{PlayerIdx: 3, Card: NewCard(CardDesignSpade, 1, false)}}
+		pl := p.GetPlayer(0)
+		pl.Reset()
+		pl.AddCard(NewCard(CardDesignSpade, 13, false))
+		pl.AddCard(NewCard(CardDesignSpade, 7, false))
+
+		h := p.GetHint()
+		require.NotNil(t, h)
+		require.NotNil(t, h.CardIndex)
+		assert.Equal(t, 1, *h.CardIndex, "7 を捨てる")
 	})
 }
 

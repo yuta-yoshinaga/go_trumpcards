@@ -440,8 +440,14 @@ func (p *Polignac) chooseCpuCard(playerIdx int) int {
 	}
 	pl := p.players[playerIdx]
 
+	// **自分が capot を宣言しているなら、狙いは丸ごと反転する。**
+	// 全 8 トリック取らなければ失敗なので、回避ではなく獲得に徹する。
+	if p.capotIdx == playerIdx {
+		return p.pickForCapot(pl, valid)
+	}
+
 	// capot を潰しに行く場面では、取れるなら取る。
-	if p.capotIdx >= 0 && p.capotIdx != playerIdx && len(p.currentTrick) > 0 {
+	if p.capotIdx >= 0 && len(p.currentTrick) > 0 {
 		if idx, ok := p.pickWinning(pl, valid); ok {
 			return idx
 		}
@@ -472,6 +478,25 @@ func (p *Polignac) chooseCpuCard(playerIdx int) int {
 			return jIdx
 		}
 		return loseIdx
+	}
+	return p.pickLowest(pl, valid)
+}
+
+// pickForCapot capot 宣言者の手。**全トリック取るのが唯一の道**なので、
+// リードなら最強札、フォローなら「取れる最安の札」を選ぶ。取れないなら
+// 一番弱い札を捨てる（そのトリックはどのみち落ちる）。
+func (p *Polignac) pickForCapot(pl *PolignacPlayer, valid []int) int {
+	if len(p.currentTrick) == 0 {
+		bestIdx, bestRank := valid[0], polignacRank(pl.GetCard(valid[0]))
+		for _, i := range valid[1:] {
+			if r := polignacRank(pl.GetCard(i)); r > bestRank {
+				bestIdx, bestRank = i, r
+			}
+		}
+		return bestIdx
+	}
+	if idx, ok := p.pickWinning(pl, valid); ok {
+		return idx
 	}
 	return p.pickLowest(pl, valid)
 }
@@ -581,7 +606,11 @@ func (p *Polignac) GetHint() *PolignacHint {
 
 // hintReason 現在の狙いを表す理由キーを返す
 func (p *Polignac) hintReason() string {
-	if p.capotIdx >= 0 && p.capotIdx != 0 {
+	// **自分の capot なら狙いは反転する。** 回避ではなく全トリック獲得。
+	if p.capotIdx == 0 {
+		return "polignacWinCapot"
+	}
+	if p.capotIdx > 0 {
 		return "polignacBlockCapot"
 	}
 	if len(p.currentTrick) == 0 {

@@ -23,5 +23,6 @@
   "hintReasonAvoidJack": "a jack is on the table -- don't take this trick",
   "hintReasonDumpJack": "safe trick: shed a jack now",
   "hintReasonLeadSafe": "lead a low card that isn't a jack",
-  "hintReasonBlockCapot": "take this trick to break the capot"
+  "hintReasonBlockCapot": "take this trick to break the capot",
+  "hintReasonWinCapot": "your own capot: you must win every trick, so take this one"
 }

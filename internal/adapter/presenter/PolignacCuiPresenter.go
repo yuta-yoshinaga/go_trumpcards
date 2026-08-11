@@ -116,6 +116,7 @@ var polignacHintReasonKeys = map[string]string{
 	"polignacDumpJack":   "polignac.hintReasonDumpJack",
 	"polignacLeadSafe":   "polignac.hintReasonLeadSafe",
 	"polignacBlockCapot": "polignac.hintReasonBlockCapot",
+	"polignacWinCapot":   "polignac.hintReasonWinCapot",
 }
 
 // ActionLogOutput emits the action-log transcript as plain text.
