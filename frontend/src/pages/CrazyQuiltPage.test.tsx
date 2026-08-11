@@ -103,6 +103,33 @@ describe('CrazyQuiltPage', () => {
     );
   });
 
+  // **キルト→捨て札の連番置き。**キルトを崩す主要な手なので、UI から出せなければ
+  // ゲームが成立しない（レビュー指摘）。
+  it('plays a quilt card onto the waste', async () => {
+    mockExec.mockResolvedValue({ ...playingState, waste: [card('HEART', 8)] });
+    renderWithProviders(<CrazyQuiltPage />);
+    await waitFor(() => expect(screen.getByTestId('cq-cell-0')).toBeEnabled());
+
+    fireEvent.click(screen.getByTestId('cq-cell-0'));
+    await waitFor(() => expect(screen.getByTestId('cq-cell-0')).toHaveAttribute('aria-pressed', 'true'));
+    mockExec.mockClear();
+
+    fireEvent.click(screen.getByTestId('cq-waste'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', { zone: 'quilt', col: 0 }, { zone: 'waste' }));
+  });
+
+  // 負のコントロール: 何も選んでいなければ、捨て札は移動元として振る舞う。
+  it('treats the waste as a source when nothing is selected', async () => {
+    mockExec.mockResolvedValue({ ...playingState, waste: [card('HEART', 8)] });
+    renderWithProviders(<CrazyQuiltPage />);
+    const waste = await screen.findByTestId('cq-waste');
+    mockExec.mockClear();
+
+    fireEvent.click(waste);
+    await waitFor(() => expect(waste).toHaveAttribute('aria-pressed', 'true'));
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('draws from the stock', async () => {
     renderWithProviders(<CrazyQuiltPage />);
     const stock = await screen.findByRole('button', { name: /山札 残り32枚/ });

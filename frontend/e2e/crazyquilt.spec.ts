@@ -66,6 +66,27 @@ test.describe('CrazyQuilt E2E', () => {
     await expect(stock).not.toHaveText(before ?? '');
   });
 
+  // The quilt->waste play is how the quilt actually comes apart, and it was
+  // missing from the GUI entirely until review caught it: the unit tests
+  // asserted the exec arguments but nothing checked the waste was wired as a
+  // target. Selecting a quilt card must at minimum make the waste a drop
+  // target rather than staying a plain source.
+  test('a selected quilt card makes the waste a drop target', async ({ page }) => {
+    await navigateTo(page, '/crazyquilt');
+
+    // Turn a card so the waste exists at all.
+    await page.getByRole('button', { name: /山札 残り/ }).click();
+    await waitForLoaded(page);
+
+    await page.locator('[data-available="true"]').first().click();
+    await waitForLoaded(page);
+
+    const waste = page.getByTestId('cq-waste');
+    await expect(waste).toBeVisible();
+    // With a quilt card held, the waste advertises itself as a destination.
+    await expect(waste).toHaveAccessibleName(/捨て札に置く/);
+  });
+
   test('give up ends the game', async ({ page }) => {
     await navigateTo(page, '/crazyquilt');
 

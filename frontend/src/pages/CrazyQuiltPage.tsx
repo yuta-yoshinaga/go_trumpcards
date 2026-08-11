@@ -174,6 +174,8 @@ function CrazyQuiltPageContent() {
 
   const wasteTop = state.waste.length > 0 ? state.waste[state.waste.length - 1] : null;
   const wasteZone: CrazyQuiltMoveZone = { zone: 'waste' };
+  // キルトの札を選んでいる間だけ、捨て札が置き先になる。
+  const quiltSelected = selectedSource?.zone === 'quilt';
 
   // キルトは 8×8。**取れるのは短辺が空いている札だけ**で、その判定は向きに
   // 依存する。サーバが `available` で送ってくるので、ここで再実装しない。
@@ -323,19 +325,35 @@ function CrazyQuiltPageContent() {
                 <div className="text-center">
                   <div className="text-game-text-muted text-xs mb-1">{t('waste')}</div>
                   {wasteTop ? (
-                    <button
-                      type="button"
-                      onClick={() => game.handleSelectSource(wasteZone)}
-                      disabled={!isPlaying || loading}
-                      aria-label={cardAlt(wasteTop)}
-                      aria-pressed={isSourceSelected('waste', undefined)}
-                      draggable={isPlaying && !loading}
-                      onDragStart={dnd.handleDragStart(wasteZone)}
-                      onDragEnd={dnd.handleDragEnd}
-                      className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste', undefined) ? 'ring-2 ring-ds-warning' : ''}`}
+                    <DropZone
+                      isDropTarget={dnd.isDropTarget(wasteZone)}
+                      onDragOver={dnd.handleDragOver(wasteZone)}
+                      onDrop={dnd.handleDrop(wasteZone)}
+                      onDragLeave={dnd.handleDragLeave}
                     >
-                      <AnimatedCard card={wasteTop} width={dims.cw} draggable={false} />
-                    </button>
+                      <button
+                        type="button"
+                        // **捨て札は移動元にも移動先にもなる。** キルトの札を
+                        // 選んでいるときは連番置きの置き先（キルトを崩す主要な
+                        // 手）で、それ以外は移動元。片方しか繋がないと、その手が
+                        // UI から一切出せなくなる。
+                        onClick={() =>
+                          quiltSelected ? game.handleSelectTarget(wasteZone) : game.handleSelectSource(wasteZone)
+                        }
+                        disabled={!isPlaying || loading}
+                        aria-label={
+                          quiltSelected ? t('wasteDropAriaLabel', { card: cardAlt(wasteTop) }) : cardAlt(wasteTop)
+                        }
+                        aria-pressed={isSourceSelected('waste', undefined)}
+                        draggable={isPlaying && !loading && !quiltSelected}
+                        onDragStart={dnd.handleDragStart(wasteZone)}
+                        onDragEnd={dnd.handleDragEnd}
+                        data-testid="cq-waste"
+                        className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste', undefined) ? 'ring-2 ring-ds-warning' : ''} ${quiltSelected ? 'ring-2 ring-ds-info/70' : ''}`}
+                      >
+                        <AnimatedCard card={wasteTop} width={dims.cw} draggable={false} />
+                      </button>
+                    </DropZone>
                   ) : (
                     <div
                       role="img"
