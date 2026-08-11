@@ -596,6 +596,37 @@ func TestRams_UnmarshalRejectsBadPlayerCount(t *testing.T) {
 	assert.Error(t, json.Unmarshal(broken, NewDefaultRams()))
 }
 
+// 壊れた設定も拒否する。Rounds=0 は「配った直後に終わる」盤面になる。
+func TestRams_UnmarshalRejectsBadConfig(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		mutate func(map[string]any)
+	}{
+		{"rounds is zero", func(raw map[string]any) {
+			raw["cf"] = map[string]any{"pc": 4, "rd": 0}
+		}},
+		{"player count out of range", func(raw map[string]any) {
+			raw["cf"] = map[string]any{"pc": 9, "rd": 4}
+		}},
+		{"config disagrees with the stored seats", func(raw map[string]any) {
+			raw["cf"] = map[string]any{"pc": 5, "rd": 4} // 席は 4 つしか入っていない
+		}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			r := newTestRams(t)
+			data, err := json.Marshal(r)
+			require.NoError(t, err)
+			var raw map[string]any
+			require.NoError(t, json.Unmarshal(data, &raw))
+			tc.mutate(raw)
+			broken, err := json.Marshal(raw)
+			require.NoError(t, err)
+
+			assert.Error(t, json.Unmarshal(broken, NewDefaultRams()))
+		})
+	}
+}
+
 func TestRams_ActionLog(t *testing.T) {
 	r := newTestRams(t)
 	assert.NotEmpty(t, r.GetActionLog())

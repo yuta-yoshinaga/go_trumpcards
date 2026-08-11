@@ -772,10 +772,20 @@ func (r *Rams) UnmarshalJSON(data []byte) error {
 	if j.Pot < 0 {
 		return fmt.Errorf("invalid pot: %d", j.Pot)
 	}
+	// **設定そのものも検証する。** Rounds が 0 の壊れた blob を通すと、
+	// finishRound() の `roundNumber >= config.Rounds` が 1 ラウンド目で真になり、
+	// 配った直後にゲームが終わる。Loo.UnmarshalJSON も同じ検証をしている。
+	if err := j.Config.Validate(); err != nil {
+		return err
+	}
 	// **人数は可変なので、まず席数を検証してから席番号を見る。**
 	n := len(j.Players)
 	if n < RamsPlayerCntMin || n > RamsPlayerCntMax {
 		return fmt.Errorf("invalid player count: %d", n)
+	}
+	// 設定の人数と実際の席数が食い違う blob も拒否する。
+	if j.Config.PlayerCnt != n {
+		return fmt.Errorf("config says %d players but %d seats were stored", j.Config.PlayerCnt, n)
 	}
 	if len(j.ActionLog) > ramsMaxSliceLen {
 		return errors.New("rams: input array exceeds maximum allowed size")
