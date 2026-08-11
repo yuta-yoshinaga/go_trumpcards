@@ -913,6 +913,14 @@ var registry = []*Game{
 	// trick's POSITION, so the opening and closing tricks are dangerous
 	// regardless of what is in them.
 	{Name: "slobberhannes", Category: CategoryClassic},
+	// Polignac is the French avoidance game to Slobberhannes's German one, and
+	// the contrast is the point: only the four JACKS score, and the jack of
+	// spades (the "Polignac") costs double -- 2 against the others' 1, so 5
+	// points move each round. A player may also declare capot, undertaking to
+	// win every trick: 5 to everyone else if it comes off, 5 to the declarer if
+	// it does not. **Lowest total wins**, the opposite sign to Slobberhannes;
+	// each follows its own traditional notation.
+	{Name: "polignac", Category: CategoryExtra2},
 }
 
 // All returns a value-level copy of the registry in canonical order.

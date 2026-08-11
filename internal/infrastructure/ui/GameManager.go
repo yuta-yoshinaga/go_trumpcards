@@ -4405,6 +4405,22 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
 		}),
+	BindCuiFor("polignac",
+		func() usecase.PolignacInteractorIF {
+			return usecase.NewPolignacInteractor(domain.NewDefaultPolignac(), new(presenter.PolignacCuiPresenter))
+		},
+		controller.NewPolignacCuiController,
+		CuiHelpSpec{
+			TitleKey: "polignac.helpTitle",
+			CommandKeys: []string{
+				"polignac.helpCapot",
+				"polignac.helpPass",
+				"polignac.helpPlay",
+				"polignac.helpNext",
+				"polignac.helpGiveUp",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

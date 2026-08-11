@@ -181,6 +181,7 @@ export * from './games/pitch';
 export * from './games/poch';
 export * from './games/poker';
 export * from './games/pokersquares';
+export * from './games/polignac';
 export * from './games/pontoon';
 export * from './games/popejoan';
 export * from './games/preference';

@@ -445,6 +445,11 @@ func init() {
 			return usecase.NewRoyalCotillionInteractor(domain.NewDefaultRoyalCotillion(), new(presenter.RoyalCotillionWebPresenter))
 		},
 		controller.NewRoyalCotillionWebController)
+	BindWebControllerFor("polignac",
+		func() usecase.PolignacInteractorIF {
+			return usecase.NewPolignacInteractor(domain.NewDefaultPolignac(), new(presenter.PolignacWebPresenter))
+		},
+		controller.NewPolignacWebController)
 	BindWebControllerFor("slobberhannes",
 		func() usecase.SlobberhannesInteractorIF {
 			return usecase.NewSlobberhannesInteractor(domain.NewDefaultSlobberhannes(), new(presenter.SlobberhannesWebPresenter))

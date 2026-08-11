@@ -1559,6 +1559,15 @@ export const SchnapsenPhase = {
   GAME_END: 2,
 } as const;
 
+/** Polignac phase constants (sync: internal/domain/Polignac.go). */
+export const PolignacPhase = {
+  /** Before play: the human may declare capot. */
+  DECLARE: 0,
+  PLAY: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Slobberhannes phase constants (sync: internal/domain/Slobberhannes.go). */
 export const SlobberhannesPhase = {
   PLAY: 0,

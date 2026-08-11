@@ -953,6 +953,13 @@ export const gameCategories: readonly GameCategory[] = [
         page: 'Slobberhannes',
         profile: { mood: [3, 4, 4, 3], skill: [4, 4, 3, 2], social: [1, 4, 4, 3, 3], theme: [2, 4, 1, 1, 3, 3] },
       },
+      {
+        path: '/polignac',
+        labelKey: 'nav.polignac',
+        icon: '🃏',
+        page: 'Polignac',
+        profile: { mood: [3, 4, 4, 3], skill: [4, 5, 3, 2], social: [1, 4, 4, 3, 3], theme: [2, 4, 1, 1, 3, 3] },
+      },
     ],
   },
   {

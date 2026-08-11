@@ -1,0 +1,46 @@
+{
+  "phase": {
+    "declare": "Declaring",
+    "play": "Playing",
+    "roundEnd": "Round over",
+    "gameEnd": "Game over"
+  },
+  "header": {
+    "round": "Round",
+    "trick": "Trick",
+    "penaltyRule": "No trump. Each jack you take costs 1 point — the J of spades (Polignac) costs 2.",
+    "you": "You",
+    "cpu": "CPU{{idx}}",
+    "score": "{{score}} pts total (this round {{round}})"
+  },
+  "capot": {
+    "active": "{{name}} has declared capot ({{tricks}}/8 taken). One trick breaks it.",
+    "mark": "[capot]"
+  },
+  "currentTrick": "Current trick",
+  "actions": {
+    "declareCapot": "Declare capot",
+    "pass": "Proceed without declaring",
+    "nextRound": "Next round",
+    "reset": "Reset",
+    "giveUp": "Give up",
+    "playAria": "Play {{card}}"
+  },
+  "result": {
+    "youWin": "You win! {{score}} penalty points",
+    "cpuWin": "CPU{{idx}} wins with {{score}} penalty points.",
+    "tie": "It's a tie."
+  },
+  "hint": {
+    "polignacAvoidJack": "A jack is on the table. Play low and let someone else take it.",
+    "polignacDumpJack": "A safe trick — shed a jack while you can.",
+    "polignacLeadSafe": "Lead a low card that isn't a jack.",
+    "polignacBlockCapot": "Take this trick to break the capot."
+  },
+  "tutorial": {
+    "penalty": "Only the four jacks cost anything — and the J of spades (the Polignac) costs two. Exactly 5 points move every round.",
+    "scores": "Each seat's running penalty total and what it has taken this round. **The lowest total wins.**",
+    "trick": "Cards played this trick appear here. There is no trump — the highest card of the led suit wins.",
+    "hand": "Your hand. Legal cards carry a green ring. Getting rid of the J of spades early is the standard play."
+  }
+}

@@ -125,6 +125,7 @@ export type GameKey =
   | 'schnapsen'
   | 'germanwhist'
   | 'slobberhannes'
+  | 'polignac'
   | 'skat'
   | 'belote'
   | 'jass'
@@ -660,6 +661,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   schnapsen: BLUE,
   germanwhist: BLUE,
   slobberhannes: BLUE,
+  polignac: BLUE,
   // Matching/Pass
   oldmaid: GREEN,
   doubt: GREEN,

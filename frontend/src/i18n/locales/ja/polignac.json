@@ -1,0 +1,46 @@
+{
+  "phase": {
+    "declare": "宣言",
+    "play": "プレイ中",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "終了"
+  },
+  "header": {
+    "round": "ラウンド",
+    "trick": "トリック",
+    "penaltyRule": "切り札なし。ジャックを取ると1失点、ただし♠J（Polignac）は2失点。",
+    "you": "あなた",
+    "cpu": "CPU{{idx}}",
+    "score": "累計{{score}}失点（今ラウンド{{round}}）"
+  },
+  "capot": {
+    "active": "{{name}} が capot 宣言中（獲得 {{tricks}}/8）。1トリック取れば潰せます。",
+    "mark": "[capot]"
+  },
+  "currentTrick": "現在のトリック",
+  "actions": {
+    "declareCapot": "capot を宣言",
+    "pass": "宣言せず進む",
+    "nextRound": "次のラウンドへ",
+    "reset": "リセット",
+    "giveUp": "投了",
+    "playAria": "{{card}} を出す"
+  },
+  "result": {
+    "youWin": "あなたの勝ち！ 失点 {{score}}",
+    "cpuWin": "CPU{{idx}} の勝ち。 失点 {{score}}",
+    "tie": "同点で決着つかず。"
+  },
+  "hint": {
+    "polignacAvoidJack": "ジャックが乗っています。取らないように低い札を出しましょう。",
+    "polignacDumpJack": "安全なトリックです。ジャックを今のうちに処分しましょう。",
+    "polignacLeadSafe": "ジャック以外の低い札でリードしましょう。",
+    "polignacBlockCapot": "capot を潰すために、このトリックを取りにいきましょう。"
+  },
+  "tutorial": {
+    "penalty": "失点するのはジャック4枚だけです。しかも♠J（Polignac）だけは2失点。1ラウンドで動く失点は必ず5点です。",
+    "scores": "各プレイヤーの累計失点と、このラウンドの失点です。**失点が最も少ない人が勝ち**ます。",
+    "trick": "出されたカードがここに並びます。切り札は無く、リードのスートの最強札がトリックを取ります。",
+    "hand": "あなたの手札です。出せる札には緑の枠が付きます。♠Jは早めに手放すのが定石です。"
+  }
+}
