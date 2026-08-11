@@ -46,17 +46,21 @@ test.describe('3-2-5 E2E', () => {
     await expect(page.getByTestId('td-trump')).toContainText(/[♠♣♥♦]/, { timeout: TIMEOUT_ACTION });
   });
 
+  // **席行は変わらないことがある。** ノルマ・獲得数・達成回数しか出ておらず、
+  // 打った札がトリックを取らなければ 3 つとも同じまま。**手札が 1 枚減ったこと**を
+  // 見るのが、勝敗に依らず必ず動く唯一の信号。
   test('plays a card and the board advances', async ({ page }) => {
     await navigateTo(page, '/teendopaanch');
     await settleAndPlay(page);
 
-    const before = await page.getByTestId('td-seat-0').textContent();
+    const hand = page.getByRole('button', { name: /を出す|^Play / });
+    const before = await hand.count();
+    expect(before).toBeGreaterThan(0);
+
     await expect(legalCard(page).first()).toBeEnabled({ timeout: TIMEOUT_ACTION });
     await legalCard(page).first().click();
 
-    await expect
-      .poll(async () => page.getByTestId('td-seat-0').textContent(), { timeout: TIMEOUT_ACTION })
-      .not.toBe(before);
+    await expect.poll(async () => hand.count(), { timeout: TIMEOUT_ACTION }).toBeLessThan(before);
   });
 
   test('can reset the game via the reset confirmation dialog', async ({ page }) => {
