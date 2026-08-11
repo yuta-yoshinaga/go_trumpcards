@@ -1241,7 +1241,7 @@
     "hokm.result.team0": "あなたのチームの勝ちです（{{t0}} - {{t1}}）。",
     "hokm.result.team1": "相手チームの勝ちです（{{t0}} - {{t1}}）。",
     "hokm.result.tie": "同点です（{{t0}} - {{t1}}）。",
-    "shelem.bid.choose": "入札してください（{{min}}点以上、5刻み）。Shelem 宣言や降りることもできます。",
+    "shelem.bid.choose": "入札してください（{{min}}点以上、5刻み、上限100点）。Shelem 宣言や降りることもできます。",
     "shelem.bid.wait": "他のプレイヤーが競っています。",
     "shelem.discard.choose": "ウィドウを取り込みました。{{n}}枚捨てて切り札を決めてください（契約 {{contract}}点）。",
     "shelem.discard.wait": "落札者がウィドウを整理しています。",

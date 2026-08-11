@@ -41,11 +41,11 @@ func TestShelemCuiControllerSimpleCommands(t *testing.T) {
 func TestShelemCuiControllerBiddingCommandsAreDistinct(t *testing.T) {
 	si := newMockShelemInteractor()
 	c := NewShelemCuiController(si)
-	si.On("Bid", 120).Return("bid")
+	si.On("Bid", 80).Return("bid")
 	si.On("BidShelem").Return("shelem")
 	si.On("Pass").Return("pass")
 
-	assert.Equal(t, "bid", c.Exec("b 120"))
+	assert.Equal(t, "bid", c.Exec("b 80"))
 	assert.Equal(t, "shelem", c.Exec("shelem"))
 	assert.Equal(t, "pass", c.Exec("pass"))
 	si.AssertNumberOfCalls(t, "Bid", 1)
@@ -81,8 +81,10 @@ func TestShelemCuiControllerBidRejectsBadArgs(t *testing.T) {
 	for _, tc := range []struct{ name, cmd, want string }{
 		{"missing bid", "b", "Bid is required."},
 		{"non-numeric", "b x", "Invalid bid: x."},
-		{"below the minimum", "b 95", "Invalid bid: 95."},
+		{"below the minimum", "b 50", "Invalid bid: 50."},
 		{"above the maximum", "b 200", "Invalid bid: 200."},
+		// **プールは100点しかない。** それを超える契約は達成できないので通さない。
+		{"above the point pool", "b 105", "Invalid bid: 105."},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			si := newMockShelemInteractor()

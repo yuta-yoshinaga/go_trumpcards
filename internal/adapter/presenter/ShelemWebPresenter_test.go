@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"encoding/json"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -57,8 +58,8 @@ func TestShelemWebPresenterSurfacesTheNextBid(t *testing.T) {
 	assert.Equal(t, float64(domain.ShelemMinBid), decodeShelem(t, p.Output(fresh, nil))["minBid"])
 
 	raised := newShelemForWeb(t)
-	raised.SetContractForTest(2, 130, false)
-	assert.Equal(t, float64(130+domain.ShelemBidStep), decodeShelem(t, p.Output(raised, nil))["minBid"])
+	raised.SetContractForTest(2, 90, false)
+	assert.Equal(t, float64(90+domain.ShelemBidStep), decodeShelem(t, p.Output(raised, nil))["minBid"])
 
 	// **上限を超えない。** 165 が立っていたら 165 のまま。
 	capped := newShelemForWeb(t)
@@ -70,17 +71,17 @@ func TestShelemWebPresenterSurfacesTheNextBid(t *testing.T) {
 func TestShelemWebPresenterSurfacesBiddingState(t *testing.T) {
 	p := new(ShelemWebPresenter)
 	s := newShelemForWeb(t)
-	s.SetContractForTest(0, 135, false)
-	s.GetPlayer(0).SetBid(135)
+	s.SetContractForTest(0, 95, false)
+	s.GetPlayer(0).SetBid(95)
 	s.GetPlayer(1).SetPassed(true)
 
 	m := decodeShelem(t, p.Output(s, nil))
-	assert.Equal(t, float64(135), m["contract"])
+	assert.Equal(t, float64(95), m["contract"])
 	assert.Equal(t, float64(0), m["declarerIdx"])
 	assert.False(t, m["shelemBid"].(bool))
 
 	players := m["players"].([]any)
-	assert.Equal(t, float64(135), players[0].(map[string]any)["bid"])
+	assert.Equal(t, float64(95), players[0].(map[string]any)["bid"])
 	assert.True(t, players[1].(map[string]any)["passed"].(bool))
 }
 
@@ -104,7 +105,7 @@ func TestShelemWebPresenterBidMessages(t *testing.T) {
 	mine.SetBidPlayerIdxForTest(0)
 	m := decodeShelem(t, p.Output(mine, nil))
 	assert.Equal(t, "shelem.bid.choose", m["messageCode"])
-	assert.Equal(t, "100", m["messageParams"].(map[string]any)["min"])
+	assert.Equal(t, strconv.Itoa(domain.ShelemMinBid), m["messageParams"].(map[string]any)["min"])
 
 	theirs := newShelemForWeb(t)
 	theirs.SetBidPlayerIdxForTest(2)
@@ -116,12 +117,12 @@ func TestShelemWebPresenterDiscardMessages(t *testing.T) {
 	p := new(ShelemWebPresenter)
 
 	mine := newShelemForWeb(t)
-	mine.SetContractForTest(0, 130, false)
+	mine.SetContractForTest(0, 90, false)
 	mine.SetPhaseForTest(domain.ShelemPhaseDiscard)
 	assert.Equal(t, "shelem.discard.choose", decodeShelem(t, p.Output(mine, nil))["messageCode"])
 
 	theirs := newShelemForWeb(t)
-	theirs.SetContractForTest(2, 130, false)
+	theirs.SetContractForTest(2, 90, false)
 	theirs.SetPhaseForTest(domain.ShelemPhaseDiscard)
 	assert.Equal(t, "shelem.discard.wait", decodeShelem(t, p.Output(theirs, nil))["messageCode"])
 }
@@ -131,12 +132,12 @@ func TestShelemWebPresenterRoundEndMessages(t *testing.T) {
 	p := new(ShelemWebPresenter)
 
 	normal := newShelemForWeb(t)
-	normal.SetContractForTest(0, 130, false)
+	normal.SetContractForTest(0, 90, false)
 	normal.SetRoundPointsForTest(0, 95)
 	normal.SetPhaseForTest(domain.ShelemPhaseRoundEnd)
 	m := decodeShelem(t, p.Output(normal, nil))
 	assert.Equal(t, "shelem.roundEnd", m["messageCode"])
-	assert.Equal(t, "130", m["messageParams"].(map[string]any)["contract"])
+	assert.Equal(t, "90", m["messageParams"].(map[string]any)["contract"])
 	assert.Equal(t, "95", m["messageParams"].(map[string]any)["got"])
 
 	shelem := newShelemForWeb(t)

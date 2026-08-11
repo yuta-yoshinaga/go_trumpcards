@@ -25,9 +25,15 @@ const VALID_COMMANDS = [
   'l',
 ];
 
-/** Bidding runs from 100 to 165 in steps of five. */
-const BID_MIN = 100;
-const BID_MAX = 165;
+/**
+ * Bidding runs from 55 to 100 in steps of five (sync:
+ * `ShelemMinBid`/`ShelemMaxBid` in `internal/domain/Shelem.go`).
+ *
+ * **The ceiling is the whole round's card points.** A contract above 100 could
+ * never be made, so it is not offered.
+ */
+const BID_MIN = 55;
+const BID_MAX = 100;
 
 /** Suit codes accepted by `discard` (1=♠ 2=♣ 3=♥ 4=♦). */
 const SUIT_MIN = 1;
@@ -44,8 +50,8 @@ export function parseShelemCommand(input: string): CliParseResult<ShelemArgs> {
     case 'b':
     case 'bid': {
       const bid = parseIntArg(args, 0);
-      if ('error' in bid) return { error: 'Usage: b <100-165>' };
-      if (bid.value < BID_MIN || bid.value > BID_MAX) return { error: 'Usage: b <100-165>' };
+      if ('error' in bid) return { error: 'Usage: b <55-100>' };
+      if (bid.value < BID_MIN || bid.value > BID_MAX) return { error: 'Usage: b <55-100>' };
       return { args: ['bid', undefined, undefined, undefined, bid.value] as ShelemArgs };
     }
     case 'shelem':
@@ -99,7 +105,7 @@ export function parseShelemCommand(input: string): CliParseResult<ShelemArgs> {
 
 /** Help text for Shelem CLI mode. */
 export const SHELEM_HELP: string[] = [
-  'b <100-165>  - Bid that many points (in steps of 5)',
+  'b <55-100>   - Bid that many points (in steps of 5; 100 is every card point)',
   'shelem       - Declare Shelem (take every trick)',
   'pass         - Drop out of the bidding',
   'd <i>x4 <s>  - Discard four cards and name trump (1=S 2=C 3=H 4=D)',

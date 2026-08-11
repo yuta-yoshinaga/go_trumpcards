@@ -7406,11 +7406,11 @@ paths:
         52 cards dealt as **12 each plus a four-card widow** (12x4 + 4 = 52
         exactly), four players in two partnerships, **12 tricks**.
 
-        **What is bid is the score itself, not a number of tricks**: from 100
-        upward in steps of 5, over a hand that holds exactly **100 card
-        points** -- and only three ranks score at all (A and 10 are 10, the 5
-        is 5, everything else 0). That is why bidding opens at the whole hand's
-        worth.
+        **What is bid is the score itself, not a number of tricks**: from 55 to
+        100 in steps of 5 -- the ceiling being exactly the **100 card points**
+        a hand holds -- and only three ranks score at all (A and 10 are 10, the 5
+        is 5, everything else 0). A contract above 100 could never be made,
+        which is what caps the bidding.
 
         Whoever wins the bidding takes the widow into hand (16 cards),
         **discards four** and names trump. Making the contract in card points
@@ -7444,7 +7444,7 @@ paths:
                   description: Trump suit 1..4 (1=S 2=C 3=H 4=D); required for `discard`
                 bid:
                   type: integer
-                  description: Points bid, 100..165 in steps of 5; required for `bid`
+                  description: Points bid, 55..100 in steps of 5; required for `bid`
                 discards:
                   type: array
                   description: Exactly four hand indices to discard; required for `discard`
@@ -7461,7 +7461,7 @@ paths:
                 value:
                   command: bid
                   sessionId: my-session-001
-                  bid: 130
+                  bid: 90
               shelem:
                 summary: Claim every trick
                 value:

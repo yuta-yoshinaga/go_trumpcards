@@ -77,6 +77,47 @@ func TestShelem_CardPoints(t *testing.T) {
 	assert.Equal(t, 0, ShelemCardPoints(nil))
 }
 
+// **上限はプールそのもの。** これを超える契約はカード点では達成できないので、
+// そもそも入札できてはいけない（レビュー指摘 PR #5306）。
+func TestShelem_MaxBidIsExactlyAchievable(t *testing.T) {
+	assert.Equal(t, ShelemHandPoints, ShelemMaxBid)
+	assert.Less(t, ShelemMinBid, ShelemMaxBid, "競り上げる余地があること")
+	assert.Zero(t, (ShelemMaxBid-ShelemMinBid)%ShelemBidStep, "刻みで上限にちょうど届くこと")
+
+	// 上限を取り切れば達成になる。
+	s := newTestShelem(t)
+	s.SetContractForTest(0, ShelemMaxBid, false)
+	s.SetRoundPointsForTest(0, ShelemHandPoints)
+	s.FinishRoundForTest()
+	assert.Equal(t, ShelemMaxBid, s.GetScore(0))
+}
+
+// **CPU はプールを超える契約を出さない。** 見積もりが上振れても頭打ちになる。
+func TestShelem_CpuNeverBidsAboveThePool(t *testing.T) {
+	for range 50 {
+		s := newTestShelem(t)
+		s.SetDealerIdxForTest(1)
+		for range ShelemPlayerCnt * 4 {
+			if s.GetPhase() != ShelemPhaseBid {
+				break
+			}
+			if s.IsHumanBidTurn() {
+				if err := s.PlayerPass(); err != nil {
+					require.NoError(t, s.PlayerBid(ShelemMinBid))
+				}
+				continue
+			}
+			s.CpuBid()
+		}
+		assert.LessOrEqual(t, s.GetContract(), ShelemMaxBid)
+		for i := range ShelemPlayerCnt {
+			if bid := s.GetPlayer(i).GetBid(); bid > 0 {
+				assert.LessOrEqual(t, bid, ShelemMaxBid, "player %d bid %d", i, bid)
+			}
+		}
+	}
+}
+
 func TestShelem_DeckHoldsExactlyOneHundredPoints(t *testing.T) {
 	total := 0
 	for suit := CardDesignSpade; suit <= CardDesignDiamond; suit++ {
@@ -96,7 +137,7 @@ func TestShelem_BidValidation(t *testing.T) {
 
 	assert.Error(t, s.PlayerBid(ShelemMinBid-ShelemBidStep))
 	assert.Error(t, s.PlayerBid(ShelemMaxBid+ShelemBidStep))
-	assert.Error(t, s.PlayerBid(102), "5 刻みでない")
+	assert.Error(t, s.PlayerBid(57), "5 刻みでない")
 	require.NoError(t, s.PlayerBid(ShelemMinBid))
 
 	s.SetBidPlayerIdxForTest(0)
@@ -107,13 +148,13 @@ func TestShelem_BidValidation(t *testing.T) {
 // 降りたら戻れない。
 func TestShelem_PassedPlayerCannotBidAgain(t *testing.T) {
 	s := newTestShelem(t)
-	s.SetContractForTest(2, 110, false)
+	s.SetContractForTest(2, 75, false)
 	s.SetBidPlayerIdxForTest(0)
 	require.NoError(t, s.PlayerPass())
 	assert.True(t, s.GetPlayer(0).GetPassed())
 
 	s.SetBidPlayerIdxForTest(0)
-	assert.Error(t, s.PlayerBid(120))
+	assert.Error(t, s.PlayerBid(80))
 }
 
 // **誰も入札しないまま最後の 1 人になったら降りられない。**
@@ -133,7 +174,7 @@ func TestShelem_LastBidderStandingCannotPass(t *testing.T) {
 // **Shelem はどんな点数入札にも勝ち、その場で競りが決着する。**
 func TestShelem_ShelemBidEndsTheAuction(t *testing.T) {
 	s := newTestShelem(t)
-	s.SetContractForTest(2, 150, false)
+	s.SetContractForTest(2, 95, false)
 	s.SetBidPlayerIdxForTest(0)
 
 	require.NoError(t, s.PlayerBidShelem())
@@ -175,7 +216,7 @@ func TestShelem_BiddingAlwaysSettlesAndHandsOverTheWidow(t *testing.T) {
 // **落札者は 16 枚から 4 枚捨てて 12 枚に戻す。**
 func TestShelem_DiscardReturnsToTwelve(t *testing.T) {
 	s := newTestShelem(t)
-	s.SetContractForTest(0, 120, false)
+	s.SetContractForTest(0, 80, false)
 	s.CloseBiddingForTest()
 	require.Equal(t, ShelemHandSize+ShelemWidowSize, s.GetPlayer(0).GetCardsSize())
 
@@ -188,7 +229,7 @@ func TestShelem_DiscardReturnsToTwelve(t *testing.T) {
 // **捨てるのはちょうど 4 枚。** 重複も範囲外も拒否する。
 func TestShelem_DiscardValidation(t *testing.T) {
 	s := newTestShelem(t)
-	s.SetContractForTest(0, 120, false)
+	s.SetContractForTest(0, 80, false)
 	s.CloseBiddingForTest()
 
 	assert.Error(t, s.PlayerDiscard([]int{0, 1, 2}, CardDesignHeart), "3 枚は不足")
@@ -202,7 +243,7 @@ func TestShelem_DiscardValidation(t *testing.T) {
 // **後ろから消さないと残りのインデックスがずれる。** 大きい番号を含めて踏む。
 func TestShelem_DiscardRemovesTheRequestedCards(t *testing.T) {
 	s := newTestShelem(t)
-	s.SetContractForTest(0, 120, false)
+	s.SetContractForTest(0, 80, false)
 	s.CloseBiddingForTest()
 	p := s.GetPlayer(0)
 	kept := p.GetCard(4)
@@ -222,7 +263,7 @@ func TestShelem_DiscardGuards(t *testing.T) {
 	s := newTestShelem(t)
 	assert.Error(t, s.PlayerDiscard([]int{0, 1, 2, 3}, CardDesignHeart), "競り中は捨てられない")
 
-	s.SetContractForTest(2, 120, false)
+	s.SetContractForTest(2, 80, false)
 	s.CloseBiddingForTest()
 	s.SetPhaseForTest(ShelemPhaseDiscard)
 	assert.Error(t, s.PlayerDiscard([]int{0, 1, 2, 3}, CardDesignHeart), "落札者でなければ捨てられない")
@@ -234,22 +275,22 @@ func TestShelem_DiscardGuards(t *testing.T) {
 func TestShelem_ContractMadeOrSet(t *testing.T) {
 	t.Run("made", func(t *testing.T) {
 		s := newTestShelem(t)
-		s.SetContractForTest(0, 120, false)
-		s.SetRoundPointsForTest(0, 120)
+		s.SetContractForTest(0, 80, false)
+		s.SetRoundPointsForTest(0, 80)
 		s.SetRoundPointsForTest(1, 0)
 		s.FinishRoundForTest()
-		assert.Equal(t, 120, s.GetScore(0))
+		assert.Equal(t, 80, s.GetScore(0))
 	})
 
 	t.Run("set", func(t *testing.T) {
 		s := newTestShelem(t)
-		s.SetContractForTest(0, 120, false)
-		s.SetRoundPointsForTest(0, 95)
-		s.SetRoundPointsForTest(1, 5)
+		s.SetContractForTest(0, 80, false)
+		s.SetRoundPointsForTest(0, 75)
+		s.SetRoundPointsForTest(1, 25)
 		s.FinishRoundForTest()
-		assert.Equal(t, -120, s.GetScore(0))
+		assert.Equal(t, -80, s.GetScore(0))
 		// **相手は取ったカード点をそのまま得る。**
-		assert.Equal(t, 5, s.GetScore(1))
+		assert.Equal(t, 25, s.GetScore(1))
 	})
 
 	t.Run("exactly on the contract counts as made", func(t *testing.T) {
@@ -342,8 +383,8 @@ func TestShelem_RoundPointsAlwaysSumToOneHundred(t *testing.T) {
 func TestShelem_NextRoundAndGameEnd(t *testing.T) {
 	s := newTestShelem(t)
 	s.SetConfig(ShelemConfig{Target: ShelemTargetMax})
-	s.SetContractForTest(0, 120, false)
-	s.SetRoundPointsForTest(0, 120)
+	s.SetContractForTest(0, 80, false)
+	s.SetRoundPointsForTest(0, 80)
 	s.FinishRoundForTest()
 	require.Equal(t, ShelemPhaseRoundEnd, s.GetPhase())
 
@@ -488,7 +529,7 @@ func TestShelem_HintDuringBidding(t *testing.T) {
 
 func TestShelem_HintDuringDiscard(t *testing.T) {
 	s := newTestShelem(t)
-	s.SetContractForTest(0, 120, false)
+	s.SetContractForTest(0, 80, false)
 	s.CloseBiddingForTest()
 
 	h := s.GetHint()
@@ -563,7 +604,7 @@ func TestShelemConfig_Validate(t *testing.T) {
 
 func TestShelem_JSONRoundTrip(t *testing.T) {
 	s := newTestShelem(t)
-	s.SetContractForTest(0, 130, false)
+	s.SetContractForTest(0, 90, false)
 	s.CloseBiddingForTest()
 	require.NoError(t, s.PlayerDiscard([]int{0, 1, 2, 3}, CardDesignDiamond))
 	s.SetScoreForTestUse(0, 240)
@@ -576,7 +617,7 @@ func TestShelem_JSONRoundTrip(t *testing.T) {
 
 	assert.Equal(t, s.GetPhase(), got.GetPhase())
 	assert.Equal(t, CardDesignDiamond, got.GetTrumpSuit())
-	assert.Equal(t, 130, got.GetContract())
+	assert.Equal(t, 90, got.GetContract())
 	assert.Equal(t, 0, got.GetDeclarerIdx())
 	assert.False(t, got.GetShelemBid())
 	assert.Equal(t, 240, got.GetScore(0))
@@ -593,7 +634,7 @@ func TestShelem_UnmarshalRejectsInvalid(t *testing.T) {
 			Phase:       ShelemPhasePlay,
 			RoundNumber: 1,
 			TrumpSuit:   CardDesignSpade,
-			Contract:    120,
+			Contract:    80,
 			DeclarerIdx: 0,
 			WinnerTeam:  -1,
 		}

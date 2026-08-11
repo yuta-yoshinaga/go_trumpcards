@@ -36,7 +36,7 @@ func TestShelemCuiPresenterContractLine(t *testing.T) {
 	p := new(ShelemCuiPresenter)
 
 	normal := newShelemForCui(t)
-	normal.SetContractForTest(1, 130, false)
+	normal.SetContractForTest(1, 90, false)
 	out := p.Output(normal, nil)
 	assert.Contains(t, out, fixedPart("shelem.contractLine"))
 	assert.NotContains(t, out, i18n.T("shelem.contractUndecided"))
@@ -50,10 +50,10 @@ func TestShelemCuiPresenterContractLine(t *testing.T) {
 func TestShelemCuiPresenterRoles(t *testing.T) {
 	p := new(ShelemCuiPresenter)
 	s := newShelemForCui(t)
-	s.SetContractForTest(0, 130, false)
-	s.GetPlayer(0).SetBid(130)
+	s.SetContractForTest(0, 90, false)
+	s.GetPlayer(0).SetBid(90)
 	s.GetPlayer(1).SetPassed(true)
-	s.GetPlayer(2).SetBid(120)
+	s.GetPlayer(2).SetBid(80)
 
 	out := p.Output(s, nil)
 	assert.Contains(t, out, fixedPart("shelem.roleDeclarer"))
@@ -87,12 +87,12 @@ func TestShelemCuiPresenterDiscardPrompts(t *testing.T) {
 	p := new(ShelemCuiPresenter)
 
 	mine := newShelemForCui(t)
-	mine.SetContractForTest(0, 130, false)
+	mine.SetContractForTest(0, 90, false)
 	mine.SetPhaseForTest(domain.ShelemPhaseDiscard)
 	assert.Contains(t, p.Output(mine, nil), fixedPart("shelem.promptDiscard"))
 
 	theirs := newShelemForCui(t)
-	theirs.SetContractForTest(2, 130, false)
+	theirs.SetContractForTest(2, 90, false)
 	theirs.SetPhaseForTest(domain.ShelemPhaseDiscard)
 	assert.Contains(t, p.Output(theirs, nil), i18n.T("shelem.promptDiscardWait"))
 }
@@ -166,7 +166,7 @@ func TestShelemCuiPresenterHintDuringBidding(t *testing.T) {
 func TestShelemCuiPresenterHintDuringDiscard(t *testing.T) {
 	p := new(ShelemCuiPresenter)
 	s := newShelemForCui(t)
-	s.SetContractForTest(0, 130, false)
+	s.SetContractForTest(0, 90, false)
 	s.CloseBiddingForTest()
 
 	out := p.HintOutput(s)
@@ -179,14 +179,14 @@ func TestShelemCuiPresenterHintDuringPlay(t *testing.T) {
 	p := new(ShelemCuiPresenter)
 
 	solo := newShelemForCui(t)
-	solo.SetContractForTest(0, 130, false)
+	solo.SetContractForTest(0, 90, false)
 	solo.CloseBiddingForTest()
 	require.NoError(t, solo.PlayerDiscard([]int{0, 1, 2, 3}, domain.CardDesignHeart))
 	solo.SetCurrentPlayerIdxForTest(0)
 	assert.Contains(t, p.HintOutput(solo), i18n.T("shelem.hintReasonWinTrick"))
 
 	partner := newShelemForCui(t)
-	partner.SetContractForTest(0, 130, false)
+	partner.SetContractForTest(0, 90, false)
 	partner.CloseBiddingForTest()
 	require.NoError(t, partner.PlayerDiscard([]int{0, 1, 2, 3}, domain.CardDesignHeart))
 	partner.SetCurrentPlayerIdxForTest(0)

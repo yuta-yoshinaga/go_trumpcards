@@ -1,6 +1,6 @@
 {
   "helpTitle": "Shelem",
-  "helpBid": "  b <n>                Bid n points (100..165, in steps of 5)",
+  "helpBid": "  b <n>                Bid n points (55..100, in steps of 5)",
   "helpShelem": "  shelem               Declare Shelem (take every trick)",
   "helpPass": "  pass                 Drop out of the bidding",
   "helpDiscard": "  d <i> <i> <i> <i> <suit>  Discard four and name trump (1:S 2:C 3:H 4:D)",
@@ -10,7 +10,7 @@
   "header": "Round: {{round}}  Trick: {{trick}}/{{tricks}}  (first to {{target}})",
   "pointTable": "Point cards: A and 10 are worth 10, the 5 is worth 5. A round holds exactly 100.",
   "scoreLine": "Total: your team={{t0}}  theirs={{t1}}",
-  "contractUndecided": "Contract: undecided (bidding starts at 100, in steps of 5)",
+  "contractUndecided": "Contract: undecided (bidding runs 55 to 100 in fives -- 100 is every card point in the round)",
   "contractLine": "Contract: {{n}} ({{name}} won it; {{got}} so far)",
   "contractShelem": "Contract: Shelem -- every trick ({{name}} declared it)",
   "trumpLine": "Trump: {{suit}}",

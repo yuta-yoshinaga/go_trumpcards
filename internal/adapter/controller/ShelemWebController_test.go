@@ -43,7 +43,7 @@ func TestShelemWebController_Method(t *testing.T) {
 	siMock := new(usecase.MockShelemInteractor)
 	siMock.On("ResetWithConfig", domain.DefaultShelemConfig()).Return(mockOutput)
 	siMock.On("ResetWithConfig", domain.ShelemConfig{Target: 700}).Return(mockOutput)
-	siMock.On("Bid", 120).Return(mockOutput)
+	siMock.On("Bid", 80).Return(mockOutput)
 	siMock.On("BidShelem").Return(mockOutput)
 	siMock.On("Pass").Return(mockOutput)
 	siMock.On("Discard", []int{0, 1, 2, 3}, 3).Return(mockOutput)
@@ -72,7 +72,7 @@ func TestShelemWebController_Method(t *testing.T) {
 	for _, tc := range []struct{ name, body string }{
 		{"reset r", `{"command":"r","sessionId":"s1"}`},
 		{"reset with target", `{"command":"reset","sessionId":"s1","config":{"target":700}}`},
-		{"bid b", `{"command":"b","sessionId":"s1","bid":120}`},
+		{"bid b", `{"command":"b","sessionId":"s1","bid":80}`},
 		{"shelem", `{"command":"shelem","sessionId":"s1"}`},
 		{"pass", `{"command":"pass","sessionId":"s1"}`},
 		{"discard d", `{"command":"d","sessionId":"s1","discards":[0,1,2,3],"suit":3}`},

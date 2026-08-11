@@ -42,7 +42,7 @@ function makeState(overrides: Partial<ShelemResponse> = {}): ShelemResponse {
     declarerIdx: -1,
     contract: 0,
     shelemBid: false,
-    minBid: 100,
+    minBid: 55,
     widowSize: 4,
     discardCount: 4,
     scores: [0, 0],
@@ -68,7 +68,7 @@ const playing = (over: Partial<ShelemResponse> = {}) =>
     phase: 2,
     trumpSuit: 3,
     declarerIdx: 1,
-    contract: 130,
+    contract: 90,
     widowSize: 0,
     ...over,
   } as Partial<ShelemResponse>);
@@ -94,17 +94,17 @@ describe('ShelemPage', () => {
 
   // **上回れる額だけを出す。** サーバが必ず拒否する額のボタンは作らない。
   it('offers only bids that beat the standing one', async () => {
-    mockExec.mockResolvedValue(makeState({ minBid: 135 }));
+    mockExec.mockResolvedValue(makeState({ minBid: 85 }));
     renderWithProviders(<ShelemPage />);
 
-    expect(await screen.findByTestId('sh-bid-135-btn')).toBeInTheDocument();
-    expect(screen.getByTestId('sh-bid-165-btn')).toBeInTheDocument();
-    expect(screen.queryByTestId('sh-bid-130-btn')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('sh-bid-100-btn')).not.toBeInTheDocument();
+    expect(await screen.findByTestId('sh-bid-85-btn')).toBeInTheDocument();
+    expect(screen.getByTestId('sh-bid-100-btn')).toBeInTheDocument();
+    expect(screen.queryByTestId('sh-bid-80-btn')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('sh-bid-55-btn')).not.toBeInTheDocument();
   });
 
-  it.each([100, 130, 165])('sends bid %s', async (bid) => {
-    mockExec.mockResolvedValue(makeState({ minBid: 100 }));
+  it.each([55, 80, 100])('sends bid %s', async (bid) => {
+    mockExec.mockResolvedValue(makeState({ minBid: 55 }));
     renderWithProviders(<ShelemPage />);
     const btn = await screen.findByTestId(`sh-bid-${bid.toString()}-btn`);
     mockExec.mockClear();
@@ -141,10 +141,10 @@ describe('ShelemPage', () => {
   it('still offers pass once a bid is standing', async () => {
     mockExec.mockResolvedValue(
       makeState({
-        contract: 120,
-        minBid: 125,
+        contract: 80,
+        minBid: 85,
         declarerIdx: 2,
-        players: [seat(0), seat(1, { passed: true }), seat(2, { bid: 120 }), seat(3, { passed: true })],
+        players: [seat(0), seat(1, { passed: true }), seat(2, { bid: 80 }), seat(3, { passed: true })],
       } as Partial<ShelemResponse>),
     );
     renderWithProviders(<ShelemPage />);
@@ -156,7 +156,7 @@ describe('ShelemPage', () => {
   // **捨て札はちょうど4枚選ぶまで確定できない。** サーバが必ず拒否する。
   it('keeps the discard buttons disabled until four cards are picked', async () => {
     mockExec.mockResolvedValue(
-      makeState({ phase: 1, declarerIdx: 0, contract: 130, widowSize: 0 } as Partial<ShelemResponse>),
+      makeState({ phase: 1, declarerIdx: 0, contract: 90, widowSize: 0 } as Partial<ShelemResponse>),
     );
     renderWithProviders(<ShelemPage />);
 
@@ -174,7 +174,7 @@ describe('ShelemPage', () => {
   // **捨て札は4つのインデックスとスートを一緒に送る。**
   it('sends the picked cards and the trump suit together', async () => {
     mockExec.mockResolvedValue(
-      makeState({ phase: 1, declarerIdx: 0, contract: 130, widowSize: 0 } as Partial<ShelemResponse>),
+      makeState({ phase: 1, declarerIdx: 0, contract: 90, widowSize: 0 } as Partial<ShelemResponse>),
     );
     renderWithProviders(<ShelemPage />);
 
@@ -209,7 +209,7 @@ describe('ShelemPage', () => {
 
     mockExec.mockResolvedValue(playing({ roundPoints: [45, 20] } as Partial<ShelemResponse>));
     const second = renderWithProviders(<ShelemPage />);
-    expect(await screen.findByTestId('sh-contract')).toHaveTextContent('130');
+    expect(await screen.findByTestId('sh-contract')).toHaveTextContent('90');
     second.unmount();
 
     mockExec.mockResolvedValue(playing({ shelemBid: true } as Partial<ShelemResponse>));
@@ -222,15 +222,15 @@ describe('ShelemPage', () => {
     mockExec.mockResolvedValue(
       makeState({
         declarerIdx: 0,
-        contract: 130,
-        players: [seat(0, { bid: 130 }), seat(1, { passed: true }), seat(2, { bid: 120 }), seat(3)],
+        contract: 90,
+        players: [seat(0, { bid: 90 }), seat(1, { passed: true }), seat(2, { bid: 80 }), seat(3)],
       } as Partial<ShelemResponse>),
     );
     renderWithProviders(<ShelemPage />);
 
-    expect(await screen.findByTestId('sh-seat-0')).toHaveTextContent('落札 130');
+    expect(await screen.findByTestId('sh-seat-0')).toHaveTextContent('落札 90');
     expect(screen.getByTestId('sh-seat-1')).toHaveTextContent('降り');
-    expect(screen.getByTestId('sh-seat-2')).toHaveTextContent('入札 120');
+    expect(screen.getByTestId('sh-seat-2')).toHaveTextContent('入札 80');
     expect(screen.getByTestId('sh-seat-3')).toHaveTextContent('競り中');
   });
 
@@ -275,7 +275,7 @@ describe('ShelemPage', () => {
 
   it('shows the hint when one is enabled', async () => {
     vi.mocked(useGameHint).mockReturnValue({
-      hint: { targetAction: 'bid-125', reason: 'hint.shelemBid', confidence: 'moderate' },
+      hint: { targetAction: 'bid-85', reason: 'hint.shelemBid', confidence: 'moderate' },
       hintEnabled: true,
       setHintEnabled: vi.fn(),
     });

@@ -1241,7 +1241,7 @@
     "hokm.result.team0": "Your team wins ({{t0}} - {{t1}}).",
     "hokm.result.team1": "The other team wins ({{t0}} - {{t1}}).",
     "hokm.result.tie": "It's a tie ({{t0}} - {{t1}}).",
-    "shelem.bid.choose": "Bid at least {{min}} (in steps of 5), or declare Shelem, or pass.",
+    "shelem.bid.choose": "Bid at least {{min}} (in fives, up to 100), or declare Shelem, or pass.",
     "shelem.bid.wait": "The other players are bidding.",
     "shelem.discard.choose": "You took the widow. Discard {{n}} cards and name trump (contract {{contract}}).",
     "shelem.discard.wait": "The declarer is sorting out the widow.",

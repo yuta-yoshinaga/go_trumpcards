@@ -25,9 +25,9 @@ const state = (over: Partial<ShelemResponse> = {}): ShelemResponse =>
     trickNumber: 3,
     trumpSuit: 3,
     declarerIdx: 0,
-    contract: 130,
+    contract: 90,
     shelemBid: false,
-    minBid: 135,
+    minBid: 95,
     widowSize: 0,
     discardCount: 4,
     scores: [120, 60],
@@ -68,8 +68,8 @@ describe('formatShelemState', () => {
 
   // 契約は未定・通常・Shelem の3通りを踏む。
   it('shows the contract in each of its shapes', () => {
-    expect(formatShelemState(state({ declarerIdx: -1, contract: 0, minBid: 100 }))).toContain('bid at least 100');
-    expect(formatShelemState(state())).toContain('contract: 130');
+    expect(formatShelemState(state({ declarerIdx: -1, contract: 0, minBid: 55 }))).toContain('bid at least 55');
+    expect(formatShelemState(state())).toContain('contract: 90');
     expect(formatShelemState(state({ shelemBid: true }))).toContain('Shelem');
   });
 
@@ -83,12 +83,12 @@ describe('formatShelemState', () => {
     const out = formatShelemState(
       state({
         declarerIdx: 0,
-        players: [seat(0, { bid: 130 }), seat(1, { passed: true }), seat(2, { bid: 120 }), seat(3)],
+        players: [seat(0, { bid: 90 }), seat(1, { passed: true }), seat(2, { bid: 80 }), seat(3)],
       } as Partial<ShelemResponse>),
     );
-    expect(out).toContain('won 130');
+    expect(out).toContain('won 90');
     expect(out).toContain('passed');
-    expect(out).toContain('bid 120');
+    expect(out).toContain('bid 80');
     expect(out).toContain('bidding');
 
     const shelem = formatShelemState(

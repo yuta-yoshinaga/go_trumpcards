@@ -1,6 +1,6 @@
 {
   "helpTitle": "Shelem (シェレム)",
-  "helpBid": "  b <n>                n 点で入札する (100..165、5刻み)",
+  "helpBid": "  b <n>                n 点で入札する (55..100、5刻み)",
   "helpShelem": "  shelem               Shelem（全トリック独占）を宣言する",
   "helpPass": "  pass                 競りを降りる",
   "helpDiscard": "  d <i> <i> <i> <i> <suit>  4枚捨てて切り札を決める (1:♠ 2:♣ 3:♥ 4:♦)",
@@ -10,7 +10,7 @@
   "header": "ラウンド: {{round}}  トリック: {{trick}}/{{tricks}}  ({{target}}点先取)",
   "pointTable": "点になる札: A と 10 が10点、5 が5点。1ラウンドの合計はちょうど100点。",
   "scoreLine": "累計: あなたのチーム={{t0}}  相手={{t1}}",
-  "contractUndecided": "契約: 未定（100点から5刻みで競り上げます）",
+  "contractUndecided": "契約: 未定（55点から5刻みで競り上げます。上限は100点＝1ラウンドの全カード点）",
   "contractLine": "契約: {{n}}点（{{name}} が落札・現在 {{got}} 点）",
   "contractShelem": "契約: Shelem＝全トリック独占（{{name}} が宣言）",
   "trumpLine": "切り札: {{suit}}",

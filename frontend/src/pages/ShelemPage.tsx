@@ -38,8 +38,12 @@ const SUIT_SYMBOLS: Readonly<Record<number, string>> = { 1: '♠', 2: '♣', 3: 
 /** The four suits, in the order the trump buttons are offered. */
 const SUITS: readonly number[] = [1, 2, 3, 4];
 
-/** Bidding tops out here; offering more would always be rejected. */
-const BID_MAX = 165;
+/**
+ * Bidding tops out at the whole round's card points (sync: `ShelemMaxBid` in
+ * `internal/domain/Shelem.go`). **A contract above 100 could never be made**,
+ * so those buttons are not offered at all.
+ */
+const BID_MAX = 100;
 
 /** Guided tutorial steps (the point cards, bidding, the widow, hand). */
 const SHELEM_TUTORIAL_STEPS: TutorialStep[] = [

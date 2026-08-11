@@ -24,17 +24,17 @@ describe('parseShelemCommand', () => {
 
   // **入札額は5番目の引数。** 位置がずれると別の値として届く。
   it.each([
-    ['b 100', 100],
-    ['bid 165', 165],
-    ['b 130', 130],
+    ['b 55', 55],
+    ['bid 100', 100],
+    ['b 80', 80],
   ])('parses %s', (input, bid) => {
     expect(parseShelemCommand(input)).toEqual({
       args: ['bid', undefined, undefined, undefined, bid],
     });
   });
 
-  it.each(['b', 'b x', 'b 95', 'b 200'])('rejects %s', (input) => {
-    expect(parseShelemCommand(input)).toEqual({ error: 'Usage: b <100-165>' });
+  it.each(['b', 'b x', 'b 50', 'b 105', 'b 200'])('rejects %s', (input) => {
+    expect(parseShelemCommand(input)).toEqual({ error: 'Usage: b <55-100>' });
   });
 
   // **捨て札は4つのインデックス + スートで1つ。** どれが欠けても成立しない。
@@ -62,7 +62,7 @@ describe('parseShelemCommand', () => {
 
   // ヘルプが実在するコマンドだけを案内していること。
   it('documents only commands the parser accepts', () => {
-    const sample: Record<string, string> = { b: 'b 100', d: 'd 0 1 2 3 1', p: 'p 0' };
+    const sample: Record<string, string> = { b: 'b 55', d: 'd 0 1 2 3 1', p: 'p 0' };
     for (const line of SHELEM_HELP) {
       const cmd = line.split(/[\s/]/)[0];
       expect(parseShelemCommand(sample[cmd] ?? cmd)).not.toHaveProperty('error', `Unknown command: ${cmd}`);

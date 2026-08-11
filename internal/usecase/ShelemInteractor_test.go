@@ -80,7 +80,7 @@ func TestShelemInteractorBiddingCommandsAreDistinct(t *testing.T) {
 		args   []any
 		others []string
 	}{
-		{"bid", func(i *ShelemInteractor) string { return i.Bid(120) }, "PlayerBid", []any{120}, []string{"PlayerBidShelem", "PlayerPass"}},
+		{"bid", func(i *ShelemInteractor) string { return i.Bid(80) }, "PlayerBid", []any{80}, []string{"PlayerBidShelem", "PlayerPass"}},
 		{"shelem", func(i *ShelemInteractor) string { return i.BidShelem() }, "PlayerBidShelem", nil, []string{"PlayerBid", "PlayerPass"}},
 		{"pass", func(i *ShelemInteractor) string { return i.Pass() }, "PlayerPass", nil, []string{"PlayerBid", "PlayerBidShelem"}},
 	} {
@@ -90,7 +90,7 @@ func TestShelemInteractorBiddingCommandsAreDistinct(t *testing.T) {
 			i := NewShelemInteractor(g, p)
 
 			g.On("GetGameEndFlag").Return(false)
-			g.On("PlayerBid", 120).Return(nil)
+			g.On("PlayerBid", 80).Return(nil)
 			g.On("PlayerBidShelem").Return(nil)
 			g.On("PlayerPass").Return(nil)
 			g.On("GetPhase").Return(domain.ShelemPhasePlay)
@@ -130,12 +130,12 @@ func TestShelemInteractorRejectedBid(t *testing.T) {
 	p := newMockShelemPresenter()
 	i := NewShelemInteractor(g, p)
 
-	err := errors.New("bid must beat 130")
+	err := errors.New("bid must beat 90")
 	g.On("GetGameEndFlag").Return(false)
-	g.On("PlayerBid", 120).Return(err)
+	g.On("PlayerBid", 80).Return(err)
 	p.On("Output", g, err).Return("bid_error")
 
-	assert.Equal(t, "bid_error", i.Bid(120))
+	assert.Equal(t, "bid_error", i.Bid(80))
 	g.AssertNotCalled(t, "CpuBid")
 	g.AssertNotCalled(t, "CpuPlay")
 }
@@ -239,7 +239,7 @@ func TestShelemInteractorGuardsAfterGameEnd(t *testing.T) {
 	}{
 		{"next round", func(i *ShelemInteractor) string { return i.NextRound() }, "NextRound"},
 		{"give up", func(i *ShelemInteractor) string { return i.GiveUp() }, "GiveUp"},
-		{"bid", func(i *ShelemInteractor) string { return i.Bid(120) }, "PlayerBid"},
+		{"bid", func(i *ShelemInteractor) string { return i.Bid(80) }, "PlayerBid"},
 		{"shelem", func(i *ShelemInteractor) string { return i.BidShelem() }, "PlayerBidShelem"},
 		{"pass", func(i *ShelemInteractor) string { return i.Pass() }, "PlayerPass"},
 		{"discard", func(i *ShelemInteractor) string { return i.Discard([]int{0, 1, 2, 3}, 1) }, "PlayerDiscard"},
@@ -308,7 +308,7 @@ func TestShelemInteractorHintAndActionLog(t *testing.T) {
 func TestShelemInteractorSnapshotRoundTrip(t *testing.T) {
 	g := domain.NewDefaultShelem()
 	g.Reset()
-	g.SetContractForTest(0, 130, false)
+	g.SetContractForTest(0, 90, false)
 	g.CloseBiddingForTest()
 	require.NoError(t, g.PlayerDiscard([]int{0, 1, 2, 3}, domain.CardDesignClover))
 	g.SetScoreForTestUse(0, 260)
@@ -323,7 +323,7 @@ func TestShelemInteractorSnapshotRoundTrip(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, domain.CardDesignClover, restored.Game.GetTrumpSuit())
-	assert.Equal(t, 130, restored.Game.GetContract())
+	assert.Equal(t, 90, restored.Game.GetContract())
 	assert.Equal(t, 0, restored.Game.GetDeclarerIdx())
 	assert.Equal(t, 260, restored.Game.GetScore(0))
 	assert.Equal(t, g.GetConfig().Target, restored.Game.GetConfig().Target)

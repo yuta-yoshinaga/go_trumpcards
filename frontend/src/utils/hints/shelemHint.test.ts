@@ -11,8 +11,8 @@ describe('getShelemHint', () => {
 
   // **競りのヒントは点数を指す。** 札ではない。
   it('names the points when it recommends a bid', () => {
-    expect(getShelemHint(base({ reason: 'shelemBid', value: 125, suit: 0 }))).toEqual({
-      targetAction: 'bid-125',
+    expect(getShelemHint(base({ reason: 'shelemBid', value: 85, suit: 0 }))).toEqual({
+      targetAction: 'bid-85',
       reason: 'hint.shelemBid',
       confidence: 'moderate',
     });
