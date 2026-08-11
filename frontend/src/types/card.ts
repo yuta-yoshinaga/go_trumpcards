@@ -245,6 +245,7 @@ export * from './games/tablanet';
 export * from './games/tarabish';
 export * from './games/tarneeb';
 export * from './games/tarocchini';
+export * from './games/teendopaanch';
 export * from './games/teenpatti';
 export * from './games/terrace';
 export * from './games/texasholdembonus';

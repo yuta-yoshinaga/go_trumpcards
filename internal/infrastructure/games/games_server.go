@@ -485,6 +485,11 @@ func init() {
 			return usecase.NewBhabhiInteractor(domain.NewDefaultBhabhi(), new(presenter.BhabhiWebPresenter))
 		},
 		controller.NewBhabhiWebController)
+	BindWebControllerFor("teendopaanch",
+		func() usecase.TeenDoPaanchInteractorIF {
+			return usecase.NewTeenDoPaanchInteractor(domain.NewDefaultTeenDoPaanch(), new(presenter.TeenDoPaanchWebPresenter))
+		},
+		controller.NewTeenDoPaanchWebController)
 	BindWebControllerFor("rams",
 		func() usecase.RamsInteractorIF {
 			return usecase.NewRamsInteractor(domain.NewDefaultRams(), new(presenter.RamsWebPresenter))

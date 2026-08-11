@@ -1560,6 +1560,19 @@ export const SchnapsenPhase = {
 } as const;
 
 /**
+ * 3-2-5 phase constants (sync: internal/domain/TeenDoPaanch.go).
+ *
+ * **There is no bidding phase.** The 3, 2 and 5 targets are assigned at the
+ * start of each round, so the only declaration is trump.
+ */
+export const TeenDoPaanchPhase = {
+  TRUMP: 0,
+  PLAY: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
+/**
  * Bhabhi phase constants (sync: internal/domain/Bhabhi.go).
  *
  * **There are no hands.** The whole deck is dealt once and play runs until

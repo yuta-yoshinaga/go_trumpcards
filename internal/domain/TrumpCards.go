@@ -178,6 +178,33 @@ func NewTrumpCardsPrsi() *TrumpCards {
 	return t
 }
 
+// NewTrumpCardsTeenDoPaanch 3-2-5用30枚デッキコンストラクタ
+// 8,9,10,J,Q,K,A (値: 1,8,9,10,11,12,13) × 4スート = 28枚 + 7♠ + 7♥ = 30枚
+//
+// **28枚では 3人 × 10枚 に 2枚足りない。** 3-2-5 は 3+2+5 = 10 トリックを
+// 打つので手札はちょうど 10枚必要で、そのために 7♠ と 7♥ の 2枚だけを足した
+// 30枚デッキを使う（7 は 8 のすぐ下）。
+func NewTrumpCardsTeenDoPaanch() *TrumpCards {
+	values := []int{1, 8, 9, 10, 11, 12, 13} // A,8,9,10,J,Q,K
+	suits := []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond}
+	extraSevens := []int{CardDesignSpade, CardDesignHeart}
+	totalCards := len(values)*len(suits) + len(extraSevens) // 30
+
+	t := new(TrumpCards)
+	t.deckCnt = totalCards
+	t.deck = make([]*Card, 0, totalCards)
+	for _, suit := range suits {
+		for _, val := range values {
+			t.deck = append(t.deck, NewCard(suit, val, false))
+		}
+	}
+	for _, suit := range extraSevens {
+		t.deck = append(t.deck, NewCard(suit, 7, false))
+	}
+	t.deckInit()
+	return t
+}
+
 // NewTrumpCardsPinochle ピノクル用48枚デッキコンストラクタ
 // 9,10,J,Q,K,A (値: 1,9,10,11,12,13) × 4スート × 2セット = 48枚
 func NewTrumpCardsPinochle() *TrumpCards {

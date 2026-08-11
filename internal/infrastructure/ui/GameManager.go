@@ -4577,6 +4577,21 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
 		}),
+	BindCuiFor("teendopaanch",
+		func() usecase.TeenDoPaanchInteractorIF {
+			return usecase.NewTeenDoPaanchInteractor(domain.NewDefaultTeenDoPaanch(), new(presenter.TeenDoPaanchCuiPresenter))
+		},
+		controller.NewTeenDoPaanchCuiController,
+		CuiHelpSpec{
+			TitleKey: "teendopaanch.helpTitle",
+			CommandKeys: []string{
+				"teendopaanch.helpTrump",
+				"teendopaanch.helpPlay",
+				"teendopaanch.helpNext",
+				"teendopaanch.helpGiveUp",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

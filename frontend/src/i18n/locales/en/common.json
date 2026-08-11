@@ -305,7 +305,8 @@
     "hokm": "Hokm",
     "shelem": "Shelem",
     "mendikot": "Mendikot",
-    "bhabhi": "Bhabhi"
+    "bhabhi": "Bhabhi",
+    "teendopaanch": "3-2-5"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1557,7 +1558,14 @@
     "bhabhi.result.you": "You are the Bhabhi -- the last one still holding cards.",
     "bhabhi.result.cpu": "CPU{{idx}} is the Bhabhi. You got out safely.",
     "bhabhi.result.stalemateYou": "Deadlocked after {{tricks}} tricks. You hold the most cards, so you are the Bhabhi.",
-    "bhabhi.result.stalemateCpu": "Deadlocked after {{tricks}} tricks. CPU{{idx}} holds the most cards and is the Bhabhi."
+    "bhabhi.result.stalemateCpu": "Deadlocked after {{tricks}} tricks. CPU{{idx}} holds the most cards and is the Bhabhi.",
+    "teendopaanch.trump.choose": "You owe five tricks, so trump is your call -- from just {{seen}} of your cards.",
+    "teendopaanch.trump.wait": "The five-target seat is choosing trump from its first {{seen}} cards.",
+    "teendopaanch.play": "Your target is {{target}} tricks and you have {{took}}. Taking more scores nothing.",
+    "teendopaanch.roundEnd": "Round {{round}}/{{total}} is over. Whoever fell short hands their best cards to whoever went over.",
+    "teendopaanch.result.you": "You win -- you made your target most often.",
+    "teendopaanch.result.cpu": "CPU{{idx}} wins.",
+    "teendopaanch.result.tie": "It's a tie."
   },
   "manual": {
     "ariaLabel": "Game Manual",

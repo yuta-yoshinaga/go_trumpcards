@@ -987,6 +987,12 @@ var registry = []*Game{
 	// 手札を出し切った人から抜け、**最後に残った 1 人が Bhabhi（敗者）**。
 	// 勝者ではなく敗者を決めるゲーム。
 	{Name: "bhabhi", Category: CategoryExtra},
+	// Teen Do Paanch (3-2-5 / ティーン・ドー・パーンチ) -- インド北部の 3 人専用。
+	// **ノルマは宣言ではなく割り当て**で、3 人が 3・2・5 という別々のトリック数を
+	// 負う。30 枚（8〜A の 28 枚 + 7♠ + 7♥）を 10 枚ずつ配り、3+2+5 = 10 トリック
+	// ちょうどで割り切れる。多く取っても得点は増えず、超過は次ラウンドで相手の
+	// 良い札を召し上げる権利になる。
+	{Name: "teendopaanch", Category: CategorySolo},
 }
 
 // All returns a value-level copy of the registry in canonical order.

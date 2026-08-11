@@ -238,6 +238,7 @@ import type {
   TarabishResponse,
   TarneebResponse,
   TarocchiniResponse,
+  TeenDoPaanchResponse,
   TeenPattiResponse,
   TerraceResponse,
   TexasHoldemBonusResponse,
@@ -520,6 +521,7 @@ import { getTablanetHint } from '../utils/hints/tablanetHint';
 import { getTarabishHint } from '../utils/hints/tarabishHint';
 import { getTarneebHint } from '../utils/hints/tarneebHint';
 import { getTarocchiniHint } from '../utils/hints/tarocchiniHint';
+import { getTeenDoPaanchHint } from '../utils/hints/teendopaanchHint';
 import { getTeenPattiHint } from '../utils/hints/teenPattiHint';
 import { getTerraceHint } from '../utils/hints/terraceHint';
 import { getTexasHoldemBonusHint } from '../utils/hints/texasHoldemBonusHint';
@@ -629,6 +631,7 @@ export const hintFactories = {
   shelem: (s) => getShelemHint(s as ShelemResponse),
   mendikot: (s) => getMendikotHint(s as MendikotResponse),
   bhabhi: (s) => getBhabhiHint(s as BhabhiResponse),
+  teendopaanch: (s) => getTeenDoPaanchHint(s as TeenDoPaanchResponse),
   faro: (s) => getFaroHint(s as FaroResponse),
   fiftyone: (s) => getFiftyOneHint(s as FiftyOneResponse),
   napoleon: (s) => getNapoleonHint(s as NapoleonResponse),
