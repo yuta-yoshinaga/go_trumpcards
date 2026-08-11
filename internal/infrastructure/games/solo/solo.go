@@ -443,4 +443,12 @@ func init() {
 			return usecase.RestoreTeenDoPaanchInteractor(data, new(presenter.TeenDoPaanchWebPresenter))
 		},
 		controller.NewTeenDoPaanchWebControllerWithProvider)
+	games.RegisterKVGame("honeymoonbridge", games.CategorySolo,
+		func() usecase.HoneymoonBridgeInteractorIF {
+			return usecase.NewHoneymoonBridgeInteractor(domain.NewDefaultHoneymoonBridge(), new(presenter.HoneymoonBridgeWebPresenter))
+		},
+		func(data []byte) (usecase.HoneymoonBridgeInteractorIF, error) {
+			return usecase.RestoreHoneymoonBridgeInteractor(data, new(presenter.HoneymoonBridgeWebPresenter))
+		},
+		controller.NewHoneymoonBridgeWebControllerWithProvider)
 }

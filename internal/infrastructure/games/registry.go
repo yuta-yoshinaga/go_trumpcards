@@ -1004,6 +1004,12 @@ var registry = []*Game{
 	// 親が取り込んで 4 枚捨てる**。ノルマとの差がそのまま得点で、不足ぶんは
 	// 次ラウンドで良い札を召し上げられる。
 	{Name: "sergeantmajor", Category: CategoryExtra},
+	// HoneymoonBridge ハネムーンブリッジ
+	//
+	// 2 人専用のブリッジ。**前半 13 トリックは得点にならない引き合い**で、
+	// 1 トリックごとに勝者・敗者の順で山札から 1 枚ずつ引く（13×2 = 山札 26 枚
+	// ちょうど）。両者 13 枚に戻ってから競り、契約は 6 + レベル トリック。
+	{Name: "honeymoonbridge", Category: CategorySolo},
 }
 
 // All returns a value-level copy of the registry in canonical order.
