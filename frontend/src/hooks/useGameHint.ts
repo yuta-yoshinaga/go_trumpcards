@@ -111,6 +111,7 @@ import type {
   HandAndFootResponse,
   HeartsResponse,
   HighCardFlushResponse,
+  HokmResponse,
   HoldemResponse,
   IndianPokerResponse,
   IndianRummyResponse,
@@ -384,6 +385,7 @@ import { getHachiHachiHint } from '../utils/hints/hachihachiHint';
 import { getHandAndFootHint } from '../utils/hints/handandfootHint';
 import { getHeartsHint } from '../utils/hints/heartsHint';
 import { getHighCardFlushHint } from '../utils/hints/highcardflushHint';
+import { getHokmHint } from '../utils/hints/hokmHint';
 import { getHoldemHint } from '../utils/hints/holdemHint';
 import { getIndianPokerHint } from '../utils/hints/indianpokerHint';
 import { getIndianRummyHint } from '../utils/hints/indianRummyHint';
@@ -617,6 +619,7 @@ export const hintFactories = {
   baloot: (s) => getBalootHint(s as BalootResponse),
   estimation: (s) => getEstimationHint(s as EstimationResponse),
   israeliwhist: (s) => getIsraeliWhistHint(s as IsraeliWhistResponse),
+  hokm: (s) => getHokmHint(s as HokmResponse),
   faro: (s) => getFaroHint(s as FaroResponse),
   fiftyone: (s) => getFiftyOneHint(s as FiftyOneResponse),
   napoleon: (s) => getNapoleonHint(s as NapoleonResponse),

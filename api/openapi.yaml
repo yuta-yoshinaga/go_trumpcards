@@ -178,6 +178,8 @@ tags:
     description: Estimation (エスティメーション) game endpoints -- 4-player Oh Hell from the Gulf; only an exact call scores, and Dash/Risk calls swing wider
   - name: israeliwhist
     description: Israeli Whist (イスラエリホイスト) game endpoints -- 4-player two-stage bidder; an auction settles trump and a quota, then everyone calls separately
+  - name: hokm
+    description: Hokm (ホクム) game endpoints -- Iran's 2v2 trick-taker; a hand ends the moment one side takes seven tricks, and a shut-out (Kot) counts double
   - name: clocksolitaire
     description: Clock Solitaire (クロックソリティア) game
   - name: durak
@@ -7306,6 +7308,90 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/IsraeliWhistResponse'
+  /hokm/exec:
+    post:
+      tags:
+        - hokm
+      summary: Execute a Hokm game command
+      description: |
+        Send a command to advance the Hokm (ホクム) game session identified by
+        `sessionId`.
+
+        Iran's most-played trick-taking game: 52 cards, four players in two
+        partnerships (seats 0+2 vs 1+3), thirteen cards each.
+
+        **A hand does not play out all thirteen tricks.** The first partnership
+        to **seven** takes it and the remaining cards are never played, so
+        `teamTricks` against `tricksToWin` -- not `trickNumber` -- is the
+        progress of a hand. (7 + 7 = 14 > 13, so a hand always settles.)
+
+        The **hakem** is dealt **five cards only** and names trump from those
+        alone; the rest is dealt afterwards to bring everyone to thirteen. The
+        hakem keeps the role while their team keeps winning and passes it to
+        the left only on a loss.
+
+        Taking a hand scores 1 hand point. Taking it while the losers get **no
+        trick at all** is a **Kot**, worth 2 -- `lastHandKot` says which
+        happened, because a jump of two points is otherwise unexplained.
+      operationId: execHokm
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, trump, t, play, p, next, n, giveup, g, hint, h, log, l]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                  description: Index into your hand (required for `play`)
+                suit:
+                  type: integer
+                  description: Trump suit 1..4 (1=S 2=C 3=H 4=D); required for `trump`
+                config:
+                  type: object
+                  properties:
+                    target:
+                      type: integer
+                      description: Hand points needed to win (1..13, default 7)
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              trump:
+                summary: Declare hearts as trump
+                value:
+                  command: trump
+                  sessionId: my-session-001
+                  suit: 3
+              play:
+                summary: Play the third card in hand
+                value:
+                  command: play
+                  sessionId: my-session-001
+                  cardIndex: 2
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HokmResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HokmResponse'
   /clocksolitaire/exec:
     post:
       tags:
@@ -44585,6 +44671,133 @@ components:
           type: object
           properties:
             rounds:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    HokmTrickCard:
+      type: object
+      description: A card played in the current trick
+      required:
+        - playerIdx
+        - card
+      properties:
+        playerIdx:
+          type: integer
+          description: Index of the player who played this card
+        card:
+          $ref: '#/components/schemas/Card'
+    HokmHint:
+      type: object
+      description: >-
+        A suggestion. While trump is undeclared it carries no cardIndex and
+        puts the recommended suit in suit; during play it names a card.
+      properties:
+        cardIndex:
+          type: integer
+          description: Index into your hand. Absent while trump is undeclared.
+        reason:
+          type: string
+          description: >-
+            hokmDeclareTrump before play; hokmWinTrick or hokmSaveCards (your
+            partner is winning -- keep your high cards) during play.
+        suit:
+          type: integer
+          description: Suit to make trump; 0 during play.
+    HokmPlayer:
+      type: object
+      description: One seat at a Hokm table
+      properties:
+        id:
+          type: integer
+        isHuman:
+          type: boolean
+        team:
+          type: integer
+          description: "0 or 1. Seats 0+2 are one partnership, 1+3 the other."
+        cardCount:
+          type: integer
+          description: Hand size. The only hand information exposed for the CPU.
+        cards:
+          type: array
+          description: Populated for the human player only; empty for the CPU.
+          items:
+            $ref: '#/components/schemas/Card'
+        isHakem:
+          type: boolean
+          description: Declares trump from their first five cards; keeps the role while winning.
+        trickCount:
+          type: integer
+    HokmResponse:
+      type: object
+      description: Response payload for /hokm/exec
+      properties:
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/HokmPlayer'
+        phase:
+          type: integer
+          description: "0=Trump, 1=Play, 2=HandEnd, 3=GameEnd"
+        handNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        trumpSuit:
+          type: integer
+          description: 0 until the hakem has declared.
+        hakemIdx:
+          type: integer
+        scores:
+          type: array
+          description: Hand points per team, index 0 and 1.
+          items:
+            type: integer
+        teamTricks:
+          type: array
+          description: >-
+            Tricks taken this hand per team. The hand ends the moment one side
+            reaches tricksToWin, so this -- not trickNumber -- is the progress.
+          items:
+            type: integer
+        tricksToWin:
+          type: integer
+          description: Tricks that take the hand (7).
+        lastHandKot:
+          type: boolean
+          description: The previous hand was a Kot (the losers took no trick), worth 2.
+        lastHandWinner:
+          type: integer
+          description: "Team that took the previous hand, or -1 before there is one"
+        currentPlayerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        currentTrick:
+          type: array
+          items:
+            $ref: '#/components/schemas/HokmTrickCard'
+        validPlays:
+          type: array
+          description: Hand indices you may legally play. Following suit is compulsory.
+          items:
+            type: integer
+        gameEndFlag:
+          type: boolean
+        winnerTeam:
+          type: integer
+          description: "-1 until decided, and -1 on a tie"
+        hint:
+          $ref: '#/components/schemas/HokmHint'
+        config:
+          type: object
+          properties:
+            target:
               type: integer
         message:
           type: string

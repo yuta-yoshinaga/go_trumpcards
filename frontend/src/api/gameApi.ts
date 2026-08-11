@@ -124,6 +124,7 @@ export * from './games/hachihachi';
 export * from './games/handandfoot';
 export * from './games/hearts';
 export * from './games/highcardflush';
+export * from './games/hokm';
 export * from './games/holdem';
 export * from './games/indianpoker';
 export * from './games/indianrummy';
@@ -329,6 +330,7 @@ export const games = [
   'baloot',
   'estimation',
   'israeliwhist',
+  'hokm',
   'razz',
   'sevencardstudhilo',
   'badugi',

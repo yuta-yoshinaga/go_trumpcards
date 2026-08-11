@@ -412,4 +412,12 @@ func init() {
 			return usecase.RestoreEstimationInteractor(data, new(presenter.EstimationWebPresenter))
 		},
 		controller.NewEstimationWebControllerWithProvider)
+	games.RegisterKVGame("hokm", games.CategoryClassic,
+		func() usecase.HokmInteractorIF {
+			return usecase.NewHokmInteractor(domain.NewDefaultHokm(), new(presenter.HokmWebPresenter))
+		},
+		func(data []byte) (usecase.HokmInteractorIF, error) {
+			return usecase.RestoreHokmInteractor(data, new(presenter.HokmWebPresenter))
+		},
+		controller.NewHokmWebControllerWithProvider)
 }

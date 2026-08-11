@@ -366,7 +366,8 @@
     "tarabish": "A 36-card partnership game of the Jass family: in trump the J (Jass) and 9 (Menel) outrank the ace. Runs and bella score as melds.",
     "baloot": "The Gulf's most-played 32-card partnership game. Sun (no trump) and Hokom (trump) swap the rank order itself.",
     "estimation": "Call your tricks exactly, for four. A Dash Call (0) and Risk (the highest call) change the size of the swing.",
-    "israeliwhist": "Bidding twice: an auction for trump and a quota, then everyone calls their own target separately."
+    "israeliwhist": "Bidding twice: an auction for trump and a quota, then everyone calls their own target separately.",
+    "hokm": "Iran's 2v2. The thirteen tricks are never played out — the first partnership to seven takes the hand."
   },
   "stretch_blurb": {
     "accordion": "Completion is rare; the journey itself is the joy.",
@@ -649,6 +650,7 @@
     "tarabish": "In trump, strength and point value stop agreeing. Counting the 20-point jack and 14-point nine is the whole game.",
     "baloot": "Two orders and two point tables over the same 32 cards. The strong cards change the moment someone declares.",
     "estimation": "Too many hurts as much as too few. Throwing away a winner to avoid one extra trick is the whole feel of it.",
-    "israeliwhist": "What you win at auction is the right to choose trump, not the contract. An exact call rises with its square."
+    "israeliwhist": "What you win at auction is the right to choose trump, not the contract. An exact call rises with its square.",
+    "hokm": "The hakem picks trump from five cards and keeps the role while winning. A shut-out (Kot) counts double."
   }
 }

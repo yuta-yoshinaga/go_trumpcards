@@ -1,0 +1,49 @@
+{
+  "phase": {
+    "trump": "Declaring trump",
+    "play": "Playing",
+    "handEnd": "Hand over",
+    "gameEnd": "Game over"
+  },
+  "header": {
+    "hand": "Hand",
+    "target": "first to {{target}} hands",
+    "trump": "Trump: {{suit}}",
+    "trumpUndecided": "Trump: undeclared",
+    "race": "Tricks: your team {{t0}} - theirs {{t1}} (the first to {{need}} takes the hand)",
+    "score": "Hand points: your team {{t0}} - theirs {{t1}}",
+    "took": "{{n}} taken",
+    "team": "T{{team}}",
+    "hakem": "[hakem]",
+    "you": "You",
+    "cpu": "CPU{{idx}}"
+  },
+  "currentTrick": "Current trick",
+  "handEnd": {
+    "normal": "Team {{team}} reached {{need}} tricks and took the hand (+1).",
+    "kot": "Team {{team}} let the others take nothing at all — that is a Kot, +2."
+  },
+  "actions": {
+    "trump": "Trump {{suit}}",
+    "nextHand": "Next hand",
+    "reset": "Reset",
+    "giveUp": "Give up",
+    "playAria": "Play {{card}}"
+  },
+  "result": {
+    "youWin": "Your team wins! {{t0}} - {{t1}}",
+    "theyWin": "The other team wins. {{t0}} - {{t1}}",
+    "tie": "It's a tie. {{t0}} - {{t1}}"
+  },
+  "hint": {
+    "hokmDeclareTrump": "Make your longest suit trump.",
+    "hokmWinTrick": "Go for this trick.",
+    "hokmSaveCards": "Your partner is winning — keep your high cards."
+  },
+  "tutorial": {
+    "race": "Hokm **does not play out all thirteen tricks**. The moment one partnership takes **seven**, the hand is over and the rest of the cards are never played. The figures above are that race.",
+    "hakem": "The **hakem** declares trump from their **first five cards only** — not from a full hand, which is what makes it a gamble. **The hakem keeps the role while their team keeps winning.**",
+    "kot": "Taking the hand scores 1, and **letting the other side take no trick at all is a Kot, worth 2**. Stacking Kots while holding on to the hakem's role is the fastest way home.",
+    "hand": "Your hand. Legal cards get a green ring. When your partner (T0) is winning a trick, keep your high cards back."
+  }
+}
