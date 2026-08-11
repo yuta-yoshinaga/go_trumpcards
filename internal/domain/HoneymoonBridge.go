@@ -97,7 +97,18 @@ type HoneymoonBridge struct {
 }
 
 // NewHoneymoonBridge はコンストラクタ。
+//
+// **2 人ちょうどでなければ標準のセットアップに差し替える（レビュー指摘 PR #5312）。**
+// 席数はゲーム中どこでも固定の前提で、足りないまま配ると `startRound` が
+// 範囲外を引く。いまは `NewDefaultHoneymoonBridge` からしか呼ばれないが、
+// 呼び手が増えたときに黙って壊れる形にはしない。
 func NewHoneymoonBridge(players []*HoneymoonBridgePlayer, config HoneymoonBridgeConfig) *HoneymoonBridge {
+	if len(players) != HoneymoonBridgePlayerCnt {
+		players = []*HoneymoonBridgePlayer{
+			NewHoneymoonBridgePlayer(true),
+			NewHoneymoonBridgePlayer(false),
+		}
+	}
 	return &HoneymoonBridge{
 		players:     players,
 		config:      config,
@@ -806,11 +817,17 @@ func (h *HoneymoonBridge) UnmarshalJSON(data []byte) error {
 	if j.Phase < HoneymoonBridgePhaseDraw || j.Phase > HoneymoonBridgePhaseGameEnd {
 		return fmt.Errorf("invalid phase: %d", j.Phase)
 	}
-	// **落札者と契約レベルは対。** 競り前・引き合い中は両方空。
-	if j.Phase == HoneymoonBridgePhaseDraw || j.Phase == HoneymoonBridgePhaseBid {
-		if j.DeclarerIdx != -1 && j.Phase == HoneymoonBridgePhaseDraw {
-			return fmt.Errorf("declarer %d during the draw phase", j.DeclarerIdx)
-		}
+	// **落札者と契約レベルは対。** 引き合い中は両方空、本番は両方埋まっている。
+	//
+	// **後者を落とすと復元後に panic する（レビュー指摘 PR #5312）。** 対として
+	// 一致してさえいれば下の突き合わせは通ってしまうので、「本番なのに落札者が
+	// いない」は素通りし、13 トリック目の `finishRound` が `h.players[-1]` を
+	// 引いて落ちる。あり得ない**組み合わせ**を弾くのが目的で、範囲検査ではない。
+	if j.Phase == HoneymoonBridgePhaseDraw && j.DeclarerIdx != -1 {
+		return fmt.Errorf("declarer %d during the draw phase", j.DeclarerIdx)
+	}
+	if j.Phase == HoneymoonBridgePhasePlay && j.DeclarerIdx < 0 {
+		return errors.New("play phase without a declarer")
 	}
 	if j.DeclarerIdx < -1 || j.DeclarerIdx >= HoneymoonBridgePlayerCnt {
 		return fmt.Errorf("invalid declarer: %d", j.DeclarerIdx)

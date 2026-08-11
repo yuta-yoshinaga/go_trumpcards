@@ -33,6 +33,26 @@ func TestHoneymoonBridge_DealAndStockLineUp(t *testing.T) {
 	assert.Equal(t, 52, total, "52 枚すべてが行き先を持つ")
 }
 
+// **席数が合わない呼び出しでも遊べる盤面を返す（レビュー指摘 PR #5312）。**
+func TestHoneymoonBridge_ConstructorFixesTheSeatCount(t *testing.T) {
+	for _, given := range [][]*HoneymoonBridgePlayer{
+		nil,
+		{NewHoneymoonBridgePlayer(true)},
+		{NewHoneymoonBridgePlayer(true), NewHoneymoonBridgePlayer(false), NewHoneymoonBridgePlayer(false)},
+	} {
+		h := NewHoneymoonBridge(given, DefaultHoneymoonBridgeConfig())
+		assert.Equal(t, HoneymoonBridgePlayerCnt, h.GetPlayerCnt())
+		assert.NotPanics(t, h.Reset)
+		assert.Equal(t, HoneymoonBridgeHandSize, h.GetPlayer(0).GetCardsSize())
+	}
+
+	// **負のコントロール: 2 人ちょうどなら渡したものをそのまま使う。**
+	mine := []*HoneymoonBridgePlayer{NewHoneymoonBridgePlayer(false), NewHoneymoonBridgePlayer(true)}
+	h := NewHoneymoonBridge(mine, DefaultHoneymoonBridgeConfig())
+	assert.False(t, h.GetPlayer(0).GetIsHuman(), "席の並びを勝手に入れ替えない")
+	assert.True(t, h.GetPlayer(1).GetIsHuman())
+}
+
 func TestHoneymoonBridge_ResetStartsInTheDrawPhase(t *testing.T) {
 	h := newTestHoneymoonBridge(t)
 	assert.Equal(t, HoneymoonBridgePhaseDraw, h.GetPhase())
@@ -493,6 +513,38 @@ func TestHoneymoonBridge_UnmarshalRejectsBrokenSnapshots(t *testing.T) {
 		_ = ok.GetValidPlayIndices(ok.GetCurrentPlayerIdx())
 		_ = ok.TrickWinnerForTest()
 	})
+}
+
+// **本番フェーズには必ず落札者がいる。** レベルと対で 0 のまま一致していても、
+// 復元して 13 トリック目を打つと `finishRound` が `h.players[-1]` で落ちる
+// （レビュー指摘 PR #5312、ガードを外して実際に panic を踏んで確認した）。
+func TestHoneymoonBridge_UnmarshalRejectsPlayPhaseWithoutDeclarer(t *testing.T) {
+	h := newTestHoneymoonBridge(t)
+	h.SetPhaseForTest(HoneymoonBridgePhasePlay)
+	h.SetStockForTest(nil)
+	data, err := json.Marshal(h)
+	require.NoError(t, err)
+	require.Equal(t, -1, h.GetDeclarerIdx(), "落札者がいない状態を作れている")
+
+	var restored HoneymoonBridge
+	assert.Error(t, json.Unmarshal(data, &restored))
+
+	// **負のコントロール: 落札者がいれば同じフェーズでも通り、打ち切れる。**
+	h.SetContractForTest(0, 2, CardDesignHeart)
+	ok, err := json.Marshal(h)
+	require.NoError(t, err)
+	var good HoneymoonBridge
+	require.NoError(t, json.Unmarshal(ok, &good))
+	good.SetTrickNumberForTest(HoneymoonBridgeTricksPerPhase - 1)
+	good.SetLeadPlayerIdxForTest(0)
+	good.SetCurrentPlayerIdxForTest(0)
+	honeymoonBridgeHandOf(&good, 0, NewCard(CardDesignSpade, 5, false))
+	honeymoonBridgeHandOf(&good, 1, NewCard(CardDesignSpade, 6, false))
+	assert.NotPanics(t, func() {
+		require.NoError(t, good.PlayForTest(0, 0))
+		require.NoError(t, good.PlayForTest(1, 0))
+	})
+	assert.Equal(t, HoneymoonBridgePhaseRoundEnd, good.GetPhase(), "最後のトリックで精算まで進む")
 }
 
 // **落札者と契約レベルは対。** 片方だけ立っていたら壊れている。
