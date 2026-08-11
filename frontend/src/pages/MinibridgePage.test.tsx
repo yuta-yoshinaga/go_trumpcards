@@ -220,13 +220,23 @@ describe('MinibridgePage', () => {
   });
 
   // **CPU がデクレアラーなら、ダミーも CPU のもの。**
-  it('never lets you play a CPU declarer’s dummy', async () => {
+  //
+  // **ダミーが自分の席と重なる組み合わせを必ず踏む（レビュー指摘 PR #5313）。**
+  // ダミーは落札者の相方なので、落札者が席 2 ならダミーは席 0 ——自分の席になる。
+  it.each([
+    ['ダミーも CPU の席', 1, 3],
+    ['ダミーが自分の席', 2, 0],
+  ])('never lets you play a CPU declarer’s dummy (%s)', async (_name, declarerIdx, dummyIdx) => {
     mockExec.mockResolvedValue(
-      playing({ declarerIdx: 1, dummyIdx: 3, currentPlayerIdx: 3 } as Partial<MinibridgeResponse>),
+      playing({ declarerIdx, dummyIdx, currentPlayerIdx: dummyIdx } as Partial<MinibridgeResponse>),
     );
     renderWithProviders(<MinibridgePage />);
+
     const dummyCards = await screen.findAllByRole('button', { name: /^ダミーの/ });
     expect(dummyCards[0]).toBeDisabled();
+    // 自分の手札も押せない——盤面は CPU の手番なので、こちらが動かす札は無い。
+    const ownCards = screen.getAllByRole('button', { name: /^(?!ダミーの).*を出す$/ });
+    expect(ownCards[0]).toBeDisabled();
   });
 
   it('disables the hand while it is a CPU turn', async () => {

@@ -193,7 +193,8 @@ func TestMinibridgeWebPresenterMessages(t *testing.T) {
 			g.FinishGameForTest()
 			m := decodeMinibridge(t, p.Output(g, nil))
 			assert.Equal(t, tc.want, m["messageCode"])
-			assert.Equal(t, strconv.Itoa(tc.winner), m["messageParams"].(map[string]any)["idx"])
+			// **勝敗はペア単位。** 席番号を渡す文言が無いのでパラメータも載せない。
+			assert.Nil(t, m["messageParams"])
 		})
 	}
 }

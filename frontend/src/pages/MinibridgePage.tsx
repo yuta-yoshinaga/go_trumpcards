@@ -126,15 +126,15 @@ function MinibridgePageContent() {
   const isRoundEnd = state.phase === MinibridgePhase.ROUND_END;
   const isGameEnd = state.phase === MinibridgePhase.GAME_END || state.gameEndFlag;
   const isHumanContractTurn = isContract && !isGameEnd && state.players[state.declarerIdx]?.isHuman === true;
-  // **人間がデクレアラーならダミーの手番も自分の出番。**
+  // **ダミーの席かどうかを先に見る（sync: Minibridge.IsHumanTurn）。** ダミーは
+  // 落札者の相方なので、落札者が席 2 ならダミーは席 0 ——**自分の席**になる。
+  // 「その席が人間か」を先に見ると、CPU が落札したダミーまで自分の番と判定され、
+  // サーバは受け付けないのに押せる札が出てしまう。
   const humanIsDeclarer = state.players[state.declarerIdx]?.isHuman === true;
   const isDummyTurn = state.phase === MinibridgePhase.PLAY && state.currentPlayerIdx === state.dummyIdx;
-  const isHumanTurn =
-    !isGameEnd &&
-    !isRoundEnd &&
-    !isContract &&
-    (state.players[state.currentPlayerIdx]?.isHuman === true || (isDummyTurn && humanIsDeclarer));
-  const isHumanDummyTurn = isHumanTurn && isDummyTurn && humanIsDeclarer;
+  const seatIsControllable = isDummyTurn ? humanIsDeclarer : state.players[state.currentPlayerIdx]?.isHuman === true;
+  const isHumanTurn = !isGameEnd && !isRoundEnd && !isContract && seatIsControllable;
+  const isHumanDummyTurn = isHumanTurn && isDummyTurn;
 
   const phaseName = isGameEnd
     ? t('phase.gameEnd')

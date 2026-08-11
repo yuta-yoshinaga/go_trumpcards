@@ -108,14 +108,15 @@ func (p *MinibridgeWebPresenter) buildMessage(s interfaces.MinibridgeGame, lastE
 		return lastErr.Error(), "", nil
 	}
 	if s.GetGameEndFlag() {
-		params := map[string]string{"idx": strconv.Itoa(s.GetWinnerTeam())}
+		// **勝敗はペア単位なので、席番号を渡す文言が無い。** 未使用のパラメータは
+		// 載せない（レビュー指摘 PR #5313）。
 		switch s.GetWinnerTeam() {
 		case 0:
-			return "", "minibridge.result.you", params
+			return "", "minibridge.result.you", nil
 		case -1:
-			return "", "minibridge.result.tie", params
+			return "", "minibridge.result.tie", nil
 		default:
-			return "", "minibridge.result.cpu", params
+			return "", "minibridge.result.cpu", nil
 		}
 	}
 	switch s.GetPhase() {

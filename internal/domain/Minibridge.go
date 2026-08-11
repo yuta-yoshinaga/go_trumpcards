@@ -467,17 +467,19 @@ func (m *Minibridge) IsHumanContractTurn() bool {
 
 // IsHumanTurn は人間が札を出す番かを返す。
 //
-// **人間がデクレアラーならダミーの手番も人間が操作します。** これを落とすと
-// ダミーの番で盤面が止まります。
+// **ダミーの席かどうかを先に見る（レビュー指摘 PR #5313）。** ダミーは常に
+// 落札者の相方なので、落札者が席 2 ならダミーは席 0 ——**人間自身の席**です。
+// 「その席が人間か」を先に見ると、CPU が落札したダミーまで人間の番と判定され、
+// `advance()` が CPU を進めないまま人間の入力待ちで止まります。
+// ダミーの手番を握るのは席の持ち主ではなく**落札者**です。
 func (m *Minibridge) IsHumanTurn() bool {
 	if m.gameEndFlag || m.phase != MinibridgePhasePlay {
 		return false
 	}
-	if m.players[m.currentPlayerIdx].GetIsHuman() {
-		return true
+	if m.currentPlayerIdx == m.dummyIdx && m.declarerIdx >= 0 {
+		return m.players[m.declarerIdx].GetIsHuman()
 	}
-	return m.currentPlayerIdx == m.dummyIdx && m.declarerIdx >= 0 &&
-		m.players[m.declarerIdx].GetIsHuman()
+	return m.players[m.currentPlayerIdx].GetIsHuman()
 }
 
 // PlayerPlay は人間が札を出す。
@@ -594,19 +596,52 @@ func minibridgeContains(xs []int, v int) bool {
 }
 
 // chooseCpuCard は CPU の手。**取れるなら取り、取れないなら安く出す。**
+//
+// **どれも勝てないときに最強札を投げない（レビュー指摘 PR #5313）。** リードの
+// スートを持っていないと `GetValidPlayIndices` は手札全部を返すので、素朴に
+// 最強を選ぶと切り札でもないエースを捨て札にしてしまいます。
 func (m *Minibridge) chooseCpuCard(playerIdx int) int {
 	valid := m.GetValidPlayIndices(playerIdx)
 	if len(valid) == 0 {
 		return 0
 	}
 	p := m.players[playerIdx]
-	pick, pickRank := valid[0], minibridgeRank(p.GetCard(valid[0]))
+
+	// いま場の最強札に勝てる手があるかを先に見る。
+	canWin := false
+	for _, i := range valid {
+		if m.winsTrick(p.GetCard(i)) {
+			canWin = true
+			break
+		}
+	}
+
+	pick := valid[0]
+	pickRank := minibridgeRank(p.GetCard(pick))
 	for _, i := range valid[1:] {
-		if r := minibridgeRank(p.GetCard(i)); r > pickRank {
+		r := minibridgeRank(p.GetCard(i))
+		switch {
+		case canWin && m.winsTrick(p.GetCard(i)) && (!m.winsTrick(p.GetCard(pick)) || r > pickRank):
+			pick, pickRank = i, r
+		case !canWin && r < pickRank:
 			pick, pickRank = i, r
 		}
 	}
 	return pick
+}
+
+// winsTrick は card がいまの場を取れるかを返す（場が空ならリードなので取れる扱い）。
+func (m *Minibridge) winsTrick(card *Card) bool {
+	if len(m.currentTrick) == 0 {
+		return true
+	}
+	best := m.currentTrick[0].Card
+	for _, tc := range m.currentTrick[1:] {
+		if m.beats(tc.Card, best) {
+			best = tc.Card
+		}
+	}
+	return m.beats(card, best)
 }
 
 // finishRound はディールを精算する。
@@ -959,6 +994,13 @@ func (m *Minibridge) UnmarshalJSON(data []byte) error {
 	}
 	if !j.GameEndFlag && j.WinnerTeam != -1 {
 		return fmt.Errorf("winner team %d before the game ended", j.WinnerTeam)
+	}
+	// **終了フラグとフェーズは対（レビュー指摘 PR #5313）。** `finishGame` は必ず
+	// 両方を立てるので、片方だけ立った盤面は存在しません。通してしまうと
+	// すべての入口が `gameEndFlag` で早期 return する一方フェーズは進まず、
+	// **投了でも復旧できない恒久デッドロック**になります。
+	if j.GameEndFlag != (j.Phase == MinibridgePhaseGameEnd) {
+		return fmt.Errorf("game end flag %v disagrees with phase %d", j.GameEndFlag, j.Phase)
 	}
 	if len(j.CurrentTrick) > MinibridgePlayerCnt {
 		return fmt.Errorf("current trick holds %d cards", len(j.CurrentTrick))

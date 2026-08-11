@@ -354,16 +354,33 @@ func TestMinibridge_HumanDeclarerPlaysTheDummy(t *testing.T) {
 }
 
 // **落札者が CPU なら、ダミーも CPU が動かす。**
+//
+// **ダミーが人間の席と重なる組み合わせを必ず踏む（レビュー指摘 PR #5313）。**
+// ダミーは落札者の相方なので、落札者が席 2 ならダミーは席 0 ——人間自身の席。
+// 「その席が人間か」で判定していると、ここだけ人間の番と誤判定して盤面が止まる。
 func TestMinibridge_CpuDeclarerPlaysItsOwnDummy(t *testing.T) {
-	m := newTestMinibridge(t)
-	m.SetContractForTest(1, 1, CardDesignHeart) // 席 1 = CPU が落札者、ダミーは席 3
-	m.SetPhaseForTest(MinibridgePhasePlay)
-	m.SetCurrentPlayerIdxForTest(3)
+	for _, tc := range []struct {
+		name            string
+		declarer, dummy int
+	}{
+		{"ダミーも CPU の席", 1, 3},
+		{"ダミーが人間の席", 2, 0},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			m := newTestMinibridge(t)
+			m.SetContractForTest(tc.declarer, 1, CardDesignHeart)
+			require.Equal(t, tc.dummy, m.GetDummyIdx())
+			m.SetPhaseForTest(MinibridgePhasePlay)
+			m.SetCurrentPlayerIdxForTest(tc.dummy)
 
-	assert.False(t, m.IsHumanTurn())
-	before := m.GetPlayer(3).GetCardsSize()
-	m.CpuPlay()
-	assert.Equal(t, before-1, m.GetPlayer(3).GetCardsSize())
+			assert.False(t, m.IsHumanTurn(), "ダミーの手番を握るのは席の持ち主でなく落札者")
+			assert.Error(t, m.PlayerPlay(0), "人間は CPU 落札者のダミーを操作できない")
+
+			before := m.GetPlayer(tc.dummy).GetCardsSize()
+			m.CpuPlay()
+			assert.Equal(t, before-1, m.GetPlayer(tc.dummy).GetCardsSize(), "CPU が進めるので盤面は止まらない")
+		})
+	}
 }
 
 // **公開の入口も踏む。**
@@ -631,6 +648,10 @@ func TestMinibridge_UnmarshalRejectsBrokenSnapshots(t *testing.T) {
 		{"round number above the configured rounds", true, func(m map[string]any) { m["rn"] = 99 }},
 		{"negative trick number", true, func(m map[string]any) { m["tn"] = -1 }},
 		{"winner before the game ended", true, func(m map[string]any) { m["wt"] = 1 }},
+		// **終了フラグとフェーズは対。** 片方だけ立つと投了でも復旧できない
+		// 恒久デッドロックになる（レビュー指摘 PR #5313）。
+		{"game end flag without the game end phase", true, func(m map[string]any) { m["ge"] = true }},
+		{"game end phase without the flag", true, func(m map[string]any) { m["ph"] = 3 }},
 		{"winner team out of range", true, func(m map[string]any) { m["ge"] = true; m["wt"] = 9 }},
 		{"config out of range", true, func(m map[string]any) { m["cf"] = map[string]any{"r": 6} }},
 		// **場札は枚数だけでなく中身も見る（#5310 の再発防止）。**
@@ -701,4 +722,69 @@ func TestMinibridgePlayer_UnmarshalRejectsBrokenFields(t *testing.T) {
 		var p MinibridgePlayer
 		assert.NoError(t, json.Unmarshal([]byte(body), &p), body)
 	}
+}
+
+// **終了フラグとフェーズが割れた盤面は、通すと二度と動かせない。**
+// すべての入口が `gameEndFlag` で早期 return する一方、フェーズは終局ではないので
+// 何も進まず、`GiveUp` でも復旧できない（レビュー指摘 PR #5313）。
+func TestMinibridge_UnmarshalRejectsADeadlockedSnapshot(t *testing.T) {
+	m := newTestMinibridge(t)
+	data, err := json.Marshal(m)
+	require.NoError(t, err)
+	var raw map[string]any
+	require.NoError(t, json.Unmarshal(data, &raw))
+	raw["ge"] = true // フェーズは Contract のまま
+
+	bad, err := json.Marshal(raw)
+	require.NoError(t, err)
+	var restored Minibridge
+	assert.Error(t, json.Unmarshal(bad, &restored))
+
+	// **負のコントロール: 対で立っていれば通り、終局として扱える。**
+	m.FinishGameForTest()
+	good, err := json.Marshal(m)
+	require.NoError(t, err)
+	var ok Minibridge
+	require.NoError(t, json.Unmarshal(good, &ok))
+	assert.True(t, ok.GetGameEndFlag())
+	assert.Equal(t, MinibridgePhaseGameEnd, ok.GetPhase())
+}
+
+// **勝てないときに最強札を投げない。** リードのスートが無いと合法手は手札全部に
+// なるので、素朴に最強を選ぶと切り札でもないエースを捨て札にする
+// （レビュー指摘 PR #5313）。
+func TestMinibridge_CpuDiscardsLowWhenItCannotWin(t *testing.T) {
+	m := newTestMinibridge(t)
+	m.SetContractForTest(0, 1, CardDesignHeart)
+	m.SetPhaseForTest(MinibridgePhasePlay)
+	m.SetLeadPlayerIdxForTest(0)
+	m.SetCurrentPlayerIdxForTest(1)
+	// ♠ がリードされていて、席 1 は ♠ も切り札 ♥ も持っていない。
+	m.SetCurrentTrickForTest([]*TrickCard{
+		{PlayerIdx: 0, Card: NewCard(CardDesignSpade, 13, false)},
+	})
+	minibridgeHandOf(m, 1,
+		NewCard(CardDesignDiamond, 1, false), // ♦A（最強だが勝てない）
+		NewCard(CardDesignClover, 2, false),  // ♣2（いちばん安い）
+	)
+	assert.Equal(t, 1, m.CpuChoiceForTest(1), "勝てないので安い札を捨てる")
+
+	// **負のコントロール: 取れるなら取りにいく。**
+	minibridgeHandOf(m, 1,
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignSpade, 1, false), // ♠A で ♠K に勝てる
+	)
+	assert.Equal(t, 1, m.CpuChoiceForTest(1))
+
+	// 切り札で取れるならそれを使う。
+	minibridgeHandOf(m, 1,
+		NewCard(CardDesignDiamond, 1, false),
+		NewCard(CardDesignHeart, 2, false), // 切り札の ♥2
+	)
+	assert.Equal(t, 1, m.CpuChoiceForTest(1), "切り札なら 2 でも取れる")
+
+	// リードする番なら「勝てる」扱いで強く出る。
+	m.SetCurrentTrickForTest(nil)
+	minibridgeHandOf(m, 1, NewCard(CardDesignClover, 3, false), NewCard(CardDesignClover, 1, false))
+	assert.Equal(t, 1, m.CpuChoiceForTest(1), "リードは強い札から")
 }
