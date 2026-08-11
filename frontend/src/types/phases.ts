@@ -1559,6 +1559,20 @@ export const SchnapsenPhase = {
   GAME_END: 2,
 } as const;
 
+/**
+ * Israeli Whist phase constants (sync: internal/domain/IsraeliWhist.go).
+ *
+ * **Bidding happens twice**: the auction settles trump and a quota for whoever
+ * wins it, then everyone calls their own target separately.
+ */
+export const IsraeliWhistPhase = {
+  AUCTION: 0,
+  BID: 1,
+  PLAY: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
 /** Estimation phase constants (sync: internal/domain/Estimation.go). */
 export const EstimationPhase = {
   /** The dealer chooses the trump suit before anyone calls. */

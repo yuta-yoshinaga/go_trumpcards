@@ -460,6 +460,11 @@ func init() {
 			return usecase.NewEstimationInteractor(domain.NewDefaultEstimation(), new(presenter.EstimationWebPresenter))
 		},
 		controller.NewEstimationWebController)
+	BindWebControllerFor("israeliwhist",
+		func() usecase.IsraeliWhistInteractorIF {
+			return usecase.NewIsraeliWhistInteractor(domain.NewDefaultIsraeliWhist(), new(presenter.IsraeliWhistWebPresenter))
+		},
+		controller.NewIsraeliWhistWebController)
 	BindWebControllerFor("rams",
 		func() usecase.RamsInteractorIF {
 			return usecase.NewRamsInteractor(domain.NewDefaultRams(), new(presenter.RamsWebPresenter))

@@ -300,7 +300,8 @@
     "rams": "ラムス",
     "tarabish": "タラビッシュ",
     "baloot": "バルート",
-    "estimation": "エスティメーション"
+    "estimation": "エスティメーション",
+    "israeliwhist": "イスラエリホイスト"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1220,6 +1221,16 @@
     "estimation.result.win": "あなたの勝ちです（{{score}}点）。",
     "estimation.result.lose": "CPU{{idx}} の勝ちです。",
     "estimation.result.tie": "同点です。",
+    "israeliwhist.auction.choose": "入札してください（最低5）。降りることもできます。",
+    "israeliwhist.auction.wait": "他のプレイヤーが入札しています。",
+    "israeliwhist.bid.choose": "目標トリック数を宣言してください。",
+    "israeliwhist.bid.quota": "あなたが落札者です。{{n}} 以上を宣言する義務があります。",
+    "israeliwhist.bid.restricted": "あなたが最後の宣言者です。合計が13になるため {{n}} は選べません。",
+    "israeliwhist.play": "的中は宣言の2乗で跳ねます。全員的中／全員外しは2倍。",
+    "israeliwhist.roundEnd": "ラウンド{{round}}が終了しました（あなたは {{score}} 点）。",
+    "israeliwhist.result.win": "あなたの勝ちです（{{score}}点）。",
+    "israeliwhist.result.lose": "CPU{{idx}} の勝ちです。",
+    "israeliwhist.result.tie": "同点です。",
     "schnapsen.trickEnd": "トリック終了 — 次へ進んでください。",
     "seahaventowers.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
     "seahaventowers.gameOver": "ゲームオーバー",

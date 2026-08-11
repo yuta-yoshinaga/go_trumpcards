@@ -176,6 +176,8 @@ tags:
     description: Baloot (バルート) game endpoints -- 32-card Gulf partnership game; the declared mode (Sun or Hokom) swaps the rank order itself
   - name: estimation
     description: Estimation (エスティメーション) game endpoints -- 4-player Oh Hell from the Gulf; only an exact call scores, and Dash/Risk calls swing wider
+  - name: israeliwhist
+    description: Israeli Whist (イスラエリホイスト) game endpoints -- 4-player two-stage bidder; an auction settles trump and a quota, then everyone calls separately
   - name: clocksolitaire
     description: Clock Solitaire (クロックソリティア) game
   - name: durak
@@ -7203,6 +7205,107 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/EstimationResponse'
+  /israeliwhist/exec:
+    post:
+      tags:
+        - israeliwhist
+      summary: Execute an Israeli Whist game command
+      description: |
+        Send a command to advance the Israeli Whist (イスラエリホイスト) game
+        session identified by `sessionId`.
+
+        52 cards, four players each for themselves, thirteen apiece.
+        **Bidding happens twice**, which is what separates it from the
+        one-auction games:
+
+        1. **Auction** -- players call "n tricks + a suit" (minimum 5), each
+           call beating the last by number or, at equal number, by suit rank
+           (clubs < diamonds < hearts < spades -- *not* the order the
+           `CardDesign` constants sit in). Dropping out is final, and the last
+           player standing with nobody having bid must bid rather than pass, so
+           a trump is always settled. The winner's suit becomes trump and their
+           number becomes their personal quota.
+        2. **Calling** -- everyone, the winner included, calls their own target.
+           The winner must call at least their quota (`minimumBid`), and the
+           last caller may not make the total 13 (`restrictedBid`).
+
+        Scoring: an exact call of n scores `n^2 + 10`, an exact 0 scores 25, and
+        missing costs 10 per trick of difference. If all four are exact, or all
+        four miss, the round doubles either way.
+      operationId: execIsraeliWhist
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, auction, a, pass, bid, b, play, p, next, n, giveup, g, hint, h, log, l]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                  description: Index into your hand (required for `play`)
+                suit:
+                  type: integer
+                  description: Trump suit 1..4 (1=S 2=C 3=H 4=D); required for `auction`
+                bid:
+                  type: integer
+                  description: Tricks -- 5..13 for `auction`, 0..13 for `bid`. Required for both; 0 is a call, not an omission.
+                config:
+                  type: object
+                  properties:
+                    rounds:
+                      type: integer
+                      description: Rounds before the game ends (1..20, default 4)
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              auction:
+                summary: Bid seven tricks in hearts
+                value:
+                  command: auction
+                  sessionId: my-session-001
+                  bid: 7
+                  suit: 3
+              pass:
+                summary: Drop out of the auction
+                value:
+                  command: pass
+                  sessionId: my-session-001
+              bid:
+                summary: Call four tricks
+                value:
+                  command: bid
+                  sessionId: my-session-001
+                  bid: 4
+              play:
+                summary: Play the third card in hand
+                value:
+                  command: play
+                  sessionId: my-session-001
+                  cardIndex: 2
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IsraeliWhistResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IsraeliWhistResponse'
   /clocksolitaire/exec:
     post:
       tags:
@@ -44334,6 +44437,150 @@ components:
           description: "-1 until decided, and -1 on a tie"
         hint:
           $ref: '#/components/schemas/EstimationHint'
+        config:
+          type: object
+          properties:
+            rounds:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    IsraeliWhistTrickCard:
+      type: object
+      description: A card played in the current trick
+      required:
+        - playerIdx
+        - card
+      properties:
+        playerIdx:
+          type: integer
+          description: Index of the player who played this card
+        card:
+          $ref: '#/components/schemas/Card'
+    IsraeliWhistHint:
+      type: object
+      description: >-
+        A suggestion. During the auction and the calling round it carries no
+        cardIndex and puts the recommended number in value (and the suit in
+        suit when it recommends a bid); during play it names a card.
+      properties:
+        cardIndex:
+          type: integer
+          description: Index into your hand. Absent before play begins.
+        reason:
+          type: string
+          description: >-
+            israeliwhistAuctionBid / israeliwhistAuctionPass in the auction;
+            israeliwhistBid / israeliwhistMeetQuota /
+            israeliwhistAvoidRestricted when calling; israeliwhistWinTrick or
+            israeliwhistDuck during play.
+        value:
+          type: integer
+          description: Tricks to bid or call. 0 during play.
+        suit:
+          type: integer
+          description: Suit to bid in the auction; 0 otherwise.
+    IsraeliWhistPlayer:
+      type: object
+      description: One seat at an Israeli Whist table
+      properties:
+        id:
+          type: integer
+        isHuman:
+          type: boolean
+        cardCount:
+          type: integer
+          description: Hand size. The only hand information exposed for the CPU.
+        cards:
+          type: array
+          description: Populated for the human player only; empty for the CPU.
+          items:
+            $ref: '#/components/schemas/Card'
+        auctionBid:
+          type: integer
+          description: "Tricks called in the auction, or -1 when this seat never bid"
+        auctionSuit:
+          type: integer
+          description: Suit offered in the auction, or 0.
+        passed:
+          type: boolean
+          description: Dropped out of the auction. Final -- a passed seat cannot bid again.
+        bid:
+          type: integer
+          description: "Target called in the second round, or -1 before this seat has called"
+        trickCount:
+          type: integer
+        roundScore:
+          type: integer
+          description: Change from the round just scored.
+        totalScore:
+          type: integer
+    IsraeliWhistResponse:
+      type: object
+      description: Response payload for /israeliwhist/exec
+      properties:
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/IsraeliWhistPlayer'
+        phase:
+          type: integer
+          description: "0=Auction, 1=Bid, 2=Play, 3=RoundEnd, 4=GameEnd"
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        trumpSuit:
+          type: integer
+          description: 0 until the auction closes.
+        declarerIdx:
+          type: integer
+          description: "Seat that won the auction, or -1 before it closes"
+        highBid:
+          type: integer
+          description: Highest auction call so far; becomes the declarer's quota.
+        highSuit:
+          type: integer
+          description: Suit of the highest auction call.
+        minimumBid:
+          type: integer
+          description: Lowest call you may make -- the quota when you are the declarer, else 0.
+        restrictedBid:
+          type: integer
+          description: >-
+            The one call the last bidder may not make, because it would bring
+            the total to 13; -1 when nobody is under that restriction.
+        currentPlayerIdx:
+          type: integer
+        auctionPlayerIdx:
+          type: integer
+        bidPlayerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        currentTrick:
+          type: array
+          items:
+            $ref: '#/components/schemas/IsraeliWhistTrickCard'
+        validPlays:
+          type: array
+          description: Hand indices you may legally play. Following suit is compulsory.
+          items:
+            type: integer
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: "-1 until decided, and -1 on a tie"
+        hint:
+          $ref: '#/components/schemas/IsraeliWhistHint'
         config:
           type: object
           properties:

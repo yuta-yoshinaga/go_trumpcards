@@ -405,4 +405,12 @@ func init() {
 			return usecase.RestoreBalootInteractor(data, new(presenter.BalootWebPresenter))
 		},
 		controller.NewBalootWebControllerWithProvider)
+	games.RegisterKVGame("israeliwhist", games.CategoryExtra2,
+		func() usecase.IsraeliWhistInteractorIF {
+			return usecase.NewIsraeliWhistInteractor(domain.NewDefaultIsraeliWhist(), new(presenter.IsraeliWhistWebPresenter))
+		},
+		func(data []byte) (usecase.IsraeliWhistInteractorIF, error) {
+			return usecase.RestoreIsraeliWhistInteractor(data, new(presenter.IsraeliWhistWebPresenter))
+		},
+		controller.NewIsraeliWhistWebControllerWithProvider)
 }
