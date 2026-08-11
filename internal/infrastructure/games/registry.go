@@ -1010,6 +1010,12 @@ var registry = []*Game{
 	// 1 トリックごとに勝者・敗者の順で山札から 1 枚ずつ引く（13×2 = 山札 26 枚
 	// ちょうど）。両者 13 枚に戻ってから競り、契約は 6 + レベル トリック。
 	{Name: "honeymoonbridge", Category: CategorySolo},
+	// Minibridge ミニブリッジ
+	//
+	// **競りをハイカードポイントの公開申告に置き換えたブリッジ入門用の版。**
+	// HCP の総和は必ず 40 なので「合計の多いペア」は 20-20 で決まらないことがあり
+	// （実測 8.1%）、そこは親の側が取る。デクレアラーはダミーも操作する。
+	{Name: "minibridge", Category: CategoryExtra3},
 }
 
 // All returns a value-level copy of the registry in canonical order.
