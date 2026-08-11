@@ -1560,6 +1560,20 @@ export const SchnapsenPhase = {
 } as const;
 
 /**
+ * Sergeant Major (8-5-3) phase constants (sync: internal/domain/SergeantMajor.go).
+ *
+ * **There is no bidding phase.** The 8, 5 and 3 targets are fixed by seat, so
+ * the dealer's only choice is trump — and then the kitty discard.
+ */
+export const SergeantMajorPhase = {
+  TRUMP: 0,
+  DISCARD: 1,
+  PLAY: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
+/**
  * Hasenpfeffer phase constants (sync: internal/domain/Hasenpfeffer.go).
  *
  * **The declarer takes the blind before play**, so a discard phase of its own

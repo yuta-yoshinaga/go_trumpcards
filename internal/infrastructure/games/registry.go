@@ -998,6 +998,12 @@ var registry = []*Game{
 	// **競りは全員参加が義務**（3 人が降りたら親は降りられない）。25 枚を
 	// 6 枚ずつ + 伏せ札 1 枚で配り、6 トリック打つ。
 	{Name: "hasenpfeffer", Category: CategoryExtra3},
+	// Sergeant Major (8-5-3 / サージェントメジャー) -- イギリス軍隊由来とされる
+	// 3 人専用。**ノルマは席順で決まり**、親が 8・左隣が 5・右隣が 3
+	// （合計 16 = トリック数）。52 枚を 16 枚ずつ配り、**余り 4 枚（キティ）は
+	// 親が取り込んで 4 枚捨てる**。ノルマとの差がそのまま得点で、不足ぶんは
+	// 次ラウンドで良い札を召し上げられる。
+	{Name: "sergeantmajor", Category: CategoryExtra},
 }
 
 // All returns a value-level copy of the registry in canonical order.

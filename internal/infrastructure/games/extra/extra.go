@@ -331,4 +331,12 @@ func init() {
 			return usecase.RestoreBhabhiInteractor(data, new(presenter.BhabhiWebPresenter))
 		},
 		controller.NewBhabhiWebControllerWithProvider)
+	games.RegisterKVGame("sergeantmajor", games.CategoryExtra,
+		func() usecase.SergeantMajorInteractorIF {
+			return usecase.NewSergeantMajorInteractor(domain.NewDefaultSergeantMajor(), new(presenter.SergeantMajorWebPresenter))
+		},
+		func(data []byte) (usecase.SergeantMajorInteractorIF, error) {
+			return usecase.RestoreSergeantMajorInteractor(data, new(presenter.SergeantMajorWebPresenter))
+		},
+		controller.NewSergeantMajorWebControllerWithProvider)
 }

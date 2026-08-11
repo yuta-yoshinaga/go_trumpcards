@@ -4609,6 +4609,22 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
 		}),
+	BindCuiFor("sergeantmajor",
+		func() usecase.SergeantMajorInteractorIF {
+			return usecase.NewSergeantMajorInteractor(domain.NewDefaultSergeantMajor(), new(presenter.SergeantMajorCuiPresenter))
+		},
+		controller.NewSergeantMajorCuiController,
+		CuiHelpSpec{
+			TitleKey: "sergeantmajor.helpTitle",
+			CommandKeys: []string{
+				"sergeantmajor.helpTrump",
+				"sergeantmajor.helpDiscard",
+				"sergeantmajor.helpPlay",
+				"sergeantmajor.helpNext",
+				"sergeantmajor.helpGiveUp",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

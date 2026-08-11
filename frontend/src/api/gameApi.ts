@@ -223,6 +223,7 @@ export * from './games/scopone';
 export * from './games/scorpion';
 export * from './games/seahaventowers';
 export * from './games/sedma';
+export * from './games/sergeantmajor';
 export * from './games/settemezzo';
 export * from './games/sevenbridge';
 export * from './games/sevencardstud';
@@ -341,6 +342,7 @@ export const games = [
   'bhabhi',
   'teendopaanch',
   'hasenpfeffer',
+  'sergeantmajor',
   'razz',
   'sevencardstudhilo',
   'badugi',

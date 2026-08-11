@@ -206,6 +206,7 @@ import type {
   ScorpionResponse,
   SeahavenTowersResponse,
   SedmaResponse,
+  SergeantMajorResponse,
   SetteEMezzoResponse,
   SevenBridgeResponse,
   SevenCardStudResponse,
@@ -489,6 +490,7 @@ import { getScoponeHint } from '../utils/hints/scoponeHint';
 import { getScorpionHint } from '../utils/hints/scorpionHint';
 import { getSeahavenTowersHint } from '../utils/hints/seahavenTowersHint';
 import { getSedmaHint } from '../utils/hints/sedmaHint';
+import { getSergeantMajorHint } from '../utils/hints/sergeantmajorHint';
 import { getSetteEMezzoHint } from '../utils/hints/settemezzoHint';
 import { getSevenbridgeHint } from '../utils/hints/sevenbridgeHint';
 import { getSevenCardStudHint } from '../utils/hints/sevencardstudHint';
@@ -635,6 +637,7 @@ export const hintFactories = {
   bhabhi: (s) => getBhabhiHint(s as BhabhiResponse),
   teendopaanch: (s) => getTeenDoPaanchHint(s as TeenDoPaanchResponse),
   hasenpfeffer: (s) => getHasenpfefferHint(s as HasenpfefferResponse),
+  sergeantmajor: (s) => getSergeantMajorHint(s as SergeantMajorResponse),
   faro: (s) => getFaroHint(s as FaroResponse),
   fiftyone: (s) => getFiftyOneHint(s as FiftyOneResponse),
   napoleon: (s) => getNapoleonHint(s as NapoleonResponse),

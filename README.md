@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した287種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した288種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -101,6 +101,7 @@ Go + Clean Architecture で実装した287種類のトランプゲーム。CLI �
 | バービー (Bhabhi) | `bhabhi` | [CUI](docs/manual/cui/bhabhi.md) / [Web](docs/manual/web/bhabhi.md) |
 | 3-2-5 (Teen Do Paanch) | `teendopaanch` | [CUI](docs/manual/cui/teendopaanch.md) / [Web](docs/manual/web/teendopaanch.md) |
 | ハーゼンプフェファー (Hasenpfeffer) | `hasenpfeffer` | [CUI](docs/manual/cui/hasenpfeffer.md) / [Web](docs/manual/web/hasenpfeffer.md) |
+| サージェントメジャー (Sergeant Major) | `sergeantmajor` | [CUI](docs/manual/cui/sergeantmajor.md) / [Web](docs/manual/web/sergeantmajor.md) |
 | クロックソリティア (Clock Solitaire) | `clocksolitaire` | [CUI](docs/manual/cui/clocksolitaire.md) / [Web](docs/manual/web/clocksolitaire.md) |
 | ドゥラーク (Durak) | `durak` | [CUI](docs/manual/cui/durak.md) / [Web](docs/manual/web/durak.md) |
 | フォーティシーブス (Forty Thieves) | `fortythieves` | [CUI](docs/manual/cui/fortythieves.md) / [Web](docs/manual/web/fortythieves.md) |
