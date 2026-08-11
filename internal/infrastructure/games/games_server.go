@@ -515,6 +515,11 @@ func init() {
 			return usecase.NewPasurInteractor(domain.NewDefaultPasur(), new(presenter.PasurWebPresenter))
 		},
 		controller.NewPasurWebController)
+	BindWebControllerFor("snap",
+		func() usecase.SnapInteractorIF {
+			return usecase.NewSnapInteractor(domain.NewDefaultSnap(), new(presenter.SnapWebPresenter))
+		},
+		controller.NewSnapWebController)
 	BindWebControllerFor("rams",
 		func() usecase.RamsInteractorIF {
 			return usecase.NewRamsInteractor(domain.NewDefaultRams(), new(presenter.RamsWebPresenter))

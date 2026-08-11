@@ -1022,6 +1022,12 @@ var registry = []*Game{
 	// 取る。**J/Q/K は合計に使わず同ランクだけ**取れる。取った結果**場が空になると
 	// スール**で、その捕獲の札は得点が 2 倍。
 	{Name: "pasur", Category: CategoryExtra},
+	// Snap スナップ
+	//
+	// イギリスの反射ゲーム。**トリガーは固定ではなく「直前に出た札と同じランク」**
+	// なので、場札が 1 枚のあいだは決して成立しない。同時反射は Slapjack と同じく
+	// **予約 + Tick** で決定的に解く。
+	{Name: "snap", Category: CategorySolo},
 }
 
 // All returns a value-level copy of the registry in canonical order.

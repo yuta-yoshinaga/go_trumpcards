@@ -4669,6 +4669,21 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
 		}),
+	BindCuiFor("snap",
+		func() usecase.SnapInteractorIF {
+			return usecase.NewSnapInteractor(domain.NewDefaultSnap(), new(presenter.SnapCuiPresenter))
+		},
+		controller.NewSnapCuiController,
+		CuiHelpSpec{
+			TitleKey: "snap.helpTitle",
+			CommandKeys: []string{
+				"snap.helpStep",
+				"snap.helpSnap",
+				"snap.helpTick",
+				"snap.helpGiveUp",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.
