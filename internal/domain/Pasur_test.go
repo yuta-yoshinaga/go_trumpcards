@@ -21,7 +21,7 @@ func newTestPasur(t *testing.T) *Pasur {
 // **場に 4 枚置いた残り 48 枚は 2/3/4 人のどれでも割り切れる。**
 func TestPasur_DealDividesForEveryPlayerCount(t *testing.T) {
 	for n := PasurPlayerCntMin; n <= PasurPlayerCntMax; n++ {
-		rest := 52 - PasurInitialTableSize
+		rest := PasurDeckSize - PasurInitialTableSize
 		assert.Zero(t, rest%(n*PasurHandSize), "%d 人で割り切れる", n)
 
 		p := NewPasur(nil, PasurConfig{PlayerCnt: n})
@@ -32,7 +32,7 @@ func TestPasur_DealDividesForEveryPlayerCount(t *testing.T) {
 			assert.Equal(t, PasurHandSize, p.GetPlayer(i).GetCardsSize())
 			total += p.GetPlayer(i).GetCardsSize()
 		}
-		assert.Equal(t, 52, total, "%d 人でも 52 枚すべてに行き先がある", n)
+		assert.Equal(t, PasurDeckSize, total, "%d 人でも 52 枚すべてに行き先がある", n)
 	}
 }
 
@@ -270,7 +270,7 @@ func TestPasur_LeftoversGoToTheLastCapturer(t *testing.T) {
 func TestPasur_DealsAnotherPackUntilTheDeckRunsOut(t *testing.T) {
 	p := newTestPasur(t)
 	assert.Equal(t, 1, p.GetPacksDealt())
-	assert.Equal(t, 52-PasurInitialTableSize-PasurDefaultPlayerCnt*PasurHandSize, p.GetDeckRemaining())
+	assert.Equal(t, PasurDeckSize-PasurInitialTableSize-PasurDefaultPlayerCnt*PasurHandSize, p.GetDeckRemaining())
 
 	for !p.GetGameEndFlag() {
 		idx, table := p.CpuChoiceForTest(p.GetCurrentPlayerIdx())
@@ -296,7 +296,7 @@ func TestPasur_GamesTerminateForEveryPlayerCount(t *testing.T) {
 			for i := range n {
 				held += p.GetPlayer(i).GetCapturedCount()
 			}
-			assert.Equal(t, 52, held, "%d 人: 52 枚すべてがどこかにある", n)
+			assert.Equal(t, PasurDeckSize, held, "%d 人: 52 枚すべてがどこかにある", n)
 			assert.NotEmpty(t, p.GetWinners())
 		}
 	}
@@ -571,4 +571,60 @@ func TestPasurPlayer_UnmarshalRejectsAHalfSoor(t *testing.T) {
 		var p PasurPlayer
 		assert.NoError(t, json.Unmarshal([]byte(body), &p), body)
 	}
+}
+
+// **山札そのものが無いスナップショットは弾く（レビュー指摘 PR #5314）。**
+//
+// `GetDeckRemaining` だけが nil を守っていて `advanceTurn` は守っていなかったので、
+// 通すと手札が尽きた瞬間に nil pointer dereference で落ちました。
+func TestPasur_UnmarshalRejectsAMissingDeck(t *testing.T) {
+	p := newTestPasur(t)
+	data, err := json.Marshal(p)
+	require.NoError(t, err)
+	var raw map[string]any
+	require.NoError(t, json.Unmarshal(data, &raw))
+	raw["tc"] = nil
+
+	bad, err := json.Marshal(raw)
+	require.NoError(t, err)
+	var restored Pasur
+	assert.Error(t, json.Unmarshal(bad, &restored))
+
+	// **負のコントロール: 山札があれば通り、手札が尽きても落ちない。**
+	var ok Pasur
+	require.NoError(t, json.Unmarshal(data, &ok))
+	assert.NotPanics(t, func() {
+		for !ok.GetGameEndFlag() {
+			idx, table := ok.CpuChoiceForTest(ok.GetCurrentPlayerIdx())
+			if err := ok.PlayForTest(ok.GetCurrentPlayerIdx(), idx, table); err != nil {
+				t.Fatalf("play: %v", err)
+			}
+		}
+	})
+}
+
+// **配ったパック数と山札の残りは対。** 食い違うと dealPack が途中で引けなくなり、
+// 席ごとに手札の枚数が変わります（レビュー指摘 PR #5314 の残余リスク）。
+func TestPasur_UnmarshalRejectsAPackCountThatDisagreesWithTheDeck(t *testing.T) {
+	p := newTestPasur(t)
+	data, err := json.Marshal(p)
+	require.NoError(t, err)
+	var raw map[string]any
+	require.NoError(t, json.Unmarshal(data, &raw))
+
+	for _, packs := range []int{0, 2, 5} {
+		raw["pd"] = packs
+		bad, err := json.Marshal(raw)
+		require.NoError(t, err)
+		var restored Pasur
+		assert.Error(t, json.Unmarshal(bad, &restored), "packsDealt=%d", packs)
+	}
+
+	// **負のコントロール: 実際の配りと一致していれば通る。**
+	raw["pd"] = 1
+	good, err := json.Marshal(raw)
+	require.NoError(t, err)
+	var ok Pasur
+	assert.NoError(t, json.Unmarshal(good, &ok))
+	assert.Equal(t, 1, ok.GetPacksDealt())
 }

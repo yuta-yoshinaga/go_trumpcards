@@ -24,6 +24,9 @@ const PasurHandSize = 4
 // PasurInitialTableSize はゲーム開始時に場へ置く枚数。
 const PasurInitialTableSize = 4
 
+// PasurDeckSize は 1 デッキの枚数。
+const PasurDeckSize = 52
+
 // PasurCaptureSum は捕獲の合計値。**手札 1 枚 + 場の数札の合計がこれ。**
 //
 // **手札 1 枚だけでは絶対に取れない。** 数札は A=1..10 なので 11 ちょうどの札は
@@ -469,7 +472,11 @@ func (p *Pasur) chooseCpuMove(playerIdx int) (int, []int) {
 			for _, ti := range opt {
 				value += pasurCardScore(p.tableCards[ti])
 			}
-			// **場を空にできるならスール。** 倍になるので強く優先する。
+			// **スールは取った札が倍になるので、倍で見積もる。**
+			//
+			// 最優先ではありません（レビュー指摘 PR #5314）——0 点の札で場を
+			// 空にするより、点になる札を取るほうが得なことがあります。
+			// `+1` は「0 点でも場を空にする価値はある」ぶんの下駄です。
 			if len(opt) == len(p.tableCards) {
 				value = value*PasurSoorMultiplier + 1
 			}
@@ -677,10 +684,23 @@ func (p *Pasur) UnmarshalJSON(data []byte) error {
 			return errors.New("nil player")
 		}
 	}
-
-	if j.TrumpCards != nil {
-		p.trumpCards = j.TrumpCards
+	// **山札そのものが要る（レビュー指摘 PR #5314）。** 無いまま通すと、
+	// `advanceTurn` が手札の尽きた瞬間に nil の山札を引いて落ちます
+	// ——`GetDeckRemaining` だけが nil を守っていて、非対称になっていました。
+	if j.TrumpCards == nil {
+		return errors.New("missing trump cards")
 	}
+	// **配ったパック数と山札の残りは対。** 場の 4 枚を先に引くので、
+	// 残りは「52 - 4 - 配った枚数」ちょうどでなければ、細工されたスナップショットで
+	// `dealPack` が途中で引けなくなり、席ごとに手札の枚数が食い違います。
+	dealt := j.PacksDealt * j.Config.PlayerCnt * PasurHandSize
+	wantLeft := PasurDeckSize - PasurInitialTableSize - dealt
+	if j.TrumpCards.GetRemainingCount() != wantLeft {
+		return fmt.Errorf("deck has %d cards left after %d packs, want %d",
+			j.TrumpCards.GetRemainingCount(), j.PacksDealt, wantLeft)
+	}
+
+	p.trumpCards = j.TrumpCards
 	p.players, p.config, p.phase = j.Players, j.Config, j.Phase
 	p.tableCards, p.packsDealt = j.TableCards, j.PacksDealt
 	p.lastCaptureIdx, p.currentPlayerIdx = j.LastCaptureIdx, j.CurrentPlayerIdx
