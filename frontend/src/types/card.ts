@@ -102,6 +102,7 @@ export * from './games/frenchtarot';
 export * from './games/gaigel';
 export * from './games/ganjifa';
 export * from './games/gaps';
+export * from './games/germanwhist';
 export * from './games/ginrummy';
 export * from './games/gofish';
 export * from './games/golf';

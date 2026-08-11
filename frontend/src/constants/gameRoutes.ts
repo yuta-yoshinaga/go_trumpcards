@@ -939,6 +939,13 @@ export const gameCategories: readonly GameCategory[] = [
         page: 'Schnapsen',
         profile: { mood: [2, 4, 4, 3], skill: [5, 4, 2, 2], social: [1, 2, 5, 4, 3], theme: [2, 4, 1, 1, 2, 3] },
       },
+      {
+        path: '/germanwhist',
+        labelKey: 'nav.germanwhist',
+        icon: '🎩',
+        page: 'GermanWhist',
+        profile: { mood: [2, 4, 4, 3], skill: [5, 5, 2, 2], social: [1, 2, 5, 4, 3], theme: [2, 5, 1, 1, 2, 3] },
+      },
     ],
   },
   {

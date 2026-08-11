@@ -4378,6 +4378,19 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),
+	BindCuiFor("germanwhist",
+		func() usecase.GermanWhistInteractorIF {
+			return usecase.NewGermanWhistInteractor(domain.NewDefaultGermanWhist(), new(presenter.GermanWhistCuiPresenter))
+		},
+		controller.NewGermanWhistCuiController,
+		CuiHelpSpec{
+			TitleKey: "germanwhist.helpTitle",
+			CommandKeys: []string{
+				"germanwhist.helpPlay",
+				"germanwhist.helpGiveUp",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

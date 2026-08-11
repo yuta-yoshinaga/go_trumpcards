@@ -292,7 +292,8 @@
     "cribbagesquares": "クリベッジ・スクエアズ",
     "diplomat": "ディプロマット",
     "royalcotillion": "ロイヤルコティヨン",
-    "crazyquilt": "クレイジーキルト"
+    "crazyquilt": "クレイジーキルト",
+    "germanwhist": "ジャーマンホイスト"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1162,6 +1163,11 @@
     "schnapsen.result.p0Win": "ゲーム終了！ あなたの勝利です（{{p0}}-{{p1}}）！",
     "schnapsen.result.p1Win": "ゲーム終了！ CPU の勝利です（{{p0}}-{{p1}}）。",
     "schnapsen.result.tie": "ゲーム終了！ 引き分けです（{{p0}}-{{p1}}）。",
+    "germanwhist.phase.draw": "前半です。表向きの札が欲しければ取りに行き、要らなければわざと負けましょう。",
+    "germanwhist.phase.scoring": "後半です。ここからは取ったトリックがそのまま得点になります。",
+    "germanwhist.result.p0Win": "あなたの勝ちです（後半 {{p0}}-{{p1}}）。",
+    "germanwhist.result.p1Win": "CPUの勝ちです（後半 {{p0}}-{{p1}}）。",
+    "germanwhist.result.tie": "引き分けです（後半 {{p0}}-{{p1}}）。",
     "schnapsen.trickEnd": "トリック終了 — 次へ進んでください。",
     "seahaventowers.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
     "seahaventowers.gameOver": "ゲームオーバー",

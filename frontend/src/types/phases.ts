@@ -1559,6 +1559,15 @@ export const SchnapsenPhase = {
   GAME_END: 2,
 } as const;
 
+/** German Whist phase constants (sync: internal/domain/GermanWhist.go). */
+export const GermanWhistPhase = {
+  /** First 13 tricks — played for the face-up card, and they do NOT score. */
+  DRAW: 0,
+  /** Second 13 tricks — every trick counts. */
+  SCORING: 1,
+  GAME_END: 2,
+} as const;
+
 /** Truco phase constants (sync: internal/domain/Truco.go). */
 export const TrucoPhase = {
   PLAY: 0,

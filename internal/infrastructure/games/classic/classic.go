@@ -380,4 +380,12 @@ func init() {
 			return usecase.RestoreRoyalCotillionInteractor(data, new(presenter.RoyalCotillionWebPresenter))
 		},
 		controller.NewRoyalCotillionWebControllerWithProvider)
+	games.RegisterKVGame("germanwhist", games.CategoryClassic,
+		func() usecase.GermanWhistInteractorIF {
+			return usecase.NewGermanWhistInteractor(domain.NewDefaultGermanWhist(), new(presenter.GermanWhistWebPresenter))
+		},
+		func(data []byte) (usecase.GermanWhistInteractorIF, error) {
+			return usecase.RestoreGermanWhistInteractor(data, new(presenter.GermanWhistWebPresenter))
+		},
+		controller.NewGermanWhistWebControllerWithProvider)
 }

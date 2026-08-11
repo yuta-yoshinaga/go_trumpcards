@@ -292,7 +292,8 @@
     "cribbagesquares": "Cribbage Squares",
     "diplomat": "Diplomat",
     "royalcotillion": "Royal Cotillion",
-    "crazyquilt": "Crazy Quilt"
+    "crazyquilt": "Crazy Quilt",
+    "germanwhist": "German Whist"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1162,6 +1163,11 @@
     "schnapsen.result.p0Win": "Game over! You win ({{p0}}-{{p1}})!",
     "schnapsen.result.p1Win": "Game over! The CPU wins ({{p0}}-{{p1}}).",
     "schnapsen.result.tie": "Game over! It's a draw ({{p0}}-{{p1}}).",
+    "germanwhist.phase.draw": "First half. Take the face-up card if it's worth having — otherwise lose the trick on purpose.",
+    "germanwhist.phase.scoring": "Second half. From here on every trick you take is a point.",
+    "germanwhist.result.p0Win": "You win (second half {{p0}}-{{p1}}).",
+    "germanwhist.result.p1Win": "The CPU wins (second half {{p0}}-{{p1}}).",
+    "germanwhist.result.tie": "A tie (second half {{p0}}-{{p1}}).",
     "schnapsen.trickEnd": "Trick complete — continue.",
     "seahaventowers.gameClear": "Game Clear! Moves: {{moveCount}}",
     "seahaventowers.gameOver": "Game Over",

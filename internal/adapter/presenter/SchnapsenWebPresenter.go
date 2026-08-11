@@ -63,14 +63,6 @@ func (p *SchnapsenWebPresenter) buildBase(s interfaces.SchnapsenGame) *controlle
 	return resObj
 }
 
-// intSliceOrEmpty nil スライスを空スライスに正規化する (JSON で null を避ける)。
-func intSliceOrEmpty(in []int) []int {
-	if in == nil {
-		return make([]int, 0)
-	}
-	return in
-}
-
 // buildPlayersOutput プレイヤー情報を構築
 func (p *SchnapsenWebPresenter) buildPlayersOutput(s interfaces.SchnapsenGame) []*controller.SchnapsenWebOutputPlayer {
 	out := make([]*controller.SchnapsenWebOutputPlayer, 0)
