@@ -295,7 +295,8 @@
     "crazyquilt": "クレイジーキルト",
     "germanwhist": "ジャーマンホイスト",
     "slobberhannes": "スロバーハンネス",
-    "polignac": "ポリニャック"
+    "polignac": "ポリニャック",
+    "reversis": "レヴェルシ"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1182,6 +1183,10 @@
     "polignac.roundEnd": "ラウンド{{round}}が終了しました。",
     "polignac.result.winner": "プレイヤー{{idx}}の勝ちです（失点 {{score}}）。",
     "polignac.result.tie": "同点で決着つかず。",
+    "reversis.play": "失点を避けましょう。プールは現在 {{pool}} チップです。",
+    "reversis.roundEnd": "ラウンド{{round}}が終了しました。プールは {{pool}} チップです。",
+    "reversis.result.winner": "プレイヤー{{idx}}の勝ちです（{{chips}}チップ）。",
+    "reversis.result.tie": "同点で決着つかず。",
     "schnapsen.trickEnd": "トリック終了 — 次へ進んでください。",
     "seahaventowers.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
     "seahaventowers.gameOver": "ゲームオーバー",

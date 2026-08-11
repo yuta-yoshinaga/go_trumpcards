@@ -200,6 +200,7 @@ export * from './games/prsi';
 export * from './games/pyramid';
 export * from './games/razz';
 export * from './games/reddog';
+export * from './games/reversis';
 export * from './games/rook';
 export * from './games/royalcotillion';
 export * from './games/rummy500';
@@ -317,6 +318,7 @@ export const games = [
   'germanwhist',
   'slobberhannes',
   'polignac',
+  'reversis',
   'razz',
   'sevencardstudhilo',
   'badugi',

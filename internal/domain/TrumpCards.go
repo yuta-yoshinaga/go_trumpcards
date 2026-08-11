@@ -285,6 +285,28 @@ func NewTrumpCardsBezique() *TrumpCards {
 // 役判定 (casino) の両方が参照するため、untagged な core ファイルに置く (#2126)。
 var ShortDeckValues = []int{1, 6, 7, 8, 9, 10, 11, 12, 13}
 
+// NewTrumpCardsReversis レヴェルシ用48枚デッキコンストラクタ
+// 標準52枚から**10を4枚抜いた**48枚。
+// A,2,3,4,5,6,7,8,9,J,Q,K (値: 1..9,11,12,13) × 4スート = 48枚。
+// ピノクルの48枚とは構成が違う（あちらは9〜Aの短いデッキを2組）ので流用できない。
+// 4人に12枚ずつ配ると過不足なく0枚残る。
+func NewTrumpCardsReversis() *TrumpCards {
+	reversisValues := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13} // 10 を除く
+	suits := []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond}
+	totalCards := len(reversisValues) * len(suits) // 48
+
+	t := new(TrumpCards)
+	t.deckCnt = totalCards
+	t.deck = make([]*Card, 0, totalCards)
+	for _, suit := range suits {
+		for _, val := range reversisValues {
+			t.deck = append(t.deck, NewCard(suit, val, false))
+		}
+	}
+	t.deckInit()
+	return t
+}
+
 // NewTrumpCardsShortDeck ショートデック(6+)用36枚デッキコンストラクタ
 // A,6,7,8,9,10,J,Q,K (値: 1,6,7,8,9,10,11,12,13) × 4スート = 36枚
 func NewTrumpCardsShortDeck() *TrumpCards {

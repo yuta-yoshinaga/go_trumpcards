@@ -166,6 +166,8 @@ tags:
     description: Slobberhannes (スロバーハンネス) game endpoints -- avoid the first trick, the last trick, and the Q of clubs
   - name: polignac
     description: Polignac (ポリニャック) game endpoints -- avoid the jacks; the J of spades costs double
+  - name: reversis
+    description: Reversis (レヴェルシ) game endpoints -- 48-card avoidance with a chip pool; the Quinola and the A of diamonds cost extra
   - name: clocksolitaire
     description: Clock Solitaire (クロックソリティア) game
   - name: durak
@@ -6784,6 +6786,71 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PolignacResponse'
+  /reversis/exec:
+    post:
+      tags:
+        - reversis
+      summary: Execute a Reversis game command
+      description: |
+        Send a command to advance the Reversis (レヴェルシ) game session
+        identified by `sessionId`.
+
+        A 4-player **avoidance** game on a 48-card pack (a standard 52 with the
+        four 10s removed), **no trump**. Taking a trick costs its card points
+        (A=4, K=3, Q=2, J=1 -- 40 a round). The **Quinola (J of hearts)** and
+        the **A of diamonds** cost 5 more each **and 5 chips into the pool**.
+        Everyone antes each round; the fewest penalty points takes the pool
+        whole, and a tie carries it into the next round. Most chips wins.
+      operationId: execReversis
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, play, p, next, n, giveup, g, hint, h, log, l]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                  description: Index into your hand (required for `play`)
+                config:
+                  type: object
+                  properties:
+                    rounds:
+                      type: integer
+                      description: Rounds to play (1..12, default 4)
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play the third card in hand
+                value:
+                  command: play
+                  sessionId: my-session-001
+                  cardIndex: 2
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReversisResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReversisResponse'
   /clocksolitaire/exec:
     post:
       tags:
@@ -43547,6 +43614,115 @@ components:
           type: integer
         hint:
           $ref: '#/components/schemas/CrazyQuiltHint'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    ReversisTrickCard:
+      type: object
+      description: A card played in the current trick
+      required:
+        - playerIdx
+        - card
+      properties:
+        playerIdx:
+          type: integer
+          description: Index of the player who played this card
+        card:
+          $ref: '#/components/schemas/Card'
+    ReversisHint:
+      type: object
+      description: A suggested card to play
+      properties:
+        cardIndex:
+          type: integer
+          description: Index into your hand
+        reason:
+          type: string
+          description: >-
+            Why that card: reversisAvoidMarked (the Quinola or the A of
+            diamonds is on the table), reversisAvoidPoints (plain penalty cards
+            are), reversisLeadSafe (leading; play a low card worth nothing), or
+            reversisDumpHigh (safe trick -- shed a high card now).
+    ReversisPlayer:
+      type: object
+      description: One seat at a Reversis table
+      properties:
+        id:
+          type: integer
+        isHuman:
+          type: boolean
+        cardCount:
+          type: integer
+          description: Hand size. The only hand information exposed for the CPU.
+        cards:
+          type: array
+          description: Populated for the human player only; empty for the CPU.
+          items:
+            $ref: '#/components/schemas/Card'
+        chips:
+          type: integer
+          description: Chips held. HIGHER is better -- this decides the game.
+        roundPenalty:
+          type: integer
+          description: Penalty points taken this round. LOWER is better -- it wins the pool.
+        trickCount:
+          type: integer
+        tookQuinola:
+          type: boolean
+          description: Took the J of hearts (+5 penalty, 5 chips to the pool).
+        tookDiamondAce:
+          type: boolean
+          description: Took the A of diamonds (+5 penalty, 5 chips to the pool).
+    ReversisResponse:
+      type: object
+      description: Response payload for /reversis/exec
+      properties:
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReversisPlayer'
+        phase:
+          type: integer
+          description: "0=Play, 1=RoundEnd, 2=GameEnd"
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        pool:
+          type: integer
+          description: Chips in the pool, taken whole by the fewest penalty points.
+        currentPlayerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        currentTrick:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReversisTrickCard'
+        validPlays:
+          type: array
+          description: Hand indices you may legally play. Following suit is compulsory.
+          items:
+            type: integer
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: "-1 until decided, and -1 on a tie"
+        hint:
+          $ref: '#/components/schemas/ReversisHint'
+        config:
+          type: object
+          properties:
+            rounds:
+              type: integer
         message:
           type: string
         messageCode:

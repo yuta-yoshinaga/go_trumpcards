@@ -183,6 +183,7 @@ import type {
   PrsiResponse,
   PyramidResponse,
   RedDogResponse,
+  ReversisResponse,
   RookResponse,
   RoyalCotillionResponse,
   Rummy500Response,
@@ -454,6 +455,7 @@ import { getPrsiHint } from '../utils/hints/prsiHint';
 import { getPyramidHint } from '../utils/hints/pyramidHint';
 import { getRazzHint } from '../utils/hints/razzHint';
 import { getReddogHint } from '../utils/hints/reddogHint';
+import { getReversisHint } from '../utils/hints/reversisHint';
 import { getRookHint } from '../utils/hints/rookHint';
 import { getRoyalCotillionHint } from '../utils/hints/royalcotillionHint';
 import { getRummy500Hint } from '../utils/hints/rummy500Hint';
@@ -599,6 +601,7 @@ export const hintFactories = {
   germanwhist: (s) => getGermanWhistHint(s as GermanWhistResponse),
   slobberhannes: (s) => getSlobberhannesHint(s as SlobberhannesResponse),
   polignac: (s) => getPolignacHint(s as PolignacResponse),
+  reversis: (s) => getReversisHint(s as ReversisResponse),
   faro: (s) => getFaroHint(s as FaroResponse),
   fiftyone: (s) => getFiftyOneHint(s as FiftyOneResponse),
   napoleon: (s) => getNapoleonHint(s as NapoleonResponse),
