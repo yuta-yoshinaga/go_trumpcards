@@ -178,6 +178,29 @@ func NewTrumpCardsPrsi() *TrumpCards {
 	return t
 }
 
+// NewTrumpCardsHasenpfeffer ハーゼンプフェファー用25枚デッキコンストラクタ
+// 9,10,J,Q,K,A (値: 1,9,10,11,12,13) × 4スート = 24枚 + ジョーカー1枚 = 25枚
+//
+// **25枚は 4人 × 6枚 + 伏せ札 1枚。** ジョーカーは Best Bower として全カード中
+// 最強の切り札になるため、ユーカーの24枚に 1枚だけ足した構成になっている。
+func NewTrumpCardsHasenpfeffer() *TrumpCards {
+	values := []int{1, 9, 10, 11, 12, 13} // A,9,10,J,Q,K
+	suits := []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond}
+	totalCards := len(values)*len(suits) + 1 // 25
+
+	t := new(TrumpCards)
+	t.deckCnt = totalCards
+	t.deck = make([]*Card, 0, totalCards)
+	for _, suit := range suits {
+		for _, val := range values {
+			t.deck = append(t.deck, NewCard(suit, val, false))
+		}
+	}
+	t.deck = append(t.deck, NewCard(CardDesignJoker, CardValueJoker, false))
+	t.deckInit()
+	return t
+}
+
 // NewTrumpCardsTeenDoPaanch 3-2-5用30枚デッキコンストラクタ
 // 8,9,10,J,Q,K,A (値: 1,8,9,10,11,12,13) × 4スート = 28枚 + 7♠ + 7♥ = 30枚
 //

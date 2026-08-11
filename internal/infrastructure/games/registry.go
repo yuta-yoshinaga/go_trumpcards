@@ -993,6 +993,11 @@ var registry = []*Game{
 	// ちょうどで割り切れる。多く取っても得点は増えず、超過は次ラウンドで相手の
 	// 良い札を召し上げる権利になる。
 	{Name: "teendopaanch", Category: CategorySolo},
+	// Hasenpfeffer (ハーゼンプフェファー) -- アメリカのドイツ系移民に伝わる
+	// ユーカー派生。**ジョーカーが全カード中最強の切り札 (Best Bower)**、
+	// **競りは全員参加が義務**（3 人が降りたら親は降りられない）。25 枚を
+	// 6 枚ずつ + 伏せ札 1 枚で配り、6 トリック打つ。
+	{Name: "hasenpfeffer", Category: CategoryExtra3},
 }
 
 // All returns a value-level copy of the registry in canonical order.

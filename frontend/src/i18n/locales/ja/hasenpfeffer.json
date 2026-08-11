@@ -1,0 +1,61 @@
+{
+  "phase": {
+    "bid": "競り",
+    "discard": "捨て札",
+    "play": "プレイ中",
+    "handEnd": "ハンド終了",
+    "gameEnd": "終了"
+  },
+  "header": {
+    "hand": "ハンド",
+    "target": "{{target}}点先取",
+    "trump": "切り札: {{suit}}",
+    "trumpUndecided": "切り札: 未宣言",
+    "blind": "伏せ札 {{n}} 枚（落札者が取り込んで1枚捨てます）",
+    "rule": "ジョーカーが全カード中最強の切り札（Best Bower）です。切り札の J（Right Bower）、同色の J（Left Bower）がそれに次ぎます。競りは全員参加が義務で、3人が降りたら親は降りられません。",
+    "score": "得点: あなたのチーム {{t0}} － 相手 {{t1}}",
+    "mustBid": "3人が降りました。あなたは親なので降りられません——宣言してください。",
+    "bidNone": "未宣言",
+    "bidPassed": "降り",
+    "bidValue": "宣言{{n}}",
+    "took": "獲得{{n}}",
+    "team": "T{{team}}",
+    "declarer": "[落札]",
+    "you": "あなた",
+    "cpu": "CPU{{idx}}"
+  },
+  "currentTrick": "現在のトリック",
+  "handEnd": {
+    "made": "契約 {{contract}} に対し {{took}} トリック：達成しました。",
+    "euchred": "契約 {{contract}} に対し {{took}} トリック：落としました（相手に {{contract}} 点）。"
+  },
+  "actions": {
+    "bid": "{{n}} 宣言",
+    "pass": "降りる",
+    "discard": "捨てて切り札 {{suit}}",
+    "nextHand": "次のハンドへ",
+    "reset": "リセット",
+    "giveUp": "投了",
+    "playAria": "{{card}} を出す",
+    "discardAria": "{{card}} を捨て札に選ぶ"
+  },
+  "result": {
+    "youWin": "あなたのチームの勝ち！ {{t0}} － {{t1}}",
+    "theyWin": "相手チームの勝ち。 {{t0}} － {{t1}}",
+    "tie": "同点です。 {{t0}} － {{t1}}"
+  },
+  "hint": {
+    "hasenpfefferBid": "この手なら取れる見込みです。宣言しましょう。",
+    "hasenpfefferPass": "この手では届きません。降りましょう。",
+    "hasenpfefferMustBid": "親は降りられません。最低額で受けましょう。",
+    "hasenpfefferDiscard": "切り札にならない最弱札を捨てましょう。",
+    "hasenpfefferWinTrick": "このトリックは取りにいきましょう。",
+    "hasenpfefferFeedPartner": "味方が勝っています。強い札は温存しましょう。"
+  },
+  "tutorial": {
+    "joker": "ハーゼンプフェファーは**ジョーカーが全カード中最強の切り札**です（Best Bower）。次が切り札の J（Right Bower）、その次が**同色の J**（Left Bower）——同色の J は切り札スートの札として扱われます。",
+    "bidding": "**競りは全員参加が義務です。** 3人が降りたら**親は降りられません**（そのときは降りるボタンが出ません）。宣言は3〜6トリックで、上回らないと落札できません。",
+    "blind": "25枚のうち1枚は**伏せ札**になります。落札した人がそれを手に入れて7枚になり、**1枚捨てて切り札を宣言**します。",
+    "hand": "あなたの手札です。出せる札には緑の枠が付きます。捨て札のときは札を選ぶと黄色の枠が付き、そのあとスートを選ぶと確定します。"
+  }
+}

@@ -110,6 +110,7 @@ import type {
   GutsResponse,
   HachiHachiResponse,
   HandAndFootResponse,
+  HasenpfefferResponse,
   HeartsResponse,
   HighCardFlushResponse,
   HokmResponse,
@@ -388,6 +389,7 @@ import { getGuandanHint } from '../utils/hints/guandanHint';
 import { getGutsHint } from '../utils/hints/gutsHint';
 import { getHachiHachiHint } from '../utils/hints/hachihachiHint';
 import { getHandAndFootHint } from '../utils/hints/handandfootHint';
+import { getHasenpfefferHint } from '../utils/hints/hasenpfefferHint';
 import { getHeartsHint } from '../utils/hints/heartsHint';
 import { getHighCardFlushHint } from '../utils/hints/highcardflushHint';
 import { getHokmHint } from '../utils/hints/hokmHint';
@@ -632,6 +634,7 @@ export const hintFactories = {
   mendikot: (s) => getMendikotHint(s as MendikotResponse),
   bhabhi: (s) => getBhabhiHint(s as BhabhiResponse),
   teendopaanch: (s) => getTeenDoPaanchHint(s as TeenDoPaanchResponse),
+  hasenpfeffer: (s) => getHasenpfefferHint(s as HasenpfefferResponse),
   faro: (s) => getFaroHint(s as FaroResponse),
   fiftyone: (s) => getFiftyOneHint(s as FiftyOneResponse),
   napoleon: (s) => getNapoleonHint(s as NapoleonResponse),

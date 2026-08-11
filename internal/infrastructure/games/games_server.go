@@ -490,6 +490,11 @@ func init() {
 			return usecase.NewTeenDoPaanchInteractor(domain.NewDefaultTeenDoPaanch(), new(presenter.TeenDoPaanchWebPresenter))
 		},
 		controller.NewTeenDoPaanchWebController)
+	BindWebControllerFor("hasenpfeffer",
+		func() usecase.HasenpfefferInteractorIF {
+			return usecase.NewHasenpfefferInteractor(domain.NewDefaultHasenpfeffer(), new(presenter.HasenpfefferWebPresenter))
+		},
+		controller.NewHasenpfefferWebController)
 	BindWebControllerFor("rams",
 		func() usecase.RamsInteractorIF {
 			return usecase.NewRamsInteractor(domain.NewDefaultRams(), new(presenter.RamsWebPresenter))

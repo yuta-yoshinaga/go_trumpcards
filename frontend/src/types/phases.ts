@@ -1560,6 +1560,20 @@ export const SchnapsenPhase = {
 } as const;
 
 /**
+ * Hasenpfeffer phase constants (sync: internal/domain/Hasenpfeffer.go).
+ *
+ * **The declarer takes the blind before play**, so a discard phase of its own
+ * sits between the auction and the first trick.
+ */
+export const HasenpfefferPhase = {
+  BID: 0,
+  DISCARD: 1,
+  PLAY: 2,
+  HAND_END: 3,
+  GAME_END: 4,
+} as const;
+
+/**
  * 3-2-5 phase constants (sync: internal/domain/TeenDoPaanch.go).
  *
  * **There is no bidding phase.** The 3, 2 and 5 targets are assigned at the

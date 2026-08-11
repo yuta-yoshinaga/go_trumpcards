@@ -1010,6 +1010,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [2, 4, 4, 3], skill: [4, 4, 3, 3], social: [1, 3, 4, 4, 3], theme: [2, 4, 1, 1, 2, 3] },
       },
       {
+        path: '/hasenpfeffer',
+        labelKey: 'nav.hasenpfeffer',
+        icon: '🐇',
+        page: 'Hasenpfeffer',
+        profile: { mood: [2, 4, 4, 3], skill: [4, 4, 2, 3], social: [1, 2, 5, 4, 3], theme: [2, 4, 1, 1, 2, 3] },
+      },
+      {
         path: '/hokm',
         labelKey: 'nav.hokm',
         icon: '🏛️',

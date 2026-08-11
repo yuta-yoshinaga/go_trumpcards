@@ -306,7 +306,8 @@
     "shelem": "Shelem",
     "mendikot": "Mendikot",
     "bhabhi": "Bhabhi",
-    "teendopaanch": "3-2-5"
+    "teendopaanch": "3-2-5",
+    "hasenpfeffer": "Hasenpfeffer"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1565,7 +1566,19 @@
     "teendopaanch.roundEnd": "Round {{round}}/{{total}} is over. Whoever fell short hands their best cards to whoever went over.",
     "teendopaanch.result.you": "You win -- you made your target most often.",
     "teendopaanch.result.cpu": "CPU{{idx}} wins.",
-    "teendopaanch.result.tie": "It's a tie."
+    "teendopaanch.result.tie": "It's a tie.",
+    "hasenpfeffer.bid.choose": "Make a bid ({{min}} or more, up to 6), or pass.",
+    "hasenpfeffer.bid.must": "Three players passed. **As dealer you cannot** -- bid at least {{min}}.",
+    "hasenpfeffer.bid.capped": "The maximum of {{max}} is already standing, so you can only pass.",
+    "hasenpfeffer.bid.wait": "The other players are bidding.",
+    "hasenpfeffer.discard.choose": "You bid {{contract}}. You have taken the blind, so discard one card and name trump.",
+    "hasenpfeffer.discard.wait": "The declarer is naming trump.",
+    "hasenpfeffer.play": "The contract is {{contract}} tricks. The joker is the highest trump of all.",
+    "hasenpfeffer.handEnd.made": "Contract {{contract}}, took {{took}}: made.",
+    "hasenpfeffer.handEnd.euchred": "Contract {{contract}}, took {{took}}: euchred -- {{contract}} to the other team.",
+    "hasenpfeffer.result.team0": "Your team wins ({{t0}} - {{t1}}).",
+    "hasenpfeffer.result.team1": "The other team wins ({{t0}} - {{t1}}).",
+    "hasenpfeffer.result.tie": "It's a tie ({{t0}} - {{t1}})."
   },
   "manual": {
     "ariaLabel": "Game Manual",
