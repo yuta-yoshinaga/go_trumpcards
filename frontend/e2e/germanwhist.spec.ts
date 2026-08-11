@@ -1,5 +1,11 @@
-import { expect, test } from '@playwright/test';
+import { expect, type Page, test } from '@playwright/test';
 import { navigateTo, TIMEOUT_ACTION, TIMEOUT_TRANSITION } from './helpers';
+
+// **合法な札だけを選ぶ。** カードは意図的に disabled にしていない
+// （サーバが必ず検証するし、個別に無効化すると「先頭の札を押す」が動く的に
+// なる）。その代わり、フォロー義務を満たさない札を押すとサーバが拒否して
+// 盤面が動かないので、緑の枠が付いた札を掴む。
+const legalCard = (page: Page) => page.locator('button.ring-ds-success');
 
 test.describe('German Whist E2E', () => {
   test('navigates to germanwhist and renders initial game state', async ({ page }) => {
@@ -32,9 +38,8 @@ test.describe('German Whist E2E', () => {
     await expect(page.getByTestId('gw-trick')).toBeVisible({ timeout: TIMEOUT_TRANSITION });
 
     const before = await page.getByTestId('gw-trick').textContent();
-    const hand = page.getByRole('button', { name: /を出す|^Play / });
-    await expect(hand.first()).toBeEnabled({ timeout: TIMEOUT_ACTION });
-    await hand.first().click();
+    await expect(legalCard(page).first()).toBeEnabled({ timeout: TIMEOUT_ACTION });
+    await legalCard(page).first().click();
 
     await expect
       .poll(async () => page.getByTestId('gw-trick').textContent(), { timeout: TIMEOUT_ACTION })
@@ -46,7 +51,7 @@ test.describe('German Whist E2E', () => {
     const hand = page.getByRole('button', { name: /を出す|^Play / });
     await expect(hand).toHaveCount(13, { timeout: TIMEOUT_TRANSITION });
 
-    await hand.first().click();
+    await legalCard(page).first().click();
     // トリックが解決すると双方が 1 枚ずつ補充するので、また 13 枚に戻る。
     await expect(hand).toHaveCount(13, { timeout: TIMEOUT_ACTION });
     // 減ったのは山札のほう。

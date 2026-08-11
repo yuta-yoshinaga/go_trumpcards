@@ -381,4 +381,12 @@ func init() {
 			return usecase.RestoreCribbageSquaresInteractor(data, new(presenter.CribbageSquaresWebPresenter))
 		},
 		controller.NewCribbageSquaresWebControllerWithProvider)
+	games.RegisterKVGame("polignac", games.CategoryExtra2,
+		func() usecase.PolignacInteractorIF {
+			return usecase.NewPolignacInteractor(domain.NewDefaultPolignac(), new(presenter.PolignacWebPresenter))
+		},
+		func(data []byte) (usecase.PolignacInteractorIF, error) {
+			return usecase.RestorePolignacInteractor(data, new(presenter.PolignacWebPresenter))
+		},
+		controller.NewPolignacWebControllerWithProvider)
 }

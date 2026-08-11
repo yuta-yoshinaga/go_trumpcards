@@ -294,7 +294,8 @@
     "royalcotillion": "ロイヤルコティヨン",
     "crazyquilt": "クレイジーキルト",
     "germanwhist": "ジャーマンホイスト",
-    "slobberhannes": "スロバーハンネス"
+    "slobberhannes": "スロバーハンネス",
+    "polignac": "ポリニャック"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1175,6 +1176,12 @@
     "slobberhannes.roundEnd": "ラウンド{{round}}が終了しました。",
     "slobberhannes.result.winner": "プレイヤー{{idx}}の勝ちです（{{score}}点）。",
     "slobberhannes.result.tie": "同点で決着つかず。",
+    "polignac.declarePhase": "capot（全8トリック獲得）を宣言しますか？ 宣言しない場合は「宣言せず進む」を選びます。",
+    "polignac.play.normal": "ジャックを取らないように。♠Jは2失点です。",
+    "polignac.play.capotActive": "プレイヤー{{idx}}が capot 宣言中。1トリック取れば潰せます。",
+    "polignac.roundEnd": "ラウンド{{round}}が終了しました。",
+    "polignac.result.winner": "プレイヤー{{idx}}の勝ちです（失点 {{score}}）。",
+    "polignac.result.tie": "同点で決着つかず。",
     "schnapsen.trickEnd": "トリック終了 — 次へ進んでください。",
     "seahaventowers.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
     "seahaventowers.gameOver": "ゲームオーバー",

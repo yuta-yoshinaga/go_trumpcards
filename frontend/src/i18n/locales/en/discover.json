@@ -359,7 +359,8 @@
     "royalcotillion": "Foundations climb by twos and wrap — after the King comes the deuce — so eight piles swallow all 104 cards.",
     "crazyquilt": "Prise cards out of an 8x8 quilt, but only where a short side is exposed — an open long side frees nothing.",
     "germanwhist": "Only the last 13 of 26 tricks score. In the first half, losing on purpose is correct whenever the face-up card is not worth having.",
-    "slobberhannes": "Three tricks you must not take: the first, the last, and the one with the Q of clubs. Escape all three and you score. No trump."
+    "slobberhannes": "Three tricks you must not take: the first, the last, and the one with the Q of clubs. Escape all three and you score. No trump.",
+    "polignac": "Only the four jacks cost you anything — and the jack of spades (the Polignac) costs double. You may also declare capot and go for every trick."
   },
   "stretch_blurb": {
     "accordion": "Completion is rare; the journey itself is the joy.",
@@ -635,6 +636,7 @@
     "royalcotillion": "Digging the reserve buys you options, but emptying one costs a slot forever. That single trade is the game.",
     "crazyquilt": "Every card you take opens a neighbour's short side. Finding the order that cascades is the whole puzzle.",
     "germanwhist": "A two-player game of repeatedly declining to win. The hand you hold entering the second half decides everything.",
-    "slobberhannes": "Eight tricks of declining to win, for four players. It comes down to whether you kept a low card for the end."
+    "slobberhannes": "Eight tricks of declining to win, for four players. It comes down to whether you kept a low card for the end.",
+    "polignac": "Just four dangerous cards. Everything rides on working out who is holding which jack."
   }
 }

@@ -294,7 +294,8 @@
     "royalcotillion": "Royal Cotillion",
     "crazyquilt": "Crazy Quilt",
     "germanwhist": "German Whist",
-    "slobberhannes": "Slobberhannes"
+    "slobberhannes": "Slobberhannes",
+    "polignac": "Polignac"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1175,6 +1176,12 @@
     "slobberhannes.roundEnd": "Round {{round}} is over.",
     "slobberhannes.result.winner": "Player {{idx}} wins with {{score}} points.",
     "slobberhannes.result.tie": "It's a tie.",
+    "polignac.declarePhase": "Declare capot (win all eight tricks)? Otherwise choose to proceed without declaring.",
+    "polignac.play.normal": "Avoid taking jacks — the J of spades costs 2.",
+    "polignac.play.capotActive": "Player {{idx}} has declared capot. One trick breaks it.",
+    "polignac.roundEnd": "Round {{round}} is over.",
+    "polignac.result.winner": "Player {{idx}} wins with {{score}} penalty points.",
+    "polignac.result.tie": "It's a tie.",
     "schnapsen.trickEnd": "Trick complete — continue.",
     "seahaventowers.gameClear": "Game Clear! Moves: {{moveCount}}",
     "seahaventowers.gameOver": "Game Over",

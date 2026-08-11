@@ -77,6 +77,7 @@ export const workerUrl: Record<string, string> = {
   crazyquilt: WORKER_SOLO,
   germanwhist: WORKER_CLASSIC,
   slobberhannes: WORKER_CLASSIC,
+  polignac: WORKER_EXTRA2,
   bisley: WORKER_EXTRA2,
   napoleonssquare: WORKER_EXTRA2,
   grandfathersclock: WORKER_EXTRA2,

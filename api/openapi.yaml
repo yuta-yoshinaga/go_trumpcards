@@ -164,6 +164,8 @@ tags:
     description: German Whist (ジャーマンホイスト) game endpoints -- 26 tricks in two halves, only the second half scores
   - name: slobberhannes
     description: Slobberhannes (スロバーハンネス) game endpoints -- avoid the first trick, the last trick, and the Q of clubs
+  - name: polignac
+    description: Polignac (ポリニャック) game endpoints -- avoid the jacks; the J of spades costs double
   - name: clocksolitaire
     description: Clock Solitaire (クロックソリティア) game
   - name: durak
@@ -6712,6 +6714,76 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SlobberhannesResponse'
+  /polignac/exec:
+    post:
+      tags:
+        - polignac
+      summary: Execute a Polignac game command
+      description: |
+        Send a command to advance the Polignac (ポリニャック) game session
+        identified by `sessionId`.
+
+        An **avoidance** game on the 32-card piquet pack with **no trump**.
+        Only the four jacks score: 1 penalty point each, except the **jack of
+        spades (the "Polignac") which costs 2**, so exactly 5 points move each
+        round. Before play a player may declare **capot**, undertaking to win
+        **all eight tricks** (5 to everyone else on success, 5 to the declarer
+        on failure). The **lowest** total wins.
+      operationId: execPolignac
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, capot, c, pass, play, p, next, n, giveup, g, hint, h, log, l]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                  description: Index into your hand (required for `play`)
+                config:
+                  type: object
+                  properties:
+                    rounds:
+                      type: integer
+                      description: Rounds to play (1..12, default 4)
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              capot:
+                summary: Undertake to win all eight tricks
+                value:
+                  command: capot
+                  sessionId: my-session-001
+              play:
+                summary: Play the third card in hand
+                value:
+                  command: play
+                  sessionId: my-session-001
+                  cardIndex: 2
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolignacResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolignacResponse'
   /clocksolitaire/exec:
     post:
       tags:
@@ -43475,6 +43547,115 @@ components:
           type: integer
         hint:
           $ref: '#/components/schemas/CrazyQuiltHint'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    PolignacTrickCard:
+      type: object
+      description: A card played in the current trick
+      required:
+        - playerIdx
+        - card
+      properties:
+        playerIdx:
+          type: integer
+          description: Index of the player who played this card
+        card:
+          $ref: '#/components/schemas/Card'
+    PolignacHint:
+      type: object
+      description: A suggested card to play
+      properties:
+        cardIndex:
+          type: integer
+          description: Index into your hand
+        reason:
+          type: string
+          description: >-
+            Why that card: polignacAvoidJack (a jack is on the table),
+            polignacDumpJack (safe trick -- shed a jack now), polignacLeadSafe
+            (leading; play a low non-jack), or polignacBlockCapot (take this
+            trick to break a declared capot).
+    PolignacPlayer:
+      type: object
+      description: One seat at a Polignac table
+      properties:
+        id:
+          type: integer
+        isHuman:
+          type: boolean
+        cardCount:
+          type: integer
+          description: Hand size. The only hand information exposed for the CPU.
+        cards:
+          type: array
+          description: Populated for the human player only; empty for the CPU.
+          items:
+            $ref: '#/components/schemas/Card'
+        score:
+          type: integer
+          description: Running penalty total across rounds. LOWER is better.
+        roundPenalty:
+          type: integer
+          description: Penalty taken in the current round.
+        trickCount:
+          type: integer
+        declaredCapot:
+          type: boolean
+          description: Declared capot this round.
+    PolignacResponse:
+      type: object
+      description: Response payload for /polignac/exec
+      properties:
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/PolignacPlayer'
+        phase:
+          type: integer
+          description: "0=Declare, 1=Play, 2=RoundEnd, 3=GameEnd"
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        capotIdx:
+          type: integer
+          description: "Seat that declared capot, or -1 when nobody did"
+        capotTricks:
+          type: integer
+          description: Tricks the capot declarer has taken so far.
+        currentTrick:
+          type: array
+          items:
+            $ref: '#/components/schemas/PolignacTrickCard'
+        validPlays:
+          type: array
+          description: Hand indices you may legally play. Following suit is compulsory.
+          items:
+            type: integer
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: "-1 until decided, and -1 on a tie"
+        hint:
+          $ref: '#/components/schemas/PolignacHint'
+        config:
+          type: object
+          properties:
+            rounds:
+              type: integer
         message:
           type: string
         messageCode:

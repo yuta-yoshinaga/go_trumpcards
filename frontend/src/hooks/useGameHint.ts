@@ -174,6 +174,7 @@ import type {
   PochResponse,
   PokerResponse,
   PokerSquaresResponse,
+  PolignacResponse,
   PontoonResponse,
   PopeJoanResponse,
   PreferenceResponse,
@@ -443,6 +444,7 @@ import { getPitchHint } from '../utils/hints/pitchHint';
 import { getPochHint } from '../utils/hints/pochHint';
 import { getPokerHint } from '../utils/hints/pokerHint';
 import { getPokersquaresHint } from '../utils/hints/pokersquaresHint';
+import { getPolignacHint } from '../utils/hints/polignacHint';
 import { getPontoonHint } from '../utils/hints/pontoonHint';
 import { getPopeJoanHint } from '../utils/hints/popejoanHint';
 import { getPreferenceHint } from '../utils/hints/preferenceHint';
@@ -596,6 +598,7 @@ export const hintFactories = {
   schnapsen: (s) => getSchnapsenHint(s as SchnapsenResponse),
   germanwhist: (s) => getGermanWhistHint(s as GermanWhistResponse),
   slobberhannes: (s) => getSlobberhannesHint(s as SlobberhannesResponse),
+  polignac: (s) => getPolignacHint(s as PolignacResponse),
   faro: (s) => getFaroHint(s as FaroResponse),
   fiftyone: (s) => getFiftyOneHint(s as FiftyOneResponse),
   napoleon: (s) => getNapoleonHint(s as NapoleonResponse),
