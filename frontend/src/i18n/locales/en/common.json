@@ -293,7 +293,8 @@
     "diplomat": "Diplomat",
     "royalcotillion": "Royal Cotillion",
     "crazyquilt": "Crazy Quilt",
-    "germanwhist": "German Whist"
+    "germanwhist": "German Whist",
+    "slobberhannes": "Slobberhannes"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1168,6 +1169,12 @@
     "germanwhist.result.p0Win": "You win (second half {{p0}}-{{p1}}).",
     "germanwhist.result.p1Win": "The CPU wins (second half {{p0}}-{{p1}}).",
     "germanwhist.result.tie": "A tie (second half {{p0}}-{{p1}}).",
+    "slobberhannes.play.firstTrick": "This is the first trick. Taking it costs 1 point.",
+    "slobberhannes.play.lastTrick": "This is the last trick. Taking it costs 1 point.",
+    "slobberhannes.play.normal": "No penalty rides on this trick — a good moment to shed a high card.",
+    "slobberhannes.roundEnd": "Round {{round}} is over.",
+    "slobberhannes.result.winner": "Player {{idx}} wins with {{score}} points.",
+    "slobberhannes.result.tie": "It's a tie.",
     "schnapsen.trickEnd": "Trick complete — continue.",
     "seahaventowers.gameClear": "Game Clear! Moves: {{moveCount}}",
     "seahaventowers.gameOver": "Game Over",

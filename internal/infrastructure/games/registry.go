@@ -905,6 +905,14 @@ var registry = []*Game{
 	// is the other two-player draw-then-follow game here, but it scores card
 	// points to 66 rather than counting tricks.
 	{Name: "germanwhist", Category: CategoryClassic},
+	// Slobberhannes penalises three things that have nothing to do with card
+	// values: taking the FIRST trick, taking the LAST trick, and taking the
+	// trick with the Q of clubs -- one point each, plus one point for escaping
+	// all three. There is no trump. Hearts is the other avoidance game here,
+	// but its penalties attach to cards; here two of the three attach to a
+	// trick's POSITION, so the opening and closing tricks are dangerous
+	// regardless of what is in them.
+	{Name: "slobberhannes", Category: CategoryClassic},
 }
 
 // All returns a value-level copy of the registry in canonical order.

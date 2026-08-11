@@ -1,0 +1,48 @@
+{
+  "phase": {
+    "play": "Playing",
+    "roundEnd": "Round over",
+    "gameEnd": "Game over"
+  },
+  "header": {
+    "round": "Round",
+    "trick": "Trick",
+    "noTrump": "No trump",
+    "you": "You",
+    "cpu": "CPU{{idx}}",
+    "score": "{{score}} pts"
+  },
+  "warn": {
+    "first": "This is the FIRST trick. Taking it costs 1 point.",
+    "last": "This is the LAST trick. Taking it costs 1 point."
+  },
+  "marks": {
+    "first": "1st",
+    "last": "last",
+    "queen": "Q♣",
+    "clean": "clean"
+  },
+  "currentTrick": "Current trick",
+  "actions": {
+    "reset": "Reset",
+    "nextRound": "Next round",
+    "giveUp": "Give up",
+    "playAria": "Play {{card}}"
+  },
+  "result": {
+    "youWin": "You win! {{score}} points",
+    "cpuWin": "CPU{{idx}} wins with {{score}} points.",
+    "tie": "It's a tie."
+  },
+  "hint": {
+    "slobberhannesAvoid": "This trick carries a penalty. Play low and let someone else take it.",
+    "slobberhannesDump": "A safe trick — get rid of a high card while you can.",
+    "slobberhannesLeadLow": "Lead low and see what happens."
+  },
+  "tutorial": {
+    "scores": "Each seat's score and the penalties it has taken this round. First trick, last trick, and the Q of clubs cost 1 point each; escaping all three scores 1.",
+    "trick": "Cards played this trick appear here. There is no trump — the highest card of the led suit wins.",
+    "hand": "Your hand. Legal cards carry a green ring; if you hold the led suit you must follow it.",
+    "actions": "After a round ends, continue with Next round. The hint changes its aim depending on whether the trick is dangerous."
+  }
+}

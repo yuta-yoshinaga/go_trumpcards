@@ -77,6 +77,7 @@ var gameDescriptions = map[string]string{
 	"cribbagesquares":     "クリベッジ・スクエアズ（4×4に置き、8手をクリベッジで採点）",
 	"diplomat":            "ディプロマット（104枚、8列×4枚、スート無視の降順）",
 	"royalcotillion":      "ロイヤルコティヨン（104枚、2つ飛ばしで折り返す8本の組札）",
+	"slobberhannes":       "スロバーハンネス（最初・最後・♣Qのトリックを避ける回避型）",
 	"germanwhist":         "ジャーマンホイスト（前半で表向きの札を取り合い、後半だけが得点）",
 	"crazyquilt":          "クレイジーキルト（8×8のキルト、短辺が空いた札だけ取れる）",
 	"pageone":             "Page One (ページワン)",
