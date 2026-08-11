@@ -168,6 +168,8 @@ tags:
     description: Polignac (ポリニャック) game endpoints -- avoid the jacks; the J of spades costs double
   - name: reversis
     description: Reversis (レヴェルシ) game endpoints -- 48-card avoidance with a chip pool; the Quinola and the A of diamonds cost extra
+  - name: rams
+    description: Rams (ラムス) game endpoints -- a 3-5 player pot game; play or drop, and taking no trick costs extra
   - name: clocksolitaire
     description: Clock Solitaire (クロックソリティア) game
   - name: durak
@@ -6851,6 +6853,82 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ReversisResponse'
+  /rams/exec:
+    post:
+      tags:
+        - rams
+      summary: Execute a Rams game command
+      description: |
+        Send a command to advance the Rams (ラムス) game session identified by
+        `sessionId`.
+
+        A **pot game for 3-5 players** (the table size is configurable) on the
+        32-card piquet pack. Five cards each, trump from the card turned after
+        the deal. Everyone antes, then each player chooses to **play** (`in`) or
+        **drop** (`out`); only those who played take part in the tricks.
+        **Playing and taking no trick at all costs an extra payment into the
+        pot**, while anyone who took tricks shares the pot in proportion. Most
+        chips after the configured rounds wins.
+      operationId: execRams
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, in, play, out, pass, card, c, next, n, giveup, g, hint, h, log, l]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                  description: Index into your hand (required for `card`)
+                config:
+                  type: object
+                  properties:
+                    playerCnt:
+                      type: integer
+                      description: Players at the table (3..5, default 4)
+                    rounds:
+                      type: integer
+                      description: Rounds to play (1..12, default 4)
+            examples:
+              reset:
+                summary: Start a new five-player game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+                  config:
+                    playerCnt: 5
+              playIn:
+                summary: Enter this round
+                value:
+                  command: in
+                  sessionId: my-session-001
+              card:
+                summary: Play the third card in hand
+                value:
+                  command: card
+                  sessionId: my-session-001
+                  cardIndex: 2
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RamsResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RamsResponse'
   /clocksolitaire/exec:
     post:
       tags:
@@ -43614,6 +43692,129 @@ components:
           type: integer
         hint:
           $ref: '#/components/schemas/CrazyQuiltHint'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    RamsTrickCard:
+      type: object
+      description: A card played in the current trick
+      required:
+        - playerIdx
+        - card
+      properties:
+        playerIdx:
+          type: integer
+          description: Index of the player who played this card
+        card:
+          $ref: '#/components/schemas/Card'
+    RamsHint:
+      type: object
+      description: >-
+        A suggestion. In the decision phase it advises whether to enter and
+        carries no cardIndex; during play it names a card.
+      properties:
+        cardIndex:
+          type: integer
+          description: Index into your hand. Absent during the decision phase.
+        reason:
+          type: string
+          description: >-
+            ramsPlayIn / ramsPassOut in the decision phase; ramsTakeTrick (no
+            trick banked yet, so avoid the extra payment) or ramsAlreadySafe
+            (one trick banked) during play.
+    RamsPlayer:
+      type: object
+      description: One seat at a Rams table
+      properties:
+        id:
+          type: integer
+        isHuman:
+          type: boolean
+        cardCount:
+          type: integer
+          description: Hand size. The only hand information exposed for the CPU.
+        cards:
+          type: array
+          description: Populated for the human player only; empty for the CPU.
+          items:
+            $ref: '#/components/schemas/Card'
+        chips:
+          type: integer
+          description: Chips held. HIGHER is better -- this decides the game.
+        inRound:
+          type: boolean
+          description: Entered this round (chose to play rather than drop).
+        decided:
+          type: boolean
+          description: Has chosen play or drop for this round.
+        roundTricks:
+          type: integer
+          description: Tricks taken this round. Zero while inRound costs an extra payment.
+        trickCount:
+          type: integer
+    RamsResponse:
+      type: object
+      description: Response payload for /rams/exec
+      properties:
+        players:
+          type: array
+          description: Length is 3, 4 or 5 depending on the configured table size.
+          items:
+            $ref: '#/components/schemas/RamsPlayer'
+        phase:
+          type: integer
+          description: "0=Decide, 1=Play, 2=RoundEnd, 3=GameEnd"
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        pot:
+          type: integer
+          description: Chips in the pot, shared out by tricks taken.
+        trumpSuit:
+          type: integer
+          description: Suit of the card turned after the deal.
+        upCard:
+          allOf:
+            - $ref: '#/components/schemas/Card'
+          description: The card turned to fix trump.
+        currentPlayerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        activeCount:
+          type: integer
+          description: How many players entered this round.
+        currentTrick:
+          type: array
+          items:
+            $ref: '#/components/schemas/RamsTrickCard'
+        validPlays:
+          type: array
+          description: Hand indices you may legally play. Following suit is compulsory.
+          items:
+            type: integer
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: "-1 until decided, and -1 on a tie"
+        hint:
+          $ref: '#/components/schemas/RamsHint'
+        config:
+          type: object
+          properties:
+            playerCnt:
+              type: integer
+            rounds:
+              type: integer
         message:
           type: string
         messageCode:

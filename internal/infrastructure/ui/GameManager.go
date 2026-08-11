@@ -4435,6 +4435,22 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
 		}),
+	BindCuiFor("rams",
+		func() usecase.RamsInteractorIF {
+			return usecase.NewRamsInteractor(domain.NewDefaultRams(), new(presenter.RamsCuiPresenter))
+		},
+		controller.NewRamsCuiController,
+		CuiHelpSpec{
+			TitleKey: "rams.helpTitle",
+			CommandKeys: []string{
+				"rams.helpIn",
+				"rams.helpOut",
+				"rams.helpCard",
+				"rams.helpNext",
+				"rams.helpGiveUp",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

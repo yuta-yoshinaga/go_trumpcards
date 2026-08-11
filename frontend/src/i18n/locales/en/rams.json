@@ -1,0 +1,51 @@
+{
+  "phase": {
+    "decide": "Deciding",
+    "play": "Playing",
+    "roundEnd": "Round over",
+    "gameEnd": "Game over"
+  },
+  "header": {
+    "round": "Round",
+    "trick": "Trick",
+    "players": "{{count}} players",
+    "pot": "Pot: {{pot}} chips (shared out by tricks taken)",
+    "trump": "Trump",
+    "risk": "Play and take no trick at all and you pay {{penalty}} more into the pot.",
+    "you": "You",
+    "cpu": "CPU{{idx}}",
+    "seat": "{{chips}} chips / {{tricks}} taken"
+  },
+  "status": {
+    "in": "in",
+    "out": "out",
+    "undecided": "—"
+  },
+  "currentTrick": "Current trick",
+  "actions": {
+    "playIn": "Play this round",
+    "passOut": "Drop out",
+    "nextRound": "Next round",
+    "reset": "Reset",
+    "giveUp": "Give up",
+    "playAria": "Play {{card}}"
+  },
+  "watching": "You dropped out of this round. Watching it play out.",
+  "result": {
+    "youWin": "You win! {{chips}} chips",
+    "cpuWin": "CPU{{idx}} wins with {{chips}} chips.",
+    "tie": "It's a tie."
+  },
+  "hint": {
+    "ramsPlayIn": "You hold trumps or high cards — this is worth playing.",
+    "ramsPassOut": "Little chance of a trick. Drop out and lose only the ante.",
+    "ramsTakeTrick": "No trick yet. Take one to avoid the extra payment.",
+    "ramsAlreadySafe": "One trick is banked. Now take what you can."
+  },
+  "tutorial": {
+    "pot": "Chips staked on this round, shared out among whoever takes tricks. It grows every time a player owes the extra payment.",
+    "decide": "Look at your hand and the trump card, then choose. **Dropping costs only the ante**; playing and taking no trick costs more.",
+    "trick": "Cards played this trick appear here. Trump beats everything, then the led suit.",
+    "hand": "Your hand. Legal cards carry a green ring. The first goal is simply to bank one trick."
+  }
+}

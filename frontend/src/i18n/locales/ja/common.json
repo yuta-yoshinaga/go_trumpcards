@@ -296,7 +296,8 @@
     "germanwhist": "ジャーマンホイスト",
     "slobberhannes": "スロバーハンネス",
     "polignac": "ポリニャック",
-    "reversis": "レヴェルシ"
+    "reversis": "レヴェルシ",
+    "rams": "ラムス"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1187,6 +1188,12 @@
     "reversis.roundEnd": "ラウンド{{round}}が終了しました。プールは {{pool}} チップです。",
     "reversis.result.winner": "プレイヤー{{idx}}の勝ちです（{{chips}}チップ）。",
     "reversis.result.tie": "同点で決着つかず。",
+    "rams.decidePhase": "参加しますか？ ポットは現在 {{pot}} チップです。降りればアンティだけの損で済みます。",
+    "rams.play": "1トリック取れば追加支払いを避けられます。ポットは {{pot}} チップ。",
+    "rams.watching": "このラウンドは降りています。決着まで見ています。",
+    "rams.roundEnd": "ラウンド{{round}}が終了しました。ポットは {{pot}} チップです。",
+    "rams.result.winner": "プレイヤー{{idx}}の勝ちです（{{chips}}チップ）。",
+    "rams.result.tie": "同点で決着つかず。",
     "schnapsen.trickEnd": "トリック終了 — 次へ進んでください。",
     "seahaventowers.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
     "seahaventowers.gameOver": "ゲームオーバー",

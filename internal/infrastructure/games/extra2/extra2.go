@@ -389,4 +389,12 @@ func init() {
 			return usecase.RestorePolignacInteractor(data, new(presenter.PolignacWebPresenter))
 		},
 		controller.NewPolignacWebControllerWithProvider)
+	games.RegisterKVGame("rams", games.CategoryExtra2,
+		func() usecase.RamsInteractorIF {
+			return usecase.NewRamsInteractor(domain.NewDefaultRams(), new(presenter.RamsWebPresenter))
+		},
+		func(data []byte) (usecase.RamsInteractorIF, error) {
+			return usecase.RestoreRamsInteractor(data, new(presenter.RamsWebPresenter))
+		},
+		controller.NewRamsWebControllerWithProvider)
 }

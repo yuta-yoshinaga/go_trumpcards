@@ -182,6 +182,7 @@ import type {
   PrimeroResponse,
   PrsiResponse,
   PyramidResponse,
+  RamsResponse,
   RedDogResponse,
   ReversisResponse,
   RookResponse,
@@ -453,6 +454,7 @@ import { getPresidentHint } from '../utils/hints/presidentHint';
 import { getPrimeroHint } from '../utils/hints/primeroHint';
 import { getPrsiHint } from '../utils/hints/prsiHint';
 import { getPyramidHint } from '../utils/hints/pyramidHint';
+import { getRamsHint } from '../utils/hints/ramsHint';
 import { getRazzHint } from '../utils/hints/razzHint';
 import { getReddogHint } from '../utils/hints/reddogHint';
 import { getReversisHint } from '../utils/hints/reversisHint';
@@ -602,6 +604,7 @@ export const hintFactories = {
   slobberhannes: (s) => getSlobberhannesHint(s as SlobberhannesResponse),
   polignac: (s) => getPolignacHint(s as PolignacResponse),
   reversis: (s) => getReversisHint(s as ReversisResponse),
+  rams: (s) => getRamsHint(s as RamsResponse),
   faro: (s) => getFaroHint(s as FaroResponse),
   fiftyone: (s) => getFiftyOneHint(s as FiftyOneResponse),
   napoleon: (s) => getNapoleonHint(s as NapoleonResponse),
