@@ -49,11 +49,22 @@ test.describe('Bhabhi E2E', () => {
   });
 
   // **人数を変えるとゲームの形が変わる。** 席がその数だけ出ること。
+  //
+  // 人数の select は SettingsPanel の中で、**既定で閉じた `<details>`** なので
+  // 先に summary を開かないと操作できない（jsdom は閉じた details の中身も
+  // 拾ってしまうので、ここでしか気付けない）。
   test('deals a bigger table when the player count changes', async ({ page }) => {
     await navigateTo(page, '/bhabhi');
     await expect(page.getByTestId('bh-trick')).toBeVisible({ timeout: TIMEOUT_TRANSITION });
 
-    await page.getByTestId('bh-player-cnt').selectOption('6');
+    const settingsToggle = page.locator('summary', { hasText: '設定' });
+    await expect(settingsToggle).toBeVisible({ timeout: TIMEOUT_TRANSITION });
+    await settingsToggle.click();
+
+    const playerCnt = page.getByTestId('bh-player-cnt');
+    await expect(playerCnt).toBeVisible({ timeout: TIMEOUT_ACTION });
+    await playerCnt.selectOption('6');
+
     await expect(page.getByTestId('bh-seat-5')).toBeVisible({ timeout: TIMEOUT_ACTION });
     await expect(page.getByTestId('bh-seat-6')).toHaveCount(0);
   });
