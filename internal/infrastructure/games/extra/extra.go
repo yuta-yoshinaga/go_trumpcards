@@ -315,4 +315,12 @@ func init() {
 			return usecase.RestoreDiplomatInteractor(data, new(presenter.DiplomatWebPresenter))
 		},
 		controller.NewDiplomatWebControllerWithProvider)
+	games.RegisterKVGame("mendikot", games.CategoryExtra,
+		func() usecase.MendikotInteractorIF {
+			return usecase.NewMendikotInteractor(domain.NewDefaultMendikot(), new(presenter.MendikotWebPresenter))
+		},
+		func(data []byte) (usecase.MendikotInteractorIF, error) {
+			return usecase.RestoreMendikotInteractor(data, new(presenter.MendikotWebPresenter))
+		},
+		controller.NewMendikotWebControllerWithProvider)
 }
