@@ -637,6 +637,27 @@ func TestSergeantMajorConfig_Validate(t *testing.T) {
 	assert.Error(t, SergeantMajorConfig{Rounds: SergeantMajorRoundsMax + 1}.Validate())
 }
 
+// **3 の倍数でないラウンド数は不公平になる（レビュー指摘 PR #5311）。**
+// 親は毎ラウンド 1 つ回るだけなので、4 ラウンドだと 1 人だけノルマ 8 を
+// 2 回引き受ける——届きにくいノルマを多く負う側がそのまま不利になる。
+func TestSergeantMajorConfig_RoundsMustCoverEverySeat(t *testing.T) {
+	for _, n := range []int{4, 5, 7, 8, 29} {
+		assert.Error(t, SergeantMajorConfig{Rounds: n}.Validate(), "rounds=%d", n)
+	}
+	// **負のコントロール: 3 の倍数は通る。**
+	for _, n := range []int{3, 6, 9, 30} {
+		assert.NoError(t, SergeantMajorConfig{Rounds: n}.Validate(), "rounds=%d", n)
+	}
+
+	// **偏りが実際に起きることを踏む。** 4 ラウンドなら 1 人が 8 を 2 回。
+	counts := map[int]int{}
+	for round := range 4 {
+		dealer := round % SergeantMajorPlayerCnt
+		counts[dealer]++
+	}
+	assert.Equal(t, 2, counts[0], "4 ラウンドだと席 0 だけが親を 2 回引く")
+}
+
 func TestSergeantMajor_AccessorsAndBounds(t *testing.T) {
 	s := newTestSergeantMajor(t)
 	assert.Nil(t, s.GetPlayer(-1))

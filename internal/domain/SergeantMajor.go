@@ -346,7 +346,13 @@ func (s *SergeantMajor) exchangeCards() {
 			if giver < 0 {
 				break
 			}
-			s.moveBestCard(giver, taker)
+			// **動かなかったら数えない（レビュー指摘 PR #5311）。** 数えると
+			// GetLastExchange が「動いた」と報告するのに 1 枚も動いていない、
+			// という表示になる。いまは全員 16 枚固定で到達しないが、
+			// 枚数の前提が変わったときに黙って壊れる形にしない。
+			if !s.moveBestCard(giver, taker) {
+				break
+			}
 			s.surplus[taker]--
 			s.surplus[giver]++
 			moved++
@@ -371,10 +377,12 @@ func (s *SergeantMajor) nextDeficit() int {
 }
 
 // moveBestCard は giver の最強札を taker に渡し、taker の最弱札を返す。
-func (s *SergeantMajor) moveBestCard(giver, taker int) {
+//
+// 実際に動かせたかを返す。どちらかの手札が空なら何もせず false。
+func (s *SergeantMajor) moveBestCard(giver, taker int) bool {
 	gp, tp := s.players[giver], s.players[taker]
 	if gp.GetCardsSize() == 0 || tp.GetCardsSize() == 0 {
-		return
+		return false
 	}
 	bi, brank := 0, -1
 	for i := range gp.GetCardsSize() {
@@ -396,6 +404,7 @@ func (s *SergeantMajor) moveBestCard(giver, taker int) {
 	if worst != nil {
 		gp.AddCard(worst)
 	}
+	return true
 }
 
 // sortAllHands は手札をスート・ランク順に整える。

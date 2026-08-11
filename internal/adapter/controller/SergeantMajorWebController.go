@@ -78,10 +78,18 @@ type SergeantMajorWebOutputConfig struct {
 }
 
 // ToConfig builds a SergeantMajorConfig from the nested web config, applying bounds checking.
+//
+// **範囲に収めるだけでは足りない。** ラウンド数は 3 の倍数でなければ親の役が
+// 一巡せず、1 人だけノルマ 8 を多く引き受けることになる（レビュー指摘 PR #5311）。
+// クライアントが 4 を送ってきたらエラーにするのではなく、直近の倍数へ丸める。
 func (c *SergeantMajorWebConfig) ToConfig() domain.SergeantMajorConfig {
 	cfg := domain.DefaultSergeantMajorConfig()
-	cfg.Rounds = webutil.BoundedIntPtr(c.Rounds,
+	rounds := webutil.BoundedIntPtr(c.Rounds,
 		domain.SergeantMajorRoundsMin, domain.SergeantMajorRoundsMax, cfg.Rounds)
+	cfg.Rounds = rounds - rounds%domain.SergeantMajorPlayerCnt
+	if cfg.Rounds < domain.SergeantMajorRoundsMin {
+		cfg.Rounds = domain.SergeantMajorRoundsMin
+	}
 	return cfg
 }
 

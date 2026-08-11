@@ -117,10 +117,20 @@ func TestSergeantMajorWebConfig_ToConfigClamps(t *testing.T) {
 		{"above the maximum", intPtrSm(domain.SergeantMajorRoundsMax + 1), def},
 		{"the minimum is kept", intPtrSm(domain.SergeantMajorRoundsMin), domain.SergeantMajorRoundsMin},
 		{"the maximum is kept", intPtrSm(domain.SergeantMajorRoundsMax), domain.SergeantMajorRoundsMax},
+		// **3 の倍数でないと親の役が一巡しない。** エラーにせず丸める。
+		{"4 snaps down to 3", intPtrSm(4), 3},
+		{"5 snaps down to 3", intPtrSm(5), 3},
+		{"7 snaps down to 6", intPtrSm(7), 6},
+		{"29 snaps down to 27", intPtrSm(29), 27},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			if got := (&controller.SergeantMajorWebConfig{Rounds: tc.in}).ToConfig().Rounds; got != tc.want {
-				t.Fatalf("Rounds = %d, want %d", got, tc.want)
+			cfg := (&controller.SergeantMajorWebConfig{Rounds: tc.in}).ToConfig()
+			if cfg.Rounds != tc.want {
+				t.Fatalf("Rounds = %d, want %d", cfg.Rounds, tc.want)
+			}
+			// **丸めた結果は必ずドメインが受け取れる。**
+			if err := cfg.Validate(); err != nil {
+				t.Fatalf("ToConfig produced a config the domain rejects: %v", err)
 			}
 		})
 	}

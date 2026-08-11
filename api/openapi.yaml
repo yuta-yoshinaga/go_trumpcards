@@ -7928,7 +7928,10 @@ paths:
                   properties:
                     rounds:
                       type: integer
-                      description: Rounds to play (3..30, default 3 -- one turn each at 8, 5 and 3)
+                      description: >-
+                        Rounds to play, 3..30 and always a multiple of 3 -- otherwise
+                        one seat would take the 8 more often than the others. Values
+                        that are not a multiple are rounded down. Default 3.
             examples:
               reset:
                 summary: Start a new game
