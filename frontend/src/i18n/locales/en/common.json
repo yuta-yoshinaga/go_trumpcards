@@ -308,6 +308,7 @@
     "bhabhi": "Bhabhi",
     "teendopaanch": "3-2-5",
     "hasenpfeffer": "Hasenpfeffer",
+    "pasur": "Pasur",
     "minibridge": "Minibridge",
     "honeymoonbridge": "Honeymoon Bridge",
     "sergeantmajor": "Sergeant Major"
@@ -1582,6 +1583,10 @@
     "hasenpfeffer.result.team0": "Your team wins ({{t0}} - {{t1}}).",
     "hasenpfeffer.result.team1": "The other team wins ({{t0}} - {{t1}}).",
     "hasenpfeffer.result.tie": "It's a tie ({{t0}} - {{t1}}).",
+    "pasur.play": "{{table}} cards on the table, {{deck}} left in the deck. Look for a set that adds to 11.",
+    "pasur.result.you": "You win.",
+    "pasur.result.cpu": "CPU{{idx}} wins.",
+    "pasur.result.tie": "{{n}} players tie.",
     "minibridge.contract.choose": "You are the declarer. Choose the contract (your pair holds {{hcp}} HCP).",
     "minibridge.contract.wait": "The declarer is choosing the contract (their pair holds {{hcp}} HCP).",
     "minibridge.play": "The contract needs {{need}} tricks and the declaring side has {{took}} so far.",

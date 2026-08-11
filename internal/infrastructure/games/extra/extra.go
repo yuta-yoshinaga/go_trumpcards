@@ -339,4 +339,12 @@ func init() {
 			return usecase.RestoreSergeantMajorInteractor(data, new(presenter.SergeantMajorWebPresenter))
 		},
 		controller.NewSergeantMajorWebControllerWithProvider)
+	games.RegisterKVGame("pasur", games.CategoryExtra,
+		func() usecase.PasurInteractorIF {
+			return usecase.NewPasurInteractor(domain.NewDefaultPasur(), new(presenter.PasurWebPresenter))
+		},
+		func(data []byte) (usecase.PasurInteractorIF, error) {
+			return usecase.RestorePasurInteractor(data, new(presenter.PasurWebPresenter))
+		},
+		controller.NewPasurWebControllerWithProvider)
 }

@@ -1578,6 +1578,18 @@ export const SchnapsenPhase = {
  * **There is no auction phase.** The declarer falls out of the HCP everyone
  * announces at the deal, so the first decision is the contract itself.
  */
+/**
+ * Pasur phase constants (sync: internal/domain/Pasur.go).
+ *
+ * **There are no rounds.** Hands are refilled automatically when they empty,
+ * and the game ends the moment the deck runs out — so there is nothing between
+ * playing and being finished.
+ */
+export const PasurPhase = {
+  PLAY: 0,
+  GAME_END: 1,
+} as const;
+
 export const MinibridgePhase = {
   CONTRACT: 0,
   PLAY: 1,

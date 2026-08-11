@@ -1,0 +1,45 @@
+{
+  "phase": {
+    "play": "Playing",
+    "gameEnd": "Finished"
+  },
+  "header": {
+    "pack": "Pack {{pack}}",
+    "deck": "Deck: {{n}} left",
+    "rule": "Take a set of table numerals that, with the card you play, adds to 11. Aces count 1 through tens 10; J, Q and K never join the sum and only take the same rank from the table. Capturing is compulsory when a capture exists. Emptying the table is a \"soor\": the cards from that capture score double.",
+    "table": "Table",
+    "tableEmpty": "Table: empty",
+    "captured": "{{n}} taken",
+    "soors": "{{n}} soor",
+    "score": "score {{n}}",
+    "lastCapture": "[last capture]",
+    "you": "You",
+    "cpu": "CPU{{idx}}"
+  },
+  "actions": {
+    "pick": "Choose what to take",
+    "take": "Take {{cards}}",
+    "trail": "Lay it down",
+    "mustCapture": "A capture is available, so this card cannot be laid down",
+    "cancel": "Choose again",
+    "reset": "Reset",
+    "giveUp": "Give up",
+    "selectAria": "Select {{card}}"
+  },
+  "result": {
+    "you": "You win!",
+    "cpu": "{{name}} wins.",
+    "tie": "{{n}} players tie."
+  },
+  "hint": {
+    "pasurSoor": "This empties the table -- that capture scores double.",
+    "pasurCapture": "It takes cards that score.",
+    "pasurTrail": "Nothing adds to 11. Lay down your least valuable card."
+  },
+  "tutorial": {
+    "rule": "Take table numerals that, together with the card you play, **add to 11** (ace = 1, ten = 10). **One card alone never captures** — no card is worth 11.",
+    "face": "**J, Q and K never join the sum.** They only take **the same rank** from the table, which is why a face card left there cannot be shifted by numerals.",
+    "soor": "Emptying the table is a **soor**, and the cards from that capture **score double**. At the end, whatever is left on the table goes to **whoever captured last**.",
+    "hand": "Your hand. Press a card that can capture and its options appear. While a capture is available that card **cannot be laid down**."
+  }
+}
