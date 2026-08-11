@@ -170,6 +170,8 @@ tags:
     description: Reversis (レヴェルシ) game endpoints -- 48-card avoidance with a chip pool; the Quinola and the A of diamonds cost extra
   - name: rams
     description: Rams (ラムス) game endpoints -- a 3-5 player pot game; play or drop, and taking no trick costs extra
+  - name: tarabish
+    description: Tarabish (タラビッシュ) game endpoints -- 36-card Jass-family partnership game; trump J and 9 outrank the ace
   - name: clocksolitaire
     description: Clock Solitaire (クロックソリティア) game
   - name: durak
@@ -6929,6 +6931,82 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RamsResponse'
+  /tarabish/exec:
+    post:
+      tags:
+        - tarabish
+      summary: Execute a Tarabish game command
+      description: |
+        Send a command to advance the Tarabish (タラビッシュ) game session
+        identified by `sessionId`.
+
+        A **Jass-family** partnership game from Cape Breton: 36 cards, 4 players
+        in two partnerships (seats 0+2 vs 1+3), nine cards each. In trump the
+        **J (Jass) = 20 and the 9 (Menel) = 14 outrank the ace**, in strength as
+        well as points.
+
+        **The deal is in two stages**, because nine each is the whole deck: six
+        are dealt, the next card is turned to propose trump, and once a player
+        takes it the rest is dealt with **the turned card going to the dealer**.
+        Each player in turn may `take` or `pass`; **the dealer cannot pass**.
+
+        Melds are computed from the deal: a run of three scores 20, four or more
+        scores 50, and bella (trump K+Q) scores 20.
+      operationId: execTarabish
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, take, t, pass, play, p, next, n, giveup, g, hint, h, log, l]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                  description: Index into your hand (required for `play`)
+                config:
+                  type: object
+                  properties:
+                    target:
+                      type: integer
+                      description: Points needed to win (100..1000, default 500)
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              take:
+                summary: Take the turned suit as trump
+                value:
+                  command: take
+                  sessionId: my-session-001
+              play:
+                summary: Play the third card in hand
+                value:
+                  command: play
+                  sessionId: my-session-001
+                  cardIndex: 2
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TarabishResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TarabishResponse'
   /clocksolitaire/exec:
     post:
       tags:
@@ -43692,6 +43770,132 @@ components:
           type: integer
         hint:
           $ref: '#/components/schemas/CrazyQuiltHint'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    TarabishTrickCard:
+      type: object
+      description: A card played in the current trick
+      required:
+        - playerIdx
+        - card
+      properties:
+        playerIdx:
+          type: integer
+          description: Index of the player who played this card
+        card:
+          $ref: '#/components/schemas/Card'
+    TarabishHint:
+      type: object
+      description: >-
+        A suggestion. During bidding it advises whether to take trump and
+        carries no cardIndex; during play it names a card.
+      properties:
+        cardIndex:
+          type: integer
+          description: Index into your hand. Absent during bidding.
+        reason:
+          type: string
+          description: >-
+            tarabishTakeTrump / tarabishPassTrump while bidding;
+            tarabishWinTrick or tarabishFeedPartner (your partner is winning --
+            throw points on it) during play.
+    TarabishPlayer:
+      type: object
+      description: One seat at a Tarabish table
+      properties:
+        id:
+          type: integer
+        isHuman:
+          type: boolean
+        team:
+          type: integer
+          description: "0 or 1. Seats 0+2 are one partnership, 1+3 the other."
+        cardCount:
+          type: integer
+          description: Hand size. The only hand information exposed for the CPU.
+        cards:
+          type: array
+          description: Populated for the human player only; empty for the CPU.
+          items:
+            $ref: '#/components/schemas/Card'
+        meldPoints:
+          type: integer
+          description: Meld total computed from the deal (runs plus bella).
+        runLen:
+          type: integer
+          description: Longest run declared, or 0.
+        hasBella:
+          type: boolean
+          description: Holds the trump K and Q.
+        trickCount:
+          type: integer
+    TarabishResponse:
+      type: object
+      description: Response payload for /tarabish/exec
+      properties:
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/TarabishPlayer'
+        phase:
+          type: integer
+          description: "0=Bid, 1=Play, 2=RoundEnd, 3=GameEnd"
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        trumpSuit:
+          type: integer
+        upCard:
+          allOf:
+            - $ref: '#/components/schemas/Card'
+          description: The card turned to propose trump. It joins the dealer's hand once trump is settled.
+        trumpTakerIdx:
+          type: integer
+          description: "Seat that took trump, or -1 before it is settled"
+        currentPlayerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        scores:
+          type: array
+          description: Running total per team, index 0 and 1.
+          items:
+            type: integer
+        roundPoints:
+          type: array
+          description: Points taken this round per team, index 0 and 1.
+          items:
+            type: integer
+        currentTrick:
+          type: array
+          items:
+            $ref: '#/components/schemas/TarabishTrickCard'
+        validPlays:
+          type: array
+          description: Hand indices you may legally play. Following suit is compulsory.
+          items:
+            type: integer
+        gameEndFlag:
+          type: boolean
+        winnerTeam:
+          type: integer
+          description: "-1 until decided, and -1 on a tie"
+        hint:
+          $ref: '#/components/schemas/TarabishHint'
+        config:
+          type: object
+          properties:
+            target:
+              type: integer
         message:
           type: string
         messageCode:

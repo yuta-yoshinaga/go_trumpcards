@@ -974,6 +974,13 @@ export const gameCategories: readonly GameCategory[] = [
         page: 'Rams',
         profile: { mood: [3, 5, 4, 3], skill: [3, 4, 4, 3], social: [1, 4, 4, 3, 3], theme: [2, 4, 1, 1, 3, 4] },
       },
+      {
+        path: '/tarabish',
+        labelKey: 'nav.tarabish',
+        icon: '🍁',
+        page: 'Tarabish',
+        profile: { mood: [2, 4, 4, 3], skill: [5, 4, 2, 3], social: [1, 2, 5, 4, 3], theme: [2, 4, 1, 1, 2, 3] },
+      },
     ],
   },
   {

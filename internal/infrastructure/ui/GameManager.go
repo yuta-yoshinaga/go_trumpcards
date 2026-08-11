@@ -4451,6 +4451,22 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
 		}),
+	BindCuiFor("tarabish",
+		func() usecase.TarabishInteractorIF {
+			return usecase.NewTarabishInteractor(domain.NewDefaultTarabish(), new(presenter.TarabishCuiPresenter))
+		},
+		controller.NewTarabishCuiController,
+		CuiHelpSpec{
+			TitleKey: "tarabish.helpTitle",
+			CommandKeys: []string{
+				"tarabish.helpTake",
+				"tarabish.helpPass",
+				"tarabish.helpPlay",
+				"tarabish.helpNext",
+				"tarabish.helpGiveUp",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

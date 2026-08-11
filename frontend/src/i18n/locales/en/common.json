@@ -297,7 +297,8 @@
     "slobberhannes": "Slobberhannes",
     "polignac": "Polignac",
     "reversis": "Reversis",
-    "rams": "Rams"
+    "rams": "Rams",
+    "tarabish": "Tarabish"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1194,6 +1195,13 @@
     "rams.roundEnd": "Round {{round}} is over. The pot stands at {{pot}} chips.",
     "rams.result.winner": "Player {{idx}} wins with {{chips}} chips.",
     "rams.result.tie": "It's a tie.",
+    "tarabish.bid.choose": "Take the turned card's suit as trump?",
+    "tarabish.bid.dealerStuck": "You are the dealer and cannot pass — you must take it.",
+    "tarabish.play": "Remember the trump J (20) and 9 (14) outrank the ace.",
+    "tarabish.roundEnd": "Round {{round}} is over ({{t0}} — {{t1}}).",
+    "tarabish.result.team0": "Your team wins ({{t0}} — {{t1}}).",
+    "tarabish.result.team1": "The other team wins ({{t0}} — {{t1}}).",
+    "tarabish.result.tie": "It's a tie ({{t0}} — {{t1}}).",
     "schnapsen.trickEnd": "Trick complete — continue.",
     "seahaventowers.gameClear": "Game Clear! Moves: {{moveCount}}",
     "seahaventowers.gameOver": "Game Over",

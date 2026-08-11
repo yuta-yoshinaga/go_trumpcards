@@ -228,6 +228,7 @@ import type {
   SuecaResponse,
   SultanResponse,
   TablanetResponse,
+  TarabishResponse,
   TarneebResponse,
   TarocchiniResponse,
   TeenPattiResponse,
@@ -502,6 +503,7 @@ import { getStreetsandalleysHint } from '../utils/hints/streetsandalleysHint';
 import { getSuecaHint } from '../utils/hints/suecaHint';
 import { getSultanHint } from '../utils/hints/sultanHint';
 import { getTablanetHint } from '../utils/hints/tablanetHint';
+import { getTarabishHint } from '../utils/hints/tarabishHint';
 import { getTarneebHint } from '../utils/hints/tarneebHint';
 import { getTarocchiniHint } from '../utils/hints/tarocchiniHint';
 import { getTeenPattiHint } from '../utils/hints/teenPattiHint';
@@ -605,6 +607,7 @@ export const hintFactories = {
   polignac: (s) => getPolignacHint(s as PolignacResponse),
   reversis: (s) => getReversisHint(s as ReversisResponse),
   rams: (s) => getRamsHint(s as RamsResponse),
+  tarabish: (s) => getTarabishHint(s as TarabishResponse),
   faro: (s) => getFaroHint(s as FaroResponse),
   fiftyone: (s) => getFiftyOneHint(s as FiftyOneResponse),
   napoleon: (s) => getNapoleonHint(s as NapoleonResponse),
