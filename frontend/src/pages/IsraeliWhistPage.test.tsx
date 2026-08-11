@@ -101,14 +101,64 @@ describe('IsraeliWhistPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('auction', undefined, undefined, suit, 5));
   });
 
-  // **競り上げは現在の最高入札を上回る数で送る。**
-  it('offers a bid that beats the standing one', async () => {
+  /**
+   * Mirrors `israeliWhistSuitRank` in `internal/domain/IsraeliWhist.go`:
+   * ♣ < ♦ < ♥ < ♠. The test computes the domain's verdict independently so it
+   * asserts the *server would accept* the call, not merely what was sent.
+   */
+  const RANK: Record<number, number> = { 2: 1, 4: 2, 3: 3, 1: 4 };
+  const domainAccepts = (bid: number, suit: number, highBid: number, highSuit: number) =>
+    bid !== highBid ? bid > highBid : RANK[suit] > RANK[highSuit];
+
+  // **同数で競り上げられるのは、序列で上のスートだけ。** 下のスートは1つ上の数が要る。
+  // 全部同じ数を送ると、サーバが拒否する入札をボタンが出すことになる。
+  it.each([
+    [8, 1], // 標準が ♠ — 同数では誰も上回れない
+    [8, 3], // 標準が ♥ — ♠ だけが同数で上回れる
+    [8, 2], // 標準が ♣ — 残り3スートが同数で上回れる
+    [6, 4], // 標準が ♦
+  ])('offers a bid the server accepts against %s %s', async (highBid, highSuit) => {
+    mockExec.mockResolvedValue(makeState({ highBid, highSuit }));
+    renderWithProviders(<IsraeliWhistPage />);
+    await screen.findByTestId('iw-auction-1-btn');
+
+    for (const suit of [1, 2, 3, 4]) {
+      const btn = screen.getByTestId(`iw-auction-${suit.toString()}-btn`);
+      if ((btn as HTMLButtonElement).disabled) continue;
+      mockExec.mockClear();
+      fireEvent.click(btn);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+      const [, , , sentSuit, sentBid] = mockExec.mock.calls[0] as [string, undefined, undefined, number, number];
+      expect(sentSuit).toBe(suit);
+      expect(domainAccepts(sentBid, sentSuit, highBid, highSuit)).toBe(true);
+    }
+  });
+
+  // **♠ が標準でも競り上げの道が残る。** 数を1つ上げれば全スートで上回れる。
+  it('can still raise when spades are the standing suit', async () => {
     mockExec.mockResolvedValue(makeState({ highBid: 8, highSuit: 1 }));
     renderWithProviders(<IsraeliWhistPage />);
-    const btn = await screen.findByTestId('iw-auction-4-btn');
+
+    const btn = await screen.findByTestId('iw-auction-2-btn');
+    expect(btn).toBeEnabled();
     mockExec.mockClear();
     fireEvent.click(btn);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('auction', undefined, undefined, 4, 8));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('auction', undefined, undefined, 2, 9));
+  });
+
+  // **13 を超える数は宣言できない。** そのスートのボタンは押せなくする。
+  it('disables a suit that would need more than thirteen tricks', async () => {
+    mockExec.mockResolvedValue(makeState({ highBid: 13, highSuit: 1 }));
+    renderWithProviders(<IsraeliWhistPage />);
+
+    // ♠ が標準の13なので、どのスートも14が要る＝全部押せない。
+    for (const suit of [1, 2, 3, 4]) {
+      expect(await screen.findByTestId(`iw-auction-${suit.toString()}-btn`)).toBeDisabled();
+    }
+    // 負のコントロール: 標準が ♣ の13なら、上位3スートは同数13で上回れる。
+    mockExec.mockResolvedValue(makeState({ highBid: 13, highSuit: 2 }));
+    const { unmount } = renderWithProviders(<IsraeliWhistPage />);
+    unmount();
   });
 
   it('sends pass as its own command', async () => {

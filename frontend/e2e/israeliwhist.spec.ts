@@ -53,6 +53,25 @@ test.describe('Israeli Whist E2E', () => {
     await expect(page.getByTestId('iw-trump')).toContainText(/[♠♣♥♦]/, { timeout: TIMEOUT_ACTION });
   });
 
+  // **実際に競り上げる経路を1本通す。** 常に pass するフローだけでは、
+  // 入札ボタンがサーバに拒否される値を送っていても気付けない（レビュー指摘 PR #5304）。
+  test('raising the auction is accepted by the server', async ({ page }) => {
+    await navigateTo(page, '/israeliwhist');
+    await expect(page.getByTestId('iw-round')).toBeVisible({ timeout: TIMEOUT_ACTION });
+
+    // 押せる入札ボタンを1つ押す。拒否されればエラー表示が出て盤面が進まない。
+    const openAuction = page.locator('[data-testid^="iw-auction-"]:not([disabled])');
+    if (await openAuction.first().isVisible()) {
+      await openAuction.first().click();
+      // 拒否されるとエラーが出る。出ないこと、そして先へ進めることを見る。
+      await expect(page.getByRole('alert')).toHaveCount(0, { timeout: TIMEOUT_ACTION });
+    }
+    // 宣言かプレイのどちらかに到達していること。
+    await expect(
+      page.locator('[data-testid^="iw-bid-"]').first().or(page.locator('button.ring-ds-success').first()),
+    ).toBeVisible({ timeout: TIMEOUT_ACTION });
+  });
+
   // 4 席すべてが立場と宣言つきで出る。
   test('labels all four seats', async ({ page }) => {
     await navigateTo(page, '/israeliwhist');

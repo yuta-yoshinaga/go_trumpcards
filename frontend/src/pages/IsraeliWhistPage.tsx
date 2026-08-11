@@ -41,6 +41,29 @@ const SUITS: readonly number[] = [1, 2, 3, 4];
 /** The auction opens at five. */
 const AUCTION_MIN = 5;
 
+/**
+ * Bidding rank of each suit (sync: `israeliWhistSuitRank` in
+ * `internal/domain/IsraeliWhist.go`): ♣ < ♦ < ♥ < ♠.
+ *
+ * **Deliberately not the `CardDesign` constant order** (♠1 ♣2 ♥3 ♦4) — comparing
+ * the raw codes would make diamonds the strongest bid.
+ */
+const SUIT_BID_RANK: Readonly<Record<number, number>> = { 2: 1, 4: 2, 3: 3, 1: 4 };
+
+/**
+ * The lowest call in `suit` that would actually beat the standing bid.
+ *
+ * The server accepts an equal trick count **only** when the new suit outranks
+ * the standing one, so a suit that does not outrank it has to go a trick
+ * higher. Offering the same number for all four suits would send calls the
+ * server rejects — and once ♠ is standing, every one of them.
+ */
+function minBidForSuit(suit: number, highBid: number, highSuit: number): number {
+  if (highBid === 0) return AUCTION_MIN;
+  const outranks = (SUIT_BID_RANK[suit] ?? 0) > (SUIT_BID_RANK[highSuit] ?? 0);
+  return outranks ? highBid : highBid + 1;
+}
+
 /** Every call a player may make in the second round. */
 const BIDS: readonly number[] = Array.from({ length: TRICKS_PER_ROUND + 1 }, (_, i) => i);
 
@@ -159,9 +182,6 @@ function IsraeliWhistPageContent() {
 
   // 出せる札に緑の枠を足すだけで、押せなくはしない（サーバが必ず検証する）。
   const legalRing = new Set(isHumanTurn ? state.validPlays : []);
-
-  /** The lowest auction call that would actually beat the standing one. */
-  const nextAuctionBid = Math.max(AUCTION_MIN, state.highBid);
 
   /** A seat's standing in the auction, which the calling round does not replace. */
   const roleStr = (p: IsraeliWhistPlayer): string => {
@@ -298,18 +318,25 @@ function IsraeliWhistPageContent() {
               {isHumanAuctionTurn && (
                 <>
                   {/* **入札は数とスートの両方で1つ。** スートごとにボタンを出す。 */}
-                  {SUITS.map((suit) => (
-                    <button
-                      key={suit}
-                      type="button"
-                      className={btnWarning}
-                      onClick={() => handleAuction(nextAuctionBid, suit)}
-                      disabled={loading}
-                      data-testid={`iw-auction-${suit.toString()}-btn`}
-                    >
-                      {t('actions.auction', { n: String(nextAuctionBid), suit: SUIT_SYMBOLS[suit] ?? '?' })}
-                    </button>
-                  ))}
+                  {SUITS.map((suit) => {
+                    // **スートごとに必要な数が違う。** 全部同じ数を送ると、
+                    // 序列で負けるスートはサーバに拒否される。
+                    const bid = minBidForSuit(suit, state.highBid, state.highSuit);
+                    const barred = bid > TRICKS_PER_ROUND;
+                    return (
+                      <button
+                        key={suit}
+                        type="button"
+                        className={btnWarning}
+                        onClick={() => handleAuction(bid, suit)}
+                        disabled={loading || barred}
+                        aria-disabled={barred}
+                        data-testid={`iw-auction-${suit.toString()}-btn`}
+                      >
+                        {t('actions.auction', { n: String(bid), suit: SUIT_SYMBOLS[suit] ?? '?' })}
+                      </button>
+                    );
+                  })}
                   <button
                     type="button"
                     className={btnSuccess}
