@@ -4,6 +4,7 @@ package domain
 
 import (
 	"encoding/json"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -90,6 +91,52 @@ func TestPasur_NumeralCapturesSumToEleven(t *testing.T) {
 		assert.NotEmpty(t, o, "場の札を使わない捕獲は無い")
 	}
 	assert.Equal(t, map[int]bool{7: true}, sums, "どの組み合わせも 11-4 = 7")
+}
+
+// **同じ値の札が場に複数あっても、候補は札ごとに 1 通りずつ。**
+//
+// 位置で列挙するので、値が同じでも**別の札は別の選択肢**になり、同じ組み合わせが
+// 二重に出ることはありません。捕獲の検証も値ではなく位置の集合で比べます。
+func TestPasur_DuplicateTableValuesGiveDistinctOptions(t *testing.T) {
+	p := newTestPasur(t)
+	p.SetCurrentPlayerIdxForTest(0)
+	p.SetTableForTest([]*Card{
+		NewCard(CardDesignSpade, 4, false),
+		NewCard(CardDesignHeart, 4, false),
+		NewCard(CardDesignClover, 3, false),
+		NewCard(CardDesignDiamond, 4, false),
+	})
+
+	// ♠7 は 4 が要る。4 が 3 枚あるので単独 3 通り。
+	pasurHandOf(p, 0, NewCard(CardDesignSpade, 7, false))
+	single := p.GetCaptureOptions(0, 0)
+	assert.ElementsMatch(t, [][]int{{0}, {1}, {3}}, single)
+
+	// ♠4 は 7 が要る。4+3 の組が 3 通り。
+	pasurHandOf(p, 0, NewCard(CardDesignSpade, 4, false))
+	pairs := p.GetCaptureOptions(0, 0)
+	assert.ElementsMatch(t, [][]int{{0, 2}, {1, 2}, {2, 3}}, pairs)
+
+	seen := map[string]bool{}
+	for _, o := range append(append([][]int{}, single...), pairs...) {
+		key := fmt.Sprint(o)
+		assert.False(t, seen[key], "同じ組み合わせが二度出ない: %s", key)
+		seen[key] = true
+	}
+
+	// **どの候補も実際に受理される。**
+	for _, o := range pairs {
+		q := newTestPasur(t)
+		q.SetCurrentPlayerIdxForTest(0)
+		q.SetTableForTest([]*Card{
+			NewCard(CardDesignSpade, 4, false),
+			NewCard(CardDesignHeart, 4, false),
+			NewCard(CardDesignClover, 3, false),
+			NewCard(CardDesignDiamond, 4, false),
+		})
+		pasurHandOf(q, 0, NewCard(CardDesignSpade, 4, false))
+		assert.NoError(t, q.PlayForTest(0, 0, o), "候補 %v", o)
+	}
 }
 
 // **絵札は数値に混ぜず、同ランクだけ取れる。**
