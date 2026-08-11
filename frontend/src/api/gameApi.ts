@@ -198,6 +198,7 @@ export * from './games/pyramid';
 export * from './games/razz';
 export * from './games/reddog';
 export * from './games/rook';
+export * from './games/royalcotillion';
 export * from './games/rummy500';
 export * from './games/russianbank';
 export * from './games/russianpoker';
@@ -307,6 +308,7 @@ export const games = [
   'colorado',
   'cribbagesquares',
   'diplomat',
+  'royalcotillion',
   'razz',
   'sevencardstudhilo',
   'badugi',

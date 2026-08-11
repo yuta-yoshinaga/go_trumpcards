@@ -1,0 +1,56 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
+  "foundation": "組札",
+  "tableau": "場札",
+  "stock": "山札",
+  "waste": "捨て札",
+  "draw": "めくる",
+  "moveCount": "手数",
+  "giveup": "ギブアップ",
+  "empty": "空",
+  "foundationAriaLabel": "{{suit}} 組札{{idx}} {{count}}枚",
+  "emptyFoundationAriaLabel": "空の組札{{idx}} ({{suit}}、A から)",
+  "stockAriaLabel": "山札 残り{{count}}枚",
+  "emptyStockAriaLabel": "山札は空です（めくり直しはありません）",
+  "emptyWasteAriaLabel": "捨て札は空です",
+  "stockOrWaste": "山/捨",
+  "landscapeBanner": "横画面での表示を推奨します",
+  "hint": "ヒント",
+  "autoComplete": "自動完成",
+  "autoCompleteNotReady": "組札へ送れる札があると有効になります",
+  "undo": "元に戻す",
+  "stalemate": "手詰まりです",
+  "playing": "カードを移動してください",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "gameOverSummary": "組札 {{count}}/104 枚（{{percent}}%）まで到達",
+  "hintAvailable": "ヒントがあります",
+  "noHint": "ヒントはありません",
+  "tutorial": {
+    "foundation": "組札は8つ（スートごとに2つ）。**最初は空**で、A が出てきたら置き、同じスートで A→K と13枚積みます。8×13＝104枚すべてでクリアです。",
+    "tableau": "場札は8山。最初は**1枚ずつ**しか配られていません（残り96枚は山札）。**スートも色も無視した降順**で重ねられますが、**1枚ずつしか動かせません**。",
+    "emptyPile": "山が空くと、そこは**山札か捨て札からしか埋められません**。場札から空き山へは動かせないので、空き山は「場を組み替える道具」ではなく「山札・捨て札の受け皿」です。",
+    "stock": "山札は1枚ずつ捨て札へ。**めくり直しはありません（1巡のみ）**。空き山があるときは、捨て札を経由せず山札から直接置けます。",
+    "controls": "めくる・ヒント・元に戻す・自動完成などの操作ボタンです。"
+  },
+  "frontendHint": {
+    "tableau": "山{{pile}}",
+    "foundation": "組札{{idx}}",
+    "waste": "捨て札",
+    "stock": "山札"
+  },
+  "hintReason": {
+    "toFoundation": "このカードを組札に上げると場が1枚軽くなります",
+    "toTableau": "示唆された場札への移動で山を掘り出しましょう",
+    "fillGap": "空き山を山札から直接埋められます（捨て札を1枚節約できます）",
+    "draw": "動かせる札が無いので、山札をめくって手を増やしましょう"
+  },
+  "emptySlotAriaLabel": "空の枠 {{slot}} (山札か捨て札から埋められます)",
+  "emptyReserveAriaLabel": "空のリザーブ {{pile}} (二度と埋まりません)",
+  "emptyReserve": "空",
+  "reserve": "リザーブ"
+}

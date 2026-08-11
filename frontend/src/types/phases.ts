@@ -1441,6 +1441,13 @@ export const DiplomatPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Royal Cotillion phase constants (sync: internal/domain/RoyalCotillion.go). */
+export const RoyalCotillionPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 export const SirTommyPhase = {
   PLAYING: 0,
   GAME_CLEAR: 1,

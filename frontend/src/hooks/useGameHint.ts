@@ -181,6 +181,7 @@ import type {
   PyramidResponse,
   RedDogResponse,
   RookResponse,
+  RoyalCotillionResponse,
   Rummy500Response,
   RussianBankResponse,
   RussianPokerResponse,
@@ -447,6 +448,7 @@ import { getPyramidHint } from '../utils/hints/pyramidHint';
 import { getRazzHint } from '../utils/hints/razzHint';
 import { getReddogHint } from '../utils/hints/reddogHint';
 import { getRookHint } from '../utils/hints/rookHint';
+import { getRoyalCotillionHint } from '../utils/hints/royalcotillionHint';
 import { getRummy500Hint } from '../utils/hints/rummy500Hint';
 import { getRussianBankHint } from '../utils/hints/russianbankHint';
 import { getRussianPokerHint } from '../utils/hints/russianpokerHint';
@@ -581,6 +583,7 @@ export const hintFactories = {
   colorado: (s) => getColoradoHint(s as ColoradoResponse),
   cribbagesquares: (s) => getCribbageSquaresHint(s as CribbageSquaresResponse),
   diplomat: (s) => getDiplomatHint(s as DiplomatResponse),
+  royalcotillion: (s) => getRoyalCotillionHint(s as RoyalCotillionResponse),
   fivehundred: (s) => getFiveHundredHint(s as FiveHundredResponse),
   rook: (s) => getRookHint(s as RookResponse),
   schnapsen: (s) => getSchnapsenHint(s as SchnapsenResponse),

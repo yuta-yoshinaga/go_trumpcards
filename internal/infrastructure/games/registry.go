@@ -884,6 +884,13 @@ var registry = []*Game{
 	// the 104 cards, the eight foundations and the suit-blind descent, but
 	// deals one card per pile and cannot fill an empty pile from the tableau.
 	{Name: "diplomat", Category: CategoryExtra},
+	// Royal Cotillion builds its eight foundations BY TWOS and wraps, so an
+	// Ace-start pile runs A,3,5,7,9,J,K,2,4,6,8,10,Q -- all thirteen ranks, which
+	// is why eight piles hold all 104 cards. Sixteen single-card tableau slots
+	// refill from the stock or waste; the four three-card reserve piles never do.
+	// Calculation is the other by-arithmetic game here, but its four piles use
+	// different step sizes (+1/+2/+3/+4) and do not wrap.
+	{Name: "royalcotillion", Category: CategoryClassic},
 }
 
 // All returns a value-level copy of the registry in canonical order.
