@@ -1565,6 +1565,21 @@ export const SchnapsenPhase = {
  * **There is no bidding phase.** The 8, 5 and 3 targets are fixed by seat, so
  * the dealer's only choice is trump — and then the kitty discard.
  */
+/**
+ * Honeymoon Bridge phase constants (sync: internal/domain/HoneymoonBridge.go).
+ *
+ * **DRAW is a real trick-playing phase, not a deal animation.** Thirteen
+ * no-trump tricks are played that score nothing; each one just hands the
+ * winner and then the loser a card from the stock.
+ */
+export const HoneymoonBridgePhase = {
+  DRAW: 0,
+  BID: 1,
+  PLAY: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
 export const SergeantMajorPhase = {
   TRUMP: 0,
   DISCARD: 1,
