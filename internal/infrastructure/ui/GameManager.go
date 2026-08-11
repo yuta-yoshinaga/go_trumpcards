@@ -4391,6 +4391,20 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
 		}),
+	BindCuiFor("slobberhannes",
+		func() usecase.SlobberhannesInteractorIF {
+			return usecase.NewSlobberhannesInteractor(domain.NewDefaultSlobberhannes(), new(presenter.SlobberhannesCuiPresenter))
+		},
+		controller.NewSlobberhannesCuiController,
+		CuiHelpSpec{
+			TitleKey: "slobberhannes.helpTitle",
+			CommandKeys: []string{
+				"slobberhannes.helpPlay",
+				"slobberhannes.helpNext",
+				"slobberhannes.helpGiveUp",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

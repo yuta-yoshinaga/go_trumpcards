@@ -388,4 +388,12 @@ func init() {
 			return usecase.RestoreGermanWhistInteractor(data, new(presenter.GermanWhistWebPresenter))
 		},
 		controller.NewGermanWhistWebControllerWithProvider)
+	games.RegisterKVGame("slobberhannes", games.CategoryClassic,
+		func() usecase.SlobberhannesInteractorIF {
+			return usecase.NewSlobberhannesInteractor(domain.NewDefaultSlobberhannes(), new(presenter.SlobberhannesWebPresenter))
+		},
+		func(data []byte) (usecase.SlobberhannesInteractorIF, error) {
+			return usecase.RestoreSlobberhannesInteractor(data, new(presenter.SlobberhannesWebPresenter))
+		},
+		controller.NewSlobberhannesWebControllerWithProvider)
 }

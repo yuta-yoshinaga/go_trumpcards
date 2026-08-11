@@ -1559,6 +1559,13 @@ export const SchnapsenPhase = {
   GAME_END: 2,
 } as const;
 
+/** Slobberhannes phase constants (sync: internal/domain/Slobberhannes.go). */
+export const SlobberhannesPhase = {
+  PLAY: 0,
+  ROUND_END: 1,
+  GAME_END: 2,
+} as const;
+
 /** German Whist phase constants (sync: internal/domain/GermanWhist.go). */
 export const GermanWhistPhase = {
   /** First 13 tricks — played for the face-up card, and they do NOT score. */

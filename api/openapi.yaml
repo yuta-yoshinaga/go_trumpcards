@@ -162,6 +162,8 @@ tags:
     description: Crazy Quilt (クレイジーキルト) game - an 8x8 quilt where only cards with an exposed short side can be taken
   - name: germanwhist
     description: German Whist (ジャーマンホイスト) game endpoints -- 26 tricks in two halves, only the second half scores
+  - name: slobberhannes
+    description: Slobberhannes (スロバーハンネス) game endpoints -- avoid the first trick, the last trick, and the Q of clubs
   - name: clocksolitaire
     description: Clock Solitaire (クロックソリティア) game
   - name: durak
@@ -6647,6 +6649,69 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GermanWhistResponse'
+  /slobberhannes/exec:
+    post:
+      tags:
+        - slobberhannes
+      summary: Execute a Slobberhannes game command
+      description: |
+        Send a command to advance the Slobberhannes (スロバーハンネス) game
+        session identified by `sessionId`.
+
+        An **avoidance** game on the 32-card piquet pack with **no trump**.
+        Taking the first trick, the last trick, or the trick holding the Q of
+        clubs costs 1 point each; escaping all three scores 1. The **highest**
+        total after the configured number of rounds wins.
+      operationId: execSlobberhannes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, play, p, next, n, giveup, g, hint, h, log, l]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                  description: Index into your hand (required for `play`)
+                config:
+                  type: object
+                  properties:
+                    rounds:
+                      type: integer
+                      description: Rounds to play (1..12, default 4)
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play the third card in hand
+                value:
+                  command: play
+                  sessionId: my-session-001
+                  cardIndex: 2
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SlobberhannesResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SlobberhannesResponse'
   /clocksolitaire/exec:
     post:
       tags:
@@ -43410,6 +43475,112 @@ components:
           type: integer
         hint:
           $ref: '#/components/schemas/CrazyQuiltHint'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    SlobberhannesTrickCard:
+      type: object
+      description: A card played in the current trick
+      required:
+        - playerIdx
+        - card
+      properties:
+        playerIdx:
+          type: integer
+          description: Index of the player who played this card
+        card:
+          $ref: '#/components/schemas/Card'
+    SlobberhannesHint:
+      type: object
+      description: A suggested card to play
+      properties:
+        cardIndex:
+          type: integer
+          description: Index into your hand
+        reason:
+          type: string
+          description: >-
+            Why that card: slobberhannesAvoid (this trick carries a penalty),
+            slobberhannesDump (safe trick -- shed a high card now), or
+            slobberhannesLeadLow (leading; play low and see what happens).
+    SlobberhannesPlayer:
+      type: object
+      description: One seat at a Slobberhannes table
+      properties:
+        id:
+          type: integer
+        isHuman:
+          type: boolean
+        cardCount:
+          type: integer
+          description: Hand size. The only hand information exposed for the CPU.
+        cards:
+          type: array
+          description: Populated for the human player only; empty for the CPU.
+          items:
+            $ref: '#/components/schemas/Card'
+        score:
+          type: integer
+          description: Running total across rounds. Penalties are negative, the clean-round bonus positive.
+        trickCount:
+          type: integer
+        tookFirstTrick:
+          type: boolean
+          description: Took this round's first trick (-1).
+        tookLastTrick:
+          type: boolean
+          description: Took this round's last trick (-1).
+        tookQueen:
+          type: boolean
+          description: Took the trick holding the Q of clubs (-1).
+    SlobberhannesResponse:
+      type: object
+      description: Response payload for /slobberhannes/exec
+      properties:
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/SlobberhannesPlayer'
+        phase:
+          type: integer
+          description: "0=Play, 1=RoundEnd, 2=GameEnd"
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+          description: 0-based. Tricks 0 and 7 carry the position penalties.
+        currentPlayerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        currentTrick:
+          type: array
+          items:
+            $ref: '#/components/schemas/SlobberhannesTrickCard'
+        validPlays:
+          type: array
+          description: Hand indices you may legally play. Following suit is compulsory.
+          items:
+            type: integer
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: "-1 until decided, and -1 on a tie"
+        hint:
+          $ref: '#/components/schemas/SlobberhannesHint'
+        config:
+          type: object
+          properties:
+            rounds:
+              type: integer
         message:
           type: string
         messageCode:

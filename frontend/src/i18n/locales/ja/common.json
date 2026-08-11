@@ -293,7 +293,8 @@
     "diplomat": "ディプロマット",
     "royalcotillion": "ロイヤルコティヨン",
     "crazyquilt": "クレイジーキルト",
-    "germanwhist": "ジャーマンホイスト"
+    "germanwhist": "ジャーマンホイスト",
+    "slobberhannes": "スロバーハンネス"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1168,6 +1169,12 @@
     "germanwhist.result.p0Win": "あなたの勝ちです（後半 {{p0}}-{{p1}}）。",
     "germanwhist.result.p1Win": "CPUの勝ちです（後半 {{p0}}-{{p1}}）。",
     "germanwhist.result.tie": "引き分けです（後半 {{p0}}-{{p1}}）。",
+    "slobberhannes.play.firstTrick": "最初のトリックです。取ると -1 点。",
+    "slobberhannes.play.lastTrick": "最後のトリックです。取ると -1 点。",
+    "slobberhannes.play.normal": "罰点の絡まないトリックです。高い札を処分する好機。",
+    "slobberhannes.roundEnd": "ラウンド{{round}}が終了しました。",
+    "slobberhannes.result.winner": "プレイヤー{{idx}}の勝ちです（{{score}}点）。",
+    "slobberhannes.result.tie": "同点で決着つかず。",
     "schnapsen.trickEnd": "トリック終了 — 次へ進んでください。",
     "seahaventowers.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
     "seahaventowers.gameOver": "ゲームオーバー",

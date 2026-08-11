@@ -230,6 +230,7 @@ export * from './games/sjavs';
 export * from './games/skat';
 export * from './games/skitgubbe';
 export * from './games/slapjack';
+export * from './games/slobberhannes';
 export * from './games/soko';
 export * from './games/solowhist';
 export * from './games/spades';
@@ -313,6 +314,7 @@ export const games = [
   'royalcotillion',
   'crazyquilt',
   'germanwhist',
+  'slobberhannes',
   'razz',
   'sevencardstudhilo',
   'badugi',

@@ -212,6 +212,7 @@ import type {
   SkatResponse,
   SkitgubbeResponse,
   SlapjackResponse,
+  SlobberhannesResponse,
   SoloWhistResponse,
   SpadesResponse,
   SpeedResponse,
@@ -481,6 +482,7 @@ import { getSjavsHint } from '../utils/hints/sjavsHint';
 import { getSkatHint } from '../utils/hints/skatHint';
 import { getSkitgubbeHint } from '../utils/hints/skitgubbeHint';
 import { getSlapjackHint } from '../utils/hints/slapjackHint';
+import { getSlobberhannesHint } from '../utils/hints/slobberhannesHint';
 import { getSokoHint } from '../utils/hints/sokoHint';
 import { getSoloWhistHint } from '../utils/hints/soloWhistHint';
 import { getSpadesHint } from '../utils/hints/spadesHint';
@@ -593,6 +595,7 @@ export const hintFactories = {
   rook: (s) => getRookHint(s as RookResponse),
   schnapsen: (s) => getSchnapsenHint(s as SchnapsenResponse),
   germanwhist: (s) => getGermanWhistHint(s as GermanWhistResponse),
+  slobberhannes: (s) => getSlobberhannesHint(s as SlobberhannesResponse),
   faro: (s) => getFaroHint(s as FaroResponse),
   fiftyone: (s) => getFiftyOneHint(s as FiftyOneResponse),
   napoleon: (s) => getNapoleonHint(s as NapoleonResponse),
