@@ -180,6 +180,7 @@ export * from './games/osmosis';
 export * from './games/pageone';
 export * from './games/paigow';
 export * from './games/pan';
+export * from './games/pasur';
 export * from './games/penguin';
 export * from './games/pigtail';
 export * from './games/pineapple';

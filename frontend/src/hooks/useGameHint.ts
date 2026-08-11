@@ -173,6 +173,7 @@ import type {
   PageOneResponse,
   PaiGowResponse,
   PanResponse,
+  PasurResponse,
   PenguinResponse,
   PigsTailResponse,
   PineappleResponse,
@@ -458,6 +459,7 @@ import { getOsmosisHint } from '../utils/hints/osmosisHint';
 import { getPageOneHint } from '../utils/hints/pageoneHint';
 import { getPaiGowHint } from '../utils/hints/paigowHint';
 import { getPanHint } from '../utils/hints/panHint';
+import { getPasurHint } from '../utils/hints/pasurHint';
 import { getPenguinHint } from '../utils/hints/penguinHint';
 import { getPigstailHint } from '../utils/hints/pigstailHint';
 import { getPineappleHint } from '../utils/hints/pineappleHint';
@@ -644,6 +646,7 @@ export const hintFactories = {
   sergeantmajor: (s) => getSergeantMajorHint(s as SergeantMajorResponse),
   honeymoonbridge: (s) => getHoneymoonBridgeHint(s as HoneymoonBridgeResponse),
   minibridge: (s) => getMinibridgeHint(s as MinibridgeResponse),
+  pasur: (s) => getPasurHint(s as PasurResponse),
   faro: (s) => getFaroHint(s as FaroResponse),
   fiftyone: (s) => getFiftyOneHint(s as FiftyOneResponse),
   napoleon: (s) => getNapoleonHint(s as NapoleonResponse),
