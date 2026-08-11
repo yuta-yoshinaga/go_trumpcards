@@ -121,6 +121,7 @@ export * from './games/holdem';
 export * from './games/indianpoker';
 export * from './games/indianrummy';
 export * from './games/irishpoker';
+export * from './games/israeliwhist';
 export * from './games/jass';
 export * from './games/kaiser';
 export * from './games/kalooki';

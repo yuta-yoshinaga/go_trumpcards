@@ -4500,6 +4500,23 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
 		}),
+	BindCuiFor("israeliwhist",
+		func() usecase.IsraeliWhistInteractorIF {
+			return usecase.NewIsraeliWhistInteractor(domain.NewDefaultIsraeliWhist(), new(presenter.IsraeliWhistCuiPresenter))
+		},
+		controller.NewIsraeliWhistCuiController,
+		CuiHelpSpec{
+			TitleKey: "israeliwhist.helpTitle",
+			CommandKeys: []string{
+				"israeliwhist.helpAuction",
+				"israeliwhist.helpPass",
+				"israeliwhist.helpBid",
+				"israeliwhist.helpPlay",
+				"israeliwhist.helpNext",
+				"israeliwhist.helpGiveUp",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

@@ -957,6 +957,13 @@ var registry = []*Game{
 	// highest call at the table) doubles. The "total must not be 13" rule it is
 	// often credited with is the same one OhHell already enforces on its dealer.
 	{Name: "estimation", Category: CategoryClassic},
+	// Israeli Whist bids **twice**: an auction settles the trump suit and a
+	// minimum quota for whoever wins it, and then everyone -- winner included --
+	// calls their own target separately. That second round is what makes it
+	// different from the one-auction games; the winner is buying the right to
+	// choose trump, not the contract. All four exact, or all four wrong,
+	// doubles the round either way.
+	{Name: "israeliwhist", Category: CategoryExtra2},
 }
 
 // All returns a value-level copy of the registry in canonical order.

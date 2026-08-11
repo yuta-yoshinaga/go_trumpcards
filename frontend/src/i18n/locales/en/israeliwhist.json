@@ -1,0 +1,58 @@
+{
+  "phase": {
+    "auction": "Auction",
+    "bid": "Calling",
+    "play": "Playing",
+    "roundEnd": "Round over",
+    "gameEnd": "Game over"
+  },
+  "header": {
+    "round": "Round",
+    "trick": "Trick",
+    "auction": "Auction: high bid {{n}} {{suit}}",
+    "trump": "Trump: {{suit}} (won with {{n}})",
+    "scoreTable": "Exact +(call² + 10), an exact 0 is +25, missing costs -(10 × the difference). All four exact or all four missing doubles either way.",
+    "took": "{{n}} taken",
+    "total": "{{n}} total",
+    "you": "You",
+    "cpu": "CPU{{idx}}"
+  },
+  "role": {
+    "declarer": "won {{n}}",
+    "passed": "passed",
+    "active": "bidding"
+  },
+  "bid": {
+    "none": "no call",
+    "value": "call {{n}}"
+  },
+  "currentTrick": "Current trick",
+  "actions": {
+    "auction": "{{n}} {{suit}}",
+    "pass": "Pass",
+    "nextRound": "Next round",
+    "reset": "Reset",
+    "giveUp": "Give up",
+    "playAria": "Play {{card}}"
+  },
+  "result": {
+    "win": "You win with {{score}}!",
+    "lose": "CPU{{idx}} wins.",
+    "tie": "It's a tie."
+  },
+  "hint": {
+    "israeliwhistAuctionBid": "This hand is worth winning the auction with.",
+    "israeliwhistAuctionPass": "Not worth winning the auction — drop out.",
+    "israeliwhistBid": "Counted from the high cards in your hand.",
+    "israeliwhistMeetQuota": "You won the auction, so you must call at least your quota.",
+    "israeliwhistAvoidRestricted": "Your estimate is the barred number, so this shifts by one.",
+    "israeliwhistWinTrick": "You are short of your call — go for this trick.",
+    "israeliwhistDuck": "You already have your call — avoid taking more."
+  },
+  "tutorial": {
+    "score": "You score **only for an exact call**, and it rises with the **square** of the call (an exact 7 is 59). Missing costs in proportion to the difference. **All four exact, or all four wrong, doubles the round.**",
+    "twoStage": "Bidding happens **twice**. First an auction for \"n tricks + a trump suit\" (minimum 5; suits rank ♣ < ♦ < ♥ < ♠), then **everyone, the winner included, calls their own target**. The winner must call at least their quota, and whoever calls last may not make the total 13.",
+    "seats": "Each seat's **auction standing** (won / passed / bidding) and **its own call**, tricks taken and running total. The two bidding rounds are separate, so both stay on screen.",
+    "hand": "Your hand. Legal cards get a green ring. Once you have your call, the play is to duck everything else."
+  }
+}

@@ -114,6 +114,7 @@ import type {
   HoldemResponse,
   IndianPokerResponse,
   IndianRummyResponse,
+  IsraeliWhistResponse,
   JassResponse,
   KaiserResponse,
   KalookiResponse,
@@ -387,6 +388,7 @@ import { getHoldemHint } from '../utils/hints/holdemHint';
 import { getIndianPokerHint } from '../utils/hints/indianpokerHint';
 import { getIndianRummyHint } from '../utils/hints/indianRummyHint';
 import { getIrishPokerHint } from '../utils/hints/irishPokerHint';
+import { getIsraeliWhistHint } from '../utils/hints/israeliwhistHint';
 import { getJassHint } from '../utils/hints/jassHint';
 import { getJokerPokerHint } from '../utils/hints/jokerpokerHint';
 import { getKaiserHint } from '../utils/hints/kaiserHint';
@@ -614,6 +616,7 @@ export const hintFactories = {
   tarabish: (s) => getTarabishHint(s as TarabishResponse),
   baloot: (s) => getBalootHint(s as BalootResponse),
   estimation: (s) => getEstimationHint(s as EstimationResponse),
+  israeliwhist: (s) => getIsraeliWhistHint(s as IsraeliWhistResponse),
   faro: (s) => getFaroHint(s as FaroResponse),
   fiftyone: (s) => getFiftyOneHint(s as FiftyOneResponse),
   napoleon: (s) => getNapoleonHint(s as NapoleonResponse),

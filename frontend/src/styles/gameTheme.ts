@@ -131,6 +131,7 @@ export type GameKey =
   | 'tarabish'
   | 'baloot'
   | 'estimation'
+  | 'israeliwhist'
   | 'skat'
   | 'belote'
   | 'jass'
@@ -672,6 +673,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   tarabish: BLUE,
   baloot: BLUE,
   estimation: BLUE,
+  israeliwhist: BLUE,
   // Matching/Pass
   oldmaid: GREEN,
   doubt: GREEN,

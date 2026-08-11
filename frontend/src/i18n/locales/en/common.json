@@ -300,7 +300,8 @@
     "rams": "Rams",
     "tarabish": "Tarabish",
     "baloot": "Baloot",
-    "estimation": "Estimation"
+    "estimation": "Estimation",
+    "israeliwhist": "Israeli Whist"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1220,6 +1221,16 @@
     "estimation.result.win": "You win with {{score}}.",
     "estimation.result.lose": "CPU{{idx}} wins.",
     "estimation.result.tie": "It's a tie.",
+    "israeliwhist.auction.choose": "Bid (minimum 5), or pass to drop out.",
+    "israeliwhist.auction.wait": "The other players are bidding.",
+    "israeliwhist.bid.choose": "Call the tricks you expect to take.",
+    "israeliwhist.bid.quota": "You won the auction, so you must call at least {{n}}.",
+    "israeliwhist.bid.restricted": "You call last, so {{n}} is barred — it would make the total 13.",
+    "israeliwhist.play": "An exact call rises with its square, and all-exact or all-miss doubles the round.",
+    "israeliwhist.roundEnd": "Round {{round}} is over (you scored {{score}}).",
+    "israeliwhist.result.win": "You win with {{score}}.",
+    "israeliwhist.result.lose": "CPU{{idx}} wins.",
+    "israeliwhist.result.tie": "It's a tie.",
     "schnapsen.trickEnd": "Trick complete — continue.",
     "seahaventowers.gameClear": "Game Clear! Moves: {{moveCount}}",
     "seahaventowers.gameOver": "Game Over",
