@@ -962,6 +962,16 @@ func (b *Baloot) UnmarshalJSON(data []byte) error {
 	if j.Mode < BalootModeNone || j.Mode > BalootModeHokom {
 		return fmt.Errorf("invalid mode: %d", j.Mode)
 	}
+	// **切り札はモードと整合していなければならない。** Hokom なら実在するスート、
+	// Sun なら「切り札なし」の 0。壊れた値を通すと rankOf が別の序列を選び、
+	// 札の強さが黙って変わる（レビュー指摘 PR #5302）。
+	if j.Mode == BalootModeHokom {
+		if j.TrumpSuit < CardDesignSpade || j.TrumpSuit > CardDesignDiamond {
+			return fmt.Errorf("invalid trump suit for hokom: %d", j.TrumpSuit)
+		}
+	} else if j.TrumpSuit != 0 {
+		return fmt.Errorf("trump suit %d without hokom", j.TrumpSuit)
+	}
 	if j.TrickNumber < 0 || j.TrickNumber > BalootTricksPerRound {
 		return fmt.Errorf("invalid trick number: %d", j.TrickNumber)
 	}

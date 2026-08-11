@@ -766,10 +766,23 @@ func TestBaloot_UnmarshalRejectsInvalid(t *testing.T) {
 		}
 	}
 	cases := map[string]func(*balootJSON){
-		"bad config":   func(j *balootJSON) { j.Config.Target = 0 },
-		"bad phase":    func(j *balootJSON) { j.Phase = BalootPhase(99) },
-		"bad mode":     func(j *balootJSON) { j.Mode = BalootMode(99) },
-		"bad trick":    func(j *balootJSON) { j.TrickNumber = BalootTricksPerRound + 1 },
+		"bad config": func(j *balootJSON) { j.Config.Target = 0 },
+		"bad phase":  func(j *balootJSON) { j.Phase = BalootPhase(99) },
+		"bad mode":   func(j *balootJSON) { j.Mode = BalootMode(99) },
+		"bad trick":  func(j *balootJSON) { j.TrickNumber = BalootTricksPerRound + 1 },
+		// **切り札はモードと整合していなければならない。** どちらの向きも踏む。
+		"hokom without a suit": func(j *balootJSON) {
+			j.Mode, j.TrumpSuit = BalootModeHokom, 0
+		},
+		"hokom with a bogus suit": func(j *balootJSON) {
+			j.Mode, j.TrumpSuit = BalootModeHokom, 99
+		},
+		"sun carrying a trump suit": func(j *balootJSON) {
+			j.Mode, j.TrumpSuit = BalootModeSun, CardDesignHeart
+		},
+		"undeclared carrying a trump suit": func(j *balootJSON) {
+			j.Mode, j.TrumpSuit = BalootModeNone, CardDesignSpade
+		},
 		"bad round":    func(j *balootJSON) { j.RoundNumber = 0 },
 		"bad current":  func(j *balootJSON) { j.CurrentPlayerIdx = BalootPlayerCnt },
 		"bad lead":     func(j *balootJSON) { j.LeadPlayerIdx = -1 },
@@ -801,6 +814,16 @@ func TestBaloot_UnmarshalRejectsInvalid(t *testing.T) {
 	data, err := json.Marshal(valid())
 	require.NoError(t, err)
 	assert.NoError(t, json.Unmarshal(data, &got))
+
+	// **Hokom + 実在するスートも通る。** 上のガードが Hokom を一律に弾いて
+	// いないことを確かめる（負のコントロール 2 本目）。
+	j := valid()
+	j.Mode, j.TrumpSuit = BalootModeHokom, CardDesignDiamond
+	hokom, err := json.Marshal(j)
+	require.NoError(t, err)
+	var okHokom Baloot
+	require.NoError(t, json.Unmarshal(hokom, &okHokom))
+	assert.Equal(t, CardDesignDiamond, okHokom.GetTrumpSuit())
 }
 
 // 棋譜が積まれること。
