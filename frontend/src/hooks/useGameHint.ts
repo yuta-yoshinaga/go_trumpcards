@@ -96,6 +96,7 @@ import type {
   GaigelResponse,
   GanjifaResponse,
   GapsResponse,
+  GermanWhistResponse,
   GinRummyResponse,
   GoFishResponse,
   GolfResponse,
@@ -360,6 +361,7 @@ import { getFrenchTarotHint } from '../utils/hints/frenchtarotHint';
 import { getGaigelHint } from '../utils/hints/gaigelHint';
 import { getGanjifaHint } from '../utils/hints/ganjifaHint';
 import { getGapsHint } from '../utils/hints/gapsHint';
+import { getGermanWhistHint } from '../utils/hints/germanwhistHint';
 import { getGinRummyHint } from '../utils/hints/ginrummyHint';
 import { getGoFishHint } from '../utils/hints/gofishHint';
 import { getGolfHint } from '../utils/hints/golfHint';
@@ -590,6 +592,7 @@ export const hintFactories = {
   fivehundred: (s) => getFiveHundredHint(s as FiveHundredResponse),
   rook: (s) => getRookHint(s as RookResponse),
   schnapsen: (s) => getSchnapsenHint(s as SchnapsenResponse),
+  germanwhist: (s) => getGermanWhistHint(s as GermanWhistResponse),
   faro: (s) => getFaroHint(s as FaroResponse),
   fiftyone: (s) => getFiftyOneHint(s as FiftyOneResponse),
   napoleon: (s) => getNapoleonHint(s as NapoleonResponse),

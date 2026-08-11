@@ -898,6 +898,13 @@ var registry = []*Game{
 	// neighbour. Sultan shares the fixed-layout, pick-from-the-edge idea but
 	// has no orientation rule and no by-rank play onto the waste.
 	{Name: "crazyquilt", Category: CategorySolo},
+	// German Whist is 13 tricks that DO NOT score followed by 13 that do. The
+	// first half is played for the face-up card: the winner takes it, the loser
+	// draws blind from the stock, so ducking a trick you could win is often
+	// correct. Whist proper scores every trick and has four players; Schnapsen
+	// is the other two-player draw-then-follow game here, but it scores card
+	// points to 66 rather than counting tricks.
+	{Name: "germanwhist", Category: CategoryClassic},
 }
 
 // All returns a value-level copy of the registry in canonical order.

@@ -160,6 +160,8 @@ tags:
     description: Royal Cotillion (ロイヤルコティヨン) game - eight foundations built by twos that wrap through all thirteen ranks
   - name: crazyquilt
     description: Crazy Quilt (クレイジーキルト) game - an 8x8 quilt where only cards with an exposed short side can be taken
+  - name: germanwhist
+    description: German Whist (ジャーマンホイスト) game endpoints -- 26 tricks in two halves, only the second half scores
   - name: clocksolitaire
     description: Clock Solitaire (クロックソリティア) game
   - name: durak
@@ -6588,6 +6590,63 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CrazyQuiltResponse'
+  /germanwhist/exec:
+    post:
+      tags:
+        - germanwhist
+      summary: Execute a German Whist game command
+      description: |
+        Send a command to advance the German Whist (ジャーマンホイスト) game
+        session identified by `sessionId`.
+
+        The hand is 26 tricks in two halves. In the first 13 the winner takes
+        the face-up card and the loser draws blind from the stock, and **those
+        tricks do not score**; only the second 13 count. The suit of the first
+        face-up card is trump for the whole hand.
+      operationId: execGermanWhist
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, play, p, giveup, g, hint, h, log, l]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                  description: Index into your hand (required for `play`)
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play the third card in hand
+                value:
+                  command: play
+                  sessionId: my-session-001
+                  cardIndex: 2
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GermanWhistResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GermanWhistResponse'
   /clocksolitaire/exec:
     post:
       tags:
@@ -43351,6 +43410,104 @@ components:
           type: integer
         hint:
           $ref: '#/components/schemas/CrazyQuiltHint'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    GermanWhistTrickCard:
+      type: object
+      description: A card played in the current trick
+      required:
+        - playerIdx
+        - card
+      properties:
+        playerIdx:
+          type: integer
+          description: Index of the player who played this card
+        card:
+          $ref: '#/components/schemas/Card'
+    GermanWhistHint:
+      type: object
+      description: A suggested card to play in German Whist
+      properties:
+        cardIndex:
+          type: integer
+          description: Index into your hand
+        reason:
+          type: string
+          description: >-
+            Why that card. The aim inverts between the halves:
+            germanWhistTakeUpCard (win this trick, the face-up card is worth
+            having), germanWhistDuck (lose on purpose, it is not), or
+            germanWhistWinTrick (second half -- every trick scores).
+    GermanWhistPlayer:
+      type: object
+      description: One seat at a German Whist table
+      properties:
+        id:
+          type: integer
+        isHuman:
+          type: boolean
+        cardCount:
+          type: integer
+          description: Hand size. The only hand information exposed for the CPU.
+        cards:
+          type: array
+          description: Populated for the human player only; empty for the CPU.
+          items:
+            $ref: '#/components/schemas/Card'
+        trickCount:
+          type: integer
+          description: Total tricks taken, both halves.
+        scoringTricks:
+          type: integer
+          description: Tricks taken in the SECOND half only -- the ones that decide the game.
+    GermanWhistResponse:
+      type: object
+      description: Response payload for /germanwhist/exec
+      properties:
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/GermanWhistPlayer'
+        phase:
+          type: integer
+          description: "0=Draw (first 13 tricks, no score), 1=Scoring (second 13), 2=GameEnd"
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        currentTrick:
+          type: array
+          items:
+            $ref: '#/components/schemas/GermanWhistTrickCard'
+        trumpSuit:
+          type: integer
+          description: Suit of the first face-up card; trump for the whole hand.
+        upCard:
+          allOf:
+            - $ref: '#/components/schemas/Card'
+          description: The face-up card the first half is played for. Absent once the stock is exhausted.
+        stockCount:
+          type: integer
+        validPlays:
+          type: array
+          description: Hand indices you may legally play. Following suit is compulsory.
+          items:
+            type: integer
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: "-1 until decided"
+        hint:
+          $ref: '#/components/schemas/GermanWhistHint'
         message:
           type: string
         messageCode:
