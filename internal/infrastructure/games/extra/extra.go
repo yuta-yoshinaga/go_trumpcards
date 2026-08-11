@@ -323,4 +323,12 @@ func init() {
 			return usecase.RestoreMendikotInteractor(data, new(presenter.MendikotWebPresenter))
 		},
 		controller.NewMendikotWebControllerWithProvider)
+	games.RegisterKVGame("bhabhi", games.CategoryExtra,
+		func() usecase.BhabhiInteractorIF {
+			return usecase.NewBhabhiInteractor(domain.NewDefaultBhabhi(), new(presenter.BhabhiWebPresenter))
+		},
+		func(data []byte) (usecase.BhabhiInteractorIF, error) {
+			return usecase.RestoreBhabhiInteractor(data, new(presenter.BhabhiWebPresenter))
+		},
+		controller.NewBhabhiWebControllerWithProvider)
 }

@@ -480,6 +480,11 @@ func init() {
 			return usecase.NewMendikotInteractor(domain.NewDefaultMendikot(), new(presenter.MendikotWebPresenter))
 		},
 		controller.NewMendikotWebController)
+	BindWebControllerFor("bhabhi",
+		func() usecase.BhabhiInteractorIF {
+			return usecase.NewBhabhiInteractor(domain.NewDefaultBhabhi(), new(presenter.BhabhiWebPresenter))
+		},
+		controller.NewBhabhiWebController)
 	BindWebControllerFor("rams",
 		func() usecase.RamsInteractorIF {
 			return usecase.NewRamsInteractor(domain.NewDefaultRams(), new(presenter.RamsWebPresenter))

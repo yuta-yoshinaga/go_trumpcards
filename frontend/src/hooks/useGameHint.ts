@@ -19,6 +19,7 @@ import type {
   BeleagueredCastleResponse,
   BeloteResponse,
   BeziqueResponse,
+  BhabhiResponse,
   BidEuchreResponse,
   BidWhistResponse,
   BigTwoResponse,
@@ -293,6 +294,7 @@ import { getBeggarMyNeighbourHint } from '../utils/hints/beggarmyneighbourHint';
 import { getBeleagueredcastleHint } from '../utils/hints/beleagueredcastleHint';
 import { getBeloteHint } from '../utils/hints/beloteHint';
 import { getBeziqueHint } from '../utils/hints/beziqueHint';
+import { getBhabhiHint } from '../utils/hints/bhabhiHint';
 import { getBidEuchreHint } from '../utils/hints/bideuchreHint';
 import { getBidWhistHint } from '../utils/hints/bidwhistHint';
 import { getBigTwoHint } from '../utils/hints/bigtwoHint';
@@ -626,6 +628,7 @@ export const hintFactories = {
   hokm: (s) => getHokmHint(s as HokmResponse),
   shelem: (s) => getShelemHint(s as ShelemResponse),
   mendikot: (s) => getMendikotHint(s as MendikotResponse),
+  bhabhi: (s) => getBhabhiHint(s as BhabhiResponse),
   faro: (s) => getFaroHint(s as FaroResponse),
   fiftyone: (s) => getFiftyOneHint(s as FiftyOneResponse),
   napoleon: (s) => getNapoleonHint(s as NapoleonResponse),

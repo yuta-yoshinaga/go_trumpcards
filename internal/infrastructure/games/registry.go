@@ -982,6 +982,11 @@ var registry = []*Game{
 	// トリックの多いほうが勝つ。切り札を選ぶフェーズは無く、最初にフォローできな
 	// かった人が出した札のスートがそのまま切り札になる。
 	{Name: "mendikot", Category: CategoryExtra},
+	// Bhabhi (バービー) -- インド・パキスタンの**回避型**。52 枚を 3〜7 人で
+	// 配り切り、リードのスートにフォローできなかった人が**場札を全部引き取る**。
+	// 手札を出し切った人から抜け、**最後に残った 1 人が Bhabhi（敗者）**。
+	// 勝者ではなく敗者を決めるゲーム。
+	{Name: "bhabhi", Category: CategoryExtra},
 }
 
 // All returns a value-level copy of the registry in canonical order.
