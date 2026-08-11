@@ -297,7 +297,8 @@
     "slobberhannes": "スロバーハンネス",
     "polignac": "ポリニャック",
     "reversis": "レヴェルシ",
-    "rams": "ラムス"
+    "rams": "ラムス",
+    "tarabish": "タラビッシュ"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1194,6 +1195,13 @@
     "rams.roundEnd": "ラウンド{{round}}が終了しました。ポットは {{pot}} チップです。",
     "rams.result.winner": "プレイヤー{{idx}}の勝ちです（{{chips}}チップ）。",
     "rams.result.tie": "同点で決着つかず。",
+    "tarabish.bid.choose": "表向きの札のスートを切り札として引き受けますか？",
+    "tarabish.bid.dealerStuck": "あなたが親です。親は見送れません。引き受けてください。",
+    "tarabish.play": "切り札のJ(20)と9(14)がAより強い点に注意。",
+    "tarabish.roundEnd": "ラウンド{{round}}が終了しました（{{t0}} － {{t1}}）。",
+    "tarabish.result.team0": "あなたのチームの勝ちです（{{t0}} － {{t1}}）。",
+    "tarabish.result.team1": "相手チームの勝ちです（{{t0}} － {{t1}}）。",
+    "tarabish.result.tie": "同点です（{{t0}} － {{t1}}）。",
     "schnapsen.trickEnd": "トリック終了 — 次へ進んでください。",
     "seahaventowers.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
     "seahaventowers.gameOver": "ゲームオーバー",

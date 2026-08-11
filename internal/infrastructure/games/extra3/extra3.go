@@ -333,4 +333,12 @@ func init() {
 			return usecase.RestoreVintInteractor(data, new(presenter.VintWebPresenter))
 		},
 		controller.NewVintWebControllerWithProvider)
+	games.RegisterKVGame("tarabish", games.CategoryExtra3,
+		func() usecase.TarabishInteractorIF {
+			return usecase.NewTarabishInteractor(domain.NewDefaultTarabish(), new(presenter.TarabishWebPresenter))
+		},
+		func(data []byte) (usecase.TarabishInteractorIF, error) {
+			return usecase.RestoreTarabishInteractor(data, new(presenter.TarabishWebPresenter))
+		},
+		controller.NewTarabishWebControllerWithProvider)
 }

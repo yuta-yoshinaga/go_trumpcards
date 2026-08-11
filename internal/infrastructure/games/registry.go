@@ -938,6 +938,12 @@ var registry = []*Game{
 	// for the price of the ante alone. Loo has the same play/drop-and-pay shape at
 	// a fixed four seats.
 	{Name: "rams", Category: CategoryExtra2},
+	// Tarabish is the Cape Breton branch of the Jass family: 36 cards, 2v2, and
+	// the trump order that defines the family -- **J (Jass) 20 and 9 (Menel) 14
+	// outrank the ace**, in strength and in points. Melds are runs (3 = 20,
+	// 4+ = 50) and bella (trump K+Q = 20). Belote and Jass share the same point
+	// table, but each keeps its own unexported copy, so this one does too.
+	{Name: "tarabish", Category: CategoryExtra3},
 }
 
 // All returns a value-level copy of the registry in canonical order.

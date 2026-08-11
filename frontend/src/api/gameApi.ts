@@ -248,6 +248,7 @@ export * from './games/streetsandalleys';
 export * from './games/sueca';
 export * from './games/sultan';
 export * from './games/tablanet';
+export * from './games/tarabish';
 export * from './games/tarneeb';
 export * from './games/tarocchini';
 export * from './games/teenpatti';
@@ -321,6 +322,7 @@ export const games = [
   'polignac',
   'reversis',
   'rams',
+  'tarabish',
   'razz',
   'sevencardstudhilo',
   'badugi',

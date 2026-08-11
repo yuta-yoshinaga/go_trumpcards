@@ -1,0 +1,53 @@
+{
+  "phase": {
+    "bid": "Bidding",
+    "play": "Playing",
+    "roundEnd": "Round over",
+    "gameEnd": "Game over"
+  },
+  "header": {
+    "round": "Round",
+    "trick": "Trick",
+    "target": "first to {{target}}",
+    "order": "Trump: J (Jass)=20 > 9 (Menel)=14 > A=11 > 10 > K=4 > Q=3. Plain suits: A=11 > 10 > K=4 > Q=3 > J=2.",
+    "upCard": "Turned for trump",
+    "trumpTaken": "Trump: {{suit}} (taken by {{name}})",
+    "score": "Score: your team {{t0}} — theirs {{t1}}",
+    "you": "You",
+    "cpu": "CPU{{idx}}",
+    "team": "T{{team}}"
+  },
+  "meld": {
+    "none": "no meld",
+    "run": "run of {{len}}",
+    "bella": "bella",
+    "summary": "{{detail}}={{points}}"
+  },
+  "currentTrick": "Current trick",
+  "actions": {
+    "take": "Take it",
+    "pass": "Pass",
+    "nextRound": "Next round",
+    "reset": "Reset",
+    "giveUp": "Give up",
+    "playAria": "Play {{card}}"
+  },
+  "dealerStuck": "You are the dealer. The dealer cannot pass.",
+  "result": {
+    "youWin": "Your team wins! {{t0}} — {{t1}}",
+    "theyWin": "The other team wins. {{t0}} — {{t1}}",
+    "tie": "It's a tie. {{t0}} — {{t1}}"
+  },
+  "hint": {
+    "tarabishTakeTrump": "You hold strength in this suit — worth taking.",
+    "tarabishPassTrump": "You are weak in this suit. Passing is safer.",
+    "tarabishWinTrick": "Go for this trick.",
+    "tarabishFeedPartner": "Your partner is winning — throw a high-scoring card on it."
+  },
+  "tutorial": {
+    "order": "In trump the **J (Jass) is highest at 20 points and the 9 (Menel) second at 14**. They outrank the ace, which defines this family and cannot be read off the table.",
+    "bid": "Choose whether to take the turned card's suit as trump. **When you are the dealer you cannot pass.**",
+    "meld": "Melds are computed from the deal: a run (three in suit = 20, four or more = 50) and bella (trump K+Q = 20).",
+    "hand": "Your hand. Legal cards carry a green ring. When your partner (T0) is winning a trick, throw a high-scoring card on it."
+  }
+}
