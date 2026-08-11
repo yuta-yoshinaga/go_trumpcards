@@ -964,6 +964,12 @@ var registry = []*Game{
 	// choose trump, not the contract. All four exact, or all four wrong,
 	// doubles the round either way.
 	{Name: "israeliwhist", Category: CategoryExtra2},
+	// Hokm is Iran's most-played trick-taker, and **it does not play out the
+	// thirteen tricks**: the first partnership to seven takes the hand and the
+	// rest of the cards are never played. The hakem declares trump from their
+	// first five cards alone, keeps the role while their team keeps winning,
+	// and a hand where the losers take nothing at all (Kot) is worth two.
+	{Name: "hokm", Category: CategoryClassic},
 }
 
 // All returns a value-level copy of the registry in canonical order.

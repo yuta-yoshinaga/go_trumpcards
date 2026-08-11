@@ -301,7 +301,8 @@
     "tarabish": "タラビッシュ",
     "baloot": "バルート",
     "estimation": "エスティメーション",
-    "israeliwhist": "イスラエリホイスト"
+    "israeliwhist": "イスラエリホイスト",
+    "hokm": "ホクム"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1231,6 +1232,14 @@
     "israeliwhist.result.win": "あなたの勝ちです（{{score}}点）。",
     "israeliwhist.result.lose": "CPU{{idx}} の勝ちです。",
     "israeliwhist.result.tie": "同点です。",
+    "hokm.trump.choose": "あなたが親です。最初の5枚を見て切り札を決めてください。",
+    "hokm.trump.wait": "親が最初の5枚を見て切り札を決めています。",
+    "hokm.play": "7トリック先取でハンドが終わります。13トリックは打ち切りません。",
+    "hokm.handEnd": "ハンド{{hand}}が終了しました（{{t0}} - {{t1}}）。",
+    "hokm.handEndKot": "ハンド{{hand}}が終了しました。相手は1トリックも取れず、Kot で2点です（{{t0}} - {{t1}}）。",
+    "hokm.result.team0": "あなたのチームの勝ちです（{{t0}} - {{t1}}）。",
+    "hokm.result.team1": "相手チームの勝ちです（{{t0}} - {{t1}}）。",
+    "hokm.result.tie": "同点です（{{t0}} - {{t1}}）。",
     "schnapsen.trickEnd": "トリック終了 — 次へ進んでください。",
     "seahaventowers.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
     "seahaventowers.gameOver": "ゲームオーバー",

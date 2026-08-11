@@ -4517,6 +4517,21 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
 		}),
+	BindCuiFor("hokm",
+		func() usecase.HokmInteractorIF {
+			return usecase.NewHokmInteractor(domain.NewDefaultHokm(), new(presenter.HokmCuiPresenter))
+		},
+		controller.NewHokmCuiController,
+		CuiHelpSpec{
+			TitleKey: "hokm.helpTitle",
+			CommandKeys: []string{
+				"hokm.helpTrump",
+				"hokm.helpPlay",
+				"hokm.helpNext",
+				"hokm.helpGiveUp",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

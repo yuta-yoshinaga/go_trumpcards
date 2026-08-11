@@ -301,7 +301,8 @@
     "tarabish": "Tarabish",
     "baloot": "Baloot",
     "estimation": "Estimation",
-    "israeliwhist": "Israeli Whist"
+    "israeliwhist": "Israeli Whist",
+    "hokm": "Hokm"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1231,6 +1232,14 @@
     "israeliwhist.result.win": "You win with {{score}}.",
     "israeliwhist.result.lose": "CPU{{idx}} wins.",
     "israeliwhist.result.tie": "It's a tie.",
+    "hokm.trump.choose": "You are the hakem — choose trump from your first five cards.",
+    "hokm.trump.wait": "The hakem is choosing trump from their first five cards.",
+    "hokm.play": "Seven tricks takes the hand; the thirteen are never played out.",
+    "hokm.handEnd": "Hand {{hand}} is over ({{t0}} - {{t1}}).",
+    "hokm.handEndKot": "Hand {{hand}} is over. The other team took no trick at all — a Kot, worth 2 ({{t0}} - {{t1}}).",
+    "hokm.result.team0": "Your team wins ({{t0}} - {{t1}}).",
+    "hokm.result.team1": "The other team wins ({{t0}} - {{t1}}).",
+    "hokm.result.tie": "It's a tie ({{t0}} - {{t1}}).",
     "schnapsen.trickEnd": "Trick complete — continue.",
     "seahaventowers.gameClear": "Game Clear! Moves: {{moveCount}}",
     "seahaventowers.gameOver": "Game Over",

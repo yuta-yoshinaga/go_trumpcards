@@ -465,6 +465,11 @@ func init() {
 			return usecase.NewIsraeliWhistInteractor(domain.NewDefaultIsraeliWhist(), new(presenter.IsraeliWhistWebPresenter))
 		},
 		controller.NewIsraeliWhistWebController)
+	BindWebControllerFor("hokm",
+		func() usecase.HokmInteractorIF {
+			return usecase.NewHokmInteractor(domain.NewDefaultHokm(), new(presenter.HokmWebPresenter))
+		},
+		controller.NewHokmWebController)
 	BindWebControllerFor("rams",
 		func() usecase.RamsInteractorIF {
 			return usecase.NewRamsInteractor(domain.NewDefaultRams(), new(presenter.RamsWebPresenter))

@@ -1560,6 +1560,20 @@ export const SchnapsenPhase = {
 } as const;
 
 /**
+ * Hokm phase constants (sync: internal/domain/Hokm.go).
+ *
+ * **A hand does not play out all thirteen tricks** -- the first partnership to
+ * seven takes it and the rest of the cards are never played.
+ */
+export const HokmPhase = {
+  /** The hakem declares trump from their first five cards. */
+  TRUMP: 0,
+  PLAY: 1,
+  HAND_END: 2,
+  GAME_END: 3,
+} as const;
+
+/**
  * Israeli Whist phase constants (sync: internal/domain/IsraeliWhist.go).
  *
  * **Bidding happens twice**: the auction settles trump and a quota for whoever
