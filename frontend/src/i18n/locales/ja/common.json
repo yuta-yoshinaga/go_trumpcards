@@ -298,7 +298,8 @@
     "polignac": "ポリニャック",
     "reversis": "レヴェルシ",
     "rams": "ラムス",
-    "tarabish": "タラビッシュ"
+    "tarabish": "タラビッシュ",
+    "baloot": "バルート"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1202,6 +1203,13 @@
     "tarabish.result.team0": "あなたのチームの勝ちです（{{t0}} － {{t1}}）。",
     "tarabish.result.team1": "相手チームの勝ちです（{{t0}} － {{t1}}）。",
     "tarabish.result.tie": "同点です（{{t0}} － {{t1}}）。",
+    "baloot.declare.choose": "モードを宣言してください（Sun か Hokom）。",
+    "baloot.declare.dealerStuck": "あなたが親です。親は見送れません。Sun か Hokom を宣言してください。",
+    "baloot.play": "モードで序列が変わります。Hokom では切り札のJ(20)と9(14)がAより強い点に注意。",
+    "baloot.roundEnd": "ラウンド{{round}}が終了しました（{{t0}} － {{t1}}）。",
+    "baloot.result.team0": "あなたのチームの勝ちです（{{t0}} － {{t1}}）。",
+    "baloot.result.team1": "相手チームの勝ちです（{{t0}} － {{t1}}）。",
+    "baloot.result.tie": "同点です（{{t0}} － {{t1}}）。",
     "schnapsen.trickEnd": "トリック終了 — 次へ進んでください。",
     "seahaventowers.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
     "seahaventowers.gameOver": "ゲームオーバー",

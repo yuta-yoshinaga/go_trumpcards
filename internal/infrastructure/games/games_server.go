@@ -450,6 +450,11 @@ func init() {
 			return usecase.NewTarabishInteractor(domain.NewDefaultTarabish(), new(presenter.TarabishWebPresenter))
 		},
 		controller.NewTarabishWebController)
+	BindWebControllerFor("baloot",
+		func() usecase.BalootInteractorIF {
+			return usecase.NewBalootInteractor(domain.NewDefaultBaloot(), new(presenter.BalootWebPresenter))
+		},
+		controller.NewBalootWebController)
 	BindWebControllerFor("rams",
 		func() usecase.RamsInteractorIF {
 			return usecase.NewRamsInteractor(domain.NewDefaultRams(), new(presenter.RamsWebPresenter))

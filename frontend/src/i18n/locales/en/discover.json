@@ -363,7 +363,8 @@
     "polignac": "Only the four jacks cost you anything — and the jack of spades (the Polignac) costs double. You may also declare capot and go for every trick.",
     "reversis": "Avoidance on a 48-card pack with the 10s removed. The Quinola (J♥) and the A♦ cost you points *and* chips. Fewest penalties takes the pool.",
     "rams": "A pot game for three to five. Choose to play or drop — and playing without taking a single trick costs you extra.",
-    "tarabish": "A 36-card partnership game of the Jass family: in trump the J (Jass) and 9 (Menel) outrank the ace. Runs and bella score as melds."
+    "tarabish": "A 36-card partnership game of the Jass family: in trump the J (Jass) and 9 (Menel) outrank the ace. Runs and bella score as melds.",
+    "baloot": "The Gulf's most-played 32-card partnership game. Sun (no trump) and Hokom (trump) swap the rank order itself."
   },
   "stretch_blurb": {
     "accordion": "Completion is rare; the journey itself is the joy.",
@@ -643,6 +644,7 @@
     "polignac": "Just four dangerous cards. Everything rides on working out who is holding which jack.",
     "reversis": "You are not aiming for zero — only for fewer than the other three. Somebody always carries those 40 points.",
     "rams": "Every round asks one question: is this hand worth entering? Knowing when to fold is the whole skill.",
-    "tarabish": "In trump, strength and point value stop agreeing. Counting the 20-point jack and 14-point nine is the whole game."
+    "tarabish": "In trump, strength and point value stop agreeing. Counting the 20-point jack and 14-point nine is the whole game.",
+    "baloot": "Two orders and two point tables over the same 32 cards. The strong cards change the moment someone declares."
   }
 }

@@ -1,0 +1,55 @@
+{
+  "phase": {
+    "declare": "モード宣言",
+    "play": "プレイ中",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "終了"
+  },
+  "header": {
+    "round": "ラウンド",
+    "trick": "トリック",
+    "target": "{{target}}点先取",
+    "modeUndecided": "モード未定: Sun か Hokom を宣言してください。",
+    "modeSun": "モード: Sun（切り札なし・{{name}} が宣言）",
+    "modeHokom": "モード: Hokom（切り札 {{suit}}・{{name}} が宣言）",
+    "orderSun": "序列: A=11 > 10 > K=4 > Q=3 > J=2 > 9 > 8 > 7（全スート共通、1ラウンド120点）",
+    "orderHokom": "切り札: J=20 > 9=14 > A=11 > 10 > K=4 > Q=3 > 8 > 7。非切り札は Sun と同じ（1ラウンド152点）",
+    "score": "得点: あなたのチーム {{t0}} － 相手 {{t1}}",
+    "you": "あなた",
+    "cpu": "CPU{{idx}}",
+    "team": "T{{team}}"
+  },
+  "baloot": {
+    "none": "役なし",
+    "held": "Baloot（切り札のK+Q）=20点"
+  },
+  "currentTrick": "現在のトリック",
+  "actions": {
+    "sun": "Sun（切り札なし）",
+    "hokom": "Hokom {{suit}}",
+    "pass": "見送る",
+    "nextRound": "次のラウンドへ",
+    "reset": "リセット",
+    "giveUp": "投了",
+    "playAria": "{{card}} を出す"
+  },
+  "dealerStuck": "あなたが親です。親は見送れません。",
+  "result": {
+    "youWin": "あなたのチームの勝ち！ {{t0}} － {{t1}}",
+    "theyWin": "相手チームの勝ち。 {{t0}} － {{t1}}",
+    "tie": "同点です。 {{t0}} － {{t1}}"
+  },
+  "hint": {
+    "balootDeclareSun": "AとKが厚いです。Sun が有利でしょう。",
+    "balootDeclareHokom": "1つのスートが厚いです。Hokom が有利でしょう。",
+    "balootPassDeclare": "どちらも弱いです。見送るのが無難です。",
+    "balootWinTrick": "このトリックを取りにいきましょう。",
+    "balootFeedPartner": "味方が勝っています。点の高い札を乗せましょう。"
+  },
+  "tutorial": {
+    "order": "バルートは**モードによって序列そのものが入れ替わります**。Sun は切り札なしで A が最強、Hokom は選んだ切り札だけ J（20点）→9（14点）→A の順になります。",
+    "declare": "5枚を見て Sun か Hokom（＋切り札スート）を宣言します。**あなたが親のときは見送れません。**",
+    "baloot": "Hokom のときだけ、切り札の K と Q を両方持っていると Baloot として20点が入ります。Sun には切り札が無いので成立しません。",
+    "hand": "あなたの手札です。出せる札には緑の枠が付きます。味方（T0）が勝っているトリックには点の高い札を乗せましょう。"
+  }
+}

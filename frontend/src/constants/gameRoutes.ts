@@ -981,6 +981,13 @@ export const gameCategories: readonly GameCategory[] = [
         page: 'Tarabish',
         profile: { mood: [2, 4, 4, 3], skill: [5, 4, 2, 3], social: [1, 2, 5, 4, 3], theme: [2, 4, 1, 1, 2, 3] },
       },
+      {
+        path: '/baloot',
+        labelKey: 'nav.baloot',
+        icon: '🐪',
+        page: 'Baloot',
+        profile: { mood: [2, 4, 4, 3], skill: [5, 5, 2, 3], social: [1, 2, 5, 4, 3], theme: [2, 4, 1, 1, 2, 3] },
+      },
     ],
   },
   {

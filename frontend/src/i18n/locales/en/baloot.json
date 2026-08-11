@@ -1,0 +1,55 @@
+{
+  "phase": {
+    "declare": "Declaring",
+    "play": "Playing",
+    "roundEnd": "Round over",
+    "gameEnd": "Game over"
+  },
+  "header": {
+    "round": "Round",
+    "trick": "Trick",
+    "target": "first to {{target}}",
+    "modeUndecided": "Mode undecided — declare Sun or Hokom.",
+    "modeSun": "Mode: Sun, no trump (declared by {{name}})",
+    "modeHokom": "Mode: Hokom, trump {{suit}} (declared by {{name}})",
+    "orderSun": "Order: A=11 > 10 > K=4 > Q=3 > J=2 > 9 > 8 > 7 (all suits alike, 120 a round)",
+    "orderHokom": "Trump: J=20 > 9=14 > A=11 > 10 > K=4 > Q=3 > 8 > 7. Plain suits as in Sun (152 a round)",
+    "score": "Score: your team {{t0}} - theirs {{t1}}",
+    "you": "You",
+    "cpu": "CPU{{idx}}",
+    "team": "T{{team}}"
+  },
+  "baloot": {
+    "none": "no bonus",
+    "held": "Baloot (trump K+Q) = 20"
+  },
+  "currentTrick": "Current trick",
+  "actions": {
+    "sun": "Sun (no trump)",
+    "hokom": "Hokom {{suit}}",
+    "pass": "Pass",
+    "nextRound": "Next round",
+    "reset": "Reset",
+    "giveUp": "Give up",
+    "playAria": "Play {{card}}"
+  },
+  "dealerStuck": "You are the dealer. The dealer cannot pass.",
+  "result": {
+    "youWin": "Your team wins! {{t0}} - {{t1}}",
+    "theyWin": "The other team wins. {{t0}} - {{t1}}",
+    "tie": "It's a tie. {{t0}} - {{t1}}"
+  },
+  "hint": {
+    "balootDeclareSun": "You are strong in aces and kings — Sun favours you.",
+    "balootDeclareHokom": "One suit is long and strong — Hokom favours you.",
+    "balootPassDeclare": "Weak either way — passing is safer.",
+    "balootWinTrick": "Go for this trick.",
+    "balootFeedPartner": "Your partner is winning — throw points on it."
+  },
+  "tutorial": {
+    "order": "Baloot **changes the rank order itself with the mode**. Sun has no trump and the ace is highest; Hokom makes the chosen trump suit run J (20) > 9 (14) > A.",
+    "declare": "You see five cards, then declare Sun or Hokom (naming a trump suit). **You cannot pass when you are the dealer.**",
+    "baloot": "In Hokom only, holding both the trump king and queen scores 20 as Baloot. Sun has no trump, so it cannot happen.",
+    "hand": "Your hand. Legal cards get a green ring. When your partner (T0) is winning a trick, throw high-point cards on it."
+  }
+}

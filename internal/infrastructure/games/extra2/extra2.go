@@ -397,4 +397,12 @@ func init() {
 			return usecase.RestoreRamsInteractor(data, new(presenter.RamsWebPresenter))
 		},
 		controller.NewRamsWebControllerWithProvider)
+	games.RegisterKVGame("baloot", games.CategoryExtra2,
+		func() usecase.BalootInteractorIF {
+			return usecase.NewBalootInteractor(domain.NewDefaultBaloot(), new(presenter.BalootWebPresenter))
+		},
+		func(data []byte) (usecase.BalootInteractorIF, error) {
+			return usecase.RestoreBalootInteractor(data, new(presenter.BalootWebPresenter))
+		},
+		controller.NewBalootWebControllerWithProvider)
 }
