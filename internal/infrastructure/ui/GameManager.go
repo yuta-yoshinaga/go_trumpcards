@@ -4550,6 +4550,20 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
 		}),
+	BindCuiFor("mendikot",
+		func() usecase.MendikotInteractorIF {
+			return usecase.NewMendikotInteractor(domain.NewDefaultMendikot(), new(presenter.MendikotCuiPresenter))
+		},
+		controller.NewMendikotCuiController,
+		CuiHelpSpec{
+			TitleKey: "mendikot.helpTitle",
+			CommandKeys: []string{
+				"mendikot.helpPlay",
+				"mendikot.helpNext",
+				"mendikot.helpGiveUp",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

@@ -303,7 +303,8 @@
     "estimation": "エスティメーション",
     "israeliwhist": "イスラエリホイスト",
     "hokm": "ホクム",
-    "shelem": "シェレム"
+    "shelem": "シェレム",
+    "mendikot": "メンディコット"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1540,7 +1541,16 @@
     "cribbagesquares.win": "クリア！ 合計得点: {{totalScore}}（{{winScore}}点以上）",
     "cribbagesquares.lose": "ゲーム終了 合計得点: {{totalScore}}（クリアは{{winScore}}点）",
     "cribbagesquares.hintAvailable": "ヒントがあります",
-    "cribbagesquares.noHint": "ヒントはありません"
+    "cribbagesquares.noHint": "ヒントはありません",
+    "mendikot.play": "勝敗は4枚の10の取り合いで決まります。3枚取ればこのハンドの勝ちです。",
+    "mendikot.play.noTrump": "切り札はまだありません。最初にフォローできなかった人が出した札のスートが切り札になります。",
+    "mendikot.handEnd.tens": "ハンドが終了しました。チーム{{team}}が10を多く取りました（{{tens0}} - {{tens1}}、+1）。",
+    "mendikot.handEnd.tricks": "ハンドが終了しました。10が2枚ずつだったので、トリックの多いチーム{{team}}の勝ちです（{{tricks}}トリック、+1）。",
+    "mendikot.handEnd.mendikot": "ハンドが終了しました。チーム{{team}}が10を4枚とも取りました。Mendikot で+2です。",
+    "mendikot.handEnd.whitewash": "ハンドが終了しました。チーム{{team}}が全13トリックを取りました。Whitewash で+3です。",
+    "mendikot.result.team0": "あなたのチームの勝ちです（{{t0}} - {{t1}}）。",
+    "mendikot.result.team1": "相手チームの勝ちです（{{t0}} - {{t1}}）。",
+    "mendikot.result.tie": "同点です（{{t0}} - {{t1}}）。"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",

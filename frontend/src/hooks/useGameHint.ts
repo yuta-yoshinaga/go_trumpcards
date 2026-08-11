@@ -142,6 +142,7 @@ import type {
   MaoResponse,
   MariasResponse,
   MemoryResponse,
+  MendikotResponse,
   MichiganResponse,
   MightyResponse,
   MinchiateResponse,
@@ -419,6 +420,7 @@ import { getManilleHint } from '../utils/hints/manilleHint';
 import { getMaoHint } from '../utils/hints/maoHint';
 import { getMariasHint } from '../utils/hints/mariasHint';
 import { getMemoryHint } from '../utils/hints/memoryHint';
+import { getMendikotHint } from '../utils/hints/mendikotHint';
 import { getMichiganHint } from '../utils/hints/michiganHint';
 import { getMightyHint } from '../utils/hints/mightyHint';
 import { getMinchiateHint } from '../utils/hints/minchiateHint';
@@ -623,6 +625,7 @@ export const hintFactories = {
   israeliwhist: (s) => getIsraeliWhistHint(s as IsraeliWhistResponse),
   hokm: (s) => getHokmHint(s as HokmResponse),
   shelem: (s) => getShelemHint(s as ShelemResponse),
+  mendikot: (s) => getMendikotHint(s as MendikotResponse),
   faro: (s) => getFaroHint(s as FaroResponse),
   fiftyone: (s) => getFiftyOneHint(s as FiftyOneResponse),
   napoleon: (s) => getNapoleonHint(s as NapoleonResponse),

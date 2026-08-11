@@ -475,6 +475,11 @@ func init() {
 			return usecase.NewShelemInteractor(domain.NewDefaultShelem(), new(presenter.ShelemWebPresenter))
 		},
 		controller.NewShelemWebController)
+	BindWebControllerFor("mendikot",
+		func() usecase.MendikotInteractorIF {
+			return usecase.NewMendikotInteractor(domain.NewDefaultMendikot(), new(presenter.MendikotWebPresenter))
+		},
+		controller.NewMendikotWebController)
 	BindWebControllerFor("rams",
 		func() usecase.RamsInteractorIF {
 			return usecase.NewRamsInteractor(domain.NewDefaultRams(), new(presenter.RamsWebPresenter))

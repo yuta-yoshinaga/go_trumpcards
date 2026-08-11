@@ -1560,6 +1560,18 @@ export const SchnapsenPhase = {
 } as const;
 
 /**
+ * Mendikot phase constants (sync: internal/domain/Mendikot.go).
+ *
+ * **There is no trump phase.** Trump is set by whichever card the first player
+ * who cannot follow suit chooses to play, so the hand starts in PLAY.
+ */
+export const MendikotPhase = {
+  PLAY: 0,
+  HAND_END: 1,
+  GAME_END: 2,
+} as const;
+
+/**
  * Shelem phase constants (sync: internal/domain/Shelem.go).
  *
  * **What is bid is the score itself**, not a number of tricks, and the winner

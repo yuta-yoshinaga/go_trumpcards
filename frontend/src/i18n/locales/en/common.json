@@ -303,7 +303,8 @@
     "estimation": "Estimation",
     "israeliwhist": "Israeli Whist",
     "hokm": "Hokm",
-    "shelem": "Shelem"
+    "shelem": "Shelem",
+    "mendikot": "Mendikot"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1540,7 +1541,16 @@
     "cribbagesquares.win": "Cleared! Total score: {{totalScore}} (target {{winScore}})",
     "cribbagesquares.lose": "Game over. Total score: {{totalScore}} (target {{winScore}})",
     "cribbagesquares.hintAvailable": "Hint available",
-    "cribbagesquares.noHint": "No hint available"
+    "cribbagesquares.noHint": "No hint available",
+    "mendikot.play": "The hand is decided by the four tens. Taking three of them wins it.",
+    "mendikot.play.noTrump": "There is no trump yet. The first player who cannot follow suit sets it with the card they play.",
+    "mendikot.handEnd.tens": "Hand over. Team {{team}} took more tens ({{tens0}} - {{tens1}}, +1).",
+    "mendikot.handEnd.tricks": "Hand over. The tens split two apiece, so team {{team}} wins on tricks ({{tricks}}, +1).",
+    "mendikot.handEnd.mendikot": "Hand over. Team {{team}} took all four tens -- a Mendikot, +2.",
+    "mendikot.handEnd.whitewash": "Hand over. Team {{team}} took all thirteen tricks -- a Whitewash, +3.",
+    "mendikot.result.team0": "Your team wins ({{t0}} - {{t1}}).",
+    "mendikot.result.team1": "The other team wins ({{t0}} - {{t1}}).",
+    "mendikot.result.tie": "It's a tie ({{t0}} - {{t1}})."
   },
   "manual": {
     "ariaLabel": "Game Manual",

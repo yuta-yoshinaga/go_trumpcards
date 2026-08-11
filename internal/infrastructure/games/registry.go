@@ -977,6 +977,11 @@ var registry = []*Game{
 	// trump. Declaring **Shelem** replaces the number with a claim on every
 	// trick, and is settled the instant one is lost.
 	{Name: "shelem", Category: CategoryExtra2},
+	// Mendikot (メンディコット) -- インドの 2 対 2。**勝敗を決めるのは点数でも
+	// トリック数でもなく、4 枚の 10 を何枚取ったか。** 3 枚取れば勝ち、2 枚ずつなら
+	// トリックの多いほうが勝つ。切り札を選ぶフェーズは無く、最初にフォローできな
+	// かった人が出した札のスートがそのまま切り札になる。
+	{Name: "mendikot", Category: CategoryExtra},
 }
 
 // All returns a value-level copy of the registry in canonical order.

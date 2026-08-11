@@ -1,0 +1,51 @@
+{
+  "phase": {
+    "play": "Playing",
+    "handEnd": "Hand over",
+    "gameEnd": "Finished"
+  },
+  "header": {
+    "hand": "Hand",
+    "target": "First to {{target}} hands",
+    "trump": "Trump: {{suit}}",
+    "trumpUndecided": "Trump: undecided (set by the first player who cannot follow)",
+    "tens": "Tens: your team {{t0}} - theirs {{t1}} (of {{total}}; three takes the hand)",
+    "tricks": "Tricks: your team {{t0}} - theirs {{t1}} (only decides a two-apiece split)",
+    "score": "Hand points: your team {{t0}} - theirs {{t1}}",
+    "seatTens": "{{n}} tens",
+    "took": "{{n}} tricks",
+    "team": "T{{team}}",
+    "chooser": "[set trump]",
+    "you": "You",
+    "cpu": "CPU{{idx}}"
+  },
+  "currentTrick": "Current trick",
+  "handEnd": {
+    "tens": "Team {{team}} took more tens (+1).",
+    "tricks": "The tens split two apiece, so team {{team}} wins on tricks (+1).",
+    "mendikot": "Team {{team}} took all four tens -- a Mendikot, +2.",
+    "whitewash": "Team {{team}} took all thirteen tricks -- a Whitewash, +3."
+  },
+  "actions": {
+    "nextHand": "Next hand",
+    "reset": "Reset",
+    "giveUp": "Give up",
+    "playAria": "Play {{card}}"
+  },
+  "result": {
+    "youWin": "Your team wins! {{t0}} - {{t1}}",
+    "theyWin": "The other team wins. {{t0}} - {{t1}}",
+    "tie": "It's a tie. {{t0}} - {{t1}}"
+  },
+  "hint": {
+    "mendikotChaseTen": "A ten is on the table. Go for this trick.",
+    "mendikotFeedPartner": "Your partner is winning. Put a ten on it.",
+    "mendikotDuck": "You cannot win it. Keep your tens and throw something cheap."
+  },
+  "tutorial": {
+    "tens": "Mendikot is decided by neither points nor tricks but by **how many of the four tens you take**. **Three of them wins the hand outright.** The figure above is that race.",
+    "trump": "**There is no step where anyone chooses trump.** The suit is fixed by whatever card the first player who cannot follow chooses to play -- so you cannot pretend to be void in the suit you want.",
+    "mendikot": "Only a two-apiece split falls back to the trick count. **All four tens is a Mendikot, worth 2**; **all thirteen tricks is a Whitewash, worth 3.**",
+    "hand": "Your hand. Playable cards get a green ring. When your partner (T0) already has the trick, put a ten on it."
+  }
+}

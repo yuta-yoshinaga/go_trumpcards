@@ -149,6 +149,7 @@ export * from './games/manille';
 export * from './games/mao';
 export * from './games/marias';
 export * from './games/memory';
+export * from './games/mendikot';
 export * from './games/michigan';
 export * from './games/mighty';
 export * from './games/minchiate';
