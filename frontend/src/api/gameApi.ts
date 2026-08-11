@@ -164,6 +164,7 @@ export * from './games/mendikot';
 export * from './games/michigan';
 export * from './games/mighty';
 export * from './games/minchiate';
+export * from './games/minibridge';
 export * from './games/mississippistud';
 export * from './games/missmilligan';
 export * from './games/montecarlo';
@@ -345,6 +346,7 @@ export const games = [
   'hasenpfeffer',
   'sergeantmajor',
   'honeymoonbridge',
+  'minibridge',
   'razz',
   'sevencardstudhilo',
   'badugi',

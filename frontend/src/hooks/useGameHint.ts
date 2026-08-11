@@ -149,6 +149,7 @@ import type {
   MichiganResponse,
   MightyResponse,
   MinchiateResponse,
+  MinibridgeResponse,
   MississippiStudResponse,
   MissMilliganResponse,
   MonteCarloResponse,
@@ -432,6 +433,7 @@ import { getMendikotHint } from '../utils/hints/mendikotHint';
 import { getMichiganHint } from '../utils/hints/michiganHint';
 import { getMightyHint } from '../utils/hints/mightyHint';
 import { getMinchiateHint } from '../utils/hints/minchiateHint';
+import { getMinibridgeHint } from '../utils/hints/minibridgeHint';
 import { getMississippiStudHint } from '../utils/hints/mississippiStudHint';
 import { getMissMilliganHint } from '../utils/hints/missmilliganHint';
 import { getMonteCarloHint } from '../utils/hints/montecarloHint';
@@ -641,6 +643,7 @@ export const hintFactories = {
   hasenpfeffer: (s) => getHasenpfefferHint(s as HasenpfefferResponse),
   sergeantmajor: (s) => getSergeantMajorHint(s as SergeantMajorResponse),
   honeymoonbridge: (s) => getHoneymoonBridgeHint(s as HoneymoonBridgeResponse),
+  minibridge: (s) => getMinibridgeHint(s as MinibridgeResponse),
   faro: (s) => getFaroHint(s as FaroResponse),
   fiftyone: (s) => getFiftyOneHint(s as FiftyOneResponse),
   napoleon: (s) => getNapoleonHint(s as NapoleonResponse),
