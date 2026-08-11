@@ -85,6 +85,42 @@ func TestMendikot_TrumpIsSetByTheFirstPlayerWhoCannotFollow(t *testing.T) {
 	assert.Equal(t, 1, m.GetPlayer(2).GetTrickCount())
 }
 
+// **リードした本人は切り札を決められない。** 決められてしまうと、切りたい
+// スートを持っていないふりをして 1 枚目に出すだけで切り札を選べることになり、
+// 「フォローできなかった人が決める」という規則そのものが消える。
+//
+// いまこれを防いでいるのは resolveTrick が currentTrick を空にしてから次の
+// リードに手番を渡すことだけで、**needsTrump 側には何の防御も無い**
+// （レビュー指摘 PR #5307）。トリックの切り替えを触ると静かに壊れる。
+func TestMendikot_TheLeadPlayerCannotSetTrump(t *testing.T) {
+	m := newTestMendikot(t)
+	m.SetLeadPlayerIdxForTest(0)
+	m.SetCurrentPlayerIdxForTest(0)
+
+	for i := range MendikotPlayerCnt {
+		mendikotHandOf(m, i, NewCard(CardDesignSpade, 5+i, false), NewCard(CardDesignHeart, 2+i, false))
+	}
+
+	// リードが ♥ を出しても切り札にはならない（フォロー失敗ではない）。
+	require.NoError(t, m.PlayForTest(0, 1))
+	assert.Equal(t, 0, m.GetTrumpSuit(), "リードは切り札を決められない")
+	assert.Equal(t, -1, m.GetTrumpChooserIdx())
+
+	// 負のコントロール: 2 人目が ♥ を持っていないと、そこで決まる。
+	m2 := newTestMendikot(t)
+	m2.SetLeadPlayerIdxForTest(0)
+	m2.SetCurrentPlayerIdxForTest(0)
+	mendikotHandOf(m2, 0, NewCard(CardDesignHeart, 4, false))
+	mendikotHandOf(m2, 1, NewCard(CardDesignClover, 9, false))
+	mendikotHandOf(m2, 2, NewCard(CardDesignHeart, 6, false))
+	mendikotHandOf(m2, 3, NewCard(CardDesignHeart, 7, false))
+	require.NoError(t, m2.PlayForTest(0, 0))
+	assert.Equal(t, 0, m2.GetTrumpSuit())
+	require.NoError(t, m2.PlayForTest(1, 0))
+	assert.Equal(t, CardDesignClover, m2.GetTrumpSuit(), "2 人目のフォロー失敗で決まる")
+	assert.Equal(t, 1, m2.GetTrumpChooserIdx())
+}
+
 // **切り札が決まったら、以降は変わらない。**
 func TestMendikot_TrumpIsFixedOnceChosen(t *testing.T) {
 	m := newTestMendikot(t)
