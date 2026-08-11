@@ -223,7 +223,13 @@ func (g *Snap) step(playerIdx int) {
 	g.lastEvent = SnapLastEvent{Kind: SnapEventStep, PlayerIdx: playerIdx}
 	g.addLog(playerIdx, "step", "1 枚めくりました", []*Card{card})
 	g.advanceTurn()
-	g.scheduleNext()
+	// **めくった直後にも終局を見る。** 最後の 1 枚を出すと全員のストックが空に
+	// なり得ます。ここで見ないと「誰も動かせないのに終わっていない」盤面を
+	// 返してしまい、人間が空のストックをめくって初めて終局が分かります。
+	g.checkGameEnd()
+	if !g.gameEndFlag {
+		g.scheduleNext()
+	}
 }
 
 // snap は playerIdx が宣言する。

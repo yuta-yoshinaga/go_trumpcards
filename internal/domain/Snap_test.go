@@ -455,3 +455,71 @@ func TestSnapPlayer_UnmarshalRejectsANilCard(t *testing.T) {
 	assert.Zero(t, ok.GetStockSize())
 	assert.False(t, ok.HasStock())
 }
+
+// **誰も動かせない盤面を「まだ続いている」と言わない。**
+//
+// 最後の 1 枚を出すと全員のストックが空になり得ます。めくった直後に終局を
+// 見ないと、人間が空のストックをめくって初めて終わりが分かる形になります。
+func TestSnap_EndsWhenTheLastCardLeavesEveryStock(t *testing.T) {
+	g := newTestSnap(t)
+	all := make([]*Card, 0, SnapDeckSize)
+	for d := CardDesignSpade; d <= CardDesignDiamond; d++ {
+		for v := 1; v <= 13; v++ {
+			all = append(all, NewCard(d, v, false))
+		}
+	}
+	g.GiveStockForTest(0, all[0])
+	g.GiveStockForTest(1)
+	g.SetCenterPileForTest(all[1:])
+	g.SetCurrentTurnIdxForTest(0)
+
+	require.NoError(t, g.PlayerStep())
+	assert.True(t, g.GetGameEndFlag(), "誰も動かせないのに続いている状態を返さない")
+	assert.Equal(t, -1, g.GetWinnerIdx(), "全札が場に出たままなので勝者はいない")
+	assert.Equal(t, SnapPendingNone, g.GetPending().Kind, "予約も残さない")
+
+	// **負のコントロール: 相手に札が残っていれば続く。**
+	h := newTestSnap(t)
+	h.GiveStockForTest(0, all[0])
+	h.GiveStockForTest(1, all[1], all[2])
+	h.SetCenterPileForTest(all[3:])
+	h.SetCurrentTurnIdxForTest(0)
+	require.NoError(t, h.PlayerStep())
+	assert.False(t, h.GetGameEndFlag())
+}
+
+// **どの局も必ず終わる。** 時計を進めながら最後まで回す。
+func TestSnap_GamesTerminate(t *testing.T) {
+	for seed := int64(1); seed <= 20; seed++ {
+		g := NewDefaultSnap()
+		ms := int64(0)
+		g.SetClock(func() time.Time { return time.UnixMilli(ms) })
+		g.SetRand(rand.New(rand.NewSource(seed)))
+		g.Reset()
+
+		for turns := 0; !g.GetGameEndFlag(); turns++ {
+			require.Less(t, turns, 20000, "seed %d: 終わらない", seed)
+			ms += 5000 // どんな反応時間でも必ず期限を越える
+			if g.GetPending().Kind != SnapPendingNone {
+				g.Tick()
+				continue
+			}
+			if g.IsSnapAvailable() {
+				require.NoError(t, g.PlayerSnap())
+				continue
+			}
+			if g.GetCurrentTurnIdx() == 0 {
+				require.NoError(t, g.PlayerStep())
+				continue
+			}
+			g.StepForTest(g.GetCurrentTurnIdx())
+		}
+
+		// **札は増えも減りもしない。**
+		total := g.GetCenterPileSize()
+		for i := range g.GetPlayerCnt() {
+			total += g.GetPlayer(i).GetStockSize()
+		}
+		assert.Equal(t, SnapDeckSize, total, "seed %d", seed)
+	}
+}
