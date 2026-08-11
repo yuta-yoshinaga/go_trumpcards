@@ -48,8 +48,9 @@ const HasenpfefferDeckSize = HasenpfefferPlayerCnt*HasenpfefferHandSize + 1
 
 // HasenpfefferMinBid / HasenpfefferMaxBid は競りの範囲。
 //
-// **過半（4 トリック中 3）から。** それ未満を落札しても相手が勝つので意味が
-// ありません。上限は全トリック。
+// **下限は 3。** 6 トリック中 1〜2 なら切り札を持つ側はまず落とさないので、
+// 競りにならず宣言する意味がありません（過半の 4 ではなく 3 なのは、
+// 伏せ札を取り込める落札者に踏み込む余地を残すため）。上限は全トリック。
 const (
 	HasenpfefferMinBid = 3
 	HasenpfefferMaxBid = HasenpfefferTricksPerRound
@@ -407,13 +408,12 @@ func (h *Hasenpfeffer) IsHumanDiscardTurn() bool {
 // chooseCpuBid は CPU の宣言。**強い札の枚数で決めます。**
 func (h *Hasenpfeffer) chooseCpuBid(playerIdx int) int {
 	p := h.players[playerIdx]
-	best, bestScore := 0, -1
+	// **どのスートを切り札にするかはここでは決めない。** 決めるのは落札後の
+	// chooseCpuTrump で、競りに要るのは「いちばん強い組み合わせの強さ」だけ。
+	bestScore := -1
 	for _, suit := range []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond} {
-		if s := h.handStrength(p, suit); s > bestScore {
-			best, bestScore = suit, s
-		}
+		bestScore = max(bestScore, h.handStrength(p, suit))
 	}
-	_ = best
 	// 強さをトリック数の見積もりに落とす。届かなければ降りる。
 	estimate := HasenpfefferMinBid + (bestScore-6)/3
 	estimate = min(max(estimate, 0), HasenpfefferMaxBid)
@@ -986,6 +986,15 @@ func (h *Hasenpfeffer) UnmarshalJSON(data []byte) error {
 	}
 	if len(j.CurrentTrick) > HasenpfefferPlayerCnt {
 		return fmt.Errorf("current trick holds %d cards", len(j.CurrentTrick))
+	}
+	// **枚数だけでなく中身も見る（レビュー指摘 PR #5310）。** 壊れた KV から
+	// nil の Card が入ると EffectiveSuit → isLeftBower が nil を参照して panic し、
+	// 範囲外の PlayerIdx は resolveTrick の h.players[winner] で panic する。
+	// 悪意ある入力でなくても古い/壊れたエントリで到達する。Nap.go:872 と同じ形。
+	for _, tc := range j.CurrentTrick {
+		if tc == nil || tc.Card == nil || tc.PlayerIdx < 0 || tc.PlayerIdx >= HasenpfefferPlayerCnt {
+			return errors.New("invalid current trick entry")
+		}
 	}
 	if len(j.ActionLog) > hasenpfefferMaxSliceLen {
 		return errors.New("hasenpfeffer: input array exceeds maximum allowed size")

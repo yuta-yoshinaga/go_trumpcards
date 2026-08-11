@@ -507,8 +507,6 @@ func TestHasenpfeffer_CpuDiscardKeepsTrumps(t *testing.T) {
 		NewCard(CardDesignJoker, CardValueJoker, false),
 		NewCard(CardDesignSpade, 9, false)) // これが捨てられるはず
 
-	idx := h.CpuChoiceForTest(1)
-	_ = idx
 	discard := h.GetPlayer(1).GetCard(h.CpuDiscardChoiceForTest(1, CardDesignHeart))
 	assert.Equal(t, CardDesignSpade, discard.GetDesign(), "切り札でない最弱札を捨てる")
 	assert.Equal(t, 9, discard.GetValue())
@@ -636,6 +634,53 @@ func TestHasenpfeffer_UnmarshalRejectsBrokenSnapshots(t *testing.T) {
 	require.NoError(t, err)
 	var ok Hasenpfeffer
 	assert.NoError(t, json.Unmarshal(data, &ok))
+}
+
+// **場札の中身も検証する。** 枚数だけ見て素通しすると、壊れた KV から
+// nil の Card や範囲外の席番号が入り、**復元したあとで panic する**
+// （レビュー指摘 PR #5310）。
+func TestHasenpfeffer_UnmarshalRejectsBrokenTrickEntries(t *testing.T) {
+	base := func(t *testing.T) map[string]any {
+		t.Helper()
+		h := newTestHasenpfeffer(t)
+		playOutBidding(t, h)
+		require.NoError(t, h.PlayForTest(h.GetCurrentPlayerIdx(), 0))
+		data, err := json.Marshal(h)
+		require.NoError(t, err)
+		var m map[string]any
+		require.NoError(t, json.Unmarshal(data, &m))
+		require.Len(t, m["ct"], 1, "場に 1 枚出ている状態を作る")
+		return m
+	}
+
+	for _, tc := range []struct {
+		name  string
+		entry any
+	}{
+		{"a nil entry", nil},
+		{"an entry with no card", map[string]any{"playerIdx": 0}},
+		{"a player index above the table", map[string]any{"playerIdx": 9, "card": map[string]any{"d": 1, "v": 9, "j": false}}},
+		{"a negative player index", map[string]any{"playerIdx": -1, "card": map[string]any{"d": 1, "v": 9, "j": false}}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			m := base(t)
+			m["ct"] = []any{tc.entry}
+			data, err := json.Marshal(m)
+			require.NoError(t, err)
+			var restored Hasenpfeffer
+			assert.Error(t, json.Unmarshal(data, &restored))
+		})
+	}
+
+	// **負のコントロール: 手を加えていない場札は通り、復元後も panic しない。**
+	data, err := json.Marshal(base(t))
+	require.NoError(t, err)
+	var ok Hasenpfeffer
+	require.NoError(t, json.Unmarshal(data, &ok))
+	assert.NotPanics(t, func() {
+		_ = ok.GetValidPlayIndices(ok.GetCurrentPlayerIdx())
+		_ = ok.TrickWinnerForTest()
+	})
 }
 
 // **競り中は落札者も落札額も空。** 対で検証する。
