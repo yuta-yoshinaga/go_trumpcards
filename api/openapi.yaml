@@ -172,6 +172,8 @@ tags:
     description: Rams (ラムス) game endpoints -- a 3-5 player pot game; play or drop, and taking no trick costs extra
   - name: tarabish
     description: Tarabish (タラビッシュ) game endpoints -- 36-card Jass-family partnership game; trump J and 9 outrank the ace
+  - name: baloot
+    description: Baloot (バルート) game endpoints -- 32-card Gulf partnership game; the declared mode (Sun or Hokom) swaps the rank order itself
   - name: clocksolitaire
     description: Clock Solitaire (クロックソリティア) game
   - name: durak
@@ -7007,6 +7009,97 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TarabishResponse'
+  /baloot/exec:
+    post:
+      tags:
+        - baloot
+      summary: Execute a Baloot game command
+      description: |
+        Send a command to advance the Baloot (バルート) game session
+        identified by `sessionId`.
+
+        The Gulf's most-played trick-taking game, descended from Belote: 32
+        cards, 4 players in two partnerships (seats 0+2 vs 1+3), eight cards
+        each. **The declared mode swaps the rank order itself**, not merely
+        whether a trump exists:
+
+        - **Sun** -- no trump; every suit runs A=11 > 10 > K=4 > Q=3 > J=2 > 9 >
+          8 > 7, for 120 a round.
+        - **Hokom** -- the declared trump suit runs J=20 > 9=14 > A=11 > 10 >
+          K=4 > Q=3 > 8 > 7, plain suits as in Sun, for 152 a round.
+
+        Both add 10 for the last trick. **The deal is in two stages**, because
+        eight each is the whole deck: five are dealt, the mode is declared
+        around the table, and the remaining three each follow. Each player in
+        turn may declare `sun`, declare `hokom` (with a `suit`), or `pass`;
+        **the dealer cannot pass**.
+
+        Baloot -- the trump K+Q in one hand, worth 20 -- is a **Hokom-only**
+        bonus, since Sun has no trump for it to be in.
+      operationId: execBaloot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, sun, hokom, pass, play, p, next, n, giveup, g, hint, h, log, l]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                  description: Index into your hand (required for `play`)
+                suit:
+                  type: integer
+                  description: Trump suit 1..4 (1=S 2=C 3=H 4=D); required for `hokom`
+                config:
+                  type: object
+                  properties:
+                    target:
+                      type: integer
+                      description: Points needed to win (50..500, default 152)
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              sun:
+                summary: Declare Sun (no trump)
+                value:
+                  command: sun
+                  sessionId: my-session-001
+              hokom:
+                summary: Declare Hokom with hearts as trump
+                value:
+                  command: hokom
+                  sessionId: my-session-001
+                  suit: 3
+              play:
+                summary: Play the third card in hand
+                value:
+                  command: play
+                  sessionId: my-session-001
+                  cardIndex: 2
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalootResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalootResponse'
   /clocksolitaire/exec:
     post:
       tags:
@@ -43891,6 +43984,133 @@ components:
           description: "-1 until decided, and -1 on a tie"
         hint:
           $ref: '#/components/schemas/TarabishHint'
+        config:
+          type: object
+          properties:
+            target:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    BalootTrickCard:
+      type: object
+      description: A card played in the current trick
+      required:
+        - playerIdx
+        - card
+      properties:
+        playerIdx:
+          type: integer
+          description: Index of the player who played this card
+        card:
+          $ref: '#/components/schemas/Card'
+    BalootHint:
+      type: object
+      description: >-
+        A suggestion. While declaring it advises a mode and carries no
+        cardIndex, naming the suit when it recommends Hokom; during play it
+        names a card.
+      properties:
+        cardIndex:
+          type: integer
+          description: Index into your hand. Absent while declaring.
+        reason:
+          type: string
+          description: >-
+            balootDeclareSun / balootDeclareHokom / balootPassDeclare while
+            declaring; balootWinTrick or balootFeedPartner (your partner is
+            winning -- throw points on it) during play.
+        suit:
+          type: integer
+          description: Trump suit to declare when reason is balootDeclareHokom; 0 otherwise.
+    BalootPlayer:
+      type: object
+      description: One seat at a Baloot table
+      properties:
+        id:
+          type: integer
+        isHuman:
+          type: boolean
+        team:
+          type: integer
+          description: "0 or 1. Seats 0+2 are one partnership, 1+3 the other."
+        cardCount:
+          type: integer
+          description: Hand size. The only hand information exposed for the CPU.
+        cards:
+          type: array
+          description: Populated for the human player only; empty for the CPU.
+          items:
+            $ref: '#/components/schemas/Card'
+        hasBaloot:
+          type: boolean
+          description: Holds the trump K and Q -- worth 20, and possible in Hokom only.
+        declared:
+          type: boolean
+          description: Has already declared or passed this round.
+        trickCount:
+          type: integer
+    BalootResponse:
+      type: object
+      description: Response payload for /baloot/exec
+      properties:
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/BalootPlayer'
+        phase:
+          type: integer
+          description: "0=Declare, 1=Play, 2=RoundEnd, 3=GameEnd"
+        mode:
+          type: integer
+          description: "0=undeclared, 1=Sun, 2=Hokom. The mode decides the rank order itself."
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        trumpSuit:
+          type: integer
+          description: Meaningful in Hokom only; 0 under Sun, which has no trump.
+        declarerIdx:
+          type: integer
+          description: "Seat that declared the mode, or -1 before it is settled"
+        currentPlayerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        scores:
+          type: array
+          description: Running total per team, index 0 and 1.
+          items:
+            type: integer
+        roundPoints:
+          type: array
+          description: Points taken this round per team, index 0 and 1.
+          items:
+            type: integer
+        currentTrick:
+          type: array
+          items:
+            $ref: '#/components/schemas/BalootTrickCard'
+        validPlays:
+          type: array
+          description: Hand indices you may legally play. Following suit is compulsory.
+          items:
+            type: integer
+        gameEndFlag:
+          type: boolean
+        winnerTeam:
+          type: integer
+          description: "-1 until decided, and -1 on a tie"
+        hint:
+          $ref: '#/components/schemas/BalootHint'
         config:
           type: object
           properties:

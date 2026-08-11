@@ -4467,6 +4467,23 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
 		}),
+	BindCuiFor("baloot",
+		func() usecase.BalootInteractorIF {
+			return usecase.NewBalootInteractor(domain.NewDefaultBaloot(), new(presenter.BalootCuiPresenter))
+		},
+		controller.NewBalootCuiController,
+		CuiHelpSpec{
+			TitleKey: "baloot.helpTitle",
+			CommandKeys: []string{
+				"baloot.helpSun",
+				"baloot.helpHokom",
+				"baloot.helpPass",
+				"baloot.helpPlay",
+				"baloot.helpNext",
+				"baloot.helpGiveUp",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

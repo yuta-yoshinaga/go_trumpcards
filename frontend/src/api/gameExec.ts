@@ -81,6 +81,7 @@ export const workerUrl: Record<string, string> = {
   reversis: WORKER_CLASSIC,
   rams: WORKER_EXTRA2,
   tarabish: WORKER_EXTRA3,
+  baloot: WORKER_EXTRA2,
   bisley: WORKER_EXTRA2,
   napoleonssquare: WORKER_EXTRA2,
   grandfathersclock: WORKER_EXTRA2,

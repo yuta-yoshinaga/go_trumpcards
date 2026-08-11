@@ -1559,6 +1559,28 @@ export const SchnapsenPhase = {
   GAME_END: 2,
 } as const;
 
+/** Baloot phase constants (sync: internal/domain/Baloot.go). */
+export const BalootPhase = {
+  /** Before play: each player in turn declares Sun, Hokom, or passes. */
+  DECLARE: 0,
+  PLAY: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
+/**
+ * Baloot mode constants (sync: internal/domain/Baloot.go).
+ *
+ * **The mode selects the rank order itself**, not merely whether a trump
+ * exists: Sun runs A>10>K>Q>J>9>8>7 with no trump, while Hokom gives the
+ * trump suit J>9>A>10>K>Q>8>7.
+ */
+export const BalootMode = {
+  NONE: 0,
+  SUN: 1,
+  HOKOM: 2,
+} as const;
+
 /** Tarabish phase constants (sync: internal/domain/Tarabish.go). */
 export const TarabishPhase = {
   /** Before play: each player in turn may take the turned suit as trump. */

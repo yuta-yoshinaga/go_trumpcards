@@ -12,6 +12,7 @@ import type {
   BaccaratResponse,
   BadugiResponse,
   BakersDozenResponse,
+  BalootResponse,
   BarbuResponse,
   BasraResponse,
   BeggarMyNeighbourResponse,
@@ -280,6 +281,7 @@ import { getAuldLangSyneHint } from '../utils/hints/auldlangsyneHint';
 import { getBaccaratHint } from '../utils/hints/baccaratHint';
 import { getBadugiHint } from '../utils/hints/badugiHint';
 import { getBakersdozenHint } from '../utils/hints/bakersdozenHint';
+import { getBalootHint } from '../utils/hints/balootHint';
 import { getBarbuHint } from '../utils/hints/barbuHint';
 import { getBasraHint } from '../utils/hints/basraHint';
 import { getBeggarMyNeighbourHint } from '../utils/hints/beggarmyneighbourHint';
@@ -608,6 +610,7 @@ export const hintFactories = {
   reversis: (s) => getReversisHint(s as ReversisResponse),
   rams: (s) => getRamsHint(s as RamsResponse),
   tarabish: (s) => getTarabishHint(s as TarabishResponse),
+  baloot: (s) => getBalootHint(s as BalootResponse),
   faro: (s) => getFaroHint(s as FaroResponse),
   fiftyone: (s) => getFiftyOneHint(s as FiftyOneResponse),
   napoleon: (s) => getNapoleonHint(s as NapoleonResponse),

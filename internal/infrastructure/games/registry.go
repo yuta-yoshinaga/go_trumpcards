@@ -944,6 +944,12 @@ var registry = []*Game{
 	// 4+ = 50) and bella (trump K+Q = 20). Belote and Jass share the same point
 	// table, but each keeps its own unexported copy, so this one does too.
 	{Name: "tarabish", Category: CategoryExtra3},
+	// Baloot is the Gulf's most-played trick-taker, a Belote descendant in which
+	// **the rank order itself is what the players bid over**: Sun runs
+	// A>10>K>Q>J>9>8>7 with no trump (120 a round), while Hokom gives the chosen
+	// trump suit J>9>A>10>K>Q>8>7 (152 a round). The same 32 cards therefore
+	// carry two orders and two point tables, decided fresh every round.
+	{Name: "baloot", Category: CategoryExtra2},
 }
 
 // All returns a value-level copy of the registry in canonical order.

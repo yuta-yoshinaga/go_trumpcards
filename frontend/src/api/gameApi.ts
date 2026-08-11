@@ -21,6 +21,7 @@ export * from './games/baccarat';
 export * from './games/badugi';
 export * from './games/bakersdozen';
 export * from './games/bakersgame';
+export * from './games/baloot';
 export * from './games/barbu';
 export * from './games/basra';
 export * from './games/beggarmyneighbour';
@@ -323,6 +324,7 @@ export const games = [
   'reversis',
   'rams',
   'tarabish',
+  'baloot',
   'razz',
   'sevencardstudhilo',
   'badugi',
