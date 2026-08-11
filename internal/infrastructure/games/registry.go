@@ -891,6 +891,13 @@ var registry = []*Game{
 	// Calculation is the other by-arithmetic game here, but its four piles use
 	// different step sizes (+1/+2/+3/+4) and do not wrap.
 	{Name: "royalcotillion", Category: CategoryClassic},
+	// Crazy Quilt seeds its eight foundations with an Ace and a King of each
+	// suit before dealing, so 104 - 8 - 64 leaves 32 in the stock. A quilt card
+	// is available only when a SHORT side is exposed, which depends on whether
+	// the cell is laid vertically or horizontally -- not merely on an empty
+	// neighbour. Sultan shares the fixed-layout, pick-from-the-edge idea but
+	// has no orientation rule and no by-rank play onto the waste.
+	{Name: "crazyquilt", Category: CategorySolo},
 }
 
 // All returns a value-level copy of the registry in canonical order.

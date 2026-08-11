@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した271種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した272種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -85,6 +85,7 @@ Go + Clean Architecture で実装した271種類のトランプゲーム。CLI �
 | クリベッジ・スクエアズ (Cribbage Squares) | `cribbagesquares` | [CUI](docs/manual/cui/cribbagesquares.md) / [Web](docs/manual/web/cribbagesquares.md) |
 | ディプロマット (Diplomat) | `diplomat` | [CUI](docs/manual/cui/diplomat.md) / [Web](docs/manual/web/diplomat.md) |
 | ロイヤルコティヨン (Royal Cotillion) | `royalcotillion` | [CUI](docs/manual/cui/royalcotillion.md) / [Web](docs/manual/web/royalcotillion.md) |
+| クレイジーキルト (Crazy Quilt) | `crazyquilt` | [CUI](docs/manual/cui/crazyquilt.md) / [Web](docs/manual/web/crazyquilt.md) |
 | クロックソリティア (Clock Solitaire) | `clocksolitaire` | [CUI](docs/manual/cui/clocksolitaire.md) / [Web](docs/manual/web/clocksolitaire.md) |
 | ドゥラーク (Durak) | `durak` | [CUI](docs/manual/cui/durak.md) / [Web](docs/manual/web/durak.md) |
 | フォーティシーブス (Forty Thieves) | `fortythieves` | [CUI](docs/manual/cui/fortythieves.md) / [Web](docs/manual/web/fortythieves.md) |

@@ -63,6 +63,7 @@ export * from './games/conquian';
 export * from './games/contractrummy';
 export * from './games/courtpiece';
 export * from './games/crazyeights';
+export * from './games/crazyquilt';
 export * from './games/crescent';
 export * from './games/cribbage';
 export * from './games/cribbagesquares';
