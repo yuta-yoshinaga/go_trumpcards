@@ -288,7 +288,73 @@ func TestReversis_ChipsAreConserved(t *testing.T) {
 		}
 		require.True(t, r.GetGameEndFlag())
 		require.Equal(t, want, totalChips(r), "終局時")
+		// **終局時にプールが残っていてはいけない。** 総量が保たれていても、
+		// 盤上に取り残されたチップは GetChips() に入らず勝敗に反映されない。
+		require.Equal(t, 0, r.GetPool(), "終局時にプールは空")
 	}
+}
+
+// **最終ラウンドが同点でも、プールは必ず誰かの手に渡る。**
+// 持ち越し先が無いので、ここを持ち越し扱いにするとチップが盤上に取り残される
+// （総量は保たれるので、保存則の assert だけでは捕まらない）。
+func TestReversis_TieOnTheFinalRoundSplitsThePool(t *testing.T) {
+	r := newTestReversis(t)
+	r.config.Rounds = 1
+	r.SetPoolForTest(20)
+	before := totalChips(r)
+	chipsBefore := make([]int, ReversisPlayerCnt)
+	for i := range ReversisPlayerCnt {
+		r.GetPlayer(i).SetRoundPenalty(10) // 全員同点
+		chipsBefore[i] = r.GetPlayer(i).GetChips()
+	}
+
+	r.FinishRoundForTest()
+
+	assert.True(t, r.GetGameEndFlag(), "最終ラウンドなので終局する")
+	assert.Equal(t, 0, r.GetPool(), "プールは残らない")
+	assert.Equal(t, before, totalChips(r), "チップの総量は変わらない")
+	for i := range ReversisPlayerCnt {
+		assert.Equal(t, chipsBefore[i]+5, r.GetPlayer(i).GetChips(), "20 を 4 人で分けて 5 ずつ (player %d)", i)
+	}
+}
+
+// 割り切れない端数も 1 枚残さず配る。
+func TestReversis_TieSplitHandsOutTheRemainder(t *testing.T) {
+	r := newTestReversis(t)
+	r.config.Rounds = 1
+	r.SetPoolForTest(22) // 4 人で割ると 5 余り 2
+	before := totalChips(r)
+	for i := range ReversisPlayerCnt {
+		r.GetPlayer(i).SetRoundPenalty(10)
+	}
+
+	r.FinishRoundForTest()
+
+	assert.Equal(t, 0, r.GetPool(), "端数も残さない")
+	assert.Equal(t, before, totalChips(r))
+}
+
+// 同点が一部だけなら、その人たちだけで分ける。
+func TestReversis_TieSplitOnlyAmongTheTiedLeaders(t *testing.T) {
+	r := newTestReversis(t)
+	r.config.Rounds = 1
+	r.SetPoolForTest(20)
+	r.GetPlayer(0).SetRoundPenalty(3)
+	r.GetPlayer(1).SetRoundPenalty(3)
+	r.GetPlayer(2).SetRoundPenalty(9)
+	r.GetPlayer(3).SetRoundPenalty(12)
+	before := []int{
+		r.GetPlayer(0).GetChips(), r.GetPlayer(1).GetChips(),
+		r.GetPlayer(2).GetChips(), r.GetPlayer(3).GetChips(),
+	}
+
+	r.FinishRoundForTest()
+
+	assert.Equal(t, 0, r.GetPool())
+	assert.Equal(t, before[0]+10, r.GetPlayer(0).GetChips(), "同点の 2 人で 20 を折半")
+	assert.Equal(t, before[1]+10, r.GetPlayer(1).GetChips())
+	assert.Equal(t, before[2], r.GetPlayer(2).GetChips(), "失点が多い人は貰えない")
+	assert.Equal(t, before[3], r.GetPlayer(3).GetChips())
 }
 
 // 1 ラウンドで動く失点は 40（カード）＋ 5＋5（印 2 枚）= 50 ちょうど。

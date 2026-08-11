@@ -340,10 +340,16 @@ func (r *Reversis) finishRound() {
 		}
 	}
 
-	if tied {
-		// 同点なら次のラウンドへ持ち越す。プールが膨らむぶん次が重くなる。
+	switch {
+	case tied && r.roundNumber >= r.config.Rounds:
+		// **最終ラウンドの同点は持ち越せない。** NextRound() は二度と走らないので、
+		// そのままだとプールのチップが誰のものにもならないまま盤上に取り残される。
+		// 総量としては保存されていても、勝敗を決める GetChips() には入らない。
+		r.splitPoolAmongTied(best)
+	case tied:
+		// まだ先があるなら次のラウンドへ持ち越す。プールが膨らむぶん次が重くなる。
 		r.appendLog(-1, "pool", fmt.Sprintf("最少失点が同点。プール %d を持ち越し", r.pool), nil)
-	} else {
+	default:
 		r.players[bestIdx].AddChips(r.pool)
 		r.appendLog(bestIdx, "pool", fmt.Sprintf("最少失点（%d）でプール %d を獲得", best, r.pool), nil)
 		r.pool = 0
@@ -354,6 +360,36 @@ func (r *Reversis) finishRound() {
 		return
 	}
 	r.phase = ReversisPhaseRoundEnd
+}
+
+// splitPoolAmongTied 最終ラウンドが同点で終わったとき、プールを同点者で分ける。
+//
+// **1 チップも盤上に残さない。** 割り切れないぶんはディーラーの左隣から順に
+// 1 枚ずつ配る。ここで捨ててしまうと「チップは生まれも消えもしない」が
+// 総量としては保たれても、勝敗判定からは消える。
+func (r *Reversis) splitPoolAmongTied(best int) {
+	tiedIdx := make([]int, 0, len(r.players))
+	for i := range len(r.players) {
+		// ディーラーの左隣から順に見るので、端数の配り先も決定的になる。
+		idx := (r.dealerIdx + 1 + i) % len(r.players)
+		if r.players[idx].GetRoundPenalty() == best {
+			tiedIdx = append(tiedIdx, idx)
+		}
+	}
+	if len(tiedIdx) == 0 {
+		return
+	}
+	share, remainder := r.pool/len(tiedIdx), r.pool%len(tiedIdx)
+	for n, idx := range tiedIdx {
+		amount := share
+		if n < remainder {
+			amount++
+		}
+		r.players[idx].AddChips(amount)
+	}
+	r.appendLog(-1, "pool",
+		fmt.Sprintf("最終ラウンドが同点。プール %d を %d 人で分配", r.pool, len(tiedIdx)), nil)
+	r.pool = 0
 }
 
 // NextRound 次のラウンドを開始する。持ち越したプールはそのまま残る。
