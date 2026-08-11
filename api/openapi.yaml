@@ -156,6 +156,8 @@ tags:
     description: Cribbage Squares (クリベッジ・スクエアズ) game - 4x4 grid scored as eight cribbage hands against a hidden starter
   - name: diplomat
     description: Diplomat (ディプロマット) game - two-deck solitaire whose tableau builds down ignoring suit
+  - name: royalcotillion
+    description: Royal Cotillion (ロイヤルコティヨン) game - eight foundations built by twos that wrap through all thirteen ranks
   - name: clocksolitaire
     description: Clock Solitaire (クロックソリティア) game
   - name: durak
@@ -6401,6 +6403,96 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DiplomatResponse'
+  /royalcotillion/exec:
+    post:
+      tags:
+        - royalcotillion
+      summary: Execute a Royal Cotillion game command
+      description: |
+        Send a command to advance the Royal Cotillion (ロイヤルコティヨン) game
+        session identified by `sessionId`. A single-player patience played with
+        **two 52-card decks (104 cards)**.
+
+        Sixteen single-card tableau slots and four reserve piles of three (28
+        cards in all) are dealt face up; the other 76 form the stock.
+
+        **The eight foundations build by twos and wrap.** The four Ace-start
+        piles run A,3,5,7,9,J,K,2,4,6,8,10,Q and the four deuce-start piles run
+        2,4,6,8,10,Q,A,3,5,7,9,J,K, so each pile passes through all thirteen
+        ranks and eight piles absorb all 104 cards.
+
+        A tableau slot holds exactly one card and refills from the stock or the
+        waste. **An emptied reserve pile is never refilled.** The stock turns
+        one card at a time with no redeal.
+
+        Move zones:
+
+        * `from`: `{zone: "tableau", col: 0..15}`, `{zone: "reserve", col: 0..3}`,
+          `{zone: "waste"}` or `{zone: "stock"}`
+        * `to`: `{zone: "foundation"}` (the server picks the pile) or
+          `{zone: "tableau", col: 0..15}` for an empty slot
+      operationId: royalcotillionExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, draw, d, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, undo_n, log, l]
+                sessionId:
+                  type: string
+                from:
+                  $ref: '#/components/schemas/RoyalCotillionMoveZone'
+                to:
+                  $ref: '#/components/schemas/RoyalCotillionMoveZone'
+                n:
+                  type: integer
+                  description: Number of moves to undo (for `undo_n` command)
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              tableauToFoundation:
+                summary: Send the card in slot 3 to a foundation
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from:
+                    zone: tableau
+                    col: 3
+                  to:
+                    zone: foundation
+              fillSlotFromStock:
+                summary: Refill the emptied slot 3 straight from the stock
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from:
+                    zone: stock
+                  to:
+                    zone: tableau
+                    col: 3
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoyalCotillionResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoyalCotillionResponse'
   /clocksolitaire/exec:
     post:
       tags:
@@ -43074,6 +43166,90 @@ components:
         col:
           type: integer
           description: Column index (0..7); omitted for the waste and for a foundation (the server picks the pile)
+    RoyalCotillionMoveZone:
+      type: object
+      description: Source or target zone for a Royal Cotillion card move
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          description: Zone identifier (tableau, reserve, waste, stock, foundation)
+          enum: [tableau, reserve, waste, stock, foundation]
+        col:
+          type: integer
+          description: Tableau slot (0..15) or reserve pile (0..3); omitted for the waste, the stock, and for a foundation (the server picks the pile)
+    RoyalCotillionHint:
+      type: object
+      description: A suggested move in Royal Cotillion
+      properties:
+        fromZone:
+          type: string
+          description: "tableau, reserve, waste or stock"
+        fromIdx:
+          type: integer
+          description: Slot or reserve index, or -1 when the source is the waste or the stock
+        toZone:
+          type: string
+          description: "foundation, tableau or waste"
+        toIdx:
+          type: integer
+          description: Destination index, or -1 when the destination is the waste
+    RoyalCotillionResponse:
+      type: object
+      description: Response payload for /royalcotillion/exec
+      properties:
+        tableau:
+          type: array
+          description: The sixteen slots, one card each. An empty slot is null.
+          items:
+            $ref: '#/components/schemas/Card'
+        reserve:
+          type: array
+          description: The four reserve piles. Only the last card of each is playable, and an emptied pile is never refilled.
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        foundation:
+          type: array
+          description: The eight foundations, each building by twos and wrapping through all thirteen ranks.
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        foundationOdd:
+          type: array
+          description: Per-foundation series; true starts from the Ace, false from the deuce.
+          items:
+            type: boolean
+        stockCount:
+          type: integer
+        waste:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "0=Playing, 1=GameClear, 2=GameOver"
+        moveCount:
+          type: integer
+        canUndo:
+          type: boolean
+        isStalemate:
+          type: boolean
+        undoToEscape:
+          type: integer
+        hint:
+          $ref: '#/components/schemas/RoyalCotillionHint'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
     DiplomatHint:
       type: object
       description: A suggested move in Diplomat

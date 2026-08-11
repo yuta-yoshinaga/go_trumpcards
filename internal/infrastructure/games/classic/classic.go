@@ -372,4 +372,12 @@ func init() {
 			return usecase.RestoreColoradoInteractor(data, new(presenter.ColoradoWebPresenter))
 		},
 		controller.NewColoradoWebControllerWithProvider)
+	games.RegisterKVGame("royalcotillion", games.CategoryClassic,
+		func() usecase.RoyalCotillionInteractorIF {
+			return usecase.NewRoyalCotillionInteractor(domain.NewDefaultRoyalCotillion(), new(presenter.RoyalCotillionWebPresenter))
+		},
+		func(data []byte) (usecase.RoyalCotillionInteractorIF, error) {
+			return usecase.RestoreRoyalCotillionInteractor(data, new(presenter.RoyalCotillionWebPresenter))
+		},
+		controller.NewRoyalCotillionWebControllerWithProvider)
 }

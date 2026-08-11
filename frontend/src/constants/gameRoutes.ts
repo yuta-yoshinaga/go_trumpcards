@@ -1804,6 +1804,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [5, 1, 4, 2], skill: [3, 4, 3, 2], social: [5, 1, 0, 3, 3], theme: [1, 4, 4, 1, 1, 4] },
       },
       {
+        path: '/royalcotillion',
+        labelKey: 'nav.royalcotillion',
+        icon: '👑',
+        page: 'RoyalCotillion',
+        profile: { mood: [5, 1, 5, 2], skill: [2, 4, 4, 3], social: [5, 1, 0, 2, 4], theme: [1, 5, 3, 1, 2, 4] },
+      },
+      {
         path: '/sirtommy',
         labelKey: 'nav.sirtommy',
         icon: '🎩',

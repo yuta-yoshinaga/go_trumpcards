@@ -4338,6 +4338,27 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),
+	BindCuiFor("royalcotillion",
+		func() usecase.RoyalCotillionInteractorIF {
+			return usecase.NewRoyalCotillionInteractor(domain.NewDefaultRoyalCotillion(), new(presenter.RoyalCotillionCuiPresenter))
+		},
+		controller.NewRoyalCotillionCuiController,
+		CuiHelpSpec{
+			TitleKey: "royalcotillion.helpTitle",
+			CommandKeys: []string{
+				"royalcotillion.helpDraw",
+				"royalcotillion.helpMoveTF",
+				"royalcotillion.helpMoveRF",
+				"royalcotillion.helpMoveWF",
+				"royalcotillion.helpMoveWT",
+				"royalcotillion.helpMoveST",
+				"royalcotillion.helpGiveUp",
+				"royalcotillion.helpHint",
+				"royalcotillion.helpAutoComplete",
+				"royalcotillion.helpUndo",
+			},
+			ExtraCommandLines: []string{"  l                        action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.
