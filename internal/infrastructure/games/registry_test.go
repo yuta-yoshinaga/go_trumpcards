@@ -16,7 +16,7 @@ import (
 const (
 	expectedCasino  = 56
 	expectedClassic = 45
-	expectedSolo    = 49
+	expectedSolo    = 50
 	expectedExtra   = 37
 	expectedExtra2  = 45
 	expectedExtra3  = 39

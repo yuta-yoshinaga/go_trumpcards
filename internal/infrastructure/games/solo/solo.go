@@ -427,4 +427,12 @@ func init() {
 			return usecase.RestoreLiteratureInteractor(data, new(presenter.LiteratureWebPresenter))
 		},
 		controller.NewLiteratureWebControllerWithProvider)
+	games.RegisterKVGame("crazyquilt", games.CategorySolo,
+		func() usecase.CrazyQuiltInteractorIF {
+			return usecase.NewCrazyQuiltInteractor(domain.NewDefaultCrazyQuilt(), new(presenter.CrazyQuiltWebPresenter))
+		},
+		func(data []byte) (usecase.CrazyQuiltInteractorIF, error) {
+			return usecase.RestoreCrazyQuiltInteractor(data, new(presenter.CrazyQuiltWebPresenter))
+		},
+		controller.NewCrazyQuiltWebControllerWithProvider)
 }

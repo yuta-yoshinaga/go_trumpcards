@@ -57,6 +57,7 @@ import type {
   ContractRummyResponse,
   CourtPieceResponse,
   CrazyEightsResponse,
+  CrazyQuiltResponse,
   CrescentResponse,
   CribbageResponse,
   CribbageSquaresResponse,
@@ -319,6 +320,7 @@ import { getContractRummyHint } from '../utils/hints/contractrummyHint';
 import { getCourtPieceHint } from '../utils/hints/courtPieceHint';
 import { getCrazyEightsHint } from '../utils/hints/crazyeightsHint';
 import { getCrazyPineappleHint } from '../utils/hints/crazyPineappleHint';
+import { getCrazyQuiltHint } from '../utils/hints/crazyquiltHint';
 import { getCrescentHint } from '../utils/hints/crescentHint';
 import { getCribbageHint } from '../utils/hints/cribbageHint';
 import { getCribbageSquaresHint } from '../utils/hints/cribbagesquaresHint';
@@ -584,6 +586,7 @@ export const hintFactories = {
   cribbagesquares: (s) => getCribbageSquaresHint(s as CribbageSquaresResponse),
   diplomat: (s) => getDiplomatHint(s as DiplomatResponse),
   royalcotillion: (s) => getRoyalCotillionHint(s as RoyalCotillionResponse),
+  crazyquilt: (s) => getCrazyQuiltHint(s as CrazyQuiltResponse),
   fivehundred: (s) => getFiveHundredHint(s as FiveHundredResponse),
   rook: (s) => getRookHint(s as RookResponse),
   schnapsen: (s) => getSchnapsenHint(s as SchnapsenResponse),

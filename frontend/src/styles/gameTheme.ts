@@ -216,6 +216,7 @@ export type GameKey =
   | 'cribbagesquares'
   | 'diplomat'
   | 'royalcotillion'
+  | 'crazyquilt'
   | 'auldlangsyne'
   | 'bisley'
   | 'napoleonssquare'
@@ -740,6 +741,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   cribbagesquares: CASINO,
   diplomat: CASINO,
   royalcotillion: CASINO,
+  crazyquilt: CASINO,
   auldlangsyne: CASINO,
   bisley: CASINO,
   napoleonssquare: CASINO,

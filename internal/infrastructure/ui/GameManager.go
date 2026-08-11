@@ -4359,6 +4359,25 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),
+	BindCuiFor("crazyquilt",
+		func() usecase.CrazyQuiltInteractorIF {
+			return usecase.NewCrazyQuiltInteractor(domain.NewDefaultCrazyQuilt(), new(presenter.CrazyQuiltCuiPresenter))
+		},
+		controller.NewCrazyQuiltCuiController,
+		CuiHelpSpec{
+			TitleKey: "crazyquilt.helpTitle",
+			CommandKeys: []string{
+				"crazyquilt.helpDraw",
+				"crazyquilt.helpMoveQF",
+				"crazyquilt.helpMoveQW",
+				"crazyquilt.helpMoveWF",
+				"crazyquilt.helpGiveUp",
+				"crazyquilt.helpHint",
+				"crazyquilt.helpAutoComplete",
+				"crazyquilt.helpUndo",
+			},
+			ExtraCommandLines: []string{"  l                        action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

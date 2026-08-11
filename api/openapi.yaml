@@ -158,6 +158,8 @@ tags:
     description: Diplomat (ディプロマット) game - two-deck solitaire whose tableau builds down ignoring suit
   - name: royalcotillion
     description: Royal Cotillion (ロイヤルコティヨン) game - eight foundations built by twos that wrap through all thirteen ranks
+  - name: crazyquilt
+    description: Crazy Quilt (クレイジーキルト) game - an 8x8 quilt where only cards with an exposed short side can be taken
   - name: clocksolitaire
     description: Clock Solitaire (クロックソリティア) game
   - name: durak
@@ -6493,6 +6495,99 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RoyalCotillionResponse'
+  /crazyquilt/exec:
+    post:
+      tags:
+        - crazyquilt
+      summary: Execute a Crazy Quilt game command
+      description: |
+        Send a command to advance the Crazy Quilt (クレイジーキルト, also known as
+        Indian Carpet) game session identified by `sessionId`. A single-player
+        patience played with **two 52-card decks (104 cards)**.
+
+        One Ace and one King of each suit are **removed before the deal to seed
+        the eight foundations**, so 104 - 8 - 64 leaves **32 cards in the
+        stock**. The remaining 64 form an 8x8 quilt, laid vertically and
+        horizontally in alternation.
+
+        **A quilt card is available only when one of its SHORT sides is
+        exposed** - up or down for a vertically laid card, left or right for a
+        horizontal one. An open long side frees nothing, so an intact quilt
+        offers exactly sixteen cards. The server reports this per cell in
+        `available`; do not re-derive it from the layout.
+
+        The Ace foundations build up in suit and the King foundations build
+        down. A quilt card may also be played onto the **waste** when it is one
+        rank away in either direction, suit irrelevant - the main way the quilt
+        comes apart. The stock turns one card at a time; when it empties, the
+        waste is turned over **without shuffling** for a single redeal.
+
+        Move zones:
+
+        * `from`: `{zone: "quilt", col: 0..63}` (cell index, row*8+col) or `{zone: "waste"}`
+        * `to`: `{zone: "foundation"}` (the server picks the pile) or `{zone: "waste"}`
+      operationId: crazyquiltExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, draw, d, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, undo_n, log, l]
+                sessionId:
+                  type: string
+                from:
+                  $ref: '#/components/schemas/CrazyQuiltMoveZone'
+                to:
+                  $ref: '#/components/schemas/CrazyQuiltMoveZone'
+                n:
+                  type: integer
+                  description: Number of moves to undo (for `undo_n` command)
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              quiltToFoundation:
+                summary: Send the card in cell 0 to a foundation
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from:
+                    zone: quilt
+                    col: 0
+                  to:
+                    zone: foundation
+              quiltToWaste:
+                summary: Drop the card in cell 7 onto the waste (one rank away)
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from:
+                    zone: quilt
+                    col: 7
+                  to:
+                    zone: waste
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CrazyQuiltResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CrazyQuiltResponse'
   /clocksolitaire/exec:
     post:
       tags:
@@ -43179,6 +43274,91 @@ components:
         col:
           type: integer
           description: Tableau slot (0..15) or reserve pile (0..3); omitted for the waste, the stock, and for a foundation (the server picks the pile)
+    CrazyQuiltMoveZone:
+      type: object
+      description: Source or target zone for a Crazy Quilt card move
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          description: Zone identifier (quilt, waste, foundation)
+          enum: [quilt, waste, foundation]
+        col:
+          type: integer
+          description: Quilt cell index (0..63, row*8+col); omitted for the waste and for a foundation (the server picks the pile)
+    CrazyQuiltHint:
+      type: object
+      description: A suggested move in Crazy Quilt
+      properties:
+        fromZone:
+          type: string
+          description: "quilt, waste or stock"
+        fromIdx:
+          type: integer
+          description: Quilt cell index, or -1 when the source is the waste or the stock
+        toZone:
+          type: string
+          description: "foundation or waste"
+        toIdx:
+          type: integer
+          description: Destination index, or -1 when the destination is the waste
+    CrazyQuiltResponse:
+      type: object
+      description: Response payload for /crazyquilt/exec
+      properties:
+        quilt:
+          type: array
+          description: The 64 cells in row-major order. A cell whose card has been taken is null.
+          items:
+            $ref: '#/components/schemas/Card'
+        available:
+          type: array
+          description: Per-cell availability. True when one of the card's SHORT sides is exposed, which depends on whether the cell is laid vertically or horizontally. Computed by the server so the rule lives in one place.
+          items:
+            type: boolean
+        foundation:
+          type: array
+          description: The eight foundations, seeded with an Ace or a King of each suit before the deal.
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        foundationAscending:
+          type: array
+          description: Per-foundation direction; true builds up from the Ace, false down from the King.
+          items:
+            type: boolean
+        stockCount:
+          type: integer
+        redealsLeft:
+          type: integer
+          description: Redeals remaining. The waste is turned over without shuffling.
+        waste:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "0=Playing, 1=GameClear, 2=GameOver"
+        moveCount:
+          type: integer
+        canUndo:
+          type: boolean
+        isStalemate:
+          type: boolean
+        undoToEscape:
+          type: integer
+        hint:
+          $ref: '#/components/schemas/CrazyQuiltHint'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
     RoyalCotillionHint:
       type: object
       description: A suggested move in Royal Cotillion

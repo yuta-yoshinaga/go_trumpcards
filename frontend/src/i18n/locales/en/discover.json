@@ -356,7 +356,8 @@
     "colorado": "104 cards, 20 piles, and eight foundations — half of them building down from the King. The waste goes on any pile, burying what was under it.",
     "cribbagesquares": "Place 16 cards in a 4x4 grid, then turn a 17th; all four rows and four columns are scored as cribbage hands against it. 61 points clears it.",
     "diplomat": "A Forty Thieves relative dealing 104 cards into eight columns of four. The tableau builds down ignoring suit, which makes it the gentle one.",
-    "royalcotillion": "Foundations climb by twos and wrap — after the King comes the deuce — so eight piles swallow all 104 cards."
+    "royalcotillion": "Foundations climb by twos and wrap — after the King comes the deuce — so eight piles swallow all 104 cards.",
+    "crazyquilt": "Prise cards out of an 8x8 quilt, but only where a short side is exposed — an open long side frees nothing."
   },
   "stretch_blurb": {
     "accordion": "Completion is rare; the journey itself is the joy.",
@@ -629,6 +630,7 @@
     "colorado": "A solitaire whose only decision is where to dump the waste card, feeding ascending and descending foundations at once.",
     "cribbagesquares": "Build eight hands at once without knowing their shared fifth card. Everything rides on how you stack fifteens and pairs.",
     "diplomat": "No same-suit restriction means far more landing spots. When you spend an empty column is the whole game.",
-    "royalcotillion": "Digging the reserve buys you options, but emptying one costs a slot forever. That single trade is the game."
+    "royalcotillion": "Digging the reserve buys you options, but emptying one costs a slot forever. That single trade is the game.",
+    "crazyquilt": "Every card you take opens a neighbour's short side. Finding the order that cascades is the whole puzzle."
   }
 }

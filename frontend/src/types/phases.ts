@@ -1448,6 +1448,13 @@ export const RoyalCotillionPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Crazy Quilt phase constants (sync: internal/domain/CrazyQuilt.go). */
+export const CrazyQuiltPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 export const SirTommyPhase = {
   PLAYING: 0,
   GAME_CLEAR: 1,
