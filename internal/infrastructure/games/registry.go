@@ -1016,6 +1016,12 @@ var registry = []*Game{
 	// HCP の総和は必ず 40 なので「合計の多いペア」は 20-20 で決まらないことがあり
 	// （実測 8.1%）、そこは親の側が取る。デクレアラーはダミーも操作する。
 	{Name: "minibridge", Category: CategoryExtra3},
+	// Pasur パスール
+	//
+	// イランのフィッシング系。**手札 1 枚と場の数札の合計が 11** になる組み合わせを
+	// 取る。**J/Q/K は合計に使わず同ランクだけ**取れる。取った結果**場が空になると
+	// スール**で、その捕獲の札は得点が 2 倍。
+	{Name: "pasur", Category: CategoryExtra},
 }
 
 // All returns a value-level copy of the registry in canonical order.

@@ -47,3 +47,6 @@ func pasurHandOf(p *Pasur, playerIdx int, cards ...*Card) {
 		pl.AddCard(c)
 	}
 }
+
+// SetHumanHandForTest は席 0 の手札を cards ちょうどに置き換える。
+func (p *Pasur) SetHumanHandForTest(cards ...*Card) { pasurHandOf(p, 0, cards...) }

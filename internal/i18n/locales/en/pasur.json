@@ -1,0 +1,22 @@
+{
+  "helpTitle": "Pasur",
+  "helpPlay": "  p <i> [t...]         Play hand card i (t... are table indices to take; omit to lay it down)",
+  "helpGiveUp": "  g                    Give up",
+  "header": "Pack: {{pack}}  Deck: {{deck}} left",
+  "rule": "Take a set of table numerals that, with the card you play, adds to 11. Aces count 1 through tens 10; J, Q and K never join the sum and only take the same rank from the table. Capturing is compulsory when a capture exists. Emptying the table is a \"soor\": the cards from that capture score double.",
+  "tableLine": "Table: {{cards}}",
+  "tableEmpty": "Table: empty",
+  "playerLine": "{{name}}{{role}}: {{captured}} taken, {{soors}} soor, score {{score}}, hand {{cards}}",
+  "roleLastCapture": "[last capture]",
+  "promptCurrentPlayer": "Turn: {{name}}",
+  "promptPlay": "play <i> [t...] ... play hand card i (t... are table indices)",
+  "gameEndYou": "Game over! You win.",
+  "gameEndCpu": "Game over! {{name}} wins.",
+  "gameEndTie": "Game over! {{n}} players tie.",
+  "hintNone": "No hint available.",
+  "hintCapture": "[HINT: play [{{idx}}]{{card}} and take table {{table}} ({{reason}})]",
+  "hintTrail": "[HINT: lay [{{idx}}]{{card}} on the table ({{reason}})]",
+  "hintReasonSoor": "This empties the table -- that capture scores double",
+  "hintReasonCapture": "It takes cards that score",
+  "hintReasonTrail": "Nothing adds to 11; lay down your least valuable card"
+}

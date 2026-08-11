@@ -4656,6 +4656,19 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
 		}),
+	BindCuiFor("pasur",
+		func() usecase.PasurInteractorIF {
+			return usecase.NewPasurInteractor(domain.NewDefaultPasur(), new(presenter.PasurCuiPresenter))
+		},
+		controller.NewPasurCuiController,
+		CuiHelpSpec{
+			TitleKey: "pasur.helpTitle",
+			CommandKeys: []string{
+				"pasur.helpPlay",
+				"pasur.helpGiveUp",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.
