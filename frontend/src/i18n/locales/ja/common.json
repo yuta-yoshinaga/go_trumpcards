@@ -302,7 +302,8 @@
     "baloot": "バルート",
     "estimation": "エスティメーション",
     "israeliwhist": "イスラエリホイスト",
-    "hokm": "ホクム"
+    "hokm": "ホクム",
+    "shelem": "シェレム"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1240,6 +1241,16 @@
     "hokm.result.team0": "あなたのチームの勝ちです（{{t0}} - {{t1}}）。",
     "hokm.result.team1": "相手チームの勝ちです（{{t0}} - {{t1}}）。",
     "hokm.result.tie": "同点です（{{t0}} - {{t1}}）。",
+    "shelem.bid.choose": "入札してください（{{min}}点以上、5刻み）。Shelem 宣言や降りることもできます。",
+    "shelem.bid.wait": "他のプレイヤーが競っています。",
+    "shelem.discard.choose": "ウィドウを取り込みました。{{n}}枚捨てて切り札を決めてください（契約 {{contract}}点）。",
+    "shelem.discard.wait": "落札者がウィドウを整理しています。",
+    "shelem.play": "点になるのは A・10・5 だけ。1ラウンドの合計は100点です。",
+    "shelem.roundEnd": "ラウンド{{round}}が終了しました（契約 {{contract}}点 / 獲得 {{got}}点）。",
+    "shelem.roundEnd.shelem": "ラウンド{{round}}が終了しました（Shelem 宣言の結果）。",
+    "shelem.result.team0": "あなたのチームの勝ちです（{{t0}} - {{t1}}）。",
+    "shelem.result.team1": "相手チームの勝ちです（{{t0}} - {{t1}}）。",
+    "shelem.result.tie": "同点です（{{t0}} - {{t1}}）。",
     "schnapsen.trickEnd": "トリック終了 — 次へ進んでください。",
     "seahaventowers.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
     "seahaventowers.gameOver": "ゲームオーバー",

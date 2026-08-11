@@ -226,6 +226,7 @@ export * from './games/sevencardstud';
 export * from './games/sevencardstudhilo';
 export * from './games/sevens';
 export * from './games/sheepshead';
+export * from './games/shelem';
 export * from './games/shengji';
 export * from './games/shithead';
 export * from './games/shortdeck';
@@ -331,6 +332,7 @@ export const games = [
   'estimation',
   'israeliwhist',
   'hokm',
+  'shelem',
   'razz',
   'sevencardstudhilo',
   'badugi',

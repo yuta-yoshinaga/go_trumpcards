@@ -4532,6 +4532,24 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
 		}),
+	BindCuiFor("shelem",
+		func() usecase.ShelemInteractorIF {
+			return usecase.NewShelemInteractor(domain.NewDefaultShelem(), new(presenter.ShelemCuiPresenter))
+		},
+		controller.NewShelemCuiController,
+		CuiHelpSpec{
+			TitleKey: "shelem.helpTitle",
+			CommandKeys: []string{
+				"shelem.helpBid",
+				"shelem.helpShelem",
+				"shelem.helpPass",
+				"shelem.helpDiscard",
+				"shelem.helpPlay",
+				"shelem.helpNext",
+				"shelem.helpGiveUp",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

@@ -1,0 +1,64 @@
+{
+  "phase": {
+    "bid": "Bidding",
+    "discard": "Sorting the widow",
+    "play": "Playing",
+    "roundEnd": "Round over",
+    "gameEnd": "Game over"
+  },
+  "header": {
+    "round": "Round",
+    "trick": "Trick",
+    "target": "first to {{target}}",
+    "pointTable": "Point cards: A and 10 are worth 10, the 5 is worth 5. A round holds exactly 100.",
+    "contractUndecided": "Contract: undecided (bid at least {{min}})",
+    "contract": "Contract: {{n}} ({{got}} so far)",
+    "contractShelem": "Contract: Shelem -- every trick",
+    "trump": "trump {{suit}}",
+    "score": "Total: your team {{t0}} - theirs {{t1}}",
+    "took": "{{n}} taken",
+    "team": "T{{team}}",
+    "you": "You",
+    "cpu": "CPU{{idx}}"
+  },
+  "role": {
+    "declarer": "won {{n}}",
+    "shelem": "declared Shelem",
+    "bid": "bid {{n}}",
+    "passed": "passed",
+    "active": "bidding"
+  },
+  "discard": {
+    "picked": "{{n}}/{{of}} selected",
+    "pickAria": "Select {{card}} to discard"
+  },
+  "currentTrick": "Current trick",
+  "mustBid": "Everyone else has passed. You cannot drop out — a contract has to be settled, so you must bid.",
+  "actions": {
+    "shelem": "Declare Shelem",
+    "pass": "Pass",
+    "discard": "Confirm with {{suit}} trump",
+    "nextRound": "Next round",
+    "reset": "Reset",
+    "giveUp": "Give up",
+    "playAria": "Play {{card}}"
+  },
+  "result": {
+    "youWin": "Your team wins! {{t0}} - {{t1}}",
+    "theyWin": "The other team wins. {{t0}} - {{t1}}",
+    "tie": "It's a tie. {{t0}} - {{t1}}"
+  },
+  "hint": {
+    "shelemBid": "This hand is worth bidding on.",
+    "shelemPass": "Not worth bidding on — drop out.",
+    "shelemDiscard": "Throw away what scores nothing and make your longest suit trump.",
+    "shelemWinTrick": "Go for this trick.",
+    "shelemFeedPartner": "Your partner is winning — throw a point card on it."
+  },
+  "tutorial": {
+    "points": "**Only the A, the 10 and the 5 score** (A and 10 are 10, the 5 is 5). A round holds exactly **100**, which is why bidding starts there.",
+    "bid": "What you bid is **the score itself, not a number of tricks**. Bidding runs from 100 upward in fives; make the contract in card points and you add it, miss and you **lose the same amount**. **Shelem** replaces the number with a claim on every trick, and swings ±200.",
+    "widow": "Whoever wins the bidding **takes the four face-down cards (the widow)**, discards four and names trump — sixteen back down to twelve, so the cards that score nothing are what to throw.",
+    "hand": "Your hand. Legal cards get a green ring. When your partner is winning a trick, throw a point card (A, 10 or 5) on it."
+  }
+}

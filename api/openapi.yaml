@@ -180,6 +180,8 @@ tags:
     description: Israeli Whist (イスラエリホイスト) game endpoints -- 4-player two-stage bidder; an auction settles trump and a quota, then everyone calls separately
   - name: hokm
     description: Hokm (ホクム) game endpoints -- Iran's 2v2 trick-taker; a hand ends the moment one side takes seven tricks, and a shut-out (Kot) counts double
+  - name: shelem
+    description: Shelem (シェレム) game endpoints -- Iran's bridge-shaped bidder; what is bid is the score itself, with a widow exchange and an all-tricks Shelem call
   - name: clocksolitaire
     description: Clock Solitaire (クロックソリティア) game
   - name: durak
@@ -7392,6 +7394,105 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HokmResponse'
+  /shelem/exec:
+    post:
+      tags:
+        - shelem
+      summary: Execute a Shelem game command
+      description: |
+        Send a command to advance the Shelem (シェレム) game session identified
+        by `sessionId`.
+
+        52 cards dealt as **12 each plus a four-card widow** (12x4 + 4 = 52
+        exactly), four players in two partnerships, **12 tricks**.
+
+        **What is bid is the score itself, not a number of tricks**: from 100
+        upward in steps of 5, over a hand that holds exactly **100 card
+        points** -- and only three ranks score at all (A and 10 are 10, the 5
+        is 5, everything else 0). That is why bidding opens at the whole hand's
+        worth.
+
+        Whoever wins the bidding takes the widow into hand (16 cards),
+        **discards four** and names trump. Making the contract in card points
+        adds it; missing subtracts the same amount, and the other side banks
+        the card points it took.
+
+        Declaring **Shelem** replaces the number with a claim on every trick:
+        ±200, settled the instant one trick is lost rather than playing the
+        hand out. The last bidder standing with nobody having bid may not pass.
+      operationId: execShelem
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, bid, b, shelem, pass, discard, d, play, p, next, n, giveup, g, hint, h, log, l]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                  description: Index into your hand (required for `play`)
+                suit:
+                  type: integer
+                  description: Trump suit 1..4 (1=S 2=C 3=H 4=D); required for `discard`
+                bid:
+                  type: integer
+                  description: Points bid, 100..165 in steps of 5; required for `bid`
+                discards:
+                  type: array
+                  description: Exactly four hand indices to discard; required for `discard`
+                  items:
+                    type: integer
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bid:
+                summary: Bid 130 points
+                value:
+                  command: bid
+                  sessionId: my-session-001
+                  bid: 130
+              shelem:
+                summary: Claim every trick
+                value:
+                  command: shelem
+                  sessionId: my-session-001
+              discard:
+                summary: Discard four cards and make hearts trump
+                value:
+                  command: discard
+                  sessionId: my-session-001
+                  discards: [0, 3, 7, 11]
+                  suit: 3
+              play:
+                summary: Play the third card in hand
+                value:
+                  command: play
+                  sessionId: my-session-001
+                  cardIndex: 2
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShelemResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShelemResponse'
   /clocksolitaire/exec:
     post:
       tags:
@@ -44794,6 +44895,157 @@ components:
           description: "-1 until decided, and -1 on a tie"
         hint:
           $ref: '#/components/schemas/HokmHint'
+        config:
+          type: object
+          properties:
+            target:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    ShelemTrickCard:
+      type: object
+      description: A card played in the current trick
+      required:
+        - playerIdx
+        - card
+      properties:
+        playerIdx:
+          type: integer
+          description: Index of the player who played this card
+        card:
+          $ref: '#/components/schemas/Card'
+    ShelemHint:
+      type: object
+      description: >-
+        A suggestion. While bidding or discarding it carries no cardIndex and
+        puts the recommended points in value (or the trump suit in suit);
+        during play it names a card.
+      properties:
+        cardIndex:
+          type: integer
+          description: Index into your hand. Absent before play begins.
+        reason:
+          type: string
+          description: >-
+            shelemBid / shelemPass while bidding; shelemDiscard while sorting
+            the widow; shelemWinTrick or shelemFeedPartner during play.
+        value:
+          type: integer
+          description: Points to bid. 0 otherwise.
+        suit:
+          type: integer
+          description: Suit to make trump when discarding. 0 otherwise.
+    ShelemPlayer:
+      type: object
+      description: One seat at a Shelem table
+      properties:
+        id:
+          type: integer
+        isHuman:
+          type: boolean
+        team:
+          type: integer
+          description: "0 or 1. Seats 0+2 are one partnership, 1+3 the other."
+        cardCount:
+          type: integer
+          description: Hand size. The only hand information exposed for the CPU.
+        cards:
+          type: array
+          description: Populated for the human player only; empty for the CPU.
+          items:
+            $ref: '#/components/schemas/Card'
+        bid:
+          type: integer
+          description: "Points bid, or -1 when this seat never bid"
+        passed:
+          type: boolean
+          description: Dropped out of the bidding. Final -- a passed seat cannot bid again.
+        declaredShelem:
+          type: boolean
+          description: Claimed every trick instead of naming a number.
+        trickCount:
+          type: integer
+    ShelemResponse:
+      type: object
+      description: Response payload for /shelem/exec
+      properties:
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/ShelemPlayer'
+        phase:
+          type: integer
+          description: "0=Bid, 1=Discard, 2=Play, 3=RoundEnd, 4=GameEnd"
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        trumpSuit:
+          type: integer
+          description: 0 until the declarer has named it.
+        declarerIdx:
+          type: integer
+          description: "Seat that won the bidding, or -1 before it settles"
+        contract:
+          type: integer
+          description: Points contracted for.
+        shelemBid:
+          type: boolean
+          description: The contract is Shelem -- every trick -- rather than a points total.
+        minBid:
+          type: integer
+          description: Lowest bid that would beat the standing one; already clamped to the maximum.
+        widowSize:
+          type: integer
+          description: Cards still face down; 0 once the declarer has taken them.
+        discardCount:
+          type: integer
+          description: How many cards the declarer must discard (4).
+        scores:
+          type: array
+          description: Running total per team, index 0 and 1.
+          items:
+            type: integer
+        roundPoints:
+          type: array
+          description: Card points taken this round per team, index 0 and 1.
+          items:
+            type: integer
+        teamTricks:
+          type: array
+          description: Tricks taken this round per team, index 0 and 1.
+          items:
+            type: integer
+        currentPlayerIdx:
+          type: integer
+        bidPlayerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        currentTrick:
+          type: array
+          items:
+            $ref: '#/components/schemas/ShelemTrickCard'
+        validPlays:
+          type: array
+          description: Hand indices you may legally play. Following suit is compulsory.
+          items:
+            type: integer
+        gameEndFlag:
+          type: boolean
+        winnerTeam:
+          type: integer
+          description: "-1 until decided, and -1 on a tie"
+        hint:
+          $ref: '#/components/schemas/ShelemHint'
         config:
           type: object
           properties:

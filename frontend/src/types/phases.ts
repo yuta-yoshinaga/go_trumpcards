@@ -1560,6 +1560,21 @@ export const SchnapsenPhase = {
 } as const;
 
 /**
+ * Shelem phase constants (sync: internal/domain/Shelem.go).
+ *
+ * **What is bid is the score itself**, not a number of tricks, and the winner
+ * takes a four-card widow before naming trump — hence a discard phase of its
+ * own between bidding and play.
+ */
+export const ShelemPhase = {
+  BID: 0,
+  DISCARD: 1,
+  PLAY: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
+/**
  * Hokm phase constants (sync: internal/domain/Hokm.go).
  *
  * **A hand does not play out all thirteen tricks** -- the first partnership to

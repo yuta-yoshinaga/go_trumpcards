@@ -208,6 +208,7 @@ import type {
   SevenCardStudResponse,
   SevensResponse,
   SheepsheadResponse,
+  ShelemResponse,
   ShengJiResponse,
   ShitheadResponse,
   ShortDeckResponse,
@@ -486,6 +487,7 @@ import { getSevenbridgeHint } from '../utils/hints/sevenbridgeHint';
 import { getSevenCardStudHint } from '../utils/hints/sevencardstudHint';
 import { getSevensHint } from '../utils/hints/sevensHint';
 import { getSheepsheadHint } from '../utils/hints/sheepsheadHint';
+import { getShelemHint } from '../utils/hints/shelemHint';
 import { getShengJiHint } from '../utils/hints/shengjiHint';
 import { getShitheadHint } from '../utils/hints/shitheadHint';
 import { getShortDeckHint } from '../utils/hints/shortdeckHint';
@@ -620,6 +622,7 @@ export const hintFactories = {
   estimation: (s) => getEstimationHint(s as EstimationResponse),
   israeliwhist: (s) => getIsraeliWhistHint(s as IsraeliWhistResponse),
   hokm: (s) => getHokmHint(s as HokmResponse),
+  shelem: (s) => getShelemHint(s as ShelemResponse),
   faro: (s) => getFaroHint(s as FaroResponse),
   fiftyone: (s) => getFiftyOneHint(s as FiftyOneResponse),
   napoleon: (s) => getNapoleonHint(s as NapoleonResponse),

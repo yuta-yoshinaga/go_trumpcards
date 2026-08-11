@@ -470,6 +470,11 @@ func init() {
 			return usecase.NewHokmInteractor(domain.NewDefaultHokm(), new(presenter.HokmWebPresenter))
 		},
 		controller.NewHokmWebController)
+	BindWebControllerFor("shelem",
+		func() usecase.ShelemInteractorIF {
+			return usecase.NewShelemInteractor(domain.NewDefaultShelem(), new(presenter.ShelemWebPresenter))
+		},
+		controller.NewShelemWebController)
 	BindWebControllerFor("rams",
 		func() usecase.RamsInteractorIF {
 			return usecase.NewRamsInteractor(domain.NewDefaultRams(), new(presenter.RamsWebPresenter))
