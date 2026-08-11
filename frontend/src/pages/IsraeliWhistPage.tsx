@@ -166,6 +166,9 @@ function IsraeliWhistPageContent() {
   const isGameEnd = state.phase === IsraeliWhistPhase.GAME_END || state.gameEndFlag;
   const humanPassed = state.players[0]?.passed === true;
   const isHumanAuctionTurn = isAuction && !isGameEnd && state.auctionPlayerIdx === 0 && !humanPassed;
+  // **誰も入札しないまま最後の1人になったら降りられない。** 降りると切り札が
+  // 決まらずラウンドを開始できないので、サーバが pass を拒否する。
+  const mustBid = state.highBid === 0 && state.players.filter((p) => !p.passed).length === 1;
   const isHumanBidTurn = isBid && !isGameEnd && state.bidPlayerIdx === 0;
   const isHumanTurn =
     !isGameEnd && !isRoundEnd && !isAuction && !isBid && state.players[state.currentPlayerIdx]?.isHuman === true;
@@ -337,15 +340,22 @@ function IsraeliWhistPageContent() {
                       </button>
                     );
                   })}
-                  <button
-                    type="button"
-                    className={btnSuccess}
-                    onClick={handleAuctionPass}
-                    disabled={loading}
-                    data-testid="iw-pass-btn"
-                  >
-                    {t('actions.pass')}
-                  </button>
+                  {/* **最後の1人は降りられない。** 押せないボタンを出さない。 */}
+                  {mustBid ? (
+                    <span className="self-center text-ds-text-muted text-sm" data-testid="iw-must-bid">
+                      {t('mustBid')}
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      className={btnSuccess}
+                      onClick={handleAuctionPass}
+                      disabled={loading}
+                      data-testid="iw-pass-btn"
+                    >
+                      {t('actions.pass')}
+                    </button>
+                  )}
                 </>
               )}
               {isHumanBidTurn &&

@@ -9,6 +9,9 @@ const legalCard = (page: Page) => page.locator('button.ring-ds-success');
 // 決め打ちの番号を押すとその値に当たったときだけ落ちる。
 const openBid = (page: Page) => page.locator('[data-testid^="iw-bid-"]:not([disabled])');
 
+// **押せる入札だけを選ぶ。** 序列で上回れないスートは無効化されている。
+const openAuction = (page: Page) => page.locator('[data-testid^="iw-auction-"]:not([disabled])');
+
 test.describe('Israeli Whist E2E', () => {
   test('navigates to israeliwhist and renders initial game state', async ({ page }) => {
     await navigateTo(page, '/israeliwhist');
@@ -31,10 +34,13 @@ test.describe('Israeli Whist E2E', () => {
   const settleAndPlay = async (page: Page) => {
     await expect(page.getByTestId('iw-round')).toBeVisible({ timeout: TIMEOUT_ACTION });
 
-    // 1 段階目: 出ていれば降りる（降りられない席なら入札に切り替わる）。
+    // 1 段階目: 降りられるなら降りる。**降りられない席では pass ボタンが
+    // 出ない**（誰も入札していない最後の1人）ので、その場合は入札する。
     const pass = page.getByTestId('iw-pass-btn');
     if (await pass.isVisible()) {
       await pass.click();
+    } else if (await openAuction(page).first().isVisible()) {
+      await openAuction(page).first().click();
     }
 
     // 2 段階目: 押せる宣言があれば押す。
@@ -60,9 +66,8 @@ test.describe('Israeli Whist E2E', () => {
     await expect(page.getByTestId('iw-round')).toBeVisible({ timeout: TIMEOUT_ACTION });
 
     // 押せる入札ボタンを1つ押す。拒否されればエラー表示が出て盤面が進まない。
-    const openAuction = page.locator('[data-testid^="iw-auction-"]:not([disabled])');
-    if (await openAuction.first().isVisible()) {
-      await openAuction.first().click();
+    if (await openAuction(page).first().isVisible()) {
+      await openAuction(page).first().click();
       // 拒否されるとエラーが出る。出ないこと、そして先へ進めることを見る。
       await expect(page.getByRole('alert')).toHaveCount(0, { timeout: TIMEOUT_ACTION });
     }

@@ -161,6 +161,51 @@ describe('IsraeliWhistPage', () => {
     unmount();
   });
 
+  // **誰も入札しないまま最後の1人になったら降りられない。** サーバが必ず
+  // 拒否するので、pass ボタンを出さない。負のコントロール付き。
+  it('hides pass when the human is the last bidder standing with no bid', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        highBid: 0,
+        players: [seat(0), seat(1, { passed: true }), seat(2, { passed: true }), seat(3, { passed: true })],
+      } as Partial<IsraeliWhistResponse>),
+    );
+    renderWithProviders(<IsraeliWhistPage />);
+
+    expect(await screen.findByTestId('iw-must-bid')).toBeInTheDocument();
+    expect(screen.queryByTestId('iw-pass-btn')).not.toBeInTheDocument();
+    // 入札の道は残っていること。
+    expect(screen.getByTestId('iw-auction-1-btn')).toBeEnabled();
+  });
+
+  it('still offers pass while someone else is bidding', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        highBid: 0,
+        players: [seat(0), seat(1, { passed: true }), seat(2), seat(3, { passed: true })],
+      } as Partial<IsraeliWhistResponse>),
+    );
+    renderWithProviders(<IsraeliWhistPage />);
+
+    expect(await screen.findByTestId('iw-pass-btn')).toBeInTheDocument();
+    expect(screen.queryByTestId('iw-must-bid')).not.toBeInTheDocument();
+  });
+
+  // 入札が出ていれば、最後の1人でも降りられる。
+  it('offers pass once a bid is standing', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        highBid: 7,
+        highSuit: 1,
+        players: [seat(0), seat(1, { passed: true }), seat(2, { passed: true }), seat(3, { passed: true })],
+      } as Partial<IsraeliWhistResponse>),
+    );
+    renderWithProviders(<IsraeliWhistPage />);
+
+    expect(await screen.findByTestId('iw-pass-btn')).toBeInTheDocument();
+    expect(screen.queryByTestId('iw-must-bid')).not.toBeInTheDocument();
+  });
+
   it('sends pass as its own command', async () => {
     renderWithProviders(<IsraeliWhistPage />);
     const btn = await screen.findByTestId('iw-pass-btn');

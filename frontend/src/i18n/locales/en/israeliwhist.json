@@ -27,6 +27,7 @@
     "value": "call {{n}}"
   },
   "currentTrick": "Current trick",
+  "mustBid": "Everyone else has passed. You cannot drop out — a trump has to be settled, so you must bid.",
   "actions": {
     "auction": "{{n}} {{suit}}",
     "pass": "Pass",
