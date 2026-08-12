@@ -1054,6 +1054,12 @@ var registry = []*Game{
 	// 束ごと持っていける。取れる手があるときは場に置けない。最後にいちばん
 	// 多く集めた人の勝ち。
 	{Name: "stealingbundles", Category: CategoryExtra3},
+	// Cucumber キューカンバー（グルカ）
+	//
+	// **スートは一切関係ない比較フォロー。** いま出ている最高ランクより高い札を
+	// 持っていれば必ず出し、無ければいちばん低い札を出す。**失点が付くのは最終
+	// トリックを取った 1 人だけ**で、そのトリックを取った札のランクぶん。
+	{Name: "cucumber", Category: CategoryClassic},
 }
 
 // All returns a value-level copy of the registry in canonical order.

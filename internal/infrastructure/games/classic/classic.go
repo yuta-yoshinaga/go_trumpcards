@@ -420,4 +420,12 @@ func init() {
 			return usecase.RestoreHokmInteractor(data, new(presenter.HokmWebPresenter))
 		},
 		controller.NewHokmWebControllerWithProvider)
+	games.RegisterKVGame("cucumber", games.CategoryClassic,
+		func() usecase.CucumberInteractorIF {
+			return usecase.NewCucumberInteractor(domain.NewDefaultCucumber(), new(presenter.CucumberWebPresenter))
+		},
+		func(data []byte) (usecase.CucumberInteractorIF, error) {
+			return usecase.RestoreCucumberInteractor(data, new(presenter.CucumberWebPresenter))
+		},
+		controller.NewCucumberWebControllerWithProvider)
 }

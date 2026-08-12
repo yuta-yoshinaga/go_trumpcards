@@ -4741,6 +4741,20 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
 		}),
+	BindCuiFor("cucumber",
+		func() usecase.CucumberInteractorIF {
+			return usecase.NewCucumberInteractor(domain.NewDefaultCucumber(), new(presenter.CucumberCuiPresenter))
+		},
+		controller.NewCucumberCuiController,
+		CuiHelpSpec{
+			TitleKey: "cucumber.helpTitle",
+			CommandKeys: []string{
+				"cucumber.helpPlay",
+				"cucumber.helpNext",
+				"cucumber.helpGiveUp",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.
