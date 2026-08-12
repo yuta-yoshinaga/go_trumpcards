@@ -208,6 +208,7 @@ export * from './games/pyramid';
 export * from './games/rams';
 export * from './games/reddog';
 export * from './games/reversis';
+export * from './games/rikken';
 export * from './games/rollingstone';
 export * from './games/rook';
 export * from './games/royalcotillion';

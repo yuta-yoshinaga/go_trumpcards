@@ -201,6 +201,7 @@ import type {
   RamsResponse,
   RedDogResponse,
   ReversisResponse,
+  RikkenResponse,
   RollingStoneResponse,
   RookResponse,
   RoyalCotillionResponse,
@@ -497,6 +498,7 @@ import { getRamsHint } from '../utils/hints/ramsHint';
 import { getRazzHint } from '../utils/hints/razzHint';
 import { getReddogHint } from '../utils/hints/reddogHint';
 import { getReversisHint } from '../utils/hints/reversisHint';
+import { getRikkenHint } from '../utils/hints/rikkenHint';
 import { getRollingStoneHint } from '../utils/hints/rollingstoneHint';
 import { getRookHint } from '../utils/hints/rookHint';
 import { getRoyalCotillionHint } from '../utils/hints/royalcotillionHint';
@@ -763,6 +765,7 @@ export const hintFactories = {
   oichokabu: (s) => getOichokabuHint(s as OichoKabuResponse),
   andarbahar: (s) => getAndarbaharHint(s as AndarBaharResponse),
   botifarra: (s) => getBotifarraHint(s as BotifarraResponse),
+  rikken: (s) => getRikkenHint(s as RikkenResponse),
   dragontiger: (s) => getDragontigerHint(s as DragonTigerResponse),
   blackjackswitch: (s) => getBlackjackswitchHint(s as BlackJackSwitchResponse),
   war: (s) => getWarHint(s as WarResponse),

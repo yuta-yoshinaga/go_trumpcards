@@ -320,7 +320,8 @@
     "honeymoonbridge": "Honeymoon Bridge",
     "sergeantmajor": "Sergeant Major",
     "andarbahar": "Andar Bahar",
-    "botifarra": "Botifarra"
+    "botifarra": "Botifarra",
+    "rikken": "Rikken"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1670,7 +1671,9 @@
     "andarbahar.result.win": "Your bet came in — the payout is yours.",
     "andarbahar.result.lose": "Your bet missed. On to the next round.",
     "botifarra.result.win": "Your team wins!",
-    "botifarra.result.lose": "The other team wins."
+    "botifarra.result.lose": "The other team wins.",
+    "rikken.result.win": "You win!",
+    "rikken.result.lose": "Another seat wins."
   },
   "manual": {
     "ariaLabel": "Game Manual",

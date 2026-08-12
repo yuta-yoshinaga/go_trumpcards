@@ -385,7 +385,8 @@
     "honeymoonbridge": "Bridge for two. The first 13 tricks score nothing -- each one just draws you a card.",
     "sergeantmajor": "The British army's three-hander. Nobody bids -- the seats owe 8, 5 and 3.",
     "andarbahar": "Bet on which of two columns draws the joker's rank first. From India; the rules fit in one line.",
-    "botifarra": "A Catalan partnership game with no auction — and you must win the trick if you can."
+    "botifarra": "A Catalan partnership game with no auction — and you must win the trick if you can.",
+    "rikken": "A Dutch auction where \"take eight\" and \"take none\" sit on the same ladder."
   },
   "stretch_blurb": {
     "accordion": "Completion is rare; the journey itself is the joy.",
@@ -687,6 +688,7 @@
     "honeymoonbridge": "Thirteen tricks that score nothing rebuild your hand -- then the real game starts.",
     "sergeantmajor": "Overshoot and you score; fall short and your best cards leave next round.",
     "andarbahar": "A pure two-way call. Nothing to decide, so all that is left is the reveal.",
-    "botifarra": "With so much forced, the moves you do get to choose carry real weight."
+    "botifarra": "With so much forced, the moves you do get to choose carry real weight.",
+    "rikken": "Choosing your contract is the whole game; passing is a skill too."
   }
 }

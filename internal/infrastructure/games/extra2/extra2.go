@@ -429,4 +429,12 @@ func init() {
 			return usecase.RestorePigInteractor(data, new(presenter.PigWebPresenter))
 		},
 		controller.NewPigWebControllerWithProvider)
+	games.RegisterKVGame("rikken", games.CategoryExtra2,
+		func() usecase.RikkenInteractorIF {
+			return usecase.NewRikkenInteractor(domain.NewDefaultRikken(), new(presenter.RikkenWebPresenter))
+		},
+		func(data []byte) (usecase.RikkenInteractorIF, error) {
+			return usecase.RestoreRikkenInteractor(data, new(presenter.RikkenWebPresenter))
+		},
+		controller.NewRikkenWebControllerWithProvider)
 }

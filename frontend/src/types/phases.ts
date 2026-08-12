@@ -1974,6 +1974,24 @@ export const BotifarraMultiplier = {
   RECONTRAR: 4,
 } as const;
 
+/** Rikken phase constants (sync: internal/domain/Rikken.go). */
+export const RikkenPhase = {
+  BID: 0,
+  CALL: 1,
+  PLAY: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
+/** Rikken contract ladder; the number is the bidding strength (sync: internal/domain/RikkenConfig.go). */
+export const RikkenContract = {
+  NONE: 0,
+  RIK: 1,
+  MISERE: 2,
+  SOLO: 3,
+  OPEN_MISERE: 4,
+} as const;
+
 /** Blackjack Switch phase constants (sync: internal/domain/BlackJackSwitch.go). */
 export const BlackJackSwitchPhase = {
   BET: 1,
