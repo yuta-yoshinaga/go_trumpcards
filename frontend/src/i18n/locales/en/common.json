@@ -1665,7 +1665,9 @@
     "sergeantmajor.roundEnd": "Round {{round}}/{{total}} is over. Whoever fell short hands their best cards to whoever went over.",
     "sergeantmajor.result.you": "You win -- you finished with the most points.",
     "sergeantmajor.result.cpu": "CPU{{idx}} wins.",
-    "sergeantmajor.result.tie": "It's a tie."
+    "sergeantmajor.result.tie": "It's a tie.",
+    "andarbahar.result.win": "Your bet came in — the payout is yours.",
+    "andarbahar.result.lose": "Your bet missed. On to the next round."
   },
   "manual": {
     "ariaLabel": "Game Manual",

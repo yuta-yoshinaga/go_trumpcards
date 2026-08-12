@@ -1,0 +1,67 @@
+{
+  "title": "Andar Bahar",
+  "betGuide": "Pick the column that will draw the joker's rank first",
+  "label": {
+    "chips": "Chips",
+    "bet": "Bet",
+    "joker": "Joker",
+    "andar": "Andar",
+    "bahar": "Bahar",
+    "firstColumn": "Dealt first",
+    "dealtCount": "Cards dealt",
+    "road": "Road",
+    "sideBet": "Side bet",
+    "sideAmount": "Side bet stake",
+    "payoutTable": "Payouts",
+    "band": "Band",
+    "odds": "Pays",
+    "chance": "Chance",
+    "noSideBet": "No side bet"
+  },
+  "button": {
+    "betAndar": "Bet Andar",
+    "betBahar": "Bet Bahar",
+    "reset": "Next round",
+    "clearHistory": "Clear history",
+    "rebet": "Same bet ({{amount}})"
+  },
+  "kbd": {
+    "betAndar": "A",
+    "betBahar": "B",
+    "rebet": "E",
+    "reset": "R"
+  },
+  "phase": {
+    "bet": "Bet",
+    "end": "Settled"
+  },
+  "result": {
+    "win": "Your bet came in",
+    "lose": "Your bet missed",
+    "andarWins": "Andar wins",
+    "baharWins": "Bahar wins"
+  },
+  "payout": {
+    "total": "Payout",
+    "win": "+{{amount}}",
+    "loss": "-{{amount}}",
+    "firstColumnBadge": "Dealt first, pays 0.9:1 (51.50%)",
+    "secondColumnBadge": "Dealt second, pays 1:1 (48.50%)",
+    "sideHit": "Side bet hit (+{{amount}})",
+    "sideMiss": "Side bet missed"
+  },
+  "band": {
+    "exact": "exactly {{count}}",
+    "range": "{{lo}}-{{hi}} cards",
+    "plus": "{{lo}}+ cards"
+  },
+  "tutorial": {
+    "betControls": "Choose a stake, then pick Andar or Bahar",
+    "cards": "The column that draws the joker's rank first wins",
+    "road": "Which column won in past rounds"
+  },
+  "frontendHint": {
+    "andarBaharFirstColumn": "The first-dealt column wins 51.50% of the time but only pays 0.9:1",
+    "andarBaharSideBet": "Side bets carry a much heavier ~11% house margin"
+  }
+}

@@ -1665,7 +1665,9 @@
     "sergeantmajor.roundEnd": "ラウンド {{round}}/{{total}} が終了しました。届かなかった人の良い札が、超えた人へ移ります。",
     "sergeantmajor.result.you": "あなたの勝ちです。累計得点がいちばん高いです。",
     "sergeantmajor.result.cpu": "CPU{{idx}} の勝ちです。",
-    "sergeantmajor.result.tie": "同点です。"
+    "sergeantmajor.result.tie": "同点です。",
+    "andarbahar.result.win": "的中しました！ 払い戻しを受け取りました。",
+    "andarbahar.result.lose": "外れました。次のラウンドへ。"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",
