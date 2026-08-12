@@ -4801,6 +4801,24 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  log                  action log"},
 		}),
+	BindCuiFor("rikken",
+		func() usecase.RikkenInteractorIF {
+			return usecase.NewRikkenInteractor(domain.NewDefaultRikken(), new(presenter.RikkenCuiPresenter))
+		},
+		controller.NewRikkenCuiController,
+		CuiHelpSpec{
+			TitleKey: "rikken.helpTitle",
+			CommandKeys: []string{
+				"rikken.helpPlay",
+				"rikken.helpBid",
+				"rikken.helpPass",
+				"rikken.helpCall",
+				"rikken.helpNext",
+				"rikken.helpGiveUp",
+				"rikken.helpHint",
+			},
+			ExtraCommandLines: []string{"  log                  action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

@@ -1081,6 +1081,13 @@ var registry = []*Game{
 	// 温存する選択が効かない。スペイン式 48 枚を 12 枚ずつ配り、札 60 点 + 各トリック
 	// 1 点で 1 ラウンド 72 点。36 を超えたぶんだけが得点になる。
 	{Name: "botifarra", Category: CategoryClassic},
+	// Rikken リッケン
+	//
+	// **オランダの競り + 契約トリックテイキング。** Rik(相方を呼んで8) < Misere(0) <
+	// Solo(単独6) < Open Misere(公開・0) が**ひとつの梯子に並ぶ**——「多く取る」契約と
+	// 「1枚も取らない」契約が強さ順に混ざる。**組は席では決まらず**、Rik だけが 2 対 2。
+	// 得点はゼロサムで、卓の合計は常に 0。
+	{Name: "rikken", Category: CategoryExtra2},
 }
 
 // All returns a value-level copy of the registry in canonical order.

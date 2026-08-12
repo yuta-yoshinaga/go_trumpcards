@@ -20,6 +20,8 @@ tags:
     description: Andar Bahar (アンダーバハール) game
   - name: botifarra
     description: Botifarra (ボティファラ) game
+  - name: rikken
+    description: Rikken (リッケン) game
   - name: poker
     description: 5-card Draw Poker game
   - name: oldmaid
@@ -9052,6 +9054,72 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BotifarraResponse'
+
+  /rikken/exec:
+    post:
+      tags:
+        - rikken
+      summary: Execute a Rikken game command
+      description: |
+        Send a command to advance the Rikken (リッケン) game session identified
+        by `sessionId`.
+
+        A Dutch auction-and-contract trick-taker for four players on a standard
+        52-card deck, thirteen cards each.
+
+        **Contracts of opposite kinds share one bidding ladder**: Rik (take 8
+        with a called partner) < Misere (take none, alone) < Solo (take 6
+        alone) < Open Misere (take none, hand exposed). Bids may only rise.
+        `contract: 0` is a pass and must be sent explicitly - it is a value,
+        not an omission.
+
+        **Teams are not fixed by seat.** Only Rik is 2-v-2: its declarer names
+        a trump, then calls an ace they do not hold; the holder becomes a
+        partner who stays hidden (`partnerIdx: -1`) until that card is played.
+
+        Scoring is zero-sum - the four scores always total 0.
+      operationId: execRikken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: "reset (r), bid (b), call (c), play (p), next, giveup (g), hint (h), log, quit (q)"
+                cardIndex:
+                  type: integer
+                  description: Hand index to play.
+                contract:
+                  type: integer
+                  description: "0=pass, 1=Rik, 2=Misere, 3=Solo, 4=Open Misere. Required for bid."
+                suit:
+                  type: integer
+                  description: "Trump: 1=spades, 2=clubs, 3=hearts, 4=diamonds. Required for call."
+                sessionId:
+                  type: string
+              example:
+                command: bid
+                contract: 1
+                sessionId: my-session-001
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RikkenResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RikkenResponse'
 
   /clocksolitaire/exec:
     post:
@@ -47892,6 +47960,106 @@ components:
           description: Index of the player who played this card
         card:
           $ref: '#/components/schemas/Card'
+    RikkenTrickCard:
+      type: object
+      description: A card played in the current trick
+      required:
+        - playerIdx
+        - card
+      properties:
+        playerIdx:
+          type: integer
+          description: Index of the player who played this card
+        card:
+          $ref: '#/components/schemas/Card'
+    RikkenResponse:
+      type: object
+      description: Response payload for /rikken/exec
+      properties:
+        players:
+          type: array
+          description: Always an array. Only the human seat carries its cards.
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              trickCount:
+                type: integer
+              score:
+                type: integer
+                description: Running score. Negative values are normal - scoring is zero-sum.
+              isDeclarerSide:
+                type: boolean
+                description: Sides are set by the contract, not by seat.
+              hasPassed:
+                type: boolean
+        phase:
+          type: integer
+          description: "0=Bid, 1=Call, 2=Play, 3=RoundEnd, 4=GameEnd"
+        validPlays:
+          type: array
+          items:
+            type: integer
+        dealerIdx:
+          type: integer
+        contract:
+          type: integer
+          description: "0=none, 1=Rik, 2=Misere, 3=Solo, 4=Open Misere"
+        declarerIdx:
+          type: integer
+          description: -1 until the auction resolves.
+        partnerIdx:
+          type: integer
+          description: -1 until the called card is played.
+        calledCard:
+          allOf:
+            - $ref: '#/components/schemas/Card'
+          description: The ace called to find a partner. Rik only.
+        trumpSuit:
+          type: integer
+          description: "1..4, or -1 for no trump (the Misere contracts)"
+        currentTurn:
+          type: integer
+        isHumanTurn:
+          type: boolean
+        currentTrick:
+          type: array
+          items:
+            $ref: '#/components/schemas/RikkenTrickCard'
+        lastTrick:
+          type: array
+          items:
+            $ref: '#/components/schemas/RikkenTrickCard'
+        lastTrickWinner:
+          type: integer
+        trickCount:
+          type: integer
+        declarerTricks:
+          type: integer
+        roundNumber:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+        config:
+          type: object
+          properties:
+            rounds:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
     BotifarraResponse:
       type: object
       description: Response payload for /botifarra/exec

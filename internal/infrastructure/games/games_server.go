@@ -800,6 +800,11 @@ func init() {
 			return usecase.NewBotifarraInteractor(domain.NewDefaultBotifarra(), new(presenter.BotifarraWebPresenter))
 		},
 		controller.NewBotifarraWebController)
+	BindWebControllerFor("rikken",
+		func() usecase.RikkenInteractorIF {
+			return usecase.NewRikkenInteractor(domain.NewDefaultRikken(), new(presenter.RikkenWebPresenter))
+		},
+		controller.NewRikkenWebController)
 	BindWebControllerFor("blackjackswitch",
 		func() usecase.BlackJackSwitchInteractorIF {
 			return usecase.NewBlackJackSwitchInteractor(domain.NewDefaultBlackJackSwitch(), new(presenter.BlackJackSwitchWebPresenter))
