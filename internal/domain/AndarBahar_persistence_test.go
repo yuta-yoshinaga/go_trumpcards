@@ -134,6 +134,14 @@ func TestAndarBahar_UnmarshalRejectsTamperedState(t *testing.T) {
 			want:   "staked on no side bet band",
 		},
 		{
+			// **逆向きも同じく作れない。** 帯 0 は有効な値なので、番号だけを見て
+			// 「賭けていない」とは判定できない——金額が 0 なら帯は載りません。
+			name:   "帯があるのに金額が 0",
+			ended:  true,
+			mutate: func(m map[string]any) { m["sa"] = 0 },
+			want:   "carries no stake",
+		},
+		{
 			name:   "払戻額が負",
 			ended:  true,
 			mutate: func(m map[string]any) { m["po"] = -1 },
@@ -159,7 +167,10 @@ func TestAndarBahar_UnmarshalRejectsTamperedState(t *testing.T) {
 			name:  "列の枚数が交互配布と食い違う",
 			ended: true,
 			mutate: func(m map[string]any) {
-				m["an"] = append(m["an"].([]any), andarBaharCardJSON(CardDesignSpade, 2), andarBaharCardJSON(CardDesignClover, 3))
+				// **空の列は JSON では `null`** なので comma-ok で受ける。素で
+				// キャストすると、バハールが先に配られて 1 枚目で決着した回に落ちる。
+				andar, _ := m["an"].([]any)
+				m["an"] = append(andar, andarBaharCardJSON(CardDesignSpade, 2), andarBaharCardJSON(CardDesignClover, 3))
 			},
 			want: "the columns do not alternate",
 		},

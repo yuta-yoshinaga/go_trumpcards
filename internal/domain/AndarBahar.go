@@ -581,7 +581,12 @@ func andarBaharValidateBets(j *andarBaharJSON) error {
 		(j.SideBand < AndarBaharSideFirst || j.SideBand > AndarBaharSide36Plus) {
 		return fmt.Errorf("andarbahar: side bet band out of range: %d", j.SideBand)
 	}
-	// **賭けていない帯に金額は載りません。**
+	// **帯と金額は両方あるか両方無いかのどちらかです。** 片方だけの状態は `Bet` からは
+	// 作れないので、保存データにあれば改竄か壊れです。0 は「1 枚目の帯」という有効な値
+	// なので、**番号側を見ても「賭けていない」は判定できません**——金額側で決めます。
+	if j.SideBand != AndarBaharSideNone && j.SideAmount == 0 {
+		return fmt.Errorf("andarbahar: side bet band %d carries no stake", j.SideBand)
+	}
 	if j.SideBand == AndarBaharSideNone && j.SideAmount != 0 {
 		return fmt.Errorf("andarbahar: %d staked on no side bet band", j.SideAmount)
 	}
