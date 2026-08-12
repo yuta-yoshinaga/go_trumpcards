@@ -271,7 +271,7 @@ function LingerLongerPageContent() {
                       id: 'lingerlonger-players',
                       label: t('actions.players'),
                       value: String(playerCnt),
-                      options: [3, 4, 5, 6].map((n) => ({ value: String(n), label: String(n) })),
+                      options: [4, 5, 6].map((n) => ({ value: String(n), label: String(n) })),
                       onSelect: (v: string) => setPlayerCnt(Number(v)),
                       testId: 'll-players-select',
                     },

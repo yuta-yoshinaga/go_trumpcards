@@ -32,7 +32,7 @@ export interface LingerLongerHint {
 
 /** Table-size setting. */
 export interface LingerLongerConfig {
-  /** Players at the table (3..6, default 4). You are dealt that many cards. */
+  /** Players at the table (4..6, default 4). You are dealt that many cards. */
   playerCnt: number;
 }
 

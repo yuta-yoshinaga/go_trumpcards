@@ -189,6 +189,11 @@ describe('LingerLongerPage', () => {
     renderWithProviders(<LingerLongerPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
 
+    // **サーバは 4..6 しか受けない。** 弾かれる値を並べると、選んだのに黙って
+    // 4 人で配り直される（画面はどこにも「3 人にはできない」と出ない）。
+    const options = [...screen.getByTestId('ll-players-select').querySelectorAll('option')].map((o) => o.value);
+    expect(options).toEqual(['4', '5', '6']);
+
     fireEvent.change(screen.getByTestId('ll-players-select'), { target: { value: '6' } });
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
