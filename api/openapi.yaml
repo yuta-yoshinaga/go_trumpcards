@@ -9229,7 +9229,7 @@ paths:
               properties:
                 command:
                   type: string
-                  description: "reset (r), stake (s), bet (b), pd, ps, bd, bs, pb, next, giveup (g), hint (h), log, quit (q)"
+                  description: "reset (r), stake (s), bet (b), pd, ps, bd, bs, d, st, pb, next, giveup (g), hint (h), log, quit (q)"
                 stake:
                   type: integer
                   description: Amount to bank, for the stake command.

@@ -34,7 +34,7 @@ func chemindeFerTampered(t *testing.T, base *ChemindeFer, mutate func(m map[stri
 func chemindeFerBetOpen(t *testing.T) *ChemindeFer {
 	t.Helper()
 	g := newChemindeFerAllCpu(t, 77)
-	require.NoError(t, g.SetStake(100))
+	require.NoError(t, g.setStake(100)) // CPU を進めない内部版 (賭けの途中を保つ)
 	require.Equal(t, ChemindeFerPhaseBet, g.GetPhase())
 	require.Equal(t, 0, g.GetBankerIdx())
 	return g

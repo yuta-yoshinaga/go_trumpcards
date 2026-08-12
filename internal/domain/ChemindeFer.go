@@ -102,8 +102,16 @@ func (g *ChemindeFer) SetRand(r *rand.Rand) {
 	}
 }
 
-// Reset はゲームを初期状態に戻す。**バンクは席 0 (人間) から始まる。**
+// Reset はゲームを初期状態に戻し、人間の番まで CPU を進める。
+//
+// **バンクは席 0 (人間) から始まる。**
 func (g *ChemindeFer) Reset() {
+	g.reset()
+	g.advanceCpu()
+}
+
+// reset は盤面を初期化するだけで CPU を進めない。
+func (g *ChemindeFer) reset() {
 	g.shoe = newChemindeFerShoe()
 	g.shoe.Shuffle()
 	for _, p := range g.players {
@@ -189,8 +197,17 @@ func (g *ChemindeFer) StakeRangeFor(idx int) (minStake, maxStake int) {
 	return ChemindeFerStakeMin, chips
 }
 
-// SetStake は親がバンク額を張る。
+// SetStake は親がバンク額を張り、次に人間の番が来るまで CPU を進める。
 func (g *ChemindeFer) SetStake(amount int) error {
+	if err := g.setStake(amount); err != nil {
+		return err
+	}
+	g.advanceCpu()
+	return nil
+}
+
+// setStake は張りだけを行う。**CPU は進めない。**
+func (g *ChemindeFer) setStake(amount int) error {
 	if g.gameEndFlag {
 		return errChemindeFerGameFinished
 	}
@@ -263,8 +280,17 @@ func (g *ChemindeFer) BetRangeFor(idx int) (minBet, maxBet int) {
 	return 0, hi
 }
 
-// PlaceBet は子が賭ける。amount=0 は降りる (パス)。
+// PlaceBet は子が賭け、次に人間の番が来るまで CPU を進める。
 func (g *ChemindeFer) PlaceBet(idx, amount int) error {
+	if err := g.placeBet(idx, amount); err != nil {
+		return err
+	}
+	g.advanceCpu()
+	return nil
+}
+
+// placeBet は賭けだけを行う。**CPU は進めない。**
+func (g *ChemindeFer) placeBet(idx, amount int) error {
 	if g.gameEndFlag {
 		return errChemindeFerGameFinished
 	}
@@ -407,10 +433,19 @@ func (g *ChemindeFer) PunterMayChoose() bool {
 }
 
 // PunterDraw は子側が 3 枚目を引く。
-func (g *ChemindeFer) PunterDraw() error { return g.punterAct(true) }
+func (g *ChemindeFer) PunterDraw() error { return g.advanceAfter(g.punterAct(true)) }
 
 // PunterStand は子側が立つ (引かない)。
-func (g *ChemindeFer) PunterStand() error { return g.punterAct(false) }
+func (g *ChemindeFer) PunterStand() error { return g.advanceAfter(g.punterAct(false)) }
+
+// advanceAfter は成功した操作のあとだけ CPU を進める。
+func (g *ChemindeFer) advanceAfter(err error) error {
+	if err != nil {
+		return err
+	}
+	g.advanceCpu()
+	return nil
+}
 
 // punterAct は子側の任意判断を適用する。**選べない合計では拒否する。**
 func (g *ChemindeFer) punterAct(draw bool) error {
@@ -461,10 +496,10 @@ func (g *ChemindeFer) toBankerDraw() {
 }
 
 // BankerDraw は親が 3 枚目を引く。
-func (g *ChemindeFer) BankerDraw() error { return g.bankerAct(true) }
+func (g *ChemindeFer) BankerDraw() error { return g.advanceAfter(g.bankerAct(true)) }
 
 // BankerStand は親が立つ (引かない)。
-func (g *ChemindeFer) BankerStand() error { return g.bankerAct(false) }
+func (g *ChemindeFer) BankerStand() error { return g.advanceAfter(g.bankerAct(false)) }
 
 // bankerAct は親の任意判断を適用する。**親はどの合計でも自由。**
 func (g *ChemindeFer) bankerAct(draw bool) error {
@@ -635,6 +670,7 @@ func (g *ChemindeFer) NextRound() error {
 	}
 	g.roundNumber++
 	g.startRound()
+	g.advanceCpu()
 	return nil
 }
 
@@ -660,22 +696,50 @@ func (g *ChemindeFer) IsHumanTurn() bool {
 	}
 }
 
-// CpuPlay は手番の CPU に 1 手打たせる。人間の手番なら何もしない。
-func (g *ChemindeFer) CpuPlay() {
-	if g.gameEndFlag || g.IsHumanTurn() {
-		return
+// chemindeFerMaxCpuSteps は 1 回の自動進行で打てる手数の上限。
+//
+// 1 ラウンドで要るのは張り 1 + 賭け 5 + 子 1 + 親 1 = 8 手なので十分に余裕がある。
+// 上限そのものは**規則の停止性を当てにしない**ための保険で、想定外の状態で
+// 無限に回るくらいなら止まったほうがよい。
+const chemindeFerMaxCpuSteps = 64
+
+// CpuPlay は人間の入力待ちになるまで CPU に打たせる。
+//
+// **人間の操作のあとは必ずここを通る。** 通さないと、親が張った直後に卓が止まり、
+// 子が誰も賭けないまま画面が固まる。
+func (g *ChemindeFer) CpuPlay() { g.advanceCpu() }
+
+// advanceCpu は人間の番・ラウンド終了・終局のいずれかまで CPU を進める。
+func (g *ChemindeFer) advanceCpu() {
+	for range chemindeFerMaxCpuSteps {
+		if g.gameEndFlag || g.phase == ChemindeFerPhaseRoundEnd || g.IsHumanTurn() {
+			return
+		}
+		if !g.stepCpu() {
+			return
+		}
 	}
+}
+
+// stepCpu は CPU に 1 手打たせる。打てなければ false。
+func (g *ChemindeFer) stepCpu() bool {
 	switch g.phase {
 	case ChemindeFerPhaseStake:
-		_ = g.SetStake(g.cpuStake())
+		return g.setStake(g.cpuStake()) == nil
 	case ChemindeFerPhaseBet:
-		if turn := g.GetBetTurn(); turn >= 0 {
-			_ = g.PlaceBet(turn, g.cpuBet(turn))
+		turn := g.GetBetTurn()
+		if turn < 0 {
+			return false
 		}
+		return g.placeBet(turn, g.cpuBet(turn)) == nil
 	case ChemindeFerPhasePunterDraw:
 		g.punterDecideCpu()
+		return true
 	case ChemindeFerPhaseBankerDraw:
 		g.bankerDecideCpu()
+		return true
+	default:
+		return false
 	}
 }
 

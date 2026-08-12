@@ -121,6 +121,12 @@ func chemindeFerDispatch(bc *baseController, w http.ResponseWriter, ci usecase.C
 		bc.writePresenterResponse(w, ci.BankerDraw())
 	case "bs", "bankerstand":
 		bc.writePresenterResponse(w, ci.BankerStand())
+	case "d", "draw":
+		// 側を書かない経路。**振り分けるのはドメインのフェーズ**なので、
+		// クライアントが側を推測することにはならない。CLI から使う。
+		bc.writePresenterResponse(w, ci.DrawOrStand(true))
+	case "st", "stand":
+		bc.writePresenterResponse(w, ci.DrawOrStand(false))
 	case "pb", "passbank":
 		bc.writePresenterResponse(w, ci.PassBank())
 	case "next":

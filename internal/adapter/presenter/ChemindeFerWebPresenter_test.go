@@ -42,7 +42,7 @@ func TestChemindeFerWebPresenter_ArraysAreNeverNull(t *testing.T) {
 func TestChemindeFerWebPresenter_CarriesTheTable(t *testing.T) {
 	cp := new(ChemindeFerWebPresenter)
 	g := newChemindeFerForPresenter(t)
-	require.NoError(t, g.SetStake(300))
+	require.NoError(t, g.StakeForTest(300)) // CPU を進めない (賭けの途中を保つ)
 
 	var got struct {
 		Players []struct {

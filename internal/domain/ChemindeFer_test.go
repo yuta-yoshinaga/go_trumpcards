@@ -30,7 +30,9 @@ func newChemindeFerAllCpu(t *testing.T, seed int64) *ChemindeFer {
 	}
 	g := NewChemindeFer(newChemindeFerShoe(), players, cfg)
 	g.SetRand(rand.New(rand.NewSource(seed)))
-	g.Reset()
+	// **Reset は人間の番まで自動で進む。** 人間の居ない卓では 1 ラウンド走り切って
+	// しまうので、張り待ちの状態を観察したいテストのために巻き戻す。
+	g.reset()
 	return g
 }
 
@@ -107,7 +109,9 @@ func chemindeFerAtBet(t *testing.T, stake int) *ChemindeFer {
 	t.Helper()
 	g := newChemindeFerAllCpu(t, 7)
 	require.Equal(t, ChemindeFerPhaseStake, g.GetPhase())
-	require.NoError(t, g.SetStake(stake))
+	// **CPU を進めない内部版を使う。** 公開版は次の人間の番まで走り切るので、
+	// 人間の居ない卓では賭けの途中を観察できない。
+	require.NoError(t, g.setStake(stake))
 	require.Equal(t, ChemindeFerPhaseBet, g.GetPhase())
 	return g
 }
@@ -137,7 +141,7 @@ func TestChemindeFer_BetsCannotExceedTheBank(t *testing.T) {
 	assert.Equal(t, 100, hi, "最初の子はバンク額まで賭けられる")
 	assert.ErrorIs(t, g.PlaceBet(first, 101), errChemindeFerBetRange)
 
-	require.NoError(t, g.PlaceBet(first, 60))
+	require.NoError(t, g.placeBet(first, 60))
 	assert.Equal(t, 40, g.GetRemainingStake())
 
 	second := g.GetBetTurn()
@@ -152,7 +156,7 @@ func TestChemindeFer_BettingClosesOnceTheBankIsCovered(t *testing.T) {
 	g := chemindeFerAtBet(t, 100)
 
 	first := g.GetBetTurn()
-	require.NoError(t, g.PlaceBet(first, 100))
+	require.NoError(t, g.placeBet(first, 100))
 
 	assert.NotEqual(t, ChemindeFerPhaseBet, g.GetPhase(), "まだ賭けを受け付けている")
 	assert.Equal(t, -1, g.GetBetTurn(), "順番が残っている")
@@ -175,13 +179,13 @@ func TestChemindeFer_HighestBettorRepresentsTheseWithTiesToTheBankersRight(t *te
 	g := chemindeFerAtBet(t, 100)
 
 	first := g.GetBetTurn()
-	require.NoError(t, g.PlaceBet(first, 30))
+	require.NoError(t, g.placeBet(first, 30))
 	second := g.GetBetTurn()
-	require.NoError(t, g.PlaceBet(second, 30))
+	require.NoError(t, g.placeBet(second, 30))
 
 	// 賭けはまだ締まっていないので、代表は配りの直前に決まる。同額なら先の席。
 	for g.GetPhase() == ChemindeFerPhaseBet {
-		require.NoError(t, g.PlaceBet(g.GetBetTurn(), 0))
+		require.NoError(t, g.placeBet(g.GetBetTurn(), 0))
 	}
 	assert.Equal(t, first, g.GetRepresentativeIdx())
 }
@@ -192,7 +196,7 @@ func TestChemindeFer_RoundIsVoidWhenNobodyCovers(t *testing.T) {
 	banker := g.GetBankerIdx()
 
 	for g.GetPhase() == ChemindeFerPhaseBet {
-		require.NoError(t, g.PlaceBet(g.GetBetTurn(), 0))
+		require.NoError(t, g.placeBet(g.GetBetTurn(), 0))
 	}
 
 	assert.Equal(t, ChemindeFerPhaseRoundEnd, g.GetPhase())
@@ -220,7 +224,9 @@ func chemindeFerDealt(t *testing.T, punterTotal, bankerTotal int, humanSeats ...
 	}
 	g := NewChemindeFer(newChemindeFerShoe(), players, cfg)
 	g.SetRand(rand.New(rand.NewSource(11)))
-	g.Reset()
+	// **CPU を進めない reset を使う。** 公開版は人間の番まで走るので、席が全部
+	// CPU だと 1 ラウンド遊び切ってしまい、チップが初期値から動いてしまう。
+	g.reset()
 
 	// **PlaceBet で配らせてはいけない。** PlaceBet はそのまま決着まで走り切るので、
 	// 後から手札を差し替えて resolve を呼ぶと、同じ 1 回のクーが 2 度精算される。
@@ -702,4 +708,73 @@ func TestChemindeFer_ShoeIsReplenishedBeforeItRunsOut(t *testing.T) {
 	require.Less(t, g.GetRemainingCards(), ChemindeFerMaxHandSize*2)
 	g.ensureShoe()
 	assert.Greater(t, g.GetRemainingCards(), ChemindeFerMaxHandSize*2)
+}
+
+// newChemindeFerHumanBanker は席 0 だけが人間で、その席が親の卓を返す。
+func newChemindeFerHumanBanker(t *testing.T, seed int64) *ChemindeFer {
+	t.Helper()
+	cfg := DefaultChemindeFerConfig()
+	players := make([]*ChemindeFerPlayer, ChemindeFerSeatCnt)
+	for i := range players {
+		players[i] = NewChemindeFerPlayer("seat", cfg.InitialChips, i == 0)
+	}
+	g := NewChemindeFer(newChemindeFerShoe(), players, cfg)
+	g.SetRand(rand.New(rand.NewSource(seed)))
+	g.Reset()
+	return g
+}
+
+// **人間が操作したら、卓は次の判断どころまで自分で進む。**
+//
+// これを入れ忘れると、親が張った瞬間に卓が止まる。子は全員 CPU なので誰も賭けず、
+// フェーズは Bet のまま、画面には押せるボタンが 1 つも無い。ドメインのテストは
+// (CpuPlay を自分で呼んでいたので) 全部緑のまま、**E2E だけが落ちた**。
+func TestChemindeFer_AdvancesToTheNextHumanDecision(t *testing.T) {
+	for seed := range 20 {
+		g := newChemindeFerHumanBanker(t, int64(seed)+1)
+		require.Equal(t, ChemindeFerPhaseStake, g.GetPhase(), "seed %d", seed)
+		require.True(t, g.IsHumanTurn(), "seed %d: 張りは人間の番のはず", seed)
+
+		require.NoError(t, g.SetStake(200))
+
+		assert.NotEqual(t, ChemindeFerPhaseBet, g.GetPhase(),
+			"seed %d: 賭けの途中で止まっている (CPU が進んでいない)", seed)
+		assert.True(t, g.IsHumanTurn() || g.GetPhase() == ChemindeFerPhaseRoundEnd,
+			"seed %d: 人間の番でもラウンド終了でもない場面で止まった (phase=%d, betTurn=%d)",
+			seed, g.GetPhase(), g.GetBetTurn())
+		// **精算で賭け金は 0 に戻る**ので、GetTotalBet では「賭けたか」を見られない。
+		// 棋譜に賭けの記録が残っていることで確かめる。
+		bet := 0
+		for _, e := range g.GetActionLog() {
+			if e.ActionType == "bet" {
+				bet++
+			}
+		}
+		assert.Positive(t, bet, "seed %d: 子が 1 人も賭けていない", seed)
+	}
+}
+
+// 次のラウンドへ進めたときも同じく自分で進む。
+func TestChemindeFer_NextRoundAdvancesToo(t *testing.T) {
+	g := newChemindeFerHumanBanker(t, 5)
+	require.NoError(t, g.SetStake(200))
+
+	for step := 0; step < 200 && g.GetPhase() != ChemindeFerPhaseRoundEnd; step++ {
+		require.True(t, g.IsHumanTurn(), "人間の番でないのに止まっている (phase=%d)", g.GetPhase())
+		switch g.GetPhase() {
+		case ChemindeFerPhaseBankerDraw:
+			require.NoError(t, g.BankerStand())
+		case ChemindeFerPhasePunterDraw:
+			require.NoError(t, g.PunterStand())
+		case ChemindeFerPhaseBet:
+			require.NoError(t, g.PlaceBet(g.GetBetTurn(), 0))
+		default:
+			require.NoError(t, g.SetStake(200))
+		}
+	}
+	require.Equal(t, ChemindeFerPhaseRoundEnd, g.GetPhase())
+
+	require.NoError(t, g.NextRound())
+	assert.True(t, g.IsHumanTurn() || g.GetPhase() == ChemindeFerPhaseRoundEnd || g.GetGameEndFlag(),
+		"NextRound のあとに誰の番でもない場面で止まった (phase=%d)", g.GetPhase())
 }

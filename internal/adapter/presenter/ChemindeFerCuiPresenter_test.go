@@ -55,7 +55,7 @@ func TestChemindeFerCuiPresenter_RendersJapaneseNotRawKeys(t *testing.T) {
 func TestChemindeFerCuiPresenter_ShowsBettingProgress(t *testing.T) {
 	cp := new(ChemindeFerCuiPresenter)
 	g := newChemindeFerForPresenter(t)
-	require.NoError(t, g.SetStake(300))
+	require.NoError(t, g.StakeForTest(300)) // CPU を進めない (賭けの途中を保つ)
 
 	out := cp.Output(g, nil)
 	assert.Contains(t, out, "バンク額 300")

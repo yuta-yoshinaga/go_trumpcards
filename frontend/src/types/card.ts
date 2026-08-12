@@ -56,6 +56,7 @@ export * from './games/casinowar';
 export * from './games/cassino';
 export * from './games/catchten';
 export * from './games/cego';
+export * from './games/chemindefer';
 export * from './games/chinchon';
 export * from './games/chinesepoker';
 export * from './games/chineseten';
