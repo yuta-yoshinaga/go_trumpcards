@@ -98,6 +98,12 @@ type RollingStone struct {
 	winnerIdx int
 	// lastPickupIdx は直前に引き取った席（-1 = 無し）。表示用。
 	lastPickupIdx int
+	// discarded は場から抜けた札の枚数。
+	//
+	// **全員フォローできたトリックだけが場から抜けます。** 引き取りは席の間で
+	// 動かすだけなので減りません。復元時に「手札 + 場札 + 抜けた枚数 = デッキ」で
+	// 突き合わせるために持っています。
+	discarded int
 }
 
 // NewRollingStone はコンストラクタ。
@@ -135,6 +141,7 @@ func (r *RollingStone) Reset() {
 	r.currentTrick = nil
 	r.trickNumber = 0
 	r.finishedCnt = 0
+	r.discarded = 0
 	r.gameEndFlag = false
 	r.winnerIdx = -1
 	r.lastPickupIdx = -1
@@ -360,6 +367,7 @@ func (r *RollingStone) resolveTrick() {
 		cards = append(cards, tc.Card)
 	}
 	r.addLog(winner, "trick", "トリックを取りました（得点にはなりません）", cards)
+	r.discarded += len(cards)
 	r.currentTrick = nil
 	r.trickNumber++
 	r.lastPickupIdx = -1
@@ -569,6 +577,9 @@ func (r *RollingStone) GetTrickNumber() int { return r.trickNumber }
 // GetLastPickupIdx は直前に引き取った席を返す（-1 = 無し）。
 func (r *RollingStone) GetLastPickupIdx() int { return r.lastPickupIdx }
 
+// GetDiscarded は場から抜けた札の枚数を返す。
+func (r *RollingStone) GetDiscarded() int { return r.discarded }
+
 // GetFinishedCnt は上がった人数を返す。
 func (r *RollingStone) GetFinishedCnt() int { return r.finishedCnt }
 
@@ -600,6 +611,7 @@ type rollingStoneJSON struct {
 	LeadPlayerIdx    int                   `json:"li"`
 	TrickNumber      int                   `json:"tn"`
 	FinishedCnt      int                   `json:"fc"`
+	Discarded        int                   `json:"dc"`
 	GameEndFlag      bool                  `json:"ge"`
 	WinnerIdx        int                   `json:"wi"`
 	LastPickupIdx    int                   `json:"lp"`
@@ -612,7 +624,7 @@ func (r *RollingStone) MarshalJSON() ([]byte, error) {
 		TrumpCards: r.trumpCards, Players: r.players, Config: r.config, Phase: r.phase,
 		CurrentTrick: r.currentTrick, CurrentPlayerIdx: r.currentPlayerIdx,
 		LeadPlayerIdx: r.leadPlayerIdx, TrickNumber: r.trickNumber,
-		FinishedCnt: r.finishedCnt, GameEndFlag: r.gameEndFlag,
+		FinishedCnt: r.finishedCnt, Discarded: r.discarded, GameEndFlag: r.gameEndFlag,
 		WinnerIdx: r.winnerIdx, LastPickupIdx: r.lastPickupIdx, ActionLog: r.actionLog,
 	})
 }
@@ -709,8 +721,16 @@ func (r *RollingStone) UnmarshalJSON(data []byte) error {
 		return fmt.Errorf("%d seats have finished but the count says %d", len(seen), j.FinishedCnt)
 	}
 	// **札は人数 × 8 枚しかない（#5314 で踏んだ「数え元と突き合わせる」形）。**
-	if want := RollingStoneDeckSize(j.Config.PlayerCnt); total != want {
-		return fmt.Errorf("hands and the trick hold %d cards, want %d", total, want)
+	//
+	// **抜けた枚数を足して数える。** 全員フォローできたトリックは場から抜けるので、
+	// 手札と場札だけを足すと途中の盤面では必ず足りません——最初に書いた
+	// 「total == デッキ」は、トリックが 1 つ解決した時点で正しい盤面を拒否しました。
+	if j.Discarded < 0 {
+		return fmt.Errorf("invalid discarded count: %d", j.Discarded)
+	}
+	if want := RollingStoneDeckSize(j.Config.PlayerCnt); total+j.Discarded != want {
+		return fmt.Errorf("hands, the trick and the discards hold %d cards, want %d",
+			total+j.Discarded, want)
 	}
 	// **手番とリード席は上がった席にならない。** `advanceTurn`/`resolveTrick` が
 	// そう保っています。通すと上がった席が打つ盤面になります。
@@ -731,7 +751,7 @@ func (r *RollingStone) UnmarshalJSON(data []byte) error {
 	r.players, r.config, r.phase = j.Players, j.Config, j.Phase
 	r.currentTrick, r.currentPlayerIdx = j.CurrentTrick, j.CurrentPlayerIdx
 	r.leadPlayerIdx, r.trickNumber = j.LeadPlayerIdx, j.TrickNumber
-	r.finishedCnt, r.gameEndFlag = j.FinishedCnt, j.GameEndFlag
+	r.finishedCnt, r.discarded, r.gameEndFlag = j.FinishedCnt, j.Discarded, j.GameEndFlag
 	r.winnerIdx, r.lastPickupIdx, r.actionLog = j.WinnerIdx, j.LastPickupIdx, j.ActionLog
 	return nil
 }

@@ -633,3 +633,39 @@ func TestRollingStonePlayer_UnmarshalRejectsAContradictoryRank(t *testing.T) {
 	assert.Equal(t, 1, ok.GetFinishedAt())
 	assert.Equal(t, 2, ok.GetPickups())
 }
+
+// **抜けた枚数まで足して 52 ではなく「人数 × 8」に合わせる。**
+//
+// 手札と場札だけを数えると、トリックが 1 つ解決した時点で足りなくなります
+// ——最初に書いた検証はそれで正しい盤面を拒否しました。
+func TestRollingStone_UnmarshalCountsTheDiscardsToo(t *testing.T) {
+	r := newTestRollingStone(t)
+	// 1 トリック解決させて、場から札を抜く。
+	for i := range r.GetPlayerCnt() {
+		r.GiveHandForTest(i, NewCard(CardDesignSpade, 7+i, false), NewCard(CardDesignHeart, 7+i, false))
+	}
+	r.SetLeadPlayerIdxForTest(0)
+	r.SetCurrentPlayerIdxForTest(0)
+	for i := range r.GetPlayerCnt() {
+		require.NoError(t, r.PlayForTest(i, 0))
+	}
+	require.Equal(t, r.GetPlayerCnt(), r.GetDiscarded(), "解決したトリックのぶん抜ける")
+
+	// 抜けたぶんを数えているので、この盤面は通る。
+	data, err := json.Marshal(r)
+	require.NoError(t, err)
+	var ok RollingStone
+	require.NoError(t, json.Unmarshal(data, &ok))
+	assert.Equal(t, r.GetDiscarded(), ok.GetDiscarded())
+
+	// **負のコントロール: 抜けた枚数を書き換えれば弾く。**
+	var raw map[string]any
+	require.NoError(t, json.Unmarshal(data, &raw))
+	for _, bad := range []any{0, -1, 99} {
+		raw["dc"] = bad
+		mutated, err := json.Marshal(raw)
+		require.NoError(t, err)
+		var restored RollingStone
+		assert.Error(t, json.Unmarshal(mutated, &restored), "dc=%v", bad)
+	}
+}
