@@ -65,6 +65,7 @@ export * from './games/chinchon';
 export * from './games/chinesepoker';
 export * from './games/chineseten';
 export * from './games/cinch';
+export * from './games/chemindefer';
 export * from './games/clocksolitaire';
 export * from './games/colorado';
 export * from './games/colourwhist';
@@ -371,6 +372,7 @@ export const games = [
   'botifarra',
   'rikken',
   'colourwhist',
+  'chemindefer',
   'razz',
   'sevencardstudhilo',
   'badugi',

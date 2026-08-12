@@ -4837,6 +4837,25 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  log                  action log"},
 		}),
+	BindCuiFor("chemindefer",
+		func() usecase.ChemindeFerInteractorIF {
+			return usecase.NewChemindeFerInteractor(domain.NewDefaultChemindeFer(), new(presenter.ChemindeFerCuiPresenter))
+		},
+		controller.NewChemindeFerCuiController,
+		CuiHelpSpec{
+			TitleKey: "chemindefer.helpTitle",
+			CommandKeys: []string{
+				"chemindefer.helpStake",
+				"chemindefer.helpBet",
+				"chemindefer.helpDraw",
+				"chemindefer.helpStand",
+				"chemindefer.helpPass",
+				"chemindefer.helpNext",
+				"chemindefer.helpGiveUp",
+				"chemindefer.helpHint",
+			},
+			ExtraCommandLines: []string{"  log                  action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

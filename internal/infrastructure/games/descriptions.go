@@ -161,6 +161,7 @@ var gameDescriptions = map[string]string{
 	"botifarra":           "Botifarra (ボティファラ)",
 	"rikken":              "Rikken (リッケン)",
 	"colourwhist":         "Colour Whist (カラーホイスト)",
+	"chemindefer":         "Chemin de Fer (シュマン・ド・フェール)",
 	"blackjackswitch":     "Blackjack Switch (ブラックジャック・スイッチ)",
 	"montecarlo":          "Monte Carlo Solitaire (モンテカルロ・ソリティア)",
 	"contractrummy":       "Contract Rummy (コントラクトラミー)",
