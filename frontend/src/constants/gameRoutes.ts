@@ -1052,6 +1052,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [2, 4, 4, 3], skill: [3, 4, 3, 3], social: [1, 3, 4, 4, 3], theme: [2, 4, 1, 1, 2, 3] },
       },
       {
+        path: '/goofspiel',
+        labelKey: 'nav.goofspiel',
+        icon: '🎯',
+        page: 'Goofspiel',
+        profile: { mood: [2, 5, 4, 2], skill: [4, 5, 2, 4], social: [1, 4, 3, 4, 2], theme: [2, 4, 1, 1, 2, 4] },
+      },
+      {
         path: '/snap',
         labelKey: 'nav.snap',
         icon: '👏',

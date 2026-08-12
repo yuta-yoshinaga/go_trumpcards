@@ -105,6 +105,7 @@ import type {
   GoFishResponse,
   GolfResponse,
   GongZhuResponse,
+  GoofspielResponse,
   GoStopResponse,
   GrandfathersClockResponse,
   GuandanResponse,
@@ -394,6 +395,7 @@ import { getGinRummyHint } from '../utils/hints/ginrummyHint';
 import { getGoFishHint } from '../utils/hints/gofishHint';
 import { getGolfHint } from '../utils/hints/golfHint';
 import { getGongZhuHint } from '../utils/hints/gongzhuHint';
+import { getGoofspielHint } from '../utils/hints/goofspielHint';
 import { getGoStopHint } from '../utils/hints/gostopHint';
 import { getGrandfathersClockHint } from '../utils/hints/grandfathersclockHint';
 import { getGuandanHint } from '../utils/hints/guandanHint';
@@ -665,6 +667,7 @@ export const hintFactories = {
   pig: (s) => getPigHint(s as PigResponse),
   stealingbundles: (s) => getStealingBundlesHint(s as StealingBundlesResponse),
   cucumber: (s) => getCucumberHint(s as CucumberResponse),
+  goofspiel: (s) => getGoofspielHint(s as GoofspielResponse),
   faro: (s) => getFaroHint(s as FaroResponse),
   fiftyone: (s) => getFiftyOneHint(s as FiftyOneResponse),
   napoleon: (s) => getNapoleonHint(s as NapoleonResponse),

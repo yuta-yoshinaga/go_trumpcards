@@ -545,6 +545,11 @@ func init() {
 			return usecase.NewCucumberInteractor(domain.NewDefaultCucumber(), new(presenter.CucumberWebPresenter))
 		},
 		controller.NewCucumberWebController)
+	BindWebControllerFor("goofspiel",
+		func() usecase.GoofspielInteractorIF {
+			return usecase.NewGoofspielInteractor(domain.NewDefaultGoofspiel(), new(presenter.GoofspielWebPresenter))
+		},
+		controller.NewGoofspielWebController)
 	BindWebControllerFor("rams",
 		func() usecase.RamsInteractorIF {
 			return usecase.NewRamsInteractor(domain.NewDefaultRams(), new(presenter.RamsWebPresenter))

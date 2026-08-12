@@ -2543,3 +2543,15 @@ export const CucumberPhase = {
   ROUND_END: 1,
   GAME_END: 2,
 } as const;
+
+/**
+ * Goofspiel phase constants (sync: internal/domain/Goofspiel.go).
+ *
+ * **Reveal is a real stop.** Bids are simultaneous, so the moment they turn
+ * face up is the only chance to read them before the next prize is turned.
+ */
+export const GoofspielPhase = {
+  BID: 0,
+  REVEAL: 1,
+  GAME_END: 2,
+} as const;
