@@ -27,8 +27,18 @@ const RollingStoneHandSize = 8
 // RollingStoneSuitCnt はスート数。
 const RollingStoneSuitCnt = 4
 
-// rollingStoneMaxSliceLen は復元時に受け付けるスライスの上限。
-const rollingStoneMaxSliceLen = 1000
+// rollingStoneMaxSliceLen は復元時に受け付ける棋譜の上限。
+//
+// **他ゲームの 1000 では足りない。** このゲームは膠着上限まで走ることがあり、
+// 1 トリックあたり最大「在席人数ぶんのプレイ + トリック解決または引き取り」の
+// 棋譜が出ます。上限は
+//
+//	500 トリック × (6 人 + 1) + 開始 1 + 上がり 6 + 結果 1 = 3508
+//
+// なので 4000 を取ります。**1000 のままだと、長い局を保存して読み直すと
+// 自分の codec が「大きすぎる」と言って正当な対局を拒否しました**
+// ——実際の局を毎手ごとに往復させるテストが見つけました。
+const rollingStoneMaxSliceLen = 4000
 
 // RollingStoneStalemateTricks は引き分け（膠着）と判定するまでのトリック数。
 //
@@ -289,12 +299,37 @@ func (r *RollingStone) play(playerIdx, cardIndex int) error {
 	// **出し切ったら上がり。** 途中でも抜けます。
 	r.checkFinished(playerIdx)
 
-	if len(r.currentTrick) >= r.activeSeatCnt() {
+	if r.gameEndFlag {
+		return nil
+	}
+	if r.trickComplete() {
 		r.resolveTrick()
 		return nil
 	}
 	r.advanceTurn()
 	return nil
+}
+
+// trickComplete はこのトリックで打つべき席が全員打ったかを返す。
+//
+// **在席数と枚数を比べない（レビュー指摘 PR #5316）。** トリックの途中で誰かが
+// 上がると在席数がその場で縮み、まだ出していない最後の席を飛ばして解決して
+// しまいます。上がった席はこのトリックに札を出しているので、「出していない
+// 在席者がいるか」で見れば数の増減に影響されません。
+func (r *RollingStone) trickComplete() bool {
+	if len(r.currentTrick) == 0 {
+		return false
+	}
+	played := make(map[int]bool, len(r.currentTrick))
+	for _, tc := range r.currentTrick {
+		played[tc.PlayerIdx] = true
+	}
+	for i, p := range r.players {
+		if !p.HasFinished() && !played[i] {
+			return false
+		}
+	}
+	return true
 }
 
 // pickUp は playerIdx が場札を全部引き取る。
@@ -331,6 +366,9 @@ func (r *RollingStone) pickUp(playerIdx int) error {
 	r.trickNumber++
 	r.leadPlayerIdx = playerIdx
 	r.currentPlayerIdx = playerIdx
+	if r.gameEndFlag {
+		return nil
+	}
 	r.checkStalemate()
 	return nil
 }
@@ -451,10 +489,21 @@ func (r *RollingStone) checkFinished(playerIdx int) {
 		r.winnerIdx = playerIdx
 	}
 	r.addLog(playerIdx, "finish", fmt.Sprintf("%d 番目に上がりました", r.finishedCnt), nil)
+	// **上がった瞬間に終局させる（レビュー指摘 PR #5316）。**
+	//
+	// 以前は `resolveTrick` でしか決着させていませんでした。上がった直後に
+	// 別の席が引き取ると、そのトリックは `pickUp` で流れて `resolveTrick` に
+	// 届かず、**勝者が決まっているのに終局していない**盤面が残ります
+	// ——それは `UnmarshalJSON` が「壊れている」として弾く状態そのもので、
+	// 保存して読み直すと正当な対局が拒否されました。
+	r.checkGameEnd()
 }
 
 // checkGameEnd は決着したかを返す。**最初に上がった人が勝ちなので 1 人で終わり。**
 func (r *RollingStone) checkGameEnd() bool {
+	if r.gameEndFlag {
+		return true
+	}
 	if r.winnerIdx < 0 {
 		return false
 	}

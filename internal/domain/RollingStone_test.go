@@ -285,7 +285,8 @@ func TestRollingStone_CpuPicksUpWhenItCannotFollow(t *testing.T) {
 	r := newTestRollingStone(t)
 	r.SetLeadPlayerIdxForTest(0)
 	r.SetCurrentPlayerIdxForTest(0)
-	r.GiveHandForTest(0, NewCard(CardDesignSpade, 8, false))
+	// **席 0 に 2 枚持たせる。** 1 枚だと出した時点で上がって終局し、CPU が動かない。
+	r.GiveHandForTest(0, NewCard(CardDesignSpade, 8, false), NewCard(CardDesignSpade, 9, false))
 	r.GiveHandForTest(1, NewCard(CardDesignHeart, 8, false))
 	require.NoError(t, r.PlayForTest(0, 0))
 
@@ -669,4 +670,119 @@ func TestRollingStone_UnmarshalCountsTheDiscardsToo(t *testing.T) {
 		var restored RollingStone
 		assert.Error(t, json.Unmarshal(mutated, &restored), "dc=%v", bad)
 	}
+}
+
+// **上がりは、そのトリックが引き取りで流れても取り消されない（レビュー指摘 PR #5316）。**
+//
+// 以前は `resolveTrick` でしか終局させていなかったので、上がった直後に別の席が
+// 引き取ると「勝者が決まっているのに終局していない」盤面が残りました
+// ——それは `UnmarshalJSON` が弾く状態そのもので、保存して読み直すと
+// 正当な対局が拒否されました。
+func TestRollingStone_FinishingEndsTheGameEvenIfAPickUpBreaksTheTrick(t *testing.T) {
+	r := newTestRollingStone(t)
+	r.SetLeadPlayerIdxForTest(0)
+	r.SetCurrentPlayerIdxForTest(0)
+	r.GiveHandForTest(0, NewCard(CardDesignSpade, 8, false))
+	r.GiveHandForTest(1, NewCard(CardDesignHeart, 8, false))
+	r.GiveHandForTest(2, NewCard(CardDesignSpade, 9, false))
+	r.GiveHandForTest(3, NewCard(CardDesignSpade, 10, false))
+
+	require.NoError(t, r.PlayForTest(0, 0))
+	assert.True(t, r.GetGameEndFlag(), "出し切った瞬間に終わる")
+	assert.Equal(t, 0, r.GetWinnerIdx())
+
+	// 終局後は引き取りも打つこともできない。
+	assert.Error(t, r.PickUpForTest(1))
+	assert.Error(t, r.PlayForTest(1, 0))
+}
+
+// **トリックの途中で誰かが上がっても、残りの席は出し切れる（レビュー指摘 PR #5316）。**
+//
+// 在席数と枚数を比べていたので、上がった瞬間に在席数が縮み、まだ出していない
+// 最後の席を飛ばして解決していました。
+func TestRollingStone_AFinishMidTrickDoesNotSkipTheRemainingSeat(t *testing.T) {
+	r := newTestRollingStone(t)
+	r.SetLeadPlayerIdxForTest(0)
+	r.SetCurrentPlayerIdxForTest(0)
+	// 席 2 だけが最後の 1 枚。ただし席 0 が既に上がっていない状態で始める。
+	r.GiveHandForTest(0, NewCard(CardDesignSpade, 7, false), NewCard(CardDesignHeart, 7, false))
+	r.GiveHandForTest(1, NewCard(CardDesignSpade, 8, false), NewCard(CardDesignHeart, 8, false))
+	r.GiveHandForTest(2, NewCard(CardDesignSpade, 9, false))
+	r.GiveHandForTest(3, NewCard(CardDesignSpade, 10, false), NewCard(CardDesignHeart, 10, false))
+
+	require.NoError(t, r.PlayForTest(0, 0))
+	require.NoError(t, r.PlayForTest(1, 0))
+	require.NoError(t, r.PlayForTest(2, 0))
+
+	// 席 2 が上がるので終局する——が、その前にトリックを打ち切っていないこと。
+	assert.True(t, r.GetGameEndFlag(), "最初の上がりで終わる")
+	assert.Equal(t, 2, r.GetWinnerIdx())
+	assert.Len(t, r.GetCurrentTrick(), 3, "席 3 を飛ばしてトリックを解決していない")
+}
+
+// **既に上がった席がいる局でも、残りはトリックを打ち切れる。**
+//
+// 「まだ出していない在席者がいるか」で判定しているので、上がった席のぶん
+// 枚数が足りなくても解決します。
+func TestRollingStone_TrickResolvesWithFinishedSeatsSkipped(t *testing.T) {
+	r := newTestRollingStone(t)
+	// 席 3 を先に上がらせる（勝者は既に決まっている扱いにはしない）。
+	r.GiveHandForTest(3)
+	r.GetPlayer(3).SetFinishedAt(1)
+
+	r.SetLeadPlayerIdxForTest(0)
+	r.SetCurrentPlayerIdxForTest(0)
+	for i := range 3 {
+		r.GiveHandForTest(i, NewCard(CardDesignSpade, 7+i, false), NewCard(CardDesignHeart, 7+i, false))
+	}
+
+	for i := range 3 {
+		require.NoError(t, r.PlayForTest(i, 0))
+	}
+	assert.Empty(t, r.GetCurrentTrick(), "在席 3 人が打てば解決する")
+	assert.Equal(t, 1, r.GetTrickNumber())
+}
+
+// **書き込み側は、自分の codec が弾く盤面を作らない（レビュー指摘 PR #5316）。**
+//
+// これがこの指摘の本質でした——`UnmarshalJSON` のガードは正しく、破っていたのは
+// `play` / `pickUp` のほうです。実際の局を最後まで回し、**毎手ごとに**保存して
+// 読み直せることを確かめます。
+func TestRollingStone_EveryReachableStateSurvivesARoundTrip(t *testing.T) {
+	for n := RollingStonePlayerCntMin; n <= RollingStonePlayerCntMax; n++ {
+		for range 10 {
+			r := NewRollingStone(nil, RollingStoneConfig{PlayerCnt: n})
+			r.Reset()
+
+			for turns := 0; ; turns++ {
+				require.Less(t, turns, 200000, "%d 人: 終わらない", n)
+
+				data, err := json.Marshal(r)
+				require.NoError(t, err)
+				var back RollingStone
+				require.NoError(t, json.Unmarshal(data, &back),
+					"%d 人 %d 手目: 書き込み側が codec の不変条件を破った", n, turns)
+
+				if r.GetGameEndFlag() {
+					break
+				}
+				idx := r.GetCurrentPlayerIdx()
+				if r.MustPickUp(idx) {
+					require.NoError(t, r.PickUpForTest(idx))
+					continue
+				}
+				require.NoError(t, r.PlayForTest(idx, r.CpuChoiceForTest(idx)))
+			}
+		}
+	}
+}
+
+// **棋譜の上限は、この局が実際に出しうる長さより上でなければならない。**
+//
+// 膠着上限まで走る局が出す棋譜は、1 トリックあたり「在席人数ぶんのプレイ +
+// 解決または引き取り」。1000 のままだと長い局を読み直せませんでした。
+func TestRollingStone_ActionLogCapCoversTheLongestPossibleGame(t *testing.T) {
+	worst := RollingStoneStalemateTricks*(RollingStonePlayerCntMax+1) + 1 + RollingStonePlayerCntMax + 1
+	assert.GreaterOrEqual(t, rollingStoneMaxSliceLen, worst,
+		"膠着上限まで走った局の棋譜（最大 %d 行）を読み直せる必要がある", worst)
 }
