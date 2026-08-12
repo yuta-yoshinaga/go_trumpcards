@@ -1038,6 +1038,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [4, 2, 3, 4], skill: [1, 2, 5, 2], social: [1, 3, 4, 4, 3], theme: [3, 2, 1, 1, 3, 3] },
       },
       {
+        path: '/stealingbundles',
+        labelKey: 'nav.stealingbundles',
+        icon: '🎣',
+        page: 'StealingBundles',
+        profile: { mood: [3, 3, 4, 3], skill: [2, 4, 3, 3], social: [1, 3, 4, 4, 3], theme: [3, 2, 1, 1, 3, 3] },
+      },
+      {
         path: '/snap',
         labelKey: 'nav.snap',
         icon: '👏',

@@ -260,6 +260,7 @@ export * from './games/spiderette';
 export * from './games/spiteandmalice';
 export * from './games/spoilfive';
 export * from './games/spoons';
+export * from './games/stealingbundles';
 export * from './games/streetsandalleys';
 export * from './games/sueca';
 export * from './games/sultan';
@@ -357,6 +358,7 @@ export const games = [
   'rollingstone',
   'lingerlonger',
   'pig',
+  'stealingbundles',
   'razz',
   'sevencardstudhilo',
   'badugi',

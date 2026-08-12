@@ -240,6 +240,7 @@ import type {
   SpiteAndMaliceResponse,
   SpoilFiveResponse,
   SpoonsResponse,
+  StealingBundlesResponse,
   StreetsAndAlleysResponse,
   SuecaResponse,
   SultanResponse,
@@ -532,6 +533,7 @@ import { getSpiderHint } from '../utils/hints/spiderHint';
 import { getSpiteAndMaliceHint } from '../utils/hints/spiteAndMaliceHint';
 import { getSpoilFiveHint } from '../utils/hints/spoilFiveHint';
 import { getSpoonsHint } from '../utils/hints/spoonsHint';
+import { getStealingBundlesHint } from '../utils/hints/stealingbundlesHint';
 import { getStreetsandalleysHint } from '../utils/hints/streetsandalleysHint';
 import { getSuecaHint } from '../utils/hints/suecaHint';
 import { getSultanHint } from '../utils/hints/sultanHint';
@@ -659,6 +661,7 @@ export const hintFactories = {
   rollingstone: (s) => getRollingStoneHint(s as RollingStoneResponse),
   lingerlonger: (s) => getLingerLongerHint(s as LingerLongerResponse),
   pig: (s) => getPigHint(s as PigResponse),
+  stealingbundles: (s) => getStealingBundlesHint(s as StealingBundlesResponse),
   faro: (s) => getFaroHint(s as FaroResponse),
   fiftyone: (s) => getFiftyOneHint(s as FiftyOneResponse),
   napoleon: (s) => getNapoleonHint(s as NapoleonResponse),

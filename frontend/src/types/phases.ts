@@ -2519,3 +2519,14 @@ export const PigPhase = {
   ROUND_END: 2,
   GAME_END: 3,
 } as const;
+
+/**
+ * Stealing Bundles phase constants (sync: internal/domain/StealingBundles.go).
+ *
+ * **There are no rounds.** Hands are redealt from the same deck until it runs
+ * out, and the game ends the moment it does.
+ */
+export const StealingBundlesPhase = {
+  PLAY: 0,
+  GAME_END: 1,
+} as const;

@@ -365,4 +365,12 @@ func init() {
 			return usecase.RestoreRollingStoneInteractor(data, new(presenter.RollingStoneWebPresenter))
 		},
 		controller.NewRollingStoneWebControllerWithProvider)
+	games.RegisterKVGame("stealingbundles", games.CategoryExtra3,
+		func() usecase.StealingBundlesInteractorIF {
+			return usecase.NewStealingBundlesInteractor(domain.NewDefaultStealingBundles(), new(presenter.StealingBundlesWebPresenter))
+		},
+		func(data []byte) (usecase.StealingBundlesInteractorIF, error) {
+			return usecase.RestoreStealingBundlesInteractor(data, new(presenter.StealingBundlesWebPresenter))
+		},
+		controller.NewStealingBundlesWebControllerWithProvider)
 }
