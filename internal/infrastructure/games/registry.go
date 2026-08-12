@@ -1047,6 +1047,13 @@ var registry = []*Game{
 	// なかった 1 人**が P・I・G の文字を 1 つ受け取り、3 文字で脱落する。
 	// デッキは人数 × 4 枚（= 人数と同じ種類のランク × 4 スート）。
 	{Name: "pig", Category: CategoryExtra2},
+	// StealingBundles スティーリングバンドル
+	//
+	// **相手の得点済みの束を丸ごと奪える。** 場の同じランクを取るのが基本だが、
+	// 相手が獲得した束は**一番上のランクが弱点**で、そこに同じランクを出すと
+	// 束ごと持っていける。取れる手があるときは場に置けない。最後にいちばん
+	// 多く集めた人の勝ち。
+	{Name: "stealingbundles", Category: CategoryExtra3},
 }
 
 // All returns a value-level copy of the registry in canonical order.

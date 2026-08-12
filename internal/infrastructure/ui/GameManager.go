@@ -4726,6 +4726,21 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
 		}),
+	BindCuiFor("stealingbundles",
+		func() usecase.StealingBundlesInteractorIF {
+			return usecase.NewStealingBundlesInteractor(domain.NewDefaultStealingBundles(), new(presenter.StealingBundlesCuiPresenter))
+		},
+		controller.NewStealingBundlesCuiController,
+		CuiHelpSpec{
+			TitleKey: "stealingbundles.helpTitle",
+			CommandKeys: []string{
+				"stealingbundles.helpTake",
+				"stealingbundles.helpSteal",
+				"stealingbundles.helpTrail",
+				"stealingbundles.helpGiveUp",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

@@ -535,6 +535,11 @@ func init() {
 			return usecase.NewPigInteractor(domain.NewDefaultPig(), new(presenter.PigWebPresenter))
 		},
 		controller.NewPigWebController)
+	BindWebControllerFor("stealingbundles",
+		func() usecase.StealingBundlesInteractorIF {
+			return usecase.NewStealingBundlesInteractor(domain.NewDefaultStealingBundles(), new(presenter.StealingBundlesWebPresenter))
+		},
+		controller.NewStealingBundlesWebController)
 	BindWebControllerFor("rams",
 		func() usecase.RamsInteractorIF {
 			return usecase.NewRamsInteractor(domain.NewDefaultRams(), new(presenter.RamsWebPresenter))
