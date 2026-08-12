@@ -1,0 +1,66 @@
+{
+  "title": "Botifarra",
+  "declareGuide": "Name trump, or hand the decision to your partner",
+  "doubleGuide": "Double the stake?",
+  "playGuide": "Only legal cards can be chosen (you must win the trick if you can)",
+  "label": {
+    "you": "You",
+    "partner": "Partner",
+    "opponent": "Opponent",
+    "team": "Team",
+    "yourTeam": "Your team",
+    "theirTeam": "Their team",
+    "trump": "Trump",
+    "multiplier": "Stake",
+    "dealer": "Dealer",
+    "declarer": "Declarer",
+    "roundPoints": "This round",
+    "score": "Score",
+    "target": "Game to",
+    "trick": "Trick",
+    "lastTrick": "Last trick",
+    "tricks": "Tricks",
+    "hand": "Hand",
+    "cards": "cards"
+  },
+  "trump": {
+    "spade": "Spades",
+    "clover": "Clubs",
+    "heart": "Hearts",
+    "diamond": "Diamonds",
+    "none": "No trump"
+  },
+  "button": {
+    "declare": "Declare {{trump}}",
+    "delegate": "Delegate to partner",
+    "double": "Double",
+    "passDouble": "Let it stand",
+    "next": "Next round",
+    "giveUp": "Resign"
+  },
+  "kbd": {
+    "next": "N",
+    "giveUp": "G"
+  },
+  "phase": {
+    "declare": "Declare",
+    "delegated": "Partner declares",
+    "double": "Double",
+    "play": "Play",
+    "roundEnd": "Round over",
+    "gameEnd": "Finished"
+  },
+  "result": {
+    "win": "Your team wins",
+    "lose": "The other team wins"
+  },
+  "tutorial": {
+    "declare": "Name trump, or hand the decision to your partner",
+    "hand": "Only legal cards can be chosen — you must win the trick if you can",
+    "score": "Only the points above 36 score"
+  },
+  "frontendHint": {
+    "botifarraDeclareLongest": "Making your longest suit trump is the usual choice",
+    "botifarraMustWin": "You must win the trick if you can"
+  }
+}

@@ -4783,6 +4783,24 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  log                  action log"},
 		}),
+	BindCuiFor("botifarra",
+		func() usecase.BotifarraInteractorIF {
+			return usecase.NewBotifarraInteractor(domain.NewDefaultBotifarra(), new(presenter.BotifarraCuiPresenter))
+		},
+		controller.NewBotifarraCuiController,
+		CuiHelpSpec{
+			TitleKey: "botifarra.helpTitle",
+			CommandKeys: []string{
+				"botifarra.helpPlay",
+				"botifarra.helpDeclare",
+				"botifarra.helpDelegate",
+				"botifarra.helpDouble",
+				"botifarra.helpNext",
+				"botifarra.helpGiveUp",
+				"botifarra.helpHint",
+			},
+			ExtraCommandLines: []string{"  log                  action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

@@ -29,6 +29,7 @@ import type {
   BlackJackResponse,
   BlackJackSwitchResponse,
   BostonResponse,
+  BotifarraResponse,
   BouillotteResponse,
   BourreResponse,
   BraidResponse,
@@ -318,6 +319,7 @@ import { getBlackHoleHint } from '../utils/hints/blackholeHint';
 import { getBlackjackHint } from '../utils/hints/blackjackHint';
 import { getBlackjackswitchHint } from '../utils/hints/blackjackswitchHint';
 import { getBostonHint } from '../utils/hints/bostonHint';
+import { getBotifarraHint } from '../utils/hints/botifarraHint';
 import { getBouillotteHint } from '../utils/hints/bouillotteHint';
 import { getBourreHint } from '../utils/hints/bourreHint';
 import { getBraidHint } from '../utils/hints/braidHint';
@@ -760,6 +762,7 @@ export const hintFactories = {
   casinowar: (s) => getCasinowarHint(s as CasinoWarResponse),
   oichokabu: (s) => getOichokabuHint(s as OichoKabuResponse),
   andarbahar: (s) => getAndarbaharHint(s as AndarBaharResponse),
+  botifarra: (s) => getBotifarraHint(s as BotifarraResponse),
   dragontiger: (s) => getDragontigerHint(s as DragonTigerResponse),
   blackjackswitch: (s) => getBlackjackswitchHint(s as BlackJackSwitchResponse),
   war: (s) => getWarHint(s as WarResponse),

@@ -18,6 +18,8 @@ tags:
     description: BlackJack game
   - name: andarbahar
     description: Andar Bahar (アンダーバハール) game
+  - name: botifarra
+    description: Botifarra (ボティファラ) game
   - name: poker
     description: 5-card Draw Poker game
   - name: oldmaid
@@ -8986,6 +8988,70 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AndarBaharResponse'
+
+  /botifarra/exec:
+    post:
+      tags:
+        - botifarra
+      summary: Execute a Botifarra game command
+      description: |
+        Send a command to advance the Botifarra (ボティファラ) game session
+        identified by `sessionId`.
+
+        A Catalan four-player partnership trick-taker on the Spanish 48-card
+        deck (no tens), twelve cards each, seats 0+2 against 1+3.
+
+        **There is no auction.** The dealer either names trump or delegates to
+        their partner, who must then name it - passing is not an option.
+        No-trump is a legal call, sent as `suit: -1`.
+
+        **You must win the trick if you can**: beyond following suit, a player
+        holding a card that beats the trick must play one, unless their partner
+        is already winning. `validPlays` reflects that, so it is often a strict
+        subset of the hand.
+
+        Card points are manilla (9) 5, ace 4, king 3, knight 2, jack 1 - 60 in
+        all - plus one point per trick, so exactly **72 points** move each round
+        and only the excess over 36 scores. contrar/recontrar multiply it.
+      operationId: execBotifarra
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: "reset (r), declare, delegate, double, passdouble, play (p), next, giveup (g), hint (h), log, quit (q)"
+                cardIndex:
+                  type: integer
+                  description: Hand index to play.
+                suit:
+                  type: integer
+                  description: "Trump to declare: 1=spades, 2=clubs, 3=hearts, 4=diamonds, -1=no trump."
+                sessionId:
+                  type: string
+              example:
+                command: declare
+                suit: 3
+                sessionId: my-session-001
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BotifarraResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BotifarraResponse'
 
   /clocksolitaire/exec:
     post:
@@ -47814,6 +47880,103 @@ components:
           allOf:
             - $ref: '#/components/schemas/Card'
           description: The bid, present only after the reveal.
+    BotifarraTrickCard:
+      type: object
+      description: A card played in the current trick
+      required:
+        - playerIdx
+        - card
+      properties:
+        playerIdx:
+          type: integer
+          description: Index of the player who played this card
+        card:
+          $ref: '#/components/schemas/Card'
+    BotifarraResponse:
+      type: object
+      description: Response payload for /botifarra/exec
+      properties:
+        players:
+          type: array
+          description: Always an array. Only the human seat carries its cards.
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              team:
+                type: integer
+                description: "0 = seats 0 and 2, 1 = seats 1 and 3"
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              trickCount:
+                type: integer
+        phase:
+          type: integer
+          description: "0=Declare, 1=Delegated, 2=Double, 3=Play, 4=RoundEnd, 5=GameEnd"
+        validPlays:
+          type: array
+          description: Hand indices you may play. Often a strict subset - you must win the trick if you can.
+          items:
+            type: integer
+        dealerIdx:
+          type: integer
+        declarerIdx:
+          type: integer
+          description: -1 until trump is named.
+        trumpSuit:
+          type: integer
+          description: "1=spades, 2=clubs, 3=hearts, 4=diamonds, -1=no trump"
+        multiplier:
+          type: integer
+          description: "1, 2 (contrar) or 4 (recontrar)"
+        currentTurn:
+          type: integer
+        isHumanTurn:
+          type: boolean
+        currentTrick:
+          type: array
+          items:
+            $ref: '#/components/schemas/BotifarraTrickCard'
+        lastTrick:
+          type: array
+          items:
+            $ref: '#/components/schemas/BotifarraTrickCard'
+        lastTrickWinner:
+          type: integer
+        trickCount:
+          type: integer
+        roundPoints:
+          type: array
+          description: Points taken this round per team. They sum to 72 once the round is dealt out.
+          items:
+            type: integer
+        scores:
+          type: array
+          items:
+            type: integer
+        gameEndFlag:
+          type: boolean
+        winnerTeam:
+          type: integer
+          description: -1 until decided.
+        config:
+          type: object
+          properties:
+            targetScore:
+              type: integer
+            allowDoubling:
+              type: boolean
+        message:
+          type: string
+        messageCode:
+          type: string
     AndarBaharResponse:
       type: object
       description: Response payload for /andarbahar/exec
