@@ -96,6 +96,7 @@ export const workerUrl: Record<string, string> = {
   pasur: WORKER_EXTRA,
   snap: WORKER_SOLO,
   rollingstone: WORKER_EXTRA3,
+  lingerlonger: WORKER_EXTRA,
   bisley: WORKER_EXTRA2,
   napoleonssquare: WORKER_EXTRA2,
   grandfathersclock: WORKER_EXTRA2,

@@ -136,6 +136,7 @@ import type {
   LaBelleLucieResponse,
   LaughAndLieDownResponse,
   LetItRideResponse,
+  LingerLongerResponse,
   LiteratureResponse,
   LobaResponse,
   LooResponse,
@@ -423,6 +424,7 @@ import { getKoiKoiHint } from '../utils/hints/koikoiHint';
 import { getLaBelleLucieHint } from '../utils/hints/labellelucieHint';
 import { getLaughAndLieDownHint } from '../utils/hints/laughandliedownHint';
 import { getLetitrideHint } from '../utils/hints/letitrideHint';
+import { getLingerLongerHint } from '../utils/hints/lingerlongerHint';
 import { getLiteratureHint } from '../utils/hints/literatureHint';
 import { getLobaHint } from '../utils/hints/lobaHint';
 import { getLooHint } from '../utils/hints/looHint';
@@ -653,6 +655,7 @@ export const hintFactories = {
   pasur: (s) => getPasurHint(s as PasurResponse),
   snap: (s) => getSnapHint(s as SnapResponse),
   rollingstone: (s) => getRollingStoneHint(s as RollingStoneResponse),
+  lingerlonger: (s) => getLingerLongerHint(s as LingerLongerResponse),
   faro: (s) => getFaroHint(s as FaroResponse),
   fiftyone: (s) => getFiftyOneHint(s as FiftyOneResponse),
   napoleon: (s) => getNapoleonHint(s as NapoleonResponse),
