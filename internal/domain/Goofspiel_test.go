@@ -251,3 +251,158 @@ func TestGoofspiel_EveryReachableStateSurvivesARoundTrip(t *testing.T) {
 		}
 	}
 }
+
+func TestGoofspielNewDefaultUsesTheDefaultConfig(t *testing.T) {
+	g := NewDefaultGoofspiel()
+	assert.Equal(t, DefaultGoofspielConfig(), g.GetConfig())
+	assert.Equal(t, GoofspielDefaultPlayerCnt, g.GetPlayerCnt())
+
+	// **壊れた設定は既定に落とす。** 席を渡さなければ人数ぶん作ります。
+	broken := NewGoofspiel(nil, GoofspielConfig{PlayerCnt: 99})
+	assert.Equal(t, DefaultGoofspielConfig(), broken.GetConfig())
+	assert.Equal(t, GoofspielDefaultPlayerCnt, broken.GetPlayerCnt())
+	assert.True(t, broken.GetPlayer(0).GetIsHuman(), "席 0 は人間")
+	assert.False(t, broken.GetPlayer(1).GetIsHuman())
+}
+
+func TestGoofspielSetConfig(t *testing.T) {
+	g := newGoofspielForTest(t, 2)
+
+	// 人数を変えると席も作り直す。
+	g.SetConfig(GoofspielConfig{PlayerCnt: 3, TieRule: GoofspielTieCarryOver})
+	assert.Equal(t, 3, g.GetPlayerCnt())
+	assert.Equal(t, GoofspielTieCarryOver, g.GetConfig().TieRule)
+
+	// 人数が同じなら席は据え置き。
+	before := g.GetPlayer(0)
+	g.SetConfig(GoofspielConfig{PlayerCnt: 3, TieRule: GoofspielTieDiscard})
+	assert.Same(t, before, g.GetPlayer(0))
+	assert.Equal(t, GoofspielTieDiscard, g.GetConfig().TieRule)
+
+	// **壊れた設定は無視する。**
+	g.SetConfig(GoofspielConfig{PlayerCnt: 99, TieRule: GoofspielTieDiscard})
+	assert.Equal(t, 3, g.GetPlayerCnt(), "範囲外の人数は反映しない")
+}
+
+// **手番はありません。** 人間がまだ伏せていなければ入力待ち、というだけです。
+func TestGoofspielIsHumanTurn(t *testing.T) {
+	g := newGoofspielForTest(t, 2)
+	assert.True(t, g.IsHumanTurn(), "入札前")
+
+	require.NoError(t, g.PlayerBid(0))
+	assert.Equal(t, GoofspielPhaseReveal, g.GetPhase())
+	assert.True(t, g.IsHumanTurn(), "公開を読む時間も入力待ち")
+
+	g.GiveUp()
+	assert.False(t, g.IsHumanTurn(), "終局後は待たない")
+}
+
+func TestGoofspielGetValidBidIndices(t *testing.T) {
+	g := newGoofspielForTest(t, 2)
+	assert.Len(t, g.GetValidBidIndices(0), GoofspielRounds, "入札前は全部出せる")
+
+	assert.Nil(t, g.GetValidBidIndices(-1), "席が範囲外")
+	assert.Nil(t, g.GetValidBidIndices(9), "席が範囲外")
+
+	require.NoError(t, g.BidForTest(0, 0))
+	assert.Nil(t, g.GetValidBidIndices(0), "伏せ終えた席は出せない")
+	assert.Len(t, g.GetValidBidIndices(1), GoofspielRounds, "まだの席は出せる")
+
+	g.ResolveForTest()
+	assert.Nil(t, g.GetValidBidIndices(0), "公開後は出せない")
+}
+
+// **CpuPlay は CPU の入札だけを埋める。** 人間が伏せるまで公開しません。
+func TestGoofspielCpuPlayFillsOnlyTheCpuBids(t *testing.T) {
+	g := newGoofspielForTest(t, 2)
+
+	g.CpuPlay()
+	assert.True(t, g.HasBid(1), "CPU は伏せた")
+	assert.False(t, g.HasBid(0), "人間はまだ")
+	assert.Equal(t, GoofspielPhaseBid, g.GetPhase(), "人間が伏せるまで公開しない")
+	assert.Empty(t, g.GetRevealedBids())
+
+	// 人間が伏せると、そこで公開される。
+	require.NoError(t, g.PlayerBid(0))
+	assert.Equal(t, GoofspielPhaseReveal, g.GetPhase())
+
+	// 公開の場面と終局後は何もしない。
+	g.CpuPlay()
+	assert.Equal(t, GoofspielPhaseReveal, g.GetPhase())
+	g.GiveUp()
+	g.CpuPlay()
+	assert.True(t, g.GetGameEndFlag())
+}
+
+func TestGoofspielNextRoundRejectsWrongMoments(t *testing.T) {
+	g := newGoofspielForTest(t, 2)
+	assert.Error(t, g.NextRound(), "入札中は区切りではない")
+
+	g.GiveUp()
+	assert.Error(t, g.NextRound(), "終局後は進めない")
+}
+
+func TestGoofspielAccessorsRejectOutOfRange(t *testing.T) {
+	g := newGoofspielForTest(t, 2)
+
+	assert.False(t, g.HasBid(-1))
+	assert.False(t, g.HasBid(99))
+	assert.Nil(t, g.GetPlayer(-1))
+	assert.Nil(t, g.GetPlayer(99))
+
+	// **席が 4 つ目以降なら入札スートは無い。** 既定に落とします。
+	assert.Equal(t, CardDesignSpade, GoofspielBidSuit(-1))
+	assert.Equal(t, CardDesignSpade, GoofspielBidSuit(GoofspielPlayerCntMax))
+
+	assert.Zero(t, goofspielRank(nil), "札が無ければ 0 点")
+}
+
+func TestGoofspielPlayerScore(t *testing.T) {
+	p := NewGoofspielPlayer(true)
+	assert.Zero(t, p.GetScore())
+
+	p.SetScore(20)
+	assert.Equal(t, 20, p.GetScore())
+	p.AddScore(5)
+	assert.Equal(t, 25, p.GetScore())
+
+	p.AddCard(NewCard(CardDesignSpade, 1, false))
+	p.SetIsFinished(true)
+	p.ResetGame()
+	assert.Zero(t, p.GetScore())
+	assert.Zero(t, p.GetCardsSize())
+	assert.False(t, p.GetIsFinished())
+}
+
+// **持ち越しが乗っているときは、それを理由にする。**
+func TestGoofspielHintMentionsTheCarriedPrize(t *testing.T) {
+	cfg := DefaultGoofspielConfig()
+	cfg.TieRule = GoofspielTieCarryOver
+	g := NewGoofspiel(newGoofspielSeats(2), cfg)
+	g.SetRand(rand.New(rand.NewSource(1)))
+	g.Reset()
+
+	require.NoError(t, g.BidForTest(0, 6))
+	require.NoError(t, g.BidForTest(1, 6))
+	g.ResolveForTest()
+	require.Len(t, g.GetCarriedPrizes(), 1)
+	require.NoError(t, g.NextRound())
+
+	h := g.GetHint()
+	require.NotNil(t, h)
+	assert.Equal(t, "goofspielCarried", h.Reason)
+	assert.NotNil(t, h.CardIndex, "出す札まで指す")
+}
+
+// **札を切らした席は 0 番目を返す。** 呼ばれても落ちません。
+func TestGoofspielCpuChoiceWithNoCards(t *testing.T) {
+	g := newGoofspielForTest(t, 2)
+	for !g.GetGameEndFlag() {
+		require.NoError(t, g.PlayerBid(0))
+		if g.GetPhase() == GoofspielPhaseReveal && !g.GetGameEndFlag() {
+			require.NoError(t, g.NextRound())
+		}
+	}
+	require.Zero(t, g.GetPlayer(1).GetCardsSize())
+	assert.Zero(t, g.CpuChoiceForTest(1))
+}

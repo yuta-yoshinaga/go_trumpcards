@@ -2,9 +2,6 @@
 
 package domain
 
-// SetPhaseForTest はフェーズを設定する
-func (g *Goofspiel) SetPhaseForTest(p GoofspielPhase) { g.phase = p }
-
 // SetCurrentPrizeForTest はいま公開されている賞札を設定する
 func (g *Goofspiel) SetCurrentPrizeForTest(c *Card) { g.currentPrize = c }
 
