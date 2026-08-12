@@ -21,7 +21,8 @@ export function formatGoofspielState(state: GoofspielResponse | null): string {
   lines.push('everyone bids face down at the same time — highest takes the prize, a tie takes nothing');
 
   if (state.currentPrize) {
-    const carried = state.carriedPrizes.length > 0 ? ` (incl. ${state.carriedPrizes.length} carried)` : '';
+    const carriedCount = state.carriedPrizes?.length ?? 0;
+    const carried = carriedCount > 0 ? ` (incl. ${carriedCount} carried)` : '';
     lines.push(`prize: ${formatCard(state.currentPrize)} — ${state.prizeValue} points${carried}`);
   }
 

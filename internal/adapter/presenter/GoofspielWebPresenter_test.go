@@ -44,6 +44,10 @@ func TestGoofspielWebPresenterOutput(t *testing.T) {
 	require.NotNil(t, m["currentPrize"])
 	assert.Empty(t, m["carriedPrizes"])
 	assert.Equal(t, m["currentPrize"].(map[string]any)["value"], m["prizeValue"])
+	// **null ではなく空配列であること。** 型は `Card[]` を約束しているので、
+	// null だとクライアントが `.length` で落ちます。
+	require.NotNil(t, m["carriedPrizes"], "carriedPrizes は null にしない")
+	assert.IsType(t, []any{}, m["carriedPrizes"])
 
 	players := m["players"].([]any)
 	require.Len(t, players, domain.GoofspielDefaultPlayerCnt)

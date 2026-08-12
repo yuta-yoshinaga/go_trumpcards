@@ -73,6 +73,20 @@ describe('GoofspielPage', () => {
     expect(screen.queryByTestId('gs-carried')).not.toBeInTheDocument();
   });
 
+  // **サーバが carriedPrizes を省いても落ちないこと。**
+  //
+  // 最初の実装はサーバが null を返し、ページが `.length` で落ちて skeleton が
+  // 消えませんでした。手で `[]` を渡すページテストでは通ってしまい、E2E だけが
+  // 検出した経路です。
+  it('survives a response with no carriedPrizes field', async () => {
+    const bare = makeState();
+    delete (bare as { carriedPrizes?: unknown }).carriedPrizes;
+    mockExec.mockResolvedValue(bare);
+    renderWithProviders(<GoofspielPage />);
+    expect(await screen.findByTestId('gs-prize')).toBeInTheDocument();
+    expect(screen.queryByTestId('gs-carried')).not.toBeInTheDocument();
+  });
+
   // **持ち越しは「今回の賞が増える」こと。** 見えないと計算が合いません。
   it('notes a carry-over', async () => {
     mockExec.mockResolvedValue(makeState({ carriedPrizes: [card('DIAMOND', 4)], prizeValue: 13 }));

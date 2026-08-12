@@ -39,7 +39,10 @@ func (p *GoofspielWebPresenter) buildBase(s interfaces.GoofspielGame) *controlle
 	if prize := s.GetCurrentPrize(); prize != nil {
 		resObj.CurrentPrize = cardToOutput(prize)
 	}
-	resObj.CarriedPrizes = cardsToOutput(s.GetCarriedPrizes())
+	// **null ではなく空配列を返すこと。** 型は `Card[]` を約束しているので、
+	// null を返すとクライアントが `.length` で落ちます——実際に E2E だけが
+	// 検出しました（ページのテストは自分で `[]` を渡していたので通っていた）。
+	resObj.CarriedPrizes = cardsToOutputOrEmpty(s.GetCarriedPrizes())
 	resObj.PrizeValue = s.PrizeValue()
 	resObj.PrizeRemaining = s.GetPrizeRemaining()
 	resObj.LastWinnerIdx = s.GetLastWinnerIdx()

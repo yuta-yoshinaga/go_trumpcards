@@ -162,9 +162,9 @@ function GoofspielPageContent() {
                 <div className="text-ds-accent font-semibold">
                   {t('header.prizeValue', { n: String(state.prizeValue) })}
                 </div>
-                {state.carriedPrizes.length > 0 && (
+                {(state.carriedPrizes?.length ?? 0) > 0 && (
                   <div className="text-ds-warning text-sm" data-testid="gs-carried">
-                    {t('header.carried', { n: String(state.carriedPrizes.length) })}
+                    {t('header.carried', { n: String(state.carriedPrizes?.length ?? 0) })}
                   </div>
                 )}
               </div>
