@@ -1060,6 +1060,13 @@ var registry = []*Game{
 	// 持っていれば必ず出し、無ければいちばん低い札を出す。**失点が付くのは最終
 	// トリックを取った 1 人だけ**で、そのトリックを取った札のランクぶん。
 	{Name: "cucumber", Category: CategoryClassic},
+	// Goofspiel ゴフスピール（GOPS）
+	//
+	// **手番が無く、全員が同時に伏せて入札する。** ダイヤの賞札を 1 枚ずつめくり、
+	// 各自が自分のスートから 1 枚を伏せて出す。最高額が賞札のランクぶん得点し、
+	// 同点なら誰も取らない。**隠れているのは今いくら出したかだけ**で、相手の残り札
+	// は使ったぶんを引けば分かる。13 ラウンドちょうどで終わる。
+	{Name: "goofspiel", Category: CategoryExtra},
 }
 
 // All returns a value-level copy of the registry in canonical order.

@@ -118,6 +118,7 @@ export * from './games/ginrummy';
 export * from './games/gofish';
 export * from './games/golf';
 export * from './games/gongzhu';
+export * from './games/goofspiel';
 export * from './games/gostop';
 export * from './games/grandfathersclock';
 export * from './games/guandan';
@@ -361,6 +362,7 @@ export const games = [
   'pig',
   'stealingbundles',
   'cucumber',
+  'goofspiel',
   'razz',
   'sevencardstudhilo',
   'badugi',

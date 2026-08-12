@@ -148,6 +148,7 @@ export type GameKey =
   | 'pig'
   | 'stealingbundles'
   | 'cucumber'
+  | 'goofspiel'
   | 'skat'
   | 'belote'
   | 'jass'
@@ -706,6 +707,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   pig: BLUE,
   stealingbundles: GREEN,
   cucumber: BRIGHT_GREEN,
+  goofspiel: BLUE,
   // Matching/Pass
   oldmaid: GREEN,
   doubt: GREEN,

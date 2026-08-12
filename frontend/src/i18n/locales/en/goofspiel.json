@@ -1,0 +1,49 @@
+{
+  "phase": { "bid": "Bidding", "reveal": "Revealed", "gameEnd": "Finished" },
+  "header": {
+    "round": "Round {{n}}",
+    "left": "{{n}} prizes left",
+    "rule": "A diamond is turned up as the prize and everyone bids one card from their own suit, face down and at the same time. The highest bid takes the prize's rank in points; a tie means nobody takes it. The only hidden thing is what you are bidding right now -- an opponent's remaining cards are simply their suit minus what they have spent. Thirteen rounds use up the prizes; the highest total wins.",
+    "prize": "Prize",
+    "prizeValue": "{{n}} points",
+    "carried": "including {{n}} carried over",
+    "cards": "{{n}} left",
+    "score": "{{n}} points",
+    "bidDone": "[has bid]",
+    "revealed": "[played]",
+    "you": "You",
+    "cpu": "CPU{{idx}}"
+  },
+  "actions": {
+    "next": "Next prize",
+    "players": "Players",
+    "tieRule": "On a tie",
+    "tieDiscard": "Discard",
+    "tieCarry": "Carry over",
+    "reset": "Reset",
+    "giveUp": "Give up",
+    "bidAria": "Bid {{card}}"
+  },
+  "status": {
+    "bid": "{{n}} points are at stake. Choose a card to bid face down.",
+    "waiting": "You have bid. Waiting for everyone else.",
+    "roundEnd": "{{name}} takes {{n}} points.",
+    "tie": "A tie. Nobody takes this prize."
+  },
+  "result": {
+    "you": "You win! You took the most with {{n}} points.",
+    "cpu": "{{name}} took the most with {{n}} points."
+  },
+  "hint": {
+    "goofspielMatch": "This matches the prize's rank.",
+    "goofspielHighPrize": "A rich prize -- worth spending a high card on.",
+    "goofspielLowPrize": "A cheap prize -- let it go with a low card.",
+    "goofspielCarried": "The carry-over has made this pot large; it is worth taking."
+  },
+  "tutorial": {
+    "rule": "**A diamond is turned up and everyone bids one card face down, at the same time.** The highest bid takes the prize's rank in points; a tie means nobody takes it.",
+    "open": "**The only hidden thing is what you are bidding right now.** An opponent's remaining cards are their suit minus what they have spent, so every seat's remainder is shown openly.",
+    "prize": "**The points at stake are the prize card's rank.** With carry-over enabled, a tied prize is added to the next round's pot.",
+    "hand": "Your bid cards. Spend high on a rich prize, or let it go and keep your high cards -- the whole game is how you allocate thirteen cards."
+  }
+}

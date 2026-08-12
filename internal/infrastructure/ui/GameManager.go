@@ -4755,6 +4755,20 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
 		}),
+	BindCuiFor("goofspiel",
+		func() usecase.GoofspielInteractorIF {
+			return usecase.NewGoofspielInteractor(domain.NewDefaultGoofspiel(), new(presenter.GoofspielCuiPresenter))
+		},
+		controller.NewGoofspielCuiController,
+		CuiHelpSpec{
+			TitleKey: "goofspiel.helpTitle",
+			CommandKeys: []string{
+				"goofspiel.helpBid",
+				"goofspiel.helpNext",
+				"goofspiel.helpGiveUp",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.
