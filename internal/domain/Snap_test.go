@@ -409,6 +409,15 @@ func TestSnap_UnmarshalRejectsBrokenSnapshots(t *testing.T) {
 		{"pending action for the human", func(m map[string]any) {
 			m["pd"] = map[string]any{"kind": 1, "playerIdx": 0, "deadlineMs": 500}
 		}},
+		// **めくる予約は必ず「いまの手番の席」（レビュー指摘 PR #5315）。**
+		{"step booked for a seat that is not on turn", func(m map[string]any) {
+			m["ct"] = 0
+			m["pd"] = map[string]any{"kind": 2, "playerIdx": 1, "deadlineMs": 500}
+		}},
+		// **宣言の予約は成立しているときにしか入らない。**
+		{"snap booked with no match showing", func(m map[string]any) {
+			m["pd"] = map[string]any{"kind": 1, "playerIdx": 1, "deadlineMs": 500}
+		}},
 		{"last event kind out of range", func(m map[string]any) {
 			m["le"] = map[string]any{"kind": 9, "playerIdx": 0}
 		}},
@@ -522,4 +531,71 @@ func TestSnap_GamesTerminate(t *testing.T) {
 		}
 		assert.Equal(t, SnapDeckSize, total, "seed %d", seed)
 	}
+}
+
+// **予約と盤面の対応が崩れたスナップショットは弾く（レビュー指摘 PR #5315）。**
+//
+// 通すと `Tick` で手番でない席がめくり、手番の整合が崩れます。
+func TestSnap_UnmarshalRejectsAPendingThatContradictsTheBoard(t *testing.T) {
+	build := func(t *testing.T) *Snap {
+		t.Helper()
+		g := NewSnap(nil, SnapConfig{PlayerCnt: 4, CpuDifficulty: SnapCpuNormal})
+		g.SetClock(fixedSnapClock(0))
+		g.SetRand(rand.New(rand.NewSource(1)))
+		g.Reset()
+		return g
+	}
+
+	// めくる予約が手番と食い違う。
+	mismatch := build(t)
+	mismatch.SetCurrentTurnIdxForTest(1)
+	mismatch.SetPendingForTest(SnapPending{Kind: SnapPendingStep, PlayerIdx: 2, DeadlineMs: 100})
+	data, err := json.Marshal(mismatch)
+	require.NoError(t, err)
+	var restored Snap
+	assert.Error(t, json.Unmarshal(data, &restored))
+
+	// **負のコントロール: 一致していれば通り、Tick でその席がめくる。**
+	ok := build(t)
+	ok.SetCurrentTurnIdxForTest(2)
+	ok.SetPendingForTest(SnapPending{Kind: SnapPendingStep, PlayerIdx: 2, DeadlineMs: 100})
+	good, err := json.Marshal(ok)
+	require.NoError(t, err)
+	var live Snap
+	require.NoError(t, json.Unmarshal(good, &live))
+	live.SetClock(fixedSnapClock(1000))
+	before := live.GetPlayer(2).GetStockSize()
+	assert.Equal(t, SnapPendingStep, live.Tick())
+	assert.Equal(t, before-1, live.GetPlayer(2).GetStockSize())
+
+	// 宣言の予約は、成立していない盤面には入らない。
+	noMatch := build(t)
+	noMatch.SetCenterPileForTest([]*Card{NewCard(CardDesignSpade, 7, false)})
+	noMatch.SetPendingForTest(SnapPending{Kind: SnapPendingSnap, PlayerIdx: 1, DeadlineMs: 100})
+	bad, err := json.Marshal(noMatch)
+	require.NoError(t, err)
+	var rejected Snap
+	assert.Error(t, json.Unmarshal(bad, &rejected))
+
+	// **負のコントロール: 揃っていれば通る。**
+	//
+	// ストック 2 枚 + 場札 50 枚 = 52 枚ちょうどに組む（合計の突き合わせがあるため）。
+	matched := build(t)
+	matched.GiveStockForTest(0, NewCard(CardDesignClover, 2, false))
+	matched.GiveStockForTest(1, NewCard(CardDesignClover, 3, false))
+	matched.GiveStockForTest(2)
+	matched.GiveStockForTest(3)
+	pile := make([]*Card, 0, SnapDeckSize-2)
+	for len(pile) < SnapDeckSize-4 {
+		pile = append(pile, NewCard(CardDesignSpade, 4, false))
+	}
+	// 上 2 枚を同ランクにする。
+	pile = append(pile, NewCard(CardDesignSpade, 7, false), NewCard(CardDesignHeart, 7, false))
+	require.Len(t, pile, SnapDeckSize-2)
+	matched.SetCenterPileForTest(pile)
+	matched.SetPendingForTest(SnapPending{Kind: SnapPendingSnap, PlayerIdx: 1, DeadlineMs: 100})
+	fine, err := json.Marshal(matched)
+	require.NoError(t, err)
+	var accepted Snap
+	assert.NoError(t, json.Unmarshal(fine, &accepted))
 }

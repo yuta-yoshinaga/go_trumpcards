@@ -176,18 +176,21 @@ func (g *Snap) Reset() {
 	g.scheduleNext()
 }
 
+// snapMatchesTop は場札の上 2 枚が同ランクかを返す。
+//
+// **復元前の検証にも使うので、レシーバではなく場札そのものを取ります。**
+func snapMatchesTop(pile []*Card) bool {
+	if len(pile) < 2 {
+		return false
+	}
+	return pile[len(pile)-1].GetValue() == pile[len(pile)-2].GetValue()
+}
+
 // IsSnapAvailable はいま宣言が正しいかを返す。
 //
 // **場札が 2 枚以上あって、上 2 枚のランクが同じとき**だけ成立します。
 // 1 枚しか出ていないあいだは「直前の札」が無いので、決して成立しません。
-func (g *Snap) IsSnapAvailable() bool {
-	if len(g.centerPile) < 2 {
-		return false
-	}
-	top := g.centerPile[len(g.centerPile)-1]
-	prev := g.centerPile[len(g.centerPile)-2]
-	return top.GetValue() == prev.GetValue()
-}
+func (g *Snap) IsSnapAvailable() bool { return snapMatchesTop(g.centerPile) }
 
 // PlayerStep は人間が 1 枚めくる。
 func (g *Snap) PlayerStep() error {
@@ -563,6 +566,17 @@ func (g *Snap) UnmarshalJSON(data []byte) error {
 		}
 		if j.GameEndFlag {
 			return errors.New("pending action after the game ended")
+		}
+		// **めくる予約は必ず「いまの手番の席」（レビュー指摘 PR #5315）。**
+		// `scheduleNext` は currentTurnIdx にしか予約しません。食い違ったまま
+		// 復元すると、`Tick` で手番でない席がめくって手番の整合が崩れます。
+		if j.Pending.Kind == SnapPendingStep && j.Pending.PlayerIdx != j.CurrentTurnIdx {
+			return fmt.Errorf("step booked for seat %d while seat %d is on turn",
+				j.Pending.PlayerIdx, j.CurrentTurnIdx)
+		}
+		// **宣言の予約は成立しているときにしか入らない。** 同じくレビュー指摘。
+		if j.Pending.Kind == SnapPendingSnap && !snapMatchesTop(j.CenterPile) {
+			return errors.New("snap booked while no match is showing")
 		}
 	}
 	if j.LastEvent.Kind < SnapEventNone || j.LastEvent.Kind > SnapEventEliminated {
