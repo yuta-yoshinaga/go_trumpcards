@@ -56,6 +56,7 @@ import type {
   CinchResponse,
   ClockSolitaireResponse,
   ColoradoResponse,
+  ColourWhistResponse,
   CongressResponse,
   ConquianResponse,
   ContractRummyResponse,
@@ -347,6 +348,7 @@ import { getChineseTenHint } from '../utils/hints/chinesetenHint';
 import { getCinchHint } from '../utils/hints/cinchHint';
 import { getClocksolitaireHint } from '../utils/hints/clocksolitaireHint';
 import { getColoradoHint } from '../utils/hints/coloradoHint';
+import { getColourwhistHint } from '../utils/hints/colourwhistHint';
 import { getCongressHint } from '../utils/hints/congressHint';
 import { getConquianHint } from '../utils/hints/conquianHint';
 import { getContractRummyHint } from '../utils/hints/contractrummyHint';
@@ -766,6 +768,7 @@ export const hintFactories = {
   andarbahar: (s) => getAndarbaharHint(s as AndarBaharResponse),
   botifarra: (s) => getBotifarraHint(s as BotifarraResponse),
   rikken: (s) => getRikkenHint(s as RikkenResponse),
+  colourwhist: (s) => getColourwhistHint(s as ColourWhistResponse),
   dragontiger: (s) => getDragontigerHint(s as DragonTigerResponse),
   blackjackswitch: (s) => getBlackjackswitchHint(s as BlackJackSwitchResponse),
   war: (s) => getWarHint(s as WarResponse),

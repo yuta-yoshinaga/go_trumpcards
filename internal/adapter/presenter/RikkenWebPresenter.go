@@ -77,7 +77,7 @@ func rikkenPlayersToOutput(r interfaces.RikkenGame) []*controller.RikkenWebOutpu
 			Cards:          make([]*controller.WebOutputCard, 0),
 			TrickCount:     p.GetTrickCount(),
 			Score:          p.GetScore(),
-			IsDeclarerSide: r.IsDeclarerSide(i),
+			IsDeclarerSide: r.IsDeclarerSideVisible(i),
 			HasPassed:      r.HasPassed(i),
 		}
 		if p.GetIsHuman() || (openMisere && i == r.GetDeclarerIdx()) {

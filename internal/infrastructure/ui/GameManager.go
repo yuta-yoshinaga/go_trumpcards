@@ -4819,6 +4819,24 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  log                  action log"},
 		}),
+	BindCuiFor("colourwhist",
+		func() usecase.ColourWhistInteractorIF {
+			return usecase.NewColourWhistInteractor(domain.NewDefaultColourWhist(), new(presenter.ColourWhistCuiPresenter))
+		},
+		controller.NewColourWhistCuiController,
+		CuiHelpSpec{
+			TitleKey: "colourwhist.helpTitle",
+			CommandKeys: []string{
+				"colourwhist.helpPlay",
+				"colourwhist.helpBid",
+				"colourwhist.helpPass",
+				"colourwhist.helpCall",
+				"colourwhist.helpNext",
+				"colourwhist.helpGiveUp",
+				"colourwhist.helpHint",
+			},
+			ExtraCommandLines: []string{"  log                  action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

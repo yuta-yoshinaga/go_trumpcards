@@ -321,7 +321,8 @@
     "sergeantmajor": "サージェントメジャー",
     "andarbahar": "アンダーバハール",
     "botifarra": "ボティファラ",
-    "rikken": "リッケン"
+    "rikken": "リッケン",
+    "colourwhist": "カラーホイスト"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1673,7 +1674,9 @@
     "botifarra.result.win": "あなたの組の勝ちです！",
     "botifarra.result.lose": "相手の組の勝ちです。",
     "rikken.result.win": "あなたの勝ちです！",
-    "rikken.result.lose": "相手の勝ちです。"
+    "rikken.result.lose": "相手の勝ちです。",
+    "colourwhist.result.win": "あなたの勝ちです！",
+    "colourwhist.result.lose": "相手の勝ちです。"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",

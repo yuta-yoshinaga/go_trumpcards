@@ -321,7 +321,8 @@
     "sergeantmajor": "Sergeant Major",
     "andarbahar": "Andar Bahar",
     "botifarra": "Botifarra",
-    "rikken": "Rikken"
+    "rikken": "Rikken",
+    "colourwhist": "Colour Whist"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1673,7 +1674,9 @@
     "botifarra.result.win": "Your team wins!",
     "botifarra.result.lose": "The other team wins.",
     "rikken.result.win": "You win!",
-    "rikken.result.lose": "Another seat wins."
+    "rikken.result.lose": "Another seat wins.",
+    "colourwhist.result.win": "You win!",
+    "colourwhist.result.lose": "Another seat wins."
   },
   "manual": {
     "ariaLabel": "Game Manual",

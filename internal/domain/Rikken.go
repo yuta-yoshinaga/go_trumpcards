@@ -373,10 +373,28 @@ func (g *Rikken) startPlay() {
 
 // IsDeclarerSide は席 idx が宣言側かを返す。
 //
+// **これは内部の真値です。** トリックの数え上げ・精算・CPU の判断がこれに依存して
+// いるので、相方が未公開でも真を返さなければなりません。**画面に出すときは
+// `IsDeclarerSideVisible` を使ってください。**
+//
 // **組は席では決まりません。** Rik のときだけ相方が加わります。
 func (g *Rikken) IsDeclarerSide(idx int) bool {
 	if idx == g.declarerIdx {
 		return true
+	}
+	return RikkenHasPartner(g.contract) && idx == g.partnerIdx
+}
+
+// IsDeclarerSideVisible は席 idx が宣言側だと**公開されているか**を返す。
+//
+// Rik の相方は指名した札が出るまで伏せられます。`IsDeclarerSide` をそのまま画面に
+// 出すと、「相方: 未公開」と表示しながら相方の席に印を付けてしまいます。
+func (g *Rikken) IsDeclarerSideVisible(idx int) bool {
+	if idx == g.declarerIdx {
+		return true
+	}
+	if !g.partnerRevealed {
+		return false
 	}
 	return RikkenHasPartner(g.contract) && idx == g.partnerIdx
 }

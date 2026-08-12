@@ -194,3 +194,8 @@ func (m *MockRikkenGame) GetActionLog() []*domain.ActionLogEntry {
 	}
 	return args.Get(0).([]*domain.ActionLogEntry)
 }
+
+func (m *MockRikkenGame) IsDeclarerSideVisible(playerIdx int) bool {
+	args := m.Called(playerIdx)
+	return args.Bool(0)
+}
