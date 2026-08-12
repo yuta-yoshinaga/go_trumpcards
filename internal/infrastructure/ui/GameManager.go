@@ -4698,6 +4698,19 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
 		}),
+	BindCuiFor("lingerlonger",
+		func() usecase.LingerLongerInteractorIF {
+			return usecase.NewLingerLongerInteractor(domain.NewDefaultLingerLonger(), new(presenter.LingerLongerCuiPresenter))
+		},
+		controller.NewLingerLongerCuiController,
+		CuiHelpSpec{
+			TitleKey: "lingerlonger.helpTitle",
+			CommandKeys: []string{
+				"lingerlonger.helpPlay",
+				"lingerlonger.helpGiveUp",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

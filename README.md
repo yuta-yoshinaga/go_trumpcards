@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した293種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した294種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -107,6 +107,7 @@ Go + Clean Architecture で実装した293種類のトランプゲーム。CLI �
 | パスール (Pasur) | `pasur` | [CUI](docs/manual/cui/pasur.md) / [Web](docs/manual/web/pasur.md) |
 | スナップ (Snap) | `snap` | [CUI](docs/manual/cui/snap.md) / [Web](docs/manual/web/snap.md) |
 | ローリングストーン (Rolling Stone) | `rollingstone` | [CUI](docs/manual/cui/rollingstone.md) / [Web](docs/manual/web/rollingstone.md) |
+| リンガーロンガー (Linger Longer) | `lingerlonger` | [CUI](docs/manual/cui/lingerlonger.md) / [Web](docs/manual/web/lingerlonger.md) |
 | クロックソリティア (Clock Solitaire) | `clocksolitaire` | [CUI](docs/manual/cui/clocksolitaire.md) / [Web](docs/manual/web/clocksolitaire.md) |
 | ドゥラーク (Durak) | `durak` | [CUI](docs/manual/cui/durak.md) / [Web](docs/manual/web/durak.md) |
 | フォーティシーブス (Forty Thieves) | `fortythieves` | [CUI](docs/manual/cui/fortythieves.md) / [Web](docs/manual/web/fortythieves.md) |

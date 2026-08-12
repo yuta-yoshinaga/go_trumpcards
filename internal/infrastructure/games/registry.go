@@ -1034,6 +1034,12 @@ var registry = []*Game{
 	// 人が勝ち**。フォローできないとその場のトリックを全部手札に加えられる。
 	// 1 人 8 枚で、デッキは人数 × 8（4人32 / 5人40 / 6人48）。
 	{Name: "rollingstone", Category: CategoryExtra3},
+	// LingerLonger リンガーロンガー
+	//
+	// **トリックを取っても得点にならない。** 取れるのは「山札から 1 枚補充する
+	// 権利」だけで、勝ち続けるかぎり手札が減らない。手札が尽きた人から脱落し、
+	// 最後まで持ち続けた 1 人が勝ち。配る枚数は人数と同じ（4 人なら 4 枚ずつ）。
+	{Name: "lingerlonger", Category: CategoryExtra},
 }
 
 // All returns a value-level copy of the registry in canonical order.

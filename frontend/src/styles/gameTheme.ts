@@ -144,6 +144,7 @@ export type GameKey =
   | 'pasur'
   | 'snap'
   | 'rollingstone'
+  | 'lingerlonger'
   | 'skat'
   | 'belote'
   | 'jass'
@@ -698,6 +699,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   pasur: BLUE,
   snap: BLUE,
   rollingstone: BLUE,
+  lingerlonger: GREEN,
   // Matching/Pass
   oldmaid: GREEN,
   doubt: GREEN,

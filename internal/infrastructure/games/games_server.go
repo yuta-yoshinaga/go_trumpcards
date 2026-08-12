@@ -525,6 +525,11 @@ func init() {
 			return usecase.NewRollingStoneInteractor(domain.NewDefaultRollingStone(), new(presenter.RollingStoneWebPresenter))
 		},
 		controller.NewRollingStoneWebController)
+	BindWebControllerFor("lingerlonger",
+		func() usecase.LingerLongerInteractorIF {
+			return usecase.NewLingerLongerInteractor(domain.NewDefaultLingerLonger(), new(presenter.LingerLongerWebPresenter))
+		},
+		controller.NewLingerLongerWebController)
 	BindWebControllerFor("rams",
 		func() usecase.RamsInteractorIF {
 			return usecase.NewRamsInteractor(domain.NewDefaultRams(), new(presenter.RamsWebPresenter))

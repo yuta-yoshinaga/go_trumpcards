@@ -202,6 +202,9 @@ tags:
     description: Snap (スナップ) game endpoints -- England's reflex game, where the trigger moves with every card
   - name: rollingstone
     description: Rolling Stone (ローリングストーン) game endpoints -- the inside-out trick game where failing to follow suit hands you the trick
+  - name: lingerlonger
+    description: Linger Longer (リンガーロンガー) game endpoints -- an American elimination trick game where a trick wins you one card from the stock
+
   - name: clocksolitaire
     description: Clock Solitaire (クロックソリティア) game
   - name: durak
@@ -8464,6 +8467,87 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RollingStoneResponse'
+  /lingerlonger/exec:
+    post:
+      tags:
+        - lingerlonger
+      summary: Execute a Linger Longer game command
+      description: |
+        Send a command to advance the Linger Longer (リンガーロンガー) game
+        session identified by `sessionId`.
+
+        An American elimination trick game for four to six players.
+        **Winning a trick earns exactly one card from the stock and nothing
+        else** -- so a player who keeps winning never loses hand size. Run out
+        of cards and you are eliminated; the last player still holding any
+        wins.
+
+        **You are dealt as many cards as there are players** -- four each at a
+        four-player table, six each at six -- and the remainder becomes the
+        stock (36 / 27 / 16 cards for 4 / 5 / 6 players). Following suit is
+        compulsory.
+
+        **There is no draw command.** Refilling is automatic and belongs to the
+        trick winner alone, so `play` is the only move the game accepts.
+
+        Two invariants that look true and are not: hands + trick + stock never
+        equals 52 (completed tricks leave play, reported as `discarded`), and
+        an empty hand does not mean elimination -- playing your last card
+        leaves you in until the trick resolves and the winner's draw settles.
+
+        Unlike every other game here, **the human can be eliminated while play
+        continues**; the session keeps running until one seat is left.
+      operationId: execLingerLonger
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, play, p, giveup, g, hint, h, log, l]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                  description: Index into your hand (required for `play`)
+                config:
+                  type: object
+                  properties:
+                    playerCnt:
+                      type: integer
+                      description: Players at the table (4..6, default 4). You are dealt that many cards.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Follow suit with your third card
+                value:
+                  command: play
+                  sessionId: my-session-001
+                  cardIndex: 2
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LingerLongerResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LingerLongerResponse'
+
   /clocksolitaire/exec:
     post:
       tags:
@@ -47253,6 +47337,112 @@ components:
           type: object
           additionalProperties:
             type: string
+    LingerLongerTrickCard:
+      type: object
+      description: A card played in the current trick
+      required:
+        - playerIdx
+        - card
+      properties:
+        playerIdx:
+          type: integer
+          description: Index of the player who played this card
+        card:
+          $ref: '#/components/schemas/Card'
+    LingerLongerHint:
+      type: object
+      description: A suggestion. Always names a card; there is only ever one kind of move.
+      properties:
+        cardIndex:
+          type: integer
+          description: Index into your hand.
+        reason:
+          type: string
+          description: lingerlongerWinTrick, lingerlongerNoStock, or lingerlongerDuck.
+    LingerLongerPlayer:
+      type: object
+      description: One seat at a Linger Longer table
+      properties:
+        id:
+          type: integer
+        isHuman:
+          type: boolean
+        cardCount:
+          type: integer
+          description: Hand size. **More is better** -- running out is how you go out.
+        cards:
+          type: array
+          description: Populated for the human player only; empty for the CPU.
+          items:
+            $ref: '#/components/schemas/Card'
+        tricksWon:
+          type: integer
+          description: Tricks won. **Not a score** -- it is the number of refills earned.
+        eliminatedAt:
+          type: integer
+          description: Elimination order, or 0 while still holding cards.
+    LingerLongerResponse:
+      type: object
+      description: Response payload for /lingerlonger/exec
+      properties:
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/LingerLongerPlayer'
+        phase:
+          type: integer
+          description: "0=Play, 1=GameEnd"
+        validPlays:
+          type: array
+          description: Hand indices you may legally play. Following suit is compulsory.
+          items:
+            type: integer
+        stockSize:
+          type: integer
+          description: >-
+            Cards left in the stock. **At 0 nobody can refill any more**, so
+            from here every trick strictly shrinks the table.
+        currentTrick:
+          type: array
+          items:
+            $ref: '#/components/schemas/LingerLongerTrickCard'
+        currentPlayerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        trickNumber:
+          type: integer
+          description: Tricks resolved so far.
+        lastDrawIdx:
+          type: integer
+          description: The seat that just drew a replacement, or -1.
+        eliminatedCnt:
+          type: integer
+          description: How many seats have run out so far.
+        discarded:
+          type: integer
+          description: Cards out of play. **Only a completed trick removes any.**
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: -1 until decided.
+        hint:
+          $ref: '#/components/schemas/LingerLongerHint'
+        config:
+          type: object
+          properties:
+            playerCnt:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
     RamsTrickCard:
       type: object
       description: A card played in the current trick

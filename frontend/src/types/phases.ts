@@ -1586,9 +1586,6 @@ export const SchnapsenPhase = {
  * playing and being finished.
  */
 /**
- * Snap phase constants (sync: internal/domain/Snap.go).
- */
-/**
  * Rolling Stone phase constants (sync: internal/domain/RollingStone.go).
  *
  * **There are no rounds.** Tricks resolve as soon as they are complete, and
@@ -1599,6 +1596,9 @@ export const RollingStonePhase = {
   GAME_END: 1,
 } as const;
 
+/**
+ * Snap phase constants (sync: internal/domain/Snap.go).
+ */
 export const SnapPhase = {
   PLAY: 0,
   GAME_END: 1,
@@ -2492,4 +2492,16 @@ export const RookPhase = {
   TRICK_END: 3,
   ROUND_END: 4,
   GAME_END: 5,
+} as const;
+
+/**
+ * Linger Longer phase constants (sync: internal/domain/LingerLonger.go).
+ *
+ * **There are no rounds and no deals after the first.** Cards come back one at
+ * a time as trick prizes, and the game ends when one seat is the last holding
+ * any.
+ */
+export const LingerLongerPhase = {
+  PLAY: 0,
+  GAME_END: 1,
 } as const;

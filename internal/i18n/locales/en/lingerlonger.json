@@ -1,0 +1,21 @@
+{
+  "helpTitle": "Linger Longer",
+  "helpPlay": "  p <idx>              Play the card at idx",
+  "helpGiveUp": "  g                    Give up",
+  "header": "Trick: {{trick}}  Stock: {{stock}} left",
+  "rule": "Winning a trick scores nothing. All it earns is the right to draw one card from the stock -- so while you keep winning, your hand never shrinks. Run out of cards and you are out; the last player still holding cards wins. You are dealt as many cards as there are players (four each at a four-player table), and the rest is the stock.",
+  "noStockLine": "The stock is empty. Nobody can refill now -- eliminations come quickly from here.",
+  "playerLine": "{{name}}{{role}}: {{cards}} cards, won {{tricks}}",
+  "roleOut": "[out {{rank}}]",
+  "roleDrew": "[just drew]",
+  "promptCurrentPlayer": "Turn: {{name}}",
+  "promptPlay": "play <idx> ... play a card",
+  "promptEliminated": "You are out. The remaining players will finish it between them.",
+  "gameEndYou": "Game over! You held cards longest.",
+  "gameEndCpu": "Game over! {{name}} held cards longest.",
+  "hintNone": "No hint available.",
+  "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
+  "hintReasonWinTrick": "Take it and you draw a replacement",
+  "hintReasonNoStock": "You can take it, but the stock is empty -- no refill",
+  "hintReasonDuck": "You cannot take it, so play low"
+}

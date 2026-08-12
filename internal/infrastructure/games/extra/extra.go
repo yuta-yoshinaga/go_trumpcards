@@ -347,4 +347,12 @@ func init() {
 			return usecase.RestorePasurInteractor(data, new(presenter.PasurWebPresenter))
 		},
 		controller.NewPasurWebControllerWithProvider)
+	games.RegisterKVGame("lingerlonger", games.CategoryExtra,
+		func() usecase.LingerLongerInteractorIF {
+			return usecase.NewLingerLongerInteractor(domain.NewDefaultLingerLonger(), new(presenter.LingerLongerWebPresenter))
+		},
+		func(data []byte) (usecase.LingerLongerInteractorIF, error) {
+			return usecase.RestoreLingerLongerInteractor(data, new(presenter.LingerLongerWebPresenter))
+		},
+		controller.NewLingerLongerWebControllerWithProvider)
 }
