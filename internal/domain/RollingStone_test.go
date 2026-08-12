@@ -634,22 +634,23 @@ func TestRollingStonePlayer_UnmarshalRejectsAContradictoryRank(t *testing.T) {
 	assert.Equal(t, 2, ok.GetPickups())
 }
 
-// **抜けた枚数まで足して 52 ではなく「人数 × 8」に合わせる。**
+// **抜けた枚数まで足して「人数 × 8」に合わせる。**
 //
 // 手札と場札だけを数えると、トリックが 1 つ解決した時点で足りなくなります
 // ——最初に書いた検証はそれで正しい盤面を拒否しました。
 func TestRollingStone_UnmarshalCountsTheDiscardsToo(t *testing.T) {
+	// **配りを差し替えず、実際の局を進めて 1 トリック解決させる。**
+	// `GiveHandForTest` は札を捨てるので、枚数の突き合わせには使えません。
 	r := newTestRollingStone(t)
-	// 1 トリック解決させて、場から札を抜く。
-	for i := range r.GetPlayerCnt() {
-		r.GiveHandForTest(i, NewCard(CardDesignSpade, 7+i, false), NewCard(CardDesignHeart, 7+i, false))
+	for turns := 0; r.GetDiscarded() == 0 && turns < 200; turns++ {
+		idx := r.GetCurrentPlayerIdx()
+		if r.MustPickUp(idx) {
+			require.NoError(t, r.PickUpForTest(idx))
+			continue
+		}
+		require.NoError(t, r.PlayForTest(idx, r.CpuChoiceForTest(idx)))
 	}
-	r.SetLeadPlayerIdxForTest(0)
-	r.SetCurrentPlayerIdxForTest(0)
-	for i := range r.GetPlayerCnt() {
-		require.NoError(t, r.PlayForTest(i, 0))
-	}
-	require.Equal(t, r.GetPlayerCnt(), r.GetDiscarded(), "解決したトリックのぶん抜ける")
+	require.Positive(t, r.GetDiscarded(), "解決したトリックのぶん抜ける")
 
 	// 抜けたぶんを数えているので、この盤面は通る。
 	data, err := json.Marshal(r)
