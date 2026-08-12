@@ -357,4 +357,12 @@ func init() {
 			return usecase.RestoreMinibridgeInteractor(data, new(presenter.MinibridgeWebPresenter))
 		},
 		controller.NewMinibridgeWebControllerWithProvider)
+	games.RegisterKVGame("rollingstone", games.CategoryExtra3,
+		func() usecase.RollingStoneInteractorIF {
+			return usecase.NewRollingStoneInteractor(domain.NewDefaultRollingStone(), new(presenter.RollingStoneWebPresenter))
+		},
+		func(data []byte) (usecase.RollingStoneInteractorIF, error) {
+			return usecase.RestoreRollingStoneInteractor(data, new(presenter.RollingStoneWebPresenter))
+		},
+		controller.NewRollingStoneWebControllerWithProvider)
 }

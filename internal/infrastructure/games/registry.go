@@ -1028,6 +1028,12 @@ var registry = []*Game{
 	// なので、場札が 1 枚のあいだは決して成立しない。同時反射は Slapjack と同じく
 	// **予約 + Tick** で決定的に解く。
 	{Name: "snap", Category: CategorySolo},
+	// RollingStone ローリングストーン（アンフレ）
+	//
+	// **勝利条件が逆さま。** トリックを取っても得点にならず、**先に手札を出し切った
+	// 人が勝ち**。フォローできないとその場のトリックを全部手札に加えられる。
+	// 1 人 8 枚で、デッキは人数 × 8（4人32 / 5人40 / 6人48）。
+	{Name: "rollingstone", Category: CategoryExtra3},
 }
 
 // All returns a value-level copy of the registry in canonical order.

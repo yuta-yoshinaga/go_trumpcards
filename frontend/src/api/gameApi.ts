@@ -212,6 +212,7 @@ export * from './games/rams';
 export * from './games/razz';
 export * from './games/reddog';
 export * from './games/reversis';
+export * from './games/rollingstone';
 export * from './games/rook';
 export * from './games/royalcotillion';
 export * from './games/rummy500';
@@ -351,6 +352,7 @@ export const games = [
   'minibridge',
   'pasur',
   'snap',
+  'rollingstone',
   'razz',
   'sevencardstudhilo',
   'badugi',

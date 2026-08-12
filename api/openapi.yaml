@@ -200,6 +200,8 @@ tags:
     description: Pasur (パスール) game endpoints -- Iran's fishing game, where captures add to eleven and emptying the table doubles what you took
   - name: snap
     description: Snap (スナップ) game endpoints -- England's reflex game, where the trigger moves with every card
+  - name: rollingstone
+    description: Rolling Stone (ローリングストーン) game endpoints -- the inside-out trick game where failing to follow suit hands you the trick
   - name: clocksolitaire
     description: Clock Solitaire (クロックソリティア) game
   - name: durak
@@ -8376,6 +8378,92 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SnapResponse'
+  /rollingstone/exec:
+    post:
+      tags:
+        - rollingstone
+      summary: Execute a Rolling Stone game command
+      description: |
+        Send a command to advance the Rolling Stone (ローリングストーン, also
+        Enflé) game session identified by `sessionId`.
+
+        Germany and France's inside-out trick game, for four to six players.
+        **Winning a trick is worth nothing but the lead**, and **failing to
+        follow suit puts the whole trick into your hand** — the penalty is
+        being given cards rather than taking them. The winner is whoever runs
+        out first.
+
+        Everyone gets **eight cards**, with the deck sized to the table:
+        4/5/6 players take 32/40/48, each splitting evenly across four suits
+        once the low ranks are dropped and the aces kept.
+
+        **`pickup` is its own command**, not `play` with `cardIndex` omitted:
+        being unable to follow is a different action, and the server rejects a
+        pickup while a legal card remains. `mustPickUp` says which situation
+        you are in — read it before `validPlays`, since an empty list of legal
+        plays also means "not your turn".
+
+        **The game does not necessarily end.** Cards leave play only on a
+        completed trick, so a table that keeps failing to follow recycles the
+        same cards. Measured over 400 games per table size, half of
+        four-player games did not finish within 300,000 plays, while the
+        longest finishing game took 303 tricks — so play stops at **500
+        tricks** and goes to the smallest hand.
+      operationId: execRollingStone
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, play, p, pickup, u, giveup, g, hint, h, log, l]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                  description: Index into your hand (required for `play`)
+                config:
+                  type: object
+                  properties:
+                    playerCnt:
+                      type: integer
+                      description: Players at the table (4..6, default 4). The deck is sized to match.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Follow suit with your third card
+                value:
+                  command: play
+                  sessionId: my-session-001
+                  cardIndex: 2
+              pickup:
+                summary: Take the trick into hand (only legal when you cannot follow)
+                value:
+                  command: pickup
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RollingStoneResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RollingStoneResponse'
   /clocksolitaire/exec:
     post:
       tags:
@@ -47047,6 +47135,116 @@ components:
           type: integer
         hint:
           $ref: '#/components/schemas/SnapHint'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    RollingStoneTrickCard:
+      type: object
+      description: A card played in the current trick
+      required:
+        - playerIdx
+        - card
+      properties:
+        playerIdx:
+          type: integer
+          description: Index of the player who played this card
+        card:
+          $ref: '#/components/schemas/Card'
+    RollingStoneHint:
+      type: object
+      description: A suggestion. Carries no cardIndex when the only move is to pick up.
+      properties:
+        cardIndex:
+          type: integer
+          description: Index into your hand.
+        reason:
+          type: string
+          description: rollingstoneLead, rollingstoneFollow, or rollingstonePickUp.
+    RollingStonePlayer:
+      type: object
+      description: One seat at a Rolling Stone table
+      properties:
+        id:
+          type: integer
+        isHuman:
+          type: boolean
+        cardCount:
+          type: integer
+          description: Hand size. **Fewer is better** -- running out first is how you win.
+        cards:
+          type: array
+          description: Populated for the human player only; empty for the CPU.
+          items:
+            $ref: '#/components/schemas/Card'
+        pickups:
+          type: integer
+          description: How many tricks this seat has been forced to take into hand.
+        finishedAt:
+          type: integer
+          description: Finishing place, or 0 while still holding cards.
+    RollingStoneResponse:
+      type: object
+      description: Response payload for /rollingstone/exec
+      properties:
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/RollingStonePlayer'
+        phase:
+          type: integer
+          description: "0=Play, 1=GameEnd"
+        mustPickUp:
+          type: boolean
+          description: >-
+            Whether you cannot follow and must take the trick into your hand.
+            **Read this before validPlays** -- an empty validPlays also means
+            "not your turn", and the two call for opposite things.
+        validPlays:
+          type: array
+          description: Hand indices you may legally play. Following suit is compulsory.
+          items:
+            type: integer
+        currentTrick:
+          type: array
+          items:
+            $ref: '#/components/schemas/RollingStoneTrickCard'
+        currentPlayerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        trickNumber:
+          type: integer
+          description: Tricks resolved so far. Pickups count too -- they end a trick as well.
+        lastPickupIdx:
+          type: integer
+          description: The seat that just took a trick into hand, or -1.
+        finishedCnt:
+          type: integer
+        deckSize:
+          type: integer
+          description: "Cards in this deal: players x 8, so 32 / 40 / 48."
+        discarded:
+          type: integer
+          description: Cards out of play. **Only a completed trick removes any.**
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: >-
+            -1 until decided. A winner still holding cards means the 500-trick
+            stalemate was reached rather than anyone running out.
+        hint:
+          $ref: '#/components/schemas/RollingStoneHint'
+        config:
+          type: object
+          properties:
+            playerCnt:
+              type: integer
         message:
           type: string
         messageCode:

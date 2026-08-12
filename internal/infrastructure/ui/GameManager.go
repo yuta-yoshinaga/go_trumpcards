@@ -4684,6 +4684,20 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
 		}),
+	BindCuiFor("rollingstone",
+		func() usecase.RollingStoneInteractorIF {
+			return usecase.NewRollingStoneInteractor(domain.NewDefaultRollingStone(), new(presenter.RollingStoneCuiPresenter))
+		},
+		controller.NewRollingStoneCuiController,
+		CuiHelpSpec{
+			TitleKey: "rollingstone.helpTitle",
+			CommandKeys: []string{
+				"rollingstone.helpPlay",
+				"rollingstone.helpPickUp",
+				"rollingstone.helpGiveUp",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

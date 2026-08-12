@@ -195,6 +195,7 @@ import type {
   RamsResponse,
   RedDogResponse,
   ReversisResponse,
+  RollingStoneResponse,
   RookResponse,
   RoyalCotillionResponse,
   Rummy500Response,
@@ -483,6 +484,7 @@ import { getRamsHint } from '../utils/hints/ramsHint';
 import { getRazzHint } from '../utils/hints/razzHint';
 import { getReddogHint } from '../utils/hints/reddogHint';
 import { getReversisHint } from '../utils/hints/reversisHint';
+import { getRollingStoneHint } from '../utils/hints/rollingstoneHint';
 import { getRookHint } from '../utils/hints/rookHint';
 import { getRoyalCotillionHint } from '../utils/hints/royalcotillionHint';
 import { getRummy500Hint } from '../utils/hints/rummy500Hint';
@@ -650,6 +652,7 @@ export const hintFactories = {
   minibridge: (s) => getMinibridgeHint(s as MinibridgeResponse),
   pasur: (s) => getPasurHint(s as PasurResponse),
   snap: (s) => getSnapHint(s as SnapResponse),
+  rollingstone: (s) => getRollingStoneHint(s as RollingStoneResponse),
   faro: (s) => getFaroHint(s as FaroResponse),
   fiftyone: (s) => getFiftyOneHint(s as FiftyOneResponse),
   napoleon: (s) => getNapoleonHint(s as NapoleonResponse),
