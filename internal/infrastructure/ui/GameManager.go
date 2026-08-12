@@ -4769,6 +4769,20 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
 		}),
+	BindCuiFor("andarbahar",
+		func() usecase.AndarBaharInteractorIF {
+			return usecase.NewAndarBaharInteractor(domain.NewDefaultAndarBahar(), new(presenter.AndarBaharCuiPresenter))
+		},
+		controller.NewAndarBaharCuiController,
+		CuiHelpSpec{
+			TitleKey: "andarbahar.helpTitle",
+			CommandKeys: []string{
+				"andarbahar.helpBet",
+				"andarbahar.helpClear",
+				"andarbahar.helpHint",
+			},
+			ExtraCommandLines: []string{"  log                  action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.
