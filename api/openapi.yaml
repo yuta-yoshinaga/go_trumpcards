@@ -205,6 +205,9 @@ tags:
   - name: lingerlonger
     description: Linger Longer (リンガーロンガー) game endpoints -- an American elimination trick game where a trick wins you one card from the stock
 
+  - name: pig
+    description: Pig (ピッグ) game endpoints -- an American children's party game where four of a kind is signalled in silence
+
   - name: clocksolitaire
     description: Clock Solitaire (クロックソリティア) game
   - name: durak
@@ -8547,6 +8550,95 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LingerLongerResponse'
+
+  /pig/exec:
+    post:
+      tags:
+        - pig
+      summary: Execute a Pig game command
+      description: |
+        Send a command to advance the Pig (ピッグ, also Donkey) game session
+        identified by `sessionId`.
+
+        An American children's party game for three to six players. **A player
+        who collects four of a kind says nothing and quietly puts a hand to
+        their nose**; everyone else simply copies once they notice, and **the
+        last player to notice** takes one letter of P-I-G. Three letters put
+        you out, and the last player left wins. Nothing is grabbed and nothing
+        is scored -- being slow to react is the only way to lose.
+
+        The deck is players x 4, which is **n ranks x 4 suits** -- a plain
+        subset of the standard pack, not a new kind of card. Three to six
+        players use 12 / 16 / 20 / 24 cards.
+
+        **Everyone passes one card to the left simultaneously**, so hands stay
+        at four cards for the whole game. The server models this as each seat
+        choosing in turn: `hasChosenPass` says who has already committed, and
+        nothing moves until every seat has.
+
+        **`signal` is its own command**, not `pass` with `cardIndex` omitted:
+        noticing is a different action, and the server rejects a signal when
+        nobody has signalled. `next` deals the following round -- the game
+        stops at RoundEnd so the letter award can be read, since nothing on the
+        board records it.
+      operationId: execPig
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, pass, p, signal, s, next, n, giveup, g, hint, h, log, l]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                  description: Index into your hand (required for `pass`)
+                config:
+                  type: object
+                  properties:
+                    playerCnt:
+                      type: integer
+                      description: Players at the table (3..6, default 4). The deck is sized to match.
+                    cpuDifficulty:
+                      type: integer
+                      description: "0=easy, 1=normal, 2=hard. How quickly the CPU notices a signal."
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              pass:
+                summary: Pass your third card to the left
+                value:
+                  command: pass
+                  sessionId: my-session-001
+                  cardIndex: 2
+              signal:
+                summary: Say you noticed the signal (only legal while one is out)
+                value:
+                  command: signal
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PigResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PigResponse'
 
   /clocksolitaire/exec:
     post:
@@ -47337,6 +47429,110 @@ components:
           type: object
           additionalProperties:
             type: string
+    PigHint:
+      type: object
+      description: A suggestion. Carries no cardIndex while a signal is out.
+      properties:
+        cardIndex:
+          type: integer
+          description: Index into your hand.
+        reason:
+          type: string
+          description: pigSignal, pigDiscardOdd, or pigNoSingleton.
+    PigPlayer:
+      type: object
+      description: One seat at a Pig table
+      properties:
+        id:
+          type: integer
+        isHuman:
+          type: boolean
+        cardCount:
+          type: integer
+          description: Hand size. **Always 4** -- everyone passes and receives at the same time.
+        cards:
+          type: array
+          description: Populated for the human player only; empty for the CPU.
+          items:
+            $ref: '#/components/schemas/Card'
+        letters:
+          type: integer
+          description: Letters collected. Three puts you out.
+        letterWord:
+          type: string
+          description: 'The letters themselves: "", "P", "PI", or "PIG".'
+        eliminated:
+          type: boolean
+        hasSignalled:
+          type: boolean
+          description: Whether this seat has noticed the signal in the current round.
+        noticedOrder:
+          type: integer
+          description: The order in which this seat noticed (1-based, 0 = not yet).
+        hasChosenPass:
+          type: boolean
+          description: Whether this seat has chosen its card. Everyone passes at once.
+    PigResponse:
+      type: object
+      description: Response payload for /pig/exec
+      properties:
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/PigPlayer'
+        phase:
+          type: integer
+          description: "0=Pass, 1=Signal, 2=RoundEnd, 3=GameEnd"
+        validPlays:
+          type: array
+          description: Hand indices you may pass. Empty once you have chosen this round.
+          items:
+            type: integer
+        signallerIdx:
+          type: integer
+          description: >-
+            The seat that put a hand to its nose, or -1. **Nothing on the board
+            shows this** -- a signal is silent, so this field is the only way a
+            client can surface it.
+        noticedCnt:
+          type: integer
+          description: How many seats have noticed, including the signaller.
+        roundLoserIdx:
+          type: integer
+          description: The seat that took a letter at the end of the last round, or -1.
+        roundNumber:
+          type: integer
+        passCount:
+          type: integer
+          description: Passes made this round.
+        deckSize:
+          type: integer
+          description: "Cards in play: players x 4, so 12 / 16 / 20 / 24."
+        currentPlayerIdx:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: -1 until decided.
+        hint:
+          $ref: '#/components/schemas/PigHint'
+        config:
+          type: object
+          properties:
+            playerCnt:
+              type: integer
+            cpuDifficulty:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
     LingerLongerTrickCard:
       type: object
       description: A card played in the current trick

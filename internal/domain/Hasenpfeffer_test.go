@@ -437,17 +437,22 @@ func TestHasenpfeffer_PublicEntryPointsGuardTheTurn(t *testing.T) {
 	// 競り: 人間の番でなければ弾く。
 	assert.False(t, h.IsHumanBidTurn())
 	assert.Error(t, h.PlayerBid(4))
-	h.CpuBid()
-	assert.True(t, h.GetPlayer(1).HasBid(), "CPU は自分の番で宣言する")
 
 	h.SetCurrentPlayerIdxForTest(0)
 	assert.True(t, h.IsHumanBidTurn())
 	before := h.GetPlayer(1).GetBid()
 	h.CpuBid()
 	assert.Equal(t, before, h.GetPlayer(1).GetBid(), "人間の番では CPU は動かない")
-	// **上限で落札する。** CPU が先に宣言していると 4 では上回れないし、
-	// あとの CPU に上回られると「落札したのは人間」が配り依存になる。
+
+	// **人間が先に上限で落札する。** 順番が逆だと配り依存で落ちます——先に CPU に
+	// 宣言させると、その CPU が上限を宣言した配り (実測 1.4%) では人間が上回れず
+	// `PlayerBid` が "bid 6 is already the maximum" で弾かれます。
 	require.NoError(t, h.PlayerBid(HasenpfefferMaxBid))
+
+	// 上限が立ったあとでも、CPU は自分の番に「降りる」という宣言をする。
+	h.SetCurrentPlayerIdxForTest(1)
+	h.CpuBid()
+	assert.True(t, h.GetPlayer(1).HasBid(), "CPU は自分の番で宣言する")
 	assert.Equal(t, HasenpfefferMaxBid, h.GetContract())
 
 	// 残りを CPU に任せて捨て札フェーズへ。

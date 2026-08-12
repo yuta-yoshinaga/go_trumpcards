@@ -1,0 +1,50 @@
+{
+  "phase": { "pass": "Passing", "signal": "Signal is out", "roundEnd": "Round over", "gameEnd": "Finished" },
+  "header": {
+    "round": "Round {{n}}",
+    "deck": "Deck: {{n}}",
+    "pass": "{{n}} passes",
+    "rule": "A player who collects four of a kind says nothing and quietly puts a hand to their nose. Everyone else simply copies once they notice -- there is nothing to grab. The last player to notice takes one letter of P-I-G, and three letters put you out. The last player left wins. Hands stay at four cards throughout: everyone passes and receives at the same time.",
+    "cards": "{{n}} cards",
+    "letters": "letters [{{word}}]",
+    "out": "[out]",
+    "noticed": "[noticed {{order}}]",
+    "chosen": "[chosen]",
+    "you": "You",
+    "cpu": "CPU{{idx}}"
+  },
+  "actions": {
+    "signal": "I noticed! (hand to nose)",
+    "next": "Next round",
+    "players": "Players",
+    "difficulty": "CPU reaction",
+    "difficultyEasy": "Slow",
+    "difficultyNormal": "Normal",
+    "difficultyHard": "Fast",
+    "reset": "Reset",
+    "giveUp": "Give up",
+    "passAria": "Pass {{card}} to your left"
+  },
+  "status": {
+    "waiting": "You have chosen. Waiting for everyone else to choose.",
+    "signal": "Somebody put a hand to their nose! Say you noticed -- only the last to react takes a letter.",
+    "signalDone": "You said you noticed ({{n}} so far). Waiting for the rest.",
+    "roundEnd": "{{name}} was last to notice and took a letter ({{word}}).",
+    "eliminated": "You are out. The remaining players will finish it between them."
+  },
+  "result": {
+    "you": "You win! You were the last one standing.",
+    "cpu": "{{name}} was the last one standing."
+  },
+  "hint": {
+    "pigSignal": "Press \"I noticed!\" now -- only the last to react takes a letter.",
+    "pigDiscardOdd": "Let go of a rank you are not collecting.",
+    "pigNoSingleton": "Everything is evenly split, so break the least useful one."
+  },
+  "tutorial": {
+    "rule": "**A player who collects four of a kind quietly puts a hand to their nose.** No announcement. Everyone else simply copies once they notice -- **there is nothing to grab**.",
+    "penalty": "**The last player to notice** takes one letter of P-I-G. Three letters put you out: being slow to react is the only way to lose.",
+    "pass": "**Everyone passes one card to the left at the same time.** Because you give and receive together, your hand stays at four cards. Nothing moves until every seat has chosen.",
+    "hand": "Your hand, sorted so matching ranks sit together -- you can see what you are close to at a glance."
+  }
+}

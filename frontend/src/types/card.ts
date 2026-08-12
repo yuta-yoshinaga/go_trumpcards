@@ -183,6 +183,7 @@ export * from './games/paigow';
 export * from './games/pan';
 export * from './games/pasur';
 export * from './games/penguin';
+export * from './games/pig';
 export * from './games/pigtail';
 export * from './games/pineapple';
 export * from './games/pinochle';

@@ -4711,6 +4711,21 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
 		}),
+	BindCuiFor("pig",
+		func() usecase.PigInteractorIF {
+			return usecase.NewPigInteractor(domain.NewDefaultPig(), new(presenter.PigCuiPresenter))
+		},
+		controller.NewPigCuiController,
+		CuiHelpSpec{
+			TitleKey: "pig.helpTitle",
+			CommandKeys: []string{
+				"pig.helpPass",
+				"pig.helpSignal",
+				"pig.helpNext",
+				"pig.helpGiveUp",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

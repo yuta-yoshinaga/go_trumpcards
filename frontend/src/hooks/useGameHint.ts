@@ -176,6 +176,7 @@ import type {
   PanResponse,
   PasurResponse,
   PenguinResponse,
+  PigResponse,
   PigsTailResponse,
   PineappleResponse,
   PinochleResponse,
@@ -465,6 +466,7 @@ import { getPaiGowHint } from '../utils/hints/paigowHint';
 import { getPanHint } from '../utils/hints/panHint';
 import { getPasurHint } from '../utils/hints/pasurHint';
 import { getPenguinHint } from '../utils/hints/penguinHint';
+import { getPigHint } from '../utils/hints/pigHint';
 import { getPigstailHint } from '../utils/hints/pigstailHint';
 import { getPineappleHint } from '../utils/hints/pineappleHint';
 import { getPinochleHint } from '../utils/hints/pinochleHint';
@@ -656,6 +658,7 @@ export const hintFactories = {
   snap: (s) => getSnapHint(s as SnapResponse),
   rollingstone: (s) => getRollingStoneHint(s as RollingStoneResponse),
   lingerlonger: (s) => getLingerLongerHint(s as LingerLongerResponse),
+  pig: (s) => getPigHint(s as PigResponse),
   faro: (s) => getFaroHint(s as FaroResponse),
   fiftyone: (s) => getFiftyOneHint(s as FiftyOneResponse),
   napoleon: (s) => getNapoleonHint(s as NapoleonResponse),
