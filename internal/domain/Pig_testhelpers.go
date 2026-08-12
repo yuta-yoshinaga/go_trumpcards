@@ -39,3 +39,6 @@ func (g *Pig) HumanSeatForTest() int { return g.humanSeat() }
 
 // SetRoundLoserIdxForTest は直近ラウンドの敗者を設定する
 func (g *Pig) SetRoundLoserIdxForTest(i int) { g.roundLoserIdx = i }
+
+// SetPassCountForTest は当該ラウンドのパス回数を設定する
+func (g *Pig) SetPassCountForTest(n int) { g.passCount = n }

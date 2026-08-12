@@ -389,8 +389,12 @@ func (g *Pig) resolvePassIfReady() {
 		return
 	}
 	// **揃わないまま回り続ける配りがある。** 上限で打ち切って合図を開く。
+	//
+	// **選ぶ席は無作為。** 合図した席はその場で「気づいた」扱いになるので、常に
+	// `active[0]` を選ぶと**いちばん若い生存席だけが打ち切りラウンドで絶対に
+	// 負けない**——席 0 は生きているかぎり人間なので、人間だけが構造的に守られます。
 	if g.passCount >= PigMaxPassesPerRound {
-		g.openSignal(active[0])
+		g.openSignal(active[g.rng.Intn(len(active))])
 	}
 }
 

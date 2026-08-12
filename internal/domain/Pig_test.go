@@ -338,3 +338,45 @@ func TestPig_EveryReachableStateSurvivesARoundTrip(t *testing.T) {
 		}
 	}
 }
+
+// **打ち切りラウンドでも席は平等。**
+//
+// 上限で合図を開くとき、合図した席はその場で「気づいた」扱いになるので負けません。
+// 常に `active[0]` を選ぶと、**席 0（生きているかぎり人間）だけが打ち切りラウンドで
+// 絶対に文字をもらわない**という偏りが残ります。#5318 のレビュー指摘。
+func TestPigTimeoutFallbackDoesNotShieldTheLowestSeat(t *testing.T) {
+	seen := map[int]bool{}
+	for seed := range 40 {
+		cfg := DefaultPigConfig()
+		cfg.PlayerCnt = 4
+		g := NewPig(newPigSeats(4), cfg)
+		g.SetRand(rand.New(rand.NewSource(int64(seed) + 1)))
+		g.Reset()
+
+		// 4 枚揃わない配りにして、上限の 1 手前から最後のパスを踏ませる。
+		for i := range 4 {
+			g.GiveHandForTest(i,
+				NewCard(CardDesignSpade, 1+i, false),
+				NewCard(CardDesignHeart, 1+(i+1)%4, false),
+				NewCard(CardDesignClover, 1+(i+2)%4, false),
+				NewCard(CardDesignDiamond, 1+(i+3)%4, false))
+		}
+		g.SetPassCountForTest(PigMaxPassesPerRound - 1)
+		for i := range 4 {
+			require.NoError(t, g.ChoosePassForTest(i, 0))
+		}
+		require.Equal(t, PigPhaseSignal, g.GetPhase(), "seed %d: 上限で打ち切られる", seed)
+
+		// 人間は黙っているので、合図した席以外が順に気づき、最後の 1 人が負ける。
+		for turns := 0; turns < 200 && g.GetPhase() == PigPhaseSignal; turns++ {
+			g.CpuPlay()
+		}
+		require.Equal(t, PigPhaseRoundEnd, g.GetPhase(), "seed %d: ラウンドが終わる", seed)
+		seen[g.GetRoundLoserIdx()] = true
+	}
+
+	// **席 0 も負ける側に回る。** 合図した席はその場で気づいた扱いになるので、
+	// 常に席 0 を選んでいると席 0 だけが打ち切りラウンドで絶対に負けません。
+	assert.True(t, seen[0], "打ち切りラウンドで席 0 が文字をもらう場合がある")
+	assert.Greater(t, len(seen), 1, "敗者が 1 席に固定されていない")
+}
