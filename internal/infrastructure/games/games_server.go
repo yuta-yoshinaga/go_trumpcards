@@ -795,6 +795,11 @@ func init() {
 			return usecase.NewAndarBaharInteractor(domain.NewDefaultAndarBahar(), new(presenter.AndarBaharWebPresenter))
 		},
 		controller.NewAndarBaharWebController)
+	BindWebControllerFor("botifarra",
+		func() usecase.BotifarraInteractorIF {
+			return usecase.NewBotifarraInteractor(domain.NewDefaultBotifarra(), new(presenter.BotifarraWebPresenter))
+		},
+		controller.NewBotifarraWebController)
 	BindWebControllerFor("blackjackswitch",
 		func() usecase.BlackJackSwitchInteractorIF {
 			return usecase.NewBlackJackSwitchInteractor(domain.NewDefaultBlackJackSwitch(), new(presenter.BlackJackSwitchWebPresenter))

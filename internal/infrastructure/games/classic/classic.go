@@ -428,4 +428,12 @@ func init() {
 			return usecase.RestoreCucumberInteractor(data, new(presenter.CucumberWebPresenter))
 		},
 		controller.NewCucumberWebControllerWithProvider)
+	games.RegisterKVGame("botifarra", games.CategoryClassic,
+		func() usecase.BotifarraInteractorIF {
+			return usecase.NewBotifarraInteractor(domain.NewDefaultBotifarra(), new(presenter.BotifarraWebPresenter))
+		},
+		func(data []byte) (usecase.BotifarraInteractorIF, error) {
+			return usecase.RestoreBotifarraInteractor(data, new(presenter.BotifarraWebPresenter))
+		},
+		controller.NewBotifarraWebControllerWithProvider)
 }

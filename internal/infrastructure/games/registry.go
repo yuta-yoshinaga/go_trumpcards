@@ -1074,6 +1074,13 @@ var registry = []*Game{
 	// 51.50% で有利**なので、その列だけ配当を 0.9:1 に下げる (もう一方は 1:1)。
 	// 非対称なのは「最初の 1 枚」ではなく「先に配る列」。
 	{Name: "andarbahar", Category: CategoryCasino},
+	// Botifarra ボティファラ
+	//
+	// **カタルーニャの 2 対 2 トリックテイキング。** 競りは無く、親が切り札を宣言するか
+	// 相方に委ねるだけ。**勝てるなら勝たなければならない**という義務があり、安い札を
+	// 温存する選択が効かない。スペイン式 48 枚を 12 枚ずつ配り、札 60 点 + 各トリック
+	// 1 点で 1 ラウンド 72 点。36 を超えたぶんだけが得点になる。
+	{Name: "botifarra", Category: CategoryClassic},
 }
 
 // All returns a value-level copy of the registry in canonical order.

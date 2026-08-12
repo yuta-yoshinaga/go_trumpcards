@@ -319,7 +319,8 @@
     "minibridge": "Minibridge",
     "honeymoonbridge": "Honeymoon Bridge",
     "sergeantmajor": "Sergeant Major",
-    "andarbahar": "Andar Bahar"
+    "andarbahar": "Andar Bahar",
+    "botifarra": "Botifarra"
   },
   "sound": {
     "mute": "Mute sound",
@@ -1667,7 +1668,9 @@
     "sergeantmajor.result.cpu": "CPU{{idx}} wins.",
     "sergeantmajor.result.tie": "It's a tie.",
     "andarbahar.result.win": "Your bet came in — the payout is yours.",
-    "andarbahar.result.lose": "Your bet missed. On to the next round."
+    "andarbahar.result.lose": "Your bet missed. On to the next round.",
+    "botifarra.result.win": "Your team wins!",
+    "botifarra.result.lose": "The other team wins."
   },
   "manual": {
     "ariaLabel": "Game Manual",

@@ -319,7 +319,8 @@
     "minibridge": "ミニブリッジ",
     "honeymoonbridge": "ハネムーンブリッジ",
     "sergeantmajor": "サージェントメジャー",
-    "andarbahar": "アンダーバハール"
+    "andarbahar": "アンダーバハール",
+    "botifarra": "ボティファラ"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -1667,7 +1668,9 @@
     "sergeantmajor.result.cpu": "CPU{{idx}} の勝ちです。",
     "sergeantmajor.result.tie": "同点です。",
     "andarbahar.result.win": "的中しました！ 払い戻しを受け取りました。",
-    "andarbahar.result.lose": "外れました。次のラウンドへ。"
+    "andarbahar.result.lose": "外れました。次のラウンドへ。",
+    "botifarra.result.win": "あなたの組の勝ちです！",
+    "botifarra.result.lose": "相手の組の勝ちです。"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",

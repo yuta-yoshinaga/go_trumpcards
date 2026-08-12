@@ -221,6 +221,7 @@ export const workerUrl: Record<string, string> = {
   tressette: WORKER_CASINO,
   tonk: WORKER_CLASSIC,
   andarbahar: WORKER_CASINO,
+  botifarra: WORKER_CLASSIC,
   dragontiger: WORKER_CASINO,
   blackjackswitch: WORKER_CASINO,
   montecarlo: WORKER_SOLO,

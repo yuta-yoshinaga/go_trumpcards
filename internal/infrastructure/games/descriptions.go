@@ -158,6 +158,7 @@ var gameDescriptions = map[string]string{
 	"pitch":               "Pitch / Setback (ピッチ / セットバック)",
 	"dragontiger":         "Dragon Tiger (ドラゴンタイガー)",
 	"andarbahar":          "Andar Bahar (アンダーバハール)",
+	"botifarra":           "Botifarra (ボティファラ)",
 	"blackjackswitch":     "Blackjack Switch (ブラックジャック・スイッチ)",
 	"montecarlo":          "Monte Carlo Solitaire (モンテカルロ・ソリティア)",
 	"contractrummy":       "Contract Rummy (コントラクトラミー)",
