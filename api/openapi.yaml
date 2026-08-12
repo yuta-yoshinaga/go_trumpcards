@@ -198,6 +198,8 @@ tags:
     description: Minibridge (ミニブリッジ) game endpoints -- bridge with the auction replaced by an open high-card-point count
   - name: pasur
     description: Pasur (パスール) game endpoints -- Iran's fishing game, where captures add to eleven and emptying the table doubles what you took
+  - name: snap
+    description: Snap (スナップ) game endpoints -- England's reflex game, where the trigger moves with every card
   - name: clocksolitaire
     description: Clock Solitaire (クロックソリティア) game
   - name: durak
@@ -8281,6 +8283,99 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PasurResponse'
+  /snap/exec:
+    post:
+      tags:
+        - snap
+      summary: Execute a Snap game command
+      description: |
+        Send a command to advance the Snap (スナップ) game session identified by
+        `sessionId`.
+
+        Players turn the top of their face-down stock over in turn, and
+        whoever calls first when a card matches the rank of the one before it
+        takes the whole pile.
+
+        **The trigger moves.** Slapjack always looks for a jack; Snap compares
+        against the previous card, so **a single card showing can never be
+        snapped**, and only the top two matter — a match buried under a third
+        card is not one. `snapAvailable` carries the answer so a client need
+        not work it out.
+
+        Calling wrongly costs a card from the caller's stock, face up onto the
+        pile. A seat with no stock left is skipped, and collecting every card
+        wins.
+
+        **`snap` takes no seat.** The server always calls for seat 0 — letting
+        a client name the seat would let it force a CPU into a wrong call and
+        pay the penalty for it.
+
+        Simultaneous reflexes are deterministic: each CPU books its call behind
+        a deadline drawn from a normal distribution clamped at 80ms, and `tick`
+        fires it only once the clock passes that deadline, so a human who calls
+        first genuinely wins. Poll `tick` while `pendingKind` is non-zero —
+        including during your own turn, since a CPU's call is booked then too.
+      operationId: execSnap
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, step, s, snap, n, tick, t, giveup, g, hint, h, log, l]
+                sessionId:
+                  type: string
+                config:
+                  type: object
+                  properties:
+                    playerCnt:
+                      type: integer
+                      description: Players at the table (2..4, default 2)
+                    cpuDifficulty:
+                      type: integer
+                      description: >-
+                        0 easy, 1 normal, 2 hard. Moves the mean CPU reaction
+                        time (1400 / 900 / 500 ms), floored at 80ms.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              step:
+                summary: Turn your top card over
+                value:
+                  command: step
+                  sessionId: my-session-001
+              snap:
+                summary: Call snap (always for seat 0)
+                value:
+                  command: snap
+                  sessionId: my-session-001
+              tick:
+                summary: Let a booked CPU reaction fire
+                value:
+                  command: tick
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SnapResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SnapResponse'
   /clocksolitaire/exec:
     post:
       tags:
@@ -46874,6 +46969,84 @@ components:
           properties:
             playerCnt:
               type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    SnapHint:
+      type: object
+      description: A suggestion -- whether to call right now, and why.
+      properties:
+        snap:
+          type: boolean
+          description: true when a call would be correct this instant.
+        reason:
+          type: string
+          description: snapDeclare, snapStep, or snapWait.
+    SnapPlayer:
+      type: object
+      description: One seat at a Snap table. Stocks are face down -- only the count is public.
+      properties:
+        id:
+          type: integer
+        isHuman:
+          type: boolean
+        stockSize:
+          type: integer
+    SnapResponse:
+      type: object
+      description: Response payload for /snap/exec
+      properties:
+        phase:
+          type: integer
+          description: "0=Play, 1=GameEnd"
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: "-1 until decided, and -1 when play simply could not continue"
+        currentTurnIdx:
+          type: integer
+        isHumanTurn:
+          type: boolean
+        snapAvailable:
+          type: boolean
+          description: >-
+            Whether a call would be correct right now. **True only when the top
+            two cards match** -- a single card showing can never be snapped.
+        centerPileSize:
+          type: integer
+        topCard:
+          $ref: '#/components/schemas/Card'
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/SnapPlayer'
+        playerCnt:
+          type: integer
+        cpuDifficulty:
+          type: integer
+          description: "0=easy, 1=normal, 2=hard"
+        pendingKind:
+          type: integer
+          description: "0=none, 1=a CPU has booked a call, 2=a CPU will turn a card"
+        pendingDeadlineMs:
+          type: integer
+          format: int64
+          description: >-
+            When the booked action fires. A human who calls before this wins
+            the pile.
+        lastEventKind:
+          type: integer
+          description: "0=none, 1=step, 2=correct call, 3=wrong call, 4=out of stock"
+        lastEventPlayerIdx:
+          type: integer
+        hint:
+          $ref: '#/components/schemas/SnapHint'
         message:
           type: string
         messageCode:

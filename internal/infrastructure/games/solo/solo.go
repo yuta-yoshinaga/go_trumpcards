@@ -451,4 +451,12 @@ func init() {
 			return usecase.RestoreHoneymoonBridgeInteractor(data, new(presenter.HoneymoonBridgeWebPresenter))
 		},
 		controller.NewHoneymoonBridgeWebControllerWithProvider)
+	games.RegisterKVGame("snap", games.CategorySolo,
+		func() usecase.SnapInteractorIF {
+			return usecase.NewSnapInteractor(domain.NewDefaultSnap(), new(presenter.SnapWebPresenter))
+		},
+		func(data []byte) (usecase.SnapInteractorIF, error) {
+			return usecase.RestoreSnapInteractor(data, new(presenter.SnapWebPresenter))
+		},
+		controller.NewSnapWebControllerWithProvider)
 }

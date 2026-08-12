@@ -1,0 +1,46 @@
+{
+  "phase": { "play": "Playing", "gameEnd": "Finished" },
+  "header": {
+    "pile": "Pile: {{n}}",
+    "pileEmpty": "Pile empty",
+    "rule": "Players turn cards over in turn, and whoever calls first when a card matches the one before it takes the whole pile. The trigger is not fixed -- it is always a comparison with the previous card, so nothing can be called while a single card is showing. Calling wrongly costs you a card from your stock, face up onto the pile.",
+    "available": "SNAP IS ON!",
+    "stock": "{{n}} in stock",
+    "you": "You",
+    "cpu": "CPU{{idx}}",
+    "yourTurn": "Your turn to turn a card"
+  },
+  "event": {
+    "step": "{{name}} turned a card over",
+    "snapCorrect": "{{name}} called snap and took the pile",
+    "snapWrong": "{{name}} called wrongly and paid a card",
+    "eliminated": "{{name}} has run out of stock"
+  },
+  "actions": {
+    "step": "Turn a card",
+    "snap": "Snap!",
+    "reset": "Reset",
+    "giveUp": "Give up",
+    "difficulty": "CPU reactions",
+    "easy": "Slow",
+    "normal": "Normal",
+    "hard": "Fast",
+    "players": "Players"
+  },
+  "result": {
+    "you": "You win! You collected every card.",
+    "cpu": "{{name}} wins.",
+    "none": "Play could not continue."
+  },
+  "hint": {
+    "snapDeclare": "The top card matches the one before it. Call it now.",
+    "snapStep": "It is your turn to turn a card.",
+    "snapWait": "No match yet. Calling wrongly costs you a card."
+  },
+  "tutorial": {
+    "rule": "Players turn cards over in turn, and whoever calls first when a card **matches the one before it** takes the pile. **The trigger is not fixed** -- it is always a comparison with the previous card.",
+    "single": "**A single card showing can never be snapped**: there is nothing to match it against. Pressing early costs you.",
+    "penalty": "Calling wrongly **puts one of your own cards face up on the pile**, which makes the pile worth more to whoever takes it next.",
+    "stock": "A seat with no stock left is skipped, and **collecting every card wins**. How fast the CPUs react is a setting."
+  }
+}
