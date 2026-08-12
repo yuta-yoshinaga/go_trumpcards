@@ -601,6 +601,18 @@ func (g *ChemindeFer) PassBank() error {
 	return nil
 }
 
+// GiveUp は投了する。**卓はそこで終わる。**
+//
+// 終局フラグはラウンド終了フェーズとしか両立しないので、フェーズも合わせて畳む。
+func (g *ChemindeFer) GiveUp() {
+	if g.gameEndFlag {
+		return
+	}
+	g.gameEndFlag = true
+	g.phase = ChemindeFerPhaseRoundEnd
+	g.appendLog(-1, "giveUp", "the player gives up", nil)
+}
+
 // NextRound は次のラウンドを始める。
 func (g *ChemindeFer) NextRound() error {
 	if g.gameEndFlag {
