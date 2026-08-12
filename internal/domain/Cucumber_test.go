@@ -260,3 +260,36 @@ func TestCucumber_EveryReachableStateSurvivesARoundTrip(t *testing.T) {
 		}
 	}
 }
+
+// **判定はドメインに 1 か所だけ。**
+//
+// 「合法手が 1 つ = 更新できない」は偽なので、UI 側で数え直すと片方だけ直り
+// 損ねます。#5320 のレビュー指摘を受けて公開したのがこのメソッドです。
+func TestCucumberIsForcedLowest(t *testing.T) {
+	c := newCucumberForTest(t, 4)
+	c.SetCurrentPlayerIdxForTest(0)
+
+	// リードは決まっていない。
+	c.SetCurrentTrickForTest(nil)
+	assert.False(t, c.IsForcedLowest(0))
+
+	// **合法手が 1 つでも、それが更新するなら forced ではない。**
+	c.GiveHandForTest(0,
+		NewCard(CardDesignSpade, 3, false),
+		NewCard(CardDesignHeart, 10, false))
+	c.SetCurrentTrickForTest([]*TrickCard{
+		{PlayerIdx: 1, Card: NewCard(CardDesignDiamond, 9, false)},
+	})
+	require.Len(t, c.GetValidPlayIndices(0), 1, "合法手はちょうど 1 つ")
+	assert.False(t, c.IsForcedLowest(0), "その 1 枚は更新できるので forced ではない")
+
+	// 更新できないときだけ真。
+	c.SetCurrentTrickForTest([]*TrickCard{
+		{PlayerIdx: 1, Card: NewCard(CardDesignDiamond, 13, false)},
+	})
+	assert.True(t, c.IsForcedLowest(0))
+
+	// ラウンドの区切りや終局では判定しない。
+	c.SetPhaseForTest(CucumberPhaseRoundEnd)
+	assert.False(t, c.IsForcedLowest(0))
+}

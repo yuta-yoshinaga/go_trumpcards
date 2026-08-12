@@ -30,9 +30,14 @@ func (m *MockCucumberGame) GetPhase() domain.CucumberPhase {
 	return m.Called().Get(0).(domain.CucumberPhase)
 }
 
-func (m *MockCucumberGame) GetGameEndFlag() bool       { return m.Called().Bool(0) }
-func (m *MockCucumberGame) IsHumanTurn() bool          { return m.Called().Bool(0) }
-func (m *MockCucumberGame) HighestInTrick() int        { return m.Called().Int(0) }
+func (m *MockCucumberGame) GetGameEndFlag() bool { return m.Called().Bool(0) }
+func (m *MockCucumberGame) IsHumanTurn() bool    { return m.Called().Bool(0) }
+func (m *MockCucumberGame) HighestInTrick() int  { return m.Called().Int(0) }
+
+func (m *MockCucumberGame) IsForcedLowest(playerIdx int) bool {
+	return m.Called(playerIdx).Bool(0)
+}
+
 func (m *MockCucumberGame) GetCurrentPlayerIdx() int   { return m.Called().Int(0) }
 func (m *MockCucumberGame) GetLeadPlayerIdx() int      { return m.Called().Int(0) }
 func (m *MockCucumberGame) GetTrickNumber() int        { return m.Called().Int(0) }

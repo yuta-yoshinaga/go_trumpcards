@@ -33,6 +33,10 @@ type CucumberGame interface {
 	GetValidPlayIndices(playerIdx int) []int
 	// HighestInTrick いまトリックに出ている最高ランクを返す (0: まだ無い)
 	HighestInTrick() int
+	// IsForcedLowest 更新できないので低い札に決まっているかを返す
+	//
+	// **各層で判定し直さないこと。** 「合法手が 1 つ = 更新できない」は偽です。
+	IsForcedLowest(playerIdx int) bool
 	// GetCurrentTrick 現在のトリックを取得する
 	GetCurrentTrick() []*domain.TrickCard
 	// GetCurrentPlayerIdx 現在の手番を取得する

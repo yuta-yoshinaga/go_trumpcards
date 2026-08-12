@@ -306,6 +306,17 @@ func (c *Cucumber) play(playerIdx, cardIndex int) error {
 	return nil
 }
 
+// IsForcedLowest は席 playerIdx が「更新できないので低い札に決まっている」かを返す。
+//
+// **この判定を各層で書き直さないこと。** 「合法手が 1 つ = 更新できない」は偽で、
+// 実際そこで一度間違えました。判定はここ 1 か所に置き、UI は結果だけを受け取ります。
+func (c *Cucumber) IsForcedLowest(playerIdx int) bool {
+	if c.phase != CucumberPhasePlay {
+		return false
+	}
+	return c.forcedLowest(playerIdx, c.GetValidPlayIndices(playerIdx))
+}
+
 // forcedLowest は「更新できないので低い札に決まっている」場面かを返す。
 func (c *Cucumber) forcedLowest(playerIdx int, valid []int) bool {
 	high := c.HighestInTrick()
