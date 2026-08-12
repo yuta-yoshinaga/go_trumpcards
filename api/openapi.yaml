@@ -211,6 +211,9 @@ tags:
   - name: stealingbundles
     description: Stealing Bundles (スティーリングバンドル) game endpoints -- an American fishing game where a rival's won pile can be taken whole
 
+  - name: cucumber
+    description: Cucumber (キューカンバー) game endpoints -- a Swedish trick game with a suitless comparison follow
+
   - name: clocksolitaire
     description: Clock Solitaire (クロックソリティア) game
   - name: durak
@@ -8733,6 +8736,93 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StealingBundlesResponse'
+
+  /cucumber/exec:
+    post:
+      tags:
+        - cucumber
+      summary: Execute a Cucumber game command
+      description: |
+        Send a command to advance the Cucumber (キューカンバー, also Gurka) game
+        session identified by `sessionId`.
+
+        A Swedish/Finnish trick game for three to six players with **no suits at
+        all**. If you hold a card higher than the highest played so far you must
+        play one of them; if you do not, you must play your lowest card. The only
+        decision is *which* high card to spend.
+
+        **Only the last trick scores.** Whoever takes the seventh trick gains
+        penalty points equal to the rank of the card they took it with; every
+        other trick is worth nothing. Fewest penalty points wins, and the game
+        ends when any seat reaches `targetScore`.
+
+        Hands are a fixed **seven cards each** — 52 does not divide evenly by 3,
+        5 or 6, so the remainder is simply not dealt.
+
+        **`validPlays.length == 1` does not mean the play is forced**: a hand can
+        hold exactly one card that *does* beat the trick. Read the `forced` flag
+        instead. `highestInTrick` is the rank to beat, or 0 while nobody has led.
+
+        `next` deals the following round — the game stops at RoundEnd so the
+        penalty can be read, since nothing on the board records it.
+      operationId: execCucumber
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, play, p, next, n, giveup, g, hint, h, log, l]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                  description: Index into your hand (required for `play`)
+                config:
+                  type: object
+                  properties:
+                    playerCnt:
+                      type: integer
+                      description: Players at the table (3..6, default 4).
+                    targetScore:
+                      type: integer
+                      description: Penalty total that ends the game (10..100, default 30).
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play your third card
+                value:
+                  command: play
+                  sessionId: my-session-001
+                  cardIndex: 2
+              next:
+                summary: Deal the next round after reading the penalty
+                value:
+                  command: next
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CucumberResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CucumberResponse'
 
   /clocksolitaire/exec:
     post:
@@ -47523,6 +47613,114 @@ components:
           type: object
           additionalProperties:
             type: string
+    CucumberTrickCard:
+      type: object
+      description: A card played in the current trick
+      required:
+        - playerIdx
+        - card
+      properties:
+        playerIdx:
+          type: integer
+          description: Index of the player who played this card
+        card:
+          $ref: '#/components/schemas/Card'
+    CucumberHint:
+      type: object
+      description: A suggestion.
+      properties:
+        cardIndex:
+          type: integer
+          description: Index into your hand.
+        reason:
+          type: string
+          description: cucumberLead, cucumberBeat, or cucumberForced.
+    CucumberPlayer:
+      type: object
+      description: One seat at a Cucumber table
+      properties:
+        id:
+          type: integer
+        isHuman:
+          type: boolean
+        cardCount:
+          type: integer
+        cards:
+          type: array
+          description: Populated for the human player only; empty for the CPU.
+          items:
+            $ref: '#/components/schemas/Card'
+        penalty:
+          type: integer
+          description: Penalty points. **Fewer is better** -- this is the only score.
+    CucumberResponse:
+      type: object
+      description: Response payload for /cucumber/exec
+      properties:
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/CucumberPlayer'
+        phase:
+          type: integer
+          description: "0=Play, 1=RoundEnd, 2=GameEnd"
+        validPlays:
+          type: array
+          description: >-
+            Hand indices you may legally play. You must beat highestInTrick if
+            you can; if you cannot, this holds exactly your lowest card.
+          items:
+            type: integer
+        highestInTrick:
+          type: integer
+          description: The rank to beat, or 0 while nobody has led. Suits are irrelevant.
+        forced:
+          type: boolean
+          description: >-
+            Whether your lowest card is the only legal play. **This is not the
+            same as validPlays having one entry** -- a hand can hold exactly one
+            card that does beat the trick.
+        currentTrick:
+          type: array
+          items:
+            $ref: '#/components/schemas/CucumberTrickCard'
+        currentPlayerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        trickNumber:
+          type: integer
+        roundNumber:
+          type: integer
+        lastTrickWinnerIdx:
+          type: integer
+          description: The seat that took the last trick of the previous round, or -1.
+        lastPenalty:
+          type: integer
+          description: Penalty scored for that last trick.
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: -1 until decided.
+        hint:
+          $ref: '#/components/schemas/CucumberHint'
+        config:
+          type: object
+          properties:
+            playerCnt:
+              type: integer
+            targetScore:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
     StealingBundlesHint:
       type: object
       description: A suggestion. victimIdx is -1 unless the advice is to steal.
