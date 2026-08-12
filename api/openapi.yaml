@@ -208,6 +208,9 @@ tags:
   - name: pig
     description: Pig (ピッグ) game endpoints -- an American children's party game where four of a kind is signalled in silence
 
+  - name: stealingbundles
+    description: Stealing Bundles (スティーリングバンドル) game endpoints -- an American fishing game where a rival's won pile can be taken whole
+
   - name: clocksolitaire
     description: Clock Solitaire (クロックソリティア) game
   - name: durak
@@ -8639,6 +8642,97 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PigResponse'
+
+  /stealingbundles/exec:
+    post:
+      tags:
+        - stealingbundles
+      summary: Execute a Stealing Bundles game command
+      description: |
+        Send a command to advance the Stealing Bundles (スティーリングバンドル)
+        game session identified by `sessionId`.
+
+        An American children's fishing game for two to four players. Matching a
+        rank on the table captures it -- but **a rival's won bundle has a weak
+        spot: its top card**. Play a card of that rank and the whole bundle
+        becomes yours. Whatever you play lands on top of your own bundle, so
+        the card you just captured with is what gets aimed at next; no lead is
+        ever safe.
+
+        **Capture is compulsory.** You take from the table or you take a
+        bundle; only when neither is possible may you trail. `canCapture` says
+        which situation you are in, and the server rejects a trail while a
+        capture exists.
+
+        Four cards go to the table and four to each player, and the rest is the
+        stock. **It divides evenly at every table size** -- 48/8, 36/12, 32/16 --
+        so hands are redealt until the stock runs out exactly. Whatever is left
+        on the table then goes to the seat in `lastCaptureIdx`.
+
+        `tableMatches` and `stealTargets` map each of your hand positions to
+        what it can take, so a client does not have to cross-reference the
+        table's ranks against every seat's `bundleTop` itself. Every seat's
+        `bundleTop` is public -- it is the one thing opponents aim at.
+      operationId: execStealingBundles
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, take, t, steal, s, trail, d, giveup, g, hint, h, log, l]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                  description: Index into your hand (required for `take`, `steal` and `trail`)
+                victimIdx:
+                  type: integer
+                  description: Seat whose bundle to take (required for `steal`)
+                config:
+                  type: object
+                  properties:
+                    playerCnt:
+                      type: integer
+                      description: Players at the table (2..4, default 4).
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              take:
+                summary: Capture from the table with your third card
+                value:
+                  command: take
+                  sessionId: my-session-001
+                  cardIndex: 2
+              steal:
+                summary: Take seat 1's whole bundle (its top card must match)
+                value:
+                  command: steal
+                  sessionId: my-session-001
+                  cardIndex: 0
+                  victimIdx: 1
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StealingBundlesResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StealingBundlesResponse'
 
   /clocksolitaire/exec:
     post:
@@ -47429,6 +47523,109 @@ components:
           type: object
           additionalProperties:
             type: string
+    StealingBundlesHint:
+      type: object
+      description: A suggestion. victimIdx is -1 unless the advice is to steal.
+      properties:
+        cardIndex:
+          type: integer
+          description: Index into your hand.
+        victimIdx:
+          type: integer
+          description: Seat to steal from, or -1.
+        reason:
+          type: string
+          description: stealingbundlesSteal, stealingbundlesTake, or stealingbundlesTrail.
+    StealingBundlesPlayer:
+      type: object
+      description: One seat at a Stealing Bundles table
+      properties:
+        id:
+          type: integer
+        isHuman:
+          type: boolean
+        cardCount:
+          type: integer
+        cards:
+          type: array
+          description: Populated for the human player only; empty for the CPU.
+          items:
+            $ref: '#/components/schemas/Card'
+        bundleSize:
+          type: integer
+          description: Cards won so far. **This is the score.**
+        bundleTop:
+          allOf:
+            - $ref: '#/components/schemas/Card'
+          description: >-
+            The top card of this seat's bundle, absent while it is empty.
+            **Public for every seat** -- it is the one thing opponents aim at.
+    StealingBundlesResponse:
+      type: object
+      description: Response payload for /stealingbundles/exec
+      properties:
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/StealingBundlesPlayer'
+        phase:
+          type: integer
+          description: "0=Play, 1=GameEnd"
+        tableCards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        tableMatches:
+          type: object
+          description: Hand index (as a string key) to the table positions it can capture.
+          additionalProperties:
+            type: array
+            items:
+              type: integer
+        stealTargets:
+          type: object
+          description: Hand index (as a string key) to the seats whose bundle it can steal.
+          additionalProperties:
+            type: array
+            items:
+              type: integer
+        canCapture:
+          type: boolean
+          description: >-
+            Whether any capture is available. **You may only trail when this is
+            false** -- taking is compulsory when something can be taken.
+        deckRemaining:
+          type: integer
+        lastCaptureIdx:
+          type: integer
+          description: The seat that captured last, or -1. It receives whatever is left on the table.
+        currentPlayerIdx:
+          type: integer
+        turnNumber:
+          type: integer
+        packsDealt:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: -1 until decided.
+        hint:
+          $ref: '#/components/schemas/StealingBundlesHint'
+        config:
+          type: object
+          properties:
+            playerCnt:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
     PigHint:
       type: object
       description: A suggestion. Carries no cardIndex while a signal is out.
