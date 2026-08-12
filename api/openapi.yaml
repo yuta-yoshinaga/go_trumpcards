@@ -16,6 +16,8 @@ servers:
 tags:
   - name: blackjack
     description: BlackJack game
+  - name: andarbahar
+    description: Andar Bahar (アンダーバハール) game
   - name: poker
     description: 5-card Draw Poker game
   - name: oldmaid
@@ -8914,6 +8916,76 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GoofspielResponse'
+
+  /andarbahar/exec:
+    post:
+      tags:
+        - andarbahar
+      summary: Execute an Andar Bahar game command
+      description: |
+        Send a command to advance the Andar Bahar (アンダーバハール) game
+        session identified by `sessionId`.
+
+        An Indian two-way betting game. A joker (reference card) is turned up,
+        then cards are dealt alternately into the **Andar** and **Bahar**
+        columns until one matches the joker's rank.
+
+        **The joker's colour decides which column is dealt first** - black
+        starts with Andar, red with Bahar. The first-dealt column gets one extra
+        chance and so wins 429/833 = **51.50%** of the time, which is why it
+        pays only **0.9:1** while the other column pays **1:1**. Paying both
+        1:1 would give the player a +3.00% edge.
+
+        Bets must be multiples of 10 so the 0.9:1 payout settles exactly in
+        integer chips. An optional side bet on the number of cards dealt pays
+        by band (`sideBand` 0=1 card, 1=2-5, 2=6-10, 3=11-15, 4=16-25,
+        5=26-35, 6=36+); omit `sideAmount` to skip it.
+      operationId: execAndarBahar
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: "reset (r), bet (b), clear, hint (h), log, quit (q)"
+                amount:
+                  type: integer
+                  description: Main bet, a multiple of 10 between 10 and 10000.
+                target:
+                  type: integer
+                  description: "0=Andar, 1=Bahar"
+                sideAmount:
+                  type: integer
+                  description: Side bet stake. Omit or 0 for no side bet.
+                sideBand:
+                  type: integer
+                  description: Side bet band, only read when sideAmount is above 0.
+                sessionId:
+                  type: string
+              example:
+                command: bet
+                amount: 100
+                target: 0
+                sessionId: my-session-001
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AndarBaharResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AndarBaharResponse'
 
   /clocksolitaire/exec:
     post:
@@ -47742,6 +47814,62 @@ components:
           allOf:
             - $ref: '#/components/schemas/Card'
           description: The bid, present only after the reveal.
+    AndarBaharResponse:
+      type: object
+      description: Response payload for /andarbahar/exec
+      properties:
+        joker:
+          allOf:
+            - $ref: '#/components/schemas/Card'
+          description: The reference card. Its colour decides which column is dealt first.
+        andarCards:
+          type: array
+          description: Cards dealt to Andar. Always an array, never null.
+          items:
+            $ref: '#/components/schemas/Card'
+        baharCards:
+          type: array
+          description: Cards dealt to Bahar. Always an array, never null.
+          items:
+            $ref: '#/components/schemas/Card'
+        firstColumn:
+          type: integer
+          description: "Column dealt first, and the one paying 0.9:1. 0=Andar, 1=Bahar"
+        dealtCount:
+          type: integer
+          description: Cards dealt before the round was decided.
+        phase:
+          type: integer
+          description: "1=Bet, 2=End"
+        chips:
+          type: integer
+        betAmount:
+          type: integer
+        betTarget:
+          type: integer
+          description: "0=Andar, 1=Bahar"
+        sideAmount:
+          type: integer
+        sideBand:
+          type: integer
+          description: -1 when no side bet was placed.
+        winner:
+          type: integer
+          description: Column that matched the joker. -1 until decided.
+        result:
+          type: integer
+        payout:
+          type: integer
+          description: Total returned to the player, stake included.
+        history:
+          type: array
+          description: Winning column per round. Always an array, never null.
+          items:
+            type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
     GoofspielResponse:
       type: object
       description: Response payload for /goofspiel/exec

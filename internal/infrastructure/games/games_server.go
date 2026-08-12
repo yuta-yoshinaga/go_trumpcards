@@ -790,6 +790,11 @@ func init() {
 			return usecase.NewDragonTigerInteractor(domain.NewDefaultDragonTiger(), new(presenter.DragonTigerWebPresenter))
 		},
 		controller.NewDragonTigerWebController)
+	BindWebControllerFor("andarbahar",
+		func() usecase.AndarBaharInteractorIF {
+			return usecase.NewAndarBaharInteractor(domain.NewDefaultAndarBahar(), new(presenter.AndarBaharWebPresenter))
+		},
+		controller.NewAndarBaharWebController)
 	BindWebControllerFor("blackjackswitch",
 		func() usecase.BlackJackSwitchInteractorIF {
 			return usecase.NewBlackJackSwitchInteractor(domain.NewDefaultBlackJackSwitch(), new(presenter.BlackJackSwitchWebPresenter))

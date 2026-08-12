@@ -1,0 +1,67 @@
+{
+  "title": "アンダーバハール",
+  "betGuide": "基準札と同じランクが先に出る列を当ててください",
+  "label": {
+    "chips": "チップ",
+    "bet": "ベット額",
+    "joker": "基準札",
+    "andar": "アンダー",
+    "bahar": "バハール",
+    "firstColumn": "先に配る列",
+    "dealtCount": "配った枚数",
+    "road": "罫線",
+    "sideBet": "サイドベット",
+    "sideAmount": "サイドベット額",
+    "payoutTable": "配当表",
+    "band": "帯",
+    "odds": "配当",
+    "chance": "確率",
+    "noSideBet": "賭けない"
+  },
+  "button": {
+    "betAndar": "アンダーに賭ける",
+    "betBahar": "バハールに賭ける",
+    "reset": "次のラウンド",
+    "clearHistory": "履歴を消す",
+    "rebet": "同じ賭け ({{amount}})"
+  },
+  "kbd": {
+    "betAndar": "A",
+    "betBahar": "B",
+    "rebet": "E",
+    "reset": "R"
+  },
+  "phase": {
+    "bet": "ベット",
+    "end": "決着"
+  },
+  "result": {
+    "win": "的中しました",
+    "lose": "外れました",
+    "andarWins": "アンダーの勝ち",
+    "baharWins": "バハールの勝ち"
+  },
+  "payout": {
+    "total": "払い戻し",
+    "win": "+{{amount}}",
+    "loss": "-{{amount}}",
+    "firstColumnBadge": "先に配る列 0.9:1（51.50%）",
+    "secondColumnBadge": "後に配る列 1:1（48.50%）",
+    "sideHit": "サイドベット的中 (+{{amount}})",
+    "sideMiss": "サイドベットは外れました"
+  },
+  "band": {
+    "exact": "{{count}}枚ちょうど",
+    "range": "{{lo}}〜{{hi}}枚",
+    "plus": "{{lo}}枚以上"
+  },
+  "tutorial": {
+    "betControls": "ベット額を決めて、アンダーかバハールを選びます",
+    "cards": "基準札と同じランクが先に出た列の勝ちです",
+    "road": "過去に勝った列の履歴です"
+  },
+  "frontendHint": {
+    "andarBaharFirstColumn": "先に配る列は51.50%で当たりますが、配当は0.9:1に下がります",
+    "andarBaharSideBet": "サイドベットはハウスマージンが約11%と重めです"
+  }
+}

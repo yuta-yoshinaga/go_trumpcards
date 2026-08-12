@@ -1067,6 +1067,13 @@ var registry = []*Game{
 	// 同点なら誰も取らない。**隠れているのは今いくら出したかだけ**で、相手の残り札
 	// は使ったぶんを引けば分かる。13 ラウンドちょうどで終わる。
 	{Name: "goofspiel", Category: CategoryExtra},
+	// Andar Bahar アンダーバハール
+	//
+	// **インド発の二者択一。** 基準札を 1 枚めくり、アンダーとバハールへ交互に配って、
+	// 同じランクが先に出た列を当てる。**先に配る列は 1 枚多く配られる機会があるぶん
+	// 51.50% で有利**なので、その列だけ配当を 0.9:1 に下げる (もう一方は 1:1)。
+	// 非対称なのは「最初の 1 枚」ではなく「先に配る列」。
+	{Name: "andarbahar", Category: CategoryCasino},
 }
 
 // All returns a value-level copy of the registry in canonical order.

@@ -16,6 +16,7 @@ export * from './games/allfours';
 export * from './games/aluette';
 export * from './games/americantoad';
 export * from './games/anaconda';
+export * from './games/andarbahar';
 export * from './games/auldlangsyne';
 export * from './games/baccarat';
 export * from './games/badugi';
@@ -363,6 +364,7 @@ export const games = [
   'stealingbundles',
   'cucumber',
   'goofspiel',
+  'andarbahar',
   'razz',
   'sevencardstudhilo',
   'badugi',

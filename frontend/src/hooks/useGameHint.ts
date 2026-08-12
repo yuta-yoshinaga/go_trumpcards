@@ -8,6 +8,7 @@ import type {
   AluetteResponse,
   AmericanToadResponse,
   AnacondaResponse,
+  AndarBaharResponse,
   AuldLangSyneResponse,
   BaccaratResponse,
   BadugiResponse,
@@ -296,6 +297,7 @@ import { getAllFoursHint } from '../utils/hints/allfoursHint';
 import { getAluetteHint } from '../utils/hints/aluetteHint';
 import { getAmericanToadHint } from '../utils/hints/americantoadHint';
 import { getAnacondaHint } from '../utils/hints/anacondaHint';
+import { getAndarbaharHint } from '../utils/hints/andarbaharHint';
 import { getAuldLangSyneHint } from '../utils/hints/auldlangsyneHint';
 import { getBaccaratHint } from '../utils/hints/baccaratHint';
 import { getBadugiHint } from '../utils/hints/badugiHint';
@@ -757,6 +759,7 @@ export const hintFactories = {
   reddog: (s) => getReddogHint(s as RedDogResponse),
   casinowar: (s) => getCasinowarHint(s as CasinoWarResponse),
   oichokabu: (s) => getOichokabuHint(s as OichoKabuResponse),
+  andarbahar: (s) => getAndarbaharHint(s as AndarBaharResponse),
   dragontiger: (s) => getDragontigerHint(s as DragonTigerResponse),
   blackjackswitch: (s) => getBlackjackswitchHint(s as BlackJackSwitchResponse),
   war: (s) => getWarHint(s as WarResponse),
