@@ -452,17 +452,6 @@ func rollingStoneContains(xs []int, v int) bool {
 	return false
 }
 
-// activeSeatCnt はまだ上がっていない席の数を返す。
-func (r *RollingStone) activeSeatCnt() int {
-	n := 0
-	for _, p := range r.players {
-		if !p.HasFinished() {
-			n++
-		}
-	}
-	return n
-}
-
 // nextActive は i の次の、まだ上がっていない席を返す。
 func (r *RollingStone) nextActive(i int) int {
 	for step := 1; step <= r.config.PlayerCnt; step++ {

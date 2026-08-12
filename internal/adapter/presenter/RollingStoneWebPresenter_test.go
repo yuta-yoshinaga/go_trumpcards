@@ -81,7 +81,9 @@ func TestRollingStoneWebPresenterCarriesPickupsAndFinishing(t *testing.T) {
 	r := newRollingStoneForWeb(t)
 	r.SetLeadPlayerIdxForTest(0)
 	r.SetCurrentPlayerIdxForTest(0)
-	r.GiveHandForTest(0, domain.NewCard(domain.CardDesignSpade, 8, false))
+	// **席 0 に 2 枚持たせる。** 1 枚だと出した時点で上がって終局し、引き取りに進めない。
+	r.GiveHandForTest(0, domain.NewCard(domain.CardDesignSpade, 8, false),
+		domain.NewCard(domain.CardDesignSpade, 9, false))
 	r.GiveHandForTest(1, domain.NewCard(domain.CardDesignHeart, 8, false))
 	require.NoError(t, r.PlayForTest(0, 0))
 	require.NoError(t, r.PickUpForTest(1))
@@ -89,8 +91,15 @@ func TestRollingStoneWebPresenterCarriesPickupsAndFinishing(t *testing.T) {
 	m := decodeRollingStone(t, p.Output(r, nil))
 	assert.Equal(t, float64(1), m["players"].([]any)[1].(map[string]any)["pickups"])
 	assert.Equal(t, float64(1), m["lastPickupIdx"])
-	// 席 0 は出し切ったので上がっている。
-	assert.Equal(t, float64(1), m["players"].([]any)[0].(map[string]any)["finishedAt"])
+
+	// 上がりは別に確かめる（1 枚だけ持たせて出し切らせる）。
+	fin := newRollingStoneForWeb(t)
+	fin.SetLeadPlayerIdxForTest(0)
+	fin.SetCurrentPlayerIdxForTest(0)
+	fin.GiveHandForTest(0, domain.NewCard(domain.CardDesignSpade, 8, false))
+	require.NoError(t, fin.PlayForTest(0, 0))
+	assert.Equal(t, float64(1),
+		decodeRollingStone(t, p.Output(fin, nil))["players"].([]any)[0].(map[string]any)["finishedAt"])
 }
 
 func TestRollingStoneWebPresenterMessages(t *testing.T) {
