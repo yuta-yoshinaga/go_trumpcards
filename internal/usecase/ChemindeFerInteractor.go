@@ -3,6 +3,8 @@
 package usecase
 
 import (
+	"errors"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
@@ -28,6 +30,8 @@ type ChemindeFerInteractorIF interface {
 	BankerDraw() string
 	// BankerStand 親が立つ
 	BankerStand() string
+	// DrawOrStand 手番の側へ引き/立ちを送る
+	DrawOrStand(draw bool) string
 	// PassBank 親が自分から親を降りる
 	PassBank() string
 	// NextRound 次のラウンドを始める
@@ -93,6 +97,39 @@ func (ci *ChemindeFerInteractor) BankerDraw() string {
 // BankerStand 親が立つ
 func (ci *ChemindeFerInteractor) BankerStand() string {
 	return ci.runGuarded(ci.Game.BankerStand)
+}
+
+// ErrChemindeFerNotDrawPhase は引くか立つかを決める場面ではないときのエラー。
+var ErrChemindeFerNotDrawPhase = errors.New("chemindefer: nobody is deciding on a third card")
+
+// DrawOrStand は手番の側へ引き/立ちを送る。
+//
+// **どちらの側かはドメインのフェーズが決める。** CUI に側を書かせると、画面側が
+// フェーズをもう 1 つ持つことになってドメインとずれる。ここは規則を作り直しているの
+// ではなく、ドメインが公開している現在のフェーズをそのまま読んで振り分けているだけ。
+func (ci *ChemindeFerInteractor) DrawOrStand(draw bool) string {
+	if out, blocked := guardGameEnd(ci.Game, ci.cp); blocked {
+		return out
+	}
+	var action func() error
+	switch ci.Game.GetPhase() {
+	case domain.ChemindeFerPhasePunterDraw:
+		action = ci.Game.PunterStand
+		if draw {
+			action = ci.Game.PunterDraw
+		}
+	case domain.ChemindeFerPhaseBankerDraw:
+		action = ci.Game.BankerStand
+		if draw {
+			action = ci.Game.BankerDraw
+		}
+	default:
+		return ci.cp.Output(ci.Game, ErrChemindeFerNotDrawPhase)
+	}
+	if err := action(); err != nil {
+		return ci.cp.Output(ci.Game, err)
+	}
+	return ci.cp.Output(ci.Game, nil)
 }
 
 // PassBank 親が自分から親を降りる
