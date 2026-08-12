@@ -214,6 +214,9 @@ tags:
   - name: cucumber
     description: Cucumber (キューカンバー) game endpoints -- a Swedish trick game with a suitless comparison follow
 
+  - name: goofspiel
+    description: Goofspiel (ゴフスピール) game endpoints -- a simultaneous-bidding mathematical game, also known as GOPS
+
   - name: clocksolitaire
     description: Clock Solitaire (クロックソリティア) game
   - name: durak
@@ -8823,6 +8826,94 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CucumberResponse'
+
+  /goofspiel/exec:
+    post:
+      tags:
+        - goofspiel
+      summary: Execute a Goofspiel game command
+      description: |
+        Send a command to advance the Goofspiel (ゴフスピール, also GOPS) game
+        session identified by `sessionId`.
+
+        An American mathematical game and a game-theory staple, for two or three
+        players. **There is no turn order.** A diamond is turned up as the prize
+        and every seat bids one card from its own suit, face down and at the same
+        time. The highest bid takes the prize's rank in points; a tie means
+        nobody takes it, and the prize is either discarded or added to the next
+        round's pot depending on `tieRule`. Exactly thirteen rounds.
+
+        Diamonds are the prizes and the remaining suits are the bid hands.
+        **Three players need four suits** -- one for prizes and one per seat --
+        which a standard deck has exactly.
+
+        **`bid` resolves the entire round in one request.** Because bidding is
+        simultaneous there is no CPU turn to wait for: the response comes back
+        in the Reveal phase with every seat's `revealedBid` filled in. `next`
+        then turns the following prize.
+
+        **Nothing is hidden except the bid in flight.** Every seat's `cards`
+        holds its remaining bid cards, CPUs included -- spent cards are public,
+        so a remainder is just a suit minus what has been played. Before the
+        reveal a seat exposes only `hasBid`.
+      operationId: execGoofspiel
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, bid, b, next, n, giveup, g, hint, h, log, l]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                  description: Index into your bid hand (required for `bid`)
+                config:
+                  type: object
+                  properties:
+                    playerCnt:
+                      type: integer
+                      description: Players at the table (2..3, default 2).
+                    tieRule:
+                      type: integer
+                      description: "0=a tied prize is discarded, 1=it carries into the next round."
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bid:
+                summary: Bid your third card face down
+                value:
+                  command: bid
+                  sessionId: my-session-001
+                  cardIndex: 2
+              next:
+                summary: Turn the next prize after reading the reveal
+                value:
+                  command: next
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GoofspielResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GoofspielResponse'
 
   /clocksolitaire/exec:
     post:
@@ -47613,6 +47704,105 @@ components:
           type: object
           additionalProperties:
             type: string
+    GoofspielHint:
+      type: object
+      description: A suggestion.
+      properties:
+        cardIndex:
+          type: integer
+          description: Index into your bid hand.
+        reason:
+          type: string
+          description: goofspielMatch, goofspielHighPrize, goofspielLowPrize, or goofspielCarried.
+    GoofspielPlayer:
+      type: object
+      description: One seat at a Goofspiel table
+      properties:
+        id:
+          type: integer
+        isHuman:
+          type: boolean
+        cardCount:
+          type: integer
+          description: Bid cards not yet spent.
+        cards:
+          type: array
+          description: >-
+            The remaining bid cards. **Populated for every seat, CPUs included**
+            -- spent cards are public, so a remainder is just a suit minus what
+            has been played.
+          items:
+            $ref: '#/components/schemas/Card'
+        score:
+          type: integer
+        hasBid:
+          type: boolean
+          description: Whether this seat has committed a bid this round.
+        revealedBid:
+          allOf:
+            - $ref: '#/components/schemas/Card'
+          description: The bid, present only after the reveal.
+    GoofspielResponse:
+      type: object
+      description: Response payload for /goofspiel/exec
+      properties:
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/GoofspielPlayer'
+        phase:
+          type: integer
+          description: "0=Bid, 1=Reveal, 2=GameEnd"
+        validPlays:
+          type: array
+          description: Hand indices you may bid. Empty once you have committed this round.
+          items:
+            type: integer
+        currentPrize:
+          allOf:
+            - $ref: '#/components/schemas/Card'
+          description: The prize on the table, absent once the round is settled.
+        carriedPrizes:
+          type: array
+          description: Prizes carried over by earlier ties.
+          items:
+            $ref: '#/components/schemas/Card'
+        prizeValue:
+          type: integer
+          description: Points at stake this round, **including any carry-over**.
+        prizeRemaining:
+          type: integer
+        lastWinnerIdx:
+          type: integer
+          description: The seat that won the last round, or -1 when it was a tie.
+        lastGained:
+          type: integer
+          description: Points moved last round. 0 on a tie.
+        roundNumber:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+          description: -1 until decided.
+        hint:
+          $ref: '#/components/schemas/GoofspielHint'
+        config:
+          type: object
+          properties:
+            playerCnt:
+              type: integer
+            tieRule:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
     CucumberTrickCard:
       type: object
       description: A card played in the current trick
