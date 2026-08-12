@@ -1957,6 +1957,23 @@ export const AndarBaharSideBand = {
   THIRTYSIX_PLUS: 6,
 } as const;
 
+/** Botifarra phase constants (sync: internal/domain/Botifarra.go). */
+export const BotifarraPhase = {
+  DECLARE: 0,
+  DELEGATED: 1,
+  DOUBLE: 2,
+  PLAY: 3,
+  ROUND_END: 4,
+  GAME_END: 5,
+} as const;
+
+/** Botifarra doubling multipliers (sync: internal/domain/Botifarra.go). */
+export const BotifarraMultiplier = {
+  NONE: 1,
+  CONTRAR: 2,
+  RECONTRAR: 4,
+} as const;
+
 /** Blackjack Switch phase constants (sync: internal/domain/BlackJackSwitch.go). */
 export const BlackJackSwitchPhase = {
   BET: 1,

@@ -35,6 +35,7 @@ export * from './games/blackhole';
 export * from './games/blackjack';
 export * from './games/blackjackswitch';
 export * from './games/boston';
+export * from './games/botifarra';
 export * from './games/bouillotte';
 export * from './games/bourre';
 export * from './games/braid';
