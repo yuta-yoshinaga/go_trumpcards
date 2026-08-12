@@ -373,6 +373,7 @@ export const games = [
   'rikken',
   'colourwhist',
   'chemindefer',
+  'crazyfourpoker',
   'razz',
   'sevencardstudhilo',
   'badugi',

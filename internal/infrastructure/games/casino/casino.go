@@ -470,6 +470,14 @@ func init() {
 		},
 		controller.NewFiveCardStudWebControllerWithProvider)
 
+	games.RegisterKVGame("crazyfourpoker", games.CategoryCasino,
+		func() usecase.CrazyFourPokerInteractorIF {
+			return usecase.NewCrazyFourPokerInteractor(domain.NewDefaultCrazyFourPoker(), new(presenter.CrazyFourPokerWebPresenter))
+		},
+		func(data []byte) (usecase.CrazyFourPokerInteractorIF, error) {
+			return usecase.RestoreCrazyFourPokerInteractor(data, new(presenter.CrazyFourPokerWebPresenter))
+		},
+		controller.NewCrazyFourPokerWebControllerWithProvider)
 	games.RegisterKVGame("chemindefer", games.CategoryCasino,
 		func() usecase.ChemindeFerInteractorIF {
 			return usecase.NewChemindeFerInteractor(domain.NewDefaultChemindeFer(), new(presenter.ChemindeFerWebPresenter))
