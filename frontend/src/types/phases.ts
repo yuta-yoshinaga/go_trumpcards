@@ -1992,6 +1992,28 @@ export const RikkenContract = {
   OPEN_MISERE: 4,
 } as const;
 
+/** Colour Whist phase constants (sync: internal/domain/ColourWhist.go). */
+export const ColourWhistPhase = {
+  BID: 0,
+  CALL: 1,
+  PLAY: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
+/**
+ * Colour Whist contracts (sync: internal/domain/ColourWhistConfig.go).
+ *
+ * TROEL is forced at deal time by holding three aces and **cannot be bid**.
+ */
+export const ColourWhistContract = {
+  NONE: 0,
+  SAMEN: 1,
+  ALLEEN: 2,
+  MISERIE: 3,
+  TROEL: 4,
+} as const;
+
 /** Blackjack Switch phase constants (sync: internal/domain/BlackJackSwitch.go). */
 export const BlackJackSwitchPhase = {
   BET: 1,

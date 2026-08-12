@@ -1,0 +1,68 @@
+{
+  "title": "Colour Whist",
+  "bidGuide": "Bid a stronger contract, or drop out",
+  "callGuide": "Choose the trump suit",
+  "playGuide": "Only legal cards can be chosen",
+  "troelNotice": "Three aces settled the contract without an auction",
+  "label": {
+    "you": "You",
+    "score": "Score",
+    "round": "Round",
+    "contract": "Contract",
+    "trump": "Trump",
+    "declarer": "Declarer",
+    "partner": "Partner",
+    "declarerTricks": "Declaring side",
+    "hand": "Hand",
+    "trick": "Trick",
+    "cards": "cards",
+    "passed": "passed",
+    "declarerSide": "declaring side",
+    "hidden": "hidden"
+  },
+  "contract": {
+    "none": "undecided",
+    "samen": "Samen (8 with a partner)",
+    "alleen": "Alleen (8 alone)",
+    "miserie": "Miserie (take none)",
+    "troel": "Troel (three aces, forced)"
+  },
+  "trump": {
+    "spade": "Spades",
+    "clover": "Clubs",
+    "heart": "Hearts",
+    "diamond": "Diamonds",
+    "none": "none"
+  },
+  "button": {
+    "bid": "Bid {{contract}}",
+    "pass": "Pass",
+    "call": "Trump {{trump}}",
+    "next": "Next round",
+    "giveUp": "Resign"
+  },
+  "kbd": {
+    "next": "N",
+    "giveUp": "G"
+  },
+  "phase": {
+    "bid": "Bidding",
+    "call": "Trump",
+    "play": "Play",
+    "roundEnd": "Round over",
+    "gameEnd": "Finished"
+  },
+  "result": {
+    "win": "You win",
+    "lose": "Another seat wins"
+  },
+  "tutorial": {
+    "bid": "You may only bid a stronger contract (troel cannot be bid)",
+    "hand": "Only legal cards can be chosen",
+    "score": "Scoring is zero-sum — the four scores always total 0"
+  },
+  "frontendHint": {
+    "colourWhistBidStrength": "based on your hand's strength",
+    "colourWhistFollowSuit": "you must follow suit"
+  }
+}

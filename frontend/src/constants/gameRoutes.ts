@@ -213,6 +213,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [2, 4, 4, 2], skill: [1, 5, 5, 1], social: [4, 3, 4, 3, 3], theme: [2, 1, 1, 5, 2, 3] },
       },
       {
+        path: '/colourwhist',
+        labelKey: 'nav.colourwhist',
+        icon: '🍺',
+        page: 'ColourWhist',
+        profile: { mood: [2, 4, 4, 2], skill: [1, 5, 4, 2], social: [5, 2, 4, 3, 3], theme: [2, 1, 1, 5, 2, 3] },
+      },
+      {
         path: '/blackjackswitch',
         labelKey: 'nav.blackjackswitch',
         icon: '🔀',
