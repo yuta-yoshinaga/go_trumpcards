@@ -99,6 +99,7 @@ export const workerUrl: Record<string, string> = {
   lingerlonger: WORKER_EXTRA,
   pig: WORKER_EXTRA2,
   stealingbundles: WORKER_EXTRA3,
+  cucumber: WORKER_CLASSIC,
   bisley: WORKER_EXTRA2,
   napoleonssquare: WORKER_EXTRA2,
   grandfathersclock: WORKER_EXTRA2,

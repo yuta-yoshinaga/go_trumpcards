@@ -2530,3 +2530,16 @@ export const StealingBundlesPhase = {
   PLAY: 0,
   GAME_END: 1,
 } as const;
+
+/**
+ * Cucumber phase constants (sync: internal/domain/Cucumber.go).
+ *
+ * **RoundEnd is a real stop.** A round's whole result is one seat taking
+ * penalty points, and nothing on the board records it — so the game waits
+ * there until the next round is asked for.
+ */
+export const CucumberPhase = {
+  PLAY: 0,
+  ROUND_END: 1,
+  GAME_END: 2,
+} as const;

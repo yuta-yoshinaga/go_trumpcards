@@ -540,6 +540,11 @@ func init() {
 			return usecase.NewStealingBundlesInteractor(domain.NewDefaultStealingBundles(), new(presenter.StealingBundlesWebPresenter))
 		},
 		controller.NewStealingBundlesWebController)
+	BindWebControllerFor("cucumber",
+		func() usecase.CucumberInteractorIF {
+			return usecase.NewCucumberInteractor(domain.NewDefaultCucumber(), new(presenter.CucumberWebPresenter))
+		},
+		controller.NewCucumberWebController)
 	BindWebControllerFor("rams",
 		func() usecase.RamsInteractorIF {
 			return usecase.NewRamsInteractor(domain.NewDefaultRams(), new(presenter.RamsWebPresenter))

@@ -66,6 +66,7 @@ import type {
   CruelResponse,
   CuarentaResponse,
   CuckooResponse,
+  CucumberResponse,
   DaifugoResponse,
   DesmocheResponse,
   DeuceToSevenResponse,
@@ -353,6 +354,7 @@ import { getCribbageSquaresHint } from '../utils/hints/cribbagesquaresHint';
 import { getCruelHint } from '../utils/hints/cruelHint';
 import { getCuarentaHint } from '../utils/hints/cuarentaHint';
 import { getCuckooHint } from '../utils/hints/cuckooHint';
+import { getCucumberHint } from '../utils/hints/cucumberHint';
 import { getDaifugoHint } from '../utils/hints/daifugoHint';
 import { getDesmocheHint } from '../utils/hints/desmocheHint';
 import { getDeucesWildHint } from '../utils/hints/deuceswildHint';
@@ -662,6 +664,7 @@ export const hintFactories = {
   lingerlonger: (s) => getLingerLongerHint(s as LingerLongerResponse),
   pig: (s) => getPigHint(s as PigResponse),
   stealingbundles: (s) => getStealingBundlesHint(s as StealingBundlesResponse),
+  cucumber: (s) => getCucumberHint(s as CucumberResponse),
   faro: (s) => getFaroHint(s as FaroResponse),
   fiftyone: (s) => getFiftyOneHint(s as FiftyOneResponse),
   napoleon: (s) => getNapoleonHint(s as NapoleonResponse),

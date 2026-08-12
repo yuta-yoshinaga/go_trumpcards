@@ -147,6 +147,7 @@ export type GameKey =
   | 'lingerlonger'
   | 'pig'
   | 'stealingbundles'
+  | 'cucumber'
   | 'skat'
   | 'belote'
   | 'jass'
@@ -704,6 +705,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   lingerlonger: GREEN,
   pig: BLUE,
   stealingbundles: GREEN,
+  cucumber: BRIGHT_GREEN,
   // Matching/Pass
   oldmaid: GREEN,
   doubt: GREEN,

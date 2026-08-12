@@ -1045,6 +1045,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [3, 3, 4, 3], skill: [2, 4, 3, 3], social: [1, 3, 4, 4, 3], theme: [3, 2, 1, 1, 3, 3] },
       },
       {
+        path: '/cucumber',
+        labelKey: 'nav.cucumber',
+        icon: '🥒',
+        page: 'Cucumber',
+        profile: { mood: [2, 4, 4, 3], skill: [3, 4, 3, 3], social: [1, 3, 4, 4, 3], theme: [2, 4, 1, 1, 2, 3] },
+      },
+      {
         path: '/snap',
         labelKey: 'nav.snap',
         icon: '👏',
