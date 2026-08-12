@@ -63,6 +63,8 @@ func (m *MockCrazyFourPokerGame) PlayerHasAcesOrBetter() bool { return m.Called(
 
 func (m *MockCrazyFourPokerGame) MaxPlayMultiplier() int { return m.Called().Int(0) }
 
+func (m *MockCrazyFourPokerGame) PlayerQualifies() bool { return m.Called().Bool(0) }
+
 func (m *MockCrazyFourPokerGame) DealerQualifies() bool { return m.Called().Bool(0) }
 
 func (m *MockCrazyFourPokerGame) GetAnteBet() int { return m.Called().Int(0) }

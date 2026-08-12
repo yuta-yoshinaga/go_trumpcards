@@ -288,6 +288,12 @@ func (g *CrazyFourPoker) Fold() error {
 
 // --- 決着 ---
 
+// PlayerQualifies はプレイヤーの手がキング以上かを返す。
+//
+// **画面のヒントがこれを自分で計算しないための窓口。** 札の値から「キング以上か」を
+// 引き直すと、ディーラーの成立条件と同じ規則がフロントにもう 1 つできてずれる。
+func (g *CrazyFourPoker) PlayerQualifies() bool { return crazyFourPokerQualifies(g.playerBest) }
+
 // DealerQualifies はディーラーの手が成立している (キング以上) かを返す。
 //
 // **成立しなければプレイベットはプッシュ**で、アンティだけが 1:1 で払われる。

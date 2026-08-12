@@ -17,5 +17,12 @@ export function getCrazyfourpokerHint(state: CrazyFourPokerResponse): HintResult
   if (state.hasAcesOrBetter) {
     return { targetAction: 'raise', reason: 'frontendHint.crazyFourPokerAces', confidence: 'strong' };
   }
+  // **降りるのも定石の一部。** ディーラーもキング以上でしか成立しないので、
+  // こちらがそれに届かないなら降りたほうがよい。判定 (`playerQualifies`) は
+  // サーバが計算したものを使う ── ここで札から「キング以上か」を引き直すと、
+  // ディーラーの成立条件と同じ規則がフロントにもう 1 つできる。
+  if (!state.playerQualifies) {
+    return { targetAction: 'fold', reason: 'frontendHint.crazyFourPokerFold', confidence: 'moderate' };
+  }
   return { targetAction: 'play', reason: 'frontendHint.crazyFourPokerMinimum', confidence: 'moderate' };
 }

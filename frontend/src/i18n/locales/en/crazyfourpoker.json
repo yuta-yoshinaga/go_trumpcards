@@ -44,5 +44,6 @@
   "tutorial.hand": "Your best four of the five dealt cards play",
   "tutorial.multiplier": "With a pair of aces or better you may raise to 3x here",
   "frontendHint.crazyFourPokerAces": "A pair of aces or better — this is the hand to raise to the cap",
-  "frontendHint.crazyFourPokerMinimum": "The dealer also needs king high to qualify, so playing beats folding"
+  "frontendHint.crazyFourPokerMinimum": "The dealer also needs king high to qualify, so playing beats folding",
+  "frontendHint.crazyFourPokerFold": "not even king high — folding is the better play"
 }

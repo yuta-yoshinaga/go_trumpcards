@@ -43,6 +43,7 @@ const base: CrazyFourPokerResponse = {
   dealerHandRank: 0,
   hasAcesOrBetter: false,
   maxMultiplier: 1,
+  playerQualifies: false,
   dealerQualifies: false,
   anteBet: 0,
   superBet: 0,
@@ -69,6 +70,7 @@ const dealt = (over: Partial<CrazyFourPokerResponse> = {}) =>
     playerHand: [ace, ace, king, five, five],
     playerBest: [ace, ace, king, five],
     playerHandRank: 2,
+    playerQualifies: true,
     ...over,
   });
 

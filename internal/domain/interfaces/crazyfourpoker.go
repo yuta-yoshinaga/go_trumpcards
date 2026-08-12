@@ -45,6 +45,8 @@ type CrazyFourPokerGame interface {
 	PlayerHasAcesOrBetter() bool
 	// MaxPlayMultiplier いま置ける上限倍率
 	MaxPlayMultiplier() int
+	// PlayerQualifies プレイヤーの手がキング以上か
+	PlayerQualifies() bool
 	// DealerQualifies ディーラーが成立しているか
 	DealerQualifies() bool
 

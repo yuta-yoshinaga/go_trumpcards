@@ -18,7 +18,6 @@ type CrazyFourPokerWebInput struct {
 	QueensUp *int `json:"queensUp,omitempty"`
 	// Multiplier はプレイベットの倍率。
 	Multiplier *int `json:"multiplier,omitempty"`
-	Chips      *int `json:"chips,omitempty"`
 }
 
 // CrazyFourPokerWebOutCfg はクレイジー 4 ポーカーの設定
@@ -42,7 +41,9 @@ type CrazyFourPokerWebOutput struct {
 	// HasAcesOrBetter はエースのペア以上か。**3 倍を出せる条件。**
 	HasAcesOrBetter bool `json:"hasAcesOrBetter"`
 	// MaxMultiplier はいま置ける上限倍率。ページはこれに従うこと。
-	MaxMultiplier   int  `json:"maxMultiplier"`
+	MaxMultiplier int `json:"maxMultiplier"`
+	// PlayerQualifies はプレイヤーの手がキング以上か。ヒントが使う。
+	PlayerQualifies bool `json:"playerQualifies"`
 	DealerQualifies bool `json:"dealerQualifies"`
 	AnteBet         int  `json:"anteBet"`
 	SuperBet        int  `json:"superBet"`

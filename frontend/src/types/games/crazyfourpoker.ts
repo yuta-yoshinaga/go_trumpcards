@@ -56,6 +56,13 @@ export interface CrazyFourPokerResponse extends BaseGameResponse {
    * second copy on the page drifts and silently loosens the 3x rule.
    */
   maxMultiplier: number;
+  /**
+   * Whether the player's own four is king high or better.
+   *
+   * Computed by the server so the page never re-derives "king high", which is
+   * the same rule the dealer qualifies on.
+   */
+  playerQualifies: boolean;
   dealerQualifies: boolean;
   anteBet: number;
   /** Always equal to the ante. */

@@ -224,12 +224,14 @@ function CrazyFourPokerPageContent() {
                     max={state.chips}
                     step={CRAZY_FOUR_POKER_ANTE_UNIT}
                   />
+                  {/* **アンティと Super Bonus を引いた残りしか置けない。** 上限を
+                      チップ全額にすると、合計が持ち金を超える組み合わせを選べてしまう。 */}
                   <ChipBetInput
                     id="crazyfourpoker-queensup"
                     label={t('label.queensUp')}
                     value={queensUp}
                     onChange={setQueensUp}
-                    max={state.chips}
+                    max={Math.max(0, state.chips - ante * 2)}
                     step={CRAZY_FOUR_POKER_ANTE_UNIT}
                   />
                   <button type="button" className={btnPrimary} onClick={handleDeal} disabled={loading}>

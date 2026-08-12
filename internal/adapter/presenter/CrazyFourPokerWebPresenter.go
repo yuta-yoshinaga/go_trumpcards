@@ -35,6 +35,7 @@ func (cp *CrazyFourPokerWebPresenter) Output(c interfaces.CrazyFourPokerGame, la
 	resObj.PlayerHandRank = c.GetPlayerHandRank()
 	resObj.HasAcesOrBetter = c.PlayerHasAcesOrBetter()
 	resObj.MaxMultiplier = c.MaxPlayMultiplier()
+	resObj.PlayerQualifies = c.PlayerQualifies()
 	resObj.AnteBet = c.GetAnteBet()
 	resObj.SuperBet = c.GetSuperBet()
 	resObj.QueensUpBet = c.GetQueensUpBet()

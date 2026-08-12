@@ -7,6 +7,7 @@ const base = {
   phase: CrazyFourPokerPhase.BET,
   gameEndFlag: false,
   hasAcesOrBetter: false,
+  playerQualifies: true,
   maxMultiplier: 1,
 } as unknown as CrazyFourPokerResponse;
 
@@ -37,6 +38,24 @@ describe('getCrazyfourpokerHint', () => {
     );
     expect(hint?.targetAction).toBe('play');
     expect(hint?.reason).toBe('frontendHint.crazyFourPokerMinimum');
+  });
+
+  // **降りるのも定石の一部。** CUI 側のヒントは fold を出すので、Web だけ出さないと
+  // 同じ局面で違う助言になる。判定はサーバの `playerQualifies` に従う。
+  it('キングにも届かなければ降りる助言', () => {
+    const hint = getCrazyfourpokerHint(
+      at({ phase: CrazyFourPokerPhase.DECIDE, hasAcesOrBetter: false, playerQualifies: false }),
+    );
+    expect(hint?.targetAction).toBe('fold');
+    expect(hint?.reason).toBe('frontendHint.crazyFourPokerFold');
+  });
+
+  // **playerQualifies を自分で計算し直さない。** キング以上の判定はドメインの規則。
+  it('札の中身ではなく playerQualifies に従う', () => {
+    const weak = getCrazyfourpokerHint(at({ phase: CrazyFourPokerPhase.DECIDE, playerQualifies: false }));
+    const ok = getCrazyfourpokerHint(at({ phase: CrazyFourPokerPhase.DECIDE, playerQualifies: true }));
+    expect(weak?.targetAction).toBe('fold');
+    expect(ok?.targetAction).toBe('play');
   });
 
   // **助言側で倍率を決め直さない。**

@@ -44,5 +44,6 @@
   "tutorial.hand": "配られた5枚のうち、最良の4枚で勝負します",
   "tutorial.multiplier": "エースのペア以上なら、ここで3倍まで乗せられます",
   "frontendHint.crazyFourPokerAces": "エースのペア以上です。上限まで乗せる場面です",
-  "frontendHint.crazyFourPokerMinimum": "ディーラーもキング以上でしか成立しないので、降りるより乗るほうが分がよいです"
+  "frontendHint.crazyFourPokerMinimum": "ディーラーもキング以上でしか成立しないので、降りるより乗るほうが分がよいです",
+  "frontendHint.crazyFourPokerFold": "キングにも届かないので、降りたほうが分がよいです"
 }

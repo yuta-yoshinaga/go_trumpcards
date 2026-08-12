@@ -48228,6 +48228,9 @@ components:
         maxMultiplier:
           type: integer
           description: 1, or 3 with a pair of aces or better. Do not re-derive client-side.
+        playerQualifies:
+          type: boolean
+          description: Whether the player's own four is king high or better. Server-computed so clients need not re-derive it.
         dealerQualifies:
           type: boolean
         anteBet:
