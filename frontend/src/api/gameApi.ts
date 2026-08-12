@@ -218,6 +218,7 @@ export * from './games/rams';
 export * from './games/razz';
 export * from './games/reddog';
 export * from './games/reversis';
+export * from './games/rikken';
 export * from './games/rollingstone';
 export * from './games/rook';
 export * from './games/royalcotillion';
@@ -367,6 +368,7 @@ export const games = [
   'goofspiel',
   'andarbahar',
   'botifarra',
+  'rikken',
   'razz',
   'sevencardstudhilo',
   'badugi',

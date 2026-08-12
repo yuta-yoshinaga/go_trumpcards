@@ -1,0 +1,70 @@
+{
+  "title": "Rikken",
+  "bidGuide": "Bid a stronger contract, or drop out",
+  "callGuide": "Choose the trump suit",
+  "playGuide": "Only legal cards can be chosen",
+  "label": {
+    "you": "You",
+    "seat": "Seat",
+    "score": "Score",
+    "round": "Round",
+    "contract": "Contract",
+    "trump": "Trump",
+    "declarer": "Declarer",
+    "partner": "Partner",
+    "tricks": "Tricks",
+    "declarerTricks": "Declaring side",
+    "hand": "Hand",
+    "trick": "Trick",
+    "cards": "cards",
+    "passed": "passed",
+    "declarerSide": "declaring side",
+    "calledCard": "Called card",
+    "hidden": "hidden"
+  },
+  "contract": {
+    "none": "undecided",
+    "rik": "Rik (8 with a partner)",
+    "misere": "Misere (take none)",
+    "solo": "Solo (6 alone)",
+    "openMisere": "Open Misere (none, exposed)"
+  },
+  "trump": {
+    "spade": "Spades",
+    "clover": "Clubs",
+    "heart": "Hearts",
+    "diamond": "Diamonds",
+    "none": "none"
+  },
+  "button": {
+    "bid": "Bid {{contract}}",
+    "pass": "Pass",
+    "call": "Trump {{trump}}",
+    "next": "Next round",
+    "giveUp": "Resign"
+  },
+  "kbd": {
+    "next": "N",
+    "giveUp": "G"
+  },
+  "phase": {
+    "bid": "Bidding",
+    "call": "Trump",
+    "play": "Play",
+    "roundEnd": "Round over",
+    "gameEnd": "Finished"
+  },
+  "result": {
+    "win": "You win",
+    "lose": "Another seat wins"
+  },
+  "tutorial": {
+    "bid": "You may only bid a stronger contract than the current one",
+    "hand": "Only legal cards can be chosen",
+    "score": "Scoring is zero-sum — the four scores always total 0"
+  },
+  "frontendHint": {
+    "rikkenBidStrength": "based on your hand's strength",
+    "rikkenFollowSuit": "you must follow suit"
+  }
+}
