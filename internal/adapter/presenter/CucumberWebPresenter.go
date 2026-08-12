@@ -37,7 +37,7 @@ func (p *CucumberWebPresenter) buildBase(s interfaces.CucumberGame) *controller.
 	resObj.Phase = int(s.GetPhase())
 	resObj.ValidPlays = intSliceOrEmpty(s.GetValidPlayIndices(0))
 	resObj.HighestInTrick = s.HighestInTrick()
-	resObj.Forced = cucumberIsForced(s)
+	resObj.Forced = s.IsForcedLowest(0)
 	resObj.CurrentTrick = trickCardsToOutput(s.GetCurrentTrick())
 	resObj.CurrentPlayerIdx = s.GetCurrentPlayerIdx()
 	resObj.LeadPlayerIdx = s.GetLeadPlayerIdx()
@@ -54,38 +54,6 @@ func (p *CucumberWebPresenter) buildBase(s interfaces.CucumberGame) *controller.
 		TargetScore: cfg.TargetScore,
 	}
 	return resObj
-}
-
-// cucumberIsForced は「更新できないので低い札に決まっている」場面かを返す。
-//
-// **合法手が 1 つ = 更新できない、ではありません。** ちょうど 1 枚だけ更新できる
-// 形もあるので、その札が実際に最高ランクを超えるかどうかで見分けます。
-func cucumberIsForced(s interfaces.CucumberGame) bool {
-	high := s.HighestInTrick()
-	valid := s.GetValidPlayIndices(0)
-	if high == 0 || len(valid) != 1 {
-		return false
-	}
-	human := s.GetPlayer(0)
-	if human == nil {
-		return false
-	}
-	card := human.GetCard(valid[0])
-	if card == nil {
-		return false
-	}
-	return cucumberWebRank(card) <= high
-}
-
-// cucumberWebRank は A を最強とするランク値を返す (ドメインと同じ規則)。
-func cucumberWebRank(c *domain.Card) int {
-	if c == nil {
-		return 0
-	}
-	if v := c.GetValue(); v == 1 {
-		return 14
-	}
-	return c.GetValue()
 }
 
 // buildPlayersOutput プレイヤー情報を構築
@@ -132,7 +100,7 @@ func (p *CucumberWebPresenter) buildMessage(s interfaces.CucumberGame, lastErr e
 		return "", "cucumber.waiting", nil
 	}
 	// **出す札が決まっている場面は、選べる場面と言い分けます。**
-	if cucumberIsForced(s) {
+	if s.IsForcedLowest(0) {
 		return "", "cucumber.forced", nil
 	}
 	if s.HighestInTrick() == 0 {

@@ -99,7 +99,10 @@ func (p *CucumberCuiPresenter) Output(s interfaces.CucumberGame, lastErr error) 
 		}
 
 		// **出す札が決まっている場面は、選べる場面と言い分けます。**
-		if cucumberIsForced(s) {
+		//
+		// **判定はドメインの 1 か所だけ。** ここで数え直すと、規則が変わったときに
+		// 片方だけ直り損ねます（「合法手が 1 つ = 更新できない」は偽です）。
+		if s.IsForcedLowest(0) {
 			sb.WriteString(color.Yellow(i18n.T("cucumber.promptForced")) + "\n")
 		} else if high := s.HighestInTrick(); high > 0 {
 			sb.WriteString(i18n.Tf("cucumber.promptBeat", "n", strconv.Itoa(high)) + "\n")
