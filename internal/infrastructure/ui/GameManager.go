@@ -4856,6 +4856,22 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  log                  action log"},
 		}),
+	BindCuiFor("crazyfourpoker",
+		func() usecase.CrazyFourPokerInteractorIF {
+			return usecase.NewCrazyFourPokerInteractor(domain.NewDefaultCrazyFourPoker(), new(presenter.CrazyFourPokerCuiPresenter))
+		},
+		controller.NewCrazyFourPokerCuiController,
+		CuiHelpSpec{
+			TitleKey: "crazyfourpoker.helpTitle",
+			CommandKeys: []string{
+				"crazyfourpoker.helpBet",
+				"crazyfourpoker.helpPlay",
+				"crazyfourpoker.helpFold",
+				"crazyfourpoker.helpNext",
+				"crazyfourpoker.helpHint",
+			},
+			ExtraCommandLines: []string{"  log                  action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

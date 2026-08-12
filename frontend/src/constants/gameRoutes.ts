@@ -227,6 +227,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [3, 3, 4, 2], skill: [2, 4, 4, 3], social: [4, 4, 3, 3, 3], theme: [5, 1, 1, 2, 3, 1] },
       },
       {
+        path: '/crazyfourpoker',
+        labelKey: 'nav.crazyfourpoker',
+        icon: '🃏',
+        page: 'CrazyFourPoker',
+        profile: { mood: [4, 3, 3, 2], skill: [3, 4, 3, 3], social: [5, 3, 2, 3, 3], theme: [5, 1, 1, 1, 3, 1] },
+      },
+      {
         path: '/blackjackswitch',
         labelKey: 'nav.blackjackswitch',
         icon: '🔀',

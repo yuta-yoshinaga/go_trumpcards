@@ -204,7 +204,18 @@ func (g *Rikken) Bid(contract int) error {
 	if !g.players[g.currentTurn].GetIsHuman() {
 		return errors.New("あなたの番ではありません")
 	}
-	return g.bid(g.currentTurn, contract)
+	if err := g.bid(g.currentTurn, contract); err != nil {
+		return err
+	}
+	// **競りを次の席へ渡したら CPU を進める。**
+	//
+	// これが無いと、人間が最初に競ったときだけ盤面が止まる。`advanceBid` は手番を
+	// 隣へ移すだけで誰も動かさず、`finishBidding` (= CPU を進める側) は競りが
+	// その場で終わったときにしか呼ばれない。人間が最後に競った局面 ── CPU が
+	// 既に全員降りていて、宣言した瞬間に競りが締まる ── では動くので、
+	// **半分くらいは正常に見える**のがこの抜けの厄介なところだった。
+	g.advanceCpu()
+	return nil
 }
 
 // bid は席 idx に競らせる。

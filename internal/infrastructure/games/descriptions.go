@@ -162,6 +162,7 @@ var gameDescriptions = map[string]string{
 	"rikken":              "Rikken (リッケン)",
 	"colourwhist":         "Colour Whist (カラーホイスト)",
 	"chemindefer":         "Chemin de Fer (シュマン・ド・フェール)",
+	"crazyfourpoker":      "Crazy 4 Poker (クレイジー4ポーカー)",
 	"blackjackswitch":     "Blackjack Switch (ブラックジャック・スイッチ)",
 	"montecarlo":          "Monte Carlo Solitaire (モンテカルロ・ソリティア)",
 	"contractrummy":       "Contract Rummy (コントラクトラミー)",

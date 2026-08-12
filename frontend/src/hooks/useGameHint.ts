@@ -63,6 +63,7 @@ import type {
   ContractRummyResponse,
   CourtPieceResponse,
   CrazyEightsResponse,
+  CrazyFourPokerResponse,
   CrazyQuiltResponse,
   CrescentResponse,
   CribbageResponse,
@@ -356,6 +357,7 @@ import { getConquianHint } from '../utils/hints/conquianHint';
 import { getContractRummyHint } from '../utils/hints/contractrummyHint';
 import { getCourtPieceHint } from '../utils/hints/courtPieceHint';
 import { getCrazyEightsHint } from '../utils/hints/crazyeightsHint';
+import { getCrazyfourpokerHint } from '../utils/hints/crazyfourpokerHint';
 import { getCrazyPineappleHint } from '../utils/hints/crazyPineappleHint';
 import { getCrazyQuiltHint } from '../utils/hints/crazyquiltHint';
 import { getCrescentHint } from '../utils/hints/crescentHint';
@@ -771,6 +773,7 @@ export const hintFactories = {
   botifarra: (s) => getBotifarraHint(s as BotifarraResponse),
   rikken: (s) => getRikkenHint(s as RikkenResponse),
   chemindefer: (s) => getChemindeferHint(s as ChemindeFerResponse),
+  crazyfourpoker: (s) => getCrazyfourpokerHint(s as CrazyFourPokerResponse),
   colourwhist: (s) => getColourwhistHint(s as ColourWhistResponse),
   dragontiger: (s) => getDragontigerHint(s as DragonTigerResponse),
   blackjackswitch: (s) => getBlackjackswitchHint(s as BlackJackSwitchResponse),

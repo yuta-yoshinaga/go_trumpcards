@@ -26,6 +26,8 @@ tags:
     description: Colour Whist (カラーホイスト) game
   - name: chemindefer
     description: Chemin de Fer (シュマン・ド・フェール) game
+  - name: crazyfourpoker
+    description: Crazy 4 Poker (クレイジー4ポーカー) game
   - name: poker
     description: 5-card Draw Poker game
   - name: oldmaid
@@ -9189,6 +9191,81 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ColourWhistResponse'
+
+  /crazyfourpoker/exec:
+    post:
+      tags:
+        - crazyfourpoker
+      summary: Execute a Crazy 4 Poker game command
+      description: |
+        Send a command to advance the Crazy 4 Poker (クレイジー4ポーカー) game
+        session identified by `sessionId`.
+
+        One player against the dealer on a standard 52-card deck. Both sides are
+        dealt five cards and play their **best four**.
+
+        **The ante and the Super Bonus are equal and mandatory**; Queens Up is
+        optional and settles on the player's own four regardless of the dealer or
+        a fold. Omitting `queensUp` means "no side bet".
+
+        **The play bet must equal the ante unless the player holds a pair of aces
+        or better**, in which case it may go up to 3x. Being able to move the
+        multiplier at all is the strong-hand privilege, so `maxMultiplier` is
+        returned by the server and is either 1 or 3 — clients must not re-derive
+        it. Sending a larger multiplier is rejected rather than clamped.
+
+        The dealer qualifies at **king high**. If the dealer does not qualify the
+        ante pays 1:1 and the play bet pushes.
+
+        **The dealer's cards are not in the response until the showdown**;
+        `dealerHand`, `dealerBest` and `dealerHandRank` stay empty/zero while the
+        player is still deciding.
+      operationId: execCrazyFourPoker
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: "reset (r), bet (b), play (p), fold (f), next, hint (h), log, quit (q)"
+                ante:
+                  type: integer
+                  description: Ante in multiples of 10. An equal Super Bonus is placed with it.
+                queensUp:
+                  type: integer
+                  description: Optional side bet. Omit or send 0 for none.
+                multiplier:
+                  type: integer
+                  description: "Play bet multiplier: 1, or up to 3 with a pair of aces or better."
+                chips:
+                  type: integer
+                  description: Starting chips, for reset.
+                sessionId:
+                  type: string
+              example:
+                command: bet
+                ante: 50
+                queensUp: 20
+                sessionId: my-session-001
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CrazyFourPokerResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CrazyFourPokerResponse'
 
   /chemindefer/exec:
     post:
@@ -48113,6 +48190,87 @@ components:
           description: Index of the player who played this card
         card:
           $ref: '#/components/schemas/Card'
+    CrazyFourPokerResponse:
+      type: object
+      description: Response payload for /crazyfourpoker/exec
+      properties:
+        phase:
+          type: integer
+          description: "0=Bet, 1=Decide, 2=Result"
+        playerHand:
+          type: array
+          description: Always an array. Five cards; four of them play.
+          items:
+            $ref: '#/components/schemas/Card'
+        dealerHand:
+          type: array
+          description: Always an array. Empty until the showdown.
+          items:
+            $ref: '#/components/schemas/Card'
+        playerBest:
+          type: array
+          description: Always an array.
+          items:
+            $ref: '#/components/schemas/Card'
+        dealerBest:
+          type: array
+          description: Always an array. Empty until the showdown.
+          items:
+            $ref: '#/components/schemas/Card'
+        playerHandRank:
+          type: integer
+          description: "1=High Card .. 8=Four of a Kind"
+        dealerHandRank:
+          type: integer
+          description: Zero until the showdown.
+        hasAcesOrBetter:
+          type: boolean
+        maxMultiplier:
+          type: integer
+          description: 1, or 3 with a pair of aces or better. Do not re-derive client-side.
+        playerQualifies:
+          type: boolean
+          description: Whether the player's own four is king high or better. Server-computed so clients need not re-derive it.
+        dealerQualifies:
+          type: boolean
+        anteBet:
+          type: integer
+        superBet:
+          type: integer
+          description: Always equal to the ante.
+        queensUpBet:
+          type: integer
+        playBet:
+          type: integer
+        playMultiplier:
+          type: integer
+        result:
+          type: integer
+          description: "0=none, 1=fold, 2=win, 3=lose, 4=push, 5=dealer did not qualify"
+        payout:
+          type: integer
+          description: Total returned this round, including returned stakes.
+        chips:
+          type: integer
+        minTotalWager:
+          type: integer
+        roundNumber:
+          type: integer
+        remainingCards:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        config:
+          type: object
+          properties:
+            initialChips:
+              type: integer
+            defaultAnte:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
     ChemindeFerResponse:
       type: object
       description: Response payload for /chemindefer/exec

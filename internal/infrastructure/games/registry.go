@@ -1101,6 +1101,12 @@ var registry = []*Game{
 	// プント・バンコと違い 3 枚目の引き方は表で固定されておらず、決まっているのは
 	// **子の 0-4 (引く) と 6-7 (立つ) だけ**。合計 5 の子と、あらゆる合計の親は自由。
 	{Name: "chemindefer", Category: CategoryCasino},
+	// Crazy 4 Poker クレイジー4ポーカー
+	//
+	// 5 枚から**最良の 4 枚**で勝負するテーブルポーカー。名前の由来は
+	// 「エースのペア以上なら、プレイベットを 3 倍まで乗せられる」ところで、
+	// **倍率を動かせること自体が強い手の特典**。ディーラーはキング以上で成立。
+	{Name: "crazyfourpoker", Category: CategoryCasino},
 }
 
 // All returns a value-level copy of the registry in canonical order.

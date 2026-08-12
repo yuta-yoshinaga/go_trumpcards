@@ -1992,6 +1992,13 @@ export const RikkenContract = {
   OPEN_MISERE: 4,
 } as const;
 
+/** Crazy 4 Poker phase constants (sync: internal/domain/CrazyFourPokerConfig.go). */
+export const CrazyFourPokerPhase = {
+  BET: 0,
+  DECIDE: 1,
+  RESULT: 2,
+} as const;
+
 /** Chemin de Fer phase constants (sync: internal/domain/ChemindeFerConfig.go). */
 export const ChemindeFerPhase = {
   STAKE: 0,

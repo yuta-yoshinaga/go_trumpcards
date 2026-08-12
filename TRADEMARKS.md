@@ -49,6 +49,7 @@ time. Verify against the relevant national registry before relying on any row.
 |---|---|
 | Three Card Poker | Shuffle Master / Light & Wonder |
 | Four Card Poker | Shuffle Master / Light & Wonder |
+| Crazy 4 Poker | Shuffle Master / Light & Wonder |
 | Let It Ride | Shuffle Master / Light & Wonder |
 | Mississippi Stud | Shuffle Master / Light & Wonder |
 | Ultimate Texas Hold'em | Shuffle Master / Light & Wonder |
@@ -67,6 +68,7 @@ time. Verify against the relevant national registry before relying on any row.
 | Name | Reported owner |
 |---|---|
 | 21+3 | **Galaxy Gaming — registered in Japan** (登録6752649 / 6785367, classes 28 and 41) |
+| Queens Up | Shuffle Master / Light & Wonder — searched 2026-08-13, no Japanese registration found |
 
 This is the only mark in this inventory confirmed to be *registered in Japan*,
 and class 41 covers providing games online. The project therefore no longer

@@ -552,3 +552,32 @@ func TestRikkenSoloContractHasNoVisiblePartner(t *testing.T) {
 		assert.False(t, g.IsDeclarerSideVisible(i), "席 %d", i)
 	}
 }
+
+// **人間が競った直後、盤面は必ず次の判断どころまで進む。**
+//
+// これが抜けていると、**人間が最初に競った局面だけ**卓が止まる ── `advanceBid` は
+// 手番を隣へ移すだけで誰も動かさず、CPU を進める `finishBidding` は競りがその場で
+// 締まったときしか呼ばれない。人間が最後に競った局面 (CPU が既に全員降りている) では
+// 正常に動くので、**半分ほどは正しく見えてしまう**のが厄介だった。
+// 実測では 25 回中 11 回、オープンミゼール宣言後に phase=Bid のまま CPU の手番で
+// 固まり、画面に押せるボタンが 1 つも無くなっていた (#5260 の CI で発覚)。
+func TestRikken_BidAdvancesToTheNextHumanDecision(t *testing.T) {
+	stuck := 0
+	for seed := range 40 {
+		g := newRikkenWithHuman(t, int64(seed)+1)
+		if g.GetPhase() != RikkenPhaseBid || !g.IsHumanTurn() {
+			continue // 人間の競り番から始まる配りだけを見る
+		}
+		require.NoError(t, g.Bid(RikkenContractOpenMisere))
+
+		// 最強の契約なので競りはここで終わり、プレイに入っているはず。
+		if g.GetPhase() == RikkenPhaseBid && !g.IsHumanTurn() {
+			stuck++
+			continue
+		}
+		assert.True(t, g.IsHumanTurn() || g.GetPhase() == RikkenPhaseRoundEnd || g.GetGameEndFlag(),
+			"seed %d: 人間の番でもラウンド終了でもない場面で止まった (phase=%d, turn=%d)",
+			seed, g.GetPhase(), g.GetCurrentTurn())
+	}
+	assert.Zero(t, stuck, "%d 個の配りで競りの途中に固まった (CPU が進んでいない)", stuck)
+}
