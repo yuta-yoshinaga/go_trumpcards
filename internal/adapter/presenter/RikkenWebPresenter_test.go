@@ -207,3 +207,32 @@ func TestRikkenWebPresenter_PlainMisereKeepsTheDeclarerHandHidden(t *testing.T) 
 	require.Len(t, out.Players, 2)
 	assert.Empty(t, out.Players[1].Cards, "ミゼールで手札が漏れている")
 }
+
+// **未公開の相方はワイヤにも出ない。**
+func TestRikkenWebPresenter_HidesTheUnrevealedPartnerFlag(t *testing.T) {
+	m := new(interfaces.MockRikkenGame)
+	m.On("GetContract").Return(domain.RikkenContractRik)
+	m.On("GetPartnerIdx").Return(-1)
+	m.On("IsDeclarerSideVisible", 0).Return(true)
+	m.On("IsDeclarerSideVisible", 1).Return(false)
+	m.On("IsDeclarerSideVisible", 2).Return(false)
+	m.On("IsDeclarerSideVisible", 3).Return(false)
+	fillRikkenDefaults(m)
+
+	var out struct {
+		PartnerIdx int `json:"partnerIdx"`
+		Players    []struct {
+			ID             int  `json:"id"`
+			IsDeclarerSide bool `json:"isDeclarerSide"`
+		} `json:"players"`
+	}
+	require.NoError(t, json.Unmarshal([]byte(new(RikkenWebPresenter).Output(m, nil)), &out))
+	assert.Equal(t, -1, out.PartnerIdx)
+	for _, p := range out.Players {
+		if p.ID == 0 {
+			assert.True(t, p.IsDeclarerSide)
+			continue
+		}
+		assert.False(t, p.IsDeclarerSide, "席 %d で相方が漏れている", p.ID)
+	}
+}

@@ -75,7 +75,7 @@ func colourWhistPlayersToOutput(c interfaces.ColourWhistGame) []*controller.Colo
 			Cards:          make([]*controller.WebOutputCard, 0),
 			TrickCount:     p.GetTrickCount(),
 			Score:          p.GetScore(),
-			IsDeclarerSide: c.IsDeclarerSide(i),
+			IsDeclarerSide: c.IsDeclarerSideVisible(i),
 			HasPassed:      c.HasPassed(i),
 		}
 		if p.GetIsHuman() {

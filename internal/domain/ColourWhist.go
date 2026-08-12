@@ -398,9 +398,28 @@ func (g *ColourWhist) startPlay() {
 }
 
 // IsDeclarerSide は席 idx が契約側かを返す。
+//
+// **これは内部の真値です。** トリックの数え上げ・精算・CPU の判断がこれに依存して
+// いるので、相方が未公開でも真を返さなければなりません（伏せると契約側のトリックを
+// 数え落とします）。**画面に出すときは `IsDeclarerSideVisible` を使ってください。**
 func (g *ColourWhist) IsDeclarerSide(idx int) bool {
 	if idx == g.declarerIdx {
 		return true
+	}
+	return ColourWhistHasPartner(g.contract) && idx == g.partnerIdx
+}
+
+// IsDeclarerSideVisible は席 idx が契約側だと**公開されているか**を返す。
+//
+// Samen の相方は指名した札が出るまで伏せられます。`IsDeclarerSide` をそのまま
+// 画面に出すと、「相方: 未公開」と表示しながら隣で相方の席に「契約側」の印を
+// 付けてしまい、仕掛けが台無しになります。
+func (g *ColourWhist) IsDeclarerSideVisible(idx int) bool {
+	if idx == g.declarerIdx {
+		return true
+	}
+	if !g.partnerRevealed {
+		return false
 	}
 	return ColourWhistHasPartner(g.contract) && idx == g.partnerIdx
 }

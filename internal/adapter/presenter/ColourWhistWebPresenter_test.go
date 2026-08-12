@@ -148,3 +148,33 @@ func TestColourWhistWebPresenter_ErrorAndHint(t *testing.T) {
 	assert.Nil(t, none.Hint)
 	assert.NotEmpty(t, p.ActionLogOutput(m))
 }
+
+// **未公開の相方はワイヤにも出ない。** ページは isDeclarerSide をそのまま印にします。
+func TestColourWhistWebPresenter_HidesTheUnrevealedPartner(t *testing.T) {
+	m := new(interfaces.MockColourWhistGame)
+	m.On("GetContract").Return(domain.ColourWhistContractSamen)
+	m.On("GetPartnerIdx").Return(-1)
+	// 公開用アクセサは相方を false にする（内部の真値とは別物）。
+	m.On("IsDeclarerSideVisible", 0).Return(true)
+	m.On("IsDeclarerSideVisible", 1).Return(false)
+	m.On("IsDeclarerSideVisible", 2).Return(false)
+	m.On("IsDeclarerSideVisible", 3).Return(false)
+	fillColourWhistDefaults(m)
+
+	var out struct {
+		PartnerIdx int `json:"partnerIdx"`
+		Players    []struct {
+			ID             int  `json:"id"`
+			IsDeclarerSide bool `json:"isDeclarerSide"`
+		} `json:"players"`
+	}
+	require.NoError(t, json.Unmarshal([]byte(new(ColourWhistWebPresenter).Output(m, nil)), &out))
+	assert.Equal(t, -1, out.PartnerIdx)
+	for _, p := range out.Players {
+		if p.ID == 0 {
+			assert.True(t, p.IsDeclarerSide, "宣言者は常に見える")
+			continue
+		}
+		assert.False(t, p.IsDeclarerSide, "席 %d で相方が漏れている", p.ID)
+	}
+}

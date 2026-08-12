@@ -37,6 +37,8 @@ type ColourWhistGame interface {
 	GetValidPlayIndices(playerIdx int) []int
 	// IsDeclarerSide 席が契約側かを返す
 	IsDeclarerSide(playerIdx int) bool
+	// IsDeclarerSideVisible 契約側だと公開されているか（未公開の相方は false）
+	IsDeclarerSideVisible(playerIdx int) bool
 	// GetDealerIdx 親の席
 	GetDealerIdx() int
 	// GetContract 成立した契約

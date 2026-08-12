@@ -505,3 +505,50 @@ func TestRikkenFallsBackToAKingOnlyWithAllFourAces(t *testing.T) {
 	assert.Equal(t, 13, card.GetValue(), "エースを全部持っていればキング")
 	assert.Equal(t, 1, g.holderOf(card))
 }
+
+// **Rik の相方も「宣言側」の印で漏れてはいけない。**
+//
+// ColourWhist と同じ形のバグで、こちらは先にマージされていました。
+func TestRikkenPartnerIsNotLeakedByDeclarerSide(t *testing.T) {
+	t.Parallel()
+
+	g := newRikkenWithHuman(t, 51)
+	g.phase = RikkenPhaseCall
+	g.contract = RikkenContractRik
+	g.declarerIdx = 0
+	g.currentTurn = 0
+	g.partnerRevealed = false
+	require.NoError(t, g.call(0, CardDesignSpade))
+
+	partner := g.partnerIdx
+	require.GreaterOrEqual(t, partner, 0)
+	require.NotEqual(t, 0, partner)
+
+	// **必ず伏せた状態にしてから検査します。** 条件付きだとテストが何も検査せずに
+	// 通ることがあります。
+	g.partnerRevealed = false
+	assert.Equal(t, -1, g.GetPartnerIdx(), "相方の席が漏れている")
+	assert.False(t, g.IsDeclarerSideVisible(partner), "宣言側の印で相方が漏れている")
+	// **内部の真値は伏せない。**
+	assert.True(t, g.IsDeclarerSide(partner), "内部では宣言側のまま")
+	assert.True(t, g.IsDeclarerSideVisible(0))
+
+	g.partnerRevealed = true
+	assert.True(t, g.IsDeclarerSideVisible(partner))
+}
+
+// **単独契約では宣言者だけが宣言側。**
+func TestRikkenSoloContractHasNoVisiblePartner(t *testing.T) {
+	t.Parallel()
+
+	g := newRikkenAllCpu(t, 53)
+	g.contract = RikkenContractSolo
+	g.declarerIdx = 1
+	g.partnerIdx = -1
+	g.partnerRevealed = false
+
+	assert.True(t, g.IsDeclarerSideVisible(1))
+	for _, i := range []int{0, 2, 3} {
+		assert.False(t, g.IsDeclarerSideVisible(i), "席 %d", i)
+	}
+}

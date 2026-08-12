@@ -37,6 +37,7 @@ func fillColourWhistDefaults(m *interfaces.MockColourWhistGame) {
 	for i := range domain.ColourWhistPlayerCnt {
 		m.On("GetPlayer", i).Return((*domain.ColourWhistPlayer)(nil)).Maybe()
 		m.On("IsDeclarerSide", i).Return(false).Maybe()
+		m.On("IsDeclarerSideVisible", i).Return(false).Maybe()
 		m.On("HasPassed", i).Return(false).Maybe()
 	}
 	m.On("GetWinnerIdx").Return(-1).Maybe()

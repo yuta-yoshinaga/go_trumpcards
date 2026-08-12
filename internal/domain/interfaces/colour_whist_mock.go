@@ -199,3 +199,8 @@ func (m *MockColourWhistGame) GetActionLog() []*domain.ActionLogEntry {
 	}
 	return args.Get(0).([]*domain.ActionLogEntry)
 }
+
+func (m *MockColourWhistGame) IsDeclarerSideVisible(playerIdx int) bool {
+	args := m.Called(playerIdx)
+	return args.Bool(0)
+}

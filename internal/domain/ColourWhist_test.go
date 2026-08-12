@@ -417,3 +417,82 @@ func TestColourWhistHint(t *testing.T) {
 	require.NotNil(t, h.Contract)
 	assert.Nil(t, h.CardIndex)
 }
+
+// **Samen の相方は「契約側」の印でも漏れてはいけない。**
+//
+// `GetPartnerIdx` は伏せているのに `IsDeclarerSide` が真を返すと、画面は
+// 「相方: 未公開」と出しながら相方の席に印を付けてしまいます。
+// **内部の真値は伏せられません**——トリックの数え上げがこれに依存しているので、
+// 公開用は別のアクセサに分けます。
+func TestColourWhistSamenPartnerIsNotLeakedByDeclarerSide(t *testing.T) {
+	t.Parallel()
+
+	g := newColourWhistWithHuman(t, 41)
+	g.phase = ColourWhistPhaseCall
+	g.contract = ColourWhistContractSamen
+	g.declarerIdx = 0
+	g.currentTurn = 0
+	g.troelForced = false
+	g.partnerRevealed = false
+	require.NoError(t, g.call(0, CardDesignSpade))
+
+	require.NotNil(t, g.GetCalledCard(), "Samen は札を指名する")
+	partner := g.partnerIdx
+	require.GreaterOrEqual(t, partner, 0)
+	require.NotEqual(t, 0, partner)
+
+	// **必ず伏せた状態にしてから検査します。** `call()` の直後に CPU が第1トリックを
+	// 進めて指名札が出ると公開済みになることがあり、条件付きで assert すると
+	// テストが何も検査しないまま通ります（変異テストで実際に素通りしました）。
+	g.partnerRevealed = false
+	assert.Equal(t, -1, g.GetPartnerIdx(), "相方の席が漏れている")
+	assert.False(t, g.IsDeclarerSideVisible(partner), "契約側の印で相方が漏れている")
+	// **内部の真値は伏せない。** 数え上げが壊れます。
+	assert.True(t, g.IsDeclarerSide(partner), "内部では契約側のまま")
+	// 宣言者自身は常に公開。
+	assert.True(t, g.IsDeclarerSideVisible(0))
+
+	// 公開されたら印も出る。
+	g.partnerRevealed = true
+	assert.True(t, g.IsDeclarerSideVisible(partner))
+	assert.Equal(t, partner, g.GetPartnerIdx())
+}
+
+// **Troel の相方は最初から公開。** 配りで決まるので伏せる意味がありません。
+func TestColourWhistTroelPartnerIsVisibleImmediately(t *testing.T) {
+	t.Parallel()
+
+	g := newColourWhistAllCpu(t, 43)
+	for i := range ColourWhistPlayerCnt {
+		g.players[i].ResetRound()
+	}
+	for _, suit := range []int{CardDesignSpade, CardDesignClover, CardDesignHeart} {
+		g.players[1].AddCard(NewCard(suit, 1, false))
+	}
+	g.players[3].AddCard(NewCard(CardDesignDiamond, 1, false))
+	g.contract = ColourWhistContractNone
+	g.declarerIdx = -1
+	g.partnerIdx = -1
+
+	require.True(t, g.detectTroel())
+	assert.True(t, g.IsDeclarerSideVisible(1), "契約者")
+	assert.True(t, g.IsDeclarerSideVisible(3), "相方は最初から見える")
+	assert.False(t, g.IsDeclarerSideVisible(0))
+	assert.False(t, g.IsDeclarerSideVisible(2))
+}
+
+// **単独契約では宣言者だけが契約側。**
+func TestColourWhistSoloContractHasNoVisiblePartner(t *testing.T) {
+	t.Parallel()
+
+	g := newColourWhistAllCpu(t, 45)
+	g.contract = ColourWhistContractAlleen
+	g.declarerIdx = 2
+	g.partnerIdx = -1
+	g.partnerRevealed = false
+
+	assert.True(t, g.IsDeclarerSideVisible(2))
+	for _, i := range []int{0, 1, 3} {
+		assert.False(t, g.IsDeclarerSideVisible(i), "席 %d", i)
+	}
+}
