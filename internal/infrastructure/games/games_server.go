@@ -520,6 +520,11 @@ func init() {
 			return usecase.NewSnapInteractor(domain.NewDefaultSnap(), new(presenter.SnapWebPresenter))
 		},
 		controller.NewSnapWebController)
+	BindWebControllerFor("rollingstone",
+		func() usecase.RollingStoneInteractorIF {
+			return usecase.NewRollingStoneInteractor(domain.NewDefaultRollingStone(), new(presenter.RollingStoneWebPresenter))
+		},
+		controller.NewRollingStoneWebController)
 	BindWebControllerFor("rams",
 		func() usecase.RamsInteractorIF {
 			return usecase.NewRamsInteractor(domain.NewDefaultRams(), new(presenter.RamsWebPresenter))
