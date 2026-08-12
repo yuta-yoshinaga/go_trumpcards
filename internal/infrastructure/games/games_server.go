@@ -805,6 +805,11 @@ func init() {
 			return usecase.NewRikkenInteractor(domain.NewDefaultRikken(), new(presenter.RikkenWebPresenter))
 		},
 		controller.NewRikkenWebController)
+	BindWebControllerFor("colourwhist",
+		func() usecase.ColourWhistInteractorIF {
+			return usecase.NewColourWhistInteractor(domain.NewDefaultColourWhist(), new(presenter.ColourWhistWebPresenter))
+		},
+		controller.NewColourWhistWebController)
 	BindWebControllerFor("blackjackswitch",
 		func() usecase.BlackJackSwitchInteractorIF {
 			return usecase.NewBlackJackSwitchInteractor(domain.NewDefaultBlackJackSwitch(), new(presenter.BlackJackSwitchWebPresenter))

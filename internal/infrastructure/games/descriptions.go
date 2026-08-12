@@ -160,6 +160,7 @@ var gameDescriptions = map[string]string{
 	"andarbahar":          "Andar Bahar (アンダーバハール)",
 	"botifarra":           "Botifarra (ボティファラ)",
 	"rikken":              "Rikken (リッケン)",
+	"colourwhist":         "Colour Whist (カラーホイスト)",
 	"blackjackswitch":     "Blackjack Switch (ブラックジャック・スイッチ)",
 	"montecarlo":          "Monte Carlo Solitaire (モンテカルロ・ソリティア)",
 	"contractrummy":       "Contract Rummy (コントラクトラミー)",

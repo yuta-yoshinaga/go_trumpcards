@@ -22,6 +22,8 @@ tags:
     description: Botifarra (ボティファラ) game
   - name: rikken
     description: Rikken (リッケン) game
+  - name: colourwhist
+    description: Colour Whist (カラーホイスト) game
   - name: poker
     description: 5-card Draw Poker game
   - name: oldmaid
@@ -9120,6 +9122,71 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RikkenResponse'
+
+  /colourwhist/exec:
+    post:
+      tags:
+        - colourwhist
+      summary: Execute a Colour Whist game command
+      description: |
+        Send a command to advance the Colour Whist (カラーホイスト) game session
+        identified by `sessionId`.
+
+        A Flemish contract whist for four players on a standard 52-card deck.
+
+        **The shape of the hand can decide the contract.** If anyone is dealt
+        three aces, `troel` is forced **without an auction** and the holder of
+        the fourth ace becomes their partner automatically; `troelForced` says
+        so, and `phase` will not be Bid. Troel is the one contract that cannot
+        be bid - sending it is rejected.
+
+        Otherwise the ladder is Samen (8 with a called partner) < Alleen (8
+        alone) < Miserie (take none). `contract: 0` is a pass and must be sent
+        explicitly - it is a value, not an omission.
+
+        Scoring is zero-sum: the four scores always total 0.
+      operationId: execColourWhist
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: "reset (r), bid (b), call (c), play (p), next, giveup (g), hint (h), log, quit (q)"
+                cardIndex:
+                  type: integer
+                  description: Hand index to play.
+                contract:
+                  type: integer
+                  description: "0=pass, 1=Samen, 2=Alleen, 3=Miserie. Troel (4) cannot be bid."
+                suit:
+                  type: integer
+                  description: "Trump: 1=spades, 2=clubs, 3=hearts, 4=diamonds."
+                sessionId:
+                  type: string
+              example:
+                command: bid
+                contract: 1
+                sessionId: my-session-001
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ColourWhistResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ColourWhistResponse'
 
   /clocksolitaire/exec:
     post:
@@ -47960,6 +48027,108 @@ components:
           description: Index of the player who played this card
         card:
           $ref: '#/components/schemas/Card'
+    ColourWhistTrickCard:
+      type: object
+      description: A card played in the current trick
+      required:
+        - playerIdx
+        - card
+      properties:
+        playerIdx:
+          type: integer
+          description: Index of the player who played this card
+        card:
+          $ref: '#/components/schemas/Card'
+    ColourWhistResponse:
+      type: object
+      description: Response payload for /colourwhist/exec
+      properties:
+        players:
+          type: array
+          description: Always an array. Only the human seat carries its cards.
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              trickCount:
+                type: integer
+              score:
+                type: integer
+                description: Running score. Negative values are normal - scoring is zero-sum.
+              isDeclarerSide:
+                type: boolean
+                description: Sides are set by the contract, not by seat.
+              hasPassed:
+                type: boolean
+        phase:
+          type: integer
+          description: "0=Bid, 1=Call, 2=Play, 3=RoundEnd, 4=GameEnd"
+        validPlays:
+          type: array
+          items:
+            type: integer
+        dealerIdx:
+          type: integer
+        contract:
+          type: integer
+          description: "0=none, 1=Samen, 2=Alleen, 3=Miserie, 4=Troel"
+        declarerIdx:
+          type: integer
+        partnerIdx:
+          type: integer
+          description: -1 until known. Troel names it at deal time; Samen hides it until the called card is played.
+        calledCard:
+          allOf:
+            - $ref: '#/components/schemas/Card'
+          description: The card called to find a partner. Samen only - troel is dealt, not called.
+        trumpSuit:
+          type: integer
+          description: "1..4, or -1 for no trump (Miserie)"
+        troelForced:
+          type: boolean
+          description: True when three aces in one hand forced the contract without an auction.
+        currentTurn:
+          type: integer
+        isHumanTurn:
+          type: boolean
+        currentTrick:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColourWhistTrickCard'
+        lastTrick:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColourWhistTrickCard'
+        lastTrickWinner:
+          type: integer
+        trickCount:
+          type: integer
+        declarerTricks:
+          type: integer
+        roundNumber:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+        config:
+          type: object
+          properties:
+            rounds:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
     RikkenTrickCard:
       type: object
       description: A card played in the current trick

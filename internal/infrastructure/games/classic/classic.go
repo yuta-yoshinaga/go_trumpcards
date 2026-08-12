@@ -436,4 +436,12 @@ func init() {
 			return usecase.RestoreBotifarraInteractor(data, new(presenter.BotifarraWebPresenter))
 		},
 		controller.NewBotifarraWebControllerWithProvider)
+	games.RegisterKVGame("colourwhist", games.CategoryClassic,
+		func() usecase.ColourWhistInteractorIF {
+			return usecase.NewColourWhistInteractor(domain.NewDefaultColourWhist(), new(presenter.ColourWhistWebPresenter))
+		},
+		func(data []byte) (usecase.ColourWhistInteractorIF, error) {
+			return usecase.RestoreColourWhistInteractor(data, new(presenter.ColourWhistWebPresenter))
+		},
+		controller.NewColourWhistWebControllerWithProvider)
 }

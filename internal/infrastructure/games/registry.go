@@ -1088,6 +1088,13 @@ var registry = []*Game{
 	// 「1枚も取らない」契約が強さ順に混ざる。**組は席では決まらず**、Rik だけが 2 対 2。
 	// 得点はゼロサムで、卓の合計は常に 0。
 	{Name: "rikken", Category: CategoryExtra2},
+	// Colour Whist カラーホイスト（クルーレンヴィーゼン）
+	//
+	// **手札の形が契約を決めてしまう。** 配った時点で誰かがエースを 3 枚持っていれば
+	// **競りをせずに** Troel が成立し、4 枚目のエースの持ち主が自動的に相方になる。
+	// 該当が無ければ Samen(相方と8) < Alleen(単独8) < Miserie(0) を競る。
+	// 得点はゼロサムで、卓の合計は常に 0。
+	{Name: "colourwhist", Category: CategoryClassic},
 }
 
 // All returns a value-level copy of the registry in canonical order.
