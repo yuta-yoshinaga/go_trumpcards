@@ -530,6 +530,11 @@ func init() {
 			return usecase.NewLingerLongerInteractor(domain.NewDefaultLingerLonger(), new(presenter.LingerLongerWebPresenter))
 		},
 		controller.NewLingerLongerWebController)
+	BindWebControllerFor("pig",
+		func() usecase.PigInteractorIF {
+			return usecase.NewPigInteractor(domain.NewDefaultPig(), new(presenter.PigWebPresenter))
+		},
+		controller.NewPigWebController)
 	BindWebControllerFor("rams",
 		func() usecase.RamsInteractorIF {
 			return usecase.NewRamsInteractor(domain.NewDefaultRams(), new(presenter.RamsWebPresenter))

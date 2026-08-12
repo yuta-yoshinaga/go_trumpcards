@@ -2505,3 +2505,17 @@ export const LingerLongerPhase = {
   PLAY: 0,
   GAME_END: 1,
 } as const;
+
+/**
+ * Pig phase constants (sync: internal/domain/Pig.go).
+ *
+ * **RoundEnd is a real stop, not a flicker.** A round's whole result is one
+ * seat taking a letter, and nothing on the board records it — so the game
+ * waits there until the next round is asked for.
+ */
+export const PigPhase = {
+  PASS: 0,
+  SIGNAL: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;

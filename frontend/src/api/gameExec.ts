@@ -97,6 +97,7 @@ export const workerUrl: Record<string, string> = {
   snap: WORKER_SOLO,
   rollingstone: WORKER_EXTRA3,
   lingerlonger: WORKER_EXTRA,
+  pig: WORKER_EXTRA2,
   bisley: WORKER_EXTRA2,
   napoleonssquare: WORKER_EXTRA2,
   grandfathersclock: WORKER_EXTRA2,

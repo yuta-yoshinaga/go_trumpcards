@@ -421,4 +421,12 @@ func init() {
 			return usecase.RestoreShelemInteractor(data, new(presenter.ShelemWebPresenter))
 		},
 		controller.NewShelemWebControllerWithProvider)
+	games.RegisterKVGame("pig", games.CategoryExtra2,
+		func() usecase.PigInteractorIF {
+			return usecase.NewPigInteractor(domain.NewDefaultPig(), new(presenter.PigWebPresenter))
+		},
+		func(data []byte) (usecase.PigInteractorIF, error) {
+			return usecase.RestorePigInteractor(data, new(presenter.PigWebPresenter))
+		},
+		controller.NewPigWebControllerWithProvider)
 }

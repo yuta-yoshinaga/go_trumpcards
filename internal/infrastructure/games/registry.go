@@ -1040,6 +1040,13 @@ var registry = []*Game{
 	// 権利」だけで、勝ち続けるかぎり手札が減らない。手札が尽きた人から脱落し、
 	// 最後まで持ち続けた 1 人が勝ち。配る枚数は人数と同じ（4 人なら 4 枚ずつ）。
 	{Name: "lingerlonger", Category: CategoryExtra},
+	// Pig ピッグ（ドンキー）
+	//
+	// **取り合うものが何もないパーティゲーム。** 同じランク 4 枚を揃えた人は
+	// 黙って手を鼻に当て、他の人はそれに気づいて真似るだけ。**最後まで気づか
+	// なかった 1 人**が P・I・G の文字を 1 つ受け取り、3 文字で脱落する。
+	// デッキは人数 × 4 枚（= 人数と同じ種類のランク × 4 スート）。
+	{Name: "pig", Category: CategoryExtra2},
 }
 
 // All returns a value-level copy of the registry in canonical order.
