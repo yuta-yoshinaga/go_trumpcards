@@ -460,3 +460,101 @@ func TestBotifarraHint(t *testing.T) {
 		assert.Contains(t, g.GetValidPlayIndices(0), *h.CardIndex, "助言が違法な札を指している")
 	}
 }
+
+// **切り札がリードされたときも「勝てるなら勝つ」義務は効く。**
+//
+// `trickWonByTrump()` はリード札が切り札でも真になるので、素直に除外すると
+// **切り札リードのトリックだけ義務が外れ**、上位の切り札を持っていても安い切り札で
+// 逃げられてしまいます。切り札を引き出すためのリードは定石なので、めったに起きない
+// 場面ではありません。
+//
+// 既存の TestBotifarraMustBeatWhenAble は `trickWonByTrump()` が真だと観測を
+// 打ち切るため、この経路を一度も踏んでいませんでした。
+func TestBotifarraMustBeatWhenTrumpIsLed(t *testing.T) {
+	t.Parallel()
+
+	g := newBotifarraAllCpu(t, 1)
+	g.Reset()
+
+	trump := CardDesignSpade
+	g.trumpSuit = trump
+	g.phase = BotifarraPhasePlay
+	g.declarerIdx = 0
+
+	// 席 1 に「勝てる切り札」と「勝てない切り札」を1枚ずつだけ持たせる。
+	seat := g.players[1]
+	seat.Reset()
+	manille := NewCard(trump, 9, false) // rank 12 — 場を上回れる
+	sota := NewCard(trump, 11, false)   // rank 8  — 上回れない
+	seat.AddCard(sota)
+	seat.AddCard(manille)
+
+	// 席 0（相手チーム）が騎士の切り札でリード。rank 9。
+	lead := NewCard(trump, 12, false)
+	g.trick = []*TrickCard{{PlayerIdx: 0, Card: lead}}
+	g.currentTurn = 1
+
+	require.NotEqual(t, BotifarraTeamOf(0), BotifarraTeamOf(1), "味方ではない")
+	require.True(t, g.trickWonByTrump(), "リード札が切り札なので真になる")
+	require.Equal(t, BotifarraRank(lead), g.bestRankInTrick())
+
+	valid := g.GetValidPlayIndices(1)
+	require.NotEmpty(t, valid)
+	for _, v := range valid {
+		c := seat.GetCard(v)
+		assert.Greater(t, BotifarraRank(c), BotifarraRank(lead),
+			"勝てるのに安い切り札で逃げられてしまう")
+	}
+	assert.Len(t, valid, 1, "上回れる札はマニラだけ")
+}
+
+// **リードとは別のスートの切り札で取られたら、フォローでは勝てない。**
+// このときだけ「上回る義務」は外れます。
+func TestBotifarraNoObligationWhenRuffedByAnotherSuit(t *testing.T) {
+	t.Parallel()
+
+	g := newBotifarraAllCpu(t, 2)
+	g.Reset()
+
+	trump := CardDesignSpade
+	lead := CardDesignHeart
+	g.trumpSuit = trump
+	g.phase = BotifarraPhasePlay
+	g.declarerIdx = 0
+
+	seat := g.players[1]
+	seat.Reset()
+	seat.AddCard(NewCard(lead, 11, false))
+	seat.AddCard(NewCard(lead, 9, false)) // リードスートの最強でも切り札には勝てない
+
+	g.trick = []*TrickCard{
+		{PlayerIdx: 0, Card: NewCard(lead, 12, false)},
+		{PlayerIdx: 3, Card: NewCard(trump, 2, false)}, // 別スートの切り札で取られた
+	}
+	g.currentTurn = 1
+
+	require.True(t, g.trickWonByTrump())
+	// フォローはするが、上回る義務は無い（勝てないので）。
+	valid := g.GetValidPlayIndices(1)
+	assert.Len(t, valid, 2, "リードスートの札は両方出せる")
+}
+
+// **倍付けは配りの価値に掛かる。** 契約側かどうかで変わりません。
+func TestBotifarraMultiplierAppliesToWhicheverTeamScores(t *testing.T) {
+	t.Parallel()
+
+	for _, declarer := range []int{0, 1} {
+		g := newBotifarraAllCpu(t, 3)
+		g.Reset()
+		g.roundPoints = [2]int{50, 22}
+		g.scores = [2]int{}
+		g.declarerIdx = declarer
+		g.multiplier = BotifarraMultiplierContrar
+		g.trickCount = BotifarraTrickCnt
+		g.finishRound()
+
+		// 50 - 36 = 14、×2 = 28。宣言者がどちらでも同じ。
+		assert.Equal(t, 28, g.GetScore(0), "declarer=%d", declarer)
+		assert.Zero(t, g.GetScore(1), "declarer=%d", declarer)
+	}
+}

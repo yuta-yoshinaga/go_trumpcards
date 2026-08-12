@@ -82,14 +82,14 @@ func newBotifarraDefaultOutput(msg string) *BotifarraWebOutput {
 	}
 }
 
-func botifarraDispatch(bc *baseController, w http.ResponseWriter, bi usecase.BotifarraInteractorIF, param BotifarraWebInput, _ func(string) *BotifarraWebOutput) bool {
+func botifarraDispatch(bc *baseController, w http.ResponseWriter, bi usecase.BotifarraInteractorIF, param BotifarraWebInput, newOut func(string) *BotifarraWebOutput) bool {
 	switch param.Command {
 	case "p", "play":
 		bc.writePresenterResponse(w, bi.PlayCard(param.CardIndex))
 	case "declare":
-		// **切り札なしは -1。** ポインタで受けるので「送らなかった」と区別できます。
-		if param.Suit == nil {
-			bc.writePresenterResponse(w, bi.Declare(0))
+		// **切り札なしは -1、スートは 1..4。** 0 は無効値なので、省略を 0 に
+		// 落とすと「送らなかった」と区別できません。他ゲームと同じく 400 で返します。
+		if !requireParam(bc, w, newOut, param.Suit == nil, "param error: suit is required.") {
 			return true
 		}
 		bc.writePresenterResponse(w, bi.Declare(*param.Suit))

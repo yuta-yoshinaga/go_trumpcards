@@ -32,7 +32,7 @@ const (
 // 切り札スートを札の design と比べるだけなので、これで「切り札なし」になります。
 const BotifarraNoTrump = -1
 
-// 倍付けの段階。**契約した側の得点にそのまま掛かります。**
+// 倍付けの段階。**この配りの価値に掛かります**（36 を超えた側の得点に乗ります）。
 const (
 	BotifarraMultiplierNone     = 1
 	BotifarraMultiplierContrar  = 2
@@ -356,8 +356,12 @@ func (g *Botifarra) GetValidPlayIndices(idx int) []int {
 	best := g.bestRankInTrick()
 
 	if follow := filterByDesign(p, all, leadSuit); len(follow) > 0 {
-		// リードのスートが場を取っているなら、上回れる札があれば出す義務があります。
-		if !partnerWinning && !g.trickWonByTrump() {
+		// **リード自体が切り札のときも義務は効きます。** 除外していいのは
+		// 「リードとは *別の* スートの切り札で取られた」場合だけ——そのときは
+		// フォローしても勝てないからです。切り札がリードされたなら、同じスートの
+		// 上位札で普通に勝てるので、上回れるなら出さなければなりません。
+		ruffed := g.trickWonByTrump() && g.trumpSuit != leadSuit
+		if !partnerWinning && !ruffed {
 			if above := filterAbove(p, follow, best, BotifarraRank); len(above) > 0 {
 				return above
 			}
@@ -490,18 +494,15 @@ func (g *Botifarra) finishTrick() {
 
 // finishRound はラウンドを精算する。
 //
-// **72 点のうち 36 を超えたぶんだけが得点。** 契約した側の得点には倍付けが掛かります。
+// **72 点のうち 36 を超えたぶんだけが得点。** 倍付けは**この配りそのものの価値**に
+// 掛かるので、契約した側か守った側かに関係なく、36 を超えた側の得点に乗ります。
 func (g *Botifarra) finishRound() {
 	for team := range 2 {
 		diff := g.roundPoints[team] - BotifarraHalfPoints
 		if diff <= 0 {
 			continue
 		}
-		if g.declarerIdx >= 0 && BotifarraTeamOf(g.declarerIdx) == team {
-			diff *= g.multiplier
-		} else {
-			diff *= g.multiplier
-		}
+		diff *= g.multiplier
 		g.scores[team] += diff
 		g.addLog(-1, "score", fmt.Sprintf("チーム %d が %d 点を獲得しました", team, diff), nil)
 	}

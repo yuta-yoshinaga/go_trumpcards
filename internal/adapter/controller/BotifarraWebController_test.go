@@ -50,7 +50,6 @@ func TestBotifarraWebController_Method(t *testing.T) {
 	m.On("PlayCard", 2).Return(mockOutput)
 	m.On("Declare", domain.CardDesignHeart).Return(mockOutput)
 	m.On("Declare", domain.BotifarraNoTrump).Return(mockOutput)
-	m.On("Declare", 0).Return(mockOutput)
 	m.On("Delegate").Return(mockOutput)
 	m.On("Double").Return(mockOutput)
 	m.On("PassDouble").Return(mockOutput)
@@ -97,6 +96,19 @@ func TestBotifarraWebController_Method(t *testing.T) {
 
 	t.Run("invalid json", func(t *testing.T) {
 		execRequest(t, ctrl.Exec, strings.NewReader("{invalid")).CodeIs(http.StatusBadRequest)
+	})
+
+	// **suit を省いた declare は 400。** スートは 1..4 で 0 は無効値なので、
+	// 省略を 0 に落とすと「送らなかった」と区別できません。他ゲームと同じ形で返します。
+	t.Run("declare without suit is rejected", func(t *testing.T) {
+		var input controller.BotifarraWebInput
+		_ = json.Unmarshal([]byte(`{"command":"declare","sessionId":"s12"}`), &input)
+		recorded := execRequest(t, ctrl.Exec, &input)
+		recorded.CodeIs(http.StatusBadRequest)
+		if !strings.Contains(recorded.Body.String(), "suit is required") {
+			t.Errorf("expected 'suit is required', got: %s", recorded.Body.String())
+		}
+		m.AssertNotCalled(t, "Declare", 0)
 	})
 }
 
