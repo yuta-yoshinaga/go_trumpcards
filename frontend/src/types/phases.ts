@@ -1933,6 +1933,30 @@ export const DragonTigerHistoryResult = {
   TIE: 2,
 } as const;
 
+/** Andar Bahar phase constants (sync: internal/domain/AndarBahar.go). */
+export const AndarBaharPhase = {
+  BET: 1,
+  END: 2,
+} as const;
+
+/** Andar Bahar column constants, used for both bets and history (sync: internal/domain/AndarBahar.go). */
+export const AndarBaharColumn = {
+  ANDAR: 0,
+  BAHAR: 1,
+} as const;
+
+/** Andar Bahar side-bet bands. `NONE` means no side bet was placed (sync: internal/domain/AndarBahar.go). */
+export const AndarBaharSideBand = {
+  NONE: -1,
+  FIRST: 0,
+  TWO_TO_FIVE: 1,
+  SIX_TO_TEN: 2,
+  ELEVEN_TO_FIFTEEN: 3,
+  SIXTEEN_TO_TWENTYFIVE: 4,
+  TWENTYSIX_TO_THIRTYFIVE: 5,
+  THIRTYSIX_PLUS: 6,
+} as const;
+
 /** Blackjack Switch phase constants (sync: internal/domain/BlackJackSwitch.go). */
 export const BlackJackSwitchPhase = {
   BET: 1,
