@@ -143,6 +143,7 @@ export type GameKey =
   | 'minibridge'
   | 'pasur'
   | 'snap'
+  | 'rollingstone'
   | 'skat'
   | 'belote'
   | 'jass'
@@ -696,6 +697,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   minibridge: BLUE,
   pasur: BLUE,
   snap: BLUE,
+  rollingstone: BLUE,
   // Matching/Pass
   oldmaid: GREEN,
   doubt: GREEN,

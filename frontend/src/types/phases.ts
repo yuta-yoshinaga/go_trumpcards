@@ -1588,6 +1588,17 @@ export const SchnapsenPhase = {
 /**
  * Snap phase constants (sync: internal/domain/Snap.go).
  */
+/**
+ * Rolling Stone phase constants (sync: internal/domain/RollingStone.go).
+ *
+ * **There are no rounds.** Tricks resolve as soon as they are complete, and
+ * the game ends the moment somebody empties their hand.
+ */
+export const RollingStonePhase = {
+  PLAY: 0,
+  GAME_END: 1,
+} as const;
+
 export const SnapPhase = {
   PLAY: 0,
   GAME_END: 1,

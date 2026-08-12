@@ -1,0 +1,39 @@
+{
+  "phase": { "play": "Playing", "gameEnd": "Finished" },
+  "header": {
+    "trick": "Trick {{n}}",
+    "deck": "Deck {{deck}} ({{left}} still in play)",
+    "rule": "Winning a trick scores nothing; the winner is whoever runs out of cards first. Fail to follow suit and the whole trick goes into your hand -- the penalty is being given cards, not taking them. Everyone starts with eight, and the deck is sized to the table (32 for four players, 40 for five, 48 for six).",
+    "cards": "{{n}} cards",
+    "pickups": "picked up {{n}}x",
+    "finished": "[out in {{rank}}]",
+    "pickedUp": "[just picked up]",
+    "you": "You",
+    "cpu": "CPU{{idx}}",
+    "mustPickUp": "You cannot follow. Take the {{n}} cards on the table."
+  },
+  "currentTrick": "Current trick",
+  "actions": {
+    "pickUp": "Take the {{n}} cards",
+    "players": "Players",
+    "reset": "Reset",
+    "giveUp": "Give up",
+    "playAria": "Play {{card}}"
+  },
+  "result": {
+    "you": "You win! You ran out of cards first.",
+    "cpu": "{{name}} ran out first.",
+    "stalemate": "Nobody ran out, so it goes to {{name}}, holding the fewest at {{n}}."
+  },
+  "hint": {
+    "rollingstoneLead": "Lead your longest suit -- short suits are what get you stuck.",
+    "rollingstoneFollow": "Taking the trick gains nothing, so play low.",
+    "rollingstonePickUp": "Nothing in your hand follows. You have to take it."
+  },
+  "tutorial": {
+    "rule": "**Winning a trick scores nothing.** The winner is **whoever runs out of cards first**, so high cards are a liability rather than an asset.",
+    "penalty": "**Fail to follow suit and the whole trick goes into your hand.** That is the penalty here -- you are not taking cards, you are **being given** them.",
+    "deck": "Everyone starts with eight, and **the deck is sized to the table** (32 for four players, 40 for five, 48 for six), built by dropping low ranks so every suit keeps the same count.",
+    "hand": "Your hand. Cards you may legally play get a green ring. When nothing follows, the only button offered is the one that takes the trick."
+  }
+}
