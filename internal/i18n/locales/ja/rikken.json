@@ -36,5 +36,6 @@
   "hintBid": "{{contract}} が良さそうです（{{reason}}）",
   "hintPlay": "{{index}} 番目の札が良さそうです（{{reason}}）",
   "rikkenBidStrength": "手札の強さから見た契約",
-  "rikkenFollowSuit": "フォローの義務がある"
+  "rikkenFollowSuit": "フォローの義務がある",
+  "openHandLine": "公開手札（席 {{seat}}）: {{cards}}"
 }

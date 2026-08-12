@@ -315,16 +315,25 @@ func (g *Rikken) call(idx, trumpSuit int) error {
 // **自分が持っていないエースを呼びます。** 4 枚とも持っているならキング、
 // それも無ければ持っていない札のどれか——13 枚しか持たないので必ず見つかります。
 func (g *Rikken) chooseCalledCard(idx int) *Card {
+	var trumpAce *Card
 	for _, value := range []int{1, 13, 12, 11} {
 		for suit := CardDesignSpade; suit <= CardDesignDiamond; suit++ {
-			if suit == g.trumpSuit && value == 1 {
-				// 切り札のエースは自分で持っていることが多いので後回し。
+			c := NewCard(suit, value, false)
+			if h := g.holderOf(c); h == idx || h < 0 {
 				continue
 			}
-			c := NewCard(suit, value, false)
-			if g.holderOf(c) != idx && g.holderOf(c) >= 0 {
-				return c
+			if value == 1 && suit == g.trumpSuit {
+				// **切り札のエースは後回しにするだけで、捨てません。** ここで
+				// `continue` したまま二度と見ないと、非切り札のエース 3 枚を自分で
+				// 持っている手（よくある形）で、他家が持つ切り札のエースを飛ばして
+				// キングを呼んでしまいます。
+				trumpAce = c
+				continue
 			}
+			return c
+		}
+		if value == 1 && trumpAce != nil {
+			return trumpAce
 		}
 	}
 	// ここには来ませんが、来たら自分以外の誰かの 1 枚目を指名します。

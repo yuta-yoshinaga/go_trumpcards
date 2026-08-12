@@ -61,6 +61,9 @@ func rikkenTrickOrEmpty(trick []*domain.TrickCard) []*controller.WebOutputTrickC
 //
 // **手札の中身は人間の席だけ。** 相手の手札まで返すとそのまま覗けてしまいます。
 func rikkenPlayersToOutput(r interfaces.RikkenGame) []*controller.RikkenWebOutputPlayer {
+	// **オープンミゼールは手札を公開する契約です。** 名前どおりの仕掛けなので、
+	// 宣言者の手札は相手にも見せます (FiveHundredWebPresenter と同じ形)。
+	openMisere := r.GetContract() == domain.RikkenContractOpenMisere
 	out := make([]*controller.RikkenWebOutputPlayer, 0, r.GetPlayerCnt())
 	for i := range r.GetPlayerCnt() {
 		p := r.GetPlayer(i)
@@ -77,7 +80,7 @@ func rikkenPlayersToOutput(r interfaces.RikkenGame) []*controller.RikkenWebOutpu
 			IsDeclarerSide: r.IsDeclarerSide(i),
 			HasPassed:      r.HasPassed(i),
 		}
-		if p.GetIsHuman() {
+		if p.GetIsHuman() || (openMisere && i == r.GetDeclarerIdx()) {
 			cards := make([]*domain.Card, 0, p.GetCardsSize())
 			for k := range p.GetCardsSize() {
 				cards = append(cards, p.GetCard(k))

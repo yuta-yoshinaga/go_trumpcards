@@ -73,7 +73,11 @@ func (rp *RikkenCuiPresenter) writeTrick(sb *strings.Builder, r interfaces.Rikke
 }
 
 // writeHand は人間の手札を書き出す。出せる札に印を付けます。
+//
+// **オープンミゼールでは宣言者の手札も見せます。** 手札を公開して 0 トリックを
+// 目指す契約なので、隠したままだと名前どおりの仕掛けが働きません。
 func (rp *RikkenCuiPresenter) writeHand(sb *strings.Builder, r interfaces.RikkenGame) {
+	rp.writeOpenMisereHand(sb, r)
 	p := r.GetPlayer(0)
 	if p == nil || p.GetCardsSize() == 0 {
 		return
@@ -154,4 +158,26 @@ func (rp *RikkenCuiPresenter) trumpStr(suit int) string {
 	default:
 		return i18n.T("rikken.trumpNone")
 	}
+}
+
+// writeOpenMisereHand はオープンミゼールの宣言者の手札を公開する。
+func (rp *RikkenCuiPresenter) writeOpenMisereHand(sb *strings.Builder, r interfaces.RikkenGame) {
+	if r.GetContract() != domain.RikkenContractOpenMisere {
+		return
+	}
+	idx := r.GetDeclarerIdx()
+	if idx < 0 || idx == 0 {
+		return // 人間が宣言者なら下の手札表示で出ます。
+	}
+	p := r.GetPlayer(idx)
+	if p == nil || p.GetCardsSize() == 0 {
+		return
+	}
+	parts := make([]string, 0, p.GetCardsSize())
+	for i := range p.GetCardsSize() {
+		parts = append(parts, cuiCardStr(p.GetCard(i)))
+	}
+	sb.WriteString("----------\n")
+	sb.WriteString(i18n.Tf("rikken.openHandLine",
+		"seat", strconv.Itoa(idx), "cards", strings.Join(parts, " ")) + "\n")
 }

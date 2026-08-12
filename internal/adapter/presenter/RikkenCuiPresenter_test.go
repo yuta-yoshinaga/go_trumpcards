@@ -140,3 +140,35 @@ func TestRikkenCuiPresenter_UnknownValues(t *testing.T) {
 	assert.Equal(t, "CALL", p.phaseStr(domain.RikkenPhaseCall))
 	assert.Equal(t, "ROUND END", p.phaseStr(domain.RikkenPhaseRoundEnd))
 }
+
+// **CUI もオープンミゼールで宣言者の手札を見せる。**
+func TestRikkenCuiPresenter_OpenMisereShowsTheOpenHand(t *testing.T) {
+	cpu := domain.NewRikkenPlayer(false)
+	cpu.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+
+	m := new(interfaces.MockRikkenGame)
+	m.On("GetContract").Return(domain.RikkenContractOpenMisere)
+	m.On("GetDeclarerIdx").Return(1)
+	m.On("GetTrumpSuit").Return(domain.RikkenNoTrump)
+	m.On("GetPlayer", 1).Return(cpu)
+	fillRikkenDefaults(m)
+
+	out := new(RikkenCuiPresenter).Output(m, nil)
+	assert.Contains(t, out, "公開手札（席 1）")
+	assert.NotContains(t, out, "rikken.", "生キーが漏れている")
+}
+
+// **ミゼールでは公開しない。** 負のコントロールです。
+func TestRikkenCuiPresenter_PlainMisereHasNoOpenHand(t *testing.T) {
+	cpu := domain.NewRikkenPlayer(false)
+	cpu.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+
+	m := new(interfaces.MockRikkenGame)
+	m.On("GetContract").Return(domain.RikkenContractMisere)
+	m.On("GetDeclarerIdx").Return(1)
+	m.On("GetTrumpSuit").Return(domain.RikkenNoTrump)
+	m.On("GetPlayer", 1).Return(cpu)
+	fillRikkenDefaults(m)
+
+	assert.NotContains(t, new(RikkenCuiPresenter).Output(m, nil), "公開手札")
+}

@@ -438,3 +438,70 @@ func TestRikkenHint(t *testing.T) {
 	require.NotNil(t, h.Contract)
 	assert.Nil(t, h.CardIndex)
 }
+
+// **切り札のエースは後回しにするだけで、捨てない。**
+//
+// 非切り札のエース 3 枚を自分で持っていて切り札のエースだけ持っていない手は
+// よくある形です。ここで切り札のエースを飛ばすと、他家が持っている札を無視して
+// キングを呼んでしまいます——doc は「4 枚とも持っているならキング」と書いている
+// ので、コードとコメントが食い違っていました。
+func TestRikkenCallsTheTrumpAceWhenTheOthersAreInHand(t *testing.T) {
+	t.Parallel()
+
+	g := newRikkenWithHuman(t, 31)
+	trump := CardDesignSpade
+	g.trumpSuit = trump
+	g.phase = RikkenPhaseCall
+	g.contract = RikkenContractRik
+	g.declarerIdx = 0
+	g.currentTurn = 0
+
+	// 宣言者に「切り札以外のエース 3 枚」を持たせ、切り札のエースは他家に置く。
+	for i := range RikkenPlayerCnt {
+		g.players[i].Reset()
+	}
+	declarer := g.players[0]
+	for suit := CardDesignSpade; suit <= CardDesignDiamond; suit++ {
+		if suit == trump {
+			continue
+		}
+		declarer.AddCard(NewCard(suit, 1, false))
+	}
+	declarer.AddCard(NewCard(CardDesignHeart, 5, false))
+	g.players[2].AddCard(NewCard(trump, 1, false)) // 切り札のエースは席 2
+	// **キングも他家に置きます。** これが無いと、切り札のエースを飛ばす壊れた実装でも
+	// 最後の総当たりフォールバックが同じ札を返してしまい、テストが理由を取り違えて
+	// 通ります（変異テストで実際に素通りしました）。
+	g.players[1].AddCard(NewCard(CardDesignHeart, 13, false))
+
+	card := g.chooseCalledCard(0)
+	require.NotNil(t, card)
+	assert.Equal(t, trump, card.GetDesign(), "切り札のエースを呼ぶべき")
+	assert.Equal(t, 1, card.GetValue(), "キングに落ちてはいけない")
+	assert.Equal(t, 2, g.holderOf(card), "他家が持っている札を呼ぶ")
+}
+
+// **4 枚とも持っているときだけキングに落ちる。**
+func TestRikkenFallsBackToAKingOnlyWithAllFourAces(t *testing.T) {
+	t.Parallel()
+
+	g := newRikkenWithHuman(t, 33)
+	g.trumpSuit = CardDesignSpade
+	g.phase = RikkenPhaseCall
+	g.contract = RikkenContractRik
+	g.declarerIdx = 0
+
+	for i := range RikkenPlayerCnt {
+		g.players[i].Reset()
+	}
+	declarer := g.players[0]
+	for suit := CardDesignSpade; suit <= CardDesignDiamond; suit++ {
+		declarer.AddCard(NewCard(suit, 1, false))
+	}
+	g.players[1].AddCard(NewCard(CardDesignHeart, 13, false))
+
+	card := g.chooseCalledCard(0)
+	require.NotNil(t, card)
+	assert.Equal(t, 13, card.GetValue(), "エースを全部持っていればキング")
+	assert.Equal(t, 1, g.holderOf(card))
+}

@@ -150,3 +150,60 @@ func TestRikkenWebPresenter_HintAndActionLog(t *testing.T) {
 
 	assert.NotEmpty(t, p.ActionLogOutput(game))
 }
+
+// **オープンミゼールは宣言者の手札を公開する。** 名前どおりの仕掛けです。
+//
+// これが無いと、オープンミゼールは「ミゼールだが点が高いだけ」になります。
+func TestRikkenWebPresenter_OpenMisereRevealsTheDeclarerHand(t *testing.T) {
+	hand := []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 2, false),
+		domain.NewCard(domain.CardDesignHeart, 3, false),
+	}
+	cpu := domain.NewRikkenPlayer(false)
+	for _, c := range hand {
+		cpu.AddCard(c)
+	}
+
+	m := new(interfaces.MockRikkenGame)
+	m.On("GetContract").Return(domain.RikkenContractOpenMisere)
+	m.On("GetDeclarerIdx").Return(1)
+	m.On("GetTrumpSuit").Return(domain.RikkenNoTrump)
+	m.On("GetPlayerCnt").Return(2)
+	m.On("GetPlayer", 0).Return(domain.NewRikkenPlayer(true))
+	m.On("GetPlayer", 1).Return(cpu)
+	fillRikkenDefaults(m)
+
+	var out struct {
+		Players []struct {
+			ID    int              `json:"id"`
+			Cards []map[string]any `json:"cards"`
+		} `json:"players"`
+	}
+	require.NoError(t, json.Unmarshal([]byte(new(RikkenWebPresenter).Output(m, nil)), &out))
+	require.Len(t, out.Players, 2)
+	assert.Len(t, out.Players[1].Cards, len(hand), "宣言者の手札が公開されていない")
+}
+
+// **ミゼール（非公開）では宣言者の手札は伏せたまま。** 負のコントロールです。
+func TestRikkenWebPresenter_PlainMisereKeepsTheDeclarerHandHidden(t *testing.T) {
+	cpu := domain.NewRikkenPlayer(false)
+	cpu.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+
+	m := new(interfaces.MockRikkenGame)
+	m.On("GetContract").Return(domain.RikkenContractMisere)
+	m.On("GetDeclarerIdx").Return(1)
+	m.On("GetTrumpSuit").Return(domain.RikkenNoTrump)
+	m.On("GetPlayerCnt").Return(2)
+	m.On("GetPlayer", 0).Return(domain.NewRikkenPlayer(true))
+	m.On("GetPlayer", 1).Return(cpu)
+	fillRikkenDefaults(m)
+
+	var out struct {
+		Players []struct {
+			Cards []map[string]any `json:"cards"`
+		} `json:"players"`
+	}
+	require.NoError(t, json.Unmarshal([]byte(new(RikkenWebPresenter).Output(m, nil)), &out))
+	require.Len(t, out.Players, 2)
+	assert.Empty(t, out.Players[1].Cards, "ミゼールで手札が漏れている")
+}
