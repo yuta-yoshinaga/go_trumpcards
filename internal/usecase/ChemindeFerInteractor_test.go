@@ -254,3 +254,102 @@ func TestRestoreChemindeFerInteractor_RejectsBrokenData(t *testing.T) {
 	_, err = RestoreChemindeFerInteractor([]byte(`{"ph":99}`), mp)
 	assert.Error(t, err, "フェーズが範囲外")
 }
+
+// **DrawOrStand の中身を直接踏む。**
+//
+// コントローラのテストはインタラクタをモックしているので、この振り分けは一度も
+// 実行されない。側を決めているのはここだけなので、踏まないと「フェーズを読み違えて
+// 相手側の判断を確定させる」バグが誰にも見えない。
+func TestChemindeFerInteractor_DrawOrStand(t *testing.T) {
+	tests := []struct {
+		name    string
+		phase   domain.ChemindeFerPhase
+		draw    bool
+		want    string
+		notWant []string
+	}{
+		{
+			name:  "子の判断中の draw は子に届く",
+			phase: domain.ChemindeFerPhasePunterDraw, draw: true,
+			want: "PunterDraw", notWant: []string{"PunterStand", "BankerDraw", "BankerStand"},
+		},
+		{
+			name:  "子の判断中の stand は子に届く",
+			phase: domain.ChemindeFerPhasePunterDraw, draw: false,
+			want: "PunterStand", notWant: []string{"PunterDraw", "BankerDraw", "BankerStand"},
+		},
+		{
+			name:  "親の判断中の draw は親に届く",
+			phase: domain.ChemindeFerPhaseBankerDraw, draw: true,
+			want: "BankerDraw", notWant: []string{"BankerStand", "PunterDraw", "PunterStand"},
+		},
+		{
+			name:  "親の判断中の stand は親に届く",
+			phase: domain.ChemindeFerPhaseBankerDraw, draw: false,
+			want: "BankerStand", notWant: []string{"BankerDraw", "PunterDraw", "PunterStand"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mg, mp, ci := newChemindeFerInteractorForTest()
+			mg.On("GetGameEndFlag").Return(false)
+			mg.On("GetPhase").Return(tt.phase)
+			mg.On(tt.want).Return(nil)
+			mp.On("Output", mg, nil).Return("ok output")
+
+			assert.Equal(t, "ok output", ci.DrawOrStand(tt.draw))
+			mg.AssertCalled(t, tt.want)
+			for _, other := range tt.notWant {
+				mg.AssertNotCalled(t, other)
+			}
+		})
+	}
+}
+
+// **引くか立つかを決める場面でなければ弾く。**
+func TestChemindeFerInteractor_DrawOrStandRejectsOtherPhases(t *testing.T) {
+	for _, phase := range []domain.ChemindeFerPhase{
+		domain.ChemindeFerPhaseStake,
+		domain.ChemindeFerPhaseBet,
+		domain.ChemindeFerPhaseRoundEnd,
+	} {
+		t.Run(domain.ChemindeFerPhaseName(phase), func(t *testing.T) {
+			mg, mp, ci := newChemindeFerInteractorForTest()
+			mg.On("GetGameEndFlag").Return(false)
+			mg.On("GetPhase").Return(phase)
+			mp.On("Output", mg, ErrChemindeFerNotDrawPhase).Return("not a draw phase")
+
+			assert.Equal(t, "not a draw phase", ci.DrawOrStand(true))
+			mp.AssertCalled(t, "Output", mg, ErrChemindeFerNotDrawPhase)
+			for _, m := range []string{"PunterDraw", "PunterStand", "BankerDraw", "BankerStand"} {
+				mg.AssertNotCalled(t, m)
+			}
+		})
+	}
+}
+
+// ドメインが返したエラーはそのままプレゼンタへ届く。
+func TestChemindeFerInteractor_DrawOrStandPropagatesErrors(t *testing.T) {
+	mg, mp, ci := newChemindeFerInteractorForTest()
+	drawErr := errors.New("この合計に選択の余地はありません")
+	mg.On("GetGameEndFlag").Return(false)
+	mg.On("GetPhase").Return(domain.ChemindeFerPhasePunterDraw)
+	mg.On("PunterStand").Return(drawErr)
+	mp.On("Output", mg, drawErr).Return("error output")
+
+	assert.Equal(t, "error output", ci.DrawOrStand(false))
+}
+
+// **終局後はフェーズを見る前に弾く。**
+func TestChemindeFerInteractor_DrawOrStandBlocksAfterGameEnd(t *testing.T) {
+	mg, mp, ci := newChemindeFerInteractorForTest()
+	mg.On("GetGameEndFlag").Return(true)
+	mp.On("Output", mg, nil).Return("game over")
+
+	assert.Equal(t, "game over", ci.DrawOrStand(true))
+	mg.AssertNotCalled(t, "GetPhase")
+	for _, m := range []string{"PunterDraw", "PunterStand", "BankerDraw", "BankerStand"} {
+		mg.AssertNotCalled(t, m)
+	}
+}

@@ -20,7 +20,11 @@ export function getChemindeferHint(state: ChemindeFerResponse): HintResult | nul
     return { targetAction: 'draw', reason: 'frontendHint.chemindeferPunterFive', confidence: 'strong' };
   }
   if (state.phase === ChemindeFerPhase.BANKER_DRAW) {
-    return { targetAction: 'draw', reason: 'frontendHint.chemindeferBankerFree', confidence: 'moderate' };
+    // **ここで特定のボタンを指してはいけない。** 親はどの合計でも自由で、正しい手は
+    // 子の 3 枚目次第。それを計算するのはドメイン (`GetHint`) の仕事で、ページ側で
+    // 引き直すと規則がもう 1 か所に増えてずれる。`targetAction` はどのボタンの
+    // `data-hint-action` とも一致しない値にして、助言は文章だけを出す。
+    return { targetAction: 'bankerDecision', reason: 'frontendHint.chemindeferBankerFree', confidence: 'moderate' };
   }
   return null;
 }

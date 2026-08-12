@@ -286,7 +286,7 @@ function ChemindeFerPageContent() {
                     <button
                       type="button"
                       className={btnSuccess}
-                      data-hint-action="draw"
+                      data-hint-action={canPunterDecide ? 'draw' : undefined}
                       onClick={() => execApi(canPunterDecide ? 'pd' : 'bd')}
                       disabled={loading}
                     >

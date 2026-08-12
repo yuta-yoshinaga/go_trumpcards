@@ -48,4 +48,20 @@ describe('getChemindeferHint', () => {
     expect(hint).not.toBeNull();
     expect(hint?.reason).toBe('frontendHint.chemindeferBankerFree');
   });
+
+  // **親の助言は「引け」と言い切らない。**
+  //
+  // 正しい手は子の 3 枚目次第で、それを決めるのはドメイン。ここで 'draw' を返すと
+  // 合計 7 でも引くボタンが強調され、規則を知らない人を確実に誤らせる。
+  it('親の助言は特定のボタンを指さない', () => {
+    const hint = getChemindeferHint(at({ phase: ChemindeFerPhase.BANKER_DRAW }));
+    expect(hint?.targetAction).not.toBe('draw');
+    expect(hint?.targetAction).not.toBe('stand');
+  });
+
+  // 子の合計 5 は定石が 1 つに決まるので、引くボタンを指してよい。
+  it('子の助言は引くボタンを指す', () => {
+    const hint = getChemindeferHint(at({ phase: ChemindeFerPhase.PUNTER_DRAW, punterMayChoose: true }));
+    expect(hint?.targetAction).toBe('draw');
+  });
 });
