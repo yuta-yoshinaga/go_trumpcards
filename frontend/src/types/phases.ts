@@ -1992,6 +1992,15 @@ export const RikkenContract = {
   OPEN_MISERE: 4,
 } as const;
 
+/** Chemin de Fer phase constants (sync: internal/domain/ChemindeFerConfig.go). */
+export const ChemindeFerPhase = {
+  STAKE: 0,
+  BET: 1,
+  PUNTER_DRAW: 2,
+  BANKER_DRAW: 3,
+  ROUND_END: 4,
+} as const;
+
 /** Colour Whist phase constants (sync: internal/domain/ColourWhist.go). */
 export const ColourWhistPhase = {
   BID: 0,

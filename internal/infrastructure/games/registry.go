@@ -1095,6 +1095,12 @@ var registry = []*Game{
 	// 該当が無ければ Samen(相方と8) < Alleen(単独8) < Miserie(0) を競る。
 	// 得点はゼロサムで、卓の合計は常に 0。
 	{Name: "colourwhist", Category: CategoryClassic},
+	// Chemin de Fer シュマン・ド・フェール
+	//
+	// バカラの原型。**ハウスではなく席の 1 つが親**になり、負けるとバンクが隣へ渡る。
+	// プント・バンコと違い 3 枚目の引き方は表で固定されておらず、決まっているのは
+	// **子の 0-4 (引く) と 6-7 (立つ) だけ**。合計 5 の子と、あらゆる合計の親は自由。
+	{Name: "chemindefer", Category: CategoryCasino},
 }
 
 // All returns a value-level copy of the registry in canonical order.

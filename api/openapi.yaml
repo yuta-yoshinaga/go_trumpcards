@@ -24,6 +24,8 @@ tags:
     description: Rikken (リッケン) game
   - name: colourwhist
     description: Colour Whist (カラーホイスト) game
+  - name: chemindefer
+    description: Chemin de Fer (シュマン・ド・フェール) game
   - name: poker
     description: 5-card Draw Poker game
   - name: oldmaid
@@ -9187,6 +9189,78 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ColourWhistResponse'
+
+  /chemindefer/exec:
+    post:
+      tags:
+        - chemindefer
+      summary: Execute a Chemin de Fer game command
+      description: |
+        Send a command to advance the Chemin de Fer (シュマン・ド・フェール) game
+        session identified by `sessionId`.
+
+        The French ancestor of baccarat, played on a six-deck shoe by six seats.
+        **One of the seats is the bank, not the house.** The banker stakes an
+        amount, the other seats cover it between them, and the bank passes to
+        the next seat whenever the punters win.
+
+        **The third card is not on a table here.** That is the whole difference
+        from punto banco. Only the punter side is constrained, and only partly:
+        0-4 must draw, 6-7 must stand, and **5 is a free choice**. The banker is
+        free at every total. `punterMayChoose` says whether the punter side has
+        a decision right now; when it is false the domain applies the forced
+        play itself rather than asking.
+
+        Drawing and standing are separate commands per side (`pd`/`ps` for the
+        punter, `bd`/`bs` for the banker) so a client cannot resolve the wrong
+        side's decision.
+
+        Chips are zero-sum: the six stacks always total their starting sum.
+      operationId: execChemindeFer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: "reset (r), stake (s), bet (b), pd, ps, bd, bs, d, st, pb, next, giveup (g), hint (h), log, quit (q)"
+                stake:
+                  type: integer
+                  description: Amount to bank, for the stake command.
+                amount:
+                  type: integer
+                  description: "Amount to bet. 0 means pass and is a value, not an omission."
+                rounds:
+                  type: integer
+                  description: Coups per session, for reset.
+                chips:
+                  type: integer
+                  description: Starting chips per seat, for reset.
+                sessionId:
+                  type: string
+              example:
+                command: bet
+                amount: 50
+                sessionId: my-session-001
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChemindeFerResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChemindeFerResponse'
 
   /clocksolitaire/exec:
     post:
@@ -48039,6 +48113,97 @@ components:
           description: Index of the player who played this card
         card:
           $ref: '#/components/schemas/Card'
+    ChemindeFerResponse:
+      type: object
+      description: Response payload for /chemindefer/exec
+      properties:
+        players:
+          type: array
+          description: Always an array. Six seats; the bank travels between them.
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+              isHuman:
+                type: boolean
+              chips:
+                type: integer
+              bet:
+                type: integer
+              isBanker:
+                type: boolean
+              isRepresentative:
+                type: boolean
+        phase:
+          type: integer
+          description: "0=Stake, 1=Bet, 2=PunterDraw, 3=BankerDraw, 4=RoundEnd"
+        bankerIdx:
+          type: integer
+        betTurn:
+          type: integer
+          description: Seat due to bet, or -1 once betting has closed.
+        stake:
+          type: integer
+        remainingStake:
+          type: integer
+        totalBet:
+          type: integer
+        stakeMin:
+          type: integer
+        stakeMax:
+          type: integer
+        betMin:
+          type: integer
+        betMax:
+          type: integer
+          description: Zero once betting has closed.
+        representativeIdx:
+          type: integer
+          description: Highest bettor, who decides the punter side. -1 until the deal.
+        punterMayChoose:
+          type: boolean
+          description: True only at a punter total of 5.
+        bankerHand:
+          type: array
+          description: Always an array.
+          items:
+            $ref: '#/components/schemas/Card'
+        punterHand:
+          type: array
+          description: Always an array.
+          items:
+            $ref: '#/components/schemas/Card'
+        bankerTotal:
+          type: integer
+        punterTotal:
+          type: integer
+        punterDrew:
+          type: boolean
+        result:
+          type: integer
+          description: "0=undecided, 1=banker, 2=punters, 3=tie"
+        roundNumber:
+          type: integer
+        remainingCards:
+          type: integer
+        isHumanTurn:
+          type: boolean
+        gameEndFlag:
+          type: boolean
+        config:
+          type: object
+          properties:
+            rounds:
+              type: integer
+            initialChips:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
     ColourWhistResponse:
       type: object
       description: Response payload for /colourwhist/exec

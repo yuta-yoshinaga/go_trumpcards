@@ -50,6 +50,7 @@ import type {
   CassinoResponse,
   CatchTenResponse,
   CegoResponse,
+  ChemindeFerResponse,
   ChinchonResponse,
   ChinesePokerResponse,
   ChineseTenResponse,
@@ -342,6 +343,7 @@ import { getCasinowarHint } from '../utils/hints/casinowarHint';
 import { getCassinoHint } from '../utils/hints/cassinoHint';
 import { getCatchTenHint } from '../utils/hints/catchtenHint';
 import { getCegoHint } from '../utils/hints/cegoHint';
+import { getChemindeferHint } from '../utils/hints/chemindeferHint';
 import { getChinchonHint } from '../utils/hints/chinchonHint';
 import { getChinesePokerHint } from '../utils/hints/chinesepokerHint';
 import { getChineseTenHint } from '../utils/hints/chinesetenHint';
@@ -768,6 +770,7 @@ export const hintFactories = {
   andarbahar: (s) => getAndarbaharHint(s as AndarBaharResponse),
   botifarra: (s) => getBotifarraHint(s as BotifarraResponse),
   rikken: (s) => getRikkenHint(s as RikkenResponse),
+  chemindefer: (s) => getChemindeferHint(s as ChemindeFerResponse),
   colourwhist: (s) => getColourwhistHint(s as ColourWhistResponse),
   dragontiger: (s) => getDragontigerHint(s as DragonTigerResponse),
   blackjackswitch: (s) => getBlackjackswitchHint(s as BlackJackSwitchResponse),

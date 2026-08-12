@@ -387,7 +387,8 @@
     "andarbahar": "Bet on which of two columns draws the joker's rank first. From India; the rules fit in one line.",
     "botifarra": "A Catalan partnership game with no auction — and you must win the trick if you can.",
     "rikken": "A Dutch auction where \"take eight\" and \"take none\" sit on the same ladder.",
-    "colourwhist": "A Flemish contract whist where three aces settle the contract without an auction."
+    "colourwhist": "A Flemish contract whist where three aces settle the contract without an auction.",
+    "chemindefer": "The ancestor of baccarat: the bank travels the table and the third card is your call."
   },
   "stretch_blurb": {
     "accordion": "Completion is rare; the journey itself is the joy.",
@@ -691,6 +692,7 @@
     "andarbahar": "A pure two-way call. Nothing to decide, so all that is left is the reveal.",
     "botifarra": "With so much forced, the moves you do get to choose carry real weight.",
     "rikken": "Choosing your contract is the whole game; passing is a skill too.",
-    "colourwhist": "Sometimes the deal simply decides for you."
+    "colourwhist": "Sometimes the deal simply decides for you.",
+    "chemindefer": "Less about the cards you get than the card you choose to take."
   }
 }

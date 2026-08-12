@@ -470,6 +470,14 @@ func init() {
 		},
 		controller.NewFiveCardStudWebControllerWithProvider)
 
+	games.RegisterKVGame("chemindefer", games.CategoryCasino,
+		func() usecase.ChemindeFerInteractorIF {
+			return usecase.NewChemindeFerInteractor(domain.NewDefaultChemindeFer(), new(presenter.ChemindeFerWebPresenter))
+		},
+		func(data []byte) (usecase.ChemindeFerInteractorIF, error) {
+			return usecase.RestoreChemindeFerInteractor(data, new(presenter.ChemindeFerWebPresenter))
+		},
+		controller.NewChemindeFerWebControllerWithProvider)
 	games.RegisterKVGame("openfacechinese", games.CategoryCasino,
 		func() usecase.OpenFaceChineseInteractorIF {
 			return usecase.NewOpenFaceChineseInteractor(domain.NewDefaultOpenFaceChinese(), new(presenter.OpenFaceChineseWebPresenter))
