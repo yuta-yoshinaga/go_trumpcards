@@ -303,6 +303,7 @@ export * from './games/tressette';
 export * from './games/trex';
 export * from './games/tripeaks';
 export * from './games/truco';
+export * from './games/tusac';
 export * from './games/tute';
 export * from './games/twentynine';
 export * from './games/twotenjack';
@@ -630,6 +631,7 @@ export const games = [
   'pan',
   'oichokabu',
   'kingo',
+  'tusac',
   'aluette',
   'minchiate',
   'tarocchini',

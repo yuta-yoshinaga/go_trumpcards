@@ -185,6 +185,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [4, 4, 1, 5], skill: [5, 2, 1, 5], social: [3, 5, 2, 5, 2], theme: [5, 1, 1, 1, 4, 1] },
       },
       {
+        path: '/tusac',
+        labelKey: 'nav.tusac',
+        icon: '🀄',
+        page: 'TuSac',
+        profile: { mood: [2, 3, 4, 3], skill: [3, 4, 3, 3], social: [3, 4, 3, 4, 3], theme: [4, 1, 1, 1, 5, 1] },
+      },
+      {
         path: '/trenteetquarante',
         labelKey: 'nav.trenteetquarante',
         icon: '🔴',

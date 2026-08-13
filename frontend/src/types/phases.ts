@@ -2008,6 +2008,14 @@ export const BaseballPhase = {
   GAME_END: 3,
 } as const;
 
+/** Tu Sac phase constants (sync: internal/domain/TuSac.go). */
+export const TuSacPhase = {
+  DRAW: 0,
+  DISCARD: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Kingo phase constants (sync: internal/domain/Kingo.go). */
 export const KingoPhase = {
   BET: 0,
