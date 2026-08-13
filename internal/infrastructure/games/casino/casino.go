@@ -526,6 +526,14 @@ func init() {
 			return usecase.RestoreCincinnatiInteractor(data, new(presenter.CincinnatiWebPresenter))
 		},
 		controller.NewCincinnatiWebControllerWithProvider)
+	games.RegisterKVGame("ironcross", games.CategoryCasino,
+		func() usecase.IronCrossInteractorIF {
+			return usecase.NewIronCrossInteractor(domain.NewDefaultIronCross(), new(presenter.IronCrossWebPresenter))
+		},
+		func(data []byte) (usecase.IronCrossInteractorIF, error) {
+			return usecase.RestoreIronCrossInteractor(data, new(presenter.IronCrossWebPresenter))
+		},
+		controller.NewIronCrossWebControllerWithProvider)
 	games.RegisterKVGame("openfacechinese", games.CategoryCasino,
 		func() usecase.OpenFaceChineseInteractorIF {
 			return usecase.NewOpenFaceChineseInteractor(domain.NewDefaultOpenFaceChinese(), new(presenter.OpenFaceChineseWebPresenter))

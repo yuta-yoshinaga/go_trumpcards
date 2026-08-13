@@ -38,6 +38,8 @@ tags:
     description: Monte Bank (モンテバンク) game
   - name: cincinnati
     description: Cincinnati (シンシナティ) game
+  - name: ironcross
+    description: Iron Cross (アイアンクロス) game
   - name: poker
     description: 5-card Draw Poker game
   - name: oldmaid
@@ -9337,6 +9339,86 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CincinnatiResponse'
+
+  /ironcross/exec:
+    post:
+      tags:
+        - ironcross
+      summary: Execute an Iron Cross game command
+      description: |
+        Send a command to advance the Iron Cross (アイアンクロス) game session
+        identified by `sessionId`.
+
+        A home-poker variant, also called Criss Cross. Each seat holds four
+        hole cards and five community cards are laid out in a cross:
+
+            [1]
+        [3] [0] [4]
+            [2]
+
+        **Only one arm of the cross plays.** A seat takes either the vertical
+        three (top, centre, bottom) or the horizontal three (left, centre,
+        right) — never a free pick of all five. The centre card is the only one
+        both arms share, so half of either choice is the same. `verticalIndexes`
+        and `horizontalIndexes` name those positions so a client never has to
+        hardcode them.
+
+        **`cross` stays positional.** A face-down slot is `null` rather than
+        omitted, because a compacted array cannot say whether the third entry is
+        the centre or the left arm. The centre is dealt last, after the four
+        arms. `revealedCount` and `crossTotal` report the progress.
+
+        After the fifth card each seat picks a line: send `vertical` / `v`,
+        `horizontal` / `h`, or `line` with a `line` body field (1=vertical,
+        2=horizontal). `isChoosing` says when that is expected. The server does
+        not upgrade a weak choice — the chosen arm is the arm that plays.
+
+        **CPU hole cards and CPU line choices are not on the wire before
+        showdown.** Either would give away the strength the betting is meant to
+        hide, so the server withholds them rather than relying on the client.
+
+        `amount` is required for `bet` and `raise`, and ignored for `fold`,
+        `check` and `call`. Raises are capped at three per round; `canRaise`
+        reports whether one is still available.
+      operationId: execIronCross
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: "reset (r), fold (f), check (k), call (c), bet (b), raise, vertical (v), horizontal (h), line, next, hint, log, quit (q)"
+                amount:
+                  type: integer
+                  description: Stake for bet and raise. Ignored by the other actions.
+                line:
+                  type: integer
+                  description: "Line for the line command: 1=vertical, 2=horizontal. 0 means not chosen and is rejected."
+                sessionId:
+                  type: string
+              example:
+                command: bet
+                amount: 20
+                sessionId: my-session-001
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IronCrossResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IronCrossResponse'
 
   /montebank/exec:
     post:
@@ -48617,6 +48699,120 @@ components:
             initialChips:
               type: integer
             defaultAnte:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+    IronCrossResponse:
+      type: object
+      description: Response payload for /ironcross/exec
+      properties:
+        phase:
+          type: integer
+          description: "0=Betting, 1=ChooseLine, 2=Showdown, 3=GameEnd"
+        seats:
+          type: array
+          description: Always an array, one entry per seat, in seat order.
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              isHuman:
+                type: boolean
+              chips:
+                type: integer
+              bet:
+                type: integer
+              cards:
+                type: array
+                description: >-
+                  The four hole cards. Empty for CPU seats until showdown --
+                  the server withholds them rather than relying on the client.
+                items:
+                  $ref: '#/components/schemas/Card'
+              folded:
+                type: boolean
+              allIn:
+                type: boolean
+              isTurn:
+                type: boolean
+              line:
+                type: integer
+                description: >-
+                  The arm this seat plays: 0=not chosen, 1=vertical,
+                  2=horizontal. Stays 0 for CPU seats until showdown.
+              handRank:
+                type: integer
+                description: Set at showdown only.
+              bestHand:
+                type: array
+                description: The best five of the seven available cards. Set at showdown only.
+                items:
+                  $ref: '#/components/schemas/Card'
+              wonAmount:
+                type: integer
+        cross:
+          type: array
+          description: >-
+            Always five entries, positional. A face-down slot is null rather
+            than omitted, so index 0 is always the centre, 1 the top, 2 the
+            bottom, 3 the left and 4 the right.
+          items:
+            $ref: '#/components/schemas/Card'
+            nullable: true
+        revealedCount:
+          type: integer
+          description: How many of the five cross cards are face up.
+        crossTotal:
+          type: integer
+          description: Always 5.
+        verticalIndexes:
+          type: array
+          description: The cross positions the vertical line uses (top, centre, bottom).
+          items:
+            type: integer
+        horizontalIndexes:
+          type: array
+          description: The cross positions the horizontal line uses (left, centre, right).
+          items:
+            type: integer
+        pot:
+          type: integer
+        currentBet:
+          type: integer
+        toCall:
+          type: integer
+        raiseCount:
+          type: integer
+        canRaise:
+          type: boolean
+        turnSeat:
+          type: integer
+        humanSeat:
+          type: integer
+        isHumanTurn:
+          type: boolean
+        isChoosing:
+          type: boolean
+          description: True while the table is picking vertical or horizontal.
+        handNumber:
+          type: integer
+        remainingCards:
+          type: integer
+        winnerSeat:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        config:
+          type: object
+          properties:
+            seats:
+              type: integer
+            initialChips:
+              type: integer
+            ante:
               type: integer
         message:
           type: string
