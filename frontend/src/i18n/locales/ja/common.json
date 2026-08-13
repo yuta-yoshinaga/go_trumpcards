@@ -328,7 +328,8 @@
     "doubleattack": "追加ベット・ブラックジャック",
     "freebet": "フリーベット・ブラックジャック",
     "banluck": "バンラック",
-    "montebank": "モンテバンク"
+    "montebank": "モンテバンク",
+    "cincinnati": "シンシナティ"
   },
   "sound": {
     "mute": "サウンドをオフにする",

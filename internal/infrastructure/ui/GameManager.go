@@ -4939,6 +4939,24 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  log                  action log"},
 		}),
+	BindCuiFor("cincinnati",
+		func() usecase.CincinnatiInteractorIF {
+			return usecase.NewCincinnatiInteractor(domain.NewDefaultCincinnati(), new(presenter.CincinnatiCuiPresenter))
+		},
+		controller.NewCincinnatiCuiController,
+		CuiHelpSpec{
+			TitleKey: "cincinnati.helpTitle",
+			CommandKeys: []string{
+				"cincinnati.helpFold",
+				"cincinnati.helpCheck",
+				"cincinnati.helpCall",
+				"cincinnati.helpBet",
+				"cincinnati.helpRaise",
+				"cincinnati.helpNext",
+				"cincinnati.helpHint",
+			},
+			ExtraCommandLines: []string{"  log                  action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

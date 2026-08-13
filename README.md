@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した308種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した309種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -122,6 +122,7 @@ Go + Clean Architecture で実装した308種類のトランプゲーム。CLI �
 | フリーベット・ブラックジャック (Free Bet Blackjack) | `freebet` | [CUI](docs/manual/cui/freebet.md) / [Web](docs/manual/web/freebet.md) |
 | バンラック (Ban Luck) | `banluck` | [CUI](docs/manual/cui/banluck.md) / [Web](docs/manual/web/banluck.md) |
 | モンテバンク (Monte Bank) | `montebank` | [CUI](docs/manual/cui/montebank.md) / [Web](docs/manual/web/montebank.md) |
+| シンシナティ (Cincinnati) | `cincinnati` | [CUI](docs/manual/cui/cincinnati.md) / [Web](docs/manual/web/cincinnati.md) |
 | クロックソリティア (Clock Solitaire) | `clocksolitaire` | [CUI](docs/manual/cui/clocksolitaire.md) / [Web](docs/manual/web/clocksolitaire.md) |
 | ドゥラーク (Durak) | `durak` | [CUI](docs/manual/cui/durak.md) / [Web](docs/manual/web/durak.md) |
 | フォーティシーブス (Forty Thieves) | `fortythieves` | [CUI](docs/manual/cui/fortythieves.md) / [Web](docs/manual/web/fortythieves.md) |

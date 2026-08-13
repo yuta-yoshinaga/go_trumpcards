@@ -167,6 +167,7 @@ var gameDescriptions = map[string]string{
 	"freebet":             "Free Bet Blackjack (フリーベット・ブラックジャック)",
 	"banluck":             "Ban Luck (バンラック)",
 	"montebank":           "Monte Bank (モンテバンク)",
+	"cincinnati":          "Cincinnati (シンシナティ)",
 	"blackjackswitch":     "Blackjack Switch (ブラックジャック・スイッチ)",
 	"montecarlo":          "Monte Carlo Solitaire (モンテカルロ・ソリティア)",
 	"contractrummy":       "Contract Rummy (コントラクトラミー)",
