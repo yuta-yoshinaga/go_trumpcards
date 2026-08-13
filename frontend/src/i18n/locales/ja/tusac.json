@@ -34,6 +34,7 @@
   "tutorial.meld": "作れるのは同色同種3枚・異色の車馬砲・卒5枚の3つだけ。出した札は戻せません",
   "tutorial.score": "得点は「出した組み合わせ − 手に残った枚数」。抱えたままだと減点です",
   "result.gameEnd": "ゲームが終わりました",
+  "frontendHint.tusacRoundIsOver": "ラウンドが終わりました。次のラウンドへ進んでください",
   "frontendHint.tusacDrawFirst": "まず引いてください",
   "frontendHint.tusacDiscardToEndTurn": "1枚捨てて手番を渡してください",
   "frontendHint.tusacHoldingCostsPoints": "手に残した枚数はそのまま減点になります"

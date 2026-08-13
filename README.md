@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した314種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した315種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -296,6 +296,7 @@ Go + Clean Architecture で実装した314種類のトランプゲーム。CLI �
 | トゥーサック／四色牌 (Tu Sac) | `tusac` | [CUI](docs/manual/cui/tusac.md) / [Web](docs/manual/web/tusac.md) |
 | 四色入札 (Four-Color Bid / Rook系) | `rook` | [CUI](docs/manual/cui/rook.md) / [Web](docs/manual/web/rook.md) |
 | こいこい (Koi-Koi) | `koikoi` | [CUI](docs/manual/cui/koikoi.md) / [Web](docs/manual/web/koikoi.md) |
+| さくら／肥後花 (Sakura) | `sakura` | [CUI](docs/manual/cui/sakura.md) / [Web](docs/manual/web/sakura.md) |
 | ゴーストップ (Go-Stop) | `gostop` | [CUI](docs/manual/cui/gostop.md) / [Web](docs/manual/web/gostop.md) |
 | 八八 (Hachi-Hachi) | `hachihachi` | [CUI](docs/manual/cui/hachihachi.md) / [Web](docs/manual/web/hachihachi.md) |
 | フレンチタロット (French Tarot) | `frenchtarot` | [CUI](docs/manual/cui/frenchtarot.md) / [Web](docs/manual/web/frenchtarot.md) |

@@ -192,6 +192,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [2, 3, 4, 3], skill: [3, 4, 3, 3], social: [3, 4, 3, 4, 3], theme: [4, 1, 1, 1, 5, 1] },
       },
       {
+        path: '/sakura',
+        labelKey: 'nav.sakura',
+        icon: '🌸',
+        page: 'Sakura',
+        profile: { mood: [3, 4, 2, 4], skill: [4, 2, 2, 4], social: [3, 4, 2, 4, 3], theme: [3, 1, 1, 1, 5, 1] },
+      },
+      {
         path: '/trenteetquarante',
         labelKey: 'nav.trenteetquarante',
         icon: '🔴',

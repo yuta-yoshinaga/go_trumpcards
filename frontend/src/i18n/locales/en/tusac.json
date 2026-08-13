@@ -34,6 +34,7 @@
   "tutorial.meld": "Only three combinations: three of one colour, a cross-colour chariot-horse-cannon, and five soldiers. What you lay cannot be taken back",
   "tutorial.score": "You score melds minus the cards still in your hand, so holding on costs points",
   "result.gameEnd": "The game is over",
+  "frontendHint.tusacRoundIsOver": "the round is over — move on to the next one",
   "frontendHint.tusacDrawFirst": "draw before anything else",
   "frontendHint.tusacDiscardToEndTurn": "discard one card to pass the turn",
   "frontendHint.tusacHoldingCostsPoints": "every card left in hand is a point against you"
