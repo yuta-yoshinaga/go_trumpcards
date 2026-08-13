@@ -1585,4 +1585,9 @@ func init() {
 			return usecase.NewShengJiInteractor(domain.NewDefaultShengJi(), new(presenter.ShengJiWebPresenter))
 		},
 		controller.NewShengJiWebController)
+	BindWebControllerFor("sakura",
+		func() usecase.SakuraInteractorIF {
+			return usecase.NewSakuraInteractor(domain.NewDefaultSakura(), new(presenter.SakuraWebPresenter))
+		},
+		controller.NewSakuraWebController)
 }

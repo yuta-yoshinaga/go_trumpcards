@@ -105,6 +105,20 @@ func (g *Sakura) GetPlayers() []*SakuraPlayer { return g.players }
 // GetConfig は卓設定を返す。
 func (g *Sakura) GetConfig() SakuraConfig { return g.config }
 
+// SetConfig は卓設定を差し替える (次の Reset で反映される)。
+func (g *Sakura) SetConfig(cfg SakuraConfig) { g.config = cfg }
+
+// GetPlayerCnt は席数を返す。
+func (g *Sakura) GetPlayerCnt() int { return len(g.players) }
+
+// GetPlayer は指定した席を返す (範囲外なら nil)。
+func (g *Sakura) GetPlayer(i int) *SakuraPlayer {
+	if i < 0 || i >= len(g.players) {
+		return nil
+	}
+	return g.players[i]
+}
+
 // GetPhase は現在のフェーズを返す。
 func (g *Sakura) GetPhase() SakuraPhase { return g.phase }
 
@@ -159,7 +173,16 @@ func (g *Sakura) playerName(i int) string {
 // --- ゲーム進行 ---
 
 // Reset は新しいゲームを開始する。
+//
+// **席は設定から作り直す。** 設定だけ替えて席を据え置くと、席数と人数が食い違った
+// まま配ることになり、その局面は保存すると復元できなくなる。
 func (g *Sakura) Reset() {
+	if err := g.config.Validate(); err != nil {
+		g.config = DefaultSakuraConfig()
+	}
+	if len(g.players) != g.config.Seats {
+		g.players = NewSakuraPlayersForTable(g.config.Seats)
+	}
 	for _, p := range g.players {
 		p.ResetForRound()
 		p.score = 0

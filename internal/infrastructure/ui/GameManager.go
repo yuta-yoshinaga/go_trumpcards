@@ -5048,6 +5048,20 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  log                  action log"},
 		}),
+	BindCuiFor("sakura",
+		func() usecase.SakuraInteractorIF {
+			return usecase.NewSakuraInteractor(domain.NewDefaultSakura(), new(presenter.SakuraCuiPresenter))
+		},
+		controller.NewSakuraCuiController,
+		CuiHelpSpec{
+			TitleKey: "sakura.helpTitle",
+			CommandKeys: []string{
+				"sakura.helpPlay",
+				"sakura.helpNextRound",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys:       []string{"sakura.helpSetSeats", "sakura.helpSetRounds"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.
