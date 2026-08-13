@@ -18,11 +18,28 @@ func newFreeBetForTest(t *testing.T) *FreeBetBlackjack {
 	return g
 }
 
+// fbStackNext は次に引かれる札を指定する。
+//
+// **引く札を配りに委ねると、検査そのものが配り依存になる。** FreeDouble は 1 枚
+// 引いてその場で精算まで走るので、札を決めないと同じ assert が勝ち負けで通ったり
+// 落ちたりする (実測 900 期待に対し 1200)。
+func fbStackNext(g *FreeBetBlackjack, cards ...*Card) {
+	for i, c := range cards {
+		g.shoe.deck[g.shoe.deckDrawCnt+i] = c
+	}
+}
+
 // fbStaged は指定の手を積んでプレイ待ちにした卓を返す。
 func fbStaged(t *testing.T, ante int, player, dealer []*Card) *FreeBetBlackjack {
 	t.Helper()
 	g := newFreeBetForTest(t)
+	// **最初の配りもこちらで決める。** ナチュラルが出ると PlaceBet がその場で
+	// 精算まで走ってチップを動かし、この後で手札を差し替えても**チップだけが
+	// 捨てたクープの結果を持ったまま**になる。9-8 なら双方 17 で決着しない。
+	fbStackNext(g, fbCard(CardDesignSpade, 9), fbCard(CardDesignClover, 8),
+		fbCard(CardDesignHeart, 9), fbCard(CardDesignDiamond, 8))
 	require.NoError(t, g.PlaceBet(ante))
+	require.Equal(t, FreeBetPhasePlay, g.phase, "積んだ配りで決着してしまった")
 
 	h := NewBlackJackHand()
 	for _, c := range player {
@@ -92,11 +109,16 @@ func TestFreeBet_FreeDoubleCostsNothing(t *testing.T) {
 		[]*Card{fbCard(CardDesignClover, 13), fbCard(CardDesignDiamond, 7)})
 	before := g.GetChips()
 	require.True(t, g.CanFreeDouble())
+	// **負ける札を積む。** FreeDouble は 1 枚引いて打ち止めにするので、ここで
+	// 勝ってしまうと配当がチップを押し上げ、「ハウスの出資をプレイヤーから
+	// 引いていないか」という肝心の問いに答えられなくなる。
+	fbStackNext(g, fbCard(CardDesignClover, 2)) // 11+2 = 13 でディーラー 17 に負け
 
 	require.NoError(t, g.FreeDouble())
-	assert.Equal(t, before, g.GetChips(), "無料ダブルでチップが減っている")
 	assert.Equal(t, 100, g.GetFreeBet(0), "ハウスの出資が乗っていない")
 	assert.Equal(t, 100, g.GetHands()[0].GetBet(), "プレイヤーの賭け金が変わっている")
+	assert.Equal(t, FreeBetResultLose, g.GetResults()[0], "積んだ札で負けていない")
+	assert.Equal(t, before, g.GetChips(), "無料ダブルでチップが減っている")
 }
 
 func TestFreeBet_FreeDoubleRejectedOutsideTheRange(t *testing.T) {
@@ -144,6 +166,8 @@ func TestFreeBet_FreeSplitCostsNothing(t *testing.T) {
 		[]*Card{fbCard(CardDesignClover, 13), fbCard(CardDesignDiamond, 7)})
 	before := g.GetChips()
 	require.True(t, g.CanFreeSplit())
+	// 分けた 2 手に配る札も決めておく (8+10 = 18 が 2 つ)。
+	fbStackNext(g, fbCard(CardDesignClover, 10), fbCard(CardDesignDiamond, 10))
 
 	require.NoError(t, g.FreeSplit())
 	assert.Equal(t, before, g.GetChips(), "無料スプリットでチップが減っている")
@@ -165,6 +189,7 @@ func TestFreeBet_SplitAcesGetOneCardEach(t *testing.T) {
 	g := fbStaged(t, 100,
 		[]*Card{fbCard(CardDesignSpade, 1), fbCard(CardDesignHeart, 1)},
 		[]*Card{fbCard(CardDesignClover, 13), fbCard(CardDesignDiamond, 7)})
+	fbStackNext(g, fbCard(CardDesignClover, 9), fbCard(CardDesignDiamond, 9))
 	require.NoError(t, g.FreeSplit())
 
 	for i, h := range g.GetHands() {
@@ -178,6 +203,9 @@ func TestFreeBet_FreeSplitHandLosesNothing(t *testing.T) {
 	g := fbStaged(t, 100,
 		[]*Card{fbCard(CardDesignSpade, 8), fbCard(CardDesignHeart, 8)},
 		[]*Card{fbCard(CardDesignClover, 13), fbCard(CardDesignDiamond, 9)})
+	// **引く札を決める。** 素の配りだと 8 にエースが付いて 19 になり、
+	// ディーラー 19 と同点で勝敗が引き分けに化ける (実測)。
+	fbStackNext(g, fbCard(CardDesignClover, 10), fbCard(CardDesignDiamond, 10))
 	require.NoError(t, g.FreeSplit())
 
 	// 2 つ目 (bet=0, free=100) が負けても払い戻しは 0 = 失うものが無い。
@@ -185,12 +213,11 @@ func TestFreeBet_FreeSplitHandLosesNothing(t *testing.T) {
 	assert.Equal(t, FreeBetResultLose, r)
 	assert.Zero(t, ret)
 
-	// 勝てばハウスのぶんが配当として付く。
+	// 勝てばハウスのぶんが配当として付く。18 対 17 なので必ずこちらを通る。
 	g.hands[1].SetStood(true)
 	r2, ret2 := g.settleHand(g.hands[1], g.GetFreeBet(1), 17, false)
-	if r2 == FreeBetResultWin {
-		assert.Equal(t, 100, ret2, "ハウス持ちの手札の配当が違う")
-	}
+	require.Equal(t, FreeBetResultWin, r2)
+	assert.Equal(t, 100, ret2, "ハウス持ちの手札の配当が違う")
 }
 
 // --- ディーラー 22 プッシュ ---
