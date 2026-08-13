@@ -39,5 +39,6 @@
   "frontendHint.freeBetFreeIsFree": "the house pays the raise, so take it whenever it is offered",
   "frontendHint.freeBetCannotBust": "11 or less cannot bust",
   "frontendHint.freeBetStandPat": "17 or more is a standing hand",
-  "frontendHint.freeBetDealerMayBust": "the dealer's 22 only pushes, so busting yourself costs more here"
+  "frontendHint.freeBetDealerMayBust": "the dealer's 22 only pushes, so busting yourself costs more here",
+  "frontendHint.freeBetChaseDealer": "the dealer is strong, so you have to chase"
 }

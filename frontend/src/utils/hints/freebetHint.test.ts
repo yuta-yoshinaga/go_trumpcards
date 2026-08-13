@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import type { FreeBetResponse } from '../../types/card';
+import type { Card, FreeBetResponse } from '../../types/card';
 import { FreeBetPhase } from '../../types/phases';
 import { getFreebetHint } from './freebetHint';
+
+const card = (value: number): Card => ({ design: 'SPADE', value });
 
 const hand = (score: number) =>
   ({
@@ -72,11 +74,23 @@ describe('getFreebetHint', () => {
     expect(getFreebetHint(state({ hands: [hand(20)] }))?.targetAction).toBe('stand');
   });
 
-  // 12〜16 は、ディーラーの 22 が引き分けになるぶん立つほうが得。
-  it('12〜16は立つ', () => {
-    const hint = getFreebetHint(state({ hands: [hand(15)] }));
+  // **12〜16 はアップカードで割れる。** サーバ側の助言と同じ規則にしていないと、
+  // 同じ盤面で 2 つの違うことを言うページになる。両側を踏む。
+  it('12〜16は弱いアップカードなら立つ', () => {
+    const hint = getFreebetHint(state({ hands: [hand(15)], dealerCards: [card(5), card(9)] }));
     expect(hint?.targetAction).toBe('stand');
     expect(hint?.reason).toBe('frontendHint.freeBetDealerMayBust');
+  });
+
+  it('12〜16は強いアップカードなら追いかける', () => {
+    const hint = getFreebetHint(state({ hands: [hand(15)], dealerCards: [card(10), card(9)] }));
+    expect(hint?.targetAction).toBe('hit');
+    expect(hint?.reason).toBe('frontendHint.freeBetChaseDealer');
+  });
+
+  it('エースのアップカードは11として扱う', () => {
+    const hint = getFreebetHint(state({ hands: [hand(15)], dealerCards: [card(1), card(9)] }));
+    expect(hint?.targetAction).toBe('hit');
   });
 
   it('操作中の手札が無ければ助言しない', () => {

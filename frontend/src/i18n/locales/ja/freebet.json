@@ -39,5 +39,6 @@
   "frontendHint.freeBetFreeIsFree": "上乗せぶんはハウス持ちなので、使えるなら使うのが得です",
   "frontendHint.freeBetCannotBust": "11以下なのでバストしません",
   "frontendHint.freeBetStandPat": "17以上あるので立つのが定石です",
-  "frontendHint.freeBetDealerMayBust": "ディーラーの22が引き分けになるぶん、自分からバストしにいくのは損です"
+  "frontendHint.freeBetDealerMayBust": "ディーラーの22が引き分けになるぶん、自分からバストしにいくのは損です",
+  "frontendHint.freeBetChaseDealer": "ディーラーが強いので追いかけるしかありません"
 }

@@ -6,6 +6,9 @@ import { FreeBetPhase } from '../../types/phases';
 const STAND_FROM = 17;
 /** A hand at or below this total cannot bust on one card. */
 const CANNOT_BUST_UP_TO = 11;
+/** Up-card values the dealer busts from most often. */
+const WEAK_UP_CARD_MIN = 2;
+const WEAK_UP_CARD_MAX = 6;
 
 /**
  * Returns a frontend {@link HintResult} for Free Bet Blackjack, or null when
@@ -36,8 +39,13 @@ export function getFreebetHint(state: FreeBetResponse): HintResult | null {
   if (hand.score >= STAND_FROM) {
     return { targetAction: 'stand', reason: 'frontendHint.freeBetStandPat', confidence: 'strong' };
   }
-  // **Between 12 and 16 the dealer's 22 push tilts things toward standing.**
-  // A hand that would have won outright now only pushes when the dealer busts
-  // at 22, so busting yourself costs more here than in ordinary blackjack.
-  return { targetAction: 'stand', reason: 'frontendHint.freeBetDealerMayBust', confidence: 'moderate' };
+  // **Between 12 and 16 the up-card decides it, exactly as the server's hint does.**
+  // Returning one fixed answer here would contradict the hint the same board
+  // produces server-side, and a player following both would be told two things.
+  const up = state.dealerCards[0];
+  const upValue = up ? (up.value === 1 ? 11 : Math.min(up.value, 10)) : 0;
+  if (upValue >= WEAK_UP_CARD_MIN && upValue <= WEAK_UP_CARD_MAX) {
+    return { targetAction: 'stand', reason: 'frontendHint.freeBetDealerMayBust', confidence: 'moderate' };
+  }
+  return { targetAction: 'hit', reason: 'frontendHint.freeBetChaseDealer', confidence: 'moderate' };
 }

@@ -474,6 +474,40 @@ func TestFreeBet_GetHint(t *testing.T) {
 		require.NotNil(t, h)
 		assert.Equal(t, "stand", h.Action)
 	})
+
+	t.Run("11 以下は引く", func(t *testing.T) {
+		g := fbStaged(t, 100,
+			[]*Card{fbCard(CardDesignSpade, 4), fbCard(CardDesignHeart, 3)}, // 7 (無料ダブルの範囲外)
+			[]*Card{fbCard(CardDesignClover, 13), fbCard(CardDesignDiamond, 7)})
+		h := g.GetHint()
+		require.NotNil(t, h)
+		assert.Equal(t, "hit", h.Action)
+		assert.Equal(t, "cannotBust", h.Reason)
+	})
+
+	// **12〜16 はアップカードで割れる。** ここを両側踏まないと、助言が
+	// 常に片方を返していても全部緑になる。
+	t.Run("12〜16 はアップカード次第", func(t *testing.T) {
+		for _, tt := range []struct {
+			name           string
+			up             *Card
+			action, reason string
+		}{
+			{"弱いアップカードなら立つ", fbCard(CardDesignClover, 5), "stand", "dealerMayBust"},
+			{"強いアップカードなら追いかける", fbCard(CardDesignClover, 10), "hit", "chaseDealer"},
+			{"エースは 11 なので追いかける", fbCard(CardDesignClover, 1), "hit", "chaseDealer"},
+		} {
+			t.Run(tt.name, func(t *testing.T) {
+				g := fbStaged(t, 100,
+					[]*Card{fbCard(CardDesignSpade, 10), fbCard(CardDesignHeart, 5)}, // 15
+					[]*Card{tt.up, fbCard(CardDesignDiamond, 7)})
+				h := g.GetHint()
+				require.NotNil(t, h)
+				assert.Equal(t, tt.action, h.Action)
+				assert.Equal(t, tt.reason, h.Reason)
+			})
+		}
+	})
 }
 
 // --- 名前と設定 ---
@@ -518,10 +552,18 @@ func TestFreeBet_Accessors(t *testing.T) {
 	assert.Zero(t, g.GetFreeBet(0), "範囲外は 0")
 	assert.Zero(t, g.GetFreeBet(-1))
 
+	// **配りを固定してから配る。** ナチュラルが出ると PlaceBet がその場で
+	// 精算まで走り、`GetPayout()` が 0 でなくなる (約 5% で落ちる)。
+	fbStackNext(g, fbCard(CardDesignSpade, 9), fbCard(CardDesignClover, 8),
+		fbCard(CardDesignHeart, 9), fbCard(CardDesignDiamond, 8))
 	require.NoError(t, g.PlaceBet(50))
 	assert.Equal(t, 50, g.GetAnteBet())
 	assert.Equal(t, 1, g.GetHandCount())
 	assert.Len(t, g.GetDealerCards(), 2)
+	assert.Zero(t, g.GetActiveHandIdx())
+	assert.Equal(t, 1, g.GetRoundNumber())
+	// 配った直後はまだ何も戻っていない。
+	assert.Zero(t, g.GetPayout())
 
 	g.SetConfig(FreeBetBlackjackConfig{InitialChips: 500, DefaultAnte: 20})
 	assert.Equal(t, 500, g.GetConfig().InitialChips)
