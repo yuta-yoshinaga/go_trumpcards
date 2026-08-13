@@ -56,6 +56,7 @@ import type {
   ChinesePokerResponse,
   ChineseTenResponse,
   CinchResponse,
+  CincinnatiResponse,
   ClockSolitaireResponse,
   ColoradoResponse,
   ColourWhistResponse,
@@ -354,6 +355,7 @@ import { getChinchonHint } from '../utils/hints/chinchonHint';
 import { getChinesePokerHint } from '../utils/hints/chinesepokerHint';
 import { getChineseTenHint } from '../utils/hints/chinesetenHint';
 import { getCinchHint } from '../utils/hints/cinchHint';
+import { getCincinnatiHint } from '../utils/hints/cincinnatiHint';
 import { getClocksolitaireHint } from '../utils/hints/clocksolitaireHint';
 import { getColoradoHint } from '../utils/hints/coloradoHint';
 import { getColourwhistHint } from '../utils/hints/colourwhistHint';
@@ -786,6 +788,7 @@ export const hintFactories = {
   freebet: (s) => getFreebetHint(s as FreeBetResponse),
   banluck: (s) => getBanluckHint(s as BanLuckResponse),
   montebank: (s) => getMontebankHint(s as MonteBankResponse),
+  cincinnati: (s) => getCincinnatiHint(s as CincinnatiResponse),
   colourwhist: (s) => getColourwhistHint(s as ColourWhistResponse),
   dragontiger: (s) => getDragontigerHint(s as DragonTigerResponse),
   blackjackswitch: (s) => getBlackjackswitchHint(s as BlackJackSwitchResponse),

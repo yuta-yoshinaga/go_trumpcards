@@ -67,6 +67,7 @@ export * from './games/chinchon';
 export * from './games/chinesepoker';
 export * from './games/chineseten';
 export * from './games/cinch';
+export * from './games/cincinnati';
 export * from './games/clocksolitaire';
 export * from './games/colorado';
 export * from './games/colourwhist';
@@ -383,6 +384,7 @@ export const games = [
   'freebet',
   'banluck',
   'montebank',
+  'cincinnati',
   'razz',
   'sevencardstudhilo',
   'badugi',

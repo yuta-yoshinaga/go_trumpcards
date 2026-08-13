@@ -241,6 +241,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [4, 3, 3, 2], skill: [2, 4, 4, 2], social: [5, 3, 2, 3, 3], theme: [5, 1, 1, 1, 3, 1] },
       },
       {
+        path: '/cincinnati',
+        labelKey: 'nav.cincinnati',
+        icon: '🎴',
+        page: 'Cincinnati',
+        profile: { mood: [3, 4, 4, 3], skill: [2, 5, 4, 3], social: [4, 4, 3, 3, 4], theme: [5, 1, 1, 1, 3, 1] },
+      },
+      {
         path: '/montebank',
         labelKey: 'nav.montebank',
         icon: '🃏',

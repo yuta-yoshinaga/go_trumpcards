@@ -1133,6 +1133,12 @@ var registry = []*Game{
 	// すべてプレイヤーの選択から出る ── 場札に 1 枚しか出ていないスートを
 	// 選べば互角で、重複したスートを選ぶたびに 11% 以上を失う。
 	{Name: "montebank", Category: CategoryCasino},
+	// Cincinnati シンシナティ
+	//
+	// **手札 5 枚 + コミュニティ 5 枚の 10 枚から最良の 5 枚。** コミュニティを
+	// 1 枚ずつ 5 回めくり、そのたびにベットラウンドが入る (Holdem の 3-1-1 とは
+	// 進行が違う)。手札だけで役が完成しうるのが Holdem との一番の差。
+	{Name: "cincinnati", Category: CategoryCasino},
 }
 
 // All returns a value-level copy of the registry in canonical order.

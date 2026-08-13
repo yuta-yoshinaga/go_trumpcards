@@ -2000,6 +2000,14 @@ export const DoubleAttackPhase = {
   RESULT: 3,
 } as const;
 
+/** Cincinnati phase constants (sync: internal/domain/Cincinnati.go). */
+export const CincinnatiPhase = {
+  DEAL: 0,
+  BETTING: 1,
+  SHOWDOWN: 2,
+  GAME_END: 3,
+} as const;
+
 /** Monte Bank phase constants (sync: internal/domain/MonteBank.go). */
 export const MonteBankPhase = {
   BET: 0,

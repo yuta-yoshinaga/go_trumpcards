@@ -36,6 +36,8 @@ tags:
     description: Ban Luck (バンラック) game
   - name: montebank
     description: Monte Bank (モンテバンク) game
+  - name: cincinnati
+    description: Cincinnati (シンシナティ) game
   - name: poker
     description: 5-card Draw Poker game
   - name: oldmaid
@@ -9272,6 +9274,69 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DoubleAttackResponse'
+
+  /cincinnati/exec:
+    post:
+      tags:
+        - cincinnati
+      summary: Execute a Cincinnati game command
+      description: |
+        Send a command to advance the Cincinnati (シンシナティ) game session
+        identified by `sessionId`.
+
+        An American home-poker variant and an ancestor of Hold'em. **Each seat
+        holds five cards and the five community cards are turned one at a
+        time**, with a betting round after every one — five rounds, not
+        Hold'em's 3-1-1. At showdown the best five of the ten available cards
+        plays, and **a hand may use no community cards at all** (or only
+        community cards).
+
+        `revealedCount` and `communityTotal` let a client show how many rounds
+        remain; `community` only ever carries the cards already turned.
+
+        **CPU hole cards are not on the wire before showdown.** With five cards
+        each, shipping them would settle the hand — the server withholds them
+        rather than relying on the client to hide them.
+
+        `amount` is required for `bet` and `raise`, and ignored for `fold`,
+        `check` and `call`. Raises are capped at three per round; `canRaise`
+        reports whether one is still available.
+      operationId: execCincinnati
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: "reset (r), fold (f), check (k), call (c), bet (b), raise, next, hint, log, quit (q)"
+                amount:
+                  type: integer
+                  description: Stake for bet and raise. Ignored by the other actions.
+                sessionId:
+                  type: string
+              example:
+                command: bet
+                amount: 20
+                sessionId: my-session-001
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CincinnatiResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CincinnatiResponse'
 
   /montebank/exec:
     post:
@@ -48552,6 +48617,100 @@ components:
             initialChips:
               type: integer
             defaultAnte:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+    CincinnatiResponse:
+      type: object
+      description: Response payload for /cincinnati/exec
+      properties:
+        phase:
+          type: integer
+          description: "0=Deal, 1=Betting, 2=Showdown, 3=GameEnd"
+        seats:
+          type: array
+          description: Always an array, one entry per seat, in seat order.
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              isHuman:
+                type: boolean
+              chips:
+                type: integer
+              bet:
+                type: integer
+              cards:
+                type: array
+                description: >-
+                  The five hole cards. Empty for CPU seats until showdown --
+                  the server withholds them rather than relying on the client.
+                items:
+                  $ref: '#/components/schemas/Card'
+              folded:
+                type: boolean
+              allIn:
+                type: boolean
+              isTurn:
+                type: boolean
+              handRank:
+                type: integer
+                description: Set at showdown only.
+              bestHand:
+                type: array
+                description: The best five of the ten cards. Set at showdown only.
+                items:
+                  $ref: '#/components/schemas/Card'
+              wonAmount:
+                type: integer
+        community:
+          type: array
+          description: Always an array. Only the cards already turned face up.
+          items:
+            $ref: '#/components/schemas/Card'
+        revealedCount:
+          type: integer
+          description: How many community cards are face up (0..5).
+        communityTotal:
+          type: integer
+          description: How many there will be in total (5), so a client can show the rounds left.
+        pot:
+          type: integer
+        currentBet:
+          type: integer
+        toCall:
+          type: integer
+          description: What the human seat must put in to call.
+        raiseCount:
+          type: integer
+        canRaise:
+          type: boolean
+          description: False once the three-raise cap for this round is reached.
+        turnSeat:
+          type: integer
+        humanSeat:
+          type: integer
+        isHumanTurn:
+          type: boolean
+        handNumber:
+          type: integer
+        remainingCards:
+          type: integer
+        winnerSeat:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        config:
+          type: object
+          properties:
+            seats:
+              type: integer
+            initialChips:
+              type: integer
+            ante:
               type: integer
         message:
           type: string
