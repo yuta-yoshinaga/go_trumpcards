@@ -606,6 +606,8 @@ tags:
     description: Michigan (ミシガン) game
   - name: oichokabu
     description: Oicho-Kabu (おいちょかぶ) game
+  - name: kingo
+    description: Kingo (キンゴ) game
   - name: ombre
     description: Ombre / Hombre (オンブル) game
   - name: pan
@@ -26807,6 +26809,69 @@ paths:
                 properties:
                   message:
                     type: string
+  /kingo/exec:
+    post:
+      tags:
+        - kingo
+      summary: Execute a Kingo game command
+      description: |
+        Send a command to advance the Kingo (キンゴ) game session identified by
+        `sessionId`.
+
+        A Japanese banking game on the 40-card kabufuda deck — the same deck as
+        Oicho-Kabu, but **what it competes on is different**. Oicho-Kabu scores
+        the last digit of a total; Kingo scores **how many cards of the same
+        number you collected**, so no sum enters the hand evaluation.
+
+        Three cards each: 嵐 (three alike) beats a pair beats nothing, and
+        within the same rank the higher matched number wins. `payoutArashi` and
+        `payoutPair` carry the multipliers so a client never hardcodes them.
+
+        **The bank rotates and the banker does not bet.** Which action the human
+        owes follows from `isHumanBanker`: a child sends `bet` with an `amount`,
+        the banker sends `deal` once the children's bets are in. Sending `bet`
+        as the banker is rejected.
+
+        **Nothing is dealt before the bets**, so during the bet phase no seat
+        carries cards — `cards` fills in for every seat at once when the round
+        resolves. There is no private hand in this game.
+      operationId: execKingo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: "reset (r), bet (b), deal (d), next, hint, log, quit (q)"
+                amount:
+                  type: integer
+                  description: Stake for bet. Ignored by the other actions.
+                sessionId:
+                  type: string
+              example:
+                command: bet
+                amount: 20
+                sessionId: my-session-001
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KingoResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KingoResponse'
+
   /oichokabu/exec:
     post:
       tags:
@@ -48960,6 +49025,91 @@ components:
             initialChips:
               type: integer
             ante:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+    KingoResponse:
+      type: object
+      description: Response payload for /kingo/exec
+      properties:
+        phase:
+          type: integer
+          description: "0=Bet, 1=Result, 2=GameEnd"
+        seats:
+          type: array
+          description: Always an array, one entry per seat, in seat order.
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              isHuman:
+                type: boolean
+              chips:
+                type: integer
+              bet:
+                type: integer
+                description: This round's stake. Always 0 for the banker.
+              cards:
+                type: array
+                description: >-
+                  The three cards. Empty for every seat during the bet phase --
+                  nothing is dealt until the bets are in, so no seat has a
+                  private hand.
+                items:
+                  $ref: '#/components/schemas/Card'
+              rank:
+                type: integer
+                description: "0=none, 1=pair, 2=arashi. Set once the round resolves."
+              matchedValue:
+                type: integer
+                description: The number the seat collected. Set once the round resolves.
+              isBanker:
+                type: boolean
+              wonAmount:
+                type: integer
+                description: This round's net for the seat; negative when it paid.
+        bankerSeat:
+          type: integer
+        roundNumber:
+          type: integer
+        rounds:
+          type: integer
+          description: Total rounds; at least the seat count so the bank reaches every seat.
+        humanSeat:
+          type: integer
+        isHumanBanker:
+          type: boolean
+          description: Decides whether the human owes a bet or a deal.
+        isHumanTurn:
+          type: boolean
+        handSize:
+          type: integer
+          description: Always 3.
+        payoutArashi:
+          type: integer
+          description: Multiplier for three alike.
+        payoutPair:
+          type: integer
+          description: Multiplier for a pair.
+        remainingCards:
+          type: integer
+        winnerSeat:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        config:
+          type: object
+          properties:
+            seats:
+              type: integer
+            initialChips:
+              type: integer
+            minBet:
+              type: integer
+            rounds:
               type: integer
         message:
           type: string

@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全312ゲーム)](#12-ゲームドメイン-全312ゲーム)
+  - [1.2 ゲームドメイン (全313ゲーム)](#12-ゲームドメイン-全313ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -42,9 +42,9 @@
   - [3.7 Memory フェーズ遷移](#37-memory-フェーズ遷移)
   - [3.8 Klondike / FreeCell / Spider / Pyramid / TriPeaks / Golf / ClockSolitaire フェーズ遷移](#38-klondike--freecell--spider--pyramid--tripeaks--golf--clocksolitaire-フェーズ遷移)
   - [3.9 CrazyEights フェーズ遷移](#39-crazyeights-フェーズ遷移)
-  - [3.10 GinRummy フェーズ遷移](#312-ginrummy-フェーズ遷移)
-  - [3.11 Baccarat フェーズ遷移](#312-baccarat-フェーズ遷移)
-  - [3.12 Napoleon フェーズ遷移](#312-napoleon-フェーズ遷移)
+  - [3.10 GinRummy フェーズ遷移](#313-ginrummy-フェーズ遷移)
+  - [3.11 Baccarat フェーズ遷移](#313-baccarat-フェーズ遷移)
+  - [3.12 Napoleon フェーズ遷移](#313-napoleon-フェーズ遷移)
   - [3.13 IndianPoker フェーズ遷移](#313-indianpoker-フェーズ遷移)
   - [3.14 VideoPoker フェーズ遷移](#314-videopoker-フェーズ遷移)
   - [3.15 Euchre フェーズ遷移](#315-euchre-フェーズ遷移)
@@ -153,7 +153,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全312ゲーム)
+### 1.2 ゲームドメイン (全313ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -1683,7 +1683,7 @@ classDiagram
     note for GamePresenter "各ゲームの Presenter は\nGamePresenter[G] の型エイリアス\nまたは拡張インターフェース"
 ```
 
-**Interactor パターン (全312ゲーム共通)**
+**Interactor パターン (全313ゲーム共通)**
 
 ```mermaid
 classDiagram
@@ -1757,8 +1757,8 @@ classDiagram
     GameCuiPresenter ..|> GamePresenter : implements
     GameWebPresenter ..|> GamePresenter : implements
 
-    note for GameCuiController "312ゲーム × CUI/Web = 624 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
-    note for GameCuiPresenter "312ゲーム × CUI/Web = 624 Presenter 実装"
+    note for GameCuiController "313ゲーム × CUI/Web = 626 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
+    note for GameCuiPresenter "313ゲーム × CUI/Web = 626 Presenter 実装"
 ```
 
 ### 1.5 インフラストラクチャ層
@@ -1797,8 +1797,8 @@ classDiagram
     }
 
     TrumpCardsWeb --> "*" gameEntry : registerAll() over games.All()
-    gameEntry --> GameWebController : holds 312 controllers
-    GameManager --> "*" CuiExecer : holds 312 games
+    gameEntry --> GameWebController : holds 313 controllers
+    GameManager --> "*" CuiExecer : holds 313 games
     GameCui ..|> CuiExecer : implements
     GameCui --> GameCuiController : delegates
 ```

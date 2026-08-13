@@ -363,4 +363,12 @@ func init() {
 			return usecase.RestoreGoofspielInteractor(data, new(presenter.GoofspielWebPresenter))
 		},
 		controller.NewGoofspielWebControllerWithProvider)
+	games.RegisterKVGame("kingo", games.CategoryExtra,
+		func() usecase.KingoInteractorIF {
+			return usecase.NewKingoInteractor(domain.NewDefaultKingo(), new(presenter.KingoWebPresenter))
+		},
+		func(data []byte) (usecase.KingoInteractorIF, error) {
+			return usecase.RestoreKingoInteractor(data, new(presenter.KingoWebPresenter))
+		},
+		controller.NewKingoWebControllerWithProvider)
 }
