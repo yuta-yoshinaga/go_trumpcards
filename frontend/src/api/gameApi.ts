@@ -23,6 +23,7 @@ export * from './games/badugi';
 export * from './games/bakersdozen';
 export * from './games/bakersgame';
 export * from './games/baloot';
+export * from './games/banluck';
 export * from './games/barbu';
 export * from './games/basra';
 export * from './games/beggarmyneighbour';
@@ -379,6 +380,7 @@ export const games = [
   'crazyfourpoker',
   'doubleattack',
   'freebet',
+  'banluck',
   'razz',
   'sevencardstudhilo',
   'badugi',
