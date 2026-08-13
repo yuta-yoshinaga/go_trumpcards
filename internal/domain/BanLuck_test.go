@@ -503,3 +503,109 @@ func TestBanLuck_SettlesWhenEverySeatIsSpecialAtDeal(t *testing.T) {
 	assert.Equal(t, BanLuckPhaseRoundEnd, g.GetPhase(),
 		"動ける席が無いのに PLAY のまま固まっている")
 }
+
+// --- 助言 ---
+
+// **義務・枚数・点数の順で決まる。** 全分岐を踏まないと、片方しか返さない
+// 実装でも全部緑になる。
+func TestBanLuck_GetHint(t *testing.T) {
+	t.Parallel()
+
+	t.Run("賭ける前や他人の手番では助言しない", func(t *testing.T) {
+		t.Parallel()
+		g := newBanLuckForTest(t)
+		assert.Nil(t, g.GetHint(), "配る前に助言が出ている")
+
+		blDealPlain(g)
+		require.NoError(t, g.PlaceBet(0))
+		g.turn = 1 // CPU の席
+		assert.Nil(t, g.GetHint(), "他人の手番で助言が出ている")
+
+		g.turn = g.GetHumanSeat()
+		g.gameEndFlag = true
+		assert.Nil(t, g.GetHint(), "終局後に助言が出ている")
+	})
+
+	// staged は人間の席に指定の手札を積み、手番を回した卓を返す。
+	staged := func(t *testing.T, banker int, cards ...*Card) *BanLuck {
+		t.Helper()
+		g := newBanLuckForTest(t)
+		g.banker = banker
+		blDealPlain(g)
+		// **親は 0、子は正規の額。** 子で 0 を送ると範囲外で弾かれる。
+		bet := 0
+		if banker != g.GetHumanSeat() {
+			bet = BanLuckDefaultBet
+		}
+		require.NoError(t, g.PlaceBet(bet))
+		g.hands[g.GetHumanSeat()] = blHand(cards...)
+		g.turn = g.GetHumanSeat()
+		g.phase = BanLuckPhasePlay
+		return g
+	}
+
+	for _, tt := range []struct {
+		name           string
+		banker         int
+		cards          []*Card
+		action, reason string
+	}{
+		{
+			// **義務は戦略より先。** 押せない操作を薦めないため。
+			name: "親が15未満なら義務を言う", banker: 0,
+			cards:  []*Card{blCard(CardDesignSpade, 10), blCard(CardDesignHeart, 4)}, // 14
+			action: "hit", reason: "bankerMustHit",
+		},
+		{
+			name: "5枚あればもう引けない", banker: 1,
+			cards: []*Card{blCard(CardDesignSpade, 2), blCard(CardDesignHeart, 2),
+				blCard(CardDesignClover, 2), blCard(CardDesignDiamond, 2), blCard(CardDesignSpade, 3)},
+			action: "stand", reason: "handFull",
+		},
+		{
+			// **17 でも引くほうが得な場面がある。** ファイブドラゴンは合計に
+			// 関係なく通常の手に勝つ。
+			name: "4枚21以下ならファイブドラゴンを狙う", banker: 1,
+			cards: []*Card{blCard(CardDesignSpade, 2), blCard(CardDesignHeart, 3),
+				blCard(CardDesignClover, 4), blCard(CardDesignDiamond, 6)}, // 15
+			action: "hit", reason: "chaseFiveDragon",
+		},
+		{
+			name: "11以下は引く", banker: 1,
+			cards:  []*Card{blCard(CardDesignSpade, 5), blCard(CardDesignHeart, 6)}, // 11
+			action: "hit", reason: "cannotBust",
+		},
+		{
+			name: "17以上は立つ", banker: 1,
+			cards:  []*Card{blCard(CardDesignSpade, 10), blCard(CardDesignHeart, 7)}, // 17
+			action: "stand", reason: "standPat",
+		},
+		{
+			name: "12〜16は追いかける", banker: 1,
+			cards:  []*Card{blCard(CardDesignSpade, 10), blCard(CardDesignHeart, 5)}, // 15
+			action: "hit", reason: "chaseBanker",
+		},
+		{
+			// **子は 15 未満でも義務を負わない。** 親の分岐に落ちないこと。
+			name: "子の14は義務ではない", banker: 1,
+			cards:  []*Card{blCard(CardDesignSpade, 10), blCard(CardDesignHeart, 4)}, // 14
+			action: "hit", reason: "chaseBanker",
+		},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			h := staged(t, tt.banker, tt.cards...).GetHint()
+			require.NotNil(t, h)
+			assert.Equal(t, tt.action, h.Action)
+			assert.Equal(t, tt.reason, h.Reason)
+		})
+	}
+}
+
+func TestBanLuck_PlayerName(t *testing.T) {
+	t.Parallel()
+	p := NewBanLuckPlayer("YOU", 500, true)
+	assert.Equal(t, "YOU", p.GetName())
+	assert.True(t, p.GetIsHuman())
+	assert.Equal(t, 500, p.GetChips())
+}
