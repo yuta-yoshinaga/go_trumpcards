@@ -32,6 +32,8 @@ tags:
     description: Extra Bet Blackjack (追加ベット・ブラックジャック) game
   - name: freebet
     description: Free Bet Blackjack (フリーベット・ブラックジャック) game
+  - name: banluck
+    description: Ban Luck (バンラック) game
   - name: poker
     description: 5-card Draw Poker game
   - name: oldmaid
@@ -9268,6 +9270,74 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DoubleAttackResponse'
+
+  /banluck/exec:
+    post:
+      tags:
+        - banluck
+      summary: Execute a Ban Luck game command
+      description: |
+        Send a command to advance the Ban Luck (バンラック) game session
+        identified by `sessionId`.
+
+        A Lunar New Year game from Singapore and Malaysia, played by 2-6 seats
+        against a banker that **moves between the seats**. It is not blackjack
+        with more hands: **card count decides the rank, not the total**.
+
+        - **Ban Ban** (rank 4) is A+A. Its total is 12, so a score-only check
+          misses the strongest hand entirely.
+        - **Ban Luck** (rank 3) is 21 on the two dealt cards. A 21 reached by
+          drawing is an ordinary hand.
+        - **Five Dragon** (rank 2) is five cards totalling 21 or less,
+          regardless of the total — a five-card 16 beats a two-card 20.
+
+        The payout multiplier comes from the **winner's** rank (3 / 2 / 2 / 1),
+        so the banker's Ban Ban collects 3x as well.
+
+        **Only the banker is forced to draw**, and only below 15. `mustHit`
+        reports that obligation; clients must not re-derive it, and `stand` is
+        rejected while it holds. Seats dealt a special hand are never given a
+        turn, since drawing would destroy the rank they already have.
+
+        `bet` is **required even on your banker round**, where the correct value
+        is `0` — the banker does not stake. Omitting the field is an error, not
+        a way to express "no bet".
+      operationId: execBanLuck
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: "reset (r), bet (b), hit (h), stand (s), next, hint, log, quit (q)"
+                bet:
+                  type: integer
+                  description: "Stake for the bet command. 0 is a value (your banker round), not an omission."
+                sessionId:
+                  type: string
+              example:
+                command: bet
+                bet: 50
+                sessionId: my-session-001
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BanLuckResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BanLuckResponse'
 
   /freebet/exec:
     post:
@@ -48409,6 +48479,92 @@ components:
             initialChips:
               type: integer
             defaultAnte:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+    BanLuckResponse:
+      type: object
+      description: Response payload for /banluck/exec
+      properties:
+        phase:
+          type: integer
+          description: "0=Bet, 1=Play, 2=RoundEnd, 3=GameEnd"
+        seats:
+          type: array
+          description: Always an array, one entry per seat, in seat order.
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              isHuman:
+                type: boolean
+              chips:
+                type: integer
+              bet:
+                type: integer
+                description: The live stake. Reset to 0 once the round settles.
+              cards:
+                type: array
+                description: Always an array. No seat's cards are hidden.
+                items:
+                  $ref: '#/components/schemas/Card'
+              score:
+                type: integer
+              rank:
+                type: integer
+                description: "0=bust, 1=point, 2=fiveDragon, 3=banLuck, 4=banBan"
+              outcome:
+                type: integer
+                description: "Against the banker: 0=lose, 1=push, 2=win. The banker itself is push."
+              roundBet:
+                type: integer
+                description: >-
+                  What this seat staked in the settled round. Use this for the
+                  result screen -- bet is cleared once the round settles.
+              delta:
+                type: integer
+              busted:
+                type: boolean
+              stood:
+                type: boolean
+              isBanker:
+                type: boolean
+              isTurn:
+                type: boolean
+        bankerSeat:
+          type: integer
+        turnSeat:
+          type: integer
+        humanSeat:
+          type: integer
+        isHumanTurn:
+          type: boolean
+        mustHit:
+          type: boolean
+          description: >-
+            The human seat is the banker and is below 15, so it cannot stand.
+            Server-computed; do not re-derive.
+        roundNumber:
+          type: integer
+        remainingCards:
+          type: integer
+        winnerSeat:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        config:
+          type: object
+          properties:
+            seats:
+              type: integer
+            initialChips:
+              type: integer
+            rounds:
+              type: integer
+            defaultBet:
               type: integer
         message:
           type: string
