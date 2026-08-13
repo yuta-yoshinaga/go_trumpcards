@@ -1162,6 +1162,12 @@ var registry = []*Game{
 	// **おいちょかぶと同じ株札を使うが、競うものが違う。** 合計の下一桁では
 	// なく、同じ数字を何枚そろえたかで決まる ── 役の判定に総和は出てこない。
 	{Name: "kingo", Category: CategoryExtra},
+	// Tu Sac トゥーサック (四色牌)
+	//
+	// **4 色 × 7 種 × 4 枚 = 112 枚の専用デッキ。** 引いて捨てる形は
+	// ラミーと同じだが、数字の並びという概念が無いので「同スートの連番」に
+	// 当たるメルドが存在しない ── 同色同種 3 枚 / 異色の車馬砲 / 卒 5 枚の 3 つ。
+	{Name: "tusac", Category: CategorySolo},
 }
 
 // All returns a value-level copy of the registry in canonical order.

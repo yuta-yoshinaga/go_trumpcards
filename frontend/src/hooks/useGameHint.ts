@@ -282,6 +282,7 @@ import type {
   TrexResponse,
   TriPeaksResponse,
   TrucoResponse,
+  TuSacResponse,
   TuteResponse,
   TwentyNineResponse,
   TwoTenJackResponse,
@@ -591,6 +592,7 @@ import { getTressetteHint } from '../utils/hints/tressetteHint';
 import { getTrexHint } from '../utils/hints/trexHint';
 import { getTriPeaksHint } from '../utils/hints/tripeaksHint';
 import { getTrucoHint } from '../utils/hints/trucoHint';
+import { getTusacHint } from '../utils/hints/tusacHint';
 import { getTuteHint } from '../utils/hints/tuteHint';
 import { getTwentyNineHint } from '../utils/hints/twentyNineHint';
 import { getTwoTenJackHint } from '../utils/hints/twotenjackHint';
@@ -787,6 +789,7 @@ export const hintFactories = {
   casinowar: (s) => getCasinowarHint(s as CasinoWarResponse),
   oichokabu: (s) => getOichokabuHint(s as OichoKabuResponse),
   kingo: (s) => getKingoHint(s as KingoResponse),
+  tusac: (s) => getTusacHint(s as TuSacResponse),
   andarbahar: (s) => getAndarbaharHint(s as AndarBaharResponse),
   botifarra: (s) => getBotifarraHint(s as BotifarraResponse),
   rikken: (s) => getRikkenHint(s as RikkenResponse),

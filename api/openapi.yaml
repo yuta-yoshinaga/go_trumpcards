@@ -608,6 +608,8 @@ tags:
     description: Oicho-Kabu (おいちょかぶ) game
   - name: kingo
     description: Kingo (キンゴ) game
+  - name: tusac
+    description: Tu Sac (トゥーサック／四色牌) game
   - name: ombre
     description: Ombre / Hombre (オンブル) game
   - name: pan
@@ -26809,6 +26811,82 @@ paths:
                 properties:
                   message:
                     type: string
+  /tusac/exec:
+    post:
+      tags:
+        - tusac
+      summary: Execute a Tu Sac game command
+      description: |
+        Send a command to advance the Tu Sac (トゥーサック／四色牌) game
+        session identified by `sessionId`.
+
+        A rummy from southern Vietnam played on a **112-card four-colour deck**
+        (4 colours × 7 piece types × 4 copies), not a 52-card pack. The suits
+        are colours and the ranks are chess-piece names, and **there is no
+        notion of numeric order** — so the "same-suit run" of other rummies
+        does not exist. The three combinations are three of one colour and
+        type, one each of chariot/horse/cannon **in three different colours**,
+        and five soldiers. `meldPointsByKind` carries their scores so a client
+        never hardcodes them.
+
+        A turn is draw one, optionally lay combinations, discard one.
+        **Drawing from the stock and taking the discard are separate
+        commands** (`draw` / `take`) rather than a flag, so a missing field can
+        never silently turn a deliberate pickup into a stock draw.
+
+        **Cards are chosen by hand position, never by identity**: with four
+        copies of every colour-and-piece, naming a card does not say which one.
+        `index` and `indexes` are 0-based; index 0 is the first card, so it is
+        a real value rather than an omitted one.
+
+        **Other seats' hands are not on the wire** — only `handCount` and the
+        melds they have laid, which is what the game is read from.
+
+        A round ends when someone melds out (rare: it needs melds totalling
+        exactly 21) or, far more often, when the stock runs out. Scoring is
+        melds minus cards still held.
+      operationId: execTuSac
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: "reset (r), draw (d), take (t), meld (m), discard (x), next, hint, log, quit (q)"
+                index:
+                  type: integer
+                  description: 0-based hand position to discard. Required for discard.
+                indexes:
+                  type: array
+                  description: 0-based hand positions to lay as a combination. Required for meld.
+                  items:
+                    type: integer
+                sessionId:
+                  type: string
+              example:
+                command: meld
+                indexes: [0, 3, 6]
+                sessionId: my-session-001
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TuSacResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TuSacResponse'
+
   /kingo/exec:
     post:
       tags:
@@ -49025,6 +49103,106 @@ components:
             initialChips:
               type: integer
             ante:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+    TuSacResponse:
+      type: object
+      description: Response payload for /tusac/exec
+      properties:
+        phase:
+          type: integer
+          description: "0=Draw, 1=Discard, 2=RoundEnd, 3=GameEnd"
+        seats:
+          type: array
+          description: Always an array, one entry per seat, in seat order.
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              isHuman:
+                type: boolean
+              cards:
+                type: array
+                description: >-
+                  The seat's hand. Empty for every seat but the human -- other
+                  hands are never put on the wire, only their counts.
+                items:
+                  $ref: '#/components/schemas/Card'
+              handCount:
+                type: integer
+                description: How many cards the seat holds. Known for every seat.
+              melds:
+                type: array
+                description: Combinations laid on the table. Visible for every seat.
+                items:
+                  type: object
+                  properties:
+                    kind:
+                      type: integer
+                      description: "1=three of one colour, 2=chariot-horse-cannon, 3=five soldiers"
+                    points:
+                      type: integer
+                    cards:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Card'
+              meldPoints:
+                type: integer
+              score:
+                type: integer
+                description: Running total across rounds.
+              roundScore:
+                type: integer
+                description: Melds minus cards still held, for the round just scored.
+              isTurn:
+                type: boolean
+              wentOut:
+                type: boolean
+        discardTop:
+          $ref: '#/components/schemas/Card'
+          nullable: true
+        discardCount:
+          type: integer
+        stockCount:
+          type: integer
+        turnSeat:
+          type: integer
+        humanSeat:
+          type: integer
+        isHumanTurn:
+          type: boolean
+        roundNumber:
+          type: integer
+        rounds:
+          type: integer
+        wentOutSeat:
+          type: integer
+          description: The seat that melted out, or -1 when the stock ran out instead.
+        handSize:
+          type: integer
+          description: Cards dealt to each seat (20).
+        deckSize:
+          type: integer
+          description: Always 112 -- four colours, seven piece types, four copies.
+        meldPointsByKind:
+          type: array
+          description: Score for each combination kind, indexed by kind.
+          items:
+            type: integer
+        winnerSeat:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        config:
+          type: object
+          properties:
+            seats:
+              type: integer
+            rounds:
               type: integer
         message:
           type: string

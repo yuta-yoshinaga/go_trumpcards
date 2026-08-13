@@ -459,4 +459,12 @@ func init() {
 			return usecase.RestoreSnapInteractor(data, new(presenter.SnapWebPresenter))
 		},
 		controller.NewSnapWebControllerWithProvider)
+	games.RegisterKVGame("tusac", games.CategorySolo,
+		func() usecase.TuSacInteractorIF {
+			return usecase.NewTuSacInteractor(domain.NewDefaultTuSac(), new(presenter.TuSacWebPresenter))
+		},
+		func(data []byte) (usecase.TuSacInteractorIF, error) {
+			return usecase.RestoreTuSacInteractor(data, new(presenter.TuSacWebPresenter))
+		},
+		controller.NewTuSacWebControllerWithProvider)
 }

@@ -5031,6 +5031,23 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  log                  action log"},
 		}),
+	BindCuiFor("tusac",
+		func() usecase.TuSacInteractorIF {
+			return usecase.NewTuSacInteractor(domain.NewDefaultTuSac(), new(presenter.TuSacCuiPresenter))
+		},
+		controller.NewTuSacCuiController,
+		CuiHelpSpec{
+			TitleKey: "tusac.helpTitle",
+			CommandKeys: []string{
+				"tusac.helpDraw",
+				"tusac.helpTake",
+				"tusac.helpMeld",
+				"tusac.helpDiscard",
+				"tusac.helpNext",
+				"tusac.helpHint",
+			},
+			ExtraCommandLines: []string{"  log                  action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.
