@@ -50,7 +50,7 @@ public/                        # Built frontend assets served by Go web server
 
 - **Presenter pattern**: `internal/usecase/presenter/` defines output interfaces (e.g., `BlackJackPresenter`). `internal/adapter/presenter/` provides concrete implementations (CUI vs Web). Presenters are injected into interactors.
 - **Mock presenters**: `*_mock.go` files in `internal/usecase/presenter/` are used in tests to avoid I/O.
-- **Web API**: 304 endpoints, one per game. Each accepts JSON with a `command` field and the game state; the full list is in [Web API endpoints](#web-api-endpoints) below.
+- **Web API**: 305 endpoints, one per game. Each accepts JSON with a `command` field and the game state; the full list is in [Web API endpoints](#web-api-endpoints) below.
 - **Swagger UI**: Available at `/swagger/` -- serves the OpenAPI spec (`api/openapi.yaml`) via Swagger UI for interactive API documentation and testing. The spec is embedded into the binary with `go:embed`; the Swagger UI frontend is loaded from a CDN. Both routes accept `GET` and `HEAD` (HEAD returns headers only).
 - **SPA fallback**: All other GET/HEAD requests are served from `public/` via `http.FileServer`; unknown paths fall back to `public/index.html` so externally shared deep-links (e.g., `/blackjack`, `/poker`) reach the React HashRouter SPA instead of returning a bare 404. See `internal/infrastructure/web/spa.go`.
 
@@ -122,7 +122,7 @@ constant in `frontend/src/api/gameApi.ts`. For the full set of registration poin
 
 ## Web API endpoints
 
-One `POST /<game>/exec` per registered game -- **304** in total. Every endpoint takes JSON with a
+One `POST /<game>/exec` per registered game -- **305** in total. Every endpoint takes JSON with a
 `command` field plus the game state, and returns that game's Web presenter output.
 
 One row per game, so adding a game is a one-line diff. This used to be a single inline paragraph
@@ -232,6 +232,7 @@ previously spelled out in words and maintained entirely by hand, with nothing ch
 | `POST /colourwhist/exec` | Colour Whist |
 | `POST /chemindefer/exec` | Chemin de Fer |
 | `POST /crazyfourpoker/exec` | Crazy 4 Poker |
+| `POST /doubleattack/exec` | Extra Bet Blackjack |
 | `POST /blackjackswitch/exec` | Blackjack Switch |
 | `POST /montecarlo/exec` | Monte Carlo Solitaire |
 | `POST /contractrummy/exec` | Contract Rummy |

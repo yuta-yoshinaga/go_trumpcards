@@ -375,6 +375,7 @@ export const games = [
   'colourwhist',
   'chemindefer',
   'crazyfourpoker',
+  'doubleattack',
   'razz',
   'sevencardstudhilo',
   'badugi',

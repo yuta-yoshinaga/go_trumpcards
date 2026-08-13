@@ -470,6 +470,14 @@ func init() {
 		},
 		controller.NewFiveCardStudWebControllerWithProvider)
 
+	games.RegisterKVGame("doubleattack", games.CategoryCasino,
+		func() usecase.DoubleAttackBlackjackInteractorIF {
+			return usecase.NewDoubleAttackBlackjackInteractor(domain.NewDefaultDoubleAttackBlackjack(), new(presenter.DoubleAttackBlackjackWebPresenter))
+		},
+		func(data []byte) (usecase.DoubleAttackBlackjackInteractorIF, error) {
+			return usecase.RestoreDoubleAttackBlackjackInteractor(data, new(presenter.DoubleAttackBlackjackWebPresenter))
+		},
+		controller.NewDoubleAttackBlackjackWebControllerWithProvider)
 	games.RegisterKVGame("crazyfourpoker", games.CategoryCasino,
 		func() usecase.CrazyFourPokerInteractorIF {
 			return usecase.NewCrazyFourPokerInteractor(domain.NewDefaultCrazyFourPoker(), new(presenter.CrazyFourPokerWebPresenter))

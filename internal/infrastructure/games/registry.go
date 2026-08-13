@@ -1107,6 +1107,12 @@ var registry = []*Game{
 	// 「エースのペア以上なら、プレイベットを 3 倍まで乗せられる」ところで、
 	// **倍率を動かせること自体が強い手の特典**。ディーラーはキング以上で成立。
 	{Name: "crazyfourpoker", Category: CategoryCasino},
+	// Double Attack Blackjack 追加ベット・ブラックジャック
+	//
+	// **アップカードを見てから賭け増しできる**のが本体。その対価として
+	// プレイヤーのブラックジャックは 1:1 に抑えられ、デッキから 10 を抜いてある
+	// (48 枚 × 8)。表示名は商標登録済みのため機能名で呼ぶ (TRADEMARKS.md 参照)。
+	{Name: "doubleattack", Category: CategoryCasino},
 }
 
 // All returns a value-level copy of the registry in canonical order.

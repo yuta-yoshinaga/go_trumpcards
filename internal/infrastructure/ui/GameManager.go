@@ -4872,6 +4872,25 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  log                  action log"},
 		}),
+	BindCuiFor("doubleattack",
+		func() usecase.DoubleAttackBlackjackInteractorIF {
+			return usecase.NewDoubleAttackBlackjackInteractor(domain.NewDefaultDoubleAttackBlackjack(), new(presenter.DoubleAttackBlackjackCuiPresenter))
+		},
+		controller.NewDoubleAttackBlackjackCuiController,
+		CuiHelpSpec{
+			TitleKey: "doubleattack.helpTitle",
+			CommandKeys: []string{
+				"doubleattack.helpBet",
+				"doubleattack.helpAttack",
+				"doubleattack.helpHit",
+				"doubleattack.helpStand",
+				"doubleattack.helpDouble",
+				"doubleattack.helpSplit",
+				"doubleattack.helpNext",
+				"doubleattack.helpHint",
+			},
+			ExtraCommandLines: []string{"  log                  action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.
