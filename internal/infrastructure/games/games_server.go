@@ -68,6 +68,11 @@ func init() {
 			return usecase.NewOmahaInteractor(domain.NewDefaultBigO(), new(presenter.OmahaWebPresenter))
 		},
 		controller.NewOmahaWebController)
+	BindWebControllerFor("courchevel",
+		func() usecase.OmahaInteractorIF {
+			return usecase.NewOmahaInteractor(domain.NewDefaultCourchevel(), new(presenter.OmahaWebPresenter))
+		},
+		controller.NewOmahaWebController)
 	BindWebControllerFor("bigohilo",
 		func() usecase.OmahaInteractorIF {
 			return usecase.NewOmahaInteractor(domain.NewDefaultBigOHiLo(), new(presenter.OmahaWebPresenter))

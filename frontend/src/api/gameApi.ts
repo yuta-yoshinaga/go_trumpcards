@@ -75,6 +75,7 @@ export * from './games/colourwhist';
 export * from './games/congress';
 export * from './games/conquian';
 export * from './games/contractrummy';
+export * from './games/courchevel';
 export * from './games/courtpiece';
 export * from './games/crazyeights';
 export * from './games/crazyfourpoker';
@@ -337,6 +338,7 @@ export const games = [
   'omahahilo',
   'bigo',
   'bigohilo',
+  'courchevel',
   'shortdeck',
   'pineapple',
   'crazypineapple',

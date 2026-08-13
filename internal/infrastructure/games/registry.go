@@ -118,6 +118,12 @@ var registry = []*Game{
 	{Name: "omahahilo", Category: CategoryCasino},
 	{Name: "bigo", Category: CategoryCasino},
 	{Name: "bigohilo", Category: CategoryCasino},
+	// Courchevel クールシュヴェル
+	//
+	// **フロップの 1 枚目を賭ける前に見せる Big O。** 配る枚数も役の作り方も
+	// Big O と同じで、変わるのは公開の時刻だけ ── 最初のベットラウンドが
+	// 「見えない 5 枚の評価」から「見えている 1 枚と噛み合うか」に変わる。
+	{Name: "courchevel", Category: CategoryCasino},
 	{Name: "shortdeck", Category: CategoryCasino},
 	{Name: "pineapple", Category: CategoryCasino},
 	{Name: "crazypineapple", Category: CategoryCasino},

@@ -1,0 +1,99 @@
+{
+  "phase": {
+    "preFlop": "Pre-Flop",
+    "flop": "Flop",
+    "turn": "Turn",
+    "river": "River",
+    "showdown": "Showdown",
+    "end": "Result",
+    "init": "Initializing",
+    "rebuy": "Rebuy/Addon"
+  },
+  "communityCards": "Community Cards",
+  "yourHand": "Your Hand",
+  "mandatoryRule": "Rule: exactly 2 from hand + exactly 3 from the board",
+  "mandatoryRuleAria": "Courchevel rule: use exactly two hole cards and exactly three community cards",
+  "cardUsed": "Used",
+  "cardUnused": "Unused",
+  "handNumber": "Hand #{{count}} (Level up: every {{level}} hands)",
+  "rebuy": {
+    "prompt": "Rebuy? ({{chips}} chips, {{used}}/{{max}} used)",
+    "accept": "Rebuy",
+    "skip": "Skip"
+  },
+  "addon": {
+    "prompt": "Addon? ({{chips}} chips)",
+    "accept": "Addon",
+    "skip": "Skip"
+  },
+  "muck": {
+    "prompt": "Muck or show your hand.",
+    "muck": "Muck",
+    "show": "Show"
+  },
+  "stats": {
+    "vpip": "VPIP",
+    "vpipTooltip": "VPIP (Voluntarily Put In Pot): % of hands where player voluntarily put chips in the pot",
+    "pfr": "PFR",
+    "pfrTooltip": "PFR (Pre-Flop Raise): % of hands where player raised pre-flop",
+    "threeBet": "3Bet",
+    "threeBetTooltip": "3Bet: % of hands where player re-raised an opponent's raise",
+    "af": "AF",
+    "afTooltip": "AF (Aggression Factor): ratio of aggressive actions (bet/raise) to passive actions (call)"
+  },
+  "style": {
+    "tag": "TAG",
+    "tagTooltip": "Tight Aggressive: plays few hands but bets strongly when in",
+    "lag": "LAG",
+    "lagTooltip": "Loose Aggressive: plays many hands and bets strongly",
+    "tp": "TP",
+    "tpTooltip": "Tight Passive: plays few hands, mostly calls",
+    "lp": "LP",
+    "lpTooltip": "Loose Passive: plays many hands but rarely raises",
+    "balanced": "BAL",
+    "balancedTooltip": "Balanced style"
+  },
+  "learning": {
+    "title": "Learning Mode",
+    "toggle": "Learning Mode",
+    "equity": "Equity",
+    "potOdds": "Pot Odds",
+    "plusEV": "+EV (Positive Expected Value)",
+    "minusEV": "-EV (Negative Expected Value)",
+    "handOdds": "Hand Odds"
+  },
+  "settings": {
+    "cpuMetaAI": "Meta-AI (CPU learns your play style)"
+  },
+  "tutorial": {
+    "communityCards": "Community cards revealed progressively.",
+    "playerHand": "Your 5 hole cards. You must use exactly 2 of them.",
+    "combinationRule": "In Big O (5 Card Omaha), you must use exactly 2 hole cards and 3 community cards to form your hand.",
+    "actionButtons": "Choose your betting action.",
+    "potDisplay": "Shows pot size and blind levels.",
+    "cpuArea": "CPU opponent information.",
+    "resetButton": "Press the reset button to start a new game."
+  },
+  "hint": {
+    "positiveEV": "Positive expected value — raise recommended",
+    "marginalEV": "Marginal expected value — call recommended",
+    "negativeEV": "Negative expected value — fold recommended",
+    "strongHandRank": "Strong hand — raise recommended",
+    "decentHandRank": "Decent hand — call recommended",
+    "weakHandRank": "Weak hand — fold recommended"
+  },
+  "livePreview": "Current hand:",
+  "hand": {
+    "highCard": "High Card",
+    "onePair": "One Pair",
+    "twoPair": "Two Pair",
+    "threeOfAKind": "Three of a Kind",
+    "straight": "Straight",
+    "flush": "Flush",
+    "fullHouse": "Full House",
+    "fourOfAKind": "Four of a Kind",
+    "straightFlush": "Straight Flush",
+    "royalFlush": "Royal Flush"
+  },
+  "exposedNotice": "The first board card is already face up before the opening bet"
+}

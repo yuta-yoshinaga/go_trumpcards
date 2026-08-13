@@ -21,6 +21,7 @@ var gameDescriptions = map[string]string{
 	"omaha":               "Omaha Hold'em (オマハホールデム)",
 	"omahahilo":           "Omaha Hi-Lo / 8 or Better (オマハ ハイロー)",
 	"bigo":                "5 Card Omaha (Big O) (5カードオマハ)",
+	"courchevel":          "Courchevel (クールシュヴェル)",
 	"bigohilo":            "5 Card Omaha Hi-Lo (Big O) (5カードオマハ ハイロー)",
 	"shortdeck":           "Short Deck (6+ Hold'em) (ショートデック)",
 	"pineapple":           "Pineapple Poker (パイナップルポーカー)",
