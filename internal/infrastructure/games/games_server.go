@@ -1410,6 +1410,11 @@ func init() {
 			return usecase.NewKingoInteractor(domain.NewDefaultKingo(), new(presenter.KingoWebPresenter))
 		},
 		controller.NewKingoWebController)
+	BindWebControllerFor("tusac",
+		func() usecase.TuSacInteractorIF {
+			return usecase.NewTuSacInteractor(domain.NewDefaultTuSac(), new(presenter.TuSacWebPresenter))
+		},
+		controller.NewTuSacWebController)
 	BindWebControllerFor("rook",
 		func() usecase.RookInteractorIF {
 			return usecase.NewRookInteractor(domain.NewDefaultRook(), new(presenter.RookWebPresenter))
