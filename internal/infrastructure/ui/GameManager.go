@@ -4977,6 +4977,26 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  log                  action log"},
 		}),
+	BindCuiFor("baseballpoker",
+		func() usecase.BaseballPokerInteractorIF {
+			return usecase.NewBaseballPokerInteractor(domain.NewDefaultBaseballPoker(), new(presenter.BaseballPokerCuiPresenter))
+		},
+		controller.NewBaseballPokerCuiController,
+		CuiHelpSpec{
+			TitleKey: "baseballpoker.helpTitle",
+			CommandKeys: []string{
+				"baseballpoker.helpFold",
+				"baseballpoker.helpCheck",
+				"baseballpoker.helpCall",
+				"baseballpoker.helpBet",
+				"baseballpoker.helpRaise",
+				"baseballpoker.helpPay",
+				"baseballpoker.helpBuyFold",
+				"baseballpoker.helpNext",
+				"baseballpoker.helpHint",
+			},
+			ExtraCommandLines: []string{"  log                  action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

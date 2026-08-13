@@ -1560,6 +1560,11 @@ func init() {
 			return usecase.NewIronCrossInteractor(domain.NewDefaultIronCross(), new(presenter.IronCrossWebPresenter))
 		},
 		controller.NewIronCrossWebController)
+	BindWebControllerFor("baseballpoker",
+		func() usecase.BaseballPokerInteractorIF {
+			return usecase.NewBaseballPokerInteractor(domain.NewDefaultBaseballPoker(), new(presenter.BaseballPokerWebPresenter))
+		},
+		controller.NewBaseballPokerWebController)
 	BindWebControllerFor("shengji",
 		func() usecase.ShengJiInteractorIF {
 			return usecase.NewShengJiInteractor(domain.NewDefaultShengJi(), new(presenter.ShengJiWebPresenter))
