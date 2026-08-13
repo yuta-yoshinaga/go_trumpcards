@@ -2008,6 +2008,13 @@ export const BaseballPhase = {
   GAME_END: 3,
 } as const;
 
+/** Kingo phase constants (sync: internal/domain/Kingo.go). */
+export const KingoPhase = {
+  BET: 0,
+  RESULT: 1,
+  GAME_END: 2,
+} as const;
+
 /** Iron Cross phase constants (sync: internal/domain/IronCross.go). */
 export const IronCrossPhase = {
   BETTING: 0,
