@@ -326,7 +326,8 @@
     "chemindefer": "シュマン・ド・フェール",
     "crazyfourpoker": "クレイジー4ポーカー",
     "doubleattack": "追加ベット・ブラックジャック",
-    "freebet": "フリーベット・ブラックジャック"
+    "freebet": "フリーベット・ブラックジャック",
+    "banluck": "バンラック"
   },
   "sound": {
     "mute": "サウンドをオフにする",

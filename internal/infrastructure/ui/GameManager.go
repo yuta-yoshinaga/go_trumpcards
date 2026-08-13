@@ -4909,6 +4909,22 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  log                  action log"},
 		}),
+	BindCuiFor("banluck",
+		func() usecase.BanLuckInteractorIF {
+			return usecase.NewBanLuckInteractor(domain.NewDefaultBanLuck(), new(presenter.BanLuckCuiPresenter))
+		},
+		controller.NewBanLuckCuiController,
+		CuiHelpSpec{
+			TitleKey: "banluck.helpTitle",
+			CommandKeys: []string{
+				"banluck.helpBet",
+				"banluck.helpHit",
+				"banluck.helpStand",
+				"banluck.helpNext",
+				"banluck.helpHint",
+			},
+			ExtraCommandLines: []string{"  log                  action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

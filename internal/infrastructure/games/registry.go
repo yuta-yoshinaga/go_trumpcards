@@ -1120,6 +1120,12 @@ var registry = []*Game{
 	// 必ずセットで扱う。無料ダブルはハードの 9〜11 のみ、無料スプリットは
 	// 10 札の対を除く同数の対のみ。
 	{Name: "freebet", Category: CategoryCasino},
+	// Ban Luck バンラック (チャイニーズ・ブラックジャック)
+	//
+	// **親だけが 15 未満で引く義務を負い、その親が席を移る。** 役は枚数で
+	// 決まり、A+A の Ban Ban (合計は 12) と 2 枚 21 の Ban Luck、5 枚 21 以下の
+	// Five Dragon が普通の手より上に立つ。合計値だけで比べると全部消える。
+	{Name: "banluck", Category: CategoryCasino},
 }
 
 // All returns a value-level copy of the registry in canonical order.

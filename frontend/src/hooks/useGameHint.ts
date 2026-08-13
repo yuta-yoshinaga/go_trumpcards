@@ -14,6 +14,7 @@ import type {
   BadugiResponse,
   BakersDozenResponse,
   BalootResponse,
+  BanLuckResponse,
   BarbuResponse,
   BasraResponse,
   BeggarMyNeighbourResponse,
@@ -310,6 +311,7 @@ import { getBaccaratHint } from '../utils/hints/baccaratHint';
 import { getBadugiHint } from '../utils/hints/badugiHint';
 import { getBakersdozenHint } from '../utils/hints/bakersdozenHint';
 import { getBalootHint } from '../utils/hints/balootHint';
+import { getBanluckHint } from '../utils/hints/banluckHint';
 import { getBarbuHint } from '../utils/hints/barbuHint';
 import { getBasraHint } from '../utils/hints/basraHint';
 import { getBeggarMyNeighbourHint } from '../utils/hints/beggarmyneighbourHint';
@@ -780,6 +782,7 @@ export const hintFactories = {
   crazyfourpoker: (s) => getCrazyfourpokerHint(s as CrazyFourPokerResponse),
   doubleattack: (s) => getDoubleattackHint(s as DoubleAttackResponse),
   freebet: (s) => getFreebetHint(s as FreeBetResponse),
+  banluck: (s) => getBanluckHint(s as BanLuckResponse),
   colourwhist: (s) => getColourwhistHint(s as ColourWhistResponse),
   dragontiger: (s) => getDragontigerHint(s as DragonTigerResponse),
   blackjackswitch: (s) => getBlackjackswitchHint(s as BlackJackSwitchResponse),

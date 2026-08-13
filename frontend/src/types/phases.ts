@@ -2000,6 +2000,14 @@ export const DoubleAttackPhase = {
   RESULT: 3,
 } as const;
 
+/** Ban Luck phase constants (sync: internal/domain/BanLuck.go). */
+export const BanLuckPhase = {
+  BET: 0,
+  PLAY: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Free Bet Blackjack phase constants (sync: internal/domain/FreeBetBlackjackConfig.go). */
 export const FreeBetPhase = {
   BET: 0,
