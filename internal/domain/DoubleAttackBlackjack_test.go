@@ -119,10 +119,35 @@ func TestDoubleAttack_AttackIsCappedAtTheAnte(t *testing.T) {
 	assert.ErrorIs(t, g.Attack(51), errDoubleAttackAttackRange)
 	assert.ErrorIs(t, g.Attack(-1), errDoubleAttackAttackRange)
 
+	// **`Attack` は賭け増しを取ったあと、その場で決着することがある。**
+	// ディーラーの 2 枚目をここで配るので、どちらかがブラックジャックなら
+	// 精算まで走り、チップは「50 引かれた」以外の動き方をする。賭け増しの額
+	// そのものは配りに関わらず 50 なので、そちらは毎回見る。
 	before := g.GetChips()
 	require.NoError(t, g.Attack(50))
-	assert.Equal(t, 50, g.GetAttackBet())
-	assert.Equal(t, before-50, g.GetChips())
+	assert.Equal(t, 50, g.GetAttackBet(), "賭け増しが額どおりに立っていない")
+	if g.GetPhase() == DoubleAttackPhasePlay {
+		assert.Equal(t, before-50, g.GetChips(), "賭け増しぶんが引かれていない")
+	}
+}
+
+// **賭け増しは必ず額どおりに引かれる。** 上のテストは即決着した配りで
+// チップの検査を飛ばすので、飛ばさない配りを引いて必ず一度は踏む。
+func TestDoubleAttack_AttackTakesTheStakeWhenTheHandContinues(t *testing.T) {
+	checked := 0
+	for range 50 {
+		g := newDoubleAttackForTest(t)
+		require.NoError(t, g.PlaceBet(50, 0))
+		before := g.GetChips()
+		require.NoError(t, g.Attack(50))
+		if g.GetPhase() != DoubleAttackPhasePlay {
+			continue
+		}
+		checked++
+		assert.Equal(t, before-50, g.GetChips())
+		assert.Equal(t, 50, g.GetAttackBet())
+	}
+	require.Positive(t, checked, "50 回配っても即決着しない配りが出なかった")
 }
 
 // 追加ベットを見送っても進む。
