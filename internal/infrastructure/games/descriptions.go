@@ -165,6 +165,7 @@ var gameDescriptions = map[string]string{
 	"crazyfourpoker":      "Crazy 4 Poker (クレイジー4ポーカー)",
 	"doubleattack":        "追加ベット・ブラックジャック (Extra Bet Blackjack)",
 	"freebet":             "Free Bet Blackjack (フリーベット・ブラックジャック)",
+	"banluck":             "Ban Luck (バンラック)",
 	"blackjackswitch":     "Blackjack Switch (ブラックジャック・スイッチ)",
 	"montecarlo":          "Monte Carlo Solitaire (モンテカルロ・ソリティア)",
 	"contractrummy":       "Contract Rummy (コントラクトラミー)",

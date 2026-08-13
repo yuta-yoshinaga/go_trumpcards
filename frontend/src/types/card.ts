@@ -20,6 +20,7 @@ export * from './games/baccarat';
 export * from './games/badugi';
 export * from './games/bakersdozen';
 export * from './games/baloot';
+export * from './games/banluck';
 export * from './games/barbu';
 export * from './games/basra';
 export * from './games/beggarmyneighbour';

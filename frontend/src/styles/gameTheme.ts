@@ -37,6 +37,7 @@ export type GameKey =
   | 'crazyfourpoker'
   | 'doubleattack'
   | 'freebet'
+  | 'banluck'
   | 'blackjackswitch'
   | 'fourcardpoker'
   // Poker
@@ -596,6 +597,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   crazyfourpoker: GREEN,
   doubleattack: GREEN,
   freebet: BRIGHT_GREEN,
+  banluck: CASINO,
   blackjackswitch: BRIGHT_GREEN,
   fourcardpoker: CASINO,
   // Poker
