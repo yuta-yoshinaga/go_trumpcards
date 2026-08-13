@@ -4925,6 +4925,20 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  log                  action log"},
 		}),
+	BindCuiFor("montebank",
+		func() usecase.MonteBankInteractorIF {
+			return usecase.NewMonteBankInteractor(domain.NewDefaultMonteBank(), new(presenter.MonteBankCuiPresenter))
+		},
+		controller.NewMonteBankCuiController,
+		CuiHelpSpec{
+			TitleKey: "montebank.helpTitle",
+			CommandKeys: []string{
+				"montebank.helpBet",
+				"montebank.helpNext",
+				"montebank.helpHint",
+			},
+			ExtraCommandLines: []string{"  log                  action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

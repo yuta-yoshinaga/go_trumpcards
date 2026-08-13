@@ -1126,6 +1126,13 @@ var registry = []*Game{
 	// 決まり、A+A の Ban Ban (合計は 12) と 2 枚 21 の Ban Luck、5 枚 21 以下の
 	// Five Dragon が普通の手より上に立つ。合計値だけで比べると全部消える。
 	{Name: "banluck", Category: CategoryCasino},
+	// Monte Bank モンテバンク (スパニッシュ・モンテ)
+	//
+	// **スートだけを見る 19 世紀のバンキングゲーム。** 場札 4 枚のうち 1 枚に
+	// 賭け、次にめくる 1 枚 (ゲート) とスートが一致すれば 3:1。控除率は
+	// すべてプレイヤーの選択から出る ── 場札に 1 枚しか出ていないスートを
+	// 選べば互角で、重複したスートを選ぶたびに 11% 以上を失う。
+	{Name: "montebank", Category: CategoryCasino},
 }
 
 // All returns a value-level copy of the registry in canonical order.
