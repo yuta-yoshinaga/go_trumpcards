@@ -305,3 +305,33 @@ func TestCrazyFourPoker_RestoredGameKeepsPlaying(t *testing.T) {
 	require.NoError(t, back.NextRound())
 	assert.Equal(t, CrazyFourPokerPhaseBet, back.GetPhase())
 }
+
+// **同じ壊れた保存は、いつ読んでも同じ理由で落ちる。**
+//
+// 額の検査を map の range で回していたため、2 つ以上が同時に負の保存では
+// 走査順が実行ごとに変わり、返るエラーが毎回違っていた。利用者から見れば
+// 「同じ保存を読み込むたびに別の理由を言われる」で、テストから見れば数回に
+// 1 回だけ落ちるフレーク (CI で実際に落ちた)。
+//
+// 1 回の実行では偶然そろうことがあるので、**何度も読み直して全部同じ**で
+// あることを見る。
+func TestCrazyFourPoker_ReportsTheSameReasonEveryTime(t *testing.T) {
+	first := ""
+	for i := range 50 {
+		err := crazyFourPokerTampered(t, crazyFourPokerMidRound(t), func(m map[string]any) {
+			// アンティとスーパーボーナスは一致していなければならないので、
+			// 両方を負にするしかない ── ここで順序が揺れていた。
+			m["an"] = -10
+			m["sb"] = -10
+		})
+		require.Error(t, err, "改竄した保存データが素通しした")
+		if i == 0 {
+			first = err.Error()
+			assert.Contains(t, first, "ante must not be negative",
+				"最初に報告されるのは宣言順のいちばん上であるべき")
+			continue
+		}
+		require.Equal(t, first, err.Error(),
+			"%d 回目で違う理由が返った (走査順が固定されていない)", i+1)
+	}
+}
