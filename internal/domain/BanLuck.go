@@ -3,6 +3,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 )
@@ -52,6 +53,12 @@ type BanLuckSeatResult struct {
 	Rank BanLuckRank
 	// Outcome は親から見た子の決着 (親自身は Push)。
 	Outcome BanLuckOutcome
+	// Bet はそのラウンドに置いた額。
+	//
+	// **精算のあとに席の `bet` を見てはいけない。** 使い終わった賭け金は
+	// その場で 0 に戻す (親が回ってきた席に前ラウンドの賭け金が残ると、
+	// 「親は賭けない」という不変条件が破れる) ので、表示に要る額はここに残す。
+	Bet int
 	// Delta はそのラウンドのチップ増減。
 	Delta int
 }
@@ -412,7 +419,7 @@ func (g *BanLuck) settle() {
 		}
 		rank := EvalBanLuckHand(g.hands[i])
 		outcome, mult := CompareBanLuck(rank, bankerRank, g.hands[i].GetScore(), bankerScore)
-		g.results[i] = BanLuckSeatResult{Rank: rank, Outcome: outcome}
+		g.results[i] = BanLuckSeatResult{Rank: rank, Outcome: outcome, Bet: p.GetBet()}
 		switch outcome {
 		case BanLuckOutcomeLose:
 			// **払えるぶんまでしか取らない。** 倍率が 3 倍まであるので、
@@ -440,6 +447,13 @@ func (g *BanLuck) settle() {
 
 	g.players[g.banker].AddChips(bankerDelta)
 	g.results[g.banker].Delta = bankerDelta
+
+	// **使い終わった賭け金は捨てる。** 親はこの直後に次の席へ移るので、
+	// 残しておくと「親に賭け金が乗っている」状態が保存に出る (往復テストが
+	// 実際にここで落ちた)。表示に要る額は結果側が持っている。
+	for _, p := range g.players {
+		p.SetBet(0)
+	}
 
 	g.settled = true
 	g.phase = BanLuckPhaseRoundEnd
@@ -484,6 +498,12 @@ func (g *BanLuck) NextRound() error {
 	}
 	g.roundNum++
 	g.phase = BanLuckPhaseBet
+	// **前のラウンドの盤面は持ち越さない。** 賭ける前に手札が残っていると、
+	// 保存が「配る前なのに配られている」状態になる (往復テストが捕まえた)。
+	// 次の `deal` が作り直すので、消しても失うものは無い。
+	g.hands = nil
+	g.results = nil
+	g.settled = false
 	for _, p := range g.players {
 		p.SetBet(0)
 	}
@@ -591,4 +611,178 @@ func (g *BanLuck) appendLog(seat int, actionType, detail string, cards []*Card) 
 	if len(g.actionLog) > banLuckMaxSliceLen {
 		g.actionLog = g.actionLog[len(g.actionLog)-banLuckMaxSliceLen:]
 	}
+}
+
+// --- 永続化 ---
+
+// banLuckJSON is the JSON wire format for BanLuck.
+type banLuckJSON struct {
+	Deck        *TrumpCards       `json:"dk"`
+	Players     []*BanLuckPlayer  `json:"pl"`
+	Config      BanLuckConfig     `json:"cf"`
+	Phase       int               `json:"ph"`
+	Hands       []*BlackJackHand  `json:"hd"`
+	Ranks       []int             `json:"rk"`
+	Outcomes    []int             `json:"oc"`
+	Deltas      []int             `json:"dl"`
+	Settled     bool              `json:"st"`
+	Banker      int               `json:"bk"`
+	Turn        int               `json:"tu"`
+	RoundNumber int               `json:"rn"`
+	GameEndFlag bool              `json:"ge"`
+	ActionLog   []*ActionLogEntry `json:"al"`
+	TurnNumber  int               `json:"tn"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (g *BanLuck) MarshalJSON() ([]byte, error) {
+	ranks := make([]int, 0, len(g.results))
+	outcomes := make([]int, 0, len(g.results))
+	deltas := make([]int, 0, len(g.results))
+	for _, r := range g.results {
+		ranks = append(ranks, int(r.Rank))
+		outcomes = append(outcomes, int(r.Outcome))
+		deltas = append(deltas, r.Delta)
+	}
+	return json.Marshal(banLuckJSON{
+		Deck: g.deck, Players: g.players, Config: g.config,
+		Phase: int(g.phase), Hands: g.hands,
+		Ranks: ranks, Outcomes: outcomes, Deltas: deltas,
+		Settled: g.settled, Banker: g.banker, Turn: g.turn,
+		RoundNumber: g.roundNum, GameEndFlag: g.gameEndFlag,
+		ActionLog: g.actionLog, TurnNumber: g.turnNumber,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+//
+// **席の添字が 2 つある (親と手番) のが危ないところ。** どちらも範囲外なら
+// その場で落ちるが、**範囲内でも局面と食い違う**ことがある ── 配る前なのに
+// 手番があったり、親が居ない席を指していたり。範囲検査だけ書くと、そういう
+// 保存が素通りして勝敗だけが静かに変わる。
+func (g *BanLuck) UnmarshalJSON(data []byte) error {
+	var j banLuckJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if err := banLuckValidate(&j); err != nil {
+		return err
+	}
+
+	g.deck = j.Deck
+	if g.deck == nil {
+		g.deck = NewTrumpCards(0)
+	}
+	g.players = j.Players
+	g.config = j.Config
+	g.phase = BanLuckPhase(j.Phase)
+	g.hands = j.Hands
+	g.results = make([]BanLuckSeatResult, 0, len(j.Ranks))
+	for i := range j.Ranks {
+		g.results = append(g.results, BanLuckSeatResult{
+			Rank:    BanLuckRank(j.Ranks[i]),
+			Outcome: BanLuckOutcome(j.Outcomes[i]),
+			Delta:   j.Deltas[i],
+		})
+	}
+	g.settled = j.Settled
+	g.banker = j.Banker
+	g.turn = j.Turn
+	g.roundNum = j.RoundNumber
+	g.gameEndFlag = j.GameEndFlag
+	g.actionLog = j.ActionLog
+	g.turnNumber = j.TurnNumber
+	return nil
+}
+
+// banLuckValidate は保存データの範囲と整合を検証する。
+func banLuckValidate(j *banLuckJSON) error {
+	if err := j.Config.Validate(); err != nil {
+		return err
+	}
+	seats := len(j.Players)
+	if seats < BanLuckMinSeats || seats > BanLuckMaxSeats {
+		return fmt.Errorf("banluck: %d seats out of range", seats)
+	}
+	for i, p := range j.Players {
+		if p == nil {
+			return fmt.Errorf("banluck: seat %d is missing", i)
+		}
+	}
+	if j.Phase < int(BanLuckPhaseBet) || j.Phase > int(BanLuckPhaseMax) {
+		return fmt.Errorf("banluck: phase out of range: %d", j.Phase)
+	}
+	if j.Banker < 0 || j.Banker >= seats {
+		return fmt.Errorf("banluck: banker seat out of range: %d", j.Banker)
+	}
+	if j.Turn < 0 || j.Turn >= seats {
+		return fmt.Errorf("banluck: turn seat out of range: %d", j.Turn)
+	}
+	if j.RoundNumber < 1 || j.RoundNumber > j.Config.Rounds {
+		return fmt.Errorf("banluck: round number out of range: %d", j.RoundNumber)
+	}
+	if err := banLuckValidateSeatSlices(j, seats); err != nil {
+		return err
+	}
+	return banLuckValidatePhase(j, seats)
+}
+
+// banLuckValidateSeatSlices は席ごとのスライスが揃っていることを見る。
+//
+// **手札・役・決着・増減は必ず席と同数。** ここがずれると、精算が別の席の
+// 金を動かしても添字は範囲内のままなので、どこにも例外が出ない。
+func banLuckValidateSeatSlices(j *banLuckJSON, seats int) error {
+	if len(j.Hands) != 0 && len(j.Hands) != seats {
+		return fmt.Errorf("banluck: %d hands for %d seats", len(j.Hands), seats)
+	}
+	for _, n := range []struct {
+		name string
+		got  int
+	}{{"ranks", len(j.Ranks)}, {"outcomes", len(j.Outcomes)}, {"deltas", len(j.Deltas)}} {
+		if n.got != len(j.Hands) {
+			return fmt.Errorf("banluck: %d %s for %d hands", n.got, n.name, len(j.Hands))
+		}
+	}
+	for _, r := range j.Ranks {
+		if r < int(BanLuckRankBust) || r > int(BanLuckRankMax) {
+			return fmt.Errorf("banluck: rank out of range: %d", r)
+		}
+	}
+	for _, o := range j.Outcomes {
+		if o < int(BanLuckOutcomeLose) || o > int(BanLuckOutcomeWin) {
+			return fmt.Errorf("banluck: outcome out of range: %d", o)
+		}
+	}
+	if len(j.ActionLog) > banLuckMaxSliceLen {
+		return fmt.Errorf("banluck: action log too long: %d", len(j.ActionLog))
+	}
+	return nil
+}
+
+// banLuckValidatePhase はフェーズと盤面の整合を見る。
+//
+// **範囲チェックでは捕まらない食い違いがここ。** 「配る前なのに手札がある」
+// 「配った後なのに手札が無い」「親に賭け金が乗っている」はどれも添字としては
+// 正当で、通すと勝敗だけが静かに変わる。
+func banLuckValidatePhase(j *banLuckJSON, seats int) error {
+	dealt := len(j.Hands) == seats
+	switch BanLuckPhase(j.Phase) {
+	case BanLuckPhaseBet:
+		if dealt {
+			return fmt.Errorf("banluck: cards are dealt before the bets are placed")
+		}
+	case BanLuckPhasePlay, BanLuckPhaseRoundEnd:
+		if !dealt {
+			return fmt.Errorf("banluck: no cards dealt in phase %d", j.Phase)
+		}
+	default:
+	}
+	if BanLuckPhase(j.Phase) == BanLuckPhasePlay && j.Settled {
+		return fmt.Errorf("banluck: the round is settled but still in play")
+	}
+	// **親は賭けない。** 賭け金の乗った親は精算で自分から取ることになる。
+	if j.Players[j.Banker].GetBet() != 0 {
+		return fmt.Errorf("banluck: the banker seat %d carries a bet", j.Banker)
+	}
+	return nil
 }
