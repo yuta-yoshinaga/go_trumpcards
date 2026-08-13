@@ -456,7 +456,6 @@ func (g *BanLuck) settle() {
 	g.settled = true
 	g.phase = BanLuckPhaseRoundEnd
 	g.appendLog(-1, "result", fmt.Sprintf("banker seat %d nets %d", g.banker, bankerDelta), nil)
-	g.rotateBanker()
 }
 
 // rotateBanker は次のラウンドの親を決める。
@@ -498,6 +497,12 @@ func (g *BanLuck) NextRound() error {
 		g.finish()
 		return nil
 	}
+	// **親を移すのはここ。** 精算時に移すと、決着画面が「いま打ち終えた
+	// ラウンドの親」ではなく次の親を指してしまう ── CLI で実際に、YOU が親で
+	// 払ったラウンドの結果に「親: CPU1」と出た。交代は次のラウンドの準備で
+	// あって、決着の一部ではない。
+	g.rotateBanker()
+
 	g.roundNum++
 	g.phase = BanLuckPhaseBet
 	// **前のラウンドの盤面は持ち越さない。** 賭ける前に手札が残っていると、

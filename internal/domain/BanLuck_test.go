@@ -282,6 +282,10 @@ func TestBanLuck_BankerRotation(t *testing.T) {
 			}
 			g.settled = false
 			g.settle()
+			// **交代は決着ではなく次のラウンドの準備。** 決着画面は打ち終えた
+			// ラウンドの親を指し続ける。
+			assert.Equal(t, 0, g.GetBankerSeat(), "決着の時点で親が動いている")
+			require.NoError(t, g.NextRound())
 			assert.Equal(t, tt.wantBanker, g.GetBankerSeat())
 		})
 	}
