@@ -634,6 +634,7 @@ export const hintFactories = {
   omaha: (s) => getOmahaHint(s as OmahaResponse),
   omahahilo: (s) => getOmahaHiLoHint(s as OmahaResponse),
   bigo: (s) => getOmahaHint(s as OmahaResponse),
+  courchevel: (s) => getOmahaHint(s as OmahaResponse),
   bigohilo: (s) => getOmahaHiLoHint(s as OmahaResponse),
   shortdeck: (s) => getShortDeckHint(s as ShortDeckResponse),
   pineapple: (s) => getPineappleHint(s as PineappleResponse),

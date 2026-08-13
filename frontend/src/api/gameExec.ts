@@ -35,6 +35,7 @@ export const workerUrl: Record<string, string> = {
   omaha: WORKER_CASINO,
   omahahilo: WORKER_CASINO,
   bigo: WORKER_CASINO,
+  courchevel: WORKER_CASINO,
   bigohilo: WORKER_CASINO,
   shortdeck: WORKER_CASINO,
   indianpoker: WORKER_CASINO,
