@@ -83,6 +83,7 @@ export * from './games/desmoche';
 export * from './games/deucetoseven';
 export * from './games/diplomat';
 export * from './games/doppelkopf';
+export * from './games/doubleattack';
 export * from './games/doubleklondike';
 export * from './games/doubt';
 export * from './games/doudizhu';

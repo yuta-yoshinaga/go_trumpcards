@@ -805,6 +805,11 @@ func init() {
 			return usecase.NewRikkenInteractor(domain.NewDefaultRikken(), new(presenter.RikkenWebPresenter))
 		},
 		controller.NewRikkenWebController)
+	BindWebControllerFor("doubleattack",
+		func() usecase.DoubleAttackBlackjackInteractorIF {
+			return usecase.NewDoubleAttackBlackjackInteractor(domain.NewDefaultDoubleAttackBlackjack(), new(presenter.DoubleAttackBlackjackWebPresenter))
+		},
+		controller.NewDoubleAttackBlackjackWebController)
 	BindWebControllerFor("crazyfourpoker",
 		func() usecase.CrazyFourPokerInteractorIF {
 			return usecase.NewCrazyFourPokerInteractor(domain.NewDefaultCrazyFourPoker(), new(presenter.CrazyFourPokerWebPresenter))

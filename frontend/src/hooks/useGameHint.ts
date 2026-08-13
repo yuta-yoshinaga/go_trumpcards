@@ -77,6 +77,7 @@ import type {
   DeuceToSevenResponse,
   DiplomatResponse,
   DoppelkopfResponse,
+  DoubleAttackResponse,
   DoubleKlondikeResponse,
   DoubtResponse,
   DoudizhuResponse,
@@ -373,6 +374,7 @@ import { getDeucesWildHint } from '../utils/hints/deuceswildHint';
 import { getDeuceToSevenHint } from '../utils/hints/deuceToSevenHint';
 import { getDiplomatHint } from '../utils/hints/diplomatHint';
 import { getDoppelkopfHint } from '../utils/hints/doppelkopfHint';
+import { getDoubleattackHint } from '../utils/hints/doubleattackHint';
 import { getDoubleKlondikeHint } from '../utils/hints/doubleklondikeHint';
 import { getDoubtHint } from '../utils/hints/doubtHint';
 import { getDoudizhuHint } from '../utils/hints/doudizhuHint';
@@ -774,6 +776,7 @@ export const hintFactories = {
   rikken: (s) => getRikkenHint(s as RikkenResponse),
   chemindefer: (s) => getChemindeferHint(s as ChemindeFerResponse),
   crazyfourpoker: (s) => getCrazyfourpokerHint(s as CrazyFourPokerResponse),
+  doubleattack: (s) => getDoubleattackHint(s as DoubleAttackResponse),
   colourwhist: (s) => getColourwhistHint(s as ColourWhistResponse),
   dragontiger: (s) => getDragontigerHint(s as DragonTigerResponse),
   blackjackswitch: (s) => getBlackjackswitchHint(s as BlackJackSwitchResponse),

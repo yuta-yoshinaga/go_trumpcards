@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した304種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した305種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -118,6 +118,7 @@ Go + Clean Architecture で実装した304種類のトランプゲーム。CLI �
 | カラーホイスト (Colour Whist) | `colourwhist` | [CUI](docs/manual/cui/colourwhist.md) / [Web](docs/manual/web/colourwhist.md) |
 | シュマン・ド・フェール (Chemin de Fer) | `chemindefer` | [CUI](docs/manual/cui/chemindefer.md) / [Web](docs/manual/web/chemindefer.md) |
 | クレイジー4ポーカー (Crazy 4 Poker) | `crazyfourpoker` | [CUI](docs/manual/cui/crazyfourpoker.md) / [Web](docs/manual/web/crazyfourpoker.md) |
+| 追加ベット・ブラックジャック (Extra Bet Blackjack) | `doubleattack` | [CUI](docs/manual/cui/doubleattack.md) / [Web](docs/manual/web/doubleattack.md) |
 | クロックソリティア (Clock Solitaire) | `clocksolitaire` | [CUI](docs/manual/cui/clocksolitaire.md) / [Web](docs/manual/web/clocksolitaire.md) |
 | ドゥラーク (Durak) | `durak` | [CUI](docs/manual/cui/durak.md) / [Web](docs/manual/web/durak.md) |
 | フォーティシーブス (Forty Thieves) | `fortythieves` | [CUI](docs/manual/cui/fortythieves.md) / [Web](docs/manual/web/fortythieves.md) |

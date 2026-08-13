@@ -163,6 +163,7 @@ var gameDescriptions = map[string]string{
 	"colourwhist":         "Colour Whist (カラーホイスト)",
 	"chemindefer":         "Chemin de Fer (シュマン・ド・フェール)",
 	"crazyfourpoker":      "Crazy 4 Poker (クレイジー4ポーカー)",
+	"doubleattack":        "追加ベット・ブラックジャック (Extra Bet Blackjack)",
 	"blackjackswitch":     "Blackjack Switch (ブラックジャック・スイッチ)",
 	"montecarlo":          "Monte Carlo Solitaire (モンテカルロ・ソリティア)",
 	"contractrummy":       "Contract Rummy (コントラクトラミー)",

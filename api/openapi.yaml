@@ -28,6 +28,8 @@ tags:
     description: Chemin de Fer (シュマン・ド・フェール) game
   - name: crazyfourpoker
     description: Crazy 4 Poker (クレイジー4ポーカー) game
+  - name: doubleattack
+    description: Extra Bet Blackjack (追加ベット・ブラックジャック) game
   - name: poker
     description: 5-card Draw Poker game
   - name: oldmaid
@@ -9191,6 +9193,79 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ColourWhistResponse'
+
+  /doubleattack/exec:
+    post:
+      tags:
+        - doubleattack
+      summary: Execute an Extra Bet Blackjack game command
+      description: |
+        Send a command to advance the Extra Bet Blackjack (追加ベット・ブラックジャック)
+        game session identified by `sessionId`.
+
+        A blackjack variant played on a **Spanish shoe with the tens removed**
+        (48 cards x 8). Its defining feature is the order in which information
+        arrives: the dealer shows **one up-card**, the player may then raise by up
+        to the ante, and **only then is the dealer's second card dealt**. Before
+        that point the server does not hold a second dealer card at all, so
+        `dealerCards` has length 1 and `dealerScore` is 0 — that is absence, not
+        masking.
+
+        The price of raising on information is that a player blackjack **pays 1:1
+        rather than 3:2**.
+
+        The dealer hits soft 17 and **plays out even when every player hand has
+        busted**, because the Bust It side bet is still live.
+
+        `maxAttackBet`, `canDouble` and `canSplit` are computed by the server;
+        clients must not re-derive them. An over-large attack bet is rejected
+        rather than clamped.
+
+        Note on naming: the trade name of this game is a registered Japanese
+        trademark, so it is listed and displayed by what it does. The route and
+        identifiers are unchanged. See TRADEMARKS.md.
+      operationId: execDoubleAttack
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: "reset (r), bet (b), attack (a), hit (h), stand (s), double (d), split (sp), next, hint, log, quit (q)"
+                ante:
+                  type: integer
+                  description: Ante for the bet command.
+                bustIt:
+                  type: integer
+                  description: Optional side bet. Omit or send 0 for none.
+                amount:
+                  type: integer
+                  description: "Extra bet after seeing the up-card. 0 declines and is a value, not an omission."
+                sessionId:
+                  type: string
+              example:
+                command: attack
+                amount: 50
+                sessionId: my-session-001
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DoubleAttackResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DoubleAttackResponse'
 
   /crazyfourpoker/exec:
     post:
@@ -48190,6 +48265,89 @@ components:
           description: Index of the player who played this card
         card:
           $ref: '#/components/schemas/Card'
+    DoubleAttackResponse:
+      type: object
+      description: Response payload for /doubleattack/exec
+      properties:
+        phase:
+          type: integer
+          description: "0=Bet, 1=Attack, 2=Play, 3=Result"
+        hands:
+          type: array
+          description: Always an array. Grows with splits, up to four.
+          items:
+            type: object
+            properties:
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              score:
+                type: integer
+              bet:
+                type: integer
+              isSoft:
+                type: boolean
+              stood:
+                type: boolean
+              doubled:
+                type: boolean
+              busted:
+                type: boolean
+              blackjack:
+                type: boolean
+                description: Pays 1:1, not 3:2.
+              result:
+                type: integer
+                description: "0=none, 1=win, 2=lose, 3=push, 4=blackjack"
+        activeHand:
+          type: integer
+        dealerCards:
+          type: array
+          description: Always an array. Length 1 until the extra bet is placed.
+          items:
+            $ref: '#/components/schemas/Card'
+        dealerScore:
+          type: integer
+          description: Zero until the second dealer card exists.
+        dealerHoleDealt:
+          type: boolean
+        maxAttackBet:
+          type: integer
+          description: Up to the ante. Server-computed; do not re-derive.
+        canDouble:
+          type: boolean
+        canSplit:
+          type: boolean
+        anteBet:
+          type: integer
+        attackBet:
+          type: integer
+        bustItBet:
+          type: integer
+        payout:
+          type: integer
+        bustItPayout:
+          type: integer
+        chips:
+          type: integer
+        roundNumber:
+          type: integer
+        remainingCards:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        config:
+          type: object
+          properties:
+            initialChips:
+              type: integer
+            defaultAnte:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
     CrazyFourPokerResponse:
       type: object
       description: Response payload for /crazyfourpoker/exec
