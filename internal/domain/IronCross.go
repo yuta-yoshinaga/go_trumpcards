@@ -284,10 +284,17 @@ func (g *IronCross) nextStage() {
 	if g.revealed >= IronCrossCommunityCards {
 		// **5 枚そろってから選ぶ。** 全部見えている状態で選ばせるので、
 		// 縦横の判断は運ではなく読みになる。
+		g.chooseForCpus()
+		// **降りた人間には選ばせない。** 降りた席は役を比べられないので、
+		// 縦横を聞いても答えが盤面に何も起こさない ── 意味のない 1 クリックを
+		// 挟むだけになり、「次のハンドへ」がその向こうに隠れる。
+		if g.players[g.HumanSeat()].GetFolded() {
+			g.finishHand()
+			return
+		}
 		g.phase = IronCrossPhaseChoose
 		g.turn = g.HumanSeat()
 		g.appendLog(-1, "choose", "all five are up; pick a line", nil)
-		g.chooseForCpus()
 		return
 	}
 	g.cross[g.revealOrder()] = g.deck.DrawCard()
@@ -337,6 +344,12 @@ func (g *IronCross) ChooseLine(l IronCrossLine) error {
 	}
 	if l != IronCrossLineVertical && l != IronCrossLineHorizontal {
 		return errIronCrossBadLine
+	}
+	// **降りた席は列を選べない。** 通常の進行では `nextStage` が先に手を
+	// 打つが、書き換えられた保存から復元すればここに来られる ── 降りた席に
+	// 列を持たせると、`finishHand` が比べない手に列だけが残る。
+	if g.players[g.HumanSeat()].GetFolded() {
+		return errIronCrossWrongPhase
 	}
 	p := g.players[g.HumanSeat()]
 	p.SetLine(l)

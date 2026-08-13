@@ -392,3 +392,49 @@ func TestIronCross_HintDuringBetting(t *testing.T) {
 	g.gameEndFlag = true
 	assert.Nil(t, g.GetHint())
 }
+
+// **降りた人間に列を聞かない。** 降りた席は役を比べられないので、縦横を
+// 聞いても盤面には何も起こらない ── 意味のない 1 クリックを挟むだけになり、
+// その向こうに「次のハンドへ」が隠れる。レビュー指摘 (#5333) で見つかった。
+func TestIronCross_FoldedHumanIsNotAskedToChooseALine(t *testing.T) {
+	asked, settled := 0, 0
+	for range 60 {
+		g := NewDefaultIronCross()
+		g.Reset()
+		require.NoError(t, g.PlayerAction(IronCrossActionFold, 0))
+
+		// 人間が降りた後、残りは CPU が進める。
+		for steps := 0; g.GetPhase() == IronCrossPhaseBetting; steps++ {
+			require.Less(t, steps, 200, "人間が降りたあとハンドが終わらない")
+			g.CpuPlay()
+		}
+
+		if g.GetPhase() == IronCrossPhaseChoose {
+			asked++
+			continue
+		}
+		settled++
+		assert.Equal(t, IronCrossPhaseShowdown, g.GetPhase(),
+			"降りたあと決着以外のフェーズで止まっている")
+		// 降りた席には列が付かない。
+		assert.Equal(t, IronCrossLineNone, g.GetPlayers()[g.HumanSeat()].GetLine(),
+			"降りた席に列が付いている")
+		// 助言も出さない。
+		assert.Nil(t, g.GetHint(), "降りた席に助言が出ている")
+	}
+	assert.Zero(t, asked, "降りた人間が %d 回、列を聞かれた", asked)
+	require.Positive(t, settled, "人間が降りる盤面に一度も到達しなかった")
+}
+
+// **降りた席は列を選べない。** 書き換えた保存から復元しても通さない。
+func TestIronCross_ChooseLineRejectsAFoldedSeat(t *testing.T) {
+	g := NewDefaultIronCross()
+	g.Reset()
+	if !icPlayToChoose(t, g) {
+		t.Skip("選ぶ場面まで進まない配り")
+	}
+	g.GetPlayers()[g.HumanSeat()].SetFolded(true)
+	assert.ErrorIs(t, g.ChooseLine(IronCrossLineVertical), errIronCrossWrongPhase)
+	assert.Equal(t, IronCrossLineNone, g.GetPlayers()[g.HumanSeat()].GetLine(),
+		"弾いたのに列が付いている")
+}
