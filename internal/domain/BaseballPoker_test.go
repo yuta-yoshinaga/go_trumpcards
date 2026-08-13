@@ -552,3 +552,104 @@ func TestBaseballPoker_Accessors(t *testing.T) {
 	g.Reset()
 	assert.Len(t, g.GetPlayers(), 3)
 }
+
+// **拠出を超えて勝てない。** レビュー指摘 (#5334)。
+//
+// 表の 3 の買い増しは払えない席をその場でオールインにするので、拠出額の
+// 違う席が同じハンドに何段も並ぶ。ポット全体を最高役に渡すと、早くに
+// オールインした短いスタックが、その後のラウンドで自分が付き合えなかった
+// チップまで持っていく ── **卓の総量は変わらないので保存則のテストでは
+// 絶対に見つからない**。
+func TestBaseballPoker_ShortStackWinsOnlyTheMainPot(t *testing.T) {
+	g := NewDefaultBaseballPoker()
+	g.Reset()
+
+	players := g.GetPlayers()
+	require.GreaterOrEqual(t, len(players), 3, "3 席以上でないと段が作れない")
+
+	// 席 0 が 50 だけ出してオールイン、席 1 と 2 が 200 ずつ出した局面を組む。
+	// 開始時のチップを基準に拠出が決まるので、そこから逆算して積む。
+	g.startingChips = []int{50, 250, 250}
+	for i := range g.startingChips {
+		if i >= len(players) {
+			break
+		}
+		g.startingChips[i] = []int{50, 250, 250}[i]
+	}
+	for i := 3; i < len(players); i++ {
+		// 残りの席は降りている扱いにして、段の計算から外す。
+		g.startingChips = append(g.startingChips, players[i].GetChips())
+		players[i].SetFolded(true)
+	}
+
+	players[0].SetChips(0)
+	players[0].SetAllIn(true)
+	players[0].SetFolded(false)
+	players[1].SetChips(50)
+	players[1].SetFolded(false)
+	players[2].SetChips(50)
+	players[2].SetFolded(false)
+	g.pot = 50 + 200 + 200
+
+	// 席 0 に最強、席 1 にその次の手を持たせる。
+	for _, p := range players {
+		p.cards = p.cards[:0]
+		p.faceUp = p.faceUp[:0]
+	}
+	// 席 0: A のフォーカード相当 (ワイルド 2 枚 + A 2 枚)。
+	for _, c := range []*Card{
+		NewCard(CardDesignSpade, 1, true), NewCard(CardDesignHeart, 1, true),
+		NewCard(CardDesignSpade, BaseballWildThree, true), NewCard(CardDesignHeart, BaseballWildNine, true),
+		NewCard(CardDesignClover, 7, true),
+	} {
+		players[0].AddDealtCard(c, true)
+	}
+	// 席 1: ワンペア。
+	for _, c := range []*Card{
+		NewCard(CardDesignSpade, 5, true), NewCard(CardDesignHeart, 5, true),
+		NewCard(CardDesignClover, 8, true), NewCard(CardDesignDiamond, 11, true),
+		NewCard(CardDesignSpade, 12, true),
+	} {
+		players[1].AddDealtCard(c, true)
+	}
+	// 席 2: ハイカード。
+	for _, c := range []*Card{
+		NewCard(CardDesignSpade, 2, true), NewCard(CardDesignHeart, 4, true),
+		NewCard(CardDesignClover, 6, true), NewCard(CardDesignDiamond, 8, true),
+		NewCard(CardDesignSpade, 10, true),
+	} {
+		players[2].AddDealtCard(c, true)
+	}
+
+	totalBefore := baseballTotalChips(g)
+	g.finishHand()
+
+	assert.Equal(t, totalBefore, baseballTotalChips(g), "チップ総量が動いた")
+	assert.Zero(t, g.GetPot(), "決着後にポットが残っている")
+
+	// **メインポットは 50 × 3 = 150 まで。** 残り 300 は席 1 と 2 の勝負。
+	assert.Equal(t, 150, g.GetResults()[0].WonAmount,
+		"オールインの席が拠出を超えて受け取っている (サイドポットが効いていない)")
+	assert.Equal(t, 300, g.GetResults()[1].WonAmount,
+		"サイドポットが 2 番手に渡っていない")
+	assert.Zero(t, g.GetResults()[2].WonAmount)
+}
+
+// **どのストリートも棋譜に残す。** レビュー指摘 (#5334)。3rd だけ記録して
+// 4th〜7th を落とすと、棋譜が配札の半分を語らないものになる ── 「deal が
+// 1 回でも出ていれば通る」検査では、落ちていても気づけない。
+func TestBaseballPoker_ActionLogRecordsEveryStreet(t *testing.T) {
+	g := newBaseballForTest(t)
+	baseballDriveToShowdown(t, g)
+
+	deals := 0
+	for _, e := range g.GetActionLog() {
+		if e.ActionType == "deal" {
+			deals++
+		}
+	}
+	// 3rd ストリートは席ごとに 1 行 + 4th〜7th の 4 行。
+	want := len(g.GetPlayers()) + baseballStreets
+	assert.GreaterOrEqual(t, deals, want,
+		"配札の棋譜が %d 行しかない (4th〜7th が落ちている)", deals)
+}

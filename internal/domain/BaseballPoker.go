@@ -5,6 +5,7 @@ package domain
 import (
 	"encoding/json"
 	"errors"
+	"strconv"
 )
 
 // BaseballPhase は進行の段階。
@@ -117,6 +118,13 @@ type BaseballPoker struct {
 	// buyCost は buyer が払うべき額。**迫られた時点のポットで固定する。**
 	buyCost int
 
+	// startingChips はこのハンドを始めたときの各席のチップ。
+	//
+	// **サイドポットは「いくら出したか」で決まる。** ラウンドごとの
+	// `GetCurrentBet` は各ラウンドで 0 に戻るので、ハンド全体の拠出は
+	// 開始時との差でしか分からない。
+	startingChips []int
+
 	handNumber  int
 	results     []BaseballResult
 	gameEndFlag bool
@@ -174,6 +182,13 @@ func (g *BaseballPoker) startHand() {
 
 	for _, p := range g.players {
 		p.ResetForHand()
+	}
+
+	// **拠出の基準はアンティを引く前。** アンティもポットの一部なので、
+	// ここを後にすると短いスタックの取り分が実際より小さく計算される。
+	g.startingChips = make([]int, len(g.players))
+	for i, p := range g.players {
+		g.startingChips[i] = p.GetChips()
 	}
 
 	// アンティ。チップの足りない席はあるだけ出す。
@@ -429,6 +444,13 @@ func (g *BaseballPoker) nextStreet() {
 		p.AddDealtCard(g.draw(), faceUp)
 	}
 	g.street++
+	// **どのストリートも棋譜に残す。** 3rd だけ記録して 4th〜7th を
+	// 落とすと、棋譜が配札の半分を語らないものになる。
+	detail := "dealt street " + strconv.Itoa(g.street) + " face down"
+	if faceUp {
+		detail = "dealt street " + strconv.Itoa(g.street) + " face up"
+	}
+	g.appendLog(-1, "deal", detail, nil)
 	g.resetRound()
 	if faceUp {
 		g.resolveUpCardEvents(0)
@@ -449,45 +471,42 @@ func (g *BaseballPoker) finishHand() {
 		g.results = append(g.results, BaseballResult{})
 	}
 
-	eligible := make([]int, 0, len(g.players))
-	best := -1
 	for i, p := range g.players {
 		g.results[i].PlayerIdx = i
 		if p.GetFolded() {
 			continue
 		}
-		rank := p.EvaluateBest()
-		g.results[i].HandRank = rank
+		g.results[i].HandRank = p.EvaluateBest()
 		g.results[i].UsedWild = p.GetUsedWild()
-		if rank > best {
-			best = rank
-			eligible = eligible[:0]
-			eligible = append(eligible, i)
-		} else if rank == best {
-			eligible = append(eligible, i)
-		}
-	}
-	if len(eligible) == 0 {
-		// 全員降りた (起こり得ないが、ポットを取り残さない)。
-		eligible = append(eligible, 0)
 	}
 
-	// **端数は若い席から配る。** ポットに残すと卓からチップが消える。
-	share := g.pot / len(eligible)
-	rest := g.pot % len(eligible)
-	for n, i := range eligible {
-		won := share
-		if n < rest {
-			won++
+	// **拠出を超えて勝てない。** 表の 3 の買い増しは払えない席をその場で
+	// オールインにするので、拠出額の違う席が同じハンドに何段も並ぶ。ポット
+	// 全体を最高役に渡すと、早くにオールインした短いスタックが、その後の
+	// ラウンドで自分が付き合えなかったチップまで持っていく ── 卓の総量は
+	// 変わらないので、保存則のテストでは絶対に見つからない。
+	bp := g.bettingPlayers()
+	pots := CalculateSidePots(bp, g.pot, g.startingChips)
+	won := DistributePots(bp, pots)
+	for i, amount := range won {
+		if i >= 0 && i < len(g.results) {
+			g.results[i].WonAmount = amount
 		}
-		g.players[i].AddChips(won)
-		g.results[i].WonAmount = won
 	}
 	g.pot = 0
 
 	if g.aliveSeats() <= 1 || g.humanIsBroke() {
 		g.finish()
 	}
+}
+
+// bettingPlayers は共有のベット補助に渡す形に直す。
+func (g *BaseballPoker) bettingPlayers() []BettingPlayer {
+	out := make([]BettingPlayer, len(g.players))
+	for i, p := range g.players {
+		out[i] = p
+	}
+	return out
 }
 
 // NextHand は次のハンドを始める。
@@ -797,23 +816,24 @@ func (g *BaseballPoker) GetHint() *BaseballHint {
 
 // baseballJSON is the JSON wire format for BaseballPoker.
 type baseballJSON struct {
-	Deck        *TrumpCards            `json:"dk"`
-	Players     []*BaseballPokerPlayer `json:"pl"`
-	Config      BaseballPokerConfig    `json:"cf"`
-	Phase       int                    `json:"ph"`
-	Street      int                    `json:"st"`
-	Pot         int                    `json:"po"`
-	CurrentBet  int                    `json:"cb"`
-	RaiseCount  int                    `json:"rc"`
-	Turn        int                    `json:"tu"`
-	ActedFlags  []bool                 `json:"af"`
-	Buyer       int                    `json:"by"`
-	BuyCost     int                    `json:"bc"`
-	HandNumber  int                    `json:"hn"`
-	Results     []BaseballResult       `json:"rs"`
-	GameEndFlag bool                   `json:"ge"`
-	ActionLog   []*ActionLogEntry      `json:"al"`
-	TurnNumber  int                    `json:"tn"`
+	Deck          *TrumpCards            `json:"dk"`
+	Players       []*BaseballPokerPlayer `json:"pl"`
+	Config        BaseballPokerConfig    `json:"cf"`
+	Phase         int                    `json:"ph"`
+	Street        int                    `json:"st"`
+	Pot           int                    `json:"po"`
+	CurrentBet    int                    `json:"cb"`
+	RaiseCount    int                    `json:"rc"`
+	Turn          int                    `json:"tu"`
+	ActedFlags    []bool                 `json:"af"`
+	Buyer         int                    `json:"by"`
+	BuyCost       int                    `json:"bc"`
+	StartingChips []int                  `json:"sc"`
+	HandNumber    int                    `json:"hn"`
+	Results       []BaseballResult       `json:"rs"`
+	GameEndFlag   bool                   `json:"ge"`
+	ActionLog     []*ActionLogEntry      `json:"al"`
+	TurnNumber    int                    `json:"tn"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -824,7 +844,8 @@ func (g *BaseballPoker) MarshalJSON() ([]byte, error) {
 		Pot: g.pot, CurrentBet: g.currentBet, RaiseCount: g.raiseCount,
 		Turn: g.turn, ActedFlags: g.actedFlags,
 		Buyer: g.buyer, BuyCost: g.buyCost,
-		HandNumber: g.handNumber, Results: g.results, GameEndFlag: g.gameEndFlag,
+		StartingChips: g.startingChips,
+		HandNumber:    g.handNumber, Results: g.results, GameEndFlag: g.gameEndFlag,
 		ActionLog: g.actionLog, TurnNumber: g.turnNumber,
 	})
 }
@@ -855,6 +876,7 @@ func (g *BaseballPoker) UnmarshalJSON(data []byte) error {
 	g.actedFlags = j.ActedFlags
 	g.buyer = j.Buyer
 	g.buyCost = j.BuyCost
+	g.startingChips = j.StartingChips
 	g.handNumber = j.HandNumber
 	g.results = j.Results
 	g.gameEndFlag = j.GameEndFlag
@@ -863,6 +885,14 @@ func (g *BaseballPoker) UnmarshalJSON(data []byte) error {
 
 	if g.actedFlags == nil || len(g.actedFlags) != len(g.players) {
 		g.actedFlags = make([]bool, len(g.players))
+	}
+	// **拠出の基準が欠けた保存は、いまのチップを基準にする。** そのまま
+	// 進めるとサイドポットが全員 0 拠出として計算され、配分が壊れる。
+	if len(g.startingChips) != len(g.players) {
+		g.startingChips = make([]int, len(g.players))
+		for i, p := range g.players {
+			g.startingChips[i] = p.GetChips()
+		}
 	}
 	if g.results == nil {
 		g.results = make([]BaseballResult, 0, len(g.players))

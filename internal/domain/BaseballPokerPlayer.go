@@ -89,6 +89,12 @@ func (p *BaseballPokerPlayer) GetUsedWild() bool { return p.usedWild }
 // GetBestHand は選ばれた最良の 5 枚を返す。
 func (p *BaseballPokerPlayer) GetBestHand() []*Card { return p.bestHand }
 
+// GetComparisonCards は同ランク同士の比較に使う札を返す。
+//
+// **ワイルドを含む手でも、比べるのは選ばれた 5 枚。** `BettingPlayer` を
+// 満たすために要る (サイドポットの勝者判定が使う)。
+func (p *BaseballPokerPlayer) GetComparisonCards() []*Card { return p.bestHand }
+
 // AddDealtCard は札を 1 枚加える。faceUp が表向きかどうか。
 func (p *BaseballPokerPlayer) AddDealtCard(c *Card, faceUp bool) {
 	p.cards = append(p.cards, c)
