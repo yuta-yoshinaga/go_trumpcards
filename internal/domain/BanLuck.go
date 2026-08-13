@@ -492,7 +492,11 @@ func (g *BanLuck) NextRound() error {
 	if g.phase != BanLuckPhaseRoundEnd {
 		return errBanLuckWrongPhase
 	}
-	if g.roundNum >= g.config.Rounds || g.aliveSeats() < BanLuckMinSeats {
+	// **人間が賭けられなくなったら終わる。** 最小額すら払えない席はどの額でも
+	// `PlaceBet` に拒否されるので、他の席にチップが残っていると局が終わらず、
+	// 画面はエラーを出し続けるだけの行き止まりになる。親のラウンドなら賭けずに
+	// 打てるが、その次でまた詰まるので、ここで区切る。
+	if g.roundNum >= g.config.Rounds || g.aliveSeats() < BanLuckMinSeats || g.humanIsBroke() {
 		g.finish()
 		return nil
 	}
@@ -508,6 +512,11 @@ func (g *BanLuck) NextRound() error {
 		p.SetBet(0)
 	}
 	return nil
+}
+
+// humanIsBroke は人間の席が最小の賭け金すら置けないかを返す。
+func (g *BanLuck) humanIsBroke() bool {
+	return g.players[g.humanSeat()].GetChips() < BanLuckMinBet
 }
 
 // aliveSeats はまだチップが残っている席の数を返す。

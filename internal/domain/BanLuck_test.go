@@ -452,3 +452,28 @@ func TestBanLuck_ConfigValidate(t *testing.T) {
 		})
 	}
 }
+
+// **チップが尽きた人間は、どの額を出しても賭けられない。**
+//
+// 最小額すら払えないので `PlaceBet` はどう呼んでも拒否される。他の席にチップが
+// 残っている限り `aliveSeats` は 2 以上なので局は終わらず、**画面はエラーを
+// 出し続けるだけで先へ進めなくなる**。終局にしないと行き止まりになる。
+func TestBanLuck_EndsWhenTheHumanIsBroke(t *testing.T) {
+	t.Parallel()
+	g := newBanLuckForTest(t)
+	blDealPlain(g)
+	require.NoError(t, g.PlaceBet(0)) // 席 0 は親なので 0 で配れる
+	for steps := 0; g.GetPhase() == BanLuckPhasePlay; steps++ {
+		require.Less(t, steps, 200)
+		blStep(t, g)
+	}
+	require.Equal(t, BanLuckPhaseRoundEnd, g.GetPhase())
+
+	// 人間だけ破産させる。他の席にはチップが残っている。
+	g.players[g.GetHumanSeat()].SetChips(0)
+	require.GreaterOrEqual(t, g.aliveSeats(), BanLuckMinSeats, "他の席は生きている前提")
+
+	require.NoError(t, g.NextRound())
+	assert.True(t, g.GetGameEndFlag(), "破産した人間が賭けられないまま局が続いている")
+	assert.Equal(t, BanLuckPhaseGameEnd, g.GetPhase())
+}
