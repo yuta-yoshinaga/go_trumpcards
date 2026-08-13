@@ -1590,4 +1590,9 @@ func init() {
 			return usecase.NewSakuraInteractor(domain.NewDefaultSakura(), new(presenter.SakuraWebPresenter))
 		},
 		controller.NewSakuraWebController)
+	BindWebControllerFor("zwanzigerrufen",
+		func() usecase.ZwanzigerrufenInteractorIF {
+			return usecase.NewZwanzigerrufenInteractor(domain.NewDefaultZwanzigerrufen(), new(presenter.ZwanzigerrufenWebPresenter))
+		},
+		controller.NewZwanzigerrufenWebController)
 }

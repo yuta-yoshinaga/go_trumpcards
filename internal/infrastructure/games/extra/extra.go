@@ -371,4 +371,12 @@ func init() {
 			return usecase.RestoreKingoInteractor(data, new(presenter.KingoWebPresenter))
 		},
 		controller.NewKingoWebControllerWithProvider)
+	games.RegisterKVGame("zwanzigerrufen", games.CategoryExtra,
+		func() usecase.ZwanzigerrufenInteractorIF {
+			return usecase.NewZwanzigerrufenInteractor(domain.NewDefaultZwanzigerrufen(), new(presenter.ZwanzigerrufenWebPresenter))
+		},
+		func(data []byte) (usecase.ZwanzigerrufenInteractorIF, error) {
+			return usecase.RestoreZwanzigerrufenInteractor(data, new(presenter.ZwanzigerrufenWebPresenter))
+		},
+		controller.NewZwanzigerrufenWebControllerWithProvider)
 }

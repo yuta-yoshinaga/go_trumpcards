@@ -1174,6 +1174,12 @@ var registry = []*Game{
 	// 「役ができたか」で勝負するのに対し、こちらは獲得札を 20/10/5/1 点で
 	// 数え上げる ── 勝敗の決め方そのものが違う熊本のローカルルール。
 	{Name: "sakura", Category: CategoryExtra3},
+	// Zwanzigerrufen ツヴァンツィガールーフェン
+	//
+	// **呼ぶのは切り札の 20 番。** Königrufen のキング呼びと違い、呼び札そのものが
+	// 最強クラスの切り札なので、デクレアラーが自分で抱えていれば 19・18 へ下げる。
+	// 誰も落札しなければ Trischaken ── 最も多く点を取った席が負ける契約になる。
+	{Name: "zwanzigerrufen", Category: CategoryExtra},
 }
 
 // All returns a value-level copy of the registry in canonical order.
