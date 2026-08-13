@@ -25,6 +25,7 @@ export * from './games/bakersgame';
 export * from './games/baloot';
 export * from './games/banluck';
 export * from './games/barbu';
+export * from './games/baseballpoker';
 export * from './games/basra';
 export * from './games/beggarmyneighbour';
 export * from './games/beleagueredcastle';
@@ -387,6 +388,7 @@ export const games = [
   'montebank',
   'cincinnati',
   'ironcross',
+  'baseballpoker',
   'razz',
   'sevencardstudhilo',
   'badugi',

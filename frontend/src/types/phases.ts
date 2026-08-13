@@ -2000,6 +2000,14 @@ export const DoubleAttackPhase = {
   RESULT: 3,
 } as const;
 
+/** Baseball Poker phase constants (sync: internal/domain/BaseballPoker.go). */
+export const BaseballPhase = {
+  BETTING: 0,
+  BUY_IN: 1,
+  SHOWDOWN: 2,
+  GAME_END: 3,
+} as const;
+
 /** Iron Cross phase constants (sync: internal/domain/IronCross.go). */
 export const IronCrossPhase = {
   BETTING: 0,
