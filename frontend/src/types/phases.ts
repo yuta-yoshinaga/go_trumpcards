@@ -2000,6 +2000,13 @@ export const DoubleAttackPhase = {
   RESULT: 3,
 } as const;
 
+/** Free Bet Blackjack phase constants (sync: internal/domain/FreeBetBlackjackConfig.go). */
+export const FreeBetPhase = {
+  BET: 0,
+  PLAY: 1,
+  RESULT: 2,
+} as const;
+
 /** Crazy 4 Poker phase constants (sync: internal/domain/CrazyFourPokerConfig.go). */
 export const CrazyFourPokerPhase = {
   BET: 0,

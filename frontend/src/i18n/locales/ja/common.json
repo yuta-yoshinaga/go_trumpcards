@@ -325,7 +325,8 @@
     "colourwhist": "カラーホイスト",
     "chemindefer": "シュマン・ド・フェール",
     "crazyfourpoker": "クレイジー4ポーカー",
-    "doubleattack": "追加ベット・ブラックジャック"
+    "doubleattack": "追加ベット・ブラックジャック",
+    "freebet": "フリーベット・ブラックジャック"
   },
   "sound": {
     "mute": "サウンドをオフにする",
