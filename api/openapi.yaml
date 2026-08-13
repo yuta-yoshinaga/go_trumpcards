@@ -34,6 +34,8 @@ tags:
     description: Free Bet Blackjack (フリーベット・ブラックジャック) game
   - name: banluck
     description: Ban Luck (バンラック) game
+  - name: montebank
+    description: Monte Bank (モンテバンク) game
   - name: poker
     description: 5-card Draw Poker game
   - name: oldmaid
@@ -9270,6 +9272,77 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DoubleAttackResponse'
+
+  /montebank/exec:
+    post:
+      tags:
+        - montebank
+      summary: Execute a Monte Bank game command
+      description: |
+        Send a command to advance the Monte Bank (モンテバンク) game session
+        identified by `sessionId`.
+
+        A 19th-century Spanish banking game on a **Latin 40-card deck** (no 8s,
+        9s or 10s; ten cards per suit). Four cards are exposed as the layout,
+        the player backs one, and the next card off the deck (the gate) settles
+        it. **Only the suit matters — rank is never used.** A match pays 3:1.
+
+        **The odds depend on how often the backed suit already shows in the
+        layout**, and that is the whole game:
+
+        | backed suit shows | win rate | edge at 3:1 |
+        |---|---|---|
+        | once   | 9/36 = 25.00% | exactly even |
+        | twice  | 8/36 = 22.22% | 11.11% house |
+        | thrice | 7/36 = 19.44% | 22.22% house |
+        | 4x     | 6/36 = 16.67% | 33.33% house |
+
+        The server therefore counts the suits and returns `suitCount` and
+        `isEven` on every layout card. Clients must not re-derive them — that
+        one number is where the entire house edge comes from.
+
+        `idx` is **0-based and 0 is a valid value** (the leftmost card).
+        Omitting it is an error, not a way to say "no selection".
+      operationId: execMonteBank
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: "reset (r), bet (b), next, hint, log, quit (q)"
+                idx:
+                  type: integer
+                  description: "0-based layout position to back. 0 is a value, not an omission."
+                bet:
+                  type: integer
+                  description: Stake for the bet command.
+                sessionId:
+                  type: string
+              example:
+                command: bet
+                idx: 2
+                bet: 50
+                sessionId: my-session-001
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonteBankResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonteBankResponse'
 
   /banluck/exec:
     post:
@@ -48479,6 +48552,72 @@ components:
             initialChips:
               type: integer
             defaultAnte:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+    MonteBankResponse:
+      type: object
+      description: Response payload for /montebank/exec
+      properties:
+        phase:
+          type: integer
+          description: "0=Bet, 1=Result, 2=GameEnd"
+        layout:
+          type: array
+          description: Always an array. The four exposed cards, in position order.
+          items:
+            type: object
+            properties:
+              card:
+                $ref: '#/components/schemas/Card'
+              suitCount:
+                type: integer
+                description: >-
+                  How many of this suit are showing in the layout. This is the
+                  only number that decides whether a bet is good.
+              remainingOfSuit:
+                type: integer
+                description: How many of this suit are left in the deck.
+              isEven:
+                type: boolean
+                description: >-
+                  True when suitCount is 1, which is exactly break-even at 3:1.
+                  Server-computed; do not re-derive.
+              isPicked:
+                type: boolean
+        gate:
+          allOf:
+            - $ref: '#/components/schemas/Card'
+          description: The card turned to settle the round. Absent before the bet.
+        pick:
+          type: integer
+          description: "0-based layout position backed this round, or -1 before the bet."
+        bet:
+          type: integer
+        result:
+          type: integer
+          description: "0=none, 1=win, 2=lose"
+        payout:
+          type: integer
+        chips:
+          type: integer
+        roundNumber:
+          type: integer
+        remainingCards:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        payoutMultiplier:
+          type: integer
+          description: Multiplier paid on a suit match (3).
+        config:
+          type: object
+          properties:
+            initialChips:
+              type: integer
+            defaultBet:
               type: integer
         message:
           type: string

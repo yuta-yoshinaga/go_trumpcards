@@ -510,6 +510,14 @@ func init() {
 			return usecase.RestoreBanLuckInteractor(data, new(presenter.BanLuckWebPresenter))
 		},
 		controller.NewBanLuckWebControllerWithProvider)
+	games.RegisterKVGame("montebank", games.CategoryCasino,
+		func() usecase.MonteBankInteractorIF {
+			return usecase.NewMonteBankInteractor(domain.NewDefaultMonteBank(), new(presenter.MonteBankWebPresenter))
+		},
+		func(data []byte) (usecase.MonteBankInteractorIF, error) {
+			return usecase.RestoreMonteBankInteractor(data, new(presenter.MonteBankWebPresenter))
+		},
+		controller.NewMonteBankWebControllerWithProvider)
 	games.RegisterKVGame("openfacechinese", games.CategoryCasino,
 		func() usecase.OpenFaceChineseInteractorIF {
 			return usecase.NewOpenFaceChineseInteractor(domain.NewDefaultOpenFaceChinese(), new(presenter.OpenFaceChineseWebPresenter))

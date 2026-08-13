@@ -166,6 +166,7 @@ var gameDescriptions = map[string]string{
 	"doubleattack":        "追加ベット・ブラックジャック (Extra Bet Blackjack)",
 	"freebet":             "Free Bet Blackjack (フリーベット・ブラックジャック)",
 	"banluck":             "Ban Luck (バンラック)",
+	"montebank":           "Monte Bank (モンテバンク)",
 	"blackjackswitch":     "Blackjack Switch (ブラックジャック・スイッチ)",
 	"montecarlo":          "Monte Carlo Solitaire (モンテカルロ・ソリティア)",
 	"contractrummy":       "Contract Rummy (コントラクトラミー)",

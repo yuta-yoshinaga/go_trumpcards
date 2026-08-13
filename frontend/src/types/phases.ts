@@ -2000,6 +2000,13 @@ export const DoubleAttackPhase = {
   RESULT: 3,
 } as const;
 
+/** Monte Bank phase constants (sync: internal/domain/MonteBank.go). */
+export const MonteBankPhase = {
+  BET: 0,
+  RESULT: 1,
+  GAME_END: 2,
+} as const;
+
 /** Ban Luck phase constants (sync: internal/domain/BanLuck.go). */
 export const BanLuckPhase = {
   BET: 0,
