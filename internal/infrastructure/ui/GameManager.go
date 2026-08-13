@@ -4957,6 +4957,26 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  log                  action log"},
 		}),
+	BindCuiFor("ironcross",
+		func() usecase.IronCrossInteractorIF {
+			return usecase.NewIronCrossInteractor(domain.NewDefaultIronCross(), new(presenter.IronCrossCuiPresenter))
+		},
+		controller.NewIronCrossCuiController,
+		CuiHelpSpec{
+			TitleKey: "ironcross.helpTitle",
+			CommandKeys: []string{
+				"ironcross.helpFold",
+				"ironcross.helpCheck",
+				"ironcross.helpCall",
+				"ironcross.helpBet",
+				"ironcross.helpRaise",
+				"ironcross.helpVertical",
+				"ironcross.helpHorizontal",
+				"ironcross.helpNext",
+				"ironcross.helpHint",
+			},
+			ExtraCommandLines: []string{"  log                  action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

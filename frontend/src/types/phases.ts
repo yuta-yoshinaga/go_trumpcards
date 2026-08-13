@@ -2000,6 +2000,14 @@ export const DoubleAttackPhase = {
   RESULT: 3,
 } as const;
 
+/** Iron Cross phase constants (sync: internal/domain/IronCross.go). */
+export const IronCrossPhase = {
+  BETTING: 0,
+  CHOOSE_LINE: 1,
+  SHOWDOWN: 2,
+  GAME_END: 3,
+} as const;
+
 /** Cincinnati phase constants (sync: internal/domain/Cincinnati.go). */
 export const CincinnatiPhase = {
   DEAL: 0,

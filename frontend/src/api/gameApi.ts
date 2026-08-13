@@ -143,6 +143,7 @@ export * from './games/honeymoonbridge';
 export * from './games/indianpoker';
 export * from './games/indianrummy';
 export * from './games/irishpoker';
+export * from './games/ironcross';
 export * from './games/israeliwhist';
 export * from './games/jass';
 export * from './games/jokerpoker';
@@ -385,6 +386,7 @@ export const games = [
   'banluck',
   'montebank',
   'cincinnati',
+  'ironcross',
   'razz',
   'sevencardstudhilo',
   'badugi',

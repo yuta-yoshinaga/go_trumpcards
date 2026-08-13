@@ -129,6 +129,7 @@ import type {
   HoneymoonBridgeResponse,
   IndianPokerResponse,
   IndianRummyResponse,
+  IronCrossResponse,
   IsraeliWhistResponse,
   JassResponse,
   KaiserResponse,
@@ -431,6 +432,7 @@ import { getHoneymoonBridgeHint } from '../utils/hints/honeymoonbridgeHint';
 import { getIndianPokerHint } from '../utils/hints/indianpokerHint';
 import { getIndianRummyHint } from '../utils/hints/indianRummyHint';
 import { getIrishPokerHint } from '../utils/hints/irishPokerHint';
+import { getIroncrossHint } from '../utils/hints/ironcrossHint';
 import { getIsraeliWhistHint } from '../utils/hints/israeliwhistHint';
 import { getJassHint } from '../utils/hints/jassHint';
 import { getJokerPokerHint } from '../utils/hints/jokerpokerHint';
@@ -789,6 +791,7 @@ export const hintFactories = {
   banluck: (s) => getBanluckHint(s as BanLuckResponse),
   montebank: (s) => getMontebankHint(s as MonteBankResponse),
   cincinnati: (s) => getCincinnatiHint(s as CincinnatiResponse),
+  ironcross: (s) => getIroncrossHint(s as IronCrossResponse),
   colourwhist: (s) => getColourwhistHint(s as ColourWhistResponse),
   dragontiger: (s) => getDragontigerHint(s as DragonTigerResponse),
   blackjackswitch: (s) => getBlackjackswitchHint(s as BlackJackSwitchResponse),

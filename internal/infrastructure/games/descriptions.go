@@ -168,6 +168,7 @@ var gameDescriptions = map[string]string{
 	"banluck":             "Ban Luck (バンラック)",
 	"montebank":           "Monte Bank (モンテバンク)",
 	"cincinnati":          "Cincinnati (シンシナティ)",
+	"ironcross":           "Iron Cross (アイアンクロス)",
 	"blackjackswitch":     "Blackjack Switch (ブラックジャック・スイッチ)",
 	"montecarlo":          "Monte Carlo Solitaire (モンテカルロ・ソリティア)",
 	"contractrummy":       "Contract Rummy (コントラクトラミー)",

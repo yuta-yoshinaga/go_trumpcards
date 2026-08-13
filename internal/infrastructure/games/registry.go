@@ -1139,6 +1139,12 @@ var registry = []*Game{
 	// 1 枚ずつ 5 回めくり、そのたびにベットラウンドが入る (Holdem の 3-1-1 とは
 	// 進行が違う)。手札だけで役が完成しうるのが Holdem との一番の差。
 	{Name: "cincinnati", Category: CategoryCasino},
+	// Iron Cross アイアンクロス (クリスクロス)
+	//
+	// **十字に並べた 5 枚のうち、使えるのは縦か横の 3 枚だけ。** 中央の 1 枚が
+	// 両方に入るので、全員が同じ場を共有する Holdem と違って「どちらを取るか」
+	// で手が変わる。1 枚ずつ開いてそのたびにベットし、5 枚出そろってから選ぶ。
+	{Name: "ironcross", Category: CategoryCasino},
 }
 
 // All returns a value-level copy of the registry in canonical order.
