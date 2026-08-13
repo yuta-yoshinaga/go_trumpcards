@@ -191,8 +191,13 @@ func (g *BanLuck) deal() {
 	}
 	g.settled = false
 	g.phase = BanLuckPhasePlay
-	g.turn = g.firstActiveSeat()
 	g.appendLog(-1, "deal", fmt.Sprintf("round %d, banker seat %d", g.roundNum, g.banker), nil)
+	// **手番は直接置かない。** 特別役の席は手番を持たないので、配った時点で
+	// 「動ける席が 1 つも無い」ことがある (全席が Ban Luck など)。手番を素直に
+	// 代入すると精算がどこからも呼ばれず、**盤面が PLAY のまま固まる** ──
+	// 人間が親のラウンドでは CPU も走らないので、押せるものが何も無くなる。
+	// 進めるか精算するかの判断は `advanceTurn` 1 か所に集める。
+	g.advanceTurn()
 }
 
 // ensureCards は必要枚数を引けるように山を補充する。
@@ -204,19 +209,6 @@ func (g *BanLuck) ensureCards(need int) {
 		g.deck.Replenish()
 		g.deck.Shuffle()
 	}
-}
-
-// firstActiveSeat は最初に操作する席を返す。
-//
-// **親は最後。** 子が全員止まってから親が引くので、親は場の状況を見て
-// 引くかどうかを決められる ── 義務ヒットと引き換えの、親の唯一の情報上の得。
-func (g *BanLuck) firstActiveSeat() int {
-	for i := range g.players {
-		if i != g.banker && !g.seatDone(i) {
-			return i
-		}
-	}
-	return g.banker
 }
 
 // seatDone はその席の手がもう動かないかを返す。
@@ -312,6 +304,12 @@ func (g *BanLuck) requireHumanTurn() error {
 }
 
 // advanceTurn は次に動く席へ手番を移し、全席が済んでいれば精算する。
+//
+// **配った直後の最初の手番もここが決める。** 「動ける席を探す」と「誰も動け
+// なければ精算する」は必ず一組で、片方だけを別の場所に書くと固まる経路ができる。
+//
+// **親は最後。** 子が全員止まってから親が引くので、親は場の状況を見て決められる
+// ── 義務ヒットと引き換えの、親の唯一の情報上の得。
 func (g *BanLuck) advanceTurn() {
 	for i := range g.players {
 		if i == g.banker || g.seatDone(i) {

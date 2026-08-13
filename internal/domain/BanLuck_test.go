@@ -477,3 +477,29 @@ func TestBanLuck_EndsWhenTheHumanIsBroke(t *testing.T) {
 	assert.True(t, g.GetGameEndFlag(), "破産した人間が賭けられないまま局が続いている")
 	assert.Equal(t, BanLuckPhaseGameEnd, g.GetPhase())
 }
+
+// **全席が特別役だと、配った瞬間に誰も動けなくなる。**
+//
+// 特別役の席は手番を持たないので、`deal` が手番を直接置いた時点で「動ける席が
+// 1 つも無い」状態があり得る。精算は `advanceTurn` からしか呼ばれないため、
+// **盤面が PLAY のまま固まる** ── 人間が親のときは CPU も走らないので、
+// 画面に押せるものが何も無いまま止まる。
+func TestBanLuck_SettlesWhenEverySeatIsSpecialAtDeal(t *testing.T) {
+	t.Parallel()
+	g := newBanLuckForTest(t)
+	require.Equal(t, g.GetHumanSeat(), g.GetBankerSeat(), "既定では人間が親")
+
+	// 全席に A + K (= バンラック) を配る。
+	cards := make([]*Card, 0, 2*len(g.players))
+	for range g.players {
+		cards = append(cards, blCard(CardDesignSpade, 1), blCard(CardDesignHeart, 13))
+	}
+	blStackNext(g, cards...)
+
+	require.NoError(t, g.PlaceBet(0))
+	for _, h := range g.GetHands() {
+		require.Equal(t, BanLuckRankBanLuck, EvalBanLuckHand(h), "積んだ配りが効いていない")
+	}
+	assert.Equal(t, BanLuckPhaseRoundEnd, g.GetPhase(),
+		"動ける席が無いのに PLAY のまま固まっている")
+}
