@@ -248,6 +248,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [3, 4, 4, 3], skill: [2, 5, 4, 3], social: [4, 4, 3, 3, 4], theme: [5, 1, 1, 1, 3, 1] },
       },
       {
+        path: '/ironcross',
+        labelKey: 'nav.ironcross',
+        icon: '✚',
+        page: 'IronCross',
+        profile: { mood: [3, 4, 4, 3], skill: [2, 5, 5, 3], social: [4, 4, 3, 3, 4], theme: [5, 1, 1, 1, 3, 1] },
+      },
+      {
         path: '/montebank',
         labelKey: 'nav.montebank',
         icon: '🃏',
