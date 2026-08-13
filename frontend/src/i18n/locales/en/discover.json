@@ -390,7 +390,8 @@
     "colourwhist": "A Flemish contract whist where three aces settle the contract without an auction.",
     "chemindefer": "The ancestor of baccarat: the bank travels the table and the third card is your call.",
     "crazyfourpoker": "Poker where your best four of five play, and a strong hand lets you triple the bet.",
-    "doubleattack": "Blackjack where you raise after seeing the dealer’s up-card, on a deck with no tens."
+    "doubleattack": "Blackjack where you raise after seeing the dealer’s up-card, on a deck with no tens.",
+    "freebet": "The house pays for your doubles and splits. The price: a dealer 22 pushes."
   },
   "stretch_blurb": {
     "accordion": "Completion is rare; the journey itself is the joy.",
@@ -697,6 +698,7 @@
     "colourwhist": "Sometimes the deal simply decides for you.",
     "chemindefer": "Less about the cards you get than the card you choose to take.",
     "crazyfourpoker": "The question is how hard you press when the hand finally comes.",
-    "doubleattack": "The luxury of choosing your stake after the information arrives."
+    "doubleattack": "The luxury of choosing your stake after the information arrives.",
+    "freebet": "A single round teaches you what free really costs."
   }
 }
