@@ -125,9 +125,9 @@ type banLuckConfigJSON struct {
 
 // MarshalJSON implements json.Marshaler.
 func (c BanLuckConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(banLuckConfigJSON{
-		Seats: c.Seats, InitialChips: c.InitialChips, Rounds: c.Rounds, DefaultBet: c.DefaultBet,
-	})
+	// **変換で書く。** 項目が 1 対 1 なので、片方に項目を足してもう片方に
+	// 足し忘れたらコンパイルが落ちる ── 手書きの代入だと黙って落ちる。
+	return json.Marshal(banLuckConfigJSON(c))
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
@@ -139,9 +139,7 @@ func (c *BanLuckConfig) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
 	}
-	restored := BanLuckConfig{
-		Seats: j.Seats, InitialChips: j.InitialChips, Rounds: j.Rounds, DefaultBet: j.DefaultBet,
-	}
+	restored := BanLuckConfig(j)
 	if err := restored.Validate(); err != nil {
 		return err
 	}

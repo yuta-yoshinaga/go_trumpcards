@@ -1,0 +1,594 @@
+//go:build !js || !wasm || casino
+
+package domain
+
+import (
+	"errors"
+	"fmt"
+)
+
+// BanLuckPhase はゲームの進行段階。
+type BanLuckPhase int
+
+const (
+	// BanLuckPhaseBet は子が賭け金を置く段階。
+	BanLuckPhaseBet BanLuckPhase = iota
+	// BanLuckPhasePlay は各席が引くか止めるかを決める段階。
+	BanLuckPhasePlay
+	// BanLuckPhaseRoundEnd はラウンドの決着を見せる段階。
+	BanLuckPhaseRoundEnd
+	// BanLuckPhaseGameEnd は全ラウンドが終わった段階。
+	BanLuckPhaseGameEnd
+)
+
+// BanLuckPhaseMax は最大のフェーズ値 (復元時の範囲検査に使う)。
+const BanLuckPhaseMax = BanLuckPhaseGameEnd
+
+// banLuckMaxSliceLen は復元時に許すスライス長の上限。
+const banLuckMaxSliceLen = 512
+
+// banLuckMaxCpuSteps は CPU を進める 1 回あたりの上限。
+//
+// **止まらない規則を書いていないことを機械的に保証する。** 席ごとに最大 5 枚
+// なので 6 席でも 30 手あれば足りるが、規則を書き換えたときに無限ループで
+// 固まるのではなく上限で止まってほしいので余裕を持たせてある。
+const banLuckMaxCpuSteps = 128
+
+// エラー値。
+var (
+	errBanLuckFinished   = errors.New("banluck: game already finished")
+	errBanLuckWrongPhase = errors.New("banluck: not allowed in this phase")
+	errBanLuckBetRangeIn = errors.New("banluck: bet out of range")
+	errBanLuckBetUnitIn  = errors.New("banluck: bet must be a multiple of the unit")
+	errBanLuckNotEnough  = errors.New("banluck: not enough chips")
+	errBanLuckNotYourRun = errors.New("banluck: not your turn")
+	errBanLuckMustHit    = errors.New("banluck: the banker must hit below the minimum")
+	errBanLuckHandFull   = errors.New("banluck: the hand already holds five cards")
+)
+
+// BanLuckSeatResult は 1 席のラウンド結果。
+type BanLuckSeatResult struct {
+	// Rank はその席の役。
+	Rank BanLuckRank
+	// Outcome は親から見た子の決着 (親自身は Push)。
+	Outcome BanLuckOutcome
+	// Delta はそのラウンドのチップ増減。
+	Delta int
+}
+
+// BanLuck はバンラック (チャイニーズ・ブラックジャック) の卓。
+//
+// **親だけが 15 未満で引く義務を負う。** 子は自由に止められるのに親は止まれない
+// ── これが「親は全員を相手に一度に勝てる」有利さを打ち消している仕掛けで、
+// 片方だけ実装すると期待値が大きく傾く。
+//
+// **親は席を移る。** 誰が親かは卓が 1 つの添字で持つ。席の側に「親フラグ」を
+// 置くと、移すたびに全席を書き換えることになり、しかも「親が 2 人いる」状態を
+// 作れてしまう。
+type BanLuck struct {
+	deck    *TrumpCards
+	players []*BanLuckPlayer
+	config  BanLuckConfig
+
+	phase    BanLuckPhase
+	hands    []*BlackJackHand
+	results  []BanLuckSeatResult
+	settled  bool // このラウンドの精算が済んだか
+	banker   int  // 親の席
+	turn     int  // いま操作している席
+	roundNum int
+
+	gameEndFlag bool
+	actionLog   []*ActionLogEntry
+	turnNumber  int
+}
+
+// NewBanLuck は指定の山・席・設定で卓を構築する。
+func NewBanLuck(deck *TrumpCards, players []*BanLuckPlayer, config BanLuckConfig) *BanLuck {
+	return &BanLuck{deck: deck, players: players, config: config, roundNum: 1}
+}
+
+// NewDefaultBanLuck は既定の卓を構築する。席 0 が人間。
+func NewDefaultBanLuck() *BanLuck {
+	cfg := DefaultBanLuckConfig()
+	players := make([]*BanLuckPlayer, 0, cfg.Seats)
+	for i := range cfg.Seats {
+		name := fmt.Sprintf("CPU%d", i)
+		if i == 0 {
+			name = "YOU"
+		}
+		players = append(players, NewBanLuckPlayer(name, cfg.InitialChips, i == 0))
+	}
+	return NewBanLuck(NewTrumpCards(0), players, cfg)
+}
+
+// Reset はゲームを初期化する。
+func (g *BanLuck) Reset() {
+	g.deck.Replenish()
+	g.deck.Shuffle()
+	for _, p := range g.players {
+		p.SetChips(g.config.InitialChips)
+		p.SetBet(0)
+	}
+	g.phase = BanLuckPhaseBet
+	g.hands = nil
+	g.results = nil
+	g.settled = false
+	g.banker = 0
+	g.turn = 0
+	g.roundNum = 1
+	g.gameEndFlag = false
+	g.actionLog = nil
+	g.turnNumber = 0
+	g.appendLog(-1, "reset", "game reset", nil)
+}
+
+// --- 進行 ---
+
+// PlaceBet は人間の席の賭け金を置き、配って勝負を始める。
+//
+// **親は賭けない。** 親は全員の賭けを一手に受ける側なので、人間が親のラウンドは
+// 額を取らずにそのまま配る。
+func (g *BanLuck) PlaceBet(bet int) error {
+	if g.gameEndFlag {
+		return errBanLuckFinished
+	}
+	if g.phase != BanLuckPhaseBet {
+		return errBanLuckWrongPhase
+	}
+	if !g.humanIsBanker() {
+		if bet < BanLuckMinBet || bet > BanLuckMaxBet {
+			return errBanLuckBetRangeIn
+		}
+		if bet%BanLuckBetUnit != 0 {
+			return errBanLuckBetUnitIn
+		}
+		if g.players[g.humanSeat()].GetChips() < bet {
+			return errBanLuckNotEnough
+		}
+	}
+	g.takeBets(bet)
+	g.deal()
+	g.advanceCpu()
+	return nil
+}
+
+// takeBets は子の賭け金を決める。CPU は既定額で、足りなければ持ち分すべて。
+func (g *BanLuck) takeBets(humanBet int) {
+	human := g.humanSeat()
+	for i, p := range g.players {
+		if i == g.banker {
+			p.SetBet(0)
+			continue
+		}
+		want := g.config.DefaultBet
+		if i == human {
+			want = humanBet
+		}
+		// **足りない席は持ち分すべてを賭ける。** 席を落とさずに続けるため。
+		p.SetBet(min(want, p.GetChips()))
+	}
+}
+
+// deal は全席に 2 枚ずつ配る。
+func (g *BanLuck) deal() {
+	g.ensureCards(2 * len(g.players))
+	g.hands = make([]*BlackJackHand, len(g.players))
+	g.results = make([]BanLuckSeatResult, len(g.players))
+	for i := range g.players {
+		h := NewBlackJackHand()
+		h.AddCard(g.deck.DrawCard())
+		h.AddCard(g.deck.DrawCard())
+		g.hands[i] = h
+		g.results[i] = BanLuckSeatResult{Rank: EvalBanLuckHand(h)}
+	}
+	g.settled = false
+	g.phase = BanLuckPhasePlay
+	g.turn = g.firstActiveSeat()
+	g.appendLog(-1, "deal", fmt.Sprintf("round %d, banker seat %d", g.roundNum, g.banker), nil)
+}
+
+// ensureCards は必要枚数を引けるように山を補充する。
+//
+// **1 デッキ 52 枚では 6 席 × 5 枚に足りない場面がある。** 引けない札を
+// nil のまま手札に入れると、点数計算がそこで静かに壊れる。
+func (g *BanLuck) ensureCards(need int) {
+	if g.deck.GetRemainingCount() < need {
+		g.deck.Replenish()
+		g.deck.Shuffle()
+	}
+}
+
+// firstActiveSeat は最初に操作する席を返す。
+//
+// **親は最後。** 子が全員止まってから親が引くので、親は場の状況を見て
+// 引くかどうかを決められる ── 義務ヒットと引き換えの、親の唯一の情報上の得。
+func (g *BanLuck) firstActiveSeat() int {
+	for i := range g.players {
+		if i != g.banker && !g.seatDone(i) {
+			return i
+		}
+	}
+	return g.banker
+}
+
+// seatDone はその席の手がもう動かないかを返す。
+func (g *BanLuck) seatDone(i int) bool {
+	h := g.hands[i]
+	if h == nil {
+		return true
+	}
+	// **特別役は配られた時点で確定。** 引く意味が無いので手番を作らない。
+	if r := EvalBanLuckHand(h); r == BanLuckRankBanBan || r == BanLuckRankBanLuck {
+		return true
+	}
+	return h.IsStood() || h.IsBusted() || h.GetCardsSize() >= BanLuckMaxHandCards
+}
+
+// Hit はいまの席が 1 枚引く。
+func (g *BanLuck) Hit() error {
+	if err := g.requireHumanTurn(); err != nil {
+		return err
+	}
+	return g.hitSeat(g.turn)
+}
+
+// hitSeat は席 i に 1 枚配り、必要なら手番を進める。
+func (g *BanLuck) hitSeat(i int) error {
+	h := g.hands[i]
+	if h.GetCardsSize() >= BanLuckMaxHandCards {
+		return errBanLuckHandFull
+	}
+	g.ensureCards(1)
+	c := g.deck.DrawCard()
+	h.AddCard(c)
+	if h.GetScore() > BanLuckTarget {
+		h.SetBusted(true)
+	}
+	g.results[i].Rank = EvalBanLuckHand(h)
+	g.appendLog(i, "hit", fmt.Sprintf("seat %d hits", i), []*Card{c})
+	g.advanceTurn()
+	return nil
+}
+
+// Stand はいまの席が打ち止めにする。
+//
+// **親は 15 未満で止まれない。** ここを弾かずに CPU 側だけで守ると、人間が
+// 親のときだけ規則が消える。
+func (g *BanLuck) Stand() error {
+	if err := g.requireHumanTurn(); err != nil {
+		return err
+	}
+	if g.turn == g.banker && g.bankerMustHit() {
+		return errBanLuckMustHit
+	}
+	return g.standSeat(g.turn)
+}
+
+// standSeat は席 i を打ち止めにし、手番を進める。
+func (g *BanLuck) standSeat(i int) error {
+	g.hands[i].SetStood(true)
+	g.appendLog(i, "stand", fmt.Sprintf("seat %d stands", i), nil)
+	g.advanceTurn()
+	return nil
+}
+
+// bankerMustHit は親が引く義務を負っているかを返す。
+func (g *BanLuck) bankerMustHit() bool {
+	h := g.hands[g.banker]
+	if h == nil || h.GetCardsSize() >= BanLuckMaxHandCards {
+		return false
+	}
+	return h.GetScore() < BanLuckBankerMustHitUnder
+}
+
+// MustHit は人間の席がいま引く義務を負っているかを返す (画面の案内に使う)。
+func (g *BanLuck) MustHit() bool {
+	if g.phase != BanLuckPhasePlay || g.turn != g.humanSeat() || g.turn != g.banker {
+		return false
+	}
+	return g.bankerMustHit()
+}
+
+// requireHumanTurn は人間が操作できる状態かを検査する。
+func (g *BanLuck) requireHumanTurn() error {
+	if g.gameEndFlag {
+		return errBanLuckFinished
+	}
+	if g.phase != BanLuckPhasePlay {
+		return errBanLuckWrongPhase
+	}
+	if g.turn != g.humanSeat() {
+		return errBanLuckNotYourRun
+	}
+	return nil
+}
+
+// advanceTurn は次に動く席へ手番を移し、全席が済んでいれば精算する。
+func (g *BanLuck) advanceTurn() {
+	for i := range g.players {
+		if i == g.banker || g.seatDone(i) {
+			continue
+		}
+		g.turn = i
+		return
+	}
+	if !g.seatDone(g.banker) {
+		g.turn = g.banker
+		return
+	}
+	g.settle()
+}
+
+// CpuPlay は CPU の席を進める。
+func (g *BanLuck) CpuPlay() { g.advanceCpu() }
+
+// advanceCpu は人間の手番になるかラウンドが終わるまで CPU を進める。
+func (g *BanLuck) advanceCpu() {
+	for range banLuckMaxCpuSteps {
+		if g.gameEndFlag || g.phase != BanLuckPhasePlay || g.IsHumanTurn() {
+			return
+		}
+		if !g.stepCpu() {
+			return
+		}
+	}
+}
+
+// stepCpu は CPU の席を 1 手だけ進める。進めたら true。
+func (g *BanLuck) stepCpu() bool {
+	i := g.turn
+	if i == g.humanSeat() {
+		return false
+	}
+	if g.cpuWantsHit(i) {
+		return g.hitSeat(i) == nil
+	}
+	return g.standSeat(i) == nil
+}
+
+// cpuWantsHit は CPU が引くかを決める。
+//
+// **親の義務は戦略より先。** 15 未満なら好むと好まざるとにかかわらず引く。
+func (g *BanLuck) cpuWantsHit(i int) bool {
+	h := g.hands[i]
+	if h.GetCardsSize() >= BanLuckMaxHandCards {
+		return false
+	}
+	if i == g.banker {
+		if g.bankerMustHit() {
+			return true
+		}
+		return h.GetScore() < banLuckCpuBankerStand
+	}
+	// **4 枚目まで来たら Five Dragon を狙う価値がある。** 21 以下で 5 枚に
+	// 届けば、合計に関係なく普通の手に勝てるため。
+	if h.GetCardsSize() == BanLuckMaxHandCards-1 && h.GetScore() <= banLuckCpuDragonChase {
+		return true
+	}
+	return h.GetScore() < banLuckCpuSeatStand
+}
+
+// CPU の打ち方の境目。
+const (
+	// banLuckCpuSeatStand は子の CPU が止まる下限。
+	banLuckCpuSeatStand = 17
+	// banLuckCpuBankerStand は親の CPU が止まる下限 (義務より上)。
+	banLuckCpuBankerStand = 17
+	// banLuckCpuDragonChase は 4 枚目から Five Dragon を狙う上限。
+	banLuckCpuDragonChase = 15
+)
+
+// --- 精算 ---
+
+// settle はラウンドを精算する。
+//
+// **チップは親と子の間だけで動く。** 子の負け分は親に入り、子の勝ち分は親から
+// 出る。どこにも消えず、どこからも湧かない。
+//
+// **負けた席から先に集め、それから勝った席に払う。** 順序を逆にすると、
+// 親の持ち分を各席が独立に見るので、3 席が同時に勝ったときに親が持っていない
+// 額まで払い出して**残高が負になる**。集めてから払えば、払える上限は常に
+// その時点の親の持ち分ひとつで決まる。
+func (g *BanLuck) settle() {
+	if g.settled {
+		return
+	}
+	bankerHand := g.hands[g.banker]
+	bankerRank := EvalBanLuckHand(bankerHand)
+	bankerScore := bankerHand.GetScore()
+	g.results[g.banker] = BanLuckSeatResult{Rank: bankerRank, Outcome: BanLuckOutcomePush}
+
+	type pending struct {
+		seat int
+		mult int
+	}
+	var winners []pending
+	bankerDelta := 0
+
+	for i, p := range g.players {
+		if i == g.banker {
+			continue
+		}
+		rank := EvalBanLuckHand(g.hands[i])
+		outcome, mult := CompareBanLuck(rank, bankerRank, g.hands[i].GetScore(), bankerScore)
+		g.results[i] = BanLuckSeatResult{Rank: rank, Outcome: outcome}
+		switch outcome {
+		case BanLuckOutcomeLose:
+			// **払えるぶんまでしか取らない。** 倍率が 3 倍まであるので、
+			// 素直に bet*mult を引くと席の残高が負になる。
+			amount := min(p.GetBet()*mult, p.GetChips())
+			p.SubtractChips(amount)
+			g.results[i].Delta = -amount
+			bankerDelta += amount
+		case BanLuckOutcomeWin:
+			winners = append(winners, pending{seat: i, mult: mult})
+		default:
+		}
+	}
+
+	// 集め終わった時点の持ち分が、払える総額。
+	avail := g.players[g.banker].GetChips() + bankerDelta
+	for _, w := range winners {
+		p := g.players[w.seat]
+		amount := min(p.GetBet()*w.mult, avail)
+		avail -= amount
+		p.AddChips(amount)
+		g.results[w.seat].Delta = amount
+		bankerDelta -= amount
+	}
+
+	g.players[g.banker].AddChips(bankerDelta)
+	g.results[g.banker].Delta = bankerDelta
+
+	g.settled = true
+	g.phase = BanLuckPhaseRoundEnd
+	g.appendLog(-1, "result", fmt.Sprintf("banker seat %d nets %d", g.banker, bankerDelta), nil)
+	g.rotateBanker()
+}
+
+// rotateBanker は次のラウンドの親を決める。
+//
+// **親を倒した席が次の親になる。** 特別役で親を破った席があればその席、
+// 無ければ次の席へ順に回す。「誰も親になれない」経路を作らないため、
+// 最後は必ず次の席という既定に落ちる。
+func (g *BanLuck) rotateBanker() {
+	next := -1
+	best := BanLuckRankBust
+	for i := range g.players {
+		if i == g.banker || g.results[i].Outcome != BanLuckOutcomeWin {
+			continue
+		}
+		// 特別役で勝った席だけが親を奪える。普通の勝ちでは奪えない。
+		if r := g.results[i].Rank; r > BanLuckRankPoint && r > best {
+			best, next = r, i
+		}
+	}
+	if next < 0 {
+		next = (g.banker + 1) % len(g.players)
+	}
+	g.banker = next
+}
+
+// NextRound は次のラウンドを始める。
+func (g *BanLuck) NextRound() error {
+	if g.gameEndFlag {
+		return errBanLuckFinished
+	}
+	if g.phase != BanLuckPhaseRoundEnd {
+		return errBanLuckWrongPhase
+	}
+	if g.roundNum >= g.config.Rounds || g.aliveSeats() < BanLuckMinSeats {
+		g.finish()
+		return nil
+	}
+	g.roundNum++
+	g.phase = BanLuckPhaseBet
+	for _, p := range g.players {
+		p.SetBet(0)
+	}
+	return nil
+}
+
+// aliveSeats はまだチップが残っている席の数を返す。
+func (g *BanLuck) aliveSeats() int {
+	n := 0
+	for _, p := range g.players {
+		if p.GetChips() > 0 {
+			n++
+		}
+	}
+	return n
+}
+
+// finish はゲームを終える。
+func (g *BanLuck) finish() {
+	g.gameEndFlag = true
+	g.phase = BanLuckPhaseGameEnd
+	g.appendLog(-1, "gameEnd", fmt.Sprintf("winner seat %d", g.WinnerSeat()), nil)
+}
+
+// WinnerSeat はチップがいちばん多い席を返す。同点なら若い席。
+func (g *BanLuck) WinnerSeat() int {
+	best, bestChips := 0, -1
+	for i, p := range g.players {
+		if p.GetChips() > bestChips {
+			best, bestChips = i, p.GetChips()
+		}
+	}
+	return best
+}
+
+// --- 参照 ---
+
+// humanSeat は人間の席を返す。無ければ 0。
+func (g *BanLuck) humanSeat() int {
+	for i, p := range g.players {
+		if p.GetIsHuman() {
+			return i
+		}
+	}
+	return 0
+}
+
+// humanIsBanker は人間が親かを返す。
+func (g *BanLuck) humanIsBanker() bool { return g.banker == g.humanSeat() }
+
+// IsHumanTurn は人間の操作待ちかを返す。
+func (g *BanLuck) IsHumanTurn() bool {
+	return g.phase == BanLuckPhasePlay && g.turn == g.humanSeat()
+}
+
+// GetConfig はゲーム設定を返す。
+func (g *BanLuck) GetConfig() BanLuckConfig { return g.config }
+
+// SetConfig はゲーム設定を設定する。
+func (g *BanLuck) SetConfig(c BanLuckConfig) { g.config = c }
+
+// GetPhase は現在のフェーズを返す。
+func (g *BanLuck) GetPhase() BanLuckPhase { return g.phase }
+
+// GetGameEndFlag はゲーム終了フラグを返す。
+func (g *BanLuck) GetGameEndFlag() bool { return g.gameEndFlag }
+
+// GetPlayers は席の一覧を返す。
+func (g *BanLuck) GetPlayers() []*BanLuckPlayer { return g.players }
+
+// GetHands は席ごとの手札を返す。
+func (g *BanLuck) GetHands() []*BlackJackHand { return g.hands }
+
+// GetResults は席ごとのラウンド結果を返す。
+func (g *BanLuck) GetResults() []BanLuckSeatResult { return g.results }
+
+// GetBankerSeat は親の席を返す。
+func (g *BanLuck) GetBankerSeat() int { return g.banker }
+
+// GetTurnSeat はいま操作している席を返す。
+func (g *BanLuck) GetTurnSeat() int { return g.turn }
+
+// GetHumanSeat は人間の席を返す。
+func (g *BanLuck) GetHumanSeat() int { return g.humanSeat() }
+
+// GetRoundNumber は現在のラウンド数を返す。
+func (g *BanLuck) GetRoundNumber() int { return g.roundNum }
+
+// GetRemainingCards は山の残り枚数を返す。
+func (g *BanLuck) GetRemainingCards() int { return g.deck.GetRemainingCount() }
+
+// GetActionLog は棋譜を返す。
+func (g *BanLuck) GetActionLog() []*ActionLogEntry { return g.actionLog }
+
+// appendLog は棋譜に 1 行足す。
+func (g *BanLuck) appendLog(seat int, actionType, detail string, cards []*Card) {
+	g.turnNumber++
+	g.actionLog = append(g.actionLog, &ActionLogEntry{
+		TurnNumber: g.turnNumber,
+		PlayerIdx:  seat,
+		ActionType: actionType,
+		Detail:     detail,
+		Cards:      cards,
+	})
+	if len(g.actionLog) > banLuckMaxSliceLen {
+		g.actionLog = g.actionLog[len(g.actionLog)-banLuckMaxSliceLen:]
+	}
+}
