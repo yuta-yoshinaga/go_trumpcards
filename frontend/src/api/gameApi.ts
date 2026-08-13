@@ -178,6 +178,7 @@ export * from './games/minchiate';
 export * from './games/minibridge';
 export * from './games/mississippistud';
 export * from './games/missmilligan';
+export * from './games/montebank';
 export * from './games/montecarlo';
 export * from './games/mus';
 export * from './games/mushi';
@@ -381,6 +382,7 @@ export const games = [
   'doubleattack',
   'freebet',
   'banluck',
+  'montebank',
   'razz',
   'sevencardstudhilo',
   'badugi',

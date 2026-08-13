@@ -163,6 +163,7 @@ import type {
   MinibridgeResponse,
   MississippiStudResponse,
   MissMilliganResponse,
+  MonteBankResponse,
   MonteCarloResponse,
   MushiResponse,
   MusResponse,
@@ -464,6 +465,7 @@ import { getMinchiateHint } from '../utils/hints/minchiateHint';
 import { getMinibridgeHint } from '../utils/hints/minibridgeHint';
 import { getMississippiStudHint } from '../utils/hints/mississippiStudHint';
 import { getMissMilliganHint } from '../utils/hints/missmilliganHint';
+import { getMontebankHint } from '../utils/hints/montebankHint';
 import { getMonteCarloHint } from '../utils/hints/montecarloHint';
 import { getMusHint } from '../utils/hints/musHint';
 import { getMushiHint } from '../utils/hints/mushiHint';
@@ -783,6 +785,7 @@ export const hintFactories = {
   doubleattack: (s) => getDoubleattackHint(s as DoubleAttackResponse),
   freebet: (s) => getFreebetHint(s as FreeBetResponse),
   banluck: (s) => getBanluckHint(s as BanLuckResponse),
+  montebank: (s) => getMontebankHint(s as MonteBankResponse),
   colourwhist: (s) => getColourwhistHint(s as ColourWhistResponse),
   dragontiger: (s) => getDragontigerHint(s as DragonTigerResponse),
   blackjackswitch: (s) => getBlackjackswitchHint(s as BlackJackSwitchResponse),
