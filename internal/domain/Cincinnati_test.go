@@ -424,3 +424,30 @@ func TestCincinnati_ActedSeatMustAnswerALaterRaise(t *testing.T) {
 	require.NoError(t, g.applyAction(1, CincinnatiActionCall, 0))
 	assert.True(t, g.bettingRoundComplete(), "全員応じたのに閉じない")
 }
+
+// **CpuPlay は人間の手番まで進める。** ここを誰も呼ばないと盤面が止まる。
+func TestCincinnati_CpuPlayAdvancesToTheHuman(t *testing.T) {
+	t.Parallel()
+	g := newCincinnatiForTest(t)
+	// 手番を CPU に移してから駆動する。
+	g.turn = (g.HumanSeat() + 1) % len(g.GetPlayers())
+	g.CpuPlay()
+	assert.True(t, g.IsHumanTurn() || g.GetPhase() != CincinnatiPhaseBetting,
+		"CpuPlay を呼んだのに CPU の席 %d で止まっている", g.GetTurnSeat())
+}
+
+func TestCincinnati_PlayerHandRankAccessor(t *testing.T) {
+	t.Parallel()
+	p := NewCincinnatiPlayer("YOU", 1000, true)
+	assert.Zero(t, p.GetHandRank(), "評価前は 0")
+
+	for _, c := range []*Card{
+		cinCard(CardDesignSpade, 1), cinCard(CardDesignSpade, 13), cinCard(CardDesignSpade, 12),
+		cinCard(CardDesignSpade, 11), cinCard(CardDesignSpade, 10),
+	} {
+		p.AddCard(c)
+	}
+	rank := p.EvaluateBest(nil)
+	assert.Equal(t, rank, p.GetHandRank(), "評価結果がアクセサに反映されていない")
+	assert.Equal(t, PokerHandRoyalFlush, p.GetHandRank())
+}

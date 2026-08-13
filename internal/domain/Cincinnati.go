@@ -3,6 +3,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 )
@@ -562,4 +563,128 @@ func (g *Cincinnati) appendLog(seat int, actionType, detail string, cards []*Car
 	if len(g.actionLog) > cincinnatiMaxSliceLen {
 		g.actionLog = g.actionLog[len(g.actionLog)-cincinnatiMaxSliceLen:]
 	}
+}
+
+// --- 永続化 ---
+
+// cincinnatiJSON is the JSON wire format for Cincinnati.
+type cincinnatiJSON struct {
+	Deck        *TrumpCards         `json:"dk"`
+	Players     []*CincinnatiPlayer `json:"pl"`
+	Config      CincinnatiConfig    `json:"cf"`
+	Phase       int                 `json:"ph"`
+	Community   []*Card             `json:"cm"`
+	Revealed    int                 `json:"rv"`
+	Pot         int                 `json:"po"`
+	CurrentBet  int                 `json:"cb"`
+	RaiseCount  int                 `json:"rc"`
+	Turn        int                 `json:"tu"`
+	ActedFlags  []bool              `json:"af"`
+	HandNumber  int                 `json:"hn"`
+	Results     []CincinnatiResult  `json:"rs"`
+	GameEndFlag bool                `json:"ge"`
+	ActionLog   []*ActionLogEntry   `json:"al"`
+	TurnNumber  int                 `json:"tn"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (g *Cincinnati) MarshalJSON() ([]byte, error) {
+	return json.Marshal(cincinnatiJSON{
+		Deck: g.deck, Players: g.players, Config: g.config,
+		Phase: int(g.phase), Community: g.community, Revealed: g.revealed,
+		Pot: g.pot, CurrentBet: g.currentBet, RaiseCount: g.raiseCount,
+		Turn: g.turn, ActedFlags: g.actedFlags, HandNumber: g.handNumber,
+		Results: g.results, GameEndFlag: g.gameEndFlag,
+		ActionLog: g.actionLog, TurnNumber: g.turnNumber,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+//
+// **公開枚数とコミュニティの実枚数は必ず一致する。** ここがずれた保存を通すと、
+// 「まだ伏せている札」を役の判定に使ってしまう ── 添字としては正当なので
+// 範囲チェックでは捕まらない。
+func (g *Cincinnati) UnmarshalJSON(data []byte) error {
+	var j cincinnatiJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if err := cincinnatiValidate(&j); err != nil {
+		return err
+	}
+
+	g.deck = j.Deck
+	if g.deck == nil {
+		g.deck = NewTrumpCards(0)
+	}
+	g.players = j.Players
+	g.config = j.Config
+	g.phase = CincinnatiPhase(j.Phase)
+	g.community = j.Community
+	g.revealed = j.Revealed
+	g.pot = j.Pot
+	g.currentBet = j.CurrentBet
+	g.raiseCount = j.RaiseCount
+	g.turn = j.Turn
+	g.actedFlags = j.ActedFlags
+	g.handNumber = j.HandNumber
+	g.results = j.Results
+	g.gameEndFlag = j.GameEndFlag
+	g.actionLog = j.ActionLog
+	g.turnNumber = j.TurnNumber
+	return nil
+}
+
+// cincinnatiValidate は保存データの範囲と整合を検証する。
+func cincinnatiValidate(j *cincinnatiJSON) error {
+	if err := j.Config.Validate(); err != nil {
+		return err
+	}
+	seats := len(j.Players)
+	if seats != j.Config.Seats {
+		return fmt.Errorf("cincinnati: %d players for a %d-seat table", seats, j.Config.Seats)
+	}
+	for i, p := range j.Players {
+		if p == nil {
+			return fmt.Errorf("cincinnati: seat %d is missing", i)
+		}
+	}
+	if j.Phase < int(CincinnatiPhaseDeal) || j.Phase > int(CincinnatiPhaseMax) {
+		return fmt.Errorf("cincinnati: phase out of range: %d", j.Phase)
+	}
+	if j.Turn < 0 || j.Turn >= seats {
+		return fmt.Errorf("cincinnati: turn seat out of range: %d", j.Turn)
+	}
+	if j.HandNumber < 1 {
+		return fmt.Errorf("cincinnati: hand number out of range: %d", j.HandNumber)
+	}
+	for _, v := range []struct {
+		name string
+		n    int
+	}{{"pot", j.Pot}, {"current bet", j.CurrentBet}, {"raise count", j.RaiseCount}} {
+		if v.n < 0 {
+			return fmt.Errorf("cincinnati: %s must not be negative: %d", v.name, v.n)
+		}
+	}
+	if j.RaiseCount > cincinnatiMaxRaisesPerRound {
+		return fmt.Errorf("cincinnati: raise count exceeds the cap: %d", j.RaiseCount)
+	}
+	// **公開枚数とコミュニティの実枚数が一致すること。**
+	if j.Revealed < 0 || j.Revealed > CincinnatiCommunityCards {
+		return fmt.Errorf("cincinnati: revealed count out of range: %d", j.Revealed)
+	}
+	if len(j.Community) != j.Revealed {
+		return fmt.Errorf("cincinnati: %d community cards for %d revealed",
+			len(j.Community), j.Revealed)
+	}
+	if len(j.ActedFlags) != 0 && len(j.ActedFlags) != seats {
+		return fmt.Errorf("cincinnati: %d acted flags for %d seats", len(j.ActedFlags), seats)
+	}
+	if len(j.Results) != 0 && len(j.Results) != seats {
+		return fmt.Errorf("cincinnati: %d results for %d seats", len(j.Results), seats)
+	}
+	if len(j.ActionLog) > cincinnatiMaxSliceLen {
+		return fmt.Errorf("cincinnati: action log too long: %d", len(j.ActionLog))
+	}
+	return nil
 }
