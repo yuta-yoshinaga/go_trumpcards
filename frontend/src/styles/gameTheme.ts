@@ -41,6 +41,7 @@ export type GameKey =
   | 'montebank'
   | 'cincinnati'
   | 'ironcross'
+  | 'baseballpoker'
   | 'blackjackswitch'
   | 'fourcardpoker'
   // Poker
@@ -605,6 +606,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   montebank: GREEN,
   cincinnati: CASINO,
   ironcross: CASINO,
+  baseballpoker: CASINO,
   blackjackswitch: BRIGHT_GREEN,
   fourcardpoker: CASINO,
   // Poker

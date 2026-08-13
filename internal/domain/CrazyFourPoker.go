@@ -656,12 +656,22 @@ func crazyFourPokerValidateScalars(j *crazyFourPokerJSON) error {
 	if j.Result < int(CrazyFourPokerResultNone) || j.Result > int(CrazyFourPokerResultMax) {
 		return fmt.Errorf("crazyfourpoker: result out of range: %d", j.Result)
 	}
-	for name, v := range map[string]int{
-		"ante": j.AnteBet, "super bonus": j.SuperBet,
-		"queens up": j.QueensUpBet, "play": j.PlayBet, "payout": j.Payout,
+	// **順序を固定して見る。** map を range すると走査順が実行ごとに変わるので、
+	// 2 つ以上の額が同時に負の保存では**返るエラーが毎回違う**。利用者から見れば
+	// 「同じ壊れた保存を読み込むたびに別の理由を言われる」ことになり、テストから
+	// 見れば数回に 1 回だけ落ちるフレークになる (CI で実際に落ちた)。
+	for _, f := range []struct {
+		name  string
+		value int
+	}{
+		{"ante", j.AnteBet},
+		{"super bonus", j.SuperBet},
+		{"queens up", j.QueensUpBet},
+		{"play", j.PlayBet},
+		{"payout", j.Payout},
 	} {
-		if v < 0 {
-			return fmt.Errorf("crazyfourpoker: %s must not be negative: %d", name, v)
+		if f.value < 0 {
+			return fmt.Errorf("crazyfourpoker: %s must not be negative: %d", f.name, f.value)
 		}
 	}
 	if j.RoundNumber < 1 {

@@ -1151,6 +1151,12 @@ var registry = []*Game{
 	// 両方に入るので、全員が同じ場を共有する Holdem と違って「どちらを取るか」
 	// で手が変わる。1 枚ずつ開いてそのたびにベットし、5 枚出そろってから選ぶ。
 	{Name: "ironcross", Category: CategoryCasino},
+	// Baseball Poker ベースボールポーカー
+	//
+	// **セブンカードスタッドに配札連動のイベントが乗る。** 3 と 9 は常に
+	// ワイルドだが、**表向きに配られた** 3 はその時点のポットを払うか降りるかを
+	// 迫り、表の 4 は伏せ札を 1 枚くれる。伏せて配られた 3 はただのワイルド。
+	{Name: "baseballpoker", Category: CategoryCasino},
 }
 
 // All returns a value-level copy of the registry in canonical order.

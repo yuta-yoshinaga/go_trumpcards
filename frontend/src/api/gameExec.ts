@@ -233,6 +233,7 @@ export const workerUrl: Record<string, string> = {
   montebank: WORKER_CASINO,
   cincinnati: WORKER_CASINO,
   ironcross: WORKER_CASINO,
+  baseballpoker: WORKER_CASINO,
   dragontiger: WORKER_CASINO,
   blackjackswitch: WORKER_CASINO,
   montecarlo: WORKER_SOLO,

@@ -126,14 +126,31 @@ func TestDoubleAttack_AttackIsCappedAtTheAnte(t *testing.T) {
 }
 
 // 追加ベットを見送っても進む。
+// **見送りは追加のチップを取らない。**
+//
+// `Attack` は見送りでもディーラーの 2 枚目を配り、**どちらかがブラックジャック
+// ならその場で決着する** —— 決着すればチップは当然動くので、「見送った直後は
+// チップが変わらない」は配りによって成り立たない (CI で実際に落ちた)。
+// 決着しない配りを引くまで配り直し、そのうえで額を見る。
 func TestDoubleAttack_AttackMayBeDeclined(t *testing.T) {
-	g := newDoubleAttackForTest(t)
-	require.NoError(t, g.PlaceBet(50, 0))
-	before := g.GetChips()
+	checked := 0
+	for range 50 {
+		g := newDoubleAttackForTest(t)
+		require.NoError(t, g.PlaceBet(50, 0))
+		before := g.GetChips()
 
-	require.NoError(t, g.Attack(0))
-	assert.Zero(t, g.GetAttackBet())
-	assert.Equal(t, before, g.GetChips(), "見送ったのにチップが減っている")
+		require.NoError(t, g.Attack(0))
+		// 見送りは常に賭け増し 0 —— 決着したかどうかに関わらず成り立つ。
+		assert.Zero(t, g.GetAttackBet(), "見送ったのに賭け増しが立っている")
+
+		if g.GetPhase() != DoubleAttackPhasePlay {
+			// ブラックジャックで即決着した配り。チップは動いて当然なので見ない。
+			continue
+		}
+		checked++
+		assert.Equal(t, before, g.GetChips(), "見送ったのにチップが減っている")
+	}
+	require.Positive(t, checked, "50 回配っても決着しない配りが出なかった")
 }
 
 // --- 配当 ---

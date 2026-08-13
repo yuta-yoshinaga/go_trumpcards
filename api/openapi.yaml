@@ -40,6 +40,8 @@ tags:
     description: Cincinnati (シンシナティ) game
   - name: ironcross
     description: Iron Cross (アイアンクロス) game
+  - name: baseballpoker
+    description: Baseball Poker (ベースボールポーカー) game
   - name: poker
     description: 5-card Draw Poker game
   - name: oldmaid
@@ -9401,6 +9403,80 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CincinnatiResponse'
+
+  /baseballpoker/exec:
+    post:
+      tags:
+        - baseballpoker
+      summary: Execute a Baseball Poker game command
+      description: |
+        Send a command to advance the Baseball Poker (ベースボールポーカー)
+        game session identified by `sessionId`.
+
+        Dealt like seven-card stud — two down, four up one at a time with a
+        betting round after each, then one down — with two rules named for
+        baseball:
+
+        * **3s and 9s are always wild.** Eight wild cards in the deck raise the
+          going rate for a hand; `wildValues` carries them so a client never
+          hardcodes them.
+        * **A face-up card can trigger an event.** A face-up 4 (`bonusValue`)
+          pays that seat one extra card, dealt face down. A face-up 3
+          (`buyInValue`) forces the seat to either buy the pot for its current
+          size or drop out — `buyerSeat`, `buyCost` and `isBuying` report that,
+          and the answer is sent as the named `pay` or `buyfold` command.
+
+        The same 3 is both the card you want in the hole and the card you dread
+        on the board; what separates them is the direction it was dealt, not
+        the card.
+
+        **Face-up cards are on the wire for every seat, face-down cards for
+        none.** Up-cards are what stud players read, so withholding them would
+        reduce the game to chance. A card the viewer may not see is sent as a
+        positional `null` rather than omitted, and `faceUp` runs parallel to
+        `cards`, so the order of the revealed cards stays legible.
+
+        Hand size varies by seat: a seat that caught a face-up 4 holds eight or
+        more cards, reported in `bonusCards`.
+
+        `amount` is required for `bet` and `raise`, and ignored for `fold`,
+        `check`, `call`, `pay` and `buyfold`. Raises are capped at three per
+        round; `canRaise` reports whether one is still available.
+      operationId: execBaseballPoker
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: "reset (r), fold (f), check (k), call (c), bet (b), raise, pay (p), buyfold, next, hint, log, quit (q)"
+                amount:
+                  type: integer
+                  description: Stake for bet and raise. Ignored by the other actions.
+                sessionId:
+                  type: string
+              example:
+                command: pay
+                sessionId: my-session-001
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseballPokerResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseballPokerResponse'
 
   /ironcross/exec:
     post:
@@ -48761,6 +48837,129 @@ components:
             initialChips:
               type: integer
             defaultAnte:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+    BaseballPokerResponse:
+      type: object
+      description: Response payload for /baseballpoker/exec
+      properties:
+        phase:
+          type: integer
+          description: "0=Betting, 1=BuyIn, 2=Showdown, 3=GameEnd"
+        seats:
+          type: array
+          description: Always an array, one entry per seat, in seat order.
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              isHuman:
+                type: boolean
+              chips:
+                type: integer
+              bet:
+                type: integer
+              cards:
+                type: array
+                description: >-
+                  The seat's cards, positional. A card the viewer may not see is
+                  null rather than omitted, so the order of the revealed cards
+                  stays legible. Face-up cards are present for every seat.
+                items:
+                  $ref: '#/components/schemas/Card'
+                  nullable: true
+              faceUp:
+                type: array
+                description: Runs parallel to cards; true where that card is face up.
+                items:
+                  type: boolean
+              bonusCards:
+                type: integer
+                description: Extra cards this seat received from face-up 4s.
+              folded:
+                type: boolean
+              allIn:
+                type: boolean
+              isTurn:
+                type: boolean
+              isBuying:
+                type: boolean
+                description: True while this seat is the one being asked to buy the pot.
+              handRank:
+                type: integer
+                description: Set at showdown only.
+              usedWild:
+                type: boolean
+                description: Whether the winning five used a wild card. Set at showdown only.
+              bestHand:
+                type: array
+                description: The best five cards. Set at showdown only.
+                items:
+                  $ref: '#/components/schemas/Card'
+              wonAmount:
+                type: integer
+        street:
+          type: integer
+          description: How many face-up cards have been dealt (1..4).
+        streetTotal:
+          type: integer
+          description: Always 4 — the betting rounds left follow from it.
+        wildValues:
+          type: array
+          description: The card values that are wild (3 and 9). Sent so a client never hardcodes them.
+          items:
+            type: integer
+        bonusValue:
+          type: integer
+          description: The face-up value that pays an extra card (4).
+        buyInValue:
+          type: integer
+          description: The face-up value that forces the buy-or-fold choice (3).
+        pot:
+          type: integer
+        currentBet:
+          type: integer
+        toCall:
+          type: integer
+        raiseCount:
+          type: integer
+        canRaise:
+          type: boolean
+        turnSeat:
+          type: integer
+        humanSeat:
+          type: integer
+        isHumanTurn:
+          type: boolean
+        buyerSeat:
+          type: integer
+          description: The seat being asked to buy the pot, or -1 when nobody is.
+        buyCost:
+          type: integer
+          description: What the buyer must pay. Fixed when the seat is asked, not when it answers.
+        isBuying:
+          type: boolean
+          description: True while the human seat is the one being asked.
+        handNumber:
+          type: integer
+        remainingCards:
+          type: integer
+        winnerSeat:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        config:
+          type: object
+          properties:
+            seats:
+              type: integer
+            initialChips:
+              type: integer
+            ante:
               type: integer
         message:
           type: string

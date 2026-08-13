@@ -216,12 +216,28 @@ func TestDoubleAttackWebPresenter_ErrorAndHint(t *testing.T) {
 // (= 収支 0) が **+50 の黒字**として表示される、という嘘をつく。
 func TestDoubleAttackCuiPresenter_NetIsCorrectAfterASplit(t *testing.T) {
 	cp := new(DoubleAttackBlackjackCuiPresenter)
-	g := newDoubleAttackForPresenter(t)
-	// **アンティを置く前のチップを基準にする。** PlaceBet の後で取ると、
-	// アンティぶんが基準に織り込まれてしまい、収支の定義とずれる。
-	before := g.GetChips()
-	require.NoError(t, g.PlaceBet(50, 0))
-	require.NoError(t, g.Attack(0))
+
+	// **`Attack` は見送りでも即決着することがある。** ディーラーの 2 枚目を
+	// そこで配るので、どちらかがブラックジャックならその場で精算まで走る。
+	// 精算が済んだ卓に手札を積み直すと、**既に動いたチップ**が収支の基準に
+	// 混ざって、数回に 1 回だけ落ちる (CI で実際に落ちた)。決着しない配りを
+	// 引くまで配り直す。
+	var g *domain.DoubleAttackBlackjack
+	var before int
+	dealt := false
+	for range 50 {
+		g = newDoubleAttackForPresenter(t)
+		// **アンティを置く前のチップを基準にする。** PlaceBet の後で取ると、
+		// アンティぶんが基準に織り込まれてしまい、収支の定義とずれる。
+		before = g.GetChips()
+		require.NoError(t, g.PlaceBet(50, 0))
+		require.NoError(t, g.Attack(0))
+		if g.GetPhase() == domain.DoubleAttackPhasePlay {
+			dealt = true
+			break
+		}
+	}
+	require.True(t, dealt, "50 回配っても即決着しない配りが出なかった")
 
 	// 8 のペア対ディーラーのハード 17。配りに依存させず局面を組む。
 	g.SetupSplitForTest(8)
