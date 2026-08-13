@@ -60,6 +60,7 @@ time. Verify against the relevant national registry before relying on any row.
 | Spanish 21 | Masque Publishing |
 | Casino Hold'em | Stephen Au-Yeung |
 | Blackjack Switch | Geoff Hall / Playtech |
+| Free Bet Blackjack | Shuffle Master / Light & Wonder — searched 2026-08-13, no Japanese registration found |
 | Oasis Poker | asserted by various operators |
 | Russian Poker | asserted by various operators |
 
@@ -93,6 +94,11 @@ The conservative reading was chosen deliberately.
 returned no Japanese registration, so it is used as-is.
 
 Perfect Pairs, the other side bet, is unregistered in Japan and is used as-is.
+
+`Free Bet Blackjack` (#5262) was searched on 2026-08-13 and returned no Japanese
+registration, so the game keeps its trade name with the attribution row above.
+The house-funded raises it is named for are described functionally in the UI
+(無料ダブル / 無料スプリット) because they are rules, not marks.
 
 ### Published card games
 

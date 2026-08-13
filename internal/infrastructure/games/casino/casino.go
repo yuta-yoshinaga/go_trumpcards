@@ -494,6 +494,14 @@ func init() {
 			return usecase.RestoreChemindeFerInteractor(data, new(presenter.ChemindeFerWebPresenter))
 		},
 		controller.NewChemindeFerWebControllerWithProvider)
+	games.RegisterKVGame("freebet", games.CategoryCasino,
+		func() usecase.FreeBetBlackjackInteractorIF {
+			return usecase.NewFreeBetBlackjackInteractor(domain.NewDefaultFreeBetBlackjack(), new(presenter.FreeBetBlackjackWebPresenter))
+		},
+		func(data []byte) (usecase.FreeBetBlackjackInteractorIF, error) {
+			return usecase.RestoreFreeBetBlackjackInteractor(data, new(presenter.FreeBetBlackjackWebPresenter))
+		},
+		controller.NewFreeBetBlackjackWebControllerWithProvider)
 	games.RegisterKVGame("openfacechinese", games.CategoryCasino,
 		func() usecase.OpenFaceChineseInteractorIF {
 			return usecase.NewOpenFaceChineseInteractor(domain.NewDefaultOpenFaceChinese(), new(presenter.OpenFaceChineseWebPresenter))

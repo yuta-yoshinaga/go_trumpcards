@@ -101,6 +101,7 @@ import type {
   FortyThievesResponse,
   FourCardPokerResponse,
   FourSeasonsResponse,
+  FreeBetResponse,
   FreeCellResponse,
   FrenchTarotResponse,
   GaigelResponse,
@@ -398,6 +399,7 @@ import { getFortyFivesHint } from '../utils/hints/fortyFivesHint';
 import { getFortyThievesHint } from '../utils/hints/fortythievesHint';
 import { getFourCardPokerHint } from '../utils/hints/fourcardpokerHint';
 import { getFourSeasonsHint } from '../utils/hints/fourseasonsHint';
+import { getFreebetHint } from '../utils/hints/freebetHint';
 import { getFreeCellHint } from '../utils/hints/freecellHint';
 import { getFrenchTarotHint } from '../utils/hints/frenchtarotHint';
 import { getGaigelHint } from '../utils/hints/gaigelHint';
@@ -777,6 +779,7 @@ export const hintFactories = {
   chemindefer: (s) => getChemindeferHint(s as ChemindeFerResponse),
   crazyfourpoker: (s) => getCrazyfourpokerHint(s as CrazyFourPokerResponse),
   doubleattack: (s) => getDoubleattackHint(s as DoubleAttackResponse),
+  freebet: (s) => getFreebetHint(s as FreeBetResponse),
   colourwhist: (s) => getColourwhistHint(s as ColourWhistResponse),
   dragontiger: (s) => getDragontigerHint(s as DragonTigerResponse),
   blackjackswitch: (s) => getBlackjackswitchHint(s as BlackJackSwitchResponse),

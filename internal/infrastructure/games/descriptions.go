@@ -164,6 +164,7 @@ var gameDescriptions = map[string]string{
 	"chemindefer":         "Chemin de Fer (シュマン・ド・フェール)",
 	"crazyfourpoker":      "Crazy 4 Poker (クレイジー4ポーカー)",
 	"doubleattack":        "追加ベット・ブラックジャック (Extra Bet Blackjack)",
+	"freebet":             "Free Bet Blackjack (フリーベット・ブラックジャック)",
 	"blackjackswitch":     "Blackjack Switch (ブラックジャック・スイッチ)",
 	"montecarlo":          "Monte Carlo Solitaire (モンテカルロ・ソリティア)",
 	"contractrummy":       "Contract Rummy (コントラクトラミー)",
