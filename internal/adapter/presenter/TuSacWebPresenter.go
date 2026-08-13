@@ -8,6 +8,69 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
+// tuSacFace は四色牌の札を手続き描画の記述子にする。
+//
+// **専用の PNG アートを持たない札。** ADR-0033 の手続き描画に乗せて、色 (4 色)
+// と駒の漢字を札そのものに書かせる ── 共有のカード絵はトランプのスートを
+// 描くので、四色牌では何も意味しない。
+func tuSacFace(card *domain.Card) *CardFace {
+	if card == nil {
+		return nil
+	}
+	glyph := tuSacPieceGlyph(card.GetValue())
+	return &CardFace{
+		Glyph: glyph,
+		Label: glyph,
+		Color: tuSacFaceColor(card.GetDesign()),
+		Deck:  "tusac",
+	}
+}
+
+// tuSacPieceGlyph は駒の漢字を返す。
+func tuSacPieceGlyph(value int) string {
+	switch value {
+	case domain.TuSacPieceGeneral:
+		return "將"
+	case domain.TuSacPieceAdvisor:
+		return "士"
+	case domain.TuSacPieceElephant:
+		return "象"
+	case domain.TuSacPieceChariot:
+		return "車"
+	case domain.TuSacPieceHorse:
+		return "馬"
+	case domain.TuSacPieceCannon:
+		return "砲"
+	case domain.TuSacPieceSoldier:
+		return "卒"
+	default:
+		return "?"
+	}
+}
+
+// tuSacFaceColor は色調トークンを返す。**スートではなく色そのもの。**
+func tuSacFaceColor(design int) string {
+	switch design {
+	case domain.TuSacColorYellow:
+		return "gold"
+	case domain.TuSacColorRed:
+		return "red"
+	case domain.TuSacColorGreen:
+		return "green"
+	default:
+		return "black"
+	}
+}
+
+// tuSacCardsOutput は札の並びを手続き描画つきで変換する。
+func tuSacCardsOutput(cards []*domain.Card) []*controller.WebOutputCard {
+	out := make([]*controller.WebOutputCard, 0, len(cards))
+	for _, c := range cards {
+		out = append(out, cardToOutputWithFace(c, tuSacFace))
+	}
+	return out
+}
+
 // TuSacWebPresenter 四色牌Webプレゼンタークラス
 type TuSacWebPresenter struct{}
 
@@ -20,7 +83,7 @@ func (cp *TuSacWebPresenter) Output(c interfaces.TuSacGame, lastErr error) strin
 	resObj.Phase = int(c.GetPhase())
 	resObj.Seats = tuSacSeatsToOutput(c)
 	if top := c.GetDiscardTop(); top != nil {
-		resObj.DiscardTop = cardToOutput(top)
+		resObj.DiscardTop = cardToOutputWithFace(top, tuSacFace)
 	}
 	resObj.DiscardCount = c.GetDiscardCount()
 	resObj.StockCount = c.GetStockCount()
@@ -76,7 +139,7 @@ func tuSacSeatsToOutput(c interfaces.TuSacGame) []*controller.TuSacWebOutputSeat
 			melds = append(melds, &controller.TuSacWebOutputMeld{
 				Kind:   int(m.Kind),
 				Points: domain.TuSacMeldPoints(m.Kind),
-				Cards:  cardsToOutputOrEmpty(m.Cards),
+				Cards:  tuSacCardsOutput(m.Cards),
 			})
 		}
 		seat := &controller.TuSacWebOutputSeat{
@@ -92,7 +155,7 @@ func tuSacSeatsToOutput(c interfaces.TuSacGame) []*controller.TuSacWebOutputSeat
 			WentOut:    i == c.GetWentOutSeat(),
 		}
 		if p.GetIsHuman() {
-			seat.Cards = cardsToOutputOrEmpty(p.GetCards())
+			seat.Cards = tuSacCardsOutput(p.GetCards())
 		}
 		if i < len(results) {
 			seat.RoundScore = results[i].RoundScore

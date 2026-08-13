@@ -249,3 +249,47 @@ func TestTuSacWebPresenter_ErrorAndHint(t *testing.T) {
 	assert.NotEmpty(t, hint.Reason)
 	assert.NotNil(t, hint.Indexes, "薦める札が null で返っている")
 }
+
+// **四色牌の札は手続き描画で送る。** 共有のカード絵はトランプのスートを
+// 描くので、四色牌では何も意味しない ── 色と駒の漢字を札そのものに載せる
+// (ADR-0033)。
+func TestTuSacWebPresenter_ShipsProceduralCardFaces(t *testing.T) {
+	cp := new(TuSacWebPresenter)
+	g := newTuSacForPresenter(t)
+
+	var got struct {
+		Seats []struct {
+			IsHuman bool `json:"isHuman"`
+			Cards   []struct {
+				Glyph string `json:"glyph"`
+				Label string `json:"label"`
+				Color string `json:"color"`
+				Deck  string `json:"deck"`
+			} `json:"cards"`
+		} `json:"seats"`
+		DiscardTop struct {
+			Glyph string `json:"glyph"`
+			Deck  string `json:"deck"`
+		} `json:"discardTop"`
+	}
+	require.NoError(t, json.Unmarshal([]byte(cp.Output(g, nil)), &got))
+
+	hand := got.Seats[g.HumanSeat()].Cards
+	require.NotEmpty(t, hand)
+	glyphs := map[string]bool{}
+	colors := map[string]bool{}
+	for i, c := range hand {
+		assert.Equal(t, "tusac", c.Deck, "%d 枚目が手続き描画に乗っていない", i)
+		assert.NotEmpty(t, c.Glyph, "%d 枚目に駒の字が無い", i)
+		assert.NotEqual(t, "?", c.Glyph, "%d 枚目の駒が不明", i)
+		assert.NotEmpty(t, c.Color, "%d 枚目に色が無い", i)
+		glyphs[c.Glyph] = true
+		colors[c.Color] = true
+	}
+	// 20 枚あれば駒も色も複数種類出る。
+	assert.Greater(t, len(glyphs), 1, "駒の字が 1 種類しか出ていない")
+	assert.Greater(t, len(colors), 1, "色が 1 種類しか出ていない")
+
+	assert.Equal(t, "tusac", got.DiscardTop.Deck, "捨て札が手続き描画に乗っていない")
+	assert.NotEmpty(t, got.DiscardTop.Glyph)
+}
