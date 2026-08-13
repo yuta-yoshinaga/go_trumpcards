@@ -791,7 +791,26 @@ func banLuckValidatePhase(j *banLuckJSON, seats int) error {
 	if j.Players[j.Banker].GetBet() != 0 {
 		return fmt.Errorf("banluck: the banker seat %d carries a bet", j.Banker)
 	}
+	// **手番の席は必ず動ける。** 添字としては正当でも、打ち止め済み・バスト・
+	// 5 枚・特別役の席に手番が乗っていると復元後に誰も動かせず、精算も走らない
+	// ので盤面が固まる ── 配りの時に潰したのと同じ穴が、ここから開く。
+	if BanLuckPhase(j.Phase) == BanLuckPhasePlay && banLuckHandIsDone(j.Hands[j.Turn]) {
+		return fmt.Errorf("banluck: the seat on turn (%d) cannot act", j.Turn)
+	}
 	return nil
+}
+
+// banLuckHandIsDone はその手札がもう動かないかを返す (復元時の検証用)。
+//
+// 卓の `seatDone` と同じ判断を、組み立て前のデータに対して行う。
+func banLuckHandIsDone(h *BlackJackHand) bool {
+	if h == nil {
+		return true
+	}
+	if r := EvalBanLuckHand(h); r == BanLuckRankBanBan || r == BanLuckRankBanLuck {
+		return true
+	}
+	return h.IsStood() || h.IsBusted() || h.GetCardsSize() >= BanLuckMaxHandCards
 }
 
 // --- 助言 ---

@@ -247,3 +247,36 @@ func TestBanLuck_ConfigCodec(t *testing.T) {
 	assert.Error(t, json.Unmarshal([]byte(`{"s":1,"c":1000,"r":10,"b":50}`), new(BanLuckConfig)))
 	assert.Error(t, json.Unmarshal([]byte(`{"s":4,"c":1000,"r":10,"b":55}`), new(BanLuckConfig)))
 }
+
+// **手番が「もう動けない席」を指した保存を拒む。**
+//
+// 席の添字としては正当なので範囲検査は通る。しかし復元後は誰も動かせず、
+// 精算も走らないので**盤面が固まる** ── 配りの時に潰したのと同じ穴が、
+// 復元経路から開く。
+func TestBanLuck_RejectsTurnOnASeatThatCannotAct(t *testing.T) {
+	t.Parallel()
+	g := blPlayedBoard(t)
+	turn := g.GetTurnSeat()
+
+	for _, tt := range []struct {
+		name   string
+		break_ func(m map[string]any)
+	}{
+		{
+			name: "手番の席が打ち止め済み",
+			break_: func(m map[string]any) {
+				hands, ok := m["hd"].([]any)
+				require.True(t, ok)
+				h, ok := hands[turn].(map[string]any)
+				require.True(t, ok)
+				h["st"] = true
+			},
+		},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			err := blTamper(t, g, tt.break_)
+			require.Error(t, err, "動けない席に手番がある保存が通ってしまった")
+			assert.ErrorContains(t, err, "cannot act")
+		})
+	}
+}
