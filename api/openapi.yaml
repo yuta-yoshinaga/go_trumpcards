@@ -49277,6 +49277,17 @@ components:
             type: array
             items:
               type: integer
+        choiceOptions:
+          type: object
+          description: >-
+            Hand indices that genuinely require picking which field card to
+            take. Being able to take is not the same as having a choice: with
+            three field cards of the same month all four are captured at once,
+            so any pick gives the same result and the client must not ask.
+          additionalProperties:
+            type: array
+            items:
+              type: integer
         winner:
           type: integer
           description: Winning seat, or -1 while undecided or on a tie.

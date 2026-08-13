@@ -49,6 +49,8 @@ type SakuraGame interface {
 	GetPlayer(i int) *domain.SakuraPlayer
 	// GetValidFieldIndices 各手札が合わせられる場札インデックスを取得する
 	GetValidFieldIndices() map[int][]int
+	// GetChoiceIndices 取る札を選ぶ必要がある手札のインデックスを取得する
+	GetChoiceIndices() map[int][]int
 	// GetHint ヒントを取得する
 	GetHint() domain.SakuraHint
 }

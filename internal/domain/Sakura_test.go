@@ -707,6 +707,42 @@ func TestSakuraGetHint_NoneOutsidePlay(t *testing.T) {
 	assert.Equal(t, "none", g.GetHint().Reason)
 }
 
+// **合わせられる = 選ばせる、ではない。** 場に同月が 3 枚あると 4 枚まとめて
+// 取るので、どれを押しても結果が変わらない ── 選択を求めてはいけない。
+func TestSakuraGetChoiceIndices_OnlyWhenTheChoiceMatters(t *testing.T) {
+	g := newSakuraForTest(t, 2)
+	hand := g.GetPlayers()[0].GetCards()[0]
+	m := hand.GetDesign()
+	others := []int{}
+	for i := 1; i <= KoiKoiCardsPerMonth; i++ {
+		if i != hand.GetValue() {
+			others = append(others, i)
+		}
+	}
+	require.Len(t, others, 3)
+
+	// 1 枚一致: 選ばせない。
+	g.field = []*Card{NewCard(m, others[0], false)}
+	assert.Empty(t, g.GetChoiceIndices()[0])
+	assert.Len(t, g.GetValidFieldIndices()[0], 1, "合わせられることは伝える")
+
+	// 2 枚一致: 選ばせる。
+	g.field = []*Card{NewCard(m, others[0], false), NewCard(m, others[1], false)}
+	assert.Len(t, g.GetChoiceIndices()[0], 2)
+
+	// 3 枚一致: まとめて取るので選ばせない。
+	g.field = []*Card{
+		NewCard(m, others[0], false), NewCard(m, others[1], false), NewCard(m, others[2], false),
+	}
+	assert.Empty(t, g.GetChoiceIndices()[0], "3 枚一致で選択を求めている")
+	assert.Len(t, g.GetValidFieldIndices()[0], 3, "取れる札は 3 枚とも伝える")
+
+	// 実際にまとめて取れる (どれを指定しても同じ)。
+	g.stock = nil
+	require.NoError(t, g.PlayerPlay(0, 0))
+	assert.Len(t, g.GetPlayers()[0].GetTaken(), KoiKoiCardsPerMonth)
+}
+
 func TestSakuraGetValidFieldIndices(t *testing.T) {
 	g := newSakuraForTest(t, 2)
 	hand := g.GetPlayers()[0].GetCards()[0]

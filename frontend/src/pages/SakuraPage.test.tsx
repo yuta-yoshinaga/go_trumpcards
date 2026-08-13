@@ -69,7 +69,7 @@ describe('SakuraPage', () => {
   // **2 枚一致のときだけ場札を選ばせる。** 選ばせずに送ると、どちらを取るかを
   // サーバの既定 (点数の高いほう) に任せることになり、選択そのものが消える。
   it('requires a field pick for a two-way match, then plays with fieldIndex', async () => {
-    mockExec.mockResolvedValue(makeSakuraState({ captureOptions: { 0: [0, 1] } }));
+    mockExec.mockResolvedValue(makeSakuraState({ captureOptions: { 0: [0, 1] }, choiceOptions: { 0: [0, 1] } }));
     renderWithProviders(<SakuraPage />);
     fireEvent.click(await screen.findByTestId('hand-card-0'));
 
@@ -79,9 +79,28 @@ describe('SakuraPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0, fieldIndex: 1 }));
   });
 
+  // **3 枚一致では選ばせない。** まとめて取るのでどれを押しても結果が変わらず、
+  // 「選べ」と出すと効かない選択を求めることになる (#5338 のレビュー指摘)。
+  it('does not ask for a pick when every matching field card is captured anyway', async () => {
+    mockExec.mockResolvedValue(makeSakuraState({ captureOptions: { 0: [0, 1, 2] }, choiceOptions: {} }));
+    renderWithProviders(<SakuraPage />);
+    const card = await screen.findByTestId('hand-card-0');
+    mockExec.mockClear();
+    fireEvent.click(card);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0 }));
+    expect(screen.queryByTestId('sakura-field-pick')).not.toBeInTheDocument();
+  });
+
   // 一致していない場札は押せない (押しても送らない)。
   it('ignores a field card that does not match the selected hand card', async () => {
-    mockExec.mockResolvedValue(makeSakuraState({ captureOptions: { 0: [0, 1] }, fieldCards: playState.fieldCards }));
+    mockExec.mockResolvedValue(
+      makeSakuraState({
+        captureOptions: { 0: [0, 1] },
+        choiceOptions: { 0: [0, 1] },
+        fieldCards: playState.fieldCards,
+      }),
+    );
     renderWithProviders(<SakuraPage />);
     fireEvent.click(await screen.findByTestId('hand-card-0'));
     await screen.findByTestId('sakura-field-pick');

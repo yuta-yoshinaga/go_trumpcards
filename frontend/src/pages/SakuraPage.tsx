@@ -91,7 +91,10 @@ function SakuraPageContent() {
 
   // Field indices the currently-selected hand card can take (published by the server).
   const candidates = handIndex !== null && isPlayPhase && isHumanTurn ? (state.captureOptions[handIndex] ?? []) : [];
-  const needsFieldPick = candidates.length > 1;
+  // **Whether a choice is required is the server's call**, not `candidates.length`:
+  // three field cards of the same month are all captured at once, so asking
+  // would show a pick prompt that changes nothing.
+  const needsFieldPick = handIndex !== null && (state.choiceOptions?.[handIndex]?.length ?? 0) > 0;
   const candidateSet = new Set(candidates);
 
   /** Localizes a seat's display name (the human seat reads as "you"). */
@@ -106,8 +109,7 @@ function SakuraPageContent() {
   /** Handles clicking a hand card: selects it, or plays immediately when there is no choice to make. */
   const onHandClick = (idx: number) => {
     if (!isPlayPhase || !isHumanTurn) return;
-    const opts = state.captureOptions[idx] ?? [];
-    if (opts.length > 1) {
+    if ((state.choiceOptions?.[idx]?.length ?? 0) > 0) {
       // Two field cards of that month: make the player pick which one to take.
       setHandIndex((prev) => (prev === idx ? null : idx));
       return;

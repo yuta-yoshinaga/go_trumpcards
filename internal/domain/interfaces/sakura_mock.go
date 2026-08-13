@@ -133,6 +133,15 @@ func (_m *MockSakuraGame) GetValidFieldIndices() map[int][]int {
 	return nil
 }
 
+// GetChoiceIndices モック
+func (_m *MockSakuraGame) GetChoiceIndices() map[int][]int {
+	ret := _m.Called()
+	if v, ok := ret.Get(0).(map[int][]int); ok {
+		return v
+	}
+	return nil
+}
+
 // GetHint モック
 func (_m *MockSakuraGame) GetHint() domain.SakuraHint {
 	ret := _m.Called()

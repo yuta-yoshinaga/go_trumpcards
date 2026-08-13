@@ -100,12 +100,18 @@ type SakuraWebOutput struct {
 	FieldCards  []*WebOutputCard         `json:"fieldCards"`
 	StockCount  int                      `json:"stockCount"`
 	// CaptureOptions は手札インデックスごとに合わせられる場札インデックス。
-	CaptureOptions map[int][]int               `json:"captureOptions"`
-	Winner         int                         `json:"winner"`
-	GameEndFlag    bool                        `json:"gameEndFlag"`
-	IsHumanTurn    bool                        `json:"isHumanTurn"`
-	LastResult     *SakuraWebOutputRoundResult `json:"lastResult"`
-	Hint           *SakuraWebOutputHint        `json:"hint,omitempty"`
+	CaptureOptions map[int][]int `json:"captureOptions"`
+	// ChoiceOptions は「取る札を選ぶ必要がある」手札だけの一覧。
+	//
+	// **合わせられる = 選ばせる、ではない。** 場に同月が 3 枚あるときは 4 枚
+	// まとめて取るので、どれを押しても結果は変わらない ── 画面が枚数から
+	// 判定し直すと「選べと言われたのに選択が効かない」表示になる。
+	ChoiceOptions map[int][]int               `json:"choiceOptions"`
+	Winner        int                         `json:"winner"`
+	GameEndFlag   bool                        `json:"gameEndFlag"`
+	IsHumanTurn   bool                        `json:"isHumanTurn"`
+	LastResult    *SakuraWebOutputRoundResult `json:"lastResult"`
+	Hint          *SakuraWebOutputHint        `json:"hint,omitempty"`
 	WebOutputBase
 	Config SakuraWebConfigOutput `json:"config"`
 }
@@ -124,6 +130,7 @@ func newSakuraDefaultOutput(msg string) *SakuraWebOutput {
 		Players:        make([]*SakuraWebOutputPlayer, 0),
 		FieldCards:     make([]*WebOutputCard, 0),
 		CaptureOptions: make(map[int][]int),
+		ChoiceOptions:  make(map[int][]int),
 		Winner:         -1,
 		WebOutputBase:  WebOutputBase{Message: msg},
 	}

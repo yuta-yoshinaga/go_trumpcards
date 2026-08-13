@@ -61,6 +61,7 @@ func (p *SakuraWebPresenter) buildBase(g interfaces.SakuraGame) *controller.Saku
 	resObj := new(controller.SakuraWebOutput)
 	resObj.Players = make([]*controller.SakuraWebOutputPlayer, 0, g.GetPlayerCnt())
 	resObj.CaptureOptions = make(map[int][]int)
+	resObj.ChoiceOptions = make(map[int][]int)
 
 	fieldOut := make([]*controller.WebOutputCard, 0, len(g.GetField()))
 	for _, c := range g.GetField() {
@@ -83,6 +84,9 @@ func (p *SakuraWebPresenter) buildBase(g interfaces.SakuraGame) *controller.Saku
 	if g.GetPhase() == domain.SakuraPhasePlay && g.IsHumanTurn() {
 		if opts := g.GetValidFieldIndices(); opts != nil {
 			resObj.CaptureOptions = opts
+		}
+		if opts := g.GetChoiceIndices(); opts != nil {
+			resObj.ChoiceOptions = opts
 		}
 	}
 

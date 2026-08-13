@@ -3641,6 +3641,7 @@ const baseSakuraState: SakuraResponse = {
   fieldCards: [hanafudaCard('🌸', '桜·カス', 'black'), hanafudaCard('🌕', '芒·光', 'gold')],
   stockCount: 21,
   captureOptions: { 0: [0] },
+  choiceOptions: {},
   winner: -1,
   gameEndFlag: false,
   isHumanTurn: true,

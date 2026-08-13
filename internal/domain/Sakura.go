@@ -281,7 +281,7 @@ func (g *Sakura) placeCard(seat int, card *Card, chosen int) bool {
 	switch {
 	case len(matches) >= 3:
 		take = matches
-	case len(matches) == 2:
+	case sakuraNeedsFieldChoice(len(matches)):
 		sel := -1
 		for _, idx := range matches {
 			if idx == chosen {
@@ -531,6 +531,28 @@ func (g *Sakura) GetHint() SakuraHint {
 		reason = "discard"
 	}
 	return SakuraHint{CardIndex: handIdx, FieldIndex: fieldIdx, Reason: reason}
+}
+
+// sakuraNeedsFieldChoice は一致枚数から「取る札を選ぶ必要があるか」を返す。
+//
+// **選ぶ余地があるのは 2 枚一致のときだけ。** 1 枚ならそれしか無く、3 枚なら
+// 場の同月 4 枚目としてまとめて取るので、どれを押しても結果は変わらない。
+// 判定をここに置くのは、画面が同じ規則を作り直すと「選べと言われたのに選択が
+// 効かない」表示になるから (#5338 のレビュー指摘)。
+func sakuraNeedsFieldChoice(matches int) bool { return matches == 2 }
+
+// GetChoiceIndices は「取る札を選ぶ必要がある」手札だけを返す。
+//
+// GetValidFieldIndices が「合わせられるか」を答えるのに対し、こちらは
+// 「選ばせるべきか」を答える。画面の確認プロンプトはこちらを見る。
+func (g *Sakura) GetChoiceIndices() map[int][]int {
+	out := map[int][]int{}
+	for i, m := range g.GetValidFieldIndices() {
+		if sakuraNeedsFieldChoice(len(m)) {
+			out[i] = m
+		}
+	}
+	return out
 }
 
 // GetValidFieldIndices は手札ごとに合わせられる場札インデックスを返す。

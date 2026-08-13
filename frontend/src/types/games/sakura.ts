@@ -102,6 +102,16 @@ export interface SakuraResponse extends BaseGameResponse {
   stockCount: number;
   /** Map of hand index -> field indices that hand card can take. */
   captureOptions: Record<number, number[]>;
+  /**
+   * Hand indices that genuinely require picking which field card to take.
+   *
+   * **Being able to take is not the same as having a choice**: with three
+   * field cards of the same month all four are captured at once, so any click
+   * gives the same result. The server decides — deriving it from
+   * `captureOptions.length` on the page would prompt for a choice that does
+   * not exist.
+   */
+  choiceOptions: Record<number, number[]>;
   /** Winning seat index of the whole match, or -1. */
   winner: number;
   /** Whether the match has ended. */
