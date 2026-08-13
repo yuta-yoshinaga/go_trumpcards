@@ -287,6 +287,25 @@ var gameRegistry = []GameRegistryEntry{
 				"omaha.helpBettingLimit", "omaha.helpTournament",
 			}, holdemBlindKeys...),
 		}),
+	BindCuiFor("courchevel",
+		func() usecase.OmahaInteractorIF {
+			return usecase.NewOmahaInteractor(domain.NewDefaultCourchevel(), new(presenter.OmahaCuiPresenter))
+		},
+		controller.NewOmahaCuiController,
+		CuiHelpSpec{
+			TitleKey: "omaha.helpTitleCourchevel",
+			CommandKeys: append([]string{
+				"omaha.helpFold",
+				"omaha.helpCheck",
+				"omaha.helpCall",
+				"omaha.helpBet",
+				"omaha.helpRaise",
+				"omaha.helpAllIn",
+			}, tournamentRebuyAddOnKeys...),
+			SettingKeys: append([]string{
+				"omaha.helpBettingLimit", "omaha.helpTournament",
+			}, holdemBlindKeys...),
+		}),
 	BindCuiFor("shortdeck",
 		func() usecase.ShortDeckInteractorIF {
 			return usecase.NewShortDeckInteractor(domain.NewDefaultShortDeck(), new(presenter.ShortDeckCuiPresenter))

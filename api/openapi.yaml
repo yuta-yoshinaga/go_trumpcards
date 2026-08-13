@@ -60,6 +60,8 @@ tags:
     description: Omaha Hi-Lo / 8 or Better (split-pot variant of Omaha)
   - name: bigo
     description: 5 Card Omaha (Big O) game (Omaha dealt 5 hole cards)
+  - name: courchevel
+    description: Courchevel (クールシュヴェル) game
   - name: bigohilo
     description: 5 Card Omaha Hi-Lo (Big O) / 8 or Better (split-pot variant)
   - name: shortdeck
@@ -1686,6 +1688,66 @@ paths:
                 $ref: '#/components/schemas/HoldemResponse'
         '400':
           description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HoldemResponse'
+
+  /courchevel/exec:
+    post:
+      tags:
+        - courchevel
+      summary: Execute a Courchevel game command
+      description: |
+        Send a command to advance the Courchevel (クールシュヴェル) game
+        session identified by `sessionId`.
+
+        A French five-card Omaha variant. **Everything matches Big O except
+        the moment the first flop card is turned**: five hole cards, the same
+        "exactly two from hand plus exactly three from the board" rule, the
+        same five community cards by the river — but the first of them is
+        already face up when the opening betting round starts.
+
+        That moves the pre-flop decision from "how good are these five cards
+        against an unseen board" to "do they connect with the card already
+        showing", which is answerable, so there is a real basis for folding on
+        the first round where ordinary Omaha has almost none.
+
+        The response shape is the shared poker one (`HoldemResponse`, as Omaha
+        and Big O use): `communityCards`
+        simply already holds one card during the pre-flop phase, and the flop
+        tops the board up to three rather than adding three.
+      operationId: execCourchevel
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: "reset (r), fold (f), check (k), call (c), bet (b), raise, allin, next, hint, log, quit (q)"
+                amount:
+                  type: integer
+                  description: Stake for bet and raise. Ignored by the other actions.
+                sessionId:
+                  type: string
+              example:
+                command: call
+                sessionId: my-session-001
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HoldemResponse'
+        '400':
+          description: Invalid command or missing parameter
           content:
             application/json:
               schema:
