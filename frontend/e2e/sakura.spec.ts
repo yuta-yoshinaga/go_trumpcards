@@ -47,12 +47,15 @@ test.describe('Sakura E2E', () => {
     await expect(page.getByTestId(/^hand-card-/)).toHaveCount(6, { timeout: TIMEOUT_TRANSITION });
   });
 
-  // 花札は手続き描画なので、共有のトランプ絵ではなく月と札種のグリフが出る。
+  // 花札は手続き描画 (ADR-0033) なので、共有のトランプ画像ではなく
+  // role="img" の CardFace が出る。**画像が出ていないことまで見る** ──
+  // 手続き描画に載せ損ねると、52 枚デッキのスート絵が並ぶ。
   test('draws the hanafuda cards procedurally', async ({ page }) => {
     await navigateTo(page, '/sakura');
     const field = page.getByTestId('field-card-0');
     await expect(field).toBeVisible({ timeout: TIMEOUT_TRANSITION });
-    await expect(field.locator('svg, [data-deck="hanafuda"]').first()).toBeVisible();
+    await expect(field.getByRole('img')).toBeVisible();
+    await expect(field.locator('img[src*="/images/"]')).toHaveCount(0);
   });
 
   test('plays the round out and reports the result', async ({ page }) => {
@@ -80,8 +83,9 @@ test.describe('Sakura E2E', () => {
     await expect(page.getByTestId('hand-card-0')).toBeVisible({ timeout: TIMEOUT_TRANSITION });
     await playOneCard(page);
 
-    await page.getByRole('button', { name: 'リセット' }).click();
-    const confirm = page.getByRole('button', { name: 'リセットする' });
+    await page.getByRole('button', { name: 'リセット', exact: true }).click();
+    // 確認ダイアログの肯定ボタンは共通の「確認」。
+    const confirm = page.getByRole('button', { name: '確認' });
     if (await isVisibleWithin(confirm, TIMEOUT_ACTION)) await confirm.click();
     await waitForLoaded(page);
 
