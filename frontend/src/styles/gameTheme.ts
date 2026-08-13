@@ -30,6 +30,7 @@ export type GameKey =
   | 'oichokabu'
   | 'kingo'
   | 'tusac'
+  | 'sakura'
   | 'dragontiger'
   | 'andarbahar'
   | 'botifarra'
@@ -597,6 +598,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   oichokabu: CASINO,
   kingo: CASINO,
   tusac: CASINO,
+  sakura: GREEN,
   dragontiger: CASINO,
   andarbahar: CASINO,
   botifarra: GREEN,

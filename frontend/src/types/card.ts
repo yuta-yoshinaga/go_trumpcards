@@ -227,6 +227,7 @@ export * from './games/rummy500';
 export * from './games/russianbank';
 export * from './games/russianpoker';
 export * from './games/russiansolitaire';
+export * from './games/sakura';
 export * from './games/samba';
 export * from './games/scarto';
 export * from './games/schnapsen';

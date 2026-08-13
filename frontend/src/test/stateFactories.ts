@@ -36,6 +36,7 @@ import type {
   OmbreResponse,
   PreferenceResponse,
   PrimeroResponse,
+  SakuraResponse,
   SambaPlayerData,
   SambaResponse,
   ScartoResponse,
@@ -3574,4 +3575,89 @@ const baseSambaState: SambaResponse = {
  */
 export function makeSambaState(overrides?: Partial<SambaResponse>): SambaResponse {
   return { ...baseSambaState, ...overrides };
+}
+
+/** Base Sakura state used as the default for {@link makeSakuraState}. Defaults to a human Play turn. */
+const baseSakuraState: SakuraResponse = {
+  players: [
+    {
+      id: 0,
+      name: 'YOU',
+      isHuman: true,
+      cardCount: 3,
+      cards: [
+        hanafudaCard('🌸', '桜·光', 'gold'),
+        hanafudaCard('🎋', '柳·カス', 'black'),
+        hanafudaCard('🐦', '梅·タネ', 'purple'),
+      ],
+      taken: [],
+      takenCount: 0,
+      cardPoints: 0,
+      bonuses: [],
+      bonusPoints: 0,
+      totalPoints: 0,
+      score: 0,
+      roundScore: 0,
+      roundWins: 0,
+    },
+    {
+      id: 1,
+      name: 'CPU1',
+      isHuman: false,
+      cardCount: 3,
+      cards: [],
+      taken: [],
+      takenCount: 0,
+      cardPoints: 0,
+      bonuses: [],
+      bonusPoints: 0,
+      totalPoints: 0,
+      score: 0,
+      roundScore: 0,
+      roundWins: 0,
+    },
+    {
+      id: 2,
+      name: 'CPU2',
+      isHuman: false,
+      cardCount: 3,
+      cards: [],
+      taken: [],
+      takenCount: 0,
+      cardPoints: 0,
+      bonuses: [],
+      bonusPoints: 0,
+      totalPoints: 0,
+      score: 0,
+      roundScore: 0,
+      roundWins: 0,
+    },
+  ],
+  phase: 0,
+  round: 1,
+  totalRounds: 3,
+  currentTurn: 0,
+  dealer: 0,
+  fieldCards: [hanafudaCard('🌸', '桜·カス', 'black'), hanafudaCard('🌕', '芒·光', 'gold')],
+  stockCount: 21,
+  captureOptions: { 0: [0] },
+  choiceOptions: {},
+  winner: -1,
+  gameEndFlag: false,
+  isHumanTurn: true,
+  lastResult: null,
+  hint: null,
+  message: '',
+  config: { seats: 3, rounds: 3 },
+};
+
+/**
+ * Creates a {@link SakuraResponse} with sensible defaults (a human Play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial SakuraResponse fields to override.
+ * @returns A complete SakuraResponse suitable for use in tests.
+ */
+export function makeSakuraState(overrides?: Partial<SakuraResponse>): SakuraResponse {
+  return { ...baseSakuraState, ...overrides };
 }

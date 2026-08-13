@@ -1168,6 +1168,12 @@ var registry = []*Game{
 	// ラミーと同じだが、数字の並びという概念が無いので「同スートの連番」に
 	// 当たるメルドが存在しない ── 同色同種 3 枚 / 異色の車馬砲 / 卒 5 枚の 3 つ。
 	{Name: "tusac", Category: CategorySolo},
+	// Sakura さくら (肥後花)
+	//
+	// **花札 48 枚を使うが、役ではなく点数の合計で競う。** こいこいや八八が
+	// 「役ができたか」で勝負するのに対し、こちらは獲得札を 20/10/5/1 点で
+	// 数え上げる ── 勝敗の決め方そのものが違う熊本のローカルルール。
+	{Name: "sakura", Category: CategoryExtra3},
 }
 
 // All returns a value-level copy of the registry in canonical order.

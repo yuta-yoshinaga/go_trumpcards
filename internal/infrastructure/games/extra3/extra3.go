@@ -373,4 +373,12 @@ func init() {
 			return usecase.RestoreStealingBundlesInteractor(data, new(presenter.StealingBundlesWebPresenter))
 		},
 		controller.NewStealingBundlesWebControllerWithProvider)
+	games.RegisterKVGame("sakura", games.CategoryExtra3,
+		func() usecase.SakuraInteractorIF {
+			return usecase.NewSakuraInteractor(domain.NewDefaultSakura(), new(presenter.SakuraWebPresenter))
+		},
+		func(data []byte) (usecase.SakuraInteractorIF, error) {
+			return usecase.RestoreSakuraInteractor(data, new(presenter.SakuraWebPresenter))
+		},
+		controller.NewSakuraWebControllerWithProvider)
 }

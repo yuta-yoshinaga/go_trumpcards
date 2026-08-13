@@ -220,6 +220,7 @@ import type {
   RussianBankResponse,
   RussianPokerResponse,
   RussianSolitaireResponse,
+  SakuraResponse,
   SambaResponse,
   ScartoResponse,
   SchnapsenResponse,
@@ -529,6 +530,7 @@ import { getRummy500Hint } from '../utils/hints/rummy500Hint';
 import { getRussianBankHint } from '../utils/hints/russianbankHint';
 import { getRussianPokerHint } from '../utils/hints/russianpokerHint';
 import { getRussianSolitaireHint } from '../utils/hints/russianSolitaireHint';
+import { getSakuraHint } from '../utils/hints/sakuraHint';
 import { getSambaHint } from '../utils/hints/sambaHint';
 import { getScartoHint } from '../utils/hints/scartoHint';
 import { getSchnapsenHint } from '../utils/hints/schnapsenHint';
@@ -790,6 +792,7 @@ export const hintFactories = {
   oichokabu: (s) => getOichokabuHint(s as OichoKabuResponse),
   kingo: (s) => getKingoHint(s as KingoResponse),
   tusac: (s) => getTusacHint(s as TuSacResponse),
+  sakura: (s) => getSakuraHint(s as SakuraResponse),
   andarbahar: (s) => getAndarbaharHint(s as AndarBaharResponse),
   botifarra: (s) => getBotifarraHint(s as BotifarraResponse),
   rikken: (s) => getRikkenHint(s as RikkenResponse),

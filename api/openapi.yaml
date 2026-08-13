@@ -610,6 +610,8 @@ tags:
     description: Kingo (キンゴ) game
   - name: tusac
     description: Tu Sac (トゥーサック／四色牌) game
+  - name: sakura
+    description: Sakura / Higo-bana (さくら／肥後花) game
   - name: ombre
     description: Ombre / Hombre (オンブル) game
   - name: pan
@@ -26887,6 +26889,88 @@ paths:
               schema:
                 $ref: '#/components/schemas/TuSacResponse'
 
+  /sakura/exec:
+    post:
+      tags:
+        - sakura
+      summary: Execute a Sakura game command
+      description: |
+        Send a command to advance the Sakura (さくら／肥後花) game session
+        identified by `sessionId`.
+
+        A Kumamoto hanafuda matching game for 2-4 players on the same 48-card
+        deck as Koi-Koi. **It is not scored by yaku**: each seat adds up the
+        cards it took (Bright 20, Animal 10, Ribbon 5, Chaff 1 — 264 points in
+        the deck), which is what separates it from Koi-Koi and Hachi-Hachi,
+        where a completed combination decides the round. Two bonuses add to
+        that total: Sakura-zake (30, taking both the Curtain and the Moon) and
+        Five Brights (100).
+
+        A turn plays one hand card onto a field card of the same month, then
+        flips one stock card that resolves the same way. `fieldIndex` only
+        matters when two field cards share the played card's month; omit it and
+        the server takes the higher-scoring one. Both indices are 0-based, so
+        index 0 is a real position rather than an omitted value —
+        `captureOptions` publishes, per hand index, which field cards that card
+        can take, so a client never re-derives the month matching.
+
+        **With 4 seats the stock (14) runs out before the hands (28)**; the
+        flip is then skipped and play continues.
+
+        **Other seats' hands are not on the wire** — only `cardCount` and the
+        points they have taken.
+      operationId: execSakura
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: "reset (r), play (p), next (nr), hint (h), log (l), quit (q)"
+                cardIndex:
+                  type: integer
+                  description: 0-based hand position to play. Required for play.
+                fieldIndex:
+                  type: integer
+                  description: >-
+                    0-based field position to take. Only meaningful when two
+                    field cards match the played card's month; omit for the
+                    server's default (the higher-scoring card).
+                config:
+                  type: object
+                  properties:
+                    seats:
+                      type: integer
+                      description: Number of seats, 2-4 (default 3).
+                    rounds:
+                      type: integer
+                      description: Number of rounds, 1-12 (default 3).
+                sessionId:
+                  type: string
+              example:
+                command: play
+                cardIndex: 0
+                sessionId: my-session-001
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SakuraResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SakuraResponse'
+
   /kingo/exec:
     post:
       tags:
@@ -49108,6 +49192,166 @@ components:
           type: string
         messageCode:
           type: string
+    SakuraResponse:
+      type: object
+      description: Response payload for /sakura/exec
+      properties:
+        phase:
+          type: integer
+          description: "0=Play, 1=RoundEnd, 2=GameEnd"
+        players:
+          type: array
+          description: Always an array, one entry per seat, in seat order.
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+                description: How many cards the seat holds. Known for every seat.
+              cards:
+                type: array
+                description: >-
+                  The seat's hand. Empty for every seat but the human -- other
+                  hands are never put on the wire, only their counts.
+                items:
+                  $ref: '#/components/schemas/Card'
+              taken:
+                type: array
+                description: Cards captured this round. Visible for every seat.
+                items:
+                  $ref: '#/components/schemas/Card'
+              takenCount:
+                type: integer
+              cardPoints:
+                type: integer
+                description: Points from captured cards alone (20/10/5/1 each).
+              bonuses:
+                type: array
+                description: Bonus combinations currently held.
+                items:
+                  type: object
+                  properties:
+                    key:
+                      type: string
+                      description: "sakuraSake | allBrights"
+                    points:
+                      type: integer
+              bonusPoints:
+                type: integer
+              totalPoints:
+                type: integer
+                description: cardPoints + bonusPoints.
+              score:
+                type: integer
+                description: Running total across rounds.
+              roundScore:
+                type: integer
+              roundWins:
+                type: integer
+        round:
+          type: integer
+        totalRounds:
+          type: integer
+        currentTurn:
+          type: integer
+        dealer:
+          type: integer
+        fieldCards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        stockCount:
+          type: integer
+        captureOptions:
+          type: object
+          description: >-
+            Hand index -> the field indices that hand card can take. Only
+            populated on the human's play turn.
+          additionalProperties:
+            type: array
+            items:
+              type: integer
+        choiceOptions:
+          type: object
+          description: >-
+            Hand indices that genuinely require picking which field card to
+            take. Being able to take is not the same as having a choice: with
+            three field cards of the same month all four are captured at once,
+            so any pick gives the same result and the client must not ask.
+          additionalProperties:
+            type: array
+            items:
+              type: integer
+        winner:
+          type: integer
+          description: Winning seat, or -1 while undecided or on a tie.
+        gameEndFlag:
+          type: boolean
+        isHumanTurn:
+          type: boolean
+        lastResult:
+          type: object
+          nullable: true
+          description: Result of the round just finished, or null.
+          properties:
+            round:
+              type: integer
+            winner:
+              type: integer
+              description: Winning seat, or -1 when the round is tied.
+            seats:
+              type: array
+              items:
+                type: object
+                properties:
+                  cardPoints:
+                    type: integer
+                  bonuses:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        key:
+                          type: string
+                        points:
+                          type: integer
+                  bonusPoints:
+                    type: integer
+                  total:
+                    type: integer
+        hint:
+          type: object
+          nullable: true
+          properties:
+            cardIndex:
+              type: integer
+            fieldIndex:
+              type: integer
+              description: Field card to take, or -1 when nothing matches.
+            reason:
+              type: string
+              description: "capture | discard"
+        config:
+          type: object
+          properties:
+            seats:
+              type: integer
+            rounds:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
     TuSacResponse:
       type: object
       description: Response payload for /tusac/exec

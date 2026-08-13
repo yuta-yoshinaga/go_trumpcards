@@ -173,6 +173,7 @@ var gameDescriptions = map[string]string{
 	"baseballpoker":       "Baseball Poker (ベースボールポーカー)",
 	"kingo":               "Kingo (キンゴ)",
 	"tusac":               "Tu Sac (トゥーサック／四色牌)",
+	"sakura":              "Sakura (さくら／肥後花)",
 	"blackjackswitch":     "Blackjack Switch (ブラックジャック・スイッチ)",
 	"montecarlo":          "Monte Carlo Solitaire (モンテカルロ・ソリティア)",
 	"contractrummy":       "Contract Rummy (コントラクトラミー)",

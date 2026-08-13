@@ -2008,6 +2008,13 @@ export const BaseballPhase = {
   GAME_END: 3,
 } as const;
 
+/** Sakura (さくら/肥後花) phase constants (sync: internal/domain/Sakura.go). */
+export const SakuraPhase = {
+  PLAY: 0,
+  ROUND_END: 1,
+  GAME_END: 2,
+} as const;
+
 /** Tu Sac phase constants (sync: internal/domain/TuSac.go). */
 export const TuSacPhase = {
   DRAW: 0,

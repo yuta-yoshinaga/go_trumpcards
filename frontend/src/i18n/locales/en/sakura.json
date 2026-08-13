@@ -1,0 +1,59 @@
+{
+  "title": "Sakura",
+  "phase": {
+    "play": "Play",
+    "roundEnd": "Round over",
+    "gameEnd": "Game over"
+  },
+  "settings": {
+    "title": "Settings",
+    "seats": "Players",
+    "rounds": "Rounds"
+  },
+  "round": "Round {{n}}/{{total}}",
+  "stock": "Stock: {{count}}",
+  "dealer": "Dealer: {{name}}",
+  "field": "Field",
+  "fieldEmpty": "(empty)",
+  "pickField": "Pick the field card to take (two of them match).",
+  "you": "You",
+  "taken": "Taken: {{count}}",
+  "takenEmpty": "No cards taken",
+  "points": "This round: {{points}}",
+  "score": "Total: {{score}}",
+  "wins": "Wins: {{wins}}",
+  "bonusNone": "No bonus",
+  "turnYours": "Your turn — play a hand card to take a field card of the same month.",
+  "turnCpu": "{{name}} is playing…",
+  "roundResult": {
+    "title": "Round result",
+    "winner": "Winner: {{name}}",
+    "draw": "The round is tied",
+    "seat": "{{name}}: {{card}} from cards + {{bonus}} bonus = {{total}}"
+  },
+  "result": {
+    "title": "Final scores",
+    "winner": "Winner: {{name}}",
+    "draw": "The game is a tie",
+    "score": "{{name}}: {{score}} ({{wins}} wins)"
+  },
+  "nextRound": "Next round",
+  "newGame": "New game",
+  "bonus": {
+    "sakuraSake": "Sakura-zake",
+    "allBrights": "Five Brights"
+  },
+  "hint": {
+    "capture": "match the same month to score points",
+    "discard": "nothing matches, so discard a cheap card"
+  },
+  "tutorial": {
+    "field": "These are the field cards. Play a hand card to take a field card of the same month; when two match you choose which one to take.",
+    "hand": "This is your hand. Playing a card takes a matching field card, then one stock card is flipped and resolved the same way.",
+    "info": "Sakura (Higo-bana) is a Kumamoto hanafuda game played with the 48-card deck. Unlike Koi-Koi it is not scored by yaku: you add up the cards you took (Bright 20, Animal 10, Ribbon 5, Chaff 1). Taking both the Curtain and the Moon scores a 30-point Sakura-zake bonus, and all five Brights score 100.",
+    "resetButton": "Use the reset button to start a new game."
+  },
+  "frontendHint.sakuraRoundIsOver": "the round is over — move on to the next one",
+  "frontendHint.sakuraTakeTheMatch": "a field card of the same month is available; taking always scores",
+  "frontendHint.sakuraDiscardCheapest": "nothing matches, so give up the cheapest card"
+}
