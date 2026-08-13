@@ -295,6 +295,7 @@ export const workerUrl: Record<string, string> = {
   kingo: WORKER_EXTRA,
   tusac: WORKER_SOLO,
   sakura: WORKER_EXTRA3,
+  zwanzigerrufen: WORKER_EXTRA,
   eightoff: WORKER_SOLO,
   penguin: WORKER_SOLO,
   chinesepoker: WORKER_CASINO,

@@ -192,6 +192,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [2, 3, 4, 3], skill: [3, 4, 3, 3], social: [3, 4, 3, 4, 3], theme: [4, 1, 1, 1, 5, 1] },
       },
       {
+        path: '/zwanzigerrufen',
+        labelKey: 'nav.zwanzigerrufen',
+        icon: '🃏',
+        page: 'Zwanzigerrufen',
+        profile: { mood: [2, 3, 5, 2], skill: [5, 5, 4, 2], social: [4, 5, 4, 5, 2], theme: [2, 1, 1, 1, 5, 1] },
+      },
+      {
         path: '/sakura',
         labelKey: 'nav.sakura',
         icon: '🌸',
