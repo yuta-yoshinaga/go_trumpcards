@@ -216,6 +216,14 @@ func (g *TuSac) meldFor(i int, indexes []int) error {
 	p.AddMeld(kind, picked)
 	p.RemoveCardsAt(indexes)
 	g.appendLog(i, "meld", TuSacMeldKindName(kind), picked)
+
+	// **出し切ったらそこで上がり。** 捨てる札が残っていないので、捨てるまで
+	// 手番が終わらない規則のままだと、上がった席が「捨てられないまま進めない」
+	// 盤面で固まる ── 21 枚が 3a + 5b でちょうど割り切れると実際に起きる。
+	if len(p.GetCards()) == 0 {
+		g.wentOut = i
+		g.finishRound()
+	}
 	return nil
 }
 
@@ -289,6 +297,9 @@ func (g *TuSac) runCpuTurns() {
 		}
 		g.phase = TuSacPhaseDiscard
 		g.cpuMeld(i)
+		if g.phase == TuSacPhaseRoundEnd || g.gameEndFlag {
+			return
+		}
 		_ = g.discardFor(i, g.cpuDiscardIndex(i))
 		if len(g.players[i].GetCards()) == 0 {
 			g.wentOut = i
@@ -303,6 +314,9 @@ func (g *TuSac) runCpuTurns() {
 // cpuMeld は出せる組み合わせをすべて出す。
 func (g *TuSac) cpuMeld(i int) {
 	for range TuSacHandSize {
+		if g.phase == TuSacPhaseRoundEnd || g.gameEndFlag {
+			return
+		}
 		indexes := g.findAnyMeld(g.players[i].GetCards())
 		if indexes == nil {
 			return

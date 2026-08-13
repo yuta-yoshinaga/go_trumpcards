@@ -47,6 +47,10 @@ func tuSacPlayRound(t *testing.T, g *TuSac) {
 				}
 				require.NoError(t, g.Meld(h.Indexes))
 			}
+			// **出し切ったらそこで上がり。** 捨てる札が残っていない。
+			if g.GetPhase() == TuSacPhaseRoundEnd || g.GetGameEndFlag() {
+				return
+			}
 			require.NoError(t, g.Discard(0))
 		}
 	}
@@ -314,4 +318,48 @@ func TestTuSac_HumanNeverFacesAnEmptyStock(t *testing.T) {
 			}
 		})
 	}
+}
+
+// **手札を出し切ったらそこで上がり。** 捨てる札が残っていないので、
+// 「捨てるまで手番が終わらない」規則のままだと、上がった席が捨てられない
+// まま進めない盤面で固まる ── 21 枚が 3a + 5b でちょうど割り切れると
+// 実際に起きる (2 席の卓で実測して見つかった)。
+func TestTuSac_MeldingOutEndsTheRound(t *testing.T) {
+	g := NewTuSac(NewTuSacPlayersForTable(2), TuSacConfig{Seats: 2, Rounds: 2})
+	g.Reset()
+	require.True(t, g.IsHumanTurn())
+	require.NoError(t, g.Draw(false))
+
+	// 手札を丸ごと差し替えて、卒 5 枚 × 3 + 同色同種 3 枚 × 2 = 21 枚にする。
+	p := g.GetPlayers()[g.HumanSeat()]
+	p.cards = p.cards[:0]
+	for range 15 {
+		p.AddCard(tsCard(TuSacColorRed, TuSacPieceSoldier))
+	}
+	for range 3 {
+		p.AddCard(tsCard(TuSacColorGreen, TuSacPieceElephant))
+	}
+	for range 3 {
+		p.AddCard(tsCard(TuSacColorWhite, TuSacPieceHorse))
+	}
+	require.Len(t, p.GetCards(), TuSacHandSize+1)
+
+	// 出せるだけ出す。最後の 1 組で手札が空になる。
+	for range TuSacHandSize {
+		h := g.GetHint()
+		if h == nil || h.Action != "meld" {
+			break
+		}
+		require.NoError(t, g.Meld(h.Indexes))
+		if g.GetPhase() == TuSacPhaseRoundEnd {
+			break
+		}
+	}
+
+	assert.Empty(t, p.GetCards(), "出し切れていない")
+	assert.Equal(t, TuSacPhaseRoundEnd, g.GetPhase(), "出し切ってもラウンドが終わらない")
+	assert.Equal(t, g.HumanSeat(), g.GetWentOutSeat(), "上がった席が記録されていない")
+	// 上がった席は手残りが 0 なので減点が無い。
+	assert.Zero(t, g.GetResults()[g.HumanSeat()].HandPenalty)
+	assert.Positive(t, g.GetResults()[g.HumanSeat()].RoundScore, "出し切ったのに得点が無い")
 }
