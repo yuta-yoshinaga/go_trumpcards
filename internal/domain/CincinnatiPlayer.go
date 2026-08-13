@@ -59,6 +59,9 @@ func (p *CincinnatiPlayer) GetName() string { return p.name }
 // GetIsHuman は人間の席かを返す。
 func (p *CincinnatiPlayer) GetIsHuman() bool { return p.isHuman }
 
+// GetCards は手札を返す。
+func (p *CincinnatiPlayer) GetCards() []*Card { return p.cards }
+
 // GetHandRank は役のランクを返す。
 func (p *CincinnatiPlayer) GetHandRank() int { return p.handRank }
 
