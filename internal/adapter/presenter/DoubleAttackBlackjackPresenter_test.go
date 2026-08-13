@@ -5,6 +5,8 @@ package presenter
 import (
 	"encoding/json"
 	"errors"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -204,4 +206,68 @@ func TestDoubleAttackWebPresenter_ErrorAndHint(t *testing.T) {
 	assert.NotEmpty(t, hint.Reason)
 
 	assert.NotEmpty(t, cp.ActionLogOutput(g))
+}
+
+// **スプリットしても収支が正しい。**
+//
+// 以前は「アンティ + 追加ベット」を土台にして手札ごとの差分を足していたため、
+// 分割すると両方の手札が土台と同額になって差分が 0 になり、**2 つ目の手札を
+// 作るのに払ったぶんが消えていた**。アンティ 50 で分割して両方プッシュ
+// (= 収支 0) が **+50 の黒字**として表示される、という嘘をつく。
+func TestDoubleAttackCuiPresenter_NetIsCorrectAfterASplit(t *testing.T) {
+	cp := new(DoubleAttackBlackjackCuiPresenter)
+	g := newDoubleAttackForPresenter(t)
+	// **アンティを置く前のチップを基準にする。** PlaceBet の後で取ると、
+	// アンティぶんが基準に織り込まれてしまい、収支の定義とずれる。
+	before := g.GetChips()
+	require.NoError(t, g.PlaceBet(50, 0))
+	require.NoError(t, g.Attack(0))
+
+	// 8 のペア対ディーラーのハード 17。配りに依存させず局面を組む。
+	g.SetupSplitForTest(8)
+	require.True(t, g.CanSplit())
+	require.NoError(t, g.Split())
+	for g.GetPhase() == domain.DoubleAttackPhasePlay {
+		require.NoError(t, g.Stand())
+	}
+	require.Equal(t, domain.DoubleAttackPhaseResult, g.GetPhase())
+
+	// **画面の収支は、実際のチップの増減と一致しなければならない。**
+	// Split で引かれた分も含む。
+	wantNet := g.GetChips() - before
+	out := cp.Output(g, nil)
+
+	found := false
+	for _, line := range strings.Split(out, "\n") {
+		if strings.Contains(line, "収支:") {
+			found = true
+			assert.Contains(t, line, strconv.Itoa(wantNet),
+				"画面の収支が実際のチップの増減 (%d) と違う: %s", wantNet, line)
+		}
+	}
+	assert.True(t, found, "収支の行が出ていない")
+}
+
+// 分割していないときも収支はチップの増減と一致する (負のコントロール)。
+func TestDoubleAttackCuiPresenter_NetMatchesChipsWithoutASplit(t *testing.T) {
+	cp := new(DoubleAttackBlackjackCuiPresenter)
+	g := newDoubleAttackForPresenter(t)
+	before := g.GetChips()
+	require.NoError(t, g.PlaceBet(50, 20))
+	require.NoError(t, g.Attack(50))
+	for g.GetPhase() == domain.DoubleAttackPhasePlay {
+		require.NoError(t, g.Stand())
+	}
+
+	wantNet := g.GetChips() - before
+	out := cp.Output(g, nil)
+	found := false
+	for _, line := range strings.Split(out, "\n") {
+		if strings.Contains(line, "収支:") {
+			found = true
+			assert.Contains(t, line, strconv.Itoa(wantNet),
+				"画面の収支が実際のチップの増減 (%d) と違う: %s", wantNet, line)
+		}
+	}
+	assert.True(t, found, "収支の行が出ていない")
 }

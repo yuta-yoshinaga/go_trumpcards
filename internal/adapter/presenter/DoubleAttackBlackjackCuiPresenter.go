@@ -84,9 +84,16 @@ func (cp *DoubleAttackBlackjackCuiPresenter) writeResult(sb *strings.Builder, c 
 	if c.GetPhase() != domain.DoubleAttackPhaseResult {
 		return
 	}
-	staked := c.GetAnteBet() + c.GetAttackBet() + c.GetBustItBet()
+	// **手札の賭け金をそのまま足す。**
+	//
+	// 以前は「アンティ + 追加ベット」を土台にして手札ごとの差分を足していたが、
+	// **スプリットすると両方の手札が土台と同額**になるため差分が 0 になり、
+	// 2 つ目の手札を作るのに払ったぶんが丸ごと消えていた (アンティ 50 で分割して
+	// 両方プッシュ = 収支 0 が、+50 の黒字として表示される)。手札の `GetBet()` は
+	// ダブルもスプリットも反映済みなので、素直に合計すればよい。
+	staked := c.GetBustItBet()
 	for _, h := range c.GetHands() {
-		staked += h.GetBet() - c.GetAnteBet() - c.GetAttackBet()
+		staked += h.GetBet()
 	}
 	net := c.GetPayout() - staked
 	for i, r := range c.GetResults() {
