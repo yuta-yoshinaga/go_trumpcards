@@ -393,7 +393,8 @@
     "doubleattack": "Blackjack where you raise after seeing the dealer’s up-card, on a deck with no tens.",
     "freebet": "The house pays for your doubles and splits. The price: a dealer 22 pushes.",
     "banluck": "A Lunar New Year staple. Card count decides the rank, and only the banker is forced to draw.",
-    "montebank": "Suit is all that matters. Back a lone suit and it's even; back a duplicate and it bleeds."
+    "montebank": "Suit is all that matters. Back a lone suit and it's even; back a duplicate and it bleeds.",
+    "cincinnati": "Best five of ten — five in hand, five on the board, and the board is optional."
   },
   "stretch_blurb": {
     "accordion": "Completion is rare; the journey itself is the joy.",
@@ -703,6 +704,7 @@
     "doubleattack": "The luxury of choosing your stake after the information arrives.",
     "freebet": "A single round teaches you what free really costs.",
     "banluck": "The bank moves, so everyone takes a turn with the hard job.",
-    "montebank": "One number decides every choice — nothing else to hide behind."
+    "montebank": "One number decides every choice — nothing else to hide behind.",
+    "cincinnati": "Five reveals means five chances to get out cheaply."
   }
 }
