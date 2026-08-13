@@ -1157,6 +1157,11 @@ var registry = []*Game{
 	// ワイルドだが、**表向きに配られた** 3 はその時点のポットを払うか降りるかを
 	// 迫り、表の 4 は伏せ札を 1 枚くれる。伏せて配られた 3 はただのワイルド。
 	{Name: "baseballpoker", Category: CategoryCasino},
+	// Kingo キンゴ
+	//
+	// **おいちょかぶと同じ株札を使うが、競うものが違う。** 合計の下一桁では
+	// なく、同じ数字を何枚そろえたかで決まる ── 役の判定に総和は出てこない。
+	{Name: "kingo", Category: CategoryExtra},
 }
 
 // All returns a value-level copy of the registry in canonical order.

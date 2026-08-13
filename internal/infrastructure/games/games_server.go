@@ -1405,6 +1405,11 @@ func init() {
 			return usecase.NewOichoKabuInteractor(domain.NewDefaultOichoKabu(), new(presenter.OichoKabuWebPresenter))
 		},
 		controller.NewOichoKabuWebController)
+	BindWebControllerFor("kingo",
+		func() usecase.KingoInteractorIF {
+			return usecase.NewKingoInteractor(domain.NewDefaultKingo(), new(presenter.KingoWebPresenter))
+		},
+		controller.NewKingoWebController)
 	BindWebControllerFor("rook",
 		func() usecase.RookInteractorIF {
 			return usecase.NewRookInteractor(domain.NewDefaultRook(), new(presenter.RookWebPresenter))

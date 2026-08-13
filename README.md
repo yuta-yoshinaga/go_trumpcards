@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した312種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した313種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -292,6 +292,7 @@ Go + Clean Architecture で実装した312種類のトランプゲーム。CLI �
 | トラント・エ・カラント (Trente et Quarante) | `trenteetquarante` | [CUI](docs/manual/cui/trenteetquarante.md) / [Web](docs/manual/web/trenteetquarante.md) |
 | ぴたり宣言 (Exact Call / Wizard系) | `wizard` | [CUI](docs/manual/cui/wizard.md) / [Web](docs/manual/web/wizard.md) |
 | おいちょかぶ (Oicho-Kabu) | `oichokabu` | [CUI](docs/manual/cui/oichokabu.md) / [Web](docs/manual/web/oichokabu.md) |
+| キンゴ (Kingo) | `kingo` | [CUI](docs/manual/cui/kingo.md) / [Web](docs/manual/web/kingo.md) |
 | 四色入札 (Four-Color Bid / Rook系) | `rook` | [CUI](docs/manual/cui/rook.md) / [Web](docs/manual/web/rook.md) |
 | こいこい (Koi-Koi) | `koikoi` | [CUI](docs/manual/cui/koikoi.md) / [Web](docs/manual/web/koikoi.md) |
 | ゴーストップ (Go-Stop) | `gostop` | [CUI](docs/manual/cui/gostop.md) / [Web](docs/manual/web/gostop.md) |

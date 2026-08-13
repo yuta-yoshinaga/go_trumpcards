@@ -139,6 +139,7 @@ import type {
   KempsResponse,
   KilleResponse,
   KingAlbertResponse,
+  KingoResponse,
   KingResponse,
   KlaberjassResponse,
   KlaverjasResponse,
@@ -445,6 +446,7 @@ import { getKempsHint } from '../utils/hints/kempsHint';
 import { getKilleHint } from '../utils/hints/killeHint';
 import { getKingalbertHint } from '../utils/hints/kingalbertHint';
 import { getKingHint } from '../utils/hints/kingHint';
+import { getKingoHint } from '../utils/hints/kingoHint';
 import { getKlaberjassHint } from '../utils/hints/klaberjassHint';
 import { getKlaverjasHint } from '../utils/hints/klaverjasHint';
 import { getKlondikeHint } from '../utils/hints/klondikeHint';
@@ -784,6 +786,7 @@ export const hintFactories = {
   reddog: (s) => getReddogHint(s as RedDogResponse),
   casinowar: (s) => getCasinowarHint(s as CasinoWarResponse),
   oichokabu: (s) => getOichokabuHint(s as OichoKabuResponse),
+  kingo: (s) => getKingoHint(s as KingoResponse),
   andarbahar: (s) => getAndarbaharHint(s as AndarBaharResponse),
   botifarra: (s) => getBotifarraHint(s as BotifarraResponse),
   rikken: (s) => getRikkenHint(s as RikkenResponse),

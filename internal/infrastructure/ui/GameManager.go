@@ -5016,6 +5016,21 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  log                  action log"},
 		}),
+	BindCuiFor("kingo",
+		func() usecase.KingoInteractorIF {
+			return usecase.NewKingoInteractor(domain.NewDefaultKingo(), new(presenter.KingoCuiPresenter))
+		},
+		controller.NewKingoCuiController,
+		CuiHelpSpec{
+			TitleKey: "kingo.helpTitle",
+			CommandKeys: []string{
+				"kingo.helpBet",
+				"kingo.helpDeal",
+				"kingo.helpNext",
+				"kingo.helpHint",
+			},
+			ExtraCommandLines: []string{"  log                  action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

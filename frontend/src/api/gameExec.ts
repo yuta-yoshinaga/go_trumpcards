@@ -292,6 +292,7 @@ export const workerUrl: Record<string, string> = {
   watten: WORKER_EXTRA,
   pan: WORKER_EXTRA,
   oichokabu: WORKER_EXTRA,
+  kingo: WORKER_EXTRA,
   eightoff: WORKER_SOLO,
   penguin: WORKER_SOLO,
   chinesepoker: WORKER_CASINO,
