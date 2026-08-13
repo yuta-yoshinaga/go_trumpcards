@@ -70,7 +70,7 @@ func freeBetHandsToOutput(c interfaces.FreeBetBlackjackGame) []*controller.FreeB
 			Stood:     h.IsStood(),
 			Doubled:   h.IsDoubled(),
 			Busted:    h.IsBusted(),
-			Blackjack: h.IsBlackJack(),
+			Blackjack: domain.FreeBetIsNatural(h),
 			Result:    int(result),
 		})
 	}

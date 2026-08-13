@@ -55,12 +55,18 @@ test.describe('Free Bet Blackjack E2E', () => {
         const before = await chipsOf();
         await free.click();
         await waitForLoaded(page);
-        // 精算まで進むとチップが動くので、押した直後だけを見る。
-        expect(await chipsOf()).toBe(before);
-        // ハウス持ちのぶんが別建てで表示される。
+
+        // **「押した直後は動かない」は成り立たない。** 無料ダブルは 1 枚引いて
+        // その場で打ち止めになるので、手札が 1 つなら精算まで走ってチップが増える
+        // (CI で 3 回とも落ちた)。成り立つのは**減らない**ほう ── 上乗せぶんを
+        // ハウスが出す以上、押したことでプレイヤーの持ち分が減ることはない。
+        expect(await chipsOf()).toBeGreaterThanOrEqual(before);
+        // ハウス持ちのぶんが、自分の賭け金と別建てで表示される。
         await expect(page.getByTestId('fb-free-0').or(page.getByTestId('fb-free-1')).first()).toBeVisible({
           timeout: TIMEOUT_ACTION,
         });
+        // 自分の賭け金は倍になっていない (合算表示になっていたらここで落ちる)。
+        await expect(page.getByTestId('fb-hand-0')).toContainText('賭け 50');
         return;
       }
 

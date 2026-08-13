@@ -198,6 +198,45 @@ func TestFreeBet_SplitAcesGetOneCardEach(t *testing.T) {
 	}
 }
 
+// **分けた手の 2 枚 21 はナチュラルではない。**
+//
+// エースを割ると 2 枚 21 が素直に起きる。印を付けずにいると 3:2 で払われ、
+// さらに悪いことに **bet が 0 のハウス持ちの手は「ブラックジャック」判定に
+// 落ちて払い戻しが 0** になる ── 勝ったのに何も戻らない。
+func TestFreeBet_SplitTwentyOneIsNotANatural(t *testing.T) {
+	g := fbStaged(t, 100,
+		[]*Card{fbCard(CardDesignSpade, 1), fbCard(CardDesignHeart, 1)},
+		[]*Card{fbCard(CardDesignClover, 13), fbCard(CardDesignDiamond, 7)}) // 17 で立つ
+	// 分けた両手に 10 を配って 2 枚 21 にする。
+	fbStackNext(g, fbCard(CardDesignClover, 10), fbCard(CardDesignDiamond, 10))
+	before := g.GetChips()
+	require.NoError(t, g.FreeSplit())
+
+	require.Equal(t, FreeBetPhaseResult, g.GetPhase(), "エースを割ったら決着まで進むはず")
+	for i, h := range g.GetHands() {
+		assert.Equal(t, 21, h.GetScore(), "手札 %d が 21 になっていない", i)
+		assert.True(t, h.IsFromSplit(), "手札 %d に分けた印が付いていない", i)
+		assert.Equal(t, FreeBetResultWin, g.GetResults()[i],
+			"手札 %d がナチュラル扱いになっている", i)
+	}
+	// 自腹 100 の手 = 200、ハウス持ち 100 の手 = 100。合計 300。
+	// ナチュラル扱いだと 250 + 0 = 250 にしかならない。
+	assert.Equal(t, 300, g.GetPayout())
+	assert.Equal(t, before+300, g.GetChips())
+}
+
+// **配ったままの 2 枚 21 はナチュラルのまま。** 上の修正で潰していないこと。
+func TestFreeBet_UnsplitTwentyOneIsStillANatural(t *testing.T) {
+	g := fbStaged(t, 100,
+		[]*Card{fbCard(CardDesignSpade, 1), fbCard(CardDesignHeart, 13)},
+		[]*Card{fbCard(CardDesignClover, 10), fbCard(CardDesignDiamond, 9)})
+	before := g.GetChips()
+
+	g.settle()
+	assert.Equal(t, FreeBetResultBlackjack, g.GetResults()[0])
+	assert.Equal(t, before+250, g.GetChips(), "3:2 で払われていない")
+}
+
 // **ハウス持ちの手札で負けても、プレイヤーは何も失わない。**
 func TestFreeBet_FreeSplitHandLosesNothing(t *testing.T) {
 	g := fbStaged(t, 100,

@@ -48452,7 +48452,10 @@ components:
                 type: boolean
               blackjack:
                 type: boolean
-                description: Pays 3:2.
+                description: >-
+                  Twenty-one on the first two cards, pays 3:2. False on a hand
+                  produced by a free split even when it holds two cards worth
+                  21 -- that settles as an ordinary win.
               result:
                 type: integer
                 description: "0=none, 1=win, 2=lose, 3=push, 4=blackjack, 5=dealer-22 push"

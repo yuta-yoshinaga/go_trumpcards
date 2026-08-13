@@ -9,9 +9,11 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
 // newFreeBetForPresenter は本物のドメインを返す。
@@ -253,6 +255,62 @@ func TestFreeBetWebPresenter_ErrorAndHint(t *testing.T) {
 	assert.NotEmpty(t, hint.Reason)
 
 	assert.NotEmpty(t, cp.ActionLogOutput(g))
+}
+
+// **分けた手の 2 枚 21 はワイヤでも blackjack ではない。**
+//
+// 精算だけを直しても、札の欄が `IsBlackJack()` の生値のままだと、決着は
+// 「勝ち」なのに手札には「ブラックジャック」と出る画面になる。
+//
+// **ここだけはモックを使う。** 本物を回すと A-A を配って両方に 10 が来る配りが
+// 要り、1000 回配っても出ない。「分けられる配り」で妥協すると、生の値を載せる
+// 実装でも 40 回中 37 回が素通りした ── 検査になっていない。
+func TestFreeBetWebPresenter_SplitTwentyOneIsNotFlaggedAsBlackjack(t *testing.T) {
+	split21 := func() *domain.BlackJackHand {
+		h := domain.NewBlackJackHand()
+		h.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		h.AddCard(domain.NewCard(domain.CardDesignHeart, 13, false))
+		h.SetFromSplit(true)
+		h.SetStood(true)
+		return h
+	}
+	// 印が無い同じ札はナチュラルのまま、という対照も同時に見る。
+	natural := domain.NewBlackJackHand()
+	natural.AddCard(domain.NewCard(domain.CardDesignClover, 1, false))
+	natural.AddCard(domain.NewCard(domain.CardDesignDiamond, 12, false))
+	natural.SetStood(true)
+
+	m := new(interfaces.MockFreeBetBlackjackGame)
+	m.On("GetHands").Return([]*domain.BlackJackHand{split21(), natural})
+	m.On("GetResults").Return([]domain.FreeBetResult{domain.FreeBetResultWin, domain.FreeBetResultBlackjack})
+	m.On("GetFreeBet", mock.Anything).Return(0)
+	m.On("GetPhase").Return(domain.FreeBetPhaseResult)
+	m.On("GetActiveHandIdx").Return(0)
+	m.On("GetDealerCards").Return([]*domain.Card{})
+	m.On("GetDealerScore").Return(20)
+	m.On("IsDealerPushed22").Return(false)
+	m.On("CanFreeDouble").Return(false)
+	m.On("CanFreeSplit").Return(false)
+	m.On("GetAnteBet").Return(100)
+	m.On("GetPayout").Return(0)
+	m.On("GetChips").Return(1000)
+	m.On("GetRoundNumber").Return(1)
+	m.On("GetRemainingCards").Return(300)
+	m.On("GetGameEndFlag").Return(false)
+	m.On("GetConfig").Return(domain.DefaultFreeBetBlackjackConfig())
+
+	cp := new(FreeBetBlackjackWebPresenter)
+	var got struct {
+		Hands []struct {
+			Score     int  `json:"score"`
+			Blackjack bool `json:"blackjack"`
+		} `json:"hands"`
+	}
+	require.NoError(t, json.Unmarshal([]byte(cp.Output(m, nil)), &got))
+	require.Len(t, got.Hands, 2)
+	require.Equal(t, 21, got.Hands[0].Score)
+	assert.False(t, got.Hands[0].Blackjack, "分けた手札がブラックジャック扱いになっている")
+	assert.True(t, got.Hands[1].Blackjack, "配ったままの 21 までナチュラルでなくなっている")
 }
 
 // **チップが尽きたら messageCode で伝える。**

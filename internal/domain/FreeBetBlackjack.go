@@ -335,16 +335,22 @@ func (g *FreeBetBlackjack) FreeSplit() error {
 	moved := h.GetCard(1)
 	isAces := h.GetCard(0).GetValue() == 1
 
+	// **分けた手は 21 になってもナチュラルではない。** どちらの手も由来を
+	// 記録しておく (`settleHand` がこれを見る)。エースを割ると 2 枚 21 が
+	// 素直に起きるので、印を付けないと 3:2 で払われ、しかもハウス持ちの手は
+	// bet が 0 なので**勝ったのに払い戻し 0** になる。
 	rebuilt := NewBlackJackHand()
 	rebuilt.AddCard(h.GetCard(0))
 	rebuilt.AddCard(g.shoe.DrawCard())
 	rebuilt.SetBet(h.GetBet())
+	rebuilt.SetFromSplit(true)
 
 	other := NewBlackJackHand()
 	other.AddCard(moved)
 	other.AddCard(g.shoe.DrawCard())
 	// **2 つ目はプレイヤーの金が 0。** 賭け金はすべて freeBets 側で持つ。
 	other.SetBet(0)
+	other.SetFromSplit(true)
 
 	if isAces {
 		rebuilt.SetStood(true)
@@ -428,6 +434,19 @@ func (g *FreeBetBlackjack) settle() {
 	g.phase = FreeBetPhaseResult
 }
 
+// FreeBetIsNatural はその手札がナチュラル (3:2 で払うブラックジャック) かを返す。
+//
+// **分けた手の 2 枚 21 はナチュラルではない。** 通常勝ちとして扱うので 3:2 では
+// 払わず、ハウス持ちのぶんも配当に乗る。印を見ずに `IsBlackJack()` だけで判定
+// すると、自腹の手は 3:2 で払い過ぎ、**bet が 0 のハウス持ちの手は払い戻しが
+// 0 になる** ── 勝ったのに何も戻らない。
+//
+// 精算と、画面に載せる `blackjack` 欄の両方がこれを通る。片方だけが知っている
+// と、決着は「勝ち」なのに札には「ブラックジャック」と出る画面になる。
+func FreeBetIsNatural(h *BlackJackHand) bool {
+	return h != nil && h.IsBlackJack() && !h.IsFromSplit()
+}
+
 // settleHand は 1 つの手札を精算し、決着と払い戻し (賭け金の返却を含む) を返す。
 //
 // **払い戻しはプレイヤーの金 (bet) とハウスの金 (freeBet) で扱いが違う。**
@@ -437,15 +456,19 @@ func (g *FreeBetBlackjack) settleHand(h *BlackJackHand, free, dealerScore int,
 	dealerBJ bool,
 ) (FreeBetResult, int) {
 	bet := h.GetBet()
+	natural := FreeBetIsNatural(h)
 	switch {
 	case h.IsBusted():
 		// **バストは先に負けている。** ディーラーの 22 は関係しない。
 		return FreeBetResultLose, 0
-	case h.IsBlackJack() && !dealerBJ:
+	case natural && !dealerBJ:
 		return FreeBetResultBlackjack, bet + bet*FreeBetBlackjackPayoutNum/FreeBetBlackjackPayoutDen
-	case dealerBJ && !h.IsBlackJack():
+	case dealerBJ && !natural:
+		// ディーラーのナチュラルは `PlaceBet` の時点で決着するので、ここに
+		// 分けた手が来ることは無い。将来その順序が変わっても、分けた手が
+		// 「ナチュラル同士の引き分け」に化けないようにこの判定を通す。
 		return FreeBetResultLose, 0
-	case dealerBJ && h.IsBlackJack():
+	case dealerBJ && natural:
 		return FreeBetResultPush, bet
 	case g.dealerPushed22:
 		// **これが無料ダブル / 無料スプリットの対価。** 勝てたはずの手が引き分けになる。
