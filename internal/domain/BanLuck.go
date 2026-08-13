@@ -786,3 +786,45 @@ func banLuckValidatePhase(j *banLuckJSON, seats int) error {
 	}
 	return nil
 }
+
+// --- 助言 ---
+
+// BanLuckHint は人間への助言。
+type BanLuckHint struct {
+	// Action は薦める操作 ("hit" / "stand")。
+	Action string
+	// Reason は理由の識別子 (i18n キーの一部)。
+	Reason string
+}
+
+// GetHint は人間への助言を返す。判断どころでなければ nil。
+//
+// **義務のある場面では「引け」しか言わない。** 選べないところで戦略を語ると、
+// 押せないボタンを薦めることになる。
+func (g *BanLuck) GetHint() *BanLuckHint {
+	if g.gameEndFlag || g.phase != BanLuckPhasePlay || !g.IsHumanTurn() {
+		return nil
+	}
+	h := g.hands[g.turn]
+	if h == nil {
+		return nil
+	}
+	if g.turn == g.banker && g.bankerMustHit() {
+		return &BanLuckHint{Action: "hit", Reason: "bankerMustHit"}
+	}
+	if h.GetCardsSize() >= BanLuckMaxHandCards {
+		return &BanLuckHint{Action: "stand", Reason: "handFull"}
+	}
+	// **4 枚目まで来たら Five Dragon を狙う価値がある。** 5 枚で 21 以下なら
+	// 合計に関係なく普通の手に勝てるので、17 でも引くほうが得な場面が出る。
+	if h.GetCardsSize() == BanLuckMaxHandCards-1 && h.GetScore() <= banLuckCpuDragonChase {
+		return &BanLuckHint{Action: "hit", Reason: "chaseFiveDragon"}
+	}
+	if h.GetScore() <= 11 {
+		return &BanLuckHint{Action: "hit", Reason: "cannotBust"}
+	}
+	if h.GetScore() >= banLuckCpuSeatStand {
+		return &BanLuckHint{Action: "stand", Reason: "standPat"}
+	}
+	return &BanLuckHint{Action: "hit", Reason: "chaseBanker"}
+}
