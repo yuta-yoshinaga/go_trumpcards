@@ -1535,6 +1535,11 @@ func init() {
 			return usecase.NewGuandanInteractor(domain.NewDefaultGuandan(), new(presenter.GuandanWebPresenter))
 		},
 		controller.NewGuandanWebController)
+	BindWebControllerFor("freebet",
+		func() usecase.FreeBetBlackjackInteractorIF {
+			return usecase.NewFreeBetBlackjackInteractor(domain.NewDefaultFreeBetBlackjack(), new(presenter.FreeBetBlackjackWebPresenter))
+		},
+		controller.NewFreeBetBlackjackWebController)
 	BindWebControllerFor("shengji",
 		func() usecase.ShengJiInteractorIF {
 			return usecase.NewShengJiInteractor(domain.NewDefaultShengJi(), new(presenter.ShengJiWebPresenter))

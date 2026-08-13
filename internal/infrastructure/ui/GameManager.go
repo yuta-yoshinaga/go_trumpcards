@@ -4891,6 +4891,24 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  log                  action log"},
 		}),
+	BindCuiFor("freebet",
+		func() usecase.FreeBetBlackjackInteractorIF {
+			return usecase.NewFreeBetBlackjackInteractor(domain.NewDefaultFreeBetBlackjack(), new(presenter.FreeBetBlackjackCuiPresenter))
+		},
+		controller.NewFreeBetBlackjackCuiController,
+		CuiHelpSpec{
+			TitleKey: "freebet.helpTitle",
+			CommandKeys: []string{
+				"freebet.helpBet",
+				"freebet.helpHit",
+				"freebet.helpStand",
+				"freebet.helpFreeDouble",
+				"freebet.helpFreeSplit",
+				"freebet.helpNext",
+				"freebet.helpHint",
+			},
+			ExtraCommandLines: []string{"  log                  action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

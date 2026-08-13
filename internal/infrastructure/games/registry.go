@@ -1113,6 +1113,13 @@ var registry = []*Game{
 	// プレイヤーのブラックジャックは 1:1 に抑えられ、デッキから 10 を抜いてある
 	// (48 枚 × 8)。表示名は商標登録済みのため機能名で呼ぶ (TRADEMARKS.md 参照)。
 	{Name: "doubleattack", Category: CategoryCasino},
+	// Free Bet Blackjack フリーベット・ブラックジャック
+	//
+	// **ダブルとスプリットをハウスが払う**代わりに、ディーラーの 22 が
+	// 引き分けになる。片方だけ実装すると期待値が大きく傾くので、この 2 つは
+	// 必ずセットで扱う。無料ダブルはハードの 9〜11 のみ、無料スプリットは
+	// 10 札の対を除く同数の対のみ。
+	{Name: "freebet", Category: CategoryCasino},
 }
 
 // All returns a value-level copy of the registry in canonical order.

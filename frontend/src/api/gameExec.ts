@@ -227,6 +227,7 @@ export const workerUrl: Record<string, string> = {
   chemindefer: WORKER_CASINO,
   crazyfourpoker: WORKER_CASINO,
   doubleattack: WORKER_CASINO,
+  freebet: WORKER_CASINO,
   dragontiger: WORKER_CASINO,
   blackjackswitch: WORKER_CASINO,
   montecarlo: WORKER_SOLO,

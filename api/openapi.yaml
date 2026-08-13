@@ -30,6 +30,8 @@ tags:
     description: Crazy 4 Poker (クレイジー4ポーカー) game
   - name: doubleattack
     description: Extra Bet Blackjack (追加ベット・ブラックジャック) game
+  - name: freebet
+    description: Free Bet Blackjack (フリーベット・ブラックジャック) game
   - name: poker
     description: 5-card Draw Poker game
   - name: oldmaid
@@ -9266,6 +9268,70 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DoubleAttackResponse'
+
+  /freebet/exec:
+    post:
+      tags:
+        - freebet
+      summary: Execute a Free Bet Blackjack game command
+      description: |
+        Send a command to advance the Free Bet Blackjack (フリーベット・ブラックジャック)
+        game session identified by `sessionId`.
+
+        A blackjack variant played on a six-deck shoe in which **the house pays
+        for the player's doubles and splits**. The price of that is that a dealer
+        total of exactly **22 pushes** every surviving hand; 23 or more is an
+        ordinary bust and pays.
+
+        Those two rules are a single trade. Implementing either without the other
+        moves the return by several per cent, so treat them as one feature.
+
+        Each hand therefore carries **two independent stakes**: `bet` is the
+        player's own money and is lost on a loss, and `freeBet` is the house's
+        contribution, which earns a payout on a win and costs the player nothing
+        on a loss. Do not add them together — a client that shows only the sum
+        cannot answer how much of the stake is at risk.
+
+        Free doubles are limited to a hard 9, 10 or 11 on the first two cards;
+        free splits cover any pair except ten-valued ones. `canFreeDouble` and
+        `canFreeSplit` are computed by the server; clients must not re-derive
+        them.
+      operationId: execFreeBet
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: "reset (r), bet (b), hit (h), stand (s), freedouble (fd), freesplit (fs), next, hint, log, quit (q)"
+                ante:
+                  type: integer
+                  description: Ante for the bet command.
+                sessionId:
+                  type: string
+              example:
+                command: bet
+                ante: 50
+                sessionId: my-session-001
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FreeBetResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FreeBetResponse'
 
   /crazyfourpoker/exec:
     post:
@@ -48328,6 +48394,89 @@ components:
         payout:
           type: integer
         bustItPayout:
+          type: integer
+        chips:
+          type: integer
+        roundNumber:
+          type: integer
+        remainingCards:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        config:
+          type: object
+          properties:
+            initialChips:
+              type: integer
+            defaultAnte:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+    FreeBetResponse:
+      type: object
+      description: Response payload for /freebet/exec
+      properties:
+        phase:
+          type: integer
+          description: "0=Bet, 1=Play, 2=Result"
+        hands:
+          type: array
+          description: Always an array. Grows with free splits.
+          items:
+            type: object
+            properties:
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              score:
+                type: integer
+              bet:
+                type: integer
+                description: The player's own stake. Lost on a loss.
+              freeBet:
+                type: integer
+                description: >-
+                  The house's contribution from a free double or free split.
+                  Earns a payout on a win and costs the player nothing on a
+                  loss. Never add this to bet.
+              isSoft:
+                type: boolean
+              stood:
+                type: boolean
+              doubled:
+                type: boolean
+              busted:
+                type: boolean
+              blackjack:
+                type: boolean
+                description: Pays 3:2.
+              result:
+                type: integer
+                description: "0=none, 1=win, 2=lose, 3=push, 4=blackjack, 5=dealer-22 push"
+        activeHand:
+          type: integer
+        dealerCards:
+          type: array
+          description: Always an array.
+          items:
+            $ref: '#/components/schemas/Card'
+        dealerScore:
+          type: integer
+        dealerPushed22:
+          type: boolean
+          description: The dealer busted with exactly 22, so surviving hands push.
+        canFreeDouble:
+          type: boolean
+          description: Server-computed. Hard 9-11 on the first two cards only.
+        canFreeSplit:
+          type: boolean
+          description: Server-computed. Any pair except ten-valued ones.
+        anteBet:
+          type: integer
+        payout:
           type: integer
         chips:
           type: integer
