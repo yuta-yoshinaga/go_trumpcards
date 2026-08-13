@@ -688,3 +688,44 @@ func cincinnatiValidate(j *cincinnatiJSON) error {
 	}
 	return nil
 }
+
+// --- 助言 ---
+
+// CincinnatiHint は人間への助言。
+type CincinnatiHint struct {
+	// Action は薦める操作 ("fold" / "check" / "call" / "bet" / "raise")。
+	Action string
+	// Reason は理由の識別子 (i18n キーの一部)。
+	Reason string
+}
+
+// GetHint は人間への助言を返す。判断どころでなければ nil。
+//
+// **見えている札だけで決める。** 相手の手札を覗くと勝てない相手になる。
+// 手札 5 枚のぶん、コミュニティが少ないうちから役ができていることがあるので、
+// **早い段階の強い手ほど価値がある**という向きで助言する。
+func (g *Cincinnati) GetHint() *CincinnatiHint {
+	if g.gameEndFlag || g.phase != CincinnatiPhaseBetting || !g.IsHumanTurn() {
+		return nil
+	}
+	p := g.players[g.HumanSeat()]
+	rank := p.EvaluateBest(g.community)
+	toCall := g.GetToCall()
+
+	if toCall <= 0 {
+		if rank >= PokerHandTwoPair && g.raiseCount < cincinnatiMaxRaisesPerRound {
+			return &CincinnatiHint{Action: "bet", Reason: "strongEnoughToBet"}
+		}
+		return &CincinnatiHint{Action: "check", Reason: "seeAnotherCard"}
+	}
+	if rank >= PokerHandThreeOfAKind && g.CanRaise() {
+		return &CincinnatiHint{Action: "raise", Reason: "strongEnoughToRaise"}
+	}
+	if rank >= PokerHandOnePair {
+		return &CincinnatiHint{Action: "call", Reason: "worthACall"}
+	}
+	if toCall <= g.config.Ante {
+		return &CincinnatiHint{Action: "call", Reason: "cheapToStay"}
+	}
+	return &CincinnatiHint{Action: "fold", Reason: "notWorthIt"}
+}
