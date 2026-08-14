@@ -72,7 +72,10 @@ func TestHorse_DisciplineNames(t *testing.T) {
 // **設定したハンド数ごとに切り替わり、E の次は H に戻る。**
 func TestHorse_RotatesEveryNHands(t *testing.T) {
 	t.Parallel()
-	g := NewHorse(HorseConfig{Seats: 4, InitialChips: HorseDefaultChips, HandsPerDiscipline: 2})
+	// **12 ハンド打ち切れる残高を積む。** 既定の 1000 だと CPU 同士の全賭けで
+	// 席が飛び、マッチが終わって 11 ハンドに届かない ── 実測 13/300 (4.3%) で、
+	// 配り依存のまま放置すると自分の PR とは無関係に落ち続ける。5000 では 0/300。
+	g := NewHorse(HorseConfig{Seats: 4, InitialChips: 5000, HandsPerDiscipline: 2})
 	g.Reset()
 
 	seen := make([]HorseDiscipline, 0, 12)
@@ -85,14 +88,18 @@ func TestHorse_RotatesEveryNHands(t *testing.T) {
 		require.NoError(t, g.NextHand())
 	}
 
-	require.GreaterOrEqual(t, len(seen), 11, "12 ハンド回らなかった")
 	// 2 ハンドずつ H,H,O,O,R,R,S,S,E,E,H,H
 	want := []HorseDiscipline{
 		HorseHoldem, HorseHoldem, HorseOmahaHiLo, HorseOmahaHiLo,
 		HorseRazz, HorseRazz, HorseStud, HorseStud,
 		HorseStudHiLo, HorseStudHiLo, HorseHoldem,
 	}
-	assert.Equal(t, want, seen[:len(want)], "種目のローテーションが H-O-R-S-E で回っていない")
+	// **打てたぶんは必ず並びどおり。** 早く終わった配りでも、ここまでは言える。
+	require.LessOrEqual(t, len(seen), len(want)+1)
+	assert.Equal(t, want[:min(len(seen), len(want))], seen[:min(len(seen), len(want))],
+		"種目のローテーションが H-O-R-S-E で回っていない")
+	// E の次に H へ戻るところまで見るには 11 ハンド要る。
+	require.GreaterOrEqual(t, len(seen), 11, "12 ハンド回らなかった")
 }
 
 // **1 ハンドごとの設定でも回る。**
