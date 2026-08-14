@@ -6,6 +6,17 @@ import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, FourSeasonsResponse } from '../types/card';
 import { FourSeasonsPage, fourseasonsNextRank, fourseasonsTableauNextRank } from './FourSeasonsPage';
 
+/**
+ * This page's own hint region.
+ *
+ * **`GameMessageBox` is also `role="status"`**, and it now renders on every
+ * phase because this game's messageCodes are translated (#5291). Querying the
+ * role alone therefore matches two elements; the message box is the one built
+ * from `glass-panel`, so the hint region is the other one.
+ */
+const hintLiveRegion = () =>
+  screen.queryAllByRole('status').find((el) => !el.classList.contains('glass-panel')) ?? null;
+
 vi.mock('../api/gameApi', () => ({
   fourseasonsApi: { exec: vi.fn() },
   actionLogApi: { fourseasons: vi.fn() },
@@ -161,7 +172,7 @@ describe('FourSeasonsPage', () => {
       }),
     );
     renderWithProviders(<FourSeasonsPage />);
-    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('ヒントがあります'));
+    await waitFor(() => expect(hintLiveRegion()).toHaveTextContent('ヒントがあります'));
   });
 
   // The other half of the gate: a passive hint must not surface the banner.
@@ -171,7 +182,7 @@ describe('FourSeasonsPage', () => {
     );
     renderWithProviders(<FourSeasonsPage />);
     await waitFor(() => expect(screen.getByTestId('fs-draw-button')).toBeInTheDocument());
-    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(hintLiveRegion()).not.toBeInTheDocument();
   });
 
   it('hides the playing controls once the game clears', async () => {

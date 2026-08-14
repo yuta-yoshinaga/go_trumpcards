@@ -4,6 +4,18 @@ import { auldlangsyneApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { AuldLangSyneResponse, Card, CardDesign } from '../types/card';
+
+/**
+ * This page's own hint region.
+ *
+ * **`GameMessageBox` is also `role="status"`**, and it now renders on every
+ * phase because this game's messageCodes are translated (#5291). Querying the
+ * role alone therefore matches two elements; the message box is the one built
+ * from `glass-panel`, so the hint region is the other one.
+ */
+const hintLiveRegion = () =>
+  screen.queryAllByRole('status').find((el) => !el.classList.contains('glass-panel')) ?? null;
+
 import {
   AuldLangSynePage,
   auldlangsyneDealsLeft,
@@ -192,7 +204,7 @@ describe('AuldLangSynePage', () => {
   it('renders the hint banner once the hint was requested', async () => {
     mockExec.mockResolvedValue(hintRequestedState);
     renderWithProviders(<AuldLangSynePage />);
-    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('ヒントがあります'));
+    await waitFor(() => expect(hintLiveRegion()).toHaveTextContent('ヒントがあります'));
   });
 
   // The other half of the gate: a passive hint on an ordinary response must not
@@ -201,7 +213,7 @@ describe('AuldLangSynePage', () => {
     mockExec.mockResolvedValue(passiveHintState);
     renderWithProviders(<AuldLangSynePage />);
     await waitFor(() => expect(screen.getByTestId('als-deal-button')).toBeInTheDocument());
-    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(hintLiveRegion()).not.toBeInTheDocument();
   });
 
   it('toggles a waste selection off when clicked twice', async () => {
