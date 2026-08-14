@@ -84,9 +84,13 @@ type HorseWebOutput struct {
 	IsHumanTurn      bool                  `json:"isHumanTurn"`
 	CommunityCards   []*WebOutputCard      `json:"communityCards"`
 	Pot              int                   `json:"pot"`
-	TablePhase       int                   `json:"tablePhase"`
-	GameEndFlag      bool                  `json:"gameEndFlag"`
-	WinnerSeat       int                   `json:"winnerSeat"`
+	// ToCall はコールに要する額 (0 ならチェック可)。
+	ToCall int `json:"toCall"`
+	// MinRaise はいまの種目が受け付ける最小のレイズ幅。
+	MinRaise    int  `json:"minRaise"`
+	TablePhase  int  `json:"tablePhase"`
+	GameEndFlag bool `json:"gameEndFlag"`
+	WinnerSeat  int  `json:"winnerSeat"`
 	WebOutputBase
 	Config HorseWebOutputConfig `json:"config"`
 }
