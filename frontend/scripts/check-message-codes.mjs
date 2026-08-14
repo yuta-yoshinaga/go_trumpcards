@@ -33,7 +33,7 @@ const REPO = join(FRONTEND, '..');
 // that passes everything.
 const PRESENTER_DIR = process.argv[2] ?? join(REPO, 'internal/adapter/presenter');
 const LOCALES = process.argv[3] ?? join(FRONTEND, 'src/i18n/locales');
-const REAL_FLOOR = 500;
+const REAL_FLOOR = 1050;
 const FIXTURE_FLOOR = 1;
 
 /**
@@ -118,12 +118,16 @@ async function emittedCodes() {
     // collected, so the guard reported full coverage of the codes it happened
     // to recognise while the assignment form went unchecked entirely — the
     // same "confidently silent" failure the splitArgs comment above describes.
-    // The message is assigned separately, so it is never blank-with-no-fallback;
-    // it renders the raw Go literal, which is what `<computed>` classifies.
+    //
+    // Which of the two failure modes an untranslated one lands in cannot be read
+    // off this line: `Message` is a separate statement, and several branches
+    // never assign it (ColoradoWebPresenter's playing/stalemate/hint paths leave
+    // a zero-valued struct). Rather than guess by proximity, they get their own
+    // bucket in the report.
     for (const m of text.matchAll(/\.MessageCode\s*=\s*"([a-zA-Z0-9_.]+)"/g)) {
       const code = m[1];
       if (!out.has(code)) out.set(code, { literals: new Set(), files: new Set() });
-      out.get(code).literals.add('<computed>');
+      out.get(code).literals.add('<assigned>');
       out.get(code).files.add(name);
     }
   }
@@ -131,9 +135,11 @@ async function emittedCodes() {
 }
 
 const emitted = await emittedCodes();
-// 774 codes today, parsed out of the presenter sources by regex. A parser change that stops
-// recognising most `return` forms would leave a handful of codes, all of them translated, and
-// this guard would announce full coverage of the codes it could still see.
+// 1585 codes today, parsed out of the presenter sources by regex. A parser change that stops
+// recognising most `return` forms — or the `.MessageCode =` assignments, which account for
+// roughly half — would leave a subset of codes, all of them translated, and this guard would
+// announce full coverage of the codes it could still see. The floor is what makes that visible:
+// dropping the assignment scan alone takes the count back to ~774, which must not clear it.
 // A fixture run (argv-supplied roots) has a handful of codes by design, so it floors at
 // FIXTURE_FLOOR; the real run keeps the number that matters. Both are plain literals so
 // the floor can be read off the source — check-guard-floors rejects a computed one.
@@ -161,13 +167,16 @@ for (const [code, info] of emitted) {
   if (!(code in ja)) gaps.push('ja');
   if (!(code in en)) gaps.push('en');
   if (gaps.length === 0) continue;
-  const blank = [...info.literals].every((l) => l === '""');
-  missing.push({ code, gaps, blank, file: [...info.files][0] });
+  const lits = [...info.literals];
+  const assigned = lits.length > 0 && lits.every((l) => l === '<assigned>');
+  const blank = !assigned && lits.every((l) => l === '""');
+  missing.push({ code, gaps, blank, assigned, file: [...info.files][0] });
 }
 
 if (missing.length > 0) {
   const blanks = missing.filter((m) => m.blank);
-  const literals = missing.filter((m) => !m.blank);
+  const assigned = missing.filter((m) => m.assigned);
+  const literals = missing.filter((m) => !m.blank && !m.assigned);
   console.error('\nUntranslated messageCodes (emitted by Go, absent from the locale files):\n');
   if (blanks.length > 0) {
     console.error(`  ${blanks.length} render as an EMPTY message box (no fallback text at all):`);
@@ -176,6 +185,13 @@ if (missing.length > 0) {
   if (literals.length > 0) {
     console.error(`\n  ${literals.length} render the raw Go literal, in both locales:`);
     for (const m of literals) console.error(`    ${m.code}  [${m.gaps.join(' + ')}]  ${m.file}`);
+  }
+  if (assigned.length > 0) {
+    console.error(
+      `\n  ${assigned.length} set via \`resObj.MessageCode =\`; each renders the Go literal that` +
+        ' branch assigned, or an empty box if it assigned none:',
+    );
+    for (const m of assigned) console.error(`    ${m.code}  [${m.gaps.join(' + ')}]  ${m.file}`);
   }
   console.error(
     `\n${missing.length} untranslated code(s) of ${emitted.size} emitted.` +

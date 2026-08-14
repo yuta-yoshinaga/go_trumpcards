@@ -79,6 +79,16 @@ describe('check-message-codes', () => {
     expect(r.out).toContain('OK');
   });
 
+  // **代入形式は「空箱」か「生リテラル」かをこの行から読めない。** Message は
+  // 別の文で、そもそも書かない分岐もある (Colorado の playing/stalemate)。
+  // 近さで推測せず、専用のバケットで報告する。
+  it('reports the assignment form in its own bucket', () => {
+    const r = check(ASSIGN_FORM, []);
+    expect(r.code).toBe(1);
+    expect(r.out).toContain('resObj.MessageCode =');
+    expect(r.out).toContain('or an empty box if it assigned none');
+  });
+
   it('rejects a code translated in only one locale', () => {
     const { presenters, locales } = fixture(ASSIGN_FORM, ['demo.assigned']);
     writeFileSync(join(locales, 'en', 'common.json'), JSON.stringify({ messageCode: {} }));
