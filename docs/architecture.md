@@ -402,6 +402,7 @@ previously spelled out in words and maintained entirely by hand, with nothing ch
 | `POST /tusac/exec` | Tu Sac |
 | `POST /sakura/exec` | Sakura |
 | `POST /zwanzigerrufen/exec` | Zwanzigerrufen |
+| `POST /troggu/exec` | Troggu |
 | `POST /rook/exec` | Rook |
 | `POST /koikoi/exec` | Koi-Koi |
 | `POST /gostop/exec` | Go-Stop |

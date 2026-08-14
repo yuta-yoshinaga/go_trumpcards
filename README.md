@@ -302,6 +302,7 @@ Go + Clean Architecture で実装した316種類のトランプゲーム。CLI �
 | フレンチタロット (French Tarot) | `frenchtarot` | [CUI](docs/manual/cui/frenchtarot.md) / [Web](docs/manual/web/frenchtarot.md) |
 | ケーニッヒルーフェン (Königrufen) | `koenigrufen` | [CUI](docs/manual/cui/koenigrufen.md) / [Web](docs/manual/web/koenigrufen.md) |
 | ツヴァンツィガールーフェン (Zwanzigerrufen) | `zwanzigerrufen` | [CUI](docs/manual/cui/zwanzigerrufen.md) / [Web](docs/manual/web/zwanzigerrufen.md) |
+| トロッグ (Troggu) | `troggu` | [CUI](docs/manual/cui/troggu.md) / [Web](docs/manual/web/troggu.md) |
 | スカルト (Scarto) | `scarto` | [CUI](docs/manual/cui/scarto.md) / [Web](docs/manual/web/scarto.md) |
 | チェゴ (Cego) | `cego` | [CUI](docs/manual/cui/cego.md) / [Web](docs/manual/web/cego.md) |
 | 争上游 (Zheng Shangyou) | `zheng` | [CUI](docs/manual/cui/zheng.md) / [Web](docs/manual/web/zheng.md) |
