@@ -60,6 +60,7 @@ import type {
   UltiResponse,
   ViraResponse,
   WattenResponse,
+  ZwanzigerrufenResponse,
 } from '../types/card';
 
 /** Base Hearts player data for player 0 (human). */
@@ -3660,4 +3661,96 @@ const baseSakuraState: SakuraResponse = {
  */
 export function makeSakuraState(overrides?: Partial<SakuraResponse>): SakuraResponse {
   return { ...baseSakuraState, ...overrides };
+}
+
+/** Base Zwanzigerrufen state used as the default for {@link makeZwanzigerrufenState}. Defaults to a human bid turn. */
+const baseZwanzigerrufenState: ZwanzigerrufenResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 3,
+      cards: [
+        { design: 'SPADE', value: 8, glyph: '♠', label: 'K', color: 'black', deck: 'tarot' },
+        { design: 'HEART', value: 3, glyph: '♥', label: '3', color: 'red', deck: 'tarot' },
+        { design: 'SPADE', value: 1, glyph: '✦', label: '20', color: 'purple', deck: 'tarot' },
+      ],
+      trickCount: 0,
+      cardPoints: 0,
+      score: 0,
+      isDeclarer: false,
+      isPartner: false,
+    },
+    {
+      id: 1,
+      isHuman: false,
+      cardCount: 3,
+      cards: [],
+      trickCount: 0,
+      cardPoints: 0,
+      score: 0,
+      isDeclarer: false,
+      isPartner: false,
+    },
+    {
+      id: 2,
+      isHuman: false,
+      cardCount: 3,
+      cards: [],
+      trickCount: 0,
+      cardPoints: 0,
+      score: 0,
+      isDeclarer: false,
+      isPartner: false,
+    },
+    {
+      id: 3,
+      isHuman: false,
+      cardCount: 3,
+      cards: [],
+      trickCount: 0,
+      cardPoints: 0,
+      score: 0,
+      isDeclarer: false,
+      isPartner: false,
+    },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  totalRounds: 4,
+  trickNumber: 0,
+  currentPlayerIdx: 0,
+  dealerIdx: 0,
+  bidPlayerIdx: 0,
+  highestBid: 0,
+  declarerIdx: -1,
+  contract: 0,
+  contractName: 'pass',
+  calledTrump: -1,
+  partnerIdx: -1,
+  partnerRevealed: false,
+  talonCount: 6,
+  currentTrick: [],
+  lastTrickWinner: -1,
+  lastTrickCards: [],
+  outcome: 0,
+  breakdown: null,
+  playableIndices: [0, 1, 2],
+  gameEndFlag: false,
+  winnerPlayer: -1,
+  isHumanTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetDeals: 4 },
+};
+
+/**
+ * Creates a {@link ZwanzigerrufenResponse} with sensible defaults (a human bid turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial ZwanzigerrufenResponse fields to override.
+ * @returns A complete ZwanzigerrufenResponse suitable for use in tests.
+ */
+export function makeZwanzigerrufenState(overrides?: Partial<ZwanzigerrufenResponse>): ZwanzigerrufenResponse {
+  return { ...baseZwanzigerrufenState, ...overrides };
 }

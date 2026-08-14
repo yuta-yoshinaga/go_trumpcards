@@ -309,4 +309,5 @@ export * from './games/wizard';
 export * from './games/yaniv';
 export * from './games/yukon';
 export * from './games/zheng';
+export * from './games/zwanzigerrufen';
 export * from './games/zwicker';

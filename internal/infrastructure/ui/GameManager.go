@@ -5062,6 +5062,24 @@ var gameRegistry = []GameRegistryEntry{
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"sakura.helpSetSeats", "sakura.helpSetRounds"},
 		}),
+	BindCuiFor("zwanzigerrufen",
+		func() usecase.ZwanzigerrufenInteractorIF {
+			return usecase.NewZwanzigerrufenInteractor(domain.NewDefaultZwanzigerrufen(), new(presenter.ZwanzigerrufenCuiPresenter))
+		},
+		controller.NewZwanzigerrufenCuiController,
+		CuiHelpSpec{
+			TitleKey: "zwanzigerrufen.helpTitle",
+			CommandKeys: []string{
+				"zwanzigerrufen.helpBid",
+				"zwanzigerrufen.helpPass",
+				"zwanzigerrufen.helpDiscard",
+				"zwanzigerrufen.helpPlay",
+				"zwanzigerrufen.helpNext",
+				"zwanzigerrufen.helpNextRound",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys:       []string{"zwanzigerrufen.helpSetDifficulty", "zwanzigerrufen.helpSetDeals"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

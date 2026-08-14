@@ -2008,6 +2008,16 @@ export const BaseballPhase = {
   GAME_END: 3,
 } as const;
 
+/** Zwanzigerrufen phase constants (sync: internal/domain/Zwanzigerrufen.go). */
+export const ZwanzigerrufenPhase = {
+  BID: 0,
+  TALON: 1,
+  PLAY: 2,
+  TRICK_END: 3,
+  ROUND_END: 4,
+  GAME_END: 5,
+} as const;
+
 /** Sakura (さくら/肥後花) phase constants (sync: internal/domain/Sakura.go). */
 export const SakuraPhase = {
   PLAY: 0,

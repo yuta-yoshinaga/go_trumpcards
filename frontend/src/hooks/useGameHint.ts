@@ -302,6 +302,7 @@ import type {
   YanivResponse,
   YukonResponse,
   ZhengResponse,
+  ZwanzigerrufenResponse,
   ZwickerResponse,
 } from '../types/card';
 import type { HintResult } from '../types/hint';
@@ -613,6 +614,7 @@ import { getWizardHint } from '../utils/hints/wizardHint';
 import { getYanivHint } from '../utils/hints/yanivHint';
 import { getYukonHint } from '../utils/hints/yukonHint';
 import { getZhengHint } from '../utils/hints/zhengHint';
+import { getZwanzigerrufenHint } from '../utils/hints/zwanzigerrufenHint';
 import { getZwickerHint } from '../utils/hints/zwickerHint';
 import { useLocalStorageToggle } from './useLocalStorageToggle';
 
@@ -793,6 +795,7 @@ export const hintFactories = {
   kingo: (s) => getKingoHint(s as KingoResponse),
   tusac: (s) => getTusacHint(s as TuSacResponse),
   sakura: (s) => getSakuraHint(s as SakuraResponse),
+  zwanzigerrufen: (s) => getZwanzigerrufenHint(s as ZwanzigerrufenResponse),
   andarbahar: (s) => getAndarbaharHint(s as AndarBaharResponse),
   botifarra: (s) => getBotifarraHint(s as BotifarraResponse),
   rikken: (s) => getRikkenHint(s as RikkenResponse),

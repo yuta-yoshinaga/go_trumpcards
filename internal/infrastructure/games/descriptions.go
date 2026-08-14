@@ -174,6 +174,7 @@ var gameDescriptions = map[string]string{
 	"kingo":               "Kingo (キンゴ)",
 	"tusac":               "Tu Sac (トゥーサック／四色牌)",
 	"sakura":              "Sakura (さくら／肥後花)",
+	"zwanzigerrufen":      "Zwanzigerrufen (ツヴァンツィガールーフェン)",
 	"blackjackswitch":     "Blackjack Switch (ブラックジャック・スイッチ)",
 	"montecarlo":          "Monte Carlo Solitaire (モンテカルロ・ソリティア)",
 	"contractrummy":       "Contract Rummy (コントラクトラミー)",
