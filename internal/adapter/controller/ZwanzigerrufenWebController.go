@@ -171,7 +171,14 @@ func zwanzigerrufenDispatch(bc *baseController, w http.ResponseWriter, zi usecas
 		if !requireParam(bc, w, newDefault, param.Bid == nil, "param error: bid is required.") {
 			return true
 		}
-		bc.writePresenterResponse(w, zi.Bid(zwanzigerrufenParseBid(*param.Bid)))
+		// **知らない入札はここで名指しで断る。** ドメインまで運ぶと
+		// 「bid 0 cannot be declared」という、送った文字列を含まない返事になる。
+		bid := zwanzigerrufenParseBid(*param.Bid)
+		if !requireParam(bc, w, newDefault, bid == domain.ZwanzigerrufenBidPass,
+			"param error: bid must be rufer or solo.") {
+			return true
+		}
+		bc.writePresenterResponse(w, zi.Bid(bid))
 	case "pass":
 		bc.writePresenterResponse(w, zi.Pass())
 	case "d", "discard":

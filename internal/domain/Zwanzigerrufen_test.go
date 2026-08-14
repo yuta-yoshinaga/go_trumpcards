@@ -247,7 +247,42 @@ func TestZwanzigerrufenAllPass_BecomesTrischaken(t *testing.T) {
 	assert.Equal(t, -1, g.GetDeclarerIdx())
 	assert.Equal(t, -1, g.GetCalledTrump())
 	assert.Equal(t, ZwanzigerrufenPhasePlay, g.GetPhase(), "場札交換を挟んでいる")
-	assert.Equal(t, ZwanzigerrufenTalonSize, g.GetTalonSize(), "Trischaken では場札は伏せたまま")
+	// **場札は脇へ移る。** 手札に加えないが、置き去りにもしない ── 最終トリックの
+	// 勝者が引き取るので、ここで移し忘れると 6 枚ぶんの点が消える。
+	assert.Equal(t, 0, g.GetTalonSize(), "場札が場に残っている")
+	assert.Len(t, g.stash, ZwanzigerrufenTalonSize, "場札が脇へ移っていない")
+	assertZwanzigerrufenDeckIntact(t, g)
+}
+
+// **どの契約でも、ディールが終われば 54 枚すべてが席に収まる。**
+//
+// 脇に置いた札を引き取らせ忘れると総点が合わなくなる ── 手で stash を積むテスト
+// では finalizeBid の移し忘れを踏めないので、本物の入札から通す。
+func TestZwanzigerrufenTrischaken_TalonReachesASeat(t *testing.T) {
+	g := NewZwanzigerrufen(zwanzigerrufenPlayers(), ZwanzigerrufenConfig{TargetDeals: 1})
+	g.Reset()
+	for range ZwanzigerrufenPlayerCnt {
+		if g.GetPhase() != ZwanzigerrufenPhaseBid {
+			break
+		}
+		g.applyPass(g.GetBidPlayerIdx())
+	}
+	require.Equal(t, ZwanzigerrufenBidTrischaken, g.GetContract())
+
+	zwanzigerrufenPlayOut(t, g)
+	taken := 0
+	for _, p := range g.GetPlayers() {
+		for _, tr := range p.GetTricksTaken() {
+			taken += len(tr)
+		}
+	}
+	assert.Equal(t, ZwanzigerrufenDeckSize, taken, "54 枚が席に収まっていない")
+	// 点も消えていない。
+	total := 0
+	for i := range g.GetPlayers() {
+		total += g.GetCardPoints(i)
+	}
+	assert.Equal(t, zwanzigerrufenTotalPoints(), total, "カードポイントが消えている")
 }
 
 // --- 呼び札 ---

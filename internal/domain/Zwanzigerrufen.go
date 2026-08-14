@@ -397,7 +397,10 @@ func (g *Zwanzigerrufen) finalizeBid() {
 		g.declarerIdx = -1
 		g.partnerIdx = -1
 		g.calledTrump = -1
-		// 場札は最終トリックの勝者が引き取る。
+		// **場札は脇へ移し、最終トリックの勝者が引き取る。** 移し忘れると
+		// assignStash が何も足さず、6 枚ぶんの点が黙って消える。
+		g.stash = append([]*Card(nil), g.talon...)
+		g.talon = nil
 		g.stashOwner = -1
 		g.appendLog(-1, "contract", "everyone passed: Trischaken", nil)
 		g.startPlay()

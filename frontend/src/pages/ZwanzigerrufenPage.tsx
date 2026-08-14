@@ -1,6 +1,9 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import type { zwanzigerrufenApi as ZwanzigerrufenApi } from '../api/gameApi';
 import { zwanzigerrufenApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -13,13 +16,19 @@ import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
+import type { ZwanzigerrufenResponse } from '../types/card';
 import { ZwanzigerrufenPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { parseZwanzigerrufenCommand, ZWANZIGERRUFEN_HELP } from '../utils/cli/commands/zwanzigerrufenCommands';
+import { formatZwanzigerrufenState } from '../utils/cli/formatters/zwanzigerrufenFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Zwanzigerrufen tutorial step definitions. */
@@ -84,6 +93,18 @@ function ZwanzigerrufenPageContent() {
     callApi('reset', { config: { cpuDifficulty, targetDeals } });
   }, [callApi, cpuDifficulty, targetDeals]);
 
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('zwanzigerrufen');
+  const cliConfig: CliGameConfig<ZwanzigerrufenResponse, Parameters<typeof ZwanzigerrufenApi.exec>> = useMemo(
+    () => ({
+      gameName: 'zwanzigerrufen',
+      parseCommand: parseZwanzigerrufenCommand,
+      formatResponse: formatZwanzigerrufenState,
+      helpText: ZWANZIGERRUFEN_HELP,
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(callApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
+
   if (!state) {
     return (
       <GameSkeleton gameKey="zwanzigerrufen" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 12 }} />
@@ -141,213 +162,231 @@ function ZwanzigerrufenPageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
-      <div className="flex-1 overflow-y-auto px-4 py-2 space-y-3">
-        <div className="text-center text-xs text-ds-text-muted" data-testid="zw-info">
-          <span className="mr-3">{t('deal', { n: state.roundNumber, total: state.totalRounds })}</span>
-          <span className="mr-3">{t('trick', { n: state.trickNumber })}</span>
-          <span>{t('contract', { name: t(`contract.${state.contractName}`, { defaultValue: '-' }) })}</span>
-        </div>
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <div className="flex-1 overflow-y-auto px-4 py-2 space-y-3">
+            <div className="text-center text-xs text-ds-text-muted" data-testid="zw-info">
+              <span className="mr-3">{t('deal', { n: state.roundNumber, total: state.totalRounds })}</span>
+              <span className="mr-3">{t('trick', { n: state.trickNumber })}</span>
+              <span>{t('contract', { name: t(`contract.${state.contractName}`, { defaultValue: '-' }) })}</span>
+            </div>
 
-        {/* **The called trump is public; who holds it is not.** */}
-        {state.calledTrump > 0 && (
-          <div className="text-center text-xs text-ds-accent" data-testid="zw-called">
-            {state.partnerRevealed && state.partnerIdx >= 0
-              ? t('calledRevealed', { trump: state.calledTrump, name: seatName(state.partnerIdx) })
-              : t('calledSecret', { trump: state.calledTrump })}
-          </div>
-        )}
-
-        <div className="flex flex-wrap justify-center gap-3" data-testid="zw-seats">
-          {state.players.map((p) => (
-            <div key={p.id} className="text-center text-xs text-ds-text-muted" data-testid={`zw-seat-${p.id}`}>
-              <div className="text-ds-text-primary">
-                {seatName(p.id)}
-                {p.isDeclarer && <span className="ml-1 text-ds-warning">{t('roleDeclarer')}</span>}
-                {p.isPartner && <span className="ml-1 text-ds-info">{t('rolePartner')}</span>}
+            {/* **The called trump is public; who holds it is not.** */}
+            {state.calledTrump > 0 && (
+              <div className="text-center text-xs text-ds-accent" data-testid="zw-called">
+                {state.partnerRevealed && state.partnerIdx >= 0
+                  ? t('calledRevealed', { trump: state.calledTrump, name: seatName(state.partnerIdx) })
+                  : t('calledSecret', { trump: state.calledTrump })}
               </div>
-              <div>{t('cards', { count: p.cardCount })}</div>
-              <div data-testid={`zw-seat-${p.id}-points`}>{t('points', { points: p.cardPoints })}</div>
-              <div>{t('score', { score: p.score })}</div>
+            )}
+
+            <div className="flex flex-wrap justify-center gap-3" data-testid="zw-seats">
+              {state.players.map((p) => (
+                <div key={p.id} className="text-center text-xs text-ds-text-muted" data-testid={`zw-seat-${p.id}`}>
+                  <div className="text-ds-text-primary">
+                    {seatName(p.id)}
+                    {p.isDeclarer && <span className="ml-1 text-ds-warning">{t('roleDeclarer')}</span>}
+                    {state.partnerRevealed && p.isPartner && (
+                      <span className="ml-1 text-ds-info">{t('rolePartner')}</span>
+                    )}
+                  </div>
+                  <div>{t('cards', { count: p.cardCount })}</div>
+                  <div data-testid={`zw-seat-${p.id}-points`}>{t('points', { points: p.cardPoints })}</div>
+                  <div>{t('score', { score: p.score })}</div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
 
-        <TrickDisplay
-          currentTrick={state.currentTrick}
-          players={state.players.map((p) => ({ id: p.id, name: seatName(p.id), isHuman: p.isHuman }))}
-          cardWidth={cardWidth}
-          label={t('currentTrick')}
-          dataTutorial="zw-trick-display"
-          winnerIdx={isTrickEnd ? state.lastTrickWinner : undefined}
-          winnerLabel={t('trickWinner')}
-        />
+            <TrickDisplay
+              currentTrick={state.currentTrick}
+              players={state.players.map((p) => ({ id: p.id, name: seatName(p.id), isHuman: p.isHuman }))}
+              cardWidth={cardWidth}
+              label={t('currentTrick')}
+              dataTutorial="zw-trick-display"
+              winnerIdx={isTrickEnd ? state.lastTrickWinner : undefined}
+              winnerLabel={t('trickWinner')}
+            />
 
-        {human && (
-          <PlayerHandSection
-            humanPlayer={human}
-            selectedCardIndices={selected}
-            toggleCard={toggleCard}
-            cardWidth={cardWidth}
-            isMobile={isMobile}
-            dataTutorialPrefix="zw"
-            validIndices={isPlay && isHumanTurn ? state.playableIndices : undefined}
-            restrictedTooltip={t('restricted')}
-          />
-        )}
+            {human && (
+              <PlayerHandSection
+                humanPlayer={human}
+                selectedCardIndices={selected}
+                toggleCard={toggleCard}
+                cardWidth={cardWidth}
+                isMobile={isMobile}
+                dataTutorialPrefix="zw"
+                validIndices={isPlay && isHumanTurn ? state.playableIndices : undefined}
+                restrictedTooltip={t('restricted')}
+              />
+            )}
 
-        {isRoundEnd && state.breakdown && (
-          <div className="my-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm" data-testid="zw-round-result">
-            <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
-            <div className="text-ds-success mb-1">
-              {state.breakdown.loser >= 0
-                ? t('roundResult.trischaken', {
-                    name: seatName(state.breakdown.loser),
-                    points: state.breakdown.teamPoints,
-                  })
-                : t(state.breakdown.won ? 'roundResult.won' : 'roundResult.lost', {
-                    points: state.breakdown.teamPoints,
-                    threshold: state.breakdown.threshold,
-                  })}
-            </div>
-            {state.breakdown.seats.map((delta, i) => (
-              <div key={i} data-testid={`zw-round-seat-${i}`}>
-                {t('roundResult.seat', { name: seatName(i), delta })}
+            {isRoundEnd && state.breakdown && (
+              <div className="my-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm" data-testid="zw-round-result">
+                <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
+                <div className="text-ds-success mb-1">
+                  {state.breakdown.loser >= 0
+                    ? t('roundResult.trischaken', {
+                        name: seatName(state.breakdown.loser),
+                        points: state.breakdown.teamPoints,
+                      })
+                    : t(state.breakdown.won ? 'roundResult.won' : 'roundResult.lost', {
+                        points: state.breakdown.teamPoints,
+                        threshold: state.breakdown.threshold,
+                      })}
+                </div>
+                {state.breakdown.seats.map((delta, i) => (
+                  <div key={i} data-testid={`zw-round-seat-${i}`}>
+                    {t('roundResult.seat', { name: seatName(i), delta })}
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
+
+            {isGameEnd && (
+              <div className="my-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm" data-testid="zw-result">
+                <div className="mb-1 text-ds-text-primary">{t('result.title')}</div>
+                <div className="text-ds-success mb-1">
+                  {state.winnerPlayer < 0
+                    ? t('result.draw')
+                    : t('result.winner', { name: seatName(state.winnerPlayer) })}
+                </div>
+                {state.players.map((p) => (
+                  <div key={p.id}>{t('result.score', { name: seatName(p.id), score: p.score })}</div>
+                ))}
+              </div>
+            )}
+
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
+            <ErrorAlert message={error} onRetry={retry} />
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+            <ActionLogSection
+              isEndPhase={isGameEnd}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
           </div>
-        )}
 
-        {isGameEnd && (
-          <div className="my-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm" data-testid="zw-result">
-            <div className="mb-1 text-ds-text-primary">{t('result.title')}</div>
-            <div className="text-ds-success mb-1">
-              {state.winnerPlayer < 0 ? t('result.draw') : t('result.winner', { name: seatName(state.winnerPlayer) })}
-            </div>
-            {state.players.map((p) => (
-              <div key={p.id}>{t('result.score', { name: seatName(p.id), score: p.score })}</div>
-            ))}
-          </div>
-        )}
-
-        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
-        <ErrorAlert message={error} onRetry={retry} />
-        <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-        <ActionLogSection
-          isEndPhase={isGameEnd}
-          actionLog={actionLog}
-          showActionLog={showActionLog}
-          hideActionLog={hideActionLog}
-        />
-      </div>
-
-      <SettingsPanel
-        title={t('settings.title')}
-        groups={[
-          {
-            items: [
+          <SettingsPanel
+            title={t('settings.title')}
+            groups={[
               {
-                type: 'select' as const,
-                id: 'cpuDifficulty',
-                label: t('settings.cpuDifficulty'),
-                value: String(cpuDifficulty),
-                options: CPU_DIFFICULTY_OPTIONS.map((v) => ({ value: String(v), label: t(`settings.difficulty${v}`) })),
-                onSelect: (v: string) => setCpuDifficulty(Number.parseInt(v, 10)),
+                items: [
+                  {
+                    type: 'select' as const,
+                    id: 'cpuDifficulty',
+                    label: t('settings.cpuDifficulty'),
+                    value: String(cpuDifficulty),
+                    options: CPU_DIFFICULTY_OPTIONS.map((v) => ({
+                      value: String(v),
+                      label: t(`settings.difficulty${v}`),
+                    })),
+                    onSelect: (v: string) => setCpuDifficulty(Number.parseInt(v, 10)),
+                  },
+                  {
+                    type: 'select' as const,
+                    id: 'targetDeals',
+                    label: t('settings.targetDeals'),
+                    value: String(targetDeals),
+                    options: TARGET_DEALS_OPTIONS.map((v) => ({ value: String(v), label: String(v) })),
+                    onSelect: (v: string) => setTargetDeals(Number.parseInt(v, 10)),
+                  },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
+                ],
               },
-              {
-                type: 'select' as const,
-                id: 'targetDeals',
-                label: t('settings.targetDeals'),
-                value: String(targetDeals),
-                options: TARGET_DEALS_OPTIONS.map((v) => ({ value: String(v), label: String(v) })),
-                onSelect: (v: string) => setTargetDeals(Number.parseInt(v, 10)),
-              },
-              hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
-            ],
-          },
-        ]}
-      />
-
-      <GameFooter className={`${gameTheme.zwanzigerrufen.footer} px-4 py-2.5`}>
-        <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="zw-actions">
-          {isBid && isHumanTurn && (
-            <>
-              <button
-                type="button"
-                className={btnPrimary}
-                onClick={() => callApi('bid', { bid: 'rufer' })}
-                disabled={loading}
-                data-testid="zw-bid-rufer"
-              >
-                {t('bidRufer')}
-              </button>
-              <button
-                type="button"
-                className={btnSecondary}
-                onClick={() => callApi('bid', { bid: 'solo' })}
-                disabled={loading}
-                data-testid="zw-bid-solo"
-              >
-                {t('bidSolo')}
-              </button>
-              <button
-                type="button"
-                className={btnSecondary}
-                onClick={() => callApi('pass')}
-                disabled={loading}
-                data-testid="zw-pass"
-              >
-                {t('pass')}
-              </button>
-            </>
-          )}
-          {isTalon && isHumanTurn && (
-            <button
-              type="button"
-              className={btnPrimary}
-              onClick={() => callApi('discard', { cardIndices: selected })}
-              disabled={loading || selected.length !== DISCARD_COUNT}
-              data-testid="zw-discard"
-            >
-              {t('discard', { count: selected.length, total: DISCARD_COUNT })}
-            </button>
-          )}
-          {isTrickEnd && (
-            <button
-              type="button"
-              className={btnPrimary}
-              onClick={() => callApi('next')}
-              disabled={loading}
-              data-testid="zw-next-trick"
-            >
-              {t('nextTrick')}
-            </button>
-          )}
-          {isRoundEnd && !isGameEnd && (
-            <button
-              type="button"
-              className={btnPrimary}
-              onClick={() => callApi('nextround')}
-              disabled={loading}
-              data-testid="zw-next-round"
-            >
-              {t('nextDeal')}
-            </button>
-          )}
-          {isGameEnd && (
-            <button type="button" className={btnSuccess} onClick={resetWithConfig} disabled={loading}>
-              {t('newGame')}
-            </button>
-          )}
-          <GameResetButton
-            isGameEnd={isGameEnd}
-            onReset={resetWithConfig}
-            requestConfirm={requestConfirm}
-            loading={loading}
-            dataTutorial="zw-reset-button"
+            ]}
           />
-        </div>
-      </GameFooter>
+
+          <GameFooter className={`${gameTheme.zwanzigerrufen.footer} px-4 py-2.5`}>
+            <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="zw-actions">
+              {isBid && isHumanTurn && (
+                <>
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={() => callApi('bid', { bid: 'rufer' })}
+                    disabled={loading}
+                    data-testid="zw-bid-rufer"
+                  >
+                    {t('bidRufer')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnSecondary}
+                    onClick={() => callApi('bid', { bid: 'solo' })}
+                    disabled={loading}
+                    data-testid="zw-bid-solo"
+                  >
+                    {t('bidSolo')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnSecondary}
+                    onClick={() => callApi('pass')}
+                    disabled={loading}
+                    data-testid="zw-pass"
+                  >
+                    {t('pass')}
+                  </button>
+                </>
+              )}
+              {isTalon && isHumanTurn && (
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={() => callApi('discard', { cardIndices: selected })}
+                  disabled={loading || selected.length !== DISCARD_COUNT}
+                  data-testid="zw-discard"
+                >
+                  {t('discard', { count: selected.length, total: DISCARD_COUNT })}
+                </button>
+              )}
+              {isTrickEnd && (
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={() => callApi('next')}
+                  disabled={loading}
+                  data-testid="zw-next-trick"
+                >
+                  {t('nextTrick')}
+                </button>
+              )}
+              {isRoundEnd && !isGameEnd && (
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={() => callApi('nextround')}
+                  disabled={loading}
+                  data-testid="zw-next-round"
+                >
+                  {t('nextDeal')}
+                </button>
+              )}
+              {isGameEnd && (
+                <button type="button" className={btnSuccess} onClick={resetWithConfig} disabled={loading}>
+                  {t('newGame')}
+                </button>
+              )}
+              <GameResetButton
+                isGameEnd={isGameEnd}
+                onReset={resetWithConfig}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="zw-reset-button"
+              />
+            </div>
+          </GameFooter>
+        </>
+      )}
     </GamePageShell>
   );
 }
