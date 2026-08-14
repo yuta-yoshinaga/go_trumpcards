@@ -107,6 +107,16 @@ func TestHorseUnmarshal_RejectsTamperedState(t *testing.T) {
 			m["cf"] = cf
 		}, "seats out of range"},
 		{"卓の JSON が壊れている", func(m map[string]any) { m["tb"] = map[string]any{"ph": "x"} }, "restore table"},
+		// **卓の人数が席数と食い違う保存は受け取らない。** 種目側の
+		// UnmarshalJSON はプレイヤー列を差し替えるだけで人数を検めないので、
+		// 通すと次の 1 手で範囲外を触って落ちる。
+		{"卓の人数が席数より少ない", func(m map[string]any) {
+			tb := m["tb"].(map[string]any)
+			tb["pl"] = tb["pl"].([]any)[:2]
+			m["tb"] = tb
+		}, "seats 2 players but 4 seats are funded"},
+		// ハンド中なのに卓が無い保存は、落ちない代わりに二度と進まない。
+		{"ハンド中なのに卓が無い", func(m map[string]any) { delete(m, "tb") }, "no table was saved"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

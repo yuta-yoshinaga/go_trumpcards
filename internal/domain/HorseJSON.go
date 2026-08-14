@@ -114,7 +114,13 @@ func (g *Horse) UnmarshalJSON(data []byte) error {
 		g.actionLog = make([]*ActionLogEntry, 0)
 	}
 	g.table, g.endPhase, g.harvest = nil, horseEndPhase{}, nil
-	if len(j.Table) > 0 && j.Phase == HorsePhaseHand {
+	if j.Phase == HorsePhaseHand {
+		// **ハンド中なのに卓が無い保存は受け取らない。** 復元しても打てる手が
+		// 1 つも無く、マッチは止まったまま二度と進まない ── 落ちないぶん、
+		// 壊れた保存より質が悪い。
+		if len(j.Table) == 0 {
+			return fmt.Errorf("horse: phase is Hand but no table was saved")
+		}
 		if err := g.restoreTable(j.Table); err != nil {
 			return err
 		}
@@ -133,6 +139,14 @@ func (g *Horse) restoreTable(raw json.RawMessage) error {
 	}
 	if err := json.Unmarshal(raw, table); err != nil {
 		return fmt.Errorf("horse: restore table: %w", err)
+	}
+	// **卓の人数は席数と一致していなければならない。** 種目の UnmarshalJSON は
+	// プレイヤー列をまるごと差し替えるだけで人数を検めないので、少ない卓を
+	// 復元すると次の 1 手で落ちる ── `players[currentTurn]` も、回収の
+	// `GetPlayer(i).GetChips()` も、範囲外を見に行く。
+	if n := table.GetPlayerCnt(); n != len(g.seatMap) {
+		return fmt.Errorf("horse: restored table seats %d players but %d seats are funded",
+			n, len(g.seatMap))
 	}
 	g.table, g.endPhase, g.harvest = table, end, harvest
 	return nil

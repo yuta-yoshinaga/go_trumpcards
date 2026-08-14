@@ -56,6 +56,9 @@ type horseTable interface {
 	GetGameEndFlag() bool
 	GetCurrentTurn() int
 	GetPot() int
+	// GetPlayerCnt は卓に座っている人数を返す。復元した卓が席数と食い違って
+	// いないかを確かめるために要る。
+	GetPlayerCnt() int
 }
 
 // horseEndPhase は種目ごとの「ハンドが終わった」フェーズ番号。
