@@ -303,6 +303,7 @@ export * from './games/trenteetquarante';
 export * from './games/tressette';
 export * from './games/trex';
 export * from './games/tripeaks';
+export * from './games/troggu';
 export * from './games/truco';
 export * from './games/tusac';
 export * from './games/tute';
@@ -636,6 +637,7 @@ export const games = [
   'tusac',
   'sakura',
   'zwanzigerrufen',
+  'troggu',
   'aluette',
   'minchiate',
   'tarocchini',
