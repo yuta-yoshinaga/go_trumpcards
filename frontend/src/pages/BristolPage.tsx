@@ -20,6 +20,7 @@ import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
+import { useDestinationPreview } from '../hooks/useDestinationPreview';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -109,9 +110,18 @@ function BristolPageContent() {
   // **押すまで合法か分からなかった。**選択中は全ての移動先が同じ見た目で強調されて
   // いた (#4813)。判定はサーバー (ドメインの canPlaceOn*) が返す legalTargets を
   // そのまま読む — ここで書き直すと画面とサーバーの言うことが食い違う。
-  const legalForSelected = selected ? state?.legalTargets?.[`${selected.zone}-${selected.col ?? 0}`] : undefined;
-  const legalTableau = new Set(legalForSelected?.tableau ?? []);
-  const legalFoundation = new Set(legalForSelected?.foundation ?? []);
+  // **選ぶ前に行き先が見える (#4454)。** hover / フォーカス中の札にも、選択後と
+  // まったく同じサーバー由来の集合を当てる ── 判定を書き直さないので、画面と
+  // サーバーの言うことが食い違わない。
+  const preview = useDestinationPreview<BristolMoveZone>(selected);
+  const previewSource = preview.source;
+  const legalForSource = previewSource
+    ? state?.legalTargets?.[`${previewSource.zone}-${previewSource.col ?? 0}`]
+    : undefined;
+  const legalTableau = new Set(legalForSource?.tableau ?? []);
+  const legalFoundation = new Set(legalForSource?.foundation ?? []);
+  /** Border for a legal destination: softer while it is only a hover preview. */
+  const targetBorder = preview.isPreview ? 'border-ds-success/70' : 'border-ds-success';
 
   const handleReset = useCallback(() => {
     setSelected(null);
@@ -288,11 +298,14 @@ function BristolPageContent() {
                             : t('foundationAriaEmpty', { num: i })
                         }
                         className={
-                          selected && legalFoundation.has(i)
-                            ? `rounded border p-0.5 ${focusRingWhite} border-ds-success`
+                          previewSource && legalFoundation.has(i)
+                            ? `rounded border p-0.5 ${focusRingWhite} ${targetBorder}`
                             : `rounded border p-0.5 ${focusRingWhite} border-white/30`
                         }
-                        data-testid={selected && legalFoundation.has(i) ? 'bristol-legal-target' : undefined}
+                        data-testid={previewSource && legalFoundation.has(i) ? 'bristol-legal-target' : undefined}
+                        data-preview-target={
+                          previewSource && legalFoundation.has(i) && preview.isPreview ? 'true' : undefined
+                        }
                         style={{ width: cardWidth + 4, height: cardHeight + 4 }}
                       >
                         {pile.length > 0 ? (
@@ -336,14 +349,18 @@ function BristolPageContent() {
                         disabled={!isPlaying || loading || (col.length === 0 && !selected)}
                         aria-label={t('tableauColAria', { num: colIdx + 1, count: col.length })}
                         aria-pressed={isSelected(zone)}
+                        {...preview.previewProps(zone)}
                         className={
                           isSelected(zone)
                             ? `relative w-full rounded border-2 bg-transparent p-0 ${focusRingWhite} border-ds-info`
-                            : selected && legalTableau.has(colIdx)
-                              ? `relative w-full rounded border-2 bg-transparent p-0 ${focusRingWhite} border-ds-success`
+                            : previewSource && legalTableau.has(colIdx)
+                              ? `relative w-full rounded border-2 bg-transparent p-0 ${focusRingWhite} ${targetBorder}`
                               : `relative w-full rounded border-2 bg-transparent p-0 ${focusRingWhite} border-transparent`
                         }
-                        data-testid={selected && legalTableau.has(colIdx) ? 'bristol-legal-target' : undefined}
+                        data-testid={previewSource && legalTableau.has(colIdx) ? 'bristol-legal-target' : undefined}
+                        data-preview-target={
+                          previewSource && legalTableau.has(colIdx) && preview.isPreview ? 'true' : undefined
+                        }
                         style={{ height: colHeight }}
                       >
                         {col.length === 0 ? (
@@ -388,6 +405,7 @@ function BristolPageContent() {
                           draggable={isPlaying && !loading}
                           onDragStart={dnd.handleDragStart(zone)}
                           onDragEnd={dnd.handleDragEnd}
+                          {...preview.previewProps(zone)}
                           onClick={() => handleFanClick(i)}
                           disabled={!isPlaying || loading}
                           aria-label={t('fanAria', { num: i, card: cardAlt(top), count: pile.length })}

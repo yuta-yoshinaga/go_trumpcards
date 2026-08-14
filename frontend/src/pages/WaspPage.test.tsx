@@ -671,3 +671,51 @@ describe('WaspPage CLI legal command', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('deal'));
   });
 });
+
+// 選ぶ前に行き先が見える (#4454)。
+describe('WaspPage destination preview', () => {
+  /** The ♥7 in column 5; ♥8 tops column 1, so it has exactly one legal target. */
+  const heartSeven = () => screen.getByRole('button', { name: /♥ 7/ });
+
+  it('highlights the destination while a card is hovered, and drops it on leave', async () => {
+    renderWithProviders(<WaspPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.queryByTestId('wasp-legal-target')).not.toBeInTheDocument();
+
+    fireEvent.mouseEnter(heartSeven());
+    const target = await screen.findByTestId('wasp-legal-target');
+    expect(target).toHaveAttribute('data-preview-target', 'true');
+    expect(target.className).toContain('ring-ds-success/70');
+
+    fireEvent.mouseLeave(heartSeven());
+    expect(screen.queryByTestId('wasp-legal-target')).not.toBeInTheDocument();
+  });
+
+  it('highlights the destination on focus', async () => {
+    renderWithProviders(<WaspPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    fireEvent.focus(heartSeven());
+    expect(await screen.findByTestId('wasp-legal-target')).toHaveAttribute('data-preview-target', 'true');
+  });
+
+  // 選択が hover に勝つ ── 狙っている最中に消えない。
+  it('keeps the selected targets while the pointer moves elsewhere', async () => {
+    renderWithProviders(<WaspPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    fireEvent.click(heartSeven());
+    const target = await screen.findByTestId('wasp-legal-target');
+    expect(target).not.toHaveAttribute('data-preview-target');
+    expect(target.className).not.toContain('ring-ds-success/70');
+
+    fireEvent.mouseEnter(screen.getByRole('button', { name: /♣ 2/ }));
+    expect(screen.getByTestId('wasp-legal-target')).not.toHaveAttribute('data-preview-target');
+  });
+
+  it('shows nothing for a card with no legal destination', async () => {
+    renderWithProviders(<WaspPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    fireEvent.mouseEnter(screen.getByRole('button', { name: /♠ 3/ }));
+    expect(screen.queryByTestId('wasp-legal-target')).not.toBeInTheDocument();
+  });
+});

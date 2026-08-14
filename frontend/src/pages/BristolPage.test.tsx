@@ -377,3 +377,61 @@ describe('BristolPage', () => {
     await waitFor(() => expect(screen.queryAllByTestId('bristol-legal-target')).toHaveLength(2));
   });
 });
+
+// 選ぶ前に行き先が見える (#4454)。判定はサーバーの legalTargets のまま。
+describe('BristolPage destination preview', () => {
+  const withTargets = () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      legalTargets: { 'tableau-0': { tableau: [3], foundation: [1] } },
+    });
+    renderWithProviders(<BristolPage />);
+    return screen.findByRole('button', { name: '降順ビルド列 1（1枚）' });
+  };
+  const targets = () => screen.queryAllByTestId('bristol-legal-target');
+  const previews = () => document.querySelectorAll('[data-preview-target="true"]');
+
+  it('highlights the destinations while a column is hovered', async () => {
+    const col = await withTargets();
+    expect(targets()).toHaveLength(0);
+
+    fireEvent.mouseEnter(col);
+    await waitFor(() => expect(targets()).toHaveLength(2));
+    expect(previews()).toHaveLength(2);
+    expect(targets()[0]?.className).toContain('border-ds-success/70');
+
+    fireEvent.mouseLeave(col);
+    await waitFor(() => expect(targets()).toHaveLength(0));
+  });
+
+  it('highlights the destinations on focus', async () => {
+    const col = await withTargets();
+    fireEvent.focus(col);
+    await waitFor(() => expect(previews()).toHaveLength(2));
+    fireEvent.blur(col);
+    await waitFor(() => expect(targets()).toHaveLength(0));
+  });
+
+  // **hover と選択で同じ集合。** サーバーの答えを 1 つだけ読んでいることの検証。
+  it('previews exactly the set the selection then commits to', async () => {
+    const col = await withTargets();
+    fireEvent.mouseEnter(col);
+    await waitFor(() => expect(targets()).toHaveLength(2));
+
+    fireEvent.click(col);
+    await waitFor(() => expect(previews()).toHaveLength(0));
+    expect(targets()).toHaveLength(2);
+    expect(targets()[0]?.className).not.toContain('border-ds-success/70');
+  });
+
+  it('shows nothing for a column the server lists no targets for', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      legalTargets: { 'tableau-0': { tableau: [3], foundation: [1] } },
+    });
+    renderWithProviders(<BristolPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    fireEvent.mouseEnter(screen.getByRole('button', { name: '降順ビルド列 2（1枚）' }));
+    expect(targets()).toHaveLength(0);
+  });
+});

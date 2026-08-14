@@ -370,3 +370,45 @@ describe('BakersDozenPage legal targets', () => {
     expect(emptyFoundation).toBeEnabled();
   });
 });
+
+// 選ぶ前に行き先が見える (#4454)。
+describe('BakersDozenPage destination preview', () => {
+  const render = async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BakersDozenPage />);
+    return screen.findByRole('button', { name: '♠ 5' });
+  };
+  const targets = () => document.querySelectorAll('[data-legal-target="true"]');
+  const previews = () => document.querySelectorAll('[data-preview-target="true"]');
+
+  it('rings the destination while a card is hovered', async () => {
+    const spadeFive = await render();
+    expect(targets().length).toBe(0);
+
+    fireEvent.mouseEnter(spadeFive);
+    await waitFor(() => expect(targets().length).toBeGreaterThan(0));
+    // プレビュー中は弱いリング。選択後と見分けが付く。
+    expect(previews().length).toBe(targets().length);
+    expect(targets()[0]?.className).toContain('ring-ds-success/70');
+
+    fireEvent.mouseLeave(spadeFive);
+    await waitFor(() => expect(targets().length).toBe(0));
+  });
+
+  it('rings the destination on focus', async () => {
+    const spadeFive = await render();
+    fireEvent.focus(spadeFive);
+    await waitFor(() => expect(previews().length).toBeGreaterThan(0));
+    fireEvent.blur(spadeFive);
+    await waitFor(() => expect(targets().length).toBe(0));
+  });
+
+  // 選択が hover に勝つ ── 選んだあとは実線で、カーソルが動いても消えない。
+  it('switches to the solid ring once the card is selected', async () => {
+    const spadeFive = await render();
+    fireEvent.click(spadeFive);
+    await waitFor(() => expect(targets().length).toBeGreaterThan(0));
+    expect(previews().length).toBe(0);
+    expect(targets()[0]?.className).not.toContain('ring-ds-success/70');
+  });
+});
