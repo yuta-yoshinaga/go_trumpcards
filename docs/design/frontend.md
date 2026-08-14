@@ -1128,7 +1128,7 @@ classDiagram
 
     class useKlondikeGame {
         +KlondikeResponse state
-        +FortyThievesMoveZone selectedSource
+        +KlondikeMoveZone selectedSource
         +Function handleDraw
         +Function handleSelectSource
         +Function handleSelectTarget
