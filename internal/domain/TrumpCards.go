@@ -139,18 +139,22 @@ func NewTrumpCardsEuchre() *TrumpCards {
 	return t
 }
 
-// NewTrumpCardsBelote ベロート用32枚デッキコンストラクタ
+// NewTrumpCards32 German/Czech 32枚デッキコンストラクタ
 // 7,8,9,10,J,Q,K,A (値: 1,7,8,9,10,11,12,13) × 4スート = 32枚
-func NewTrumpCardsBelote() *TrumpCards {
-	beloteValues := []int{1, 7, 8, 9, 10, 11, 12, 13} // A,7,8,9,10,J,Q,K
+//
+// **枚数を指定する NewTrumpCardsWithSuits では作れない。** あちらはスートごとに
+// 値 1..13 を回して指定枚数で打ち切るので、32 を渡すと 13+13+6+0 になり
+// ダイヤが 1 枚も入らない (実測)。使う値を並べて作るのはそのため。
+func NewTrumpCards32() *TrumpCards {
+	values := []int{1, 7, 8, 9, 10, 11, 12, 13} // A,7,8,9,10,J,Q,K
 	suits := []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond}
-	totalCards := len(beloteValues) * len(suits) // 32
+	totalCards := len(values) * len(suits) // 32
 
 	t := new(TrumpCards)
 	t.deckCnt = totalCards
 	t.deck = make([]*Card, 0, totalCards)
 	for _, suit := range suits {
-		for _, val := range beloteValues {
+		for _, val := range values {
 			t.deck = append(t.deck, NewCard(suit, val, false))
 		}
 	}
@@ -158,24 +162,17 @@ func NewTrumpCardsBelote() *TrumpCards {
 	return t
 }
 
+// NewTrumpCardsBelote ベロート用32枚デッキコンストラクタ
+// 7,8,9,10,J,Q,K,A (値: 1,7,8,9,10,11,12,13) × 4スート = 32枚
+func NewTrumpCardsBelote() *TrumpCards {
+	return NewTrumpCards32()
+}
+
 // NewTrumpCardsPrsi プルシー(チェコ版クレイジーエイト/Mau Mau)用32枚デッキコンストラクタ
 // 7,8,9,10,J,Q,K,A (値: 1,7,8,9,10,11,12,13) × 4スート = 32枚
 // ベロートと同一構成 (German/Czech 32-card pack)。
 func NewTrumpCardsPrsi() *TrumpCards {
-	prsiValues := []int{1, 7, 8, 9, 10, 11, 12, 13} // A,7,8,9,10,J,Q,K
-	suits := []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond}
-	totalCards := len(prsiValues) * len(suits) // 32
-
-	t := new(TrumpCards)
-	t.deckCnt = totalCards
-	t.deck = make([]*Card, 0, totalCards)
-	for _, suit := range suits {
-		for _, val := range prsiValues {
-			t.deck = append(t.deck, NewCard(suit, val, false))
-		}
-	}
-	t.deckInit()
-	return t
+	return NewTrumpCards32()
 }
 
 // NewTrumpCardsHasenpfeffer ハーゼンプフェファー用25枚デッキコンストラクタ
