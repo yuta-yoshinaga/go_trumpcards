@@ -1828,7 +1828,7 @@ sequenceDiagram
 
     User->>Main: go run ./cmd/trumpcards
     Main->>GM: NewGameManager()
-    Main->>GM: RunInteractiveCuiLoop()
+    Main->>GM: ui.RunInteractiveCuiLoop(manager)
 
     loop REPL ループ
         User->>GM: コマンド入力 (例: "hit")
@@ -1865,7 +1865,7 @@ sequenceDiagram
 
     WebCtrl->>Store: GetWithLock("abc123", factory)
     alt 新規セッション
-        Store->>Store: factory() でInteractor生成
+        Store->>Store: factory フィールドで Interactor 生成
         Store-->>WebCtrl: 新規Interactor
     else 既存セッション
         Store-->>WebCtrl: 既存Interactor (mutex lock)
@@ -1895,7 +1895,7 @@ sequenceDiagram
     Store->>Store: entries["sess-1"] 作成 + mutex lock
     Note over Store: Interactor A 生成
     Store-->>WebCtrl: Interactor A (locked)
-    WebCtrl->>WebCtrl: Reset() 実行
+    WebCtrl->>WebCtrl: reset コマンドを dispatch
     WebCtrl->>Store: mutex unlock
     WebCtrl-->>C1: レスポンス
 
@@ -1904,7 +1904,7 @@ sequenceDiagram
     Store->>Store: sessions["sess-2"] 作成 + mutex lock
     Note over Store: Interactor B 生成 (独立)
     Store-->>WebCtrl: Interactor B (locked)
-    WebCtrl->>WebCtrl: Reset() 実行
+    WebCtrl->>WebCtrl: reset コマンドを dispatch
     WebCtrl->>Store: mutex unlock
     WebCtrl-->>C2: レスポンス
 
@@ -1958,7 +1958,7 @@ sequenceDiagram
     Note over User,Pres: ベットフロー
     User->>Ctrl: bet 100 50
     Ctrl->>Interactor: Bet(100, 50)
-    Interactor->>Domain: PlayerBet(100, 50)
+    Interactor->>Domain: Bet(100, 50)
     Domain->>Domain: チップ減算 → 3枚ずつ配布 → phase=Action
     Domain-->>Interactor: nil
     Interactor->>Pres: Output(game, nil)
@@ -1967,7 +1967,7 @@ sequenceDiagram
     Note over User,Pres: プレイフロー
     User->>Ctrl: play
     Ctrl->>Interactor: Play()
-    Interactor->>Domain: PlayerPlay()
+    Interactor->>Domain: Play()
     Domain->>Domain: プレイベット = アンティ額
     Domain->>Eval: evalThreeCardHand(playerHand)
     Eval-->>Domain: playerRank
@@ -2023,7 +2023,7 @@ sequenceDiagram
     Note over User,Pres: オークションフロー
     User->>Ctrl: bid 1 1 5
     Ctrl->>Interactor: Bid(1, 1, 5)
-    Interactor->>Domain: Bid(BidTypeNormal, 1, NoTrump)
+    Interactor->>Domain: PlayerBid(BidTypeNormal, 1, NoTrump)
     Domain->>Domain: ビッド記録 → CPU自動ビッド → コントラクト確定 → phase=Play
     Domain-->>Interactor: nil
     Interactor->>Pres: Output(game, nil)
@@ -2032,7 +2032,7 @@ sequenceDiagram
     Note over User,Pres: トリックプレイフロー
     User->>Ctrl: play 3
     Ctrl->>Interactor: Play(3)
-    Interactor->>Domain: PlayCard(3)
+    Interactor->>Domain: PlayerPlay(3)
     Domain->>Domain: フォロースート検証 → カード出し → CPU/ダミー自動プレイ
     Domain->>Domain: トリック勝者判定 → phase=TrickEnd
     Domain-->>Interactor: nil
@@ -2053,7 +2053,7 @@ sequenceDiagram
     Note over User,Pres: フロップベッティング完了 → ディスカードフェーズ
     User->>Ctrl: discard 1
     Ctrl->>Interactor: Discard(1)
-    Interactor->>Domain: PlayerDiscard(1)
+    Interactor->>Domain: DiscardCard(1)
     Domain->>Domain: ホールカード[1]を除去 → CPU自動ディスカード → phase=Turn
     Domain-->>Interactor: nil
     Interactor->>Pres: Output(game, nil)
@@ -2073,7 +2073,7 @@ sequenceDiagram
     Note over User,Pres: プレイフロー
     User->>Ctrl: play 0 1
     Ctrl->>Interactor: Play(0, 1)
-    Interactor->>Domain: Play(0, 1)
+    Interactor->>Domain: PlayerPlay(0, 1)
     Domain->>Domain: 手札[0]を場札[1]に出す → 手札補充 → CPU自動プレイ
     Domain-->>Interactor: nil
     Interactor->>Pres: Output(game, nil)
@@ -2102,7 +2102,7 @@ sequenceDiagram
     Note over User,Pres: 要求フロー
     User->>Ctrl: ask 1 7
     Ctrl->>Interactor: Ask(1, 7)
-    Interactor->>Domain: Ask(1, 7)
+    Interactor->>Domain: PlayerAsk(1, 7)
     Domain->>Domain: 相手が持っていればカード移動 → ブックチェック → CPU自動プレイ
     Domain-->>Interactor: nil
     Interactor->>Pres: Output(game, nil)
@@ -2111,7 +2111,7 @@ sequenceDiagram
     Note over User,Pres: Go Fish (相手が持っていない場合)
     User->>Ctrl: ask 2 13
     Ctrl->>Interactor: Ask(2, 13)
-    Interactor->>Domain: Ask(2, 13)
+    Interactor->>Domain: PlayerAsk(2, 13)
     Domain->>Domain: 相手が持っていない → 山札から1枚引く → ブックチェック → CPU自動プレイ
     Domain-->>Interactor: nil
     Interactor->>Pres: Output(game, nil)
@@ -2130,8 +2130,8 @@ sequenceDiagram
 
     Note over User,Pres: ドローフロー
     User->>Ctrl: draw
-    Ctrl->>Interactor: Draw()
-    Interactor->>Domain: Draw()
+    Ctrl->>Interactor: Action()
+    Interactor->>Domain: PlayerAction()
     Domain->>Domain: 山札から1枚引く → スート一致判定 → ペナルティ or 場に置く → CPU自動プレイ
     Domain-->>Interactor: nil
     Interactor->>Pres: Output(game, nil)
@@ -2209,7 +2209,7 @@ sequenceDiagram
     Note over User,Pres: アタックフロー
     User->>Ctrl: attack 0
     Ctrl->>Interactor: Attack(0)
-    Interactor->>Domain: Attack(0)
+    Interactor->>Domain: PlayerAttack(0)
     Domain->>Domain: カード出す → テーブルに配置 → CPU自動ディフェンス判定
     Domain-->>Interactor: nil
     Interactor->>Pres: Output(game, nil)
@@ -2218,7 +2218,7 @@ sequenceDiagram
     Note over User,Pres: ディフェンスフロー
     User->>Ctrl: defend 2
     Ctrl->>Interactor: Defend(2)
-    Interactor->>Domain: Defend(2)
+    Interactor->>Domain: PlayerDefend(2)
     Domain->>Domain: 防御カード配置 → 切り札/同スート判定 → ビート成否
     Domain-->>Interactor: nil
     Interactor->>Pres: Output(game, nil)
@@ -2255,8 +2255,8 @@ sequenceDiagram
 
     Note over User,Pres: ムーブフロー
     User->>Ctrl: move w f1
-    Ctrl->>Interactor: Move("w", "f1")
-    Interactor->>Domain: Move("w", "f1")
+    Ctrl->>Interactor: MoveWasteToFoundation()
+    Interactor->>Domain: MoveWasteToFoundation()
     Domain->>Domain: ウェスト → 組札1へ移動 → 同スート昇順チェック
     Domain-->>Interactor: nil
     Interactor->>Pres: Output(game, nil)
@@ -2486,7 +2486,7 @@ sequenceDiagram
 
     Note over User,Pres: トリック終了 (phase=TrickEnd)
     User->>Ctrl: next
-    Ctrl->>Interactor: Next()
+    Ctrl->>Interactor: NextTrick()
     Interactor->>Domain: NextTrick()
     Domain->>Domain: 10トリック未満なら phase=Play
     Domain->>Domain: 10トリック完了で phase=RoundEnd
@@ -2506,6 +2506,17 @@ sequenceDiagram
 ---
 
 ## 3. ステートマシン図
+
+遷移ラベルのメソッド名と `note` のフェーズ定数名は、
+`TestDesignDocStateTransitionsExistInGo` と `TestDesignDocStateConstantsExistInGo`
+が節見出しのゲーム名を持ち主として実コードと照合している（
+`internal/infrastructure/games/design_doc_diagrams_test.go`）。
+
+末尾に `*` を付けた `Move*()` は**兄弟メソッド群の略記**で、ラベルに列挙するには
+長すぎる場合にだけ使う（例: `MoveTableauToTableau` / `MoveTableauToFoundation` /
+`MoveTableauToFreeCell` / `MoveFreeCellToTableau` / `MoveFreeCellToFoundation`）。
+ガードは `*` 付きを実メソッド名として照合しない。逆に言えば、`*` の無い名前は
+すべて実在するメソッドでなければならない。
 
 ### 3.1 BlackJack フェーズ遷移
 
@@ -3047,7 +3058,7 @@ stateDiagram-v2
 ```mermaid
 stateDiagram-v2
     [*] --> Playing : Reset()
-    Playing --> Playing : Draw() / Move() / Undo() / Hint() / AutoComplete()
+    Playing --> Playing : Draw() / Move*() / Undo() / Hint() / AutoComplete()
     Playing --> GameClear : 8組札すべて完成
     Playing --> GameOver : 移動可能な手なし
     GameOver --> [*]
@@ -3526,7 +3537,7 @@ stateDiagram-v2
 ```mermaid
 stateDiagram-v2
     [*] --> Playing : Reset()
-    Playing --> Playing : Move() / Undo() / Hint() / AutoComplete()
+    Playing --> Playing : Move*() / Undo() / Hint() / AutoComplete()
     Playing --> GameClear : 組札4スート全完成
     Playing --> GameOver : GiveUp()
     GameClear --> [*]
@@ -3544,7 +3555,7 @@ Penguin は FreeCell のバリアントで、最初に配られたカードの�
 ```mermaid
 stateDiagram-v2
     [*] --> Playing : Reset()
-    Playing --> Playing : Move() / Undo() / Hint() / AutoComplete()
+    Playing --> Playing : Move*() / Undo() / Hint() / AutoComplete()
     Playing --> GameClear : 組札4スート全完成
     Playing --> GameOver : GiveUp()
     GameClear --> [*]
