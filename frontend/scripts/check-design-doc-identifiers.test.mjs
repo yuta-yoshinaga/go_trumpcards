@@ -103,4 +103,83 @@ describe('check-design-doc-identifiers', () => {
     expect(r.out).toContain('GhostOne');
     expect(r.out).toContain('GhostTwo');
   });
+
+  // Cross-game consistency (#5350). The first fix for that issue replaced a
+  // dead `MoveZone` with `FortyThievesMoveZone` under `useKlondikeGame` — an
+  // identifier that exists, on the wrong game. Every check here had passed it,
+  // because all of them only ever asked whether the name exists somewhere.
+  describe('cross-game references', () => {
+    /** A doc whose nodes carry the given member lines verbatim. */
+    function membersDoc(nodes) {
+      const body = Object.entries(nodes)
+        .map(([name, lines]) => `    class ${name} {\n${lines.map((l) => `        ${l}`).join('\n')}\n    }`)
+        .join('\n');
+      return ['# Design', '', '```mermaid', 'classDiagram', body, '```', ''].join('\n');
+    }
+
+    function checkDoc(nodes, sources = {}) {
+      const dir = mkdtempSync(join(tmpdir(), 'design-doc-ids-x-'));
+      dirs.push(dir);
+      const src = join(dir, 'src');
+      mkdirSync(src, { recursive: true });
+      // Export every node so the class-existence check passes and these cases
+      // isolate the cross-game rule.
+      writeFileSync(
+        join(src, 'a.ts'),
+        Object.keys(nodes)
+          .map((n) => `export const ${n} = 1;`)
+          .join('\n'),
+      );
+      for (const [name, body] of Object.entries(sources)) writeFileSync(join(src, name), body);
+      const docFile = join(dir, 'design.md');
+      writeFileSync(docFile, membersDoc(nodes));
+      const r = spawnSync(process.execPath, [GUARD, src, docFile], { encoding: 'utf8', cwd: process.cwd() });
+      return { code: r.status, out: `${r.stdout}${r.stderr}` };
+    }
+
+    it("rejects a member typed with another game's type", () => {
+      const r = checkDoc({
+        useKlondikeGame: ['+FortyThievesMoveZone selectedSource'],
+        FortyThievesResponse: ['+number stockCount'],
+      });
+      expect(r.code).toBe(1);
+      expect(r.out).toContain('FortyThievesMoveZone');
+      expect(r.out).toContain('useKlondikeGame');
+    });
+
+    it("accepts a member typed with its own game's type", () => {
+      const r = checkDoc({
+        useKlondikeGame: ['+KlondikeMoveZone selectedSource'],
+        FortyThievesResponse: ['+number stockCount'],
+      });
+      expect(r.code).toBe(0);
+    });
+
+    it('accepts an identifier listed as shared across games', () => {
+      // Yukon and RussianSolitaire really do import Klondike's tableau type.
+      const r = checkDoc({
+        YukonResponse: ['+KlondikeTableauCard[][] tableau'],
+        KlondikeResponse: ['+number stockCount'],
+      });
+      expect(r.code).toBe(0);
+    });
+
+    it('does not read a longer game name as a shorter one', () => {
+      // `VideoPokerResponse` must not be treated as belonging to `Poker`, or
+      // every one of its own types would look cross-game.
+      const r = checkDoc({
+        VideoPokerResponse: ['+VideoPokerHand hand'],
+        PokerResponse: ['+number pot'],
+      });
+      expect(r.code).toBe(0);
+    });
+
+    it('ignores nodes that are not game-scoped', () => {
+      const r = checkDoc({
+        useCardSelection: ['+KlondikeMoveZone zone'],
+        KlondikeResponse: ['+number stockCount'],
+      });
+      expect(r.code).toBe(0);
+    });
+  });
 });

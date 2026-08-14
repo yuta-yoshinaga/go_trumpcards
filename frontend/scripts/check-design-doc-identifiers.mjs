@@ -60,6 +60,27 @@ const EXPORT_LIST = /export\s*(?:type\s+)?\{([^}]*)\}/g;
 const EXPORT_DEFAULT_IDENT = /export\s+default\s+([A-Za-z0-9_$]+)\s*;/g;
 
 const CLASS_DECL = /^\s*class\s+([A-Za-z0-9_]+)/;
+/** `class Foo {` — a node that opens a member body. */
+const CLASS_OPEN = /^\s*class\s+([A-Za-z0-9_~]+)\s*\{/;
+const CLASS_CLOSE = /^\s*\}/;
+
+/**
+ * Identifiers that legitimately appear under a different game's node because
+ * the type really is shared. Verified by import, not assumed: `yukon.ts:5` and
+ * `russiansolitaire.ts:5` both `import type { KlondikeTableauCard }`.
+ *
+ * Keep this list short. Every entry is a claim that two games share a type on
+ * purpose, and a wrong entry silences the check for that identifier everywhere.
+ */
+const SHARED_ACROSS_GAMES = new Set(['KlondikeTableauCard']);
+
+/**
+ * The game a node belongs to, from `useKlondikeGame` or `KlondikeResponse`.
+ * Returns null for nodes that are not game-scoped.
+ */
+function gameOf(node) {
+  return /^use([A-Z][A-Za-z0-9]*)Game$/.exec(node)?.[1] ?? /^([A-Z][A-Za-z0-9]*)Response$/.exec(node)?.[1] ?? null;
+}
 
 async function* sourceFiles(dir) {
   for (const entry of await readdir(dir, { withFileTypes: true })) {
@@ -109,11 +130,52 @@ for await (const name of directories(SRC)) known.add(name);
 
 const doc = await readFile(DOC, 'utf8');
 const classes = new Set();
+/** node name -> its member lines, for the cross-game check below. */
+const members = new Map();
 for (const block of doc.matchAll(/```mermaid\n([\s\S]*?)```/g)) {
   if (!/^\s*classDiagram/m.test(block[1])) continue;
+  let open = null;
   for (const line of block[1].split('\n')) {
     const m = line.match(CLASS_DECL);
     if (m) classes.add(m[1]);
+    const o = line.match(CLASS_OPEN);
+    if (o) {
+      open = o[1];
+      if (!members.has(open)) members.set(open, []);
+      continue;
+    }
+    if (open && CLASS_CLOSE.test(line)) {
+      open = null;
+      continue;
+    }
+    if (open) members.get(open).push(line);
+  }
+}
+
+// Cross-game consistency. `design_doc_identifiers_test.go` and the class check
+// above both ask only "does this identifier exist somewhere", and that is not
+// the question: `FortyThievesMoveZone` exists, but writing it under
+// `useKlondikeGame` (which uses `KlondikeMoveZone`) still shipped a wrong type
+// into the diagram (#5350). Existence is not correctness — the owner decides.
+//
+// The game vocabulary comes from the document itself, so this needs no game
+// list to drift against: every `use<Game>Game` / `<Game>Response` node
+// contributes its game.
+const gameNames = new Set([...members.keys()].map(gameOf).filter(Boolean));
+const crossGame = [];
+for (const [node, lines] of members) {
+  const owner = gameOf(node);
+  if (!owner) continue;
+  for (const line of lines) {
+    for (const [, ident] of line.matchAll(/\b([A-Z][A-Za-z0-9]*)\b/g)) {
+      if (SHARED_ACROSS_GAMES.has(ident)) continue;
+      // Longest match wins so `VideoPoker…` is not read as `Poker…`.
+      let other = null;
+      for (const g of gameNames) {
+        if (ident.startsWith(g) && ident.length > g.length && (!other || g.length > other.length)) other = g;
+      }
+      if (other && other !== owner) crossGame.push({ node, ident, owner, other });
+    }
   }
 }
 
@@ -124,6 +186,20 @@ if (SCANNING_REPO) {
 }
 
 const unknown = [...classes].filter((c) => !PLACEHOLDERS.has(c) && !known.has(c)).sort();
+
+if (crossGame.length > 0) {
+  console.error(`\ndesign-doc-identifiers: ${crossGame.length} member(s) reference another game's type.\n`);
+  for (const { node, ident, owner, other } of crossGame) {
+    console.error(`  ${node} (${owner}) references ${ident} (${other})`);
+  }
+  console.error(
+    '\nThe identifier exists, but not for this game -- each game has its own\n' +
+      "<Game>MoveZone, <Game>Response and friends. Use this node's own type, or,\n" +
+      'if the type really is shared, add it to SHARED_ACROSS_GAMES in this script\n' +
+      'after confirming the import.\n',
+  );
+  process.exit(1);
+}
 
 if (unknown.length > 0) {
   console.error(
