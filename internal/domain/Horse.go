@@ -179,27 +179,27 @@ func (g *Horse) buildTable() (horseTable, horseEndPhase, func()) {
 		players := NewPlayersForTable(n)
 		g.dealChipsTo(func(i, chips int) { players[i].SetChips(chips) })
 		t := NewHoldem(NewTrumpCards(0), players, horseTableConfig(DefaultHoldemConfig(), n))
-		return t, horseEndPhase{end: HoldemPhaseEnd, rebuy: HoldemPhaseRebuy}, func() { g.collectChipsFrom(func(i int) int { return players[i].GetChips() }) }
+		return t, horseEndPhase{end: HoldemPhaseEnd, rebuy: HoldemPhaseRebuy}, func() { g.collectChipsFrom(func(i int) int { return t.GetPlayer(i).GetChips() }) }
 	case HorseOmahaHiLo:
 		players := NewOmahaPlayersForTable(n)
 		g.dealChipsTo(func(i, chips int) { players[i].SetChips(chips) })
 		t := NewOmahaHiLo(NewTrumpCards(0), players, horseTableConfig(DefaultOmahaConfig(), n))
-		return t, horseEndPhase{end: HoldemPhaseEnd, rebuy: HoldemPhaseRebuy}, func() { g.collectChipsFrom(func(i int) int { return players[i].GetChips() }) }
+		return t, horseEndPhase{end: HoldemPhaseEnd, rebuy: HoldemPhaseRebuy}, func() { g.collectChipsFrom(func(i int) int { return t.GetPlayer(i).GetChips() }) }
 	case HorseRazz:
 		players := NewSevenCardStudPlayersForTable(n)
 		g.dealChipsTo(func(i, chips int) { players[i].SetChips(chips) })
 		t := NewRazz(NewTrumpCards(0), players, horseStudTableConfig(DefaultRazzConfig(), n))
-		return t, horseEndPhase{end: SevenCardStudPhaseEnd, rebuy: SevenCardStudPhaseRebuy}, func() { g.collectChipsFrom(func(i int) int { return players[i].GetChips() }) }
+		return t, horseEndPhase{end: SevenCardStudPhaseEnd, rebuy: SevenCardStudPhaseRebuy}, func() { g.collectChipsFrom(func(i int) int { return t.GetPlayer(i).GetChips() }) }
 	case HorseStud:
 		players := NewSevenCardStudPlayersForTable(n)
 		g.dealChipsTo(func(i, chips int) { players[i].SetChips(chips) })
 		t := NewSevenCardStud(NewTrumpCards(0), players, horseStudTableConfig(DefaultSevenCardStudConfig(), n))
-		return t, horseEndPhase{end: SevenCardStudPhaseEnd, rebuy: SevenCardStudPhaseRebuy}, func() { g.collectChipsFrom(func(i int) int { return players[i].GetChips() }) }
+		return t, horseEndPhase{end: SevenCardStudPhaseEnd, rebuy: SevenCardStudPhaseRebuy}, func() { g.collectChipsFrom(func(i int) int { return t.GetPlayer(i).GetChips() }) }
 	case HorseStudHiLo:
 		players := NewSevenCardStudPlayersForTable(n)
 		g.dealChipsTo(func(i, chips int) { players[i].SetChips(chips) })
 		t := NewSevenCardStudHiLo(NewTrumpCards(0), players, horseStudTableConfig(DefaultSevenCardStudConfig(), n))
-		return t, horseEndPhase{end: SevenCardStudPhaseEnd, rebuy: SevenCardStudPhaseRebuy}, func() { g.collectChipsFrom(func(i int) int { return players[i].GetChips() }) }
+		return t, horseEndPhase{end: SevenCardStudPhaseEnd, rebuy: SevenCardStudPhaseRebuy}, func() { g.collectChipsFrom(func(i int) int { return t.GetPlayer(i).GetChips() }) }
 	default:
 		return nil, horseEndPhase{}, nil
 	}
@@ -261,6 +261,12 @@ func (g *Horse) dealChipsTo(set func(i, chips int)) {
 }
 
 // collectChipsFrom は種目側の残高を正本へ戻す。
+//
+// **読むのは卓のアクセサであってスライスではない。** 復元では
+// `json.Unmarshal` が卓の中のプレイヤーを丸ごと差し替えるので、作ったときの
+// スライスを閉じ込めておくと**差し替え前の別人を読む** ── ハンドを打っても
+// 正本の残高が 1 円も動かなかった (実測)。卓のポインタは同じままなので、
+// `GetPlayer(i)` を通せば必ず現物を読む。
 func (g *Horse) collectChipsFrom(get func(i int) int) {
 	for tableIdx, seatIdx := range g.seatMap {
 		g.seats[seatIdx].chips = get(tableIdx)

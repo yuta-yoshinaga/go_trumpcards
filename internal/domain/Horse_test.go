@@ -206,45 +206,11 @@ func TestHorse_TurnIsReportedInCanonicalSeats(t *testing.T) {
 	assert.Contains(t, []int{0, 1, 2, 3}, g.GetCurrentTurn())
 }
 
-// **スタッド系はハンドを通じて総量が変わらない。**
-//
-// 飛んだ席を座らせないようにして初めて成立した (それ以前は積み直しで
-// 総量が 3000 → 3114 に増えていた)。
-func TestHorse_StudFamilyConservesChips(t *testing.T) {
-	t.Parallel()
-	for range 20 {
-		g := NewHorse(HorseConfig{Seats: 4, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
-		g.Reset()
-		// R / S / E まで進める。
-		for g.GetDiscipline() != HorseRazz && !g.GetGameEndFlag() {
-			horseFoldOutHand(t, g)
-			require.NoError(t, g.NextHand())
-		}
-		for range 3 {
-			if g.GetGameEndFlag() {
-				break
-			}
-			before := horseTotalChips(g)
-			name := HorseDisciplineName(g.GetDiscipline())
-			horseFoldOutHand(t, g)
-			assert.Equal(t, before, horseTotalChips(g), "%s のハンドで総量が変わった", name)
-			if g.GetGameEndFlag() {
-				break
-			}
-			require.NoError(t, g.NextHand())
-		}
-	}
-}
+// スタッド系だけを見ていた古い検査は
+// `TestHorse_EveryDisciplineConservesChips` に統合した。**歩き回る途中で席が
+// 飛ぶと NextHand がマッチを終える**ので、終局の確認を挟まないループは 6 回に
+// 1 回ほど落ちていた (実測)。統合先は毎ステップで終局を見る。
 
-// **どの種目でもチップは保存する。**
-//
-// 以前ここは「Holdem/Omaha はハンド終了時にポットが未配分のまま残る」として
-// skip していたが、**測り直したら読み違いだった**: 配っていないのではなく
-// `resolveShowdown` が `pot` を 0 に戻していないだけで、チップは配られていた。
-// 当時見えた「総量が増減する」はリバイ (破産した席へのチップ補充) が原因。
-//
-// pot が残る側は #5341 で 6 実装すべて直したので、ここでは **H-O-R-S-E の 5 種目
-// すべて**で総量が動かないことを見る。
 func TestHorse_EveryDisciplineConservesChips(t *testing.T) {
 	t.Parallel()
 	seen := map[HorseDiscipline]bool{}
