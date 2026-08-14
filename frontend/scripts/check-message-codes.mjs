@@ -27,8 +27,14 @@ import { assertFloor } from './lib/floor.mjs';
 
 const FRONTEND = fileURLToPath(new URL('..', import.meta.url));
 const REPO = join(FRONTEND, '..');
-const PRESENTER_DIR = join(REPO, 'internal/adapter/presenter');
-const LOCALES = join(FRONTEND, 'src/i18n/locales');
+// The two roots are overridable by argv so the guard's own test can run it against a
+// fixture. A guard that can only ever be pointed at the real tree cannot be shown to
+// fail on bad input, and one that is never shown to fail is indistinguishable from one
+// that passes everything.
+const PRESENTER_DIR = process.argv[2] ?? join(REPO, 'internal/adapter/presenter');
+const LOCALES = process.argv[3] ?? join(FRONTEND, 'src/i18n/locales');
+const REAL_FLOOR = 500;
+const FIXTURE_FLOOR = 1;
 
 /**
  * Emitted codes, as code -> the message literals returned alongside it.
@@ -105,6 +111,21 @@ async function emittedCodes() {
       out.get(code).literals.add(args[0].startsWith('"') ? args[0] : '<computed>');
       out.get(code).files.add(name);
     }
+    // The assignment form, which the `return` scan above cannot see at all.
+    //
+    // Newer presenters build an output struct and set the field:
+    // `resObj.MessageCode = "colorado.gameClear"`. Those codes were never
+    // collected, so the guard reported full coverage of the codes it happened
+    // to recognise while the assignment form went unchecked entirely — the
+    // same "confidently silent" failure the splitArgs comment above describes.
+    // The message is assigned separately, so it is never blank-with-no-fallback;
+    // it renders the raw Go literal, which is what `<computed>` classifies.
+    for (const m of text.matchAll(/\.MessageCode\s*=\s*"([a-zA-Z0-9_.]+)"/g)) {
+      const code = m[1];
+      if (!out.has(code)) out.set(code, { literals: new Set(), files: new Set() });
+      out.get(code).literals.add('<computed>');
+      out.get(code).files.add(name);
+    }
   }
   return out;
 }
@@ -113,7 +134,14 @@ const emitted = await emittedCodes();
 // 774 codes today, parsed out of the presenter sources by regex. A parser change that stops
 // recognising most `return` forms would leave a handful of codes, all of them translated, and
 // this guard would announce full coverage of the codes it could still see.
-assertFloor('message-codes', emitted.size, 500, `codes emitted from ${relative(REPO, PRESENTER_DIR)}`);
+// A fixture run (argv-supplied roots) has a handful of codes by design, so it floors at
+// FIXTURE_FLOOR; the real run keeps the number that matters. Both are plain literals so
+// the floor can be read off the source — check-guard-floors rejects a computed one.
+if (process.argv[2]) {
+  assertFloor('message-codes', emitted.size, FIXTURE_FLOOR, 'codes emitted from the fixture');
+} else {
+  assertFloor('message-codes', emitted.size, REAL_FLOOR, `codes emitted from ${relative(REPO, PRESENTER_DIR)}`);
+}
 
 const ja = JSON.parse(await readFile(join(LOCALES, 'ja/common.json'), 'utf8')).messageCode ?? {};
 const en = JSON.parse(await readFile(join(LOCALES, 'en/common.json'), 'utf8')).messageCode ?? {};
