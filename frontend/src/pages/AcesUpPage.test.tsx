@@ -302,7 +302,10 @@ describe('AcesUpPage', () => {
       message: '手詰まりです。',
     });
     renderWithProviders(<AcesUpPage />);
-    await waitFor(() => expect(screen.getByText('手詰まりです。')).toBeInTheDocument());
+    // messageCode の訳が勝つ (#5291)。サーバの message はフォールバック。
+    await waitFor(() =>
+      expect(screen.getByText('手詰まりです。元に戻すかギブアップしてください。')).toBeInTheDocument(),
+    );
   });
 
   it('suppresses unused import warning', () => {

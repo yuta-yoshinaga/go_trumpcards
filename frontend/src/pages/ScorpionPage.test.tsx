@@ -6,6 +6,17 @@ import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, ScorpionResponse } from '../types/card';
 import { ScorpionPage } from './ScorpionPage';
 
+/**
+ * This page's own hint region.
+ *
+ * **`GameMessageBox` is also `role="status"`**, and it now renders on every
+ * phase because this game's messageCodes are translated (#5291). Querying the
+ * role alone therefore matches two elements; the message box is the one built
+ * from `glass-panel`, so the hint region is the other one.
+ */
+const hintLiveRegion = () =>
+  screen.queryAllByRole('status').find((el) => !el.classList.contains('glass-panel')) ?? null;
+
 vi.mock('../api/gameApi', () => ({
   scorpionApi: { exec: vi.fn() },
   actionLogApi: { scorpion: vi.fn() },
@@ -335,8 +346,9 @@ describe('ScorpionPage', () => {
     renderWithProviders(<ScorpionPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     // Inline hint box shows "場札 3"
-    const hintBox = screen.getByRole('status');
-    expect(hintBox.textContent).toMatch(/3/);
+    const hintBox = hintLiveRegion();
+    expect(hintBox).not.toBeNull();
+    expect(hintBox?.textContent).toMatch(/3/);
   });
 
   it('renders inline hint for deal when hint.fromCol is -1', async () => {
@@ -347,9 +359,10 @@ describe('ScorpionPage', () => {
     });
     renderWithProviders(<ScorpionPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    const hintBox = screen.getByRole('status');
+    const hintBox = hintLiveRegion();
+    expect(hintBox).not.toBeNull();
     // Deal label is '配る' (from scorpion.json)
-    expect(hintBox.textContent).toMatch(/配る/);
+    expect(hintBox?.textContent).toMatch(/配る/);
   });
 
   it('shows action log button in ended phase', async () => {

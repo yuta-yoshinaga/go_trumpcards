@@ -126,6 +126,8 @@ beforeEach(() => {
   vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
 });
 
+// **表示は messageCode の訳が勝つ。** サーバの `message` は英語リテラルで、
+// 引けなかったときだけのフォールバック (#5291)。期待値はロケール側の文字列。
 describe('FourCardPokerPage', () => {
   it('renders bet phase on mount', async () => {
     mockExec.mockResolvedValue(betPhaseState);
@@ -198,7 +200,7 @@ describe('FourCardPokerPage', () => {
   it('reveals all dealer cards face-up (no backs) at the end phase', async () => {
     mockExec.mockResolvedValue(endPhasePlayerWins);
     renderWithProviders(<FourCardPokerPage />);
-    await waitFor(() => expect(screen.getByText('You Win!')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('勝利！')).toBeInTheDocument());
     expect(screen.queryByRole('img', { name: '非公開のカード' })).not.toBeInTheDocument();
   });
 
@@ -214,26 +216,26 @@ describe('FourCardPokerPage', () => {
   it('renders end phase with player win result', async () => {
     mockExec.mockResolvedValue(endPhasePlayerWins);
     renderWithProviders(<FourCardPokerPage />);
-    await waitFor(() => expect(screen.getByText('You Win!')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('勝利！')).toBeInTheDocument());
     expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument();
   });
 
   it('renders dealer wins', async () => {
     mockExec.mockResolvedValue(endPhaseDealerWins);
     renderWithProviders(<FourCardPokerPage />);
-    await waitFor(() => expect(screen.getByText('Dealer Wins!')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('ディーラー勝利！')).toBeInTheDocument());
   });
 
   it('renders push', async () => {
     mockExec.mockResolvedValue(endPhasePush);
     renderWithProviders(<FourCardPokerPage />);
-    await waitFor(() => expect(screen.getByText('Push!')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('引き分け！')).toBeInTheDocument());
   });
 
   it('renders folded state', async () => {
     mockExec.mockResolvedValue(endPhaseFold);
     renderWithProviders(<FourCardPokerPage />);
-    await waitFor(() => expect(screen.getByText('Folded')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('フォールド')).toBeInTheDocument());
   });
 
   it('shows aces up payout when sidebet wins', async () => {

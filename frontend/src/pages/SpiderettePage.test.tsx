@@ -7,6 +7,17 @@ import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, SpideretteResponse, SpideretteTableauCard } from '../types/card';
 import { SpiderettePage } from './SpiderettePage';
 
+/**
+ * This page's own hint region.
+ *
+ * **`GameMessageBox` is also `role="status"`**, and it now renders on every
+ * phase because this game's messageCodes are translated (#5291). Querying the
+ * role alone therefore matches two elements; the message box is the one built
+ * from `glass-panel`, so the hint region is the other one.
+ */
+const hintLiveRegion = () =>
+  screen.queryAllByRole('status').find((el) => !el.classList.contains('glass-panel')) ?? null;
+
 vi.mock('../api/gameApi', () => ({
   spideretteApi: { exec: vi.fn() },
   actionLogApi: { spiderette: vi.fn() },
@@ -94,9 +105,9 @@ describe('SpiderettePage', () => {
     // A non-target column is not highlighted.
     expect(screen.getByTestId('spdt-col-2').className).not.toContain('ring-ds-success');
     // The hint text is exposed to screen readers via an aria-live status region.
-    const status = screen.getByRole('status');
+    const status = hintLiveRegion();
     expect(status).toHaveAttribute('aria-live', 'polite');
-    expect(status.textContent).toContain('場札');
+    expect(status?.textContent).toContain('場札');
   });
 
   it('hides the frontend hint tooltip when hints are disabled', async () => {

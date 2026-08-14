@@ -277,7 +277,9 @@ describe('SirTommyPage', () => {
     });
     renderWithProviders(<SirTommyPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    expect(screen.getByText(/ヒントがあります/)).toBeInTheDocument();
+    // ページ自身のヒント帯と GameMessageBox の両方が同じ文言を出す (#5291 で
+    // sirtommy.hintAvailable が訳されたため)。帯のほうを見る。
+    expect(screen.getAllByText(/ヒントがあります/).length).toBeGreaterThanOrEqual(1);
     // Hint uses localized zone names + index, not raw F/W symbols.
     expect(screen.getByText(/ストック → ファンデーション 2/)).toBeInTheDocument();
   });

@@ -6,6 +6,17 @@ import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, ColoradoResponse } from '../types/card';
 import { ColoradoPage, coloradoNextRank } from './ColoradoPage';
 
+/**
+ * This page's own hint region.
+ *
+ * **`GameMessageBox` is also `role="status"`**, and it now renders on every
+ * phase because this game's messageCodes are translated (#5291). Querying the
+ * role alone therefore matches two elements; the message box is the one built
+ * from `glass-panel`, so the hint region is the other one.
+ */
+const hintLiveRegion = () =>
+  screen.queryAllByRole('status').find((el) => !el.classList.contains('glass-panel')) ?? null;
+
 vi.mock('../api/gameApi', () => ({
   coloradoApi: { exec: vi.fn() },
   actionLogApi: { colorado: vi.fn() },
@@ -194,7 +205,7 @@ describe('ColoradoPage', () => {
       }),
     );
     renderWithProviders(<ColoradoPage />);
-    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('ヒントがあります'));
+    await waitFor(() => expect(hintLiveRegion()).toHaveTextContent('ヒントがあります'));
   });
 
   // The other half of the gate: a passive hint must not surface the banner.
@@ -204,7 +215,7 @@ describe('ColoradoPage', () => {
     );
     renderWithProviders(<ColoradoPage />);
     await waitFor(() => expect(screen.getByTestId('co-draw-button')).toBeInTheDocument());
-    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(hintLiveRegion()).not.toBeInTheDocument();
   });
 
   it('names the stock in the hint banner when the hint is to draw', async () => {
@@ -215,7 +226,7 @@ describe('ColoradoPage', () => {
       }),
     );
     renderWithProviders(<ColoradoPage />);
-    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('山札'));
+    await waitFor(() => expect(hintLiveRegion()).toHaveTextContent('山札'));
   });
 
   it('requests a hint', async () => {
