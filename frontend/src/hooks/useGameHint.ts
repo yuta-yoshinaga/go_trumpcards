@@ -282,6 +282,7 @@ import type {
   TressetteResponse,
   TrexResponse,
   TriPeaksResponse,
+  TrogguResponse,
   TrucoResponse,
   TuSacResponse,
   TuteResponse,
@@ -594,6 +595,7 @@ import { getTrenteEtQuaranteHint } from '../utils/hints/trenteetquaranteHint';
 import { getTressetteHint } from '../utils/hints/tressetteHint';
 import { getTrexHint } from '../utils/hints/trexHint';
 import { getTriPeaksHint } from '../utils/hints/tripeaksHint';
+import { getTrogguHint } from '../utils/hints/trogguHint';
 import { getTrucoHint } from '../utils/hints/trucoHint';
 import { getTusacHint } from '../utils/hints/tusacHint';
 import { getTuteHint } from '../utils/hints/tuteHint';
@@ -796,6 +798,7 @@ export const hintFactories = {
   tusac: (s) => getTusacHint(s as TuSacResponse),
   sakura: (s) => getSakuraHint(s as SakuraResponse),
   zwanzigerrufen: (s) => getZwanzigerrufenHint(s as ZwanzigerrufenResponse),
+  troggu: (s) => getTrogguHint(s as TrogguResponse),
   andarbahar: (s) => getAndarbaharHint(s as AndarBaharResponse),
   botifarra: (s) => getBotifarraHint(s as BotifarraResponse),
   rikken: (s) => getRikkenHint(s as RikkenResponse),

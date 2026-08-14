@@ -2018,6 +2018,15 @@ export const ZwanzigerrufenPhase = {
   GAME_END: 5,
 } as const;
 
+/** Troggu phase constants (sync: internal/domain/Troggu.go). */
+export const TrogguPhase = {
+  BID: 0,
+  PLAY: 1,
+  TRICK_END: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
 /** Sakura (さくら/肥後花) phase constants (sync: internal/domain/Sakura.go). */
 export const SakuraPhase = {
   PLAY: 0,

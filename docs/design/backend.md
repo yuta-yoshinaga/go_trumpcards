@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全316ゲーム)](#12-ゲームドメイン-全316ゲーム)
+  - [1.2 ゲームドメイン (全317ゲーム)](#12-ゲームドメイン-全317ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -42,13 +42,13 @@
   - [3.7 Memory フェーズ遷移](#37-memory-フェーズ遷移)
   - [3.8 Klondike / FreeCell / Spider / Pyramid / TriPeaks / Golf / ClockSolitaire フェーズ遷移](#38-klondike--freecell--spider--pyramid--tripeaks--golf--clocksolitaire-フェーズ遷移)
   - [3.9 CrazyEights フェーズ遷移](#39-crazyeights-フェーズ遷移)
-  - [3.10 GinRummy フェーズ遷移](#316-ginrummy-フェーズ遷移)
-  - [3.11 Baccarat フェーズ遷移](#316-baccarat-フェーズ遷移)
-  - [3.12 Napoleon フェーズ遷移](#316-napoleon-フェーズ遷移)
-  - [3.13 IndianPoker フェーズ遷移](#316-indianpoker-フェーズ遷移)
-  - [3.14 VideoPoker フェーズ遷移](#316-videopoker-フェーズ遷移)
-  - [3.15 Euchre フェーズ遷移](#316-euchre-フェーズ遷移)
-  - [3.16 Cribbage フェーズ遷移](#316-cribbage-フェーズ遷移)
+  - [3.10 GinRummy フェーズ遷移](#317-ginrummy-フェーズ遷移)
+  - [3.11 Baccarat フェーズ遷移](#317-baccarat-フェーズ遷移)
+  - [3.12 Napoleon フェーズ遷移](#317-napoleon-フェーズ遷移)
+  - [3.13 IndianPoker フェーズ遷移](#317-indianpoker-フェーズ遷移)
+  - [3.14 VideoPoker フェーズ遷移](#317-videopoker-フェーズ遷移)
+  - [3.15 Euchre フェーズ遷移](#317-euchre-フェーズ遷移)
+  - [3.16 Cribbage フェーズ遷移](#317-cribbage-フェーズ遷移)
   - [3.17 ShortDeck フェーズ遷移](#317-shortdeck-フェーズ遷移)
   - [3.18 ThreeCard フェーズ遷移](#318-threecard-フェーズ遷移)
   - [3.19 OhHell フェーズ遷移](#319-ohhell-フェーズ遷移)
@@ -153,7 +153,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全316ゲーム)
+### 1.2 ゲームドメイン (全317ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -1683,7 +1683,7 @@ classDiagram
     note for GamePresenter "各ゲームの Presenter は\nGamePresenter[G] の型エイリアス\nまたは拡張インターフェース"
 ```
 
-**Interactor パターン (全316ゲーム共通)**
+**Interactor パターン (全317ゲーム共通)**
 
 ```mermaid
 classDiagram
@@ -1757,8 +1757,8 @@ classDiagram
     GameCuiPresenter ..|> GamePresenter : implements
     GameWebPresenter ..|> GamePresenter : implements
 
-    note for GameCuiController "316ゲーム × CUI/Web = 632 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
-    note for GameCuiPresenter "316ゲーム × CUI/Web = 632 Presenter 実装"
+    note for GameCuiController "317ゲーム × CUI/Web = 634 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
+    note for GameCuiPresenter "317ゲーム × CUI/Web = 634 Presenter 実装"
 ```
 
 ### 1.5 インフラストラクチャ層
@@ -1797,8 +1797,8 @@ classDiagram
     }
 
     TrumpCardsWeb --> "*" gameEntry : registerAll() over games.All()
-    gameEntry --> GameWebController : holds 316 controllers
-    GameManager --> "*" CuiExecer : holds 316 games
+    gameEntry --> GameWebController : holds 317 controllers
+    GameManager --> "*" CuiExecer : holds 317 games
     GameCui ..|> CuiExecer : implements
     GameCui --> GameCuiController : delegates
 ```

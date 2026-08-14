@@ -614,6 +614,8 @@ tags:
     description: Sakura / Higo-bana (さくら／肥後花) game
   - name: zwanzigerrufen
     description: Zwanzigerrufen (ツヴァンツィガールーフェン) game
+  - name: troggu
+    description: Troggu (トロッグ) game
   - name: ombre
     description: Ombre / Hombre (オンブル) game
   - name: pan
@@ -27004,6 +27006,38 @@ paths:
         to bury — **kings and trull cards are refused**, since burying them
         would quietly move 5-point cards into the declarer's score.
       operationId: execZwanzigerrufen
+  /troggu/exec:
+    post:
+      tags:
+        - troggu
+      summary: Execute a Troggu game command
+      description: |
+        Send a command to advance the Troggu (トロッグ) game session identified
+        by `sessionId`.
+
+        A tarot-family trick-taking game from the Swiss Valais for four, on the
+        78-card tarot pack shared with French Tarot. **What separates it from
+        the other tarot games is that each contract changes what winning
+        means**:
+
+        - `trois` — take at least three tricks (x1)
+        - `solo` — take more than half the card points (x2)
+        - `piccolo` — take **exactly one** trick; more also fails (x3)
+        - `misere` — take no tricks at all (x4)
+
+        Every contract is played alone against the other three and pays or costs
+        triple. `breakdown.targetIsTricks` says which unit the deal was judged
+        in — Solo is the only contract measured in card points — so a client
+        must not assume one or the other.
+
+        **`bid` never accepts "pass"**: passing is its own command, and a deal
+        where all four pass is thrown in (no tricks are played, `breakdown` is
+        null and no score moves).
+
+        Play is 18 tricks: follow the led suit, trump when void. **The Excuse
+        may always be played and never sets the led suit**, so a client must not
+        derive legality itself — `playableIndices` carries it.
+      operationId: execTroggu
       requestBody:
         required: true
         content:
@@ -27020,6 +27054,10 @@ paths:
                 bid:
                   type: string
                   enum: [rufer, solo]
+                  description: "reset (r), bid (b), pass, play (p), next (n), nextround (nr), hint, log, quit (q)"
+                bid:
+                  type: string
+                  enum: [trois, solo, piccolo, misere]
                   description: Contract to declare. Required for bid.
                 cardIndex:
                   type: integer
@@ -27043,6 +27081,7 @@ paths:
               example:
                 command: bid
                 bid: rufer
+                bid: misere
                 sessionId: my-session-001
       responses:
         '200':
@@ -27051,12 +27090,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ZwanzigerrufenResponse'
+                $ref: '#/components/schemas/TrogguResponse'
         '400':
           description: Invalid command or missing parameter
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ZwanzigerrufenResponse'
+                $ref: '#/components/schemas/TrogguResponse'
 
   /kingo/exec:
     post:
@@ -49446,6 +49487,13 @@ components:
         phase:
           type: integer
           description: "0=Bid, 1=Talon, 2=Play, 3=TrickEnd, 4=RoundEnd, 5=GameEnd"
+    TrogguResponse:
+      type: object
+      description: Response payload for /troggu/exec
+      properties:
+        phase:
+          type: integer
+          description: "0=Bid, 1=Play, 2=TrickEnd, 3=RoundEnd, 4=GameEnd"
         players:
           type: array
           description: Always an array, one entry per seat, in seat order.
@@ -49513,6 +49561,16 @@ components:
           description: Partner seat -- always -1 until partnerRevealed.
         partnerRevealed:
           type: boolean
+          description: "0=pass, 1=trois, 2=solo, 3=piccolo, 4=misere"
+        declarerIdx:
+          type: integer
+          description: Declarer seat, or -1 while undecided or after a thrown-in deal.
+        contract:
+          type: integer
+          description: "0=pass, 1=trois, 2=solo, 3=piccolo, 4=misere"
+        contractName:
+          type: string
+          description: "pass | trois | solo | piccolo | misere"
         talonCount:
           type: integer
         currentTrick:
@@ -49548,6 +49606,29 @@ components:
             won:
               type: boolean
             solo:
+          description: "0=none (thrown in), 1=declarer made it, 2=declarer failed"
+        breakdown:
+          type: object
+          nullable: true
+          description: Settlement of the deal just scored, or null for a thrown-in deal.
+          properties:
+            contract:
+              type: integer
+            contractName:
+              type: string
+            declarerPoints:
+              type: integer
+            declarerTricks:
+              type: integer
+            target:
+              type: integer
+              description: Card points for Solo, tricks for every other contract.
+            targetIsTricks:
+              type: boolean
+              description: >-
+                Which unit target is in. Solo is the only contract measured in
+                card points, so a client must not assume one or the other.
+            won:
               type: boolean
             base:
               type: integer
@@ -49564,6 +49645,11 @@ components:
         playableIndices:
           type: array
           description: Hand indices the human may legally play right now.
+        playableIndices:
+          type: array
+          description: >-
+            Hand indices the human may legally play right now. The Excuse is
+            always among them, so a client must not re-derive legality.
           items:
             type: integer
         gameEndFlag:

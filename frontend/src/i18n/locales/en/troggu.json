@@ -1,0 +1,66 @@
+{
+  "title": "Troggu",
+  "phase": {
+    "bid": "Auction",
+    "play": "Play",
+    "trickEnd": "Trick over",
+    "roundEnd": "Deal over",
+    "gameEnd": "Game over"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU difficulty",
+    "difficulty0": "Easy",
+    "difficulty1": "Normal",
+    "difficulty2": "Hard",
+    "targetDeals": "Deals"
+  },
+  "deal": "Deal {{n}}/{{total}}",
+  "trick": "Trick {{n}}",
+  "contract": "Contract: {{name}}",
+  "contract.pass": "-",
+  "contract.trois": "Trois (3 tricks)",
+  "contract.solo": "Solo (most points)",
+  "contract.piccolo": "Piccolo (exactly 1 trick)",
+  "contract.misere": "Misere (no tricks)",
+  "roleDeclarer": "(declarer)",
+  "you": "You",
+  "cpu": "CPU{{n}}",
+  "cards": "{{count}} cards",
+  "tricks": "{{count}} tricks",
+  "points": "{{points}} pts this deal",
+  "score": "total {{score}}",
+  "currentTrick": "Current trick",
+  "trickWinner": "WIN",
+  "restricted": "You must follow the led suit",
+  "bid": "Bid",
+  "pass": "Pass",
+  "nextTrick": "Next trick",
+  "nextDeal": "Next deal",
+  "newGame": "New game",
+  "roundResult": {
+    "title": "Deal result",
+    "thrownIn": "Everyone passed, so the deal is thrown in. No scores change.",
+    "wonPoints": "Made! {{got}} points (needed {{target}})",
+    "lostPoints": "Failed. {{got}} points (needed {{target}})",
+    "wonTricks": "Made! {{got}} tricks (target {{target}})",
+    "lostTricks": "Failed. {{got}} tricks (target {{target}})",
+    "seat": "{{name}}: {{delta}}"
+  },
+  "result": {
+    "title": "Final scores",
+    "winner": "Winner: {{name}}",
+    "draw": "The game is a tie",
+    "score": "{{name}}: {{score}}"
+  },
+  "tutorial": {
+    "trickDisplay": "This is the current trick. Follow the led suit; play a trump when you cannot. The Excuse may always be played.",
+    "playerHand": "Your eighteen cards. Win the auction and the six-card talon is added to your score.",
+    "actions": "Each contract changes what winning means: Solo takes most of the points, Trois needs three tricks, Piccolo exactly one, and Misere none at all. If everyone passes the deal is thrown in."
+  },
+  "frontendHint.trogguNextTrick": "the trick is complete — move on",
+  "frontendHint.trogguNextDeal": "the deal is over — move on",
+  "frontendHint.trogguBidPickTheContract": "bid only the contract your hand fits",
+  "frontendHint.trogguAvoidTricks": "under this contract, taking a trick loses the deal",
+  "frontendHint.trogguFollowSuit": "follow the led suit, or trump when void"
+}
