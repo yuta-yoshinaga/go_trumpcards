@@ -27,11 +27,11 @@ Always follow this cycle before implementing:
 
 1. **Red** — Write a failing test first. Create a test that captures the expected behavior before writing implementation code:
    ```sh
-   cd frontend && bun run test -- --run TestNewFeature  # Fails (Red)
+   cd frontend && bunx vitest run <file> -t "<test name>"  # Fails (Red)
    ```
 2. **Green** — Write the minimum code to pass the test. Do not add extra functionality:
    ```sh
-   cd frontend && bun run test -- --run TestNewFeature  # Passes (Green)
+   cd frontend && bunx vitest run <file> -t "<test name>"  # Passes (Green)
    ```
 3. **Refactor** — Clean up code while keeping tests green. Improve naming, structure, and remove duplication:
    ```sh

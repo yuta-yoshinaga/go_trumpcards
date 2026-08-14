@@ -56,7 +56,7 @@ var readmeGameRowRe = regexp.MustCompile("(?m)^\\| .+ \\| `([a-z0-9]+)` \\| \\[C
 // TestReadmeGameTableMatchesRegistry asserts that the README Features table
 // lists exactly the registered games.
 //
-// TestDocGameCountsMatchRegistry already guards the prose "実装した264種類"
+// TestDocGameCountsMatchRegistry already guards the prose "実装したN種類"
 // immediately above this table -- and that is precisely why the table drifted
 // undetected. A guard on the number is not a guard on the list: the prose said
 // 264 while the table held 234 rows, so 30 new games shipped without a row and

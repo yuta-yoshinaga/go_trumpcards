@@ -33,7 +33,7 @@ const goSourceRoot = "internal"
 
 // placeholderClasses are diagram nodes that stand for "the per-game
 // implementation" rather than naming one concrete Go type. They are a real
-// documentation device here -- there are 264 games and the diagrams show the
+// documentation device here -- there are 318 games and the diagrams show the
 // shape once -- so they are expected to have no counterpart in code.
 var placeholderClasses = map[string]bool{
 	"GameCui":           true,

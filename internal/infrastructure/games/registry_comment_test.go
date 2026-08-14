@@ -41,7 +41,7 @@ var (
 // answered by the field itself plus git history and the ADRs.
 //
 // The package doc in registry.go already explains that Category is purely a
-// size bucket, so nothing is lost by not repeating it 264 times.
+// size bucket, so nothing is lost by not repeating it 318 times.
 func TestRegistryCommentsDoNotNameBuckets(t *testing.T) {
 	path := filepath.Join(".", registrySrc)
 	raw, err := os.ReadFile(filepath.Clean(path))
