@@ -164,3 +164,33 @@ func TestHorse_LiveChipsFallBackToTheCanonicalStack(t *testing.T) {
 	assert.Equal(t, 0, g.GetSeatLiveChips(-1))
 	assert.Equal(t, 0, g.GetSeatLiveChips(g.GetSeatCount()))
 }
+
+// **どの種目でも同じことを訊ける。** 卓の型ごとに分岐しているので、1 つ書き
+// 忘れると**その種目でだけ**コール額が 0 になり、賭けられていないように見える。
+func TestHorse_BettingViewWorksInEveryDiscipline(t *testing.T) {
+	for _, tt := range []struct {
+		name string
+		want domain.HorseDiscipline
+	}{
+		{"omaha", domain.HorseOmahaHiLo},
+		{"razz", domain.HorseRazz},
+		{"stud", domain.HorseStud},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			cfg := domain.DefaultHorseConfig()
+			cfg.HandsPerDiscipline = 1
+			g := domain.NewDefaultHorse()
+			g.SetConfig(cfg)
+			g.Reset()
+			if !horseAdvanceTo(g, tt.want) {
+				t.Skipf("%s まで届かなかった配り", tt.name)
+			}
+			human := g.GetHumanSeat()
+			assert.GreaterOrEqual(t, g.GetToCall(), 0)
+			assert.Positive(t, g.GetMinRaise(), "最小レイズ幅が卓から取れていない")
+			assert.Positive(t, g.GetSeatLiveChips(human), "残高が卓から取れていない")
+			// アンティ／ブラインドを出しているので、正本より減っている。
+			assert.LessOrEqual(t, g.GetSeatLiveChips(human), g.GetSeatChips(human))
+		})
+	}
+}
