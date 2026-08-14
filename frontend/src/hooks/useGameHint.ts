@@ -128,6 +128,7 @@ import type {
   HokmResponse,
   HoldemResponse,
   HoneymoonBridgeResponse,
+  HorseResponse,
   IndianPokerResponse,
   IndianRummyResponse,
   IronCrossResponse,
@@ -436,6 +437,7 @@ import { getHighCardFlushHint } from '../utils/hints/highcardflushHint';
 import { getHokmHint } from '../utils/hints/hokmHint';
 import { getHoldemHint } from '../utils/hints/holdemHint';
 import { getHoneymoonBridgeHint } from '../utils/hints/honeymoonbridgeHint';
+import { getHorseHint } from '../utils/hints/horseHint';
 import { getIndianPokerHint } from '../utils/hints/indianpokerHint';
 import { getIndianRummyHint } from '../utils/hints/indianRummyHint';
 import { getIrishPokerHint } from '../utils/hints/irishPokerHint';
@@ -799,6 +801,7 @@ export const hintFactories = {
   sakura: (s) => getSakuraHint(s as SakuraResponse),
   zwanzigerrufen: (s) => getZwanzigerrufenHint(s as ZwanzigerrufenResponse),
   troggu: (s) => getTrogguHint(s as TrogguResponse),
+  horse: (s) => getHorseHint(s as HorseResponse),
   andarbahar: (s) => getAndarbaharHint(s as AndarBaharResponse),
   botifarra: (s) => getBotifarraHint(s as BotifarraResponse),
   rikken: (s) => getRikkenHint(s as RikkenResponse),

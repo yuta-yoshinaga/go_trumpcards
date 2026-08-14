@@ -2027,6 +2027,13 @@ export const TrogguPhase = {
   GAME_END: 4,
 } as const;
 
+/** H.O.R.S.E. phase constants (sync: internal/domain/Horse.go). */
+export const HorsePhase = {
+  HAND: 0,
+  HAND_END: 1,
+  GAME_END: 2,
+} as const;
+
 /** Sakura (さくら/肥後花) phase constants (sync: internal/domain/Sakura.go). */
 export const SakuraPhase = {
   PLAY: 0,

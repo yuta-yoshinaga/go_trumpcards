@@ -176,6 +176,7 @@ var gameDescriptions = map[string]string{
 	"sakura":              "Sakura (さくら／肥後花)",
 	"zwanzigerrufen":      "Zwanzigerrufen (ツヴァンツィガールーフェン)",
 	"troggu":              "Troggu (トロッグ)",
+	"horse":               "H.O.R.S.E. (ホース／ミックスポーカー)",
 	"blackjackswitch":     "Blackjack Switch (ブラックジャック・スイッチ)",
 	"montecarlo":          "Monte Carlo Solitaire (モンテカルロ・ソリティア)",
 	"contractrummy":       "Contract Rummy (コントラクトラミー)",

@@ -1,0 +1,41 @@
+{
+  "title": "H.O.R.S.E.",
+  "phase": {
+    "play": "Betting",
+    "handEnd": "Hand over",
+    "gameEnd": "Game over"
+  },
+  "settings": {
+    "title": "Settings",
+    "seats": "Seats",
+    "handsPerDiscipline": "Hands per discipline"
+  },
+  "discipline.holdem": "Texas Hold'em",
+  "discipline.omahaHiLo": "Omaha Hi-Lo",
+  "discipline.razz": "Razz",
+  "discipline.stud": "Seven-Card Stud",
+  "discipline.studHiLo": "Stud Hi-Lo",
+  "hand": "Hand {{n}}/{{total}}",
+  "handTotal": "{{n}} overall",
+  "pot": "Pot {{pot}}",
+  "community": "Board",
+  "chips": "{{chips}} chips",
+  "you": "You",
+  "nextHand": "Next hand",
+  "newGame": "New game",
+  "result": {
+    "title": "Final result",
+    "winner": "Winner: {{name}}",
+    "chips": "{{name}}: {{chips}} chips"
+  },
+  "tutorial": {
+    "discipline": "The discipline being played right now. It rotates H-O-R-S-E every few hands, and the rules change with it.",
+    "seats": "Each seat's stack and the cards it reveals. In the stud disciplines you also see everyone's face-up door cards.",
+    "actions": "The betting controls are the same in every discipline. Chips carry across disciplines, and the match ends as soon as a seat busts."
+  },
+  "frontendHint.horseNextHand": "The hand is settled — deal the next one",
+  "frontendHint.horseDisciplineChanged": "The discipline just changed; check the rules before you act",
+  "frontendHint.horseOmahaUsesTwo": "Omaha uses exactly two of your hole cards",
+  "frontendHint.horseRazzWantsLow": "In Razz the lowest hand wins",
+  "frontendHint.horsePlayTheDiscipline": "Play by the rules of the current discipline"
+}
