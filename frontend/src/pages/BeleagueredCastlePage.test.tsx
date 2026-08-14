@@ -290,3 +290,49 @@ describe('BeleagueredCastlePage keyboard shortcuts', () => {
     expect(mockExec).not.toHaveBeenCalled();
   });
 });
+
+// 選ぶ前に行き先が見える (#4454)。
+describe('BeleagueredCastlePage destination preview', () => {
+  const render = async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BeleagueredCastlePage />);
+    return screen.findByRole('button', { name: '♠ 5' });
+  };
+  const targets = () => document.querySelectorAll('[data-legal-target="true"]');
+  const previews = () => document.querySelectorAll('[data-preview-target="true"]');
+
+  it('marks the destinations while a card is hovered', async () => {
+    const spadeFive = await render();
+    expect(targets()).toHaveLength(0);
+
+    fireEvent.mouseEnter(spadeFive);
+    await waitFor(() => expect(targets().length).toBeGreaterThan(0));
+    // 選択後と同じ集合が、弱いリングで出る。
+    expect(previews().length).toBe(targets().length);
+    expect(targets()[0]?.className).toContain('ring-ds-success/70');
+
+    fireEvent.mouseLeave(spadeFive);
+    await waitFor(() => expect(targets()).toHaveLength(0));
+  });
+
+  it('marks the destinations on focus', async () => {
+    const spadeFive = await render();
+    fireEvent.focus(spadeFive);
+    await waitFor(() => expect(previews().length).toBeGreaterThan(0));
+    fireEvent.blur(spadeFive);
+    await waitFor(() => expect(targets()).toHaveLength(0));
+  });
+
+  // hover と選択で同じ集合を指す ── プレビューが嘘をつかないことの検証。
+  it('previews exactly the set the selection then commits to', async () => {
+    const spadeFive = await render();
+    fireEvent.mouseEnter(spadeFive);
+    await waitFor(() => expect(targets().length).toBeGreaterThan(0));
+    const hovered = targets().length;
+
+    fireEvent.click(spadeFive);
+    await waitFor(() => expect(previews()).toHaveLength(0));
+    expect(targets().length).toBe(hovered);
+    expect(targets()[0]?.className).not.toContain('ring-ds-success/70');
+  });
+});

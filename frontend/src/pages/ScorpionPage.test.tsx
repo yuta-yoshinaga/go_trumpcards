@@ -555,3 +555,60 @@ describe('ScorpionPage', () => {
     await waitFor(() => expect(document.querySelectorAll('.ring-ds-info').length).toBeGreaterThan(0));
   });
 });
+
+// **選ぶ前に行き先が見える (#4454)。** 移動できるかどうかを押して確かめるしかない
+// のが元の状態で、外れたときはサーバーのエラーだけが返っていた。
+describe('ScorpionPage destination preview', () => {
+  /** The ♥7 in column 5; ♥8 sits on top of column 1, so it has exactly one legal target. */
+  const heartSeven = () => screen.getByRole('button', { name: /♥ 7/ });
+
+  it('highlights the destination while a card is hovered', async () => {
+    renderWithProviders(<ScorpionPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.queryByTestId('sc-legal-target')).not.toBeInTheDocument();
+
+    fireEvent.mouseEnter(heartSeven());
+    const target = await screen.findByTestId('sc-legal-target');
+    expect(target).toHaveAttribute('data-preview-target', 'true');
+    expect(target.className).toContain('ring-ds-success/70');
+
+    fireEvent.mouseLeave(heartSeven());
+    expect(screen.queryByTestId('sc-legal-target')).not.toBeInTheDocument();
+  });
+
+  // キーボードだけでも同じものが見える。
+  it('highlights the destination on focus', async () => {
+    renderWithProviders(<ScorpionPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    fireEvent.focus(heartSeven());
+    expect(await screen.findByTestId('sc-legal-target')).toHaveAttribute('data-preview-target', 'true');
+    fireEvent.blur(heartSeven());
+    expect(screen.queryByTestId('sc-legal-target')).not.toBeInTheDocument();
+  });
+
+  // **選択が hover に勝つ。** 勝たないと、狙っている最中に移動先が消える。
+  it("keeps the selected card's targets while the pointer moves elsewhere", async () => {
+    renderWithProviders(<ScorpionPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    fireEvent.click(heartSeven());
+    const target = await screen.findByTestId('sc-legal-target');
+    // 選択後は実線のリングで、プレビューではない。
+    expect(target).not.toHaveAttribute('data-preview-target');
+    expect(target.className).toContain('ring-2 ring-ds-success');
+    expect(target.className).not.toContain('ring-ds-success/70');
+
+    fireEvent.mouseEnter(screen.getByRole('button', { name: /♣ 2/ }));
+    const stillThere = screen.getByTestId('sc-legal-target');
+    expect(stillThere).not.toHaveAttribute('data-preview-target');
+  });
+
+  it('shows nothing for a card with no legal destination', async () => {
+    renderWithProviders(<ScorpionPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    // ♠3 の上に置ける札 (♠4) は場に無い。
+    fireEvent.mouseEnter(screen.getByRole('button', { name: /♠ 3/ }));
+    expect(screen.queryByTestId('sc-legal-target')).not.toBeInTheDocument();
+  });
+});
