@@ -107,7 +107,7 @@ describe('SpiderettePage', () => {
     // The hint text is exposed to screen readers via an aria-live status region.
     const status = hintLiveRegion();
     expect(status).toHaveAttribute('aria-live', 'polite');
-    expect(status.textContent).toContain('場札');
+    expect(status?.textContent).toContain('場札');
   });
 
   it('hides the frontend hint tooltip when hints are disabled', async () => {

@@ -385,7 +385,8 @@ describe('WaspPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     // Inline hint box shows "場札 3"
     const hintBox = hintLiveRegion();
-    expect(hintBox.textContent).toMatch(/3/);
+    expect(hintBox).not.toBeNull();
+    expect(hintBox?.textContent).toMatch(/3/);
   });
 
   it('renders inline hint for deal when hint.fromCol is -1', async () => {
@@ -397,8 +398,9 @@ describe('WaspPage', () => {
     renderWithProviders(<WaspPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     const hintBox = hintLiveRegion();
+    expect(hintBox).not.toBeNull();
     // Deal label is '配る' (from wasp.json)
-    expect(hintBox.textContent).toMatch(/配る/);
+    expect(hintBox?.textContent).toMatch(/配る/);
   });
 
   it('shows action log button in ended phase', async () => {
