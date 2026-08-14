@@ -72,7 +72,7 @@ func TestHorse_DisciplineNames(t *testing.T) {
 // **設定したハンド数ごとに切り替わり、E の次は H に戻る。**
 func TestHorse_RotatesEveryNHands(t *testing.T) {
 	t.Parallel()
-	g := NewHorse(HorseConfig{Seats: 3, InitialChips: HorseDefaultChips, HandsPerDiscipline: 2})
+	g := NewHorse(HorseConfig{Seats: 4, InitialChips: HorseDefaultChips, HandsPerDiscipline: 2})
 	g.Reset()
 
 	seen := make([]HorseDiscipline, 0, 12)
@@ -98,7 +98,7 @@ func TestHorse_RotatesEveryNHands(t *testing.T) {
 // **1 ハンドごとの設定でも回る。**
 func TestHorse_RotatesEveryHandWhenConfiguredSo(t *testing.T) {
 	t.Parallel()
-	g := NewHorse(HorseConfig{Seats: 3, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
+	g := NewHorse(HorseConfig{Seats: 4, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
 	g.Reset()
 
 	seen := make([]HorseDiscipline, 0, 6)
@@ -135,7 +135,7 @@ func TestHorse_DisciplineIsStableWithinAHand(t *testing.T) {
 // 持ち回りが安定しない (`TestHorse_HoldemFamilyPotIsUndistributedAtEnd` 参照)。
 func TestHorse_ChipsCarryAcrossDisciplines(t *testing.T) {
 	t.Parallel()
-	g := NewHorse(HorseConfig{Seats: 3, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
+	g := NewHorse(HorseConfig{Seats: 4, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
 	g.Reset()
 	// R まで進める。
 	for g.GetDiscipline() != HorseRazz && !g.GetGameEndFlag() {
@@ -170,36 +170,40 @@ func TestHorse_ChipsCarryAcrossDisciplines(t *testing.T) {
 
 // **飛んだ席は種目に座らせない。** 各エンジンの `Reset` は残高 0 の席を
 // `InitChips` まで黙って積み直すので、座らせるとチップが湧く。
-func TestHorse_BustedSeatsAreNotSeated(t *testing.T) {
+// **席が 1 つでも飛んだらマッチを終える。**
+//
+// 種目側の卓は 4 / 6 / 9 人のいずれかしか作れないので、欠けた人数で座らせることが
+// できない (3 人を渡すと黙って 4 人に落とされ、こちらが残高を配ったプレイヤーとは
+// 別の 4 人が打つ)。積み直しを避けるには飛んだ席を座らせないしかなく、席を欠いた
+// 卓が作れない以上、そこで区切るのが誤魔化しの無い扱いになる。
+func TestHorse_ABustEndsTheMatch(t *testing.T) {
 	t.Parallel()
 	g := NewHorse(HorseConfig{Seats: 4, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
 	g.Reset()
 	horseFoldOutHand(t, g)
 	g.SetSeatChips(2, 0)
-	g.SetSeatChips(3, 0)
 	require.NoError(t, g.NextHand())
 
-	assert.Equal(t, []int{0, 1}, g.seatMap, "飛んだ席が座卓に残っている")
+	assert.True(t, g.GetGameEndFlag(), "席が飛んだのにマッチが続いている")
+	assert.Equal(t, HorsePhaseGameEnd, g.GetPhase())
 	assert.Zero(t, g.GetSeatChips(2), "飛んだ席が積み直されている")
-	assert.Zero(t, g.GetSeatChips(3), "飛んだ席が積み直されている")
 }
 
-// **席番号は正本に直して返す。** 飛んだ席を外すと番号が詰まるので、
-// 種目側の番号をそのまま出すと別の席を指す。
+// **席番号は正本に直して返す。**
+//
+// 卓は常に全席ぶんなので番号は 1 対 1 だが、変換を通さずに種目側の番号を出すと、
+// 将来席の並びが変わったときに黙って別の席を指す。
 func TestHorse_TurnIsReportedInCanonicalSeats(t *testing.T) {
 	t.Parallel()
 	g := NewHorse(HorseConfig{Seats: 4, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
 	g.Reset()
-	horseFoldOutHand(t, g)
-	g.SetSeatChips(1, 0) // 真ん中の席が飛ぶ
-	require.NoError(t, g.NextHand())
 
-	require.Equal(t, []int{0, 2, 3}, g.seatMap)
-	assert.Equal(t, 2, g.toCanonicalSeat(1), "詰まった番号が正本に直っていない")
-	assert.Equal(t, 3, g.toCanonicalSeat(2))
+	require.Equal(t, []int{0, 1, 2, 3}, g.seatMap)
+	for i := range 4 {
+		assert.Equal(t, i, g.toCanonicalSeat(i))
+	}
 	assert.Equal(t, -1, g.toCanonicalSeat(99), "範囲外が -1 で返らない")
-	// 手番も正本の番号で出る。
-	assert.Contains(t, []int{0, 2, 3}, g.GetCurrentTurn())
+	assert.Contains(t, []int{0, 1, 2, 3}, g.GetCurrentTurn())
 }
 
 // **スタッド系はハンドを通じて総量が変わらない。**
@@ -209,7 +213,7 @@ func TestHorse_TurnIsReportedInCanonicalSeats(t *testing.T) {
 func TestHorse_StudFamilyConservesChips(t *testing.T) {
 	t.Parallel()
 	for range 20 {
-		g := NewHorse(HorseConfig{Seats: 3, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
+		g := NewHorse(HorseConfig{Seats: 4, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
 		g.Reset()
 		// R / S / E まで進める。
 		for g.GetDiscipline() != HorseRazz && !g.GetGameEndFlag() {
@@ -232,23 +236,40 @@ func TestHorse_StudFamilyConservesChips(t *testing.T) {
 	}
 }
 
-// **Holdem / Omaha はハンド終了時にポットが未配分のまま残る。**
+// **どの種目でもチップは保存する。**
 //
-// これは H.O.R.S.E. のバグではなく、**既存エンジン側の会計**の話なので、
-// ここでは記録だけして先へ進めない ── 直すには Holdem の精算を触ることになり、
-// それを共有している他ゲームすべてに影響する。
+// 以前ここは「Holdem/Omaha はハンド終了時にポットが未配分のまま残る」として
+// skip していたが、**測り直したら読み違いだった**: 配っていないのではなく
+// `resolveShowdown` が `pot` を 0 に戻していないだけで、チップは配られていた。
+// 当時見えた「総量が増減する」はリバイ (破産した席へのチップ補充) が原因。
 //
-// 実測 (3 席・人間が fold で閉じる・6 試行):
-//
-//	tablePhase=6 (Holdem の End) の時点で pot=20〜184 が残っており、
-//	1 ハンドの総量の増減は -97 〜 +20 とばらつく。
-//	一方スタッド系は自分の End (=7) で pot=0、増減は常に 0。
-//
-// つまり Holdem/Omaha は「End に達した時点ではまだポットを配っていない」。
-// H.O.R.S.E. のように**残高を持ち回るゲームだけがこれに当たる** (単体で遊ぶ
-// ぶんには次の Reset で配り直されるので表に出ない)。
-func TestHorse_HoldemFamilyPotIsUndistributedAtEnd(t *testing.T) {
-	t.Skip("既存エンジン側の会計の問題。#5265 のコメントに実測を残してある")
+// pot が残る側は #5341 で 6 実装すべて直したので、ここでは **H-O-R-S-E の 5 種目
+// すべて**で総量が動かないことを見る。
+func TestHorse_EveryDisciplineConservesChips(t *testing.T) {
+	t.Parallel()
+	seen := map[HorseDiscipline]bool{}
+	for range 30 {
+		g := NewHorse(HorseConfig{Seats: 4, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
+		g.Reset()
+		for range HorseDisciplineCount {
+			if g.GetGameEndFlag() {
+				break
+			}
+			d := g.GetDiscipline()
+			before := horseTotalChips(g)
+			horseFoldOutHand(t, g)
+			assert.Equal(t, before, horseTotalChips(g),
+				"%s のハンドで総量が変わった", HorseDisciplineName(d))
+			seen[d] = true
+			if g.GetGameEndFlag() {
+				break
+			}
+			require.NoError(t, g.NextHand())
+		}
+	}
+	// **5 種目すべてを通ったことを確かめる。** 1 種目でも通らないと、
+	// 「保存している」の根拠がその種目には無い。
+	assert.Len(t, seen, HorseDisciplineCount, "通っていない種目がある")
 }
 
 // --- 進行 ---
@@ -312,7 +333,7 @@ func TestHorse_Accessors(t *testing.T) {
 	g.SetSeatChips(1, 42)
 	assert.Equal(t, 42, g.GetSeatChips(1))
 
-	g.SetConfig(HorseConfig{Seats: 3, InitialChips: 500, HandsPerDiscipline: 1})
+	g.SetConfig(HorseConfig{Seats: 4, InitialChips: 500, HandsPerDiscipline: 1})
 	assert.Equal(t, 500, g.GetConfig().InitialChips)
 }
 

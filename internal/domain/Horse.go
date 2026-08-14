@@ -178,31 +178,54 @@ func (g *Horse) buildTable() (horseTable, horseEndPhase, func()) {
 	case HorseHoldem:
 		players := NewPlayersForTable(n)
 		g.dealChipsTo(func(i, chips int) { players[i].SetChips(chips) })
-		t := NewHoldem(NewTrumpCards(0), players, DefaultHoldemConfig())
+		t := NewHoldem(NewTrumpCards(0), players, horseTableConfig(DefaultHoldemConfig(), n))
 		return t, horseEndPhase{end: HoldemPhaseEnd, rebuy: HoldemPhaseRebuy}, func() { g.collectChipsFrom(func(i int) int { return players[i].GetChips() }) }
 	case HorseOmahaHiLo:
 		players := NewOmahaPlayersForTable(n)
 		g.dealChipsTo(func(i, chips int) { players[i].SetChips(chips) })
-		t := NewOmahaHiLo(NewTrumpCards(0), players, DefaultOmahaConfig())
+		t := NewOmahaHiLo(NewTrumpCards(0), players, horseTableConfig(DefaultOmahaConfig(), n))
 		return t, horseEndPhase{end: HoldemPhaseEnd, rebuy: HoldemPhaseRebuy}, func() { g.collectChipsFrom(func(i int) int { return players[i].GetChips() }) }
 	case HorseRazz:
 		players := NewSevenCardStudPlayersForTable(n)
 		g.dealChipsTo(func(i, chips int) { players[i].SetChips(chips) })
-		t := NewRazz(NewTrumpCards(0), players, DefaultRazzConfig())
+		t := NewRazz(NewTrumpCards(0), players, horseStudTableConfig(DefaultRazzConfig(), n))
 		return t, horseEndPhase{end: SevenCardStudPhaseEnd, rebuy: SevenCardStudPhaseRebuy}, func() { g.collectChipsFrom(func(i int) int { return players[i].GetChips() }) }
 	case HorseStud:
 		players := NewSevenCardStudPlayersForTable(n)
 		g.dealChipsTo(func(i, chips int) { players[i].SetChips(chips) })
-		t := NewSevenCardStud(NewTrumpCards(0), players, DefaultSevenCardStudConfig())
+		t := NewSevenCardStud(NewTrumpCards(0), players, horseStudTableConfig(DefaultSevenCardStudConfig(), n))
 		return t, horseEndPhase{end: SevenCardStudPhaseEnd, rebuy: SevenCardStudPhaseRebuy}, func() { g.collectChipsFrom(func(i int) int { return players[i].GetChips() }) }
 	case HorseStudHiLo:
 		players := NewSevenCardStudPlayersForTable(n)
 		g.dealChipsTo(func(i, chips int) { players[i].SetChips(chips) })
-		t := NewSevenCardStudHiLo(NewTrumpCards(0), players, DefaultSevenCardStudConfig())
+		t := NewSevenCardStudHiLo(NewTrumpCards(0), players, horseStudTableConfig(DefaultSevenCardStudConfig(), n))
 		return t, horseEndPhase{end: SevenCardStudPhaseEnd, rebuy: SevenCardStudPhaseRebuy}, func() { g.collectChipsFrom(func(i int) int { return players[i].GetChips() }) }
 	default:
 		return nil, horseEndPhase{}, nil
 	}
+}
+
+// horseTableConfig は種目の設定を「いま座らせる人数」に合わせる。
+//
+// **既定の設定は 4 人卓を指している。** 飛んだ席を抜いて 3 人で座らせても、
+// 設定の TableSize が 4 のままだと**種目側は 4 人ぶんの席を作り直し**、こちらが
+// 残高を配ったプレイヤーとは別の 4 人が打つ ── 回収は元の 3 人を読むので、
+// 人間の残高がまったく動かず、総量が ±数十ずれる (実測: 卓 4 人 / 正本 3 席)。
+func horseTableConfig(cfg HoldemConfig, seats int) HoldemConfig {
+	cfg.TableSize = seats
+	// **リバイとアドオンは種目に任せない。** 飛んだ席を座らせないのはこちらの
+	// 役目で、種目側が補充するとチップが湧く。
+	cfg.RebuyEnabled = false
+	cfg.AddonEnabled = false
+	return cfg
+}
+
+// horseStudTableConfig はスタッド系の設定を同じ理由で揃える。
+func horseStudTableConfig(cfg SevenCardStudConfig, seats int) SevenCardStudConfig {
+	cfg.TableSize = seats
+	cfg.RebuyEnabled = false
+	cfg.AddonEnabled = false
+	return cfg
 }
 
 // aliveSeatIndexes はチップの残っている席の番号を並べて返す。
@@ -211,12 +234,21 @@ func (g *Horse) buildTable() (horseTable, horseEndPhase, func()) {
 // `InitChips` まで**黙って積み直す** (単体のゲームなら卓を続けるための正しい
 // 挙動)。ミックスゲームでそれをやると**チップが湧く** ── 実測で総量が
 // 3000 → 3114 に増えた。座らせなければ積み直されない。
+//
+// **ただし人数を減らした卓は作れない。** Holdem 系の卓は 4 / 6 / 9 人のいずれかで、
+// 3 人を渡すと黙って 4 人に落とされる。だから席が 1 つでも飛んだ時点で
+// `startHand` は卓を作らず、そのマッチを終える ── 「誰かが飛んだら終わり」は
+// ミックスゲームの区切りとしても自然で、席を欠いたまま続けるより誤魔化しが無い。
 func (g *Horse) aliveSeatIndexes() []int {
 	out := make([]int, 0, len(g.seats))
 	for i, s := range g.seats {
 		if s.chips > 0 {
 			out = append(out, i)
 		}
+	}
+	if len(out) != len(g.seats) {
+		// 欠けた卓は作らない (呼び出し側が finish する)。
+		return nil
 	}
 	return out
 }

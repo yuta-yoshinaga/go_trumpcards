@@ -70,12 +70,21 @@ func HorseDisciplineLetter(d HorseDiscipline) string {
 
 // 卓の範囲設定。
 const (
+	// 席数は **種目側が受け付ける卓サイズしか選べない**。
+	//
+	// Holdem 系の卓は 4 / 6 / 9 人のいずれかで、それ以外を渡すと
+	// `NewOmahaPlayersForTable` などが**黙って 4 人に落とす** ── こちらが 3 人ぶんの
+	// 残高を配っても 4 人が打つことになり、回収が別のプレイヤーを読んで人間の残高が
+	// まったく動かない (実測: 卓 4 人 / 正本 3 席、総量が ±数十ずれた)。
+	//
+	// HorseSeatSizes に無い数は Validate で弾く。
+
 	// HorseMinSeats は最小席数。
-	HorseMinSeats = 2
+	HorseMinSeats = 4
 	// HorseMaxSeats は最大席数。
-	HorseMaxSeats = 6
+	HorseMaxSeats = 9
 	// HorseDefaultSeats は既定の席数。
-	HorseDefaultSeats = 6
+	HorseDefaultSeats = 4
 
 	// HorseMinChips は最小の初期チップ。
 	HorseMinChips = 100
@@ -91,6 +100,19 @@ const (
 	// HorseDefaultHandsPerDiscipline は既定のハンド数。
 	HorseDefaultHandsPerDiscipline = 2
 )
+
+// HorseSeatSizes は選べる席数。**種目側の卓サイズと同じものしか選べない。**
+var HorseSeatSizes = []int{4, 6, 9}
+
+// HorseValidSeats は席数が種目側の受け付ける卓サイズかを返す。
+func HorseValidSeats(n int) bool {
+	for _, v := range HorseSeatSizes {
+		if v == n {
+			return true
+		}
+	}
+	return false
+}
 
 // エラー値。設定検証で使う。
 var (
@@ -118,7 +140,7 @@ func DefaultHorseConfig() HorseConfig {
 // Validate は設定が範囲内かを検査する。
 func (c HorseConfig) Validate() error {
 	switch {
-	case c.Seats < HorseMinSeats || c.Seats > HorseMaxSeats:
+	case !HorseValidSeats(c.Seats):
 		return errHorseSeatsRange
 	case c.InitialChips < HorseMinChips || c.InitialChips > HorseMaxChips:
 		return errHorseChipsRange
