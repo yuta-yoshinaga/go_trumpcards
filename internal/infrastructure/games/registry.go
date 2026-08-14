@@ -1180,6 +1180,12 @@ var registry = []*Game{
 	// 最強クラスの切り札なので、デクレアラーが自分で抱えていれば 19・18 へ下げる。
 	// 誰も落札しなければ Trischaken ── 最も多く点を取った席が負ける契約になる。
 	{Name: "zwanzigerrufen", Category: CategoryExtra},
+	// Troggu トロッグ
+	//
+	// **契約ごとに「勝ち」の意味が変わる。** Solo は最多得点、Trois は 3 トリック、
+	// Piccolo はちょうど 1 トリック、Misère は 1 つも取らないこと ── 同じ卓で
+	// 目標が正負どちらにも振れるのが、他のタロー系と分かれるところ。
+	{Name: "troggu", Category: CategoryExtra},
 }
 
 // All returns a value-level copy of the registry in canonical order.

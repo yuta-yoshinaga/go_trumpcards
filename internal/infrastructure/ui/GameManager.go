@@ -5080,6 +5080,23 @@ var gameRegistry = []GameRegistryEntry{
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"zwanzigerrufen.helpSetDifficulty", "zwanzigerrufen.helpSetDeals"},
 		}),
+	BindCuiFor("troggu",
+		func() usecase.TrogguInteractorIF {
+			return usecase.NewTrogguInteractor(domain.NewDefaultTroggu(), new(presenter.TrogguCuiPresenter))
+		},
+		controller.NewTrogguCuiController,
+		CuiHelpSpec{
+			TitleKey: "troggu.helpTitle",
+			CommandKeys: []string{
+				"troggu.helpBid",
+				"troggu.helpPass",
+				"troggu.helpPlay",
+				"troggu.helpNext",
+				"troggu.helpNextRound",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys:       []string{"troggu.helpSetDifficulty", "troggu.helpSetDeals"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

@@ -379,4 +379,12 @@ func init() {
 			return usecase.RestoreZwanzigerrufenInteractor(data, new(presenter.ZwanzigerrufenWebPresenter))
 		},
 		controller.NewZwanzigerrufenWebControllerWithProvider)
+	games.RegisterKVGame("troggu", games.CategoryExtra,
+		func() usecase.TrogguInteractorIF {
+			return usecase.NewTrogguInteractor(domain.NewDefaultTroggu(), new(presenter.TrogguWebPresenter))
+		},
+		func(data []byte) (usecase.TrogguInteractorIF, error) {
+			return usecase.RestoreTrogguInteractor(data, new(presenter.TrogguWebPresenter))
+		},
+		controller.NewTrogguWebControllerWithProvider)
 }

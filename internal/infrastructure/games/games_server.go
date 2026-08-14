@@ -1595,4 +1595,9 @@ func init() {
 			return usecase.NewZwanzigerrufenInteractor(domain.NewDefaultZwanzigerrufen(), new(presenter.ZwanzigerrufenWebPresenter))
 		},
 		controller.NewZwanzigerrufenWebController)
+	BindWebControllerFor("troggu",
+		func() usecase.TrogguInteractorIF {
+			return usecase.NewTrogguInteractor(domain.NewDefaultTroggu(), new(presenter.TrogguWebPresenter))
+		},
+		controller.NewTrogguWebController)
 }
