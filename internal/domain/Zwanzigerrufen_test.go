@@ -872,7 +872,15 @@ func TestZwanzigerrufenUnmarshal_RejectsTamperedState(t *testing.T) {
 			m["cl"] = -1
 			m["pi"] = 2
 		}, "requires a called trump"},
+		// **呼び札も明示する。**`zwanzigerrufenAtPlay` の局面は配りに依存し、
+		// デクレアラー自身が呼び札を持っていた回は `cl` が -1 のまま返る
+		// (Zwanzigerrufen.resolveCall がその場合パートナー無しに倒す)。
+		// `dc`/`pi` だけを弄ると、その回は先に並ぶ「パートナーには呼び札が要る」
+		// が先に当たり、期待した "own partner" ではなくそちらのエラーになる。
+		// 検証したい違反だけが立つように、他の前提はこのケース内で固定する。
 		{"自分自身がパートナー", func(m map[string]any) {
+			m["co"] = int(ZwanzigerrufenBidRufer)
+			m["cl"] = ZwanzigerrufenCallTrump
 			m["dc"] = 1
 			m["pi"] = 1
 		}, "own partner"},
