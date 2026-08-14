@@ -1,0 +1,52 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
+  "foundation": "組札",
+  "tableau": "場札",
+  "stock": "山札",
+  "waste": "捨て札",
+  "draw": "めくる",
+  "moveCount": "手数",
+  "giveup": "ギブアップ",
+  "empty": "空",
+  "foundationAriaLabel": "{{suit}} 組札{{idx}} {{count}}枚",
+  "emptyFoundationAriaLabel": "空の組札{{idx}} ({{suit}}、A から)",
+  "emptyPileAriaLabel": "空の列 {{pile}} (どのカードでも置けます)",
+  "stockAriaLabel": "山札 残り{{count}}枚",
+  "emptyStockAriaLabel": "山札は空です（めくり直しはありません）",
+  "emptyWasteAriaLabel": "捨て札は空です",
+  "landscapeBanner": "横画面での表示を推奨します",
+  "hint": "ヒント",
+  "autoComplete": "自動完成",
+  "autoCompleteNotReady": "組札へ送れる札があると有効になります",
+  "undo": "元に戻す",
+  "stalemate": "手詰まりです",
+  "playing": "カードを移動してください",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "gameOverSummary": "組札 {{count}}/104 枚（{{percent}}%）まで到達",
+  "hintAvailable": "ヒントがあります",
+  "noHint": "ヒントはありません",
+  "tutorial": {
+    "foundation": "組札は8つ（スートごとに2つ）。**最初は空**で、A が出てきたら置き、同じスートで A→K と13枚積みます。8×13＝104枚すべてでクリアです。",
+    "tableau": "場札は8列で、最初から**4枚ずつ**配られています（残り72枚が山札）。**スートを無視した降順**で重ねられますが、**動かせるのは各列の一番上1枚だけ**です。同スート縛りが無いぶん、Forty Thieves より置き先がずっと多くあります。",
+    "emptyPile": "列が空くと、**どのカードでも置けます**。別の列の一番上か捨て札から移せるので、空き列は詰まったときの逃げ場になります。山札から直接は置けません。",
+    "stock": "山札は1枚ずつ捨て札へ。**めくり直しはありません（1巡のみ）**。捨て札に流す前に、置ける場所がないか毎回確認しましょう。",
+    "controls": "めくる・ヒント・元に戻す・自動完成などの操作ボタンです。"
+  },
+  "frontendHint": {
+    "tableau": "列{{pile}}",
+    "foundation": "組札{{idx}}",
+    "waste": "捨て札",
+    "stock": "山札"
+  },
+  "hintReason": {
+    "toFoundation": "このカードを組札に上げると場が1枚軽くなります",
+    "toTableau": "示唆された列への移動で、下に埋もれた札を掘り出しましょう",
+    "draw": "動かせる札が無いので、山札をめくって手を増やしましょう"
+  },
+  "emptyColumn": "空き列"
+}

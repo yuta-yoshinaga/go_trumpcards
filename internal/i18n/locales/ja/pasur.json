@@ -1,0 +1,22 @@
+{
+  "helpTitle": "Pasur (パスール)",
+  "helpPlay": "  p <i> [t...]         手札 i を出す（t... は取る場札の番号、省略で場に置く）",
+  "helpGiveUp": "  g                    投了する",
+  "header": "配布: {{pack}} パック目  山札: 残り{{deck}}枚",
+  "rule": "手札1枚と場の数札の合計が11になる組み合わせを取ります。A=1〜10=10で、J・Q・Kは合計に使わず、場の同ランク札だけを取れます。取れる組み合わせがあるときは必ず取ります（場に置けません）。取った結果、場が空になると「スール」で、その捕獲の札は得点が2倍になります。",
+  "tableLine": "場: {{cards}}",
+  "tableEmpty": "場: なし",
+  "playerLine": "{{name}}{{role}}: 捕獲{{captured}}枚 スール{{soors}} 得点{{score}} 手札{{cards}}枚",
+  "roleLastCapture": "[最後に捕獲]",
+  "promptCurrentPlayer": "手番: {{name}}",
+  "promptPlay": "play <i> [t...]・・・手札 i を出す（t... は場札の番号）",
+  "gameEndYou": "ゲーム終了！ あなたの勝ちです。",
+  "gameEndCpu": "ゲーム終了！ {{name}} の勝ちです。",
+  "gameEndTie": "ゲーム終了！ {{n}} 人が同点です。",
+  "hintNone": "ヒントはありません。",
+  "hintCapture": "[HINT: [{{idx}}]{{card}} で場の {{table}} を取る ({{reason}})]",
+  "hintTrail": "[HINT: [{{idx}}]{{card}} を場に置く ({{reason}})]",
+  "hintReasonSoor": "場を空にできる。この捕獲は得点が2倍",
+  "hintReasonCapture": "点になる札を取れる",
+  "hintReasonTrail": "取れる組み合わせが無い。いちばん点にならない札を置く"
+}

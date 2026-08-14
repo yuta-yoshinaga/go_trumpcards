@@ -1,0 +1,21 @@
+{
+  "helpTitle": "Linger Longer (リンガーロンガー)",
+  "helpPlay": "  p <idx>              手札の idx 番目を出す",
+  "helpGiveUp": "  g                    投了する",
+  "header": "トリック: {{trick}}  山札: 残り{{stock}}枚",
+  "rule": "トリックを取っても得点にはなりません。取れるのは「山札から1枚補充する権利」だけで、勝ち続けるかぎり手札が減りません。手札が尽きた人から脱落し、最後まで持ち続けた1人が勝ちです。配る枚数は人数と同じ（4人なら4枚ずつ）で、残りが山札になります。",
+  "noStockLine": "山札が尽きました。もう誰も補充できません——ここから一気に脱落が進みます。",
+  "playerLine": "{{name}}{{role}}: 手札{{cards}}枚 獲得{{tricks}}回",
+  "roleOut": "[{{rank}}番目に脱落]",
+  "roleDrew": "[直前に補充]",
+  "promptCurrentPlayer": "手番: {{name}}",
+  "promptPlay": "play <idx>・・・カードを出す",
+  "promptEliminated": "あなたは脱落しました。残りのプレイヤーが決着するまで見守ります。",
+  "gameEndYou": "ゲーム終了！ あなたが最後まで手札を持ち続けました。",
+  "gameEndCpu": "ゲーム終了！ {{name}} が最後まで持ち続けました。",
+  "hintNone": "ヒントはありません。",
+  "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
+  "hintReasonWinTrick": "取れば山札から1枚補充できる",
+  "hintReasonNoStock": "取れるが山札が空なので補充は無い",
+  "hintReasonDuck": "取れないので安い札から"
+}

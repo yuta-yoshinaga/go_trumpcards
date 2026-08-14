@@ -47,25 +47,31 @@ const (
 // qualified なローが 1 人もいない場合はハイ側が全額獲得する。
 type Omaha struct {
 	communityCardBettingBase
-	trumpCards      *TrumpCards
-	players         []*OmahaPlayer
-	communityCards  []*Card
-	sidePots        []SidePot
-	dealerIdx       int
-	currentTurn     int
-	phase           int
-	hiLo            bool // Omaha 8 or Better (Hi-Lo) モード
-	holeCards       int  // ホールカード配布枚数 (0 は既定の4枚扱い; Big O は5枚)
-	config          OmahaConfig
-	roundResults    []HoldemResult
-	cpuActions      []HoldemCpuAction
-	startingChips   []int
-	vpipTracked     []bool
-	pfrTracked      []bool
-	threeBetTracked []bool
-	tournamentBase  // handCount / rebuyCounts / addonUsed (issue #1463)
-	lastCpuError    error
-	rebuyPhaseType  int
+	trumpCards     *TrumpCards
+	players        []*OmahaPlayer
+	communityCards []*Card
+	sidePots       []SidePot
+	dealerIdx      int
+	currentTurn    int
+	phase          int
+	hiLo           bool // Omaha 8 or Better (Hi-Lo) モード
+	holeCards      int  // ホールカード配布枚数 (0 は既定の4枚扱い; Big O は5枚)
+	// preflopCommunity はプリフロップ前に表向きにするコミュニティの枚数。
+	//
+	// **0 が通常のオマハ。** Courchevel だけが 1 で、フロップの 1 枚目を
+	// 賭ける前に見せる ── 公開する枚数を前倒しするだけで、総枚数も役の
+	// 作り方も変わらない。
+	preflopCommunity int
+	config           OmahaConfig
+	roundResults     []HoldemResult
+	cpuActions       []HoldemCpuAction
+	startingChips    []int
+	vpipTracked      []bool
+	pfrTracked       []bool
+	threeBetTracked  []bool
+	tournamentBase   // handCount / rebuyCounts / addonUsed (issue #1463)
+	lastCpuError     error
+	rebuyPhaseType   int
 	actionLogBase
 	humanProfile    *BettingHumanProfile
 	lastHumanPlayMs int
@@ -235,6 +241,17 @@ func (o *Omaha) continueReset() error {
 		}
 	}
 
+	// **フロップの 1 枚目を先に見せるバリアントがある (Courchevel)。**
+	// 既定は 0 枚なので、通常のオマハと Big O の進行は変わらない。
+	for i := 0; i < o.preflopCommunity; i++ {
+		if card := o.trumpCards.DrawCard(); card != nil {
+			o.communityCards = append(o.communityCards, card)
+		}
+	}
+	if o.preflopCommunity > 0 {
+		o.appendLog(-1, "deal", "exposed the first flop card", o.communityCards)
+	}
+
 	o.phase = OmahaPhasePreFlop
 	o.currentTurn = (o.dealerIdx + 3) % len(o.players)
 
@@ -393,7 +410,9 @@ func (o *Omaha) advancePhase() {
 	switch o.phase {
 	case OmahaPhasePreFlop:
 		o.phase = OmahaPhaseFlop
-		for i := 0; i < 3; i++ {
+		// **フロップは「3 枚まで足す」。** 先に見せた枚数を引かずに 3 枚
+		// 配ると、Courchevel の場だけ 6 枚になって役の作り方が変わる。
+		for i := len(o.communityCards); i < 3; i++ {
 			card := o.trumpCards.DrawCard()
 			if card != nil {
 				o.communityCards = append(o.communityCards, card)
@@ -602,6 +621,8 @@ func distributeAmongWinners(bp []BettingPlayer, winners []int, amount int, won m
 
 // finalizeShowdown ショーダウンを完了し、END フェーズに遷移する
 func (o *Omaha) finalizeShowdown() {
+	// **配り終えたポットは 0 にする。** 理由は Holdem 側と同じ。
+	o.pot = 0
 	o.phase = OmahaPhaseEnd
 	o.gameEndFlag = true
 	o.dealerIdx = (o.dealerIdx + 1) % len(o.players)
@@ -1316,35 +1337,36 @@ func (o *Omaha) logAction(playerIdx, action, amount int) {
 
 // omahaJSON is the JSON wire format for Omaha.
 type omahaJSON struct {
-	TrumpCards      *TrumpCards              `json:"tc"`
-	Players         []*OmahaPlayer           `json:"pl"`
-	CommunityCards  []*Card                  `json:"cc"`
-	Pot             int                      `json:"pt"`
-	SidePots        []SidePot                `json:"sp"`
-	DealerIdx       int                      `json:"di"`
-	CurrentTurn     int                      `json:"ct"`
-	Phase           int                      `json:"ph"`
-	Config          OmahaConfig              `json:"cf"`
-	GameEndFlag     bool                     `json:"ge"`
-	LastBet         int                      `json:"lb"`
-	MinRaise        int                      `json:"mr"`
-	RaiseCount      int                      `json:"rc"`
-	ActedFlags      []bool                   `json:"af"`
-	RoundResults    []HoldemResult           `json:"rr"`
-	CpuActions      []HoldemCpuAction        `json:"ca"`
-	StartingChips   []int                    `json:"sc"`
-	VPIPTracked     []bool                   `json:"vt"`
-	PFRTracked      []bool                   `json:"ft"`
-	ThreeBetTracked []bool                   `json:"tt"`
-	HandCount       int                      `json:"hc"`
-	RebuyCounts     []int                    `json:"rb"`
-	AddonUsed       []bool                   `json:"au"`
-	RebuyPhaseType  int                      `json:"rp"`
-	ActionLog       []*ActionLogEntry        `json:"al"`
-	Profile         *BettingHumanProfileData `json:"pf,omitempty"`
-	LastHumanPlayMs int                      `json:"hm"`
-	HiLo            bool                     `json:"hl,omitempty"`
-	HoleCards       int                      `json:"hcn,omitempty"`
+	TrumpCards       *TrumpCards              `json:"tc"`
+	Players          []*OmahaPlayer           `json:"pl"`
+	CommunityCards   []*Card                  `json:"cc"`
+	Pot              int                      `json:"pt"`
+	SidePots         []SidePot                `json:"sp"`
+	DealerIdx        int                      `json:"di"`
+	CurrentTurn      int                      `json:"ct"`
+	Phase            int                      `json:"ph"`
+	Config           OmahaConfig              `json:"cf"`
+	GameEndFlag      bool                     `json:"ge"`
+	LastBet          int                      `json:"lb"`
+	MinRaise         int                      `json:"mr"`
+	RaiseCount       int                      `json:"rc"`
+	ActedFlags       []bool                   `json:"af"`
+	RoundResults     []HoldemResult           `json:"rr"`
+	CpuActions       []HoldemCpuAction        `json:"ca"`
+	StartingChips    []int                    `json:"sc"`
+	VPIPTracked      []bool                   `json:"vt"`
+	PFRTracked       []bool                   `json:"ft"`
+	ThreeBetTracked  []bool                   `json:"tt"`
+	HandCount        int                      `json:"hc"`
+	RebuyCounts      []int                    `json:"rb"`
+	AddonUsed        []bool                   `json:"au"`
+	RebuyPhaseType   int                      `json:"rp"`
+	ActionLog        []*ActionLogEntry        `json:"al"`
+	Profile          *BettingHumanProfileData `json:"pf,omitempty"`
+	LastHumanPlayMs  int                      `json:"hm"`
+	HiLo             bool                     `json:"hl,omitempty"`
+	HoleCards        int                      `json:"hcn,omitempty"`
+	PreflopCommunity int                      `json:"pfc,omitempty"`
 }
 
 // omahaMaxSliceLen caps slice sizes during deserialisation.
@@ -1353,34 +1375,35 @@ const omahaMaxSliceLen = 1000
 // MarshalJSON implements json.Marshaler.
 func (o *Omaha) MarshalJSON() ([]byte, error) {
 	j := omahaJSON{
-		TrumpCards:      o.trumpCards,
-		Players:         o.players,
-		CommunityCards:  o.communityCards,
-		Pot:             o.pot,
-		SidePots:        o.sidePots,
-		DealerIdx:       o.dealerIdx,
-		CurrentTurn:     o.currentTurn,
-		Phase:           o.phase,
-		Config:          o.config,
-		GameEndFlag:     o.gameEndFlag,
-		LastBet:         o.lastBet,
-		MinRaise:        o.minRaise,
-		RaiseCount:      o.raiseCount,
-		ActedFlags:      o.actedFlags,
-		RoundResults:    o.roundResults,
-		CpuActions:      o.cpuActions,
-		StartingChips:   o.startingChips,
-		VPIPTracked:     o.vpipTracked,
-		PFRTracked:      o.pfrTracked,
-		ThreeBetTracked: o.threeBetTracked,
-		HandCount:       o.handCount,
-		RebuyCounts:     o.rebuyCounts,
-		AddonUsed:       o.addonUsed,
-		RebuyPhaseType:  o.rebuyPhaseType,
-		ActionLog:       o.actionLog,
-		LastHumanPlayMs: o.lastHumanPlayMs,
-		HiLo:            o.hiLo,
-		HoleCards:       o.holeCards,
+		TrumpCards:       o.trumpCards,
+		Players:          o.players,
+		CommunityCards:   o.communityCards,
+		Pot:              o.pot,
+		SidePots:         o.sidePots,
+		DealerIdx:        o.dealerIdx,
+		CurrentTurn:      o.currentTurn,
+		Phase:            o.phase,
+		Config:           o.config,
+		GameEndFlag:      o.gameEndFlag,
+		LastBet:          o.lastBet,
+		MinRaise:         o.minRaise,
+		RaiseCount:       o.raiseCount,
+		ActedFlags:       o.actedFlags,
+		RoundResults:     o.roundResults,
+		CpuActions:       o.cpuActions,
+		StartingChips:    o.startingChips,
+		VPIPTracked:      o.vpipTracked,
+		PFRTracked:       o.pfrTracked,
+		ThreeBetTracked:  o.threeBetTracked,
+		HandCount:        o.handCount,
+		RebuyCounts:      o.rebuyCounts,
+		AddonUsed:        o.addonUsed,
+		RebuyPhaseType:   o.rebuyPhaseType,
+		ActionLog:        o.actionLog,
+		LastHumanPlayMs:  o.lastHumanPlayMs,
+		HiLo:             o.hiLo,
+		HoleCards:        o.holeCards,
+		PreflopCommunity: o.preflopCommunity,
 	}
 	if o.humanProfile != nil {
 		d := o.humanProfile.Export()
@@ -1471,6 +1494,7 @@ func (o *Omaha) UnmarshalJSON(data []byte) error {
 	o.lastHumanPlayMs = j.LastHumanPlayMs
 	o.hiLo = j.HiLo
 	o.holeCards = j.HoleCards
+	o.preflopCommunity = j.PreflopCommunity
 	if j.Profile != nil {
 		o.humanProfile = &BettingHumanProfile{}
 		o.humanProfile.Import(*j.Profile)

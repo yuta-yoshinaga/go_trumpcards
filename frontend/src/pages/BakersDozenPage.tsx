@@ -22,6 +22,7 @@ import { useBakersDozenGame } from '../hooks/useBakersDozenGame';
 import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
+import { useDestinationPreview } from '../hooks/useDestinationPreview';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
@@ -203,6 +204,10 @@ function BakersDozenPageContent() {
     enabled: !!isPlayingForKbd && !loading,
   });
 
+  // **フックは早期 return より前。** 下に置くと state が来た描画でだけ
+  // フック数が増え、React が "Rendered more hooks" で落ちる。
+  const preview = useDestinationPreview<BakersDozenMoveZone>(selectedSource);
+
   if (!state) return <GameSkeleton gameKey="bakersdozen" layout={{ kind: 'tableau', topRow: 4, tableau: 13 }} />;
 
   const isPlaying = state.phase === BakersDozenPhase.PLAYING;
@@ -216,11 +221,16 @@ function BakersDozenPageContent() {
   //
   // **枠を出すだけで、押せなくはしない。**押せなくすると E2E の
   // 「最初の列をクリック」が別の列を掴んでしまう。
-  const selectedCard =
-    selectedSource?.zone === 'tableau' && selectedSource.col !== undefined && selectedSource.cardIndex !== undefined
-      ? state.tableau[selectedSource.col]?.[selectedSource.cardIndex]?.card
+  // **選ぶ前に行き先が見える (#4454)。** hover / フォーカス中の札にも、選択後と
+  // まったく同じ計算を当てる ── 判定を二重に持たないので食い違わない。
+  const previewSource = preview.source;
+  const previewedCard =
+    previewSource?.zone === 'tableau' && previewSource.col !== undefined && previewSource.cardIndex !== undefined
+      ? state.tableau[previewSource.col]?.[previewSource.cardIndex]?.card
       : undefined;
-  const legalTargets = bakersDozenLegalTargets(state.tableau, state.foundation, selectedCard);
+  const legalTargets = bakersDozenLegalTargets(state.tableau, state.foundation, previewedCard);
+  /** Ring for a legal destination: softer while it is only a hover preview. */
+  const targetRing = preview.isPreview ? ' rounded ring-2 ring-ds-success/70' : ' rounded ring-2 ring-ds-success';
 
   const isSourceSelected = (zone: string, col?: number, cardIndex?: number) =>
     selectedSource !== null &&
@@ -267,8 +277,9 @@ function BakersDozenPageContent() {
                 return (
                   <div
                     key={`f-${idx.toString()}`}
-                    className={`text-center${legalTargets.foundation.has(idx) ? ' rounded ring-2 ring-ds-success' : ''}`}
+                    className={`text-center${legalTargets.foundation.has(idx) ? targetRing : ''}`}
                     data-legal-target={legalTargets.foundation.has(idx) ? 'true' : undefined}
+                    data-preview-target={legalTargets.foundation.has(idx) && preview.isPreview ? 'true' : undefined}
                   >
                     <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
                     <DropZone
@@ -330,8 +341,9 @@ function BakersDozenPageContent() {
                     // on desktop the columns flex to fill the available width as before.
                     className={`${isMobile ? 'shrink-0' : 'flex-1 min-w-0'}${
                       isOneCardCol ? ' rounded ring-1 ring-ds-warning/40 ring-dashed' : ''
-                    }${legalTargets.tableau.has(colIdx) ? ' rounded ring-2 ring-ds-success' : ''}`}
+                    }${legalTargets.tableau.has(colIdx) ? targetRing : ''}`}
                     data-legal-target={legalTargets.tableau.has(colIdx) ? 'true' : undefined}
+                    data-preview-target={legalTargets.tableau.has(colIdx) && preview.isPreview ? 'true' : undefined}
                     style={isMobile ? { width: bd.cw } : undefined}
                     data-testid={isOneCardCol ? `bd-onecard-col-${colIdx}` : undefined}
                   >
@@ -377,6 +389,9 @@ function BakersDozenPageContent() {
                                 {tc.card ? (
                                   <button
                                     type="button"
+                                    // **動かせる札だけがプレビューを持つ。** 埋もれた札に
+                                    // 出しても、その札は選べないので嘘になる。
+                                    {...(isTop ? preview.previewProps(cardZone) : {})}
                                     data-testid={isLastInCol ? `bd-last-card-${colIdx}` : undefined}
                                     onClick={() => {
                                       if (selectedSource) {

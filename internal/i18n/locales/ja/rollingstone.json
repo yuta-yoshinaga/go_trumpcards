@@ -1,0 +1,23 @@
+{
+  "helpTitle": "Rolling Stone (ローリングストーン)",
+  "helpPlay": "  p <idx>              手札の idx 番目を出す",
+  "helpPickUp": "  u                    フォローできないので場札を引き取る",
+  "helpGiveUp": "  g                    投了する",
+  "header": "トリック: {{trick}}  デッキ: {{deck}}枚（場に残り {{left}}枚）",
+  "rule": "トリックを取っても得点にはならず、勝つのは先に手札を出し切った人です。フォローできないと、その場のトリックを全部自分の手札に加えます——つまり取るのではなく、増やされるのが罰。1人8枚で始め、人数に応じてデッキの枚数が変わります（4人32枚・5人40枚・6人48枚）。",
+  "playerLine": "{{name}}{{role}}: 手札{{cards}}枚 引き取り{{pickups}}回",
+  "roleFinished": "[{{rank}}位で上がり]",
+  "rolePickedUp": "[直前に引き取り]",
+  "promptCurrentPlayer": "手番: {{name}}",
+  "promptPlay": "play <idx>・・・カードを出す",
+  "promptPickUp": "フォローできる札がありません。pickup で場札 {{n}} 枚を引き取ってください。",
+  "gameEndYou": "ゲーム終了！ あなたが先に出し切りました。",
+  "gameEndCpu": "ゲーム終了！ {{name}} が先に出し切りました。",
+  "gameEndStalemate": "ゲーム終了！ 決着が付かなかったので、手札のいちばん少ない {{name}}（{{n}}枚）の勝ちとします。",
+  "hintNone": "ヒントはありません。",
+  "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
+  "hintPickUp": "[HINT: 引き取るしかありません ({{reason}})]",
+  "hintReasonLead": "長いスートから出す。短いスートを残すと引き取りやすい",
+  "hintReasonFollow": "取っても得にはならないので安い札から",
+  "hintReasonPickUp": "フォローできる札が無い"
+}

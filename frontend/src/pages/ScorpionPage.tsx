@@ -23,6 +23,7 @@ import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
+import { useDestinationPreview } from '../hooks/useDestinationPreview';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -236,10 +237,14 @@ function ScorpionPageContent() {
   // Empty-column deal guard: surfaces a shake animation + tooltip instead of failing silently.
   const [emptyDealAttemptKey, setEmptyDealAttemptKey] = useState(0);
   const hasEmptyColumn = useMemo(() => state?.tableau.some((col) => col.length === 0) ?? false, [state?.tableau]);
-  // Columns the selected card may legally move onto (same suit, one rank higher).
+  // **選ぶ前に行き先が見える。** hover / フォーカス中の札についても、選択後と
+  // まったく同じ計算で移動先を出す (#4454)。判定を二重に持たないので、
+  // プレビューと選択後の表示が食い違うことはない。
+  const preview = useDestinationPreview<ScorpionMoveZone>(selectedSource);
+  // Columns the previewed card may legally move onto (same suit, one rank higher).
   const legalTargets = useMemo(
-    () => (selectedSource && state ? scorpionLegalTargets(state.tableau, selectedSource) : new Set<number>()),
-    [selectedSource, state],
+    () => (preview.source && state ? scorpionLegalTargets(state.tableau, preview.source) : new Set<number>()),
+    [preview.source, state],
   );
   const dealBlockedByEmpty = hasEmptyColumn && (state?.stockCount ?? 0) > 0;
   const handleDealGuarded = useCallback(() => {
@@ -437,13 +442,21 @@ function ScorpionPageContent() {
                                   draggable={isPlaying}
                                   onDragStart={dnd.handleDragStart(zone)}
                                   onDragEnd={dnd.handleDragEnd}
+                                  {...preview.previewProps({ zone: 'tableau', col: colIdx, cardIndex: cardIdx })}
                                   data-testid={isLast && legalTargets.has(colIdx) ? 'sc-legal-target' : undefined}
+                                  data-preview-target={
+                                    isLast && legalTargets.has(colIdx) && preview.isPreview ? 'true' : undefined
+                                  }
                                   className={`${focusRingWhite} rounded-lg transition-all ${
                                     isSelected ? 'ring-2 ring-ds-warning -translate-y-1' : ''
                                   } ${isDragSrc ? 'opacity-50' : ''} ${
                                     hintFrom ? 'ring-2 ring-ds-info animate-pulse' : ''
                                   } ${hintTo ? 'ring-2 ring-ds-success animate-pulse' : ''} ${
-                                    isLast && legalTargets.has(colIdx) ? 'ring-2 ring-ds-success' : ''
+                                    isLast && legalTargets.has(colIdx)
+                                      ? preview.isPreview
+                                        ? 'ring-2 ring-ds-success/70'
+                                        : 'ring-2 ring-ds-success'
+                                      : ''
                                   }`}
                                   onClick={() => {
                                     // Clicking the selected card again deselects it, which

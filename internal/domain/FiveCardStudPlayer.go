@@ -24,7 +24,25 @@ type FiveCardStudPlayer struct {
 	threeBetCount       int                   // 3Bet実行数
 	postFlopBetRaise    int                   // ポストフロップ ベット+レイズ回数
 	postFlopCall        int                   // ポストフロップ コール回数
+	sokoMode            bool                  // Soko の役序列で評価する (Canadian Stud)
+	// kickerRank は ExtractKickers に渡すための**標準スケール**のランク。
+	// 通常は handRank と同じだが、Soko モードでは handRank が Soko スケールになり、
+	// kicker.go は標準スケールの PokerHand* で switch するため、両者の整数が衝突する
+	// （SokoHandFourFlush(3) == PokerHandThreeOfAKind(3) など）。片方だけ渡すと
+	// キッカーが黙って nil になったり無意味な値になったりするので、別に持つ。
+	kickerRank int
 }
+
+// SetSokoMode は Soko (Canadian Stud) の役序列で評価するかを設定する。
+// ゲーム側 (FiveCardStud) が構築時とリセット時に伝播する。
+func (p *FiveCardStudPlayer) SetSokoMode(v bool) { p.sokoMode = v }
+
+// GetSokoMode は Soko モードかを返す。
+func (p *FiveCardStudPlayer) GetSokoMode() bool { return p.sokoMode }
+
+// GetKickerRank は ExtractKickers に渡すための標準スケールのランクを返す。
+// handRank をそのまま渡してはいけない: Soko モードではスケールが違う。
+func (p *FiveCardStudPlayer) GetKickerRank() int { return p.kickerRank }
 
 // NewFiveCardStudPlayer コンストラクタ
 func NewFiveCardStudPlayer(isHuman bool, style FiveCardStudPlayStyle) *FiveCardStudPlayer {
@@ -155,6 +173,7 @@ func (p *FiveCardStudPlayer) EvalBestHand() int {
 
 	if len(all) < 5 {
 		p.handRank = PokerHandHighCard
+		p.kickerRank = PokerHandHighCard
 		p.bestHand = nil
 		return p.handRank
 	}
@@ -164,7 +183,7 @@ func (p *FiveCardStudPlayer) EvalBestHand() int {
 	var bestCards []*Card
 
 	for _, combo := range combos {
-		rank := evalFiveCardHand(combo)
+		rank := p.evalHand(combo)
 		if rank > bestRank || (rank == bestRank && compareHighCardsSlice(combo, bestCards) > 0) {
 			bestRank = rank
 			bestCards = make([]*Card, 5)
@@ -174,7 +193,33 @@ func (p *FiveCardStudPlayer) EvalBestHand() int {
 
 	p.handRank = bestRank
 	p.bestHand = bestCards
+	p.kickerRank = kickerRankFor(p.sokoMode, bestRank, bestCards)
 	return p.handRank
+}
+
+// evalHand は5枚の役を評価する。Soko は4枚ストレート/4枚フラッシュを含む独自の
+// 序列を使うため、標準の評価器とは戻り値のスケールが違う（soko_hand_eval.go 参照）。
+// 両者を混ぜて比較してはいけないので、1ハンド内では必ず同じ側を使う。
+func (p *FiveCardStudPlayer) evalHand(cards []*Card) int {
+	if p.sokoMode {
+		return evalSokoHand(cards)
+	}
+	return evalFiveCardHand(cards)
+}
+
+// kickerRankFor は ExtractKickers に渡す**標準スケール**のランクを決める。
+//
+// 通常は5枚の標準評価そのもの。Soko で4枚役が勝ったときだけ HighCard を返して
+// キッカーを消す: 4枚ストレート/4枚フラッシュには「グループ」が無いので
+// キッカーという概念が無いが、その手にペアが**共存**していることがある
+// （ペアがあると異なるランクが4つ残るので、その4枚が同スート/連続になりうる）。
+// 素直に標準評価を渡すと、役名は「4枚フラッシュ」なのに偶発的なペア由来の
+// キッカーが並ぶ。表示される役と噛み合わないので、ここで断つ。
+func kickerRankFor(sokoMode bool, sokoRank int, bestCards []*Card) int {
+	if sokoMode && (sokoRank == SokoHandFourStraight || sokoRank == SokoHandFourFlush) {
+		return PokerHandHighCard
+	}
+	return evalFiveCardHand(bestCards)
 }
 
 // EvalVisibleHand 表向き札のみからハンドを評価 (ベッティング順序決定用)

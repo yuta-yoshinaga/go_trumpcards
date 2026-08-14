@@ -5,6 +5,19 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { gameCategories, gameRoutes } from '../constants/gameRoutes';
 import { DesktopSidebar } from './DesktopSidebar';
 
+// **この 2 ファイルは全ゲームぶんのリンクを描いて数える。** ゲームが 1 つ
+// 増えるたびに重くなり、313 ゲームの時点で `links point to correct hrefs` は
+// ローカルで 2.1 秒 —— 既定の 10 秒に対して 2 割強を使う。CI の runner は
+// 負荷時にこの数倍かかるので、既定のままだと**中身と無関係にタイムアウトで
+// 落ちる**（実際に NavBar と DesktopSidebar の両方が CI で落ちた）。
+//
+// テストが遅いのは検査の性質であって欠陥ではない（全ルートを網羅する検査を
+// 速くする方法は「検査を減らす」しかない）ので、このファイルだけ上限を上げる。
+// hookTimeout も同じ理由で上げる。**片方だけでは足りない** —— 316 ゲームぶんの
+// DOM を畳む RTL の自動 cleanup は afterEach フックで走るので、既定の 10 秒だと
+// 「Hook timed out」で落ちる（CI で実際に落ちた）。
+vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
+
 vi.mock('../providers/SoundProvider', () => ({
   useSound: vi.fn(() => ({
     muted: false,

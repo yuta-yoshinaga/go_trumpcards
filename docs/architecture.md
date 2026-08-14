@@ -50,7 +50,7 @@ public/                        # Built frontend assets served by Go web server
 
 - **Presenter pattern**: `internal/usecase/presenter/` defines output interfaces (e.g., `BlackJackPresenter`). `internal/adapter/presenter/` provides concrete implementations (CUI vs Web). Presenters are injected into interactors.
 - **Mock presenters**: `*_mock.go` files in `internal/usecase/presenter/` are used in tests to avoid I/O.
-- **Web API**: 264 endpoints, one per game. Each accepts JSON with a `command` field and the game state; the full list is in [Web API endpoints](#web-api-endpoints) below.
+- **Web API**: 318 endpoints, one per game. Each accepts JSON with a `command` field and the game state; the full list is in [Web API endpoints](#web-api-endpoints) below.
 - **Swagger UI**: Available at `/swagger/` -- serves the OpenAPI spec (`api/openapi.yaml`) via Swagger UI for interactive API documentation and testing. The spec is embedded into the binary with `go:embed`; the Swagger UI frontend is loaded from a CDN. Both routes accept `GET` and `HEAD` (HEAD returns headers only).
 - **SPA fallback**: All other GET/HEAD requests are served from `public/` via `http.FileServer`; unknown paths fall back to `public/index.html` so externally shared deep-links (e.g., `/blackjack`, `/poker`) reach the React HashRouter SPA instead of returning a bare 404. See `internal/infrastructure/web/spa.go`.
 
@@ -122,7 +122,7 @@ constant in `frontend/src/api/gameApi.ts`. For the full set of registration poin
 
 ## Web API endpoints
 
-One `POST /<game>/exec` per registered game -- **264** in total. Every endpoint takes JSON with a
+One `POST /<game>/exec` per registered game -- **318** in total. Every endpoint takes JSON with a
 `command` field plus the game state, and returns that game's Web presenter output.
 
 One row per game, so adding a game is a one-line diff. This used to be a single inline paragraph
@@ -148,6 +148,7 @@ previously spelled out in words and maintained entirely by hand, with nothing ch
 | `POST /omahahilo/exec` | Omaha Hi-Lo / 8 or Better |
 | `POST /bigo/exec` | 5 Card Omaha (Big O) |
 | `POST /bigohilo/exec` | 5 Card Omaha Hi-Lo (Big O) |
+| `POST /courchevel/exec` | Courchevel |
 | `POST /shortdeck/exec` | Short Deck (6+ Hold'em) |
 | `POST /pineapple/exec` | Pineapple Poker |
 | `POST /crazypineapple/exec` | Crazy Pineapple Poker |
@@ -214,6 +215,7 @@ previously spelled out in words and maintained entirely by hand, with nothing ch
 | `POST /spanish21/exec` | Spanish 21 |
 | `POST /calculation/exec` | Calculation |
 | `POST /sirtommy/exec` | Sir Tommy |
+| `POST /auldlangsyne/exec` | Auld Lang Syne |
 | `POST /spiteandmalice/exec` | Spite and Malice |
 | `POST /skat/exec` | Skat |
 | `POST /shithead/exec` | Shithead / Karma |
@@ -225,6 +227,19 @@ previously spelled out in words and maintained entirely by hand, with nothing ch
 | `POST /casinowar/exec` | Casino War |
 | `POST /pitch/exec` | Pitch / Setback |
 | `POST /dragontiger/exec` | Dragon Tiger |
+| `POST /andarbahar/exec` | Andar Bahar |
+| `POST /botifarra/exec` | Botifarra |
+| `POST /rikken/exec` | Rikken |
+| `POST /colourwhist/exec` | Colour Whist |
+| `POST /chemindefer/exec` | Chemin de Fer |
+| `POST /crazyfourpoker/exec` | Crazy 4 Poker |
+| `POST /doubleattack/exec` | Extra Bet Blackjack |
+| `POST /freebet/exec` | Free Bet Blackjack |
+| `POST /banluck/exec` | Ban Luck |
+| `POST /montebank/exec` | Monte Bank |
+| `POST /cincinnati/exec` | Cincinnati |
+| `POST /ironcross/exec` | Iron Cross |
+| `POST /baseballpoker/exec` | Baseball Poker |
 | `POST /blackjackswitch/exec` | Blackjack Switch |
 | `POST /montecarlo/exec` | Monte Carlo Solitaire |
 | `POST /contractrummy/exec` | Contract Rummy |
@@ -308,6 +323,39 @@ previously spelled out in words and maintained entirely by hand, with nothing ch
 | `POST /pishti/exec` | Pişti |
 | `POST /cuarenta/exec` | Cuarenta |
 | `POST /fivecardstud/exec` | Five Card Stud |
+| `POST /soko/exec` | Soko |
+| `POST /fourseasons/exec` | Four Seasons |
+| `POST /colorado/exec` | Colorado |
+| `POST /cribbagesquares/exec` | Cribbage Squares |
+| `POST /diplomat/exec` | Diplomat |
+| `POST /royalcotillion/exec` | Royal Cotillion |
+| `POST /crazyquilt/exec` | Crazy Quilt |
+| `POST /germanwhist/exec` | German Whist |
+| `POST /slobberhannes/exec` | Slobberhannes |
+| `POST /polignac/exec` | Polignac |
+| `POST /reversis/exec` | Reversis |
+| `POST /rams/exec` | Rams |
+| `POST /tarabish/exec` | Tarabish |
+| `POST /baloot/exec` | Baloot |
+| `POST /estimation/exec` | Estimation |
+| `POST /israeliwhist/exec` | Israeli Whist |
+| `POST /hokm/exec` | Hokm |
+| `POST /shelem/exec` | Shelem |
+| `POST /mendikot/exec` | Mendikot |
+| `POST /bhabhi/exec` | Bhabhi |
+| `POST /teendopaanch/exec` | 3-2-5 |
+| `POST /hasenpfeffer/exec` | Hasenpfeffer |
+| `POST /sergeantmajor/exec` | Sergeant Major |
+| `POST /honeymoonbridge/exec` | Honeymoon Bridge |
+| `POST /minibridge/exec` | Minibridge |
+| `POST /pasur/exec` | Pasur |
+| `POST /snap/exec` | Snap |
+| `POST /rollingstone/exec` | Rolling Stone |
+| `POST /lingerlonger/exec` | Linger Longer |
+| `POST /pig/exec` | Pig |
+| `POST /stealingbundles/exec` | Stealing Bundles |
+| `POST /cucumber/exec` | Cucumber |
+| `POST /goofspiel/exec` | Goofspiel |
 | `POST /faro/exec` | Faro |
 | `POST /openfacechinese/exec` | Open Face Chinese Poker / OFC |
 | `POST /russianbank/exec` | Russian Bank / Crapette |
@@ -350,6 +398,12 @@ previously spelled out in words and maintained entirely by hand, with nothing ch
 | `POST /ulti/exec` | Ulti / Ultimó |
 | `POST /wizard/exec` | Wizard |
 | `POST /oichokabu/exec` | Oicho-Kabu |
+| `POST /kingo/exec` | Kingo |
+| `POST /tusac/exec` | Tu Sac |
+| `POST /sakura/exec` | Sakura |
+| `POST /zwanzigerrufen/exec` | Zwanzigerrufen |
+| `POST /troggu/exec` | Troggu |
+| `POST /horse/exec` | H.O.R.S.E. |
 | `POST /rook/exec` | Rook |
 | `POST /koikoi/exec` | Koi-Koi |
 | `POST /gostop/exec` | Go-Stop |

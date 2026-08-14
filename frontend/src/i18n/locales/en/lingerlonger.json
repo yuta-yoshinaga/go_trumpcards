@@ -1,0 +1,41 @@
+{
+  "phase": {
+    "play": "Playing",
+    "gameEnd": "Finished"
+  },
+  "header": {
+    "trick": "Trick {{n}}",
+    "stock": "Stock: {{n}} left",
+    "rule": "Winning a trick scores nothing. All it earns is the right to draw one card from the stock -- so while you keep winning, your hand never shrinks. Run out of cards and you are out; the last player still holding cards wins. You are dealt as many cards as there are players (four each at a four-player table), and the rest is the stock.",
+    "noStock": "The stock is empty. Nobody can refill now -- eliminations come quickly from here.",
+    "cards": "{{n}} cards",
+    "tricks": "won {{n}}",
+    "eliminated": "[out {{rank}}]",
+    "drew": "[just drew]",
+    "you": "You",
+    "cpu": "CPU{{idx}}"
+  },
+  "currentTrick": "Current trick",
+  "actions": {
+    "players": "Players",
+    "reset": "Reset",
+    "giveUp": "Give up",
+    "playAria": "Play {{card}}"
+  },
+  "result": {
+    "you": "You win! You held cards longest.",
+    "cpu": "{{name}} held cards longest.",
+    "eliminated": "You are out. The remaining players will finish it between them."
+  },
+  "hint": {
+    "lingerlongerWinTrick": "This card takes the trick, and taking it draws you a replacement.",
+    "lingerlongerNoStock": "This takes the trick, but the stock is empty so there is no refill. Still worth taking.",
+    "lingerlongerDuck": "You cannot take this trick, so play a low card."
+  },
+  "tutorial": {
+    "rule": "**Winning a trick scores nothing.** All it earns is **one card from the stock**. Because your hand does not shrink while you keep winning, high cards are simply good here.",
+    "goal": "**Run out of cards and you are out; the last player still holding cards wins.** It is the exact inverse of a shedding game -- lingering is the whole point.",
+    "stock": "**Once the stock is empty nobody can refill.** From there every hand only shrinks, so eliminations come quickly. The count is always on screen.",
+    "hand": "Your hand. Playable cards get a green ring. You must follow the suit that was led."
+  }
+}

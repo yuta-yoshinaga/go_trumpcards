@@ -725,6 +725,8 @@ func (p *Pineapple) resolveShowdown() {
 
 // finalizeShowdown ショーダウンを完了し、END フェーズに遷移する
 func (p *Pineapple) finalizeShowdown() {
+	// **配り終えたポットは 0 にする。** 理由は Holdem 側と同じ。
+	p.pot = 0
 	p.phase = PineapplePhaseEnd
 	p.gameEndFlag = true
 	p.dealerIdx = (p.dealerIdx + 1) % len(p.players)

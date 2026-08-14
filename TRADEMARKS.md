@@ -49,6 +49,7 @@ time. Verify against the relevant national registry before relying on any row.
 |---|---|
 | Three Card Poker | Shuffle Master / Light & Wonder |
 | Four Card Poker | Shuffle Master / Light & Wonder |
+| Crazy 4 Poker | Shuffle Master / Light & Wonder |
 | Let It Ride | Shuffle Master / Light & Wonder |
 | Mississippi Stud | Shuffle Master / Light & Wonder |
 | Ultimate Texas Hold'em | Shuffle Master / Light & Wonder |
@@ -59,6 +60,7 @@ time. Verify against the relevant national registry before relying on any row.
 | Spanish 21 | Masque Publishing |
 | Casino Hold'em | Stephen Au-Yeung |
 | Blackjack Switch | Geoff Hall / Playtech |
+| Free Bet Blackjack | Shuffle Master / Light & Wonder — searched 2026-08-13, no Japanese registration found |
 | Oasis Poker | asserted by various operators |
 | Russian Poker | asserted by various operators |
 
@@ -67,6 +69,8 @@ time. Verify against the relevant national registry before relying on any row.
 | Name | Reported owner |
 |---|---|
 | 21+3 | **Galaxy Gaming — registered in Japan** (登録6752649 / 6785367, classes 28 and 41) |
+| Double Attack | **株式会社オーイズミ — registered in Japan** (登録6798394, class 28) |
+| Queens Up | Shuffle Master / Light & Wonder — searched 2026-08-13, no Japanese registration found |
 
 This is the only mark in this inventory confirmed to be *registered in Japan*,
 and class 41 covers providing games online. The project therefore no longer
@@ -74,7 +78,27 @@ displays it: the BlackJack / Spanish 21 side bet is labelled by what it does
 (ポーカー役ベット / Poker Hand Bet) rather than by its trade name. Internal
 identifiers (`t3`, `twentyOnePlus3Bet`, `TwentyOnePlus3Payout`) are unchanged.
 
+`Double Attack` is the second such mark, found on 2026-08-13 while adding the game
+that bears its name (#5261). Class 28 covers playing cards and gaming equipment —
+this project's own subject matter — so the game is listed and displayed by what it
+does (追加ベット・ブラックジャック / Extra Bet Blackjack) rather than by the trade
+name. The route, slug and internal identifiers (`doubleattack`) are unchanged, as
+with `21+3`.
+
+Two differences from `21+3` were weighed before applying the same treatment: this
+registration is class 28 only (not class 41, "providing games online"), and the
+owner is an amusement-machine manufacturer rather than a casino-game licensor.
+The conservative reading was chosen deliberately.
+
+`Bust It`, the side bet this game carries, was searched at the same time and
+returned no Japanese registration, so it is used as-is.
+
 Perfect Pairs, the other side bet, is unregistered in Japan and is used as-is.
+
+`Free Bet Blackjack` (#5262) was searched on 2026-08-13 and returned no Japanese
+registration, so the game keeps its trade name with the attribution row above.
+The house-funded raises it is named for are described functionally in the UI
+(無料ダブル / 無料スプリット) because they are rules, not marks.
 
 ### Published card games
 

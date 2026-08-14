@@ -35,5 +35,17 @@
   "pokerHandRank7": "フォーカード",
   "pokerHandRank8": "ストレートフラッシュ",
   "pokerHandRank9": "ロイヤルフラッシュ",
-  "pokerHandRank10": "ファイブカード"
+  "pokerHandRank10": "ファイブカード",
+  "sokoHandRank0": "ハイカード",
+  "sokoHandRank1": "ワンペア",
+  "sokoHandRank2": "4枚ストレート",
+  "sokoHandRank3": "4枚フラッシュ",
+  "sokoHandRank4": "ツーペア",
+  "sokoHandRank5": "スリーカード",
+  "sokoHandRank6": "ストレート",
+  "sokoHandRank7": "フラッシュ",
+  "sokoHandRank8": "フルハウス",
+  "sokoHandRank9": "フォーカード",
+  "sokoHandRank10": "ストレートフラッシュ",
+  "sokoHandRank11": "ロイヤルフラッシュ"
 }

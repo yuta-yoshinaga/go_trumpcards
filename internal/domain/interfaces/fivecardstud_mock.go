@@ -23,6 +23,8 @@ func (_m *MockFiveCardStudGame) PlayerAction(action, amount, humanPlayMs int) er
 	return ret.Error(0)
 }
 
+func (_m *MockFiveCardStudGame) GetIsSoko() bool { return _m.Called().Bool(0) }
+
 func (_m *MockFiveCardStudGame) GetPhase() int {
 	ret := _m.Called()
 	return ret.Int(0)

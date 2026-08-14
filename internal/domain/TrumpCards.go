@@ -139,18 +139,22 @@ func NewTrumpCardsEuchre() *TrumpCards {
 	return t
 }
 
-// NewTrumpCardsBelote ベロート用32枚デッキコンストラクタ
+// NewTrumpCards32 German/Czech 32枚デッキコンストラクタ
 // 7,8,9,10,J,Q,K,A (値: 1,7,8,9,10,11,12,13) × 4スート = 32枚
-func NewTrumpCardsBelote() *TrumpCards {
-	beloteValues := []int{1, 7, 8, 9, 10, 11, 12, 13} // A,7,8,9,10,J,Q,K
+//
+// **枚数を指定する NewTrumpCardsWithSuits では作れない。** あちらはスートごとに
+// 値 1..13 を回して指定枚数で打ち切るので、32 を渡すと 13+13+6+0 になり
+// ダイヤが 1 枚も入らない (実測)。使う値を並べて作るのはそのため。
+func NewTrumpCards32() *TrumpCards {
+	values := []int{1, 7, 8, 9, 10, 11, 12, 13} // A,7,8,9,10,J,Q,K
 	suits := []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond}
-	totalCards := len(beloteValues) * len(suits) // 32
+	totalCards := len(values) * len(suits) // 32
 
 	t := new(TrumpCards)
 	t.deckCnt = totalCards
 	t.deck = make([]*Card, 0, totalCards)
 	for _, suit := range suits {
-		for _, val := range beloteValues {
+		for _, val := range values {
 			t.deck = append(t.deck, NewCard(suit, val, false))
 		}
 	}
@@ -158,21 +162,64 @@ func NewTrumpCardsBelote() *TrumpCards {
 	return t
 }
 
+// NewTrumpCardsBelote ベロート用32枚デッキコンストラクタ
+// 7,8,9,10,J,Q,K,A (値: 1,7,8,9,10,11,12,13) × 4スート = 32枚
+func NewTrumpCardsBelote() *TrumpCards {
+	return NewTrumpCards32()
+}
+
 // NewTrumpCardsPrsi プルシー(チェコ版クレイジーエイト/Mau Mau)用32枚デッキコンストラクタ
 // 7,8,9,10,J,Q,K,A (値: 1,7,8,9,10,11,12,13) × 4スート = 32枚
 // ベロートと同一構成 (German/Czech 32-card pack)。
 func NewTrumpCardsPrsi() *TrumpCards {
-	prsiValues := []int{1, 7, 8, 9, 10, 11, 12, 13} // A,7,8,9,10,J,Q,K
+	return NewTrumpCards32()
+}
+
+// NewTrumpCardsHasenpfeffer ハーゼンプフェファー用25枚デッキコンストラクタ
+// 9,10,J,Q,K,A (値: 1,9,10,11,12,13) × 4スート = 24枚 + ジョーカー1枚 = 25枚
+//
+// **25枚は 4人 × 6枚 + 伏せ札 1枚。** ジョーカーは Best Bower として全カード中
+// 最強の切り札になるため、ユーカーの24枚に 1枚だけ足した構成になっている。
+func NewTrumpCardsHasenpfeffer() *TrumpCards {
+	values := []int{1, 9, 10, 11, 12, 13} // A,9,10,J,Q,K
 	suits := []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond}
-	totalCards := len(prsiValues) * len(suits) // 32
+	totalCards := len(values)*len(suits) + 1 // 25
 
 	t := new(TrumpCards)
 	t.deckCnt = totalCards
 	t.deck = make([]*Card, 0, totalCards)
 	for _, suit := range suits {
-		for _, val := range prsiValues {
+		for _, val := range values {
 			t.deck = append(t.deck, NewCard(suit, val, false))
 		}
+	}
+	t.deck = append(t.deck, NewCard(CardDesignJoker, CardValueJoker, false))
+	t.deckInit()
+	return t
+}
+
+// NewTrumpCardsTeenDoPaanch 3-2-5用30枚デッキコンストラクタ
+// 8,9,10,J,Q,K,A (値: 1,8,9,10,11,12,13) × 4スート = 28枚 + 7♠ + 7♥ = 30枚
+//
+// **28枚では 3人 × 10枚 に 2枚足りない。** 3-2-5 は 3+2+5 = 10 トリックを
+// 打つので手札はちょうど 10枚必要で、そのために 7♠ と 7♥ の 2枚だけを足した
+// 30枚デッキを使う（7 は 8 のすぐ下）。
+func NewTrumpCardsTeenDoPaanch() *TrumpCards {
+	values := []int{1, 8, 9, 10, 11, 12, 13} // A,8,9,10,J,Q,K
+	suits := []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond}
+	extraSevens := []int{CardDesignSpade, CardDesignHeart}
+	totalCards := len(values)*len(suits) + len(extraSevens) // 30
+
+	t := new(TrumpCards)
+	t.deckCnt = totalCards
+	t.deck = make([]*Card, 0, totalCards)
+	for _, suit := range suits {
+		for _, val := range values {
+			t.deck = append(t.deck, NewCard(suit, val, false))
+		}
+	}
+	for _, suit := range extraSevens {
+		t.deck = append(t.deck, NewCard(suit, 7, false))
 	}
 	t.deckInit()
 	return t
@@ -284,6 +331,28 @@ func NewTrumpCardsBezique() *TrumpCards {
 // ShortDeckValues はショートデック(6+)の札値 A,6-K。デッキ構築 (core) と
 // 役判定 (casino) の両方が参照するため、untagged な core ファイルに置く (#2126)。
 var ShortDeckValues = []int{1, 6, 7, 8, 9, 10, 11, 12, 13}
+
+// NewTrumpCardsReversis レヴェルシ用48枚デッキコンストラクタ
+// 標準52枚から**10を4枚抜いた**48枚。
+// A,2,3,4,5,6,7,8,9,J,Q,K (値: 1..9,11,12,13) × 4スート = 48枚。
+// ピノクルの48枚とは構成が違う（あちらは9〜Aの短いデッキを2組）ので流用できない。
+// 4人に12枚ずつ配ると過不足なく0枚残る。
+func NewTrumpCardsReversis() *TrumpCards {
+	reversisValues := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13} // 10 を除く
+	suits := []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond}
+	totalCards := len(reversisValues) * len(suits) // 48
+
+	t := new(TrumpCards)
+	t.deckCnt = totalCards
+	t.deck = make([]*Card, 0, totalCards)
+	for _, suit := range suits {
+		for _, val := range reversisValues {
+			t.deck = append(t.deck, NewCard(suit, val, false))
+		}
+	}
+	t.deckInit()
+	return t
+}
 
 // NewTrumpCardsShortDeck ショートデック(6+)用36枚デッキコンストラクタ
 // A,6,7,8,9,10,J,Q,K (値: 1,6,7,8,9,10,11,12,13) × 4スート = 36枚

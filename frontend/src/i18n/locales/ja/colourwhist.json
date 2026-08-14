@@ -1,0 +1,68 @@
+{
+  "title": "カラーホイスト",
+  "bidGuide": "いまより強い契約を宣言するか、降りてください",
+  "callGuide": "切り札を決めてください",
+  "playGuide": "出せる札だけが選べます",
+  "troelNotice": "エース3枚のため競り抜きで契約が決まりました",
+  "label": {
+    "you": "あなた",
+    "score": "得点",
+    "round": "ラウンド",
+    "contract": "契約",
+    "trump": "切り札",
+    "declarer": "契約者",
+    "partner": "相方",
+    "declarerTricks": "契約側の獲得",
+    "hand": "手札",
+    "trick": "場",
+    "cards": "枚",
+    "passed": "降りた",
+    "declarerSide": "契約側",
+    "hidden": "未公開"
+  },
+  "contract": {
+    "none": "未定",
+    "samen": "サーメン（相方と8）",
+    "alleen": "アレーン（単独8）",
+    "miserie": "ミゼリー（0）",
+    "troel": "トルール（エース3枚・強制）"
+  },
+  "trump": {
+    "spade": "スペード",
+    "clover": "クラブ",
+    "heart": "ハート",
+    "diamond": "ダイヤ",
+    "none": "なし"
+  },
+  "button": {
+    "bid": "{{contract}} を宣言",
+    "pass": "降りる",
+    "call": "{{trump}} を切り札に",
+    "next": "次のラウンド",
+    "giveUp": "投了"
+  },
+  "kbd": {
+    "next": "N",
+    "giveUp": "G"
+  },
+  "phase": {
+    "bid": "競り",
+    "call": "切り札",
+    "play": "プレイ",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "終了"
+  },
+  "result": {
+    "win": "あなたの勝ちです",
+    "lose": "相手の勝ちです"
+  },
+  "tutorial": {
+    "bid": "いまより強い契約だけ宣言できます（トルールは競れません）",
+    "hand": "出せる札だけが選べます",
+    "score": "得点はゼロサム。合計は必ず 0 です"
+  },
+  "frontendHint": {
+    "colourWhistBidStrength": "手札の強さから見た契約です",
+    "colourWhistFollowSuit": "フォローの義務があります"
+  }
+}

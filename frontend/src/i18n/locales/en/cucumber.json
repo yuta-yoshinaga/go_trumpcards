@@ -1,0 +1,47 @@
+{
+  "phase": { "play": "Playing", "roundEnd": "Round over", "gameEnd": "Finished" },
+  "header": {
+    "round": "Round {{n}}",
+    "trick": "Trick {{n}}",
+    "target": "ends at {{n}}",
+    "rule": "Suits do not matter at all. If you hold a card higher than the highest one played so far, you must play one of them; if you do not, you must play your lowest card. The only choice is which higher card to spend. The highest rank takes the trick -- but penalty points are scored only by whoever takes the LAST trick, equal to the rank of the card they took it with. Every other trick is worth nothing. Fewest penalty points wins.",
+    "highest": "Rank to beat: {{n}}",
+    "lead": "You lead (any card is legal)",
+    "cards": "{{n}} cards",
+    "penalty": "{{n}} penalty",
+    "lastTrick": "[took the last trick for {{n}}]",
+    "you": "You",
+    "cpu": "CPU{{idx}}"
+  },
+  "currentTrick": "Current trick",
+  "actions": {
+    "next": "Next round",
+    "players": "Players",
+    "target": "Ends at",
+    "reset": "Reset",
+    "giveUp": "Give up",
+    "playAria": "Play {{card}}"
+  },
+  "status": {
+    "lead": "You lead. Any card is legal.",
+    "beat": "Play a card higher than {{n}}.",
+    "forced": "You cannot beat it, so your lowest card is the only legal play.",
+    "waiting": "Waiting for the other players.",
+    "roundEnd": "{{name}} took the last trick and scored {{n}} penalty points."
+  },
+  "result": {
+    "you": "You win! You finished with the fewest penalty points ({{n}}).",
+    "cpu": "{{name}} finished with the fewest penalty points ({{n}})."
+  },
+  "hint": {
+    "cucumberLead": "You lead, so anything is legal.",
+    "cucumberBeat": "The cheapest card that still beats it -- do not carry high cards into the last trick.",
+    "cucumberForced": "You cannot beat it, so this card is forced."
+  },
+  "tutorial": {
+    "rule": "**Suits do not matter at all.** If you hold a card higher than the highest played so far you **must** play one of them; if you do not, you must play your **lowest** card. The only choice is which high card to spend.",
+    "penalty": "**Only the player who takes the LAST trick scores**, equal to the rank of the card they took it with. Every other trick is worth nothing at all.",
+    "strategy": "So the only real danger is **still holding high cards at the end**. Spend cheaply while you can beat the trick, and get rid of aces and kings early.",
+    "hand": "Your hand. Legal plays get a green ring -- and when you cannot beat the trick, only your lowest card lights up."
+  }
+}

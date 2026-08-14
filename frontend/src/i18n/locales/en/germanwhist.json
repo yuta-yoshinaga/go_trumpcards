@@ -1,0 +1,42 @@
+{
+  "phase": {
+    "firstHalf": "First half (no score)",
+    "secondHalf": "Second half (scoring)",
+    "gameEnd": "Game over"
+  },
+  "header": {
+    "trick": "Trick",
+    "stock": "Stock",
+    "trump": "Trump",
+    "phase1": "First half: play for the face-up card",
+    "phase2": "Second half: every trick scores",
+    "upCard": "Face-up card (goes to the winner)",
+    "upCardNone": "No face-up card (stock exhausted; trump is {{suit}})",
+    "you": "You",
+    "cpu": "CPU",
+    "scoringTricks": "Scoring tricks",
+    "firstHalfNote": "Tricks in this half do not score"
+  },
+  "currentTrick": "Current trick",
+  "actions": {
+    "reset": "Reset",
+    "giveUp": "Give up",
+    "playAria": "Play {{card}}"
+  },
+  "result": {
+    "youWin": "You win! Second half {{p0}}-{{p1}}",
+    "cpuWin": "The CPU wins. Second half {{p0}}-{{p1}}",
+    "tie": "A tie. Second half {{p0}}-{{p1}}"
+  },
+  "hint": {
+    "germanWhistTakeUpCard": "The face-up card is worth having — win this trick.",
+    "germanWhistDuck": "The face-up card isn't worth having. Throw a cheap card and lose on purpose.",
+    "germanWhistWinTrick": "Tricks score now, so take this one."
+  },
+  "tutorial": {
+    "upCard": "The card turned face up. The first half's tricks are played for this one card, and the suit of the very first face-up card is trump for the whole hand.",
+    "trick": "Cards played this trick appear here. If you hold the led suit you must follow it.",
+    "hand": "Your hand. Legal cards carry a green ring. In the first half the real decision is whether to win the trick or duck it.",
+    "actions": "Reset deals again and Give up ends the game. The hint's aim changes between the halves."
+  }
+}

@@ -1406,7 +1406,55 @@ export const CalculationPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Auld Lang Syne phase constants (sync: internal/domain/AuldLangSyne.go). */
+export const AuldLangSynePhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Sir Tommy phase constants (sync: internal/domain/SirTommy.go). */
+/** Four Seasons phase constants (sync: internal/domain/FourSeasons.go). */
+export const FourSeasonsPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
+/** Colorado phase constants (sync: internal/domain/Colorado.go). */
+export const ColoradoPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
+/** Cribbage Squares phase constants (sync: internal/domain/CribbageSquares.go). */
+export const CribbageSquaresPhase = {
+  PLAYING: 0,
+  COMPLETE: 1,
+} as const;
+
+/** Diplomat phase constants (sync: internal/domain/Diplomat.go). */
+export const DiplomatPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
+/** Royal Cotillion phase constants (sync: internal/domain/RoyalCotillion.go). */
+export const RoyalCotillionPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
+/** Crazy Quilt phase constants (sync: internal/domain/CrazyQuilt.go). */
+export const CrazyQuiltPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 export const SirTommyPhase = {
   PLAYING: 0,
   GAME_CLEAR: 1,
@@ -1511,6 +1559,284 @@ export const SchnapsenPhase = {
   GAME_END: 2,
 } as const;
 
+/**
+ * Sergeant Major (8-5-3) phase constants (sync: internal/domain/SergeantMajor.go).
+ *
+ * **There is no bidding phase.** The 8, 5 and 3 targets are fixed by seat, so
+ * the dealer's only choice is trump — and then the kitty discard.
+ */
+/**
+ * Honeymoon Bridge phase constants (sync: internal/domain/HoneymoonBridge.go).
+ *
+ * **DRAW is a real trick-playing phase, not a deal animation.** Thirteen
+ * no-trump tricks are played that score nothing; each one just hands the
+ * winner and then the loser a card from the stock.
+ */
+/**
+ * Minibridge phase constants (sync: internal/domain/Minibridge.go).
+ *
+ * **There is no auction phase.** The declarer falls out of the HCP everyone
+ * announces at the deal, so the first decision is the contract itself.
+ */
+/**
+ * Pasur phase constants (sync: internal/domain/Pasur.go).
+ *
+ * **There are no rounds.** Hands are refilled automatically when they empty,
+ * and the game ends the moment the deck runs out — so there is nothing between
+ * playing and being finished.
+ */
+/**
+ * Rolling Stone phase constants (sync: internal/domain/RollingStone.go).
+ *
+ * **There are no rounds.** Tricks resolve as soon as they are complete, and
+ * the game ends the moment somebody empties their hand.
+ */
+export const RollingStonePhase = {
+  PLAY: 0,
+  GAME_END: 1,
+} as const;
+
+/**
+ * Snap phase constants (sync: internal/domain/Snap.go).
+ */
+export const SnapPhase = {
+  PLAY: 0,
+  GAME_END: 1,
+} as const;
+
+/** Snap pending-action kinds (sync: internal/domain/Snap.go). */
+export const SnapPendingKind = {
+  NONE: 0,
+  SNAP: 1,
+  STEP: 2,
+} as const;
+
+/** Snap event kinds (sync: internal/domain/Snap.go). */
+export const SnapEventKind = {
+  NONE: 0,
+  STEP: 1,
+  SNAP_CORRECT: 2,
+  SNAP_WRONG: 3,
+  ELIMINATED: 4,
+} as const;
+
+export const PasurPhase = {
+  PLAY: 0,
+  GAME_END: 1,
+} as const;
+
+export const MinibridgePhase = {
+  CONTRACT: 0,
+  PLAY: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
+export const HoneymoonBridgePhase = {
+  DRAW: 0,
+  BID: 1,
+  PLAY: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
+export const SergeantMajorPhase = {
+  TRUMP: 0,
+  DISCARD: 1,
+  PLAY: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
+/**
+ * Hasenpfeffer phase constants (sync: internal/domain/Hasenpfeffer.go).
+ *
+ * **The declarer takes the blind before play**, so a discard phase of its own
+ * sits between the auction and the first trick.
+ */
+export const HasenpfefferPhase = {
+  BID: 0,
+  DISCARD: 1,
+  PLAY: 2,
+  HAND_END: 3,
+  GAME_END: 4,
+} as const;
+
+/**
+ * 3-2-5 phase constants (sync: internal/domain/TeenDoPaanch.go).
+ *
+ * **There is no bidding phase.** The 3, 2 and 5 targets are assigned at the
+ * start of each round, so the only declaration is trump.
+ */
+export const TeenDoPaanchPhase = {
+  TRUMP: 0,
+  PLAY: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
+/**
+ * Bhabhi phase constants (sync: internal/domain/Bhabhi.go).
+ *
+ * **There are no hands.** The whole deck is dealt once and play runs until
+ * only one player still holds cards, so there is nothing between PLAY and
+ * GAME_END.
+ */
+export const BhabhiPhase = {
+  PLAY: 0,
+  GAME_END: 1,
+} as const;
+
+/**
+ * Mendikot phase constants (sync: internal/domain/Mendikot.go).
+ *
+ * **There is no trump phase.** Trump is set by whichever card the first player
+ * who cannot follow suit chooses to play, so the hand starts in PLAY.
+ */
+export const MendikotPhase = {
+  PLAY: 0,
+  HAND_END: 1,
+  GAME_END: 2,
+} as const;
+
+/**
+ * Shelem phase constants (sync: internal/domain/Shelem.go).
+ *
+ * **What is bid is the score itself**, not a number of tricks, and the winner
+ * takes a four-card widow before naming trump — hence a discard phase of its
+ * own between bidding and play.
+ */
+export const ShelemPhase = {
+  BID: 0,
+  DISCARD: 1,
+  PLAY: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
+/**
+ * Hokm phase constants (sync: internal/domain/Hokm.go).
+ *
+ * **A hand does not play out all thirteen tricks** -- the first partnership to
+ * seven takes it and the rest of the cards are never played.
+ */
+export const HokmPhase = {
+  /** The hakem declares trump from their first five cards. */
+  TRUMP: 0,
+  PLAY: 1,
+  HAND_END: 2,
+  GAME_END: 3,
+} as const;
+
+/**
+ * Israeli Whist phase constants (sync: internal/domain/IsraeliWhist.go).
+ *
+ * **Bidding happens twice**: the auction settles trump and a quota for whoever
+ * wins it, then everyone calls their own target separately.
+ */
+export const IsraeliWhistPhase = {
+  AUCTION: 0,
+  BID: 1,
+  PLAY: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
+/** Estimation phase constants (sync: internal/domain/Estimation.go). */
+export const EstimationPhase = {
+  /** The dealer chooses the trump suit before anyone calls. */
+  TRUMP: 0,
+  BID: 1,
+  PLAY: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
+/**
+ * Estimation call kinds (sync: internal/domain/EstimationPlayer.go).
+ *
+ * The kind decides how far the score swings: a Dash Call is a flat ±23 and
+ * Risk — the highest call at the table — doubles whatever it would otherwise
+ * have been worth.
+ */
+export const EstimationCall = {
+  NORMAL: 0,
+  DASH: 1,
+  RISK: 2,
+} as const;
+
+/** Baloot phase constants (sync: internal/domain/Baloot.go). */
+export const BalootPhase = {
+  /** Before play: each player in turn declares Sun, Hokom, or passes. */
+  DECLARE: 0,
+  PLAY: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
+/**
+ * Baloot mode constants (sync: internal/domain/Baloot.go).
+ *
+ * **The mode selects the rank order itself**, not merely whether a trump
+ * exists: Sun runs A>10>K>Q>J>9>8>7 with no trump, while Hokom gives the
+ * trump suit J>9>A>10>K>Q>8>7.
+ */
+export const BalootMode = {
+  NONE: 0,
+  SUN: 1,
+  HOKOM: 2,
+} as const;
+
+/** Tarabish phase constants (sync: internal/domain/Tarabish.go). */
+export const TarabishPhase = {
+  /** Before play: each player in turn may take the turned suit as trump. */
+  BID: 0,
+  PLAY: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
+/** Rams phase constants (sync: internal/domain/Rams.go). */
+export const RamsPhase = {
+  /** Before play: each player chooses to enter the round or drop. */
+  DECIDE: 0,
+  PLAY: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
+/** Reversis phase constants (sync: internal/domain/Reversis.go). */
+export const ReversisPhase = {
+  PLAY: 0,
+  ROUND_END: 1,
+  GAME_END: 2,
+} as const;
+
+/** Polignac phase constants (sync: internal/domain/Polignac.go). */
+export const PolignacPhase = {
+  /** Before play: the human may declare capot. */
+  DECLARE: 0,
+  PLAY: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
+/** Slobberhannes phase constants (sync: internal/domain/Slobberhannes.go). */
+export const SlobberhannesPhase = {
+  PLAY: 0,
+  ROUND_END: 1,
+  GAME_END: 2,
+} as const;
+
+/** German Whist phase constants (sync: internal/domain/GermanWhist.go). */
+export const GermanWhistPhase = {
+  /** First 13 tricks — played for the face-up card, and they do NOT score. */
+  DRAW: 0,
+  /** Second 13 tricks — every trick counts. */
+  SCORING: 1,
+  GAME_END: 2,
+} as const;
+
 /** Truco phase constants (sync: internal/domain/Truco.go). */
 export const TrucoPhase = {
   PLAY: 0,
@@ -1605,6 +1931,205 @@ export const DragonTigerHistoryResult = {
   DRAGON: 0,
   TIGER: 1,
   TIE: 2,
+} as const;
+
+/** Andar Bahar phase constants (sync: internal/domain/AndarBahar.go). */
+export const AndarBaharPhase = {
+  BET: 1,
+  END: 2,
+} as const;
+
+/** Andar Bahar column constants, used for both bets and history (sync: internal/domain/AndarBahar.go). */
+export const AndarBaharColumn = {
+  ANDAR: 0,
+  BAHAR: 1,
+} as const;
+
+/** Andar Bahar side-bet bands. `NONE` means no side bet was placed (sync: internal/domain/AndarBahar.go). */
+export const AndarBaharSideBand = {
+  NONE: -1,
+  FIRST: 0,
+  TWO_TO_FIVE: 1,
+  SIX_TO_TEN: 2,
+  ELEVEN_TO_FIFTEEN: 3,
+  SIXTEEN_TO_TWENTYFIVE: 4,
+  TWENTYSIX_TO_THIRTYFIVE: 5,
+  THIRTYSIX_PLUS: 6,
+} as const;
+
+/** Botifarra phase constants (sync: internal/domain/Botifarra.go). */
+export const BotifarraPhase = {
+  DECLARE: 0,
+  DELEGATED: 1,
+  DOUBLE: 2,
+  PLAY: 3,
+  ROUND_END: 4,
+  GAME_END: 5,
+} as const;
+
+/** Botifarra doubling multipliers (sync: internal/domain/Botifarra.go). */
+export const BotifarraMultiplier = {
+  NONE: 1,
+  CONTRAR: 2,
+  RECONTRAR: 4,
+} as const;
+
+/** Rikken phase constants (sync: internal/domain/Rikken.go). */
+export const RikkenPhase = {
+  BID: 0,
+  CALL: 1,
+  PLAY: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
+/** Rikken contract ladder; the number is the bidding strength (sync: internal/domain/RikkenConfig.go). */
+export const RikkenContract = {
+  NONE: 0,
+  RIK: 1,
+  MISERE: 2,
+  SOLO: 3,
+  OPEN_MISERE: 4,
+} as const;
+
+/** Extra Bet Blackjack phase constants (sync: internal/domain/DoubleAttackBlackjackConfig.go). */
+export const DoubleAttackPhase = {
+  BET: 0,
+  ATTACK: 1,
+  PLAY: 2,
+  RESULT: 3,
+} as const;
+
+/** Baseball Poker phase constants (sync: internal/domain/BaseballPoker.go). */
+export const BaseballPhase = {
+  BETTING: 0,
+  BUY_IN: 1,
+  SHOWDOWN: 2,
+  GAME_END: 3,
+} as const;
+
+/** Zwanzigerrufen phase constants (sync: internal/domain/Zwanzigerrufen.go). */
+export const ZwanzigerrufenPhase = {
+  BID: 0,
+  TALON: 1,
+  PLAY: 2,
+  TRICK_END: 3,
+  ROUND_END: 4,
+  GAME_END: 5,
+} as const;
+
+/** Troggu phase constants (sync: internal/domain/Troggu.go). */
+export const TrogguPhase = {
+  BID: 0,
+  PLAY: 1,
+  TRICK_END: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
+/** H.O.R.S.E. phase constants (sync: internal/domain/Horse.go). */
+export const HorsePhase = {
+  HAND: 0,
+  HAND_END: 1,
+  GAME_END: 2,
+} as const;
+
+/** Sakura (さくら/肥後花) phase constants (sync: internal/domain/Sakura.go). */
+export const SakuraPhase = {
+  PLAY: 0,
+  ROUND_END: 1,
+  GAME_END: 2,
+} as const;
+
+/** Tu Sac phase constants (sync: internal/domain/TuSac.go). */
+export const TuSacPhase = {
+  DRAW: 0,
+  DISCARD: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
+/** Kingo phase constants (sync: internal/domain/Kingo.go). */
+export const KingoPhase = {
+  BET: 0,
+  RESULT: 1,
+  GAME_END: 2,
+} as const;
+
+/** Iron Cross phase constants (sync: internal/domain/IronCross.go). */
+export const IronCrossPhase = {
+  BETTING: 0,
+  CHOOSE_LINE: 1,
+  SHOWDOWN: 2,
+  GAME_END: 3,
+} as const;
+
+/** Cincinnati phase constants (sync: internal/domain/Cincinnati.go). */
+export const CincinnatiPhase = {
+  DEAL: 0,
+  BETTING: 1,
+  SHOWDOWN: 2,
+  GAME_END: 3,
+} as const;
+
+/** Monte Bank phase constants (sync: internal/domain/MonteBank.go). */
+export const MonteBankPhase = {
+  BET: 0,
+  RESULT: 1,
+  GAME_END: 2,
+} as const;
+
+/** Ban Luck phase constants (sync: internal/domain/BanLuck.go). */
+export const BanLuckPhase = {
+  BET: 0,
+  PLAY: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
+/** Free Bet Blackjack phase constants (sync: internal/domain/FreeBetBlackjackConfig.go). */
+export const FreeBetPhase = {
+  BET: 0,
+  PLAY: 1,
+  RESULT: 2,
+} as const;
+
+/** Crazy 4 Poker phase constants (sync: internal/domain/CrazyFourPokerConfig.go). */
+export const CrazyFourPokerPhase = {
+  BET: 0,
+  DECIDE: 1,
+  RESULT: 2,
+} as const;
+
+/** Chemin de Fer phase constants (sync: internal/domain/ChemindeFerConfig.go). */
+export const ChemindeFerPhase = {
+  STAKE: 0,
+  BET: 1,
+  PUNTER_DRAW: 2,
+  BANKER_DRAW: 3,
+  ROUND_END: 4,
+} as const;
+
+/** Colour Whist phase constants (sync: internal/domain/ColourWhist.go). */
+export const ColourWhistPhase = {
+  BID: 0,
+  CALL: 1,
+  PLAY: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
+/**
+ * Colour Whist contracts (sync: internal/domain/ColourWhistConfig.go).
+ *
+ * TROEL is forced at deal time by holding three aces and **cannot be bid**.
+ */
+export const ColourWhistContract = {
+  NONE: 0,
+  SAMEN: 1,
+  ALLEEN: 2,
+  MISERIE: 3,
+  TROEL: 4,
 } as const;
 
 /** Blackjack Switch phase constants (sync: internal/domain/BlackJackSwitch.go). */
@@ -2166,4 +2691,66 @@ export const RookPhase = {
   TRICK_END: 3,
   ROUND_END: 4,
   GAME_END: 5,
+} as const;
+
+/**
+ * Linger Longer phase constants (sync: internal/domain/LingerLonger.go).
+ *
+ * **There are no rounds and no deals after the first.** Cards come back one at
+ * a time as trick prizes, and the game ends when one seat is the last holding
+ * any.
+ */
+export const LingerLongerPhase = {
+  PLAY: 0,
+  GAME_END: 1,
+} as const;
+
+/**
+ * Pig phase constants (sync: internal/domain/Pig.go).
+ *
+ * **RoundEnd is a real stop, not a flicker.** A round's whole result is one
+ * seat taking a letter, and nothing on the board records it — so the game
+ * waits there until the next round is asked for.
+ */
+export const PigPhase = {
+  PASS: 0,
+  SIGNAL: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
+/**
+ * Stealing Bundles phase constants (sync: internal/domain/StealingBundles.go).
+ *
+ * **There are no rounds.** Hands are redealt from the same deck until it runs
+ * out, and the game ends the moment it does.
+ */
+export const StealingBundlesPhase = {
+  PLAY: 0,
+  GAME_END: 1,
+} as const;
+
+/**
+ * Cucumber phase constants (sync: internal/domain/Cucumber.go).
+ *
+ * **RoundEnd is a real stop.** A round's whole result is one seat taking
+ * penalty points, and nothing on the board records it — so the game waits
+ * there until the next round is asked for.
+ */
+export const CucumberPhase = {
+  PLAY: 0,
+  ROUND_END: 1,
+  GAME_END: 2,
+} as const;
+
+/**
+ * Goofspiel phase constants (sync: internal/domain/Goofspiel.go).
+ *
+ * **Reveal is a real stop.** Bids are simultaneous, so the moment they turn
+ * face up is the only chance to read them before the next prize is turned.
+ */
+export const GoofspielPhase = {
+  BID: 0,
+  REVEAL: 1,
+  GAME_END: 2,
 } as const;

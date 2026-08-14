@@ -364,4 +364,84 @@ func init() {
 			return usecase.RestoreShengJiInteractor(data, new(presenter.ShengJiWebPresenter))
 		},
 		controller.NewShengJiWebControllerWithProvider)
+	games.RegisterKVGame("colorado", games.CategoryClassic,
+		func() usecase.ColoradoInteractorIF {
+			return usecase.NewColoradoInteractor(domain.NewDefaultColorado(), new(presenter.ColoradoWebPresenter))
+		},
+		func(data []byte) (usecase.ColoradoInteractorIF, error) {
+			return usecase.RestoreColoradoInteractor(data, new(presenter.ColoradoWebPresenter))
+		},
+		controller.NewColoradoWebControllerWithProvider)
+	games.RegisterKVGame("royalcotillion", games.CategoryClassic,
+		func() usecase.RoyalCotillionInteractorIF {
+			return usecase.NewRoyalCotillionInteractor(domain.NewDefaultRoyalCotillion(), new(presenter.RoyalCotillionWebPresenter))
+		},
+		func(data []byte) (usecase.RoyalCotillionInteractorIF, error) {
+			return usecase.RestoreRoyalCotillionInteractor(data, new(presenter.RoyalCotillionWebPresenter))
+		},
+		controller.NewRoyalCotillionWebControllerWithProvider)
+	games.RegisterKVGame("germanwhist", games.CategoryClassic,
+		func() usecase.GermanWhistInteractorIF {
+			return usecase.NewGermanWhistInteractor(domain.NewDefaultGermanWhist(), new(presenter.GermanWhistWebPresenter))
+		},
+		func(data []byte) (usecase.GermanWhistInteractorIF, error) {
+			return usecase.RestoreGermanWhistInteractor(data, new(presenter.GermanWhistWebPresenter))
+		},
+		controller.NewGermanWhistWebControllerWithProvider)
+	games.RegisterKVGame("slobberhannes", games.CategoryClassic,
+		func() usecase.SlobberhannesInteractorIF {
+			return usecase.NewSlobberhannesInteractor(domain.NewDefaultSlobberhannes(), new(presenter.SlobberhannesWebPresenter))
+		},
+		func(data []byte) (usecase.SlobberhannesInteractorIF, error) {
+			return usecase.RestoreSlobberhannesInteractor(data, new(presenter.SlobberhannesWebPresenter))
+		},
+		controller.NewSlobberhannesWebControllerWithProvider)
+	games.RegisterKVGame("reversis", games.CategoryClassic,
+		func() usecase.ReversisInteractorIF {
+			return usecase.NewReversisInteractor(domain.NewDefaultReversis(), new(presenter.ReversisWebPresenter))
+		},
+		func(data []byte) (usecase.ReversisInteractorIF, error) {
+			return usecase.RestoreReversisInteractor(data, new(presenter.ReversisWebPresenter))
+		},
+		controller.NewReversisWebControllerWithProvider)
+	games.RegisterKVGame("estimation", games.CategoryClassic,
+		func() usecase.EstimationInteractorIF {
+			return usecase.NewEstimationInteractor(domain.NewDefaultEstimation(), new(presenter.EstimationWebPresenter))
+		},
+		func(data []byte) (usecase.EstimationInteractorIF, error) {
+			return usecase.RestoreEstimationInteractor(data, new(presenter.EstimationWebPresenter))
+		},
+		controller.NewEstimationWebControllerWithProvider)
+	games.RegisterKVGame("hokm", games.CategoryClassic,
+		func() usecase.HokmInteractorIF {
+			return usecase.NewHokmInteractor(domain.NewDefaultHokm(), new(presenter.HokmWebPresenter))
+		},
+		func(data []byte) (usecase.HokmInteractorIF, error) {
+			return usecase.RestoreHokmInteractor(data, new(presenter.HokmWebPresenter))
+		},
+		controller.NewHokmWebControllerWithProvider)
+	games.RegisterKVGame("cucumber", games.CategoryClassic,
+		func() usecase.CucumberInteractorIF {
+			return usecase.NewCucumberInteractor(domain.NewDefaultCucumber(), new(presenter.CucumberWebPresenter))
+		},
+		func(data []byte) (usecase.CucumberInteractorIF, error) {
+			return usecase.RestoreCucumberInteractor(data, new(presenter.CucumberWebPresenter))
+		},
+		controller.NewCucumberWebControllerWithProvider)
+	games.RegisterKVGame("botifarra", games.CategoryClassic,
+		func() usecase.BotifarraInteractorIF {
+			return usecase.NewBotifarraInteractor(domain.NewDefaultBotifarra(), new(presenter.BotifarraWebPresenter))
+		},
+		func(data []byte) (usecase.BotifarraInteractorIF, error) {
+			return usecase.RestoreBotifarraInteractor(data, new(presenter.BotifarraWebPresenter))
+		},
+		controller.NewBotifarraWebControllerWithProvider)
+	games.RegisterKVGame("colourwhist", games.CategoryClassic,
+		func() usecase.ColourWhistInteractorIF {
+			return usecase.NewColourWhistInteractor(domain.NewDefaultColourWhist(), new(presenter.ColourWhistWebPresenter))
+		},
+		func(data []byte) (usecase.ColourWhistInteractorIF, error) {
+			return usecase.RestoreColourWhistInteractor(data, new(presenter.ColourWhistWebPresenter))
+		},
+		controller.NewColourWhistWebControllerWithProvider)
 }

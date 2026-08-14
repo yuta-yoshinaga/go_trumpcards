@@ -129,6 +129,14 @@ func init() {
 			return usecase.RestoreFortyThievesInteractor(data, new(presenter.FortyThievesWebPresenter))
 		},
 		controller.NewFortyThievesWebControllerWithProvider)
+	games.RegisterKVGame("fourseasons", games.CategorySolo,
+		func() usecase.FourSeasonsInteractorIF {
+			return usecase.NewFourSeasonsInteractor(domain.NewDefaultFourSeasons(), new(presenter.FourSeasonsWebPresenter))
+		},
+		func(data []byte) (usecase.FourSeasonsInteractorIF, error) {
+			return usecase.RestoreFourSeasonsInteractor(data, new(presenter.FourSeasonsWebPresenter))
+		},
+		controller.NewFourSeasonsWebControllerWithProvider)
 	games.RegisterKVGame("canfield", games.CategorySolo,
 		func() usecase.CanfieldInteractorIF {
 			return usecase.NewCanfieldInteractor(domain.NewDefaultCanfield(), new(presenter.CanfieldWebPresenter))
@@ -419,4 +427,44 @@ func init() {
 			return usecase.RestoreLiteratureInteractor(data, new(presenter.LiteratureWebPresenter))
 		},
 		controller.NewLiteratureWebControllerWithProvider)
+	games.RegisterKVGame("crazyquilt", games.CategorySolo,
+		func() usecase.CrazyQuiltInteractorIF {
+			return usecase.NewCrazyQuiltInteractor(domain.NewDefaultCrazyQuilt(), new(presenter.CrazyQuiltWebPresenter))
+		},
+		func(data []byte) (usecase.CrazyQuiltInteractorIF, error) {
+			return usecase.RestoreCrazyQuiltInteractor(data, new(presenter.CrazyQuiltWebPresenter))
+		},
+		controller.NewCrazyQuiltWebControllerWithProvider)
+	games.RegisterKVGame("teendopaanch", games.CategorySolo,
+		func() usecase.TeenDoPaanchInteractorIF {
+			return usecase.NewTeenDoPaanchInteractor(domain.NewDefaultTeenDoPaanch(), new(presenter.TeenDoPaanchWebPresenter))
+		},
+		func(data []byte) (usecase.TeenDoPaanchInteractorIF, error) {
+			return usecase.RestoreTeenDoPaanchInteractor(data, new(presenter.TeenDoPaanchWebPresenter))
+		},
+		controller.NewTeenDoPaanchWebControllerWithProvider)
+	games.RegisterKVGame("honeymoonbridge", games.CategorySolo,
+		func() usecase.HoneymoonBridgeInteractorIF {
+			return usecase.NewHoneymoonBridgeInteractor(domain.NewDefaultHoneymoonBridge(), new(presenter.HoneymoonBridgeWebPresenter))
+		},
+		func(data []byte) (usecase.HoneymoonBridgeInteractorIF, error) {
+			return usecase.RestoreHoneymoonBridgeInteractor(data, new(presenter.HoneymoonBridgeWebPresenter))
+		},
+		controller.NewHoneymoonBridgeWebControllerWithProvider)
+	games.RegisterKVGame("snap", games.CategorySolo,
+		func() usecase.SnapInteractorIF {
+			return usecase.NewSnapInteractor(domain.NewDefaultSnap(), new(presenter.SnapWebPresenter))
+		},
+		func(data []byte) (usecase.SnapInteractorIF, error) {
+			return usecase.RestoreSnapInteractor(data, new(presenter.SnapWebPresenter))
+		},
+		controller.NewSnapWebControllerWithProvider)
+	games.RegisterKVGame("tusac", games.CategorySolo,
+		func() usecase.TuSacInteractorIF {
+			return usecase.NewTuSacInteractor(domain.NewDefaultTuSac(), new(presenter.TuSacWebPresenter))
+		},
+		func(data []byte) (usecase.TuSacInteractorIF, error) {
+			return usecase.RestoreTuSacInteractor(data, new(presenter.TuSacWebPresenter))
+		},
+		controller.NewTuSacWebControllerWithProvider)
 }

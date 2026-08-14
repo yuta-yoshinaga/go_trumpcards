@@ -472,6 +472,8 @@ func (sd *ShortDeck) resolveShowdown() {
 
 // finalizeShowdown ショーダウンを完了し、END フェーズに遷移する
 func (sd *ShortDeck) finalizeShowdown() {
+	// **配り終えたポットは 0 にする。** 理由は Holdem 側と同じ。
+	sd.pot = 0
 	sd.phase = ShortDeckPhaseEnd
 	sd.gameEndFlag = true
 	sd.dealerIdx = (sd.dealerIdx + 1) % len(sd.players)

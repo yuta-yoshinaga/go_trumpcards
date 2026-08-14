@@ -116,6 +116,12 @@ func (h *Holdem) resolveShowdown() {
 
 // finalizeShowdown ショーダウンを完了し、END フェーズに遷移する
 func (h *Holdem) finalizeShowdown() {
+	// **配り終えたポットは 0 にする。** resolveShowdown は DistributePots で
+	// チップを配るが pot を戻さないので、END でも配り終えた額が残り続けていた
+	// ── 全員降りて終わる resolveLastPlayer は 0 にしており、同じ「ハンドが
+	// 終わった」状態なのに片方だけ残るのは読み手を誤らせる (実測 200 ハンド中
+	// 176 で残っていた)。次の Reset が作り直すので、消して失うものは無い。
+	h.pot = 0
 	h.phase = HoldemPhaseEnd
 	h.gameEndFlag = true
 	h.dealerIdx = (h.dealerIdx + 1) % len(h.players)

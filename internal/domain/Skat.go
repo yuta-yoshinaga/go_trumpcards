@@ -17,9 +17,6 @@ const SkatHandSize = 10
 // SkatSkatSize face-down cards (the "Skat")
 const SkatSkatSize = 2
 
-// SkatTotalCards 32-card deck (7..A across 4 suits)
-const SkatTotalCards = 32
-
 // SkatTricksPerRound number of tricks per round
 const SkatTricksPerRound = 10
 
@@ -163,10 +160,13 @@ func NewDefaultSkat() *Skat {
 }
 
 // newSkatDeck builds the 32-card Skat deck (7..A across the four standard suits).
+//
+// **NewTrumpCardsWithSuits(32, …) では作れない。** 枚数で打ち切る汎用
+// コンストラクタなので、♠13 + ♣13 + ♥6 + ♦0 になり**ダイヤが 1 枚も入らない**。
+// 切り札スートを選ぶゲームでこれをやると、選べるのに 1 枚も存在しない切り札が
+// できる (#5296)。German 32 枚パックは Skat / Belote / Prsi で共通。
 func newSkatDeck() *TrumpCards {
-	suits := []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond}
-	t := NewTrumpCardsWithSuits(SkatTotalCards, suits)
-	return t
+	return NewTrumpCards32()
 }
 
 // Reset initializes a new game session.

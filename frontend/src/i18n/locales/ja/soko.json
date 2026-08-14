@@ -1,0 +1,78 @@
+{
+  "phase": {
+    "secondStreet": "セカンドストリート",
+    "thirdStreet": "サードストリート",
+    "fourthStreet": "フォースストリート",
+    "fifthStreet": "フィフスストリート",
+    "showdown": "ショーダウン",
+    "end": "結果",
+    "init": "初期化中",
+    "rebuy": "リバイ/アドオン"
+  },
+  "doorCards": "ドアカード",
+  "holeCards": "ホールカード",
+  "yourHand": "あなたの手札",
+  "anteBringIn": "アンティ/ブリングイン",
+  "handNumber": "ハンド#{{count}} (レベルアップ:{{level}}ハンド毎)",
+  "rebuy": {
+    "prompt": "リバイしますか? ({{chips}}チップ, {{used}}/{{max}}回使用済)",
+    "accept": "リバイ",
+    "skip": "スキップ"
+  },
+  "addon": {
+    "prompt": "アドオンしますか? ({{chips}}チップ)",
+    "accept": "アドオン",
+    "skip": "スキップ"
+  },
+  "muck": {
+    "prompt": "マックしますか?",
+    "muck": "マック",
+    "show": "ショー"
+  },
+  "stats": {
+    "vpip": "VPIP",
+    "vpipTooltip": "VPIP（ボランタリー・プット・イン・ポット）: 自発的にポットに参加した割合",
+    "pfr": "PFR",
+    "pfrTooltip": "PFR（プリフロップレイズ）: 最初のラウンドでレイズした割合",
+    "threeBet": "3Bet",
+    "threeBetTooltip": "3Bet（スリーベット）: 相手のレイズに対して再レイズした割合",
+    "af": "AF",
+    "afTooltip": "AF（アグレッションファクター）: ベット・レイズのコールに対する比率"
+  },
+  "settings": {
+    "cpuMetaAI": "メタAI（CPUがプレイスタイルを学習）"
+  },
+  "tutorial": {
+    "playerHand": "あなたのホールカードとドアカードです。5枚のカードで役を作ります。",
+    "actionButtons": "ベット・コール・レイズ・フォールドなどのアクションを選びます。",
+    "potDisplay": "現在のポットとアンティレベルが表示されます。",
+    "cpuArea": "CPU対戦相手の情報です。ショーダウン時にカードが公開されます。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。",
+    "fourCard": "4枚ストレート（ちょうど4枚が連続）と4枚フラッシュ（ちょうど4枚が同スート）が役として認められます。ペアと同時に成立したときは、上位の4枚役として扱われます。",
+    "ranking": "序列は ハイカード < ワンペア < 4枚ストレート < 4枚フラッシュ < ツーペア < スリーカード … です。4枚役はツーペアに負けるので、相手にペアが見えたら降り時です。"
+  },
+  "hint": {
+    "strongHandRank": "強いハンド — レイズ推奨",
+    "decentHandRank": "まずまずのハンド — コール推奨",
+    "weakHandRank": "弱いハンド — フォールド推奨"
+  },
+  "frontendHint": {
+    "fivecardstudRaisePair": "ペアができています。攻めましょう",
+    "fivecardstudCallHigh": "高い札があります。見に行く価値があります",
+    "fivecardstudCheckFree": "まだ役がありません。ただで見られるならチェックしましょう",
+    "fivecardstudFoldWeak": "役も高い札もなく、払う必要があります。降りるほうが無難です"
+  },
+  "style": {
+    "tag": "TAG",
+    "tagTooltip": "Tight Aggressive：参加少なめだが入ったら強気",
+    "lag": "LAG",
+    "lagTooltip": "Loose Aggressive：参加多くかつ攻め志向",
+    "tp": "TP",
+    "tpTooltip": "Tight Passive：参加少なめでコール中心",
+    "lp": "LP",
+    "lpTooltip": "Loose Passive：参加多めだがコール中心",
+    "balanced": "BAL",
+    "balancedTooltip": "バランス型のスタイル"
+  },
+  "helpTitle": "ソッコ (Soko / カナディアンスタッド)"
+}

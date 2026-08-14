@@ -34,7 +34,13 @@ export default defineConfig({
     // nothing up front. Keep CI's NODE_OPTIONS too: execArgv reaches only the
     // forked workers, while the coverage run also needs headroom in the PARENT
     // process that aggregates it.
-    execArgv: ['--max-old-space-size=8192'],
+    //
+    // 2026-08-14: 317 ゲームで 8 GB を超え、shard 3 が OOM で落ちるようになった
+    // (`node::OOMErrorHandler`)。ゲームが 1 本増えるたびに NavBar/DesktopSidebar の
+    // カタログ検査が全ルートを描くので、**上限は件数に比例して効かなくなる** ──
+    // runner は 16 GB あるので 12 GB へ上げる。次に当たったらシャード数を増やす
+    // ほうが筋が良い (上限の引き上げは 3 度目)。
+    execArgv: ['--max-old-space-size=12288'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],

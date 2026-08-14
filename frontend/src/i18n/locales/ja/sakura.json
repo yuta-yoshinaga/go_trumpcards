@@ -1,0 +1,59 @@
+{
+  "title": "さくら",
+  "phase": {
+    "play": "プレイ",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "seats": "人数",
+    "rounds": "ラウンド数"
+  },
+  "round": "ラウンド {{n}}/{{total}}",
+  "stock": "山札: {{count}}",
+  "dealer": "親: {{name}}",
+  "field": "場",
+  "fieldEmpty": "（なし）",
+  "pickField": "取る場札を選んでください（2枚が一致しています）。",
+  "you": "あなた",
+  "taken": "取り札: {{count}}",
+  "takenEmpty": "取り札なし",
+  "points": "今局: {{points}}点",
+  "score": "通算: {{score}}点",
+  "wins": "勝: {{wins}}",
+  "bonusNone": "追加役なし",
+  "turnYours": "あなたの手番です — 手札を1枚選んで同じ月の場札を取ります。",
+  "turnCpu": "{{name}} がプレイ中です…",
+  "roundResult": {
+    "title": "ラウンド結果",
+    "winner": "勝者: {{name}}",
+    "draw": "同点でした",
+    "seat": "{{name}}: 札{{card}}点 + 追加役{{bonus}}点 = {{total}}点"
+  },
+  "result": {
+    "title": "最終得点",
+    "winner": "勝者: {{name}}",
+    "draw": "引き分けです",
+    "score": "{{name}}: {{score}}点（勝{{wins}}）"
+  },
+  "nextRound": "次のラウンド",
+  "newGame": "新しいゲーム",
+  "bonus": {
+    "sakuraSake": "桜酒",
+    "allBrights": "五光"
+  },
+  "hint": {
+    "capture": "同じ月の札を合わせて点を稼ぐ",
+    "discard": "合う札が無いので安い札を捨てる"
+  },
+  "tutorial": {
+    "field": "場の札です。出した手札と同じ月（花）の場札を取ります。2枚が一致する場合はどちらを取るか選びます。",
+    "hand": "あなたの手札です。1枚を選ぶと同じ月の場札を取り、続けて山札を1枚めくります。",
+    "info": "さくら（肥後花）は花札48枚を使う熊本のローカルルールです。こいこいのような「役」ではなく、取った札の点数（光20点・タネ10点・短冊5点・カス1点）の合計で競います。「桜に幕」と「芒に月」の両取りで桜酒30点、光5枚で五光100点の追加役があります。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "frontendHint.sakuraRoundIsOver": "ラウンドが終わりました。次のラウンドへ進んでください",
+  "frontendHint.sakuraTakeTheMatch": "同じ月の場札を取れます。取るほうが必ず点になります",
+  "frontendHint.sakuraDiscardCheapest": "合う札がありません。安い札を捨てて場に残さないようにします"
+}

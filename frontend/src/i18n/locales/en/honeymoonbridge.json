@@ -1,0 +1,58 @@
+{
+  "phase": {
+    "draw": "Draw",
+    "bid": "Auction",
+    "play": "Playing",
+    "roundEnd": "Deal over",
+    "gameEnd": "Finished"
+  },
+  "header": {
+    "round": "Deal {{round}}",
+    "target": "Target {{n}} pts",
+    "stock": "Stock: {{n}} left (tricks in this half do not score)",
+    "contract": "Contract: {{level}}{{suit}} ({{name}}) / needs {{need}} tricks",
+    "contractUndecided": "Contract: not yet decided",
+    "minBid": "Lowest bid that outbids: {{level}}{{suit}}",
+    "minBidCapped": "The contract is at the ceiling (7NT). Pass is the only move.",
+    "rule": "Bridge for two. The first 13 tricks are a no-trump draw: winning one scores nothing, and after each trick the winner then the loser draws a card. Once the 26-card stock is gone both hands are back to 13 and the auction begins. A contract needs 6 + level tricks.",
+    "bid": "bid {{level}}{{suit}}",
+    "noBid": "no bid",
+    "took": "tricks {{n}}",
+    "score": "total {{n}}",
+    "declarer": "[declarer]",
+    "you": "You",
+    "cpu": "CPU{{idx}}"
+  },
+  "currentTrick": "Current trick",
+  "roundResult": {
+    "made": "Contract made: {{took}} of the {{need}} tricks needed.",
+    "down": "Contract down: only {{took}} of the {{need}} tricks needed.",
+    "passedOut": "Both passed, so the deal was thrown in."
+  },
+  "actions": {
+    "level": "Level",
+    "bid": "Bid {{level}}{{suit}}",
+    "pass": "Pass",
+    "nextRound": "Next deal",
+    "reset": "Reset",
+    "giveUp": "Give up",
+    "playAria": "Play {{card}}"
+  },
+  "result": {
+    "you": "You win! You reached the target first.",
+    "cpu": "{{name}} wins.",
+    "tie": "It's a tie."
+  },
+  "hint": {
+    "honeymoonbridgeDraw": "Tricks in this half do not score. Play low and keep your winners.",
+    "honeymoonbridgeBid": "Your long suit should bring the tricks in.",
+    "honeymoonbridgePass": "Outbidding this would be more than the hand can take. Pass.",
+    "honeymoonbridgeWinTrick": "Take this trick -- the contract needs it."
+  },
+  "tutorial": {
+    "draw": "The first 13 tricks **do not score**. They are played without trumps, and after each one **the winner draws first, then the loser**. 13 x 2 = 26 empties the stock exactly, leaving both hands back at 13 cards.",
+    "bid": "Once the stock is gone, the auction runs. **Levels 1-7 across five denominations (S < C < H < D < NT)**, and a bid has to outbid the table. **No-trump is the strongest**, so it sits above diamonds at the same level. Two passes in a row close the auction.",
+    "contract": "A contract needs **6 + level** tricks. Making it scores level x 10 plus 5 per overtrick; going down hands the opponent **10 per trick short**.",
+    "hand": "Your hand. Cards you may legally play get a green ring."
+  }
+}

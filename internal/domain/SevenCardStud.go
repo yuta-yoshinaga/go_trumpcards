@@ -847,6 +847,8 @@ func (s *SevenCardStud) findStudLowWinners(eligible []int) []int {
 
 // finalizeShowdown ショーダウンを完了しENDフェーズに遷移する
 func (s *SevenCardStud) finalizeShowdown() {
+	// **配り終えたポットは 0 にする。** 理由は Holdem 側と同じ。
+	s.pot = 0
 	s.phase = SevenCardStudPhaseEnd
 	s.gameEndFlag = true
 	s.dealerIdx = (s.dealerIdx + 1) % len(s.players)

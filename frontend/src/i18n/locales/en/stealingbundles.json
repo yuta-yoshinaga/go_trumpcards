@@ -1,0 +1,48 @@
+{
+  "phase": { "play": "Playing", "gameEnd": "Finished" },
+  "header": {
+    "turn": "Turn {{n}}",
+    "deck": "Deck: {{n}} left",
+    "rule": "Matching a rank on the table captures it -- but an opponent's won bundle has a weak spot: its top card. Play a card of that rank and you take the whole bundle. You cannot place a card while a capture is available; you take from the table or you take a bundle. The card you play becomes the top of your own bundle, so that is what gets aimed at next. Most cards at the end wins.",
+    "table": "Table",
+    "tableEmpty": "(empty)",
+    "bundle": "bundle {{n}}",
+    "bundleTop": "top",
+    "bundleEmpty": "none",
+    "cards": "{{n}} cards",
+    "lastCapture": "[captured last]",
+    "you": "You",
+    "cpu": "CPU{{idx}}"
+  },
+  "actions": {
+    "take": "Capture from the table",
+    "steal": "Steal {{name}}'s bundle",
+    "trail": "Place on the table",
+    "cancel": "Pick another card",
+    "players": "Players",
+    "reset": "Reset",
+    "giveUp": "Give up",
+    "selectAria": "Select {{card}}"
+  },
+  "status": {
+    "mustCapture": "A capture is available. You cannot place a card on the table.",
+    "trailOnly": "No capture is available. Place a card on the table.",
+    "waiting": "Waiting for the other players.",
+    "selected": "{{card}} selected. What would you like to do?"
+  },
+  "result": {
+    "you": "You win! You collected the most with {{n}} cards.",
+    "cpu": "{{name}} collected the most with {{n}} cards."
+  },
+  "hint": {
+    "stealingbundlesSteal": "You can take an opponent's whole bundle -- the swing is its full size.",
+    "stealingbundlesTake": "You can capture from the table.",
+    "stealingbundlesTrail": "Nothing can be captured. Place whatever is least likely to be taken."
+  },
+  "tutorial": {
+    "rule": "**Matching a rank on the table captures it.** The cards you take and the card you played all go onto your own bundle.",
+    "steal": "**An opponent's bundle has a weak spot: its top card.** Play a card of that rank and you take **the whole bundle** — this game lets you attack cards that are already scored.",
+    "mustCapture": "**You cannot place a card while a capture is available.** Take from the table or take a bundle. Whatever you play becomes the top of your own bundle, so that is what gets aimed at next.",
+    "hand": "Your hand. Select a card and only the moves it can actually make are offered."
+  }
+}

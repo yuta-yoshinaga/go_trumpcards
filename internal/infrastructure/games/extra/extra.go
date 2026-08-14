@@ -307,4 +307,84 @@ func init() {
 			return usecase.RestoreViraInteractor(data, new(presenter.ViraWebPresenter))
 		},
 		controller.NewViraWebControllerWithProvider)
+	games.RegisterKVGame("diplomat", games.CategoryExtra,
+		func() usecase.DiplomatInteractorIF {
+			return usecase.NewDiplomatInteractor(domain.NewDefaultDiplomat(), new(presenter.DiplomatWebPresenter))
+		},
+		func(data []byte) (usecase.DiplomatInteractorIF, error) {
+			return usecase.RestoreDiplomatInteractor(data, new(presenter.DiplomatWebPresenter))
+		},
+		controller.NewDiplomatWebControllerWithProvider)
+	games.RegisterKVGame("mendikot", games.CategoryExtra,
+		func() usecase.MendikotInteractorIF {
+			return usecase.NewMendikotInteractor(domain.NewDefaultMendikot(), new(presenter.MendikotWebPresenter))
+		},
+		func(data []byte) (usecase.MendikotInteractorIF, error) {
+			return usecase.RestoreMendikotInteractor(data, new(presenter.MendikotWebPresenter))
+		},
+		controller.NewMendikotWebControllerWithProvider)
+	games.RegisterKVGame("bhabhi", games.CategoryExtra,
+		func() usecase.BhabhiInteractorIF {
+			return usecase.NewBhabhiInteractor(domain.NewDefaultBhabhi(), new(presenter.BhabhiWebPresenter))
+		},
+		func(data []byte) (usecase.BhabhiInteractorIF, error) {
+			return usecase.RestoreBhabhiInteractor(data, new(presenter.BhabhiWebPresenter))
+		},
+		controller.NewBhabhiWebControllerWithProvider)
+	games.RegisterKVGame("sergeantmajor", games.CategoryExtra,
+		func() usecase.SergeantMajorInteractorIF {
+			return usecase.NewSergeantMajorInteractor(domain.NewDefaultSergeantMajor(), new(presenter.SergeantMajorWebPresenter))
+		},
+		func(data []byte) (usecase.SergeantMajorInteractorIF, error) {
+			return usecase.RestoreSergeantMajorInteractor(data, new(presenter.SergeantMajorWebPresenter))
+		},
+		controller.NewSergeantMajorWebControllerWithProvider)
+	games.RegisterKVGame("pasur", games.CategoryExtra,
+		func() usecase.PasurInteractorIF {
+			return usecase.NewPasurInteractor(domain.NewDefaultPasur(), new(presenter.PasurWebPresenter))
+		},
+		func(data []byte) (usecase.PasurInteractorIF, error) {
+			return usecase.RestorePasurInteractor(data, new(presenter.PasurWebPresenter))
+		},
+		controller.NewPasurWebControllerWithProvider)
+	games.RegisterKVGame("lingerlonger", games.CategoryExtra,
+		func() usecase.LingerLongerInteractorIF {
+			return usecase.NewLingerLongerInteractor(domain.NewDefaultLingerLonger(), new(presenter.LingerLongerWebPresenter))
+		},
+		func(data []byte) (usecase.LingerLongerInteractorIF, error) {
+			return usecase.RestoreLingerLongerInteractor(data, new(presenter.LingerLongerWebPresenter))
+		},
+		controller.NewLingerLongerWebControllerWithProvider)
+	games.RegisterKVGame("goofspiel", games.CategoryExtra,
+		func() usecase.GoofspielInteractorIF {
+			return usecase.NewGoofspielInteractor(domain.NewDefaultGoofspiel(), new(presenter.GoofspielWebPresenter))
+		},
+		func(data []byte) (usecase.GoofspielInteractorIF, error) {
+			return usecase.RestoreGoofspielInteractor(data, new(presenter.GoofspielWebPresenter))
+		},
+		controller.NewGoofspielWebControllerWithProvider)
+	games.RegisterKVGame("kingo", games.CategoryExtra,
+		func() usecase.KingoInteractorIF {
+			return usecase.NewKingoInteractor(domain.NewDefaultKingo(), new(presenter.KingoWebPresenter))
+		},
+		func(data []byte) (usecase.KingoInteractorIF, error) {
+			return usecase.RestoreKingoInteractor(data, new(presenter.KingoWebPresenter))
+		},
+		controller.NewKingoWebControllerWithProvider)
+	games.RegisterKVGame("zwanzigerrufen", games.CategoryExtra,
+		func() usecase.ZwanzigerrufenInteractorIF {
+			return usecase.NewZwanzigerrufenInteractor(domain.NewDefaultZwanzigerrufen(), new(presenter.ZwanzigerrufenWebPresenter))
+		},
+		func(data []byte) (usecase.ZwanzigerrufenInteractorIF, error) {
+			return usecase.RestoreZwanzigerrufenInteractor(data, new(presenter.ZwanzigerrufenWebPresenter))
+		},
+		controller.NewZwanzigerrufenWebControllerWithProvider)
+	games.RegisterKVGame("troggu", games.CategoryExtra,
+		func() usecase.TrogguInteractorIF {
+			return usecase.NewTrogguInteractor(domain.NewDefaultTroggu(), new(presenter.TrogguWebPresenter))
+		},
+		func(data []byte) (usecase.TrogguInteractorIF, error) {
+			return usecase.RestoreTrogguInteractor(data, new(presenter.TrogguWebPresenter))
+		},
+		controller.NewTrogguWebControllerWithProvider)
 }

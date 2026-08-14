@@ -7,6 +7,17 @@ import type { Card, CardDesign, WaspResponse } from '../types/card';
 import { cardAlt } from '../utils/cardAlt';
 import { WaspPage } from './WaspPage';
 
+/**
+ * This page's own hint region.
+ *
+ * **`GameMessageBox` is also `role="status"`**, and it now renders on every
+ * phase because this game's messageCodes are translated (#5291). Querying the
+ * role alone therefore matches two elements; the message box is the one built
+ * from `glass-panel`, so the hint region is the other one.
+ */
+const hintLiveRegion = () =>
+  screen.queryAllByRole('status').find((el) => !el.classList.contains('glass-panel')) ?? null;
+
 vi.mock('../api/gameApi', () => ({
   waspApi: { exec: vi.fn() },
   actionLogApi: { wasp: vi.fn() },
@@ -373,8 +384,9 @@ describe('WaspPage', () => {
     renderWithProviders(<WaspPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     // Inline hint box shows "場札 3"
-    const hintBox = screen.getByRole('status');
-    expect(hintBox.textContent).toMatch(/3/);
+    const hintBox = hintLiveRegion();
+    expect(hintBox).not.toBeNull();
+    expect(hintBox?.textContent).toMatch(/3/);
   });
 
   it('renders inline hint for deal when hint.fromCol is -1', async () => {
@@ -385,9 +397,10 @@ describe('WaspPage', () => {
     });
     renderWithProviders(<WaspPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    const hintBox = screen.getByRole('status');
+    const hintBox = hintLiveRegion();
+    expect(hintBox).not.toBeNull();
     // Deal label is '配る' (from wasp.json)
-    expect(hintBox.textContent).toMatch(/配る/);
+    expect(hintBox?.textContent).toMatch(/配る/);
   });
 
   it('shows action log button in ended phase', async () => {
@@ -656,5 +669,53 @@ describe('WaspPage CLI legal command', () => {
   it('still sends other commands to the API', async () => {
     await runCli('d');
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('deal'));
+  });
+});
+
+// 選ぶ前に行き先が見える (#4454)。
+describe('WaspPage destination preview', () => {
+  /** The ♥7 in column 5; ♥8 tops column 1, so it has exactly one legal target. */
+  const heartSeven = () => screen.getByRole('button', { name: /♥ 7/ });
+
+  it('highlights the destination while a card is hovered, and drops it on leave', async () => {
+    renderWithProviders(<WaspPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.queryByTestId('wasp-legal-target')).not.toBeInTheDocument();
+
+    fireEvent.mouseEnter(heartSeven());
+    const target = await screen.findByTestId('wasp-legal-target');
+    expect(target).toHaveAttribute('data-preview-target', 'true');
+    expect(target.className).toContain('ring-ds-success/70');
+
+    fireEvent.mouseLeave(heartSeven());
+    expect(screen.queryByTestId('wasp-legal-target')).not.toBeInTheDocument();
+  });
+
+  it('highlights the destination on focus', async () => {
+    renderWithProviders(<WaspPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    fireEvent.focus(heartSeven());
+    expect(await screen.findByTestId('wasp-legal-target')).toHaveAttribute('data-preview-target', 'true');
+  });
+
+  // 選択が hover に勝つ ── 狙っている最中に消えない。
+  it('keeps the selected targets while the pointer moves elsewhere', async () => {
+    renderWithProviders(<WaspPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    fireEvent.click(heartSeven());
+    const target = await screen.findByTestId('wasp-legal-target');
+    expect(target).not.toHaveAttribute('data-preview-target');
+    expect(target.className).not.toContain('ring-ds-success/70');
+
+    fireEvent.mouseEnter(screen.getByRole('button', { name: /♣ 2/ }));
+    expect(screen.getByTestId('wasp-legal-target')).not.toHaveAttribute('data-preview-target');
+  });
+
+  it('shows nothing for a card with no legal destination', async () => {
+    renderWithProviders(<WaspPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    fireEvent.mouseEnter(screen.getByRole('button', { name: /♠ 3/ }));
+    expect(screen.queryByTestId('wasp-legal-target')).not.toBeInTheDocument();
   });
 });

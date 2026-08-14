@@ -1,0 +1,70 @@
+{
+  "title": "リッケン",
+  "bidGuide": "いまより強い契約を宣言するか、降りてください",
+  "callGuide": "切り札を決めてください",
+  "playGuide": "出せる札だけが選べます",
+  "label": {
+    "you": "あなた",
+    "seat": "席",
+    "score": "得点",
+    "round": "ラウンド",
+    "contract": "契約",
+    "trump": "切り札",
+    "declarer": "落札者",
+    "partner": "相方",
+    "tricks": "トリック",
+    "declarerTricks": "宣言側の獲得",
+    "hand": "手札",
+    "trick": "場",
+    "cards": "枚",
+    "passed": "降りた",
+    "declarerSide": "宣言側",
+    "calledCard": "指名した札",
+    "hidden": "未公開"
+  },
+  "contract": {
+    "none": "未定",
+    "rik": "リク（相方と8）",
+    "misere": "ミゼール（0）",
+    "solo": "ソロ（単独6）",
+    "openMisere": "オープンミゼール（公開・0）"
+  },
+  "trump": {
+    "spade": "スペード",
+    "clover": "クラブ",
+    "heart": "ハート",
+    "diamond": "ダイヤ",
+    "none": "なし"
+  },
+  "button": {
+    "bid": "{{contract}} を宣言",
+    "pass": "降りる",
+    "call": "{{trump}} を切り札に",
+    "next": "次のラウンド",
+    "giveUp": "投了"
+  },
+  "kbd": {
+    "next": "N",
+    "giveUp": "G"
+  },
+  "phase": {
+    "bid": "競り",
+    "call": "切り札",
+    "play": "プレイ",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "終了"
+  },
+  "result": {
+    "win": "あなたの勝ちです",
+    "lose": "相手の勝ちです"
+  },
+  "tutorial": {
+    "bid": "いまより強い契約だけ宣言できます",
+    "hand": "出せる札だけが選べます",
+    "score": "得点はゼロサム。合計は必ず 0 です"
+  },
+  "frontendHint": {
+    "rikkenBidStrength": "手札の強さから見た契約です",
+    "rikkenFollowSuit": "フォローの義務があります"
+  }
+}

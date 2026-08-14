@@ -596,7 +596,9 @@ describe('FortyThievesPage', () => {
       messageCode: 'fortythieves.playing',
     });
     renderWithProviders(<FortyThievesPage />);
-    await waitFor(() => expect(screen.getAllByText('カードを移動してください').length).toBeGreaterThanOrEqual(1));
+    // **訳が引ければ messageCode が勝つ。** サーバの message はフォールバックで、
+    // 引けなかったときにだけ出る (#5291)。
+    await waitFor(() => expect(screen.getAllByText('プレイ中').length).toBeGreaterThanOrEqual(1));
   });
 
   it('displays hint error when hint fetch fails', async () => {

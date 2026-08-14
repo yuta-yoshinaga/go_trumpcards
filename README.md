@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した264種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した318種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -31,6 +31,7 @@ Go + Clean Architecture で実装した264種類のトランプゲーム。CLI �
 | オマハ ハイロー (Omaha Hi-Lo / 8 or Better) | `omahahilo` | [CUI](docs/manual/cui/omahahilo.md) / [Web](docs/manual/web/omahahilo.md) |
 | 5カードオマハ (5 Card Omaha / Big O) | `bigo` | [CUI](docs/manual/cui/bigo.md) / [Web](docs/manual/web/bigo.md) |
 | 5カードオマハ ハイロー (5 Card Omaha Hi-Lo / Big O) | `bigohilo` | [CUI](docs/manual/cui/bigohilo.md) / [Web](docs/manual/web/bigohilo.md) |
+| クールシュヴェル (Courchevel) | `courchevel` | [CUI](docs/manual/cui/courchevel.md) / [Web](docs/manual/web/courchevel.md) |
 | ショートデック (Short Deck / 6+ Hold'em) | `shortdeck` | [CUI](docs/manual/cui/shortdeck.md) / [Web](docs/manual/web/shortdeck.md) |
 | パイナップルポーカー (Pineapple Poker) | `pineapple` | [CUI](docs/manual/cui/pineapple.md) / [Web](docs/manual/web/pineapple.md) |
 | クレイジーパイナップル (Crazy Pineapple Poker) | `crazypineapple` | [CUI](docs/manual/cui/crazypineapple.md) / [Web](docs/manual/web/crazypineapple.md) |
@@ -79,6 +80,52 @@ Go + Clean Architecture で実装した264種類のトランプゲーム。CLI �
 | ぶたのしっぽ (Pig's Tail) | `pigtail` | [CUI](docs/manual/cui/pigtail.md) / [Web](docs/manual/web/pigtail.md) |
 | セブンカード・スタッド (Seven Card Stud) | `sevencardstud` | [CUI](docs/manual/cui/sevencardstud.md) / [Web](docs/manual/web/sevencardstud.md) |
 | ファイブカード・スタッド (Five Card Stud) | `fivecardstud` | [CUI](docs/manual/cui/fivecardstud.md) / [Web](docs/manual/web/fivecardstud.md) |
+| ソッコ (Soko) | `soko` | [CUI](docs/manual/cui/soko.md) / [Web](docs/manual/web/soko.md) |
+| フォーシーズンズ (Four Seasons) | `fourseasons` | [CUI](docs/manual/cui/fourseasons.md) / [Web](docs/manual/web/fourseasons.md) |
+| コロラド (Colorado) | `colorado` | [CUI](docs/manual/cui/colorado.md) / [Web](docs/manual/web/colorado.md) |
+| クリベッジ・スクエアズ (Cribbage Squares) | `cribbagesquares` | [CUI](docs/manual/cui/cribbagesquares.md) / [Web](docs/manual/web/cribbagesquares.md) |
+| ディプロマット (Diplomat) | `diplomat` | [CUI](docs/manual/cui/diplomat.md) / [Web](docs/manual/web/diplomat.md) |
+| ロイヤルコティヨン (Royal Cotillion) | `royalcotillion` | [CUI](docs/manual/cui/royalcotillion.md) / [Web](docs/manual/web/royalcotillion.md) |
+| クレイジーキルト (Crazy Quilt) | `crazyquilt` | [CUI](docs/manual/cui/crazyquilt.md) / [Web](docs/manual/web/crazyquilt.md) |
+| ジャーマンホイスト (German Whist) | `germanwhist` | [CUI](docs/manual/cui/germanwhist.md) / [Web](docs/manual/web/germanwhist.md) |
+| スロバーハンネス (Slobberhannes) | `slobberhannes` | [CUI](docs/manual/cui/slobberhannes.md) / [Web](docs/manual/web/slobberhannes.md) |
+| ポリニャック (Polignac) | `polignac` | [CUI](docs/manual/cui/polignac.md) / [Web](docs/manual/web/polignac.md) |
+| レヴェルシ (Reversis) | `reversis` | [CUI](docs/manual/cui/reversis.md) / [Web](docs/manual/web/reversis.md) |
+| ラムス (Rams) | `rams` | [CUI](docs/manual/cui/rams.md) / [Web](docs/manual/web/rams.md) |
+| タラビッシュ (Tarabish) | `tarabish` | [CUI](docs/manual/cui/tarabish.md) / [Web](docs/manual/web/tarabish.md) |
+| バルート (Baloot) | `baloot` | [CUI](docs/manual/cui/baloot.md) / [Web](docs/manual/web/baloot.md) |
+| エスティメーション (Estimation) | `estimation` | [CUI](docs/manual/cui/estimation.md) / [Web](docs/manual/web/estimation.md) |
+| イスラエリホイスト (Israeli Whist) | `israeliwhist` | [CUI](docs/manual/cui/israeliwhist.md) / [Web](docs/manual/web/israeliwhist.md) |
+| ホクム (Hokm) | `hokm` | [CUI](docs/manual/cui/hokm.md) / [Web](docs/manual/web/hokm.md) |
+| シェレム (Shelem) | `shelem` | [CUI](docs/manual/cui/shelem.md) / [Web](docs/manual/web/shelem.md) |
+| メンディコット (Mendikot) | `mendikot` | [CUI](docs/manual/cui/mendikot.md) / [Web](docs/manual/web/mendikot.md) |
+| バービー (Bhabhi) | `bhabhi` | [CUI](docs/manual/cui/bhabhi.md) / [Web](docs/manual/web/bhabhi.md) |
+| 3-2-5 (Teen Do Paanch) | `teendopaanch` | [CUI](docs/manual/cui/teendopaanch.md) / [Web](docs/manual/web/teendopaanch.md) |
+| ハーゼンプフェファー (Hasenpfeffer) | `hasenpfeffer` | [CUI](docs/manual/cui/hasenpfeffer.md) / [Web](docs/manual/web/hasenpfeffer.md) |
+| サージェントメジャー (Sergeant Major) | `sergeantmajor` | [CUI](docs/manual/cui/sergeantmajor.md) / [Web](docs/manual/web/sergeantmajor.md) |
+| ハネムーンブリッジ (Honeymoon Bridge) | `honeymoonbridge` | [CUI](docs/manual/cui/honeymoonbridge.md) / [Web](docs/manual/web/honeymoonbridge.md) |
+| ミニブリッジ (Minibridge) | `minibridge` | [CUI](docs/manual/cui/minibridge.md) / [Web](docs/manual/web/minibridge.md) |
+| パスール (Pasur) | `pasur` | [CUI](docs/manual/cui/pasur.md) / [Web](docs/manual/web/pasur.md) |
+| スナップ (Snap) | `snap` | [CUI](docs/manual/cui/snap.md) / [Web](docs/manual/web/snap.md) |
+| ローリングストーン (Rolling Stone) | `rollingstone` | [CUI](docs/manual/cui/rollingstone.md) / [Web](docs/manual/web/rollingstone.md) |
+| リンガーロンガー (Linger Longer) | `lingerlonger` | [CUI](docs/manual/cui/lingerlonger.md) / [Web](docs/manual/web/lingerlonger.md) |
+| ピッグ (Pig) | `pig` | [CUI](docs/manual/cui/pig.md) / [Web](docs/manual/web/pig.md) |
+| スティーリングバンドル (Stealing Bundles) | `stealingbundles` | [CUI](docs/manual/cui/stealingbundles.md) / [Web](docs/manual/web/stealingbundles.md) |
+| キューカンバー (Cucumber) | `cucumber` | [CUI](docs/manual/cui/cucumber.md) / [Web](docs/manual/web/cucumber.md) |
+| ゴフスピール (Goofspiel) | `goofspiel` | [CUI](docs/manual/cui/goofspiel.md) / [Web](docs/manual/web/goofspiel.md) |
+| アンダーバハール (Andar Bahar) | `andarbahar` | [CUI](docs/manual/cui/andarbahar.md) / [Web](docs/manual/web/andarbahar.md) |
+| ボティファラ (Botifarra) | `botifarra` | [CUI](docs/manual/cui/botifarra.md) / [Web](docs/manual/web/botifarra.md) |
+| リッケン (Rikken) | `rikken` | [CUI](docs/manual/cui/rikken.md) / [Web](docs/manual/web/rikken.md) |
+| カラーホイスト (Colour Whist) | `colourwhist` | [CUI](docs/manual/cui/colourwhist.md) / [Web](docs/manual/web/colourwhist.md) |
+| シュマン・ド・フェール (Chemin de Fer) | `chemindefer` | [CUI](docs/manual/cui/chemindefer.md) / [Web](docs/manual/web/chemindefer.md) |
+| クレイジー4ポーカー (Crazy 4 Poker) | `crazyfourpoker` | [CUI](docs/manual/cui/crazyfourpoker.md) / [Web](docs/manual/web/crazyfourpoker.md) |
+| 追加ベット・ブラックジャック (Extra Bet Blackjack) | `doubleattack` | [CUI](docs/manual/cui/doubleattack.md) / [Web](docs/manual/web/doubleattack.md) |
+| フリーベット・ブラックジャック (Free Bet Blackjack) | `freebet` | [CUI](docs/manual/cui/freebet.md) / [Web](docs/manual/web/freebet.md) |
+| バンラック (Ban Luck) | `banluck` | [CUI](docs/manual/cui/banluck.md) / [Web](docs/manual/web/banluck.md) |
+| モンテバンク (Monte Bank) | `montebank` | [CUI](docs/manual/cui/montebank.md) / [Web](docs/manual/web/montebank.md) |
+| シンシナティ (Cincinnati) | `cincinnati` | [CUI](docs/manual/cui/cincinnati.md) / [Web](docs/manual/web/cincinnati.md) |
+| アイアンクロス (Iron Cross) | `ironcross` | [CUI](docs/manual/cui/ironcross.md) / [Web](docs/manual/web/ironcross.md) |
+| ベースボールポーカー (Baseball Poker) | `baseballpoker` | [CUI](docs/manual/cui/baseballpoker.md) / [Web](docs/manual/web/baseballpoker.md) |
 | クロックソリティア (Clock Solitaire) | `clocksolitaire` | [CUI](docs/manual/cui/clocksolitaire.md) / [Web](docs/manual/web/clocksolitaire.md) |
 | ドゥラーク (Durak) | `durak` | [CUI](docs/manual/cui/durak.md) / [Web](docs/manual/web/durak.md) |
 | フォーティシーブス (Forty Thieves) | `fortythieves` | [CUI](docs/manual/cui/fortythieves.md) / [Web](docs/manual/web/fortythieves.md) |
@@ -110,6 +157,7 @@ Go + Clean Architecture で実装した264種類のトランプゲーム。CLI �
 | スパニッシュ21 (Spanish 21) | `spanish21` | [CUI](docs/manual/cui/spanish21.md) / [Web](docs/manual/web/spanish21.md) |
 | カルキュレーション (Calculation) | `calculation` | [CUI](docs/manual/cui/calculation.md) / [Web](docs/manual/web/calculation.md) |
 | サー・トミー (Sir Tommy) | `sirtommy` | [CUI](docs/manual/cui/sirtommy.md) / [Web](docs/manual/web/sirtommy.md) |
+| オールド・ラング・サイン (Auld Lang Syne) | `auldlangsyne` | [CUI](docs/manual/cui/auldlangsyne.md) / [Web](docs/manual/web/auldlangsyne.md) |
 | ビズリー (Bisley) | `bisley` | [CUI](docs/manual/cui/bisley.md) / [Web](docs/manual/web/bisley.md) |
 | ナポレオンズ・スクエア (Napoleon's Square) | `napoleonssquare` | [CUI](docs/manual/cui/napoleonssquare.md) / [Web](docs/manual/web/napoleonssquare.md) |
 | グランドファーザーズ・クロック (Grandfather's Clock) | `grandfathersclock` | [CUI](docs/manual/cui/grandfathersclock.md) / [Web](docs/manual/web/grandfathersclock.md) |
@@ -244,12 +292,18 @@ Go + Clean Architecture で実装した264種類のトランプゲーム。CLI �
 | トラント・エ・カラント (Trente et Quarante) | `trenteetquarante` | [CUI](docs/manual/cui/trenteetquarante.md) / [Web](docs/manual/web/trenteetquarante.md) |
 | ぴたり宣言 (Exact Call / Wizard系) | `wizard` | [CUI](docs/manual/cui/wizard.md) / [Web](docs/manual/web/wizard.md) |
 | おいちょかぶ (Oicho-Kabu) | `oichokabu` | [CUI](docs/manual/cui/oichokabu.md) / [Web](docs/manual/web/oichokabu.md) |
+| キンゴ (Kingo) | `kingo` | [CUI](docs/manual/cui/kingo.md) / [Web](docs/manual/web/kingo.md) |
+| トゥーサック／四色牌 (Tu Sac) | `tusac` | [CUI](docs/manual/cui/tusac.md) / [Web](docs/manual/web/tusac.md) |
 | 四色入札 (Four-Color Bid / Rook系) | `rook` | [CUI](docs/manual/cui/rook.md) / [Web](docs/manual/web/rook.md) |
 | こいこい (Koi-Koi) | `koikoi` | [CUI](docs/manual/cui/koikoi.md) / [Web](docs/manual/web/koikoi.md) |
+| さくら／肥後花 (Sakura) | `sakura` | [CUI](docs/manual/cui/sakura.md) / [Web](docs/manual/web/sakura.md) |
 | ゴーストップ (Go-Stop) | `gostop` | [CUI](docs/manual/cui/gostop.md) / [Web](docs/manual/web/gostop.md) |
 | 八八 (Hachi-Hachi) | `hachihachi` | [CUI](docs/manual/cui/hachihachi.md) / [Web](docs/manual/web/hachihachi.md) |
 | フレンチタロット (French Tarot) | `frenchtarot` | [CUI](docs/manual/cui/frenchtarot.md) / [Web](docs/manual/web/frenchtarot.md) |
 | ケーニッヒルーフェン (Königrufen) | `koenigrufen` | [CUI](docs/manual/cui/koenigrufen.md) / [Web](docs/manual/web/koenigrufen.md) |
+| ツヴァンツィガールーフェン (Zwanzigerrufen) | `zwanzigerrufen` | [CUI](docs/manual/cui/zwanzigerrufen.md) / [Web](docs/manual/web/zwanzigerrufen.md) |
+| トロッグ (Troggu) | `troggu` | [CUI](docs/manual/cui/troggu.md) / [Web](docs/manual/web/troggu.md) |
+| H.O.R.S.E. (ホース) | `horse` | [CUI](docs/manual/cui/horse.md) / [Web](docs/manual/web/horse.md) |
 | スカルト (Scarto) | `scarto` | [CUI](docs/manual/cui/scarto.md) / [Web](docs/manual/web/scarto.md) |
 | チェゴ (Cego) | `cego` | [CUI](docs/manual/cui/cego.md) / [Web](docs/manual/web/cego.md) |
 | 争上游 (Zheng Shangyou) | `zheng` | [CUI](docs/manual/cui/zheng.md) / [Web](docs/manual/web/zheng.md) |

@@ -188,7 +188,7 @@ jobs:
         # runner. Raise the heap (ubuntu-latest has 16 GB); inherited by the
         # forked test workers via NODE_OPTIONS.
         env:
-          NODE_OPTIONS: --max-old-space-size=8192
+          NODE_OPTIONS: --max-old-space-size=12288
         run: bun run test:coverage -- --shard=${{ matrix.shard }}/4
 
       - name: Upload frontend coverage to Codecov

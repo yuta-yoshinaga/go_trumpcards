@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Go implementations of 264 trump card game algorithms (blackjack, poker, hearts, klondike, baccarat, ...). Run `go run ./cmd/trumpcards games --short` for the canonical list. Clean Architecture with CLI and Web GUI (React + Go REST API).
+Go implementations of 318 trump card game algorithms (blackjack, poker, hearts, klondike, baccarat, ...). Run `go run ./cmd/trumpcards games --short` for the canonical list. Clean Architecture with CLI and Web GUI (React + Go REST API).
 
 ## Requirements
 
@@ -112,6 +112,25 @@ See [`docs/new-game-checklist.md`](docs/new-game-checklist.md) for the full chec
 - **`master`**: Triggers automatic version bump, git tag, and GitHub Release.
 - **PR Summary**: When creating a PR, if there is an associated issue, the PR description must explicitly close the issue (e.g., `Closes #123`).
 
+## Autonomous Merge Policy
+
+`land-pr`, `improve-issue` and `new-game` are model-invocable, which means Claude can
+run branch → PR → squash-merge without a slash command. That is deliberate, and this is
+the authorisation it rests on — stated here rather than assumed, so it is discoverable
+by any session and any contributor.
+
+Claude may squash-merge a PR itself, without asking again, only when **all** of these hold:
+
+1. the work was started by an explicit human invocation (`/improve-batch`, `/improve-issue`,
+   `/new-game`, or a loop the user authorised in that session), **and**
+2. `land-pr`'s gate passes in full — head-SHA match, zero pending, zero failing, and the
+   check count above the floor (an empty check array satisfies every "all green" test), **and**
+3. every review finding has been read and either fixed or answered in the PR.
+
+Anything outside that needs a fresh go-ahead: a PR Claude did not open, a gate that is red
+or still pending, an unaddressed review finding, or a merge into `master` (which triggers the
+version bump, tag and release).
+
 ## Commit Message Format
 
 All commit messages must follow [Conventional Commits](https://www.conventionalcommits.org/):
@@ -190,6 +209,16 @@ When the user's request matches an available skill, ALWAYS invoke it using the S
 tool as your FIRST action. Do NOT answer directly, do NOT use other tools first.
 The skill has specialized workflows that produce better results than ad-hoc answers.
 
+Two of these are **explicit-invocation only** and Claude cannot start them itself:
+`improve-batch` (the batch entry point) and the `make-issue*` trio (they file GitHub
+issues in bulk). Everything else is model-invocable on purpose: gating a *step*
+(`new-game`, `improve-issue`, `land-pr`) does not prevent its commits, PRs or merges —
+the human already started the batch or the standing loop — it only removes the
+checklist and merge gate that keep them correct, and leaves the orchestrator unable to
+do the one thing it exists for. The read-only helpers (`coverage-gate`, `flake-ledger`,
+`doc-drift-check`) have to fire unprompted to be any use at all: nobody types
+`/flake-ledger` at the moment a re-run looks tempting.
+
 Key routing rules:
 - Product ideas, "is this worth building", brainstorming → invoke office-hours
 - Bugs, errors, "why is this broken", 500 errors → invoke investigate
@@ -205,12 +234,12 @@ Key routing rules:
 - Code quality, health check → invoke health
 - Per-game improvement proposals → GitHub issues ("各ゲームの改善提案", "全ゲームのissueを作って") → invoke game-improve
 - New-game candidates → GitHub issues ("追加した方が良いゲームを提案", "新規ゲーム候補をissueに") → invoke propose-games
-- Add a new game end-to-end ("ゲームを追加", "add a new game", "implement <game>") → invoke new-game (explicit `/new-game <name> <category>`) — it drives the New Game Addition Checklist so no registration point or hardcoded count is missed
-- Merge a PR ("マージして", "land it", "merge #NNNN") → invoke land-pr (explicit `/land-pr <#>`) — a green tick alone is not the gate; it also checks the head SHA still matches and that the checks actually ran
-- Docs out of sync with the code ("ドキュメントの乖離", "docs are stale") → invoke doc-drift-check (explicit `/doc-drift-check [--fix]`)
+- Add a new game end-to-end ("ゲームを追加", "add a new game", "implement <game>") → invoke new-game (`/new-game <name> <category>`) — it drives the New Game Addition Checklist so no registration point or hardcoded count is missed
+- Merge a PR ("マージして", "land it", "merge #NNNN") → invoke land-pr (`/land-pr <#>`) — a green tick alone is not the gate; it also checks the head SHA still matches and that the checks actually ran
+- Docs out of sync with the code ("ドキュメントの乖離", "docs are stale") → invoke doc-drift-check (`/doc-drift-check [--fix]`)
 - Coverage of only this branch's changes, before pushing → invoke coverage-gate
 - A test failed and you suspect a flake → invoke flake-ledger
 - Move a game between worker size buckets → invoke rebucket-game
 - DRY/KISS/YAGNI 観点のソース解析を issue 化 → invoke make-issue; CUI 側だけなら invoke make-issue-cli, Web GUI 側だけなら invoke make-issue-web
-- Implement a single GitHub issue end-to-end ("issueに着手して", "#NNNN を対応して", "implement issue #N") → invoke improve-issue (explicit `/improve-issue <#>`)
+- Implement a single GitHub issue end-to-end ("issueに着手して", "#NNNN を対応して", "implement issue #N") → invoke improve-issue (`/improve-issue <#>`)
 - Clear a whole batch of improvement issues, lowest-effort first ("issueバッチを片付けて", "#NNNN〜#MMMM を全部対応", "残りの改善issueを全部やって") → invoke improve-batch (explicit `/improve-batch <range>`)

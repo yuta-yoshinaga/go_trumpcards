@@ -127,7 +127,7 @@ func (p *FiveCardStudCuiPresenter) Output(s interfaces.FiveCardStudGame, lastErr
 				case r.HandName != "":
 					b.WriteString(i18n.Tf("fivecardstud.resultHand",
 						"name", name,
-						"hand", cuiPokerHandName(r.HandRank),
+						"hand", cuiHandNameForStud(s, r.HandRank),
 						"kickers", kickers))
 				default:
 					b.WriteString(i18n.Tf("fivecardstud.resultName", "name", name))
@@ -173,4 +173,25 @@ func (p *FiveCardStudCuiPresenter) Output(s interfaces.FiveCardStudGame, lastErr
 			b.WriteString(i18n.T("fivecardstud.gameEnd") + "\n")
 		}
 	})
+}
+
+// cuiHandNameForStud はファイブカード・スタッド系の役名をローカライズして返す。
+//
+// **ランクのスケールがゲームによって違うので、表も切り替える。** Soko
+// (Canadian Stud) は4枚ストレート/4枚フラッシュをワンペアとツーペアの間に
+// 挿入した独自スケールなので、標準の `pokerHandRank<N>` を引くと別の役名が出る
+// （Soko の 4 はツーペアだが、標準の 4 はストレート）。
+//
+// **この関数が casino タグ側にあるのは意図的。** 無タグの cui_card_helper.go に
+// 置くと、そこは6 worker すべてにコンパイルされるのに interfaces.FiveCardStudGame
+// と domain.SokoHand* は casino 限定なので、casino 以外の5 worker が
+// `undefined:` で落ちる（実際に落とした）。
+func cuiHandNameForStud(g interfaces.FiveCardStudGame, rank int) string {
+	if g.GetIsSoko() {
+		if rank < 0 || rank > domain.SokoHandRoyalFlush {
+			return ""
+		}
+		return i18n.T("sokoHandRank" + strconv.Itoa(rank))
+	}
+	return cuiPokerHandName(rank)
 }

@@ -28,7 +28,26 @@ export type GameKey =
   | 'reddog'
   | 'casinowar'
   | 'oichokabu'
+  | 'kingo'
+  | 'tusac'
+  | 'sakura'
+  | 'zwanzigerrufen'
+  | 'troggu'
+  | 'horse'
   | 'dragontiger'
+  | 'andarbahar'
+  | 'botifarra'
+  | 'rikken'
+  | 'colourwhist'
+  | 'chemindefer'
+  | 'crazyfourpoker'
+  | 'doubleattack'
+  | 'freebet'
+  | 'banluck'
+  | 'montebank'
+  | 'cincinnati'
+  | 'ironcross'
+  | 'baseballpoker'
   | 'blackjackswitch'
   | 'fourcardpoker'
   // Poker
@@ -38,12 +57,14 @@ export type GameKey =
   | 'omahahilo'
   | 'bigo'
   | 'bigohilo'
+  | 'courchevel'
   | 'shortdeck'
   | 'pineapple'
   | 'crazypineapple'
   | 'irishpoker'
   | 'sevencardstud'
   | 'fivecardstud'
+  | 'soko'
   | 'razz'
   | 'sevencardstudhilo'
   | 'badugi'
@@ -122,6 +143,32 @@ export type GameKey =
   | 'tarneeb'
   | 'briscola'
   | 'schnapsen'
+  | 'germanwhist'
+  | 'slobberhannes'
+  | 'polignac'
+  | 'reversis'
+  | 'rams'
+  | 'tarabish'
+  | 'baloot'
+  | 'estimation'
+  | 'israeliwhist'
+  | 'hokm'
+  | 'shelem'
+  | 'mendikot'
+  | 'bhabhi'
+  | 'teendopaanch'
+  | 'hasenpfeffer'
+  | 'sergeantmajor'
+  | 'honeymoonbridge'
+  | 'minibridge'
+  | 'pasur'
+  | 'snap'
+  | 'rollingstone'
+  | 'lingerlonger'
+  | 'pig'
+  | 'stealingbundles'
+  | 'cucumber'
+  | 'goofspiel'
   | 'skat'
   | 'belote'
   | 'jass'
@@ -210,6 +257,13 @@ export type GameKey =
   | 'montecarlo'
   | 'calculation'
   | 'sirtommy'
+  | 'fourseasons'
+  | 'colorado'
+  | 'cribbagesquares'
+  | 'diplomat'
+  | 'royalcotillion'
+  | 'crazyquilt'
+  | 'auldlangsyne'
   | 'bisley'
   | 'napoleonssquare'
   | 'grandfathersclock'
@@ -545,7 +599,26 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   reddog: CASINO,
   casinowar: CASINO,
   oichokabu: CASINO,
+  kingo: CASINO,
+  tusac: CASINO,
+  sakura: GREEN,
+  zwanzigerrufen: GREEN,
+  troggu: GREEN,
+  horse: CASINO,
   dragontiger: CASINO,
+  andarbahar: CASINO,
+  botifarra: GREEN,
+  rikken: BLUE,
+  colourwhist: GREEN,
+  chemindefer: GREEN,
+  crazyfourpoker: GREEN,
+  doubleattack: GREEN,
+  freebet: BRIGHT_GREEN,
+  banluck: CASINO,
+  montebank: GREEN,
+  cincinnati: CASINO,
+  ironcross: CASINO,
+  baseballpoker: CASINO,
   blackjackswitch: BRIGHT_GREEN,
   fourcardpoker: CASINO,
   // Poker
@@ -554,6 +627,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   omaha: POKER,
   omahahilo: POKER,
   bigo: POKER,
+  courchevel: POKER,
   bigohilo: POKER,
   shortdeck: POKER,
   pineapple: POKER,
@@ -561,6 +635,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   irishpoker: POKER,
   sevencardstud: POKER,
   fivecardstud: POKER,
+  soko: POKER,
   razz: POKER,
   sevencardstudhilo: POKER,
   badugi: POKER,
@@ -647,6 +722,32 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   tarneeb: BLUE,
   briscola: BLUE,
   schnapsen: BLUE,
+  germanwhist: BLUE,
+  slobberhannes: BLUE,
+  polignac: BLUE,
+  reversis: BLUE,
+  rams: BLUE,
+  tarabish: BLUE,
+  baloot: BLUE,
+  estimation: BLUE,
+  israeliwhist: BLUE,
+  hokm: BLUE,
+  shelem: BLUE,
+  mendikot: BLUE,
+  bhabhi: GREEN,
+  teendopaanch: BLUE,
+  hasenpfeffer: BLUE,
+  sergeantmajor: BLUE,
+  honeymoonbridge: BLUE,
+  minibridge: BLUE,
+  pasur: BLUE,
+  snap: BLUE,
+  rollingstone: BLUE,
+  lingerlonger: GREEN,
+  pig: BLUE,
+  stealingbundles: GREEN,
+  cucumber: BRIGHT_GREEN,
+  goofspiel: BLUE,
   // Matching/Pass
   oldmaid: GREEN,
   doubt: GREEN,
@@ -727,6 +828,13 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   montecarlo: CASINO,
   calculation: CASINO,
   sirtommy: CASINO,
+  fourseasons: CASINO,
+  colorado: CASINO,
+  cribbagesquares: CASINO,
+  diplomat: CASINO,
+  royalcotillion: CASINO,
+  crazyquilt: CASINO,
+  auldlangsyne: CASINO,
   bisley: CASINO,
   napoleonssquare: CASINO,
   grandfathersclock: CASINO,

@@ -25,3 +25,15 @@ func buildWinnerWebMessage(gamePrefix string, winnerIdx int, isHuman bool) (stri
 	params := map[string]string{"cpuId": fmt.Sprintf("%d", winnerIdx)}
 	return resultMsg, gamePrefix + ".result.cpuWin", params
 }
+
+// intSliceOrEmpty nil スライスを空スライスに正規化する (JSON で null を避ける)。
+//
+// **この共通ファイルはビルドタグを持たないので 6 つの Worker すべてに入る。**
+// Schnapsen の presenter (solo タグ) に置いたままだと、同じヘルパを使う別
+// カテゴリのゲームが classic の Worker ビルドだけで落ちる。
+func intSliceOrEmpty(in []int) []int {
+	if in == nil {
+		return make([]int, 0)
+	}
+	return in
+}

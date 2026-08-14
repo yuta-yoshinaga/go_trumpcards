@@ -21,6 +21,7 @@ import type {
   GutsResponse,
   HachiHachiResponse,
   HeartsResponse,
+  HorseResponse,
   KingResponse,
   KlaverjasResponse,
   KnockoutWhistResponse,
@@ -36,6 +37,7 @@ import type {
   OmbreResponse,
   PreferenceResponse,
   PrimeroResponse,
+  SakuraResponse,
   SambaPlayerData,
   SambaResponse,
   ScartoResponse,
@@ -52,6 +54,7 @@ import type {
   ThreeCardBragResponse,
   TrenteEtQuaranteResponse,
   TressetteResponse,
+  TrogguResponse,
   TuteResponse,
   TwentyNineResponse,
   TwoTenJackResponse,
@@ -59,6 +62,7 @@ import type {
   UltiResponse,
   ViraResponse,
   WattenResponse,
+  ZwanzigerrufenResponse,
 } from '../types/card';
 
 /** Base Hearts player data for player 0 (human). */
@@ -3574,4 +3578,287 @@ const baseSambaState: SambaResponse = {
  */
 export function makeSambaState(overrides?: Partial<SambaResponse>): SambaResponse {
   return { ...baseSambaState, ...overrides };
+}
+
+/** Base Sakura state used as the default for {@link makeSakuraState}. Defaults to a human Play turn. */
+const baseSakuraState: SakuraResponse = {
+  players: [
+    {
+      id: 0,
+      name: 'YOU',
+      isHuman: true,
+      cardCount: 3,
+      cards: [
+        hanafudaCard('🌸', '桜·光', 'gold'),
+        hanafudaCard('🎋', '柳·カス', 'black'),
+        hanafudaCard('🐦', '梅·タネ', 'purple'),
+      ],
+      taken: [],
+      takenCount: 0,
+      cardPoints: 0,
+      bonuses: [],
+      bonusPoints: 0,
+      totalPoints: 0,
+      score: 0,
+      roundScore: 0,
+      roundWins: 0,
+    },
+    {
+      id: 1,
+      name: 'CPU1',
+      isHuman: false,
+      cardCount: 3,
+      cards: [],
+      taken: [],
+      takenCount: 0,
+      cardPoints: 0,
+      bonuses: [],
+      bonusPoints: 0,
+      totalPoints: 0,
+      score: 0,
+      roundScore: 0,
+      roundWins: 0,
+    },
+    {
+      id: 2,
+      name: 'CPU2',
+      isHuman: false,
+      cardCount: 3,
+      cards: [],
+      taken: [],
+      takenCount: 0,
+      cardPoints: 0,
+      bonuses: [],
+      bonusPoints: 0,
+      totalPoints: 0,
+      score: 0,
+      roundScore: 0,
+      roundWins: 0,
+    },
+  ],
+  phase: 0,
+  round: 1,
+  totalRounds: 3,
+  currentTurn: 0,
+  dealer: 0,
+  fieldCards: [hanafudaCard('🌸', '桜·カス', 'black'), hanafudaCard('🌕', '芒·光', 'gold')],
+  stockCount: 21,
+  captureOptions: { 0: [0] },
+  choiceOptions: {},
+  winner: -1,
+  gameEndFlag: false,
+  isHumanTurn: true,
+  lastResult: null,
+  hint: null,
+  message: '',
+  config: { seats: 3, rounds: 3 },
+};
+
+/**
+ * Creates a {@link SakuraResponse} with sensible defaults (a human Play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial SakuraResponse fields to override.
+ * @returns A complete SakuraResponse suitable for use in tests.
+ */
+export function makeSakuraState(overrides?: Partial<SakuraResponse>): SakuraResponse {
+  return { ...baseSakuraState, ...overrides };
+}
+
+/** Base Zwanzigerrufen state used as the default for {@link makeZwanzigerrufenState}. Defaults to a human bid turn. */
+const baseZwanzigerrufenState: ZwanzigerrufenResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 3,
+      cards: [
+        { design: 'SPADE', value: 8, glyph: '♠', label: 'K', color: 'black', deck: 'tarot' },
+        { design: 'HEART', value: 3, glyph: '♥', label: '3', color: 'red', deck: 'tarot' },
+        { design: 'SPADE', value: 1, glyph: '✦', label: '20', color: 'purple', deck: 'tarot' },
+      ],
+      trickCount: 0,
+      cardPoints: 0,
+      score: 0,
+      isDeclarer: false,
+      isPartner: false,
+    },
+    {
+      id: 1,
+      isHuman: false,
+      cardCount: 3,
+      cards: [],
+      trickCount: 0,
+      cardPoints: 0,
+      score: 0,
+      isDeclarer: false,
+      isPartner: false,
+    },
+    {
+      id: 2,
+      isHuman: false,
+      cardCount: 3,
+      cards: [],
+      trickCount: 0,
+      cardPoints: 0,
+      score: 0,
+      isDeclarer: false,
+      isPartner: false,
+    },
+    {
+      id: 3,
+      isHuman: false,
+      cardCount: 3,
+      cards: [],
+      trickCount: 0,
+      cardPoints: 0,
+      score: 0,
+      isDeclarer: false,
+      isPartner: false,
+    },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  totalRounds: 4,
+  trickNumber: 0,
+  currentPlayerIdx: 0,
+  dealerIdx: 0,
+  bidPlayerIdx: 0,
+  highestBid: 0,
+  declarerIdx: -1,
+  contract: 0,
+  contractName: 'pass',
+  calledTrump: -1,
+  partnerIdx: -1,
+  partnerRevealed: false,
+  talonCount: 6,
+  currentTrick: [],
+  lastTrickWinner: -1,
+  lastTrickCards: [],
+  outcome: 0,
+  breakdown: null,
+  playableIndices: [0, 1, 2],
+  gameEndFlag: false,
+  winnerPlayer: -1,
+  isHumanTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetDeals: 4 },
+};
+
+/**
+ * Creates a {@link ZwanzigerrufenResponse} with sensible defaults (a human bid turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial ZwanzigerrufenResponse fields to override.
+ * @returns A complete ZwanzigerrufenResponse suitable for use in tests.
+ */
+export function makeZwanzigerrufenState(overrides?: Partial<ZwanzigerrufenResponse>): ZwanzigerrufenResponse {
+  return { ...baseZwanzigerrufenState, ...overrides };
+}
+
+/** Base Troggu state used as the default for {@link makeTrogguState}. Defaults to a human bid turn. */
+const baseTrogguState: TrogguResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 3,
+      cards: [
+        { design: 'SPADE', value: 14, glyph: '♠', label: 'K', color: 'black', deck: 'tarot' },
+        { design: 'HEART', value: 3, glyph: '♥', label: '3', color: 'red', deck: 'tarot' },
+        { design: 'SPADE', value: 21, glyph: '✦', label: '21', color: 'purple', deck: 'tarot' },
+      ],
+      trickCount: 0,
+      cardPoints: 0,
+      score: 0,
+      isDeclarer: false,
+    },
+    { id: 1, isHuman: false, cardCount: 3, cards: [], trickCount: 0, cardPoints: 0, score: 0, isDeclarer: false },
+    { id: 2, isHuman: false, cardCount: 3, cards: [], trickCount: 0, cardPoints: 0, score: 0, isDeclarer: false },
+    { id: 3, isHuman: false, cardCount: 3, cards: [], trickCount: 0, cardPoints: 0, score: 0, isDeclarer: false },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  totalRounds: 4,
+  trickNumber: 0,
+  currentPlayerIdx: 0,
+  dealerIdx: 0,
+  bidPlayerIdx: 0,
+  highestBid: 0,
+  declarerIdx: -1,
+  contract: 0,
+  contractName: 'pass',
+  talonCount: 6,
+  currentTrick: [],
+  lastTrickWinner: -1,
+  lastTrickCards: [],
+  outcome: 0,
+  breakdown: null,
+  playableIndices: [0, 1, 2],
+  gameEndFlag: false,
+  winnerPlayer: -1,
+  isHumanTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetDeals: 4 },
+};
+
+/**
+ * Creates a {@link TrogguResponse} with sensible defaults (a human bid turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial TrogguResponse fields to override.
+ * @returns A complete TrogguResponse suitable for use in tests.
+ */
+export function makeTrogguState(overrides?: Partial<TrogguResponse>): TrogguResponse {
+  return { ...baseTrogguState, ...overrides };
+}
+
+/** Base H.O.R.S.E. state used as the default for {@link makeHorseState}. Defaults to the human's turn in hold'em. */
+const baseHorseState: HorseResponse = {
+  seats: [
+    {
+      id: 0,
+      name: 'YOU',
+      isHuman: true,
+      chips: 1000,
+      cards: [
+        { design: 'SPADE', value: 14, glyph: '\u2660', label: 'A', color: 'black', deck: 'standard' },
+        { design: 'HEART', value: 13, glyph: '\u2665', label: 'K', color: 'red', deck: 'standard' },
+      ],
+    },
+    { id: 1, name: 'CPU1', isHuman: false, chips: 1000, cards: [] },
+    { id: 2, name: 'CPU2', isHuman: false, chips: 1000, cards: [] },
+    { id: 3, name: 'CPU3', isHuman: false, chips: 1000, cards: [] },
+  ],
+  phase: 0,
+  discipline: 0,
+  disciplineLetter: 'H',
+  disciplineName: 'holdem',
+  handInDiscipline: 1,
+  handNumber: 1,
+  currentTurn: 0,
+  humanSeat: 0,
+  isHumanTurn: true,
+  communityCards: [],
+  pot: 30,
+  toCall: 20,
+  minRaise: 20,
+  tablePhase: 0,
+  gameEndFlag: false,
+  winnerSeat: -1,
+  message: '',
+  config: { seats: 4, initialChips: 1000, handsPerDiscipline: 2 },
+};
+
+/**
+ * Creates a {@link HorseResponse} with sensible defaults (the human to act in
+ * the hold'em leg). Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial HorseResponse fields to override.
+ * @returns A complete HorseResponse suitable for use in tests.
+ */
+export function makeHorseState(overrides?: Partial<HorseResponse>): HorseResponse {
+  return { ...baseHorseState, ...overrides };
 }

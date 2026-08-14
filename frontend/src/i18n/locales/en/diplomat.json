@@ -1,0 +1,52 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "foundation": "Foundation",
+  "tableau": "Tableau",
+  "stock": "Stock",
+  "waste": "Waste",
+  "draw": "Draw",
+  "moveCount": "Moves",
+  "giveup": "Give up",
+  "empty": "Empty",
+  "foundationAriaLabel": "{{suit}} foundation {{idx}}, {{count}} cards",
+  "emptyFoundationAriaLabel": "Empty foundation {{idx}} ({{suit}}, starts at the Ace)",
+  "emptyPileAriaLabel": "empty column {{pile}} (any card may go here)",
+  "stockAriaLabel": "Stock, {{count}} cards left",
+  "emptyStockAriaLabel": "The stock is empty (there is no redeal)",
+  "emptyWasteAriaLabel": "The waste is empty",
+  "landscapeBanner": "Landscape orientation is recommended",
+  "hint": "Hint",
+  "autoComplete": "Auto-complete",
+  "autoCompleteNotReady": "Available once a card can reach a foundation",
+  "undo": "Undo",
+  "stalemate": "No moves left",
+  "playing": "Move a card",
+  "gameClear": "Game clear! Moves: {{moveCount}}",
+  "gameOver": "Game over",
+  "gameOverSummary": "Reached {{count}}/104 cards on the foundations ({{percent}}%)",
+  "hintAvailable": "A hint is available",
+  "noHint": "No hint available",
+  "tutorial": {
+    "foundation": "Eight foundations, two per suit. They start **empty**; an Ace opens one and it builds up in suit to the King. All 8x13 = 104 cards clears the game.",
+    "tableau": "Eight columns, dealt **four cards each** from the start (the other 72 are the stock). They build **down ignoring suit**, but **only the top card of a column moves**. Dropping the same-suit rule is what gives Diplomat far more landing spots than Forty Thieves.",
+    "emptyPile": "An empty column takes **any card** — the top of another column, or the waste. That makes it your way out of a jam. It cannot be filled straight from the stock.",
+    "stock": "The stock turns one card at a time to the waste, with **no redeal (a single pass)**. Check for a landing spot before letting a card go by.",
+    "controls": "Draw, hint, undo, auto-complete, and the other controls."
+  },
+  "frontendHint": {
+    "tableau": "column {{pile}}",
+    "foundation": "foundation {{idx}}",
+    "waste": "the waste",
+    "stock": "stock"
+  },
+  "hintReason": {
+    "toFoundation": "Sending this card to a foundation frees up the board",
+    "toTableau": "Take the suggested tableau move to dig out the pile",
+    "draw": "Nothing can move, so turn a card from the stock"
+  },
+  "emptyColumn": "empty"
+}

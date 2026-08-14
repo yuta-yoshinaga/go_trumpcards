@@ -8,15 +8,21 @@ import type {
   AluetteResponse,
   AmericanToadResponse,
   AnacondaResponse,
+  AndarBaharResponse,
+  AuldLangSyneResponse,
   BaccaratResponse,
   BadugiResponse,
   BakersDozenResponse,
+  BalootResponse,
+  BanLuckResponse,
   BarbuResponse,
+  BaseballPokerResponse,
   BasraResponse,
   BeggarMyNeighbourResponse,
   BeleagueredCastleResponse,
   BeloteResponse,
   BeziqueResponse,
+  BhabhiResponse,
   BidEuchreResponse,
   BidWhistResponse,
   BigTwoResponse,
@@ -25,6 +31,7 @@ import type {
   BlackJackResponse,
   BlackJackSwitchResponse,
   BostonResponse,
+  BotifarraResponse,
   BouillotteResponse,
   BourreResponse,
   BraidResponse,
@@ -45,25 +52,35 @@ import type {
   CassinoResponse,
   CatchTenResponse,
   CegoResponse,
+  ChemindeFerResponse,
   ChinchonResponse,
   ChinesePokerResponse,
   ChineseTenResponse,
   CinchResponse,
+  CincinnatiResponse,
   ClockSolitaireResponse,
+  ColoradoResponse,
+  ColourWhistResponse,
   CongressResponse,
   ConquianResponse,
   ContractRummyResponse,
   CourtPieceResponse,
   CrazyEightsResponse,
+  CrazyFourPokerResponse,
+  CrazyQuiltResponse,
   CrescentResponse,
   CribbageResponse,
+  CribbageSquaresResponse,
   CruelResponse,
   CuarentaResponse,
   CuckooResponse,
+  CucumberResponse,
   DaifugoResponse,
   DesmocheResponse,
   DeuceToSevenResponse,
+  DiplomatResponse,
   DoppelkopfResponse,
+  DoubleAttackResponse,
   DoubleKlondikeResponse,
   DoubtResponse,
   DoudizhuResponse,
@@ -75,6 +92,7 @@ import type {
   EgyptianRatscrewResponse,
   EightOffResponse,
   EscobaResponse,
+  EstimationResponse,
   EuchreResponse,
   FaroResponse,
   FiftyOneResponse,
@@ -85,26 +103,36 @@ import type {
   FortyFivesResponse,
   FortyThievesResponse,
   FourCardPokerResponse,
+  FourSeasonsResponse,
+  FreeBetResponse,
   FreeCellResponse,
   FrenchTarotResponse,
   GaigelResponse,
   GanjifaResponse,
   GapsResponse,
+  GermanWhistResponse,
   GinRummyResponse,
   GoFishResponse,
   GolfResponse,
   GongZhuResponse,
+  GoofspielResponse,
   GoStopResponse,
   GrandfathersClockResponse,
   GuandanResponse,
   GutsResponse,
   HachiHachiResponse,
   HandAndFootResponse,
+  HasenpfefferResponse,
   HeartsResponse,
   HighCardFlushResponse,
+  HokmResponse,
   HoldemResponse,
+  HoneymoonBridgeResponse,
+  HorseResponse,
   IndianPokerResponse,
   IndianRummyResponse,
+  IronCrossResponse,
+  IsraeliWhistResponse,
   JassResponse,
   KaiserResponse,
   KalookiResponse,
@@ -112,6 +140,7 @@ import type {
   KempsResponse,
   KilleResponse,
   KingAlbertResponse,
+  KingoResponse,
   KingResponse,
   KlaberjassResponse,
   KlaverjasResponse,
@@ -122,6 +151,7 @@ import type {
   LaBelleLucieResponse,
   LaughAndLieDownResponse,
   LetItRideResponse,
+  LingerLongerResponse,
   LiteratureResponse,
   LobaResponse,
   LooResponse,
@@ -131,11 +161,14 @@ import type {
   MaoResponse,
   MariasResponse,
   MemoryResponse,
+  MendikotResponse,
   MichiganResponse,
   MightyResponse,
   MinchiateResponse,
+  MinibridgeResponse,
   MississippiStudResponse,
   MissMilliganResponse,
+  MonteBankResponse,
   MonteCarloResponse,
   MushiResponse,
   MusResponse,
@@ -157,7 +190,9 @@ import type {
   PageOneResponse,
   PaiGowResponse,
   PanResponse,
+  PasurResponse,
   PenguinResponse,
+  PigResponse,
   PigsTailResponse,
   PineappleResponse,
   PinochleResponse,
@@ -167,6 +202,7 @@ import type {
   PochResponse,
   PokerResponse,
   PokerSquaresResponse,
+  PolignacResponse,
   PontoonResponse,
   PopeJoanResponse,
   PreferenceResponse,
@@ -174,12 +210,18 @@ import type {
   PrimeroResponse,
   PrsiResponse,
   PyramidResponse,
+  RamsResponse,
   RedDogResponse,
+  ReversisResponse,
+  RikkenResponse,
+  RollingStoneResponse,
   RookResponse,
+  RoyalCotillionResponse,
   Rummy500Response,
   RussianBankResponse,
   RussianPokerResponse,
   RussianSolitaireResponse,
+  SakuraResponse,
   SambaResponse,
   ScartoResponse,
   SchnapsenResponse,
@@ -188,11 +230,13 @@ import type {
   ScorpionResponse,
   SeahavenTowersResponse,
   SedmaResponse,
+  SergeantMajorResponse,
   SetteEMezzoResponse,
   SevenBridgeResponse,
   SevenCardStudResponse,
   SevensResponse,
   SheepsheadResponse,
+  ShelemResponse,
   ShengJiResponse,
   ShitheadResponse,
   ShortDeckResponse,
@@ -204,6 +248,8 @@ import type {
   SkatResponse,
   SkitgubbeResponse,
   SlapjackResponse,
+  SlobberhannesResponse,
+  SnapResponse,
   SoloWhistResponse,
   SpadesResponse,
   SpeedResponse,
@@ -212,12 +258,15 @@ import type {
   SpiteAndMaliceResponse,
   SpoilFiveResponse,
   SpoonsResponse,
+  StealingBundlesResponse,
   StreetsAndAlleysResponse,
   SuecaResponse,
   SultanResponse,
   TablanetResponse,
+  TarabishResponse,
   TarneebResponse,
   TarocchiniResponse,
+  TeenDoPaanchResponse,
   TeenPattiResponse,
   TerraceResponse,
   TexasHoldemBonusResponse,
@@ -234,7 +283,9 @@ import type {
   TressetteResponse,
   TrexResponse,
   TriPeaksResponse,
+  TrogguResponse,
   TrucoResponse,
+  TuSacResponse,
   TuteResponse,
   TwentyNineResponse,
   TwoTenJackResponse,
@@ -253,6 +304,7 @@ import type {
   YanivResponse,
   YukonResponse,
   ZhengResponse,
+  ZwanzigerrufenResponse,
   ZwickerResponse,
 } from '../types/card';
 import type { HintResult } from '../types/hint';
@@ -263,15 +315,21 @@ import { getAllFoursHint } from '../utils/hints/allfoursHint';
 import { getAluetteHint } from '../utils/hints/aluetteHint';
 import { getAmericanToadHint } from '../utils/hints/americantoadHint';
 import { getAnacondaHint } from '../utils/hints/anacondaHint';
+import { getAndarbaharHint } from '../utils/hints/andarbaharHint';
+import { getAuldLangSyneHint } from '../utils/hints/auldlangsyneHint';
 import { getBaccaratHint } from '../utils/hints/baccaratHint';
 import { getBadugiHint } from '../utils/hints/badugiHint';
 import { getBakersdozenHint } from '../utils/hints/bakersdozenHint';
+import { getBalootHint } from '../utils/hints/balootHint';
+import { getBanluckHint } from '../utils/hints/banluckHint';
 import { getBarbuHint } from '../utils/hints/barbuHint';
+import { getBaseballpokerHint } from '../utils/hints/baseballpokerHint';
 import { getBasraHint } from '../utils/hints/basraHint';
 import { getBeggarMyNeighbourHint } from '../utils/hints/beggarmyneighbourHint';
 import { getBeleagueredcastleHint } from '../utils/hints/beleagueredcastleHint';
 import { getBeloteHint } from '../utils/hints/beloteHint';
 import { getBeziqueHint } from '../utils/hints/beziqueHint';
+import { getBhabhiHint } from '../utils/hints/bhabhiHint';
 import { getBidEuchreHint } from '../utils/hints/bideuchreHint';
 import { getBidWhistHint } from '../utils/hints/bidwhistHint';
 import { getBigTwoHint } from '../utils/hints/bigtwoHint';
@@ -280,6 +338,7 @@ import { getBlackHoleHint } from '../utils/hints/blackholeHint';
 import { getBlackjackHint } from '../utils/hints/blackjackHint';
 import { getBlackjackswitchHint } from '../utils/hints/blackjackswitchHint';
 import { getBostonHint } from '../utils/hints/bostonHint';
+import { getBotifarraHint } from '../utils/hints/botifarraHint';
 import { getBouillotteHint } from '../utils/hints/bouillotteHint';
 import { getBourreHint } from '../utils/hints/bourreHint';
 import { getBraidHint } from '../utils/hints/braidHint';
@@ -300,27 +359,37 @@ import { getCasinowarHint } from '../utils/hints/casinowarHint';
 import { getCassinoHint } from '../utils/hints/cassinoHint';
 import { getCatchTenHint } from '../utils/hints/catchtenHint';
 import { getCegoHint } from '../utils/hints/cegoHint';
+import { getChemindeferHint } from '../utils/hints/chemindeferHint';
 import { getChinchonHint } from '../utils/hints/chinchonHint';
 import { getChinesePokerHint } from '../utils/hints/chinesepokerHint';
 import { getChineseTenHint } from '../utils/hints/chinesetenHint';
 import { getCinchHint } from '../utils/hints/cinchHint';
+import { getCincinnatiHint } from '../utils/hints/cincinnatiHint';
 import { getClocksolitaireHint } from '../utils/hints/clocksolitaireHint';
+import { getColoradoHint } from '../utils/hints/coloradoHint';
+import { getColourwhistHint } from '../utils/hints/colourwhistHint';
 import { getCongressHint } from '../utils/hints/congressHint';
 import { getConquianHint } from '../utils/hints/conquianHint';
 import { getContractRummyHint } from '../utils/hints/contractrummyHint';
 import { getCourtPieceHint } from '../utils/hints/courtPieceHint';
 import { getCrazyEightsHint } from '../utils/hints/crazyeightsHint';
+import { getCrazyfourpokerHint } from '../utils/hints/crazyfourpokerHint';
 import { getCrazyPineappleHint } from '../utils/hints/crazyPineappleHint';
+import { getCrazyQuiltHint } from '../utils/hints/crazyquiltHint';
 import { getCrescentHint } from '../utils/hints/crescentHint';
 import { getCribbageHint } from '../utils/hints/cribbageHint';
+import { getCribbageSquaresHint } from '../utils/hints/cribbagesquaresHint';
 import { getCruelHint } from '../utils/hints/cruelHint';
 import { getCuarentaHint } from '../utils/hints/cuarentaHint';
 import { getCuckooHint } from '../utils/hints/cuckooHint';
+import { getCucumberHint } from '../utils/hints/cucumberHint';
 import { getDaifugoHint } from '../utils/hints/daifugoHint';
 import { getDesmocheHint } from '../utils/hints/desmocheHint';
 import { getDeucesWildHint } from '../utils/hints/deuceswildHint';
 import { getDeuceToSevenHint } from '../utils/hints/deuceToSevenHint';
+import { getDiplomatHint } from '../utils/hints/diplomatHint';
 import { getDoppelkopfHint } from '../utils/hints/doppelkopfHint';
+import { getDoubleattackHint } from '../utils/hints/doubleattackHint';
 import { getDoubleKlondikeHint } from '../utils/hints/doubleklondikeHint';
 import { getDoubtHint } from '../utils/hints/doubtHint';
 import { getDoudizhuHint } from '../utils/hints/doudizhuHint';
@@ -332,6 +401,7 @@ import { getEcarteHint } from '../utils/hints/ecarteHint';
 import { getEgyptianRatscrewHint } from '../utils/hints/egyptianratscrewHint';
 import { getEightOffHint } from '../utils/hints/eightoffHint';
 import { getEscobaHint } from '../utils/hints/escobaHint';
+import { getEstimationHint } from '../utils/hints/estimationHint';
 import { getEuchreHint } from '../utils/hints/euchreHint';
 import { getFaroHint } from '../utils/hints/faroHint';
 import { getFiftyOneHint } from '../utils/hints/fiftyoneHint';
@@ -342,27 +412,37 @@ import { getFortyAndEightHint } from '../utils/hints/fortyandeightHint';
 import { getFortyFivesHint } from '../utils/hints/fortyFivesHint';
 import { getFortyThievesHint } from '../utils/hints/fortythievesHint';
 import { getFourCardPokerHint } from '../utils/hints/fourcardpokerHint';
+import { getFourSeasonsHint } from '../utils/hints/fourseasonsHint';
+import { getFreebetHint } from '../utils/hints/freebetHint';
 import { getFreeCellHint } from '../utils/hints/freecellHint';
 import { getFrenchTarotHint } from '../utils/hints/frenchtarotHint';
 import { getGaigelHint } from '../utils/hints/gaigelHint';
 import { getGanjifaHint } from '../utils/hints/ganjifaHint';
 import { getGapsHint } from '../utils/hints/gapsHint';
+import { getGermanWhistHint } from '../utils/hints/germanwhistHint';
 import { getGinRummyHint } from '../utils/hints/ginrummyHint';
 import { getGoFishHint } from '../utils/hints/gofishHint';
 import { getGolfHint } from '../utils/hints/golfHint';
 import { getGongZhuHint } from '../utils/hints/gongzhuHint';
+import { getGoofspielHint } from '../utils/hints/goofspielHint';
 import { getGoStopHint } from '../utils/hints/gostopHint';
 import { getGrandfathersClockHint } from '../utils/hints/grandfathersclockHint';
 import { getGuandanHint } from '../utils/hints/guandanHint';
 import { getGutsHint } from '../utils/hints/gutsHint';
 import { getHachiHachiHint } from '../utils/hints/hachihachiHint';
 import { getHandAndFootHint } from '../utils/hints/handandfootHint';
+import { getHasenpfefferHint } from '../utils/hints/hasenpfefferHint';
 import { getHeartsHint } from '../utils/hints/heartsHint';
 import { getHighCardFlushHint } from '../utils/hints/highcardflushHint';
+import { getHokmHint } from '../utils/hints/hokmHint';
 import { getHoldemHint } from '../utils/hints/holdemHint';
+import { getHoneymoonBridgeHint } from '../utils/hints/honeymoonbridgeHint';
+import { getHorseHint } from '../utils/hints/horseHint';
 import { getIndianPokerHint } from '../utils/hints/indianpokerHint';
 import { getIndianRummyHint } from '../utils/hints/indianRummyHint';
 import { getIrishPokerHint } from '../utils/hints/irishPokerHint';
+import { getIroncrossHint } from '../utils/hints/ironcrossHint';
+import { getIsraeliWhistHint } from '../utils/hints/israeliwhistHint';
 import { getJassHint } from '../utils/hints/jassHint';
 import { getJokerPokerHint } from '../utils/hints/jokerpokerHint';
 import { getKaiserHint } from '../utils/hints/kaiserHint';
@@ -372,6 +452,7 @@ import { getKempsHint } from '../utils/hints/kempsHint';
 import { getKilleHint } from '../utils/hints/killeHint';
 import { getKingalbertHint } from '../utils/hints/kingalbertHint';
 import { getKingHint } from '../utils/hints/kingHint';
+import { getKingoHint } from '../utils/hints/kingoHint';
 import { getKlaberjassHint } from '../utils/hints/klaberjassHint';
 import { getKlaverjasHint } from '../utils/hints/klaverjasHint';
 import { getKlondikeHint } from '../utils/hints/klondikeHint';
@@ -381,6 +462,7 @@ import { getKoiKoiHint } from '../utils/hints/koikoiHint';
 import { getLaBelleLucieHint } from '../utils/hints/labellelucieHint';
 import { getLaughAndLieDownHint } from '../utils/hints/laughandliedownHint';
 import { getLetitrideHint } from '../utils/hints/letitrideHint';
+import { getLingerLongerHint } from '../utils/hints/lingerlongerHint';
 import { getLiteratureHint } from '../utils/hints/literatureHint';
 import { getLobaHint } from '../utils/hints/lobaHint';
 import { getLooHint } from '../utils/hints/looHint';
@@ -390,11 +472,14 @@ import { getManilleHint } from '../utils/hints/manilleHint';
 import { getMaoHint } from '../utils/hints/maoHint';
 import { getMariasHint } from '../utils/hints/mariasHint';
 import { getMemoryHint } from '../utils/hints/memoryHint';
+import { getMendikotHint } from '../utils/hints/mendikotHint';
 import { getMichiganHint } from '../utils/hints/michiganHint';
 import { getMightyHint } from '../utils/hints/mightyHint';
 import { getMinchiateHint } from '../utils/hints/minchiateHint';
+import { getMinibridgeHint } from '../utils/hints/minibridgeHint';
 import { getMississippiStudHint } from '../utils/hints/mississippiStudHint';
 import { getMissMilliganHint } from '../utils/hints/missmilliganHint';
+import { getMontebankHint } from '../utils/hints/montebankHint';
 import { getMonteCarloHint } from '../utils/hints/montecarloHint';
 import { getMusHint } from '../utils/hints/musHint';
 import { getMushiHint } from '../utils/hints/mushiHint';
@@ -417,7 +502,9 @@ import { getOsmosisHint } from '../utils/hints/osmosisHint';
 import { getPageOneHint } from '../utils/hints/pageoneHint';
 import { getPaiGowHint } from '../utils/hints/paigowHint';
 import { getPanHint } from '../utils/hints/panHint';
+import { getPasurHint } from '../utils/hints/pasurHint';
 import { getPenguinHint } from '../utils/hints/penguinHint';
+import { getPigHint } from '../utils/hints/pigHint';
 import { getPigstailHint } from '../utils/hints/pigstailHint';
 import { getPineappleHint } from '../utils/hints/pineappleHint';
 import { getPinochleHint } from '../utils/hints/pinochleHint';
@@ -427,6 +514,7 @@ import { getPitchHint } from '../utils/hints/pitchHint';
 import { getPochHint } from '../utils/hints/pochHint';
 import { getPokerHint } from '../utils/hints/pokerHint';
 import { getPokersquaresHint } from '../utils/hints/pokersquaresHint';
+import { getPolignacHint } from '../utils/hints/polignacHint';
 import { getPontoonHint } from '../utils/hints/pontoonHint';
 import { getPopeJoanHint } from '../utils/hints/popejoanHint';
 import { getPreferenceHint } from '../utils/hints/preferenceHint';
@@ -434,13 +522,19 @@ import { getPresidentHint } from '../utils/hints/presidentHint';
 import { getPrimeroHint } from '../utils/hints/primeroHint';
 import { getPrsiHint } from '../utils/hints/prsiHint';
 import { getPyramidHint } from '../utils/hints/pyramidHint';
+import { getRamsHint } from '../utils/hints/ramsHint';
 import { getRazzHint } from '../utils/hints/razzHint';
 import { getReddogHint } from '../utils/hints/reddogHint';
+import { getReversisHint } from '../utils/hints/reversisHint';
+import { getRikkenHint } from '../utils/hints/rikkenHint';
+import { getRollingStoneHint } from '../utils/hints/rollingstoneHint';
 import { getRookHint } from '../utils/hints/rookHint';
+import { getRoyalCotillionHint } from '../utils/hints/royalcotillionHint';
 import { getRummy500Hint } from '../utils/hints/rummy500Hint';
 import { getRussianBankHint } from '../utils/hints/russianbankHint';
 import { getRussianPokerHint } from '../utils/hints/russianpokerHint';
 import { getRussianSolitaireHint } from '../utils/hints/russianSolitaireHint';
+import { getSakuraHint } from '../utils/hints/sakuraHint';
 import { getSambaHint } from '../utils/hints/sambaHint';
 import { getScartoHint } from '../utils/hints/scartoHint';
 import { getSchnapsenHint } from '../utils/hints/schnapsenHint';
@@ -449,11 +543,13 @@ import { getScoponeHint } from '../utils/hints/scoponeHint';
 import { getScorpionHint } from '../utils/hints/scorpionHint';
 import { getSeahavenTowersHint } from '../utils/hints/seahavenTowersHint';
 import { getSedmaHint } from '../utils/hints/sedmaHint';
+import { getSergeantMajorHint } from '../utils/hints/sergeantmajorHint';
 import { getSetteEMezzoHint } from '../utils/hints/settemezzoHint';
 import { getSevenbridgeHint } from '../utils/hints/sevenbridgeHint';
 import { getSevenCardStudHint } from '../utils/hints/sevencardstudHint';
 import { getSevensHint } from '../utils/hints/sevensHint';
 import { getSheepsheadHint } from '../utils/hints/sheepsheadHint';
+import { getShelemHint } from '../utils/hints/shelemHint';
 import { getShengJiHint } from '../utils/hints/shengjiHint';
 import { getShitheadHint } from '../utils/hints/shitheadHint';
 import { getShortDeckHint } from '../utils/hints/shortdeckHint';
@@ -465,6 +561,9 @@ import { getSjavsHint } from '../utils/hints/sjavsHint';
 import { getSkatHint } from '../utils/hints/skatHint';
 import { getSkitgubbeHint } from '../utils/hints/skitgubbeHint';
 import { getSlapjackHint } from '../utils/hints/slapjackHint';
+import { getSlobberhannesHint } from '../utils/hints/slobberhannesHint';
+import { getSnapHint } from '../utils/hints/snapHint';
+import { getSokoHint } from '../utils/hints/sokoHint';
 import { getSoloWhistHint } from '../utils/hints/soloWhistHint';
 import { getSpadesHint } from '../utils/hints/spadesHint';
 import { getSpeedHint } from '../utils/hints/speedHint';
@@ -473,12 +572,15 @@ import { getSpiderHint } from '../utils/hints/spiderHint';
 import { getSpiteAndMaliceHint } from '../utils/hints/spiteAndMaliceHint';
 import { getSpoilFiveHint } from '../utils/hints/spoilFiveHint';
 import { getSpoonsHint } from '../utils/hints/spoonsHint';
+import { getStealingBundlesHint } from '../utils/hints/stealingbundlesHint';
 import { getStreetsandalleysHint } from '../utils/hints/streetsandalleysHint';
 import { getSuecaHint } from '../utils/hints/suecaHint';
 import { getSultanHint } from '../utils/hints/sultanHint';
 import { getTablanetHint } from '../utils/hints/tablanetHint';
+import { getTarabishHint } from '../utils/hints/tarabishHint';
 import { getTarneebHint } from '../utils/hints/tarneebHint';
 import { getTarocchiniHint } from '../utils/hints/tarocchiniHint';
+import { getTeenDoPaanchHint } from '../utils/hints/teendopaanchHint';
 import { getTeenPattiHint } from '../utils/hints/teenPattiHint';
 import { getTerraceHint } from '../utils/hints/terraceHint';
 import { getTexasHoldemBonusHint } from '../utils/hints/texasHoldemBonusHint';
@@ -495,7 +597,9 @@ import { getTrenteEtQuaranteHint } from '../utils/hints/trenteetquaranteHint';
 import { getTressetteHint } from '../utils/hints/tressetteHint';
 import { getTrexHint } from '../utils/hints/trexHint';
 import { getTriPeaksHint } from '../utils/hints/tripeaksHint';
+import { getTrogguHint } from '../utils/hints/trogguHint';
 import { getTrucoHint } from '../utils/hints/trucoHint';
+import { getTusacHint } from '../utils/hints/tusacHint';
 import { getTuteHint } from '../utils/hints/tuteHint';
 import { getTwentyNineHint } from '../utils/hints/twentyNineHint';
 import { getTwoTenJackHint } from '../utils/hints/twotenjackHint';
@@ -514,6 +618,7 @@ import { getWizardHint } from '../utils/hints/wizardHint';
 import { getYanivHint } from '../utils/hints/yanivHint';
 import { getYukonHint } from '../utils/hints/yukonHint';
 import { getZhengHint } from '../utils/hints/zhengHint';
+import { getZwanzigerrufenHint } from '../utils/hints/zwanzigerrufenHint';
 import { getZwickerHint } from '../utils/hints/zwickerHint';
 import { useLocalStorageToggle } from './useLocalStorageToggle';
 
@@ -543,6 +648,7 @@ export const hintFactories = {
   omaha: (s) => getOmahaHint(s as OmahaResponse),
   omahahilo: (s) => getOmahaHiLoHint(s as OmahaResponse),
   bigo: (s) => getOmahaHint(s as OmahaResponse),
+  courchevel: (s) => getOmahaHint(s as OmahaResponse),
   bigohilo: (s) => getOmahaHiLoHint(s as OmahaResponse),
   shortdeck: (s) => getShortDeckHint(s as ShortDeckResponse),
   pineapple: (s) => getPineappleHint(s as PineappleResponse),
@@ -565,9 +671,42 @@ export const hintFactories = {
   tienlen: (s) => getTienLenHint(s as TienLenResponse),
   zheng: (s) => getZhengHint(s as ZhengResponse),
   fivecardstud: (s) => getFiveCardStudHint(s as FiveCardStudResponse),
+  soko: (s) => getSokoHint(s as FiveCardStudResponse),
+  fourseasons: (s) => getFourSeasonsHint(s as FourSeasonsResponse),
+  colorado: (s) => getColoradoHint(s as ColoradoResponse),
+  cribbagesquares: (s) => getCribbageSquaresHint(s as CribbageSquaresResponse),
+  diplomat: (s) => getDiplomatHint(s as DiplomatResponse),
+  royalcotillion: (s) => getRoyalCotillionHint(s as RoyalCotillionResponse),
+  crazyquilt: (s) => getCrazyQuiltHint(s as CrazyQuiltResponse),
   fivehundred: (s) => getFiveHundredHint(s as FiveHundredResponse),
   rook: (s) => getRookHint(s as RookResponse),
   schnapsen: (s) => getSchnapsenHint(s as SchnapsenResponse),
+  germanwhist: (s) => getGermanWhistHint(s as GermanWhistResponse),
+  slobberhannes: (s) => getSlobberhannesHint(s as SlobberhannesResponse),
+  polignac: (s) => getPolignacHint(s as PolignacResponse),
+  reversis: (s) => getReversisHint(s as ReversisResponse),
+  rams: (s) => getRamsHint(s as RamsResponse),
+  tarabish: (s) => getTarabishHint(s as TarabishResponse),
+  baloot: (s) => getBalootHint(s as BalootResponse),
+  estimation: (s) => getEstimationHint(s as EstimationResponse),
+  israeliwhist: (s) => getIsraeliWhistHint(s as IsraeliWhistResponse),
+  hokm: (s) => getHokmHint(s as HokmResponse),
+  shelem: (s) => getShelemHint(s as ShelemResponse),
+  mendikot: (s) => getMendikotHint(s as MendikotResponse),
+  bhabhi: (s) => getBhabhiHint(s as BhabhiResponse),
+  teendopaanch: (s) => getTeenDoPaanchHint(s as TeenDoPaanchResponse),
+  hasenpfeffer: (s) => getHasenpfefferHint(s as HasenpfefferResponse),
+  sergeantmajor: (s) => getSergeantMajorHint(s as SergeantMajorResponse),
+  honeymoonbridge: (s) => getHoneymoonBridgeHint(s as HoneymoonBridgeResponse),
+  minibridge: (s) => getMinibridgeHint(s as MinibridgeResponse),
+  pasur: (s) => getPasurHint(s as PasurResponse),
+  snap: (s) => getSnapHint(s as SnapResponse),
+  rollingstone: (s) => getRollingStoneHint(s as RollingStoneResponse),
+  lingerlonger: (s) => getLingerLongerHint(s as LingerLongerResponse),
+  pig: (s) => getPigHint(s as PigResponse),
+  stealingbundles: (s) => getStealingBundlesHint(s as StealingBundlesResponse),
+  cucumber: (s) => getCucumberHint(s as CucumberResponse),
+  goofspiel: (s) => getGoofspielHint(s as GoofspielResponse),
   faro: (s) => getFaroHint(s as FaroResponse),
   fiftyone: (s) => getFiftyOneHint(s as FiftyOneResponse),
   napoleon: (s) => getNapoleonHint(s as NapoleonResponse),
@@ -657,6 +796,25 @@ export const hintFactories = {
   reddog: (s) => getReddogHint(s as RedDogResponse),
   casinowar: (s) => getCasinowarHint(s as CasinoWarResponse),
   oichokabu: (s) => getOichokabuHint(s as OichoKabuResponse),
+  kingo: (s) => getKingoHint(s as KingoResponse),
+  tusac: (s) => getTusacHint(s as TuSacResponse),
+  sakura: (s) => getSakuraHint(s as SakuraResponse),
+  zwanzigerrufen: (s) => getZwanzigerrufenHint(s as ZwanzigerrufenResponse),
+  troggu: (s) => getTrogguHint(s as TrogguResponse),
+  horse: (s) => getHorseHint(s as HorseResponse),
+  andarbahar: (s) => getAndarbaharHint(s as AndarBaharResponse),
+  botifarra: (s) => getBotifarraHint(s as BotifarraResponse),
+  rikken: (s) => getRikkenHint(s as RikkenResponse),
+  chemindefer: (s) => getChemindeferHint(s as ChemindeFerResponse),
+  crazyfourpoker: (s) => getCrazyfourpokerHint(s as CrazyFourPokerResponse),
+  doubleattack: (s) => getDoubleattackHint(s as DoubleAttackResponse),
+  freebet: (s) => getFreebetHint(s as FreeBetResponse),
+  banluck: (s) => getBanluckHint(s as BanLuckResponse),
+  montebank: (s) => getMontebankHint(s as MonteBankResponse),
+  cincinnati: (s) => getCincinnatiHint(s as CincinnatiResponse),
+  ironcross: (s) => getIroncrossHint(s as IronCrossResponse),
+  baseballpoker: (s) => getBaseballpokerHint(s as BaseballPokerResponse),
+  colourwhist: (s) => getColourwhistHint(s as ColourWhistResponse),
   dragontiger: (s) => getDragontigerHint(s as DragonTigerResponse),
   blackjackswitch: (s) => getBlackjackswitchHint(s as BlackJackSwitchResponse),
   war: (s) => getWarHint(s as WarResponse),
@@ -682,6 +840,7 @@ export const hintFactories = {
   doubleklondike: (s) => getDoubleKlondikeHint(s as DoubleKlondikeResponse),
   calculation: (s) => getCalculationHint(s as CalculationResponse),
   sirtommy: (s) => getSirTommyHint(s as SirTommyResponse),
+  auldlangsyne: (s) => getAuldLangSyneHint(s as AuldLangSyneResponse),
   bisley: (s) => getBisleyHint(s as BisleyResponse),
   napoleonssquare: (s) => getNapoleonsSquareHint(s as NapoleonsSquareResponse),
   grandfathersclock: (s) => getGrandfathersClockHint(s as GrandfathersClockResponse),

@@ -1,0 +1,66 @@
+{
+  "title": "ボティファラ",
+  "declareGuide": "切り札を宣言するか、相方に委ねてください",
+  "doubleGuide": "倍付けしますか？",
+  "playGuide": "出せる札だけが選べます（勝てるなら勝つ義務があります）",
+  "label": {
+    "you": "あなた",
+    "partner": "相方",
+    "opponent": "相手",
+    "team": "組",
+    "yourTeam": "あなたの組",
+    "theirTeam": "相手の組",
+    "trump": "切り札",
+    "multiplier": "倍率",
+    "dealer": "親",
+    "declarer": "宣言者",
+    "roundPoints": "このラウンド",
+    "score": "得点",
+    "target": "上がり点",
+    "trick": "場",
+    "lastTrick": "直前のトリック",
+    "tricks": "トリック",
+    "hand": "手札",
+    "cards": "枚"
+  },
+  "trump": {
+    "spade": "スペード",
+    "clover": "クラブ",
+    "heart": "ハート",
+    "diamond": "ダイヤ",
+    "none": "切り札なし"
+  },
+  "button": {
+    "declare": "{{trump}} を宣言",
+    "delegate": "相方に委ねる",
+    "double": "倍付けする",
+    "passDouble": "そのまま進む",
+    "next": "次のラウンド",
+    "giveUp": "投了"
+  },
+  "kbd": {
+    "next": "N",
+    "giveUp": "G"
+  },
+  "phase": {
+    "declare": "宣言",
+    "delegated": "相方が宣言",
+    "double": "倍付け",
+    "play": "プレイ",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "終了"
+  },
+  "result": {
+    "win": "あなたの組の勝ちです",
+    "lose": "相手の組の勝ちです"
+  },
+  "tutorial": {
+    "declare": "切り札を宣言するか、相方に委ねます",
+    "hand": "出せる札だけが選べます。勝てるなら勝つ義務があります",
+    "score": "36 点を超えたぶんだけが得点になります"
+  },
+  "frontendHint": {
+    "botifarraDeclareLongest": "いちばん長いスートを切り札にするのが基本です",
+    "botifarraMustWin": "勝てるなら勝つ義務があります"
+  }
+}

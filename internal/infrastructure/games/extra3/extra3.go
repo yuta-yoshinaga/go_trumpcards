@@ -333,4 +333,52 @@ func init() {
 			return usecase.RestoreVintInteractor(data, new(presenter.VintWebPresenter))
 		},
 		controller.NewVintWebControllerWithProvider)
+	games.RegisterKVGame("tarabish", games.CategoryExtra3,
+		func() usecase.TarabishInteractorIF {
+			return usecase.NewTarabishInteractor(domain.NewDefaultTarabish(), new(presenter.TarabishWebPresenter))
+		},
+		func(data []byte) (usecase.TarabishInteractorIF, error) {
+			return usecase.RestoreTarabishInteractor(data, new(presenter.TarabishWebPresenter))
+		},
+		controller.NewTarabishWebControllerWithProvider)
+	games.RegisterKVGame("hasenpfeffer", games.CategoryExtra3,
+		func() usecase.HasenpfefferInteractorIF {
+			return usecase.NewHasenpfefferInteractor(domain.NewDefaultHasenpfeffer(), new(presenter.HasenpfefferWebPresenter))
+		},
+		func(data []byte) (usecase.HasenpfefferInteractorIF, error) {
+			return usecase.RestoreHasenpfefferInteractor(data, new(presenter.HasenpfefferWebPresenter))
+		},
+		controller.NewHasenpfefferWebControllerWithProvider)
+	games.RegisterKVGame("minibridge", games.CategoryExtra3,
+		func() usecase.MinibridgeInteractorIF {
+			return usecase.NewMinibridgeInteractor(domain.NewDefaultMinibridge(), new(presenter.MinibridgeWebPresenter))
+		},
+		func(data []byte) (usecase.MinibridgeInteractorIF, error) {
+			return usecase.RestoreMinibridgeInteractor(data, new(presenter.MinibridgeWebPresenter))
+		},
+		controller.NewMinibridgeWebControllerWithProvider)
+	games.RegisterKVGame("rollingstone", games.CategoryExtra3,
+		func() usecase.RollingStoneInteractorIF {
+			return usecase.NewRollingStoneInteractor(domain.NewDefaultRollingStone(), new(presenter.RollingStoneWebPresenter))
+		},
+		func(data []byte) (usecase.RollingStoneInteractorIF, error) {
+			return usecase.RestoreRollingStoneInteractor(data, new(presenter.RollingStoneWebPresenter))
+		},
+		controller.NewRollingStoneWebControllerWithProvider)
+	games.RegisterKVGame("stealingbundles", games.CategoryExtra3,
+		func() usecase.StealingBundlesInteractorIF {
+			return usecase.NewStealingBundlesInteractor(domain.NewDefaultStealingBundles(), new(presenter.StealingBundlesWebPresenter))
+		},
+		func(data []byte) (usecase.StealingBundlesInteractorIF, error) {
+			return usecase.RestoreStealingBundlesInteractor(data, new(presenter.StealingBundlesWebPresenter))
+		},
+		controller.NewStealingBundlesWebControllerWithProvider)
+	games.RegisterKVGame("sakura", games.CategoryExtra3,
+		func() usecase.SakuraInteractorIF {
+			return usecase.NewSakuraInteractor(domain.NewDefaultSakura(), new(presenter.SakuraWebPresenter))
+		},
+		func(data []byte) (usecase.SakuraInteractorIF, error) {
+			return usecase.RestoreSakuraInteractor(data, new(presenter.SakuraWebPresenter))
+		},
+		controller.NewSakuraWebControllerWithProvider)
 }

@@ -1164,8 +1164,13 @@ func TestPinochle_CpuBid(t *testing.T) {
 		g2 := newTestPinochle()
 		g2.config.CpuDifficulty = PinochleCpuDifficultyNormal
 		g2.Reset()
-		// Run bids until phase changes or limit
-		for j := 0; j < 200 && g2.GetPhase() == PinochlePhaseBid; j++ {
+		// Run bids until the phase changes or the loop is exhausted.
+		//
+		// **上限 200 は競りの実測に足りていなかった。** 人間は降りられない席で
+		// 1 点ずつ上げさせられ、CPU がそれに乗ると入札が長く伸びる。20000 局
+		// 回した実測で最悪 185 回、200 回だと ~0.2% で使い切って Bid のまま
+		// 抜けていた (highestBid=223 で失敗したのがそれ)。2000 なら 0/20000。
+		for j := 0; j < 2000 && g2.GetPhase() == PinochlePhaseBid; j++ {
 			bidder := g2.GetBidPlayerIdx()
 			if g2.players[bidder].GetIsHuman() {
 				// The last remaining active bidder cannot pass (doPass returns

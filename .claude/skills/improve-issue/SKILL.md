@@ -10,8 +10,9 @@ allowed-tools:
   - Grep
   - Glob
   - AskUserQuestion
-# Explicit-invocation only (it commits and opens PRs); run it with `/improve-issue <#>`.
-disable-model-invocation: true
+# Model-invocable: same reasoning as new-game — improve-batch exists to run this per
+# issue, so gating it makes the orchestrator inoperable by design. The entry point
+# (improve-batch) stays explicit-invocation only.
 ---
 
 # improve-issue — one issue, branch → merge

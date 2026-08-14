@@ -23,6 +23,7 @@ import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
+import { useDestinationPreview } from '../hooks/useDestinationPreview';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -281,9 +282,12 @@ function WaspPageContent() {
   const [emptyDealAttemptKey, setEmptyDealAttemptKey] = useState(0);
   const hasEmptyColumn = useMemo(() => state?.tableau.some((col) => col.length === 0) ?? false, [state?.tableau]);
   // Columns the selected card may legally move onto (same suit, one rank higher).
+  // **選ぶ前に行き先が見える (#4454)。** hover / フォーカス中の札にも、選択後と
+  // まったく同じ計算を当てる ── 判定を二重に持たないので食い違わない。
+  const preview = useDestinationPreview<WaspMoveZone>(selectedSource);
   const legalTargets = useMemo(
-    () => (selectedSource && state ? waspLegalTargets(state.tableau, selectedSource) : new Set<number>()),
-    [selectedSource, state],
+    () => (preview.source && state ? waspLegalTargets(state.tableau, preview.source) : new Set<number>()),
+    [preview.source, state],
   );
   const dealBlockedByEmpty = hasEmptyColumn && (state?.stockCount ?? 0) > 0;
   const handleDealGuarded = useCallback(() => {
@@ -484,13 +488,21 @@ function WaspPageContent() {
                                   draggable={isPlaying}
                                   onDragStart={dnd.handleDragStart(zone)}
                                   onDragEnd={dnd.handleDragEnd}
+                                  {...preview.previewProps({ zone: 'tableau', col: colIdx, cardIndex: cardIdx })}
                                   data-testid={isLast && legalTargets.has(colIdx) ? 'wasp-legal-target' : undefined}
+                                  data-preview-target={
+                                    isLast && legalTargets.has(colIdx) && preview.isPreview ? 'true' : undefined
+                                  }
                                   className={`${focusRingWhite} rounded-lg transition-all ${
                                     isSelected ? 'ring-2 ring-ds-warning -translate-y-1' : ''
                                   } ${isDragSrc ? 'opacity-50' : ''} ${
                                     hintFrom ? 'ring-2 ring-ds-info animate-pulse' : ''
                                   } ${hintTo ? 'ring-2 ring-ds-success animate-pulse' : ''} ${
-                                    isLast && legalTargets.has(colIdx) ? 'ring-2 ring-ds-success' : ''
+                                    isLast && legalTargets.has(colIdx)
+                                      ? preview.isPreview
+                                        ? 'ring-2 ring-ds-success/70'
+                                        : 'ring-2 ring-ds-success'
+                                      : ''
                                   }`}
                                   onClick={() => {
                                     if (selectedSource) {

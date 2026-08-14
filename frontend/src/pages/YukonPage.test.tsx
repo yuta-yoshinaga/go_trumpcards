@@ -6,6 +6,17 @@ import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, YukonResponse } from '../types/card';
 import { YukonPage } from './YukonPage';
 
+/**
+ * This page's own hint region.
+ *
+ * **`GameMessageBox` is also `role="status"`**, and it now renders on every
+ * phase because this game's messageCodes are translated (#5291). Querying the
+ * role alone therefore matches two elements; the message box is the one built
+ * from `glass-panel`, so the hint region is the other one.
+ */
+const hintLiveRegion = () =>
+  screen.queryAllByRole('status').find((el) => !el.classList.contains('glass-panel')) ?? null;
+
 vi.mock('../api/gameApi', () => ({
   yukonApi: { exec: vi.fn() },
   actionLogApi: { yukon: vi.fn() },
@@ -112,7 +123,7 @@ describe('YukonPage', () => {
     // The hint live region survives for screen readers but is visually hidden,
     // so it no longer squeezes the footer on mobile. It names the card since
     // "this card" is ambiguous when announced without focus context.
-    const liveRegion = screen.getByRole('status');
+    const liveRegion = hintLiveRegion();
     expect(liveRegion).toHaveClass('sr-only');
     expect(liveRegion).toHaveTextContent('♥ 8');
   });
@@ -134,7 +145,7 @@ describe('YukonPage', () => {
     // so it no longer squeezes the footer on mobile. It names the card since
     // "this card" is ambiguous when announced without focus context.
     // 頼んでいないので live region ごと出ない。
-    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(hintLiveRegion()).not.toBeInTheDocument();
   });
 
   it('labels the hint source with the foundation destination', async () => {

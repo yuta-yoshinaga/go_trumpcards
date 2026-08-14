@@ -1,0 +1,69 @@
+{
+  "title": "Zwanzigerrufen",
+  "phase": {
+    "bid": "Auction",
+    "talon": "Talon exchange",
+    "play": "Play",
+    "trickEnd": "Trick over",
+    "roundEnd": "Deal over",
+    "gameEnd": "Game over"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU difficulty",
+    "difficulty0": "Easy",
+    "difficulty1": "Normal",
+    "difficulty2": "Hard",
+    "targetDeals": "Deals"
+  },
+  "deal": "Deal {{n}}/{{total}}",
+  "trick": "Trick {{n}}",
+  "contract": "Contract: {{name}}",
+  "contract.pass": "-",
+  "contract.trischaken": "Trischaken",
+  "contract.rufer": "Call the XX",
+  "contract.solo": "Solo",
+  "calledSecret": "Called: trump {{trump}} (holder unknown)",
+  "calledRevealed": "Called: trump {{trump}} — {{name}} is the partner",
+  "roleDeclarer": "(declarer)",
+  "rolePartner": "(partner)",
+  "you": "You",
+  "cpu": "CPU{{n}}",
+  "cards": "{{count}} cards",
+  "points": "{{points}} pts this deal",
+  "score": "total {{score}}",
+  "currentTrick": "Current trick",
+  "trickWinner": "WIN",
+  "restricted": "You must follow the led suit",
+  "bidRufer": "Call the XX",
+  "bidSolo": "Solo",
+  "pass": "Pass",
+  "discard": "Bury ({{count}}/{{total}})",
+  "nextTrick": "Next trick",
+  "nextDeal": "Next deal",
+  "newGame": "New game",
+  "roundResult": {
+    "title": "Deal result",
+    "won": "The declarer's side succeeds! {{points}} points (needed more than {{threshold}})",
+    "lost": "The declarer's side fails. {{points}} points (needed more than {{threshold}})",
+    "trischaken": "Trischaken: {{name}} took the most ({{points}} points) and loses",
+    "seat": "{{name}}: {{delta}}"
+  },
+  "result": {
+    "title": "Final scores",
+    "winner": "Winner: {{name}}",
+    "draw": "The game is a tie",
+    "score": "{{name}}: {{score}}"
+  },
+  "tutorial": {
+    "trickDisplay": "This is the current trick. Follow the led suit; trump when you cannot. The Sküs is the highest card.",
+    "playerHand": "Your twelve cards. If you win the auction you take the six-card talon and bury six (kings and trull cards cannot be buried).",
+    "actions": "Calling the XX makes whoever holds trump 20 your secret partner. If everyone passes the deal becomes Trischaken, where taking the most card points loses."
+  },
+  "frontendHint.zwanzigerrufenNextTrick": "the trick is complete — move on",
+  "frontendHint.zwanzigerrufenNextDeal": "the deal is over — move on",
+  "frontendHint.zwanzigerrufenBidNeedsTrumps": "bid only with plenty of trumps",
+  "frontendHint.zwanzigerrufenBuryCheap": "bury the six cheapest cards",
+  "frontendHint.zwanzigerrufenAvoidPoints": "under Trischaken, taking points loses the deal",
+  "frontendHint.zwanzigerrufenFollowSuit": "follow the led suit, or trump when void"
+}

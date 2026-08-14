@@ -118,6 +118,12 @@ var registry = []*Game{
 	{Name: "omahahilo", Category: CategoryCasino},
 	{Name: "bigo", Category: CategoryCasino},
 	{Name: "bigohilo", Category: CategoryCasino},
+	// Courchevel クールシュヴェル
+	//
+	// **フロップの 1 枚目を賭ける前に見せる Big O。** 配る枚数も役の作り方も
+	// Big O と同じで、変わるのは公開の時刻だけ ── 最初のベットラウンドが
+	// 「見えない 5 枚の評価」から「見えている 1 枚と噛み合うか」に変わる。
+	{Name: "courchevel", Category: CategoryCasino},
 	{Name: "shortdeck", Category: CategoryCasino},
 	{Name: "pineapple", Category: CategoryCasino},
 	{Name: "crazypineapple", Category: CategoryCasino},
@@ -842,6 +848,351 @@ var registry = []*Game{
 	// 10s and kings (200 in the pack); the declarers win by holding them
 	// under 80. Climbing stops at the ace, which must then be held to win.
 	{Name: "shengji", Category: CategoryClassic},
+	// Auld Lang Syne is the luck-heavy end of the patience family: the four Aces
+	// are set out as foundations, the other 48 cards are dealt four at a time
+	// onto four wastes, and only a waste's top card may be built up A->K with
+	// suit ignored. Sir Tommy shares the shape but lets the player CHOOSE which
+	// waste each card lands on; here the deal is forced, which is what strips
+	// the game down to "when to deal" and "which playable card first".
+	{Name: "auldlangsyne", Category: CategoryExtra2},
+	// Soko (Canadian Stud) is Five Card Stud with two extra hand ranks: a
+	// four-card straight beats a pair and a four-card flush beats that, both
+	// ranking below two pair. The deal, the bring-in and the betting rounds are
+	// the same game, so it reuses the whole FiveCardStud stack the way razz
+	// reuses SevenCardStud. That reuse is what fixes its Category: the entry
+	// below is authoritative, and it must match wherever FiveCardStud and
+	// betting.go are compiled.
+	{Name: "soko", Category: CategoryCasino},
+	// Four Seasons (Corners) deals a five-card cross plus four corner
+	// foundations. The foundations start from whatever rank the first card was
+	// and build up in suit; the cross builds down ignoring suit. Both wrap, so
+	// an Ace follows a King and a King goes under an Ace. An emptied cross space
+	// takes any card. Canfield shares the deal-decides-the-base-rank idea but
+	// alternates colour on its tableau and does not wrap there.
+	{Name: "fourseasons", Category: CategorySolo},
+	// Colorado spreads 20 single-card piles under eight foundations -- four
+	// building up from the Ace and four building down from the King, which is
+	// exactly the 104 cards of two decks. The waste card may be dropped on any
+	// pile whatever its suit or rank, so the only decision in the game is which
+	// card to bury. Congress shares the two-deck, eight-foundation shape but
+	// builds every foundation upward and lets the tableau be packed.
+	{Name: "colorado", Category: CategoryClassic},
+	// Cribbage Squares fills a 4x4 grid one card at a time, then turns a 17th
+	// card as the starter and scores all four rows and all four columns as
+	// cribbage hands against it. Poker Squares shares the place-and-score-the
+	// -lines shape but is 5x5, scores poker hands, and has no starter -- here
+	// the fifth card of every hand is the same unknown card, and it is not
+	// revealed until the last placement is committed.
+	{Name: "cribbagesquares", Category: CategoryExtra2},
+	// Diplomat deals 8 columns of 4 from two decks and builds the tableau down
+	// ignoring suit -- the concession that makes it the gentle member of the
+	// Forty Thieves family, which insists on same-suit runs. Congress shares
+	// the 104 cards, the eight foundations and the suit-blind descent, but
+	// deals one card per pile and cannot fill an empty pile from the tableau.
+	{Name: "diplomat", Category: CategoryExtra},
+	// Royal Cotillion builds its eight foundations BY TWOS and wraps, so an
+	// Ace-start pile runs A,3,5,7,9,J,K,2,4,6,8,10,Q -- all thirteen ranks, which
+	// is why eight piles hold all 104 cards. Sixteen single-card tableau slots
+	// refill from the stock or waste; the four three-card reserve piles never do.
+	// Calculation is the other by-arithmetic game here, but its four piles use
+	// different step sizes (+1/+2/+3/+4) and do not wrap.
+	{Name: "royalcotillion", Category: CategoryClassic},
+	// Crazy Quilt seeds its eight foundations with an Ace and a King of each
+	// suit before dealing, so 104 - 8 - 64 leaves 32 in the stock. A quilt card
+	// is available only when a SHORT side is exposed, which depends on whether
+	// the cell is laid vertically or horizontally -- not merely on an empty
+	// neighbour. Sultan shares the fixed-layout, pick-from-the-edge idea but
+	// has no orientation rule and no by-rank play onto the waste.
+	{Name: "crazyquilt", Category: CategorySolo},
+	// German Whist is 13 tricks that DO NOT score followed by 13 that do. The
+	// first half is played for the face-up card: the winner takes it, the loser
+	// draws blind from the stock, so ducking a trick you could win is often
+	// correct. Whist proper scores every trick and has four players; Schnapsen
+	// is the other two-player draw-then-follow game here, but it scores card
+	// points to 66 rather than counting tricks.
+	{Name: "germanwhist", Category: CategoryClassic},
+	// Slobberhannes penalises three things that have nothing to do with card
+	// values: taking the FIRST trick, taking the LAST trick, and taking the
+	// trick with the Q of clubs -- one point each, plus one point for escaping
+	// all three. There is no trump. Hearts is the other avoidance game here,
+	// but its penalties attach to cards; here two of the three attach to a
+	// trick's POSITION, so the opening and closing tricks are dangerous
+	// regardless of what is in them.
+	{Name: "slobberhannes", Category: CategoryClassic},
+	// Polignac is the French avoidance game to Slobberhannes's German one, and
+	// the contrast is the point: only the four JACKS score, and the jack of
+	// spades (the "Polignac") costs double -- 2 against the others' 1, so 5
+	// points move each round. A player may also declare capot, undertaking to
+	// win every trick: 5 to everyone else if it comes off, 5 to the declarer if
+	// it does not. **Lowest total wins**, the opposite sign to Slobberhannes;
+	// each follows its own traditional notation.
+	{Name: "polignac", Category: CategoryExtra2},
+	// Reversis is the 48-card French ancestor of the avoidance family (the pack
+	// is a standard 52 with the four 10s removed). Taking tricks costs
+	// A=4/K=3/Q=2/J=1 -- 40 points a round -- and two marked cards, the
+	// **Quinola (J of hearts)** and the **A of diamonds**, cost 5 more each AND
+	// 5 chips into the pool. Everyone antes each round and the fewest penalty
+	// points takes the pool whole; most chips at the end wins. Polignac and
+	// Slobberhannes score on paper, so this is the only avoidance game here
+	// where the stake itself moves during a trick.
+	{Name: "reversis", Category: CategoryClassic},
+	// Rams is the pot game where **the table size itself varies (3-5)**, which is
+	// why its per-seat state is slices and not the fixed arrays Loo uses. Five
+	// cards each on a 32-card piquet pack, trump from the card turned after the
+	// deal. Each player chooses to play or drop; **playing and taking no trick at
+	// all costs an extra payment into the pot**, so a weak hand is worth dropping
+	// for the price of the ante alone. Loo has the same play/drop-and-pay shape at
+	// a fixed four seats.
+	{Name: "rams", Category: CategoryExtra2},
+	// Tarabish is the Cape Breton branch of the Jass family: 36 cards, 2v2, and
+	// the trump order that defines the family -- **J (Jass) 20 and 9 (Menel) 14
+	// outrank the ace**, in strength and in points. Melds are runs (3 = 20,
+	// 4+ = 50) and bella (trump K+Q = 20). Belote and Jass share the same point
+	// table, but each keeps its own unexported copy, so this one does too.
+	{Name: "tarabish", Category: CategoryExtra3},
+	// Baloot is the Gulf's most-played trick-taker, a Belote descendant in which
+	// **the rank order itself is what the players bid over**: Sun runs
+	// A>10>K>Q>J>9>8>7 with no trump (120 a round), while Hokom gives the chosen
+	// trump suit J>9>A>10>K>Q>8>7 (152 a round). The same 32 cards therefore
+	// carry two orders and two point tables, decided fresh every round.
+	{Name: "baloot", Category: CategoryExtra2},
+	// Estimation is the Gulf's household Oh Hell: 4 players, 13 cards each, and
+	// **only an exact call scores** -- one short and five over lose the same
+	// amount, so the size of the call is the size of the bet. Two calls swing
+	// wider than the rest: a Dash Call (0) is worth a flat ±23, and Risk (the
+	// highest call at the table) doubles. The "total must not be 13" rule it is
+	// often credited with is the same one OhHell already enforces on its dealer.
+	{Name: "estimation", Category: CategoryClassic},
+	// Israeli Whist bids **twice**: an auction settles the trump suit and a
+	// minimum quota for whoever wins it, and then everyone -- winner included --
+	// calls their own target separately. That second round is what makes it
+	// different from the one-auction games; the winner is buying the right to
+	// choose trump, not the contract. All four exact, or all four wrong,
+	// doubles the round either way.
+	{Name: "israeliwhist", Category: CategoryExtra2},
+	// Hokm is Iran's most-played trick-taker, and **it does not play out the
+	// thirteen tricks**: the first partnership to seven takes the hand and the
+	// rest of the cards are never played. The hakem declares trump from their
+	// first five cards alone, keeps the role while their team keeps winning,
+	// and a hand where the losers take nothing at all (Kot) is worth two.
+	{Name: "hokm", Category: CategoryClassic},
+	// Shelem is Iran's bridge-shaped bidder, and **what is bid is the score
+	// itself**, not a number of tricks: 100 upward in fives, over a hand that
+	// holds exactly 100 card points (A and 10 are 10, the 5 is 5, nothing else
+	// counts). The winner takes a four-card widow, discards four and names
+	// trump. Declaring **Shelem** replaces the number with a claim on every
+	// trick, and is settled the instant one is lost.
+	{Name: "shelem", Category: CategoryExtra2},
+	// Mendikot (メンディコット) -- インドの 2 対 2。**勝敗を決めるのは点数でも
+	// トリック数でもなく、4 枚の 10 を何枚取ったか。** 3 枚取れば勝ち、2 枚ずつなら
+	// トリックの多いほうが勝つ。切り札を選ぶフェーズは無く、最初にフォローできな
+	// かった人が出した札のスートがそのまま切り札になる。
+	{Name: "mendikot", Category: CategoryExtra},
+	// Bhabhi (バービー) -- インド・パキスタンの**回避型**。52 枚を 3〜7 人で
+	// 配り切り、リードのスートにフォローできなかった人が**場札を全部引き取る**。
+	// 手札を出し切った人から抜け、**最後に残った 1 人が Bhabhi（敗者）**。
+	// 勝者ではなく敗者を決めるゲーム。
+	{Name: "bhabhi", Category: CategoryExtra},
+	// Teen Do Paanch (3-2-5 / ティーン・ドー・パーンチ) -- インド北部の 3 人専用。
+	// **ノルマは宣言ではなく割り当て**で、3 人が 3・2・5 という別々のトリック数を
+	// 負う。30 枚（8〜A の 28 枚 + 7♠ + 7♥）を 10 枚ずつ配り、3+2+5 = 10 トリック
+	// ちょうどで割り切れる。多く取っても得点は増えず、超過は次ラウンドで相手の
+	// 良い札を召し上げる権利になる。
+	{Name: "teendopaanch", Category: CategorySolo},
+	// Hasenpfeffer (ハーゼンプフェファー) -- アメリカのドイツ系移民に伝わる
+	// ユーカー派生。**ジョーカーが全カード中最強の切り札 (Best Bower)**、
+	// **競りは全員参加が義務**（3 人が降りたら親は降りられない）。25 枚を
+	// 6 枚ずつ + 伏せ札 1 枚で配り、6 トリック打つ。
+	{Name: "hasenpfeffer", Category: CategoryExtra3},
+	// Sergeant Major (8-5-3 / サージェントメジャー) -- イギリス軍隊由来とされる
+	// 3 人専用。**ノルマは席順で決まり**、親が 8・左隣が 5・右隣が 3
+	// （合計 16 = トリック数）。52 枚を 16 枚ずつ配り、**余り 4 枚（キティ）は
+	// 親が取り込んで 4 枚捨てる**。ノルマとの差がそのまま得点で、不足ぶんは
+	// 次ラウンドで良い札を召し上げられる。
+	{Name: "sergeantmajor", Category: CategoryExtra},
+	// HoneymoonBridge ハネムーンブリッジ
+	//
+	// 2 人専用のブリッジ。**前半 13 トリックは得点にならない引き合い**で、
+	// 1 トリックごとに勝者・敗者の順で山札から 1 枚ずつ引く（13×2 = 山札 26 枚
+	// ちょうど）。両者 13 枚に戻ってから競り、契約は 6 + レベル トリック。
+	{Name: "honeymoonbridge", Category: CategorySolo},
+	// Minibridge ミニブリッジ
+	//
+	// **競りをハイカードポイントの公開申告に置き換えたブリッジ入門用の版。**
+	// HCP の総和は必ず 40 なので「合計の多いペア」は 20-20 で決まらないことがあり
+	// （実測 8.1%）、そこは親の側が取る。デクレアラーはダミーも操作する。
+	{Name: "minibridge", Category: CategoryExtra3},
+	// Pasur パスール
+	//
+	// イランのフィッシング系。**手札 1 枚と場の数札の合計が 11** になる組み合わせを
+	// 取る。**J/Q/K は合計に使わず同ランクだけ**取れる。取った結果**場が空になると
+	// スール**で、その捕獲の札は得点が 2 倍。
+	{Name: "pasur", Category: CategoryExtra},
+	// Snap スナップ
+	//
+	// イギリスの反射ゲーム。**トリガーは固定ではなく「直前に出た札と同じランク」**
+	// なので、場札が 1 枚のあいだは決して成立しない。同時反射は Slapjack と同じく
+	// **予約 + Tick** で決定的に解く。
+	{Name: "snap", Category: CategorySolo},
+	// RollingStone ローリングストーン（アンフレ）
+	//
+	// **勝利条件が逆さま。** トリックを取っても得点にならず、**先に手札を出し切った
+	// 人が勝ち**。フォローできないとその場のトリックを全部手札に加えられる。
+	// 1 人 8 枚で、デッキは人数 × 8（4人32 / 5人40 / 6人48）。
+	{Name: "rollingstone", Category: CategoryExtra3},
+	// LingerLonger リンガーロンガー
+	//
+	// **トリックを取っても得点にならない。** 取れるのは「山札から 1 枚補充する
+	// 権利」だけで、勝ち続けるかぎり手札が減らない。手札が尽きた人から脱落し、
+	// 最後まで持ち続けた 1 人が勝ち。配る枚数は人数と同じ（4 人なら 4 枚ずつ）。
+	{Name: "lingerlonger", Category: CategoryExtra},
+	// Pig ピッグ（ドンキー）
+	//
+	// **取り合うものが何もないパーティゲーム。** 同じランク 4 枚を揃えた人は
+	// 黙って手を鼻に当て、他の人はそれに気づいて真似るだけ。**最後まで気づか
+	// なかった 1 人**が P・I・G の文字を 1 つ受け取り、3 文字で脱落する。
+	// デッキは人数 × 4 枚（= 人数と同じ種類のランク × 4 スート）。
+	{Name: "pig", Category: CategoryExtra2},
+	// StealingBundles スティーリングバンドル
+	//
+	// **相手の得点済みの束を丸ごと奪える。** 場の同じランクを取るのが基本だが、
+	// 相手が獲得した束は**一番上のランクが弱点**で、そこに同じランクを出すと
+	// 束ごと持っていける。取れる手があるときは場に置けない。最後にいちばん
+	// 多く集めた人の勝ち。
+	{Name: "stealingbundles", Category: CategoryExtra3},
+	// Cucumber キューカンバー（グルカ）
+	//
+	// **スートは一切関係ない比較フォロー。** いま出ている最高ランクより高い札を
+	// 持っていれば必ず出し、無ければいちばん低い札を出す。**失点が付くのは最終
+	// トリックを取った 1 人だけ**で、そのトリックを取った札のランクぶん。
+	{Name: "cucumber", Category: CategoryClassic},
+	// Goofspiel ゴフスピール（GOPS）
+	//
+	// **手番が無く、全員が同時に伏せて入札する。** ダイヤの賞札を 1 枚ずつめくり、
+	// 各自が自分のスートから 1 枚を伏せて出す。最高額が賞札のランクぶん得点し、
+	// 同点なら誰も取らない。**隠れているのは今いくら出したかだけ**で、相手の残り札
+	// は使ったぶんを引けば分かる。13 ラウンドちょうどで終わる。
+	{Name: "goofspiel", Category: CategoryExtra},
+	// Andar Bahar アンダーバハール
+	//
+	// **インド発の二者択一。** 基準札を 1 枚めくり、アンダーとバハールへ交互に配って、
+	// 同じランクが先に出た列を当てる。**先に配る列は 1 枚多く配られる機会があるぶん
+	// 51.50% で有利**なので、その列だけ配当を 0.9:1 に下げる (もう一方は 1:1)。
+	// 非対称なのは「最初の 1 枚」ではなく「先に配る列」。
+	{Name: "andarbahar", Category: CategoryCasino},
+	// Botifarra ボティファラ
+	//
+	// **カタルーニャの 2 対 2 トリックテイキング。** 競りは無く、親が切り札を宣言するか
+	// 相方に委ねるだけ。**勝てるなら勝たなければならない**という義務があり、安い札を
+	// 温存する選択が効かない。スペイン式 48 枚を 12 枚ずつ配り、札 60 点 + 各トリック
+	// 1 点で 1 ラウンド 72 点。36 を超えたぶんだけが得点になる。
+	{Name: "botifarra", Category: CategoryClassic},
+	// Rikken リッケン
+	//
+	// **オランダの競り + 契約トリックテイキング。** Rik(相方を呼んで8) < Misere(0) <
+	// Solo(単独6) < Open Misere(公開・0) が**ひとつの梯子に並ぶ**——「多く取る」契約と
+	// 「1枚も取らない」契約が強さ順に混ざる。**組は席では決まらず**、Rik だけが 2 対 2。
+	// 得点はゼロサムで、卓の合計は常に 0。
+	{Name: "rikken", Category: CategoryExtra2},
+	// Colour Whist カラーホイスト（クルーレンヴィーゼン）
+	//
+	// **手札の形が契約を決めてしまう。** 配った時点で誰かがエースを 3 枚持っていれば
+	// **競りをせずに** Troel が成立し、4 枚目のエースの持ち主が自動的に相方になる。
+	// 該当が無ければ Samen(相方と8) < Alleen(単独8) < Miserie(0) を競る。
+	// 得点はゼロサムで、卓の合計は常に 0。
+	{Name: "colourwhist", Category: CategoryClassic},
+	// Chemin de Fer シュマン・ド・フェール
+	//
+	// バカラの原型。**ハウスではなく席の 1 つが親**になり、負けるとバンクが隣へ渡る。
+	// プント・バンコと違い 3 枚目の引き方は表で固定されておらず、決まっているのは
+	// **子の 0-4 (引く) と 6-7 (立つ) だけ**。合計 5 の子と、あらゆる合計の親は自由。
+	{Name: "chemindefer", Category: CategoryCasino},
+	// Crazy 4 Poker クレイジー4ポーカー
+	//
+	// 5 枚から**最良の 4 枚**で勝負するテーブルポーカー。名前の由来は
+	// 「エースのペア以上なら、プレイベットを 3 倍まで乗せられる」ところで、
+	// **倍率を動かせること自体が強い手の特典**。ディーラーはキング以上で成立。
+	{Name: "crazyfourpoker", Category: CategoryCasino},
+	// Double Attack Blackjack 追加ベット・ブラックジャック
+	//
+	// **アップカードを見てから賭け増しできる**のが本体。その対価として
+	// プレイヤーのブラックジャックは 1:1 に抑えられ、デッキから 10 を抜いてある
+	// (48 枚 × 8)。表示名は商標登録済みのため機能名で呼ぶ (TRADEMARKS.md 参照)。
+	{Name: "doubleattack", Category: CategoryCasino},
+	// Free Bet Blackjack フリーベット・ブラックジャック
+	//
+	// **ダブルとスプリットをハウスが払う**代わりに、ディーラーの 22 が
+	// 引き分けになる。片方だけ実装すると期待値が大きく傾くので、この 2 つは
+	// 必ずセットで扱う。無料ダブルはハードの 9〜11 のみ、無料スプリットは
+	// 10 札の対を除く同数の対のみ。
+	{Name: "freebet", Category: CategoryCasino},
+	// Ban Luck バンラック (チャイニーズ・ブラックジャック)
+	//
+	// **親だけが 15 未満で引く義務を負い、その親が席を移る。** 役は枚数で
+	// 決まり、A+A の Ban Ban (合計は 12) と 2 枚 21 の Ban Luck、5 枚 21 以下の
+	// Five Dragon が普通の手より上に立つ。合計値だけで比べると全部消える。
+	{Name: "banluck", Category: CategoryCasino},
+	// Monte Bank モンテバンク (スパニッシュ・モンテ)
+	//
+	// **スートだけを見る 19 世紀のバンキングゲーム。** 場札 4 枚のうち 1 枚に
+	// 賭け、次にめくる 1 枚 (ゲート) とスートが一致すれば 3:1。控除率は
+	// すべてプレイヤーの選択から出る ── 場札に 1 枚しか出ていないスートを
+	// 選べば互角で、重複したスートを選ぶたびに 11% 以上を失う。
+	{Name: "montebank", Category: CategoryCasino},
+	// Cincinnati シンシナティ
+	//
+	// **手札 5 枚 + コミュニティ 5 枚の 10 枚から最良の 5 枚。** コミュニティを
+	// 1 枚ずつ 5 回めくり、そのたびにベットラウンドが入る (Holdem の 3-1-1 とは
+	// 進行が違う)。手札だけで役が完成しうるのが Holdem との一番の差。
+	{Name: "cincinnati", Category: CategoryCasino},
+	// Iron Cross アイアンクロス (クリスクロス)
+	//
+	// **十字に並べた 5 枚のうち、使えるのは縦か横の 3 枚だけ。** 中央の 1 枚が
+	// 両方に入るので、全員が同じ場を共有する Holdem と違って「どちらを取るか」
+	// で手が変わる。1 枚ずつ開いてそのたびにベットし、5 枚出そろってから選ぶ。
+	{Name: "ironcross", Category: CategoryCasino},
+	// Baseball Poker ベースボールポーカー
+	//
+	// **セブンカードスタッドに配札連動のイベントが乗る。** 3 と 9 は常に
+	// ワイルドだが、**表向きに配られた** 3 はその時点のポットを払うか降りるかを
+	// 迫り、表の 4 は伏せ札を 1 枚くれる。伏せて配られた 3 はただのワイルド。
+	{Name: "baseballpoker", Category: CategoryCasino},
+	// Kingo キンゴ
+	//
+	// **おいちょかぶと同じ株札を使うが、競うものが違う。** 合計の下一桁では
+	// なく、同じ数字を何枚そろえたかで決まる ── 役の判定に総和は出てこない。
+	{Name: "kingo", Category: CategoryExtra},
+	// Tu Sac トゥーサック (四色牌)
+	//
+	// **4 色 × 7 種 × 4 枚 = 112 枚の専用デッキ。** 引いて捨てる形は
+	// ラミーと同じだが、数字の並びという概念が無いので「同スートの連番」に
+	// 当たるメルドが存在しない ── 同色同種 3 枚 / 異色の車馬砲 / 卒 5 枚の 3 つ。
+	{Name: "tusac", Category: CategorySolo},
+	// Sakura さくら (肥後花)
+	//
+	// **花札 48 枚を使うが、役ではなく点数の合計で競う。** こいこいや八八が
+	// 「役ができたか」で勝負するのに対し、こちらは獲得札を 20/10/5/1 点で
+	// 数え上げる ── 勝敗の決め方そのものが違う熊本のローカルルール。
+	{Name: "sakura", Category: CategoryExtra3},
+	// Zwanzigerrufen ツヴァンツィガールーフェン
+	//
+	// **呼ぶのは切り札の 20 番。** Königrufen のキング呼びと違い、呼び札そのものが
+	// 最強クラスの切り札なので、デクレアラーが自分で抱えていれば 19・18 へ下げる。
+	// 誰も落札しなければ Trischaken ── 最も多く点を取った席が負ける契約になる。
+	{Name: "zwanzigerrufen", Category: CategoryExtra},
+	// Troggu トロッグ
+	//
+	// **契約ごとに「勝ち」の意味が変わる。** Solo は最多得点、Trois は 3 トリック、
+	// Piccolo はちょうど 1 トリック、Misère は 1 つも取らないこと ── 同じ卓で
+	// 目標が正負どちらにも振れるのが、他のタロー系と分かれるところ。
+	{Name: "troggu", Category: CategoryExtra},
+	// Horse H.O.R.S.E.
+	//
+	// **1 つの卓で 5 種目を順に回すミックスポーカー。** それぞれの種目は
+	// 単体でも遊べる実装をそのまま卓として使い、この実装が持つのは席とチップの
+	// 正本と、いま何の種目の何ハンド目かという進行だけ ── 役の判定や
+	// ベッティングの規則は種目側に置いたままにする。
+	{Name: "horse", Category: CategoryCasino},
 }
 
 // All returns a value-level copy of the registry in canonical order.

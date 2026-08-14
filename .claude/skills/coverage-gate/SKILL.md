@@ -1,7 +1,8 @@
 ---
 name: coverage-gate
 description: Measure coverage for only the files this branch changed and report which fall under 80%, before pushing. Use when finishing a change, before opening a PR, or when asked whether the coverage standard is met ("カバレッジ足りてる?", "check coverage", "ready to push?").
-disable-model-invocation: true
+# Model-invocable: read-only measurement. It is meant to run as part of finishing a
+# change, which is exactly when nobody thinks to type a slash command.
 allowed-tools: Read, Grep, Glob, Bash
 argument-hint: "[base-ref]"
 ---

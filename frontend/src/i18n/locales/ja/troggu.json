@@ -1,0 +1,66 @@
+{
+  "title": "トロッグ",
+  "phase": {
+    "bid": "入札",
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ディール終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "difficulty0": "Easy",
+    "difficulty1": "Normal",
+    "difficulty2": "Hard",
+    "targetDeals": "ディール数"
+  },
+  "deal": "ディール {{n}}/{{total}}",
+  "trick": "トリック {{n}}",
+  "contract": "契約: {{name}}",
+  "contract.pass": "-",
+  "contract.trois": "トロワ（3トリック）",
+  "contract.solo": "ソロ（過半の点）",
+  "contract.piccolo": "ピッコロ（ちょうど1トリック）",
+  "contract.misere": "ミゼール（0トリック）",
+  "roleDeclarer": "（デクレアラー）",
+  "you": "あなた",
+  "cpu": "CPU{{n}}",
+  "cards": "手札{{count}}枚",
+  "tricks": "トリック{{count}}",
+  "points": "今局{{points}}点",
+  "score": "通算{{score}}",
+  "currentTrick": "現在のトリック",
+  "trickWinner": "勝ち",
+  "restricted": "リードスートに従う必要があります",
+  "bid": "入札",
+  "pass": "パス",
+  "nextTrick": "次のトリック",
+  "nextDeal": "次のディール",
+  "newGame": "新しいゲーム",
+  "roundResult": {
+    "title": "ディール結果",
+    "thrownIn": "全員パスのため流局しました。得点は動きません。",
+    "wonPoints": "成功！ {{got}}点（必要 {{target}}点）",
+    "lostPoints": "失敗。{{got}}点（必要 {{target}}点）",
+    "wonTricks": "成功！ {{got}}トリック（目標 {{target}}）",
+    "lostTricks": "失敗。{{got}}トリック（目標 {{target}}）",
+    "seat": "{{name}}: {{delta}}"
+  },
+  "result": {
+    "title": "最終得点",
+    "winner": "勝者: {{name}}",
+    "draw": "引き分けです",
+    "score": "{{name}}: {{score}}"
+  },
+  "tutorial": {
+    "trickDisplay": "場に出たトリックです。リードスートに従い、持っていなければアトゥ（切り札）を出します。エクスキューズはいつでも出せます。",
+    "playerHand": "あなたの手札18枚です。落札すると場札6枚があなたの得点に加わります。",
+    "actions": "契約ごとに勝ち方が変わります。ソロは点数の過半、トロワは3トリック、ピッコロはちょうど1トリック、ミゼールは1つも取らないこと。全員パスすると流局です。"
+  },
+  "frontendHint.trogguNextTrick": "トリックが揃いました。次へ進んでください",
+  "frontendHint.trogguNextDeal": "ディールが終わりました。次のディールへ進んでください",
+  "frontendHint.trogguBidPickTheContract": "手札に合う契約だけを選びます",
+  "frontendHint.trogguAvoidTricks": "この契約では取ると負けます",
+  "frontendHint.trogguFollowSuit": "リードスートに従い、無ければアトゥを出します"
+}

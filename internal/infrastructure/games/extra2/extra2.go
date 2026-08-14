@@ -221,6 +221,14 @@ func init() {
 			return usecase.RestoreSirTommyInteractor(data, new(presenter.SirTommyWebPresenter))
 		},
 		controller.NewSirTommyWebControllerWithProvider)
+	games.RegisterKVGame("auldlangsyne", games.CategoryExtra2,
+		func() usecase.AuldLangSyneInteractorIF {
+			return usecase.NewAuldLangSyneInteractor(domain.NewDefaultAuldLangSyne(), new(presenter.AuldLangSyneWebPresenter))
+		},
+		func(data []byte) (usecase.AuldLangSyneInteractorIF, error) {
+			return usecase.RestoreAuldLangSyneInteractor(data, new(presenter.AuldLangSyneWebPresenter))
+		},
+		controller.NewAuldLangSyneWebControllerWithProvider)
 	games.RegisterKVGame("bisley", games.CategoryExtra2,
 		func() usecase.BisleyInteractorIF {
 			return usecase.NewBisleyInteractor(domain.NewDefaultBisley(), new(presenter.BisleyWebPresenter))
@@ -365,4 +373,68 @@ func init() {
 			return usecase.RestoreAluetteInteractor(data, new(presenter.AluetteWebPresenter))
 		},
 		controller.NewAluetteWebControllerWithProvider)
+	games.RegisterKVGame("cribbagesquares", games.CategoryExtra2,
+		func() usecase.CribbageSquaresInteractorIF {
+			return usecase.NewCribbageSquaresInteractor(domain.NewDefaultCribbageSquares(), new(presenter.CribbageSquaresWebPresenter))
+		},
+		func(data []byte) (usecase.CribbageSquaresInteractorIF, error) {
+			return usecase.RestoreCribbageSquaresInteractor(data, new(presenter.CribbageSquaresWebPresenter))
+		},
+		controller.NewCribbageSquaresWebControllerWithProvider)
+	games.RegisterKVGame("polignac", games.CategoryExtra2,
+		func() usecase.PolignacInteractorIF {
+			return usecase.NewPolignacInteractor(domain.NewDefaultPolignac(), new(presenter.PolignacWebPresenter))
+		},
+		func(data []byte) (usecase.PolignacInteractorIF, error) {
+			return usecase.RestorePolignacInteractor(data, new(presenter.PolignacWebPresenter))
+		},
+		controller.NewPolignacWebControllerWithProvider)
+	games.RegisterKVGame("rams", games.CategoryExtra2,
+		func() usecase.RamsInteractorIF {
+			return usecase.NewRamsInteractor(domain.NewDefaultRams(), new(presenter.RamsWebPresenter))
+		},
+		func(data []byte) (usecase.RamsInteractorIF, error) {
+			return usecase.RestoreRamsInteractor(data, new(presenter.RamsWebPresenter))
+		},
+		controller.NewRamsWebControllerWithProvider)
+	games.RegisterKVGame("baloot", games.CategoryExtra2,
+		func() usecase.BalootInteractorIF {
+			return usecase.NewBalootInteractor(domain.NewDefaultBaloot(), new(presenter.BalootWebPresenter))
+		},
+		func(data []byte) (usecase.BalootInteractorIF, error) {
+			return usecase.RestoreBalootInteractor(data, new(presenter.BalootWebPresenter))
+		},
+		controller.NewBalootWebControllerWithProvider)
+	games.RegisterKVGame("israeliwhist", games.CategoryExtra2,
+		func() usecase.IsraeliWhistInteractorIF {
+			return usecase.NewIsraeliWhistInteractor(domain.NewDefaultIsraeliWhist(), new(presenter.IsraeliWhistWebPresenter))
+		},
+		func(data []byte) (usecase.IsraeliWhistInteractorIF, error) {
+			return usecase.RestoreIsraeliWhistInteractor(data, new(presenter.IsraeliWhistWebPresenter))
+		},
+		controller.NewIsraeliWhistWebControllerWithProvider)
+	games.RegisterKVGame("shelem", games.CategoryExtra2,
+		func() usecase.ShelemInteractorIF {
+			return usecase.NewShelemInteractor(domain.NewDefaultShelem(), new(presenter.ShelemWebPresenter))
+		},
+		func(data []byte) (usecase.ShelemInteractorIF, error) {
+			return usecase.RestoreShelemInteractor(data, new(presenter.ShelemWebPresenter))
+		},
+		controller.NewShelemWebControllerWithProvider)
+	games.RegisterKVGame("pig", games.CategoryExtra2,
+		func() usecase.PigInteractorIF {
+			return usecase.NewPigInteractor(domain.NewDefaultPig(), new(presenter.PigWebPresenter))
+		},
+		func(data []byte) (usecase.PigInteractorIF, error) {
+			return usecase.RestorePigInteractor(data, new(presenter.PigWebPresenter))
+		},
+		controller.NewPigWebControllerWithProvider)
+	games.RegisterKVGame("rikken", games.CategoryExtra2,
+		func() usecase.RikkenInteractorIF {
+			return usecase.NewRikkenInteractor(domain.NewDefaultRikken(), new(presenter.RikkenWebPresenter))
+		},
+		func(data []byte) (usecase.RikkenInteractorIF, error) {
+			return usecase.RestoreRikkenInteractor(data, new(presenter.RikkenWebPresenter))
+		},
+		controller.NewRikkenWebControllerWithProvider)
 }
