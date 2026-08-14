@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Accepted（CodeQL の PR トリガーのみ [ADR-0034](0034-codeql-post-merge.md) が置換）
 
 ## Date
 

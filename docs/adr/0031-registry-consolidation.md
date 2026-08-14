@@ -119,7 +119,7 @@ func TestWorkerRegistrationsCoverAllGames(t *testing.T) {
 }
 ```
 
-実行時に `RegisterWorker != nil` を assert したい場合は、`registry.go:RegisterCategory` が既に同等のチェックを startup-time で行っており (ローカル `go run ./cmd/workers/casino` で漏れがあれば即座に panic)、CI の AST 検査と二重で守られる形になる。
+実行時に `RegisterWorker != nil` を assert したい場合は、`registry.go:RegisterCategory` が既に同等のチェックを startup-time で行っており (ローカル `make build-worker-casino` でビルドしたワーカーを起動すれば漏れがあれば即座に panic。`cmd/workers/*` は `//go:build js && wasm` なので `go run` では建てられない)、CI の AST 検査と二重で守られる形になる。
 
 加えて `docs/new-game-checklist.md` を「リトマステスト的なテスト」へ寄せる:
 

@@ -40,7 +40,8 @@
   - [2.23 TrashPage フェーズ別レンダリングフロー](#223-trashpage-フェーズ別レンダリングフロー)
   - [2.24 RussianSolitairePage フェーズ別レンダリングフロー](#224-russiansolitairepage-フェーズ別レンダリングフロー)
   - [2.25 MightyPage フェーズ別レンダリングフロー](#225-mightypage-フェーズ別レンダリングフロー)
-  - [2.26 AI Game Concierge サーベイ → 結果フロー](#226-ai-game-concierge-サーベイ--結果フロー)
+  - [2.26 PenguinPage フェーズ別レンダリングフロー](#226-penguinpage-フェーズ別レンダリングフロー)
+  - [2.27 AI Game Concierge サーベイ → 結果フロー](#227-ai-game-concierge-サーベイ--結果フロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 ゲームページ表示状態](#31-ゲームページ表示状態)
   - [3.2 カード選択状態 (useCardSelection)](#32-カード選択状態-usecardselection)
@@ -50,6 +51,8 @@
   - [3.6 チュートリアル状態 (useTutorial)](#36-チュートリアル状態-usetutorial)
   - [3.7 CLIモード状態 (useCliMode + useCliGame)](#37-cliモード状態-useclimode--usecligame)
   - [3.8 Mighty フェーズ遷移 (MightyPhase)](#38-mighty-フェーズ遷移-mightyphase)
+  - [3.8.1 Doudizhu フェーズ遷移 (DoudizhuPage)](#381-doudizhu-フェーズ遷移-doudizhupage)
+  - [3.8.2 Truco フェーズ遷移 (TrucoPage)](#382-truco-フェーズ遷移-trucopage)
   - [3.9 Discover サーベイステップ遷移 (SurveyState)](#39-discover-サーベイステップ遷移-surveystate)
 
 ---
@@ -75,7 +78,8 @@ classDiagram
 
     class BlackJackResponse {
         +object dealer
-        +object[] players
+        +BlackJackPlayer player
+        +BlackJackHand[] hands
         +number phase
         +string message
         +string messageCode
@@ -84,8 +88,7 @@ classDiagram
 
     class HeartsResponse {
         +object[] players
-        +object[] trickCards
-        +number[][] scores
+        +HeartsTrickCard[] currentTrick
         +number phase
         +string message
         +string messageCode
@@ -95,10 +98,10 @@ classDiagram
     class KlondikeResponse {
         +object[][] tableau
         +Card[][] foundation
-        +Card[] stock
+        +number stockCount
         +Card[] waste
         +number phase
-        +number moves
+        +number moveCount
         +number score
         +string message
         +string messageCode
@@ -109,7 +112,7 @@ classDiagram
         +object[] board
         +object[] players
         +number phase
-        +number currentPlayer
+        +number currentPlayerIdx
         +string message
         +string messageCode
         +object messageParams
@@ -144,7 +147,7 @@ classDiagram
     }
 
     class TriPeaksResponse {
-        +object[][] tableau
+        +TriPeaksCard[][] layout
         +Card[] waste
         +number stockCount
         +number phase
@@ -204,7 +207,7 @@ classDiagram
         +object[] players
         +Card[] centerPiles
         +number phase
-        +number currentTurn
+        +boolean gameEndFlag
         +number winnerIdx
         +object[] cpuActions
         +string message
@@ -217,7 +220,7 @@ classDiagram
         +number phase
         +number currentTurn
         +number winnerIdx
-        +number stockCount
+        +number deckRemaining
         +object humanAction
         +object[] cpuActions
         +string message
@@ -307,11 +310,12 @@ classDiagram
 
     class PigsTailResponse {
         +object[] players
-        +Card[] centerPile
-        +number circlePileCount
-        +number phase
+        +Card|null centerTop
+        +number centerCount
+        +number circleCount
+        +boolean gameEndFlag
         +number currentTurn
-        +number winnerIdx
+        +number loserIdx
         +object[] cpuActions
         +string message
         +string messageCode
@@ -320,11 +324,10 @@ classDiagram
 
     class DurakResponse {
         +object[] players
-        +Card[] tableAttack
-        +Card[] tableDefense
+        +DurakTablePair[] tablePairs
         +Card trumpCard
         +number trumpSuit
-        +number deckCount
+        +number stockCount
         +number attackerIdx
         +number defenderIdx
         +number currentTurn
@@ -339,7 +342,7 @@ classDiagram
 
     class FortyThievesResponse {
         +Card[][] tableau
-        +Card[] foundations
+        +Card[][] foundation
         +Card waste
         +number stockCount
         +number moveCount
@@ -407,14 +410,12 @@ classDiagram
         +Card[] initialCards
         +Card thirdCard
         +number phase
-        +boolean gameEndFlag
         +number ante
         +number raise
         +number spread
         +number result
         +number totalPayout
         +number chips
-        +ActionLogEntry[] actionLog
         +string message
         +string messageCode
         +object messageParams
@@ -950,10 +951,12 @@ classDiagram
     }
 
     class useGameApi~TState_TArgs~ {
-        +TState data
-        +boolean isLoading
+        +TState state
+        +Function setState
+        +boolean loading
         +Error error
         +Function exec
+        +Function retry
     }
 
     class useGameConfig~T~ {
@@ -1125,7 +1128,7 @@ classDiagram
 
     class useKlondikeGame {
         +KlondikeResponse state
-        +MoveZone selectedSource
+        +KlondikeMoveZone selectedSource
         +Function handleDraw
         +Function handleSelectSource
         +Function handleSelectTarget
@@ -1262,7 +1265,7 @@ classDiagram
 
     useCanastaGame --> useGameApi : uses
 
-    note for useHeartsGame "主要ゲームに固有Hookが存在 (現在131ファイル)\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
+    note for useHeartsGame "主要ゲームに固有Hookが存在 (現在 use<Game>Game.ts が167本、hooks/ 全体で229モジュール)\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
 ```
 
 ### 1.5 コンポーネント層
@@ -1283,6 +1286,8 @@ classDiagram
         +string path
         +string labelKey
         +string icon
+        +string page
+        +GameProfile profile
     }
 
     class GameCategory {
@@ -2182,7 +2187,7 @@ sequenceDiagram
 sequenceDiagram
     participant User as ユーザー
     participant Page as VideoPokerPage
-    participant Hook as useVideoPokerGame
+    participant Hook as useGamePageSetup / useGameApi (VideoPokerGameContent)
     participant API as gameApi
 
     Note over User,API: ベットフェーズ (phase=0)
@@ -2217,7 +2222,7 @@ sequenceDiagram
 sequenceDiagram
     participant User as ユーザー
     participant Page as ThreeCardPage
-    participant Hook as useThreeCardGame
+    participant Hook as useGamePageSetup / useGameApi (ThreeCardPage)
     participant API as gameApi
 
     Note over User,API: ベットフェーズ (phase=1)
@@ -2330,7 +2335,7 @@ sequenceDiagram
 sequenceDiagram
     participant User as ユーザー
     participant Page as PineapplePage
-    participant Hook as usePineappleGame
+    participant Hook as useGamePageSetup / useGameApi (PineapplePage)
     participant API as gameApi
 
     Note over User,API: プリフロップ・フロップ (phase=1,2)
@@ -2546,7 +2551,7 @@ sequenceDiagram
 sequenceDiagram
     participant User as ユーザー
     participant Page as SevenCardStudPage
-    participant Hook as useSevenCardStudGame
+    participant Hook as useGamePageSetup / useGameApi (SevenCardStudPage)
     participant API as gameApi
 
     Note over User,API: サード～セブンスストリート - ベッティング
@@ -2687,7 +2692,7 @@ sequenceDiagram
 sequenceDiagram
     participant User as ユーザー
     participant Page as YukonPage
-    participant Hook as useYukonGame
+    participant Hook as useGamePageSetup / useSolitaireDragDrop (YukonPage)
     participant API as gameApi
 
     Note over User,API: プレイフェーズ (phase=0)
@@ -2932,7 +2937,7 @@ sequenceDiagram
 sequenceDiagram
     participant User as ユーザー
     participant Page as RussianSolitairePage
-    participant Hook as useRussianSolitaireGame
+    participant Hook as useGamePageSetup / useSolitaireDragDrop (RussianSolitairePage)
     participant API as gameApi
 
     Note over User,API: プレイフェーズ (phase=0)
