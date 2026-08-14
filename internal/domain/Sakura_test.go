@@ -691,8 +691,16 @@ func TestSakuraGetHint_CaptureWhenAMatchExists(t *testing.T) {
 	hand := g.GetPlayers()[0].GetCards()[0]
 	g.field = []*Card{NewCard(hand.GetDesign(), sakuraOtherIndex(hand.GetValue()), false)}
 	h := g.GetHint()
-	assert.Equal(t, 0, h.CardIndex)
+
 	assert.Equal(t, "capture", h.Reason)
+	// **添字を固定しない。** 同じ月の札は手札に複数あり得て、点数の高いほうが
+	// 選ばれる ── 「[0] が返る」と書くと配り次第で半分ほど落ちる (実測)。
+	// 不変条件は「返した札が場の札と合う」こと。
+	require.GreaterOrEqual(t, h.CardIndex, 0)
+	picked := g.GetPlayers()[0].GetCard(h.CardIndex)
+	assert.Equal(t, g.GetField()[0].GetDesign(), picked.GetDesign(), "合わない札を薦めている")
+	assert.NoError(t, g.PlayerPlay(h.CardIndex, h.FieldIndex))
+	assert.Len(t, g.GetPlayers()[0].GetTaken(), 2, "取れていない")
 }
 
 func TestSakuraGetHint_NoneOutsidePlay(t *testing.T) {
