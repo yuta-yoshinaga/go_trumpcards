@@ -105,7 +105,9 @@ func TestHorse_RotatesEveryNHands(t *testing.T) {
 // **1 ハンドごとの設定でも回る。**
 func TestHorse_RotatesEveryHandWhenConfiguredSo(t *testing.T) {
 	t.Parallel()
-	g := NewHorse(HorseConfig{Seats: 4, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
+	// 既定の 1000 だと 6 ハンドでも席が飛びうる (実測 5/400)。上の 12 ハンドの
+	// テストと同じ理由で、卓を打ち切れる残高で作る。
+	g := NewHorse(HorseConfig{Seats: 4, InitialChips: 5000, HandsPerDiscipline: 1})
 	g.Reset()
 
 	seen := make([]HorseDiscipline, 0, 6)
@@ -117,10 +119,12 @@ func TestHorse_RotatesEveryHandWhenConfiguredSo(t *testing.T) {
 		}
 		require.NoError(t, g.NextHand())
 	}
-	require.GreaterOrEqual(t, len(seen), 6)
-	assert.Equal(t, []HorseDiscipline{
+	want := []HorseDiscipline{
 		HorseHoldem, HorseOmahaHiLo, HorseRazz, HorseStud, HorseStudHiLo, HorseHoldem,
-	}, seen[:6])
+	}
+	// 打てたぶんは必ず並びどおり ── 早く終わっても言えることは言う。
+	assert.Equal(t, want[:min(len(seen), len(want))], seen[:min(len(seen), len(want))])
+	require.GreaterOrEqual(t, len(seen), 6)
 }
 
 // **ハンドの途中で種目は変わらない。**
