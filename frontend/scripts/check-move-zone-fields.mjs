@@ -32,17 +32,35 @@ const TS_DIRS = process.argv[3]
 const REAL_FLOOR = 30;
 const FIXTURE_FLOOR = 1;
 
-/** Fields of every `type <Game>WebZone struct` in the Go controllers. */
+/**
+ * Fields of every `type <Game>WebZone struct` under the Go controller tree.
+ *
+ * The walk recurses. Everything lives at the top level today, but a zone struct
+ * added one directory down would otherwise not be scanned — and an unscanned
+ * struct is not a finding, it is an absence, which reads exactly like agreement.
+ */
 async function goZones(dir) {
   const out = new Map();
-  for (const name of (await readdir(dir)).filter((f) => f.endsWith('.go') && !f.endsWith('_test.go'))) {
-    const text = await readFile(join(dir, name), 'utf8');
+  const entries = await readdir(dir, { withFileTypes: true, recursive: true });
+  for (const e of entries) {
+    if (!e.isFile() || !e.name.endsWith('.go') || e.name.endsWith('_test.go')) continue;
+    const text = await readFile(join(e.parentPath ?? e.path ?? dir, e.name), 'utf8');
     for (const m of text.matchAll(/type\s+([A-Za-z0-9]+)WebZone\s+struct\s*\{([\s\S]*?)\n\}/g)) {
       const fields = new Set();
-      for (const f of m[2].matchAll(/`json:"([^",]+)/g)) {
-        if (f[1] !== '-') fields.add(f[1]);
+      for (const line of m[2].split('\n')) {
+        // The tag is matched on its own: folding it into the declaration pattern as an
+        // optional group makes it optional in practice too, since nothing after it forces
+        // the engine to try — every field then reports its Go name and all 48 zones
+        // "mismatch" at once (measured).
+        const decl = line.match(/^\s*([A-Z][A-Za-z0-9]*)\s+\S/);
+        if (!decl) continue;
+        const tag = line.match(/`json:"([^",]+)/);
+        // **タグの無いフィールドも数える。** encoding/json はその場合フィールド名を
+        // そのまま使うので、読み飛ばすと「TS に無い」ことに気付けない。
+        const name = tag ? tag[1] : decl[1];
+        if (name !== '-') fields.add(name);
       }
-      out.set(m[1], { fields, file: name });
+      out.set(m[1], { fields, file: e.name });
     }
   }
   return out;
@@ -60,7 +78,11 @@ async function tsZones(dirs) {
     }
     for (const name of names) {
       const text = await readFile(join(dir, name), 'utf8');
-      for (const m of text.matchAll(/export\s+interface\s+([A-Za-z0-9]+)MoveZone\s*\{([\s\S]*?)\n\}/g)) {
+      // `extends` を挟んでも拾う。取りこぼすとその対だけが比較から外れ、
+      // 「不一致が無い」ではなく「見ていない」状態になる。
+      for (const m of text.matchAll(
+        /export\s+interface\s+([A-Za-z0-9]+)MoveZone\s*(?:extends\s+[^{]+)?\{([\s\S]*?)\n\}/g,
+      )) {
         const fields = new Set();
         for (const f of m[2].matchAll(/^\s*([a-zA-Z0-9_]+)\??\s*:/gm)) fields.add(f[1]);
         out.set(m[1], { fields, file: `${relative(FRONTEND, dir)}/${name}` });
