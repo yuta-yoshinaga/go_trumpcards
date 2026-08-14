@@ -252,7 +252,12 @@ func countImplTypes(t *testing.T, dir, suffix string) int {
 // but that is a count of *bindings*, not of types: several controllers serve
 // more than one game (`NewOmahaWebController` is bound for 5, VideoPoker /
 // SevenCardStud / Pineapple for 3 each, BlackJack / FreeCell / FiveCardStud for
-// 2), so there are 611 controller and 612 presenter types, not 636 of each.
+// 2), so there are 610 controller and 612 presenter types, not 636 of each.
+// (610 = CuiController 305 + WebController 305; the generic base
+// GameWebController[I,P,O] is not a per-game implementation and is excluded.
+// Hand-counting it in is how this comment first said 611 -- the guard below
+// caught that, which is the entire reason the number is asserted and not
+// written down once.)
 //
 // Reading 636 as "636 implementations" is what #5350 flagged and could not fix:
 // correcting the prose alone would have contradicted the binding guard, so the
