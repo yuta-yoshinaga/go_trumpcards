@@ -65,13 +65,6 @@ describe('useDestinationPreview', () => {
     expect(result.current.isPreview).toBe(true);
   });
 
-  it('clears on demand', () => {
-    const { result } = renderHook(() => useDestinationPreview<Src>(null));
-    act(() => result.current.previewProps({ col: 2 }).onMouseEnter());
-    act(() => result.current.clear());
-    expect(result.current.source).toBeNull();
-  });
-
   it('keeps the handler factory stable across renders', () => {
     const { result, rerender } = renderHook(() => useDestinationPreview<Src>(null));
     const first = result.current.previewProps;

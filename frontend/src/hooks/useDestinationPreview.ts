@@ -16,8 +16,6 @@ export interface DestinationPreview<S> {
     onFocus: () => void;
     onBlur: () => void;
   };
-  /** Drop the preview (used when a page resets or commits a move). */
-  clear: () => void;
 }
 
 /**
@@ -58,15 +56,12 @@ export function useDestinationPreview<S>(selected: S | null): DestinationPreview
     [],
   );
 
-  const clear = useCallback(() => setHovered(null), []);
-
   return useMemo(
     () => ({
       source: selected ?? hovered,
       isPreview: selected === null && hovered !== null,
       previewProps,
-      clear,
     }),
-    [selected, hovered, previewProps, clear],
+    [selected, hovered, previewProps],
   );
 }
