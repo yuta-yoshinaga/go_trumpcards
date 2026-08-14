@@ -4,7 +4,7 @@
  * which mounts on `/discover` and is ~25-35 KB gzipped — not worth
  * carrying for users who never open the concierge).
  */
-export const LAZY_NAMESPACES: ReadonlySet<string> = new Set<string>(['discover']);
+const LAZY_NAMESPACES: ReadonlySet<string> = new Set<string>(['discover']);
 
 /** Options for the resource builder. */
 export interface BuildResourcesOptions {

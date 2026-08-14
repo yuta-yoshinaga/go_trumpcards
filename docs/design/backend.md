@@ -10,6 +10,7 @@
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
+  - [1.6 セッションと Cloudflare Worker 層](#16-セッションと-cloudflare-worker-層)
 - [2. シーケンス図](#2-シーケンス図)
   - [2.1 CUIゲーム実行フロー](#21-cuiゲーム実行フロー)
   - [2.2 Web APIゲーム実行フロー](#22-web-apiゲーム実行フロー)
@@ -157,6 +158,48 @@ classDiagram
     RankedGamePlayer --|> GamePlayer : extends
     GamePlayer *-- ChipHolder : mixin
 ```
+
+#### 共有ミックスイン
+
+318 ゲームの多くが同じ関心事を持つので、以下は**埋め込みで共有**している。
+§1.2 以降の per-game クラス図に現れる `GetActionLog()` / `GetTricksTaken()` /
+`GetRoundScore()` などは、たいていここから昇格してきたメソッドで、
+per-game 型が自前で定義しているわけではない。
+
+```mermaid
+classDiagram
+    class actionLogBase {
+        +GetActionLog() []*ActionLogEntry
+    }
+
+    class TrickHolder {
+        +GetTricksTaken() [][]*Card
+        +GetTrickCount() int
+        +AddTrick(cards) void
+        +ResetTricks() void
+        +MarshalJSON() []byte, error
+        +UnmarshalJSON(data) error
+    }
+
+    class RoundScoreHolder {
+        +GetRoundScore() int
+        +SetRoundScore(score) void
+        +GetCumulativeScore() int
+        +SetCumulativeScore(score) void
+        +CommitRoundScore() void
+        +MarshalJSON() []byte, error
+        +UnmarshalJSON(data) error
+    }
+
+    note for actionLogBase "272 ファイルが埋め込む (domain/action_log_base.go)。\n非公開の appendLog / appendLogAt で行を足し\nGetActionLog で読み出す"
+    note for TrickHolder "89 ファイル (domain/TrickHolder.go)。\nトリックテイキング系の取り札を保持"
+    note for RoundScoreHolder "39 ファイル (domain/RoundScoreHolder.go)。\nラウンド得点と累計得点、CommitRoundScore で確定"
+```
+
+`TrickHolder` と `RoundScoreHolder` が自前の `MarshalJSON` / `UnmarshalJSON` を
+持つのは、非公開フィールドが KV セッションの往復で消えないようにするため。
+新しいゲームでこれらを埋め込む場合、ゲーム側のコーデックがこの往復を壊していないか
+確認すること（[ADR-0031](../adr/0031-registry-consolidation.md) の登録手順を参照）。
 
 ### 1.2 ゲームドメイン (全318ゲーム)
 
@@ -1700,19 +1743,30 @@ classDiagram
         ゲーム固有アクション() string
     }
 
+    class GameBase~G~ {
+        +Game G
+        +Snapshot() []byte, error
+    }
+
     class GameInteractor {
-        -game GameInterface
-        -presenter GamePresenter
-        +execAndPresent(fn) string
-        +runAndPresent(fn) string
+        -bjp GamePresenter
     }
 
     GameInteractor ..|> GameInteractorIF : implements
+    GameInteractor --|> GameBase~G~ : embeds
     GameInteractor --> GamePresenter~G~ : uses
     GameInteractor --> GameInterface : uses
 
-    note for GameInteractor "execAndPresent: error返却アクション実行後Presenter呼出\nrunAndPresent: void アクション実行後Presenter呼出"
+    note for GameBase~G~ "全 305 interactor が埋め込む総称基底\n(usecase/interactor_base.go)。Snapshot が\nKV 永続化用の JSON 化を一手に引き受ける"
+    note for GameInteractor "GameInteractor はここでは 305 個の per-game\ninteractor を代表する placeholder。実体は\nBlackJackInteractor などで、いずれも\nGameBase[G] を埋め込み Presenter を1つ持つ"
 ```
+
+`execAndPresent` / `runAndPresent` は **Interactor のメソッドではなく
+`usecase/interactor_helper.go` のパッケージレベル総称関数**で、
+`execAndPresent(game, presenter, action)` の形で呼ぶ
+（`resetWithValidatedConfig` も同じ場所にある同種のヘルパ）。
+per-game interactor が `GameBase[G]` を埋め込むことで `Snapshot()` を得ており、
+これが Cloudflare Worker の KV 永続化の土台になっている（§1.6）。
 
 ### 1.4 アダプタ層 (Controller・Presenter実装)
 
@@ -1763,8 +1817,8 @@ classDiagram
     GameCuiPresenter ..|> GamePresenter : implements
     GameWebPresenter ..|> GamePresenter : implements
 
-    note for GameCuiController "318ゲーム × CUI/Web = 636 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
-    note for GameCuiPresenter "318ゲーム × CUI/Web = 636 Presenter 実装"
+    note for GameCuiController "318ゲーム × CUI/Web = 636 バインディング\n実装型は 610 種類 (CuiController 305 + WebController 305)\n差分は複数ゲームで共有される Controller\n(総称基底 GameWebController[I,P,O] は別)"
+    note for GameCuiPresenter "318ゲーム × CUI/Web = 636 バインディング\n実装型は 612 種類 (CuiPresenter 306 + WebPresenter 306)"
 ```
 
 ### 1.5 インフラストラクチャ層
@@ -1808,6 +1862,75 @@ classDiagram
     GameCui ..|> CuiExecer : implements
     GameCui --> GameCuiController : delegates
 ```
+
+### 1.6 セッションと Cloudflare Worker 層
+
+Web リクエストが interactor に届くまでの経路は、HTTP サーバと Worker で
+**同じ `SessionProvider` インタフェースの差し替え**で実現している。
+`GameWebController` は `SessionStore` を直接触らず、必ず provider 越しに取る。
+
+```mermaid
+classDiagram
+    class SessionProvider~T~ {
+        <<interface>>
+        +Acquire(id, factory) T, SessionRelease, bool
+        +Stop() void
+    }
+
+    class MemorySessionProvider~T~ {
+        +Acquire(id, factory) T, SessionRelease, bool
+        +Stop() void
+        +Store() *SessionStore~T~
+    }
+
+    class KVSessionProvider~T~ {
+        +Acquire(id, factory) T, SessionRelease, bool
+        +Stop() void
+    }
+
+    class SessionStore~T~ {
+        +GetWithLock(id, factory) T, bool
+    }
+
+    MemorySessionProvider~T~ ..|> SessionProvider~T~ : implements
+    KVSessionProvider~T~ ..|> SessionProvider~T~ : implements
+    MemorySessionProvider~T~ --> SessionStore~T~ : wraps
+
+    note for SessionProvider~T~ "Acquire は解放コールバック SessionRelease を返す。\n呼び出し側は必ず defer で解放する"
+    note for MemorySessionProvider~T~ "HTTP サーバ用。プロセス内 map + per-session mutex"
+    note for KVSessionProvider~T~ "Worker 用。リクエスト毎に KV から復元し、\nGameBase.Snapshot() の JSON を書き戻す。\nプロセスが持続しないので状態は毎回 KV 往復する"
+```
+
+Worker 側はゲームをカテゴリ単位で 6 バイナリに分割している。
+`Category` は**バイナリのサイズバケットであってユーザ向けの分類ではない**
+（[ADR-0032](../adr/0032-fourth-worker-capacity.md) /
+[ADR-0036](../adr/0036-fifth-sixth-worker-capacity.md)）。
+
+```mermaid
+classDiagram
+    class Game {
+        +Name string
+        +Category Category
+    }
+
+    class Category {
+        <<enumeration>>
+        CategoryCasino
+        CategoryClassic
+        CategorySolo
+        CategoryExtra
+        CategoryExtra2
+        CategoryExtra3
+    }
+
+    Game --> Category : size bucket
+
+    note for Game "registry.go が 318 件の Name+Category だけを持つ。\nゲーム実装への参照は持たないので、TinyGo が\n他カテゴリを dead-code elimination できる"
+    note for Category "6 バケットは 1 MB gzip 無料枠に収めるための分割。\n各 Worker は自分のカテゴリだけを blank import する"
+```
+
+詳細な per-worker のゲーム一覧とビルド手順は
+[`docs/cloudflare-workers.md`](../cloudflare-workers.md) を参照。
 
 ---
 
@@ -1888,28 +2011,39 @@ sequenceDiagram
     participant C1 as クライアント A
     participant C2 as クライアント B
     participant WebCtrl as WebController
+    participant Prov as MemorySessionProvider
     participant Store as SessionStore
 
     C1->>WebCtrl: POST {"sessionId":"sess-1","cmd":"reset"}
-    WebCtrl->>Store: GetWithLock("sess-1")
+    WebCtrl->>Prov: execWithSession → Acquire("sess-1", factory)
+    Prov->>Store: GetWithLock("sess-1")
     Store->>Store: entries["sess-1"] 作成 + mutex lock
     Note over Store: Interactor A 生成
-    Store-->>WebCtrl: Interactor A (locked)
+    Store-->>Prov: Interactor A (locked)
+    Prov-->>WebCtrl: Interactor A + SessionRelease
     WebCtrl->>WebCtrl: reset コマンドを dispatch
-    WebCtrl->>Store: mutex unlock
+    WebCtrl->>Prov: defer で SessionRelease を呼ぶ
     WebCtrl-->>C1: レスポンス
 
     C2->>WebCtrl: POST {"sessionId":"sess-2","cmd":"reset"}
-    WebCtrl->>Store: GetWithLock("sess-2")
-    Store->>Store: sessions["sess-2"] 作成 + mutex lock
+    WebCtrl->>Prov: execWithSession → Acquire("sess-2", factory)
+    Prov->>Store: GetWithLock("sess-2")
+    Store->>Store: entries["sess-2"] 作成 + mutex lock
     Note over Store: Interactor B 生成 (独立)
-    Store-->>WebCtrl: Interactor B (locked)
+    Store-->>Prov: Interactor B (locked)
+    Prov-->>WebCtrl: Interactor B + SessionRelease
     WebCtrl->>WebCtrl: reset コマンドを dispatch
-    WebCtrl->>Store: mutex unlock
+    WebCtrl->>Prov: defer で SessionRelease を呼ぶ
     WebCtrl-->>C2: レスポンス
 
     Note over Store: 各セッションは独立した<br/>ゲーム状態を保持
 ```
+
+Controller は `SessionStore` を直接触らない。`execWithSession`
+(`adapter/controller/base_controller.go:92`) が provider から
+interactor と解放コールバックを受け取り、`defer release()` で必ず解放する。
+Cloudflare Worker ではこの `MemorySessionProvider` が `KVSessionProvider` に
+差し替わり、`GetWithLock` の代わりに KV からの復元と書き戻しが走る（§1.6）。
 
 ### 2.4 VideoPoker ベット・ホールドフロー
 

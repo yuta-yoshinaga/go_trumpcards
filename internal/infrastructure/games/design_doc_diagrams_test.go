@@ -33,6 +33,12 @@ import (
 var (
 	// headingRe captures the identifier in `### 3.12 Cruel フェーズ遷移`.
 	headingRe = regexp.MustCompile(`^#{2,4}\s+[\d.]+\s+([A-Za-z][A-Za-z0-9]*)`)
+	// anyHeadingRe matches a section heading whatever its title. Tracking must
+	// not be limited to headings headingRe understands: a Japanese-titled
+	// section such as `### 2.3 セッション管理フロー` names no Go type, but if it
+	// does not update the current heading then its diagrams get reported under
+	// the previous section and the error message points at the wrong place.
+	anyHeadingRe = regexp.MustCompile(`^#{2,4}\s+\S`)
 	// fenceOpenRe/fenceCloseRe bracket a mermaid block.
 	fenceOpenRe  = regexp.MustCompile("^\\s*```mermaid\\s*$")
 	fenceCloseRe = regexp.MustCompile("^\\s*```\\s*$")
@@ -110,7 +116,7 @@ func readDesignDoc(t *testing.T, path string) []docBlock {
 		case inFence:
 			cur = append(cur, line)
 		default:
-			if m := headingRe.FindStringSubmatch(line); m != nil {
+			if anyHeadingRe.MatchString(line) {
 				heading = strings.TrimSpace(strings.TrimLeft(line, "# "))
 			}
 		}
@@ -390,6 +396,60 @@ func TestDesignDocDiagramParsersCatchBreakage(t *testing.T) {
 	}
 	if surface.consts["NoSuchPhaseConstant"] {
 		t.Error("surface claims NoSuchPhaseConstant exists -- the const collector is too permissive")
+	}
+}
+
+// TestDesignDocHeadingTrackingFollowsNonASCIISections asserts that a section
+// whose title is not ASCII still becomes the current heading.
+//
+// headingRe only matches a heading that names a bare identifier, and using it
+// for *tracking* meant `### 2.3 セッション管理フロー` left the heading pointing at
+// the previous English-titled section -- so a finding in 2.3 was reported as
+// living in 2.2, sending the reader to the wrong diagram.
+func TestDesignDocHeadingTrackingFollowsNonASCIISections(t *testing.T) {
+	doc := "## 2.2 Web APIゲーム実行フロー\n\n" +
+		"```mermaid\nsequenceDiagram\n    participant A as Durak\n    A->>A: Reset()\n```\n\n" +
+		"### 2.3 セッション管理フロー\n\n" +
+		"```mermaid\nsequenceDiagram\n    participant B as Durak\n    B->>B: Reset()\n```\n"
+
+	path := filepath.Join(t.TempDir(), "doc.md")
+	if err := os.WriteFile(path, []byte(doc), 0o600); err != nil {
+		t.Fatalf("write temp doc: %v", err)
+	}
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("read temp doc: %v", err)
+	}
+
+	var blocks []docBlock
+	heading, inFence := "", false
+	var cur []string
+	for line := range strings.SplitSeq(string(data), "\n") {
+		switch {
+		case !inFence && fenceOpenRe.MatchString(line):
+			inFence, cur = true, nil
+		case inFence && fenceCloseRe.MatchString(line):
+			blocks = append(blocks, docBlock{heading: heading, body: strings.Join(cur, "\n")})
+			inFence = false
+		case inFence:
+			cur = append(cur, line)
+		default:
+			if anyHeadingRe.MatchString(line) {
+				heading = strings.TrimSpace(strings.TrimLeft(line, "# "))
+			}
+		}
+	}
+
+	if len(blocks) != 2 {
+		t.Fatalf("parsed %d blocks, want 2", len(blocks))
+	}
+	if want := "2.3 セッション管理フロー"; blocks[1].heading != want {
+		t.Errorf("second block attributed to %q, want %q -- a non-ASCII heading did not update tracking",
+			blocks[1].heading, want)
+	}
+	// The owner extraction is deliberately stricter: this heading names no type.
+	if owner := headingOwner(blocks[1].heading); owner != "" {
+		t.Errorf("headingOwner(%q) = %q, want \"\" -- it must not invent an owner", blocks[1].heading, owner)
 	}
 }
 
