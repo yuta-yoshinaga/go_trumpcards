@@ -503,6 +503,8 @@ func (g *Zwanzigerrufen) validateDiscards(indices []int) error {
 			fmt.Sprintf("must discard exactly %d cards, got %d", ZwanzigerrufenTalonSize, len(indices)))
 	}
 	p := g.players[g.declarerIdx]
+	// **添字の妥当性を先に全部見る。** 札の種別より先に範囲と重複を弾かないと、
+	// 返る理由が「何番目の札がキングだったか」という配り次第の話になる。
 	seen := map[int]bool{}
 	for _, idx := range indices {
 		if idx < 0 || idx >= p.GetCardsSize() {
@@ -512,6 +514,8 @@ func (g *Zwanzigerrufen) validateDiscards(indices []int) error {
 			return NewDomainError(ErrInvalidPlay, fmt.Sprintf("hand index %d listed twice", idx))
 		}
 		seen[idx] = true
+	}
+	for _, idx := range indices {
 		c := p.GetCard(idx)
 		if koenigrufenIsKing(c) {
 			return NewDomainError(ErrInvalidPlay, "a king cannot be discarded")

@@ -348,51 +348,47 @@ func TestZwanzigerrufenPartnerRevealsWhenTheCalledTrumpIsPlayed(t *testing.T) {
 
 // --- 場札交換 ---
 
+// **キングとトゥルルは伏せられない。** 5 点札を黙って自分の得点へ移せると、
+// 場札交換が「点を配る操作」になる。
 func TestZwanzigerrufenDiscard_RejectsKingsAndTrull(t *testing.T) {
-	g := zwanzigerrufenAtTalon(t)
-	p := g.GetPlayers()[g.GetDeclarerIdx()]
-	require.Equal(t, ZwanzigerrufenHandSize+ZwanzigerrufenTalonSize, p.GetCardsSize(),
-		"場札が手札に加わっていない")
+	tests := []struct {
+		name string
+		pick func(c *Card) bool
+	}{
+		{"キング", koenigrufenIsKing},
+		{"トゥルル", koenigrufenIsTrull},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := zwanzigerrufenAtTalon(t)
+			p := g.GetPlayer(g.GetDeclarerIdx())
+			target := -1
+			for i := range p.GetCardsSize() {
+				if tt.pick(p.GetCard(i)) {
+					target = i
+					break
+				}
+			}
+			if target < 0 {
+				t.Skipf("この配りでは %s が手札に無い", tt.name)
+			}
+			// target を含む、重複しないちょうど 6 枚を作る。
+			indices := []int{target}
+			for i := 0; i < p.GetCardsSize() && len(indices) < ZwanzigerrufenTalonSize; i++ {
+				if i != target {
+					indices = append(indices, i)
+				}
+			}
+			require.Len(t, indices, ZwanzigerrufenTalonSize)
 
-	king, trull := -1, -1
-	for i := range p.GetCardsSize() {
-		c := p.GetCard(i)
-		if koenigrufenIsKing(c) && king < 0 {
-			king = i
-		}
-		if koenigrufenIsTrull(c) && trull < 0 {
-			trull = i
-		}
-	}
-	base := []int{0, 1, 2, 3, 4, 5}
-	if king >= 0 {
-		bad := append([]int{king}, base[:ZwanzigerrufenTalonSize-1]...)
-		err := g.PlayerDiscard(zwanzigerrufenDistinct(bad, p.GetCardsSize()))
-		if err != nil {
-			assert.ErrorContains(t, err, "king")
-		}
-	}
-	if trull >= 0 {
-		bad := append([]int{trull}, base[:ZwanzigerrufenTalonSize-1]...)
-		err := g.PlayerDiscard(zwanzigerrufenDistinct(bad, p.GetCardsSize()))
-		if err != nil {
-			assert.Contains(t, []string{"a king cannot be discarded", "a trull card cannot be discarded"},
+			err := g.PlayerDiscard(indices)
+			require.Error(t, err, "%s を伏せられてしまった", tt.name)
+			// 6 枚のうち別の禁止札が先に当たることもあるので、どちらかであればよい。
+			assert.Contains(t,
+				[]string{"a king cannot be discarded", "a trull card cannot be discarded"},
 				err.(*DomainError).Message)
-		}
+		})
 	}
-}
-
-// zwanzigerrufenDistinct は重複を除いた添字列を返す (先頭は保つ)。
-func zwanzigerrufenDistinct(in []int, size int) []int {
-	seen := map[int]bool{}
-	out := make([]int, 0, len(in))
-	for _, v := range in {
-		if v >= 0 && v < size && !seen[v] {
-			seen[v] = true
-			out = append(out, v)
-		}
-	}
-	return out
 }
 
 func TestZwanzigerrufenDiscard_RejectsWrongCountAndDuplicates(t *testing.T) {

@@ -612,6 +612,8 @@ tags:
     description: Tu Sac (トゥーサック／四色牌) game
   - name: sakura
     description: Sakura / Higo-bana (さくら／肥後花) game
+  - name: zwanzigerrufen
+    description: Zwanzigerrufen (ツヴァンツィガールーフェン) game
   - name: ombre
     description: Ombre / Hombre (オンブル) game
   - name: pan
@@ -26971,6 +26973,91 @@ paths:
               schema:
                 $ref: '#/components/schemas/SakuraResponse'
 
+  /zwanzigerrufen/exec:
+    post:
+      tags:
+        - zwanzigerrufen
+      summary: Execute a Zwanzigerrufen game command
+      description: |
+        Send a command to advance the Zwanzigerrufen (ツヴァンツィガールーフェン)
+        game session identified by `sessionId`.
+
+        An Austrian calling tarock for four on the 54-card tarock pack (32 suit
+        cards + 21 trumps + the Sküs). Two things separate it from Königrufen.
+
+        **The declarer calls the trump XX, not a king.** Because the called card
+        is itself a top trump, a declarer holding it steps the call down to XIX,
+        then XVIII, and plays alone if they hold all three. Whoever holds the
+        called trump is a **secret partner**: `partnerIdx` stays `-1` and no
+        seat carries `isPartner` until `partnerRevealed` flips, which happens
+        the moment that card is played.
+
+        **When every seat passes the deal becomes Trischaken** — no declarer, no
+        talon exchange, each seat for itself, and the seat taking the **most**
+        card points loses (-3 while the others gain +1). The direction of
+        winning is inverted, so `breakdown.loser` names that seat and
+        `breakdown.won` is meaningless for it.
+
+        `bid` accepts `"rufer"` or `"solo"` only. **`"trischaken"` is rejected**:
+        it arises solely from everyone passing, so allowing it as a bid would
+        erase the distinction. `cardIndices` are the six 0-based hand positions
+        to bury — **kings and trull cards are refused**, since burying them
+        would quietly move 5-point cards into the declarer's score.
+      operationId: execZwanzigerrufen
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: "reset (r), bid (b), pass, discard (d), play (p), next (n), nextround (nr), hint, log, quit (q)"
+                bid:
+                  type: string
+                  enum: [rufer, solo]
+                  description: Contract to declare. Required for bid.
+                cardIndex:
+                  type: integer
+                  description: 0-based hand position to play. Required for play.
+                cardIndices:
+                  type: array
+                  description: Six 0-based hand positions to bury. Required for discard.
+                  items:
+                    type: integer
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: 0=Easy, 1=Normal, 2=Hard.
+                    targetDeals:
+                      type: integer
+                      description: Number of deals in the match, 1-12 (default 4).
+                sessionId:
+                  type: string
+              example:
+                command: bid
+                bid: rufer
+                sessionId: my-session-001
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ZwanzigerrufenResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ZwanzigerrufenResponse'
+
   /kingo/exec:
     post:
       tags:
@@ -49343,6 +49430,171 @@ components:
             seats:
               type: integer
             rounds:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    ZwanzigerrufenResponse:
+      type: object
+      description: Response payload for /zwanzigerrufen/exec
+      properties:
+        phase:
+          type: integer
+          description: "0=Bid, 1=Talon, 2=Play, 3=TrickEnd, 4=RoundEnd, 5=GameEnd"
+        players:
+          type: array
+          description: Always an array, one entry per seat, in seat order.
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+                description: How many cards the seat holds. Known for every seat.
+              cards:
+                type: array
+                description: >-
+                  The seat's hand. Empty for every seat but the human -- other
+                  hands are never put on the wire, only their counts.
+                items:
+                  $ref: '#/components/schemas/Card'
+              trickCount:
+                type: integer
+              cardPoints:
+                type: integer
+                description: Card points taken so far this deal.
+              score:
+                type: integer
+                description: Running total across deals.
+              isDeclarer:
+                type: boolean
+              isPartner:
+                type: boolean
+                description: >-
+                  Only ever true once partnerRevealed is true. The secret
+                  partner is not published before the called trump is played.
+        roundNumber:
+          type: integer
+        totalRounds:
+          type: integer
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        bidPlayerIdx:
+          type: integer
+        highestBid:
+          type: integer
+          description: "0=pass, 1=trischaken, 2=rufer, 3=solo"
+        declarerIdx:
+          type: integer
+          description: Declarer seat, or -1 while undecided or under Trischaken.
+        contract:
+          type: integer
+          description: "0=pass, 1=trischaken, 2=rufer, 3=solo"
+        contractName:
+          type: string
+          description: "pass | trischaken | rufer | solo"
+        calledTrump:
+          type: integer
+          description: Called trump number (18-20), or -1 when nothing was called.
+        partnerIdx:
+          type: integer
+          description: Partner seat -- always -1 until partnerRevealed.
+        partnerRevealed:
+          type: boolean
+        talonCount:
+          type: integer
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        lastTrickWinner:
+          type: integer
+        lastTrickCards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        outcome:
+          type: integer
+          description: "0=none, 1=declarer side won, 2=declarer side lost, 3=trischaken"
+        breakdown:
+          type: object
+          nullable: true
+          description: Settlement of the deal just scored, or null.
+          properties:
+            contract:
+              type: integer
+            teamPoints:
+              type: integer
+              description: Declarer side's card points; for Trischaken, the loser's.
+            threshold:
+              type: integer
+            won:
+              type: boolean
+            solo:
+              type: boolean
+            base:
+              type: integer
+            seats:
+              type: array
+              description: Per-seat change, in seat order. Always sums to zero.
+              items:
+                type: integer
+            loser:
+              type: integer
+              description: Trischaken's biggest taker, or -1 for other contracts.
+            name:
+              type: string
+        playableIndices:
+          type: array
+          description: Hand indices the human may legally play right now.
+          items:
+            type: integer
+        gameEndFlag:
+          type: boolean
+        winnerPlayer:
+          type: integer
+          description: Winning seat, or -1 while undecided or on a tie.
+        isHumanTurn:
+          type: boolean
+        hint:
+          type: object
+          nullable: true
+          properties:
+            bid:
+              type: integer
+              nullable: true
+            cardIndex:
+              type: integer
+              nullable: true
+            discardIndices:
+              type: array
+              items:
+                type: integer
+            reason:
+              type: string
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            targetDeals:
               type: integer
         message:
           type: string
