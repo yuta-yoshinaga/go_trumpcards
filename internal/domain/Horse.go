@@ -515,3 +515,82 @@ func (g *Horse) appendLog(actionType, detail string) {
 		g.actionLog = g.actionLog[len(g.actionLog)-horseMaxSliceLen:]
 	}
 }
+
+// horseTableIdx は正本の席番号から卓の席番号を引く。座っていなければ -1。
+func (g *Horse) horseTableIdx(seat int) int {
+	for ti, si := range g.seatMap {
+		if si == seat {
+			return ti
+		}
+	}
+	return -1
+}
+
+// playerCardsOf は卓の席 ti について (手札すべて, 表向きだけ) を返す。
+//
+// **スタッド系は「表向き」が実在する。** ホールデム系では自分の 2 枚 (オマハは 4 枚)
+// はすべて伏せ札なので、表向きは空 ── 共有札は GetCommunityCards が返す。
+func (g *Horse) playerCardsOf(ti int) (all, up []*Card) {
+	switch t := g.table.(type) {
+	case *Holdem:
+		p := t.GetPlayer(ti)
+		if p == nil {
+			return nil, nil
+		}
+		for i := range p.GetCardsSize() {
+			all = append(all, p.GetCard(i))
+		}
+		return all, nil
+	case *Omaha:
+		p := t.GetPlayer(ti)
+		if p == nil {
+			return nil, nil
+		}
+		for i := range p.GetCardsSize() {
+			all = append(all, p.GetCard(i))
+		}
+		return all, nil
+	case *SevenCardStud:
+		p := t.GetPlayer(ti)
+		if p == nil {
+			return nil, nil
+		}
+		up = append(up, p.GetDoorCards()...)
+		all = append(all, p.GetHoleCards()...)
+		all = append(all, up...)
+		return all, up
+	default:
+		return nil, nil
+	}
+}
+
+// GetSeatCards は指定席の「その席から見えている札」を返す。
+//
+// **CPU の伏せ札は返さない。** 人間の席なら全部、それ以外は表向きだけ ──
+// 出力に混ぜると画面から相手の手が読めてしまう。
+func (g *Horse) GetSeatCards(seat int) []*Card {
+	if g.table == nil || seat < 0 || seat >= len(g.seats) {
+		return nil
+	}
+	ti := g.horseTableIdx(seat)
+	if ti < 0 {
+		return nil
+	}
+	all, up := g.playerCardsOf(ti)
+	if g.seats[seat].isHuman {
+		return all
+	}
+	return up
+}
+
+// GetCommunityCards はいまの種目の共有札を返す。スタッド系には無いので空。
+func (g *Horse) GetCommunityCards() []*Card {
+	switch t := g.table.(type) {
+	case *Holdem:
+		return t.GetCommunityCards()
+	case *Omaha:
+		return t.GetCommunityCards()
+	default:
+		return nil
+	}
+}

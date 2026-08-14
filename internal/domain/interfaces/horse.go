@@ -51,4 +51,8 @@ type HorseGame interface {
 	GetTablePhase() int
 	// WinnerSeat チップが最も多い席を取得する
 	WinnerSeat() int
+	// GetSeatCards 指定席から見えている札を取得する (CPU は表向きのみ)
+	GetSeatCards(seat int) []*domain.Card
+	// GetCommunityCards いまの種目の共有札を取得する (スタッド系は空)
+	GetCommunityCards() []*domain.Card
 }

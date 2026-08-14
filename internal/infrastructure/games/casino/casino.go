@@ -558,5 +558,13 @@ func init() {
 			return usecase.RestoreOpenFaceChineseInteractor(data, new(presenter.OpenFaceChineseWebPresenter))
 		},
 		controller.NewOpenFaceChineseWebControllerWithProvider)
+	games.RegisterKVGame("horse", games.CategoryCasino,
+		func() usecase.HorseInteractorIF {
+			return usecase.NewHorseInteractor(domain.NewDefaultHorse(), new(presenter.HorseWebPresenter))
+		},
+		func(data []byte) (usecase.HorseInteractorIF, error) {
+			return usecase.RestoreHorseInteractor(data, new(presenter.HorseWebPresenter))
+		},
+		controller.NewHorseWebControllerWithProvider)
 
 }

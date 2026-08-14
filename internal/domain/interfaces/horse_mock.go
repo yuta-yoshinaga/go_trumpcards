@@ -141,3 +141,21 @@ func (_m *MockHorseGame) GetActionLog() []*domain.ActionLogEntry {
 	}
 	return nil
 }
+
+// GetSeatCards モック
+func (_m *MockHorseGame) GetSeatCards(seat int) []*domain.Card {
+	ret := _m.Called(seat)
+	if ret.Get(0) == nil {
+		return nil
+	}
+	return ret.Get(0).([]*domain.Card)
+}
+
+// GetCommunityCards モック
+func (_m *MockHorseGame) GetCommunityCards() []*domain.Card {
+	ret := _m.Called()
+	if ret.Get(0) == nil {
+		return nil
+	}
+	return ret.Get(0).([]*domain.Card)
+}
