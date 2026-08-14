@@ -109,7 +109,11 @@ func TestBanLuck_AlwaysTerminates(t *testing.T) {
 		// 「止まった」ようには見えるので、実際に配られたことまで数える。
 		require.Positive(t, g.GetRoundNumber())
 	}
-	assert.GreaterOrEqual(t, rounds, 200*BanLuckDefaultRounds,
+	// **「1 局も早く終わらない」は不変条件ではない。** 破産した席が出た局は
+	// 規定ラウンドを待たずに終わるので、満額を要求すると 200 局に 1 度ほど
+	// 落ちる (実測 2000 に対し 1999)。捕まえたいのは「早々に終わっている」ほう
+	// なので、下限は満額の 9 割に置く ── 駆動が抜ければ数百単位で下回る。
+	assert.GreaterOrEqual(t, rounds, 200*BanLuckDefaultRounds*9/10,
 		"200 局で %d ラウンドしか回っていない — 局が早々に終わっている", rounds)
 }
 
