@@ -621,6 +621,8 @@ func distributeAmongWinners(bp []BettingPlayer, winners []int, amount int, won m
 
 // finalizeShowdown ショーダウンを完了し、END フェーズに遷移する
 func (o *Omaha) finalizeShowdown() {
+	// **配り終えたポットは 0 にする。** 理由は Holdem 側と同じ。
+	o.pot = 0
 	o.phase = OmahaPhaseEnd
 	o.gameEndFlag = true
 	o.dealerIdx = (o.dealerIdx + 1) % len(o.players)
