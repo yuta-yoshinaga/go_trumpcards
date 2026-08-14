@@ -5097,6 +5097,20 @@ var gameRegistry = []GameRegistryEntry{
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"troggu.helpSetDifficulty", "troggu.helpSetDeals"},
 		}),
+	BindCuiFor("horse",
+		func() usecase.HorseInteractorIF {
+			return usecase.NewHorseInteractor(domain.NewDefaultHorse(), new(presenter.HorseCuiPresenter))
+		},
+		controller.NewHorseCuiController,
+		CuiHelpSpec{
+			TitleKey: "horse.helpTitle",
+			CommandKeys: []string{
+				"horse.helpAction",
+				"horse.helpNext",
+			},
+			ExtraCommandLines: []string{"  l                    action log"},
+			SettingKeys:       []string{"horse.helpSetSeats", "horse.helpSetHands"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

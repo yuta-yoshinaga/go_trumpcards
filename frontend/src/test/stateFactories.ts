@@ -21,6 +21,7 @@ import type {
   GutsResponse,
   HachiHachiResponse,
   HeartsResponse,
+  HorseResponse,
   KingResponse,
   KlaverjasResponse,
   KnockoutWhistResponse,
@@ -3812,4 +3813,52 @@ const baseTrogguState: TrogguResponse = {
  */
 export function makeTrogguState(overrides?: Partial<TrogguResponse>): TrogguResponse {
   return { ...baseTrogguState, ...overrides };
+}
+
+/** Base H.O.R.S.E. state used as the default for {@link makeHorseState}. Defaults to the human's turn in hold'em. */
+const baseHorseState: HorseResponse = {
+  seats: [
+    {
+      id: 0,
+      name: 'YOU',
+      isHuman: true,
+      chips: 1000,
+      cards: [
+        { design: 'SPADE', value: 14, glyph: '\u2660', label: 'A', color: 'black', deck: 'standard' },
+        { design: 'HEART', value: 13, glyph: '\u2665', label: 'K', color: 'red', deck: 'standard' },
+      ],
+    },
+    { id: 1, name: 'CPU1', isHuman: false, chips: 1000, cards: [] },
+    { id: 2, name: 'CPU2', isHuman: false, chips: 1000, cards: [] },
+    { id: 3, name: 'CPU3', isHuman: false, chips: 1000, cards: [] },
+  ],
+  phase: 0,
+  discipline: 0,
+  disciplineLetter: 'H',
+  disciplineName: 'holdem',
+  handInDiscipline: 1,
+  handNumber: 1,
+  currentTurn: 0,
+  humanSeat: 0,
+  isHumanTurn: true,
+  communityCards: [],
+  pot: 30,
+  toCall: 20,
+  minRaise: 20,
+  tablePhase: 0,
+  gameEndFlag: false,
+  winnerSeat: -1,
+  message: '',
+  config: { seats: 4, initialChips: 1000, handsPerDiscipline: 2 },
+};
+
+/**
+ * Creates a {@link HorseResponse} with sensible defaults (the human to act in
+ * the hold'em leg). Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial HorseResponse fields to override.
+ * @returns A complete HorseResponse suitable for use in tests.
+ */
+export function makeHorseState(overrides?: Partial<HorseResponse>): HorseResponse {
+  return { ...baseHorseState, ...overrides };
 }

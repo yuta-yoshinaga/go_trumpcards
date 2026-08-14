@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した317種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した318種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -303,6 +303,7 @@ Go + Clean Architecture で実装した317種類のトランプゲーム。CLI �
 | ケーニッヒルーフェン (Königrufen) | `koenigrufen` | [CUI](docs/manual/cui/koenigrufen.md) / [Web](docs/manual/web/koenigrufen.md) |
 | ツヴァンツィガールーフェン (Zwanzigerrufen) | `zwanzigerrufen` | [CUI](docs/manual/cui/zwanzigerrufen.md) / [Web](docs/manual/web/zwanzigerrufen.md) |
 | トロッグ (Troggu) | `troggu` | [CUI](docs/manual/cui/troggu.md) / [Web](docs/manual/web/troggu.md) |
+| H.O.R.S.E. (ホース) | `horse` | [CUI](docs/manual/cui/horse.md) / [Web](docs/manual/web/horse.md) |
 | スカルト (Scarto) | `scarto` | [CUI](docs/manual/cui/scarto.md) / [Web](docs/manual/web/scarto.md) |
 | チェゴ (Cego) | `cego` | [CUI](docs/manual/cui/cego.md) / [Web](docs/manual/web/cego.md) |
 | 争上游 (Zheng Shangyou) | `zheng` | [CUI](docs/manual/cui/zheng.md) / [Web](docs/manual/web/zheng.md) |

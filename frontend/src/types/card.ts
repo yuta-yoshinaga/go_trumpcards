@@ -134,6 +134,7 @@ export * from './games/highcardflush';
 export * from './games/hokm';
 export * from './games/holdem';
 export * from './games/honeymoonbridge';
+export * from './games/horse';
 export * from './games/indianpoker';
 export * from './games/indianrummy';
 export * from './games/irishpoker';

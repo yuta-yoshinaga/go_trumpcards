@@ -297,6 +297,7 @@ export const workerUrl: Record<string, string> = {
   sakura: WORKER_EXTRA3,
   zwanzigerrufen: WORKER_EXTRA,
   troggu: WORKER_EXTRA,
+  horse: WORKER_CASINO,
   eightoff: WORKER_SOLO,
   penguin: WORKER_SOLO,
   chinesepoker: WORKER_CASINO,

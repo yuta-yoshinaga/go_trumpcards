@@ -616,6 +616,8 @@ tags:
     description: Zwanzigerrufen (ツヴァンツィガールーフェン) game
   - name: troggu
     description: Troggu (トロッグ) game
+  - name: horse
+    description: H.O.R.S.E. (ホース) game
   - name: ombre
     description: Ombre / Hombre (オンブル) game
   - name: pan
@@ -27006,6 +27008,60 @@ paths:
         to bury — **kings and trull cards are refused**, since burying them
         would quietly move 5-point cards into the declarer's score.
       operationId: execZwanzigerrufen
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: "reset (r), bid (b), pass, discard (d), play (p), next (n), nextround (nr), hint, log, quit (q)"
+                bid:
+                  type: string
+                  enum: [rufer, solo]
+                  description: Contract to declare. Required for bid.
+                cardIndex:
+                  type: integer
+                  description: 0-based hand position to play. Required for play.
+                cardIndices:
+                  type: array
+                  description: Six 0-based hand positions to bury. Required for discard.
+                  items:
+                    type: integer
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: 0=Easy, 1=Normal, 2=Hard.
+                    targetDeals:
+                      type: integer
+                      description: Number of deals in the match, 1-12 (default 4).
+                sessionId:
+                  type: string
+              example:
+                command: bid
+                bid: rufer
+                sessionId: my-session-001
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ZwanzigerrufenResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ZwanzigerrufenResponse'
+
   /troggu/exec:
     post:
       tags:
@@ -27050,10 +27106,6 @@ paths:
               properties:
                 command:
                   type: string
-                  description: "reset (r), bid (b), pass, discard (d), play (p), next (n), nextround (nr), hint, log, quit (q)"
-                bid:
-                  type: string
-                  enum: [rufer, solo]
                   description: "reset (r), bid (b), pass, play (p), next (n), nextround (nr), hint, log, quit (q)"
                 bid:
                   type: string
@@ -27062,11 +27114,6 @@ paths:
                 cardIndex:
                   type: integer
                   description: 0-based hand position to play. Required for play.
-                cardIndices:
-                  type: array
-                  description: Six 0-based hand positions to bury. Required for discard.
-                  items:
-                    type: integer
                 config:
                   type: object
                   properties:
@@ -27080,7 +27127,6 @@ paths:
                   type: string
               example:
                 command: bid
-                bid: rufer
                 bid: misere
                 sessionId: my-session-001
       responses:
@@ -27089,15 +27135,98 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ZwanzigerrufenResponse'
                 $ref: '#/components/schemas/TrogguResponse'
         '400':
           description: Invalid command or missing parameter
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ZwanzigerrufenResponse'
                 $ref: '#/components/schemas/TrogguResponse'
+
+
+  /horse/exec:
+    post:
+      tags:
+        - horse
+      summary: Execute a H.O.R.S.E. game command
+      description: |
+        Send a command to advance the H.O.R.S.E. game session identified by
+        `sessionId`.
+
+        A mixed poker game that rotates five disciplines at one table: the
+        letters spell the order -- Hold'em, Omaha Hi-Lo, Razz, Stud, Stud
+        Hi-Lo. Each leg is the standalone implementation of that game driven as
+        a sub-table, so the hand rankings and betting rules are exactly those
+        of the game played on its own; what this endpoint owns is the seats,
+        the chips and the rotation.
+
+        **Chips carry across disciplines and the match ends the moment a seat
+        busts.** A poker table can only be built for 4, 6 or 9 players, so a
+        short table cannot be re-seated and rebuy would create chips out of
+        nothing. `config.seats` therefore accepts **only 4, 6 or 9** -- any
+        other value falls back to the default rather than being rounded.
+
+        **Only the cards a seat reveals are sent.** `seats[].cards` holds every
+        card for the human and, in the stud disciplines, the face-up door
+        cards for the others; it is empty for a CPU seat in the hold'em-style
+        legs. `communityCards` is always empty in the stud disciplines.
+
+        `action` takes the betting verb shared by every discipline. **`bet` and
+        `raise` require `amount`** -- a missing amount is rejected rather than
+        read as zero. `toCall` says what calling costs (0 means checking is
+        legal), so a client never derives it from the pot.
+      operationId: execHorse
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  description: "reset (r), action (a), next (n), hint, log, quit (q)"
+                action:
+                  type: string
+                  enum: [fold, check, call, bet, raise, allin]
+                  description: Betting action. Required for action.
+                amount:
+                  type: integer
+                  description: Chips to put in. Required for bet and raise.
+                config:
+                  type: object
+                  properties:
+                    seats:
+                      type: integer
+                      description: Table size; 4, 6 or 9 only.
+                    initialChips:
+                      type: integer
+                      description: Starting stack for every seat.
+                    handsPerDiscipline:
+                      type: integer
+                      description: Hands before the next discipline, 1-10 (default 2).
+                sessionId:
+                  type: string
+              example:
+                command: action
+                action: call
+                sessionId: my-session-001
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HorseResponse'
+        '400':
+          description: Invalid command or missing parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HorseResponse'
 
   /kingo/exec:
     post:
@@ -49487,13 +49616,6 @@ components:
         phase:
           type: integer
           description: "0=Bid, 1=Talon, 2=Play, 3=TrickEnd, 4=RoundEnd, 5=GameEnd"
-    TrogguResponse:
-      type: object
-      description: Response payload for /troggu/exec
-      properties:
-        phase:
-          type: integer
-          description: "0=Bid, 1=Play, 2=TrickEnd, 3=RoundEnd, 4=GameEnd"
         players:
           type: array
           description: Always an array, one entry per seat, in seat order.
@@ -49543,38 +49665,31 @@ components:
           type: integer
         highestBid:
           type: integer
-          description: "0=pass, 1=trischaken, 2=rufer, 3=solo"
+          description: "0=none, 1=Rufer, 2=Solo, 3=Trischaken"
         declarerIdx:
           type: integer
-          description: Declarer seat, or -1 while undecided or under Trischaken.
+          description: Declaring seat, or -1 under Trischaken and before the auction ends.
         contract:
           type: integer
-          description: "0=pass, 1=trischaken, 2=rufer, 3=solo"
+          description: "0=none, 1=Rufer, 2=Solo, 3=Trischaken"
         contractName:
           type: string
-          description: "pass | trischaken | rufer | solo"
+          description: "rufer | solo | trischaken"
         calledTrump:
           type: integer
-          description: Called trump number (18-20), or -1 when nothing was called.
+          description: Called trump (20, 19 or 18), or -1 when there is none.
         partnerIdx:
           type: integer
-          description: Partner seat -- always -1 until partnerRevealed.
+          description: >-
+            Stays -1 until partnerRevealed is true. The partner is secret until
+            the called trump is played.
         partnerRevealed:
           type: boolean
-          description: "0=pass, 1=trois, 2=solo, 3=piccolo, 4=misere"
-        declarerIdx:
-          type: integer
-          description: Declarer seat, or -1 while undecided or after a thrown-in deal.
-        contract:
-          type: integer
-          description: "0=pass, 1=trois, 2=solo, 3=piccolo, 4=misere"
-        contractName:
-          type: string
-          description: "pass | trois | solo | piccolo | misere"
         talonCount:
           type: integer
         currentTrick:
           type: array
+          description: Always an array; the cards played into the current trick.
           items:
             type: object
             properties:
@@ -49586,11 +49701,12 @@ components:
           type: integer
         lastTrickCards:
           type: array
+          description: Always an array; the cards of the trick just completed.
           items:
             $ref: '#/components/schemas/Card'
         outcome:
           type: integer
-          description: "0=none, 1=declarer side won, 2=declarer side lost, 3=trischaken"
+          description: "0=none (thrown in), 1=declarer made it, 2=declarer failed"
         breakdown:
           type: object
           nullable: true
@@ -49605,30 +49721,8 @@ components:
               type: integer
             won:
               type: boolean
+              description: Meaningless under Trischaken, which has no declarer to succeed.
             solo:
-          description: "0=none (thrown in), 1=declarer made it, 2=declarer failed"
-        breakdown:
-          type: object
-          nullable: true
-          description: Settlement of the deal just scored, or null for a thrown-in deal.
-          properties:
-            contract:
-              type: integer
-            contractName:
-              type: string
-            declarerPoints:
-              type: integer
-            declarerTricks:
-              type: integer
-            target:
-              type: integer
-              description: Card points for Solo, tricks for every other contract.
-            targetIsTricks:
-              type: boolean
-              description: >-
-                Which unit target is in. Solo is the only contract measured in
-                card points, so a client must not assume one or the other.
-            won:
               type: boolean
             base:
               type: integer
@@ -49639,17 +49733,12 @@ components:
                 type: integer
             loser:
               type: integer
-              description: Trischaken's biggest taker, or -1 for other contracts.
+              description: Trischaken's biggest taker, or -1 for the other contracts.
             name:
               type: string
         playableIndices:
           type: array
           description: Hand indices the human may legally play right now.
-        playableIndices:
-          type: array
-          description: >-
-            Hand indices the human may legally play right now. The Excuse is
-            always among them, so a client must not re-derive legality.
           items:
             type: integer
         gameEndFlag:
@@ -49681,6 +49770,247 @@ components:
             cpuDifficulty:
               type: integer
             targetDeals:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    TrogguResponse:
+      type: object
+      description: Response payload for /troggu/exec
+      properties:
+        phase:
+          type: integer
+          description: "0=Bid, 1=Play, 2=TrickEnd, 3=RoundEnd, 4=GameEnd"
+        players:
+          type: array
+          description: Always an array, one entry per seat, in seat order.
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+                description: How many cards the seat holds. Known for every seat.
+              cards:
+                type: array
+                description: >-
+                  The seat's hand. Empty for every seat but the human -- other
+                  hands are never put on the wire, only their counts.
+                items:
+                  $ref: '#/components/schemas/Card'
+              trickCount:
+                type: integer
+              cardPoints:
+                type: integer
+                description: Card points taken so far this deal.
+              score:
+                type: integer
+                description: Running total across deals.
+              isDeclarer:
+                type: boolean
+        roundNumber:
+          type: integer
+        totalRounds:
+          type: integer
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        bidPlayerIdx:
+          type: integer
+        highestBid:
+          type: integer
+          description: "0=pass, 1=Trois, 2=Solo, 3=Piccolo, 4=Misere"
+        declarerIdx:
+          type: integer
+          description: Declaring seat, or -1 for a thrown-in deal.
+        contract:
+          type: integer
+          description: "0=pass, 1=Trois, 2=Solo, 3=Piccolo, 4=Misere"
+        contractName:
+          type: string
+          description: "pass | trois | solo | piccolo | misere"
+        talonCount:
+          type: integer
+        currentTrick:
+          type: array
+          description: Always an array; the cards played into the current trick.
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        lastTrickWinner:
+          type: integer
+        lastTrickCards:
+          type: array
+          description: Always an array; the cards of the trick just completed.
+          items:
+            $ref: '#/components/schemas/Card'
+        outcome:
+          type: integer
+          description: "0=none (thrown in), 1=declarer made it, 2=declarer failed"
+        breakdown:
+          type: object
+          nullable: true
+          description: Settlement of the deal just scored, or null for a thrown-in deal.
+          properties:
+            contract:
+              type: integer
+            contractName:
+              type: string
+            declarerPoints:
+              type: integer
+            declarerTricks:
+              type: integer
+            target:
+              type: integer
+              description: Card points for Solo, tricks for every other contract.
+            targetIsTricks:
+              type: boolean
+              description: >-
+                Which unit target is in. Solo is the only contract measured in
+                card points, so a client must not assume one or the other.
+            won:
+              type: boolean
+            base:
+              type: integer
+            seats:
+              type: array
+              description: Per-seat change, in seat order. Always sums to zero.
+              items:
+                type: integer
+        playableIndices:
+          type: array
+          description: >-
+            Hand indices the human may legally play right now. The Excuse is
+            always among them, so a client must not re-derive legality.
+          items:
+            type: integer
+        gameEndFlag:
+          type: boolean
+        winnerPlayer:
+          type: integer
+          description: Winning seat, or -1 while undecided or on a tie.
+        isHumanTurn:
+          type: boolean
+        hint:
+          type: object
+          nullable: true
+          properties:
+            bid:
+              type: integer
+              nullable: true
+            cardIndex:
+              type: integer
+              nullable: true
+            reason:
+              type: string
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            targetDeals:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+    HorseResponse:
+      type: object
+      description: Response payload for /horse/exec
+      properties:
+        phase:
+          type: integer
+          description: "0=Hand, 1=HandEnd, 2=GameEnd"
+        seats:
+          type: array
+          description: Always an array, one entry per seat, in seat order.
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+              isHuman:
+                type: boolean
+              chips:
+                type: integer
+              cards:
+                type: array
+                description: >-
+                  Only what the seat reveals: every card for the human, the
+                  face-up door cards in the stud disciplines, and nothing at
+                  all for a CPU seat in the hold'em-style legs.
+                items:
+                  $ref: '#/components/schemas/Card'
+        discipline:
+          type: integer
+          description: "0=Hold'em, 1=Omaha Hi-Lo, 2=Razz, 3=Stud, 4=Stud Hi-Lo"
+        disciplineLetter:
+          type: string
+          description: The letter of H.O.R.S.E. currently in play.
+        disciplineName:
+          type: string
+          description: "holdem | omahaHiLo | razz | stud | studHiLo"
+        handInDiscipline:
+          type: integer
+        handNumber:
+          type: integer
+          description: Hands played in the match so far.
+        currentTurn:
+          type: integer
+        humanSeat:
+          type: integer
+        isHumanTurn:
+          type: boolean
+        communityCards:
+          type: array
+          description: Always an array; empty in the stud disciplines.
+          items:
+            $ref: '#/components/schemas/Card'
+        pot:
+          type: integer
+        toCall:
+          type: integer
+          description: Chips the human owes to call; 0 means checking is legal.
+        minRaise:
+          type: integer
+          description: Smallest raise the running discipline accepts.
+        tablePhase:
+          type: integer
+          description: Phase number reported by the running discipline.
+        gameEndFlag:
+          type: boolean
+        winnerSeat:
+          type: integer
+          description: Seat with the most chips once the match ends, -1 while it runs.
+        config:
+          type: object
+          properties:
+            seats:
+              type: integer
+            initialChips:
+              type: integer
+            handsPerDiscipline:
               type: integer
         message:
           type: string
