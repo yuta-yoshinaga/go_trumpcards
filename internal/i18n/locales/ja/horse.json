@@ -14,7 +14,7 @@
   "discipline.stud": "セブンカードスタッド",
   "discipline.studHiLo": "スタッド ハイロー",
   "discipline.unknown": "-",
-  "promptPlay": "ポット: {{pot}}",
+  "promptPlay": "ポット: {{pot}}  コール: {{toCall}}",
   "promptPlayHelp": "f=フォールド x=チェック c=コール b <n>=ベット raise <n>=レイズ allin=オールイン",
   "promptHandEnd": "ハンドが決着しました。",
   "promptHandEndHelp": "n ... 次のハンドへ（種目が変わることがあります）",

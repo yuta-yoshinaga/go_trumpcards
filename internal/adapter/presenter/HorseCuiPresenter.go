@@ -35,7 +35,7 @@ func (p *HorseCuiPresenter) Output(g interfaces.HorseGame, lastErr error) string
 		for i := 0; i < g.GetSeatCount(); i++ {
 			line := i18n.Tf("horse.seatLine",
 				"name", g.GetSeatName(i),
-				"chips", strconv.Itoa(g.GetSeatChips(i)))
+				"chips", strconv.Itoa(g.GetSeatLiveChips(i)))
 			// **見えている札だけを並べる。** CPU の伏せ札はドメインが返さない。
 			if cards := g.GetSeatCards(i); len(cards) > 0 {
 				line += "  " + horseCardsText(cards)
@@ -58,7 +58,11 @@ func (p *HorseCuiPresenter) Output(g interfaces.HorseGame, lastErr error) string
 			b.WriteString(i18n.T("horse.promptHandEnd") + "\n")
 			b.WriteString(i18n.T("horse.promptHandEndHelp") + "\n")
 		default:
-			b.WriteString(i18n.Tf("horse.promptPlay", "pot", strconv.Itoa(g.GetPot())) + "\n")
+			// **コールに要る額まで出す。** ポットだけでは、チェックできる場面
+			// なのか賭けられているのかが読み取れない。
+			b.WriteString(i18n.Tf("horse.promptPlay",
+				"pot", strconv.Itoa(g.GetPot()),
+				"toCall", strconv.Itoa(g.GetToCall())) + "\n")
 			b.WriteString(i18n.T("horse.promptPlayHelp") + "\n")
 		}
 	})

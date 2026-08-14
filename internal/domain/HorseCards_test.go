@@ -127,3 +127,40 @@ func TestHorse_CardsAreEmptyWithoutATable(t *testing.T) {
 	assert.Empty(t, g.GetSeatCards(0))
 	assert.Empty(t, g.GetCommunityCards())
 }
+
+// **打った分だけ手持ちが減って見える。** 正本はハンドが終わるまで動かないので、
+// そのまま出すとポットだけが増えて自分の残高が変わらない画面になる。
+func TestHorse_LiveChipsMoveWhileTheHandIsBeingPlayed(t *testing.T) {
+	g := domain.NewDefaultHorse()
+	g.Reset()
+	human := g.GetHumanSeat()
+	require.Equal(t, g.GetSeatChips(human), g.GetSeatLiveChips(human),
+		"配った直後は正本と一致する")
+
+	moved := false
+	for range 20 {
+		if g.GetPhase() != domain.HorsePhaseHand || g.GetGameEndFlag() {
+			break
+		}
+		act := domain.HoldemActionCall
+		if g.GetToCall() == 0 {
+			act = domain.HoldemActionCheck
+		}
+		if err := g.PlayerAction(act, 0, 0); err != nil {
+			break
+		}
+		if g.GetSeatLiveChips(human) < g.GetSeatChips(human) {
+			moved = true
+			break
+		}
+	}
+	assert.True(t, moved, "コールしても画面に出す残高が減らなかった")
+}
+
+// 卓が無いあいだは正本を返す。
+func TestHorse_LiveChipsFallBackToTheCanonicalStack(t *testing.T) {
+	g := domain.NewDefaultHorse()
+	assert.Equal(t, g.GetSeatChips(0), g.GetSeatLiveChips(0))
+	assert.Equal(t, 0, g.GetSeatLiveChips(-1))
+	assert.Equal(t, 0, g.GetSeatLiveChips(g.GetSeatCount()))
+}

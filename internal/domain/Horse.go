@@ -594,3 +594,86 @@ func (g *Horse) GetCommunityCards() []*Card {
 		return nil
 	}
 }
+
+// GetToCall は人間の席がコールに要する額を返す。0 ならチェックできる。
+//
+// **「賭けられているか」は種目に訊く。** ここで持つと、種目側がベットを受け
+// 付けた瞬間に食い違い、画面がチェックできない場面でチェックを出す。
+func (g *Horse) GetToCall() int {
+	ti := g.horseTableIdx(g.GetHumanSeat())
+	if g.table == nil || ti < 0 {
+		return 0
+	}
+	var lastBet, mine int
+	switch t := g.table.(type) {
+	case *Holdem:
+		p := t.GetPlayer(ti)
+		if p == nil {
+			return 0
+		}
+		lastBet, mine = t.GetLastBet(), p.GetCurrentBet()
+	case *Omaha:
+		p := t.GetPlayer(ti)
+		if p == nil {
+			return 0
+		}
+		lastBet, mine = t.GetLastBet(), p.GetCurrentBet()
+	case *SevenCardStud:
+		p := t.GetPlayer(ti)
+		if p == nil {
+			return 0
+		}
+		lastBet, mine = t.GetLastBet(), p.GetCurrentBet()
+	default:
+		return 0
+	}
+	if lastBet <= mine {
+		return 0
+	}
+	return lastBet - mine
+}
+
+// GetMinRaise はいまの種目が受け付ける最小のレイズ幅を返す。
+func (g *Horse) GetMinRaise() int {
+	switch t := g.table.(type) {
+	case *Holdem:
+		return t.GetMinRaise()
+	case *Omaha:
+		return t.GetMinRaise()
+	case *SevenCardStud:
+		return t.GetMinRaise()
+	default:
+		return 0
+	}
+}
+
+// GetSeatLiveChips は「いま画面に出すべき残高」を返す。
+//
+// **正本はハンドが終わるまで動かない。** 残高は開始時に卓へ配り、終了時に
+// 回収する写しなので、打っている最中に正本を出すと**自分がいくら賭けたのかが
+// 画面に出ない** ── ポットだけが増えて手持ちが減らないように見える。
+// 卓があるあいだは卓の残高を、無ければ正本を返す。
+func (g *Horse) GetSeatLiveChips(seat int) int {
+	if seat < 0 || seat >= len(g.seats) {
+		return 0
+	}
+	ti := g.horseTableIdx(seat)
+	if g.table == nil || ti < 0 {
+		return g.seats[seat].chips
+	}
+	switch t := g.table.(type) {
+	case *Holdem:
+		if p := t.GetPlayer(ti); p != nil {
+			return p.GetChips()
+		}
+	case *Omaha:
+		if p := t.GetPlayer(ti); p != nil {
+			return p.GetChips()
+		}
+	case *SevenCardStud:
+		if p := t.GetPlayer(ti); p != nil {
+			return p.GetChips()
+		}
+	}
+	return g.seats[seat].chips
+}

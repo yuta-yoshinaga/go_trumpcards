@@ -146,7 +146,8 @@ func TestHorseWebPresenter_Output(t *testing.T) {
 	for i, s := range out.Seats {
 		assert.Equal(t, i, s.ID)
 		assert.Equal(t, g.GetSeatName(i), s.Name)
-		assert.Equal(t, g.GetSeatChips(i), s.Chips)
+		// **出るのは打っている最中の残高。** 正本はハンドが終わるまで動かない。
+		assert.Equal(t, g.GetSeatLiveChips(i), s.Chips)
 	}
 	assert.Equal(t, "H", out.DisciplineLetter)
 	assert.Equal(t, "holdem", out.DisciplineName)

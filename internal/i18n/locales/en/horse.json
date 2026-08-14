@@ -14,7 +14,7 @@
   "discipline.stud": "Seven-Card Stud",
   "discipline.studHiLo": "Stud Hi-Lo",
   "discipline.unknown": "-",
-  "promptPlay": "Pot: {{pot}}",
+  "promptPlay": "Pot: {{pot}}  to call: {{toCall}}",
   "promptPlayHelp": "f=fold x=check c=call b <n>=bet raise <n>=raise allin=all in",
   "promptHandEnd": "The hand is settled.",
   "promptHandEndHelp": "n ... go to the next hand (the discipline may change)",

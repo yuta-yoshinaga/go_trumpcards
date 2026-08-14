@@ -159,3 +159,21 @@ func (_m *MockHorseGame) GetCommunityCards() []*domain.Card {
 	}
 	return ret.Get(0).([]*domain.Card)
 }
+
+// GetToCall モック
+func (_m *MockHorseGame) GetToCall() int {
+	ret := _m.Called()
+	return ret.Get(0).(int)
+}
+
+// GetMinRaise モック
+func (_m *MockHorseGame) GetMinRaise() int {
+	ret := _m.Called()
+	return ret.Get(0).(int)
+}
+
+// GetSeatLiveChips モック
+func (_m *MockHorseGame) GetSeatLiveChips(seat int) int {
+	ret := _m.Called(seat)
+	return ret.Get(0).(int)
+}

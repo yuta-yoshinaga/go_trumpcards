@@ -34,7 +34,7 @@ func (p *HorseWebPresenter) buildBase(g interfaces.HorseGame) *controller.HorseW
 			ID:      i,
 			Name:    g.GetSeatName(i),
 			IsHuman: g.GetSeatIsHuman(i),
-			Chips:   g.GetSeatChips(i),
+			Chips:   g.GetSeatLiveChips(i),
 			Cards:   cardsToOutputOrEmpty(g.GetSeatCards(i)),
 		})
 	}
@@ -49,6 +49,8 @@ func (p *HorseWebPresenter) buildBase(g interfaces.HorseGame) *controller.HorseW
 	resObj.IsHumanTurn = g.IsHumanTurn()
 	resObj.CommunityCards = cardsToOutputOrEmpty(g.GetCommunityCards())
 	resObj.Pot = g.GetPot()
+	resObj.ToCall = g.GetToCall()
+	resObj.MinRaise = g.GetMinRaise()
 	resObj.TablePhase = g.GetTablePhase()
 	resObj.GameEndFlag = g.GetGameEndFlag()
 	resObj.WinnerSeat = -1

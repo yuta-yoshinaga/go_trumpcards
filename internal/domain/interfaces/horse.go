@@ -55,4 +55,10 @@ type HorseGame interface {
 	GetSeatCards(seat int) []*domain.Card
 	// GetCommunityCards いまの種目の共有札を取得する (スタッド系は空)
 	GetCommunityCards() []*domain.Card
+	// GetSeatLiveChips 指定席のいまの残高を取得する (ハンド中は卓の値)
+	GetSeatLiveChips(seat int) int
+	// GetToCall 人間の席がコールに要する額を取得する (0 ならチェック可)
+	GetToCall() int
+	// GetMinRaise いまの種目の最小レイズ幅を取得する
+	GetMinRaise() int
 }
