@@ -17,9 +17,6 @@ const SkatHandSize = 10
 // SkatSkatSize face-down cards (the "Skat")
 const SkatSkatSize = 2
 
-// SkatTotalCards 32-card deck (7..A across 4 suits)
-const SkatTotalCards = 32
-
 // SkatTricksPerRound number of tricks per round
 const SkatTricksPerRound = 10
 
