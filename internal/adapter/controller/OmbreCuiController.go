@@ -103,7 +103,7 @@ func (c *OmbreCuiController) execBid(args []string) (string, bool) {
 // bidWithTrump entrar/solo の切り札スート引数を解釈してビッドする。
 func (c *OmbreCuiController) bidWithTrump(bid domain.OmbreBid, args []string) string {
 	if len(args) < 2 {
-		return "Trump suit is required (s=spade, c=club, h=heart, d=diamond)."
+		return invalidArg("trumpSuitRequiredWords")
 	}
 	suit := ombreParseSuit(args[1])
 	if suit < 0 {

@@ -92,7 +92,7 @@ func TestHorseCuiController_Exec(t *testing.T) {
 		t.Run("set seats rejects "+seats, func(t *testing.T) {
 			m := newMock()
 			out := controller.NewHorseCuiController(m).Exec("ss " + seats)
-			assert.Contains(t, out, "4, 6 or 9")
+			assert.Contains(t, out, msgKey("invalidNumberOfSeats469"))
 			m.AssertNotCalled(t, "ResetWithConfig", mock.Anything)
 		})
 	}

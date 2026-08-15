@@ -42,8 +42,8 @@ func TestMonteCarloCuiController_RemoveInvalid(t *testing.T) {
 
 	assert.Contains(t, c.Exec("m"), "Usage:")
 	assert.Contains(t, c.Exec("m 0 1 1"), "Usage:")
-	assert.Contains(t, c.Exec("m abc 1 2 3"), "Invalid")
-	assert.Contains(t, c.Exec("m 0 1 2 zzz"), "Invalid")
+	assert.True(t, msgRejected(c.Exec("m abc 1 2 3")))
+	assert.True(t, msgRejected(c.Exec("m 0 1 2 zzz")))
 }
 
 func TestMonteCarloCuiController_Deal(t *testing.T) {

@@ -109,7 +109,7 @@ func (c *UltiCuiController) execBid(args []string) (string, bool) {
 // bidWithTrump 切り札スート引数を解釈して切り札コントラクト (Party / Ulti) を宣言する。
 func (c *UltiCuiController) bidWithTrump(contract domain.UltiContract, args []string) string {
 	if len(args) < 2 {
-		return "Trump suit is required (s=spade, c=club, h=heart, d=diamond)."
+		return invalidArg("trumpSuitRequiredWords")
 	}
 	suit := ultiParseSuit(args[1])
 	if suit < 0 {

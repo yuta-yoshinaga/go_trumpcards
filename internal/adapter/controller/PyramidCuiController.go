@@ -60,11 +60,11 @@ func (c *PyramidCuiController) handleRemove(args []string) string {
 			// rm w <row> <col> → ウェイスト+ピラミッド
 			row, err := strconv.Atoi(args[1])
 			if err != nil {
-				return fmt.Sprintf("Invalid row: %s.", args[1])
+				return invalidArg("invalidRowRaw", "val", fmt.Sprint(args[1]))
 			}
 			col, err := strconv.Atoi(args[2])
 			if err != nil {
-				return fmt.Sprintf("Invalid col: %s.", args[2])
+				return invalidArg("invalidColRaw", "val", fmt.Sprint(args[2]))
 			}
 			return c.pi.RemoveWithWaste(row, col)
 		}
@@ -75,11 +75,11 @@ func (c *PyramidCuiController) handleRemove(args []string) string {
 	if len(args) == 2 {
 		row, err := strconv.Atoi(args[0])
 		if err != nil {
-			return fmt.Sprintf("Invalid row: %s.", args[0])
+			return invalidArg("invalidRowRaw", "val", fmt.Sprint(args[0]))
 		}
 		col, err := strconv.Atoi(args[1])
 		if err != nil {
-			return fmt.Sprintf("Invalid col: %s.", args[1])
+			return invalidArg("invalidColRaw", "val", fmt.Sprint(args[1]))
 		}
 		return c.pi.RemoveKing(row, col)
 	}
@@ -88,19 +88,19 @@ func (c *PyramidCuiController) handleRemove(args []string) string {
 	if len(args) == 4 {
 		r1, err := strconv.Atoi(args[0])
 		if err != nil {
-			return fmt.Sprintf("Invalid row1: %s.", args[0])
+			return invalidArg("invalidRow1", "val", fmt.Sprint(args[0]))
 		}
 		c1, err := strconv.Atoi(args[1])
 		if err != nil {
-			return fmt.Sprintf("Invalid col1: %s.", args[1])
+			return invalidArg("invalidCol1", "val", fmt.Sprint(args[1]))
 		}
 		r2, err := strconv.Atoi(args[2])
 		if err != nil {
-			return fmt.Sprintf("Invalid row2: %s.", args[2])
+			return invalidArg("invalidRow2", "val", fmt.Sprint(args[2]))
 		}
 		c2, err := strconv.Atoi(args[3])
 		if err != nil {
-			return fmt.Sprintf("Invalid col2: %s.", args[3])
+			return invalidArg("invalidCol2", "val", fmt.Sprint(args[3]))
 		}
 		return c.pi.RemovePair(r1, c1, r2, c2)
 	}

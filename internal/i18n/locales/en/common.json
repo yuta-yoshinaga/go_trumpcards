@@ -478,5 +478,20 @@
   "twoIndicesRequiredDiscard": "Two card indices are required (e.g. discard 0 5).",
   "unknownRule": "Unknown rule: {{val}}.",
   "victimIndexRequired": "Victim index is required.",
-  "wordRequired": "A word is required."
+  "wordRequired": "A word is required.",
+  "betTypeAndStakeRequired": "Bet type and stake are required (e.g. b 0 100 — 0=Noir, 1=Rouge, 2=Couleur, 3=Inverse).",
+  "invalidArgsMoveIntegers": "Invalid arguments: m <from> <cardIndex> <to> all must be integers.",
+  "invalidArgumentRaw": "Invalid argument: {{val}}.",
+  "invalidCol1": "Invalid col1: {{val}}.",
+  "invalidCol2": "Invalid col2: {{val}}.",
+  "invalidColRaw": "Invalid col: {{val}}.",
+  "invalidFromCol": "Invalid fromCol: {{val}}.",
+  "invalidFromRow": "Invalid fromRow: {{val}}.",
+  "invalidNumberOfSeats469": "Invalid number of seats: please enter 4, 6 or 9.",
+  "invalidRow1": "Invalid row1: {{val}}.",
+  "invalidRow2": "Invalid row2: {{val}}.",
+  "invalidRowRaw": "Invalid row: {{val}}.",
+  "invalidToCol": "Invalid toCol: {{val}}.",
+  "invalidToRow": "Invalid toRow: {{val}}.",
+  "trumpSuitRequiredWords": "Trump suit is required (s=spade, c=club, h=heart, d=diamond)."
 }

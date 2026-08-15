@@ -63,7 +63,7 @@ func (c *SimpleSimonCuiController) handleMove(args []string) string {
 	idx, err2 := strconv.Atoi(args[1])
 	to, err3 := strconv.Atoi(args[2])
 	if err1 != nil || err2 != nil || err3 != nil {
-		return "Invalid arguments: m <from> <cardIndex> <to> all must be integers."
+		return invalidArg("invalidArgsMoveIntegers")
 	}
 	return c.si.MoveSequence(from, idx, to)
 }

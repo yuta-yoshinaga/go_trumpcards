@@ -80,8 +80,8 @@ func TestTriPeaksCuiControllerRemove_InvalidArgs(t *testing.T) {
 	c := NewTriPeaksCuiController(ti)
 	assert.Contains(t, c.Exec("rm"), "Usage")
 	assert.Contains(t, c.Exec("rm 3"), "Usage")
-	assert.Contains(t, c.Exec("rm a 0"), "Invalid row")
-	assert.Contains(t, c.Exec("rm 3 b"), "Invalid col")
+	assert.True(t, msgRejected(c.Exec("rm a 0")))
+	assert.True(t, msgRejected(c.Exec("rm 3 b")))
 }
 
 func TestTriPeaksCuiControllerUnknown(t *testing.T) {

@@ -65,7 +65,7 @@ func TestUltiCuiController_Exec(t *testing.T) {
 
 	t.Run("bid party missing suit", func(t *testing.T) {
 		result := controller.NewUltiCuiController(newMock()).Exec("bid party")
-		assert.Contains(t, result, "Trump suit is required")
+		assert.Contains(t, result, msgStem("trumpSuitRequiredWords"))
 	})
 
 	t.Run("bid party invalid suit", func(t *testing.T) {

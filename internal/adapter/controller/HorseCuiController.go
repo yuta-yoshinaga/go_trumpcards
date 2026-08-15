@@ -91,7 +91,7 @@ func (c *HorseCuiController) execSetSeats(args []string) (string, bool) {
 	return cuiutil.WithParsedIntKeys(args, "numberOfSeatsRequired46Or9", "invalidNumberOfSeats46Or9",
 		cuiutil.NoMin, cuiutil.NoMax, func(v int) string {
 			if !domain.HorseValidSeats(v) {
-				return "Invalid number of seats: please enter 4, 6 or 9."
+				return invalidArg("invalidNumberOfSeats469")
 			}
 			cfg := c.hi.GetConfig()
 			cfg.Seats = v

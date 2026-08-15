@@ -53,7 +53,7 @@ func (c *MonteCarloCuiController) handleRemove(args []string) string {
 	for i, raw := range args {
 		v, err := strconv.Atoi(raw)
 		if err != nil {
-			return fmt.Sprintf("Invalid argument: %s.", raw)
+			return invalidArg("invalidArgumentRaw", "val", fmt.Sprint(raw))
 		}
 		parsed[i] = v
 	}

@@ -478,5 +478,20 @@
   "twoIndicesRequiredDiscard": "手札の番号を 2 個指定してください (例: discard 0 5)。",
   "unknownRule": "規則が不明です: {{val}}。",
   "victimIndexRequired": "対象の番号を指定してください。",
-  "wordRequired": "語を指定してください。"
+  "wordRequired": "語を指定してください。",
+  "betTypeAndStakeRequired": "ベットの種類とステークを指定してください (例: b 0 100 — 0=ノワール, 1=ルージュ, 2=クルール, 3=インヴェルス)。",
+  "invalidArgsMoveIntegers": "引数が不正です: m <from> <cardIndex> <to> はすべて整数で指定してください。",
+  "invalidArgumentRaw": "引数が不正です: {{val}}。",
+  "invalidCol1": "列 1 が不正です: {{val}}。",
+  "invalidCol2": "列 2 が不正です: {{val}}。",
+  "invalidColRaw": "列が不正です: {{val}}。",
+  "invalidFromCol": "移動元の列が不正です: {{val}}。",
+  "invalidFromRow": "移動元の行が不正です: {{val}}。",
+  "invalidNumberOfSeats469": "席数が不正です。4, 6, 9 のいずれかを入力してください。",
+  "invalidRow1": "行 1 が不正です: {{val}}。",
+  "invalidRow2": "行 2 が不正です: {{val}}。",
+  "invalidRowRaw": "行が不正です: {{val}}。",
+  "invalidToCol": "移動先の列が不正です: {{val}}。",
+  "invalidToRow": "移動先の行が不正です: {{val}}。",
+  "trumpSuitRequiredWords": "切り札のスートを指定してください (s=スペード, c=クラブ, h=ハート, d=ダイヤ)。"
 }
