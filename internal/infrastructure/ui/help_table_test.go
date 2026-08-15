@@ -135,3 +135,91 @@ func TestCuiHelpTableVerbsDispatch(t *testing.T) {
 			len(bad), checked, strings.Join(bad, "\n  "))
 	}
 }
+
+// TestCuiRendersNoRawKeysAtRuntime is TestCuiHelpRendersNoRawKeys applied to
+// what the game actually prints, not just to its help.
+//
+// The help guard was written after ten games shipped an untranslated command
+// table, and it would not have caught what came next: courtpiece and tarneeb
+// had no locale file at all, so their board, prompts and scores rendered as
+// `courtpiece.round`, `tarneeb.promptBid` and so on -- the games were not
+// playable, and their presenter tests passed because they asserted the key
+// names (`assert.Contains(out, "courtpiece.playerLine")`), which only held
+// while the translation was missing.
+//
+// It also catches the case where the key exists and something forgets to
+// translate it: lookupHintReason returned its map's value verbatim, so
+// fivehundred, bidwhist and rook printed `fivehundred.hintReasonPass` in a hint
+// while the translation sat in both locale files.
+func TestCuiRendersNoRawKeysAtRuntime(t *testing.T) {
+	registry := GameRegistry()
+	if len(registry) < 300 {
+		t.Fatalf("only %d games in the registry -- the walk broke", len(registry))
+	}
+
+	// Positive control: the scan is a substring search, and a search that
+	// stopped matching would report zero for every possible state of the code.
+	if got := rawKeysFor("vira", "vira.helpBid and some text"); len(got) != 1 {
+		t.Fatalf("the raw-key scan found %d keys in a string that contains one; fix rawKeysFor "+
+			"rather than trusting the result below", len(got))
+	}
+	if got := rawKeysFor("vira", "  b <0-4>   bid (0=pass)"); len(got) != 0 {
+		t.Fatalf("the raw-key scan flagged %v in an ordinary rendered row", got)
+	}
+
+	original := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(original) })
+
+	checked := 0
+	var bad []string
+	for _, lang := range []string{"ja", "en"} {
+		i18n.SetLang(lang)
+		for _, entry := range registry {
+			ctrl := entry.NewCui().Controller()
+			// "r" deals (what GameManager.initGame sends) and "h" asks for a
+			// hint, which is where the reason strings surface.
+			screen := ctrl.Exec("r") + "\n" + ctrl.Exec("h") + "\n" +
+				strings.Join(entry.NewCui().HelpLines(), "\n")
+			checked++
+			for _, key := range rawKeysFor(entry.Name, screen) {
+				bad = append(bad, lang+"/"+entry.Name+": "+key)
+			}
+		}
+	}
+	if checked < 2*len(registry) {
+		t.Fatalf("only %d screens were read for %d games in two languages -- the walk broke",
+			checked, len(registry))
+	}
+	sort.Strings(bad)
+	if len(bad) > 0 {
+		t.Errorf("untranslated i18n keys printed to the screen (%d across %d screens):\n  %s",
+			len(bad), checked, strings.Join(uniqueStrings(bad), "\n  "))
+	}
+}
+
+// rawKeysFor returns the `<game>.<key>` tokens in screen. Anchoring on the
+// game's own name keeps ordinary prose ("e.g.", a version number, a URL) out.
+func rawKeysFor(game, screen string) []string {
+	var out []string
+	for _, m := range runtimeRawKeyRe.FindAllString(screen, -1) {
+		if strings.HasPrefix(m, game+".") {
+			out = append(out, m)
+		}
+	}
+	return out
+}
+
+var runtimeRawKeyRe = regexp.MustCompile(`\b[a-z0-9]+\.[a-z][a-zA-Z0-9]{2,}\b`)
+
+func uniqueStrings(in []string) []string {
+	seen := map[string]bool{}
+	var out []string
+	for _, s := range in {
+		if seen[s] {
+			continue
+		}
+		seen[s] = true
+		out = append(out, s)
+	}
+	return out
+}

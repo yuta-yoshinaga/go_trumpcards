@@ -9,6 +9,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -31,7 +33,8 @@ func TestCourtPieceCuiPresenter_Output_PhaseLabels(t *testing.T) {
 		cp.SetPhase(domain.CourtPiecePhaseTrumpDeclaration)
 		cp.SetCallerIdx(0)
 		out := p.Output(cp, nil)
-		assert.Contains(t, out, "courtpiece")
+		assert.Contains(t, out, i18n.T("courtpiece.promptTrumpHelp"))
+		assert.NotContains(t, out, "courtpiece.", "a raw i18n key reached the screen")
 	})
 
 	t.Run("play phase prompt", func(t *testing.T) {
@@ -39,9 +42,8 @@ func TestCourtPieceCuiPresenter_Output_PhaseLabels(t *testing.T) {
 		cp.SetPhase(domain.CourtPiecePhasePlay)
 		cp.SetTrumpSuit(domain.CardDesignSpade)
 		out := p.Output(cp, nil)
-		// i18n placeholders are emitted literally in tests; key the assertion to a
-		// section we know is present regardless of locale.
-		assert.Contains(t, out, "courtpiece.promptPlay")
+		assert.Contains(t, out, i18n.T("courtpiece.promptPlayHelp"))
+		assert.NotContains(t, out, "courtpiece.", "a raw i18n key reached the screen")
 	})
 
 	t.Run("trick end prompt", func(t *testing.T) {
@@ -78,11 +80,14 @@ func TestCourtPieceCuiPresenter_Output_PhaseLabels(t *testing.T) {
 		cp.SetTrumpSuit(domain.CardDesignSpade)
 		cp.SetCallerIdx(0)
 		out := p.Output(cp, nil)
-		// The caller line (which now carries the caller's team) and one player
-		// line per seat are rendered. Assertions key on the section markers
-		// because i18n templates resolve to their literal keys in tests.
-		assert.Contains(t, out, "courtpiece.callerLine")
-		assert.Contains(t, out, "courtpiece.playerLine")
+		// The caller line carries the caller's team, and one player line per seat
+		// is rendered. Asserted through i18n rather than on the key names: the
+		// previous version matched "courtpiece.callerLine", which only held
+		// because the key had no translation (issue #5380).
+		assert.Contains(t, out, i18n.Tf("courtpiece.callerLine", "name", "あなた", "team", "A"))
+		assert.Contains(t, out, i18n.Tf("courtpiece.playerLine",
+			"name", "あなた", "team", "A", "tricks", "0", "cards", "5"))
+		assert.NotContains(t, out, "courtpiece.", "a raw i18n key reached the screen")
 	})
 }
 
@@ -175,7 +180,7 @@ func TestCourtPieceCuiPresenter_HintOutput(t *testing.T) {
 		cp.SetPhase(domain.CourtPiecePhasePlay)
 		cp.SetCurrentPlayerIdx(1) // CPU's turn
 		out := p.HintOutput(cp)
-		assert.Contains(t, strings.ToLower(out), "hint")
+		assert.Contains(t, out, i18n.T("courtpiece.hintNone"))
 	})
 }
 

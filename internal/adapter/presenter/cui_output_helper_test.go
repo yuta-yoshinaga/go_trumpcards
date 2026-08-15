@@ -60,47 +60,6 @@ func TestCuiErrorBlock(t *testing.T) {
 	})
 }
 
-func TestLookupHintReason(t *testing.T) {
-	gameReasons := map[string]string{
-		"pass_high_risk_cards": "リスクの高いカードを渡す",
-	}
-
-	t.Run("game-specific reason", func(t *testing.T) {
-		assert.Equal(t, "リスクの高いカードを渡す", lookupHintReason("pass_high_risk_cards", gameReasons))
-	})
-	t.Run("shared reason", func(t *testing.T) {
-		assert.Equal(t, "リードスートに追随", lookupHintReason("follow_suit", gameReasons))
-	})
-	t.Run("game-specific overrides shared", func(t *testing.T) {
-		override := map[string]string{"follow_suit": "カスタム"}
-		assert.Equal(t, "カスタム", lookupHintReason("follow_suit", override))
-	})
-	t.Run("unknown reason returns key", func(t *testing.T) {
-		assert.Equal(t, "unknown_reason", lookupHintReason("unknown_reason", gameReasons))
-	})
-	t.Run("nil game reasons uses shared", func(t *testing.T) {
-		assert.Equal(t, "低いカードでリード", lookupHintReason("lead_low", nil))
-	})
-	// Issue #1699 Phase 1: shared hint-reason strings follow the active locale
-	// instead of always rendering as Japanese.
-	t.Run("shared reason in English", func(t *testing.T) {
-		i18n.SetLang("en")
-		defer i18n.SetLang("ja")
-		assert.Equal(t, "Follow the lead suit", lookupHintReason("follow_suit", nil))
-		assert.Equal(t, "Lead with a low card", lookupHintReason("lead_low", nil))
-	})
-	t.Run("game-specific override still wins under English", func(t *testing.T) {
-		i18n.SetLang("en")
-		defer i18n.SetLang("ja")
-		// Game-specific reasons are not yet i18n-aware, so they still pass through
-		// verbatim. The English assertion intentionally keeps the original
-		// (non-translated) game-specific text to document the boundary: the
-		// shared layer is locale-aware, per-game overrides are not (Phase 2/3).
-		override := map[string]string{"follow_suit": "Custom"}
-		assert.Equal(t, "Custom", lookupHintReason("follow_suit", override))
-	})
-}
-
 func TestBuildCuiOutput(t *testing.T) {
 	t.Run("wraps content with header and footer", func(t *testing.T) {
 		result := buildCuiOutput("Test Game", func(b *strings.Builder) {

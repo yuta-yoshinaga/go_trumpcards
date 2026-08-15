@@ -4,7 +4,6 @@ package presenter_test
 
 import (
 	"errors"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -13,6 +12,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func newTarneebForCuiTest() *domain.Tarneeb {
@@ -30,7 +30,8 @@ func TestTarneebCuiPresenter_Output_PhaseLabels(t *testing.T) {
 	t.Run("bid phase prompt", func(t *testing.T) {
 		tn := newTarneebForCuiTest()
 		out := p.Output(tn, nil)
-		assert.Contains(t, out, "tarneeb")
+		assert.Contains(t, out, i18n.T("tarneeb.promptBidHelp"))
+		assert.NotContains(t, out, "tarneeb.", "a raw i18n key reached the screen")
 	})
 
 	t.Run("trump phase prompt", func(t *testing.T) {
@@ -46,9 +47,8 @@ func TestTarneebCuiPresenter_Output_PhaseLabels(t *testing.T) {
 		tn.SetPhase(domain.TarneebPhasePlay)
 		tn.SetTrumpSuit(domain.CardDesignSpade)
 		out := p.Output(tn, nil)
-		// i18n placeholders are emitted literally in tests; key the assertion to a
-		// section we know is present regardless of locale.
-		assert.Contains(t, out, "tarneeb.promptPlay")
+		assert.Contains(t, out, i18n.T("tarneeb.promptPlayHelp"))
+		assert.NotContains(t, out, "tarneeb.", "a raw i18n key reached the screen")
 	})
 
 	t.Run("trick end prompt", func(t *testing.T) {
@@ -129,7 +129,7 @@ func TestTarneebCuiPresenter_HintOutput(t *testing.T) {
 		tn.SetPhase(domain.TarneebPhasePlay)
 		tn.SetCurrentPlayerIdx(1) // CPU's turn
 		out := p.HintOutput(tn)
-		assert.Contains(t, strings.ToLower(out), "hint")
+		assert.Contains(t, out, i18n.T("tarneeb.hintNone"))
 	})
 }
 
