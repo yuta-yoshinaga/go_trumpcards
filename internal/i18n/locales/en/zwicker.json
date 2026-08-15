@@ -22,5 +22,6 @@
   "hintReasonRoundEnd": "this deal is already over",
   "hintReasonNotYourTurn": "it is not your turn",
   "hintReasonTake": "this capture picks up scoring cards",
-  "hintReasonTrail": "nothing is takeable, so trail a card that scores nothing"
+  "hintReasonTrail": "nothing is takeable, so trail a card that scores nothing",
+  "helpExampleN": "  n                        move on to the next deal"
 }

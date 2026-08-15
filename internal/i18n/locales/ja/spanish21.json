@@ -20,5 +20,6 @@
   "payoutRef.bonusSixCard21": "6枚で21 (2:1)",
   "payoutRef.bonusSevenCard21": "7枚以上で21 (3:1)",
   "payoutRef.bonus678": "6-7-8 (3:2 / 同スート 2:1 / 全スペード 3:1)",
-  "payoutRef.bonus777": "7-7-7 (3:2 / 同スート 2:1 / 全スペード 3:1)"
+  "payoutRef.bonus777": "7-7-7 (3:2 / 同スート 2:1 / 全スペード 3:1)",
+  "helpExampleH": "  h                    もう 1 枚引く"
 }

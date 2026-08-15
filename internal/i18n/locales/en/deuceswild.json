@@ -9,5 +9,6 @@
   "hand.fullHouse": "Full House",
   "hand.flush": "Flush",
   "hand.straight": "Straight",
-  "hand.threeOfAKind": "Three of a Kind"
+  "hand.threeOfAKind": "Three of a Kind",
+  "helpExampleHint": "  hint                 see which cards to keep"
 }
