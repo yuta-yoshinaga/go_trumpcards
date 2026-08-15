@@ -97,7 +97,10 @@ func (c *FiveHundredCuiController) Exec(command string) string {
 				if !ok {
 					return errMsg, true
 				}
-				jokerSuit := cuiutil.ParseOptionalInt(args, 1, -1)
+				jokerSuit, errMsg, ok := cuiutil.ParseOptionalIntKeys(args, 1, -1, "invalidSuit")
+				if !ok {
+					return errMsg, true
+				}
 				return c.fi.Play(cardIdx, jokerSuit), true
 			case "n", "next":
 				return c.fi.NextTrick(), true

@@ -255,3 +255,34 @@ func TestBridgeCuiController_Exec(t *testing.T) {
 		assert.Contains(t, result, "'help' でコマンド一覧を表示します。")
 	})
 }
+
+// #5390: `b 0 abc` は入札レベルを 0 に落として通っていた。
+func TestBridgeCuiController_BidRefusesMistypedOptionalArgs(t *testing.T) {
+	newMock := func() *mockUsecases.MockBridgeInteractor {
+		m := new(mockUsecases.MockBridgeInteractor)
+		m.On("Reset").Return("ok")
+		m.On("Bid", mock.Anything, mock.Anything, mock.Anything).Return("bid-ok")
+		return m
+	}
+
+	t.Run("bid level", func(t *testing.T) {
+		m := newMock()
+		out := controller.NewBridgeCuiController(m).Exec("b 0 abc")
+		assert.Equal(t, msgKey("invalidBidLevel", "val", "abc"), out)
+		m.AssertNotCalled(t, "Bid", mock.Anything, mock.Anything, mock.Anything)
+	})
+
+	t.Run("bid suit", func(t *testing.T) {
+		m := newMock()
+		out := controller.NewBridgeCuiController(m).Exec("b 0 1 xyz")
+		assert.Equal(t, msgKey("invalidSuit", "val", "xyz"), out)
+		m.AssertNotCalled(t, "Bid", mock.Anything, mock.Anything, mock.Anything)
+	})
+
+	// **省略形も一緒に見る。** 断る側だけ直して既定値を消しても緑になるので。
+	t.Run("both omitted still bids", func(t *testing.T) {
+		m := newMock()
+		assert.Equal(t, "bid-ok", controller.NewBridgeCuiController(m).Exec("b 0"))
+		m.AssertCalled(t, "Bid", 0, 0, 0)
+	})
+}

@@ -497,5 +497,8 @@
   "invalidTargetValue": "Invalid target value: {{val}}.",
   "invalidPairPlusBet": "Invalid Pair Plus bet: {{val}}.",
   "invalidTripsBet": "Invalid trips bet: {{val}}.",
-  "invalidHandCount": "Invalid hand count: {{val}}."
+  "invalidHandCount": "Invalid hand count: {{val}}.",
+  "invalidMaxRounds": "Invalid max rounds: {{val}}.",
+  "invalidBidLevel": "Invalid bid level: {{val}}.",
+  "invalidClaimedValue": "Invalid claimed value: {{val}}."
 }

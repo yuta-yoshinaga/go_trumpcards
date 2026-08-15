@@ -74,3 +74,16 @@ func TestWarCuiController_Exec(t *testing.T) {
 		assert.NotEmpty(t, c.Exec("xyz"))
 	})
 }
+
+// 打ち間違えた任意引数は既定値に落とさず断る (#5390)。`sm abc` が既定の
+// ラウンド数で設定を上書きし直すと、局が黙って作り直される。
+func TestWarCuiController_SetMaxRefusesMistypedValue(t *testing.T) {
+	m := newWarCuiMock()
+	c := controller.NewWarCuiController(m)
+	assert.Equal(t, msgKey("invalidMaxRounds", "val", "abc"), c.Exec("sm abc"))
+	m.AssertNotCalled(t, "ResetWithConfig", mock.Anything)
+
+	// 引数なしは既定値のまま。断る側だけ直して省略形を壊しても緑にならないように。
+	assert.Equal(t, "reset-ok", c.Exec("sm"))
+	m.AssertCalled(t, "ResetWithConfig", mock.Anything)
+}
