@@ -64,7 +64,7 @@ func (c *RookCuiController) Exec(command string) string {
 				}
 				idxs := make([]int, 5)
 				for i := 0; i < 5; i++ {
-					v, errMsg, ok := cuiutil.ParseIntArg(args[i:i+1], "", "Invalid card index: %s.", 0, math.MaxInt)
+					v, errMsg, ok := cuiutil.ParseIntArgKeys(args[i:i+1], "", "invalidCardIndex", 0, math.MaxInt)
 					if !ok {
 						return errMsg, true
 					}
@@ -76,7 +76,7 @@ func (c *RookCuiController) Exec(command string) string {
 				}
 				return c.fi.ExchangeNest(idxs, color), true
 			case "p", "play":
-				cardIdx, errMsg, ok := cuiutil.ParseIntArg(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax)
+				cardIdx, errMsg, ok := cuiutil.ParseIntArgKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax)
 				if !ok {
 					return errMsg, true
 				}

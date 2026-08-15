@@ -90,12 +90,12 @@ func TestHandAndFootCuiController_Exec(t *testing.T) {
 
 	t.Run("discard d no args", func(t *testing.T) {
 		c := controller.NewHandAndFootCuiController(newMock())
-		assert.Contains(t, c.Exec("d"), "Card index is required")
+		assert.Contains(t, c.Exec("d"), msgCardIndexRequired())
 	})
 
 	t.Run("discard d invalid arg", func(t *testing.T) {
 		c := controller.NewHandAndFootCuiController(newMock())
-		assert.Contains(t, c.Exec("d abc"), "Invalid card index")
+		assert.Contains(t, c.Exec("d abc"), msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("goout go", func(t *testing.T) {

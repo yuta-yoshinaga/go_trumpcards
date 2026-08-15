@@ -84,7 +84,7 @@ func TestZwanzigerrufenCuiController_Exec(t *testing.T) {
 	t.Run("discard rejects a non-numeric index", func(t *testing.T) {
 		m := newMock()
 		out := controller.NewZwanzigerrufenCuiController(m).Exec("discard 0 1 2 3 4 x")
-		assert.Contains(t, out, "Invalid card index")
+		assert.Contains(t, out, msgInvalidCardIndexPrefix())
 		m.AssertNotCalled(t, "Discard", mock.Anything)
 	})
 	t.Run("play", func(t *testing.T) {
@@ -95,7 +95,7 @@ func TestZwanzigerrufenCuiController_Exec(t *testing.T) {
 	t.Run("play rejects a non-numeric index", func(t *testing.T) {
 		m := newMock()
 		out := controller.NewZwanzigerrufenCuiController(m).Exec("play x")
-		assert.Contains(t, out, "Invalid card index")
+		assert.Contains(t, out, msgInvalidCardIndexPrefix())
 		m.AssertNotCalled(t, "Play", mock.Anything)
 	})
 	t.Run("next trick and next round", func(t *testing.T) {

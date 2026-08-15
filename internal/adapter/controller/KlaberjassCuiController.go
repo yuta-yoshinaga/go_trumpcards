@@ -49,7 +49,7 @@ func (c *KlaberjassCuiController) Exec(command string) string {
 			case "no":
 				return c.ki.AnswerSchmeiss(false), true
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", 0, 8, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", 0, 8, func(v int) string {
 					return c.ki.PlayCard(v)
 				})
 			case "n", "next":

@@ -94,17 +94,17 @@ func TestVideoPokerCuiController_Hold_Errors(t *testing.T) {
 
 	t.Run("invalid index text", func(t *testing.T) {
 		result := c.Exec("h abc")
-		assert.Contains(t, result, "Invalid card index")
+		assert.Contains(t, result, msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("index out of range", func(t *testing.T) {
 		result := c.Exec("h 5")
-		assert.Contains(t, result, "Invalid card index")
+		assert.Contains(t, result, msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("negative index", func(t *testing.T) {
 		result := c.Exec("h -1")
-		assert.Contains(t, result, "Invalid card index")
+		assert.Contains(t, result, msgInvalidCardIndexPrefix())
 	})
 }
 

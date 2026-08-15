@@ -94,9 +94,9 @@ func TestHasenpfefferCuiControllerDiscard(t *testing.T) {
 // **どちらの引数も既定値で埋めない。** 埋めると選んでいないスートが切り札になる。
 func TestHasenpfefferCuiControllerDiscardRejectsBadArgs(t *testing.T) {
 	for _, tc := range []struct{ name, cmd, want string }{
-		{"no args", "d", "Card index is required."},
+		{"no args", "d", msgCardIndexRequired()},
 		{"only the index", "d 2", "Suit is required."},
-		{"non-numeric index", "d x 3", "Invalid card index: x."},
+		{"non-numeric index", "d x 3", msgInvalidCardIndex("x")},
 		{"non-numeric suit", "d 2 x", "Invalid suit: x."},
 		{"suit below the range", "d 2 0", "Invalid suit: 0."},
 		{"suit above the range", "d 2 5", "Invalid suit: 5."},
@@ -124,8 +124,8 @@ func TestHasenpfefferCuiControllerPlay(t *testing.T) {
 
 func TestHasenpfefferCuiControllerPlayRejectsBadArgs(t *testing.T) {
 	for _, tc := range []struct{ name, cmd, want string }{
-		{"missing index", "p", "Card index is required."},
-		{"non-numeric", "p abc", "Invalid card index: abc."},
+		{"missing index", "p", msgCardIndexRequired()},
+		{"non-numeric", "p abc", msgInvalidCardIndex("abc")},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			hi := newMockHasenpfefferInteractor()

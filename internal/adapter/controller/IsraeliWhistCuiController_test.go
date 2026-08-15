@@ -149,8 +149,8 @@ func TestIsraeliWhistCuiControllerPlay(t *testing.T) {
 
 func TestIsraeliWhistCuiControllerPlayRejectsBadArgs(t *testing.T) {
 	for _, tc := range []struct{ name, cmd, want string }{
-		{"missing index", "p", "Card index is required."},
-		{"non-numeric", "p abc", "Invalid card index: abc."},
+		{"missing index", "p", msgCardIndexRequired()},
+		{"non-numeric", "p abc", msgInvalidCardIndex("abc")},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			wi := newMockIsraeliWhistInteractor()

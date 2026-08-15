@@ -46,8 +46,8 @@ func TestPasurCuiController_Commands(t *testing.T) {
 
 func TestPasurCuiController_PlayRejectsBadArgs(t *testing.T) {
 	for _, tc := range []struct{ name, cmd, want string }{
-		{"index missing", "p", "Card index is required."},
-		{"index not a number", "p x", "Invalid card index: x."},
+		{"index missing", "p", msgCardIndexRequired()},
+		{"index not a number", "p x", msgInvalidCardIndex("x")},
 		{"table index not a number", "p 1 x", "Invalid table index: x."},
 		{"a later table index is bad", "p 1 0 y", "Invalid table index: y."},
 	} {

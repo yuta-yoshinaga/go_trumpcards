@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -64,7 +65,7 @@ func parseHoldIndices(args []string) ([]int, string) {
 		}
 		idx, err := strconv.Atoi(arg)
 		if err != nil || idx < 0 || idx > 4 {
-			return nil, "Invalid card index. Use 0-4."
+			return nil, i18n.T("invalidCardIndexHold")
 		}
 		indices = append(indices, idx)
 	}

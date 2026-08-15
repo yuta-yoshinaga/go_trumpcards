@@ -46,7 +46,7 @@ func (c *TuteCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.di.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.di.Play)
 			case "m", "marriage":
 				return cuiutil.WithParsedInt(args, "Suit is required (1=♠ 2=♣ 3=♥ 4=♦).", "Invalid suit: %s. Please enter 1-4.", 1, domain.CardDesignMax, c.di.DeclareMarriage)
 			case "tute":

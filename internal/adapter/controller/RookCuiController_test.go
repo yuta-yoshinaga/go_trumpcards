@@ -68,7 +68,7 @@ func TestRookCuiController_Usage(t *testing.T) {
 	if got := c.Exec("e 0 1 2"); !strings.Contains(got, "Usage") {
 		t.Errorf("exchange with few args should show usage, got %q", got)
 	}
-	if got := c.Exec("p"); !strings.Contains(got, "required") {
+	if got := c.Exec("p"); !strings.Contains(got, msgCardIndexRequired()) {
 		t.Errorf("play without args should require index, got %q", got)
 	}
 }

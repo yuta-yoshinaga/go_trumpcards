@@ -64,7 +64,7 @@ func (c *EcarteCuiController) Exec(command string) string {
 				indices, skipped := cuiutil.ParseBoundedIntSlice(args, 0, domain.EcarteHandSize-1)
 				return cuiutil.PrependSkippedWarning(c.ei.Discard(indices), skipped), true
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.ei.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.ei.Play)
 			case "n", "next", "nextround":
 				return c.ei.NextRound(), true
 			case "sd", "setdifficulty":

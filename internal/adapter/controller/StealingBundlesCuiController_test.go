@@ -52,8 +52,8 @@ func TestStealingBundlesCuiController_Commands(t *testing.T) {
 // **どちらの引数が欠けているかを言い分けます。**
 func TestStealingBundlesCuiController_StealRejectsBadArgs(t *testing.T) {
 	for _, tc := range []struct{ name, cmd, want string }{
-		{"no args", "s", "Card index is required."},
-		{"card not a number", "s x 1", "Invalid card index: x."},
+		{"no args", "s", msgCardIndexRequired()},
+		{"card not a number", "s x 1", msgInvalidCardIndex("x")},
 		{"victim missing", "s 1", "Victim index is required."},
 		{"victim not a number", "s 1 y", "Invalid victim index: y."},
 	} {
@@ -67,10 +67,10 @@ func TestStealingBundlesCuiController_StealRejectsBadArgs(t *testing.T) {
 
 func TestStealingBundlesCuiController_TakeAndTrailRejectBadArgs(t *testing.T) {
 	for _, tc := range []struct{ name, cmd, want string }{
-		{"take missing", "t", "Card index is required."},
-		{"take not a number", "t x", "Invalid card index: x."},
-		{"trail missing", "d", "Card index is required."},
-		{"trail not a number", "d x", "Invalid card index: x."},
+		{"take missing", "t", msgCardIndexRequired()},
+		{"take not a number", "t x", msgInvalidCardIndex("x")},
+		{"trail missing", "d", msgCardIndexRequired()},
+		{"trail not a number", "d x", msgInvalidCardIndex("x")},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			c, si := newStealingBundlesCui()

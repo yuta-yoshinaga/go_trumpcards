@@ -44,7 +44,7 @@ func (c *HoneymoonBridgeCuiController) Exec(command string) string {
 			case "pass":
 				return c.hi.Pass(), true
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.hi.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.hi.Play)
 			case "n", "next":
 				return c.hi.NextRound(), true
 			case "g", "giveup":

@@ -138,5 +138,18 @@
   "realtime.labelNormal": "set CPU difficulty Normal and reset",
   "realtime.labelHard": "set CPU difficulty Hard and reset",
   "realtime.labelHelp": "show this key list again",
-  "realtime.labelQuit": "quit"
+  "realtime.labelQuit": "quit",
+  "cardIndexRequired": "Card index is required.",
+  "invalidCardIndexNotANumber": "Invalid card index. Please enter a number.",
+  "invalidIndexNotANumber": "Invalid index. Please enter a number.",
+  "discardIndexRequired": "Discard index is required.",
+  "invalidDiscardIndex": "Invalid discard index: {{val}}",
+  "cardIndexRequiredExample": "Card index is required (e.g. p 0).",
+  "cardIndexToKeepRequired": "Card index to keep is required.",
+  "invalidCardIndexRange": "Invalid card index: {{val}}. Please enter 0-{{max}}.",
+  "invalidCardIndexHold": "Invalid card index. Use 0-4.",
+  "cardIndexRequiredField": "Card index is required (e.g. p 0, or p 0 3 to pick a field card).",
+  "cardIndexRequiredCapture": "Card index is required (e.g. p 0, or p 0 1 2 to capture table cards).",
+  "cardIndexesRequiredMeld": "Card indexes are required (e.g. meld 1 4 7).",
+  "invalidIndexFromOne": "Invalid index. Please enter numbers from 1."
 }

@@ -5,6 +5,7 @@ package controller
 import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -52,8 +53,8 @@ func (c *ZwanzigerrufenCuiController) Exec(command string) string {
 			case "discard":
 				return c.execDiscard(args)
 			case "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.",
-					"Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.zi.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired",
+					"invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.zi.Play)
 			case "n", "next":
 				return c.zi.NextTrick(), true
 			case "nr", "nextround":
@@ -104,7 +105,7 @@ func (c *ZwanzigerrufenCuiController) execDiscard(args []string) (string, bool) 
 	}
 	indices, skipped := cuiutil.ParseIntSlice(args)
 	if len(skipped) > 0 {
-		return "Invalid card index: " + skipped[0] + ".", true
+		return i18n.Tf("invalidCardIndex", "val", skipped[0]), true
 	}
 	return c.zi.Discard(indices), true
 }

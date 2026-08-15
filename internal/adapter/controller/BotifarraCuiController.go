@@ -31,8 +31,8 @@ func (bc *BotifarraCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "p", "play":
-				idx, errMsg, ok := cuiutil.ParseIntArg(args,
-					"Card index is required.", "Invalid card index. Please enter a number.", 0, math.MaxInt)
+				idx, errMsg, ok := cuiutil.ParseIntArgKeys(args,
+					"cardIndexRequired", "invalidCardIndexNotANumber", 0, math.MaxInt)
 				if !ok {
 					return errMsg, true
 				}

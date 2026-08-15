@@ -72,12 +72,12 @@ func TestConquianCuiController_Exec(t *testing.T) {
 
 	t.Run("discard d no args", func(t *testing.T) {
 		result := controller.NewConquianCuiController(newMock()).Exec("d")
-		assert.Contains(t, result, "Card index is required")
+		assert.Contains(t, result, msgCardIndexRequired())
 	})
 
 	t.Run("discard d invalid", func(t *testing.T) {
 		result := controller.NewConquianCuiController(newMock()).Exec("d abc")
-		assert.Contains(t, result, "Invalid card index")
+		assert.Contains(t, result, msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("nextround nr", func(t *testing.T) {

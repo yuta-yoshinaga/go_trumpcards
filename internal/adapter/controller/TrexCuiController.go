@@ -41,7 +41,7 @@ func (c *TrexCuiController) Exec(command string) string {
 			case "c", "choose":
 				return cuiutil.WithParsedInt(args, "Contract number is required.", "Invalid contract: %s.", cuiutil.NoMin, cuiutil.NoMax, c.ti.Choose)
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.ti.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.ti.Play)
 			case "s", "pass":
 				return c.ti.Pass(), true
 			case "n", "next":

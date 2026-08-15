@@ -65,11 +65,11 @@ func (c *SkatCuiController) Exec(command string) string {
 				if len(args) < 2 {
 					return "Usage: discard <i> <j> (two card indices)\n", true
 				}
-				idxA, errMsg, ok := cuiutil.ParseIntArg(args[:1], "", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax)
+				idxA, errMsg, ok := cuiutil.ParseIntArgKeys(args[:1], "", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax)
 				if !ok {
 					return errMsg, true
 				}
-				idxB, errMsg, ok := cuiutil.ParseIntArg(args[1:2], "", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax)
+				idxB, errMsg, ok := cuiutil.ParseIntArgKeys(args[1:2], "", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax)
 				if !ok {
 					return errMsg, true
 				}
@@ -92,7 +92,7 @@ func (c *SkatCuiController) Exec(command string) string {
 				}
 				return c.si.DeclareGame(domain.SkatGameType(gt), trump), true
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.si.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.si.Play)
 			case "n", "next":
 				return c.si.NextTrick(), true
 			case "nr", "nextround":

@@ -70,8 +70,8 @@ func TestMinibridgeCuiController_ContractRejectsBadArgs(t *testing.T) {
 
 func TestMinibridgeCuiController_PlayRejectsBadArgs(t *testing.T) {
 	for _, tc := range []struct{ name, cmd, want string }{
-		{"index missing", "p", "Card index is required."},
-		{"index not a number", "p x", "Invalid card index: x."},
+		{"index missing", "p", msgCardIndexRequired()},
+		{"index not a number", "p x", msgInvalidCardIndex("x")},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			c, mi := newMinibridgeCui()

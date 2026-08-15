@@ -72,7 +72,7 @@ func TestLooCuiController_Exec(t *testing.T) {
 	})
 	t.Run("play invalid arg", func(t *testing.T) {
 		out := controller.NewLooCuiController(newMock()).Exec("p xyz")
-		assert.Contains(t, out, "Invalid card index")
+		assert.Contains(t, out, msgInvalidCardIndexPrefix())
 	})
 	t.Run("next round", func(t *testing.T) {
 		m := newMock()

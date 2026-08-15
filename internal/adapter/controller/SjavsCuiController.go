@@ -40,7 +40,7 @@ func (c *SjavsCuiController) Exec(command string) string {
 			case "b", "bid":
 				return cuiutil.WithParsedInt(args, "Bid length is required.", "Invalid bid length: %s.", cuiutil.NoMin, cuiutil.NoMax, c.si.Bid)
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.si.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.si.Play)
 			case "n", "next":
 				return c.si.NextHand(), true
 			default:

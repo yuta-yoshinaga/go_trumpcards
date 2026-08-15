@@ -91,7 +91,7 @@ func TestKaiserCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "Discard", []int{0, 3})
 		assert.Contains(t, c.Exec("d 0"), "Two card indices")
 		assert.Contains(t, c.Exec("d"), "Two card indices")
-		assert.Contains(t, c.Exec("d a b"), "Invalid card index")
+		assert.Contains(t, c.Exec("d a b"), msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("play and next", func(t *testing.T) {
@@ -101,7 +101,7 @@ func TestKaiserCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "PlayCard", 2)
 		assert.Equal(t, mockOutput, c.Exec("n"))
 		m.AssertCalled(t, "NextHand")
-		assert.Contains(t, c.Exec("p abc"), "Invalid card index")
+		assert.Contains(t, c.Exec("p abc"), msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("log and unknown", func(t *testing.T) {

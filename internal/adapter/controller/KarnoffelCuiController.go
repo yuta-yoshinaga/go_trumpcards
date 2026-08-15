@@ -30,7 +30,7 @@ func (c *KarnoffelCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.",
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex",
 					0, domain.KarnoffelHandSize-1, func(v int) string {
 						return c.ki.PlayCard(v)
 					})

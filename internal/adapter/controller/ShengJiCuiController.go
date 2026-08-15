@@ -7,6 +7,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -70,7 +71,7 @@ func shengJiParseIndexes(args []string, want, maxIdx int, apply func([]int) stri
 	for _, a := range args {
 		v, err := strconv.Atoi(a)
 		if err != nil || v < 0 || v > maxIdx {
-			return "Invalid card index: " + a + ". Please enter 0-" + strconv.Itoa(maxIdx) + ".", true
+			return i18n.Tf("invalidCardIndexRange", "val", a, "max", strconv.Itoa(maxIdx)), true
 		}
 		// **同じ札を 2 回数えられない。**通すと 1 枚から対子が作れてしまう。
 		if seen[v] {

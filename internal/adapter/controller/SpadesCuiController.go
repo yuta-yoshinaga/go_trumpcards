@@ -47,7 +47,7 @@ func (c *SpadesCuiController) Exec(command string) string {
 			case "b", "bid":
 				return cuiutil.WithParsedInt(args, "Bid value is required (0-13).", "Invalid bid value: %s.", 0, 13, c.si.Bid)
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.si.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.si.Play)
 			case "n", "next":
 				return c.si.NextTrick(), true
 			case "nr", "nextround":

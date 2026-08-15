@@ -166,13 +166,13 @@ func TestBurracoCuiController_Exec(t *testing.T) {
 	t.Run("discard command d no args", func(t *testing.T) {
 		c := controller.NewBurracoCuiController(newMock())
 		result := c.Exec("d")
-		assert.Contains(t, result, "Card index is required")
+		assert.Contains(t, result, msgCardIndexRequired())
 	})
 
 	t.Run("discard command d invalid arg", func(t *testing.T) {
 		c := controller.NewBurracoCuiController(newMock())
 		result := c.Exec("d abc")
-		assert.Contains(t, result, "Invalid card index")
+		assert.Contains(t, result, msgInvalidCardIndexPrefix())
 	})
 
 	// goout

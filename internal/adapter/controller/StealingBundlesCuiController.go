@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -38,10 +39,10 @@ func (c *StealingBundlesCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "t", "take":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.",
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex",
 					cuiutil.NoMin, cuiutil.NoMax, c.si.Take)
 			case "d", "trail":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.",
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex",
 					cuiutil.NoMin, cuiutil.NoMax, c.si.Trail)
 			case "s", "steal":
 				return c.execSteal(args)
@@ -59,11 +60,11 @@ func (c *StealingBundlesCuiController) Exec(command string) string {
 // **札と相手の両方が要ります。** どちらが欠けているかを言い分けます。
 func (c *StealingBundlesCuiController) execSteal(args []string) (string, bool) {
 	if len(args) < 1 {
-		return "Card index is required.", true
+		return i18n.T("cardIndexRequired"), true
 	}
 	cardIdx, err := strconv.Atoi(args[0])
 	if err != nil {
-		return "Invalid card index: " + args[0] + ".", true
+		return i18n.Tf("invalidCardIndex", "val", args[0]), true
 	}
 	if len(args) < 2 {
 		return "Victim index is required.", true

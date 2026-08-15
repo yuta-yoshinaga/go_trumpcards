@@ -49,13 +49,13 @@ func TestSakuraCuiController_Exec(t *testing.T) {
 	t.Run("play needs a card index", func(t *testing.T) {
 		m := newMock()
 		out := controller.NewSakuraCuiController(m).Exec("p")
-		assert.Contains(t, out, "Card index is required")
+		assert.Contains(t, out, msgCardIndexRequiredField())
 		m.AssertNotCalled(t, "Play", mock.Anything, mock.Anything)
 	})
 	t.Run("play rejects a non-numeric index", func(t *testing.T) {
 		m := newMock()
 		out := controller.NewSakuraCuiController(m).Exec("p x")
-		assert.Contains(t, out, "Invalid card index")
+		assert.Contains(t, out, msgInvalidCardIndexPrefix())
 		m.AssertNotCalled(t, "Play", mock.Anything, mock.Anything)
 	})
 	// **場札インデックスが数字でなければ「指定なし」に倒す。** 途中で止めると

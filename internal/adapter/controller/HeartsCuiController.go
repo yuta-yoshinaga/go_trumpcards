@@ -54,7 +54,7 @@ func (c *HeartsCuiController) Exec(command string) string {
 				}
 				return cuiutil.PrependSkippedWarning(result, skipped), true
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.hi.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.hi.Play)
 			case "n", "next":
 				return c.hi.NextTrick(), true
 			case "nr", "nextround":

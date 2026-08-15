@@ -46,7 +46,7 @@ func (c *IsraeliWhistCuiController) Exec(command string) string {
 				return cuiutil.WithParsedInt(args, "Bid is required.", "Invalid bid: %s.",
 					0, domain.IsraeliWhistHandSize, c.wi.Bid)
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.wi.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.wi.Play)
 			case "n", "next":
 				return c.wi.NextRound(), true
 			case "g", "giveup":

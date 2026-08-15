@@ -53,7 +53,7 @@ func (c *MichiganCuiController) Exec(command string) string {
 			case "b", "bet":
 				return c.handleBet(args), true
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required (e.g. p 0).", "Invalid card index: %s.", 0, 51, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequiredExample", "invalidCardIndex", 0, 51, func(v int) string {
 					return c.ti.Play(v)
 				})
 			case "n", "next", "nr", "nextround":

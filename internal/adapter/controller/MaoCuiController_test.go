@@ -53,7 +53,7 @@ func TestMaoCuiController_Exec(t *testing.T) {
 	})
 
 	t.Run("play no args", func(t *testing.T) {
-		assert.Contains(t, controller.NewMaoCuiController(newMaoCuiMock()).Exec("p"), "Card index is required")
+		assert.Contains(t, controller.NewMaoCuiController(newMaoCuiMock()).Exec("p"), msgCardIndexRequired())
 	})
 
 	t.Run("draw", func(t *testing.T) {

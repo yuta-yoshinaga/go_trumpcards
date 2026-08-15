@@ -211,13 +211,13 @@ func TestNapoleonCuiController_Exec(t *testing.T) {
 	t.Run("exchange command e no args", func(t *testing.T) {
 		c := controller.NewNapoleonCuiController(newMock())
 		result := c.Exec("e")
-		assert.Contains(t, result, "Card index is required")
+		assert.Contains(t, result, msgCardIndexRequired())
 	})
 
 	t.Run("exchange command e invalid arg", func(t *testing.T) {
 		c := controller.NewNapoleonCuiController(newMock())
 		result := c.Exec("e abc")
-		assert.Contains(t, result, "Invalid card index")
+		assert.Contains(t, result, msgInvalidCardIndexPrefix())
 	})
 
 	// play
@@ -240,13 +240,13 @@ func TestNapoleonCuiController_Exec(t *testing.T) {
 	t.Run("play command p no args", func(t *testing.T) {
 		c := controller.NewNapoleonCuiController(newMock())
 		result := c.Exec("p")
-		assert.Contains(t, result, "Card index is required")
+		assert.Contains(t, result, msgCardIndexRequired())
 	})
 
 	t.Run("play command p invalid arg", func(t *testing.T) {
 		c := controller.NewNapoleonCuiController(newMock())
 		result := c.Exec("p abc")
-		assert.Contains(t, result, "Invalid card index")
+		assert.Contains(t, result, msgInvalidCardIndexPrefix())
 	})
 
 	// next

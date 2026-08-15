@@ -97,7 +97,7 @@ func (c *MightyCuiController) Exec(command string) string {
 				}
 				idxs := make([]int, 3)
 				for i := 0; i < 3; i++ {
-					v, errMsg, ok := cuiutil.ParseIntArg(args[i:i+1], "", "Invalid card index: %s.", 0, math.MaxInt)
+					v, errMsg, ok := cuiutil.ParseIntArgKeys(args[i:i+1], "", "invalidCardIndex", 0, math.MaxInt)
 					if !ok {
 						return errMsg, true
 					}
@@ -105,12 +105,12 @@ func (c *MightyCuiController) Exec(command string) string {
 				}
 				return c.mi.ExchangeKitty(idxs), true
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.mi.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.mi.Play)
 			case "jl", "jokerlead":
 				if len(args) < 2 {
 					return "Usage: jokerlead <cardIndex> <demandSuit>\n  demandSuit: 1=Spade 2=Clover 3=Heart 4=Diamond\n", true
 				}
-				cardIdx, errMsg, ok := cuiutil.ParseIntArg(args[:1], "", "Invalid card index: %s.", 0, math.MaxInt)
+				cardIdx, errMsg, ok := cuiutil.ParseIntArgKeys(args[:1], "", "invalidCardIndex", 0, math.MaxInt)
 				if !ok {
 					return errMsg, true
 				}

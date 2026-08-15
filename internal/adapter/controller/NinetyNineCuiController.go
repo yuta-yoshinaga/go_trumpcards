@@ -52,7 +52,7 @@ func (c *NinetyNineCuiController) Exec(command string) string {
 				}
 				return c.oi.Bid(idxs[:domain.NinetyNineBurySize]), true
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.oi.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.oi.Play)
 			case "n", "next":
 				return c.oi.NextTrick(), true
 			case "nr", "nextround":

@@ -76,7 +76,7 @@ func TestMinchiateCuiController_Exec(t *testing.T) {
 	t.Run("scarto with a non-numeric index", func(t *testing.T) {
 		args, _ := surplusArgs()
 		out := controller.NewMinchiateCuiController(newMock()).Exec("scarto" + args + " x")
-		assert.Contains(t, out, "Invalid card index")
+		assert.Contains(t, out, msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("play card", func(t *testing.T) {
@@ -86,7 +86,7 @@ func TestMinchiateCuiController_Exec(t *testing.T) {
 	})
 
 	t.Run("play no args", func(t *testing.T) {
-		assert.Contains(t, controller.NewMinchiateCuiController(newMock()).Exec("play"), "Card index is required")
+		assert.Contains(t, controller.NewMinchiateCuiController(newMock()).Exec("play"), msgCardIndexRequired())
 	})
 
 	// このゲームに入札は無い。bid/pass が黙って別の動作に落ちてはならない。

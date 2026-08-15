@@ -48,7 +48,7 @@ func (c *CinchCuiController) Exec(command string) string {
 			case "t", "trump":
 				return cuiutil.WithParsedInt(args, "Trump suit is required (1-4).", "Invalid trump suit: %s. Please enter 1-4.", domain.CardDesignSpade, domain.CardDesignDiamond, c.ci.NameTrump)
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", 0, domain.CinchHandSize-1, c.ci.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", 0, domain.CinchHandSize-1, c.ci.Play)
 			case "n", "next", "nr", "nextround":
 				return c.ci.NextRound(), true
 			case "sd", "setdifficulty":

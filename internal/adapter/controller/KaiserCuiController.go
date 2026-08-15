@@ -8,6 +8,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -46,7 +47,7 @@ func (c *KaiserCuiController) Exec(command string) string {
 			case "d", "discard":
 				return kaiserParseDiscard(args, c.ki)
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", 0, domain.KaiserHandSize+domain.KaiserKittySize-1, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", 0, domain.KaiserHandSize+domain.KaiserKittySize-1, func(v int) string {
 					return c.ki.PlayCard(v)
 				})
 			case "n", "next":
@@ -89,7 +90,7 @@ func kaiserParseDiscard(args []string, ki usecase.KaiserInteractorIF) (string, b
 	for _, a := range args[:domain.KaiserKittySize] {
 		v, err := strconv.Atoi(strings.TrimSpace(a))
 		if err != nil || v < 0 {
-			return "Invalid card index: " + a + ".", true
+			return i18n.Tf("invalidCardIndex", "val", a), true
 		}
 		idxs = append(idxs, v)
 	}

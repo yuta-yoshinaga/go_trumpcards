@@ -61,11 +61,11 @@ func TestMacauCuiController_Exec(t *testing.T) {
 	})
 
 	t.Run("play no args", func(t *testing.T) {
-		assert.Contains(t, controller.NewMacauCuiController(newMock()).Exec("p"), "Card index is required")
+		assert.Contains(t, controller.NewMacauCuiController(newMock()).Exec("p"), msgCardIndexRequired())
 	})
 
 	t.Run("play invalid arg", func(t *testing.T) {
-		assert.Contains(t, controller.NewMacauCuiController(newMock()).Exec("p abc"), "Invalid card index")
+		assert.Contains(t, controller.NewMacauCuiController(newMock()).Exec("p abc"), msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("playing an 8 inlines a suit prompt", func(t *testing.T) {

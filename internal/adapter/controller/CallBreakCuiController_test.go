@@ -76,10 +76,10 @@ func TestCallBreakCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "Play", 5)
 	})
 	t.Run("play no args", func(t *testing.T) {
-		assert.Contains(t, controller.NewCallBreakCuiController(newMock()).Exec("p"), "Card index is required")
+		assert.Contains(t, controller.NewCallBreakCuiController(newMock()).Exec("p"), msgCardIndexRequired())
 	})
 	t.Run("play invalid arg", func(t *testing.T) {
-		assert.Contains(t, controller.NewCallBreakCuiController(newMock()).Exec("p abc"), "Invalid card index")
+		assert.Contains(t, controller.NewCallBreakCuiController(newMock()).Exec("p abc"), msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("next n", func(t *testing.T) {

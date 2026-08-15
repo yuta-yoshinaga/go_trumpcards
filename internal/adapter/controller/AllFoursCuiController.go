@@ -57,7 +57,7 @@ func (c *AllFoursCuiController) Exec(command string) string {
 			case "run":
 				return c.ai.RespondBeg(true), true
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.ai.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.ai.Play)
 			case "n", "next":
 				return c.ai.NextTrick(), true
 			case "nr", "nextround":

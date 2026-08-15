@@ -58,7 +58,7 @@ func (c *JassCuiController) Exec(command string) string {
 			case "sc", "schieben":
 				return c.ji.Schieben(), true
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.ji.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.ji.Play)
 			case "n", "next":
 				return c.ji.NextTrick(), true
 			case "nr", "nextround":

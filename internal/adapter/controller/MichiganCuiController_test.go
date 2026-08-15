@@ -11,6 +11,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	mockUsecases "github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func TestMichiganCuiController_Exec(t *testing.T) {
@@ -61,7 +62,7 @@ func TestMichiganCuiController_Exec(t *testing.T) {
 	})
 	t.Run("play missing arg", func(t *testing.T) {
 		out := controller.NewMichiganCuiController(newMock()).Exec("p")
-		assert.Contains(t, out, "required")
+		assert.Contains(t, out, i18n.T("cardIndexRequiredExample"))
 	})
 	t.Run("next round", func(t *testing.T) {
 		m := newMock()

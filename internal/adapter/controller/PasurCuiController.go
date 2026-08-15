@@ -51,7 +51,7 @@ func (c *PasurCuiController) Exec(command string) string {
 
 // play は手札インデックスと、取る場札の番号（可変長）を取る。
 func (c *PasurCuiController) play(args []string) (string, bool) {
-	idx, errMsg, ok := cuiutil.ParseIntArg(args, "Card index is required.", "Invalid card index: %s.",
+	idx, errMsg, ok := cuiutil.ParseIntArgKeys(args, "cardIndexRequired", "invalidCardIndex",
 		cuiutil.NoMin, cuiutil.NoMax)
 	if !ok {
 		return errMsg, true

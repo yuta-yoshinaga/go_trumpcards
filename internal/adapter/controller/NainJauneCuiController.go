@@ -38,7 +38,7 @@ func (c *NainJauneCuiController) Exec(command string) string {
 			switch cmd {
 			case "p", "play":
 				// 下限を 0 に。NoMin だと `p -1` がそのままドメインまで届く。
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", 0, cuiutil.NoMax, c.pi.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", 0, cuiutil.NoMax, c.pi.Play)
 			case "n", "next":
 				return c.pi.NextDeal(), true
 			default:

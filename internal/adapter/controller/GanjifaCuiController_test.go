@@ -49,7 +49,7 @@ func TestGanjifaCuiController_Exec(t *testing.T) {
 
 	t.Run("play no args", func(t *testing.T) {
 		result := controller.NewGanjifaCuiController(newMock()).Exec("play")
-		assert.Contains(t, result, "Card index is required")
+		assert.Contains(t, result, msgCardIndexRequired())
 	})
 
 	// Ganjifa has no bidding, so bid/pass must not silently resolve to something.

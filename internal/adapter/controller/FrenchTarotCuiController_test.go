@@ -87,7 +87,7 @@ func TestFrenchTarotCuiController_Exec(t *testing.T) {
 
 	t.Run("discard invalid index", func(t *testing.T) {
 		result := controller.NewFrenchTarotCuiController(newMock()).Exec("discard 0 1 2 3 4 x")
-		assert.Contains(t, result, "Invalid card index")
+		assert.Contains(t, result, msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("play card", func(t *testing.T) {
@@ -99,7 +99,7 @@ func TestFrenchTarotCuiController_Exec(t *testing.T) {
 
 	t.Run("play no args", func(t *testing.T) {
 		result := controller.NewFrenchTarotCuiController(newMock()).Exec("play")
-		assert.Contains(t, result, "Card index is required")
+		assert.Contains(t, result, msgCardIndexRequired())
 	})
 
 	t.Run("next / nextround", func(t *testing.T) {

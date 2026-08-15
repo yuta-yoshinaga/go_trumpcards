@@ -91,7 +91,7 @@ func TestOhHellCuiController_Exec_Errors(t *testing.T) {
 
 	// Missing args
 	assert.Contains(t, c.Exec("b"), "required")
-	assert.Contains(t, c.Exec("p"), "required")
+	assert.Contains(t, c.Exec("p"), msgCardIndexRequired())
 	assert.Contains(t, c.Exec("sd"), "required")
 	assert.Contains(t, c.Exec("sm"), "required")
 

@@ -53,7 +53,7 @@ func (c *TarneebCuiController) Exec(command string) string {
 			case "t", "trump":
 				return cuiutil.WithParsedInt(args, "Trump suit is required (1=Spade 2=Club 3=Heart 4=Diamond).", "Invalid suit: %s.", domain.CardDesignSpade, domain.CardDesignDiamond, c.ti.DeclareTrump)
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.ti.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.ti.Play)
 			case "n", "next":
 				return c.ti.NextTrick(), true
 			case "nr", "nextround":

@@ -51,7 +51,7 @@ func (c *LooCuiController) Exec(command string) string {
 			case "pass":
 				return c.li.Decide(false), true
 			case "p":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", 0, domain.LooHandSize-1, c.li.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", 0, domain.LooHandSize-1, c.li.Play)
 			case "n", "next", "nr", "nextround":
 				return c.li.NextRound(), true
 			case "sd", "setdifficulty":

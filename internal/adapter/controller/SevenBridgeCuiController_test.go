@@ -116,12 +116,12 @@ func TestSevenBridgeCuiController_Exec(t *testing.T) {
 
 	t.Run("discard no args", func(t *testing.T) {
 		c := controller.NewSevenBridgeCuiController(newMock())
-		assert.Contains(t, c.Exec("d"), "Card index is required")
+		assert.Contains(t, c.Exec("d"), msgCardIndexRequired())
 	})
 
 	t.Run("discard invalid", func(t *testing.T) {
 		c := controller.NewSevenBridgeCuiController(newMock())
-		assert.Contains(t, c.Exec("d abc"), "Invalid card index")
+		assert.Contains(t, c.Exec("d abc"), msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("nextround aliases", func(t *testing.T) {
