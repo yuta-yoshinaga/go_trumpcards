@@ -29,5 +29,5 @@
   "hint": "[HINT: {{action}} ({{reason}})]",
   "hintReasonStrongHand": "strong hand — worth staying in",
   "hintReasonWeakHand": "weak hand — better to fold",
-  "helpExampleIn": "  i                         stay in for this round"
+  "helpExampleNext": "  n                         read the round result, then continue"
 }

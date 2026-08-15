@@ -33,5 +33,5 @@
   "result.humanWin": "Game over! Your team wins!",
   "result.cpuWin": "Game over! The other team wins.",
   "result.draw": "Game over. It ended level, so nobody wins.",
-  "helpExampleAsk": "  a 1 1 1                   ask seat 1 for the ace of spades"
+  "helpExampleClaim": "  c                         claim a half-suit"
 }

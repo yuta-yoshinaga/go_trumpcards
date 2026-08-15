@@ -29,5 +29,5 @@
   "hint": "[HINT: {{action}}（{{reason}}）]",
   "hintReasonStrongHand": "強い手 — 残る価値あり",
   "hintReasonWeakHand": "弱い手 — 降りるのが無難",
-  "helpExampleIn": "  i                         このラウンドに残る"
+  "helpExampleNext": "  n                         ラウンドの結果を見てから次へ"
 }

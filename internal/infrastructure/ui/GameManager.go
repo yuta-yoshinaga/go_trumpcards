@@ -4426,7 +4426,7 @@ var gameRegistry = []GameRegistryEntry{
 		CuiHelpSpec{
 			TitleKey: "guts.helpTitle",
 			ExampleKeys: []string{
-				"guts.helpExampleIn",
+				"guts.helpExampleNext",
 			},
 			CommandKeys:       []string{"guts.helpDeclare", "guts.helpNext"},
 			ExtraCommandLines: []string{"  l                    action log"},
@@ -5054,7 +5054,7 @@ var gameRegistry = []GameRegistryEntry{
 		CuiHelpSpec{
 			TitleKey: "literature.helpTitle",
 			ExampleKeys: []string{
-				"literature.helpExampleAsk",
+				"literature.helpExampleClaim",
 			},
 			CommandKeys: []string{
 				"literature.helpAsk",
@@ -5070,7 +5070,7 @@ var gameRegistry = []GameRegistryEntry{
 		CuiHelpSpec{
 			TitleKey: "guandan.helpTitle",
 			ExampleKeys: []string{
-				"guandan.helpExamplePass",
+				"guandan.helpExampleNext",
 			},
 			CommandKeys: []string{
 				"guandan.helpPlay",
@@ -5702,7 +5702,7 @@ var gameRegistry = []GameRegistryEntry{
 		CuiHelpSpec{
 			TitleKey: "stealingbundles.helpTitle",
 			ExampleKeys: []string{
-				"stealingbundles.helpExampleTake",
+				"stealingbundles.helpExampleGiveUp",
 			},
 			CommandKeys: []string{
 				"stealingbundles.helpTake",

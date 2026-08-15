@@ -33,5 +33,5 @@
   "result.humanWin": "ゲーム終了！ あなたのチームの勝ちです！",
   "result.cpuWin": "ゲーム終了！ 相手チームの勝ちです。",
   "result.draw": "ゲーム終了。同数で勝者なしです。",
-  "helpExampleAsk": "  a 1 1 1                  席 1 に ♠A を要求する"
+  "helpExampleClaim": "  c                       ハーフスートを宣言する"
 }

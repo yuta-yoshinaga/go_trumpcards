@@ -37,5 +37,5 @@
   "handFirstSecond": "1着2着の独占。4段階昇級です",
   "result.humanWin": "ゲーム終了！ あなたのチームの勝ちです！",
   "result.cpuWin": "ゲーム終了！ 相手チームの勝ちです。",
-  "helpExamplePass": "  ps                        この番はパスする"
+  "helpExampleNext": "  n                         トリックの決着を見てから次へ"
 }
