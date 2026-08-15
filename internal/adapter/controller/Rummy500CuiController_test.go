@@ -157,7 +157,7 @@ func TestRummy500CuiController_Exec(t *testing.T) {
 
 	t.Run("setlimit sl invalid", func(t *testing.T) {
 		result := controller.NewRummy500CuiController(newMock()).Exec("sl 0")
-		assert.Contains(t, result, "Invalid point limit")
+		assert.Contains(t, result, msgInvalidPointLimitPrefix())
 	})
 
 	t.Run("action log l", func(t *testing.T) {

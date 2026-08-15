@@ -117,9 +117,9 @@ func TestTwoTenJackCuiController_Exec(t *testing.T) {
 		expected := domain.DefaultTwoTenJackConfig()
 		expected.PointLimit = 100
 		m.AssertCalled(t, "ResetWithConfig", expected)
-		assert.Contains(t, c.Exec("sl"), "required")
-		assert.Contains(t, c.Exec("sl abc"), "Invalid point limit")
-		assert.Contains(t, c.Exec("sl 0"), "Invalid point limit")
+		assert.Contains(t, c.Exec("sl"), msgPointLimitRequired())
+		assert.Contains(t, c.Exec("sl abc"), msgInvalidPointLimitPrefix())
+		assert.Contains(t, c.Exec("sl 0"), msgInvalidPointLimitPrefix())
 	})
 
 	t.Run("hint and log", func(t *testing.T) {

@@ -44,8 +44,8 @@ func TestBlackJackSwitchCuiController_Bet(t *testing.T) {
 
 func TestBlackJackSwitchCuiController_Bet_Errors(t *testing.T) {
 	c := controller.NewBlackJackSwitchCuiController(newMockBlackJackSwitchInteractor())
-	assert.Contains(t, c.Exec("b"), "Bet amount is required")
-	assert.Contains(t, c.Exec("b abc"), "Invalid bet amount")
+	assert.Contains(t, c.Exec("b"), msgBetAmountRequired())
+	assert.Contains(t, c.Exec("b abc"), msgInvalidBetAmountPrefix())
 }
 
 func TestBlackJackSwitchCuiController_PlayActions(t *testing.T) {

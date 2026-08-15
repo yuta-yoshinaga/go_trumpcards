@@ -74,7 +74,7 @@ func (c *EcarteCuiController) Exec(command string) string {
 					return c.ei.ResetWithConfig(cfg)
 				})
 			case "tg", "settarget":
-				return cuiutil.WithParsedInt(args, "Target score is required.", "Invalid target score: %s. Please enter 1 or more.", 1, math.MaxInt, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "targetScoreRequired", "invalidTargetScore", 1, math.MaxInt, func(v int) string {
 					cfg := c.ei.GetConfig()
 					cfg.TargetScore = v
 					return c.ei.ResetWithConfig(cfg)

@@ -123,7 +123,7 @@ func TestChinchonCuiController_Exec(t *testing.T) {
 
 	t.Run("setplayers sp out of range", func(t *testing.T) {
 		result := controller.NewChinchonCuiController(newMock()).Exec("sp 5")
-		assert.Equal(t, "Invalid player count: 5. Please enter 2-4.", result)
+		assert.Equal(t, msgInvalidPlayerCount("5"), result)
 	})
 
 	t.Run("log", func(t *testing.T) {

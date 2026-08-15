@@ -99,7 +99,7 @@ func TestOpenFaceChineseCuiController_Exec(t *testing.T) {
 
 	t.Run("setplayers invalid", func(t *testing.T) {
 		result := controller.NewOpenFaceChineseCuiController(newMock()).Exec("sp 9")
-		assert.Contains(t, result, "Invalid player count")
+		assert.Contains(t, result, msgInvalidPlayerCountPrefix())
 	})
 
 	t.Run("hint / log", func(t *testing.T) {

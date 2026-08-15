@@ -213,8 +213,8 @@ func TestIronCrossCuiController(t *testing.T) {
 	assert.NotEmpty(t, c.Exec("h"))
 	m.AssertCalled(t, "ChooseLine", int(domain.IronCrossLineHorizontal))
 
-	assert.Contains(t, c.Exec("bet"), "required")
-	assert.Contains(t, c.Exec("bet xyz"), "Invalid")
+	assert.Contains(t, c.Exec("bet"), msgAmountRequired())
+	assert.Contains(t, c.Exec("bet xyz"), msgInvalidAmountPrefix())
 
 	for _, cmd := range []string{"next", "hint", "log"} {
 		assert.NotEmpty(t, c.Exec(cmd), "command %s produced nothing", cmd)

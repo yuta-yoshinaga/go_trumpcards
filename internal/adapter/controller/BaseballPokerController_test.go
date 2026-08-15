@@ -198,8 +198,8 @@ func TestBaseballPokerCuiController(t *testing.T) {
 	assert.NotEmpty(t, c.Exec("buyfold"))
 	m.AssertCalled(t, "AnswerBuyIn", domain.BaseballBuyFold)
 
-	assert.Contains(t, c.Exec("bet"), "required")
-	assert.Contains(t, c.Exec("bet xyz"), "Invalid")
+	assert.Contains(t, c.Exec("bet"), msgAmountRequired())
+	assert.Contains(t, c.Exec("bet xyz"), msgInvalidAmountPrefix())
 
 	for _, cmd := range []string{"next", "hint", "log"} {
 		assert.NotEmpty(t, c.Exec(cmd), "command %s produced nothing", cmd)

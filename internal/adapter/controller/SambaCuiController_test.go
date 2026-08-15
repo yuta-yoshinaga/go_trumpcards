@@ -141,8 +141,8 @@ func TestSambaCuiController_Exec(t *testing.T) {
 
 	t.Run("setlimit invalid", func(t *testing.T) {
 		c := controller.NewSambaCuiController(newMock())
-		assert.Contains(t, c.Exec("sl abc"), "Invalid point limit")
-		assert.Contains(t, c.Exec("sl 0"), "Invalid point limit")
+		assert.Contains(t, c.Exec("sl abc"), msgInvalidPointLimitPrefix())
+		assert.Contains(t, c.Exec("sl 0"), msgInvalidPointLimitPrefix())
 	})
 
 	t.Run("log", func(t *testing.T) {

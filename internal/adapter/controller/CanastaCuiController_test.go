@@ -271,19 +271,19 @@ func TestCanastaCuiController_Exec(t *testing.T) {
 	t.Run("setlimit no args", func(t *testing.T) {
 		c := controller.NewCanastaCuiController(newMock())
 		result := c.Exec("sl")
-		assert.Contains(t, result, "required")
+		assert.Contains(t, result, msgPointLimitRequired())
 	})
 
 	t.Run("setlimit invalid value", func(t *testing.T) {
 		c := controller.NewCanastaCuiController(newMock())
 		result := c.Exec("sl abc")
-		assert.Contains(t, result, "Invalid point limit")
+		assert.Contains(t, result, msgInvalidPointLimitPrefix())
 	})
 
 	t.Run("setlimit zero is invalid", func(t *testing.T) {
 		c := controller.NewCanastaCuiController(newMock())
 		result := c.Exec("sl 0")
-		assert.Contains(t, result, "Invalid point limit")
+		assert.Contains(t, result, msgInvalidPointLimitPrefix())
 	})
 
 	// log

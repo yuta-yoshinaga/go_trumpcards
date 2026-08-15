@@ -109,7 +109,7 @@ func TestGongZhuCuiController_Exec(t *testing.T) {
 
 	t.Run("setlimit invalid", func(t *testing.T) {
 		result := controller.NewGongZhuCuiController(newMock()).Exec("sl 0")
-		assert.Contains(t, result, "Invalid point limit")
+		assert.Contains(t, result, msgInvalidPointLimitPrefix())
 	})
 
 	t.Run("hint / log", func(t *testing.T) {

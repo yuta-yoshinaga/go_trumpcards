@@ -303,7 +303,7 @@ func TestPinochleCuiController_Exec(t *testing.T) {
 	t.Run("setlimit zero", func(t *testing.T) {
 		c := controller.NewPinochleCuiController(newPinochleMock())
 		result := c.Exec("sl 0")
-		assert.Contains(t, result, "Invalid point limit: 0")
+		assert.Contains(t, result, "Invalid point limit")
 	})
 
 	// hint

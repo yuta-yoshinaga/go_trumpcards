@@ -71,13 +71,13 @@ func (c *MichiganCuiController) Exec(command string) string {
 					return c.ti.ResetWithConfig(cfg)
 				})
 			case "sc", "setchips":
-				return cuiutil.WithParsedInt(args, "Starting chips is required (e.g. sc 200).", "Invalid starting chips: %s.", domain.MichiganMinStartingChips, domain.MichiganMaxStartingChips, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "startingChipsRequired", "invalidStartingChips", domain.MichiganMinStartingChips, domain.MichiganMaxStartingChips, func(v int) string {
 					cfg := c.ti.GetConfig()
 					cfg.StartingChips = v
 					return c.ti.ResetWithConfig(cfg)
 				})
 			case "st", "setrounds":
-				return cuiutil.WithParsedInt(args, "Target rounds is required (e.g. st 10).", "Invalid target rounds: %s.", domain.MichiganMinTargetRounds, domain.MichiganMaxTargetRounds, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "targetRoundsRequired", "invalidTargetRounds", domain.MichiganMinTargetRounds, domain.MichiganMaxTargetRounds, func(v int) string {
 					cfg := c.ti.GetConfig()
 					cfg.TargetRounds = v
 					return c.ti.ResetWithConfig(cfg)

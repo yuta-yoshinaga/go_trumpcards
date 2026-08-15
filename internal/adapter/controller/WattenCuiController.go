@@ -69,7 +69,7 @@ func (c *WattenCuiController) Exec(command string) string {
 					return c.wi.ResetWithConfig(cfg)
 				})
 			case "st", "settarget":
-				return cuiutil.WithParsedInt(args, "Target score is required.", "Invalid target score: %s. Please enter 1 or more.", 1, math.MaxInt, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "targetScoreRequired", "invalidTargetScore", 1, math.MaxInt, func(v int) string {
 					cfg := c.wi.GetConfig()
 					cfg.TargetScore = v
 					return c.wi.ResetWithConfig(cfg)

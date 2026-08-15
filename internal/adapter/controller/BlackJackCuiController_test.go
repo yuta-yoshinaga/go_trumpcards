@@ -53,16 +53,16 @@ func TestBlackJackCuiController_Method(t *testing.T) {
 		assert.Equal(t, mockOutput, tbc.Exec("bet 100"))
 	})
 	t.Run("error Exec b without amount", func(t *testing.T) {
-		assert.Equal(t, "Bet amount is required.", tbc.Exec("b"))
+		assert.Equal(t, msgBetAmountRequired(), tbc.Exec("b"))
 	})
 	t.Run("error Exec b with invalid amount", func(t *testing.T) {
-		assert.Equal(t, "Invalid bet amount. Please enter a number.", tbc.Exec("b foo"))
+		assert.Equal(t, msgInvalidBetAmount(""), tbc.Exec("b foo"))
 	})
 	t.Run("error Exec b with negative amount", func(t *testing.T) {
-		assert.Equal(t, "Invalid bet amount. Please enter a number.", tbc.Exec("b -100"))
+		assert.Equal(t, msgInvalidBetAmount(""), tbc.Exec("b -100"))
 	})
 	t.Run("error Exec b with zero amount", func(t *testing.T) {
-		assert.Equal(t, "Invalid bet amount. Please enter a number.", tbc.Exec("b 0"))
+		assert.Equal(t, msgInvalidBetAmount(""), tbc.Exec("b 0"))
 	})
 	t.Run("success Exec d", func(t *testing.T) {
 		assert.Equal(t, mockOutput, tbc.Exec("d"))

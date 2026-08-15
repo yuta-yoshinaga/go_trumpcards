@@ -232,25 +232,25 @@ func TestSpadesCuiController_Exec(t *testing.T) {
 	t.Run("setlimit no args", func(t *testing.T) {
 		c := controller.NewSpadesCuiController(newMock())
 		result := c.Exec("sl")
-		assert.Contains(t, result, "required")
+		assert.Contains(t, result, msgPointLimitRequired())
 	})
 
 	t.Run("setlimit invalid value", func(t *testing.T) {
 		c := controller.NewSpadesCuiController(newMock())
 		result := c.Exec("sl abc")
-		assert.Contains(t, result, "Invalid point limit")
+		assert.Contains(t, result, msgInvalidPointLimitPrefix())
 	})
 
 	t.Run("setlimit zero", func(t *testing.T) {
 		c := controller.NewSpadesCuiController(newMock())
 		result := c.Exec("sl 0")
-		assert.Equal(t, "Invalid point limit: 0. Please enter 1 or more.", result)
+		assert.Equal(t, msgInvalidPointLimit("0"), result)
 	})
 
 	t.Run("setlimit negative", func(t *testing.T) {
 		c := controller.NewSpadesCuiController(newMock())
 		result := c.Exec("sl -1")
-		assert.Equal(t, "Invalid point limit: -1. Please enter 1 or more.", result)
+		assert.Equal(t, msgInvalidPointLimit("-1"), result)
 	})
 
 	// log

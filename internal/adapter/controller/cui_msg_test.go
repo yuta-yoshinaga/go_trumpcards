@@ -29,3 +29,10 @@ func msgInvalidCpuDifficultyPrefix() string {
 }
 
 func msgCpuDifficultyRequired() string { return i18n.T("cpuDifficultyRequired") }
+
+func msgBetAmountRequired() string { return i18n.T("betAmountRequired") }
+
+func msgInvalidBetAmountPrefix() string {
+	stem := strings.SplitN(i18n.Tf("invalidBetAmount", "val", "\x00"), "\x00", 2)[0]
+	return strings.TrimRight(stem, ":. ")
+}

@@ -59,7 +59,7 @@ func TestAndarBaharCuiController_Bet_InvalidInput(t *testing.T) {
 
 	assert.Contains(t, c.Exec("b"), "required")
 	assert.Contains(t, c.Exec("b 100"), "required")
-	assert.Contains(t, c.Exec("b abc a"), "Invalid bet amount")
+	assert.Contains(t, c.Exec("b abc a"), msgInvalidBetAmountPrefix())
 	assert.Contains(t, c.Exec("b 100 x"), "Invalid bet target")
 	assert.Contains(t, c.Exec("b 100 a abc 2"), "Invalid side bet amount")
 	assert.Contains(t, c.Exec("b 100 a 50 abc"), "Invalid side bet band")
