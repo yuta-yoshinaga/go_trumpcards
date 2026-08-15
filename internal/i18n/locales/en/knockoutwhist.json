@@ -23,5 +23,7 @@
   "hintReasonFollowDuck": "Cannot win — follow with a low card",
   "hintReasonDiscardLow": "Cannot follow suit — discard a low card",
   "leaderMark": "▶(lead) ",
-  "winnerMark": "★(winner) "
+  "winnerMark": "★(winner) ",
+  "helpExamplePlay": "  play 0                   play hand card 0",
+  "helpExampleNext": "  n                        read the trick result, then start the next trick"
 }

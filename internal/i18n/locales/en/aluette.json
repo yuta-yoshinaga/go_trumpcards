@@ -25,5 +25,7 @@
   "round": "Mene: {{round}}  trick: {{trick}}",
   "roundEndTrickEntry": "{{name}} {{tricks}}",
   "roundEndTricks": "Tricks per player: {{list}}",
-  "teamLine": "Score  team 0: {{team0}}  team 1: {{team1}}  (first to {{target}})"
+  "teamLine": "Score  team 0: {{team0}}  team 1: {{team1}}  (first to {{target}})",
+  "helpExamplePlay": "  play 0               play hand card 0",
+  "helpExampleNext": "  n                    read the trick result, then start the next trick"
 }

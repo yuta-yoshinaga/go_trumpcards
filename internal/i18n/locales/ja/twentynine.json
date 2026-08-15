@@ -40,5 +40,8 @@
   "trickEnd": "トリック終了",
   "roundEnd": "ラウンド終了",
   "result.humanWin": "ゲーム終了！ あなたのチームの勝ち！",
-  "result.cpuWin": "ゲーム終了！ チーム{{team}}の勝ち！"
+  "result.cpuWin": "ゲーム終了！ チーム{{team}}の勝ち！",
+  "helpExampleBid": "  bid 20                   20 点を宣言する",
+  "helpExamplePlay": "  play 0                   手札の 0 番のカードを出す",
+  "helpExampleNext": "  n                        トリックの決着を見てから次のトリックへ"
 }

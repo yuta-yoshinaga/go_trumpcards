@@ -41,5 +41,8 @@
   "result.cpuWin": "Game over! Player {{player}} wins!",
   "promptBidHolder": "Current high bidder: {{name}}",
   "declarerProgress": "Declarer: {{won}}/{{needed}} tricks ({{remaining}} left)",
-  "contractUnreachable": " - the contract can no longer be made"
+  "contractUnreachable": " - the contract can no longer be made",
+  "helpExampleBid": "  bid 3                    declare three tricks",
+  "helpExamplePlay": "  play 0                   play hand card 0",
+  "helpExampleNext": "  n                        read the trick result, then start the next trick"
 }

@@ -20,5 +20,7 @@
   "hintReasonFollowDuck": "取れない／取る価値がないのでダック",
   "hintReasonDiscardLow": "フォローできないので低い札を捨てる",
   "trickWinner": "{{name}}（チーム{{team}}）がトリックを獲得",
-  "roundPoints": "カード獲得点 — チームA: {{ptsA}}点 / チームB: {{ptsB}}点（勝利ライン {{win}}点）"
+  "roundPoints": "カード獲得点 — チームA: {{ptsA}}点 / チームB: {{ptsB}}点（勝利ライン {{win}}点）",
+  "helpExamplePlay": "  play 0                   手札の 0 番のカードを出す",
+  "helpExampleNext": "  n                        トリックの決着を見てから次のトリックへ"
 }

@@ -23,5 +23,7 @@
   "hintReasonFollowDuck": "取れないのでリードスートの低い札で受ける",
   "hintReasonDiscardLow": "リードに従えないので低い札を捨てる",
   "leaderMark": "▶(リード) ",
-  "winnerMark": "★(勝者) "
+  "winnerMark": "★(勝者) ",
+  "helpExamplePlay": "  play 0                   手札の 0 番のカードを出す",
+  "helpExampleNext": "  n                        トリックの決着を見てから次のトリックへ"
 }
