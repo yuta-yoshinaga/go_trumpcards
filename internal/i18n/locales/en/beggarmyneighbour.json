@@ -15,5 +15,6 @@
   "gameWinHuman": "You win!",
   "gameWinCpu": "CPU wins...",
   "gameDraw": "It's a draw!",
-  "roundProgress": "Round {{played}} of {{max}} (a draw is called at the cap)"
+  "roundProgress": "Round {{played}} of {{max}} (a draw is called at the cap)",
+  "helpExampleStep": "  s                    turn the next card"
 }

@@ -35,5 +35,6 @@
   "showLabelCrib": "クリブ",
   "showDetailLine": "  {{label}}: {{total}}点 (15s={{fifteens}}, ペア={{pairs}}, ラン={{runs}}, フラッシュ={{flush}}, ノブ={{nobs}})",
   "hintDiscard": "ヒント: インデックス {{i}} と {{j}} をクリブに捨てるのがおすすめです。",
-  "hintPlay": "ヒント: インデックス {{i}} のカードを出すのがおすすめです。"
+  "hintPlay": "ヒント: インデックス {{i}} のカードを出すのがおすすめです。",
+  "helpExampleDiscard": "  d 0                  手札の 0 番をクリブへ捨てる"
 }

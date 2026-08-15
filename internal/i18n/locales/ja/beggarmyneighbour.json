@@ -15,5 +15,6 @@
   "gameWinHuman": "あなたの勝ちです！",
   "gameWinCpu": "CPUの勝ちです...",
   "gameDraw": "引き分けです！",
-  "roundProgress": "ラウンド: {{played}} / {{max}}（上限で引き分け）"
+  "roundProgress": "ラウンド: {{played}} / {{max}}（上限で引き分け）",
+  "helpExampleStep": "  s                    次の 1 枚をめくる"
 }

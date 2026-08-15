@@ -33,5 +33,7 @@
   "hintReason.knock_ready": "your best suit is high enough to knock",
   "hintReason.discard_improves": "the discard raises your best suit",
   "hintReason.draw_stock": "the discard would not help",
-  "hintReason.drop_weakest": "it leaves the highest total"
+  "hintReason.drop_weakest": "it leaves the highest total",
+  "helpExampleDraw": "  ds                   start the turn by drawing from the stock",
+  "helpExampleDiscard": "  d 0                  discard hand card 0"
 }
