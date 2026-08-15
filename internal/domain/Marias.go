@@ -514,24 +514,13 @@ func (g *Marias) cpuPlaySmart(playerIdx int, valid []int) int {
 	for _, tc := range g.currentTrick {
 		trickPts += mariasCardPoints(tc.Card)
 	}
-	winners := mariasFilter(valid, func(idx int) bool { return g.mariasRank(player.GetCard(idx)) > topRank })
+	winners := filterIndices(valid, func(idx int) bool { return g.mariasRank(player.GetCard(idx)) > topRank })
 	if trickPts > 0 && len(winners) > 0 {
 		return pickLowest(player, winners, func(c *Card) int { return g.mariasRank(c) })
 	}
 	return pickLowest(player, valid, func(c *Card) int {
 		return mariasCardPoints(c)*100 + g.mariasRank(c)
 	})
-}
-
-// mariasFilter 述語を満たすインデックスを抽出する。
-func mariasFilter(indices []int, pred func(int) bool) []int {
-	var out []int
-	for _, idx := range indices {
-		if pred(idx) {
-			out = append(out, idx)
-		}
-	}
-	return out
 }
 
 // --- Hint ---

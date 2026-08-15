@@ -591,9 +591,9 @@ func (g *Tute) cpuPlaySmart(playerIdx int, valid []int) int {
 			return tuteCardPoints(c.GetValue())*100 + tuteStrength(c.GetValue())
 		})
 	}
-	winners := tuteFilter(follows, func(idx int) bool { return g.tuteRank(player.GetCard(idx)) > topRank })
+	winners := filterIndices(follows, func(idx int) bool { return g.tuteRank(player.GetCard(idx)) > topRank })
 	if partnerWinning {
-		nonWinners := tuteFilter(follows, func(idx int) bool { return g.tuteRank(player.GetCard(idx)) < topRank })
+		nonWinners := filterIndices(follows, func(idx int) bool { return g.tuteRank(player.GetCard(idx)) < topRank })
 		if len(nonWinners) > 0 {
 			return pickHighest(player, nonWinners, func(c *Card) int {
 				return tuteCardPoints(c.GetValue())*100 - tuteStrength(c.GetValue())
@@ -607,17 +607,6 @@ func (g *Tute) cpuPlaySmart(playerIdx int, valid []int) int {
 	return pickLowest(player, follows, func(c *Card) int {
 		return tuteCardPoints(c.GetValue())*100 + tuteStrength(c.GetValue())
 	})
-}
-
-// tuteFilter 述語を満たすインデックスを抽出する。
-func tuteFilter(indices []int, pred func(int) bool) []int {
-	var out []int
-	for _, idx := range indices {
-		if pred(idx) {
-			out = append(out, idx)
-		}
-	}
-	return out
 }
 
 // --- Hint ---

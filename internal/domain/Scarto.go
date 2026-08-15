@@ -748,7 +748,7 @@ func (g *Scarto) trumpFollowIndices(player *ScartoPlayer, highestTrump int) []in
 	if len(trumps) == 0 {
 		return g.nonExcuseIndices(player)
 	}
-	higher := scartoFilter(trumps, func(idx int) bool {
+	higher := filterIndices(trumps, func(idx int) bool {
 		c := player.GetCard(idx)
 		return c != nil && c.GetValue() > highestTrump
 	})
@@ -768,7 +768,7 @@ func (g *Scarto) suitFollowIndices(player *ScartoPlayer, led, highestTrump int) 
 	if len(trumps) == 0 {
 		return g.nonExcuseIndices(player)
 	}
-	higher := scartoFilter(trumps, func(idx int) bool {
+	higher := filterIndices(trumps, func(idx int) bool {
 		c := player.GetCard(idx)
 		return c != nil && c.GetValue() > highestTrump
 	})
@@ -928,7 +928,7 @@ func (g *Scarto) cpuPlaySmart(playerIdx int, valid []int) int {
 		return g.minByPoints(playerIdx, valid)
 	}
 	winCard := g.currentTrick[pos].Card
-	winners := scartoFilter(valid, func(idx int) bool {
+	winners := filterIndices(valid, func(idx int) bool {
 		c := p.GetCard(idx)
 		return c != nil && scartoWinRank(c, led) > scartoWinRank(winCard, led)
 	})
@@ -1118,17 +1118,6 @@ func scartoCardStr(c *Card) string {
 		s = "?"
 	}
 	return fmt.Sprintf("%s%d", s, c.GetValue())
-}
-
-// scartoFilter 述語を満たすインデックスを抽出する。
-func scartoFilter(indices []int, pred func(int) bool) []int {
-	var out []int
-	for _, idx := range indices {
-		if pred(idx) {
-			out = append(out, idx)
-		}
-	}
-	return out
 }
 
 // scartoAppendUnique スライスに未含有のインデックスを追加する。

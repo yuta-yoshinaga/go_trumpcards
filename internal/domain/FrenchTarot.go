@@ -1019,7 +1019,7 @@ func (g *FrenchTarot) trumpFollowIndices(player *FrenchTarotPlayer, highestTrump
 	if len(trumps) == 0 {
 		return g.nonExcuseIndices(player) // 切り札なし → 任意の非エクスキューズ札
 	}
-	higher := frenchTarotFilter(trumps, func(idx int) bool {
+	higher := filterIndices(trumps, func(idx int) bool {
 		return player.GetCard(idx).GetValue() > highestTrump
 	})
 	if len(higher) > 0 {
@@ -1039,7 +1039,7 @@ func (g *FrenchTarot) suitFollowIndices(player *FrenchTarotPlayer, led, highestT
 		return g.nonExcuseIndices(player) // ボイド + 切り札なし → 任意
 	}
 	// ボイド → 切り札義務 (+ 場に切り札があればオーバートランプ義務)。
-	higher := frenchTarotFilter(trumps, func(idx int) bool {
+	higher := filterIndices(trumps, func(idx int) bool {
 		return player.GetCard(idx).GetValue() > highestTrump
 	})
 	if highestTrump > 0 && len(higher) > 0 {
@@ -1258,7 +1258,7 @@ func (g *FrenchTarot) cpuPlaySmart(playerIdx int, valid []int) int {
 	winnerIsDecl := winnerIdx == g.declarerIdx
 	iAmDecl := playerIdx == g.declarerIdx
 	// 勝てる札。
-	winners := frenchTarotFilter(valid, func(idx int) bool {
+	winners := filterIndices(valid, func(idx int) bool {
 		return frenchTarotWinRank(p.GetCard(idx), led) > frenchTarotWinRank(winCard, led)
 	})
 	sameSideWinning := winnerIsDecl == iAmDecl
@@ -1502,17 +1502,6 @@ func frenchTarotValidBid(bid FrenchTarotBid) bool {
 // frenchTarotValidBidVal bid が定義済みの入札値 (Pass 含む) か。
 func frenchTarotValidBidVal(bid FrenchTarotBid) bool {
 	return bid >= FrenchTarotBidPass && bid <= FrenchTarotBidGardeContre
-}
-
-// frenchTarotFilter 述語を満たすインデックスを抽出する。
-func frenchTarotFilter(indices []int, pred func(int) bool) []int {
-	var out []int
-	for _, idx := range indices {
-		if pred(idx) {
-			out = append(out, idx)
-		}
-	}
-	return out
 }
 
 // frenchTarotAppendUnique スライスに未含有のインデックスを追加する。

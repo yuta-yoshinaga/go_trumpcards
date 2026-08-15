@@ -491,24 +491,13 @@ func (g *KnockoutWhist) cpuPlaySmart(playerIdx int, valid []int) int {
 	}
 	winnerIdx := g.trickWinner()
 	topRank := g.trickTopRank(winnerIdx)
-	winners := knockoutFilter(valid, func(idx int) bool { return g.knockoutRank(player.GetCard(idx)) > topRank })
+	winners := filterIndices(valid, func(idx int) bool { return g.knockoutRank(player.GetCard(idx)) > topRank })
 	if len(winners) > 0 {
 		// 最小コストで勝てる札。
 		return pickLowest(player, winners, func(c *Card) int { return g.knockoutRank(c) })
 	}
 	// 勝てない: 最弱札を捨てる。
 	return pickLowest(player, valid, func(c *Card) int { return g.knockoutRank(c) })
-}
-
-// knockoutFilter 述語を満たすインデックスを抽出する。
-func knockoutFilter(indices []int, pred func(int) bool) []int {
-	var out []int
-	for _, idx := range indices {
-		if pred(idx) {
-			out = append(out, idx)
-		}
-	}
-	return out
 }
 
 // --- Hint ---

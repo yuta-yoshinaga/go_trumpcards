@@ -590,23 +590,12 @@ func (g *SoloWhist) cpuPlaySmart(playerIdx int, valid []int) int {
 	}
 	winnerIdx := g.trickWinner()
 	topRank := g.trickTopRank(winnerIdx)
-	winners := soloWhistFilter(valid, func(idx int) bool { return g.soloWhistRank(player.GetCard(idx)) > topRank })
+	winners := filterIndices(valid, func(idx int) bool { return g.soloWhistRank(player.GetCard(idx)) > topRank })
 	wantWin := isDeclarer != misere // 宣言者(非Misère)は勝ちたい; 防御は宣言者を負かしたい
 	if wantWin && len(winners) > 0 {
 		return pickLowest(player, winners, func(c *Card) int { return g.soloWhistRank(c) })
 	}
 	return pickLowest(player, valid, func(c *Card) int { return g.soloWhistRank(c) })
-}
-
-// soloWhistFilter 述語を満たすインデックスを抽出する。
-func soloWhistFilter(indices []int, pred func(int) bool) []int {
-	var out []int
-	for _, idx := range indices {
-		if pred(idx) {
-			out = append(out, idx)
-		}
-	}
-	return out
 }
 
 // --- Hint ---

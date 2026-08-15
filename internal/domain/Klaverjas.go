@@ -625,10 +625,10 @@ func (g *Klaverjas) cpuPlaySmart(playerIdx int, valid []int) int {
 	for _, tc := range g.currentTrick {
 		trickPts += g.cardPoints(tc.Card)
 	}
-	winners := klaverjasFilter(valid, func(idx int) bool { return g.klaverjasRank(player.GetCard(idx)) > topRank })
+	winners := filterIndices(valid, func(idx int) bool { return g.klaverjasRank(player.GetCard(idx)) > topRank })
 	if partnerWinning {
 		// 味方が勝っている: 得点の高い札を渡す (勝ち札以外があればそれ)。
-		nonWinners := klaverjasFilter(valid, func(idx int) bool { return g.klaverjasRank(player.GetCard(idx)) < topRank })
+		nonWinners := filterIndices(valid, func(idx int) bool { return g.klaverjasRank(player.GetCard(idx)) < topRank })
 		if len(nonWinners) > 0 {
 			return pickHighest(player, nonWinners, func(c *Card) int { return g.cardPoints(c) })
 		}
@@ -640,17 +640,6 @@ func (g *Klaverjas) cpuPlaySmart(playerIdx int, valid []int) int {
 	return pickLowest(player, valid, func(c *Card) int {
 		return g.cardPoints(c)*100 + g.klaverjasRank(c)
 	})
-}
-
-// klaverjasFilter 述語を満たすインデックスを抽出する。
-func klaverjasFilter(indices []int, pred func(int) bool) []int {
-	var out []int
-	for _, idx := range indices {
-		if pred(idx) {
-			out = append(out, idx)
-		}
-	}
-	return out
 }
 
 // --- Hint ---

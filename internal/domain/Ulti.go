@@ -640,7 +640,7 @@ func (g *Ulti) getValidPlayIndices(playerIdx int) []int {
 	}
 	led := g.currentTrick[0].Card.GetDesign()
 	// リードスートを持っていれば必ず従う。
-	follows := ultiFilter(all, func(idx int) bool {
+	follows := filterIndices(all, func(idx int) bool {
 		return player.GetCard(idx).GetDesign() == led
 	})
 	if len(follows) > 0 {
@@ -655,7 +655,7 @@ func (g *Ulti) getValidPlayIndices(playerIdx int) []int {
 	if !hasTrumpInTrick {
 		return all
 	}
-	beating := ultiFilter(all, func(idx int) bool {
+	beating := filterIndices(all, func(idx int) bool {
 		c := player.GetCard(idx)
 		return c.GetDesign() == g.trumpSuit && ultiTrickRank(c.GetValue()) > highestTrumpRank
 	})
@@ -878,17 +878,6 @@ func ultiHasTrump(contract UltiContract, trump int) bool {
 	return ultiContractNeedsTrump(contract) && ultiValidSuit(trump)
 }
 
-// ultiFilter 述語を満たすインデックスを抽出する。
-func ultiFilter(indices []int, pred func(int) bool) []int {
-	var out []int
-	for _, idx := range indices {
-		if pred(idx) {
-			out = append(out, idx)
-		}
-	}
-	return out
-}
-
 // indexOfPlayerInTrick currentTrick 内で playerIdx の札の位置を返す (-1=なし)。
 func (g *Ulti) indexOfPlayerInTrick(playerIdx int) int {
 	return indexOfPlayerInTrick(g.currentTrick, playerIdx)
@@ -934,10 +923,10 @@ func (g *Ulti) cpuPlaySmart(playerIdx int, valid []int) int {
 	winnerIdx := g.trickWinner()
 	winCard := g.currentTrick[g.indexOfPlayerInTrick(winnerIdx)].Card
 	declWinning := winnerIdx == g.declarerIdx
-	winners := ultiFilter(valid, func(idx int) bool {
+	winners := filterIndices(valid, func(idx int) bool {
 		return g.ultiBeats(g.players[playerIdx].GetCard(idx), winCard, g.currentTrick[0].Card.GetDesign())
 	})
-	nonWinners := ultiFilter(valid, func(idx int) bool {
+	nonWinners := filterIndices(valid, func(idx int) bool {
 		return !g.ultiBeats(g.players[playerIdx].GetCard(idx), winCard, g.currentTrick[0].Card.GetDesign())
 	})
 

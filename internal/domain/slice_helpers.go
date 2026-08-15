@@ -109,6 +109,26 @@ func recycleDiscardToDraw(discard, draw *[]*Card) {
 	*draw = recycled
 }
 
+// filterIndices returns the elements of indices for which keep reports true.
+//
+// Consolidates 26 byte-identical per-game copies that differed only in name
+// (koenigrufenFilter, gzFilter, twentyNineFilter, …). Being spelled differently
+// per game is exactly why a name-based search never grouped them and each new
+// game grew another one -- see issue #5361.
+//
+// Returns nil rather than an empty slice when nothing matches, matching what
+// the copies did (`var out []int` plus append), so callers that distinguish
+// nil from empty are unaffected. The input is never modified.
+func filterIndices(indices []int, keep func(int) bool) []int {
+	var out []int
+	for _, idx := range indices {
+		if keep(idx) {
+			out = append(out, idx)
+		}
+	}
+	return out
+}
+
 // nextIndexWhere returns the first index after from, wrapping, whose element
 // satisfies ok -- or from itself when none does. Callers index with the result,
 // so it never returns -1. Two "next active seat" variants shared this shape.

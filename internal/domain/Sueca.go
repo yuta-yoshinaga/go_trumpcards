@@ -487,9 +487,9 @@ func (g *Sueca) cpuPlaySmart(playerIdx int, valid []int) int {
 			return suecaCardPoints(c.GetValue())*100 + suecaStrength(c.GetValue())
 		})
 	}
-	winners := suecaFilter(follows, func(idx int) bool { return g.suecaRank(player.GetCard(idx)) > topRank })
+	winners := filterIndices(follows, func(idx int) bool { return g.suecaRank(player.GetCard(idx)) > topRank })
 	if partnerWinning {
-		nonWinners := suecaFilter(follows, func(idx int) bool { return g.suecaRank(player.GetCard(idx)) < topRank })
+		nonWinners := filterIndices(follows, func(idx int) bool { return g.suecaRank(player.GetCard(idx)) < topRank })
 		if len(nonWinners) > 0 {
 			return pickHighest(player, nonWinners, func(c *Card) int {
 				return suecaCardPoints(c.GetValue())*100 - suecaStrength(c.GetValue())
@@ -503,17 +503,6 @@ func (g *Sueca) cpuPlaySmart(playerIdx int, valid []int) int {
 	return pickLowest(player, follows, func(c *Card) int {
 		return suecaCardPoints(c.GetValue())*100 + suecaStrength(c.GetValue())
 	})
-}
-
-// suecaFilter 述語を満たすインデックスを抽出する。
-func suecaFilter(indices []int, pred func(int) bool) []int {
-	var out []int
-	for _, idx := range indices {
-		if pred(idx) {
-			out = append(out, idx)
-		}
-	}
-	return out
 }
 
 // --- Hint ---

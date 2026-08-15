@@ -545,13 +545,13 @@ func (g *Tressette) cpuPlaySmart(playerIdx int, valid []int) int {
 		})
 	}
 
-	winners := tressetteFilter(follows, func(idx int) bool {
+	winners := filterIndices(follows, func(idx int) bool {
 		return tressetteStrength(player.GetCard(idx).GetValue()) > topStrength
 	})
 
 	if partnerWinning {
 		// 味方が勝っている: 得点札を渡しつつ、無駄に上書きしない。
-		nonWinners := tressetteFilter(follows, func(idx int) bool {
+		nonWinners := filterIndices(follows, func(idx int) bool {
 			return tressetteStrength(player.GetCard(idx).GetValue()) < topStrength
 		})
 		if len(nonWinners) > 0 {
@@ -572,17 +572,6 @@ func (g *Tressette) cpuPlaySmart(playerIdx int, valid []int) int {
 	return pickLowest(player, follows, func(c *Card) int {
 		return tressetteThirds(c.GetValue())*100 + tressetteStrength(c.GetValue())
 	})
-}
-
-// tressetteFilter 述語を満たすインデックスを抽出する
-func tressetteFilter(indices []int, pred func(int) bool) []int {
-	var out []int
-	for _, idx := range indices {
-		if pred(idx) {
-			out = append(out, idx)
-		}
-	}
-	return out
 }
 
 // --- JSON ---

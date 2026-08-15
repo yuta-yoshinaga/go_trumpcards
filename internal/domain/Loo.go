@@ -704,23 +704,13 @@ func (g *Loo) cpuPlaySmart(playerIdx int, valid []int) int {
 	}
 	winnerIdx := g.trickWinner()
 	top := g.trickTopRank(winnerIdx)
-	winners := looFilter(valid, func(idx int) bool { return g.looRank(player.GetCard(idx)) > top })
+	winners := filterIndices(valid, func(idx int) bool { return g.looRank(player.GetCard(idx)) > top })
 	if len(winners) > 0 {
 		// 勝てるなら最小の勝ち札で勝つ。
 		return pickLowest(player, winners, func(c *Card) int { return g.looRank(c) })
 	}
 	// 勝てない: 最小の札を捨てる。
 	return pickLowest(player, valid, func(c *Card) int { return g.looRank(c) })
-}
-
-func looFilter(indices []int, pred func(int) bool) []int {
-	var out []int
-	for _, idx := range indices {
-		if pred(idx) {
-			out = append(out, idx)
-		}
-	}
-	return out
 }
 
 // --- Hint ---

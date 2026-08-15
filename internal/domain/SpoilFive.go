@@ -513,24 +513,13 @@ func (g *SpoilFive) cpuPlaySmart(playerIdx int, valid []int) int {
 	}
 	winnerIdx := g.trickWinner()
 	topRank := g.trickTopRank(winnerIdx)
-	winners := spoilFilter(valid, func(idx int) bool { return g.spoilRank(player.GetCard(idx)) > topRank })
+	winners := filterIndices(valid, func(idx int) bool { return g.spoilRank(player.GetCard(idx)) > topRank })
 	if len(winners) > 0 {
 		// 最小コストで勝てる札。
 		return pickLowest(player, winners, func(c *Card) int { return g.spoilRank(c) })
 	}
 	// 勝てない: 最弱札を捨てる。
 	return pickLowest(player, valid, func(c *Card) int { return g.spoilRank(c) })
-}
-
-// spoilFilter 述語を満たすインデックスを抽出する。
-func spoilFilter(indices []int, pred func(int) bool) []int {
-	var out []int
-	for _, idx := range indices {
-		if pred(idx) {
-			out = append(out, idx)
-		}
-	}
-	return out
 }
 
 // --- Hint ---

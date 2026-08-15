@@ -637,7 +637,7 @@ func (g *FortyFives) cpuPlaySmart(playerIdx int, valid []int) int {
 	winnerIdx := g.trickWinner()
 	topRank := g.trickTopRank(winnerIdx)
 	partnerWinning := FortyFivesTeamOf(winnerIdx) == FortyFivesTeamOf(playerIdx) && winnerIdx != playerIdx
-	winners := fortyFivesFilter(valid, func(idx int) bool { return g.fortyFivesRank(player.GetCard(idx)) > topRank })
+	winners := filterIndices(valid, func(idx int) bool { return g.fortyFivesRank(player.GetCard(idx)) > topRank })
 	if partnerWinning {
 		// 味方が勝っている: 最弱札を温存・捨てる。
 		return pickLowest(player, valid, func(c *Card) int { return g.fortyFivesRank(c) })
@@ -646,17 +646,6 @@ func (g *FortyFives) cpuPlaySmart(playerIdx int, valid []int) int {
 		return pickLowest(player, winners, func(c *Card) int { return g.fortyFivesRank(c) })
 	}
 	return pickLowest(player, valid, func(c *Card) int { return g.fortyFivesRank(c) })
-}
-
-// fortyFivesFilter 述語を満たすインデックスを抽出する。
-func fortyFivesFilter(indices []int, pred func(int) bool) []int {
-	var out []int
-	for _, idx := range indices {
-		if pred(idx) {
-			out = append(out, idx)
-		}
-	}
-	return out
 }
 
 // --- Hint ---

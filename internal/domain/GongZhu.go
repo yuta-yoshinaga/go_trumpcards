@@ -863,14 +863,14 @@ func (g *GongZhu) cpuPlaySmart(playerIdx int, validIndices []int) int {
 func (g *GongZhu) cpuFollow(player *GongZhuPlayer, follows []int, topValue int, trickHasSheep, trickNegative bool) int {
 	if trickHasSheep {
 		// 羊（+100）を奪いに行く: 勝てる最高札を出す
-		winners := gzFilter(follows, func(idx int) bool { return gzRankValue(player.GetCard(idx)) > topValue })
+		winners := filterIndices(follows, func(idx int) bool { return gzRankValue(player.GetCard(idx)) > topValue })
 		if len(winners) > 0 {
 			return gzHighest(player, winners)
 		}
 	}
 	if trickNegative {
 		// マイナスのトリックは避ける: 勝たない最高札（ダックの最大）を出す
-		ducks := gzFilter(follows, func(idx int) bool { return gzRankValue(player.GetCard(idx)) < topValue })
+		ducks := filterIndices(follows, func(idx int) bool { return gzRankValue(player.GetCard(idx)) < topValue })
 		if len(ducks) > 0 {
 			return gzHighest(player, ducks)
 		}
@@ -927,17 +927,6 @@ func gzDiscardScore(c *Card) int {
 		score += 100 + gzHeartPenalty(c.GetValue())
 	}
 	return score
-}
-
-// gzFilter 述語を満たすインデックスを抽出する
-func gzFilter(indices []int, pred func(int) bool) []int {
-	var out []int
-	for _, idx := range indices {
-		if pred(idx) {
-			out = append(out, idx)
-		}
-	}
-	return out
 }
 
 // gzHighest 指定インデックス群のうち最も強いカードのインデックスを返す

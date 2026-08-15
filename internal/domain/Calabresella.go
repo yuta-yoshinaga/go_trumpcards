@@ -794,13 +794,13 @@ func (g *Calabresella) cpuPlaySmart(playerIdx int, valid []int) int {
 		})
 	}
 
-	winners := calabresellaFilter(follows, func(idx int) bool {
+	winners := filterIndices(follows, func(idx int) bool {
 		return calabresellaStrength(player.GetCard(idx).GetValue()) > topStrength
 	})
 
 	if partnerWinning {
 		// 味方が勝っている: 上書きせず得点札を渡す。
-		nonWinners := calabresellaFilter(follows, func(idx int) bool {
+		nonWinners := filterIndices(follows, func(idx int) bool {
 			return calabresellaStrength(player.GetCard(idx).GetValue()) < topStrength
 		})
 		if len(nonWinners) > 0 {
@@ -819,17 +819,6 @@ func (g *Calabresella) cpuPlaySmart(playerIdx int, valid []int) int {
 	return pickLowest(player, follows, func(c *Card) int {
 		return calabresellaThirds(c.GetValue())*100 + calabresellaStrength(c.GetValue())
 	})
-}
-
-// calabresellaFilter 述語を満たすインデックスを抽出する。
-func calabresellaFilter(indices []int, pred func(int) bool) []int {
-	var out []int
-	for _, idx := range indices {
-		if pred(idx) {
-			out = append(out, idx)
-		}
-	}
-	return out
 }
 
 // --- Hint ---
