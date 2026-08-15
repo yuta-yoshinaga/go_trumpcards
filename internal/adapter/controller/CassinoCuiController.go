@@ -156,7 +156,10 @@ func (c *CassinoCuiController) handleTake(args []string) (string, bool) {
 	tableIdxs, skippedT := parseIntListArg(tableArgs)
 	buildIdxs, skippedB := parseIntListArg(buildArgs)
 	skipped := append(skippedT, skippedB...)
-	return cuiutil.PrependSkippedWarning(c.ci.Take(handIdx, tableIdxs, buildIdxs), skipped), true
+	if len(skipped) > 0 {
+		return invalidArg("invalidCardIndex", "val", strings.Join(skipped, ", ")), true
+	}
+	return c.ci.Take(handIdx, tableIdxs, buildIdxs), true
 }
 
 // handleBuild は `b <h> <value> <t1 t2 ...>` を処理する。
@@ -173,7 +176,10 @@ func (c *CassinoCuiController) handleBuild(args []string) (string, bool) {
 		return "Invalid build value: " + args[1], true
 	}
 	tableIdxs, skipped := parseIntListArg(args[2:])
-	return cuiutil.PrependSkippedWarning(c.ci.Build(handIdx, tableIdxs, value), skipped), true
+	if len(skipped) > 0 {
+		return invalidArg("invalidCardIndex", "val", strings.Join(skipped, ", ")), true
+	}
+	return c.ci.Build(handIdx, tableIdxs, value), true
 }
 
 // handleTrail は `tr <h>` を処理する。

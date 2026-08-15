@@ -40,6 +40,17 @@ func TestDurakCuiController_Exec(t *testing.T) {
 
 	// **打ち間違いを 0 番として実行しない。** `a zz` が `a 0` に化けていたとき、
 	// 40 配り中 4 配りで実際に札が出ていた (issue #5390)。
+	t.Run("defend refuses an unparseable index", func(t *testing.T) {
+		refuseMock := new(usecase.MockDurakInteractor)
+		refuseMock.On("Defend", mock.Anything, mock.Anything).Return(mockOutput)
+		rc := controller.NewDurakCuiController(refuseMock)
+
+		assert.Equal(t, msgInvalidCardIndex("zz"), rc.Exec("d zz 1"))
+		assert.Equal(t, msgInvalidCardIndex("zz"), rc.Exec("d 0 zz"))
+
+		refuseMock.AssertNotCalled(t, "Defend", mock.Anything, mock.Anything)
+	})
+
 	t.Run("attack refuses an unparseable index", func(t *testing.T) {
 		refuseMock := new(usecase.MockDurakInteractor)
 		refuseMock.On("Attack", mock.Anything).Return(mockOutput)
