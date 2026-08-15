@@ -1,9 +1,30 @@
 import type React from 'react';
 import { EXPANSION_GAP_PX } from './motionPresets';
 
-/** Tailwind classes for focus-visible ring on card selection buttons. */
-export const focusRingCard =
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-accent focus-visible:ring-offset-1 focus-visible:ring-offset-transparent rounded-lg';
+/**
+ * Classes for the keyboard focus indicator on card selection buttons.
+ *
+ * The indicator itself is a stylesheet rule (`.card-focus-ring:focus-visible`
+ * in `index.css`), deliberately not a Tailwind utility. Card buttons set inline
+ * styles on **both** channels a utility could use:
+ *
+ * - `boxShadow` — `selectedCardStyle` / `highlightCardStyle` /
+ *   `playableCardStyle` / `smartHighlightStyle`; the "off" branch sets `'none'`,
+ *   which still counts as an inline declaration.
+ * - `outline` — `trumpRingStyle` / `meldCardStyle` / `playableRingStyle`;
+ *   `meldCardStyle` sets one on *every* hand card during the GinRummy and
+ *   Chinchon discard and layoff phases.
+ *
+ * Inline styles beat class-based declarations, so both a `ring-*` and a plain
+ * `outline-*` utility are erased — a `ring` everywhere, an `outline` in exactly
+ * the phases a player is most likely to be navigating by keyboard. The
+ * stylesheet rule carries `!important` so the indicator survives regardless.
+ * See issue #5359.
+ *
+ * Any new decorative helper that sets `outline` or `boxShadow` inline is fine;
+ * the focus indicator no longer competes with them.
+ */
+export const focusRingCard = 'rounded-lg card-focus-ring';
 
 /** Tailwind classes for hover feedback on clickable cards (non-AnimatedCard). */
 export const hoverCardClass = 'cursor-pointer transition-[transform,box-shadow] duration-150';

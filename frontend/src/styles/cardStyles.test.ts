@@ -2,9 +2,13 @@ import { describe, expect, it } from 'vitest';
 import {
   expansionMargin,
   focusRingCard,
+  highlightCardStyle,
+  meldCardStyle,
   playableCardStyle,
+  playableRingStyle,
   selectedCardStyle,
   smartHighlightStyle,
+  trumpRingStyle,
 } from './cardStyles';
 import { EXPANSION_GAP_PX } from './motionPresets';
 
@@ -40,11 +44,57 @@ describe('playableCardStyle', () => {
 });
 
 describe('focusRingCard', () => {
-  it('includes focus-visible ring classes', () => {
-    expect(focusRingCard).toContain('focus-visible:outline-none');
-    expect(focusRingCard).toContain('focus-visible:ring-2');
-    expect(focusRingCard).toContain('focus-visible:ring-ds-accent');
+  // The indicator must survive the inline styles every card button sets.
+  //
+  // Card buttons write inline styles on BOTH channels a Tailwind utility could
+  // use: `boxShadow` (selectedCardStyle & friends, whose "off" branch sets
+  // `'none'`) and `outline` (trumpRingStyle / meldCardStyle / playableRingStyle,
+  // where meldCardStyle applies to *every* hand card during the GinRummy and
+  // Chinchon discard phases). Inline styles win, so the indicator lives in a
+  // stylesheet rule with `!important` instead. See issue #5359.
+  it('delegates to the stylesheet rule rather than a utility inline styles can erase', () => {
+    expect(focusRingCard).toContain('card-focus-ring');
     expect(focusRingCard).toContain('rounded-lg');
+  });
+
+  it('uses no ring or outline utility, either of which an inline style would beat', () => {
+    // Anchored to a class boundary: `card-focus-ring` legitimately ends in
+    // "ring", and a substring match would reject the very class we want.
+    const utility = (name: string) => new RegExp(`(^|[\\s:])${name}(-|$|\\s)`);
+    expect(focusRingCard).not.toMatch(utility('ring'));
+    expect(focusRingCard).not.toMatch(utility('outline'));
+  });
+
+  it('does not disable the browser default outline', () => {
+    expect(focusRingCard).not.toContain('outline-none');
+  });
+});
+
+describe('the inline styles the focus indicator has to coexist with', () => {
+  // Enumerated deliberately. The first fix for #5359 moved the focus ring from
+  // `boxShadow` to `outline` and reintroduced the same collision, because the
+  // interaction test only covered the boxShadow-setting helpers. Listing both
+  // families means a new decorative helper shows up here as a failing case
+  // rather than as an invisible focus ring.
+  it('boxShadow family always sets boxShadow, in both branches', () => {
+    for (const style of [
+      selectedCardStyle(true),
+      selectedCardStyle(false),
+      playableCardStyle(true),
+      playableCardStyle(false),
+      highlightCardStyle(),
+      smartHighlightStyle(true),
+      smartHighlightStyle(false),
+    ]) {
+      expect(style).toHaveProperty('boxShadow');
+    }
+  });
+
+  it('outline family always sets outline, in both branches', () => {
+    for (const style of [trumpRingStyle(), meldCardStyle(true), meldCardStyle(false), playableRingStyle()]) {
+      expect(style).toHaveProperty('outline');
+      expect(style.outline).not.toBe('none');
+    }
   });
 });
 

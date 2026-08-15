@@ -594,6 +594,27 @@ input:not([type]):focus-visible {
   animation: card-deal-in 0.15s ease-out both;
 }
 
+/* Keyboard focus indicator for card buttons.
+ *
+ * Card buttons carry inline styles on BOTH channels a focus ring could use:
+ * `boxShadow` (selectedCardStyle / highlightCardStyle / playableCardStyle /
+ * smartHighlightStyle — the "off" branch sets `none`, not nothing) and
+ * `outline` (trumpRingStyle / meldCardStyle / playableRingStyle — meldCardStyle
+ * sets one on *every* hand card during the GinRummy and Chinchon discard and
+ * layoff phases). Inline styles beat any class-based utility, so a Tailwind
+ * `ring-*` or `outline-*` is erased in exactly the states a player is most
+ * likely to be navigating by keyboard. See issue #5359.
+ *
+ * biome-ignore lint/complexity/noImportantStyles: same reasoning as the
+ * reduced-motion reset below — `!important` is the mechanism, not an accident.
+ * A focus indicator that decorative inline styles can suppress is not a focus
+ * indicator. `scripts/check-design-tokens.mjs` asserts this block is present.
+ */
+.card-focus-ring:focus-visible {
+  outline: 2px solid var(--color-ds-accent) !important;
+  outline-offset: 2px;
+}
+
 /* Respect reduced motion preferences.
  * Universal enforcement (issue #4315): rather than an allowlist of animation
  * class names — which silently missed arbitrary `animate-[…]` utilities and
