@@ -4,6 +4,7 @@ package controller
 
 import (
 	"net/http/httptest"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -141,4 +142,71 @@ func TestDispatchResetHintAndLog(t *testing.T) {
 			assert.Equal(t, tc.wantBody, strings.TrimSpace(w.Body.String()))
 		})
 	}
+}
+
+// dispatchTrickPlay consolidates 8 byte-identical per-game dispatchers
+// (aluetteDispatch, ganjifaDispatch, klaverjasDispatch, manilleDispatch,
+// mariasDispatch, sedmaDispatch, spoilFiveDispatch, suecaDispatch). They
+// differed only in name and in the concrete interactor type — see #5368.
+//
+// Taking function values rather than an interface is what makes that possible:
+// each game's ResetWithConfig takes its own config type, so no single interface
+// can cover them. That is the same reason dispatchResetHintAndLog above takes
+// resetFn/hintFn/actionLogFn.
+func TestDispatchTrickPlay(t *testing.T) {
+	cases := []struct {
+		name     string
+		cmd      string
+		cardIdx  *int
+		wantBody string
+		wantCode int
+	}{
+		{"reset", "r", nil, `{"method":"reset"}`, 200},
+		{"reset long form", "reset", nil, `{"method":"reset"}`, 200},
+		{"play", "p", intPtr(2), `{"method":"play:2"}`, 200},
+		{"play long form", "play", intPtr(0), `{"method":"play:0"}`, 200},
+		{"next trick", "n", nil, `{"method":"next"}`, 200},
+		{"next trick long form", "next", nil, `{"method":"next"}`, 200},
+		{"next round", "nr", nil, `{"method":"nextround"}`, 200},
+		{"next round long form", "nextround", nil, `{"method":"nextround"}`, 200},
+		{"hint falls through to the shared helper", "h", nil, `{"method":"hint"}`, 200},
+		{"log falls through to the shared helper", "log", nil, `{"method":"log"}`, 200},
+		// The missing-parameter path must 400 rather than dereference nil.
+		{"play without an index", "p", nil, "cardIndex is required", 400},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			bc := &baseController{}
+			handled := dispatchTrickPlay(tc.cmd, bc, w, trickPlayFns{
+				resetWithConfig: func() string { return `{"method":"reset"}` },
+				play:            func(i int) string { return `{"method":"play:` + strconv.Itoa(i) + `"}` },
+				nextTrick:       func() string { return `{"method":"next"}` },
+				nextRound:       func() string { return `{"method":"nextround"}` },
+				hint:            func() string { return `{"method":"hint"}` },
+				actionLog:       func() string { return `{"method":"log"}` },
+			}, tc.cardIdx, func(msg string) any { return map[string]string{"message": msg} })
+			assert.True(t, handled, "every command in this table is handled")
+			assert.Equal(t, tc.wantCode, w.Code)
+			assert.True(t, strings.Contains(w.Body.String(), tc.wantBody),
+				"body %q should contain %q", w.Body.String(), tc.wantBody)
+		})
+	}
+}
+
+// An unknown command must NOT be swallowed: the caller falls back to its own
+// default branch, and reporting true here would silently drop the request.
+func TestDispatchTrickPlay_UnknownCommandIsNotHandled(t *testing.T) {
+	w := httptest.NewRecorder()
+	handled := dispatchTrickPlay("frobnicate", &baseController{}, w, trickPlayFns{
+		resetWithConfig: func() string { return "" },
+		play:            func(int) string { return "" },
+		nextTrick:       func() string { return "" },
+		nextRound:       func() string { return "" },
+		hint:            func() string { return "" },
+		actionLog:       func() string { return "" },
+	}, nil, func(msg string) any { return msg })
+	assert.False(t, handled)
+	assert.Equal(t, 200, w.Code, "nothing should have been written")
+	assert.Empty(t, w.Body.String())
 }

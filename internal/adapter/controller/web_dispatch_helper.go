@@ -86,3 +86,51 @@ func dispatchResetStepLog(cmd string, bc *baseController, w http.ResponseWriter,
 	}
 	return false
 }
+
+// trickPlayFns is the set of interactor actions the trick-taking command set
+// needs, passed as function values rather than as an interface.
+//
+// An interface cannot express this: every game's ResetWithConfig takes its own
+// config type (domain.AluetteConfig, domain.ManilleConfig, …), so there is no
+// single method set they share. Binding the calls at the call site — where the
+// concrete type is still known — is what lets one dispatcher serve all of them.
+// Same reasoning as dispatchResetHintAndLog's resetFn/hintFn/actionLogFn.
+type trickPlayFns struct {
+	resetWithConfig func() string
+	play            func(cardIndex int) string
+	nextTrick       func() string
+	nextRound       func() string
+	hint            func() string
+	actionLog       func() string
+}
+
+// dispatchTrickPlay handles the reset/play/next/nextround command set shared by
+// the trick-taking games, falling through to dispatchHintAndLog for "h"/"log".
+// Returns false for a command it does not own so the caller can handle it.
+//
+// Consolidates 8 byte-identical dispatchers that differed only in name and in
+// the concrete interactor type: aluetteDispatch, ganjifaDispatch,
+// klaverjasDispatch, manilleDispatch, mariasDispatch, sedmaDispatch,
+// spoilFiveDispatch, suecaDispatch. Being spelled differently per game is why a
+// name-based search never grouped them — see issue #5368.
+//
+// cardIndex is a pointer because it is optional on the wire; "p" with none set
+// must answer 400 rather than dereference nil.
+func dispatchTrickPlay[O any](cmd string, bc *baseController, w http.ResponseWriter, fns trickPlayFns, cardIndex *int, newDefault func(string) O) bool {
+	switch cmd {
+	case "r", "reset":
+		bc.writePresenterResponse(w, fns.resetWithConfig())
+	case "p", "play":
+		if !requireParam(bc, w, newDefault, cardIndex == nil, "param error: cardIndex is required.") {
+			return true
+		}
+		bc.writePresenterResponse(w, fns.play(*cardIndex))
+	case "n", "next":
+		bc.writePresenterResponse(w, fns.nextTrick())
+	case "nr", "nextround":
+		bc.writePresenterResponse(w, fns.nextRound())
+	default:
+		return dispatchHintAndLog(cmd, bc, w, fns.hint, fns.actionLog)
+	}
+	return true
+}
