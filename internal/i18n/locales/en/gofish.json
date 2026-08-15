@@ -17,5 +17,6 @@
   "promptCurrentTurn": "{{name}}'s turn",
   "promptHumanHelp": "ask <opponent> <rank> to request",
   "knownRanks": "{{name}} known ranks: {{ranks}}",
-  "knownRanksLegend": "(* = a rank you also hold = a strong ask target)"
+  "knownRanksLegend": "(* = a rank you also hold = a strong ask target)",
+  "helpExampleAsk": "  ask 1 7              ask player 1 for a 7"
 }

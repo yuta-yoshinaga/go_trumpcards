@@ -32,5 +32,7 @@
   "promptSevenPass": "[7-pass] choose a card to pass (p [index])",
   "promptTenDiscard": "[10-discard] choose a card to discard (p [index])",
   "promptQueenBomber": "[Queen bomber] enter the rank to remove (p [1-13])",
-  "promptPlay": "p [index...] to play cards / p to pass"
+  "promptPlay": "p [index...] to play cards / p to pass",
+  "helpExamplePlay": "  p 0 2                play hand cards 0 and 2 as a pair",
+  "helpExamplePass": "  p                    pass (no index)"
 }

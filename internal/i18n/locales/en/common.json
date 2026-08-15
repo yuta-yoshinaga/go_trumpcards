@@ -6,6 +6,7 @@
   "gameCommands": "Game commands:",
   "settings": "Settings:",
   "session": "Session:",
+  "examples": "Examples:",
   "helpEntry": "  help, ?              show this help",
   "resetEntry": "  r                    reset game",
   "quitEntry": "  q, quit, exit        quit",

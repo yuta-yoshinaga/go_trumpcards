@@ -17,5 +17,6 @@
   "promptCurrentTurn": "{{name}}のターン",
   "promptHumanHelp": "ask <相手番号> <ランク> で要求",
   "knownRanks": "{{name}}の既知ランク: {{ranks}}",
-  "knownRanksLegend": "(* = あなたも持つランク = 有利な要求先)"
+  "knownRanksLegend": "(* = あなたも持つランク = 有利な要求先)",
+  "helpExampleAsk": "  ask 1 7              プレイヤー1に 7 を要求する"
 }
