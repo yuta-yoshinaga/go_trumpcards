@@ -19,5 +19,7 @@
   "comboStraight": "ストレート",
   "comboThreePairRun": "3連ペア",
   "comboFourOfAKind": "フォーカード",
-  "comboInvalid": "不明"
+  "comboInvalid": "不明",
+  "helpExamplePlay": "  p 0                  手札の 0 番を 1 枚出す",
+  "helpExamplePass": "  p                    指定なしでパスする"
 }

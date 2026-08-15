@@ -30,5 +30,7 @@
   "hintReasonPlayExcuse": "Play the Excuse — you keep it and it cannot be captured",
   "discardableList": "Discardable: {{cards}}",
   "discardableNone": "none",
-  "discardableLegend": "Note: trumps, the Excuse, and court cards cannot be discarded"
+  "discardableLegend": "Note: trumps, the Excuse, and court cards cannot be discarded",
+  "helpExamplePlay": "  play 0                    play hand card 0",
+  "helpExampleNext": "  n                         read the trick result, then continue"
 }

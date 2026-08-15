@@ -11,5 +11,7 @@
   "playerYou": "あなた",
   "yourTurn": "あなたのターンです",
   "comboRulesHint": "役: シングル/ペア/3カード/連番(3..A)/連続ペア(3..A)。強さは 3<...<A<2<小J<大J でスートは無関係。爆弾(同ランク4枚)は通常役を切れ、ジョーカー2枚は全てに勝ちます。",
-  "actionPass": "パス"
+  "actionPass": "パス",
+  "helpExamplePlay": "  p 0                  手札の 0 番を 1 枚出す",
+  "helpExamplePass": "  p                    指定なしでパスする"
 }

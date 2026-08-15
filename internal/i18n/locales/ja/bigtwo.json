@@ -18,5 +18,7 @@
   "gameEnd": "ゲーム終了！",
   "rankN": "{{rank}}位",
   "yourTurn": "あなたのターンです",
-  "actionPass": "パス"
+  "actionPass": "パス",
+  "helpExamplePlay": "  p 0                  手札の 0 番を 1 枚出す",
+  "helpExamplePass": "  p                    指定なしでパスする"
 }

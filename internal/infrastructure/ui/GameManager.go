@@ -186,7 +186,11 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewBigTwoCuiController,
 		CuiHelpSpec{
-			TitleKey:    "bigtwo.helpTitle",
+			TitleKey: "bigtwo.helpTitle",
+			ExampleKeys: []string{
+				"bigtwo.helpExamplePlay",
+				"bigtwo.helpExamplePass",
+			},
 			CommandKeys: []string{"bigtwo.helpPlay"},
 			SettingKeys: []string{"bigtwo.helpSetDifficulty"},
 		}),
@@ -2616,7 +2620,11 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewTienLenCuiController,
 		CuiHelpSpec{
-			TitleKey:    "tienlen.helpTitle",
+			TitleKey: "tienlen.helpTitle",
+			ExampleKeys: []string{
+				"tienlen.helpExamplePlay",
+				"tienlen.helpExamplePass",
+			},
 			CommandKeys: []string{"tienlen.helpPlay"},
 			SettingKeys: []string{"tienlen.helpSetDifficulty"},
 		}),
@@ -3771,6 +3779,11 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewTysiacCuiController,
 		CuiHelpSpec{
 			TitleKey: "tysiac.helpTitle",
+			ExampleKeys: []string{
+				"tysiac.helpExampleBid",
+				"tysiac.helpExamplePlay",
+				"tysiac.helpExampleNext",
+			},
 			CommandKeys: []string{
 				"tysiac.helpBid",
 				"tysiac.helpDiscard",
@@ -3788,6 +3801,11 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewCalabresellaCuiController,
 		CuiHelpSpec{
 			TitleKey: "calabresella.helpTitle",
+			ExampleKeys: []string{
+				"calabresella.helpExampleBid",
+				"calabresella.helpExamplePlay",
+				"calabresella.helpExampleNext",
+			},
 			CommandKeys: []string{
 				"calabresella.helpBid",
 				"calabresella.helpDiscard",
@@ -3821,6 +3839,11 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewUltiCuiController,
 		CuiHelpSpec{
 			TitleKey: "ulti.helpTitle",
+			ExampleKeys: []string{
+				"ulti.helpExampleBid",
+				"ulti.helpExamplePlay",
+				"ulti.helpExampleNext",
+			},
 			CommandKeys: []string{
 				"ulti.helpBid",
 				"ulti.helpDiscard",
@@ -4160,6 +4183,10 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewMinchiateCuiController,
 		CuiHelpSpec{
 			TitleKey: "minchiate.helpTitle",
+			ExampleKeys: []string{
+				"minchiate.helpExamplePlay",
+				"minchiate.helpExampleNext",
+			},
 			CommandKeys: []string{
 				"minchiate.helpScarto",
 				"minchiate.helpPlay",
@@ -4176,6 +4203,10 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewTarocchiniCuiController,
 		CuiHelpSpec{
 			TitleKey: "tarocchini.helpTitle",
+			ExampleKeys: []string{
+				"tarocchini.helpExamplePlay",
+				"tarocchini.helpExampleNext",
+			},
 			CommandKeys: []string{
 				"tarocchini.helpScarto",
 				"tarocchini.helpPlay",
@@ -4191,7 +4222,11 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewScartoCuiController,
 		CuiHelpSpec{
-			TitleKey:          "scarto.helpTitle",
+			TitleKey: "scarto.helpTitle",
+			ExampleKeys: []string{
+				"scarto.helpExamplePlay",
+				"scarto.helpExampleNext",
+			},
 			CommandKeys:       []string{"scarto.helpScarto", "scarto.helpPlay", "scarto.helpNext", "scarto.helpNextRound"},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"scarto.helpSetDifficulty"},
@@ -4213,7 +4248,11 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewZhengCuiController,
 		CuiHelpSpec{
-			TitleKey:    "zheng.helpTitle",
+			TitleKey: "zheng.helpTitle",
+			ExampleKeys: []string{
+				"zheng.helpExamplePlay",
+				"zheng.helpExamplePass",
+			},
 			CommandKeys: []string{"zheng.helpPlay"},
 			SettingKeys: []string{"zheng.helpSetDifficulty"},
 		}),

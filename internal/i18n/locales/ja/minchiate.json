@@ -30,5 +30,7 @@
   "roundEndTrickEntry": "{{name}} {{tricks}}",
   "roundEndTricks": "各プレイヤーのトリック数: {{list}}",
   "teamLine": "得点  チーム0: {{team0}}  チーム1: {{team1}}",
-  "trumpCountNote": "切札は40枚 —— 星座12・四大元素・美徳を含み、上に何枚残っているかが読みどころです"
+  "trumpCountNote": "切札は40枚 —— 星座12・四大元素・美徳を含み、上に何枚残っているかが読みどころです",
+  "helpExamplePlay": "  play 0               手札の 0 番のカードを出す",
+  "helpExampleNext": "  n                    トリックの決着を見てから次へ"
 }

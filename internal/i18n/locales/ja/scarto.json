@@ -30,5 +30,7 @@
   "hintReasonPlayExcuse": "エクスキューズを出す — 自分で保持し、取られない",
   "discardableList": "捨て可能: {{cards}}",
   "discardableNone": "なし",
-  "discardableLegend": "※ 切り札・エクスキューズ・絵札は捨てられません"
+  "discardableLegend": "※ 切り札・エクスキューズ・絵札は捨てられません",
+  "helpExamplePlay": "  play 0                    手札の 0 番のカードを出す",
+  "helpExampleNext": "  n                         トリックの決着を見てから次へ"
 }
