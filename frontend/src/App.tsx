@@ -4,6 +4,7 @@ import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { DesktopSidebar } from './components/DesktopSidebar';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { NavBar } from './components/NavBar';
+import { RouteAnnouncer } from './components/RouteAnnouncer';
 import { RouteErrorBoundary } from './components/RouteErrorBoundary';
 import { SkipNavLink } from './components/SkipNavLink';
 import { SkeletonBar } from './components/skeleton/SkeletonBar';
@@ -59,6 +60,10 @@ export default function App() {
       <ErrorBoundary>
         <div className="flex flex-col h-full lg:flex-row">
           <SkipNavLink targetId="main-content" label={t('nav.skipToContent')} />
+          {/* Announces route changes and moves focus to <main>; a HashRouter
+              navigation fires no page-load event, so nothing else tells
+              assistive tech the view changed (#5360). */}
+          <RouteAnnouncer />
           <DesktopSidebar />
           {/* `min-h-0` is load-bearing, not defensive: this is a flex item in a
               `h-full` column, and without it its automatic minimum size is its

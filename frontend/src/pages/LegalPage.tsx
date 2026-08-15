@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { btnSecondary, focusRingWhite } from '../styles/buttonStyles';
 
 /** Repository root — the authoritative home of TRADEMARKS.md and the asset READMEs. */
@@ -36,6 +37,7 @@ function LegalSection({ title, children }: LegalSectionProps) {
  */
 export function LegalPage() {
   const { t } = useTranslation('common');
+  useDocumentTitle(t('legal.title'));
   return (
     <div className="flex-1 overflow-y-auto bg-ds-surface text-ds-text-primary">
       <div className="mx-auto max-w-2xl px-6 py-10 flex flex-col gap-8">
