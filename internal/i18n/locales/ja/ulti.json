@@ -45,5 +45,8 @@
   "hintReasonBidParty": "点札の多い手なのでパルティを宣言",
   "hintReasonBidBetli": "低い札ばかりなのでベトリを宣言",
   "hintReasonBidDurchmarsch": "高い札ばかりなのでドゥルマルスを宣言",
-  "hintReasonBidUlti": "切り札の7を含む長いスートがあるのでウルティを宣言"
+  "hintReasonBidUlti": "切り札の7を含む長いスートがあるのでウルティを宣言",
+  "helpExampleBid": "  bid betli                 ベトリを宣言する",
+  "helpExamplePlay": "  play 0                    手札の 0 番のカードを出す",
+  "helpExampleNext": "  n                         トリックの決着を見てから次へ"
 }

@@ -33,5 +33,8 @@
   "hintReasonBidPass": "Weak hand — pass",
   "hintReasonTalonDiscard": "Give away your weakest card",
   "headerInfo": "Contract: {{contract}} / Target: {{target}}",
-  "headerBid": "Current bid: {{bid}}"
+  "headerBid": "Current bid: {{bid}}",
+  "helpExampleBid": "  bid pass                  drop out of the bidding",
+  "helpExamplePlay": "  play 0                    play hand card 0",
+  "helpExampleNext": "  n                         read the trick result, then continue"
 }

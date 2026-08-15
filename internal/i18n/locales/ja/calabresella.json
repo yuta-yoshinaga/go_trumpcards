@@ -36,5 +36,8 @@
   "hintReasonBidChiamo": "手堅い手なのでキアーモを宣言",
   "hintReasonBidSolo": "非常に強い手なのでソロを宣言",
   "hintReasonBidPass": "弱い手なのでパスする",
-  "thirdsLine": "  {{name}}（{{role}}）: {{thirds}}/3"
+  "thirdsLine": "  {{name}}（{{role}}）: {{thirds}}/3",
+  "helpExampleBid": "  bid pass                  入札を降りる",
+  "helpExamplePlay": "  play 0                    手札の 0 番のカードを出す",
+  "helpExampleNext": "  n                         トリックの決着を見てから次へ"
 }

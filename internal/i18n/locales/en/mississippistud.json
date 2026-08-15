@@ -31,5 +31,5 @@
   "madeHandEligible": "pays",
   "madeHandNotEligible": "does not pay",
   "helpExampleBet": "  b 10                 ante 10 and get a hand",
-  "helpExamplePlay": "  p                    play, matching the ante"
+  "helpExamplePlay": "  p 1                  play at 1x the ante"
 }

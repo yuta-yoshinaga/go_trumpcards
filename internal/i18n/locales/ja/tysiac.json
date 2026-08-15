@@ -33,5 +33,8 @@
   "hintReasonBidPass": "弱い手なのでパスする",
   "hintReasonTalonDiscard": "最も弱い札を渡す",
   "headerInfo": "契約: {{contract}} / 目標: {{target}}",
-  "headerBid": "現在ビッド: {{bid}}"
+  "headerBid": "現在ビッド: {{bid}}",
+  "helpExampleBid": "  bid pass                  入札を降りる",
+  "helpExamplePlay": "  play 0                    手札の 0 番のカードを出す",
+  "helpExampleNext": "  n                         トリックの決着を見てから次へ"
 }

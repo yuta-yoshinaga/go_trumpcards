@@ -18,5 +18,7 @@
   "gameEnd": "Game Over!",
   "rankN": "Rank {{rank}}",
   "yourTurn": "Your turn",
-  "actionPass": "pass"
+  "actionPass": "pass",
+  "helpExamplePlay": "  p 0                  play hand card 0 on its own",
+  "helpExamplePass": "  p                    pass by naming no cards"
 }

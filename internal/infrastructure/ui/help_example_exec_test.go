@@ -113,3 +113,71 @@ func TestCuiHelpExampleCommandParsing(t *testing.T) {
 		}
 	}
 }
+
+// exampleRefusalRe matches the wording a controller uses when it turns a
+// command down. It is a heuristic, and deliberately so: see below.
+var exampleRefusalRe = regexp.MustCompile(`(?i)invalid|required|must |cannot|不正|無効|必要|できません`)
+
+// TestCuiHelpExamplesAreNotQuietlyRefused catches the refusals
+// TestCuiHelpExamplesExecute cannot see.
+//
+// That guard asks i18n.StripErrorPrefix, so it only sees a refusal that went
+// through i18n.MarkError. The games still on the literal-message ParseIntArg
+// return an unmarked string, which is byte-for-byte an ordinary reply -- and
+// that is exactly how `p` shipped as mississippistud's example while the game
+// answered "Multiplier (1, 2 or 3) is required." to it. My own pre-flight probe
+// used the same predicate and reported the same clean result, so the blind spot
+// was in the measurement, not just the guard.
+//
+// Matching on the wording is a heuristic and would not survive a rewording, but
+// it is checked against every example on every run, and a false positive is a
+// sentence to read rather than a broken build. It can be deleted once #5377
+// leaves nothing unmarked.
+func TestCuiHelpExamplesAreNotQuietlyRefused(t *testing.T) {
+	registry := GameRegistry()
+	if len(registry) < 300 {
+		t.Fatalf("only %d games in the registry -- the walk broke", len(registry))
+	}
+
+	// The predicate has to recognise a refusal, or "0 suspect" means nothing.
+	if !exampleRefusalRe.MatchString("Multiplier (1, 2 or 3) is required.") {
+		t.Fatal("the refusal pattern no longer matches a real refusal message")
+	}
+	if exampleRefusalRe.MatchString("Round: 1  Trick: 0") {
+		t.Fatal("the refusal pattern matches an ordinary board line")
+	}
+
+	checked := 0
+	var bad []string
+	for _, entry := range registry {
+		g := entry.NewCui()
+		_, examples := helpSections(g.HelpLines())
+		if len(examples) == 0 {
+			continue
+		}
+		ctrl := g.Controller()
+		ctrl.Exec("r")
+		for _, line := range examples {
+			cmd := helpExampleCommand(line)
+			if cmd == "" {
+				continue
+			}
+			checked++
+			out := ctrl.Exec(cmd)
+			if _, isErr := i18n.StripErrorPrefix(out); isErr {
+				continue // TestCuiHelpExamplesExecute owns the marked ones
+			}
+			if len(out) < 200 && exampleRefusalRe.MatchString(out) {
+				bad = append(bad, entry.Name+": `"+cmd+"` -> "+strings.TrimSpace(out))
+			}
+		}
+	}
+	if checked == 0 {
+		t.Fatal("no example command was executed -- the walk broke")
+	}
+	sort.Strings(bad)
+	if len(bad) > 0 {
+		t.Errorf("examples the game turns down without marking it (%d of %d):\n  %s",
+			len(bad), checked, strings.Join(bad, "\n  "))
+	}
+}

@@ -32,5 +32,7 @@
   "round": "ラウンド: {{round}}  トリック: {{trick}}",
   "roundEndTrickEntry": "{{name}} {{tricks}}",
   "roundEndTricks": "各プレイヤーのトリック数: {{list}}",
-  "teamLine": "得点  チーム0: {{team0}}  チーム1: {{team1}}"
+  "teamLine": "得点  チーム0: {{team0}}  チーム1: {{team1}}",
+  "helpExamplePlay": "  play 0               手札の 0 番のカードを出す",
+  "helpExampleNext": "  n                    トリックの決着を見てから次へ"
 }
