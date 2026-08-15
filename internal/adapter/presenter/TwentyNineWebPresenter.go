@@ -24,10 +24,7 @@ func (p *TwentyNineWebPresenter) Output(g interfaces.TwentyNineGame, lastErr err
 	// **フェーズと手番はここでは見ない。**TwentyNine.GetHint() が自分で
 	// 「人間の手番で、かつ行動を選べる状態か」を確かめて nil を返す。
 	if hint := g.GetHint(); hint != nil {
-		resObj.Hint = &controller.WebOutputCardHint{
-			CardIndices: hint.CardIndices,
-			Reason:      hint.Reason,
-		}
+		resObj.Hint = cardHint(hint.CardIndices, hint.Reason)
 	}
 
 	return marshalOrError(resObj)
@@ -159,10 +156,7 @@ func (p *TwentyNineWebPresenter) HintOutput(g interfaces.TwentyNineGame) string 
 	hint := g.GetHint()
 	resObj := p.buildBase(g)
 	if hint != nil {
-		resObj.Hint = &controller.WebOutputCardHint{
-			CardIndices: hint.CardIndices,
-			Reason:      hint.Reason,
-		}
+		resObj.Hint = cardHint(hint.CardIndices, hint.Reason)
 	}
 	// **「頼んだヒントか」をフロントが見分けられるようにする。**ページは
 	// `isRequestedHint` でこのコードを見てからバナーを出すので (#4605)、

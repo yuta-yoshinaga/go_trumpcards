@@ -78,10 +78,7 @@ func (p *ScartoWebPresenter) Output(g interfaces.ScartoGame, lastErr error) stri
 	// **Scarto.GetHint() の各フェーズを読んで、席を確かめていることを確認した。**
 	// 他ゲームがそうだから、で済ませない —— Pinochle は見ていなかった (#4585)。
 	if hint := g.GetHint(); hint != nil {
-		resObj.Hint = &controller.WebOutputCardHint{
-			CardIndices: hint.CardIndices,
-			Reason:      hint.Reason,
-		}
+		resObj.Hint = cardHint(hint.CardIndices, hint.Reason)
 	}
 
 	return marshalOrError(resObj)
@@ -217,10 +214,7 @@ func (p *ScartoWebPresenter) HintOutput(g interfaces.ScartoGame) string {
 	hint := g.GetHint()
 	resObj := p.buildBase(g)
 	if hint != nil {
-		resObj.Hint = &controller.WebOutputCardHint{
-			CardIndices: hint.CardIndices,
-			Reason:      hint.Reason,
-		}
+		resObj.Hint = cardHint(hint.CardIndices, hint.Reason)
 	}
 	// **「頼んだヒントか」を CLI が見分けられるようにする。**このゲーム群の
 	// `hintAvailable` は画面のラベルとして既に使われているので、別キーを出す (#4483)。

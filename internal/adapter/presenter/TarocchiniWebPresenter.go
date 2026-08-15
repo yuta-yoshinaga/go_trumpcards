@@ -76,10 +76,7 @@ func (p *TarocchiniWebPresenter) Output(g interfaces.TarocchiniGame, lastErr err
 	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"` 専用の
 	// レスポンスで、ページの state にはマージされない (#4483)。
 	if hint := g.GetHint(); hint != nil {
-		resObj.Hint = &controller.WebOutputCardHint{
-			CardIndices: hint.CardIndices,
-			Reason:      hint.Reason,
-		}
+		resObj.Hint = cardHint(hint.CardIndices, hint.Reason)
 	}
 	return marshalOrError(resObj)
 }
@@ -199,10 +196,7 @@ func (p *TarocchiniWebPresenter) HintOutput(g interfaces.TarocchiniGame) string 
 	hint := g.GetHint()
 	resObj := p.buildBase(g)
 	if hint != nil {
-		resObj.Hint = &controller.WebOutputCardHint{
-			CardIndices: hint.CardIndices,
-			Reason:      hint.Reason,
-		}
+		resObj.Hint = cardHint(hint.CardIndices, hint.Reason)
 		resObj.MessageCode = "tarocchini.hintRequested"
 	} else {
 		resObj.MessageCode = "tarocchini.noHint"
