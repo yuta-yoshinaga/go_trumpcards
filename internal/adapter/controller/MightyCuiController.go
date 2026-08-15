@@ -76,7 +76,7 @@ func (c *MightyCuiController) Exec(command string) string {
 				return c.mi.Bid(val, noTrump), true
 			case "t", "trump":
 				if len(args) < 3 {
-					return "Usage: trump <suit> <partnerSuit> <partnerVal>\n  suit: -1=No-Trump 1=Spade 2=Clover 3=Heart 4=Diamond\n  partnerSuit: 0=Joker 1=Spade 2=Clover 3=Heart 4=Diamond\n  partnerVal: 1=A 2-10 11=J 12=Q 13=K (Joker: 1)\n", true
+					return invalidArg("usageTrumpSuitPartnersuitPartnervalSuit1NoTrump1Spad"), true
 				}
 				suit, errMsg, ok := cuiutil.ParseIntArgKeys(args[:1], "", "invalidSuit", -1, 4)
 				if !ok {
@@ -93,7 +93,7 @@ func (c *MightyCuiController) Exec(command string) string {
 				return c.mi.DeclareTrumpAndFriend(suit, partnerSuit, partnerVal), true
 			case "e", "exchange":
 				if len(args) < 3 {
-					return "Usage: exchange <i> <j> <k>  (three card indices to discard from kitty pickup)\n", true
+					return invalidArg("usageExchangeIJKThreeCardIndicesToDiscardFromKittyPi"), true
 				}
 				idxs := make([]int, 3)
 				for i := 0; i < 3; i++ {
@@ -108,7 +108,7 @@ func (c *MightyCuiController) Exec(command string) string {
 				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.mi.Play)
 			case "jl", "jokerlead":
 				if len(args) < 2 {
-					return "Usage: jokerlead <cardIndex> <demandSuit>\n  demandSuit: 1=Spade 2=Clover 3=Heart 4=Diamond\n", true
+					return invalidArg("usageJokerleadCardindexDemandsuitDemandsuit1Spade2Cl"), true
 				}
 				cardIdx, errMsg, ok := cuiutil.ParseIntArgKeys(args[:1], "", "invalidCardIndex", 0, math.MaxInt)
 				if !ok {

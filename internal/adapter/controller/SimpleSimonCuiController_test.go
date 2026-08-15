@@ -35,7 +35,7 @@ func TestSimpleSimonCuiController_Exec(t *testing.T) {
 	})
 	t.Run("invalid move args", func(t *testing.T) {
 		c := newSsCui()
-		assert.Contains(t, c.Exec("m 0 0"), "Usage")
+		assert.True(t, msgRejected(c.Exec("m 0 0")))
 		assert.True(t, msgRejected(c.Exec("m x 0 1")))
 	})
 	t.Run("giveup + unknown", func(t *testing.T) {

@@ -66,3 +66,9 @@ func msgRejected(out string) bool {
 	_, isErr := i18n.StripErrorPrefix(out)
 	return isErr
 }
+
+// msgUsage renders a usage line the way the controllers do -- through i18n and
+// marked as a rejection, because the command did not run.
+func msgUsage(key string) string {
+	return i18n.MarkError(i18n.T(key))
+}

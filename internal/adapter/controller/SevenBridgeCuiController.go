@@ -51,7 +51,7 @@ func (c *SevenBridgeCuiController) Exec(command string) string {
 			case "lo", "layoff":
 				idx := parseIntList(args)
 				if len(idx) < 3 {
-					return "Usage: lo <targetPlayerIdx> <meldIdx> <cardIndex>", true
+					return invalidArg("usageLoTargetplayeridxMeldidxCardindex"), true
 				}
 				return c.ci.Layoff(idx[0], idx[1], idx[2]), true
 			case "d", "discard":

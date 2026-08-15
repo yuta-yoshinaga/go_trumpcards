@@ -59,7 +59,7 @@ func (c *BarbuCuiController) Exec(command string) string {
 // handleSelectContract は `c <contract> [trump]` を処理する。
 func (c *BarbuCuiController) handleSelectContract(args []string) (string, bool) {
 	if len(args) < 1 {
-		return "Usage: c <contract 0-6> [trumpSuit 1-4 for Trumps]", true
+		return invalidArg("usageCContract06Trumpsuit14ForTrumps"), true
 	}
 	contract, _, ok := cuiutil.ParseIntArgKeys([]string{args[0]}, "contractRequired", "invalidContract", 0, domain.BarbuContractCnt-1)
 	if !ok {
@@ -78,7 +78,7 @@ func (c *BarbuCuiController) handleSelectContract(args []string) (string, bool) 
 // handlePlay は `p <h>` (Dominoes では `p -1` でパス) を処理する。
 func (c *BarbuCuiController) handlePlay(args []string) (string, bool) {
 	if len(args) < 1 {
-		return "Usage: p <handIdx> (-1 to pass in Dominoes)", true
+		return invalidArg("usagePHandidx1ToPassInDominoes"), true
 	}
 	handIdx, _, ok := cuiutil.ParseIntArgKeys([]string{args[0]}, "handIndexRequired", "invalidHandIndex", -1, domain.BarbuHandSize-1)
 	if !ok {

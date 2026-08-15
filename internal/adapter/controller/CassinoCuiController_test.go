@@ -74,7 +74,7 @@ func TestCassinoCuiController_Exec(t *testing.T) {
 		m := newMock()
 		c := controller.NewCassinoCuiController(m)
 		out := c.Exec("t")
-		assert.Contains(t, out, "Usage:")
+		assert.True(t, msgRejected(out))
 	})
 
 	t.Run("build command", func(t *testing.T) {
@@ -102,7 +102,7 @@ func TestCassinoCuiController_Exec(t *testing.T) {
 		m := newMock()
 		c := controller.NewCassinoCuiController(m)
 		out := c.Exec("tr")
-		assert.Contains(t, out, "Usage:")
+		assert.True(t, msgRejected(out))
 	})
 
 	t.Run("sd (difficulty)", func(t *testing.T) {
@@ -134,7 +134,7 @@ func TestCassinoCuiController_Exec(t *testing.T) {
 		m := newMock()
 		c := controller.NewCassinoCuiController(m)
 		out := c.Exec("sr")
-		assert.Contains(t, out, "Usage:")
+		assert.True(t, msgRejected(out))
 	})
 
 	t.Run("sr unknown rule", func(t *testing.T) {

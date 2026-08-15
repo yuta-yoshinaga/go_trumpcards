@@ -39,7 +39,7 @@ func TestFiftyOneCuiController_Play(t *testing.T) {
 func TestFiftyOneCuiController_Play_MissingArgs(t *testing.T) {
 	ctrl, _ := newFiftyOneCuiController()
 	result := ctrl.Exec("p")
-	assert.Contains(t, result, "Usage")
+	assert.True(t, msgRejected(result))
 }
 
 func TestFiftyOneCuiController_Play_InvalidHandIdx(t *testing.T) {

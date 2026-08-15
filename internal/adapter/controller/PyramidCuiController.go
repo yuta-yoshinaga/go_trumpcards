@@ -47,7 +47,7 @@ func (c *PyramidCuiController) Exec(command string) string {
 // handleRemove 除去コマンドを処理
 func (c *PyramidCuiController) handleRemove(args []string) string {
 	if len(args) == 0 {
-		return "Usage: rm <row> <col> | rm <r1> <c1> <r2> <c2> | rm w <row> <col> | rm w"
+		return invalidArg("usageRmRowColRmR1C1R2C2RmWRowColRmW")
 	}
 
 	// rm w ... → ウェイスト関連
@@ -68,7 +68,7 @@ func (c *PyramidCuiController) handleRemove(args []string) string {
 			}
 			return c.pi.RemoveWithWaste(row, col)
 		}
-		return "Usage: rm w | rm w <row> <col>"
+		return invalidArg("usageRmWRmWRowCol")
 	}
 
 	// rm <row> <col> → キング除去
@@ -105,5 +105,5 @@ func (c *PyramidCuiController) handleRemove(args []string) string {
 		return c.pi.RemovePair(r1, c1, r2, c2)
 	}
 
-	return "Usage: rm <row> <col> | rm <r1> <c1> <r2> <c2> | rm w <row> <col> | rm w"
+	return invalidArg("usageRmRowColRmR1C1R2C2RmWRowColRmW")
 }

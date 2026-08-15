@@ -62,7 +62,7 @@ func (c *LaBelleLucieCuiController) Exec(command string) string {
 // handleMove 移動コマンド `m <from> <to|f>` を処理する。
 func (c *LaBelleLucieCuiController) handleMove(args []string) string {
 	if len(args) < 2 {
-		return "Usage: m <from> <to|f>."
+		return invalidArg("usageMFromToF")
 	}
 	from, err := strconv.Atoi(args[0])
 	if err != nil {

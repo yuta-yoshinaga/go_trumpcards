@@ -99,7 +99,7 @@ func TestPyramidCuiControllerRemoveNoArgs(t *testing.T) {
 	pi := newMockPyramidInteractor()
 	c := NewPyramidCuiController(pi)
 	result := c.Exec("rm")
-	assert.Contains(t, result, "Usage:")
+	assert.True(t, msgRejected(result))
 }
 
 func TestPyramidCuiControllerRemoveInvalidArgs(t *testing.T) {
@@ -127,7 +127,7 @@ func TestPyramidCuiControllerRemoveWasteInvalid(t *testing.T) {
 	c := NewPyramidCuiController(pi)
 	// rm w with 2 args (invalid)
 	result := c.Exec("rm w 6")
-	assert.Contains(t, result, "Usage:")
+	assert.True(t, msgRejected(result))
 	// rm w with invalid number
 	result = c.Exec("rm w abc 0")
 	assert.True(t, msgRejected(result))
@@ -139,5 +139,5 @@ func TestPyramidCuiControllerRemove3Args(t *testing.T) {
 	pi := newMockPyramidInteractor()
 	c := NewPyramidCuiController(pi)
 	result := c.Exec("rm 6 0 6")
-	assert.Contains(t, result, "Usage:")
+	assert.True(t, msgRejected(result))
 }

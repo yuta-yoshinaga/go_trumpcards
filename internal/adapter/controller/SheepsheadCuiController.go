@@ -86,7 +86,7 @@ func (c *SheepsheadCuiController) Exec(command string) string {
 // handleBury は "b <i> <j>" コマンドを処理する。
 func (c *SheepsheadCuiController) handleBury(args []string) (string, bool) {
 	if len(args) < 2 {
-		return "Usage: b <idx1> <idx2> — specify two card indices to bury.", true
+		return invalidArg("usageBIdx1Idx2SpecifyTwoCardIndicesToBury"), true
 	}
 	idx1, _, ok1 := cuiutil.ParseIntArgKeys(args[:1], "firstCardIndexRequired", "invalidCardIndexPlain", cuiutil.NoMin, cuiutil.NoMax)
 	idx2, _, ok2 := cuiutil.ParseIntArgKeys(args[1:2], "secondCardIndexRequired", "invalidCardIndexPlain", cuiutil.NoMin, cuiutil.NoMax)

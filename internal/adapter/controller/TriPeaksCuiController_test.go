@@ -78,8 +78,8 @@ func TestTriPeaksCuiControllerRemove(t *testing.T) {
 func TestTriPeaksCuiControllerRemove_InvalidArgs(t *testing.T) {
 	ti := newMockTriPeaksInteractor()
 	c := NewTriPeaksCuiController(ti)
-	assert.Contains(t, c.Exec("rm"), "Usage")
-	assert.Contains(t, c.Exec("rm 3"), "Usage")
+	assert.True(t, msgRejected(c.Exec("rm")))
+	assert.True(t, msgRejected(c.Exec("rm 3")))
 	assert.True(t, msgRejected(c.Exec("rm a 0")))
 	assert.True(t, msgRejected(c.Exec("rm 3 b")))
 }

@@ -58,7 +58,7 @@ func (c *ScopaCuiController) Exec(command string) string {
 // handlePlay は `p <h> [t1 t2 ...]` を処理する。
 func (c *ScopaCuiController) handlePlay(args []string) (string, bool) {
 	if len(args) < 1 {
-		return "Usage: p <handIdx> [tableIdx...]", true
+		return invalidArg("usagePHandidxTableidxMany"), true
 	}
 	handIdx, _, ok := cuiutil.ParseIntArgKeys([]string{args[0]}, "handIndexRequired", "invalidHandIndex", 0, 39)
 	if !ok {

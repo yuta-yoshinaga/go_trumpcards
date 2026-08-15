@@ -122,19 +122,19 @@ func TestNapoleonCuiController_Exec(t *testing.T) {
 	t.Run("trump command t no args", func(t *testing.T) {
 		c := controller.NewNapoleonCuiController(newMock())
 		result := c.Exec("t")
-		assert.Contains(t, result, "Usage: trump")
+		assert.Contains(t, result, msgUsage("usageTrumpSuitAdjsuitAdjvalSuit1Spade2Club3Heart4Dia"))
 	})
 
 	t.Run("trump command t one arg", func(t *testing.T) {
 		c := controller.NewNapoleonCuiController(newMock())
 		result := c.Exec("t 1")
-		assert.Contains(t, result, "Usage: trump")
+		assert.Contains(t, result, msgUsage("usageTrumpSuitAdjsuitAdjvalSuit1Spade2Club3Heart4Dia"))
 	})
 
 	t.Run("trump command t two args", func(t *testing.T) {
 		c := controller.NewNapoleonCuiController(newMock())
 		result := c.Exec("t 1 2")
-		assert.Contains(t, result, "Usage: trump")
+		assert.Contains(t, result, msgUsage("usageTrumpSuitAdjsuitAdjvalSuit1Spade2Club3Heart4Dia"))
 	})
 
 	t.Run("trump command t invalid suit", func(t *testing.T) {

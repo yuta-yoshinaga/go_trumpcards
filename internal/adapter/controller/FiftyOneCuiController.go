@@ -33,7 +33,7 @@ func (c *FiftyOneCuiController) Exec(command string) string {
 			switch cmd {
 			case "p", "play":
 				if len(args) < 2 {
-					return "Usage: p <handIdx> <tableIdx>", true
+					return invalidArg("usagePHandidxTableidxOne"), true
 				}
 				handIdx, err1 := strconv.Atoi(args[0])
 				tableIdx, err2 := strconv.Atoi(args[1])

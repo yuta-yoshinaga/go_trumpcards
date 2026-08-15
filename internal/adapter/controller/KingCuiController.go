@@ -60,7 +60,7 @@ func (c *KingCuiController) Exec(command string) string {
 // handleSelectContract は `c <contract> [trump]` を処理する。
 func (c *KingCuiController) handleSelectContract(args []string) (string, bool) {
 	if len(args) < 1 {
-		return "Usage: c <contract 0-6> [trumpSuit 1-4 for King Trump]", true
+		return invalidArg("usageCContract06Trumpsuit14ForKingTrump"), true
 	}
 	contract, _, ok := cuiutil.ParseIntArgKeys([]string{args[0]}, "contractRequired", "invalidContract", 0, domain.KingContractCnt-1)
 	if !ok {
@@ -79,7 +79,7 @@ func (c *KingCuiController) handleSelectContract(args []string) (string, bool) {
 // handlePlay は `p <h>` を処理する。
 func (c *KingCuiController) handlePlay(args []string) (string, bool) {
 	if len(args) < 1 {
-		return "Usage: p <handIdx>", true
+		return invalidArg("usagePHandidx"), true
 	}
 	handIdx, _, ok := cuiutil.ParseIntArgKeys([]string{args[0]}, "handIndexRequired", "invalidHandIndex", 0, domain.KingHandSize-1)
 	if !ok {

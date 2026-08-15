@@ -45,7 +45,7 @@ func (c *CariocaCuiController) Exec(command string) string {
 			case "mc", "meldcontract":
 				slots, ok := parseSlotIndices(args)
 				if !ok {
-					return "Usage: mc <a,b,c> <d,e,f> [<g,h,i>]  (one slot per arg)", true
+					return invalidArg("usageMcABCDEFGHIOneSlotPerArg"), true
 				}
 				return c.ci.MeldContract(slots), true
 			case "me", "meldextra":
@@ -53,7 +53,7 @@ func (c *CariocaCuiController) Exec(command string) string {
 			case "lo", "layoff":
 				idx := parseIntList(args)
 				if len(idx) < 3 {
-					return "Usage: lo <targetPlayerIdx> <meldIdx> <cardIndex>", true
+					return invalidArg("usageLoTargetplayeridxMeldidxCardindex"), true
 				}
 				return c.ci.Layoff(idx[0], idx[1], idx[2]), true
 			case "d", "discard":

@@ -34,7 +34,7 @@ func (c *GoFishCuiController) Exec(command string) string {
 			switch cmd {
 			case "ask":
 				if len(args) < 2 {
-					return "Usage: ask <targetIdx> <rank>", true
+					return invalidArg("usageAskTargetidxRank"), true
 				}
 				targetIdx, err1 := strconv.Atoi(args[0])
 				rank, err2 := strconv.Atoi(args[1])

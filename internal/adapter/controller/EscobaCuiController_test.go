@@ -68,7 +68,7 @@ func TestEscobaCuiController_Exec(t *testing.T) {
 	t.Run("play missing hand", func(t *testing.T) {
 		m := newMock()
 		c := controller.NewEscobaCuiController(m)
-		assert.Contains(t, c.Exec("p"), "Usage:")
+		assert.Contains(t, c.Exec("p"), msgUsage("usagePHandidxTableidxMany"))
 	})
 
 	t.Run("play bad hand index", func(t *testing.T) {

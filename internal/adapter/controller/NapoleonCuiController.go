@@ -55,7 +55,7 @@ func (c *NapoleonCuiController) Exec(command string) string {
 				return cuiutil.WithParsedIntKeys(args, "bidValueRequiredPass1217", "invalidBidValue", 0, domain.NapoleonMaxPictureCards, c.ni.Bid)
 			case "t", "trump":
 				if len(args) < 3 {
-					return "Usage: trump <suit> <adjSuit> <adjVal>\n  suit: 1=Spade 2=Club 3=Heart 4=Diamond\n  adjSuit: 0=Joker 1=Spade 2=Club 3=Heart 4=Diamond\n  adjVal: 1=A 2-10 11=J 12=Q 13=K (Joker: 1)\n", true
+					return invalidArg("usageTrumpSuitAdjsuitAdjvalSuit1Spade2Club3Heart4Dia"), true
 				}
 				suit, errMsg, ok := cuiutil.ParseIntArgKeys(args[:1], "", "invalidSuit", 1, 4)
 				if !ok {

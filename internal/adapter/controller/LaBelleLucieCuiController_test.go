@@ -35,7 +35,7 @@ func TestLaBelleLucieCuiController_Exec(t *testing.T) {
 	})
 	t.Run("invalid move args", func(t *testing.T) {
 		c := newLlCui()
-		assert.Contains(t, c.Exec("m"), "Usage")
+		assert.True(t, msgRejected(c.Exec("m")))
 		assert.Contains(t, c.Exec("m x 1"), "Invalid source")
 		assert.Contains(t, c.Exec("m 0 x"), "Invalid destination")
 	})

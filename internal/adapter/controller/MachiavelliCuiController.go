@@ -42,13 +42,13 @@ func (c *MachiavelliCuiController) Exec(command string) string {
 			case "nm", "newmeld":
 				idx := parseIntList(args)
 				if len(idx) < domain.MachiavelliMeldMin {
-					return "Usage: nm <i> <j> <k> ...  (at least 3 hand indices)", true
+					return invalidArg("usageNmIJKAtLeast3HandIndices"), true
 				}
 				return c.ci.NewMeld(idx), true
 			case "lo", "layoff":
 				idx := parseIntList(args)
 				if len(idx) < 2 {
-					return "Usage: lo <meldIdx> <handIndex>", true
+					return invalidArg("usageLoMeldidxHandindex"), true
 				}
 				return c.ci.Layoff(idx[0], idx[1]), true
 			case "nr", "nextround":

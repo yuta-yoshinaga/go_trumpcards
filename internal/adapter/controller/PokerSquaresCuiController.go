@@ -45,7 +45,7 @@ func (c *PokerSquaresCuiController) Exec(command string) string {
 // handlePlace は place コマンドを処理する。
 func (c *PokerSquaresCuiController) handlePlace(args []string) string {
 	if len(args) != 2 {
-		return "Usage: p <row> <col>"
+		return invalidArg("usagePRowCol")
 	}
 	row, err := strconv.Atoi(args[0])
 	if err != nil {

@@ -54,7 +54,7 @@ func (c *BidWhistCuiController) Exec(command string) string {
 			switch cmd {
 			case "b", "bid":
 				if len(args) < 2 {
-					return "Usage: bid <tricks> <dir>  (tricks 1-7, dir 0=Uptown 1=Downtown 2=NoTrump)\n", true
+					return invalidArg("usageBidTricksDirTricks17Dir0Uptown1Downtown2Notrump"), true
 				}
 				tricks, errMsg, ok := cuiutil.ParseIntArgKeys(args[:1], "", "invalidTricks", domain.BidWhistMinBid, domain.BidWhistMaxBid)
 				if !ok {
@@ -74,7 +74,7 @@ func (c *BidWhistCuiController) Exec(command string) string {
 				})
 			case "e", "exchange":
 				if len(args) < domain.BidWhistKittySize {
-					return "Usage: exchange <i1> <i2> <i3> <i4> <i5> <i6>  (six card indices to discard)\n", true
+					return invalidArg("usageExchangeI1I2I3I4I5I6SixCardIndicesToDiscard"), true
 				}
 				idxs := make([]int, domain.BidWhistKittySize)
 				for i := 0; i < domain.BidWhistKittySize; i++ {

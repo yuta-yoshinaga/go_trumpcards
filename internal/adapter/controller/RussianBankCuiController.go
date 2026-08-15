@@ -81,7 +81,7 @@ func (c *RussianBankCuiController) Exec(command string) string {
 				return c.di.MoveToFoundation(zone, opp, col), true
 			case "mt":
 				if len(args) < 2 {
-					return "Usage: mt <src> <col>.", true
+					return invalidArg("usageMtSrcCol"), true
 				}
 				zone, opp, col, ok := rbParseSource(args[0])
 				if !ok {
