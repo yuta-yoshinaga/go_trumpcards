@@ -26,5 +26,8 @@
   "invalidFromZone": "無効な移動元です: {{val}}",
   "invalidToZone": "無効な移動先です: {{val}}",
   "moveUsage": "使い方: m t <col> [<idx>] t|f|c <toCol|cell>",
-  "supermoveLine": "一括移動可能: 最大{{limit}}枚（空きリザーブ{{reserved}}）"
+  "supermoveLine": "一括移動可能: 最大{{limit}}枚（空きリザーブ{{reserved}}）",
+  "helpExampleMoveCell": "  m t 0 c 0            列 0 の一番上を空きセル 0 へ逃がす",
+  "helpExampleHint": "  h                    次の一手を教えてもらう",
+  "helpExampleAuto": "  ac                   組札へ送れる札を自動で送る"
 }

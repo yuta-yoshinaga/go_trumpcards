@@ -19,5 +19,7 @@
   "scoreEntry": "  Team {{team}}: {{score}} pts",
   "promptCurrentTurn": "Turn: {{name}}",
   "promptHelp": "p <hand> to capture or lay / n for next round",
-  "teamCaptured": "Team {{team}} captured: {{count}} ({{need}}+ earns +{{bonus}})"
+  "teamCaptured": "Team {{team}} captured: {{count}} ({{need}}+ earns +{{bonus}})",
+  "helpExamplePlay": "  p 0                      lay hand card 0 on the table, capturing nothing",
+  "helpExampleNext": "  n                        read the round result, then continue"
 }

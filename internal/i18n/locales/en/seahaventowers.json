@@ -26,5 +26,8 @@
   "invalidFromZone": "invalid source zone: {{val}}",
   "invalidToZone": "invalid destination zone: {{val}}",
   "moveUsage": "usage: m t <col> [<idx>] t|f|c <toCol|cell>",
-  "supermoveLine": "Max cards per move: {{limit}} (empty reserved cells {{reserved}})"
+  "supermoveLine": "Max cards per move: {{limit}} (empty reserved cells {{reserved}})",
+  "helpExampleMoveCell": "  m t 0 c 0            park the top of column 0 in free cell 0",
+  "helpExampleHint": "  h                    ask for a move",
+  "helpExampleAuto": "  ac                   send everything that can go to a foundation"
 }

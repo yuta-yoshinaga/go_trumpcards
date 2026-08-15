@@ -21,5 +21,8 @@
   "hintToFreeCell": "フリーセル{{col}}",
   "hintLine": "ヒント: {{from}} → {{to}}",
   "supermoveLine": "一括移動: 最大{{limit}}枚 (空きセル{{cells}} / 空き列{{cols}})",
-  "supermoveToEmpty": " / 空き列へは{{limit}}枚"
+  "supermoveToEmpty": " / 空き列へは{{limit}}枚",
+  "helpExampleMoveCell": "  m t 0 c 0            列 0 の一番上を空きセル 0 へ逃がす",
+  "helpExampleHint": "  h                    次の一手を教えてもらう",
+  "helpExampleAuto": "  ac                   組札へ送れる札を自動で送る"
 }

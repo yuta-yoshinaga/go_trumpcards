@@ -480,6 +480,11 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewFreeCellCuiController,
 		CuiHelpSpec{
 			TitleKey: "freecell.helpTitle",
+			ExampleKeys: []string{
+				"freecell.helpExampleMoveCell",
+				"freecell.helpExampleHint",
+				"freecell.helpExampleAuto",
+			},
 			CommandKeys: []string{
 				"freecell.helpMove",
 				"freecell.helpMoveTF",
@@ -502,6 +507,11 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewSeahavenTowersCuiController,
 		CuiHelpSpec{
 			TitleKey: "seahaventowers.helpTitle",
+			ExampleKeys: []string{
+				"seahaventowers.helpExampleMoveCell",
+				"seahaventowers.helpExampleHint",
+				"seahaventowers.helpExampleAuto",
+			},
 			CommandKeys: []string{
 				"seahaventowers.helpMove",
 				"seahaventowers.helpMoveTF",
@@ -2345,7 +2355,11 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewBriscolaCuiController,
 		CuiHelpSpec{
-			TitleKey:          "briscola.helpTitle",
+			TitleKey: "briscola.helpTitle",
+			ExampleKeys: []string{
+				"briscola.helpExamplePlay",
+				"briscola.helpExampleNext",
+			},
 			CommandKeys:       []string{"briscola.helpPlay", "briscola.helpNext"},
 			ExtraCommandLines: []string{"  l                    action log"},
 		}),
@@ -2400,6 +2414,11 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewEightOffCuiController,
 		CuiHelpSpec{
 			TitleKey: "eightoff.helpTitle",
+			ExampleKeys: []string{
+				"eightoff.helpExampleMoveCell",
+				"eightoff.helpExampleHint",
+				"eightoff.helpExampleAuto",
+			},
 			CommandKeys: []string{
 				"eightoff.helpMove",
 				"eightoff.helpMoveTF",
@@ -2441,6 +2460,11 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewPenguinCuiController,
 		CuiHelpSpec{
 			TitleKey: "penguin.helpTitle",
+			ExampleKeys: []string{
+				"penguin.helpExampleMoveCell",
+				"penguin.helpExampleHint",
+				"penguin.helpExampleAuto",
+			},
 			CommandKeys: []string{
 				"penguin.helpMove",
 				"penguin.helpMoveTF",
@@ -2501,7 +2525,11 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewScopaCuiController,
 		CuiHelpSpec{
-			TitleKey:    "scopa.helpTitle",
+			TitleKey: "scopa.helpTitle",
+			ExampleKeys: []string{
+				"scopa.helpExamplePlay",
+				"scopa.helpExampleNext",
+			},
 			CommandKeys: []string{"scopa.helpPlay", "scopa.helpNext"},
 			SettingKeys: []string{"scopa.helpSetDifficulty"},
 		}),
@@ -2774,6 +2802,11 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewFreeCellCuiController,
 		CuiHelpSpec{
 			TitleKey: "bakersgame.helpTitle",
+			ExampleKeys: []string{
+				"bakersgame.helpExampleMoveCell",
+				"bakersgame.helpExampleHint",
+				"bakersgame.helpExampleAuto",
+			},
 			CommandKeys: []string{
 				"bakersgame.helpMove",
 				"bakersgame.helpMoveTF",
@@ -3487,6 +3520,10 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewCuarentaCuiController,
 		CuiHelpSpec{
 			TitleKey: "cuarenta.helpTitle",
+			ExampleKeys: []string{
+				"cuarenta.helpExamplePlay",
+				"cuarenta.helpExampleNext",
+			},
 			CommandKeys: []string{
 				"cuarenta.helpPlay",
 				"cuarenta.helpNext",
@@ -3805,7 +3842,11 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewBasraCuiController,
 		CuiHelpSpec{
-			TitleKey:          "basra.helpTitle",
+			TitleKey: "basra.helpTitle",
+			ExampleKeys: []string{
+				"basra.helpExamplePlay",
+				"basra.helpExampleNext",
+			},
 			CommandKeys:       []string{"basra.helpPlay", "basra.helpNext"},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"basra.helpSetDifficulty"},
@@ -3816,7 +3857,11 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewTablanetCuiController,
 		CuiHelpSpec{
-			TitleKey:          "tablanet.helpTitle",
+			TitleKey: "tablanet.helpTitle",
+			ExampleKeys: []string{
+				"tablanet.helpExamplePlay",
+				"tablanet.helpExampleNext",
+			},
 			CommandKeys:       []string{"tablanet.helpPlay", "tablanet.helpNext"},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"tablanet.helpSetDifficulty"},
@@ -4199,6 +4244,10 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewPopeJoanCuiController,
 		CuiHelpSpec{
 			TitleKey: "popejoan.helpTitle",
+			ExampleKeys: []string{
+				"popejoan.helpExamplePlay",
+				"popejoan.helpExampleNext",
+			},
 			CommandKeys: []string{
 				"popejoan.helpPlay",
 				"popejoan.helpNext",
@@ -4212,6 +4261,10 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewNainJauneCuiController,
 		CuiHelpSpec{
 			TitleKey: "nainjaune.helpTitle",
+			ExampleKeys: []string{
+				"nainjaune.helpExamplePlay",
+				"nainjaune.helpExampleNext",
+			},
 			CommandKeys: []string{
 				"nainjaune.helpPlay",
 				"nainjaune.helpNext",
@@ -4345,6 +4398,10 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewKarnoffelCuiController,
 		CuiHelpSpec{
 			TitleKey: "karnoffel.helpTitle",
+			ExampleKeys: []string{
+				"karnoffel.helpExamplePlay",
+				"karnoffel.helpExampleNext",
+			},
 			CommandKeys: []string{
 				"karnoffel.helpPlay",
 				"karnoffel.helpNext",

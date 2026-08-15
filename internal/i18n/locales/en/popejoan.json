@@ -29,5 +29,7 @@
   "hintReasonDealEnd": "this deal is already over",
   "hintReasonNotYourTurn": "it is not your turn",
   "hintReasonLead": "the run is stopped, so lead your lowest card",
-  "hintReasonFollow": "the next higher card of the same suit"
+  "hintReasonFollow": "the next higher card of the same suit",
+  "helpExamplePlay": "  p 0                      play hand card 0",
+  "helpExampleNext": "  n                        read the trick result, then continue"
 }
