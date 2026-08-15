@@ -136,7 +136,10 @@ func (pi *PiquetInteractor) GetConfig() domain.PiquetConfig {
 
 // runCpuExchange 交換フェーズでCPUの手番を自動実行する
 func (pi *PiquetInteractor) runCpuExchange() {
-	for !pi.Game.GetGameEndFlag() {
+	for i := 0; i < MaxCpuIterations; i++ {
+		if pi.Game.GetGameEndFlag() {
+			return
+		}
 		if pi.Game.GetPhase() != domain.PiquetPhaseExchange {
 			return
 		}
@@ -160,7 +163,10 @@ func (pi *PiquetInteractor) runCpuExchange() {
 
 // runCpuPlay プレイフェーズでCPUの手番を自動実行する
 func (pi *PiquetInteractor) runCpuPlay() {
-	for !pi.Game.GetGameEndFlag() {
+	for i := 0; i < MaxCpuIterations; i++ {
+		if pi.Game.GetGameEndFlag() {
+			return
+		}
 		if pi.Game.GetPhase() != domain.PiquetPhasePlay {
 			return
 		}

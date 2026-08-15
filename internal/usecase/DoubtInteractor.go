@@ -102,7 +102,10 @@ func (di *DoubtInteractor) ActionLog() string {
 
 // runCpuTurns ゲームが終わるか人間の手番またはダウトフェーズになるまでCPUターンを実行
 func (di *DoubtInteractor) runCpuTurns() {
-	for !di.Game.GetGameEndFlag() {
+	for i := 0; i < MaxCpuIterations; i++ {
+		if di.Game.GetGameEndFlag() {
+			return
+		}
 		if di.Game.GetPhase() == domain.DoubtPhaseDoubt {
 			break
 		}

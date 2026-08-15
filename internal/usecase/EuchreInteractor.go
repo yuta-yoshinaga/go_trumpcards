@@ -192,7 +192,10 @@ func (ei *EuchreInteractor) ActionLog() string {
 
 // runCpuBids PickUpとCallTrumpフェーズでCPUを自動実行する
 func (ei *EuchreInteractor) runCpuBids() {
-	for !ei.Game.GetGameEndFlag() {
+	for i := 0; i < MaxCpuIterations; i++ {
+		if ei.Game.GetGameEndFlag() {
+			return
+		}
 		phase := ei.Game.GetPhase()
 		if phase == domain.EuchrePhasePickUp {
 			if ei.Game.IsHumanBidTurn() {

@@ -146,7 +146,10 @@ func (ci *CribbageInteractor) ActionLog() string {
 
 // runCpuTurns CPUターンを実行
 func (ci *CribbageInteractor) runCpuTurns() {
-	for !ci.Game.GetGameEndFlag() {
+	for i := 0; i < MaxCpuIterations; i++ {
+		if ci.Game.GetGameEndFlag() {
+			return
+		}
 		phase := ci.Game.GetPhase()
 		if phase == domain.CribbagePhaseRoundEnd || phase == domain.CribbagePhaseGameEnd ||
 			phase == domain.CribbagePhaseShow {

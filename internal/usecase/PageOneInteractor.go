@@ -136,7 +136,10 @@ func (ci *PageOneInteractor) Hint() string {
 
 // runCpuTurns ゲームが終わるか人間の手番またはラウンド/ゲーム終了になるまでCPUターンを実行
 func (ci *PageOneInteractor) runCpuTurns() {
-	for !ci.Game.GetGameEndFlag() {
+	for i := 0; i < MaxCpuIterations; i++ {
+		if ci.Game.GetGameEndFlag() {
+			return
+		}
 		phase := ci.Game.GetPhase()
 		if phase == PageOnePhaseRoundEnd || phase == PageOnePhaseGameEnd {
 			break

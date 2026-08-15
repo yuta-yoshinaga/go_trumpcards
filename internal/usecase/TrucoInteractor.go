@@ -120,7 +120,10 @@ func (ti *TrucoInteractor) ActionLog() string {
 // 共通の runCpuTurnsLoop ではなく専用ループを用いる。
 func (ti *TrucoInteractor) runCpuTurns() {
 	g := ti.Game
-	for !g.GetGameEndFlag() {
+	for i := 0; i < MaxCpuIterations; i++ {
+		if g.GetGameEndFlag() {
+			return
+		}
 		switch g.GetPhase() {
 		case domain.TrucoPhasePlay, domain.TrucoPhaseRespond:
 			if g.IsHumanTurn() {

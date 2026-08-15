@@ -172,7 +172,10 @@ func (bi *BeloteInteractor) ActionLog() string {
 
 // runCpuBids ビッドフェーズでCPUを自動実行する (PickUp と CallTrump)
 func (bi *BeloteInteractor) runCpuBids() {
-	for !bi.Game.GetGameEndFlag() {
+	for i := 0; i < MaxCpuIterations; i++ {
+		if bi.Game.GetGameEndFlag() {
+			return
+		}
 		phase := bi.Game.GetPhase()
 		switch phase {
 		case domain.BelotePhaseBidPickUp:

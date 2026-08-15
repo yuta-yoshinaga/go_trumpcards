@@ -139,7 +139,10 @@ func (ji *JassInteractor) ActionLog() string {
 
 // runCpuBids ビッドフェーズでCPUを自動実行する (切り札選択 / Schieben)
 func (ji *JassInteractor) runCpuBids() {
-	for !ji.Game.GetGameEndFlag() {
+	for i := 0; i < MaxCpuIterations; i++ {
+		if ji.Game.GetGameEndFlag() {
+			return
+		}
 		phase := ji.Game.GetPhase()
 		if phase != domain.JassPhaseBidTrump && phase != domain.JassPhaseBidPartner {
 			return

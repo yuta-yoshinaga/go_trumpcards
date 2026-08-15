@@ -190,7 +190,10 @@ func (ci *MaoInteractor) IsHumanAwaitingWord() bool {
 // CPUターンを実行する。隠しルールの宣言待ち (awaitingWord) のときは、人間が
 // 言葉を宣言するまでCPUを進めない。
 func (ci *MaoInteractor) runCpuTurns() {
-	for !ci.Game.GetGameEndFlag() {
+	for i := 0; i < MaxCpuIterations; i++ {
+		if ci.Game.GetGameEndFlag() {
+			return
+		}
 		// 人間が隠しルールの言葉を宣言すべき状態なら一旦停止する。
 		if ci.Game.GetAwaitingWord() {
 			break

@@ -29,7 +29,12 @@ type bidGame[P comparable] interface {
 // runCpuBidsLoop ビッドフェーズでCPUのビッドを自動実行するループ。
 // bidPhase に該当するフェーズの間、人間の手番になるまでCPUにビッドさせる。
 func runCpuBidsLoop[P comparable](g bidGame[P], bidPhase P) {
-	for !g.GetGameEndFlag() {
+	// runCpuTurnsLoop と同じ理由で上限を持つ。ビッドが進まないまま回ると
+	// goroutine が戻らない (#5416)。
+	for turns := 0; !g.GetGameEndFlag(); turns++ {
+		if turns >= maxCpuTurnsPerCall {
+			return
+		}
 		if g.GetPhase() != bidPhase {
 			break
 		}
