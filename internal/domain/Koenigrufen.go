@@ -1091,7 +1091,7 @@ func (g *Koenigrufen) trumpFollowIndices(player *KoenigrufenPlayer, highestTrump
 	if len(trumps) == 0 {
 		return g.allIndices(player) // 切り札なし → 任意の札
 	}
-	higher := koenigrufenFilter(trumps, func(idx int) bool {
+	higher := filterIndices(trumps, func(idx int) bool {
 		return koenigrufenTrumpValue(player.GetCard(idx)) > highestTrump
 	})
 	if len(higher) > 0 {
@@ -1110,7 +1110,7 @@ func (g *Koenigrufen) suitFollowIndices(player *KoenigrufenPlayer, led, highestT
 	if len(trumps) == 0 {
 		return g.allIndices(player) // ボイド + 切り札なし → 任意
 	}
-	higher := koenigrufenFilter(trumps, func(idx int) bool {
+	higher := filterIndices(trumps, func(idx int) bool {
 		return koenigrufenTrumpValue(player.GetCard(idx)) > highestTrump
 	})
 	if highestTrump > 0 && len(higher) > 0 {
@@ -1324,7 +1324,7 @@ func (g *Koenigrufen) cpuPlaySmart(playerIdx int, valid []int) int {
 	winCard := g.currentTrick[g.indexInTrick(winnerIdx)].Card
 	winnerSide := g.isDeclarerSide(winnerIdx)
 	mySide := g.isDeclarerSide(playerIdx)
-	winners := koenigrufenFilter(valid, func(idx int) bool {
+	winners := filterIndices(valid, func(idx int) bool {
 		return koenigrufenWinRank(p.GetCard(idx), led) > koenigrufenWinRank(winCard, led)
 	})
 	if winnerSide == mySide {
@@ -1557,17 +1557,6 @@ func koenigrufenValidBid(bid KoenigrufenBid) bool {
 // koenigrufenValidBidVal bid が定義済みの入札値 (Pass 含む) か。
 func koenigrufenValidBidVal(bid KoenigrufenBid) bool {
 	return bid >= KoenigrufenBidPass && bid <= KoenigrufenBidRufer
-}
-
-// koenigrufenFilter 述語を満たすインデックスを抽出する。
-func koenigrufenFilter(indices []int, pred func(int) bool) []int {
-	var out []int
-	for _, idx := range indices {
-		if pred(idx) {
-			out = append(out, idx)
-		}
-	}
-	return out
 }
 
 // --- State getters / setters ---

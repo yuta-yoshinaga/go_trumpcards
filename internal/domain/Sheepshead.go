@@ -1117,12 +1117,12 @@ func (g *Sheepshead) cpuPlaySmart(playerIdx int, valid []int) int {
 		})
 	}
 
-	winners := sheepsheadFilter(follows, func(idx int) bool {
+	winners := filterIndices(follows, func(idx int) bool {
 		return sheepsheadStrength(player.GetCard(idx)) > topStrength
 	})
 
 	if partnerWinning {
-		nonWinners := sheepsheadFilter(follows, func(idx int) bool {
+		nonWinners := filterIndices(follows, func(idx int) bool {
 			return sheepsheadStrength(player.GetCard(idx)) < topStrength
 		})
 		if len(nonWinners) > 0 {
@@ -1145,17 +1145,6 @@ func (g *Sheepshead) cpuPlaySmart(playerIdx int, valid []int) int {
 // CPU はチーム構成を把握しているものとして扱う (簡易 AI)。
 func (g *Sheepshead) cpuSameTeam(a, b int) bool {
 	return g.isPickerTeam(a) == g.isPickerTeam(b)
-}
-
-// sheepsheadFilter 述語を満たすインデックスを抽出する。
-func sheepsheadFilter(indices []int, pred func(int) bool) []int {
-	var out []int
-	for _, idx := range indices {
-		if pred(idx) {
-			out = append(out, idx)
-		}
-	}
-	return out
 }
 
 // --- JSON ---

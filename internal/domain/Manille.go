@@ -464,10 +464,10 @@ func (g *Manille) cpuPlaySmart(playerIdx int, valid []int) int {
 	for _, tc := range g.currentTrick {
 		trickPts += manilleCardPoints(tc.Card)
 	}
-	winners := manilleFilter(valid, func(idx int) bool { return g.manilleRank(player.GetCard(idx)) > topRank })
+	winners := filterIndices(valid, func(idx int) bool { return g.manilleRank(player.GetCard(idx)) > topRank })
 	if partnerWinning {
 		// 味方が勝っている: 得点の高い札を渡す。
-		nonWinners := manilleFilter(valid, func(idx int) bool { return g.manilleRank(player.GetCard(idx)) < topRank })
+		nonWinners := filterIndices(valid, func(idx int) bool { return g.manilleRank(player.GetCard(idx)) < topRank })
 		if len(nonWinners) > 0 {
 			return pickHighest(player, nonWinners, func(c *Card) int { return manilleCardPoints(c) })
 		}
@@ -479,17 +479,6 @@ func (g *Manille) cpuPlaySmart(playerIdx int, valid []int) int {
 	return pickLowest(player, valid, func(c *Card) int {
 		return manilleCardPoints(c)*100 + g.manilleRank(c)
 	})
-}
-
-// manilleFilter 述語を満たすインデックスを抽出する。
-func manilleFilter(indices []int, pred func(int) bool) []int {
-	var out []int
-	for _, idx := range indices {
-		if pred(idx) {
-			out = append(out, idx)
-		}
-	}
-	return out
 }
 
 // --- Hint ---

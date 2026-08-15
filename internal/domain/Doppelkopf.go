@@ -864,12 +864,12 @@ func (g *Doppelkopf) cpuPlaySmart(playerIdx int, valid []int) int {
 		})
 	}
 
-	winners := dkFilter(follows, func(idx int) bool {
+	winners := filterIndices(follows, func(idx int) bool {
 		return dkStrength(player.GetCard(idx)) > topStrength
 	})
 
 	if partnerWinning {
-		nonWinners := dkFilter(follows, func(idx int) bool {
+		nonWinners := filterIndices(follows, func(idx int) bool {
 			return dkStrength(player.GetCard(idx)) < topStrength
 		})
 		if len(nonWinners) > 0 {
@@ -886,17 +886,6 @@ func (g *Doppelkopf) cpuPlaySmart(playerIdx int, valid []int) int {
 	return pickLowest(player, follows, func(c *Card) int {
 		return dkCardPoints(c.GetValue())*100 + dkStrength(c)
 	})
-}
-
-// dkFilter 述語を満たすインデックスを抽出する。
-func dkFilter(indices []int, pred func(int) bool) []int {
-	var out []int
-	for _, idx := range indices {
-		if pred(idx) {
-			out = append(out, idx)
-		}
-	}
-	return out
 }
 
 // --- JSON ---

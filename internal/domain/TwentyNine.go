@@ -599,7 +599,7 @@ func (g *TwentyNine) cpuPlaySmart(playerIdx int, valid []int) int {
 	winnerIdx := g.trickWinner()
 	topRank := g.trickTopRank(winnerIdx)
 	partnerWinning := TwentyNineTeamOf(winnerIdx) == TwentyNineTeamOf(playerIdx) && winnerIdx != playerIdx
-	winners := twentyNineFilter(valid, func(idx int) bool { return g.twentyNineRank(player.GetCard(idx)) > topRank })
+	winners := filterIndices(valid, func(idx int) bool { return g.twentyNineRank(player.GetCard(idx)) > topRank })
 	if partnerWinning {
 		// 味方が勝っている: 得点札を渡す。
 		return pickHighest(player, valid, func(c *Card) int { return twentyNineCardPoints(c) })
@@ -608,17 +608,6 @@ func (g *TwentyNine) cpuPlaySmart(playerIdx int, valid []int) int {
 		return pickLowest(player, winners, func(c *Card) int { return g.twentyNineRank(c) })
 	}
 	return pickLowest(player, valid, func(c *Card) int { return twentyNineCardPoints(c)*100 + g.twentyNineRank(c) })
-}
-
-// twentyNineFilter 述語を満たすインデックスを抽出する。
-func twentyNineFilter(indices []int, pred func(int) bool) []int {
-	var out []int
-	for _, idx := range indices {
-		if pred(idx) {
-			out = append(out, idx)
-		}
-	}
-	return out
 }
 
 // --- Hint ---

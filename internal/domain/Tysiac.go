@@ -877,7 +877,7 @@ func (g *Tysiac) cpuPlaySmart(playerIdx int, valid []int) int {
 	for _, tc := range g.currentTrick {
 		trickPts += tysiacCardPoints(tc.Card)
 	}
-	winners := tysiacFilter(valid, func(idx int) bool { return g.tysiacRank(player.GetCard(idx)) > topRank })
+	winners := filterIndices(valid, func(idx int) bool { return g.tysiacRank(player.GetCard(idx)) > topRank })
 	if trickPts > 0 && len(winners) > 0 {
 		return pickLowest(player, winners, func(c *Card) int { return g.tysiacRank(c) })
 	}
@@ -906,17 +906,6 @@ func (g *Tysiac) cpuMarriageLead(playerIdx int, valid []int) int {
 		}
 	}
 	return best
-}
-
-// tysiacFilter 述語を満たすインデックスを抽出する。
-func tysiacFilter(indices []int, pred func(int) bool) []int {
-	var out []int
-	for _, idx := range indices {
-		if pred(idx) {
-			out = append(out, idx)
-		}
-	}
-	return out
 }
 
 // --- Hint ---
