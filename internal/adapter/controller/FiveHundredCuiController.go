@@ -64,7 +64,7 @@ func (c *FiveHundredCuiController) Exec(command string) string {
 				if !ok {
 					return errMsg, true
 				}
-				suit, errMsg, ok := cuiutil.ParseIntArg(args[1:2], "", "Invalid suit: %s.", 1, 4)
+				suit, errMsg, ok := cuiutil.ParseIntArgKeys(args[1:2], "", "invalidSuit", 1, 4)
 				if !ok {
 					return errMsg, true
 				}

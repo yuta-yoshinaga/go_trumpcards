@@ -50,10 +50,10 @@ func TestCourtPieceCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "DeclareTrump", domain.CardDesignDiamond)
 	})
 	t.Run("trump no args", func(t *testing.T) {
-		assert.Contains(t, controller.NewCourtPieceCuiController(newMock()).Exec("t"), "Trump suit is required")
+		assert.Contains(t, controller.NewCourtPieceCuiController(newMock()).Exec("t"), msgStem("trumpSuitRequiredNames"))
 	})
 	t.Run("trump invalid suit", func(t *testing.T) {
-		assert.Contains(t, controller.NewCourtPieceCuiController(newMock()).Exec("t 9"), "Invalid suit")
+		assert.Contains(t, controller.NewCourtPieceCuiController(newMock()).Exec("t 9"), msgStem("invalidSuit"))
 	})
 
 	t.Run("play valid", func(t *testing.T) {

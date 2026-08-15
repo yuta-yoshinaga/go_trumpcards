@@ -55,10 +55,7 @@ func TestViraCuiController_Exec(t *testing.T) {
 
 	t.Run("bid no args names the Vira ladder, not another game's", func(t *testing.T) {
 		result := controller.NewViraCuiController(newMock()).Exec("bid")
-		assert.Contains(t, result, "Bid is required")
-		for _, want := range []string{"Gask", "Solo", "Vira"} {
-			assert.Contains(t, result, want)
-		}
+		assert.Equal(t, msgKey("bidRequiredGask"), result)
 		// Préférence's rungs — the prompt was copied from it and named these.
 		for _, wrong := range []string{"Six", "Seven", "Eight"} {
 			assert.NotContains(t, result, wrong, "%q belongs to Préférence, not Vira", wrong)
@@ -67,7 +64,7 @@ func TestViraCuiController_Exec(t *testing.T) {
 
 	t.Run("bid out of range", func(t *testing.T) {
 		result := controller.NewViraCuiController(newMock()).Exec("bid 9")
-		assert.Contains(t, result, "Invalid bid")
+		assert.Contains(t, result, msgStem("invalidBid04"))
 	})
 
 	t.Run("pass maps to bid 0", func(t *testing.T) {

@@ -71,7 +71,7 @@ func TestKnockoutWhistCuiController_Exec(t *testing.T) {
 
 	t.Run("selecttrump invalid", func(t *testing.T) {
 		result := controller.NewKnockoutWhistCuiController(newMock()).Exec("st 9")
-		assert.Contains(t, result, "Invalid trump suit")
+		assert.Contains(t, result, msgStem("invalidTrumpSuitRange"))
 	})
 
 	t.Run("setdifficulty", func(t *testing.T) {

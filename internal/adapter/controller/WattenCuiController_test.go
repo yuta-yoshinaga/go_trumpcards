@@ -58,12 +58,12 @@ func TestWattenCuiController_Exec(t *testing.T) {
 
 	t.Run("declare missing args", func(t *testing.T) {
 		c := controller.NewWattenCuiController(newMock())
-		assert.Contains(t, c.Exec("d"), "Rank and suit are required")
+		assert.Contains(t, c.Exec("d"), msgStem("rankAndSuitRequired"))
 	})
 
 	t.Run("declare bad suit", func(t *testing.T) {
 		c := controller.NewWattenCuiController(newMock())
-		assert.Contains(t, c.Exec("d 10 9"), "Invalid suit")
+		assert.Contains(t, c.Exec("d 10 9"), msgStem("invalidSuit"))
 	})
 
 	t.Run("play p index", func(t *testing.T) {

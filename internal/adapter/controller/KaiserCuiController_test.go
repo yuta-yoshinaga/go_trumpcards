@@ -79,8 +79,8 @@ func TestKaiserCuiController_Exec(t *testing.T) {
 		c := controller.NewKaiserCuiController(m)
 		assert.Equal(t, mockOutput, c.Exec("t 3"))
 		m.AssertCalled(t, "SetTrump", domain.CardDesignHeart)
-		assert.Contains(t, c.Exec("t"), "required")
-		assert.Contains(t, c.Exec("t 5"), "Invalid suit")
+		assert.Contains(t, c.Exec("t"), msgStem("suitRequiredLetters"))
+		assert.Contains(t, c.Exec("t 5"), msgStem("invalidSuitRange"))
 	})
 
 	// **捨て札は必ず 2 枚。**キティと同数でなければ手札が合わなくなる。

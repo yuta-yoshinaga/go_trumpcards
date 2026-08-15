@@ -52,7 +52,7 @@ func (c *KoenigrufenCuiController) Exec(command string) string {
 			case "pass":
 				return c.di.Pass(), true
 			case "ck", "callking":
-				return cuiutil.WithParsedInt(args, "King suit is required (1-4).", "Invalid suit: %s. Please enter 1-4.", 1, domain.KoenigrufenSuitCnt, c.di.CallKing)
+				return cuiutil.WithParsedIntKeys(args, "kingSuitRequired", "invalidSuitRange", 1, domain.KoenigrufenSuitCnt, c.di.CallKing)
 			case "discard":
 				return c.execDiscard(args)
 			case "play":

@@ -39,7 +39,7 @@ func (c *HasenpfefferCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bid":
-				return cuiutil.WithParsedInt(args, "Bid is required.", "Invalid bid: %s.",
+				return cuiutil.WithParsedIntKeys(args, "bidRequired", "invalidBid",
 					domain.HasenpfefferMinBid, domain.HasenpfefferMaxBid, c.hi.Bid)
 			case "pass":
 				// **降りるのは専用コマンド。** `bid 0` を通すと下限の検査が要らなく
@@ -70,7 +70,7 @@ func (c *HasenpfefferCuiController) discard(args []string) (string, bool) {
 	if !ok {
 		return errMsg, true
 	}
-	suit, errMsg, ok := cuiutil.ParseIntArg(args[1:], "Suit is required.", "Invalid suit: %s.",
+	suit, errMsg, ok := cuiutil.ParseIntArgKeys(args[1:], "suitRequired", "invalidSuit",
 		domain.CardDesignSpade, domain.CardDesignMax)
 	if !ok {
 		return errMsg, true

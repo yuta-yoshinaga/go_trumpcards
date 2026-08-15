@@ -363,17 +363,17 @@ func TestDaifugoCuiController_SuitLockMode_Valid(t *testing.T) {
 func TestDaifugoCuiController_SuitLockMode_NoArgs(t *testing.T) {
 	mi := new(mockUsecases.MockDaifugoInteractor)
 	c := controller.NewDaifugoCuiController(mi)
-	assert.Contains(t, c.Exec("suitlockmode"), "Suit lock mode is required")
+	assert.Contains(t, c.Exec("suitlockmode"), msgStem("suitLockModeRequired"))
 }
 
 func TestDaifugoCuiController_SuitLockMode_InvalidValue(t *testing.T) {
 	mi := new(mockUsecases.MockDaifugoInteractor)
 	c := controller.NewDaifugoCuiController(mi)
 	// non-numeric: controller catches
-	assert.Contains(t, c.Exec("suitlockmode abc"), "Invalid suit lock mode: abc")
+	assert.Contains(t, c.Exec("suitlockmode abc"), msgKey("invalidSuitLockMode", "val", "abc"))
 	// numeric out-of-range: controller catches via ParseIntArg bounds
-	assert.Equal(t, "Invalid suit lock mode: 3. Please enter 0-2.", c.Exec("suitlockmode 3"))
-	assert.Equal(t, "Invalid suit lock mode: -1. Please enter 0-2.", c.Exec("suitlockmode -1"))
+	assert.Equal(t, msgKey("invalidSuitLockMode", "val", "3"), c.Exec("suitlockmode 3"))
+	assert.Equal(t, msgKey("invalidSuitLockMode", "val", "-1"), c.Exec("suitlockmode -1"))
 }
 
 // --- 5skipcount ---

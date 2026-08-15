@@ -55,10 +55,10 @@ func TestKlaberjassCuiController_Exec(t *testing.T) {
 	// **スートは 1〜4。**0 や 5 を通すとドメインで弾かれるだけの往復になる。
 	t.Run("call rejects a bad suit", func(t *testing.T) {
 		c := controller.NewKlaberjassCuiController(newMock())
-		assert.Contains(t, c.Exec("c"), "required")
-		assert.Contains(t, c.Exec("c abc"), "Invalid suit")
-		assert.Contains(t, c.Exec("c 0"), "Invalid suit")
-		assert.Contains(t, c.Exec("c 5"), "Invalid suit")
+		assert.Contains(t, c.Exec("c"), msgStem("suitRequiredLetters"))
+		assert.Contains(t, c.Exec("c abc"), msgStem("invalidSuitRange"))
+		assert.Contains(t, c.Exec("c 0"), msgStem("invalidSuitRange"))
+		assert.Contains(t, c.Exec("c 5"), msgStem("invalidSuitRange"))
 	})
 
 	t.Run("schmeiss and its answer", func(t *testing.T) {

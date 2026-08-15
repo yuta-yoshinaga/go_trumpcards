@@ -46,8 +46,7 @@ func (c *SoloWhistCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bid":
-				return cuiutil.WithParsedInt(args, "Bid is required (0=Pass, 1=Solo, 2=Misère, 3=Abundance).",
-					"Invalid bid: %s. Please enter 0-3.",
+				return cuiutil.WithParsedIntKeys(args, "bidRequiredAbundance", "invalidBid03",
 					int(domain.SoloWhistBidPass), int(domain.SoloWhistBidAbundance), c.di.Bid)
 			case "pass":
 				return c.di.Bid(int(domain.SoloWhistBidPass)), true

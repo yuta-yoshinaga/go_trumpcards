@@ -75,7 +75,7 @@ func TestBidWhistCuiController_Usage(t *testing.T) {
 	if got := c.Exec("p"); !strings.Contains(got, msgCardIndexRequired()) {
 		t.Errorf("play without args should require index, got %q", got)
 	}
-	if got := c.Exec("t"); !strings.Contains(got, "required") {
+	if got := c.Exec("t"); !strings.Contains(got, msgStem("trumpSuitRequiredLettersPlain")) {
 		t.Errorf("trump without args should require suit, got %q", got)
 	}
 }

@@ -70,10 +70,10 @@ func TestBalootCuiControllerHokomAcceptsEverySuit(t *testing.T) {
 // **範囲外のスートは弾く。** 0 や 5 を通すと切り札の無い Hokom になる。
 func TestBalootCuiControllerHokomRejectsBadArgs(t *testing.T) {
 	for _, tc := range []struct{ name, cmd, want string }{
-		{"missing suit", "hokom", "Suit is required."},
-		{"non-numeric", "hokom x", "Invalid suit: x."},
-		{"below the range", "hokom 0", "Invalid suit: 0."},
-		{"above the range", "hokom 5", "Invalid suit: 5."},
+		{"missing suit", "hokom", msgKey("suitRequired")},
+		{"non-numeric", "hokom x", msgKey("invalidSuit", "val", "x")},
+		{"below the range", "hokom 0", msgKey("invalidSuit", "val", "0")},
+		{"above the range", "hokom 5", msgKey("invalidSuit", "val", "5")},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			bi := newMockBalootInteractor()

@@ -43,7 +43,7 @@ func (c *IsraeliWhistCuiController) Exec(command string) string {
 			case "pass":
 				return c.wi.AuctionPass(), true
 			case "b", "bid":
-				return cuiutil.WithParsedInt(args, "Bid is required.", "Invalid bid: %s.",
+				return cuiutil.WithParsedIntKeys(args, "bidRequired", "invalidBid",
 					0, domain.IsraeliWhistHandSize, c.wi.Bid)
 			case "p", "play":
 				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.wi.Play)
@@ -60,12 +60,12 @@ func (c *IsraeliWhistCuiController) Exec(command string) string {
 
 // auction 入札は数とスートの 2 引数を取る。**どちらも既定値で埋めない。**
 func (c *IsraeliWhistCuiController) auction(args []string) (string, bool) {
-	bid, errMsg, ok := cuiutil.ParseIntArg(args, "Bid is required.", "Invalid bid: %s.",
+	bid, errMsg, ok := cuiutil.ParseIntArgKeys(args, "bidRequired", "invalidBid",
 		domain.IsraeliWhistMinAuctionBid, domain.IsraeliWhistHandSize)
 	if !ok {
 		return errMsg, true
 	}
-	suit, errMsg, ok := cuiutil.ParseIntArg(args[1:], "Suit is required.", "Invalid suit: %s.",
+	suit, errMsg, ok := cuiutil.ParseIntArgKeys(args[1:], "suitRequired", "invalidSuit",
 		domain.CardDesignSpade, domain.CardDesignMax)
 	if !ok {
 		return errMsg, true

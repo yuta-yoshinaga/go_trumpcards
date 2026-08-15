@@ -63,11 +63,11 @@ func (c *EuchreCuiController) Exec(command string) string {
 			case "pa", "pass":
 				return c.ei.Pass(), true
 			case "c", "call":
-				return cuiutil.WithParsedInt(args, "Suit is required (1-4).", "Invalid suit: %s.", 1, 4, func(suit int) string {
+				return cuiutil.WithParsedIntKeys(args, "suitRequiredRange", "invalidSuit", 1, 4, func(suit int) string {
 					return c.ei.CallTrump(suit, false)
 				})
 			case "ca", "callalone":
-				return cuiutil.WithParsedInt(args, "Suit is required (1-4).", "Invalid suit: %s.", 1, 4, func(suit int) string {
+				return cuiutil.WithParsedIntKeys(args, "suitRequiredRange", "invalidSuit", 1, 4, func(suit int) string {
 					return c.ei.CallTrump(suit, true)
 				})
 			case "d", "discard":

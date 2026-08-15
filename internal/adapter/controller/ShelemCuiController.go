@@ -40,7 +40,7 @@ func (c *ShelemCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bid":
-				return cuiutil.WithParsedInt(args, "Bid is required.", "Invalid bid: %s.",
+				return cuiutil.WithParsedIntKeys(args, "bidRequired", "invalidBid",
 					domain.ShelemMinBid, domain.ShelemMaxBid, c.si.Bid)
 			case "shelem":
 				return c.si.BidShelem(), true
@@ -78,7 +78,7 @@ func (c *ShelemCuiController) discard(args []string) (string, bool) {
 		}
 		indices = append(indices, v)
 	}
-	suit, errMsg, ok := cuiutil.ParseIntArg(args[domain.ShelemWidowSize:], "Suit is required.", "Invalid suit: %s.",
+	suit, errMsg, ok := cuiutil.ParseIntArgKeys(args[domain.ShelemWidowSize:], "suitRequired", "invalidSuit",
 		domain.CardDesignSpade, domain.CardDesignMax)
 	if !ok {
 		return errMsg, true

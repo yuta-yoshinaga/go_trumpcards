@@ -70,12 +70,12 @@ func TestTuteCuiController_Exec(t *testing.T) {
 
 	t.Run("marriage invalid suit", func(t *testing.T) {
 		result := controller.NewTuteCuiController(newMock()).Exec("m 9")
-		assert.Contains(t, result, "Invalid suit")
+		assert.Contains(t, result, msgStem("invalidSuitRange"))
 	})
 
 	t.Run("marriage no args", func(t *testing.T) {
 		result := controller.NewTuteCuiController(newMock()).Exec("m")
-		assert.Contains(t, result, "Suit is required")
+		assert.Contains(t, result, msgStem("suitRequiredSymbolsPlain"))
 	})
 
 	t.Run("tute declaration", func(t *testing.T) {

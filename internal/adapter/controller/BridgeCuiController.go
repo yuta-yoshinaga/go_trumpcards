@@ -47,7 +47,7 @@ func (c *BridgeCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bid":
-				return cuiutil.WithParsedInt(args, "Bid type is required (0=Pass, 1=Normal, 2=Double, 3=Redouble).", "Invalid bid type: %s.", 0, 3, func(bidType int) string {
+				return cuiutil.WithParsedIntKeys(args, "bidTypeRequired", "invalidBidType", 0, 3, func(bidType int) string {
 					bidLevel := cuiutil.ParseOptionalInt(args, 1, 0)
 					bidSuit := cuiutil.ParseOptionalInt(args, 2, 0)
 					return c.bi.Bid(bidType, bidLevel, bidSuit)

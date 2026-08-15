@@ -51,10 +51,10 @@ func TestSixBidSoloCuiController_Exec(t *testing.T) {
 
 	t.Run("bid rejects a value outside 1-6", func(t *testing.T) {
 		c := controller.NewSixBidSoloCuiController(newMock())
-		assert.Contains(t, c.Exec("b"), "required")
-		assert.Contains(t, c.Exec("b abc"), "Invalid bid")
-		assert.Contains(t, c.Exec("b 0"), "Invalid bid")
-		assert.Contains(t, c.Exec("b 7"), "Invalid bid")
+		assert.Contains(t, c.Exec("b"), msgStem("bidRequiredSolo"))
+		assert.Contains(t, c.Exec("b abc"), msgStem("invalidBid"))
+		assert.Contains(t, c.Exec("b 0"), msgStem("invalidBid"))
+		assert.Contains(t, c.Exec("b 7"), msgStem("invalidBid"))
 	})
 
 	t.Run("declares a trump", func(t *testing.T) {

@@ -48,10 +48,10 @@ func TestShengJiCuiController_Exec(t *testing.T) {
 
 	t.Run("declare rejects bad input", func(t *testing.T) {
 		c := controller.NewShengJiCuiController(newMock())
-		assert.Contains(t, c.Exec("d"), "Suit is required")
-		assert.Contains(t, c.Exec("d abc"), "Invalid suit")
-		assert.Contains(t, c.Exec("d 5"), "Invalid suit")
-		assert.Contains(t, c.Exec("d -1"), "Invalid suit")
+		assert.Contains(t, c.Exec("d"), msgStem("suitRequiredOrPass"))
+		assert.Contains(t, c.Exec("d abc"), msgStem("invalidSuit"))
+		assert.Contains(t, c.Exec("d 5"), msgStem("invalidSuit"))
+		assert.Contains(t, c.Exec("d -1"), msgStem("invalidSuit"))
 	})
 
 	// **底牌はちょうど 8 枚。**

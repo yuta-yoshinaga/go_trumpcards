@@ -50,12 +50,12 @@ func TestSoloWhistCuiController_Exec(t *testing.T) {
 
 	t.Run("bid no args", func(t *testing.T) {
 		result := controller.NewSoloWhistCuiController(newMock()).Exec("bid")
-		assert.Contains(t, result, "Bid is required")
+		assert.Contains(t, result, msgStem("bidRequiredAbundance"))
 	})
 
 	t.Run("bid invalid", func(t *testing.T) {
 		result := controller.NewSoloWhistCuiController(newMock()).Exec("bid 9")
-		assert.Contains(t, result, "Invalid bid")
+		assert.Contains(t, result, msgStem("invalidBid03"))
 	})
 
 	t.Run("pass maps to bid 0", func(t *testing.T) {

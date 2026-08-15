@@ -133,25 +133,25 @@ func TestEuchreCuiController_Exec(t *testing.T) {
 	t.Run("call command c no args", func(t *testing.T) {
 		c := controller.NewEuchreCuiController(newMock())
 		result := c.Exec("c")
-		assert.Contains(t, result, "Suit is required")
+		assert.Contains(t, result, msgStem("suitRequiredRange"))
 	})
 
 	t.Run("call command c invalid arg", func(t *testing.T) {
 		c := controller.NewEuchreCuiController(newMock())
 		result := c.Exec("c abc")
-		assert.Contains(t, result, "Invalid suit")
+		assert.Contains(t, result, msgStem("invalidSuit"))
 	})
 
 	t.Run("call command c out of range", func(t *testing.T) {
 		c := controller.NewEuchreCuiController(newMock())
 		result := c.Exec("c 5")
-		assert.Contains(t, result, "Invalid suit: 5")
+		assert.Contains(t, result, msgKey("invalidSuit", "val", "5"))
 	})
 
 	t.Run("call command c below range", func(t *testing.T) {
 		c := controller.NewEuchreCuiController(newMock())
 		result := c.Exec("c 0")
-		assert.Contains(t, result, "Invalid suit: 0")
+		assert.Contains(t, result, msgKey("invalidSuit", "val", "0"))
 	})
 
 	// callalone
@@ -174,7 +174,7 @@ func TestEuchreCuiController_Exec(t *testing.T) {
 	t.Run("callalone command ca no args", func(t *testing.T) {
 		c := controller.NewEuchreCuiController(newMock())
 		result := c.Exec("ca")
-		assert.Contains(t, result, "Suit is required")
+		assert.Contains(t, result, msgStem("suitRequiredRange"))
 	})
 
 	// discard

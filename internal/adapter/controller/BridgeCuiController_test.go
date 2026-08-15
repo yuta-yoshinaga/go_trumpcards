@@ -79,25 +79,25 @@ func TestBridgeCuiController_Exec(t *testing.T) {
 	t.Run("bid command b no args", func(t *testing.T) {
 		c := controller.NewBridgeCuiController(newMock())
 		result := c.Exec("b")
-		assert.Contains(t, result, "Bid type is required")
+		assert.Contains(t, result, msgStem("bidTypeRequired"))
 	})
 
 	t.Run("bid command b invalid arg", func(t *testing.T) {
 		c := controller.NewBridgeCuiController(newMock())
 		result := c.Exec("b abc")
-		assert.Contains(t, result, "Invalid bid type")
+		assert.Contains(t, result, msgStem("invalidBidType"))
 	})
 
 	t.Run("bid command b out of range", func(t *testing.T) {
 		c := controller.NewBridgeCuiController(newMock())
 		result := c.Exec("b 4")
-		assert.Contains(t, result, "Invalid bid type: 4")
+		assert.Contains(t, result, msgKey("invalidBidType", "val", "4"))
 	})
 
 	t.Run("bid command b below range", func(t *testing.T) {
 		c := controller.NewBridgeCuiController(newMock())
 		result := c.Exec("b -1")
-		assert.Contains(t, result, "Invalid bid type: -1")
+		assert.Contains(t, result, msgKey("invalidBidType", "val", "-1"))
 	})
 
 	// play

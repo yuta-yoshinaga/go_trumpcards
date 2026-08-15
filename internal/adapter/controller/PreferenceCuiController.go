@@ -46,8 +46,7 @@ func (c *PreferenceCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bid":
-				return cuiutil.WithParsedInt(args, "Bid is required (0=Pass, 1=Six, 2=Misère, 3=Seven, 4=Eight).",
-					"Invalid bid: %s. Please enter 0-4.",
+				return cuiutil.WithParsedIntKeys(args, "bidRequiredSix", "invalidBid04",
 					int(domain.PreferenceBidPass), int(domain.PreferenceBidEight), c.di.Bid)
 			case "pass":
 				return c.di.Bid(int(domain.PreferenceBidPass)), true

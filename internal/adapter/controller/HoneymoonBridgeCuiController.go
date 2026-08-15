@@ -66,7 +66,7 @@ func (c *HoneymoonBridgeCuiController) bid(args []string) (string, bool) {
 	if !ok {
 		return errMsg, true
 	}
-	suit, errMsg, ok := cuiutil.ParseIntArg(args[1:], "Suit is required.", "Invalid suit: %s.",
+	suit, errMsg, ok := cuiutil.ParseIntArgKeys(args[1:], "suitRequired", "invalidSuit",
 		0, domain.CardDesignMax)
 	if !ok {
 		return errMsg, true

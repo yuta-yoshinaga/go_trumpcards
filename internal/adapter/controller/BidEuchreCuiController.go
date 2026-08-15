@@ -30,7 +30,7 @@ func (c *BidEuchreCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bid":
-				return cuiutil.WithParsedInt(args, "Bid value is required.", "Invalid bid: %s.",
+				return cuiutil.WithParsedIntKeys(args, "bidValueRequired", "invalidBid",
 					domain.BidEuchreMinBid, domain.BidEuchreMaxBid, func(v int) string {
 						return c.bi.Bid(v)
 					})
@@ -38,10 +38,9 @@ func (c *BidEuchreCuiController) Exec(command string) string {
 				return c.bi.PassBid(), true
 			case "t", "trump":
 				// **0=S 1=C 2=D 3=H 4=NT-high 5=NT-low。**ノートランプが 2 種類ある。
-				return cuiutil.WithParsedInt(args, "Trump declaration is required (0=S 1=C 2=D 3=H 4=NT-high 5=NT-low).",
-					"Invalid trump: %s.", 0, int(domain.BidEuchreTrumpCount)-1, func(v int) string {
-						return c.bi.ChooseTrump(v)
-					})
+				return cuiutil.WithParsedIntKeys(args, "trumpDeclarationRequired", "invalidTrump", 0, int(domain.BidEuchreTrumpCount)-1, func(v int) string {
+					return c.bi.ChooseTrump(v)
+				})
 			case "p", "play":
 				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", 0, domain.BidEuchreHandSize-1, func(v int) string {
 					return c.bi.PlayCard(v)

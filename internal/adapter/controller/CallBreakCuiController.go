@@ -45,7 +45,7 @@ func (c *CallBreakCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bid":
-				return cuiutil.WithParsedInt(args, "Bid value is required (1-13).", "Invalid bid value: %s.", domain.CallBreakMinBid, domain.CallBreakHandSize, c.ci.Bid)
+				return cuiutil.WithParsedIntKeys(args, "bidValueRequired113", "invalidBidValue", domain.CallBreakMinBid, domain.CallBreakHandSize, c.ci.Bid)
 			case "p", "play":
 				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.ci.Play)
 			case "n", "next":

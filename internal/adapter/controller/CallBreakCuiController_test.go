@@ -53,16 +53,16 @@ func TestCallBreakCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "Bid", 5)
 	})
 	t.Run("bid no args", func(t *testing.T) {
-		assert.Contains(t, controller.NewCallBreakCuiController(newMock()).Exec("b"), "Bid value is required")
+		assert.Contains(t, controller.NewCallBreakCuiController(newMock()).Exec("b"), msgStem("bidValueRequired113"))
 	})
 	t.Run("bid invalid arg", func(t *testing.T) {
-		assert.Contains(t, controller.NewCallBreakCuiController(newMock()).Exec("b abc"), "Invalid bid value")
+		assert.Contains(t, controller.NewCallBreakCuiController(newMock()).Exec("b abc"), msgStem("invalidBidValue"))
 	})
 	t.Run("bid below min", func(t *testing.T) {
-		assert.Contains(t, controller.NewCallBreakCuiController(newMock()).Exec("b 0"), "Invalid bid value: 0")
+		assert.Contains(t, controller.NewCallBreakCuiController(newMock()).Exec("b 0"), msgKey("invalidBidValue", "val", "0"))
 	})
 	t.Run("bid above max", func(t *testing.T) {
-		assert.Contains(t, controller.NewCallBreakCuiController(newMock()).Exec("b 14"), "Invalid bid value: 14")
+		assert.Contains(t, controller.NewCallBreakCuiController(newMock()).Exec("b 14"), msgKey("invalidBidValue", "val", "14"))
 	})
 
 	t.Run("play valid", func(t *testing.T) {

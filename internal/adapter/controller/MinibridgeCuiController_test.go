@@ -52,13 +52,13 @@ func TestMinibridgeCuiController_Commands(t *testing.T) {
 func TestMinibridgeCuiController_ContractRejectsBadArgs(t *testing.T) {
 	for _, tc := range []struct{ name, cmd, want string }{
 		{"level missing", "c", "Level is required."},
-		{"suit missing", "c 3", "Suit is required."},
+		{"suit missing", "c 3", msgKey("suitRequired")},
 		{"level not a number", "c x 0", "Invalid level: x."},
-		{"suit not a number", "c 3 x", "Invalid suit: x."},
+		{"suit not a number", "c 3 x", msgKey("invalidSuit", "val", "x")},
 		{"level below the minimum", "c 0 0", "Invalid level: 0."},
 		{"level above the maximum", "c 8 0", "Invalid level: 8."},
-		{"suit below the minimum", "c 3 -1", "Invalid suit: -1."},
-		{"suit above the maximum", "c 3 5", "Invalid suit: 5."},
+		{"suit below the minimum", "c 3 -1", msgKey("invalidSuit", "val", "-1")},
+		{"suit above the maximum", "c 3 5", msgKey("invalidSuit", "val", "5")},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			c, mi := newMinibridgeCui()

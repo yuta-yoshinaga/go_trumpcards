@@ -79,12 +79,12 @@ func TestWizardCuiController_Exec_Errors(t *testing.T) {
 	c := controller.NewWizardCuiController(m)
 
 	// Missing args
-	assert.Contains(t, c.Exec("b"), "required")
+	assert.Contains(t, c.Exec("b"), msgStem("bidValueRequired"))
 	assert.Contains(t, c.Exec("p"), msgCardIndexRequired())
 	assert.Contains(t, c.Exec("sd"), msgCpuDifficultyRequired())
 
 	// Invalid args
-	assert.Contains(t, c.Exec("b abc"), "Invalid")
+	assert.Contains(t, c.Exec("b abc"), msgStem("invalidBidValue"))
 	assert.Contains(t, c.Exec("sd 99"), msgInvalidCpuDifficultyPrefix())
 }
 

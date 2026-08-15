@@ -76,12 +76,12 @@ func TestKoenigrufenCuiController_Exec(t *testing.T) {
 
 	t.Run("callking no args", func(t *testing.T) {
 		result := controller.NewKoenigrufenCuiController(newMock()).Exec("callking")
-		assert.Contains(t, result, "King suit is required")
+		assert.Contains(t, result, msgStem("kingSuitRequired"))
 	})
 
 	t.Run("callking invalid", func(t *testing.T) {
 		result := controller.NewKoenigrufenCuiController(newMock()).Exec("callking 9")
-		assert.Contains(t, result, "Invalid suit")
+		assert.Contains(t, result, msgStem("invalidSuitRange"))
 	})
 
 	t.Run("discard six cards", func(t *testing.T) {

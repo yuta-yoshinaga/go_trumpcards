@@ -81,25 +81,25 @@ func TestNapoleonCuiController_Exec(t *testing.T) {
 	t.Run("bid command b no args", func(t *testing.T) {
 		c := controller.NewNapoleonCuiController(newMock())
 		result := c.Exec("b")
-		assert.Contains(t, result, "Bid value is required")
+		assert.Contains(t, result, msgStem("bidValueRequiredPass1217"))
 	})
 
 	t.Run("bid command b invalid arg", func(t *testing.T) {
 		c := controller.NewNapoleonCuiController(newMock())
 		result := c.Exec("b abc")
-		assert.Contains(t, result, "Invalid bid value")
+		assert.Contains(t, result, msgStem("invalidBidValue"))
 	})
 
 	t.Run("bid command b out of range negative", func(t *testing.T) {
 		c := controller.NewNapoleonCuiController(newMock())
 		result := c.Exec("b -1")
-		assert.Contains(t, result, "Invalid bid value: -1")
+		assert.Contains(t, result, msgKey("invalidBidValue", "val", "-1"))
 	})
 
 	t.Run("bid command b out of range over max", func(t *testing.T) {
 		c := controller.NewNapoleonCuiController(newMock())
 		result := c.Exec("b 18")
-		assert.Contains(t, result, "Invalid bid value: 18")
+		assert.Contains(t, result, msgKey("invalidBidValue", "val", "18"))
 	})
 
 	// trump
@@ -140,37 +140,37 @@ func TestNapoleonCuiController_Exec(t *testing.T) {
 	t.Run("trump command t invalid suit", func(t *testing.T) {
 		c := controller.NewNapoleonCuiController(newMock())
 		result := c.Exec("t abc 2 13")
-		assert.Contains(t, result, "Invalid suit")
+		assert.Contains(t, result, msgStem("invalidSuit"))
 	})
 
 	t.Run("trump command t suit out of range", func(t *testing.T) {
 		c := controller.NewNapoleonCuiController(newMock())
 		result := c.Exec("t 5 2 13")
-		assert.Contains(t, result, "Invalid suit: 5")
+		assert.Contains(t, result, msgKey("invalidSuit", "val", "5"))
 	})
 
 	t.Run("trump command t suit below min", func(t *testing.T) {
 		c := controller.NewNapoleonCuiController(newMock())
 		result := c.Exec("t 0 2 13")
-		assert.Contains(t, result, "Invalid suit: 0")
+		assert.Contains(t, result, msgKey("invalidSuit", "val", "0"))
 	})
 
 	t.Run("trump command t invalid adjSuit", func(t *testing.T) {
 		c := controller.NewNapoleonCuiController(newMock())
 		result := c.Exec("t 1 abc 13")
-		assert.Contains(t, result, "Invalid adjutant suit")
+		assert.Contains(t, result, msgStem("invalidAdjutantSuit"))
 	})
 
 	t.Run("trump command t adjSuit out of range", func(t *testing.T) {
 		c := controller.NewNapoleonCuiController(newMock())
 		result := c.Exec("t 1 5 13")
-		assert.Contains(t, result, "Invalid adjutant suit: 5")
+		assert.Contains(t, result, msgKey("invalidAdjutantSuit", "val", "5"))
 	})
 
 	t.Run("trump command t adjSuit below min", func(t *testing.T) {
 		c := controller.NewNapoleonCuiController(newMock())
 		result := c.Exec("t 1 -1 13")
-		assert.Contains(t, result, "Invalid adjutant suit: -1")
+		assert.Contains(t, result, msgKey("invalidAdjutantSuit", "val", "-1"))
 	})
 
 	t.Run("trump command t invalid adjVal", func(t *testing.T) {
@@ -397,25 +397,25 @@ func TestNapoleonCuiController_Exec(t *testing.T) {
 	t.Run("setminbid no args", func(t *testing.T) {
 		c := controller.NewNapoleonCuiController(newMock())
 		result := c.Exec("sm")
-		assert.Contains(t, result, "required")
+		assert.Contains(t, result, msgStem("minBidRequired"))
 	})
 
 	t.Run("setminbid invalid value", func(t *testing.T) {
 		c := controller.NewNapoleonCuiController(newMock())
 		result := c.Exec("sm abc")
-		assert.Contains(t, result, "Invalid min bid")
+		assert.Contains(t, result, msgStem("invalidMinBid"))
 	})
 
 	t.Run("setminbid zero", func(t *testing.T) {
 		c := controller.NewNapoleonCuiController(newMock())
 		result := c.Exec("sm 0")
-		assert.Contains(t, result, "Invalid min bid: 0")
+		assert.Contains(t, result, msgKey("invalidMinBid", "val", "0"))
 	})
 
 	t.Run("setminbid over max", func(t *testing.T) {
 		c := controller.NewNapoleonCuiController(newMock())
 		result := c.Exec("sm 18")
-		assert.Contains(t, result, "Invalid min bid: 18")
+		assert.Contains(t, result, msgKey("invalidMinBid", "val", "18"))
 	})
 
 	// log

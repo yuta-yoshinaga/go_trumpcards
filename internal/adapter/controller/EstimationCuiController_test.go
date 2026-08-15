@@ -65,10 +65,10 @@ func TestEstimationCuiControllerTrumpAcceptsEverySuit(t *testing.T) {
 // **範囲外のスートは弾く。** 0 や 5 を通すと切り札の無いラウンドになる。
 func TestEstimationCuiControllerTrumpRejectsBadArgs(t *testing.T) {
 	for _, tc := range []struct{ name, cmd, want string }{
-		{"missing suit", "t", "Suit is required."},
-		{"non-numeric", "t x", "Invalid suit: x."},
-		{"below the range", "t 0", "Invalid suit: 0."},
-		{"above the range", "t 5", "Invalid suit: 5."},
+		{"missing suit", "t", msgKey("suitRequired")},
+		{"non-numeric", "t x", msgKey("invalidSuit", "val", "x")},
+		{"below the range", "t 0", msgKey("invalidSuit", "val", "0")},
+		{"above the range", "t 5", msgKey("invalidSuit", "val", "5")},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			ei := newMockEstimationInteractor()
@@ -96,10 +96,10 @@ func TestEstimationCuiControllerBidAcceptsZeroAndThirteen(t *testing.T) {
 
 func TestEstimationCuiControllerBidRejectsBadArgs(t *testing.T) {
 	for _, tc := range []struct{ name, cmd, want string }{
-		{"missing bid", "b", "Bid is required."},
-		{"non-numeric", "b x", "Invalid bid: x."},
-		{"negative", "b -1", "Invalid bid: -1."},
-		{"above the hand size", "b 14", "Invalid bid: 14."},
+		{"missing bid", "b", msgKey("bidRequired")},
+		{"non-numeric", "b x", msgKey("invalidBid", "val", "x")},
+		{"negative", "b -1", msgKey("invalidBid", "val", "-1")},
+		{"above the hand size", "b 14", msgKey("invalidBid", "val", "14")},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			ei := newMockEstimationInteractor()

@@ -45,11 +45,11 @@ func TestCinchCuiController_Exec(t *testing.T) {
 	})
 	t.Run("bid missing arg", func(t *testing.T) {
 		out := controller.NewCinchCuiController(newMock()).Exec("bid")
-		assert.Contains(t, out, "required")
+		assert.Contains(t, out, msgStem("bidValueRequiredPass114"))
 	})
 	t.Run("bid invalid arg", func(t *testing.T) {
 		out := controller.NewCinchCuiController(newMock()).Exec("bid xyz")
-		assert.Contains(t, out, "Invalid bid")
+		assert.Contains(t, out, msgStem("invalidBid014"))
 	})
 	t.Run("name trump", func(t *testing.T) {
 		m := newMock()
@@ -58,7 +58,7 @@ func TestCinchCuiController_Exec(t *testing.T) {
 	})
 	t.Run("trump invalid arg", func(t *testing.T) {
 		out := controller.NewCinchCuiController(newMock()).Exec("t 9")
-		assert.Contains(t, out, "Invalid trump suit")
+		assert.Contains(t, out, msgStem("invalidTrumpSuitRange"))
 	})
 	t.Run("play", func(t *testing.T) {
 		m := newMock()

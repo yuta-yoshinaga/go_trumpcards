@@ -52,7 +52,7 @@ func (c *CrazyEightsCuiController) Exec(command string) string {
 			case "d", "draw":
 				return c.ci.Draw(), true
 			case "s", "suit":
-				return cuiutil.WithParsedInt(args, "Suit is required (1=♠, 2=♣, 3=♥, 4=♦).", "Invalid suit: %s. Please enter 1-4.", 1, 4, c.ci.ChooseSuit)
+				return cuiutil.WithParsedIntKeys(args, "suitRequiredSymbols", "invalidSuitRange", 1, 4, c.ci.ChooseSuit)
 			case "nr", "nextround":
 				return c.ci.NextRound(), true
 			case "sd", "setdifficulty":
