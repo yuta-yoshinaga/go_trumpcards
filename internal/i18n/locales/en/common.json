@@ -579,5 +579,8 @@
   "invalidSeat0Max": "Invalid seat: {{val}}. Please enter 0-{{max}}.",
   "invalidHalfSuit0Max": "Invalid half-suit: {{val}}. Please enter 0-{{max}}.",
   "invalidBidLevelMinMax": "Invalid bid level: {{val}}. Please enter {{max}}.",
-  "invalidDenomination0Max": "Invalid denomination: {{val}}. Please enter 0-{{max}} (0=S 1=C 2=D 3=H 4=NT)."
+  "invalidDenomination0Max": "Invalid denomination: {{val}}. Please enter 0-{{max}} (0=S 1=C 2=D 3=H 4=NT).",
+  "usageSrRuleDaifugo": "Usage: sr <rule> <0|1> | sr list\nRules: {{val}}.\nUse 'suitlockmode' for suit lock (0-2), '5skipcount' for skip count.",
+  "askNeedsSeatSuitRank": "Ask needs a target seat, a suit and a rank (e.g. a 1 1 2 for the two of spades).",
+  "claimNeedsHalfSuitAndHolders": "Claim needs a half-suit and all six holders (e.g. c 0 0 0 2 2 4 4)."
 }

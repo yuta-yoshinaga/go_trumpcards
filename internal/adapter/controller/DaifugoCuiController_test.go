@@ -251,7 +251,7 @@ func TestDaifugoCuiController_SetRule_NoArgs(t *testing.T) {
 	mi := new(mockUsecases.MockDaifugoInteractor)
 	c := controller.NewDaifugoCuiController(mi)
 	result := c.Exec("sr")
-	assert.Contains(t, result, "Usage: sr <rule> <0|1> | sr list")
+	assert.Contains(t, result, msgStem("usageSrRuleDaifugo"))
 	assert.Contains(t, result, "8cut")
 }
 
@@ -279,7 +279,7 @@ func TestDaifugoCuiController_SetRule_List_LongCommand(t *testing.T) {
 func TestDaifugoCuiController_SetRule_OneArg(t *testing.T) {
 	mi := new(mockUsecases.MockDaifugoInteractor)
 	c := controller.NewDaifugoCuiController(mi)
-	assert.Contains(t, c.Exec("sr 8cut"), "Usage: sr <rule> <0|1> | sr list")
+	assert.Contains(t, c.Exec("sr 8cut"), msgStem("usageSrRuleDaifugo"))
 }
 
 func TestDaifugoCuiController_SetRule_UnknownRule(t *testing.T) {

@@ -196,7 +196,7 @@ func (c *DaifugoCuiController) Exec(command string) string {
 					return "Rules:\n" + formatDaifugoRuleList(&cfg), true
 				}
 				if len(args) < 2 {
-					return "Usage: sr <rule> <0|1> | sr list\nRules: " + strings.Join(daifugoRuleKeys, ", ") + ".\nUse 'suitlockmode' for suit lock (0-2), '5skipcount' for skip count.", true
+					return invalidArg("usageSrRuleDaifugo", "val", strings.Join(daifugoRuleKeys, ", ")), true
 				}
 				if !setDaifugoRule(nil, args[0], false) {
 					return invalidArg("unknownRule", "val", fmt.Sprint(args[0])), true
