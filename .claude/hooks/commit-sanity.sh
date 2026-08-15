@@ -18,6 +18,14 @@
 # line of angle brackets in prose or a shell heredoc does not trip it either.
 #
 # Reads the hook payload on stdin, writes a hook decision object on stdout.
+#
+# Decision shape: this guard denies ONE tool call, so it emits
+# hookSpecificOutput.permissionDecision = "deny". It must never emit
+# {"continue": false}, which is the kill switch: that ends the whole turn, and
+# its stopReason is documented as "Not shown to Claude" -- so the agent is
+# stopped without ever learning why, and the Stop hook does not run either.
+# Every guard in this repo used the kill switch until 2026-08-16; that is what
+# was behind the recurring "a hook block ended my turn" failures.
 set -uo pipefail
 
 payload=$(cat)
@@ -37,10 +45,13 @@ esac
 
 if [ -z "$(git diff --cached --name-only)" ] && [ "$allows_empty" -eq 0 ]; then
   jq -nc '{
-    continue: false,
-    stopReason: ("Blocked: nothing is staged, so this commit would record zero changes. " +
+    hookSpecificOutput: {
+      hookEventName: "PreToolUse",
+      permissionDecision: "deny",
+      permissionDecisionReason: ("Blocked: nothing is staged, so this commit would record zero changes. " +
                  "Check `git status` -- a `git add` that matched no paths is silent. " +
                  "Pass --allow-empty if an empty commit really is what you want.")
+    }
   }'
   exit 0
 fi
@@ -53,10 +64,13 @@ conflicted=$(git diff --cached -U0 | awk '
 
 if [ -n "$conflicted" ]; then
   jq -nc --arg files "$conflicted" '{
-    continue: false,
-    stopReason: ("Blocked: staged content contains merge conflict markers. Neither tsc nor " +
+    hookSpecificOutput: {
+      hookEventName: "PreToolUse",
+      permissionDecision: "deny",
+      permissionDecisionReason: ("Blocked: staged content contains merge conflict markers. Neither tsc nor " +
                  "vitest fails on these -- only the E2E production build does, minutes into CI. " +
                  "Resolve them in:\n" + $files)
+    }
   }'
   exit 0
 fi

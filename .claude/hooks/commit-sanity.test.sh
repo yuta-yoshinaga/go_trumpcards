@@ -21,7 +21,14 @@ run() {
   local expect=$1 desc=$2 cmd=$3 out
   out=$(printf '{"tool_input":{"command":%s}}' "$(printf '%s' "$cmd" | jq -Rs .)" | bash "$HOOK")
   local blocked=pass
-  printf '%s' "$out" | grep -q '"continue": *false' && blocked=block
+  # A guard denies one tool call; it must never use the `continue:false` kill
+  # switch, which ends the whole turn and whose stopReason is never shown to
+  # Claude. Assert the shape, not just "something was refused".
+  printf '%s' "$out" | grep -q '"permissionDecision": *"deny"' && blocked=block
+  if printf '%s' "$out" | grep -q '"continue" *: *false'; then
+    printf '  FAIL  %s: hook used the continue:false kill switch\n' "$desc"
+    fail=1
+  fi
   if [ "$blocked" = "$expect" ]; then
     printf '  ok    %s (%s)\n' "$desc" "$expect"
   else
