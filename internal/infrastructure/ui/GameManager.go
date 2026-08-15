@@ -208,6 +208,11 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewHoldemCuiController,
 		CuiHelpSpec{
 			TitleKey: "holdem.helpTitle",
+			ExampleKeys: []string{
+				"holdem.helpExampleCheck",
+				"holdem.helpExampleBet",
+				"holdem.helpExampleRaise",
+			},
 			CommandKeys: append([]string{
 				"holdem.helpFold",
 				"holdem.helpCheck",
@@ -227,6 +232,11 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewOmahaCuiController,
 		CuiHelpSpec{
 			TitleKey: "omaha.helpTitle",
+			ExampleKeys: []string{
+				"omaha.helpExampleCheck",
+				"omaha.helpExampleBet",
+				"omaha.helpExampleRaise",
+			},
 			CommandKeys: append([]string{
 				"omaha.helpFold",
 				"omaha.helpCheck",
@@ -322,6 +332,11 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewShortDeckCuiController,
 		CuiHelpSpec{
 			TitleKey: "shortdeck.helpTitle",
+			ExampleKeys: []string{
+				"shortdeck.helpExampleCheck",
+				"shortdeck.helpExampleBet",
+				"shortdeck.helpExampleRaise",
+			},
 			CommandKeys: append([]string{
 				"shortdeck.helpFold",
 				"shortdeck.helpCheck",
@@ -341,6 +356,11 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewPineappleCuiController,
 		CuiHelpSpec{
 			TitleKey: "pineapple.helpTitle",
+			ExampleKeys: []string{
+				"pineapple.helpExampleCheck",
+				"pineapple.helpExampleBet",
+				"pineapple.helpExampleRaise",
+			},
 			CommandKeys: append([]string{
 				"pineapple.helpFold",
 				"pineapple.helpCheck",
@@ -360,6 +380,11 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewPineappleCuiController,
 		CuiHelpSpec{
 			TitleKey: "crazypineapple.helpTitle",
+			ExampleKeys: []string{
+				"crazypineapple.helpExampleCheck",
+				"crazypineapple.helpExampleBet",
+				"crazypineapple.helpExampleRaise",
+			},
 			CommandKeys: append([]string{
 				"crazypineapple.helpFold",
 				"crazypineapple.helpCheck",
@@ -379,6 +404,11 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewPineappleCuiController,
 		CuiHelpSpec{
 			TitleKey: "irishpoker.helpTitle",
+			ExampleKeys: []string{
+				"irishpoker.helpExampleCheck",
+				"irishpoker.helpExampleBet",
+				"irishpoker.helpExampleRaise",
+			},
 			CommandKeys: append([]string{
 				"irishpoker.helpFold",
 				"irishpoker.helpCheck",
@@ -876,6 +906,11 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewSevenCardStudCuiController,
 		CuiHelpSpec{
 			TitleKey: "sevencardstud.helpTitle",
+			ExampleKeys: []string{
+				"sevencardstud.helpExampleCheck",
+				"sevencardstud.helpExampleBet",
+				"sevencardstud.helpExampleRaise",
+			},
 			CommandKeys: append([]string{
 				"sevencardstud.helpFold",
 				"sevencardstud.helpCheck",
@@ -3406,6 +3441,11 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewFiveCardStudCuiController,
 		CuiHelpSpec{
 			TitleKey: "fivecardstud.helpTitle",
+			ExampleKeys: []string{
+				"fivecardstud.helpExampleCheck",
+				"fivecardstud.helpExampleBet",
+				"fivecardstud.helpExampleRaise",
+			},
 			CommandKeys: []string{
 				"fivecardstud.helpFold",
 				"fivecardstud.helpCheck",
@@ -4312,6 +4352,11 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewFiveCardStudCuiController,
 		CuiHelpSpec{
 			TitleKey: "soko.helpTitle",
+			ExampleKeys: []string{
+				"soko.helpExampleCheck",
+				"soko.helpExampleBet",
+				"soko.helpExampleRaise",
+			},
 			CommandKeys: []string{
 				"soko.helpFold",
 				"soko.helpCheck",

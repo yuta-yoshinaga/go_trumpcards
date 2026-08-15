@@ -62,5 +62,8 @@
   "discardUpcoming": "フロップベット終了後にカードを{{count}}枚捨てます",
   "discardCandidate": "  [{{idx}}] これを捨てると: {{hand}}",
   "discardRecommended": " ← おすすめ",
-  "discardCandidatePair": "  [{{idx0}}] [{{idx1}}] を捨てると: {{hand}}"
+  "discardCandidatePair": "  [{{idx0}}] [{{idx1}}] を捨てると: {{hand}}",
+  "helpExampleCheck": "  ck                   チェックして次のプレイヤーへ回す",
+  "helpExampleBet": "  b 100                100 チップをベットする",
+  "helpExampleRaise": "  ra 200               合計 200 チップになるようレイズする"
 }
