@@ -44,5 +44,5 @@
   "handRank3": "3カード",
   "handRank4": "バドゥーギ",
   "handRankUnknown": "不明",
-  "helpExampleBet": "  b 100                100 チップを賭ける"
+  "helpExampleCall": "  c                    現在のベットにコールする"
 }

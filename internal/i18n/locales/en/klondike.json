@@ -26,7 +26,5 @@
   "hintToTableau": "tableau column {{col}}",
   "hintLine": "Hint: {{from}} → {{to}}",
   "autoCompleteReady": "Auto-complete is available (ac)",
-  "helpExampleDraw": "  d                    draw one card from the stock",
-  "helpExampleMove": "  m w t 1              move waste to tableau column 1",
-  "helpExampleFound": "  m w f                move waste to a foundation"
+  "helpExampleDraw": "  d                    draw one card from the stock"
 }

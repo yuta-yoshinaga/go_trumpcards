@@ -30,6 +30,5 @@
   "hintReasonNotYourTurn": "あなたの手番ではありません",
   "hintReasonLead": "並びが止まっているので、最も低い札から始めます",
   "hintReasonFollow": "同じスートの次に高い札です",
-  "helpExamplePlay": "  p 0                      手札の 0 番のカードを出す",
   "helpExampleNext": "  n                        トリックの決着を見てから次へ"
 }

@@ -8,6 +8,5 @@
   "hintLine": "[HINT: fan {{fan}} can be played]",
   "acceptableRanks": "Accepted ranks: {{ranks}}",
   "acceptableRanksNone": "Accepted ranks: none",
-  "legalMoveCount": "Legal moves: {{count}}",
-  "helpExampleUndo": "  u                    take the last move back"
+  "legalMoveCount": "Legal moves: {{count}}"
 }

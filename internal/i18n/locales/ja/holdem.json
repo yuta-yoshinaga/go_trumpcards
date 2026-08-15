@@ -56,7 +56,6 @@
   "addonPrompt": "アドオンしますか? ({{chips}}チップ) (ad=アドオン / sa=スキップ)",
   "gameEnd": "ゲーム終了",
   "resultBestFive": " [{{cards}}]",
-  "helpExampleCheck": "  ck                   チェックして次のプレイヤーへ回す",
-  "helpExampleBet": "  b 100                100 チップをベットする",
-  "helpExampleRaise": "  ra 200               合計 200 チップになるようレイズする"
+  "helpExampleRaise": "  ra 200               合計 200 チップになるようレイズする",
+  "helpExampleCall": "  c                    現在のベットにコールする"
 }

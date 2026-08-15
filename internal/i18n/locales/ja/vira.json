@@ -40,7 +40,5 @@
   "helpNext": "  n                    次のトリックへ",
   "helpNextRound": "  nr                   次のラウンドへ",
   "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
-  "helpExampleBid": "  b 2                  ソロを宣言する",
-  "helpExamplePlay": "  play 0               手札の 0 番のカードを出す",
-  "helpExampleNext": "  n                    トリックの決着を見てから次のトリックへ"
+  "helpExampleBid": "  pass                 入札を降りる"
 }

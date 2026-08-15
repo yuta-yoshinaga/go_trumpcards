@@ -31,6 +31,5 @@
   "suitClover": "クラブ",
   "suitHeart": "ハート",
   "suitDiamond": "ダイヤ",
-  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
-  "helpExampleNext": "  n                    ラウンドの結果を見てから次へ"
+  "helpExampleGiveUp": "  g                    この局を投了する"
 }

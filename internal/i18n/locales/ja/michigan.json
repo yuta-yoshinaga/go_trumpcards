@@ -45,5 +45,5 @@
   "roundEndHumanLose": "他のプレイヤーの方が稼ぎました。",
   "result.humanWin": "ゲーム終了！あなたの勝ち！",
   "result.cpuWin": "ゲーム終了！CPU {{player}} の勝ち！",
-  "helpExampleBet": "  b 25 25 25 25             4 つのブードルに 25 ずつ賭ける"
+  "helpExampleNext": "  n                         次のディールへ進む"
 }

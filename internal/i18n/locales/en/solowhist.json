@@ -39,7 +39,5 @@
   "result.humanWin": "Game over! You win!",
   "result.cpuWin": "Game over! Player {{player}} wins!",
   "bidHistory": "Bids: {{bids}}",
-  "helpExampleBid": "  bid 1                    declare Solo",
-  "helpExamplePlay": "  play 0                   play hand card 0",
-  "helpExampleNext": "  n                        read the trick result, then start the next trick"
+  "helpExampleBid": "  pass                      drop out of the bidding"
 }

@@ -13,5 +13,5 @@
   "zoneWaste": "ウェイスト",
   "zoneTableau": "タブロー",
   "zoneFoundation": "ファウンデーション",
-  "helpExampleUndo": "  u                                  直前の 1 手を取り消す"
+  "helpExampleDraw": "  d                     ストックから 1 枚めくる"
 }

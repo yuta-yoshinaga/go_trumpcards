@@ -37,5 +37,5 @@
   "resultName": "  {{name}}",
   "wonAmount": " → {{total}}チップ獲得",
   "gameEnd": "ゲーム終了",
-  "helpExampleBet": "  b 100                100 チップを賭ける"
+  "helpExampleFold": "  f                    この手を降りる"
 }

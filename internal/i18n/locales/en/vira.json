@@ -40,7 +40,5 @@
   "helpNext": "  n                    go to next trick",
   "helpNextRound": "  nr                   go to next round",
   "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
-  "helpExampleBid": "  b 2                  declare Solo",
-  "helpExamplePlay": "  play 0               play hand card 0",
-  "helpExampleNext": "  n                    read the trick result, then start the next trick"
+  "helpExampleBid": "  pass                 drop out of the bidding"
 }

@@ -33,5 +33,5 @@
   "suitHeart": "H",
   "suitDiamond": "D",
   "suitNoTrump": "NT",
-  "helpExamplePlay": "  p 0                  play hand card 0"
+  "helpExampleGiveUp": "  g                    give the round up"
 }

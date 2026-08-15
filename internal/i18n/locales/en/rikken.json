@@ -38,5 +38,5 @@
   "rikkenBidStrength": "based on your hand's strength",
   "rikkenFollowSuit": "you must follow suit",
   "openHandLine": "Open hand (seat {{seat}}): {{cards}}",
-  "helpExamplePlay": "  p 0                  play hand card 0"
+  "helpExampleHint": "  hint                 ask for a move"
 }

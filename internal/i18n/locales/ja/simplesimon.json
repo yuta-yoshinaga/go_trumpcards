@@ -5,6 +5,5 @@
   "helpGiveUp": "  g / giveup           投了する",
   "colLabel": "列{{idx}}:",
   "completedLine": "完成スート: {{count}} / 4",
-  "hintLine": "[HINT: 列{{from}}[{{idx}}] を 列{{to}} へ]",
-  "helpExampleUndo": "  u                    直前の 1 手を取り消す"
+  "hintLine": "[HINT: 列{{from}}[{{idx}}] を 列{{to}} へ]"
 }

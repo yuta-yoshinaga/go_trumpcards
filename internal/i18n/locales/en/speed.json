@@ -14,6 +14,5 @@
   "promptStuckHelp": "Command: f / flip — both players flip a new card to break the deadlock",
   "winHuman": "You win!",
   "winCpu": "CPU wins...",
-  "helpExamplePlay": "  p 0 1                play hand card 0 onto pile 1",
-  "helpExampleFlip": "  f                    flip a new centre card when stuck"
+  "helpExampleHint": "  h                    ask for a move"
 }

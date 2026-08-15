@@ -48,7 +48,6 @@
   "handRank7": "Four of a Kind",
   "handRank8": "Straight Flush",
   "handRank9": "Royal Flush",
-  "helpExampleCheck": "  ck                   check and pass the action along",
-  "helpExampleBet": "  b 100                bet 100 chips",
-  "helpExampleRaise": "  ra 200               raise to 200 chips total"
+  "helpExampleRaise": "  ra 200               raise to 200 chips total",
+  "helpExampleCall": "  c                    call the current bet"
 }

@@ -28,6 +28,5 @@
   "category.denari": "Denari (most diamonds)",
   "category.primiera": "Primiera (most sevens)",
   "category.settebello": "Settebello (7 of diamonds)",
-  "helpExamplePlay": "  p 0                      lay hand card 0 on the table, capturing nothing",
   "helpExampleNext": "  n                        read the round result, then continue"
 }

@@ -44,5 +44,5 @@
   "phaseEnd": "終了",
   "promptBet": "操作: bet <額> / call / raise <額> / fold",
   "promptExchange": "操作: exchange <カード番号...>（交換なしは exchange のみ）",
-  "helpExampleBet": "  b 100                100 チップを賭ける"
+  "helpExampleCall": "  c                    現在のベットにコールする"
 }

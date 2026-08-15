@@ -56,7 +56,6 @@
   "addonPrompt": "Add-on? ({{chips}} chips) (ad=addon / sa=skip)",
   "gameEnd": "Game over",
   "resultBestFive": " [{{cards}}]",
-  "helpExampleCheck": "  ck                   check and pass the action along",
-  "helpExampleBet": "  b 100                bet 100 chips",
-  "helpExampleRaise": "  ra 200               raise to 200 chips total"
+  "helpExampleRaise": "  ra 200               raise to 200 chips total",
+  "helpExampleCall": "  c                    call the current bet"
 }

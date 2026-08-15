@@ -37,5 +37,5 @@
   "resultName": "  {{name}}",
   "wonAmount": " → won {{total}} chips",
   "gameEnd": "Game over",
-  "helpExampleBet": "  b 100                bet 100 chips"
+  "helpExampleFold": "  f                    fold this hand"
 }

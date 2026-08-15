@@ -76,7 +76,5 @@
   "hintReasonRazzDecent": "ロー札はそこそこある",
   "hintReasonRazzWeak": "ロー札が足りない",
   "hintReasonHiLoLow": "ロー役が狙える (8以下が5枚)",
-  "helpExampleCheck": "  ck                   チェックして次のプレイヤーへ回す",
-  "helpExampleBet": "  b 100                100 チップをベットする",
-  "helpExampleRaise": "  ra 200               合計 200 チップになるようレイズする"
+  "helpExampleFold": "  f                    この手を降りる"
 }

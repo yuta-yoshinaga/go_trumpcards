@@ -13,5 +13,5 @@
   "zoneWaste": "Waste",
   "zoneTableau": "Tableau",
   "zoneFoundation": "Foundation",
-  "helpExampleUndo": "  u                                  take the last move back"
+  "helpExampleDraw": "  d                     turn one card from the stock"
 }

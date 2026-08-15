@@ -24,7 +24,6 @@
   "invalidTableSize": "Invalid table size: {{val}}. Please enter 4, 6, or 9.",
   "discardIdxRequired": "Discard card index is required.",
   "invalidDiscardIdx": "Invalid card index: {{val}}",
-  "helpExampleCheck": "  ck                   check and pass the action along",
-  "helpExampleBet": "  b 100                bet 100 chips",
-  "helpExampleRaise": "  ra 200               raise to 200 chips total"
+  "helpExampleRaise": "  ra 200               raise to 200 chips total",
+  "helpExampleCall": "  c                    call the current bet"
 }
