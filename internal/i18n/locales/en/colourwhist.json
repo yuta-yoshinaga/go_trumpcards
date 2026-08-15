@@ -38,5 +38,5 @@
   "hintPlay": "Card {{index}} looks best ({{reason}})",
   "colourWhistBidStrength": "based on your hand's strength",
   "colourWhistFollowSuit": "you must follow suit",
-  "helpExamplePass": "  pass                 drop out of the bidding"
+  "helpExamplePass": "  pass                 stay out of this auction"
 }
