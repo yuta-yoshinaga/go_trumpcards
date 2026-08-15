@@ -121,6 +121,11 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewBlackJackCuiController,
 		CuiHelpSpec{
 			TitleKey: "blackjack.helpTitle",
+			ExampleKeys: []string{
+				"blackjack.helpExampleBet",
+				"blackjack.helpExampleHit",
+				"blackjack.helpExampleStand",
+			},
 			CommandKeys: []string{
 				"blackjack.helpBet",
 				"blackjack.helpHit",
@@ -167,7 +172,11 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewDaifugoCuiController,
 		CuiHelpSpec{
-			TitleKey:    "daifugo.helpTitle",
+			TitleKey: "daifugo.helpTitle",
+			ExampleKeys: []string{
+				"daifugo.helpExamplePlay",
+				"daifugo.helpExamplePass",
+			},
 			CommandKeys: []string{"daifugo.helpPlay", "daifugo.helpSort"},
 			SettingKeys: []string{"daifugo.helpSetDifficulty", "daifugo.helpSetJoker", "daifugo.helpSetRule"},
 		}),
@@ -388,7 +397,11 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewHeartsCuiController,
 		CuiHelpSpec{
-			TitleKey:          "hearts.helpTitle",
+			TitleKey: "hearts.helpTitle",
+			ExampleKeys: []string{
+				"hearts.helpExamplePass",
+				"hearts.helpExamplePlay",
+			},
 			CommandKeys:       []string{"hearts.helpPass", "hearts.helpPlay", "hearts.helpNext", "hearts.helpNextRound"},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"hearts.helpSetDifficulty", "hearts.helpSetLimit"},
@@ -411,6 +424,11 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewKlondikeCuiController,
 		CuiHelpSpec{
 			TitleKey: "klondike.helpTitle",
+			ExampleKeys: []string{
+				"klondike.helpExampleDraw",
+				"klondike.helpExampleMove",
+				"klondike.helpExampleFound",
+			},
 			CommandKeys: []string{
 				"klondike.helpDraw",
 				"klondike.helpMove",
@@ -785,7 +803,11 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewSpeedCuiController,
 		CuiHelpSpec{
-			TitleKey:    "speed.helpTitle",
+			TitleKey: "speed.helpTitle",
+			ExampleKeys: []string{
+				"speed.helpExamplePlay",
+				"speed.helpExampleFlip",
+			},
 			CommandKeys: []string{"speed.helpPlay", "speed.helpFlip", "speed.helpHint"},
 			SettingKeys: []string{"speed.helpSetDifficulty"},
 		}),
@@ -795,7 +817,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewGoFishCuiController,
 		CuiHelpSpec{
-			TitleKey:    "gofish.helpTitle",
+			TitleKey: "gofish.helpTitle",
+			ExampleKeys: []string{
+				"gofish.helpExampleAsk",
+			},
 			CommandKeys: []string{"gofish.helpAsk"},
 			SettingKeys: []string{"gofish.helpSetDifficulty"},
 		}),

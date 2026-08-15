@@ -28,6 +28,15 @@ type CuiHelpSpec struct {
 	// ExtraSettingLines are literal lines appended after SettingKeys in the
 	// settings section. Used for settings not yet in i18n.
 	ExtraSettingLines []string
+	// ExampleKeys are i18n keys for a worked sequence of commands, in the order
+	// a player would type them. Optional: when empty the examples section
+	// (header + entries) is omitted entirely, so a game that supplies none
+	// renders exactly as it did before the section existed.
+	//
+	// The command tables above say what each command means; they do not say
+	// which one to type first, and with 318 games each carrying its own
+	// vocabulary that is the question a newcomer actually has (issue #5358).
+	ExampleKeys []string
 	// ResetOverride, when non-empty, replaces the default i18n.T("resetEntry")
 	// line in the session section. Used by games whose reset command accepts
 	// options (e.g. Sevens: "r [tunnel] [joker=N] [strategy] [passes=N]").
@@ -39,9 +48,14 @@ type CuiHelpSpec struct {
 // BuildCuiHelp assembles standard CUI help text from spec. Order:
 // title, blank, gameCommands header, command keys, extra command lines,
 // blank + settings header + setting keys (only when non-empty),
-// blank + session header + reset + quit + help.
+// blank + session header + reset + quit + help,
+// blank + examples header + example keys (only when non-empty).
 // When spec.Body is non-empty the scaffold is skipped entirely and Body
 // is returned verbatim.
+//
+// Examples come last, after the session block: the command tables are the
+// reference a returning player scans, while the worked sequence is for someone
+// who does not yet know which command to type first.
 func BuildCuiHelp(spec CuiHelpSpec) []string {
 	if len(spec.Body) > 0 {
 		return spec.Body
@@ -70,5 +84,11 @@ func BuildCuiHelp(spec CuiHelpSpec) []string {
 		i18n.T("quitEntry"),
 		i18n.T("helpEntry"),
 	)
+	if len(spec.ExampleKeys) > 0 {
+		lines = append(lines, "", i18n.T("examples"))
+		for _, k := range spec.ExampleKeys {
+			lines = append(lines, i18n.T(k))
+		}
+	}
 	return lines
 }

@@ -29,5 +29,7 @@
   "hintCard": "[HINT: {{cards}} ({{reason}})]",
   "hintReasonPassHighRisk": "リスクの高いカードを渡す",
   "hintReasonDiscardQueenSpades": "Q♠を捨てるチャンス",
-  "hintReasonDiscardHearts": "ハートを捨てる"
+  "hintReasonDiscardHearts": "ハートを捨てる",
+  "helpExamplePass": "  pass 0 3 7           手札の 0/3/7 番を渡す",
+  "helpExamplePlay": "  p 0                  手札の 0 番を出す"
 }

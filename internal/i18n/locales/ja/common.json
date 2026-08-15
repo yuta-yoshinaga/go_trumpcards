@@ -6,6 +6,7 @@
   "gameCommands": "ゲームコマンド:",
   "settings": "設定:",
   "session": "セッション:",
+  "examples": "例:",
   "helpEntry": "  help, ?              このヘルプを表示",
   "resetEntry": "  r                    ゲームをリセット",
   "quitEntry": "  q, quit, exit        終了",
