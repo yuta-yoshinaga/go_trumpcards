@@ -104,28 +104,15 @@ func newBurracoDefaultOutput(msg string) *BurracoWebOutput {
 }
 
 func burracoDispatch(bc *baseController, w http.ResponseWriter, ci usecase.BurracoInteractorIF, param BurracoWebInput, newDefault func(string) *BurracoWebOutput) bool {
-	switch param.Command {
-	case "r", "reset":
-		bc.writePresenterResponse(w, ci.ResetWithConfig(param.ToConfig()))
-	case "ds", "drawstock":
-		bc.writePresenterResponse(w, ci.DrawFromStock())
-	case "dd", "drawdiscard":
-		bc.writePresenterResponse(w, ci.DrawFromDiscard(param.NaturalPairIndices))
-	case "m", "meld":
-		bc.writePresenterResponse(w, ci.Meld(param.MeldGroups))
-	case "sm", "skipmeld":
-		bc.writePresenterResponse(w, ci.SkipMeld())
-	case "d", "discard":
-		if !requireParam(bc, w, newDefault, param.CardIndex == nil, "param error: cardIndex is required.") {
-			return true
-		}
-		bc.writePresenterResponse(w, ci.Discard(*param.CardIndex))
-	case "go", "goout":
-		bc.writePresenterResponse(w, ci.GoOut())
-	case "nr", "nextround":
-		bc.writePresenterResponse(w, ci.NextRound())
-	default:
-		return dispatchLog(param.Command, bc, w, ci.ActionLog)
-	}
-	return true
+	return dispatchRummyMeld(param.Command, bc, w, rummyMeldFns{
+		resetWithConfig: func() string { return ci.ResetWithConfig(param.ToConfig()) },
+		drawFromStock:   ci.DrawFromStock,
+		drawFromDiscard: func() string { return ci.DrawFromDiscard(param.NaturalPairIndices) },
+		meld:            func() string { return ci.Meld(param.MeldGroups) },
+		skipMeld:        ci.SkipMeld,
+		discard:         ci.Discard,
+		goOut:           ci.GoOut,
+		nextRound:       ci.NextRound,
+		actionLog:       ci.ActionLog,
+	}, param.CardIndex, newDefault)
 }

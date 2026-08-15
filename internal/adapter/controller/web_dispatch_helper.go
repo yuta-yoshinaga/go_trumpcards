@@ -178,3 +178,56 @@ func dispatchBidTrickPlay[O any](cmd string, bc *baseController, w http.Response
 	}
 	return true
 }
+
+// rummyMeldFns is the interactor surface of the canasta-family command set.
+//
+// drawFromDiscard and meld take their argument from the request rather than as
+// a parameter here: the games differ in what they pass (natural-pair indices,
+// meld groups), and closing over param at the call site keeps that difference
+// out of this helper.
+type rummyMeldFns struct {
+	resetWithConfig func() string
+	drawFromStock   func() string
+	drawFromDiscard func() string
+	meld            func() string
+	skipMeld        func() string
+	discard         func(cardIndex int) string
+	goOut           func() string
+	nextRound       func() string
+	actionLog       func() string
+}
+
+// dispatchRummyMeld handles the draw/meld/discard/go-out command set shared by
+// the canasta family, falling through to dispatchLog for "log"/"l".
+//
+// Consolidates 4 byte-identical dispatchers: burracoDispatch, canastaDispatch,
+// handAndFootDispatch, sambaDispatch. See issue #5368.
+//
+// dispatchLog, not dispatchHintAndLog: these games have no hint command, so
+// "h" must fall through to the caller's default rather than be answered here.
+func dispatchRummyMeld[O any](cmd string, bc *baseController, w http.ResponseWriter, fns rummyMeldFns, cardIndex *int, newDefault func(string) O) bool {
+	switch cmd {
+	case "r", "reset":
+		bc.writePresenterResponse(w, fns.resetWithConfig())
+	case "ds", "drawstock":
+		bc.writePresenterResponse(w, fns.drawFromStock())
+	case "dd", "drawdiscard":
+		bc.writePresenterResponse(w, fns.drawFromDiscard())
+	case "m", "meld":
+		bc.writePresenterResponse(w, fns.meld())
+	case "sm", "skipmeld":
+		bc.writePresenterResponse(w, fns.skipMeld())
+	case "d", "discard":
+		if !requireParam(bc, w, newDefault, cardIndex == nil, "param error: cardIndex is required.") {
+			return true
+		}
+		bc.writePresenterResponse(w, fns.discard(*cardIndex))
+	case "go", "goout":
+		bc.writePresenterResponse(w, fns.goOut())
+	case "nr", "nextround":
+		bc.writePresenterResponse(w, fns.nextRound())
+	default:
+		return dispatchLog(cmd, bc, w, fns.actionLog)
+	}
+	return true
+}

@@ -266,3 +266,64 @@ func TestDispatchBidTrickPlay_UnknownCommandIsNotHandled(t *testing.T) {
 	assert.False(t, handled)
 	assert.Empty(t, w.Body.String())
 }
+
+// dispatchRummyMeld consolidates the 4 identical canasta-family dispatchers:
+// burracoDispatch, canastaDispatch, handAndFootDispatch, sambaDispatch.
+// Falls through to dispatchLog (not dispatchHintAndLog) — these games have no
+// hint command, and wiring one that does not exist would answer a hint request
+// with a nil call.
+func TestDispatchRummyMeld(t *testing.T) {
+	cases := []struct {
+		name     string
+		cmd      string
+		cardIdx  *int
+		wantBody string
+		wantCode int
+	}{
+		{"reset", "r", nil, `{"method":"reset"}`, 200},
+		{"draw stock", "ds", nil, `{"method":"drawstock"}`, 200},
+		{"draw stock long form", "drawstock", nil, `{"method":"drawstock"}`, 200},
+		{"draw discard", "dd", nil, `{"method":"drawdiscard"}`, 200},
+		{"meld", "m", nil, `{"method":"meld"}`, 200},
+		{"skip meld", "sm", nil, `{"method":"skipmeld"}`, 200},
+		{"discard", "d", intPtr(4), `{"method":"discard:4"}`, 200},
+		{"go out", "go", nil, `{"method":"goout"}`, 200},
+		{"next round", "nr", nil, `{"method":"nextround"}`, 200},
+		{"log", "log", nil, `{"method":"log"}`, 200},
+		{"discard without an index", "d", nil, "cardIndex is required", 400},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			handled := dispatchRummyMeld(tc.cmd, &baseController{}, w, rummyMeldFns{
+				resetWithConfig: func() string { return `{"method":"reset"}` },
+				drawFromStock:   func() string { return `{"method":"drawstock"}` },
+				drawFromDiscard: func() string { return `{"method":"drawdiscard"}` },
+				meld:            func() string { return `{"method":"meld"}` },
+				skipMeld:        func() string { return `{"method":"skipmeld"}` },
+				discard:         func(i int) string { return `{"method":"discard:` + strconv.Itoa(i) + `"}` },
+				goOut:           func() string { return `{"method":"goout"}` },
+				nextRound:       func() string { return `{"method":"nextround"}` },
+				actionLog:       func() string { return `{"method":"log"}` },
+			}, tc.cardIdx, func(msg string) any { return map[string]string{"message": msg} })
+			assert.True(t, handled)
+			assert.Equal(t, tc.wantCode, w.Code)
+			assert.Contains(t, w.Body.String(), tc.wantBody)
+		})
+	}
+}
+
+// "h"/"hint" must fall through unhandled: these games have no hint, and the
+// caller's default branch is what answers.
+func TestDispatchRummyMeld_HintIsNotHandled(t *testing.T) {
+	w := httptest.NewRecorder()
+	handled := dispatchRummyMeld("h", &baseController{}, w, rummyMeldFns{
+		resetWithConfig: func() string { return "" }, drawFromStock: func() string { return "" },
+		drawFromDiscard: func() string { return "" }, meld: func() string { return "" },
+		skipMeld: func() string { return "" }, discard: func(int) string { return "" },
+		goOut: func() string { return "" }, nextRound: func() string { return "" },
+		actionLog: func() string { return "" },
+	}, nil, func(msg string) any { return msg })
+	assert.False(t, handled)
+	assert.Empty(t, w.Body.String())
+}
