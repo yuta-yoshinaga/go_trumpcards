@@ -116,13 +116,16 @@ func (bi *BourreInteractor) ActionLog() string {
 // runCpuTurns ゲーム終了・人間の手番・ハンド終了のいずれかになるまでCPUを進める
 func (bi *BourreInteractor) runCpuTurns() {
 	g := bi.Game
-	for !g.GetGameEndFlag() {
+	for i := 0; i < MaxCpuIterations; i++ {
+		if g.GetGameEndFlag() {
+			return
+		}
 		phase := g.GetPhase()
 		if phase == domain.BourrePhaseRoundEnd || phase == domain.BourrePhaseGameEnd {
-			break
+			return
 		}
 		if g.IsHumanTurn() {
-			break
+			return
 		}
 		g.CpuPlay()
 	}

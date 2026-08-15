@@ -123,13 +123,16 @@ func (ci *TonkInteractor) ActionLog() string {
 
 // runCpuTurns CPUターンを実行
 func (ci *TonkInteractor) runCpuTurns() {
-	for !ci.Game.GetGameEndFlag() {
+	for i := 0; i < MaxCpuIterations; i++ {
+		if ci.Game.GetGameEndFlag() {
+			return
+		}
 		phase := ci.Game.GetPhase()
 		if phase == domain.TonkPhaseRoundEnd || phase == domain.TonkPhaseGameEnd {
-			break
+			return
 		}
 		if ci.Game.IsHumanTurn() {
-			break
+			return
 		}
 		ci.Game.CpuPlay()
 	}

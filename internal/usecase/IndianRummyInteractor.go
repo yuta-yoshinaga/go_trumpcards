@@ -121,13 +121,16 @@ func (ci *IndianRummyInteractor) ActionLog() string {
 
 // runCpuTurns CPU ターンを連続で処理する
 func (ci *IndianRummyInteractor) runCpuTurns() {
-	for !ci.Game.GetGameEndFlag() {
+	for i := 0; i < MaxCpuIterations; i++ {
+		if ci.Game.GetGameEndFlag() {
+			return
+		}
 		phase := ci.Game.GetPhase()
 		if phase == domain.IndianRummyPhaseRoundEnd || phase == domain.IndianRummyPhaseGameEnd {
-			break
+			return
 		}
 		if ci.Game.IsHumanTurn() {
-			break
+			return
 		}
 		ci.Game.CpuPlay()
 	}

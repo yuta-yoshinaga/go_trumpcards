@@ -149,13 +149,16 @@ func (ci *ContractRummyInteractor) ActionLog() string {
 
 // runCpuTurns CPU ターンを連続で処理する
 func (ci *ContractRummyInteractor) runCpuTurns() {
-	for !ci.Game.GetGameEndFlag() {
+	for i := 0; i < MaxCpuIterations; i++ {
+		if ci.Game.GetGameEndFlag() {
+			return
+		}
 		phase := ci.Game.GetPhase()
 		if phase == domain.ContractRummyPhaseRoundEnd || phase == domain.ContractRummyPhaseGameEnd {
-			break
+			return
 		}
 		if ci.Game.IsHumanTurn() {
-			break
+			return
 		}
 		ci.Game.CpuPlay()
 	}

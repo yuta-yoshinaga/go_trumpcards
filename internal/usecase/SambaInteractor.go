@@ -155,13 +155,16 @@ func (ci *SambaInteractor) ActionLog() string {
 
 // runCpuTurns CPUターンを実行
 func (ci *SambaInteractor) runCpuTurns() {
-	for !ci.Game.GetGameEndFlag() {
+	for i := 0; i < MaxCpuIterations; i++ {
+		if ci.Game.GetGameEndFlag() {
+			return
+		}
 		phase := ci.Game.GetPhase()
 		if phase == domain.SambaPhaseRoundEnd || phase == domain.SambaPhaseGameEnd {
-			break
+			return
 		}
 		if ci.Game.IsHumanTurn() {
-			break
+			return
 		}
 		ci.Game.CpuPlay()
 	}
