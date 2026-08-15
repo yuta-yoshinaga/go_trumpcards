@@ -75,9 +75,7 @@ func (ti *TienLenInteractor) ActionLog() string {
 
 // runCpuTurns ゲームが終わるか人間の手番になるまでCPUターンを実行
 func (ti *TienLenInteractor) runCpuTurns() {
-	for !ti.Game.GetGameEndFlag() && !ti.Game.IsHumanTurn() {
-		ti.Game.CpuPlay()
-	}
+	runCpuTurnsCapped(ti.Game, ti.Game.CpuPlay)
 }
 
 // RestoreTienLenInteractor deserialises JSON into a TienLenInteractor.

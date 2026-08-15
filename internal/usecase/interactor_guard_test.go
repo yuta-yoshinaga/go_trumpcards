@@ -131,3 +131,50 @@ func (o *orderRecordingGame) NextRound() {
 	*o.order = append(*o.order, "nextRound")
 	o.mockRoundGame.NextRound()
 }
+
+// **上限そのものが検査対象。** 上限が無いと、ドメインが局を終わらせないときに
+// CLI はプロンプトを返さず Web はリクエストを返さない (#5414 / #5416)。
+func TestRunCpuTurnsCapped(t *testing.T) {
+	t.Run("stops when the game ends", func(t *testing.T) {
+		g := &mockPlayableGame{}
+		calls := 0
+		ok := runCpuTurnsCapped(g, func() {
+			calls++
+			if calls == 3 {
+				g.gameEnd = true
+			}
+		})
+		assert.True(t, ok, "上限に当たっていないのに false")
+		assert.Equal(t, 3, calls)
+	})
+
+	t.Run("stops when it becomes the human's turn", func(t *testing.T) {
+		g := &mockPlayableGame{}
+		calls := 0
+		ok := runCpuTurnsCapped(g, func() {
+			calls++
+			if calls == 2 {
+				g.humanTurn = true
+			}
+		})
+		assert.True(t, ok)
+		assert.Equal(t, 2, calls)
+	})
+
+	t.Run("does not call play at all when already finished", func(t *testing.T) {
+		g := &mockPlayableGame{gameEnd: true}
+		calls := 0
+		ok := runCpuTurnsCapped(g, func() { calls++ })
+		assert.True(t, ok)
+		assert.Zero(t, calls)
+	})
+
+	// **これが本題。** 進まないゲームでも必ず戻り、false を返す。
+	t.Run("gives up at the cap on a game that never progresses", func(t *testing.T) {
+		g := &mockPlayableGame{}
+		calls := 0
+		ok := runCpuTurnsCapped(g, func() { calls++ })
+		assert.False(t, ok, "上限に当たったのに true を返している")
+		assert.Equal(t, MaxCpuIterations, calls)
+	})
+}

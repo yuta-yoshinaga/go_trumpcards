@@ -67,9 +67,7 @@ func (gi *GoFishInteractor) ActionLog() string {
 
 // runCpuTurns ゲームが終わるか人間の手番になるまでCPUターンを実行
 func (gi *GoFishInteractor) runCpuTurns() {
-	for !gi.Game.GetGameEndFlag() && !gi.Game.IsHumanTurn() {
-		_ = gi.Game.CpuAsk()
-	}
+	runCpuTurnsCapped(gi.Game, func() { _ = gi.Game.CpuAsk() })
 }
 
 // RestoreGoFishInteractor deserialises JSON into a GoFishInteractor.

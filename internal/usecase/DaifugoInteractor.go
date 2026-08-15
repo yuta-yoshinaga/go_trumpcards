@@ -81,9 +81,7 @@ func (di *DaifugoInteractor) ActionLog() string {
 
 // runCpuTurns ゲームが終わるか人間の手番になるまでCPUターンを実行
 func (di *DaifugoInteractor) runCpuTurns() {
-	for !di.Game.GetGameEndFlag() && !di.Game.IsHumanTurn() {
-		di.Game.CpuPlay()
-	}
+	runCpuTurnsCapped(di.Game, di.Game.CpuPlay)
 }
 
 // RestoreDaifugoInteractor deserialises JSON into a DaifugoInteractor.

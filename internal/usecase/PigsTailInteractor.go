@@ -70,9 +70,7 @@ func (pi *PigsTailInteractor) ActionLog() string {
 
 // runCpuTurns ゲームが終わるか人間の手番になるまでCPUターンを実行
 func (pi *PigsTailInteractor) runCpuTurns() {
-	for !pi.Game.GetGameEndFlag() && !pi.Game.IsHumanTurn() {
-		_ = pi.Game.CpuAction()
-	}
+	runCpuTurnsCapped(pi.Game, func() { _ = pi.Game.CpuAction() })
 }
 
 // RestorePigsTailInteractor deserialises JSON into a PigsTailInteractor.

@@ -97,9 +97,7 @@ func (oi *OldMaidInteractor) ActionLog() string {
 
 // runCpuTurns ゲームが終わるか人間の手番になるまでCPUターンを実行
 func (oi *OldMaidInteractor) runCpuTurns() {
-	for !oi.Game.GetGameEndFlag() && !oi.Game.IsHumanTurn() {
-		_ = oi.Game.CpuDraw()
-	}
+	runCpuTurnsCapped(oi.Game, func() { _ = oi.Game.CpuDraw() })
 }
 
 // RestoreOldMaidInteractor deserialises JSON into an OldMaidInteractor.

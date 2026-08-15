@@ -80,9 +80,7 @@ func (pi *PresidentInteractor) ActionLog() string {
 
 // runCpuTurns ゲームが終わるか人間の手番になるまでCPUターンを実行
 func (pi *PresidentInteractor) runCpuTurns() {
-	for !pi.Game.GetGameEndFlag() && !pi.Game.IsHumanTurn() {
-		pi.Game.CpuPlay()
-	}
+	runCpuTurnsCapped(pi.Game, pi.Game.CpuPlay)
 }
 
 // RestorePresidentInteractor deserialises JSON into a PresidentInteractor.
