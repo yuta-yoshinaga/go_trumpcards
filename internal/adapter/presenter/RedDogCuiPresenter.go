@@ -98,7 +98,7 @@ func (rp *RedDogCuiPresenter) Output(rd interfaces.RedDogGame, lastErr error) st
 	sb.WriteString("----------\n")
 
 	if lastErr != nil {
-		sb.WriteString(color.Red(lastErr.Error()) + "\n")
+		sb.WriteString(i18n.MarkErrorLine(color.Red(lastErr.Error())) + "\n")
 	}
 
 	if rd.GetGameEndFlag() {

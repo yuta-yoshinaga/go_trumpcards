@@ -89,7 +89,7 @@ func (up *UltimateTexasHoldemCuiPresenter) Output(g interfaces.UltimateTexasHold
 	sb.WriteString("----------\n")
 
 	if lastErr != nil {
-		fmt.Fprintf(&sb, "%s\n", color.Red(lastErr.Error()))
+		fmt.Fprintf(&sb, "%s\n", i18n.MarkErrorLine(color.Red(lastErr.Error())))
 	}
 
 	if g.GetGameEndFlag() {

@@ -72,7 +72,7 @@ func (p *OichoKabuCuiPresenter) Output(o interfaces.OichoKabuGame, lastErr error
 	sb.WriteString("----------\n")
 
 	if lastErr != nil {
-		sb.WriteString(color.Red(lastErr.Error()) + "\n")
+		sb.WriteString(i18n.MarkErrorLine(color.Red(lastErr.Error())) + "\n")
 	}
 
 	if o.GetGameEndFlag() {

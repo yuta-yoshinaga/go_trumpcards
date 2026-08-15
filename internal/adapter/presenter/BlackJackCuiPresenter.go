@@ -196,7 +196,7 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 	}
 
 	if lastErr != nil {
-		fmt.Fprintf(&b, "%s\n", color.Red(lastErr.Error()))
+		fmt.Fprintf(&b, "%s\n", i18n.MarkErrorLine(color.Red(lastErr.Error())))
 	}
 
 	if bj.GetGameEndFlag() {

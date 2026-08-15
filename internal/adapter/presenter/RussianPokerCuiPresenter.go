@@ -74,7 +74,7 @@ func (rp *RussianPokerCuiPresenter) Output(g interfaces.RussianPokerGame, lastEr
 	sb.WriteString("----------\n")
 
 	if lastErr != nil {
-		sb.WriteString(color.Red(lastErr.Error()) + "\n")
+		sb.WriteString(i18n.MarkErrorLine(color.Red(lastErr.Error())) + "\n")
 	}
 
 	if g.GetExchangeCount() > 0 {

@@ -73,7 +73,7 @@ func (bp *BaccaratCuiPresenter) Output(b interfaces.BaccaratGame, lastErr error)
 	sb.WriteString("----------\n")
 
 	if lastErr != nil {
-		sb.WriteString(color.Red(lastErr.Error()) + "\n")
+		sb.WriteString(i18n.MarkErrorLine(color.Red(lastErr.Error())) + "\n")
 	}
 
 	if b.GetGameEndFlag() {

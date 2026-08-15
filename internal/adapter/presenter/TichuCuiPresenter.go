@@ -63,7 +63,7 @@ func (p *TichuCuiPresenter) Output(tg interfaces.TichuGame, lastErr error) strin
 		}
 
 		if lastErr != nil {
-			b.WriteString(color.Red(lastErr.Error()) + "\n")
+			b.WriteString(i18n.MarkErrorLine(color.Red(lastErr.Error())) + "\n")
 		}
 	})
 }
