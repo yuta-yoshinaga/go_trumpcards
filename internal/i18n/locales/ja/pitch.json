@@ -23,5 +23,11 @@
   "hintReasonTrumpCut": "トランプでカット",
   "hintReasonBidStrong": "強い手札なので入札",
   "hintReasonBidPass": "弱い手札なのでパス",
-  "handPips": "手札のゲーム得点: {{total}} ({{breakdown}})"
+  "handPips": "手札のゲーム得点: {{total}} ({{breakdown}})",
+  "helpBid": "  b <n>                ビッドを宣言 (0=Pass, 2-4)",
+  "helpPlay": "  p <idx>              カードを出す",
+  "helpNext": "  n                    次のトリックへ",
+  "helpNextRound": "  nr                   ラウンドを集計して次のラウンドへ",
+  "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
+  "helpSetLimit": "  sl <n>               ポイント上限"
 }

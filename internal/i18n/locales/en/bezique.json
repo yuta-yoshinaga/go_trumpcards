@@ -39,5 +39,10 @@
   "suitSpade": "Spades",
   "suitClover": "Clubs",
   "suitHeart": "Hearts",
-  "suitDiamond": "Diamonds"
+  "suitDiamond": "Diamonds",
+  "helpPlay": "  p <idx>              play hand card idx",
+  "helpMeld": "  m <idx>              declare meld idx (trick winner only)",
+  "helpSkip": "  s                    skip the meld",
+  "helpNext": "  n                    go to the next trick or deal",
+  "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)"
 }

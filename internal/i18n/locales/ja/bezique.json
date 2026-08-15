@@ -39,5 +39,10 @@
   "suitSpade": "スペード",
   "suitClover": "クラブ",
   "suitHeart": "ハート",
-  "suitDiamond": "ダイヤ"
+  "suitDiamond": "ダイヤ",
+  "helpPlay": "  p <idx>              手札の idx 番のカードを出す",
+  "helpMeld": "  m <idx>              一覧 idx 番のメルドを宣言 (トリックの勝者のみ)",
+  "helpSkip": "  s                    メルドを宣言しない",
+  "helpNext": "  n                    次のトリック／ディールへ",
+  "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)"
 }
