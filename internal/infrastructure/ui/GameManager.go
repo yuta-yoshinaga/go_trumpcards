@@ -200,7 +200,7 @@ var gameRegistry = []GameRegistryEntry{
 		CuiHelpSpec{
 			TitleKey: "sevens.helpTitle",
 			ExampleKeys: []string{
-				"sevens.helpExamplePlay",
+				"sevens.helpExamplePass",
 			},
 			CommandKeys:   []string{"sevens.helpPlay", "sevens.helpJoker"},
 			ResetOverride: "  r [tunnel] [joker=N] [strategy] [passes=N]  reset with options",
@@ -280,8 +280,7 @@ var gameRegistry = []GameRegistryEntry{
 			TitleKey: "omaha.helpTitleBigO",
 			// Renders omaha's command rows, so it renders omaha's examples too.
 			ExampleKeys: []string{
-				"omaha.helpExampleCheck",
-				"omaha.helpExampleBet",
+				"omaha.helpExampleCall",
 				"omaha.helpExampleRaise",
 			},
 			CommandKeys: append([]string{
@@ -305,8 +304,7 @@ var gameRegistry = []GameRegistryEntry{
 			TitleKey: "omaha.helpTitleBigOHiLo",
 			// Renders omaha's command rows, so it renders omaha's examples too.
 			ExampleKeys: []string{
-				"omaha.helpExampleCheck",
-				"omaha.helpExampleBet",
+				"omaha.helpExampleCall",
 				"omaha.helpExampleRaise",
 			},
 			CommandKeys: append([]string{
@@ -330,8 +328,7 @@ var gameRegistry = []GameRegistryEntry{
 			TitleKey: "omaha.helpTitleCourchevel",
 			// Renders omaha's command rows, so it renders omaha's examples too.
 			ExampleKeys: []string{
-				"omaha.helpExampleCheck",
-				"omaha.helpExampleBet",
+				"omaha.helpExampleCall",
 				"omaha.helpExampleRaise",
 			},
 			CommandKeys: append([]string{

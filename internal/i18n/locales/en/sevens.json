@@ -29,5 +29,5 @@
   "playHint": "p [index] to play a card / p to pass",
   "jokerHint": "j [card index] [suit] [value] to place a joker",
   "boardSuitLine": "  {{suit}}: {{cells}}",
-  "helpExamplePlay": "  p 0                  play hand card 0"
+  "helpExamplePass": "  p                    pass when you cannot play"
 }
