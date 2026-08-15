@@ -97,7 +97,7 @@ func TestSoloWhistCuiController_Exec(t *testing.T) {
 
 	t.Run("setdifficulty invalid", func(t *testing.T) {
 		result := controller.NewSoloWhistCuiController(newMock()).Exec("sd 9")
-		assert.Contains(t, result, "Invalid CPU difficulty")
+		assert.Contains(t, result, msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("hint / log", func(t *testing.T) {

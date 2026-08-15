@@ -66,9 +66,9 @@ func TestTienLenCuiController_Exec(t *testing.T) {
 
 	t.Run("setdifficulty errors", func(t *testing.T) {
 		c := controller.NewTienLenCuiController(newMock())
-		assert.Contains(t, c.Exec("sd"), "required")
-		assert.Contains(t, c.Exec("sd abc"), "Invalid CPU difficulty")
-		assert.Contains(t, c.Exec("sd 9"), "Invalid CPU difficulty")
+		assert.Contains(t, c.Exec("sd"), msgCpuDifficultyRequiredAlt())
+		assert.Contains(t, c.Exec("sd abc"), msgInvalidCpuDifficultyPrefix())
+		assert.Contains(t, c.Exec("sd 9"), msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("log", func(t *testing.T) {

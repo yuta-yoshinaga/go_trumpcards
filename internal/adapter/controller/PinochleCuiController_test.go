@@ -252,19 +252,19 @@ func TestPinochleCuiController_Exec(t *testing.T) {
 	t.Run("setdifficulty no args", func(t *testing.T) {
 		c := controller.NewPinochleCuiController(newPinochleMock())
 		result := c.Exec("sd")
-		assert.Contains(t, result, "required")
+		assert.Contains(t, result, msgCpuDifficultyRequired())
 	})
 
 	t.Run("setdifficulty invalid", func(t *testing.T) {
 		c := controller.NewPinochleCuiController(newPinochleMock())
 		result := c.Exec("sd abc")
-		assert.Contains(t, result, "Invalid CPU difficulty")
+		assert.Contains(t, result, msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("setdifficulty out of range", func(t *testing.T) {
 		c := controller.NewPinochleCuiController(newPinochleMock())
 		result := c.Exec("sd 3")
-		assert.Contains(t, result, "Invalid CPU difficulty: 3")
+		assert.Contains(t, result, msgInvalidCpuDifficultyPrefix())
 	})
 
 	// setlimit

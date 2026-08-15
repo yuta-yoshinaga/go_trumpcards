@@ -68,12 +68,12 @@ func TestPresidentCuiController_Exec(t *testing.T) {
 
 	t.Run("set difficulty requires arg", func(t *testing.T) {
 		c := controller.NewPresidentCuiController(newMock())
-		assert.Contains(t, c.Exec("sd"), "required")
+		assert.Contains(t, c.Exec("sd"), msgCpuDifficultyRequired())
 	})
 
 	t.Run("set difficulty invalid arg", func(t *testing.T) {
 		c := controller.NewPresidentCuiController(newMock())
-		assert.Contains(t, c.Exec("sd 9"), "Invalid")
+		assert.Contains(t, c.Exec("sd 9"), msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("setrule list", func(t *testing.T) {

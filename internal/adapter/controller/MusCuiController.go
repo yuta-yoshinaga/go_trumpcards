@@ -77,7 +77,7 @@ func (c *MusCuiController) Exec(command string) string {
 			case "n", "next":
 				return c.mi.NextRound(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.mi.GetConfig()
 					cfg.CpuDifficulty = domain.MusCpuDifficulty(v)
 					return c.mi.ResetWithConfig(cfg)

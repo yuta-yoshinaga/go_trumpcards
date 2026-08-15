@@ -163,7 +163,7 @@ func TestMacauCuiController_Exec(t *testing.T) {
 	})
 
 	t.Run("setdifficulty out of range", func(t *testing.T) {
-		assert.Equal(t, "Invalid CPU difficulty: 3. Please enter 0-2.", controller.NewMacauCuiController(newMock()).Exec("sd 3"))
+		assert.Equal(t, msgInvalidCpuDifficulty("3"), controller.NewMacauCuiController(newMock()).Exec("sd 3"))
 	})
 
 	t.Run("setlimit valid", func(t *testing.T) {

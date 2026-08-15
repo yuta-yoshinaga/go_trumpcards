@@ -108,10 +108,10 @@ func TestTonkCuiController_Exec(t *testing.T) {
 
 	t.Run("setdifficulty errors", func(t *testing.T) {
 		c := controller.NewTonkCuiController(newMock())
-		assert.Contains(t, c.Exec("sd"), "required")
-		assert.Contains(t, c.Exec("sd abc"), "Invalid CPU difficulty")
-		assert.Equal(t, "Invalid CPU difficulty: -1. Please enter 0-2.", c.Exec("sd -1"))
-		assert.Equal(t, "Invalid CPU difficulty: 3. Please enter 0-2.", c.Exec("sd 3"))
+		assert.Contains(t, c.Exec("sd"), msgCpuDifficultyRequired())
+		assert.Contains(t, c.Exec("sd abc"), msgInvalidCpuDifficultyPrefix())
+		assert.Equal(t, msgInvalidCpuDifficulty("-1"), c.Exec("sd -1"))
+		assert.Equal(t, msgInvalidCpuDifficulty("3"), c.Exec("sd 3"))
 	})
 
 	t.Run("setlimit valid", func(t *testing.T) {

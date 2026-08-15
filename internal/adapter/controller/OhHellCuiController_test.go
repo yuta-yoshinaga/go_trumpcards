@@ -92,12 +92,12 @@ func TestOhHellCuiController_Exec_Errors(t *testing.T) {
 	// Missing args
 	assert.Contains(t, c.Exec("b"), "required")
 	assert.Contains(t, c.Exec("p"), msgCardIndexRequired())
-	assert.Contains(t, c.Exec("sd"), "required")
+	assert.Contains(t, c.Exec("sd"), msgCpuDifficultyRequired())
 	assert.Contains(t, c.Exec("sm"), "required")
 
 	// Invalid args
 	assert.Contains(t, c.Exec("b abc"), "Invalid")
-	assert.Contains(t, c.Exec("sd 99"), "Invalid")
+	assert.Contains(t, c.Exec("sd 99"), msgInvalidCpuDifficultyPrefix())
 	assert.Contains(t, c.Exec("sm 0"), "Invalid")
 	assert.Contains(t, c.Exec("sm 14"), "Invalid")
 }

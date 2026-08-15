@@ -216,25 +216,25 @@ func TestCribbageCuiController_Exec(t *testing.T) {
 	t.Run("setdifficulty no args", func(t *testing.T) {
 		c := controller.NewCribbageCuiController(newMock())
 		result := c.Exec("sd")
-		assert.Contains(t, result, "required")
+		assert.Contains(t, result, msgCpuDifficultyRequired())
 	})
 
 	t.Run("setdifficulty invalid value", func(t *testing.T) {
 		c := controller.NewCribbageCuiController(newMock())
 		result := c.Exec("sd abc")
-		assert.Contains(t, result, "Invalid CPU difficulty")
+		assert.Contains(t, result, msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("setdifficulty negative", func(t *testing.T) {
 		c := controller.NewCribbageCuiController(newMock())
 		result := c.Exec("sd -1")
-		assert.Equal(t, "Invalid CPU difficulty: -1. Please enter 0-2.", result)
+		assert.Equal(t, msgInvalidCpuDifficulty("-1"), result)
 	})
 
 	t.Run("setdifficulty over 2", func(t *testing.T) {
 		c := controller.NewCribbageCuiController(newMock())
 		result := c.Exec("sd 3")
-		assert.Equal(t, "Invalid CPU difficulty: 3. Please enter 0-2.", result)
+		assert.Equal(t, msgInvalidCpuDifficulty("3"), result)
 	})
 
 	// setlimit

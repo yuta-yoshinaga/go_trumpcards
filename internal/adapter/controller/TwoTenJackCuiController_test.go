@@ -105,9 +105,9 @@ func TestTwoTenJackCuiController_Exec(t *testing.T) {
 		expected := domain.DefaultTwoTenJackConfig()
 		expected.CpuDifficulty = domain.TwoTenJackCpuDifficultyHard
 		m.AssertCalled(t, "ResetWithConfig", expected)
-		assert.Contains(t, c.Exec("sd"), "required")
-		assert.Contains(t, c.Exec("sd abc"), "Invalid CPU difficulty")
-		assert.Contains(t, c.Exec("sd 3"), "Invalid CPU difficulty")
+		assert.Contains(t, c.Exec("sd"), msgCpuDifficultyRequired())
+		assert.Contains(t, c.Exec("sd abc"), msgInvalidCpuDifficultyPrefix())
+		assert.Contains(t, c.Exec("sd 3"), msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("setlimit", func(t *testing.T) {

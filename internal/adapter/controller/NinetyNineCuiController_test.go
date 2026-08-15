@@ -92,11 +92,11 @@ func TestNinetyNineCuiController_Exec_Errors(t *testing.T) {
 	assert.Contains(t, c.Exec("b 0 1"), "required")
 	assert.Contains(t, c.Exec("b a b c"), "Invalid")
 	assert.Contains(t, c.Exec("p"), msgCardIndexRequired())
-	assert.Contains(t, c.Exec("sd"), "required")
+	assert.Contains(t, c.Exec("sd"), msgCpuDifficultyRequired())
 	assert.Contains(t, c.Exec("st"), "required")
 
 	assert.Contains(t, c.Exec("p abc"), msgInvalidCardIndexPrefix())
-	assert.Contains(t, c.Exec("sd 99"), "Invalid")
+	assert.Contains(t, c.Exec("sd 99"), msgInvalidCpuDifficultyPrefix())
 	assert.Contains(t, c.Exec("st 5"), "Invalid")
 	assert.Contains(t, c.Exec("st 9999"), "Invalid")
 }

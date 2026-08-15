@@ -126,8 +126,8 @@ func TestSambaCuiController_Exec(t *testing.T) {
 
 	t.Run("setdifficulty invalid", func(t *testing.T) {
 		c := controller.NewSambaCuiController(newMock())
-		assert.Contains(t, c.Exec("sd abc"), "Invalid CPU difficulty")
-		assert.Contains(t, c.Exec("sd -1"), "Invalid CPU difficulty")
+		assert.Contains(t, c.Exec("sd abc"), msgInvalidCpuDifficultyPrefix())
+		assert.Contains(t, c.Exec("sd -1"), msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("setlimit valid", func(t *testing.T) {

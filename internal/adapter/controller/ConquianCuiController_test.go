@@ -97,12 +97,12 @@ func TestConquianCuiController_Exec(t *testing.T) {
 
 	t.Run("setdifficulty sd no args", func(t *testing.T) {
 		result := controller.NewConquianCuiController(newMock()).Exec("sd")
-		assert.Contains(t, result, "required")
+		assert.Contains(t, result, msgCpuDifficultyRequired())
 	})
 
 	t.Run("setdifficulty sd over 2", func(t *testing.T) {
 		result := controller.NewConquianCuiController(newMock()).Exec("sd 3")
-		assert.Equal(t, "Invalid CPU difficulty: 3. Please enter 0-2.", result)
+		assert.Equal(t, msgInvalidCpuDifficulty("3"), result)
 	})
 
 	t.Run("setwins sw valid", func(t *testing.T) {

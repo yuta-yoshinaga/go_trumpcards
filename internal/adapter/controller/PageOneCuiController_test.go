@@ -108,11 +108,11 @@ func TestPageOneCuiController_Exec(t *testing.T) {
 	})
 	t.Run("setdifficulty no args", func(t *testing.T) {
 		c := controller.NewPageOneCuiController(newMock())
-		assert.Contains(t, c.Exec("sd"), "required")
+		assert.Contains(t, c.Exec("sd"), msgCpuDifficultyRequired())
 	})
 	t.Run("setdifficulty out of range", func(t *testing.T) {
 		c := controller.NewPageOneCuiController(newMock())
-		assert.Contains(t, c.Exec("sd 3"), "Invalid CPU difficulty")
+		assert.Contains(t, c.Exec("sd 3"), msgInvalidCpuDifficultyPrefix())
 	})
 	t.Run("setlimit valid", func(t *testing.T) {
 		m := newMock()

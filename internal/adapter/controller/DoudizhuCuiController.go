@@ -47,7 +47,7 @@ func (c *DoudizhuCuiController) Exec(command string) string {
 				}
 				return c.dgi.Bid(v), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Normal, 1=Easy, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequiredAlt", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.dgi.GetConfig()
 					cfg.CpuDifficulty = domain.DoudizhuCpuDifficulty(v)
 					return c.dgi.ResetWithConfig(cfg)

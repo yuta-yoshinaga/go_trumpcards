@@ -123,7 +123,7 @@ func TestHandAndFootCuiController_Exec(t *testing.T) {
 
 	t.Run("setdifficulty invalid", func(t *testing.T) {
 		c := controller.NewHandAndFootCuiController(newMock())
-		assert.Contains(t, c.Exec("sd abc"), "Invalid CPU difficulty")
+		assert.Contains(t, c.Exec("sd abc"), msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("setlimit sl valid", func(t *testing.T) {

@@ -55,7 +55,7 @@ func (c *GoStopCuiController) Exec(command string) string {
 			case "n", "next", "nr", "nextround":
 				return c.ki.NextRound(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.ki.GetConfig()
 					cfg.CpuDifficulty = domain.GoStopCpuDifficulty(v)
 					return c.ki.ResetWithConfig(cfg)

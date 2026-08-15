@@ -144,12 +144,12 @@ func TestSevenBridgeCuiController_Exec(t *testing.T) {
 
 	t.Run("setdifficulty out of range", func(t *testing.T) {
 		c := controller.NewSevenBridgeCuiController(newMock())
-		assert.Contains(t, c.Exec("sd 9"), "Invalid CPU difficulty")
+		assert.Contains(t, c.Exec("sd 9"), msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("setdifficulty no args", func(t *testing.T) {
 		c := controller.NewSevenBridgeCuiController(newMock())
-		assert.Contains(t, c.Exec("sd"), "CPU difficulty is required")
+		assert.Contains(t, c.Exec("sd"), msgCpuDifficultyRequired())
 	})
 
 	t.Run("setlimit valid", func(t *testing.T) {

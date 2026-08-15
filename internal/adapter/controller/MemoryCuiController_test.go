@@ -91,19 +91,19 @@ func TestMemoryCuiControllerSetDifficulty(t *testing.T) {
 		mi := newMockMemoryInteractor()
 		c := NewMemoryCuiController(mi)
 		result := c.Exec("sd")
-		assert.Contains(t, result, "CPU difficulty is required")
+		assert.Contains(t, result, msgCpuDifficultyRequired())
 	})
 	t.Run("invalid difficulty", func(t *testing.T) {
 		mi := newMockMemoryInteractor()
 		c := NewMemoryCuiController(mi)
 		result := c.Exec("sd 5")
-		assert.Contains(t, result, "Invalid CPU difficulty")
+		assert.Contains(t, result, msgInvalidCpuDifficultyPrefix())
 	})
 	t.Run("non-numeric difficulty", func(t *testing.T) {
 		mi := newMockMemoryInteractor()
 		c := NewMemoryCuiController(mi)
 		result := c.Exec("sd abc")
-		assert.Contains(t, result, "Invalid CPU difficulty")
+		assert.Contains(t, result, msgInvalidCpuDifficultyPrefix())
 	})
 }
 

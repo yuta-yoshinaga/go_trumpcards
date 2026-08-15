@@ -33,7 +33,7 @@ func (c *TienLenCuiController) Exec(command string) string {
 				indices, skipped := cuiutil.ParseIntSlice(args)
 				return cuiutil.PrependSkippedWarning(c.tli.Play(indices), skipped), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Normal, 1=Easy, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequiredAlt", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.tli.GetConfig()
 					cfg.CpuDifficulty = domain.TienLenCpuDifficulty(v)
 					return c.tli.ResetWithConfig(cfg)

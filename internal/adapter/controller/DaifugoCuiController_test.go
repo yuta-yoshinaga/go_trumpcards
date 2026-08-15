@@ -173,17 +173,17 @@ func TestDaifugoCuiController_SetDifficulty_LongCommand(t *testing.T) {
 func TestDaifugoCuiController_SetDifficulty_NoArgs(t *testing.T) {
 	mi := new(mockUsecases.MockDaifugoInteractor)
 	c := controller.NewDaifugoCuiController(mi)
-	assert.Contains(t, c.Exec("sd"), "CPU difficulty is required")
+	assert.Contains(t, c.Exec("sd"), msgCpuDifficultyRequiredAlt())
 }
 
 func TestDaifugoCuiController_SetDifficulty_InvalidValue(t *testing.T) {
 	mi := new(mockUsecases.MockDaifugoInteractor)
 	c := controller.NewDaifugoCuiController(mi)
 	// non-numeric: controller catches
-	assert.Contains(t, c.Exec("sd abc"), "Invalid CPU difficulty: abc")
+	assert.Contains(t, c.Exec("sd abc"), msgInvalidCpuDifficultyPrefix())
 	// numeric out-of-range: controller catches via ParseIntArg bounds
-	assert.Equal(t, "Invalid CPU difficulty: 3. Please enter 0-2.", c.Exec("sd 3"))
-	assert.Equal(t, "Invalid CPU difficulty: -1. Please enter 0-2.", c.Exec("sd -1"))
+	assert.Equal(t, msgInvalidCpuDifficulty("3"), c.Exec("sd 3"))
+	assert.Equal(t, msgInvalidCpuDifficulty("-1"), c.Exec("sd -1"))
 }
 
 // --- setjoker ---

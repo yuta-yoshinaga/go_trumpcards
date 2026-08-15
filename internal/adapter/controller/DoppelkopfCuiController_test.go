@@ -87,7 +87,7 @@ func TestDoppelkopfCuiController_Exec(t *testing.T) {
 
 	t.Run("setdifficulty invalid", func(t *testing.T) {
 		result := controller.NewDoppelkopfCuiController(newMock()).Exec("sd 9")
-		assert.Contains(t, result, "Invalid CPU difficulty")
+		assert.Contains(t, result, msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("setchips", func(t *testing.T) {

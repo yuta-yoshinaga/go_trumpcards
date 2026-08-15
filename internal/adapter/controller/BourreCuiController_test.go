@@ -79,7 +79,7 @@ func TestBourreCuiController_Exec(t *testing.T) {
 	})
 	t.Run("setdifficulty invalid", func(t *testing.T) {
 		c := controller.NewBourreCuiController(newMock())
-		assert.Contains(t, c.Exec("sd 9"), "Invalid CPU difficulty")
+		assert.Contains(t, c.Exec("sd 9"), msgInvalidCpuDifficultyPrefix())
 	})
 	t.Run("log", func(t *testing.T) {
 		m := newMock()

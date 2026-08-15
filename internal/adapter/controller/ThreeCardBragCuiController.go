@@ -70,7 +70,7 @@ func (c *ThreeCardBragCuiController) Exec(command string) string {
 			case "n", "next", "nextround":
 				return c.ti.NextRound(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.ti.GetConfig()
 					cfg.CpuDifficulty = domain.ThreeCardBragCpuDifficulty(v)
 					return c.ti.ResetWithConfig(cfg)

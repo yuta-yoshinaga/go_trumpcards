@@ -140,12 +140,12 @@ func TestBeloteCuiController_Exec(t *testing.T) {
 
 	t.Run("setdifficulty invalid", func(t *testing.T) {
 		c := controller.NewBeloteCuiController(newMock())
-		assert.Contains(t, c.Exec("sd abc"), "Invalid CPU difficulty")
+		assert.Contains(t, c.Exec("sd abc"), msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("setdifficulty no args", func(t *testing.T) {
 		c := controller.NewBeloteCuiController(newMock())
-		assert.Contains(t, c.Exec("sd"), "required")
+		assert.Contains(t, c.Exec("sd"), msgCpuDifficultyRequired())
 	})
 
 	t.Run("settarget valid", func(t *testing.T) {
