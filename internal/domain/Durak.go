@@ -45,6 +45,16 @@ const (
 	DurakActionTake   = 3 // 引き取り
 )
 
+// DurakMaxBouts は 1 局のバウト数の上限。
+//
+// **山札が尽きた後、カードが場から消えるのは防御成功のときだけ**で、防御失敗なら
+// 防御者が全部引き取るので手札の総数は変わらない。CPU の手選択に乱数は無く、同じ
+// 局面からは必ず同じ手が選ばれるため、「山札切れ + 防御が成立しない配置」の循環に
+// 一度入ると永久に出られない。20 万局に 14 局(0.007%)で実際に起きる。
+//
+// 通常局は 44 バウト前後、実測の最大が 78 なので、200 は健全な局に触れない。
+const DurakMaxBouts = 200
+
 // DurakCpuAction CPUまたは人間の1ターン分の行動記録
 type DurakCpuAction struct {
 	PlayerIdx  int   // 行動したプレイヤーインデックス
@@ -639,6 +649,25 @@ func (d *Durak) endBout(defended bool) {
 
 	// ゲーム終了チェック
 	activePlayers := d.countActivePlayers()
+	if activePlayers > 1 && d.round.boutNumber >= DurakMaxBouts {
+		// 循環に入っている。引き分けにはしない -- loserIdx = -1 は「全員上がり」
+		// の意味なので、混ぜると別の結末と区別できなくなる。手札が最も多い
+		// プレイヤーを敗者にする。同数なら座順の早い方。
+		d.round.gameEndFlag = true
+		d.round.phase = DurakPhaseGameEnd
+		worst, worstCnt := -1, -1
+		for i, p := range d.players {
+			if p.GetIsFinished() {
+				continue
+			}
+			if n := p.GetCardsSize(); n > worstCnt {
+				worst, worstCnt = i, n
+			}
+		}
+		d.round.loserIdx = worst
+		d.appendLog(-1, "bout", "bout limit reached, the player holding the most cards loses", nil)
+		return
+	}
 	if activePlayers <= 1 {
 		d.round.gameEndFlag = true
 		d.round.phase = DurakPhaseGameEnd
