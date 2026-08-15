@@ -20,5 +20,6 @@
   "push": "Push.",
   "totalPayoutLine": "total payout: {{payout}}",
   "maxBetHint": "Max bet: {{max}} (bet <amount> to wager)",
-  "drawHint": "draw to take a card / stand to hold"
+  "drawHint": "draw to take a card / stand to hold",
+  "helpExampleBet": "  b 100                bet 100 chips"
 }

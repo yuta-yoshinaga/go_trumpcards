@@ -39,5 +39,6 @@
   "cannotBust": "11以下なのでバストしません",
   "standPat": "17以上あるので立つのが定石です",
   "dealerMayBust": "ディーラーがバストしやすい形です",
-  "chaseDealer": "ディーラーが強いので追いかけます"
+  "chaseDealer": "ディーラーが強いので追いかけます",
+  "helpExampleBet": "  bet 100             100 チップを賭ける"
 }

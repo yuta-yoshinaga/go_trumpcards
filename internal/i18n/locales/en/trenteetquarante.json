@@ -28,5 +28,6 @@
   "result.refait": "Refait at 31 — half your stake goes to the house.",
   "hintNone": "No hint available.",
   "hintBet": "[HINT: {{bet}} ({{reason}})]",
-  "hintReasonEvenOdds": "All bets pay even money; the Refait (tie at 31) is the house edge"
+  "hintReasonEvenOdds": "All bets pay even money; the Refait (tie at 31) is the house edge",
+  "helpExampleBet": "  b 0 100                   bet 100 on Noir"
 }

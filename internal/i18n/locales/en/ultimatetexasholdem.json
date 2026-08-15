@@ -33,5 +33,6 @@
   "hintPlay2x": "Recommended: play 2x (one pair or better)",
   "hintPlay1x": "Recommended: play 1x (you have a made hand)",
   "hintCheck": "Recommended: check (wait for the next card)",
-  "hintFold": "Recommended: fold (no made hand)"
+  "hintFold": "Recommended: fold (no made hand)",
+  "helpExampleBet": "  b 100                bet 100 chips"
 }

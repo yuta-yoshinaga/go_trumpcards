@@ -8,5 +8,6 @@
   "payoutInline": "→ {{payout}}",
   "multiplierInline": " (x{{mult}})",
   "placeBet": "ベット額を入力してください (b <額>)。* の3枚が牛を作った札です",
-  "nextRound": "r で次の局へ"
+  "nextRound": "r で次の局へ",
+  "helpExampleBet": "  b 100                   100 チップを賭ける"
 }

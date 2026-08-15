@@ -27,5 +27,6 @@
   "dealer22Push": "dealer 22: push",
   "overallWin": "overall: net win",
   "overallDraw": "overall: even",
-  "overallLose": "overall: net loss"
+  "overallLose": "overall: net loss",
+  "helpExampleBet": "  b 100                bet 100 chips"
 }

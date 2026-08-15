@@ -43,5 +43,6 @@
   "standPat": "17以上あるので立つのが定石です",
   "dealerMayBust": "ディーラーがバストしやすい形です",
   "chaseDealer": "ディーラーが強いので追いかけます",
-  "splitAces": "エースは分けるのが定石です"
+  "splitAces": "エースは分けるのが定石です",
+  "helpExampleBet": "  bet 100            100 チップを賭ける"
 }

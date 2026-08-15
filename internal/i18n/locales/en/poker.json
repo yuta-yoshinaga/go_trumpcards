@@ -43,5 +43,6 @@
   "phaseSecondBet": "Second bet",
   "phaseEnd": "End",
   "promptBet": "Commands: bet <amount> / call / raise <amount> / fold",
-  "promptExchange": "Commands: exchange <card indices> (exchange alone to keep all)"
+  "promptExchange": "Commands: exchange <card indices> (exchange alone to keep all)",
+  "helpExampleBet": "  b 100                bet 100 chips"
 }

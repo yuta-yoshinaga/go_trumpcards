@@ -27,5 +27,6 @@
   "hintRaise3x": "推奨: 3倍レイズ（6枚以上のフラッシュ）",
   "hintRaise2x": "推奨: 2倍レイズ（5枚のフラッシュ）",
   "hintRaise1x": "推奨: 1倍レイズ（4枚のフラッシュ）",
-  "hintRaise1xMarginal": "推奨: 1倍レイズ（3枚だが最高札が Q 以上）"
+  "hintRaise1xMarginal": "推奨: 1倍レイズ（3枚だが最高札が Q 以上）",
+  "helpExampleBet": "  b 100                                   100 チップを賭ける"
 }

@@ -42,5 +42,6 @@
   "ptTwoPair": "Two Pair",
   "ptJacksOrBetter": "Jacks or Better",
   "ptKingsOrBetter": "Kings or Better",
-  "holdRoyalDraw": "Hold four to a royal flush"
+  "holdRoyalDraw": "Hold four to a royal flush",
+  "helpExampleBet": "  b 5                  bet five coins and deal"
 }

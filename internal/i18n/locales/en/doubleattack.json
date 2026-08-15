@@ -43,5 +43,6 @@
   "standPat": "17 or more is a standing hand",
   "dealerMayBust": "the dealer is likely to bust from here",
   "chaseDealer": "the dealer is strong, so keep drawing",
-  "splitAces": "aces are always worth splitting"
+  "splitAces": "aces are always worth splitting",
+  "helpExampleBet": "  bet 100              bet 100 chips"
 }

@@ -24,5 +24,6 @@
   "reason.stackIsShort": "your stack is short, so the minimum is the safe call",
   "reason.youAreTheBanker": "the banker does not bet — it takes the bets",
   "reason.roundIsOver": "this round is decided",
-  "result.gameEnd": "The game is over"
+  "result.gameEnd": "The game is over",
+  "helpExampleBet": "  bet 100              bet 100 chips"
 }

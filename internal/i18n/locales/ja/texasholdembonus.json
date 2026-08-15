@@ -27,5 +27,6 @@
   "totalPayoutLine": "合計払戻し: {{payout}}",
   "betCostLine": "アンテ: {{ante}} / {{action}}: {{cost}} チップ",
   "costPlay": "プレイ",
-  "costRaise": "レイズ"
+  "costRaise": "レイズ",
+  "helpExampleBet": "  b 100                100 チップを賭ける"
 }
