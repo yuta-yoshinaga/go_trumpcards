@@ -16,5 +16,6 @@
   "playerRank": " (上がり {{rank}}位)",
   "playerCardCount": " ({{count}}枚)",
   "bombCount": "ボム使用: {{count}}回",
-  "oneTwo": "ワンツー成立！ (同チームが 1・2 位)"
+  "oneTwo": "ワンツー成立！ (同チームが 1・2 位)",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
 }

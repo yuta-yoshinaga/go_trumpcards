@@ -22,5 +22,6 @@
   "hintNone": "ヒントはありません。",
   "hintNextHand": "[HINT: n で次のハンドへ進みます]",
   "hintDiscipline": "[HINT: いまの種目は{{name}}です。規則はその種目のものに従います]",
-  "result.winner": "ゲーム終了！ {{name}} の勝ち"
+  "result.winner": "ゲーム終了！ {{name}} の勝ち",
+  "helpExampleFold": "  f                                       この手を降りる"
 }

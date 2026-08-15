@@ -25,5 +25,6 @@
   "winCpu": "The opposing team wins...",
   "result.humanWin": "Your team wins!",
   "result.cpuWin": "The opposing team wins...",
-  "fourOfAKindReady": "* Four of a kind! You may declare Kemps (declare / d)"
+  "fourOfAKindReady": "* Four of a kind! You may declare Kemps (declare / d)",
+  "helpExamplePass": "  p                    skip the swap"
 }

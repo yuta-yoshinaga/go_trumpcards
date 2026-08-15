@@ -28,5 +28,6 @@
   "hintReasonPlayIn": "切り札や高い札があるので参加する価値がある",
   "hintReasonPassOut": "取れる見込みが薄い。降りてアンティだけで済ませる",
   "hintReasonTakeTrick": "まだ0トリック。追加支払いを避けるため取りに行く",
-  "hintReasonAlreadySafe": "1トリック確保済み。あとは取れるだけ取る"
+  "hintReasonAlreadySafe": "1トリック確保済み。あとは取れるだけ取る",
+  "helpExampleIn": "  in                   配られた手で勝負すると宣言する"
 }

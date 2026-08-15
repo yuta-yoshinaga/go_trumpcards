@@ -48,5 +48,6 @@
   "resultDeferred": "Paso (deferred to showdown)",
   "resultAccepted": "Quiero (showdown)",
   "resultAwarded": "No quiero (awarded)",
-  "resultOrdago": "Ordago accepted"
+  "resultOrdago": "Ordago accepted",
+  "helpExampleMus": "  m                     declare Mus to exchange cards"
 }

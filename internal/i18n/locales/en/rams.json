@@ -28,5 +28,6 @@
   "hintReasonPlayIn": "trumps or high cards make this worth playing",
   "hintReasonPassOut": "little chance of a trick -- drop out and lose only the ante",
   "hintReasonTakeTrick": "no trick yet: take one to avoid the extra payment",
-  "hintReasonAlreadySafe": "one trick is banked -- now take what you can"
+  "hintReasonAlreadySafe": "one trick is banked -- now take what you can",
+  "helpExampleIn": "  in                   declare that you will play this hand"
 }

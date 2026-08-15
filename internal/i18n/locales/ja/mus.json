@@ -48,5 +48,6 @@
   "resultDeferred": "パソ（ショーダウン持ち越し）",
   "resultAccepted": "キエロ（ショーダウン）",
   "resultAwarded": "ノキエロ（即時獲得）",
-  "resultOrdago": "オルダゴ受諾"
+  "resultOrdago": "オルダゴ受諾",
+  "helpExampleMus": "  m                     ムスを宣言して手札を交換する"
 }

@@ -38,5 +38,6 @@
   "handHeld": "The declarers held",
   "handTaken": "The defenders reached eighty and took the deal",
   "result.humanWin": "Game over! Your team wins!",
-  "result.cpuWin": "Game over! The other team wins."
+  "result.cpuWin": "Game over! The other team wins.",
+  "helpExampleDeclare": "  d 0                       pass on declaring a trump"
 }

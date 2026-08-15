@@ -21,5 +21,6 @@
   "tricksTaken": " ({{count}} tricks)",
   "handResult": "Hand result",
   "gameEndWinner": "{{name}} wins the game!",
-  "you": "You"
+  "you": "You",
+  "helpExampleDecide": "  d 1                  stay in for this hand"
 }

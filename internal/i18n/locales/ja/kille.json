@@ -24,5 +24,6 @@
   "dealerTurn": "親の手番（山札と交換できます）",
   "showdown": "公開",
   "result.humanWin": "ゲーム終了！ あなたの勝ち！",
-  "result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！"
+  "result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
+  "helpExampleSatisfied": "  s                         交換しないと宣言する"
 }

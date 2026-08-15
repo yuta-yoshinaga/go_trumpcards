@@ -21,5 +21,6 @@
   "promptRoundEndHelp": "nr / nextround: advance to next round",
   "turnPhase": "Your turn. Draw or play.",
   "roundEnd": "Round complete. Advance to the next round.",
-  "promptLayoffNone": "Layoff unavailable: no melds on the table"
+  "promptLayoffNone": "Layoff unavailable: no melds on the table",
+  "helpExampleDraw": "  dr                   draw from the stock and end the turn"
 }

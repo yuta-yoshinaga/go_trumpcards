@@ -23,5 +23,6 @@
   "hintSteal": "[HINT: [{{idx}}]{{card}} -> {{victim}} ({{reason}})]",
   "hintReasonSteal": "Takes an opponent's whole bundle",
   "hintReasonTake": "Captures from the table",
-  "hintReasonTrail": "Nothing to capture, so play what is least likely to be taken"
+  "hintReasonTrail": "Nothing to capture, so play what is least likely to be taken",
+  "helpExampleTake": "  t 0                  take a table card with hand card 0"
 }

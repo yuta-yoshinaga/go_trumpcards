@@ -32,5 +32,6 @@
   "roundEnd": "Round over",
   "result.humanWin": "Game over! You win!",
   "result.cpuWin": "Game over! CPU {{player}} wins!",
-  "result.draw": "Game over! It's a draw!"
+  "result.draw": "Game over! It's a draw!",
+  "helpExampleFront": "  front 0                   place hand card 0 on the front row"
 }

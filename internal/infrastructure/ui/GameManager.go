@@ -982,7 +982,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewPigsTailCuiController,
 		CuiHelpSpec{
-			TitleKey:    "pigtail.helpTitle",
+			TitleKey: "pigtail.helpTitle",
+			ExampleKeys: []string{
+				"pigtail.helpExampleDraw",
+			},
 			CommandKeys: []string{"pigtail.helpAction"},
 		}),
 	BindCuiFor("sevencardstud",
@@ -1170,7 +1173,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewFiftyOneCuiController,
 		CuiHelpSpec{
-			TitleKey:    "fiftyone.helpTitle",
+			TitleKey: "fiftyone.helpTitle",
+			ExampleKeys: []string{
+				"fiftyone.helpExampleAll",
+			},
 			CommandKeys: []string{"fiftyone.helpPlay", "fiftyone.helpAll", "fiftyone.helpStop"},
 			SettingKeys: []string{"fiftyone.helpSetDifficulty"},
 		}),
@@ -2108,6 +2114,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewShitheadCuiController,
 		CuiHelpSpec{
 			TitleKey: "shithead.helpTitle",
+			ExampleKeys: []string{
+				"shithead.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"shithead.helpPlay",
 				"shithead.helpPickup",
@@ -2870,7 +2879,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewDoudizhuCuiController,
 		CuiHelpSpec{
-			TitleKey:    "doudizhu.helpTitle",
+			TitleKey: "doudizhu.helpTitle",
+			ExampleKeys: []string{
+				"doudizhu.helpExampleBid",
+			},
 			CommandKeys: []string{"doudizhu.helpPlay", "doudizhu.helpBid"},
 			SettingKeys: []string{"doudizhu.helpSetDifficulty"},
 		}),
@@ -3070,6 +3082,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewYanivCuiController,
 		CuiHelpSpec{
 			TitleKey: "yaniv.helpTitle",
+			ExampleKeys: []string{
+				"yaniv.helpExampleDraw",
+			},
 			CommandKeys: []string{
 				"yaniv.helpDiscard",
 				"yaniv.helpYaniv",
@@ -3195,7 +3210,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewTichuCuiController,
 		CuiHelpSpec{
-			TitleKey:    "tichu.helpTitle",
+			TitleKey: "tichu.helpTitle",
+			ExampleKeys: []string{
+				"tichu.helpExamplePlay",
+			},
 			CommandKeys: []string{"tichu.helpPlay", "tichu.helpDeclare"},
 			SettingKeys: []string{"tichu.helpSetDifficulty"},
 		}),
@@ -3235,6 +3253,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewBourreCuiController,
 		CuiHelpSpec{
 			TitleKey: "bourre.helpTitle",
+			ExampleKeys: []string{
+				"bourre.helpExampleDecide",
+			},
 			CommandKeys: []string{
 				"bourre.helpDecide",
 				"bourre.helpDraw",
@@ -3298,6 +3319,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewMusCuiController,
 		CuiHelpSpec{
 			TitleKey: "mus.helpTitle",
+			ExampleKeys: []string{
+				"mus.helpExampleMus",
+			},
 			CommandKeys: []string{
 				"mus.helpMus",
 				"mus.helpCut",
@@ -3899,6 +3923,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewSpoonsCuiController,
 		CuiHelpSpec{
 			TitleKey: "spoons.helpTitle",
+			ExampleKeys: []string{
+				"spoons.helpExamplePass",
+			},
 			CommandKeys: []string{
 				"spoons.helpPass",
 				"spoons.helpGrab",
@@ -3913,6 +3940,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewKempsCuiController,
 		CuiHelpSpec{
 			TitleKey: "kemps.helpTitle",
+			ExampleKeys: []string{
+				"kemps.helpExamplePass",
+			},
 			CommandKeys: []string{
 				"kemps.helpSwap",
 				"kemps.helpPass",
@@ -3930,6 +3960,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewCuckooCuiController,
 		CuiHelpSpec{
 			TitleKey: "cuckoo.helpTitle",
+			ExampleKeys: []string{
+				"cuckoo.helpExampleKeep",
+			},
 			CommandKeys: []string{
 				"cuckoo.helpKeep",
 				"cuckoo.helpSwap",
@@ -4033,6 +4066,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewOpenFaceChineseCuiController,
 		CuiHelpSpec{
 			TitleKey: "openfacechinese.helpTitle",
+			ExampleKeys: []string{
+				"openfacechinese.helpExampleFront",
+			},
 			CommandKeys: []string{
 				"openfacechinese.helpPlace",
 				"openfacechinese.helpFront",
@@ -4052,6 +4088,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewRussianBankCuiController,
 		CuiHelpSpec{
 			TitleKey: "russianbank.helpTitle",
+			ExampleKeys: []string{
+				"russianbank.helpExampleDiscard",
+			},
 			CommandKeys: []string{
 				"russianbank.helpFoundation",
 				"russianbank.helpTableau",
@@ -4385,7 +4424,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewGutsCuiController,
 		CuiHelpSpec{
-			TitleKey:          "guts.helpTitle",
+			TitleKey: "guts.helpTitle",
+			ExampleKeys: []string{
+				"guts.helpExampleIn",
+			},
 			CommandKeys:       []string{"guts.helpDeclare", "guts.helpNext"},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"guts.helpSetPlayers", "guts.helpSetAnte", "guts.helpSetChips", "guts.helpSetRounds"},
@@ -4502,7 +4544,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewAnacondaCuiController,
 		CuiHelpSpec{
-			TitleKey:          "anaconda.helpTitle",
+			TitleKey: "anaconda.helpTitle",
+			ExampleKeys: []string{
+				"anaconda.helpExampleCall",
+			},
 			CommandKeys:       []string{"anaconda.helpPass", "anaconda.helpKeep", "anaconda.helpBet", "anaconda.helpNext"},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"anaconda.helpSetPlayers", "anaconda.helpSetAnte", "anaconda.helpSetChips", "anaconda.helpSetRounds"},
@@ -4514,6 +4559,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewMachiavelliCuiController,
 		CuiHelpSpec{
 			TitleKey: "machiavelli.helpTitle",
+			ExampleKeys: []string{
+				"machiavelli.helpExampleDraw",
+			},
 			CommandKeys: []string{
 				"machiavelli.helpDraw",
 				"machiavelli.helpNewMeld",
@@ -4761,6 +4809,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewDesmocheCuiController,
 		CuiHelpSpec{
 			TitleKey: "desmoche.helpTitle",
+			ExampleKeys: []string{
+				"desmoche.helpExampleDraw",
+			},
 			CommandKeys: []string{
 				"desmoche.helpDrawStock",
 				"desmoche.helpDrawDiscard",
@@ -4844,6 +4895,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewKilleCuiController,
 		CuiHelpSpec{
 			TitleKey: "kille.helpTitle",
+			ExampleKeys: []string{
+				"kille.helpExampleSatisfied",
+			},
 			CommandKeys: []string{
 				"kille.helpExchange",
 				"kille.helpSatisfied",
@@ -4999,6 +5053,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewLiteratureCuiController,
 		CuiHelpSpec{
 			TitleKey: "literature.helpTitle",
+			ExampleKeys: []string{
+				"literature.helpExampleAsk",
+			},
 			CommandKeys: []string{
 				"literature.helpAsk",
 				"literature.helpClaim",
@@ -5012,6 +5069,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewGuandanCuiController,
 		CuiHelpSpec{
 			TitleKey: "guandan.helpTitle",
+			ExampleKeys: []string{
+				"guandan.helpExamplePass",
+			},
 			CommandKeys: []string{
 				"guandan.helpPlay",
 				"guandan.helpPass",
@@ -5027,6 +5087,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewShengJiCuiController,
 		CuiHelpSpec{
 			TitleKey: "shengji.helpTitle",
+			ExampleKeys: []string{
+				"shengji.helpExampleDeclare",
+			},
 			CommandKeys: []string{
 				"shengji.helpDeclare",
 				"shengji.helpBury",
@@ -5290,6 +5353,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewRamsCuiController,
 		CuiHelpSpec{
 			TitleKey: "rams.helpTitle",
+			ExampleKeys: []string{
+				"rams.helpExampleIn",
+			},
 			CommandKeys: []string{
 				"rams.helpIn",
 				"rams.helpOut",
@@ -5617,6 +5683,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewPigCuiController,
 		CuiHelpSpec{
 			TitleKey: "pig.helpTitle",
+			ExampleKeys: []string{
+				"pig.helpExamplePass",
+			},
 			CommandKeys: []string{
 				"pig.helpPass",
 				"pig.helpSignal",
@@ -5632,6 +5701,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewStealingBundlesCuiController,
 		CuiHelpSpec{
 			TitleKey: "stealingbundles.helpTitle",
+			ExampleKeys: []string{
+				"stealingbundles.helpExampleTake",
+			},
 			CommandKeys: []string{
 				"stealingbundles.helpTake",
 				"stealingbundles.helpSteal",
@@ -5664,6 +5736,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewGoofspielCuiController,
 		CuiHelpSpec{
 			TitleKey: "goofspiel.helpTitle",
+			ExampleKeys: []string{
+				"goofspiel.helpExampleBid",
+			},
 			CommandKeys: []string{
 				"goofspiel.helpBid",
 				"goofspiel.helpNext",
@@ -5960,6 +6035,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewTuSacCuiController,
 		CuiHelpSpec{
 			TitleKey: "tusac.helpTitle",
+			ExampleKeys: []string{
+				"tusac.helpExampleDraw",
+			},
 			CommandKeys: []string{
 				"tusac.helpDraw",
 				"tusac.helpTake",
@@ -6035,6 +6113,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewHorseCuiController,
 		CuiHelpSpec{
 			TitleKey: "horse.helpTitle",
+			ExampleKeys: []string{
+				"horse.helpExampleFold",
+			},
 			CommandKeys: []string{
 				"horse.helpAction",
 				"horse.helpNext",

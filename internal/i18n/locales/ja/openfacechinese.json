@@ -32,5 +32,6 @@
   "roundEnd": "ラウンド終了",
   "result.humanWin": "ゲーム終了！ あなたの勝ち！",
   "result.cpuWin": "ゲーム終了！ CPU {{player}} の勝ち！",
-  "result.draw": "ゲーム終了！ 引き分け！"
+  "result.draw": "ゲーム終了！ 引き分け！",
+  "helpExampleFront": "  front 0                   手札の 0 番を上段に置く"
 }

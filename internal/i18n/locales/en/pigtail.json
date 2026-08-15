@@ -12,5 +12,6 @@
   "gameEndPrefix": "Game over! ",
   "gameEndLoser": "{{name}} loses!",
   "gameEndCardSuffix": " ({{count}} cards)",
-  "promptCurrentTurn": "{{name}} to act (draw to pull from stock)"
+  "promptCurrentTurn": "{{name}} to act (draw to pull from stock)",
+  "helpExampleDraw": "  d                     draw from the circle"
 }

@@ -25,5 +25,6 @@
   "hintSignal": "[HINT: {{reason}}]",
   "hintReasonSignal": "いますぐ signal で気づいたと伝える",
   "hintReasonDiscardOdd": "揃いかけていないランクから手放す",
-  "hintReasonNoSingleton": "全部同じ枚数なので、崩しても被害の小さい札から"
+  "hintReasonNoSingleton": "全部同じ枚数なので、崩しても被害の小さい札から",
+  "helpExamplePass": "  p 0                  手札の 0 番を左隣へ渡す"
 }
