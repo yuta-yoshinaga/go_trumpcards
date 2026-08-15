@@ -918,3 +918,81 @@ func TestDurak_BoutLimitEndsTheGame(t *testing.T) {
 		}
 	})
 }
+
+// **打ち切り経路を直接踏む。** 20 万局に 14 局という頻度なので、局を回して
+// 待っていては CI で一度も通らない。JSON 往復でバウト数を上限直前に置き、
+// 次の bout 終了で必ず打ち切りに入る局面を作る。
+func TestDurak_BoutLimitCutoffPath(t *testing.T) {
+	newGame := func() *domain.Durak {
+		players := []*domain.DurakPlayer{
+			domain.NewDurakPlayer(false), domain.NewDurakPlayer(false),
+			domain.NewDurakPlayer(false), domain.NewDurakPlayer(false),
+		}
+		d := domain.NewDurak(domain.NewTrumpCardsShortDeck(), players)
+		d.Reset()
+		return d
+	}
+
+	// バウト数だけ上限直前へ動かす。他の状態は配ったままなので、続きを回せば
+	// 数バウトで上限に当たる。
+	atLimit := func(d *domain.Durak) *domain.Durak {
+		raw, err := json.Marshal(d)
+		assert.NoError(t, err)
+		var m map[string]any
+		assert.NoError(t, json.Unmarshal(raw, &m))
+		m["bn"] = domain.DurakMaxBouts - 1
+		patched, err := json.Marshal(m)
+		assert.NoError(t, err)
+		out := newGame()
+		assert.NoError(t, json.Unmarshal(patched, out))
+		return out
+	}
+
+	t.Run("the game ends at the limit", func(t *testing.T) {
+		d := atLimit(newGame())
+		turns := 0
+		for !d.GetGameEndFlag() && turns < 500 {
+			d.CpuPlay()
+			turns++
+		}
+		assert.True(t, d.GetGameEndFlag(), "上限を越えても終わっていない")
+		assert.GreaterOrEqual(t, d.GetBoutNumber(), domain.DurakMaxBouts)
+
+		// **打ち切りで終わったことを確かめる。** 自然終了なら上がっていない
+		// プレイヤーは 1 人だけ。2 人以上残っているなら、終わらせたのは上限。
+		active := 0
+		for i := 0; i < d.GetPlayerCnt(); i++ {
+			if !d.GetPlayer(i).GetIsFinished() {
+				active++
+			}
+		}
+		assert.Greater(t, active, 1,
+			"自然終了してしまっている -- この局面では打ち切り経路を踏めていない")
+	})
+
+	t.Run("the cutoff names a loser who still holds cards", func(t *testing.T) {
+		d := atLimit(newGame())
+		turns := 0
+		for !d.GetGameEndFlag() && turns < 500 {
+			d.CpuPlay()
+			turns++
+		}
+		loser := d.GetLoserIdx()
+		if loser < 0 {
+			// 全員上がりで終わった場合だけ -1 が許される
+			for i := 0; i < d.GetPlayerCnt(); i++ {
+				assert.True(t, d.GetPlayer(i).GetIsFinished())
+			}
+			return
+		}
+		assert.False(t, d.GetPlayer(loser).GetIsFinished(), "上がった人が敗者になっている")
+
+		// 敗者は手札が最多であること。少ない人を負けにすると規則が逆になる。
+		for i := 0; i < d.GetPlayerCnt(); i++ {
+			if d.GetPlayer(i).GetIsFinished() {
+				continue
+			}
+			assert.LessOrEqual(t, d.GetPlayer(i).GetCardsSize(), d.GetPlayer(loser).GetCardsSize())
+		}
+	})
+}
