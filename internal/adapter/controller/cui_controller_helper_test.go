@@ -3,6 +3,7 @@
 package controller
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -86,5 +87,61 @@ func TestExecCuiCommand(t *testing.T) {
 	t.Run("unhandled game command no suggestion", func(t *testing.T) {
 		result := execCuiCommand("zzzzzzz", resetFn, validCmds, gameHandler)
 		assert.Equal(t, i18n.ErrorPrefix+"コマンドが不明です: zzzzzzz", result)
+	})
+}
+
+// execSolitaireCui consolidates 6 byte-identical Exec bodies across the
+// tableau solitaires (BakersDozen, BeleagueredCastle, Bisley, FlowerGarden,
+// KingAlbert, StreetsAndAlleys). They differed only in receiver and in which
+// interactor the closures called — see issue #5368.
+func TestExecSolitaireCui(t *testing.T) {
+	fns := func(calls *[]string) solitaireCuiFns {
+		rec := func(name string) func() string {
+			return func() string { *calls = append(*calls, name); return name }
+		}
+		return solitaireCuiFns{
+			reset:        rec("reset"),
+			giveUp:       rec("giveup"),
+			autoComplete: rec("autocomplete"),
+			undo:         rec("undo"),
+			hint:         rec("hint"),
+			actionLog:    rec("log"),
+			move: func(args []string) string {
+				*calls = append(*calls, "move:"+strings.Join(args, ","))
+				return "moved"
+			},
+		}
+	}
+
+	cases := []struct{ cmd, want string }{
+		{"r", "reset"}, {"reset", "reset"},
+		{"g", "giveup"}, {"giveup", "giveup"},
+		{"ac", "autocomplete"}, {"autocomplete", "autocomplete"},
+		{"u", "undo"}, {"undo", "undo"},
+		{"h", "hint"}, {"hint", "hint"},
+		{"l", "log"}, {"log", "log"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.cmd, func(t *testing.T) {
+			var calls []string
+			execSolitaireCui(tc.cmd, fns(&calls))
+			assert.Equal(t, []string{tc.want}, calls)
+		})
+	}
+
+	t.Run("move forwards its arguments", func(t *testing.T) {
+		var calls []string
+		got := execSolitaireCui("m w 1", fns(&calls))
+		assert.Equal(t, "moved", got)
+		assert.Equal(t, []string{"move:w,1"}, calls)
+	})
+
+	// An unknown command must reach the shared suggestion path rather than
+	// being answered here: that is what produces "もしかして…" for a typo.
+	t.Run("unknown command is not answered by any of the callbacks", func(t *testing.T) {
+		var calls []string
+		out := execSolitaireCui("frobnicate", fns(&calls))
+		assert.Empty(t, calls, "no interactor method should have run")
+		assert.NotEmpty(t, out, "the shared helper still answers with a suggestion")
 	})
 }

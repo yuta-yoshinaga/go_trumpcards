@@ -68,3 +68,49 @@ func execCuiCommand(
 		return unknownCommandMessage(fields[0], allCommands)
 	}
 }
+
+// solitaireCuiFns is the interactor surface of the tableau-solitaire CUI
+// command set, taken as function values because each game has its own
+// interactor type with no shared interface.
+type solitaireCuiFns struct {
+	reset        func() string
+	move         func(args []string) string
+	giveUp       func() string
+	autoComplete func() string
+	undo         func() string
+	hint         func() string
+	actionLog    func() string
+}
+
+// execSolitaireCui runs the move/giveup/autocomplete/undo command set shared by
+// the tableau solitaires, delegating quit/reset and unknown-command suggestions
+// to execCuiCommand.
+//
+// Consolidates 6 byte-identical Exec bodies: BakersDozen, BeleagueredCastle,
+// Bisley, FlowerGarden, KingAlbert, StreetsAndAlleys. They differed only in
+// receiver name and in which interactor the closures called — see issue #5368.
+//
+// The command list is passed to execCuiCommand unchanged, so a typo still
+// reaches the shared suggestion path ("もしかして 'move' ですか？") instead of
+// being swallowed here.
+func execSolitaireCui(command string, fns solitaireCuiFns) string {
+	return execCuiCommand(
+		command,
+		func(_ []string) string { return fns.reset() },
+		[]string{"m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"},
+		func(cmd string, args []string) (string, bool) {
+			switch cmd {
+			case "m", "move":
+				return fns.move(args), true
+			case "g", "giveup":
+				return fns.giveUp(), true
+			case "ac", "autocomplete":
+				return fns.autoComplete(), true
+			case "u", "undo":
+				return fns.undo(), true
+			default:
+				return handleCuiHintAndLog(cmd, fns.hint, fns.actionLog)
+			}
+		},
+	)
+}
