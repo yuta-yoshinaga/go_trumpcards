@@ -5648,9 +5648,6 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewColourWhistCuiController,
 		CuiHelpSpec{
 			TitleKey: "colourwhist.helpTitle",
-			ExampleKeys: []string{
-				"colourwhist.helpExamplePass",
-			},
 			CommandKeys: []string{
 				"colourwhist.helpPlay",
 				"colourwhist.helpBid",
