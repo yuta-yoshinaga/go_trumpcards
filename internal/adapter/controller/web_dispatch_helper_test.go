@@ -210,3 +210,59 @@ func TestDispatchTrickPlay_UnknownCommandIsNotHandled(t *testing.T) {
 	assert.Equal(t, 200, w.Code, "nothing should have been written")
 	assert.Empty(t, w.Body.String())
 }
+
+// dispatchBidTrickPlay is dispatchTrickPlay plus a bid step, consolidating
+// 6 more byte-identical dispatchers: fortyFivesDispatch, napDispatch,
+// preferenceDispatch, soloWhistDispatch, twentyNineDispatch, viraDispatch.
+// Kept separate from dispatchTrickPlay rather than making bid optional: a
+// nil-able function field would let a game silently accept "b" and do nothing.
+func TestDispatchBidTrickPlay(t *testing.T) {
+	cases := []struct {
+		name     string
+		cmd      string
+		bid      *int
+		cardIdx  *int
+		wantBody string
+		wantCode int
+	}{
+		{"reset", "r", nil, nil, `{"method":"reset"}`, 200},
+		{"bid", "b", intPtr(3), nil, `{"method":"bid:3"}`, 200},
+		{"bid long form", "bid", intPtr(0), nil, `{"method":"bid:0"}`, 200},
+		{"play", "p", nil, intPtr(5), `{"method":"play:5"}`, 200},
+		{"next trick", "n", nil, nil, `{"method":"next"}`, 200},
+		{"next round", "nr", nil, nil, `{"method":"nextround"}`, 200},
+		{"hint", "h", nil, nil, `{"method":"hint"}`, 200},
+		{"log", "log", nil, nil, `{"method":"log"}`, 200},
+		{"bid without a value", "b", nil, nil, "bid is required", 400},
+		{"play without an index", "p", nil, nil, "cardIndex is required", 400},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			handled := dispatchBidTrickPlay(tc.cmd, &baseController{}, w, bidTrickPlayFns{
+				resetWithConfig: func() string { return `{"method":"reset"}` },
+				bid:             func(b int) string { return `{"method":"bid:` + strconv.Itoa(b) + `"}` },
+				play:            func(i int) string { return `{"method":"play:` + strconv.Itoa(i) + `"}` },
+				nextTrick:       func() string { return `{"method":"next"}` },
+				nextRound:       func() string { return `{"method":"nextround"}` },
+				hint:            func() string { return `{"method":"hint"}` },
+				actionLog:       func() string { return `{"method":"log"}` },
+			}, tc.bid, tc.cardIdx, func(msg string) any { return map[string]string{"message": msg} })
+			assert.True(t, handled)
+			assert.Equal(t, tc.wantCode, w.Code)
+			assert.Contains(t, w.Body.String(), tc.wantBody)
+		})
+	}
+}
+
+func TestDispatchBidTrickPlay_UnknownCommandIsNotHandled(t *testing.T) {
+	w := httptest.NewRecorder()
+	handled := dispatchBidTrickPlay("frobnicate", &baseController{}, w, bidTrickPlayFns{
+		resetWithConfig: func() string { return "" }, bid: func(int) string { return "" },
+		play: func(int) string { return "" }, nextTrick: func() string { return "" },
+		nextRound: func() string { return "" }, hint: func() string { return "" },
+		actionLog: func() string { return "" },
+	}, nil, nil, func(msg string) any { return msg })
+	assert.False(t, handled)
+	assert.Empty(t, w.Body.String())
+}

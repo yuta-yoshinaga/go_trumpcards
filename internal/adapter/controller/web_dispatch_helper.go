@@ -134,3 +134,47 @@ func dispatchTrickPlay[O any](cmd string, bc *baseController, w http.ResponseWri
 	}
 	return true
 }
+
+// bidTrickPlayFns is trickPlayFns plus the bid step used by the trick-taking
+// games that open with an auction.
+type bidTrickPlayFns struct {
+	resetWithConfig func() string
+	bid             func(bid int) string
+	play            func(cardIndex int) string
+	nextTrick       func() string
+	nextRound       func() string
+	hint            func() string
+	actionLog       func() string
+}
+
+// dispatchBidTrickPlay handles reset/bid/play/next/nextround, falling through
+// to dispatchHintAndLog. Consolidates 6 byte-identical dispatchers:
+// fortyFivesDispatch, napDispatch, preferenceDispatch, soloWhistDispatch,
+// twentyNineDispatch, viraDispatch. See issue #5368.
+//
+// A separate helper rather than an optional bid field on trickPlayFns: a
+// nil-able function would let a game accept "b" and silently do nothing, and
+// the compiler would not notice. Two structs make the command set explicit.
+func dispatchBidTrickPlay[O any](cmd string, bc *baseController, w http.ResponseWriter, fns bidTrickPlayFns, bid, cardIndex *int, newDefault func(string) O) bool {
+	switch cmd {
+	case "r", "reset":
+		bc.writePresenterResponse(w, fns.resetWithConfig())
+	case "b", "bid":
+		if !requireParam(bc, w, newDefault, bid == nil, "param error: bid is required.") {
+			return true
+		}
+		bc.writePresenterResponse(w, fns.bid(*bid))
+	case "p", "play":
+		if !requireParam(bc, w, newDefault, cardIndex == nil, "param error: cardIndex is required.") {
+			return true
+		}
+		bc.writePresenterResponse(w, fns.play(*cardIndex))
+	case "n", "next":
+		bc.writePresenterResponse(w, fns.nextTrick())
+	case "nr", "nextround":
+		bc.writePresenterResponse(w, fns.nextRound())
+	default:
+		return dispatchHintAndLog(cmd, bc, w, fns.hint, fns.actionLog)
+	}
+	return true
+}
