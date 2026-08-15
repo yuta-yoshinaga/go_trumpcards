@@ -62,7 +62,14 @@ export default function App() {
           <SkipNavLink targetId="main-content" label={t('nav.skipToContent')} />
           {/* Announces route changes and moves focus to <main>; a HashRouter
               navigation fires no page-load event, so nothing else tells
-              assistive tech the view changed (#5360). */}
+              assistive tech the view changed (#5360).
+
+              Placement here is not load-bearing. It is declared before
+              <Routes>, so its effects run first, but it no longer reads
+              document.title in that window -- it subscribes to
+              useDocumentTitle and announces when the title actually lands.
+              That also covers lazy route chunks, where the page has not
+              mounted yet when this component's effect runs. */}
           <RouteAnnouncer />
           <DesktopSidebar />
           {/* `min-h-0` is load-bearing, not defensive: this is a flex item in a
