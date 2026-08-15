@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // --- ParseIntArg ---
@@ -281,4 +282,33 @@ func TestPrependSkippedWarning_WithSkipped(t *testing.T) {
 	assert.Contains(t, result, "'abc'")
 	assert.Contains(t, result, "game output")
 	assert.True(t, strings.Index(result, "'abc'") < strings.Index(result, "game output"))
+}
+
+// ParseOptionalIntKeys は「省略」と「打ち間違い」を区別する。既定値に差し替える
+// 実装では `p abc` が 0 番を出してしまい、プレイヤーが選んでいない手が通る。
+func TestParseOptionalIntKeys(t *testing.T) {
+	t.Run("absent takes the default", func(t *testing.T) {
+		v, msg, ok := cuiutil.ParseOptionalIntKeys(nil, 0, 7, "invalidCardIndex")
+		assert.True(t, ok)
+		assert.Equal(t, 7, v)
+		assert.Empty(t, msg)
+	})
+	t.Run("index past the end takes the default", func(t *testing.T) {
+		v, _, ok := cuiutil.ParseOptionalIntKeys([]string{"0"}, 1, -1, "invalidCardIndex")
+		assert.True(t, ok)
+		assert.Equal(t, -1, v)
+	})
+	t.Run("a valid argument wins over the default", func(t *testing.T) {
+		v, _, ok := cuiutil.ParseOptionalIntKeys([]string{"3"}, 0, 7, "invalidCardIndex")
+		assert.True(t, ok)
+		assert.Equal(t, 3, v)
+	})
+	t.Run("a typo is refused, not defaulted", func(t *testing.T) {
+		v, msg, ok := cuiutil.ParseOptionalIntKeys([]string{"abc"}, 0, 7, "invalidCardIndex")
+		assert.False(t, ok)
+		assert.Zero(t, v)
+		body, isErr := i18n.StripErrorPrefix(msg)
+		assert.True(t, isErr, "the refusal has to be marked or callers cannot tell it from output")
+		assert.Contains(t, body, "abc")
+	})
 }

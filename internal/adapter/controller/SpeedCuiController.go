@@ -40,13 +40,22 @@ func (c *SpeedCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "p", "play":
-				cardIdx := cuiutil.ParseOptionalInt(args, 0, 0)
-				pileIdx := cuiutil.ParseOptionalInt(args, 1, 0)
+				cardIdx, errMsg, ok := cuiutil.ParseOptionalIntKeys(args, 0, 0, "invalidCardIndex")
+				if !ok {
+					return errMsg, true
+				}
+				pileIdx, errMsg, ok := cuiutil.ParseOptionalIntKeys(args, 1, 0, "invalidPileIndex")
+				if !ok {
+					return errMsg, true
+				}
 				return c.si.Play(cardIdx, pileIdx), true
 			case "f", "flip":
 				return c.si.Flip(), true
 			case "sd", "setdifficulty":
-				val := cuiutil.ParseOptionalInt(args, 0, int(domain.SpeedCpuDifficultyNormal))
+				val, errMsg, ok := cuiutil.ParseOptionalIntKeys(args, 0, int(domain.SpeedCpuDifficultyNormal), "invalidCpuDifficulty")
+				if !ok {
+					return errMsg, true
+				}
 				cfg := c.si.GetConfig()
 				cfg.CpuDifficulty = domain.SpeedCpuDifficulty(val)
 				return c.si.ResetWithConfig(cfg), true

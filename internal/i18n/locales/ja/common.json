@@ -492,5 +492,10 @@
   "invalidRowRaw": "行が不正です: {{val}}。",
   "invalidToCol": "移動先の列が不正です: {{val}}。",
   "invalidToRow": "移動先の行が不正です: {{val}}。",
-  "trumpSuitRequiredWords": "切り札のスートを指定してください (s=スペード, c=クラブ, h=ハート, d=ダイヤ)。"
+  "trumpSuitRequiredWords": "切り札のスートを指定してください (s=スペード, c=クラブ, h=ハート, d=ダイヤ)。",
+  "invalidPileIndex": "山の番号が不正です: {{val}}。",
+  "invalidTargetValue": "指定した値が不正です: {{val}}。",
+  "invalidPairPlusBet": "ペアプラスの賭け金が不正です: {{val}}。",
+  "invalidTripsBet": "トリップスの賭け金が不正です: {{val}}。",
+  "invalidHandCount": "手の数が不正です: {{val}}。"
 }

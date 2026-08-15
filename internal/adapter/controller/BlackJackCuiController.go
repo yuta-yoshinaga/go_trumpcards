@@ -71,9 +71,18 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 				if !ok {
 					return errMsg, true
 				}
-				ppBet := cuiutil.ParseOptionalInt(args, 1, 0)
-				t3Bet := cuiutil.ParseOptionalInt(args, 2, 0)
-				handCount := cuiutil.ParseOptionalInt(args, 3, 0)
+				ppBet, errMsg, ok := cuiutil.ParseOptionalIntKeys(args, 1, 0, "invalidPairPlusBet")
+				if !ok {
+					return errMsg, true
+				}
+				t3Bet, errMsg, ok := cuiutil.ParseOptionalIntKeys(args, 2, 0, "invalidTripsBet")
+				if !ok {
+					return errMsg, true
+				}
+				handCount, errMsg, ok := cuiutil.ParseOptionalIntKeys(args, 3, 0, "invalidHandCount")
+				if !ok {
+					return errMsg, true
+				}
 				return bcc.bji.Bet(amount, ppBet, t3Bet, handCount), true
 			case "ssr", "setsurrenderrule":
 				return cuiutil.WithParsedIntKeys(args, "surrenderRuleRequired", "invalidSurrenderRuleANumber02", 0, domain.BJSurrenderMax, bcc.bji.SetSurrenderRule)

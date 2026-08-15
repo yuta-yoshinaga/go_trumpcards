@@ -492,5 +492,10 @@
   "invalidRowRaw": "Invalid row: {{val}}.",
   "invalidToCol": "Invalid toCol: {{val}}.",
   "invalidToRow": "Invalid toRow: {{val}}.",
-  "trumpSuitRequiredWords": "Trump suit is required (s=spade, c=club, h=heart, d=diamond)."
+  "trumpSuitRequiredWords": "Trump suit is required (s=spade, c=club, h=heart, d=diamond).",
+  "invalidPileIndex": "Invalid pile index: {{val}}.",
+  "invalidTargetValue": "Invalid target value: {{val}}.",
+  "invalidPairPlusBet": "Invalid Pair Plus bet: {{val}}.",
+  "invalidTripsBet": "Invalid trips bet: {{val}}.",
+  "invalidHandCount": "Invalid hand count: {{val}}."
 }

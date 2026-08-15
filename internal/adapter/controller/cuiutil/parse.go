@@ -48,6 +48,24 @@ func WithParsedInt(args []string, missingMsg, invalidMsg string, min, max int, f
 	return fn(v), true
 }
 
+// ParseOptionalIntKeys parses an optional argument. An absent argument takes
+// defaultVal, but a present-but-unparseable one is refused rather than
+// silently replaced: `p abc` used to play card 0, which is a move the player
+// never asked for.
+//
+// It returns (value, "", true) when the argument is absent or valid, and
+// (0, message, false) when it is present and cannot be parsed.
+func ParseOptionalIntKeys(args []string, idx, defaultVal int, invalidKey string) (int, string, bool) {
+	if len(args) <= idx {
+		return defaultVal, "", true
+	}
+	v, err := strconv.Atoi(args[idx])
+	if err != nil {
+		return 0, i18n.MarkError(i18n.Tf(invalidKey, "val", args[idx])), false
+	}
+	return v, "", true
+}
+
 // ParseOptionalInt parses args[idx] as an integer, returning defaultVal if absent or invalid.
 func ParseOptionalInt(args []string, idx, defaultVal int) int {
 	if len(args) <= idx {
