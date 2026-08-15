@@ -50,8 +50,7 @@ func literatureParseAsk(args []string, li usecase.LiteratureInteractorIF) (strin
 	}
 	to, err := strconv.Atoi(args[0])
 	if err != nil || to < 0 || to >= domain.LiteraturePlayerCnt {
-		return "Invalid seat: " + args[0] + ". Please enter 0-" +
-			strconv.Itoa(domain.LiteraturePlayerCnt-1) + ".", true
+		return invalidArg("invalidSeat0Max", "val", args[0], "max", strconv.Itoa(domain.LiteraturePlayerCnt-1)), true
 	}
 	suit, err := strconv.Atoi(args[1])
 	if err != nil || suit < domain.CardDesignSpade || suit > domain.CardDesignDiamond {
@@ -74,15 +73,13 @@ func literatureParseClaim(args []string, li usecase.LiteratureInteractorIF) (str
 	}
 	half, err := strconv.Atoi(args[0])
 	if err != nil || half < 0 || half >= domain.LiteratureHalfSuitCnt {
-		return "Invalid half-suit: " + args[0] + ". Please enter 0-" +
-			strconv.Itoa(domain.LiteratureHalfSuitCnt-1) + ".", true
+		return invalidArg("invalidHalfSuit0Max", "val", args[0], "max", strconv.Itoa(domain.LiteratureHalfSuitCnt-1)), true
 	}
 	holders := make([]int, 0, domain.LiteratureHalfSuitSize)
 	for i := range domain.LiteratureHalfSuitSize {
 		seat, err := strconv.Atoi(args[1+i])
 		if err != nil || seat < 0 || seat >= domain.LiteraturePlayerCnt {
-			return "Invalid seat: " + args[1+i] + ". Please enter 0-" +
-				strconv.Itoa(domain.LiteraturePlayerCnt-1) + ".", true
+			return invalidArg("invalidSeat0Max", "val", args[1+i], "max", strconv.Itoa(domain.LiteraturePlayerCnt-1)), true
 		}
 		holders = append(holders, seat)
 	}

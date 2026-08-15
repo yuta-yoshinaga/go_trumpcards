@@ -572,5 +572,12 @@
   "invalidTakeCountDot": "取る枚数が不正です: {{val}}。",
   "invalidTrumpSuitSCHD": "切り札のスートが不正です: {{val}}。s, c, h, d のいずれかを入力してください。",
   "invalidValueDot": "値が不正です: {{val}}。",
-  "invalidVictimIndexDot": "対象の番号が不正です: {{val}}。"
+  "invalidVictimIndexDot": "対象の番号が不正です: {{val}}。",
+  "invalidBidLevel1Max": "入札のレベルが不正です: {{val}}。1-{{max}} を入力してください。",
+  "invalidPartnerMinus1Max": "パートナーが不正です: {{val}}。-1〜{{max}} を入力してください。",
+  "invalidBidMinMax": "入札が不正です: {{val}}。{{max}} を入力してください。",
+  "invalidSeat0Max": "席が不正です: {{val}}。0-{{max}} を入力してください。",
+  "invalidHalfSuit0Max": "ハーフスートが不正です: {{val}}。0-{{max}} を入力してください。",
+  "invalidBidLevelMinMax": "入札のレベルが不正です: {{val}}。{{max}} を入力してください。",
+  "invalidDenomination0Max": "種別が不正です: {{val}}。0-{{max}} を入力してください (0=S 1=C 2=D 3=H 4=NT)。"
 }

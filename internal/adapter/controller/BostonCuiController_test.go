@@ -53,9 +53,9 @@ func TestBostonCuiController_Exec(t *testing.T) {
 	t.Run("bid rejects a bad step or suit", func(t *testing.T) {
 		c := controller.NewBostonCuiController(newMock())
 		assert.True(t, msgRejected(c.Exec("b")))
-		assert.Contains(t, c.Exec("b abc"), "Invalid bid level")
-		assert.Contains(t, c.Exec("b 0"), "Invalid bid level")
-		assert.Contains(t, c.Exec("b 99"), "Invalid bid level")
+		assert.Contains(t, c.Exec("b abc"), msgStem("invalidBidLevel1Max"))
+		assert.Contains(t, c.Exec("b 0"), msgStem("invalidBidLevel1Max"))
+		assert.Contains(t, c.Exec("b 99"), msgStem("invalidBidLevel1Max"))
 		assert.Contains(t, c.Exec("b 1 9"), msgStem("invalidSuit14Plain"))
 	})
 
@@ -68,9 +68,9 @@ func TestBostonCuiController_Exec(t *testing.T) {
 		assert.Equal(t, mockOutput, c.Exec("cp -1"))
 		m.AssertCalled(t, "CallPartner", -1)
 		assert.True(t, msgRejected(c.Exec("cp")))
-		assert.Contains(t, c.Exec("cp abc"), "Invalid partner")
-		assert.Contains(t, c.Exec("cp 9"), "Invalid partner")
-		assert.Contains(t, c.Exec("cp -2"), "Invalid partner")
+		assert.Contains(t, c.Exec("cp abc"), msgStem("invalidPartnerMinus1Max"))
+		assert.Contains(t, c.Exec("cp 9"), msgStem("invalidPartnerMinus1Max"))
+		assert.Contains(t, c.Exec("cp -2"), msgStem("invalidPartnerMinus1Max"))
 	})
 
 	t.Run("play and next", func(t *testing.T) {

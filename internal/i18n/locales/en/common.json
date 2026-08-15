@@ -572,5 +572,12 @@
   "invalidTakeCountDot": "Invalid take count: {{val}}.",
   "invalidTrumpSuitSCHD": "Invalid trump suit: {{val}}. Please enter s, c, h, or d.",
   "invalidValueDot": "Invalid value: {{val}}.",
-  "invalidVictimIndexDot": "Invalid victim index: {{val}}."
+  "invalidVictimIndexDot": "Invalid victim index: {{val}}.",
+  "invalidBidLevel1Max": "Invalid bid level: {{val}}. Please enter 1-{{max}}.",
+  "invalidPartnerMinus1Max": "Invalid partner: {{val}}. Please enter -1 to {{max}}.",
+  "invalidBidMinMax": "Invalid bid: {{val}}. Please enter {{max}}.",
+  "invalidSeat0Max": "Invalid seat: {{val}}. Please enter 0-{{max}}.",
+  "invalidHalfSuit0Max": "Invalid half-suit: {{val}}. Please enter 0-{{max}}.",
+  "invalidBidLevelMinMax": "Invalid bid level: {{val}}. Please enter {{max}}.",
+  "invalidDenomination0Max": "Invalid denomination: {{val}}. Please enter 0-{{max}} (0=S 1=C 2=D 3=H 4=NT)."
 }
