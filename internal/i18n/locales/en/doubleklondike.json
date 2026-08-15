@@ -12,5 +12,6 @@
   "hintLine": "[HINT: {{from}}{{fromCol}} -> {{to}}{{toCol}}]",
   "zoneWaste": "Waste",
   "zoneTableau": "Tableau",
-  "zoneFoundation": "Foundation"
+  "zoneFoundation": "Foundation",
+  "helpExampleUndo": "  u                                  take the last move back"
 }

@@ -16,5 +16,6 @@
   "header": "Piles remaining: {{count}}",
   "pileSingle": "[{{idx}}]{{card}} ",
   "pileStack": "[{{idx}}]{{card}}(+{{count}}) ",
-  "hintLine": "Hint: pile {{from}} → pile {{to}}"
+  "hintLine": "Hint: pile {{from}} → pile {{to}}",
+  "helpExampleHint": "  h                   ask for a move"
 }

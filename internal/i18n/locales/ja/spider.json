@@ -11,5 +11,7 @@
   "gameClearLine": "ゲームクリア！ 手数: {{moves}} スコア: {{score}}",
   "hintLine": "ヒント: タブロー列{{fromCol}}[{{idx}}] → タブロー列{{toCol}}",
   "difficultyLine": "難易度: {{suits}}スート / 残りディール: {{deals}}回",
-  "dealBlockedEmpty": "空の列があるためディール不可（全列にカードを置いてください）"
+  "dealBlockedEmpty": "空の列があるためディール不可（全列にカードを置いてください）",
+  "helpExampleHint": "  h                        次の一手を教えてもらう",
+  "helpExampleAuto": "  ac                       組札へ送れる札を自動で送る"
 }

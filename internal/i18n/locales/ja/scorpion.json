@@ -26,5 +26,7 @@
   "legalTargetEmpty": "  列{{col}} (空列 — Kのみ可)",
   "legalNone": "  なし",
   "legalNoCard": "列{{col}}には移動可能な表向きカードがありません",
-  "legalNotPlaying": "表示できる合法手はありません（プレイ中ではありません）"
+  "legalNotPlaying": "表示できる合法手はありません（プレイ中ではありません）",
+  "helpExampleHint": "  h                    次の一手を教えてもらう",
+  "helpExampleAuto": "  ac                   組札へ送れる札を自動で送る"
 }

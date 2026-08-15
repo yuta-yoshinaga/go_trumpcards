@@ -27,5 +27,7 @@
   "hintToTableau": "タブロー列{{col}}",
   "hintToDeal": "各列へ配り足す",
   "hintLine": "ヒント: {{from}} → {{to}}",
-  "undoToEscape": "脱出には {{count}} 手戻す必要があります（undo {{count}} または u を繰り返す）"
+  "undoToEscape": "脱出には {{count}} 手戻す必要があります（undo {{count}} または u を繰り返す）",
+  "helpExampleHint": "  h                        次の一手を教えてもらう",
+  "helpExampleAuto": "  ac                       組札へ送れる札を自動で送る"
 }

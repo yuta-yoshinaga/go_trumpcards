@@ -11,5 +11,7 @@
   "gameClearLine": "Game clear! Moves: {{moves}} Score: {{score}}",
   "hintLine": "Hint: tableau column {{fromCol}}[{{idx}}] → tableau column {{toCol}}",
   "difficultyLine": "Difficulty: {{suits}}-suit / Deals left: {{deals}}",
-  "dealBlockedEmpty": "Cannot deal while a column is empty (fill every column first)"
+  "dealBlockedEmpty": "Cannot deal while a column is empty (fill every column first)",
+  "helpExampleHint": "  h                        ask for a move",
+  "helpExampleAuto": "  ac                       send everything that can go to a foundation"
 }

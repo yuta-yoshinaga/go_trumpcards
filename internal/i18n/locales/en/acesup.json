@@ -15,5 +15,6 @@
   "hintDraw": "Hint: deal a card to each column",
   "hintUnknown": "Hint: unknown",
   "markerLegend": "Markers: * = removable / > = movable to an empty column",
-  "usageCol": "Usage: {{cmd}} <col>"
+  "usageCol": "Usage: {{cmd}} <col>",
+  "helpExampleHint": "  h                         ask for a move"
 }

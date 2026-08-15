@@ -18,5 +18,6 @@
   "lockedLegend": "* = kept on redeal",
   "gapBlocked": "[ x ]",
   "gapAnySuit": "[{{rank}}?]",
-  "gapNeeded": "[{{card}}]"
+  "gapNeeded": "[{{card}}]",
+  "helpExampleHint": "  h                         ask for a move"
 }

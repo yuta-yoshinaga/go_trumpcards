@@ -26,5 +26,7 @@
   "gameClear": "{{moveCount}}手でゲームクリア！",
   "gameOver": "ゲームオーバー",
   "hintAvailable": "ヒントあり",
-  "noHint": "ヒントなし"
+  "noHint": "ヒントなし",
+  "helpExampleHint": "  h                        次の一手を教えてもらう",
+  "helpExampleAuto": "  ac                       組札へ送れる札を自動で送る"
 }

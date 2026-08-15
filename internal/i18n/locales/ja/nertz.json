@@ -41,5 +41,6 @@
   "zoneWaste": "ウェイスト",
   "zoneTableau": "タブロー{{col}}",
   "zoneTableauWithIdx": "タブロー{{col}}(idx={{idx}})",
-  "zoneFoundation": "ファウンデーション{{col}}"
+  "zoneFoundation": "ファウンデーション{{col}}",
+  "helpExampleHint": "  h                   次の一手を教えてもらう"
 }

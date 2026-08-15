@@ -16,5 +16,6 @@
   "header": "残りパイル: {{count}}",
   "pileSingle": "[{{idx}}]{{card}} ",
   "pileStack": "[{{idx}}]{{card}}(+{{count}}) ",
-  "hintLine": "ヒント: パイル{{from}} → パイル{{to}}"
+  "hintLine": "ヒント: パイル{{from}} → パイル{{to}}",
+  "helpExampleHint": "  h                   次の一手を教えてもらう"
 }

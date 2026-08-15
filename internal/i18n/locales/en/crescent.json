@@ -26,5 +26,7 @@
   "gameClear": "Game cleared in {{moveCount}} moves!",
   "gameOver": "Game over",
   "hintAvailable": "Hint available",
-  "noHint": "No hint available"
+  "noHint": "No hint available",
+  "helpExampleHint": "  h                        ask for a move",
+  "helpExampleAuto": "  ac                       send everything that can go to a foundation"
 }
