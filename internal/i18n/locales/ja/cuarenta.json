@@ -19,5 +19,7 @@
   "scoreEntry": "  チーム{{team}}: {{score}}点",
   "promptCurrentTurn": "手番: {{name}}",
   "promptHelp": "p <hand> で捕獲または場に置く / n で次のラウンド",
-  "teamCaptured": "チーム{{team}} 捕獲: {{count}}枚（{{need}}枚以上で +{{bonus}}）"
+  "teamCaptured": "チーム{{team}} 捕獲: {{count}}枚（{{need}}枚以上で +{{bonus}}）",
+  "helpExamplePlay": "  p 0                      手札の 0 番を場に置く (場札を取らない)",
+  "helpExampleNext": "  n                        ラウンドの結果を見てから次へ"
 }

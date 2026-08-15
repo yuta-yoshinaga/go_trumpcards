@@ -22,5 +22,7 @@
   "handEnd": "局終了",
   "handDrawn": "局終了（どちらも3トリックに届かず）",
   "result.humanWin": "ゲーム終了！ あなたのチームの勝ちです！",
-  "result.cpuWin": "ゲーム終了！ 相手チームの勝ちです。"
+  "result.cpuWin": "ゲーム終了！ 相手チームの勝ちです。",
+  "helpExamplePlay": "  p 0                       手札の 0 番のカードを出す",
+  "helpExampleNext": "  n                         トリックの決着を見てから次へ"
 }

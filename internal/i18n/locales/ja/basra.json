@@ -16,5 +16,7 @@
   "hintReasonCapture": "価値の高い場札を捕獲する",
   "hintReasonTrail": "捕獲できないので低い札を捨てる",
   "result.scores": "ゲーム終了！ 得点: {{scores}}",
-  "captureHint": "{{hand}} → 場{{table}}"
+  "captureHint": "{{hand}} → 場{{table}}",
+  "helpExamplePlay": "  p 0                       手札の 0 番を場に置く (場札を取らない)",
+  "helpExampleNext": "  nr                        新しいゲームを始める"
 }
