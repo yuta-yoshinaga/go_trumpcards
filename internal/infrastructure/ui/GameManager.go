@@ -1013,7 +1013,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewClockSolitaireCuiController,
 		CuiHelpSpec{
-			TitleKey:          "clocksolitaire.helpTitle",
+			TitleKey: "clocksolitaire.helpTitle",
+			ExampleKeys: []string{
+				"clocksolitaire.helpExampleStep",
+			},
 			CommandKeys:       []string{"clocksolitaire.helpStep", "clocksolitaire.helpAutoPlay", "clocksolitaire.helpUndo"},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),
@@ -1459,6 +1462,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewTrashCuiController,
 		CuiHelpSpec{
 			TitleKey: "trash.helpTitle",
+			ExampleKeys: []string{
+				"trash.helpExampleHint",
+			},
 			CommandKeys: []string{
 				"trash.helpDraw",
 				"trash.helpPlace",
@@ -1474,6 +1480,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewSevenBridgeCuiController,
 		CuiHelpSpec{
 			TitleKey: "sevenbridge.helpTitle",
+			ExampleKeys: []string{
+				"sevenbridge.helpExampleHint",
+			},
 			CommandKeys: []string{
 				"sevenbridge.helpDrawStock",
 				"sevenbridge.helpPon",
@@ -1493,6 +1502,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewPresidentCuiController,
 		CuiHelpSpec{
 			TitleKey: "president.helpTitle",
+			ExampleKeys: []string{
+				"president.helpExampleHint",
+			},
 			CommandKeys: []string{
 				"president.helpPlay",
 				"president.helpPass",
@@ -1511,6 +1523,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewCassinoCuiController,
 		CuiHelpSpec{
 			TitleKey: "cassino.helpTitle",
+			ExampleKeys: []string{
+				"cassino.helpExampleHint",
+			},
 			CommandKeys: []string{
 				"cassino.helpTake",
 				"cassino.helpBuild",
@@ -1763,6 +1778,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewSpiteAndMaliceCuiController,
 		CuiHelpSpec{
 			TitleKey: "spiteandmalice.helpTitle",
+			ExampleKeys: []string{
+				"spiteandmalice.helpExampleHint",
+			},
 			CommandKeys: []string{
 				"spiteandmalice.helpPlayHand",
 				"spiteandmalice.helpPlayGoal",
@@ -2131,6 +2149,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewSlapjackCuiController,
 		CuiHelpSpec{
 			TitleKey: "slapjack.helpTitle",
+			ExampleKeys: []string{
+				"slapjack.helpExampleStep",
+			},
 			CommandKeys: []string{
 				"slapjack.helpStep",
 				"slapjack.helpSlap",
@@ -2146,6 +2167,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewEgyptianRatscrewCuiController,
 		CuiHelpSpec{
 			TitleKey: "egyptianratscrew.helpTitle",
+			ExampleKeys: []string{
+				"egyptianratscrew.helpExampleStep",
+			},
 			CommandKeys: []string{
 				"egyptianratscrew.helpStep",
 				"egyptianratscrew.helpSlap",
@@ -2262,6 +2286,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewMonteCarloCuiController,
 		CuiHelpSpec{
 			TitleKey: "montecarlo.helpTitle",
+			ExampleKeys: []string{
+				"montecarlo.helpExampleHint",
+			},
 			CommandKeys: []string{
 				"montecarlo.helpRemove",
 				"montecarlo.helpDeal",
@@ -5015,6 +5042,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewAuldLangSyneCuiController,
 		CuiHelpSpec{
 			TitleKey: "auldlangsyne.helpTitle",
+			ExampleKeys: []string{
+				"auldlangsyne.helpExampleHint",
+			},
 			CommandKeys: []string{
 				"auldlangsyne.helpDeal",
 				"auldlangsyne.helpWasteToFoundation",
@@ -5101,6 +5131,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewCribbageSquaresCuiController,
 		CuiHelpSpec{
 			TitleKey: "cribbagesquares.helpTitle",
+			ExampleKeys: []string{
+				"cribbagesquares.helpExampleHint",
+			},
 			CommandKeys: []string{
 				"cribbagesquares.helpPlace",
 				"cribbagesquares.helpHint",
@@ -5533,6 +5566,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewSnapCuiController,
 		CuiHelpSpec{
 			TitleKey: "snap.helpTitle",
+			ExampleKeys: []string{
+				"snap.helpExampleStep",
+			},
 			CommandKeys: []string{
 				"snap.helpStep",
 				"snap.helpSnap",

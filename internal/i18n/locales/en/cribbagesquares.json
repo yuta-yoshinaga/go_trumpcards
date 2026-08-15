@@ -26,5 +26,6 @@
   "hintLine": "Hint: place {{card}} at ({{r}},{{c}}) - {{reason}}",
   "hintSynergy": "it makes fifteens, pairs or runs with what is already in that row or column",
   "hintAny": "nothing combines yet; any empty cell will do",
-  "gameComplete": "Game over. Total score: {{score}} (target {{target}})"
+  "gameComplete": "Game over. Total score: {{score}} (target {{target}})",
+  "helpExampleHint": "  h                        ask for a move"
 }

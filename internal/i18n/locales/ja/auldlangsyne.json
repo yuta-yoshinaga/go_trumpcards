@@ -23,5 +23,6 @@
   "wasteEmpty": "(空)",
   "wasteFilled": "{{card}} ({{count}}枚)",
   "stockLine": "ストック: {{count}}枚 (残り{{deals}}回配れます)",
-  "hintWaste": "ヒント: ウェイスト{{waste}} → ファンデーション{{foundation}}"
+  "hintWaste": "ヒント: ウェイスト{{waste}} → ファンデーション{{foundation}}",
+  "helpExampleHint": "  h                   次の一手を教えてもらう"
 }

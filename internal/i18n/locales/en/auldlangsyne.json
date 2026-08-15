@@ -23,5 +23,6 @@
   "wasteEmpty": "(empty)",
   "wasteFilled": "{{card}} ({{count}})",
   "stockLine": "Stock: {{count}} ({{deals}} deals left)",
-  "hintWaste": "Hint: waste {{waste}} → foundation {{foundation}}"
+  "hintWaste": "Hint: waste {{waste}} → foundation {{foundation}}",
+  "helpExampleHint": "  h                   ask for a move"
 }

@@ -28,5 +28,6 @@
   "rankUnknown": "不明",
   "hintPlay": "推奨: 手札 [{{idxs}}] ({{cards}}) を出す",
   "hintPass": "推奨: 出せる手がないのでパス (p) しましょう。",
-  "hintNotYourTurn": "今はあなたの番ではありません。"
+  "hintNotYourTurn": "今はあなたの番ではありません。",
+  "helpExampleHint": "  h                    次の一手を教えてもらう"
 }

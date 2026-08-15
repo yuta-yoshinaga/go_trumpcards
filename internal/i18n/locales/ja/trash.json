@@ -35,5 +35,6 @@
   "hintTakeDiscardWild": "捨て札の一番上はワイルドです。取って好きなスロットに置けます。",
   "hintDrawStock": "捨て札は使えません。山札から引きましょう。",
   "hintGameOver": "ゲームは終了しています。",
-  "hintNotYourTurn": "今はあなたの番ではありません。"
+  "hintNotYourTurn": "今はあなたの番ではありません。",
+  "helpExampleHint": "  h                   次の一手を教えてもらう"
 }
