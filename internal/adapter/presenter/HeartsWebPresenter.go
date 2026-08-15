@@ -22,10 +22,7 @@ func (p *HeartsWebPresenter) Output(h interfaces.HeartsGame, lastErr error) stri
 	// **フェーズと手番はここでは見ない。**Hearts.GetHint() が自分で
 	// 「人間の手番で、かつ行動を選べる状態か」を確かめて nil を返す。
 	if hint := h.GetHint(); hint != nil {
-		resObj.Hint = &controller.WebOutputCardHint{
-			CardIndices: hint.CardIndices,
-			Reason:      hint.Reason,
-		}
+		resObj.Hint = cardHint(hint.CardIndices, hint.Reason)
 	}
 
 	return marshalOrError(resObj)
@@ -146,10 +143,7 @@ func (p *HeartsWebPresenter) HintOutput(h interfaces.HeartsGame) string {
 	hint := h.GetHint()
 	resObj := p.buildBase(h)
 	if hint != nil {
-		resObj.Hint = &controller.WebOutputCardHint{
-			CardIndices: hint.CardIndices,
-			Reason:      hint.Reason,
-		}
+		resObj.Hint = cardHint(hint.CardIndices, hint.Reason)
 	}
 	// **「頼んだヒントか」を CLI が見分けられるようにする。**このゲーム群の
 	// `hintAvailable` は画面のラベルとして既に使われているので、別キーを出す (#4483)。

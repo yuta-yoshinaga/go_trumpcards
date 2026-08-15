@@ -24,10 +24,7 @@ func (p *AluetteWebPresenter) Output(g interfaces.AluetteGame, lastErr error) st
 	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"` 専用の
 	// レスポンスで、ページの state にはマージされない (#4483)。
 	if hint := g.GetHint(); hint != nil {
-		resObj.Hint = &controller.WebOutputCardHint{
-			CardIndices: hint.CardIndices,
-			Reason:      hint.Reason,
-		}
+		resObj.Hint = cardHint(hint.CardIndices, hint.Reason)
 	}
 	return marshalOrError(resObj)
 }
@@ -158,10 +155,7 @@ func (p *AluetteWebPresenter) HintOutput(g interfaces.AluetteGame) string {
 	hint := g.GetHint()
 	resObj := p.buildBase(g)
 	if hint != nil {
-		resObj.Hint = &controller.WebOutputCardHint{
-			CardIndices: hint.CardIndices,
-			Reason:      hint.Reason,
-		}
+		resObj.Hint = cardHint(hint.CardIndices, hint.Reason)
 		resObj.MessageCode = "aluette.hintRequested"
 	} else {
 		resObj.MessageCode = "aluette.noHint"
