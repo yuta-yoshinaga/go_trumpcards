@@ -593,6 +593,10 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewGinRummyCuiController,
 		CuiHelpSpec{
 			TitleKey: "ginrummy.helpTitle",
+			ExampleKeys: []string{
+				"ginrummy.helpExampleDraw",
+				"ginrummy.helpExampleDiscard",
+			},
 			CommandKeys: []string{
 				"ginrummy.helpDrawStock",
 				"ginrummy.helpDrawDiscard",
@@ -611,6 +615,10 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewIndianRummyCuiController,
 		CuiHelpSpec{
 			TitleKey: "indianrummy.helpTitle",
+			ExampleKeys: []string{
+				"indianrummy.helpExampleDraw",
+				"indianrummy.helpExampleDiscard",
+			},
 			CommandKeys: []string{
 				"indianrummy.helpDrawStock",
 				"indianrummy.helpDrawDiscard",
@@ -774,6 +782,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewPyramidCuiController,
 		CuiHelpSpec{
 			TitleKey: "pyramid.helpTitle",
+			ExampleKeys: []string{
+				"pyramid.helpExampleHint",
+			},
 			CommandKeys: []string{
 				"pyramid.helpDraw",
 				"pyramid.helpRemoveKing",
@@ -792,6 +803,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewTriPeaksCuiController,
 		CuiHelpSpec{
 			TitleKey: "tripeaks.helpTitle",
+			ExampleKeys: []string{
+				"tripeaks.helpExampleHint",
+			},
 			CommandKeys: []string{
 				"tripeaks.helpDraw",
 				"tripeaks.helpRemove",
@@ -931,7 +945,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewGolfCuiController,
 		CuiHelpSpec{
-			TitleKey:          "golf.helpTitle",
+			TitleKey: "golf.helpTitle",
+			ExampleKeys: []string{
+				"golf.helpExampleHint",
+			},
 			CommandKeys:       []string{"golf.helpDraw", "golf.helpRemove", "golf.helpGiveUp", "golf.helpHint"},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),
@@ -1505,6 +1522,10 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewCalculationCuiController,
 		CuiHelpSpec{
 			TitleKey: "calculation.helpTitle",
+			ExampleKeys: []string{
+				"calculation.helpExampleHint",
+				"calculation.helpExampleAuto",
+			},
 			CommandKeys: []string{
 				"calculation.helpStockToFoundation",
 				"calculation.helpStockToWaste",
@@ -1523,6 +1544,10 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewSirTommyCuiController,
 		CuiHelpSpec{
 			TitleKey: "sirtommy.helpTitle",
+			ExampleKeys: []string{
+				"sirtommy.helpExampleHint",
+				"sirtommy.helpExampleAuto",
+			},
 			CommandKeys: []string{
 				"sirtommy.helpStockToFoundation",
 				"sirtommy.helpStockToWaste",
@@ -1986,6 +2011,10 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewLobaCuiController,
 		CuiHelpSpec{
 			TitleKey: "loba.helpTitle",
+			ExampleKeys: []string{
+				"loba.helpExampleDraw",
+				"loba.helpExampleDiscard",
+			},
 			CommandKeys: []string{
 				"loba.helpDrawStock",
 				"loba.helpDrawDiscard",
@@ -2126,6 +2155,10 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewTonkCuiController,
 		CuiHelpSpec{
 			TitleKey: "tonk.helpTitle",
+			ExampleKeys: []string{
+				"tonk.helpExampleDraw",
+				"tonk.helpExampleDiscard",
+			},
 			CommandKeys: []string{
 				"tonk.helpDrawStock",
 				"tonk.helpDrawDiscard",
@@ -2219,6 +2252,10 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewContractRummyCuiController,
 		CuiHelpSpec{
 			TitleKey: "contractrummy.helpTitle",
+			ExampleKeys: []string{
+				"contractrummy.helpExampleDraw",
+				"contractrummy.helpExampleDiscard",
+			},
 			CommandKeys: []string{
 				"contractrummy.helpDrawStock",
 				"contractrummy.helpDrawDiscard",
@@ -2657,6 +2694,10 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewRummy500CuiController,
 		CuiHelpSpec{
 			TitleKey: "rummy500.helpTitle",
+			ExampleKeys: []string{
+				"rummy500.helpExampleDraw",
+				"rummy500.helpExampleDiscard",
+			},
 			CommandKeys: []string{
 				"rummy500.helpDrawStock",
 				"rummy500.helpDrawDiscard",
@@ -3641,6 +3682,10 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewHandAndFootCuiController,
 		CuiHelpSpec{
 			TitleKey: "handandfoot.helpTitle",
+			ExampleKeys: []string{
+				"handandfoot.helpExampleDraw",
+				"handandfoot.helpExampleDiscard",
+			},
 			CommandKeys: []string{
 				"handandfoot.helpDrawStock",
 				"handandfoot.helpDrawDiscard",
@@ -3664,6 +3709,10 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewConquianCuiController,
 		CuiHelpSpec{
 			TitleKey: "conquian.helpTitle",
+			ExampleKeys: []string{
+				"conquian.helpExampleDraw",
+				"conquian.helpExampleDiscard",
+			},
 			CommandKeys: []string{
 				"conquian.helpDrawStock",
 				"conquian.helpDrawDiscard",
@@ -3684,6 +3733,10 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewChinchonCuiController,
 		CuiHelpSpec{
 			TitleKey: "chinchon.helpTitle",
+			ExampleKeys: []string{
+				"chinchon.helpExampleDraw",
+				"chinchon.helpExampleDiscard",
+			},
 			CommandKeys: []string{
 				"chinchon.helpDrawStock",
 				"chinchon.helpDrawDiscard",
@@ -3705,6 +3758,10 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewKalookiCuiController,
 		CuiHelpSpec{
 			TitleKey: "kalooki.helpTitle",
+			ExampleKeys: []string{
+				"kalooki.helpExampleDraw",
+				"kalooki.helpExampleDiscard",
+			},
 			CommandKeys: []string{
 				"kalooki.helpDrawStock",
 				"kalooki.helpDrawDiscard",
@@ -3727,6 +3784,10 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewThreeThirteenCuiController,
 		CuiHelpSpec{
 			TitleKey: "threethirteen.helpTitle",
+			ExampleKeys: []string{
+				"threethirteen.helpExampleDraw",
+				"threethirteen.helpExampleDiscard",
+			},
 			CommandKeys: []string{
 				"threethirteen.helpDrawStock",
 				"threethirteen.helpDrawDiscard",
@@ -4323,6 +4384,10 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewCariocaCuiController,
 		CuiHelpSpec{
 			TitleKey: "carioca.helpTitle",
+			ExampleKeys: []string{
+				"carioca.helpExampleDraw",
+				"carioca.helpExampleDiscard",
+			},
 			CommandKeys: []string{
 				"carioca.helpDrawStock",
 				"carioca.helpDrawDiscard",
@@ -4341,6 +4406,10 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewSambaCuiController,
 		CuiHelpSpec{
 			TitleKey: "samba.helpTitle",
+			ExampleKeys: []string{
+				"samba.helpExampleDraw",
+				"samba.helpExampleDiscard",
+			},
 			CommandKeys: []string{
 				"samba.helpDrawStock",
 				"samba.helpDrawDiscard",

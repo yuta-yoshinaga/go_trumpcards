@@ -28,5 +28,7 @@
   "promptLayoffHelp": "lo <idx,idx,...>・・・レイオフするカードを選択",
   "promptLayoffSkip": "lo・・・レイオフなしでスコアリング",
   "promptRoundEnd": "ラウンド終了",
-  "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ"
+  "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
+  "helpExampleDraw": "  ds                   手番の最初に山札から 1 枚引く",
+  "helpExampleDiscard": "  d 0                  手札の 0 番を捨てる"
 }

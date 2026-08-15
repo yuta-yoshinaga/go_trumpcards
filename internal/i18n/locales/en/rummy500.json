@@ -32,5 +32,7 @@
   "hintMeld": "Meld candidates: {{cands}} (m <idx...> to lay down)",
   "hintNoMeld": "No meldable combination. Consider discarding with d <idx>.",
   "hintLayoff": "Layoff: {{cands}}",
-  "hintLayoffEntry": "{{card}} -> {{name}} [{{meld}}]"
+  "hintLayoffEntry": "{{card}} -> {{name}} [{{meld}}]",
+  "helpExampleDraw": "  ds                   start the turn by drawing from the stock",
+  "helpExampleDiscard": "  d 0                  discard hand card 0"
 }

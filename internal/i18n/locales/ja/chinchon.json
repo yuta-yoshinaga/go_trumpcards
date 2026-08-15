@@ -36,5 +36,7 @@
   "meldedLine": "  メルド済み: {{melds}}",
   "deadwoodBreakdown": "  デッドウッド: {{cards}} ({{sum}} = {{total}})",
   "deadwoodLine": "デッドウッド: {{value}}点 (ノック閾値 {{threshold}}点以下)",
-  "knockReady": "→ ノック可能"
+  "knockReady": "→ ノック可能",
+  "helpExampleDraw": "  ds                   手番の最初に山札から 1 枚引く",
+  "helpExampleDiscard": "  d 0                  手札の 0 番を捨てる"
 }

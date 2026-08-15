@@ -47,5 +47,7 @@
   "goOutBlocked": "  Cannot go out yet: {{reasons}}",
   "goOutNeedFoot": "foot not picked up",
   "goOutNeedRed": "red canastas {{have}}/{{need}}",
-  "goOutNeedBlack": "black canastas {{have}}/{{need}}"
+  "goOutNeedBlack": "black canastas {{have}}/{{need}}",
+  "helpExampleDraw": "  ds                   start the turn by drawing from the stock",
+  "helpExampleDiscard": "  d 0                  discard hand card 0"
 }
