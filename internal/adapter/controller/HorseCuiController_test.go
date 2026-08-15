@@ -88,6 +88,14 @@ func TestHorseCuiController_Exec(t *testing.T) {
 			m.AssertCalled(t, "ResetWithConfig", cfg)
 		})
 	}
+	// **引数なしの経路は別物。** WithParsedIntKeys の missing 分岐ではなく手前の
+	// ガードが返すので、鍵を足しただけでは到達せず英語のまま残る。
+	t.Run("set seats with no argument asks for one", func(t *testing.T) {
+		m := newMock()
+		out := controller.NewHorseCuiController(m).Exec("ss")
+		assert.Equal(t, msgKey("numberOfSeatsRequired469"), out)
+		m.AssertNotCalled(t, "ResetWithConfig", mock.Anything)
+	})
 	for _, seats := range []string{"3", "5", "8", "10"} {
 		t.Run("set seats rejects "+seats, func(t *testing.T) {
 			m := newMock()

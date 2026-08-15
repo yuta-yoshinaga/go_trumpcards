@@ -383,7 +383,6 @@
   "numberOfHandsPerDisciplineRequired110": "種目あたりの手数を指定してください (1-10)。",
   "numberOfRoundsRequired112": "ラウンド数を指定してください (1-12)。",
   "numberOfSeatsRequired24": "席数を指定してください (2-4)。",
-  "numberOfSeatsRequired46Or9": "席数を指定してください (4, 6, 9)。",
   "openingThresholdRequired": "オープンの下限を指定してください。",
   "penaltyDrawLimitRequired0Unlimited0Limit": "ペナルティで引く上限を指定してください (0=無制限, 1 以上=上限)。",
   "penetrationRateRequired": "ペネトレーション率を指定してください。",

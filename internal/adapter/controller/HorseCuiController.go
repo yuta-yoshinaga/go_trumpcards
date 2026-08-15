@@ -88,7 +88,7 @@ func (c *HorseCuiController) execSetSeats(args []string) (string, bool) {
 	if len(args) == 0 {
 		return invalidArg("numberOfSeatsRequired469"), true
 	}
-	return cuiutil.WithParsedIntKeys(args, "numberOfSeatsRequired46Or9", "invalidNumberOfSeats46Or9",
+	return cuiutil.WithParsedIntKeys(args, "numberOfSeatsRequired469", "invalidNumberOfSeats46Or9",
 		cuiutil.NoMin, cuiutil.NoMax, func(v int) string {
 			if !domain.HorseValidSeats(v) {
 				return invalidArg("invalidNumberOfSeats469")

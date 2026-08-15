@@ -383,7 +383,6 @@
   "numberOfHandsPerDisciplineRequired110": "Number of hands per discipline is required (1-10).",
   "numberOfRoundsRequired112": "Number of rounds is required (1-12).",
   "numberOfSeatsRequired24": "Number of seats is required (2-4).",
-  "numberOfSeatsRequired46Or9": "Number of seats is required (4, 6 or 9).",
   "openingThresholdRequired": "Opening threshold is required.",
   "penaltyDrawLimitRequired0Unlimited0Limit": "Penalty draw limit is required (0=unlimited, >0=limit).",
   "penetrationRateRequired": "Penetration rate is required.",
