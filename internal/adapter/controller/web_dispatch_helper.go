@@ -271,3 +271,95 @@ func dispatchTableauOnlyMove[O any](bc *baseController, w http.ResponseWriter, m
 	bc.writePresenterResponse(w, move(*mv.fromCol, *mv.fromCardIndex, *mv.toCol))
 	return true
 }
+
+// tarotDiscardPlayFns is the interactor surface of the tarot command set.
+type tarotDiscardPlayFns struct {
+	resetWithConfig func() string
+	discard         func(cardIndices []int) string
+	play            func(cardIndex int) string
+	nextTrick       func() string
+	nextRound       func() string
+	hint            func() string
+	actionLog       func() string
+}
+
+// dispatchTarotDiscardPlay handles reset/discard/play/next/nextround for the
+// tarot games, falling through to dispatchHintAndLog.
+//
+// Consolidates 3 byte-identical dispatchers: minchiateDispatch, scartoDispatch,
+// tarocchiniDispatch. See issue #5368.
+//
+// The discard step answers to two spellings ("s"/"scarto" and "d"/"discard")
+// and takes a slice, so its missing-check is nil rather than len == 0: an empty
+// slice is a legal "discard nothing", and rejecting it would 400 a valid
+// request.
+func dispatchTarotDiscardPlay[O any](cmd string, bc *baseController, w http.ResponseWriter, fns tarotDiscardPlayFns, cardIndices []int, cardIndex *int, newDefault func(string) O) bool {
+	switch cmd {
+	case "r", "reset":
+		bc.writePresenterResponse(w, fns.resetWithConfig())
+	case "s", "scarto", "d", "discard":
+		if !requireParam(bc, w, newDefault, cardIndices == nil, "param error: cardIndices is required.") {
+			return true
+		}
+		bc.writePresenterResponse(w, fns.discard(cardIndices))
+	case "p", "play":
+		if !requireParam(bc, w, newDefault, cardIndex == nil, "param error: cardIndex is required.") {
+			return true
+		}
+		bc.writePresenterResponse(w, fns.play(*cardIndex))
+	case "n", "next":
+		bc.writePresenterResponse(w, fns.nextTrick())
+	case "nr", "nextround":
+		bc.writePresenterResponse(w, fns.nextRound())
+	default:
+		return dispatchHintAndLog(cmd, bc, w, fns.hint, fns.actionLog)
+	}
+	return true
+}
+
+// topCardMove is one move request for the top-card-only solitaires, unpacked
+// from whichever per-game zone type carried it. Same reasoning as tableauMove.
+type topCardMove struct {
+	haveFrom, haveTo bool
+	fromZone, toZone string
+	fromCol          *int
+	toCol            *int
+}
+
+// topCardMoveFns is the interactor surface these moves need.
+type topCardMoveFns struct {
+	tableauToTableau    func(fromCol, cardIndex, toCol int) string
+	tableauToFoundation func(col int) string
+}
+
+// dispatchTopCardMove validates and performs a move for the solitaires that
+// only ever move the top card of a column.
+//
+// Consolidates 3 byte-identical dispatchers: bakersDozenMoveDispatch,
+// beleagueredCastleMoveDispatch, streetsAndAlleysMoveDispatch. See #5368.
+//
+// Passes -1 as the card index rather than the client's value: these games move
+// only the top card, so the domain resolves the index from its own state and
+// the server has one less untrusted input. That contract is pinned by a test —
+// forwarding the client value instead would let a request name a card that is
+// not on top, and the move would still look legal.
+func dispatchTopCardMove[O any](bc *baseController, w http.ResponseWriter, mv topCardMove, fns topCardMoveFns, newDefault func(string) O) bool {
+	if !requireParam(bc, w, newDefault, !mv.haveFrom || !mv.haveTo, "param error: from and to are required.") {
+		return true
+	}
+	switch {
+	case mv.fromZone == "tableau" && mv.toZone == "tableau":
+		if !requireParam(bc, w, newDefault, mv.fromCol == nil || mv.toCol == nil, "param error: from.col and to.col are required.") {
+			return true
+		}
+		bc.writePresenterResponse(w, fns.tableauToTableau(*mv.fromCol, -1, *mv.toCol))
+	case mv.fromZone == "tableau" && mv.toZone == "foundation":
+		if !requireParam(bc, w, newDefault, mv.fromCol == nil, "param error: from.col is required.") {
+			return true
+		}
+		bc.writePresenterResponse(w, fns.tableauToFoundation(*mv.fromCol))
+	default:
+		bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: invalid move zones."))
+	}
+	return true
+}

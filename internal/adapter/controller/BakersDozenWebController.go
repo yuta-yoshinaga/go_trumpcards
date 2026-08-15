@@ -84,28 +84,15 @@ func bakersDozenDispatch(bc *baseController, w http.ResponseWriter, bi usecase.B
 }
 
 func bakersDozenMoveDispatch(bc *baseController, w http.ResponseWriter, bi usecase.BakersDozenInteractorIF, param BakersDozenWebInput, newDefault func(string) *BakersDozenWebOutput) bool {
-	if !requireParam(bc, w, newDefault, param.From == nil || param.To == nil, "param error: from and to are required.") {
-		return true
+	mv := topCardMove{haveFrom: param.From != nil, haveTo: param.To != nil}
+	if param.From != nil {
+		mv.fromZone, mv.fromCol = param.From.Zone, param.From.Col
 	}
-	fromZone := param.From.Zone
-	toZone := param.To.Zone
-
-	switch {
-	case fromZone == "tableau" && toZone == "tableau":
-		if !requireParam(bc, w, newDefault, param.From.Col == nil || param.To.Col == nil, "param error: from.col and to.col are required.") {
-			return true
-		}
-		// Pass -1 so the domain resolves the index from its own state — Baker's
-		// Dozen only ever moves the top card, so trusting the client cardIndex
-		// adds nothing and gives the server one less untrusted input.
-		bc.writePresenterResponse(w, bi.MoveTableauToTableau(*param.From.Col, -1, *param.To.Col))
-	case fromZone == "tableau" && toZone == "foundation":
-		if !requireParam(bc, w, newDefault, param.From.Col == nil, "param error: from.col is required.") {
-			return true
-		}
-		bc.writePresenterResponse(w, bi.MoveTableauToFoundation(*param.From.Col))
-	default:
-		bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: invalid move zones."))
+	if param.To != nil {
+		mv.toZone, mv.toCol = param.To.Zone, param.To.Col
 	}
-	return true
+	return dispatchTopCardMove(bc, w, mv, topCardMoveFns{
+		tableauToTableau:    bi.MoveTableauToTableau,
+		tableauToFoundation: bi.MoveTableauToFoundation,
+	}, newDefault)
 }

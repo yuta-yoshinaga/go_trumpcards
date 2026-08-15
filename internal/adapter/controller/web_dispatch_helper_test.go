@@ -384,3 +384,117 @@ func TestDispatchTableauOnlyMove_PassesIndicesInOrder(t *testing.T) {
 	}, func(msg string) any { return msg })
 	assert.Equal(t, []int{3, 4, 5}, got)
 }
+
+// dispatchTarotDiscardPlay consolidates minchiateDispatch, scartoDispatch and
+// tarocchiniDispatch — tarot games whose discard step takes a slice of indices
+// and answers to two command spellings ("s"/"scarto" as well as "d"/"discard").
+func TestDispatchTarotDiscardPlay(t *testing.T) {
+	idx := 3
+	cases := []struct {
+		name     string
+		cmd      string
+		indices  []int
+		cardIdx  *int
+		wantBody string
+		wantCode int
+	}{
+		{"reset", "r", nil, nil, `{"method":"reset"}`, 200},
+		{"discard as scarto", "s", []int{1, 2}, nil, `{"method":"discard:2"}`, 200},
+		{"discard as scarto long form", "scarto", []int{1}, nil, `{"method":"discard:1"}`, 200},
+		{"discard", "d", []int{1, 2, 3}, nil, `{"method":"discard:3"}`, 200},
+		{"discard long form", "discard", []int{}, nil, `{"method":"discard:0"}`, 200},
+		{"play", "p", nil, &idx, `{"method":"play:3"}`, 200},
+		{"next trick", "n", nil, nil, `{"method":"next"}`, 200},
+		{"next round", "nr", nil, nil, `{"method":"nextround"}`, 200},
+		{"hint", "h", nil, nil, `{"method":"hint"}`, 200},
+		{"log", "log", nil, nil, `{"method":"log"}`, 200},
+		{"discard without indices", "d", nil, nil, "cardIndices is required", 400},
+		{"play without an index", "p", nil, nil, "cardIndex is required", 400},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			handled := dispatchTarotDiscardPlay(tc.cmd, &baseController{}, w, tarotDiscardPlayFns{
+				resetWithConfig: func() string { return `{"method":"reset"}` },
+				discard:         func(ix []int) string { return `{"method":"discard:` + strconv.Itoa(len(ix)) + `"}` },
+				play:            func(i int) string { return `{"method":"play:` + strconv.Itoa(i) + `"}` },
+				nextTrick:       func() string { return `{"method":"next"}` },
+				nextRound:       func() string { return `{"method":"nextround"}` },
+				hint:            func() string { return `{"method":"hint"}` },
+				actionLog:       func() string { return `{"method":"log"}` },
+			}, tc.indices, tc.cardIdx, func(msg string) any { return map[string]string{"message": msg} })
+			assert.True(t, handled)
+			assert.Equal(t, tc.wantCode, w.Code)
+			assert.Contains(t, w.Body.String(), tc.wantBody)
+		})
+	}
+}
+
+// An empty (but non-nil) slice is a legal discard — "discard nothing" differs
+// from "the field was omitted", and conflating them would 400 a valid request.
+func TestDispatchTarotDiscardPlay_EmptySliceIsNotMissing(t *testing.T) {
+	w := httptest.NewRecorder()
+	dispatchTarotDiscardPlay("d", &baseController{}, w, tarotDiscardPlayFns{
+		discard: func(ix []int) string { return `{"n":` + strconv.Itoa(len(ix)) + `}` },
+	}, []int{}, nil, func(msg string) any { return msg })
+	assert.Equal(t, 200, w.Code)
+	assert.Contains(t, w.Body.String(), `{"n":0}`)
+}
+
+// dispatchTopCardMove consolidates bakersDozenMoveDispatch,
+// beleagueredCastleMoveDispatch and streetsAndAlleysMoveDispatch — solitaires
+// that move only the top card, so the domain resolves the index itself and the
+// client's cardIndex is never trusted.
+func TestDispatchTopCardMove(t *testing.T) {
+	col := 2
+	cases := []struct {
+		name             string
+		haveFrom, haveTo bool
+		fromZone, toZone string
+		fromCol, toCol   *int
+		wantBody         string
+		wantCode         int
+	}{
+		{"tableau to tableau", true, true, "tableau", "tableau", &col, &col, `{"tt":true}`, 200},
+		{"tableau to foundation", true, true, "tableau", "foundation", &col, nil, `{"tf":true}`, 200},
+		{"missing from", false, true, "", "tableau", nil, &col, "from and to are required", 400},
+		{"unsupported zone pair", true, true, "waste", "tableau", &col, &col, "invalid move zones", 400},
+		{"tableau to tableau without to.col", true, true, "tableau", "tableau", &col, nil, "from.col and to.col", 400},
+		{"tableau to foundation without from.col", true, true, "tableau", "foundation", nil, nil, "from.col is required", 400},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			handled := dispatchTopCardMove(&baseController{}, w, topCardMove{
+				haveFrom: tc.haveFrom, haveTo: tc.haveTo,
+				fromZone: tc.fromZone, toZone: tc.toZone,
+				fromCol: tc.fromCol, toCol: tc.toCol,
+			}, topCardMoveFns{
+				tableauToTableau:    func(from, idx, to int) string { return `{"tt":true}` },
+				tableauToFoundation: func(col int) string { return `{"tf":true}` },
+			}, func(msg string) any { return map[string]string{"message": msg} })
+			assert.True(t, handled)
+			assert.Equal(t, tc.wantCode, w.Code)
+			assert.Contains(t, w.Body.String(), tc.wantBody)
+		})
+	}
+}
+
+// -1 is the contract with the domain: "resolve the index yourself". Passing
+// the client's value instead would let a request name a card that is not on top.
+func TestDispatchTopCardMove_PassesMinusOneAsTheIndex(t *testing.T) {
+	from, to := 1, 4
+	var got []int
+	w := httptest.NewRecorder()
+	dispatchTopCardMove(&baseController{}, w, topCardMove{
+		haveFrom: true, haveTo: true, fromZone: "tableau", toZone: "tableau",
+		fromCol: &from, toCol: &to,
+	}, topCardMoveFns{
+		tableauToTableau: func(fromCol, cardIndex, toCol int) string {
+			got = []int{fromCol, cardIndex, toCol}
+			return "{}"
+		},
+		tableauToFoundation: func(int) string { return "{}" },
+	}, func(msg string) any { return msg })
+	assert.Equal(t, []int{1, -1, 4}, got)
+}
