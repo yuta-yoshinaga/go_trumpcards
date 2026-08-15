@@ -7,7 +7,6 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -64,11 +63,11 @@ func (c *TablanetCuiController) Exec(command string) string {
 // handlePlay は "p <handIdx> [tableIdx...]" を解析して Play を呼ぶ。
 func (c *TablanetCuiController) handlePlay(args []string) string {
 	if len(args) == 0 {
-		return i18n.T("cardIndexRequiredCapture")
+		return invalidArg("cardIndexRequiredCapture")
 	}
 	handIdx, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidCardIndex", "val", args[0])
+		return invalidArg("invalidCardIndex", "val", args[0])
 	}
 	tableIdxs, _ := cuiutil.ParseIntSlice(args[1:])
 	return c.bi.Play(handIdx, tableIdxs)

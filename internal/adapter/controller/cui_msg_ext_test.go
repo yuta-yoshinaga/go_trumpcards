@@ -10,9 +10,11 @@ import (
 
 // The same helpers as cui_msg_test.go, for the test files in the external
 // package. See there for why the assertions go through i18n.
-func msgCardIndexRequired() string { return i18n.T("cardIndexRequired") }
+func msgCardIndexRequired() string { return i18n.MarkError(i18n.T("cardIndexRequired")) }
 
-func msgInvalidCardIndex(val string) string { return i18n.Tf("invalidCardIndex", "val", val) }
+func msgInvalidCardIndex(val string) string {
+	return i18n.MarkError(i18n.Tf("invalidCardIndex", "val", val))
+}
 
 // msgInvalidCardIndexPrefix is the part of the message before the offending
 // value, for the assertions that only check that the rejection happened.
@@ -26,9 +28,9 @@ func msgInvalidCardIndexPrefix() string {
 }
 
 // The two card-index prompts that carry a usage example.
-func msgCardIndexRequiredField() string { return i18n.T("cardIndexRequiredField") }
+func msgCardIndexRequiredField() string { return i18n.MarkError(i18n.T("cardIndexRequiredField")) }
 
-func msgCardIndexRequiredCapture() string { return i18n.T("cardIndexRequiredCapture") }
+func msgCardIndexRequiredCapture() string { return i18n.MarkError(i18n.T("cardIndexRequiredCapture")) }
 
 // msgInvalidDiscardIndexPrefix is msgInvalidCardIndexPrefix for the discard pile.
 func msgInvalidDiscardIndexPrefix() string {
@@ -39,7 +41,7 @@ func msgInvalidDiscardIndexPrefix() string {
 // The CPU-difficulty rejections. The prefix form is for the assertions that
 // only check that the value was refused; see msgInvalidCardIndexPrefix.
 func msgInvalidCpuDifficulty(val string) string {
-	return i18n.Tf("invalidCpuDifficulty", "val", val)
+	return i18n.MarkError(i18n.Tf("invalidCpuDifficulty", "val", val))
 }
 
 func msgInvalidCpuDifficultyPrefix() string {
@@ -47,53 +49,61 @@ func msgInvalidCpuDifficultyPrefix() string {
 	return strings.TrimRight(stem, ":. ")
 }
 
-func msgCpuDifficultyRequired() string { return i18n.T("cpuDifficultyRequired") }
+func msgCpuDifficultyRequired() string { return i18n.MarkError(i18n.T("cpuDifficultyRequired")) }
 
 // msgCpuDifficultyRequiredAlt is the wording used by the games whose difficulty
 // scale starts at Normal.
-func msgCpuDifficultyRequiredAlt() string { return i18n.T("cpuDifficultyRequiredAlt") }
+func msgCpuDifficultyRequiredAlt() string { return i18n.MarkError(i18n.T("cpuDifficultyRequiredAlt")) }
 
 // Generated per-family renderers for the #5384 migration; see the note on
 // msgCardIndexRequired for why the tests go through i18n at all.
-func msgPointLimitRequired() string { return i18n.T("pointLimitRequired") }
+func msgPointLimitRequired() string { return i18n.MarkError(i18n.T("pointLimitRequired")) }
 
-func msgInvalidPointLimit(val string) string { return i18n.Tf("invalidPointLimit", "val", val) }
+func msgInvalidPointLimit(val string) string {
+	return i18n.MarkError(i18n.Tf("invalidPointLimit", "val", val))
+}
 
 func msgInvalidPointLimitPrefix() string {
 	stem := strings.SplitN(i18n.Tf("invalidPointLimit", "val", "\x00"), "\x00", 2)[0]
 	return strings.TrimRight(stem, ":. ")
 }
 
-func msgBetAmountRequired() string { return i18n.T("betAmountRequired") }
+func msgBetAmountRequired() string { return i18n.MarkError(i18n.T("betAmountRequired")) }
 
 func msgInvalidBetAmountPrefix() string {
 	stem := strings.SplitN(i18n.Tf("invalidBetAmount", "val", "\x00"), "\x00", 2)[0]
 	return strings.TrimRight(stem, ":. ")
 }
 
-func msgTargetScoreRequired() string { return i18n.T("targetScoreRequired") }
+func msgTargetScoreRequired() string { return i18n.MarkError(i18n.T("targetScoreRequired")) }
 
-func msgInvalidTargetScore(val string) string { return i18n.Tf("invalidTargetScore", "val", val) }
+func msgInvalidTargetScore(val string) string {
+	return i18n.MarkError(i18n.Tf("invalidTargetScore", "val", val))
+}
 
-func msgAnteAmountRequired() string { return i18n.T("anteAmountRequired") }
+func msgAnteAmountRequired() string { return i18n.MarkError(i18n.T("anteAmountRequired")) }
 
 func msgInvalidAnteAmountPrefix() string {
 	stem := strings.SplitN(i18n.Tf("invalidAnteAmount", "val", "\x00"), "\x00", 2)[0]
 	return strings.TrimRight(stem, ":. ")
 }
 
-func msgInvalidPlayerCount(val string) string { return i18n.Tf("invalidPlayerCount", "val", val) }
+func msgInvalidPlayerCount(val string) string {
+	return i18n.MarkError(i18n.Tf("invalidPlayerCount", "val", val))
+}
 
 func msgInvalidPlayerCountPrefix() string {
 	stem := strings.SplitN(i18n.Tf("invalidPlayerCount", "val", "\x00"), "\x00", 2)[0]
 	return strings.TrimRight(stem, ":. ")
 }
 
-func msgAmountRequired() string { return i18n.T("amountRequired") }
+func msgAmountRequired() string { return i18n.MarkError(i18n.T("amountRequired")) }
 
 func msgInvalidAmountPrefix() string {
 	stem := strings.SplitN(i18n.Tf("invalidAmountNotANumber", "val", "\x00"), "\x00", 2)[0]
 	return strings.TrimRight(stem, ":. ")
 }
 
-func msgInvalidBetAmount(val string) string { return i18n.Tf("invalidBetAmount", "val", val) }
+func msgInvalidBetAmount(val string) string {
+	return i18n.MarkError(i18n.Tf("invalidBetAmount", "val", val))
+}

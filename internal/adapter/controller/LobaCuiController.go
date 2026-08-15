@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -74,7 +73,7 @@ func (c *LobaCuiController) meld(args []string) (string, bool) {
 	for _, p := range parts {
 		n, err := strconv.Atoi(strings.TrimSpace(p))
 		if err != nil || n < 0 {
-			return i18n.Tf("invalidCardIndex", "val", p), true
+			return invalidArg("invalidCardIndex", "val", p), true
 		}
 		idxs = append(idxs, n)
 	}
@@ -88,7 +87,7 @@ func (c *LobaCuiController) layOff(args []string) (string, bool) {
 	}
 	card, err := strconv.Atoi(args[0])
 	if err != nil || card < 0 {
-		return i18n.Tf("invalidCardIndex", "val", args[0]), true
+		return invalidArg("invalidCardIndex", "val", args[0]), true
 	}
 	meld, err := strconv.Atoi(args[1])
 	if err != nil || meld < 0 {

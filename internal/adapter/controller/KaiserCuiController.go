@@ -8,7 +8,6 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -90,7 +89,7 @@ func kaiserParseDiscard(args []string, ki usecase.KaiserInteractorIF) (string, b
 	for _, a := range args[:domain.KaiserKittySize] {
 		v, err := strconv.Atoi(strings.TrimSpace(a))
 		if err != nil || v < 0 {
-			return i18n.Tf("invalidCardIndex", "val", a), true
+			return invalidArg("invalidCardIndex", "val", a), true
 		}
 		idxs = append(idxs, v)
 	}

@@ -19,18 +19,20 @@ import (
 //
 // cui_msg_ext_test.go carries the same helpers for the external test package,
 // plus the ones only it needs.
-func msgCardIndexRequired() string { return i18n.T("cardIndexRequired") }
+func msgCardIndexRequired() string { return i18n.MarkError(i18n.T("cardIndexRequired")) }
 
-func msgInvalidCardIndex(val string) string { return i18n.Tf("invalidCardIndex", "val", val) }
+func msgInvalidCardIndex(val string) string {
+	return i18n.MarkError(i18n.Tf("invalidCardIndex", "val", val))
+}
 
 func msgInvalidCpuDifficultyPrefix() string {
 	stem := strings.SplitN(i18n.Tf("invalidCpuDifficulty", "val", "\x00"), "\x00", 2)[0]
 	return strings.TrimRight(stem, ":. ")
 }
 
-func msgCpuDifficultyRequired() string { return i18n.T("cpuDifficultyRequired") }
+func msgCpuDifficultyRequired() string { return i18n.MarkError(i18n.T("cpuDifficultyRequired")) }
 
-func msgBetAmountRequired() string { return i18n.T("betAmountRequired") }
+func msgBetAmountRequired() string { return i18n.MarkError(i18n.T("betAmountRequired")) }
 
 func msgInvalidBetAmountPrefix() string {
 	stem := strings.SplitN(i18n.Tf("invalidBetAmount", "val", "\x00"), "\x00", 2)[0]

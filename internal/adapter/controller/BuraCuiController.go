@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -72,14 +71,14 @@ func (c *BuraCuiController) Exec(command string) string {
 // player verbatim, and Go error strings are not capitalised.
 func buraParseIndices(args []string) ([]int, string) {
 	if len(args) == 0 {
-		return nil, i18n.T("cardIndexRequired")
+		return nil, invalidArg("cardIndexRequired")
 	}
 	seen := map[int]bool{}
 	indices := make([]int, 0, len(args))
 	for _, a := range args {
 		n, err := strconv.Atoi(strings.TrimSpace(a))
 		if err != nil {
-			return nil, i18n.Tf("invalidCardIndex", "val", a)
+			return nil, invalidArg("invalidCardIndex", "val", a)
 		}
 		if seen[n] {
 			return nil, fmt.Sprintf("Duplicate card index: %d.", n)
