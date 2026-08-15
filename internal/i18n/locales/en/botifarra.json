@@ -33,5 +33,5 @@
   "hintPlay": "Card {{index}} looks best ({{reason}})",
   "botifarraDeclareLongest": "make your longest suit trump",
   "botifarraMustWin": "you must win the trick if you can",
-  "helpExamplePlay": "  p 0                  play hand card 0"
+  "helpExampleHint": "  hint                 ask for a move"
 }

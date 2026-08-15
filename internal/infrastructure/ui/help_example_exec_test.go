@@ -116,7 +116,36 @@ func TestCuiHelpExampleCommandParsing(t *testing.T) {
 
 // exampleRefusalRe matches the wording a controller uses when it turns a
 // command down. It is a heuristic, and deliberately so: see below.
-var exampleRefusalRe = regexp.MustCompile(`(?i)invalid|required|must |cannot|不正|無効|必要|できません`)
+var exampleRefusalRe = regexp.MustCompile(`(?i)invalid|required|must |cannot|nothing to|no .* to |not your|too few|too many|不正|無効|必要|できません|ありません`)
+
+// exampleErrorLineRe matches cuiErrorBlock's output: the presenters render a
+// rejection as a red line inside the board, so it is not a short reply and
+// cannot be found by looking at the whole output's length.
+var exampleErrorLineRe = regexp.MustCompile("\x1b\\[31m(.*?)\x1b\\[0m")
+
+// exampleRefusalLine reports the line on which the game turned the command
+// down, if it did.
+//
+// Two shapes, because the CUI has two. A game that answers with nothing but a
+// message is a short reply; a game that redraws the board puts the message
+// inside it as a red line, which an earlier version of this guard missed
+// entirely -- it required the whole reply to be under 200 bytes, and a board is
+// not. blackhole's `u` answered "blackhole: nothing to undo" in 965 bytes of
+// board and sailed straight through.
+func exampleRefusalLine(out string) (string, bool) {
+	// Red is not only for errors -- hearts and diamonds are red too, so a red
+	// run has to read like a refusal before it counts as one.
+	for _, m := range exampleErrorLineRe.FindAllStringSubmatch(out, -1) {
+		line := strings.TrimSpace(m[1])
+		if line != "" && exampleRefusalRe.MatchString(line) {
+			return line, true
+		}
+	}
+	if len(out) < 200 && exampleRefusalRe.MatchString(out) {
+		return strings.TrimSpace(out), true
+	}
+	return "", false
+}
 
 // TestCuiHelpExamplesAreNotQuietlyRefused catches the refusals
 // TestCuiHelpExamplesExecute cannot see.
@@ -167,8 +196,8 @@ func TestCuiHelpExamplesAreNotQuietlyRefused(t *testing.T) {
 			if _, isErr := i18n.StripErrorPrefix(out); isErr {
 				continue // TestCuiHelpExamplesExecute owns the marked ones
 			}
-			if len(out) < 200 && exampleRefusalRe.MatchString(out) {
-				bad = append(bad, entry.Name+": `"+cmd+"` -> "+strings.TrimSpace(out))
+			if line, ok := exampleRefusalLine(out); ok {
+				bad = append(bad, entry.Name+": `"+cmd+"` -> "+line)
 			}
 		}
 	}

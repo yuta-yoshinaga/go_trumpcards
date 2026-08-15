@@ -23,5 +23,7 @@
   "hintFrom": "タブロー列{{col}}[{{idx}}]",
   "hintToFoundation": "ファンデーション",
   "hintToTableau": "タブロー列{{col}}",
-  "hintLine": "ヒント: {{from}} → {{to}}"
+  "hintLine": "ヒント: {{from}} → {{to}}",
+  "helpExampleHint": "  h                    次の一手を教えてもらう",
+  "helpExampleAuto": "  ac                   組札へ送れる札を自動で送る"
 }

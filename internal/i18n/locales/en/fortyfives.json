@@ -45,7 +45,5 @@
   "contractMade": "made",
   "contractFailed": "can no longer be made",
   "contractNeedMore": "{{remaining}} more needed",
-  "helpExampleBid": "  bid 20                   bid 20",
-  "helpExamplePlay": "  play 0                   play hand card 0",
-  "helpExampleNext": "  n                        read the trick result, then start the next trick"
+  "helpExampleBid": "  pass                      drop out of the bidding"
 }

@@ -20,5 +20,5 @@
   "promptNext": "n で次のラウンドを開始する",
   "promptCurrentTurn": "手番: {{name}}",
   "promptHelp": "p <hand> [table...] で捕獲または場に置く / n で次のラウンド",
-  "helpExamplePlay": "  p 0                      手札の 0 番のカードを出す"
+  "helpExampleNext": "  n                        ラウンドの結果を見てから次へ"
 }

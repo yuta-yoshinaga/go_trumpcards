@@ -10,5 +10,7 @@
   "columnLabel": "列{{col}}:",
   "gameClearLine": "ゲームクリア！ 手数: {{moves}} スコア: {{score}}",
   "hintLine": "ヒント: タブロー列{{fromCol}}[{{idx}}] → タブロー列{{toCol}}",
-  "dealsRemaining": " | 残り配布: {{count}}回"
+  "dealsRemaining": " | 残り配布: {{count}}回",
+  "helpExampleHint": "  h                        次の一手を教えてもらう",
+  "helpExampleAuto": "  ac                       組札へ送れる札を自動で送る"
 }

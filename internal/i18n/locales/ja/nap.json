@@ -42,7 +42,5 @@
   "promptBidHolder": "現在の最高入札者: {{name}}",
   "declarerProgress": "宣言者: {{won}}/{{needed}} トリック (残り{{remaining}})",
   "contractUnreachable": " — 達成不可能が確定",
-  "helpExampleBid": "  bid 3                    3 トリックを宣言する",
-  "helpExamplePlay": "  play 0                   手札の 0 番のカードを出す",
-  "helpExampleNext": "  n                        トリックの決着を見てから次のトリックへ"
+  "helpExampleBid": "  pass                      入札を降りる"
 }

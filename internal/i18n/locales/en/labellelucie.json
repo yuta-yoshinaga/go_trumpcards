@@ -13,5 +13,6 @@
   "hintLine": "[HINT: move fan {{from}} to {{to}}]",
   "foundationCount": "({{count}} cards)",
   "redealRecommended": "No legal moves. Redeal recommended (nr).",
-  "stuckDeadlock": "No legal move remains and no redeals are left - type giveup to concede."
+  "stuckDeadlock": "No legal move remains and no redeals are left - type giveup to concede.",
+  "helpExampleAuto": "  ac                   send everything that can go to a foundation"
 }

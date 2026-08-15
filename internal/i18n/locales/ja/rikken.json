@@ -38,5 +38,5 @@
   "rikkenBidStrength": "手札の強さから見た契約",
   "rikkenFollowSuit": "フォローの義務がある",
   "openHandLine": "公開手札（席 {{seat}}）: {{cards}}",
-  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
+  "helpExampleHint": "  hint                 次の一手を教えてもらう"
 }

@@ -30,5 +30,7 @@
   "hintFromFan": "ファン{{col}}",
   "hintToFoundation": "組札{{idx}}",
   "hintToTableau": "タブロー{{idx}}列",
-  "hintLine": "ヒント: {{from}} → {{to}}"
+  "hintLine": "ヒント: {{from}} → {{to}}",
+  "helpExampleHint": "  h                    次の一手を教えてもらう",
+  "helpExampleAuto": "  ac                   組札へ送れる札を自動で送る"
 }

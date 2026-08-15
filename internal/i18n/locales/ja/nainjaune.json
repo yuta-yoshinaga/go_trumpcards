@@ -27,6 +27,5 @@
   "hintReasonLead": "並びが止まっているので、低い札から始めます",
   "hintReasonFollow": "並びの続きになる札です",
   "hintReasonBox": "この札は区画のチップを取れます",
-  "helpExamplePlay": "  p 0                      手札の 0 番のカードを出す",
   "helpExampleNext": "  n                        トリックの決着を見てから次へ"
 }

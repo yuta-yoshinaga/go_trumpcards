@@ -12,5 +12,6 @@
   "hintLine": "[HINT: {{from}}{{fromCol}} → {{to}}{{toCol}}]",
   "zoneWaste": "ウェイスト",
   "zoneTableau": "タブロー",
-  "zoneFoundation": "ファウンデーション"
+  "zoneFoundation": "ファウンデーション",
+  "helpExampleDraw": "  d                     ストックから 1 枚めくる"
 }

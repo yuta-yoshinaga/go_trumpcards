@@ -18,5 +18,6 @@
   "hintFromTableau": "tableau column {{col}}[{{idx}}]",
   "hintToFoundation": "foundation",
   "hintToTableau": "tableau column {{col}}",
-  "hintLine": "Hint: {{from}} → {{to}}"
+  "hintLine": "Hint: {{from}} → {{to}}",
+  "helpExampleHint": "  h                    ask for a move"
 }

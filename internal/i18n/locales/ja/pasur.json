@@ -19,5 +19,5 @@
   "hintReasonSoor": "場を空にできる。この捕獲は得点が2倍",
   "hintReasonCapture": "点になる札を取れる",
   "hintReasonTrail": "取れる組み合わせが無い。いちばん点にならない札を置く",
-  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
+  "helpExampleGiveUp": "  g                    この局を投了する"
 }

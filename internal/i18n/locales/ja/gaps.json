@@ -18,5 +18,6 @@
   "lockedLegend": "* = 再配布で保持されるカード",
   "gapBlocked": "[ x ]",
   "gapAnySuit": "[{{rank}}?]",
-  "gapNeeded": "[{{card}}]"
+  "gapNeeded": "[{{card}}]",
+  "helpExampleHint": "  h                         次の一手を教えてもらう"
 }

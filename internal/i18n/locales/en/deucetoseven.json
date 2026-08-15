@@ -37,5 +37,5 @@
   "hintExchange": "Suggestion: exchange hand [{{idxs}}] ({{cards}}) with e {{cmd}}",
   "hintStandPat": "Suggestion: made low — stand pat (s).",
   "hintNotYourTurn": "It is not your draw phase right now.",
-  "helpExampleBet": "  b 100                bet 100 chips"
+  "helpExampleFold": "  f                    fold this hand"
 }

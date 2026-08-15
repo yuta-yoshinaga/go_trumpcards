@@ -26,7 +26,5 @@
   "hintToTableau": "タブロー列{{col}}",
   "hintLine": "ヒント: {{from}} → {{to}}",
   "autoCompleteReady": "オートコンプリート可能です (ac)",
-  "helpExampleDraw": "  d                    山札から1枚めくる",
-  "helpExampleMove": "  m w t 1              ウェイストから列1へ移す",
-  "helpExampleFound": "  m w f                ウェイストからファウンデーションへ"
+  "helpExampleDraw": "  d                    山札から1枚めくる"
 }

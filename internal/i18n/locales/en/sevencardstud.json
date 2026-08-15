@@ -76,7 +76,5 @@
   "hintReasonRazzDecent": "you have a fair number of low cards",
   "hintReasonRazzWeak": "you do not have enough low cards",
   "hintReasonHiLoLow": "a qualifying low is live (five cards of eight or lower)",
-  "helpExampleCheck": "  ck                   check and pass the action along",
-  "helpExampleBet": "  b 100                bet 100 chips",
-  "helpExampleRaise": "  ra 200               raise to 200 chips total"
+  "helpExampleFold": "  f                    fold this hand"
 }

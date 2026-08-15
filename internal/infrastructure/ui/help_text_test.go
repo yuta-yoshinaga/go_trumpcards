@@ -433,7 +433,11 @@ func helpLineVerb(line string) string {
 	if len(fields) == 0 {
 		return ""
 	}
-	verb := fields[0]
+	// A row may list aliases as "h, hint" or "n / next"; the command is the
+	// first of them. Without this the whole row is skipped, and a guard that
+	// silently skips a row cannot fail on it -- which is how `h` looked absent
+	// from accordion's table while being right there.
+	verb := strings.TrimSuffix(fields[0], ",")
 	for _, r := range verb {
 		if (r < 'a' || r > 'z') && (r < '0' || r > '9') {
 			return ""

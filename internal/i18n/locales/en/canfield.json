@@ -33,5 +33,6 @@
   "hintFromWaste": "waste",
   "hintToFoundation": "foundation",
   "hintToTableau": "tableau column {{col}}",
-  "hintLine": "Hint: {{from}} → {{to}}"
+  "hintLine": "Hint: {{from}} → {{to}}",
+  "helpExampleDraw": "  d                    turn one card from the stock"
 }

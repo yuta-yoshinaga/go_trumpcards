@@ -33,5 +33,5 @@
   "hintPlay": "{{index}} 番目の札が良さそうです（{{reason}}）",
   "botifarraDeclareLongest": "いちばん長いスートを切り札にする",
   "botifarraMustWin": "勝てるなら勝つ義務がある",
-  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
+  "helpExampleHint": "  hint                 次の一手を教えてもらう"
 }

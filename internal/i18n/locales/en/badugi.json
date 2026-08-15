@@ -44,5 +44,5 @@
   "handRank3": "3-card",
   "handRank4": "Badugi",
   "handRankUnknown": "Unknown",
-  "helpExampleBet": "  b 100                bet 100 chips"
+  "helpExampleCall": "  c                    call the current bet"
 }

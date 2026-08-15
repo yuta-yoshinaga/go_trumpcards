@@ -31,6 +31,5 @@
   "suitClover": "Clubs",
   "suitHeart": "Hearts",
   "suitDiamond": "Diamonds",
-  "helpExamplePlay": "  p 0                  play hand card 0",
-  "helpExampleNext": "  n                    read the round result, then continue"
+  "helpExampleGiveUp": "  g                    give the round up"
 }
