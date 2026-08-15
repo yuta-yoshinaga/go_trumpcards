@@ -38,3 +38,7 @@ func msgInvalidBetAmountPrefix() string {
 	stem := strings.SplitN(i18n.Tf("invalidBetAmount", "val", "\x00"), "\x00", 2)[0]
 	return strings.TrimRight(stem, ":. ")
 }
+
+func msgInvalidBetAmount(val string) string {
+	return i18n.MarkError(i18n.Tf("invalidBetAmount", "val", val))
+}
