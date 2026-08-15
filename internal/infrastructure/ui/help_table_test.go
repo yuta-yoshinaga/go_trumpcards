@@ -289,3 +289,36 @@ func TestCuiHelpTableCoversTheParser(t *testing.T) {
 			len(bad), strings.Join(bad, "\n  "))
 	}
 }
+
+// TestCuiNoRawMarkersAtRuntime checks that neither marker survives to the
+// screen. ErrorLinePrefix sits in the middle of a board, so forgetting to strip
+// it prints a control character between the cards -- and the presenter tests
+// never see it, because they assert on the presenter's output rather than on
+// what the runner prints.
+func TestCuiNoRawMarkersAtRuntime(t *testing.T) {
+	registry := GameRegistry()
+	checked := 0
+	var bad []string
+	for _, entry := range registry {
+		ctrl := entry.NewCui().Controller()
+		for _, cmd := range []string{"r", "zzbogusverb", "p zzz", "m zzz", "b zzz"} {
+			out := ctrl.Exec(cmd)
+			checked++
+			// what the runner would print: the reply marker is stripped when it
+			// routes to stderr, the line marker when it prints the board
+			body, _ := i18n.StripErrorPrefix(out)
+			body, _ = i18n.StripErrorLines(body)
+			if strings.Contains(body, i18n.ErrorPrefix) || strings.Contains(body, i18n.ErrorLinePrefix) {
+				bad = append(bad, entry.Name+": `"+cmd+"` leaves a marker in what the user sees")
+			}
+		}
+	}
+	if checked < len(registry) {
+		t.Fatalf("only %d replies were read for %d games -- the walk broke", checked, len(registry))
+	}
+	sort.Strings(bad)
+	if len(bad) > 0 {
+		t.Errorf("markers reaching the screen (%d of %d replies):\n  %s",
+			len(bad), checked, strings.Join(bad, "\n  "))
+	}
+}

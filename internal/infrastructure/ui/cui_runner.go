@@ -224,7 +224,10 @@ func printResult(res string) {
 		fmt.Fprintln(os.Stderr, color.RedStderr(body))
 		return
 	}
-	fmt.Println(res)
+	// A board carrying a refusal line stays on stdout -- it is a board. The
+	// marker exists so callers can tell, not to change where it goes.
+	body, _ := i18n.StripErrorLines(res)
+	fmt.Println(body)
 }
 
 // RunCuiLoop runs a single-game CUI loop. gameName is shown in the prompt

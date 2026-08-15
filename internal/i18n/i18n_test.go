@@ -208,3 +208,45 @@ func TestSetLang_ResetToJa(t *testing.T) {
 	i18n.SetLang("ja")
 	assert.Equal(t, "ja", i18n.Lang())
 }
+
+// **印がユーザーに届いてはいけない。** 行単位の印は盤面の途中に埋まるので、
+// 剥がし忘れると制御文字が画面に出る。
+func TestMarkErrorLineRoundTrip(t *testing.T) {
+	t.Run("marks and strips", func(t *testing.T) {
+		marked := i18n.MarkErrorLine("cannot move")
+		assert.NotEqual(t, "cannot move", marked)
+		body, had := i18n.StripErrorLines(marked)
+		assert.True(t, had)
+		assert.Equal(t, "cannot move", body)
+	})
+
+	t.Run("empty stays empty", func(t *testing.T) {
+		assert.Equal(t, "", i18n.MarkErrorLine(""))
+	})
+
+	t.Run("marking twice does not nest", func(t *testing.T) {
+		once := i18n.MarkErrorLine("x")
+		assert.Equal(t, once, i18n.MarkErrorLine(once))
+	})
+
+	t.Run("an unmarked board is reported as clean", func(t *testing.T) {
+		body, had := i18n.StripErrorLines("plain board\nsecond line")
+		assert.False(t, had)
+		assert.Equal(t, "plain board\nsecond line", body)
+	})
+
+	// 盤面の途中の 1 行だけが印つき、という本来の使い方。
+	t.Run("strips a marker buried in a board", func(t *testing.T) {
+		board := "top\n" + i18n.MarkErrorLine("refused") + "\nbottom"
+		body, had := i18n.StripErrorLines(board)
+		assert.True(t, had)
+		assert.Equal(t, "top\nrefused\nbottom", body)
+		assert.NotContains(t, body, i18n.ErrorLinePrefix)
+	})
+
+	// 行の印と返答全体の印は別物。混ざると盤面が stderr へ流れる。
+	t.Run("a line marker is not a reply marker", func(t *testing.T) {
+		_, isErr := i18n.StripErrorPrefix(i18n.MarkErrorLine("refused"))
+		assert.False(t, isErr)
+	})
+}

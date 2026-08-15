@@ -44,7 +44,9 @@ func cuiTrickBlock[TC any](b *strings.Builder, trick []TC, playerIdx func(TC) in
 // cuiErrorBlock writes the error line if lastErr is non-nil.
 func cuiErrorBlock(b *strings.Builder, lastErr error) {
 	if lastErr != nil {
-		fmt.Fprintf(b, "%s\n", color.Red(lastErr.Error()))
+		// Marked per line, not per reply: the reply is a board and belongs on
+		// stdout. i18n.StripErrorLines takes the marker off before display.
+		fmt.Fprintf(b, "%s\n", i18n.MarkErrorLine(color.Red(lastErr.Error())))
 	}
 }
 
