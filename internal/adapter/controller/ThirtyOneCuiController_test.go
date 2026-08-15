@@ -113,9 +113,9 @@ func TestThirtyOneCuiController_Exec(t *testing.T) {
 
 	t.Run("setlives errors", func(t *testing.T) {
 		c := controller.NewThirtyOneCuiController(newMock())
-		assert.Contains(t, c.Exec("sv"), "required")
-		assert.Contains(t, c.Exec("sv abc"), "Invalid lives")
-		assert.Contains(t, c.Exec("sv 0"), "Invalid lives")
+		assert.True(t, msgRejected(c.Exec("sv")))
+		assert.Contains(t, c.Exec("sv abc"), msgStem("invalidLives"))
+		assert.Contains(t, c.Exec("sv 0"), msgStem("invalidLives"))
 	})
 
 	t.Run("log", func(t *testing.T) {

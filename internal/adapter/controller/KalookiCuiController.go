@@ -70,7 +70,7 @@ func (c *KalookiCuiController) Exec(command string) string {
 					return c.ci.ResetWithConfig(cfg)
 				})
 			case "st", "setthreshold":
-				return cuiutil.WithParsedInt(args, "Opening threshold is required.", "Invalid threshold: %s. Please enter 0 or more.", 0, 1000, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "openingThresholdRequired", "invalidThreshold0OrMore", 0, 1000, func(v int) string {
 					cfg := c.ci.GetConfig()
 					cfg.OpeningThreshold = v
 					return c.ci.ResetWithConfig(cfg)

@@ -176,7 +176,7 @@ func TestMacauCuiController_Exec(t *testing.T) {
 	})
 
 	t.Run("setlimit zero", func(t *testing.T) {
-		assert.Equal(t, "Invalid point limit: 0. Please enter 1-1000.", controller.NewMacauCuiController(newMock()).Exec("sl 0"))
+		assert.Equal(t, msgKey("invalidPointLimit11000", "val", "0"), controller.NewMacauCuiController(newMock()).Exec("sl 0"))
 	})
 
 	t.Run("log", func(t *testing.T) {

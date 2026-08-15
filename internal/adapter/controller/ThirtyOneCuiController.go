@@ -54,7 +54,7 @@ func (c *ThirtyOneCuiController) Exec(command string) string {
 					return c.ci.ResetWithConfig(cfg)
 				})
 			case "sv", "setlives":
-				return cuiutil.WithParsedInt(args, "Initial lives is required.", "Invalid lives: %s.", domain.ThirtyOneMinLives, domain.ThirtyOneMaxLives, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "initialLivesRequired", "invalidLives", domain.ThirtyOneMinLives, domain.ThirtyOneMaxLives, func(v int) string {
 					cfg := c.ci.GetConfig()
 					cfg.InitialLives = v
 					return c.ci.ResetWithConfig(cfg)

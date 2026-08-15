@@ -42,7 +42,7 @@ func (c *MushiCuiController) Exec(command string) string {
 			case "p", "play":
 				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.mi.Play)
 			case "s", "select":
-				return cuiutil.WithParsedInt(args, "Field index is required.", "Invalid field index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.mi.Select)
+				return cuiutil.WithParsedIntKeys(args, "fieldIndexRequired", "invalidFieldIndex", cuiutil.NoMin, cuiutil.NoMax, c.mi.Select)
 			case "n", "next":
 				return c.mi.NextRound(), true
 			default:

@@ -139,7 +139,7 @@ func (c *CassinoCuiController) handleTake(args []string) (string, bool) {
 		return "Usage: t <handIdx> <tableIdx...> [b <buildIdx...>]", true
 	}
 	handStr := args[0]
-	handIdx, _, ok := cuiutil.ParseIntArg([]string{handStr}, "hand index is required", "Invalid hand index: %s", 0, 51)
+	handIdx, _, ok := cuiutil.ParseIntArgKeys([]string{handStr}, "handIndexRequired", "invalidHandIndex", 0, 51)
 	if !ok {
 		return "Invalid hand index: " + handStr, true
 	}
@@ -167,11 +167,11 @@ func (c *CassinoCuiController) handleBuild(args []string) (string, bool) {
 	if len(args) < 3 {
 		return "Usage: b <handIdx> <value> <tableIdx...>", true
 	}
-	handIdx, _, ok := cuiutil.ParseIntArg([]string{args[0]}, "hand index is required", "Invalid hand index: %s", 0, 51)
+	handIdx, _, ok := cuiutil.ParseIntArgKeys([]string{args[0]}, "handIndexRequired", "invalidHandIndex", 0, 51)
 	if !ok {
 		return "Invalid hand index: " + args[0], true
 	}
-	value, _, ok := cuiutil.ParseIntArg([]string{args[1]}, "build value is required", "Invalid build value: %s", 2, 10)
+	value, _, ok := cuiutil.ParseIntArgKeys([]string{args[1]}, "buildValueRequired", "invalidBuildValue", 2, 10)
 	if !ok {
 		return "Invalid build value: " + args[1], true
 	}
@@ -187,7 +187,7 @@ func (c *CassinoCuiController) handleTrail(args []string) (string, bool) {
 	if len(args) < 1 {
 		return "Usage: tr <handIdx>", true
 	}
-	handIdx, _, ok := cuiutil.ParseIntArg([]string{args[0]}, "hand index is required", "Invalid hand index: %s", 0, 51)
+	handIdx, _, ok := cuiutil.ParseIntArgKeys([]string{args[0]}, "handIndexRequired", "invalidHandIndex", 0, 51)
 	if !ok {
 		return "Invalid hand index: " + args[0], true
 	}

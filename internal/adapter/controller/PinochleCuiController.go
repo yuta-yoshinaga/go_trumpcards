@@ -76,7 +76,7 @@ func (c *PinochleCuiController) Exec(command string) string {
 					return c.pi.ResetWithConfig(cfg)
 				})
 			case "sl", "setlimit":
-				return cuiutil.WithParsedInt(args, "Point limit is required.", "Invalid point limit: %s.", 1, math.MaxInt, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "pointLimitRequired", "invalidPointLimitPlain", 1, math.MaxInt, func(v int) string {
 					cfg := c.pi.GetConfig()
 					cfg.PointLimit = v
 					return c.pi.ResetWithConfig(cfg)

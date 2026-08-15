@@ -51,7 +51,7 @@ func (c *EscobaCuiController) Exec(command string) string {
 					return c.ei.ResetWithConfig(cfg)
 				})
 			case "st", "settarget":
-				return cuiutil.WithParsedInt(args, "target score is required.", "Invalid target score: %s.", 1, domain.EscobaMaxTargetScore, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "targetScoreRequiredAlt", "invalidTargetScorePlain", 1, domain.EscobaMaxTargetScore, func(v int) string {
 					cfg := c.ei.GetConfig()
 					cfg.TargetScore = v
 					return c.ei.ResetWithConfig(cfg)
@@ -68,7 +68,7 @@ func (c *EscobaCuiController) handlePlay(args []string) (string, bool) {
 	if len(args) < 1 {
 		return "Usage: p <handIdx> [tableIdx...]", true
 	}
-	handIdx, _, ok := cuiutil.ParseIntArg([]string{args[0]}, "hand index is required", "Invalid hand index: %s", 0, 39)
+	handIdx, _, ok := cuiutil.ParseIntArgKeys([]string{args[0]}, "handIndexRequired", "invalidHandIndex", 0, 39)
 	if !ok {
 		return "Invalid hand index: " + args[0], true
 	}

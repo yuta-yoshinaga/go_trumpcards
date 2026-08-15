@@ -58,7 +58,7 @@ func (c *TressetteCuiController) Exec(command string) string {
 					return c.ti.ResetWithConfig(cfg)
 				})
 			case "st", "settarget":
-				return cuiutil.WithParsedInt(args, "Target points is required.", "Invalid target points: %s. Please enter 1 or more.", 1, math.MaxInt, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "targetPointsRequired", "invalidTargetPoints1OrMore", 1, math.MaxInt, func(v int) string {
 					cfg := c.ti.GetConfig()
 					cfg.TargetPoints = v
 					return c.ti.ResetWithConfig(cfg)

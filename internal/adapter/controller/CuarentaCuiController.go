@@ -58,7 +58,7 @@ func (c *CuarentaCuiController) handlePlay(args []string) (string, bool) {
 	if len(args) < 1 {
 		return "Usage: p <handIdx>", true
 	}
-	handIdx, _, ok := cuiutil.ParseIntArg([]string{args[0]}, "hand index is required", "Invalid hand index: %s", 0, 39)
+	handIdx, _, ok := cuiutil.ParseIntArgKeys([]string{args[0]}, "handIndexRequired", "invalidHandIndex", 0, 39)
 	if !ok {
 		return "Invalid hand index: " + args[0], true
 	}

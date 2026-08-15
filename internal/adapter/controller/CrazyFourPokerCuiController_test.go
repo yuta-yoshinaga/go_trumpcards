@@ -40,9 +40,9 @@ func TestCrazyFourPokerCuiController_Bet(t *testing.T) {
 	assert.Equal(t, "bet 50/0", c.Exec("bet 50"))
 	m.AssertCalled(t, "PlaceBet", 50, 0)
 
-	assert.Contains(t, c.Exec("bet"), "required")
-	assert.Contains(t, c.Exec("bet xyz"), "Invalid")
-	assert.Contains(t, c.Exec("bet 50 xyz"), "Invalid")
+	assert.True(t, msgRejected(c.Exec("bet")))
+	assert.True(t, msgRejected(c.Exec("bet xyz")))
+	assert.True(t, msgRejected(c.Exec("bet 50 xyz")))
 }
 
 func TestCrazyFourPokerCuiController_Play(t *testing.T) {
@@ -51,8 +51,8 @@ func TestCrazyFourPokerCuiController_Play(t *testing.T) {
 
 	assert.Equal(t, "played x1", c.Exec("play 1"))
 	assert.Equal(t, "played x3", c.Exec("play 3"))
-	assert.Contains(t, c.Exec("play"), "required")
-	assert.Contains(t, c.Exec("play xyz"), "Invalid")
+	assert.True(t, msgRejected(c.Exec("play")))
+	assert.True(t, msgRejected(c.Exec("play xyz")))
 }
 
 func TestCrazyFourPokerCuiController_RemainingCommands(t *testing.T) {

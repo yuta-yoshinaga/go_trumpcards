@@ -71,8 +71,8 @@ func TestYanivCuiController_Exec(t *testing.T) {
 
 	t.Run("drawpickup errors", func(t *testing.T) {
 		c := controller.NewYanivCuiController(newMock())
-		assert.Contains(t, c.Exec("dp"), "required")
-		assert.Contains(t, c.Exec("dp 5"), "Invalid pickup end")
+		assert.True(t, msgRejected(c.Exec("dp")))
+		assert.Contains(t, c.Exec("dp 5"), msgStem("invalidPickupEnd0Or1"))
 	})
 
 	t.Run("nextround", func(t *testing.T) {
@@ -109,8 +109,8 @@ func TestYanivCuiController_Exec(t *testing.T) {
 
 	t.Run("setlimit errors", func(t *testing.T) {
 		c := controller.NewYanivCuiController(newMock())
-		assert.Contains(t, c.Exec("sl"), "required")
-		assert.Contains(t, c.Exec("sl 9"), "Invalid score limit")
+		assert.True(t, msgRejected(c.Exec("sl")))
+		assert.Contains(t, c.Exec("sl 9"), msgStem("invalidScoreLimit"))
 	})
 
 	t.Run("log", func(t *testing.T) {

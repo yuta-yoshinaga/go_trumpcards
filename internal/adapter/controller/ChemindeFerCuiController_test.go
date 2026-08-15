@@ -42,14 +42,14 @@ func TestChemindeFerCuiController_StakeAndBet(t *testing.T) {
 	c := controller.NewChemindeFerCuiController(m)
 
 	assert.Equal(t, "staked 200", c.Exec("stake 200"))
-	assert.Contains(t, c.Exec("stake"), "required")
-	assert.Contains(t, c.Exec("stake xyz"), "Invalid")
+	assert.True(t, msgRejected(c.Exec("stake")))
+	assert.True(t, msgRejected(c.Exec("stake xyz")))
 
 	assert.Equal(t, "bet 50", c.Exec("bet 50"))
 	// **bet 0 は「降りる」。** 下限を 0 にしていないと降りられない。
 	assert.Equal(t, "passed", c.Exec("bet 0"))
 	m.AssertCalled(t, "PlaceBet", 0, 0)
-	assert.Contains(t, c.Exec("bet"), "required")
+	assert.True(t, msgRejected(c.Exec("bet")))
 }
 
 // **側を省いたら手番の側へ。** 明示すればその側へ。

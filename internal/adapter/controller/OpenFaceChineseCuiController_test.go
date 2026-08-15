@@ -48,12 +48,12 @@ func TestOpenFaceChineseCuiController_Exec(t *testing.T) {
 
 	t.Run("place no args", func(t *testing.T) {
 		result := controller.NewOpenFaceChineseCuiController(newMock()).Exec("place")
-		assert.Contains(t, result, "Row is required")
+		assert.Contains(t, result, msgStem("rowRequired0Front1Middle2Back"))
 	})
 
 	t.Run("place invalid", func(t *testing.T) {
 		result := controller.NewOpenFaceChineseCuiController(newMock()).Exec("place 9")
-		assert.Contains(t, result, "Invalid row")
+		assert.Contains(t, result, msgStem("invalidRow01Or2"))
 	})
 
 	t.Run("front/middle/back shortcuts", func(t *testing.T) {

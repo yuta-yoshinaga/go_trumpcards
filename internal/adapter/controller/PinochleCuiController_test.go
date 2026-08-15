@@ -291,19 +291,19 @@ func TestPinochleCuiController_Exec(t *testing.T) {
 	t.Run("setlimit no args", func(t *testing.T) {
 		c := controller.NewPinochleCuiController(newPinochleMock())
 		result := c.Exec("sl")
-		assert.Contains(t, result, "required")
+		assert.True(t, msgRejected(result))
 	})
 
 	t.Run("setlimit invalid", func(t *testing.T) {
 		c := controller.NewPinochleCuiController(newPinochleMock())
 		result := c.Exec("sl abc")
-		assert.Contains(t, result, "Invalid point limit")
+		assert.Contains(t, result, msgStem("invalidPointLimitPlain"))
 	})
 
 	t.Run("setlimit zero", func(t *testing.T) {
 		c := controller.NewPinochleCuiController(newPinochleMock())
 		result := c.Exec("sl 0")
-		assert.Contains(t, result, "Invalid point limit")
+		assert.Contains(t, result, msgStem("invalidPointLimitPlain"))
 	})
 
 	// hint

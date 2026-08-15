@@ -81,7 +81,7 @@ func TestThreeCardCuiController_Bet_Errors(t *testing.T) {
 
 	t.Run("invalid pair plus", func(t *testing.T) {
 		result := c.Exec("b 100 abc")
-		assert.Contains(t, result, "Invalid Pair Plus amount")
+		assert.Contains(t, result, msgStem("invalidPairPlusAmount"))
 	})
 }
 

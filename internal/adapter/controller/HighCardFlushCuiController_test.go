@@ -72,10 +72,10 @@ func TestHighCardFlushCuiController_Bet_Errors(t *testing.T) {
 		assert.Contains(t, c.Exec("b 0"), msgInvalidAnteAmountPrefix())
 	})
 	t.Run("invalid flush bonus", func(t *testing.T) {
-		assert.Contains(t, c.Exec("b 100 abc"), "Invalid Flush Bonus amount")
+		assert.Contains(t, c.Exec("b 100 abc"), msgStem("invalidFlushBonusAmount"))
 	})
 	t.Run("invalid straight flush bonus", func(t *testing.T) {
-		assert.Contains(t, c.Exec("b 100 50 abc"), "Invalid Straight Flush Bonus amount")
+		assert.Contains(t, c.Exec("b 100 50 abc"), msgStem("invalidStraightFlushBonusAmount"))
 	})
 }
 
@@ -91,10 +91,10 @@ func TestHighCardFlushCuiController_Raise(t *testing.T) {
 func TestHighCardFlushCuiController_Raise_Errors(t *testing.T) {
 	m := newMockHighCardFlushInteractor()
 	c := controller.NewHighCardFlushCuiController(m)
-	assert.Contains(t, c.Exec("ra"), "Raise multiplier is required")
-	assert.Contains(t, c.Exec("ra 0"), "Invalid raise multiplier")
-	assert.Contains(t, c.Exec("ra 5"), "Invalid raise multiplier")
-	assert.Contains(t, c.Exec("ra xyz"), "Invalid raise multiplier")
+	assert.Contains(t, c.Exec("ra"), msgStem("raiseMultiplierRequired13"))
+	assert.Contains(t, c.Exec("ra 0"), msgStem("invalidRaiseMultiplier"))
+	assert.Contains(t, c.Exec("ra 5"), msgStem("invalidRaiseMultiplier"))
+	assert.Contains(t, c.Exec("ra xyz"), msgStem("invalidRaiseMultiplier"))
 }
 
 func TestHighCardFlushCuiController_Fold(t *testing.T) {

@@ -50,3 +50,11 @@ func msgInvalidBetAmount(val string) string {
 func msgKey(key string, params ...string) string {
 	return i18n.MarkError(i18n.Tf(key, params...))
 }
+
+func msgStem(key string) string {
+	stem := strings.SplitN(i18n.Tf(key, "val", "\x00"), "\x00", 2)[0]
+	if i := strings.Index(stem, " ("); i >= 0 {
+		stem = stem[:i]
+	}
+	return strings.TrimRight(stem, ":.。 ")
+}

@@ -185,7 +185,7 @@ func (c *DaifugoCuiController) Exec(command string) string {
 					return c.dgi.ResetWithConfig(cfg)
 				})
 			case "sj", "setjoker":
-				return cuiutil.WithParsedInt(args, "Joker count is required (0-2).", "Invalid joker count: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "jokerCountRequired02", "invalidJokerCount02", 0, 2, func(v int) string {
 					cfg := c.dgi.GetConfig()
 					cfg.JokerCount = v
 					return c.dgi.ResetWithConfig(cfg)
@@ -215,7 +215,7 @@ func (c *DaifugoCuiController) Exec(command string) string {
 					return c.dgi.ResetWithConfig(cfg)
 				})
 			case "5skipcount":
-				return cuiutil.WithParsedInt(args, "Five skip count is required (1-5).", "Invalid five skip count: %s. Please enter 1-5.", 1, 5, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "fiveSkipCountRequired15", "invalidFiveSkipCount15", 1, 5, func(v int) string {
 					cfg := c.dgi.GetConfig()
 					cfg.FiveSkipCount = v
 					return c.dgi.ResetWithConfig(cfg)

@@ -61,10 +61,10 @@ func TestAndarBaharCuiController_Bet_InvalidInput(t *testing.T) {
 	assert.Contains(t, c.Exec("b 100"), "required")
 	assert.Contains(t, c.Exec("b abc a"), msgInvalidBetAmountPrefix())
 	assert.Contains(t, c.Exec("b 100 x"), "Invalid bet target")
-	assert.Contains(t, c.Exec("b 100 a abc 2"), "Invalid side bet amount")
-	assert.Contains(t, c.Exec("b 100 a 50 abc"), "Invalid side bet band")
+	assert.Contains(t, c.Exec("b 100 a abc 2"), msgStem("invalidSideBetAmountANumber"))
+	assert.Contains(t, c.Exec("b 100 a 50 abc"), msgStem("invalidSideBetBandANumber"))
 	// 帯は 0..6 の範囲外を弾く。
-	assert.Contains(t, c.Exec("b 100 a 50 9"), "Invalid side bet band")
+	assert.Contains(t, c.Exec("b 100 a 50 9"), msgStem("invalidSideBetBandANumber"))
 }
 
 func TestAndarBaharCuiController_ClearHintAndLog(t *testing.T) {

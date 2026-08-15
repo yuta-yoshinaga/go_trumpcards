@@ -86,7 +86,7 @@ func (c *MightyCuiController) Exec(command string) string {
 				if !ok {
 					return errMsg, true
 				}
-				partnerVal, errMsg, ok := cuiutil.ParseIntArg(args[2:3], "", "Invalid partner value: %s.", 1, 13)
+				partnerVal, errMsg, ok := cuiutil.ParseIntArgKeys(args[2:3], "", "invalidPartnerValue", 1, 13)
 				if !ok {
 					return errMsg, true
 				}

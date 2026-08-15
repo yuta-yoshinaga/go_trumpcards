@@ -67,9 +67,7 @@ func (c *ZwanzigerrufenCuiController) Exec(command string) string {
 						return c.zi.ResetWithConfig(cfg)
 					})
 			case "st", "setdeals":
-				return cuiutil.WithParsedInt(args,
-					"Number of deals is required (1-12).",
-					"Invalid number of deals: %s. Please enter 1-12.",
+				return cuiutil.WithParsedIntKeys(args, "numberOfDealsRequired112", "invalidNumberOfDeals112",
 					domain.ZwanzigerrufenMinDeals, domain.ZwanzigerrufenMaxDeals, func(v int) string {
 						cfg := c.zi.GetConfig()
 						cfg.TargetDeals = v

@@ -163,13 +163,13 @@ func TestDoubleAttackCuiController(t *testing.T) {
 	assert.NotEmpty(t, c.Exec("bet 50 20"))
 	assert.NotEmpty(t, c.Exec("bet 50"))
 	m.AssertCalled(t, "PlaceBet", 50, 0)
-	assert.Contains(t, c.Exec("bet"), "required")
-	assert.Contains(t, c.Exec("bet xyz"), "Invalid")
+	assert.True(t, msgRejected(c.Exec("bet")))
+	assert.True(t, msgRejected(c.Exec("bet xyz")))
 
 	// **見送り (0) が通ること。**
 	assert.NotEmpty(t, c.Exec("attack 0"))
 	m.AssertCalled(t, "Attack", 0)
-	assert.Contains(t, c.Exec("attack"), "required")
+	assert.True(t, msgRejected(c.Exec("attack")))
 
 	for _, cmd := range []string{"hit", "stand", "double", "split", "next", "hint", "log"} {
 		assert.NotEmpty(t, c.Exec(cmd), "command %s produced nothing", cmd)

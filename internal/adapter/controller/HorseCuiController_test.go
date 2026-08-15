@@ -62,13 +62,13 @@ func TestHorseCuiController_Exec(t *testing.T) {
 	t.Run("bet needs an amount", func(t *testing.T) {
 		m := newMock()
 		out := controller.NewHorseCuiController(m).Exec("b")
-		assert.Contains(t, out, "amount is required")
+		assert.Contains(t, out, msgStem("betAmountRequired"))
 		m.AssertNotCalled(t, "Action", mock.Anything, mock.Anything, mock.Anything)
 	})
 	t.Run("bet rejects a non-numeric amount", func(t *testing.T) {
 		m := newMock()
 		out := controller.NewHorseCuiController(m).Exec("b x")
-		assert.Contains(t, out, "Invalid amount")
+		assert.Contains(t, out, msgStem("invalidAmount"))
 		m.AssertNotCalled(t, "Action", mock.Anything, mock.Anything, mock.Anything)
 	})
 	t.Run("next hand", func(t *testing.T) {
@@ -106,7 +106,7 @@ func TestHorseCuiController_Exec(t *testing.T) {
 	t.Run("set hands rejects out-of-range", func(t *testing.T) {
 		m := newMock()
 		out := controller.NewHorseCuiController(m).Exec("sh 99")
-		assert.Contains(t, out, "Invalid number of hands")
+		assert.Contains(t, out, msgStem("invalidNumberOfHands110"))
 		m.AssertNotCalled(t, "ResetWithConfig", mock.Anything)
 	})
 	t.Run("hint and log", func(t *testing.T) {

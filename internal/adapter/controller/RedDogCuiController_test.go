@@ -54,8 +54,8 @@ func TestRedDogCuiController_Raise(t *testing.T) {
 
 func TestRedDogCuiController_Raise_Errors(t *testing.T) {
 	c := controller.NewRedDogCuiController(newMockRedDogInteractor())
-	assert.Contains(t, c.Exec("raise"), "Raise amount is required")
-	assert.Contains(t, c.Exec("raise abc"), "Invalid raise amount")
+	assert.Contains(t, c.Exec("raise"), msgStem("raiseAmountRequired"))
+	assert.Contains(t, c.Exec("raise abc"), msgStem("invalidRaiseAmountANumber"))
 }
 
 func TestRedDogCuiController_Stay(t *testing.T) {

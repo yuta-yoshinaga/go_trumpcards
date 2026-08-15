@@ -51,7 +51,7 @@ func (c *BeziqueCuiController) Exec(command string) string {
 			case "p", "play":
 				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.bi.Play)
 			case "m", "meld":
-				return cuiutil.WithParsedInt(args, "Meld index is required.", "Invalid meld index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.bi.DeclareMeld)
+				return cuiutil.WithParsedIntKeys(args, "meldIndexRequired", "invalidMeldIndex", cuiutil.NoMin, cuiutil.NoMax, c.bi.DeclareMeld)
 			case "s", "skip":
 				return c.bi.SkipMeld(), true
 			case "n", "next", "nextround":

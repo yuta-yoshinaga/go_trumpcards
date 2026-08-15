@@ -31,8 +31,7 @@ func (cc *FreeBetBlackjackCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bet":
-				ante, errMsg, ok := cuiutil.ParseIntArg(args,
-					"Ante is required.", "Invalid ante. Please enter a number.", 0, math.MaxInt)
+				ante, errMsg, ok := cuiutil.ParseIntArgKeys(args, "anteRequiredPlain", "invalidAnteANumber", 0, math.MaxInt)
 				if !ok {
 					return errMsg, true
 				}

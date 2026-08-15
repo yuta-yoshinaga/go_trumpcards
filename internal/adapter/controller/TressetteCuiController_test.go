@@ -86,7 +86,7 @@ func TestTressetteCuiController_Exec(t *testing.T) {
 
 	t.Run("settarget invalid", func(t *testing.T) {
 		result := controller.NewTressetteCuiController(newMock()).Exec("st 0")
-		assert.Contains(t, result, "Invalid target points")
+		assert.Contains(t, result, msgStem("invalidTargetPoints1OrMore"))
 	})
 
 	t.Run("hint / log", func(t *testing.T) {

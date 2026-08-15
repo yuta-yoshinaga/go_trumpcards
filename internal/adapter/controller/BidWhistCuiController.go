@@ -56,11 +56,11 @@ func (c *BidWhistCuiController) Exec(command string) string {
 				if len(args) < 2 {
 					return "Usage: bid <tricks> <dir>  (tricks 1-7, dir 0=Uptown 1=Downtown 2=NoTrump)\n", true
 				}
-				tricks, errMsg, ok := cuiutil.ParseIntArg(args[:1], "", "Invalid tricks: %s.", domain.BidWhistMinBid, domain.BidWhistMaxBid)
+				tricks, errMsg, ok := cuiutil.ParseIntArgKeys(args[:1], "", "invalidTricks", domain.BidWhistMinBid, domain.BidWhistMaxBid)
 				if !ok {
 					return errMsg, true
 				}
-				dir, errMsg, ok := cuiutil.ParseIntArg(args[1:2], "", "Invalid direction: %s.",
+				dir, errMsg, ok := cuiutil.ParseIntArgKeys(args[1:2], "", "invalidDirection",
 					domain.BidWhistDirectionUptown, domain.BidWhistDirectionNoTrump)
 				if !ok {
 					return errMsg, true

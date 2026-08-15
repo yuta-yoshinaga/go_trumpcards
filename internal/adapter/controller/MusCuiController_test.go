@@ -111,7 +111,7 @@ func TestMusCuiController_Exec(t *testing.T) {
 
 	t.Run("envido no args", func(t *testing.T) {
 		result := controller.NewMusCuiController(newMock()).Exec("e")
-		assert.Contains(t, result, "Amount is required (e.g. e 2).")
+		assert.Contains(t, result, msgKey("amountRequiredEGE2"))
 	})
 
 	t.Run("ordago", func(t *testing.T) {

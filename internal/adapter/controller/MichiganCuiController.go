@@ -59,13 +59,13 @@ func (c *MichiganCuiController) Exec(command string) string {
 			case "n", "next", "nr", "nextround":
 				return c.ti.NextRound(), true
 			case "sp", "setplayers":
-				return cuiutil.WithParsedInt(args, "Player count is required (e.g. sp 4).", "Invalid player count: %s. Please enter 3-8.", domain.MichiganMinPlayerCount, domain.MichiganMaxPlayerCount, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "playerCountRequiredEGSp4", "invalidPlayerCount38", domain.MichiganMinPlayerCount, domain.MichiganMaxPlayerCount, func(v int) string {
 					cfg := c.ti.GetConfig()
 					cfg.PlayerCount = v
 					return c.ti.ResetWithConfig(cfg)
 				})
 			case "sa", "setante":
-				return cuiutil.WithParsedInt(args, "Ante is required (e.g. sa 8).", "Invalid ante: %s.", domain.MichiganMinAnte, domain.MichiganMaxAnte, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "anteRequiredEGSa8", "invalidAntePlain", domain.MichiganMinAnte, domain.MichiganMaxAnte, func(v int) string {
 					cfg := c.ti.GetConfig()
 					cfg.Ante = v
 					return c.ti.ResetWithConfig(cfg)

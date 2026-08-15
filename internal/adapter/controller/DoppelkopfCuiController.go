@@ -62,7 +62,7 @@ func (c *DoppelkopfCuiController) Exec(command string) string {
 					return c.di.ResetWithConfig(cfg)
 				})
 			case "sb", "setchips":
-				return cuiutil.WithParsedInt(args, "Base chips is required.", "Invalid base chips: %s. Please enter 1 or more.", 1, math.MaxInt, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "baseChipsRequired", "invalidBaseChips1OrMore", 1, math.MaxInt, func(v int) string {
 					cfg := c.di.GetConfig()
 					cfg.BaseChips = v
 					return c.di.ResetWithConfig(cfg)

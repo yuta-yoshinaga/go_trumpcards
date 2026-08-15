@@ -71,7 +71,7 @@ func (c *SheepsheadCuiController) Exec(command string) string {
 					return c.si.ResetWithConfig(cfg)
 				})
 			case "sb", "setchips":
-				return cuiutil.WithParsedInt(args, "Base chips is required.", "Invalid base chips: %s. Please enter 1 or more.", 1, math.MaxInt, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "baseChipsRequired", "invalidBaseChips1OrMore", 1, math.MaxInt, func(v int) string {
 					cfg := c.si.GetConfig()
 					cfg.BaseChips = v
 					return c.si.ResetWithConfig(cfg)
@@ -88,8 +88,8 @@ func (c *SheepsheadCuiController) handleBury(args []string) (string, bool) {
 	if len(args) < 2 {
 		return "Usage: b <idx1> <idx2> — specify two card indices to bury.", true
 	}
-	idx1, _, ok1 := cuiutil.ParseIntArg(args[:1], "First card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax)
-	idx2, _, ok2 := cuiutil.ParseIntArg(args[1:2], "Second card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax)
+	idx1, _, ok1 := cuiutil.ParseIntArgKeys(args[:1], "firstCardIndexRequired", "invalidCardIndexPlain", cuiutil.NoMin, cuiutil.NoMax)
+	idx2, _, ok2 := cuiutil.ParseIntArgKeys(args[1:2], "secondCardIndexRequired", "invalidCardIndexPlain", cuiutil.NoMin, cuiutil.NoMax)
 	if !ok1 || !ok2 {
 		return "Invalid card indices. Usage: b <idx1> <idx2>", true
 	}

@@ -152,8 +152,8 @@ func TestBanLuckCuiController(t *testing.T) {
 	// **親のラウンドの 0 が通ること。**
 	assert.NotEmpty(t, c.Exec("bet 0"))
 	m.AssertCalled(t, "PlaceBet", 0)
-	assert.Contains(t, c.Exec("bet"), "required")
-	assert.Contains(t, c.Exec("bet xyz"), "Invalid")
+	assert.Contains(t, c.Exec("bet"), msgStem("betRequired"))
+	assert.Contains(t, c.Exec("bet xyz"), msgStem("invalidBetANumber"))
 
 	for _, cmd := range []string{"hit", "h", "stand", "s", "next", "hint", "log"} {
 		assert.NotEmpty(t, c.Exec(cmd), "command %s produced nothing", cmd)

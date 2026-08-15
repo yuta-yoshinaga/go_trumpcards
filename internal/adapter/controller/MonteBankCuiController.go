@@ -32,14 +32,12 @@ func (cc *MonteBankCuiController) Exec(command string) string {
 			case "b", "bet":
 				// **画面は 1 始まり、ドメインは 0 始まり。** 表示に合わせて
 				// 受け取り、ここで 1 度だけ引く。
-				idx, errMsg, ok := cuiutil.ParseIntArg(args,
-					"Layout number is required.", "Invalid layout number. Please enter 1-4.",
+				idx, errMsg, ok := cuiutil.ParseIntArgKeys(args, "layoutNumberRequired", "invalidLayoutNumber14",
 					1, math.MaxInt)
 				if !ok {
 					return errMsg, true
 				}
-				bet, errMsg, ok := cuiutil.ParseIntArg(args[1:],
-					"Bet is required.", "Invalid bet. Please enter a number.", 0, math.MaxInt)
+				bet, errMsg, ok := cuiutil.ParseIntArgKeys(args[1:], "betRequired", "invalidBetANumber", 0, math.MaxInt)
 				if !ok {
 					return errMsg, true
 				}

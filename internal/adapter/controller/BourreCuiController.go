@@ -35,7 +35,7 @@ func (c *BourreCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "d", "decide":
-				return cuiutil.WithParsedInt(args, "Decision is required (1=play, 0=fold).", "Invalid decision: %s. Please enter 0 or 1.", 0, 1, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "decisionRequired1Play0Fold", "invalidDecision0Or1", 0, 1, func(v int) string {
 					return c.bgi.Decide(v == 1)
 				})
 			case "dr", "draw":

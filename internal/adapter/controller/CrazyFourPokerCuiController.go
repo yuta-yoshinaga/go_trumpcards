@@ -31,16 +31,14 @@ func (cc *CrazyFourPokerCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bet":
-				ante, errMsg, ok := cuiutil.ParseIntArg(args,
-					"Ante is required.", "Invalid ante. Please enter a number.", 0, math.MaxInt)
+				ante, errMsg, ok := cuiutil.ParseIntArgKeys(args, "anteRequiredPlain", "invalidAnteANumber", 0, math.MaxInt)
 				if !ok {
 					return errMsg, true
 				}
 				// **Queens Up は省略可。** 省略は「置かない」。
 				queensUp := 0
 				if len(args) > 1 {
-					v, errMsg2, ok2 := cuiutil.ParseIntArg(args[1:],
-						"", "Invalid queens up bet. Please enter a number.", 0, math.MaxInt)
+					v, errMsg2, ok2 := cuiutil.ParseIntArgKeys(args[1:], "", "invalidQueensUpBetANumber", 0, math.MaxInt)
 					if !ok2 {
 						return errMsg2, true
 					}
@@ -49,8 +47,7 @@ func (cc *CrazyFourPokerCuiController) Exec(command string) string {
 				return cc.ci.PlaceBet(ante, queensUp), true
 			case "p", "play":
 				// **上限は書かない。** 手役次第で 1 か 3 に変わるのでドメインが弾く。
-				mult, errMsg, ok := cuiutil.ParseIntArg(args,
-					"Play multiplier is required.", "Invalid multiplier. Please enter a number.", 0, math.MaxInt)
+				mult, errMsg, ok := cuiutil.ParseIntArgKeys(args, "playMultiplierRequired", "invalidMultiplierANumber", 0, math.MaxInt)
 				if !ok {
 					return errMsg, true
 				}

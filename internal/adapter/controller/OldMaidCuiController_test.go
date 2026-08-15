@@ -134,17 +134,17 @@ func TestOldMaidCuiController_SetMode_LongCommand(t *testing.T) {
 func TestOldMaidCuiController_SetMode_NoArgs(t *testing.T) {
 	mi := new(usecase.MockOldMaidInteractor)
 	c := controller.NewOldMaidCuiController(mi)
-	assert.Contains(t, c.Exec("sm"), "Game mode is required")
+	assert.Contains(t, c.Exec("sm"), msgStem("gameModeRequired0Normal1Jijinuki"))
 }
 
 func TestOldMaidCuiController_SetMode_InvalidValue(t *testing.T) {
 	mi := new(usecase.MockOldMaidInteractor)
 	c := controller.NewOldMaidCuiController(mi)
 	// non-numeric: controller catches
-	assert.Contains(t, c.Exec("sm abc"), "Invalid game mode: abc")
+	assert.Contains(t, c.Exec("sm abc"), msgKey("invalidGameMode01", "val", "abc"))
 	// numeric out-of-range: controller catches via ParseIntArg bounds
-	assert.Equal(t, "Invalid game mode: 2. Please enter 0-1.", c.Exec("sm 2"))
-	assert.Equal(t, "Invalid game mode: -1. Please enter 0-1.", c.Exec("sm -1"))
+	assert.Equal(t, msgKey("invalidGameMode01", "val", "2"), c.Exec("sm 2"))
+	assert.Equal(t, msgKey("invalidGameMode01", "val", "-1"), c.Exec("sm -1"))
 }
 
 // --- set placement strategy ---
@@ -172,15 +172,15 @@ func TestOldMaidCuiController_SetPlacementStrategy_LongCommand(t *testing.T) {
 func TestOldMaidCuiController_SetPlacementStrategy_NoArgs(t *testing.T) {
 	mi := new(usecase.MockOldMaidInteractor)
 	c := controller.NewOldMaidCuiController(mi)
-	assert.Contains(t, c.Exec("sps"), "CPU placement strategy flag is required")
+	assert.Contains(t, c.Exec("sps"), msgStem("cpuPlacementStrategyFlagRequired0Off1On"))
 }
 
 func TestOldMaidCuiController_SetPlacementStrategy_InvalidValue(t *testing.T) {
 	mi := new(usecase.MockOldMaidInteractor)
 	c := controller.NewOldMaidCuiController(mi)
-	assert.Contains(t, c.Exec("sps 2"), "Invalid CPU placement strategy flag: 2")
-	assert.Contains(t, c.Exec("sps abc"), "Invalid CPU placement strategy flag: abc")
-	assert.Contains(t, c.Exec("sps -1"), "Invalid CPU placement strategy flag: -1")
+	assert.Contains(t, c.Exec("sps 2"), msgKey("invalidCpuPlacementStrategyFlag01", "val", "2"))
+	assert.Contains(t, c.Exec("sps abc"), msgKey("invalidCpuPlacementStrategyFlag01", "val", "abc"))
+	assert.Contains(t, c.Exec("sps -1"), msgKey("invalidCpuPlacementStrategyFlag01", "val", "-1"))
 }
 
 // --- set memory AI ---
@@ -208,15 +208,15 @@ func TestOldMaidCuiController_SetMemoryAI_LongCommand(t *testing.T) {
 func TestOldMaidCuiController_SetMemoryAI_NoArgs(t *testing.T) {
 	mi := new(usecase.MockOldMaidInteractor)
 	c := controller.NewOldMaidCuiController(mi)
-	assert.Contains(t, c.Exec("sma"), "CPU memory AI flag is required")
+	assert.Contains(t, c.Exec("sma"), msgStem("cpuMemoryAiFlagRequired0Off1On"))
 }
 
 func TestOldMaidCuiController_SetMemoryAI_InvalidValue(t *testing.T) {
 	mi := new(usecase.MockOldMaidInteractor)
 	c := controller.NewOldMaidCuiController(mi)
-	assert.Contains(t, c.Exec("sma 2"), "Invalid CPU memory AI flag: 2")
-	assert.Contains(t, c.Exec("sma abc"), "Invalid CPU memory AI flag: abc")
-	assert.Contains(t, c.Exec("sma -1"), "Invalid CPU memory AI flag: -1")
+	assert.Contains(t, c.Exec("sma 2"), msgKey("invalidCpuMemoryAiFlag01", "val", "2"))
+	assert.Contains(t, c.Exec("sma abc"), msgKey("invalidCpuMemoryAiFlag01", "val", "abc"))
+	assert.Contains(t, c.Exec("sma -1"), msgKey("invalidCpuMemoryAiFlag01", "val", "-1"))
 }
 
 // --- set meta-AI ---
@@ -244,15 +244,15 @@ func TestOldMaidCuiController_SetMetaAI_LongCommand(t *testing.T) {
 func TestOldMaidCuiController_SetMetaAI_NoArgs(t *testing.T) {
 	mi := new(usecase.MockOldMaidInteractor)
 	c := controller.NewOldMaidCuiController(mi)
-	assert.Contains(t, c.Exec("smai"), "Meta-AI flag is required")
+	assert.Contains(t, c.Exec("smai"), msgStem("metaAiFlagRequired0Off1On"))
 }
 
 func TestOldMaidCuiController_SetMetaAI_InvalidValue(t *testing.T) {
 	mi := new(usecase.MockOldMaidInteractor)
 	c := controller.NewOldMaidCuiController(mi)
-	assert.Contains(t, c.Exec("smai 2"), "Invalid meta-AI flag: 2")
-	assert.Contains(t, c.Exec("smetaai abc"), "Invalid meta-AI flag: abc")
-	assert.Contains(t, c.Exec("smai -1"), "Invalid meta-AI flag: -1")
+	assert.Contains(t, c.Exec("smai 2"), msgKey("invalidMetaAiFlag01", "val", "2"))
+	assert.Contains(t, c.Exec("smetaai abc"), msgKey("invalidMetaAiFlag01", "val", "abc"))
+	assert.Contains(t, c.Exec("smai -1"), msgKey("invalidMetaAiFlag01", "val", "-1"))
 }
 
 // --- reset profile ---

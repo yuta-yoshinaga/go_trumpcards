@@ -77,11 +77,11 @@ func TestAnacondaCuiController_Exec(t *testing.T) {
 	})
 	t.Run("set players missing arg", func(t *testing.T) {
 		out := controller.NewAnacondaCuiController(newMock()).Exec("sp")
-		assert.Contains(t, out, "required")
+		assert.Contains(t, out, msgStem("playerCountRequiredEGSp4"))
 	})
 	t.Run("set players invalid", func(t *testing.T) {
 		out := controller.NewAnacondaCuiController(newMock()).Exec("sp 99")
-		assert.Contains(t, out, "Invalid")
+		assert.Contains(t, out, msgStem("invalidPlayerCount37"))
 	})
 	t.Run("set ante", func(t *testing.T) {
 		m := newMock()

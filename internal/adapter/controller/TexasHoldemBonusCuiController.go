@@ -35,7 +35,7 @@ func (tc *TexasHoldemBonusCuiController) Exec(command string) string {
 				}
 				bonus := 0
 				if len(args) > 1 {
-					bonus, errMsg, ok = cuiutil.ParseIntArg(args[1:], "", "Invalid bonus amount.", 0, math.MaxInt)
+					bonus, errMsg, ok = cuiutil.ParseIntArgKeys(args[1:], "", "invalidBonusAmount", 0, math.MaxInt)
 					if !ok {
 						return errMsg, true
 					}

@@ -94,7 +94,7 @@ func TestPishtiCuiController_Exec(t *testing.T) {
 		m := newMock()
 		c := controller.NewPishtiCuiController(m)
 		out := c.Exec("sp 9")
-		assert.Contains(t, out, "Invalid")
+		assert.True(t, msgRejected(out))
 	})
 
 	t.Run("log command", func(t *testing.T) {

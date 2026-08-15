@@ -61,7 +61,7 @@ func (c *CariocaCuiController) Exec(command string) string {
 			case "nr", "nextround":
 				return c.ci.NextRound(), true
 			case "pc", "setplayers":
-				return cuiutil.WithParsedInt(args, "Player count is required (3-6).", "Invalid player count: %s. Please enter 3-6.", domain.CariocaPlayerCountMin, domain.CariocaPlayerCountMax, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "playerCountRequired36", "invalidPlayerCount36", domain.CariocaPlayerCountMin, domain.CariocaPlayerCountMax, func(v int) string {
 					cfg := c.ci.GetConfig()
 					cfg.PlayerCount = v
 					return c.ci.ResetWithConfig(cfg)
@@ -73,7 +73,7 @@ func (c *CariocaCuiController) Exec(command string) string {
 					return c.ci.ResetWithConfig(cfg)
 				})
 			case "sp", "setpenalty":
-				return cuiutil.WithParsedInt(args, "Fail penalty is required.", "Invalid fail penalty: %s. Please enter 0 or more.", 0, 1000, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "failPenaltyRequired", "invalidFailPenalty0OrMore", 0, 1000, func(v int) string {
 					cfg := c.ci.GetConfig()
 					cfg.FailContractPenalty = v
 					return c.ci.ResetWithConfig(cfg)

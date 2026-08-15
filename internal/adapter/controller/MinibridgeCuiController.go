@@ -59,7 +59,7 @@ func (c *MinibridgeCuiController) Exec(command string) string {
 // **どちらも既定値で埋めない。** スートの下限は 0 (ノートランプ) で、
 // 「省略」ではなく明示的に選べる 5 つ目の選択肢です。
 func (c *MinibridgeCuiController) contract(args []string) (string, bool) {
-	level, errMsg, ok := cuiutil.ParseIntArg(args, "Level is required.", "Invalid level: %s.",
+	level, errMsg, ok := cuiutil.ParseIntArgKeys(args, "levelRequired", "invalidLevel",
 		1, domain.MinibridgeMaxLevel)
 	if !ok {
 		return errMsg, true

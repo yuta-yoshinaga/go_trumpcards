@@ -111,7 +111,7 @@ func TestDeuceToSevenCuiController_BettingLimit_NoArg(t *testing.T) {
 	mi := newDeuceToSevenMockInteractor()
 	c := NewDeuceToSevenCuiController(mi)
 	result := c.Exec("bl")
-	assert.Contains(t, result, "Betting limit type is required")
+	assert.Contains(t, result, msgStem("bettingLimitTypeRequired0Fixed1Potlimit2Nolimit"))
 }
 
 func TestDeuceToSevenCuiController_BettingLimit_Valid(t *testing.T) {
@@ -129,7 +129,7 @@ func TestDeuceToSevenCuiController_BettingLimit_Invalid(t *testing.T) {
 	mi := newDeuceToSevenMockInteractor()
 	c := NewDeuceToSevenCuiController(mi)
 	result := c.Exec("bl 7")
-	assert.Contains(t, result, "Invalid betting limit")
+	assert.Contains(t, result, msgStem("invalidBettingLimit02"))
 }
 
 func TestDeuceToSevenCuiController_SetCpuCount(t *testing.T) {

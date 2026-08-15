@@ -58,7 +58,7 @@ func (c *SkatCuiController) Exec(command string) string {
 					return c.si.Bid(v == 1)
 				})
 			case "ps", "pickskat":
-				return cuiutil.WithParsedInt(args, "Pickup decision is required (0=decline, 1=pick up).", "Invalid pickup decision: %s.", 0, 1, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "pickupDecisionRequired0Decline1PickUp", "invalidPickupDecision", 0, 1, func(v int) string {
 					return c.si.PickSkat(v == 1)
 				})
 			case "d", "discard":
@@ -78,7 +78,7 @@ func (c *SkatCuiController) Exec(command string) string {
 				if len(args) < 1 {
 					return "Usage: game <type> [trumpSuit]\n  type: 1=Suit 2=Grand 3=Null\n  trumpSuit (suit only): 1=♠ 2=♣ 3=♥ 4=♦\n", true
 				}
-				gt, errMsg, ok := cuiutil.ParseIntArg(args[:1], "", "Invalid game type: %s.", 1, 3)
+				gt, errMsg, ok := cuiutil.ParseIntArgKeys(args[:1], "", "invalidGameType", 1, 3)
 				if !ok {
 					return errMsg, true
 				}
