@@ -249,6 +249,22 @@ func TestSevensCuiController_RefusesMistypedOptionalArgs(t *testing.T) {
 		m.AssertCalled(t, "Play", -1)
 	})
 
+	// **3 つの引数それぞれに分岐がある。** 真ん中だけ試すと、両端が既定値に
+	// 落ちたままでもテストは緑になる。
+	t.Run("joker refuses a mistyped card index", func(t *testing.T) {
+		m := newMock()
+		out := controller.NewSevensCuiController(m).Exec("j abc")
+		assert.Equal(t, msgKey("invalidCardIndex", "val", "abc"), out)
+		m.AssertNotCalled(t, "PlayJoker", mock.Anything, mock.Anything, mock.Anything)
+	})
+
+	t.Run("joker refuses a mistyped target value", func(t *testing.T) {
+		m := newMock()
+		out := controller.NewSevensCuiController(m).Exec("j 0 1 zzz")
+		assert.Equal(t, msgKey("invalidTargetValue", "val", "zzz"), out)
+		m.AssertNotCalled(t, "PlayJoker", mock.Anything, mock.Anything, mock.Anything)
+	})
+
 	t.Run("joker refuses a mistyped suit", func(t *testing.T) {
 		m := newMock()
 		out := controller.NewSevensCuiController(m).Exec("j 0 xyz")
