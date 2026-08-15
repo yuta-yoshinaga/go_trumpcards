@@ -172,9 +172,3 @@ func sjavsDispatch(bc *baseController, w http.ResponseWriter, si usecase.SjavsIn
 	}
 	return true
 }
-
-// NewSjavsDefaultOutputForTest exposes the default-output builder to the
-// external controller_test package.
-func NewSjavsDefaultOutputForTest(msg string) *SjavsWebOutput {
-	return newSjavsDefaultOutput(msg)
-}

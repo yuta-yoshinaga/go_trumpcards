@@ -153,7 +153,3 @@ func toepenDispatch(bc *baseController, w http.ResponseWriter, ti usecase.Toepen
 	}
 	return true
 }
-
-// NewToepenDefaultOutputForTest exposes the default-output builder to the
-// external controller_test package.
-func NewToepenDefaultOutputForTest(msg string) *ToepenWebOutput { return newToepenDefaultOutput(msg) }

@@ -139,9 +139,3 @@ func laughAndLieDownDispatch(bc *baseController, w http.ResponseWriter, li useca
 	}
 	return true
 }
-
-// NewLaughAndLieDownDefaultOutputForTest exposes the default-output builder to
-// the external controller_test package.
-func NewLaughAndLieDownDefaultOutputForTest(msg string) *LaughAndLieDownWebOutput {
-	return newLaughAndLieDownDefaultOutput(msg)
-}
