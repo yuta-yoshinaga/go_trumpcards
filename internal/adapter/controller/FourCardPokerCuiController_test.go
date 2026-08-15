@@ -72,7 +72,7 @@ func TestFourCardPokerCuiController_Bet_Errors(t *testing.T) {
 		assert.Contains(t, c.Exec("b -10"), msgInvalidAnteAmountPrefix())
 	})
 	t.Run("invalid aces up", func(t *testing.T) {
-		assert.Contains(t, c.Exec("b 100 abc"), "Invalid Aces Up amount")
+		assert.Contains(t, c.Exec("b 100 abc"), msgStem("invalidAcesUpAmount"))
 	})
 }
 
@@ -99,9 +99,9 @@ func TestFourCardPokerCuiController_Play_InvalidMultiplier(t *testing.T) {
 	m := newMockFourCardPokerInteractor()
 	c := controller.NewFourCardPokerCuiController(m)
 
-	assert.Contains(t, c.Exec("p 4"), "Invalid play multiplier")
-	assert.Contains(t, c.Exec("p 0"), "Invalid play multiplier")
-	assert.Contains(t, c.Exec("p abc"), "Invalid play multiplier")
+	assert.Contains(t, c.Exec("p 4"), msgStem("invalidPlayMultiplier12Or3"))
+	assert.Contains(t, c.Exec("p 0"), msgStem("invalidPlayMultiplier12Or3"))
+	assert.Contains(t, c.Exec("p abc"), msgStem("invalidPlayMultiplier12Or3"))
 }
 
 func TestFourCardPokerCuiController_Fold(t *testing.T) {

@@ -65,7 +65,7 @@ func (c *TarneebCuiController) Exec(command string) string {
 					return c.ti.ResetWithConfig(cfg)
 				})
 			case "sl", "setlimit":
-				return cuiutil.WithParsedInt(args, "Point limit is required.", "Invalid point limit: %s. Please enter 1-200.", 1, domain.TarneebMaxPointLimit, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "pointLimitRequired", "invalidPointLimit1200", 1, domain.TarneebMaxPointLimit, func(v int) string {
 					cfg := c.ti.GetConfig()
 					cfg.PointLimit = v
 					return c.ti.ResetWithConfig(cfg)

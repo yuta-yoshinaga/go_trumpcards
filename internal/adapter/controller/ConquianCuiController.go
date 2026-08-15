@@ -57,7 +57,7 @@ func (c *ConquianCuiController) Exec(command string) string {
 					return c.ci.ResetWithConfig(cfg)
 				})
 			case "sw", "setwins":
-				return cuiutil.WithParsedInt(args, "Target wins is required.", "Invalid target wins: %s. Please enter 1 or more.", 1, math.MaxInt, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "targetWinsRequired", "invalidTargetWins1OrMore", 1, math.MaxInt, func(v int) string {
 					cfg := c.ci.GetConfig()
 					cfg.TargetWins = v
 					return c.ci.ResetWithConfig(cfg)

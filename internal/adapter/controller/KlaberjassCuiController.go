@@ -55,7 +55,7 @@ func (c *KlaberjassCuiController) Exec(command string) string {
 			case "n", "next":
 				return c.ki.NextDeal(), true
 			case "st", "settarget":
-				return cuiutil.WithParsedInt(args, "Target score is required.", "Invalid target score: %s.", domain.KlaberjassTargetScoreMin, domain.KlaberjassTargetScoreMax, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "targetScoreRequired", "invalidTargetScorePlain", domain.KlaberjassTargetScoreMin, domain.KlaberjassTargetScoreMax, func(v int) string {
 					cfg := c.ki.GetConfig()
 					cfg.TargetScore = v
 					return c.ki.ResetWithConfig(cfg)

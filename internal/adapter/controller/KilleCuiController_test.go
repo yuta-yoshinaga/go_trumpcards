@@ -75,9 +75,9 @@ func TestKilleCuiController_Exec(t *testing.T) {
 
 	t.Run("setstake errors", func(t *testing.T) {
 		c := controller.NewKilleCuiController(newMock())
-		assert.Contains(t, c.Exec("st"), "required")
-		assert.Contains(t, c.Exec("st abc"), "Invalid stake")
-		assert.Contains(t, c.Exec("st 0"), "Invalid stake")
+		assert.True(t, msgRejected(c.Exec("st")))
+		assert.Contains(t, c.Exec("st abc"), msgStem("invalidStake"))
+		assert.Contains(t, c.Exec("st 0"), msgStem("invalidStake"))
 	})
 
 	t.Run("log", func(t *testing.T) {

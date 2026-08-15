@@ -37,7 +37,7 @@ func (tcc *ThreeCardCuiController) Exec(command string) string {
 				}
 				pairPlus := 0
 				if len(args) > 1 {
-					pairPlus, errMsg, ok = cuiutil.ParseIntArg(args[1:], "", "Invalid Pair Plus amount.", 0, math.MaxInt)
+					pairPlus, errMsg, ok = cuiutil.ParseIntArgKeys(args[1:], "", "invalidPairPlusAmount", 0, math.MaxInt)
 					if !ok {
 						return errMsg, true
 					}

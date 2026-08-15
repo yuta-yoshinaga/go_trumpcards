@@ -47,8 +47,7 @@ func (c *OpenFaceChineseCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "p", "place":
-				return cuiutil.WithParsedInt(args, "Row is required (0=front, 1=middle, 2=back).",
-					"Invalid row: %s. Please enter 0, 1 or 2.",
+				return cuiutil.WithParsedIntKeys(args, "rowRequired0Front1Middle2Back", "invalidRow01Or2",
 					domain.OpenFaceChineseRowFront, domain.OpenFaceChineseRowBack, c.di.Place)
 			case "front", "f":
 				return c.di.Place(domain.OpenFaceChineseRowFront), true

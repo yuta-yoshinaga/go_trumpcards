@@ -153,8 +153,8 @@ func TestFreeBetCuiController(t *testing.T) {
 
 	assert.NotEmpty(t, c.Exec("bet 50"))
 	m.AssertCalled(t, "PlaceBet", 50)
-	assert.Contains(t, c.Exec("bet"), "required")
-	assert.Contains(t, c.Exec("bet xyz"), "Invalid")
+	assert.True(t, msgRejected(c.Exec("bet")))
+	assert.True(t, msgRejected(c.Exec("bet xyz")))
 
 	for _, cmd := range []string{"hit", "h", "stand", "s", "fd", "freedouble",
 		"fs", "freesplit", "next", "hint", "log"} {

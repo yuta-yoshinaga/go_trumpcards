@@ -31,16 +31,14 @@ func (cc *ChemindeFerCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "stake":
-				amount, errMsg, ok := cuiutil.ParseIntArg(args,
-					"Stake is required.", "Invalid stake. Please enter a number.", 0, math.MaxInt)
+				amount, errMsg, ok := cuiutil.ParseIntArgKeys(args, "stakeRequired", "invalidStakeANumber", 0, math.MaxInt)
 				if !ok {
 					return errMsg, true
 				}
 				return cc.ci.SetStake(amount), true
 			case "bet":
 				// **0 は「降りる」。** 下限を 0 にしておかないと降りられない。
-				amount, errMsg, ok := cuiutil.ParseIntArg(args,
-					"Bet amount is required.", "Invalid bet. Please enter a number.", 0, math.MaxInt)
+				amount, errMsg, ok := cuiutil.ParseIntArgKeys(args, "betAmountRequired", "invalidBetANumber", 0, math.MaxInt)
 				if !ok {
 					return errMsg, true
 				}

@@ -113,7 +113,7 @@ func TestBadugiCuiController_BettingLimit_NoArg(t *testing.T) {
 	mi := newBadugiMockInteractor()
 	c := NewBadugiCuiController(mi)
 	result := c.Exec("bl")
-	assert.Contains(t, result, "Betting limit type is required")
+	assert.Contains(t, result, msgStem("bettingLimitTypeRequired0Fixed1Potlimit2Nolimit"))
 }
 
 func TestBadugiCuiController_BettingLimit_Valid(t *testing.T) {
@@ -131,7 +131,7 @@ func TestBadugiCuiController_BettingLimit_Invalid(t *testing.T) {
 	mi := newBadugiMockInteractor()
 	c := NewBadugiCuiController(mi)
 	result := c.Exec("bl 7")
-	assert.Contains(t, result, "Invalid betting limit")
+	assert.Contains(t, result, msgStem("invalidBettingLimit02"))
 }
 
 func TestBadugiCuiController_SetCpuCount(t *testing.T) {

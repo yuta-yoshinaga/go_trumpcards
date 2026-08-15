@@ -39,7 +39,7 @@ func (c *ChineseTenCuiController) Exec(command string) string {
 			case "p", "play":
 				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.ci.Play)
 			case "s", "select":
-				return cuiutil.WithParsedInt(args, "Layout index is required.", "Invalid layout index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.ci.Select)
+				return cuiutil.WithParsedIntKeys(args, "layoutIndexRequired", "invalidLayoutIndex", cuiutil.NoMin, cuiutil.NoMax, c.ci.Select)
 			default:
 				return handleCuiHintAndLog(cmd, c.ci.Hint, c.ci.ActionLog)
 			}

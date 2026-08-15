@@ -60,7 +60,7 @@ func (c *FiveHundredCuiController) Exec(command string) string {
 				if len(args) < 2 {
 					return "Usage: bid <tricks> <suit>  (tricks 6-10, suit 1=S 2=C 3=H 4=D)\n", true
 				}
-				tricks, errMsg, ok := cuiutil.ParseIntArg(args[:1], "", "Invalid tricks: %s.", 6, 10)
+				tricks, errMsg, ok := cuiutil.ParseIntArgKeys(args[:1], "", "invalidTricks", 6, 10)
 				if !ok {
 					return errMsg, true
 				}
@@ -70,7 +70,7 @@ func (c *FiveHundredCuiController) Exec(command string) string {
 				}
 				return c.fi.Bid(domain.FiveHundredContractSuit, tricks, suit), true
 			case "bnt":
-				return cuiutil.WithParsedInt(args, "Tricks is required (6-10).", "Invalid tricks: %s.", 6, 10, func(t int) string {
+				return cuiutil.WithParsedIntKeys(args, "tricksRequired610", "invalidTricks", 6, 10, func(t int) string {
 					return c.fi.Bid(domain.FiveHundredContractNoTrump, t, -1)
 				})
 			case "m", "misere":

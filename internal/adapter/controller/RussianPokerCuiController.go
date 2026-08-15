@@ -49,7 +49,7 @@ func (rc *RussianPokerCuiController) Exec(command string) string {
 			case "6", "buy6th":
 				return rc.ri.Buy6th(), true
 			case "sel", "select":
-				idx, errMsg, ok := cuiutil.ParseIntArg(args, "Discard index is required.", "Invalid index. Please enter a number.", 0, 5)
+				idx, errMsg, ok := cuiutil.ParseIntArgKeys(args, "discardIndexRequired", "invalidIndexANumber", 0, 5)
 				if !ok {
 					return errMsg, true
 				}

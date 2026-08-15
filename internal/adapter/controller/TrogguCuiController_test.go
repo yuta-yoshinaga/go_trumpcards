@@ -117,7 +117,7 @@ func TestTrogguCuiController_Exec(t *testing.T) {
 	t.Run("set deals rejects out-of-range", func(t *testing.T) {
 		m := newMock()
 		out := controller.NewTrogguCuiController(m).Exec("st 99")
-		assert.Contains(t, out, "Invalid number of deals")
+		assert.Contains(t, out, msgStem("invalidNumberOfDeals112"))
 		m.AssertNotCalled(t, "ResetWithConfig", mock.Anything)
 	})
 	t.Run("hint and log", func(t *testing.T) {

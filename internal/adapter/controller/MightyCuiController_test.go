@@ -141,7 +141,7 @@ func TestMightyCuiController_Exec(t *testing.T) {
 
 	t.Run("trump invalid partner value", func(t *testing.T) {
 		c := controller.NewMightyCuiController(newMightyCuiMock(mockOutput))
-		assert.Contains(t, c.Exec("t 1 2 0"), "Invalid partner value: 0")
+		assert.Contains(t, c.Exec("t 1 2 0"), msgKey("invalidPartnerValue", "val", "0"))
 	})
 
 	// exchange: three indices

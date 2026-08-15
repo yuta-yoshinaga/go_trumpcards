@@ -50,7 +50,7 @@ func (c *YanivCuiController) Exec(command string) string {
 			case "ds", "drawstock":
 				return c.ci.DrawFromStock(), true
 			case "dp", "drawpickup":
-				return cuiutil.WithParsedInt(args, "Pickup end is required (0=first, 1=last).", "Invalid pickup end: %s. Please enter 0 or 1.", 0, 1, c.ci.DrawFromPickup)
+				return cuiutil.WithParsedIntKeys(args, "pickupEndRequired0First1Last", "invalidPickupEnd0Or1", 0, 1, c.ci.DrawFromPickup)
 			case "nr", "nextround":
 				return c.ci.NextRound(), true
 			case "sd", "setdifficulty":
@@ -60,7 +60,7 @@ func (c *YanivCuiController) Exec(command string) string {
 					return c.ci.ResetWithConfig(cfg)
 				})
 			case "sl", "setlimit":
-				return cuiutil.WithParsedInt(args, "Score limit is required.", "Invalid score limit: %s.", domain.YanivMinScoreLimit, domain.YanivMaxScoreLimit, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "scoreLimitRequired", "invalidScoreLimit", domain.YanivMinScoreLimit, domain.YanivMaxScoreLimit, func(v int) string {
 					cfg := c.ci.GetConfig()
 					cfg.ScoreLimit = v
 					return c.ci.ResetWithConfig(cfg)

@@ -115,7 +115,7 @@ func TestCallBreakCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "ResetWithConfig", expected)
 	})
 	t.Run("setrounds zero is invalid", func(t *testing.T) {
-		assert.Contains(t, controller.NewCallBreakCuiController(newMock()).Exec("sr 0"), "Invalid round count")
+		assert.Contains(t, controller.NewCallBreakCuiController(newMock()).Exec("sr 0"), msgStem("invalidRoundCount1OrMore"))
 	})
 	t.Run("setrounds long form", func(t *testing.T) {
 		m := newMock()
@@ -125,7 +125,7 @@ func TestCallBreakCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "ResetWithConfig", expected)
 	})
 	t.Run("setrounds no args", func(t *testing.T) {
-		assert.Contains(t, controller.NewCallBreakCuiController(newMock()).Exec("sr"), "required")
+		assert.True(t, msgRejected(controller.NewCallBreakCuiController(newMock()).Exec("sr")))
 	})
 
 	t.Run("log", func(t *testing.T) {

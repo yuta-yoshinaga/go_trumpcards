@@ -30,7 +30,7 @@ func (c *MemoryCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "f", "flip":
-				return cuiutil.WithParsedInt(args, "Position is required.", "Invalid position: %s.", cuiutil.NoMin, cuiutil.NoMax, c.mi.Flip)
+				return cuiutil.WithParsedIntKeys(args, "positionRequired", "invalidPosition", cuiutil.NoMin, cuiutil.NoMax, c.mi.Flip)
 			case "n", "next":
 				return c.mi.Next(), true
 			case "sd", "setdifficulty":

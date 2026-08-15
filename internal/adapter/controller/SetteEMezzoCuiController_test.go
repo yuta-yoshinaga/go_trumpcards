@@ -77,11 +77,11 @@ func TestSetteEMezzoCuiControllerRejectsBadInput(t *testing.T) {
 	for _, tc := range []struct{ cmd, contains string }{
 		{"b", msgBetAmountRequired()},
 		{"b abc", msgInvalidBetAmountPrefix()},
-		{"matta", "required"},
-		{"matta abc", "Invalid"},
+		{"matta", msgStem("mattaValueRequired05Or17")},
+		{"matta abc", msgStem("invalidMattaValueEnter05OrAWholeNumberFrom1To7")},
 		// 0.5 と 1〜7 以外は取れない。
-		{"matta 8", "Invalid"},
-		{"matta 0", "Invalid"},
+		{"matta 8", msgStem("invalidMattaValueEnter05OrAWholeNumberFrom1To7")},
+		{"matta 0", msgStem("invalidMattaValueEnter05OrAWholeNumberFrom1To7")},
 	} {
 		t.Run(tc.cmd, func(t *testing.T) {
 			c := NewSetteEMezzoCuiController(newMockSetteEMezzoInteractor())

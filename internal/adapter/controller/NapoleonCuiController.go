@@ -65,7 +65,7 @@ func (c *NapoleonCuiController) Exec(command string) string {
 				if !ok {
 					return errMsg, true
 				}
-				adjVal, errMsg, ok := cuiutil.ParseIntArg(args[2:3], "", "Invalid adjutant value: %s.", 1, 13)
+				adjVal, errMsg, ok := cuiutil.ParseIntArgKeys(args[2:3], "", "invalidAdjutantValue", 1, 13)
 				if !ok {
 					return errMsg, true
 				}

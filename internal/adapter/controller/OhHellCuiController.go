@@ -57,7 +57,7 @@ func (c *OhHellCuiController) Exec(command string) string {
 					return c.oi.ResetWithConfig(cfg)
 				})
 			case "sm", "setmaxhand":
-				return cuiutil.WithParsedInt(args, "Max hand size is required (1-13).", "Invalid max hand size: %s. Please enter 1-13.", 1, 13, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "maxHandSizeRequired113", "invalidMaxHandSize113", 1, 13, func(v int) string {
 					cfg := c.oi.GetConfig()
 					cfg.MaxHandSize = v
 					return c.oi.ResetWithConfig(cfg)

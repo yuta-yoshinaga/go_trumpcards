@@ -51,7 +51,7 @@ func TestBourreCuiController_Exec(t *testing.T) {
 	})
 	t.Run("decide invalid", func(t *testing.T) {
 		c := controller.NewBourreCuiController(newMock())
-		assert.Contains(t, c.Exec("d 9"), "Invalid decision")
+		assert.Contains(t, c.Exec("d 9"), msgStem("invalidDecision0Or1"))
 	})
 	t.Run("draw indices", func(t *testing.T) {
 		m := newMock()

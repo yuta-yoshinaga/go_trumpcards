@@ -176,19 +176,19 @@ func TestNapoleonCuiController_Exec(t *testing.T) {
 	t.Run("trump command t invalid adjVal", func(t *testing.T) {
 		c := controller.NewNapoleonCuiController(newMock())
 		result := c.Exec("t 1 2 abc")
-		assert.Contains(t, result, "Invalid adjutant value")
+		assert.Contains(t, result, msgStem("invalidAdjutantValue"))
 	})
 
 	t.Run("trump command t adjVal out of range high", func(t *testing.T) {
 		c := controller.NewNapoleonCuiController(newMock())
 		result := c.Exec("t 1 2 14")
-		assert.Contains(t, result, "Invalid adjutant value: 14")
+		assert.Contains(t, result, msgKey("invalidAdjutantValue", "val", "14"))
 	})
 
 	t.Run("trump command t adjVal out of range low", func(t *testing.T) {
 		c := controller.NewNapoleonCuiController(newMock())
 		result := c.Exec("t 1 2 0")
-		assert.Contains(t, result, "Invalid adjutant value: 0")
+		assert.Contains(t, result, msgKey("invalidAdjutantValue", "val", "0"))
 	})
 
 	// exchange

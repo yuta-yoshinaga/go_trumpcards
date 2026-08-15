@@ -148,25 +148,25 @@ func TestDoubtCuiController_Exec(t *testing.T) {
 	t.Run("setwindow no args", func(t *testing.T) {
 		c := controller.NewDoubtCuiController(newMock())
 		result := c.Exec("sw")
-		assert.Contains(t, result, "required")
+		assert.True(t, msgRejected(result))
 	})
 
 	t.Run("setwindow invalid value", func(t *testing.T) {
 		c := controller.NewDoubtCuiController(newMock())
 		result := c.Exec("sw abc")
-		assert.Contains(t, result, "Invalid doubt window")
+		assert.Contains(t, result, msgStem("invalidDoubtWindow160"))
 	})
 
 	t.Run("setwindow zero", func(t *testing.T) {
 		c := controller.NewDoubtCuiController(newMock())
 		result := c.Exec("sw 0")
-		assert.Contains(t, result, "Invalid doubt window")
+		assert.Contains(t, result, msgStem("invalidDoubtWindow160"))
 	})
 
 	t.Run("setwindow over 60", func(t *testing.T) {
 		c := controller.NewDoubtCuiController(newMock())
 		result := c.Exec("sw 61")
-		assert.Contains(t, result, "Invalid doubt window")
+		assert.Contains(t, result, msgStem("invalidDoubtWindow160"))
 	})
 
 	// setmemory tests
@@ -193,25 +193,25 @@ func TestDoubtCuiController_Exec(t *testing.T) {
 	t.Run("setmemory no args", func(t *testing.T) {
 		c := controller.NewDoubtCuiController(newMock())
 		result := c.Exec("sm")
-		assert.Contains(t, result, "required")
+		assert.True(t, msgRejected(result))
 	})
 
 	t.Run("setmemory invalid value", func(t *testing.T) {
 		c := controller.NewDoubtCuiController(newMock())
 		result := c.Exec("sm abc")
-		assert.Contains(t, result, "Invalid CPU memory level")
+		assert.Contains(t, result, msgStem("invalidCpuMemoryLevel02"))
 	})
 
 	t.Run("setmemory negative", func(t *testing.T) {
 		c := controller.NewDoubtCuiController(newMock())
 		result := c.Exec("sm -1")
-		assert.Contains(t, result, "Invalid CPU memory level")
+		assert.Contains(t, result, msgStem("invalidCpuMemoryLevel02"))
 	})
 
 	t.Run("setmemory over 2", func(t *testing.T) {
 		c := controller.NewDoubtCuiController(newMock())
 		result := c.Exec("sm 3")
-		assert.Contains(t, result, "Invalid CPU memory level")
+		assert.Contains(t, result, msgStem("invalidCpuMemoryLevel02"))
 	})
 
 	// setpenalty tests
@@ -238,19 +238,19 @@ func TestDoubtCuiController_Exec(t *testing.T) {
 	t.Run("setpenalty no args", func(t *testing.T) {
 		c := controller.NewDoubtCuiController(newMock())
 		result := c.Exec("sp")
-		assert.Contains(t, result, "required")
+		assert.True(t, msgRejected(result))
 	})
 
 	t.Run("setpenalty invalid value", func(t *testing.T) {
 		c := controller.NewDoubtCuiController(newMock())
 		result := c.Exec("sp abc")
-		assert.Contains(t, result, "Invalid penalty draw limit")
+		assert.Contains(t, result, msgStem("invalidPenaltyDrawLimit0OrMore"))
 	})
 
 	t.Run("setpenalty negative", func(t *testing.T) {
 		c := controller.NewDoubtCuiController(newMock())
 		result := c.Exec("sp -1")
-		assert.Contains(t, result, "Invalid penalty draw limit")
+		assert.Contains(t, result, msgStem("invalidPenaltyDrawLimit0OrMore"))
 	})
 
 	// smetaai / smai tests
@@ -277,14 +277,14 @@ func TestDoubtCuiController_Exec(t *testing.T) {
 	t.Run("smetaai no args", func(t *testing.T) {
 		c := controller.NewDoubtCuiController(newMock())
 		result := c.Exec("smetaai")
-		assert.Contains(t, result, "Meta-AI flag is required")
+		assert.Contains(t, result, msgStem("metaAiFlagRequired0Off1On"))
 	})
 
 	t.Run("smetaai invalid value", func(t *testing.T) {
 		c := controller.NewDoubtCuiController(newMock())
-		assert.Contains(t, c.Exec("smetaai 2"), "Invalid meta-AI flag")
-		assert.Contains(t, c.Exec("smai abc"), "Invalid meta-AI flag")
-		assert.Contains(t, c.Exec("smai -1"), "Invalid meta-AI flag")
+		assert.Contains(t, c.Exec("smetaai 2"), msgStem("invalidMetaAiFlag01"))
+		assert.Contains(t, c.Exec("smai abc"), msgStem("invalidMetaAiFlag01"))
+		assert.Contains(t, c.Exec("smai -1"), msgStem("invalidMetaAiFlag01"))
 	})
 
 	// rp / resetprofile tests

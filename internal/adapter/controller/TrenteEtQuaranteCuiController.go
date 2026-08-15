@@ -49,7 +49,7 @@ func (c *TrenteEtQuaranteCuiController) Exec(command string) string {
 			case "n", "next", "nr", "nextround":
 				return c.bi.NextRound(), true
 			case "sb", "setdefaultbet":
-				return cuiutil.WithParsedInt(args, "Default bet is required (0=Noir, 1=Rouge, 2=Couleur, 3=Inverse).", "Invalid bet: %s. Please enter 0-3.", 0, 3, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "defaultBetRequired0Noir1Rouge2Couleur3Inverse", "invalidBet03", 0, 3, func(v int) string {
 					cfg := c.bi.GetConfig()
 					cfg.DefaultBet = domain.TrenteEtQuaranteBet(v)
 					return c.bi.ResetWithConfig(cfg)

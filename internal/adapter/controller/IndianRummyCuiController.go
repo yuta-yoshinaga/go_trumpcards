@@ -61,7 +61,7 @@ func (c *IndianRummyCuiController) Exec(command string) string {
 					return c.ci.ResetWithConfig(cfg)
 				})
 			case "sr", "setrounds":
-				return cuiutil.WithParsedInt(args, "Target rounds is required.", "Invalid target rounds: %s. Please enter 1 or more.", 1, math.MaxInt, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "targetRoundsRequiredPlain", "invalidTargetRounds1OrMore", 1, math.MaxInt, func(v int) string {
 					cfg := c.ci.GetConfig()
 					cfg.TargetRounds = v
 					return c.ci.ResetWithConfig(cfg)

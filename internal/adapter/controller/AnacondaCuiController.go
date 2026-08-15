@@ -80,7 +80,7 @@ func (c *AnacondaCuiController) Exec(command string) string {
 			case "n", "next", "nr", "nextround":
 				return c.ti.NextRound(), true
 			case "sp", "setplayers":
-				return cuiutil.WithParsedInt(args, "Player count is required (e.g. sp 4).", "Invalid player count: %s. Please enter 3-7.", domain.AnacondaMinPlayerCount, domain.AnacondaMaxPlayerCount, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "playerCountRequiredEGSp4", "invalidPlayerCount37", domain.AnacondaMinPlayerCount, domain.AnacondaMaxPlayerCount, func(v int) string {
 					cfg := c.ti.GetConfig()
 					cfg.PlayerCount = v
 					return c.ti.ResetWithConfig(cfg)

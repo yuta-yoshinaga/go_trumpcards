@@ -110,7 +110,7 @@ func TestPaiGowCuiController_Set_Errors(t *testing.T) {
 
 	t.Run("missing args", func(t *testing.T) {
 		result := c.Exec("s")
-		assert.Contains(t, result, "Two card indices are required")
+		assert.Contains(t, result, msgStem("twoCardIndicesAreRequired"))
 	})
 
 	t.Run("missing second", func(t *testing.T) {
@@ -120,12 +120,12 @@ func TestPaiGowCuiController_Set_Errors(t *testing.T) {
 
 	t.Run("invalid first", func(t *testing.T) {
 		result := c.Exec("s abc 1")
-		assert.Contains(t, result, "Invalid first index")
+		assert.Contains(t, result, msgStem("invalidFirstIndex"))
 	})
 
 	t.Run("invalid second", func(t *testing.T) {
 		result := c.Exec("s 0 abc")
-		assert.Contains(t, result, "Invalid second index")
+		assert.Contains(t, result, msgStem("invalidSecondIndex"))
 	})
 }
 

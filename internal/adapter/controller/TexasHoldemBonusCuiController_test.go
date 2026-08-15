@@ -71,7 +71,7 @@ func TestTexasHoldemBonusCuiController_Bet_Errors(t *testing.T) {
 	})
 	t.Run("invalid bonus", func(t *testing.T) {
 		result := c.Exec("b 100 abc")
-		assert.Contains(t, result, "Invalid bonus amount")
+		assert.Contains(t, result, msgStem("invalidBonusAmount"))
 	})
 }
 

@@ -65,7 +65,7 @@ func (c *MusCuiController) Exec(command string) string {
 			case "paso":
 				return c.mi.Bet(domain.MusActionPaso, 0), true
 			case "e", "envido":
-				return cuiutil.WithParsedInt(args, "Amount is required (e.g. e 2).", "Invalid amount: %s.", 1, 40, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "amountRequiredEGE2", "invalidAmount", 1, 40, func(v int) string {
 					return c.mi.Bet(domain.MusActionEnvido, v)
 				})
 			case "ordago":
@@ -93,7 +93,7 @@ func (c *MusCuiController) Exec(command string) string {
 func (c *MusCuiController) handleDiscard(args []string) (string, bool) {
 	indices := make([]int, 0, len(args))
 	for _, a := range args {
-		v, _, ok := cuiutil.ParseIntArg([]string{a}, "Index required.", "Invalid index: %s.", 0, 3)
+		v, _, ok := cuiutil.ParseIntArgKeys([]string{a}, "indexRequired", "invalidIndexPlain", 0, 3)
 		if !ok {
 			return "Invalid card index. Usage: d <idx>...", true
 		}

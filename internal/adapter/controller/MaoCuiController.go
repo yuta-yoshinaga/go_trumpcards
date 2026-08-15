@@ -82,7 +82,7 @@ func (c *MaoCuiController) Exec(command string) string {
 			case "sl", "setlimit":
 				// Cap matches the Web controller's bound (MaoWebConfig.ToConfig) so the
 				// CUI and Web layers enforce the same maximum point limit.
-				return cuiutil.WithParsedInt(args, "Point limit is required.", "Invalid point limit: %s. Please enter 1-1000.", 1, 1000, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "pointLimitRequired", "invalidPointLimit11000", 1, 1000, func(v int) string {
 					cfg := c.ci.GetConfig()
 					cfg.PointLimit = v
 					return c.ci.ResetWithConfig(cfg)

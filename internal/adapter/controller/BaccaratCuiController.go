@@ -35,7 +35,7 @@ func (bcc *BaccaratCuiController) Exec(command string) string {
 				if !ok {
 					return errMsg, true
 				}
-				betType, errMsg, ok := cuiutil.ParseIntArg(args[1:], "Bet type is required (0=Player, 1=Banker, 2=Tie).", "Invalid bet type. Please enter 0(Player), 1(Banker), or 2(Tie).", 0, 2)
+				betType, errMsg, ok := cuiutil.ParseIntArgKeys(args[1:], "betTypeRequired0Player1Banker2Tie", "invalidBetType0Player1BankerOr2Tie", 0, 2)
 				if !ok {
 					return errMsg, true
 				}

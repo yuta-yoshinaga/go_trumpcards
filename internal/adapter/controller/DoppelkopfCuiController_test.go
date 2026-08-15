@@ -101,7 +101,7 @@ func TestDoppelkopfCuiController_Exec(t *testing.T) {
 
 	t.Run("setchips invalid", func(t *testing.T) {
 		result := controller.NewDoppelkopfCuiController(newMock()).Exec("sb 0")
-		assert.Contains(t, result, "Invalid base chips")
+		assert.Contains(t, result, msgStem("invalidBaseChips1OrMore"))
 	})
 
 	t.Run("hint / log", func(t *testing.T) {

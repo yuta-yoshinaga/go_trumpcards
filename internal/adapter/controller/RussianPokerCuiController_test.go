@@ -126,12 +126,12 @@ func TestRussianPokerCuiController_Select_Errors(t *testing.T) {
 
 	t.Run("missing args", func(t *testing.T) {
 		result := c.Exec("sel")
-		assert.Contains(t, result, "Discard index is required")
+		assert.Contains(t, result, msgStem("discardIndexRequired"))
 	})
 
 	t.Run("invalid index", func(t *testing.T) {
 		result := c.Exec("sel abc")
-		assert.Contains(t, result, "Invalid index")
+		assert.Contains(t, result, msgStem("invalidIndexANumber"))
 	})
 }
 

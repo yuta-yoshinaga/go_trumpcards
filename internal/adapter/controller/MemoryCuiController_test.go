@@ -48,13 +48,13 @@ func TestMemoryCuiControllerFlip(t *testing.T) {
 		mi := newMockMemoryInteractor()
 		c := NewMemoryCuiController(mi)
 		result := c.Exec("f")
-		assert.Equal(t, "Position is required.", result)
+		assert.Equal(t, msgKey("positionRequired"), result)
 	})
 	t.Run("flip invalid position", func(t *testing.T) {
 		mi := newMockMemoryInteractor()
 		c := NewMemoryCuiController(mi)
 		result := c.Exec("f abc")
-		assert.Contains(t, result, "Invalid position")
+		assert.Contains(t, result, msgStem("invalidPosition"))
 	})
 }
 

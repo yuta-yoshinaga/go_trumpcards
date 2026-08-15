@@ -37,14 +37,14 @@ func (uc *UltimateTexasHoldemCuiController) Exec(command string) string {
 				}
 				trips := 0
 				if len(args) > 1 {
-					trips, errMsg, ok = cuiutil.ParseIntArg(args[1:], "", "Invalid trips amount.", 0, math.MaxInt)
+					trips, errMsg, ok = cuiutil.ParseIntArgKeys(args[1:], "", "invalidTripsAmount", 0, math.MaxInt)
 					if !ok {
 						return errMsg, true
 					}
 				}
 				return uc.ui.Bet(ante, trips), true
 			case "p", "play":
-				mult, errMsg, ok := cuiutil.ParseIntArg(args, "Play multiplier is required (e.g. `p 4`).", "Invalid play multiplier.", 1, 4)
+				mult, errMsg, ok := cuiutil.ParseIntArgKeys(args, "playMultiplierRequiredEGP4", "invalidPlayMultiplier", 1, 4)
 				if !ok {
 					return errMsg, true
 				}

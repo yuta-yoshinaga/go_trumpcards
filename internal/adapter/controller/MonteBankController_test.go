@@ -134,11 +134,11 @@ func TestMonteBankCuiController(t *testing.T) {
 	m.AssertCalled(t, "PlaceBet", 3, 50)
 
 	// 0 は画面上の番号として無効 (1〜4)。
-	assert.Contains(t, c.Exec("bet 0 50"), "Invalid")
-	assert.Contains(t, c.Exec("bet"), "required")
-	assert.Contains(t, c.Exec("bet 1"), "required")
-	assert.Contains(t, c.Exec("bet xyz 50"), "Invalid")
-	assert.Contains(t, c.Exec("bet 1 xyz"), "Invalid")
+	assert.True(t, msgRejected(c.Exec("bet 0 50")))
+	assert.True(t, msgRejected(c.Exec("bet")))
+	assert.True(t, msgRejected(c.Exec("bet 1")))
+	assert.True(t, msgRejected(c.Exec("bet xyz 50")))
+	assert.True(t, msgRejected(c.Exec("bet 1 xyz")))
 
 	for _, cmd := range []string{"next", "hint", "log"} {
 		assert.NotEmpty(t, c.Exec(cmd), "command %s produced nothing", cmd)

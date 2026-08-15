@@ -258,17 +258,17 @@ func TestPokerCuiController_BettingLimit_LongCommand(t *testing.T) {
 func TestPokerCuiController_BettingLimit_NoArgs(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
-	assert.Contains(t, c.Exec("bl"), "Betting limit type is required")
+	assert.Contains(t, c.Exec("bl"), msgStem("bettingLimitTypeRequired0Fixed1Potlimit2Nolimit"))
 }
 
 func TestPokerCuiController_BettingLimit_InvalidValue(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
 	// non-numeric: controller catches
-	assert.Contains(t, c.Exec("bl abc"), "Invalid betting limit: abc")
+	assert.Contains(t, c.Exec("bl abc"), msgKey("invalidBettingLimit02", "val", "abc"))
 	// numeric out-of-range: controller catches via ParseIntArg bounds
-	assert.Equal(t, "Invalid betting limit: 5. Please enter 0-2.", c.Exec("bl 5"))
-	assert.Equal(t, "Invalid betting limit: -1. Please enter 0-2.", c.Exec("bl -1"))
+	assert.Equal(t, msgKey("invalidBettingLimit02", "val", "5"), c.Exec("bl 5"))
+	assert.Equal(t, msgKey("invalidBettingLimit02", "val", "-1"), c.Exec("bl -1"))
 }
 
 // --- lowball ---
@@ -321,18 +321,18 @@ func TestPokerCuiController_SetCpuCount_MaxValue(t *testing.T) {
 func TestPokerCuiController_SetCpuCount_NoArgs(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
-	assert.Contains(t, c.Exec("scc"), "CPU player count is required")
+	assert.Contains(t, c.Exec("scc"), msgStem("cpuPlayerCountRequired"))
 }
 
 func TestPokerCuiController_SetCpuCount_InvalidValue(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
 	// non-numeric: controller catches
-	assert.Contains(t, c.Exec("scc abc"), "Invalid CPU player count: abc")
+	assert.Contains(t, c.Exec("scc abc"), msgKey("invalidCpuPlayerCount13", "val", "abc"))
 	// numeric out-of-range: controller catches via ParseIntArg bounds
-	assert.Equal(t, "Invalid CPU player count: 0. Please enter 1-3.", c.Exec("scc 0"))
-	assert.Equal(t, "Invalid CPU player count: 4. Please enter 1-3.", c.Exec("scc 4"))
-	assert.Equal(t, "Invalid CPU player count: -1. Please enter 1-3.", c.Exec("scc -1"))
+	assert.Equal(t, msgKey("invalidCpuPlayerCount13", "val", "0"), c.Exec("scc 0"))
+	assert.Equal(t, msgKey("invalidCpuPlayerCount13", "val", "4"), c.Exec("scc 4"))
+	assert.Equal(t, msgKey("invalidCpuPlayerCount13", "val", "-1"), c.Exec("scc -1"))
 }
 
 // --- set joker count ---
@@ -370,17 +370,17 @@ func TestPokerCuiController_SetJokerCount_MinValue(t *testing.T) {
 func TestPokerCuiController_SetJokerCount_NoArgs(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
-	assert.Contains(t, c.Exec("sjc"), "Joker count is required")
+	assert.Contains(t, c.Exec("sjc"), msgStem("jokerCountRequired"))
 }
 
 func TestPokerCuiController_SetJokerCount_InvalidValue(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
 	// non-numeric: controller catches
-	assert.Contains(t, c.Exec("sjc abc"), "Invalid joker count: abc")
+	assert.Contains(t, c.Exec("sjc abc"), msgKey("invalidJokerCount02", "val", "abc"))
 	// numeric out-of-range: controller catches via ParseIntArg bounds
-	assert.Equal(t, "Invalid joker count: -1. Please enter 0-2.", c.Exec("sjc -1"))
-	assert.Equal(t, "Invalid joker count: 3. Please enter 0-2.", c.Exec("sjc 3"))
+	assert.Equal(t, msgKey("invalidJokerCount02", "val", "-1"), c.Exec("sjc -1"))
+	assert.Equal(t, msgKey("invalidJokerCount02", "val", "3"), c.Exec("sjc 3"))
 }
 
 // --- odds ---

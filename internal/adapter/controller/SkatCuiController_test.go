@@ -129,7 +129,7 @@ func TestSkatCuiController_Exec(t *testing.T) {
 
 	t.Run("game invalid type", func(t *testing.T) {
 		c := controller.NewSkatCuiController(newMock())
-		assert.Contains(t, c.Exec("g 99"), "Invalid game type")
+		assert.Contains(t, c.Exec("g 99"), msgStem("invalidGameType"))
 	})
 
 	t.Run("game invalid trump", func(t *testing.T) {

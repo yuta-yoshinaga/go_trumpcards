@@ -32,7 +32,7 @@ func (vpc *VideoPokerCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bet":
-				amount, errMsg, ok := cuiutil.ParseIntArg(args, "Bet amount is required (1-5).", "Invalid bet amount.", 1, 5)
+				amount, errMsg, ok := cuiutil.ParseIntArgKeys(args, "betAmountRequired15", "invalidBetAmountPlain", 1, 5)
 				if !ok {
 					return errMsg, true
 				}

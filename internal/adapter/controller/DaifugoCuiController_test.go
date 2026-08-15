@@ -212,17 +212,17 @@ func TestDaifugoCuiController_SetJoker_LongCommand(t *testing.T) {
 func TestDaifugoCuiController_SetJoker_NoArgs(t *testing.T) {
 	mi := new(mockUsecases.MockDaifugoInteractor)
 	c := controller.NewDaifugoCuiController(mi)
-	assert.Contains(t, c.Exec("sj"), "Joker count is required")
+	assert.Contains(t, c.Exec("sj"), msgStem("jokerCountRequired02"))
 }
 
 func TestDaifugoCuiController_SetJoker_InvalidValue(t *testing.T) {
 	mi := new(mockUsecases.MockDaifugoInteractor)
 	c := controller.NewDaifugoCuiController(mi)
 	// non-numeric: controller catches
-	assert.Contains(t, c.Exec("sj abc"), "Invalid joker count: abc")
+	assert.Contains(t, c.Exec("sj abc"), msgKey("invalidJokerCount02", "val", "abc"))
 	// numeric out-of-range: controller catches via ParseIntArg bounds
-	assert.Equal(t, "Invalid joker count: 3. Please enter 0-2.", c.Exec("sj 3"))
-	assert.Equal(t, "Invalid joker count: -1. Please enter 0-2.", c.Exec("sj -1"))
+	assert.Equal(t, msgKey("invalidJokerCount02", "val", "3"), c.Exec("sj 3"))
+	assert.Equal(t, msgKey("invalidJokerCount02", "val", "-1"), c.Exec("sj -1"))
 }
 
 // --- setrule ---
@@ -391,15 +391,15 @@ func TestDaifugoCuiController_FiveSkipCount_Valid(t *testing.T) {
 func TestDaifugoCuiController_FiveSkipCount_NoArgs(t *testing.T) {
 	mi := new(mockUsecases.MockDaifugoInteractor)
 	c := controller.NewDaifugoCuiController(mi)
-	assert.Contains(t, c.Exec("5skipcount"), "Five skip count is required")
+	assert.Contains(t, c.Exec("5skipcount"), msgStem("fiveSkipCountRequired15"))
 }
 
 func TestDaifugoCuiController_FiveSkipCount_InvalidValue(t *testing.T) {
 	mi := new(mockUsecases.MockDaifugoInteractor)
 	c := controller.NewDaifugoCuiController(mi)
 	// non-numeric: controller catches
-	assert.Contains(t, c.Exec("5skipcount abc"), "Invalid five skip count: abc")
+	assert.Contains(t, c.Exec("5skipcount abc"), msgKey("invalidFiveSkipCount15", "val", "abc"))
 	// numeric out-of-range: controller catches via ParseIntArg bounds
-	assert.Equal(t, "Invalid five skip count: 0. Please enter 1-5.", c.Exec("5skipcount 0"))
-	assert.Equal(t, "Invalid five skip count: 6. Please enter 1-5.", c.Exec("5skipcount 6"))
+	assert.Equal(t, msgKey("invalidFiveSkipCount15", "val", "0"), c.Exec("5skipcount 0"))
+	assert.Equal(t, msgKey("invalidFiveSkipCount15", "val", "6"), c.Exec("5skipcount 6"))
 }

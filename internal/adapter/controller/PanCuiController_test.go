@@ -102,7 +102,7 @@ func TestPanCuiController_Exec(t *testing.T) {
 
 	t.Run("setplayers pc out of range", func(t *testing.T) {
 		result := controller.NewPanCuiController(newMock()).Exec("pc 9")
-		assert.Contains(t, result, "Invalid player count")
+		assert.Contains(t, result, msgStem("invalidPlayerCount36"))
 	})
 
 	t.Run("setdifficulty sd valid", func(t *testing.T) {
@@ -128,7 +128,7 @@ func TestPanCuiController_Exec(t *testing.T) {
 
 	t.Run("setrounds sr invalid", func(t *testing.T) {
 		result := controller.NewPanCuiController(newMock()).Exec("sr 0")
-		assert.Contains(t, result, "Invalid target rounds")
+		assert.Contains(t, result, msgStem("invalidTargetRounds1OrMore"))
 	})
 
 	t.Run("action log l", func(t *testing.T) {

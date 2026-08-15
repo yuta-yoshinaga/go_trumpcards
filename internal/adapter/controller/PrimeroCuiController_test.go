@@ -63,11 +63,11 @@ func TestPrimeroCuiController_Exec(t *testing.T) {
 	})
 	t.Run("set players missing arg", func(t *testing.T) {
 		out := controller.NewPrimeroCuiController(newMock()).Exec("sp")
-		assert.Contains(t, out, "required")
+		assert.True(t, msgRejected(out))
 	})
 	t.Run("set players invalid", func(t *testing.T) {
 		out := controller.NewPrimeroCuiController(newMock()).Exec("sp 99")
-		assert.Contains(t, out, "Invalid")
+		assert.True(t, msgRejected(out))
 	})
 	t.Run("set ante", func(t *testing.T) {
 		m := newMock()

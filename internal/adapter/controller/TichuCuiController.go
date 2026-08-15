@@ -47,7 +47,7 @@ func (c *TichuCuiController) Exec(command string) string {
 				if len(args) == 0 {
 					return c.tgi.Declare(0), true
 				}
-				return cuiutil.WithParsedInt(args, "Declaration is required (0=none, 1=Tichu, 2=Grand Tichu).", "Invalid declaration: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "declarationRequired0None1Tichu2GrandTichu", "invalidDeclaration02", 0, 2, func(v int) string {
 					return c.tgi.Declare(v)
 				})
 			case "sd", "setdifficulty":

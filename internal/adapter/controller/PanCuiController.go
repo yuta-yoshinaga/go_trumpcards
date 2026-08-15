@@ -53,7 +53,7 @@ func (c *PanCuiController) Exec(command string) string {
 			case "nr", "nextround":
 				return c.ci.NextRound(), true
 			case "pc", "setplayers":
-				return cuiutil.WithParsedInt(args, "Player count is required (3-6).", "Invalid player count: %s. Please enter 3-6.", domain.PanPlayerCountMin, domain.PanPlayerCountMax, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "playerCountRequired36", "invalidPlayerCount36", domain.PanPlayerCountMin, domain.PanPlayerCountMax, func(v int) string {
 					cfg := c.ci.GetConfig()
 					cfg.PlayerCount = v
 					return c.ci.ResetWithConfig(cfg)
@@ -65,7 +65,7 @@ func (c *PanCuiController) Exec(command string) string {
 					return c.ci.ResetWithConfig(cfg)
 				})
 			case "sr", "setrounds":
-				return cuiutil.WithParsedInt(args, "Target rounds is required.", "Invalid target rounds: %s. Please enter 1 or more.", 1, math.MaxInt, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "targetRoundsRequiredPlain", "invalidTargetRounds1OrMore", 1, math.MaxInt, func(v int) string {
 					cfg := c.ci.GetConfig()
 					cfg.TargetRounds = v
 					return c.ci.ResetWithConfig(cfg)

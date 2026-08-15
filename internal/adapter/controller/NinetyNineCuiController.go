@@ -64,7 +64,7 @@ func (c *NinetyNineCuiController) Exec(command string) string {
 					return c.oi.ResetWithConfig(cfg)
 				})
 			case "st", "settarget":
-				return cuiutil.WithParsedInt(args, "Target score is required (10-1000).", "Invalid target score: %s. Please enter 10-1000.", 10, 1000, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "targetScoreRequired101000", "invalidTargetScore101000", 10, 1000, func(v int) string {
 					cfg := c.oi.GetConfig()
 					cfg.TargetScore = v
 					return c.oi.ResetWithConfig(cfg)

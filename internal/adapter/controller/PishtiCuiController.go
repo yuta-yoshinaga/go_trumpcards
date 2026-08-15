@@ -49,7 +49,7 @@ func (c *PishtiCuiController) Exec(command string) string {
 					return c.pi.ResetWithConfig(cfg)
 				})
 			case "sp", "setplayers":
-				return cuiutil.WithParsedInt(args, "player count is required (2-4).", "Invalid player count: %s. Please enter 2-4.", domain.PishtiMinPlayerCnt, domain.PishtiMaxPlayerCnt, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "playerCountRequired24", "invalidPlayerCount24", domain.PishtiMinPlayerCnt, domain.PishtiMaxPlayerCnt, func(v int) string {
 					cfg := c.pi.GetConfig()
 					cfg.PlayerCnt = v
 					return c.pi.ResetWithConfig(cfg)
@@ -66,7 +66,7 @@ func (c *PishtiCuiController) handlePlay(args []string) (string, bool) {
 	if len(args) < 1 {
 		return "Usage: p <handIdx>", true
 	}
-	handIdx, _, ok := cuiutil.ParseIntArg([]string{args[0]}, "hand index is required", "Invalid hand index: %s", 0, 51)
+	handIdx, _, ok := cuiutil.ParseIntArgKeys([]string{args[0]}, "handIndexRequired", "invalidHandIndex", 0, 51)
 	if !ok {
 		return "Invalid hand index: " + args[0], true
 	}

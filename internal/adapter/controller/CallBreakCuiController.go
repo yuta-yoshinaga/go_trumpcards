@@ -59,7 +59,7 @@ func (c *CallBreakCuiController) Exec(command string) string {
 					return c.ci.ResetWithConfig(cfg)
 				})
 			case "sr", "setrounds":
-				return cuiutil.WithParsedInt(args, "Total rounds is required.", "Invalid round count: %s. Please enter 1 or more.", 1, math.MaxInt, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "totalRoundsRequired", "invalidRoundCount1OrMore", 1, math.MaxInt, func(v int) string {
 					cfg := c.ci.GetConfig()
 					cfg.MaxRounds = v
 					return c.ci.ResetWithConfig(cfg)

@@ -65,14 +65,12 @@ func (sc *SetteEMezzoCuiController) Exec(command string) string {
 // 「15 と入力してください」と言わせないため、変換はここで吸収する。
 func (sc *SetteEMezzoCuiController) handleMatta(args []string) string {
 	if len(args) == 0 {
-		return "Matta value is required (0.5 or 1-7)."
+		return invalidArg("mattaValueRequired05Or17")
 	}
 	if args[0] == "0.5" {
 		return sc.si.Matta(1)
 	}
-	points, errMsg, ok := cuiutil.ParseIntArg(args,
-		"Matta value is required (0.5 or 1-7).",
-		"Invalid matta value. Enter 0.5 or a whole number from 1 to 7.", 1, 7)
+	points, errMsg, ok := cuiutil.ParseIntArgKeys(args, "mattaValueRequired05Or17", "invalidMattaValueEnter05OrAWholeNumberFrom1To7", 1, 7)
 	if !ok {
 		return errMsg
 	}

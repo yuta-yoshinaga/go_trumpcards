@@ -82,7 +82,7 @@ func TestCaribbeanStudCuiController_Bet_Errors(t *testing.T) {
 
 	t.Run("invalid jackpot", func(t *testing.T) {
 		result := c.Exec("b 100 abc")
-		assert.Contains(t, result, "Invalid jackpot amount")
+		assert.Contains(t, result, msgStem("invalidJackpotAmount"))
 	})
 }
 

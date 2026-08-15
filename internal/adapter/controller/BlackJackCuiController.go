@@ -76,15 +76,15 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 				handCount := cuiutil.ParseOptionalInt(args, 3, 0)
 				return bcc.bji.Bet(amount, ppBet, t3Bet, handCount), true
 			case "ssr", "setsurrenderrule":
-				return cuiutil.WithParsedInt(args, "Surrender rule is required.", "Invalid surrender rule: %s. Please enter a number (0-2).", 0, domain.BJSurrenderMax, bcc.bji.SetSurrenderRule)
+				return cuiutil.WithParsedIntKeys(args, "surrenderRuleRequired", "invalidSurrenderRuleANumber02", 0, domain.BJSurrenderMax, bcc.bji.SetSurrenderRule)
 			case "sd", "setdeckcount":
-				return cuiutil.WithParsedInt(args, "Deck count is required.", "Invalid deck count. Please enter a number.", 1, math.MaxInt, bcc.bji.SetDeckCount)
+				return cuiutil.WithParsedIntKeys(args, "deckCountRequired", "invalidDeckCountANumber", 1, math.MaxInt, bcc.bji.SetDeckCount)
 			case "scc", "setcpucount":
-				return cuiutil.WithParsedInt(args, "CPU player count is required.", "Invalid CPU player count: %s. Please enter a number (0-3).", 0, domain.BJMaxCpuPlayers, bcc.bji.SetCpuPlayerCount)
+				return cuiutil.WithParsedIntKeys(args, "cpuPlayerCountRequired", "invalidCpuPlayerCountANumber03", 0, domain.BJMaxCpuPlayers, bcc.bji.SetCpuPlayerCount)
 			case "scs", "setcountingsystem":
-				return cuiutil.WithParsedInt(args, "Counting system is required.", "Invalid counting system: %s. Please enter a number (0-3).", 0, domain.BJCountingMax, bcc.bji.SetCountingSystem)
+				return cuiutil.WithParsedIntKeys(args, "countingSystemRequired", "invalidCountingSystemANumber03", 0, domain.BJCountingMax, bcc.bji.SetCountingSystem)
 			case "pen", "setpenetration":
-				return cuiutil.WithParsedInt(args, "Penetration rate is required.", "Invalid penetration rate. Please enter a number.", cuiutil.NoMin, cuiutil.NoMax, bcc.bji.SetDeckPenetration)
+				return cuiutil.WithParsedIntKeys(args, "penetrationRateRequired", "invalidPenetrationRateANumber", cuiutil.NoMin, cuiutil.NoMax, bcc.bji.SetDeckPenetration)
 			default:
 				return handleCuiLog(cmd, bcc.bji.ActionLog)
 			}

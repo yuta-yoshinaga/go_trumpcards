@@ -75,13 +75,13 @@ func (bcc *BadugiCuiController) Exec(command string) string {
 			case "a", "allin":
 				return bcc.bi.Action(domain.BadugiActionAllIn, 0, 0), true
 			case "bl", "bettinglimit":
-				return cuiutil.WithParsedInt(args, "Betting limit type is required (0=Fixed, 1=PotLimit, 2=NoLimit).", "Invalid betting limit: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "bettingLimitTypeRequired0Fixed1Potlimit2Nolimit", "invalidBettingLimit02", 0, 2, func(v int) string {
 					cfg := bcc.bi.GetConfig()
 					cfg.BettingLimit = domain.BettingLimitType(v)
 					return bcc.bi.ResetWithConfig(cfg, nil)
 				})
 			case "scc", "setcpucount":
-				return cuiutil.WithParsedInt(args, "CPU player count is required.", "Invalid CPU player count: %s. Please enter 1-3.", domain.BadugiCpuCountMin, domain.BadugiCpuCountMax, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuPlayerCountRequired", "invalidCpuPlayerCount13", domain.BadugiCpuCountMin, domain.BadugiCpuCountMax, func(v int) string {
 					cfg := bcc.bi.GetConfig()
 					cfg.CpuCount = v
 					return bcc.bi.ResetWithConfig(cfg, nil)

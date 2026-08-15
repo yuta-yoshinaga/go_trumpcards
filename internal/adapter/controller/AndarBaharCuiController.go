@@ -64,14 +64,12 @@ func (ac *AndarBaharCuiController) execBet(args []string) (string, bool) {
 
 	sideAmount, sideBand := 0, domain.AndarBaharSideNone
 	if len(args) >= 4 {
-		sideAmount, errMsg, ok = cuiutil.ParseIntArg(args[2:3],
-			"Side bet amount is required.", "Invalid side bet amount. Please enter a number.",
+		sideAmount, errMsg, ok = cuiutil.ParseIntArgKeys(args[2:3], "sideBetAmountRequired", "invalidSideBetAmountANumber",
 			domain.AndarBaharMinBet, math.MaxInt)
 		if !ok {
 			return errMsg, true
 		}
-		sideBand, errMsg, ok = cuiutil.ParseIntArg(args[3:4],
-			"Side bet band is required.", "Invalid side bet band. Please enter a number.",
+		sideBand, errMsg, ok = cuiutil.ParseIntArgKeys(args[3:4], "sideBetBandRequired", "invalidSideBetBandANumber",
 			domain.AndarBaharSideFirst, domain.AndarBaharSide36Plus)
 		if !ok {
 			return errMsg, true

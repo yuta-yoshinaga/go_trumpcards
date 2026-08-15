@@ -61,7 +61,7 @@ func TestTichuCuiController_Exec(t *testing.T) {
 	})
 	t.Run("declare invalid", func(t *testing.T) {
 		c := controller.NewTichuCuiController(newMock())
-		assert.Contains(t, c.Exec("d 9"), "Invalid declaration")
+		assert.Contains(t, c.Exec("d 9"), msgStem("invalidDeclaration02"))
 	})
 	t.Run("setdifficulty", func(t *testing.T) {
 		m := newMock()

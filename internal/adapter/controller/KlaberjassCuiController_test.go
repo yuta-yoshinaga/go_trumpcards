@@ -96,7 +96,7 @@ func TestKlaberjassCuiController_Exec(t *testing.T) {
 		expected := domain.DefaultKlaberjassConfig()
 		expected.TargetScore = 300
 		m.AssertCalled(t, "ResetWithConfig", expected)
-		assert.Contains(t, c.Exec("st 5"), "Invalid target score")
+		assert.Contains(t, c.Exec("st 5"), msgStem("invalidTargetScorePlain"))
 	})
 
 	t.Run("log and unknown", func(t *testing.T) {

@@ -37,7 +37,7 @@ func (cc *CaribbeanStudCuiController) Exec(command string) string {
 				}
 				jackpot := 0
 				if len(args) > 1 {
-					jackpot, errMsg, ok = cuiutil.ParseIntArg(args[1:], "", "Invalid jackpot amount.", 0, math.MaxInt)
+					jackpot, errMsg, ok = cuiutil.ParseIntArgKeys(args[1:], "", "invalidJackpotAmount", 0, math.MaxInt)
 					if !ok {
 						return errMsg, true
 					}

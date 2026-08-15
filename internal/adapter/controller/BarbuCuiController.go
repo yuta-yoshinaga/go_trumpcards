@@ -61,7 +61,7 @@ func (c *BarbuCuiController) handleSelectContract(args []string) (string, bool) 
 	if len(args) < 1 {
 		return "Usage: c <contract 0-6> [trumpSuit 1-4 for Trumps]", true
 	}
-	contract, _, ok := cuiutil.ParseIntArg([]string{args[0]}, "contract is required", "Invalid contract: %s", 0, domain.BarbuContractCnt-1)
+	contract, _, ok := cuiutil.ParseIntArgKeys([]string{args[0]}, "contractRequired", "invalidContract", 0, domain.BarbuContractCnt-1)
 	if !ok {
 		return "Invalid contract: " + args[0], true
 	}
@@ -80,7 +80,7 @@ func (c *BarbuCuiController) handlePlay(args []string) (string, bool) {
 	if len(args) < 1 {
 		return "Usage: p <handIdx> (-1 to pass in Dominoes)", true
 	}
-	handIdx, _, ok := cuiutil.ParseIntArg([]string{args[0]}, "hand index is required", "Invalid hand index: %s", -1, domain.BarbuHandSize-1)
+	handIdx, _, ok := cuiutil.ParseIntArgKeys([]string{args[0]}, "handIndexRequired", "invalidHandIndex", -1, domain.BarbuHandSize-1)
 	if !ok {
 		return "Invalid hand index: " + args[0], true
 	}

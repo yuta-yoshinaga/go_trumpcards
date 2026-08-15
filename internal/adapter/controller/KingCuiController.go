@@ -62,7 +62,7 @@ func (c *KingCuiController) handleSelectContract(args []string) (string, bool) {
 	if len(args) < 1 {
 		return "Usage: c <contract 0-6> [trumpSuit 1-4 for King Trump]", true
 	}
-	contract, _, ok := cuiutil.ParseIntArg([]string{args[0]}, "contract is required", "Invalid contract: %s", 0, domain.KingContractCnt-1)
+	contract, _, ok := cuiutil.ParseIntArgKeys([]string{args[0]}, "contractRequired", "invalidContract", 0, domain.KingContractCnt-1)
 	if !ok {
 		return "Invalid contract: " + args[0], true
 	}
@@ -81,7 +81,7 @@ func (c *KingCuiController) handlePlay(args []string) (string, bool) {
 	if len(args) < 1 {
 		return "Usage: p <handIdx>", true
 	}
-	handIdx, _, ok := cuiutil.ParseIntArg([]string{args[0]}, "hand index is required", "Invalid hand index: %s", 0, domain.KingHandSize-1)
+	handIdx, _, ok := cuiutil.ParseIntArgKeys([]string{args[0]}, "handIndexRequired", "invalidHandIndex", 0, domain.KingHandSize-1)
 	if !ok {
 		return "Invalid hand index: " + args[0], true
 	}

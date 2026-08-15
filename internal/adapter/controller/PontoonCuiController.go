@@ -44,8 +44,7 @@ func (pc *PontoonCuiController) Exec(command string) string {
 			case "t", "twist":
 				return pc.pi.Twist(), true
 			case "buy":
-				extra, errMsg, ok := cuiutil.ParseIntArg(args,
-					"Extra stake is required.", "Invalid stake. Please enter a number.",
+				extra, errMsg, ok := cuiutil.ParseIntArgKeys(args, "extraStakeRequired", "invalidStakeANumber",
 					domain.PontoonMinBet, math.MaxInt)
 				if !ok {
 					return errMsg, true

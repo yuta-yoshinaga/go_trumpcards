@@ -124,3 +124,12 @@ func msgStem(key string) string {
 	}
 	return strings.TrimRight(stem, ":.。 ")
 }
+
+// msgRejected reports whether a reply carries the rejection marker. It replaces
+// assertions that looked for the English word "required" or "Invalid": those
+// pass in Japanese mode only while the reply is still English, so they were
+// testing the bug rather than the behaviour.
+func msgRejected(out string) bool {
+	_, isErr := i18n.StripErrorPrefix(out)
+	return isErr
+}

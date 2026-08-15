@@ -60,7 +60,7 @@ func (c *ThreeCardBragCuiController) Exec(command string) string {
 			case "b", "bet":
 				return c.ti.Bet(), true
 			case "rs", "raise":
-				return cuiutil.WithParsedInt(args, "Stake is required (e.g. rs 4).", "Invalid stake: %s.", 1, 100000, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "stakeRequiredEGRs4", "invalidStake", 1, 100000, func(v int) string {
 					return c.ti.Raise(v)
 				})
 			case "f", "fold":
@@ -76,13 +76,13 @@ func (c *ThreeCardBragCuiController) Exec(command string) string {
 					return c.ti.ResetWithConfig(cfg)
 				})
 			case "sa", "setante":
-				return cuiutil.WithParsedInt(args, "Ante is required (e.g. sa 2).", "Invalid ante: %s.", 1, 1000, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "anteRequiredEGSa2", "invalidAntePlain", 1, 1000, func(v int) string {
 					cfg := c.ti.GetConfig()
 					cfg.Ante = v
 					return c.ti.ResetWithConfig(cfg)
 				})
 			case "sc", "setchips":
-				return cuiutil.WithParsedInt(args, "Starting chips is required (e.g. sc 50).", "Invalid starting chips: %s.", 2, domain.ThreeCardBragMaxStartingChips, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "startingChipsRequiredEGSc50", "invalidStartingChipsPlain", 2, domain.ThreeCardBragMaxStartingChips, func(v int) string {
 					cfg := c.ti.GetConfig()
 					cfg.StartingChips = v
 					return c.ti.ResetWithConfig(cfg)

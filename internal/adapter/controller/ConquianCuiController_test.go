@@ -116,7 +116,7 @@ func TestConquianCuiController_Exec(t *testing.T) {
 
 	t.Run("setwins sw zero", func(t *testing.T) {
 		result := controller.NewConquianCuiController(newMock()).Exec("sw 0")
-		assert.Equal(t, "Invalid target wins: 0. Please enter 1 or more.", result)
+		assert.Equal(t, msgKey("invalidTargetWins1OrMore", "val", "0"), result)
 	})
 
 	t.Run("log", func(t *testing.T) {
