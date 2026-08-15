@@ -31,5 +31,6 @@
   "promptCurrentPlayer": "手番: {{name}}",
   "promptHonestValue": "正直に申告するなら: {{value}}",
   "promptPlayHelp": "p <値> <idx...>・・・カードを出す",
-  "tell": "（そわそわしている…）"
+  "tell": "（そわそわしている…）",
+  "helpLog": "  l                    行動ログを表示"
 }

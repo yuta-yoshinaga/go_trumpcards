@@ -24,5 +24,6 @@
   "invalidDivanIndex": "無効なディヴァン番号です: {{val}}",
   "invalidFromZone": "無効な移動元です: {{val}}",
   "helpExampleHint": "  h                    次の一手を教えてもらう",
-  "helpExampleAuto": "  ac                   組札へ送れる札を自動で送る"
+  "helpExampleAuto": "  ac                   組札へ送れる札を自動で送る",
+  "helpUndo": "  u                    1手戻す"
 }

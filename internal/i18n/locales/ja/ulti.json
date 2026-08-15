@@ -48,5 +48,6 @@
   "hintReasonBidUlti": "切り札の7を含む長いスートがあるのでウルティを宣言",
   "helpExampleBid": "  bid betli                 ベトリを宣言する",
   "helpExamplePlay": "  play 0                    手札の 0 番のカードを出す",
-  "helpExampleNext": "  n                         トリックの決着を見てから次へ"
+  "helpExampleNext": "  n                         トリックの決着を見てから次へ",
+  "helpHint": "  h                         助言を表示"
 }

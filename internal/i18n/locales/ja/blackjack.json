@@ -70,5 +70,6 @@
   "payoutRef.bust": "バスト (21超過: 負け)",
   "helpExampleBet": "  b 100                100 チップ賭けて配る",
   "helpExampleHit": "  h                    もう1枚引く",
-  "helpExampleStand": "  s                    スタンドしてディーラーの番へ"
+  "helpExampleStand": "  s                    スタンドしてディーラーの番へ",
+  "helpLog": "  l                    行動ログを表示"
 }

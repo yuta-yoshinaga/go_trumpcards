@@ -223,3 +223,69 @@ func uniqueStrings(in []string) []string {
 	}
 	return out
 }
+
+// commonVerbGroups are the commands most games share, with their spellings.
+// A command is findable if any spelling of it is in the table: cinch documents
+// `nr` and also answers `n`, and printing both rows would say the same thing
+// twice.
+var commonVerbGroups = [][]string{
+	{"h", "hint"}, {"l", "log"}, {"u", "undo"}, {"n", "next", "nr"},
+	{"ac", "auto", "autocomplete"}, {"s", "sort"}, {"g", "giveup"},
+}
+
+// TestCuiHelpTableCoversTheParser is TestCuiHelpTableVerbsDispatch in the other
+// direction. That one catches a row for a command the parser does not have;
+// this one catches a command the parser answers that no row mentions -- which
+// the player cannot find at all.
+//
+// It closed 206 gaps when it was written: 139 games answered `hint` without
+// saying so, 54 answered `log`, 31 answered `undo`.
+func TestCuiHelpTableCoversTheParser(t *testing.T) {
+	registry := GameRegistry()
+
+	// Negative control: a verb no game has must read as unknown everywhere, or
+	// this guard passes by failing to notice anything.
+	for _, entry := range registry {
+		c := entry.NewCui().Controller()
+		c.Exec("r")
+		if !helpVerbIsUnknown(c.Exec("zzbogusverb"), "zzbogusverb") {
+			t.Fatalf("%s does not report a bogus verb as unknown; this guard cannot tell "+
+				"an accepted command from a rejected one", entry.Name)
+		}
+	}
+
+	var bad []string
+	for _, entry := range registry {
+		documented := map[string]bool{}
+		for _, line := range entry.NewCui().HelpLines() {
+			for _, f := range strings.Fields(line) {
+				w := strings.Trim(f, ",/")
+				// only the verb column, not words inside a description
+				if w != "" && strings.Index(line, w) < 30 {
+					documented[w] = true
+				}
+			}
+		}
+		ctrl := entry.NewCui().Controller()
+		ctrl.Exec("r")
+		for _, group := range commonVerbGroups {
+			listed := false
+			for _, spelling := range group {
+				if documented[spelling] {
+					listed = true
+				}
+			}
+			if listed {
+				continue
+			}
+			if !helpVerbIsUnknown(ctrl.Exec(group[0]), group[0]) {
+				bad = append(bad, entry.Name+": answers `"+group[0]+"`, which no row mentions")
+			}
+		}
+	}
+	sort.Strings(bad)
+	if len(bad) > 0 {
+		t.Errorf("commands the parser has but the help does not list (%d):\n  %s",
+			len(bad), strings.Join(bad, "\n  "))
+	}
+}

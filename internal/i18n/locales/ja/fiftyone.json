@@ -21,5 +21,6 @@
   "winHuman": "あなたの勝ち！",
   "winCpu": "CPU {{idx}}の勝ち！",
   "promptHumanTurn": "あなたのターン: p <手札番号> <場札番号> / a (全交換) / stop",
-  "helpExampleAll": "  a                    手札 5 枚すべてを交換する"
+  "helpExampleAll": "  a                    手札 5 枚すべてを交換する",
+  "helpLog": "  l                    行動ログを表示"
 }

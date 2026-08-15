@@ -23,5 +23,6 @@
   "winnerMark": "★(winner) ",
   "topTrumpLine": "Ranking: {{cards}} > other trumps > non-trumps",
   "helpExamplePlay": "  play 0                   play hand card 0",
-  "helpExampleNext": "  n                        read the trick result, then start the next trick"
+  "helpExampleNext": "  n                        read the trick result, then start the next trick",
+  "helpHint": "  h                         show a hint"
 }

@@ -13,5 +13,6 @@
   "gameEndLoser": "{{name}} loses!",
   "gameEndCardSuffix": " ({{count}} cards)",
   "promptCurrentTurn": "{{name}} to act (draw to pull from stock)",
-  "helpExampleDraw": "  d                     draw from the circle"
+  "helpExampleDraw": "  d                     draw from the circle",
+  "helpLog": "  l                     show the action log"
 }

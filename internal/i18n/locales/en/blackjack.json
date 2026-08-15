@@ -70,5 +70,6 @@
   "payoutRef.bust": "Bust (over 21: lose)",
   "helpExampleBet": "  b 100                bet 100 chips and deal",
   "helpExampleHit": "  h                    draw one more card",
-  "helpExampleStand": "  s                    stand and pass to the dealer"
+  "helpExampleStand": "  s                    stand and pass to the dealer",
+  "helpLog": "  l                    show the action log"
 }

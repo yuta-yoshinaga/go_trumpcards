@@ -40,5 +40,6 @@
   "helpNext": "  n                    go to next trick",
   "helpNextRound": "  nr                   go to next round",
   "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
-  "helpExampleBid": "  pass                 drop out of the bidding"
+  "helpExampleBid": "  pass                 drop out of the bidding",
+  "helpHint": "  h                    show a hint"
 }

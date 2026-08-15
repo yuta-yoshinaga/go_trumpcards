@@ -9,5 +9,6 @@
   "hand.fullHouse": "フルハウス",
   "hand.flush": "フラッシュ",
   "hand.straight": "ストレート",
-  "hand.threeOfAKind": "スリーカード"
+  "hand.threeOfAKind": "スリーカード",
+  "helpExampleHint": "  hint                 残す札の推奨を見る"
 }

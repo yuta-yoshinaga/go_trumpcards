@@ -26,5 +26,6 @@
   "cNoLastTrick": "ノー・ラストトリック",
   "cTrumps": "トランプ",
   "cDominoes": "ドミノ",
-  "helpExamplePlay": "  p 0                      手札の 0 番のカードを出す"
+  "helpExamplePlay": "  p 0                      手札の 0 番のカードを出す",
+  "helpLog": "  l                        行動ログを表示"
 }

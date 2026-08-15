@@ -19,5 +19,6 @@
   "hintToFoundation": "ファンデーション",
   "hintToTableau": "タブロー列{{col}}",
   "hintLine": "ヒント: {{from}} → {{to}}",
-  "helpExampleHint": "  h                    次の一手を教えてもらう"
+  "helpExampleHint": "  h                    次の一手を教えてもらう",
+  "helpUndo": "  u                    1手戻す"
 }

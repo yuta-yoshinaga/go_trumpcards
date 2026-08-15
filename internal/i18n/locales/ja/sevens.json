@@ -29,5 +29,6 @@
   "playHint": "p [インデックス] でカードを出す / p でパス",
   "jokerHint": "j [カードインデックス] [スート] [値] でジョーカーを配置",
   "boardSuitLine": "  {{suit}}: {{cells}}",
-  "helpExamplePass": "  p                    出せる札が無いときはパスする"
+  "helpExamplePass": "  p                    出せる札が無いときはパスする",
+  "helpLog": "  l                    行動ログを表示"
 }

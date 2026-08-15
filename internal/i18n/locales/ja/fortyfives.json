@@ -45,5 +45,6 @@
   "contractMade": "成立",
   "contractFailed": "不成立が確定",
   "contractNeedMore": "あと{{remaining}}点",
-  "helpExampleBid": "  pass                      入札を降りる"
+  "helpExampleBid": "  pass                      入札を降りる",
+  "helpHint": "  h                         助言を表示"
 }

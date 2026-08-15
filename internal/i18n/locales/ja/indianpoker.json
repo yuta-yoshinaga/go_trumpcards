@@ -37,5 +37,6 @@
   "resultName": "  {{name}}",
   "wonAmount": " → {{total}}チップ獲得",
   "gameEnd": "ゲーム終了",
-  "helpExampleFold": "  f                    この手を降りる"
+  "helpExampleFold": "  f                    この手を降りる",
+  "helpLog": "  l                    行動ログを表示"
 }

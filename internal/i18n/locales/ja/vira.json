@@ -40,5 +40,6 @@
   "helpNext": "  n                    次のトリックへ",
   "helpNextRound": "  nr                   次のラウンドへ",
   "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
-  "helpExampleBid": "  pass                 入札を降りる"
+  "helpExampleBid": "  pass                 入札を降りる",
+  "helpHint": "  h                    助言を表示"
 }

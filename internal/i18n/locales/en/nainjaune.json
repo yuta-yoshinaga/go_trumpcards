@@ -27,5 +27,6 @@
   "hintReasonLead": "the run is stopped, so start low",
   "hintReasonFollow": "this continues the run",
   "hintReasonBox": "this card claims a box",
-  "helpExampleNext": "  n                        read the trick result, then continue"
+  "helpExampleNext": "  n                        read the trick result, then continue",
+  "helpHint": "  h                        show a hint"
 }

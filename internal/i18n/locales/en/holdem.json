@@ -57,5 +57,6 @@
   "gameEnd": "Game over",
   "resultBestFive": " [{{cards}}]",
   "helpExampleRaise": "  ra 200               raise to 200 chips total",
-  "helpExampleCall": "  c                    call the current bet"
+  "helpExampleCall": "  c                    call the current bet",
+  "helpLog": "  l                    show the action log"
 }

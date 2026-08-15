@@ -37,5 +37,6 @@
   "hintExchange": "Suggestion: exchange hand [{{idxs}}] ({{cards}}) with e {{cmd}}",
   "hintStandPat": "Suggestion: made low — stand pat (s).",
   "hintNotYourTurn": "It is not your draw phase right now.",
-  "helpExampleFold": "  f                    fold this hand"
+  "helpExampleFold": "  f                    fold this hand",
+  "helpLog": "  l                    show the action log"
 }

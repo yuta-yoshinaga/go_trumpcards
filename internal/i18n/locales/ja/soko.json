@@ -55,5 +55,6 @@
   "rebuyPrompt": "リバイしますか? ({{chips}}チップ, {{used}}/{{max}}回使用済) (rb=リバイ / sr=スキップ)",
   "addonPrompt": "アドオンしますか? ({{chips}}チップ) (ad=アドオン / sa=スキップ)",
   "gameEnd": "ゲーム終了",
-  "helpExampleFold": "  f                    この手を降りる"
+  "helpExampleFold": "  f                    この手を降りる",
+  "helpLog": "  l                    行動ログを表示"
 }

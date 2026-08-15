@@ -45,5 +45,6 @@
   "roundEnd": "ラウンド終了",
   "result.humanWin": "ゲーム終了！ あなたの勝ち！",
   "result.cpuWin": "ゲーム終了！ プレイヤー{{player}}の勝ち！",
-  "helpExampleBid": "  pass                      入札を降りる"
+  "helpExampleBid": "  pass                      入札を降りる",
+  "helpHint": "  h                         助言を表示"
 }

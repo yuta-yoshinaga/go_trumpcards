@@ -31,5 +31,6 @@
   "hintReasonFollowDump": "Discard a low card",
   "hintReasonMarriage": "Declare a marriage for bonus points",
   "promptMarriageCards": "Declarable: {{cards}}",
-  "helpExamplePlay": "  p 0                  play hand card 0"
+  "helpExamplePlay": "  p 0                  play hand card 0",
+  "helpHint": "  h                    show a hint"
 }

@@ -35,5 +35,6 @@
   "reason.standPat": "17以上あるので立つのが定石です",
   "reason.chaseBanker": "親に届かないので追いかけます",
   "result.gameEnd": "全ラウンドが終わりました",
-  "helpExampleBet": "  bet 100             100 チップを賭ける"
+  "helpExampleBet": "  bet 100             100 チップを賭ける",
+  "helpSort": "  s                    手札を並べ替える"
 }

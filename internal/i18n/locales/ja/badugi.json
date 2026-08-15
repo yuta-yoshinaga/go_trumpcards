@@ -44,5 +44,7 @@
   "handRank3": "3カード",
   "handRank4": "バドゥーギ",
   "handRankUnknown": "不明",
-  "helpExampleCall": "  c                    現在のベットにコールする"
+  "helpExampleCall": "  c                    現在のベットにコールする",
+  "helpHint": "  h                    助言を表示",
+  "helpLog": "  l                    行動ログを表示"
 }

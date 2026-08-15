@@ -25,5 +25,6 @@
   "hintReasonLeadSafe": "lead a low card that isn't a jack",
   "hintReasonBlockCapot": "take this trick to break the capot",
   "hintReasonWinCapot": "your own capot: you must win every trick, so take this one",
-  "helpExamplePlay": "  p 0                  play hand card 0"
+  "helpExamplePlay": "  p 0                  play hand card 0",
+  "helpHint": "  h                    show a hint"
 }

@@ -16,5 +16,6 @@
   "gameWinCpu": "CPUの勝ちです...",
   "gameDraw": "引き分けです！",
   "roundProgress": "ラウンド: {{played}} / {{max}}（上限で引き分け）",
-  "helpExampleStep": "  s                    次の 1 枚をめくる"
+  "helpExampleStep": "  s                    次の 1 枚をめくる",
+  "helpLog": "  l                    行動ログを表示"
 }

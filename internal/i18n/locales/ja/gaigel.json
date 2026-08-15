@@ -31,5 +31,6 @@
   "hintReasonFollowDump": "低いカードを捨てる",
   "hintReasonMarriage": "マリアージュを宣言してボーナス点を得る",
   "promptMarriageCards": "宣言可能: {{cards}}",
-  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
+  "helpHint": "  h                    助言を表示"
 }

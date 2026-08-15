@@ -21,5 +21,6 @@
   "hintReasonDiscardLow": "フォローできないので低い札を捨てる",
   "rankHelp": "ランク順: 10 > A > K > Q > J > 9 > 8 > 7（得点: 10=5, A=4, K=3, Q=2, J=1）",
   "helpExamplePlay": "  play 0                   手札の 0 番のカードを出す",
-  "helpExampleNext": "  n                        トリックの決着を見てから次のトリックへ"
+  "helpExampleNext": "  n                        トリックの決着を見てから次のトリックへ",
+  "helpHint": "  h                         助言を表示"
 }

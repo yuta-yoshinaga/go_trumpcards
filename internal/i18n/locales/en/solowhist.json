@@ -39,5 +39,6 @@
   "result.humanWin": "Game over! You win!",
   "result.cpuWin": "Game over! Player {{player}} wins!",
   "bidHistory": "Bids: {{bids}}",
-  "helpExampleBid": "  pass                      drop out of the bidding"
+  "helpExampleBid": "  pass                      drop out of the bidding",
+  "helpHint": "  h                         show a hint"
 }

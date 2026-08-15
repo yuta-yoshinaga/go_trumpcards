@@ -24,5 +24,6 @@
   "hintReasonFollowWin": "得点があるので勝ちに行く",
   "hintReasonFollowDuck": "取れない／取る価値がないのでダック",
   "hintReasonDiscardLow": "フォローできないので低い札を捨てる",
-  "helpExamplePlay": "  play 0               手札の 0 番のカードを出す"
+  "helpExamplePlay": "  play 0               手札の 0 番のカードを出す",
+  "helpHint": "  h                    助言を表示"
 }

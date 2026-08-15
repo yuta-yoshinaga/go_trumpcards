@@ -43,5 +43,6 @@
   "hintReasonFollowWin": "勝てる — トリックを取る",
   "hintReasonFollowDuck": "勝てない/取るべきでない — 低い札を出す",
   "promptTalonLegend": "埋め不可: キング・トゥルル（パガト/XXI/スキュース）。平トランプは埋められる平札が6枚未満のときのみ可。",
-  "helpExamplePlay": "  play 0                    手札の 0 番のカードを出す"
+  "helpExamplePlay": "  play 0                    手札の 0 番のカードを出す",
+  "helpHint": "  h                         助言を表示"
 }

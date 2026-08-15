@@ -22,5 +22,6 @@
   "hintReasonAvoidPoints": "penalty cards are on the table -- let someone else take it",
   "hintReasonLeadSafe": "lead a low card that scores nothing",
   "hintReasonDumpHigh": "safe trick: shed a high card now",
-  "helpExampleGiveUp": "  g                    give the round up"
+  "helpExampleGiveUp": "  g                    give the round up",
+  "helpHint": "  h                    show a hint"
 }

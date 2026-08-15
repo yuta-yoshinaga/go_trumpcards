@@ -52,5 +52,6 @@
   "legalPlayLegend": "Legal plays: {{indices}}",
   "promptTrickEnd": "Trick ended. (use 'next' to advance)",
   "promptRoundEnd": "Round ended. (use 'nextround' to advance)",
-  "helpExamplePlay": "  p 0                  play hand card 0"
+  "helpExamplePlay": "  p 0                  play hand card 0",
+  "helpHint": "  h                    show a hint"
 }

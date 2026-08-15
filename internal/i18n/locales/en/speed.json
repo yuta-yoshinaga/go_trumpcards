@@ -14,5 +14,6 @@
   "promptStuckHelp": "Command: f / flip — both players flip a new card to break the deadlock",
   "winHuman": "You win!",
   "winCpu": "CPU wins...",
-  "helpExampleHint": "  h                    ask for a move"
+  "helpExampleHint": "  h                    ask for a move",
+  "helpLog": "  l                    show the action log"
 }

@@ -30,5 +30,6 @@
   "hintReasonDiscardPig": "♠Q（豚）を捨てるチャンス",
   "hintReasonDiscardHearts": "ハートを捨てる",
   "capturedLine": "  獲得: {{cards}}",
-  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
+  "helpHint": "  h                    助言を表示"
 }

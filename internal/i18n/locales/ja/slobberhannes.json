@@ -23,5 +23,6 @@
   "hintReasonAvoid": "罰点のトリックなので取らない",
   "hintReasonDump": "安全なうちに高い札を処分する",
   "hintReasonLeadLow": "低い札でリードして様子を見る",
-  "helpExampleGiveUp": "  g                    この局を投了する"
+  "helpExampleGiveUp": "  g                    この局を投了する",
+  "helpHint": "  h                    助言を表示"
 }

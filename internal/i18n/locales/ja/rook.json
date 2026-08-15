@@ -49,5 +49,6 @@
   "hintReasonFollowSuit": "リードスートに従う",
   "hintReasonTrumpCut": "切り札で取る",
   "hintReasonDiscardWeak": "弱いカードを処理",
-  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
+  "helpHint": "  h                    助言を表示"
 }

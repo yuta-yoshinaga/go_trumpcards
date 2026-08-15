@@ -57,5 +57,6 @@
   "gameEnd": "ゲーム終了",
   "resultBestFive": " [{{cards}}]",
   "helpExampleRaise": "  ra 200               合計 200 チップになるようレイズする",
-  "helpExampleCall": "  c                    現在のベットにコールする"
+  "helpExampleCall": "  c                    現在のベットにコールする",
+  "helpLog": "  l                    行動ログを表示"
 }

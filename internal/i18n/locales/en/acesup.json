@@ -16,5 +16,6 @@
   "hintUnknown": "Hint: unknown",
   "markerLegend": "Markers: * = removable / > = movable to an empty column",
   "usageCol": "Usage: {{cmd}} <col>",
-  "helpExampleHint": "  h                         ask for a move"
+  "helpExampleHint": "  h                         ask for a move",
+  "helpUndo": "  u                        undo one move"
 }

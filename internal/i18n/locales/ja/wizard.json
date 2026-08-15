@@ -27,5 +27,6 @@
   "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
   "promptLead": "巡目 {{trick}} / リードスート: {{lead}}",
   "leadNone": "なし（フォロー制約なし）",
-  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
+  "helpHint": "  h                    助言を表示"
 }

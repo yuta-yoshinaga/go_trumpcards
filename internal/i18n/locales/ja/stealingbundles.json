@@ -24,5 +24,6 @@
   "hintReasonSteal": "相手の束を丸ごと奪える",
   "hintReasonTake": "場から取れる",
   "hintReasonTrail": "取れないので、狙われにくい札を置く",
-  "helpExampleGiveUp": "  g                    この局を投了する"
+  "helpExampleGiveUp": "  g                    この局を投了する",
+  "helpHint": "  h                    助言を表示"
 }

@@ -48,5 +48,6 @@
   "matadorSpadille": "スパディーユ",
   "matadorManille": "マニーユ",
   "matadorBasto": "バスト",
-  "helpExamplePlay": "  play 0                    手札の 0 番のカードを出す"
+  "helpExamplePlay": "  play 0                    手札の 0 番のカードを出す",
+  "helpHint": "  h                         助言を表示"
 }

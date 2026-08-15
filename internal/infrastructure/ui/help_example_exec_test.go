@@ -116,7 +116,7 @@ func TestCuiHelpExampleCommandParsing(t *testing.T) {
 
 // exampleRefusalRe matches the wording a controller uses when it turns a
 // command down. It is a heuristic, and deliberately so: see below.
-var exampleRefusalRe = regexp.MustCompile(`(?i)invalid|required|must |cannot|nothing to|no .* to |not your|too few|too many|不正|無効|必要|できません|ありません`)
+var exampleRefusalRe = regexp.MustCompile(`(?i)invalid|required|must |cannot|nothing to|no .* to |not your|too few|too many|usage:|unknown command|did you mean|不正|無効|必要|できません|ありません|使い方:|使用法:`)
 
 // exampleErrorLineRe matches cuiErrorBlock's output: the presenters render a
 // rejection as a red line inside the board, so it is not a short reply and

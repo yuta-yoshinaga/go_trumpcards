@@ -44,5 +44,6 @@
   "dealerMayBust": "the dealer is likely to bust from here",
   "chaseDealer": "the dealer is strong, so keep drawing",
   "splitAces": "aces are always worth splitting",
-  "helpExampleBet": "  bet 100              bet 100 chips"
+  "helpExampleBet": "  bet 100              bet 100 chips",
+  "helpSort": "  s                    sort the hand"
 }

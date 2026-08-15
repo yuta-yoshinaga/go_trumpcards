@@ -22,5 +22,6 @@
   "hintReasonLead": "リードなので何を出してもよい",
   "hintReasonBeat": "更新できる中でいちばん低い札。高い札は終盤に残さない",
   "hintReasonForced": "更新できないので、この札に決まっている",
-  "helpExampleGiveUp": "  g                    この局を投了する"
+  "helpExampleGiveUp": "  g                    この局を投了する",
+  "helpHint": "  h                    助言を表示"
 }

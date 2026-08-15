@@ -41,5 +41,6 @@
   "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
   "hintReasonDiscardWeakest": "discard the weakest card",
   "sittingOut": " 💤(sitting out)",
-  "helpExamplePlay": "  p 0                  play hand card 0"
+  "helpExamplePlay": "  p 0                  play hand card 0",
+  "helpHint": "  h                    show a hint"
 }

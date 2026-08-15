@@ -25,5 +25,6 @@
   "result.chips": "Deal over! Chips: {{chips}}",
   "looedList": "Looed (penalised): {{names}}",
   "chipDeltaLine": "  {{name}}: {{delta}}",
-  "helpExamplePlay": "  p 0                       play hand card 0"
+  "helpExamplePlay": "  p 0                       play hand card 0",
+  "helpHint": "  h                         show a hint"
 }

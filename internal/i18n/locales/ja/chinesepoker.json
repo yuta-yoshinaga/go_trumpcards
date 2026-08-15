@@ -28,5 +28,6 @@
   "hintRowBack": "後列(5枚): {{cards}}",
   "hintSplitOk": "この分け方ならファウルにならない",
   "hintFoulRisk": "注意: この分け方はファウルになる。前列/中列を組み替えること",
-  "helpExampleBet": "  b 100                                      100 チップを賭ける"
+  "helpExampleBet": "  b 100                                      100 チップを賭ける",
+  "helpHint": "  h                                          助言を表示"
 }

@@ -34,5 +34,6 @@
   "hintToFoundation": "ファンデーション",
   "hintToTableau": "タブロー列{{col}}",
   "hintLine": "ヒント: {{from}} → {{to}}",
-  "helpExampleDraw": "  d                    ストックから 1 枚めくる"
+  "helpExampleDraw": "  d                    ストックから 1 枚めくる",
+  "helpUndo": "  u                    1手戻す"
 }

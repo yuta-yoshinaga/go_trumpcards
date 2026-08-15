@@ -34,5 +34,6 @@
   "hintToFoundation": "foundation",
   "hintToTableau": "tableau column {{col}}",
   "hintLine": "Hint: {{from}} → {{to}}",
-  "helpExampleDraw": "  d                    turn one card from the stock"
+  "helpExampleDraw": "  d                    turn one card from the stock",
+  "helpUndo": "  u                    undo one move"
 }

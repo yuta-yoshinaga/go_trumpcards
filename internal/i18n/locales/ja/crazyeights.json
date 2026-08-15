@@ -27,5 +27,6 @@
   "hintReasonPlayWild": "8 でスートを変えられる",
   "hintReasonPlayValid": "出せる札",
   "hintReasonChooseLongestSuit": "手札に一番多いスート",
-  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
+  "helpHint": "  h                    助言を表示"
 }

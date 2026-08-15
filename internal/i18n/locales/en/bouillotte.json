@@ -33,5 +33,6 @@
   "hintReasonStrongHand": "strong hand — worth pressing",
   "hintReasonMediumHand": "decent hand — call and see",
   "hintReasonWeakHand": "weak hand — better to fold",
-  "helpExampleCall": "  c                         call the current bet"
+  "helpExampleCall": "  c                         call the current bet",
+  "helpHint": "  h                         show a hint"
 }

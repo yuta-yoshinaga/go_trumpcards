@@ -55,5 +55,6 @@
   "rebuyPrompt": "Rebuy? ({{chips}} chips, used {{used}}/{{max}}) (rb=rebuy / sr=skip)",
   "addonPrompt": "Add-on? ({{chips}} chips) (ad=addon / sa=skip)",
   "gameEnd": "Game over",
-  "helpExampleFold": "  f                    fold this hand"
+  "helpExampleFold": "  f                    fold this hand",
+  "helpLog": "  l                    show the action log"
 }

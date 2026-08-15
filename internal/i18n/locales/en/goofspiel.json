@@ -23,5 +23,6 @@
   "hintReasonHighPrize": "A rich prize -- worth spending a high card on",
   "hintReasonLowPrize": "A cheap prize -- let it go with a low card",
   "hintReasonCarried": "The carry-over has made this pot large",
-  "helpExampleBid": "  b 0                  bid hand card 0 face down"
+  "helpExampleBid": "  b 0                  bid hand card 0 face down",
+  "helpHint": "  h                    show a hint"
 }

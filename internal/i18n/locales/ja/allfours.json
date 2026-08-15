@@ -37,5 +37,7 @@
   "hintReasonBegStand": "十分な手札なのでスタンド",
   "hintReasonGiftGift": "強い手札なのでギフトで進める",
   "hintReasonGiftRun": "弱い手札なので引き直す",
-  "helpExamplePlay": "  play 0               手札の 0 番のカードを出す"
+  "helpExamplePlay": "  play 0               手札の 0 番のカードを出す",
+  "helpHint": "  h                    助言を表示",
+  "helpLog": "  l                    行動ログを表示"
 }

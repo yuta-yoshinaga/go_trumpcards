@@ -44,5 +44,7 @@
   "hintReasonDiscardWeakest": "discard the weakest cards",
   "hintReasonLeadTrump": "lead a trump",
   "hintReasonDiscardWeak": "shed a weak card",
-  "helpExamplePlay": "  p 0                  play hand card 0"
+  "helpExamplePlay": "  p 0                  play hand card 0",
+  "helpHint": "  h                    show a hint",
+  "helpLog": "  l                    show the action log"
 }

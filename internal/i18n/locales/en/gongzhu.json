@@ -30,5 +30,6 @@
   "hintReasonDiscardPig": "A chance to dump the ♠Q (pig)",
   "hintReasonDiscardHearts": "Discard hearts",
   "capturedLine": "  Taken: {{cards}}",
-  "helpExamplePlay": "  p 0                  play hand card 0"
+  "helpExamplePlay": "  p 0                  play hand card 0",
+  "helpHint": "  h                    show a hint"
 }

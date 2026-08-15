@@ -39,5 +39,6 @@
   "thirdsLine": "  {{name}} ({{role}}): {{thirds}}/3",
   "helpExampleBid": "  bid pass                  drop out of the bidding",
   "helpExamplePlay": "  play 0                    play hand card 0",
-  "helpExampleNext": "  n                         read the trick result, then continue"
+  "helpExampleNext": "  n                         read the trick result, then continue",
+  "helpHint": "  h                         show a hint"
 }

@@ -20,5 +20,6 @@
   "hintReasonLead": "Lead your longest suit -- short suits are what get you stuck",
   "hintReasonFollow": "Taking the trick gains nothing, so play low",
   "hintReasonPickUp": "Nothing in your hand follows",
-  "helpExamplePlay": "  p 0                  play hand card 0"
+  "helpExamplePlay": "  p 0                  play hand card 0",
+  "helpHint": "  h                    show a hint"
 }

@@ -19,5 +19,6 @@
   "comboStraight": "ストレート",
   "comboThreePairRun": "3連ペア",
   "comboFourOfAKind": "フォーカード",
-  "comboInvalid": "不明"
+  "comboInvalid": "不明",
+  "helpLog": "  l                    行動ログを表示"
 }

@@ -21,5 +21,6 @@
   "totalPayoutLine": "合計払戻し: {{payout}}",
   "maxBetHint": "最大ベット: {{max}}（bet <額> で賭ける）",
   "drawHint": "draw で1枚引く / stand で確定",
-  "helpExampleBet": "  b 100              100 チップを賭ける"
+  "helpExampleBet": "  b 100              100 チップを賭ける",
+  "helpSort": "  s                    手札を並べ替える"
 }

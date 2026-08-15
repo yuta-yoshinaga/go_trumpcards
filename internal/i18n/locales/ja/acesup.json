@@ -16,5 +16,6 @@
   "hintUnknown": "ヒント: 不明",
   "markerLegend": "マーカー: * = 捨て可能 / > = 空き列へ移動可能",
   "usageCol": "使い方: {{cmd}} <列番号>",
-  "helpExampleHint": "  h                         次の一手を教えてもらう"
+  "helpExampleHint": "  h                         次の一手を教えてもらう",
+  "helpUndo": "  u                        1手戻す"
 }

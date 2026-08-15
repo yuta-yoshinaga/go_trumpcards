@@ -23,5 +23,6 @@
   "hintReasonAvoid": "this trick carries a penalty -- don't take it",
   "hintReasonDump": "safe trick: get rid of a high card now",
   "hintReasonLeadLow": "lead low and see what happens",
-  "helpExampleGiveUp": "  g                    give the round up"
+  "helpExampleGiveUp": "  g                    give the round up",
+  "helpHint": "  h                    show a hint"
 }

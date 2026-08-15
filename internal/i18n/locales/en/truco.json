@@ -30,5 +30,7 @@
   "hintReasonLeadLow": "lead low to save strong cards",
   "hintReasonFollowWin": "win this baza",
   "hintReasonFollowDump": "dump a weak card",
-  "helpExamplePlay": "  p 0                  play hand card 0"
+  "helpExamplePlay": "  p 0                  play hand card 0",
+  "helpHint": "  h                    show a hint",
+  "helpLog": "  l                    show the action log"
 }

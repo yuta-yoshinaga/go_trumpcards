@@ -13,5 +13,7 @@
   "zoneWaste": "ウェイスト",
   "zoneTableau": "タブロー",
   "zoneFoundation": "ファウンデーション",
-  "helpExampleDraw": "  d                     ストックから 1 枚めくる"
+  "helpExampleDraw": "  d                     ストックから 1 枚めくる",
+  "helpHint": "  h                     助言を表示",
+  "helpLog": "  l                     行動ログを表示"
 }

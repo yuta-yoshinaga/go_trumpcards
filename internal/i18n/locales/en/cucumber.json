@@ -22,5 +22,6 @@
   "hintReasonLead": "You lead, so anything is legal",
   "hintReasonBeat": "The cheapest card that still beats it -- do not carry high cards into the last trick",
   "hintReasonForced": "You cannot beat it, so this card is forced",
-  "helpExampleGiveUp": "  g                    give the round up"
+  "helpExampleGiveUp": "  g                    give the round up",
+  "helpHint": "  h                    show a hint"
 }

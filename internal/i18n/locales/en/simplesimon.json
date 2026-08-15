@@ -5,5 +5,7 @@
   "helpGiveUp": "  g / giveup           give up",
   "colLabel": "Col {{idx}}:",
   "completedLine": "Completed suits: {{count}} / 4",
-  "hintLine": "[HINT: move col {{from}}[{{idx}}] to col {{to}}]"
+  "hintLine": "[HINT: move col {{from}}[{{idx}}] to col {{to}}]",
+  "helpHint": "  h                    show a hint",
+  "helpLog": "  l                    show the action log"
 }

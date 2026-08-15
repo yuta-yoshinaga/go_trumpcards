@@ -32,5 +32,6 @@
   "hintPon": "ポンできます: 手札 {{idxs}} ({{cards}})",
   "hintChi": "チーできます: 手札 {{idxs}} ({{cards}})",
   "hintDraw": "捨て札は使えません。山札から引きましょう。",
-  "helpExampleHint": "  h                    次の一手を教えてもらう"
+  "helpExampleHint": "  h                    次の一手を教えてもらう",
+  "helpLog": "  l                    行動ログを表示"
 }
