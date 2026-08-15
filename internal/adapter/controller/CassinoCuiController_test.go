@@ -168,3 +168,32 @@ func TestCassinoCuiController_Exec(t *testing.T) {
 			"a mistyped index must be refused, not dropped")
 	})
 }
+
+// codecov flagged these two: the rule-setter's own rejections. Both are the
+// only thing standing between a mistyped rule name and a config write.
+func TestCassinoCuiController_SetRuleRejections(t *testing.T) {
+	mockOutput := `{"players":[]}`
+	newMock := func() *mockUsecases.MockCassinoInteractor {
+		m := new(mockUsecases.MockCassinoInteractor)
+		m.On("Reset").Return(mockOutput)
+		m.On("GetConfig").Return(domain.DefaultCassinoConfig())
+		m.On("ResetWithConfig", mock.Anything).Return(mockOutput)
+		return m
+	}
+
+	t.Run("unknown rule name", func(t *testing.T) {
+		m := newMock()
+		out := controller.NewCassinoCuiController(m).Exec("sr nosuchrule 1")
+		assert.Equal(t, msgKey("unknownRule", "val", "nosuchrule"), out)
+		m.AssertNotCalled(t, "ResetWithConfig", mock.Anything)
+	})
+
+	// **2 でも 1 扱いにしない。** 真偽値の設定で 0/1 以外を通すと、指定した覚えの
+	// ない側に倒れたまま局が進む。
+	t.Run("value outside 0/1", func(t *testing.T) {
+		m := newMock()
+		out := controller.NewCassinoCuiController(m).Exec("sr sweepbonus 2")
+		assert.Equal(t, msgKey("invalidValue0Or1Raw", "val", "2"), out)
+		m.AssertNotCalled(t, "ResetWithConfig", mock.Anything)
+	})
+}

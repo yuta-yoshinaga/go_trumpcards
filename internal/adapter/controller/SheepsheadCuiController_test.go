@@ -175,3 +175,25 @@ func TestSheepsheadCuiController_Exec(t *testing.T) {
 		assert.Contains(t, result, "コマンドが不明です")
 	})
 }
+
+// codecov flagged the bury rejection: two indices are required and either one
+// being unparseable has to stop the write.
+func TestSheepsheadCuiController_BuryRejectsBadIndices(t *testing.T) {
+	mockOutput := `{"phase":0}`
+	newMock := func() *mockUsecases.MockSheepsheadInteractor {
+		m := new(mockUsecases.MockSheepsheadInteractor)
+		m.On("GetConfig").Return(domain.DefaultSheepsheadConfig())
+		m.On("ResetWithConfig", mock.Anything).Return(mockOutput)
+		m.On("Bury", mock.Anything).Return(mockOutput)
+		return m
+	}
+
+	for _, args := range []string{"abc 1", "0 xyz"} {
+		t.Run("bury "+args, func(t *testing.T) {
+			m := newMock()
+			out := controller.NewSheepsheadCuiController(m).Exec("b " + args)
+			assert.Equal(t, msgKey("invalidCardIndicesUsageB"), out)
+			m.AssertNotCalled(t, "Bury", mock.Anything)
+		})
+	}
+}
