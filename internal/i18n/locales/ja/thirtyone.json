@@ -33,5 +33,7 @@
   "hintReason.knock_ready": "ノックできる点数に届いています",
   "hintReason.discard_improves": "捨て札を取ると最高スートの点が上がります",
   "hintReason.draw_stock": "捨て札では点が上がりません",
-  "hintReason.drop_weakest": "残りの点が最大になります"
+  "hintReason.drop_weakest": "残りの点が最大になります",
+  "helpExampleDraw": "  ds                   手番の最初に山札から 1 枚引く",
+  "helpExampleDiscard": "  d 0                  手札の 0 番を捨てる"
 }

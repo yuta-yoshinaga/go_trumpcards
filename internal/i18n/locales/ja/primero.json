@@ -33,5 +33,6 @@
   "hint": "[HINT: {{action}}（{{reason}}）]",
   "hintReasonStrongHand": "強い手 — 攻める価値あり",
   "hintReasonMediumHand": "そこそこの手 — 様子を見てコール",
-  "hintReasonWeakHand": "弱い手 — 降りるのが無難"
+  "hintReasonWeakHand": "弱い手 — 降りるのが無難",
+  "helpExampleCall": "  c                         現在のベットにコールする"
 }

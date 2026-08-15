@@ -13,5 +13,6 @@
   "promptNextHelp": "n・・・次へ",
   "gameEnd": "ゲーム終了！ {{name}}の勝利です！",
   "progressLine": "残り {{remaining}} ペア / 全 {{total}} ペア",
-  "visitedCountLegend": "既出セル数: {{count}}"
+  "visitedCountLegend": "既出セル数: {{count}}",
+  "helpExampleFlip": "  f 0                  0 番の札をめくる"
 }

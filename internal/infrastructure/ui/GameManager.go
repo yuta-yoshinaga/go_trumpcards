@@ -198,7 +198,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewSevensCuiController,
 		CuiHelpSpec{
-			TitleKey:      "sevens.helpTitle",
+			TitleKey: "sevens.helpTitle",
+			ExampleKeys: []string{
+				"sevens.helpExamplePlay",
+			},
 			CommandKeys:   []string{"sevens.helpPlay", "sevens.helpJoker"},
 			ResetOverride: "  r [tunnel] [joker=N] [strategy] [passes=N]  reset with options",
 		}),
@@ -275,6 +278,12 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewOmahaCuiController,
 		CuiHelpSpec{
 			TitleKey: "omaha.helpTitleBigO",
+			// Renders omaha's command rows, so it renders omaha's examples too.
+			ExampleKeys: []string{
+				"omaha.helpExampleCheck",
+				"omaha.helpExampleBet",
+				"omaha.helpExampleRaise",
+			},
 			CommandKeys: append([]string{
 				"omaha.helpFold",
 				"omaha.helpCheck",
@@ -294,6 +303,12 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewOmahaCuiController,
 		CuiHelpSpec{
 			TitleKey: "omaha.helpTitleBigOHiLo",
+			// Renders omaha's command rows, so it renders omaha's examples too.
+			ExampleKeys: []string{
+				"omaha.helpExampleCheck",
+				"omaha.helpExampleBet",
+				"omaha.helpExampleRaise",
+			},
 			CommandKeys: append([]string{
 				"omaha.helpFold",
 				"omaha.helpCheck",
@@ -313,6 +328,12 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewOmahaCuiController,
 		CuiHelpSpec{
 			TitleKey: "omaha.helpTitleCourchevel",
+			// Renders omaha's command rows, so it renders omaha's examples too.
+			ExampleKeys: []string{
+				"omaha.helpExampleCheck",
+				"omaha.helpExampleBet",
+				"omaha.helpExampleRaise",
+			},
 			CommandKeys: append([]string{
 				"omaha.helpFold",
 				"omaha.helpCheck",
@@ -438,7 +459,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewMemoryCuiController,
 		CuiHelpSpec{
-			TitleKey:          "memory.helpTitle",
+			TitleKey: "memory.helpTitle",
+			ExampleKeys: []string{
+				"memory.helpExampleFlip",
+			},
 			CommandKeys:       []string{"memory.helpFlip", "memory.helpNext"},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"memory.helpSetDifficulty"},
@@ -820,7 +844,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewCribbageCuiController,
 		CuiHelpSpec{
-			TitleKey:          "cribbage.helpTitle",
+			TitleKey: "cribbage.helpTitle",
+			ExampleKeys: []string{
+				"cribbage.helpExampleDiscard",
+			},
 			CommandKeys:       []string{"cribbage.helpDiscard", "cribbage.helpCut", "cribbage.helpPeg", "cribbage.helpGo", "cribbage.helpHint", "cribbage.helpShowNext", "cribbage.helpNextRound"},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"cribbage.helpSetDifficulty", "cribbage.helpSetLimit"},
@@ -1106,7 +1133,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewWarCuiController,
 		CuiHelpSpec{
-			TitleKey:    "war.helpTitle",
+			TitleKey: "war.helpTitle",
+			ExampleKeys: []string{
+				"war.helpExampleStep",
+			},
 			CommandKeys: []string{"war.helpStep", "war.helpAutoPlay"},
 			SettingKeys: []string{"war.helpSetMax"},
 		}),
@@ -2803,7 +2833,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewSixCardGolfCuiController,
 		CuiHelpSpec{
-			TitleKey:    "sixcardgolf.helpTitle",
+			TitleKey: "sixcardgolf.helpTitle",
+			ExampleKeys: []string{
+				"sixcardgolf.helpExampleDraw",
+			},
 			CommandKeys: []string{"sixcardgolf.helpFlipInitial", "sixcardgolf.helpDrawStock", "sixcardgolf.helpDrawDiscard", "sixcardgolf.helpSwap", "sixcardgolf.helpDiscard", "sixcardgolf.helpFlip", "sixcardgolf.helpSkipFlip", "sixcardgolf.helpNextRound"},
 			SettingKeys: []string{"sixcardgolf.helpSetDifficulty", "sixcardgolf.helpSetPlayers", "sixcardgolf.helpSetRounds"},
 		}),
@@ -2889,6 +2922,10 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewThirtyOneCuiController,
 		CuiHelpSpec{
 			TitleKey: "thirtyone.helpTitle",
+			ExampleKeys: []string{
+				"thirtyone.helpExampleDraw",
+				"thirtyone.helpExampleDiscard",
+			},
 			CommandKeys: []string{
 				"thirtyone.helpDrawStock",
 				"thirtyone.helpDrawDiscard",
@@ -3608,6 +3645,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewThreeCardBragCuiController,
 		CuiHelpSpec{
 			TitleKey: "threecardbrag.helpTitle",
+			ExampleKeys: []string{
+				"threecardbrag.helpExampleSee",
+			},
 			CommandKeys: []string{
 				"threecardbrag.helpSee",
 				"threecardbrag.helpBet",
@@ -3626,6 +3666,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewTeenPattiCuiController,
 		CuiHelpSpec{
 			TitleKey: "teenpatti.helpTitle",
+			ExampleKeys: []string{
+				"teenpatti.helpExampleSee",
+			},
 			CommandKeys: []string{
 				"teenpatti.helpSee",
 				"teenpatti.helpBet",
@@ -4065,7 +4108,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewBeggarMyNeighbourCuiController,
 		CuiHelpSpec{
-			TitleKey:    "beggarmyneighbour.helpTitle",
+			TitleKey: "beggarmyneighbour.helpTitle",
+			ExampleKeys: []string{
+				"beggarmyneighbour.helpExampleStep",
+			},
 			CommandKeys: []string{"beggarmyneighbour.helpStep", "beggarmyneighbour.helpAutoPlay"},
 			SettingKeys: []string{"beggarmyneighbour.helpSetMax"},
 		}),
@@ -4326,7 +4372,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewBouillotteCuiController,
 		CuiHelpSpec{
-			TitleKey:          "bouillotte.helpTitle",
+			TitleKey: "bouillotte.helpTitle",
+			ExampleKeys: []string{
+				"bouillotte.helpExampleCall",
+			},
 			CommandKeys:       []string{"bouillotte.helpBet", "bouillotte.helpNext"},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"bouillotte.helpSetPlayers", "bouillotte.helpSetAnte", "bouillotte.helpSetChips", "bouillotte.helpSetRounds"},
@@ -4337,7 +4386,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewPrimeroCuiController,
 		CuiHelpSpec{
-			TitleKey:          "primero.helpTitle",
+			TitleKey: "primero.helpTitle",
+			ExampleKeys: []string{
+				"primero.helpExampleCall",
+			},
 			CommandKeys:       []string{"primero.helpBet", "primero.helpNext"},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"primero.helpSetPlayers", "primero.helpSetAnte", "primero.helpSetChips", "primero.helpSetRounds"},
@@ -4454,6 +4506,10 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewPanCuiController,
 		CuiHelpSpec{
 			TitleKey: "pan.helpTitle",
+			ExampleKeys: []string{
+				"pan.helpExampleDraw",
+				"pan.helpExampleDiscard",
+			},
 			CommandKeys: []string{
 				"pan.helpDrawStock",
 				"pan.helpDrawDiscard",

@@ -31,5 +31,6 @@
   "helpShow": "  sh                   ショーダウンを要求する (残り2人)",
   "helpSideShow": "  ss                   サイドショーを申請する",
   "helpNext": "  n                    次のディールへ",
-  "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)"
+  "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
+  "helpExampleSee": "  s                    手札を見てシーンになる"
 }

@@ -28,5 +28,6 @@
   "turnLine": "手番: {{name}}",
   "playHint": "p [インデックス] でカードを出す / p でパス",
   "jokerHint": "j [カードインデックス] [スート] [値] でジョーカーを配置",
-  "boardSuitLine": "  {{suit}}: {{cells}}"
+  "boardSuitLine": "  {{suit}}: {{cells}}",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
 }

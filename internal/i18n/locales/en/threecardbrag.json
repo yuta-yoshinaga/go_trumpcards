@@ -27,5 +27,6 @@
   "helpFold": "  f                    fold",
   "helpShow": "  sh                   call a showdown (two players left)",
   "helpNext": "  n                    go to the next deal",
-  "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)"
+  "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
+  "helpExampleSee": "  s                    look at your hand and become seen"
 }
