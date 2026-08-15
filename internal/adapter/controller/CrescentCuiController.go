@@ -105,7 +105,7 @@ func (c *CrescentCuiController) handleMove(args []string) string {
 		}
 		return c.ci.MoveTableauToFoundation(fromCol, fIdx)
 	default:
-		return i18n.T("crescent.moveUsage")
+		return i18n.MarkError(i18n.T("crescent.moveUsage"))
 	}
 }
 

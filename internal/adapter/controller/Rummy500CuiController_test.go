@@ -109,7 +109,7 @@ func TestRummy500CuiController_Exec(t *testing.T) {
 	t.Run("layoff lo missing args", func(t *testing.T) {
 		c := controller.NewRummy500CuiController(newMock())
 		result := c.Exec("lo 0 1")
-		assert.Contains(t, result, "layoff requires")
+		assert.Contains(t, result, msgStem("layoffNeedsThreeInts"))
 	})
 
 	t.Run("discard d with index", func(t *testing.T) {

@@ -63,7 +63,7 @@ func TestShengJiCuiController_Exec(t *testing.T) {
 		// **底牌を拾った直後は 25 + 8 枚**あるので、埋め戻しの上限は広い。
 		assert.Equal(t, mockOutput, c.Exec("b 25 26 27 28 29 30 31 32"))
 		assert.Contains(t, c.Exec("b 33 0 1 2 3 4 5 6"), msgInvalidCardIndexPrefix())
-		assert.Contains(t, c.Exec("b 0 1"), "exactly 8")
+		assert.Contains(t, c.Exec("b 0 1"), msgKey("giveExactlyNIndexes", "n", "8"))
 		assert.Contains(t, c.Exec("b"), msgStem("cardIndexesRequiredPair"))
 	})
 

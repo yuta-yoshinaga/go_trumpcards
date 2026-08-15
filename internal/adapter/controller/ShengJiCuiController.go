@@ -62,7 +62,7 @@ func shengJiParseIndexes(args []string, want, maxIdx int, apply func([]int) stri
 		return invalidArg("cardIndexesRequiredPair"), true
 	}
 	if want > 0 && len(args) != want {
-		return "Give exactly " + strconv.Itoa(want) + " card indexes.", true
+		return invalidArg("giveExactlyNIndexes", "n", strconv.Itoa(want)), true
 	}
 	idxs := make([]int, 0, len(args))
 	seen := map[int]bool{}

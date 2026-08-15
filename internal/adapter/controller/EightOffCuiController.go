@@ -112,13 +112,13 @@ func (c *EightOffCuiController) handleMoveFromTableau(args []string) string {
 	default:
 		cardIdx, err := strconv.Atoi(args[1])
 		if err != nil {
-			return i18n.T("eightoff.moveUsage")
+			return i18n.MarkError(i18n.T("eightoff.moveUsage"))
 		}
 		if len(args) < 4 || args[2] != "t" {
 			if len(args) == 3 && args[2] == "t" {
 				return cuiutil.PromptRequest(i18n.T("promptToColumn"), fmt.Sprintf("m t %s %s t {0}", args[0], args[1]))
 			}
-			return i18n.T("eightoff.moveUsage")
+			return i18n.MarkError(i18n.T("eightoff.moveUsage"))
 		}
 		toCol, err := strconv.Atoi(args[3])
 		if err != nil {

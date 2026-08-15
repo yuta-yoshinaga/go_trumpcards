@@ -582,5 +582,7 @@
   "invalidDenomination0Max": "種別が不正です: {{val}}。0-{{max}} を入力してください (0=S 1=C 2=D 3=H 4=NT)。",
   "usageSrRuleDaifugo": "使い方: sr <rule> <0|1> | sr list\n規則: {{val}}。\nスート固定は 'suitlockmode' (0-2)、飛ばし回数は '5skipcount' を使います。",
   "askNeedsSeatSuitRank": "ask には相手の席・スート・ランクが要ります (例: スペードの 2 なら a 1 1 2)。",
-  "claimNeedsHalfSuitAndHolders": "claim にはハーフスートと 6 人分の持ち主が要ります (例: c 0 0 0 2 2 4 4)。"
+  "claimNeedsHalfSuitAndHolders": "claim にはハーフスートと 6 人分の持ち主が要ります (例: c 0 0 0 2 2 4 4)。",
+  "layoffNeedsThreeInts": "レイオフには整数が 3 つ要ります: <owner> <meldIdx> <cardIdx>。",
+  "giveExactlyNIndexes": "手札の番号をちょうど {{n}} 個指定してください。"
 }
