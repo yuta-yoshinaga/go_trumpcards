@@ -17,5 +17,6 @@
   "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
   "hintReasonWinTrick": "Take it and you draw a replacement",
   "hintReasonNoStock": "You can take it, but the stock is empty -- no refill",
-  "hintReasonDuck": "You cannot take it, so play low"
+  "hintReasonDuck": "You cannot take it, so play low",
+  "helpExamplePlay": "  p 0                  play hand card 0"
 }

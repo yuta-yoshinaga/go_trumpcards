@@ -17,5 +17,6 @@
   "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
   "hintReasonWinTrick": "取れば山札から1枚補充できる",
   "hintReasonNoStock": "取れるが山札が空なので補充は無い",
-  "hintReasonDuck": "取れないので安い札から"
+  "hintReasonDuck": "取れないので安い札から",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
 }

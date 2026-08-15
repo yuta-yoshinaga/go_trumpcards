@@ -21,5 +21,7 @@
   "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
   "hintReasonLead": "You lead, so anything is legal",
   "hintReasonBeat": "The cheapest card that still beats it -- do not carry high cards into the last trick",
-  "hintReasonForced": "You cannot beat it, so this card is forced"
+  "hintReasonForced": "You cannot beat it, so this card is forced",
+  "helpExamplePlay": "  p 0                  play hand card 0",
+  "helpExampleNext": "  n                    read the round result, then continue"
 }

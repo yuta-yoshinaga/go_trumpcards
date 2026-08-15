@@ -24,5 +24,7 @@
   "antePayoutLine": "Ante payout: {{payout}}",
   "playPayoutLine": "Play payout: {{payout}}",
   "anteBonusPayoutLine": "Ante bonus: {{payout}}",
-  "acesUpPayoutLine": "Aces Up: {{payout}}"
+  "acesUpPayoutLine": "Aces Up: {{payout}}",
+  "helpExampleBet": "  b 10                 ante 10 and get a hand",
+  "helpExamplePlay": "  p                    play, matching the ante"
 }
