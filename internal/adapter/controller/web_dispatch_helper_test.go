@@ -327,3 +327,60 @@ func TestDispatchRummyMeld_HintIsNotHandled(t *testing.T) {
 	assert.False(t, handled)
 	assert.Empty(t, w.Body.String())
 }
+
+// dispatchTableauOnlyMove consolidates scorpionMoveDispatch,
+// spideretteMoveDispatch and waspMoveDispatch — solitaires whose only legal
+// move is tableau-to-tableau, so anything else is a 400 rather than a branch.
+//
+// Zones are passed as plain values, not as a struct: every game declares its
+// own zone type (ScorpionWebZone, SpideretteWebZone, …) with identical fields,
+// and there is no shared type to accept. The caller unpacks; the helper decides.
+func TestDispatchTableauOnlyMove(t *testing.T) {
+	col, idx := 1, 2
+
+	cases := []struct {
+		name                       string
+		haveFrom, haveTo           bool
+		fromZone, toZone           string
+		fromCol, fromIdx, toColPtr *int
+		wantBody                   string
+		wantCode                   int
+	}{
+		{"tableau to tableau", true, true, "tableau", "tableau", &col, &idx, &col, `{"moved":true}`, 200},
+		{"missing from", false, true, "", "tableau", nil, nil, &col, "from and to are required", 400},
+		{"missing to", true, false, "tableau", "", &col, &idx, nil, "from and to are required", 400},
+		{"foundation is not a legal target", true, true, "tableau", "foundation", &col, &idx, &col, "Only tableau to tableau", 400},
+		{"waste is not a legal source", true, true, "waste", "tableau", &col, &idx, &col, "Only tableau to tableau", 400},
+		{"missing cardIndex", true, true, "tableau", "tableau", &col, nil, &col, "from.cardIndex", 400},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			handled := dispatchTableauOnlyMove(&baseController{}, w, tableauMove{
+				haveFrom: tc.haveFrom, haveTo: tc.haveTo,
+				fromZone: tc.fromZone, toZone: tc.toZone,
+				fromCol: tc.fromCol, fromCardIndex: tc.fromIdx, toCol: tc.toColPtr,
+			}, func(fromCol, cardIndex, toCol int) string { return `{"moved":true}` },
+				func(msg string) any { return map[string]string{"message": msg} })
+			assert.True(t, handled, "the helper always answers -- it never falls through")
+			assert.Equal(t, tc.wantCode, w.Code)
+			assert.Contains(t, w.Body.String(), tc.wantBody)
+		})
+	}
+}
+
+// The move function must receive the indices in the documented order; swapping
+// fromCol and toCol renders a legal-looking move that plays the wrong card.
+func TestDispatchTableauOnlyMove_PassesIndicesInOrder(t *testing.T) {
+	from, ci, to := 3, 4, 5
+	var got []int
+	w := httptest.NewRecorder()
+	dispatchTableauOnlyMove(&baseController{}, w, tableauMove{
+		haveFrom: true, haveTo: true, fromZone: "tableau", toZone: "tableau",
+		fromCol: &from, fromCardIndex: &ci, toCol: &to,
+	}, func(fromCol, cardIndex, toCol int) string {
+		got = []int{fromCol, cardIndex, toCol}
+		return "{}"
+	}, func(msg string) any { return msg })
+	assert.Equal(t, []int{3, 4, 5}, got)
+}

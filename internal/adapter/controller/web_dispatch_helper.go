@@ -231,3 +231,43 @@ func dispatchRummyMeld[O any](cmd string, bc *baseController, w http.ResponseWri
 	}
 	return true
 }
+
+// tableauMove is one move request, unpacked from whichever per-game zone type
+// carried it.
+//
+// Every solitaire declares its own zone struct (ScorpionWebZone,
+// SpideretteWebZone, WaspWebZone, …) with identical fields, and Go has no
+// structural typing, so there is nothing common to accept. The caller unpacks
+// its own type into this; the helper owns the validation order.
+type tableauMove struct {
+	haveFrom, haveTo bool
+	fromZone, toZone string
+	fromCol          *int
+	fromCardIndex    *int
+	toCol            *int
+}
+
+// dispatchTableauOnlyMove validates and performs a tableau-to-tableau move for
+// the solitaires that allow no other kind, answering 400 for anything else.
+//
+// Consolidates 3 byte-identical dispatchers: scorpionMoveDispatch,
+// spideretteMoveDispatch, waspMoveDispatch. See issue #5368.
+//
+// Always returns true: unlike the command dispatchers, this one owns the whole
+// request. Reporting false would leave the caller to answer a request that has
+// already been written to.
+func dispatchTableauOnlyMove[O any](bc *baseController, w http.ResponseWriter, mv tableauMove, move func(fromCol, cardIndex, toCol int) string, newDefault func(string) O) bool {
+	if !requireParam(bc, w, newDefault, !mv.haveFrom || !mv.haveTo, "param error: from and to are required.") {
+		return true
+	}
+	if !requireParam(bc, w, newDefault, mv.fromZone != "tableau" || mv.toZone != "tableau",
+		"param error: invalid move zones. Only tableau to tableau is supported.") {
+		return true
+	}
+	if !requireParam(bc, w, newDefault, mv.fromCol == nil || mv.fromCardIndex == nil || mv.toCol == nil,
+		"param error: from.col, from.cardIndex, to.col are required.") {
+		return true
+	}
+	bc.writePresenterResponse(w, move(*mv.fromCol, *mv.fromCardIndex, *mv.toCol))
+	return true
+}
