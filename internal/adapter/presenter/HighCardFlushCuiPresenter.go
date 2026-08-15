@@ -56,7 +56,7 @@ func (hp *HighCardFlushCuiPresenter) Output(hcf interfaces.HighCardFlushGame, la
 	sb.WriteString("----------\n")
 
 	if lastErr != nil {
-		sb.WriteString(color.Red(lastErr.Error()) + "\n")
+		sb.WriteString(i18n.MarkErrorLine(color.Red(lastErr.Error())) + "\n")
 	}
 
 	if hcf.GetGameEndFlag() {

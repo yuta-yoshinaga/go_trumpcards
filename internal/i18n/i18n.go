@@ -23,6 +23,31 @@ func MarkError(msg string) string {
 	return ErrorPrefix + msg
 }
 
+// ErrorLinePrefix marks one line inside an otherwise ordinary reply as a
+// rejection. The board games render a refusal as a red line inside the board,
+// so the reply as a whole is a board and must stay on stdout -- marking it with
+// ErrorPrefix would send the whole board to stderr in red. This says "there is
+// a refusal in here" without claiming the reply is one.
+const ErrorLinePrefix = "\x1eERRLN\x1e"
+
+// MarkErrorLine marks a single line as a rejection. Returns line unchanged if
+// it is empty or already marked.
+func MarkErrorLine(line string) string {
+	if line == "" || strings.HasPrefix(line, ErrorLinePrefix) {
+		return line
+	}
+	return ErrorLinePrefix + line
+}
+
+// StripErrorLines removes every ErrorLinePrefix from msg and reports whether
+// any was present. Callers display the result; the marker never reaches a user.
+func StripErrorLines(msg string) (body string, hadError bool) {
+	if !strings.Contains(msg, ErrorLinePrefix) {
+		return msg, false
+	}
+	return strings.ReplaceAll(msg, ErrorLinePrefix, ""), true
+}
+
 // StripErrorPrefix removes ErrorPrefix from msg and reports whether it was present.
 func StripErrorPrefix(msg string) (body string, isError bool) {
 	if strings.HasPrefix(msg, ErrorPrefix) {

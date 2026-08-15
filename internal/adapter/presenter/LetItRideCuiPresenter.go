@@ -75,7 +75,7 @@ func (lp *LetItRideCuiPresenter) Output(lir interfaces.LetItRideGame, lastErr er
 	sb.WriteString("----------\n")
 
 	if lastErr != nil {
-		fmt.Fprintf(&sb, "%s\n", color.Red(lastErr.Error()))
+		fmt.Fprintf(&sb, "%s\n", i18n.MarkErrorLine(color.Red(lastErr.Error())))
 	}
 
 	if lir.GetGameEndFlag() {

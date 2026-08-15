@@ -65,7 +65,7 @@ func (p *PageOneCuiPresenter) Output(g interfaces.PageOneGame, lastErr error) st
 		b.WriteString("----------\n")
 
 		if lastErr != nil {
-			fmt.Fprintf(b, "%s\n", color.Red(lastErr.Error()))
+			fmt.Fprintf(b, "%s\n", i18n.MarkErrorLine(color.Red(lastErr.Error())))
 		}
 
 		if g.GetGameEndFlag() {

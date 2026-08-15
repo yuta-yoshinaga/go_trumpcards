@@ -69,7 +69,7 @@ func (p *DoudizhuCuiPresenter) Output(dg interfaces.DoudizhuGame, lastErr error)
 		}
 
 		if lastErr != nil {
-			b.WriteString(color.Red(lastErr.Error()) + "\n")
+			b.WriteString(i18n.MarkErrorLine(color.Red(lastErr.Error())) + "\n")
 		}
 	})
 }
