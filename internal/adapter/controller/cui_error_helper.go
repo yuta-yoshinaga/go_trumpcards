@@ -10,10 +10,12 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 // test executing a documented example -- can tell "the game refused this" from
 // "the game did this".
 //
-// Measured on 2026-08-15 by giving a malformed argument to every one of the 638
-// argument-taking commands in the help tables, on a freshly dealt game: 4 came
-// back marked. The rest returned a perfectly good message that read as success,
-// or (27 commands) nothing but a redrawn board. See issue #5377.
+// Measured by giving a malformed argument to every argument-taking command in
+// the help tables, on a freshly dealt game. When this helper was introduced on
+// 2026-08-15, 4 of 638 came back marked; after the i18n migration moved most
+// rejections onto cuiutil.ParseIntArgKeys and that path started marking too,
+// it is 668 of 994. The rest still return a message that reads as success, or
+// (45 commands) nothing but a redrawn board -- issues #5377 and #5390.
 //
 // The signature deliberately mirrors i18n.Tf so the call sites differ only in
 // the function name.
