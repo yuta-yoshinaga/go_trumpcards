@@ -25,5 +25,7 @@
   "helpPlay": "  play <idx>           カードを出す",
   "helpNext": "  n                    次のトリックへ",
   "helpNextRound": "  nr                   次のラウンドへ",
-  "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)"
+  "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
+  "helpExamplePlay": "  play 0               手札の 0 番のカードを出す",
+  "helpExampleNext": "  n                    トリックの決着を見てから次のトリックへ"
 }

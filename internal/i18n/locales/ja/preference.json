@@ -44,5 +44,8 @@
   "trickEnd": "トリック終了",
   "roundEnd": "ラウンド終了",
   "result.humanWin": "ゲーム終了！ あなたの勝ち！",
-  "result.cpuWin": "ゲーム終了！ プレイヤー{{player}}の勝ち！"
+  "result.cpuWin": "ゲーム終了！ プレイヤー{{player}}の勝ち！",
+  "helpExampleBid": "  bid 1                    シックスを宣言する",
+  "helpExamplePlay": "  play 0                   手札の 0 番のカードを出す",
+  "helpExampleNext": "  n                        トリックの決着を見てから次のトリックへ"
 }

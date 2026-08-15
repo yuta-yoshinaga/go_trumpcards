@@ -22,5 +22,7 @@
   "hintReasonFollowWin": "得点があるので勝ちに行く",
   "hintReasonFollowDuck": "取れない／取る価値がないのでダック",
   "hintReasonDiscardLow": "フォローできないので低い札を捨てる",
-  "promptRoundEndDefenders": "ディフェンダー合計: {{pts}}点"
+  "promptRoundEndDefenders": "ディフェンダー合計: {{pts}}点",
+  "helpExamplePlay": "  play 0                   手札の 0 番のカードを出す",
+  "helpExampleNext": "  n                        トリックの決着を見てから次のトリックへ"
 }

@@ -19,5 +19,7 @@
   "hintReasonFollowWin": "Points on the table — win the trick",
   "hintReasonFollowDuck": "Cannot/should not win — duck",
   "hintReasonDiscardLow": "Cannot follow suit — discard a low card",
-  "rankHelp": "Rank order: 10 > A > K > Q > J > 9 > 8 > 7 (points: 10=5, A=4, K=3, Q=2, J=1)"
+  "rankHelp": "Rank order: 10 > A > K > Q > J > 9 > 8 > 7 (points: 10=5, A=4, K=3, Q=2, J=1)",
+  "helpExamplePlay": "  play 0                   play hand card 0",
+  "helpExampleNext": "  n                        read the trick result, then start the next trick"
 }

@@ -2891,6 +2891,10 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewSuecaCuiController,
 		CuiHelpSpec{
 			TitleKey: "sueca.helpTitle",
+			ExampleKeys: []string{
+				"sueca.helpExamplePlay",
+				"sueca.helpExampleNext",
+			},
 			CommandKeys: []string{
 				"sueca.helpPlay",
 				"sueca.helpNext",
@@ -2906,6 +2910,11 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewFortyFivesCuiController,
 		CuiHelpSpec{
 			TitleKey: "fortyfives.helpTitle",
+			ExampleKeys: []string{
+				"fortyfives.helpExampleBid",
+				"fortyfives.helpExamplePlay",
+				"fortyfives.helpExampleNext",
+			},
 			CommandKeys: []string{
 				"fortyfives.helpBid",
 				"fortyfives.helpPass",
@@ -2923,6 +2932,11 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewTwentyNineCuiController,
 		CuiHelpSpec{
 			TitleKey: "twentynine.helpTitle",
+			ExampleKeys: []string{
+				"twentynine.helpExampleBid",
+				"twentynine.helpExamplePlay",
+				"twentynine.helpExampleNext",
+			},
 			CommandKeys: []string{
 				"twentynine.helpBid",
 				"twentynine.helpPass",
@@ -2940,6 +2954,10 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewKlaverjasCuiController,
 		CuiHelpSpec{
 			TitleKey: "klaverjas.helpTitle",
+			ExampleKeys: []string{
+				"klaverjas.helpExamplePlay",
+				"klaverjas.helpExampleNext",
+			},
 			CommandKeys: []string{
 				"klaverjas.helpPlay",
 				"klaverjas.helpNext",
@@ -2955,6 +2973,10 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewManilleCuiController,
 		CuiHelpSpec{
 			TitleKey: "manille.helpTitle",
+			ExampleKeys: []string{
+				"manille.helpExamplePlay",
+				"manille.helpExampleNext",
+			},
 			CommandKeys: []string{
 				"manille.helpPlay",
 				"manille.helpNext",
@@ -2970,6 +2992,10 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewMariasCuiController,
 		CuiHelpSpec{
 			TitleKey: "marias.helpTitle",
+			ExampleKeys: []string{
+				"marias.helpExamplePlay",
+				"marias.helpExampleNext",
+			},
 			CommandKeys: []string{
 				"marias.helpPlay",
 				"marias.helpNext",
@@ -2985,6 +3011,10 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewSedmaCuiController,
 		CuiHelpSpec{
 			TitleKey: "sedma.helpTitle",
+			ExampleKeys: []string{
+				"sedma.helpExamplePlay",
+				"sedma.helpExampleNext",
+			},
 			CommandKeys: []string{
 				"sedma.helpPlay",
 				"sedma.helpNext",
@@ -3000,6 +3030,11 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewSoloWhistCuiController,
 		CuiHelpSpec{
 			TitleKey: "solowhist.helpTitle",
+			ExampleKeys: []string{
+				"solowhist.helpExampleBid",
+				"solowhist.helpExamplePlay",
+				"solowhist.helpExampleNext",
+			},
 			CommandKeys: []string{
 				"solowhist.helpBid",
 				"solowhist.helpPass",
@@ -3017,6 +3052,10 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewKnockoutWhistCuiController,
 		CuiHelpSpec{
 			TitleKey: "knockoutwhist.helpTitle",
+			ExampleKeys: []string{
+				"knockoutwhist.helpExamplePlay",
+				"knockoutwhist.helpExampleNext",
+			},
 			CommandKeys: []string{
 				"knockoutwhist.helpPlay",
 				"knockoutwhist.helpNext",
@@ -3032,6 +3071,11 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewNapCuiController,
 		CuiHelpSpec{
 			TitleKey: "nap.helpTitle",
+			ExampleKeys: []string{
+				"nap.helpExampleBid",
+				"nap.helpExamplePlay",
+				"nap.helpExampleNext",
+			},
 			CommandKeys: []string{
 				"nap.helpBid",
 				"nap.helpPass",
@@ -3049,6 +3093,11 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewPreferenceCuiController,
 		CuiHelpSpec{
 			TitleKey: "preference.helpTitle",
+			ExampleKeys: []string{
+				"preference.helpExampleBid",
+				"preference.helpExamplePlay",
+				"preference.helpExampleNext",
+			},
 			CommandKeys: []string{
 				"preference.helpBid",
 				"preference.helpPass",
@@ -3066,6 +3115,10 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewGanjifaCuiController,
 		CuiHelpSpec{
 			TitleKey: "ganjifa.helpTitle",
+			ExampleKeys: []string{
+				"ganjifa.helpExamplePlay",
+				"ganjifa.helpExampleNext",
+			},
 			CommandKeys: []string{
 				"ganjifa.helpPlay",
 				"ganjifa.helpNext",
@@ -3081,6 +3134,11 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewViraCuiController,
 		CuiHelpSpec{
 			TitleKey: "vira.helpTitle",
+			ExampleKeys: []string{
+				"vira.helpExampleBid",
+				"vira.helpExamplePlay",
+				"vira.helpExampleNext",
+			},
 			CommandKeys: []string{
 				"vira.helpBid",
 				"vira.helpPass",
@@ -3098,6 +3156,10 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewSpoilFiveCuiController,
 		CuiHelpSpec{
 			TitleKey: "spoilfive.helpTitle",
+			ExampleKeys: []string{
+				"spoilfive.helpExamplePlay",
+				"spoilfive.helpExampleNext",
+			},
 			CommandKeys: []string{
 				"spoilfive.helpPlay",
 				"spoilfive.helpNext",
@@ -4006,6 +4068,10 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewAluetteCuiController,
 		CuiHelpSpec{
 			TitleKey: "aluette.helpTitle",
+			ExampleKeys: []string{
+				"aluette.helpExamplePlay",
+				"aluette.helpExampleNext",
+			},
 			CommandKeys: []string{
 				"aluette.helpPlay",
 				"aluette.helpNext",

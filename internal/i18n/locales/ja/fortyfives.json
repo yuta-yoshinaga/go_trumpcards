@@ -44,5 +44,8 @@
   "contractProgress": "契約: {{team}} {{got}}/{{contract}} 点 — {{status}}",
   "contractMade": "成立",
   "contractFailed": "不成立が確定",
-  "contractNeedMore": "あと{{remaining}}点"
+  "contractNeedMore": "あと{{remaining}}点",
+  "helpExampleBid": "  bid 20                   20 点を宣言する",
+  "helpExamplePlay": "  play 0                   手札の 0 番のカードを出す",
+  "helpExampleNext": "  n                        トリックの決着を見てから次のトリックへ"
 }
