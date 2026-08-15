@@ -50,7 +50,7 @@ func TestDoppelkopfCuiController_Exec(t *testing.T) {
 
 	t.Run("play no args", func(t *testing.T) {
 		result := controller.NewDoppelkopfCuiController(newMock()).Exec("play")
-		assert.Contains(t, result, "Card index is required")
+		assert.Contains(t, result, msgCardIndexRequired())
 	})
 
 	t.Run("announce shorthand a", func(t *testing.T) {

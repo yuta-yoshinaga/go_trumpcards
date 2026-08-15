@@ -47,7 +47,7 @@ func (c *CallBreakCuiController) Exec(command string) string {
 			case "b", "bid":
 				return cuiutil.WithParsedInt(args, "Bid value is required (1-13).", "Invalid bid value: %s.", domain.CallBreakMinBid, domain.CallBreakHandSize, c.ci.Bid)
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.ci.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.ci.Play)
 			case "n", "next":
 				return c.ci.NextTrick(), true
 			case "nr", "nextround":

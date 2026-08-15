@@ -51,12 +51,12 @@ func TestSchnapsenCuiController_Exec(t *testing.T) {
 
 	t.Run("play missing index", func(t *testing.T) {
 		c := controller.NewSchnapsenCuiController(newMock())
-		assert.Contains(t, c.Exec("p"), "Card index is required")
+		assert.Contains(t, c.Exec("p"), msgCardIndexRequired())
 	})
 
 	t.Run("play invalid index", func(t *testing.T) {
 		c := controller.NewSchnapsenCuiController(newMock())
-		assert.Contains(t, c.Exec("p abc"), "Invalid card index")
+		assert.Contains(t, c.Exec("p abc"), msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("marriage with index", func(t *testing.T) {
@@ -69,7 +69,7 @@ func TestSchnapsenCuiController_Exec(t *testing.T) {
 
 	t.Run("marriage missing index", func(t *testing.T) {
 		c := controller.NewSchnapsenCuiController(newMock())
-		assert.Contains(t, c.Exec("marriage"), "Card index is required")
+		assert.Contains(t, c.Exec("marriage"), msgCardIndexRequired())
 	})
 
 	t.Run("next short", func(t *testing.T) {

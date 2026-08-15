@@ -82,7 +82,7 @@ func TestCalabresellaCuiController_Exec(t *testing.T) {
 
 	t.Run("discard no args", func(t *testing.T) {
 		result := controller.NewCalabresellaCuiController(newMock()).Exec("discard")
-		assert.Contains(t, result, "Card index is required")
+		assert.Contains(t, result, msgCardIndexRequired())
 	})
 
 	t.Run("play card", func(t *testing.T) {
@@ -94,7 +94,7 @@ func TestCalabresellaCuiController_Exec(t *testing.T) {
 
 	t.Run("play no args", func(t *testing.T) {
 		result := controller.NewCalabresellaCuiController(newMock()).Exec("play")
-		assert.Contains(t, result, "Card index is required")
+		assert.Contains(t, result, msgCardIndexRequired())
 	})
 
 	t.Run("next / nextround", func(t *testing.T) {

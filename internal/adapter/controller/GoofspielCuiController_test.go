@@ -47,8 +47,8 @@ func TestGoofspielCuiController_Commands(t *testing.T) {
 
 func TestGoofspielCuiController_BidRejectsBadArgs(t *testing.T) {
 	for _, tc := range []struct{ name, cmd, want string }{
-		{"index missing", "b", "Card index is required."},
-		{"index not a number", "b x", "Invalid card index: x."},
+		{"index missing", "b", msgCardIndexRequired()},
+		{"index not a number", "b x", msgInvalidCardIndex("x")},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			c, gi := newGoofspielCui()

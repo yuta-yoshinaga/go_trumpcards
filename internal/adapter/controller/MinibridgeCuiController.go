@@ -42,7 +42,7 @@ func (c *MinibridgeCuiController) Exec(command string) string {
 			case "c", "contract":
 				return c.contract(args)
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.mi.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.mi.Play)
 			case "n", "next":
 				return c.mi.NextRound(), true
 			case "g", "giveup":

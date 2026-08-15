@@ -37,8 +37,8 @@ func TestColourWhistCuiController_QuitAndReset(t *testing.T) {
 func TestColourWhistCuiController_Play(t *testing.T) {
 	c := controller.NewColourWhistCuiController(newMockColourWhistInteractor())
 	assert.Equal(t, "played 2", c.Exec("p 2"))
-	assert.Contains(t, c.Exec("p"), "required")
-	assert.Contains(t, c.Exec("p abc"), "Invalid card index")
+	assert.Contains(t, c.Exec("p"), msgCardIndexRequired())
+	assert.Contains(t, c.Exec("p abc"), msgInvalidCardIndexPrefix())
 }
 
 // **競れる契約は3つだけ。** troel は配りでしか成立しないので語彙に入れません。

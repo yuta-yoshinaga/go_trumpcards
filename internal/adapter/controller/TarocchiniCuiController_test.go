@@ -57,7 +57,7 @@ func TestTarocchiniCuiController_Exec(t *testing.T) {
 
 	t.Run("scarto with a non-numeric index", func(t *testing.T) {
 		out := controller.NewTarocchiniCuiController(newMock()).Exec("scarto x y")
-		assert.Contains(t, out, "Invalid card index")
+		assert.Contains(t, out, msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("play card", func(t *testing.T) {
@@ -67,7 +67,7 @@ func TestTarocchiniCuiController_Exec(t *testing.T) {
 	})
 
 	t.Run("play no args", func(t *testing.T) {
-		assert.Contains(t, controller.NewTarocchiniCuiController(newMock()).Exec("play"), "Card index is required")
+		assert.Contains(t, controller.NewTarocchiniCuiController(newMock()).Exec("play"), msgCardIndexRequired())
 	})
 
 	// このゲームに入札は無い。bid/pass が黙って別の動作に落ちてはならない。

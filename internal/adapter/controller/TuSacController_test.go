@@ -13,6 +13,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	uc "github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -197,11 +198,11 @@ func TestTuSacCuiController(t *testing.T) {
 	assert.NotEmpty(t, c.Exec("x 1"))
 	m.AssertCalled(t, "Discard", 0)
 
-	assert.Contains(t, c.Exec("meld"), "required")
-	assert.Contains(t, c.Exec("meld abc"), "Invalid")
-	assert.Contains(t, c.Exec("meld 0"), "Invalid", "0 番を受け付けている")
-	assert.Contains(t, c.Exec("discard"), "required")
-	assert.Contains(t, c.Exec("discard xyz"), "Invalid")
+	assert.Contains(t, c.Exec("meld"), i18n.T("cardIndexesRequiredMeld"))
+	assert.Contains(t, c.Exec("meld abc"), i18n.T("invalidIndexFromOne"))
+	assert.Contains(t, c.Exec("meld 0"), i18n.T("invalidIndexFromOne"), "0 番を受け付けている")
+	assert.Contains(t, c.Exec("discard"), msgCardIndexRequired())
+	assert.Contains(t, c.Exec("discard xyz"), i18n.T("invalidIndexNotANumber"))
 
 	for _, cmd := range []string{"next", "hint", "log"} {
 		assert.NotEmpty(t, c.Exec(cmd), "command %s produced nothing", cmd)

@@ -71,9 +71,9 @@ func (c *NapoleonCuiController) Exec(command string) string {
 				}
 				return c.ni.DeclareTrump(suit, adjSuit, adjVal), true
 			case "e", "exchange":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.ni.ExchangeKitty)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.ni.ExchangeKitty)
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.ni.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.ni.Play)
 			case "n", "next":
 				return c.ni.NextTrick(), true
 			case "nr", "nextround":

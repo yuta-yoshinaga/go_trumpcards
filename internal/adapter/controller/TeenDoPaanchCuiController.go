@@ -43,7 +43,7 @@ func (c *TeenDoPaanchCuiController) Exec(command string) string {
 				return cuiutil.WithParsedInt(args, "Suit is required.", "Invalid suit: %s.",
 					domain.CardDesignSpade, domain.CardDesignDiamond, c.ti.DeclareTrump)
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.ti.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.ti.Play)
 			case "n", "next":
 				return c.ti.NextRound(), true
 			case "g", "giveup":

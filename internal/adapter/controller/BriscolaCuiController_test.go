@@ -56,13 +56,13 @@ func TestBriscolaCuiController_Exec(t *testing.T) {
 	t.Run("play missing index", func(t *testing.T) {
 		c := controller.NewBriscolaCuiController(newMock())
 		got := c.Exec("p")
-		assert.Contains(t, got, "Card index is required")
+		assert.Contains(t, got, msgCardIndexRequired())
 	})
 
 	t.Run("play invalid index", func(t *testing.T) {
 		c := controller.NewBriscolaCuiController(newMock())
 		got := c.Exec("p abc")
-		assert.Contains(t, got, "Invalid card index")
+		assert.Contains(t, got, msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("next short", func(t *testing.T) {

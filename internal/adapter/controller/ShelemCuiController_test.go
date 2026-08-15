@@ -109,7 +109,7 @@ func TestShelemCuiControllerDiscardRejectsBadArgs(t *testing.T) {
 	for _, tc := range []struct{ name, cmd, want string }{
 		{"no args", "d", "Four card indices and a suit are required."},
 		{"too few", "d 0 1 2 3", "Four card indices and a suit are required."},
-		{"non-numeric index", "d 0 x 2 3 1", "Invalid card index: x."},
+		{"non-numeric index", "d 0 x 2 3 1", msgInvalidCardIndex("x")},
 		{"suit out of range", "d 0 1 2 3 5", "Invalid suit: 5."},
 		{"non-numeric suit", "d 0 1 2 3 x", "Invalid suit: x."},
 	} {
@@ -155,8 +155,8 @@ func TestShelemCuiControllerPlay(t *testing.T) {
 
 func TestShelemCuiControllerPlayRejectsBadArgs(t *testing.T) {
 	for _, tc := range []struct{ name, cmd, want string }{
-		{"missing index", "p", "Card index is required."},
-		{"non-numeric", "p abc", "Invalid card index: abc."},
+		{"missing index", "p", msgCardIndexRequired()},
+		{"non-numeric", "p abc", msgInvalidCardIndex("abc")},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			si := newMockShelemInteractor()

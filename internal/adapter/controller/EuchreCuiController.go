@@ -71,9 +71,9 @@ func (c *EuchreCuiController) Exec(command string) string {
 					return c.ei.CallTrump(suit, true)
 				})
 			case "d", "discard":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.ei.Discard)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.ei.Discard)
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.ei.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.ei.Play)
 			case "n", "next":
 				return c.ei.NextTrick(), true
 			case "nr", "nextround":

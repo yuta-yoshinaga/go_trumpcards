@@ -41,7 +41,7 @@ func (c *PolignacCuiController) Exec(command string) string {
 			case "pass":
 				return c.pi.Pass(), true
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.pi.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.pi.Play)
 			case "n", "next":
 				return c.pi.NextRound(), true
 			case "g", "giveup":

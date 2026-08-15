@@ -83,7 +83,7 @@ func TestPanCuiController_Exec(t *testing.T) {
 
 	t.Run("discard d no args", func(t *testing.T) {
 		result := controller.NewPanCuiController(newMock()).Exec("d")
-		assert.Contains(t, result, "Card index is required")
+		assert.Contains(t, result, msgCardIndexRequired())
 	})
 
 	t.Run("nextround nr", func(t *testing.T) {

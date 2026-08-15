@@ -43,7 +43,7 @@ func (c *Rummy500CuiController) Exec(command string) string {
 				if len(args) == 0 {
 					return c.ci.DrawFromDiscard(-1), true
 				}
-				return cuiutil.WithParsedInt(args, "Discard index is required.", "Invalid discard index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.ci.DrawFromDiscard)
+				return cuiutil.WithParsedIntKeys(args, "discardIndexRequired", "invalidDiscardIndex", cuiutil.NoMin, cuiutil.NoMax, c.ci.DrawFromDiscard)
 			case "m", "meld":
 				return c.ci.Meld(parseIntList(args)), true
 			case "lo", "layoff":
@@ -53,7 +53,7 @@ func (c *Rummy500CuiController) Exec(command string) string {
 				}
 				return c.ci.Layoff(indices[0], indices[1], indices[2]), true
 			case "d", "discard":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.ci.Discard)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.ci.Discard)
 			case "nr", "nextround":
 				return c.ci.NextRound(), true
 			case "sd", "setdifficulty":

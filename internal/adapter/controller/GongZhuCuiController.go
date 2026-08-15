@@ -48,7 +48,7 @@ func (c *GongZhuCuiController) Exec(command string) string {
 				indices, skipped := cuiutil.ParseIntSlice(args)
 				return cuiutil.PrependSkippedWarning(c.gi.Expose(indices), skipped), true
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.gi.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.gi.Play)
 			case "n", "next":
 				return c.gi.NextTrick(), true
 			case "nr", "nextround":

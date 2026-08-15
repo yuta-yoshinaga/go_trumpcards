@@ -40,7 +40,7 @@ func (c *HokmCuiController) Exec(command string) string {
 				return cuiutil.WithParsedInt(args, "Suit is required.", "Invalid suit: %s.",
 					domain.CardDesignSpade, domain.CardDesignMax, c.hi.DeclareTrump)
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.hi.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.hi.Play)
 			case "n", "next":
 				return c.hi.NextHand(), true
 			case "g", "giveup":

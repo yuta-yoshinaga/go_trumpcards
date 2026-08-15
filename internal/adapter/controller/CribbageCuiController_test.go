@@ -140,13 +140,13 @@ func TestCribbageCuiController_Exec(t *testing.T) {
 	t.Run("peg command p no args", func(t *testing.T) {
 		c := controller.NewCribbageCuiController(newMock())
 		result := c.Exec("p")
-		assert.Contains(t, result, "Card index is required")
+		assert.Contains(t, result, msgCardIndexRequired())
 	})
 
 	t.Run("peg command p invalid arg", func(t *testing.T) {
 		c := controller.NewCribbageCuiController(newMock())
 		result := c.Exec("p abc")
-		assert.Contains(t, result, "Invalid card index")
+		assert.Contains(t, result, msgInvalidCardIndexPrefix())
 	})
 
 	// go

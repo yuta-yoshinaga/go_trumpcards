@@ -70,8 +70,8 @@ func TestTonkCuiController_Exec(t *testing.T) {
 
 	t.Run("discard no args", func(t *testing.T) {
 		c := controller.NewTonkCuiController(newMock())
-		assert.Contains(t, c.Exec("d"), "Card index is required")
-		assert.Contains(t, c.Exec("d abc"), "Invalid card index")
+		assert.Contains(t, c.Exec("d"), msgCardIndexRequired())
+		assert.Contains(t, c.Exec("d abc"), msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("knock with index", func(t *testing.T) {
@@ -85,8 +85,8 @@ func TestTonkCuiController_Exec(t *testing.T) {
 
 	t.Run("knock no args", func(t *testing.T) {
 		c := controller.NewTonkCuiController(newMock())
-		assert.Contains(t, c.Exec("k"), "Card index is required")
-		assert.Contains(t, c.Exec("k abc"), "Invalid card index")
+		assert.Contains(t, c.Exec("k"), msgCardIndexRequired())
+		assert.Contains(t, c.Exec("k abc"), msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("nextround", func(t *testing.T) {

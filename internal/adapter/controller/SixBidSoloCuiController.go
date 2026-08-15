@@ -43,7 +43,7 @@ func (c *SixBidSoloCuiController) Exec(command string) string {
 			case "d", "declare":
 				return sixBidSoloParseDeclare(args, c.si)
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.",
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex",
 					0, domain.SixBidSoloHandSize-1, func(v int) string {
 						return c.si.PlayCard(v)
 					})

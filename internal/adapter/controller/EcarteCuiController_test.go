@@ -110,12 +110,12 @@ func TestEcarteCuiController_Exec(t *testing.T) {
 
 	t.Run("play missing index", func(t *testing.T) {
 		c := controller.NewEcarteCuiController(newMock())
-		assert.Contains(t, c.Exec("p"), "Card index is required")
+		assert.Contains(t, c.Exec("p"), msgCardIndexRequired())
 	})
 
 	t.Run("play invalid index", func(t *testing.T) {
 		c := controller.NewEcarteCuiController(newMock())
-		assert.Contains(t, c.Exec("p abc"), "Invalid card index")
+		assert.Contains(t, c.Exec("p abc"), msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("next short", func(t *testing.T) {

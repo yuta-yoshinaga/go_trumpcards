@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -46,7 +47,7 @@ func (c *ZwickerCuiController) Exec(command string) string {
 			case "b", "build":
 				return c.build(args)
 			case "tr", "trail":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.zi.Trail)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.zi.Trail)
 			case "n", "next":
 				return c.zi.NextRound(), true
 			default:
@@ -66,7 +67,7 @@ func (c *ZwickerCuiController) take(args []string) (string, bool) {
 	}
 	hand, ok := zwickerParseIdx(args[0])
 	if !ok {
-		return "Invalid card index: " + args[0] + ".", true
+		return i18n.Tf("invalidCardIndex", "val", args[0]), true
 	}
 	value, err := strconv.Atoi(strings.TrimSpace(args[1]))
 	if err != nil || value <= 0 {
@@ -97,7 +98,7 @@ func (c *ZwickerCuiController) build(args []string) (string, bool) {
 	}
 	hand, ok := zwickerParseIdx(args[0])
 	if !ok {
-		return "Invalid card index: " + args[0] + ".", true
+		return i18n.Tf("invalidCardIndex", "val", args[0]), true
 	}
 	table, _, ok := zwickerParseList(args[1])
 	if !ok || len(table) == 0 {

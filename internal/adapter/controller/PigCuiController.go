@@ -36,7 +36,7 @@ func (c *PigCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "p", "pass":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.",
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex",
 					cuiutil.NoMin, cuiutil.NoMax, c.pi.Pass)
 			case "s", "signal":
 				return c.pi.Signal(), true

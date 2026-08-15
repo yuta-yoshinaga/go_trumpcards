@@ -138,5 +138,18 @@
   "realtime.labelNormal": "CPU難易度 Normal にしてリセット",
   "realtime.labelHard": "CPU難易度 Hard にしてリセット",
   "realtime.labelHelp": "このキー一覧を再表示",
-  "realtime.labelQuit": "終了"
+  "realtime.labelQuit": "終了",
+  "cardIndexRequired": "カードのインデックスを指定してください。",
+  "invalidCardIndexNotANumber": "無効なカードインデックスです。数値を入力してください。",
+  "invalidIndexNotANumber": "無効なインデックスです。数値を入力してください。",
+  "discardIndexRequired": "捨てるカードのインデックスを指定してください。",
+  "invalidDiscardIndex": "無効な捨て札インデックスです: {{val}}",
+  "cardIndexRequiredExample": "カードのインデックスを指定してください (例: p 0)。",
+  "cardIndexToKeepRequired": "残すカードのインデックスを指定してください。",
+  "invalidCardIndexRange": "無効なカードインデックスです: {{val}}。0-{{max}} を指定してください。",
+  "invalidCardIndexHold": "無効なカードインデックスです。0-4 を指定してください。",
+  "cardIndexRequiredField": "カードのインデックスを指定してください (例: p 0 / 場札を取るなら p 0 3)。",
+  "cardIndexRequiredCapture": "カードのインデックスを指定してください (例: p 0 / 場札を取るなら p 0 1 2)。",
+  "cardIndexesRequiredMeld": "メルドするカードのインデックスを指定してください (例: meld 1 4 7)。",
+  "invalidIndexFromOne": "無効なインデックスです。1 以上の数値を入力してください。"
 }

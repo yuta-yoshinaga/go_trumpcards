@@ -45,7 +45,7 @@ func (c *PochCuiController) Exec(command string) string {
 			case "p", "play":
 				// 下限を 0 にしておく。NoMin だと `p -1` がそのまま
 				// ドメインまで届き、同じ拒否をもう一段深いところでやることになる。
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", 0, cuiutil.NoMax, c.pi.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", 0, cuiutil.NoMax, c.pi.Play)
 			case "n", "next":
 				return c.pi.NextDeal(), true
 			default:

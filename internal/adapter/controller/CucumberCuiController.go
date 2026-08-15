@@ -35,7 +35,7 @@ func (c *CucumberCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.",
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex",
 					cuiutil.NoMin, cuiutil.NoMax, c.ci.Play)
 			case "n", "next":
 				return c.ci.NextRound(), true

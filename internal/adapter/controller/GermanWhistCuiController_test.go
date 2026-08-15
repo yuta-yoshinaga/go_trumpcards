@@ -55,8 +55,8 @@ func TestGermanWhistCuiControllerPlay(t *testing.T) {
 // 引数の欠落と不正はそれぞれ固有の文言で断り、インタラクターには届かない。
 func TestGermanWhistCuiControllerPlayRejectsBadArgs(t *testing.T) {
 	for _, tc := range []struct{ name, cmd, want string }{
-		{"missing index", "p", "Card index is required."},
-		{"non-numeric", "p abc", "Invalid card index: abc."},
+		{"missing index", "p", msgCardIndexRequired()},
+		{"non-numeric", "p abc", msgInvalidCardIndex("abc")},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			gi := newMockGermanWhistInteractor()

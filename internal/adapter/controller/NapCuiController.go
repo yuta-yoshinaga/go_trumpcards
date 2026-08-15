@@ -52,7 +52,7 @@ func (c *NapCuiController) Exec(command string) string {
 			case "pass":
 				return c.di.Bid(int(domain.NapBidPass)), true
 			case "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.di.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.di.Play)
 			case "n", "next":
 				return c.di.NextTrick(), true
 			case "nr", "nextround":

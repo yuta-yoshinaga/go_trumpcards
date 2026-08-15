@@ -171,7 +171,7 @@ func TestMightyCuiController_Exec(t *testing.T) {
 
 	t.Run("exchange invalid index", func(t *testing.T) {
 		c := controller.NewMightyCuiController(newMightyCuiMock(mockOutput))
-		assert.Contains(t, c.Exec("e abc 1 2"), "Invalid card index")
+		assert.Contains(t, c.Exec("e abc 1 2"), msgInvalidCardIndexPrefix())
 	})
 
 	// play
@@ -184,12 +184,12 @@ func TestMightyCuiController_Exec(t *testing.T) {
 
 	t.Run("play no args", func(t *testing.T) {
 		c := controller.NewMightyCuiController(newMightyCuiMock(mockOutput))
-		assert.Contains(t, c.Exec("p"), "Card index is required")
+		assert.Contains(t, c.Exec("p"), msgCardIndexRequired())
 	})
 
 	t.Run("play invalid", func(t *testing.T) {
 		c := controller.NewMightyCuiController(newMightyCuiMock(mockOutput))
-		assert.Contains(t, c.Exec("play foo"), "Invalid card index")
+		assert.Contains(t, c.Exec("play foo"), msgInvalidCardIndexPrefix())
 	})
 
 	// jokerlead (Mighty-specific)

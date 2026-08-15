@@ -42,7 +42,7 @@ func (c *CribbageCuiController) Exec(command string) string {
 			case "c", "cut":
 				return c.ci.Cut(), true
 			case "p", "peg":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.ci.Peg)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.ci.Peg)
 			case "go":
 				return c.ci.Go(), true
 			case "h", "hint":

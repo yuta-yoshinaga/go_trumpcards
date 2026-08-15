@@ -109,3 +109,40 @@ func PrependSkippedWarning(result string, skipped []string) string {
 	}
 	return result
 }
+
+// ParseIntArgKeys is ParseIntArg with i18n keys instead of message strings.
+//
+// ParseIntArg takes the two messages as Go literals, and all 588 call sites
+// passed English ones -- so a player running in Japanese got a Japanese board,
+// Japanese prompts and a Japanese "unknown command", then `Invalid card index:
+// zz.` the moment they mistyped an argument (issue #5384). Taking keys instead
+// puts these messages through the same i18n path as every other string the CUI
+// prints.
+//
+// invalidKey is rendered with the offending argument as {{val}}; a message that
+// does not name the value simply omits the placeholder.
+// An empty missingKey means "this call cannot be reached with no argument";
+// it yields an empty message rather than i18n.T("")'s literal empty key.
+func ParseIntArgKeys(args []string, missingKey, invalidKey string, min, max int) (int, string, bool) {
+	if len(args) < 1 {
+		if missingKey == "" {
+			return 0, "", false
+		}
+		return 0, i18n.T(missingKey), false
+	}
+	v, err := strconv.Atoi(args[0])
+	if err != nil || v < min || v > max {
+		return 0, i18n.Tf(invalidKey, "val", args[0]), false
+	}
+	return v, "", true
+}
+
+// WithParsedIntKeys is WithParsedInt with i18n keys instead of message strings.
+// See ParseIntArgKeys.
+func WithParsedIntKeys(args []string, missingKey, invalidKey string, min, max int, fn func(int) string) (string, bool) {
+	v, errMsg, ok := ParseIntArgKeys(args, missingKey, invalidKey, min, max)
+	if !ok {
+		return errMsg, true
+	}
+	return fn(v), true
+}

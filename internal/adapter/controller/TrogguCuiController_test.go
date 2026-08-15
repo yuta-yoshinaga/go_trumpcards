@@ -83,7 +83,7 @@ func TestTrogguCuiController_Exec(t *testing.T) {
 	t.Run("play rejects a non-numeric index", func(t *testing.T) {
 		m := newMock()
 		out := controller.NewTrogguCuiController(m).Exec("play x")
-		assert.Contains(t, out, "Invalid card index")
+		assert.Contains(t, out, msgInvalidCardIndexPrefix())
 		m.AssertNotCalled(t, "Play", mock.Anything)
 	})
 	t.Run("next trick and next round", func(t *testing.T) {

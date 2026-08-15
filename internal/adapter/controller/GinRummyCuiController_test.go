@@ -114,13 +114,13 @@ func TestGinRummyCuiController_Exec(t *testing.T) {
 	t.Run("discard command d no args", func(t *testing.T) {
 		c := controller.NewGinRummyCuiController(newMock())
 		result := c.Exec("d")
-		assert.Contains(t, result, "Card index is required")
+		assert.Contains(t, result, msgCardIndexRequired())
 	})
 
 	t.Run("discard command d invalid arg", func(t *testing.T) {
 		c := controller.NewGinRummyCuiController(newMock())
 		result := c.Exec("d abc")
-		assert.Contains(t, result, "Invalid card index")
+		assert.Contains(t, result, msgInvalidCardIndexPrefix())
 	})
 
 	// knock
@@ -143,13 +143,13 @@ func TestGinRummyCuiController_Exec(t *testing.T) {
 	t.Run("knock command k no args", func(t *testing.T) {
 		c := controller.NewGinRummyCuiController(newMock())
 		result := c.Exec("k")
-		assert.Contains(t, result, "Card index is required")
+		assert.Contains(t, result, msgCardIndexRequired())
 	})
 
 	t.Run("knock command k invalid arg", func(t *testing.T) {
 		c := controller.NewGinRummyCuiController(newMock())
 		result := c.Exec("k abc")
-		assert.Contains(t, result, "Invalid card index")
+		assert.Contains(t, result, msgInvalidCardIndexPrefix())
 	})
 
 	// layoff

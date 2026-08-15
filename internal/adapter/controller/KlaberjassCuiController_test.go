@@ -84,9 +84,9 @@ func TestKlaberjassCuiController_Exec(t *testing.T) {
 
 	t.Run("play rejects a bad index", func(t *testing.T) {
 		c := controller.NewKlaberjassCuiController(newMock())
-		assert.Contains(t, c.Exec("p"), "required")
-		assert.Contains(t, c.Exec("p abc"), "Invalid card index")
-		assert.Contains(t, c.Exec("p 9"), "Invalid card index")
+		assert.Contains(t, c.Exec("p"), msgCardIndexRequired())
+		assert.Contains(t, c.Exec("p abc"), msgInvalidCardIndexPrefix())
+		assert.Contains(t, c.Exec("p 9"), msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("settarget", func(t *testing.T) {

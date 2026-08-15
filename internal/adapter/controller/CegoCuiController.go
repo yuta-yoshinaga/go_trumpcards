@@ -57,11 +57,11 @@ func (c *CegoCuiController) Exec(command string) string {
 			case "handspiel", "solo":
 				return c.di.ChooseContract(domain.CegoContractHandspiel), true
 			case "discard":
-				return cuiutil.WithParsedInt(args, "Card index to keep is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cardIndexToKeepRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, func(v int) string {
 					return c.di.Discard([]int{v})
 				})
 			case "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.di.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.di.Play)
 			case "n", "next":
 				return c.di.NextTrick(), true
 			case "nr", "nextround":

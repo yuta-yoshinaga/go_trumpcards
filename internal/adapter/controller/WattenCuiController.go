@@ -55,7 +55,7 @@ func (c *WattenCuiController) Exec(command string) string {
 			case "d", "declare":
 				return c.handleDeclare(args)
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.wi.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.wi.Play)
 			case "rz", "raise":
 				return c.wi.Raise(), true
 			case "resp", "respond":

@@ -48,7 +48,7 @@ func (c *HasenpfefferCuiController) Exec(command string) string {
 			case "d", "discard":
 				return c.discard(args)
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.hi.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.hi.Play)
 			case "n", "next":
 				return c.hi.NextHand(), true
 			case "g", "giveup":
@@ -65,7 +65,7 @@ func (c *HasenpfefferCuiController) Exec(command string) string {
 // **どちらも既定値で埋めない。** 埋めると捨てていない札が捨てられたり、
 // 選んでいないスートが切り札になる。
 func (c *HasenpfefferCuiController) discard(args []string) (string, bool) {
-	idx, errMsg, ok := cuiutil.ParseIntArg(args, "Card index is required.", "Invalid card index: %s.",
+	idx, errMsg, ok := cuiutil.ParseIntArgKeys(args, "cardIndexRequired", "invalidCardIndex",
 		cuiutil.NoMin, cuiutil.NoMax)
 	if !ok {
 		return errMsg, true

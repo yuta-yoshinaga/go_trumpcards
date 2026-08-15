@@ -68,7 +68,7 @@ func (c *PinochleCuiController) Exec(command string) string {
 			case "t", "trump":
 				return cuiutil.WithParsedInt(args, "Suit is required (1-4).", "Invalid suit: %s.", 1, 4, c.pi.CallTrump)
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.pi.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.pi.Play)
 			case "sd", "setdifficulty":
 				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
 					cfg := c.pi.GetConfig()

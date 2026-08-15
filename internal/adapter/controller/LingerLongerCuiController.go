@@ -36,7 +36,7 @@ func (c *LingerLongerCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.",
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex",
 					cuiutil.NoMin, cuiutil.NoMax, c.li.Play)
 			case "g", "giveup":
 				return c.li.GiveUp(), true

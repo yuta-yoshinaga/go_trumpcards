@@ -81,7 +81,7 @@ func TestPreferenceCuiController_Exec(t *testing.T) {
 
 	t.Run("play no args", func(t *testing.T) {
 		result := controller.NewPreferenceCuiController(newMock()).Exec("play")
-		assert.Contains(t, result, "Card index is required")
+		assert.Contains(t, result, msgCardIndexRequired())
 	})
 
 	t.Run("next / nextround", func(t *testing.T) {

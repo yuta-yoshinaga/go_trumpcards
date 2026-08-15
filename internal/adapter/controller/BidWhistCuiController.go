@@ -79,7 +79,7 @@ func (c *BidWhistCuiController) Exec(command string) string {
 				}
 				idxs := make([]int, domain.BidWhistKittySize)
 				for i := 0; i < domain.BidWhistKittySize; i++ {
-					v, errMsg, ok := cuiutil.ParseIntArg(args[i:i+1], "", "Invalid card index: %s.", 0, math.MaxInt)
+					v, errMsg, ok := cuiutil.ParseIntArgKeys(args[i:i+1], "", "invalidCardIndex", 0, math.MaxInt)
 					if !ok {
 						return errMsg, true
 					}
@@ -87,7 +87,7 @@ func (c *BidWhistCuiController) Exec(command string) string {
 				}
 				return c.bi.ExchangeKitty(idxs), true
 			case "p", "play":
-				cardIdx, errMsg, ok := cuiutil.ParseIntArg(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax)
+				cardIdx, errMsg, ok := cuiutil.ParseIntArgKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax)
 				if !ok {
 					return errMsg, true
 				}

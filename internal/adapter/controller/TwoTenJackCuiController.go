@@ -46,7 +46,7 @@ func (c *TwoTenJackCuiController) Exec(command string) string {
 			case "d", "declare":
 				return cuiutil.WithParsedInt(args, "Trump suit is required (1=S, 2=C, 3=H, 4=D).", "Invalid trump suit: %s.", domain.CardDesignSpade, domain.CardDesignDiamond, c.ti.DeclareTrump)
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.ti.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.ti.Play)
 			case "n", "next":
 				return c.ti.NextTrick(), true
 			case "nr", "nextround":

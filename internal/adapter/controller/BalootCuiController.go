@@ -46,7 +46,7 @@ func (c *BalootCuiController) Exec(command string) string {
 			case "pass":
 				return c.bi.PassDeclaration(), true
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.bi.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.bi.Play)
 			case "n", "next":
 				return c.bi.NextRound(), true
 			case "g", "giveup":

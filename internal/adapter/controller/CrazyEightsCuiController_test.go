@@ -82,13 +82,13 @@ func TestCrazyEightsCuiController_Exec(t *testing.T) {
 	t.Run("play command p no args", func(t *testing.T) {
 		c := controller.NewCrazyEightsCuiController(newMock())
 		result := c.Exec("p")
-		assert.Contains(t, result, "Card index is required")
+		assert.Contains(t, result, msgCardIndexRequired())
 	})
 
 	t.Run("play command p invalid arg", func(t *testing.T) {
 		c := controller.NewCrazyEightsCuiController(newMock())
 		result := c.Exec("p abc")
-		assert.Contains(t, result, "Invalid card index")
+		assert.Contains(t, result, msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("playing an 8 inlines a suit prompt instead of forcing 's' on the next line", func(t *testing.T) {

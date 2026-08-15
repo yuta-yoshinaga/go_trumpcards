@@ -52,7 +52,7 @@ func (c *TwentyNineCuiController) Exec(command string) string {
 			case "pass":
 				return c.di.Bid(int(domain.TwentyNineBidPass)), true
 			case "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.di.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.di.Play)
 			case "n", "next":
 				return c.di.NextTrick(), true
 			case "nr", "nextround":

@@ -56,11 +56,11 @@ func TestPageOneCuiController_Exec(t *testing.T) {
 	})
 	t.Run("play no args", func(t *testing.T) {
 		c := controller.NewPageOneCuiController(newMock())
-		assert.Contains(t, c.Exec("p"), "Card index is required")
+		assert.Contains(t, c.Exec("p"), msgCardIndexRequired())
 	})
 	t.Run("play invalid", func(t *testing.T) {
 		c := controller.NewPageOneCuiController(newMock())
-		assert.Contains(t, c.Exec("p abc"), "Invalid card index")
+		assert.Contains(t, c.Exec("p abc"), msgInvalidCardIndexPrefix())
 	})
 	t.Run("draw d", func(t *testing.T) {
 		m := newMock()

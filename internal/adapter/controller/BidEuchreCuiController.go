@@ -43,7 +43,7 @@ func (c *BidEuchreCuiController) Exec(command string) string {
 						return c.bi.ChooseTrump(v)
 					})
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", 0, domain.BidEuchreHandSize-1, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", 0, domain.BidEuchreHandSize-1, func(v int) string {
 					return c.bi.PlayCard(v)
 				})
 			case "n", "next":

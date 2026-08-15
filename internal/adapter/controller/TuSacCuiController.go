@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -43,8 +44,8 @@ func (cc *TuSacCuiController) Exec(command string) string {
 				}
 				return cc.ci.Meld(indexes), true
 			case "discard", "x":
-				index, errMsg, ok := cuiutil.ParseIntArg(args,
-					"Card index is required.", "Invalid index. Please enter a number.", 0, math.MaxInt)
+				index, errMsg, ok := cuiutil.ParseIntArgKeys(args,
+					"cardIndexRequired", "invalidIndexNotANumber", 0, math.MaxInt)
 				if !ok {
 					return errMsg, true
 				}
@@ -64,13 +65,13 @@ func (cc *TuSacCuiController) Exec(command string) string {
 // tuSacParseIndexes は "1 4 7" のような並びを 0 始まりの添字にする。
 func tuSacParseIndexes(args []string) ([]int, string, bool) {
 	if len(args) == 0 {
-		return nil, "Card indexes are required (e.g. meld 1 4 7).", false
+		return nil, i18n.T("cardIndexesRequiredMeld"), false
 	}
 	out := make([]int, 0, len(args))
 	for _, a := range args {
 		n, err := strconv.Atoi(strings.TrimSpace(a))
 		if err != nil || n < 1 {
-			return nil, "Invalid index. Please enter numbers from 1.", false
+			return nil, i18n.T("invalidIndexFromOne"), false
 		}
 		out = append(out, n-1)
 	}

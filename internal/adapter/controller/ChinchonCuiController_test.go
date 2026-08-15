@@ -61,12 +61,12 @@ func TestChinchonCuiController_Exec(t *testing.T) {
 
 	t.Run("discard d no args", func(t *testing.T) {
 		result := controller.NewChinchonCuiController(newMock()).Exec("d")
-		assert.Contains(t, result, "Card index is required")
+		assert.Contains(t, result, msgCardIndexRequired())
 	})
 
 	t.Run("discard d invalid", func(t *testing.T) {
 		result := controller.NewChinchonCuiController(newMock()).Exec("d abc")
-		assert.Contains(t, result, "Invalid card index")
+		assert.Contains(t, result, msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("knock k with index", func(t *testing.T) {
@@ -77,7 +77,7 @@ func TestChinchonCuiController_Exec(t *testing.T) {
 
 	t.Run("knock k no args", func(t *testing.T) {
 		result := controller.NewChinchonCuiController(newMock()).Exec("k")
-		assert.Contains(t, result, "Card index is required")
+		assert.Contains(t, result, msgCardIndexRequired())
 	})
 
 	t.Run("layoff lo with indices", func(t *testing.T) {

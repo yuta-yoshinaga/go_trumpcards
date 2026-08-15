@@ -28,8 +28,8 @@ func TestBuraCuiController_PlayParsesOneToThreeIndices(t *testing.T) {
 
 func TestBuraCuiController_PlayRejectsBadInput(t *testing.T) {
 	cases := map[string]string{
-		"p":     "Card index is required.",
-		"p x":   "Invalid card index: x.",
+		"p":     msgCardIndexRequired(),
+		"p x":   msgInvalidCardIndex("x"),
 		"p 1 1": "Duplicate card index: 1.",
 	}
 	for input, want := range cases {

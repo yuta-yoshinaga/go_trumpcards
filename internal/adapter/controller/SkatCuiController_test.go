@@ -103,7 +103,7 @@ func TestSkatCuiController_Exec(t *testing.T) {
 
 	t.Run("discard invalid first arg", func(t *testing.T) {
 		c := controller.NewSkatCuiController(newMock())
-		assert.Contains(t, c.Exec("d abc 1"), "Invalid card index")
+		assert.Contains(t, c.Exec("d abc 1"), msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("game suit + trump", func(t *testing.T) {

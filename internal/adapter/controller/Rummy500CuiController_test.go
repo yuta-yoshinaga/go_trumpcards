@@ -75,7 +75,7 @@ func TestRummy500CuiController_Exec(t *testing.T) {
 	t.Run("drawdiscard invalid arg", func(t *testing.T) {
 		c := controller.NewRummy500CuiController(newMock())
 		result := c.Exec("dd xx")
-		assert.Contains(t, result, "Invalid discard index")
+		assert.Contains(t, result, msgInvalidDiscardIndexPrefix())
 	})
 
 	t.Run("meld m with indices", func(t *testing.T) {
@@ -122,7 +122,7 @@ func TestRummy500CuiController_Exec(t *testing.T) {
 	t.Run("discard d no args", func(t *testing.T) {
 		c := controller.NewRummy500CuiController(newMock())
 		result := c.Exec("d")
-		assert.Contains(t, result, "Card index is required")
+		assert.Contains(t, result, msgCardIndexRequired())
 	})
 
 	t.Run("nextround nr", func(t *testing.T) {

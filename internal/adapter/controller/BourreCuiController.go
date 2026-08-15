@@ -40,7 +40,7 @@ func (c *BourreCuiController) Exec(command string) string {
 				indices, skipped := cuiutil.ParseIntSlice(args)
 				return cuiutil.PrependSkippedWarning(c.bgi.Draw(indices), skipped), true
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", 0, 4, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", 0, 4, func(v int) string {
 					return c.bgi.Play(v)
 				})
 			case "n", "next":

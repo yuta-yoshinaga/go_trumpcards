@@ -65,7 +65,7 @@ func (c *OmbreCuiController) Exec(command string) string {
 			case "bid":
 				return c.execBid(args)
 			case "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.di.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.di.Play)
 			case "n", "next":
 				return c.di.NextTrick(), true
 			case "nr", "nextround":

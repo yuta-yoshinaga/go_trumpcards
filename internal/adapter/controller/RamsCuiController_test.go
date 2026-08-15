@@ -83,8 +83,8 @@ func TestRamsCuiControllerCard(t *testing.T) {
 
 func TestRamsCuiControllerCardRejectsBadArgs(t *testing.T) {
 	for _, tc := range []struct{ name, cmd, want string }{
-		{"missing index", "c", "Card index is required."},
-		{"non-numeric", "c abc", "Invalid card index: abc."},
+		{"missing index", "c", msgCardIndexRequired()},
+		{"non-numeric", "c abc", msgInvalidCardIndex("abc")},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			ri := newMockRamsInteractor()

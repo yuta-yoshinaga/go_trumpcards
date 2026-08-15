@@ -44,7 +44,7 @@ func (c *EstimationCuiController) Exec(command string) string {
 				return cuiutil.WithParsedInt(args, "Bid is required.", "Invalid bid: %s.",
 					0, domain.EstimationHandSize, c.ei.Bid)
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.ei.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.ei.Play)
 			case "n", "next":
 				return c.ei.NextRound(), true
 			case "g", "giveup":

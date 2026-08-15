@@ -49,8 +49,8 @@ func (c *TrogguCuiController) Exec(command string) string {
 			case "pass":
 				return c.ti.Pass(), true
 			case "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.",
-					"Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.ti.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired",
+					"invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.ti.Play)
 			case "n", "next":
 				return c.ti.NextTrick(), true
 			case "nr", "nextround":

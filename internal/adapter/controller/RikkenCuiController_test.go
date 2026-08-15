@@ -41,8 +41,8 @@ func TestRikkenCuiController_Play(t *testing.T) {
 	c := controller.NewRikkenCuiController(newMockRikkenInteractor())
 	assert.Equal(t, "played 3", c.Exec("p 3"))
 	assert.Equal(t, "played 3", c.Exec("play 3"))
-	assert.Contains(t, c.Exec("p"), "required")
-	assert.Contains(t, c.Exec("p abc"), "Invalid card index")
+	assert.Contains(t, c.Exec("p"), msgCardIndexRequired())
+	assert.Contains(t, c.Exec("p abc"), msgInvalidCardIndexPrefix())
 }
 
 // **4 種類の契約とパスが全部通る。** パスは契約 0 で、別経路にはしていません。

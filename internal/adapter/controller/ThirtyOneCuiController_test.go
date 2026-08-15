@@ -66,8 +66,8 @@ func TestThirtyOneCuiController_Exec(t *testing.T) {
 
 	t.Run("discard no args", func(t *testing.T) {
 		c := controller.NewThirtyOneCuiController(newMock())
-		assert.Contains(t, c.Exec("d"), "Card index is required")
-		assert.Contains(t, c.Exec("d abc"), "Invalid card index")
+		assert.Contains(t, c.Exec("d"), msgCardIndexRequired())
+		assert.Contains(t, c.Exec("d abc"), msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("knock takes no index", func(t *testing.T) {

@@ -83,7 +83,7 @@ func TestSergeantMajorCuiControllerDiscardRejectsBadArgs(t *testing.T) {
 	for _, tc := range []struct{ name, cmd, want string }{
 		{"no args", "d", "Four card indices are required."},
 		{"too few", "d 0 1 2", "Four card indices are required."},
-		{"non-numeric", "d 0 x 2 3", "Invalid card index: x."},
+		{"non-numeric", "d 0 x 2 3", msgInvalidCardIndex("x")},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			si := newMockSergeantMajorInteractor()
@@ -108,8 +108,8 @@ func TestSergeantMajorCuiControllerPlay(t *testing.T) {
 
 func TestSergeantMajorCuiControllerPlayRejectsBadArgs(t *testing.T) {
 	for _, tc := range []struct{ name, cmd, want string }{
-		{"missing index", "p", "Card index is required."},
-		{"non-numeric", "p abc", "Invalid card index: abc."},
+		{"missing index", "p", msgCardIndexRequired()},
+		{"non-numeric", "p abc", msgInvalidCardIndex("abc")},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			si := newMockSergeantMajorInteractor()

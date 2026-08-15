@@ -40,7 +40,7 @@ func (c *ThirtyOneCuiController) Exec(command string) string {
 			case "dd", "drawdiscard":
 				return c.ci.DrawFromDiscard(), true
 			case "d", "discard":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.ci.Discard)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.ci.Discard)
 			case "k", "knock":
 				return c.ci.Knock(), true
 			case "h", "hint":

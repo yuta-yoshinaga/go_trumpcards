@@ -50,12 +50,12 @@ func TestTrucoCuiController_Exec(t *testing.T) {
 
 	t.Run("play missing index", func(t *testing.T) {
 		got := controller.NewTrucoCuiController(newMock()).Exec("p")
-		assert.Contains(t, got, "Card index is required")
+		assert.Contains(t, got, msgCardIndexRequired())
 	})
 
 	t.Run("play invalid index", func(t *testing.T) {
 		got := controller.NewTrucoCuiController(newMock()).Exec("p abc")
-		assert.Contains(t, got, "Invalid card index")
+		assert.Contains(t, got, msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("truco", func(t *testing.T) {

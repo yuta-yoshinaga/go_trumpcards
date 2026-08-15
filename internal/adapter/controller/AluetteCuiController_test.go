@@ -46,11 +46,11 @@ func TestAluetteCuiController_Exec(t *testing.T) {
 	})
 
 	t.Run("play no args", func(t *testing.T) {
-		assert.Contains(t, controller.NewAluetteCuiController(newMock()).Exec("play"), "Card index is required")
+		assert.Contains(t, controller.NewAluetteCuiController(newMock()).Exec("play"), msgCardIndexRequired())
 	})
 
 	t.Run("play with a non-numeric index", func(t *testing.T) {
-		assert.Contains(t, controller.NewAluetteCuiController(newMock()).Exec("play x"), "Invalid card index")
+		assert.Contains(t, controller.NewAluetteCuiController(newMock()).Exec("play x"), msgInvalidCardIndexPrefix())
 	})
 
 	// **捨て札も入札もこのゲームには無い。**タロー系から写すと scarto / bid が

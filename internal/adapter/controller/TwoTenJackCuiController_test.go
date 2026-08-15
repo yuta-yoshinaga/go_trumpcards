@@ -79,12 +79,12 @@ func TestTwoTenJackCuiController_Exec(t *testing.T) {
 
 	t.Run("play missing arg", func(t *testing.T) {
 		c := controller.NewTwoTenJackCuiController(newMock())
-		assert.Contains(t, c.Exec("p"), "Card index is required")
+		assert.Contains(t, c.Exec("p"), msgCardIndexRequired())
 	})
 
 	t.Run("play invalid arg", func(t *testing.T) {
 		c := controller.NewTwoTenJackCuiController(newMock())
-		assert.Contains(t, c.Exec("p abc"), "Invalid card index")
+		assert.Contains(t, c.Exec("p abc"), msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("next/nextround", func(t *testing.T) {

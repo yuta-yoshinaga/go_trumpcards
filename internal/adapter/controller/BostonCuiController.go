@@ -41,7 +41,7 @@ func (c *BostonCuiController) Exec(command string) string {
 			case "cp", "callpartner":
 				return bostonParseCallPartner(args, c.bi)
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", 0, domain.BostonHandSize-1, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", 0, domain.BostonHandSize-1, func(v int) string {
 					return c.bi.PlayCard(v)
 				})
 			case "n", "next":

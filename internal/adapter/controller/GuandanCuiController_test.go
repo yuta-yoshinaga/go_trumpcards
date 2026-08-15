@@ -49,9 +49,9 @@ func TestGuandanCuiController_Exec(t *testing.T) {
 	t.Run("play rejects bad input", func(t *testing.T) {
 		c := controller.NewGuandanCuiController(newMock())
 		assert.Contains(t, c.Exec("p"), "Card indexes are required")
-		assert.Contains(t, c.Exec("p abc"), "Invalid card index")
-		assert.Contains(t, c.Exec("p -1"), "Invalid card index")
-		assert.Contains(t, c.Exec("p 27"), "Invalid card index")
+		assert.Contains(t, c.Exec("p abc"), msgInvalidCardIndexPrefix())
+		assert.Contains(t, c.Exec("p -1"), msgInvalidCardIndexPrefix())
+		assert.Contains(t, c.Exec("p 27"), msgInvalidCardIndexPrefix())
 		// **同じ札を 2 回数えられない。**通すとペアが 1 枚から作れてしまう。
 		assert.Contains(t, c.Exec("p 1 1"), "twice")
 	})
@@ -73,9 +73,9 @@ func TestGuandanCuiController_Exec(t *testing.T) {
 
 	t.Run("tribute rejects bad input", func(t *testing.T) {
 		c := controller.NewGuandanCuiController(newMock())
-		assert.Contains(t, c.Exec("t"), "Card index is required")
-		assert.Contains(t, c.Exec("t abc"), "Invalid card index")
-		assert.Contains(t, c.Exec("t 27"), "Invalid card index")
+		assert.Contains(t, c.Exec("t"), msgCardIndexRequired())
+		assert.Contains(t, c.Exec("t abc"), msgInvalidCardIndexPrefix())
+		assert.Contains(t, c.Exec("t 27"), msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("log and unknown", func(t *testing.T) {

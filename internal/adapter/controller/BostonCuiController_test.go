@@ -80,8 +80,8 @@ func TestBostonCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "PlayCard", 12)
 		assert.Equal(t, mockOutput, c.Exec("n"))
 		m.AssertCalled(t, "NextHand")
-		assert.Contains(t, c.Exec("p abc"), "Invalid card index")
-		assert.Contains(t, c.Exec("p 13"), "Invalid card index")
+		assert.Contains(t, c.Exec("p abc"), msgInvalidCardIndexPrefix())
+		assert.Contains(t, c.Exec("p 13"), msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("log and unknown", func(t *testing.T) {
