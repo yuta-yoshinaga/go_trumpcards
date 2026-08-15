@@ -5581,7 +5581,7 @@ var gameRegistry = []GameRegistryEntry{
 		CuiHelpSpec{
 			TitleKey: "colourwhist.helpTitle",
 			ExampleKeys: []string{
-				"colourwhist.helpExampleGiveUp",
+				"colourwhist.helpExamplePass",
 			},
 			CommandKeys: []string{
 				"colourwhist.helpPlay",

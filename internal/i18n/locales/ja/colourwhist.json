@@ -38,5 +38,5 @@
   "hintPlay": "{{index}} 番目の札が良さそうです（{{reason}}）",
   "colourWhistBidStrength": "手札の強さから見た契約",
   "colourWhistFollowSuit": "フォローの義務がある",
-  "helpExampleGiveUp": "  g                    この局を投了する"
+  "helpExamplePass": "  pass                 競りを降りる"
 }
