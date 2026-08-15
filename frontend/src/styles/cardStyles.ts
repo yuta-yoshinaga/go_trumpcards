@@ -1,9 +1,22 @@
 import type React from 'react';
 import { EXPANSION_GAP_PX } from './motionPresets';
 
-/** Tailwind classes for focus-visible ring on card selection buttons. */
+/**
+ * Tailwind classes for the keyboard focus indicator on card selection buttons.
+ *
+ * Uses `outline`, deliberately not a Tailwind `ring`. A `ring-*` compiles to
+ * `box-shadow`, and every card button sets `boxShadow` inline via
+ * `selectedCardStyle` / `highlightCardStyle` — including the unselected branch,
+ * which sets `'none'`. Inline styles beat class-based declarations, so a
+ * ring-based indicator was silently erased in every state, and the paired
+ * `outline-none` removed the browser default that would otherwise have shown
+ * through: keyboard focus on a hand card was invisible everywhere (#5359).
+ *
+ * `outline` is a separate property and stacks additively — the same reasoning
+ * `trumpRingStyle` documents below.
+ */
 export const focusRingCard =
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-accent focus-visible:ring-offset-1 focus-visible:ring-offset-transparent rounded-lg';
+  'rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-ds-accent)]';
 
 /** Tailwind classes for hover feedback on clickable cards (non-AnimatedCard). */
 export const hoverCardClass = 'cursor-pointer transition-[transform,box-shadow] duration-150';

@@ -40,11 +40,45 @@ describe('playableCardStyle', () => {
 });
 
 describe('focusRingCard', () => {
-  it('includes focus-visible ring classes', () => {
-    expect(focusRingCard).toContain('focus-visible:outline-none');
-    expect(focusRingCard).toContain('focus-visible:ring-2');
-    expect(focusRingCard).toContain('focus-visible:ring-ds-accent');
+  // The focus indicator must survive the inline styles every card button sets.
+  //
+  // Tailwind's `ring-*` compiles to `box-shadow`, and each card button sets
+  // `boxShadow` inline via selectedCardStyle / highlightCardStyle -- including
+  // the unselected branch, which sets `'none'`. Inline styles beat class-based
+  // declarations, so a ring-based focus indicator is silently dropped in every
+  // state. `outline` is a separate property and stacks additively, which is the
+  // same reasoning trumpRingStyle already documents. See issue #5359.
+  it('uses outline, not a ring, so inline boxShadow cannot erase it', () => {
+    expect(focusRingCard).toContain('focus-visible:outline-2');
     expect(focusRingCard).toContain('rounded-lg');
+    expect(focusRingCard).not.toMatch(/focus-visible:ring/);
+  });
+
+  // Removing the browser default leaves nothing when the ring is overridden,
+  // so there must be no `outline-none` to fall back from.
+  it('does not disable the browser default outline', () => {
+    expect(focusRingCard).not.toContain('outline-none');
+  });
+
+  it('is visible against the card, not transparent', () => {
+    expect(focusRingCard).toMatch(/focus-visible:outline-(\[var\(--color-ds-accent\)\]|ds-accent)/);
+  });
+});
+
+describe('focusRingCard vs the inline styles it coexists with', () => {
+  // Guards the *interaction* rather than either side alone: this is what makes
+  // the bug reproducible, and it is why asserting on focusRingCard's string in
+  // isolation was not enough to catch it before.
+  it('every card style helper that sets boxShadow leaves outline untouched', () => {
+    for (const style of [
+      selectedCardStyle(true),
+      selectedCardStyle(false),
+      playableCardStyle(true),
+      playableCardStyle(false),
+    ]) {
+      expect(style).toHaveProperty('boxShadow');
+      expect(style.outline).toBeUndefined();
+    }
   });
 });
 
