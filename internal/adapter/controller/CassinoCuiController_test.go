@@ -156,4 +156,15 @@ func TestCassinoCuiController_Exec(t *testing.T) {
 		c := controller.NewCassinoCuiController(m)
 		assert.Equal(t, "log", c.Exec("log"))
 	})
+
+	// **落として残りで実行しない。** 打ち間違いを捨てると、プレイヤーが
+	// 選んでいない組み合わせが実行される (issue #5390)。
+	t.Run("refuses a mistyped index", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewCassinoCuiController(m)
+		assert.Contains(t, c.Exec("t 0 zz"), msgInvalidCardIndexPrefix(),
+			"a mistyped index must be refused, not dropped")
+		assert.Contains(t, c.Exec("t 0 b zz"), msgInvalidCardIndexPrefix(),
+			"a mistyped index must be refused, not dropped")
+	})
 }

@@ -2,6 +2,7 @@ package controller
 
 import (
 	"math"
+	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -46,13 +47,15 @@ func (c *HeartsCuiController) Exec(command string) string {
 			switch cmd {
 			case "pass":
 				indices, skipped := cuiutil.ParseIntSlice(args)
-				var result string
-				if len(indices) != 3 {
-					result = "Pass requires exactly 3 card indices."
-				} else {
-					result = c.hi.Pass(indices)
+				// Refuse before counting: dropping a mistyped index could leave
+				// exactly three and pass a hand the player never chose (#5390).
+				if len(skipped) > 0 {
+					return invalidArg("invalidCardIndex", "val", strings.Join(skipped, ", ")), true
 				}
-				return cuiutil.PrependSkippedWarning(result, skipped), true
+				if len(indices) != 3 {
+					return "Pass requires exactly 3 card indices.", true
+				}
+				return c.hi.Pass(indices), true
 			case "p", "play":
 				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.hi.Play)
 			case "n", "next":

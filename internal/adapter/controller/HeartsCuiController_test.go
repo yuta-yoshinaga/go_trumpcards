@@ -86,27 +86,37 @@ func TestHeartsCuiController_Exec(t *testing.T) {
 		assert.Contains(t, result, "exactly 3")
 	})
 
-	t.Run("pass with non-numeric args shows warning", func(t *testing.T) {
+	t.Run("pass refuses non-numeric args", func(t *testing.T) {
 		c := controller.NewHeartsCuiController(newMock())
 		result := c.Exec("pass a b c")
-		assert.Contains(t, result, "exactly 3")
-		assert.Contains(t, result, "'a'")
+		assert.Contains(t, result, "a")
+		assert.NotContains(t, result, "exactly 3",
+			"the count is only meaningful once every index parsed")
 	})
 
-	t.Run("pass with mixed numeric and non-numeric args shows warning", func(t *testing.T) {
-		c := controller.NewHeartsCuiController(newMock())
-		result := c.Exec("pass 0 a 2")
-		assert.Contains(t, result, "exactly 3")
-		assert.Contains(t, result, "'a'")
-	})
-
-	t.Run("pass with 3 valid and invalid args shows warning", func(t *testing.T) {
+	// **落として数えない。** `pass 0 a 2 3` は a を捨てると 3 枚になり、
+	// プレイヤーが選んでいない組み合わせを渡してしまう (issue #5390)。
+	t.Run("pass refuses a mistyped index instead of dropping it", func(t *testing.T) {
 		m := newMock()
 		c := controller.NewHeartsCuiController(m)
+
+		result := c.Exec("pass 0 a 2 3")
+
+		assert.Contains(t, result, "a")
+		m.AssertNotCalled(t, "Pass", mock.Anything)
+	})
+
+	// This is the case the drop-and-continue behaviour was worst for: `abc` is
+	// discarded, the remaining three happen to be a legal pass, and a hand the
+	// player never chose goes across (issue #5390).
+	t.Run("pass refuses even when the survivors number three", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewHeartsCuiController(m)
+
 		result := c.Exec("pass 0 abc 1 2")
-		assert.Contains(t, result, "'abc'")
-		assert.Contains(t, result, mockOutput)
-		m.AssertCalled(t, "Pass", []int{0, 1, 2})
+
+		assert.Contains(t, result, "abc")
+		m.AssertNotCalled(t, "Pass", mock.Anything)
 	})
 
 	// play

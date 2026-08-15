@@ -57,40 +57,36 @@ func TestPokerCuiController_Exchange_InvalidIndex_NonNumeric(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
 	// "abc" fails strconv.Atoi => err != nil => skipped; "2" is valid
-	mi.On("Exchange", []int{2}).Return("exchange ok")
 	result := c.Exec("e abc 2")
-	assert.Contains(t, result, "'abc'")
-	assert.Contains(t, result, "exchange ok")
+	assert.Contains(t, result, "abc")
+	mi.AssertNotCalled(t, "Exchange", mock.Anything)
 }
 
 func TestPokerCuiController_Exchange_InvalidIndex_OutOfRange_Negative(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
 	// -1 fails 0 <= idx check => skipped; "3" is valid
-	mi.On("Exchange", []int{3}).Return("exchange ok")
 	result := c.Exec("e -1 3")
-	assert.Contains(t, result, "'-1'")
-	assert.Contains(t, result, "exchange ok")
+	assert.Contains(t, result, "-1")
+	mi.AssertNotCalled(t, "Exchange", mock.Anything)
 }
 
 func TestPokerCuiController_Exchange_InvalidIndex_OutOfRange_Above(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
 	// 5 fails idx <= 4 check => skipped; "0" is valid
-	mi.On("Exchange", []int{0}).Return("exchange ok")
 	result := c.Exec("e 5 0")
-	assert.Contains(t, result, "'5'")
-	assert.Contains(t, result, "exchange ok")
+	assert.Contains(t, result, "5")
+	mi.AssertNotCalled(t, "Exchange", mock.Anything)
 }
 
 func TestPokerCuiController_Exchange_AllInvalid(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
 	// All indices invalid => empty slice
-	mi.On("Exchange", []int{}).Return("exchange empty")
 	result := c.Exec("e abc -1 5 99")
-	assert.Contains(t, result, "'abc'")
-	assert.Contains(t, result, "exchange empty")
+	assert.Contains(t, result, "abc")
+	mi.AssertNotCalled(t, "Exchange", mock.Anything)
 }
 
 // --- stand ---
@@ -413,28 +409,25 @@ func TestPokerCuiController_Odds_NoIndices(t *testing.T) {
 func TestPokerCuiController_Odds_InvalidIndex_NonNumeric(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
-	mi.On("Odds", []int{2}).Return("odds ok")
 	result := c.Exec("o abc 2")
-	assert.Contains(t, result, "'abc'")
-	assert.Contains(t, result, "odds ok")
+	assert.Contains(t, result, "abc")
+	mi.AssertNotCalled(t, "Odds", mock.Anything)
 }
 
 func TestPokerCuiController_Odds_InvalidIndex_OutOfRange(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
-	mi.On("Odds", []int{0}).Return("odds ok")
 	result := c.Exec("o -1 0 5")
-	assert.Contains(t, result, "'-1'")
-	assert.Contains(t, result, "odds ok")
+	assert.Contains(t, result, "-1")
+	mi.AssertNotCalled(t, "Odds", mock.Anything)
 }
 
 func TestPokerCuiController_Odds_AllInvalid(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
-	mi.On("Odds", []int{}).Return("odds empty")
 	result := c.Exec("o abc -1 5 99")
-	assert.Contains(t, result, "'abc'")
-	assert.Contains(t, result, "odds empty")
+	assert.Contains(t, result, "abc")
+	mi.AssertNotCalled(t, "Odds", mock.Anything)
 }
 
 // --- metaai ---

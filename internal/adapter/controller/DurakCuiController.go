@@ -47,17 +47,23 @@ func (c *DurakCuiController) Exec(command string) string {
 				}
 				return c.di.Attack(idx), true
 			case "d", "defend":
+				// Same rule as attack: a typed argument that does not parse is
+				// refused rather than read as 0 (issue #5390).
 				atkIdx := 0
 				handIdx := 0
 				if len(args) > 0 {
-					if v, err := strconv.Atoi(args[0]); err == nil {
-						atkIdx = v
+					v, err := strconv.Atoi(args[0])
+					if err != nil {
+						return invalidArg("invalidCardIndex", "val", args[0]), true
 					}
+					atkIdx = v
 				}
 				if len(args) > 1 {
-					if v, err := strconv.Atoi(args[1]); err == nil {
-						handIdx = v
+					v, err := strconv.Atoi(args[1])
+					if err != nil {
+						return invalidArg("invalidCardIndex", "val", args[1]), true
 					}
+					handIdx = v
 				}
 				return c.di.Defend(atkIdx, handIdx), true
 			case "p", "pass":

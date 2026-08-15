@@ -2,6 +2,7 @@ package controller
 
 import (
 	"math"
+	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -52,10 +53,22 @@ func (c *DoubtCuiController) Exec(command string) string {
 					cardArgs = args[1:]
 				}
 				indices, skipped := cuiutil.ParseIntSlice(cardArgs)
-				return cuiutil.PrependSkippedWarning(c.di.Play(indices, claimedValue, 0), skipped), true
+				// Refuse before playing. PrependSkippedWarning ran the move first and
+				// put the warning above the new board, so a mistyped index was dropped
+				// and the remaining ones played as a different, legal move (issue #5390).
+				if len(skipped) > 0 {
+					return invalidArg("invalidCardIndex", "val", strings.Join(skipped, ", ")), true
+				}
+				return c.di.Play(indices, claimedValue, 0), true
 			case "d", "doubt":
 				indices, skipped := cuiutil.ParseIntSlice(args)
-				return cuiutil.PrependSkippedWarning(c.di.ResolveDoubt(indices), skipped), true
+				// Refuse before playing. PrependSkippedWarning ran the move first and
+				// put the warning above the new board, so a mistyped index was dropped
+				// and the remaining ones played as a different, legal move (issue #5390).
+				if len(skipped) > 0 {
+					return invalidArg("invalidCardIndex", "val", strings.Join(skipped, ", ")), true
+				}
+				return c.di.ResolveDoubt(indices), true
 			case "s", "skip":
 				return c.di.SkipDoubt(), true
 			case "sw", "setwindow":

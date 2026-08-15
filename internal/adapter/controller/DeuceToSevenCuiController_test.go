@@ -49,10 +49,9 @@ func TestDeuceToSevenCuiController_Exchange_OutOfRangeSkipped(t *testing.T) {
 	mi := newDeuceToSevenMockInteractor()
 	c := NewDeuceToSevenCuiController(mi)
 	// 2-7 uses 5 cards, valid range 0..4. 5 is skipped, 1 is valid.
-	mi.On("Exchange", []int{1}).Return("exchange ok")
 	result := c.Exec("e 5 1")
-	assert.Contains(t, result, "'5'")
-	assert.Contains(t, result, "exchange ok")
+	assert.Contains(t, result, "5")
+	mi.AssertNotCalled(t, "Exchange", mock.Anything)
 }
 
 func TestDeuceToSevenCuiController_Exchange_NoIndices(t *testing.T) {
