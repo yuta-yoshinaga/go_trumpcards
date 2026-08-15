@@ -27,5 +27,6 @@
   "dealer22Push": "ディーラー22: プッシュ扱い",
   "overallWin": "総合: 勝ち越し",
   "overallDraw": "総合: 引き分け",
-  "overallLose": "総合: 負け越し"
+  "overallLose": "総合: 負け越し",
+  "helpExampleBet": "  b 100                100 チップを賭ける"
 }

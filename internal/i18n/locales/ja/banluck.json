@@ -34,5 +34,6 @@
   "reason.cannotBust": "11以下なのでバストしません",
   "reason.standPat": "17以上あるので立つのが定石です",
   "reason.chaseBanker": "親に届かないので追いかけます",
-  "result.gameEnd": "全ラウンドが終わりました"
+  "result.gameEnd": "全ラウンドが終わりました",
+  "helpExampleBet": "  bet 100             100 チップを賭ける"
 }

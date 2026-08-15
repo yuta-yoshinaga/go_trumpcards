@@ -27,5 +27,6 @@
   "optTwist": "t=ツイスト",
   "optBuy": "buy=バイ",
   "optSplit": "sp=スプリット",
-  "bankPasses": "{{name}} がポンツーンで親を取りました"
+  "bankPasses": "{{name}} がポンツーンで親を取りました",
+  "helpExampleBet": "  b 100                   100 チップを賭ける"
 }

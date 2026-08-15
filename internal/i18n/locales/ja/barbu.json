@@ -25,5 +25,6 @@
   "cBarbu": "バルブ (ハートの K)",
   "cNoLastTrick": "ノー・ラストトリック",
   "cTrumps": "トランプ",
-  "cDominoes": "ドミノ"
+  "cDominoes": "ドミノ",
+  "helpExamplePlay": "  p 0                      手札の 0 番のカードを出す"
 }

@@ -21,5 +21,6 @@
   "hintReasonNotYourTurn": "あなたの手番ではありません",
   "hintReasonDuel": "この札で一騎打ちを取れます",
   "hintReasonBeat": "場の札を上回れる最も弱い札です",
-  "hintReasonPickUp": "上回れる札が1枚もないので引き取るしかありません"
+  "hintReasonPickUp": "上回れる札が1枚もないので引き取るしかありません",
+  "helpExamplePlay": "  p 0                      手札の 0 番のカードを出す"
 }

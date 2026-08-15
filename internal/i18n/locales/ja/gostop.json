@@ -32,5 +32,6 @@
   "bak.gwang": "光박",
   "bak.pi": "피박",
   "bak.go": "고박",
-  "categoryCounts": "  獲得内訳: 光{{gwang}} 열끗{{yeol}} 띠{{tti}} 피{{pi}}"
+  "categoryCounts": "  獲得内訳: 光{{gwang}} 열끗{{yeol}} 띠{{tti}} 피{{pi}}",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
 }

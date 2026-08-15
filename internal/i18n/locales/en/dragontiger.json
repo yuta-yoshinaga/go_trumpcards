@@ -22,5 +22,6 @@
   "oddsLine": "Bet: {{type}} ×{{odds}}",
   "payoutLine": "payout: {{payout}}",
   "historyLine": "History: {{symbols}}",
-  "historyCounts": "Totals: D:{{d}} T:{{t}} =:{{tie}}"
+  "historyCounts": "Totals: D:{{d}} T:{{t}} =:{{tie}}",
+  "helpExampleBet": "  b 100 d              bet 100 on the Dragon"
 }

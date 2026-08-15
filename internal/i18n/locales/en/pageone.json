@@ -25,5 +25,6 @@
   "gameEnd": "Game over! {{name}} wins!",
   "hintNone": "No hint available.",
   "hintPlayable": "Playable cards: {{cards}} (p <idx> to play)",
-  "hintDraw": "No playable card. Draw with d."
+  "hintDraw": "No playable card. Draw with d.",
+  "helpExamplePlay": "  p 0                  play hand card 0"
 }

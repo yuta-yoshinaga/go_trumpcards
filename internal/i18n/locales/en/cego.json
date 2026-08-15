@@ -48,5 +48,6 @@
   "hintReasonLeadLow": "You are an opponent — lead a low card to conserve",
   "hintReasonFollowWin": "You can win — take the trick",
   "hintReasonFollowDuck": "Cannot/should not win — play low",
-  "declarerLine": "Declarer: {{name}} (contract: {{contract}}) vs the field"
+  "declarerLine": "Declarer: {{name}} (contract: {{contract}}) vs the field",
+  "helpExamplePlay": "  play 0                    play hand card 0"
 }

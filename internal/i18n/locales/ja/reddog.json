@@ -25,5 +25,6 @@
   "hintStayRec": "ステイ推奨",
   "hintSpread": "スプレッド {{spread}}（勝てるランク: {{ranks}}）→ {{rec}}",
   "hintBetFirst": "まずベットしてください。",
-  "hintGameOver": "ゲームは終了しています。"
+  "hintGameOver": "ゲームは終了しています。",
+  "helpExampleBet": "  b 100              100 チップを賭ける"
 }

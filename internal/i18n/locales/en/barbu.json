@@ -25,5 +25,6 @@
   "cBarbu": "Barbu (K of Hearts)",
   "cNoLastTrick": "No Last Trick",
   "cTrumps": "Trumps",
-  "cDominoes": "Dominoes"
+  "cDominoes": "Dominoes",
+  "helpExamplePlay": "  p 0                      play hand card 0"
 }

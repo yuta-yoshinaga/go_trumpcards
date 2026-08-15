@@ -40,5 +40,6 @@
   "hintCallSuitAlone": "[HINT: {{suit}}をコール (ゴーアローン) ({{reason}})]",
   "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
   "hintReasonDiscardWeakest": "最弱カードを捨てる",
-  "sittingOut": " 💤（休み）"
+  "sittingOut": " 💤（休み）",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
 }

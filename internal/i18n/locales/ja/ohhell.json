@@ -28,5 +28,6 @@
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
   "hintNone": "ヒントはありません。",
   "hintBid": "[HINT: ビッド {{bid}} を推奨 ({{reason}})]",
-  "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]"
+  "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
 }

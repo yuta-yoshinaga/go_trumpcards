@@ -27,5 +27,6 @@
   "hintReasonLeadStrong": "強い札でリードする",
   "hintReasonFollowSuit": "フォロー義務を満たす",
   "hintReasonTrumpCut": "切り札で取る",
-  "hintReasonDiscardHigh": "取れないので高い札を落とす"
+  "hintReasonDiscardHigh": "取れないので高い札を落とす",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
 }

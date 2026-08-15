@@ -42,5 +42,6 @@
   "hintReasonFollowDuck": "Cannot/should not win — duck",
   "hintReasonDiscardLow": "Cannot follow suit — discard a low card",
   "roundPickerWon": "Picker team won (receives chips)",
-  "roundPickerLost": "Picker team lost (pays chips)"
+  "roundPickerLost": "Picker team lost (pays chips)",
+  "helpExamplePlay": "  play 0               play hand card 0"
 }

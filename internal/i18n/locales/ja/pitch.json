@@ -29,5 +29,6 @@
   "helpNext": "  n                    次のトリックへ",
   "helpNextRound": "  nr                   ラウンドを集計して次のラウンドへ",
   "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
-  "helpSetLimit": "  sl <n>               ポイント上限"
+  "helpSetLimit": "  sl <n>               ポイント上限",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
 }

@@ -22,5 +22,6 @@
   "oddsLine": "ベット: {{type}} ×{{odds}}",
   "payoutLine": "払戻し: {{payout}}",
   "historyLine": "履歴: {{symbols}}",
-  "historyCounts": "集計: D:{{d}} T:{{t}} =:{{tie}}"
+  "historyCounts": "集計: D:{{d}} T:{{t}} =:{{tie}}",
+  "helpExampleBet": "  b 100 d              100 をドラゴンに賭ける"
 }

@@ -35,5 +35,6 @@
   "hintReasonBidPass": "手が弱いのでパスする",
   "hintReasonBidEstimate": "取れるトリック数の見積もり",
   "hintReasonTrumpLongest": "最も長いスートを切り札にする",
-  "hintReasonTrumpCut": "切り札で取る"
+  "hintReasonTrumpCut": "切り札で取る",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
 }

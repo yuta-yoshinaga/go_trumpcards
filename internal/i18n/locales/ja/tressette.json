@@ -23,5 +23,6 @@
   "hintReasonFollowDuck": "取れない／取る価値がないのでダックする",
   "hintReasonGivePartner": "味方が勝っているので得点札を渡す",
   "hintReasonDiscardLow": "フォローできないので低い札を捨てる",
-  "roundBreakdown": "ラウンド内訳: チーム{{a}} thirds{{athird}} / チーム{{b}} thirds{{bthird}}（ラストトリック: チーム{{lastteam}}）"
+  "roundBreakdown": "ラウンド内訳: チーム{{a}} thirds{{athird}} / チーム{{b}} thirds{{bthird}}（ラストトリック: チーム{{lastteam}}）",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
 }

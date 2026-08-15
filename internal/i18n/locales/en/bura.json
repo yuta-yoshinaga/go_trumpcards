@@ -22,5 +22,6 @@
   "hintReasonDeclare": "your hand is a winning combination -- declare with d",
   "hintReasonClaim": "you have reached 31 -- claim with c",
   "hintReasonRespond": "this combination covers the lead",
-  "hintReasonLead": "leading these together collects more points at once"
+  "hintReasonLead": "leading these together collects more points at once",
+  "helpExamplePlay": "  p 0                      play hand card 0"
 }

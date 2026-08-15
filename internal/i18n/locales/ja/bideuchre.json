@@ -37,5 +37,6 @@
   "handMade": "宣言達成",
   "handSet": "宣言失敗。取った数ではなく宣言額を失います",
   "result.humanWin": "ゲーム終了！ あなたのチームの勝ち！",
-  "result.cpuWin": "ゲーム終了！ 相手チームの勝ち！"
+  "result.cpuWin": "ゲーム終了！ 相手チームの勝ち！",
+  "helpExamplePlay": "  p 0                       手札の 0 番のカードを出す"
 }

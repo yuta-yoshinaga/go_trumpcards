@@ -144,6 +144,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewPokerCuiController,
 		CuiHelpSpec{
 			TitleKey: "poker.helpTitle",
+			ExampleKeys: []string{
+				"poker.helpExampleBet",
+			},
 			CommandKeys: []string{
 				"poker.helpBet",
 				"poker.helpCall",
@@ -554,7 +557,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewBaccaratCuiController,
 		CuiHelpSpec{
-			TitleKey:    "baccarat.helpTitle",
+			TitleKey: "baccarat.helpTitle",
+			ExampleKeys: []string{
+				"baccarat.helpExampleBet",
+			},
 			CommandKeys: []string{"baccarat.helpBet"},
 			ExtraCommandLines: []string{
 				"  log                  action log",
@@ -567,7 +573,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewSpadesCuiController,
 		CuiHelpSpec{
-			TitleKey:          "spades.helpTitle",
+			TitleKey: "spades.helpTitle",
+			ExampleKeys: []string{
+				"spades.helpExamplePlay",
+			},
 			CommandKeys:       []string{"spades.helpBid", "spades.helpPlay", "spades.helpNext", "spades.helpNextRound"},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"spades.helpSetDifficulty", "spades.helpSetLimit"},
@@ -578,7 +587,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewCrazyEightsCuiController,
 		CuiHelpSpec{
-			TitleKey:          "crazyeights.helpTitle",
+			TitleKey: "crazyeights.helpTitle",
+			ExampleKeys: []string{
+				"crazyeights.helpExamplePlay",
+			},
 			CommandKeys:       []string{"crazyeights.helpPlay", "crazyeights.helpDraw", "crazyeights.helpSuit", "crazyeights.helpNextRound"},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"crazyeights.helpSetDifficulty", "crazyeights.helpSetLimit"},
@@ -669,6 +681,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewNapoleonCuiController,
 		CuiHelpSpec{
 			TitleKey: "napoleon.helpTitle",
+			ExampleKeys: []string{
+				"napoleon.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"napoleon.helpBid",
 				"napoleon.helpTrump",
@@ -687,6 +702,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewIndianPokerCuiController,
 		CuiHelpSpec{
 			TitleKey: "indianpoker.helpTitle",
+			ExampleKeys: []string{
+				"indianpoker.helpExampleBet",
+			},
 			CommandKeys: []string{
 				"indianpoker.helpFold",
 				"indianpoker.helpCheck",
@@ -703,7 +721,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewVideoPokerCuiController,
 		CuiHelpSpec{
-			TitleKey:          "videopoker.helpTitle",
+			TitleKey: "videopoker.helpTitle",
+			ExampleKeys: []string{
+				"videopoker.helpExampleBet",
+			},
 			CommandKeys:       []string{"videopoker.helpBet", "videopoker.helpHold", "videopoker.helpHint"},
 			ExtraCommandLines: []string{"  log                  action log"},
 		}),
@@ -734,6 +755,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewEuchreCuiController,
 		CuiHelpSpec{
 			TitleKey: "euchre.helpTitle",
+			ExampleKeys: []string{
+				"euchre.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"euchre.helpOrderUp",
 				"euchre.helpOrderUpAlone",
@@ -812,7 +836,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewOhHellCuiController,
 		CuiHelpSpec{
-			TitleKey:          "ohhell.helpTitle",
+			TitleKey: "ohhell.helpTitle",
+			ExampleKeys: []string{
+				"ohhell.helpExamplePlay",
+			},
 			CommandKeys:       []string{"ohhell.helpBid", "ohhell.helpPlay", "ohhell.helpNext", "ohhell.helpNextRound"},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"ohhell.helpSetDifficulty", "ohhell.helpSetMaxHand"},
@@ -823,7 +850,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewNinetyNineCuiController,
 		CuiHelpSpec{
-			TitleKey:          "ninetynine.helpTitle",
+			TitleKey: "ninetynine.helpTitle",
+			ExampleKeys: []string{
+				"ninetynine.helpExamplePlay",
+			},
 			CommandKeys:       []string{"ninetynine.helpBid", "ninetynine.helpPlay", "ninetynine.helpNext", "ninetynine.helpNextRound"},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"ninetynine.helpSetDifficulty", "ninetynine.helpSetTarget"},
@@ -886,6 +916,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewPinochleCuiController,
 		CuiHelpSpec{
 			TitleKey: "pinochle.helpTitle",
+			ExampleKeys: []string{
+				"pinochle.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"pinochle.helpBid",
 				"pinochle.helpPass",
@@ -995,7 +1028,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewPaiGowCuiController,
 		CuiHelpSpec{
-			TitleKey:          "paigow.helpTitle",
+			TitleKey: "paigow.helpTitle",
+			ExampleKeys: []string{
+				"paigow.helpExampleBet",
+			},
 			CommandKeys:       []string{"paigow.helpBet", "paigow.helpSet", "paigow.helpAuto", "paigow.helpHint"},
 			ExtraCommandLines: []string{"  log                  action log"},
 		}),
@@ -1006,6 +1042,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewTwoTenJackCuiController,
 		CuiHelpSpec{
 			TitleKey: "twotenjack.helpTitle",
+			ExampleKeys: []string{
+				"twotenjack.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"twotenjack.helpDeclare",
 				"twotenjack.helpPlay",
@@ -1036,6 +1075,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewTexasHoldemBonusCuiController,
 		CuiHelpSpec{
 			TitleKey: "texasholdembonus.helpTitle",
+			ExampleKeys: []string{
+				"texasholdembonus.helpExampleBet",
+			},
 			CommandKeys: []string{
 				"texasholdembonus.helpBet",
 				"texasholdembonus.helpPlay",
@@ -1126,7 +1168,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewWhistCuiController,
 		CuiHelpSpec{
-			TitleKey:          "whist.helpTitle",
+			TitleKey: "whist.helpTitle",
+			ExampleKeys: []string{
+				"whist.helpExamplePlay",
+			},
 			CommandKeys:       []string{"whist.helpPlay", "whist.helpNext", "whist.helpNextRound"},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"whist.helpSetDifficulty", "whist.helpSetLimit"},
@@ -1137,7 +1182,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewCatchTenCuiController,
 		CuiHelpSpec{
-			TitleKey:          "catchten.helpTitle",
+			TitleKey: "catchten.helpTitle",
+			ExampleKeys: []string{
+				"catchten.helpExamplePlay",
+			},
 			CommandKeys:       []string{"catchten.helpPlay", "catchten.helpNext", "catchten.helpNextRound"},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"catchten.helpSetDifficulty", "catchten.helpSetLimit"},
@@ -1148,7 +1196,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewLetItRideCuiController,
 		CuiHelpSpec{
-			TitleKey:          "letitride.helpTitle",
+			TitleKey: "letitride.helpTitle",
+			ExampleKeys: []string{
+				"letitride.helpExampleBet",
+			},
 			CommandKeys:       []string{"letitride.helpBet", "letitride.helpPull", "letitride.helpLetItRide"},
 			ExtraCommandLines: []string{"  log                  action log"},
 		}),
@@ -1179,6 +1230,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewPageOneCuiController,
 		CuiHelpSpec{
 			TitleKey: "pageone.helpTitle",
+			ExampleKeys: []string{
+				"pageone.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"pageone.helpPlay",
 				"pageone.helpDraw",
@@ -1195,7 +1249,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewRedDogCuiController,
 		CuiHelpSpec{
-			TitleKey:          "reddog.helpTitle",
+			TitleKey: "reddog.helpTitle",
+			ExampleKeys: []string{
+				"reddog.helpExampleBet",
+			},
 			CommandKeys:       []string{"reddog.helpBet", "reddog.helpRaise", "reddog.helpStay", "reddog.helpHint"},
 			ExtraCommandLines: []string{"  log                  action log"},
 		}),
@@ -1206,6 +1263,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewBadugiCuiController,
 		CuiHelpSpec{
 			TitleKey: "badugi.helpTitle",
+			ExampleKeys: []string{
+				"badugi.helpExampleBet",
+			},
 			CommandKeys: []string{
 				"badugi.helpBet",
 				"badugi.helpCall",
@@ -1225,6 +1285,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewDeuceToSevenCuiController,
 		CuiHelpSpec{
 			TitleKey: "deucetoseven.helpTitle",
+			ExampleKeys: []string{
+				"deucetoseven.helpExampleBet",
+			},
 			CommandKeys: []string{
 				"deucetoseven.helpBet",
 				"deucetoseven.helpCall",
@@ -1619,6 +1682,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewSkatCuiController,
 		CuiHelpSpec{
 			TitleKey: "skat.helpTitle",
+			ExampleKeys: []string{
+				"skat.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"skat.helpBid",
 				"skat.helpPickSkat",
@@ -1702,6 +1768,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewPontoonCuiController,
 		CuiHelpSpec{
 			TitleKey: "pontoon.helpTitle",
+			ExampleKeys: []string{
+				"pontoon.helpExampleBet",
+			},
 			CommandKeys: []string{
 				"pontoon.helpBet",
 				"pontoon.helpDeal",
@@ -1721,6 +1790,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewSetteEMezzoCuiController,
 		CuiHelpSpec{
 			TitleKey: "settemezzo.helpTitle",
+			ExampleKeys: []string{
+				"settemezzo.helpExampleBet",
+			},
 			CommandKeys: []string{
 				"settemezzo.helpBet",
 				"settemezzo.helpDeal",
@@ -1738,7 +1810,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewNiuNiuCuiController,
 		CuiHelpSpec{
-			TitleKey:          "niuniu.helpTitle",
+			TitleKey: "niuniu.helpTitle",
+			ExampleKeys: []string{
+				"niuniu.helpExampleBet",
+			},
 			CommandKeys:       []string{"niuniu.helpBet"},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),
@@ -1749,6 +1824,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewBuraCuiController,
 		CuiHelpSpec{
 			TitleKey: "bura.helpTitle",
+			ExampleKeys: []string{
+				"bura.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"bura.helpPlay",
 				"bura.helpClaim",
@@ -1763,6 +1841,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewMushiCuiController,
 		CuiHelpSpec{
 			TitleKey: "mushi.helpTitle",
+			ExampleKeys: []string{
+				"mushi.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"mushi.helpPlay",
 				"mushi.helpSelect",
@@ -1777,6 +1858,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewToepenCuiController,
 		CuiHelpSpec{
 			TitleKey: "toepen.helpTitle",
+			ExampleKeys: []string{
+				"toepen.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"toepen.helpPlay",
 				"toepen.helpToep",
@@ -1794,6 +1878,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewChineseTenCuiController,
 		CuiHelpSpec{
 			TitleKey: "chineseten.helpTitle",
+			ExampleKeys: []string{
+				"chineseten.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"chineseten.helpPlay",
 				"chineseten.helpSelect",
@@ -1807,6 +1894,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewTrexCuiController,
 		CuiHelpSpec{
 			TitleKey: "trex.helpTitle",
+			ExampleKeys: []string{
+				"trex.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"trex.helpChoose",
 				"trex.helpPlay",
@@ -1822,6 +1912,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewSkitgubbeCuiController,
 		CuiHelpSpec{
 			TitleKey: "skitgubbe.helpTitle",
+			ExampleKeys: []string{
+				"skitgubbe.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"skitgubbe.helpPlay",
 				"skitgubbe.helpPickUp",
@@ -1852,6 +1945,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewSjavsCuiController,
 		CuiHelpSpec{
 			TitleKey: "sjavs.helpTitle",
+			ExampleKeys: []string{
+				"sjavs.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"sjavs.helpBid",
 				"sjavs.helpPlay",
@@ -1866,6 +1962,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewLaughAndLieDownCuiController,
 		CuiHelpSpec{
 			TitleKey: "laughandliedown.helpTitle",
+			ExampleKeys: []string{
+				"laughandliedown.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"laughandliedown.helpPlay",
 			},
@@ -1982,7 +2081,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewCasinoWarCuiController,
 		CuiHelpSpec{
-			TitleKey:          "casinowar.helpTitle",
+			TitleKey: "casinowar.helpTitle",
+			ExampleKeys: []string{
+				"casinowar.helpExampleBet",
+			},
 			CommandKeys:       []string{"casinowar.helpBet", "casinowar.helpSurrender", "casinowar.helpWar"},
 			ExtraCommandLines: []string{"  log                  action log"},
 		}),
@@ -1992,7 +2094,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewPitchCuiController,
 		CuiHelpSpec{
-			TitleKey:          "pitch.helpTitle",
+			TitleKey: "pitch.helpTitle",
+			ExampleKeys: []string{
+				"pitch.helpExamplePlay",
+			},
 			CommandKeys:       []string{"pitch.helpBid", "pitch.helpPlay", "pitch.helpNext", "pitch.helpNextRound"},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"pitch.helpSetDifficulty", "pitch.helpSetLimit"},
@@ -2003,7 +2108,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewDragonTigerCuiController,
 		CuiHelpSpec{
-			TitleKey:          "dragontiger.helpTitle",
+			TitleKey: "dragontiger.helpTitle",
+			ExampleKeys: []string{
+				"dragontiger.helpExampleBet",
+			},
 			CommandKeys:       []string{"dragontiger.helpBet", "dragontiger.helpClear"},
 			ExtraCommandLines: []string{"  log                  action log"},
 		}),
@@ -2014,6 +2122,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewBlackJackSwitchCuiController,
 		CuiHelpSpec{
 			TitleKey: "blackjackswitch.helpTitle",
+			ExampleKeys: []string{
+				"blackjackswitch.helpExampleBet",
+			},
 			CommandKeys: []string{
 				"blackjackswitch.helpBet",
 				"blackjackswitch.helpSwitch",
@@ -2065,6 +2176,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewUltimateTexasHoldemCuiController,
 		CuiHelpSpec{
 			TitleKey: "ultimatetexasholdem.helpTitle",
+			ExampleKeys: []string{
+				"ultimatetexasholdem.helpExampleBet",
+			},
 			CommandKeys: []string{
 				"ultimatetexasholdem.helpBet",
 				"ultimatetexasholdem.helpPlay",
@@ -2115,6 +2229,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewBeloteCuiController,
 		CuiHelpSpec{
 			TitleKey: "belote.helpTitle",
+			ExampleKeys: []string{
+				"belote.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"belote.helpOrderUp",
 				"belote.helpPass",
@@ -2150,6 +2267,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewMightyCuiController,
 		CuiHelpSpec{
 			TitleKey: "mighty.helpTitle",
+			ExampleKeys: []string{
+				"mighty.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"mighty.helpBid",
 				"mighty.helpTrump",
@@ -2169,6 +2289,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewOasisPokerCuiController,
 		CuiHelpSpec{
 			TitleKey: "oasispoker.helpTitle",
+			ExampleKeys: []string{
+				"oasispoker.helpExampleBet",
+			},
 			CommandKeys: []string{
 				"oasispoker.helpBet",
 				"oasispoker.helpExchange",
@@ -2315,6 +2438,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewPiquetCuiController,
 		CuiHelpSpec{
 			TitleKey: "piquet.helpTitle",
+			ExampleKeys: []string{
+				"piquet.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"piquet.helpExchange",
 				"piquet.helpExchangeY",
@@ -2332,6 +2458,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewCasinoHoldemCuiController,
 		CuiHelpSpec{
 			TitleKey: "casinoholdem.helpTitle",
+			ExampleKeys: []string{
+				"casinoholdem.helpExampleBet",
+			},
 			CommandKeys: []string{
 				"casinoholdem.helpBet",
 				"casinoholdem.helpCall",
@@ -2345,7 +2474,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewCallBreakCuiController,
 		CuiHelpSpec{
-			TitleKey:          "callbreak.helpTitle",
+			TitleKey: "callbreak.helpTitle",
+			ExampleKeys: []string{
+				"callbreak.helpExamplePlay",
+			},
 			CommandKeys:       []string{"callbreak.helpBid", "callbreak.helpPlay", "callbreak.helpNext", "callbreak.helpNextRound"},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"callbreak.helpSetDifficulty", "callbreak.helpSetRounds"},
@@ -2357,6 +2489,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewTarneebCuiController,
 		CuiHelpSpec{
 			TitleKey: "tarneeb.helpTitle",
+			ExampleKeys: []string{
+				"tarneeb.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"tarneeb.helpBid",
 				"tarneeb.helpTrump",
@@ -2373,7 +2508,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewHighCardFlushCuiController,
 		CuiHelpSpec{
-			TitleKey:          "highcardflush.helpTitle",
+			TitleKey: "highcardflush.helpTitle",
+			ExampleKeys: []string{
+				"highcardflush.helpExampleBet",
+			},
 			CommandKeys:       []string{"highcardflush.helpBet", "highcardflush.helpRaise", "highcardflush.helpFold"},
 			ExtraCommandLines: []string{"  log                  action log"},
 		}),
@@ -2473,6 +2611,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewRussianPokerCuiController,
 		CuiHelpSpec{
 			TitleKey: "russianpoker.helpTitle",
+			ExampleKeys: []string{
+				"russianpoker.helpExampleBet",
+			},
 			CommandKeys: []string{
 				"russianpoker.helpBet",
 				"russianpoker.helpExchange",
@@ -2518,7 +2659,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewChinesePokerCuiController,
 		CuiHelpSpec{
-			TitleKey:          "chinesepoker.helpTitle",
+			TitleKey: "chinesepoker.helpTitle",
+			ExampleKeys: []string{
+				"chinesepoker.helpExampleBet",
+			},
 			CommandKeys:       []string{"chinesepoker.helpBet", "chinesepoker.helpSet"},
 			ExtraCommandLines: []string{"  l                                            action log"},
 		}),
@@ -2548,7 +2692,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewTrucoCuiController,
 		CuiHelpSpec{
-			TitleKey:    "truco.helpTitle",
+			TitleKey: "truco.helpTitle",
+			ExampleKeys: []string{
+				"truco.helpExamplePlay",
+			},
 			CommandKeys: []string{"truco.helpPlay", "truco.helpTruco", "truco.helpRespond", "truco.helpNext"},
 		}),
 	BindCuiFor("scopa",
@@ -2581,7 +2728,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewBarbuCuiController,
 		CuiHelpSpec{
-			TitleKey:    "barbu.helpTitle",
+			TitleKey: "barbu.helpTitle",
+			ExampleKeys: []string{
+				"barbu.helpExamplePlay",
+			},
 			CommandKeys: []string{"barbu.helpContract", "barbu.helpPlay", "barbu.helpNext"},
 			SettingKeys: []string{"barbu.helpSetDifficulty"},
 		}),
@@ -2591,7 +2741,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewMacauCuiController,
 		CuiHelpSpec{
-			TitleKey:          "macau.helpTitle",
+			TitleKey: "macau.helpTitle",
+			ExampleKeys: []string{
+				"macau.helpExamplePlay",
+			},
 			CommandKeys:       []string{"macau.helpPlay", "macau.helpDraw", "macau.helpSuit", "macau.helpDeclare", "macau.helpSkipDeclare", "macau.helpNextRound"},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"macau.helpSetDifficulty", "macau.helpSetLimit"},
@@ -2652,6 +2805,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewFiveHundredCuiController,
 		CuiHelpSpec{
 			TitleKey: "fivehundred.helpTitle",
+			ExampleKeys: []string{
+				"fivehundred.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"fivehundred.helpBid",
 				"fivehundred.helpBidNoTrump",
@@ -2675,6 +2831,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewSchnapsenCuiController,
 		CuiHelpSpec{
 			TitleKey: "schnapsen.helpTitle",
+			ExampleKeys: []string{
+				"schnapsen.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"schnapsen.helpPlay",
 				"schnapsen.helpMarriage",
@@ -2734,6 +2893,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewGongZhuCuiController,
 		CuiHelpSpec{
 			TitleKey: "gongzhu.helpTitle",
+			ExampleKeys: []string{
+				"gongzhu.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"gongzhu.helpExpose",
 				"gongzhu.helpPlay",
@@ -2769,6 +2931,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewBidWhistCuiController,
 		CuiHelpSpec{
 			TitleKey: "bidwhist.helpTitle",
+			ExampleKeys: []string{
+				"bidwhist.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"bidwhist.helpBid",
 				"bidwhist.helpPass",
@@ -2790,6 +2955,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewTressetteCuiController,
 		CuiHelpSpec{
 			TitleKey: "tressette.helpTitle",
+			ExampleKeys: []string{
+				"tressette.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"tressette.helpPlay",
 				"tressette.helpNext",
@@ -2881,6 +3049,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewSheepsheadCuiController,
 		CuiHelpSpec{
 			TitleKey: "sheepshead.helpTitle",
+			ExampleKeys: []string{
+				"sheepshead.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"sheepshead.helpPick",
 				"sheepshead.helpPass",
@@ -2903,6 +3074,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewDoppelkopfCuiController,
 		CuiHelpSpec{
 			TitleKey: "doppelkopf.helpTitle",
+			ExampleKeys: []string{
+				"doppelkopf.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"doppelkopf.helpPlay",
 				"doppelkopf.helpAnnounce",
@@ -2943,6 +3117,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewTuteCuiController,
 		CuiHelpSpec{
 			TitleKey: "tute.helpTitle",
+			ExampleKeys: []string{
+				"tute.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"tute.helpPlay",
 				"tute.helpMarriage",
@@ -3244,6 +3421,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewCourtPieceCuiController,
 		CuiHelpSpec{
 			TitleKey: "courtpiece.helpTitle",
+			ExampleKeys: []string{
+				"courtpiece.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"courtpiece.helpTrump",
 				"courtpiece.helpPlay",
@@ -3260,6 +3440,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewBeziqueCuiController,
 		CuiHelpSpec{
 			TitleKey: "bezique.helpTitle",
+			ExampleKeys: []string{
+				"bezique.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"bezique.helpPlay",
 				"bezique.helpMeld",
@@ -3276,6 +3459,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewEcarteCuiController,
 		CuiHelpSpec{
 			TitleKey: "ecarte.helpTitle",
+			ExampleKeys: []string{
+				"ecarte.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"ecarte.helpPropose",
 				"ecarte.helpStand",
@@ -3330,6 +3516,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewScoponeCuiController,
 		CuiHelpSpec{
 			TitleKey: "scopone.helpTitle",
+			ExampleKeys: []string{
+				"scopone.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"scopone.helpPlay",
 				"scopone.helpNext",
@@ -3345,6 +3534,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewEscobaCuiController,
 		CuiHelpSpec{
 			TitleKey: "escoba.helpTitle",
+			ExampleKeys: []string{
+				"escoba.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"escoba.helpPlay",
 				"escoba.helpNext",
@@ -3466,6 +3658,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewMaoCuiController,
 		CuiHelpSpec{
 			TitleKey: "mao.helpTitle",
+			ExampleKeys: []string{
+				"mao.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"mao.helpPlay",
 				"mao.helpDraw",
@@ -3539,6 +3734,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewPishtiCuiController,
 		CuiHelpSpec{
 			TitleKey: "pishti.helpTitle",
+			ExampleKeys: []string{
+				"pishti.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"pishti.helpPlay",
 				"pishti.helpNext",
@@ -3601,6 +3799,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewFaroCuiController,
 		CuiHelpSpec{
 			TitleKey: "faro.helpTitle",
+			ExampleKeys: []string{
+				"faro.helpExampleBet",
+			},
 			CommandKeys: []string{
 				"faro.helpBet",
 				"faro.helpClearBet",
@@ -3722,6 +3923,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewAllFoursCuiController,
 		CuiHelpSpec{
 			TitleKey: "allfours.helpTitle",
+			ExampleKeys: []string{
+				"allfours.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"allfours.helpStand", "allfours.helpBeg", "allfours.helpGift",
 				"allfours.helpRun", "allfours.helpPlay", "allfours.helpNext", "allfours.helpNextRound",
@@ -3734,7 +3938,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewPrsiCuiController,
 		CuiHelpSpec{
-			TitleKey:          "prsi.helpTitle",
+			TitleKey: "prsi.helpTitle",
+			ExampleKeys: []string{
+				"prsi.helpExamplePlay",
+			},
 			CommandKeys:       []string{"prsi.helpPlay", "prsi.helpDraw"},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"prsi.helpSetDifficulty"},
@@ -3746,6 +3953,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewJassCuiController,
 		CuiHelpSpec{
 			TitleKey: "jass.helpTitle",
+			ExampleKeys: []string{
+				"jass.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"jass.helpCall",
 				"jass.helpSchieben",
@@ -3763,6 +3973,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewGaigelCuiController,
 		CuiHelpSpec{
 			TitleKey: "gaigel.helpTitle",
+			ExampleKeys: []string{
+				"gaigel.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"gaigel.helpPlay",
 				"gaigel.helpMarriage",
@@ -3823,6 +4036,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewOmbreCuiController,
 		CuiHelpSpec{
 			TitleKey: "ombre.helpTitle",
+			ExampleKeys: []string{
+				"ombre.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"ombre.helpBid",
 				"ombre.helpPlay",
@@ -3860,7 +4076,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewKingCuiController,
 		CuiHelpSpec{
-			TitleKey:          "king.helpTitle",
+			TitleKey: "king.helpTitle",
+			ExampleKeys: []string{
+				"king.helpExamplePlay",
+			},
 			CommandKeys:       []string{"king.helpContract", "king.helpPlay", "king.helpNext"},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"king.helpSetDifficulty"},
@@ -3871,7 +4090,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewCinchCuiController,
 		CuiHelpSpec{
-			TitleKey:          "cinch.helpTitle",
+			TitleKey: "cinch.helpTitle",
+			ExampleKeys: []string{
+				"cinch.helpExamplePlay",
+			},
 			CommandKeys:       []string{"cinch.helpBid", "cinch.helpTrump", "cinch.helpPlay", "cinch.helpNext"},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"cinch.helpSetDifficulty"},
@@ -3882,7 +4104,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewLooCuiController,
 		CuiHelpSpec{
-			TitleKey:          "loo.helpTitle",
+			TitleKey: "loo.helpTitle",
+			ExampleKeys: []string{
+				"loo.helpExamplePlay",
+			},
 			CommandKeys:       []string{"loo.helpDecide", "loo.helpPlay", "loo.helpNext"},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"loo.helpSetDifficulty"},
@@ -3923,7 +4148,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewTrenteEtQuaranteCuiController,
 		CuiHelpSpec{
-			TitleKey:          "trenteetquarante.helpTitle",
+			TitleKey: "trenteetquarante.helpTitle",
+			ExampleKeys: []string{
+				"trenteetquarante.helpExampleBet",
+			},
 			CommandKeys:       []string{"trenteetquarante.helpBet", "trenteetquarante.helpNext"},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"trenteetquarante.helpSetDefaultBet"},
@@ -3967,7 +4195,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewMichiganCuiController,
 		CuiHelpSpec{
-			TitleKey:          "michigan.helpTitle",
+			TitleKey: "michigan.helpTitle",
+			ExampleKeys: []string{
+				"michigan.helpExampleBet",
+			},
 			CommandKeys:       []string{"michigan.helpBet", "michigan.helpPlay", "michigan.helpNext"},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"michigan.helpSetPlayers", "michigan.helpSetAnte", "michigan.helpSetChips", "michigan.helpSetRounds"},
@@ -3979,6 +4210,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewWattenCuiController,
 		CuiHelpSpec{
 			TitleKey: "watten.helpTitle",
+			ExampleKeys: []string{
+				"watten.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"watten.helpDeclare",
 				"watten.helpPlay",
@@ -4076,7 +4310,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewWizardCuiController,
 		CuiHelpSpec{
-			TitleKey:          "wizard.helpTitle",
+			TitleKey: "wizard.helpTitle",
+			ExampleKeys: []string{
+				"wizard.helpExamplePlay",
+			},
 			CommandKeys:       []string{"wizard.helpBid", "wizard.helpPlay", "wizard.helpNext", "wizard.helpNextRound"},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"wizard.helpSetDifficulty"},
@@ -4087,7 +4324,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewOichoKabuCuiController,
 		CuiHelpSpec{
-			TitleKey:          "oichokabu.helpTitle",
+			TitleKey: "oichokabu.helpTitle",
+			ExampleKeys: []string{
+				"oichokabu.helpExampleBet",
+			},
 			CommandKeys:       []string{"oichokabu.helpBet", "oichokabu.helpDraw", "oichokabu.helpStand"},
 			ExtraCommandLines: []string{"  log                  action log"},
 		}),
@@ -4097,7 +4337,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewRookCuiController,
 		CuiHelpSpec{
-			TitleKey:          "rook.helpTitle",
+			TitleKey: "rook.helpTitle",
+			ExampleKeys: []string{
+				"rook.helpExamplePlay",
+			},
 			CommandKeys:       []string{"rook.helpBid", "rook.helpPass", "rook.helpExchange", "rook.helpPlay", "rook.helpNext", "rook.helpNextRound"},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"rook.helpSetDifficulty", "rook.helpSetTarget"},
@@ -4108,7 +4351,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewKoiKoiCuiController,
 		CuiHelpSpec{
-			TitleKey:          "koikoi.helpTitle",
+			TitleKey: "koikoi.helpTitle",
+			ExampleKeys: []string{
+				"koikoi.helpExamplePlay",
+			},
 			CommandKeys:       []string{"koikoi.helpPlay", "koikoi.helpKoiKoi", "koikoi.helpStop", "koikoi.helpNextRound"},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"koikoi.helpSetDifficulty"},
@@ -4119,7 +4365,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewGoStopCuiController,
 		CuiHelpSpec{
-			TitleKey:          "gostop.helpTitle",
+			TitleKey: "gostop.helpTitle",
+			ExampleKeys: []string{
+				"gostop.helpExamplePlay",
+			},
 			CommandKeys:       []string{"gostop.helpPlay", "gostop.helpGo", "gostop.helpStop", "gostop.helpNextRound"},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"gostop.helpSetDifficulty"},
@@ -4130,7 +4379,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewHachiHachiCuiController,
 		CuiHelpSpec{
-			TitleKey:          "hachihachi.helpTitle",
+			TitleKey: "hachihachi.helpTitle",
+			ExampleKeys: []string{
+				"hachihachi.helpExamplePlay",
+			},
 			CommandKeys:       []string{"hachihachi.helpPlay", "hachihachi.helpNextRound"},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"hachihachi.helpSetDifficulty"},
@@ -4141,7 +4393,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewFrenchTarotCuiController,
 		CuiHelpSpec{
-			TitleKey:          "frenchtarot.helpTitle",
+			TitleKey: "frenchtarot.helpTitle",
+			ExampleKeys: []string{
+				"frenchtarot.helpExamplePlay",
+			},
 			CommandKeys:       []string{"frenchtarot.helpBid", "frenchtarot.helpPass", "frenchtarot.helpDiscard", "frenchtarot.helpPlay", "frenchtarot.helpNext", "frenchtarot.helpNextRound"},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"frenchtarot.helpSetDifficulty"},
@@ -4152,7 +4407,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewKoenigrufenCuiController,
 		CuiHelpSpec{
-			TitleKey:          "koenigrufen.helpTitle",
+			TitleKey: "koenigrufen.helpTitle",
+			ExampleKeys: []string{
+				"koenigrufen.helpExamplePlay",
+			},
 			CommandKeys:       []string{"koenigrufen.helpBid", "koenigrufen.helpPass", "koenigrufen.helpCallKing", "koenigrufen.helpDiscard", "koenigrufen.helpPlay", "koenigrufen.helpNext", "koenigrufen.helpNextRound"},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"koenigrufen.helpSetDifficulty"},
@@ -4237,7 +4495,10 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewCegoCuiController,
 		CuiHelpSpec{
-			TitleKey:          "cego.helpTitle",
+			TitleKey: "cego.helpTitle",
+			ExampleKeys: []string{
+				"cego.helpExamplePlay",
+			},
 			CommandKeys:       []string{"cego.helpBid", "cego.helpPass", "cego.helpCego", "cego.helpHandspiel", "cego.helpDiscard", "cego.helpPlay", "cego.helpNext", "cego.helpNextRound"},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"cego.helpSetDifficulty"},
@@ -4296,6 +4557,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewPochCuiController,
 		CuiHelpSpec{
 			TitleKey: "poch.helpTitle",
+			ExampleKeys: []string{
+				"poch.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"poch.helpBet",
 				"poch.helpFold",
@@ -4363,6 +4627,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewKlaberjassCuiController,
 		CuiHelpSpec{
 			TitleKey: "klaberjass.helpTitle",
+			ExampleKeys: []string{
+				"klaberjass.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"klaberjass.helpAccept",
 				"klaberjass.helpCall",
@@ -4384,6 +4651,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewKaiserCuiController,
 		CuiHelpSpec{
 			TitleKey: "kaiser.helpTitle",
+			ExampleKeys: []string{
+				"kaiser.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"kaiser.helpBid",
 				"kaiser.helpPass",
@@ -4402,6 +4672,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewBostonCuiController,
 		CuiHelpSpec{
 			TitleKey: "boston.helpTitle",
+			ExampleKeys: []string{
+				"boston.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"boston.helpBid",
 				"boston.helpPass",
@@ -4418,6 +4691,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewVintCuiController,
 		CuiHelpSpec{
 			TitleKey: "vint.helpTitle",
+			ExampleKeys: []string{
+				"vint.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"vint.helpBid",
 				"vint.helpPass",
@@ -4433,6 +4709,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewBidEuchreCuiController,
 		CuiHelpSpec{
 			TitleKey: "bideuchre.helpTitle",
+			ExampleKeys: []string{
+				"bideuchre.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"bideuchre.helpBid",
 				"bideuchre.helpPass",
@@ -4449,6 +4728,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewSixBidSoloCuiController,
 		CuiHelpSpec{
 			TitleKey: "sixbidsolo.helpTitle",
+			ExampleKeys: []string{
+				"sixbidsolo.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"sixbidsolo.helpBid",
 				"sixbidsolo.helpPass",
@@ -4714,6 +4996,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewPolignacCuiController,
 		CuiHelpSpec{
 			TitleKey: "polignac.helpTitle",
+			ExampleKeys: []string{
+				"polignac.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"polignac.helpCapot",
 				"polignac.helpPass",
@@ -4764,6 +5049,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewTarabishCuiController,
 		CuiHelpSpec{
 			TitleKey: "tarabish.helpTitle",
+			ExampleKeys: []string{
+				"tarabish.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"tarabish.helpTake",
 				"tarabish.helpPass",
@@ -4780,6 +5068,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewBalootCuiController,
 		CuiHelpSpec{
 			TitleKey: "baloot.helpTitle",
+			ExampleKeys: []string{
+				"baloot.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"baloot.helpSun",
 				"baloot.helpHokom",
@@ -4797,6 +5088,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewEstimationCuiController,
 		CuiHelpSpec{
 			TitleKey: "estimation.helpTitle",
+			ExampleKeys: []string{
+				"estimation.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"estimation.helpTrump",
 				"estimation.helpBid",
@@ -4813,6 +5107,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewIsraeliWhistCuiController,
 		CuiHelpSpec{
 			TitleKey: "israeliwhist.helpTitle",
+			ExampleKeys: []string{
+				"israeliwhist.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"israeliwhist.helpAuction",
 				"israeliwhist.helpPass",
@@ -4830,6 +5127,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewHokmCuiController,
 		CuiHelpSpec{
 			TitleKey: "hokm.helpTitle",
+			ExampleKeys: []string{
+				"hokm.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"hokm.helpTrump",
 				"hokm.helpPlay",
@@ -4845,6 +5145,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewShelemCuiController,
 		CuiHelpSpec{
 			TitleKey: "shelem.helpTitle",
+			ExampleKeys: []string{
+				"shelem.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"shelem.helpBid",
 				"shelem.helpShelem",
@@ -4897,6 +5200,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewTeenDoPaanchCuiController,
 		CuiHelpSpec{
 			TitleKey: "teendopaanch.helpTitle",
+			ExampleKeys: []string{
+				"teendopaanch.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"teendopaanch.helpTrump",
 				"teendopaanch.helpPlay",
@@ -4912,6 +5218,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewHasenpfefferCuiController,
 		CuiHelpSpec{
 			TitleKey: "hasenpfeffer.helpTitle",
+			ExampleKeys: []string{
+				"hasenpfeffer.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"hasenpfeffer.helpBid",
 				"hasenpfeffer.helpPass",
@@ -4929,6 +5238,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewSergeantMajorCuiController,
 		CuiHelpSpec{
 			TitleKey: "sergeantmajor.helpTitle",
+			ExampleKeys: []string{
+				"sergeantmajor.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"sergeantmajor.helpTrump",
 				"sergeantmajor.helpDiscard",
@@ -4945,6 +5257,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewHoneymoonBridgeCuiController,
 		CuiHelpSpec{
 			TitleKey: "honeymoonbridge.helpTitle",
+			ExampleKeys: []string{
+				"honeymoonbridge.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"honeymoonbridge.helpBid",
 				"honeymoonbridge.helpPass",
@@ -4961,6 +5276,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewMinibridgeCuiController,
 		CuiHelpSpec{
 			TitleKey: "minibridge.helpTitle",
+			ExampleKeys: []string{
+				"minibridge.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"minibridge.helpContract",
 				"minibridge.helpPlay",
@@ -5007,6 +5325,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewRollingStoneCuiController,
 		CuiHelpSpec{
 			TitleKey: "rollingstone.helpTitle",
+			ExampleKeys: []string{
+				"rollingstone.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"rollingstone.helpPlay",
 				"rollingstone.helpPickUp",
@@ -5099,6 +5420,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewAndarBaharCuiController,
 		CuiHelpSpec{
 			TitleKey: "andarbahar.helpTitle",
+			ExampleKeys: []string{
+				"andarbahar.helpExampleBet",
+			},
 			CommandKeys: []string{
 				"andarbahar.helpBet",
 				"andarbahar.helpClear",
@@ -5113,6 +5437,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewBotifarraCuiController,
 		CuiHelpSpec{
 			TitleKey: "botifarra.helpTitle",
+			ExampleKeys: []string{
+				"botifarra.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"botifarra.helpPlay",
 				"botifarra.helpDeclare",
@@ -5131,6 +5458,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewRikkenCuiController,
 		CuiHelpSpec{
 			TitleKey: "rikken.helpTitle",
+			ExampleKeys: []string{
+				"rikken.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"rikken.helpPlay",
 				"rikken.helpBid",
@@ -5149,6 +5479,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewColourWhistCuiController,
 		CuiHelpSpec{
 			TitleKey: "colourwhist.helpTitle",
+			ExampleKeys: []string{
+				"colourwhist.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"colourwhist.helpPlay",
 				"colourwhist.helpBid",
@@ -5167,6 +5500,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewChemindeFerCuiController,
 		CuiHelpSpec{
 			TitleKey: "chemindefer.helpTitle",
+			ExampleKeys: []string{
+				"chemindefer.helpExampleBet",
+			},
 			CommandKeys: []string{
 				"chemindefer.helpStake",
 				"chemindefer.helpBet",
@@ -5186,6 +5522,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewCrazyFourPokerCuiController,
 		CuiHelpSpec{
 			TitleKey: "crazyfourpoker.helpTitle",
+			ExampleKeys: []string{
+				"crazyfourpoker.helpExampleBet",
+			},
 			CommandKeys: []string{
 				"crazyfourpoker.helpBet",
 				"crazyfourpoker.helpPlay",
@@ -5202,6 +5541,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewDoubleAttackBlackjackCuiController,
 		CuiHelpSpec{
 			TitleKey: "doubleattack.helpTitle",
+			ExampleKeys: []string{
+				"doubleattack.helpExampleBet",
+			},
 			CommandKeys: []string{
 				"doubleattack.helpBet",
 				"doubleattack.helpAttack",
@@ -5221,6 +5563,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewFreeBetBlackjackCuiController,
 		CuiHelpSpec{
 			TitleKey: "freebet.helpTitle",
+			ExampleKeys: []string{
+				"freebet.helpExampleBet",
+			},
 			CommandKeys: []string{
 				"freebet.helpBet",
 				"freebet.helpHit",
@@ -5239,6 +5584,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewBanLuckCuiController,
 		CuiHelpSpec{
 			TitleKey: "banluck.helpTitle",
+			ExampleKeys: []string{
+				"banluck.helpExampleBet",
+			},
 			CommandKeys: []string{
 				"banluck.helpBet",
 				"banluck.helpHit",
@@ -5255,6 +5603,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewMonteBankCuiController,
 		CuiHelpSpec{
 			TitleKey: "montebank.helpTitle",
+			ExampleKeys: []string{
+				"montebank.helpExampleBet",
+			},
 			CommandKeys: []string{
 				"montebank.helpBet",
 				"montebank.helpNext",
@@ -5269,6 +5620,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewCincinnatiCuiController,
 		CuiHelpSpec{
 			TitleKey: "cincinnati.helpTitle",
+			ExampleKeys: []string{
+				"cincinnati.helpExampleBet",
+			},
 			CommandKeys: []string{
 				"cincinnati.helpFold",
 				"cincinnati.helpCheck",
@@ -5287,6 +5641,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewIronCrossCuiController,
 		CuiHelpSpec{
 			TitleKey: "ironcross.helpTitle",
+			ExampleKeys: []string{
+				"ironcross.helpExampleBet",
+			},
 			CommandKeys: []string{
 				"ironcross.helpFold",
 				"ironcross.helpCheck",
@@ -5307,6 +5664,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewBaseballPokerCuiController,
 		CuiHelpSpec{
 			TitleKey: "baseballpoker.helpTitle",
+			ExampleKeys: []string{
+				"baseballpoker.helpExampleBet",
+			},
 			CommandKeys: []string{
 				"baseballpoker.helpFold",
 				"baseballpoker.helpCheck",
@@ -5327,6 +5687,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewKingoCuiController,
 		CuiHelpSpec{
 			TitleKey: "kingo.helpTitle",
+			ExampleKeys: []string{
+				"kingo.helpExampleBet",
+			},
 			CommandKeys: []string{
 				"kingo.helpBet",
 				"kingo.helpDeal",
@@ -5359,6 +5722,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewSakuraCuiController,
 		CuiHelpSpec{
 			TitleKey: "sakura.helpTitle",
+			ExampleKeys: []string{
+				"sakura.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"sakura.helpPlay",
 				"sakura.helpNextRound",
@@ -5373,6 +5739,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewZwanzigerrufenCuiController,
 		CuiHelpSpec{
 			TitleKey: "zwanzigerrufen.helpTitle",
+			ExampleKeys: []string{
+				"zwanzigerrufen.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"zwanzigerrufen.helpBid",
 				"zwanzigerrufen.helpPass",
@@ -5391,6 +5760,9 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewTrogguCuiController,
 		CuiHelpSpec{
 			TitleKey: "troggu.helpTitle",
+			ExampleKeys: []string{
+				"troggu.helpExamplePlay",
+			},
 			CommandKeys: []string{
 				"troggu.helpBid",
 				"troggu.helpPass",

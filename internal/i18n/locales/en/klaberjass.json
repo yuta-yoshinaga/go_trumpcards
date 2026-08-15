@@ -34,5 +34,6 @@
   "bete": "Bete: the maker did not score more than the opponent",
   "result.humanWin": "Game over! You win!",
   "result.cpuWin": "Game over! CPU {{cpuId}} wins!",
-  "lastTrickBonus": "Last trick: +{{points}} to {{name}}"
+  "lastTrickBonus": "Last trick: +{{points}} to {{name}}",
+  "helpExamplePlay": "  p 0                       play hand card 0"
 }

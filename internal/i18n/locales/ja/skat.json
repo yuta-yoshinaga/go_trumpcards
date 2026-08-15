@@ -49,5 +49,6 @@
   "hintReasonSkatPickup": "スカート取得",
   "hintReasonDiscardLow": "低いカードを捨てる",
   "hintReasonGameChoice": "最適なゲーム選択",
-  "hintReasonBestPlay": "最善手"
+  "hintReasonBestPlay": "最善手",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
 }

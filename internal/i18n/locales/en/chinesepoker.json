@@ -27,5 +27,6 @@
   "hintRowMiddle": "Middle (5): {{cards}}",
   "hintRowBack": "Back (5): {{cards}}",
   "hintSplitOk": "This split does not foul",
-  "hintFoulRisk": "Careful: this split fouls. Rework the front and middle rows"
+  "hintFoulRisk": "Careful: this split fouls. Rework the front and middle rows",
+  "helpExampleBet": "  b 100                                        bet 100 chips"
 }

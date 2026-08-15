@@ -26,5 +26,6 @@
   "hintReasonMatchRank": "matches the rank",
   "hintReasonPlayWild": "an 8 lets you change the suit",
   "hintReasonPlayValid": "a legal play",
-  "hintReasonChooseLongestSuit": "your longest suit"
+  "hintReasonChooseLongestSuit": "your longest suit",
+  "helpExamplePlay": "  p 0                  play hand card 0"
 }

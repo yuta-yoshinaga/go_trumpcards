@@ -37,5 +37,6 @@
   "hintStand": "stand",
   "punterFive": "drawing on 5 is the standard play",
   "bankerDraw": "drawing is the stronger play at this total",
-  "bankerStand": "standing is the stronger play at this total"
+  "bankerStand": "standing is the stronger play at this total",
+  "helpExampleBet": "  bet 100              bet 100 chips"
 }

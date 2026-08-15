@@ -13,5 +13,6 @@
   "promptDrawHelp": "draw・・・出せなければ山札から引く (7ペナルティ中はまとめて引く)",
   "legalPlays": "出せる札: {{cards}}",
   "noLegalPlay": "出せる札がありません → draw で引いてください",
-  "pendingSkips": " / スキップ{{count}}人ぶん"
+  "pendingSkips": " / スキップ{{count}}人ぶん",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
 }

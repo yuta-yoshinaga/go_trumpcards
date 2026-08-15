@@ -36,5 +36,6 @@
   "resultCard": "  {{name}}: {{card}}",
   "resultName": "  {{name}}",
   "wonAmount": " → won {{total}} chips",
-  "gameEnd": "Game over"
+  "gameEnd": "Game over",
+  "helpExampleBet": "  b 100                bet 100 chips"
 }

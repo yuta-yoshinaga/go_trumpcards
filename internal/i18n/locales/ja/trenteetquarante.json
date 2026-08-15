@@ -28,5 +28,6 @@
   "result.refait": "31 での Refait — ステークの半額が胴元に渡ります。",
   "hintNone": "ヒントはありません。",
   "hintBet": "[HINT: {{bet}} ({{reason}})]",
-  "hintReasonEvenOdds": "すべてのベットはイーブンマネー。Refait（31 の同点）が胴元のエッジ"
+  "hintReasonEvenOdds": "すべてのベットはイーブンマネー。Refait（31 の同点）が胴元のエッジ",
+  "helpExampleBet": "  b 0 100                   ノワールに 100 賭ける"
 }

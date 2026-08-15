@@ -27,5 +27,6 @@
   "hintReasonLeadStrong": "lead a strong card",
   "hintReasonFollowSuit": "follow the led suit",
   "hintReasonTrumpCut": "ruff with a trump",
-  "hintReasonDiscardHigh": "discard a high card you cannot win with"
+  "hintReasonDiscardHigh": "discard a high card you cannot win with",
+  "helpExamplePlay": "  p 0                  play hand card 0"
 }

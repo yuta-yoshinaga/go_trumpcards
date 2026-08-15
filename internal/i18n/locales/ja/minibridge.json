@@ -32,5 +32,6 @@
   "suitClover": "♣",
   "suitHeart": "♥",
   "suitDiamond": "♦",
-  "suitNoTrump": "NT"
+  "suitNoTrump": "NT",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
 }

@@ -25,5 +25,6 @@
   "hintNone": "いまはヒントを出せません。",
   "hintSplit": "推奨: [{{idx0}}] [{{idx1}}] ({{cards}}) をローハンドへ - {{reason}}",
   "hintReasonPair": "ローにペアを置いても反則にならない最強の分割",
-  "hintReasonHigh": "反則にならない範囲でローを最大化した分割"
+  "hintReasonHigh": "反則にならない範囲でローを最大化した分割",
+  "helpExampleBet": "  b 100              100 チップを賭ける"
 }

@@ -50,5 +50,6 @@
   "bid.eleven": "11 tricks",
   "bid.twelve": "12 tricks",
   "bid.chelem": "Chelem (13 tricks)",
-  "bid.chelemTable": "Chelem on the Table"
+  "bid.chelemTable": "Chelem on the Table",
+  "helpExamplePlay": "  p 0                       play hand card 0"
 }

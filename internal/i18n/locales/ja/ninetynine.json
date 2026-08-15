@@ -22,5 +22,6 @@
   "promptRoundEndHelp": "nr / nextround・・・次のディールへ",
   "hintNone": "ヒントはありません。",
   "hintBury": "[HINT: 伏せ札 {{indices}} を推奨 ({{reason}})]",
-  "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]"
+  "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
 }

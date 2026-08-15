@@ -23,5 +23,6 @@
   "hintNone": "There is nothing to advise right now",
   "reason.loneSuit": "only one of this suit is showing, so 3:1 makes it an even bet",
   "reason.allDuplicated": "every suit is showing at least twice, so no bet here is even",
-  "result.gameEnd": "The deck is used up"
+  "result.gameEnd": "The deck is used up",
+  "helpExampleBet": "  bet 1 100            bet 100 on layout card 1"
 }

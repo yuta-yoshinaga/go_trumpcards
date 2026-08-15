@@ -27,5 +27,6 @@
   "optTwist": "t = twist",
   "optBuy": "buy = buy",
   "optSplit": "sp = split",
-  "bankPasses": "{{name}} takes the bank with a pontoon"
+  "bankPasses": "{{name}} takes the bank with a pontoon",
+  "helpExampleBet": "  b 100                    bet 100 chips"
 }

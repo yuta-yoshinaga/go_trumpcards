@@ -8,5 +8,6 @@
   "payoutInline": "-> {{payout}}",
   "multiplierInline": " (x{{mult}})",
   "placeBet": "Enter your stake (b <amount>). The three cards marked * form the bull",
-  "nextRound": "r for the next round"
+  "nextRound": "r for the next round",
+  "helpExampleBet": "  b 100                    bet 100 chips"
 }

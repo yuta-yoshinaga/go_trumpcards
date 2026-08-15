@@ -36,5 +36,6 @@
   "yaku.tane": "Tane (Animals)",
   "yaku.kasu": "Kasu (Chaff)",
   "yaku.hanami": "Hanami-zake (Flower Viewing)",
-  "yaku.tsukimi": "Tsukimi-zake (Moon Viewing)"
+  "yaku.tsukimi": "Tsukimi-zake (Moon Viewing)",
+  "helpExamplePlay": "  p 0                  play hand card 0"
 }

@@ -24,5 +24,6 @@
   "hintNone": "No hint available.",
   "hintBid": "[HINT: bid {{bid}} ({{reason}})]",
   "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
-  "hintReasonTrumpCut": "cut with a spade"
+  "hintReasonTrumpCut": "cut with a spade",
+  "helpExamplePlay": "  p 0                  play hand card 0"
 }

@@ -27,5 +27,6 @@
   "totalPayoutLine": "total payout: {{payout}}",
   "betCostLine": "Ante: {{ante}} / {{action}}: {{cost}} chips",
   "costPlay": "Play",
-  "costRaise": "Raise"
+  "costRaise": "Raise",
+  "helpExampleBet": "  b 100                bet 100 chips"
 }

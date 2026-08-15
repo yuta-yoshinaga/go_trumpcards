@@ -31,5 +31,6 @@
   "hintReasonLead": "リード",
   "hintReasonFollowSuit": "リードスートに追随",
   "hintReasonTrumpCut": "トランプでカット",
-  "hintReasonDiscard": "不要カードを捨てる"
+  "hintReasonDiscard": "不要カードを捨てる",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
 }

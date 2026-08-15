@@ -37,5 +37,6 @@
   "hintStand": "立つ",
   "punterFive": "合計5は引くのが定石です",
   "bankerDraw": "この合計なら引くのが有利です",
-  "bankerStand": "この合計なら立つのが有利です"
+  "bankerStand": "この合計なら立つのが有利です",
+  "helpExampleBet": "  bet 100             100 チップを賭ける"
 }

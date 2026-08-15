@@ -24,5 +24,6 @@
   "payoutLine": "payout: {{payout}}",
   "historyStreak": "Current streak: {{side}} x{{count}}",
   "sidePlayer": "Player",
-  "sideBanker": "Banker"
+  "sideBanker": "Banker",
+  "helpExampleBet": "  b 100 0              bet 100 on the Player"
 }

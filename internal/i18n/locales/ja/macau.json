@@ -28,5 +28,6 @@
   "hintNone": "現在ヒントはありません。",
   "hintPlayable": "出せるカード: {{cards}}",
   "hintDraw": "出せるカードがありません。d でドローしてください。",
-  "hintReceivePenalty": "カウンターできるカードがありません。d でペナルティを受けてください。"
+  "hintReceivePenalty": "カウンターできるカードがありません。d でペナルティを受けてください。",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
 }

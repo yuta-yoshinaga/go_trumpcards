@@ -23,5 +23,6 @@
   "optHit": "h=引く",
   "optStand": "s=止める",
   "optMatta": "matta=マッタの値",
-  "bankPasses": "{{name}} がちょうど7.5を出して親を取りました"
+  "bankPasses": "{{name}} がちょうど7.5を出して親を取りました",
+  "helpExampleBet": "  b 100                   100 チップを賭ける"
 }

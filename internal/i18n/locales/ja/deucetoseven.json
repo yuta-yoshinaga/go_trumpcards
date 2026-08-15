@@ -36,5 +36,6 @@
   "gameEnd": "ゲーム終了",
   "hintExchange": "推奨: 手札 [{{idxs}}] ({{cards}}) を交換 (e {{cmd}})",
   "hintStandPat": "推奨: 完成ロー。スタンドパット (s) しましょう。",
-  "hintNotYourTurn": "今はあなたのドローフェーズではありません。"
+  "hintNotYourTurn": "今はあなたのドローフェーズではありません。",
+  "helpExampleBet": "  b 100                100 チップを賭ける"
 }

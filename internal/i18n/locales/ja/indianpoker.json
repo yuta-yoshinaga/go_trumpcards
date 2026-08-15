@@ -36,5 +36,6 @@
   "resultCard": "  {{name}}: {{card}}",
   "resultName": "  {{name}}",
   "wonAmount": " → {{total}}チップ獲得",
-  "gameEnd": "ゲーム終了"
+  "gameEnd": "ゲーム終了",
+  "helpExampleBet": "  b 100                100 チップを賭ける"
 }

@@ -42,5 +42,6 @@
   "ptTwoPair": "ツーペア",
   "ptJacksOrBetter": "ジャックス・オア・ベター",
   "ptKingsOrBetter": "キングス・オア・ベター",
-  "holdRoyalDraw": "ロイヤルフラッシュへの4枚を残す"
+  "holdRoyalDraw": "ロイヤルフラッシュへの4枚を残す",
+  "helpExampleBet": "  b 5                  5 コイン賭けて配る"
 }

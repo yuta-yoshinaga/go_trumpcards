@@ -32,5 +32,6 @@
   "result.scores": "ゲーム終了！ 得点: {{scores}}",
   "result.humanWin": "ゲーム終了！ あなたの勝ち！",
   "result.cpuWin": "ゲーム終了！ プレイヤー{{player}}の勝ち！",
-  "remainingContracts": "残りコントラクト: {{contracts}}"
+  "remainingContracts": "残りコントラクト: {{contracts}}",
+  "helpExamplePlay": "  play 0                    手札の 0 番のカードを出す"
 }

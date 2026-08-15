@@ -19,5 +19,6 @@
   "hintReasonGameEnd": "this game is over",
   "hintReasonNotYourTurn": "it is not your turn",
   "hintReasonSelect": "this is the most valuable card you may take",
-  "hintReasonPlay": "this card captures the most points"
+  "hintReasonPlay": "this card captures the most points",
+  "helpExamplePlay": "  p 0                      play hand card 0"
 }

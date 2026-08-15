@@ -32,5 +32,6 @@
   "errBetArgs": "A bet needs a rank and an amount. Example: b 7 100 [c]",
   "errRank": "Invalid rank. Use 1 (A) through 13 (K).",
   "errAmount": "Invalid amount. Please enter a number.",
-  "errCallArgs": "A call needs a sequence of ranks. Example: call 3 9 12"
+  "errCallArgs": "A call needs a sequence of ranks. Example: call 3 9 12",
+  "helpExampleBet": "  b 1 100                bet 100 on the ace"
 }

@@ -29,5 +29,6 @@
   "hintExchange": "Exchange suggestion: {{cards}} (e <idx...> to swap)",
   "hintStand": "No exchange needed; stand with s.",
   "hintPlay": "Recommended: Play (p) — a pair or better, or an Ace/King",
-  "hintFold": "Recommended: Fold (f) — no qualifying hand"
+  "hintFold": "Recommended: Fold (f) — no qualifying hand",
+  "helpExampleBet": "  b 100                bet 100 chips"
 }

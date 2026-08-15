@@ -19,5 +19,6 @@
   "hintPickUp": "[HINT: you have to pick it up ({{reason}})]",
   "hintReasonLead": "Lead your longest suit -- short suits are what get you stuck",
   "hintReasonFollow": "Taking the trick gains nothing, so play low",
-  "hintReasonPickUp": "Nothing in your hand follows"
+  "hintReasonPickUp": "Nothing in your hand follows",
+  "helpExamplePlay": "  p 0                  play hand card 0"
 }

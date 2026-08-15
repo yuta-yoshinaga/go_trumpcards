@@ -34,5 +34,6 @@
   "bete": "ベート：宣言側が相手を上回れませんでした",
   "result.humanWin": "ゲーム終了！ あなたの勝ち！",
   "result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
-  "lastTrickBonus": "最終トリック: {{name}} に +{{points}}点"
+  "lastTrickBonus": "最終トリック: {{name}} に +{{points}}点",
+  "helpExamplePlay": "  p 0                       手札の 0 番のカードを出す"
 }

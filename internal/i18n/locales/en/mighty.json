@@ -53,5 +53,6 @@
   "hintReasonPlayMighty": "win with the Mighty",
   "hintReasonPlayLow": "conserve high cards",
   "hintReasonPlayTrump": "win with trump",
-  "hintReasonPlayFollow": "follow the lead suit"
+  "hintReasonPlayFollow": "follow the lead suit",
+  "helpExamplePlay": "  p 0                  play hand card 0"
 }

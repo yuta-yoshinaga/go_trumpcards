@@ -44,5 +44,6 @@
   "roundEndHumanWin": "You had the best round!",
   "roundEndHumanLose": "A rival did better this round.",
   "result.humanWin": "Game over! You win!",
-  "result.cpuWin": "Game over! CPU {{player}} wins!"
+  "result.cpuWin": "Game over! CPU {{player}} wins!",
+  "helpExampleBet": "  b 25 25 25 25             stake 25 on each of the four boodles"
 }

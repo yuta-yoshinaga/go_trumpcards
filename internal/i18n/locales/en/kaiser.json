@@ -49,5 +49,6 @@
   "hintForced": "Only one card is legal.",
   "hintDumpSpadeThree": "The three of spades costs its taker 3 points — shed it while you still have a choice.",
   "hintChoose": "The five of hearts is worth 5 to whoever takes it, so leading it invites the opponents to grab it.",
-  "hintWith": "{{hint}} -> {{list}}"
+  "hintWith": "{{hint}} -> {{list}}",
+  "helpExamplePlay": "  p 0                       play hand card 0"
 }

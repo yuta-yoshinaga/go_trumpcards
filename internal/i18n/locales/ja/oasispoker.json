@@ -29,5 +29,6 @@
   "hintExchange": "交換推奨: {{cards}}（e <idx...> で交換）",
   "hintStand": "交換不要です。s でスタンドしてください。",
   "hintPlay": "推奨: プレイ（p）— ワンペア以上または A/K を保持",
-  "hintFold": "推奨: フォールド（f）— 続行条件を満たしません"
+  "hintFold": "推奨: フォールド（f）— 続行条件を満たしません",
+  "helpExampleBet": "  b 100                100 チップを賭ける"
 }

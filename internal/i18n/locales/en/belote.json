@@ -31,5 +31,6 @@
   "hintOrderUp": "[HINT: take ({{reason}})]",
   "hintPass": "[HINT: pass ({{reason}})]",
   "hintCallSuit": "[HINT: call {{suit}} ({{reason}})]",
-  "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]"
+  "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
+  "helpExamplePlay": "  p 0                  play hand card 0"
 }
