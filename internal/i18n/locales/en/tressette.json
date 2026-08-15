@@ -23,5 +23,6 @@
   "hintReasonFollowDuck": "Cannot/should not win, so duck the trick",
   "hintReasonGivePartner": "Partner is winning, so give them point cards",
   "hintReasonDiscardLow": "Cannot follow, so discard a low card",
-  "roundBreakdown": "Round breakdown: Team {{a}} thirds {{athird}} / Team {{b}} thirds {{bthird}} (last trick: Team {{lastteam}})"
+  "roundBreakdown": "Round breakdown: Team {{a}} thirds {{athird}} / Team {{b}} thirds {{bthird}} (last trick: Team {{lastteam}})",
+  "helpExamplePlay": "  p 0                  play hand card 0"
 }

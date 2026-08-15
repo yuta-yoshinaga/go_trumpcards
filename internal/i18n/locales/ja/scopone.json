@@ -19,5 +19,6 @@
   "scoreDetailLine": "  チーム{{team}}: カード{{cards}} / ダイヤ{{diamonds}} / 7×{{sevens}} / スコパ{{scopas}} → {{gained}}点",
   "promptNext": "n で次のラウンドを開始する",
   "promptCurrentTurn": "手番: {{name}} (チーム{{team}})",
-  "promptHelp": "p <hand> [table...] で捕獲または場に置く / n で次のラウンド"
+  "promptHelp": "p <hand> [table...] で捕獲または場に置く / n で次のラウンド",
+  "helpExamplePlay": "  p 0                      手札の 0 番のカードを出す"
 }

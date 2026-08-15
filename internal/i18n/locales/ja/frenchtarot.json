@@ -40,5 +40,6 @@
   "hintReasonFollowWin": "勝てる — トリックを取る",
   "hintReasonFollowDuck": "勝てない/取るべきでない — 低い札を出す",
   "hintReasonPlayExcuse": "エクスキューズを出す — 自分で保持し、取られない",
-  "promptBidLegend": "契約倍率: プティット×1 / ガルド×2 / ガルド・サン×4 / ガルド・コントル×6（現在の最高ビッドを上回る契約のみ入札可）"
+  "promptBidLegend": "契約倍率: プティット×1 / ガルド×2 / ガルド・サン×4 / ガルド・コントル×6（現在の最高ビッドを上回る契約のみ入札可）",
+  "helpExamplePlay": "  play 0                    手札の 0 番のカードを出す"
 }

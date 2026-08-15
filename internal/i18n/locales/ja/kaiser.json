@@ -49,5 +49,6 @@
   "hintForced": "出せる札が 1 枚しかありません。",
   "hintDumpSpadeThree": "♠3 は取った側が −3 点です。選べるうちに手放します。",
   "hintChoose": "♥5 は +5 点なので、自分から出すと相手に取られかねません。",
-  "hintWith": "{{hint}} → {{list}}"
+  "hintWith": "{{hint}} → {{list}}",
+  "helpExamplePlay": "  p 0                       手札の 0 番のカードを出す"
 }

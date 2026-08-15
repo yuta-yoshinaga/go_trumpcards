@@ -48,5 +48,6 @@
   "hintReasonLeadLow": "あなたは対戦側 — 安い札でリードして温存する",
   "hintReasonFollowWin": "勝てる — トリックを取る",
   "hintReasonFollowDuck": "勝てない/取るべきでない — 低い札を出す",
-  "declarerLine": "宣言者: {{name}}（契約: {{contract}}）が全員と対戦"
+  "declarerLine": "宣言者: {{name}}（契約: {{contract}}）が全員と対戦",
+  "helpExamplePlay": "  play 0                    手札の 0 番のカードを出す"
 }

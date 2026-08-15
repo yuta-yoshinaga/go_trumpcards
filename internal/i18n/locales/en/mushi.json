@@ -27,5 +27,6 @@
   "hintReasonNotYourTurn": "it is not your turn",
   "hintReasonSelect": "this is the most valuable card you may take",
   "hintReasonPlay": "this card captures the most points",
-  "cardLabel": "m{{month}}-{{index}}({{category}})"
+  "cardLabel": "m{{month}}-{{index}}({{category}})",
+  "helpExamplePlay": "  p 0                      play hand card 0"
 }

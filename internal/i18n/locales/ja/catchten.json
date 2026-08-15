@@ -19,5 +19,6 @@
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
   "hintNone": "ヒントはありません。",
   "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
-  "hintReasonTrumpCut": "トランプでカット"
+  "hintReasonTrumpCut": "トランプでカット",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
 }

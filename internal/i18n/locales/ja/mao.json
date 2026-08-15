@@ -36,5 +36,6 @@
   "promptAwaitingWordHelp": "dw <word>・・・言葉を宣言する",
   "promptRoundEnd": "ラウンド終了",
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
-  "compliance": "ルール適合: {{count}}/{{total}}（{{total}}回正解でヒント解放）"
+  "compliance": "ルール適合: {{count}}/{{total}}（{{total}}回正解でヒント解放）",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
 }

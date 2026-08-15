@@ -31,5 +31,6 @@
   "hintOrderUp": "[HINT: 取る ({{reason}})]",
   "hintPass": "[HINT: パス ({{reason}})]",
   "hintCallSuit": "[HINT: {{suit}}をコール ({{reason}})]",
-  "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]"
+  "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
 }

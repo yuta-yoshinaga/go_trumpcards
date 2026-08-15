@@ -19,5 +19,6 @@
   "hintPickUp": "[HINT: 引き取るしかありません ({{reason}})]",
   "hintReasonLead": "長いスートから出す。短いスートを残すと引き取りやすい",
   "hintReasonFollow": "取っても得にはならないので安い札から",
-  "hintReasonPickUp": "フォローできる札が無い"
+  "hintReasonPickUp": "フォローできる札が無い",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
 }

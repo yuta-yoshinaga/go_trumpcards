@@ -26,5 +26,6 @@
   "hintReasonNotYourTurn": "it is not your turn",
   "hintReasonBid": "this length beats the standing bid",
   "hintReasonPass": "nothing you hold beats the standing bid",
-  "hintReasonPlay": "this card wastes the least"
+  "hintReasonPlay": "this card wastes the least",
+  "helpExamplePlay": "  p 0                      play hand card 0"
 }

@@ -44,5 +44,6 @@
   "helpMeld": "  m <idx>              declare meld idx (trick winner only)",
   "helpSkip": "  s                    skip the meld",
   "helpNext": "  n                    go to the next trick or deal",
-  "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)"
+  "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
+  "helpExamplePlay": "  p 0                  play hand card 0"
 }

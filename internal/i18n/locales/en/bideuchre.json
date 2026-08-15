@@ -37,5 +37,6 @@
   "handMade": "Contract made",
   "handSet": "Contract set. You lose the bid, not the tricks you took",
   "result.humanWin": "Game over! Your team wins!",
-  "result.cpuWin": "Game over! The other team wins!"
+  "result.cpuWin": "Game over! The other team wins!",
+  "helpExamplePlay": "  p 0                       play hand card 0"
 }

@@ -46,5 +46,6 @@
   "handMade": "宣言達成",
   "handSet": "宣言失敗",
   "result.humanWin": "ゲーム終了！ あなたの勝ちです！",
-  "result.cpuWin": "ゲーム終了！ CPUの勝ちです。"
+  "result.cpuWin": "ゲーム終了！ CPUの勝ちです。",
+  "helpExamplePlay": "  p 0                       手札の 0 番のカードを出す"
 }

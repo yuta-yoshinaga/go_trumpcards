@@ -42,5 +42,6 @@
   "hintReasonLeadLow": "You are an opponent — lead a low card to conserve",
   "hintReasonFollowWin": "You can win — take the trick",
   "hintReasonFollowDuck": "Cannot/should not win — play low",
-  "promptTalonLegend": "Cannot bury: Kings and the trull (Pagat/XXI/Sküs). Plain trumps only when fewer than 6 buriable plain cards remain."
+  "promptTalonLegend": "Cannot bury: Kings and the trull (Pagat/XXI/Sküs). Plain trumps only when fewer than 6 buriable plain cards remain.",
+  "helpExamplePlay": "  play 0                    play hand card 0"
 }

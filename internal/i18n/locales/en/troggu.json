@@ -39,5 +39,6 @@
   "hintReasonBidMisere": "no honours and no high trumps, so no trick need be taken",
   "hintReasonPlayWin": "go for the trick",
   "hintReasonPlayDuck": "you must not take it, so let a cheap card go",
-  "result.scores": "Game over! Scores: {{scores}}"
+  "result.scores": "Game over! Scores: {{scores}}",
+  "helpExamplePlay": "  play 0                    play hand card 0"
 }

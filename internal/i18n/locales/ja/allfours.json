@@ -36,5 +36,6 @@
   "hintReasonBegBeg": "弱い手札なのでベグ",
   "hintReasonBegStand": "十分な手札なのでスタンド",
   "hintReasonGiftGift": "強い手札なのでギフトで進める",
-  "hintReasonGiftRun": "弱い手札なので引き直す"
+  "hintReasonGiftRun": "弱い手札なので引き直す",
+  "helpExamplePlay": "  play 0               手札の 0 番のカードを出す"
 }

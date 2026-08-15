@@ -30,5 +30,6 @@
   "hintReasonFollowWin": "Win the trick",
   "hintReasonFollowDump": "Discard a low card",
   "hintReasonMarriage": "Declare a marriage for bonus points",
-  "promptMarriageCards": "Declarable: {{cards}}"
+  "promptMarriageCards": "Declarable: {{cards}}",
+  "helpExamplePlay": "  p 0                  play hand card 0"
 }

@@ -15,5 +15,6 @@
   "promptHelp": "p <hand> で手札を場に出す (同ランクまたはJで場札を捕獲)",
   "result.scores": "ゲーム終了。スコア: {{scores}}",
   "provisional": "{{name}} 暫定: {{score}}点",
-  "provisionalNote": "※ 暫定点はピシュティ賞と最多捕獲(+3)のみ。カード点は集計時に加算されます"
+  "provisionalNote": "※ 暫定点はピシュティ賞と最多捕獲(+3)のみ。カード点は集計時に加算されます",
+  "helpExamplePlay": "  p 0                      手札の 0 番のカードを出す"
 }

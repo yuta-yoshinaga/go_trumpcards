@@ -32,5 +32,6 @@
   "suitClover": "C",
   "suitHeart": "H",
   "suitDiamond": "D",
-  "suitNoTrump": "NT"
+  "suitNoTrump": "NT",
+  "helpExamplePlay": "  p 0                  play hand card 0"
 }

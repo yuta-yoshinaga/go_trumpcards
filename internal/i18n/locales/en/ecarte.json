@@ -41,5 +41,6 @@
   "helpDiscard": "  d <i j k>            discard the given cards and redraw",
   "helpPlay": "  p <idx>              play a card",
   "helpNext": "  n                    go to the next trick or deal",
-  "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)"
+  "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
+  "helpExamplePlay": "  p 0                  play hand card 0"
 }

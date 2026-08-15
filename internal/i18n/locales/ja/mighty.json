@@ -53,5 +53,6 @@
   "hintReasonPlayMighty": "マイティで勝つ",
   "hintReasonPlayLow": "低ランクで温存",
   "hintReasonPlayTrump": "切り札で勝つ",
-  "hintReasonPlayFollow": "リードスートに従う"
+  "hintReasonPlayFollow": "リードスートに従う",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
 }

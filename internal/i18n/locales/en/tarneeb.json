@@ -35,5 +35,6 @@
   "hintReasonBidPass": "the hand is too weak to bid",
   "hintReasonBidEstimate": "an estimate of the tricks you can take",
   "hintReasonTrumpLongest": "call your longest suit",
-  "hintReasonTrumpCut": "ruff with a trump"
+  "hintReasonTrumpCut": "ruff with a trump",
+  "helpExamplePlay": "  p 0                  play hand card 0"
 }

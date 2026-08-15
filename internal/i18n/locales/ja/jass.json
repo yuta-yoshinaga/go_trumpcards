@@ -28,5 +28,6 @@
   "hintNone": "ヒントはありません。",
   "hintSchieben": "[HINT: シーベン ({{reason}})]",
   "hintTrump": "[HINT: {{suit}}を切り札に ({{reason}})]",
-  "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]"
+  "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
 }

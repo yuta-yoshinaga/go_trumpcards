@@ -29,5 +29,6 @@
   "handMade": "宣言達成",
   "handSet": "宣言失敗。不足数 × レベル × 500 が相手の線上へ",
   "result.humanWin": "ラバー終了！ あなたのチームの勝ち！",
-  "result.cpuWin": "ラバー終了！ 相手チームの勝ち！"
+  "result.cpuWin": "ラバー終了！ 相手チームの勝ち！",
+  "helpExamplePlay": "  p 0                       手札の 0 番のカードを出す"
 }

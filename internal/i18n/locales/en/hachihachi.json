@@ -23,5 +23,6 @@
   "yaku.sanko": "Sanko (Three Brights)",
   "yaku.inoshikacho": "Inoshikacho (Boar-Deer-Butterfly)",
   "yaku.akatan": "Akatan (Red Poetry Ribbons)",
-  "yaku.aotan": "Aotan (Blue Ribbons)"
+  "yaku.aotan": "Aotan (Blue Ribbons)",
+  "helpExamplePlay": "  p 0                  play hand card 0"
 }

@@ -44,5 +44,6 @@
   "hintReasonStrategicDeclare": "戦略的な宣言",
   "hintReasonStrategicDiscard": "戦略的な捨て",
   "hintReasonPlayJoker": "ジョーカーをプレイ",
-  "hintReasonDiscardLow": "低いカードを捨てる"
+  "hintReasonDiscardLow": "低いカードを捨てる",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
 }

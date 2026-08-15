@@ -19,5 +19,6 @@
   "specialLine": "  剣のA: P{{ace}} / 剣の7: P{{sete}} (-1=なし)",
   "promptNext": "n で次のラウンドを開始する",
   "promptCurrentTurn": "手番: {{name}}",
-  "promptHelp": "p <hand> [table...] で捕獲または場に置く / n で次のラウンド"
+  "promptHelp": "p <hand> [table...] で捕獲または場に置く / n で次のラウンド",
+  "helpExamplePlay": "  p 0                      手札の 0 番のカードを出す"
 }

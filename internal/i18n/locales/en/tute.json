@@ -27,5 +27,6 @@
   "hintReasonDeclareMarriage": "Declare a marriage for bonus points",
   "hintReasonDeclareTute": "Declare Tute for an instant win!",
   "promptMarriageSuits": "Declarable: {{suits}}",
-  "marriageTrumpMark": "(trump +40)"
+  "marriageTrumpMark": "(trump +40)",
+  "helpExamplePlay": "  play 0                   play hand card 0"
 }

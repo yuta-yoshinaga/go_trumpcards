@@ -44,5 +44,6 @@
   "helpMeld": "  m <idx>              一覧 idx 番のメルドを宣言 (トリックの勝者のみ)",
   "helpSkip": "  s                    メルドを宣言しない",
   "helpNext": "  n                    次のトリック／ディールへ",
-  "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)"
+  "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
 }

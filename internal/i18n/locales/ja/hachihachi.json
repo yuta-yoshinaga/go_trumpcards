@@ -23,5 +23,6 @@
   "yaku.sanko": "三光",
   "yaku.inoshikacho": "猪鹿蝶",
   "yaku.akatan": "赤短",
-  "yaku.aotan": "青短"
+  "yaku.aotan": "青短",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
 }

@@ -41,5 +41,6 @@
   "hintReasonBury": "点の低い札を伏せる",
   "hintReasonPlayLow": "安い札から落とす",
   "hintReasonAvoidPoints": "トリシャーケンなので点を取らない",
-  "result.scores": "ゲーム終了！ 得点: {{scores}}"
+  "result.scores": "ゲーム終了！ 得点: {{scores}}",
+  "helpExamplePlay": "  play 0                    手札の 0 番のカードを出す"
 }

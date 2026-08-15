@@ -46,5 +46,6 @@
   "handMade": "Contract made",
   "handSet": "Contract set",
   "result.humanWin": "Game over! You win!",
-  "result.cpuWin": "Game over! A CPU wins."
+  "result.cpuWin": "Game over! A CPU wins.",
+  "helpExamplePlay": "  p 0                       play hand card 0"
 }

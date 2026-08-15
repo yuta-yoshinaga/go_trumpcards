@@ -32,5 +32,6 @@
   "result.scores": "Game over! Scores: {{scores}}",
   "result.humanWin": "Game over! You win!",
   "result.cpuWin": "Game over! Player {{player}} wins!",
-  "remainingContracts": "Remaining contracts: {{contracts}}"
+  "remainingContracts": "Remaining contracts: {{contracts}}",
+  "helpExamplePlay": "  play 0                    play hand card 0"
 }

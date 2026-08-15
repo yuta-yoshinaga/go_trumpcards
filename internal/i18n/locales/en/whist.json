@@ -18,5 +18,6 @@
   "promptRoundEndHelp": "nr / nextround: advance to next round",
   "hintNone": "No hint available.",
   "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
-  "hintReasonTrumpCut": "cut with trump"
+  "hintReasonTrumpCut": "cut with trump",
+  "helpExamplePlay": "  p 0                  play hand card 0"
 }

@@ -18,5 +18,6 @@
   "hintReasonNotYourTurn": "あなたの手番ではありません",
   "hintReasonMustLieDown": "取れる札が1枚もないので、手札を場に置いて降りることになります",
   "hintReasonTakeOne": "同ランクの場札を取れます",
-  "hintReasonTakeThree": "同ランクが3枚あるので、まとめて取れます"
+  "hintReasonTakeThree": "同ランクが3枚あるので、まとめて取れます",
+  "helpExamplePlay": "  p 0                      手札の 0 番のカードを出す"
 }

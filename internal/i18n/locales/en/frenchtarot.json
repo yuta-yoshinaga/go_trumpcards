@@ -40,5 +40,6 @@
   "hintReasonFollowWin": "You can win — take the trick",
   "hintReasonFollowDuck": "Cannot/should not win — play low",
   "hintReasonPlayExcuse": "Play the Excuse — you keep it and it cannot be captured",
-  "promptBidLegend": "Contract multipliers: Petite×1 / Garde×2 / Garde-Sans×4 / Garde-Contre×6 (only a contract above the current highest bid may be bid)"
+  "promptBidLegend": "Contract multipliers: Petite×1 / Garde×2 / Garde-Sans×4 / Garde-Contre×6 (only a contract above the current highest bid may be bid)",
+  "helpExamplePlay": "  play 0                    play hand card 0"
 }
