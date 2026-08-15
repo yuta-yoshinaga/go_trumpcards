@@ -22,5 +22,6 @@
   "hintReasonRoundEnd": "このディールは終わっています",
   "hintReasonNotYourTurn": "あなたの手番ではありません",
   "hintReasonTake": "得点札を含めて取れます",
-  "hintReasonTrail": "取れる札がないので、点にならない札を置きます"
+  "hintReasonTrail": "取れる札がないので、点にならない札を置きます",
+  "helpExampleN": "  n                        次のディールを配る"
 }

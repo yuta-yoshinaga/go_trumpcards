@@ -24,5 +24,6 @@
   "gameEndLoser": "{{name}} loses!",
   "gameEndJijiNukiSuffix": " (removed card: {{card}})",
   "promptCurrentTurnWithTarget": "{{name}} to act → drawing from {{target}}",
-  "promptCurrentTurn": "{{name}} to act"
+  "promptCurrentTurn": "{{name}} to act",
+  "helpExampleD": "  d                    draw one card at random"
 }

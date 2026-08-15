@@ -166,6 +166,7 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewOldMaidCuiController,
 		CuiHelpSpec{
 			TitleKey:    "oldmaid.helpTitle",
+			ExampleKeys: []string{"oldmaid.helpExampleD"},
 			CommandKeys: []string{"oldmaid.helpDraw", "oldmaid.helpShuffle", "oldmaid.helpReorder"},
 			SettingKeys: []string{"oldmaid.helpSetMode", "oldmaid.helpSetPlacement", "oldmaid.helpSetMemoryAI"},
 		}),
@@ -258,7 +259,8 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewOmahaCuiController,
 		CuiHelpSpec{
-			TitleKey: "omahahilo.helpTitle",
+			TitleKey:    "omahahilo.helpTitle",
+			ExampleKeys: []string{"omahahilo.helpExampleF"},
 			CommandKeys: append([]string{
 				"omaha.helpFold",
 				"omaha.helpCheck",
@@ -759,6 +761,7 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewVideoPokerCuiController,
 		CuiHelpSpec{
 			TitleKey:          "deuceswild.helpTitle",
+			ExampleKeys:       []string{"deuceswild.helpExampleHint"},
 			CommandKeys:       []string{"videopoker.helpBet", "videopoker.helpHold", "videopoker.helpHint"},
 			ExtraCommandLines: []string{"  log                  action log"},
 		}),
@@ -769,6 +772,7 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewVideoPokerCuiController,
 		CuiHelpSpec{
 			TitleKey:          "jokerpoker.helpTitle",
+			ExampleKeys:       []string{"jokerpoker.helpExampleHint"},
 			CommandKeys:       []string{"videopoker.helpBet", "videopoker.helpHold", "videopoker.helpHint"},
 			ExtraCommandLines: []string{"  log                  action log"},
 		}),
@@ -1367,7 +1371,8 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewSevenCardStudCuiController,
 		CuiHelpSpec{
-			TitleKey: "razz.helpTitle",
+			TitleKey:    "razz.helpTitle",
+			ExampleKeys: []string{"razz.helpExampleF"},
 			CommandKeys: append([]string{
 				"sevencardstud.helpFold",
 				"sevencardstud.helpCheck",
@@ -1386,7 +1391,8 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewSevenCardStudCuiController,
 		CuiHelpSpec{
-			TitleKey: "sevencardstudhilo.helpTitle",
+			TitleKey:    "sevencardstudhilo.helpTitle",
+			ExampleKeys: []string{"sevencardstudhilo.helpExampleF"},
 			CommandKeys: append([]string{
 				"sevencardstud.helpFold",
 				"sevencardstud.helpCheck",
@@ -1551,7 +1557,8 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewBlackJackCuiController,
 		CuiHelpSpec{
-			TitleKey: "spanish21.helpTitle",
+			TitleKey:    "spanish21.helpTitle",
+			ExampleKeys: []string{"spanish21.helpExampleH"},
 			CommandKeys: []string{
 				"blackjack.helpBet",
 				"blackjack.helpHit",
@@ -4829,7 +4836,8 @@ var gameRegistry = []GameRegistryEntry{
 		},
 		controller.NewZwickerCuiController,
 		CuiHelpSpec{
-			TitleKey: "zwicker.helpTitle",
+			TitleKey:    "zwicker.helpTitle",
+			ExampleKeys: []string{"zwicker.helpExampleN"},
 			CommandKeys: []string{
 				"zwicker.helpTake",
 				"zwicker.helpBuild",

@@ -20,5 +20,6 @@
   "payoutRef.bonusSixCard21": "6-card 21 (2:1)",
   "payoutRef.bonusSevenCard21": "7+ card 21 (3:1)",
   "payoutRef.bonus678": "6-7-8 (3:2 / same suit 2:1 / all spades 3:1)",
-  "payoutRef.bonus777": "7-7-7 (3:2 / same suit 2:1 / all spades 3:1)"
+  "payoutRef.bonus777": "7-7-7 (3:2 / same suit 2:1 / all spades 3:1)",
+  "helpExampleH": "  h                    take one more card"
 }

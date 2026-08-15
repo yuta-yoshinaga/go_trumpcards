@@ -24,5 +24,6 @@
   "gameEndLoser": "{{name}}の負け！",
   "gameEndJijiNukiSuffix": "（除外カード: {{card}}）",
   "promptCurrentTurnWithTarget": "手番: {{name}} → {{target}}から引きます",
-  "promptCurrentTurn": "手番: {{name}}"
+  "promptCurrentTurn": "手番: {{name}}",
+  "helpExampleD": "  d                    相手から 1 枚引く (無作為)"
 }
