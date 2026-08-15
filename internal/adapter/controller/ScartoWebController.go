@@ -105,25 +105,13 @@ func newScartoDefaultOutput(msg string) *ScartoWebOutput {
 }
 
 func scartoDispatch(bc *baseController, w http.ResponseWriter, di usecase.ScartoInteractorIF, param ScartoWebInput, newDefault func(string) *ScartoWebOutput) bool {
-	switch param.Command {
-	case "r", "reset":
-		bc.writePresenterResponse(w, di.ResetWithConfig(param.ToConfig()))
-	case "s", "scarto", "d", "discard":
-		if !requireParam(bc, w, newDefault, param.CardIndices == nil, "param error: cardIndices is required.") {
-			return true
-		}
-		bc.writePresenterResponse(w, di.Discard(param.CardIndices))
-	case "p", "play":
-		if !requireParam(bc, w, newDefault, param.CardIndex == nil, "param error: cardIndex is required.") {
-			return true
-		}
-		bc.writePresenterResponse(w, di.Play(*param.CardIndex))
-	case "n", "next":
-		bc.writePresenterResponse(w, di.NextTrick())
-	case "nr", "nextround":
-		bc.writePresenterResponse(w, di.NextRound())
-	default:
-		return dispatchHintAndLog(param.Command, bc, w, di.Hint, di.ActionLog)
-	}
-	return true
+	return dispatchTarotDiscardPlay(param.Command, bc, w, tarotDiscardPlayFns{
+		resetWithConfig: func() string { return di.ResetWithConfig(param.ToConfig()) },
+		discard:         di.Discard,
+		play:            di.Play,
+		nextTrick:       di.NextTrick,
+		nextRound:       di.NextRound,
+		hint:            di.Hint,
+		actionLog:       di.ActionLog,
+	}, param.CardIndices, param.CardIndex, newDefault)
 }

@@ -79,15 +79,12 @@ func scorpionDispatch(bc *baseController, w http.ResponseWriter, si usecase.Scor
 }
 
 func scorpionMoveDispatch(bc *baseController, w http.ResponseWriter, si usecase.ScorpionInteractorIF, param ScorpionWebInput, newDefault func(string) *ScorpionWebOutput) bool {
-	if !requireParam(bc, w, newDefault, param.From == nil || param.To == nil, "param error: from and to are required.") {
-		return true
+	mv := tableauMove{haveFrom: param.From != nil, haveTo: param.To != nil}
+	if param.From != nil {
+		mv.fromZone, mv.fromCol, mv.fromCardIndex = param.From.Zone, param.From.Col, param.From.CardIndex
 	}
-	if !requireParam(bc, w, newDefault, param.From.Zone != "tableau" || param.To.Zone != "tableau", "param error: invalid move zones. Only tableau to tableau is supported.") {
-		return true
+	if param.To != nil {
+		mv.toZone, mv.toCol = param.To.Zone, param.To.Col
 	}
-	if !requireParam(bc, w, newDefault, param.From.Col == nil || param.From.CardIndex == nil || param.To.Col == nil, "param error: from.col, from.cardIndex, to.col are required.") {
-		return true
-	}
-	bc.writePresenterResponse(w, si.MoveTableauToTableau(*param.From.Col, *param.From.CardIndex, *param.To.Col))
-	return true
+	return dispatchTableauOnlyMove(bc, w, mv, si.MoveTableauToTableau, newDefault)
 }

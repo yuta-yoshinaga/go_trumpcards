@@ -96,20 +96,12 @@ func newSpoilFiveDefaultOutput(msg string) *SpoilFiveWebOutput {
 }
 
 func spoilFiveDispatch(bc *baseController, w http.ResponseWriter, di usecase.SpoilFiveInteractorIF, param SpoilFiveWebInput, newDefault func(string) *SpoilFiveWebOutput) bool {
-	switch param.Command {
-	case "r", "reset":
-		bc.writePresenterResponse(w, di.ResetWithConfig(param.ToConfig()))
-	case "p", "play":
-		if !requireParam(bc, w, newDefault, param.CardIndex == nil, "param error: cardIndex is required.") {
-			return true
-		}
-		bc.writePresenterResponse(w, di.Play(*param.CardIndex))
-	case "n", "next":
-		bc.writePresenterResponse(w, di.NextTrick())
-	case "nr", "nextround":
-		bc.writePresenterResponse(w, di.NextRound())
-	default:
-		return dispatchHintAndLog(param.Command, bc, w, di.Hint, di.ActionLog)
-	}
-	return true
+	return dispatchTrickPlay(param.Command, bc, w, trickPlayFns{
+		resetWithConfig: func() string { return di.ResetWithConfig(param.ToConfig()) },
+		play:            di.Play,
+		nextTrick:       di.NextTrick,
+		nextRound:       di.NextRound,
+		hint:            di.Hint,
+		actionLog:       di.ActionLog,
+	}, param.CardIndex, newDefault)
 }

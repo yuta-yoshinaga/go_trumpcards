@@ -111,25 +111,13 @@ func newViraDefaultOutput(msg string) *ViraWebOutput {
 }
 
 func viraDispatch(bc *baseController, w http.ResponseWriter, di usecase.ViraInteractorIF, param ViraWebInput, newDefault func(string) *ViraWebOutput) bool {
-	switch param.Command {
-	case "r", "reset":
-		bc.writePresenterResponse(w, di.ResetWithConfig(param.ToConfig()))
-	case "b", "bid":
-		if !requireParam(bc, w, newDefault, param.Bid == nil, "param error: bid is required.") {
-			return true
-		}
-		bc.writePresenterResponse(w, di.Bid(*param.Bid))
-	case "p", "play":
-		if !requireParam(bc, w, newDefault, param.CardIndex == nil, "param error: cardIndex is required.") {
-			return true
-		}
-		bc.writePresenterResponse(w, di.Play(*param.CardIndex))
-	case "n", "next":
-		bc.writePresenterResponse(w, di.NextTrick())
-	case "nr", "nextround":
-		bc.writePresenterResponse(w, di.NextRound())
-	default:
-		return dispatchHintAndLog(param.Command, bc, w, di.Hint, di.ActionLog)
-	}
-	return true
+	return dispatchBidTrickPlay(param.Command, bc, w, bidTrickPlayFns{
+		resetWithConfig: func() string { return di.ResetWithConfig(param.ToConfig()) },
+		bid:             di.Bid,
+		play:            di.Play,
+		nextTrick:       di.NextTrick,
+		nextRound:       di.NextRound,
+		hint:            di.Hint,
+		actionLog:       di.ActionLog,
+	}, param.Bid, param.CardIndex, newDefault)
 }
