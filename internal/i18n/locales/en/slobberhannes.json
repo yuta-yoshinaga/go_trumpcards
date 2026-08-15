@@ -22,5 +22,7 @@
   "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
   "hintReasonAvoid": "this trick carries a penalty -- don't take it",
   "hintReasonDump": "safe trick: get rid of a high card now",
-  "hintReasonLeadLow": "lead low and see what happens"
+  "hintReasonLeadLow": "lead low and see what happens",
+  "helpExamplePlay": "  p 0                  play hand card 0",
+  "helpExampleNext": "  n                    read the round result, then continue"
 }

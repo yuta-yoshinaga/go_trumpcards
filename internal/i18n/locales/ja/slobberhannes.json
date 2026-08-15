@@ -22,5 +22,7 @@
   "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
   "hintReasonAvoid": "罰点のトリックなので取らない",
   "hintReasonDump": "安全なうちに高い札を処分する",
-  "hintReasonLeadLow": "低い札でリードして様子を見る"
+  "hintReasonLeadLow": "低い札でリードして様子を見る",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
+  "helpExampleNext": "  n                    ラウンドの結果を見てから次へ"
 }

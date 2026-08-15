@@ -18,5 +18,6 @@
   "hintTrail": "[HINT: lay [{{idx}}]{{card}} on the table ({{reason}})]",
   "hintReasonSoor": "This empties the table -- that capture scores double",
   "hintReasonCapture": "It takes cards that score",
-  "hintReasonTrail": "Nothing adds to 11; lay down your least valuable card"
+  "hintReasonTrail": "Nothing adds to 11; lay down your least valuable card",
+  "helpExamplePlay": "  p 0                  play hand card 0"
 }

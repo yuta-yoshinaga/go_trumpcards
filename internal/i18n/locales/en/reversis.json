@@ -21,5 +21,7 @@
   "hintReasonAvoidMarked": "the Quinola or the A of diamonds is on the table -- do not take this",
   "hintReasonAvoidPoints": "penalty cards are on the table -- let someone else take it",
   "hintReasonLeadSafe": "lead a low card that scores nothing",
-  "hintReasonDumpHigh": "safe trick: shed a high card now"
+  "hintReasonDumpHigh": "safe trick: shed a high card now",
+  "helpExamplePlay": "  p 0                  play hand card 0",
+  "helpExampleNext": "  n                    read the round result, then continue"
 }

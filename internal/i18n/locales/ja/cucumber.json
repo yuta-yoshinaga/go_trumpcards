@@ -21,5 +21,7 @@
   "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
   "hintReasonLead": "リードなので何を出してもよい",
   "hintReasonBeat": "更新できる中でいちばん低い札。高い札は終盤に残さない",
-  "hintReasonForced": "更新できないので、この札に決まっている"
+  "hintReasonForced": "更新できないので、この札に決まっている",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
+  "helpExampleNext": "  n                    ラウンドの結果を見てから次へ"
 }

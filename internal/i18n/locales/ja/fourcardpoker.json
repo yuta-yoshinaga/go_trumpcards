@@ -24,5 +24,7 @@
   "antePayoutLine": "アンテ払戻し: {{payout}}",
   "playPayoutLine": "プレイ払戻し: {{payout}}",
   "anteBonusPayoutLine": "アンテボーナス: {{payout}}",
-  "acesUpPayoutLine": "エースアップ: {{payout}}"
+  "acesUpPayoutLine": "エースアップ: {{payout}}",
+  "helpExampleBet": "  b 10                 アンテ 10 で参加する",
+  "helpExamplePlay": "  p                    勝負する (アンテと同額を追加)"
 }

@@ -25,5 +25,7 @@
   "push": "Push!",
   "anteBonusPayoutLine": "Ante bonus payout: {{payout}}",
   "pairPlusPayoutLine": "Pair Plus payout: {{payout}}",
-  "totalPayoutLine": "total payout: {{payout}}"
+  "totalPayoutLine": "total payout: {{payout}}",
+  "helpExampleBet": "  b 10                 ante 10 and get a hand",
+  "helpExamplePlay": "  p                    play, matching the ante"
 }
