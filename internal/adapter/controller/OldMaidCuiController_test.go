@@ -50,6 +50,17 @@ func TestOldMaidCuiController_Method(t *testing.T) {
 	t.Run("success Exec draw 2", func(t *testing.T) {
 		assert.Equal(t, mockOutput, tomc.Exec("draw 2"))
 	})
+	// **打ち間違いを -1 (ランダム) として実行しない。** 30 配り中 17 配りで、
+	// プレイヤーが選んでいない札を引いていた (issue #5390)。
+	t.Run("draw refuses an unparseable index", func(t *testing.T) {
+		refuseMock := new(usecase.MockOldMaidInteractor)
+		refuseMock.On("Draw", mock.Anything).Return(mockOutput)
+		c := controller.NewOldMaidCuiController(refuseMock)
+
+		assert.Contains(t, c.Exec("d zz"), msgInvalidCardIndexPrefix())
+
+		refuseMock.AssertNotCalled(t, "Draw", mock.Anything)
+	})
 	t.Run("success Exec s (shuffle)", func(t *testing.T) {
 		assert.Equal(t, mockOutput, tomc.Exec("s"))
 		omiMock.AssertCalled(t, "Shuffle")
