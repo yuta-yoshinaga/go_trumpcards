@@ -6,7 +6,6 @@
   "helpKemps": "  k, kemps             declare Kemps",
   "helpCounter": "  c <seat>, counter <seat>  declare Counter-Kemps on opponent seat",
   "helpNext": "  n, next              advance to the next round",
-  "helpSetDifficulty": "  sd <n>               set CPU difficulty (0=Easy, 1=Normal, 2=Hard) and reset",
   "labelHuman": "You",
   "labelCpu": "CPU",
   "roundLine": "Round {{round}}  Team A: {{teamA}}  Team B: {{teamB}}",

@@ -6,7 +6,6 @@
   "helpKemps": "  k, kemps             Kemps を宣言する",
   "helpCounter": "  c <seat>, counter <seat>  相手 seat に Counter-Kemps を宣言する",
   "helpNext": "  n, next              次のラウンドへ進む",
-  "helpSetDifficulty": "  sd <n>               CPU難易度 (0=Easy, 1=Normal, 2=Hard) を設定してリセット",
   "labelHuman": "あなた",
   "labelCpu": "CPU",
   "roundLine": "ラウンド{{round}}  チームA: {{teamA}}点  チームB: {{teamB}}点",
