@@ -70,7 +70,7 @@ func (c *OsmosisCuiController) handleMove(args []string) string {
 	case "r":
 		return c.handleMoveFromReserve(args[1:])
 	default:
-		return i18n.Tf("osmosis.invalidFromZone", "val", from)
+		return invalidArg("osmosis.invalidFromZone", "val", from)
 	}
 }
 
@@ -84,7 +84,7 @@ func (c *OsmosisCuiController) handleMoveFromWaste(args []string) string {
 	}
 	fIdx, err := strconv.Atoi(args[1])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[1])
+		return invalidArg("invalidColumn", "val", args[1])
 	}
 	return c.oi.MoveWasteToFoundation(fIdx)
 }
@@ -96,7 +96,7 @@ func (c *OsmosisCuiController) handleMoveFromReserve(args []string) string {
 	}
 	rIdx, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[0])
+		return invalidArg("invalidColumn", "val", args[0])
 	}
 	if len(args) < 2 || args[1] != "f" {
 		return i18n.T("osmosis.moveUsage")
@@ -106,7 +106,7 @@ func (c *OsmosisCuiController) handleMoveFromReserve(args []string) string {
 	}
 	fIdx, err := strconv.Atoi(args[2])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[2])
+		return invalidArg("invalidColumn", "val", args[2])
 	}
 	return c.oi.MoveReserveToFoundation(rIdx, fIdx)
 }

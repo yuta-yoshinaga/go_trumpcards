@@ -165,7 +165,7 @@ func TestDeuceToSevenCuiController_MetaAI_Invalid(t *testing.T) {
 	mi := newDeuceToSevenMockInteractor()
 	c := NewDeuceToSevenCuiController(mi)
 	result := c.Exec("mai abc")
-	assert.Equal(t, i18n.Tf("invalidMetaAI", "val", "abc"), result)
+	assert.Equal(t, invalidArg("invalidMetaAI", "val", "abc"), result)
 }
 
 func TestDeuceToSevenCuiController_Log(t *testing.T) {

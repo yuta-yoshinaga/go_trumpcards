@@ -74,7 +74,7 @@ func (c *ScorpionCuiController) handleMove(args []string) string {
 	}
 	fromCol, err := strconv.Atoi(args[1])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[1])
+		return invalidArg("invalidColumn", "val", args[1])
 	}
 	if len(args) < 3 {
 		return cuiutil.PromptRequest(i18n.T("scorpion.promptCardIndex"), fmt.Sprintf("m t %d {0} t", fromCol))
@@ -87,11 +87,11 @@ func (c *ScorpionCuiController) handleMove(args []string) string {
 	}
 	cardIdx, err := strconv.Atoi(args[2])
 	if err != nil {
-		return i18n.Tf("invalidCardIndex", "val", args[2])
+		return invalidArg("invalidCardIndex", "val", args[2])
 	}
 	toCol, err := strconv.Atoi(args[4])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[4])
+		return invalidArg("invalidColumn", "val", args[4])
 	}
 	return c.si.MoveTableauToTableau(fromCol, cardIdx, toCol)
 }
@@ -105,7 +105,7 @@ func (c *ScorpionCuiController) handleLegal(args []string) string {
 	}
 	col, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[0])
+		return invalidArg("invalidColumn", "val", args[0])
 	}
 	return c.si.LegalMoves(col)
 }
@@ -118,17 +118,17 @@ func (c *ScorpionCuiController) handleMoveShorthand(args []string) string {
 	if len(args) == 2 {
 		toCol, err := strconv.Atoi(args[1])
 		if err != nil {
-			return i18n.Tf("invalidColumn", "val", args[1])
+			return invalidArg("invalidColumn", "val", args[1])
 		}
 		return c.si.MoveTableauToTableau(fromCol, -1, toCol)
 	}
 	cardIdx, err := strconv.Atoi(args[1])
 	if err != nil {
-		return i18n.Tf("invalidCardIndex", "val", args[1])
+		return invalidArg("invalidCardIndex", "val", args[1])
 	}
 	toCol, err := strconv.Atoi(args[2])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[2])
+		return invalidArg("invalidColumn", "val", args[2])
 	}
 	return c.si.MoveTableauToTableau(fromCol, cardIdx, toCol)
 }

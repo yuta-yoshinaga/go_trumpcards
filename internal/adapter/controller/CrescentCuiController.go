@@ -73,14 +73,14 @@ func (c *CrescentCuiController) handleMove(args []string) string {
 		return c.handleMoveShorthand(args)
 	}
 	if args[0] != "t" {
-		return i18n.Tf("crescent.invalidFromZone", "val", args[0])
+		return invalidArg("crescent.invalidFromZone", "val", args[0])
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("crescent.promptFromColumn"), "m t {0}")
 	}
 	fromCol, err := strconv.Atoi(args[1])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[1])
+		return invalidArg("invalidColumn", "val", args[1])
 	}
 	if len(args) < 3 {
 		return cuiutil.PromptRequest(i18n.T("crescent.promptToZone"), fmt.Sprintf("m t %s {0}", args[1]))
@@ -92,7 +92,7 @@ func (c *CrescentCuiController) handleMove(args []string) string {
 		}
 		toCol, err := strconv.Atoi(args[3])
 		if err != nil {
-			return i18n.Tf("invalidColumn", "val", args[3])
+			return invalidArg("invalidColumn", "val", args[3])
 		}
 		return c.ci.MoveTableauToTableau(fromCol, toCol)
 	case "f":
@@ -101,7 +101,7 @@ func (c *CrescentCuiController) handleMove(args []string) string {
 		}
 		fIdx, err := strconv.Atoi(args[3])
 		if err != nil {
-			return i18n.Tf("crescent.invalidFoundationId", "val", args[3])
+			return invalidArg("crescent.invalidFoundationId", "val", args[3])
 		}
 		return c.ci.MoveTableauToFoundation(fromCol, fIdx)
 	default:
@@ -116,7 +116,7 @@ func (c *CrescentCuiController) handleMoveShorthand(args []string) string {
 	}
 	toCol, err := strconv.Atoi(args[1])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[1])
+		return invalidArg("invalidColumn", "val", args[1])
 	}
 	return c.ci.MoveTableauToTableau(fromCol, toCol)
 }

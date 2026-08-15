@@ -53,14 +53,14 @@ func (c *AuldLangSyneCuiController) handleWasteMove(args []string) string {
 	}
 	wasteIdx, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidIndex", "val", args[0])
+		return invalidArg("invalidIndex", "val", args[0])
 	}
 	if len(args) < 3 || args[1] != "f" {
 		return cuiutil.PromptRequest(i18n.T("auldlangsyne.promptFoundationIdx"), fmt.Sprintf("w %d f {0}", wasteIdx))
 	}
 	fIdx, err := strconv.Atoi(args[2])
 	if err != nil {
-		return i18n.Tf("invalidIndex", "val", args[2])
+		return invalidArg("invalidIndex", "val", args[2])
 	}
 	return c.ci.PlayWasteToFoundation(wasteIdx, fIdx)
 }

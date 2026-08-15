@@ -91,7 +91,7 @@ func (c *OmahaCuiController) Exec(command string) string {
 				}
 				bl, err := strconv.Atoi(args[0])
 				if err != nil {
-					return i18n.Tf("holdem.invalidBettingLimit", "val", args[0]), true
+					return invalidArg("holdem.invalidBettingLimit", "val", args[0]), true
 				}
 				cfg := c.oi.GetConfig()
 				cfg.BettingLimit = domain.BettingLimitType(bl)
@@ -102,7 +102,7 @@ func (c *OmahaCuiController) Exec(command string) string {
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 0 || v > 1 {
-					return i18n.Tf("holdem.invalidTournamentMode", "val", args[0]), true
+					return invalidArg("holdem.invalidTournamentMode", "val", args[0]), true
 				}
 				cfg := c.oi.GetConfig()
 				cfg.TournamentMode = v == 1
@@ -113,7 +113,7 @@ func (c *OmahaCuiController) Exec(command string) string {
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil {
-					return i18n.Tf("holdem.invalidSmallBlind", "val", args[0]), true
+					return invalidArg("holdem.invalidSmallBlind", "val", args[0]), true
 				}
 				cfg := c.oi.GetConfig()
 				cfg.SmallBlind = v
@@ -124,7 +124,7 @@ func (c *OmahaCuiController) Exec(command string) string {
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil {
-					return i18n.Tf("holdem.invalidBigBlind", "val", args[0]), true
+					return invalidArg("holdem.invalidBigBlind", "val", args[0]), true
 				}
 				cfg := c.oi.GetConfig()
 				cfg.BigBlind = v
@@ -135,7 +135,7 @@ func (c *OmahaCuiController) Exec(command string) string {
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil {
-					return i18n.Tf("holdem.invalidLevelHand", "val", args[0]), true
+					return invalidArg("holdem.invalidLevelHand", "val", args[0]), true
 				}
 				cfg := c.oi.GetConfig()
 				cfg.BlindLevelHands = v
@@ -146,7 +146,7 @@ func (c *OmahaCuiController) Exec(command string) string {
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil {
-					return i18n.Tf("holdem.invalidTableSize", "val", args[0]), true
+					return invalidArg("holdem.invalidTableSize", "val", args[0]), true
 				}
 				cfg := c.oi.GetConfig()
 				cfg.TableSize = v
@@ -157,7 +157,7 @@ func (c *OmahaCuiController) Exec(command string) string {
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 0 || v > 1 {
-					return i18n.Tf("invalidMetaAI", "val", args[0]), true
+					return invalidArg("invalidMetaAI", "val", args[0]), true
 				}
 				cfg := c.oi.GetConfig()
 				cfg.CpuMetaAI = v == 1

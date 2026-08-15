@@ -58,14 +58,14 @@ func (c *SpiteAndMaliceCuiController) handlePlayFromHand(args []string) string {
 	}
 	handIdx, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidIndex", "val", args[0])
+		return invalidArg("invalidIndex", "val", args[0])
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("spiteandmalice.promptFoundationIdx"), "ph "+args[0]+" {0}")
 	}
 	fIdx, err := strconv.Atoi(args[1])
 	if err != nil {
-		return i18n.Tf("invalidIndex", "val", args[1])
+		return invalidArg("invalidIndex", "val", args[1])
 	}
 	return c.si.PlayFromHand(handIdx, fIdx)
 }
@@ -76,7 +76,7 @@ func (c *SpiteAndMaliceCuiController) handlePlayFromGoal(args []string) string {
 	}
 	fIdx, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidIndex", "val", args[0])
+		return invalidArg("invalidIndex", "val", args[0])
 	}
 	return c.si.PlayFromGoal(fIdx)
 }
@@ -87,14 +87,14 @@ func (c *SpiteAndMaliceCuiController) handlePlayFromSide(args []string) string {
 	}
 	sideIdx, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidIndex", "val", args[0])
+		return invalidArg("invalidIndex", "val", args[0])
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("spiteandmalice.promptFoundationIdx"), "ps "+args[0]+" {0}")
 	}
 	fIdx, err := strconv.Atoi(args[1])
 	if err != nil {
-		return i18n.Tf("invalidIndex", "val", args[1])
+		return invalidArg("invalidIndex", "val", args[1])
 	}
 	return c.si.PlayFromSide(sideIdx, fIdx)
 }
@@ -105,14 +105,14 @@ func (c *SpiteAndMaliceCuiController) handleDiscard(args []string) string {
 	}
 	handIdx, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidIndex", "val", args[0])
+		return invalidArg("invalidIndex", "val", args[0])
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("spiteandmalice.promptSideIdx"), "d "+args[0]+" {0}")
 	}
 	sideIdx, err := strconv.Atoi(args[1])
 	if err != nil {
-		return i18n.Tf("invalidIndex", "val", args[1])
+		return invalidArg("invalidIndex", "val", args[1])
 	}
 	return c.si.Discard(handIdx, sideIdx)
 }

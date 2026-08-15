@@ -77,10 +77,10 @@ func (c *SultanCuiController) handleMove(args []string) string {
 		}
 		idx, err := strconv.Atoi(args[1])
 		if err != nil {
-			return i18n.Tf("sultan.invalidDivanIndex", "val", args[1])
+			return invalidArg("sultan.invalidDivanIndex", "val", args[1])
 		}
 		return c.si.MoveDivanToFoundation(idx)
 	default:
-		return i18n.Tf("sultan.invalidFromZone", "val", from)
+		return invalidArg("sultan.invalidFromZone", "val", from)
 	}
 }

@@ -67,7 +67,7 @@ func (c *TerraceCuiController) handleMove(args []string) string {
 	case "t":
 		return c.handleMoveFromTableau(args[1:])
 	default:
-		return i18n.Tf("terrace.invalidFromZone", "val", args[0])
+		return invalidArg("terrace.invalidFromZone", "val", args[0])
 	}
 }
 
@@ -77,7 +77,7 @@ func (c *TerraceCuiController) handleMoveFromReserve(args []string) string {
 		return cuiutil.PromptRequest(i18n.T("terrace.promptReserveTo"), "m r {0}")
 	}
 	if args[0] != "f" {
-		return i18n.Tf("terrace.reserveOnlyToFoundation", "val", args[0])
+		return invalidArg("terrace.reserveOnlyToFoundation", "val", args[0])
 	}
 	return c.ti.MoveReserveToFoundation()
 }
@@ -95,11 +95,11 @@ func (c *TerraceCuiController) handleMoveFromWaste(args []string) string {
 		}
 		pile, err := strconv.Atoi(args[1])
 		if err != nil {
-			return i18n.Tf("terrace.invalidPile", "val", args[1])
+			return invalidArg("terrace.invalidPile", "val", args[1])
 		}
 		return c.ti.MoveWasteToTableau(pile)
 	default:
-		return i18n.Tf("terrace.invalidToZone", "val", args[0])
+		return invalidArg("terrace.invalidToZone", "val", args[0])
 	}
 }
 
@@ -109,7 +109,7 @@ func (c *TerraceCuiController) handleMoveFromTableau(args []string) string {
 	}
 	fromPile, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("terrace.invalidPile", "val", args[0])
+		return invalidArg("terrace.invalidPile", "val", args[0])
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("terrace.promptToZone"), fmt.Sprintf("m t %s {0}", args[0]))
@@ -123,10 +123,10 @@ func (c *TerraceCuiController) handleMoveFromTableau(args []string) string {
 		}
 		toPile, err := strconv.Atoi(args[2])
 		if err != nil {
-			return i18n.Tf("terrace.invalidPile", "val", args[2])
+			return invalidArg("terrace.invalidPile", "val", args[2])
 		}
 		return c.ti.MoveTableauToTableau(fromPile, toPile)
 	default:
-		return i18n.Tf("terrace.invalidToZone", "val", args[1])
+		return invalidArg("terrace.invalidToZone", "val", args[1])
 	}
 }

@@ -504,5 +504,5 @@ func TestOmahaCuiController_MetaAI_MissingArg(t *testing.T) {
 func TestOmahaCuiController_MetaAI_InvalidArg(t *testing.T) {
 	mi := new(usecase.MockOmahaInteractor)
 	c := NewOmahaCuiController(mi)
-	assert.Equal(t, "無効な値です: abc。0 または 1 を入力してください。", c.Exec("mai abc"))
+	assert.Equal(t, invalidArg("invalidMetaAI", "val", "abc"), c.Exec("mai abc"))
 }

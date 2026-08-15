@@ -64,7 +64,7 @@ func (c *DiplomatCuiController) handleMove(args []string) string {
 	case "w":
 		return c.handleMoveFromWaste(args[1:])
 	default:
-		return i18n.Tf("diplomat.invalidFromZone", "val", args[0])
+		return invalidArg("diplomat.invalidFromZone", "val", args[0])
 	}
 }
 
@@ -74,7 +74,7 @@ func (c *DiplomatCuiController) handleMoveFromTableau(args []string) string {
 	}
 	fromPile, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("diplomat.invalidPile", "val", args[0])
+		return invalidArg("diplomat.invalidPile", "val", args[0])
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("diplomat.promptToZone"), fmt.Sprintf("m t %s {0}", args[0]))
@@ -88,11 +88,11 @@ func (c *DiplomatCuiController) handleMoveFromTableau(args []string) string {
 		}
 		toPile, err := strconv.Atoi(args[2])
 		if err != nil {
-			return i18n.Tf("diplomat.invalidPile", "val", args[2])
+			return invalidArg("diplomat.invalidPile", "val", args[2])
 		}
 		return c.ci.MoveTableauToTableau(fromPile, toPile)
 	default:
-		return i18n.Tf("diplomat.invalidToZone", "val", args[1])
+		return invalidArg("diplomat.invalidToZone", "val", args[1])
 	}
 }
 
@@ -109,10 +109,10 @@ func (c *DiplomatCuiController) handleMoveFromWaste(args []string) string {
 		}
 		pile, err := strconv.Atoi(args[1])
 		if err != nil {
-			return i18n.Tf("diplomat.invalidPile", "val", args[1])
+			return invalidArg("diplomat.invalidPile", "val", args[1])
 		}
 		return c.ci.MoveWasteToTableau(pile)
 	default:
-		return i18n.Tf("diplomat.invalidToZone", "val", args[0])
+		return invalidArg("diplomat.invalidToZone", "val", args[0])
 	}
 }

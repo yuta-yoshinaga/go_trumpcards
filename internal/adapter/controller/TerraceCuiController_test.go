@@ -7,6 +7,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	mockusecase "github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func newMockTerraceInteractor() *mockusecase.MockTerraceInteractor {
@@ -53,9 +54,18 @@ func TestTerraceCuiControllerMoves(t *testing.T) {
 
 	// The terrace has exactly one destination, so a tableau target is refused
 	// rather than quietly reinterpreted.
+	//
+	// The refusal is asserted through i18n rather than with Contains(out, "t"),
+	// which the previous version used: every rendering of every message in this
+	// package contains a "t", so it held whether the command was refused or run.
 	t.Run("rejects the terrace to a pile", func(t *testing.T) {
 		c := NewTerraceCuiController(newMockTerraceInteractor())
-		assert.Contains(t, c.Exec("m r t 2"), "t")
+
+		out := c.Exec("m r t 2")
+
+		body, isErr := i18n.StripErrorPrefix(out)
+		assert.True(t, isErr, "a refused destination must be marked as an error")
+		assert.Equal(t, i18n.Tf("terrace.reserveOnlyToFoundation", "val", "t"), body)
 	})
 
 	t.Run("waste to a foundation", func(t *testing.T) {

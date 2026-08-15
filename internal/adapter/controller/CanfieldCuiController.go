@@ -65,7 +65,7 @@ func (c *CanfieldCuiController) handleMove(args []string) string {
 	}
 	from := args[0]
 	if from != "w" && from != "t" && from != "r" {
-		return i18n.Tf("canfield.invalidFromZone", "val", from)
+		return invalidArg("canfield.invalidFromZone", "val", from)
 	}
 	if len(args) < 2 {
 		switch from {
@@ -96,13 +96,13 @@ func (c *CanfieldCuiController) handleMoveFromWaste(args []string) string {
 		}
 		col, err := strconv.Atoi(args[1])
 		if err != nil {
-			return i18n.Tf("invalidColumn", "val", args[1])
+			return invalidArg("invalidColumn", "val", args[1])
 		}
 		return c.ci.MoveWasteToTableau(col)
 	case "f":
 		return c.ci.MoveWasteToFoundation()
 	default:
-		return i18n.Tf("canfield.invalidToZone", "val", to)
+		return invalidArg("canfield.invalidToZone", "val", to)
 	}
 }
 
@@ -115,13 +115,13 @@ func (c *CanfieldCuiController) handleMoveFromReserve(args []string) string {
 		}
 		col, err := strconv.Atoi(args[1])
 		if err != nil {
-			return i18n.Tf("invalidColumn", "val", args[1])
+			return invalidArg("invalidColumn", "val", args[1])
 		}
 		return c.ci.MoveReserveToTableau(col)
 	case "f":
 		return c.ci.MoveReserveToFoundation()
 	default:
-		return i18n.Tf("canfield.invalidToZone", "val", to)
+		return invalidArg("canfield.invalidToZone", "val", to)
 	}
 }
 
@@ -134,7 +134,7 @@ func (c *CanfieldCuiController) handleMoveFromTableau(args []string) string {
 	}
 	fromCol, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[0])
+		return invalidArg("invalidColumn", "val", args[0])
 	}
 	if args[1] == "f" {
 		return c.ci.MoveTableauToFoundation(fromCol)
@@ -147,11 +147,11 @@ func (c *CanfieldCuiController) handleMoveFromTableau(args []string) string {
 	}
 	cardIdx, err := strconv.Atoi(args[1])
 	if err != nil {
-		return i18n.Tf("invalidCardIndex", "val", args[1])
+		return invalidArg("invalidCardIndex", "val", args[1])
 	}
 	toCol, err := strconv.Atoi(args[3])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[3])
+		return invalidArg("invalidColumn", "val", args[3])
 	}
 	return c.ci.MoveTableauToTableau(fromCol, cardIdx, toCol)
 }
@@ -163,7 +163,7 @@ func (c *CanfieldCuiController) handleMoveShorthand(args []string) string {
 	}
 	toCol, err := strconv.Atoi(args[1])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[1])
+		return invalidArg("invalidColumn", "val", args[1])
 	}
 	return c.ci.MoveTableauToTableau(fromCol, -1, toCol)
 }

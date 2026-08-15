@@ -85,7 +85,7 @@ func (bcc *BadugiCuiController) Exec(command string) string {
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 0 || v > 1 {
-					return i18n.Tf("invalidMetaAI", "val", args[0]), true
+					return invalidArg("invalidMetaAI", "val", args[0]), true
 				}
 				cfg := bcc.bi.GetConfig()
 				cfg.CpuMetaAI = v == 1

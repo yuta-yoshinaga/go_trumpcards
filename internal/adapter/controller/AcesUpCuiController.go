@@ -56,7 +56,7 @@ func (c *AcesUpCuiController) handleColCommand(args []string, name string, fn fu
 	col, err := strconv.Atoi(args[0])
 	if err != nil {
 		// 列番号のエラーは共通キーがある。ゲームごとに文言を割らない。
-		return i18n.Tf("invalidColumn", "val", args[0])
+		return invalidArg("invalidColumn", "val", args[0])
 	}
 	return fn(col)
 }

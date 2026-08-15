@@ -510,5 +510,5 @@ func TestHoldemCuiController_MetaAI_MissingArg(t *testing.T) {
 func TestHoldemCuiController_MetaAI_InvalidArg(t *testing.T) {
 	mi := new(usecase.MockHoldemInteractor)
 	c := NewHoldemCuiController(mi)
-	assert.Equal(t, "無効な値です: abc。0 または 1 を入力してください。", c.Exec("mai abc"))
+	assert.Equal(t, invalidArg("invalidMetaAI", "val", "abc"), c.Exec("mai abc"))
 }
