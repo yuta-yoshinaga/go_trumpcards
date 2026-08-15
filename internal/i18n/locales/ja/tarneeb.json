@@ -1,0 +1,11 @@
+{
+  "helpTitle": "タルニーブ (Tarneeb)",
+  "helpBid": "  b <n>                ビッドを宣言 (0=Pass, 7-13)",
+  "helpTrump": "  t <1-4>              切り札を宣言 (1=♠ 2=♣ 3=♥ 4=♦)",
+  "helpPlay": "  p <idx>              カードを出す",
+  "helpNext": "  n                    次のトリックへ",
+  "helpNextRound": "  nr                   ラウンドを集計して次のラウンドへ",
+  "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
+  "helpSetLimit": "  sl <n>               目標点",
+  "helpSetMinBid": "  sm <1-13>            最低ビッド"
+}

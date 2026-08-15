@@ -23,5 +23,11 @@
   "hintReasonTrumpCut": "cut with trump",
   "hintReasonBidStrong": "bid with a strong hand",
   "hintReasonBidPass": "pass with a weak hand",
-  "handPips": "Game pips in hand: {{total}} ({{breakdown}})"
+  "handPips": "Game pips in hand: {{total}} ({{breakdown}})",
+  "helpBid": "  b <n>                bid (0=pass, 2-4)",
+  "helpPlay": "  p <idx>              play a card",
+  "helpNext": "  n                    go to next trick",
+  "helpNextRound": "  nr                   score the round and go to the next one",
+  "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
+  "helpSetLimit": "  sl <n>               point limit"
 }

@@ -21,5 +21,9 @@
   "roundEndTrickEntry": "{{name}} {{tricks}}",
   "roundEndTricks": "各プレイヤーのトリック数: {{list}}",
   "trumpGroupStrong": "切り札は強い群 — 数字が大きいほど強い",
-  "trumpGroupWeak": "切り札は弱い群 — 数字が小さいほど強い"
+  "trumpGroupWeak": "切り札は弱い群 — 数字が小さいほど強い",
+  "helpPlay": "  play <idx>           カードを出す",
+  "helpNext": "  n                    次のトリックへ",
+  "helpNextRound": "  nr                   次のラウンドへ",
+  "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)"
 }

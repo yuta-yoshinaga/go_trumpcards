@@ -33,5 +33,11 @@
   "roleDefender": "Defender",
   "round": "Round: {{round}}  Trick: {{trick}}  Trump: {{trump}}",
   "roundEndTrickEntry": "{{name}} {{tricks}}",
-  "roundEndTricks": "Tricks per player: {{list}}"
+  "roundEndTricks": "Tricks per player: {{list}}",
+  "helpBid": "  b <0-4>              bid (0=pass, 1=Gask, 2=Solo, 3=Misere, 4=Vira)",
+  "helpPass": "  pass                 pass (same as bid 0)",
+  "helpPlay": "  play <idx>           play a card",
+  "helpNext": "  n                    go to next trick",
+  "helpNextRound": "  nr                   go to next round",
+  "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)"
 }

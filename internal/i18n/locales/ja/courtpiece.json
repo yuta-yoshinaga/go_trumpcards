@@ -1,0 +1,8 @@
+{
+  "helpTitle": "コートピース (Court Piece)",
+  "helpTrump": "  t <1-4>              切り札を宣言 (1=♠ 2=♣ 3=♥ 4=♦)",
+  "helpPlay": "  p <idx>              カードを出す",
+  "helpNext": "  n                    次のトリックへ",
+  "helpNextRound": "  nr                   次のラウンドへ",
+  "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)"
+}

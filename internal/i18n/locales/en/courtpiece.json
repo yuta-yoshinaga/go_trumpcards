@@ -1,0 +1,8 @@
+{
+  "helpTitle": "Court Piece",
+  "helpTrump": "  t <1-4>              call trump (1=S 2=C 3=H 4=D)",
+  "helpPlay": "  p <idx>              play a card",
+  "helpNext": "  n                    go to next trick",
+  "helpNextRound": "  nr                   go to next round",
+  "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)"
+}
