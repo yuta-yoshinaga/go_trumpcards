@@ -62,7 +62,7 @@ func (c *SergeantMajorCuiController) Exec(command string) string {
 // **既定値で埋めない。** 埋めると捨てていない札が捨てられる。
 func (c *SergeantMajorCuiController) discard(args []string) (string, bool) {
 	if len(args) < domain.SergeantMajorKittySize {
-		return "Four card indices are required.", true
+		return invalidArg("fourIndicesRequired"), true
 	}
 	indices := make([]int, 0, domain.SergeantMajorKittySize)
 	for i := range domain.SergeantMajorKittySize {

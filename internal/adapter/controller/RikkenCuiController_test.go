@@ -57,8 +57,8 @@ func TestRikkenCuiController_Bid(t *testing.T) {
 	assert.Equal(t, "passed", c.Exec("bid pass"))
 	assert.Equal(t, "passed", c.Exec("pass"))
 
-	assert.Contains(t, c.Exec("bid"), "Invalid contract")
-	assert.Contains(t, c.Exec("bid nonsense"), "Invalid contract")
+	assert.Contains(t, c.Exec("bid"), msgStem("invalidContractRik"))
+	assert.Contains(t, c.Exec("bid nonsense"), msgStem("invalidContractRik"))
 }
 
 func TestRikkenCuiController_Call(t *testing.T) {
@@ -66,8 +66,8 @@ func TestRikkenCuiController_Call(t *testing.T) {
 	assert.Equal(t, "called spade", c.Exec("call s"))
 	assert.Equal(t, "called spade", c.Exec("call spade"))
 	assert.Equal(t, "called heart", c.Exec("call h"))
-	assert.Contains(t, c.Exec("call"), "Invalid trump")
-	assert.Contains(t, c.Exec("call x"), "Invalid trump")
+	assert.Contains(t, c.Exec("call"), msgStem("invalidTrumpSCHD"))
+	assert.Contains(t, c.Exec("call x"), msgStem("invalidTrumpSCHD"))
 }
 
 func TestRikkenCuiController_OtherCommands(t *testing.T) {

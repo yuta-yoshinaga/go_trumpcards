@@ -91,7 +91,7 @@ func (c *SheepsheadCuiController) handleBury(args []string) (string, bool) {
 	idx1, _, ok1 := cuiutil.ParseIntArgKeys(args[:1], "firstCardIndexRequired", "invalidCardIndexPlain", cuiutil.NoMin, cuiutil.NoMax)
 	idx2, _, ok2 := cuiutil.ParseIntArgKeys(args[1:2], "secondCardIndexRequired", "invalidCardIndexPlain", cuiutil.NoMin, cuiutil.NoMax)
 	if !ok1 || !ok2 {
-		return "Invalid card indices. Usage: b <idx1> <idx2>", true
+		return invalidArg("invalidCardIndicesUsageB"), true
 	}
 	return c.si.Bury([]int{idx1, idx2}), true
 }

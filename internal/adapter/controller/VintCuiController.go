@@ -53,7 +53,7 @@ func (c *VintCuiController) Exec(command string) string {
 // **denom は 0=♠ 1=♣ 2=♦ 3=♥ 4=NT。**ブリッジとは序列が違うので番号で指す。
 func vintParseBid(args []string, vi usecase.VintInteractorIF) (string, bool) {
 	if len(args) < 2 {
-		return "Bid level and denomination are required (e.g. b 3 4 for 3 no trump).", true
+		return invalidArg("bidLevelAndDenominationRequired"), true
 	}
 	level, err := strconv.Atoi(args[0])
 	if err != nil || level < domain.VintMinLevel || level > domain.VintMaxLevel {

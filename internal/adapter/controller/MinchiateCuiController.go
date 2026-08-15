@@ -74,7 +74,7 @@ func (c *MinchiateCuiController) Exec(command string) string {
 // 変わったときに案内だけが古くなる。
 func (c *MinchiateCuiController) execScarto(args []string) (string, bool) {
 	if len(args) < domain.MinchiateSurplus {
-		return fmt.Sprintf("%d card indices are required (e.g. scarto 0 1 2 ...).", domain.MinchiateSurplus), true
+		return invalidArg("cardIndicesRequiredScartoN", "n", fmt.Sprint(domain.MinchiateSurplus)), true
 	}
 	indices, skipped := cuiutil.ParseIntSlice(args)
 	if len(skipped) > 0 {

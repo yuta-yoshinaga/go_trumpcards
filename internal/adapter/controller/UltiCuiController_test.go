@@ -75,7 +75,7 @@ func TestUltiCuiController_Exec(t *testing.T) {
 
 	t.Run("bid no args", func(t *testing.T) {
 		result := controller.NewUltiCuiController(newMock()).Exec("bid")
-		assert.Contains(t, result, "Bid action is required")
+		assert.Contains(t, result, msgStem("bidActionRequiredParty"))
 	})
 
 	t.Run("bid invalid", func(t *testing.T) {
@@ -92,7 +92,7 @@ func TestUltiCuiController_Exec(t *testing.T) {
 
 	t.Run("discard too few", func(t *testing.T) {
 		result := controller.NewUltiCuiController(newMock()).Exec("discard 0")
-		assert.Contains(t, result, "Two card indices are required")
+		assert.Contains(t, result, msgStem("twoIndicesRequiredDiscard"))
 	})
 
 	t.Run("discard invalid index", func(t *testing.T) {

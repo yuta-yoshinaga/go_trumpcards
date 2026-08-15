@@ -285,15 +285,15 @@ func TestDaifugoCuiController_SetRule_OneArg(t *testing.T) {
 func TestDaifugoCuiController_SetRule_UnknownRule(t *testing.T) {
 	mi := new(mockUsecases.MockDaifugoInteractor)
 	c := controller.NewDaifugoCuiController(mi)
-	assert.Contains(t, c.Exec("sr unknown 1"), "Unknown rule: unknown")
+	assert.Contains(t, c.Exec("sr unknown 1"), msgKey("unknownRule", "val", "unknown"))
 }
 
 func TestDaifugoCuiController_SetRule_InvalidValue(t *testing.T) {
 	mi := new(mockUsecases.MockDaifugoInteractor)
 	c := controller.NewDaifugoCuiController(mi)
-	assert.Contains(t, c.Exec("sr 8cut 2"), "Invalid value: 2")
-	assert.Contains(t, c.Exec("sr 8cut abc"), "Invalid value: abc")
-	assert.Contains(t, c.Exec("sr 8cut -1"), "Invalid value: -1")
+	assert.Contains(t, c.Exec("sr 8cut 2"), msgKey("invalidValue0Or1Raw", "val", "2"))
+	assert.Contains(t, c.Exec("sr 8cut abc"), msgKey("invalidValue0Or1Raw", "val", "abc"))
+	assert.Contains(t, c.Exec("sr 8cut -1"), msgKey("invalidValue0Or1Raw", "val", "-1"))
 }
 
 func TestDaifugoCuiController_SetRule_AllKeys(t *testing.T) {

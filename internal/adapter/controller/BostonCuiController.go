@@ -59,7 +59,7 @@ func (c *BostonCuiController) Exec(command string) string {
 // トリック数だけでは一意に決まらない。
 func bostonParseBid(args []string, bi usecase.BostonInteractorIF) (string, bool) {
 	if len(args) == 0 {
-		return "Bid level is required (see the ladder above).", true
+		return invalidArg("bidLevelRequiredLadder"), true
 	}
 	level, err := strconv.Atoi(args[0])
 	if err != nil || level <= int(domain.BostonBidPass) || level >= int(domain.BostonBidLevelCount) {
@@ -79,7 +79,7 @@ func bostonParseBid(args []string, bi usecase.BostonInteractorIF) (string, bool)
 // bostonParseCallPartner は `cp <seat|-1>` を解釈する。
 func bostonParseCallPartner(args []string, bi usecase.BostonInteractorIF) (string, bool) {
 	if len(args) == 0 {
-		return "Partner seat is required (-1 to play alone).", true
+		return invalidArg("partnerSeatRequired"), true
 	}
 	seat, err := strconv.Atoi(args[0])
 	if err != nil || seat < -1 || seat >= domain.BostonPlayerCnt {

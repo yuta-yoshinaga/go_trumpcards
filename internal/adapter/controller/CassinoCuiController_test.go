@@ -88,7 +88,7 @@ func TestCassinoCuiController_Exec(t *testing.T) {
 		m := newMock()
 		c := controller.NewCassinoCuiController(m)
 		out := c.Exec("b 0 xyz 1")
-		assert.Contains(t, out, "Invalid")
+		assert.True(t, msgRejected(out))
 	})
 
 	t.Run("trail command", func(t *testing.T) {
@@ -141,14 +141,14 @@ func TestCassinoCuiController_Exec(t *testing.T) {
 		m := newMock()
 		c := controller.NewCassinoCuiController(m)
 		out := c.Exec("sr garbage 1")
-		assert.Contains(t, out, "Unknown rule")
+		assert.Contains(t, out, msgStem("unknownRule"))
 	})
 
 	t.Run("sr bad value", func(t *testing.T) {
 		m := newMock()
 		c := controller.NewCassinoCuiController(m)
 		out := c.Exec("sr multibuild 2")
-		assert.Contains(t, out, "Invalid value")
+		assert.Contains(t, out, msgStem("invalidValue0Or1Raw"))
 	})
 
 	t.Run("log command", func(t *testing.T) {

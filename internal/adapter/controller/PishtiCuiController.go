@@ -68,7 +68,7 @@ func (c *PishtiCuiController) handlePlay(args []string) (string, bool) {
 	}
 	handIdx, _, ok := cuiutil.ParseIntArgKeys([]string{args[0]}, "handIndexRequired", "invalidHandIndex", 0, 51)
 	if !ok {
-		return "Invalid hand index: " + args[0], true
+		return invalidArg("invalidHandIndexRaw", "val", args[0]), true
 	}
 	return c.pi.Play(handIdx), true
 }

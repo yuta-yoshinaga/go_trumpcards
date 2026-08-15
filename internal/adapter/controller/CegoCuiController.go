@@ -82,7 +82,7 @@ func (c *CegoCuiController) Exec(command string) string {
 // execBid bid サブコマンドを解釈する。
 func (c *CegoCuiController) execBid(args []string) (string, bool) {
 	if len(args) == 0 {
-		return "Bid is required (play).", true
+		return invalidArg("bidRequiredPlay"), true
 	}
 	bid := cegoParseBid(args[0])
 	if bid == domain.CegoBidPass {

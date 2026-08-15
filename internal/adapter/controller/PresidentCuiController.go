@@ -114,10 +114,10 @@ func (c *PresidentCuiController) Exec(command string) string {
 					return "Usage: sr <rule> <0|1> | sr list\nRules: " + strings.Join(presidentRuleKeys, ", "), true
 				}
 				if !setPresidentRule(nil, args[0], false) {
-					return fmt.Sprintf("Unknown rule: %s.", args[0]), true
+					return invalidArg("unknownRule", "val", fmt.Sprint(args[0])), true
 				}
 				if args[1] != "0" && args[1] != "1" {
-					return fmt.Sprintf("Invalid value: %s. Please enter 0 or 1.", args[1]), true
+					return invalidArg("invalidValue0Or1Raw", "val", fmt.Sprint(args[1])), true
 				}
 				cfg := c.pi.GetConfig()
 				setPresidentRule(&cfg, args[0], args[1] == "1")

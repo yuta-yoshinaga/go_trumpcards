@@ -95,7 +95,7 @@ func (c *MusCuiController) handleDiscard(args []string) (string, bool) {
 	for _, a := range args {
 		v, _, ok := cuiutil.ParseIntArgKeys([]string{a}, "indexRequired", "invalidIndexPlain", 0, 3)
 		if !ok {
-			return "Invalid card index. Usage: d <idx>...", true
+			return invalidArg("invalidCardIndexUsageD"), true
 		}
 		indices = append(indices, v)
 	}

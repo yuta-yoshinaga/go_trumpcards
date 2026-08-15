@@ -67,7 +67,7 @@ func TestKaiserCuiController_Exec(t *testing.T) {
 	// **最低は 7。**6 以下はドメインへ行く前に弾く。
 	t.Run("bid rejects a value outside 7-12", func(t *testing.T) {
 		c := controller.NewKaiserCuiController(newMock())
-		assert.Contains(t, c.Exec("b"), "required")
+		assert.True(t, msgRejected(c.Exec("b")))
 		assert.Contains(t, c.Exec("b abc"), "Invalid bid")
 		assert.Contains(t, c.Exec("b 6"), "Invalid bid")
 		assert.Contains(t, c.Exec("b 13"), "Invalid bid")
@@ -89,8 +89,8 @@ func TestKaiserCuiController_Exec(t *testing.T) {
 		c := controller.NewKaiserCuiController(m)
 		assert.Equal(t, mockOutput, c.Exec("d 0 3"))
 		m.AssertCalled(t, "Discard", []int{0, 3})
-		assert.Contains(t, c.Exec("d 0"), "Two card indices")
-		assert.Contains(t, c.Exec("d"), "Two card indices")
+		assert.Contains(t, c.Exec("d 0"), msgStem("twoIndicesRequired"))
+		assert.Contains(t, c.Exec("d"), msgStem("twoIndicesRequired"))
 		assert.Contains(t, c.Exec("d a b"), msgInvalidCardIndexPrefix())
 	})
 

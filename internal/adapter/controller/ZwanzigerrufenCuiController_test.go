@@ -61,7 +61,7 @@ func TestZwanzigerrufenCuiController_Exec(t *testing.T) {
 	t.Run("bid needs an argument", func(t *testing.T) {
 		m := newMock()
 		out := controller.NewZwanzigerrufenCuiController(m).Exec("bid")
-		assert.Contains(t, out, "Bid is required")
+		assert.Contains(t, out, msgStem("bidRequiredRuferOrSolo"))
 		m.AssertNotCalled(t, "Bid", mock.Anything)
 	})
 	t.Run("pass", func(t *testing.T) {
@@ -78,7 +78,7 @@ func TestZwanzigerrufenCuiController_Exec(t *testing.T) {
 	t.Run("discard needs six indices", func(t *testing.T) {
 		m := newMock()
 		out := controller.NewZwanzigerrufenCuiController(m).Exec("discard 0 1 2")
-		assert.Contains(t, out, "Six card indices")
+		assert.Contains(t, out, msgStem("sixIndicesRequiredDiscard"))
 		m.AssertNotCalled(t, "Discard", mock.Anything)
 	})
 	t.Run("discard rejects a non-numeric index", func(t *testing.T) {

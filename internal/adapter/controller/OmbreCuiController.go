@@ -86,7 +86,7 @@ func (c *OmbreCuiController) Exec(command string) string {
 // execBid bid サブコマンドを解釈する。
 func (c *OmbreCuiController) execBid(args []string) (string, bool) {
 	if len(args) == 0 {
-		return "Bid action is required (pass, entrar <suit>, or solo <suit>).", true
+		return invalidArg("bidActionRequiredEntrar"), true
 	}
 	switch args[0] {
 	case "pass", "p":

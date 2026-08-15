@@ -60,7 +60,7 @@ func TestCuarentaCuiController_Exec(t *testing.T) {
 	t.Run("play bad hand index", func(t *testing.T) {
 		m := newMock()
 		c := controller.NewCuarentaCuiController(m)
-		assert.Contains(t, c.Exec("p xyz"), "Invalid")
+		assert.True(t, msgRejected(c.Exec("p xyz")))
 	})
 
 	t.Run("sd (difficulty)", func(t *testing.T) {

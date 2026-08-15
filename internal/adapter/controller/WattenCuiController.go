@@ -97,7 +97,7 @@ func (c *WattenCuiController) handleDeclare(args []string) (string, bool) {
 // handleRespond は `resp <h|f>` を解析して応答する。
 func (c *WattenCuiController) handleRespond(args []string) (string, bool) {
 	if len(args) < 1 {
-		return "Response is required (h=hold, f=fold).", true
+		return invalidArg("responseRequiredHoldFold"), true
 	}
 	switch args[0] {
 	case "h", "hold":

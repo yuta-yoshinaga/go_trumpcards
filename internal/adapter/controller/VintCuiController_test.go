@@ -50,8 +50,8 @@ func TestVintCuiController_Exec(t *testing.T) {
 
 	t.Run("bid rejects a bad level or denomination", func(t *testing.T) {
 		c := controller.NewVintCuiController(newMock())
-		assert.Contains(t, c.Exec("b"), "required")
-		assert.Contains(t, c.Exec("b 3"), "required")
+		assert.True(t, msgRejected(c.Exec("b")))
+		assert.True(t, msgRejected(c.Exec("b 3")))
 		assert.Contains(t, c.Exec("b abc 1"), "Invalid bid level")
 		assert.Contains(t, c.Exec("b 0 1"), "Invalid bid level")
 		assert.Contains(t, c.Exec("b 8 1"), "Invalid bid level")

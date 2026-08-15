@@ -58,8 +58,8 @@ func TestBotifarraCuiController_Declare(t *testing.T) {
 	assert.Equal(t, "declared no trump", c.Exec("declare n"))
 	assert.Equal(t, "declared no trump", c.Exec("declare none"))
 
-	assert.Contains(t, c.Exec("declare"), "Invalid trump")
-	assert.Contains(t, c.Exec("declare x"), "Invalid trump")
+	assert.Contains(t, c.Exec("declare"), msgStem("invalidTrumpSCHDN"))
+	assert.Contains(t, c.Exec("declare x"), msgStem("invalidTrumpSCHDN"))
 }
 
 func TestBotifarraCuiController_OtherCommands(t *testing.T) {

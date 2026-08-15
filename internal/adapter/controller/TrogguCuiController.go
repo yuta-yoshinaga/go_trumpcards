@@ -80,7 +80,7 @@ func (c *TrogguCuiController) Exec(command string) string {
 // execBid bid サブコマンドを解釈する。
 func (c *TrogguCuiController) execBid(args []string) (string, bool) {
 	if len(args) == 0 {
-		return "Bid is required (trois, solo, piccolo or misere).", true
+		return invalidArg("bidRequiredTrois"), true
 	}
 	bid := trogguParseBid(args[0])
 	if bid == domain.TrogguBidPass {

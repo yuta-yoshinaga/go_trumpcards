@@ -199,11 +199,11 @@ func (c *DaifugoCuiController) Exec(command string) string {
 					return "Usage: sr <rule> <0|1> | sr list\nRules: " + strings.Join(daifugoRuleKeys, ", ") + ".\nUse 'suitlockmode' for suit lock (0-2), '5skipcount' for skip count.", true
 				}
 				if !setDaifugoRule(nil, args[0], false) {
-					return fmt.Sprintf("Unknown rule: %s.", args[0]), true
+					return invalidArg("unknownRule", "val", fmt.Sprint(args[0])), true
 				}
 				v, err := strconv.Atoi(args[1])
 				if err != nil || v < 0 || v > 1 {
-					return fmt.Sprintf("Invalid value: %s. Please enter 0 or 1.", args[1]), true
+					return invalidArg("invalidValue0Or1Raw", "val", fmt.Sprint(args[1])), true
 				}
 				cfg := c.dgi.GetConfig()
 				setDaifugoRule(&cfg, args[0], v == 1)

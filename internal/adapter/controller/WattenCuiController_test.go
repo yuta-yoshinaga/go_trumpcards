@@ -101,7 +101,7 @@ func TestWattenCuiController_Exec(t *testing.T) {
 
 	t.Run("respond missing", func(t *testing.T) {
 		c := controller.NewWattenCuiController(newMock())
-		assert.Contains(t, c.Exec("resp"), "Response is required")
+		assert.Contains(t, c.Exec("resp"), msgStem("responseRequiredHoldFold"))
 	})
 
 	t.Run("respond invalid", func(t *testing.T) {

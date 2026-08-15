@@ -69,7 +69,7 @@ func (c *DesmocheCuiController) Exec(command string) string {
 // 指定する必要があるため。
 func (c *DesmocheCuiController) meld(args []string) (string, bool) {
 	if len(args) == 0 {
-		return "Card indices are required (for example: m 0,2,5).", true
+		return invalidArg("cardIndicesRequiredMeld"), true
 	}
 	parts := strings.Split(args[0], ",")
 	idxs := make([]int, 0, len(parts))
@@ -86,7 +86,7 @@ func (c *DesmocheCuiController) meld(args []string) (string, bool) {
 // layOff は `o <card> <meld>` を解釈する。
 func (c *DesmocheCuiController) layOff(args []string) (string, bool) {
 	if len(args) < 2 {
-		return "Card index and meld index are required (for example: o 0 1).", true
+		return invalidArg("cardAndMeldIndexRequired"), true
 	}
 	card, ok := desmocheParseIdx(args[0])
 	if !ok {
@@ -102,7 +102,7 @@ func (c *DesmocheCuiController) layOff(args []string) (string, bool) {
 // desmoche は `x <from> <card> <to>` を解釈する。
 func (c *DesmocheCuiController) desmoche(args []string) (string, bool) {
 	if len(args) < 3 {
-		return "Source meld, card index and target meld are required (for example: x 0 2 1).", true
+		return invalidArg("sourceMeldCardTargetRequired"), true
 	}
 	from, ok := desmocheParseIdx(args[0])
 	if !ok {

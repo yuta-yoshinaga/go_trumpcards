@@ -74,7 +74,7 @@ func TestOmbreCuiController_Exec(t *testing.T) {
 
 	t.Run("bid no args", func(t *testing.T) {
 		result := controller.NewOmbreCuiController(newMock()).Exec("bid")
-		assert.Contains(t, result, "Bid action is required")
+		assert.Contains(t, result, msgStem("bidActionRequiredEntrar"))
 	})
 
 	t.Run("bid invalid", func(t *testing.T) {

@@ -3,6 +3,7 @@
 package controller_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -52,7 +53,7 @@ func TestTarocchiniCuiController_Exec(t *testing.T) {
 	// 変わったときに案内だけ古くなる。
 	t.Run("scarto with too few indices names the required count", func(t *testing.T) {
 		out := controller.NewTarocchiniCuiController(newMock()).Exec("scarto 0")
-		assert.Contains(t, out, "2 card indices are required")
+		assert.Contains(t, out, msgKey("cardIndicesRequiredScartoTwo", "n", fmt.Sprint(domain.TarocchiniSurplus)))
 	})
 
 	t.Run("scarto with a non-numeric index", func(t *testing.T) {

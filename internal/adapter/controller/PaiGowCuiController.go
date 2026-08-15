@@ -42,7 +42,7 @@ func (pgc *PaiGowCuiController) Exec(command string) string {
 					return errMsg, true
 				}
 				if len(args) < 2 {
-					return "Two card indices are required.", true
+					return invalidArg("twoIndicesRequired"), true
 				}
 				low1, errMsg, ok := cuiutil.ParseIntArgKeys(args[1:], "secondIndexRequired", "invalidSecondIndex", 0, 6)
 				if !ok {

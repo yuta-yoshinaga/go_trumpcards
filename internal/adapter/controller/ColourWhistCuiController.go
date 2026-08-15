@@ -41,7 +41,7 @@ func (cc *ColourWhistCuiController) Exec(command string) string {
 			case "bid":
 				contract, ok := colourWhistParseContract(args)
 				if !ok {
-					return "Invalid contract. Use samen / alleen / miserie, or pass (troel is dealt, not bid).", true
+					return invalidArg("invalidContractSamen"), true
 				}
 				return cc.ci.Bid(contract), true
 			case "pass":
@@ -49,7 +49,7 @@ func (cc *ColourWhistCuiController) Exec(command string) string {
 			case "call":
 				suit, ok := colourWhistParseSuit(args)
 				if !ok {
-					return "Invalid trump. Use s / c / h / d.", true
+					return invalidArg("invalidTrumpSCHD"), true
 				}
 				return cc.ci.Call(suit), true
 			case "next":

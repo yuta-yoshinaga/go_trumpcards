@@ -54,7 +54,7 @@ func (c *GuandanCuiController) Exec(command string) string {
 // **役は複数枚で出す**ので、単一の添字では足りない。
 func guandanParsePlay(args []string, gi usecase.GuandanInteractorIF) (string, bool) {
 	if len(args) == 0 {
-		return "Card indexes are required (e.g. p 0 1 2 for a triple).", true
+		return invalidArg("cardIndexesRequiredTriple"), true
 	}
 	idxs := make([]int, 0, len(args))
 	seen := map[int]bool{}

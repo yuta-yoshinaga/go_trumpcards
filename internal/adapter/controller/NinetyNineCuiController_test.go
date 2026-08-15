@@ -88,9 +88,9 @@ func TestNinetyNineCuiController_Exec_Errors(t *testing.T) {
 	m := newNinetyNineCuiMock()
 	c := controller.NewNinetyNineCuiController(m)
 
-	assert.Contains(t, c.Exec("b"), "required")
-	assert.Contains(t, c.Exec("b 0 1"), "required")
-	assert.Contains(t, c.Exec("b a b c"), "Invalid")
+	assert.True(t, msgRejected(c.Exec("b")))
+	assert.True(t, msgRejected(c.Exec("b 0 1")))
+	assert.True(t, msgRejected(c.Exec("b a b c")))
 	assert.Contains(t, c.Exec("p"), msgCardIndexRequired())
 	assert.Contains(t, c.Exec("sd"), msgCpuDifficultyRequired())
 	assert.True(t, msgRejected(c.Exec("st")))

@@ -40,7 +40,7 @@ func (bc *BotifarraCuiController) Exec(command string) string {
 			case "declare":
 				suit, ok := botifarraParseTrump(args)
 				if !ok {
-					return "Invalid trump. Use s/c/h/d, or n for no trump.", true
+					return invalidArg("invalidTrumpSCHDN"), true
 				}
 				return bc.bi.Declare(suit), true
 			case "delegate":

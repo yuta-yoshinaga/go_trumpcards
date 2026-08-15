@@ -66,7 +66,7 @@ func (c *LobaCuiController) Exec(command string) string {
 // 指定する必要があるため。
 func (c *LobaCuiController) meld(args []string) (string, bool) {
 	if len(args) == 0 {
-		return "Card indices are required (for example: m 0,2,5).", true
+		return invalidArg("cardIndicesRequiredMeld"), true
 	}
 	parts := strings.Split(args[0], ",")
 	idxs := make([]int, 0, len(parts))
@@ -83,7 +83,7 @@ func (c *LobaCuiController) meld(args []string) (string, bool) {
 // layOff は `o <card> <meld>` を解釈する。
 func (c *LobaCuiController) layOff(args []string) (string, bool) {
 	if len(args) < 2 {
-		return "Card index and meld index are required (for example: o 0 1).", true
+		return invalidArg("cardAndMeldIndexRequired"), true
 	}
 	card, err := strconv.Atoi(args[0])
 	if err != nil || card < 0 {

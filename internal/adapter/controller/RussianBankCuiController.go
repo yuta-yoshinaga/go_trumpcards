@@ -72,7 +72,7 @@ func (c *RussianBankCuiController) Exec(command string) string {
 			switch cmd {
 			case "pf":
 				if len(args) < 1 {
-					return "Source is required (r/w/or/ow/t0..t3).", true
+					return invalidArg("sourceRequiredZones"), true
 				}
 				zone, opp, col, ok := rbParseSource(args[0])
 				if !ok {

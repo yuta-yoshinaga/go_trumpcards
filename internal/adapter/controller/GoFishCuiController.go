@@ -39,10 +39,10 @@ func (c *GoFishCuiController) Exec(command string) string {
 				targetIdx, err1 := strconv.Atoi(args[0])
 				rank, err2 := strconv.Atoi(args[1])
 				if err1 != nil {
-					return fmt.Sprintf("Invalid target index: %s", args[0]), true
+					return invalidArg("invalidTargetIndexRaw", "val", fmt.Sprint(args[0])), true
 				}
 				if err2 != nil {
-					return fmt.Sprintf("Invalid rank: %s", args[1]), true
+					return invalidArg("invalidRankRaw", "val", fmt.Sprint(args[1])), true
 				}
 				return c.gi.Ask(targetIdx, rank), true
 			case "sd", "setdifficulty":

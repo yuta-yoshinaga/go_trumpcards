@@ -66,7 +66,7 @@ func (c *StealingBundlesCuiController) execSteal(args []string) (string, bool) {
 		return invalidArg("invalidCardIndex", "val", args[0]), true
 	}
 	if len(args) < 2 {
-		return "Victim index is required.", true
+		return invalidArg("victimIndexRequired"), true
 	}
 	victim, err := strconv.Atoi(args[1])
 	if err != nil {

@@ -69,7 +69,7 @@ func (c *ScartoCuiController) Exec(command string) string {
 // execScarto scarto / discard サブコマンドを解釈する (3 枚のインデックス)。
 func (c *ScartoCuiController) execScarto(args []string) (string, bool) {
 	if len(args) < domain.ScartoSurplus {
-		return "Three card indices are required (e.g. scarto 0 1 2).", true
+		return invalidArg("threeIndicesRequiredScarto"), true
 	}
 	indices, skipped := cuiutil.ParseIntSlice(args)
 	if len(skipped) > 0 {

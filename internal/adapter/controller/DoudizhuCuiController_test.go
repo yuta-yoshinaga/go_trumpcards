@@ -68,7 +68,7 @@ func TestDoudizhuCuiController_Exec(t *testing.T) {
 
 	t.Run("bid command rejects invalid value", func(t *testing.T) {
 		c := controller.NewDoudizhuCuiController(newMock())
-		assert.Contains(t, c.Exec("b 9"), "Invalid bid")
+		assert.Contains(t, c.Exec("b 9"), msgStem("invalidBidValue03Pass"))
 	})
 
 	t.Run("set difficulty command sd", func(t *testing.T) {

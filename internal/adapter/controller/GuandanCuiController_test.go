@@ -48,7 +48,7 @@ func TestGuandanCuiController_Exec(t *testing.T) {
 
 	t.Run("play rejects bad input", func(t *testing.T) {
 		c := controller.NewGuandanCuiController(newMock())
-		assert.Contains(t, c.Exec("p"), "Card indexes are required")
+		assert.Contains(t, c.Exec("p"), msgStem("cardIndexesRequiredTriple"))
 		assert.Contains(t, c.Exec("p abc"), msgInvalidCardIndexPrefix())
 		assert.Contains(t, c.Exec("p -1"), msgInvalidCardIndexPrefix())
 		assert.Contains(t, c.Exec("p 27"), msgInvalidCardIndexPrefix())
