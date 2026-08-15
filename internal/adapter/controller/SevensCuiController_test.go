@@ -221,3 +221,38 @@ func TestSevensCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "Reset")
 	})
 }
+
+// 打ち間違えた任意引数は既定値に落とさず断る。落とすと `p abc` が 0 番を出し、
+// プレイヤーが選んでいない札が場に出る (#5390)。
+func TestSevensCuiController_RefusesMistypedOptionalArgs(t *testing.T) {
+	mockOutput := `{"players":[],"currentTurn":0,"tableMinVals":[0,7,7,7,7],"tableMaxVals":[0,7,7,7,7],"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":""}`
+	newMock := func() *mockUsecases.MockSevensInteractor {
+		m := new(mockUsecases.MockSevensInteractor)
+		m.On("Reset").Return(mockOutput)
+		m.On("Play", mock.Anything).Return(mockOutput)
+		m.On("PlayJoker", mock.Anything, mock.Anything, mock.Anything).Return(mockOutput)
+		return m
+	}
+
+	t.Run("play refuses a mistyped index", func(t *testing.T) {
+		m := newMock()
+		out := controller.NewSevensCuiController(m).Exec("p abc")
+		assert.Equal(t, msgKey("invalidCardIndex", "val", "abc"), out)
+		m.AssertNotCalled(t, "Play", mock.Anything)
+	})
+
+	// **引数なしはパス。** 既定値 -1 が残っていることを一緒に見ておかないと、
+	// 断る側だけ直して省略形を壊しても気付けない。
+	t.Run("play with no argument still passes", func(t *testing.T) {
+		m := newMock()
+		assert.Equal(t, mockOutput, controller.NewSevensCuiController(m).Exec("p"))
+		m.AssertCalled(t, "Play", -1)
+	})
+
+	t.Run("joker refuses a mistyped suit", func(t *testing.T) {
+		m := newMock()
+		out := controller.NewSevensCuiController(m).Exec("j 0 xyz")
+		assert.Equal(t, msgKey("invalidSuit", "val", "xyz"), out)
+		m.AssertNotCalled(t, "PlayJoker", mock.Anything, mock.Anything, mock.Anything)
+	})
+}
