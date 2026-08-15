@@ -63,19 +63,19 @@ func (c *PrimeroCuiController) Exec(command string) string {
 					return c.ti.ResetWithConfig(cfg)
 				})
 			case "sa", "setante":
-				return cuiutil.WithParsedInt(args, "Ante is required (e.g. sa 10).", "Invalid ante: %s.", domain.PrimeroMinAnte, domain.PrimeroMaxAnte, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "anteRequired", "invalidAnte", domain.PrimeroMinAnte, domain.PrimeroMaxAnte, func(v int) string {
 					cfg := c.ti.GetConfig()
 					cfg.Ante = v
 					return c.ti.ResetWithConfig(cfg)
 				})
 			case "sc", "setchips":
-				return cuiutil.WithParsedInt(args, "Starting chips is required (e.g. sc 200).", "Invalid starting chips: %s.", domain.PrimeroMinStartingChips, domain.PrimeroMaxStartingChips, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "startingChipsRequired", "invalidStartingChips", domain.PrimeroMinStartingChips, domain.PrimeroMaxStartingChips, func(v int) string {
 					cfg := c.ti.GetConfig()
 					cfg.StartingChips = v
 					return c.ti.ResetWithConfig(cfg)
 				})
 			case "st", "setrounds":
-				return cuiutil.WithParsedInt(args, "Target rounds is required (e.g. st 10).", "Invalid target rounds: %s.", domain.PrimeroMinTargetRounds, domain.PrimeroMaxTargetRounds, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "targetRoundsRequired", "invalidTargetRounds", domain.PrimeroMinTargetRounds, domain.PrimeroMaxTargetRounds, func(v int) string {
 					cfg := c.ti.GetConfig()
 					cfg.TargetRounds = v
 					return c.ti.ResetWithConfig(cfg)

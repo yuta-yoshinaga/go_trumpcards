@@ -31,7 +31,7 @@ func (cc *CaribbeanStudCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bet":
-				ante, errMsg, ok := cuiutil.ParseIntArg(args, "Ante amount is required.", "Invalid ante amount. Please enter a number.", 1, math.MaxInt)
+				ante, errMsg, ok := cuiutil.ParseIntArgKeys(args, "anteAmountRequired", "invalidAnteAmount", 1, math.MaxInt)
 				if !ok {
 					return errMsg, true
 				}

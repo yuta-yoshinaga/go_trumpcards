@@ -163,12 +163,12 @@ func TestSevenBridgeCuiController_Exec(t *testing.T) {
 
 	t.Run("setlimit below min", func(t *testing.T) {
 		c := controller.NewSevenBridgeCuiController(newMock())
-		assert.Contains(t, c.Exec("sl 0"), "Invalid point limit")
+		assert.Contains(t, c.Exec("sl 0"), msgInvalidPointLimitPrefix())
 	})
 
 	t.Run("setlimit no args", func(t *testing.T) {
 		c := controller.NewSevenBridgeCuiController(newMock())
-		assert.Contains(t, c.Exec("sl"), "Point limit is required")
+		assert.Contains(t, c.Exec("sl"), msgPointLimitRequired())
 	})
 
 	t.Run("log command", func(t *testing.T) {

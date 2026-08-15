@@ -60,19 +60,19 @@ func (c *GutsCuiController) Exec(command string) string {
 					return c.ti.ResetWithConfig(cfg)
 				})
 			case "sa", "setante":
-				return cuiutil.WithParsedInt(args, "Ante is required (e.g. sa 10).", "Invalid ante: %s.", domain.GutsMinAnte, domain.GutsMaxAnte, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "anteRequired", "invalidAnte", domain.GutsMinAnte, domain.GutsMaxAnte, func(v int) string {
 					cfg := c.ti.GetConfig()
 					cfg.Ante = v
 					return c.ti.ResetWithConfig(cfg)
 				})
 			case "sc", "setchips":
-				return cuiutil.WithParsedInt(args, "Starting chips is required (e.g. sc 200).", "Invalid starting chips: %s.", domain.GutsMinStartingChips, domain.GutsMaxStartingChips, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "startingChipsRequired", "invalidStartingChips", domain.GutsMinStartingChips, domain.GutsMaxStartingChips, func(v int) string {
 					cfg := c.ti.GetConfig()
 					cfg.StartingChips = v
 					return c.ti.ResetWithConfig(cfg)
 				})
 			case "st", "setrounds":
-				return cuiutil.WithParsedInt(args, "Target rounds is required (e.g. st 10).", "Invalid target rounds: %s.", domain.GutsMinTargetRounds, domain.GutsMaxTargetRounds, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "targetRoundsRequired", "invalidTargetRounds", domain.GutsMinTargetRounds, domain.GutsMaxTargetRounds, func(v int) string {
 					cfg := c.ti.GetConfig()
 					cfg.TargetRounds = v
 					return c.ti.ResetWithConfig(cfg)

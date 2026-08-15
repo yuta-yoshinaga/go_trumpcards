@@ -60,16 +60,16 @@ func TestFourCardPokerCuiController_Bet_Errors(t *testing.T) {
 	c := controller.NewFourCardPokerCuiController(m)
 
 	t.Run("missing args", func(t *testing.T) {
-		assert.Contains(t, c.Exec("b"), "Ante amount is required")
+		assert.Contains(t, c.Exec("b"), msgAnteAmountRequired())
 	})
 	t.Run("invalid amount", func(t *testing.T) {
-		assert.Contains(t, c.Exec("b abc"), "Invalid ante amount")
+		assert.Contains(t, c.Exec("b abc"), msgInvalidAnteAmountPrefix())
 	})
 	t.Run("zero amount", func(t *testing.T) {
-		assert.Contains(t, c.Exec("b 0"), "Invalid ante amount")
+		assert.Contains(t, c.Exec("b 0"), msgInvalidAnteAmountPrefix())
 	})
 	t.Run("negative amount", func(t *testing.T) {
-		assert.Contains(t, c.Exec("b -10"), "Invalid ante amount")
+		assert.Contains(t, c.Exec("b -10"), msgInvalidAnteAmountPrefix())
 	})
 	t.Run("invalid aces up", func(t *testing.T) {
 		assert.Contains(t, c.Exec("b 100 abc"), "Invalid Aces Up amount")

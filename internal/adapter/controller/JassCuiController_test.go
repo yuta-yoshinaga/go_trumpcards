@@ -126,7 +126,7 @@ func TestJassCuiController_Exec(t *testing.T) {
 
 	t.Run("settarget invalid", func(t *testing.T) {
 		c := controller.NewJassCuiController(newMock())
-		assert.Contains(t, c.Exec("st 0"), "Invalid target score: 0")
+		assert.Contains(t, c.Exec("st 0"), msgInvalidTargetScore("0"))
 	})
 
 	t.Run("hint h", func(t *testing.T) {

@@ -60,7 +60,7 @@ func TestDragonTigerCuiController_Bet_Errors(t *testing.T) {
 	c := controller.NewDragonTigerCuiController(newMockDragonTigerInteractor())
 	assert.Contains(t, c.Exec("b"), "Bet amount and type")
 	assert.Contains(t, c.Exec("b 100"), "Bet amount and type")
-	assert.Contains(t, c.Exec("b abc d"), "Invalid bet amount")
+	assert.Contains(t, c.Exec("b abc d"), msgInvalidBetAmountPrefix())
 	assert.Contains(t, c.Exec("b 100 x"), "Invalid bet type")
 }
 

@@ -36,7 +36,7 @@ func (dc *DragonTigerCuiController) Exec(command string) string {
 				if len(args) < 2 {
 					return "Bet amount and type (d/t/e) are required.", true
 				}
-				amount, errMsg, ok := cuiutil.ParseIntArg(args[:1], "Bet amount is required.", "Invalid bet amount. Please enter a number.", domain.DragonTigerMinBet, math.MaxInt)
+				amount, errMsg, ok := cuiutil.ParseIntArgKeys(args[:1], "betAmountRequired", "invalidBetAmount", domain.DragonTigerMinBet, math.MaxInt)
 				if !ok {
 					return errMsg, true
 				}

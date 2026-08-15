@@ -30,7 +30,7 @@ func (cc *CasinoWarCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bet":
-				amount, errMsg, ok := cuiutil.ParseIntArg(args, "Bet amount is required.", "Invalid bet amount. Please enter a number.", domain.CasinoWarMinBet, math.MaxInt)
+				amount, errMsg, ok := cuiutil.ParseIntArgKeys(args, "betAmountRequired", "invalidBetAmount", domain.CasinoWarMinBet, math.MaxInt)
 				if !ok {
 					return errMsg, true
 				}

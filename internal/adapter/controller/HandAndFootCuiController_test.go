@@ -137,7 +137,7 @@ func TestHandAndFootCuiController_Exec(t *testing.T) {
 
 	t.Run("setlimit zero invalid", func(t *testing.T) {
 		c := controller.NewHandAndFootCuiController(newMock())
-		assert.Contains(t, c.Exec("sl 0"), "Invalid point limit")
+		assert.Contains(t, c.Exec("sl 0"), msgInvalidPointLimitPrefix())
 	})
 
 	t.Run("log l", func(t *testing.T) {

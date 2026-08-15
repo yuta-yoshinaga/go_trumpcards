@@ -60,7 +60,7 @@ func (c *GongZhuCuiController) Exec(command string) string {
 					return c.gi.ResetWithConfig(cfg)
 				})
 			case "sl", "setlimit":
-				return cuiutil.WithParsedInt(args, "Point limit is required.", "Invalid point limit: %s. Please enter 1 or more.", 1, math.MaxInt, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "pointLimitRequired", "invalidPointLimit", 1, math.MaxInt, func(v int) string {
 					cfg := c.gi.GetConfig()
 					cfg.PointLimit = v
 					return c.gi.ResetWithConfig(cfg)

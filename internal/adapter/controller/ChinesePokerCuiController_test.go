@@ -30,7 +30,7 @@ func TestChinesePokerCuiController_Exec_BetMissingAmount(t *testing.T) {
 	mock := new(mockusecase.MockChinesePokerInteractor)
 	cc := NewChinesePokerCuiController(mock)
 	result := cc.Exec("b")
-	assert.Contains(t, result, "required")
+	assert.Contains(t, result, msgBetAmountRequired())
 }
 
 func TestChinesePokerCuiController_Exec_Set(t *testing.T) {

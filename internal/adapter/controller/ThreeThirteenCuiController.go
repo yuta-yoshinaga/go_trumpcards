@@ -53,7 +53,7 @@ func (c *ThreeThirteenCuiController) Exec(command string) string {
 					return c.ci.ResetWithConfig(cfg)
 				})
 			case "sp", "setplayers":
-				return cuiutil.WithParsedInt(args, "Player count is required (2-4).", "Invalid player count: %s. Please enter 2-4.", domain.ThreeThirteenMinPlayers, domain.ThreeThirteenMaxPlayers, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "playerCountRequired", "invalidPlayerCount", domain.ThreeThirteenMinPlayers, domain.ThreeThirteenMaxPlayers, func(v int) string {
 					cfg := c.ci.GetConfig()
 					cfg.PlayerCount = v
 					return c.ci.ResetWithConfig(cfg)

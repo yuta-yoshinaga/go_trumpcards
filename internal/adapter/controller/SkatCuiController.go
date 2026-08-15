@@ -104,7 +104,7 @@ func (c *SkatCuiController) Exec(command string) string {
 					return c.si.ResetWithConfig(cfg)
 				})
 			case "sl", "settarget":
-				return cuiutil.WithParsedInt(args, "Target score is required.", "Invalid target score: %s. Please enter 1 or more.", 1, math.MaxInt, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "targetScoreRequired", "invalidTargetScore", 1, math.MaxInt, func(v int) string {
 					cfg := c.si.GetConfig()
 					cfg.TargetScore = v
 					return c.si.ResetWithConfig(cfg)

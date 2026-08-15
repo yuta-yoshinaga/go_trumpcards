@@ -51,8 +51,8 @@ func (ac *AndarBaharCuiController) execBet(args []string) (string, bool) {
 	if len(args) < 2 {
 		return "Bet amount and target (a/b) are required.", true
 	}
-	amount, errMsg, ok := cuiutil.ParseIntArg(args[:1],
-		"Bet amount is required.", "Invalid bet amount. Please enter a number.",
+	amount, errMsg, ok := cuiutil.ParseIntArgKeys(args[:1],
+		"betAmountRequired", "invalidBetAmount",
 		domain.AndarBaharMinBet, math.MaxInt)
 	if !ok {
 		return errMsg, true

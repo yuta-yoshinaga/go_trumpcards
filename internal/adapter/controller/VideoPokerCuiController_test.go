@@ -52,7 +52,7 @@ func TestVideoPokerCuiController_Bet_Errors(t *testing.T) {
 
 	t.Run("missing args", func(t *testing.T) {
 		result := c.Exec("b")
-		assert.Contains(t, result, "Bet amount is required")
+		assert.Contains(t, result, "Bet amount is required (1-5)")
 	})
 
 	t.Run("invalid amount", func(t *testing.T) {

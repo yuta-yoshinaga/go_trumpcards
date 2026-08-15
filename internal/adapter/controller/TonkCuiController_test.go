@@ -125,9 +125,9 @@ func TestTonkCuiController_Exec(t *testing.T) {
 
 	t.Run("setlimit errors", func(t *testing.T) {
 		c := controller.NewTonkCuiController(newMock())
-		assert.Contains(t, c.Exec("sl"), "required")
-		assert.Contains(t, c.Exec("sl abc"), "Invalid point limit")
-		assert.Equal(t, "Invalid point limit: 0. Please enter 1 or more.", c.Exec("sl 0"))
+		assert.Contains(t, c.Exec("sl"), msgPointLimitRequired())
+		assert.Contains(t, c.Exec("sl abc"), msgInvalidPointLimitPrefix())
+		assert.Equal(t, msgInvalidPointLimit("0"), c.Exec("sl 0"))
 	})
 
 	t.Run("log", func(t *testing.T) {

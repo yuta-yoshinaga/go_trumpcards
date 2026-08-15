@@ -82,17 +82,17 @@ func TestPaiGowCuiController_Bet_Errors(t *testing.T) {
 
 	t.Run("missing args", func(t *testing.T) {
 		result := c.Exec("b")
-		assert.Contains(t, result, "Bet amount is required")
+		assert.Contains(t, result, msgBetAmountRequired())
 	})
 
 	t.Run("invalid amount", func(t *testing.T) {
 		result := c.Exec("b abc")
-		assert.Contains(t, result, "Invalid bet amount")
+		assert.Contains(t, result, msgInvalidBetAmountPrefix())
 	})
 
 	t.Run("zero amount", func(t *testing.T) {
 		result := c.Exec("b 0")
-		assert.Contains(t, result, "Invalid bet amount")
+		assert.Contains(t, result, msgInvalidBetAmountPrefix())
 	})
 }
 

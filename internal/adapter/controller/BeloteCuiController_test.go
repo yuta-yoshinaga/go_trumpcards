@@ -159,12 +159,12 @@ func TestBeloteCuiController_Exec(t *testing.T) {
 
 	t.Run("settarget no args", func(t *testing.T) {
 		c := controller.NewBeloteCuiController(newMock())
-		assert.Contains(t, c.Exec("st"), "required")
+		assert.Contains(t, c.Exec("st"), msgTargetScoreRequired())
 	})
 
 	t.Run("settarget invalid", func(t *testing.T) {
 		c := controller.NewBeloteCuiController(newMock())
-		assert.Contains(t, c.Exec("st 0"), "Invalid target score: 0")
+		assert.Contains(t, c.Exec("st 0"), msgInvalidTargetScore("0"))
 	})
 
 	t.Run("hint h", func(t *testing.T) {

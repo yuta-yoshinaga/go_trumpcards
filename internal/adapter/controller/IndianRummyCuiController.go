@@ -49,7 +49,7 @@ func (c *IndianRummyCuiController) Exec(command string) string {
 			case "nr", "nextround":
 				return c.ci.NextRound(), true
 			case "pc", "setplayers":
-				return cuiutil.WithParsedInt(args, "Player count is required (2-4).", "Invalid player count: %s. Please enter 2-4.", domain.IndianRummyPlayerCountMin, domain.IndianRummyPlayerCountMax, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "playerCountRequired", "invalidPlayerCount", domain.IndianRummyPlayerCountMin, domain.IndianRummyPlayerCountMax, func(v int) string {
 					cfg := c.ci.GetConfig()
 					cfg.PlayerCount = v
 					return c.ci.ResetWithConfig(cfg)

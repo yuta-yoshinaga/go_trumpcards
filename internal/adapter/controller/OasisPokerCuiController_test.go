@@ -66,22 +66,22 @@ func TestOasisPokerCuiController_Bet_Errors(t *testing.T) {
 
 	t.Run("missing args", func(t *testing.T) {
 		result := c.Exec("b")
-		assert.Contains(t, result, "Ante amount is required")
+		assert.Contains(t, result, msgAnteAmountRequired())
 	})
 
 	t.Run("invalid amount", func(t *testing.T) {
 		result := c.Exec("b abc")
-		assert.Contains(t, result, "Invalid ante amount")
+		assert.Contains(t, result, msgInvalidAnteAmountPrefix())
 	})
 
 	t.Run("zero amount", func(t *testing.T) {
 		result := c.Exec("b 0")
-		assert.Contains(t, result, "Invalid ante amount")
+		assert.Contains(t, result, msgInvalidAnteAmountPrefix())
 	})
 
 	t.Run("negative amount", func(t *testing.T) {
 		result := c.Exec("b -10")
-		assert.Contains(t, result, "Invalid ante amount")
+		assert.Contains(t, result, msgInvalidAnteAmountPrefix())
 	})
 
 	t.Run("invalid jackpot", func(t *testing.T) {

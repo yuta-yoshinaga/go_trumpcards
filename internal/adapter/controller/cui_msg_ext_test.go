@@ -52,3 +52,48 @@ func msgCpuDifficultyRequired() string { return i18n.T("cpuDifficultyRequired") 
 // msgCpuDifficultyRequiredAlt is the wording used by the games whose difficulty
 // scale starts at Normal.
 func msgCpuDifficultyRequiredAlt() string { return i18n.T("cpuDifficultyRequiredAlt") }
+
+// Generated per-family renderers for the #5384 migration; see the note on
+// msgCardIndexRequired for why the tests go through i18n at all.
+func msgPointLimitRequired() string { return i18n.T("pointLimitRequired") }
+
+func msgInvalidPointLimit(val string) string { return i18n.Tf("invalidPointLimit", "val", val) }
+
+func msgInvalidPointLimitPrefix() string {
+	stem := strings.SplitN(i18n.Tf("invalidPointLimit", "val", "\x00"), "\x00", 2)[0]
+	return strings.TrimRight(stem, ":. ")
+}
+
+func msgBetAmountRequired() string { return i18n.T("betAmountRequired") }
+
+func msgInvalidBetAmountPrefix() string {
+	stem := strings.SplitN(i18n.Tf("invalidBetAmount", "val", "\x00"), "\x00", 2)[0]
+	return strings.TrimRight(stem, ":. ")
+}
+
+func msgTargetScoreRequired() string { return i18n.T("targetScoreRequired") }
+
+func msgInvalidTargetScore(val string) string { return i18n.Tf("invalidTargetScore", "val", val) }
+
+func msgAnteAmountRequired() string { return i18n.T("anteAmountRequired") }
+
+func msgInvalidAnteAmountPrefix() string {
+	stem := strings.SplitN(i18n.Tf("invalidAnteAmount", "val", "\x00"), "\x00", 2)[0]
+	return strings.TrimRight(stem, ":. ")
+}
+
+func msgInvalidPlayerCount(val string) string { return i18n.Tf("invalidPlayerCount", "val", val) }
+
+func msgInvalidPlayerCountPrefix() string {
+	stem := strings.SplitN(i18n.Tf("invalidPlayerCount", "val", "\x00"), "\x00", 2)[0]
+	return strings.TrimRight(stem, ":. ")
+}
+
+func msgAmountRequired() string { return i18n.T("amountRequired") }
+
+func msgInvalidAmountPrefix() string {
+	stem := strings.SplitN(i18n.Tf("invalidAmountNotANumber", "val", "\x00"), "\x00", 2)[0]
+	return strings.TrimRight(stem, ":. ")
+}
+
+func msgInvalidBetAmount(val string) string { return i18n.Tf("invalidBetAmount", "val", val) }

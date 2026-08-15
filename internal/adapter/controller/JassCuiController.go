@@ -70,7 +70,7 @@ func (c *JassCuiController) Exec(command string) string {
 					return c.ji.ResetWithConfig(cfg)
 				})
 			case "st", "settarget":
-				return cuiutil.WithParsedInt(args, "Target score is required.", "Invalid target score: %s. Please enter 1 or more.", 1, math.MaxInt, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "targetScoreRequired", "invalidTargetScore", 1, math.MaxInt, func(v int) string {
 					cfg := c.ji.GetConfig()
 					cfg.TargetScore = v
 					return c.ji.ResetWithConfig(cfg)

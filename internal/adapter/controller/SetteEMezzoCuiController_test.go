@@ -75,8 +75,8 @@ func TestSetteEMezzoCuiControllerMattaConvertsPointsToHalves(t *testing.T) {
 
 func TestSetteEMezzoCuiControllerRejectsBadInput(t *testing.T) {
 	for _, tc := range []struct{ cmd, contains string }{
-		{"b", "required."},
-		{"b abc", "Invalid"},
+		{"b", msgBetAmountRequired()},
+		{"b abc", msgInvalidBetAmountPrefix()},
 		{"matta", "required"},
 		{"matta abc", "Invalid"},
 		// 0.5 と 1〜7 以外は取れない。

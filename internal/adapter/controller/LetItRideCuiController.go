@@ -43,7 +43,7 @@ func (lc *LetItRideCuiController) Exec(command string) string {
 
 			switch cmd {
 			case "b", "bet":
-				amount, errMsg, ok := cuiutil.ParseIntArg(args, "Bet amount is required.", "Invalid bet amount. Please enter a number.", 1, math.MaxInt)
+				amount, errMsg, ok := cuiutil.ParseIntArgKeys(args, "betAmountRequired", "invalidBetAmount", 1, math.MaxInt)
 				if !ok {
 					return errMsg, true
 				}
