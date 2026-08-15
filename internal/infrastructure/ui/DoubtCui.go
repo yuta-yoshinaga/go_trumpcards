@@ -46,7 +46,7 @@ func (cui *DoubtCui) Controller() CuiExecer { return cui.dc }
 func (cui *DoubtCui) HelpLines() []string {
 	return BuildCuiHelp(CuiHelpSpec{
 		TitleKey:    "doubt.helpTitle",
-		CommandKeys: []string{"doubt.helpPlay", "doubt.helpDoubt", "doubt.helpSkip"},
+		CommandKeys: []string{"doubt.helpPlay", "doubt.helpDoubt", "doubt.helpSkip", "doubt.helpLog"},
 		SettingKeys: []string{"doubt.helpSetWindow", "doubt.helpSetMemory", "doubt.helpSetPenalty"},
 	})
 }

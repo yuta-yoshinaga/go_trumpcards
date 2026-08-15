@@ -267,7 +267,7 @@ var gameRegistry = []GameRegistryEntry{
 				"omaha.helpCall",
 				"omaha.helpBet",
 				"omaha.helpRaise",
-				"omaha.helpAllIn",
+				"omaha.helpAllIn", "omaha.helpLog",
 			}, tournamentRebuyAddOnKeys...),
 			SettingKeys: append([]string{
 				"omaha.helpBettingLimit", "omaha.helpTournament",
@@ -291,7 +291,7 @@ var gameRegistry = []GameRegistryEntry{
 				"omaha.helpCall",
 				"omaha.helpBet",
 				"omaha.helpRaise",
-				"omaha.helpAllIn",
+				"omaha.helpAllIn", "omaha.helpLog",
 			}, tournamentRebuyAddOnKeys...),
 			SettingKeys: append([]string{
 				"omaha.helpBettingLimit", "omaha.helpTournament",
@@ -315,7 +315,7 @@ var gameRegistry = []GameRegistryEntry{
 				"omaha.helpCall",
 				"omaha.helpBet",
 				"omaha.helpRaise",
-				"omaha.helpAllIn",
+				"omaha.helpAllIn", "omaha.helpLog",
 			}, tournamentRebuyAddOnKeys...),
 			SettingKeys: append([]string{
 				"omaha.helpBettingLimit", "omaha.helpTournament",
@@ -339,7 +339,7 @@ var gameRegistry = []GameRegistryEntry{
 				"omaha.helpCall",
 				"omaha.helpBet",
 				"omaha.helpRaise",
-				"omaha.helpAllIn",
+				"omaha.helpAllIn", "holdem.helpLog",
 			}, tournamentRebuyAddOnKeys...),
 			SettingKeys: append([]string{
 				"omaha.helpBettingLimit", "omaha.helpTournament",
@@ -1043,6 +1043,7 @@ var gameRegistry = []GameRegistryEntry{
 			"  sort <0|1>               sort hand (0=suit, 1=value)",
 			"  sd <0-2>                 set CPU difficulty",
 			"  l                        action log",
+			"  h                        hint",
 			"",
 			i18n.T("commonCommands"),
 		}}),
@@ -1379,7 +1380,7 @@ var gameRegistry = []GameRegistryEntry{
 				"sevencardstud.helpCall",
 				"sevencardstud.helpBet",
 				"sevencardstud.helpRaise",
-				"sevencardstud.helpAllIn",
+				"sevencardstud.helpAllIn", "sevencardstud.helpHint", "sevencardstud.helpLog",
 			}, tournamentRebuyAddOnKeys...),
 			SettingKeys: append([]string{
 				"sevencardstud.helpBettingLimit", "sevencardstud.helpTournament",
@@ -1399,7 +1400,7 @@ var gameRegistry = []GameRegistryEntry{
 				"sevencardstud.helpCall",
 				"sevencardstud.helpBet",
 				"sevencardstud.helpRaise",
-				"sevencardstud.helpAllIn",
+				"sevencardstud.helpAllIn", "sevencardstud.helpHint", "sevencardstud.helpLog",
 			}, tournamentRebuyAddOnKeys...),
 			SettingKeys: append([]string{
 				"sevencardstud.helpBettingLimit", "sevencardstud.helpTournament",
@@ -1566,7 +1567,7 @@ var gameRegistry = []GameRegistryEntry{
 				"blackjack.helpDouble",
 				"blackjack.helpSplit",
 				"blackjack.helpInsurance",
-				"blackjack.helpDeclineInsurance",
+				"blackjack.helpDeclineInsurance", "blackjack.helpLog",
 			},
 			SettingKeys: []string{"blackjack.helpSetCpuCount"},
 		}),
