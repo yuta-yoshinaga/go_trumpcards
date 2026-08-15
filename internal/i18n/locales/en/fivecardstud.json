@@ -54,5 +54,8 @@
   "muckPrompt": "Muck? (m=muck / sh=show)",
   "rebuyPrompt": "Rebuy? ({{chips}} chips, used {{used}}/{{max}}) (rb=rebuy / sr=skip)",
   "addonPrompt": "Add-on? ({{chips}} chips) (ad=addon / sa=skip)",
-  "gameEnd": "Game over"
+  "gameEnd": "Game over",
+  "helpExampleCheck": "  ck                   check and pass the action along",
+  "helpExampleBet": "  b 100                bet 100 chips",
+  "helpExampleRaise": "  ra 200               raise to 200 chips total"
 }

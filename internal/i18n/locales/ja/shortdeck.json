@@ -47,5 +47,8 @@
   "handRank6": "フラッシュ",
   "handRank7": "フォーカード",
   "handRank8": "ストレートフラッシュ",
-  "handRank9": "ロイヤルフラッシュ"
+  "handRank9": "ロイヤルフラッシュ",
+  "helpExampleCheck": "  ck                   チェックして次のプレイヤーへ回す",
+  "helpExampleBet": "  b 100                100 チップをベットする",
+  "helpExampleRaise": "  ra 200               合計 200 チップになるようレイズする"
 }

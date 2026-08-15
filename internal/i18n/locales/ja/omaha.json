@@ -46,5 +46,8 @@
   "addonPrompt": "アドオンしますか? ({{chips}}チップ) (ad=アドオン / sa=スキップ)",
   "gameEnd": "ゲーム終了",
   "hiLoRuleLine": "※ロー: 8以下5枚(8 or Better)。不成立時はHiが総取り",
-  "currentBestHand": "現在の最善役: {{hand}} ({{cards}})"
+  "currentBestHand": "現在の最善役: {{hand}} ({{cards}})",
+  "helpExampleCheck": "  ck                   チェックして次のプレイヤーへ回す",
+  "helpExampleBet": "  b 100                100 チップをベットする",
+  "helpExampleRaise": "  ra 200               合計 200 チップになるようレイズする"
 }
