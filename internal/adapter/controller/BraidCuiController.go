@@ -97,7 +97,7 @@ func (c *BraidCuiController) handleMoveFromBraid(args []string) string {
 		return cuiutil.PromptRequest(i18n.T("braid.promptBraidTo"), "m br {0}")
 	}
 	if args[0] != "f" {
-		return i18n.Tf("braid.onlyToFoundation", "val", args[0])
+		return invalidArg("braid.onlyToFoundation", "val", args[0])
 	}
 	return c.bi.MoveBraidToFoundation()
 }
@@ -115,7 +115,7 @@ func (c *BraidCuiController) handleMoveFromSlot(args []string, zone string, move
 		return cuiutil.PromptRequest(i18n.T("braid.promptBraidTo"), "m "+zone+" "+args[0]+" {0}")
 	}
 	if args[1] != "f" {
-		return i18n.Tf("braid.onlyToFoundation", "val", args[1])
+		return invalidArg("braid.onlyToFoundation", "val", args[1])
 	}
 	return move(idx)
 }

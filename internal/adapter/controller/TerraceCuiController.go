@@ -77,7 +77,7 @@ func (c *TerraceCuiController) handleMoveFromReserve(args []string) string {
 		return cuiutil.PromptRequest(i18n.T("terrace.promptReserveTo"), "m r {0}")
 	}
 	if args[0] != "f" {
-		return i18n.Tf("terrace.reserveOnlyToFoundation", "val", args[0])
+		return invalidArg("terrace.reserveOnlyToFoundation", "val", args[0])
 	}
 	return c.ti.MoveReserveToFoundation()
 }
