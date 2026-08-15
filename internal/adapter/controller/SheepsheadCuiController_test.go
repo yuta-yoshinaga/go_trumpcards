@@ -80,12 +80,12 @@ func TestSheepsheadCuiController_Exec(t *testing.T) {
 
 	t.Run("bury missing args", func(t *testing.T) {
 		result := controller.NewSheepsheadCuiController(newMock()).Exec("b 0")
-		assert.Contains(t, result, "Usage")
+		assert.True(t, msgRejected(result))
 	})
 
 	t.Run("bury no args", func(t *testing.T) {
 		result := controller.NewSheepsheadCuiController(newMock()).Exec("b")
-		assert.Contains(t, result, "Usage")
+		assert.True(t, msgRejected(result))
 	})
 
 	t.Run("call suit", func(t *testing.T) {

@@ -55,7 +55,7 @@ func TestZwanzigerrufenCuiController_Exec(t *testing.T) {
 	t.Run("bid trischaken is rejected", func(t *testing.T) {
 		m := newMock()
 		out := controller.NewZwanzigerrufenCuiController(m).Exec("bid trischaken")
-		assert.Contains(t, out, "Invalid bid")
+		assert.Contains(t, out, msgStem("invalidBidRuferOrSolo"))
 		m.AssertNotCalled(t, "Bid", mock.Anything)
 	})
 	t.Run("bid needs an argument", func(t *testing.T) {

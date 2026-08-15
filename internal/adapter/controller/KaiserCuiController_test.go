@@ -68,10 +68,10 @@ func TestKaiserCuiController_Exec(t *testing.T) {
 	t.Run("bid rejects a value outside 7-12", func(t *testing.T) {
 		c := controller.NewKaiserCuiController(newMock())
 		assert.True(t, msgRejected(c.Exec("b")))
-		assert.Contains(t, c.Exec("b abc"), "Invalid bid")
-		assert.Contains(t, c.Exec("b 6"), "Invalid bid")
-		assert.Contains(t, c.Exec("b 13"), "Invalid bid")
-		assert.Contains(t, c.Exec("b 8 9"), "Invalid contract")
+		assert.Contains(t, c.Exec("b abc"), msgStem("invalidBidMinMax"))
+		assert.Contains(t, c.Exec("b 6"), msgStem("invalidBidMinMax"))
+		assert.Contains(t, c.Exec("b 13"), msgStem("invalidBidMinMax"))
+		assert.Contains(t, c.Exec("b 8 9"), msgStem("invalidContract02"))
 	})
 
 	t.Run("trump", func(t *testing.T) {

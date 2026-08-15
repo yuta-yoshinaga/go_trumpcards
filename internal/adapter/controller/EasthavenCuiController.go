@@ -92,7 +92,7 @@ func (c *EasthavenCuiController) handleMoveFromTableau(args []string) string {
 		if len(args) == 3 && args[2] == "t" {
 			return cuiutil.PromptRequest(i18n.T("promptToColumn"), fmt.Sprintf("m t %s %s t {0}", args[0], args[1]))
 		}
-		return i18n.T("easthaven.moveUsage")
+		return i18n.MarkError(i18n.T("easthaven.moveUsage"))
 	}
 
 	cardIdx, err := strconv.Atoi(args[1])

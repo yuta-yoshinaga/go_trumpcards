@@ -32,6 +32,5 @@
   "claimLost": "相手が1枚以上持っていたので、相手チームの獲得になりました",
   "result.humanWin": "ゲーム終了！ あなたのチームの勝ちです！",
   "result.cpuWin": "ゲーム終了！ 相手チームの勝ちです。",
-  "result.draw": "ゲーム終了。同数で勝者なしです。",
-  "helpExampleClaim": "  c                       ハーフスートを宣言する"
+  "result.draw": "ゲーム終了。同数で勝者なしです。"
 }

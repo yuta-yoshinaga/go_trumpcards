@@ -111,7 +111,7 @@ func (c *PresidentCuiController) Exec(command string) string {
 					return "Rules:\n" + formatPresidentRuleList(&cfg), true
 				}
 				if len(args) < 2 {
-					return "Usage: sr <rule> <0|1> | sr list\nRules: " + strings.Join(presidentRuleKeys, ", "), true
+					return invalidArg("usageSrRule01SrListRules") + strings.Join(presidentRuleKeys, ", "), true
 				}
 				if !setPresidentRule(nil, args[0], false) {
 					return invalidArg("unknownRule", "val", fmt.Sprint(args[0])), true

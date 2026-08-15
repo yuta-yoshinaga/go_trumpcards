@@ -63,14 +63,13 @@ func bostonParseBid(args []string, bi usecase.BostonInteractorIF) (string, bool)
 	}
 	level, err := strconv.Atoi(args[0])
 	if err != nil || level <= int(domain.BostonBidPass) || level >= int(domain.BostonBidLevelCount) {
-		return "Invalid bid level: " + args[0] + ". Please enter 1-" +
-			strconv.Itoa(int(domain.BostonBidLevelCount)-1) + ".", true
+		return invalidArg("invalidBidLevel1Max", "val", args[0], "max", strconv.Itoa(int(domain.BostonBidLevelCount)-1)), true
 	}
 	suit := 0
 	if len(args) > 1 {
 		suit, err = strconv.Atoi(args[1])
 		if err != nil || suit < domain.CardDesignSpade || suit > domain.CardDesignDiamond {
-			return "Invalid suit: " + args[1] + ". Please enter 1-4.", true
+			return invalidArg("invalidSuit14Plain", "val", args[1]), true
 		}
 	}
 	return bi.Bid(domain.BostonBidLevel(level), suit), true
@@ -83,8 +82,7 @@ func bostonParseCallPartner(args []string, bi usecase.BostonInteractorIF) (strin
 	}
 	seat, err := strconv.Atoi(args[0])
 	if err != nil || seat < -1 || seat >= domain.BostonPlayerCnt {
-		return "Invalid partner: " + args[0] + ". Please enter -1 to " +
-			strconv.Itoa(domain.BostonPlayerCnt-1) + ".", true
+		return invalidArg("invalidPartnerMinus1Max", "val", args[0], "max", strconv.Itoa(domain.BostonPlayerCnt-1)), true
 	}
 	return bi.CallPartner(seat), true
 }

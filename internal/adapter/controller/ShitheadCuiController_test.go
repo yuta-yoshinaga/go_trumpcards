@@ -77,7 +77,7 @@ func TestShitheadCuiController_Exec(t *testing.T) {
 
 	t.Run("setrule usage", func(t *testing.T) {
 		c := controller.NewShitheadCuiController(newMock())
-		assert.Contains(t, c.Exec("sr"), "Usage")
+		assert.True(t, msgRejected(c.Exec("sr")))
 	})
 
 	t.Run("setrule unknown", func(t *testing.T) {

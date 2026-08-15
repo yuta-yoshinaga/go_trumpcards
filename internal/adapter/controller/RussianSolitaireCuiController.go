@@ -90,7 +90,7 @@ func (c *RussianSolitaireCuiController) handleMoveFromTableau(args []string) str
 		if len(args) == 3 && args[2] == "t" {
 			return cuiutil.PromptRequest(i18n.T("promptToColumn"), fmt.Sprintf("m t %s %s t {0}", args[0], args[1]))
 		}
-		return i18n.T("russiansolitaire.moveUsage")
+		return i18n.MarkError(i18n.T("russiansolitaire.moveUsage"))
 	}
 
 	cardIdx, err := strconv.Atoi(args[1])

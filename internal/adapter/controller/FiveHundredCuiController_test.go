@@ -72,10 +72,10 @@ func TestFiveHundredCuiController_Quit(t *testing.T) {
 
 func TestFiveHundredCuiController_Usage(t *testing.T) {
 	c, _ := newFiveHundredCui()
-	if got := c.Exec("b"); !strings.Contains(got, "Usage") {
+	if got := c.Exec("b"); !msgRejected(got) {
 		t.Errorf("bid without args should show usage, got %q", got)
 	}
-	if got := c.Exec("e 0"); !strings.Contains(got, "Usage") {
+	if got := c.Exec("e 0"); !msgRejected(got) {
 		t.Errorf("exchange with one arg should show usage, got %q", got)
 	}
 	if got := c.Exec("p"); !strings.Contains(got, msgCardIndexRequired()) {

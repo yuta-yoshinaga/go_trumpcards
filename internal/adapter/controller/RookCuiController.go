@@ -60,7 +60,7 @@ func (c *RookCuiController) Exec(command string) string {
 				return c.fi.Pass(), true
 			case "e", "exchange":
 				if len(args) < 6 {
-					return "Usage: exchange <i> <j> <k> <l> <m> <color>  (5 card indices + trump color 1-4)\n", true
+					return invalidArg("usageExchangeIJKLMColor5CardIndicesTrumpColor14"), true
 				}
 				idxs := make([]int, 5)
 				for i := 0; i < 5; i++ {

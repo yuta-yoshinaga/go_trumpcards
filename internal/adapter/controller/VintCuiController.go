@@ -57,13 +57,11 @@ func vintParseBid(args []string, vi usecase.VintInteractorIF) (string, bool) {
 	}
 	level, err := strconv.Atoi(args[0])
 	if err != nil || level < domain.VintMinLevel || level > domain.VintMaxLevel {
-		return "Invalid bid level: " + args[0] + ". Please enter " +
-			strconv.Itoa(domain.VintMinLevel) + "-" + strconv.Itoa(domain.VintMaxLevel) + ".", true
+		return invalidArg("invalidBidLevelMinMax", "val", args[0], "max", strconv.Itoa(domain.VintMinLevel)+"-"+strconv.Itoa(domain.VintMaxLevel)), true
 	}
 	denom, err := strconv.Atoi(args[1])
 	if err != nil || denom < 0 || denom >= domain.VintDenomCount {
-		return "Invalid denomination: " + args[1] + ". Please enter 0-" +
-			strconv.Itoa(domain.VintDenomCount-1) + " (0=S 1=C 2=D 3=H 4=NT).", true
+		return invalidArg("invalidDenomination0Max", "val", args[1], "max", strconv.Itoa(domain.VintDenomCount-1)), true
 	}
 	return vi.Bid(level, denom), true
 }

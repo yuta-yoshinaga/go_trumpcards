@@ -39,8 +39,8 @@ func TestPokerSquaresCuiController_PlaceInvalid(t *testing.T) {
 	pi := newMockPokerSquaresInteractor()
 	c := NewPokerSquaresCuiController(pi)
 
-	assert.Contains(t, c.Exec("p"), "Usage:")
-	assert.Contains(t, c.Exec("p 1"), "Usage:")
+	assert.Contains(t, c.Exec("p"), msgUsage("usagePRowCol"))
+	assert.Contains(t, c.Exec("p 1"), msgUsage("usagePRowCol"))
 	assert.True(t, msgRejected(c.Exec("p abc 0")))
 	assert.True(t, msgRejected(c.Exec("p 0 abc")))
 }

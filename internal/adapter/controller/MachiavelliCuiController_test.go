@@ -61,7 +61,7 @@ func TestMachiavelliCuiController_Exec(t *testing.T) {
 		m := newMock()
 		c := controller.NewMachiavelliCuiController(m)
 		out := c.Exec("nm 0 1")
-		assert.Contains(t, out, "Usage: nm")
+		assert.Contains(t, out, msgUsage("usageNmIJKAtLeast3HandIndices"))
 		m.AssertNotCalled(t, "NewMeld", mock.Anything)
 	})
 
@@ -76,7 +76,7 @@ func TestMachiavelliCuiController_Exec(t *testing.T) {
 		m := newMock()
 		c := controller.NewMachiavelliCuiController(m)
 		out := c.Exec("lo 0")
-		assert.Contains(t, out, "Usage: lo")
+		assert.Contains(t, out, msgUsage("usageLoMeldidxHandindex"))
 		m.AssertNotCalled(t, "Layoff", mock.Anything, mock.Anything)
 	})
 

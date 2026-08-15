@@ -32,6 +32,5 @@
   "claimLost": "An opponent held at least one, so the half-suit goes to them",
   "result.humanWin": "Game over! Your team wins!",
   "result.cpuWin": "Game over! The other team wins.",
-  "result.draw": "Game over. It ended level, so nobody wins.",
-  "helpExampleClaim": "  c                         claim a half-suit"
+  "result.draw": "Game over. It ended level, so nobody wins."
 }

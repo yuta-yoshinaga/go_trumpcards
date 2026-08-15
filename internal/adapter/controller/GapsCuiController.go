@@ -47,7 +47,7 @@ func (c *GapsCuiController) Exec(command string) string {
 // handleMove は "m <fromRow> <fromCol> <toRow> <toCol>" を処理する。
 func (c *GapsCuiController) handleMove(args []string) string {
 	if len(args) != 4 {
-		return "Usage: m <fromRow> <fromCol> <toRow> <toCol>"
+		return invalidArg("usageMFromrowFromcolTorowTocol")
 	}
 	fr, err := strconv.Atoi(args[0])
 	if err != nil {

@@ -61,7 +61,7 @@ func TestBarbuCuiController_Exec(t *testing.T) {
 
 	t.Run("select contract missing arg", func(t *testing.T) {
 		c := controller.NewBarbuCuiController(newMock())
-		assert.Contains(t, c.Exec("c"), "Usage")
+		assert.True(t, msgRejected(c.Exec("c")))
 	})
 
 	t.Run("play a card", func(t *testing.T) {
@@ -80,7 +80,7 @@ func TestBarbuCuiController_Exec(t *testing.T) {
 
 	t.Run("play missing arg", func(t *testing.T) {
 		c := controller.NewBarbuCuiController(newMock())
-		assert.Contains(t, c.Exec("p"), "Usage")
+		assert.True(t, msgRejected(c.Exec("p")))
 	})
 
 	t.Run("set difficulty", func(t *testing.T) {

@@ -101,7 +101,7 @@ func (c *BristolCuiController) handleMoveFromTableau(args []string) string {
 	case "f":
 		return c.bi.MoveTableauToFoundation(fromCol)
 	default:
-		return i18n.T("bristol.moveUsage")
+		return i18n.MarkError(i18n.T("bristol.moveUsage"))
 	}
 }
 
@@ -130,6 +130,6 @@ func (c *BristolCuiController) handleMoveFromFan(args []string) string {
 	case "f":
 		return c.bi.MoveFanToFoundation(fanIdx)
 	default:
-		return i18n.T("bristol.moveUsage")
+		return i18n.MarkError(i18n.T("bristol.moveUsage"))
 	}
 }

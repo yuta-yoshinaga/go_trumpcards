@@ -121,12 +121,12 @@ func TestMightyCuiController_Exec(t *testing.T) {
 
 	t.Run("trump no args", func(t *testing.T) {
 		c := controller.NewMightyCuiController(newMightyCuiMock(mockOutput))
-		assert.Contains(t, c.Exec("t"), "Usage: trump")
+		assert.Contains(t, c.Exec("t"), msgUsage("usageTrumpSuitPartnersuitPartnervalSuit1NoTrump1Spad"))
 	})
 
 	t.Run("trump partial args", func(t *testing.T) {
 		c := controller.NewMightyCuiController(newMightyCuiMock(mockOutput))
-		assert.Contains(t, c.Exec("t 1 2"), "Usage: trump")
+		assert.Contains(t, c.Exec("t 1 2"), msgUsage("usageTrumpSuitPartnersuitPartnervalSuit1NoTrump1Spad"))
 	})
 
 	t.Run("trump invalid suit value", func(t *testing.T) {
@@ -161,12 +161,12 @@ func TestMightyCuiController_Exec(t *testing.T) {
 
 	t.Run("exchange no args", func(t *testing.T) {
 		c := controller.NewMightyCuiController(newMightyCuiMock(mockOutput))
-		assert.Contains(t, c.Exec("e"), "Usage: exchange")
+		assert.Contains(t, c.Exec("e"), msgUsage("usageExchangeIJKThreeCardIndicesToDiscardFromKittyPi"))
 	})
 
 	t.Run("exchange only two args (insufficient)", func(t *testing.T) {
 		c := controller.NewMightyCuiController(newMightyCuiMock(mockOutput))
-		assert.Contains(t, c.Exec("e 1 2"), "Usage: exchange")
+		assert.Contains(t, c.Exec("e 1 2"), msgUsage("usageExchangeIJKThreeCardIndicesToDiscardFromKittyPi"))
 	})
 
 	t.Run("exchange invalid index", func(t *testing.T) {
@@ -209,12 +209,12 @@ func TestMightyCuiController_Exec(t *testing.T) {
 
 	t.Run("jokerlead no args", func(t *testing.T) {
 		c := controller.NewMightyCuiController(newMightyCuiMock(mockOutput))
-		assert.Contains(t, c.Exec("jl"), "Usage: jokerlead")
+		assert.Contains(t, c.Exec("jl"), msgUsage("usageJokerleadCardindexDemandsuitDemandsuit1Spade2Cl"))
 	})
 
 	t.Run("jokerlead missing demand suit", func(t *testing.T) {
 		c := controller.NewMightyCuiController(newMightyCuiMock(mockOutput))
-		assert.Contains(t, c.Exec("jl 1"), "Usage: jokerlead")
+		assert.Contains(t, c.Exec("jl 1"), msgUsage("usageJokerleadCardindexDemandsuitDemandsuit1Spade2Cl"))
 	})
 
 	t.Run("jokerlead invalid demand suit", func(t *testing.T) {

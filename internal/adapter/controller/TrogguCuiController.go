@@ -84,7 +84,7 @@ func (c *TrogguCuiController) execBid(args []string) (string, bool) {
 	}
 	bid := trogguParseBid(args[0])
 	if bid == domain.TrogguBidPass {
-		return "Invalid bid: " + args[0] + ". Please enter trois, solo, piccolo or misere.", true
+		return invalidArg("invalidBidTrois", "val", args[0]), true
 	}
 	return c.ti.Bid(bid), true
 }

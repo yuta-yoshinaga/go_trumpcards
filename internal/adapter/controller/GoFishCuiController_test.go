@@ -37,7 +37,7 @@ func TestGoFishCuiController_Ask(t *testing.T) {
 func TestGoFishCuiController_Ask_MissingArgs(t *testing.T) {
 	ctrl, _ := newGoFishCuiController()
 	result := ctrl.Exec("ask")
-	assert.Contains(t, result, "Usage")
+	assert.True(t, msgRejected(result))
 }
 
 func TestGoFishCuiController_Ask_InvalidTarget(t *testing.T) {

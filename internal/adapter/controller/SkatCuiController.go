@@ -63,7 +63,7 @@ func (c *SkatCuiController) Exec(command string) string {
 				})
 			case "d", "discard":
 				if len(args) < 2 {
-					return "Usage: discard <i> <j> (two card indices)\n", true
+					return invalidArg("usageDiscardIJTwoCardIndices"), true
 				}
 				idxA, errMsg, ok := cuiutil.ParseIntArgKeys(args[:1], "", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax)
 				if !ok {
@@ -76,7 +76,7 @@ func (c *SkatCuiController) Exec(command string) string {
 				return c.si.Discard(idxA, idxB), true
 			case "g", "game":
 				if len(args) < 1 {
-					return "Usage: game <type> [trumpSuit]\n  type: 1=Suit 2=Grand 3=Null\n  trumpSuit (suit only): 1=♠ 2=♣ 3=♥ 4=♦\n", true
+					return invalidArg("usageGameTypeTrumpsuitType1Suit2Grand3NullTrumpsuitS"), true
 				}
 				gt, errMsg, ok := cuiutil.ParseIntArgKeys(args[:1], "", "invalidGameType", 1, 3)
 				if !ok {

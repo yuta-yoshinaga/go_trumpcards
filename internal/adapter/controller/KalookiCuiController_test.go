@@ -72,7 +72,7 @@ func TestKalookiCuiController_Exec(t *testing.T) {
 		m := newMock()
 		c := controller.NewKalookiCuiController(m)
 		out := c.Exec("m")
-		assert.Contains(t, out, "Usage: m")
+		assert.Contains(t, out, msgUsage("usageMABCDEFOneMeldPerArg"))
 		m.AssertNotCalled(t, "Meld", mock.Anything)
 	})
 
@@ -87,7 +87,7 @@ func TestKalookiCuiController_Exec(t *testing.T) {
 		m := newMock()
 		c := controller.NewKalookiCuiController(m)
 		out := c.Exec("lo 1")
-		assert.Contains(t, out, "Usage: lo")
+		assert.Contains(t, out, msgUsage("usageLoTargetplayeridxMeldidxCardindex"))
 		m.AssertNotCalled(t, "Layoff", mock.Anything, mock.Anything, mock.Anything)
 	})
 

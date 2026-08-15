@@ -69,7 +69,7 @@ func (c *CruelCuiController) handleMove(args []string) string {
 	}
 	toCol, err := strconv.Atoi(dest)
 	if err != nil {
-		return i18n.T("cruel.moveUsage")
+		return i18n.MarkError(i18n.T("cruel.moveUsage"))
 	}
 	return c.ci.MoveTableauToTableau(fromCol, toCol)
 }

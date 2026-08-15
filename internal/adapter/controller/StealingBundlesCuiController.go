@@ -70,7 +70,7 @@ func (c *StealingBundlesCuiController) execSteal(args []string) (string, bool) {
 	}
 	victim, err := strconv.Atoi(args[1])
 	if err != nil {
-		return "Invalid victim index: " + args[1] + ".", true
+		return invalidArg("invalidVictimIndexDot", "val", args[1]), true
 	}
 	return c.si.Steal(cardIdx, victim), true
 }

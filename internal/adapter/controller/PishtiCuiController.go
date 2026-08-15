@@ -64,7 +64,7 @@ func (c *PishtiCuiController) Exec(command string) string {
 // handlePlay は `p <h>` を処理する。
 func (c *PishtiCuiController) handlePlay(args []string) (string, bool) {
 	if len(args) < 1 {
-		return "Usage: p <handIdx>", true
+		return invalidArg("usagePHandidx"), true
 	}
 	handIdx, _, ok := cuiutil.ParseIntArgKeys([]string{args[0]}, "handIndexRequired", "invalidHandIndex", 0, 51)
 	if !ok {

@@ -62,18 +62,18 @@ func (c *LaBelleLucieCuiController) Exec(command string) string {
 // handleMove 移動コマンド `m <from> <to|f>` を処理する。
 func (c *LaBelleLucieCuiController) handleMove(args []string) string {
 	if len(args) < 2 {
-		return "Usage: m <from> <to|f>."
+		return invalidArg("usageMFromToF")
 	}
 	from, err := strconv.Atoi(args[0])
 	if err != nil {
-		return "Invalid source fan: " + args[0] + "."
+		return invalidArg("invalidSourceFanDot", "val", args[0])
 	}
 	if args[1] == "f" || args[1] == "F" {
 		return c.li.MoveFanToFoundation(from)
 	}
 	to, err := strconv.Atoi(args[1])
 	if err != nil {
-		return "Invalid destination: " + args[1] + " (use a fan index or 'f')."
+		return invalidArg("invalidDestinationFanOrF", "val", args[1])
 	}
 	return c.li.MoveFanToFan(from, to)
 }

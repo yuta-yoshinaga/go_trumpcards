@@ -63,7 +63,7 @@ func TestTysiacCuiController_Exec(t *testing.T) {
 
 	t.Run("bid invalid", func(t *testing.T) {
 		result := controller.NewTysiacCuiController(newMock()).Exec("bid zzz")
-		assert.Contains(t, result, "Invalid bid action")
+		assert.Contains(t, result, msgStem("invalidBidActionRaisePass"))
 	})
 
 	t.Run("discard card", func(t *testing.T) {

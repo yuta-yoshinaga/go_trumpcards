@@ -57,7 +57,7 @@ func TestCegoCuiController_Exec(t *testing.T) {
 
 	t.Run("bid invalid", func(t *testing.T) {
 		result := controller.NewCegoCuiController(newMock()).Exec("bid zzz")
-		assert.Contains(t, result, "Invalid bid")
+		assert.Contains(t, result, msgStem("invalidBidPlay"))
 	})
 
 	t.Run("pass", func(t *testing.T) {

@@ -86,7 +86,7 @@ func (c *CegoCuiController) execBid(args []string) (string, bool) {
 	}
 	bid := cegoParseBid(args[0])
 	if bid == domain.CegoBidPass {
-		return "Invalid bid: " + args[0] + ". Please enter play.", true
+		return invalidArg("invalidBidPlay", "val", args[0]), true
 	}
 	return c.di.Bid(bid), true
 }

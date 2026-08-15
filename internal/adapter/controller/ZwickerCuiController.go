@@ -70,13 +70,13 @@ func (c *ZwickerCuiController) take(args []string) (string, bool) {
 	}
 	value, err := strconv.Atoi(strings.TrimSpace(args[1]))
 	if err != nil || value <= 0 {
-		return "Invalid value: " + args[1] + ".", true
+		return invalidArg("invalidValueDot", "val", args[1]), true
 	}
 	var tableIdxs, buildIdxs []int
 	for _, a := range args[2:] {
 		list, prefix, ok := zwickerParseList(a)
 		if !ok {
-			return "Invalid selection: " + a + ".", true
+			return invalidArg("invalidSelectionDot", "val", a), true
 		}
 		if prefix == "b" {
 			buildIdxs = append(buildIdxs, list...)
@@ -101,11 +101,11 @@ func (c *ZwickerCuiController) build(args []string) (string, bool) {
 	}
 	table, _, ok := zwickerParseList(args[1])
 	if !ok || len(table) == 0 {
-		return "Invalid table selection: " + args[1] + ".", true
+		return invalidArg("invalidTableSelectionDot", "val", args[1]), true
 	}
 	value, err := strconv.Atoi(strings.TrimSpace(args[2]))
 	if err != nil || value <= 0 {
-		return "Invalid value: " + args[2] + ".", true
+		return invalidArg("invalidValueDot", "val", args[2]), true
 	}
 	return c.zi.Build(hand, table, value), true
 }

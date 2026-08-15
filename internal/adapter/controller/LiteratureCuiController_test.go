@@ -46,14 +46,14 @@ func TestLiteratureCuiController_Exec(t *testing.T) {
 
 	t.Run("ask rejects bad input", func(t *testing.T) {
 		c := controller.NewLiteratureCuiController(newMock())
-		assert.Contains(t, c.Exec("a"), "needs a target seat")
-		assert.Contains(t, c.Exec("a 1 1"), "needs a target seat")
-		assert.Contains(t, c.Exec("a 9 1 2"), "Invalid seat")
-		assert.Contains(t, c.Exec("a abc 1 2"), "Invalid seat")
-		assert.Contains(t, c.Exec("a 1 9 2"), "Invalid suit")
-		assert.Contains(t, c.Exec("a 1 abc 2"), "Invalid suit")
-		assert.Contains(t, c.Exec("a 1 1 14"), "Invalid rank")
-		assert.Contains(t, c.Exec("a 1 1 abc"), "Invalid rank")
+		assert.Contains(t, c.Exec("a"), msgStem("askNeedsSeatSuitRank"))
+		assert.Contains(t, c.Exec("a 1 1"), msgStem("askNeedsSeatSuitRank"))
+		assert.Contains(t, c.Exec("a 9 1 2"), msgStem("invalidSeat0Max"))
+		assert.Contains(t, c.Exec("a abc 1 2"), msgStem("invalidSeat0Max"))
+		assert.Contains(t, c.Exec("a 1 9 2"), msgStem("invalidSuit14Letters"))
+		assert.Contains(t, c.Exec("a 1 abc 2"), msgStem("invalidSuit14Letters"))
+		assert.Contains(t, c.Exec("a 1 1 14"), msgStem("invalidRank113"))
+		assert.Contains(t, c.Exec("a 1 1 abc"), msgStem("invalidRank113"))
 	})
 
 	// **宣言は組と 6 席。**所在を 6 枚ぶん申告する。
@@ -68,12 +68,12 @@ func TestLiteratureCuiController_Exec(t *testing.T) {
 
 	t.Run("claim rejects bad input", func(t *testing.T) {
 		c := controller.NewLiteratureCuiController(newMock())
-		assert.Contains(t, c.Exec("c"), "all six holders")
-		assert.Contains(t, c.Exec("c 0 0 0 2"), "all six holders")
-		assert.Contains(t, c.Exec("c 9 0 0 2 2 4 4"), "Invalid half-suit")
-		assert.Contains(t, c.Exec("c abc 0 0 2 2 4 4"), "Invalid half-suit")
-		assert.Contains(t, c.Exec("c 0 0 0 2 2 4 9"), "Invalid seat")
-		assert.Contains(t, c.Exec("c 0 0 0 2 2 4 abc"), "Invalid seat")
+		assert.Contains(t, c.Exec("c"), msgStem("claimNeedsHalfSuitAndHolders"))
+		assert.Contains(t, c.Exec("c 0 0 0 2"), msgStem("claimNeedsHalfSuitAndHolders"))
+		assert.Contains(t, c.Exec("c 9 0 0 2 2 4 4"), msgStem("invalidHalfSuit0Max"))
+		assert.Contains(t, c.Exec("c abc 0 0 2 2 4 4"), msgStem("invalidHalfSuit0Max"))
+		assert.Contains(t, c.Exec("c 0 0 0 2 2 4 9"), msgStem("invalidSeat0Max"))
+		assert.Contains(t, c.Exec("c 0 0 0 2 2 4 abc"), msgStem("invalidSeat0Max"))
 	})
 
 	t.Run("log and unknown", func(t *testing.T) {

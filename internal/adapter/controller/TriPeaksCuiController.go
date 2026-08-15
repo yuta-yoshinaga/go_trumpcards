@@ -47,7 +47,7 @@ func (c *TriPeaksCuiController) Exec(command string) string {
 // handleRemove 除去コマンドを処理
 func (c *TriPeaksCuiController) handleRemove(args []string) string {
 	if len(args) != 2 {
-		return "Usage: rm <row> <col>"
+		return invalidArg("usageRmRowCol")
 	}
 	row, err := strconv.Atoi(args[0])
 	if err != nil {

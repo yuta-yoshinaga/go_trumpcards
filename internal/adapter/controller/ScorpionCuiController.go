@@ -67,7 +67,7 @@ func (c *ScorpionCuiController) handleMove(args []string) string {
 		return c.handleMoveShorthand(args)
 	}
 	if args[0] != "t" {
-		return i18n.T("scorpion.moveUsage")
+		return i18n.MarkError(i18n.T("scorpion.moveUsage"))
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("scorpion.promptFromColumn"), "m t {0}")
@@ -83,7 +83,7 @@ func (c *ScorpionCuiController) handleMove(args []string) string {
 		if len(args) == 3 || (len(args) == 4 && args[3] == "t") {
 			return cuiutil.PromptRequest(i18n.T("scorpion.promptToColumn"), fmt.Sprintf("m t %d %s t {0}", fromCol, args[2]))
 		}
-		return i18n.T("scorpion.moveUsage")
+		return i18n.MarkError(i18n.T("scorpion.moveUsage"))
 	}
 	cardIdx, err := strconv.Atoi(args[2])
 	if err != nil {

@@ -102,7 +102,7 @@ func (c *UltiCuiController) execBid(args []string) (string, bool) {
 	case "ulti", "u":
 		return c.bidWithTrump(domain.UltiContractUlti, args), true
 	default:
-		return "Invalid bid action: " + args[0] + ". Please enter party <suit>, betli, durchmarsch, or ulti <suit>.", true
+		return invalidArg("invalidBidActionParty", "val", args[0]), true
 	}
 }
 
@@ -113,7 +113,7 @@ func (c *UltiCuiController) bidWithTrump(contract domain.UltiContract, args []st
 	}
 	suit := ultiParseSuit(args[1])
 	if suit < 0 {
-		return "Invalid trump suit: " + args[1] + ". Please enter s, c, h, or d."
+		return invalidArg("invalidTrumpSuitSCHD", "val", args[1])
 	}
 	return c.di.Bid(contract, suit)
 }

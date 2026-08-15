@@ -72,7 +72,7 @@ func TestPanCuiController_Exec(t *testing.T) {
 
 	t.Run("layoff lo missing args", func(t *testing.T) {
 		result := controller.NewPanCuiController(newMock()).Exec("lo 0 1")
-		assert.Contains(t, result, "layoff requires")
+		assert.Contains(t, result, msgStem("layoffNeedsThreeInts"))
 	})
 
 	t.Run("discard d with index", func(t *testing.T) {

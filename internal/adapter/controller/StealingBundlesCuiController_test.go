@@ -55,7 +55,7 @@ func TestStealingBundlesCuiController_StealRejectsBadArgs(t *testing.T) {
 		{"no args", "s", msgCardIndexRequired()},
 		{"card not a number", "s x 1", msgInvalidCardIndex("x")},
 		{"victim missing", "s 1", msgKey("victimIndexRequired")},
-		{"victim not a number", "s 1 y", "Invalid victim index: y."},
+		{"victim not a number", "s 1 y", msgKey("invalidVictimIndexDot", "val", "y")},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			c, si := newStealingBundlesCui()

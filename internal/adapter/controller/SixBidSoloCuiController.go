@@ -63,7 +63,7 @@ func sixBidSoloParseDeclare(args []string, si usecase.SixBidSoloInteractorIF) (s
 	}
 	suit, err := strconv.Atoi(args[0])
 	if err != nil || suit < domain.CardDesignSpade || suit > domain.CardDesignDiamond {
-		return "Invalid suit: " + args[0] + ". Please enter 1-4 (1=S 2=C 3=H 4=D).", true
+		return invalidArg("invalidSuit14Letters", "val", args[0]), true
 	}
 	if len(args) == 1 {
 		return si.Declare(suit, 0, 0), true
@@ -73,11 +73,11 @@ func sixBidSoloParseDeclare(args []string, si usecase.SixBidSoloInteractorIF) (s
 	}
 	calledSuit, err := strconv.Atoi(args[1])
 	if err != nil || calledSuit < domain.CardDesignSpade || calledSuit > domain.CardDesignDiamond {
-		return "Invalid called suit: " + args[1] + ". Please enter 1-4.", true
+		return invalidArg("invalidCalledSuit14", "val", args[1]), true
 	}
 	calledValue, err := strconv.Atoi(args[2])
 	if err != nil || calledValue < 1 || calledValue > 13 {
-		return "Invalid called value: " + args[2] + ". Please enter 1-13.", true
+		return invalidArg("invalidCalledValue113", "val", args[2]), true
 	}
 	return si.Declare(suit, calledSuit, calledValue), true
 }

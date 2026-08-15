@@ -5062,9 +5062,6 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewLiteratureCuiController,
 		CuiHelpSpec{
 			TitleKey: "literature.helpTitle",
-			ExampleKeys: []string{
-				"literature.helpExampleClaim",
-			},
 			CommandKeys: []string{
 				"literature.helpAsk",
 				"literature.helpClaim",

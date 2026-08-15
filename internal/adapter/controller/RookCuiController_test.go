@@ -65,7 +65,7 @@ func TestRookCuiController_Usage(t *testing.T) {
 	if got := c.Exec("b"); !strings.Contains(got, msgStem("bidRequired70120")) {
 		t.Errorf("bid without args should require, got %q", got)
 	}
-	if got := c.Exec("e 0 1 2"); !strings.Contains(got, "Usage") {
+	if got := c.Exec("e 0 1 2"); !msgRejected(got) {
 		t.Errorf("exchange with few args should show usage, got %q", got)
 	}
 	if got := c.Exec("p"); !strings.Contains(got, msgCardIndexRequired()) {

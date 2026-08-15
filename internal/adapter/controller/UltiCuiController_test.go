@@ -70,7 +70,7 @@ func TestUltiCuiController_Exec(t *testing.T) {
 
 	t.Run("bid party invalid suit", func(t *testing.T) {
 		result := controller.NewUltiCuiController(newMock()).Exec("bid party zzz")
-		assert.Contains(t, result, "Invalid trump suit")
+		assert.Contains(t, result, msgStem("invalidTrumpSuitSCHD"))
 	})
 
 	t.Run("bid no args", func(t *testing.T) {
@@ -80,7 +80,7 @@ func TestUltiCuiController_Exec(t *testing.T) {
 
 	t.Run("bid invalid", func(t *testing.T) {
 		result := controller.NewUltiCuiController(newMock()).Exec("bid zzz")
-		assert.Contains(t, result, "Invalid bid action")
+		assert.Contains(t, result, msgStem("invalidBidActionParty"))
 	})
 
 	t.Run("discard two cards", func(t *testing.T) {

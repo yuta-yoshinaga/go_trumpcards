@@ -49,7 +49,7 @@ func (c *Rummy500CuiController) Exec(command string) string {
 			case "lo", "layoff":
 				indices := parseIntList(args)
 				if len(indices) != 3 {
-					return "param error: layoff requires 3 ints: <owner> <meldIdx> <cardIdx>.", true
+					return invalidArg("layoffNeedsThreeInts"), true
 				}
 				return c.ci.Layoff(indices[0], indices[1], indices[2]), true
 			case "d", "discard":

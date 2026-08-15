@@ -121,7 +121,7 @@ func (c *ShitheadCuiController) Exec(command string) string {
 					return "Rules:\n" + formatShitheadRuleList(&cfg), true
 				}
 				if len(args) < 2 {
-					return "Usage: sr <rule> <0|1> | sr list\nRules: " + strings.Join(shitheadRuleKeys, ", "), true
+					return invalidArg("usageSrRule01SrListRules") + strings.Join(shitheadRuleKeys, ", "), true
 				}
 				if !setShitheadRule(nil, args[0], false) {
 					return invalidArg("unknownRule", "val", fmt.Sprint(args[0])), true

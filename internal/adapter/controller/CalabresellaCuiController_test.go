@@ -70,7 +70,7 @@ func TestCalabresellaCuiController_Exec(t *testing.T) {
 
 	t.Run("bid invalid", func(t *testing.T) {
 		result := controller.NewCalabresellaCuiController(newMock()).Exec("bid zzz")
-		assert.Contains(t, result, "Invalid bid action")
+		assert.Contains(t, result, msgStem("invalidBidActionChiamo"))
 	})
 
 	t.Run("discard card", func(t *testing.T) {

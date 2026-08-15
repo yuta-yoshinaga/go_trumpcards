@@ -74,7 +74,7 @@ func TestCassinoCuiController_Exec(t *testing.T) {
 		m := newMock()
 		c := controller.NewCassinoCuiController(m)
 		out := c.Exec("t")
-		assert.Contains(t, out, "Usage:")
+		assert.True(t, msgRejected(out))
 	})
 
 	t.Run("build command", func(t *testing.T) {
@@ -102,7 +102,7 @@ func TestCassinoCuiController_Exec(t *testing.T) {
 		m := newMock()
 		c := controller.NewCassinoCuiController(m)
 		out := c.Exec("tr")
-		assert.Contains(t, out, "Usage:")
+		assert.True(t, msgRejected(out))
 	})
 
 	t.Run("sd (difficulty)", func(t *testing.T) {
@@ -134,7 +134,7 @@ func TestCassinoCuiController_Exec(t *testing.T) {
 		m := newMock()
 		c := controller.NewCassinoCuiController(m)
 		out := c.Exec("sr")
-		assert.Contains(t, out, "Usage:")
+		assert.True(t, msgRejected(out))
 	})
 
 	t.Run("sr unknown rule", func(t *testing.T) {
@@ -196,4 +196,17 @@ func TestCassinoCuiController_SetRuleRejections(t *testing.T) {
 		assert.Equal(t, msgKey("invalidValue0Or1Raw", "val", "2"), out)
 		m.AssertNotCalled(t, "ResetWithConfig", mock.Anything)
 	})
+}
+
+// codecov: `tr` with no argument answers with its usage line, and nothing
+// exercised that branch.
+func TestCassinoCuiController_TrailNeedsAnIndex(t *testing.T) {
+	mockOutput := `{"players":[]}`
+	m := new(mockUsecases.MockCassinoInteractor)
+	m.On("Reset").Return(mockOutput)
+	m.On("Trail", mock.Anything).Return(mockOutput)
+
+	out := controller.NewCassinoCuiController(m).Exec("tr")
+	assert.Equal(t, msgUsage("usageTrHandidx"), out)
+	m.AssertNotCalled(t, "Trail", mock.Anything)
 }

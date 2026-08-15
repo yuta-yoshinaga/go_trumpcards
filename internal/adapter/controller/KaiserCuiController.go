@@ -67,14 +67,13 @@ func kaiserParseBid(args []string, ki usecase.KaiserInteractorIF) (string, bool)
 	}
 	value, err := strconv.Atoi(args[0])
 	if err != nil || value < domain.KaiserMinBid || value > domain.KaiserMaxBid {
-		return "Invalid bid: " + args[0] + ". Please enter " +
-			strconv.Itoa(domain.KaiserMinBid) + "-" + strconv.Itoa(domain.KaiserMaxBid) + ".", true
+		return invalidArg("invalidBidMinMax", "val", args[0], "max", strconv.Itoa(domain.KaiserMinBid)+"-"+strconv.Itoa(domain.KaiserMaxBid)), true
 	}
 	contract := 0
 	if len(args) > 1 {
 		contract, err = strconv.Atoi(args[1])
 		if err != nil || contract < int(domain.KaiserContractTrump) || contract > int(domain.KaiserContractLowNoTrump) {
-			return "Invalid contract: " + args[1] + ". Please enter 0-2.", true
+			return invalidArg("invalidContract02", "val", args[1]), true
 		}
 	}
 	return ki.Bid(value, domain.KaiserContract(contract)), true

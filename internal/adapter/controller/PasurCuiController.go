@@ -61,7 +61,7 @@ func (c *PasurCuiController) play(args []string) (string, bool) {
 	for _, a := range args[1:] {
 		v, err := strconv.Atoi(a)
 		if err != nil {
-			return "Invalid table index: " + a + ".", true
+			return invalidArg("invalidTableIndexDot", "val", a), true
 		}
 		table = append(table, v)
 	}

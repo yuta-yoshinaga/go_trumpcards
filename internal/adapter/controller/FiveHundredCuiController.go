@@ -58,7 +58,7 @@ func (c *FiveHundredCuiController) Exec(command string) string {
 			switch cmd {
 			case "b", "bid":
 				if len(args) < 2 {
-					return "Usage: bid <tricks> <suit>  (tricks 6-10, suit 1=S 2=C 3=H 4=D)\n", true
+					return invalidArg("usageBidTricksSuitTricks610Suit1S2C3H4D"), true
 				}
 				tricks, errMsg, ok := cuiutil.ParseIntArgKeys(args[:1], "", "invalidTricks", 6, 10)
 				if !ok {
@@ -81,7 +81,7 @@ func (c *FiveHundredCuiController) Exec(command string) string {
 				return c.fi.Pass(), true
 			case "e", "exchange":
 				if len(args) < 3 {
-					return "Usage: exchange <i> <j> <k>  (three card indices to discard)\n", true
+					return invalidArg("usageExchangeIJKThreeCardIndicesToDiscard"), true
 				}
 				idxs := make([]int, 3)
 				for i := 0; i < 3; i++ {

@@ -114,7 +114,7 @@ func (c *CassinoCuiController) Exec(command string) string {
 					return "Rules:\n" + formatCassinoRuleList(&cfg), true
 				}
 				if len(args) < 2 {
-					return "Usage: sr <rule> <0|1> | sr list\nRules: " + strings.Join(cassinoRuleKeys, ", "), true
+					return invalidArg("usageSrRule01SrListRules") + strings.Join(cassinoRuleKeys, ", "), true
 				}
 				if !setCassinoRule(nil, args[0], false) {
 					return invalidArg("unknownRule", "val", fmt.Sprint(args[0])), true
@@ -136,7 +136,7 @@ func (c *CassinoCuiController) Exec(command string) string {
 // "b" 区切り以降はビルド捕獲インデックスとして扱う。
 func (c *CassinoCuiController) handleTake(args []string) (string, bool) {
 	if len(args) < 1 {
-		return "Usage: t <handIdx> <tableIdx...> [b <buildIdx...>]", true
+		return invalidArg("usageTHandidxTableidxBBuildidx"), true
 	}
 	handStr := args[0]
 	handIdx, _, ok := cuiutil.ParseIntArgKeys([]string{handStr}, "handIndexRequired", "invalidHandIndex", 0, 51)
@@ -165,7 +165,7 @@ func (c *CassinoCuiController) handleTake(args []string) (string, bool) {
 // handleBuild は `b <h> <value> <t1 t2 ...>` を処理する。
 func (c *CassinoCuiController) handleBuild(args []string) (string, bool) {
 	if len(args) < 3 {
-		return "Usage: b <handIdx> <value> <tableIdx...>", true
+		return invalidArg("usageBHandidxValueTableidx"), true
 	}
 	handIdx, _, ok := cuiutil.ParseIntArgKeys([]string{args[0]}, "handIndexRequired", "invalidHandIndex", 0, 51)
 	if !ok {
@@ -185,7 +185,7 @@ func (c *CassinoCuiController) handleBuild(args []string) (string, bool) {
 // handleTrail は `tr <h>` を処理する。
 func (c *CassinoCuiController) handleTrail(args []string) (string, bool) {
 	if len(args) < 1 {
-		return "Usage: tr <handIdx>", true
+		return invalidArg("usageTrHandidx"), true
 	}
 	handIdx, _, ok := cuiutil.ParseIntArgKeys([]string{args[0]}, "handIndexRequired", "invalidHandIndex", 0, 51)
 	if !ok {

@@ -57,7 +57,7 @@ func (c *SimpleSimonCuiController) Exec(command string) string {
 // handleMove `m <from> <idx> <to>` を処理する。
 func (c *SimpleSimonCuiController) handleMove(args []string) string {
 	if len(args) < 3 {
-		return "Usage: m <from> <cardIndex> <to>."
+		return invalidArg("usageMFromCardindexTo")
 	}
 	from, err1 := strconv.Atoi(args[0])
 	idx, err2 := strconv.Atoi(args[1])

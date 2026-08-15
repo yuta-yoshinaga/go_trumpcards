@@ -44,13 +44,13 @@ func (c *KalookiCuiController) Exec(command string) string {
 			case "m", "meld":
 				groups, ok := parseSlotIndices(args)
 				if !ok {
-					return "Usage: m <a,b,c> [<d,e,f>]  (one meld per arg)", true
+					return invalidArg("usageMABCDEFOneMeldPerArg"), true
 				}
 				return c.ci.Meld(groups), true
 			case "lo", "layoff":
 				idx := parseIntList(args)
 				if len(idx) < 3 {
-					return "Usage: lo <targetPlayerIdx> <meldIdx> <cardIndex>", true
+					return invalidArg("usageLoTargetplayeridxMeldidxCardindex"), true
 				}
 				return c.ci.Layoff(idx[0], idx[1], idx[2]), true
 			case "d", "discard":

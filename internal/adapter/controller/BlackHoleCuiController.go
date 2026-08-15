@@ -57,11 +57,11 @@ func (c *BlackHoleCuiController) Exec(command string) string {
 // handleMove 移動コマンド `m <fan>` を処理する。
 func (c *BlackHoleCuiController) handleMove(args []string) string {
 	if len(args) < 1 {
-		return "Usage: m <fan>."
+		return invalidArg("usageMFan")
 	}
 	fan, err := strconv.Atoi(args[0])
 	if err != nil {
-		return "Invalid fan index: " + args[0] + "."
+		return invalidArg("invalidFanIndexDot", "val", args[0])
 	}
 	return c.li.MoveFanToBlackHole(fan)
 }

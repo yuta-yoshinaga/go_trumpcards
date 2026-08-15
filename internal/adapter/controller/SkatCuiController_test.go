@@ -98,7 +98,7 @@ func TestSkatCuiController_Exec(t *testing.T) {
 
 	t.Run("discard usage", func(t *testing.T) {
 		c := controller.NewSkatCuiController(newMock())
-		assert.Contains(t, c.Exec("d 0"), "Usage")
+		assert.True(t, msgRejected(c.Exec("d 0")))
 	})
 
 	t.Run("discard invalid first arg", func(t *testing.T) {
@@ -124,7 +124,7 @@ func TestSkatCuiController_Exec(t *testing.T) {
 
 	t.Run("game usage", func(t *testing.T) {
 		c := controller.NewSkatCuiController(newMock())
-		assert.Contains(t, c.Exec("g"), "Usage")
+		assert.True(t, msgRejected(c.Exec("g")))
 	})
 
 	t.Run("game invalid type", func(t *testing.T) {

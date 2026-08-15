@@ -91,7 +91,7 @@ func (c *LobaCuiController) layOff(args []string) (string, bool) {
 	}
 	meld, err := strconv.Atoi(args[1])
 	if err != nil || meld < 0 {
-		return "Invalid meld index: " + args[1] + ".", true
+		return invalidArg("invalidMeldIndexDot", "val", args[1]), true
 	}
 	return c.li.LayOff(card, meld), true
 }

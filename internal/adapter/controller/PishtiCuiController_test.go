@@ -55,7 +55,7 @@ func TestPishtiCuiController_Exec(t *testing.T) {
 		m := newMock()
 		c := controller.NewPishtiCuiController(m)
 		out := c.Exec("p")
-		assert.Contains(t, out, "Usage:")
+		assert.Contains(t, out, msgUsage("usagePHandidx"))
 	})
 
 	t.Run("play invalid arg", func(t *testing.T) {

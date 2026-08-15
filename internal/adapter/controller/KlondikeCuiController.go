@@ -137,7 +137,7 @@ func (c *KlondikeCuiController) handleMoveFromTableau(args []string) string {
 			// Wizard state: m t <fromCol> <cardIdx> t — prompt for destination column
 			return cuiutil.PromptRequest(i18n.T("promptToColumn"), fmt.Sprintf("m t %s %s t {0}", args[0], args[1]))
 		}
-		return i18n.T("klondike.moveUsage")
+		return i18n.MarkError(i18n.T("klondike.moveUsage"))
 	}
 
 	cardIdx, err := strconv.Atoi(args[1])
