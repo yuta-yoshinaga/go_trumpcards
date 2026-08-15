@@ -126,7 +126,7 @@ func TestPokerCuiController_Bet_InvalidAmount_NonNumeric(t *testing.T) {
 	c := NewPokerCuiController(mi)
 	// "abc" fails strconv.Atoi => amount stays 0
 	mi.On("Action", domain.PokerActionBet, 0, 0).Return("bet zero")
-	assert.Equal(t, "bet zero", c.Exec("b abc"))
+	assert.Equal(t, msgInvalidBetAmount("abc"), c.Exec("b abc"))
 }
 
 func TestPokerCuiController_Bet_InvalidAmount_Negative(t *testing.T) {
@@ -134,7 +134,7 @@ func TestPokerCuiController_Bet_InvalidAmount_Negative(t *testing.T) {
 	c := NewPokerCuiController(mi)
 	// -20 succeeds Atoi but fails a > 0 check => amount stays 0
 	mi.On("Action", domain.PokerActionBet, 0, 0).Return("bet zero")
-	assert.Equal(t, "bet zero", c.Exec("b -20"))
+	assert.Equal(t, msgInvalidBetAmount("-20"), c.Exec("b -20"))
 }
 
 func TestPokerCuiController_Bet_InvalidAmount_Zero(t *testing.T) {
@@ -142,7 +142,7 @@ func TestPokerCuiController_Bet_InvalidAmount_Zero(t *testing.T) {
 	c := NewPokerCuiController(mi)
 	// 0 succeeds Atoi but fails a > 0 check => amount stays 0
 	mi.On("Action", domain.PokerActionBet, 0, 0).Return("bet zero")
-	assert.Equal(t, "bet zero", c.Exec("b 0"))
+	assert.Equal(t, msgInvalidBetAmount("0"), c.Exec("b 0"))
 }
 
 // --- call ---
@@ -176,21 +176,21 @@ func TestPokerCuiController_Raise_InvalidAmount_NonNumeric(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
 	mi.On("Action", domain.PokerActionRaise, 0, 0).Return("raise zero")
-	assert.Equal(t, "raise zero", c.Exec("ra abc"))
+	assert.Equal(t, msgInvalidBetAmount("abc"), c.Exec("ra abc"))
 }
 
 func TestPokerCuiController_Raise_InvalidAmount_Negative(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
 	mi.On("Action", domain.PokerActionRaise, 0, 0).Return("raise zero")
-	assert.Equal(t, "raise zero", c.Exec("ra -30"))
+	assert.Equal(t, msgInvalidBetAmount("-30"), c.Exec("ra -30"))
 }
 
 func TestPokerCuiController_Raise_InvalidAmount_Zero(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
 	mi.On("Action", domain.PokerActionRaise, 0, 0).Return("raise zero")
-	assert.Equal(t, "raise zero", c.Exec("ra 0"))
+	assert.Equal(t, msgInvalidBetAmount("0"), c.Exec("ra 0"))
 }
 
 // --- fold ---

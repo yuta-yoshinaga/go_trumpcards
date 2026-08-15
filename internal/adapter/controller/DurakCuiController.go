@@ -34,11 +34,16 @@ func (c *DurakCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "a", "attack":
+				// No argument keeps the index-0 shorthand; a typed argument that does
+				// not parse is refused rather than silently read as 0, which played a
+				// card the player never chose (issue #5390).
 				idx := 0
 				if len(args) > 0 {
-					if v, err := strconv.Atoi(args[0]); err == nil {
-						idx = v
+					v, err := strconv.Atoi(args[0])
+					if err != nil {
+						return invalidArg("invalidCardIndex", "val", args[0]), true
 					}
+					idx = v
 				}
 				return c.di.Attack(idx), true
 			case "d", "defend":

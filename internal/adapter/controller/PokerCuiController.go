@@ -44,21 +44,31 @@ func (pcc *PokerCuiController) Exec(command string) string {
 			case "s", "stand":
 				return pcc.pi.Stand(), true
 			case "b", "bet":
+				// No argument keeps the "bet zero" shorthand; a typed amount that does
+				// not parse, or is not positive, is refused rather than silently turned
+				// into zero -- the player asked to bet (issue #5390).
 				amount := 0
 				if len(args) > 0 {
-					if a, err := strconv.Atoi(args[0]); err == nil && a > 0 {
-						amount = a
+					a, err := strconv.Atoi(args[0])
+					if err != nil || a <= 0 {
+						return invalidArg("invalidBetAmount", "val", args[0]), true
 					}
+					amount = a
 				}
 				return pcc.pi.Action(domain.PokerActionBet, amount, 0), true
 			case "c", "call":
 				return pcc.pi.Action(domain.PokerActionCall, 0, 0), true
 			case "ra", "raise":
+				// No argument keeps the "bet zero" shorthand; a typed amount that does
+				// not parse, or is not positive, is refused rather than silently turned
+				// into zero -- the player asked to bet (issue #5390).
 				amount := 0
 				if len(args) > 0 {
-					if a, err := strconv.Atoi(args[0]); err == nil && a > 0 {
-						amount = a
+					a, err := strconv.Atoi(args[0])
+					if err != nil || a <= 0 {
+						return invalidArg("invalidBetAmount", "val", args[0]), true
 					}
+					amount = a
 				}
 				return pcc.pi.Action(domain.PokerActionRaise, amount, 0), true
 			case "f", "fold":
