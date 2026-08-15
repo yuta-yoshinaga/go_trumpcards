@@ -3,6 +3,8 @@
 package controller
 
 import (
+	"strings"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
@@ -38,7 +40,13 @@ func (c *BourreCuiController) Exec(command string) string {
 				})
 			case "dr", "draw":
 				indices, skipped := cuiutil.ParseIntSlice(args)
-				return cuiutil.PrependSkippedWarning(c.bgi.Draw(indices), skipped), true
+				// Refuse before playing. PrependSkippedWarning ran the move first and
+				// put the warning above the new board, so a mistyped index was dropped
+				// and the remaining ones played as a different, legal move (issue #5390).
+				if len(skipped) > 0 {
+					return invalidArg("invalidCardIndex", "val", strings.Join(skipped, ", ")), true
+				}
+				return c.bgi.Draw(indices), true
 			case "p", "play":
 				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", 0, 4, func(v int) string {
 					return c.bgi.Play(v)

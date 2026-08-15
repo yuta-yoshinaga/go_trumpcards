@@ -4,6 +4,7 @@ package controller
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -52,7 +53,13 @@ func (dcc *DeuceToSevenCuiController) Exec(command string) string {
 			switch cmd {
 			case "e", "exchange":
 				indices, skipped := cuiutil.ParseBoundedIntSlice(args, 0, domain.DeuceToSevenHandSize-1)
-				return cuiutil.PrependSkippedWarning(dcc.di.Exchange(indices), skipped), true
+				// Refuse before playing. PrependSkippedWarning ran the move first and
+				// put the warning above the new board, so a mistyped index was dropped
+				// and the remaining ones played as a different, legal move (issue #5390).
+				if len(skipped) > 0 {
+					return invalidArg("invalidCardIndex", "val", strings.Join(skipped, ", ")), true
+				}
+				return dcc.di.Exchange(indices), true
 			case "s", "stand":
 				return dcc.di.Stand(), true
 			case "h", "hint":

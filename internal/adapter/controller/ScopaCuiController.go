@@ -3,6 +3,8 @@
 package controller
 
 import (
+	"strings"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
@@ -63,5 +65,11 @@ func (c *ScopaCuiController) handlePlay(args []string) (string, bool) {
 		return "Invalid hand index: " + args[0], true
 	}
 	tableIdxs, skipped := cuiutil.ParseIntSlice(args[1:])
-	return cuiutil.PrependSkippedWarning(c.si.Play(handIdx, tableIdxs), skipped), true
+	// Refuse before playing. PrependSkippedWarning ran the move first and
+	// put the warning above the new board, so a mistyped index was dropped
+	// and the remaining ones played as a different, legal move (issue #5390).
+	if len(skipped) > 0 {
+		return invalidArg("invalidCardIndex", "val", strings.Join(skipped, ", ")), true
+	}
+	return c.si.Play(handIdx, tableIdxs), true
 }

@@ -4,6 +4,7 @@ package controller
 
 import (
 	"math"
+	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
@@ -45,7 +46,13 @@ func (oc *OasisPokerCuiController) Exec(command string) string {
 				return oc.oi.Bet(ante, jackpot), true
 			case "e", "exchange":
 				indices, skipped := cuiutil.ParseBoundedIntSlice(args, 0, 4)
-				return cuiutil.PrependSkippedWarning(oc.oi.Exchange(indices), skipped), true
+				// Refuse before playing. PrependSkippedWarning ran the move first and
+				// put the warning above the new board, so a mistyped index was dropped
+				// and the remaining ones played as a different, legal move (issue #5390).
+				if len(skipped) > 0 {
+					return invalidArg("invalidCardIndex", "val", strings.Join(skipped, ", ")), true
+				}
+				return oc.oi.Exchange(indices), true
 			case "s", "stand":
 				return oc.oi.Stand(), true
 			case "p", "play":

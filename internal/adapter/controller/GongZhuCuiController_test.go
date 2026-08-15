@@ -55,12 +55,12 @@ func TestGongZhuCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "Expose", []int{})
 	})
 
-	t.Run("expose with invalid arg shows warning", func(t *testing.T) {
+	t.Run("expose refuses an invalid arg", func(t *testing.T) {
 		m := newMock()
 		c := controller.NewGongZhuCuiController(m)
 		result := c.Exec("expose 0 x 1")
-		assert.Contains(t, result, "'x'")
-		m.AssertCalled(t, "Expose", []int{0, 1})
+		assert.Contains(t, result, "x")
+		m.AssertNotCalled(t, "Expose", mock.Anything)
 	})
 
 	t.Run("play", func(t *testing.T) {

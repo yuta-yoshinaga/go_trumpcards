@@ -130,13 +130,14 @@ func TestDaifugoCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "Sort", domain.DaifugoSortByStrength)
 	})
 
-	t.Run("play command ignores non-numeric index with warning", func(t *testing.T) {
+	// **打ち間違いを捨てて残りで出さない。** 3 枚のつもりが 2 枚として通ると、
+	// 単札とペアのように別の合法手になってしまう (issue #5390)。
+	t.Run("play command refuses a non-numeric index", func(t *testing.T) {
 		m := newMock()
 		c := controller.NewDaifugoCuiController(m)
 		result := c.Exec("p 0 abc 2")
-		assert.Contains(t, result, "'abc'")
-		assert.Contains(t, result, mockOutput)
-		m.AssertCalled(t, "Play", []int{0, 2})
+		assert.Contains(t, result, "abc")
+		m.AssertNotCalled(t, "Play", mock.Anything)
 	})
 
 	t.Run("play command no warning when all valid", func(t *testing.T) {

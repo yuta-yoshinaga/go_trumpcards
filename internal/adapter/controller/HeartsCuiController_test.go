@@ -90,21 +90,21 @@ func TestHeartsCuiController_Exec(t *testing.T) {
 		c := controller.NewHeartsCuiController(newMock())
 		result := c.Exec("pass a b c")
 		assert.Contains(t, result, "exactly 3")
-		assert.Contains(t, result, "'a'")
+		assert.Contains(t, result, "a")
 	})
 
 	t.Run("pass with mixed numeric and non-numeric args shows warning", func(t *testing.T) {
 		c := controller.NewHeartsCuiController(newMock())
 		result := c.Exec("pass 0 a 2")
 		assert.Contains(t, result, "exactly 3")
-		assert.Contains(t, result, "'a'")
+		assert.Contains(t, result, "a")
 	})
 
 	t.Run("pass with 3 valid and invalid args shows warning", func(t *testing.T) {
 		m := newMock()
 		c := controller.NewHeartsCuiController(m)
 		result := c.Exec("pass 0 abc 1 2")
-		assert.Contains(t, result, "'abc'")
+		assert.Contains(t, result, "abc")
 		assert.Contains(t, result, mockOutput)
 		m.AssertCalled(t, "Pass", []int{0, 1, 2})
 	})
