@@ -19,5 +19,6 @@
   "hintUnknown": "ヒント: 不明",
   "exposedKing": "({{row}},{{col}}){{card}}[K]",
   "wasteKing": " | Waste: {{card}}[K]",
-  "helpExampleHint": "  h                        次の一手を教えてもらう"
+  "helpExampleHint": "  h                        次の一手を教えてもらう",
+  "helpUndo": "  u                        1手戻す"
 }

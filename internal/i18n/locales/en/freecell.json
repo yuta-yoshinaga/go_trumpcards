@@ -24,5 +24,6 @@
   "supermoveToEmpty": " / {{limit}} onto an empty column",
   "helpExampleMoveCell": "  m t 0 c 0            park the top of column 0 in free cell 0",
   "helpExampleHint": "  h                    ask for a move",
-  "helpExampleAuto": "  ac                   send everything that can go to a foundation"
+  "helpExampleAuto": "  ac                   send everything that can go to a foundation",
+  "helpUndo": "  u undo one move"
 }

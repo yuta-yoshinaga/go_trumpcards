@@ -26,5 +26,6 @@
   "hintToTableau": "tableau column {{col}}",
   "hintLine": "Hint: {{from}} → {{to}}",
   "autoCompleteReady": "Auto-complete is available (ac)",
-  "helpExampleDraw": "  d                    draw one card from the stock"
+  "helpExampleDraw": "  d                    draw one card from the stock",
+  "helpUndo": "  u                    undo one move"
 }

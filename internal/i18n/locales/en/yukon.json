@@ -26,5 +26,6 @@
   "hintConfidenceFoundation": "(priority: high - safe move to a foundation)",
   "hintConfidenceTableau": "(priority: medium - tableau reorganization)",
   "helpExampleHint": "  h                    ask for a move",
-  "helpExampleAuto": "  ac                   send everything that can go to a foundation"
+  "helpExampleAuto": "  ac                   send everything that can go to a foundation",
+  "helpUndo": "  u undo one move"
 }

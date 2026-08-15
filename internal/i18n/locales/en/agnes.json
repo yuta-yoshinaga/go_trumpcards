@@ -19,5 +19,6 @@
   "hintToFoundation": "foundation",
   "hintToTableau": "tableau column {{col}}",
   "hintLine": "Hint: {{from}} → {{to}}",
-  "helpExampleHint": "  h                    ask for a move"
+  "helpExampleHint": "  h                    ask for a move",
+  "helpUndo": "  u                    undo one move"
 }

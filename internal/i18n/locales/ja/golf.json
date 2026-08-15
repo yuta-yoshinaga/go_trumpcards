@@ -14,5 +14,6 @@
   "hintRemove": "ヒント: カード除去: 列{{col}}",
   "hintDraw": "ヒント: ストックからカードを引いてください",
   "hintUnknown": "ヒント: 不明",
-  "helpExampleHint": "  h                        次の一手を教えてもらう"
+  "helpExampleHint": "  h                        次の一手を教えてもらう",
+  "helpUndo": "  u                        1手戻す"
 }

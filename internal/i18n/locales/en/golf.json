@@ -14,5 +14,6 @@
   "hintRemove": "Hint: remove column {{col}}",
   "hintDraw": "Hint: draw from stock",
   "hintUnknown": "Hint: unknown",
-  "helpExampleHint": "  h                        ask for a move"
+  "helpExampleHint": "  h                        ask for a move",
+  "helpUndo": "  u                        undo one move"
 }
