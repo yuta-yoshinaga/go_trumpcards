@@ -163,3 +163,12 @@ func TestOasisPokerCuiController_Hint(t *testing.T) {
 	assert.Equal(t, "hint result", c.Exec("hint"))
 	m.AssertCalled(t, "Hint")
 }
+
+// **落として残りで実行しない。** 打ち間違いを捨てると、プレイヤーが選んで
+// いない組み合わせが実行される (issue #5390)。
+func TestOasisPokerCuiController_RefusesMistypedIndex(t *testing.T) {
+	m := newMockOasisPokerInteractor()
+	c := controller.NewOasisPokerCuiController(m)
+	assert.Contains(t, c.Exec("e 0 zz"), msgInvalidCardIndexPrefix(),
+		"a mistyped index must be refused, not dropped")
+}

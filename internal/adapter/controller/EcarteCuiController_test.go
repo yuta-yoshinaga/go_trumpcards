@@ -176,4 +176,13 @@ func TestEcarteCuiController_Exec(t *testing.T) {
 		assert.NotEqual(t, "bye.", got)
 		assert.NotEmpty(t, got)
 	})
+
+	// **落として残りで実行しない。** 打ち間違いを捨てると、プレイヤーが
+	// 選んでいない組み合わせが実行される (issue #5390)。
+	t.Run("refuses a mistyped index", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewEcarteCuiController(m)
+		assert.Contains(t, c.Exec("d 0 zz"), msgInvalidCardIndexPrefix(),
+			"a mistyped index must be refused, not dropped")
+	})
 }

@@ -190,3 +190,12 @@ func TestRussianPokerCuiController_Empty(t *testing.T) {
 	result := c.Exec("")
 	assert.Contains(t, result, "'help' でコマンド一覧を表示します。")
 }
+
+// **落として残りで実行しない。** 打ち間違いを捨てると、プレイヤーが選んで
+// いない組み合わせが実行される (issue #5390)。
+func TestRussianPokerCuiController_RefusesMistypedIndex(t *testing.T) {
+	m := newMockRussianPokerInteractor()
+	c := controller.NewRussianPokerCuiController(m)
+	assert.Contains(t, c.Exec("e 0 zz"), msgInvalidCardIndexPrefix(),
+		"a mistyped index must be refused, not dropped")
+}
