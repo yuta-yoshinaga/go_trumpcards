@@ -42,11 +42,12 @@ func helpExampleCommand(line string) string {
 // `b 100` has been accepted.
 //
 // What this does NOT catch, measured rather than assumed: of the 291 games with
-// an argument-taking command, 289 answer a malformed argument with a board
-// redraw instead of a marked error (`b abc`, `b -5` and `ra 999999999` are all
-// silently swallowed by the poker controllers). So for those games this guard
-// still only proves the verb reaches a handler. Tightening it needs the
-// controllers to mark those rejections first -- tracked separately.
+// an argument-taking command, only 2 answer a malformed argument with a marked
+// error. 262 answer with a specific and perfectly good message that never went
+// through i18n.MarkError ("Invalid amount: zznotanumber"), and 27 answer with
+// nothing but a redrawn board. Unmarked is indistinguishable from accepted
+// here, so for those 289 this guard still only proves the verb reaches a
+// handler. Marking them is issue #5377.
 func TestCuiHelpExamplesExecute(t *testing.T) {
 	registry := GameRegistry()
 	if len(registry) < 300 {
