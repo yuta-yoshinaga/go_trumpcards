@@ -6,6 +6,7 @@ import { DiscoverSkeleton } from '../components/discover/DiscoverSkeleton';
 import { RecommendationCard } from '../components/discover/RecommendationCard';
 import { StretchPickCard } from '../components/discover/StretchPickCard';
 import { useDiscoverI18nBundle } from '../hooks/useDiscoverI18nBundle';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { useGameRecommendations } from '../hooks/useGameRecommendations';
 import { btnPrimary, btnSecondary, focusRingWhite } from '../styles/buttonStyles';
 import { hasAnyAnswer, parseSearchParams, type UserMoodInput } from '../utils/urlMoodCodec';
@@ -28,6 +29,8 @@ function toUserMood(input: UserMoodInput) {
  */
 export function DiscoverResultPage() {
   const { t } = useTranslation('discover');
+  const { t: tc } = useTranslation('common');
+  useDocumentTitle(tc('nav.discover'));
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const bundleReady = useDiscoverI18nBundle();
