@@ -104,7 +104,7 @@ func TestTrogguCuiController_Exec(t *testing.T) {
 	t.Run("set difficulty rejects out-of-range", func(t *testing.T) {
 		m := newMock()
 		out := controller.NewTrogguCuiController(m).Exec("sd 9")
-		assert.Contains(t, out, "Invalid CPU difficulty")
+		assert.Contains(t, out, msgInvalidCpuDifficultyPrefix())
 		m.AssertNotCalled(t, "ResetWithConfig", mock.Anything)
 	})
 	t.Run("set deals", func(t *testing.T) {

@@ -2,7 +2,11 @@
 
 package controller
 
-import "github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
+import (
+	"strings"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
+)
 
 // msgCardIndexRequired and msgInvalidCardIndex render the two card-index
 // rejections the way the controllers do.
@@ -18,3 +22,10 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 func msgCardIndexRequired() string { return i18n.T("cardIndexRequired") }
 
 func msgInvalidCardIndex(val string) string { return i18n.Tf("invalidCardIndex", "val", val) }
+
+func msgInvalidCpuDifficultyPrefix() string {
+	stem := strings.SplitN(i18n.Tf("invalidCpuDifficulty", "val", "\x00"), "\x00", 2)[0]
+	return strings.TrimRight(stem, ":. ")
+}
+
+func msgCpuDifficultyRequired() string { return i18n.T("cpuDifficultyRequired") }

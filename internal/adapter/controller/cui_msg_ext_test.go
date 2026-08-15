@@ -35,3 +35,20 @@ func msgInvalidDiscardIndexPrefix() string {
 	stem := strings.SplitN(i18n.Tf("invalidDiscardIndex", "val", "\x00"), "\x00", 2)[0]
 	return strings.TrimRight(stem, ":. ")
 }
+
+// The CPU-difficulty rejections. The prefix form is for the assertions that
+// only check that the value was refused; see msgInvalidCardIndexPrefix.
+func msgInvalidCpuDifficulty(val string) string {
+	return i18n.Tf("invalidCpuDifficulty", "val", val)
+}
+
+func msgInvalidCpuDifficultyPrefix() string {
+	stem := strings.SplitN(i18n.Tf("invalidCpuDifficulty", "val", "\x00"), "\x00", 2)[0]
+	return strings.TrimRight(stem, ":. ")
+}
+
+func msgCpuDifficultyRequired() string { return i18n.T("cpuDifficultyRequired") }
+
+// msgCpuDifficultyRequiredAlt is the wording used by the games whose difficulty
+// scale starts at Normal.
+func msgCpuDifficultyRequiredAlt() string { return i18n.T("cpuDifficultyRequiredAlt") }

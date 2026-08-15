@@ -249,12 +249,12 @@ func TestMightyCuiController_Exec(t *testing.T) {
 
 	t.Run("setdifficulty over range", func(t *testing.T) {
 		c := controller.NewMightyCuiController(newMightyCuiMock(mockOutput))
-		assert.Equal(t, "Invalid CPU difficulty: 3. Please enter 0-2.", c.Exec("sd 3"))
+		assert.Equal(t, msgInvalidCpuDifficulty("3"), c.Exec("sd 3"))
 	})
 
 	t.Run("setdifficulty negative", func(t *testing.T) {
 		c := controller.NewMightyCuiController(newMightyCuiMock(mockOutput))
-		assert.Equal(t, "Invalid CPU difficulty: -1. Please enter 0-2.", c.Exec("sd -1"))
+		assert.Equal(t, msgInvalidCpuDifficulty("-1"), c.Exec("sd -1"))
 	})
 
 	t.Run("setlimit valid", func(t *testing.T) {

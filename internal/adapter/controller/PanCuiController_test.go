@@ -115,7 +115,7 @@ func TestPanCuiController_Exec(t *testing.T) {
 
 	t.Run("setdifficulty sd out of range", func(t *testing.T) {
 		result := controller.NewPanCuiController(newMock()).Exec("sd 9")
-		assert.Contains(t, result, "Invalid CPU difficulty")
+		assert.Contains(t, result, msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("setrounds sr valid", func(t *testing.T) {

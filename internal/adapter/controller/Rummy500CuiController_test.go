@@ -143,7 +143,7 @@ func TestRummy500CuiController_Exec(t *testing.T) {
 
 	t.Run("setdifficulty sd out of range", func(t *testing.T) {
 		result := controller.NewRummy500CuiController(newMock()).Exec("sd 9")
-		assert.Contains(t, result, "Invalid CPU difficulty")
+		assert.Contains(t, result, msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("setlimit sl valid", func(t *testing.T) {

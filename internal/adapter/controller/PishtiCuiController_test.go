@@ -78,7 +78,7 @@ func TestPishtiCuiController_Exec(t *testing.T) {
 		m := newMock()
 		c := controller.NewPishtiCuiController(m)
 		out := c.Exec("sd 9")
-		assert.Contains(t, out, "Invalid")
+		assert.Contains(t, out, msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("set players", func(t *testing.T) {

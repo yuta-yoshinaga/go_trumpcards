@@ -79,7 +79,7 @@ func (c *EuchreCuiController) Exec(command string) string {
 			case "nr", "nextround":
 				return c.ei.NextRound(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.ei.GetConfig()
 					cfg.CpuDifficulty = domain.EuchreCpuDifficulty(v)
 					return c.ei.ResetWithConfig(cfg)

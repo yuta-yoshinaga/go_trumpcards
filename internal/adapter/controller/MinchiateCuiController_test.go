@@ -114,7 +114,7 @@ func TestMinchiateCuiController_Exec(t *testing.T) {
 	})
 
 	t.Run("setdifficulty invalid", func(t *testing.T) {
-		assert.Contains(t, controller.NewMinchiateCuiController(newMock()).Exec("sd 9"), "Invalid CPU difficulty")
+		assert.Contains(t, controller.NewMinchiateCuiController(newMock()).Exec("sd 9"), msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("hint / log", func(t *testing.T) {

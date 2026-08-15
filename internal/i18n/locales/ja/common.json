@@ -151,5 +151,8 @@
   "cardIndexRequiredField": "カードのインデックスを指定してください (例: p 0 / 場札を取るなら p 0 3)。",
   "cardIndexRequiredCapture": "カードのインデックスを指定してください (例: p 0 / 場札を取るなら p 0 1 2)。",
   "cardIndexesRequiredMeld": "メルドするカードのインデックスを指定してください (例: meld 1 4 7)。",
-  "invalidIndexFromOne": "無効なインデックスです。1 以上の数値を入力してください。"
+  "invalidIndexFromOne": "無効なインデックスです。1 以上の数値を入力してください。",
+  "cpuDifficultyRequired": "CPU難易度を指定してください (0=Easy, 1=Normal, 2=Hard)。",
+  "cpuDifficultyRequiredAlt": "CPU難易度を指定してください (0=Normal, 1=Easy, 2=Hard)。",
+  "invalidCpuDifficulty": "無効なCPU難易度です: {{val}}。0-2 を指定してください。"
 }

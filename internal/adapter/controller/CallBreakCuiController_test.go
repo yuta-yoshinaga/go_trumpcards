@@ -101,10 +101,10 @@ func TestCallBreakCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "ResetWithConfig", expected)
 	})
 	t.Run("setdifficulty invalid", func(t *testing.T) {
-		assert.Contains(t, controller.NewCallBreakCuiController(newMock()).Exec("sd 5"), "Invalid CPU difficulty")
+		assert.Contains(t, controller.NewCallBreakCuiController(newMock()).Exec("sd 5"), msgInvalidCpuDifficultyPrefix())
 	})
 	t.Run("setdifficulty no args", func(t *testing.T) {
-		assert.Contains(t, controller.NewCallBreakCuiController(newMock()).Exec("sd"), "required")
+		assert.Contains(t, controller.NewCallBreakCuiController(newMock()).Exec("sd"), msgCpuDifficultyRequired())
 	})
 
 	t.Run("setrounds valid", func(t *testing.T) {
