@@ -70,7 +70,7 @@ func bostonParseBid(args []string, bi usecase.BostonInteractorIF) (string, bool)
 	if len(args) > 1 {
 		suit, err = strconv.Atoi(args[1])
 		if err != nil || suit < domain.CardDesignSpade || suit > domain.CardDesignDiamond {
-			return "Invalid suit: " + args[1] + ". Please enter 1-4.", true
+			return invalidArg("invalidSuit14Plain", "val", args[1]), true
 		}
 	}
 	return bi.Bid(domain.BostonBidLevel(level), suit), true

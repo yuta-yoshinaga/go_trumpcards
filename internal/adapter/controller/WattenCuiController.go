@@ -105,6 +105,6 @@ func (c *WattenCuiController) handleRespond(args []string) (string, bool) {
 	case "f", "fold":
 		return c.wi.Respond(false), true
 	default:
-		return "Invalid response: " + args[0] + " (use h=hold, f=fold).", true
+		return invalidArg("invalidResponseHoldFold", "val", args[0]), true
 	}
 }

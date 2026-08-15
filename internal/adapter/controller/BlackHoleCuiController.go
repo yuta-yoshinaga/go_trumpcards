@@ -61,7 +61,7 @@ func (c *BlackHoleCuiController) handleMove(args []string) string {
 	}
 	fan, err := strconv.Atoi(args[0])
 	if err != nil {
-		return "Invalid fan index: " + args[0] + "."
+		return invalidArg("invalidFanIndexDot", "val", args[0])
 	}
 	return c.li.MoveFanToBlackHole(fan)
 }

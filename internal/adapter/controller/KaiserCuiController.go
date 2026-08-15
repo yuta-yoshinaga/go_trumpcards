@@ -74,7 +74,7 @@ func kaiserParseBid(args []string, ki usecase.KaiserInteractorIF) (string, bool)
 	if len(args) > 1 {
 		contract, err = strconv.Atoi(args[1])
 		if err != nil || contract < int(domain.KaiserContractTrump) || contract > int(domain.KaiserContractLowNoTrump) {
-			return "Invalid contract: " + args[1] + ". Please enter 0-2.", true
+			return invalidArg("invalidContract02", "val", args[1]), true
 		}
 	}
 	return ki.Bid(value, domain.KaiserContract(contract)), true

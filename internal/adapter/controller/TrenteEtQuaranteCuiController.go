@@ -68,11 +68,11 @@ func (c *TrenteEtQuaranteCuiController) handleBet(args []string) string {
 	}
 	bet, err := strconv.Atoi(args[0])
 	if err != nil || bet < int(domain.TrenteEtQuaranteBetNoir) || bet > int(domain.TrenteEtQuaranteBetInverse) {
-		return "Invalid bet type: " + args[0] + " (0=Noir, 1=Rouge, 2=Couleur, 3=Inverse)."
+		return invalidArg("invalidBetTypeNoir", "val", args[0])
 	}
 	stake, err := strconv.Atoi(args[1])
 	if err != nil {
-		return "Invalid stake: " + args[1] + "."
+		return invalidArg("invalidStakeDot", "val", args[1])
 	}
 	return c.bi.Bet(domain.TrenteEtQuaranteBet(bet), stake)
 }

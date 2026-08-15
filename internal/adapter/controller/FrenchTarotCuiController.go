@@ -78,7 +78,7 @@ func (c *FrenchTarotCuiController) execBid(args []string) (string, bool) {
 	}
 	bid := frenchTarotParseBid(args[0])
 	if bid == domain.FrenchTarotBidPass {
-		return "Invalid bid: " + args[0] + ". Please enter petite, garde, gardesans, or gardecontre.", true
+		return invalidArg("invalidBidPetite", "val", args[0]), true
 	}
 	return c.di.Bid(bid), true
 }

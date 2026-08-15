@@ -76,7 +76,7 @@ func (c *RussianBankCuiController) Exec(command string) string {
 				}
 				zone, opp, col, ok := rbParseSource(args[0])
 				if !ok {
-					return "Invalid source: " + args[0] + ".", true
+					return invalidArg("invalidSourceDot", "val", args[0]), true
 				}
 				return c.di.MoveToFoundation(zone, opp, col), true
 			case "mt":
@@ -85,11 +85,11 @@ func (c *RussianBankCuiController) Exec(command string) string {
 				}
 				zone, opp, col, ok := rbParseSource(args[0])
 				if !ok {
-					return "Invalid source: " + args[0] + ".", true
+					return invalidArg("invalidSourceDot", "val", args[0]), true
 				}
 				toCol, err := strconv.Atoi(args[1])
 				if err != nil || toCol < 0 || toCol >= domain.RussianBankTableauCnt {
-					return "Invalid column: " + args[1] + ".", true
+					return invalidArg("invalidColumnDot", "val", args[1]), true
 				}
 				return c.di.MoveToTableau(zone, opp, col, toCol), true
 			case "d", "discard":

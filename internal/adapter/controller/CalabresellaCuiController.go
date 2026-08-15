@@ -57,7 +57,7 @@ func (c *CalabresellaCuiController) Exec(command string) string {
 				case "solo", "s":
 					return c.di.Bid(domain.CalabresellaBidSolo), true
 				default:
-					return "Invalid bid action: " + args[0] + ". Please enter pass, chiamo, or solo.", true
+					return invalidArg("invalidBidActionChiamo", "val", args[0]), true
 				}
 			case "d", "discard":
 				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.di.Discard)

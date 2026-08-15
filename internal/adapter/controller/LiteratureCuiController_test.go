@@ -50,10 +50,10 @@ func TestLiteratureCuiController_Exec(t *testing.T) {
 		assert.Contains(t, c.Exec("a 1 1"), "needs a target seat")
 		assert.Contains(t, c.Exec("a 9 1 2"), "Invalid seat")
 		assert.Contains(t, c.Exec("a abc 1 2"), "Invalid seat")
-		assert.Contains(t, c.Exec("a 1 9 2"), "Invalid suit")
-		assert.Contains(t, c.Exec("a 1 abc 2"), "Invalid suit")
-		assert.Contains(t, c.Exec("a 1 1 14"), "Invalid rank")
-		assert.Contains(t, c.Exec("a 1 1 abc"), "Invalid rank")
+		assert.Contains(t, c.Exec("a 1 9 2"), msgStem("invalidSuit14Letters"))
+		assert.Contains(t, c.Exec("a 1 abc 2"), msgStem("invalidSuit14Letters"))
+		assert.Contains(t, c.Exec("a 1 1 14"), msgStem("invalidRank113"))
+		assert.Contains(t, c.Exec("a 1 1 abc"), msgStem("invalidRank113"))
 	})
 
 	// **宣言は組と 6 席。**所在を 6 枚ぶん申告する。

@@ -69,7 +69,7 @@ func TestOmbreCuiController_Exec(t *testing.T) {
 
 	t.Run("bid entrar invalid suit", func(t *testing.T) {
 		result := controller.NewOmbreCuiController(newMock()).Exec("bid entrar zzz")
-		assert.Contains(t, result, "Invalid trump suit")
+		assert.Contains(t, result, msgStem("invalidTrumpSuitSCHD"))
 	})
 
 	t.Run("bid no args", func(t *testing.T) {
@@ -79,7 +79,7 @@ func TestOmbreCuiController_Exec(t *testing.T) {
 
 	t.Run("bid invalid", func(t *testing.T) {
 		result := controller.NewOmbreCuiController(newMock()).Exec("bid zzz")
-		assert.Contains(t, result, "Invalid bid action")
+		assert.Contains(t, result, msgStem("invalidBidActionEntrar"))
 	})
 
 	t.Run("play card", func(t *testing.T) {

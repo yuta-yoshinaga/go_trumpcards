@@ -62,7 +62,7 @@ func (c *LaughAndLieDownCuiController) play(args []string) (string, bool) {
 	if len(args) > 1 {
 		take, err = strconv.Atoi(args[1])
 		if err != nil {
-			return "Invalid take count: " + args[1] + ".", true
+			return invalidArg("invalidTakeCountDot", "val", args[1]), true
 		}
 	}
 	return c.li.Play(handIdx, take), true

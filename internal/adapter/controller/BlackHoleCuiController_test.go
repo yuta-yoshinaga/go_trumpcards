@@ -36,7 +36,7 @@ func TestBlackHoleCuiController_Exec(t *testing.T) {
 	t.Run("invalid move args", func(t *testing.T) {
 		c := newBhCui()
 		assert.True(t, msgRejected(c.Exec("m")))
-		assert.Contains(t, c.Exec("m x"), "Invalid fan")
+		assert.Contains(t, c.Exec("m x"), msgStem("invalidFanIndexDot"))
 	})
 	t.Run("giveup ends the game", func(t *testing.T) {
 		assert.NotEmpty(t, newBhCui().Exec("g"))

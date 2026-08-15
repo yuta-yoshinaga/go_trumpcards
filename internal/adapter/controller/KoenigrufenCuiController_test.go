@@ -57,7 +57,7 @@ func TestKoenigrufenCuiController_Exec(t *testing.T) {
 
 	t.Run("bid invalid", func(t *testing.T) {
 		result := controller.NewKoenigrufenCuiController(newMock()).Exec("bid zzz")
-		assert.Contains(t, result, "Invalid bid")
+		assert.Contains(t, result, msgStem("invalidBidRufer"))
 	})
 
 	t.Run("pass", func(t *testing.T) {

@@ -94,7 +94,7 @@ func (c *DesmocheCuiController) layOff(args []string) (string, bool) {
 	}
 	meld, ok := desmocheParseIdx(args[1])
 	if !ok {
-		return "Invalid meld index: " + args[1] + ".", true
+		return invalidArg("invalidMeldIndexDot", "val", args[1]), true
 	}
 	return c.di.LayOff(card, meld), true
 }
@@ -106,7 +106,7 @@ func (c *DesmocheCuiController) desmoche(args []string) (string, bool) {
 	}
 	from, ok := desmocheParseIdx(args[0])
 	if !ok {
-		return "Invalid meld index: " + args[0] + ".", true
+		return invalidArg("invalidMeldIndexDot", "val", args[0]), true
 	}
 	card, ok := desmocheParseIdx(args[1])
 	if !ok {
@@ -114,7 +114,7 @@ func (c *DesmocheCuiController) desmoche(args []string) (string, bool) {
 	}
 	to, ok := desmocheParseIdx(args[2])
 	if !ok {
-		return "Invalid meld index: " + args[2] + ".", true
+		return invalidArg("invalidMeldIndexDot", "val", args[2]), true
 	}
 	return c.di.Desmoche(from, card, to), true
 }

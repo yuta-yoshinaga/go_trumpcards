@@ -55,7 +55,7 @@ func (c *TysiacCuiController) Exec(command string) string {
 				case "pass", "p":
 					return c.di.Bid(false), true
 				default:
-					return "Invalid bid action: " + args[0] + ". Please enter raise or pass.", true
+					return invalidArg("invalidBidActionRaisePass", "val", args[0]), true
 				}
 			case "d", "discard":
 				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.di.Discard)

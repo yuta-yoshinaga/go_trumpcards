@@ -63,7 +63,7 @@ func TestFrenchTarotCuiController_Exec(t *testing.T) {
 
 	t.Run("bid invalid", func(t *testing.T) {
 		result := controller.NewFrenchTarotCuiController(newMock()).Exec("bid zzz")
-		assert.Contains(t, result, "Invalid bid")
+		assert.Contains(t, result, msgStem("invalidBidPetite"))
 	})
 
 	t.Run("pass", func(t *testing.T) {

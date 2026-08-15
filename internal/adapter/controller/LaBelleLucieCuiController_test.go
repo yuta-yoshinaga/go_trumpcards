@@ -36,8 +36,8 @@ func TestLaBelleLucieCuiController_Exec(t *testing.T) {
 	t.Run("invalid move args", func(t *testing.T) {
 		c := newLlCui()
 		assert.True(t, msgRejected(c.Exec("m")))
-		assert.Contains(t, c.Exec("m x 1"), "Invalid source")
-		assert.Contains(t, c.Exec("m 0 x"), "Invalid destination")
+		assert.Contains(t, c.Exec("m x 1"), msgStem("invalidSourceFanDot"))
+		assert.Contains(t, c.Exec("m 0 x"), msgStem("invalidDestinationFanOrF"))
 	})
 	t.Run("giveup ends the game", func(t *testing.T) {
 		assert.NotEmpty(t, newLlCui().Exec("g"))

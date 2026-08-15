@@ -96,7 +96,7 @@ func (c *OmbreCuiController) execBid(args []string) (string, bool) {
 	case "solo", "s":
 		return c.bidWithTrump(domain.OmbreBidSolo, args), true
 	default:
-		return "Invalid bid action: " + args[0] + ". Please enter pass, entrar <suit>, or solo <suit>.", true
+		return invalidArg("invalidBidActionEntrar", "val", args[0]), true
 	}
 }
 
@@ -107,7 +107,7 @@ func (c *OmbreCuiController) bidWithTrump(bid domain.OmbreBid, args []string) st
 	}
 	suit := ombreParseSuit(args[1])
 	if suit < 0 {
-		return "Invalid trump suit: " + args[1] + ". Please enter s, c, h, or d."
+		return invalidArg("invalidTrumpSuitSCHD", "val", args[1])
 	}
 	return c.di.Bid(bid, suit)
 }

@@ -90,7 +90,7 @@ func (c *ZwanzigerrufenCuiController) execBid(args []string) (string, bool) {
 	}
 	bid := zwanzigerrufenParseBid(args[0])
 	if bid == domain.ZwanzigerrufenBidPass {
-		return "Invalid bid: " + args[0] + ". Please enter rufer or solo.", true
+		return invalidArg("invalidBidRuferOrSolo", "val", args[0]), true
 	}
 	return c.zi.Bid(bid), true
 }

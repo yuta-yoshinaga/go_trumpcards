@@ -106,7 +106,7 @@ func TestWattenCuiController_Exec(t *testing.T) {
 
 	t.Run("respond invalid", func(t *testing.T) {
 		c := controller.NewWattenCuiController(newMock())
-		assert.Contains(t, c.Exec("resp x"), "Invalid response")
+		assert.Contains(t, c.Exec("resp x"), msgStem("invalidResponseHoldFold"))
 	})
 
 	t.Run("nextround nr", func(t *testing.T) {

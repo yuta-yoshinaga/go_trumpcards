@@ -56,7 +56,7 @@ func TestBostonCuiController_Exec(t *testing.T) {
 		assert.Contains(t, c.Exec("b abc"), "Invalid bid level")
 		assert.Contains(t, c.Exec("b 0"), "Invalid bid level")
 		assert.Contains(t, c.Exec("b 99"), "Invalid bid level")
-		assert.Contains(t, c.Exec("b 1 9"), "Invalid suit")
+		assert.Contains(t, c.Exec("b 1 9"), msgStem("invalidSuit14Plain"))
 	})
 
 	// **-1 は「単独で戦う」という有効な選択。**

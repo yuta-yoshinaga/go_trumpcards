@@ -55,11 +55,11 @@ func literatureParseAsk(args []string, li usecase.LiteratureInteractorIF) (strin
 	}
 	suit, err := strconv.Atoi(args[1])
 	if err != nil || suit < domain.CardDesignSpade || suit > domain.CardDesignDiamond {
-		return "Invalid suit: " + args[1] + ". Please enter 1-4 (1=S 2=C 3=H 4=D).", true
+		return invalidArg("invalidSuit14Letters", "val", args[1]), true
 	}
 	value, err := strconv.Atoi(args[2])
 	if err != nil || value < 1 || value > 13 {
-		return "Invalid rank: " + args[2] + ". Please enter 1-13.", true
+		return invalidArg("invalidRank113", "val", args[2]), true
 	}
 	return li.Ask(to, suit, value), true
 }
