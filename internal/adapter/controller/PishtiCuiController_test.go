@@ -62,7 +62,7 @@ func TestPishtiCuiController_Exec(t *testing.T) {
 		m := newMock()
 		c := controller.NewPishtiCuiController(m)
 		out := c.Exec("p xyz")
-		assert.Contains(t, out, "Invalid")
+		assert.True(t, msgRejected(out))
 	})
 
 	t.Run("set difficulty", func(t *testing.T) {

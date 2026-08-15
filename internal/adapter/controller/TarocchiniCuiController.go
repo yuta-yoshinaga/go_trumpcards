@@ -74,7 +74,7 @@ func (c *TarocchiniCuiController) Exec(command string) string {
 // 変わったときに案内だけが古くなる。
 func (c *TarocchiniCuiController) execScarto(args []string) (string, bool) {
 	if len(args) < domain.TarocchiniSurplus {
-		return fmt.Sprintf("%d card indices are required (e.g. scarto 0 1).", domain.TarocchiniSurplus), true
+		return invalidArg("cardIndicesRequiredScartoTwo", "n", fmt.Sprint(domain.TarocchiniSurplus)), true
 	}
 	indices, skipped := cuiutil.ParseIntSlice(args)
 	if len(skipped) > 0 {

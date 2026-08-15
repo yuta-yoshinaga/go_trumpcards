@@ -77,7 +77,7 @@ func (c *KoenigrufenCuiController) Exec(command string) string {
 // execBid bid サブコマンドを解釈する。
 func (c *KoenigrufenCuiController) execBid(args []string) (string, bool) {
 	if len(args) == 0 {
-		return "Bid is required (rufer).", true
+		return invalidArg("bidRequiredRufer"), true
 	}
 	bid := koenigrufenParseBid(args[0])
 	if bid == domain.KoenigrufenBidPass {
@@ -89,7 +89,7 @@ func (c *KoenigrufenCuiController) execBid(args []string) (string, bool) {
 // execDiscard discard サブコマンドを解釈する (6 枚のインデックス)。
 func (c *KoenigrufenCuiController) execDiscard(args []string) (string, bool) {
 	if len(args) < domain.KoenigrufenTalonSize {
-		return "Six card indices are required (e.g. discard 0 1 2 3 4 5).", true
+		return invalidArg("sixIndicesRequiredDiscard"), true
 	}
 	indices, skipped := cuiutil.ParseIntSlice(args)
 	if len(skipped) > 0 {

@@ -90,7 +90,7 @@ func (c *UltiCuiController) Exec(command string) string {
 // execBid bid サブコマンドを解釈する。
 func (c *UltiCuiController) execBid(args []string) (string, bool) {
 	if len(args) == 0 {
-		return "Bid action is required (party <suit>, betli, or durchmarsch).", true
+		return invalidArg("bidActionRequiredParty"), true
 	}
 	switch args[0] {
 	case "party", "p":
@@ -109,7 +109,7 @@ func (c *UltiCuiController) execBid(args []string) (string, bool) {
 // bidWithTrump 切り札スート引数を解釈して切り札コントラクト (Party / Ulti) を宣言する。
 func (c *UltiCuiController) bidWithTrump(contract domain.UltiContract, args []string) string {
 	if len(args) < 2 {
-		return "Trump suit is required (s=spade, c=club, h=heart, d=diamond)."
+		return invalidArg("trumpSuitRequiredWords")
 	}
 	suit := ultiParseSuit(args[1])
 	if suit < 0 {
@@ -121,7 +121,7 @@ func (c *UltiCuiController) bidWithTrump(contract domain.UltiContract, args []st
 // execDiscard discard サブコマンドを解釈する (2 枚のインデックス)。
 func (c *UltiCuiController) execDiscard(args []string) (string, bool) {
 	if len(args) < domain.UltiDiscardSize {
-		return "Two card indices are required (e.g. discard 0 5).", true
+		return invalidArg("twoIndicesRequiredDiscard"), true
 	}
 	indices, skipped := cuiutil.ParseIntSlice(args)
 	if len(skipped) > 0 {

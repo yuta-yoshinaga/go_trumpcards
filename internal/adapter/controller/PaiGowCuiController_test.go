@@ -115,7 +115,7 @@ func TestPaiGowCuiController_Set_Errors(t *testing.T) {
 
 	t.Run("missing second", func(t *testing.T) {
 		result := c.Exec("s 0")
-		assert.Contains(t, result, "Two card indices are required")
+		assert.Contains(t, result, msgStem("twoIndicesRequired"))
 	})
 
 	t.Run("invalid first", func(t *testing.T) {

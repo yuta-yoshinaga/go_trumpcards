@@ -57,10 +57,10 @@ func TestAndarBaharCuiController_BetWithSideBet(t *testing.T) {
 func TestAndarBaharCuiController_Bet_InvalidInput(t *testing.T) {
 	c := controller.NewAndarBaharCuiController(newMockAndarBaharInteractor())
 
-	assert.Contains(t, c.Exec("b"), "required")
-	assert.Contains(t, c.Exec("b 100"), "required")
+	assert.True(t, msgRejected(c.Exec("b")))
+	assert.True(t, msgRejected(c.Exec("b 100")))
 	assert.Contains(t, c.Exec("b abc a"), msgInvalidBetAmountPrefix())
-	assert.Contains(t, c.Exec("b 100 x"), "Invalid bet target")
+	assert.Contains(t, c.Exec("b 100 x"), msgStem("invalidBetTargetAndarBahar"))
 	assert.Contains(t, c.Exec("b 100 a abc 2"), msgStem("invalidSideBetAmountANumber"))
 	assert.Contains(t, c.Exec("b 100 a 50 abc"), msgStem("invalidSideBetBandANumber"))
 	// 帯は 0..6 の範囲外を弾く。

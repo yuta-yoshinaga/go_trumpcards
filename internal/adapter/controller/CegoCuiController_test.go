@@ -52,7 +52,7 @@ func TestCegoCuiController_Exec(t *testing.T) {
 
 	t.Run("bid no args", func(t *testing.T) {
 		result := controller.NewCegoCuiController(newMock()).Exec("bid")
-		assert.Contains(t, result, "Bid is required")
+		assert.Contains(t, result, msgStem("bidRequiredPlay"))
 	})
 
 	t.Run("bid invalid", func(t *testing.T) {

@@ -36,13 +36,13 @@ func (cc *ChinesePokerCuiController) Exec(command string) string {
 				return cc.ci.Bet(amount), true
 			case "s", "set":
 				if len(args) < 8 {
-					return "8 card indices are required (3 front + 5 middle).", true
+					return invalidArg("cardIndicesRequired8FrontMiddle"), true
 				}
 				frontIndices := make([]int, 3)
 				for i := 0; i < 3; i++ {
 					v, err := strconv.Atoi(args[i])
 					if err != nil {
-						return "Invalid front index: " + args[i], true
+						return invalidArg("invalidFrontIndexRaw", "val", args[i]), true
 					}
 					frontIndices[i] = v
 				}
@@ -50,7 +50,7 @@ func (cc *ChinesePokerCuiController) Exec(command string) string {
 				for i := 0; i < 5; i++ {
 					v, err := strconv.Atoi(args[3+i])
 					if err != nil {
-						return "Invalid middle index: " + args[3+i], true
+						return invalidArg("invalidMiddleIndexRaw", "val", args[3+i]), true
 					}
 					middleIndices[i] = v
 				}

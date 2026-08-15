@@ -107,8 +107,8 @@ func TestShelemCuiControllerDiscardTakesFiveArguments(t *testing.T) {
 
 func TestShelemCuiControllerDiscardRejectsBadArgs(t *testing.T) {
 	for _, tc := range []struct{ name, cmd, want string }{
-		{"no args", "d", "Four card indices and a suit are required."},
-		{"too few", "d 0 1 2 3", "Four card indices and a suit are required."},
+		{"no args", "d", msgKey("fourIndicesAndSuitRequired")},
+		{"too few", "d 0 1 2 3", msgKey("fourIndicesAndSuitRequired")},
 		{"non-numeric index", "d 0 x 2 3 1", msgInvalidCardIndex("x")},
 		{"suit out of range", "d 0 1 2 3 5", msgKey("invalidSuit", "val", "5")},
 		{"non-numeric suit", "d 0 1 2 3 x", msgKey("invalidSuit", "val", "x")},

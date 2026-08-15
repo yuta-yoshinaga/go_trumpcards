@@ -50,7 +50,7 @@ func (c *DoudizhuCuiController) Exec(command string) string {
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 0 || v > domain.DoudizhuMaxBid {
-					return "Invalid bid value. Please enter 0-3 (0=pass).", true
+					return invalidArg("invalidBidValue03Pass"), true
 				}
 				return c.dgi.Bid(v), true
 			case "sd", "setdifficulty":

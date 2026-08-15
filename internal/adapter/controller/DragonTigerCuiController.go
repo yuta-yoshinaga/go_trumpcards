@@ -34,7 +34,7 @@ func (dc *DragonTigerCuiController) Exec(command string) string {
 			switch cmd {
 			case "b", "bet":
 				if len(args) < 2 {
-					return "Bet amount and type (d/t/e) are required.", true
+					return invalidArg("betAmountAndTypeRequired"), true
 				}
 				amount, errMsg, ok := cuiutil.ParseIntArgKeys(args[:1], "betAmountRequired", "invalidBetAmount", domain.DragonTigerMinBet, math.MaxInt)
 				if !ok {
@@ -42,7 +42,7 @@ func (dc *DragonTigerCuiController) Exec(command string) string {
 				}
 				betType, ok := dragonTigerParseBetType(args[1])
 				if !ok {
-					return "Invalid bet type. Use d (dragon) / t (tiger) / e (tie).", true
+					return invalidArg("invalidBetTypeDragonTiger"), true
 				}
 				return dc.di.Bet(amount, betType), true
 			case "clear":

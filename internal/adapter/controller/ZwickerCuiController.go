@@ -62,7 +62,7 @@ func (c *ZwickerCuiController) Exec(command string) string {
 // どちらのつもりか決まらない。
 func (c *ZwickerCuiController) take(args []string) (string, bool) {
 	if len(args) < 2 {
-		return "Card index and value are required (for example: t 0 7 t:1,2).", true
+		return invalidArg("cardIndexAndValueRequired"), true
 	}
 	hand, ok := zwickerParseIdx(args[0])
 	if !ok {
@@ -93,7 +93,7 @@ func (c *ZwickerCuiController) take(args []string) (string, bool) {
 // build は `b <hand> <a,b> <value>` を解釈する。
 func (c *ZwickerCuiController) build(args []string) (string, bool) {
 	if len(args) < 3 {
-		return "Card index, table cards and a value are required (for example: b 0 1,2 9).", true
+		return invalidArg("cardTableAndValueRequired"), true
 	}
 	hand, ok := zwickerParseIdx(args[0])
 	if !ok {

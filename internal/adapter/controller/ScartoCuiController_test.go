@@ -56,7 +56,7 @@ func TestScartoCuiController_Exec(t *testing.T) {
 
 	t.Run("scarto too few", func(t *testing.T) {
 		result := controller.NewScartoCuiController(newMock()).Exec("scarto 0 1")
-		assert.Contains(t, result, "Three card indices are required")
+		assert.Contains(t, result, msgStem("threeIndicesRequiredScarto"))
 	})
 
 	t.Run("scarto invalid index", func(t *testing.T) {

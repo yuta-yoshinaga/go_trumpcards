@@ -87,7 +87,7 @@ func TestMaoCuiController_Exec(t *testing.T) {
 	})
 
 	t.Run("declareword no arg", func(t *testing.T) {
-		assert.Contains(t, controller.NewMaoCuiController(newMaoCuiMock()).Exec("dw"), "A word is required")
+		assert.Contains(t, controller.NewMaoCuiController(newMaoCuiMock()).Exec("dw"), msgStem("wordRequired"))
 	})
 
 	t.Run("nextround", func(t *testing.T) {

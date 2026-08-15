@@ -63,7 +63,7 @@ func (c *KaiserCuiController) Exec(command string) string {
 // 第 2 引数は契約種別 (0=切札, 1=ノートランプ, 2=ロー・ノートランプ)。省略時は切札。
 func kaiserParseBid(args []string, ki usecase.KaiserInteractorIF) (string, bool) {
 	if len(args) == 0 {
-		return "Bid value is required (7-12).", true
+		return invalidArg("bidValueRequired712"), true
 	}
 	value, err := strconv.Atoi(args[0])
 	if err != nil || value < domain.KaiserMinBid || value > domain.KaiserMaxBid {
@@ -83,7 +83,7 @@ func kaiserParseBid(args []string, ki usecase.KaiserInteractorIF) (string, bool)
 // kaiserParseDiscard は `d <i> <j>` を解釈する。
 func kaiserParseDiscard(args []string, ki usecase.KaiserInteractorIF) (string, bool) {
 	if len(args) < domain.KaiserKittySize {
-		return "Two card indices are required.", true
+		return invalidArg("twoIndicesRequired"), true
 	}
 	idxs := make([]int, 0, domain.KaiserKittySize)
 	for _, a := range args[:domain.KaiserKittySize] {

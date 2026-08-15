@@ -59,7 +59,7 @@ func (c *ShengJiCuiController) Exec(command string) string {
 // 埋め戻したあとは 25 枚しかない。
 func shengJiParseIndexes(args []string, want, maxIdx int, apply func([]int) string) (string, bool) {
 	if len(args) == 0 {
-		return "Card indexes are required (e.g. p 0 1 for a pair).", true
+		return invalidArg("cardIndexesRequiredPair"), true
 	}
 	if want > 0 && len(args) != want {
 		return "Give exactly " + strconv.Itoa(want) + " card indexes.", true

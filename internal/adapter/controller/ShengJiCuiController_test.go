@@ -64,7 +64,7 @@ func TestShengJiCuiController_Exec(t *testing.T) {
 		assert.Equal(t, mockOutput, c.Exec("b 25 26 27 28 29 30 31 32"))
 		assert.Contains(t, c.Exec("b 33 0 1 2 3 4 5 6"), msgInvalidCardIndexPrefix())
 		assert.Contains(t, c.Exec("b 0 1"), "exactly 8")
-		assert.Contains(t, c.Exec("b"), "Card indexes are required")
+		assert.Contains(t, c.Exec("b"), msgStem("cardIndexesRequiredPair"))
 	})
 
 	t.Run("plays any number of cards", func(t *testing.T) {
@@ -78,7 +78,7 @@ func TestShengJiCuiController_Exec(t *testing.T) {
 
 	t.Run("play rejects bad input", func(t *testing.T) {
 		c := controller.NewShengJiCuiController(newMock())
-		assert.Contains(t, c.Exec("p"), "Card indexes are required")
+		assert.Contains(t, c.Exec("p"), msgStem("cardIndexesRequiredPair"))
 		assert.Contains(t, c.Exec("p abc"), msgInvalidCardIndexPrefix())
 		assert.Contains(t, c.Exec("p -1"), msgInvalidCardIndexPrefix())
 		assert.Contains(t, c.Exec("p 99"), msgInvalidCardIndexPrefix())

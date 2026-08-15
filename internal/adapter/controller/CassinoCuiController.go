@@ -117,10 +117,10 @@ func (c *CassinoCuiController) Exec(command string) string {
 					return "Usage: sr <rule> <0|1> | sr list\nRules: " + strings.Join(cassinoRuleKeys, ", "), true
 				}
 				if !setCassinoRule(nil, args[0], false) {
-					return fmt.Sprintf("Unknown rule: %s.", args[0]), true
+					return invalidArg("unknownRule", "val", fmt.Sprint(args[0])), true
 				}
 				if args[1] != "0" && args[1] != "1" {
-					return fmt.Sprintf("Invalid value: %s. Please enter 0 or 1.", args[1]), true
+					return invalidArg("invalidValue0Or1Raw", "val", fmt.Sprint(args[1])), true
 				}
 				cfg := c.ci.GetConfig()
 				setCassinoRule(&cfg, args[0], args[1] == "1")
@@ -141,7 +141,7 @@ func (c *CassinoCuiController) handleTake(args []string) (string, bool) {
 	handStr := args[0]
 	handIdx, _, ok := cuiutil.ParseIntArgKeys([]string{handStr}, "handIndexRequired", "invalidHandIndex", 0, 51)
 	if !ok {
-		return "Invalid hand index: " + handStr, true
+		return invalidArg("invalidHandIndexRaw", "val", handStr), true
 	}
 	rest := args[1:]
 	tableArgs := rest
@@ -169,11 +169,11 @@ func (c *CassinoCuiController) handleBuild(args []string) (string, bool) {
 	}
 	handIdx, _, ok := cuiutil.ParseIntArgKeys([]string{args[0]}, "handIndexRequired", "invalidHandIndex", 0, 51)
 	if !ok {
-		return "Invalid hand index: " + args[0], true
+		return invalidArg("invalidHandIndexRaw", "val", args[0]), true
 	}
 	value, _, ok := cuiutil.ParseIntArgKeys([]string{args[1]}, "buildValueRequired", "invalidBuildValue", 2, 10)
 	if !ok {
-		return "Invalid build value: " + args[1], true
+		return invalidArg("invalidBuildValueRaw", "val", args[1]), true
 	}
 	tableIdxs, skipped := parseIntListArg(args[2:])
 	if len(skipped) > 0 {
@@ -189,7 +189,7 @@ func (c *CassinoCuiController) handleTrail(args []string) (string, bool) {
 	}
 	handIdx, _, ok := cuiutil.ParseIntArgKeys([]string{args[0]}, "handIndexRequired", "invalidHandIndex", 0, 51)
 	if !ok {
-		return "Invalid hand index: " + args[0], true
+		return invalidArg("invalidHandIndexRaw", "val", args[0]), true
 	}
 	return c.ci.Trail(handIdx), true
 }

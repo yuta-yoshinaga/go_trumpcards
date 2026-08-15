@@ -67,7 +67,7 @@ func (c *ShelemCuiController) Exec(command string) string {
 // 選んでいないスートが切り札になる。
 func (c *ShelemCuiController) discard(args []string) (string, bool) {
 	if len(args) < domain.ShelemWidowSize+1 {
-		return "Four card indices and a suit are required.", true
+		return invalidArg("fourIndicesAndSuitRequired"), true
 	}
 	indices := make([]int, 0, domain.ShelemWidowSize)
 	for i := range domain.ShelemWidowSize {

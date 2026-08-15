@@ -70,7 +70,7 @@ func (c *ScoponeCuiController) handlePlay(args []string) (string, bool) {
 	}
 	handIdx, _, ok := cuiutil.ParseIntArgKeys([]string{args[0]}, "handIndexRequired", "invalidHandIndex", 0, 39)
 	if !ok {
-		return "Invalid hand index: " + args[0], true
+		return invalidArg("invalidHandIndexRaw", "val", args[0]), true
 	}
 	tableIdxs, skipped := cuiutil.ParseIntSlice(args[1:])
 	// Refuse before playing. PrependSkippedWarning ran the move first and

@@ -85,7 +85,7 @@ func TestMusCuiController_Exec(t *testing.T) {
 
 	t.Run("discard invalid index", func(t *testing.T) {
 		result := controller.NewMusCuiController(newMock()).Exec("d abc")
-		assert.Contains(t, result, "Invalid")
+		assert.True(t, msgRejected(result))
 	})
 
 	t.Run("paso", func(t *testing.T) {

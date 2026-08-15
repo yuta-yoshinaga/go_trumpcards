@@ -68,7 +68,7 @@ func (c *MaoCuiController) Exec(command string) string {
 			case "dw", "declareword":
 				word := strings.TrimSpace(strings.Join(args, " "))
 				if word == "" {
-					return "A word is required.", true
+					return invalidArg("wordRequired"), true
 				}
 				return c.ci.DeclareWord(word), true
 			case "nr", "nextround":

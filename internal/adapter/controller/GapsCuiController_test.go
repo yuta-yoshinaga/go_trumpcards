@@ -40,10 +40,10 @@ func TestGapsCuiController_Move_BadArgs(t *testing.T) {
 	c := NewGapsCuiController(gi)
 	assert.Contains(t, c.Exec("m"), "Usage:")
 	assert.Contains(t, c.Exec("m 0 1 2"), "Usage:")
-	assert.Contains(t, c.Exec("m x 1 2 3"), "Invalid")
-	assert.Contains(t, c.Exec("m 0 x 2 3"), "Invalid")
-	assert.Contains(t, c.Exec("m 0 1 x 3"), "Invalid")
-	assert.Contains(t, c.Exec("m 0 1 2 x"), "Invalid")
+	assert.True(t, msgRejected(c.Exec("m x 1 2 3")))
+	assert.True(t, msgRejected(c.Exec("m 0 x 2 3")))
+	assert.True(t, msgRejected(c.Exec("m 0 1 x 3")))
+	assert.True(t, msgRejected(c.Exec("m 0 1 2 x")))
 }
 
 func TestGapsCuiController_Redeal(t *testing.T) {

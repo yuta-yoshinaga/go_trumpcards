@@ -59,7 +59,7 @@ func (c *SixBidSoloCuiController) Exec(command string) string {
 // **指名札はコール・ソロのときだけ要る。**スートは 1=♠ 2=♣ 3=♥ 4=♦。
 func sixBidSoloParseDeclare(args []string, si usecase.SixBidSoloInteractorIF) (string, bool) {
 	if len(args) < 1 {
-		return "Trump suit is required (1=S 2=C 3=H 4=D).", true
+		return invalidArg("trumpSuitRequiredLettersPlainRaw"), true
 	}
 	suit, err := strconv.Atoi(args[0])
 	if err != nil || suit < domain.CardDesignSpade || suit > domain.CardDesignDiamond {

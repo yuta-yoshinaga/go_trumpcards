@@ -54,7 +54,7 @@ func TestStealingBundlesCuiController_StealRejectsBadArgs(t *testing.T) {
 	for _, tc := range []struct{ name, cmd, want string }{
 		{"no args", "s", msgCardIndexRequired()},
 		{"card not a number", "s x 1", msgInvalidCardIndex("x")},
-		{"victim missing", "s 1", "Victim index is required."},
+		{"victim missing", "s 1", msgKey("victimIndexRequired")},
 		{"victim not a number", "s 1 y", "Invalid victim index: y."},
 	} {
 		t.Run(tc.name, func(t *testing.T) {

@@ -64,7 +64,7 @@ func (c *TrenteEtQuaranteCuiController) Exec(command string) string {
 // handleBet は "b <betType> <stake>" を解析して Bet を呼ぶ。
 func (c *TrenteEtQuaranteCuiController) handleBet(args []string) string {
 	if len(args) < 2 {
-		return "Bet type and stake are required (e.g. b 0 100 — 0=Noir, 1=Rouge, 2=Couleur, 3=Inverse)."
+		return invalidArg("betTypeAndStakeRequired")
 	}
 	bet, err := strconv.Atoi(args[0])
 	if err != nil || bet < int(domain.TrenteEtQuaranteBetNoir) || bet > int(domain.TrenteEtQuaranteBetInverse) {

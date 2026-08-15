@@ -82,12 +82,12 @@ func TestShitheadCuiController_Exec(t *testing.T) {
 
 	t.Run("setrule unknown", func(t *testing.T) {
 		c := controller.NewShitheadCuiController(newMock())
-		assert.Contains(t, c.Exec("sr unknown 1"), "Unknown")
+		assert.Contains(t, c.Exec("sr unknown 1"), msgStem("unknownRule"))
 	})
 
 	t.Run("setrule invalid value", func(t *testing.T) {
 		c := controller.NewShitheadCuiController(newMock())
-		assert.Contains(t, c.Exec("sr two 9"), "Invalid")
+		assert.True(t, msgRejected(c.Exec("sr two 9")))
 	})
 
 	t.Run("setrule valid", func(t *testing.T) {

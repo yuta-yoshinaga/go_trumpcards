@@ -44,11 +44,11 @@ func (c *NinetyNineCuiController) Exec(command string) string {
 			switch cmd {
 			case "b", "bid":
 				if len(args) < domain.NinetyNineBurySize {
-					return "Bury 3 card indices are required (e.g. 'bid 0 1 2').", true
+					return invalidArg("buryThreeIndicesRequired"), true
 				}
 				idxs, skipped := cuiutil.ParseIntSlice(args)
 				if len(skipped) > 0 || len(idxs) < domain.NinetyNineBurySize {
-					return "Invalid bury indices. Please enter 3 valid card indices.", true
+					return invalidArg("invalidBuryIndices"), true
 				}
 				return c.oi.Bid(idxs[:domain.NinetyNineBurySize]), true
 			case "p", "play":

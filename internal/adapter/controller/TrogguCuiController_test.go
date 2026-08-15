@@ -67,7 +67,7 @@ func TestTrogguCuiController_Exec(t *testing.T) {
 	t.Run("bid needs an argument", func(t *testing.T) {
 		m := newMock()
 		out := controller.NewTrogguCuiController(m).Exec("bid")
-		assert.Contains(t, out, "Bid is required")
+		assert.Contains(t, out, msgStem("bidRequiredTrois"))
 		m.AssertNotCalled(t, "Bid", mock.Anything)
 	})
 	t.Run("pass", func(t *testing.T) {

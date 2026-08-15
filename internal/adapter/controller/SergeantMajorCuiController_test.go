@@ -81,8 +81,8 @@ func TestSergeantMajorCuiControllerDiscard(t *testing.T) {
 // **既定値で埋めない。** 埋めると捨てていない札が捨てられる。
 func TestSergeantMajorCuiControllerDiscardRejectsBadArgs(t *testing.T) {
 	for _, tc := range []struct{ name, cmd, want string }{
-		{"no args", "d", "Four card indices are required."},
-		{"too few", "d 0 1 2", "Four card indices are required."},
+		{"no args", "d", msgKey("fourIndicesRequired")},
+		{"too few", "d 0 1 2", msgKey("fourIndicesRequired")},
 		{"non-numeric", "d 0 x 2 3", msgInvalidCardIndex("x")},
 	} {
 		t.Run(tc.name, func(t *testing.T) {

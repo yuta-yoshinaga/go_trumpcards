@@ -47,7 +47,7 @@ func (c *TysiacCuiController) Exec(command string) string {
 			switch cmd {
 			case "bid":
 				if len(args) == 0 {
-					return "Bid action is required (raise or pass).", true
+					return invalidArg("bidActionRequiredRaise"), true
 				}
 				switch args[0] {
 				case "raise", "r":

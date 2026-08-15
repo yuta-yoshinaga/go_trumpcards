@@ -38,10 +38,10 @@ func (c *FiftyOneCuiController) Exec(command string) string {
 				handIdx, err1 := strconv.Atoi(args[0])
 				tableIdx, err2 := strconv.Atoi(args[1])
 				if err1 != nil {
-					return fmt.Sprintf("Invalid hand index: %s", args[0]), true
+					return invalidArg("invalidHandIndexRaw", "val", fmt.Sprint(args[0])), true
 				}
 				if err2 != nil {
-					return fmt.Sprintf("Invalid table index: %s", args[1]), true
+					return invalidArg("invalidTableIndexRaw", "val", fmt.Sprint(args[1])), true
 				}
 				return c.fi.ExchangeOne(handIdx, tableIdx), true
 			case "a", "all":

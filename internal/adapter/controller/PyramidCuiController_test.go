@@ -107,19 +107,19 @@ func TestPyramidCuiControllerRemoveInvalidArgs(t *testing.T) {
 	c := NewPyramidCuiController(pi)
 	// Invalid row
 	result := c.Exec("rm abc 0")
-	assert.Contains(t, result, "Invalid")
+	assert.True(t, msgRejected(result))
 	// Invalid col
 	result = c.Exec("rm 6 abc")
-	assert.Contains(t, result, "Invalid")
+	assert.True(t, msgRejected(result))
 }
 
 func TestPyramidCuiControllerRemovePairInvalidArgs(t *testing.T) {
 	pi := newMockPyramidInteractor()
 	c := NewPyramidCuiController(pi)
 	result := c.Exec("rm 6 0 abc 1")
-	assert.Contains(t, result, "Invalid")
+	assert.True(t, msgRejected(result))
 	result = c.Exec("rm 6 0 6 abc")
-	assert.Contains(t, result, "Invalid")
+	assert.True(t, msgRejected(result))
 }
 
 func TestPyramidCuiControllerRemoveWasteInvalid(t *testing.T) {
@@ -130,9 +130,9 @@ func TestPyramidCuiControllerRemoveWasteInvalid(t *testing.T) {
 	assert.Contains(t, result, "Usage:")
 	// rm w with invalid number
 	result = c.Exec("rm w abc 0")
-	assert.Contains(t, result, "Invalid")
+	assert.True(t, msgRejected(result))
 	result = c.Exec("rm w 6 abc")
-	assert.Contains(t, result, "Invalid")
+	assert.True(t, msgRejected(result))
 }
 
 func TestPyramidCuiControllerRemove3Args(t *testing.T) {

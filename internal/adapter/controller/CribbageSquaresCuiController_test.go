@@ -41,8 +41,8 @@ func TestCribbageSquaresCuiController_PlaceInvalid(t *testing.T) {
 
 	assert.Contains(t, c.Exec("p"), "Usage:")
 	assert.Contains(t, c.Exec("p 1"), "Usage:")
-	assert.Contains(t, c.Exec("p abc 0"), "Invalid")
-	assert.Contains(t, c.Exec("p 0 abc"), "Invalid")
+	assert.True(t, msgRejected(c.Exec("p abc 0")))
+	assert.True(t, msgRejected(c.Exec("p 0 abc")))
 }
 
 func TestCribbageSquaresCuiController_Undo(t *testing.T) {

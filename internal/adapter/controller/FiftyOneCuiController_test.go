@@ -45,13 +45,13 @@ func TestFiftyOneCuiController_Play_MissingArgs(t *testing.T) {
 func TestFiftyOneCuiController_Play_InvalidHandIdx(t *testing.T) {
 	ctrl, _ := newFiftyOneCuiController()
 	result := ctrl.Exec("p abc 0")
-	assert.Contains(t, result, "Invalid hand index")
+	assert.Contains(t, result, msgStem("invalidHandIndexRaw"))
 }
 
 func TestFiftyOneCuiController_Play_InvalidTableIdx(t *testing.T) {
 	ctrl, _ := newFiftyOneCuiController()
 	result := ctrl.Exec("p 0 abc")
-	assert.Contains(t, result, "Invalid table index")
+	assert.Contains(t, result, msgStem("invalidTableIndexRaw"))
 }
 
 func TestFiftyOneCuiController_All(t *testing.T) {

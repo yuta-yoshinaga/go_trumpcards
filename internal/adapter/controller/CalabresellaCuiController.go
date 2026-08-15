@@ -47,7 +47,7 @@ func (c *CalabresellaCuiController) Exec(command string) string {
 			switch cmd {
 			case "bid":
 				if len(args) == 0 {
-					return "Bid action is required (pass, chiamo, or solo).", true
+					return invalidArg("bidActionRequiredChiamo"), true
 				}
 				switch args[0] {
 				case "pass", "p":

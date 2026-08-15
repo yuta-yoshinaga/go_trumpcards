@@ -68,7 +68,7 @@ func TestMinchiateCuiController_Exec(t *testing.T) {
 	// 変わったときに案内だけ古くなる。
 	t.Run("scarto with too few indices names the required count", func(t *testing.T) {
 		out := controller.NewMinchiateCuiController(newMock()).Exec("scarto 0")
-		assert.Contains(t, out, fmt.Sprintf("%d card indices are required", domain.MinchiateSurplus))
+		assert.Contains(t, out, msgKey("cardIndicesRequiredScartoN", "n", fmt.Sprint(domain.MinchiateSurplus)))
 	})
 
 	// **枚数は足りているが中身が数字でない場合。**引数を 2 個だけ渡すと枚数検査で

@@ -49,7 +49,7 @@ func (ac *AndarBaharCuiController) Exec(command string) string {
 // execBet は "b <金額> <a|b> [サイド金額 サイド帯]" を解釈する。
 func (ac *AndarBaharCuiController) execBet(args []string) (string, bool) {
 	if len(args) < 2 {
-		return "Bet amount and target (a/b) are required.", true
+		return invalidArg("betAmountAndTargetRequired"), true
 	}
 	amount, errMsg, ok := cuiutil.ParseIntArgKeys(args[:1],
 		"betAmountRequired", "invalidBetAmount",
@@ -59,7 +59,7 @@ func (ac *AndarBaharCuiController) execBet(args []string) (string, bool) {
 	}
 	target, ok := andarBaharParseTarget(args[1])
 	if !ok {
-		return "Invalid bet target. Use a (andar) / b (bahar).", true
+		return invalidArg("invalidBetTargetAndarBahar"), true
 	}
 
 	sideAmount, sideBand := 0, domain.AndarBaharSideNone

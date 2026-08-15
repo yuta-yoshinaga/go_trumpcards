@@ -43,7 +43,7 @@ func TestTrenteEtQuaranteCuiController_Exec(t *testing.T) {
 	})
 	t.Run("bet missing args", func(t *testing.T) {
 		out := controller.NewTrenteEtQuaranteCuiController(newMock()).Exec("b")
-		assert.Contains(t, out, "required")
+		assert.True(t, msgRejected(out))
 	})
 	t.Run("bet invalid type", func(t *testing.T) {
 		out := controller.NewTrenteEtQuaranteCuiController(newMock()).Exec("b 9 100")

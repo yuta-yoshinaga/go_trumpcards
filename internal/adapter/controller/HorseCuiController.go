@@ -86,12 +86,12 @@ func (c *HorseCuiController) Exec(command string) string {
 // 範囲で受けると 5 のような作れない数が通ってしまう。
 func (c *HorseCuiController) execSetSeats(args []string) (string, bool) {
 	if len(args) == 0 {
-		return "Number of seats is required (4, 6 or 9).", true
+		return invalidArg("numberOfSeatsRequired469"), true
 	}
-	return cuiutil.WithParsedIntKeys(args, "numberOfSeatsRequired46Or9", "invalidNumberOfSeats46Or9",
+	return cuiutil.WithParsedIntKeys(args, "numberOfSeatsRequired469", "invalidNumberOfSeats46Or9",
 		cuiutil.NoMin, cuiutil.NoMax, func(v int) string {
 			if !domain.HorseValidSeats(v) {
-				return "Invalid number of seats: please enter 4, 6 or 9."
+				return invalidArg("invalidNumberOfSeats469")
 			}
 			cfg := c.hi.GetConfig()
 			cfg.Seats = v

@@ -41,7 +41,7 @@ func (rc *RikkenCuiController) Exec(command string) string {
 			case "bid":
 				contract, ok := rikkenParseContract(args)
 				if !ok {
-					return "Invalid contract. Use rik / misere / solo / open, or pass.", true
+					return invalidArg("invalidContractRik"), true
 				}
 				return rc.ri.Bid(contract), true
 			case "pass":
@@ -50,7 +50,7 @@ func (rc *RikkenCuiController) Exec(command string) string {
 			case "call":
 				suit, ok := rikkenParseSuit(args)
 				if !ok {
-					return "Invalid trump. Use s / c / h / d.", true
+					return invalidArg("invalidTrumpSCHD"), true
 				}
 				return rc.ri.Call(suit), true
 			case "next":

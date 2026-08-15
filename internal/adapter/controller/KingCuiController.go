@@ -64,7 +64,7 @@ func (c *KingCuiController) handleSelectContract(args []string) (string, bool) {
 	}
 	contract, _, ok := cuiutil.ParseIntArgKeys([]string{args[0]}, "contractRequired", "invalidContract", 0, domain.KingContractCnt-1)
 	if !ok {
-		return "Invalid contract: " + args[0], true
+		return invalidArg("invalidContractRaw", "val", args[0]), true
 	}
 	trump := -1
 	if len(args) >= 2 {
@@ -83,7 +83,7 @@ func (c *KingCuiController) handlePlay(args []string) (string, bool) {
 	}
 	handIdx, _, ok := cuiutil.ParseIntArgKeys([]string{args[0]}, "handIndexRequired", "invalidHandIndex", 0, domain.KingHandSize-1)
 	if !ok {
-		return "Invalid hand index: " + args[0], true
+		return invalidArg("invalidHandIndexRaw", "val", args[0]), true
 	}
 	return c.ki.Play(handIdx), true
 }
