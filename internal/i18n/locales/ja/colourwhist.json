@@ -37,6 +37,5 @@
   "hintBid": "{{contract}} が良さそうです（{{reason}}）",
   "hintPlay": "{{index}} 番目の札が良さそうです（{{reason}}）",
   "colourWhistBidStrength": "手札の強さから見た契約",
-  "colourWhistFollowSuit": "フォローの義務がある",
-  "helpExamplePass": "  pass                 この競りには乗らない"
+  "colourWhistFollowSuit": "フォローの義務がある"
 }

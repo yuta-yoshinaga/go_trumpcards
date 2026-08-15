@@ -37,5 +37,6 @@
   "hintDiscard": "ヒント: 手札{{idx}} をサイド{{foundation}} にディスカード",
   "hintGoal": "ヒント: ゴール → ファウンデーション{{foundation}}",
   "hintHand": "ヒント: 手札{{idx}} → ファウンデーション{{foundation}}",
-  "hintSide": "ヒント: サイド{{idx}} → ファウンデーション{{foundation}}"
+  "hintSide": "ヒント: サイド{{idx}} → ファウンデーション{{foundation}}",
+  "helpExampleHint": "  h                   次の一手を教えてもらう"
 }

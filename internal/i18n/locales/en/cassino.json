@@ -28,5 +28,6 @@
   "hintBuild": "Suggestion: play {{card}} to make a build of {{value}} (build)",
   "hintTrail": "Suggestion: trail {{card}} (trail)",
   "hintNotYourTurn": "It is not your turn right now.",
-  "hintNoMove": "No move can be recommended."
+  "hintNoMove": "No move can be recommended.",
+  "helpExampleHint": "  h                        ask for a move"
 }

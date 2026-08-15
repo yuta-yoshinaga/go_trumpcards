@@ -28,5 +28,6 @@
   "hintBuild": "推奨: 手札 {{card}} でビルド値 {{value}} を作成 (build)",
   "hintTrail": "推奨: 手札 {{card}} を場に置く (trail)",
   "hintNotYourTurn": "今はあなたの番ではありません。",
-  "hintNoMove": "推奨できる手がありません。"
+  "hintNoMove": "推奨できる手がありません。",
+  "helpExampleHint": "  h                        次の一手を教えてもらう"
 }

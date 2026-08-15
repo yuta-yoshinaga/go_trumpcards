@@ -24,5 +24,6 @@
   "hintWait": "[HINT: wait ({{reason}})]",
   "hintReasonDeclare": "The top card matches the one before it",
   "hintReasonStep": "It is your turn to turn a card",
-  "hintReasonWait": "No match yet -- calling wrongly costs a card"
+  "hintReasonWait": "No match yet -- calling wrongly costs a card",
+  "helpExampleStep": "  s                    turn the next card"
 }
