@@ -90,12 +90,7 @@ func (ci *CuckooInteractor) act(action func() error) string {
 
 // NextRound 次のラウンドへ進む
 func (ci *CuckooInteractor) NextRound() string {
-	if out, blocked := guardGameEnd(ci.Game, ci.gp); blocked {
-		return out
-	}
-	ci.Game.NextRound()
-	ci.runCpuTurns()
-	return ci.gp.Output(ci.Game, nil)
+	return advanceRound(ci.Game, ci.gp, ci.runCpuTurns)
 }
 
 // GetConfig 現在の設定を取得
