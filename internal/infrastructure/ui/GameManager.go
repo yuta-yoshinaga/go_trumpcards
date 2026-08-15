@@ -2013,7 +2013,6 @@ var gameRegistry = []GameRegistryEntry{
 			TitleKey: "loba.helpTitle",
 			ExampleKeys: []string{
 				"loba.helpExampleDraw",
-				"loba.helpExampleDiscard",
 			},
 			CommandKeys: []string{
 				"loba.helpDrawStock",

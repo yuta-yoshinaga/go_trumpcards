@@ -30,6 +30,5 @@
   "hintReasonDraw": "you must draw first",
   "hintReasonMeld": "these three make a meld",
   "hintReasonDiscard": "this card connects to nothing",
-  "helpExampleDraw": "  ds                       start the turn by drawing from the stock",
-  "helpExampleDiscard": "  d 0                      discard hand card 0"
+  "helpExampleDraw": "  ds                       start the turn by drawing from the stock"
 }
