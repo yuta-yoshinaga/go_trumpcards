@@ -180,9 +180,3 @@ func zwickerDispatch(bc *baseController, w http.ResponseWriter, zi usecase.Zwick
 	}
 	return true
 }
-
-// NewZwickerDefaultOutputForTest exposes the default-output builder to the
-// external controller_test package.
-func NewZwickerDefaultOutputForTest(msg string) *ZwickerWebOutput {
-	return newZwickerDefaultOutput(msg)
-}

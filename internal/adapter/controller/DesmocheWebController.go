@@ -166,9 +166,3 @@ func desmocheDispatch(bc *baseController, w http.ResponseWriter, di usecase.Desm
 	}
 	return true
 }
-
-// NewDesmocheDefaultOutputForTest exposes the default-output builder to the
-// external controller_test package.
-func NewDesmocheDefaultOutputForTest(msg string) *DesmocheWebOutput {
-	return newDesmocheDefaultOutput(msg)
-}

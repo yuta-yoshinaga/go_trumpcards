@@ -150,9 +150,3 @@ func nainJauneDispatch(bc *baseController, w http.ResponseWriter, ni usecase.Nai
 	}
 	return true
 }
-
-// NewNainJauneDefaultOutputForTest exposes the default-output builder to the
-// external controller_test package.
-func NewNainJauneDefaultOutputForTest(msg string) *NainJauneWebOutput {
-	return newNainJauneDefaultOutput(msg)
-}

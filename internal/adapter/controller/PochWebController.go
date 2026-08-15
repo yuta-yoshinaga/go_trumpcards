@@ -167,9 +167,3 @@ func pochDispatch(bc *baseController, w http.ResponseWriter, pi usecase.PochInte
 	}
 	return true
 }
-
-// NewPochDefaultOutputForTest exposes the default-output builder to the
-// external controller_test package.
-func NewPochDefaultOutputForTest(msg string) *PochWebOutput {
-	return newPochDefaultOutput(msg)
-}

@@ -133,9 +133,3 @@ func skitgubbeDispatch(bc *baseController, w http.ResponseWriter, si usecase.Ski
 	}
 	return true
 }
-
-// NewSkitgubbeDefaultOutputForTest exposes the default-output builder to the
-// external controller_test package.
-func NewSkitgubbeDefaultOutputForTest(msg string) *SkitgubbeWebOutput {
-	return newSkitgubbeDefaultOutput(msg)
-}
