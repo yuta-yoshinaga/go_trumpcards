@@ -63,20 +63,6 @@ var sharedHintReasonKeys = map[string]string{
 	"weak_hand":      "cuiHintWeakHand",
 }
 
-// lookupHintReason looks up a hint reason string from game-specific map, then shared map.
-// The gameReasons map holds already-resolved display strings (reason → text);
-// values are returned verbatim. For maps that hold i18n keys (reason → key)
-// use hintReasonStr instead, which applies i18n.T.
-func lookupHintReason(reason string, gameReasons map[string]string) string {
-	if s, ok := gameReasons[reason]; ok {
-		return s
-	}
-	if key, ok := sharedHintReasonKeys[reason]; ok {
-		return i18n.T(key)
-	}
-	return reason
-}
-
 // hintReasonStr resolves a hint reason via a game-specific key map first
 // (reason → i18n key, translated through i18n.T), then falls back to the
 // shared sharedHintReasonKeys, and finally returns the raw reason. It is the

@@ -156,7 +156,7 @@ func (p *BidWhistCuiPresenter) HintOutput(g interfaces.BidWhistGame) string {
 	if hint == nil {
 		return i18n.T("bidwhist.hintNone") + "\n"
 	}
-	reason := lookupHintReason(hint.Reason, bidWhistHintReasonKeys)
+	reason := hintReasonStr(hint.Reason, bidWhistHintReasonKeys)
 	switch {
 	case hint.Pass != nil && *hint.Pass:
 		return color.Yellow(i18n.Tf("bidwhist.hintPass", "reason", reason)) + "\n"

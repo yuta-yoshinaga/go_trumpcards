@@ -146,7 +146,7 @@ func (p *FiveHundredCuiPresenter) HintOutput(g interfaces.FiveHundredGame) strin
 	if hint == nil {
 		return i18n.T("fivehundred.hintNone") + "\n"
 	}
-	reason := lookupHintReason(hint.Reason, fiveHundredHintReasonKeys)
+	reason := hintReasonStr(hint.Reason, fiveHundredHintReasonKeys)
 	switch {
 	case hint.Pass != nil && *hint.Pass:
 		return color.Yellow(i18n.Tf("fivehundred.hintPass", "reason", reason)) + "\n"
