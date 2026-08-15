@@ -40,5 +40,6 @@
   "hintReasonPlayWin": "取りにいく",
   "hintReasonPlayDuck": "取ってはいけないので安い札を落とす",
   "result.scores": "ゲーム終了！ 得点: {{scores}}",
-  "helpExamplePlay": "  play 0                    手札の 0 番のカードを出す"
+  "helpExamplePlay": "  play 0                    手札の 0 番のカードを出す",
+  "helpHint": "  h                         助言を表示"
 }

@@ -37,5 +37,6 @@
   "resultName": "  {{name}}",
   "wonAmount": " → won {{total}} chips",
   "gameEnd": "Game over",
-  "helpExampleFold": "  f                    fold this hand"
+  "helpExampleFold": "  f                    fold this hand",
+  "helpLog": "  l                    show the action log"
 }

@@ -22,5 +22,6 @@
   "trickWinner": "{{name}} (Team {{team}}) won the trick",
   "roundPoints": "Card points -- Team A: {{ptsA}} / Team B: {{ptsB}} (win at {{win}})",
   "helpExamplePlay": "  play 0                   play hand card 0",
-  "helpExampleNext": "  n                        read the trick result, then start the next trick"
+  "helpExampleNext": "  n                        read the trick result, then start the next trick",
+  "helpHint": "  h                         show a hint"
 }

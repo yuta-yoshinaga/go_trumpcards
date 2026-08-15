@@ -20,5 +20,6 @@
   "hintReasonNotYourTurn": "あなたの手番ではありません",
   "hintReasonSelect": "最も点の高い札を取れます",
   "hintReasonPlay": "この札が最も多くの点を取れます",
-  "helpExamplePlay": "  p 0                      手札の 0 番のカードを出す"
+  "helpExamplePlay": "  p 0                      手札の 0 番のカードを出す",
+  "helpHint": "  h                        助言を表示"
 }

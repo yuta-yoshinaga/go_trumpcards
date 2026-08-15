@@ -28,5 +28,6 @@
   "category.denari": "Denari (most diamonds)",
   "category.primiera": "Primiera (most sevens)",
   "category.settebello": "Settebello (7 of diamonds)",
-  "helpExampleNext": "  n                        read the round result, then continue"
+  "helpExampleNext": "  n                        read the round result, then continue",
+  "helpLog": "  l                        show the action log"
 }

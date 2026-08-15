@@ -14,5 +14,7 @@
   "foundationCount": "(計{{count}}枚)",
   "redealRecommended": "合法手がありません。nr でリディールを推奨します。",
   "stuckDeadlock": "これ以上動かせる手がありません。再配札も残っていません — giveup でギブアップできます。",
-  "helpExampleAuto": "  ac                   組札へ送れる札を自動で送る"
+  "helpExampleAuto": "  ac                   組札へ送れる札を自動で送る",
+  "helpHint": "  h                    助言を表示",
+  "helpLog": "  l                    行動ログを表示"
 }

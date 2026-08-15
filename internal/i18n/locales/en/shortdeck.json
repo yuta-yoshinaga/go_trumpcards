@@ -49,5 +49,6 @@
   "handRank8": "Straight Flush",
   "handRank9": "Royal Flush",
   "helpExampleRaise": "  ra 200               raise to 200 chips total",
-  "helpExampleCall": "  c                    call the current bet"
+  "helpExampleCall": "  c                    call the current bet",
+  "helpLog": "  l                    show the action log"
 }

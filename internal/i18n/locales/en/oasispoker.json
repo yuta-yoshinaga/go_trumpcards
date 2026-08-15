@@ -30,5 +30,6 @@
   "hintStand": "No exchange needed; stand with s.",
   "hintPlay": "Recommended: Play (p) — a pair or better, or an Ace/King",
   "hintFold": "Recommended: Fold (f) — no qualifying hand",
-  "helpExampleBet": "  b 100                bet 100 chips"
+  "helpExampleBet": "  b 100                bet 100 chips",
+  "helpHint": "  h                    show a hint"
 }

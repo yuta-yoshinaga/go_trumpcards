@@ -17,5 +17,6 @@
   "pileSingle": "[{{idx}}]{{card}} ",
   "pileStack": "[{{idx}}]{{card}}(+{{count}}) ",
   "hintLine": "Hint: pile {{from}} → pile {{to}}",
-  "helpExampleHint": "  h                   ask for a move"
+  "helpExampleHint": "  h                   ask for a move",
+  "helpAutoPlay": "  ac                  play automatically"
 }

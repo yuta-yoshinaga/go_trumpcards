@@ -45,5 +45,6 @@
   "roundEnd": "Round complete",
   "result.humanWin": "Game over! You win!",
   "result.cpuWin": "Game over! Player {{player}} wins!",
-  "helpExampleBid": "  pass                      drop out of the bidding"
+  "helpExampleBid": "  pass                      drop out of the bidding",
+  "helpHint": "  h                         show a hint"
 }

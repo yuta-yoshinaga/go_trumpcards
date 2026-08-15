@@ -30,5 +30,6 @@
   "hintReasonNotYourTurn": "it is not your turn",
   "hintReasonLead": "the run is stopped, so lead your lowest card",
   "hintReasonFollow": "the next higher card of the same suit",
-  "helpExampleNext": "  n                        read the trick result, then continue"
+  "helpExampleNext": "  n                        read the trick result, then continue",
+  "helpHint": "  h                        show a hint"
 }

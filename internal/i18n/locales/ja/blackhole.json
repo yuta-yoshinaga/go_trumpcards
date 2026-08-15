@@ -8,5 +8,7 @@
   "hintLine": "[HINT: 扇{{fan}} を積めます]",
   "acceptableRanks": "出せるランク: {{ranks}}",
   "acceptableRanksNone": "出せるランク: なし",
-  "legalMoveCount": "残り合法手: {{count}}"
+  "legalMoveCount": "残り合法手: {{count}}",
+  "helpHint": "  h                    助言を表示",
+  "helpLog": "  l                    行動ログを表示"
 }

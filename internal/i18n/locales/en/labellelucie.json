@@ -14,5 +14,7 @@
   "foundationCount": "({{count}} cards)",
   "redealRecommended": "No legal moves. Redeal recommended (nr).",
   "stuckDeadlock": "No legal move remains and no redeals are left - type giveup to concede.",
-  "helpExampleAuto": "  ac                   send everything that can go to a foundation"
+  "helpExampleAuto": "  ac                   send everything that can go to a foundation",
+  "helpHint": "  h                    show a hint",
+  "helpLog": "  l                    show the action log"
 }

@@ -31,5 +31,6 @@
   "suitClover": "Clubs",
   "suitHeart": "Hearts",
   "suitDiamond": "Diamonds",
-  "helpExampleGiveUp": "  g                    give the round up"
+  "helpExampleGiveUp": "  g                    give the round up",
+  "helpHint": "  h                    show a hint"
 }

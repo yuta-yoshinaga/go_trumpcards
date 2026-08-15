@@ -22,5 +22,6 @@
   "bonus.sakuraSake": "Sakura-zake",
   "bonus.allBrights": "Five Brights",
   "bonus.none": "none",
-  "helpExamplePlay": "  p 0                  play hand card 0"
+  "helpExamplePlay": "  p 0                  play hand card 0",
+  "helpNext": "  n                    go to the next step"
 }

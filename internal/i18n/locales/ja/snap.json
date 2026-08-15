@@ -25,5 +25,6 @@
   "hintReasonDeclare": "直前の札と同じランクが出ている",
   "hintReasonStep": "あなたがめくる番",
   "hintReasonWait": "まだ揃っていない。誤宣言はペナルティ",
-  "helpExampleStep": "  s                    次の 1 枚をめくる"
+  "helpExampleStep": "  s                    次の 1 枚をめくる",
+  "helpHint": "  h                    助言を表示"
 }

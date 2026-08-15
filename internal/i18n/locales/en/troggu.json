@@ -40,5 +40,6 @@
   "hintReasonPlayWin": "go for the trick",
   "hintReasonPlayDuck": "you must not take it, so let a cheap card go",
   "result.scores": "Game over! Scores: {{scores}}",
-  "helpExamplePlay": "  play 0                    play hand card 0"
+  "helpExamplePlay": "  play 0                    play hand card 0",
+  "helpHint": "  h                         show a hint"
 }

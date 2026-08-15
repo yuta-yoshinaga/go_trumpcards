@@ -24,5 +24,6 @@
   "hintReasonGivePartner": "Partner is winning, so give them point cards",
   "hintReasonDiscardLow": "Cannot follow, so discard a low card",
   "roundBreakdown": "Round breakdown: Team {{a}} thirds {{athird}} / Team {{b}} thirds {{bthird}} (last trick: Team {{lastteam}})",
-  "helpExamplePlay": "  p 0                  play hand card 0"
+  "helpExamplePlay": "  p 0                  play hand card 0",
+  "helpHint": "  h                    show a hint"
 }

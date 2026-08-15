@@ -26,5 +26,6 @@
   "hintReasonSignal": "Signal now -- say you noticed",
   "hintReasonDiscardOdd": "Let go of a rank you are not collecting",
   "hintReasonNoSingleton": "Everything is evenly split, so break the least useful one",
-  "helpExamplePass": "  p 0                  pass hand card 0 to the left"
+  "helpExamplePass": "  p 0                  pass hand card 0 to the left",
+  "helpHint": "  h                    show a hint"
 }

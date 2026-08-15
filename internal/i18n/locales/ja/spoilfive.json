@@ -23,5 +23,6 @@
   "winnerMark": "★(勝者) ",
   "topTrumpLine": "強さ順: {{cards}} > その他の切り札 > 非切り札",
   "helpExamplePlay": "  play 0                   手札の 0 番のカードを出す",
-  "helpExampleNext": "  n                        トリックの決着を見てから次のトリックへ"
+  "helpExampleNext": "  n                        トリックの決着を見てから次のトリックへ",
+  "helpHint": "  h                         助言を表示"
 }

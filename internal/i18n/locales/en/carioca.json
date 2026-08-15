@@ -37,5 +37,6 @@
   "slotLine": "  Slot [{{idx}}]: {{detail}}",
   "meldSyntaxHint": "  meld <slot> <card indices> (e.g. meld 0 1 2 3)",
   "helpExampleDraw": "  ds                   start the turn by drawing from the stock",
-  "helpExampleDiscard": "  d 0                  discard hand card 0"
+  "helpExampleDiscard": "  d 0                  discard hand card 0",
+  "helpLog": "  l                    show the action log"
 }

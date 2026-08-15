@@ -25,5 +25,6 @@
   "leaderMark": "▶(lead) ",
   "winnerMark": "★(winner) ",
   "helpExamplePlay": "  play 0                   play hand card 0",
-  "helpExampleNext": "  n                        read the trick result, then start the next trick"
+  "helpExampleNext": "  n                        read the trick result, then start the next trick",
+  "helpHint": "  h                         show a hint"
 }

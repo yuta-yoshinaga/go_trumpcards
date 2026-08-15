@@ -49,5 +49,6 @@
   "resultAccepted": "Quiero (showdown)",
   "resultAwarded": "No quiero (awarded)",
   "resultOrdago": "Ordago accepted",
-  "helpExampleMus": "  m                     declare Mus to exchange cards"
+  "helpExampleMus": "  m                     declare Mus to exchange cards",
+  "helpHint": "  h                     show a hint"
 }

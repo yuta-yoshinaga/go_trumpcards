@@ -39,5 +39,6 @@
   "hintReasonBet": "you hold a set worth backing",
   "hintReasonFold": "you have no set and it costs to stay",
   "hintReasonPlay": "the lowest card you can legally play",
-  "helpExamplePlay": "  p 0                      play hand card 0"
+  "helpExamplePlay": "  p 0                      play hand card 0",
+  "helpHint": "  h                        show a hint"
 }

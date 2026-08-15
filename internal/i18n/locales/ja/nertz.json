@@ -42,5 +42,6 @@
   "zoneTableau": "タブロー{{col}}",
   "zoneTableauWithIdx": "タブロー{{col}}(idx={{idx}})",
   "zoneFoundation": "ファウンデーション{{col}}",
-  "helpExampleHint": "  h                   次の一手を教えてもらう"
+  "helpExampleHint": "  h                   次の一手を教えてもらう",
+  "helpLog": "  l                   行動ログを表示"
 }

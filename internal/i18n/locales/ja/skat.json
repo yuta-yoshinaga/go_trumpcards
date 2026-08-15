@@ -50,5 +50,6 @@
   "hintReasonDiscardLow": "低いカードを捨てる",
   "hintReasonGameChoice": "最適なゲーム選択",
   "hintReasonBestPlay": "最善手",
-  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
+  "helpHint": "  h                    助言を表示"
 }

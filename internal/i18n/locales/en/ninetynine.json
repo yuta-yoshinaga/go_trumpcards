@@ -23,5 +23,6 @@
   "hintNone": "No hint available.",
   "hintBury": "[HINT: bury {{indices}} ({{reason}})]",
   "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
-  "helpExamplePlay": "  p 0                  play hand card 0"
+  "helpExamplePlay": "  p 0                  play hand card 0",
+  "helpHint": "  h                    show a hint"
 }

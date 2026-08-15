@@ -27,5 +27,6 @@
   "pairPlusPayoutLine": "ペアプラス配当: {{payout}}",
   "totalPayoutLine": "合計払戻し: {{payout}}",
   "helpExampleBet": "  b 10                 アンテ 10 で参加する",
-  "helpExamplePlay": "  p                    勝負する (アンテと同額を追加)"
+  "helpExamplePlay": "  p                    勝負する (アンテと同額を追加)",
+  "helpHint": "  h                    助言を表示"
 }

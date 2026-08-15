@@ -8,5 +8,7 @@
   "hintLine": "[HINT: fan {{fan}} can be played]",
   "acceptableRanks": "Accepted ranks: {{ranks}}",
   "acceptableRanksNone": "Accepted ranks: none",
-  "legalMoveCount": "Legal moves: {{count}}"
+  "legalMoveCount": "Legal moves: {{count}}",
+  "helpHint": "  h                    show a hint",
+  "helpLog": "  l                    show the action log"
 }

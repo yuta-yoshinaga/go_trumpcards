@@ -39,5 +39,6 @@
   "hintReasonBet": "勝てる組を持っています",
   "hintReasonFold": "組がなく、追いつくのに払いが要ります",
   "hintReasonPlay": "出せる中で最も低い札です",
-  "helpExamplePlay": "  p 0                      手札の 0 番のカードを出す"
+  "helpExamplePlay": "  p 0                      手札の 0 番のカードを出す",
+  "helpHint": "  h                        助言を表示"
 }

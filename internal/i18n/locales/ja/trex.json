@@ -32,5 +32,6 @@
   "hintReasonChoose": "まだ消化していない契約です",
   "hintReasonPlay": "この札が最も無駄がありません",
   "hintReasonPass": "出せる札が1枚もありません",
-  "helpExamplePlay": "  p 0                      手札の 0 番のカードを出す"
+  "helpExamplePlay": "  p 0                      手札の 0 番のカードを出す",
+  "helpHint": "  h                        助言を表示"
 }

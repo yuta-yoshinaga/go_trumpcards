@@ -38,5 +38,6 @@
   "hintGoal": "Hint: goal → foundation {{foundation}}",
   "hintHand": "Hint: hand[{{idx}}] → foundation {{foundation}}",
   "hintSide": "Hint: side[{{idx}}] → foundation {{foundation}}",
-  "helpExampleHint": "  h                   ask for a move"
+  "helpExampleHint": "  h                   ask for a move",
+  "helpAutoPlay": "  ac                  play automatically"
 }

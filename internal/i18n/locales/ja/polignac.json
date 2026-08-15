@@ -25,5 +25,6 @@
   "hintReasonLeadSafe": "ジャック以外の低い札でリードする",
   "hintReasonBlockCapot": "capot を潰すためにこのトリックを取る",
   "hintReasonWinCapot": "自分の capot。全トリック取るしかないので、確実に取れる札を出す",
-  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
+  "helpHint": "  h                    助言を表示"
 }

@@ -34,5 +34,6 @@
   "suitHeart": "H",
   "suitDiamond": "D",
   "suitNoTrump": "NT",
-  "helpExampleGiveUp": "  g                    give the round up"
+  "helpExampleGiveUp": "  g                    give the round up",
+  "helpHint": "  h                    show a hint"
 }

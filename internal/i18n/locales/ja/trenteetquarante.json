@@ -29,5 +29,6 @@
   "hintNone": "ヒントはありません。",
   "hintBet": "[HINT: {{bet}} ({{reason}})]",
   "hintReasonEvenOdds": "すべてのベットはイーブンマネー。Refait（31 の同点）が胴元のエッジ",
-  "helpExampleBet": "  b 0 100                   ノワールに 100 賭ける"
+  "helpExampleBet": "  b 0 100                   ノワールに 100 賭ける",
+  "helpHint": "  h                         助言を表示"
 }

@@ -32,5 +32,6 @@
   "hintReasonChoose": "a contract you have not played yet",
   "hintReasonPlay": "this card wastes the least",
   "hintReasonPass": "you have no legal play",
-  "helpExamplePlay": "  p 0                      play hand card 0"
+  "helpExamplePlay": "  p 0                      play hand card 0",
+  "helpHint": "  h                        show a hint"
 }

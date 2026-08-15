@@ -27,5 +27,6 @@
   "hintReasonPlay": "this is the cheapest card that still takes the trick",
   "helpRedeal": "  d                        throw in a poverty hand (only A/K/Q/J) for a redeal",
   "promptRedeal": "your hand is nothing but A/K/Q/J -- d asks for a redeal",
-  "helpExampleFold": "  f                        fold this round"
+  "helpExampleFold": "  f                        fold this round",
+  "helpHint": "  h                        show a hint"
 }

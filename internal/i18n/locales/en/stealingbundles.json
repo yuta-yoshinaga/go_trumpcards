@@ -24,5 +24,6 @@
   "hintReasonSteal": "Takes an opponent's whole bundle",
   "hintReasonTake": "Captures from the table",
   "hintReasonTrail": "Nothing to capture, so play what is least likely to be taken",
-  "helpExampleGiveUp": "  g                    give the round up"
+  "helpExampleGiveUp": "  g                    give the round up",
+  "helpHint": "  h                    show a hint"
 }

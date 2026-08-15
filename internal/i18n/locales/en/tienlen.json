@@ -19,5 +19,6 @@
   "comboStraight": "Straight",
   "comboThreePairRun": "Three-pair run",
   "comboFourOfAKind": "Four of a kind",
-  "comboInvalid": "Unknown"
+  "comboInvalid": "Unknown",
+  "helpLog": "  l                    show the action log"
 }

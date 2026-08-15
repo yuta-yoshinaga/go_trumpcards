@@ -44,5 +44,7 @@
   "handRank3": "3-card",
   "handRank4": "Badugi",
   "handRankUnknown": "Unknown",
-  "helpExampleCall": "  c                    call the current bet"
+  "helpExampleCall": "  c                    call the current bet",
+  "helpHint": "  h                    show a hint",
+  "helpLog": "  l                    show the action log"
 }

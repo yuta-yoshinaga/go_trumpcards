@@ -32,5 +32,6 @@
   "hintHold": "[HINT: hold ({{reason}})]",
   "hintFold": "[HINT: fold ({{reason}})]",
   "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
-  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
+  "helpHint": "  h                    助言を表示"
 }

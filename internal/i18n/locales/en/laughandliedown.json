@@ -19,5 +19,6 @@
   "hintReasonMustLieDown": "nothing matches, so your hand goes to the table and you are out",
   "hintReasonTakeOne": "this captures a table card of the same rank",
   "hintReasonTakeThree": "three of that rank are on the table, so take them all",
-  "helpExamplePlay": "  p 0                      play hand card 0"
+  "helpExamplePlay": "  p 0                      play hand card 0",
+  "helpHint": "  h                        show a hint"
 }

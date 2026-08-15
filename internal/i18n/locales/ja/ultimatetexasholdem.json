@@ -34,5 +34,6 @@
   "hintPlay1x": "推奨: 1倍でプレイ（役ができている）",
   "hintCheck": "推奨: チェック（次のカードを待つ）",
   "hintFold": "推奨: フォールド（役ができていない）",
-  "helpExampleBet": "  b 100                100 チップを賭ける"
+  "helpExampleBet": "  b 100                100 チップを賭ける",
+  "helpHint": "  h                    助言を表示"
 }

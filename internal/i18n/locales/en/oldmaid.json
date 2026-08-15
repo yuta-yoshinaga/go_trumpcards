@@ -25,5 +25,6 @@
   "gameEndJijiNukiSuffix": " (removed card: {{card}})",
   "promptCurrentTurnWithTarget": "{{name}} to act → drawing from {{target}}",
   "promptCurrentTurn": "{{name}} to act",
-  "helpExampleD": "  d                    draw one card at random"
+  "helpExampleD": "  d                    draw one card at random",
+  "helpLog": "  l                    show the action log"
 }

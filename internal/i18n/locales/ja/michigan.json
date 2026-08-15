@@ -45,5 +45,6 @@
   "roundEndHumanLose": "他のプレイヤーの方が稼ぎました。",
   "result.humanWin": "ゲーム終了！あなたの勝ち！",
   "result.cpuWin": "ゲーム終了！CPU {{player}} の勝ち！",
-  "helpExampleNext": "  n                         次のディールへ進む"
+  "helpExampleNext": "  n                         次のディールへ進む",
+  "helpHint": "  h                         助言を表示"
 }

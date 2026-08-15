@@ -27,5 +27,6 @@
   "hintReasonBid": "this length beats the standing bid",
   "hintReasonPass": "nothing you hold beats the standing bid",
   "hintReasonPlay": "this card wastes the least",
-  "helpExamplePlay": "  p 0                      play hand card 0"
+  "helpExamplePlay": "  p 0                      play hand card 0",
+  "helpHint": "  h                        show a hint"
 }

@@ -11,5 +11,6 @@
   "playerYou": "You",
   "yourTurn": "Your turn",
   "comboRulesHint": "Combos: single/pair/triple/run(3..A)/pair run(3..A). Ranks 3<...<A<2<small Joker<big Joker; suits never matter. A bomb (four of a kind) cuts any normal combo, and the two Jokers together beat everything.",
-  "actionPass": "pass"
+  "actionPass": "pass",
+  "helpLog": "  l                    show the action log"
 }

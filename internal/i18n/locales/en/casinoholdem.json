@@ -26,5 +26,6 @@
   "hintNone": "No hint available.",
   "hintCall": "Recommended: Call (2x ante) — a pair or better, or an Ace/King",
   "hintFold": "Recommended: Fold — no qualifying hand",
-  "helpExampleBet": "  b 100                bet 100 chips"
+  "helpExampleBet": "  b 100                bet 100 chips",
+  "helpHint": "  h                    show a hint"
 }

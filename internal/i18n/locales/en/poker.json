@@ -44,5 +44,6 @@
   "phaseEnd": "End",
   "promptBet": "Commands: bet <amount> / call / raise <amount> / fold",
   "promptExchange": "Commands: exchange <card indices> (exchange alone to keep all)",
-  "helpExampleFold": "  f                    fold this hand"
+  "helpExampleFold": "  f                    fold this hand",
+  "helpLog": "  l                    show the action log"
 }

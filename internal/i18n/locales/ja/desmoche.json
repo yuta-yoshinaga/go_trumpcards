@@ -30,5 +30,6 @@
   "hintReasonDraw": "まず1枚引いてください",
   "hintReasonMeld": "この3枚でメルドになります",
   "hintReasonDiscard": "どこにも繋がらない札です",
-  "helpExampleDraw": "  dd                       引く代わりに捨て札の一番上をもらう"
+  "helpExampleDraw": "  dd                       引く代わりに捨て札の一番上をもらう",
+  "helpHint": "  h                        助言を表示"
 }

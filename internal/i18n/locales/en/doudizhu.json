@@ -16,5 +16,6 @@
   "playerCardCount": " ({{count}} cards)",
   "currentBidder": "Current bidder: {{name}}",
   "promptBid": "Place your bid (b 0-3, 0 = pass)",
-  "helpExampleBid": "  b 0                  pass on becoming the landlord"
+  "helpExampleBid": "  b 0                  pass on becoming the landlord",
+  "helpLog": "  l                    show the action log"
 }

@@ -32,5 +32,6 @@
   "discardableNone": "なし",
   "discardableLegend": "※ 切り札・エクスキューズ・絵札は捨てられません",
   "helpExamplePlay": "  play 0                    手札の 0 番のカードを出す",
-  "helpExampleNext": "  n                         トリックの決着を見てから次へ"
+  "helpExampleNext": "  n                         トリックの決着を見てから次へ",
+  "helpHint": "  h                         助言を表示"
 }

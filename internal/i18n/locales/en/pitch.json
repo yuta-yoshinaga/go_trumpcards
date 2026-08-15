@@ -30,5 +30,6 @@
   "helpNextRound": "  nr                   score the round and go to the next one",
   "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
   "helpSetLimit": "  sl <n>               point limit",
-  "helpExamplePlay": "  p 0                  play hand card 0"
+  "helpExamplePlay": "  p 0                  play hand card 0",
+  "helpHint": "  h                    show a hint"
 }

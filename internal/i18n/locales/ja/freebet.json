@@ -40,5 +40,6 @@
   "standPat": "17以上あるので立つのが定石です",
   "dealerMayBust": "ディーラーがバストしやすい形です",
   "chaseDealer": "ディーラーが強いので追いかけます",
-  "helpExampleBet": "  bet 100             100 チップを賭ける"
+  "helpExampleBet": "  bet 100             100 チップを賭ける",
+  "helpSort": "  s                    手札を並べ替える"
 }

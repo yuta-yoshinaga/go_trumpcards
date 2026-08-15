@@ -36,5 +36,6 @@
   "suitClover": "Clubs",
   "suitHeart": "Hearts",
   "suitDiamond": "Diamonds",
-  "helpExampleNext": "  n                    read the trick result, then continue"
+  "helpExampleNext": "  n                    read the trick result, then continue",
+  "helpHint": "  h                    show a hint"
 }

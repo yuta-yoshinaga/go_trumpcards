@@ -36,5 +36,6 @@
   "suitClover": "クラブ",
   "suitHeart": "ハート",
   "suitDiamond": "ダイヤ",
-  "helpExampleNext": "  n                    トリックの決着を見てから次へ"
+  "helpExampleNext": "  n                    トリックの決着を見てから次へ",
+  "helpHint": "  h                    助言を表示"
 }

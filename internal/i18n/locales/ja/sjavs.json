@@ -27,5 +27,6 @@
   "hintReasonBid": "この枚数なら現在の申告を上回れます",
   "hintReasonPass": "上回れる申告ができないのでパスします",
   "hintReasonPlay": "この札が最も無駄がありません",
-  "helpExamplePlay": "  p 0                      手札の 0 番のカードを出す"
+  "helpExamplePlay": "  p 0                      手札の 0 番のカードを出す",
+  "helpHint": "  h                        助言を表示"
 }

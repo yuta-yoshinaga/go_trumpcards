@@ -42,5 +42,6 @@
   "zoneTableau": "Tableau {{col}}",
   "zoneTableauWithIdx": "Tableau {{col}} (idx={{idx}})",
   "zoneFoundation": "Foundation {{col}}",
-  "helpExampleHint": "  h                   ask for a move"
+  "helpExampleHint": "  h                   ask for a move",
+  "helpLog": "  l                   show the action log"
 }

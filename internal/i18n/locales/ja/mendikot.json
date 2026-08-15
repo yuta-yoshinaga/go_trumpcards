@@ -31,5 +31,6 @@
   "suitClover": "クラブ",
   "suitHeart": "ハート",
   "suitDiamond": "ダイヤ",
-  "helpExampleGiveUp": "  g                    この局を投了する"
+  "helpExampleGiveUp": "  g                    この局を投了する",
+  "helpHint": "  h                    助言を表示"
 }

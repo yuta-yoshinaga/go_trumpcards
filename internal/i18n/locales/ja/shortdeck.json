@@ -49,5 +49,6 @@
   "handRank8": "ストレートフラッシュ",
   "handRank9": "ロイヤルフラッシュ",
   "helpExampleRaise": "  ra 200               合計 200 チップになるようレイズする",
-  "helpExampleCall": "  c                    現在のベットにコールする"
+  "helpExampleCall": "  c                    現在のベットにコールする",
+  "helpLog": "  l                    行動ログを表示"
 }

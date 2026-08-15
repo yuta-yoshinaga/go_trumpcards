@@ -26,5 +26,6 @@
   "hintNone": "現在ヒントはありません。",
   "hintCall": "推奨: コール（2×アンテ）— ワンペア以上または A/K を保持",
   "hintFold": "推奨: フォールド — 続行条件を満たしません",
-  "helpExampleBet": "  b 100                100 チップを賭ける"
+  "helpExampleBet": "  b 100                100 チップを賭ける",
+  "helpHint": "  h                    助言を表示"
 }

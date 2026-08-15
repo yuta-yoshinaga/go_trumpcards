@@ -25,5 +25,6 @@
   "hintBid": "[HINT: ビッド {{bid}} を推奨 ({{reason}})]",
   "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
   "hintReasonTrumpCut": "スペードでカット",
-  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
+  "helpHint": "  h                    助言を表示"
 }
