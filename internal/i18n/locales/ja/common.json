@@ -497,5 +497,8 @@
   "invalidTargetValue": "指定した値が不正です: {{val}}。",
   "invalidPairPlusBet": "ペアプラスの賭け金が不正です: {{val}}。",
   "invalidTripsBet": "トリップスの賭け金が不正です: {{val}}。",
-  "invalidHandCount": "手の数が不正です: {{val}}。"
+  "invalidHandCount": "手の数が不正です: {{val}}。",
+  "invalidMaxRounds": "最大ラウンド数が不正です: {{val}}。",
+  "invalidBidLevel": "入札のレベルが不正です: {{val}}。",
+  "invalidClaimedValue": "宣言する値が不正です: {{val}}。"
 }

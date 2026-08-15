@@ -334,3 +334,15 @@ func TestDoubtCuiController_Exec(t *testing.T) {
 		assert.Contains(t, result, "'help' でコマンド一覧を表示します。")
 	})
 }
+
+// #5390: `p abc` は宣言する値を 0 に落として通っていた。
+func TestDoubtCuiController_PlayRefusesMistypedValue(t *testing.T) {
+	mockOutput := `{"players":[]}`
+	m := new(mockUsecases.MockDoubtInteractor)
+	m.On("Reset").Return(mockOutput)
+	m.On("Play", mock.Anything, mock.Anything, mock.Anything).Return(mockOutput)
+
+	out := controller.NewDoubtCuiController(m).Exec("p abc")
+	assert.Equal(t, msgKey("invalidClaimedValue", "val", "abc"), out)
+	m.AssertNotCalled(t, "Play", mock.Anything, mock.Anything, mock.Anything)
+}

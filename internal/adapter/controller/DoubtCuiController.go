@@ -47,7 +47,10 @@ func (c *DoubtCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "p", "play":
-				claimedValue := cuiutil.ParseOptionalInt(args, 0, 0)
+				claimedValue, errMsg, ok := cuiutil.ParseOptionalIntKeys(args, 0, 0, "invalidClaimedValue")
+				if !ok {
+					return errMsg, true
+				}
 				var cardArgs []string
 				if len(args) > 1 {
 					cardArgs = args[1:]
