@@ -23,5 +23,6 @@
   "hintSteal": "[HINT: [{{idx}}]{{card}} → {{victim}} ({{reason}})]",
   "hintReasonSteal": "相手の束を丸ごと奪える",
   "hintReasonTake": "場から取れる",
-  "hintReasonTrail": "取れないので、狙われにくい札を置く"
+  "hintReasonTrail": "取れないので、狙われにくい札を置く",
+  "helpExampleGiveUp": "  g                    この局を投了する"
 }

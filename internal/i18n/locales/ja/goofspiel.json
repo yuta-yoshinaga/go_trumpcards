@@ -22,5 +22,6 @@
   "hintReasonMatch": "賞札の高さに見合った札",
   "hintReasonHighPrize": "高い賞札なので、高い札で取りにいく",
   "hintReasonLowPrize": "安い賞札なので、低い札で流す",
-  "hintReasonCarried": "持ち越しで賞が膨らんでいる。取る価値が高い"
+  "hintReasonCarried": "持ち越しで賞が膨らんでいる。取る価値が高い",
+  "helpExampleBid": "  b 0                  手札の 0 番を伏せて入札する"
 }

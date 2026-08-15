@@ -21,5 +21,6 @@
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
   "turnPhase": "あなたの手番です。引くかプレイしてください。",
   "roundEnd": "ラウンド終了。次のラウンドへ進んでください。",
-  "promptLayoffNone": "レイオフ不可: 場にメルドがありません"
+  "promptLayoffNone": "レイオフ不可: 場にメルドがありません",
+  "helpExampleDraw": "  dr                   山札から 1 枚引いて手番を終える"
 }

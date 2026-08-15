@@ -21,5 +21,6 @@
   "tricksTaken": " (獲得{{count}}トリック)",
   "handResult": "ハンド結果",
   "gameEndWinner": "{{name}} の勝利！",
-  "you": "あなた"
+  "you": "あなた",
+  "helpExampleDecide": "  d 1                  このハンドに参加する"
 }

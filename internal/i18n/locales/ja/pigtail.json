@@ -12,5 +12,6 @@
   "gameEndPrefix": "ゲーム終了！ ",
   "gameEndLoser": "{{name}}の負け！",
   "gameEndCardSuffix": " ({{count}}枚)",
-  "promptCurrentTurn": "手番: {{name}} (draw で山札から1枚引く)"
+  "promptCurrentTurn": "手番: {{name}} (draw で山札から1枚引く)",
+  "helpExampleDraw": "  d                     輪から 1 枚引く"
 }

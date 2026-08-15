@@ -23,5 +23,6 @@
   "srcOppReserve": "相手リザーブ",
   "srcWaste": "自廃札",
   "srcOppWaste": "相手廃札",
-  "srcTableau": "タブロー{{col}}"
+  "srcTableau": "タブロー{{col}}",
+  "helpExampleDiscard": "  d                    手札を 1 枚捨てて手番を終える"
 }

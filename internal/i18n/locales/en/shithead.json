@@ -26,5 +26,6 @@
   "rankShithead": " (Shithead!)",
   "promptCurrentTurn": "{{name}} to act (source: {{source}})",
   "promptPlayHelp": "p [indices...] to play / p to pick up the pile",
-  "facedownSlots": "Blind slots: {{slots}}"
+  "facedownSlots": "Blind slots: {{slots}}",
+  "helpExamplePlay": "  p 0                  play hand card 0"
 }

@@ -19,5 +19,6 @@
   "winCpu": "{{name}} の勝ちです...",
   "result.humanWin": "あなたの勝ちです！",
   "result.cpuWin": "CPUの勝ちです...",
-  "rankGroup": "(同{{count}}枚)"
+  "rankGroup": "(同{{count}}枚)",
+  "helpExamplePass": "  p 0                  手札の 0 番を隣へ回す"
 }

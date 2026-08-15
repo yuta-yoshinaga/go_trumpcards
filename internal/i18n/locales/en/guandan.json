@@ -36,5 +36,6 @@
   "handEnd": "hand over",
   "handFirstSecond": "First and second both taken -- four levels at once",
   "result.humanWin": "Game over! Your team wins!",
-  "result.cpuWin": "Game over! The other team wins."
+  "result.cpuWin": "Game over! The other team wins.",
+  "helpExampleNext": "  n                         read the trick result, then continue"
 }

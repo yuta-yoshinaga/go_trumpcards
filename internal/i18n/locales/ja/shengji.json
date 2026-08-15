@@ -38,5 +38,6 @@
   "handHeld": "宣言側が守りきりました",
   "handTaken": "守備側が80点に届き、宣言側が交代しました",
   "result.humanWin": "ゲーム終了！ あなたのチームの勝ちです！",
-  "result.cpuWin": "ゲーム終了！ 相手チームの勝ちです。"
+  "result.cpuWin": "ゲーム終了！ 相手チームの勝ちです。",
+  "helpExampleDeclare": "  d 0                       亮牌をパスする"
 }

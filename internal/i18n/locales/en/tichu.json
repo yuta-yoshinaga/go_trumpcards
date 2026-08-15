@@ -16,5 +16,6 @@
   "playerRank": " (finished #{{rank}})",
   "playerCardCount": " ({{count}} cards)",
   "bombCount": "Bombs played: {{count}}",
-  "oneTwo": "One-two! (the same team went out first and second)"
+  "oneTwo": "One-two! (the same team went out first and second)",
+  "helpExamplePlay": "  p 0                  play hand card 0"
 }

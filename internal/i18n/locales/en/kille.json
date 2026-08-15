@@ -24,5 +24,6 @@
   "dealerTurn": "Dealer's turn (you may swap with the stock)",
   "showdown": "Showdown",
   "result.humanWin": "Game over! You win!",
-  "result.cpuWin": "Game over! CPU {{cpuId}} wins!"
+  "result.cpuWin": "Game over! CPU {{cpuId}} wins!",
+  "helpExampleSatisfied": "  s                         declare that you are satisfied"
 }

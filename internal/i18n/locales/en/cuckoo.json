@@ -24,5 +24,6 @@
   "refusePhase": "Refuse phase",
   "roundEnd": "Round over",
   "result.humanWin": "Game over! You win!",
-  "result.cpuWin": "Game over! CPU {{cpuId}} wins!"
+  "result.cpuWin": "Game over! CPU {{cpuId}} wins!",
+  "helpExampleKeep": "  k                         keep your card instead of swapping"
 }

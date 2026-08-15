@@ -26,5 +26,6 @@
   "rankShithead": " (Shithead!)",
   "promptCurrentTurn": "手番: {{name}} (出すソース: {{source}})",
   "promptPlayHelp": "p [インデックス...] でカードを出す / p で場札を引き取る",
-  "facedownSlots": "ブラインド選択: {{slots}}"
+  "facedownSlots": "ブラインド選択: {{slots}}",
+  "helpExamplePlay": "  p 0             手札の 0 番のカードを出す"
 }

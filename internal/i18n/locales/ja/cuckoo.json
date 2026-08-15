@@ -24,5 +24,6 @@
   "refusePhase": "拒否フェーズ",
   "roundEnd": "ラウンド終了",
   "result.humanWin": "ゲーム終了！ あなたの勝ち！",
-  "result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！"
+  "result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
+  "helpExampleKeep": "  k                         手札を交換せず保持する"
 }

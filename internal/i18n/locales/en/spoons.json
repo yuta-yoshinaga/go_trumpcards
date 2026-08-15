@@ -19,5 +19,6 @@
   "winCpu": "{{name}} wins...",
   "result.humanWin": "You win!",
   "result.cpuWin": "CPU wins...",
-  "rankGroup": "(x{{count}})"
+  "rankGroup": "(x{{count}})",
+  "helpExamplePass": "  p 0                  pass hand card 0 along"
 }

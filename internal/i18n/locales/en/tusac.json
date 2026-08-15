@@ -44,5 +44,6 @@
   "reason.youCanLayAMeld": "you already hold a full combination",
   "reason.discardTheLoneCard": "let go of the card with the fewest partners",
   "reason.roundIsOver": "this round is decided",
-  "result.gameEnd": "The game is over"
+  "result.gameEnd": "The game is over",
+  "helpExampleDraw": "  draw                 draw one card from the stock"
 }
