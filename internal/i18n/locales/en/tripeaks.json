@@ -14,5 +14,6 @@
   "wasteEmpty": " | Waste: [empty]",
   "hintRemove": "Hint: remove ({{row}},{{col}})",
   "hintDraw": "Hint: draw from stock",
-  "hintUnknown": "Hint: unknown"
+  "hintUnknown": "Hint: unknown",
+  "helpExampleHint": "  h                        ask for a move"
 }

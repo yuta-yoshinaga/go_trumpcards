@@ -36,5 +36,7 @@
   "meldedLine": "  Melded: {{melds}}",
   "deadwoodBreakdown": "  Deadwood: {{cards}} ({{sum}} = {{total}})",
   "deadwoodLine": "Deadwood: {{value}} (knock at {{threshold}} or less)",
-  "knockReady": "→ ready to knock"
+  "knockReady": "→ ready to knock",
+  "helpExampleDraw": "  ds                   start the turn by drawing from the stock",
+  "helpExampleDiscard": "  d 0                  discard hand card 0"
 }

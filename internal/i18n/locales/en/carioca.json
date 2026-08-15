@@ -35,5 +35,7 @@
   "slotDetailSet": "{{n}} of the same rank",
   "slotDetailRun": "{{n}} consecutive of the same suit",
   "slotLine": "  Slot [{{idx}}]: {{detail}}",
-  "meldSyntaxHint": "  meld <slot> <card indices> (e.g. meld 0 1 2 3)"
+  "meldSyntaxHint": "  meld <slot> <card indices> (e.g. meld 0 1 2 3)",
+  "helpExampleDraw": "  ds                   start the turn by drawing from the stock",
+  "helpExampleDiscard": "  d 0                  discard hand card 0"
 }

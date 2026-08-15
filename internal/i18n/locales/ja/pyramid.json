@@ -18,5 +18,6 @@
   "hintWastePair": "ヒント: ウェイスト+ピラミッド({{row}},{{col}})",
   "hintUnknown": "ヒント: 不明",
   "exposedKing": "({{row}},{{col}}){{card}}[K]",
-  "wasteKing": " | Waste: {{card}}[K]"
+  "wasteKing": " | Waste: {{card}}[K]",
+  "helpExampleHint": "  h                        次の一手を教えてもらう"
 }
