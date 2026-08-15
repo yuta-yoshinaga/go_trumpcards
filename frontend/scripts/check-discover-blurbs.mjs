@@ -15,16 +15,28 @@
 //
 // This is a *vertical* check, route table to locale, matching
 // check-message-codes.mjs.
+//
+// Presence is necessary but not sufficient, so the text itself is checked too.
+// The realistic way a blurb goes wrong is not deletion but **copy-paste**: a new
+// game is added by duplicating a neighbouring entry and the prose is never
+// rewritten, so two unrelated games carry the same description. That renders
+// perfectly, reads plausibly, and is wrong -- no presence check can see it.
+// The same applies to a ja entry pasted into en, which looks translated until
+// you read it.
 
 import { readFile } from 'node:fs/promises';
-import { join, relative } from 'node:path';
+import { join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { assertFloor } from './lib/floor.mjs';
 
 const FRONTEND = fileURLToPath(new URL('..', import.meta.url));
 const REPO = join(FRONTEND, '..');
-const ROUTES = join(FRONTEND, 'src/constants/gameRoutes.ts');
-const LOCALES = join(FRONTEND, 'src/i18n/locales');
+// An optional srcDir lets the self-test point the guard at a fixture tree.
+// Without it the floors below would have to be met by a two-game fixture.
+const SRC = process.argv[2] ? resolve(process.argv[2]) : join(FRONTEND, 'src');
+const SCANNING_REPO = !process.argv[2];
+const ROUTES = join(SRC, 'constants/gameRoutes.ts');
+const LOCALES = join(SRC, 'i18n/locales');
 const SECTIONS = ['blurb', 'stretch_blurb'];
 
 /**
@@ -47,10 +59,12 @@ const games = await registeredGames();
 // 264 games are registered today. A regex that has drifted usually still matches *some*
 // entries, so `> 0` is not the interesting boundary -- checking 12 games and declaring all
 // blurbs present is the failure this floor exists to catch.
-assertFloor('discover-blurbs', games.size, 200, `game pages in ${relative(REPO, ROUTES)}`);
+if (SCANNING_REPO) assertFloor('discover-blurbs', games.size, 200, `game pages in ${relative(REPO, ROUTES)}`);
 
 const gaps = [];
 const empties = [];
+/** lang -> section -> game -> text, for the wording checks below. */
+const text = { ja: {}, en: {} };
 for (const lang of ['ja', 'en']) {
   const file = join(LOCALES, lang, 'discover.json');
   const data = JSON.parse(await readFile(file, 'utf8'));
@@ -60,9 +74,11 @@ for (const lang of ['ja', 'en']) {
       console.error(`discover-blurbs: ${lang}/discover.json has no "${section}" section.`);
       process.exit(1);
     }
+    text[lang][section] = {};
     for (const game of games) {
       if (!(game in map)) gaps.push({ lang, section, game });
       else if (String(map[game]).trim() === '') empties.push({ lang, section, game });
+      else text[lang][section][game] = String(map[game]).trim();
     }
     // A key with no matching route is dead weight and usually a rename.
     for (const key of Object.keys(map)) {
@@ -89,4 +105,65 @@ if (gaps.length > 0 || empties.length > 0) {
   process.exit(1);
 }
 
-console.log(`discover-blurbs: OK (all ${games.size} games have ja + en blurb and stretch_blurb).`);
+// --- wording checks -------------------------------------------------------
+//
+// Only run once presence is established, so a missing blurb is reported as
+// missing rather than as a wording fault.
+
+/** Placeholder text that should never ship. */
+const PLACEHOLDER = /\b(TODO|FIXME|WIP|Lorem ipsum|xxx)\b/i;
+/**
+ * Shortest believable blurb. The real ones run far longer; this only has to
+ * catch a stub such as "準備中" or "TBD" that survived review.
+ */
+const MIN_CHARS = 8;
+
+const wording = [];
+for (const section of SECTIONS) {
+  for (const lang of ['ja', 'en']) {
+    const entries = Object.entries(text[lang][section]);
+
+    // Two games sharing one description -- the copy-paste failure.
+    const byText = new Map();
+    for (const [game, body] of entries) {
+      const seen = byText.get(body);
+      if (seen) wording.push({ kind: 'DUPLICATE', lang, section, game, other: seen, body });
+      else byText.set(body, game);
+    }
+
+    for (const [game, body] of entries) {
+      if (PLACEHOLDER.test(body)) wording.push({ kind: 'PLACEHOLDER', lang, section, game, body });
+      else if ([...body].length < MIN_CHARS) wording.push({ kind: 'TOO SHORT', lang, section, game, body });
+    }
+  }
+
+  // A ja entry pasted verbatim into en (or the reverse) is untranslated. Games
+  // whose blurb is legitimately identical in both languages do not exist here:
+  // every one is prose, not a bare proper noun.
+  for (const game of Object.keys(text.ja[section])) {
+    const ja = text.ja[section][game];
+    const en = text.en[section][game];
+    if (en !== undefined && ja === en) {
+      wording.push({ kind: 'UNTRANSLATED', lang: 'ja=en', section, game, body: ja });
+    }
+  }
+}
+
+if (wording.length > 0) {
+  console.error('\nDiscover blurb wording problems:\n');
+  for (const w of wording) {
+    const where = `${w.lang}/discover.json  ${w.section}.${w.game}`;
+    const detail = w.kind === 'DUPLICATE' ? `  (identical to ${w.section}.${w.other})` : '';
+    console.error(`  ${w.kind.padEnd(12)} ${where}${detail}\n${' '.repeat(16)}"${w.body.slice(0, 70)}"`);
+  }
+  console.error(
+    `\n${wording.length} problem(s). A duplicated or untranslated blurb renders perfectly` +
+      ' and reads plausibly, so nothing else in the pipeline will catch it.',
+  );
+  process.exit(1);
+}
+
+console.log(
+  `discover-blurbs: OK (all ${games.size} games have ja + en blurb and stretch_blurb;` +
+    ` ${games.size * SECTIONS.length * 2} entries checked for duplicates, placeholders and untranslated text).`,
+);
