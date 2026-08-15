@@ -29,5 +29,5 @@
   "hintAceKingHigh": "役は無いが A と K を持っている",
   "hintWeakHand": "役が無く A-K にも届かない",
   "helpExampleBet": "  b 10                 アンテ 10 で参加する",
-  "helpExamplePlay": "  p                    勝負する (アンテと同額を追加)"
+  "helpExamplePlay": "  p                    勝負する (アンテの 2 倍を追加)"
 }

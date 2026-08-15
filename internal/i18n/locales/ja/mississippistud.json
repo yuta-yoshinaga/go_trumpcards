@@ -31,5 +31,5 @@
   "madeHandEligible": "配当あり",
   "madeHandNotEligible": "配当なし",
   "helpExampleBet": "  b 10                 アンテ 10 で参加する",
-  "helpExamplePlay": "  p                    勝負する (アンテと同額を追加)"
+  "helpExamplePlay": "  p 1                  1 倍で勝負する"
 }
