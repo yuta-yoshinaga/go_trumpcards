@@ -40,7 +40,7 @@ func (c *KaiserCuiController) Exec(command string) string {
 			case "ps", "pass":
 				return c.ki.PassBid(), true
 			case "t", "trump":
-				return cuiutil.WithParsedInt(args, "Suit is required (1=S, 2=C, 3=H, 4=D).", "Invalid suit: %s. Please enter 1-4.", domain.CardDesignSpade, domain.CardDesignDiamond, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "suitRequiredLetters", "invalidSuitRange", domain.CardDesignSpade, domain.CardDesignDiamond, func(v int) string {
 					return c.ki.SetTrump(v)
 				})
 			case "d", "discard":

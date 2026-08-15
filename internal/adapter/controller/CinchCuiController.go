@@ -44,9 +44,9 @@ func (c *CinchCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "bid":
-				return cuiutil.WithParsedInt(args, "Bid value is required (0=pass, 1-14).", "Invalid bid: %s. Please enter 0-14.", domain.CinchPassBid, domain.CinchMaxBid, c.ci.Bid)
+				return cuiutil.WithParsedIntKeys(args, "bidValueRequiredPass114", "invalidBid014", domain.CinchPassBid, domain.CinchMaxBid, c.ci.Bid)
 			case "t", "trump":
-				return cuiutil.WithParsedInt(args, "Trump suit is required (1-4).", "Invalid trump suit: %s. Please enter 1-4.", domain.CardDesignSpade, domain.CardDesignDiamond, c.ci.NameTrump)
+				return cuiutil.WithParsedIntKeys(args, "trumpSuitRequiredRange", "invalidTrumpSuitRange", domain.CardDesignSpade, domain.CardDesignDiamond, c.ci.NameTrump)
 			case "p", "play":
 				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", 0, domain.CinchHandSize-1, c.ci.Play)
 			case "n", "next", "nr", "nextround":

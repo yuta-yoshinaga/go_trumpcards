@@ -45,7 +45,7 @@ func (c *PitchCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bid":
-				return cuiutil.WithParsedInt(args, "Bid value is required (0=pass, 2-4).", "Invalid bid value: %s.", domain.PitchPassBid, domain.PitchMaxBid, c.pi.Bid)
+				return cuiutil.WithParsedIntKeys(args, "bidValueRequiredPass24", "invalidBidValue", domain.PitchPassBid, domain.PitchMaxBid, c.pi.Bid)
 			case "p", "play":
 				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.pi.Play)
 			case "n", "next":

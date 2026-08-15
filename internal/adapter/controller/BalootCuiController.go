@@ -41,7 +41,7 @@ func (c *BalootCuiController) Exec(command string) string {
 			case "sun":
 				return c.bi.DeclareSun(), true
 			case "hokom":
-				return cuiutil.WithParsedInt(args, "Suit is required.", "Invalid suit: %s.",
+				return cuiutil.WithParsedIntKeys(args, "suitRequired", "invalidSuit",
 					domain.CardDesignSpade, domain.CardDesignMax, c.bi.DeclareHokom)
 			case "pass":
 				return c.bi.PassDeclaration(), true

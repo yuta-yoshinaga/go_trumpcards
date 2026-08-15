@@ -79,12 +79,12 @@ func itoa(n int) string {
 // **範囲外の入札は弾く。** 100 未満も 165 超も通さない。
 func TestShelemCuiControllerBidRejectsBadArgs(t *testing.T) {
 	for _, tc := range []struct{ name, cmd, want string }{
-		{"missing bid", "b", "Bid is required."},
-		{"non-numeric", "b x", "Invalid bid: x."},
-		{"below the minimum", "b 50", "Invalid bid: 50."},
-		{"above the maximum", "b 200", "Invalid bid: 200."},
+		{"missing bid", "b", msgKey("bidRequired")},
+		{"non-numeric", "b x", msgKey("invalidBid", "val", "x")},
+		{"below the minimum", "b 50", msgKey("invalidBid", "val", "50")},
+		{"above the maximum", "b 200", msgKey("invalidBid", "val", "200")},
 		// **プールは100点しかない。** それを超える契約は達成できないので通さない。
-		{"above the point pool", "b 105", "Invalid bid: 105."},
+		{"above the point pool", "b 105", msgKey("invalidBid", "val", "105")},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			si := newMockShelemInteractor()
@@ -110,8 +110,8 @@ func TestShelemCuiControllerDiscardRejectsBadArgs(t *testing.T) {
 		{"no args", "d", "Four card indices and a suit are required."},
 		{"too few", "d 0 1 2 3", "Four card indices and a suit are required."},
 		{"non-numeric index", "d 0 x 2 3 1", msgInvalidCardIndex("x")},
-		{"suit out of range", "d 0 1 2 3 5", "Invalid suit: 5."},
-		{"non-numeric suit", "d 0 1 2 3 x", "Invalid suit: x."},
+		{"suit out of range", "d 0 1 2 3 5", msgKey("invalidSuit", "val", "5")},
+		{"non-numeric suit", "d 0 1 2 3 x", msgKey("invalidSuit", "val", "x")},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			si := newMockShelemInteractor()

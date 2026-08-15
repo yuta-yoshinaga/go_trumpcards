@@ -64,9 +64,9 @@ func (c *PinochleCuiController) Exec(command string) string {
 			}
 			switch cmd {
 			case "b", "bid":
-				return cuiutil.WithParsedInt(args, "Bid amount is required.", "Invalid bid amount: %s.", domain.PinochleMinBid, math.MaxInt, c.pi.Bid)
+				return cuiutil.WithParsedIntKeys(args, "bidAmountRequired", "invalidBidAmount", domain.PinochleMinBid, math.MaxInt, c.pi.Bid)
 			case "t", "trump":
-				return cuiutil.WithParsedInt(args, "Suit is required (1-4).", "Invalid suit: %s.", 1, 4, c.pi.CallTrump)
+				return cuiutil.WithParsedIntKeys(args, "suitRequiredRange", "invalidSuit", 1, 4, c.pi.CallTrump)
 			case "p", "play":
 				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.pi.Play)
 			case "sd", "setdifficulty":

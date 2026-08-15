@@ -64,12 +64,12 @@ func TestSkatCuiController_Exec(t *testing.T) {
 
 	t.Run("bid invalid", func(t *testing.T) {
 		c := controller.NewSkatCuiController(newMock())
-		assert.Contains(t, c.Exec("b abc"), "Invalid bid step")
+		assert.Contains(t, c.Exec("b abc"), msgStem("invalidBidStep"))
 	})
 
 	t.Run("bid no arg", func(t *testing.T) {
 		c := controller.NewSkatCuiController(newMock())
-		assert.Contains(t, c.Exec("b"), "Bid step is required")
+		assert.Contains(t, c.Exec("b"), msgStem("bidStepRequired"))
 	})
 
 	t.Run("pickskat pick up", func(t *testing.T) {
@@ -134,7 +134,7 @@ func TestSkatCuiController_Exec(t *testing.T) {
 
 	t.Run("game invalid trump", func(t *testing.T) {
 		c := controller.NewSkatCuiController(newMock())
-		assert.Contains(t, c.Exec("g 1 99"), "Invalid trump suit")
+		assert.Contains(t, c.Exec("g 1 99"), msgStem("invalidTrumpSuit"))
 	})
 
 	t.Run("play", func(t *testing.T) {

@@ -69,10 +69,9 @@ func (c *BidWhistCuiController) Exec(command string) string {
 			case "pa", "pass":
 				return c.bi.Pass(), true
 			case "t", "trump":
-				return cuiutil.WithParsedInt(args, "Trump suit is required (1=S 2=C 3=H 4=D).",
-					"Invalid suit: %s. Please enter 1-4.", 1, 4, func(s int) string {
-						return c.bi.DeclareTrump(s)
-					})
+				return cuiutil.WithParsedIntKeys(args, "trumpSuitRequiredLettersPlain", "invalidSuitRange", 1, 4, func(s int) string {
+					return c.bi.DeclareTrump(s)
+				})
 			case "e", "exchange":
 				if len(args) < domain.BidWhistKittySize {
 					return "Usage: exchange <i1> <i2> <i3> <i4> <i5> <i6>  (six card indices to discard)\n", true

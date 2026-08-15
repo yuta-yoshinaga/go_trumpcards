@@ -42,3 +42,11 @@ func msgInvalidBetAmountPrefix() string {
 func msgInvalidBetAmount(val string) string {
 	return i18n.MarkError(i18n.Tf("invalidBetAmount", "val", val))
 }
+
+// msgKey renders any rejection the controllers raise through invalidArg.
+// Assertions have to go through i18n or they pin the English wording, which is
+// the bug the suit/bid keys were added to fix -- an assertion on the English
+// literal keeps passing in Japanese mode while the player reads English.
+func msgKey(key string, params ...string) string {
+	return i18n.MarkError(i18n.Tf(key, params...))
+}

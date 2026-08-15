@@ -54,18 +54,18 @@ func TestTwoTenJackCuiController_Exec(t *testing.T) {
 
 	t.Run("declare missing arg", func(t *testing.T) {
 		c := controller.NewTwoTenJackCuiController(newMock())
-		assert.Contains(t, c.Exec("d"), "Trump suit is required")
+		assert.Contains(t, c.Exec("d"), msgStem("trumpSuitRequiredLetters"))
 	})
 
 	t.Run("declare invalid arg", func(t *testing.T) {
 		c := controller.NewTwoTenJackCuiController(newMock())
-		assert.Contains(t, c.Exec("d abc"), "Invalid trump suit")
+		assert.Contains(t, c.Exec("d abc"), msgStem("invalidTrumpSuit"))
 	})
 
 	t.Run("declare out of range", func(t *testing.T) {
 		c := controller.NewTwoTenJackCuiController(newMock())
-		assert.Contains(t, c.Exec("d 0"), "Invalid trump suit")
-		assert.Contains(t, c.Exec("d 5"), "Invalid trump suit")
+		assert.Contains(t, c.Exec("d 0"), msgStem("invalidTrumpSuit"))
+		assert.Contains(t, c.Exec("d 5"), msgStem("invalidTrumpSuit"))
 	})
 
 	t.Run("play", func(t *testing.T) {

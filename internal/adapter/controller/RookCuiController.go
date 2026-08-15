@@ -52,7 +52,7 @@ func (c *RookCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bid":
-				return cuiutil.WithParsedInt(args, "Bid is required (70-120).", "Invalid bid: %s.",
+				return cuiutil.WithParsedIntKeys(args, "bidRequired70120", "invalidBid",
 					domain.RookMinBid, domain.RookMaxBid, func(v int) string {
 						return c.fi.Bid(v)
 					})
@@ -70,7 +70,7 @@ func (c *RookCuiController) Exec(command string) string {
 					}
 					idxs[i] = v
 				}
-				color, errMsg, ok := cuiutil.ParseIntArg(args[5:6], "", "Invalid trump color: %s.", 1, 4)
+				color, errMsg, ok := cuiutil.ParseIntArgKeys(args[5:6], "", "invalidTrumpColor", 1, 4)
 				if !ok {
 					return errMsg, true
 				}

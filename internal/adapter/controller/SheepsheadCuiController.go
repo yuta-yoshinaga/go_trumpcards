@@ -57,7 +57,7 @@ func (c *SheepsheadCuiController) Exec(command string) string {
 			case "b", "bury":
 				return c.handleBury(args)
 			case "c", "call":
-				return cuiutil.WithParsedInt(args, "Suit is required (1=♠ 2=♣ 3=♥).", "Invalid suit: %s. Please enter 1-3.", domain.CardDesignSpade, domain.CardDesignHeart, c.si.Call)
+				return cuiutil.WithParsedIntKeys(args, "suitRequiredThree", "invalidSuitThree", domain.CardDesignSpade, domain.CardDesignHeart, c.si.Call)
 			case "play":
 				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.si.Play)
 			case "n", "next":

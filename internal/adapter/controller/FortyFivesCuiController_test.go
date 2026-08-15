@@ -50,12 +50,12 @@ func TestFortyFivesCuiController_Exec(t *testing.T) {
 
 	t.Run("bid no args", func(t *testing.T) {
 		result := controller.NewFortyFivesCuiController(newMock()).Exec("bid")
-		assert.Contains(t, result, "Bid is required")
+		assert.Contains(t, result, msgStem("bidRequired15"))
 	})
 
 	t.Run("bid invalid", func(t *testing.T) {
 		result := controller.NewFortyFivesCuiController(newMock()).Exec("bid 99")
-		assert.Contains(t, result, "Invalid bid")
+		assert.Contains(t, result, msgStem("invalidBid15"))
 	})
 
 	t.Run("pass maps to bid 0", func(t *testing.T) {

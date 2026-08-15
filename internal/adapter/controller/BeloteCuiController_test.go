@@ -85,17 +85,17 @@ func TestBeloteCuiController_Exec(t *testing.T) {
 
 	t.Run("call no args", func(t *testing.T) {
 		c := controller.NewBeloteCuiController(newMock())
-		assert.Contains(t, c.Exec("c"), "Suit is required")
+		assert.Contains(t, c.Exec("c"), msgStem("suitRequiredRange"))
 	})
 
 	t.Run("call invalid arg", func(t *testing.T) {
 		c := controller.NewBeloteCuiController(newMock())
-		assert.Contains(t, c.Exec("c abc"), "Invalid suit")
+		assert.Contains(t, c.Exec("c abc"), msgStem("invalidSuit"))
 	})
 
 	t.Run("call out of range", func(t *testing.T) {
 		c := controller.NewBeloteCuiController(newMock())
-		assert.Contains(t, c.Exec("c 5"), "Invalid suit: 5")
+		assert.Contains(t, c.Exec("c 5"), msgKey("invalidSuit", "val", "5"))
 	})
 
 	t.Run("play p with index", func(t *testing.T) {

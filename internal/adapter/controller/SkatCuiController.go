@@ -54,7 +54,7 @@ func (c *SkatCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bid":
-				return cuiutil.WithParsedInt(args, "Bid step is required (0=pass, 1=accept).", "Invalid bid step: %s.", 0, 1, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "bidStepRequired", "invalidBidStep", 0, 1, func(v int) string {
 					return c.si.Bid(v == 1)
 				})
 			case "ps", "pickskat":
@@ -84,7 +84,7 @@ func (c *SkatCuiController) Exec(command string) string {
 				}
 				trump := 0
 				if len(args) >= 2 {
-					t, msg, tok := cuiutil.ParseIntArg(args[1:2], "", "Invalid trump suit: %s.", 1, 4)
+					t, msg, tok := cuiutil.ParseIntArgKeys(args[1:2], "", "invalidTrumpSuit", 1, 4)
 					if !tok {
 						return msg, true
 					}

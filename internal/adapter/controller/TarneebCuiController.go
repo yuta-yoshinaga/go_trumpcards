@@ -49,9 +49,9 @@ func (c *TarneebCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bid":
-				return cuiutil.WithParsedInt(args, "Bid value is required (0=pass, 7-13).", "Invalid bid value: %s.", 0, domain.TarneebMaxBid, c.ti.Bid)
+				return cuiutil.WithParsedIntKeys(args, "bidValueRequiredPass713", "invalidBidValue", 0, domain.TarneebMaxBid, c.ti.Bid)
 			case "t", "trump":
-				return cuiutil.WithParsedInt(args, "Trump suit is required (1=Spade 2=Club 3=Heart 4=Diamond).", "Invalid suit: %s.", domain.CardDesignSpade, domain.CardDesignDiamond, c.ti.DeclareTrump)
+				return cuiutil.WithParsedIntKeys(args, "trumpSuitRequiredNames", "invalidSuit", domain.CardDesignSpade, domain.CardDesignDiamond, c.ti.DeclareTrump)
 			case "p", "play":
 				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.ti.Play)
 			case "n", "next":
@@ -71,7 +71,7 @@ func (c *TarneebCuiController) Exec(command string) string {
 					return c.ti.ResetWithConfig(cfg)
 				})
 			case "sm", "setminbid":
-				return cuiutil.WithParsedInt(args, "Minimum bid is required (1-13).", "Invalid min bid: %s.", 1, 13, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "minimumBidRequired113", "invalidMinBid", 1, 13, func(v int) string {
 					cfg := c.ti.GetConfig()
 					cfg.MinBid = v
 					return c.ti.ResetWithConfig(cfg)

@@ -33,11 +33,9 @@ func (c *SixBidSoloCuiController) Exec(command string) string {
 			switch cmd {
 			case "b", "bid":
 				// **1=ソロ 2=ハートソロ 3=ミゼール 4=ギャランティー 5=スプレッド 6=コール。**
-				return cuiutil.WithParsedInt(args,
-					"Bid is required (1=solo 2=heart solo 3=misere 4=guarantee 5=spread misere 6=call solo).",
-					"Invalid bid: %s.", int(domain.SixBidSoloMinBid), int(domain.SixBidSoloMaxBid), func(v int) string {
-						return c.si.Bid(v)
-					})
+				return cuiutil.WithParsedIntKeys(args, "bidRequiredSolo", "invalidBid", int(domain.SixBidSoloMinBid), int(domain.SixBidSoloMaxBid), func(v int) string {
+					return c.si.Bid(v)
+				})
 			case "ps", "pass":
 				return c.si.PassBid(), true
 			case "d", "declare":

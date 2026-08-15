@@ -52,7 +52,7 @@ func (c *JassCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "c", "call":
-				return cuiutil.WithParsedInt(args, "Suit is required (1-4).", "Invalid suit: %s.", 1, 4, func(suit int) string {
+				return cuiutil.WithParsedIntKeys(args, "suitRequiredRange", "invalidSuit", 1, 4, func(suit int) string {
 					return c.ji.ChooseTrump(suit)
 				})
 			case "sc", "schieben":

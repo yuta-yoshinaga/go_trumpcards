@@ -83,11 +83,11 @@ func (c *WattenCuiController) Exec(command string) string {
 
 // handleDeclare は `d <rank> <suit>` を解析して宣言する。
 func (c *WattenCuiController) handleDeclare(args []string) (string, bool) {
-	rank, errMsg, ok := cuiutil.ParseIntArg(args, "Rank and suit are required (e.g. 'd 10 3').", "Invalid rank: %s.", 1, 13)
+	rank, errMsg, ok := cuiutil.ParseIntArgKeys(args, "rankAndSuitRequired", "invalidRank", 1, 13)
 	if !ok {
 		return errMsg, true
 	}
-	suit, errMsg, ok := cuiutil.ParseIntArg(args[1:], "Suit is required (1-4).", "Invalid suit: %s.", 1, 4)
+	suit, errMsg, ok := cuiutil.ParseIntArgKeys(args[1:], "suitRequiredRange", "invalidSuit", 1, 4)
 	if !ok {
 		return errMsg, true
 	}

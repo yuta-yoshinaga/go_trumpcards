@@ -42,7 +42,7 @@ func (c *WizardCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bid":
-				return cuiutil.WithParsedInt(args, "Bid value is required.", "Invalid bid value: %s.", 0, cuiutil.NoMax, c.oi.Bid)
+				return cuiutil.WithParsedIntKeys(args, "bidValueRequired", "invalidBidValue", 0, cuiutil.NoMax, c.oi.Bid)
 			case "p", "play":
 				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.oi.Play)
 			case "n", "next":

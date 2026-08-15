@@ -47,7 +47,7 @@ func (c *CourtPieceCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "t", "trump":
-				return cuiutil.WithParsedInt(args, "Trump suit is required (1=Spade 2=Club 3=Heart 4=Diamond).", "Invalid suit: %s.", domain.CardDesignSpade, domain.CardDesignDiamond, c.ti.DeclareTrump)
+				return cuiutil.WithParsedIntKeys(args, "trumpSuitRequiredNames", "invalidSuit", domain.CardDesignSpade, domain.CardDesignDiamond, c.ti.DeclareTrump)
 			case "p", "play":
 				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.ti.Play)
 			case "n", "next":

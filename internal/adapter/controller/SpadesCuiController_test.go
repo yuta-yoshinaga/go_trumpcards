@@ -79,25 +79,25 @@ func TestSpadesCuiController_Exec(t *testing.T) {
 	t.Run("bid command b no args", func(t *testing.T) {
 		c := controller.NewSpadesCuiController(newMock())
 		result := c.Exec("b")
-		assert.Contains(t, result, "Bid value is required")
+		assert.Contains(t, result, msgStem("bidValueRequired013"))
 	})
 
 	t.Run("bid command b invalid arg", func(t *testing.T) {
 		c := controller.NewSpadesCuiController(newMock())
 		result := c.Exec("b abc")
-		assert.Contains(t, result, "Invalid bid value")
+		assert.Contains(t, result, msgStem("invalidBidValue"))
 	})
 
 	t.Run("bid command b out of range negative", func(t *testing.T) {
 		c := controller.NewSpadesCuiController(newMock())
 		result := c.Exec("b -1")
-		assert.Contains(t, result, "Invalid bid value: -1")
+		assert.Contains(t, result, msgKey("invalidBidValue", "val", "-1"))
 	})
 
 	t.Run("bid command b out of range over 13", func(t *testing.T) {
 		c := controller.NewSpadesCuiController(newMock())
 		result := c.Exec("b 14")
-		assert.Contains(t, result, "Invalid bid value: 14")
+		assert.Contains(t, result, msgKey("invalidBidValue", "val", "14"))
 	})
 
 	// play

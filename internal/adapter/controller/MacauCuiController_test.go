@@ -115,7 +115,7 @@ func TestMacauCuiController_Exec(t *testing.T) {
 	})
 
 	t.Run("suit below range", func(t *testing.T) {
-		assert.Contains(t, controller.NewMacauCuiController(newMock()).Exec("s 0"), "Invalid suit: 0")
+		assert.Contains(t, controller.NewMacauCuiController(newMock()).Exec("s 0"), msgKey("invalidSuitRange", "val", "0"))
 	})
 
 	t.Run("declare dc", func(t *testing.T) {

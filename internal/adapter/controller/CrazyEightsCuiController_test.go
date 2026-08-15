@@ -152,25 +152,25 @@ func TestCrazyEightsCuiController_Exec(t *testing.T) {
 	t.Run("suit command s no args", func(t *testing.T) {
 		c := controller.NewCrazyEightsCuiController(newMock())
 		result := c.Exec("s")
-		assert.Contains(t, result, "Suit is required")
+		assert.Contains(t, result, msgStem("suitRequiredSymbols"))
 	})
 
 	t.Run("suit command s invalid arg", func(t *testing.T) {
 		c := controller.NewCrazyEightsCuiController(newMock())
 		result := c.Exec("s abc")
-		assert.Contains(t, result, "Invalid suit")
+		assert.Contains(t, result, msgStem("invalidSuitRange"))
 	})
 
 	t.Run("suit command s below range", func(t *testing.T) {
 		c := controller.NewCrazyEightsCuiController(newMock())
 		result := c.Exec("s 0")
-		assert.Contains(t, result, "Invalid suit: 0")
+		assert.Contains(t, result, msgKey("invalidSuitRange", "val", "0"))
 	})
 
 	t.Run("suit command s above range", func(t *testing.T) {
 		c := controller.NewCrazyEightsCuiController(newMock())
 		result := c.Exec("s 5")
-		assert.Contains(t, result, "Invalid suit: 5")
+		assert.Contains(t, result, msgKey("invalidSuitRange", "val", "5"))
 	})
 
 	// nextround

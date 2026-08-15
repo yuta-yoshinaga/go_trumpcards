@@ -46,8 +46,7 @@ func (c *NapCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bid":
-				return cuiutil.WithParsedInt(args, "Bid is required (0=Pass, 2/3/4=tricks, 5=Nap).",
-					"Invalid bid: %s. Please enter 0, 2, 3, 4 or 5.",
+				return cuiutil.WithParsedIntKeys(args, "bidRequiredNap", "invalidBidNap",
 					int(domain.NapBidPass), int(domain.NapBidNap), c.di.Bid)
 			case "pass":
 				return c.di.Bid(int(domain.NapBidPass)), true

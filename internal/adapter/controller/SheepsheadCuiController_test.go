@@ -104,12 +104,12 @@ func TestSheepsheadCuiController_Exec(t *testing.T) {
 
 	t.Run("call no args", func(t *testing.T) {
 		result := controller.NewSheepsheadCuiController(newMock()).Exec("c")
-		assert.Contains(t, result, "Suit is required")
+		assert.Contains(t, result, msgStem("suitRequiredThree"))
 	})
 
 	t.Run("call invalid suit", func(t *testing.T) {
 		result := controller.NewSheepsheadCuiController(newMock()).Exec("c 9")
-		assert.Contains(t, result, "Invalid suit")
+		assert.Contains(t, result, msgStem("invalidSuitThree"))
 	})
 
 	t.Run("play card", func(t *testing.T) {

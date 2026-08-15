@@ -62,7 +62,7 @@ func TestRookCuiController_Quit(t *testing.T) {
 
 func TestRookCuiController_Usage(t *testing.T) {
 	c, _ := newRookCui()
-	if got := c.Exec("b"); !strings.Contains(got, "required") {
+	if got := c.Exec("b"); !strings.Contains(got, msgStem("bidRequired70120")) {
 		t.Errorf("bid without args should require, got %q", got)
 	}
 	if got := c.Exec("e 0 1 2"); !strings.Contains(got, "Usage") {

@@ -51,10 +51,10 @@ func TestSergeantMajorCuiControllerTrumpAcceptsEverySuit(t *testing.T) {
 // **範囲外のスートは弾く。** 通すと選んでいないスートが切り札になる。
 func TestSergeantMajorCuiControllerTrumpRejectsBadArgs(t *testing.T) {
 	for _, tc := range []struct{ name, cmd, want string }{
-		{"missing suit", "t", "Suit is required."},
-		{"non-numeric", "t x", "Invalid suit: x."},
-		{"below the range", "t 0", "Invalid suit: 0."},
-		{"above the range", "t 5", "Invalid suit: 5."},
+		{"missing suit", "t", msgKey("suitRequired")},
+		{"non-numeric", "t x", msgKey("invalidSuit", "val", "x")},
+		{"below the range", "t 0", msgKey("invalidSuit", "val", "0")},
+		{"above the range", "t 5", msgKey("invalidSuit", "val", "5")},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			si := newMockSergeantMajorInteractor()

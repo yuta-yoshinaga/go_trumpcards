@@ -68,7 +68,7 @@ func (c *KingCuiController) handleSelectContract(args []string) (string, bool) {
 	}
 	trump := -1
 	if len(args) >= 2 {
-		t, _, tok := cuiutil.ParseIntArg([]string{args[1]}, "trump suit", "Invalid trump suit: %s", domain.CardDesignSpade, domain.CardDesignDiamond)
+		t, _, tok := cuiutil.ParseIntArgKeys([]string{args[1]}, "", "invalidTrumpSuitNoPeriod", domain.CardDesignSpade, domain.CardDesignDiamond)
 		if tok {
 			trump = t
 		}

@@ -51,10 +51,10 @@ func TestBidEuchreCuiController_Exec(t *testing.T) {
 
 	t.Run("bid rejects a value outside 3-6", func(t *testing.T) {
 		c := controller.NewBidEuchreCuiController(newMock())
-		assert.Contains(t, c.Exec("b"), "required")
-		assert.Contains(t, c.Exec("b abc"), "Invalid bid")
-		assert.Contains(t, c.Exec("b 2"), "Invalid bid")
-		assert.Contains(t, c.Exec("b 7"), "Invalid bid")
+		assert.Contains(t, c.Exec("b"), msgStem("bidValueRequired"))
+		assert.Contains(t, c.Exec("b abc"), msgStem("invalidBid"))
+		assert.Contains(t, c.Exec("b 2"), msgStem("invalidBid"))
+		assert.Contains(t, c.Exec("b 7"), msgStem("invalidBid"))
 	})
 
 	// **切札は 6 種類。**ノートランプがハイとローで 2 つある。
@@ -65,10 +65,10 @@ func TestBidEuchreCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "ChooseTrump", int(domain.BidEuchreTrumpSpade))
 		assert.Equal(t, mockOutput, c.Exec("trump 5"))
 		m.AssertCalled(t, "ChooseTrump", int(domain.BidEuchreTrumpNoLow))
-		assert.Contains(t, c.Exec("t"), "required")
-		assert.Contains(t, c.Exec("t abc"), "Invalid trump")
-		assert.Contains(t, c.Exec("t 6"), "Invalid trump")
-		assert.Contains(t, c.Exec("t -1"), "Invalid trump")
+		assert.Contains(t, c.Exec("t"), msgStem("trumpDeclarationRequired"))
+		assert.Contains(t, c.Exec("t abc"), msgStem("invalidTrump"))
+		assert.Contains(t, c.Exec("t 6"), msgStem("invalidTrump"))
+		assert.Contains(t, c.Exec("t -1"), msgStem("invalidTrump"))
 	})
 
 	t.Run("play and next", func(t *testing.T) {

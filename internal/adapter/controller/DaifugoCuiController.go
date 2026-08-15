@@ -209,7 +209,7 @@ func (c *DaifugoCuiController) Exec(command string) string {
 				setDaifugoRule(&cfg, args[0], v == 1)
 				return c.dgi.ResetWithConfig(cfg), true
 			case "suitlockmode":
-				return cuiutil.WithParsedInt(args, "Suit lock mode is required (0=none, 1=partial, 2=full).", "Invalid suit lock mode: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "suitLockModeRequired", "invalidSuitLockMode", 0, 2, func(v int) string {
 					cfg := c.dgi.GetConfig()
 					cfg.SuitLockMode = domain.DaifugoSuitLockMode(v)
 					return c.dgi.ResetWithConfig(cfg)

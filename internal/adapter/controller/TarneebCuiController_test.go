@@ -51,10 +51,10 @@ func TestTarneebCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "Bid", 9)
 	})
 	t.Run("bid no args", func(t *testing.T) {
-		assert.Contains(t, controller.NewTarneebCuiController(newMock()).Exec("b"), "Bid value is required")
+		assert.Contains(t, controller.NewTarneebCuiController(newMock()).Exec("b"), msgStem("bidValueRequiredPass713"))
 	})
 	t.Run("bid above max", func(t *testing.T) {
-		assert.Contains(t, controller.NewTarneebCuiController(newMock()).Exec("b 14"), "Invalid bid value")
+		assert.Contains(t, controller.NewTarneebCuiController(newMock()).Exec("b 14"), msgStem("invalidBidValue"))
 	})
 
 	t.Run("trump valid", func(t *testing.T) {
@@ -68,10 +68,10 @@ func TestTarneebCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "DeclareTrump", domain.CardDesignDiamond)
 	})
 	t.Run("trump no args", func(t *testing.T) {
-		assert.Contains(t, controller.NewTarneebCuiController(newMock()).Exec("t"), "Trump suit is required")
+		assert.Contains(t, controller.NewTarneebCuiController(newMock()).Exec("t"), msgStem("trumpSuitRequiredNames"))
 	})
 	t.Run("trump invalid suit", func(t *testing.T) {
-		assert.Contains(t, controller.NewTarneebCuiController(newMock()).Exec("t 9"), "Invalid suit")
+		assert.Contains(t, controller.NewTarneebCuiController(newMock()).Exec("t 9"), msgStem("invalidSuit"))
 	})
 
 	t.Run("play valid", func(t *testing.T) {

@@ -81,19 +81,19 @@ func TestPinochleCuiController_Exec(t *testing.T) {
 	t.Run("bid command no args", func(t *testing.T) {
 		c := controller.NewPinochleCuiController(newPinochleMock())
 		result := c.Exec("b")
-		assert.Contains(t, result, "Bid amount is required")
+		assert.Contains(t, result, msgStem("bidAmountRequired"))
 	})
 
 	t.Run("bid command invalid arg", func(t *testing.T) {
 		c := controller.NewPinochleCuiController(newPinochleMock())
 		result := c.Exec("b abc")
-		assert.Contains(t, result, "Invalid bid amount")
+		assert.Contains(t, result, msgStem("invalidBidAmount"))
 	})
 
 	t.Run("bid command below min", func(t *testing.T) {
 		c := controller.NewPinochleCuiController(newPinochleMock())
 		result := c.Exec("b 10")
-		assert.Contains(t, result, "Invalid bid amount: 10")
+		assert.Contains(t, result, msgKey("invalidBidAmount", "val", "10"))
 	})
 
 	// pass
@@ -133,19 +133,19 @@ func TestPinochleCuiController_Exec(t *testing.T) {
 	t.Run("trump command no args", func(t *testing.T) {
 		c := controller.NewPinochleCuiController(newPinochleMock())
 		result := c.Exec("t")
-		assert.Contains(t, result, "Suit is required")
+		assert.Contains(t, result, msgStem("suitRequiredRange"))
 	})
 
 	t.Run("trump command invalid arg", func(t *testing.T) {
 		c := controller.NewPinochleCuiController(newPinochleMock())
 		result := c.Exec("t abc")
-		assert.Contains(t, result, "Invalid suit")
+		assert.Contains(t, result, msgStem("invalidSuit"))
 	})
 
 	t.Run("trump command out of range", func(t *testing.T) {
 		c := controller.NewPinochleCuiController(newPinochleMock())
 		result := c.Exec("t 5")
-		assert.Contains(t, result, "Invalid suit: 5")
+		assert.Contains(t, result, msgKey("invalidSuit", "val", "5"))
 	})
 
 	// meld
