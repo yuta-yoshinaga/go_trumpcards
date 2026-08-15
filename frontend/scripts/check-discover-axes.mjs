@@ -78,7 +78,15 @@ if (!Number.isInteger(profileMax)) {
 
 if (SCANNING_REPO) {
   assertFloor('discover-axes', keys.length, 24, 'axis/question/option i18n keys');
+  // Exact, not the usual two-thirds: the axis set is structural (mood, skill,
+  // social, theme), not a list that grows. Adding a fifth axis still passes;
+  // silently dropping one to three does not, which is the point.
   assertFloor('discover-axes', axisLengths.size, 4, 'axes with a profileLength');
+}
+
+/** Read a dotted path out of a nested locale object. */
+function getPath(obj, dotted) {
+  return dotted.split('.').reduce((o, k) => (o == null ? o : o[k]), obj);
 }
 
 const problems = [];
@@ -91,10 +99,6 @@ for (const lang of ['ja', 'en']) {
     if (!present.has(key)) problems.push(`MISSING KEY   ${lang}/discover.json  ${key}`);
     else if (String(getPath(locale, key)).trim() === '') problems.push(`EMPTY KEY     ${lang}/discover.json  ${key}`);
   }
-}
-
-function getPath(obj, dotted) {
-  return dotted.split('.').reduce((o, k) => (o == null ? o : o[k]), obj);
 }
 
 // 2. every game's profile vector matches its axis length and value range.
