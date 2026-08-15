@@ -111,12 +111,11 @@ func TestAdvanceRound(t *testing.T) {
 
 	// Order matters: the CPU must act on the new round, not the old one.
 	t.Run("runs the CPU after the round advances", func(t *testing.T) {
-		g := &mockRoundGame{}
 		var order []string
-		p := &mockPresenter[*mockRoundGame]{output: "out"}
-		orderedGame := &orderRecordingGame{mockRoundGame: g, order: &order}
+		game := &orderRecordingGame{mockRoundGame: &mockRoundGame{}, order: &order}
 
-		advanceRound(orderedGame, p2(p), func() { order = append(order, "cpu") })
+		advanceRound(game, &mockPresenter[*orderRecordingGame]{output: "out"},
+			func() { order = append(order, "cpu") })
 
 		assert.Equal(t, []string{"nextRound", "cpu"}, order)
 	})
@@ -131,9 +130,4 @@ type orderRecordingGame struct {
 func (o *orderRecordingGame) NextRound() {
 	*o.order = append(*o.order, "nextRound")
 	o.mockRoundGame.NextRound()
-}
-
-// p2 adapts the presenter's type parameter to the wrapper type.
-func p2(_ *mockPresenter[*mockRoundGame]) *mockPresenter[*orderRecordingGame] {
-	return &mockPresenter[*orderRecordingGame]{output: "out"}
 }
