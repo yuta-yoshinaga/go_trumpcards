@@ -872,7 +872,11 @@ func TestZwanzigerrufenUnmarshal_RejectsTamperedState(t *testing.T) {
 			m["cl"] = -1
 			m["pi"] = 2
 		}, "requires a called trump"},
+		// **土台の配りに依存させない。** デクレアラーが呼び札を持っていた回は
+		// `cl` が -1 で返るので、`dc`/`pi` だけ弄ると「呼び札が要る」が先に当たる。
 		{"自分自身がパートナー", func(m map[string]any) {
+			m["co"] = int(ZwanzigerrufenBidRufer)
+			m["cl"] = ZwanzigerrufenCallTrump
 			m["dc"] = 1
 			m["pi"] = 1
 		}, "own partner"},
