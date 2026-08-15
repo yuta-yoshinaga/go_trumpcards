@@ -23,7 +23,8 @@
     "e2e:ui": "playwright test --ui",
     "e2e:headed": "playwright test --headed",
     "docs:generate": "typedoc",
-    "typecheck": "bun ./node_modules/typescript7/bin/tsc -b"
+    "typecheck": "bun ./node_modules/typescript7/bin/tsc -b",
+    "deadcode": "knip"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.101.4",
@@ -53,6 +54,7 @@
     "@vitest/coverage-v8": "^4.1.10",
     "happy-dom": "^20.11.1",
     "jsdom": "^28.1.0",
+    "knip": "^6.32.2",
     "tailwindcss": "^4.3.3",
     "typedoc": "^0.28.20",
     "typescript": "~5.9.3",

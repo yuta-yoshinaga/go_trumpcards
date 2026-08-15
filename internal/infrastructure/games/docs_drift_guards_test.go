@@ -2,10 +2,12 @@ package games_test
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"regexp"
 	"sort"
+	"strings"
 	"testing"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/games"
@@ -201,6 +203,103 @@ func TestDesignDocCountsMatchRegistry(t *testing.T) {
 					got := m[i+1]
 					if got != fmt.Sprint(want) {
 						t.Errorf("%s: %q says %s where the registry implies %d", c.path, m[0], got, want)
+					}
+				}
+			}
+		})
+	}
+}
+
+// implTypeRe matches a per-game implementation type declaration such as
+// `type BlackJackCuiController struct`.
+func implTypeRe(suffix string) *regexp.Regexp {
+	return regexp.MustCompile(`(?m)^type ([A-Za-z0-9_]+` + suffix + `) `)
+}
+
+// countImplTypes returns how many distinct types under dir end in suffix.
+// Production files only: the document describes shipped code.
+func countImplTypes(t *testing.T, dir, suffix string) int {
+	t.Helper()
+	re := implTypeRe(suffix)
+	seen := map[string]bool{}
+	root := filepath.Join(repoRoot, dir)
+	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+		if err != nil || d.IsDir() || !strings.HasSuffix(path, ".go") || strings.HasSuffix(path, "_test.go") {
+			return err
+		}
+		data, rerr := os.ReadFile(path)
+		if rerr != nil {
+			return rerr
+		}
+		for _, m := range re.FindAllSubmatch(data, -1) {
+			seen[string(m[1])] = true
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("walk %s: %v", dir, err)
+	}
+	if len(seen) < 100 {
+		t.Fatalf("only %d %s types found under %s -- the declaration regex stopped matching", len(seen), suffix, dir)
+	}
+	return len(seen)
+}
+
+// TestDesignDocImplementationCountsMatchCode asserts the *type* counts the
+// design document states for the per-game controllers and presenters.
+//
+// TestDesignDocCountsMatchRegistry already guards `318ゲーム × CUI/Web = 636`,
+// but that is a count of *bindings*, not of types: several controllers serve
+// more than one game (`NewOmahaWebController` is bound for 5, VideoPoker /
+// SevenCardStud / Pineapple for 3 each, BlackJack / FreeCell / FiveCardStud for
+// 2), so there are 610 controller and 612 presenter types, not 636 of each.
+// (610 = CuiController 305 + WebController 305; the generic base
+// GameWebController[I,P,O] is not a per-game implementation and is excluded.
+// Hand-counting it in is how this comment first said 611 -- the guard below
+// caught that, which is the entire reason the number is asserted and not
+// written down once.)
+//
+// Reading 636 as "636 implementations" is what #5350 flagged and could not fix:
+// correcting the prose alone would have contradicted the binding guard, so the
+// number needed a guard of its own before the wording could say both things.
+func TestDesignDocImplementationCountsMatchCode(t *testing.T) {
+	cui := countImplTypes(t, "internal/adapter/controller", "CuiController")
+	web := countImplTypes(t, "internal/adapter/controller", "WebController")
+	cuiP := countImplTypes(t, "internal/adapter/presenter", "CuiPresenter")
+	webP := countImplTypes(t, "internal/adapter/presenter", "WebPresenter")
+
+	data, err := os.ReadFile(filepath.Join(repoRoot, "docs/design/backend.md"))
+	if err != nil {
+		t.Fatalf("read backend.md: %v", err)
+	}
+	doc := string(data)
+
+	cases := []struct {
+		name string
+		re   *regexp.Regexp
+		want []int
+	}{
+		{
+			"controller implementation types",
+			regexp.MustCompile(`実装型は (\d+) 種類 \(CuiController (\d+) \+ WebController (\d+)\)`),
+			[]int{cui + web, cui, web},
+		},
+		{
+			"presenter implementation types",
+			regexp.MustCompile(`実装型は (\d+) 種類 \(CuiPresenter (\d+) \+ WebPresenter (\d+)\)`),
+			[]int{cuiP + webP, cuiP, webP},
+		},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			matches := c.re.FindAllStringSubmatch(doc, -1)
+			if len(matches) == 0 {
+				t.Fatalf("backend.md: pattern %q matched nothing -- the wording changed; update the regex here", c.re)
+			}
+			for _, m := range matches {
+				for i, want := range c.want {
+					if m[i+1] != fmt.Sprint(want) {
+						t.Errorf("backend.md: %q says %s where the code has %d", m[0], m[i+1], want)
 					}
 				}
 			}
