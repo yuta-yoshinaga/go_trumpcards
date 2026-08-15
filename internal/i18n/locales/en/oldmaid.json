@@ -1,6 +1,6 @@
 {
   "helpTitle": "Old Maid",
-  "helpDraw": "  d                    draw a card",
+  "helpDraw": "  d [idx]              draw a card (idx picks which of their cards; omit for random)",
   "helpShuffle": "  s                    shuffle hand",
   "helpReorder": "  ro [i0 i1 ...]       reorder hand",
   "helpSetMode": "  sm [0-1]             set mode (0=Normal, 1=JijiNuki)",

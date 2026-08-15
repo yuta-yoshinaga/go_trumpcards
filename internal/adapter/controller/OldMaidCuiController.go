@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
@@ -34,7 +35,19 @@ func (c *OldMaidCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "d", "draw":
-				return c.omi.Draw(cuiutil.ParseOptionalInt(args, 0, -1)), true
+				// No argument draws at random; a typed one picks which of the next
+				// player's cards to take, so it must not be silently read as -1
+				// (issue #5390) -- that drew a card the player did not choose in
+				// 17 of 30 deals.
+				idx := -1
+				if len(args) > 0 {
+					v, err := strconv.Atoi(args[0])
+					if err != nil {
+						return invalidArg("invalidCardIndex", "val", args[0]), true
+					}
+					idx = v
+				}
+				return c.omi.Draw(idx), true
 			case "s", "shuffle":
 				return c.omi.Shuffle(), true
 			case "ro", "reorder":
