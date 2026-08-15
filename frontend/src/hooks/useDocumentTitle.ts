@@ -1,6 +1,33 @@
 import { useEffect } from 'react';
 import { SITE_NAME } from '../constants/site';
 
+/** Notified with the full document title whenever a page sets one. */
+type TitleListener = (title: string) => void;
+
+const listeners = new Set<TitleListener>();
+
+/**
+ * Subscribes to page-title changes. Returns an unsubscribe function.
+ *
+ * `RouteAnnouncer` uses this instead of reading `document.title` after a
+ * navigation. Reading it directly looks equivalent and is not: the announcer is
+ * declared before `<Routes>`, React flushes sibling effects in declaration
+ * order, so it runs *before* the destination page's `useDocumentTitle` and sees
+ * the bare site name that the unmounting page's cleanup left behind. Lazy route
+ * chunks widen the same gap. Publishing from the setter removes the ordering
+ * question entirely — the announcement happens when the title actually lands,
+ * however late that is. See issue #5360.
+ *
+ * The unmount cleanup deliberately does *not* publish: resetting to the bare
+ * site name is not a page identity worth announcing.
+ */
+export function subscribeDocumentTitle(listener: TitleListener): () => void {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
 /**
  * Sets `document.title` for the lifetime of the calling component.
  *
@@ -16,7 +43,9 @@ import { SITE_NAME } from '../constants/site';
  */
 export function useDocumentTitle(title: string): void {
   useEffect(() => {
-    document.title = title ? `${title} - ${SITE_NAME}` : SITE_NAME;
+    const full = title ? `${title} - ${SITE_NAME}` : SITE_NAME;
+    document.title = full;
+    for (const listener of listeners) listener(full);
     return () => {
       document.title = SITE_NAME;
     };

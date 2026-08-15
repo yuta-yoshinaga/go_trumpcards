@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useNavigate } from 'react-router-dom';
 import { afterEach, describe, expect, it } from 'vitest';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { RouteAnnouncer } from './RouteAnnouncer';
 
 /** A page that renders a button navigating to `to`, plus the focus target. */
@@ -20,9 +21,13 @@ function Harness({ initial = '/a' }: { initial?: string }) {
   );
 }
 
+// Sets the title from an effect, exactly as useDocumentTitle does. Setting it
+// during render instead would hide the ordering this component depends on:
+// sibling effects run in declaration order, so an announcer declared before the
+// routed page sees the title the *previous* page left behind.
 function Nav({ to, label, title }: { to: string; label: string; title: string }) {
   const navigate = useNavigate();
-  document.title = title;
+  useDocumentTitle(title);
   return (
     <button type="button" onClick={() => navigate(to)}>
       {label}
@@ -56,7 +61,7 @@ describe('RouteAnnouncer', () => {
     act(() => {
       fireEvent.click(screen.getByRole('button', { name: 'go b' }));
     });
-    expect(screen.getByRole('status')).toHaveTextContent('Page B');
+    expect(screen.getByRole('status')).toHaveTextContent('Page B - Trump Cards');
   });
 
   // Without this, a keyboard user lands back at the top of a 318-entry nav on
@@ -87,6 +92,6 @@ describe('RouteAnnouncer', () => {
         fireEvent.click(screen.getByRole('button', { name: 'go b' }));
       });
     }).not.toThrow();
-    expect(screen.getByRole('status')).toHaveTextContent('Page B');
+    expect(screen.getByRole('status')).toHaveTextContent('Page B - Trump Cards');
   });
 });
