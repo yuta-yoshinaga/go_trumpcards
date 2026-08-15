@@ -178,11 +178,13 @@ func TestBlackJackCuiController_BetWithSideBets(t *testing.T) {
 	t.Run("bet with PP only", func(t *testing.T) {
 		assert.Equal(t, mockOutput, tbc.Exec("b 100 10"))
 	})
-	t.Run("bet with invalid PP (ignored)", func(t *testing.T) {
-		assert.Equal(t, mockOutput, tbc.Exec("b 100 abc"))
+	// 打ち間違いは 0 に落とさず断る。落とすと「サイドベットを賭けたつもりが
+	// 賭けていない」局が静かに成立し、収支だけが合わなくなる。
+	t.Run("bet refuses a mistyped PP", func(t *testing.T) {
+		assert.Equal(t, msgKey("invalidPairPlusBet", "val", "abc"), tbc.Exec("b 100 abc"))
 	})
-	t.Run("bet with PP and invalid T3 (ignored)", func(t *testing.T) {
-		assert.Equal(t, mockOutput, tbc.Exec("b 100 10 xyz"))
+	t.Run("bet refuses a mistyped T3", func(t *testing.T) {
+		assert.Equal(t, msgKey("invalidTripsBet", "val", "xyz"), tbc.Exec("b 100 10 xyz"))
 	})
 }
 
@@ -200,8 +202,8 @@ func TestBlackJackCuiController_BetWithHandCount(t *testing.T) {
 	t.Run("bet with side bets and handCount", func(t *testing.T) {
 		assert.Equal(t, mockOutput, tbc.Exec("b 100 10 20 3"))
 	})
-	t.Run("bet with invalid handCount (ignored)", func(t *testing.T) {
-		assert.Equal(t, mockOutput, tbc.Exec("b 100 0 0 abc"))
+	t.Run("bet refuses a mistyped hand count", func(t *testing.T) {
+		assert.Equal(t, msgKey("invalidHandCount", "val", "abc"), tbc.Exec("b 100 0 0 abc"))
 	})
 }
 
