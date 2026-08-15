@@ -3624,7 +3624,7 @@ var gameRegistry = []GameRegistryEntry{
 		CuiHelpSpec{
 			TitleKey: "escoba.helpTitle",
 			ExampleKeys: []string{
-				"escoba.helpExamplePlay",
+				"escoba.helpExampleNext",
 			},
 			CommandKeys: []string{
 				"escoba.helpPlay",
