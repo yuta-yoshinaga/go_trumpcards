@@ -37,6 +37,5 @@
   "hintBid": "{{contract}} looks right ({{reason}})",
   "hintPlay": "Card {{index}} looks best ({{reason}})",
   "colourWhistBidStrength": "based on your hand's strength",
-  "colourWhistFollowSuit": "you must follow suit",
-  "helpExamplePass": "  pass                 stay out of this auction"
+  "colourWhistFollowSuit": "you must follow suit"
 }
