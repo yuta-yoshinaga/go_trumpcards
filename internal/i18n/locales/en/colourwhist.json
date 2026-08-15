@@ -38,5 +38,5 @@
   "hintPlay": "Card {{index}} looks best ({{reason}})",
   "colourWhistBidStrength": "based on your hand's strength",
   "colourWhistFollowSuit": "you must follow suit",
-  "helpExampleHint": "  hint                 ask for a move"
+  "helpExampleGiveUp": "  g                    give the round up"
 }

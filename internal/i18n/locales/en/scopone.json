@@ -20,5 +20,5 @@
   "promptNext": "n to start the next round",
   "promptCurrentTurn": "Current turn: {{name}} (Team {{team}})",
   "promptHelp": "p <hand> [table...] to capture or lay / n for the next round",
-  "helpExamplePlay": "  p 0                      play hand card 0"
+  "helpExampleNext": "  n                        read the round result, then continue"
 }

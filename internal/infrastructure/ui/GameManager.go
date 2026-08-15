@@ -145,7 +145,7 @@ var gameRegistry = []GameRegistryEntry{
 		CuiHelpSpec{
 			TitleKey: "poker.helpTitle",
 			ExampleKeys: []string{
-				"poker.helpExampleCall",
+				"poker.helpExampleFold",
 			},
 			CommandKeys: []string{
 				"poker.helpBet",
@@ -1293,7 +1293,7 @@ var gameRegistry = []GameRegistryEntry{
 		CuiHelpSpec{
 			TitleKey: "deucetoseven.helpTitle",
 			ExampleKeys: []string{
-				"deucetoseven.helpExampleCall",
+				"deucetoseven.helpExampleFold",
 			},
 			CommandKeys: []string{
 				"deucetoseven.helpBet",
@@ -3606,7 +3606,7 @@ var gameRegistry = []GameRegistryEntry{
 		CuiHelpSpec{
 			TitleKey: "scopone.helpTitle",
 			ExampleKeys: []string{
-				"scopone.helpExamplePlay",
+				"scopone.helpExampleNext",
 			},
 			CommandKeys: []string{
 				"scopone.helpPlay",
@@ -3864,8 +3864,7 @@ var gameRegistry = []GameRegistryEntry{
 		CuiHelpSpec{
 			TitleKey: "fivecardstud.helpTitle",
 			ExampleKeys: []string{
-				"fivecardstud.helpExampleCall",
-				"fivecardstud.helpExampleRaise",
+				"fivecardstud.helpExampleFold",
 			},
 			CommandKeys: []string{
 				"fivecardstud.helpFold",
@@ -5582,7 +5581,7 @@ var gameRegistry = []GameRegistryEntry{
 		CuiHelpSpec{
 			TitleKey: "colourwhist.helpTitle",
 			ExampleKeys: []string{
-				"colourwhist.helpExampleHint",
+				"colourwhist.helpExampleGiveUp",
 			},
 			CommandKeys: []string{
 				"colourwhist.helpPlay",
