@@ -3,6 +3,10 @@
 package ui
 
 import (
+	"encoding/json"
+	"os"
+	"path/filepath"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -441,3 +445,154 @@ func helpLineVerb(line string) string {
 	}
 	return verb
 }
+
+// TestCuiHelpCommandKeysCoverLocale asserts that a game using the standard help
+// scaffold wires every command-shaped help string its locale defines.
+//
+// The locale file and GameManager's CommandKeys are edited separately, so a
+// string can exist with no line rendering it: the command works, the help never
+// mentions it. Klondike shipped `f [<col>]` and `m <col> <col>` that way, and
+// #5369's example guard could not see the gap because its reference table *is*
+// CommandKeys -- a correct example naming `f` would have been reported as
+// naming a command the game does not have. 26 such keys across 13 games were
+// found when this check was written. See issues #5358 and #5370.
+//
+// Only games on the scaffold are checked: a game with a hand-authored Body
+// keeps unused keys legitimately, and only command-shaped values count, so a
+// prose or label string is not mistaken for a missing command line.
+func TestCuiHelpCommandKeysCoverLocale(t *testing.T) {
+	// Every .go in this package, not just GameManager.go: doubt builds its spec
+	// in DoubtCui.go, and reading only the registry file reported its six keys
+	// as unwired when they are right there.
+	uiDir := filepath.Join(repoRootForHelpTest(t), "internal/infrastructure/ui")
+	entries, err := os.ReadDir(uiDir)
+	if err != nil {
+		t.Fatalf("read ui dir: %v", err)
+	}
+	var b strings.Builder
+	for _, e := range entries {
+		if e.IsDir() || !strings.HasSuffix(e.Name(), ".go") {
+			continue
+		}
+		data, readErr := os.ReadFile(filepath.Join(uiDir, e.Name()))
+		if readErr != nil {
+			t.Fatalf("read %s: %v", e.Name(), readErr)
+		}
+		b.Write(data)
+	}
+	src := b.String()
+
+	wired := map[string]bool{}
+	for _, m := range regexp.MustCompile(`"([a-z0-9]+\.help[A-Za-z0-9]+)"`).FindAllStringSubmatch(src, -1) {
+		wired[m[1]] = true
+	}
+	if len(wired) < 500 {
+		t.Fatalf("only %d help keys parsed from GameManager.go -- the regex stopped matching", len(wired))
+	}
+
+	// A game whose registration carries Body: writes its help by hand.
+	bodyGames := map[string]bool{}
+	marks := regexp.MustCompile(`BindCuiFor\("([a-z0-9]+)"`).FindAllStringSubmatchIndex(src, -1)
+	for i, m := range marks {
+		end := len(src)
+		if i+1 < len(marks) {
+			end = marks[i+1][0]
+		}
+		if strings.Contains(src[m[0]:end], "Body:") {
+			bodyGames[src[m[2]:m[3]]] = true
+		}
+	}
+
+	commandLine := regexp.MustCompile(`^\s+[a-z][a-z0-9]*(\s|$)`)
+	checked := 0
+	var missing []string
+	for game := range gameHelpLocales(t) {
+		if bodyGames[game] {
+			continue
+		}
+		for key, value := range gameHelpLocales(t)[game] {
+			if !strings.HasPrefix(key, "help") || key == "helpTitle" {
+				continue
+			}
+			if !commandLine.MatchString(value) {
+				continue
+			}
+			checked++
+			if !wired[game+"."+key] {
+				missing = append(missing, game+"."+key+"  ("+strings.TrimSpace(value)+")")
+			}
+		}
+	}
+	if checked < 500 {
+		t.Fatalf("only %d command-shaped help strings checked -- the locale walk or the line pattern broke", checked)
+	}
+	sort.Strings(missing)
+	if len(missing) > 0 {
+		t.Errorf("command help strings that no CommandKeys entry renders (%d of %d checked):\n  %s\n"+
+			"The command works but the help never mentions it. Wire it into GameManager.go, or delete the key.",
+			len(missing), checked, strings.Join(missing, "\n  "))
+	}
+}
+
+// repoRootForHelpTest walks up from the test's working directory to the module
+// root, so the guard reads the same files regardless of where `go test` is run.
+func repoRootForHelpTest(t *testing.T) string {
+	t.Helper()
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("getwd: %v", err)
+	}
+	for range 6 {
+		if _, statErr := os.Stat(filepath.Join(dir, "go.mod")); statErr == nil {
+			return dir
+		}
+		dir = filepath.Dir(dir)
+	}
+	t.Fatal("go.mod not found above the test working directory")
+	return ""
+}
+
+// gameHelpLocales returns the ja locale of every per-game bundle, keyed by game.
+// ja is the authoring language: a key exists there first, so a gap shows up
+// here before it shows up in en.
+func gameHelpLocales(t *testing.T) map[string]map[string]string {
+	t.Helper()
+	if cachedHelpLocales != nil {
+		return cachedHelpLocales
+	}
+	dir := filepath.Join(repoRootForHelpTest(t), "internal/i18n/locales/ja")
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		t.Fatalf("read locale dir: %v", err)
+	}
+	out := map[string]map[string]string{}
+	for _, e := range entries {
+		name := e.Name()
+		if e.IsDir() || !strings.HasSuffix(name, ".json") {
+			continue
+		}
+		game := strings.TrimSuffix(name, ".json")
+		switch game {
+		case "common", "cli_help", "tutorial", "discover":
+			continue
+		}
+		data, readErr := os.ReadFile(filepath.Join(dir, name))
+		if readErr != nil {
+			t.Fatalf("read %s: %v", name, readErr)
+		}
+		var m map[string]string
+		// A bundle with nested objects is not a per-game command bundle; skip it
+		// rather than failing, so a future nested file does not break this guard.
+		if json.Unmarshal(data, &m) != nil {
+			continue
+		}
+		out[game] = m
+	}
+	if len(out) < 300 {
+		t.Fatalf("only %d game locales loaded from %s -- the walk broke", len(out), dir)
+	}
+	cachedHelpLocales = out
+	return out
+}
+
+var cachedHelpLocales map[string]map[string]string
