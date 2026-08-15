@@ -58,7 +58,7 @@ func (c *PenguinCuiController) handleMove(args []string) string {
 	}
 	from := args[0]
 	if from != "t" && from != "c" {
-		return i18n.Tf("penguin.invalidFromZone", "val", from)
+		return invalidArg("penguin.invalidFromZone", "val", from)
 	}
 	if len(args) < 2 {
 		switch from {
@@ -85,7 +85,7 @@ func (c *PenguinCuiController) handleMoveFromTableau(args []string) string {
 	}
 	fromCol, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[0])
+		return invalidArg("invalidColumn", "val", args[0])
 	}
 
 	switch args[1] {
@@ -97,7 +97,7 @@ func (c *PenguinCuiController) handleMoveFromTableau(args []string) string {
 		}
 		toCol, err := strconv.Atoi(args[2])
 		if err != nil {
-			return i18n.Tf("invalidColumn", "val", args[2])
+			return invalidArg("invalidColumn", "val", args[2])
 		}
 		return c.pi.MoveTableauToTableau(fromCol, -1, toCol)
 	case "c":
@@ -106,7 +106,7 @@ func (c *PenguinCuiController) handleMoveFromTableau(args []string) string {
 		}
 		cell, err := strconv.Atoi(args[2])
 		if err != nil {
-			return i18n.Tf("invalidCell", "val", args[2])
+			return invalidArg("invalidCell", "val", args[2])
 		}
 		return c.pi.MoveTableauToFreeCell(fromCol, cell)
 	default:
@@ -122,7 +122,7 @@ func (c *PenguinCuiController) handleMoveFromTableau(args []string) string {
 		}
 		toCol, err := strconv.Atoi(args[3])
 		if err != nil {
-			return i18n.Tf("invalidColumn", "val", args[3])
+			return invalidArg("invalidColumn", "val", args[3])
 		}
 		return c.pi.MoveTableauToTableau(fromCol, cardIdx, toCol)
 	}
@@ -137,7 +137,7 @@ func (c *PenguinCuiController) handleMoveFromFreeCell(args []string) string {
 	}
 	cell, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidCell", "val", args[0])
+		return invalidArg("invalidCell", "val", args[0])
 	}
 
 	switch args[1] {
@@ -147,13 +147,13 @@ func (c *PenguinCuiController) handleMoveFromFreeCell(args []string) string {
 		}
 		col, err := strconv.Atoi(args[2])
 		if err != nil {
-			return i18n.Tf("invalidColumn", "val", args[2])
+			return invalidArg("invalidColumn", "val", args[2])
 		}
 		return c.pi.MoveFreeCellToTableau(cell, col)
 	case "f":
 		return c.pi.MoveFreeCellToFoundation(cell)
 	default:
-		return i18n.Tf("penguin.invalidToZone", "val", args[1])
+		return invalidArg("penguin.invalidToZone", "val", args[1])
 	}
 }
 
@@ -163,7 +163,7 @@ func (c *PenguinCuiController) handleFoundationShorthand(args []string) string {
 	}
 	col, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[0])
+		return invalidArg("invalidColumn", "val", args[0])
 	}
 	return c.pi.MoveTableauToFoundation(col)
 }
@@ -175,7 +175,7 @@ func (c *PenguinCuiController) handleMoveShorthand(args []string) string {
 	}
 	toCol, err := strconv.Atoi(args[1])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[1])
+		return invalidArg("invalidColumn", "val", args[1])
 	}
 	return c.pi.MoveTableauToTableau(fromCol, -1, toCol)
 }

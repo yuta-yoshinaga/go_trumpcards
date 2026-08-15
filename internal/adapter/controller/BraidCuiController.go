@@ -60,7 +60,7 @@ func (c *BraidCuiController) handleDirection(args []string) string {
 	case "d", "desc", "down":
 		return c.bi.ChooseDirection(false)
 	default:
-		return i18n.Tf("braid.invalidDirection", "val", args[0])
+		return invalidArg("braid.invalidDirection", "val", args[0])
 	}
 }
 
@@ -87,7 +87,7 @@ func (c *BraidCuiController) handleMove(args []string) string {
 	case "w":
 		return c.handleMoveFromWaste(args[1:])
 	default:
-		return i18n.Tf("braid.invalidFromZone", "val", args[0])
+		return invalidArg("braid.invalidFromZone", "val", args[0])
 	}
 }
 
@@ -109,7 +109,7 @@ func (c *BraidCuiController) handleMoveFromSlot(args []string, zone string, move
 	}
 	idx, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("braid.invalidSlot", "val", args[0])
+		return invalidArg("braid.invalidSlot", "val", args[0])
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("braid.promptBraidTo"), "m "+zone+" "+args[0]+" {0}")
@@ -133,10 +133,10 @@ func (c *BraidCuiController) handleMoveFromWaste(args []string) string {
 		}
 		idx, err := strconv.Atoi(args[1])
 		if err != nil {
-			return i18n.Tf("braid.invalidSlot", "val", args[1])
+			return invalidArg("braid.invalidSlot", "val", args[1])
 		}
 		return c.bi.MoveWasteToHelper(idx)
 	default:
-		return i18n.Tf("braid.invalidToZone", "val", args[0])
+		return invalidArg("braid.invalidToZone", "val", args[0])
 	}
 }

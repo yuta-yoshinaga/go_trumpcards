@@ -60,7 +60,7 @@ func (c *PiquetCuiController) handleExchange(args []string, exec func([]int) str
 	}
 	indices, err := parseIndexList(args[0])
 	if err != nil {
-		return i18n.Tf("invalidIndex", "val", args[0])
+		return invalidArg("invalidIndex", "val", args[0])
 	}
 	return exec(indices)
 }
@@ -72,7 +72,7 @@ func (c *PiquetCuiController) handlePlay(args []string) string {
 	}
 	idx, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidIndex", "val", args[0])
+		return invalidArg("invalidIndex", "val", args[0])
 	}
 	return c.pi.Play(idx)
 }

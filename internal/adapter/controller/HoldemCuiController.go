@@ -94,7 +94,7 @@ func (c *HoldemCuiController) Exec(command string) string {
 				}
 				bl, err := strconv.Atoi(args[0])
 				if err != nil {
-					return i18n.Tf("holdem.invalidBettingLimit", "val", args[0]), true
+					return invalidArg("holdem.invalidBettingLimit", "val", args[0]), true
 				}
 				cfg := c.hi.GetConfig()
 				cfg.BettingLimit = domain.BettingLimitType(bl)
@@ -105,7 +105,7 @@ func (c *HoldemCuiController) Exec(command string) string {
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 0 || v > 1 {
-					return i18n.Tf("holdem.invalidTournamentMode", "val", args[0]), true
+					return invalidArg("holdem.invalidTournamentMode", "val", args[0]), true
 				}
 				cfg := c.hi.GetConfig()
 				cfg.TournamentMode = v == 1
@@ -116,7 +116,7 @@ func (c *HoldemCuiController) Exec(command string) string {
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil {
-					return i18n.Tf("holdem.invalidSmallBlind", "val", args[0]), true
+					return invalidArg("holdem.invalidSmallBlind", "val", args[0]), true
 				}
 				cfg := c.hi.GetConfig()
 				cfg.SmallBlind = v
@@ -127,7 +127,7 @@ func (c *HoldemCuiController) Exec(command string) string {
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil {
-					return i18n.Tf("holdem.invalidBigBlind", "val", args[0]), true
+					return invalidArg("holdem.invalidBigBlind", "val", args[0]), true
 				}
 				cfg := c.hi.GetConfig()
 				cfg.BigBlind = v
@@ -138,7 +138,7 @@ func (c *HoldemCuiController) Exec(command string) string {
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil {
-					return i18n.Tf("holdem.invalidLevelHand", "val", args[0]), true
+					return invalidArg("holdem.invalidLevelHand", "val", args[0]), true
 				}
 				cfg := c.hi.GetConfig()
 				cfg.BlindLevelHands = v
@@ -149,7 +149,7 @@ func (c *HoldemCuiController) Exec(command string) string {
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil {
-					return i18n.Tf("holdem.invalidTableSize", "val", args[0]), true
+					return invalidArg("holdem.invalidTableSize", "val", args[0]), true
 				}
 				cfg := c.hi.GetConfig()
 				cfg.TableSize = v
@@ -160,7 +160,7 @@ func (c *HoldemCuiController) Exec(command string) string {
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 0 || v > 1 {
-					return i18n.Tf("invalidMetaAI", "val", args[0]), true
+					return invalidArg("invalidMetaAI", "val", args[0]), true
 				}
 				cfg := c.hi.GetConfig()
 				cfg.CpuMetaAI = v == 1
@@ -179,7 +179,7 @@ func parseAmount(args []string) (int, error) {
 	}
 	amount, err := strconv.Atoi(args[0])
 	if err != nil || amount <= 0 {
-		return 0, errors.New(i18n.Tf("holdem.invalidAmount", "val", args[0]))
+		return 0, errors.New(invalidArg("holdem.invalidAmount", "val", args[0]))
 	}
 	return amount, nil
 }

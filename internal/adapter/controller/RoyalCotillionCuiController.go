@@ -68,7 +68,7 @@ func (c *RoyalCotillionCuiController) handleMove(args []string) string {
 	case "s":
 		return c.handleMoveFromStock(args[1:])
 	default:
-		return i18n.Tf("royalcotillion.invalidFromZone", "val", args[0])
+		return invalidArg("royalcotillion.invalidFromZone", "val", args[0])
 	}
 }
 
@@ -80,10 +80,10 @@ func (c *RoyalCotillionCuiController) handleMoveFromTableau(args []string) strin
 	}
 	slot, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("royalcotillion.invalidPile", "val", args[0])
+		return invalidArg("royalcotillion.invalidPile", "val", args[0])
 	}
 	if len(args) >= 2 && args[1] != "f" {
-		return i18n.Tf("royalcotillion.invalidToZone", "val", args[1])
+		return invalidArg("royalcotillion.invalidToZone", "val", args[1])
 	}
 	return c.ci.MoveTableauToFoundation(slot)
 }
@@ -95,10 +95,10 @@ func (c *RoyalCotillionCuiController) handleMoveFromReserve(args []string) strin
 	}
 	pile, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("royalcotillion.invalidReserve", "val", args[0])
+		return invalidArg("royalcotillion.invalidReserve", "val", args[0])
 	}
 	if len(args) >= 2 && args[1] != "f" {
-		return i18n.Tf("royalcotillion.invalidToZone", "val", args[1])
+		return invalidArg("royalcotillion.invalidToZone", "val", args[1])
 	}
 	return c.ci.MoveReserveToFoundation(pile)
 }
@@ -116,11 +116,11 @@ func (c *RoyalCotillionCuiController) handleMoveFromWaste(args []string) string 
 		}
 		pile, err := strconv.Atoi(args[1])
 		if err != nil {
-			return i18n.Tf("royalcotillion.invalidPile", "val", args[1])
+			return invalidArg("royalcotillion.invalidPile", "val", args[1])
 		}
 		return c.ci.MoveWasteToTableau(pile)
 	default:
-		return i18n.Tf("royalcotillion.invalidToZone", "val", args[0])
+		return invalidArg("royalcotillion.invalidToZone", "val", args[0])
 	}
 }
 
@@ -130,14 +130,14 @@ func (c *RoyalCotillionCuiController) handleMoveFromStock(args []string) string 
 		return cuiutil.PromptRequest(i18n.T("royalcotillion.promptToZone"), "m s {0}")
 	}
 	if args[0] != "t" {
-		return i18n.Tf("royalcotillion.invalidToZone", "val", args[0])
+		return invalidArg("royalcotillion.invalidToZone", "val", args[0])
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("royalcotillion.promptToPile"), "m s t {0}")
 	}
 	pile, err := strconv.Atoi(args[1])
 	if err != nil {
-		return i18n.Tf("royalcotillion.invalidPile", "val", args[1])
+		return invalidArg("royalcotillion.invalidPile", "val", args[1])
 	}
 	return c.ci.MoveStockToTableau(pile)
 }

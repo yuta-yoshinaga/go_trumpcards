@@ -45,7 +45,7 @@ func (c *StreetsAndAlleysCuiController) handleMove(args []string) string {
 	}
 	fromCol, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[0])
+		return invalidArg("invalidColumn", "val", args[0])
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("streetsandalleys.promptToZone"), fmt.Sprintf("m %s {0}", args[0]))
@@ -55,7 +55,7 @@ func (c *StreetsAndAlleysCuiController) handleMove(args []string) string {
 	}
 	toCol, err := strconv.Atoi(args[1])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[1])
+		return invalidArg("invalidColumn", "val", args[1])
 	}
 	return c.bi.MoveTableauToTableau(fromCol, -1, toCol)
 }

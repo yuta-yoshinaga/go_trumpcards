@@ -59,7 +59,7 @@ func (c *RussianSolitaireCuiController) handleMove(args []string) string {
 
 	from := args[0]
 	if from != "t" {
-		return i18n.Tf("russiansolitaire.invalidFromZone", "val", from)
+		return invalidArg("russiansolitaire.invalidFromZone", "val", from)
 	}
 
 	if len(args) < 2 {
@@ -78,7 +78,7 @@ func (c *RussianSolitaireCuiController) handleMoveFromTableau(args []string) str
 	}
 	fromCol, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[0])
+		return invalidArg("invalidColumn", "val", args[0])
 	}
 
 	if args[1] == "f" {
@@ -95,12 +95,12 @@ func (c *RussianSolitaireCuiController) handleMoveFromTableau(args []string) str
 
 	cardIdx, err := strconv.Atoi(args[1])
 	if err != nil {
-		return i18n.Tf("invalidCardIndex", "val", args[1])
+		return invalidArg("invalidCardIndex", "val", args[1])
 	}
 
 	toCol, err := strconv.Atoi(args[3])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[3])
+		return invalidArg("invalidColumn", "val", args[3])
 	}
 
 	return c.ri.MoveTableauToTableau(fromCol, cardIdx, toCol)
@@ -113,7 +113,7 @@ func (c *RussianSolitaireCuiController) handleMoveShorthand(args []string) strin
 	}
 	toCol, err := strconv.Atoi(args[1])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[1])
+		return invalidArg("invalidColumn", "val", args[1])
 	}
 	return c.ri.MoveTableauToTableau(fromCol, -1, toCol)
 }

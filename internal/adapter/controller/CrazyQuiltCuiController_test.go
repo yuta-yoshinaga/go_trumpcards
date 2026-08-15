@@ -7,7 +7,6 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	mockusecase "github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func newMockCrazyQuiltInteractor() *mockusecase.MockCrazyQuiltInteractor {
@@ -79,14 +78,14 @@ func TestCrazyQuiltCuiControllerMoves(t *testing.T) {
 	t.Run("rejects the quilt as a destination", func(t *testing.T) {
 		ci := newMockCrazyQuiltInteractor()
 		c := NewCrazyQuiltCuiController(ci)
-		assert.Equal(t, i18n.Tf("crazyquilt.invalidToZone", "val", "q"), c.Exec("m q 2 q"))
+		assert.Equal(t, invalidArg("crazyquilt.invalidToZone", "val", "q"), c.Exec("m q 2 q"))
 		ci.AssertExpectations(t)
 	})
 
 	t.Run("rejects an unknown source zone", func(t *testing.T) {
 		ci := newMockCrazyQuiltInteractor()
 		c := NewCrazyQuiltCuiController(ci)
-		assert.Equal(t, i18n.Tf("crazyquilt.invalidFromZone", "val", "s"), c.Exec("m s t 3"))
+		assert.Equal(t, invalidArg("crazyquilt.invalidFromZone", "val", "s"), c.Exec("m s t 3"))
 		ci.AssertExpectations(t)
 	})
 }

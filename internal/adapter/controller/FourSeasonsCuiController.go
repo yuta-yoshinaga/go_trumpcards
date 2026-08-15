@@ -73,7 +73,7 @@ func (c *FourSeasonsCuiController) handleMove(args []string) string {
 	case "t":
 		return c.handleFromTableau(args)
 	default:
-		return i18n.Tf("fourseasons.invalidFromZone", "val", args[0])
+		return invalidArg("fourseasons.invalidFromZone", "val", args[0])
 	}
 }
 
@@ -83,14 +83,14 @@ func (c *FourSeasonsCuiController) handleFromWaste(args []string) string {
 	}
 	dest := args[1]
 	if dest != "f" && dest != "t" {
-		return i18n.Tf("fourseasons.invalidToZone", "val", dest)
+		return invalidArg("fourseasons.invalidToZone", "val", dest)
 	}
 	if len(args) < 3 {
 		return cuiutil.PromptRequest(i18n.T("fourseasons.promptIndex"), fmt.Sprintf("m w %s {0}", dest))
 	}
 	idx, err := strconv.Atoi(args[2])
 	if err != nil {
-		return i18n.Tf("invalidIndex", "val", args[2])
+		return invalidArg("invalidIndex", "val", args[2])
 	}
 	if dest == "f" {
 		return c.ci.MoveWasteToFoundation(idx)
@@ -104,21 +104,21 @@ func (c *FourSeasonsCuiController) handleFromTableau(args []string) string {
 	}
 	fromCol, err := strconv.Atoi(args[1])
 	if err != nil {
-		return i18n.Tf("invalidIndex", "val", args[1])
+		return invalidArg("invalidIndex", "val", args[1])
 	}
 	if len(args) < 3 {
 		return cuiutil.PromptRequest(i18n.T("fourseasons.promptToZone"), fmt.Sprintf("m t %d {0}", fromCol))
 	}
 	dest := args[2]
 	if dest != "f" && dest != "t" {
-		return i18n.Tf("fourseasons.invalidToZone", "val", dest)
+		return invalidArg("fourseasons.invalidToZone", "val", dest)
 	}
 	if len(args) < 4 {
 		return cuiutil.PromptRequest(i18n.T("fourseasons.promptIndex"), fmt.Sprintf("m t %d %s {0}", fromCol, dest))
 	}
 	toIdx, err := strconv.Atoi(args[3])
 	if err != nil {
-		return i18n.Tf("invalidIndex", "val", args[3])
+		return invalidArg("invalidIndex", "val", args[3])
 	}
 	if dest == "f" {
 		return c.ci.MoveTableauToFoundation(fromCol, toIdx)

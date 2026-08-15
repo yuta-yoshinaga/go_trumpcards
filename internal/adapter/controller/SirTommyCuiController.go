@@ -53,14 +53,14 @@ func (c *SirTommyCuiController) handleStockMove(args []string) string {
 	}
 	dest := args[0]
 	if dest != "f" && dest != "w" {
-		return i18n.Tf("sirtommy.invalidDestZone", "val", dest)
+		return invalidArg("sirtommy.invalidDestZone", "val", dest)
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("sirtommy.promptIndex"), fmt.Sprintf("s %s {0}", dest))
 	}
 	idx, err := strconv.Atoi(args[1])
 	if err != nil {
-		return i18n.Tf("invalidIndex", "val", args[1])
+		return invalidArg("invalidIndex", "val", args[1])
 	}
 	if dest == "f" {
 		return c.ci.PlayStockToFoundation(idx)
@@ -75,14 +75,14 @@ func (c *SirTommyCuiController) handleWasteMove(args []string) string {
 	}
 	wasteIdx, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidIndex", "val", args[0])
+		return invalidArg("invalidIndex", "val", args[0])
 	}
 	if len(args) < 3 || args[1] != "f" {
 		return cuiutil.PromptRequest(i18n.T("sirtommy.promptFoundationIdx"), fmt.Sprintf("w %d f {0}", wasteIdx))
 	}
 	fIdx, err := strconv.Atoi(args[2])
 	if err != nil {
-		return i18n.Tf("invalidIndex", "val", args[2])
+		return invalidArg("invalidIndex", "val", args[2])
 	}
 	return c.ci.PlayWasteToFoundation(wasteIdx, fIdx)
 }

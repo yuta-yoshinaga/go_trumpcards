@@ -59,7 +59,7 @@ func (c *SeahavenTowersCuiController) handleMove(args []string) string {
 	}
 	from := args[0]
 	if from != "t" && from != "c" {
-		return i18n.Tf("seahaventowers.invalidFromZone", "val", from)
+		return invalidArg("seahaventowers.invalidFromZone", "val", from)
 	}
 	if len(args) < 2 {
 		switch from {
@@ -86,7 +86,7 @@ func (c *SeahavenTowersCuiController) handleMoveFromTableau(args []string) strin
 	}
 	fromCol, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[0])
+		return invalidArg("invalidColumn", "val", args[0])
 	}
 
 	switch args[1] {
@@ -98,7 +98,7 @@ func (c *SeahavenTowersCuiController) handleMoveFromTableau(args []string) strin
 		}
 		toCol, err := strconv.Atoi(args[2])
 		if err != nil {
-			return i18n.Tf("invalidColumn", "val", args[2])
+			return invalidArg("invalidColumn", "val", args[2])
 		}
 		return c.si.MoveTableauToTableau(fromCol, -1, toCol)
 	case "c":
@@ -107,7 +107,7 @@ func (c *SeahavenTowersCuiController) handleMoveFromTableau(args []string) strin
 		}
 		cell, err := strconv.Atoi(args[2])
 		if err != nil {
-			return i18n.Tf("invalidCell", "val", args[2])
+			return invalidArg("invalidCell", "val", args[2])
 		}
 		return c.si.MoveTableauToFreeCell(fromCol, cell)
 	default:
@@ -123,7 +123,7 @@ func (c *SeahavenTowersCuiController) handleMoveFromTableau(args []string) strin
 		}
 		toCol, err := strconv.Atoi(args[3])
 		if err != nil {
-			return i18n.Tf("invalidColumn", "val", args[3])
+			return invalidArg("invalidColumn", "val", args[3])
 		}
 		return c.si.MoveTableauToTableau(fromCol, cardIdx, toCol)
 	}
@@ -138,7 +138,7 @@ func (c *SeahavenTowersCuiController) handleMoveFromFreeCell(args []string) stri
 	}
 	cell, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidCell", "val", args[0])
+		return invalidArg("invalidCell", "val", args[0])
 	}
 
 	switch args[1] {
@@ -148,13 +148,13 @@ func (c *SeahavenTowersCuiController) handleMoveFromFreeCell(args []string) stri
 		}
 		col, err := strconv.Atoi(args[2])
 		if err != nil {
-			return i18n.Tf("invalidColumn", "val", args[2])
+			return invalidArg("invalidColumn", "val", args[2])
 		}
 		return c.si.MoveFreeCellToTableau(cell, col)
 	case "f":
 		return c.si.MoveFreeCellToFoundation(cell)
 	default:
-		return i18n.Tf("seahaventowers.invalidToZone", "val", args[1])
+		return invalidArg("seahaventowers.invalidToZone", "val", args[1])
 	}
 }
 
@@ -165,7 +165,7 @@ func (c *SeahavenTowersCuiController) handleFoundationShorthand(args []string) s
 	}
 	col, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[0])
+		return invalidArg("invalidColumn", "val", args[0])
 	}
 	return c.si.MoveTableauToFoundation(col)
 }
@@ -177,7 +177,7 @@ func (c *SeahavenTowersCuiController) handleMoveShorthand(args []string) string 
 	}
 	toCol, err := strconv.Atoi(args[1])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[1])
+		return invalidArg("invalidColumn", "val", args[1])
 	}
 	return c.si.MoveTableauToTableau(fromCol, -1, toCol)
 }

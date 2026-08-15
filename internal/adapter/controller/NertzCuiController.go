@@ -71,7 +71,7 @@ func (c *NertzCuiController) handleDraw(args []string) string {
 	}
 	p, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidIndex", "val", args[0])
+		return invalidArg("invalidIndex", "val", args[0])
 	}
 	return c.ni.Draw(p)
 }
@@ -82,14 +82,14 @@ func (c *NertzCuiController) handleMoveNF(args []string) string {
 	}
 	p, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidIndex", "val", args[0])
+		return invalidArg("invalidIndex", "val", args[0])
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("nertz.promptFoundationIdx"), "mnf "+args[0]+" {0}")
 	}
 	f, err := strconv.Atoi(args[1])
 	if err != nil {
-		return i18n.Tf("invalidIndex", "val", args[1])
+		return invalidArg("invalidIndex", "val", args[1])
 	}
 	return c.ni.MoveNertzToFoundation(p, f)
 }
@@ -100,14 +100,14 @@ func (c *NertzCuiController) handleMoveNT(args []string) string {
 	}
 	p, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidIndex", "val", args[0])
+		return invalidArg("invalidIndex", "val", args[0])
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("nertz.promptTableauCol"), "mnt "+args[0]+" {0}")
 	}
 	col, err := strconv.Atoi(args[1])
 	if err != nil {
-		return i18n.Tf("invalidIndex", "val", args[1])
+		return invalidArg("invalidIndex", "val", args[1])
 	}
 	return c.ni.MoveNertzToTableau(p, col)
 }
@@ -118,14 +118,14 @@ func (c *NertzCuiController) handleMoveWF(args []string) string {
 	}
 	p, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidIndex", "val", args[0])
+		return invalidArg("invalidIndex", "val", args[0])
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("nertz.promptFoundationIdx"), "mwf "+args[0]+" {0}")
 	}
 	f, err := strconv.Atoi(args[1])
 	if err != nil {
-		return i18n.Tf("invalidIndex", "val", args[1])
+		return invalidArg("invalidIndex", "val", args[1])
 	}
 	return c.ni.MoveWasteToFoundation(p, f)
 }
@@ -136,14 +136,14 @@ func (c *NertzCuiController) handleMoveWT(args []string) string {
 	}
 	p, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidIndex", "val", args[0])
+		return invalidArg("invalidIndex", "val", args[0])
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("nertz.promptTableauCol"), "mwt "+args[0]+" {0}")
 	}
 	col, err := strconv.Atoi(args[1])
 	if err != nil {
-		return i18n.Tf("invalidIndex", "val", args[1])
+		return invalidArg("invalidIndex", "val", args[1])
 	}
 	return c.ni.MoveWasteToTableau(p, col)
 }
@@ -154,21 +154,21 @@ func (c *NertzCuiController) handleMoveTF(args []string) string {
 	}
 	p, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidIndex", "val", args[0])
+		return invalidArg("invalidIndex", "val", args[0])
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("nertz.promptTableauCol"), "mtf "+args[0]+" {0} {1}")
 	}
 	col, err := strconv.Atoi(args[1])
 	if err != nil {
-		return i18n.Tf("invalidIndex", "val", args[1])
+		return invalidArg("invalidIndex", "val", args[1])
 	}
 	if len(args) < 3 {
 		return cuiutil.PromptRequest(i18n.T("nertz.promptFoundationIdx"), "mtf "+args[0]+" "+args[1]+" {0}")
 	}
 	f, err := strconv.Atoi(args[2])
 	if err != nil {
-		return i18n.Tf("invalidIndex", "val", args[2])
+		return invalidArg("invalidIndex", "val", args[2])
 	}
 	return c.ni.MoveTableauToFoundation(p, col, f)
 }
@@ -179,28 +179,28 @@ func (c *NertzCuiController) handleMoveTT(args []string) string {
 	}
 	p, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidIndex", "val", args[0])
+		return invalidArg("invalidIndex", "val", args[0])
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("nertz.promptTableauCol"), "mtt "+args[0]+" {0} {1} {2}")
 	}
 	fromCol, err := strconv.Atoi(args[1])
 	if err != nil {
-		return i18n.Tf("invalidIndex", "val", args[1])
+		return invalidArg("invalidIndex", "val", args[1])
 	}
 	if len(args) < 3 {
 		return cuiutil.PromptRequest(i18n.T("nertz.promptTableauFromIdx"), "mtt "+args[0]+" "+args[1]+" {0} {1}")
 	}
 	fromIdx, err := strconv.Atoi(args[2])
 	if err != nil {
-		return i18n.Tf("invalidIndex", "val", args[2])
+		return invalidArg("invalidIndex", "val", args[2])
 	}
 	if len(args) < 4 {
 		return cuiutil.PromptRequest(i18n.T("nertz.promptTableauToCol"), "mtt "+args[0]+" "+args[1]+" "+args[2]+" {0}")
 	}
 	toCol, err := strconv.Atoi(args[3])
 	if err != nil {
-		return i18n.Tf("invalidIndex", "val", args[3])
+		return invalidArg("invalidIndex", "val", args[3])
 	}
 	return c.ni.MoveTableauToTableau(p, fromCol, fromIdx, toCol)
 }

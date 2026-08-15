@@ -68,7 +68,7 @@ func (c *FortyAndEightCuiController) handleMove(args []string) string {
 	}
 	from := args[0]
 	if from != "w" && from != "t" {
-		return i18n.Tf("fortyandeight.invalidFromZone", "val", from)
+		return invalidArg("fortyandeight.invalidFromZone", "val", from)
 	}
 	if len(args) < 2 {
 		switch from {
@@ -95,13 +95,13 @@ func (c *FortyAndEightCuiController) handleMoveFromWaste(args []string) string {
 		}
 		col, err := strconv.Atoi(args[1])
 		if err != nil {
-			return i18n.Tf("invalidColumn", "val", args[1])
+			return invalidArg("invalidColumn", "val", args[1])
 		}
 		return c.fi.MoveWasteToTableau(col)
 	case "f":
 		return c.fi.MoveWasteToFoundation()
 	default:
-		return i18n.Tf("fortyandeight.invalidToZone", "val", to)
+		return invalidArg("fortyandeight.invalidToZone", "val", to)
 	}
 }
 
@@ -114,7 +114,7 @@ func (c *FortyAndEightCuiController) handleMoveFromTableau(args []string) string
 	}
 	fromCol, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[0])
+		return invalidArg("invalidColumn", "val", args[0])
 	}
 
 	if args[1] == "f" {
@@ -131,12 +131,12 @@ func (c *FortyAndEightCuiController) handleMoveFromTableau(args []string) string
 
 	cardIdx, err := strconv.Atoi(args[1])
 	if err != nil {
-		return i18n.Tf("invalidCardIndex", "val", args[1])
+		return invalidArg("invalidCardIndex", "val", args[1])
 	}
 
 	toCol, err := strconv.Atoi(args[3])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[3])
+		return invalidArg("invalidColumn", "val", args[3])
 	}
 
 	return c.fi.MoveTableauToTableau(fromCol, cardIdx, toCol)
@@ -149,7 +149,7 @@ func (c *FortyAndEightCuiController) handleMoveShorthand(args []string) string {
 	}
 	toCol, err := strconv.Atoi(args[1])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[1])
+		return invalidArg("invalidColumn", "val", args[1])
 	}
 	return c.fi.MoveTableauToTableau(fromCol, -1, toCol)
 }

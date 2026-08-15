@@ -51,7 +51,7 @@ func (c *KingAlbertCuiController) handleMove(args []string) string {
 	if strings.HasPrefix(from, "r") {
 		reserveIdx, err := strconv.Atoi(strings.TrimPrefix(from, "r"))
 		if err != nil {
-			return i18n.Tf("invalidColumn", "val", from)
+			return invalidArg("invalidColumn", "val", from)
 		}
 		if len(args) < 2 {
 			return cuiutil.PromptRequest(i18n.T("kingalbert.promptToZone"), fmt.Sprintf("m %s {0}", from))
@@ -61,14 +61,14 @@ func (c *KingAlbertCuiController) handleMove(args []string) string {
 		}
 		toCol, err := strconv.Atoi(args[1])
 		if err != nil {
-			return i18n.Tf("invalidColumn", "val", args[1])
+			return invalidArg("invalidColumn", "val", args[1])
 		}
 		return c.bi.MoveReserveToTableau(reserveIdx, toCol)
 	}
 
 	fromCol, err := strconv.Atoi(from)
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", from)
+		return invalidArg("invalidColumn", "val", from)
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("kingalbert.promptToZone"), fmt.Sprintf("m %s {0}", from))
@@ -78,7 +78,7 @@ func (c *KingAlbertCuiController) handleMove(args []string) string {
 	}
 	toCol, err := strconv.Atoi(args[1])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[1])
+		return invalidArg("invalidColumn", "val", args[1])
 	}
 	return c.bi.MoveTableauToTableau(fromCol, -1, toCol)
 }

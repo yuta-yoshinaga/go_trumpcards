@@ -63,7 +63,7 @@ func (c *CrazyQuiltCuiController) handleMove(args []string) string {
 	case "w":
 		return c.handleMoveFromWaste(args[1:])
 	default:
-		return i18n.Tf("crazyquilt.invalidFromZone", "val", args[0])
+		return invalidArg("crazyquilt.invalidFromZone", "val", args[0])
 	}
 }
 
@@ -74,7 +74,7 @@ func (c *CrazyQuiltCuiController) handleMoveFromQuilt(args []string) string {
 	}
 	idx, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("crazyquilt.invalidCell", "val", args[0])
+		return invalidArg("crazyquilt.invalidCell", "val", args[0])
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("crazyquilt.promptToZone"), fmt.Sprintf("m q %s {0}", args[0]))
@@ -85,14 +85,14 @@ func (c *CrazyQuiltCuiController) handleMoveFromQuilt(args []string) string {
 	case "w":
 		return c.ci.MoveQuiltToWaste(idx)
 	default:
-		return i18n.Tf("crazyquilt.invalidToZone", "val", args[1])
+		return invalidArg("crazyquilt.invalidToZone", "val", args[1])
 	}
 }
 
 // handleMoveFromWaste 捨て札は基礎札へしか送れないので行き先を尋ねない。
 func (c *CrazyQuiltCuiController) handleMoveFromWaste(args []string) string {
 	if len(args) >= 1 && args[0] != "f" {
-		return i18n.Tf("crazyquilt.invalidToZone", "val", args[0])
+		return invalidArg("crazyquilt.invalidToZone", "val", args[0])
 	}
 	return c.ci.MoveWasteToFoundation()
 }

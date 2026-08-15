@@ -59,7 +59,7 @@ func (c *FreeCellCuiController) handleMove(args []string) string {
 	}
 	from := args[0]
 	if from != "t" && from != "c" {
-		return i18n.Tf("freecell.invalidFromZone", "val", from)
+		return invalidArg("freecell.invalidFromZone", "val", from)
 	}
 	if len(args) < 2 {
 		switch from {
@@ -86,7 +86,7 @@ func (c *FreeCellCuiController) handleMoveFromTableau(args []string) string {
 	}
 	fromCol, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[0])
+		return invalidArg("invalidColumn", "val", args[0])
 	}
 
 	switch args[1] {
@@ -99,7 +99,7 @@ func (c *FreeCellCuiController) handleMoveFromTableau(args []string) string {
 		}
 		toCol, err := strconv.Atoi(args[2])
 		if err != nil {
-			return i18n.Tf("invalidColumn", "val", args[2])
+			return invalidArg("invalidColumn", "val", args[2])
 		}
 		// Use cardIndex = -1 to signal top card; but the interactor expects actual index
 		// For CUI simplicity, top card: cardIndex is len-1, but we don't know from here
@@ -113,7 +113,7 @@ func (c *FreeCellCuiController) handleMoveFromTableau(args []string) string {
 		}
 		cell, err := strconv.Atoi(args[2])
 		if err != nil {
-			return i18n.Tf("invalidCell", "val", args[2])
+			return invalidArg("invalidCell", "val", args[2])
 		}
 		return c.fi.MoveTableauToFreeCell(fromCol, cell)
 	default:
@@ -131,7 +131,7 @@ func (c *FreeCellCuiController) handleMoveFromTableau(args []string) string {
 		}
 		toCol, err := strconv.Atoi(args[3])
 		if err != nil {
-			return i18n.Tf("invalidColumn", "val", args[3])
+			return invalidArg("invalidColumn", "val", args[3])
 		}
 		return c.fi.MoveTableauToTableau(fromCol, cardIdx, toCol)
 	}
@@ -146,7 +146,7 @@ func (c *FreeCellCuiController) handleMoveFromFreeCell(args []string) string {
 	}
 	cell, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidCell", "val", args[0])
+		return invalidArg("invalidCell", "val", args[0])
 	}
 
 	switch args[1] {
@@ -156,13 +156,13 @@ func (c *FreeCellCuiController) handleMoveFromFreeCell(args []string) string {
 		}
 		col, err := strconv.Atoi(args[2])
 		if err != nil {
-			return i18n.Tf("invalidColumn", "val", args[2])
+			return invalidArg("invalidColumn", "val", args[2])
 		}
 		return c.fi.MoveFreeCellToTableau(cell, col)
 	case "f":
 		return c.fi.MoveFreeCellToFoundation(cell)
 	default:
-		return i18n.Tf("freecell.invalidToZone", "val", args[1])
+		return invalidArg("freecell.invalidToZone", "val", args[1])
 	}
 }
 
@@ -173,7 +173,7 @@ func (c *FreeCellCuiController) handleFoundationShorthand(args []string) string 
 	}
 	col, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[0])
+		return invalidArg("invalidColumn", "val", args[0])
 	}
 	return c.fi.MoveTableauToFoundation(col)
 }
@@ -185,7 +185,7 @@ func (c *FreeCellCuiController) handleMoveShorthand(args []string) string {
 	}
 	toCol, err := strconv.Atoi(args[1])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[1])
+		return invalidArg("invalidColumn", "val", args[1])
 	}
 	return c.fi.MoveTableauToTableau(fromCol, -1, toCol)
 }

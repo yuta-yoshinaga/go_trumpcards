@@ -67,7 +67,7 @@ func (c *CongressCuiController) handleMove(args []string) string {
 	case "s":
 		return c.handleMoveFromStock(args[1:])
 	default:
-		return i18n.Tf("congress.invalidFromZone", "val", args[0])
+		return invalidArg("congress.invalidFromZone", "val", args[0])
 	}
 }
 
@@ -77,7 +77,7 @@ func (c *CongressCuiController) handleMoveFromTableau(args []string) string {
 	}
 	fromPile, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("congress.invalidPile", "val", args[0])
+		return invalidArg("congress.invalidPile", "val", args[0])
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("congress.promptToZone"), fmt.Sprintf("m t %s {0}", args[0]))
@@ -91,11 +91,11 @@ func (c *CongressCuiController) handleMoveFromTableau(args []string) string {
 		}
 		toPile, err := strconv.Atoi(args[2])
 		if err != nil {
-			return i18n.Tf("congress.invalidPile", "val", args[2])
+			return invalidArg("congress.invalidPile", "val", args[2])
 		}
 		return c.ci.MoveTableauToTableau(fromPile, toPile)
 	default:
-		return i18n.Tf("congress.invalidToZone", "val", args[1])
+		return invalidArg("congress.invalidToZone", "val", args[1])
 	}
 }
 
@@ -112,11 +112,11 @@ func (c *CongressCuiController) handleMoveFromWaste(args []string) string {
 		}
 		pile, err := strconv.Atoi(args[1])
 		if err != nil {
-			return i18n.Tf("congress.invalidPile", "val", args[1])
+			return invalidArg("congress.invalidPile", "val", args[1])
 		}
 		return c.ci.MoveWasteToTableau(pile)
 	default:
-		return i18n.Tf("congress.invalidToZone", "val", args[0])
+		return invalidArg("congress.invalidToZone", "val", args[0])
 	}
 }
 
@@ -126,14 +126,14 @@ func (c *CongressCuiController) handleMoveFromStock(args []string) string {
 		return cuiutil.PromptRequest(i18n.T("congress.promptToZone"), "m s {0}")
 	}
 	if args[0] != "t" {
-		return i18n.Tf("congress.invalidToZone", "val", args[0])
+		return invalidArg("congress.invalidToZone", "val", args[0])
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("congress.promptToPile"), "m s t {0}")
 	}
 	pile, err := strconv.Atoi(args[1])
 	if err != nil {
-		return i18n.Tf("congress.invalidPile", "val", args[1])
+		return invalidArg("congress.invalidPile", "val", args[1])
 	}
 	return c.ci.MoveStockToTableau(pile)
 }

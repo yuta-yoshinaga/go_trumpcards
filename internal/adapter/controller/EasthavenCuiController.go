@@ -61,7 +61,7 @@ func (c *EasthavenCuiController) handleMove(args []string) string {
 
 	from := args[0]
 	if from != "t" {
-		return i18n.Tf("easthaven.invalidFromZone", "val", from)
+		return invalidArg("easthaven.invalidFromZone", "val", from)
 	}
 
 	if len(args) < 2 {
@@ -80,7 +80,7 @@ func (c *EasthavenCuiController) handleMoveFromTableau(args []string) string {
 	}
 	fromCol, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[0])
+		return invalidArg("invalidColumn", "val", args[0])
 	}
 
 	if args[1] == "f" {
@@ -97,12 +97,12 @@ func (c *EasthavenCuiController) handleMoveFromTableau(args []string) string {
 
 	cardIdx, err := strconv.Atoi(args[1])
 	if err != nil {
-		return i18n.Tf("invalidCardIndex", "val", args[1])
+		return invalidArg("invalidCardIndex", "val", args[1])
 	}
 
 	toCol, err := strconv.Atoi(args[3])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[3])
+		return invalidArg("invalidColumn", "val", args[3])
 	}
 
 	return c.ei.MoveTableauToTableau(fromCol, cardIdx, toCol)
@@ -115,7 +115,7 @@ func (c *EasthavenCuiController) handleMoveShorthand(args []string) string {
 	}
 	toCol, err := strconv.Atoi(args[1])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[1])
+		return invalidArg("invalidColumn", "val", args[1])
 	}
 	return c.ei.MoveTableauToTableau(fromCol, -1, toCol)
 }
