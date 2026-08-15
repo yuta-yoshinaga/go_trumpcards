@@ -197,3 +197,16 @@ func TestCassinoCuiController_SetRuleRejections(t *testing.T) {
 		m.AssertNotCalled(t, "ResetWithConfig", mock.Anything)
 	})
 }
+
+// codecov: `tr` with no argument answers with its usage line, and nothing
+// exercised that branch.
+func TestCassinoCuiController_TrailNeedsAnIndex(t *testing.T) {
+	mockOutput := `{"players":[]}`
+	m := new(mockUsecases.MockCassinoInteractor)
+	m.On("Reset").Return(mockOutput)
+	m.On("Trail", mock.Anything).Return(mockOutput)
+
+	out := controller.NewCassinoCuiController(m).Exec("tr")
+	assert.Equal(t, msgUsage("usageTrHandidx"), out)
+	m.AssertNotCalled(t, "Trail", mock.Anything)
+}
