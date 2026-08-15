@@ -128,11 +128,11 @@ func ParseIntArgKeys(args []string, missingKey, invalidKey string, min, max int)
 		if missingKey == "" {
 			return 0, "", false
 		}
-		return 0, i18n.T(missingKey), false
+		return 0, i18n.MarkError(i18n.T(missingKey)), false
 	}
 	v, err := strconv.Atoi(args[0])
 	if err != nil || v < min || v > max {
-		return 0, i18n.Tf(invalidKey, "val", args[0]), false
+		return 0, i18n.MarkError(i18n.Tf(invalidKey, "val", args[0])), false
 	}
 	return v, "", true
 }

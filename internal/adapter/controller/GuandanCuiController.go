@@ -7,7 +7,6 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -62,7 +61,7 @@ func guandanParsePlay(args []string, gi usecase.GuandanInteractorIF) (string, bo
 	for _, a := range args {
 		v, err := strconv.Atoi(a)
 		if err != nil || v < 0 || v >= domain.GuandanHandSize {
-			return i18n.Tf("invalidCardIndexRange", "val", a, "max", strconv.Itoa(domain.GuandanHandSize-1)), true
+			return invalidArg("invalidCardIndexRange", "val", a, "max", strconv.Itoa(domain.GuandanHandSize-1)), true
 		}
 		// **同じ札を 2 回数えられない。**
 		if seen[v] {

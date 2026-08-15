@@ -5,7 +5,6 @@ package controller
 import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -94,7 +93,7 @@ func (c *KoenigrufenCuiController) execDiscard(args []string) (string, bool) {
 	}
 	indices, skipped := cuiutil.ParseIntSlice(args)
 	if len(skipped) > 0 {
-		return i18n.Tf("invalidCardIndex", "val", skipped[0]), true
+		return invalidArg("invalidCardIndex", "val", skipped[0]), true
 	}
 	return c.di.Discard(indices), true
 }

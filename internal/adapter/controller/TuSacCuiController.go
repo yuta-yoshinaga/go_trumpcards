@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -65,13 +64,13 @@ func (cc *TuSacCuiController) Exec(command string) string {
 // tuSacParseIndexes は "1 4 7" のような並びを 0 始まりの添字にする。
 func tuSacParseIndexes(args []string) ([]int, string, bool) {
 	if len(args) == 0 {
-		return nil, i18n.T("cardIndexesRequiredMeld"), false
+		return nil, invalidArg("cardIndexesRequiredMeld"), false
 	}
 	out := make([]int, 0, len(args))
 	for _, a := range args {
 		n, err := strconv.Atoi(strings.TrimSpace(a))
 		if err != nil || n < 1 {
-			return nil, i18n.T("invalidIndexFromOne"), false
+			return nil, invalidArg("invalidIndexFromOne"), false
 		}
 		out = append(out, n-1)
 	}

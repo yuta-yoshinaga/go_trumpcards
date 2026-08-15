@@ -7,7 +7,6 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -75,11 +74,11 @@ func (c *SakuraCuiController) Exec(command string) string {
 // handlePlay は "p <handIdx> [fieldIdx]" を解析して Play を呼ぶ。
 func (c *SakuraCuiController) handlePlay(args []string) string {
 	if len(args) == 0 {
-		return i18n.T("cardIndexRequiredField")
+		return invalidArg("cardIndexRequiredField")
 	}
 	handIdx, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidCardIndex", "val", args[0])
+		return invalidArg("invalidCardIndex", "val", args[0])
 	}
 	fieldIdx := -1
 	if len(args) >= 2 {
