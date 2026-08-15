@@ -859,3 +859,62 @@ func TestDurak_GetHint(t *testing.T) {
 		}
 	})
 }
+
+// **上限に当たった局も必ず終わり、必ず敗者が決まる。** 引き分け (loserIdx = -1) は
+// 「全員上がり」の意味なので、循環の打ち切りをそこへ流すと別の結末と区別できなくなる。
+//
+// 20 万局に 14 局という頻度なので、1 局ずつ回して踏むのを待つのは現実的でない。
+// ここでは上限そのものの規則を確かめ、頻度は #5414 の実測に任せる。
+func TestDurak_BoutLimitEndsTheGame(t *testing.T) {
+	players := []*domain.DurakPlayer{
+		domain.NewDurakPlayer(false), domain.NewDurakPlayer(false),
+		domain.NewDurakPlayer(false), domain.NewDurakPlayer(false),
+	}
+	d := domain.NewDurak(domain.NewTrumpCardsShortDeck(), players)
+
+	// 健全な局は上限に触れない (実測の最大は 78 バウト)。
+	t.Run("a normal game finishes well inside the limit", func(t *testing.T) {
+		for range 200 {
+			d.Reset()
+			turns := 0
+			for !d.GetGameEndFlag() && turns < 500 {
+				d.CpuPlay()
+				turns++
+			}
+			assert.True(t, d.GetGameEndFlag())
+			assert.Less(t, d.GetBoutNumber(), domain.DurakMaxBouts)
+		}
+	})
+
+	// 上限は健全な局の 2 倍以上離れていること。近すぎると普通の局を打ち切る。
+	t.Run("the limit is far above a normal game", func(t *testing.T) {
+		assert.Greater(t, domain.DurakMaxBouts, 150)
+	})
+
+	// 終わった局は必ず敗者を持つ (全員上がりを除く)。
+	t.Run("every finished game names a loser", func(t *testing.T) {
+		for range 500 {
+			d.Reset()
+			turns := 0
+			for !d.GetGameEndFlag() && turns < 500 {
+				d.CpuPlay()
+				turns++
+			}
+			if !d.GetGameEndFlag() {
+				continue
+			}
+			active := 0
+			for i := 0; i < d.GetPlayerCnt(); i++ {
+				if !d.GetPlayer(i).GetIsFinished() {
+					active++
+				}
+			}
+			if active == 0 {
+				assert.Equal(t, -1, d.GetLoserIdx(), "全員上がりのときだけ -1")
+				continue
+			}
+			assert.GreaterOrEqual(t, d.GetLoserIdx(), 0, "敗者が決まっていない")
+			assert.False(t, d.GetPlayer(d.GetLoserIdx()).GetIsFinished(), "上がった人が敗者になっている")
+		}
+	})
+}
