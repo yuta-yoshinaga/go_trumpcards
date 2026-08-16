@@ -119,7 +119,8 @@ func (pr *TriPeaksCuiPresenter) Output(t interfaces.TriPeaksGame, lastErr error)
 				}
 			}
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
-				"count", strconv.Itoa(t.GetMoveCount())) + "\n")
+				"count", strconv.Itoa(t.GetMoveCount())) +
+				cuiSolitaireUndoHint(t.CanUndo()) + "\n")
 		case domain.TriPeaksPhaseGameClear:
 			b.WriteString(color.Green(i18n.T("cuiSolitaireGameClear")) + " " +
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(t.GetMoveCount())) + "\n")

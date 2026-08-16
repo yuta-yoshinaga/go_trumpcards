@@ -15,6 +15,7 @@ import (
 func setupBristolCuiMockDefaults(bg *interfaces.MockBristolGame) {
 	bg.On("GetPhase").Return(domain.BristolPhasePlaying).Maybe()
 	bg.On("GetMoveCount").Return(0).Maybe()
+	bg.On("CanUndo").Return(false).Maybe()
 	bg.On("GetStockCount").Return(28).Maybe()
 
 	var tableau [domain.BristolTableauCnt][]*domain.Card

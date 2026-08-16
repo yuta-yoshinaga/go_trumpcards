@@ -15,6 +15,7 @@ import (
 func setupTriPeaksCuiMockDefaults(tg *interfaces.MockTriPeaksGame) {
 	tg.On("GetPhase").Return(domain.TriPeaksPhasePlaying).Maybe()
 	tg.On("GetMoveCount").Return(0).Maybe()
+	tg.On("CanUndo").Return(false).Maybe()
 	tg.On("GetStockCount").Return(23).Maybe()
 	tg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	tg.On("IsStalemate").Return(false).Maybe()
@@ -51,6 +52,7 @@ func TestTriPeaksCuiPresenterOutput_PlayableAndBlocked(t *testing.T) {
 	tg := new(interfaces.MockTriPeaksGame)
 	tg.On("GetPhase").Return(domain.TriPeaksPhasePlaying).Maybe()
 	tg.On("GetMoveCount").Return(0).Maybe()
+	tg.On("CanUndo").Return(false).Maybe()
 	tg.On("GetStockCount").Return(10).Maybe()
 	tg.On("IsStalemate").Return(false).Maybe()
 	// Waste top is a 2: adjacent to Ace(1) and 3, with K-A wrap also possible.
@@ -95,6 +97,7 @@ func TestTriPeaksCuiPresenterOutput_Stalemate(t *testing.T) {
 	tg.ExpectedCalls = nil
 	tg.On("GetPhase").Return(domain.TriPeaksPhasePlaying).Maybe()
 	tg.On("GetMoveCount").Return(5).Maybe()
+	tg.On("CanUndo").Return(false).Maybe()
 	tg.On("GetStockCount").Return(0).Maybe()
 	tg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	tg.On("IsStalemate").Return(true).Maybe()
@@ -116,6 +119,7 @@ func TestTriPeaksCuiPresenterOutput_GameClear(t *testing.T) {
 	tg.ExpectedCalls = nil
 	tg.On("GetPhase").Return(domain.TriPeaksPhaseGameClear).Maybe()
 	tg.On("GetMoveCount").Return(10).Maybe()
+	tg.On("CanUndo").Return(false).Maybe()
 	tg.On("GetStockCount").Return(0).Maybe()
 	tg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	tg.On("IsStalemate").Return(false).Maybe()
@@ -133,6 +137,7 @@ func TestTriPeaksCuiPresenterOutput_GameOver(t *testing.T) {
 	tg.ExpectedCalls = nil
 	tg.On("GetPhase").Return(domain.TriPeaksPhaseGameOver).Maybe()
 	tg.On("GetMoveCount").Return(5).Maybe()
+	tg.On("CanUndo").Return(false).Maybe()
 	tg.On("GetStockCount").Return(0).Maybe()
 	tg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	tg.On("IsStalemate").Return(false).Maybe()
@@ -150,6 +155,7 @@ func TestTriPeaksCuiPresenterOutput_WithWaste(t *testing.T) {
 	tg.ExpectedCalls = nil
 	tg.On("GetPhase").Return(domain.TriPeaksPhasePlaying).Maybe()
 	tg.On("GetMoveCount").Return(1).Maybe()
+	tg.On("CanUndo").Return(false).Maybe()
 	tg.On("GetStockCount").Return(22).Maybe()
 	tg.On("GetWaste").Return([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 5, true)}).Maybe()
 	tg.On("IsStalemate").Return(false).Maybe()

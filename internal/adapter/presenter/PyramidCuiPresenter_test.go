@@ -27,6 +27,7 @@ func setupPyramidCuiMock() *interfaces.MockPyramidGame {
 	pg := new(interfaces.MockPyramidGame)
 	pg.On("GetPhase").Return(domain.PyramidPhasePlaying).Maybe()
 	pg.On("GetMoveCount").Return(0).Maybe()
+	pg.On("CanUndo").Return(false).Maybe()
 	pg.On("GetStockCount").Return(24).Maybe()
 	pg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	pg.On("IsStalemate").Return(false).Maybe()
@@ -77,6 +78,7 @@ func TestPyramidCuiPresenterOutput_GameClear(t *testing.T) {
 	pg.ExpectedCalls = nil
 	pg.On("GetPhase").Return(domain.PyramidPhaseGameClear).Maybe()
 	pg.On("GetMoveCount").Return(15).Maybe()
+	pg.On("CanUndo").Return(false).Maybe()
 	pg.On("GetStockCount").Return(0).Maybe()
 	pg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	pg.On("IsStalemate").Return(false).Maybe()
@@ -104,6 +106,7 @@ func TestPyramidCuiPresenterOutput_GameOver(t *testing.T) {
 	pg.ExpectedCalls = nil
 	pg.On("GetPhase").Return(domain.PyramidPhaseGameOver).Maybe()
 	pg.On("GetMoveCount").Return(5).Maybe()
+	pg.On("CanUndo").Return(false).Maybe()
 	pg.On("GetStockCount").Return(0).Maybe()
 	pg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	pg.On("IsStalemate").Return(false).Maybe()
@@ -182,6 +185,7 @@ func TestPyramidCuiPresenterOutput_StalemateAndNonEmptyWaste(t *testing.T) {
 	pg.ExpectedCalls = nil
 	pg.On("GetPhase").Return(domain.PyramidPhasePlaying).Maybe()
 	pg.On("GetMoveCount").Return(7).Maybe()
+	pg.On("CanUndo").Return(false).Maybe()
 	pg.On("GetStockCount").Return(0).Maybe()
 	// Non-nil waste with one card exercises the wasteCard branch.
 	pg.On("GetWaste").Return([]*domain.Card{
@@ -228,6 +232,7 @@ func TestPyramidCuiPresenterOutput_MarksRemovableKings(t *testing.T) {
 		pg := new(interfaces.MockPyramidGame)
 		pg.On("GetPhase").Return(domain.PyramidPhasePlaying).Maybe()
 		pg.On("GetMoveCount").Return(0).Maybe()
+		pg.On("CanUndo").Return(false).Maybe()
 		pg.On("GetStockCount").Return(24).Maybe()
 		pg.On("GetWaste").Return(waste).Maybe()
 		pg.On("IsStalemate").Return(false).Maybe()

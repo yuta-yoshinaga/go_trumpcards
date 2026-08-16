@@ -58,7 +58,8 @@ func (p *AccordionCuiPresenter) Output(a interfaces.AccordionGame, lastErr error
 				}
 			}
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
-				"count", strconv.Itoa(a.GetMoveCount())) + "\n")
+				"count", strconv.Itoa(a.GetMoveCount())) +
+				cuiSolitaireUndoHint(a.CanUndo()) + "\n")
 		case domain.AccordionPhaseGameClear:
 			b.WriteString(color.Green(i18n.T("cuiSolitaireGameClear")) + " " +
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(a.GetMoveCount())) + "\n")

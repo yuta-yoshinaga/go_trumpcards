@@ -55,7 +55,8 @@ func (p *LaBelleLucieCuiPresenter) Output(g interfaces.LaBelleLucieGame, lastErr
 
 		switch g.GetPhase() {
 		case domain.LaBelleLuciePhasePlaying:
-			sb.WriteString(i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(g.GetMoveCount())) + "\n")
+			sb.WriteString(i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(g.GetMoveCount())) +
+				cuiSolitaireUndoHint(g.CanUndo()) + "\n")
 			// No legal move but redeals remain -> recommend a redeal, mirroring the
 			// web stuck banner.
 			if !g.HasAnyLegalMove() {

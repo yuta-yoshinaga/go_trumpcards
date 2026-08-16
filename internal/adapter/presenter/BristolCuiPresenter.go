@@ -71,7 +71,8 @@ func (p *BristolCuiPresenter) Output(b interfaces.BristolGame, lastErr error) st
 
 		switch b.GetPhase() {
 		case domain.BristolPhasePlaying:
-			sb.WriteString(i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(b.GetMoveCount())) + "\n")
+			sb.WriteString(i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(b.GetMoveCount())) +
+				cuiSolitaireUndoHint(b.CanUndo()) + "\n")
 		case domain.BristolPhaseGameClear:
 			sb.WriteString(color.Green(i18n.T("cuiSolitaireGameClear")) + " " +
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(b.GetMoveCount())) + "\n")
