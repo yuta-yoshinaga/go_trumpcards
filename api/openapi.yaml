@@ -2655,6 +2655,7 @@ paths:
         | `declare`     | `dc`    | Declare "Macau!" (one card left) |
         | `skipdeclare` | `sk`    | Skip the declaration and take the penalty |
         | `nextround`   | `nr`    | Score the round and start the next |
+        | `hint`        | `h`     | Get a hint for the next move |
         | `log`         | `l`     | View action log |
       operationId: macauExec
       requestBody:
@@ -3216,6 +3217,7 @@ paths:
         | `layoff`      | `lo`    | Add one card to an existing meld (`targetPlayerIdx`, `meldIdx`, `cardIndex`) |
         | `discard`     | `d`     | Discard a card (`cardIndex`) |
         | `nextround`   | `nr`    | Start the next round |
+        | `hint`        | `h`     | Get a hint for the next move |
         | `log`         | `l`     | View action log |
       operationId: sevenbridgeExec
       requestBody:
@@ -3394,6 +3396,7 @@ paths:
         | `discard`      | `d`     | Discard a card (requires `cardIndex`) |
         | `goout`        | `go`    | Go out (requires 1 red and 1 black canasta) |
         | `nextround`    | `nr`    | Score the round and start the next |
+        | `hint`         | `h`     | Get a hint for the next move |
         | `log`          | `l`     | View action log |
       operationId: handAndFootExec
       requestBody:
@@ -3480,6 +3483,7 @@ paths:
         | `discard`      | `d`     | Discard a card (requires `cardIndex`) |
         | `goout`        | `go`    | Go out (requires the pozzetto and at least 1 burraco) |
         | `nextround`    | `nr`    | Score the round and start the next |
+        | `hint`         | `h`     | Get a hint for the next move |
         | `log`          | `l`     | View action log |
       operationId: burracoExec
       requestBody:
@@ -3862,6 +3866,7 @@ paths:
         | `reset` | `r`     | Start / restart a game |
         | `bet`   | `b`     | Place a bet (requires `amount`: 1-5) |
         | `hold`  | `h`     | Hold cards and draw (requires `indices`: array of card positions 0-4) |
+        | `hint`  | `h`     | Get a hint for the next move |
         | `log`   | `l`     | View action log |
       operationId: videoPokerExec
       requestBody:
@@ -4350,6 +4355,7 @@ paths:
         | `nextround`      | `nr`  | Start the next round |
         | `setdifficulty`  | `sd`  | Set CPU difficulty (0=Easy, 1=Normal, 2=Hard) |
         | `setlimit`       | `sl`  | Set point limit |
+        | `hint`           | `h`   | Get a hint for the next move |
         | `log`            | `l`   | View action log |
       operationId: cribbageExec
       requestBody:
@@ -4440,6 +4446,7 @@ paths:
         | `bet`   | `b`     | Place Ante bet (requires `amount`; optional `pairPlusBet`) |
         | `play`  | `p`     | Place Play bet (equal to Ante) and see dealer's hand |
         | `fold`  | `f`     | Forfeit Ante and Pair Plus bets |
+        | `hint`  | `h`     | Get a hint for the next move |
         | `log`   | `l`     | View action log |
       operationId: threecardExec
       requestBody:
@@ -4614,6 +4621,7 @@ paths:
         | `layoff`      | `lo`    | Lay off a card onto an existing meld |
         | `discard`     | `d`     | Discard a card to end the turn |
         | `nextround`   | `nr`    | Advance to the next round after RoundEnd |
+        | `hint`        | `h`     | Get a hint for the next move |
         | `log`         | `l`     | View action log |
       operationId: rummy500Exec
       requestBody:
@@ -4775,6 +4783,7 @@ paths:
         | `bet`   | `b`     | Place Ante bet (requires `amount`; optional `jackpotBet`) |
         | `play`  | `p`     | Call: place Play bet (2x Ante) and reveal dealer hand |
         | `fold`  | `f`     | Forfeit Ante bet |
+        | `hint`  | `h`     | Get a hint for the next move |
         | `log`   | `l`     | View action log |
       operationId: caribbeanstudExec
       requestBody:
@@ -4976,6 +4985,7 @@ paths:
         | `bet`   | `b`     | Place Ante bet (requires `amount`; optional `bonusBet`) |
         | `call`  | `c`     | Bet 2x Ante and reveal turn/river |
         | `fold`  | `f`     | Forfeit Ante (AA Bonus still resolves) |
+        | `hint`  | `h`     | Get a hint for the next move |
         | `log`   | `l`     | View action log |
       operationId: casinoholdemExec
       requestBody:
@@ -5938,6 +5948,7 @@ paths:
         | `muck`  | `m`     | Muck (hide) hand at showdown |
         | `show`  | `sh`    | Show hand at showdown |
         | `log`   | `l`     | View action log |
+        | `hint`  | `h`     | Get a hint for the next move |
         | `quit`  | `q`     | End the session |
       operationId: sevencardstudExec
       requestBody:
@@ -10489,6 +10500,7 @@ paths:
         | `reset` | `r`     | Start / restart a game |
         | `bet`   | `b`     | Place bet (requires `amount`) |
         | `set`   | `s`     | Set low hand cards (requires `low0`, `low1` as card indices) |
+        | `hint`  | `h`     | Get a hint for the next move |
         | `log`   | `l`     | View action log |
       operationId: paigowExec
       requestBody:
@@ -10574,6 +10586,7 @@ paths:
         | `reset` | `r`     | Start / restart a game |
         | `bet`   | `b`     | Place bet (requires `amount`) |
         | `set`   | `s`     | Set hands (requires `frontIndices` [3] and `middleIndices` [5]) |
+        | `hint`  | `h`     | Get a hint for the next move |
         | `log`   | `l`     | View action log |
       operationId: chinesepokerExec
       requestBody:
@@ -12769,6 +12782,7 @@ paths:
         | `draw`  | `d`     | Draw one card from the stock |
         | `place` | `p`     | Place the pending wild at `position` (1..10) |
         | `cpu`   | —       | Advance the CPU turn by one step |
+        | `hint`  | `h`     | Get a hint for the next move |
         | `log`   | `l`     | View action log (available after game over) |
       operationId: trashExec
       requestBody:
@@ -12781,7 +12795,7 @@ paths:
               properties:
                 command:
                   type: string
-                  enum: [reset, r, draw, d, place, p, cpu, log, l, quit, q]
+                  enum: [reset, r, draw, d, place, p, cpu, log, l, quit, q, hint, h]
                 sessionId:
                   type: string
                 position:
@@ -13211,6 +13225,7 @@ paths:
         | `bet`   | `b`     | Place ante (requires `amount`) |
         | `raise` | —       | Raise before third card (requires `amount`, max ante) |
         | `stay`  | `s`     | Stay (no raise) and draw third card |
+        | `hint`  | `h`     | Get a hint for the next move |
         | `log`   | —       | View action log |
       operationId: reddogExec
       requestBody:
@@ -13493,6 +13508,7 @@ paths:
         | `allin`  | `a`     | Go all-in |
         | `exchange` | `e`   | Draw the cards at `indices` (0..3) |
         | `stand`  | `s`     | Stand pat (no exchange) |
+        | `hint`   | `h`     | Get a hint for the next move |
         | `log`    | `l`     | View action log |
       operationId: badugiExec
       requestBody:
@@ -13505,7 +13521,7 @@ paths:
               properties:
                 command:
                   type: string
-                  enum: [reset, r, fold, f, check, ck, call, c, bet, b, raise, ra, allin, a, exchange, e, stand, s, log, l]
+                  enum: [reset, r, fold, f, check, ck, call, c, bet, b, raise, ra, allin, a, exchange, e, stand, s, log, l, hint, h]
                 sessionId:
                   type: string
                 amount:
@@ -13602,6 +13618,7 @@ paths:
         | `allin`  | `a`     | Go all-in |
         | `exchange` | `e`   | Draw the cards at `indices` (0..4) |
         | `stand`  | `s`     | Stand pat (no exchange) |
+        | `hint`   | `h`     | Get a hint for the next move |
         | `log`    | `l`     | View action log |
       operationId: deuceToSevenExec
       requestBody:
@@ -13614,7 +13631,7 @@ paths:
               properties:
                 command:
                   type: string
-                  enum: [reset, r, fold, f, check, ck, call, c, bet, b, raise, ra, allin, a, exchange, e, stand, s, log, l]
+                  enum: [reset, r, fold, f, check, ck, call, c, bet, b, raise, ra, allin, a, exchange, e, stand, s, log, l, hint, h]
                 sessionId:
                   type: string
                 amount:
@@ -13693,6 +13710,7 @@ paths:
         |----------|---------|-------------|
         | `reset`  | `r`     | Start / restart a game |
         | `play`   | `p`     | Play cards at `indices` (empty = pass) |
+        | `hint`   | `h`     | Get a hint for the next move |
         | `log`    | `l`     | View action log |
       operationId: presidentExec
       requestBody:
@@ -13753,6 +13771,7 @@ paths:
         | `build` | `b`     | Create or extend a build of declared value |
         | `trail` | `tr`    | Place the played hand card on the table without capture |
         | `next`  | `n`     | Start the next round |
+        | `hint`  | `h`     | Get a hint for the next move |
         | `log`   | `l`     | View action log |
       operationId: cassinoExec
       requestBody:
@@ -13822,6 +13841,7 @@ paths:
         | `reset` | `r`     | Start / restart a game |
         | `next`  | `n`     | Start the next round |
         | `play`  | `p`     | Play a hand card to capture table cards or lay it |
+        | `hint`  | `h`     | Get a hint for the next move |
         | `log`   | `l`     | View action log |
       operationId: scopaExec
       requestBody:
@@ -13887,6 +13907,7 @@ paths:
         | `play`          | `p`  | Play a hand card to capture table cards or lay it |
         | `setdifficulty` | `sd` | Set CPU difficulty (0-2) |
         | `settarget`     | `st` | Set the target score |
+        | `hint`          | `h`  | Get a hint for the next move |
         | `log`           | `l`  | View action log |
       operationId: scoponeExec
       requestBody:
@@ -13953,6 +13974,7 @@ paths:
         | `play`          | `p`  | Play a hand card to capture table cards or lay it |
         | `setdifficulty` | `sd` | Set CPU difficulty (0-2) |
         | `settarget`     | `st` | Set the target score |
+        | `hint`          | `h`  | Get a hint for the next move |
         | `log`           | `l`  | View action log |
       operationId: escobaExec
       requestBody:
@@ -14012,6 +14034,7 @@ paths:
         | `next`     | `n`     | Start the next deal |
         | `contract` | `c`     | Dealer picks a contract (trumpSuit only for Trumps) |
         | `play`     | `p`     | Play a hand card (handIndex -1 to pass in Dominoes) |
+        | `hint`     | `h`     | Get a hint for the next move |
         | `log`      | `l`     | View action log |
       operationId: barbuExec
       requestBody:
@@ -17806,6 +17829,7 @@ paths:
         | `discard` | `d`     | Discard the two hand `indices` |
         | `play`    | `p`     | Play `cardIndex` |
         | `next`    | `n`     | Deal the next hand |
+        | `hint`    | `h`     | Get a hint for the next move |
         | `log`     | `l`     | Action-log transcript |
       operationId: kaiserExec
       requestBody:
@@ -17820,7 +17844,7 @@ paths:
               properties:
                 command:
                   type: string
-                  enum: [reset, r, bid, b, pass, ps, trump, t, discard, d, play, p, next, n, log, l]
+                  enum: [reset, r, bid, b, pass, ps, trump, t, discard, d, play, p, next, n, log, l, hint, h]
                 sessionId:
                   type: string
                 bid:
@@ -19176,6 +19200,7 @@ paths:
         | `discard`     | `d`     | Discard a card (requires `cardIndex`) |
         | `knock`       | `k`     | Knock (stand pat) |
         | `nextround`   | `nr`    | Score the round and start the next |
+        | `hint`        | `h`     | Get a hint for the next move |
         | `log`         | `l`     | View action log |
       operationId: thirtyoneExec
       requestBody:
@@ -19903,6 +19928,7 @@ paths:
         | `play`  | `p`     | Place Play bet (`multiplier` ∈ {1, 2, 3, 4}) |
         | `check` | `c`     | Pre-flop / Flop: advance without an additional bet |
         | `fold`  | `f`     | River: forfeit Ante + Blind |
+        | `hint`  | `h`     | Get a hint for the next move |
         | `log`   | `l`     | View action log |
       operationId: ultimatetexasholdemExec
       requestBody:
@@ -19983,6 +20009,7 @@ paths:
         | `bet`   | `b`     | Place Ante (`amount`) |
         | `play`  | `p`     | Place street bet (`multiplier` ∈ {1, 2, 3}) |
         | `fold`  | `f`     | Forfeit all bets on the table |
+        | `hint`  | `h`     | Get a hint for the next move |
         | `log`   | `l`     | View action log |
       operationId: mississippistudExec
       requestBody:
@@ -20331,6 +20358,7 @@ paths:
         | `stand`    | `s`     | Skip exchange, advance to action |
         | `play`     | `p`     | Call: place Play bet (2x Ante) and reveal dealer hand |
         | `fold`     | `f`     | Forfeit Ante bet and exchange fee |
+        | `hint`     | `h`     | Get a hint for the next move |
         | `log`      | `l`     | View action log |
       operationId: oasispokerExec
       requestBody:
@@ -20987,6 +21015,7 @@ paths:
         | `bet` / `b`     |         | Place Ante + optional Flush Bonus + Straight Flush Bonus |
         | `raise` / `ra`  |         | Raise with multiplier 1..MaxRaiseMultiplier |
         | `fold` / `f`    |         | Fold and forfeit the Ante (side bets still evaluate) |
+        | `hint` / `h`    |         | Get a hint for the next move |
         | `log` / `l`     |         | View action log |
       operationId: highcardflushExec
       requestBody:
@@ -21001,7 +21030,7 @@ paths:
               properties:
                 command:
                   type: string
-                  enum: [reset, r, bet, b, raise, ra, fold, f, log, l]
+                  enum: [reset, r, bet, b, raise, ra, fold, f, log, l, hint, h]
                 amount:
                   type: integer
                   description: Ante amount for `bet`/`b`
@@ -21091,6 +21120,7 @@ paths:
         | `flip`        | `fl`    | Flip a face-down grid card (requires `position`) |
         | `skipflip`    | `sf`    | Skip the optional flip |
         | `nextround`   | `nr`    | Advance to the next round |
+        | `hint`        | `h`     | Get a hint for the next move |
         | `log`         | `l`     | View action log |
       operationId: sixcardgolfExec
       requestBody:
@@ -21105,7 +21135,7 @@ paths:
               properties:
                 command:
                   type: string
-                  enum: [reset, r, flipinitial, fi, drawstock, ds, drawdiscard, dd, swap, sw, discard, di, flip, fl, skipflip, sf, nextround, nr, log, l]
+                  enum: [reset, r, flipinitial, fi, drawstock, ds, drawdiscard, dd, swap, sw, discard, di, flip, fl, skipflip, sf, nextround, nr, log, l, hint, h]
                 position:
                   type: integer
                   description: Grid slot index (0-5) for flipinitial, swap, and flip commands
@@ -37962,8 +37992,8 @@ components:
           description: |
             Game command.  Accepted values: `reset` (`r`), `play` (`p`),
             `draw` (`d`), `suit` (`s`), `declare` (`dc`), `skipdeclare` (`sk`),
-            `nextround` (`nr`), `log` (`l`).
-          enum: [reset, r, play, p, draw, d, suit, s, declare, dc, skipdeclare, sk, nextround, nr, log, l]
+            `nextround` (`nr`), `log` (`l`), `hint` (`h`).
+          enum: [reset, r, play, p, draw, d, suit, s, declare, dc, skipdeclare, sk, nextround, nr, log, l, hint, h]
           example: reset
         cardIndex:
           type: integer
@@ -38227,8 +38257,8 @@ components:
           description: |
             Game command.  Accepted values: `reset` (`r`), `play` (`p`),
             `draw` (`d`), `declare` (`dc`), `skip` (`sk`),
-            `nextround` (`nr`), `log` (`l`).
-          enum: [reset, r, play, p, draw, d, declare, dc, skip, sk, nextround, nr, log, l]
+            `nextround` (`nr`), `log` (`l`), `hint` (`h`).
+          enum: [reset, r, play, p, draw, d, declare, dc, skip, sk, nextround, nr, log, l, hint, h]
           example: reset
         cardIndex:
           type: integer
@@ -38325,8 +38355,8 @@ components:
           description: |
             Seven Bridge command. Accepted values: `reset` (`r`),
             `drawstock` (`ds`), `pon`, `chi`, `meld` (`m`),
-            `layoff` (`lo`), `discard` (`d`), `nextround` (`nr`), `log` (`l`).
-          enum: [reset, r, drawstock, ds, pon, chi, meld, m, layoff, lo, discard, d, nextround, nr, log, l]
+            `layoff` (`lo`), `discard` (`d`), `nextround` (`nr`), `log` (`l`), `hint` (`h`).
+          enum: [reset, r, drawstock, ds, pon, chi, meld, m, layoff, lo, discard, d, nextround, nr, log, l, hint, h]
           example: reset
         cardIndex:
           type: integer
@@ -39076,8 +39106,8 @@ components:
           description: |
             Game command. Accepted values: `reset` (`r`), `drawstock` (`ds`),
             `drawdiscard` (`dd`), `discard` (`d`), `knock` (`k`),
-            `nextround` (`nr`), `log` (`l`).
-          enum: [reset, r, drawstock, ds, drawdiscard, dd, discard, d, knock, k, nextround, nr, log, l]
+            `nextround` (`nr`), `log` (`l`), `hint` (`h`).
+          enum: [reset, r, drawstock, ds, drawdiscard, dd, discard, d, knock, k, nextround, nr, log, l, hint, h]
           example: reset
         cardIndex:
           type: integer
@@ -39719,8 +39749,8 @@ components:
           description: |
             Game command.  Accepted values: `reset` (`r`), `drawstock` (`ds`),
             `drawdiscard` (`dd`), `meld` (`m`), `skipmeld` (`sm`),
-            `discard` (`d`), `goout` (`go`), `nextround` (`nr`), `log` (`l`).
-          enum: [reset, r, drawstock, ds, drawdiscard, dd, meld, m, skipmeld, sm, discard, d, goout, go, nextround, nr, log, l]
+            `discard` (`d`), `goout` (`go`), `nextround` (`nr`), `log` (`l`), `hint` (`h`).
+          enum: [reset, r, drawstock, ds, drawdiscard, dd, meld, m, skipmeld, sm, discard, d, goout, go, nextround, nr, log, l, hint, h]
           example: reset
         cardIndex:
           type: integer
@@ -39879,8 +39909,8 @@ components:
           description: |
             Game command.  Accepted values: `reset` (`r`), `drawstock` (`ds`),
             `drawdiscard` (`dd`), `meld` (`m`), `skipmeld` (`sm`),
-            `discard` (`d`), `goout` (`go`), `nextround` (`nr`), `log` (`l`).
-          enum: [reset, r, drawstock, ds, drawdiscard, dd, meld, m, skipmeld, sm, discard, d, goout, go, nextround, nr, log, l]
+            `discard` (`d`), `goout` (`go`), `nextround` (`nr`), `log` (`l`), `hint` (`h`).
+          enum: [reset, r, drawstock, ds, drawdiscard, dd, meld, m, skipmeld, sm, discard, d, goout, go, nextround, nr, log, l, hint, h]
           example: reset
         cardIndex:
           type: integer
@@ -40943,8 +40973,8 @@ components:
           type: string
           description: |
             Game command.  Accepted values: `reset` (`r`), `bet` (`b`),
-            `hold` (`h`), `log` (`l`).
-          enum: [reset, r, bet, b, hold, h, log, l]
+            `hold` (`h`), `log` (`l`), `hint` (`h`).
+          enum: [reset, r, bet, b, hold, h, log, l, hint, h]
           example: reset
         amount:
           type: integer
@@ -41460,8 +41490,8 @@ components:
           description: |
             Game command.  Accepted values: `reset` (`r`), `discard` (`d`),
             `peg` (`p`), `go`, `shownext` (`sn`), `nextround` (`nr`),
-            `setdifficulty` (`sd`), `setlimit` (`sl`), `log` (`l`).
-          enum: [reset, r, discard, d, peg, p, go, shownext, sn, nextround, nr, setdifficulty, sd, setlimit, sl, log, l]
+            `setdifficulty` (`sd`), `setlimit` (`sl`), `log` (`l`), `hint` (`h`).
+          enum: [reset, r, discard, d, peg, p, go, shownext, sn, nextround, nr, setdifficulty, sd, setlimit, sl, log, l, hint, h]
           example: discard
         cardIndex:
           type: integer
@@ -41670,8 +41700,8 @@ components:
           type: string
           description: |
             Game command.  Accepted values: `reset` (`r`), `bet` (`b`),
-            `play` (`p`), `fold` (`f`), `log` (`l`).
-          enum: [r, reset, b, bet, p, play, f, fold, log, l]
+            `play` (`p`), `fold` (`f`), `log` (`l`), `hint` (`h`).
+          enum: [r, reset, b, bet, p, play, f, fold, log, l, hint, h]
           example: bet
         amount:
           type: integer
@@ -41958,8 +41988,8 @@ components:
           type: string
           description: |
             Game command. Accepted values: `reset` (`r`), `bet` (`b`),
-            `play` (`p`), `fold` (`f`), `log` (`l`).
-          enum: [r, reset, b, bet, p, play, f, fold, log, l]
+            `play` (`p`), `fold` (`f`), `log` (`l`), `hint` (`h`).
+          enum: [r, reset, b, bet, p, play, f, fold, log, l, hint, h]
           example: bet
         amount:
           type: integer
@@ -42241,8 +42271,8 @@ components:
           type: string
           description: |
             Game command. Accepted values: `reset` (`r`), `bet` (`b`),
-            `call` (`c`), `fold` (`f`), `log` (`l`).
-          enum: [r, reset, b, bet, c, call, f, fold, log, l]
+            `call` (`c`), `fold` (`f`), `log` (`l`), `hint` (`h`).
+          enum: [r, reset, b, bet, c, call, f, fold, log, l, hint, h]
           example: bet
         amount:
           type: integer
@@ -43480,7 +43510,7 @@ components:
             `allin` (`a`), `rebuy` (`rb`), `skiprebuy` (`sr`),
             `addon` (`ad`), `skipaddon` (`sa`), `muck` (`m`),
             `show` (`sh`), `log` (`l`), `quit` (`q`).
-          enum: [r, reset, f, fold, ck, check, c, call, b, bet, ra, raise, a, allin, rb, rebuy, sr, skiprebuy, ad, addon, sa, skipaddon, m, muck, sh, show, log, l, q, quit]
+          enum: [r, reset, f, fold, ck, check, c, call, b, bet, ra, raise, a, allin, rb, rebuy, sr, skiprebuy, ad, addon, sa, skipaddon, m, muck, sh, show, log, l, q, quit, hint, h]
           example: bet
         amount:
           type: integer
@@ -44052,8 +44082,8 @@ components:
           type: string
           description: |
             Game command.  Accepted values: `reset` (`r`), `bet` (`b`),
-            `set` (`s`), `log` (`l`).
-          enum: [r, reset, b, bet, s, set, log, l]
+            `set` (`s`), `log` (`l`), `hint` (`h`).
+          enum: [r, reset, b, bet, s, set, log, l, hint, h]
           example: bet
         amount:
           type: integer
@@ -44478,7 +44508,7 @@ components:
       properties:
         command:
           type: string
-          enum: [reset, r, bet, b, raise, stay, s, log]
+          enum: [reset, r, bet, b, raise, stay, s, log, hint, h]
           description: Game command to execute.
         amount:
           type: integer
@@ -45998,7 +46028,7 @@ components:
         command:
           type: string
           description: President command. Accepted values. `reset` (`r`), `play` (`p`), `log` (`l`).
-          enum: [reset, r, play, p, log, l]
+          enum: [reset, r, play, p, log, l, hint, h]
           example: reset
         indices:
           type: array
@@ -46112,7 +46142,7 @@ components:
         command:
           type: string
           description: Cassino command. Accepted values. `reset` (`r`), `take` (`t`), `build` (`b`), `trail` (`tr`), `next` (`n`), `log` (`l`).
-          enum: [reset, r, take, t, build, b, trail, tr, next, n, log, l]
+          enum: [reset, r, take, t, build, b, trail, tr, next, n, log, l, hint, h]
           example: take
         handIndex:
           type: integer
@@ -46291,7 +46321,7 @@ components:
         command:
           type: string
           description: Scopa command. Accepted values. `reset` (`r`), `next` (`n`), `play` (`p`), `log` (`l`).
-          enum: [reset, r, next, n, play, p, log, l]
+          enum: [reset, r, next, n, play, p, log, l, hint, h]
           example: play
         handIndex:
           type: integer
@@ -46441,7 +46471,7 @@ components:
         command:
           type: string
           description: Scopone command. Accepted values. `reset` (`r`), `next` (`n`), `play` (`p`), `setdifficulty` (`sd`), `settarget` (`st`), `log` (`l`).
-          enum: [reset, r, next, n, play, p, setdifficulty, sd, settarget, st, log, l]
+          enum: [reset, r, next, n, play, p, setdifficulty, sd, settarget, st, log, l, hint, h]
           example: play
         handIndex:
           type: integer
@@ -46589,7 +46619,7 @@ components:
         command:
           type: string
           description: Escoba command. Accepted values. `reset` (`r`), `next` (`n`), `play` (`p`), `setdifficulty` (`sd`), `settarget` (`st`), `log` (`l`).
-          enum: [reset, r, next, n, play, p, setdifficulty, sd, settarget, st, log, l]
+          enum: [reset, r, next, n, play, p, setdifficulty, sd, settarget, st, log, l, hint, h]
           example: play
         handIndex:
           type: integer
@@ -46744,7 +46774,7 @@ components:
         command:
           type: string
           description: Barbu command. Accepted values. `reset` (`r`), `next` (`n`), `contract` (`c`), `play` (`p`), `log` (`l`).
-          enum: [reset, r, next, n, contract, c, play, p, log, l]
+          enum: [reset, r, next, n, contract, c, play, p, log, l, hint, h]
           example: play
         contract:
           type: integer
@@ -53125,8 +53155,8 @@ components:
           type: string
           description: |
             Game command. Accepted values: `reset` (`r`), `bet` (`b`),
-            `play` (`p`), `check` (`c`), `fold` (`f`), `log` (`l`).
-          enum: [r, reset, b, bet, p, play, c, check, f, fold, log, l]
+            `play` (`p`), `check` (`c`), `fold` (`f`), `log` (`l`), `hint` (`h`).
+          enum: [r, reset, b, bet, p, play, c, check, f, fold, log, l, hint, h]
           example: bet
         amount:
           type: integer
@@ -53286,8 +53316,8 @@ components:
           type: string
           description: |
             Game command. Accepted values: `reset` (`r`), `bet` (`b`),
-            `play` (`p`), `fold` (`f`), `log` (`l`).
-          enum: [r, reset, b, bet, p, play, f, fold, log, l]
+            `play` (`p`), `fold` (`f`), `log` (`l`), `hint` (`h`).
+          enum: [r, reset, b, bet, p, play, f, fold, log, l, hint, h]
           example: bet
         amount:
           type: integer
@@ -53916,8 +53946,8 @@ components:
           description: |
             Game command. Accepted values: `reset` (`r`), `bet` (`b`),
             `exchange` (`e`), `stand` (`s`), `play` (`p`), `fold` (`f`),
-            `log` (`l`).
-          enum: [r, reset, b, bet, e, exchange, s, stand, p, play, f, fold, log, l]
+            `log` (`l`), `hint` (`h`).
+          enum: [r, reset, b, bet, e, exchange, s, stand, p, play, f, fold, log, l, hint, h]
           example: exchange
         amount:
           type: integer
@@ -54276,7 +54306,7 @@ components:
       properties:
         command:
           type: string
-          enum: [reset, r, drawstock, ds, drawdiscard, dd, meld, m, layoff, lo, discard, d, nextround, nr, log, l, quit, q]
+          enum: [reset, r, drawstock, ds, drawdiscard, dd, meld, m, layoff, lo, discard, d, nextround, nr, log, l, quit, q, hint, h]
           description: Game command alias.
         sessionId:
           type: string
