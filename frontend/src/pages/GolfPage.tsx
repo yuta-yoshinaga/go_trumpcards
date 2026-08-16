@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { golfApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -43,6 +43,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { GOLF_HELP, parseGolfCommand } from '../utils/cli/commands/golfCommands';
 import { formatGolfState } from '../utils/cli/formatters/golfFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { comboAnnouncement } from '../utils/comboAnnounce';
 import { isGolfAdjacent } from '../utils/hints/golfHint';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -163,6 +164,18 @@ function GolfPageContent() {
 
   const combo = useChainCombo(state?.moveCount, state?.stockCount);
 
+  // **バッジは combo >= 2 のときだけ描かれる。** 消えることは live region では
+  // 伝わらないので、途切れた瞬間だけ別の文言を出す。要素そのものは常に置いて
+  // おく (出し入れすると読み上げが飛ぶ)。
+  const [comboAnnounce, setComboAnnounce] = useState('');
+  const prevCombo = useRef(0);
+  useEffect(() => {
+    const was = prevCombo.current;
+    prevCombo.current = combo;
+    const next = comboAnnouncement(combo, was);
+    setComboAnnounce(next ? t(next.key, { count: next.count }) : '');
+  }, [combo, t]);
+
   // 9-hole mode: accumulate each finished deal's remaining-card score across 9 deals (issue #3114).
   const { nineHole, setEnabled: setNineHoleEnabled, recordHole, resetCard } = useGolfNineHole();
   const nineHoleEnabled = nineHole.enabled;
@@ -241,6 +254,11 @@ function GolfPageContent() {
               {t('combo', { count: combo })}
             </span>
           )}
+          {/* コンボは色とテキストの変化だけで示されており、読み上げ利用者には
+              継続も途切れも届いていなかった (#5520)。 */}
+          <span className="sr-only" role="status" aria-live="polite" data-testid="golf-combo-announce">
+            {comboAnnounce}
+          </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
       }

@@ -309,6 +309,30 @@ describe('GolfPage', () => {
     expect(badge.className).toContain('bg-ds-error');
   });
 
+  // **コンボは色とテキストだけで示されていた。** 読み上げ利用者には継続も
+  // 途切れも届かない (#5520)。
+  it('announces a running combo to screen readers', async () => {
+    mockCombo.mockReturnValue(3);
+    renderWithProviders(<GolfPage />);
+    const live = await screen.findByTestId('golf-combo-announce');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    // 通知テキストに現在のコンボ数が入ること（受け入れ条件）。
+    expect(live).toHaveTextContent('3');
+  });
+
+  it('stays silent while there is no combo', async () => {
+    mockCombo.mockReturnValue(1);
+    renderWithProviders(<GolfPage />);
+    const live = await screen.findByTestId('golf-combo-announce');
+    // 要素は常に置く（出し入れすると読み上げが飛ぶ）が、中身は空。
+    expect(live).toBeEmptyDOMElement();
+    expect(screen.queryByTestId('combo-badge')).not.toBeInTheDocument();
+  });
+
+  // 途切れの遷移そのものは comboAnnounce.test.ts が純関数として押さえている。
+  // ここではページがその判断を live region に反映することだけを見る。
+
   it('does not show the 9-hole scorecard by default', async () => {
     renderWithProviders(<GolfPage />);
     await waitFor(() => expect(screen.getByText('捨て札')).toBeInTheDocument());
