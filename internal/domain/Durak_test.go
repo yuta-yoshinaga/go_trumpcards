@@ -872,7 +872,7 @@ func TestDurak_BoutLimitEndsTheGame(t *testing.T) {
 	}
 	d := domain.NewDurak(domain.NewTrumpCardsShortDeck(), players)
 
-	// 健全な局は上限から遠い (実測の最大は 78 バウト)。
+	// 健全な局は上限から遠い (2026-08-16 実測: 20,000 局での最大は 30 バウト)。
 	//
 	// **「200 局すべてが上限未満」は書けない。** すぐ上のコメントが書いているとおり
 	// 20 万局に 14 局は上限に到達するので、200 局を回すと
@@ -895,10 +895,12 @@ func TestDurak_BoutLimitEndsTheGame(t *testing.T) {
 			require.True(t, d.GetGameEndFlag(), "局が終わっていない")
 
 			if d.GetBoutNumber() >= domain.DurakMaxBouts {
+				// 上限に達した局が終局していることは、上の require.True が
+				// 全局について既に保証している。ここで assert.True を重ねても
+				// 決して落ちない空のアサーションになるだけなので置かない。
+				// 打ち切り局が敗者を決めることは "every finished game names a
+				// loser" が別に見ている。
 				capped++
-				// 打ち切られた局も敗者を決めて終わること。ここが崩れると
-				// 「上限に達したので投げ出した」状態を見逃す。
-				assert.True(t, d.GetGameEndFlag(), "上限に達した局が終局していない")
 				continue
 			}
 			if d.GetBoutNumber() > worstNormal {
