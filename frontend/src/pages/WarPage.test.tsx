@@ -351,4 +351,21 @@ describe('WarPage', () => {
     // The render cap keeps the layout stable on long war chains.
     expect(stack.querySelectorAll('[data-testid="animated-card-back"]')).toHaveLength(10);
   });
+
+  // **各ラウンドの決着を読み上げに乗せる。** 盤面の変化はリング色と不透明度だけで、
+  // ページに aria-live 領域が一つも無かった (#5530)。サーバがラウンドごとの
+  // messageCode を返すようになったので、既存の GameMessageBox がそのまま読み上げる。
+  it.each([
+    ['war.round.humanWin', 'あなたがラウンドに勝ちました'],
+    ['war.round.cpuWin', 'CPU がラウンドに勝ちました'],
+    ['war.round.warBury', '戦争です'],
+  ])('announces %s to screen readers', async (code, text) => {
+    mockExec.mockResolvedValue({ ...baseState, messageCode: code });
+    renderWithProviders(<WarPage />);
+
+    const box = await screen.findByText(new RegExp(text));
+    // GameMessageBox は role="status" / aria-live="polite" を内蔵している。
+    expect(box).toHaveAttribute('aria-live', 'polite');
+    expect(box).toHaveAttribute('role', 'status');
+  });
 });

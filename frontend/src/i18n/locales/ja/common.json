@@ -2188,7 +2188,10 @@
     "missmilligan.errNothingToUndo": "元に戻せる操作がありません",
     "lingerlonger.result.lastTrickYou": "全員が同時に手札を出し切り、あなたが最後のトリックを取りました。",
     "lingerlonger.result.lastTrickCpu": "全員が同時に手札を出し切り、CPU{{idx}} が最後のトリックを取りました。",
-    "lingerlonger.result.giveUp": "あなたが投了しました。CPU{{idx}} の勝ちです。"
+    "lingerlonger.result.giveUp": "あなたが投了しました。CPU{{idx}} の勝ちです。",
+    "war.round.humanWin": "あなたがラウンドに勝ちました。",
+    "war.round.cpuWin": "CPU がラウンドに勝ちました。",
+    "war.round.warBury": "戦争です。伏せ札と表札を出します。"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",
