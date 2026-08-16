@@ -304,6 +304,15 @@ func (_m *MockOmahaGame) GetIsHiLo() bool {
 	return ret.Bool(0)
 }
 
+// GetBoardLowOutlook モック
+func (_m *MockOmahaGame) GetBoardLowOutlook() domain.OmahaBoardLowOutlook {
+	ret := _m.Called()
+	if val, ok := ret.Get(0).(domain.OmahaBoardLowOutlook); ok {
+		return val
+	}
+	return domain.OmahaBoardLowOutlook{}
+}
+
 // GetHoleCardCount モック
 func (_m *MockOmahaGame) GetHoleCardCount() int {
 	ret := _m.Called()

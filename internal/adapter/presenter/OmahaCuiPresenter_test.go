@@ -993,3 +993,73 @@ func TestOmahaCuiPresenter_ShowsWhetherCallingIsPlusEV(t *testing.T) {
 		assert.NotContains(t, out, i18n.T("omaha.learningEvMinus"))
 	})
 }
+
+// #5483: Web の OmahaHiLoPage は BoardLowBadge でベッティング中ずっとロー成立
+// 可能性を出しているのに、CUI はショーダウンの resultLow でしか見せない。
+// CUI プレイヤーはベットのたびに自力で低ランクを数えることになる。
+// assertNoBoardLowLine は見通しの3行がどれも出ていないことを確かめる。
+//
+// **「ロー:」で探してはいけない。** HiLo の卓は見出しに「※ロー: 8以下5枚…」という
+// ルール説明を常に出しているので、接頭辞で探すとそちらに当たって常に通る。
+func assertNoBoardLowLine(t *testing.T, out string) {
+	t.Helper()
+	for _, key := range []string{"omaha.boardLowLive", "omaha.boardLowImpossible"} {
+		assert.NotContains(t, out, i18n.T(key))
+	}
+	assert.NotContains(t, out, i18n.Tf("omaha.boardLowPossible", "needed", "1"))
+	assert.NotContains(t, out, i18n.Tf("omaha.boardLowPossible", "needed", "2"))
+	assert.NotContains(t, out, i18n.Tf("omaha.boardLowPossible", "needed", "3"))
+}
+
+func TestOmahaCuiPresenter_BoardLowOutlook(t *testing.T) {
+	p := new(presenter.OmahaCuiPresenter)
+	card := func(design, value int) *domain.Card { return domain.NewCard(design, value, false) }
+
+	hiLoAt := func(phase int, cards ...*domain.Card) string {
+		h := makeOmahaHiLoForPresenter()
+		h.SetPhase(phase)
+		h.SetCommunityCards(cards)
+		return p.Output(h, nil)
+	}
+
+	t.Run("reports a live low on the flop", func(t *testing.T) {
+		out := hiLoAt(domain.OmahaPhaseFlop,
+			card(domain.CardDesignSpade, 2), card(domain.CardDesignHeart, 5), card(domain.CardDesignClover, 7))
+		assert.Contains(t, out, i18n.T("omaha.boardLowLive"))
+	})
+
+	t.Run("reports how many more ranks a low still needs", func(t *testing.T) {
+		out := hiLoAt(domain.OmahaPhaseFlop,
+			card(domain.CardDesignSpade, 2), card(domain.CardDesignHeart, 11), card(domain.CardDesignClover, 12))
+		assert.Contains(t, out, i18n.Tf("omaha.boardLowPossible", "needed", "2"))
+	})
+
+	t.Run("says a low is dead once the board cannot reach three ranks", func(t *testing.T) {
+		out := hiLoAt(domain.OmahaPhaseFlop,
+			card(domain.CardDesignSpade, 10), card(domain.CardDesignHeart, 11), card(domain.CardDesignClover, 12))
+		assert.Contains(t, out, i18n.T("omaha.boardLowImpossible"))
+	})
+
+	// **プリフロップでは出さない。**ボードが空なら「まだ可能」以外に言うことがなく、
+	// 毎ハンド必ず出る行は情報でなく雑音になる。Web のバッジもフロップ以降だけ。
+	t.Run("stays quiet before the flop", func(t *testing.T) {
+		assertNoBoardLowLine(t, hiLoAt(domain.OmahaPhasePreFlop))
+	})
+
+	// ショーダウンでは resultLow が実際の結果を出すので、見通しは要らない。
+	t.Run("stays quiet at showdown, where the actual result is shown", func(t *testing.T) {
+		assertNoBoardLowLine(t, hiLoAt(domain.OmahaPhaseShowdown,
+			card(domain.CardDesignSpade, 2), card(domain.CardDesignHeart, 5), card(domain.CardDesignClover, 7)))
+	})
+
+	// **通常のオマハにはローが無い。**同じ presenter を共有しているので、
+	// hiLo でない卓に出すと存在しないルールを説明することになる。
+	t.Run("stays quiet in plain Omaha, which has no low", func(t *testing.T) {
+		h, _ := makeOmahaForPresenter()
+		h.SetPhase(domain.OmahaPhaseFlop)
+		h.SetCommunityCards([]*domain.Card{
+			card(domain.CardDesignSpade, 2), card(domain.CardDesignHeart, 5), card(domain.CardDesignClover, 7),
+		})
+		assertNoBoardLowLine(t, p.Output(h, nil))
+	})
+}

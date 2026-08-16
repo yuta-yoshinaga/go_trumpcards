@@ -53,5 +53,8 @@
   "learningHeader": "[学習モード]",
   "learningLine": "  勝率: {{equity}}% / ポットオッズ: {{potodds}}%",
   "learningEvPlus": "  +EV (勝率がポットオッズを上回っています。コール有利)",
-  "learningEvMinus": "  -EV (勝率がポットオッズ以下です。コール不利)"
+  "learningEvMinus": "  -EV (勝率がポットオッズ以下です。コール不利)",
+  "boardLowLive": "ロー: 成立圏 (ボードに8以下が3ランク)",
+  "boardLowPossible": "ロー: 成立可能 (あと{{needed}}ランク)",
+  "boardLowImpossible": "ロー: 不成立確定"
 }
