@@ -5,6 +5,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, KlondikeResponse, KlondikeTableauCard } from '../types/card';
+import { KlondikeVegas } from '../types/phases';
 import { KlondikePage } from './KlondikePage';
 
 vi.mock('../api/gameApi', () => ({
@@ -1160,8 +1161,12 @@ describe('KlondikePage Vegas formula', () => {
     renderWithProviders(<KlondikePage />);
     const note = await screen.findByTestId('kl-vegas-formula');
     // 数値は KlondikeVegas から補間される。文言に直接書くと定数と乖離する。
-    expect(note.textContent).toContain('-52');
-    expect(note.textContent).toContain('5');
+    //
+    // **`toContain('5')` は無意味だった** -- 買い切りの "-52" が "5" を含むので、
+    // 1枚あたりの点が抜けていても通る。1枚あたりは符号付きで、買い切りの数字の
+    // 一部として現れない形で確かめる。
+    expect(note.textContent).toContain(`${KlondikeVegas.BUY_IN}`);
+    expect(note.textContent).toMatch(new RegExp(`\\+${KlondikeVegas.PER_CARD}(?![0-9])`));
   });
 
   // **None モードでは出さない。** ベガス方式の説明が常時出ていると、
