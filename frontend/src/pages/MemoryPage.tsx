@@ -306,10 +306,19 @@ function MemoryPageContent() {
                     id: 'cpuDifficulty',
                     label: t('settings.cpuDifficulty'),
                     value: memoryConfig.cpuDifficulty,
+                    // **強さの差は「CPU がどれだけ覚えているか」の差。** domain の
+                    // retentionChance / decayRate が難易度ごとに 30%/60%/95% 保持、
+                    // 15%/5%/1% 減衰と切り替わるのに、選択肢は Easy/Normal/Hard と
+                    // しか出ておらず、何が変わるのか分からなかった (#5492)。
+                    // 数値は出さない -- 実装が変われば嘘になる。順序だけを言う。
                     options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
                       value: o.value,
-                      label: t(`settings.${o.label.toLowerCase()}`),
+                      label: t('settings.difficultyOption', {
+                        level: t(`settings.${o.label.toLowerCase()}`),
+                        memory: t(`settings.memory${o.label}`),
+                      }),
                     })),
+                    tooltip: t('settings.difficultyTooltip'),
                     onSelect: (v) => handleConfigChange('cpuDifficulty', v),
                   },
                   {
