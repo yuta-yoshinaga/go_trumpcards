@@ -49,5 +49,9 @@
   "currentBestHand": "Best hand so far: {{hand}} ({{cards}})",
   "helpExampleRaise": "  ra 200               raise to 200 chips total",
   "helpExampleCall": "  c                    call the current bet",
-  "helpLog": "  l                    show the action log"
+  "helpLog": "  l                    show the action log",
+  "learningHeader": "[Learning mode]",
+  "learningLine": "  Equity: {{equity}}% / Pot odds: {{potodds}}%",
+  "learningEvPlus": "  +EV (equity beats pot odds; calling is favorable)",
+  "learningEvMinus": "  -EV (equity at or below pot odds; calling is unfavorable)"
 }

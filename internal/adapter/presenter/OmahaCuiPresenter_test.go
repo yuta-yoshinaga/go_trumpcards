@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -885,5 +886,61 @@ func TestOmahaCuiPresenter_English(t *testing.T) {
 		out := p.Output(o, nil)
 		assert.Contains(t, out, "Game over")
 		assert.NotContains(t, out, "ゲーム終了")
+	})
+}
+
+// **学習モードの値は Web にしか出ていなかった (#5482)。** GetEquity /
+// GetPotOdds は共有ヘルパ経由で Web へ送られ、Holdem 系の CUI も出しているのに、
+// Omaha の CUI だけが取り残されていた。
+func TestOmahaCuiPresenter_ShowsEquityAndPotOdds(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.OmahaCuiPresenter)
+
+	t.Run("on the human's turn the learning block appears", func(t *testing.T) {
+		h, players := makeOmahaForPresenter()
+		h.SetPhase(domain.OmahaPhaseFlop)
+		h.SetCurrentTurn(0)
+		for _, v := range []int{14, 13, 12, 11} {
+			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, v, false))
+		}
+
+		// **前提をドメインで確かめてから出力を見る。** ここが nil のままだと、
+		// 表示が出ないことを「正しい」と読んでしまう。
+		require.True(t, h.IsHumanTurn())
+		require.NotNil(t, h.GetEquity())
+
+		out := p.Output(h, nil)
+		assert.Contains(t, out, i18n.T("omaha.learningHeader"))
+		assert.Contains(t, out, "勝率")
+		assert.Contains(t, out, "ポットオッズ")
+	})
+
+	// **負のコントロール: 降りていれば出ない。** GetEquity が nil を返す局面。
+	t.Run("a folded human gets no learning block", func(t *testing.T) {
+		h, players := makeOmahaForPresenter()
+		h.SetPhase(domain.OmahaPhaseFlop)
+		h.SetCurrentTurn(0)
+		for _, v := range []int{14, 13, 12, 11} {
+			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, v, false))
+		}
+		players[0].SetFolded(true)
+		require.Nil(t, h.GetEquity())
+
+		assert.NotContains(t, p.Output(h, nil), i18n.T("omaha.learningHeader"))
+	})
+
+	// CPU の手番でも出さない。相手の番に自分の勝率を出しても意味がない。
+	t.Run("no learning block on a CPU turn", func(t *testing.T) {
+		h, players := makeOmahaForPresenter()
+		h.SetPhase(domain.OmahaPhaseFlop)
+		h.SetCurrentTurn(1)
+		for _, v := range []int{14, 13, 12, 11} {
+			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, v, false))
+		}
+		require.False(t, h.IsHumanTurn())
+
+		assert.NotContains(t, p.Output(h, nil), i18n.T("omaha.learningHeader"))
 	})
 }

@@ -3,6 +3,7 @@
 package presenter
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -121,6 +122,28 @@ func (p *OmahaCuiPresenter) Output(o interfaces.OmahaGame, lastErr error) string
 					b.WriteString(i18n.Tf("omaha.currentBestHand",
 						"hand", cuiPokerHandName(rank),
 						"cards", cuiCardSliceStrEmoji(best)) + "\n")
+				}
+			}
+		}
+
+		// **学習モードの値は Web にしか出ていなかった (#5482)。** GetEquity /
+		// GetPotOdds は共有ヘルパ経由で Web へ送られ、Holdem 系の CUI も出して
+		// いるのに、Omaha の CUI だけが取り残されていた。GetEquity は人間が
+		// 降りている局面などで nil を返し、そのとき表示は消える。
+		if o.IsHumanTurn() {
+			if eq := o.GetEquity(); eq != nil {
+				potOdds := o.GetPotOdds()
+				b.WriteString("----------\n")
+				b.WriteString(color.Bold(i18n.T("omaha.learningHeader")) + "\n")
+				b.WriteString(i18n.Tf("omaha.learningLine",
+					"equity", fmt.Sprintf("%.1f", eq.Equity*100),
+					"potodds", fmt.Sprintf("%.1f", potOdds)) + "\n")
+				if potOdds > 0 {
+					if eq.Equity*100 > potOdds {
+						b.WriteString(i18n.T("omaha.learningEvPlus") + "\n")
+					} else {
+						b.WriteString(i18n.T("omaha.learningEvMinus") + "\n")
+					}
 				}
 			}
 		}
