@@ -49,8 +49,13 @@ func TestCuiSolitaireProgressPercent(t *testing.T) {
 		{"all reached", 52, 52, 100},
 		{"half reached", 26, 52, 50},
 		{"rounds to nearest", 17, 52, 33},    // 32.69 -> 33
-		{"rounds up at .5", 26, 104, 25},     // 25.0 exactly
+		{"exact quarter", 26, 104, 25},       // 25.0 exactly, no rounding involved
 		{"double deck partial", 51, 104, 49}, // 49.03 -> 49
+		// A genuine .5 tie. Go's math.Round and JS Math.round agree here
+		// (both round half away from zero for positive input), which is what
+		// keeps the CUI line identical to the web page's percentage.
+		{"half rounds away from zero", 3, 8, 38}, // 37.5 -> 38
+		{"half rounds up again", 1, 8, 13},       // 12.5 -> 13
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
