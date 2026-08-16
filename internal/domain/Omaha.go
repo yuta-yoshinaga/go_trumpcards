@@ -1571,10 +1571,9 @@ func (o *Omaha) GetBoardLowOutlook() OmahaBoardLowOutlook {
 	if needed < 0 {
 		needed = 0
 	}
+	// クランプしない。ボードが5枚を超えることはゲーム上あり得ず、仮に負になっても
+	// needed >= 0 との比較は「届かない」に倒れて答えは変わらない。
 	remaining := omahaFullBoardSize - len(o.communityCards)
-	if remaining < 0 {
-		remaining = 0
-	}
 
 	switch {
 	case count >= omahaBoardLowRequiredRanks:

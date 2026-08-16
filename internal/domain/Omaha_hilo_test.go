@@ -620,4 +620,21 @@ func TestOmaha_GetBoardLowOutlook(t *testing.T) {
 	t.Run("an empty board is still possible", func(t *testing.T) {
 		assert.Equal(t, OmahaBoardLowPossible, board().Status)
 	})
+
+	// **4ランク以上でも Needed は 0 で止まる。** 引き算をそのまま返すと -1 になり、
+	// 「あと -1 ランク」という文言が出る。
+	t.Run("needed never goes negative when the board is rich in low ranks", func(t *testing.T) {
+		got := board(card(CardDesignSpade, 2), card(CardDesignHeart, 3),
+			card(CardDesignClover, 4), card(CardDesignDiamond, 5))
+		assert.Equal(t, OmahaBoardLowLive, got.Status)
+		assert.Equal(t, 4, got.LowRankCount)
+		assert.Zero(t, got.Needed)
+	})
+
+	// nil の混じったボードは数に入れない (このコードベースの他所と同じ防御)。
+	t.Run("skips nil cards instead of counting them", func(t *testing.T) {
+		got := board(card(CardDesignSpade, 2), nil, card(CardDesignHeart, 5))
+		assert.Equal(t, 2, got.LowRankCount)
+		assert.Equal(t, OmahaBoardLowPossible, got.Status)
+	})
 }
