@@ -1513,3 +1513,74 @@ func (o *Omaha) Resize(players []*OmahaPlayer) {
 	o.threeBetTracked = make([]bool, n)
 	o.initTournamentState(n)
 }
+
+// OmahaBoardLowStatus はコミュニティカードだけから見たロー成立の見通し。
+type OmahaBoardLowStatus int
+
+const (
+	// OmahaBoardLowImpossible は残り枚数を使ってもローランクが3つに届かない状態。
+	OmahaBoardLowImpossible OmahaBoardLowStatus = iota
+	// OmahaBoardLowPossible はまだ3つに届いていないが、残り枚数で届きうる状態。
+	OmahaBoardLowPossible
+	// OmahaBoardLowLive は既にローランクが3つ以上出ていて、手札次第でローが作れる状態。
+	OmahaBoardLowLive
+)
+
+// OmahaBoardLowOutlook は GetBoardLowOutlook の結果。
+type OmahaBoardLowOutlook struct {
+	Status OmahaBoardLowStatus
+	// LowRankCount はボードに出ている 8 以下の**相異なる**ランク数 (A は 1)。
+	LowRankCount int
+	// Needed はローが可能になるまでに、ボードがあと何ランク必要か (Live なら 0)。
+	Needed int
+}
+
+// omahaBoardLowRequiredRanks はローがボードから使うランク数。ローは5枚で作り、
+// 手札から2枚使うので、ボードは3ランク供給する必要がある。
+const omahaBoardLowRequiredRanks = 3
+
+// omahaFullBoardSize は完成したボードの枚数。
+const omahaFullBoardSize = 5
+
+// GetBoardLowOutlook はコミュニティカードだけを見て、8 or better のローが
+// まだ成立しうるかを返す (#5483)。
+//
+// ローの条件は isQualifyingOmahaLow と同じ「1..8 の相異なるランク」。A は 1 として
+// 数え、同じランクが2枚出ても1つとしか数えない。**プレイヤーの手札は一切見ない。**
+//
+// Web の frontend/src/utils/omahaLowCards.ts boardLowPossibility と同じ閾値。
+func (o *Omaha) GetBoardLowOutlook() OmahaBoardLowOutlook {
+	var seen uint16
+	count := 0
+	for _, c := range o.communityCards {
+		if c == nil {
+			continue
+		}
+		v := c.GetValue() // Ace == 1
+		if v < 1 || v > 8 {
+			continue
+		}
+		mask := uint16(1) << v
+		if seen&mask == 0 {
+			seen |= mask
+			count++
+		}
+	}
+
+	needed := omahaBoardLowRequiredRanks - count
+	if needed < 0 {
+		needed = 0
+	}
+	// クランプしない。ボードが5枚を超えることはゲーム上あり得ず、仮に負になっても
+	// needed >= 0 との比較は「届かない」に倒れて答えは変わらない。
+	remaining := omahaFullBoardSize - len(o.communityCards)
+
+	switch {
+	case count >= omahaBoardLowRequiredRanks:
+		return OmahaBoardLowOutlook{Status: OmahaBoardLowLive, LowRankCount: count, Needed: 0}
+	case needed <= remaining:
+		return OmahaBoardLowOutlook{Status: OmahaBoardLowPossible, LowRankCount: count, Needed: needed}
+	default:
+		return OmahaBoardLowOutlook{Status: OmahaBoardLowImpossible, LowRankCount: count, Needed: needed}
+	}
+}

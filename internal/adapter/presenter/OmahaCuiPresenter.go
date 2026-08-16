@@ -81,6 +81,27 @@ func (p *OmahaCuiPresenter) Output(o interfaces.OmahaGame, lastErr error) string
 			b.WriteString(i18n.Tf("omaha.communityCards", "cards", cuiCardSliceStrEmoji(cc)) + "\n")
 		}
 
+		// **ロー成立の見通しはボードだけで決まる。** Web は BoardLowBadge で
+		// ベッティング中ずっと出しているのに、CUI はショーダウンの resultLow まで
+		// 何も言わず、プレイヤーが毎回自分で低ランクを数えていた (#5483)。
+		//
+		// フロップ以降だけ。ボードが空では「まだ可能」以外に言うことがなく、
+		// 毎ハンド必ず出る行は情報でなく雑音になる。ショーダウンでは resultLow が
+		// 実際の結果を出すので見通しは要らない。
+		if o.GetIsHiLo() && len(cc) > 0 && o.GetPhase() != domain.OmahaPhaseShowdown &&
+			o.GetPhase() != domain.OmahaPhaseEnd {
+			outlook := o.GetBoardLowOutlook()
+			switch outlook.Status {
+			case domain.OmahaBoardLowLive:
+				b.WriteString(i18n.T("omaha.boardLowLive") + "\n")
+			case domain.OmahaBoardLowPossible:
+				b.WriteString(i18n.Tf("omaha.boardLowPossible",
+					"needed", strconv.Itoa(outlook.Needed)) + "\n")
+			case domain.OmahaBoardLowImpossible:
+				b.WriteString(i18n.T("omaha.boardLowImpossible") + "\n")
+			}
+		}
+
 		b.WriteString(i18n.Tf("omaha.potLine", "pot", strconv.Itoa(o.GetPot())) + "\n")
 
 		if int(cfg.BettingLimit) < len(domain.BettingLimitNames) {

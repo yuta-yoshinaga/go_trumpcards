@@ -57,5 +57,8 @@
   "resultBest": " / Best: {{cards}}",
   "resultBestLabel": "Best:",
   "resultBestLegend": "  (* = card used from the hole)",
+  "boardLowLive": "Low: live (3 low ranks on the board)",
+  "boardLowPossible": "Low: possible ({{needed}} more low rank(s) needed)",
+  "boardLowImpossible": "Low: dead",
   "scoop": "🏆 Scoop! took both the high and the low"
 }
