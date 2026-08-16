@@ -4,6 +4,7 @@ package domain
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -637,4 +638,163 @@ func TestTriPeaks_UndoN_Excessive(t *testing.T) {
 	err := tp.UndoN(5)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "undo step")
+}
+
+// **得点の式はフロント (frontend/src/utils/tripeaksScore.ts) と同じでなければ
+// ならない。** これまで計算はフロントにしか無く、CUI からは触れなかった (#5511)。
+//
+//	n 手目の連続除去 = n × TriPeaksPointsPerChain
+//	山を 1 つ出し切るごとに + TriPeaksPeakBonus
+//	山札を引く / アンドゥ → 連鎖は 0、得点は据え置き
+func TestTriPeaks_ScoreMatchesTheFrontendFormula(t *testing.T) {
+	// 盤面を作り込む: 3 列だけ使い、左の山を 1 枚で構成する。
+	newBoard := func() *TriPeaks {
+		tp := NewDefaultTriPeaks()
+		tp.Reset()
+		var layout [TriPeaksRowCnt][TriPeaksColCnt]*TriPeaksCard
+		// 左の山 (col<3) に 1 枚、中央 (3<=col<6) に 2 枚。
+		layout[TriPeaksRowCnt-1][0] = &TriPeaksCard{Card: NewCard(CardDesignSpade, 5, true)}
+		layout[TriPeaksRowCnt-1][3] = &TriPeaksCard{Card: NewCard(CardDesignHeart, 6, true)}
+		layout[TriPeaksRowCnt-1][4] = &TriPeaksCard{Card: NewCard(CardDesignClover, 7, true)}
+		tp.SetLayout(layout)
+		tp.SetWaste([]*Card{NewCard(CardDesignDiamond, 4, true)})
+		tp.SetStock([]*Card{NewCard(CardDesignSpade, 9, true)})
+		tp.SetPhase(TriPeaksPhasePlaying)
+		return tp
+	}
+
+	t.Run("a fresh board scores nothing", func(t *testing.T) {
+		tp := newBoard()
+		if tp.GetScore() != 0 || tp.GetCombo() != 0 {
+			t.Errorf("fresh board = (%d, %d), want (0, 0)", tp.GetScore(), tp.GetCombo())
+		}
+	})
+
+	t.Run("the chain multiplies and clearing a peak pays a bonus", func(t *testing.T) {
+		tp := newBoard()
+		// 1 手目: 5 を除去。左の山 (1 枚だけ) が空になるのでボーナスも付く。
+		if err := tp.Remove(TriPeaksRowCnt-1, 0); err != nil {
+			t.Fatalf("remove 1: %v", err)
+		}
+		want := 1*TriPeaksPointsPerChain + TriPeaksPeakBonus
+		if tp.GetScore() != want {
+			t.Errorf("after 1 removal score = %d, want %d", tp.GetScore(), want)
+		}
+		if tp.GetCombo() != 1 {
+			t.Errorf("chain = %d, want 1", tp.GetCombo())
+		}
+
+		// 2 手目: 6 を除去 (waste は 5)。連鎖 2 なので 200 点、山は空かない。
+		if err := tp.Remove(TriPeaksRowCnt-1, 3); err != nil {
+			t.Fatalf("remove 2: %v", err)
+		}
+		want += 2 * TriPeaksPointsPerChain
+		if tp.GetScore() != want {
+			t.Errorf("after 2 removals score = %d, want %d", tp.GetScore(), want)
+		}
+		if tp.GetCombo() != 2 {
+			t.Errorf("chain = %d, want 2", tp.GetCombo())
+		}
+	})
+
+	t.Run("drawing breaks the chain but keeps the score", func(t *testing.T) {
+		tp := newBoard()
+		if err := tp.Remove(TriPeaksRowCnt-1, 0); err != nil {
+			t.Fatalf("remove: %v", err)
+		}
+		before := tp.GetScore()
+		if err := tp.Draw(); err != nil {
+			t.Fatalf("draw: %v", err)
+		}
+		if tp.GetCombo() != 0 {
+			t.Errorf("chain after draw = %d, want 0", tp.GetCombo())
+		}
+		if tp.GetScore() != before {
+			t.Errorf("score after draw = %d, want %d (draws must not cost points)", tp.GetScore(), before)
+		}
+	})
+
+	// **アンドゥで点は戻らない。** 戻すと、除去→アンドゥ→除去で稼ぎ直せてしまう。
+	t.Run("undo breaks the chain but keeps the score", func(t *testing.T) {
+		tp := newBoard()
+		if err := tp.Remove(TriPeaksRowCnt-1, 0); err != nil {
+			t.Fatalf("remove: %v", err)
+		}
+		before := tp.GetScore()
+		if err := tp.Undo(); err != nil {
+			t.Fatalf("undo: %v", err)
+		}
+		if tp.GetCombo() != 0 {
+			t.Errorf("chain after undo = %d, want 0", tp.GetCombo())
+		}
+		if tp.GetScore() != before {
+			t.Errorf("score after undo = %d, want %d", tp.GetScore(), before)
+		}
+	})
+
+	t.Run("reset clears both", func(t *testing.T) {
+		tp := newBoard()
+		if err := tp.Remove(TriPeaksRowCnt-1, 0); err != nil {
+			t.Fatalf("remove: %v", err)
+		}
+		tp.Reset()
+		if tp.GetScore() != 0 || tp.GetCombo() != 0 {
+			t.Errorf("after reset = (%d, %d), want (0, 0)", tp.GetScore(), tp.GetCombo())
+		}
+	})
+
+	// **KV 往復で消えないこと。** 決着の表示は保存のあとのリクエストで読まれる。
+	t.Run("the score survives the snapshot", func(t *testing.T) {
+		tp := newBoard()
+		if err := tp.Remove(TriPeaksRowCnt-1, 0); err != nil {
+			t.Fatalf("remove: %v", err)
+		}
+		data, err := json.Marshal(tp)
+		if err != nil {
+			t.Fatalf("marshal: %v", err)
+		}
+		var back TriPeaks
+		if err := json.Unmarshal(data, &back); err != nil {
+			t.Fatalf("unmarshal: %v", err)
+		}
+		if back.GetScore() != tp.GetScore() || back.GetCombo() != tp.GetCombo() {
+			t.Errorf("restored = (%d, %d), want (%d, %d)",
+				back.GetScore(), back.GetCombo(), tp.GetScore(), tp.GetCombo())
+		}
+	})
+}
+
+// 列がどの山に属するかの対応。**ここがずれると山の完成ボーナスが別の山に付く。**
+func TestTriPeaks_PeakOfColumn(t *testing.T) {
+	for col, want := range map[int]int{0: 0, 1: 0, 2: 0, 3: 1, 4: 1, 5: 1, 6: 2, 7: 2, 8: 2, 9: 2} {
+		if got := triPeaksPeakOfColumn(col); got != want {
+			t.Errorf("triPeaksPeakOfColumn(%d) = %d, want %d", col, got, want)
+		}
+	}
+}
+
+// 壊れた得点を持つスナップショットは拒む。負の値が通ると、復元しただけで
+// 得点が減る盤面ができてしまう。
+func TestTriPeaks_SnapshotRejectsNegativeScore(t *testing.T) {
+	tp := NewDefaultTriPeaks()
+	tp.Reset()
+	data, err := json.Marshal(tp)
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	for _, tc := range []struct{ name, from, to string }{
+		{"negative score", `"sc":0`, `"sc":-1`},
+		{"negative chain", `"ch":0`, `"ch":-1`},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			tampered := strings.Replace(string(data), tc.from, tc.to, 1)
+			if tampered == string(data) {
+				t.Fatal("改竄が効いていない。キー名が変わったらここも直すこと")
+			}
+			var back TriPeaks
+			if err := json.Unmarshal([]byte(tampered), &back); err == nil {
+				t.Error("negative value was accepted")
+			}
+		})
+	}
 }

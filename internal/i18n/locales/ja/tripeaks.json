@@ -16,5 +16,6 @@
   "hintDraw": "ヒント: ストックからカードを引いてください",
   "hintUnknown": "ヒント: 不明",
   "helpExampleHint": "  h                        次の一手を教えてもらう",
-  "helpUndo": "  u                        1手戻す"
+  "helpUndo": "  u                        1手戻す",
+  "cuiScoreLine": "スコア: {{score}}"
 }

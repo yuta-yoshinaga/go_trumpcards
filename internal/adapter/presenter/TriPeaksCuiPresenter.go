@@ -121,6 +121,10 @@ func (pr *TriPeaksCuiPresenter) Output(t interfaces.TriPeaksGame, lastErr error)
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
 				"count", strconv.Itoa(t.GetMoveCount())) +
 				cuiSolitaireUndoHint(t.CanUndo()) + "\n")
+			// **得点は Web だけの概念だった。** 計算がフロントの hook にしか無く、
+			// CUI からは参照する値がサーバ側に存在しなかった (#5511)。
+			b.WriteString(i18n.Tf("tripeaks.cuiScoreLine",
+				"score", strconv.Itoa(t.GetScore())) + "\n")
 		case domain.TriPeaksPhaseGameClear:
 			b.WriteString(color.Green(i18n.T("cuiSolitaireGameClear")) + " " +
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(t.GetMoveCount())) + "\n")
