@@ -30,6 +30,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { parseSpoonsCommand, SPOONS_HELP } from '../utils/cli/commands/spoonsCommands';
 import { formatSpoonsState } from '../utils/cli/formatters/spoonsFormatter';
+import { hintCliText, isHintCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { computeSpoonsRankGroups } from '../utils/spoonsRankGroups';
@@ -129,20 +130,6 @@ function SpoonsPageContent() {
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('spoons');
-  const cliConfig: CliGameConfig<SpoonsResponse, Parameters<typeof spoonsApi.exec>> = useMemo(
-    () => ({
-      gameName: 'spoons',
-      parseCommand: parseSpoonsCommand,
-      formatResponse: formatSpoonsState,
-      helpText: SPOONS_HELP,
-    }),
-    [],
-  );
-  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
-
-  const { cardWidth } = useCardDimensions();
-  const { playSound } = useSound();
-  const phaseNames = usePhaseNames('spoons', SPOONS_PHASE_KEYS);
 
   // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
   // だけフック数が変わってページが骨組みのまま固まる (#4561)。
@@ -151,6 +138,21 @@ function SpoonsPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('spoons', state);
+  const cliConfig: CliGameConfig<SpoonsResponse, Parameters<typeof spoonsApi.exec>> = useMemo(
+    () => ({
+      gameName: 'spoons',
+      parseCommand: parseSpoonsCommand,
+      formatResponse: formatSpoonsState,
+      helpText: SPOONS_HELP,
+      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+    }),
+    [frontendHint],
+  );
+  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
+
+  const { cardWidth } = useCardDimensions();
+  const { playSound } = useSound();
+  const phaseNames = usePhaseNames('spoons', SPOONS_PHASE_KEYS);
 
   // Chime the instant the grab window opens (false→true) — a static "grab now!"
   // text alone was easy to miss in this reflex game.

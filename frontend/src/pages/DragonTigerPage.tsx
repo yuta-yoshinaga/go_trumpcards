@@ -32,6 +32,7 @@ import { DragonTigerBetType, DragonTigerHistoryResult, DragonTigerPhase } from '
 import type { TutorialStep } from '../types/tutorial';
 import { DRAGONTIGER_CLI_HELP, parseDragonTigerCommand } from '../utils/cli/commands/dragontigerCommands';
 import { formatDragonTigerState } from '../utils/cli/formatters/dragontigerFormatter';
+import { hintCliText, isHintCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -61,14 +62,23 @@ function DragonTigerPageContent() {
   const { state, loading, error, exec: execApi, retry } = useGameApi(dragontigerApi.exec);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('dragontiger');
+
+  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
+  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('dragontiger', state);
   const cliConfig: CliGameConfig<DragonTigerResponse, Parameters<typeof dragontigerApi.exec>> = useMemo(
     () => ({
       gameName: 'dragontiger',
       parseCommand: parseDragonTigerCommand,
       formatResponse: formatDragonTigerState,
       helpText: DRAGONTIGER_CLI_HELP,
+      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
     }),
-    [],
+    [frontendHint],
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
@@ -108,14 +118,6 @@ function DragonTigerPageContent() {
     [execApi, handleBet, handleRebet, isBetPhase, isEndPhase, canRebet],
   );
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading });
-
-  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
-  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('dragontiger', state);
 
   if (!state) return <GameSkeleton gameKey="dragontiger" layout={{ kind: 'casino-table', sections: [1, 1] }} />;
 

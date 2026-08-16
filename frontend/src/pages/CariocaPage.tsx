@@ -28,6 +28,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { canLayoffCariocaMeld, describeCariocaSlotShortfall, evaluateCariocaContractSlot } from '../utils/cariocaUtils';
 import { CARIOCA_HELP, parseCariocaCommand } from '../utils/cli/commands/cariocaCommands';
 import { formatCariocaState } from '../utils/cli/formatters/cariocaFormatter';
+import { hintCliText, isHintCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 
 /** Phase identifiers for Carioca. */
@@ -91,14 +92,23 @@ function CariocaPageContent() {
   // CLI mode. Carioca は CUI プレゼンターがあるのに Web からその表現へ行けなかった
   // (#4849)。他の extra worker のゲームと同じ配線。
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('carioca');
+
+  // **フックは `if (!state)` より前。**後ろに置くとスケルトン中だけフック数が
+  // 変わり、StrictMode でも本番ビルドでも検出できない形で壊れる (#4561)。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('carioca', state);
   const cliConfig: CliGameConfig<CariocaResponse, Parameters<typeof cariocaApi.exec>> = useMemo(
     () => ({
       gameName: 'carioca',
       parseCommand: parseCariocaCommand,
       formatResponse: formatCariocaState,
       helpText: CARIOCA_HELP,
+      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
     }),
-    [],
+    [frontendHint],
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
@@ -221,14 +231,6 @@ function CariocaPageContent() {
       return { ev: evaluateCariocaContractSlot(slot, cards), shortfall: describeCariocaSlotShortfall(slot, cards) };
     });
   }, [state, humanPlayer, contractSlots]);
-
-  // **フックは `if (!state)` より前。**後ろに置くとスケルトン中だけフック数が
-  // 変わり、StrictMode でも本番ビルドでも検出できない形で壊れる (#4561)。
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('carioca', state);
 
   // humanPlayer gates slotEvaluations population, so checking it here keeps the
   // intent obvious; the length>0 guard prevents `[].every(...)` from vacuously

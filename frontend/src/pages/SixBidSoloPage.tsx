@@ -28,6 +28,7 @@ import { SixBidSoloPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { parseSixBidSoloCommand, SIXBIDSOLO_HELP } from '../utils/cli/commands/sixbidsoloCommands';
 import { formatSixBidSoloState } from '../utils/cli/formatters/sixbidsoloFormatter';
+import { hintCliText, isHintCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 
 /** The six bids, in ascending order. Index 0 is a pass and is never offered. */
@@ -107,19 +108,6 @@ function SixBidSoloPageContent() {
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('sixbidsolo');
-  const cliConfig: CliGameConfig<SixBidSoloResponse, Parameters<typeof sixBidSoloApi.exec>> = useMemo(
-    () => ({
-      gameName: 'sixbidsolo',
-      parseCommand: parseSixBidSoloCommand,
-      formatResponse: formatSixBidSoloState,
-      helpText: SIXBIDSOLO_HELP,
-    }),
-    [],
-  );
-  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
-
-  const { cardWidth } = useCardDimensions();
-  const phaseNames = usePhaseNames('sixbidsolo', SIXBIDSOLO_PHASE_KEYS);
 
   // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
   // だけフック数が変わってページが骨組みのまま固まる (#4561)。
@@ -128,6 +116,20 @@ function SixBidSoloPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('sixbidsolo', state);
+  const cliConfig: CliGameConfig<SixBidSoloResponse, Parameters<typeof sixBidSoloApi.exec>> = useMemo(
+    () => ({
+      gameName: 'sixbidsolo',
+      parseCommand: parseSixBidSoloCommand,
+      formatResponse: formatSixBidSoloState,
+      helpText: SIXBIDSOLO_HELP,
+      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+    }),
+    [frontendHint],
+  );
+  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
+
+  const { cardWidth } = useCardDimensions();
+  const phaseNames = usePhaseNames('sixbidsolo', SIXBIDSOLO_PHASE_KEYS);
 
   if (!state)
     return <GameSkeleton gameKey="sixbidsolo" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 11 }} />;

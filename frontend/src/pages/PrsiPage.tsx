@@ -35,6 +35,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { PRSI_HELP, parsePrsiCommand } from '../utils/cli/commands/prsiCommands';
 import { formatPrsiState } from '../utils/cli/formatters/prsiFormatter';
+import { hintCliText, isHintCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 import { isPrsiLegalPlay } from '../utils/prsiLegal';
@@ -112,8 +113,9 @@ function PrsiPageContent() {
       parseCommand: parsePrsiCommand,
       formatResponse: formatPrsiState,
       helpText: PRSI_HELP,
+      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
     }),
-    [],
+    [frontendHint],
   );
   const { handleCommand } = useCliGame(gameExec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 

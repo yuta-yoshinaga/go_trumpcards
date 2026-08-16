@@ -40,6 +40,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { valueName } from '../utils/cardUtils';
 import { DOUBT_HELP, parseDoubtCommand } from '../utils/cli/commands/doubtCommands';
 import { formatDoubtState } from '../utils/cli/formatters/doubtFormatter';
+import { hintCliText, isHintCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -126,8 +127,9 @@ function DoubtPageContent() {
       parseCommand: parseDoubtCommand,
       formatResponse: formatDoubtState,
       helpText: DOUBT_HELP,
+      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
     }),
-    [],
+    [frontendHint],
   );
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 

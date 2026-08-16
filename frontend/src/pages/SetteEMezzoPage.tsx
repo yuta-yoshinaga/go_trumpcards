@@ -29,6 +29,7 @@ import { SetteEMezzoPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { parseSetteEMezzoCommand, SETTEMEZZO_HELP } from '../utils/cli/commands/settemezzoCommands';
 import { formatSetteEMezzoState } from '../utils/cli/formatters/settemezzoFormatter';
+import { hintCliText, isHintCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 
 const BET_OPTIONS = [10, 50, 100, 500];
@@ -62,14 +63,23 @@ function SetteEMezzoPageContent() {
   const { state, loading, error, retry } = game;
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('settemezzo');
+
+  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
+  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('settemezzo', state);
   const cliConfig: CliGameConfig<SetteEMezzoResponse, Parameters<typeof settemezzoApi.exec>> = useMemo(
     () => ({
       gameName: 'settemezzo',
       parseCommand: parseSetteEMezzoCommand,
       formatResponse: formatSetteEMezzoState,
       helpText: SETTEMEZZO_HELP,
+      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
     }),
-    [],
+    [frontendHint],
   );
   const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const { cardWidth } = useCardDimensions();
@@ -89,14 +99,6 @@ function SetteEMezzoPageContent() {
   );
 
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!isPlayerTurn && !loading });
-
-  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
-  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('settemezzo', state);
 
   if (!state) {
     return <GameSkeleton gameKey="settemezzo" layout={{ kind: 'tableau', topRow: 1, tableau: 3 }} />;

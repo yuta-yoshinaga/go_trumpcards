@@ -28,6 +28,7 @@ import {
   TIENLEN_HELP,
   type TienLenCliArgs,
 } from '../utils/cli/commands/tienlenCommands';
+import { hintCliText, isHintCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { findPlayerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -104,8 +105,9 @@ function TienLenPageContent() {
       parseCommand: parseTienLenCommand,
       formatResponse: formatTienLenState,
       helpText: [...TIENLEN_HELP],
+      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
     }),
-    [],
+    [frontendHint],
   );
   const { handleCommand } = useCliGame(callApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 

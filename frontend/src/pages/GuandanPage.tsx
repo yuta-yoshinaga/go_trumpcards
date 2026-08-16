@@ -28,6 +28,7 @@ import { GuandanPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { GUANDAN_HELP, parseGuandanCommand } from '../utils/cli/commands/guandanCommands';
 import { formatGuandanState } from '../utils/cli/formatters/guandanFormatter';
+import { hintCliText, isHintCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { guandanEvaluate, guandanIsBomb } from '../utils/guandanCombo';
 
@@ -110,19 +111,6 @@ function GuandanPageContent() {
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('guandan');
-  const cliConfig: CliGameConfig<GuandanResponse, Parameters<typeof guandanApi.exec>> = useMemo(
-    () => ({
-      gameName: 'guandan',
-      parseCommand: parseGuandanCommand,
-      formatResponse: formatGuandanState,
-      helpText: GUANDAN_HELP,
-    }),
-    [],
-  );
-  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
-
-  const { cardWidth } = useCardDimensions();
-  const phaseNames = usePhaseNames('guandan', GUANDAN_PHASE_KEYS);
 
   // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
   // だけフック数が変わってページが骨組みのまま固まる (#4561)。
@@ -131,6 +119,20 @@ function GuandanPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('guandan', state);
+  const cliConfig: CliGameConfig<GuandanResponse, Parameters<typeof guandanApi.exec>> = useMemo(
+    () => ({
+      gameName: 'guandan',
+      parseCommand: parseGuandanCommand,
+      formatResponse: formatGuandanState,
+      helpText: GUANDAN_HELP,
+      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+    }),
+    [frontendHint],
+  );
+  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
+
+  const { cardWidth } = useCardDimensions();
+  const phaseNames = usePhaseNames('guandan', GUANDAN_PHASE_KEYS);
 
   // 選択中の役プレビュー (#4901)。サーバに拒否されて初めて分かる、では遅い。
   const selectedCombo = useMemo(() => {

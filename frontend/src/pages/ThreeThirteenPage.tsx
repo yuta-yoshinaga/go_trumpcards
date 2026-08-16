@@ -32,6 +32,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { parseThreeThirteenCommand, THREETHIRTEEN_HELP } from '../utils/cli/commands/threethirteenCommands';
 import { formatThreeThirteenState } from '../utils/cli/formatters/threethirteenFormatter';
+import { hintCliText, isHintCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -105,14 +106,23 @@ function ThreeThirteenPageContent() {
   const { cardWidth } = useCardDimensions();
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('threethirteen');
+
+  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
+  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('threethirteen', state);
   const cliConfig: CliGameConfig<ThreeThirteenResponse, Parameters<typeof threethirteenApi.exec>> = useMemo(
     () => ({
       gameName: 'threethirteen',
       parseCommand: parseThreeThirteenCommand,
       formatResponse: formatThreeThirteenState,
       helpText: THREETHIRTEEN_HELP,
+      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
     }),
-    [],
+    [frontendHint],
   );
   const { handleCommand } = useCliGame(gameExec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
@@ -163,14 +173,6 @@ function ThreeThirteenPageContent() {
     }
     return bestThreeThirteenDiscardValue(cards, state.wildRank);
   }, [state, selectedCardIndices]);
-
-  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
-  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('threethirteen', state);
 
   if (!state)
     return (

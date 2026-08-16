@@ -44,6 +44,7 @@ import {
 } from '../utils/chinchonDeadwood';
 import { CHINCHON_HELP, parseChinchonCommand } from '../utils/cli/commands/chinchonCommands';
 import { formatChinchonState } from '../utils/cli/formatters/chinchonFormatter';
+import { hintCliText, isHintCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -119,14 +120,23 @@ function ChinchonPageContent() {
   const { cardWidth } = useCardDimensions();
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('chinchon');
+
+  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
+  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('chinchon', state);
   const cliConfig: CliGameConfig<ChinchonResponse, Parameters<typeof chinchonApi.exec>> = useMemo(
     () => ({
       gameName: 'chinchon',
       parseCommand: parseChinchonCommand,
       formatResponse: formatChinchonState,
       helpText: CHINCHON_HELP,
+      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
     }),
-    [],
+    [frontendHint],
   );
   const { handleCommand } = useCliGame(gameExec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
@@ -221,14 +231,6 @@ function ChinchonPageContent() {
     }
     return result;
   }, [state, selectedCardIndices]);
-
-  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
-  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('chinchon', state);
 
   if (!state)
     return (

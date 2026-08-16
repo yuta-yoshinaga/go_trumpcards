@@ -28,6 +28,7 @@ import { VintPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { parseVintCommand, VINT_HELP } from '../utils/cli/commands/vintCommands';
 import { formatVintState } from '../utils/cli/formatters/vintFormatter';
+import { hintCliText, isHintCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { vintBidBeats, vintLevelHasLegalBid, vintNextLegalBid } from '../utils/vintBid';
 
@@ -110,19 +111,6 @@ function VintPageContent() {
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('vint');
-  const cliConfig: CliGameConfig<VintResponse, Parameters<typeof vintApi.exec>> = useMemo(
-    () => ({
-      gameName: 'vint',
-      parseCommand: parseVintCommand,
-      formatResponse: formatVintState,
-      helpText: VINT_HELP,
-    }),
-    [],
-  );
-  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
-
-  const { cardWidth } = useCardDimensions();
-  const phaseNames = usePhaseNames('vint', VINT_PHASE_KEYS);
 
   // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
   // だけフック数が変わってページが骨組みのまま固まる (#4561)。
@@ -131,6 +119,20 @@ function VintPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('vint', state);
+  const cliConfig: CliGameConfig<VintResponse, Parameters<typeof vintApi.exec>> = useMemo(
+    () => ({
+      gameName: 'vint',
+      parseCommand: parseVintCommand,
+      formatResponse: formatVintState,
+      helpText: VINT_HELP,
+      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+    }),
+    [frontendHint],
+  );
+  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
+
+  const { cardWidth } = useCardDimensions();
+  const phaseNames = usePhaseNames('vint', VINT_PHASE_KEYS);
 
   if (!state)
     return <GameSkeleton gameKey="vint" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 13 }} />;

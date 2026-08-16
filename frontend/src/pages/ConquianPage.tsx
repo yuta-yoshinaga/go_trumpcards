@@ -33,6 +33,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { CONQUIAN_HELP, parseConquianCommand } from '../utils/cli/commands/conquianCommands';
 import { formatConquianState } from '../utils/cli/formatters/conquianFormatter';
+import { hintCliText, isHintCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -144,14 +145,23 @@ function ConquianPageContent() {
   };
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('conquian');
+
+  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
+  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('conquian', state);
   const cliConfig: CliGameConfig<ConquianResponse, Parameters<typeof conquianApi.exec>> = useMemo(
     () => ({
       gameName: 'conquian',
       parseCommand: parseConquianCommand,
       formatResponse: formatConquianState,
       helpText: CONQUIAN_HELP,
+      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
     }),
-    [],
+    [frontendHint],
   );
   const { handleCommand } = useCliGame(gameExec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
@@ -193,14 +203,6 @@ function ConquianPageContent() {
     [handleDrawStock, handleDrawDiscard, canDrawForKbd, state?.discardTop],
   );
   useActionKeyboardNav({ bindings: drawBindings, enabled: canDrawForKbd });
-
-  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
-  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('conquian', state);
 
   if (!state) {
     return (

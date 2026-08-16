@@ -28,6 +28,7 @@ import { LiteraturePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { LITERATURE_HELP, parseLiteratureCommand } from '../utils/cli/commands/literatureCommands';
 import { formatLiteratureState } from '../utils/cli/formatters/literatureFormatter';
+import { hintCliText, isHintCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 
 /** Half-suit ownership codes (sync: `LiteratureHalfSuitState`). */
@@ -105,14 +106,23 @@ function LiteraturePageContent() {
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('literature');
+
+  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
+  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('literature', state);
   const cliConfig: CliGameConfig<LiteratureResponse, Parameters<typeof literatureApi.exec>> = useMemo(
     () => ({
       gameName: 'literature',
       parseCommand: parseLiteratureCommand,
       formatResponse: formatLiteratureState,
       helpText: LITERATURE_HELP,
+      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
     }),
-    [],
+    [frontendHint],
   );
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
@@ -123,14 +133,6 @@ function LiteraturePageContent() {
   // gifts it to the opponents. Every other irreversible action here is confirmed
   // (#2099); this one was not (#4822).
   const [claimConfirmOpen, setClaimConfirmOpen] = useState(false);
-
-  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
-  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('literature', state);
 
   if (!state)
     return <GameSkeleton gameKey="literature" layout={{ kind: 'trick-taking', trickArea: false, footerHandSize: 8 }} />;

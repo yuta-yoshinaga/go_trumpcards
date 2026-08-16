@@ -35,6 +35,7 @@ import { LetItRidePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { LETITRIDE_HELP, parseLetitrideCommand } from '../utils/cli/commands/letitrideCommands';
 import { formatLetitrideState } from '../utils/cli/formatters/letitrideFormatter';
+import { hintCliText, isHintCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 
 /** Let It Ride tutorial step definitions. */
@@ -104,8 +105,9 @@ function LetItRidePageContent() {
       parseCommand: parseLetitrideCommand,
       formatResponse: formatLetitrideState,
       helpText: LETITRIDE_HELP,
+      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
     }),
-    [],
+    [frontendHint],
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 

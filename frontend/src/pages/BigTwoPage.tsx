@@ -32,6 +32,7 @@ import {
   formatBigTwoState,
   parseBigTwoCommand,
 } from '../utils/cli/commands/bigtwoCommands';
+import { hintCliText, isHintCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -112,8 +113,9 @@ function BigTwoPageContent() {
       parseCommand: parseBigTwoCommand,
       formatResponse: formatBigTwoState,
       helpText: [...BIGTWO_HELP],
+      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
     }),
-    [],
+    [frontendHint],
   );
   const { handleCommand } = useCliGame(callApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 

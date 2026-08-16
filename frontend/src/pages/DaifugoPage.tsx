@@ -38,6 +38,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardLabel } from '../utils/cardUtils';
 import { DAIFUGO_HELP, parseDaifugoCommand } from '../utils/cli/commands/daifugoCommands';
 import { formatDaifugoState } from '../utils/cli/formatters/daifugoFormatter';
+import { hintCliText, isHintCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { findPlayerName, playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -111,22 +112,23 @@ function DaifugoPageContent() {
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('daifugo');
-  const daifugoCliConfig: CliGameConfig<DaifugoResponse, Parameters<typeof daifugoApi.exec>> = useMemo(
-    () => ({
-      gameName: 'daifugo',
-      parseCommand: parseDaifugoCommand,
-      formatResponse: formatDaifugoState,
-      helpText: DAIFUGO_HELP,
-    }),
-    [],
-  );
-  const { handleCommand } = useCliGame(exec, daifugoCliConfig, state, { addInput, addOutput, addError, clearLog });
 
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('daifugo', state);
+  const daifugoCliConfig: CliGameConfig<DaifugoResponse, Parameters<typeof daifugoApi.exec>> = useMemo(
+    () => ({
+      gameName: 'daifugo',
+      parseCommand: parseDaifugoCommand,
+      formatResponse: formatDaifugoState,
+      helpText: DAIFUGO_HELP,
+      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+    }),
+    [frontendHint],
+  );
+  const { handleCommand } = useCliGame(exec, daifugoCliConfig, state, { addInput, addOutput, addError, clearLog });
 
   const { cardWidth } = useCardDimensions();
   const isMobile = useIsMobile();

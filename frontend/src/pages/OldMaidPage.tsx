@@ -35,6 +35,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardLabel } from '../utils/cardUtils';
 import { OLDMAID_HELP, parseOldmaidCommand } from '../utils/cli/commands/oldmaidCommands';
 import { formatOldmaidState } from '../utils/cli/formatters/oldmaidFormatter';
+import { hintCliText, isHintCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { findPlayerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -125,8 +126,9 @@ function OldMaidPageContent() {
       parseCommand: parseOldmaidCommand,
       formatResponse: formatOldmaidState,
       helpText: OLDMAID_HELP,
+      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
     }),
-    [],
+    [frontendHint],
   );
   const { handleCommand } = useCliGame(gameExec, cliConfig, displayState, { addInput, addOutput, addError, clearLog });
 

@@ -27,6 +27,7 @@ import type { Card, ShitheadConfig, ShitheadResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
 import { parseShitheadCommand, SHITHEAD_HELP } from '../utils/cli/commands/shitheadCommands';
 import { formatShitheadState } from '../utils/cli/formatters/shitheadFormatter';
+import { hintCliText, isHintCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 
 /** Shithead tutorial step definitions. */
@@ -93,8 +94,9 @@ function ShitheadPageContent() {
       parseCommand: parseShitheadCommand,
       formatResponse: formatShitheadState,
       helpText: SHITHEAD_HELP,
+      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(hint) : null),
     }),
-    [],
+    [hint],
   );
   const { handleCommand } = useCliGame(dispatch, cliConfig, state, {
     addInput: cliMode.addInput,

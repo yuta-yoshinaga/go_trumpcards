@@ -28,6 +28,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { CONTRACTRUMMY_HELP, parseContractRummyCommand } from '../utils/cli/commands/contractrummyCommands';
 import { formatContractRummyState } from '../utils/cli/formatters/contractrummyFormatter';
+import { hintCliText, isHintCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { evaluateContractSlot, isContractRummyMeld } from '../utils/contractRummyUtils';
 
@@ -93,14 +94,23 @@ function ContractRummyPageContent() {
   const phaseNames = usePhaseNames('contractrummy', CR_PHASE_KEYS);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('contractrummy');
+
+  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
+  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('contractrummy', state);
   const cliConfig: CliGameConfig<ContractRummyResponse, Parameters<typeof execApi>> = useMemo(
     () => ({
       gameName: 'contractrummy',
       parseCommand: parseContractRummyCommand,
       formatResponse: formatContractRummyState,
       helpText: CONTRACTRUMMY_HELP,
+      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
     }),
-    [],
+    [frontendHint],
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
@@ -231,14 +241,6 @@ function ContractRummyPageContent() {
   // enabling submit on a contract with zero slots.
   const allSlotsSatisfied =
     humanPlayer != null && slotEvaluations.length > 0 && slotEvaluations.every((ev) => ev.satisfied);
-
-  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
-  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('contractrummy', state);
 
   if (!state) {
     return (

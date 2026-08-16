@@ -28,6 +28,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { valueName } from '../utils/cardUtils';
 import { FARO_HELP, parseFaroCommand } from '../utils/cli/commands/faroCommands';
 import { formatFaroState } from '../utils/cli/formatters/faroFormatter';
+import { hintCliText, isHintCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { FARO_RANK_COUNT, mergeSeenCards, remainingByRank } from '../utils/faroCaseKeeper';
 
@@ -128,18 +129,6 @@ function FaroPageContent() {
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('faro');
-  const cliConfig: CliGameConfig<FaroResponse, Parameters<typeof faroApi.exec>> = useMemo(
-    () => ({
-      gameName: 'faro',
-      parseCommand: parseFaroCommand,
-      formatResponse: formatFaroState,
-      helpText: FARO_HELP,
-    }),
-    [],
-  );
-  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
-
-  const { cardWidth } = useCardDimensions();
 
   // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
   // だけフック数が変わってページが骨組みのまま固まる (#4561)。
@@ -148,6 +137,19 @@ function FaroPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('faro', state);
+  const cliConfig: CliGameConfig<FaroResponse, Parameters<typeof faroApi.exec>> = useMemo(
+    () => ({
+      gameName: 'faro',
+      parseCommand: parseFaroCommand,
+      formatResponse: formatFaroState,
+      helpText: FARO_HELP,
+      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+    }),
+    [frontendHint],
+  );
+  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
+
+  const { cardWidth } = useCardDimensions();
 
   if (!state)
     return <GameSkeleton gameKey="faro" layout={{ kind: 'casino-table', sections: [2], footerStyle: 'bet' }} />;

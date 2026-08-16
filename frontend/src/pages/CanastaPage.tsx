@@ -34,6 +34,7 @@ import { canastaMinMeld, canastaSelectionPoints } from '../utils/canastaScore';
 import { cardAlt } from '../utils/cardAlt';
 import { CANASTA_HELP, parseCanastaCommand } from '../utils/cli/commands/canastaCommands';
 import { formatCanastaState } from '../utils/cli/formatters/canastaFormatter';
+import { hintCliText, isHintCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -106,8 +107,9 @@ function CanastaPageContent() {
       parseCommand: parseCanastaCommand,
       formatResponse: formatCanastaState,
       helpText: CANASTA_HELP,
+      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
     }),
-    [],
+    [frontendHint],
   );
   const { handleCommand } = useCliGame(gameExec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 

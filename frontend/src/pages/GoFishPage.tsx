@@ -36,6 +36,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { valueName } from '../utils/cardUtils';
 import { GOFISH_HELP, parseGofishCommand } from '../utils/cli/commands/gofishCommands';
 import { formatGofishState } from '../utils/cli/formatters/gofishFormatter';
+import { hintCliText, isHintCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -117,8 +118,9 @@ function GoFishPageContent() {
       parseCommand: parseGofishCommand,
       formatResponse: formatGofishState,
       helpText: GOFISH_HELP,
+      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
     }),
-    [],
+    [frontendHint],
   );
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 

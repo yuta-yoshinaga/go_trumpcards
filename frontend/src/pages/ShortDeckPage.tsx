@@ -43,6 +43,7 @@ import { HoldemPhase, HoldemRebuyPhaseType } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { parseShortdeckCommand, SHORTDECK_HELP } from '../utils/cli/commands/shortdeckCommands';
 import { formatShortdeckState } from '../utils/cli/formatters/shortdeckFormatter';
+import { hintCliText, isHintCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { findPlayerName } from '../utils/playerUtils';
 import { shortDeckBestFive } from '../utils/shortDeckBestFive';
@@ -128,8 +129,9 @@ function ShortDeckPageContent() {
       parseCommand: parseShortdeckCommand,
       formatResponse: formatShortdeckState,
       helpText: SHORTDECK_HELP,
+      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(hint) : null),
     }),
-    [],
+    [hint],
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 

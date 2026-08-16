@@ -32,6 +32,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { GINRUMMY_HELP, parseGinrummyCommand } from '../utils/cli/commands/ginrummyCommands';
 import { formatGinrummyState } from '../utils/cli/formatters/ginrummyFormatter';
+import { hintCliText, isHintCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import {
   bestDeadwoodValue,
@@ -125,8 +126,9 @@ function GinRummyPageContent() {
       parseCommand: parseGinrummyCommand,
       formatResponse: formatGinrummyState,
       helpText: GINRUMMY_HELP,
+      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
     }),
-    [],
+    [frontendHint],
   );
   const { handleCommand } = useCliGame(gameExec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 

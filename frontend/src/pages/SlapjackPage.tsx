@@ -32,6 +32,7 @@ import { SlapjackEventKind, SlapjackPendingKind, SlapjackPhase } from '../types/
 import type { TutorialStep } from '../types/tutorial';
 import { parseSlapjackCommand, slapjackHelp } from '../utils/cli/commands/slapjackCommands';
 import { formatSlapjackState } from '../utils/cli/formatters/slapjackFormatter';
+import { hintCliText, isHintCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -155,8 +156,9 @@ function SlapjackPageContent() {
       parseCommand: parseSlapjackCommand,
       formatResponse: formatSlapjackState,
       helpText: slapjackHelp(),
+      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
     }),
-    [i18n.language],
+    [i18n.language, frontendHint],
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
