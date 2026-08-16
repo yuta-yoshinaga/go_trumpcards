@@ -93,9 +93,24 @@ test.describe('Honeymoon Bridge E2E', () => {
     await navigateTo(page, '/honeymoonbridge');
     await reachTheAuction(page);
 
+    // **1回パスしても競りは終わらない。** 締まるのは連続2回パスしたときだけで
+    // (domain の passCount)、相手が上を宣言すると passCount は 0 に戻り、手番は
+    // こちらへ返ってくる —— つまりパスボタンは再び現れる。「パスしたらボタンが
+    // 消える」と書いていたので、CPU が宣言した配りでだけ落ちていた。
+    const contractBefore = await page.getByTestId('hb-contract').innerText();
     await page.getByTestId('hb-pass-btn').click();
-    // 相手が宣言するか、両者パスでディールが流れる——どちらでも競りは終わる。
-    await expect(page.getByTestId('hb-pass-btn')).toHaveCount(0, { timeout: TIMEOUT_ACTION });
+
+    // パスが受理されたなら、競りが締まる (ボタンが消える) か、相手が上を宣言して
+    // 契約表示が変わるか、どちらかは必ず起きる。どちらも起きないのは拒否された時。
+    await expect
+      .poll(
+        async () => {
+          if ((await page.getByTestId('hb-pass-btn').count()) === 0) return true;
+          return (await page.getByTestId('hb-contract').innerText()) !== contractBefore;
+        },
+        { timeout: TIMEOUT_ACTION },
+      )
+      .toBe(true);
   });
 
   test('can reset the game via the reset confirmation dialog', async ({ page }) => {
