@@ -19,23 +19,28 @@ afterAll(() => {
  * `codes` are the messageCode strings the fake locale files define; the presenter source
  * is supplied verbatim so each case can choose the emission form under test.
  */
-function fixture(presenterSrc, codes) {
+function fixture(presenterSrc, codes, domainSrc = '') {
   const dir = mkdtempSync(join(tmpdir(), 'message-codes-'));
   dirs.push(dir);
   const presenters = join(dir, 'presenter');
   mkdirSync(presenters);
   writeFileSync(join(presenters, 'DemoWebPresenter.go'), presenterSrc);
+  // 3 つめの発火経路: ドメインのエラーが i18n キーを名乗る形。プレゼンタしか
+  // 走査していなかったので 19 件足しても件数が動かなかった (#5556)。
+  const domain = join(dir, 'domain');
+  mkdirSync(domain);
+  writeFileSync(join(domain, 'Demo.go'), domainSrc);
   for (const lang of ['ja', 'en']) {
     mkdirSync(join(dir, 'locales', lang), { recursive: true });
     const messageCode = Object.fromEntries(codes.map((c) => [c, `${lang}:${c}`]));
     writeFileSync(join(dir, 'locales', lang, 'common.json'), JSON.stringify({ messageCode }));
   }
-  return { presenters, locales: join(dir, 'locales') };
+  return { presenters, locales: join(dir, 'locales'), domain };
 }
 
-function check(presenterSrc, codes) {
-  const { presenters, locales } = fixture(presenterSrc, codes);
-  const r = spawnSync(process.execPath, [GUARD, presenters, locales], { encoding: 'utf8' });
+function check(presenterSrc, codes, domainSrc = '') {
+  const { presenters, locales, domain } = fixture(presenterSrc, codes, domainSrc);
+  const r = spawnSync(process.execPath, [GUARD, presenters, locales, domain], { encoding: 'utf8' });
   return { code: r.status, out: `${r.stdout}${r.stderr}` };
 }
 
@@ -95,5 +100,23 @@ describe('check-message-codes', () => {
     const r = spawnSync(process.execPath, [GUARD, presenters, locales], { encoding: 'utf8' });
     expect(r.status).toBe(1);
     expect(`${r.stdout}${r.stderr}`).toContain('[en]');
+  });
+
+  const DOMAIN_FORM = `func (d *Demo) Move() error {
+	return NewDomainErrorCode(ErrInvalidPlay, "demo.domainError", nil)
+}
+`;
+
+  // ドメイン発のコードも数える。ここを見ていないと、未翻訳のまま「全コード
+  // 翻訳済み」と報告する (#5556)。
+  it('accepts a domain-error code that both locales translate', () => {
+    const r = check(RETURN_FORM, ['demo.returned', 'demo.domainError'], DOMAIN_FORM);
+    expect(r.code).toBe(0);
+  });
+
+  it('rejects a domain-error code neither locale translates', () => {
+    const r = check(RETURN_FORM, ['demo.returned'], DOMAIN_FORM);
+    expect(r.code).toBe(1);
+    expect(r.out).toContain('demo.domainError');
   });
 });

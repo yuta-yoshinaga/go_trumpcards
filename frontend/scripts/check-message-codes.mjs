@@ -35,7 +35,13 @@ const PRESENTER_DIR = process.argv[2] ?? join(REPO, 'internal/adapter/presenter'
 // Domain errors can name a code too (NewDomainErrorCode), and those reach the
 // client through the same messageCode field. Scanning only presenters missed
 // them entirely -- the count did not move when 19 were added (#5556).
-const DOMAIN_DIR = process.argv[4] ?? join(REPO, 'internal/domain');
+// Only defaults to the real tree when no explicit presenter dir was given. The
+// guard's own test passes fixture dirs as argv[2]/argv[3]; if this kept pointing
+// at internal/domain, every fixture run would also pick up the repo's real
+// NewDomainErrorCode codes, which the fixture locales do not define -- the guard
+// would fail on correct input and its test would be measuring the repo, not the
+// fixture.
+const DOMAIN_DIR = process.argv[4] ?? (process.argv[2] ? null : join(REPO, 'internal/domain'));
 const LOCALES = process.argv[3] ?? join(FRONTEND, 'src/i18n/locales');
 const REAL_FLOOR = 1050;
 const FIXTURE_FLOOR = 1;
@@ -142,7 +148,9 @@ async function emittedCodes() {
   // untranslated one fails exactly like the other two forms -- but it lives
   // outside internal/adapter/presenter, so scanning only presenters could not
   // see it. Adding 19 of them left the reported count unchanged (#5556).
-  const domainFiles = (await readdir(DOMAIN_DIR)).filter((f) => f.endsWith('.go') && !f.endsWith('_test.go'));
+  const domainFiles = DOMAIN_DIR
+    ? (await readdir(DOMAIN_DIR)).filter((f) => f.endsWith('.go') && !f.endsWith('_test.go'))
+    : [];
   for (const name of domainFiles) {
     const text = await readFile(join(DOMAIN_DIR, name), 'utf8');
     for (const m of text.matchAll(/NewDomainErrorCode\(\s*[A-Za-z0-9_.]+\s*,\s*"([a-zA-Z0-9_.]+)"/g)) {
