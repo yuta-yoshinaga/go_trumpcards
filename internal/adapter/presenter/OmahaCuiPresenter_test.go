@@ -2,6 +2,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -992,4 +993,93 @@ func TestOmahaCuiPresenter_ShowsWhetherCallingIsPlusEV(t *testing.T) {
 		assert.NotContains(t, out, i18n.T("omaha.learningEvPlus"))
 		assert.NotContains(t, out, i18n.T("omaha.learningEvMinus"))
 	})
+}
+
+// #5484: Big O は5枚のホールカードから必ず2枚だけ使う。10通りの組み合わせの
+// どれが役になったのかを Web は cardUsed/cardUnused で示すのに、CUI の結果表示は
+// 役名とキッカーだけで、RoundResult.BestHand を一度も使っていなかった。
+func TestOmahaCuiPresenter_ResultBestHand(t *testing.T) {
+	p := new(presenter.OmahaCuiPresenter)
+	card := func(design, value int) *domain.Card { return domain.NewCard(design, value, false) }
+
+	t.Run("shows the five cards and marks the two that came from the hole", func(t *testing.T) {
+		h, players := makeOmahaForPresenter()
+		h.SetPhase(domain.OmahaPhaseEnd)
+		// ホール5枚 (Big O)。うち ♠A と ♠K がベストに入る。
+		for _, c := range []*domain.Card{
+			card(domain.CardDesignSpade, 1), card(domain.CardDesignSpade, 13),
+			card(domain.CardDesignHeart, 2), card(domain.CardDesignHeart, 3),
+			card(domain.CardDesignClover, 4),
+		} {
+			players[0].AddCard(c)
+		}
+		best := []*domain.Card{
+			card(domain.CardDesignSpade, 1), card(domain.CardDesignSpade, 13),
+			card(domain.CardDesignSpade, 12), card(domain.CardDesignSpade, 11), card(domain.CardDesignSpade, 10),
+		}
+		h.SetRoundResults([]domain.HoldemResult{
+			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: best},
+		})
+
+		out := p.Output(h, nil)
+		// 5枚とも出る (♠ は黒スートなので色コードが付かない)。
+		for _, want := range []string{"♠1", "♠13", "♠12", "♠11", "♠10"} {
+			assert.Contains(t, out, want)
+		}
+		// **ホール由来の2枚にだけ印。**印が5個なら、どれを使ったのか分からない
+		// のと同じ。
+		line := ""
+		for _, l := range strings.Split(out, "\n") {
+			if strings.Contains(l, i18n.T("omaha.resultBestLabel")) {
+				line = l
+			}
+		}
+		assert.NotEmpty(t, line, "ベストハンドの行が出ていない")
+		assert.Equal(t, 2, strings.Count(line, presenter.CuiHoleMark))
+	})
+
+	// マックしたプレイヤーは手を見せない。BestHand が残っていても出さない。
+	t.Run("says nothing for a mucked hand", func(t *testing.T) {
+		h, players := makeOmahaForPresenter()
+		h.SetPhase(domain.OmahaPhaseEnd)
+		players[0].AddCard(card(domain.CardDesignSpade, 1))
+		h.SetRoundResults([]domain.HoldemResult{
+			{PlayerIdx: 0, Mucked: true, BestHand: []*domain.Card{card(domain.CardDesignSpade, 1)}},
+		})
+		assert.NotContains(t, p.Output(h, nil), i18n.T("omaha.resultBestLabel"))
+	})
+
+	// BestHand が空の結果 (フォールド勝ちなど) では行ごと出さない。
+	t.Run("says nothing when there is no best hand", func(t *testing.T) {
+		h, _ := makeOmahaForPresenter()
+		h.SetPhase(domain.OmahaPhaseEnd)
+		h.SetRoundResults([]domain.HoldemResult{
+			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
+		})
+		assert.NotContains(t, p.Output(h, nil), i18n.T("omaha.resultBestLabel"))
+	})
+}
+
+// 凡例は1度だけ。4人ショーダウンで同じ注記が4回並ぶと読みにくい。
+func TestOmahaCuiPresenter_ResultBestLegendShownOnce(t *testing.T) {
+	p := new(presenter.OmahaCuiPresenter)
+	card := func(design, value int) *domain.Card { return domain.NewCard(design, value, false) }
+
+	h, players := makeOmahaForPresenter()
+	h.SetPhase(domain.OmahaPhaseEnd)
+	best := []*domain.Card{
+		card(domain.CardDesignSpade, 1), card(domain.CardDesignSpade, 13),
+		card(domain.CardDesignSpade, 12), card(domain.CardDesignSpade, 11), card(domain.CardDesignSpade, 10),
+	}
+	players[0].AddCard(card(domain.CardDesignSpade, 1))
+	players[1].AddCard(card(domain.CardDesignSpade, 13))
+	h.SetRoundResults([]domain.HoldemResult{
+		{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush", BestHand: best},
+		{PlayerIdx: 1, HandRank: domain.PokerHandFlush, HandName: "Flush", BestHand: best},
+	})
+
+	out := p.Output(h, nil)
+	assert.Equal(t, 1, strings.Count(out, i18n.T("omaha.resultBestLegend")))
+	// それでも各プレイヤーの行にはベストが出る。
+	assert.Equal(t, 2, strings.Count(out, i18n.T("omaha.resultBestLabel")))
 }

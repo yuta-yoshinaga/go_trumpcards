@@ -178,6 +178,13 @@ func cuiIndexedCardListStr(hand cuiCardList) string {
 	return formatCardList(hand, cuiCardStr, "  ", true)
 }
 
+// CuiHoleMark は「その札は自分の手札から出したもの」を示す印。ショーダウンで
+// ベストハンド5枚を並べたとき、どれがボード由来でどれが手札由来かを分ける。
+//
+// **オマハ系は手札から使う枚数が固定** (通常4枚のうち2枚、Big O は5枚のうち2枚)
+// なので、10通りの組み合わせのどれが役になったのかは印が無いと追えない (#5484)。
+const CuiHoleMark = "*"
+
 // CuiLegalMark は「この札は今出せる」ことを示す印。CrazyEights / Wizard /
 // Mushi / GoFish が以前から使っている後置の "*" に合わせている。
 const CuiLegalMark = "*"
