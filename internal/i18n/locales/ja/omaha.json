@@ -56,5 +56,6 @@
   "learningEvMinus": "  -EV (勝率がポットオッズ以下です。コール不利)",
   "resultBest": " / ベスト: {{cards}}",
   "resultBestLabel": "ベスト:",
-  "resultBestLegend": "  (* = 自分の手札から使った札)"
+  "resultBestLegend": "  (* = 自分の手札から使った札)",
+  "scoop": "🏆 スクープ! ハイ・ロー総取り"
 }

@@ -56,5 +56,6 @@
   "learningEvMinus": "  -EV (equity at or below pot odds; calling is unfavorable)",
   "resultBest": " / Best: {{cards}}",
   "resultBestLabel": "Best:",
-  "resultBestLegend": "  (* = card used from the hole)"
+  "resultBestLegend": "  (* = card used from the hole)",
+  "scoop": "🏆 Scoop! took both the high and the low"
 }
