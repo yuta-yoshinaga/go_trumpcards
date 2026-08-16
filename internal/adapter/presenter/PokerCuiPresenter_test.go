@@ -707,3 +707,30 @@ func TestPokerCuiPresenter_ActionLogOutput(t *testing.T) {
 		mockGame.AssertExpectations(t)
 	})
 }
+
+// #5475: 交換枚数が3枚未満だと CPU のフォールド閾値が1ランク上がる、という
+// 実在の戦略要素が Web にも CUI にも説明されていなかった。プレイヤーは自分の
+// 交換枚数が読まれていることを知る手段が無い。
+func TestPokerCuiPresenter_ExchangeRead(t *testing.T) {
+	p := new(presenter.PokerCuiPresenter)
+
+	game := func(phase, humanExchange int) *domain.Poker {
+		g := domain.NewDefaultPoker()
+		g.SetPhase(phase)
+		g.GetPlayers()[0].SetExchangeCount(humanExchange)
+		return g
+	}
+
+	t.Run("warns the human when their exchange count is being read", func(t *testing.T) {
+		assert.Contains(t, p.Output(game(domain.PokerPhaseSecondBet, 1), nil), i18n.T("poker.exchangeRead"))
+	})
+
+	// **閾値ちょうどでは出さない。**「3枚未満」という説明文と挙動を一致させる。
+	t.Run("stays quiet at the threshold", func(t *testing.T) {
+		assert.NotContains(t, p.Output(game(domain.PokerPhaseSecondBet, 3), nil), i18n.T("poker.exchangeRead"))
+	})
+
+	t.Run("stays quiet outside the second betting round", func(t *testing.T) {
+		assert.NotContains(t, p.Output(game(domain.PokerPhaseExchange, 0), nil), i18n.T("poker.exchangeRead"))
+	})
+}

@@ -44,6 +44,7 @@ func (pwp *PokerWebPresenter) ActionLogOutput(p interfaces.PokerGame) string {
 func (pwp *PokerWebPresenter) buildOutput(p interfaces.PokerGame, lastErr error) *controller.PokerWebOutput {
 	resObj := new(controller.PokerWebOutput)
 	resObj.Phase = p.GetPhase()
+	resObj.ExchangeRead = p.IsExchangeRead(0)
 	resObj.Pot = p.GetPot()
 
 	// **判定はドメイン。**Holdem 系と同じ形で、ベッティングフェーズのときだけ
