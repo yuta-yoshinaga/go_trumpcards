@@ -872,18 +872,55 @@ func TestDurak_BoutLimitEndsTheGame(t *testing.T) {
 	}
 	d := domain.NewDurak(domain.NewTrumpCardsShortDeck(), players)
 
-	// 健全な局は上限に触れない (実測の最大は 78 バウト)。
+	// 健全な局は上限から遠い (2026-08-16 実測: 20,000 局での最大は 30 バウト)。
+	//
+	// **「200 局すべてが上限未満」は書けない。** すぐ上のコメントが書いているとおり
+	// 20 万局に 14 局は上限に到達するので、200 局を回すと
+	// 1 - (1 - 14/200000)^200 = 1.4%、およそ 72 回に 1 回このサブテストが落ちる。
+	// 実際 #5799 として無関係な PR の CI を繰り返し赤くしていた。
+	//
+	// 到達した局は異常ではなく、#5415 で入れた打ち切りが正しく働いた局である。
+	// なので到達を許容しつつ、(1) 到達は稀であること (2) 到達しなかった局は上限の
+	// はるか下で終わること (3) 到達した局もちゃんと終局していること、を確かめる。
 	t.Run("a normal game finishes well inside the limit", func(t *testing.T) {
-		for range 200 {
+		const games = 200
+		capped, worstNormal := 0, 0
+		for range games {
 			d.Reset()
 			turns := 0
 			for !d.GetGameEndFlag() && turns < 500 {
 				d.CpuPlay()
 				turns++
 			}
-			assert.True(t, d.GetGameEndFlag())
-			assert.Less(t, d.GetBoutNumber(), domain.DurakMaxBouts)
+			require.True(t, d.GetGameEndFlag(), "局が終わっていない")
+
+			if d.GetBoutNumber() >= domain.DurakMaxBouts {
+				// 上限に達した局が終局していることは、上の require.True が
+				// 全局について既に保証している。ここで assert.True を重ねても
+				// 決して落ちない空のアサーションになるだけなので置かない。
+				// 打ち切り局が敗者を決めることは "every finished game names a
+				// loser" が別に見ている。
+				capped++
+				continue
+			}
+			if d.GetBoutNumber() > worstNormal {
+				worstNormal = d.GetBoutNumber()
+			}
 		}
+
+		// 境界は推測せず実測から決めた (2026-08-16)。この 200 局ループ自体を 300 回
+		// 標本化したところ「200 局中の最大バウト数」は min=21 / p50=25 / p99=29 /
+		// max=31 と狭く分布する。45 なら観測最大の 31 から 45% の余裕があるので
+		// 普通の揺れでは落ちず、バウト数が 2 倍になる退行 (25 -> 50) は捕まえられる。
+		//
+		// 20,000 局での最大も 30 で、コメントにあった「実測の最大は 78」とは合わない。
+		// 78 が何を測った値かは追えなかったので、ここは自分で測った値を根拠にする。
+		const normalBoutCeiling = 45
+		assert.Less(t, worstNormal, normalBoutCeiling,
+			"上限に達しなかった局が長くなりすぎている (2026-08-16 の実測は最大 30 バウト)")
+		// 14/200000 なら 200 局での期待値は 0.014 件。3 件も出るなら頻度が桁違いに増えている。
+		assert.LessOrEqual(t, capped, 3,
+			"上限に達する局が想定より多い (#5414 の実測は 20 万局に 14 局)")
 	})
 
 	// 上限は健全な局の 2 倍以上離れていること。近すぎると普通の局を打ち切る。
