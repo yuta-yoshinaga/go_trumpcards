@@ -155,19 +155,10 @@ func (ci *CanastaInteractor) ActionLog() string {
 
 // runCpuTurns CPUターンを実行
 func (ci *CanastaInteractor) runCpuTurns() {
-	for i := 0; i < MaxCpuIterations; i++ {
-		if ci.Game.GetGameEndFlag() {
-			return
-		}
+	runCpuTurnsUntil(ci.Game, func() bool {
 		phase := ci.Game.GetPhase()
-		if phase == domain.CanastaPhaseRoundEnd || phase == domain.CanastaPhaseGameEnd {
-			return
-		}
-		if ci.Game.IsHumanTurn() {
-			return
-		}
-		ci.Game.CpuPlay()
-	}
+		return phase == domain.CanastaPhaseRoundEnd || phase == domain.CanastaPhaseGameEnd || ci.Game.IsHumanTurn()
+	}, ci.Game.CpuPlay)
 }
 
 // RestoreCanastaInteractor deserialises JSON into a CanastaInteractor.

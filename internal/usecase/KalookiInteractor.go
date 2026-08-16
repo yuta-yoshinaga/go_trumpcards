@@ -135,19 +135,10 @@ func (ci *KalookiInteractor) ActionLog() string {
 
 // runCpuTurns CPU ターンを連続で処理する
 func (ci *KalookiInteractor) runCpuTurns() {
-	for i := 0; i < MaxCpuIterations; i++ {
-		if ci.Game.GetGameEndFlag() {
-			return
-		}
+	runCpuTurnsUntil(ci.Game, func() bool {
 		phase := ci.Game.GetPhase()
-		if phase == domain.KalookiPhaseRoundEnd || phase == domain.KalookiPhaseGameEnd {
-			return
-		}
-		if ci.Game.IsHumanTurn() {
-			return
-		}
-		ci.Game.CpuPlay()
-	}
+		return phase == domain.KalookiPhaseRoundEnd || phase == domain.KalookiPhaseGameEnd || ci.Game.IsHumanTurn()
+	}, ci.Game.CpuPlay)
 }
 
 // RestoreKalookiInteractor JSON から KalookiInteractor を復元する

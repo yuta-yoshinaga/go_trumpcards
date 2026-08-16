@@ -121,19 +121,10 @@ func (ci *ThreeThirteenInteractor) ActionLog() string {
 
 // runCpuTurns CPU ターンを連続で処理する
 func (ci *ThreeThirteenInteractor) runCpuTurns() {
-	for i := 0; i < MaxCpuIterations; i++ {
-		if ci.Game.GetGameEndFlag() {
-			return
-		}
+	runCpuTurnsUntil(ci.Game, func() bool {
 		phase := ci.Game.GetPhase()
-		if phase == domain.ThreeThirteenPhaseRoundEnd || phase == domain.ThreeThirteenPhaseGameEnd {
-			return
-		}
-		if ci.Game.IsHumanTurn() {
-			return
-		}
-		ci.Game.CpuPlay()
-	}
+		return phase == domain.ThreeThirteenPhaseRoundEnd || phase == domain.ThreeThirteenPhaseGameEnd || ci.Game.IsHumanTurn()
+	}, ci.Game.CpuPlay)
 }
 
 // RestoreThreeThirteenInteractor JSON から ThreeThirteenInteractor を復元する

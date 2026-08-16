@@ -155,19 +155,10 @@ func (ci *SambaInteractor) ActionLog() string {
 
 // runCpuTurns CPUターンを実行
 func (ci *SambaInteractor) runCpuTurns() {
-	for i := 0; i < MaxCpuIterations; i++ {
-		if ci.Game.GetGameEndFlag() {
-			return
-		}
+	runCpuTurnsUntil(ci.Game, func() bool {
 		phase := ci.Game.GetPhase()
-		if phase == domain.SambaPhaseRoundEnd || phase == domain.SambaPhaseGameEnd {
-			return
-		}
-		if ci.Game.IsHumanTurn() {
-			return
-		}
-		ci.Game.CpuPlay()
-	}
+		return phase == domain.SambaPhaseRoundEnd || phase == domain.SambaPhaseGameEnd || ci.Game.IsHumanTurn()
+	}, ci.Game.CpuPlay)
 }
 
 // RestoreSambaInteractor deserialises JSON into a SambaInteractor.

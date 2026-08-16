@@ -162,19 +162,10 @@ func (ci *BurracoInteractor) ActionLog() string {
 
 // runCpuTurns CPUターンを実行
 func (ci *BurracoInteractor) runCpuTurns() {
-	for i := 0; i < MaxCpuIterations; i++ {
-		if ci.Game.GetGameEndFlag() {
-			return
-		}
+	runCpuTurnsUntil(ci.Game, func() bool {
 		phase := ci.Game.GetPhase()
-		if phase == domain.BurracoPhaseRoundEnd || phase == domain.BurracoPhaseGameEnd {
-			return
-		}
-		if ci.Game.IsHumanTurn() {
-			return
-		}
-		ci.Game.CpuPlay()
-	}
+		return phase == domain.BurracoPhaseRoundEnd || phase == domain.BurracoPhaseGameEnd || ci.Game.IsHumanTurn()
+	}, ci.Game.CpuPlay)
 }
 
 // RestoreBurracoInteractor deserialises JSON into a BurracoInteractor.

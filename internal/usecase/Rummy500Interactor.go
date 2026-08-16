@@ -140,19 +140,10 @@ func (ci *Rummy500Interactor) Hint() string {
 
 // runCpuTurns CPUターンを連続実行
 func (ci *Rummy500Interactor) runCpuTurns() {
-	for i := 0; i < MaxCpuIterations; i++ {
-		if ci.Game.GetGameEndFlag() {
-			return
-		}
+	runCpuTurnsUntil(ci.Game, func() bool {
 		phase := ci.Game.GetPhase()
-		if phase == domain.Rummy500PhaseRoundEnd || phase == domain.Rummy500PhaseGameEnd {
-			return
-		}
-		if ci.Game.IsHumanTurn() {
-			return
-		}
-		ci.Game.CpuPlay()
-	}
+		return phase == domain.Rummy500PhaseRoundEnd || phase == domain.Rummy500PhaseGameEnd || ci.Game.IsHumanTurn()
+	}, ci.Game.CpuPlay)
 }
 
 // RestoreRummy500Interactor deserialises JSON into a Rummy500Interactor.

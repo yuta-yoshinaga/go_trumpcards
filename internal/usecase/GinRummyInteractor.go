@@ -140,19 +140,10 @@ func (ci *GinRummyInteractor) ActionLog() string {
 
 // runCpuTurns CPUターンを実行
 func (ci *GinRummyInteractor) runCpuTurns() {
-	for i := 0; i < MaxCpuIterations; i++ {
-		if ci.Game.GetGameEndFlag() {
-			return
-		}
+	runCpuTurnsUntil(ci.Game, func() bool {
 		phase := ci.Game.GetPhase()
-		if phase == domain.GinRummyPhaseRoundEnd || phase == domain.GinRummyPhaseGameEnd {
-			return
-		}
-		if ci.Game.IsHumanTurn() {
-			return
-		}
-		ci.Game.CpuPlay()
-	}
+		return phase == domain.GinRummyPhaseRoundEnd || phase == domain.GinRummyPhaseGameEnd || ci.Game.IsHumanTurn()
+	}, ci.Game.CpuPlay)
 }
 
 // RestoreGinRummyInteractor deserialises JSON into a GinRummyInteractor.

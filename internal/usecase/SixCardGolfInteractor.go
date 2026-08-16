@@ -176,19 +176,10 @@ func (ci *SixCardGolfInteractor) Hint() string {
 
 // runCpuTurns CPUターンループ
 func (ci *SixCardGolfInteractor) runCpuTurns() {
-	for i := 0; i < MaxCpuIterations; i++ {
-		if ci.Game.GetGameEndFlag() {
-			return
-		}
+	runCpuTurnsUntil(ci.Game, func() bool {
 		phase := ci.Game.GetPhase()
-		if phase == domain.SixCardGolfPhaseRoundOver || phase == domain.SixCardGolfPhaseGameOver {
-			return
-		}
-		if ci.Game.IsHumanTurn() {
-			return
-		}
-		ci.Game.CpuPlay()
-	}
+		return phase == domain.SixCardGolfPhaseRoundOver || phase == domain.SixCardGolfPhaseGameOver || ci.Game.IsHumanTurn()
+	}, ci.Game.CpuPlay)
 }
 
 // RestoreSixCardGolfInteractor JSON復元

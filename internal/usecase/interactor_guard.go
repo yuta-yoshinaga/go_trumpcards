@@ -71,6 +71,24 @@ const MaxCpuIterations = 1000
 //
 // 戻り値は上限に当たらずに抜けたかどうか。**false はドメインのバグを意味する**ので、
 // 呼び出し側が握り潰さずに扱えるよう返している。
+// runCpuTurnsUntil is runCpuTurnsCapped for the loops that also have to look at
+// the phase between turns. `stop` reports whether this iteration should end the
+// loop; it is read before play() so a game that starts in a stopping phase does
+// nothing.
+//
+// One helper rather than the same five lines in 40 files: the cap branch is
+// otherwise unreachable per game (a real game reaches its phase guard long
+// before 1000 turns), so 40 copies means 40 untested `return`s.
+func runCpuTurnsUntil(g gameEndChecker, stop func() bool, play func()) bool {
+	for i := 0; i < MaxCpuIterations; i++ {
+		if g.GetGameEndFlag() || stop() {
+			return true
+		}
+		play()
+	}
+	return false
+}
+
 func runCpuTurnsCapped(g playableGame, play func()) bool {
 	for i := 0; i < MaxCpuIterations; i++ {
 		if g.GetGameEndFlag() || g.IsHumanTurn() {
