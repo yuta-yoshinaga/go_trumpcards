@@ -76,6 +76,14 @@ export interface PokerResponse extends BaseGameResponse {
   dealerIdx: number;
   currentTurn: number;
   phase: PokerPhase;
+  /**
+   * Whether the human's exchange count is currently raising the CPUs' guard.
+   *
+   * The threshold lives in the domain (`calcExchangeWarning` shares it), so the
+   * page must not re-derive it from `exchangeCount` -- a second copy drifts from
+   * what the CPUs actually do.
+   */
+  exchangeRead: boolean;
   gameEndFlag: boolean;
   lastBet: number;
   minRaise: number;

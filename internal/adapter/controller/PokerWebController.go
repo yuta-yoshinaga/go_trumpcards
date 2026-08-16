@@ -98,8 +98,11 @@ type PokerWebOutput struct {
 	// Equity / PotOdds は 2 巡目ベットの判断材料。Holdem 系は EquityDisplay で
 	// 出しているのに、5 カードドローには仕組み自体が無かった (#4678)。
 	// ベッティングフェーズ以外では省略される。
-	Equity       *HoldemWebOutputEquity          `json:"equity,omitempty"`
-	PotOdds      *float64                        `json:"potOdds,omitempty"`
+	Equity  *HoldemWebOutputEquity `json:"equity,omitempty"`
+	PotOdds *float64               `json:"potOdds,omitempty"`
+	// ExchangeRead は人間の交換枚数が CPU の警戒を引き上げているか。閾値は
+	// domain 側にあり (calcExchangeWarning と共有)、フロントで数えない (#5475)。
+	ExchangeRead bool                            `json:"exchangeRead"`
 	GameEndFlag  bool                            `json:"gameEndFlag"`
 	LastBet      int                             `json:"lastBet"`
 	MinRaise     int                             `json:"minRaise"`

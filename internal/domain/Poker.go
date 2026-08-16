@@ -724,6 +724,31 @@ func (p *Poker) cpuDecide(idx int) (int, int) {
 	return action, amount
 }
 
+// pokerExchangeReadThreshold は「交換枚数が少ない = 強い手」と CPU が読み始める
+// 枚数。これ**未満**で警戒度が上がる。calcExchangeWarning と IsExchangeRead が
+// 共有する -- 別に書くと、説明文と CPU の実際の挙動がずれる (#5475)。
+const pokerExchangeReadThreshold = 3
+
+// IsExchangeRead は playerIdx の交換枚数が CPU の警戒を引き上げているかを返す。
+//
+// 第2ベッティングラウンドで、まだ降りていないプレイヤーの交換枚数が
+// pokerExchangeReadThreshold 未満なら true。**そのとき全 CPU の警戒度が上がる**
+// -- calcExchangeWarning が見るのは自分以外の最小交換枚数なので、誰か1人でも
+// 閾値未満なら、その1人を除く全員から見た最小値も閾値未満になる。
+func (p *Poker) IsExchangeRead(playerIdx int) bool {
+	if p.round.phase != PokerPhaseSecondBet {
+		return false
+	}
+	if playerIdx < 0 || playerIdx >= len(p.players) {
+		return false
+	}
+	pl := p.players[playerIdx]
+	if pl.GetFolded() {
+		return false
+	}
+	return pl.GetExchangeCount() < pokerExchangeReadThreshold
+}
+
 // calcExchangeWarning 他プレイヤーの交換枚数から警戒度を計算 (0-100)
 func (p *Poker) calcExchangeWarning(idx, weight int) int {
 	if p.round.phase != PokerPhaseSecondBet {
@@ -741,11 +766,11 @@ func (p *Poker) calcExchangeWarning(idx, weight int) int {
 	}
 	// 交換枚数0 = 強い手の可能性高い → 警戒度Max
 	// 交換枚数が少ないほど警戒度が高い
-	if minExchange >= 3 {
+	if minExchange >= pokerExchangeReadThreshold {
 		return 0
 	}
-	// warning = (3 - minExchange) * weight / 3
-	return (3 - minExchange) * weight / 3
+	// warning = (閾値 - minExchange) * weight / 閾値
+	return (pokerExchangeReadThreshold - minExchange) * weight / pokerExchangeReadThreshold
 }
 
 // cpuDecideFirstBet 第1ベッティングラウンドのCPU意思決定

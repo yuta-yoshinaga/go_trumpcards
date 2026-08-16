@@ -25,6 +25,7 @@ function makeState(overrides: Partial<PokerResponse> = {}): PokerResponse {
     dealerIdx: 0,
     currentTurn: 0,
     phase: PokerPhase.EXCHANGE,
+    exchangeRead: false,
     gameEndFlag: false,
     lastBet: 0,
     minRaise: 0,

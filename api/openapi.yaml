@@ -33405,6 +33405,7 @@ components:
         - dealerIdx
         - currentTurn
         - phase
+        - exchangeRead
         - gameEndFlag
         - lastBet
         - minRaise
@@ -33440,6 +33441,13 @@ components:
             - `3` — SecondBet (second betting round)
             - `4` — End (showdown; all hands visible)
           enum: [0, 1, 2, 3, 4]
+        exchangeRead:
+          type: boolean
+          description: |
+            Whether the human's exchange count is currently raising the CPUs' guard.
+            True during the second betting round when the human exchanged fewer
+            than 3 cards; every CPU then raises its fold threshold by one rank.
+          example: false
         gameEndFlag:
           type: boolean
         lastBet:

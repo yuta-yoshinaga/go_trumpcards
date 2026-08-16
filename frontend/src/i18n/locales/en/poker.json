@@ -46,5 +46,6 @@
     "strongHand": "Strong hand — raise recommended",
     "decentHand": "Decent hand — call recommended",
     "weakHand": "Weak hand — fold recommended"
-  }
+  },
+  "exchangeRead": "⚠ Your small exchange reads as a strong hand. Below 3 cards the CPUs grow wary and fold more readily."
 }

@@ -45,6 +45,7 @@ const baseState: PokerResponse = {
   dealerIdx: 0,
   currentTurn: 0,
   phase: PokerPhase.INIT,
+  exchangeRead: false,
   gameEndFlag: false,
   lastBet: 0,
   minRaise: 10,

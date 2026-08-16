@@ -659,3 +659,22 @@ func TestPokerWebPresenter_Output_WithMetaAIProfile(t *testing.T) {
 	assert.True(t, out.MetaAI.Enabled)
 	assert.NotNil(t, out.Profile)
 }
+
+// #5475: 交換枚数が読まれていることを Web にも伝える。閾値は domain 側にあり、
+// フロントで数え直さない -- 数え直すと CPU の実際の挙動とずれる。
+func TestPokerWebPresenter_ExchangeRead(t *testing.T) {
+	pwp := new(presenter.PokerWebPresenter)
+
+	decode := func(phase, humanExchange int) controller.PokerWebOutput {
+		g := domain.NewDefaultPoker()
+		g.SetPhase(phase)
+		g.GetPlayers()[0].SetExchangeCount(humanExchange)
+		var out controller.PokerWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(pwp.Output(g, nil)), &out))
+		return out
+	}
+
+	assert.True(t, decode(domain.PokerPhaseSecondBet, 1).ExchangeRead)
+	assert.False(t, decode(domain.PokerPhaseSecondBet, 3).ExchangeRead, "閾値ちょうどでは読まれない")
+	assert.False(t, decode(domain.PokerPhaseExchange, 0).ExchangeRead, "第2ベット以外では出さない")
+}

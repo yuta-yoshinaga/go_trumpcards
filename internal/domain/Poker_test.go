@@ -3478,3 +3478,58 @@ func TestPoker_EquityAndPotOdds(t *testing.T) {
 		}
 	})
 }
+
+// #5475: calcExchangeWarning は「交換枚数が3枚未満の相手がいると CPU の
+// フォールド閾値を1ランク上げる」という実在の戦略要素だが、Web にも CUI にも
+// 説明が無く、frontend を grep しても exchangeRead は0件だった。
+// プレイヤーは自分の交換枚数が読まれていることを知る手段が無い。
+func TestPoker_IsExchangeRead(t *testing.T) {
+	newGame := func(phase int, exchangeCounts ...int) *Poker {
+		p := NewDefaultPoker()
+		p.round.phase = phase
+		for i, n := range exchangeCounts {
+			p.players[i].exchangeCount = n
+		}
+		return p
+	}
+
+	// **閾値は calcExchangeWarning と同じ。** 別に書くと、説明文と CPU の
+	// 実際の挙動がずれる。
+	t.Run("flags a player whose exchange count is under the threshold", func(t *testing.T) {
+		p := newGame(PokerPhaseSecondBet, 2, 4, 4, 4)
+		assert.True(t, p.IsExchangeRead(0))
+		// 実際に CPU の警戒度が上がっていることも確かめる。
+		assert.Positive(t, p.calcExchangeWarning(1, 80))
+	})
+
+	t.Run("does not flag a player at or above the threshold", func(t *testing.T) {
+		p := newGame(PokerPhaseSecondBet, 3, 4, 4, 4)
+		assert.False(t, p.IsExchangeRead(0))
+	})
+
+	// 0枚交換 (スタンドパット) はいちばん強く読まれる。
+	t.Run("flags a stand pat", func(t *testing.T) {
+		assert.True(t, newGame(PokerPhaseSecondBet, 0, 4, 4, 4).IsExchangeRead(0))
+	})
+
+	// **第2ベット以外では読まれない。** calcExchangeWarning がフェーズで
+	// 早期 return するので、交換前や決着後に警告を出すのは嘘になる。
+	t.Run("is quiet outside the second betting round", func(t *testing.T) {
+		for _, phase := range []int{PokerPhaseInit, PokerPhaseDeal, PokerPhaseExchange, PokerPhaseEnd} {
+			assert.False(t, newGame(phase, 0, 4, 4, 4).IsExchangeRead(0), "phase %d", phase)
+		}
+	})
+
+	t.Run("rejects an out-of-range index instead of panicking", func(t *testing.T) {
+		p := newGame(PokerPhaseSecondBet, 0, 4, 4, 4)
+		assert.False(t, p.IsExchangeRead(-1))
+		assert.False(t, p.IsExchangeRead(99))
+	})
+
+	// 降りた相手は読まれる側から外れる。calcExchangeWarning が folded を飛ばす。
+	t.Run("does not flag a folded player", func(t *testing.T) {
+		p := newGame(PokerPhaseSecondBet, 0, 4, 4, 4)
+		p.players[0].SetFolded(true)
+		assert.False(t, p.IsExchangeRead(0))
+	})
+}

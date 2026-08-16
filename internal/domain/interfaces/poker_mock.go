@@ -49,6 +49,12 @@ func (_m *MockPokerGame) GetPhase() int {
 	return ret.Get(0).(int)
 }
 
+// IsExchangeRead モック
+func (_m *MockPokerGame) IsExchangeRead(playerIdx int) bool {
+	ret := _m.Called(playerIdx)
+	return ret.Bool(0)
+}
+
 // GetPot モック
 // GetEquity はエクイティを返すモック。
 func (_m *MockPokerGame) GetEquity() *domain.HoldemEquityResult {
