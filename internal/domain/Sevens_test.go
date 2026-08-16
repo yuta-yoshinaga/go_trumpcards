@@ -4069,3 +4069,58 @@ func TestSevens_ActionLog_Reset(t *testing.T) {
 	s.Reset()
 	assert.Nil(t, s.GetActionLog())
 }
+
+// #5479: IsPlayable は実装済みだったが interface に無く、CUI からは呼べなかった。
+// Web は SevensHumanArea.tsx が同じ判定をフロントで書き直して色を付けている。
+func TestSevens_GetPlayableCardIndices(t *testing.T) {
+	// 卓には最初から4枚の7が並んでいるので、6 と 8 が出せて 5 や J は出せない。
+	newGame := func(hand ...*domain.Card) (*domain.Sevens, []*domain.SevensPlayer) {
+		players := []*domain.SevensPlayer{
+			domain.NewSevensPlayer(true),
+			domain.NewSevensPlayer(false),
+			domain.NewSevensPlayer(false),
+			domain.NewSevensPlayer(false),
+		}
+		s := domain.NewSevens(domain.NewTrumpCards(0), players, domain.DefaultSevensConfig())
+		for _, c := range hand {
+			players[0].AddCard(c)
+		}
+		for i := 1; i < 4; i++ {
+			players[i].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		}
+		return s, players
+	}
+	card := func(design, value int) *domain.Card { return domain.NewCard(design, value, false) }
+
+	t.Run("marks only the cards adjacent to the board", func(t *testing.T) {
+		s, _ := newGame(
+			card(domain.CardDesignSpade, 6),  // ♠7 の隣 → 出せる
+			card(domain.CardDesignSpade, 11), // ♠7 から離れている → 出せない
+			card(domain.CardDesignHeart, 8),  // ♥7 の隣 → 出せる
+		)
+		assert.Equal(t, []int{0, 2}, s.GetPlayableCardIndices())
+	})
+
+	// **空スライスと nil を区別する。**7並べは「1枚も出せない」が普通に起きる
+	// (そこでパスする) 局面なので、判定していない状態と同じ扱いにはできない。
+	t.Run("returns an empty slice, not nil, when nothing is playable", func(t *testing.T) {
+		s, _ := newGame(card(domain.CardDesignSpade, 11))
+		got := s.GetPlayableCardIndices()
+		assert.NotNil(t, got)
+		assert.Empty(t, got)
+	})
+
+	t.Run("returns nil when it is not the human turn", func(t *testing.T) {
+		s, _ := newGame(card(domain.CardDesignSpade, 6), card(domain.CardDesignSpade, 8))
+		require.NoError(t, s.PlayerPlay(0)) // 手番が CPU へ移る
+		require.False(t, s.IsHumanTurn())
+		assert.Nil(t, s.GetPlayableCardIndices())
+	})
+
+	// ジョーカーは置ける場所が1つでもあれば出せる。IsPlayable がそう書いてある
+	// のをここでも通す — 印の判定を presenter 側に書き直さないため。
+	t.Run("marks a joker while the board still has room", func(t *testing.T) {
+		s, _ := newGame(domain.NewCard(domain.CardDesignJoker, 0, true))
+		assert.Equal(t, []int{0}, s.GetPlayableCardIndices())
+	})
+}

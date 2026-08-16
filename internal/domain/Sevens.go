@@ -343,6 +343,32 @@ func (s *Sevens) IsPlayable(card *Card) bool {
 	return s.isPositionPlayable(suit, value)
 }
 
+// GetPlayableCardIndices は人間プレイヤーの手札のうち、いま出せるカードの
+// インデックスを返す (#5479)。
+//
+// 判定は PlayerPlay が使う IsPlayable そのものを通す。トンネル・スキップ幅・
+// ジョーカーの配置可否といった盤面の状態は全部そちらが見るので、ここで規則を
+// 書き直さない。**別実装にすると「出せる」と印を付けた札が実際には弾かれる。**
+//
+// 戻り値は3状態を区別する:
+//   - nil          … 判定していない (人間の手番でない)
+//   - 空スライス    … 判定した上で1枚も出せない。7並べでは普通に起きる状態で、
+//     そこでプレイヤーはパスする。**nil と同じ扱いにはできない。**
+//   - 非空スライス  … 出せる手札のインデックス
+func (s *Sevens) GetPlayableCardIndices() []int {
+	if !s.IsHumanTurn() {
+		return nil
+	}
+	player := s.players[s.currentTurn]
+	idx := make([]int, 0, player.GetCardsSize())
+	for i := 0; i < player.GetCardsSize(); i++ {
+		if s.IsPlayable(player.GetCard(i)) {
+			idx = append(idx, i)
+		}
+	}
+	return idx
+}
+
 // placeCard ボードにカードを置く (ビットマスクを更新)
 func (s *Sevens) placeCard(card *Card) {
 	suit := card.GetDesign()

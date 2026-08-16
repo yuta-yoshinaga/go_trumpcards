@@ -11,7 +11,11 @@ import (
 )
 
 // sevensPlayerStr returns the display string for a single Sevens player.
-func sevensPlayerStr(player *domain.SevensPlayer, i int) string {
+//
+// playable は人間の手札のうち今出せるインデックス。nil は「判定していない」
+// (人間の手番でない) で、空スライスは「1枚も出せない」— 意味が違うので
+// 呼び出し側で分けて扱う。
+func sevensPlayerStr(player *domain.SevensPlayer, i int, playable []int) string {
 	var b strings.Builder
 	b.WriteString(cuiPlayerName(player, i))
 	if player.GetIsFinished() {
@@ -30,8 +34,13 @@ func sevensPlayerStr(player *domain.SevensPlayer, i int) string {
 		}
 		b.WriteString("\n")
 		if player.GetIsHuman() {
-			b.WriteString(cuiIndexedCardListStr(player))
+			b.WriteString(cuiPlayableMarkedCardListStr(player, playable))
 			b.WriteString("\n")
+			// **空スライスを無印のまま出すと「判定していない」と区別が付かない。**
+			// 7並べでは出せる札が1枚も無い局面が普通に起きるので、明示的に言う。
+			if playable != nil && len(playable) == 0 && player.GetCardsSize() > 0 {
+				b.WriteString(i18n.T("sevens.noPlayable") + "\n")
+			}
 		}
 	}
 	return b.String()
@@ -133,8 +142,9 @@ func (p *SevensCuiPresenter) Output(s interfaces.SevensGame, lastErr error) stri
 	}
 
 	return buildCuiOutput(title, func(b *strings.Builder) {
+		playable := s.GetPlayableCardIndices()
 		for i := 0; i < s.GetPlayerCnt(); i++ {
-			b.WriteString(sevensPlayerStr(s.GetPlayer(i), i))
+			b.WriteString(sevensPlayerStr(s.GetPlayer(i), i, playable))
 		}
 
 		b.WriteString("----------\n")

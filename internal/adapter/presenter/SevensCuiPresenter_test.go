@@ -684,3 +684,47 @@ func TestSevensCuiPresenter_English(t *testing.T) {
 		assert.Contains(t, result, "[no joker finish]")
 	})
 }
+
+// #5479: CUI の手札は出せる札とそうでない札を区別していなかった。番号を入れて
+// 弾かれることでしか学べず、Web は SevensHumanArea.tsx が色付きで示している。
+func TestSevensCuiPresenter_PlayableMarks(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	tsp := new(presenter.SevensCuiPresenter)
+
+	newGame := func(hand ...*domain.Card) *domain.Sevens {
+		players := makeSevensPlayersForPresenter()
+		s := domain.NewSevens(domain.NewTrumpCards(0), players, domain.DefaultSevensConfig())
+		for _, c := range hand {
+			players[0].AddCard(c)
+		}
+		for i := 1; i < 4; i++ {
+			players[i].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		}
+		return s
+	}
+	card := func(design, value int) *domain.Card { return domain.NewCard(design, value, false) }
+
+	t.Run("stars the playable card and leaves the others bare", func(t *testing.T) {
+		s := newGame(card(domain.CardDesignSpade, 6), card(domain.CardDesignSpade, 11))
+		out := tsp.Output(s, nil)
+		assert.Contains(t, out, "[0]SPADE 6"+presenter.CuiLegalMark)
+		assert.NotContains(t, out, "[1]SPADE 11"+presenter.CuiLegalMark)
+	})
+
+	// **1枚も出せないときに無印にすると「判定していない」と区別が付かない。**
+	// 7並べではこれが普通に起きる局面なので、明示的に言う。
+	t.Run("says so when nothing is playable, rather than showing a bare hand", func(t *testing.T) {
+		s := newGame(card(domain.CardDesignSpade, 11), card(domain.CardDesignSpade, 12))
+		out := tsp.Output(s, nil)
+		assert.Contains(t, out, i18n.T("sevens.noPlayable"))
+		assert.NotContains(t, out, presenter.CuiLegalMark)
+	})
+
+	// 出せる札があるときに「出せる札がありません」を出さない (負のコントロール)。
+	t.Run("does not claim a dead hand when a card is playable", func(t *testing.T) {
+		s := newGame(card(domain.CardDesignSpade, 6))
+		assert.NotContains(t, tsp.Output(s, nil), i18n.T("sevens.noPlayable"))
+	})
+}
