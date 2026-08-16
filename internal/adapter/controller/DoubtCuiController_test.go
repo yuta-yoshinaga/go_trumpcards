@@ -363,7 +363,6 @@ func TestDoubtCuiController_Exec(t *testing.T) {
 			assert.Contains(t, c.Exec("sh "+bad), msgStem("invalidHesitationFlag01"), bad)
 		}
 	})
-
 }
 
 // #5390: `p abc` は宣言する値を 0 に落として通っていた。
