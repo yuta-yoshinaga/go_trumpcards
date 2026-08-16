@@ -88,6 +88,21 @@ func (bcp *BadugiCuiPresenter) Output(g interfaces.BadugiGame, lastErr error) st
 						"name", cuiBadugiHandName(pl.GetBestHand().Size)) + "\n")
 				} else {
 					b.WriteString(i18n.Tf("badugi.humanHand", "cards", handStr) + "\n")
+					// **完成しているなら、訊かれなくても言う。** Web は交換
+					// フェーズに入ると同じ警告をバナーで出しているが、CUI では
+					// hint を明示的に打ったときの hintStandPat でしか出ておらず、
+					// 完成した手を無自覚に崩せてしまった (#5540)。
+					if g.GetPhase() == domain.BadugiPhaseDraw {
+						// HintOutput と同じ理由で先に評価する。交換フェーズは
+						// 人間の bestHand を更新しないので、キャッシュを読むだけ
+						// では前の手の評価が残る。EvalHand は現在の手札から
+						// 引き直すだけで冪等。
+						pl.EvalHand()
+						if best := pl.GetBestHand(); best.Size == pl.GetCardsSize() {
+							b.WriteString(color.Yellow(i18n.Tf("badugi.completeBadugiWarning",
+								"size", strconv.Itoa(best.Size))) + "\n")
+						}
+					}
 				}
 			}
 			if !pl.GetIsHuman() && isEnd && !pl.GetFolded() {
