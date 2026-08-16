@@ -46,7 +46,11 @@ type AgnesWebOutput struct {
 	Phase      int                            `json:"phase"`
 	MoveCount  int                            `json:"moveCount"`
 	CanUndo    bool                           `json:"canUndo"`
-	Hint       *AgnesWebOutputHint            `json:"hint,omitempty"`
+	// IsStalemate は合法手が 1 つも無いかどうか。判定はドメインの
+	// Agnes.IsStalemate() だけが持つ。以前はここに載せておらず、
+	// フロントが agnesHasLegalMove() で同じ規則を実装し直していた (#5601)。
+	IsStalemate bool                `json:"isStalemate"`
+	Hint        *AgnesWebOutputHint `json:"hint,omitempty"`
 	WebOutputBase
 }
 
