@@ -14,6 +14,13 @@ export interface HeartsPlayerData {
   trickCount: number;
   /** Captured penalty cards so far: every heart plus the Q♠ (J♦ excluded). */
   penaltyCards: Card[];
+  /**
+   * True when the omnibus rule is on and this player captured the J♦ (-10).
+   * The J♦ is a bonus, not a penalty, so it is deliberately absent from
+   * `penaltyCards` -- without this flag nothing on screen showed who took it
+   * (#5491). Always false while the rule is off.
+   */
+  tookOmnibusJD: boolean;
 }
 
 /** A card played in a Hearts trick. */
