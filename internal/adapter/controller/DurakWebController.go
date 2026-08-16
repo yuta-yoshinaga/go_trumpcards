@@ -132,7 +132,7 @@ func durakDispatch(bc *baseController, w http.ResponseWriter, di usecase.DurakIn
 		}
 		bc.writePresenterResponse(w, di.Sort(mode))
 	default:
-		return dispatchLog(param.Command, bc, w, di.ActionLog)
+		return dispatchHintAndLog(param.Command, bc, w, di.Hint, di.ActionLog)
 	}
 	return true
 }

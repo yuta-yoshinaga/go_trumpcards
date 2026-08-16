@@ -4,7 +4,23 @@ import type { CliParseResult } from '../types';
 
 type ZwickerArgs = Parameters<typeof zwickerApi.exec>;
 
-const VALID_COMMANDS = ['t', 'take', 'b', 'build', 'tr', 'trail', 'n', 'next', 'log', 'r', 'reset', 'help', '?'];
+const VALID_COMMANDS = [
+  't',
+  'take',
+  'b',
+  'build',
+  'tr',
+  'trail',
+  'n',
+  'next',
+  'log',
+  'r',
+  'reset',
+  'h',
+  'hint',
+  'help',
+  '?',
+];
 
 /** Parse a non-negative integer argument, or null when it is not one. */
 function parseIdx(raw: string | undefined): number | null {

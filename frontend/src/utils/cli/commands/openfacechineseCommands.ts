@@ -4,7 +4,7 @@ import type { CliParseResult } from '../types';
 
 type OpenFaceChineseArgs = Parameters<typeof openfacechineseApi.exec>;
 
-const VALID_COMMANDS = ['p', 'place', 'n', 'next', 'nextround', 'log', 'r', 'reset', 'help', '?'];
+const VALID_COMMANDS = ['p', 'place', 'n', 'next', 'nextround', 'log', 'r', 'reset', 'h', 'hint', 'help', '?'];
 
 /** Maps a row token (name / initial / index) to the backend row index, or null if invalid. */
 function parseRow(token: string | undefined): number | null {

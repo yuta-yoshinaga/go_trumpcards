@@ -4,7 +4,23 @@ import type { CliParseResult } from '../types';
 
 type DurakArgs = Parameters<typeof durakApi.exec>;
 
-const DURAK_COMMANDS = ['a', 'attack', 'd', 'defend', 'p', 'pass', 't', 'take', 'sort', 'r', 'reset', 'help', '?'];
+const DURAK_COMMANDS = [
+  'a',
+  'attack',
+  'd',
+  'defend',
+  'p',
+  'pass',
+  't',
+  'take',
+  'sort',
+  'r',
+  'reset',
+  'h',
+  'hint',
+  'help',
+  '?',
+];
 
 /** Map a sort argument (suit/value/s/v/0/1) to the numeric sort mode, or null if invalid. */
 function parseSortMode(arg: string | undefined): number | null {

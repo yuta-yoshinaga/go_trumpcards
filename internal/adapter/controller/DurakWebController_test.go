@@ -24,6 +24,8 @@ func TestDurakWebController_Method(t *testing.T) {
 	diMock.On("TakeCards").Return(mockOutput)
 	diMock.On("ResetWithConfig", mock.Anything).Return(mockOutput)
 	diMock.On("Sort", mock.Anything).Return(mockOutput)
+	diMock.On("Hint").Return(mockOutput)
+	diMock.On("ActionLog").Return(mockOutput)
 
 	factory := func() uc.DurakInteractorIF { return diMock }
 	tdwc := controller.NewDurakWebController(factory)
@@ -37,6 +39,18 @@ func TestDurakWebController_Method(t *testing.T) {
 		recorded.CodeIs(http.StatusOK)
 		recorded.BodyIs(mockOutput)
 	})
+
+	// The Web CLI sends "hint"/"h" to this endpoint. Before #5791 the default branch
+	// used dispatchLog, which does not match either, so the request 400'd with
+	// "Unsupported command." even though the interactor had Hint() all along.
+	for _, cmd := range []string{"h", "hint"} {
+		t.Run("hint via "+cmd, func(t *testing.T) {
+			_ = json.Unmarshal([]byte(`{"command":"`+cmd+`","sessionId":"s1"}`), &jsonInput)
+			recorded := execRequest(t, tdwc.Exec, &jsonInput)
+			recorded.CodeIs(http.StatusOK)
+			recorded.BodyIs(mockOutput)
+		})
+	}
 
 	t.Run("success Exec attack", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command":"a","sessionId":"s1","cardIdx":0}`), &jsonInput)
