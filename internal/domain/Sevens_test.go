@@ -4123,4 +4123,38 @@ func TestSevens_GetPlayableCardIndices(t *testing.T) {
 		s, _ := newGame(domain.NewCard(domain.CardDesignJoker, 0, true))
 		assert.Equal(t, []int{0}, s.GetPlayableCardIndices())
 	})
+
+	// **IsPlayable だけでは足りない。** ジョーカーは「置ける場所があるか」しか
+	// 見ないが、PlayerPlayJoker は連続禁止・上がり禁止でも弾く。印を付けてから
+	// 弾かれるのは、印が無いより悪い。
+	t.Run("does not mark a joker the consecutive-joker rule blocks", func(t *testing.T) {
+		s, players := newGame(domain.NewCard(domain.CardDesignJoker, 0, true),
+			card(domain.CardDesignSpade, 6))
+		cfg := domain.DefaultSevensConfig()
+		cfg.JokerConsecutiveBanned = true
+		s.SetConfig(cfg)
+		players[0].SetLastPlayedJoker(true)
+
+		assert.Equal(t, []int{1}, s.GetPlayableCardIndices(), "♠6 だけが残る")
+		// 実際に出そうとしても弾かれる (印と挙動が一致している)。
+		assert.Error(t, s.PlayerPlayJoker(0, domain.CardDesignSpade, 6))
+	})
+
+	t.Run("does not mark the last joker when finishing on a joker is banned", func(t *testing.T) {
+		s, _ := newGame(domain.NewCard(domain.CardDesignJoker, 0, true))
+		cfg := domain.DefaultSevensConfig()
+		cfg.NoJokerFinish = true
+		s.SetConfig(cfg)
+
+		assert.Empty(t, s.GetPlayableCardIndices())
+		assert.Error(t, s.PlayerPlayJoker(0, domain.CardDesignSpade, 6))
+	})
+
+	// 負のコントロール: 同じ配りでもルールが無効なら印は付く。
+	t.Run("still marks the joker when neither rule is enabled", func(t *testing.T) {
+		s, players := newGame(domain.NewCard(domain.CardDesignJoker, 0, true),
+			card(domain.CardDesignSpade, 6))
+		players[0].SetLastPlayedJoker(true)
+		assert.Equal(t, []int{0, 1}, s.GetPlayableCardIndices())
+	})
 }

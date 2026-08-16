@@ -346,7 +346,7 @@ func (s *Sevens) IsPlayable(card *Card) bool {
 // GetPlayableCardIndices は人間プレイヤーの手札のうち、いま出せるカードの
 // インデックスを返す (#5479)。
 //
-// 判定は PlayerPlay が使う IsPlayable そのものを通す。トンネル・スキップ幅・
+// 判定は PlayerPlay / PlayerPlayJoker が使うものをそのまま通す。トンネル・スキップ幅・
 // ジョーカーの配置可否といった盤面の状態は全部そちらが見るので、ここで規則を
 // 書き直さない。**別実装にすると「出せる」と印を付けた札が実際には弾かれる。**
 //
@@ -360,9 +360,18 @@ func (s *Sevens) GetPlayableCardIndices() []int {
 		return nil
 	}
 	player := s.players[s.currentTurn]
+	// **IsPlayable だけでは足りない。** ジョーカーについては「置ける場所が
+	// あるか」しか見ないが、PlayerPlayJoker は連続禁止・上がり禁止でも弾く。
+	// hasPlayableCard / findPlayableSimple / findPlayableStrategic と同じ
+	// jokerBlocked を通す -- 印を付けてから弾かれるのは、印が無いより悪い。
+	jokerBlocked := s.isJokerBlockedByFinishRule(player) || s.isJokerBlockedByConsecutiveRule(player)
 	idx := make([]int, 0, player.GetCardsSize())
 	for i := 0; i < player.GetCardsSize(); i++ {
-		if s.IsPlayable(player.GetCard(i)) {
+		card := player.GetCard(i)
+		if jokerBlocked && card != nil && card.GetDesign() == CardDesignJoker {
+			continue
+		}
+		if s.IsPlayable(card) {
 			idx = append(idx, i)
 		}
 	}
