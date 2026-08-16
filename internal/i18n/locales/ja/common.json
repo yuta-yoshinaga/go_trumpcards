@@ -584,5 +584,6 @@
   "askNeedsSeatSuitRank": "ask には相手の席・スート・ランクが要ります (例: スペードの 2 なら a 1 1 2)。",
   "claimNeedsHalfSuitAndHolders": "claim にはハーフスートと 6 人分の持ち主が要ります (例: c 0 0 0 2 2 4 4)。",
   "layoffNeedsThreeInts": "レイオフには整数が 3 つ要ります: <owner> <meldIdx> <cardIdx>。",
-  "giveExactlyNIndexes": "手札の番号をちょうど {{n}} 個指定してください。"
+  "giveExactlyNIndexes": "手札の番号をちょうど {{n}} 個指定してください。",
+  "notes": "補足:"
 }

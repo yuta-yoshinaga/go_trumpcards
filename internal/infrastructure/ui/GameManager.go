@@ -2958,6 +2958,12 @@ var gameRegistry = []GameRegistryEntry{
 			CommandKeys:       []string{"macau.helpPlay", "macau.helpDraw", "macau.helpSuit", "macau.helpDeclare", "macau.helpSkipDeclare", "macau.helpNextRound", "macau.helpHint"},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"macau.helpSetDifficulty", "macau.helpSetLimit"},
+			// Web は magicRef の表を常時出しているのに、CUI には 2/7/8/J が何を
+			// するかの説明が一切なかった (#5622)。
+			NoteKeys: []string{
+				"macau.magicTwo", "macau.magicSeven", "macau.magicEight",
+				"macau.magicJack", "macau.magicNote",
+			},
 		}),
 	BindCuiFor("thirtyone",
 		func() usecase.ThirtyOneInteractorIF {

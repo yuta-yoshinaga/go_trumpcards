@@ -584,5 +584,6 @@
   "askNeedsSeatSuitRank": "Ask needs a target seat, a suit and a rank (e.g. a 1 1 2 for the two of spades).",
   "claimNeedsHalfSuitAndHolders": "Claim needs a half-suit and all six holders (e.g. c 0 0 0 2 2 4 4).",
   "layoffNeedsThreeInts": "Layoff needs three integers: <owner> <meldIdx> <cardIdx>.",
-  "giveExactlyNIndexes": "Give exactly {{n}} card indexes."
+  "giveExactlyNIndexes": "Give exactly {{n}} card indexes.",
+  "notes": "Notes:"
 }

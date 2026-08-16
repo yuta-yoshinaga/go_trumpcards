@@ -652,3 +652,49 @@ func TestCuiHelpHasNoDuplicateLines(t *testing.T) {
 			len(dupes), checked, strings.Join(dupes, "\n  "))
 	}
 }
+
+// **注記の節。** Web は magicRef の表を常時出しているのに、CUI には 2/7/8/J が
+// 何をするかの説明が一切なかった (#5622)。コマンドでも設定でもないので、
+// 既存のどの節にも入らない。
+func TestBuildCuiHelp_notesComeLast(t *testing.T) {
+	got := BuildCuiHelp(CuiHelpSpec{
+		TitleKey:    "macau.helpTitle",
+		CommandKeys: []string{"macau.helpPlay"},
+		ExampleKeys: []string{"macau.helpExamplePlay"},
+		NoteKeys:    []string{"macau.magicTwo", "macau.magicJack"},
+	})
+
+	want := []string{
+		i18n.T("macau.helpTitle"),
+		"",
+		i18n.T("gameCommands"),
+		i18n.T("macau.helpPlay"),
+		"",
+		i18n.T("session"),
+		i18n.T("resetEntry"),
+		i18n.T("quitEntry"),
+		i18n.T("helpEntry"),
+		"",
+		i18n.T("examples"),
+		i18n.T("macau.helpExamplePlay"),
+		"",
+		i18n.T("notes"),
+		i18n.T("macau.magicTwo"),
+		i18n.T("macau.magicJack"),
+	}
+	assertLines(t, got, want)
+}
+
+// **負のコントロール。** 注記を持たないゲームは、この節が増える前と 1 行も
+// 変わらないこと。318 ゲーム中 317 が該当するので、ここが崩れると全部崩れる。
+func TestBuildCuiHelp_omitsNotesWhenEmpty(t *testing.T) {
+	got := BuildCuiHelp(CuiHelpSpec{
+		TitleKey:    "hearts.helpTitle",
+		CommandKeys: []string{"hearts.helpPass"},
+	})
+	for _, line := range got {
+		if line == i18n.T("notes") {
+			t.Fatalf("注記の見出しが出ている: %v", got)
+		}
+	}
+}

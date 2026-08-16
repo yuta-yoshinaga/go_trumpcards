@@ -30,5 +30,10 @@
   "hintDraw": "No playable card. Draw with d.",
   "hintReceivePenalty": "No counter card. Accept the penalty with d.",
   "helpExamplePlay": "  p 0                  play hand card 0",
-  "helpHint": "  h                    show a hint"
+  "helpHint": "  h                    show a hint",
+  "magicTwo": "  2                    next player draws 2 (stack another 2 to pass it on)",
+  "magicSeven": "  7                    skip the next player",
+  "magicEight": "  8                    wild -- choose any suit, playable anytime",
+  "magicJack": "  J                    reverse the play direction",
+  "magicNote": "  declare \"Macau!\" when down to your last card (forgetting costs 2 cards)"
 }
