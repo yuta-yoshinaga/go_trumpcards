@@ -15,7 +15,8 @@
     "you": "あなた",
     "cpu": "CPU",
     "scoringTricks": "得点トリック",
-    "firstHalfNote": "※ 前半のトリックは得点になりません"
+    "firstHalfNote": "※ 前半のトリックは得点になりません",
+    "trickCount": "獲得トリック"
   },
   "currentTrick": "現在のトリック",
   "actions": {

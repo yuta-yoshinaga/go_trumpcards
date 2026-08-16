@@ -178,7 +178,13 @@ function GermanWhistPageContent() {
             {/* The face-up card is what the first half is played for. */}
             <div className="flex flex-wrap items-start gap-4 mb-4">
               <div className="p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                {t('header.cpu')}: {cpu?.cardCount ?? 0} / {t('header.scoringTricks')}: {cpu?.scoringTricks ?? 0}
+                {/* **前半は得点が両者 0 のまま。** trickCount まで出さないと、
+                    13 トリックがどちらに有利に進んでいるか画面から読めない (#5744)。
+                    CUI の germanWhistPlayerStr は最初から両方出している。 */}
+                <span data-testid="gw-cpu-tricks">
+                  {t('header.cpu')}: {cpu?.cardCount ?? 0} / {t('header.trickCount')}: {cpu?.trickCount ?? 0} /{' '}
+                  {t('header.scoringTricks')}: {cpu?.scoringTricks ?? 0}
+                </span>
               </div>
               <div
                 className="flex items-center gap-2 rounded bg-black/30 p-2"
@@ -226,7 +232,10 @@ function GermanWhistPageContent() {
             {human && human.cards.length > 0 && (
               <div className="mt-4" data-tutorial="germanwhist-hand">
                 <div className="text-ds-text-muted text-sm mb-1">
-                  {t('header.you')}: {human.cardCount} / {t('header.scoringTricks')}: {human.scoringTricks}
+                  <span data-testid="gw-human-tricks">
+                    {t('header.you')}: {human.cardCount} / {t('header.trickCount')}: {human.trickCount} /{' '}
+                    {t('header.scoringTricks')}: {human.scoringTricks}
+                  </span>
                   {isFirstHalf && <span className="ml-2 text-ds-accent">{t('header.firstHalfNote')}</span>}
                 </div>
                 <div className="flex flex-wrap gap-2">
