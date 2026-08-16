@@ -33,7 +33,7 @@ import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { KlondikeResponse } from '../types/card';
-import { KlondikePhase, KlondikeScoringMode } from '../types/phases';
+import { KlondikePhase, KlondikeScoringMode, KlondikeVegas } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { KLONDIKE_HELP, parseKlondikeCommand } from '../utils/cli/commands/klondikeCommands';
@@ -87,6 +87,9 @@ const KL_TUTORIAL_STEPS: TutorialStep[] = [
 /** Renders the Klondike solitaire game page with tableau, stock/waste, and foundation. */
 export const KlondikePage = withTutorial(KlondikePageContent, 'klondike', KL_TUTORIAL_STEPS);
 /** Inner content of the Klondike page, wrapped by TutorialProvider. */
+/** Interpolation values for the Vegas formula text, kept next to the constants. */
+const VEGAS_FORMULA_VALUES = { buyIn: KlondikeVegas.BUY_IN, perCard: KlondikeVegas.PER_CARD };
+
 function KlondikePageContent() {
   const {
     t,
@@ -296,7 +299,7 @@ function KlondikePageContent() {
             {t('moveCount')}: {state.moveCount}
           </span>
           {isVegas && (
-            <span className="ml-3">
+            <span className="ml-3" title={t('vegasFormula', VEGAS_FORMULA_VALUES)} data-testid="kl-vegas-score">
               {t('score')}: {state.score}
             </span>
           )}
@@ -716,6 +719,15 @@ function KlondikePageContent() {
                 <option value={0}>{t('scoringNone')}</option>
                 <option value={1}>{t('scoringVegas')}</option>
               </select>
+              {/* **Vegas を選んだプレイヤーは計算式を知る手段が無かった。** ヘッダーには
+                  生の数字しか出ず、チュートリアルにもスコアリングの説明が無い (#5493)。
+                  数字は KlondikeVegas から取る -- domain 側の定数と突き合わせる Go の
+                  テストがあるので、片方だけ変えると落ちる。 */}
+              {isVegas && (
+                <div data-testid="kl-vegas-formula" className="w-full text-game-text-muted text-xs">
+                  {t('vegasFormula', VEGAS_FORMULA_VALUES)}
+                </div>
+              )}
               {/* Per-variant stats: win rate + best time / fewest moves (#3031). */}
               <div data-testid="kl-stats-panel" className="w-full text-game-text-muted text-xs">
                 {t('stats.winRate', { rate: klondikeWinRate(currentStat) })} ({currentStat.wins}/{currentStat.plays})
