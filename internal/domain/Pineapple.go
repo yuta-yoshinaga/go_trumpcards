@@ -798,6 +798,15 @@ func (p *Pineapple) GetEquity() *HoldemEquityResult {
 	for i := 0; i < humanPlayer.GetCardsSize(); i++ {
 		humanCards[i] = humanPlayer.GetCard(i)
 	}
+	// **まだ捨てていない札を勝率に数えない。** ベッティング中の手札は捨てる前の
+	// 枚数 (Pineapple 系は3枚、Irish Poker は4枚) で、そのまま渡すと CalcEquity の
+	// 中の evalBestFromSeven が全部を自由に組み合わせて最善役を探す。実際には
+	// 作れない手まで数えるので勝率が水増しされる (実測で 4.6 ポイント高く出た)。
+	//
+	// 捨てるタイミングは変種で違う (Crazy Pineapple / Irish Poker はフロップの
+	// ベッティング後、通常の Pineapple はフロップ前) が、**どの変種でも「まだ
+	// 3枚以上持っている間」は同じ水増しが起きる。**枚数だけを見て絞る (#5489)。
+	humanCards = p.bestKeepAfterDiscard(humanCards)
 	activePlayers := 0
 	for _, pl := range p.players {
 		if !pl.GetIsHuman() && !pl.GetFolded() {
@@ -1387,4 +1396,33 @@ func (p *Pineapple) Resize(players []*PineapplePlayer) {
 	p.threeBetTracked = make([]bool, n)
 	p.discardDone = make([]bool, n)
 	p.initTournamentState(n)
+}
+
+// pineappleKeepAfterDiscard はディスカード後に手元へ残るホールカード枚数。
+// Crazy Pineapple は3枚のうち1枚、Irish Poker は4枚のうち2枚を捨てて、
+// どちらも2枚が残る。
+const pineappleKeepAfterDiscard = 2
+
+// bestKeepAfterDiscard は、まだ捨てていない手札から「捨てたあとに残る2枚」を
+// 選んで返す。既に2枚以下ならそのまま返す。
+//
+// 選び方は CPU の捨て方 (cpuDiscard) と GetHumanDiscardPreviews の推奨が使う
+// bestRankWithBoard そのもの。**別実装にすると、ゲームが勧める捨て方とは違う
+// 2枚の勝率を出すことになる** -- 画面上の「推奨」と数字が食い違う。
+func (p *Pineapple) bestKeepAfterDiscard(hole []*Card) []*Card {
+	if len(hole) <= pineappleKeepAfterDiscard {
+		return hole
+	}
+	// 上の枚数チェックを通っているので組み合わせは必ず1つ以上ある。先頭を初期値に
+	// 置くことで「1つも選べなかった」場合の分岐そのものを無くす -- 到達しない
+	// フォールバックはテストできず、壊れても気づけない。
+	combos := combinations(hole, pineappleKeepAfterDiscard)
+	best, bestRank := combos[0], p.bestRankWithBoard(combos[0])
+	for _, keep := range combos[1:] {
+		if rank := p.bestRankWithBoard(keep); rank > bestRank {
+			bestRank = rank
+			best = keep
+		}
+	}
+	return best
 }
