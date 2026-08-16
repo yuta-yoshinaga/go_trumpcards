@@ -698,3 +698,29 @@ func TestBuildCuiHelp_omitsNotesWhenEmpty(t *testing.T) {
 		}
 	}
 }
+
+// #5498: この実装にはチーム/パートナーの概念が無く、ScoreRound はビッド・トリック・
+// ニルボーナス・バッグペナルティを4人それぞれ個別に計算する。つまりカットスロート
+// 方式なのに、そう書かれた場所がどこにも無かった。**標準スペードを知っている
+// プレイヤーほど、パートナーが表示されないことに戸惑う。**
+func TestSpadesHelpSaysItIsCutthroat(t *testing.T) {
+	var spades *GameRegistryEntry
+	for _, e := range GameRegistry() {
+		if e.Name == "spades" {
+			entry := e
+			spades = &entry
+			break
+		}
+	}
+	if spades == nil {
+		t.Fatal("spades is not registered")
+	}
+	lines := strings.Join(spades.NewCui().HelpLines(), "\n")
+	note := i18n.T("spades.noteCutthroat")
+	if note == "spades.noteCutthroat" {
+		t.Fatal("spades.noteCutthroat is not translated")
+	}
+	if !strings.Contains(lines, note) {
+		t.Errorf("spades help should say the game is cutthroat (no partnerships); got:\n%s", lines)
+	}
+}

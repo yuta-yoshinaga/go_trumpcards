@@ -46,7 +46,8 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 import { spadesBagWarning, spadesBidProgress } from '../utils/spadesBid';
 
 /** Spades tutorial step definitions. */
-const SP_TUTORIAL_STEPS: TutorialStep[] = [
+/** Tutorial steps for the Spades page (exported so tests can assert coverage of the rules). */
+export const SP_TUTORIAL_STEPS: TutorialStep[] = [
   {
     target: '[data-tutorial="sp-bid-controls"]',
     messageKey: 'tutorial.bidControls',
@@ -74,6 +75,15 @@ const SP_TUTORIAL_STEPS: TutorialStep[] = [
   {
     target: '[data-tutorial="sp-score-table"]',
     messageKey: 'tutorial.scoreTable',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  // **標準スペードと違う点はスコア表の直後に言う。** この実装は4人が個別に
+  // 得点を競うカットスロート方式で、ScoreRound にチームの概念が無い。パートナーが
+  // 表示されないことに戸惑うのは、標準ルールを知っているプレイヤーほど強い (#5498)。
+  {
+    target: '[data-tutorial="sp-score-table"]',
+    messageKey: 'tutorial.cutthroat',
     placement: 'bottom',
     advanceOn: 'next',
   },

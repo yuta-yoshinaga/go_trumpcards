@@ -73,7 +73,8 @@
     "playButton": "Press this button to play the selected card.",
     "scoreTable": "Score table. Meeting your bid earns points; failing costs points.",
     "bagsInfo": "Accumulating 10 bags (overtricks) results in a 100-point penalty. Nil bids are also possible.",
-    "resetButton": "Press the reset button to start a new game."
+    "resetButton": "Press the reset button to start a new game.",
+    "cutthroat": "This is cutthroat Spades: all four players score individually. There are no partnerships — bids and scores are counted per player."
   },
   "hint": {
     "bidEstimate": "Bid based on high cards and spades",

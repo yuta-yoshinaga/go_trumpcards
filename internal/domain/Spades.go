@@ -39,6 +39,12 @@ type SpadesHint struct {
 // SpadesLoseThreshold 負け閾値 (-200点以下で負け)
 const SpadesLoseThreshold = -200
 
+// **このスペードはカットスロート方式** -- 4人が個別に得点を競い、パートナーシップは
+// 無い。ScoreRound はビッド・トリック・ニルボーナス・バッグペナルティを4人それぞれに
+// 計算しており、チームでビッドを合算する標準の「パートナーシップ・スペード」ではない。
+// 1人の人間と3体の CPU という構成では、2人1組にすると人間の成績が相方の CPU 次第に
+// なってしまうため (#5498)。標準ルールを知っているプレイヤーほど戸惑うので、
+// ヘルプ (spades.noteCutthroat) にも明記してある。
 // Spades スペードゲームクラス
 type Spades struct {
 	trumpCards       *TrumpCards
