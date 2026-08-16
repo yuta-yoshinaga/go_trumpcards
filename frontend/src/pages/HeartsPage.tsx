@@ -333,7 +333,7 @@ function HeartsPageContent() {
                                 {t('cumulativeScore', { score: p.cumulativeScore })}
                               </span>{' '}
                               | {t('roundScore', { score: p.roundScore })} |{' '}
-                              <HeartsPenaltyBreakdown cards={p.penaltyCards} t={t} />
+                              <HeartsPenaltyBreakdown cards={p.penaltyCards} tookOmnibusJD={p.tookOmnibusJD} t={t} />
                               {moonAlertIdx === p.id && <ShootTheMoonBadge label={t('shootTheMoonAlert')} />}
                             </div>
                           );
@@ -349,7 +349,7 @@ function HeartsPageContent() {
                           {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
                           {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
                           {t('roundScore', { score: p.roundScore })} |{' '}
-                          <HeartsPenaltyBreakdown cards={p.penaltyCards} t={t} />
+                          <HeartsPenaltyBreakdown cards={p.penaltyCards} tookOmnibusJD={p.tookOmnibusJD} t={t} />
                           {moonAlertIdx === p.id && <ShootTheMoonBadge label={t('shootTheMoonAlert')} />}
                         </div>
                       </div>
@@ -395,7 +395,7 @@ function HeartsPageContent() {
                               </td>
                               <td className="text-center">{p.trickCount}</td>
                               <td className="text-center">
-                                <HeartsPenaltyBreakdown cards={p.penaltyCards} t={t} />
+                                <HeartsPenaltyBreakdown cards={p.penaltyCards} tookOmnibusJD={p.tookOmnibusJD} t={t} />
                               </td>
                             </tr>
                           );
@@ -437,7 +437,7 @@ function HeartsPageContent() {
                               </td>
                               <td className="text-center">{p.trickCount}</td>
                               <td className="text-center">
-                                <HeartsPenaltyBreakdown cards={p.penaltyCards} t={t} />
+                                <HeartsPenaltyBreakdown cards={p.penaltyCards} tookOmnibusJD={p.tookOmnibusJD} t={t} />
                               </td>
                             </tr>
                           );
@@ -570,15 +570,23 @@ const QUEEN_VALUE = 12;
 
 /**
  * Compact, accessible breakdown of a player's captured penalty cards:
- * "♥×N" for the hearts count and "♠Q" when the Queen of Spades has been taken.
+ * "♥×N" for the hearts count, "♠Q" when the Queen of Spades has been taken, and
+ * "♦J−10" when the omnibus J♦ has been captured (that one arrives as its own
+ * flag -- the server keeps it out of `cards` because it is a bonus).
  * The visible glyphs are decorative; the full description is exposed to screen
  * readers via aria-label. Renders "—" when no penalty cards are held.
  */
 function HeartsPenaltyBreakdown({
   cards,
+  tookOmnibusJD,
   t,
 }: {
   cards: Card[];
+  /**
+   * Whether the omnibus J♦ (-10) has been captured. It arrives as its own flag
+   * because the server keeps it out of `cards`: it is a bonus, not a penalty.
+   */
+  tookOmnibusJD: boolean;
   t: (key: string, opts?: Record<string, unknown>) => string;
 }) {
   const heartsCount = cards.filter((c) => c.design === 'HEART').length;
@@ -586,6 +594,7 @@ function HeartsPenaltyBreakdown({
   const parts: string[] = [];
   if (heartsCount > 0) parts.push(t('penaltyHearts', { count: heartsCount }));
   if (hasQueenSpades) parts.push(t('penaltyQueenSpades'));
+  if (tookOmnibusJD) parts.push(t('penaltyOmnibusJD'));
   const summary = parts.length > 0 ? parts.join(', ') : t('penaltyNone');
   return (
     <span
@@ -594,7 +603,7 @@ function HeartsPenaltyBreakdown({
       role="img"
       aria-label={`${t('penaltyTaken')}: ${summary}`}
     >
-      {heartsCount === 0 && !hasQueenSpades ? (
+      {heartsCount === 0 && !hasQueenSpades && !tookOmnibusJD ? (
         <span aria-hidden="true" className="text-ds-text-muted">
           —
         </span>
@@ -604,6 +613,11 @@ function HeartsPenaltyBreakdown({
           {hasQueenSpades && (
             <span aria-hidden="true" className="text-ds-text-primary font-bold">
               ♠Q
+            </span>
+          )}
+          {tookOmnibusJD && (
+            <span aria-hidden="true" className="text-ds-success font-bold">
+              ♦J−10
             </span>
           )}
         </>

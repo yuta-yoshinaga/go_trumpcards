@@ -84,5 +84,6 @@
   },
   "hintRequested": "Hint available",
   "noHint": "No hint available",
-  "limitNear": "Close to the {{limit}}-point limit — the game ends as soon as someone reaches it"
+  "limitNear": "Close to the {{limit}}-point limit — the game ends as soon as someone reaches it",
+  "penaltyOmnibusJD": "Jack of Diamonds taken (-10)"
 }

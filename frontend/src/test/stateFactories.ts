@@ -78,6 +78,7 @@ const heartsHumanPlayer = {
   cumulativeScore: 0,
   trickCount: 0,
   penaltyCards: [],
+  tookOmnibusJD: false,
 };
 
 /** Base Hearts state used as the default for {@link makeHeartsState}. */
@@ -93,6 +94,7 @@ const baseHeartsState: HeartsResponse = {
       cumulativeScore: 10,
       trickCount: 1,
       penaltyCards: [],
+      tookOmnibusJD: false,
     },
     {
       id: 2,
@@ -103,6 +105,7 @@ const baseHeartsState: HeartsResponse = {
       cumulativeScore: 20,
       trickCount: 2,
       penaltyCards: [],
+      tookOmnibusJD: false,
     },
     {
       id: 3,
@@ -113,6 +116,7 @@ const baseHeartsState: HeartsResponse = {
       cumulativeScore: 5,
       trickCount: 0,
       penaltyCards: [],
+      tookOmnibusJD: false,
     },
   ],
   phase: 1,

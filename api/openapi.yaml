@@ -36064,6 +36064,20 @@ components:
           type: integer
           description: Number of cards in hand
           example: 13
+        penaltyCards:
+          type: array
+          description: |
+            Penalty cards this player has captured: every heart plus the Q♠.
+            The omnibus J♦ is deliberately absent -- it is a bonus, not a
+            penalty; see tookOmnibusJD.
+          items:
+            $ref: '#/components/schemas/Card'
+        tookOmnibusJD:
+          type: boolean
+          description: |
+            True when the omnibus rule is enabled and this player captured the
+            J♦ (-10). Always false while the rule is off.
+          example: false
 
     HeartsTrickCard:
       type: object

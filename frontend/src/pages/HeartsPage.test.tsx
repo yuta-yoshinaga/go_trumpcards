@@ -88,6 +88,7 @@ describe('HeartsPage', () => {
           cumulativeScore: 0,
           trickCount: 0,
           penaltyCards: [],
+          tookOmnibusJD: false,
         },
         {
           id: 1,
@@ -98,6 +99,7 @@ describe('HeartsPage', () => {
           cumulativeScore: 0,
           trickCount: 0,
           penaltyCards: [],
+          tookOmnibusJD: false,
         },
         {
           id: 2,
@@ -108,6 +110,7 @@ describe('HeartsPage', () => {
           cumulativeScore: 14,
           trickCount: 5,
           penaltyCards: [],
+          tookOmnibusJD: false,
         },
         {
           id: 3,
@@ -118,6 +121,7 @@ describe('HeartsPage', () => {
           cumulativeScore: 0,
           trickCount: 0,
           penaltyCards: [],
+          tookOmnibusJD: false,
         },
       ],
     });
@@ -141,6 +145,7 @@ describe('HeartsPage', () => {
           cumulativeScore: 0,
           trickCount: 0,
           penaltyCards: [],
+          tookOmnibusJD: false,
         },
         {
           id: 1,
@@ -151,6 +156,7 @@ describe('HeartsPage', () => {
           cumulativeScore: 8,
           trickCount: 3,
           penaltyCards: [],
+          tookOmnibusJD: false,
         },
         {
           id: 2,
@@ -161,6 +167,7 @@ describe('HeartsPage', () => {
           cumulativeScore: 8,
           trickCount: 3,
           penaltyCards: [],
+          tookOmnibusJD: false,
         },
         {
           id: 3,
@@ -171,6 +178,7 @@ describe('HeartsPage', () => {
           cumulativeScore: 0,
           trickCount: 0,
           penaltyCards: [],
+          tookOmnibusJD: false,
         },
       ],
     });
@@ -192,6 +200,7 @@ describe('HeartsPage', () => {
           cumulativeScore: 0,
           trickCount: 0,
           penaltyCards: [],
+          tookOmnibusJD: false,
         },
         {
           id: 1,
@@ -206,6 +215,7 @@ describe('HeartsPage', () => {
             { design: 'HEART', value: 10 },
             { design: 'SPADE', value: 12 },
           ],
+          tookOmnibusJD: false,
         },
         {
           id: 2,
@@ -216,6 +226,7 @@ describe('HeartsPage', () => {
           cumulativeScore: 0,
           trickCount: 0,
           penaltyCards: [],
+          tookOmnibusJD: false,
         },
         {
           id: 3,
@@ -226,6 +237,7 @@ describe('HeartsPage', () => {
           cumulativeScore: 0,
           trickCount: 0,
           penaltyCards: [],
+          tookOmnibusJD: false,
         },
       ],
     });
@@ -245,6 +257,37 @@ describe('HeartsPage', () => {
     // Players with no penalty cards announce "no penalties".
     const emptyBreakdowns = breakdowns.filter((el) => el.getAttribute('aria-label')?.includes('ペナルティなし'));
     expect(emptyBreakdowns.length).toBeGreaterThan(0);
+  });
+
+  // J♦ は -10 点だが penaltyCards には入らない (ペナルティではなくボーナス)。
+  // 専用フラグで届くので、内訳と aria-label の両方に出る必要がある (#5491)。
+  it('shows who captured the omnibus J♦ and says so to screen readers', async () => {
+    // makeHeartsState は浅いコピーなので players は全テストで同じ配列。
+    // st.players[1].tookOmnibusJD = true と書くとモジュール定数を書き換えて
+    // しまい、次のテストにまで J♦ が残る (実際に踏んだ)。上書きで渡すこと。
+    const base = makeHeartsState({});
+    mockExec.mockResolvedValue(
+      makeHeartsState({
+        players: base.players.map((p) => (p.id === 1 ? { ...p, tookOmnibusJD: true } : p)),
+      }),
+    );
+    renderWithProviders(<HeartsPage />);
+
+    await waitFor(() => expect(screen.getAllByText('♦J−10').length).toBeGreaterThan(0));
+    const announced = screen
+      .getAllByTestId('hearts-penalty-breakdown')
+      .filter((el) => el.getAttribute('aria-label')?.includes('ダイヤのジャック獲得'));
+    expect(announced.length).toBeGreaterThan(0);
+    // J♦ だけを持つプレイヤーは「ペナルティなし」ではない。以前の空判定は
+    // ハートと Q♠ しか見ておらず、この行が「—」に落ちていた。
+    expect(announced[0].getAttribute('aria-label')).not.toContain('ペナルティなし');
+  });
+
+  it('leaves the breakdown unchanged when nobody took the J♦', async () => {
+    mockExec.mockResolvedValue(makeHeartsState({}));
+    renderWithProviders(<HeartsPage />);
+    await waitFor(() => expect(screen.getAllByTestId('hearts-penalty-breakdown').length).toBeGreaterThan(0));
+    expect(screen.queryByText('♦J−10')).not.toBeInTheDocument();
   });
 
   it('renders pass phase with pass button and the recipient name', async () => {
@@ -1069,6 +1112,7 @@ describe('HeartsPage', () => {
           cumulativeScore: 0,
           trickCount: 0,
           penaltyCards: [],
+          tookOmnibusJD: false,
         },
         {
           id: 1,
@@ -1079,6 +1123,7 @@ describe('HeartsPage', () => {
           cumulativeScore: 0,
           trickCount: 0,
           penaltyCards: [],
+          tookOmnibusJD: false,
         },
         {
           id: 2,
@@ -1089,6 +1134,7 @@ describe('HeartsPage', () => {
           cumulativeScore: 0,
           trickCount: 0,
           penaltyCards: [],
+          tookOmnibusJD: false,
         },
         {
           id: 3,
@@ -1099,6 +1145,7 @@ describe('HeartsPage', () => {
           cumulativeScore: 0,
           trickCount: 0,
           penaltyCards: [],
+          tookOmnibusJD: false,
         },
       ],
     });
@@ -1142,6 +1189,7 @@ describe('HeartsPage', () => {
             cumulativeScore: 0,
             trickCount: 0,
             penaltyCards: [],
+            tookOmnibusJD: false,
           },
           {
             id: 1,
@@ -1152,6 +1200,7 @@ describe('HeartsPage', () => {
             cumulativeScore: 0,
             trickCount: 0,
             penaltyCards: [],
+            tookOmnibusJD: false,
           },
           {
             id: 2,
@@ -1162,6 +1211,7 @@ describe('HeartsPage', () => {
             cumulativeScore: 0,
             trickCount: 0,
             penaltyCards: [],
+            tookOmnibusJD: false,
           },
           {
             id: 3,
@@ -1172,6 +1222,7 @@ describe('HeartsPage', () => {
             cumulativeScore: 0,
             trickCount: 0,
             penaltyCards: [],
+            tookOmnibusJD: false,
           },
         ],
       });

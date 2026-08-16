@@ -36,6 +36,11 @@ type HeartsWebOutputPlayer struct {
 	// (全ハート + Q♠。J♦は含まない) の一覧。フロントエンドが「♥×n / Q♠」の
 	// 内訳表示に用いる。トリックテイキングでは公開情報のため秘匿ゲートは不要。
 	PenaltyCards []*WebOutputCard `json:"penaltyCards"`
+	// TookOmnibusJD はオムニバス規則が有効で、かつこのプレイヤーが J♦ を獲得
+	// 済みのとき真。J♦ は -10 点というスイングを持つがボーナスなので
+	// PenaltyCards には入らず、入れると「ペナルティ」の意味が変わってしまう。
+	// 規則が無効なら常に偽 (そのとき J♦ はただの札)。
+	TookOmnibusJD bool `json:"tookOmnibusJD"`
 }
 
 // HeartsWebOutput ハーツWebアウトプット
