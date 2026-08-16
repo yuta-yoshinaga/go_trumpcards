@@ -45,8 +45,7 @@ import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { spadesBagWarning, spadesBidProgress } from '../utils/spadesBid';
 
-/** Spades tutorial step definitions. */
-/** Tutorial steps for the Spades page (exported so tests can assert coverage of the rules). */
+/** Spades tutorial step definitions (exported so tests can assert the rules are covered). */
 export const SP_TUTORIAL_STEPS: TutorialStep[] = [
   {
     target: '[data-tutorial="sp-bid-controls"]',
