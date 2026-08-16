@@ -46,5 +46,7 @@
     "complete": "9 holes done! Total score: {{total}} (lower is better)",
     "restart": "New scorecard",
     "pending": "-"
-  }
+  },
+  "comboAnnounce": "Combo ×{{count}} running",
+  "comboEnded": "Combo broken"
 }
