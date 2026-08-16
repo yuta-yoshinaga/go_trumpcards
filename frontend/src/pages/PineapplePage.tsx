@@ -696,6 +696,26 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
               <div className="mb-2 text-center" data-testid="discard-controls" data-tutorial="pn-discard-controls">
                 {discardPreview && (
                   <div className="mb-2 text-sm" data-testid="irishpoker-discard-preview">
+                    {/* **見えている行は読み上げ向きではない。** ラベル・札・役が
+                        別々の要素に割れていて、順に読まれても対応が取れない。1文に
+                        まとめた sr-only の live region を別に置く。上限超過通知
+                        (pn-discard-limit-announce) だけが aria-live を持っていて、
+                        こちらは無音だった (#5490)。視覚表示は変えていない。 */}
+                    <div
+                      className="sr-only"
+                      role="status"
+                      aria-live="polite"
+                      data-testid="irishpoker-discard-preview-announce"
+                    >
+                      {discardPreview.handKey
+                        ? t('discard.previewAriaWithHand', {
+                            cards: discardPreview.kept.map((c) => cardAlt(c)).join(', '),
+                            hand: t(`hand.${discardPreview.handKey}`),
+                          })
+                        : t('discard.previewAria', {
+                            cards: discardPreview.kept.map((c) => cardAlt(c)).join(', '),
+                          })}
+                    </div>
                     <span className="text-ds-text-muted">{`${t('discard.keepLabel')}: `}</span>
                     <span className="text-ds-text-primary font-semibold">
                       {discardPreview.kept.map((c) => cardAlt(c)).join('  ')}
