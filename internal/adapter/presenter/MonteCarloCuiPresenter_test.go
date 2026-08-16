@@ -17,6 +17,7 @@ func setupMonteCarloCuiMockDefaults(g *interfaces.MockMonteCarloGame) {
 	g.On("GetRemovedCount").Return(0).Maybe()
 	g.On("GetDealCount").Return(0).Maybe()
 	g.On("IsStalemate").Return(false).Maybe()
+	g.On("UndoToEscape").Return(0).Maybe()
 	var board [domain.MonteCarloGridSize][domain.MonteCarloGridSize]*domain.Card
 	board[0][0] = domain.NewCard(domain.CardDesignSpade, 7, false)
 	g.On("GetBoard").Return(board).Maybe()
@@ -47,6 +48,7 @@ func TestMonteCarloCuiPresenter_Output(t *testing.T) {
 		g.On("GetRemovedCount").Return(40).Maybe()
 		g.On("GetDealCount").Return(3).Maybe()
 		g.On("IsStalemate").Return(true).Maybe()
+		g.On("UndoToEscape").Return(0).Maybe()
 		var board [domain.MonteCarloGridSize][domain.MonteCarloGridSize]*domain.Card
 		g.On("GetBoard").Return(board).Maybe()
 

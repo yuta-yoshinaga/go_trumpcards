@@ -18,6 +18,7 @@ func setupTriPeaksCuiMockDefaults(tg *interfaces.MockTriPeaksGame) {
 	tg.On("GetStockCount").Return(23).Maybe()
 	tg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	tg.On("IsStalemate").Return(false).Maybe()
+	tg.On("UndoToEscape").Return(0).Maybe()
 
 	var layout [domain.TriPeaksRowCnt][domain.TriPeaksColCnt]*domain.TriPeaksCard
 	// Add some cards at row 3
@@ -97,6 +98,7 @@ func TestTriPeaksCuiPresenterOutput_Stalemate(t *testing.T) {
 	tg.On("GetStockCount").Return(0).Maybe()
 	tg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	tg.On("IsStalemate").Return(true).Maybe()
+	tg.On("UndoToEscape").Return(0).Maybe()
 	var layout [domain.TriPeaksRowCnt][domain.TriPeaksColCnt]*domain.TriPeaksCard
 	tg.On("GetLayout").Return(layout).Maybe()
 

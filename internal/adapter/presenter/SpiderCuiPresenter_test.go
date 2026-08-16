@@ -22,6 +22,7 @@ func setupSpiderCuiMockDefaults(sg *interfaces.MockSpiderGame) {
 	sg.On("GetScore").Return(500).Maybe()
 	sg.On("GetDifficulty").Return(domain.SpiderDifficulty1Suit).Maybe()
 	sg.On("IsStalemate").Return(false).Maybe()
+	sg.On("UndoToEscape").Return(0).Maybe()
 
 	var tableau [domain.SpiderTableauCnt][]*domain.SpiderTableauCard
 	for i := 0; i < domain.SpiderTableauCnt; i++ {
@@ -111,6 +112,7 @@ func TestSpiderCuiPresenter_Output(t *testing.T) {
 		setupSpiderCuiMockDefaults(sg)
 		sg.ExpectedCalls = filterCalls(sg.ExpectedCalls, "IsStalemate")
 		sg.On("IsStalemate").Return(true)
+		sg.On("UndoToEscape").Return(0).Maybe()
 
 		p := new(SpiderCuiPresenter)
 		result := p.Output(sg, nil)

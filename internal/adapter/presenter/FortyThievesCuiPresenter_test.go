@@ -19,6 +19,7 @@ func setupFortyThievesCuiMockDefaults(fg *interfaces.MockFortyThievesGame) {
 	fg.On("GetStockCount").Return(64).Maybe()
 	fg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	fg.On("IsStalemate").Return(false).Maybe()
+	fg.On("UndoToEscape").Return(0).Maybe()
 
 	var tableau [domain.FortyThievesTableauCnt][]*domain.FortyThievesTableauCard
 	for i := range domain.FortyThievesTableauCnt {
@@ -106,6 +107,7 @@ func TestFortyThievesCuiPresenter_Output(t *testing.T) {
 		setupFortyThievesCuiMockDefaults(fg)
 		fg.ExpectedCalls = filterCalls(fg.ExpectedCalls, "IsStalemate")
 		fg.On("IsStalemate").Return(true)
+		fg.On("UndoToEscape").Return(0).Maybe()
 
 		p := new(FortyThievesCuiPresenter)
 		result := p.Output(fg, nil)

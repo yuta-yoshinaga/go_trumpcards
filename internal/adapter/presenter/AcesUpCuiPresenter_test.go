@@ -22,6 +22,7 @@ func setupAcesUpCuiMockDefaults(g *interfaces.MockAcesUpGame) {
 	g.On("GetStockCount").Return(44).Maybe()
 	g.On("GetDiscardCount").Return(4).Maybe()
 	g.On("IsStalemate").Return(false).Maybe()
+	g.On("UndoToEscape").Return(0).Maybe()
 	g.On("GetColumns").Return(sampleAcesUpColumns()).Maybe()
 	g.On("CanRemove", mock.AnythingOfType("int")).Return(false).Maybe()
 	g.On("CanMove", mock.AnythingOfType("int")).Return(false).Maybe()
@@ -83,6 +84,7 @@ func TestAcesUpCuiPresenterOutput_Stalemate(t *testing.T) {
 	g.On("GetStockCount").Return(0).Maybe()
 	g.On("GetDiscardCount").Return(10).Maybe()
 	g.On("IsStalemate").Return(true).Maybe()
+	g.On("UndoToEscape").Return(0).Maybe()
 	var cols [domain.AcesUpColCnt][]*domain.Card
 	g.On("GetColumns").Return(cols).Maybe()
 	p := &AcesUpCuiPresenter{}

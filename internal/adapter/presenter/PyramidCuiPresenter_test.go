@@ -30,6 +30,7 @@ func setupPyramidCuiMock() *interfaces.MockPyramidGame {
 	pg.On("GetStockCount").Return(24).Maybe()
 	pg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	pg.On("IsStalemate").Return(false).Maybe()
+	pg.On("UndoToEscape").Return(0).Maybe()
 	pg.On("IsWasteKingRemovable").Return(false).Maybe()
 	addPyramidExposedExpectations(pg)
 
@@ -187,6 +188,7 @@ func TestPyramidCuiPresenterOutput_StalemateAndNonEmptyWaste(t *testing.T) {
 		domain.NewCard(domain.CardDesignSpade, 7, false),
 	}).Maybe()
 	pg.On("IsStalemate").Return(true).Maybe()
+	pg.On("UndoToEscape").Return(0).Maybe()
 	pg.On("IsWasteKingRemovable").Return(false).Maybe()
 	addPyramidExposedExpectations(pg)
 

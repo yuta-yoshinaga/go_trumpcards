@@ -14,6 +14,7 @@ import (
 
 func setupOsmosisCuiMockDefaults(og *interfaces.MockOsmosisGame) {
 	og.On("IsStalemate").Return(false).Maybe()
+	og.On("UndoToEscape").Return(0).Maybe()
 	og.On("GetPhase").Return(domain.OsmosisPhasePlaying).Maybe()
 	og.On("GetMoveCount").Return(0).Maybe()
 	og.On("GetStockCount").Return(34).Maybe()
@@ -42,6 +43,7 @@ func TestOsmosisCuiPresenter_Output(t *testing.T) {
 		og := new(interfaces.MockOsmosisGame)
 		// 先に登録した期待が勝つ。defaults の IsStalemate(false) より前に置く。
 		og.On("IsStalemate").Return(true)
+		og.On("UndoToEscape").Return(0).Maybe()
 		setupOsmosisCuiMockDefaults(og)
 		p := new(OsmosisCuiPresenter)
 		assert.Contains(t, p.Output(og, nil), "手詰まり")

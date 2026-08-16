@@ -16,6 +16,7 @@ func setupCrescentCuiMockDefaults(cg *interfaces.MockCrescentGame) {
 	cg.On("GetMoveCount").Return(0).Maybe()
 	cg.On("GetRedealsRemaining").Return(domain.CrescentMaxRedeals).Maybe()
 	cg.On("IsStalemate").Return(false).Maybe()
+	cg.On("UndoToEscape").Return(0).Maybe()
 
 	var tableau [domain.CrescentTableauCnt][]*domain.CrescentTableauCard
 	tableau[0] = []*domain.CrescentTableauCard{
@@ -67,6 +68,7 @@ func TestCrescentCuiPresenter_Output(t *testing.T) {
 		setupCrescentCuiMockDefaults(cg)
 		cg.ExpectedCalls = filterCalls(cg.ExpectedCalls, "IsStalemate")
 		cg.On("IsStalemate").Return(true)
+		cg.On("UndoToEscape").Return(0).Maybe()
 		p := new(CrescentCuiPresenter)
 		out := p.Output(cg, nil)
 		assert.NotEmpty(t, out)

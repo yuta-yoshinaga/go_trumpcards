@@ -21,6 +21,7 @@
   "cuiHintWeakHand": "弱い手札",
   "cuiHintNone": "ヒントはありません。",
   "cuiSolitaireStalemate": "手詰まりです",
+  "cuiSolitaireUndoToEscape": "脱出には {{count}} 手戻す必要があります（undo {{count}} または u を繰り返す）",
   "cuiSolitaireGameClear": "ゲームクリア！",
   "cuiSolitaireGameOver": "ゲームオーバー",
   "cuiSolitaireGameOverSummary": "組札 {{count}}/{{total}} 枚（{{percent}}%）まで到達",

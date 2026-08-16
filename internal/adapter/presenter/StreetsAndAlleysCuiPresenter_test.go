@@ -17,6 +17,7 @@ func setupStreetsAndAlleysCuiMockDefaults(bg *interfaces.MockStreetsAndAlleysGam
 	bg.On("GetPhase").Return(domain.StreetsAndAlleysPhasePlaying).Maybe()
 	bg.On("GetMoveCount").Return(0).Maybe()
 	bg.On("IsStalemate").Return(false).Maybe()
+	bg.On("UndoToEscape").Return(0).Maybe()
 
 	var tableau [domain.StreetsAndAlleysTableauCnt][]*domain.StreetsAndAlleysTableauCard
 	for i := range domain.StreetsAndAlleysTableauCnt {
@@ -90,6 +91,7 @@ func TestStreetsAndAlleysCuiPresenter_Output(t *testing.T) {
 		setupStreetsAndAlleysCuiMockDefaults(bg)
 		bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "IsStalemate")
 		bg.On("IsStalemate").Return(true)
+		bg.On("UndoToEscape").Return(0).Maybe()
 
 		p := new(StreetsAndAlleysCuiPresenter)
 		result := p.Output(bg, nil)

@@ -15,6 +15,7 @@ func setupScorpionCuiMockDefaults(sg *interfaces.MockScorpionGame) {
 	sg.On("GetPhase").Return(domain.ScorpionPhasePlaying).Maybe()
 	sg.On("GetMoveCount").Return(0).Maybe()
 	sg.On("IsStalemate").Return(false).Maybe()
+	sg.On("UndoToEscape").Return(0).Maybe()
 	sg.On("GetCompletedSuits").Return(0).Maybe()
 	sg.On("GetStockCount").Return(3).Maybe()
 
@@ -53,6 +54,7 @@ func TestScorpionCuiPresenter_Output(t *testing.T) {
 		sg.On("GetPhase").Return(domain.ScorpionPhasePlaying).Maybe()
 		sg.On("GetMoveCount").Return(5).Maybe()
 		sg.On("IsStalemate").Return(true).Maybe()
+		sg.On("UndoToEscape").Return(0).Maybe()
 		sg.On("GetCompletedSuits").Return(0).Maybe()
 		sg.On("GetStockCount").Return(0).Maybe()
 		var tableau [domain.ScorpionTableauCnt][]*domain.KlondikeTableauCard

@@ -15,6 +15,7 @@ func setupRussianSolitaireCuiMockDefaults(rg *interfaces.MockRussianSolitaireGam
 	rg.On("GetPhase").Return(domain.RussianSolitairePhasePlaying).Maybe()
 	rg.On("GetMoveCount").Return(0).Maybe()
 	rg.On("IsStalemate").Return(false).Maybe()
+	rg.On("UndoToEscape").Return(0).Maybe()
 
 	var tableau [domain.RussianSolitaireTableauCnt][]*domain.KlondikeTableauCard
 	for i := range domain.RussianSolitaireTableauCnt {
@@ -54,6 +55,7 @@ func TestRussianSolitaireCuiPresenter_Output(t *testing.T) {
 		rg.On("GetPhase").Return(domain.RussianSolitairePhasePlaying).Maybe()
 		rg.On("GetMoveCount").Return(5).Maybe()
 		rg.On("IsStalemate").Return(true).Maybe()
+		rg.On("UndoToEscape").Return(0).Maybe()
 		var tableau [domain.RussianSolitaireTableauCnt][]*domain.KlondikeTableauCard
 		rg.On("GetTableau").Return(tableau).Maybe()
 		var foundation [domain.RussianSolitaireFoundationCnt][]*domain.Card

@@ -20,6 +20,7 @@ func setupSpideretteCuiMockDefaults(sg *interfaces.MockSpideretteGame) {
 	sg.On("GetCompletedSuits").Return(0).Maybe()
 	sg.On("GetScore").Return(500).Maybe()
 	sg.On("IsStalemate").Return(false).Maybe()
+	sg.On("UndoToEscape").Return(0).Maybe()
 
 	var tableau [domain.SpideretteTableauCnt][]*domain.SpideretteTableauCard
 	for i := 0; i < domain.SpideretteTableauCnt; i++ {
@@ -89,6 +90,7 @@ func TestSpideretteCuiPresenter_Output(t *testing.T) {
 		setupSpideretteCuiMockDefaults(sg)
 		sg.ExpectedCalls = filterCalls(sg.ExpectedCalls, "IsStalemate")
 		sg.On("IsStalemate").Return(true)
+		sg.On("UndoToEscape").Return(0).Maybe()
 
 		p := new(SpideretteCuiPresenter)
 		result := p.Output(sg, nil)

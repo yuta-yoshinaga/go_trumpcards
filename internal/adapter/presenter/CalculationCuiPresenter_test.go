@@ -17,6 +17,7 @@ func setupCalculationCuiMockDefaults(g *interfaces.MockCalculationGame) {
 	g.On("GetPhase").Return(domain.CalculationPhasePlaying).Maybe()
 	g.On("GetMoveCount").Return(0).Maybe()
 	g.On("IsStalemate").Return(false).Maybe()
+	g.On("UndoToEscape").Return(0).Maybe()
 	g.On("GetStockCount").Return(5).Maybe()
 	g.On("GetStockTop").Return(domain.NewCard(domain.CardDesignSpade, 7, false)).Maybe()
 
@@ -58,6 +59,7 @@ func TestCalculationCuiPresenter_Output(t *testing.T) {
 		g.On("GetPhase").Return(domain.CalculationPhasePlaying).Maybe()
 		g.On("GetMoveCount").Return(1).Maybe()
 		g.On("IsStalemate").Return(true).Maybe()
+		g.On("UndoToEscape").Return(0).Maybe()
 		g.On("GetStockCount").Return(0).Maybe()
 		g.On("GetStockTop").Return((*domain.Card)(nil)).Maybe()
 		var foundations [domain.CalculationFoundationCnt][]*domain.Card
