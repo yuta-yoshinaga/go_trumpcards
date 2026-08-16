@@ -38,7 +38,9 @@ func sevensPlayerStr(player *domain.SevensPlayer, i int, playable []int) string 
 			b.WriteString("\n")
 			// **空スライスを無印のまま出すと「判定していない」と区別が付かない。**
 			// 7並べでは出せる札が1枚も無い局面が普通に起きるので、明示的に言う。
-			if playable != nil && len(playable) == 0 && player.GetCardsSize() > 0 {
+			// 手札 0 枚のプレイヤーはここへ来ない -- 手札が尽きる経路 (assignRank /
+			// 失格処理) はどちらも isFinished を立てるので、上の分岐で捌かれている。
+			if playable != nil && len(playable) == 0 {
 				b.WriteString(i18n.T("sevens.noPlayable") + "\n")
 			}
 		}
