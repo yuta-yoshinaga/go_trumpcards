@@ -50,5 +50,7 @@
   "sokoHandRank8": "フルハウス",
   "sokoHandRank9": "フォーカード",
   "sokoHandRank10": "ストレートフラッシュ",
-  "sokoHandRank11": "ロイヤルフラッシュ"
+  "sokoHandRank11": "ロイヤルフラッシュ",
+  "cuiSolitaireUndoAvailable": "（u で 1 手戻せます）",
+  "cuiSolitaireUndoUnavailable": "（戻せる手はありません）"
 }
