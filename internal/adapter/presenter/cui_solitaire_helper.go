@@ -50,3 +50,15 @@ func cuiSolitaireGameOverFaces(count, total int) string {
 		"count", strconv.Itoa(count),
 		"total", strconv.Itoa(total))
 }
+
+// cuiSolitaireUndoHint は手数行に添える Undo の可否表示を返す。
+//
+// **押せない操作をそもそも見せない、が Web 側の設計。** CUI には可否が出て
+// おらず、`u` を打って初めてエラーで分かる作りだった (#5680)。CanUndo は
+// インタフェースに在るのに、どの CUI presenter も読んでいなかった。
+func cuiSolitaireUndoHint(canUndo bool) string {
+	if canUndo {
+		return " " + i18n.T("cuiSolitaireUndoAvailable")
+	}
+	return " " + i18n.T("cuiSolitaireUndoUnavailable")
+}

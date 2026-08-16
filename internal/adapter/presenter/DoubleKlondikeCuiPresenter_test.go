@@ -7,9 +7,11 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // dkState builds a DoubleKlondike in an arbitrary state via JSON restore.
@@ -61,5 +63,34 @@ func TestDoubleKlondikeCuiPresenter_Output(t *testing.T) {
 		g := domain.NewDefaultDoubleKlondike()
 		g.Reset()
 		assert.NotEmpty(t, p.ActionLogOutput(g))
+	})
+}
+
+// **押せない操作をそもそも見せない、が Web 側の設計。** CUI には可否が出ておらず、
+// `u` を打って初めてエラーで分かる作りだった (#5680)。CanUndo はインタフェースに
+// 在るのに、どの CUI presenter も読んでいなかった。
+func TestDoubleKlondikeCuiPresenter_ShowsWhetherUndoIsAvailable(t *testing.T) {
+	p := new(presenter.DoubleKlondikeCuiPresenter)
+
+	t.Run("a fresh deal has nothing to undo", func(t *testing.T) {
+		g := domain.NewDefaultDoubleKlondike()
+		g.Reset()
+		require.False(t, g.CanUndo(), "配った直後は戻せないはず (前提が崩れたらテストの意味が消える)")
+
+		out := p.Output(g, nil)
+		assert.Contains(t, out, i18n.T("cuiSolitaireUndoUnavailable"))
+		assert.NotContains(t, out, i18n.T("cuiSolitaireUndoAvailable"))
+	})
+
+	t.Run("after a move it says the move can be undone", func(t *testing.T) {
+		g := domain.NewDefaultDoubleKlondike()
+		g.Reset()
+		// ストックをめくれば必ず 1 手進む。どの配りでも打てる唯一の手。
+		require.NoError(t, g.Draw())
+		require.True(t, g.CanUndo())
+
+		out := p.Output(g, nil)
+		assert.Contains(t, out, i18n.T("cuiSolitaireUndoAvailable"))
+		assert.NotContains(t, out, i18n.T("cuiSolitaireUndoUnavailable"))
 	})
 }

@@ -50,5 +50,7 @@
   "sokoHandRank8": "Full House",
   "sokoHandRank9": "Four of a Kind",
   "sokoHandRank10": "Straight Flush",
-  "sokoHandRank11": "Royal Flush"
+  "sokoHandRank11": "Royal Flush",
+  "cuiSolitaireUndoAvailable": "(u undoes one move)",
+  "cuiSolitaireUndoUnavailable": "(nothing to undo)"
 }
