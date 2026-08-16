@@ -129,16 +129,10 @@ func (ci *ConquianInteractor) ActionLog() string {
 
 // runCpuTurns CPUターンを実行
 func (ci *ConquianInteractor) runCpuTurns() {
-	for !ci.Game.GetGameEndFlag() {
+	runCpuTurnsUntil(ci.Game, func() bool {
 		phase := ci.Game.GetPhase()
-		if phase == domain.ConquianPhaseRoundEnd || phase == domain.ConquianPhaseGameEnd {
-			break
-		}
-		if ci.Game.IsHumanTurn() {
-			break
-		}
-		ci.Game.CpuPlay()
-	}
+		return phase == domain.ConquianPhaseRoundEnd || phase == domain.ConquianPhaseGameEnd || ci.Game.IsHumanTurn()
+	}, ci.Game.CpuPlay)
 }
 
 // RestoreConquianInteractor deserialises JSON into a ConquianInteractor.

@@ -121,16 +121,10 @@ func (ci *MachiavelliInteractor) ActionLog() string {
 
 // runCpuTurns CPU ターンを連続で処理する
 func (ci *MachiavelliInteractor) runCpuTurns() {
-	for !ci.Game.GetGameEndFlag() {
+	runCpuTurnsUntil(ci.Game, func() bool {
 		phase := ci.Game.GetPhase()
-		if phase == domain.MachiavelliPhaseRoundEnd || phase == domain.MachiavelliPhaseGameEnd {
-			break
-		}
-		if ci.Game.IsHumanTurn() {
-			break
-		}
-		ci.Game.CpuPlay()
-	}
+		return phase == domain.MachiavelliPhaseRoundEnd || phase == domain.MachiavelliPhaseGameEnd || ci.Game.IsHumanTurn()
+	}, ci.Game.CpuPlay)
 }
 
 // RestoreMachiavelliInteractor JSON から MachiavelliInteractor を復元する

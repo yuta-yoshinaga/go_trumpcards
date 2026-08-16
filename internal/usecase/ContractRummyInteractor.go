@@ -149,16 +149,10 @@ func (ci *ContractRummyInteractor) ActionLog() string {
 
 // runCpuTurns CPU ターンを連続で処理する
 func (ci *ContractRummyInteractor) runCpuTurns() {
-	for !ci.Game.GetGameEndFlag() {
+	runCpuTurnsUntil(ci.Game, func() bool {
 		phase := ci.Game.GetPhase()
-		if phase == domain.ContractRummyPhaseRoundEnd || phase == domain.ContractRummyPhaseGameEnd {
-			break
-		}
-		if ci.Game.IsHumanTurn() {
-			break
-		}
-		ci.Game.CpuPlay()
-	}
+		return phase == domain.ContractRummyPhaseRoundEnd || phase == domain.ContractRummyPhaseGameEnd || ci.Game.IsHumanTurn()
+	}, ci.Game.CpuPlay)
 }
 
 // RestoreContractRummyInteractor JSON から ContractRummyInteractor を復元する

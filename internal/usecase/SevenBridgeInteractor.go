@@ -156,16 +156,10 @@ func (ci *SevenBridgeInteractor) Hint() string {
 
 // runCpuTurns CPU ターンを連続で処理する
 func (ci *SevenBridgeInteractor) runCpuTurns() {
-	for !ci.Game.GetGameEndFlag() {
+	runCpuTurnsUntil(ci.Game, func() bool {
 		phase := ci.Game.GetPhase()
-		if phase == domain.SevenBridgePhaseRoundEnd || phase == domain.SevenBridgePhaseGameEnd {
-			break
-		}
-		if ci.Game.IsHumanTurn() {
-			break
-		}
-		ci.Game.CpuPlay()
-	}
+		return phase == domain.SevenBridgePhaseRoundEnd || phase == domain.SevenBridgePhaseGameEnd || ci.Game.IsHumanTurn()
+	}, ci.Game.CpuPlay)
 }
 
 // RestoreSevenBridgeInteractor deserialises JSON into a SevenBridgeInteractor.

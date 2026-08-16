@@ -123,16 +123,10 @@ func (ci *TonkInteractor) ActionLog() string {
 
 // runCpuTurns CPUターンを実行
 func (ci *TonkInteractor) runCpuTurns() {
-	for !ci.Game.GetGameEndFlag() {
+	runCpuTurnsUntil(ci.Game, func() bool {
 		phase := ci.Game.GetPhase()
-		if phase == domain.TonkPhaseRoundEnd || phase == domain.TonkPhaseGameEnd {
-			break
-		}
-		if ci.Game.IsHumanTurn() {
-			break
-		}
-		ci.Game.CpuPlay()
-	}
+		return phase == domain.TonkPhaseRoundEnd || phase == domain.TonkPhaseGameEnd || ci.Game.IsHumanTurn()
+	}, ci.Game.CpuPlay)
 }
 
 // RestoreTonkInteractor deserialises JSON into a TonkInteractor.

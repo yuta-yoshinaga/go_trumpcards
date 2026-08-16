@@ -174,17 +174,13 @@ func (ci *KoenigrufenInteractor) ActionLog() string {
 func (ci *KoenigrufenInteractor) advance() {
 	runCpuBidsLoop[domain.KoenigrufenPhase](ci.Game, domain.KoenigrufenPhaseBid)
 	// CPU デクレアラーの王呼びを自動実行する。
-	for !ci.Game.GetGameEndFlag() &&
-		ci.Game.GetPhase() == domain.KoenigrufenPhaseCall &&
-		!ci.Game.IsHumanCallTurn() {
-		ci.Game.CpuCallKing()
-	}
+	runCpuTurnsUntil(ci.Game, func() bool {
+		return ci.Game.GetPhase() != domain.KoenigrufenPhaseCall || ci.Game.IsHumanCallTurn()
+	}, ci.Game.CpuCallKing)
 	// CPU デクレアラーの場札交換を自動実行する。
-	for !ci.Game.GetGameEndFlag() &&
-		ci.Game.GetPhase() == domain.KoenigrufenPhaseTalon &&
-		!ci.Game.IsHumanDiscardTurn() {
-		ci.Game.CpuDiscard()
-	}
+	runCpuTurnsUntil(ci.Game, func() bool {
+		return ci.Game.GetPhase() != domain.KoenigrufenPhaseTalon || ci.Game.IsHumanDiscardTurn()
+	}, ci.Game.CpuDiscard)
 	runCpuTurnsLoop(ci.Game, koenigrufenTrickPhases())
 }
 

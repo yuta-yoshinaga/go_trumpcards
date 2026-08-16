@@ -149,16 +149,10 @@ func (ci *CariocaInteractor) ActionLog() string {
 
 // runCpuTurns CPU ターンを連続で処理する
 func (ci *CariocaInteractor) runCpuTurns() {
-	for !ci.Game.GetGameEndFlag() {
+	runCpuTurnsUntil(ci.Game, func() bool {
 		phase := ci.Game.GetPhase()
-		if phase == domain.CariocaPhaseRoundEnd || phase == domain.CariocaPhaseGameEnd {
-			break
-		}
-		if ci.Game.IsHumanTurn() {
-			break
-		}
-		ci.Game.CpuPlay()
-	}
+		return phase == domain.CariocaPhaseRoundEnd || phase == domain.CariocaPhaseGameEnd || ci.Game.IsHumanTurn()
+	}, ci.Game.CpuPlay)
 }
 
 // RestoreCariocaInteractor JSON から CariocaInteractor を復元する

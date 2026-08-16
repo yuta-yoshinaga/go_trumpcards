@@ -121,16 +121,10 @@ func (ci *IndianRummyInteractor) ActionLog() string {
 
 // runCpuTurns CPU ターンを連続で処理する
 func (ci *IndianRummyInteractor) runCpuTurns() {
-	for !ci.Game.GetGameEndFlag() {
+	runCpuTurnsUntil(ci.Game, func() bool {
 		phase := ci.Game.GetPhase()
-		if phase == domain.IndianRummyPhaseRoundEnd || phase == domain.IndianRummyPhaseGameEnd {
-			break
-		}
-		if ci.Game.IsHumanTurn() {
-			break
-		}
-		ci.Game.CpuPlay()
-	}
+		return phase == domain.IndianRummyPhaseRoundEnd || phase == domain.IndianRummyPhaseGameEnd || ci.Game.IsHumanTurn()
+	}, ci.Game.CpuPlay)
 }
 
 // RestoreIndianRummyInteractor JSON から IndianRummyInteractor を復元する

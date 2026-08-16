@@ -171,7 +171,10 @@ func (ci *MacauInteractor) IsHumanDeclareTurn() bool {
 
 // runCpuTurns ゲームが終わるか人間の手番またはラウンド/ゲーム終了になるまでCPUターンを実行
 func (ci *MacauInteractor) runCpuTurns() {
-	for !ci.Game.GetGameEndFlag() {
+	for i := 0; i < MaxCpuIterations; i++ {
+		if ci.Game.GetGameEndFlag() {
+			return
+		}
 		phase := ci.Game.GetPhase()
 		if phase == MacauPhaseRoundEnd || phase == MacauPhaseGameEnd {
 			break

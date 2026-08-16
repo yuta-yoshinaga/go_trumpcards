@@ -83,7 +83,10 @@ func (mi *MemoryInteractor) ActionLog() string {
 
 // runCpuTurns ゲームが終わるか人間の手番になるまでCPUターンを実行
 func (mi *MemoryInteractor) runCpuTurns() {
-	for !mi.Game.GetGameEndFlag() {
+	for i := 0; i < MaxCpuIterations; i++ {
+		if mi.Game.GetGameEndFlag() {
+			return
+		}
 		if mi.Game.GetPhase() != domain.MemoryPhaseFlip1 {
 			break
 		}

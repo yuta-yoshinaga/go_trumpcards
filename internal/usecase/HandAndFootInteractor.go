@@ -162,16 +162,10 @@ func (ci *HandAndFootInteractor) ActionLog() string {
 
 // runCpuTurns CPUターンを実行
 func (ci *HandAndFootInteractor) runCpuTurns() {
-	for !ci.Game.GetGameEndFlag() {
+	runCpuTurnsUntil(ci.Game, func() bool {
 		phase := ci.Game.GetPhase()
-		if phase == domain.HandAndFootPhaseRoundEnd || phase == domain.HandAndFootPhaseGameEnd {
-			break
-		}
-		if ci.Game.IsHumanTurn() {
-			break
-		}
-		ci.Game.CpuPlay()
-	}
+		return phase == domain.HandAndFootPhaseRoundEnd || phase == domain.HandAndFootPhaseGameEnd || ci.Game.IsHumanTurn()
+	}, ci.Game.CpuPlay)
 }
 
 // RestoreHandAndFootInteractor deserialises JSON into a HandAndFootInteractor.

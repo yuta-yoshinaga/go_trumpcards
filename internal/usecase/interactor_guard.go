@@ -67,6 +67,23 @@ func advanceRound[G roundAdvancer](game G, p outputPresenter[G], runCpu func()) 
 // 通常 1 局で CPU が動くのは数十回なので、1000 に達したらドメイン側のバグ。
 const MaxCpuIterations = 1000
 
+// runCpuTurnsUntil は「ゲームが終わる」以外にも抜ける条件があるループ用。stop が
+// true を返したら抜ける。stop は play の**前**に読むので、既に抜ける局面で始まった
+// 場合は一度も play しない。
+//
+// 同じ 5 行を 31 箇所に書き写さずヘルパ 1 つにしたのは、上限に当たる分岐が
+// **ゲームごとには到達不能**だから。実物の局は 1000 手のはるか手前で phase ガードに
+// 当たるので、31 箇所に書き写すとどのテストも実行できない `return` が 31 個できる。
+func runCpuTurnsUntil(g gameEndChecker, stop func() bool, play func()) bool {
+	for i := 0; i < MaxCpuIterations; i++ {
+		if g.GetGameEndFlag() || stop() {
+			return true
+		}
+		play()
+	}
+	return false
+}
+
 // runCpuTurnsCapped はゲームが終わるか人間の手番になるまで play を回す。
 //
 // 戻り値は上限に当たらずに抜けたかどうか。**false はドメインのバグを意味する**ので、

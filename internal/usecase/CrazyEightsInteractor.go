@@ -133,7 +133,10 @@ func (ci *CrazyEightsInteractor) IsHumanChooseSuitTurn() bool {
 
 // runCpuTurns ゲームが終わるか人間の手番またはラウンド/ゲーム終了になるまでCPUターンを実行
 func (ci *CrazyEightsInteractor) runCpuTurns() {
-	for !ci.Game.GetGameEndFlag() {
+	for i := 0; i < MaxCpuIterations; i++ {
+		if ci.Game.GetGameEndFlag() {
+			return
+		}
 		phase := ci.Game.GetPhase()
 		if phase == CrazyEightsPhaseRoundEnd || phase == CrazyEightsPhaseGameEnd {
 			break

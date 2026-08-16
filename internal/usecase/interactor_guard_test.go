@@ -178,3 +178,41 @@ func TestRunCpuTurnsCapped(t *testing.T) {
 		assert.Equal(t, MaxCpuIterations, calls)
 	})
 }
+
+// runCpuTurnsUntil のほうは 18 ゲームが共有するので、上限に当たる分岐を
+// ここで踏んでおけば全部が守られる。各ゲームに書くと、実ゲームは 1000 手より
+// ずっと手前でフェーズガードに当たるため **その return は永久に未実行**になる。
+func TestRunCpuTurnsUntil(t *testing.T) {
+	t.Run("stops on the game end flag", func(t *testing.T) {
+		g := &mockGameEndChecker{gameEnd: true}
+		calls := 0
+		assert.True(t, runCpuTurnsUntil(g, func() bool { return false }, func() { calls++ }))
+		assert.Zero(t, calls, "終局しているのに play が呼ばれた")
+	})
+
+	t.Run("stops when the phase guard says so", func(t *testing.T) {
+		g := &mockGameEndChecker{}
+		calls := 0
+		stopAfter := 3
+		ok := runCpuTurnsUntil(g, func() bool { return calls >= stopAfter }, func() { calls++ })
+		assert.True(t, ok)
+		assert.Equal(t, stopAfter, calls)
+	})
+
+	// **本題。** 進まないゲームでも必ず戻り、false を返す。
+	t.Run("gives up at the cap", func(t *testing.T) {
+		g := &mockGameEndChecker{}
+		calls := 0
+		assert.False(t, runCpuTurnsUntil(g, func() bool { return false }, func() { calls++ }),
+			"上限に当たったのに true を返している")
+		assert.Equal(t, MaxCpuIterations, calls)
+	})
+
+	// stop は play の前に読む -- 開始時点で止まる局面なら 1 手も進めない。
+	t.Run("reads stop before playing", func(t *testing.T) {
+		g := &mockGameEndChecker{}
+		calls := 0
+		assert.True(t, runCpuTurnsUntil(g, func() bool { return true }, func() { calls++ }))
+		assert.Zero(t, calls)
+	})
+}
