@@ -165,6 +165,14 @@ func (p *OmahaCuiPresenter) Output(o interfaces.OmahaGame, lastErr error) string
 		if len(results) > 0 && (o.GetPhase() == domain.OmahaPhaseEnd || o.GetPhase() == domain.OmahaPhaseShowdown) {
 			b.WriteString("==========\n")
 			b.WriteString(color.Bold(i18n.T("omaha.resultsHeader")) + "\n")
+			// 印の凡例は1度だけ。プレイヤーごとに繰り返すと、4人ショーダウンでは
+			// 同じ注記が4回並ぶ。
+			for _, r := range results {
+				if !r.Mucked && len(r.BestHand) > 0 {
+					b.WriteString(i18n.T("omaha.resultBestLegend") + "\n")
+					break
+				}
+			}
 			for _, r := range results {
 				name := cuiPlayerName(o.GetPlayer(r.PlayerIdx), r.PlayerIdx)
 				kickers := ""
@@ -178,6 +186,17 @@ func (p *OmahaCuiPresenter) Output(o interfaces.OmahaGame, lastErr error) string
 					b.WriteString(i18n.Tf("omaha.resultHand", "name", name, "hand", cuiPokerHandName(r.HandRank), "kickers", kickers))
 				default:
 					b.WriteString(i18n.Tf("omaha.resultPlayerOnly", "name", name))
+				}
+				// **どの2枚を手札から使ったのかは印が無いと追えない。** オマハ系は
+				// 手札から使う枚数が固定で (通常4枚のうち2枚、Big O は5枚のうち2枚)、
+				// Web は cardUsed/cardUnused ラベルでそれを見せている。CUI は役名と
+				// キッカーだけで、RoundResult.BestHand を使っていなかった (#5484)。
+				//
+				// マックした手は見せない。BestHand が空の結果 (フォールド勝ちなど) も
+				// 出さない -- 空行を出すと「役が無かった」ように読める。
+				if !r.Mucked && len(r.BestHand) > 0 {
+					b.WriteString(i18n.Tf("omaha.resultBest",
+						"cards", omahaBestHandStr(r.BestHand, o.GetPlayer(r.PlayerIdx))))
 				}
 				if o.GetIsHiLo() && r.LowQualifies {
 					b.WriteString(i18n.Tf("omaha.resultLow", "cards", cuiCardSliceStrEmoji(r.LowBestHand)))
@@ -236,4 +255,34 @@ func (p *OmahaCuiPresenter) Output(o interfaces.OmahaGame, lastErr error) string
 			b.WriteString(i18n.T("omaha.gameEnd") + "\n")
 		}
 	})
+}
+
+// omahaBestHandStr renders the winning five cards, suffixing the ones that came
+// from the player's own hole with CuiHoleMark.
+//
+// player が nil のときは印だけ落として5枚を並べる -- 印が付かないほうが、
+// 全部が手札由来に見えるより正直。
+func omahaBestHandStr(best []*domain.Card, player *domain.OmahaPlayer) string {
+	hole := make(map[string]bool)
+	if player != nil {
+		for i := 0; i < player.GetCardsSize(); i++ {
+			if c := player.GetCard(i); c != nil {
+				hole[omahaCardKey(c)] = true
+			}
+		}
+	}
+	parts := make([]string, 0, len(best))
+	for _, c := range best {
+		s := cuiCardStrEmoji(c)
+		if c != nil && hole[omahaCardKey(c)] {
+			s += CuiHoleMark
+		}
+		parts = append(parts, s)
+	}
+	return strings.Join(parts, "  ")
+}
+
+// omahaCardKey identifies a card within a single deck (suit+rank is unique).
+func omahaCardKey(c *domain.Card) string {
+	return strconv.Itoa(c.GetDesign()) + ":" + strconv.Itoa(c.GetValue())
 }

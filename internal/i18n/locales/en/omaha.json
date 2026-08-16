@@ -53,5 +53,8 @@
   "learningHeader": "[Learning mode]",
   "learningLine": "  Equity: {{equity}}% / Pot odds: {{potodds}}%",
   "learningEvPlus": "  +EV (equity beats pot odds; calling is favorable)",
-  "learningEvMinus": "  -EV (equity at or below pot odds; calling is unfavorable)"
+  "learningEvMinus": "  -EV (equity at or below pot odds; calling is unfavorable)",
+  "resultBest": " / Best: {{cards}}",
+  "resultBestLabel": "Best:",
+  "resultBestLegend": "  (* = card used from the hole)"
 }
