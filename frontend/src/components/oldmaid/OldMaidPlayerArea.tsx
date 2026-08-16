@@ -25,7 +25,6 @@ export interface PlayerAreaProps {
   isHumanTurn: boolean;
   gameEndFlag: boolean;
   loading: boolean;
-  highlightedCardIdx: number;
   isSuspect?: boolean;
   onToggleSuspect?: () => void;
   onDraw: (drawIdx: number) => void;
@@ -53,7 +52,6 @@ export function OldMaidPlayerArea({
   isHumanTurn,
   gameEndFlag,
   loading,
-  highlightedCardIdx,
   isSuspect,
   onToggleSuspect,
   onDraw,
@@ -267,18 +265,15 @@ export function OldMaidPlayerArea({
         ) : showSelectable ? (
           <>
             {Array.from({ length: showCount }, (_, i) => {
-              const isHighlighted = isTarget && !player.isHuman && i === highlightedCardIdx;
+              // **罠の位置を光らせない。** cpuPlacementStrategy は「人間が引きたく
+              // なる位置に奇数札を置く」誘い込みで、その位置を金枠・浮き上がり・
+              // グローで描くと、引く前に避けるべき札を教える案内に反転する (#5476)。
+              // ドメイン側の配置そのものは機能なので触らない。見せないだけ。
               const cardStyle: React.CSSProperties = {
-                border: isHighlighted ? '2px solid var(--color-ds-accent)' : '2px solid transparent',
+                border: '2px solid transparent',
                 borderRadius: 4,
                 cursor: 'pointer',
                 transition: 'transform 0.2s, border-color 0.2s, box-shadow 0.2s',
-                ...(isHighlighted
-                  ? {
-                      transform: 'translateY(-8px)',
-                      boxShadow: 'var(--shadow-ds-accent-glow)',
-                    }
-                  : {}),
               };
               return (
                 <CardBack

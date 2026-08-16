@@ -82,28 +82,37 @@ describe('OldMaidPlayerArea suspect/target a11y', () => {
   });
 });
 
-describe('OldMaidPlayerArea CPU highlight', () => {
+describe('OldMaidPlayerArea does not reveal the CPU placement trap', () => {
   const selectableProps = { ...defaultProps, isTarget: true, isHumanTurn: true };
 
-  it('applies gold accent border and glow to highlighted card via tokens', () => {
-    render(<OldMaidPlayerArea {...selectableProps} player={makeCpuPlayer(3)} highlightedCardIdx={1} />);
-    // Selectable cards are rendered as buttons; style is on the img inside
-    const buttons = screen.getAllByRole('button');
-    const imgs = buttons.map((btn) => btn.querySelector('img'));
-    // Highlighted card (index 1) should reference design tokens via CSS custom properties
-    expect(imgs[1]?.getAttribute('style')).toContain('var(--color-ds-accent)');
-    expect(imgs[1]?.getAttribute('style')).toContain('var(--shadow-ds-accent-glow)');
-    // Non-highlighted card (index 0) should have transparent border
-    expect(imgs[0]).toHaveStyle({ border: '2px solid transparent' });
-  });
-
-  it('does not highlight when highlightedCardIdx is -1', () => {
-    render(<OldMaidPlayerArea {...selectableProps} player={makeCpuPlayer(3)} highlightedCardIdx={-1} />);
-    const buttons = screen.getAllByRole('button');
-    for (const btn of buttons) {
-      const img = btn.querySelector('img');
+  // cpuPlacementStrategy は「人間が引きたくなる位置に奇数札を置く」誘い込み。
+  // その位置を光らせると、引く前に避けるべき札を教える案内に反転する (#5476)。
+  // 以前のテストは金枠とグローが**付くこと**を要求しており、バグを固定していた。
+  it('renders every CPU card with the same neutral style', () => {
+    render(<OldMaidPlayerArea {...selectableProps} player={makeCpuPlayer(3)} />);
+    const imgs = screen.getAllByRole('button').map((btn) => btn.querySelector('img'));
+    expect(imgs.length).toBeGreaterThan(1);
+    for (const img of imgs) {
       expect(img).not.toBeNull();
       expect(img).toHaveStyle({ border: '2px solid transparent' });
+    }
+  });
+
+  it('leaves no card visually distinguishable from the others', () => {
+    render(<OldMaidPlayerArea {...selectableProps} player={makeCpuPlayer(4)} />);
+    const styles = screen.getAllByRole('button').map((btn) => btn.querySelector('img')?.getAttribute('style') ?? '');
+    expect(styles.length).toBeGreaterThan(1);
+    // 一枚でも違えば、それが罠の位置を指す手がかりになる。
+    expect(new Set(styles).size).toBe(1);
+  });
+
+  it('applies no accent colour, lift or glow to any card', () => {
+    render(<OldMaidPlayerArea {...selectableProps} player={makeCpuPlayer(4)} />);
+    for (const btn of screen.getAllByRole('button')) {
+      const style = btn.querySelector('img')?.getAttribute('style') ?? '';
+      expect(style).not.toContain('var(--color-ds-accent)');
+      expect(style).not.toContain('var(--shadow-ds-accent-glow)');
+      expect(style).not.toContain('translateY');
     }
   });
 });

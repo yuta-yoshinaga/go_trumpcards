@@ -288,7 +288,6 @@ function OldMaidPageContent() {
                     isHumanTurn={isHumanTurn}
                     gameEndFlag={state.gameEndFlag}
                     loading={loading}
-                    highlightedCardIdx={state.nextDrawTargetIdx === player.id ? state.cpuHighlightedCardIdx : -1}
                     isSuspect={suspectPins.has(player.id)}
                     compactNonTarget={isMobile}
                     onToggleSuspect={() =>
@@ -386,7 +385,6 @@ function OldMaidPageContent() {
                   isHumanTurn={isHumanTurn}
                   gameEndFlag={state.gameEndFlag}
                   loading={loading}
-                  highlightedCardIdx={-1}
                   drawnCardIdx={humanDrawnCardIdx}
                   onDraw={(drawIdx) => gameExec('draw', drawIdx)}
                   onReorder={handleReorder}
