@@ -27,6 +27,7 @@ func (pp *PineappleWebPresenter) buildOutput(p interfaces.PineappleGame, lastErr
 		IsDiscardPhase:   p.IsDiscardPhase(),
 		DiscardDone:      p.GetDiscardDone(),
 		InitialDealCount: p.GetInitialDealCount(),
+		LiveBestHand:     pineappleLiveBestHand(p),
 	}
 }
 
@@ -81,4 +82,26 @@ func (pp *PineappleWebPresenter) buildResultMessage(p interfaces.PineappleGame) 
 // ActionLogOutput 棋譜をJSON出力
 func (pp *PineappleWebPresenter) ActionLogOutput(p interfaces.PineappleGame) string {
 	return actionLogOutputJSON(p)
+}
+
+// pineappleLiveBestHand は人間の暫定ベスト役の**キー**を返す。ショーダウン以降と、
+// 降りている/席が無い場合は空。
+//
+// **PeekBestHand は状態を変えない。** 表示のために EvalBestHand を呼ぶと、
+// 描画のたびに handRank / bestHand が書き換わる (#5488)。
+func pineappleLiveBestHand(p interfaces.PineappleGame) string {
+	if p.GetPhase() == domain.PineapplePhaseShowdown || p.GetPhase() == domain.PineapplePhaseEnd {
+		return ""
+	}
+	for i := 0; i < p.GetPlayerCnt(); i++ {
+		pl := p.GetPlayer(i)
+		if pl == nil || !pl.GetIsHuman() || pl.GetFolded() {
+			continue
+		}
+		if rank, best := pl.PeekBestHand(p.GetCommunityCards()); len(best) > 0 {
+			return pokerHandKey(rank)
+		}
+		return ""
+	}
+	return ""
 }

@@ -113,35 +113,42 @@ func (pp *PineapplePlayer) GetComparisonCards() []*Card {
 	return copyOf(pp.bestHand)
 }
 
-// EvalBestHand コミュニティカードとホールカードからベスト5枚を評価
-// ディスカード後は2枚のホールカード + コミュニティカードからC(N,5)で評価 (Holdemと同じ)
-// ディスカード前は3枚のホールカード + コミュニティカードからC(N,5)で評価
-func (pp *PineapplePlayer) EvalBestHand(communityCards []*Card) int {
+// PeekBestHand は現在の手札とボードから最善の 5 枚役を求めて返す。**状態を
+// 変えない。**
+//
+// 表示だけのために EvalBestHand を呼ぶと、描画のたびに handRank / bestHand を
+// 書き換えてしまう。途中経過の表示はこちらを使う (#5488、Omaha の #4680 と同じ形)。
+// 5 枚に満たないときはハイカード扱いで、確定した組は返さない。
+//
+// ディスカード後は 2 枚のホールカード + コミュニティ、ディスカード前は 3 枚 +
+// コミュニティから C(N,5) で選ぶ (Holdem と同じで、ホールを何枚使うかの制約は無い)。
+func (pp *PineapplePlayer) PeekBestHand(communityCards []*Card) (rank int, best []*Card) {
 	all := make([]*Card, 0, len(pp.cards)+len(communityCards))
 	all = append(all, pp.cards...)
 	all = append(all, communityCards...)
 
 	if len(all) < 5 {
-		pp.handRank = PokerHandHighCard
-		pp.bestHand = nil
-		return pp.handRank
+		return PokerHandHighCard, nil
 	}
 
-	combos := combinations(all, 5)
 	bestRank := -1
 	var bestCards []*Card
-
-	for _, combo := range combos {
-		rank := evalFiveCardHand(combo)
-		if rank > bestRank || (rank == bestRank && compareHighCardsSlice(combo, bestCards) > 0) {
-			bestRank = rank
+	for _, combo := range combinations(all, 5) {
+		r := evalFiveCardHand(combo)
+		if r > bestRank || (r == bestRank && compareHighCardsSlice(combo, bestCards) > 0) {
+			bestRank = r
 			bestCards = make([]*Card, 5)
 			copy(bestCards, combo)
 		}
 	}
+	return bestRank, bestCards
+}
 
-	pp.handRank = bestRank
-	pp.bestHand = bestCards
+// EvalBestHand コミュニティカードとホールカードからベスト5枚を評価して記録する。
+func (pp *PineapplePlayer) EvalBestHand(communityCards []*Card) int {
+	// **判定は PeekBestHand が唯一の出どころ。** 同じ探索を 2 つ持つと、片方
+	// だけ直したときに「表示とショーダウンで役が違う」ずれになる。
+	pp.handRank, pp.bestHand = pp.PeekBestHand(communityCards)
 	return pp.handRank
 }
 

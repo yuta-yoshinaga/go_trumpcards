@@ -43225,6 +43225,13 @@ components:
           format: double
           description: Pot odds percentage (0-100).
           example: 33.33
+        liveBestHand:
+          type: string
+          description: |
+            i18n key of the human's best hand so far (`straightFlush` etc.).
+            Empty before five cards exist, once the hand reaches showdown, and
+            when the human has folded. The client renders the wording.
+          example: fullHouse
 
     # -------------------------------------------------------------------------
     # Speed
