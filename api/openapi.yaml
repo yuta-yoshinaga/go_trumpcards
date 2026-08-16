@@ -40939,6 +40939,15 @@ components:
         currentTurn:
           type: integer
           description: Index of the player whose turn it is
+        estimatedStrength:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: |
+            The human player's estimated win equity as a percentage. Computed by
+            the domain (the same value the CUI prints); clients must not recompute
+            it from the visible opponent cards.
+          example: 42
         phase:
           type: integer
           description: "Game phase: 0 = Init, 1 = Ante, 2 = Betting, 3 = Showdown, 4 = End"

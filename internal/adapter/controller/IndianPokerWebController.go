@@ -66,24 +66,28 @@ type IndianPokerWebOutputMetaAI struct {
 
 // IndianPokerWebOutput インディアンポーカーWebアウトプット
 type IndianPokerWebOutput struct {
-	Players      []*IndianPokerWebOutputPlayer       `json:"players"`
-	Pot          int                                 `json:"pot"`
-	SidePots     []*IndianPokerWebOutputSidePot      `json:"sidePots"`
-	DealerIdx    int                                 `json:"dealerIdx"`
-	CurrentTurn  int                                 `json:"currentTurn"`
-	Phase        int                                 `json:"phase"`
-	GameEndFlag  bool                                `json:"gameEndFlag"`
-	LastBet      int                                 `json:"lastBet"`
-	MinRaise     int                                 `json:"minRaise"`
-	BettingLimit int                                 `json:"bettingLimit"`
-	RaiseCount   int                                 `json:"raiseCount"`
-	MaxBetAmount int                                 `json:"maxBetAmount"`
-	RoundResults []*IndianPokerWebOutputResult       `json:"roundResults"`
-	CpuActions   []*IndianPokerWebOutputCpuAction    `json:"cpuActions"`
-	HandCount    int                                 `json:"handCount"`
-	Ante         int                                 `json:"ante"`
-	MetaAI       *IndianPokerWebOutputMetaAI         `json:"metaAI,omitempty"`
-	Profile      *domain.IndianPokerHumanProfileData `json:"profile,omitempty"`
+	Players     []*IndianPokerWebOutputPlayer  `json:"players"`
+	Pot         int                            `json:"pot"`
+	SidePots    []*IndianPokerWebOutputSidePot `json:"sidePots"`
+	DealerIdx   int                            `json:"dealerIdx"`
+	CurrentTurn int                            `json:"currentTurn"`
+	Phase       int                            `json:"phase"`
+	// EstimatedStrength は人間プレイヤーの推定勝率 (0-100)。CUI が出しているのと
+	// 同じ domain の値。**フロントで計算し直さない** -- 以前は別実装があり、
+	// エースの扱いを誤って最も危険な場面ほど勝率を高く見せていた (#4690/#5505)。
+	EstimatedStrength int                                 `json:"estimatedStrength"`
+	GameEndFlag       bool                                `json:"gameEndFlag"`
+	LastBet           int                                 `json:"lastBet"`
+	MinRaise          int                                 `json:"minRaise"`
+	BettingLimit      int                                 `json:"bettingLimit"`
+	RaiseCount        int                                 `json:"raiseCount"`
+	MaxBetAmount      int                                 `json:"maxBetAmount"`
+	RoundResults      []*IndianPokerWebOutputResult       `json:"roundResults"`
+	CpuActions        []*IndianPokerWebOutputCpuAction    `json:"cpuActions"`
+	HandCount         int                                 `json:"handCount"`
+	Ante              int                                 `json:"ante"`
+	MetaAI            *IndianPokerWebOutputMetaAI         `json:"metaAI,omitempty"`
+	Profile           *domain.IndianPokerHumanProfileData `json:"profile,omitempty"`
 	WebOutputBase
 }
 

@@ -70,6 +70,15 @@ export interface IndianPokerResponse extends BaseGameResponse {
   sidePots: IndianPokerSidePot[];
   dealerIdx: number;
   currentTurn: number;
+  /**
+   * The human player's estimated win equity as a percentage (0-100).
+   *
+   * Computed by the domain (`estimateOwnStrength`) -- the same value the CUI
+   * prints. **Do not recompute it here**: the previous frontend copy mishandled
+   * aces and showed the highest equity in the most dangerous spots (#4690), and
+   * it still ignored the suit tie-break the showdown actually applies (#5505).
+   */
+  estimatedStrength: number;
   phase: number;
   gameEndFlag: boolean;
   lastBet: number;

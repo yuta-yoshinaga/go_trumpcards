@@ -49,6 +49,7 @@ const initState: IndianPokerResponse = {
   sidePots: [],
   dealerIdx: 0,
   currentTurn: 0,
+  estimatedStrength: 50,
   phase: 0,
   gameEndFlag: false,
   lastBet: 0,
@@ -70,6 +71,7 @@ const bettingState: IndianPokerResponse = {
   sidePots: [],
   dealerIdx: 3,
   currentTurn: 0,
+  estimatedStrength: 50,
   phase: 2,
   gameEndFlag: false,
   lastBet: 0,
@@ -102,6 +104,7 @@ const showdownState: IndianPokerResponse = {
   sidePots: [],
   dealerIdx: 2,
   currentTurn: -1,
+  estimatedStrength: 50,
   phase: 3,
   gameEndFlag: false,
   lastBet: 0,
@@ -122,6 +125,7 @@ const showdownState: IndianPokerResponse = {
 /** END (phase 4) — also isShowdown */
 const endState: IndianPokerResponse = {
   ...showdownState,
+  estimatedStrength: 50,
   phase: 4,
   gameEndFlag: true,
   message: 'Game over.',
@@ -130,6 +134,7 @@ const endState: IndianPokerResponse = {
 /** ANTE phase (phase 1) */
 const anteState: IndianPokerResponse = {
   ...bettingState,
+  estimatedStrength: 50,
   phase: 1,
   message: 'アンティを支払いました',
 };
@@ -936,5 +941,33 @@ describe('IndianPokerPage keyboard shortcuts', () => {
     fireEvent.keyDown(document, { key: 'c' });
     await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
+  });
+});
+
+// #5505: 勝率はフロントで計算し直していた。ドメインの estimateOwnStrength とは
+// 別実装で、**ショーダウンが実際に行うスートのタイブレークを数えていない**ぶん
+// 低めに出ていた（過去にはエースの扱いを誤って最も危険な場面ほど高く見せる
+// バグ #4690 も起こしている）。
+describe('IndianPokerPage equity source', () => {
+  // メーターはヒント表示が有効なときだけ出る (useGameHint が localStorage で持つ)。
+  beforeEach(() => {
+    localStorage.setItem('hint_enabled_indianpoker', 'true');
+  });
+
+  it('shows the server value verbatim', async () => {
+    mockExec.mockResolvedValue({ ...bettingState, estimatedStrength: 37 });
+    renderWithProviders(<IndianPokerPage />);
+    const meter = await screen.findByTestId('indianpoker-equity-meter');
+    expect(meter.textContent).toContain('37%');
+  });
+
+  // **フロントで計算し直していないこと。** 相手のカードから独自に求めていれば、
+  // サーバ値と食い違う数字が出る。
+  it('does not recompute the equity from the opponents cards', async () => {
+    mockExec.mockResolvedValue({ ...bettingState, estimatedStrength: 12 });
+    renderWithProviders(<IndianPokerPage />);
+    const meter = await screen.findByTestId('indianpoker-equity-meter');
+    expect(meter.textContent).toContain('12%');
+    expect(meter.textContent).not.toContain('37%');
   });
 });
