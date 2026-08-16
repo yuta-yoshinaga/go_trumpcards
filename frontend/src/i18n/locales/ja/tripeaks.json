@@ -44,5 +44,7 @@
     "canRemove": "除去できるカードがあります — 捨て札と隣接しています",
     "multipleRemovable": "複数のカードが除去可能です — 連鎖を狙いましょう",
     "drawFromStock": "除去できるカードがありません — 山札から引いてみましょう"
-  }
+  },
+  "comboAnnounce": "コンボ ×{{count}} 継続中",
+  "comboEnded": "コンボが途切れました"
 }

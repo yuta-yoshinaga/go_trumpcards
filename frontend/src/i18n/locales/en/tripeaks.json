@@ -44,5 +44,7 @@
     "canRemove": "An exposed card can be removed — it is adjacent to the waste top",
     "multipleRemovable": "Multiple cards can be removed — look for chain opportunities",
     "drawFromStock": "No removable cards — try drawing from the stock"
-  }
+  },
+  "comboAnnounce": "Combo ×{{count}} running",
+  "comboEnded": "Combo broken"
 }

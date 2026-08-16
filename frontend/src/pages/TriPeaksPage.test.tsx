@@ -350,6 +350,24 @@ describe('TriPeaksPage', () => {
     expect(screen.queryByTestId('combo-badge')).not.toBeInTheDocument();
   });
 
+  // **コンボは色とテキストだけで示されていた。** Golf と同じ欠落 (#5821 / #5520)。
+  it('announces a running combo to screen readers', async () => {
+    mockCombo.mockReturnValue(3);
+    renderWithProviders(<TriPeaksPage />);
+    const live = await screen.findByTestId('tripeaks-combo-announce');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toHaveTextContent('3');
+  });
+
+  it('stays silent while there is no combo', async () => {
+    mockCombo.mockReturnValue(1);
+    renderWithProviders(<TriPeaksPage />);
+    const live = await screen.findByTestId('tripeaks-combo-announce');
+    // 領域は常設し、中身だけ空にする（出し入れすると読み上げが飛ぶ）。
+    expect(live).toBeEmptyDOMElement();
+  });
+
   it('renders the combo badge with blue styling when combo is 2', async () => {
     mockCombo.mockReturnValue(2);
     renderWithProviders(<TriPeaksPage />);
