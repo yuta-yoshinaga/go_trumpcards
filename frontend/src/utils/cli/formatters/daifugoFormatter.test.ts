@@ -35,6 +35,7 @@ function makeState(overrides?: Partial<DaifugoResponse>): DaifugoResponse {
     numberLocked: false,
     sequenceLocked: false,
     sortMode: 0,
+    playableCardIndices: null,
     ...overrides,
   };
 }

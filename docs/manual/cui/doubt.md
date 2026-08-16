@@ -109,6 +109,7 @@ flowchart TD
 | `setwindow <sec>` | `sw <sec>` | ダウト判定ウィンドウの秒数を設定（1〜60） |
 | `setmemory <level>` | `sm <level>` | CPU記憶力レベルを設定（0=Easy, 1=Normal, 2=Hard） |
 | `setpenalty <limit>` | `sp <limit>` | ペナルティドロー上限を設定（0=無制限, >0=上限） |
+| `sethesitation N` | `sh N` | CPU の迷い時間演出の切替（0=OFF, 1=ON）。ON にすると CPU の行動行に考えた秒数が付く |
 | `setmetaai N` | `smai N` | Meta-AI の切替（0=OFF, 1=ON） |
 | `resetprofile` | `rp` | Meta-AI のプロファイル（学習データ）をリセット |
 | `quit` | `q` | ゲーム終了 |

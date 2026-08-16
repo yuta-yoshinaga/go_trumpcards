@@ -121,6 +121,30 @@ describe('ToepenPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('toep'));
   });
 
+  // **誰の判断に応答しているのか。** knockerIdx はサーバから届いているのに読んで
+  // おらず、賭け点しか出していなかった。相手が複数いると誰に応答するのか分からない
+  // (#5570)。CUI の respondLine は最初から名前を出している。
+  it('names the player who declared the toep', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 1, pendingRespondent: 0, knockerIdx: 2, stake: 3 }));
+    renderWithProviders(<ToepenPage />);
+
+    const line = await screen.findByTestId('toepen-toeped-by');
+    expect(line).toHaveTextContent('CPU2');
+    // 賭け点は引き続き出ること。名前で置き換えては情報が減る。
+    expect(line).toHaveTextContent('3');
+  });
+
+  // **負のコントロール: まだ誰も toep していなければ名前を出さない。**
+  // knockerIdx は -1 で来る。ここで players[-1] を引くと undefined になる。
+  it('falls back to the stake-only wording when nobody has toeped', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 1, pendingRespondent: 0, knockerIdx: -1, stake: 2 }));
+    renderWithProviders(<ToepenPage />);
+
+    const line = await screen.findByTestId('toepen-toeped-by');
+    expect(line).toHaveTextContent('toep されました');
+    expect(line).not.toHaveTextContent('CPU');
+  });
+
   it('offers stay and fold only while a toep is on the human, and prices the fold below the stake', async () => {
     mockExec.mockResolvedValue(makeState({ phase: 1, pendingRespondent: 0, knockerIdx: 2, stake: 3 }));
     renderWithProviders(<ToepenPage />);

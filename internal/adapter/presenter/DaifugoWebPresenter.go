@@ -56,6 +56,10 @@ func (dwp *DaifugoWebPresenter) Output(dg interfaces.DaifugoGame, lastErr error)
 	resObj.NumberLocked = dg.GetNumberLocked()
 	resObj.SequenceLocked = dg.GetSequenceLocked()
 	resObj.SortMode = int(dg.GetSortMode())
+	// CUI の `*` 印 (daifugoHandStr) と同じ判定をそのまま Web にも渡す。
+	// nil は「判定できない」であって「1枚も出せない」ではないので、空配列に
+	// 潰さずそのまま null として送る。
+	resObj.PlayableCardIndices = dg.GetPlayableCardIndices()
 
 	// ペンディングアクション
 	switch dg.GetPendingActionType() {

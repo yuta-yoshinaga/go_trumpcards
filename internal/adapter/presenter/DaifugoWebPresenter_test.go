@@ -509,6 +509,7 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 		m.On("GetNumberLocked").Return(false)
 		m.On("GetSequenceLocked").Return(false)
 		m.On("GetSortMode").Return(domain.DaifugoSortByStrength)
+		m.On("GetPlayableCardIndices").Return([]int(nil))
 		return m
 	}
 
@@ -733,5 +734,73 @@ func TestDaifugoWebPresenter_ActionLogOutput(t *testing.T) {
 
 		assert.Contains(t, result, `"entries":[]`)
 		mockGame.AssertExpectations(t)
+	})
+}
+
+// Web GUI は #4733 まで、革命・スートロックを踏まえた合法性を一切持っておらず、
+// 手札の枚数一致しか見ていなかった。CUI が `*` で出せる札を示しているのに Web は
+// サーバの拒否応答まかせ、という非対称を埋める (#5477)。
+//
+// **CUI と同じ GetPlayableCardIndices を通していることを確かめる。**別実装だと
+// 「出せる」と印を付けた札が実際には弾かれる。
+func TestDaifugoWebPresenter_PlayableCardIndices(t *testing.T) {
+	tdwp := new(presenter.DaifugoWebPresenter)
+	card := func(design, value int) *domain.Card { return domain.NewCard(design, value, false) }
+
+	newGame := func(hand []*domain.Card) *domain.Daifugo {
+		players := []*domain.DaifugoPlayer{
+			domain.NewDaifugoPlayer(true),
+			domain.NewDaifugoPlayer(false),
+			domain.NewDaifugoPlayer(false),
+			domain.NewDaifugoPlayer(false),
+		}
+		d := domain.NewDaifugo(domain.NewTrumpCards(0), players, domain.DefaultDaifugoConfig())
+		d.SetCurrentTurn(0)
+		for _, c := range hand {
+			players[0].AddCard(c)
+		}
+		return d
+	}
+
+	decode := func(t *testing.T, dg *domain.Daifugo) controller.DaifugoWebOutput {
+		t.Helper()
+		var resObj controller.DaifugoWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(tdwp.Output(dg, nil)), &resObj))
+		return resObj
+	}
+
+	t.Run("marks only the cards that beat the table", func(t *testing.T) {
+		dg := newGame([]*domain.Card{card(domain.CardDesignSpade, 5), card(domain.CardDesignHeart, 12)})
+		dg.SetTableCards([]*domain.Card{card(domain.CardDesignClover, 9)})
+		assert.Equal(t, []int{1}, decode(t, dg).PlayableCardIndices, "9 より弱い 5 に印は付かない")
+	})
+
+	// 革命は Web 側が持っていない知識そのもの。同じ手札・同じ場で印が入れ替わる。
+	t.Run("a revolution flips which cards are marked", func(t *testing.T) {
+		hand := []*domain.Card{card(domain.CardDesignSpade, 5), card(domain.CardDesignHeart, 12)}
+		table := []*domain.Card{card(domain.CardDesignClover, 9)}
+
+		normal := newGame(hand)
+		normal.SetTableCards(table)
+		revolution := newGame(hand)
+		revolution.SetTableCards(table)
+		revolution.SetRevolutionActive(true)
+
+		assert.Equal(t, []int{1}, decode(t, normal).PlayableCardIndices)
+		assert.Equal(t, []int{0}, decode(t, revolution).PlayableCardIndices, "革命中は 5 のほうが 9 より強い")
+	})
+
+	t.Run("marks every card when the table is clear", func(t *testing.T) {
+		dg := newGame([]*domain.Card{card(domain.CardDesignSpade, 3), card(domain.CardDesignHeart, 9)})
+		assert.Equal(t, []int{0, 1}, decode(t, dg).PlayableCardIndices)
+	})
+
+	// **判定できないときは空配列ではなく null。**空配列は「1枚も出せない」と読め、
+	// 印の無い手札を「全部出せない」と表示してしまう。CUI が無印に倒すのと同じ。
+	t.Run("sends null rather than an empty list when it is not the human's turn", func(t *testing.T) {
+		dg := newGame([]*domain.Card{card(domain.CardDesignSpade, 3)})
+		dg.SetCurrentTurn(1)
+		assert.Nil(t, decode(t, dg).PlayableCardIndices)
+		assert.Contains(t, tdwp.Output(dg, nil), `"playableCardIndices":null`)
 	})
 }
