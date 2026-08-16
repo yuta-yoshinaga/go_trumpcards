@@ -436,9 +436,9 @@ func (s *Shelem) PlayerDiscard(indices []int, suit int) error {
 // 加算しないと、点札が捨て札に入った分だけラウンド合計が 100 を割る (#5795)。
 // ウィドウ・キティ系の通例どおり、捨てた点は落札者チームのものとして扱う。
 func (s *Shelem) creditDiscard(cards []*Card) {
-	if s.declarerIdx < 0 {
-		return
-	}
+	// declarerIdx の防御は置かない。PlayerDiscard は declarerIdx != 0 で早期 return し、
+	// cpuDiscardAndTrump は declarerIdx != 0 の分岐の中でしか呼ばれない。到達しない
+	// 分岐は codecov にも残る。
 	pts := 0
 	for _, c := range cards {
 		pts += ShelemCardPoints(c)
