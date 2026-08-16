@@ -2,10 +2,11 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, spadesApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeSpadesState } from '../test/stateFactories';
 import type { SpadesResponse } from '../types/card';
-import { SpadesPage } from './SpadesPage';
+import { SP_TUTORIAL_STEPS, SpadesPage } from './SpadesPage';
 
 vi.mock('../api/gameApi', () => ({
   spadesApi: { exec: vi.fn() },
@@ -942,5 +943,22 @@ describe('SpadesPage', () => {
     for (const c of cards) {
       expect(c).not.toHaveAttribute('aria-disabled', 'true');
     }
+  });
+});
+
+// #5498: この実装にはチーム/パートナーの概念が無く、4人が個別に得点を競う
+// カットスロート方式なのに、そう書かれた場所がどこにも無かった。標準スペードを
+// 知っているプレイヤーほど、パートナーが表示されないことに戸惑う。
+describe('SpadesPage cutthroat explanation', () => {
+  it('has a tutorial step that says there are no partnerships', () => {
+    const keys = SP_TUTORIAL_STEPS.map((s) => s.messageKey);
+    expect(keys).toContain('tutorial.cutthroat');
+  });
+
+  it('spells out what cutthroat means, not just the word', () => {
+    // 「カットスロート」とだけ書いても、その語を知らないプレイヤーには伝わらない。
+    const text = i18n.t('spades:tutorial.cutthroat');
+    expect(text).toMatch(/パートナー/);
+    expect(text).toMatch(/個別|一人ひとり/);
   });
 });

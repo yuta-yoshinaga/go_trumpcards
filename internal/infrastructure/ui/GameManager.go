@@ -594,6 +594,7 @@ var gameRegistry = []GameRegistryEntry{
 			CommandKeys:       []string{"spades.helpBid", "spades.helpPlay", "spades.helpNext", "spades.helpNextRound", "spades.helpHint"},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"spades.helpSetDifficulty", "spades.helpSetLimit"},
+			NoteKeys:          []string{"spades.noteCutthroat"},
 		}),
 	BindCuiFor("crazyeights",
 		func() usecase.CrazyEightsInteractorIF {

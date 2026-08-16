@@ -26,5 +26,6 @@
   "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
   "hintReasonTrumpCut": "cut with a spade",
   "helpExamplePlay": "  p 0                  play hand card 0",
-  "helpHint": "  h                    show a hint"
+  "helpHint": "  h                    show a hint",
+  "noteCutthroat": "  * This is cutthroat Spades: all four players score individually, with no partnerships"
 }
