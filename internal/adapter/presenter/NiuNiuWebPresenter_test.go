@@ -42,7 +42,6 @@ func setupNiuNiuWebMockDefaults(g *interfaces.MockNiuNiuGame) {
 	g.On("GetChips").Return(900).Maybe()
 	g.On("GetMaxMultiplier").Return(domain.NiuNiuMaxMultiplier).Maybe()
 	g.On("GetBankerIdx").Return(3).Maybe()
-	g.On("GetLastResult").Return("").Maybe()
 	g.On("GetBankerRankKey").Return("none").Maybe()
 	g.On("GetGameEndFlag").Return(false).Maybe()
 	g.On("GetMultiplier", mock.Anything).Return(3).Maybe()
@@ -148,10 +147,8 @@ func TestNiuNiuWebPresenter_Output(t *testing.T) {
 		setupNiuNiuWebMockDefaults(g)
 		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetGameEndFlag")
 		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetPhase")
-		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetLastResult")
 		g.On("GetGameEndFlag").Return(true)
 		g.On("GetPhase").Return(domain.NiuNiuPhaseEnd)
-		g.On("GetLastResult").Return("親: 牛牛")
 		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetBankerRankKey")
 		g.On("GetBankerRankKey").Return("niuniu")
 
@@ -173,6 +170,11 @@ func TestNiuNiuWebPresenter_Output(t *testing.T) {
 			{"none", "niuniu.roundOverNone", ""},
 			{"niuniu", "niuniu.roundOverNiuNiu", ""},
 			{"n7", "niuniu.roundOverN", "7"},
+			// 役が確定していないキーでは何も送らない。default に流すと n が空の
+			// まま roundOverN が出て、画面に「親: 牛」が残る。
+			{"", "", ""},
+			{"n0", "", ""},
+			{"bogus", "", ""},
 		} {
 			g := new(interfaces.MockNiuNiuGame)
 			setupNiuNiuWebMockDefaults(g)

@@ -24,8 +24,6 @@ type NiuNiuGame interface {
 	GetBankerIdx() int
 	// GetBankerHand 親の手を取得する
 	GetBankerHand() *domain.NiuNiuHand
-	// GetLastResult 直近の精算の要約を取得する
-	GetLastResult() string
 	// GetBankerRankKey は親の格をロケール非依存の識別子で返す。
 	// ドメインの NiuNiuRankLabel が返す表示文字列と違い、presenter 側で i18n に通すためのもの。
 	GetBankerRankKey() string
