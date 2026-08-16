@@ -229,16 +229,15 @@ function ToepenPageContent() {
                   {/* **誰の判断に応答しているのか。** knockerIdx はサーバから届いて
                       いるのに読んでおらず、賭け点しか出していなかった。相手が複数
                       いると誰に応答するのか分からない (#5570)。CUI の respondLine は
-                      最初から名前を出している。 */}
+                      最初から名前を出している。
+
+                      応答者が toep 宣言者本人になることはない -- domain の
+                      nextRespondent が knockerIdx に当たった時点で -1 を返す。
+                      つまりこのブロックが出ているとき knockerIdx は必ず CPU 席で、
+                      「あなた」の分岐は書いても到達しない。 */}
                   <span className="text-sm text-ds-text-muted" data-testid="toepen-toeped-by">
                     {state.knockerIdx >= 0
-                      ? t('toepedBy', {
-                          name:
-                            state.players[state.knockerIdx]?.isHuman === true
-                              ? t('you')
-                              : t('cpu', { n: state.knockerIdx }),
-                          stake: state.stake,
-                        })
+                      ? t('toepedBy', { name: t('cpu', { n: state.knockerIdx }), stake: state.stake })
                       : t('toepedAt', { stake: state.stake })}
                   </span>
                   <button
