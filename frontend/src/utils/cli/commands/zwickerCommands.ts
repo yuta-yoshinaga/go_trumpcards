@@ -4,7 +4,23 @@ import type { CliParseResult } from '../types';
 
 type ZwickerArgs = Parameters<typeof zwickerApi.exec>;
 
-const VALID_COMMANDS = ['t', 'take', 'b', 'build', 'tr', 'trail', 'n', 'next', 'log', 'r', 'reset', 'help', '?'];
+const VALID_COMMANDS = [
+  't',
+  'take',
+  'b',
+  'build',
+  'tr',
+  'trail',
+  'n',
+  'next',
+  'log',
+  'r',
+  'reset',
+  'h',
+  'hint',
+  'help',
+  '?',
+];
 
 /** Parse a non-negative integer argument, or null when it is not one. */
 function parseIdx(raw: string | undefined): number | null {
@@ -93,6 +109,9 @@ export function parseZwickerCommand(input: string): CliParseResult<ZwickerArgs> 
     case 'r':
     case 'reset':
       return { args: ['reset'] };
+    case 'h':
+    case 'hint':
+      return { args: ['hint'] };
     default: {
       const suggestion = suggestCommand(cmd, VALID_COMMANDS);
       if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
@@ -110,4 +129,5 @@ export const ZWICKER_HELP: string[] = [
   'n/next            - Deal the next hand',
   'log               - Show action log',
   'r/reset           - New game',
+  'h/hint      - Get a hint',
 ];

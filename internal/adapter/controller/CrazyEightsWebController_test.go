@@ -39,6 +39,7 @@ func TestCrazyEightsWebController_Method(t *testing.T) {
 	siMock.On("Draw").Return(mockOutput)
 	siMock.On("NextRound").Return(mockOutput)
 	siMock.On("ActionLog").Return(mockOutput)
+	siMock.On("Hint").Return(mockOutput)
 
 	factory := func() uc.CrazyEightsInteractorIF { return siMock }
 	ctrl := controller.NewCrazyEightsWebController(factory)
@@ -52,6 +53,19 @@ func TestCrazyEightsWebController_Method(t *testing.T) {
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mustCrazyEightsOutputJSON("bye."))
 	})
+
+	// The Web CLI sends "hint"/"h" here. Before #5791 the default branch used
+	// dispatchLog, which matches neither, so the request 400'd with
+	// "Unsupported command." despite the interactor having Hint() all along.
+	for _, cmd := range []string{"h", "hint"} {
+		t.Run("hint via "+cmd, func(t *testing.T) {
+			var input controller.CrazyEightsWebInput
+			_ = json.Unmarshal([]byte(`{"command":"`+cmd+`","sessionId":"test-session-1"}`), &input)
+			recorded := execRequest(t, ctrl.Exec, &input)
+			recorded.CodeIs(http.StatusOK)
+			recorded.BodyIs(mockOutput)
+		})
+	}
 
 	t.Run("success Exec quit", func(t *testing.T) {
 		var input controller.CrazyEightsWebInput

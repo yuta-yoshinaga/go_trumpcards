@@ -33,6 +33,9 @@ export function parsePokerSquaresCommand(input: string): CliParseResult<PokerSqu
     case 'r':
     case 'reset':
       return { args: ['reset'] };
+    case 'h':
+    case 'hint':
+      return { args: ['hint'] };
     default: {
       const suggestion = suggestCommand(cmd, VALID_COMMANDS);
       if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
@@ -48,4 +51,5 @@ export const POKERSQUARES_HELP: string[] = [
   'g/giveup    - Give up current game',
   'log         - Show action log',
   'r/reset     - Reset game',
+  'h/hint      - Get a hint',
 ];
