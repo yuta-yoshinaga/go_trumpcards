@@ -31,5 +31,6 @@
   "hintReasonMeld": "この3枚でメルドになります",
   "hintReasonDiscard": "どこにも繋がらない札です",
   "helpExampleDraw": "  dd                       引く代わりに捨て札の一番上をもらう",
-  "helpHint": "  h                        助言を表示"
+  "helpHint": "  h                        助言を表示",
+  "promptActLayoffNote": "注意: 他家のメルドへの付け札は、そのメルドの持ち主のものになります。自分の上がり枚数 (10) には数えません"
 }

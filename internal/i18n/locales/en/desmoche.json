@@ -31,5 +31,6 @@
   "hintReasonMeld": "these three make a meld",
   "hintReasonDiscard": "this card connects to nothing",
   "helpExampleDraw": "  dd                       take the top discard instead of drawing",
-  "helpHint": "  h                        show a hint"
+  "helpHint": "  h                        show a hint",
+  "promptActLayoffNote": "Note: laying off onto another player's meld gives them the card — it does not count toward your 10"
 }
