@@ -4,6 +4,7 @@ package domain
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -761,4 +762,39 @@ func TestTriPeaks_ScoreMatchesTheFrontendFormula(t *testing.T) {
 				back.GetScore(), back.GetCombo(), tp.GetScore(), tp.GetCombo())
 		}
 	})
+}
+
+// 列がどの山に属するかの対応。**ここがずれると山の完成ボーナスが別の山に付く。**
+func TestTriPeaks_PeakOfColumn(t *testing.T) {
+	for col, want := range map[int]int{0: 0, 1: 0, 2: 0, 3: 1, 4: 1, 5: 1, 6: 2, 7: 2, 8: 2, 9: 2} {
+		if got := triPeaksPeakOfColumn(col); got != want {
+			t.Errorf("triPeaksPeakOfColumn(%d) = %d, want %d", col, got, want)
+		}
+	}
+}
+
+// 壊れた得点を持つスナップショットは拒む。負の値が通ると、復元しただけで
+// 得点が減る盤面ができてしまう。
+func TestTriPeaks_SnapshotRejectsNegativeScore(t *testing.T) {
+	tp := NewDefaultTriPeaks()
+	tp.Reset()
+	data, err := json.Marshal(tp)
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	for _, tc := range []struct{ name, from, to string }{
+		{"negative score", `"sc":0`, `"sc":-1`},
+		{"negative chain", `"ch":0`, `"ch":-1`},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			tampered := strings.Replace(string(data), tc.from, tc.to, 1)
+			if tampered == string(data) {
+				t.Fatal("改竄が効いていない。キー名が変わったらここも直すこと")
+			}
+			var back TriPeaks
+			if err := json.Unmarshal([]byte(tampered), &back); err == nil {
+				t.Error("negative value was accepted")
+			}
+		})
+	}
 }
