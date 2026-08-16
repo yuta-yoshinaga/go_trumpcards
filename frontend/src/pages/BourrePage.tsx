@@ -135,6 +135,8 @@ function BourrePageContent() {
     retry,
   } = useGameApi<BourreResponse, [ApiArgs]>((...args) => bourreApi.exec(...args));
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('bourre');
+  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
+  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -239,9 +241,6 @@ function BourrePageContent() {
     if (p.bourreed) return t('label.bourreed');
     return `${p.tricks} ${t('label.tricks')}`;
   };
-
-  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
-  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
 
   if (!state) return <GameSkeleton gameKey="bourre" layout={{ kind: 'card-grid', count: 5, cols: 'grid-cols-5' }} />;
 
