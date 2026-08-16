@@ -51,7 +51,8 @@
       "easy": "Easy",
       "normal": "Normal",
       "hard": "Hard"
-    }
+    },
+    "apply": "Start with these settings"
   },
   "tutorial": {
     "intro": "Welcome to Six Card Golf! Try to get the lowest score with 6 cards.",

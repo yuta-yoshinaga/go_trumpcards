@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { sixcardgolfApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
@@ -153,6 +153,74 @@ describe('SixCardGolfPage', () => {
       renderWithProviders(<SixCardGolfPage />);
       await waitFor(() => expect(mockExec).toHaveBeenCalled());
       expect(document.querySelectorAll('[data-hinted="true"]')).toHaveLength(0);
+    });
+  });
+
+  // CUI には sd/sp/sr があり 2〜4 人戦も短縮ラウンドも遊べるのに、Web には設定
+  // パネルが無く常に既定 (2人・9ラウンド) で始まっていた (#5616)。
+  describe('settings', () => {
+    it('starts a new game with the chosen player count', async () => {
+      renderWithProviders(<SixCardGolfPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith({ command: 'reset' }));
+      mockExec.mockClear();
+
+      fireEvent.change(screen.getByTestId('scg-player-count'), { target: { value: '4' } });
+      fireEvent.click(screen.getByTestId('scg-apply-settings'));
+
+      await waitFor(() =>
+        expect(mockExec).toHaveBeenCalledWith({
+          command: 'reset',
+          config: { playerCount: 4, cpuDifficulty: 1, rounds: 9 },
+        }),
+      );
+    });
+
+    it('starts a new game with the chosen round count', async () => {
+      renderWithProviders(<SixCardGolfPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith({ command: 'reset' }));
+      mockExec.mockClear();
+
+      fireEvent.change(screen.getByTestId('scg-rounds'), { target: { value: '3' } });
+      fireEvent.click(screen.getByTestId('scg-apply-settings'));
+
+      await waitFor(() =>
+        expect(mockExec).toHaveBeenCalledWith({
+          command: 'reset',
+          config: { playerCount: 2, cpuDifficulty: 1, rounds: 3 },
+        }),
+      );
+    });
+
+    it('offers every player count the domain accepts', async () => {
+      renderWithProviders(<SixCardGolfPage />);
+      // state が来るまではスケルトンなので、待たずに問い合わせると
+      // 「選択肢が無い」ではなく「要素が無い」で落ちる。
+      await waitFor(() => expect(screen.getByTestId('scg-player-count')).toBeInTheDocument());
+      const opts = Array.from(screen.getByTestId('scg-player-count').querySelectorAll('option')).map((o) => o.value);
+      // SixCardGolfConfig の PlayerCount は 2〜4。ここが増減したら合わせること。
+      expect(opts).toEqual(['2', '3', '4']);
+    });
+
+    it('renders a grid for every seat when more than two play', async () => {
+      const grid = [slot(5), slot(3), slot(7), slot(5), slot(9), slot(2)];
+      mockExec.mockResolvedValue(
+        makeState({
+          players: [0, 1, 2, 3].map((id) => ({
+            id,
+            isHuman: id === 0,
+            grid: [...grid],
+            roundScore: 5,
+            cumulativeScore: 5,
+            allFaceUp: true,
+          })),
+          config: { playerCount: 4, cpuDifficulty: 1, rounds: 9 },
+        }),
+      );
+      renderWithProviders(<SixCardGolfPage />);
+      // 4 席ぶん描かれること。2 席で固定なら、ここで落ちる。
+      // prefix は scg-seat- 。scg-player-count が同じ正規表現に引っかかると
+      // 席が 1 つ多く数えられ、2 席固定でも通ってしまう。
+      await waitFor(() => expect(screen.getAllByTestId(/^scg-seat-/).length).toBe(4));
     });
   });
 });
