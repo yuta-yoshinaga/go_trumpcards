@@ -12,7 +12,11 @@
     "pointLimit": "目標スコア",
     "easy": "Easy",
     "normal": "Normal",
-    "hard": "Hard"
+    "hard": "Hard",
+    "policyEasy": "デッドウッド{{knockLimit}}以下で即ノック / 捨て札は1/{{easyOneIn}}で拾う",
+    "policyNormal": "デッドウッド{{knockNormal}}以下でノック / 捨て札は{{gainNormal}}点超改善で拾う",
+    "policyHard": "デッドウッド{{knockHard}}以下かジンでノック / 捨て札は少しでも改善すれば拾う",
+    "policyTooltip": "難易度で変わるのは CPU のノック判断と捨て札の拾い方です。数字はデッドウッド点。"
   },
   "round": "ラウンド {{n}}",
   "drawPile": "山札: {{count}}枚",
