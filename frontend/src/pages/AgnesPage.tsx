@@ -31,7 +31,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { AgnesResponse } from '../types/card';
 import { AgnesPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { agnesHasLegalMove, agnesNextFoundationMove } from '../utils/agnesMoves';
+import { agnesNextFoundationMove } from '../utils/agnesMoves';
 import { AGNES_HELP, parseAgnesCommand } from '../utils/cli/commands/agnesCommands';
 import { formatAgnesState } from '../utils/cli/formatters/agnesFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -192,13 +192,11 @@ function AgnesPageContent() {
   // Auto-complete is offered once the stock is exhausted and every tableau card
   // is face-up — the endgame sweep, mirroring Spiderette's `autoCompleteReady`.
   const autoCompleteReady = isPlaying && (state?.stockCount ?? 1) === 0 && isTableauAllFaceUp(state?.tableau ?? []);
-  // Stalemate: no deal, no foundation move, and no tableau move remain. Detected
-  // on the frontend from the deterministic move rules (the backend exposes no
-  // stalemate flag), so the UI can prompt an undo / give-up escape.
-  const hasLegalMove = state
-    ? agnesHasLegalMove(state.tableau, state.foundation, state.baseRank, state.stockCount)
-    : true;
-  const isStalemate = isPlaying && !loading && !isAutoCompleting && !hasLegalMove;
+  // Stalemate: no deal, no foundation move, and no tableau move remain. The
+  // domain decides it (`Agnes.IsStalemate()`) and sends the answer; the page
+  // used to re-derive the same rule in TypeScript, which meant a new legal move
+  // in Go would silently leave the banner wrong here (#5601).
+  const isStalemate = isPlaying && !loading && !isAutoCompleting && (state?.isStalemate ?? false);
 
   // Keyboard shortcuts for the primary actions, matching other solitaire pages.
   // Give-up (g) is routed through its confirm dialog since it is irreversible.
