@@ -58,7 +58,7 @@ func videoPokerDispatch(bc *baseController, w http.ResponseWriter, vi usecase.Vi
 		}
 		bc.writePresenterResponse(w, vi.Hold(indices))
 	default:
-		return dispatchResetAndLog(param.Command, bc, w, vi.Reset, vi.ActionLog)
+		return dispatchResetHintAndLog(param.Command, bc, w, vi.Reset, vi.Hint, vi.ActionLog)
 	}
 	return true
 }

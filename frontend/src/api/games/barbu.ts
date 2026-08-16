@@ -10,7 +10,7 @@ export interface BarbuConfigInput {
 }
 
 /** Command verbs accepted by the Barbu /barbu/exec endpoint (short forms). */
-export type BarbuCommand = 'r' | 'n' | 'c' | 'p' | 'log';
+export type BarbuCommand = 'r' | 'n' | 'c' | 'p' | 'log' | 'hint';
 
 /** Extra payload fields for the Barbu /barbu/exec endpoint. */
 export interface BarbuExecParams {

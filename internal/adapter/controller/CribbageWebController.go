@@ -121,7 +121,7 @@ func cribbageDispatch(bc *baseController, w http.ResponseWriter, ci usecase.Crib
 	case "nr", "nextround":
 		bc.writePresenterResponse(w, ci.NextRound())
 	default:
-		return dispatchLog(param.Command, bc, w, ci.ActionLog)
+		return dispatchHintAndLog(param.Command, bc, w, ci.Hint, ci.ActionLog)
 	}
 	return true
 }

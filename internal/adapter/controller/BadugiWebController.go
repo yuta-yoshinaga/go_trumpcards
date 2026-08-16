@@ -160,7 +160,7 @@ func badugiDispatch(bc *baseController, w http.ResponseWriter, bi usecase.Badugi
 	case "a", "allin":
 		bc.writePresenterResponse(w, bi.Action(domain.BadugiActionAllIn, 0, param.HumanPlayMs))
 	default:
-		return dispatchLog(param.Command, bc, w, bi.ActionLog)
+		return dispatchHintAndLog(param.Command, bc, w, bi.Hint, bi.ActionLog)
 	}
 	return true
 }

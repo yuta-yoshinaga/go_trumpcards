@@ -76,7 +76,7 @@ func chinesePokerDispatch(bc *baseController, w http.ResponseWriter, ci usecase.
 	case "s", "set":
 		bc.writePresenterResponse(w, ci.SetHands(param.FrontIndices, param.MiddleIndices))
 	default:
-		return dispatchResetAndLog(param.Command, bc, w, ci.Reset, ci.ActionLog)
+		return dispatchResetHintAndLog(param.Command, bc, w, ci.Reset, ci.Hint, ci.ActionLog)
 	}
 	return true
 }

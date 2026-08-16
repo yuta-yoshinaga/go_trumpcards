@@ -13,7 +13,7 @@ export interface PresidentConfigInput {
 }
 
 /** Command verbs accepted by the President /president/exec endpoint. */
-export type PresidentCommand = 'reset' | 'play' | 'log';
+export type PresidentCommand = 'reset' | 'play' | 'log' | 'hint';
 
 /** API client for the President /president/exec endpoint. */
 export const presidentApi = {

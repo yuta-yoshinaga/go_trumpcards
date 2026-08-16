@@ -13,7 +13,7 @@ export interface PageOneConfigInput {
 /** API client for the Page One /pageone/exec endpoint. */
 export const pageoneApi = {
   exec: (
-    command: 'reset' | 'play' | 'draw' | 'declare' | 'skip' | 'nextround',
+    command: 'reset' | 'play' | 'draw' | 'declare' | 'skip' | 'nextround' | 'hint',
     cardIndex?: number,
     config?: PageOneConfigInput,
   ) =>

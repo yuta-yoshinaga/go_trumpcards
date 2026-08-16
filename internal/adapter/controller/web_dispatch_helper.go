@@ -195,6 +195,9 @@ type rummyMeldFns struct {
 	goOut           func() string
 	nextRound       func() string
 	actionLog       func() string
+	// hint is optional: Canasta and Samba have no Hint() on their interactor, so
+	// a nil here keeps the old log-only fallthrough for them.
+	hint func() string
 }
 
 // dispatchRummyMeld handles the draw/meld/discard/go-out command set shared by
@@ -227,6 +230,9 @@ func dispatchRummyMeld[O any](cmd string, bc *baseController, w http.ResponseWri
 	case "nr", "nextround":
 		bc.writePresenterResponse(w, fns.nextRound())
 	default:
+		if fns.hint != nil {
+			return dispatchHintAndLog(cmd, bc, w, fns.hint, fns.actionLog)
+		}
 		return dispatchLog(cmd, bc, w, fns.actionLog)
 	}
 	return true

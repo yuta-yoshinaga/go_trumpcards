@@ -14,7 +14,7 @@ export interface BadugiConfigInput {
 /** API client for the Badugi /badugi/exec endpoint. */
 export const badugiApi = {
   exec: (
-    command: 'reset' | 'exchange' | 'stand' | 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'allin',
+    command: 'reset' | 'exchange' | 'stand' | 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'allin' | 'hint',
     indices?: number[],
     amount?: number,
     config?: BadugiConfigInput,

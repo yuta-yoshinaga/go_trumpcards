@@ -159,7 +159,7 @@ func deuceToSevenDispatch(bc *baseController, w http.ResponseWriter, di usecase.
 	case "a", "allin":
 		bc.writePresenterResponse(w, di.Action(domain.DeuceToSevenActionAllIn, 0, param.HumanPlayMs))
 	default:
-		return dispatchLog(param.Command, bc, w, di.ActionLog)
+		return dispatchHintAndLog(param.Command, bc, w, di.Hint, di.ActionLog)
 	}
 	return true
 }

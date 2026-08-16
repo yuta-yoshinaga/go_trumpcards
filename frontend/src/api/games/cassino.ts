@@ -13,7 +13,7 @@ export interface CassinoConfigInput {
 }
 
 /** Command verbs accepted by the Cassino /cassino/exec endpoint. */
-export type CassinoCommand = 'reset' | 'take' | 'build' | 'trail' | 'next' | 'log';
+export type CassinoCommand = 'reset' | 'take' | 'build' | 'trail' | 'next' | 'log' | 'hint';
 
 /** Extra payload fields for the Cassino /cassino/exec endpoint. */
 export interface CassinoExecParams {

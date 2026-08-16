@@ -6,6 +6,6 @@ import { gameExec } from '../gameExec';
 
 /** API client for the Three Card Poker /threecard/exec endpoint. */
 export const threecardApi = {
-  exec: (command: 'reset' | 'bet' | 'play' | 'fold' | 'log', amount?: number, pairPlusBet?: number) =>
+  exec: (command: 'reset' | 'bet' | 'play' | 'fold' | 'log' | 'hint', amount?: number, pairPlusBet?: number) =>
     gameExec<ThreeCardResponse>('threecard', { command, amount, pairPlusBet }),
 };

@@ -7,7 +7,7 @@ import { gameExec } from '../gameExec';
 /** API client for the Oasis Poker /oasispoker/exec endpoint. */
 export const oasispokerApi = {
   exec: (
-    command: 'reset' | 'bet' | 'exchange' | 'stand' | 'play' | 'fold' | 'log',
+    command: 'reset' | 'bet' | 'exchange' | 'stand' | 'play' | 'fold' | 'log' | 'hint',
     amount?: number,
     jackpotBet?: number,
     indices?: number[],

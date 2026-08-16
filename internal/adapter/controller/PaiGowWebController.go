@@ -78,7 +78,7 @@ func paiGowDispatch(bc *baseController, w http.ResponseWriter, pi usecase.PaiGow
 		low1 := deref(param.Low1)
 		bc.writePresenterResponse(w, pi.SetHands(low0, low1))
 	default:
-		return dispatchResetAndLog(param.Command, bc, w, pi.Reset, pi.ActionLog)
+		return dispatchResetHintAndLog(param.Command, bc, w, pi.Reset, pi.Hint, pi.ActionLog)
 	}
 	return true
 }

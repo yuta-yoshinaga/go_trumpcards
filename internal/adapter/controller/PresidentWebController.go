@@ -104,7 +104,7 @@ func presidentDispatch(bc *baseController, w http.ResponseWriter, pi usecase.Pre
 		}
 		bc.writePresenterResponse(w, pi.Play(indices))
 	default:
-		return dispatchLog(param.Command, bc, w, pi.ActionLog)
+		return dispatchHintAndLog(param.Command, bc, w, pi.Hint, pi.ActionLog)
 	}
 	return true
 }

@@ -24,6 +24,8 @@ const VALID_COMMANDS = [
   'reset',
   'log',
   'l',
+  'h',
+  'hint',
 ];
 
 /** Parse a CLI input string into Seven Bridge API arguments. */
@@ -84,6 +86,9 @@ export function parseSevenBridgeCommand(input: string): CliParseResult<SevenBrid
     case 'r':
     case 'reset':
       return { args: ['reset'] };
+    case 'h':
+    case 'hint':
+      return { args: ['hint'] };
     default: {
       const suggestion = suggestCommand(cmd, VALID_COMMANDS);
       if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
@@ -103,4 +108,5 @@ export const SEVENBRIDGE_HELP: string[] = [
   'n                       - Next round',
   'r                       - Reset / new game',
   'l / log                 - Action log',
+  'h/hint       - Get a hint',
 ];

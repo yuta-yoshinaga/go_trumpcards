@@ -120,7 +120,7 @@ func escobaDispatch(bc *baseController, w http.ResponseWriter, ei usecase.Escoba
 			bc.writePresenterResponse(w, ei.Reset())
 		}
 	default:
-		return dispatchLog(param.Command, bc, w, ei.ActionLog)
+		return dispatchHintAndLog(param.Command, bc, w, ei.Hint, ei.ActionLog)
 	}
 	return true
 }

@@ -23,6 +23,8 @@ const VALID_COMMANDS = [
   'stand',
   'r',
   'reset',
+  'h',
+  'hint',
   'help',
   '?',
 ];
@@ -68,6 +70,9 @@ export function parseDeuceToSevenCommand(input: string): CliParseResult<DeuceToS
     case 'r':
     case 'reset':
       return { args: ['reset'] };
+    case 'h':
+    case 'hint':
+      return { args: ['hint'] };
     default: {
       const suggestion = suggestCommand(cmd, VALID_COMMANDS);
       if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
@@ -87,4 +92,5 @@ export const DEUCE_TO_SEVEN_HELP: string[] = [
   'ex <idx...>    - Exchange selected cards (e.g. ex 0 2 4)',
   'st/stand       - Stand pat (no exchange)',
   'r/reset        - Reset game',
+  'h/hint         - Get a hint',
 ];

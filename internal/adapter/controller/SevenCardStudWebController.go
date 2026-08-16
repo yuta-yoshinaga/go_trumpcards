@@ -189,7 +189,7 @@ func sevenCardStudDispatch(bc *baseController, w http.ResponseWriter, sgi usecas
 		}
 		bc.writePresenterResponse(w, sgi.ResetWithConfig(cfg, param.Profile))
 	default:
-		return dispatchLog(param.Command, bc, w, sgi.ActionLog)
+		return dispatchHintAndLog(param.Command, bc, w, sgi.Hint, sgi.ActionLog)
 	}
 	return true
 }

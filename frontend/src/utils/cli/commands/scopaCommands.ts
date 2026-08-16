@@ -31,6 +31,8 @@ export function parseScopaCommand(input: string): CliParseResult<ScopaCliArgs> {
     return { args: ['p', { handIndex: hand, tableIndices }] };
   }
 
+  if (cmd === 'hint' || cmd === 'h') return { args: ['hint'] };
+
   return { error: `Unknown command: ${cmd}` };
 }
 
@@ -55,4 +57,5 @@ export const SCOPA_HELP = [
   'n/next             - Start next round',
   'r/reset            - Reset game',
   'l/log              - Show action log',
+  'h/hint             - Get a hint',
 ] as const;

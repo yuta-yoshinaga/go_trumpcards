@@ -114,5 +114,6 @@ func burracoDispatch(bc *baseController, w http.ResponseWriter, ci usecase.Burra
 		goOut:           ci.GoOut,
 		nextRound:       ci.NextRound,
 		actionLog:       ci.ActionLog,
+		hint:            ci.Hint,
 	}, param.CardIndex, newDefault)
 }

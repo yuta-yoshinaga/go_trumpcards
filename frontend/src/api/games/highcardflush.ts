@@ -7,7 +7,7 @@ import { gameExec } from '../gameExec';
 /** API client for the High Card Flush /highcardflush/exec endpoint. */
 export const highcardflushApi = {
   exec: (
-    command: 'reset' | 'bet' | 'raise' | 'fold' | 'log',
+    command: 'reset' | 'bet' | 'raise' | 'fold' | 'log' | 'hint',
     amount?: number,
     flushBonusBet?: number,
     straightFlushBet?: number,
