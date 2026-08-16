@@ -182,6 +182,18 @@ export const KlondikeScoringMode = {
   VEGAS: 1,
 } as const;
 
+/**
+ * Klondike Vegas scoring constants (sync: internal/domain/Klondike.go).
+ *
+ * `GetScore` computes `BUY_IN + PER_CARD * foundationCards`. A Go test asserts
+ * these numbers against the domain constants **and** against the wording in the
+ * locale files, so the formula shown on screen cannot drift from the one played.
+ */
+export const KlondikeVegas = {
+  BUY_IN: -52,
+  PER_CARD: 5,
+} as const;
+
 /** Canfield phase constants (sync: internal/domain/Canfield.go). */
 export const CanfieldPhase = {
   PLAYING: 0,

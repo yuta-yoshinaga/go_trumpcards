@@ -1150,3 +1150,26 @@ describe('KlondikePage', () => {
     });
   });
 });
+
+// #5493: Vegas を選んだプレイヤーは、なぜスコアがマイナスから始まるのか・1枚あたり
+// 何点かを知る手段が無かった。ヘッダーは生の数字だけで、チュートリアルにも
+// スコアリングの説明が無い。
+describe('KlondikePage Vegas formula', () => {
+  it('spells out the formula while Vegas scoring is on', async () => {
+    mockExec.mockResolvedValue({ ...playingState, scoringMode: 1 });
+    renderWithProviders(<KlondikePage />);
+    const note = await screen.findByTestId('kl-vegas-formula');
+    // 数値は KlondikeVegas から補間される。文言に直接書くと定数と乖離する。
+    expect(note.textContent).toContain('-52');
+    expect(note.textContent).toContain('5');
+  });
+
+  // **None モードでは出さない。** ベガス方式の説明が常時出ていると、
+  // スコアの付かないモードでも点が入ると読める。
+  it('says nothing when scoring is off', async () => {
+    mockExec.mockResolvedValue({ ...playingState, scoringMode: 0 });
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('kl-vegas-formula')).not.toBeInTheDocument();
+  });
+});
