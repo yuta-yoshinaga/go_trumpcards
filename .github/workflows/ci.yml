@@ -24,6 +24,34 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
 jobs:
+  test-hooks:
+    name: Hook Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      # The hooks are the thing that stops a broken commit reaching CI, and they
+      # fail silently: a guard that no longer matches anything exits 0 and looks
+      # healthy. On 2026-08-16 one emitted invalid JSON for weeks and another
+      # never fired at all, and `bash -n` passed on both. Only running them and
+      # checking the output catches that, so run them here.
+      - name: Run hook tests
+        run: |
+          set -e
+          found=0
+          for t in .claude/hooks/*.test.sh; do
+            [ -e "$t" ] || continue
+            found=$((found + 1))
+            echo "== $t"
+            bash "$t"
+          done
+          # A loop over a glob that matched nothing exits 0 and reads as success.
+          if [ "$found" -eq 0 ]; then
+            echo "no hook tests were found -- the glob or the directory moved" >&2
+            exit 1
+          fi
+          echo "ran $found hook test file(s)"
+
   lint-backend:
     name: Backend Lint (golangci-lint)
     runs-on: ubuntu-latest
