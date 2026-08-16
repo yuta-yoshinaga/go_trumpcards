@@ -87,6 +87,14 @@ func (p *GrandfathersClockCuiPresenter) Output(gc interfaces.GrandfathersClockGa
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(gc.GetMoveCount())) + "\n")
 		case domain.GrandfathersClockPhaseGameOver:
 			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
+			faces := 0
+			for i := range gc.GetFoundation() {
+				if gc.IsFoundationComplete(i) {
+					faces++
+				}
+			}
+			b.WriteString(color.Yellow(cuiSolitaireGameOverFaces(
+				faces, domain.GrandfathersClockFoundationCnt)) + "\n")
 		}
 	})
 }

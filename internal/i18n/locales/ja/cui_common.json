@@ -23,6 +23,8 @@
   "cuiSolitaireStalemate": "手詰まりです",
   "cuiSolitaireGameClear": "ゲームクリア！",
   "cuiSolitaireGameOver": "ゲームオーバー",
+  "cuiSolitaireGameOverSummary": "組札 {{count}}/{{total}} 枚（{{percent}}%）まで到達",
+  "cuiSolitaireGameOverFaces": "文字盤 {{count}}/{{total}} 個を完成",
   "cuiSolitaireMoves": "手数: {{count}}",
   "cuiEmptyCol": "[空]",
   "pokerHandRank0": "ハイカード",

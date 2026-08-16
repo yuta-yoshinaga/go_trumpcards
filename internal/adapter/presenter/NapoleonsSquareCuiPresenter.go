@@ -94,6 +94,9 @@ func (p *NapoleonsSquareCuiPresenter) Output(ns interfaces.NapoleonsSquareGame, 
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(ns.GetMoveCount())) + "\n")
 		case domain.NapoleonsSquarePhaseGameOver:
 			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
+			fnd := ns.GetFoundation()
+			b.WriteString(color.Yellow(cuiSolitaireGameOverSummary(
+				cuiCountPileCards(fnd[:]...), domain.NapoleonsSquareFoundationCnt*domain.CardValueMax)) + "\n")
 		}
 	})
 }

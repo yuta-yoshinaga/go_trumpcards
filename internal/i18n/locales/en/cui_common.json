@@ -23,6 +23,8 @@
   "cuiSolitaireStalemate": "Stalemate",
   "cuiSolitaireGameClear": "Game clear!",
   "cuiSolitaireGameOver": "Game over",
+  "cuiSolitaireGameOverSummary": "Reached {{count}}/{{total}} cards on the foundations ({{percent}}%)",
+  "cuiSolitaireGameOverFaces": "Completed {{count}}/{{total}} clock faces",
   "cuiSolitaireMoves": "Moves: {{count}}",
   "cuiEmptyCol": "[empty]",
   "pokerHandRank0": "High Card",
