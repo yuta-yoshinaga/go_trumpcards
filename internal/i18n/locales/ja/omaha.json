@@ -59,5 +59,6 @@
   "resultBestLegend": "  (* = 自分の手札から使った札)",
   "boardLowLive": "ロー: 成立圏 (ボードに8以下が3ランク)",
   "boardLowPossible": "ロー: 成立可能 (あと{{needed}}ランク)",
-  "boardLowImpossible": "ロー: 不成立確定"
+  "boardLowImpossible": "ロー: 不成立確定",
+  "scoop": "🏆 スクープ! ハイ・ロー総取り"
 }

@@ -1153,3 +1153,52 @@ func TestOmahaCuiPresenter_ResultBestLegendShownOnce(t *testing.T) {
 	// それでも各プレイヤーの行にはベストが出る。
 	assert.Equal(t, 2, strings.Count(out, i18n.T("omaha.resultBestLabel")))
 }
+
+// #5485: Hi と Lo の両取り (スクープ) は Web では専用バッジ + 人間なら
+// パルスアニメーションで強調されるのに、CUI は wonHiLoBoth で金額の内訳を
+// 出すだけで、それが特別な結果だとは一言も言っていなかった。
+func TestOmahaCuiPresenter_Scoop(t *testing.T) {
+	p := new(presenter.OmahaCuiPresenter)
+
+	render := func(results []domain.HoldemResult) string {
+		h := makeOmahaHiLoForPresenter()
+		h.SetPhase(domain.OmahaPhaseEnd)
+		h.SetRoundResults(results)
+		return p.Output(h, nil)
+	}
+
+	t.Run("calls out a scoop when one player takes both halves", func(t *testing.T) {
+		out := render([]domain.HoldemResult{
+			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush",
+				WonAmount: 100, HiWonAmount: 60, LowWonAmount: 40},
+		})
+		assert.Contains(t, out, i18n.T("omaha.scoop"))
+		// 内訳は今までどおり残る。スクープ表示で置き換えては情報が減る。
+		assert.Contains(t, out, i18n.Tf("omaha.wonHiLoBoth", "total", "100", "hi", "60", "lo", "40"))
+	})
+
+	// **片取りでは出さない。** Hi だけ・Lo だけの勝ちをスクープと呼ぶと、
+	// 一番強い結果の意味が薄れる。
+	t.Run("stays quiet when only the high half is won", func(t *testing.T) {
+		assert.NotContains(t, render([]domain.HoldemResult{
+			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush",
+				WonAmount: 60, HiWonAmount: 60},
+		}), i18n.T("omaha.scoop"))
+	})
+
+	t.Run("stays quiet when only the low half is won", func(t *testing.T) {
+		assert.NotContains(t, render([]domain.HoldemResult{
+			{PlayerIdx: 0, HandRank: domain.PokerHandHighCard, HandName: "High Card",
+				WonAmount: 40, LowWonAmount: 40},
+		}), i18n.T("omaha.scoop"))
+	})
+
+	// ロー不成立でハイが総取りしたときは「スクープ」ではない。LowWonAmount が
+	// 0 なので上の判定で弾かれる -- 金額が全額でも両取りとは呼ばない。
+	t.Run("stays quiet when the low never qualified", func(t *testing.T) {
+		assert.NotContains(t, render([]domain.HoldemResult{
+			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush",
+				WonAmount: 100, HiWonAmount: 100},
+		}), i18n.T("omaha.scoop"))
+	})
+}

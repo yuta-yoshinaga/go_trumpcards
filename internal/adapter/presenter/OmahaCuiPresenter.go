@@ -226,10 +226,14 @@ func (p *OmahaCuiPresenter) Output(o interfaces.OmahaGame, lastErr error) string
 					total := strconv.Itoa(r.WonAmount)
 					switch {
 					case o.GetIsHiLo() && r.HiWonAmount > 0 && r.LowWonAmount > 0:
+						// **両取りは特別な結果。** Web は専用バッジで強調している
+						// のに、CUI は金額の内訳を出すだけでそうとは言っていなかった
+						// (#5485)。内訳は残す -- 置き換えると情報が減る。
 						b.WriteString(i18n.Tf("omaha.wonHiLoBoth",
 							"total", total,
 							"hi", strconv.Itoa(r.HiWonAmount),
 							"lo", strconv.Itoa(r.LowWonAmount)))
+						b.WriteString(" " + color.BoldYellow(i18n.T("omaha.scoop")))
 					case o.GetIsHiLo() && r.LowWonAmount > 0:
 						b.WriteString(i18n.Tf("omaha.wonLoOnly", "total", total))
 					case o.GetIsHiLo() && r.HiWonAmount > 0:
