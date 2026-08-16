@@ -71,3 +71,6 @@ func (s *Shelem) PlayForTest(playerIdx, cardIndex int) error { return s.play(pla
 
 // CpuChoiceForTest CPU が選ぶ手札インデックスを返す
 func (s *Shelem) CpuChoiceForTest(playerIdx int) int { return s.chooseCpuCard(playerIdx) }
+
+// CpuDiscardAndTrumpForTest CPU 落札者の捨て札・切り札決定を直接呼ぶ
+func (s *Shelem) CpuDiscardAndTrumpForTest() { s.cpuDiscardAndTrump() }

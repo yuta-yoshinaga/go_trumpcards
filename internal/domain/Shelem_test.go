@@ -708,3 +708,127 @@ func TestShelem_ActionLog(t *testing.T) {
 	}
 	assert.True(t, kinds["bid"])
 }
+
+// 捨て札に混ざったカード点が消えないこと。
+//
+// カード点は 52 枚全体で 100 点 (A/10 が 10 点 ×8 枚、5 が 5 点 ×4 枚)。配りは
+// 48 枚 + ウィドウ 4 枚で、落札者はウィドウを取り込んで 4 枚捨てる。捨て札の点を
+// 誰にも加算しないと、点札が捨て札に入った瞬間ラウンド合計が 100 を割る (#5795)。
+//
+// TestShelem_RoundPointsAlwaysSumToOneHundred は配り依存でしか露出しないので、
+// ここは点札を強制的に捨てさせて決定的に確かめる。
+func TestShelem_DiscardedCardPointsGoToTheDeclarer(t *testing.T) {
+	newDiscardShelem := func(t *testing.T) *Shelem {
+		t.Helper()
+		s := newTestShelem(t)
+		s.SetContractForTest(0, ShelemMinBid, false)
+		s.SetPhaseForTest(ShelemPhaseDiscard)
+		return s
+	}
+
+	t.Run("human discard credits the declarer's team", func(t *testing.T) {
+		s := newDiscardShelem(t)
+		// 先頭 4 枚を点札にして、それを捨てさせる: 10 + 10 + 5 + 5 = 30。
+		hand := []*Card{
+			NewCard(CardDesignSpade, 1, false),   // A = 10
+			NewCard(CardDesignHeart, 10, false),  // 10 = 10
+			NewCard(CardDesignClover, 5, false),  // 5  = 5
+			NewCard(CardDesignDiamond, 5, false), // 5  = 5
+		}
+		for i := range ShelemHandSize {
+			hand = append(hand, NewCard(CardDesignSpade, (i%4)+6, false)) // 6-9 のみ = 確実に 0 点
+		}
+		shelemHandOf(s, 0, hand...)
+
+		require.NoError(t, s.PlayerDiscard([]int{0, 1, 2, 3}, CardDesignSpade))
+
+		assert.Equal(t, 30, s.GetRoundPoints(ShelemTeamOf(0)),
+			"捨て札のカード点が落札者チームに入っていない")
+		assert.Equal(t, 0, s.GetRoundPoints(1-ShelemTeamOf(0)),
+			"相手チームには入らない")
+	})
+
+	t.Run("discarding only zero-point cards adds nothing", func(t *testing.T) {
+		s := newDiscardShelem(t)
+		hand := make([]*Card, 0, ShelemHandSize+ShelemWidowSize)
+		for i := range ShelemHandSize + ShelemWidowSize {
+			// 6-9 のみ。(i%7)+2 は 5 を含み、5 は 5 点なので 0 点札ではない。
+			hand = append(hand, NewCard(CardDesignSpade, (i%4)+6, false))
+		}
+		shelemHandOf(s, 0, hand...)
+
+		require.NoError(t, s.PlayerDiscard([]int{0, 1, 2, 3}, CardDesignSpade))
+
+		assert.Equal(t, 0, s.GetRoundPoints(ShelemTeamOf(0)))
+	})
+
+	t.Run("cpu discard credits the declarer's team too", func(t *testing.T) {
+		s := newTestShelem(t)
+		s.SetContractForTest(1, ShelemMinBid, false)
+		s.SetPhaseForTest(ShelemPhaseDiscard)
+		// CPU は点札を避けて捨てるので、点札しか持たせない配りを組む。
+		hand := make([]*Card, 0, ShelemHandSize+ShelemWidowSize)
+		for range ShelemHandSize + ShelemWidowSize {
+			hand = append(hand, NewCard(CardDesignHeart, 5, false)) // すべて 5 点
+		}
+		shelemHandOf(s, 1, hand...)
+
+		s.CpuDiscardAndTrumpForTest()
+
+		assert.Equal(t, ShelemWidowSize*5, s.GetRoundPoints(ShelemTeamOf(1)),
+			"CPU 経路でも捨て札の点が落札者チームに入る")
+	})
+
+	t.Run("the round still totals 100 when points are discarded", func(t *testing.T) {
+		s := newDiscardShelem(t)
+		hand := []*Card{
+			NewCard(CardDesignSpade, 1, false),
+			NewCard(CardDesignHeart, 10, false),
+			NewCard(CardDesignClover, 5, false),
+			NewCard(CardDesignDiamond, 5, false),
+		}
+		for i := range ShelemHandSize {
+			hand = append(hand, NewCard(CardDesignSpade, (i%4)+6, false))
+		}
+		shelemHandOf(s, 0, hand...)
+		require.NoError(t, s.PlayerDiscard([]int{0, 1, 2, 3}, CardDesignSpade))
+
+		// 残る 70 点が卓上で取り合われたとみなす。
+		s.SetRoundPointsForTest(1-ShelemTeamOf(0), 70)
+		assert.Equal(t, ShelemHandPoints,
+			s.GetRoundPoints(0)+s.GetRoundPoints(1),
+			"捨て札の点を含めてラウンド合計が 100 になる")
+	})
+}
+
+// 捨て札の点は契約達成の判定にも数える。
+//
+// finishRound は `got := s.roundPoints[declTeam]` を契約と比べるので、捨て札を
+// 加算した分だけ落札者は契約に近づく。ウィドウ・キティ系の通例どおりで意図的な
+// 挙動だが、#5795 の修正で判定が変わる箇所なのでテストで固定しておく。
+func TestShelem_DiscardedPointsCountTowardTheContract(t *testing.T) {
+	s := newTestShelem(t)
+	s.SetContractForTest(0, 100, false) // 卓上だけでは届かない契約にする
+	s.SetPhaseForTest(ShelemPhaseDiscard)
+
+	hand := []*Card{
+		NewCard(CardDesignSpade, 1, false),   // 10
+		NewCard(CardDesignHeart, 1, false),   // 10
+		NewCard(CardDesignClover, 1, false),  // 10
+		NewCard(CardDesignDiamond, 1, false), // 10
+	}
+	for i := range ShelemHandSize {
+		hand = append(hand, NewCard(CardDesignSpade, (i%4)+6, false))
+	}
+	shelemHandOf(s, 0, hand...)
+	require.NoError(t, s.PlayerDiscard([]int{0, 1, 2, 3}, CardDesignSpade))
+	require.Equal(t, 40, s.GetRoundPoints(ShelemTeamOf(0)), "捨て札 40 点が入っている")
+
+	// 卓上で 60 点取れば、捨て札の 40 と合わせてちょうど契約 100 に届く。
+	s.SetRoundPointsForTest(ShelemTeamOf(0), 100)
+	s.SetTrickNumberForTest(ShelemTricksPerRound)
+	s.FinishRoundForTest()
+
+	assert.Positive(t, s.GetScore(ShelemTeamOf(0)),
+		"契約達成として加点される（捨て札の点を数えないと未達になる）")
+}
