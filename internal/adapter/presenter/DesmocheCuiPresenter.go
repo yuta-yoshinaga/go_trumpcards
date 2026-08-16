@@ -105,7 +105,12 @@ func (p *DesmocheCuiPresenter) promptBlock(c interfaces.DesmocheGame) string {
 	case domain.DesmochePhaseDraw:
 		return i18n.T("desmoche.promptDraw") + "\n"
 	case domain.DesmochePhaseAct:
-		return i18n.T("desmoche.promptAct") + "\n"
+		// **10 枚上がりが勝利条件なのに、他家のメルドへ付けても自分の枚数は
+		// 増えない。** Web は foreignMeldWarning で警告しているが、CUI には
+		// 対応する文言が無かった (#5720)。MeldedCount は Owner == player の
+		// メルドしか数えない。
+		return i18n.T("desmoche.promptAct") + "\n" +
+			i18n.T("desmoche.promptActLayoffNote") + "\n"
 	case domain.DesmochePhaseRoundEnd:
 		var sb strings.Builder
 		if w := c.GetRoundWinner(); w >= 0 {
