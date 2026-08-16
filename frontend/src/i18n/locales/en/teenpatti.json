@@ -83,5 +83,6 @@
     "sideShow": "When a Side Show is requested, this highlighted panel shows the request. If you are the target, respond with the Accept / Decline buttons inside the panel.",
     "resetButton": "Reset the game and start over from the beginning."
   },
-  "raiseUnavailable": "Not enough chips to raise"
+  "raiseUnavailable": "Not enough chips to raise",
+  "raiseRange": "Range: {{min}}-{{max}}"
 }

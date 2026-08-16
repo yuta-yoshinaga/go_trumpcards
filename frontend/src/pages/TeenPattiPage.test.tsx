@@ -221,6 +221,28 @@ describe('TeenPattiPage', () => {
     expect(minus).toBeDisabled();
   });
 
+  // **範囲を出さないと、+/- を連打してボタンが無効になる位置を探るしかない (#5660)。**
+  // 姉妹の Three Card Brag は常時出しており、CUI も promptRaiseRange で出している。
+  it('shows the allowed raise range as text', async () => {
+    mockExec.mockResolvedValue(makeTeenPattiState({ minRaise: 2, maxRaise: 30, canRaise: true }));
+    renderWithProviders(<TeenPattiPage />);
+
+    const range = await screen.findByTestId('tp-raise-range');
+    expect(range).toHaveTextContent('2');
+    expect(range).toHaveTextContent('30');
+  });
+
+  // **負のコントロール: レイズできないときは範囲ではなく理由を出す。**
+  // 範囲を出すと「その額なら払える」と読めてしまう。
+  it('says why instead of showing a range when a raise is unaffordable', async () => {
+    mockExec.mockResolvedValue(makeTeenPattiState({ minRaise: 2, maxRaise: 1, canRaise: false }));
+    renderWithProviders(<TeenPattiPage />);
+
+    const range = await screen.findByTestId('tp-raise-range');
+    expect(range).toHaveTextContent('チップ不足');
+    expect(range).not.toHaveTextContent('範囲');
+  });
+
   // **チップ不足ならボタンごと無効化する。**CUI は
   // teenpatti.promptRaiseUnavailable でそう伝えている。
   it('disables the raise button when the player cannot afford any raise', async () => {
