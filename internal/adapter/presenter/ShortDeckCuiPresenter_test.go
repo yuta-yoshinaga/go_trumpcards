@@ -10,6 +10,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func makeShortDeckForPresenter() (*domain.ShortDeck, []*domain.ShortDeckPlayer) {
@@ -699,4 +700,70 @@ func TestShortDeckCuiPresenter_HandNameOrdering(t *testing.T) {
 			assert.NotContains(t, result, "あなた: "+tt.deny)
 		})
 	}
+}
+
+// #5487: GetEquity / GetPotOdds はインターフェースにあり、Web の ShortDeckPage は
+// EquityDisplay で出しているのに、CUI は2メソッドを一度も呼んでいなかった。
+// Holdem / Omaha の CUI は既に出しているので、ショートデックだけ取り残されていた。
+func TestShortDeckCuiPresenter_LearningMode(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.ShortDeckCuiPresenter)
+
+	// pot / call を与えると potOdds が決まる。エクイティはモンテカルロなので
+	// 値そのものは固定せず、**必要ポットオッズの側を極端に振って** +EV / -EV の
+	// どちらへ倒れるかだけを決める。
+	render := func(pot, call int) string {
+		h, players := makeShortDeckForPresenter()
+		h.SetPhase(domain.ShortDeckPhaseFlop)
+		h.SetCurrentTurn(0)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 14, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 14, false))
+		h.SetCommunityCards([]*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 7, false),
+			domain.NewCard(domain.CardDesignClover, 9, false),
+			domain.NewCard(domain.CardDesignDiamond, 12, false),
+		})
+		h.SetPot(pot)
+		h.SetLastBet(call)
+		return p.Output(h, nil)
+	}
+
+	t.Run("shows the equity and pot odds during a hand", func(t *testing.T) {
+		out := render(100, 20)
+		assert.Contains(t, out, i18n.T("shortdeck.learningHeader"))
+		assert.Regexp(t, `勝率: [0-9]+\.[0-9]%`, out)
+		assert.Regexp(t, `ポットオッズ: [0-9]+\.[0-9]%`, out)
+	})
+
+	// **+EV / -EV の両方を通す。** 片方しか通らないテストは、判定の向きが
+	// 逆でも気づかない。ポット1000にコール1なら必要エクイティ約0.1%、
+	// ポット1にコール1000なら約99.9% で、モンテカルロの揺れでは反転しない。
+	t.Run("calls a cheap call +EV", func(t *testing.T) {
+		assert.Contains(t, render(1000, 1), i18n.T("shortdeck.learningEvPlus"))
+	})
+
+	t.Run("calls an expensive call -EV", func(t *testing.T) {
+		assert.Contains(t, render(1, 1000), i18n.T("shortdeck.learningEvMinus"))
+	})
+
+	// **コール額が無ければ判定しない。** ポットオッズ 0 のとき「+EV」と出すと、
+	// 何もコールしていない局面で有利判定が出てしまう。
+	t.Run("gives no verdict when there is nothing to call", func(t *testing.T) {
+		out := render(100, 0)
+		assert.Contains(t, out, i18n.T("shortdeck.learningHeader"))
+		assert.NotContains(t, out, i18n.T("shortdeck.learningEvPlus"))
+		assert.NotContains(t, out, i18n.T("shortdeck.learningEvMinus"))
+	})
+
+	// 人間が降りていればエクイティは nil。行ごと出さない。
+	t.Run("says nothing once the human has folded", func(t *testing.T) {
+		h, players := makeShortDeckForPresenter()
+		h.SetPhase(domain.ShortDeckPhaseFlop)
+		h.SetCurrentTurn(0)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 14, false))
+		players[0].SetFolded(true)
+		assert.NotContains(t, p.Output(h, nil), i18n.T("shortdeck.learningHeader"))
+	})
 }
