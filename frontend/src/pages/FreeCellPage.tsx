@@ -79,6 +79,24 @@ const FC_TUTORIAL_STEPS: TutorialStep[] = [
 /** Renders the FreeCell solitaire game page with tableau, free cells, and foundation. */
 export const FreeCellPage = withTutorial(FreeCellPageContent, 'freecell', FC_TUTORIAL_STEPS);
 /** Inner content of the FreeCell page, wrapped by TutorialProvider. */
+/**
+ * Render one side of a hint as "<zone> <col>", or just the zone when the hint
+ * carries no column.
+ *
+ * **ゾーン識別子を i18n キーに使わない。** ドメインが返す "tableau" などをそのまま
+ * `t()` に渡していたので、ゾーン名を変えたり足したりすると翻訳キーが静かに壊れ、
+ * コンパイルでも型でも検出できなかった (#5494)。姉妹の Solitaire 系ページ
+ * (FlowerGarden ほか) と同じ frontendHint.* 名前空間に寄せる。
+ *
+ * 未知のゾーンはキーではなく識別子そのものを返す -- 生の "tableau" が出るほうが、
+ * 翻訳キー文字列が画面に出るより読める。
+ */
+function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => string, zone: string, col: number): string {
+  const label =
+    zone === 'tableau' || zone === 'freecell' || zone === 'foundation' ? t(`frontendHint.zone.${zone}`) : zone;
+  return col >= 0 ? `${label} ${col}` : label;
+}
+
 function FreeCellPageContent() {
   const {
     t,
@@ -488,12 +506,9 @@ function FreeCellPageContent() {
 
             {/* Hint display */}
             {hint && (
-              <div className="text-ds-warning text-sm mb-2">
-                {/* Zone identifiers (tableau/freecell/foundation) double as i18n
-                    keys, so they localize instead of showing raw English. */}
-                {t('hintAvailable')}: {t(hint.fromZone)}
-                {hint.fromCol >= 0 ? ` ${hint.fromCol}` : ''} → {t(hint.toZone)}
-                {hint.toCol >= 0 ? ` ${hint.toCol}` : ''}
+              <div className="text-ds-warning text-sm mb-2" data-testid="fc-hint-line">
+                {t('hintAvailable')}: {formatHintZone(t, hint.fromZone, hint.fromCol)} →{' '}
+                {formatHintZone(t, hint.toZone, hint.toCol)}
               </div>
             )}
             <div className="flex justify-center">
