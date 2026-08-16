@@ -22,5 +22,6 @@
   "playerLoses": "Player loses.",
   "push": "Push.",
   "totalPayoutLine": "total payout: {{payout}}",
-  "helpExampleBet": "  b 100                bet 100 chips"
+  "helpExampleBet": "  b 100                bet 100 chips",
+  "warInsufficientChips": "Not enough chips. Going to war costs {{ante}} chips"
 }

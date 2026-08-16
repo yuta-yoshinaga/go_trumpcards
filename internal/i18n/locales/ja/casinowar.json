@@ -22,5 +22,6 @@
   "playerLoses": "プレイヤーの負け。",
   "push": "プッシュ。",
   "totalPayoutLine": "合計払戻し: {{payout}}",
-  "helpExampleBet": "  b 100              100 チップを賭ける"
+  "helpExampleBet": "  b 100              100 チップを賭ける",
+  "warInsufficientChips": "チップが足りません。ウォーには {{ante}} チップが必要です"
 }
