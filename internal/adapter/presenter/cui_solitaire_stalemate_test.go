@@ -300,14 +300,41 @@ func TestSolitaireCuiUndoToEscapeHint(t *testing.T) {
 
 		assertEscapeHint(t, new(YukonCuiPresenter).Output(m, nil))
 	})
+	// Pyramid and Gaps are mock-based like the 22 above, but their fixtures use a
+	// differently named constructor (setupXCuiMock returning the mock) rather than a
+	// setupXCuiMockDefaults(mock) helper, so they are wired here by hand.
+	t.Run("Pyramid", func(t *testing.T) {
+		m := setupPyramidCuiMock()
+		m.ExpectedCalls = filterCalls(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = filterCalls(m.ExpectedCalls, "IsStalemate")
+		m.ExpectedCalls = filterCalls(m.ExpectedCalls, "UndoToEscape")
+		m.On("GetPhase").Return(domain.PyramidPhasePlaying)
+		m.On("IsStalemate").Return(true)
+		m.On("UndoToEscape").Return(escapeMoves)
+
+		assertEscapeHint(t, new(PyramidCuiPresenter).Output(m, nil))
+	})
+
+	t.Run("Gaps", func(t *testing.T) {
+		m := setupGapsCuiMock()
+		m.ExpectedCalls = filterCalls(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = filterCalls(m.ExpectedCalls, "IsStalemate")
+		m.ExpectedCalls = filterCalls(m.ExpectedCalls, "UndoToEscape")
+		m.On("GetPhase").Return(domain.GapsPhasePlaying)
+		m.On("IsStalemate").Return(true)
+		m.On("UndoToEscape").Return(escapeMoves)
+
+		assertEscapeHint(t, new(GapsCuiPresenter).Output(m, nil))
+	})
 }
 
 // TestEverySolitaireStalemateBranchReportsTheEscapeCount is a structural guard.
 //
-// Six of the wired presenters (BakersGame, EightOff, FreeCell, Penguin, Pyramid,
-// SeahavenTowers) drive their tests from real domain objects rather than mocks, and a
+// Four of the wired presenters (BakersGame, EightOff, FreeCell, SeahavenTowers)
+// drive their tests from real domain objects rather than mocks, and a
 // freshly reset game has no undo history, so UndoToEscape() returns 0 and the
 // behavioural test above cannot reach them. This parses every CUI presenter instead.
+// (Penguin mixes both styles and is likewise only covered structurally.)
 //
 // The rule is keyed on capability, not on a hardcoded list of game names: a presenter
 // must report UndoToEscape() in its IsStalemate() branch exactly when its own game
