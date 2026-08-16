@@ -32,7 +32,6 @@ const defaultProps = {
   isHumanTurn: false,
   gameEndFlag: false,
   loading: false,
-  highlightedCardIdx: -1,
   onDraw: vi.fn(),
 };
 
