@@ -70,7 +70,7 @@ func highCardFlushDispatch(bc *baseController, w http.ResponseWriter, hi usecase
 	case "f", "fold":
 		bc.writePresenterResponse(w, hi.Fold())
 	default:
-		return dispatchResetAndLog(param.Command, bc, w, hi.Reset, hi.ActionLog)
+		return dispatchResetHintAndLog(param.Command, bc, w, hi.Reset, hi.Hint, hi.ActionLog)
 	}
 	return true
 }

@@ -12,7 +12,7 @@ export interface KaiserConfigInput {
 }
 
 /** Commands the /kaiser/exec endpoint accepts. */
-export type KaiserCommand = 'reset' | 'bid' | 'pass' | 'trump' | 'discard' | 'play' | 'next' | 'log';
+export type KaiserCommand = 'reset' | 'bid' | 'pass' | 'trump' | 'discard' | 'play' | 'next' | 'log' | 'hint';
 
 /** Options carried alongside a Kaiser command. */
 export interface KaiserExecOptions {

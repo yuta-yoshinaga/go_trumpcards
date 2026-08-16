@@ -53,7 +53,7 @@ func redDogDispatch(bc *baseController, w http.ResponseWriter, ri usecase.RedDog
 	case "s", "stay":
 		bc.writePresenterResponse(w, ri.Stay())
 	default:
-		return dispatchResetAndLog(param.Command, bc, w, ri.Reset, ri.ActionLog)
+		return dispatchResetHintAndLog(param.Command, bc, w, ri.Reset, ri.Hint, ri.ActionLog)
 	}
 	return true
 }

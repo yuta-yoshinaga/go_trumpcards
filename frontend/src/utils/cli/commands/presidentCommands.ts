@@ -18,6 +18,7 @@ export function parsePresidentCommand(input: string): CliParseResult<PresidentCl
     return { args: ['play', indices] };
   }
   if (cmd === 'log' || cmd === 'l') return { args: ['log'] };
+  if (cmd === 'hint' || cmd === 'h') return { args: ['hint'] };
   return { error: `Unknown command: ${cmd}` };
 }
 
@@ -43,4 +44,5 @@ export const PRESIDENT_HELP = [
   'p [idx ...] - Play cards at indices (no index = pass)',
   'r/reset    - Reset game',
   'l/log      - Show action log',
+  'h/hint     - Get a hint',
 ] as const;

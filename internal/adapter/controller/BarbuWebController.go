@@ -125,7 +125,7 @@ func barbuDispatch(bc *baseController, w http.ResponseWriter, bi usecase.BarbuIn
 		}
 		bc.writePresenterResponse(w, bi.Play(param.HandIndex, param.TableIndices))
 	default:
-		return dispatchLog(param.Command, bc, w, bi.ActionLog)
+		return dispatchHintAndLog(param.Command, bc, w, bi.Hint, bi.ActionLog)
 	}
 	return true
 }

@@ -6,6 +6,6 @@ import { gameExec } from '../gameExec';
 
 /** API client for the Caribbean Stud Poker /caribbeanstud/exec endpoint. */
 export const caribbeanstudApi = {
-  exec: (command: 'reset' | 'bet' | 'play' | 'fold' | 'log', amount?: number, jackpotBet?: number) =>
+  exec: (command: 'reset' | 'bet' | 'play' | 'fold' | 'log' | 'hint', amount?: number, jackpotBet?: number) =>
     gameExec<CaribbeanStudResponse>('caribbeanstud', { command, amount, jackpotBet }),
 };

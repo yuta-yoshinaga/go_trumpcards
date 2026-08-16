@@ -4,7 +4,7 @@ import type { CliParseResult } from '../types';
 
 type CasinoHoldemArgs = Parameters<typeof casinoholdemApi.exec>;
 
-const VALID_COMMANDS = ['b', 'bet', 'c', 'call', 'f', 'fold', 'log', 'r', 'reset', 'help', '?'];
+const VALID_COMMANDS = ['b', 'bet', 'c', 'call', 'f', 'fold', 'log', 'r', 'reset', 'h', 'hint', 'help', '?'];
 
 /** Parse a Casino Hold'em CLI command into API exec arguments. */
 export function parseCasinoholdemCommand(input: string): CliParseResult<CasinoHoldemArgs> {
@@ -33,6 +33,9 @@ export function parseCasinoholdemCommand(input: string): CliParseResult<CasinoHo
     case 'r':
     case 'reset':
       return { args: ['reset'] };
+    case 'h':
+    case 'hint':
+      return { args: ['hint'] };
     default: {
       const suggestion = suggestCommand(cmd, VALID_COMMANDS);
       if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
@@ -48,4 +51,5 @@ export const CASINOHOLDEM_HELP: string[] = [
   'f/fold       - Fold (forfeit ante)',
   'log          - Show action log',
   'r/reset      - Reset game',
+  'h/hint       - Get a hint',
 ];

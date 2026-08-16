@@ -64,7 +64,7 @@ func mississippiStudDispatch(bc *baseController, w http.ResponseWriter, mi useca
 	case "f", "fold":
 		bc.writePresenterResponse(w, mi.Fold())
 	default:
-		return dispatchResetAndLog(param.Command, bc, w, mi.Reset, mi.ActionLog)
+		return dispatchResetHintAndLog(param.Command, bc, w, mi.Reset, mi.Hint, mi.ActionLog)
 	}
 	return true
 }

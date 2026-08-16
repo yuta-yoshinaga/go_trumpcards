@@ -45,6 +45,9 @@ export function parseSixCardGolfCommand(input: string): CliParseResult<SixCardGo
     case 'l':
     case 'log':
       return { args: [{ command: 'log' }] };
+    case 'h':
+    case 'hint':
+      return { args: [{ command: 'hint' }] };
     default:
       return { error: i18n.t('sixcardgolf:cliUnknown', { cmd: cmd ?? '' }) };
   }

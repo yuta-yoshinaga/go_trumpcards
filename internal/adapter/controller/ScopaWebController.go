@@ -117,7 +117,7 @@ func scopaDispatch(bc *baseController, w http.ResponseWriter, si usecase.ScopaIn
 		}
 		bc.writePresenterResponse(w, si.Play(param.HandIndex, param.TableIndices))
 	default:
-		return dispatchLog(param.Command, bc, w, si.ActionLog)
+		return dispatchHintAndLog(param.Command, bc, w, si.Hint, si.ActionLog)
 	}
 	return true
 }

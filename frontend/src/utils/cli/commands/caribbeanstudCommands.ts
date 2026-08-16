@@ -4,7 +4,7 @@ import type { CliParseResult } from '../types';
 
 type CaribbeanStudArgs = Parameters<typeof caribbeanstudApi.exec>;
 
-const VALID_COMMANDS = ['b', 'bet', 'p', 'play', 'f', 'fold', 'log', 'r', 'reset', 'help', '?'];
+const VALID_COMMANDS = ['b', 'bet', 'p', 'play', 'f', 'fold', 'log', 'r', 'reset', 'h', 'hint', 'help', '?'];
 
 /** Parse a Caribbean Stud Poker CLI command into API exec arguments. */
 export function parseCaribbeanstudCommand(input: string): CliParseResult<CaribbeanStudArgs> {
@@ -33,6 +33,9 @@ export function parseCaribbeanstudCommand(input: string): CliParseResult<Caribbe
     case 'r':
     case 'reset':
       return { args: ['reset'] };
+    case 'h':
+    case 'hint':
+      return { args: ['hint'] };
     default: {
       const suggestion = suggestCommand(cmd, VALID_COMMANDS);
       if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
@@ -48,4 +51,5 @@ export const CARIBBEANSTUD_HELP: string[] = [
   'f/fold       - Fold hand',
   'log          - Show action log',
   'r/reset      - Reset game',
+  'h/hint       - Get a hint',
 ];

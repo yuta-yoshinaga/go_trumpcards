@@ -4,7 +4,7 @@ import type { CliParseResult } from '../types';
 
 type ChinesePokerArgs = Parameters<typeof chinesepokerApi.exec>;
 
-const VALID_COMMANDS = ['b', 'bet', 's', 'set', 'r', 'reset', 'log', 'l'];
+const VALID_COMMANDS = ['b', 'bet', 's', 'set', 'r', 'reset', 'log', 'l', 'h', 'hint'];
 
 /** Parse a CLI input string into Chinese Poker API arguments. */
 export function parseChinesepokerCommand(input: string): CliParseResult<ChinesePokerArgs> {
@@ -40,6 +40,9 @@ export function parseChinesepokerCommand(input: string): CliParseResult<ChineseP
     case 'r':
     case 'reset':
       return { args: ['reset'] };
+    case 'h':
+    case 'hint':
+      return { args: ['hint'] };
     default: {
       const suggestion = suggestCommand(cmd, VALID_COMMANDS);
       if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
@@ -54,4 +57,5 @@ export const CHINESEPOKER_HELP: string[] = [
   's <f0 f1 f2 m0 m1 m2 m3 m4>      - Set hands (3 front + 5 middle indices)',
   'r                                 - Reset / new game',
   'l                                 - Action log',
+  'h/hint       - Get a hint',
 ];

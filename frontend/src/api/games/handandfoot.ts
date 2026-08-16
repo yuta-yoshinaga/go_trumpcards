@@ -13,7 +13,17 @@ export interface HandAndFootConfigInput {
 /** API client for the Hand and Foot /handandfoot/exec endpoint. */
 export const handandfootApi = {
   exec: (
-    command: 'reset' | 'drawstock' | 'drawdiscard' | 'meld' | 'skipmeld' | 'discard' | 'goout' | 'nextround' | 'log',
+    command:
+      | 'reset'
+      | 'drawstock'
+      | 'drawdiscard'
+      | 'meld'
+      | 'skipmeld'
+      | 'discard'
+      | 'goout'
+      | 'nextround'
+      | 'log'
+      | 'hint',
     cardIndex?: number,
     config?: HandAndFootConfigInput,
     naturalPairIndices?: number[],

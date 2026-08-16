@@ -119,5 +119,6 @@ func handAndFootDispatch(bc *baseController, w http.ResponseWriter, ci usecase.H
 		goOut:           ci.GoOut,
 		nextRound:       ci.NextRound,
 		actionLog:       ci.ActionLog,
+		hint:            ci.Hint,
 	}, param.CardIndex, newDefault)
 }

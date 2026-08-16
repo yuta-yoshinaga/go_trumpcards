@@ -20,7 +20,8 @@ export type SevenBridgeCommand =
   | 'layoff'
   | 'discard'
   | 'nextround'
-  | 'log';
+  | 'log'
+  | 'hint';
 
 /** API client for the Seven Bridge /sevenbridge/exec endpoint. */
 export const sevenBridgeApi = {

@@ -13,7 +13,7 @@ export interface MacauConfigInput {
 /** API client for the Macau /macau/exec endpoint. */
 export const macauApi = {
   exec: (
-    command: 'reset' | 'play' | 'draw' | 'suit' | 'declare' | 'skipdeclare' | 'nextround',
+    command: 'reset' | 'play' | 'draw' | 'suit' | 'declare' | 'skipdeclare' | 'nextround' | 'hint',
     cardIndex?: number,
     suit?: number,
     config?: MacauConfigInput,

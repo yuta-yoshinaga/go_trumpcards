@@ -7,7 +7,7 @@ import { gameExec } from '../gameExec';
 /** API client for the Chinese Poker /chinesepoker/exec endpoint. */
 export const chinesepokerApi = {
   exec: (
-    command: 'reset' | 'bet' | 'set' | 'log',
+    command: 'reset' | 'bet' | 'set' | 'log' | 'hint',
     amount?: number,
     frontIndices?: number[],
     middleIndices?: number[],

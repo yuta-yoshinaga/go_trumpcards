@@ -11,7 +11,7 @@ export interface ScopaConfigInput {
 }
 
 /** Command verbs accepted by the Scopa /scopa/exec endpoint (short forms). */
-export type ScopaCommand = 'r' | 'n' | 'p' | 'log';
+export type ScopaCommand = 'r' | 'n' | 'p' | 'log' | 'hint';
 
 /** Extra payload fields for the Scopa /scopa/exec endpoint. */
 export interface ScopaExecParams {

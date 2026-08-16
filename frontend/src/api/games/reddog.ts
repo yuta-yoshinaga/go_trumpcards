@@ -5,4 +5,6 @@ import type { RedDogResponse } from '../../types/card';
 import { createBetAmountApi } from '../gameExec';
 
 /** API client for the Red Dog /reddog/exec endpoint. */
-export const reddogApi = createBetAmountApi<RedDogResponse, 'reset' | 'bet' | 'raise' | 'stay' | 'log'>('reddog');
+export const reddogApi = createBetAmountApi<RedDogResponse, 'reset' | 'bet' | 'raise' | 'stay' | 'log' | 'hint'>(
+  'reddog',
+);
