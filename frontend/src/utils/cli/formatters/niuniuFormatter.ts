@@ -1,4 +1,5 @@
 import type { NiuNiuHand, NiuNiuResponse } from '../../../types/card';
+import { niuniuBankerResultText, niuniuRankText } from '../../niuniuRankText';
 import { formatCard, formatHeader, formatSeparator } from '../formatterBase';
 
 /**
@@ -13,7 +14,7 @@ function formatHand(hand: NiuNiuHand): string {
   const inCombo = new Set(hand.comboIdx);
   const cards = hand.cards.map((c, i) => `${inCombo.has(i) ? '*' : ''}${c ? formatCard(c) : '[??]'}`).join(' ');
   const mult = hand.multiplier > 1 ? ` (x${hand.multiplier})` : '';
-  return `${cards} ${hand.rankLabel}${mult}`;
+  return `${cards} ${niuniuRankText(hand.rankKey)}${mult}`;
 }
 
 /** Format a Niu Niu game state as terminal text. */
@@ -35,7 +36,8 @@ export function formatNiuNiuState(state: NiuNiuResponse): string {
   });
   lines.push('----------');
 
-  if (state.lastResult) lines.push(state.lastResult);
+  const result = niuniuBankerResultText(state.bankerRankKey);
+  if (result) lines.push(result);
   if (state.message) lines.push(state.message);
 
   lines.push(formatSeparator());

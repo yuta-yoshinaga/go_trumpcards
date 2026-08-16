@@ -58,7 +58,8 @@ func (_m *MockNiuNiuGame) GetBankerHand() *domain.NiuNiuHand {
 	return v.(*domain.NiuNiuHand)
 }
 
-func (_m *MockNiuNiuGame) GetLastResult() string {
+// GetBankerRankKey mocks the GetBankerRankKey call.
+func (_m *MockNiuNiuGame) GetBankerRankKey() string {
 	ret := _m.Called()
 	return ret.String(0)
 }
@@ -66,11 +67,6 @@ func (_m *MockNiuNiuGame) GetLastResult() string {
 func (_m *MockNiuNiuGame) GetGameEndFlag() bool {
 	ret := _m.Called()
 	return ret.Bool(0)
-}
-
-func (_m *MockNiuNiuGame) GetRankLabel(rank domain.NiuNiuRank) string {
-	ret := _m.Called(rank)
-	return ret.String(0)
 }
 
 func (_m *MockNiuNiuGame) GetMultiplier(rank domain.NiuNiuRank) int {

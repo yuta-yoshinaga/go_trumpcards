@@ -10,7 +10,7 @@ function hand(overrides?: Partial<NiuNiuHand>): NiuNiuHand {
     bet: 100,
     comboIdx: [0, 1, 2],
     rank: 10,
-    rankLabel: '牛牛',
+    rankKey: 'niuniu',
     multiplier: 3,
     payout: 0,
     hidden: false,
@@ -30,7 +30,7 @@ function makeState(overrides?: Partial<NiuNiuResponse>): NiuNiuResponse {
     bankerIdx: 3,
     chips: 900,
     maxMultiplier: 3,
-    lastResult: '',
+    bankerRankKey: '',
     phase: 1,
     message: '',
     ...overrides,
@@ -59,7 +59,7 @@ describe('formatNiuNiuState', () => {
     expect(formatNiuNiuState(makeState())).toContain('(x3)');
     const even = formatNiuNiuState(
       makeState({
-        seats: [{ name: 'あなた', isCpu: false, hand: hand({ rank: 3, rankLabel: '牛3', multiplier: 1 }) }],
+        seats: [{ name: 'あなた', isCpu: false, hand: hand({ rank: 3, rankKey: 'n3', multiplier: 1 }) }],
         bankerHand: undefined,
       }),
     );
@@ -72,11 +72,11 @@ describe('formatNiuNiuState', () => {
     const result = formatNiuNiuState(
       makeState({
         phase: 2,
-        lastResult: '親: 牛牛',
+        bankerRankKey: 'niuniu',
         bankerHand: hand({
           hidden: true,
           cards: [null, null, null, null, null],
-          rankLabel: '',
+          rankKey: '',
           comboIdx: [],
           multiplier: 0,
         }),
@@ -94,7 +94,7 @@ describe('formatNiuNiuState', () => {
     const result = formatNiuNiuState(
       makeState({
         seats: [
-          { name: 'あなた', isCpu: false, hand: hand({ rank: 0, rankLabel: '無牛', multiplier: 1, comboIdx: [] }) },
+          { name: 'あなた', isCpu: false, hand: hand({ rank: 0, rankKey: 'none', multiplier: 1, comboIdx: [] }) },
         ],
         bankerHand: undefined,
       }),

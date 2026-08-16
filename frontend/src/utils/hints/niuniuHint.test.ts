@@ -9,7 +9,7 @@ function base(overrides: Partial<NiuNiuResponse> = {}) {
     bankerIdx: 1,
     chips: 300,
     maxMultiplier: 3,
-    lastResult: '',
+    bankerRankKey: '',
     phase: NiuNiuPhase.BET,
     message: '',
     ...overrides,

@@ -11,7 +11,6 @@
   "betLabel": "Choose your stake",
   "betAmount": "{{amount}}",
   "placeBet": "Choose your stake",
-  "roundOver": "{{result}}",
   "nextRound": "Next round",
   "comboHint": "The three cards marked ★ sum to a multiple of ten",
   "landscapeBanner": "Landscape orientation is recommended",
@@ -30,5 +29,9 @@
     "niuniuStakeCap": "Your cap is chips divided by the top multiplier — a banker Niu Niu pays three times",
     "niuniuStackTooShort": "Your stack cannot cover the top multiplier on any stake"
   },
-  "betTooHigh": "Not enough chips — up to {{multiplier}}x means {{needed}} are needed"
+  "betTooHigh": "Not enough chips — up to {{multiplier}}x means {{needed}} are needed",
+  "rankNone": "No Niu",
+  "rankNiuNiu": "Niu Niu",
+  "rankN": "Niu {{n}}",
+  "bankerResult": "Banker: {{rank}}"
 }

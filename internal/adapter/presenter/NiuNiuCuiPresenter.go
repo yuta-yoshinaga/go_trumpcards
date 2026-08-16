@@ -40,7 +40,7 @@ func niuNiuHandLine(n interfaces.NiuNiuGame, h *domain.NiuNiuHand, hide bool) st
 		}
 		parts[i] = s
 	}
-	line := strings.Join(parts, " ") + " " + color.Bold(n.GetRankLabel(h.GetRank()))
+	line := strings.Join(parts, " ") + " " + color.Bold(niuNiuRankText(domain.NiuNiuRankKey(h.GetRank())))
 	if m := n.GetMultiplier(h.GetRank()); m > 1 {
 		line += i18n.Tf("niuniu.multiplierInline", "mult", strconv.Itoa(m))
 	}
@@ -80,7 +80,7 @@ func (np *NiuNiuCuiPresenter) Output(n interfaces.NiuNiuGame, lastErr error) str
 	cuiErrorBlock(&sb, lastErr)
 
 	if ended {
-		sb.WriteString(color.Green(n.GetLastResult()) + "\n")
+		sb.WriteString(color.Green(niuNiuBankerResultLine(n.GetBankerRankKey())) + "\n")
 		sb.WriteString(i18n.T("niuniu.nextRound") + "\n")
 	} else {
 		sb.WriteString(i18n.T("niuniu.placeBet") + "\n")
@@ -95,4 +95,34 @@ func (np *NiuNiuCuiPresenter) ActionLogOutput(n interfaces.NiuNiuGame) string {
 		return actionLogToText(nil)
 	}
 	return actionLogToText(n.GetActionLog())
+}
+
+// niuNiuRankText は格のキーを現在のロケールの表示名にする。
+//
+// ドメインの NiuNiuRankLabel は "牛牛" 固定で、手札行と親の見出しの両方が
+// それを素通しにしていたため、英語ロケールでも日本語が出ていた (#5567)。
+// 格が伏せられている間はキーが空で、その場合は何も表示しない。
+func niuNiuRankText(rankKey string) string {
+	switch {
+	case rankKey == "none":
+		return i18n.T("niuniu.rankNone")
+	case rankKey == "niuniu":
+		return i18n.T("niuniu.rankNiuNiu")
+	case strings.HasPrefix(rankKey, "n"):
+		return i18n.Tf("niuniu.rankN", "n", strings.TrimPrefix(rankKey, "n"))
+	default:
+		return ""
+	}
+}
+
+// niuNiuBankerResultLine はラウンド終了の見出しを組み立てる。
+//
+// 以前は GetLastResult() の "親: 牛牛" をそのまま出しており、英語ロケールでも
+// 日本語のままだった (#5567)。格はキーで受け取り、文言はここで i18n に通す。
+func niuNiuBankerResultLine(rankKey string) string {
+	rank := niuNiuRankText(rankKey)
+	if rank == "" {
+		return ""
+	}
+	return i18n.Tf("niuniu.bankerResult", "rank", rank)
 }

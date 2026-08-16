@@ -28,7 +28,7 @@ const baseState: NiuNiuResponse = {
   bankerIdx: 3,
   chips: 1000,
   maxMultiplier: 3,
-  lastResult: '',
+  bankerRankKey: '',
   phase: 1,
   message: '',
 };

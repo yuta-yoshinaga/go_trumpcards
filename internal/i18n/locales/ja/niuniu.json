@@ -9,5 +9,9 @@
   "multiplierInline": " (x{{mult}})",
   "placeBet": "ベット額を入力してください (b <額>)。* の3枚が牛を作った札です",
   "nextRound": "r で次の局へ",
-  "helpExampleBet": "  b 100                   100 チップを賭ける"
+  "helpExampleBet": "  b 100                   100 チップを賭ける",
+  "rankNone": "無牛",
+  "rankNiuNiu": "牛牛",
+  "rankN": "牛{{n}}",
+  "bankerResult": "親: {{rank}}"
 }

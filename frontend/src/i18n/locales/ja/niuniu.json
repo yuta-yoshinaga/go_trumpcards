@@ -11,7 +11,6 @@
   "betLabel": "賭け金を選んでください",
   "betAmount": "{{amount}}",
   "placeBet": "賭け金を選んでください",
-  "roundOver": "{{result}}",
   "nextRound": "次の局へ",
   "comboHint": "★ の3枚が10の倍数を作っています",
   "landscapeBanner": "横画面での表示を推奨します",
@@ -30,5 +29,9 @@
     "niuniuStakeCap": "賭けられるのは持ち点 ÷ 最大倍率までです。親のニウニウは 3 倍払いになります",
     "niuniuStackTooShort": "最大倍率を賭けきれる持ち点がありません"
   },
-  "betTooHigh": "所持チップが不足しています（最大{{multiplier}}倍で{{needed}}チップ必要）"
+  "betTooHigh": "所持チップが不足しています（最大{{multiplier}}倍で{{needed}}チップ必要）",
+  "rankNone": "無牛",
+  "rankNiuNiu": "牛牛",
+  "rankN": "牛{{n}}",
+  "bankerResult": "親: {{rank}}"
 }
