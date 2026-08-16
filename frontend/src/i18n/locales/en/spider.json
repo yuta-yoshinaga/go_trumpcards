@@ -31,7 +31,7 @@
   "cannotDealEmptyColExists": "Fill every empty column before dealing",
   "tutorial": {
     "stockPile": "Stock pile. Click to deal one card to each column. All columns must have cards.",
-    "tableau": "Tableau columns. Arrange cards in same-suit descending order. Ace-to-King sequences are removed.",
+    "tableau": "Tableau columns. A single card can go on any card one rank higher, regardless of suit. Only a same-suit descending run can be moved as a group. A King-to-Ace same-suit run is removed automatically.",
     "completedSuits": "Number of completed suits. Complete all 8 to win.",
     "controls": "Control buttons: Undo, Hint, Auto-complete.",
     "difficulty": "Choose difficulty: 1 suit (easy), 2 suits (medium), 4 suits (hard).",
