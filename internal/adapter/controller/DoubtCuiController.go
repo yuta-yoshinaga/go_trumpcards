@@ -32,6 +32,7 @@ func NewDoubtCuiController(di usecase.DoubtInteractorIF) *DoubtCuiController {
 //	sw / setwindow   → ダウト待機秒数設定 (1-60)
 //	sm / setmemory   → CPU記憶力設定 (0=Easy, 1=Normal, 2=Hard)
 //	sp / setpenalty  → ペナルティドロー上限設定 (0=無制限, >0=上限)
+//	sh / sethesitation → CPU の迷い時間演出 (0=OFF, 1=ON)
 func (c *DoubtCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
@@ -42,6 +43,7 @@ func (c *DoubtCuiController) Exec(command string) string {
 		[]string{
 			"p", "play", "d", "doubt", "s", "skip", "sw", "setwindow",
 			"sm", "setmemory", "smetaai", "smai", "rp", "resetprofile", "sp", "setpenalty",
+			"sh", "sethesitation",
 			"log", "l",
 		},
 		func(cmd string, args []string) (string, bool) {
@@ -90,6 +92,12 @@ func (c *DoubtCuiController) Exec(command string) string {
 				return cuiutil.WithParsedIntKeys(args, "metaAiFlagRequired0Off1On", "invalidMetaAiFlag01", 0, 1, func(v int) string {
 					cfg := c.di.GetConfig()
 					cfg.CpuMetaAI = v == 1
+					return c.di.ResetWithConfig(cfg, nil)
+				})
+			case "sh", "sethesitation":
+				return cuiutil.WithParsedIntKeys(args, "hesitationFlagRequired0Off1On", "invalidHesitationFlag01", 0, 1, func(v int) string {
+					cfg := c.di.GetConfig()
+					cfg.CpuHesitationEnabled = v == 1
 					return c.di.ResetWithConfig(cfg, nil)
 				})
 			case "rp", "resetprofile":
