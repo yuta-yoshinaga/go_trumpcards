@@ -32,5 +32,7 @@
   "promptHonestValue": "正直に申告するなら: {{value}}",
   "promptPlayHelp": "p <値> <idx...>・・・カードを出す",
   "tell": "（そわそわしている…）",
-  "helpLog": "  l                    行動ログを表示"
+  "helpLog": "  l                    行動ログを表示",
+  "helpSetHesitation": "  sh <0|1>             CPU hesitation delay (0=OFF, 1=ON)",
+  "cpuThinkTime": "({{sec}}秒)"
 }

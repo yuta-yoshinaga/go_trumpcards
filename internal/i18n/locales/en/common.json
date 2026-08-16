@@ -585,5 +585,7 @@
   "claimNeedsHalfSuitAndHolders": "Claim needs a half-suit and all six holders (e.g. c 0 0 0 2 2 4 4).",
   "layoffNeedsThreeInts": "Layoff needs three integers: <owner> <meldIdx> <cardIdx>.",
   "giveExactlyNIndexes": "Give exactly {{n}} card indexes.",
-  "notes": "Notes:"
+  "notes": "Notes:",
+  "hesitationFlagRequired0Off1On": "CPU hesitation flag is required (0=OFF, 1=ON).",
+  "invalidHesitationFlag01": "Invalid CPU hesitation flag: {{val}}. Please enter 0-1."
 }

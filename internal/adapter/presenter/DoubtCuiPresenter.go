@@ -99,6 +99,15 @@ func (p *DoubtCuiPresenter) Output(d interfaces.DoubtGame, lastErr error) string
 				if action.HasTell {
 					line += " " + color.Yellow(i18n.T("doubt.tell"))
 				}
+				// **間の長さもブラフの合図。** ブラフは 300-500ms か 1200-1800ms、
+				// 正直は 600-1000ms で範囲が重ならない。Web はこの秒数をそのまま
+				// 待ってプレイヤーに体感させるが、CUI は待てないので数値で出す。
+				// 「速い/遅い」と要約はしない -- 体感より綺麗な手掛かりになってしまう。
+				// 0 は「計測して 0 だった」ではなく設定 OFF なので、何も出さない。
+				if action.HesitationMs > 0 {
+					line += " " + i18n.Tf("doubt.cpuThinkTime",
+						"sec", strconv.FormatFloat(float64(action.HesitationMs)/1000, 'f', 1, 64))
+				}
 				b.WriteString(line + "\n")
 			}
 		}

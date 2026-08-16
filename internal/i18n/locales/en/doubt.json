@@ -32,5 +32,7 @@
   "promptHonestValue": "An honest claim would be: {{value}}",
   "promptPlayHelp": "p <value> <idx...>: play cards",
   "tell": "(looks nervous…)",
-  "helpLog": "  l                    show the action log"
+  "helpLog": "  l                    show the action log",
+  "helpSetHesitation": "  sh <0|1>             CPU hesitation delay (0=OFF, 1=ON)",
+  "cpuThinkTime": "({{sec}}s)"
 }

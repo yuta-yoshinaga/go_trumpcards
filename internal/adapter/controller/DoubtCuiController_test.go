@@ -333,6 +333,37 @@ func TestDoubtCuiController_Exec(t *testing.T) {
 		result := c.Exec("")
 		assert.Contains(t, result, "'help' でコマンド一覧を表示します。")
 	})
+
+	t.Run("sh 1 turns the delay on", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewDoubtCuiController(m)
+		assert.Equal(t, mockOutput, c.Exec("sh 1"))
+		expected := domain.DefaultDoubtConfig()
+		expected.CpuHesitationEnabled = true
+		m.AssertCalled(t, "ResetWithConfig", expected, mock.Anything)
+	})
+
+	t.Run("sethesitation 0 turns it off", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewDoubtCuiController(m)
+		assert.Equal(t, mockOutput, c.Exec("sethesitation 0"))
+		expected := domain.DefaultDoubtConfig()
+		expected.CpuHesitationEnabled = false
+		m.AssertCalled(t, "ResetWithConfig", expected, mock.Anything)
+	})
+
+	t.Run("sh with no argument is refused", func(t *testing.T) {
+		c := controller.NewDoubtCuiController(newMock())
+		assert.True(t, msgRejected(c.Exec("sh")))
+	})
+
+	t.Run("sh rejects a non-boolean value", func(t *testing.T) {
+		c := controller.NewDoubtCuiController(newMock())
+		for _, bad := range []string{"abc", "-1", "2"} {
+			assert.Contains(t, c.Exec("sh "+bad), msgStem("invalidHesitationFlag01"), bad)
+		}
+	})
+
 }
 
 // #5390: `p abc` は宣言する値を 0 に落として通っていた。

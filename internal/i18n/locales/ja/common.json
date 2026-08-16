@@ -585,5 +585,7 @@
   "claimNeedsHalfSuitAndHolders": "claim にはハーフスートと 6 人分の持ち主が要ります (例: c 0 0 0 2 2 4 4)。",
   "layoffNeedsThreeInts": "レイオフには整数が 3 つ要ります: <owner> <meldIdx> <cardIdx>。",
   "giveExactlyNIndexes": "手札の番号をちょうど {{n}} 個指定してください。",
-  "notes": "補足:"
+  "notes": "補足:",
+  "hesitationFlagRequired0Off1On": "CPU の迷い時間演出の有無を指定してください (0=OFF, 1=ON)。",
+  "invalidHesitationFlag01": "CPU の迷い時間演出の有無が不正です: {{val}}。0-1 を入力してください。"
 }
