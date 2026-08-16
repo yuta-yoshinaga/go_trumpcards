@@ -33,7 +33,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { computeBaccaratShoeStats } from '../utils/baccaratStats';
 import { BACCARAT_HELP, parseBaccaratCommand } from '../utils/cli/commands/baccaratCommands';
 import { formatBaccaratState } from '../utils/cli/formatters/baccaratFormatter';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 
 const BET_TYPE_LABELS: Record<number, string> = {
@@ -279,7 +279,7 @@ function BaccaratPageContent() {
       parseCommand: parseBaccaratCommand,
       formatResponse: formatBaccaratState,
       helpText: BACCARAT_HELP,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(hint) : null),
+      localCommand: hintLocalCommand(hint),
     }),
     [hint],
   );

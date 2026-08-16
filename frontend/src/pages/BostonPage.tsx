@@ -28,7 +28,7 @@ import { BostonPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { BOSTON_HELP, parseBostonCommand } from '../utils/cli/commands/bostonCommands';
 import { formatBostonState } from '../utils/cli/formatters/bostonFormatter';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 
 /** Suit glyphs by design value (1=Spade … 4=Diamond). */
@@ -115,7 +115,7 @@ function BostonPageContent() {
       parseCommand: parseBostonCommand,
       formatResponse: formatBostonState,
       helpText: BOSTON_HELP,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+      localCommand: hintLocalCommand(frontendHint),
     }),
     [frontendHint],
   );

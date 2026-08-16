@@ -32,7 +32,7 @@ import { SlapjackEventKind, SlapjackPendingKind, SlapjackPhase } from '../types/
 import type { TutorialStep } from '../types/tutorial';
 import { parseSlapjackCommand, slapjackHelp } from '../utils/cli/commands/slapjackCommands';
 import { formatSlapjackState } from '../utils/cli/formatters/slapjackFormatter';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -156,7 +156,7 @@ function SlapjackPageContent() {
       parseCommand: parseSlapjackCommand,
       formatResponse: formatSlapjackState,
       helpText: slapjackHelp(),
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+      localCommand: hintLocalCommand(frontendHint),
     }),
     [i18n.language, frontendHint],
   );

@@ -35,7 +35,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { parseRussianpokerCommand, RUSSIANPOKER_HELP } from '../utils/cli/commands/russianpokerCommands';
 import { formatRussianpokerState } from '../utils/cli/formatters/russianpokerFormatter';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -111,7 +111,7 @@ function RussianPokerPageContent() {
       parseCommand: parseRussianpokerCommand,
       formatResponse: formatRussianpokerState,
       helpText: RUSSIANPOKER_HELP,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+      localCommand: hintLocalCommand(frontendHint),
     }),
     [frontendHint],
   );

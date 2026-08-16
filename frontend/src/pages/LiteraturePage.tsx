@@ -28,7 +28,7 @@ import { LiteraturePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { LITERATURE_HELP, parseLiteratureCommand } from '../utils/cli/commands/literatureCommands';
 import { formatLiteratureState } from '../utils/cli/formatters/literatureFormatter';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 
 /** Half-suit ownership codes (sync: `LiteratureHalfSuitState`). */
@@ -120,7 +120,7 @@ function LiteraturePageContent() {
       parseCommand: parseLiteratureCommand,
       formatResponse: formatLiteratureState,
       helpText: LITERATURE_HELP,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+      localCommand: hintLocalCommand(frontendHint),
     }),
     [frontendHint],
   );

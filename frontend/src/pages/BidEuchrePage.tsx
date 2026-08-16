@@ -28,7 +28,7 @@ import { BidEuchrePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { BIDEUCHRE_HELP, parseBidEuchreCommand } from '../utils/cli/commands/bideuchreCommands';
 import { formatBidEuchreState } from '../utils/cli/formatters/bideuchreFormatter';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 
 /** Declarations, in menu order. **Two of them are no-trump forms.** */
@@ -114,7 +114,7 @@ function BidEuchrePageContent() {
       parseCommand: parseBidEuchreCommand,
       formatResponse: formatBidEuchreState,
       helpText: BIDEUCHRE_HELP,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+      localCommand: hintLocalCommand(frontendHint),
     }),
     [frontendHint],
   );

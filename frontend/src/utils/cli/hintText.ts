@@ -41,3 +41,18 @@ export function hintCliText(hint: HintResult | null): string {
   parts.push(i18n.t(`cli.hintConfidence.${hint.confidence}`));
   return parts.join(' ');
 }
+
+/**
+ * Builds the `localCommand` a page hands to {@link useCliGame}.
+ *
+ * Every page needs the identical three-token lambda, and 73 copies of it are 73
+ * lines no test executes -- the page tests never enter CLI mode. Returning it
+ * from one tested factory keeps the behaviour covered and the call sites to a
+ * single argument.
+ *
+ * Returns `null` for anything that is not a hint request, which is the contract
+ * `localCommand` uses to fall through to the game's own parser.
+ */
+export function hintLocalCommand(hint: HintResult | null): (input: string) => string | null {
+  return (input: string) => (isHintCommand(input) ? hintCliText(hint) : null);
+}

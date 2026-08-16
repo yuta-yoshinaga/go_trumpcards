@@ -40,7 +40,7 @@ import { FiveCardStudPhase, FiveCardStudRebuyPhaseType } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { FIVECARDSTUD_HELP, parseFiveCardStudCommand } from '../utils/cli/commands/fiveCardStudCommands';
 import { formatFiveCardStudState } from '../utils/cli/formatters/fiveCardStudFormatter';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { findPlayerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -133,7 +133,7 @@ export function FiveCardStudPageContent({ gameKey }: { gameKey: FcsPageGameKey }
       parseCommand: parseFiveCardStudCommand,
       formatResponse: (s: FiveCardStudResponse) => formatFiveCardStudState(s, phaseNames),
       helpText: FIVECARDSTUD_HELP,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+      localCommand: hintLocalCommand(frontendHint),
     }),
     [gameKey, phaseNames, frontendHint],
   );

@@ -30,7 +30,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { parseSpoonsCommand, SPOONS_HELP } from '../utils/cli/commands/spoonsCommands';
 import { formatSpoonsState } from '../utils/cli/formatters/spoonsFormatter';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { computeSpoonsRankGroups } from '../utils/spoonsRankGroups';
@@ -144,7 +144,7 @@ function SpoonsPageContent() {
       parseCommand: parseSpoonsCommand,
       formatResponse: formatSpoonsState,
       helpText: SPOONS_HELP,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+      localCommand: hintLocalCommand(frontendHint),
     }),
     [frontendHint],
   );

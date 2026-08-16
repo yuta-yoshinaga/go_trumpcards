@@ -38,7 +38,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardLabel } from '../utils/cardUtils';
 import { DAIFUGO_HELP, parseDaifugoCommand } from '../utils/cli/commands/daifugoCommands';
 import { formatDaifugoState } from '../utils/cli/formatters/daifugoFormatter';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { findPlayerName, playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -124,7 +124,7 @@ function DaifugoPageContent() {
       parseCommand: parseDaifugoCommand,
       formatResponse: formatDaifugoState,
       helpText: DAIFUGO_HELP,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+      localCommand: hintLocalCommand(frontendHint),
     }),
     [frontendHint],
   );

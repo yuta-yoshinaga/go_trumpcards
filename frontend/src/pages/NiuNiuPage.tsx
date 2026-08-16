@@ -27,7 +27,7 @@ import { NiuNiuPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { NIUNIU_HELP, parseNiuNiuCommand } from '../utils/cli/commands/niuniuCommands';
 import { formatNiuNiuState } from '../utils/cli/formatters/niuniuFormatter';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 
 const BET_OPTIONS = [10, 50, 100, 500];
@@ -64,7 +64,7 @@ function NiuNiuPageContent() {
       parseCommand: parseNiuNiuCommand,
       formatResponse: formatNiuNiuState,
       helpText: NIUNIU_HELP,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+      localCommand: hintLocalCommand(frontendHint),
     }),
     [frontendHint],
   );

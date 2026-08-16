@@ -44,7 +44,7 @@ import {
 } from '../utils/chinchonDeadwood';
 import { CHINCHON_HELP, parseChinchonCommand } from '../utils/cli/commands/chinchonCommands';
 import { formatChinchonState } from '../utils/cli/formatters/chinchonFormatter';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -134,7 +134,7 @@ function ChinchonPageContent() {
       parseCommand: parseChinchonCommand,
       formatResponse: formatChinchonState,
       helpText: CHINCHON_HELP,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+      localCommand: hintLocalCommand(frontendHint),
     }),
     [frontendHint],
   );

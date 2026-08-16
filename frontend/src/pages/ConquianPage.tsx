@@ -33,7 +33,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { CONQUIAN_HELP, parseConquianCommand } from '../utils/cli/commands/conquianCommands';
 import { formatConquianState } from '../utils/cli/formatters/conquianFormatter';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -159,7 +159,7 @@ function ConquianPageContent() {
       parseCommand: parseConquianCommand,
       formatResponse: formatConquianState,
       helpText: CONQUIAN_HELP,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+      localCommand: hintLocalCommand(frontendHint),
     }),
     [frontendHint],
   );

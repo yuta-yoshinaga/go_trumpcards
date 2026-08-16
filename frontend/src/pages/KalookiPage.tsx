@@ -29,7 +29,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { KALOOKI_HELP, parseKalookiCommand } from '../utils/cli/commands/kalookiCommands';
 import { formatKalookiState } from '../utils/cli/formatters/kalookiFormatter';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { kalookiOpeningPoints } from '../utils/kalookiScore';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -151,7 +151,7 @@ function KalookiPageContent() {
       parseCommand: parseKalookiCommand,
       formatResponse: formatKalookiState,
       helpText: KALOOKI_HELP,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+      localCommand: hintLocalCommand(frontendHint),
     }),
     [frontendHint],
   );

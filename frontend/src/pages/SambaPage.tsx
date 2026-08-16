@@ -32,7 +32,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { parseSambaCommand, SAMBA_HELP } from '../utils/cli/commands/sambaCommands';
 import { formatSambaState } from '../utils/cli/formatters/sambaFormatter';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 import { sambaMinMeld, sambaSelectionPoints } from '../utils/sambaScore';
@@ -109,7 +109,7 @@ function SambaPageContent() {
       parseCommand: parseSambaCommand,
       formatResponse: formatSambaState,
       helpText: SAMBA_HELP,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+      localCommand: hintLocalCommand(frontendHint),
     }),
     [frontendHint],
   );

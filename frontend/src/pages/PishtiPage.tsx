@@ -28,7 +28,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { PISHTI_HELP, parsePishtiCommand } from '../utils/cli/commands/pishtiCommands';
 import { formatPishtiState } from '../utils/cli/formatters/pishtiFormatter';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -129,7 +129,7 @@ function PishtiPageContent() {
       parseCommand: parsePishtiCommand,
       formatResponse: formatPishtiState,
       helpText: PISHTI_HELP,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+      localCommand: hintLocalCommand(frontendHint),
     }),
     [frontendHint],
   );

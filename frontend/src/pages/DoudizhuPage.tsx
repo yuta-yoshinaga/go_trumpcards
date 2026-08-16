@@ -24,7 +24,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { DoudizhuResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { classifyDoudizhuCombo, doudizhuInvalidReason } from '../utils/doudizhuComboValidator';
 
@@ -123,7 +123,7 @@ function DoudizhuPageContent() {
   const cliConfigWithHint = useMemo(
     () => ({
       ...cliConfig,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(hint) : null),
+      localCommand: hintLocalCommand(hint),
     }),
     [hint],
   );

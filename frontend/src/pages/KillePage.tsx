@@ -31,7 +31,7 @@ import { KillePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { KILLE_HELP, parseKilleCommand } from '../utils/cli/commands/killeCommands';
 import { formatKilleState } from '../utils/cli/formatters/killeFormatter';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 
 /** Stake options for the Kille settings panel. */
@@ -139,7 +139,7 @@ function KillePageContent() {
       parseCommand: parseKilleCommand,
       formatResponse: formatKilleState,
       helpText: KILLE_HELP,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+      localCommand: hintLocalCommand(frontendHint),
     }),
     [frontendHint],
   );

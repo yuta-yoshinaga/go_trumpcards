@@ -29,7 +29,7 @@ import { SetteEMezzoPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { parseSetteEMezzoCommand, SETTEMEZZO_HELP } from '../utils/cli/commands/settemezzoCommands';
 import { formatSetteEMezzoState } from '../utils/cli/formatters/settemezzoFormatter';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 
 const BET_OPTIONS = [10, 50, 100, 500];
@@ -77,7 +77,7 @@ function SetteEMezzoPageContent() {
       parseCommand: parseSetteEMezzoCommand,
       formatResponse: formatSetteEMezzoState,
       helpText: SETTEMEZZO_HELP,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+      localCommand: hintLocalCommand(frontendHint),
     }),
     [frontendHint],
   );

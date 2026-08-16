@@ -34,7 +34,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { MAO_HELP, parseMaoCommand } from '../utils/cli/commands/maoCommands';
 import { formatMaoState } from '../utils/cli/formatters/maoFormatter';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { ruleHintText } from '../utils/maoRuleHint';
 import { appendSayWordAttempt, type MaoSayWordAttempt } from '../utils/maoSayWordHistory';
@@ -156,7 +156,7 @@ function MaoPageContent() {
       parseCommand: parseMaoCommand,
       formatResponse: formatMaoState,
       helpText: MAO_HELP,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+      localCommand: hintLocalCommand(frontendHint),
     }),
     [frontendHint],
   );

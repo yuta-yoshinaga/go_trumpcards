@@ -28,7 +28,7 @@ import { ShengJiPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { parseShengJiCommand, SHENGJI_HELP } from '../utils/cli/commands/shengjiCommands';
 import { formatShengJiState } from '../utils/cli/formatters/shengjiFormatter';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 
 /** Combination names by wire code (sync: `ShengJiComboKind`). */
@@ -118,7 +118,7 @@ function ShengJiPageContent() {
       parseCommand: parseShengJiCommand,
       formatResponse: formatShengJiState,
       helpText: SHENGJI_HELP,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+      localCommand: hintLocalCommand(frontendHint),
     }),
     [frontendHint],
   );

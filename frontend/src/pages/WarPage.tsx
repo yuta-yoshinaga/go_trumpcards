@@ -25,7 +25,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { WarResponse } from '../types/card';
 import { WarPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -227,7 +227,7 @@ function WarPageContent() {
         'r/reset    - Reset game',
         'l/log      - Show action log',
       ],
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+      localCommand: hintLocalCommand(frontendHint),
     }),
     [frontendHint],
   );

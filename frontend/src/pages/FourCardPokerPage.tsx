@@ -32,7 +32,7 @@ import { FourCardPokerPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { FOURCARDPOKER_HELP, parseFourCardPokerCommand } from '../utils/cli/commands/fourcardpokerCommands';
 import { formatFourCardPokerState } from '../utils/cli/formatters/fourcardpokerFormatter';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -104,7 +104,7 @@ function FourCardPokerPageContent() {
       parseCommand: parseFourCardPokerCommand,
       formatResponse: formatFourCardPokerState,
       helpText: FOURCARDPOKER_HELP,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+      localCommand: hintLocalCommand(frontendHint),
     }),
     [frontendHint],
   );

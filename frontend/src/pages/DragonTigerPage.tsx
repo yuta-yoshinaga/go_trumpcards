@@ -32,7 +32,7 @@ import { DragonTigerBetType, DragonTigerHistoryResult, DragonTigerPhase } from '
 import type { TutorialStep } from '../types/tutorial';
 import { DRAGONTIGER_CLI_HELP, parseDragonTigerCommand } from '../utils/cli/commands/dragontigerCommands';
 import { formatDragonTigerState } from '../utils/cli/formatters/dragontigerFormatter';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -76,7 +76,7 @@ function DragonTigerPageContent() {
       parseCommand: parseDragonTigerCommand,
       formatResponse: formatDragonTigerState,
       helpText: DRAGONTIGER_CLI_HELP,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+      localCommand: hintLocalCommand(frontendHint),
     }),
     [frontendHint],
   );

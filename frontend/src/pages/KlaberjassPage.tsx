@@ -29,7 +29,7 @@ import { KlaberjassPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { KLABERJASS_HELP, parseKlaberjassCommand } from '../utils/cli/commands/klaberjassCommands';
 import { formatKlaberjassState } from '../utils/cli/formatters/klaberjassFormatter';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -140,7 +140,7 @@ function KlaberjassPageContent() {
       parseCommand: parseKlaberjassCommand,
       formatResponse: formatKlaberjassState,
       helpText: KLABERJASS_HELP,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+      localCommand: hintLocalCommand(frontendHint),
     }),
     [frontendHint],
   );

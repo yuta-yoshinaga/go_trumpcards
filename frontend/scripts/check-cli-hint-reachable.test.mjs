@@ -59,12 +59,24 @@ describe('check-cli-hint-reachable', () => {
     expect(r.status).toBe(0);
   });
 
-  it('passes when the page answers locally with hintCliText', () => {
+  it('passes when the page answers locally via hintLocalCommand', () => {
     const r = run({
-      pages: { 'XPage.tsx': page('x', 'localCommand: (i) => hintCliText(hint),') },
+      pages: { 'XPage.tsx': page('x', 'localCommand: hintLocalCommand(hint),') },
       commands: { 'xCommands.ts': "case 'play': return { args: ['play'] };" },
     });
     expect(r.status).toBe(0);
+  });
+
+  it('rejects a page that imports the helper but never wires it', () => {
+    // The dangling-import case: an earlier version accepted the import alone.
+    const r = run({
+      pages: {
+        'XPage.tsx': page('x', "// import { hintLocalCommand } from '../utils/cli/hintText';"),
+      },
+      commands: { 'xCommands.ts': "case 'play': return { args: ['play'] };" },
+    });
+    expect(r.status).toBe(1);
+    expect(r.stderr).toContain('XPage.tsx');
   });
 
   it('passes when the page parses inline and handles hint there', () => {

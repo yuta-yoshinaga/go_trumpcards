@@ -95,11 +95,11 @@ for (const f of pageFiles) {
 
   // (a) the page answers locally.
   //
-  // Both halves are required: an `import { hintCliText }` on its own satisfied
-  // the first version of this check, so deleting the localCommand line left the
-  // guard green with a dangling import. Verified by removing that line from
-  // MemoryPage -- the guard has to notice.
-  if (/localCommand:/.test(src) && /hintCliText\(/.test(src)) continue;
+  // Matched as one expression on purpose. An earlier version accepted an
+  // `import { hintCliText }` on its own, so deleting the localCommand line left
+  // a dangling import and the guard stayed green. Requiring the wiring itself
+  // means a page cannot satisfy this by importing something it never uses.
+  if (/localCommand:\s*hintLocalCommand\(/.test(src)) continue;
 
   // (b) the page defines its parser inline and handles hint there. Several
   // solitaire pages keep `parseXCommand` in the page file rather than in a

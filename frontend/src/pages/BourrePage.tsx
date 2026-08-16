@@ -25,7 +25,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BourreResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
 import { isRedSuitDesign, isSuitDesign, suitSymbol } from '../utils/cardAlt';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -145,7 +145,7 @@ function BourrePageContent() {
   const cliConfigWithHint = useMemo(
     () => ({
       ...cliConfig,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+      localCommand: hintLocalCommand(frontendHint),
     }),
     [frontendHint],
   );

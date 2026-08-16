@@ -28,7 +28,7 @@ import { VintPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { parseVintCommand, VINT_HELP } from '../utils/cli/commands/vintCommands';
 import { formatVintState } from '../utils/cli/formatters/vintFormatter';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { vintBidBeats, vintLevelHasLegalBid, vintNextLegalBid } from '../utils/vintBid';
 
@@ -125,7 +125,7 @@ function VintPageContent() {
       parseCommand: parseVintCommand,
       formatResponse: formatVintState,
       helpText: VINT_HELP,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+      localCommand: hintLocalCommand(frontendHint),
     }),
     [frontendHint],
   );

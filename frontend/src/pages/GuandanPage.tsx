@@ -28,7 +28,7 @@ import { GuandanPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { GUANDAN_HELP, parseGuandanCommand } from '../utils/cli/commands/guandanCommands';
 import { formatGuandanState } from '../utils/cli/formatters/guandanFormatter';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { guandanEvaluate, guandanIsBomb } from '../utils/guandanCombo';
 
@@ -125,7 +125,7 @@ function GuandanPageContent() {
       parseCommand: parseGuandanCommand,
       formatResponse: formatGuandanState,
       helpText: GUANDAN_HELP,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+      localCommand: hintLocalCommand(frontendHint),
     }),
     [frontendHint],
   );

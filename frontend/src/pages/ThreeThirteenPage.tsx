@@ -32,7 +32,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { parseThreeThirteenCommand, THREETHIRTEEN_HELP } from '../utils/cli/commands/threethirteenCommands';
 import { formatThreeThirteenState } from '../utils/cli/formatters/threethirteenFormatter';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -120,7 +120,7 @@ function ThreeThirteenPageContent() {
       parseCommand: parseThreeThirteenCommand,
       formatResponse: formatThreeThirteenState,
       helpText: THREETHIRTEEN_HELP,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+      localCommand: hintLocalCommand(frontendHint),
     }),
     [frontendHint],
   );

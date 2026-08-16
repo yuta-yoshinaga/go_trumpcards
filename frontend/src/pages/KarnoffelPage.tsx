@@ -29,7 +29,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { KARNOFFEL_HELP, parseKarnoffelCommand } from '../utils/cli/commands/karnoffelCommands';
 import { formatKarnoffelState } from '../utils/cli/formatters/karnoffelFormatter';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { karnoffelRankKey } from '../utils/karnoffelRanks';
 
@@ -106,7 +106,7 @@ function KarnoffelPageContent() {
       parseCommand: parseKarnoffelCommand,
       formatResponse: formatKarnoffelState,
       helpText: KARNOFFEL_HELP,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+      localCommand: hintLocalCommand(frontendHint),
     }),
     [frontendHint],
   );

@@ -28,7 +28,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { valueName } from '../utils/cardUtils';
 import { FARO_HELP, parseFaroCommand } from '../utils/cli/commands/faroCommands';
 import { formatFaroState } from '../utils/cli/formatters/faroFormatter';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { FARO_RANK_COUNT, mergeSeenCards, remainingByRank } from '../utils/faroCaseKeeper';
 
@@ -143,7 +143,7 @@ function FaroPageContent() {
       parseCommand: parseFaroCommand,
       formatResponse: formatFaroState,
       helpText: FARO_HELP,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+      localCommand: hintLocalCommand(frontendHint),
     }),
     [frontendHint],
   );

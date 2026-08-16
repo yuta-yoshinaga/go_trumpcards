@@ -30,7 +30,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { CUARENTA_HELP, parseCuarentaCommand } from '../utils/cli/commands/cuarentaCommands';
 import { formatCuarentaState } from '../utils/cli/formatters/cuarentaFormatter';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { cuarentaCaptureIndices } from '../utils/cuarentaCapture';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -137,7 +137,7 @@ function CuarentaPageContent() {
       parseCommand: parseCuarentaCommand,
       formatResponse: formatCuarentaState,
       helpText: CUARENTA_HELP,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+      localCommand: hintLocalCommand(frontendHint),
     }),
     [frontendHint],
   );

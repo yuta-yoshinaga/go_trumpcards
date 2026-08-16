@@ -42,7 +42,7 @@ import { HoldemPhase, HoldemRebuyPhaseType } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { HOLDEM_HELP, parseHoldemCommand } from '../utils/cli/commands/holdemCommands';
 import { formatHoldemState } from '../utils/cli/formatters/holdemFormatter';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { holdemBestFive } from '../utils/holdemBestFive';
 import { findPlayerName } from '../utils/playerUtils';
@@ -130,7 +130,7 @@ function HoldemPageContent() {
       parseCommand: parseHoldemCommand,
       formatResponse: formatHoldemState,
       helpText: HOLDEM_HELP,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(hint) : null),
+      localCommand: hintLocalCommand(hint),
     }),
     [hint],
   );

@@ -32,7 +32,7 @@ import type { SevensResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
 import { parseSevensCommand, SEVENS_HELP } from '../utils/cli/commands/sevensCommands';
 import { formatSevensState } from '../utils/cli/formatters/sevensFormatter';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -90,7 +90,7 @@ function SevensPageContent() {
       parseCommand: parseSevensCommand,
       formatResponse: formatSevensState,
       helpText: SEVENS_HELP,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+      localCommand: hintLocalCommand(frontendHint),
     }),
     [frontendHint],
   );

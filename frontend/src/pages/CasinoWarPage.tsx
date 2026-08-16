@@ -34,7 +34,7 @@ import { CasinoWarPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { CASINOWAR_HELP, parseCasinowarCommand } from '../utils/cli/commands/casinowarCommands';
 import { formatCasinowarState } from '../utils/cli/formatters/casinowarFormatter';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 
 const CW_TUTORIAL_STEPS: TutorialStep[] = [
@@ -72,7 +72,7 @@ function CasinoWarPageContent() {
       parseCommand: parseCasinowarCommand,
       formatResponse: formatCasinowarState,
       helpText: CASINOWAR_HELP,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(hint) : null),
+      localCommand: hintLocalCommand(hint),
     }),
     [hint],
   );

@@ -33,7 +33,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { PAN_HELP, parsePanCommand } from '../utils/cli/commands/panCommands';
 import { formatPanState } from '../utils/cli/formatters/panFormatter';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isPanValleMeld, panLayoffIndices, panMeldCandidates } from '../utils/panMeldCandidates';
 import { playerName } from '../utils/playerUtils';
@@ -115,7 +115,7 @@ function PanPageContent() {
       parseCommand: parsePanCommand,
       formatResponse: formatPanState,
       helpText: PAN_HELP,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+      localCommand: hintLocalCommand(frontendHint),
     }),
     [frontendHint],
   );

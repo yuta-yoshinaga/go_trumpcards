@@ -38,7 +38,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { SevenCardStudResponse } from '../types/card';
 import { SevenCardStudPhase, SevenCardStudRebuyPhaseType } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { findPlayerName } from '../utils/playerUtils';
 import { evaluateBestHand, pokerHandKey } from '../utils/pokerSquaresUtils';
@@ -174,7 +174,7 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
         'show        - Show hand',
         'r/reset     - Reset game',
       ],
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(hint) : null),
+      localCommand: hintLocalCommand(hint),
     }),
     [phaseNames, gameKey, hint],
   );

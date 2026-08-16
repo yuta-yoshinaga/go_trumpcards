@@ -38,7 +38,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { INDIANRUMMY_HELP, parseIndianrummyCommand } from '../utils/cli/commands/indianrummyCommands';
 import { formatIndianrummyState } from '../utils/cli/formatters/indianrummyFormatter';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { evaluateIndianRummyDeclare, INDIAN_RUMMY_HAND_SIZE } from '../utils/indianRummyDeclare';
 import { playerName } from '../utils/playerUtils';
@@ -129,7 +129,7 @@ function IndianRummyPageContent() {
       parseCommand: parseIndianrummyCommand,
       formatResponse: formatIndianrummyState,
       helpText: INDIANRUMMY_HELP,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+      localCommand: hintLocalCommand(frontendHint),
     }),
     [frontendHint],
   );

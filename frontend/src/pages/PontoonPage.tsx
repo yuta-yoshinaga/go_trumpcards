@@ -29,7 +29,7 @@ import { PontoonPhase, PontoonRank } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { PONTOON_HELP, parsePontoonCommand } from '../utils/cli/commands/pontoonCommands';
 import { formatPontoonState } from '../utils/cli/formatters/pontoonFormatter';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { PONTOON_MIN_BET, pontoonBuyChoices, pontoonClampBuy, pontoonMaxBuy } from '../utils/pontoonBet';
 
@@ -76,7 +76,7 @@ function PontoonPageContent() {
       parseCommand: parsePontoonCommand,
       formatResponse: formatPontoonState,
       helpText: PONTOON_HELP,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+      localCommand: hintLocalCommand(frontendHint),
     }),
     [frontendHint],
   );

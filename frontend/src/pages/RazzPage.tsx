@@ -37,7 +37,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { SevenCardStudResponse } from '../types/card';
 import { SevenCardStudPhase, SevenCardStudRebuyPhaseType } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { findPlayerName } from '../utils/playerUtils';
 import { formatRazzLow, razzBestLow } from '../utils/razzLow';
@@ -160,7 +160,7 @@ function RazzPageContent() {
         'show        - Show hand',
         'r/reset     - Reset game',
       ],
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(hint) : null),
+      localCommand: hintLocalCommand(hint),
     }),
     [phaseNames, hint],
   );

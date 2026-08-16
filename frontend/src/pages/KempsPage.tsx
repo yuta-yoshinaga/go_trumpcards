@@ -30,7 +30,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { KEMPS_HELP, parseKempsCommand } from '../utils/cli/commands/kempsCommands';
 import { formatKempsState } from '../utils/cli/formatters/kempsFormatter';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -145,7 +145,7 @@ function KempsPageContent() {
       parseCommand: parseKempsCommand,
       formatResponse: formatKempsState,
       helpText: KEMPS_HELP,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+      localCommand: hintLocalCommand(frontendHint),
     }),
     [frontendHint],
   );

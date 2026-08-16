@@ -28,7 +28,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { CONTRACTRUMMY_HELP, parseContractRummyCommand } from '../utils/cli/commands/contractrummyCommands';
 import { formatContractRummyState } from '../utils/cli/formatters/contractrummyFormatter';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { evaluateContractSlot, isContractRummyMeld } from '../utils/contractRummyUtils';
 
@@ -108,7 +108,7 @@ function ContractRummyPageContent() {
       parseCommand: parseContractRummyCommand,
       formatResponse: formatContractRummyState,
       helpText: CONTRACTRUMMY_HELP,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+      localCommand: hintLocalCommand(frontendHint),
     }),
     [frontendHint],
   );

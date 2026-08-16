@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import i18n from '../../i18n';
 import type { HintResult } from '../../types/hint';
-import { hintCliText, isHintCommand } from './hintText';
+import { hintCliText, hintLocalCommand, isHintCommand } from './hintText';
 
 const base: HintResult = {
   targetAction: 'play',
@@ -90,5 +90,24 @@ describe('hintCliText', () => {
     expect(ja).toContain('組札');
     expect(ja).not.toContain('foundation');
     await i18n.changeLanguage(prev);
+  });
+});
+
+describe('hintLocalCommand', () => {
+  it('answers a hint request', () => {
+    const cmd = hintLocalCommand(base);
+    expect(cmd('hint')).toContain('いちばん強い札を出す');
+    expect(cmd('h')).toContain('いちばん強い札を出す');
+  });
+
+  it('falls through for anything else, so the game parser still sees it', () => {
+    const cmd = hintLocalCommand(base);
+    for (const other of ['p 3', 'reset', 'help', '']) expect(cmd(other)).toBeNull();
+  });
+
+  it('still answers when there is no hint, rather than falling through silently', () => {
+    // Returning null here would hand "hint" to the parser, which rejects it --
+    // the player would see "Unknown command" instead of "no hint available".
+    expect(hintLocalCommand(null)('hint')).not.toBeNull();
   });
 });

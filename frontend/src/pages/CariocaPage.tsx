@@ -28,7 +28,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { canLayoffCariocaMeld, describeCariocaSlotShortfall, evaluateCariocaContractSlot } from '../utils/cariocaUtils';
 import { CARIOCA_HELP, parseCariocaCommand } from '../utils/cli/commands/cariocaCommands';
 import { formatCariocaState } from '../utils/cli/formatters/cariocaFormatter';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 
 /** Phase identifiers for Carioca. */
@@ -106,7 +106,7 @@ function CariocaPageContent() {
       parseCommand: parseCariocaCommand,
       formatResponse: formatCariocaState,
       helpText: CARIOCA_HELP,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+      localCommand: hintLocalCommand(frontendHint),
     }),
     [frontendHint],
   );

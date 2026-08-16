@@ -28,7 +28,7 @@ import { SixBidSoloPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { parseSixBidSoloCommand, SIXBIDSOLO_HELP } from '../utils/cli/commands/sixbidsoloCommands';
 import { formatSixBidSoloState } from '../utils/cli/formatters/sixbidsoloFormatter';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 
 /** The six bids, in ascending order. Index 0 is a pass and is never offered. */
@@ -122,7 +122,7 @@ function SixBidSoloPageContent() {
       parseCommand: parseSixBidSoloCommand,
       formatResponse: formatSixBidSoloState,
       helpText: SIXBIDSOLO_HELP,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+      localCommand: hintLocalCommand(frontendHint),
     }),
     [frontendHint],
   );

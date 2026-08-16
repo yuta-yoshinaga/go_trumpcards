@@ -32,7 +32,7 @@ import { CuckooPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { CUCKOO_HELP, parseCuckooCommand } from '../utils/cli/commands/cuckooCommands';
 import { formatCuckooState } from '../utils/cli/formatters/cuckooFormatter';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -127,7 +127,7 @@ function CuckooPageContent() {
       parseCommand: parseCuckooCommand,
       formatResponse: formatCuckooState,
       helpText: CUCKOO_HELP,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+      localCommand: hintLocalCommand(frontendHint),
     }),
     [frontendHint],
   );

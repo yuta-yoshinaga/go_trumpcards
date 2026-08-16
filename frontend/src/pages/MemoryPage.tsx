@@ -36,7 +36,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { MEMORY_HELP, parseMemoryCommand } from '../utils/cli/commands/memoryCommands';
 import { formatMemoryState } from '../utils/cli/formatters/memoryFormatter';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { type GridDir, moveFocus } from '../utils/gridNav';
 import { getMemoryHint } from '../utils/hints/memoryHint';
@@ -134,7 +134,7 @@ function MemoryPageContent() {
       parseCommand: parseMemoryCommand,
       formatResponse: formatMemoryState,
       helpText: MEMORY_HELP,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(hintRef.current) : null),
+      localCommand: hintLocalCommand(hintRef.current),
     }),
     [],
   );

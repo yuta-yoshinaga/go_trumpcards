@@ -41,7 +41,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { POKER_HELP, parsePokerCommand } from '../utils/cli/commands/pokerCommands';
 import { formatPokerState } from '../utils/cli/formatters/pokerFormatter';
-import { hintCliText, isHintCommand } from '../utils/cli/hintText';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { findPlayerName } from '../utils/playerUtils';
 
@@ -120,7 +120,7 @@ function PokerPageContent() {
       parseCommand: parsePokerCommand,
       formatResponse: formatPokerState,
       helpText: POKER_HELP,
-      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(hint) : null),
+      localCommand: hintLocalCommand(hint),
     }),
     [hint],
   );
