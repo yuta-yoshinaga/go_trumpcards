@@ -2,7 +2,7 @@
   "helpTitle": "Memory / Concentration",
   "helpFlip": "  f <pos>              flip a card",
   "helpNext": "  n                    next turn",
-  "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
+  "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy forgets often, 1=Normal, 2=Hard rarely forgets)",
   "playerLine": "{{name}}: {{pairs}} pair(s)",
   "visitedLegend": "Legend: *? = seen before (flipped once) / ?? = unseen",
   "promptFlip1": "{{name}} — pick the first card",
