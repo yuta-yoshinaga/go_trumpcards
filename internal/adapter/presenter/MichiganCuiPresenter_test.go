@@ -2,6 +2,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -144,4 +145,24 @@ func TestMichiganCuiPresenter_ActionLog(t *testing.T) {
 	g := michiganResultGame(false)
 	p := new(presenter.MichiganCuiPresenter)
 	assert.NotEmpty(t, p.ActionLogOutput(g))
+}
+
+// **数字だけでは謎の数でしかない。** 「デッドハンド」という語も、それが何を
+// 意味しどう影響するかも、Web にも CUI にも説明が無かった (#5700)。
+func TestMichiganCuiPresenter_ExplainsTheDeadHand(t *testing.T) {
+	g := domain.NewDefaultMichigan()
+	p := new(presenter.MichiganCuiPresenter)
+	out := p.Output(g, nil)
+
+	assert.Contains(t, out, i18n.T("michigan.deadHandNote"))
+	// 枚数の行はそのまま残っていること。説明で置き換えてしまうと枚数が消える。
+	assert.Contains(t, out, i18n.Tf("michigan.deadHandLine",
+		"count", strconv.Itoa(g.GetDeadHandCount())))
+
+	// 英語ロケールでも説明が出ること (キーが片方だけだと素通りする)。
+	i18n.SetLang("en")
+	defer i18n.SetLang("ja")
+	en := p.Output(g, nil)
+	assert.Contains(t, en, i18n.T("michigan.deadHandNote"))
+	assert.NotContains(t, en, "余分に")
 }

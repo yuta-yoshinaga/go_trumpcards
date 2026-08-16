@@ -46,5 +46,6 @@
   "result.humanWin": "ゲーム終了！あなたの勝ち！",
   "result.cpuWin": "ゲーム終了！CPU {{player}} の勝ち！",
   "helpExampleNext": "  n                         次のディールへ進む",
-  "helpHint": "  h                         助言を表示"
+  "helpHint": "  h                         助言を表示",
+  "deadHandNote": "  （余分に1人分だけ配った札です。誰の手にも入らず、この局では最後まで使われません）"
 }
