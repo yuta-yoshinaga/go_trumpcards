@@ -33,6 +33,11 @@
     "moveToFoundation": "A card can be moved to the foundation",
     "freeCellsFilling": "Free cells are almost full — try to clear some",
     "useEmptyColumn": "An empty column is available — use it for reorganization",
-    "useFreeCells": "Consider moving a card to a free cell to open up moves"
+    "useFreeCells": "Consider moving a card to a free cell to open up moves",
+    "zone": {
+      "tableau": "Tableau",
+      "freecell": "Free Cell",
+      "foundation": "Foundation"
+    }
   }
 }

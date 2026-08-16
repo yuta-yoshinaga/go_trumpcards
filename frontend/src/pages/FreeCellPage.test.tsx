@@ -459,6 +459,38 @@ describe('FreeCellPage', () => {
     await waitFor(() => expect(screen.getByText(/フリーセル.*→.*タブロー 3/)).toBeInTheDocument());
   });
 
+  // #5494: ゾーン識別子 ("tableau"/"freecell"/"foundation") をそのまま i18n キーに
+  // 使っていた。ドメイン側がゾーン名を変えたり足したりすると翻訳キーが静かに壊れ、
+  // コンパイルでは検出できない。専用キーへ移す前に**今の文字列を1文字単位で固定**する。
+  it('renders the hint line exactly as before the zone keys moved', async () => {
+    renderWithProviders(<FreeCellPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+    mockExec.mockResolvedValue(withHintFromColState);
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    const line = await screen.findByTestId('fc-hint-line');
+    expect(line.textContent).toBe('ヒント: タブロー 2 → ファンデーション');
+  });
+
+  // **未知のゾーンでも翻訳キー文字列を画面に出さない。** ドメインが新しいゾーンを
+  // 返し始めたとき、生の "reserve" が出るほうが "frontendHint.zone.reserve" が
+  // 出るよりまだ読める。
+  it('falls back to the raw zone name for an unknown zone', async () => {
+    renderWithProviders(<FreeCellPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+    mockExec.mockResolvedValue({
+      ...playingState,
+      hint: { fromZone: 'reserve', fromCol: 1, cardIndex: 0, toZone: 'foundation', toCol: -1 },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    const line = await screen.findByTestId('fc-hint-line');
+    expect(line.textContent).toBe('ヒント: reserve 1 → ファンデーション');
+    expect(line.textContent).not.toContain('frontendHint');
+  });
+
   it('hint display shows fromCol when fromCol is non-negative', async () => {
     renderWithProviders(<FreeCellPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
