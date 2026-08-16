@@ -73,9 +73,7 @@ func (si *ShitheadInteractor) ActionLog() string {
 
 // runCpuTurns ゲームが終わるか人間の手番になるまでCPUターンを実行
 func (si *ShitheadInteractor) runCpuTurns() {
-	for !si.Game.GetGameEndFlag() && !si.Game.IsHumanTurn() {
-		si.Game.CpuPlay()
-	}
+	runCpuTurnsCapped(si.Game, si.Game.CpuPlay)
 }
 
 // RestoreShitheadInteractor deserialises JSON into a ShitheadInteractor.

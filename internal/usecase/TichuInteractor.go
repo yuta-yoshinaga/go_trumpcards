@@ -89,9 +89,7 @@ func (ti *TichuInteractor) ActionLog() string {
 
 // runCpuTurns ゲームが終わるか人間の手番になるまでCPUターンを実行する
 func (ti *TichuInteractor) runCpuTurns() {
-	for !ti.Game.GetGameEndFlag() && !ti.Game.IsHumanTurn() {
-		ti.Game.CpuPlay()
-	}
+	runCpuTurnsCapped(ti.Game, ti.Game.CpuPlay)
 }
 
 // RestoreTichuInteractor deserialises JSON into a TichuInteractor.

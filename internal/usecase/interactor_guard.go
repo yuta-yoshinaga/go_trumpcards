@@ -57,3 +57,26 @@ func advanceRound[G roundAdvancer](game G, p outputPresenter[G], runCpu func()) 
 	runCpu()
 	return p.Output(game, nil)
 }
+
+// MaxCpuIterations は CPU ターンを回すループの反復上限。
+//
+// **ドメインが局を終わらせないと、上限の無いループは戻らない。** CLI ならプロンプトが
+// 返らず、Web ならリクエストが返らない。durak では実際に「山札切れ + 防御が成立しない」
+// 配置の循環が 20 万局に 14 局あり (#5414)、その配りに当たった局は永久に終わらなかった。
+//
+// 通常 1 局で CPU が動くのは数十回なので、1000 に達したらドメイン側のバグ。
+const MaxCpuIterations = 1000
+
+// runCpuTurnsCapped はゲームが終わるか人間の手番になるまで play を回す。
+//
+// 戻り値は上限に当たらずに抜けたかどうか。**false はドメインのバグを意味する**ので、
+// 呼び出し側が握り潰さずに扱えるよう返している。
+func runCpuTurnsCapped(g playableGame, play func()) bool {
+	for i := 0; i < MaxCpuIterations; i++ {
+		if g.GetGameEndFlag() || g.IsHumanTurn() {
+			return true
+		}
+		play()
+	}
+	return false
+}
