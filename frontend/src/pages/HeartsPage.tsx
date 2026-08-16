@@ -570,7 +570,9 @@ const QUEEN_VALUE = 12;
 
 /**
  * Compact, accessible breakdown of a player's captured penalty cards:
- * "♥×N" for the hearts count and "♠Q" when the Queen of Spades has been taken.
+ * "♥×N" for the hearts count, "♠Q" when the Queen of Spades has been taken, and
+ * "♦J−10" when the omnibus J♦ has been captured (that one arrives as its own
+ * flag -- the server keeps it out of `cards` because it is a bonus).
  * The visible glyphs are decorative; the full description is exposed to screen
  * readers via aria-label. Renders "—" when no penalty cards are held.
  */
