@@ -194,6 +194,21 @@ export const KlondikeVegas = {
   PER_CARD: 5,
 } as const;
 
+/**
+ * Gin Rummy CPU policy constants (sync: internal/domain/GinRummy.go).
+ *
+ * `cpuDiscardOrKnock` / `cpuDraw` branch on difficulty with these numbers. The
+ * settings panel quotes them, and a Go test asserts this object against the
+ * domain constants so the explanation cannot drift from the behaviour.
+ */
+export const GinRummyCpu = {
+  KNOCK_DEADWOOD_NORMAL: 7,
+  KNOCK_DEADWOOD_HARD: 5,
+  DISCARD_GAIN_NORMAL: 5,
+  EASY_PICK_ONE_IN: 3,
+  KNOCK_THRESHOLD: 10,
+} as const;
+
 /** Canfield phase constants (sync: internal/domain/Canfield.go). */
 export const CanfieldPhase = {
   PLAYING: 0,
