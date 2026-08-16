@@ -2192,7 +2192,14 @@
     "unknownCommand": "不明なコマンド: {{cmd}}",
     "unknownCommandWithSuggestion": "不明なコマンド: {{cmd}}。もしかして: {{suggestion}}",
     "emptyInput": "コマンドを入力してください。'help' でヘルプを表示",
-    "helpCommon": "共通コマンド: r/reset (リセット), help/? (ヘルプ), clear (ログクリア)"
+    "helpCommon": "共通コマンド: r/reset (リセット), help/? (ヘルプ), clear (ログクリア)",
+    "hintNone": "ヒントはありません",
+    "hintTarget": "(位置 {{pos}})",
+    "hintTargets": "(位置 {{positions}})",
+    "hintConfidence": {
+      "strong": "[確度: 高]",
+      "moderate": "[確度: 中]"
+    }
   },
   "notFound": {
     "eyebrow": "PAGE NOT FOUND",

@@ -2192,7 +2192,14 @@
     "unknownCommand": "Unknown command: {{cmd}}",
     "unknownCommandWithSuggestion": "Unknown command: {{cmd}}. Did you mean: {{suggestion}}",
     "emptyInput": "Please enter a command. Type 'help' for help.",
-    "helpCommon": "Common commands: r/reset (reset), help/? (help), clear (clear log)"
+    "helpCommon": "Common commands: r/reset (reset), help/? (help), clear (clear log)",
+    "hintNone": "No hint available",
+    "hintTarget": "(position {{pos}})",
+    "hintTargets": "(positions {{positions}})",
+    "hintConfidence": {
+      "strong": "[confidence: high]",
+      "moderate": "[confidence: medium]"
+    }
   },
   "notFound": {
     "eyebrow": "PAGE NOT FOUND",
