@@ -79,4 +79,12 @@ export interface DaifugoResponse extends BaseGameResponse {
   numberLocked: boolean;
   sequenceLocked: boolean;
   sortMode: number;
+  /**
+   * Hand indices that appear in at least one legal play right now, mirroring the
+   * `*` marks the CUI prints. `null` means the server could not decide (not the
+   * human's turn, a pending action, or too many combinations to enumerate) --
+   * **not** that nothing is playable, so render no marks rather than marking
+   * every card as unplayable.
+   */
+  playableCardIndices: number[] | null;
 }

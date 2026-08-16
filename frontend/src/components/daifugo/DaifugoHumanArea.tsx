@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useCardDimensions } from '../../hooks/useCardDimensions';
-import { focusRingCard, selectedCardStyle } from '../../styles/cardStyles';
+import { focusRingCard, playableRingStyle, selectedCardStyle } from '../../styles/cardStyles';
 import type { DaifugoPlayerData } from '../../types/card';
 import { playerName } from '../../utils/playerUtils';
 import { CardImage } from '../CardImage';
@@ -15,6 +15,13 @@ export interface HumanPlayerAreaProps {
   isCurrentTurn: boolean;
   onDragCard: (idx: number) => void;
   onSwipeStart?: (idx: number) => void;
+  /**
+   * Hand indices the server says are in at least one legal play, mirroring the
+   * `*` marks the CUI prints. `null`/`undefined` means the server could not
+   * decide, and **no card is marked** -- marking none is honest, marking the
+   * wrong ones is not.
+   */
+  playableIndices?: number[] | null;
 }
 
 /** Renders the human player's hand area for Daifugo with card selection and drag support. */
@@ -25,9 +32,13 @@ export function DaifugoHumanArea({
   isCurrentTurn,
   onDragCard,
   onSwipeStart,
+  playableIndices,
 }: HumanPlayerAreaProps) {
   const { t } = useTranslation('daifugo');
   const { cardWidth } = useCardDimensions();
+  // Only mark during the human's turn: the indices are computed for whoever is
+  // to move, and a stale set on a CPU turn would point at the wrong cards.
+  const playable = isCurrentTurn && playableIndices ? new Set(playableIndices) : null;
   const conditionalClass = player.isFinished
     ? 'opacity-50'
     : isCurrentTurn
@@ -57,6 +68,7 @@ export function DaifugoHumanArea({
             key={`${card.design}-${card.value}`}
             type="button"
             data-card-index={i}
+            data-playable={playable?.has(i) ? 'true' : undefined}
             aria-pressed={selectedIndices.includes(i)}
             disabled={!isCurrentTurn}
             draggable={isCurrentTurn}
@@ -73,6 +85,9 @@ export function DaifugoHumanArea({
               cursor: isCurrentTurn ? 'pointer' : 'default',
               borderRadius: 8,
               ...selectedCardStyle(selectedIndices.includes(i)),
+              // The ring uses `outline`, so it stacks on the selection border
+              // rather than replacing it -- a playable card can also be selected.
+              ...(playable?.has(i) ? playableRingStyle() : {}),
               boxSizing: 'border-box',
             }}
           >

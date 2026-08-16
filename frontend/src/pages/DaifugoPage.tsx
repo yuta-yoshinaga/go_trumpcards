@@ -419,6 +419,7 @@ function DaifugoPageContent() {
                   isCurrentTurn={isHumanTurn}
                   onDragCard={handleDragCard}
                   onSwipeStart={handleDaifugoSwipeStart}
+                  playableIndices={state.playableCardIndices}
                 />
               </div>
             )}

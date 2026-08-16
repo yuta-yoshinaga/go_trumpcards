@@ -34022,6 +34022,7 @@ components:
         - numberLocked
         - sequenceLocked
         - sortMode
+        - playableCardIndices
       properties:
         players:
           type: array
@@ -34128,6 +34129,20 @@ components:
             Current sort mode for the human player's hand.
             0 = by strength, 1 = by suit, 2 = by number.
           example: 0
+        playableCardIndices:
+          type: array
+          nullable: true
+          description: |
+            Hand indices of the human player that appear in at least one legal
+            play right now — the same set the CUI marks with `*`. Accounts for
+            revolution, eleven-back, suit lock and sequence lock.
+
+            `null` means the server did not decide (not the human's turn, a
+            pending action is open, or the combination count exceeded the search
+            cap) — **not** that nothing is playable.
+          items:
+            type: integer
+          example: [0, 2]
 
     # -------------------------------------------------------------------------
     # Dou Dizhu (斗地主)
