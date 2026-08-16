@@ -31,6 +31,7 @@ import { OichoKabuPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { OICHOKABU_HELP, parseOichokabuCommand } from '../utils/cli/commands/oichokabuCommands';
 import { formatOichokabuState } from '../utils/cli/formatters/oichokabuFormatter';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { oichokabuDealerPolicy } from '../utils/oichokabuDealerPolicy';
 
@@ -69,8 +70,9 @@ function OichoKabuPageContent() {
       parseCommand: parseOichokabuCommand,
       formatResponse: formatOichokabuState,
       helpText: OICHOKABU_HELP,
+      localCommand: hintLocalCommand(hint),
     }),
-    [],
+    [hint],
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 

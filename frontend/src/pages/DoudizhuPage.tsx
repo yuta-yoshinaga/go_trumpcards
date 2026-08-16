@@ -24,6 +24,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { DoudizhuResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { classifyDoudizhuCombo, doudizhuInvalidReason } from '../utils/doudizhuComboValidator';
 
@@ -117,7 +118,16 @@ function DoudizhuPageContent() {
   } = useGameApi<DoudizhuResponse, [ApiArgs]>((...args) => doudizhuApi.exec(...args));
   const { hint, hintEnabled, setHintEnabled } = useGameHint('doudizhu', state);
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('doudizhu');
-  const { handleCommand } = useCliGame<DoudizhuResponse, [ApiArgs]>(apiCall, cliConfig, state, {
+  // The module-level config cannot see `hint`: hints are computed per render.
+  // Layer the local answer on here rather than restructuring the shared const.
+  const cliConfigWithHint = useMemo(
+    () => ({
+      ...cliConfig,
+      localCommand: hintLocalCommand(hint),
+    }),
+    [hint],
+  );
+  const { handleCommand } = useCliGame<DoudizhuResponse, [ApiArgs]>(apiCall, cliConfigWithHint, state, {
     addInput,
     addOutput,
     addError,

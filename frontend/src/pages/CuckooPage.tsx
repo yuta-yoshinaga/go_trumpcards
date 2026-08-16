@@ -32,6 +32,7 @@ import { CuckooPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { CUCKOO_HELP, parseCuckooCommand } from '../utils/cli/commands/cuckooCommands';
 import { formatCuckooState } from '../utils/cli/formatters/cuckooFormatter';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -112,14 +113,23 @@ function CuckooPageContent() {
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('cuckoo');
+
+  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
+  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('cuckoo', state);
   const cliConfig: CliGameConfig<CuckooResponse, Parameters<typeof cuckooApi.exec>> = useMemo(
     () => ({
       gameName: 'cuckoo',
       parseCommand: parseCuckooCommand,
       formatResponse: formatCuckooState,
       helpText: CUCKOO_HELP,
+      localCommand: hintLocalCommand(frontendHint),
     }),
-    [],
+    [frontendHint],
   );
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
@@ -143,14 +153,6 @@ function CuckooPageContent() {
     [exec, kbIsHumanTurn, kbIsRefuseTarget, kbHumanHasKing],
   );
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading });
-
-  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
-  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('cuckoo', state);
 
   // **山場が全部無音だった。**CPU の手番が自動で進むテンポの速いゲームなので、
   // バッジだけだとライフ喪失やキング公開を見落とす (#4891)。

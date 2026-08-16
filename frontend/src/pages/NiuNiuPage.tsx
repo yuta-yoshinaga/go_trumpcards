@@ -27,6 +27,7 @@ import { NiuNiuPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { NIUNIU_HELP, parseNiuNiuCommand } from '../utils/cli/commands/niuniuCommands';
 import { formatNiuNiuState } from '../utils/cli/formatters/niuniuFormatter';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 
 const BET_OPTIONS = [10, 50, 100, 500];
@@ -49,17 +50,6 @@ function NiuNiuPageContent() {
   const { state, loading, error, retry } = game;
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('niuniu');
-  const cliConfig: CliGameConfig<NiuNiuResponse, Parameters<typeof niuniuApi.exec>> = useMemo(
-    () => ({
-      gameName: 'niuniu',
-      parseCommand: parseNiuNiuCommand,
-      formatResponse: formatNiuNiuState,
-      helpText: NIUNIU_HELP,
-    }),
-    [],
-  );
-  const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
-  const { cardWidth } = useCardDimensions();
 
   // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
   // だけフック数が変わってページが骨組みのまま固まる (#4561)。
@@ -68,6 +58,18 @@ function NiuNiuPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('niuniu', state);
+  const cliConfig: CliGameConfig<NiuNiuResponse, Parameters<typeof niuniuApi.exec>> = useMemo(
+    () => ({
+      gameName: 'niuniu',
+      parseCommand: parseNiuNiuCommand,
+      formatResponse: formatNiuNiuState,
+      helpText: NIUNIU_HELP,
+      localCommand: hintLocalCommand(frontendHint),
+    }),
+    [frontendHint],
+  );
+  const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
+  const { cardWidth } = useCardDimensions();
 
   if (!state) {
     return <GameSkeleton gameKey="niuniu" layout={{ kind: 'tableau', topRow: 5, tableau: 3 }} />;

@@ -34,6 +34,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { MAO_HELP, parseMaoCommand } from '../utils/cli/commands/maoCommands';
 import { formatMaoState } from '../utils/cli/formatters/maoFormatter';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { ruleHintText } from '../utils/maoRuleHint';
 import { appendSayWordAttempt, type MaoSayWordAttempt } from '../utils/maoSayWordHistory';
@@ -141,14 +142,23 @@ function MaoPageContent() {
   const pendingWordRef = useRef<{ word: string; board: Card | null; prevState: MaoResponse | null } | null>(null);
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('mao');
+
+  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
+  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('mao', state);
   const cliConfig: CliGameConfig<MaoResponse, Parameters<typeof maoApi.exec>> = useMemo(
     () => ({
       gameName: 'mao',
       parseCommand: parseMaoCommand,
       formatResponse: formatMaoState,
       helpText: MAO_HELP,
+      localCommand: hintLocalCommand(frontendHint),
     }),
-    [],
+    [frontendHint],
   );
   const { handleCommand } = useCliGame(gameExec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
@@ -215,14 +225,6 @@ function MaoPageContent() {
     }
     prevRulePenaltyRef.current = penalty;
   }, [state?.rulePenalty, playSound]);
-
-  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
-  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('mao', state);
 
   if (!state)
     return (

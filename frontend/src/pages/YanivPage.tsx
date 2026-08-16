@@ -24,6 +24,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { YanivResponse } from '../types/card';
 import { YanivPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { classifyYanivDiscard } from '../utils/yanivCombos';
@@ -157,8 +158,9 @@ function YanivPageContent() {
         'r / reset        - Reset game',
         'l / log          - Show action log',
       ],
+      localCommand: hintLocalCommand(frontendHint),
     }),
-    [],
+    [frontendHint],
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 

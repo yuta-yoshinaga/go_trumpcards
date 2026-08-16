@@ -40,6 +40,7 @@ import { IndianPokerPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { INDIANPOKER_HELP, parseIndianpokerCommand } from '../utils/cli/commands/indianpokerCommands';
 import { formatIndianpokerState } from '../utils/cli/formatters/indianpokerFormatter';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { computeIndianPokerEquity } from '../utils/indianPokerEquity';
 import { findPlayerName } from '../utils/playerUtils';
@@ -105,8 +106,9 @@ function IndianPokerPageContent() {
       parseCommand: parseIndianpokerCommand,
       formatResponse: formatIndianpokerState,
       helpText: INDIANPOKER_HELP,
+      localCommand: hintLocalCommand(hint),
     }),
-    [],
+    [hint],
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 

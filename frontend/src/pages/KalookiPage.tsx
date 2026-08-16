@@ -29,6 +29,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { KALOOKI_HELP, parseKalookiCommand } from '../utils/cli/commands/kalookiCommands';
 import { formatKalookiState } from '../utils/cli/formatters/kalookiFormatter';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { kalookiOpeningPoints } from '../utils/kalookiScore';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -136,14 +137,23 @@ function KalookiPageContent() {
 
   // CLI mode wiring (mirrors ConquianPage).
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('kalooki');
+
+  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
+  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('kalooki', state);
   const cliConfig: CliGameConfig<KalookiResponse, Parameters<typeof kalookiApi.exec>> = useMemo(
     () => ({
       gameName: 'kalooki',
       parseCommand: parseKalookiCommand,
       formatResponse: formatKalookiState,
       helpText: KALOOKI_HELP,
+      localCommand: hintLocalCommand(frontendHint),
     }),
-    [],
+    [frontendHint],
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
@@ -232,14 +242,6 @@ function KalookiPageContent() {
     if (!state) return '';
     return phaseNames[state.phase] ?? '';
   }, [phaseNames, state]);
-
-  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
-  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('kalooki', state);
 
   if (!state) {
     return (

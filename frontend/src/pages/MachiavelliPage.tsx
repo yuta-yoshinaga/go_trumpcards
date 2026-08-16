@@ -38,6 +38,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { valueName } from '../utils/cardUtils';
 import { MACHIAVELLI_HELP, parseMachiavelliCommand } from '../utils/cli/commands/machiavelliCommands';
 import { formatMachiavelliState } from '../utils/cli/formatters/machiavelliFormatter';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { findHandMeld } from '../utils/hints/machiavelliHint';
 import { designToNum, evaluateRearrange, isMachiavelliValidMeld } from '../utils/machiavelliRearrange';
@@ -134,8 +135,9 @@ function MachiavelliPageContent() {
       parseCommand: parseMachiavelliCommand,
       formatResponse: formatMachiavelliState,
       helpText: MACHIAVELLI_HELP,
+      localCommand: hintLocalCommand(frontendHint),
     }),
-    [],
+    [frontendHint],
   );
   const { handleCommand } = useCliGame(gameExec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 

@@ -45,6 +45,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { PINEAPPLE_HELP, parsePineappleCommand } from '../utils/cli/commands/pineappleCommands';
 import { formatPineappleState } from '../utils/cli/formatters/pineappleFormatter';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { holdemBestFive } from '../utils/holdemBestFive';
 import { type PineappleKeepFeature, pineappleKeepFeatures } from '../utils/pineappleDiscardHint';
@@ -165,8 +166,9 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
       parseCommand: parsePineappleCommand,
       formatResponse: formatPineappleState,
       helpText: PINEAPPLE_HELP,
+      localCommand: hintLocalCommand(hint),
     }),
-    [variant],
+    [variant, hint],
   );
   const { handleCommand } = useCliGame(apiExec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 

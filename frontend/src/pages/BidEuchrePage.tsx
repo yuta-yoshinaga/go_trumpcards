@@ -28,6 +28,7 @@ import { BidEuchrePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { BIDEUCHRE_HELP, parseBidEuchreCommand } from '../utils/cli/commands/bideuchreCommands';
 import { formatBidEuchreState } from '../utils/cli/formatters/bideuchreFormatter';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 
 /** Declarations, in menu order. **Two of them are no-trump forms.** */
@@ -99,19 +100,6 @@ function BidEuchrePageContent() {
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('bideuchre');
-  const cliConfig: CliGameConfig<BidEuchreResponse, Parameters<typeof bidEuchreApi.exec>> = useMemo(
-    () => ({
-      gameName: 'bideuchre',
-      parseCommand: parseBidEuchreCommand,
-      formatResponse: formatBidEuchreState,
-      helpText: BIDEUCHRE_HELP,
-    }),
-    [],
-  );
-  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
-
-  const { cardWidth } = useCardDimensions();
-  const phaseNames = usePhaseNames('bideuchre', BIDEUCHRE_PHASE_KEYS);
 
   // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
   // だけフック数が変わってページが骨組みのまま固まる (#4561)。
@@ -120,6 +108,20 @@ function BidEuchrePageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('bideuchre', state);
+  const cliConfig: CliGameConfig<BidEuchreResponse, Parameters<typeof bidEuchreApi.exec>> = useMemo(
+    () => ({
+      gameName: 'bideuchre',
+      parseCommand: parseBidEuchreCommand,
+      formatResponse: formatBidEuchreState,
+      helpText: BIDEUCHRE_HELP,
+      localCommand: hintLocalCommand(frontendHint),
+    }),
+    [frontendHint],
+  );
+  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
+
+  const { cardWidth } = useCardDimensions();
+  const phaseNames = usePhaseNames('bideuchre', BIDEUCHRE_PHASE_KEYS);
 
   if (!state)
     return <GameSkeleton gameKey="bideuchre" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 6 }} />;

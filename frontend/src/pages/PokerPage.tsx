@@ -41,6 +41,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { POKER_HELP, parsePokerCommand } from '../utils/cli/commands/pokerCommands';
 import { formatPokerState } from '../utils/cli/formatters/pokerFormatter';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { findPlayerName } from '../utils/playerUtils';
 
@@ -119,8 +120,9 @@ function PokerPageContent() {
       parseCommand: parsePokerCommand,
       formatResponse: formatPokerState,
       helpText: POKER_HELP,
+      localCommand: hintLocalCommand(hint),
     }),
-    [],
+    [hint],
   );
   const { handleCommand } = useCliGame(exec, pokerCliConfig, state, { addInput, addOutput, addError, clearLog });
   const [betAmount, setBetAmount] = useState(10);

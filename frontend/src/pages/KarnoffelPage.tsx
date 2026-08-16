@@ -29,6 +29,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { KARNOFFEL_HELP, parseKarnoffelCommand } from '../utils/cli/commands/karnoffelCommands';
 import { formatKarnoffelState } from '../utils/cli/formatters/karnoffelFormatter';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { karnoffelRankKey } from '../utils/karnoffelRanks';
 
@@ -91,19 +92,6 @@ function KarnoffelPageContent() {
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('karnoffel');
-  const cliConfig: CliGameConfig<KarnoffelResponse, Parameters<typeof karnoffelApi.exec>> = useMemo(
-    () => ({
-      gameName: 'karnoffel',
-      parseCommand: parseKarnoffelCommand,
-      formatResponse: formatKarnoffelState,
-      helpText: KARNOFFEL_HELP,
-    }),
-    [],
-  );
-  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
-
-  const { cardWidth } = useCardDimensions();
-  const phaseNames = usePhaseNames('karnoffel', KARNOFFEL_PHASE_KEYS);
 
   // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
   // だけフック数が変わってページが骨組みのまま固まる (#4561)。
@@ -112,6 +100,20 @@ function KarnoffelPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('karnoffel', state);
+  const cliConfig: CliGameConfig<KarnoffelResponse, Parameters<typeof karnoffelApi.exec>> = useMemo(
+    () => ({
+      gameName: 'karnoffel',
+      parseCommand: parseKarnoffelCommand,
+      formatResponse: formatKarnoffelState,
+      helpText: KARNOFFEL_HELP,
+      localCommand: hintLocalCommand(frontendHint),
+    }),
+    [frontendHint],
+  );
+  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
+
+  const { cardWidth } = useCardDimensions();
+  const phaseNames = usePhaseNames('karnoffel', KARNOFFEL_PHASE_KEYS);
 
   if (!state)
     return <GameSkeleton gameKey="karnoffel" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 5 }} />;

@@ -28,6 +28,7 @@ import { BostonPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { BOSTON_HELP, parseBostonCommand } from '../utils/cli/commands/bostonCommands';
 import { formatBostonState } from '../utils/cli/formatters/bostonFormatter';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 
 /** Suit glyphs by design value (1=Spade … 4=Diamond). */
@@ -100,19 +101,6 @@ function BostonPageContent() {
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('boston');
-  const cliConfig: CliGameConfig<BostonResponse, Parameters<typeof bostonApi.exec>> = useMemo(
-    () => ({
-      gameName: 'boston',
-      parseCommand: parseBostonCommand,
-      formatResponse: formatBostonState,
-      helpText: BOSTON_HELP,
-    }),
-    [],
-  );
-  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
-
-  const { cardWidth } = useCardDimensions();
-  const phaseNames = usePhaseNames('boston', BOSTON_PHASE_KEYS);
 
   // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
   // だけフック数が変わってページが骨組みのまま固まる (#4561)。
@@ -121,6 +109,20 @@ function BostonPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('boston', state);
+  const cliConfig: CliGameConfig<BostonResponse, Parameters<typeof bostonApi.exec>> = useMemo(
+    () => ({
+      gameName: 'boston',
+      parseCommand: parseBostonCommand,
+      formatResponse: formatBostonState,
+      helpText: BOSTON_HELP,
+      localCommand: hintLocalCommand(frontendHint),
+    }),
+    [frontendHint],
+  );
+  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
+
+  const { cardWidth } = useCardDimensions();
+  const phaseNames = usePhaseNames('boston', BOSTON_PHASE_KEYS);
 
   if (!state)
     return <GameSkeleton gameKey="boston" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 13 }} />;

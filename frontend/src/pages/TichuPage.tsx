@@ -25,6 +25,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { TichuResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -122,7 +123,16 @@ function TichuPageContent() {
   } = useGameApi<TichuResponse, [ApiArgs]>((...args) => tichuApi.exec(...args));
   const { hint, hintEnabled, setHintEnabled } = useGameHint('tichu', state);
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('tichu');
-  const { handleCommand } = useCliGame<TichuResponse, [ApiArgs]>(apiCall, cliConfig, state, {
+  // The module-level config cannot see `hint`: hints are computed per render.
+  // Layer the local answer on here rather than restructuring the shared const.
+  const cliConfigWithHint = useMemo(
+    () => ({
+      ...cliConfig,
+      localCommand: hintLocalCommand(hint),
+    }),
+    [hint],
+  );
+  const { handleCommand } = useCliGame<TichuResponse, [ApiArgs]>(apiCall, cliConfigWithHint, state, {
     addInput,
     addOutput,
     addError,

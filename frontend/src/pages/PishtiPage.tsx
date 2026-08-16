@@ -28,6 +28,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { PISHTI_HELP, parsePishtiCommand } from '../utils/cli/commands/pishtiCommands';
 import { formatPishtiState } from '../utils/cli/formatters/pishtiFormatter';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -114,14 +115,23 @@ function PishtiPageContent() {
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('pishti');
+
+  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
+  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('pishti', state);
   const cliConfig: CliGameConfig<PishtiResponse, Parameters<typeof pishtiApi.exec>> = useMemo(
     () => ({
       gameName: 'pishti',
       parseCommand: parsePishtiCommand,
       formatResponse: formatPishtiState,
       helpText: PISHTI_HELP,
+      localCommand: hintLocalCommand(frontendHint),
     }),
-    [],
+    [frontendHint],
   );
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
@@ -158,14 +168,6 @@ function PishtiPageContent() {
       setPistiCelebration(null);
     }
   }, [state, playSound]);
-
-  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
-  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('pishti', state);
 
   if (!state)
     return <GameSkeleton gameKey="pishti" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 4 }} />;

@@ -27,6 +27,7 @@ import type { TrashResponse, TrashSlot } from '../types/card';
 import { TrashPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 
 const trashRunner = trashApi;
@@ -181,8 +182,9 @@ function TrashPageContent() {
         'r              Reset',
         'l              Action log',
       ],
+      localCommand: hintLocalCommand(hint),
     }),
-    [],
+    [hint],
   );
   const { handleCommand } = useCliGame(apiCall, trashCliConfig, state, { addInput, addOutput, addError, clearLog });
 

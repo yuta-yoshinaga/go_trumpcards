@@ -30,11 +30,13 @@ import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, MemoryResponse } from '../types/card';
+import type { HintResult } from '../types/hint';
 import { MemoryPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { MEMORY_HELP, parseMemoryCommand } from '../utils/cli/commands/memoryCommands';
 import { formatMemoryState } from '../utils/cli/formatters/memoryFormatter';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { type GridDir, moveFocus } from '../utils/gridNav';
 import { getMemoryHint } from '../utils/hints/memoryHint';
@@ -121,12 +123,18 @@ function MemoryPageContent() {
   const { hintEnabled: frontendHintEnabled, setHintEnabled: setFrontendHintEnabled } = useGameHint('memory', state);
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('memory');
+  // frontendHint is computed further down (it needs `seen` and knownMatchIdx, both
+  // declared after this config). A ref lets the CLI read the current hint at command
+  // time without reordering hooks around a useState.
+  const hintRef = useRef<HintResult | null>(null);
+
   const cliConfig: CliGameConfig<MemoryResponse, Parameters<typeof memoryApi.exec>> = useMemo(
     () => ({
       gameName: 'memory',
       parseCommand: parseMemoryCommand,
       formatResponse: formatMemoryState,
       helpText: MEMORY_HELP,
+      localCommand: hintLocalCommand(hintRef.current),
     }),
     [],
   );
@@ -237,6 +245,9 @@ function MemoryPageContent() {
     () => (frontendHintEnabled && state ? getMemoryHint(state, knownMatchIdx) : null),
     [frontendHintEnabled, state, knownMatchIdx],
   );
+  useEffect(() => {
+    hintRef.current = frontendHint;
+  }, [frontendHint]);
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
