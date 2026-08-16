@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -61,6 +62,35 @@ func TestWarWebPresenter_Output(t *testing.T) {
 		assert.NotNil(t, resObj.PlayerRevealed)
 		assert.NotNil(t, resObj.CpuRevealed)
 		assert.Equal(t, 2, resObj.WarPotSize)
+	})
+
+	// **各ラウンドの決着も伝える。** 以前は最終勝敗のときしかコードが出ず、
+	// 盤面の変化はリング色と不透明度だけだった。読み上げ利用者はどのラウンドで
+	// 誰が勝ったのかも、いつ戦争になったのかも知りようがなかった (#5530)。
+	t.Run("毎ラウンドの決着にコードが出る", func(t *testing.T) {
+		override := func(phase domain.WarPhase, lastWinner int) string {
+			w := setupWarTest()
+			data, _ := json.Marshal(w)
+			var raw map[string]json.RawMessage
+			_ = json.Unmarshal(data, &raw)
+			raw["ph"], _ = json.Marshal(phase)
+			raw["lw"], _ = json.Marshal(lastWinner)
+			newData, _ := json.Marshal(raw)
+			require.NoError(t, json.Unmarshal(newData, w))
+			require.Equal(t, phase, w.GetPhase(), "改竄が効いていない")
+
+			var resObj controller.WarWebOutput
+			require.NoError(t, json.Unmarshal([]byte(p.Output(w, nil)), &resObj))
+			return resObj.MessageCode
+		}
+
+		assert.Equal(t, "war.round.humanWin", override(domain.WarPhaseResolved, 0))
+		assert.Equal(t, "war.round.cpuWin", override(domain.WarPhaseResolved, 1))
+		assert.Equal(t, "war.round.warBury", override(domain.WarPhaseWarBury, -1))
+
+		// **負のコントロール: めくる前は何も言わない。** ここでコードが出ると
+		// 1 手ごとに同じ文が読み上げられる。
+		assert.Empty(t, override(domain.WarPhaseReveal, -1))
 	})
 
 	t.Run("game end message via JSON override", func(t *testing.T) {

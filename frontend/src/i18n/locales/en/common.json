@@ -2188,7 +2188,10 @@
     "missmilligan.errNothingToUndo": "Nothing to undo",
     "lingerlonger.result.lastTrickYou": "Everyone ran out at once, and you took the last trick.",
     "lingerlonger.result.lastTrickCpu": "Everyone ran out at once, and CPU{{idx}} took the last trick.",
-    "lingerlonger.result.giveUp": "You gave up. CPU{{idx}} wins."
+    "lingerlonger.result.giveUp": "You gave up. CPU{{idx}} wins.",
+    "war.round.humanWin": "You won the round.",
+    "war.round.cpuWin": "CPU won the round.",
+    "war.round.warBury": "War! Each side buries a card and reveals another."
   },
   "manual": {
     "ariaLabel": "Game Manual",
