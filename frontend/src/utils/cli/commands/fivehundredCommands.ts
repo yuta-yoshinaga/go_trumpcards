@@ -27,6 +27,8 @@ const VALID_COMMANDS = [
   'nextround',
   'r',
   'reset',
+  'h',
+  'hint',
   'help',
   '?',
 ];
@@ -80,6 +82,9 @@ export function parseFiveHundredCommand(input: string): CliParseResult<FiveHundr
     case 'r':
     case 'reset':
       return { args: ['reset'] };
+    case 'h':
+    case 'hint':
+      return { args: ['hint'] };
     default: {
       const suggestion = suggestCommand(cmd, VALID_COMMANDS);
       if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
@@ -115,4 +120,5 @@ export const FIVE_HUNDRED_HELP = [
   'p <idx> [suit]     - Play a card (suit = joker nomination in NT)',
   'n / nr             - Next trick / next round',
   'r/reset            - Reset game',
+  'h/hint             - Get a hint',
 ] as const;

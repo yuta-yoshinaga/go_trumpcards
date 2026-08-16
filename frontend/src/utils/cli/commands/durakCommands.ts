@@ -54,6 +54,9 @@ export function parseDurakCommand(input: string): CliParseResult<DurakArgs> {
     case 'r':
     case 'reset':
       return { args: ['reset'] as DurakArgs };
+    case 'h':
+    case 'hint':
+      return { args: ['hint'] };
     default: {
       const suggestion = suggestCommand(cmd, DURAK_COMMANDS);
       if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
@@ -70,4 +73,5 @@ export const DURAK_HELP: string[] = [
   't/take               - Take the table cards (give up defending)',
   'sort <suit|value>    - Sort your hand',
   'r/reset              - Reset game',
+  'h/hint      - Get a hint',
 ];

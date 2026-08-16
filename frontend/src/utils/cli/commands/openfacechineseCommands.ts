@@ -47,6 +47,9 @@ export function parseOpenfacechineseCommand(input: string): CliParseResult<OpenF
     case 'r':
     case 'reset':
       return { args: ['reset'] };
+    case 'h':
+    case 'hint':
+      return { args: ['hint'] };
     default: {
       const suggestion = suggestCommand(cmd, VALID_COMMANDS);
       if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
@@ -61,4 +64,5 @@ export const OPENFACECHINESE_HELP: string[] = [
   'n/next          - Deal the next round',
   'log             - Show action log',
   'r/reset         - Reset game',
+  'h/hint      - Get a hint',
 ];
