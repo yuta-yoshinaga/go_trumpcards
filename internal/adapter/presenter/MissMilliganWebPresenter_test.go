@@ -110,6 +110,30 @@ func TestMissMilliganWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "test error", result.Message)
 	})
 
+	// 不正な操作は文言ではなくコードで返す。以前は英語の完成文を Message に
+	// 入れており、日本語ロケールでもそれがそのまま出ていた (#5556)。
+	t.Run("a rejected move is reported as a code, not a phrase", func(t *testing.T) {
+		g := new(interfaces.MockMissMilliganGame)
+		setupMissMilliganOutputMock(g)
+
+		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "missmilligan.errNotDescendingRun", nil)
+		result := parseMissMilliganOutput(t, new(MissMilliganWebPresenter).Output(g, err))
+
+		assert.Equal(t, "missmilligan.errNotDescendingRun", result.MessageCode)
+		// 完成文が残っていると、クライアントはコードより先にそれを出しうる。
+		assert.Empty(t, result.Message)
+	})
+
+	t.Run("a rejected move carries its params", func(t *testing.T) {
+		g := new(interfaces.MockMissMilliganGame)
+		setupMissMilliganOutputMock(g)
+
+		err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "missmilligan.errBadColumn",
+			map[string]string{"col": "9"})
+		result := parseMissMilliganOutput(t, new(MissMilliganWebPresenter).Output(g, err))
+		assert.Equal(t, "9", result.MessageParams["col"])
+	})
+
 	for _, tc := range []struct {
 		name string
 		val  domain.MissMilliganPhase
