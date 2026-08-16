@@ -42,6 +42,14 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 					"chips", strconv.Itoa(cfg.AddonChips),
 					"after", strconv.Itoa(cfg.AddonAfterHand)) + "\n")
 			}
+		} else {
+			// **ブラインド額はモードによらず効いている** (minRaise = BigBlind)。
+			// tournamentLine の中にしか無かったので、トーナメントでない大半の
+			// プレイでは額が一切出ていなかった。Web のヘッダーは常に出している。
+			// トーナメント側では tournamentLine が同じ SB/BB を含むので重ねない。
+			b.WriteString(i18n.Tf("holdem.blindsLine",
+				"sb", strconv.Itoa(cfg.SmallBlind),
+				"bb", strconv.Itoa(cfg.BigBlind)) + "\n")
 		}
 
 		b.WriteString(i18n.Tf("holdem.tableMax", "n", strconv.Itoa(h.GetPlayerCnt())) + "\n")
