@@ -29011,8 +29011,12 @@ components:
         rank:
           type: integer
           description: "0=no bull, 1-9=niu 1 through niu 9, 10=niu niu. 0 while hidden."
-        rankLabel:
+        rankKey:
           type: string
+          description: |
+            Locale-independent rank key: `none`, `niuniu`, or `n1`..`n9`. Empty
+            while hidden. The client renders the wording; the server used to send
+            the Japanese label itself, which ignored the locale.
         multiplier:
           type: integer
         payout:
@@ -29047,8 +29051,12 @@ components:
             `chips / maxMultiplier`, NOT `chips` -- a banker's niu niu takes
             three times the stake, so betting the whole stack leaves the player
             unable to pay. Sent so that division is not reinvented client-side.
-        lastResult:
+        bankerRankKey:
           type: string
+          description: |
+            The banker's rank key once the round settles, empty before that.
+            Replaces the pre-built Japanese summary previously sent as
+            `lastResult`.
         phase:
           type: integer
           description: "1=Bet, 2=End"

@@ -20,7 +20,7 @@ function hand(overrides?: Partial<NiuNiuHand>): NiuNiuHand {
     bet: 100,
     comboIdx: [0, 1, 2],
     rank: 10,
-    rankLabel: '牛牛',
+    rankKey: 'niuniu',
     multiplier: 3,
     payout: 0,
     hidden: false,
@@ -29,7 +29,7 @@ function hand(overrides?: Partial<NiuNiuHand>): NiuNiuHand {
 }
 
 const hiddenHand = (bet = 20) =>
-  hand({ hidden: true, cards: [null, null, null, null, null], rankLabel: '', comboIdx: [], multiplier: 0, bet });
+  hand({ hidden: true, cards: [null, null, null, null, null], rankKey: '', comboIdx: [], multiplier: 0, bet });
 
 function makeState(overrides?: Partial<NiuNiuResponse>): NiuNiuResponse {
   return {
@@ -43,7 +43,7 @@ function makeState(overrides?: Partial<NiuNiuResponse>): NiuNiuResponse {
     bankerIdx: 3,
     chips: 900,
     maxMultiplier: 3,
-    lastResult: '',
+    bankerRankKey: '',
     phase: 1,
     message: '',
     ...overrides,
@@ -93,7 +93,7 @@ describe('NiuNiuPage', () => {
   it('omits the multiplier at even money', async () => {
     mockExec.mockResolvedValue(
       makeState({
-        seats: [{ name: 'あなた', isCpu: false, hand: hand({ rank: 3, rankLabel: '牛3', multiplier: 1 }) }],
+        seats: [{ name: 'あなた', isCpu: false, hand: hand({ rank: 3, rankKey: 'n3', multiplier: 1 }) }],
         bankerHand: undefined,
       }),
     );
@@ -125,18 +125,31 @@ describe('NiuNiuPage', () => {
 
   // The round settles at the bet, so the stake buttons go away entirely.
   it('hides the stake buttons once the round has settled', async () => {
-    mockExec.mockResolvedValue(makeState({ phase: 2, lastResult: '親: 牛牛' }));
+    mockExec.mockResolvedValue(makeState({ phase: 2, bankerRankKey: 'niuniu' }));
     renderWithProviders(<NiuNiuPage />);
     await waitFor(() => expect(screen.queryByRole('button', { name: '100' })).not.toBeInTheDocument());
+  });
+
+  // The page renders the rank from the server's key, not from a display string
+  // the server picked -- an English-locale player used to see 牛牛 here (#5567).
+  it('names the rank on a revealed hand', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        seats: [{ name: 'あなた', isCpu: false, hand: hand({ rank: 3, rankKey: 'n3', multiplier: 1 }) }],
+        bankerHand: undefined,
+      }),
+    );
+    renderWithProviders(<NiuNiuPage />);
+    await waitFor(() => expect(screen.getByText('牛3')).toBeInTheDocument());
   });
 
   it('shows the payout and the combo hint after the round', async () => {
     mockExec.mockResolvedValue(
       makeState({
         phase: 2,
-        lastResult: '親: 無牛',
+        bankerRankKey: 'none',
         seats: [{ name: 'あなた', isCpu: false, hand: hand({ payout: 300 }) }],
-        bankerHand: hand({ rank: 0, rankLabel: '無牛', multiplier: 1, comboIdx: [] }),
+        bankerHand: hand({ rank: 0, rankKey: 'none', multiplier: 1, comboIdx: [] }),
       }),
     );
     renderWithProviders(<NiuNiuPage />);

@@ -26,10 +26,11 @@ type NiuNiuGame interface {
 	GetBankerHand() *domain.NiuNiuHand
 	// GetLastResult 直近の精算の要約を取得する
 	GetLastResult() string
+	// GetBankerRankKey は親の格をロケール非依存の識別子で返す。
+	// ドメインの NiuNiuRankLabel が返す表示文字列と違い、presenter 側で i18n に通すためのもの。
+	GetBankerRankKey() string
 	// GetGameEndFlag 局が終わっているか
 	GetGameEndFlag() bool
-	// GetRankLabel 格の表示名を取得する
-	GetRankLabel(rank domain.NiuNiuRank) string
 	// GetMultiplier 格の配当倍率を取得する
 	GetMultiplier(rank domain.NiuNiuRank) int
 }

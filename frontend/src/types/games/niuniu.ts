@@ -19,8 +19,12 @@ export interface NiuNiuHand {
   comboIdx: number[];
   /** 0 = no bull, 1-9 = niu 1 through niu 9, 10 = niu niu. 0 while hidden. */
   rank: number;
-  /** Display name for the rank, e.g. "牛牛". Empty while hidden. */
-  rankLabel: string;
+  /**
+   * Locale-independent rank key: `"none"`, `"niuniu"`, or `"n1"`..`"n9"`. Empty
+   * while hidden. Render it with `niuniuRankText` -- the server used to send the
+   * Japanese label itself, which ignored the locale (#5567).
+   */
+  rankKey: string;
   /** Payout multiplier for winning with this rank. 0 while hidden. */
   multiplier: number;
   payout: number;
@@ -49,6 +53,10 @@ export interface NiuNiuResponse extends BaseGameResponse {
    * chips. Sent so the figure is not written down twice.
    */
   maxMultiplier: number;
-  lastResult: string;
+  /**
+   * The banker's rank key once the round settles, empty before that. Replaces
+   * the pre-built Japanese summary the server used to send (#5567).
+   */
+  bankerRankKey: string;
   phase: number;
 }

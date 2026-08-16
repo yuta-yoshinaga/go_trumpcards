@@ -43,8 +43,8 @@ func setupNiuNiuWebMockDefaults(g *interfaces.MockNiuNiuGame) {
 	g.On("GetMaxMultiplier").Return(domain.NiuNiuMaxMultiplier).Maybe()
 	g.On("GetBankerIdx").Return(3).Maybe()
 	g.On("GetLastResult").Return("").Maybe()
+	g.On("GetBankerRankKey").Return("none").Maybe()
 	g.On("GetGameEndFlag").Return(false).Maybe()
-	g.On("GetRankLabel", mock.Anything).Return("牛牛").Maybe()
 	g.On("GetMultiplier", mock.Anything).Return(3).Maybe()
 
 	g.On("GetSeats").Return([]*domain.NiuNiuSeat{
@@ -103,7 +103,7 @@ func TestNiuNiuWebPresenter_Output(t *testing.T) {
 		require.NotNil(t, result.BankerHand)
 		assert.True(t, result.BankerHand.Hidden)
 		assert.Zero(t, result.BankerHand.Rank)
-		assert.Empty(t, result.BankerHand.RankLabel)
+		assert.Empty(t, result.BankerHand.RankKey)
 		assert.Empty(t, result.BankerHand.ComboIdx)
 		for i, c := range result.BankerHand.Cards {
 			assert.Nil(t, c, "banker card %d leaked", i)
@@ -129,7 +129,7 @@ func TestNiuNiuWebPresenter_Output(t *testing.T) {
 		assert.False(t, own.Hidden)
 		assert.NotNil(t, own.Cards[0])
 		assert.Equal(t, 10, own.Rank)
-		assert.Equal(t, "牛牛", own.RankLabel)
+		assert.Equal(t, "niuniu", own.RankKey)
 		assert.Equal(t, 3, own.Multiplier)
 	})
 
@@ -152,13 +152,51 @@ func TestNiuNiuWebPresenter_Output(t *testing.T) {
 		g.On("GetGameEndFlag").Return(true)
 		g.On("GetPhase").Return(domain.NiuNiuPhaseEnd)
 		g.On("GetLastResult").Return("親: 牛牛")
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetBankerRankKey")
+		g.On("GetBankerRankKey").Return("niuniu")
 
 		result := parseNiuNiuOutput(t, new(NiuNiuWebPresenter).Output(g, nil))
 		assert.False(t, result.BankerHand.Hidden)
 		assert.NotNil(t, result.BankerHand.Cards[0])
 		assert.False(t, result.Seats[1].Hand.Hidden)
-		assert.Equal(t, "niuniu.roundOver", result.MessageCode)
-		assert.Equal(t, "親: 牛牛", result.Message)
+		assert.Equal(t, "niuniu.roundOverNiuNiu", result.MessageCode)
+	})
+
+	// **完成済みの日本語を params に載せない。** 以前は "親: 牛牛" をそのまま
+	// messageParams["result"] に入れており、英語ロケールでもそれが出ていた (#5567)。
+	t.Run("the round-over message carries no pre-formatted label", func(t *testing.T) {
+		for _, c := range []struct {
+			rankKey  string
+			wantCode string
+			wantN    string
+		}{
+			{"none", "niuniu.roundOverNone", ""},
+			{"niuniu", "niuniu.roundOverNiuNiu", ""},
+			{"n7", "niuniu.roundOverN", "7"},
+		} {
+			g := new(interfaces.MockNiuNiuGame)
+			setupNiuNiuWebMockDefaults(g)
+			g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetGameEndFlag")
+			g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetPhase")
+			g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetBankerRankKey")
+			g.On("GetGameEndFlag").Return(true)
+			g.On("GetPhase").Return(domain.NiuNiuPhaseEnd)
+			g.On("GetBankerRankKey").Return(c.rankKey)
+
+			result := parseNiuNiuOutput(t, new(NiuNiuWebPresenter).Output(g, nil))
+			assert.Equal(t, c.wantCode, result.MessageCode, "rank %s", c.rankKey)
+			if c.wantN == "" {
+				assert.Empty(t, result.MessageParams, "数字の無い格は params を持たない")
+			} else {
+				assert.Equal(t, c.wantN, result.MessageParams["n"])
+			}
+			// 日本語が params に混ざっていたら、それはロケールを無視する経路。
+			for k, v := range result.MessageParams {
+				for _, r := range v {
+					assert.Less(t, r, rune(128), "messageParams[%s] に非ASCII: %q", k, v)
+				}
+			}
+		}
 	})
 
 	t.Run("a seat with no hand sends none", func(t *testing.T) {
