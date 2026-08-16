@@ -72,6 +72,12 @@ func (p *BakersDozenCuiPresenter) Output(bd interfaces.BakersDozenGame, lastErr 
 		case domain.BakersDozenPhasePlaying:
 			if bd.IsStalemate() {
 				b.WriteString(color.Red(i18n.T("cuiSolitaireStalemate")) + "\n")
+				// Tell the player how many undos escape the dead end, matching the
+				// web StalemateEscapeButton.
+				if n := bd.UndoToEscape(); n > 0 {
+					b.WriteString(color.Yellow(i18n.Tf("cuiSolitaireUndoToEscape",
+						"count", strconv.Itoa(n))) + "\n")
+				}
 			}
 			b.WriteString(i18n.T("bakersdozen.emptyColNote") + "\n")
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",

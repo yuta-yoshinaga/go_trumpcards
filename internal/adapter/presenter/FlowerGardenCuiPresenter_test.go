@@ -18,6 +18,7 @@ func setupFlowerGardenCuiMockDefaults(bg *interfaces.MockFlowerGardenGame) {
 	bg.On("GetPhase").Return(domain.FlowerGardenPhasePlaying).Maybe()
 	bg.On("GetMoveCount").Return(0).Maybe()
 	bg.On("IsStalemate").Return(false).Maybe()
+	bg.On("UndoToEscape").Return(0).Maybe()
 
 	var tableau [domain.FlowerGardenTableauCnt][]*domain.FlowerGardenTableauCard
 	for i := range domain.FlowerGardenTableauCnt {
@@ -112,6 +113,7 @@ func TestFlowerGardenCuiPresenter_Output(t *testing.T) {
 		setupFlowerGardenCuiMockDefaults(bg)
 		bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "IsStalemate")
 		bg.On("IsStalemate").Return(true)
+		bg.On("UndoToEscape").Return(0).Maybe()
 
 		p := new(FlowerGardenCuiPresenter)
 		result := p.Output(bg, nil)

@@ -19,6 +19,7 @@ func setupKlondikeCuiMockDefaults(kg *interfaces.MockKlondikeGame) {
 	kg.On("GetStockCount").Return(24).Maybe()
 	kg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	kg.On("IsStalemate").Return(false).Maybe()
+	kg.On("UndoToEscape").Return(0).Maybe()
 	kg.On("CanAutoComplete").Return(false).Maybe()
 	kg.On("GetDrawCount").Return(1).Maybe()
 	kg.On("GetScore").Return(0).Maybe()
@@ -147,6 +148,7 @@ func TestKlondikeCuiPresenter_Output(t *testing.T) {
 		kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "IsStalemate")
 		kg.On("CanAutoComplete").Return(false).Maybe()
 		kg.On("IsStalemate").Return(true)
+		kg.On("UndoToEscape").Return(0).Maybe()
 
 		p := new(KlondikeCuiPresenter)
 		result := p.Output(kg, nil)

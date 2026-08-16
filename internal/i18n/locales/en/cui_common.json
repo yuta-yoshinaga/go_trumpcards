@@ -21,6 +21,7 @@
   "cuiHintWeakHand": "Weak hand",
   "cuiHintNone": "No hint available.",
   "cuiSolitaireStalemate": "Stalemate",
+  "cuiSolitaireUndoToEscape": "Undo {{count}} move(s) to escape the dead end (undo {{count}}, or repeat u)",
   "cuiSolitaireGameClear": "Game clear!",
   "cuiSolitaireGameOver": "Game over",
   "cuiSolitaireGameOverSummary": "Reached {{count}}/{{total}} cards on the foundations ({{percent}}%)",

@@ -17,6 +17,7 @@ func setupBakersDozenCuiMockDefaults(bg *interfaces.MockBakersDozenGame) {
 	bg.On("GetPhase").Return(domain.BakersDozenPhasePlaying).Maybe()
 	bg.On("GetMoveCount").Return(0).Maybe()
 	bg.On("IsStalemate").Return(false).Maybe()
+	bg.On("UndoToEscape").Return(0).Maybe()
 
 	var tableau [domain.BakersDozenTableauCnt][]*domain.BakersDozenTableauCard
 	for i := range domain.BakersDozenTableauCnt {
@@ -115,6 +116,7 @@ func TestBakersDozenCuiPresenter_Output(t *testing.T) {
 		setupBakersDozenCuiMockDefaults(bg)
 		bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "IsStalemate")
 		bg.On("IsStalemate").Return(true)
+		bg.On("UndoToEscape").Return(0).Maybe()
 
 		p := new(BakersDozenCuiPresenter)
 		result := p.Output(bg, nil)

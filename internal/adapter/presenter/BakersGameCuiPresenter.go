@@ -78,6 +78,12 @@ func (p *BakersGameCuiPresenter) Output(f interfaces.FreeCellGame, lastErr error
 		case domain.FreeCellPhasePlaying:
 			if f.IsStalemate() {
 				b.WriteString(color.Red(i18n.T("cuiSolitaireStalemate")) + "\n")
+				// Tell the player how many undos escape the dead end, matching the
+				// web StalemateEscapeButton.
+				if n := f.UndoToEscape(); n > 0 {
+					b.WriteString(color.Yellow(i18n.Tf("cuiSolitaireUndoToEscape",
+						"count", strconv.Itoa(n))) + "\n")
+				}
 			}
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
 				"count", strconv.Itoa(f.GetMoveCount())) + "\n")

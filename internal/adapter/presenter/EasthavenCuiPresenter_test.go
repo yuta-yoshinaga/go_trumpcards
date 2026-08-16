@@ -16,6 +16,7 @@ func setupEasthavenCuiMockDefaults(eg *interfaces.MockEasthavenGame) {
 	eg.On("GetMoveCount").Return(0).Maybe()
 	eg.On("GetStockCount").Return(31).Maybe()
 	eg.On("IsStalemate").Return(false).Maybe()
+	eg.On("UndoToEscape").Return(0).Maybe()
 
 	var tableau [domain.EasthavenTableauCnt][]*domain.KlondikeTableauCard
 	for i := range domain.EasthavenTableauCnt {
@@ -54,6 +55,7 @@ func TestEasthavenCuiPresenter_Output(t *testing.T) {
 		eg.On("GetMoveCount").Return(5).Maybe()
 		eg.On("GetStockCount").Return(0).Maybe()
 		eg.On("IsStalemate").Return(true).Maybe()
+		eg.On("UndoToEscape").Return(0).Maybe()
 		var tableau [domain.EasthavenTableauCnt][]*domain.KlondikeTableauCard
 		eg.On("GetTableau").Return(tableau).Maybe()
 		var foundation [domain.EasthavenFoundationCnt][]*domain.Card

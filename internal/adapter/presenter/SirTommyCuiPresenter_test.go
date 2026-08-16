@@ -15,6 +15,7 @@ func setupSirTommyCuiMockDefaults(g *interfaces.MockSirTommyGame) {
 	g.On("GetPhase").Return(domain.SirTommyPhasePlaying).Maybe()
 	g.On("GetMoveCount").Return(0).Maybe()
 	g.On("IsStalemate").Return(false).Maybe()
+	g.On("UndoToEscape").Return(0).Maybe()
 	g.On("GetStockCount").Return(5).Maybe()
 	g.On("GetStockTop").Return(domain.NewCard(domain.CardDesignSpade, 7, false)).Maybe()
 
@@ -82,6 +83,7 @@ func TestSirTommyCuiPresenter_Output(t *testing.T) {
 		g.On("GetPhase").Return(domain.SirTommyPhasePlaying).Maybe()
 		g.On("GetMoveCount").Return(1).Maybe()
 		g.On("IsStalemate").Return(true).Maybe()
+		g.On("UndoToEscape").Return(0).Maybe()
 		g.On("GetStockCount").Return(0).Maybe()
 		g.On("GetStockTop").Return((*domain.Card)(nil)).Maybe()
 		var foundations [domain.SirTommyFoundationCnt][]*domain.Card

@@ -74,6 +74,12 @@ func (p *SpiderCuiPresenter) Output(s interfaces.SpiderGame, lastErr error) stri
 		case domain.SpiderPhasePlaying:
 			if s.IsStalemate() {
 				b.WriteString(color.Red(i18n.T("cuiSolitaireStalemate")) + "\n")
+				// Tell the player how many undos escape the dead end, matching the
+				// web StalemateEscapeButton.
+				if n := s.UndoToEscape(); n > 0 {
+					b.WriteString(color.Yellow(i18n.Tf("cuiSolitaireUndoToEscape",
+						"count", strconv.Itoa(n))) + "\n")
+				}
 			}
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
 				"count", strconv.Itoa(s.GetMoveCount())) + "\n")

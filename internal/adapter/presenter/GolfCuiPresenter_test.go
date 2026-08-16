@@ -20,6 +20,7 @@ func setupGolfCuiMockDefaults(gg *interfaces.MockGolfGame) {
 	gg.On("GetStockCount").Return(16).Maybe()
 	gg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	gg.On("IsStalemate").Return(false).Maybe()
+	gg.On("UndoToEscape").Return(0).Maybe()
 
 	var layout [domain.GolfColCnt][domain.GolfRowCnt]*domain.GolfCard
 	// Add some cards
@@ -100,6 +101,7 @@ func TestGolfCuiPresenterOutput_Stalemate(t *testing.T) {
 	gg.On("GetStockCount").Return(0).Maybe()
 	gg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	gg.On("IsStalemate").Return(true).Maybe()
+	gg.On("UndoToEscape").Return(0).Maybe()
 	var layout [domain.GolfColCnt][domain.GolfRowCnt]*domain.GolfCard
 	gg.On("GetLayout").Return(layout).Maybe()
 	for c := range domain.GolfColCnt {

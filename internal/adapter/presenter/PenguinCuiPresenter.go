@@ -80,6 +80,12 @@ func (p *PenguinCuiPresenter) Output(pg interfaces.PenguinGame, lastErr error) s
 		case domain.PenguinPhasePlaying:
 			if pg.IsStalemate() {
 				b.WriteString(color.Red(i18n.T("cuiSolitaireStalemate")) + "\n")
+				// Tell the player how many undos escape the dead end, matching the
+				// web StalemateEscapeButton.
+				if n := pg.UndoToEscape(); n > 0 {
+					b.WriteString(color.Yellow(i18n.Tf("cuiSolitaireUndoToEscape",
+						"count", strconv.Itoa(n))) + "\n")
+				}
 			}
 			// **上限が出ておらず、拒否されたコマンドで初めて気づく形だった
 			// (#4802)。**姉妹の Eight Off は supermoveLine を毎ターン出し、

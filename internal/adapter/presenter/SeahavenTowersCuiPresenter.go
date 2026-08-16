@@ -75,6 +75,12 @@ func (p *SeahavenTowersCuiPresenter) Output(s interfaces.SeahavenTowersGame, las
 		case domain.SeahavenTowersPhasePlaying:
 			if s.IsStalemate() {
 				b.WriteString(color.Red(i18n.T("cuiSolitaireStalemate")) + "\n")
+				// Tell the player how many undos escape the dead end, matching the
+				// web StalemateEscapeButton.
+				if n := s.UndoToEscape(); n > 0 {
+					b.WriteString(color.Yellow(i18n.Tf("cuiSolitaireUndoToEscape",
+						"count", strconv.Itoa(n))) + "\n")
+				}
 			}
 			// Show the one-move stack limit (1 + empty reserved cells, the web
 			// formula) so the human isn't surprised by a rejected multi-card move.

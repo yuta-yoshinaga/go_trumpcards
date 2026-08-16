@@ -97,6 +97,12 @@ func (p *FreeCellCuiPresenter) Output(f interfaces.FreeCellGame, lastErr error) 
 		case domain.FreeCellPhasePlaying:
 			if f.IsStalemate() {
 				b.WriteString(color.Red(i18n.T("cuiSolitaireStalemate")) + "\n")
+				// Tell the player how many undos escape the dead end, matching the
+				// web StalemateEscapeButton.
+				if n := f.UndoToEscape(); n > 0 {
+					b.WriteString(color.Yellow(i18n.Tf("cuiSolitaireUndoToEscape",
+						"count", strconv.Itoa(n))) + "\n")
+				}
 			}
 			// **何枚まとめて動かせるかは CUI に出ていなかった (#4777)。**Web は
 			// fc-supermove-limit で常時出し、上限を超える列には赤いリングまで
