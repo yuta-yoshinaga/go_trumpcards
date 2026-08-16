@@ -149,11 +149,11 @@ func (mm *MissMilligan) Deal() error {
 		return err
 	}
 	if len(mm.stock) == 0 {
-		return errors.New("no cards in stock")
+		return NewDomainErrorCode(ErrDeckExhausted, "missmilligan.errNoStock", nil)
 	}
 	if len(mm.waived) > 0 {
 		// 保持したままの配り足しは、戻す先を自分で潰しかねない。
-		return errors.New("return the waived cards before dealing")
+		return NewDomainErrorCode(ErrInvalidPlay, "missmilligan.errReturnWaivedFirst", nil)
 	}
 	mm.takeSnapshot()
 	dealt := 0
@@ -178,13 +178,13 @@ func (mm *MissMilligan) MoveTableauToTableau(fromCol, cardIndex, toCol int) erro
 		return err
 	}
 	if fromCol < 0 || fromCol >= MissMilliganTableauCnt {
-		return errors.New("invalid from column")
+		return NewDomainErrorCode(ErrInvalidPlay, "missmilligan.errBadFromColumn", nil)
 	}
 	if toCol < 0 || toCol >= MissMilliganTableauCnt {
-		return errors.New("invalid to column")
+		return NewDomainErrorCode(ErrInvalidPlay, "missmilligan.errBadToColumn", nil)
 	}
 	if fromCol == toCol {
-		return errors.New("from and to columns are the same")
+		return NewDomainErrorCode(ErrInvalidPlay, "missmilligan.errSameColumn", nil)
 	}
 	fromCards := mm.tableau[fromCol]
 	// -1 は「最上段 1 枚」。BeleagueredCastle など既存のソリティアと同じ約束。
@@ -192,14 +192,14 @@ func (mm *MissMilligan) MoveTableauToTableau(fromCol, cardIndex, toCol int) erro
 		cardIndex = len(fromCards) - 1
 	}
 	if cardIndex < 0 || cardIndex >= len(fromCards) {
-		return errors.New("invalid card index")
+		return NewDomainErrorCode(ErrInvalidCard, "missmilligan.errBadCardIndex", nil)
 	}
 	group := fromCards[cardIndex:]
 	if !missMilliganIsRun(group) {
-		return errors.New("cards do not form an alternating-colour descending run")
+		return NewDomainErrorCode(ErrInvalidPlay, "missmilligan.errNotDescendingRun", nil)
 	}
 	if !mm.canPlaceOnTableau(group[0].Card, toCol) {
-		return errors.New("cannot place card on tableau")
+		return NewDomainErrorCode(ErrInvalidPlay, "missmilligan.errCannotPlaceTableau", nil)
 	}
 	mm.takeSnapshot()
 	// group は fromCards の内部を指しているので、切り詰める前にコピーを取る。
@@ -218,16 +218,16 @@ func (mm *MissMilligan) MoveTableauToFoundation(col int) error {
 		return err
 	}
 	if col < 0 || col >= MissMilliganTableauCnt {
-		return errors.New("invalid column")
+		return NewDomainErrorCode(ErrInvalidPlay, "missmilligan.errBadColumn", nil)
 	}
 	fromCards := mm.tableau[col]
 	if len(fromCards) == 0 {
-		return errors.New("tableau column is empty")
+		return NewDomainErrorCode(ErrInvalidPlay, "missmilligan.errColumnEmpty", nil)
 	}
 	card := fromCards[len(fromCards)-1].Card
 	fIdx := mm.findFoundation(card)
 	if fIdx < 0 {
-		return errors.New("cannot place card on foundation")
+		return NewDomainErrorCode(ErrInvalidPlay, "missmilligan.errCannotPlaceFoundation", nil)
 	}
 	mm.takeSnapshot()
 	mm.tableau[col] = fromCards[:len(fromCards)-1]
@@ -243,24 +243,24 @@ func (mm *MissMilligan) Waive(col, cardIndex int) error {
 		return err
 	}
 	if len(mm.stock) > 0 {
-		return errors.New("waiving is only allowed once the stock is exhausted")
+		return NewDomainErrorCode(ErrInvalidPlay, "missmilligan.errWaiveNeedsEmptyStock", nil)
 	}
 	if len(mm.waived) > 0 {
-		return errors.New("cards are already waived")
+		return NewDomainErrorCode(ErrInvalidPlay, "missmilligan.errAlreadyWaived", nil)
 	}
 	if col < 0 || col >= MissMilliganTableauCnt {
-		return errors.New("invalid column")
+		return NewDomainErrorCode(ErrInvalidPlay, "missmilligan.errBadColumn", nil)
 	}
 	fromCards := mm.tableau[col]
 	if cardIndex == -1 {
 		cardIndex = len(fromCards) - 1
 	}
 	if cardIndex < 0 || cardIndex >= len(fromCards) {
-		return errors.New("invalid card index")
+		return NewDomainErrorCode(ErrInvalidCard, "missmilligan.errBadCardIndex", nil)
 	}
 	group := fromCards[cardIndex:]
 	if !missMilliganIsRun(group) {
-		return errors.New("cards do not form an alternating-colour descending run")
+		return NewDomainErrorCode(ErrInvalidPlay, "missmilligan.errNotDescendingRun", nil)
 	}
 	mm.takeSnapshot()
 	waived := make([]*Card, 0, len(group))
@@ -279,13 +279,13 @@ func (mm *MissMilligan) PlaceWaived(toCol int) error {
 		return err
 	}
 	if len(mm.waived) == 0 {
-		return errors.New("nothing is waived")
+		return NewDomainErrorCode(ErrInvalidPlay, "missmilligan.errNothingWaived", nil)
 	}
 	if toCol < 0 || toCol >= MissMilliganTableauCnt {
-		return errors.New("invalid column")
+		return NewDomainErrorCode(ErrInvalidPlay, "missmilligan.errBadColumn", nil)
 	}
 	if !mm.canPlaceOnTableau(mm.waived[0], toCol) {
-		return errors.New("cannot place waived cards there")
+		return NewDomainErrorCode(ErrInvalidPlay, "missmilligan.errCannotPlaceWaived", nil)
 	}
 	mm.takeSnapshot()
 	for _, c := range mm.waived {
@@ -306,15 +306,15 @@ func (mm *MissMilligan) MoveWaivedToFoundation() error {
 		return err
 	}
 	if len(mm.waived) == 0 {
-		return errors.New("nothing is waived")
+		return NewDomainErrorCode(ErrInvalidPlay, "missmilligan.errNothingWaived", nil)
 	}
 	if len(mm.waived) > 1 {
-		return errors.New("only a single waived card can go to a foundation")
+		return NewDomainErrorCode(ErrInvalidPlay, "missmilligan.errWaivedSingleOnly", nil)
 	}
 	card := mm.waived[0]
 	fIdx := mm.findFoundation(card)
 	if fIdx < 0 {
-		return errors.New("cannot place card on foundation")
+		return NewDomainErrorCode(ErrInvalidPlay, "missmilligan.errCannotPlaceFoundation", nil)
 	}
 	mm.takeSnapshot()
 	mm.waived = nil
@@ -422,7 +422,7 @@ func (mm *MissMilligan) tableauHint() *MissMilliganHint {
 // AutoComplete 基礎札へ送れる札がなくなるまで自動で送る
 func (mm *MissMilligan) AutoComplete() error {
 	if mm.phase != MissMilliganPhasePlaying {
-		return errors.New("game is not in playing phase")
+		return NewDomainErrorCode(ErrWrongPhase, "missmilligan.errNotPlaying", nil)
 	}
 	moved := false
 	for {
@@ -442,7 +442,7 @@ func (mm *MissMilligan) AutoComplete() error {
 		moved = true
 	}
 	if !moved {
-		return errors.New("no card can be auto-completed")
+		return NewDomainErrorCode(ErrInvalidPlay, "missmilligan.errNoAutoMove", nil)
 	}
 	return nil
 }
@@ -450,7 +450,7 @@ func (mm *MissMilligan) AutoComplete() error {
 // Undo 直前の 1 手を取り消す
 func (mm *MissMilligan) Undo() error {
 	if len(mm.history) == 0 {
-		return errors.New("nothing to undo")
+		return NewDomainErrorCode(ErrInvalidPlay, "missmilligan.errNothingToUndo", nil)
 	}
 	snap := mm.history[len(mm.history)-1]
 	mm.history = mm.history[:len(mm.history)-1]
@@ -516,7 +516,7 @@ func (mm *MissMilligan) IsStalemate() bool { return mm.isStalemate }
 // requirePlaying プレイ中でなければエラーを返す
 func (mm *MissMilligan) requirePlaying() error {
 	if mm.phase != MissMilliganPhasePlaying {
-		return errors.New("game is not in playing phase")
+		return NewDomainErrorCode(ErrWrongPhase, "missmilligan.errNotPlaying", nil)
 	}
 	return nil
 }
