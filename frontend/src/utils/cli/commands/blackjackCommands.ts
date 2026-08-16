@@ -103,6 +103,9 @@ export function parseBlackjackCommand(input: string): CliParseResult<BjArgs> {
       // サーバ (BlackJackCuiController) は amount / ppBet / t3Bet / handCount の
       // 4引数を受ける。金額しか読まないと、同じページのベットフォームと独立 CUI で
       // 使えるサイドベットと複数ハンドが CLI だけ使えない (#5474)。
+      // **余った引数を黙って捨てない。** `b 100 20 30 2 oops` が通ると、
+      // 打ち間違いに気づかないまま意図と違うベットが成立する。
+      if (args.length > 4) return { error: BET_USAGE };
       const options: BlackJackBetOptions = {};
       const extras: [keyof BlackJackBetOptions, number][] = [
         ['perfectPairsBet', 0],

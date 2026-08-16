@@ -125,6 +125,13 @@ describe('parseBlackjackCommand bet with side bets and multiple hands', () => {
     }
   });
 
+  // レビュー指摘。5つ目のトークンを黙って捨てると、打ち間違いに気づかないまま
+  // 意図と違うベットが成立する。
+  it('refuses a fifth token instead of ignoring it', () => {
+    expect('error' in parseBlackjackCommand('b 100 20 30 2 oops')).toBe(true);
+    expect('error' in parseBlackjackCommand('b 100 20 30 2 5')).toBe(true);
+  });
+
   it('documents the extended form in the help text', () => {
     expect(BLACKJACK_HELP.some((l) => /ppBet|handCount/.test(l))).toBe(true);
   });
