@@ -148,3 +148,38 @@ func TestLingerLongerCuiPresenterActionLogOutput(t *testing.T) {
 	l.GiveUp()
 	assert.NotEmpty(t, p.ActionLogOutput(l))
 }
+
+// CUI と Web が同じ勝因を主張すること。
+//
+// 山札が尽きて全員が同時に手札 0 枚になった局では「最後まで持ち続けた人」は
+// 存在せず、勝ちは最後のトリックで決まる。以前はどちらの勝ちも同じ見出しだった
+// (#5765)。
+func TestLingerLongerEndBanner_FollowsTheWinReason(t *testing.T) {
+	lasted := lingerLongerEndBanner(domain.LingerLongerWinLasted, 1, "CPU1")
+	lastTrick := lingerLongerEndBanner(domain.LingerLongerWinLastTrick, 1, "CPU1")
+	giveUp := lingerLongerEndBanner(domain.LingerLongerWinGiveUp, 1, "CPU1")
+
+	// 3 つの勝因が 3 つとも違う文言になること。ここが同じだと、勝因を持ち回った
+	// 意味が無い。
+	assert.NotEqual(t, lasted, lastTrick)
+	assert.NotEqual(t, lasted, giveUp)
+	assert.NotEqual(t, lastTrick, giveUp)
+
+	// 同時脱落の勝ちを「持ち続けた」と説明してはいけない。
+	assert.Contains(t, lasted, "持ち続け")
+	assert.NotContains(t, lastTrick, "持ち続け")
+	assert.Contains(t, lastTrick, "最後のトリック")
+
+	// 席 0 かどうかで呼び方が変わる。
+	assert.NotEqual(t, lastTrick, lingerLongerEndBanner(domain.LingerLongerWinLastTrick, 0, "あなた"))
+
+	// 未知の勝因は通常勝ちに寄せる (多数派に倒すほうが誤りが小さい)。
+	assert.Equal(t, lasted, lingerLongerEndBanner("", 1, "CPU1"))
+
+	// 英語ロケールでも同じ区別が保たれること。
+	i18n.SetLang("en")
+	defer i18n.SetLang("ja")
+	assert.NotEqual(t,
+		lingerLongerEndBanner(domain.LingerLongerWinLasted, 1, "CPU1"),
+		lingerLongerEndBanner(domain.LingerLongerWinLastTrick, 1, "CPU1"))
+}

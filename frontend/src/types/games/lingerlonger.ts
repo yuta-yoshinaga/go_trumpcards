@@ -64,6 +64,12 @@ export interface LingerLongerResponse extends BaseGameResponse {
   gameEndFlag: boolean;
   /** `-1` until decided. */
   winnerIdx: number;
+  /**
+   * Locale-independent reason the game ended: `"lasted"`, `"lastTrick"`,
+   * `"giveUp"`, or empty before the end. The page used to describe every win as
+   * "held cards longest", which is false when everyone ran out at once (#5765).
+   */
+  winReason: string;
   hint?: LingerLongerHint;
   config: LingerLongerConfig;
 }

@@ -51,6 +51,8 @@ type LingerLongerGame interface {
 	GetPlayer(i int) *domain.LingerLongerPlayer
 	// GetWinnerIdx 勝った席を取得する (-1: 未確定)
 	GetWinnerIdx() int
+	// GetWinReason は決着の理由をロケール非依存のキーで取得する。決着前は空。
+	GetWinReason() string
 	// GetHint ヒントを取得する
 	GetHint() *domain.LingerLongerHint
 }

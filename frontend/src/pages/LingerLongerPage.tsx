@@ -112,8 +112,16 @@ function LingerLongerPageContent() {
 
   const resultBanner = (() => {
     if (!isGameEnd || state.winnerIdx < 0) return null;
+    const name = t('header.cpu', { idx: String(state.winnerIdx) });
+    // 勝因で言い分けること。全員が同時に出し切った局には「最後まで持ち続けた
+    // 人」がおらず、勝ちは最後のトリックで決まる (#5765)。未知の勝因は通常勝ち
+    // に寄せる -- CUI の lingerLongerEndBanner と同じ振り分け。
+    if (state.winReason === 'lastTrick') {
+      return state.winnerIdx === 0 ? t('result.lastTrickYou') : t('result.lastTrickCpu', { name });
+    }
+    if (state.winReason === 'giveUp') return t('result.giveUp', { name });
     if (state.winnerIdx === 0) return t('result.you');
-    return t('result.cpu', { name: t('header.cpu', { idx: String(state.winnerIdx) }) });
+    return t('result.cpu', { name });
   })();
 
   return (

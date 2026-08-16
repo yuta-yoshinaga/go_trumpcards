@@ -2185,7 +2185,10 @@
     "missmilligan.errWaivedSingleOnly": "Only a single waived card can go to a foundation",
     "missmilligan.errNotPlaying": "The game is not in the playing phase",
     "missmilligan.errNoAutoMove": "No card can be auto-completed",
-    "missmilligan.errNothingToUndo": "Nothing to undo"
+    "missmilligan.errNothingToUndo": "Nothing to undo",
+    "lingerlonger.result.lastTrickYou": "Everyone ran out at once, and you took the last trick.",
+    "lingerlonger.result.lastTrickCpu": "Everyone ran out at once, and CPU{{idx}} took the last trick.",
+    "lingerlonger.result.giveUp": "You gave up. CPU{{idx}} wins."
   },
   "manual": {
     "ariaLabel": "Game Manual",

@@ -43,6 +43,7 @@ func (m *MockLingerLongerGame) GetEliminatedCnt() int    { return m.Called().Int
 func (m *MockLingerLongerGame) GetDiscarded() int        { return m.Called().Int(0) }
 func (m *MockLingerLongerGame) GetPlayerCnt() int        { return m.Called().Int(0) }
 func (m *MockLingerLongerGame) GetWinnerIdx() int        { return m.Called().Int(0) }
+func (m *MockLingerLongerGame) GetWinReason() string     { return m.Called().String(0) }
 
 func (m *MockLingerLongerGame) GetValidPlayIndices(playerIdx int) []int {
 	args := m.Called(playerIdx)

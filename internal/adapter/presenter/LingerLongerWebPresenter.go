@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
@@ -45,6 +46,7 @@ func (p *LingerLongerWebPresenter) buildBase(s interfaces.LingerLongerGame) *con
 	resObj.Discarded = s.GetDiscarded()
 	resObj.GameEndFlag = s.GetGameEndFlag()
 	resObj.WinnerIdx = s.GetWinnerIdx()
+	resObj.WinReason = s.GetWinReason()
 	resObj.Players = p.buildPlayersOutput(s)
 	resObj.Config = controller.LingerLongerWebOutputConfig{PlayerCnt: s.GetConfig().PlayerCnt}
 	return resObj
@@ -73,12 +75,22 @@ func (p *LingerLongerWebPresenter) buildMessage(s interfaces.LingerLongerGame, l
 		return lastErr.Error(), "", nil
 	}
 	if s.GetGameEndFlag() {
+		idx := map[string]string{"idx": strconv.Itoa(s.GetWinnerIdx())}
+		// CUI の lingerLongerEndBanner と同じ振り分け。片方だけ直すと、
+		// 同じ局面で 2 つの UI が違う勝因を主張することになる (#5765)。
+		switch s.GetWinReason() {
+		case domain.LingerLongerWinLastTrick:
+			if s.GetWinnerIdx() == 0 {
+				return "", "lingerlonger.result.lastTrickYou", nil
+			}
+			return "", "lingerlonger.result.lastTrickCpu", idx
+		case domain.LingerLongerWinGiveUp:
+			return "", "lingerlonger.result.giveUp", idx
+		}
 		if s.GetWinnerIdx() == 0 {
 			return "", "lingerlonger.result.you", nil
 		}
-		return "", "lingerlonger.result.cpu", map[string]string{
-			"idx": strconv.Itoa(s.GetWinnerIdx()),
-		}
+		return "", "lingerlonger.result.cpu", idx
 	}
 	// **人間が脱落しても盤面は続く。** そうと言わないと、なぜ打てないのか分からない。
 	if human := s.GetPlayer(0); human != nil && human.IsEliminated() {
