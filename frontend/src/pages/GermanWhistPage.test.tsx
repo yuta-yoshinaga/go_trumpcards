@@ -162,6 +162,32 @@ describe('GermanWhistPage', () => {
     expect(cpu).toHaveTextContent('得点トリック: 0');
   });
 
+  // `cpu` は players.find(...) なので undefined になりうる。フォールバックが
+  // 効かないと画面に `NaN` や空欄が出る。
+  it('falls back to zero when the CPU seat is missing', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            cardCount: 3,
+            cards: [card('SPADE', 1)],
+            trickCount: 5,
+            scoringTricks: 2,
+          },
+        ],
+      }),
+    );
+    renderWithProviders(<GermanWhistPage />);
+
+    const cpu = await screen.findByTestId('gw-cpu-tricks');
+    expect(cpu).toHaveTextContent('獲得トリック: 0');
+    expect(cpu).not.toHaveTextContent('NaN');
+    // 人間側は通常どおり出ること (フォールバックが全体を潰していない)。
+    expect(screen.getByTestId('gw-human-tricks')).toHaveTextContent('獲得トリック: 5');
+  });
+
   it('keeps both numbers distinguishable in the second half', async () => {
     mockExec.mockResolvedValue(
       makeState({
