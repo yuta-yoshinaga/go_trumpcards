@@ -63,5 +63,6 @@
     "scoreTable": "Player scores are shown here. Lowest cumulative total wins.",
     "resetButton": "Press the reset button to start a new game."
   },
-  "pureSequenceMissing": "No pure seq."
+  "pureSequenceMissing": "No pure seq.",
+  "pointsLegend": "Points: A, 10, J, Q, K = 10 / 2-9 = face value / wild = 0"
 }

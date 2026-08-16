@@ -63,5 +63,6 @@
     "scoreTable": "各プレイヤーのスコアが表示されます。累計最少が勝利です。",
     "resetButton": "リセットボタンで新しいゲームを始められます。"
   },
-  "pureSequenceMissing": "純シーケンス無し"
+  "pureSequenceMissing": "純シーケンス無し",
+  "pointsLegend": "点数: A・10・J・Q・K = 10点 / 2〜9 = 数字どおり / ワイルド = 0点"
 }

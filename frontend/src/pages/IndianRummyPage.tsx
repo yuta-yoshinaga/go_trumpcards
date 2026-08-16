@@ -426,6 +426,12 @@ function IndianRummyPageContent() {
                 <span className={`ml-2 ${humanPlayer.hasPureSequence ? 'text-ds-success' : 'text-ds-warning'}`}>
                   {humanPlayer.hasPureSequence ? t('pureSequenceBadge') : t('pureSequenceMissing')}
                 </span>
+                {/* **A も 10 点。** ジンラミー系に慣れたプレイヤーほど A=1 を
+                    期待するので、合計だけ見せられると数字を逆算できない。
+                    ワイルドが 0 点であることも同時に言う (#5501)。 */}
+                <div className="text-xs" data-testid="indianrummy-points-legend">
+                  {t('pointsLegend')}
+                </div>
               </div>
             )}
 
