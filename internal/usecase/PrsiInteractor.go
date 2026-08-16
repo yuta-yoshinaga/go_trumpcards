@@ -88,18 +88,9 @@ func (ci *PrsiInteractor) ActionLog() string {
 // 勝敗判定・スキップ・ペナルティはすべてドメインで処理されるため、どの席
 // (人間/CPU) が終端アクションを起こしても正しく処理される。
 func (ci *PrsiInteractor) runCpuTurns() {
-	for i := 0; i < MaxCpuIterations; i++ {
-		if ci.Game.GetGameEndFlag() {
-			return
-		}
-		if ci.Game.GetPhase() != domain.PrsiPhasePlay {
-			break
-		}
-		if ci.Game.IsHumanTurn() {
-			break
-		}
-		ci.Game.CpuPlay()
-	}
+	runCpuTurnsUntil(ci.Game, func() bool {
+		return ci.Game.GetPhase() != domain.PrsiPhasePlay || ci.Game.IsHumanTurn()
+	}, ci.Game.CpuPlay)
 }
 
 // RestorePrsiInteractor deserialises JSON into a PrsiInteractor.

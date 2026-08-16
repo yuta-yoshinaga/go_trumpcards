@@ -163,18 +163,9 @@ func (pi *PiquetInteractor) runCpuExchange() {
 
 // runCpuPlay プレイフェーズでCPUの手番を自動実行する
 func (pi *PiquetInteractor) runCpuPlay() {
-	for i := 0; i < MaxCpuIterations; i++ {
-		if pi.Game.GetGameEndFlag() {
-			return
-		}
-		if pi.Game.GetPhase() != domain.PiquetPhasePlay {
-			return
-		}
-		if pi.Game.IsHumanTurn() {
-			return
-		}
-		pi.Game.CpuPlay()
-	}
+	runCpuTurnsUntil(pi.Game, func() bool {
+		return pi.Game.GetPhase() != domain.PiquetPhasePlay || pi.Game.IsHumanTurn()
+	}, pi.Game.CpuPlay)
 }
 
 // RestorePiquetInteractor deserialises JSON into a PiquetInteractor.
