@@ -280,7 +280,8 @@ describe('DaifugoHumanArea', () => {
 // had no equivalent -- it only checked the selected count client-side and left
 // revolution / suit-lock legality to the server's rejection.
 describe('DaifugoHumanArea playable marks', () => {
-  const cards = (n: number) => Array.from({ length: n }, (_, i) => ({ design: 'SPADE', value: i + 3 }));
+  const cards = (n: number): DaifugoPlayerData['cards'] =>
+    Array.from({ length: n }, (_, i) => ({ design: 'SPADE' as const, value: i + 3 }));
   const marks = () => screen.getAllByRole('button').filter((b) => b.getAttribute('data-playable') === 'true');
 
   it('marks only the indices the server sent', () => {
