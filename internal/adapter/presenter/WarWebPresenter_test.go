@@ -67,7 +67,7 @@ func TestWarWebPresenter_Output(t *testing.T) {
 	// **各ラウンドの決着も伝える。** 以前は最終勝敗のときしかコードが出ず、
 	// 盤面の変化はリング色と不透明度だけだった。読み上げ利用者はどのラウンドで
 	// 誰が勝ったのかも、いつ戦争になったのかも知りようがなかった (#5530)。
-	t.Run("每ラウンドの決着にコードが出る", func(t *testing.T) {
+	t.Run("毎ラウンドの決着にコードが出る", func(t *testing.T) {
 		override := func(phase domain.WarPhase, lastWinner int) string {
 			w := setupWarTest()
 			data, _ := json.Marshal(w)
