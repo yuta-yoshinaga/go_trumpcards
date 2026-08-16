@@ -88,7 +88,8 @@ func (p *CanfieldCuiPresenter) Output(c interfaces.CanfieldGame, lastErr error) 
 		switch c.GetPhase() {
 		case domain.CanfieldPhasePlaying:
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
-				"count", strconv.Itoa(c.GetMoveCount())) + "\n")
+				"count", strconv.Itoa(c.GetMoveCount())) +
+				cuiSolitaireUndoHint(c.CanUndo()) + "\n")
 		case domain.CanfieldPhaseGameClear:
 			b.WriteString(color.Green(i18n.T("cuiSolitaireGameClear")) + " " +
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(c.GetMoveCount())) + "\n")

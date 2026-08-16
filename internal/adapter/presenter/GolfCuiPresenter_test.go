@@ -17,6 +17,7 @@ import (
 func setupGolfCuiMockDefaults(gg *interfaces.MockGolfGame) {
 	gg.On("GetPhase").Return(domain.GolfPhasePlaying).Maybe()
 	gg.On("GetMoveCount").Return(0).Maybe()
+	gg.On("CanUndo").Return(false).Maybe()
 	gg.On("GetStockCount").Return(16).Maybe()
 	gg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	gg.On("IsStalemate").Return(false).Maybe()
@@ -59,6 +60,7 @@ func TestGolfCuiPresenterOutput_PlayableMarker(t *testing.T) {
 	gg := new(interfaces.MockGolfGame)
 	gg.On("GetPhase").Return(domain.GolfPhasePlaying).Maybe()
 	gg.On("GetMoveCount").Return(0).Maybe()
+	gg.On("CanUndo").Return(false).Maybe()
 	gg.On("GetStockCount").Return(10).Maybe()
 	gg.On("IsStalemate").Return(false).Maybe()
 	// Waste top is K(13): adjacent to Q(12) normally and to A(1) via K-A wrap.
@@ -98,6 +100,7 @@ func TestGolfCuiPresenterOutput_Stalemate(t *testing.T) {
 	gg.ExpectedCalls = nil
 	gg.On("GetPhase").Return(domain.GolfPhasePlaying).Maybe()
 	gg.On("GetMoveCount").Return(5).Maybe()
+	gg.On("CanUndo").Return(false).Maybe()
 	gg.On("GetStockCount").Return(0).Maybe()
 	gg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	gg.On("IsStalemate").Return(true).Maybe()
@@ -121,6 +124,7 @@ func TestGolfCuiPresenterOutput_GameClear(t *testing.T) {
 	gg.ExpectedCalls = nil
 	gg.On("GetPhase").Return(domain.GolfPhaseGameClear).Maybe()
 	gg.On("GetMoveCount").Return(10).Maybe()
+	gg.On("CanUndo").Return(false).Maybe()
 	gg.On("GetStockCount").Return(0).Maybe()
 	gg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	gg.On("IsStalemate").Return(false).Maybe()
@@ -143,6 +147,7 @@ func TestGolfCuiPresenterOutput_GameOver(t *testing.T) {
 	gg.ExpectedCalls = nil
 	gg.On("GetPhase").Return(domain.GolfPhaseGameOver).Maybe()
 	gg.On("GetMoveCount").Return(5).Maybe()
+	gg.On("CanUndo").Return(false).Maybe()
 	gg.On("GetStockCount").Return(0).Maybe()
 	gg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	gg.On("IsStalemate").Return(false).Maybe()
@@ -165,6 +170,7 @@ func TestGolfCuiPresenterOutput_WithWaste(t *testing.T) {
 	gg.ExpectedCalls = nil
 	gg.On("GetPhase").Return(domain.GolfPhasePlaying).Maybe()
 	gg.On("GetMoveCount").Return(1).Maybe()
+	gg.On("CanUndo").Return(false).Maybe()
 	gg.On("GetStockCount").Return(15).Maybe()
 	gg.On("GetWaste").Return([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 5, true)}).Maybe()
 	gg.On("IsStalemate").Return(false).Maybe()
@@ -260,6 +266,7 @@ func TestGolfCuiPresenter_NineHoleScorecard(t *testing.T) {
 		g.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 		g.On("GetStockCount").Return(0).Maybe()
 		g.On("GetMoveCount").Return(10).Maybe()
+		g.On("CanUndo").Return(false).Maybe()
 		g.On("IsStalemate").Return(false).Maybe()
 		g.On("IsExposed", mock.Anything, mock.Anything).Return(false).Maybe()
 		g.On("GetPhase").Return(phase).Maybe()

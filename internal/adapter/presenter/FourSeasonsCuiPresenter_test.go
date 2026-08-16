@@ -14,6 +14,7 @@ import (
 func setupFourSeasonsCuiMockDefaults(g *interfaces.MockFourSeasonsGame) {
 	g.On("GetPhase").Return(domain.FourSeasonsPhasePlaying).Maybe()
 	g.On("GetMoveCount").Return(0).Maybe()
+	g.On("CanUndo").Return(false).Maybe()
 	g.On("GetBaseRank").Return(7).Maybe()
 	g.On("GetStockCount").Return(44).Maybe()
 	g.On("GetWaste").Return([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 6, false)}).Maybe()

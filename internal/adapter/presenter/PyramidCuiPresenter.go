@@ -90,7 +90,8 @@ func (pr *PyramidCuiPresenter) Output(p interfaces.PyramidGame, lastErr error) s
 				}
 			}
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
-				"count", strconv.Itoa(p.GetMoveCount())) + "\n")
+				"count", strconv.Itoa(p.GetMoveCount())) +
+				cuiSolitaireUndoHint(p.CanUndo()) + "\n")
 		case domain.PyramidPhaseGameClear:
 			b.WriteString(color.Green(i18n.T("cuiSolitaireGameClear")) + " " +
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(p.GetMoveCount())) + "\n")

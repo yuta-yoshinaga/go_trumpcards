@@ -62,7 +62,8 @@ func (p *BlackHoleCuiPresenter) Output(g interfaces.BlackHoleGame, lastErr error
 
 		switch g.GetPhase() {
 		case domain.BlackHolePhasePlaying:
-			sb.WriteString(i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(g.GetMoveCount())) + "\n")
+			sb.WriteString(i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(g.GetMoveCount())) +
+				cuiSolitaireUndoHint(g.CanUndo()) + "\n")
 		case domain.BlackHolePhaseGameClear:
 			sb.WriteString(color.Green(i18n.T("cuiSolitaireGameClear")) + " " +
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(g.GetMoveCount())) + "\n")

@@ -19,6 +19,7 @@ func setupGapsCuiMock() *interfaces.MockGapsGame {
 	g := new(interfaces.MockGapsGame)
 	g.On("GetPhase").Return(domain.GapsPhasePlaying).Maybe()
 	g.On("GetMoveCount").Return(0).Maybe()
+	g.On("CanUndo").Return(false).Maybe()
 	g.On("GetRedealsUsed").Return(0).Maybe()
 	g.On("GetRedealsRemaining").Return(3).Maybe()
 	g.On("IsStalemate").Return(false).Maybe()
@@ -56,6 +57,7 @@ func TestGapsCuiPresenter_Output_GameClear(t *testing.T) {
 	g.ExpectedCalls = nil
 	g.On("GetPhase").Return(domain.GapsPhaseGameClear).Maybe()
 	g.On("GetMoveCount").Return(10).Maybe()
+	g.On("CanUndo").Return(false).Maybe()
 	g.On("GetRedealsUsed").Return(1).Maybe()
 	g.On("GetRedealsRemaining").Return(2).Maybe()
 	g.On("IsStalemate").Return(false).Maybe()
@@ -77,6 +79,7 @@ func TestGapsCuiPresenter_Output_GameOver(t *testing.T) {
 	g.ExpectedCalls = nil
 	g.On("GetPhase").Return(domain.GapsPhaseGameOver).Maybe()
 	g.On("GetMoveCount").Return(5).Maybe()
+	g.On("CanUndo").Return(false).Maybe()
 	g.On("GetRedealsUsed").Return(3).Maybe()
 	g.On("GetRedealsRemaining").Return(0).Maybe()
 	g.On("IsStalemate").Return(true).Maybe()
@@ -137,6 +140,7 @@ func TestGapsCuiPresenter_GapNeeds(t *testing.T) {
 		g.On("GetLockedPrefixLengths").Return([domain.GapsRowCnt]int{}).Maybe()
 		g.On("GetPhase").Return(domain.GapsPhasePlaying).Maybe()
 		g.On("GetMoveCount").Return(0).Maybe()
+		g.On("CanUndo").Return(false).Maybe()
 		g.On("GetRedealsLeft").Return(2).Maybe()
 		g.On("GetRedealsUsed").Return(0).Maybe()
 		g.On("GetMaxRedeals").Return(2).Maybe()

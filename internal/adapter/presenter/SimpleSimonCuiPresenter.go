@@ -41,7 +41,8 @@ func (p *SimpleSimonCuiPresenter) Output(g interfaces.SimpleSimonGame, lastErr e
 
 		switch g.GetPhase() {
 		case domain.SimpleSimonPhasePlaying:
-			sb.WriteString(i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(g.GetMoveCount())) + "\n")
+			sb.WriteString(i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(g.GetMoveCount())) +
+				cuiSolitaireUndoHint(g.CanUndo()) + "\n")
 		case domain.SimpleSimonPhaseGameClear:
 			sb.WriteString(color.Green(i18n.T("cuiSolitaireGameClear")) + " " +
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(g.GetMoveCount())) + "\n")

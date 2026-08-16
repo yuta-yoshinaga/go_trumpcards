@@ -16,6 +16,7 @@ func setupOsmosisCuiMockDefaults(og *interfaces.MockOsmosisGame) {
 	og.On("IsStalemate").Return(false).Maybe()
 	og.On("GetPhase").Return(domain.OsmosisPhasePlaying).Maybe()
 	og.On("GetMoveCount").Return(0).Maybe()
+	og.On("CanUndo").Return(false).Maybe()
 	og.On("GetStockCount").Return(34).Maybe()
 	og.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	og.On("GetBaseRank").Return(7).Maybe()

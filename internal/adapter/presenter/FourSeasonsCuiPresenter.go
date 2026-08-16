@@ -80,7 +80,8 @@ func (p *FourSeasonsCuiPresenter) Output(f interfaces.FourSeasonsGame, lastErr e
 		switch f.GetPhase() {
 		case domain.FourSeasonsPhasePlaying:
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
-				"count", strconv.Itoa(f.GetMoveCount())) + "\n")
+				"count", strconv.Itoa(f.GetMoveCount())) +
+				cuiSolitaireUndoHint(f.CanUndo()) + "\n")
 		case domain.FourSeasonsPhaseGameClear:
 			b.WriteString(color.Green(i18n.T("cuiSolitaireGameClear")) + " " +
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(f.GetMoveCount())) + "\n")

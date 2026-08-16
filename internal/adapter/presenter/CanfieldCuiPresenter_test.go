@@ -15,6 +15,7 @@ import (
 func setupCanfieldCuiMockDefaults(cg *interfaces.MockCanfieldGame) {
 	cg.On("GetPhase").Return(domain.CanfieldPhasePlaying).Maybe()
 	cg.On("GetMoveCount").Return(0).Maybe()
+	cg.On("CanUndo").Return(false).Maybe()
 	cg.On("GetStockCount").Return(34).Maybe()
 	cg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	cg.On("GetReserve").Return([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 3, false)}).Maybe()

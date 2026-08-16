@@ -163,7 +163,8 @@ func (pr *GolfCuiPresenter) Output(g interfaces.GolfGame, lastErr error) string 
 				}
 			}
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
-				"count", strconv.Itoa(g.GetMoveCount())) + "\n")
+				"count", strconv.Itoa(g.GetMoveCount())) +
+				cuiSolitaireUndoHint(g.CanUndo()) + "\n")
 		case domain.GolfPhaseGameClear:
 			b.WriteString(color.Green(i18n.T("cuiSolitaireGameClear")) + " " +
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(g.GetMoveCount())) + "\n")
