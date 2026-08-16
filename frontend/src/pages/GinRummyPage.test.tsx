@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, ginrummyApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { GinRummyResponse } from '../types/card';
 import { GinRummyCpu } from '../types/phases';
@@ -1056,5 +1057,19 @@ describe('GinRummyPage difficulty policies', () => {
     for (const label of labels) {
       expect(label).toMatch(/ノック/);
     }
+  });
+});
+
+// レビュー指摘 (#5863)。括弧を JSX で書くと、全角がそのまま英語表示にも混ざる。
+// ロケール側に持たせたことを、英語に切り替えて確かめる。
+describe('GinRummyPage difficulty label punctuation', () => {
+  it('uses the locale-owned wrapper rather than hardcoded full-width parens', async () => {
+    const prev = i18n.language;
+    await i18n.changeLanguage('en');
+    const label = i18n.t('ginrummy:settings.difficultyWithPolicy', { level: 'Easy', policy: 'knocks early' });
+    expect(label).not.toMatch(/[（）]/);
+    expect(label).toContain('(');
+    await i18n.changeLanguage(prev);
+    expect(i18n.t('ginrummy:settings.difficultyWithPolicy', { level: 'Easy', policy: 'x' })).toMatch(/（/);
   });
 });

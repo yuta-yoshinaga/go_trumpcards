@@ -277,10 +277,12 @@ function GinRummyPageContent() {
                     // 突き合わせる Go のテストがあるので、片方だけ変えると落ちる。
                     options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
                       value: o.value,
-                      label: `${t(`settings.${o.label.toLowerCase()}`)}（${t(
-                        `settings.policy${o.label}`,
-                        GIN_RUMMY_POLICY_VALUES,
-                      )}）`,
+                      // 括弧はロケール側に持たせる。JSX で全角括弧を書くと英語表示にも
+                      // 混ざる (Memory の difficultyOption と同じ形にそろえた)。
+                      label: t('settings.difficultyWithPolicy', {
+                        level: t(`settings.${o.label.toLowerCase()}`),
+                        policy: t(`settings.policy${o.label}`, GIN_RUMMY_POLICY_VALUES),
+                      }),
                     })),
                     tooltip: t('settings.policyTooltip', GIN_RUMMY_POLICY_VALUES),
                     onSelect: (v) => handleConfigChange('cpuDifficulty', v),

@@ -1524,3 +1524,37 @@ func TestGinRummy_LayoffTargets(t *testing.T) {
 	assert.Nil(t, g.LayoffTargets(domain.NewCard(domain.CardDesignHeart, 10, false)))
 	assert.Nil(t, g.LayoffTargets(nil))
 }
+
+// #5500 の副産物: Easy の拾い判断は 1/GinRummyEasyPickOneIn の乱数分岐で、
+// 片方の枝しか通らないと codecov に残る。**乱択なのでリトライで両方を通す**
+// (internal/CLAUDE.md の「1000回までのリトライで両分岐を覆う」手法)。
+//
+// どちらを引いたかは行動ログ (draw_discard / draw_stock) で見る。盤面の枚数は
+// 直後の捨てで戻るので、枚数からは区別できない。
+func TestGinRummy_EasyCpuTakesTheDiscardSometimesAndSometimesNot(t *testing.T) {
+	drewFromDiscard, drewFromStock := false, false
+
+	for i := 0; i < 1000 && (!drewFromDiscard || !drewFromStock); i++ {
+		g := domain.NewDefaultGinRummy()
+		g.Reset()
+		cfg := g.GetConfig()
+		cfg.CpuDifficulty = domain.GinRummyCpuDifficultyEasy
+		g.SetConfig(cfg)
+		g.SetCurrentPlayerIdx(1)
+		g.SetPhase(domain.GinRummyPhaseDraw)
+
+		before := len(g.GetActionLog())
+		g.CpuPlay()
+		for _, e := range g.GetActionLog()[before:] {
+			switch e.ActionType {
+			case "draw_discard":
+				drewFromDiscard = true
+			case "draw_stock":
+				drewFromStock = true
+			}
+		}
+	}
+
+	assert.True(t, drewFromDiscard, "Easy が捨て札を拾う枝を一度も通らなかった")
+	assert.True(t, drewFromStock, "Easy が山札から引く枝を一度も通らなかった")
+}

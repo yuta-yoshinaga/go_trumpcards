@@ -16,7 +16,8 @@
     "policyEasy": "knocks at {{knockLimit}} deadwood or less / takes the discard 1 time in {{easyOneIn}}",
     "policyNormal": "knocks at {{knockNormal}} or less / takes the discard when it gains more than {{gainNormal}}",
     "policyHard": "knocks at {{knockHard}} or less, or on gin / takes the discard on any gain",
-    "policyTooltip": "Difficulty changes when the CPU knocks and when it takes the discard. Numbers are deadwood points."
+    "policyTooltip": "Difficulty changes when the CPU knocks and when it takes the discard. Numbers are deadwood points.",
+    "difficultyWithPolicy": "{{level}} ({{policy}})"
   },
   "round": "Round {{n}}",
   "drawPile": "Draw pile: {{count}} cards",
