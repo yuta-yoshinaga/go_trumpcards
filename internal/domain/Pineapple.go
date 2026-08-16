@@ -1413,16 +1413,16 @@ func (p *Pineapple) bestKeepAfterDiscard(hole []*Card) []*Card {
 	if len(hole) <= pineappleKeepAfterDiscard {
 		return hole
 	}
-	var best []*Card
-	bestRank := -1
-	for _, keep := range combinations(hole, pineappleKeepAfterDiscard) {
+	// 上の枚数チェックを通っているので組み合わせは必ず1つ以上ある。先頭を初期値に
+	// 置くことで「1つも選べなかった」場合の分岐そのものを無くす -- 到達しない
+	// フォールバックはテストできず、壊れても気づけない。
+	combos := combinations(hole, pineappleKeepAfterDiscard)
+	best, bestRank := combos[0], p.bestRankWithBoard(combos[0])
+	for _, keep := range combos[1:] {
 		if rank := p.bestRankWithBoard(keep); rank > bestRank {
 			bestRank = rank
 			best = keep
 		}
-	}
-	if best == nil {
-		return hole
 	}
 	return best
 }
