@@ -8,6 +8,7 @@ function makeState(overrides: Partial<CruelResponse> = {}): CruelResponse {
     foundation: [[], [], [], []],
     phase: 0,
     moveCount: 0,
+    canAutoComplete: false,
     canUndo: false,
     isStalemate: false,
     message: '',

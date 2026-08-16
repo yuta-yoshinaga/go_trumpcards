@@ -301,6 +301,7 @@ func (c *Cruel) AutoComplete() error {
 		return errors.New("game is not in playing phase")
 	}
 	c.takeSnapshot()
+	totalMoved := 0
 	for {
 		moved := false
 		for col := range CruelTableauCnt {
@@ -319,10 +320,18 @@ func (c *Cruel) AutoComplete() error {
 			c.foundation[fIdx] = append(c.foundation[fIdx], card)
 			c.moveCount++
 			moved = true
+			totalMoved++
 		}
 		if !moved {
 			break
 		}
+	}
+	// **1枚も動かなかったなら、何も起きていない。** 以前は無条件にログを残し、
+	// undo 用のスナップショットも積んでいたので、「オートコンプリートを実行しました」
+	// という記録だけが残り、undo を1回空振りさせていた (#5496)。
+	if totalMoved == 0 {
+		c.history = c.history[:len(c.history)-1]
+		return nil
 	}
 	c.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
 	c.checkGameClear()
@@ -419,6 +428,30 @@ func (c *Cruel) canPlaceOnTableau(card *Card, col int) bool {
 }
 
 // canPlaceOnFoundation ファウンデーションにカードを置けるか判定。
+// CanAutoComplete はいまオートコンプリートで動かせる札があるかを返す。
+//
+// **判定は AutoComplete が使うものと同じ。**別に書くと、押せるのに何も起きない
+// (あるいはその逆の) ボタンになる (#5496)。
+func (c *Cruel) CanAutoComplete() bool {
+	if c.phase != CruelPhasePlaying {
+		return false
+	}
+	for col := range CruelTableauCnt {
+		if len(c.tableau[col]) == 0 {
+			continue
+		}
+		card := c.tableau[col][len(c.tableau[col])-1].Card
+		fIdx := card.GetDesign() - 1
+		if fIdx < 0 || fIdx >= CruelFoundationCnt {
+			continue
+		}
+		if c.canPlaceOnFoundation(card, fIdx) {
+			return true
+		}
+	}
+	return false
+}
+
 // Reset() で各ファウンデーションに A を1枚配置済みなので、空のケースは通常発生しない。
 func (c *Cruel) canPlaceOnFoundation(card *Card, fIdx int) bool {
 	return canPlaceOnFoundationPile(c.foundation[fIdx], card)

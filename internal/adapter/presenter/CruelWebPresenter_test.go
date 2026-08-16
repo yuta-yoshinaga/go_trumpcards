@@ -18,6 +18,7 @@ func setupCruelWebMockDefaults(cg *interfaces.MockCruelGame) {
 	cg.On("GetPhase").Return(domain.CruelPhasePlaying).Maybe()
 	cg.On("GetMoveCount").Return(0).Maybe()
 	cg.On("CanUndo").Return(false).Maybe()
+	cg.On("CanAutoComplete").Return(false).Maybe()
 	cg.On("IsStalemate").Return(false).Maybe()
 	cg.On("UndoToEscape").Return(0).Maybe()
 
@@ -64,6 +65,7 @@ func TestCruelWebPresenter_Output(t *testing.T) {
 		cg.On("GetPhase").Return(domain.CruelPhasePlaying).Maybe()
 		cg.On("GetMoveCount").Return(5).Maybe()
 		cg.On("CanUndo").Return(true).Maybe()
+		cg.On("CanAutoComplete").Return(false).Maybe()
 		cg.On("IsStalemate").Return(true).Maybe()
 		cg.On("UndoToEscape").Return(3).Maybe()
 		var tableau [domain.CruelTableauCnt][]*domain.KlondikeTableauCard
@@ -83,6 +85,7 @@ func TestCruelWebPresenter_Output(t *testing.T) {
 		cg.On("GetPhase").Return(domain.CruelPhasePlaying).Maybe()
 		cg.On("GetMoveCount").Return(5).Maybe()
 		cg.On("CanUndo").Return(false).Maybe()
+		cg.On("CanAutoComplete").Return(false).Maybe()
 		cg.On("IsStalemate").Return(true).Maybe()
 		cg.On("UndoToEscape").Return(-1).Maybe()
 		var tableau [domain.CruelTableauCnt][]*domain.KlondikeTableauCard
@@ -102,6 +105,7 @@ func TestCruelWebPresenter_Output(t *testing.T) {
 		cg.On("GetPhase").Return(domain.CruelPhaseGameClear).Maybe()
 		cg.On("GetMoveCount").Return(42).Maybe()
 		cg.On("CanUndo").Return(false).Maybe()
+		cg.On("CanAutoComplete").Return(false).Maybe()
 		cg.On("IsStalemate").Return(false).Maybe()
 		cg.On("UndoToEscape").Return(0).Maybe()
 		var tableau [domain.CruelTableauCnt][]*domain.KlondikeTableauCard
@@ -119,6 +123,7 @@ func TestCruelWebPresenter_Output(t *testing.T) {
 		cg.On("GetPhase").Return(domain.CruelPhaseGameOver).Maybe()
 		cg.On("GetMoveCount").Return(10).Maybe()
 		cg.On("CanUndo").Return(false).Maybe()
+		cg.On("CanAutoComplete").Return(false).Maybe()
 		cg.On("IsStalemate").Return(false).Maybe()
 		cg.On("UndoToEscape").Return(0).Maybe()
 		var tableau [domain.CruelTableauCnt][]*domain.KlondikeTableauCard
@@ -163,6 +168,7 @@ func TestCruelWebPresenter_HintOutput(t *testing.T) {
 		cg.On("GetPhase").Return(domain.CruelPhasePlaying).Maybe()
 		cg.On("GetMoveCount").Return(0).Maybe()
 		cg.On("CanUndo").Return(false).Maybe()
+		cg.On("CanAutoComplete").Return(false).Maybe()
 		cg.On("IsStalemate").Return(false).Maybe()
 		cg.On("UndoToEscape").Return(0).Maybe()
 		cg.On("GetHint").Return(&domain.CruelHint{
@@ -183,6 +189,7 @@ func TestCruelWebPresenter_HintOutput(t *testing.T) {
 		cg.On("GetPhase").Return(domain.CruelPhasePlaying).Maybe()
 		cg.On("GetMoveCount").Return(0).Maybe()
 		cg.On("CanUndo").Return(false).Maybe()
+		cg.On("CanAutoComplete").Return(false).Maybe()
 		cg.On("IsStalemate").Return(false).Maybe()
 		cg.On("UndoToEscape").Return(0).Maybe()
 		cg.On("GetHint").Return((*domain.CruelHint)(nil))

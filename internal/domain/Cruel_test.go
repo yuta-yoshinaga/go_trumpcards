@@ -581,3 +581,44 @@ func TestCruel_GetActionLog(t *testing.T) {
 	require.Len(t, log, 1)
 	assert.Equal(t, "move", log[0].ActionType)
 }
+
+// #5496: AutoComplete は1枚も動かなくても「オートコンプリートを実行しました」を
+// 行動ログに残し、undo 用のスナップショットまで積んでいた。**何も起きていないのに
+// 記録だけが残る。**
+func TestCruel_AutoCompleteRecordsNothingWhenNothingMoves(t *testing.T) {
+	c := setupPlayingCruel()
+	clearCruelTableau(c)
+	// Reset は各組札にエースを置く。タブローの一番上が5なら、次に要る2ではない
+	// のでどこにも置けない。
+	var tab [domain.CruelTableauCnt][]*domain.KlondikeTableauCard
+	tab[0] = []*domain.KlondikeTableauCard{{Card: makeCard(domain.CardDesignSpade, 5), FaceUp: true}}
+	c.SetTableau(tab)
+
+	logsBefore := len(c.GetActionLog())
+	movesBefore := c.GetMoveCount()
+	canUndoBefore := c.CanUndo()
+
+	require.NoError(t, c.AutoComplete())
+
+	assert.Equal(t, movesBefore, c.GetMoveCount(), "1枚も動いていない")
+	assert.Len(t, c.GetActionLog(), logsBefore, "動いていないのに実行記録が残っている")
+	assert.Equal(t, canUndoBefore, c.CanUndo(), "何もしていないのに undo 先が積まれている")
+}
+
+// 正常系は今までどおり記録する。上のテストが「常にログを残さない」実装でも
+// 通ってしまわないための負のコントロール。
+func TestCruel_AutoCompleteStillRecordsWhenCardsMove(t *testing.T) {
+	c := setupPlayingCruel()
+	clearCruelTableau(c)
+	var tab [domain.CruelTableauCnt][]*domain.KlondikeTableauCard
+	// 組札の♠はエースまで出ているので、次に置けるのは2。
+	tab[0] = []*domain.KlondikeTableauCard{{Card: makeCard(domain.CardDesignSpade, 2), FaceUp: true}}
+	c.SetTableau(tab)
+
+	logsBefore := len(c.GetActionLog())
+	require.NoError(t, c.AutoComplete())
+
+	assert.Positive(t, c.GetMoveCount())
+	assert.Greater(t, len(c.GetActionLog()), logsBefore)
+	assert.True(t, c.CanUndo())
+}

@@ -40,6 +40,7 @@ const playingState: CruelResponse = {
   foundation: [[card('SPADE', 1)], [card('CLOVER', 1)], [card('HEART', 1)], [card('DIAMOND', 1)]],
   phase: 0,
   moveCount: 0,
+  canAutoComplete: true,
   canUndo: false,
   isStalemate: false,
   message: '',
@@ -343,5 +344,34 @@ describe('CruelPage foundation progress', () => {
     });
     renderWithProviders(<CruelPage />);
     expect(await screen.findByTestId('cruel-foundation-progress')).toHaveTextContent('0/52');
+  });
+});
+
+// #5496: autoComplete ボタンは disabled が loading だけで、動かせる札が無くても
+// 押せた。押すと1枚も動かないまま「オートコンプリートを実行しました」が行動ログに
+// 残る。Congress / CrazyQuilt は同種のボタンを事前に無効化している。
+describe('CruelPage autocomplete readiness', () => {
+  it('disables the button when nothing can move', async () => {
+    mockExec.mockResolvedValue({ ...playingState, canAutoComplete: false });
+    renderWithProviders(<CruelPage />);
+    await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeDisabled());
+  });
+
+  it('enables the button when a card can go to a foundation', async () => {
+    mockExec.mockResolvedValue({ ...playingState, canAutoComplete: true });
+    renderWithProviders(<CruelPage />);
+    await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeEnabled());
+  });
+
+  // **組札の中身から推測しない。** Cruel は開始時にエースを組札へ配るので、
+  // Congress と同じ「組札に何かあるか」で判定すると常に有効になる。
+  it('ignores the foundation contents and trusts the server flag', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [[{ design: 'SPADE', value: 1 }], [], [], []],
+      canAutoComplete: false,
+    });
+    renderWithProviders(<CruelPage />);
+    await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeDisabled());
   });
 });
