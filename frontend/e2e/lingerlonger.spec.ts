@@ -110,4 +110,31 @@ test.describe('Linger Longer E2E', () => {
     }
     test.skip(true, 'この配りでは人間が 40 トリック以内に 1 度も取れなかった');
   });
+
+  test('can reset the game via the reset confirmation dialog', async ({ page }) => {
+    await navigateTo(page, '/lingerlonger');
+    await expect(page.getByTestId('ll-stock')).toBeVisible({ timeout: TIMEOUT_TRANSITION });
+
+    await page
+      .getByRole('button', { name: /^リセット$|^Reset$/ })
+      .first()
+      .click();
+    await expect(page.getByRole('alertdialog')).toBeVisible({ timeout: TIMEOUT_TRANSITION });
+    await page
+      .getByRole('button', { name: /^確認$|^Confirm$/ })
+      .first()
+      .click();
+    await expect(page.getByTestId('ll-stock')).toBeVisible({ timeout: TIMEOUT_TRANSITION });
+  });
+
+  test('give up ends the game', async ({ page }) => {
+    await navigateTo(page, '/lingerlonger');
+    await expect(page.getByTestId('ll-stock')).toBeVisible({ timeout: TIMEOUT_TRANSITION });
+
+    await page
+      .getByRole('button', { name: /^投了$|^Give up$/ })
+      .first()
+      .click();
+    await expect(page.getByTestId('ll-result')).toBeVisible({ timeout: TIMEOUT_ACTION });
+  });
 });
