@@ -362,10 +362,25 @@ function CourchevelPageContent() {
                 </div>
                 {liveBestHandKey && (
                   <div className="mb-1" data-testid="courchevel-live-besthand">
-                    <span className="text-ds-text-primary text-xs">{t('livePreview')}</span>
+                    {/* **見えている2要素は読み上げ向きではない。** ラベルと役名が
+                        別々に読まれると対応が取れないので、1文にまとめた sr-only の
+                        live region を別に置き、視覚側は aria-hidden にする (#5486).
+                        バッジのスタイルは変えていない。 */}
+                    <div
+                      className="sr-only"
+                      role="status"
+                      aria-live="polite"
+                      data-testid="courchevel-live-besthand-status"
+                    >
+                      {t('livePreviewAria', { hand: t(`hand.${liveBestHandKey}`) })}
+                    </div>
+                    <span className="text-ds-text-primary text-xs" aria-hidden="true">
+                      {t('livePreview')}
+                    </span>
                     <span
                       className={`inline-block ml-1.5 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}
                       data-testid="courchevel-live-besthand-name"
+                      aria-hidden="true"
                     >
                       {t(`hand.${liveBestHandKey}`)}
                     </span>
