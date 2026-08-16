@@ -112,11 +112,13 @@ func TestLingerLongerWebPresenterMessages(t *testing.T) {
 		assert.Equal(t, "lingerlonger.eliminated", m["messageCode"])
 	})
 
+	// 投了で決まった勝ちを result.cpu (=「最後まで持ち続けました」) で出すのは
+	// 事実に反する。相手は持ちこたえたのではなく、こちらが降りただけ (#5765)。
 	t.Run("投了すると相手の勝ち", func(t *testing.T) {
 		l := newLingerLongerForWeb(t)
 		l.GiveUp()
 		m := decodeLingerLonger(t, p.Output(l, nil))
-		assert.Equal(t, "lingerlonger.result.cpu", m["messageCode"])
+		assert.Equal(t, "lingerlonger.result.giveUp", m["messageCode"])
 		assert.NotEqual(t, "0", m["messageParams"].(map[string]any)["idx"])
 	})
 
@@ -137,6 +139,32 @@ func TestLingerLongerWebPresenterMessages(t *testing.T) {
 		require.True(t, l.GetGameEndFlag())
 		m := decodeLingerLonger(t, p.Output(l, nil))
 		assert.Equal(t, "lingerlonger.result.you", m["messageCode"])
+	})
+
+	// **全員が同時に出し切ると「持ち続けた人」は存在しない。** 勝ちは最後の
+	// トリックで決まるのに、以前は通常勝ちと同じ文言を出していた (#5765)。
+	t.Run("全員が同時に出し切ったら最後のトリックで決まる", func(t *testing.T) {
+		l := newLingerLongerForWeb(t)
+		l.DrainStockForTest()
+		l.SetLeadPlayerIdxForTest(0)
+		l.SetCurrentPlayerIdxForTest(0)
+		// 全員 1 枚ずつ。このトリックで全員が出し切る。
+		l.GiveHandForTest(0, domain.NewCard(domain.CardDesignSpade, 5, false))
+		for i := 1; i < l.GetPlayerCnt(); i++ {
+			l.GiveHandForTest(i, domain.NewCard(domain.CardDesignSpade, 6+i, false))
+		}
+		for i := range l.GetPlayerCnt() {
+			require.NoError(t, l.PlayForTest(i, 0))
+		}
+		require.True(t, l.GetGameEndFlag())
+		require.Equal(t, domain.LingerLongerWinLastTrick, l.GetWinReason())
+
+		m := decodeLingerLonger(t, p.Output(l, nil))
+		// 勝者は最強札を出した席なので CPU 側。
+		require.NotEqual(t, 0, l.GetWinnerIdx())
+		assert.Equal(t, "lingerlonger.result.lastTrickCpu", m["messageCode"])
+		// 「最後まで持ち続けました」を名乗ってはいけない。
+		assert.NotEqual(t, "lingerlonger.result.cpu", m["messageCode"])
 	})
 }
 

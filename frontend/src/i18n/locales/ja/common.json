@@ -2185,7 +2185,10 @@
     "missmilligan.errWaivedSingleOnly": "組札へ置けるのは取り置いた1枚だけです",
     "missmilligan.errNotPlaying": "プレイ中のみ操作できます",
     "missmilligan.errNoAutoMove": "自動で動かせるカードがありません",
-    "missmilligan.errNothingToUndo": "元に戻せる操作がありません"
+    "missmilligan.errNothingToUndo": "元に戻せる操作がありません",
+    "lingerlonger.result.lastTrickYou": "全員が同時に手札を出し切り、あなたが最後のトリックを取りました。",
+    "lingerlonger.result.lastTrickCpu": "全員が同時に手札を出し切り、CPU{{idx}} が最後のトリックを取りました。",
+    "lingerlonger.result.giveUp": "あなたが投了しました。CPU{{idx}} の勝ちです。"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",
