@@ -27,6 +27,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { ThirtyOneResponse } from '../types/card';
 import { ThirtyOnePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { hintCliText, isHintCommand } from '../utils/cli/hintText';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { fiftyOneBestSuit, fiftyOneSuitScores } from '../utils/fiftyOneSuitScores';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -170,8 +171,9 @@ function ThirtyOnePageContent() {
         'r / reset        - Reset game',
         'l / log          - Show action log',
       ],
+      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
     }),
-    [],
+    [frontendHint],
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 

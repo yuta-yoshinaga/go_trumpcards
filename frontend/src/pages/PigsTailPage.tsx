@@ -28,6 +28,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { valueName } from '../utils/cardUtils';
 import { parsePigtailCommand, pigtailHelp } from '../utils/cli/commands/pigtailCommands';
 import { formatPigtailState } from '../utils/cli/formatters/pigtailFormatter';
+import { hintCliText, isHintCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 
 const SUIT_SYMBOLS: Record<string, string> = {
@@ -114,8 +115,9 @@ function PigsTailPageContent() {
       parseCommand: parsePigtailCommand,
       formatResponse: formatPigtailState,
       helpText: pigtailHelp(),
+      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(hint) : null),
     }),
-    [i18n.language],
+    [i18n.language, hint],
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 

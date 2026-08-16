@@ -25,6 +25,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BourreResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
 import { isRedSuitDesign, isSuitDesign, suitSymbol } from '../utils/cardAlt';
+import { hintCliText, isHintCommand } from '../utils/cli/hintText';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -134,7 +135,21 @@ function BourrePageContent() {
     retry,
   } = useGameApi<BourreResponse, [ApiArgs]>((...args) => bourreApi.exec(...args));
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('bourre');
-  const { handleCommand } = useCliGame<BourreResponse, [ApiArgs]>(apiCall, cliConfig, state, {
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('bourre', state);
+  // The module-level config cannot see `frontendHint`: hints are computed per render.
+  // Layer the local answer on here rather than restructuring the shared const.
+  const cliConfigWithHint = useMemo(
+    () => ({
+      ...cliConfig,
+      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(frontendHint) : null),
+    }),
+    [frontendHint],
+  );
+  const { handleCommand } = useCliGame<BourreResponse, [ApiArgs]>(apiCall, cliConfigWithHint, state, {
     addInput,
     addOutput,
     addError,
@@ -227,11 +242,6 @@ function BourrePageContent() {
 
   // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
   // だけフック数が変わってページが骨組みのまま固まる (#4561)。
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('bourre', state);
 
   if (!state) return <GameSkeleton gameKey="bourre" layout={{ kind: 'card-grid', count: 5, cols: 'grid-cols-5' }} />;
 

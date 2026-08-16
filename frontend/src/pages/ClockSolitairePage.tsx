@@ -27,6 +27,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { ClockSolitaireResponse } from '../types/card';
 import { ClockSolitairePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { hintCliText, isHintCommand } from '../utils/cli/hintText';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -201,8 +202,9 @@ function ClockSolitairePageContent() {
         'l/log      - Show action log',
         'r/reset    - Reset game',
       ],
+      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(hint) : null),
     }),
-    [],
+    [hint],
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, {
     addInput,

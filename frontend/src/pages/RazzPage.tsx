@@ -37,6 +37,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { SevenCardStudResponse } from '../types/card';
 import { SevenCardStudPhase, SevenCardStudRebuyPhaseType } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { hintCliText, isHintCommand } from '../utils/cli/hintText';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { findPlayerName } from '../utils/playerUtils';
 import { formatRazzLow, razzBestLow } from '../utils/razzLow';
@@ -101,6 +102,7 @@ function RazzPageContent() {
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('razz');
   type RazzArgs = Parameters<typeof razzApi.exec>;
+  const { hint, hintEnabled, setHintEnabled } = useGameHint('razz', state);
   const cliConfig: CliGameConfig<SevenCardStudResponse, RazzArgs> = useMemo(
     () => ({
       gameName: 'razz',
@@ -158,8 +160,9 @@ function RazzPageContent() {
         'show        - Show hand',
         'r/reset     - Reset game',
       ],
+      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(hint) : null),
     }),
-    [phaseNames],
+    [phaseNames, hint],
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
@@ -168,7 +171,6 @@ function RazzPageContent() {
   // Tournament / ante config applied on the next reset (mirrors the CUI's tournament + ante options).
   const [ante, setAnte] = useState(1);
   const [tournamentMode, setTournamentMode] = useState(false);
-  const { hint, hintEnabled, setHintEnabled } = useGameHint('razz', state);
   const turnStartRef = useRef(0);
 
   useMountReset(execApi);

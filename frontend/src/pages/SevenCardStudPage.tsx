@@ -38,6 +38,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { SevenCardStudResponse } from '../types/card';
 import { SevenCardStudPhase, SevenCardStudRebuyPhaseType } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { hintCliText, isHintCommand } from '../utils/cli/hintText';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { findPlayerName } from '../utils/playerUtils';
 import { evaluateBestHand, pokerHandKey } from '../utils/pokerSquaresUtils';
@@ -115,6 +116,7 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode(gameKey);
   type ScsArgs = Parameters<typeof sevenCardStudApi.exec>;
+  const { hint, hintEnabled, setHintEnabled } = useGameHint(gameKey, state);
   const cliConfig: CliGameConfig<SevenCardStudResponse, ScsArgs> = useMemo(
     () => ({
       gameName: gameKey,
@@ -172,14 +174,14 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
         'show        - Show hand',
         'r/reset     - Reset game',
       ],
+      localCommand: (input: string) => (isHintCommand(input) ? hintCliText(hint) : null),
     }),
-    [phaseNames, gameKey],
+    [phaseNames, gameKey, hint],
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   const [betAmount, setBetAmount] = useState(20);
   const [cpuMetaAI, setCpuMetaAI] = useState(false);
-  const { hint, hintEnabled, setHintEnabled } = useGameHint(gameKey, state);
   const turnStartRef = useRef(0);
 
   useMountReset(execApi);
