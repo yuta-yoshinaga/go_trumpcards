@@ -235,7 +235,6 @@ func buildPokerRoundResults(results []domain.HoldemResult) []*controller.HoldemW
 	return out
 }
 
-// pokerHandName はハンドランクから名前を返す。
 // pokerHandKeys は役のロケール非依存キー。フロントの POKER_HAND_KEYS
 // (frontend/src/utils/pokerSquaresUtils.ts) と同じ並びで、各ゲームの locale の
 // `hand` ブロックがこのキーを引く。
@@ -255,6 +254,7 @@ func pokerHandKey(rank int) string {
 	return ""
 }
 
+// pokerHandName はハンドランクから名前を返す。
 func pokerHandName(rank int) string {
 	if rank >= 0 && rank < len(domain.PokerHandNames) {
 		return domain.PokerHandNames[rank]
