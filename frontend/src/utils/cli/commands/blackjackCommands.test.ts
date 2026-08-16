@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseBlackjackCommand } from './blackjackCommands';
+import { BLACKJACK_HELP, parseBlackjackCommand } from './blackjackCommands';
 
 describe('parseBlackjackCommand', () => {
   it('parses hit', () => {
@@ -83,5 +83,49 @@ describe('parseBlackjackCommand', () => {
   it('is case insensitive', () => {
     expect(parseBlackjackCommand('HIT')).toEqual({ args: ['hit'] });
     expect(parseBlackjackCommand('B 100')).toEqual({ args: ['bet', 100] });
+  });
+});
+
+// #5474: サーバ (BlackJackCuiController) は `amount ppBet t3Bet handCount` の
+// 4引数を受けるのに、CLI モードのパーサーは金額1つしか読まなかった。同じページの
+// ベットフォームと独立 CUI では使えるサイドベットと複数ハンドが、CLI だけ使えない。
+describe('parseBlackjackCommand bet with side bets and multiple hands', () => {
+  it('passes the side bets and the hand count through', () => {
+    expect(parseBlackjackCommand('b 100 20 30 2')).toEqual({
+      args: ['bet', 100, undefined, { perfectPairsBet: 20, twentyOnePlus3Bet: 30, handCount: 2 }],
+    });
+  });
+
+  // **省略した引数は送らない。** 0 を送ると「0 を賭ける」と「賭けない」が
+  // サーバ側で区別できなくなる。
+  it('sends no options at all when only the amount is given', () => {
+    expect(parseBlackjackCommand('b 100')).toEqual({ args: ['bet', 100] });
+  });
+
+  it('fills in only the side bets that were given', () => {
+    expect(parseBlackjackCommand('b 100 20')).toEqual({
+      args: ['bet', 100, undefined, { perfectPairsBet: 20 }],
+    });
+    expect(parseBlackjackCommand('b 100 20 30')).toEqual({
+      args: ['bet', 100, undefined, { perfectPairsBet: 20, twentyOnePlus3Bet: 30 }],
+    });
+  });
+
+  // 数字でない引数を黙って捨てない。捨てると `b 100 xx 30` が
+  // 「21+3 に 30」でなく別の意味で通ってしまう。
+  it('refuses a non-numeric extra argument instead of dropping it', () => {
+    for (const bad of ['b 100 xx', 'b 100 20 yy', 'b 100 20 30 zz']) {
+      expect('error' in parseBlackjackCommand(bad)).toBe(true);
+    }
+  });
+
+  it('refuses a negative side bet or hand count', () => {
+    for (const bad of ['b 100 -1', 'b 100 20 -5', 'b 100 20 30 0']) {
+      expect('error' in parseBlackjackCommand(bad)).toBe(true);
+    }
+  });
+
+  it('documents the extended form in the help text', () => {
+    expect(BLACKJACK_HELP.some((l) => /ppBet|handCount/.test(l))).toBe(true);
   });
 });
