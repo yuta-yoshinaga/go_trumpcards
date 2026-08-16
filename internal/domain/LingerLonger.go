@@ -584,7 +584,11 @@ type lingerLongerJSON struct {
 	LastDrawIdx      int                   `json:"ld"`
 	GameEndFlag      bool                  `json:"ge"`
 	WinnerIdx        int                   `json:"wi"`
-	ActionLog        []*ActionLogEntry     `json:"al"`
+	// WinReason を載せないと、KV に保存して次のリクエストで復元した時点で
+	// 勝因が消え、presenter が通常勝ちに寄せてしまう。決着の表示は決着後の
+	// リクエストで読まれるので、ここが抜けていると本番でだけ直っていない。
+	WinReason string            `json:"wr"`
+	ActionLog []*ActionLogEntry `json:"al"`
 }
 
 // MarshalJSON KV スナップショット用のシリアライズ
@@ -594,7 +598,8 @@ func (l *LingerLonger) MarshalJSON() ([]byte, error) {
 		CurrentTrick: l.currentTrick, CurrentPlayerIdx: l.currentPlayerIdx,
 		LeadPlayerIdx: l.leadPlayerIdx, TrickNumber: l.trickNumber,
 		EliminatedCnt: l.eliminatedCnt, Discarded: l.discarded, LastDrawIdx: l.lastDrawIdx,
-		GameEndFlag: l.gameEndFlag, WinnerIdx: l.winnerIdx, ActionLog: l.actionLog,
+		GameEndFlag: l.gameEndFlag, WinnerIdx: l.winnerIdx, WinReason: l.winReason,
+		ActionLog: l.actionLog,
 	})
 }
 
@@ -618,6 +623,21 @@ func (l *LingerLonger) UnmarshalJSON(data []byte) error {
 	}
 	if j.GameEndFlag != (j.WinnerIdx >= 0) {
 		return fmt.Errorf("winner %d disagrees with game end flag %v", j.WinnerIdx, j.GameEndFlag)
+	}
+	// **決着しているなら勝因も揃っている。** ここを見ないと、勝因を載せ忘れた
+	// スナップショットが「通常勝ち」として黙って復元され、同時脱落の局が
+	// また「最後まで持ち続けました」と説明される (#5765)。
+	switch j.WinReason {
+	case "":
+		if j.GameEndFlag {
+			return errors.New("game ended but no win reason was recorded")
+		}
+	case LingerLongerWinLasted, LingerLongerWinLastTrick, LingerLongerWinGiveUp:
+		if !j.GameEndFlag {
+			return fmt.Errorf("win reason %q on a game that has not ended", j.WinReason)
+		}
+	default:
+		return fmt.Errorf("unknown win reason: %q", j.WinReason)
 	}
 	if j.TrumpCards == nil {
 		return errors.New("missing trump cards")
@@ -715,5 +735,6 @@ func (l *LingerLonger) UnmarshalJSON(data []byte) error {
 	l.eliminatedCnt, l.lastDrawIdx = j.EliminatedCnt, j.LastDrawIdx
 	l.discarded = j.Discarded
 	l.gameEndFlag, l.winnerIdx, l.actionLog = j.GameEndFlag, j.WinnerIdx, j.ActionLog
+	l.winReason = j.WinReason
 	return nil
 }

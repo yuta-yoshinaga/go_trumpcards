@@ -2,7 +2,11 @@
 
 package domain
 
-import "testing"
+import (
+	"encoding/json"
+	"strings"
+	"testing"
+)
 
 // 勝因を区別する。
 //
@@ -70,4 +74,78 @@ func newLingerLongerForReasonTest(t *testing.T) *LingerLonger {
 	l := NewLingerLonger(nil, LingerLongerConfig{PlayerCnt: 4})
 	l.Reset()
 	return l
+}
+
+// 勝因が KV スナップショットを往復すること。
+//
+// 決着の表示は「決着した**次の**リクエスト」で読まれる。載せ忘れると
+// 復元時点で勝因が消え、presenter が通常勝ちに寄せるので、テストが全部緑でも
+// 本番でだけ直っていない状態になる (#5765)。
+func TestLingerLonger_WinReasonSurvivesTheSnapshot(t *testing.T) {
+	l := newLingerLongerForReasonTest(t)
+	// **脱落席は手札を持てない** (復元時の検査がそれを見る)。全員が同時に
+	// 出し切った局面を作るので、手札も空にしてから脱落させる。
+	// 出し切った札は捨て札に移る。復元時の検査は 52 枚が
+	// 手札 + 場 + 山札 + 捨て札に揃っていることを見るので、数を合わせる。
+	for i := range l.players {
+		l.discarded += l.players[i].GetCardsSize()
+		l.GiveHandForTest(i)
+		l.players[i].SetEliminatedAt(i + 1)
+	}
+	// 脱落の順番は 1..eliminatedCnt の並べ替えでなければ復元が拒む。
+	l.eliminatedCnt = len(l.players)
+	if !l.checkGameEnd(2) {
+		t.Fatal("zero active seats should end the game")
+	}
+
+	data, err := json.Marshal(l)
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	var back LingerLonger
+	if err := json.Unmarshal(data, &back); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if got := back.GetWinReason(); got != LingerLongerWinLastTrick {
+		t.Errorf("restored GetWinReason() = %q, want %q", got, LingerLongerWinLastTrick)
+	}
+	if back.GetWinnerIdx() != l.GetWinnerIdx() {
+		t.Errorf("restored winner = %d, want %d", back.GetWinnerIdx(), l.GetWinnerIdx())
+	}
+}
+
+// 決着済みなのに勝因が無いスナップショットは拒む。載せ忘れが「通常勝ち」として
+// 黙って通ると、直したはずの誤表示がそのまま戻る。
+func TestLingerLonger_SnapshotRejectsAMissingOrUnknownWinReason(t *testing.T) {
+	l := newLingerLongerForReasonTest(t)
+	for i := 1; i < l.config.PlayerCnt; i++ {
+		l.discarded += l.players[i].GetCardsSize()
+		l.GiveHandForTest(i)
+		l.players[i].SetEliminatedAt(i)
+	}
+	l.eliminatedCnt = l.config.PlayerCnt - 1
+	if !l.checkGameEnd(0) {
+		t.Fatal("one active seat should end the game")
+	}
+	data, err := json.Marshal(l)
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+
+	for _, tc := range []struct{ name, replace string }{
+		{"missing", `"wr":""`},
+		{"unknown", `"wr":"heldOn"`},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			tampered := strings.Replace(string(data),
+				`"wr":"`+LingerLongerWinLasted+`"`, tc.replace, 1)
+			if tampered == string(data) {
+				t.Fatal("改竄が効いていない。フィールド名が変わったらここも直すこと")
+			}
+			var back LingerLonger
+			if err := json.Unmarshal([]byte(tampered), &back); err == nil {
+				t.Errorf("%s win reason was accepted", tc.name)
+			}
+		})
+	}
 }
