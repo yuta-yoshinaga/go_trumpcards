@@ -1,8 +1,12 @@
 import type { blackjackApi } from '../../../api/gameApi';
+import type { BlackJackBetOptions } from '../../../api/games/blackjack';
 import { parseIntArg, splitCommand, suggestCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type BjArgs = Parameters<typeof blackjackApi.exec>;
+
+/** Usage line for the bet command, shared by every rejection path. */
+const BET_USAGE = 'Usage: b <amount> [ppBet] [t3Bet] [handCount]';
 
 const VALID_COMMANDS = [
   'h',
@@ -95,8 +99,33 @@ export function parseBlackjackCommand(input: string): CliParseResult<BjArgs> {
     case 'b':
     case 'bet': {
       const parsed = parseIntArg(args, 0);
-      if ('error' in parsed) return { error: 'Usage: b <amount>' };
-      return { args: ['bet', parsed.value] };
+      if ('error' in parsed) return { error: BET_USAGE };
+      // サーバ (BlackJackCuiController) は amount / ppBet / t3Bet / handCount の
+      // 4引数を受ける。金額しか読まないと、同じページのベットフォームと独立 CUI で
+      // 使えるサイドベットと複数ハンドが CLI だけ使えない (#5474)。
+      // **余った引数を黙って捨てない。** `b 100 20 30 2 oops` が通ると、
+      // 打ち間違いに気づかないまま意図と違うベットが成立する。
+      if (args.length > 4) return { error: BET_USAGE };
+      const options: BlackJackBetOptions = {};
+      const extras: [keyof BlackJackBetOptions, number][] = [
+        ['perfectPairsBet', 0],
+        ['twentyOnePlus3Bet', 0],
+        ['handCount', 1],
+      ];
+      for (let i = 0; i < extras.length; i++) {
+        const [key, min] = extras[i] as [keyof BlackJackBetOptions, number];
+        if (args.length <= i + 1) break;
+        const extra = parseIntArg(args, i + 1);
+        // **数字でない引数を黙って捨てない。** 捨てると `b 100 xx 30` が
+        // 「21+3 に 30」ではない別の意味で通ってしまう。
+        if ('error' in extra) return { error: BET_USAGE };
+        if (extra.value < min) return { error: BET_USAGE };
+        options[key] = extra.value;
+      }
+      // **省略した引数は送らない。** 0 を送ると「0 を賭ける」と「賭けない」が
+      // サーバ側で区別できない。
+      if (Object.keys(options).length === 0) return { args: ['bet', parsed.value] };
+      return { args: ['bet', parsed.value, undefined, options] };
     }
     case 'sd':
     case 'setdeckcount': {
@@ -145,7 +174,7 @@ export const BLACKJACK_HELP: string[] = [
   'i/insurance - Take insurance',
   'di          - Decline insurance',
   'sur/surrender- Surrender',
-  'b <amount>  - Place bet',
+  'b <amount> [ppBet] [t3Bet] [handCount] - Place bet (side bets / multi-hand)',
   'hint        - Toggle strategy hint',
   'sd <n>      - Set deck count',
   'scc <0-3>   - Set CPU count',
