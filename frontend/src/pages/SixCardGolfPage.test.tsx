@@ -191,6 +191,46 @@ describe('SixCardGolfPage', () => {
       );
     });
 
+    it('starts a new game with the chosen CPU difficulty', async () => {
+      renderWithProviders(<SixCardGolfPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith({ command: 'reset' }));
+      mockExec.mockClear();
+
+      fireEvent.change(screen.getByTestId('scg-cpu-difficulty'), { target: { value: '2' } });
+      fireEvent.click(screen.getByTestId('scg-apply-settings'));
+
+      await waitFor(() =>
+        expect(mockExec).toHaveBeenCalledWith({
+          command: 'reset',
+          config: { playerCount: 2, cpuDifficulty: 2, rounds: 9 },
+        }),
+      );
+    });
+
+    // フッタの「リセット/次のゲーム」で設定が黙って既定へ戻らないこと。
+    // 戻ってしまうと、このページが避けようとしている「選択が黙って消える」
+    // そのものになる。
+    it('keeps the chosen settings when the footer reset is used', async () => {
+      // 終局状態にして確認ダイアログを挟まない経路にする。局の途中だと
+      // GameResetButton は先に確認を出すので、onReset まで届かない。
+      mockExec.mockResolvedValue(makeState({ gameEndFlag: true }));
+      renderWithProviders(<SixCardGolfPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith({ command: 'reset' }));
+
+      fireEvent.change(screen.getByTestId('scg-player-count'), { target: { value: '3' } });
+      fireEvent.change(screen.getByTestId('scg-rounds'), { target: { value: '6' } });
+      mockExec.mockClear();
+
+      fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
+
+      await waitFor(() =>
+        expect(mockExec).toHaveBeenCalledWith({
+          command: 'reset',
+          config: { playerCount: 3, cpuDifficulty: 1, rounds: 6 },
+        }),
+      );
+    });
+
     it('offers every player count the domain accepts', async () => {
       renderWithProviders(<SixCardGolfPage />);
       // state が来るまではスケルトンなので、待たずに問い合わせると

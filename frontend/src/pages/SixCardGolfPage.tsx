@@ -122,7 +122,6 @@ function SixCardGolfPageContent() {
   const handleFlip = useCallback((pos: number) => apiCall({ command: 'flip', position: pos }), [apiCall]);
   const handleSkipFlip = useCallback(() => apiCall({ command: 'skipflip' }), [apiCall]);
   const handleNextRound = useCallback(() => apiCall({ command: 'nextround' }), [apiCall]);
-  const handleReset = useCallback(() => apiCall({ command: 'reset' }), [apiCall]);
 
   // CUI の sd/sp/sr と同じ 3 つを Web でも選べるようにする。設定は「適用」を
   // 押したときだけ送る -- 選んだ瞬間に配り直すと、進行中の局が黙って消える。
@@ -133,6 +132,10 @@ function SixCardGolfPageContent() {
     [],
   );
   const handleApplySettings = useCallback(() => apiCall({ command: 'reset', config }), [apiCall, config]);
+  // 設定を選んだあとにフッタの「リセット/次のゲーム」を押しても、選んだ設定で
+  // 配り直す。ここで config を落とすと、選択が**黙って**既定に戻る -- この
+  // ページが避けようとしているのがまさにそれ。
+  const handleReset = useCallback(() => apiCall({ command: 'reset', config }), [apiCall, config]);
 
   const phaseName = useMemo(() => {
     if (!state) return '';
