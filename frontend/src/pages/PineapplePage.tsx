@@ -548,6 +548,20 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
             {/* Human player */}
             {humanPlayer && (
               <div className="mb-2" data-tutorial="pn-player-hand">
+                {/* **3 枚配って 1 枚捨てる game なので、どの 2 枚を残すかの判断材料が要る。**
+                    Omaha は暫定ベストを常時出しているのに Pineapple には無かった (#5488)。
+                    役の判定はサーバ (PeekBestHand) が答える。 */}
+                {state.liveBestHand && (
+                  <div className="mb-1" data-testid="pineapple-live-besthand">
+                    <span className="text-ds-text-primary text-xs">{t('livePreview')}</span>
+                    <span
+                      className={`inline-block ml-1.5 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}
+                      data-testid="pineapple-live-besthand-name"
+                    >
+                      {t(`hand.${state.liveBestHand}`)}
+                    </span>
+                  </div>
+                )}
                 <div className="text-ds-text-primary text-lg mb-1">
                   {t('yourHand')}
                   <span className="ml-3 text-xs">

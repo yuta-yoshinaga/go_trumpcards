@@ -30,6 +30,13 @@ type PineappleWebOutput struct {
 	IsDiscardPhase   bool   `json:"isDiscardPhase"`
 	DiscardDone      []bool `json:"discardDone"`
 	InitialDealCount int    `json:"initialDealCount"`
+	// LiveBestHand は人間の暫定ベスト役のキー ("straightFlush" など)。ショーダウン前のベッティング
+	// 中だけ埋まり、それ以外は空。
+	//
+	// Omaha の Web は同じ表示を TypeScript 側で組み直しているが、こちらは
+	// サーバが答える。役の探索をフロントにもう 1 つ持つと、ドメインを直した
+	// ときに片方だけ古くなる (#5601 で Agnes から同じ複製を消したばかり)。
+	LiveBestHand string `json:"liveBestHand"`
 }
 
 // ToConfig builds a PineappleConfig from the web input.

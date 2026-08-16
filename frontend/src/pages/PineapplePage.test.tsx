@@ -107,6 +107,7 @@ const initState: PineappleResponse = {
   isDiscardPhase: false,
   discardDone: [],
   initialDealCount: 3,
+  liveBestHand: '',
 };
 
 /** PRE_FLOP (phase 1): human's turn, no outstanding bet */
@@ -192,6 +193,28 @@ describe('PineapplePage', () => {
   it('calls reset on mount', async () => {
     renderWithProviders(<PineapplePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  // **3 枚配って 1 枚捨てる game なので、どの 2 枚を残すかの判断材料が要る。**
+  // Omaha は暫定ベストを常時出しているのに Pineapple には無かった (#5488)。
+  it('shows the live best hand the server sent', async () => {
+    mockExec.mockResolvedValue({
+      ...initState,
+      players: [humanPlayer(), cpuPlayer(1)],
+      liveBestHand: 'fullHouse',
+    });
+    renderWithProviders(<PineapplePage />);
+    const badge = await screen.findByTestId('pineapple-live-besthand-name');
+    // キーではなく訳文が出ること。キーのまま出ていたら i18n を素通りしている。
+    expect(badge).toHaveTextContent('フルハウス');
+    expect(badge).not.toHaveTextContent('fullHouse');
+  });
+
+  it('shows no live best hand when the server sent none', async () => {
+    mockExec.mockResolvedValue({ ...initState, players: [humanPlayer(), cpuPlayer(1)], liveBestHand: '' });
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('pineapple-live-besthand')).not.toBeInTheDocument();
   });
 
   it('shows phase name "初期化中" for INIT phase', async () => {

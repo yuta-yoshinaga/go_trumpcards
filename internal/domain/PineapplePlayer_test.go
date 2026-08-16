@@ -127,3 +127,56 @@ func TestPineapplePlayer_JSON(t *testing.T) {
 	assert.Equal(t, 1, p2.GetVPIPCount())
 	assert.Equal(t, 2, p2.GetCardsSize())
 }
+
+// **表示のために状態を書き換えない。** EvalBestHand を描画のたびに呼ぶと
+// handRank / bestHand が動くので、途中経過の表示には PeekBestHand を使う
+// (#5488、Omaha の #4680 と同じ形)。
+func TestPineapplePlayer_PeekBestHandLeavesTheStateAlone(t *testing.T) {
+	pp := NewPineapplePlayer(true, HoldemStyleTAG)
+	pp.AddCard(NewCard(CardDesignSpade, 14, false))
+	pp.AddCard(NewCard(CardDesignSpade, 13, false))
+	pp.AddCard(NewCard(CardDesignHeart, 2, false))
+	board := []*Card{
+		NewCard(CardDesignSpade, 12, false),
+		NewCard(CardDesignSpade, 11, false),
+		NewCard(CardDesignSpade, 10, false),
+	}
+
+	beforeRank, beforeBest := pp.GetHandRank(), pp.GetComparisonCards()
+
+	rank, best := pp.PeekBestHand(board)
+	if rank != PokerHandStraightFlush {
+		t.Errorf("PeekBestHand rank = %d, want straight flush (%d)", rank, PokerHandStraightFlush)
+	}
+	if len(best) != 5 {
+		t.Errorf("PeekBestHand returned %d cards, want 5", len(best))
+	}
+	if pp.GetHandRank() != beforeRank {
+		t.Errorf("handRank changed to %d (was %d) — Peek must not record", pp.GetHandRank(), beforeRank)
+	}
+	if len(pp.GetComparisonCards()) != len(beforeBest) {
+		t.Error("bestHand changed — Peek must not record")
+	}
+
+	// EvalBestHand は同じ答えを返し、そのときだけ記録する。ここがずれると
+	// 「表示とショーダウンで役が違う」になる。
+	if got := pp.EvalBestHand(board); got != rank {
+		t.Errorf("EvalBestHand = %d, PeekBestHand = %d — they must agree", got, rank)
+	}
+	if pp.GetHandRank() != rank {
+		t.Errorf("EvalBestHand did not record: handRank = %d, want %d", pp.GetHandRank(), rank)
+	}
+}
+
+// 5 枚に満たないうちは役を確定させない。ここで確定した組を返すと、フロップ前に
+// 「ハイカード」以上の役が画面に出る。
+func TestPineapplePlayer_PeekBestHandIsUndecidedBeforeFive(t *testing.T) {
+	pp := NewPineapplePlayer(true, HoldemStyleTAG)
+	pp.AddCard(NewCard(CardDesignSpade, 14, false))
+	pp.AddCard(NewCard(CardDesignHeart, 9, false))
+
+	rank, best := pp.PeekBestHand(nil)
+	if rank != PokerHandHighCard || best != nil {
+		t.Errorf("PeekBestHand(nil) = (%d, %v), want (high card, nil)", rank, best)
+	}
+}

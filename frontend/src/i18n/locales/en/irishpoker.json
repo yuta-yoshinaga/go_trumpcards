@@ -106,5 +106,6 @@
     "fourOfAKind": "Four of a Kind",
     "straightFlush": "Straight Flush",
     "royalFlush": "Royal Flush"
-  }
+  },
+  "livePreview": "Current hand:"
 }
