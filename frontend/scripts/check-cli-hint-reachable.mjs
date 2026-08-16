@@ -38,11 +38,11 @@ const FIXTURE = process.env.CLI_HINT_GUARD_ROOT !== undefined;
  * An entry is a claim that the page has no CLI hint to expose, not a to-do.
  */
 const ALLOWED = new Map([
-  [
-    'Memory',
-    'useGameHint を hintEnabled/setHintEnabled のためだけに使い、hint 自体を' +
-      ' 受け取らない。出すヒントが存在しない。',
-  ],
+  // Empty on purpose. The first version exempted Memory on the claim that it
+  // never receives a hint -- wrong: it computes `frontendHint` from
+  // getMemoryHint() instead of taking it from useGameHint, so the exemption was
+  // hiding a real gap rather than describing one. An entry here must be a claim
+  // that the page has no hint at all, verified against how it renders one.
 ]);
 
 /** Reads a directory, returning [] when it does not exist. */
@@ -78,16 +78,28 @@ for (const f of pageFiles) {
   const name = f.replace(/Page\.tsx$/, '');
 
   // Only pages that actually have a hint to show, and a CLI to show it in.
-  if (!src.includes('useGameHint') || !src.includes('parseCommand:')) continue;
-  if (!/\bhint\b\s*[,:}]/.test(src.split('useGameHint')[0].slice(-400))) {
-    // `hint` is not among the destructured names -- nothing to expose.
-    if (!/const\s*\{[^}]*\bhint\b/.test(src)) continue;
-  }
+  if (!src.includes('parseCommand:')) continue;
+
+  // "Has a hint" is not the same as "destructures `hint` from useGameHint".
+  // MemoryPage computes its own via getMemoryHint() and renders it through
+  // FrontendHintTooltip; keying on the destructure skipped it silently, so the
+  // guard reported every page reachable while never looking at it.
+  const hasHint =
+    /const\s*\{[^}]*\bhint\b[^}]*\}\s*=\s*useGameHint/.test(src) ||
+    /\bhint:\s*\w+[^}]*\}\s*=\s*useGameHint/.test(src) ||
+    /FrontendHintTooltip/.test(src) ||
+    /\bget\w+Hint\(/.test(src);
+  if (!hasHint) continue;
   if (ALLOWED.has(name)) continue;
   checked += 1;
 
-  // (a) the page answers locally
-  if (src.includes('hintCliText')) continue;
+  // (a) the page answers locally.
+  //
+  // Both halves are required: an `import { hintCliText }` on its own satisfied
+  // the first version of this check, so deleting the localCommand line left the
+  // guard green with a dangling import. Verified by removing that line from
+  // MemoryPage -- the guard has to notice.
+  if (/localCommand:/.test(src) && /hintCliText\(/.test(src)) continue;
 
   // (b) the page defines its parser inline and handles hint there. Several
   // solitaire pages keep `parseXCommand` in the page file rather than in a
