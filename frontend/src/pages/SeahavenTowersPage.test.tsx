@@ -237,6 +237,45 @@ describe('SeahavenTowersPage', () => {
     await waitFor(() => expect(screen.getAllByText(/ゲームオーバー/).length).toBeGreaterThan(0));
   });
 
+  // **上限超過は title とリングだけで示していた。** ホバーできない利用者には
+  // draggable が落ちている理由が届かない (#5495)。
+  it('says in the aria-label why an over-limit card cannot be dragged', async () => {
+    // 予備セルが 1 つ埋まっている → 上限 = 1 + 1 = 2。3 枚の列の一番上は超過。
+    const tightState: SeahavenTowersResponse = {
+      ...playingState,
+      tableau: [
+        [card('SPADE', 13), card('HEART', 12), card('CLOVER', 11)],
+        [card('DIAMOND', 1)],
+        [card('SPADE', 2)],
+        [card('HEART', 3)],
+        [card('DIAMOND', 4)],
+        [card('CLOVER', 5)],
+        [card('SPADE', 6)],
+        [card('HEART', 7)],
+        [card('CLOVER', 8)],
+        [card('DIAMOND', 9)],
+      ],
+      reservedCells: [card('SPADE', 1), null],
+    };
+    mockExec.mockResolvedValue(tightState);
+    renderWithProviders(<SeahavenTowersPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ K')).toBeInTheDocument());
+
+    // 3 枚を動かすことになる一番上の札は上限 2 を超える。
+    const blocked = screen.getByAltText('♠ K').closest('button') as HTMLButtonElement;
+    expect(blocked).toHaveAttribute('data-supermove-blocked', 'true');
+    expect(blocked.getAttribute('aria-label')).toContain('一度に動かせるのは2枚までです');
+
+    // **負のコントロール: 上限内の札はカード名のみ。** ここに理由が混ざると、
+    // 動かせる札まで動かせないように読み上げられる。
+    const movable = screen.getByAltText('♣ J').closest('button') as HTMLButtonElement;
+    expect(movable).not.toHaveAttribute('data-supermove-blocked');
+    expect(movable.getAttribute('aria-label')).not.toContain('一度に動かせるのは');
+
+    // 視覚側の挙動は変えていない。
+    expect(blocked.getAttribute('title')).toContain('一度に動かせるのは2枚までです');
+  });
+
   it('highlights the in-limit supermove block under the cursor', async () => {
     // Both reserved cells empty → limit = 1 + 2 = 3, so the bottom 3 cards form the movable block.
     const looseState: SeahavenTowersResponse = {
