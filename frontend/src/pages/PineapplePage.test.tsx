@@ -434,6 +434,85 @@ describe('PineapplePage', () => {
     expect(preview).toHaveTextContent('ワンペア');
   });
 
+  // #5490: 残す2枚と役はディスカード確定前の重要なフィードバックなのに、
+  // 同じフッター内の上限超過通知 (pn-discard-limit-announce) が aria-live を
+  // 持つのに対し、こちらは無音だった。
+  it('announces the kept cards and the hand to a screen reader', async () => {
+    const irishDiscardState: PineappleResponse = {
+      ...discardState,
+      initialDealCount: 4,
+      players: [
+        {
+          ...discardState.players[0],
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 1 },
+            { design: 'DIAMOND', value: 5 },
+            { design: 'CLOVER', value: 8 },
+          ],
+        },
+        cpuPlayer(1),
+        cpuPlayer(2),
+        cpuPlayer(3),
+      ],
+      communityCards: [
+        { design: 'SPADE', value: 10 },
+        { design: 'HEART', value: 5 },
+        { design: 'DIAMOND', value: 8 },
+      ],
+      discardDone: [false, true, true, true],
+    };
+    mockIrishExec.mockResolvedValue(irishDiscardState);
+    renderWithProviders(<PineapplePage variant="irishpoker" />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByAltText('♦ 5').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByAltText('♣ 8').closest('button') as HTMLButtonElement);
+
+    const live = await screen.findByTestId('irishpoker-discard-preview-announce');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toHaveClass('sr-only');
+    // **残す2枚と役の両方を読ませる。** どちらが欠けても選択を確認できない。
+    expect(live.textContent).toContain('♠ A');
+    expect(live.textContent).toContain('♥ A');
+    expect(live.textContent).toContain('ワンペア');
+  });
+
+  // 1枚しか選んでいない間は出さない。確定した選択だけを読み上げる。
+  it('stays silent until the second discard is chosen', async () => {
+    const irishDiscardState: PineappleResponse = {
+      ...discardState,
+      initialDealCount: 4,
+      players: [
+        {
+          ...discardState.players[0],
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 1 },
+            { design: 'DIAMOND', value: 5 },
+            { design: 'CLOVER', value: 8 },
+          ],
+        },
+        cpuPlayer(1),
+        cpuPlayer(2),
+        cpuPlayer(3),
+      ],
+      communityCards: [
+        { design: 'SPADE', value: 10 },
+        { design: 'HEART', value: 5 },
+        { design: 'DIAMOND', value: 8 },
+      ],
+      discardDone: [false, true, true, true],
+    };
+    mockIrishExec.mockResolvedValue(irishDiscardState);
+    renderWithProviders(<PineapplePage variant="irishpoker" />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByAltText('♦ 5').closest('button') as HTMLButtonElement);
+    expect(screen.queryByTestId('irishpoker-discard-preview-announce')).not.toBeInTheDocument();
+  });
+
   it('annotates each remaining Irish Poker card once the first discard is chosen', async () => {
     const irishDiscardState: PineappleResponse = {
       ...discardState,

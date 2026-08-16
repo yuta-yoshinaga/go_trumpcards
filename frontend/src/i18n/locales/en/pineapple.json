@@ -25,7 +25,9 @@
     "featurePair": "Pair",
     "featureSuited": "Suited",
     "featureConnector": "Connector",
-    "featureHighcard": "High card"
+    "featureHighcard": "High card",
+    "previewAria": "Keeping: {{cards}}",
+    "previewAriaWithHand": "Keeping: {{cards}}. Hand: {{hand}}"
   },
   "rebuy": {
     "prompt": "Rebuy? ({{chips}} chips, {{used}}/{{max}} used)",

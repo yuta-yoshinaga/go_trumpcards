@@ -25,7 +25,9 @@
     "featurePair": "ペア",
     "featureSuited": "スーテッド",
     "featureConnector": "コネクター",
-    "featureHighcard": "ハイカード"
+    "featureHighcard": "ハイカード",
+    "previewAria": "残す2枚: {{cards}}",
+    "previewAriaWithHand": "残す2枚: {{cards}}。成立する役: {{hand}}"
   },
   "rebuy": {
     "prompt": "リバイしますか? ({{chips}}チップ, {{used}}/{{max}}回使用済)",
