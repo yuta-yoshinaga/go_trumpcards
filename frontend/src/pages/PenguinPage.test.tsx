@@ -140,6 +140,13 @@ describe('PenguinPage', () => {
     expect(topCard).toHaveAttribute('data-supermove-blocked', 'true');
     // limit=1, cells=0, cols=0
     expect(topCard).toHaveAttribute('title', '一度に動かせるのは1枚まで（空きセル0・空き列0）');
+
+    // **同じ内容が読み上げにも出る。** title はホバー時にしか読まれない (#5820)。
+    expect(topCard.getAttribute('aria-label') ?? '').toContain('一度に動かせるのは1枚まで');
+    // 負のコントロール: 上限内の札には付かない。
+    const movable = screen.getByTestId('pg-tableau-0-1');
+    expect(movable).not.toHaveAttribute('data-supermove-blocked');
+    expect(movable.getAttribute('aria-label') ?? '').not.toContain('一度に動かせるのは');
   });
 
   it('shows a supermove-limit badge reflecting the free-cell/column counts', async () => {

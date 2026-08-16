@@ -870,6 +870,13 @@ describe('FreeCellPage', () => {
       expect(middleButton).toHaveAttribute('data-supermove-blocked', 'true');
       expect(topButton).toHaveAttribute('draggable', 'false');
       expect(topButton).toHaveAttribute('data-supermove-blocked', 'true');
+
+      // **動かせない理由が読み上げにも出る。** title はホバー時にしか読まれない
+      // ので、キーボード/読み上げ利用者には draggable=false の理由が届かなかった
+      // (#5820)。
+      expect(topButton.getAttribute('aria-label')).toContain('一度に動かせるのは');
+      // 負のコントロール: 動かせる札に理由が混ざってはいけない。
+      expect(bottomButton.getAttribute('aria-label')).not.toContain('一度に動かせるのは');
     });
 
     it('highlights the in-limit block under the cursor', async () => {

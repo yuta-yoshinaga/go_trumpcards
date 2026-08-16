@@ -123,6 +123,15 @@ describe('EightOffPage', () => {
     const title = blocked.getAttribute('title') ?? '';
     expect(title).toMatch(/空きフリーセル0/);
     expect(title).toMatch(/空き列0/);
+
+    // **同じ内容が読み上げにも出る。** title はホバー時にしか読まれない (#5820)。
+    const label = blocked.getAttribute('aria-label') ?? '';
+    expect(label).toContain('一度に動かせるのは');
+    expect(label).toMatch(/空きフリーセル0/);
+    // 負のコントロール: 上限内の札には付かない。
+    const movable = screen.getByTestId('eo-tableau-0-1');
+    expect(movable).not.toHaveAttribute('data-supermove-blocked');
+    expect(movable.getAttribute('aria-label') ?? '').not.toContain('一度に動かせるのは');
   });
 
   it('renders empty tableau columns with K placeholder', async () => {

@@ -479,7 +479,14 @@ function EightOffPageContent() {
                                         isTopCard ? () => handleFoundationShortcut(cardZone, card) : undefined
                                       }
                                       disabled={!isPlaying || loading}
-                                      aria-label={cardAlt(card)}
+                                      // 上限超過は title とリングだけで示していたので、
+                                      // ホバーできる人にしか届かない。draggable も落として
+                                      // いるのに、動かせない理由が読み上げに出ない (#5820)。
+                                      aria-label={
+                                        exceedsSupermove
+                                          ? `${cardAlt(card)} — ${t('supermoveLimitTooltip', { limit: supermoveLimit, cells: emptyFreeCells, cols: emptyTableauCols })}`
+                                          : cardAlt(card)
+                                      }
                                       data-testid={`eo-tableau-${colIdx.toString()}-${cardIdx.toString()}`}
                                       aria-pressed={isSourceSelected('tableau', colIdx, undefined, cardIdx)}
                                       draggable={isPlaying && !loading && !exceedsSupermove}
