@@ -1609,6 +1609,46 @@ describe('CourchevelPage', () => {
     expect(badge.textContent?.trim()).toBeTruthy();
   });
 
+  // #5486: 役名の span には role も aria-live も無く、ストリートが進んで最善役が
+  // 変わってもスクリーンリーダーには何も読まれなかった。5枚から2枚を選ぶ組み合わせは
+  // 10通りあり、見えている人ほど得をする表示になっていた。
+  it('announces the current best hand to a screen reader', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(flopState);
+    renderWithProviders(<CourchevelPage />);
+
+    const live = await screen.findByTestId('courchevel-live-besthand-status');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    // **ラベルと役名を1文で読ませる。** 2要素に割れていると「現在の役:」と
+    // 役名が別々に読まれ、対応が取れない。
+    const badge = screen.getByTestId('courchevel-live-besthand-name');
+    expect(live.textContent).toContain(badge.textContent?.trim());
+    expect(live.textContent).not.toMatch(/hand\./);
+  });
+
+  // 視覚表示は据え置き。読み上げ用の文が画面に二重に出てはいけない。
+  it('keeps the announcement out of the visible layout', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(flopState);
+    renderWithProviders(<CourchevelPage />);
+
+    const live = await screen.findByTestId('courchevel-live-besthand-status');
+    expect(live).toHaveClass('sr-only');
+    // 見えているバッジ側は今までどおり残る。
+    expect(screen.getByTestId('courchevel-live-besthand-name')).toBeInTheDocument();
+  });
+
+  it('drops the announcement at showdown along with the preview', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(showdownState);
+    renderWithProviders(<CourchevelPage />);
+    await waitFor(() => expect(screen.queryByTestId('courchevel-live-besthand-status')).not.toBeInTheDocument());
+  });
+
   it('drops the preview at showdown, where the final hand is already shown', async () => {
     localStorage.clear();
     mockExec.mockReset();
