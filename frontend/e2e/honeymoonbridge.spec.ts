@@ -97,7 +97,7 @@ test.describe('Honeymoon Bridge E2E', () => {
     // (domain の passCount)、相手が上を宣言すると passCount は 0 に戻り、手番は
     // こちらへ返ってくる —— つまりパスボタンは再び現れる。「パスしたらボタンが
     // 消える」と書いていたので、CPU が宣言した配りでだけ落ちていた。
-    const contractBefore = await page.getByTestId('hb-contract').innerText();
+    const contractBefore = await page.getByTestId('hb-contract').textContent();
     await page.getByTestId('hb-pass-btn').click();
 
     // パスが受理されたなら、競りが締まる (ボタンが消える) か、相手が上を宣言して
@@ -106,7 +106,7 @@ test.describe('Honeymoon Bridge E2E', () => {
       .poll(
         async () => {
           if ((await page.getByTestId('hb-pass-btn').count()) === 0) return true;
-          return (await page.getByTestId('hb-contract').innerText()) !== contractBefore;
+          return (await page.getByTestId('hb-contract').textContent()) !== contractBefore;
         },
         { timeout: TIMEOUT_ACTION },
       )
