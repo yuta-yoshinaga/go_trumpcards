@@ -70,6 +70,16 @@ func (_m *MockTriPeaksGame) GetMoveCount() int {
 	return ret.Get(0).(int)
 }
 
+func (_m *MockTriPeaksGame) GetScore() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}
+
+func (_m *MockTriPeaksGame) GetCombo() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}
+
 func (_m *MockTriPeaksGame) GetStockCount() int {
 	ret := _m.Called()
 	return ret.Get(0).(int)

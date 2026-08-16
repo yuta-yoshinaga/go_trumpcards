@@ -26,7 +26,6 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useTriPeaksGame } from '../hooks/useTriPeaksGame';
-import { useTriPeaksScore } from '../hooks/useTriPeaksScore';
 import { useTriPeaksStats } from '../hooks/useTriPeaksStats';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
@@ -231,9 +230,10 @@ function TriPeaksPageContent() {
     prevPeakRemaining.current = peakRemaining;
   }, [peakRemaining, isPlayingForPeaks, playSound]);
 
-  // Chain-bonus score, derived on the frontend from board transitions (issue #3087).
-  const peaksCleared = useMemo(() => peakRemaining.filter((n) => n === 0).length, [peakRemaining]);
-  const { score } = useTriPeaksScore(state?.moveCount, state?.stockCount, peaksCleared);
+  // **得点はサーバが数える。** 以前はフロントの useTriPeaksScore が盤面の遷移から
+  // 計算しており、同じ式がドメインに無いせいで CUI からは得点に手が届かなかった
+  // (#5511)。式は internal/domain/TriPeaks.go に移してある。
+  const score = state?.score ?? 0;
 
   // Best-record persistence in localStorage (issue #3087).
   const { stats, recordResult } = useTriPeaksStats();

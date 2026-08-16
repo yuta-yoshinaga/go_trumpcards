@@ -18,6 +18,7 @@ func (pr *TriPeaksWebPresenter) Output(t interfaces.TriPeaksGame, lastErr error)
 	resObj := new(controller.TriPeaksWebOutput)
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, t, int(t.GetPhase()))
 	resObj.StockCount = t.GetStockCount()
+	resObj.Score, resObj.Combo = t.GetScore(), t.GetCombo()
 
 	// ウェイスト
 	waste := t.GetWaste()
@@ -95,6 +96,7 @@ func (pr *TriPeaksWebPresenter) HintOutput(t interfaces.TriPeaksGame) string {
 	resObj := new(controller.TriPeaksWebOutput)
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, t, int(t.GetPhase()))
 	resObj.StockCount = t.GetStockCount()
+	resObj.Score, resObj.Combo = t.GetScore(), t.GetCombo()
 	resObj.Waste = make([]*controller.WebOutputCard, 0)
 	resObj.Layout = make([][]*controller.TriPeaksWebOutputCard, 0)
 

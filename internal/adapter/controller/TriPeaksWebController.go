@@ -35,6 +35,10 @@ type TriPeaksWebOutput struct {
 	StockCount int                        `json:"stockCount"`
 	Waste      []*WebOutputCard           `json:"waste"`
 	Hint       *TriPeaksWebOutputHint     `json:"hint,omitempty"`
+	// Score / Combo はドメインが数える。以前は得点計算そのものがフロントの
+	// useTriPeaksScore にしか無く、CUI からは参照する値が存在しなかった (#5511)。
+	Score int `json:"score"`
+	Combo int `json:"combo"`
 	SolitaireWebOutputBase
 	WebOutputBase
 }

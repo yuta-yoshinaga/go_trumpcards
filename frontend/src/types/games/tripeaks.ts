@@ -24,6 +24,14 @@ export interface TriPeaksResponse extends BaseGameResponse {
   waste: Card[];
   phase: number;
   moveCount: number;
+  /**
+   * Chain-bonus score, counted by the domain. The frontend used to derive this
+   * itself, which left the same rule absent from the server and therefore out of
+   * the CUI's reach entirely (#5511).
+   */
+  score: number;
+  /** Length of the unbroken removal chain; 0 after a draw or an undo. */
+  combo: number;
   canUndo: boolean;
   isStalemate: boolean;
   undoToEscape?: number;

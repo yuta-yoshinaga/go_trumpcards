@@ -15,6 +15,8 @@ function makeState(overrides?: Partial<TriPeaksResponse>): TriPeaksResponse {
     waste: [{ design: 'DIAMOND', value: 5 }],
     phase: 0,
     moveCount: 4,
+    score: 0,
+    combo: 0,
     canUndo: true,
     isStalemate: false,
     message: '',

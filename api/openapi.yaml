@@ -41466,6 +41466,17 @@ components:
           type: integer
           description: Total number of moves made in the current game
           example: 0
+        score:
+          type: integer
+          description: |
+            Chain-bonus score. The nth consecutive removal scores n x 100, and
+            clearing a peak adds 500. Drawing or undoing breaks the chain but
+            keeps the points.
+          example: 0
+        combo:
+          type: integer
+          description: Length of the unbroken removal chain; 0 after a draw or an undo
+          example: 0
         canUndo:
           type: boolean
           description: Whether the undo action is available
