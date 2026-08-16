@@ -243,18 +243,26 @@ describe('OldMaidPage', () => {
     expect(screen.getByText('ジジ抜き')).toBeInTheDocument();
   });
 
-  it('highlighted card has translateY style', async () => {
-    const highlightedState: OldMaidResponse = {
+  // #5476: cpuHighlightedCardIdx が指す罠の位置を、引く前に見せてはいけない。
+  // 以前はここで translateY(-8px) が**付くこと**を要求しており、バグを固定していた。
+  it('does not reveal the CPU placement trap before the human draws', async () => {
+    const trapState: OldMaidResponse = {
       ...humanTurnState,
       cpuHighlightedCardIdx: 0,
       nextDrawTargetIdx: 1,
       currentTurn: 0,
     };
-    mockExec.mockResolvedValue(highlightedState);
+    mockExec.mockResolvedValue(trapState);
     await startGame();
-    const btn = screen.getByRole('button', { name: 'カード 1 枚目を引く' });
-    const img = btn.querySelector('img') as HTMLImageElement;
-    expect(img).toHaveStyle({ transform: 'translateY(-8px)' });
+    const btns = screen.getAllByRole('button', { name: /カード \d+ 枚目を引く/ });
+    expect(btns.length).toBeGreaterThan(1);
+    const styles = btns.map((b) => b.querySelector('img')?.getAttribute('style') ?? '');
+    // 罠の位置 (0) が他と同じ見た目であること。1 枚でも違えば手がかりになる。
+    expect(new Set(styles).size).toBe(1);
+    for (const style of styles) {
+      expect(style).not.toContain('translateY');
+      expect(style).not.toContain('var(--shadow-ds-accent-glow)');
+    }
   });
 
   it('non-highlighted cards do not have translateY style', async () => {
