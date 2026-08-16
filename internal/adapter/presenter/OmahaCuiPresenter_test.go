@@ -944,3 +944,52 @@ func TestOmahaCuiPresenter_ShowsEquityAndPotOdds(t *testing.T) {
 		assert.NotContains(t, p.Output(h, nil), i18n.T("omaha.learningHeader"))
 	})
 }
+
+// **+EV / -EV の 2 本の腕。** #5482 では見出しと数値だけを見ており、この分岐が
+// 一度も実行されていなかった (codecov が patch 61.5% で指摘)。
+func TestOmahaCuiPresenter_ShowsWhetherCallingIsPlusEV(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.OmahaCuiPresenter)
+
+	// ポットとコール額から必要勝率が決まる。極端な値を置いて 2 本の腕を狙う。
+	render := func(pot, lastBet int) string {
+		h, players := makeOmahaForPresenter()
+		h.SetPhase(domain.OmahaPhaseRiver)
+		h.SetCurrentTurn(0)
+		for _, v := range []int{14, 13, 12, 11} {
+			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, v, false))
+		}
+		h.SetPot(pot)
+		h.SetLastBet(lastBet)
+		require.True(t, h.IsHumanTurn())
+		require.NotNil(t, h.GetEquity())
+		return p.Output(h, nil)
+	}
+
+	t.Run("a cheap call is +EV", func(t *testing.T) {
+		// ポット 1000 に対しコール 1 → 必要勝率はほぼ 0%。どんな手でも +EV。
+		out := render(1000, 1)
+		require.Contains(t, out, i18n.T("omaha.learningHeader"))
+		assert.Contains(t, out, i18n.T("omaha.learningEvPlus"))
+		assert.NotContains(t, out, i18n.T("omaha.learningEvMinus"))
+	})
+
+	t.Run("an expensive call is -EV", func(t *testing.T) {
+		// ポット 1 に対しコール 1000 → 必要勝率はほぼ 100%。どんな手でも -EV。
+		out := render(1, 1000)
+		require.Contains(t, out, i18n.T("omaha.learningHeader"))
+		assert.Contains(t, out, i18n.T("omaha.learningEvMinus"))
+		assert.NotContains(t, out, i18n.T("omaha.learningEvPlus"))
+	})
+
+	// **負のコントロール: コール額 0 なら判定しない。** ポットオッズが 0 のとき
+	// +EV/-EV を出すと、賭けていない局面で「コール有利」と言うことになる。
+	t.Run("nothing to call means no verdict", func(t *testing.T) {
+		out := render(100, 0)
+		require.Contains(t, out, i18n.T("omaha.learningHeader"))
+		assert.NotContains(t, out, i18n.T("omaha.learningEvPlus"))
+		assert.NotContains(t, out, i18n.T("omaha.learningEvMinus"))
+	})
+}
