@@ -66,5 +66,7 @@
     "leadBadge": "リード"
   },
   "hintRequested": "ヒントがあります",
-  "noHint": "ヒントはありません"
+  "noHint": "ヒントはありません",
+  "deadHandWhatTitle": "デッドハンドとは？",
+  "deadHandWhat": "余分に1人分だけ配った札です。誰の手にも入らず、この局では最後まで使われません。"
 }

@@ -66,5 +66,7 @@
     "leadBadge": "Lead"
   },
   "hintRequested": "Hint available",
-  "noHint": "No hint available"
+  "noHint": "No hint available",
+  "deadHandWhatTitle": "What is the dead hand?",
+  "deadHandWhat": "An extra hand dealt to nobody. These cards never come into play this round."
 }

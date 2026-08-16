@@ -258,6 +258,14 @@ function MichiganPageContent() {
               <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
               <span className="mr-4">{t('ante', { amount: state.ante })}</span>
               <span>{t('deadHand', { count: state.deadHandCount })}</span>
+              {/* 数字だけでは謎の数でしかない。用語もその意味もどこにも
+                  説明が無かった (#5700)。 */}
+              <details className="mt-1 inline-block text-left" data-testid="michigan-deadhand-help">
+                <summary className="cursor-pointer select-none text-ds-text-muted text-xs">
+                  {t('deadHandWhatTitle')}
+                </summary>
+                <p className="mt-1 max-w-xs text-ds-text-muted text-xs">{t('deadHandWhat')}</p>
+              </details>
             </div>
 
             {/* Boodles (center betting cards) */}

@@ -131,7 +131,10 @@ func (p *MichiganCuiPresenter) Output(g interfaces.MichiganGame, lastErr error) 
 			seqCard := domain.NewCard(g.GetSeqSuit(), g.GetSeqHighValue(), false)
 			b.WriteString(i18n.Tf("michigan.seqLine", "card", cuiCardStr(seqCard)) + "\n")
 		}
+		// **数字だけでは謎の数でしかない。** 「デッドハンド」という語も、それが
+		// 何を意味するかも、Web にも CUI にも説明が無かった (#5700)。
 		b.WriteString(i18n.Tf("michigan.deadHandLine", "count", strconv.Itoa(g.GetDeadHandCount())) + "\n")
+		b.WriteString(i18n.T("michigan.deadHandNote") + "\n")
 
 		for i := 0; i < g.GetPlayerCnt(); i++ {
 			b.WriteString(michiganPlayerStr(g, i))

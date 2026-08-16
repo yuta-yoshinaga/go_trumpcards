@@ -46,5 +46,6 @@
   "result.humanWin": "Game over! You win!",
   "result.cpuWin": "Game over! CPU {{player}} wins!",
   "helpExampleNext": "  n                         go to the next deal",
-  "helpHint": "  h                         show a hint"
+  "helpHint": "  h                         show a hint",
+  "deadHandNote": "  (an extra hand dealt to nobody -- these cards never come into play this round)"
 }
