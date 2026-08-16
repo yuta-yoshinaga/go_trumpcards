@@ -43,7 +43,7 @@ jobs:
             [ -e "$t" ] || continue
             found=$((found + 1))
             echo "== $t"
-            bash "$t"
+            bash "$t" | tee -a /tmp/hook-test-out
           done
           # A loop over a glob that matched nothing exits 0 and reads as success.
           if [ "$found" -eq 0 ]; then
@@ -51,6 +51,11 @@ jobs:
             exit 1
           fi
           echo "ran $found hook test file(s)"
+          # A test that skipped is not a test that passed. Say so in the log --
+          # "skip" scrolling past in a green job is how a permanently-inert
+          # check survives (see feedback_guard_silent_skip).
+          skipped=$(grep -c '^skip ' /tmp/hook-test-out 2>/dev/null || true)
+          [ "${skipped:-0}" -gt 0 ] && echo "note: $skipped test file(s) skipped -- they verified nothing here"
 
   lint-backend:
     name: Backend Lint (golangci-lint)
