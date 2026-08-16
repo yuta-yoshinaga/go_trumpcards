@@ -27,7 +27,7 @@ import { useMountReset } from '../hooks/useMountReset';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { FourCardPokerResponse } from '../types/card';
+import type { Card, FourCardPokerResponse } from '../types/card';
 import { FourCardPokerPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { FOURCARDPOKER_HELP, parseFourCardPokerCommand } from '../utils/cli/commands/fourcardpokerCommands';
@@ -78,6 +78,27 @@ const HAND_RANK_KEYS: Record<number, string> = {
 export const FourCardPokerPage = withTutorial(FourCardPokerPageContent, 'fourcardpoker', FCP_TUTORIAL_STEPS);
 
 /** Inner content of the Four Card Poker page, wrapped by TutorialProvider. */
+
+/**
+ * Indices of `hand` whose cards appear in `best`, matched by design+value.
+ *
+ * The server sends the four cards that actually made the hand (`playerBest` /
+ * `dealerBest`) but not their positions, so the page pairs them up itself. Cards
+ * are unique within a deal, so a value match is unambiguous.
+ *
+ * Empty when the showdown has not happened: the page must not highlight
+ * anything before the hand is decided.
+ */
+export function fourCardBestIndices(hand: readonly Card[], best: readonly Card[] | undefined): Set<number> {
+  const out = new Set<number>();
+  if (!best?.length) return out;
+  const keys = new Set(best.map((c) => `${c.design}-${c.value}`));
+  hand.forEach((c, i) => {
+    if (keys.has(`${c.design}-${c.value}`)) out.add(i);
+  });
+  return out;
+}
+
 function FourCardPokerPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('fourcardpoker');
@@ -115,6 +136,16 @@ function FourCardPokerPageContent() {
   const isBetPhase = state?.phase === FourCardPokerPhase.BET;
   const isActionPhase = state?.phase === FourCardPokerPhase.ACTION;
   const isEndPhase = state?.phase === FourCardPokerPhase.END;
+  // 決着してからだけ強調する。手番中に出すと、まだ確定していない役を
+  // 教えることになる。
+  const playerBestIdx = useMemo(
+    () => (isEndPhase ? fourCardBestIndices(state?.playerHand ?? [], state?.playerBest) : new Set<number>()),
+    [isEndPhase, state?.playerHand, state?.playerBest],
+  );
+  const dealerBestIdx = useMemo(
+    () => (isEndPhase ? fourCardBestIndices(state?.dealerHand ?? [], state?.dealerBest) : new Set<number>()),
+    [isEndPhase, state?.dealerHand, state?.dealerBest],
+  );
 
   // Bet validation (mirrors CasinoHoldem): ante is mandatory (>= 10), Aces Up is optional
   // (>= 0), both in 10-chip increments, and the combined wager cannot exceed the balance.
@@ -254,9 +285,23 @@ function FourCardPokerPageContent() {
                   )}
                 </div>
                 <div className="flex justify-center gap-2">
-                  {state.playerHand.map((card, i) => (
-                    <AnimatedCard key={`p-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
-                  ))}
+                  {state.playerHand.map((card, i) => {
+                    // 5 枚配って役は最良の 4 枚で決まる。どの 4 枚だったかは
+                    // playerBest で届いているのに画面では見分けられず、自分で
+                    // 見比べる必要があった (#5610)。CUI は bestHand 行で出している。
+                    const inBest = playerBestIdx.has(i);
+                    return (
+                      <div
+                        key={`p-${card.design}-${card.value}-${i}`}
+                        className={`transition-all ${inBest ? '-translate-y-1 ring-2 ring-ds-success' : ''} ${
+                          playerBestIdx.size > 0 && !inBest ? 'opacity-50' : ''
+                        }`}
+                        data-fcp-best={inBest || undefined}
+                      >
+                        <AnimatedCard card={card} width={cardWidth} />
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -272,9 +317,20 @@ function FourCardPokerPageContent() {
                   )}
                 </div>
                 <div className="flex justify-center gap-2 flex-wrap">
-                  {state.dealerHand.map((card, i) => (
-                    <AnimatedCard key={`d-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
-                  ))}
+                  {state.dealerHand.map((card, i) => {
+                    const inBest = dealerBestIdx.has(i);
+                    return (
+                      <div
+                        key={`d-${card.design}-${card.value}-${i}`}
+                        className={`transition-all ${inBest ? '-translate-y-1 ring-2 ring-ds-success' : ''} ${
+                          dealerBestIdx.size > 0 && !inBest ? 'opacity-50' : ''
+                        }`}
+                        data-fcp-dealer-best={inBest || undefined}
+                      >
+                        <AnimatedCard card={card} width={cardWidth} />
+                      </div>
+                    );
+                  })}
                   {/* During the action phase the dealer holds 6 cards but only the
                       upcard is revealed; render the remaining concealed cards as backs. */}
                   {isActionPhase &&
