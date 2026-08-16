@@ -78,6 +78,7 @@ const humanTurnState: DaifugoResponse = {
   numberLocked: false,
   sequenceLocked: false,
   sortMode: 0,
+  playableCardIndices: null,
 };
 
 const cpuTurnState: DaifugoResponse = {
@@ -1375,5 +1376,29 @@ describe('DaifugoPage', () => {
     renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByText('（なし）')).toBeInTheDocument());
     expect(screen.queryByTestId('daifugo-last-player')).not.toBeInTheDocument();
+  });
+});
+
+// #5477: the page held `playableCardIndices` from the server but nothing rendered
+// it, so revolution / suit-lock legality reached the player only as a rejection.
+describe('DaifugoPage playable marks', () => {
+  const playableCards = () => screen.getAllByRole('button').filter((b) => b.getAttribute('data-playable') === 'true');
+
+  it('passes the server indices through to the hand', async () => {
+    mockExec.mockResolvedValue({ ...humanTurnState, playableCardIndices: [1, 2] });
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(playableCards()).toHaveLength(2));
+    expect(playableCards().map((b) => b.getAttribute('data-card-index'))).toEqual(['1', '2']);
+  });
+
+  // 負のコントロール: 既定のフィクスチャは null なので、印が「常に出る」実装なら
+  // ここで 3 枚全部に付いて落ちる。
+  it('marks nothing when the server sent no decision', async () => {
+    mockExec.mockResolvedValue(humanTurnState);
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() =>
+      expect(screen.getAllByRole('button').filter((b) => b.hasAttribute('data-card-index'))).toHaveLength(3),
+    );
+    expect(playableCards()).toHaveLength(0);
   });
 });

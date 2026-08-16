@@ -275,3 +275,76 @@ describe('DaifugoHumanArea', () => {
     expect(screen.queryAllByRole('button')).toHaveLength(0);
   });
 });
+
+// #5477: the CUI marks playable cards with `*` (daifugoHandStr) but the Web GUI
+// had no equivalent -- it only checked the selected count client-side and left
+// revolution / suit-lock legality to the server's rejection.
+describe('DaifugoHumanArea playable marks', () => {
+  const cards = (n: number) => Array.from({ length: n }, (_, i) => ({ design: 'SPADE', value: i + 3 }));
+  const marks = () => screen.getAllByRole('button').filter((b) => b.getAttribute('data-playable') === 'true');
+
+  it('marks only the indices the server sent', () => {
+    render(
+      <DaifugoHumanArea
+        player={makePlayer({ cardCount: 3, cards: cards(3) })}
+        selectedIndices={[]}
+        onToggle={vi.fn()}
+        isCurrentTurn={true}
+        onDragCard={vi.fn()}
+        playableIndices={[2]}
+      />,
+    );
+    expect(marks()).toHaveLength(1);
+    expect(marks()[0]).toHaveAttribute('data-card-index', '2');
+  });
+
+  // **null は「1枚も出せない」ではない。**革命判定を打ち切ったときなどサーバが
+  // 判定していない場合で、そこで全札を「出せない」と描くのは嘘になる。
+  it('marks nothing when the server could not decide', () => {
+    render(
+      <DaifugoHumanArea
+        player={makePlayer({ cardCount: 3, cards: cards(3) })}
+        selectedIndices={[]}
+        onToggle={vi.fn()}
+        isCurrentTurn={true}
+        onDragCard={vi.fn()}
+        playableIndices={null}
+      />,
+    );
+    expect(marks()).toHaveLength(0);
+  });
+
+  // 手番でないときの indices は「次に動く人」の分なので、そのまま描くと別人の
+  // 手札に対する判定を自分の札に重ねることになる。
+  it('marks nothing while it is not the human turn', () => {
+    render(
+      <DaifugoHumanArea
+        player={makePlayer({ cardCount: 3, cards: cards(3) })}
+        selectedIndices={[]}
+        onToggle={vi.fn()}
+        isCurrentTurn={false}
+        onDragCard={vi.fn()}
+        playableIndices={[0, 1, 2]}
+      />,
+    );
+    expect(marks()).toHaveLength(0);
+  });
+
+  // 選択の枠 (border) と出せる印 (outline) は別チャンネル。片方が他方を消さない。
+  it('keeps the selection border on a card that is also playable', () => {
+    render(
+      <DaifugoHumanArea
+        player={makePlayer({ cardCount: 2, cards: cards(2) })}
+        selectedIndices={[0]}
+        onToggle={vi.fn()}
+        isCurrentTurn={true}
+        onDragCard={vi.fn()}
+        playableIndices={[0]}
+      />,
+    );
+    const card = screen.getAllByRole('button')[0];
+    expect(card).toHaveAttribute('data-playable', 'true');
+    expect(card.style.outline).not.toBe('');
+    expect(card.style.transform).toBe('translateY(-8px)');
+  });
+});

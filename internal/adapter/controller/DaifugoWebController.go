@@ -117,6 +117,13 @@ type DaifugoWebOutput struct {
 	NumberLocked        bool                              `json:"numberLocked"`
 	SequenceLocked      bool                              `json:"sequenceLocked"`
 	SortMode            int                               `json:"sortMode"`
+	// PlayableCardIndices は人間の手札のうち、いま出せる組み合わせに1つでも
+	// 含まれるインデックス。CUI の `*` 印と同じ domain.GetPlayableCardIndices の
+	// 結果をそのまま送る (#5477)。
+	//
+	// **判定できないときは空配列ではなく null。**空配列は「1枚も出せない」と
+	// 読めてしまい、実際には出せる手札を全部「出せない」と表示することになる。
+	PlayableCardIndices []int `json:"playableCardIndices"`
 	WebOutputBase
 }
 
