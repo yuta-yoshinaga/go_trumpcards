@@ -58,5 +58,6 @@
   "resultBestFive": " [{{cards}}]",
   "helpExampleRaise": "  ra 200               raise to 200 chips total",
   "helpExampleCall": "  c                    call the current bet",
-  "helpLog": "  l                    show the action log"
+  "helpLog": "  l                    show the action log",
+  "blindsLine": "SB:{{sb}} BB:{{bb}}"
 }
