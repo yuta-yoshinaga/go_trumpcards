@@ -67,18 +67,13 @@ func advanceRound[G roundAdvancer](game G, p outputPresenter[G], runCpu func()) 
 // 通常 1 局で CPU が動くのは数十回なので、1000 に達したらドメイン側のバグ。
 const MaxCpuIterations = 1000
 
-// runCpuTurnsCapped はゲームが終わるか人間の手番になるまで play を回す。
+// runCpuTurnsUntil は「ゲームが終わる」以外にも抜ける条件があるループ用。stop が
+// true を返したら抜ける。stop は play の**前**に読むので、既に抜ける局面で始まった
+// 場合は一度も play しない。
 //
-// 戻り値は上限に当たらずに抜けたかどうか。**false はドメインのバグを意味する**ので、
-// 呼び出し側が握り潰さずに扱えるよう返している。
-// runCpuTurnsUntil is runCpuTurnsCapped for the loops that also have to look at
-// the phase between turns. `stop` reports whether this iteration should end the
-// loop; it is read before play() so a game that starts in a stopping phase does
-// nothing.
-//
-// One helper rather than the same five lines in 40 files: the cap branch is
-// otherwise unreachable per game (a real game reaches its phase guard long
-// before 1000 turns), so 40 copies means 40 untested `return`s.
+// 同じ 5 行を 31 箇所に書き写さずヘルパ 1 つにしたのは、上限に当たる分岐が
+// **ゲームごとには到達不能**だから。実物の局は 1000 手のはるか手前で phase ガードに
+// 当たるので、31 箇所に書き写すとどのテストも実行できない `return` が 31 個できる。
 func runCpuTurnsUntil(g gameEndChecker, stop func() bool, play func()) bool {
 	for i := 0; i < MaxCpuIterations; i++ {
 		if g.GetGameEndFlag() || stop() {
@@ -89,6 +84,10 @@ func runCpuTurnsUntil(g gameEndChecker, stop func() bool, play func()) bool {
 	return false
 }
 
+// runCpuTurnsCapped はゲームが終わるか人間の手番になるまで play を回す。
+//
+// 戻り値は上限に当たらずに抜けたかどうか。**false はドメインのバグを意味する**ので、
+// 呼び出し側が握り潰さずに扱えるよう返している。
 func runCpuTurnsCapped(g playableGame, play func()) bool {
 	for i := 0; i < MaxCpuIterations; i++ {
 		if g.GetGameEndFlag() || g.IsHumanTurn() {

@@ -132,11 +132,9 @@ func (ci *TarocchiniInteractor) ActionLog() string {
 // **スカルトのループを先に回す。**ディーラーが CPU の局は、捨て終わるまで
 // プレイフェーズに入らないので、トリックのループだけでは前に進まない。
 func (ci *TarocchiniInteractor) advance() {
-	for !ci.Game.GetGameEndFlag() &&
-		ci.Game.GetPhase() == domain.TarocchiniPhaseScarto &&
-		!ci.Game.IsHumanScartoTurn() {
-		ci.Game.CpuScarto()
-	}
+	runCpuTurnsUntil(ci.Game, func() bool {
+		return ci.Game.GetPhase() != domain.TarocchiniPhaseScarto || ci.Game.IsHumanScartoTurn()
+	}, ci.Game.CpuScarto)
 	runCpuTurnsLoop(ci.Game, tarocchiniTrickPhases())
 }
 

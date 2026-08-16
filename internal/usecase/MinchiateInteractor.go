@@ -132,11 +132,9 @@ func (ci *MinchiateInteractor) ActionLog() string {
 // **スカルトのループを先に回す。**ディーラーが CPU の局は、捨て終わるまで
 // プレイフェーズに入らないので、トリックのループだけでは前に進まない。
 func (ci *MinchiateInteractor) advance() {
-	for !ci.Game.GetGameEndFlag() &&
-		ci.Game.GetPhase() == domain.MinchiatePhaseScarto &&
-		!ci.Game.IsHumanScartoTurn() {
-		ci.Game.CpuScarto()
-	}
+	runCpuTurnsUntil(ci.Game, func() bool {
+		return ci.Game.GetPhase() != domain.MinchiatePhaseScarto || ci.Game.IsHumanScartoTurn()
+	}, ci.Game.CpuScarto)
 	runCpuTurnsLoop(ci.Game, minchiateTrickPhases())
 }
 

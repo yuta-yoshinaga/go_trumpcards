@@ -131,11 +131,9 @@ func (ci *ScartoInteractor) ActionLog() string {
 // 自動実行する。
 func (ci *ScartoInteractor) advance() {
 	// CPU の親のスカルトを自動実行する。
-	for !ci.Game.GetGameEndFlag() &&
-		ci.Game.GetPhase() == domain.ScartoPhaseScarto &&
-		!ci.Game.IsHumanScartoTurn() {
-		ci.Game.CpuScarto()
-	}
+	runCpuTurnsUntil(ci.Game, func() bool {
+		return ci.Game.GetPhase() != domain.ScartoPhaseScarto || ci.Game.IsHumanScartoTurn()
+	}, ci.Game.CpuScarto)
 	runCpuTurnsLoop(ci.Game, scartoTrickPhases())
 }
 
