@@ -106,6 +106,9 @@ func (p *TerraceCuiPresenter) Output(t interfaces.TerraceGame, lastErr error) st
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(t.GetMoveCount())) + "\n")
 		case domain.TerracePhaseGameOver:
 			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
+			fnd := t.GetFoundation()
+			b.WriteString(color.Yellow(cuiSolitaireGameOverSummary(
+				cuiCountPileCards(fnd[:]...), domain.TerraceTotalCards)) + "\n")
 		}
 	})
 }

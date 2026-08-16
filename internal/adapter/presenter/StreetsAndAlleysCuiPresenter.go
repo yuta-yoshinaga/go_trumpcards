@@ -75,6 +75,9 @@ func (p *StreetsAndAlleysCuiPresenter) Output(bc interfaces.StreetsAndAlleysGame
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(bc.GetMoveCount())) + "\n")
 		case domain.StreetsAndAlleysPhaseGameOver:
 			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
+			fnd := bc.GetFoundation()
+			b.WriteString(color.Yellow(cuiSolitaireGameOverSummary(
+				cuiCountPileCards(fnd[:]...), domain.StreetsAndAlleysFoundationCnt*domain.CardValueMax)) + "\n")
 		}
 	})
 }

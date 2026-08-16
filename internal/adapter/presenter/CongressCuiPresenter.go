@@ -89,6 +89,9 @@ func (p *CongressCuiPresenter) Output(c interfaces.CongressGame, lastErr error) 
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(c.GetMoveCount())) + "\n")
 		case domain.CongressPhaseGameOver:
 			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
+			fnd := c.GetFoundation()
+			b.WriteString(color.Yellow(cuiSolitaireGameOverSummary(
+				cuiCountPileCards(fnd[:]...), domain.CongressTotalCards)) + "\n")
 		}
 	})
 }

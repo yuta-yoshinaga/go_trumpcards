@@ -101,6 +101,10 @@ func (p *WindmillCuiPresenter) Output(w interfaces.WindmillGame, lastErr error) 
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(w.GetMoveCount())) + "\n")
 		case domain.WindmillPhaseGameOver:
 			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
+			corners := w.GetCorners()
+			b.WriteString(color.Yellow(cuiSolitaireGameOverSummary(
+				len(w.GetCenter())+cuiCountPileCards(corners[:]...),
+				domain.WindmillTotalCards)) + "\n")
 		}
 	})
 }

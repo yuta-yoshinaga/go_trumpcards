@@ -106,6 +106,9 @@ func (p *AmericanToadCuiPresenter) Output(at interfaces.AmericanToadGame, lastEr
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(at.GetMoveCount())) + "\n")
 		case domain.AmericanToadPhaseGameOver:
 			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
+			fnd := at.GetFoundation()
+			b.WriteString(color.Yellow(cuiSolitaireGameOverSummary(
+				cuiCountPileCards(fnd[:]...), domain.AmericanToadTotalCards)) + "\n")
 		}
 	})
 }

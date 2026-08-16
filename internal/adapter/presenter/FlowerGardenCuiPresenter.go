@@ -98,6 +98,9 @@ func (p *FlowerGardenCuiPresenter) Output(bc interfaces.FlowerGardenGame, lastEr
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(bc.GetMoveCount())) + "\n")
 		case domain.FlowerGardenPhaseGameOver:
 			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
+			fnd := bc.GetFoundation()
+			b.WriteString(color.Yellow(cuiSolitaireGameOverSummary(
+				cuiCountPileCards(fnd[:]...), domain.FlowerGardenFoundationCnt*domain.CardValueMax)) + "\n")
 		}
 	})
 }
