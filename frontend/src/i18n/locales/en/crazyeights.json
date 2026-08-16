@@ -76,5 +76,6 @@
     "play_wild": "an 8 lets you change the suit",
     "play_valid": "a legal play",
     "choose_longest_suit": "your longest suit"
-  }
+  },
+  "winnerBadge": "(winner)"
 }

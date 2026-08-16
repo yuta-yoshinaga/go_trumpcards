@@ -885,3 +885,47 @@ describe('CrazyEightsPage', () => {
     expect(screen.queryByTestId('ce-server-hint')).not.toBeInTheDocument();
   });
 });
+
+// #5499: スコア表の色分けは `p.isHuman` だけで、**誰が勝ったかは行に出ていなかった**。
+// winnerIdx はサーバから届いていて GameMessageBox の文には反映されているのに、表は
+// 使っていない。CUI は勝者名を color.Green のバナーで出しており、CUI のほうが
+// 「誰が勝ったか」を明確に伝えていた。
+describe('CrazyEightsPage winner highlight', () => {
+  it('marks the human winner row', async () => {
+    mockExec.mockResolvedValue(gameEndState); // winnerIdx: 0 = human
+    renderWithProviders(<CrazyEightsPage />);
+    const row = await screen.findByTestId('ce-score-row-0');
+    expect(row).toHaveAttribute('data-winner', 'true');
+    // スクリーンリーダーにも勝者だと分かること。色だけでは伝わらない。
+    expect(row.textContent).toContain('勝者');
+  });
+
+  // **CPU が勝った場合も同じように出る。** 人間かどうかの色分けと混ざっていると、
+  // 「自分の行が強調されている」のか「勝者の行が強調されている」のか区別できない。
+  it('marks a CPU winner row too', async () => {
+    mockExec.mockResolvedValue({ ...gameEndState, winnerIdx: 2 });
+    renderWithProviders(<CrazyEightsPage />);
+    const row = await screen.findByTestId('ce-score-row-2');
+    expect(row).toHaveAttribute('data-winner', 'true');
+    // 人間の行 (0) には付かない。
+    expect(screen.getByTestId('ce-score-row-0')).not.toHaveAttribute('data-winner', 'true');
+  });
+
+  // **決着前は出さない。** 途中経過の首位を勝者として見せると誤解を招く。
+  it('marks nothing while the game is still running', async () => {
+    mockExec.mockResolvedValue(playPhaseState); // winnerIdx: -1
+    renderWithProviders(<CrazyEightsPage />);
+    const row = await screen.findByTestId('ce-score-row-0');
+    expect(row).not.toHaveAttribute('data-winner', 'true');
+  });
+
+  // 今のサーバはこの状態を作らない (winnerIdx が入るのは checkGameEnd の中だけで、
+  // そこで gameEndFlag も立つ)。**将来ラウンド勝者に winnerIdx を流用しても、
+  // ゲームの勝者として表示されないようにする**ためのガード。
+  it('does not treat a winnerIdx without a game end as the game winner', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, winnerIdx: 1 });
+    renderWithProviders(<CrazyEightsPage />);
+    const row = await screen.findByTestId('ce-score-row-1');
+    expect(row).not.toHaveAttribute('data-winner', 'true');
+  });
+});
