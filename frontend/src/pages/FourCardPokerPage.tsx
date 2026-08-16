@@ -77,8 +77,6 @@ const HAND_RANK_KEYS: Record<number, string> = {
 /** Renders the Four Card Poker game page. */
 export const FourCardPokerPage = withTutorial(FourCardPokerPageContent, 'fourcardpoker', FCP_TUTORIAL_STEPS);
 
-/** Inner content of the Four Card Poker page, wrapped by TutorialProvider. */
-
 /**
  * Indices of `hand` whose cards appear in `best`, matched by design+value.
  *
@@ -99,6 +97,7 @@ export function fourCardBestIndices(hand: readonly Card[], best: readonly Card[]
   return out;
 }
 
+/** Inner content of the Four Card Poker page, wrapped by TutorialProvider. */
 function FourCardPokerPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('fourcardpoker');
