@@ -19,6 +19,7 @@ import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
+import { useAutoCompleteState } from '../hooks/useAutoCompleteState';
 import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -201,9 +202,15 @@ function YukonPageContent() {
     setState((prev) => (prev ? { ...prev, hint: res.hint } : prev));
   }, [setState]);
 
+  // **自動完成は複数手が続けて動く。** その間に Undo やギブアップを押されると
+  // 表示中のアニメーションとサーバ状態がずれる。兄弟のソリティア
+  // (Spiderette / Terrace / Windmill) と同じ共有フックで窓を作る (#5533)。
+  const { isAutoCompleting, startAutoComplete } = useAutoCompleteState();
+
   const handleAutoComplete = useCallback(() => {
+    startAutoComplete();
     void apiExec('autocomplete');
-  }, [apiExec]);
+  }, [apiExec, startAutoComplete]);
 
   const handleUndo = useCallback(() => {
     void apiExec('undo');
@@ -533,14 +540,19 @@ function YukonPageContent() {
 
               {isPlaying && (
                 <>
-                  <button type="button" className={btnOutline} onClick={handleHint} disabled={loading}>
+                  <button
+                    type="button"
+                    className={btnOutline}
+                    onClick={handleHint}
+                    disabled={loading || isAutoCompleting}
+                  >
                     {t('hint')}
                   </button>
                   <button
                     type="button"
-                    className={`${btnSuccess}${autoCompleteReady && !loading ? ' animate-pulse ring-2 ring-ds-success' : ''}`}
+                    className={`${btnSuccess}${autoCompleteReady && !loading && !isAutoCompleting ? ' animate-pulse ring-2 ring-ds-success' : ''}`}
                     onClick={handleAutoComplete}
-                    disabled={loading || !autoCompleteReady}
+                    disabled={loading || isAutoCompleting || !autoCompleteReady}
                     data-testid="autocomplete-button"
                     title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
                   >
@@ -550,18 +562,23 @@ function YukonPageContent() {
                     type="button"
                     className={btnOutline}
                     onClick={handleUndo}
-                    disabled={loading || !state.canUndo}
+                    disabled={loading || isAutoCompleting || !state.canUndo}
                   >
                     {t('undo')}
                   </button>
-                  <button type="button" className={btnDanger} onClick={confirmGiveUpAction} disabled={loading}>
+                  <button
+                    type="button"
+                    className={btnDanger}
+                    onClick={confirmGiveUpAction}
+                    disabled={loading || isAutoCompleting}
+                  >
                     {t('giveup')}
                   </button>
                   {state.isStalemate && (
                     <StalemateEscapeButton
                       undoToEscape={state.undoToEscape ?? -1}
                       onEscape={handleUndoEscape}
-                      disabled={loading}
+                      disabled={loading || isAutoCompleting}
                     />
                   )}
                 </>
