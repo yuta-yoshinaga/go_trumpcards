@@ -25,5 +25,10 @@
   "historyStreak": "Current streak: {{side}} x{{count}}",
   "sidePlayer": "Player",
   "sideBanker": "Banker",
-  "helpExampleBet": "  b 100 0              bet 100 on the Player"
+  "helpExampleBet": "  b 100 0              bet 100 on the Player",
+  "payoutRefTitle": "Payouts",
+  "payoutRefPlayer": "Player win (1:1)",
+  "payoutRefBanker": "Banker win (1:1, {{commission}}% commission)",
+  "payoutRefTie": "Tie ({{rate}}:1)",
+  "payoutRefPair": "Pair (player/banker) ({{rate}}:1)"
 }

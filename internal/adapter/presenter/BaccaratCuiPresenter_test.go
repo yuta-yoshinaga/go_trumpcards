@@ -1,6 +1,7 @@
 package presenter
 
 import (
+	"strconv"
 	"strings"
 	"testing"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupBaccaratCuiMockDefaults(m *interfaces.MockBaccaratGame) {
@@ -404,5 +406,34 @@ func TestBaccaratCuiPresenter_ActionLogOutput(t *testing.T) {
 		m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 		result := p.ActionLogOutput(m)
 		assert.Contains(t, result, "棋譜はありません")
+	})
+}
+
+// #5497: Web はベット前に payoutRef パネルで配当倍率を出しているのに、CUI には
+// 配当を出すコマンドも表示も無く、プレイヤーは倍率を知らないままベットタイプを
+// 選ぶことになる。BlackJack は #4677 で同じ対応が入っている。
+func TestBaccaratCuiPresenter_PayoutTable(t *testing.T) {
+	bp := new(BaccaratCuiPresenter)
+
+	t.Run("lists every payout during the betting phase", func(t *testing.T) {
+		b := domain.NewDefaultBaccarat()
+		out := bp.Output(b, nil)
+		assert.Contains(t, out, i18n.T("baccarat.payoutRefTitle"))
+		// 倍率はドメインの定数から作る。文言に直接書くと定数と乖離する。
+		assert.Contains(t, out, i18n.Tf("baccarat.payoutRefTie",
+			"rate", strconv.Itoa(domain.BaccaratTiePayoutRate)))
+		assert.Contains(t, out, i18n.Tf("baccarat.payoutRefPair",
+			"rate", strconv.Itoa(domain.BacPairPayoutRate)))
+		assert.Contains(t, out, i18n.Tf("baccarat.payoutRefBanker",
+			"commission", strconv.Itoa(domain.BaccaratCommissionRate)))
+		assert.Contains(t, out, i18n.T("baccarat.payoutRefPlayer"))
+	})
+
+	// **結果表示中は重ねない。** 決着した卓に配当表を並べると、いま起きたことが
+	// 読み取りにくくなる。次のベット前にまた出る。
+	t.Run("stays quiet while a finished round is on screen", func(t *testing.T) {
+		b := domain.NewDefaultBaccarat()
+		b.SetGameEndFlag(true)
+		assert.NotContains(t, bp.Output(b, nil), i18n.T("baccarat.payoutRefTitle"))
 	})
 }
