@@ -32,7 +32,8 @@ func horseTotalChips(g *Horse) int {
 // ことになる。
 func horseFoldOutHand(t *testing.T, g *Horse) {
 	t.Helper()
-	for steps := 0; g.GetPhase() == HorsePhaseHand; steps++ {
+	steps := 0
+	for ; g.GetPhase() == HorsePhaseHand; steps++ {
 		require.Less(t, steps, 50, "ハンドが終わらない")
 		if !g.IsHumanTurn() {
 			// CPU の手番のまま止まっているなら、種目側が進めていない。
@@ -40,6 +41,11 @@ func horseFoldOutHand(t *testing.T, g *Horse) {
 		}
 		require.NoError(t, g.PlayerAction(HoldemActionFold, 0, 0))
 	}
+	// **1 手も打たずに抜けたら、それは「ハンドを打った」ではない。**
+	// 呼び出し側は打ち終わった前提で残高やフェーズを見るので、ここが 0 のまま
+	// 素通りすると「何もしていないのに合格」になり、失敗は数手あとの無関係な
+	// アサーションに化ける (#5812)。
+	require.Positive(t, steps, "ハンドを打つ前に既に HorsePhaseHand ではなかった")
 }
 
 // --- 種目のローテーション ---
