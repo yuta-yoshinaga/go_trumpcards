@@ -56,5 +56,8 @@
   "learningEvMinus": "  -EV (equity at or below pot odds; calling is unfavorable)",
   "resultBest": " / Best: {{cards}}",
   "resultBestLabel": "Best:",
-  "resultBestLegend": "  (* = card used from the hole)"
+  "resultBestLegend": "  (* = card used from the hole)",
+  "boardLowLive": "Low: live (3 low ranks on the board)",
+  "boardLowPossible": "Low: possible ({{needed}} more low rank(s) needed)",
+  "boardLowImpossible": "Low: dead"
 }
