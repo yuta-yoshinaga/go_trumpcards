@@ -43,6 +43,15 @@ type CuiHelpSpec struct {
 	// Extracted per issue #1460 so such games can use the standard template
 	// instead of bypassing BuildCuiHelp with a raw []string.
 	ResetOverride string
+	// NoteKeys are i18n keys for rules the player needs while reading the
+	// command list but that are not commands themselves -- e.g. Macau's magic
+	// cards (2/7/8/J), which the Web GUI shows as a permanent reference table
+	// while the CUI said nothing at all (#5622).
+	//
+	// Rendered last, after the examples: the tables answer "what can I type",
+	// the examples answer "what do I type first", and these answer "what just
+	// happened to me".
+	NoteKeys []string
 }
 
 // BuildCuiHelp assembles standard CUI help text from spec. Order:
@@ -60,7 +69,7 @@ func BuildCuiHelp(spec CuiHelpSpec) []string {
 	if len(spec.Body) > 0 {
 		return spec.Body
 	}
-	lines := make([]string, 0, 10+len(spec.CommandKeys)+len(spec.ExtraCommandLines)+len(spec.SettingKeys)+len(spec.ExtraSettingLines))
+	lines := make([]string, 0, 10+len(spec.CommandKeys)+len(spec.ExtraCommandLines)+len(spec.SettingKeys)+len(spec.ExtraSettingLines)+len(spec.NoteKeys))
 	lines = append(lines, i18n.T(spec.TitleKey), "", i18n.T("gameCommands"))
 	for _, k := range spec.CommandKeys {
 		lines = append(lines, i18n.T(k))
@@ -87,6 +96,12 @@ func BuildCuiHelp(spec CuiHelpSpec) []string {
 	if len(spec.ExampleKeys) > 0 {
 		lines = append(lines, "", i18n.T("examples"))
 		for _, k := range spec.ExampleKeys {
+			lines = append(lines, i18n.T(k))
+		}
+	}
+	if len(spec.NoteKeys) > 0 {
+		lines = append(lines, "", i18n.T("notes"))
+		for _, k := range spec.NoteKeys {
 			lines = append(lines, i18n.T(k))
 		}
 	}
