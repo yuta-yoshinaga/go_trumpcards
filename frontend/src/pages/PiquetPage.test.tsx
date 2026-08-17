@@ -298,8 +298,11 @@ describe('PiquetPage', () => {
     const cards = await screen.findAllByRole('button', { name: /♠|♥/ });
     const playable = cards.filter((c) => c.getAttribute('data-hint-action') === 'play');
     expect(playable).toHaveLength(2);
-    expect(playable[0]).toBeDisabled();
-    expect(playable[1]).not.toBeDisabled();
+    // 共有の PlayerHandSection と同じ扱い: aria-disabled で**フォーカスは残す**。
+    // HTML の disabled にすると、読み上げ利用者から札そのものが消える。
+    expect(playable[0]).toHaveAttribute('aria-disabled', 'true');
+    expect(playable[0]).not.toBeDisabled();
+    expect(playable[1]).not.toHaveAttribute('aria-disabled');
 
     mockExec.mockClear();
     fireEvent.click(playable[0] as HTMLElement);
@@ -317,6 +320,7 @@ describe('PiquetPage', () => {
     const cards = await screen.findAllByRole('button', { name: /♠|♥/ });
     for (const c of cards.filter((b) => b.getAttribute('data-hint-action') === 'play')) {
       expect(c).not.toBeDisabled();
+      expect(c).not.toHaveAttribute('aria-disabled');
     }
   });
 

@@ -129,9 +129,11 @@ function PiquetPageContent() {
   // presenter がマストフォローの合法手を毎回返している (PiquetWebPresenter.go)。
   // **空/未設定は「どれも出せない」ではなく「制限なし」。**交換フェーズなど、
   // そもそも載らない状態で手札を全部殺さないため (#5603)。
+  // 未設定は「制限なし」。presenter 側が `omitempty` なので、プレイフェーズの
+  // 人間手番以外では**キーごと来ない** ── それを「どれも出せない」と読むと
+  // 交換フェーズで手札が全部死ぬ。
   const legalPlays = state.legalPlayIndices;
-  const isPlayable = (i: number): boolean =>
-    !humanCanPlay || legalPlays === undefined || legalPlays.length === 0 || legalPlays.includes(i);
+  const isPlayable = (i: number): boolean => legalPlays === undefined || legalPlays.includes(i);
 
   return (
     <GamePageShell
@@ -198,19 +200,20 @@ function PiquetPageContent() {
                     : 'ring-2 ring-ds-error'
                   : '';
                 const handlePlay = () => game.handlePlay(i);
-                const handleClick = humanCanExchange
-                  ? () => toggleDiscard(i)
-                  : humanCanPlay && isPlayable(i)
-                    ? handlePlay
-                    : undefined;
+                const handleClick = humanCanExchange ? () => toggleDiscard(i) : humanCanPlay ? handlePlay : undefined;
+                // 出せない札は PlayerHandSection と同じ扱い ── `aria-disabled` で
+                // フォーカスは残したまま押しても何も起きない形にする。HTML の
+                // `disabled` にすると読み上げ側から札そのものが消える (#5603)。
+                const restricted = humanCanPlay && !isPlayable(i);
                 return (
                   <button
                     key={`hand-${i}-${c.design}-${c.value}`}
                     type="button"
                     aria-pressed={humanCanExchange ? selected : undefined}
                     data-hint-action={humanCanExchange ? 'discard' : 'play'}
-                    className="rounded"
-                    onClick={handleClick}
+                    className={`rounded ${restricted ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    onClick={restricted ? undefined : handleClick}
+                    aria-disabled={restricted || undefined}
                     disabled={handleClick == null}
                   >
                     <AnimatedCard card={c} width={cardWidth} isSelected={selected} wrapperClassName={ringClass} />
