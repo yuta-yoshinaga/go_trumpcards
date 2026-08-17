@@ -284,7 +284,6 @@ func (s *SetteEMezzo) playCpuSeat(h *SetteEMezzoHand) {
 		if total >= SetteEMezzoTargetHalves {
 			break
 		}
-		// 11 半点 = 5.5 点。ここを超えたら止める。
 		if total >= SetteEMezzoCpuStandHalves {
 			h.stood = true
 			break
