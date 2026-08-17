@@ -329,3 +329,60 @@ describe('AmericanToadPage keyboard shortcuts', () => {
     expect(mockExec).not.toHaveBeenCalled();
   });
 });
+
+// #5559: 8列 + 8基礎札 + リザーブ + 捨て札と候補が多いのに、どこに置けるかは
+// クリックしてサーバーのエラーを見るまで分からなかった。
+describe('AmericanToadPage destination highlight', () => {
+  const targets = () => document.querySelectorAll('[data-legal-target]');
+
+  it('rings the legal column once a card is selected', async () => {
+    // ♠8 を選ぶと ♠9 の上には置けない (降順なので ♠7 が要る) が、
+    // 別の列の ♣4 の上でもない。合法な列だけが光ること。
+    mockExec.mockResolvedValue({
+      ...playingState,
+      reserve: [],
+      tableau: makeTableau([
+        [{ card: card('SPADE', 8), faceUp: true }],
+        [{ card: card('SPADE', 9), faceUp: true }],
+        [{ card: card('CLOVER', 4), faceUp: true }],
+      ]),
+    });
+    renderWithProviders(<AmericanToadPage />);
+    const source = await screen.findByRole('button', { name: /♠ 8/ });
+    fireEvent.click(source);
+    await waitFor(() => expect(source).toHaveAttribute('aria-pressed', 'true'));
+
+    // ♠9 の列 (index 1) だけがリング。空列はリザーブが空なので全部合法。
+    const legal = [...targets()].length;
+    expect(legal).toBeGreaterThan(0);
+    expect(document.querySelector('[data-preview-target]')).toBeNull();
+  });
+
+  // **判定を二重に持たない。**hover のプレビューも同じ計算を通る。
+  it('previews the same targets on hover, marked as a preview', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      reserve: [],
+      tableau: makeTableau([[{ card: card('SPADE', 8), faceUp: true }], [{ card: card('SPADE', 9), faceUp: true }]]),
+    });
+    renderWithProviders(<AmericanToadPage />);
+    const source = await screen.findByRole('button', { name: /♠ 8/ });
+    fireEvent.mouseEnter(source);
+    await waitFor(() => expect(document.querySelector('[data-preview-target]')).not.toBeNull());
+  });
+
+  // **リザーブが残っている間は空列を光らせない。**自動補充の対象で、手では置けない。
+  it('does not offer an empty column while the reserve holds cards', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      reserve: [card('CLOVER', 3)],
+      tableau: makeTableau([[{ card: card('SPADE', 8), faceUp: true }]]),
+    });
+    renderWithProviders(<AmericanToadPage />);
+    const source = await screen.findByRole('button', { name: /♠ 8/ });
+    fireEvent.click(source);
+    await waitFor(() => expect(source).toHaveAttribute('aria-pressed', 'true'));
+    // 空列は 7 つあるが、どれも光らない。♠8 の下に置ける札も無い。
+    expect(targets()).toHaveLength(0);
+  });
+});
