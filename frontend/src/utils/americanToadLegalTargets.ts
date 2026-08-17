@@ -1,4 +1,5 @@
 import type { AmericanToadTableauCard, Card } from '../types/card';
+import type { AmericanToadMoveZone } from '../types/games/americantoad';
 
 /** Where the selected card may legally go. */
 export interface AmericanToadLegalTargets {
@@ -35,6 +36,13 @@ function prevRank(v: number): number {
  *
  * **空列はリザーブが残っている間は置き先にならない。**自動補充の対象なので、
  * 手で置くことはできない (#5559)。
+ *
+ * **空列は他のタブロー列からは決して埋められない** (`MoveTableauToTableau` の
+ * 「空き列はリザーブと捨て札の出口であって、タブローの組み替えには使えない」、
+ * #4417)。この規則は札そのものではなく*どこから来たか*で決まるので、
+ * `fromZone` を渡さないと表現できない。
+ *
+ * @param fromZone - 動かす札の出どころ (`AmericanToadMoveZone.zone`)。省略すると空列の制限を掛けない。
  */
 export function americanToadLegalTargets(
   tableau: readonly AmericanToadTableauCard[][],
@@ -42,6 +50,7 @@ export function americanToadLegalTargets(
   reserve: readonly Card[],
   baseRank: number,
   card: Card | null | undefined,
+  fromZone?: string,
 ): AmericanToadLegalTargets {
   const result: AmericanToadLegalTargets = { tableau: new Set(), foundation: new Set() };
   if (!card) return result;
@@ -49,8 +58,9 @@ export function americanToadLegalTargets(
   tableau.forEach((col, idx) => {
     const top = col[col.length - 1]?.card;
     if (!top) {
-      // 空列: リザーブが尽きて初めて手で置ける。
-      if (reserve.length === 0) result.tableau.add(idx);
+      // 空列: リザーブが尽きて初めて手で置ける。ただしタブロー同士の
+      // 組み替えでは埋められない。
+      if (reserve.length === 0 && fromZone !== 'tableau') result.tableau.add(idx);
       return;
     }
     if (card.design === top.design && card.value === prevRank(top.value)) result.tableau.add(idx);
@@ -71,4 +81,33 @@ export function americanToadLegalTargets(
   });
 
   return result;
+}
+
+/**
+ * The card a source zone refers to — the one whose destinations get rung.
+ *
+ * Lives beside {@link americanToadLegalTargets} because the two are always
+ * called as a pair: this picks the card, that answers where it may go.
+ *
+ * A zone that names nothing (an empty pile, a column index past the end,
+ * a run head that is no longer there) yields `undefined`, which the legality
+ * pass reads as "highlight nothing" rather than as an error.
+ *
+ * @param source - The selected or hovered zone, or null.
+ * @returns The card, or undefined when the zone names none.
+ */
+export function americanToadSourceCard(
+  tableau: readonly AmericanToadTableauCard[][],
+  reserve: readonly Card[],
+  waste: readonly Card[],
+  source: AmericanToadMoveZone | null | undefined,
+): Card | undefined {
+  if (!source) return undefined;
+  if (source.zone === 'reserve') return reserve[reserve.length - 1];
+  if (source.zone === 'waste') return waste[waste.length - 1];
+  if (source.zone !== 'tableau' || source.col === undefined) return undefined;
+  const pile = tableau[source.col] ?? [];
+  // cardIndex 省略時は一番上の札 — ドラッグの掴み位置と同じ既定。
+  const idx = source.cardIndex ?? pile.length - 1;
+  return pile[idx]?.card ?? undefined;
 }

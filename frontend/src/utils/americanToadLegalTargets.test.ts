@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { AmericanToadTableauCard, Card, CardDesign } from '../types/card';
-import { americanToadLegalTargets } from './americanToadLegalTargets';
+import { americanToadLegalTargets, americanToadSourceCard } from './americanToadLegalTargets';
 
 const card = (design: CardDesign, value: number): Card => ({ design, value }) as Card;
 const col = (...cards: Card[]): AmericanToadTableauCard[] => cards.map((c) => ({ card: c, faceUp: true }));
@@ -47,6 +47,34 @@ describe('americanToadLegalTargets', () => {
     expect(noReserve.tableau.size).toBe(8);
   });
 
+  // **空列はタブロー同士の組み替えでは埋められない** — リザーブと捨て札の出口
+  // だから (`MoveTableauToTableau`, #4417)。出どころを渡さないと表現できない。
+  it('never offers an empty column to a card coming from another column', () => {
+    const fromTableau = americanToadLegalTargets(
+      emptyTableau(),
+      emptyFoundations(),
+      [],
+      5,
+      card('HEART', 4),
+      'tableau',
+    );
+    expect(fromTableau.tableau.size).toBe(0);
+
+    // 同じ盤面・同じ札でも、リザーブと捨て札からなら置ける。
+    for (const zone of ['reserve', 'waste']) {
+      const r = americanToadLegalTargets(emptyTableau(), emptyFoundations(), [], 5, card('HEART', 4), zone);
+      expect(r.tableau.size).toBe(8);
+    }
+  });
+
+  // 出どころの制限は空列だけの話。埋まっている列は変わらず判定する。
+  it('still offers a matching non-empty column to a tableau card', () => {
+    const tableau = emptyTableau();
+    tableau[2] = col(card('HEART', 5));
+    const r = americanToadLegalTargets(tableau, emptyFoundations(), [], 5, card('HEART', 4), 'tableau');
+    expect([...r.tableau]).toEqual([2]);
+  });
+
   // 基礎札は**そのインデックスのスート**しか受け取らない。同スートは 2 つある。
   it('accepts the base rank on both foundations of the matching suit', () => {
     const r = americanToadLegalTargets(emptyTableau(), emptyFoundations(), [], 5, card('HEART', 5));
@@ -88,5 +116,45 @@ describe('americanToadLegalTargets', () => {
     // リザーブを残して空列を候補から外し、スート判定だけを見る。
     const r = americanToadLegalTargets(tableau, emptyFoundations(), [card('SPADE', 2)], 5, card('HEART', 7));
     expect(r.tableau.size).toBe(0);
+  });
+});
+
+// 光らせる対象を決める側。ゾーンが何も指していないときに undefined を返すのが
+// 肝で、ここが壊れると「選んでいない札の置き先」が光る。
+describe('americanToadSourceCard', () => {
+  const tableau = emptyTableau();
+  tableau[1] = [
+    { card: card('SPADE', 9), faceUp: true },
+    { card: card('HEART', 8), faceUp: true },
+  ];
+
+  it('returns nothing for no source', () => {
+    expect(americanToadSourceCard(tableau, [], [], null)).toBeUndefined();
+    expect(americanToadSourceCard(tableau, [], [], undefined)).toBeUndefined();
+  });
+
+  it('takes the top of the reserve and the waste', () => {
+    expect(
+      americanToadSourceCard(tableau, [card('CLOVER', 2), card('CLOVER', 3)], [], { zone: 'reserve' })?.value,
+    ).toBe(3);
+    expect(americanToadSourceCard(tableau, [], [card('DIAMOND', 4)], { zone: 'waste' })?.value).toBe(4);
+  });
+
+  it('returns nothing when the reserve or waste is empty', () => {
+    expect(americanToadSourceCard(tableau, [], [], { zone: 'reserve' })).toBeUndefined();
+    expect(americanToadSourceCard(tableau, [], [], { zone: 'waste' })).toBeUndefined();
+  });
+
+  it('takes the named card of a column, defaulting to its top', () => {
+    expect(americanToadSourceCard(tableau, [], [], { zone: 'tableau', col: 1, cardIndex: 0 })?.value).toBe(9);
+    expect(americanToadSourceCard(tableau, [], [], { zone: 'tableau', col: 1 })?.value).toBe(8);
+  });
+
+  it('returns nothing for a column, index or zone that names no card', () => {
+    expect(americanToadSourceCard(tableau, [], [], { zone: 'tableau' })).toBeUndefined();
+    expect(americanToadSourceCard(tableau, [], [], { zone: 'tableau', col: 0 })).toBeUndefined();
+    expect(americanToadSourceCard(tableau, [], [], { zone: 'tableau', col: 99 })).toBeUndefined();
+    expect(americanToadSourceCard(tableau, [], [], { zone: 'tableau', col: 1, cardIndex: 7 })).toBeUndefined();
+    expect(americanToadSourceCard(tableau, [], [], { zone: 'foundation', col: 0 })).toBeUndefined();
   });
 });

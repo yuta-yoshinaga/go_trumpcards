@@ -28,10 +28,10 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { AmericanToadMoveZone, AmericanToadResponse, Card } from '../types/card';
+import type { AmericanToadMoveZone, AmericanToadResponse } from '../types/card';
 import { AmericanToadPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { americanToadLegalTargets } from '../utils/americanToadLegalTargets';
+import { americanToadLegalTargets, americanToadSourceCard } from '../utils/americanToadLegalTargets';
 import { cardAlt } from '../utils/cardAlt';
 import { AMERICANTOAD_HELP, parseAmericanToadCommand } from '../utils/cli/commands/americantoadCommands';
 import { formatAmericanToadState } from '../utils/cli/formatters/americantoadFormatter';
@@ -183,23 +183,14 @@ function AmericanToadPageContent() {
   // hover / フォーカス中の札にも**まったく同じ計算**を当てる ── 判定を二重に
   // 持たないので、プレビューと選択後の表示が食い違わない。
   const previewSource = preview.source;
-  const previewedCard = ((): Card | undefined => {
-    if (!previewSource) return undefined;
-    if (previewSource.zone === 'reserve') return reserveTop ?? undefined;
-    if (previewSource.zone === 'waste') return state.waste[state.waste.length - 1];
-    if (previewSource.zone === 'tableau' && previewSource.col !== undefined) {
-      const pile = state.tableau[previewSource.col] ?? [];
-      const idx = previewSource.cardIndex ?? pile.length - 1;
-      return pile[idx]?.card ?? undefined;
-    }
-    return undefined;
-  })();
+  const previewedCard = americanToadSourceCard(state.tableau, state.reserve, state.waste, previewSource);
   const legalTargets = americanToadLegalTargets(
     state.tableau,
     state.foundation,
     state.reserve,
     state.baseRank,
     previewedCard,
+    previewSource?.zone,
   );
   /** Ring for a legal destination: softer while it is only a hover preview. */
   const targetRing = preview.isPreview ? ' rounded ring-2 ring-ds-success/70' : ' rounded ring-2 ring-ds-success';

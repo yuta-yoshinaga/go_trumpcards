@@ -352,9 +352,9 @@ describe('AmericanToadPage destination highlight', () => {
     fireEvent.click(source);
     await waitFor(() => expect(source).toHaveAttribute('aria-pressed', 'true'));
 
-    // ♠9 の列 (index 1) だけがリング。空列はリザーブが空なので全部合法。
-    const legal = [...targets()].length;
-    expect(legal).toBeGreaterThan(0);
+    // ♠9 の列 (index 1) **だけ**がリング。♣4 は不一致、空列はタブロー由来の札を
+    // 受け取らない (下の回帰テスト)。
+    expect(targets()).toHaveLength(1);
     expect(document.querySelector('[data-preview-target]')).toBeNull();
   });
 
@@ -412,5 +412,36 @@ describe('AmericanToadPage destination highlight', () => {
     await waitFor(() => expect(source).toHaveAttribute('aria-pressed', 'true'));
     // 空列は 7 つあるが、どれも光らない。♠8 の下に置ける札も無い。
     expect(targets()).toHaveLength(0);
+  });
+
+  // **リザーブが尽きても、空列はタブロー由来の札には開かない。**
+  // `MoveTableauToTableau` が拒む (#4417) ので、光らせると押して弾かれる —
+  // このPRが消そうとしているループそのものが残る。
+  it('does not offer an empty column to a tableau card once the reserve is gone', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      reserve: [],
+      tableau: makeTableau([[{ card: card('SPADE', 8), faceUp: true }]]),
+    });
+    renderWithProviders(<AmericanToadPage />);
+    const source = await screen.findByRole('button', { name: /♠ 8/ });
+    fireEvent.click(source);
+    await waitFor(() => expect(source).toHaveAttribute('aria-pressed', 'true'));
+    expect(targets()).toHaveLength(0);
+  });
+
+  // 負のコントロール: 同じ空列が、捨て札からなら開く。上のテストが
+  // 「空列を常に光らせない」だけの実装でも通ってしまわないこと。
+  it('does offer those empty columns to the waste card', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      reserve: [],
+      waste: [card('DIAMOND', 9)],
+      tableau: makeTableau([[{ card: card('SPADE', 8), faceUp: true }]]),
+    });
+    renderWithProviders(<AmericanToadPage />);
+    const waste = await screen.findByRole('button', { name: /♦ 9/ });
+    fireEvent.click(waste);
+    await waitFor(() => expect(targets().length).toBeGreaterThan(0));
   });
 });
