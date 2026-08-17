@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -273,4 +274,16 @@ func TestTonkWebPresenter_ActionLogOutput(t *testing.T) {
 		result := p.ActionLogOutput(m)
 		assert.NotEmpty(t, result)
 	})
+}
+
+// #5582: 閾値はドメインから渡すこと。画面に 2 を書くと、変えたとき Web と CUI で
+// 警告の出る局面がずれる。
+func TestTonkWebPresenter_ShipsTheUndercutThreshold(t *testing.T) {
+	g := domain.NewDefaultTonk()
+	g.Reset()
+
+	var out controller.TonkWebOutput
+	require.NoError(t, json.Unmarshal([]byte(new(presenter.TonkWebPresenter).Output(g, nil)), &out))
+	assert.Equal(t, domain.TonkUndercutRiskMax, out.UndercutRiskMax)
+	assert.NotZero(t, out.UndercutRiskMax)
 }

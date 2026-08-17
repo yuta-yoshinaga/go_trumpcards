@@ -13,6 +13,7 @@ type TonkWebPresenter struct{}
 func (p *TonkWebPresenter) Output(g interfaces.TonkGame, lastErr error) string {
 	resObj := new(controller.TonkWebOutput)
 	resObj.Phase = int(g.GetPhase())
+	resObj.UndercutRiskMax = domain.TonkUndercutRiskMax
 
 	// **CUI は毎ターン「ノック可能/不可」を出しているのに、Web は手計算だった。**
 	// 判断の基準ごと送るので、フロントは閾値の数値を写さずに済む。

@@ -38,6 +38,7 @@ const defaultState: TonkResponse = {
   opponentMelds: [],
   opponentDeadwood: [],
   isTonk: false,
+  undercutRiskMax: 2,
   isUndercut: false,
   bestDeadwood: -1,
   knockThreshold: 5,

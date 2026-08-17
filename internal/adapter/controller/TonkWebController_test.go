@@ -24,7 +24,9 @@ func mustTonkOutputJSON(msg string) string {
 		KnockerDeadwood:  []*controller.WebOutputCard{},
 		OpponentMelds:    []*controller.TonkWebOutputMeld{},
 		OpponentDeadwood: []*controller.WebOutputCard{},
-		WebOutputBase:    controller.WebOutputBase{Message: msg},
+		// 閾値は盤面が無くても規則なので、既定の応答にも乗る (#5582)。
+		UndercutRiskMax: domain.TonkUndercutRiskMax,
+		WebOutputBase:   controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {
