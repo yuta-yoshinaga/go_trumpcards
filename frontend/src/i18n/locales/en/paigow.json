@@ -70,6 +70,5 @@
     "paigowBet": "Place a bet to be dealt seven cards",
     "paigowAutoSplit": "Press auto-split (A) to take the strongest legal two-card hand",
     "paigowSplitByHand": "Auto-split is unavailable with the joker — split so the five-card hand beats the two-card hand"
-  },
-  "foulHighMustBeat": "Foul: the two-card low hand must be weaker than the five-card high hand"
+  }
 }
