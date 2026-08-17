@@ -12,6 +12,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func TestSlapjackCuiPresenter_Output(t *testing.T) {
@@ -137,4 +138,59 @@ func TestSlapjackCuiPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.SlapjackCuiPresenter)
 	g := setupSlapjackTest()
 	assert.NotEmpty(t, p.ActionLogOutput(g))
+}
+
+// #5579: `sd` で難易度を変えられるのに、**変えた結果を確かめる手段が無かった**。
+// Web はセレクトで選択中の値を常に出している。
+func TestSlapjackCuiPresenter_ShowsTheCpuDifficulty(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	i18n.SetLang("ja")
+
+	build := func(d domain.SlapjackCpuDifficulty) string {
+		g := domain.NewDefaultSlapjack()
+		cfg := g.GetConfig()
+		cfg.CpuDifficulty = d
+		g.SetConfig(cfg)
+		g.Reset()
+		return new(presenter.SlapjackCuiPresenter).Output(g, nil)
+	}
+
+	for _, tc := range []struct {
+		d   domain.SlapjackCpuDifficulty
+		key string
+	}{
+		{domain.SlapjackCpuEasy, "slapjack.difficultyEasy"},
+		{domain.SlapjackCpuNormal, "slapjack.difficultyNormal"},
+		{domain.SlapjackCpuHard, "slapjack.difficultyHard"},
+	} {
+		out := build(tc.d)
+		assert.Contains(t, out, i18n.Tf("slapjack.difficultyLine", "difficulty", i18n.T(tc.key)))
+	}
+
+	// **3 つが別の文字列であること。**同じ文言を返す実装でも上の検査は通る。
+	seen := map[string]bool{}
+	for _, key := range []string{"slapjack.difficultyEasy", "slapjack.difficultyNormal", "slapjack.difficultyHard"} {
+		assert.False(t, seen[i18n.T(key)], "duplicate difficulty label for %s", key)
+		seen[i18n.T(key)] = true
+	}
+}
+
+// 未知の値は番号のまま出すこと。Easy に丸めると、設定が壊れていることが画面から消える。
+func TestSlapjackCuiPresenter_ShowsAnUnknownDifficultyAsItsNumber(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	i18n.SetLang("ja")
+
+	g := domain.NewDefaultSlapjack()
+	cfg := g.GetConfig()
+	cfg.CpuDifficulty = domain.SlapjackCpuDifficulty(9)
+	g.SetConfig(cfg)
+	g.Reset()
+
+	out := new(presenter.SlapjackCuiPresenter).Output(g, nil)
+	assert.Contains(t, out, i18n.Tf("slapjack.difficultyLine", "difficulty", "9"))
+	assert.NotContains(t, out, i18n.Tf("slapjack.difficultyLine", "difficulty", i18n.T("slapjack.difficultyEasy")))
 }
