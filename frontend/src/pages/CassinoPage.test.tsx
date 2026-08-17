@@ -488,6 +488,19 @@ describe('CassinoPage action history', () => {
     expect(log()).toHaveTextContent('場に置');
   });
 
+  // 壊れたレスポンス (playedCard が無い / cpuActions 欠落) でも落ちない。
+  // `a.playedCard ? ... : ''` と `?? []` の短絡側を通す。
+  it('renders an action with no played card, and a response with no cpuActions', async () => {
+    mockExec.mockResolvedValue({
+      ...makeState(),
+      humanAction: { playerIdx: 0, type: 'trail', playedCard: null, capturedCards: [], buildValue: 0, isSweep: false },
+      cpuActions: undefined as never,
+    });
+    renderWithProviders(<CassinoPage />);
+    await waitFor(() => expect(log()).toBeInTheDocument());
+    expect(log()).toHaveTextContent('あなた');
+  });
+
   // **何も起きていないうちは出さない。**
   it('renders nothing before anyone has acted', async () => {
     mockExec.mockResolvedValue(makeState({ cpuActions: [], humanAction: null }));
