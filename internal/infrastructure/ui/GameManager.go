@@ -991,7 +991,7 @@ var gameRegistry = []GameRegistryEntry{
 			ExampleKeys: []string{
 				"pigtail.helpExampleDraw",
 			},
-			CommandKeys: []string{"pigtail.helpAction", "pigtail.helpLog"},
+			CommandKeys: []string{"pigtail.helpAction", "pigtail.helpSetPlayers", "pigtail.helpLog"},
 		}),
 	BindCuiFor("sevencardstud",
 		func() usecase.SevenCardStudInteractorIF {

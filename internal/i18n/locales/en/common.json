@@ -587,5 +587,6 @@
   "giveExactlyNIndexes": "Give exactly {{n}} card indexes.",
   "notes": "Notes:",
   "hesitationFlagRequired0Off1On": "CPU hesitation flag is required (0=OFF, 1=ON).",
-  "invalidHesitationFlag01": "Invalid CPU hesitation flag: {{val}}. Please enter 0-1."
+  "invalidHesitationFlag01": "Invalid CPU hesitation flag: {{val}}. Please enter 0-1.",
+  "playerCountRequired26": "Specify the player count (2-6)."
 }
