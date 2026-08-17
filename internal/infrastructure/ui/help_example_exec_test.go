@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
@@ -123,6 +124,27 @@ var exampleRefusalRe = regexp.MustCompile(`(?i)invalid|required|must |cannot|not
 // cannot be found by looking at the whole output's length.
 var exampleErrorLineRe = regexp.MustCompile("\x1b\\[31m(.*?)\x1b\\[0m")
 
+// dropMarkedErrorLines removes the lines a presenter already marked as
+// rejections, leaving the ones nothing marked.
+//
+// Without this the guard reports every properly marked refusal it happens to
+// trigger, which is deal-dependent: bisley's `ac` example only gets turned down
+// when the deal leaves nothing to send to a foundation, so this failed about
+// one run in seven and looked like a flake.
+func dropMarkedErrorLines(out string) string {
+	if !strings.Contains(out, i18n.ErrorLinePrefix) {
+		return out
+	}
+	kept := make([]string, 0, 32)
+	for _, line := range strings.Split(out, "\n") {
+		if strings.HasPrefix(line, i18n.ErrorLinePrefix) {
+			continue
+		}
+		kept = append(kept, line)
+	}
+	return strings.Join(kept, "\n")
+}
+
 // exampleRefusalLine reports the line on which the game turned the command
 // down, if it did.
 //
@@ -196,6 +218,13 @@ func TestCuiHelpExamplesAreNotQuietlyRefused(t *testing.T) {
 			if _, isErr := i18n.StripErrorPrefix(out); isErr {
 				continue // TestCuiHelpExamplesExecute owns the marked ones
 			}
+			// **A board game marks the line, not the reply.** cuiErrorBlock
+			// renders a refusal as ErrorLinePrefix + a red line inside the
+			// board, so StripErrorPrefix above -- which only looks at the front
+			// of the whole reply -- never sees it. Scanning what is left after
+			// the marked lines are removed keeps the two shapes apart: a
+			// properly marked refusal drops out, an unmarked one stays.
+			out = dropMarkedErrorLines(out)
 			if line, ok := exampleRefusalLine(out); ok {
 				bad = append(bad, entry.Name+": `"+cmd+"` -> "+line)
 			}
@@ -208,5 +237,39 @@ func TestCuiHelpExamplesAreNotQuietlyRefused(t *testing.T) {
 	if len(bad) > 0 {
 		t.Errorf("examples the game turns down without marking it (%d of %d):\n  %s",
 			len(bad), checked, strings.Join(bad, "\n  "))
+	}
+}
+
+// TestDropMarkedErrorLinesKeepsTheUnmarkedOnes is the negative control for the
+// filter above: it must remove what a presenter marked and keep what nothing
+// marked, or the guard it feeds stops catching the thing it exists for.
+func TestDropMarkedErrorLinesKeepsTheUnmarkedOnes(t *testing.T) {
+	board := "Round: 1  Trick: 0\n"
+	marked := i18n.MarkErrorLine(color.Red("No card can be sent to a foundation"))
+	unmarked := color.Red("Multiplier (1, 2 or 3) is required.")
+
+	// A marked refusal drops out, so the guard says nothing about it.
+	if _, ok := exampleRefusalLine(dropMarkedErrorLines(board + marked + "\n")); ok {
+		t.Error("a marked refusal must not be reported")
+	}
+
+	// An unmarked one survives and is still reported.
+	line, ok := exampleRefusalLine(dropMarkedErrorLines(board + unmarked + "\n"))
+	if !ok {
+		t.Fatal("an unmarked refusal must still be reported")
+	}
+	if !strings.Contains(line, "required") {
+		t.Errorf("reported the wrong line: %q", line)
+	}
+
+	// Both at once: the unmarked one is what comes back.
+	line, ok = exampleRefusalLine(dropMarkedErrorLines(board + marked + "\n" + unmarked + "\n"))
+	if !ok || !strings.Contains(line, "required") {
+		t.Errorf("an unmarked refusal beside a marked one must still be reported, got %q (%v)", line, ok)
+	}
+
+	// Nothing marked, nothing to drop -- the input is returned untouched.
+	if got := dropMarkedErrorLines(board); got != board {
+		t.Errorf("an ordinary board must pass through unchanged, got %q", got)
 	}
 }
