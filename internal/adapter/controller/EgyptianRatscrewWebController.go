@@ -25,7 +25,6 @@ type EgyptianRatscrewWebPlayer struct {
 	StockSize int    `json:"stockSize"`
 }
 
-// EgyptianRatscrewWebOutput エジプシャン・ラットスクリュー Web 出力
 // EgyptianRatscrewWebFaceChances は絵札ごとのチャンス回数。
 type EgyptianRatscrewWebFaceChances struct {
 	Jack  int `json:"jack"`
@@ -34,6 +33,20 @@ type EgyptianRatscrewWebFaceChances struct {
 	Ace   int `json:"ace"`
 }
 
+// NewEgyptianRatscrewWebFaceChances はドメインの FaceCardChances から回数を組む。
+//
+// 既定の応答とプレゼンタの両方が同じものを返す必要があるので、literal を 2 箇所に
+// 書かない ── 片方だけ直すと、盤面のある応答と無い応答で規則の説明が食い違う。
+func NewEgyptianRatscrewWebFaceChances() *EgyptianRatscrewWebFaceChances {
+	return &EgyptianRatscrewWebFaceChances{
+		Jack:  domain.FaceCardChances(domain.EgyptianRatscrewJackValue),
+		Queen: domain.FaceCardChances(domain.EgyptianRatscrewQueenValue),
+		King:  domain.FaceCardChances(domain.EgyptianRatscrewKingValue),
+		Ace:   domain.FaceCardChances(domain.EgyptianRatscrewAceValue),
+	}
+}
+
+// EgyptianRatscrewWebOutput エジプシャン・ラットスクリュー Web 出力
 type EgyptianRatscrewWebOutput struct {
 	Phase           int                          `json:"phase"`
 	GameEndFlag     bool                         `json:"gameEndFlag"`
@@ -75,12 +88,7 @@ func newEgyptianRatscrewDefaultOutput(msg string) *EgyptianRatscrewWebOutput {
 		CpuDifficulty: int(domain.EgyptianRatscrewCpuNormal),
 		Players:       make([]*EgyptianRatscrewWebPlayer, 0),
 		// 回数は盤面が無くても規則なので、既定の応答にも乗せる。
-		FaceChances: &EgyptianRatscrewWebFaceChances{
-			Jack:  domain.FaceCardChances(domain.EgyptianRatscrewJackValue),
-			Queen: domain.FaceCardChances(domain.EgyptianRatscrewQueenValue),
-			King:  domain.FaceCardChances(domain.EgyptianRatscrewKingValue),
-			Ace:   domain.FaceCardChances(domain.EgyptianRatscrewAceValue),
-		},
+		FaceChances:   NewEgyptianRatscrewWebFaceChances(),
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }

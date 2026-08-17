@@ -2,7 +2,6 @@ package presenter
 
 import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
@@ -25,12 +24,7 @@ func (p *EgyptianRatscrewWebPresenter) Output(g interfaces.EgyptianRatscrewGame,
 	resObj.ChanceRemaining = g.GetChanceRemaining()
 	// 規則の説明を画面に書くための回数。ドメインの FaceCardChances から取る ──
 	// 訳文に 1/2/3/4 を焼き込むと、回数を変えたとき説明だけが嘘になる (#5580)。
-	resObj.FaceChances = &controller.EgyptianRatscrewWebFaceChances{
-		Jack:  domain.FaceCardChances(domain.EgyptianRatscrewJackValue),
-		Queen: domain.FaceCardChances(domain.EgyptianRatscrewQueenValue),
-		King:  domain.FaceCardChances(domain.EgyptianRatscrewKingValue),
-		Ace:   domain.FaceCardChances(domain.EgyptianRatscrewAceValue),
-	}
+	resObj.FaceChances = controller.NewEgyptianRatscrewWebFaceChances()
 	resObj.ChanceFromIdx = g.GetChanceFromIdx()
 
 	pending := g.GetPending()
