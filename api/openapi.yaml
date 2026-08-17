@@ -40751,6 +40751,7 @@ components:
         - stockCount
         - completedSuits
         - score
+        - scoring
         - phase
         - moveCount
         - canUndo
