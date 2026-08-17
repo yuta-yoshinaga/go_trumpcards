@@ -12,6 +12,28 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
+// trexPenaltyMarkedStr は失点札に印を付けて並べる。
+//
+// **どれが危険かは配りごとに変わる。**5 つの契約が 1 王国内で入れ替わるので、
+// 覚えて済ませることができない (#4911)。Web は赤いリングで印を付けていたのに、
+// CUI は素で並べるだけで暗算を強いていた (#5572)。判定は得点を決めている
+// domain.TrexCardPenalty をそのまま呼ぶ ── switch を書き写すと、印と実際の
+// 失点がずれても誰も気づけない。
+func trexPenaltyMarkedStr(cards []*domain.Card, contract domain.TrexContract) string {
+	if len(cards) == 0 {
+		return "-"
+	}
+	parts := make([]string, 0, len(cards))
+	for _, c := range cards {
+		str := cuiCardStr(c)
+		if p := domain.TrexCardPenalty(contract, c); p != 0 {
+			str = color.Red(str + i18n.Tf("trex.penaltyMark", "points", strconv.Itoa(p)))
+		}
+		parts = append(parts, str)
+	}
+	return strings.Join(parts, " ")
+}
+
 func trexCardListStr(cards []*domain.Card, indexed bool) string {
 	if len(cards) == 0 {
 		return "-"
@@ -64,7 +86,8 @@ func (p *TrexCuiPresenter) Output(c interfaces.TrexGame, lastErr error) string {
 			for _, tc := range c.GetTrick() {
 				trick = append(trick, tc.Card)
 			}
-			sb.WriteString(i18n.Tf("trex.trickLine", "cards", trexCardListStr(trick, false)) + "\n")
+			sb.WriteString(i18n.Tf("trex.trickLine",
+				"cards", trexPenaltyMarkedStr(trick, c.GetContract())) + "\n")
 		}
 
 		for i, player := range c.GetPlayers() {
