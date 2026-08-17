@@ -130,3 +130,82 @@ describe('evaluateVideoPokerMadeHand for Jacks or Better', () => {
     }
   });
 });
+
+// #5507: Deuces Wild でも madeHand が常に無効だった。スリーカード以上でしか配当が
+// 出ない=分散が大きい変種なので、ドロー前に配当対象かを知れる価値はむしろ大きい。
+describe('evaluateVideoPokerMadeHand for Deuces Wild', () => {
+  const deuce = (design: Card['design']) => c(design, 2);
+
+  it('treats twos as wild', () => {
+    expect(
+      evaluateVideoPokerMadeHand('deuceswild', [
+        c('SPADE', 5),
+        c('HEART', 5),
+        deuce('CLOVER'),
+        c('DIAMOND', 9),
+        c('SPADE', 12),
+      ]),
+    ).toEqual({ rowKey: 'threeOfAKind' });
+  });
+
+  // **四枚の2は専用の行。** 素直にランクへ落とすと fiveOfAKind になってしまう。
+  it('reports four deuces on its own row', () => {
+    expect(
+      evaluateVideoPokerMadeHand('deuceswild', [
+        deuce('SPADE'),
+        deuce('HEART'),
+        deuce('CLOVER'),
+        deuce('DIAMOND'),
+        c('SPADE', 9),
+      ]),
+    ).toEqual({ rowKey: 'fourDeuces' });
+  });
+
+  it('splits the royal into natural and wild', () => {
+    expect(
+      evaluateVideoPokerMadeHand('deuceswild', [
+        c('SPADE', 1),
+        c('SPADE', 13),
+        c('SPADE', 12),
+        c('SPADE', 11),
+        c('SPADE', 10),
+      ]),
+    ).toEqual({ rowKey: 'naturalRoyalFlush' });
+    expect(
+      evaluateVideoPokerMadeHand('deuceswild', [
+        deuce('HEART'),
+        c('SPADE', 13),
+        c('SPADE', 12),
+        c('SPADE', 11),
+        c('SPADE', 10),
+      ]),
+    ).toEqual({ rowKey: 'wildRoyalFlush' });
+  });
+
+  // **最低ラインはスリーカード。** ツーペアでは配当が無い。
+  it('pays nothing below three of a kind', () => {
+    expect(
+      evaluateVideoPokerMadeHand('deuceswild', [
+        c('SPADE', 5),
+        c('HEART', 5),
+        c('CLOVER', 9),
+        c('DIAMOND', 9),
+        c('SPADE', 12),
+      ]),
+    ).toEqual({ rowKey: null });
+  });
+
+  it('only returns keys that exist in the Deuces Wild paytable', () => {
+    const keys = new Set(videoPokerPayoutRows('deuceswild').map((r) => r.key));
+    const hands: Card[][] = [
+      [deuce('SPADE'), deuce('HEART'), deuce('CLOVER'), deuce('DIAMOND'), c('SPADE', 9)],
+      [deuce('HEART'), c('SPADE', 13), c('SPADE', 12), c('SPADE', 11), c('SPADE', 10)],
+      [c('SPADE', 1), c('SPADE', 13), c('SPADE', 12), c('SPADE', 11), c('SPADE', 10)],
+      [c('SPADE', 5), c('HEART', 5), deuce('CLOVER'), c('DIAMOND', 9), c('SPADE', 12)],
+    ];
+    for (const hand of hands) {
+      const made = evaluateVideoPokerMadeHand('deuceswild', hand);
+      if (made?.rowKey) expect(keys).toContain(made.rowKey);
+    }
+  });
+});
