@@ -34,6 +34,12 @@ const (
 	PontoonMaxCards = 5
 	// PontoonStickMin これ未満では Stick できない。
 	PontoonStickMin = 15
+	// PontoonCpuStickMin CPU 席と CPU 親がここに達したら止める。
+	//
+	// **相手の停止ラインは人間の判断材料。**引き続けるかどうかは「相手がどこで
+	// 止まるか」で決まるのに、この数字はどこにも出ていなかった (#5565)。案内は
+	// この定数から書く。文言に 17 を焼き込むと、閾値を変えたとき案内だけが嘘になる。
+	PontoonCpuStickMin = 17
 	// PontoonTarget 21
 	PontoonTarget = 21
 	// PontoonMaxHands スプリットで作れる手の上限
@@ -323,7 +329,7 @@ func (p *Pontoon) playCpuSeat(s *PontoonSeat) {
 				break
 			}
 			// 15 未満は宣言できないので必ず引く。以降は 17 を目安に止める。
-			if total >= PontoonStickMin && total >= 17 {
+			if total >= PontoonStickMin && total >= PontoonCpuStickMin {
 				h.stuck = true
 				break
 			}
@@ -488,7 +494,7 @@ func (p *Pontoon) startBankerTurn() {
 	}
 	for {
 		total := pontoonTotal(p.bankerHand.cards)
-		if len(p.bankerHand.cards) >= PontoonMaxCards || total > PontoonTarget || total >= 17 {
+		if len(p.bankerHand.cards) >= PontoonMaxCards || total > PontoonTarget || total >= PontoonCpuStickMin {
 			break
 		}
 		p.hit(p.bankerHand)

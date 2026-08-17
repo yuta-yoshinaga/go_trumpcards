@@ -28965,6 +28965,16 @@ components:
           type: boolean
         canSplit:
           type: boolean
+        stickMin:
+          type: integer
+          description: >-
+            Lowest total that may stick. Sent rather than hardcoded so the
+            wording on screen cannot drift from the rule.
+        cpuStickMin:
+          type: integer
+          description: >-
+            Total at which the banker stops drawing. A CPU seat sticks at
+            `stickMin`, taking one more card below this only on four cards.
         message:
           type: string
         messageCode:

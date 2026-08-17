@@ -3,6 +3,7 @@
 package presenter
 
 import (
+	"strconv"
 	"strings"
 	"testing"
 
@@ -199,4 +200,34 @@ func TestPontoonCuiPresenter_ActionLogOutput(t *testing.T) {
 		})
 		assert.Contains(t, new(PontoonCuiPresenter).ActionLogOutput(g), "test detail")
 	})
+}
+
+// #5565: 「相手がどこで止まるか」は引き続けるかの判断材料の半分なのに、
+// CPU と親の停止ライン (17) は CUI にも Web にもロケールにも出ていなかった。
+func TestPontoonCuiPresenter_ShowsBothStickThresholds(t *testing.T) {
+	g := new(interfaces.MockPontoonGame)
+	setupPontoonCuiMockDefaults(g)
+
+	out := new(PontoonCuiPresenter).Output(g, nil)
+	assert.Contains(t, out, i18n.Tf("pontoon.cpuStickLine",
+		"cpuMin", strconv.Itoa(domain.PontoonCpuStickMin),
+		"min", strconv.Itoa(domain.PontoonStickMin)))
+	// **数字はドメインの定数から来ていること。**訳文に焼き込むと、閾値を
+	// 変えたとき案内だけが嘘になる。
+	assert.Contains(t, out, strconv.Itoa(domain.PontoonCpuStickMin))
+}
+
+// 打てる手が無い局面では案内ごと出さない。手番でもないのに停止ラインだけ
+// 残ると、誰の話をしているのか分からない。
+func TestPontoonCuiPresenter_HidesTheThresholdsWithNoLegalAction(t *testing.T) {
+	g := new(interfaces.MockPontoonGame)
+	setupPontoonCuiMockDefaults(g)
+	for _, name := range []string{"CanStick", "CanTwist", "CanBuy", "CanSplit"} {
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, name)
+		g.On(name).Return(false)
+	}
+	out := new(PontoonCuiPresenter).Output(g, nil)
+	assert.NotContains(t, out, i18n.Tf("pontoon.cpuStickLine",
+		"cpuMin", strconv.Itoa(domain.PontoonCpuStickMin),
+		"min", strconv.Itoa(domain.PontoonStickMin)))
 }

@@ -36,6 +36,8 @@ const baseState: PontoonResponse = {
   canTwist: false,
   canBuy: false,
   canSplit: false,
+  stickMin: 15,
+  cpuStickMin: 17,
   message: '',
 };
 

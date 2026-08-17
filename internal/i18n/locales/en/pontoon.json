@@ -28,5 +28,6 @@
   "optBuy": "buy = buy",
   "optSplit": "sp = split",
   "bankPasses": "{{name}} takes the bank with a pontoon",
-  "helpExampleBet": "  b 100                    bet 100 chips"
+  "helpExampleBet": "  b 100                    bet 100 chips",
+  "cpuStickLine": "The banker draws until {{cpuMin}} or more. A CPU seat sticks at {{min}} or more (on four cards it takes one more below {{cpuMin}})."
 }
