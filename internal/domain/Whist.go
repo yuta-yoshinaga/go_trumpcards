@@ -232,6 +232,15 @@ func (w *Whist) ScoreRound() {
 			points = teamTricks[ti] - WhistBookThreshold
 		}
 		w.teamScores[ti] += points
+		// **個人行の得点も更新する。**CUI の "round"/"cum" と Web の CPU 一覧は
+		// この値を読んでいて、teamScores しか動かしていなかったので常に 0 が
+		// 表示されていた (#5535)。同じチームの2人は同じ得点を持つ。
+		for _, p := range w.players {
+			if p.GetTeam() == ti {
+				p.SetRoundScore(points)
+				p.CommitRoundScore()
+			}
+		}
 		w.appendLog(-1, "round_score",
 			fmt.Sprintf("Team %d: %d points (tricks: %d, total: %d)", ti, points, teamTricks[ti], w.teamScores[ti]), nil)
 	}

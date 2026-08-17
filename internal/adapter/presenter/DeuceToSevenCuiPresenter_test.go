@@ -9,6 +9,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func TestDeuceToSevenCuiPresenter_Output_ContainsGameTitle(t *testing.T) {
@@ -168,4 +169,45 @@ func TestDeuceToSevenCuiPresenter_ActionLogOutput(t *testing.T) {
 	dt, _ := makeDeuceToSevenForPresenter()
 	out := pres.ActionLogOutput(dt)
 	assert.NotEmpty(t, out)
+}
+
+// #5541: Web は交換フェーズで完成ローを自動バナー表示するのに、CUI は
+// `hint` を打った人にしか伝わらなかった。既にできているローを崩す事故は
+// 「訊いた人」だけの問題ではない。
+func TestDeuceToSevenCuiPresenter_Output_MadeLowWarning(t *testing.T) {
+	pres := new(presenter.DeuceToSevenCuiPresenter)
+
+	// 2-4-5-6-8 のレインボー = 完成ロー (ストレートでもフラッシュでもない)。
+	madeLow := []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 2, false),
+		domain.NewCard(domain.CardDesignHeart, 4, false),
+		domain.NewCard(domain.CardDesignDiamond, 5, false),
+		domain.NewCard(domain.CardDesignClover, 6, false),
+		domain.NewCard(domain.CardDesignSpade, 8, false),
+	}
+	// K を含むので未完成。
+	notMade := []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 2, false),
+		domain.NewCard(domain.CardDesignHeart, 4, false),
+		domain.NewCard(domain.CardDesignDiamond, 5, false),
+		domain.NewCard(domain.CardDesignClover, 6, false),
+		domain.NewCard(domain.CardDesignSpade, 13, false),
+	}
+
+	outputWith := func(hand []*domain.Card, phase int) string {
+		dt, players := makeDeuceToSevenForPresenter()
+		dt.SetPhase(phase)
+		dt.SetCurrentTurn(0)
+		for _, c := range hand {
+			players[0].AddCard(c)
+		}
+		return pres.Output(dt, nil)
+	}
+
+	warn := i18n.T("deucetoseven.madeLowWarning")
+	assert.Contains(t, outputWith(madeLow, domain.DeuceToSevenPhaseDraw), warn)
+	// **未完成なら出さない。**毎ターン出ると警告が意味を失う。
+	assert.NotContains(t, outputWith(notMade, domain.DeuceToSevenPhaseDraw), warn)
+	// 交換できないフェーズでも出さない。
+	assert.NotContains(t, outputWith(madeLow, domain.DeuceToSevenPhaseBet), warn)
 }

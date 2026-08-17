@@ -2,12 +2,14 @@ package presenter
 
 import (
 	"errors"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupRedDogCuiMockDefaults(m *interfaces.MockRedDogGame) {
@@ -236,4 +238,41 @@ func TestRedDogCuiPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetGameEndFlag").Return(false)
 	result := p.ActionLogOutput(m)
 	assert.NotEmpty(t, result)
+}
+
+// #5539: Web はベット前に配当表を常設しているのに、CUI はベット額を決める材料が
+// スプレッドの広さだけだった。
+func TestRedDogCuiPresenter_Output_Paytable(t *testing.T) {
+	p := new(RedDogCuiPresenter)
+
+	outputInPhase := func(phase int) string {
+		m := new(interfaces.MockRedDogGame)
+		m.On("GetPhase").Return(phase)
+		setupRedDogCuiMockDefaults(m)
+		return p.Output(m, nil)
+	}
+
+	betOut := outputInPhase(domain.RedDogPhaseBet)
+	assert.Contains(t, betOut, i18n.T("reddog.paytableHeader"))
+	// **倍率はドメインの定数から出す。**表示用に書き写すと、配当を直したときに
+	// 表だけが古いまま残る。
+	for _, tc := range []struct {
+		key  string
+		mult int
+	}{
+		{"reddog.paySpread1", domain.RedDogPaySpread1},
+		{"reddog.paySpread2", domain.RedDogPaySpread2},
+		{"reddog.paySpread3", domain.RedDogPaySpread3},
+		{"reddog.paySpread4Plus", domain.RedDogPaySpread4},
+		{"reddog.payPair", domain.RedDogPayPair},
+	} {
+		assert.Contains(t, betOut, i18n.Tf(tc.key, "mult", strconv.Itoa(tc.mult)), tc.key)
+	}
+	// プッシュになる2ケースも Web と同じく書く。
+	assert.Contains(t, betOut, i18n.T("reddog.payPush"))
+
+	// **他フェーズでは出さない。**もう賭け終わっている。
+	header := i18n.T("reddog.paytableHeader")
+	assert.NotContains(t, outputInPhase(domain.RedDogPhaseSpreadDecision), header)
+	assert.NotContains(t, outputInPhase(domain.RedDogPhaseEnd), header)
 }

@@ -79,5 +79,7 @@
   "helpExampleFold": "  f                    fold this hand",
   "helpHint": "  h                    show a hint",
   "helpLog": "  l                    show the action log",
-  "bringInLine": "Bring-in: {{name}} (forced bet, acts first)"
+  "bringInLine": "Bring-in: {{name}} (forced bet, acts first)",
+  "wonSplit": " (high: {{high}} / low: {{low}})",
+  "wonScoop": " *scoop*"
 }

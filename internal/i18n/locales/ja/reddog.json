@@ -26,5 +26,12 @@
   "hintSpread": "スプレッド {{spread}}（勝てるランク: {{ranks}}）→ {{rec}}",
   "hintBetFirst": "まずベットしてください。",
   "hintGameOver": "ゲームは終了しています。",
-  "helpExampleBet": "  b 100              100 チップを賭ける"
+  "helpExampleBet": "  b 100              100 チップを賭ける",
+  "paytableHeader": "配当: ",
+  "paySpread1": "スプレッド1 {{mult}}:1",
+  "paySpread2": "スプレッド2 {{mult}}:1",
+  "paySpread3": "スプレッド3 {{mult}}:1",
+  "paySpread4Plus": "スプレッド4以上 {{mult}}:1",
+  "payPair": "同位ペア＋3枚目同位 {{mult}}:1",
+  "payPush": "連続・ペア＋不一致はプッシュ"
 }
