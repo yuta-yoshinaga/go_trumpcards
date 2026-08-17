@@ -23,5 +23,6 @@
   "pullConfirm": "ベットを1口引き下げます。{{amount}} が戻り、場に残る額は {{risk}} → {{newRisk}} になります。この操作は取り消せません。",
   "pullConfirmPrompt": "実行するには y を入力してください (他のコマンドで取り消し)。",
   "pullUnavailable": "いまは引き下げられません。",
-  "helpExampleBet": "  b 100              100 チップを賭ける"
+  "helpExampleBet": "  b 100              100 チップを賭ける",
+  "totalRiskLine": "いまのリスク総額: {{risk}}"
 }
