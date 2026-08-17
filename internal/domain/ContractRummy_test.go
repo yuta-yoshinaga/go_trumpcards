@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // helperContractRummyHand 任意の手札・スコア状態を持つ ContractRummy を構築する。
@@ -1020,4 +1022,48 @@ func TestContractRummy_GetterSetterCoverage(t *testing.T) {
 	if g.IsHumanTurn() {
 		t.Error("out-of-range index should not be human")
 	}
+}
+
+// #5588: 難易度が実際に CPU の拾い方を変えることを固定する。Web に選択肢を出す
+// にあたり、**選んでも何も変わらない**のでは意味がない (受け入れ条件3)。
+//
+// 拾うかどうかは乱数を含むので 1 回では測れない。同じ局面を何度も打たせて
+// 「拾った割合」で比べる。
+func TestContractRummy_CpuDifficultyChangesTheDiscardPickup(t *testing.T) {
+	// コントラクト未達で、拾っても進捗が上がらない札を出す。ここで初めて
+	// 難易度ごとの無作為性が効く。
+	// **手札を固定する。**配りごとに変えると、測っているものが試行ごとに変わり、
+	// 「進捗の上がらない札」が見つからない。バラバラのランクを持たせて、
+	// プローブ (♦2) がどのセットにも列にも寄与しないようにする。
+	hand := []*Card{
+		crCard(0, 5), crCard(1, 7), crCard(2, 9), crCard(3, 11), crCard(0, 13),
+	}
+	rate := func(difficulty ContractRummyCpuDifficulty) float64 {
+		took := 0
+		const trials = 600
+		for range trials {
+			g := helperContractRummyHand(t)
+			g.SetCurrentPlayerIdx(1)
+			cfg := g.GetConfig()
+			cfg.CpuDifficulty = difficulty
+			g.SetConfig(cfg)
+			cpu := g.GetPlayer(1)
+			cpu.SetContractMet(false)
+			setHand(cpu, hand)
+			if g.cpuShouldTakeDiscard(crCard(3, 2)) {
+				took++
+			}
+		}
+		return float64(took) / float64(trials)
+	}
+
+	hard := rate(ContractRummyCpuDifficultyHard)
+	normal := rate(ContractRummyCpuDifficultyNormal)
+	easy := rate(ContractRummyCpuDifficultyEasy)
+
+	// Hard は進捗の上がらない札を拾わない。
+	assert.Zero(t, hard, "hard never takes a useless discard")
+	// Easy ほど無駄拾いが多い。**順序を固定する**ので、3 値が同じ実装では通らない。
+	assert.Greater(t, easy, normal, "easy takes useless discards more often than normal")
+	assert.Greater(t, normal, hard, "normal takes them more often than hard")
 }

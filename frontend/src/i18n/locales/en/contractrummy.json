@@ -40,5 +40,12 @@
     "contractrummyMeetContract": "The contract is not met yet — even heavy cards are material",
     "contractrummyDiscardHeavy": "Your heaviest unconnected card"
   },
-  "invalidExtraMeld": "Not a valid set or run"
+  "invalidExtraMeld": "Not a valid set or run",
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU difficulty",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  }
 }

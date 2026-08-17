@@ -454,4 +454,34 @@ describe('ContractRummyPage', () => {
     expect(meldExtra).toBeEnabled();
     expect(screen.queryByTestId('cr-invalid-extra-meld')).not.toBeInTheDocument();
   });
+
+  // #5588: 難易度はドメインにもレスポンス型にも API にもあるのに、**Web からは
+  // 触れなかった** (CUI の `sd` だけ)。
+  describe('cpu difficulty setting', () => {
+    it('shows the current difficulty from the response', async () => {
+      mockExec.mockResolvedValue({ ...drawState, config: { cpuDifficulty: 2, failContractPenalty: 25 } });
+      renderWithProviders(<ContractRummyPage />);
+      const select = await screen.findByLabelText('CPU難易度');
+      expect((select as HTMLSelectElement).value).toBe('2');
+    });
+
+    // **数値は CUI の `sd` と同じ 0/1/2** (受け入れ条件2)。reset に載せて渡す ──
+    // 難易度は配り直しでしか効かない。
+    it('resets with the chosen difficulty', async () => {
+      mockExec.mockResolvedValue(drawState);
+      renderWithProviders(<ContractRummyPage />);
+      const select = await screen.findByLabelText('CPU難易度');
+      mockExec.mockClear();
+      fireEvent.change(select, { target: { value: '0' } });
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', { config: { cpuDifficulty: 0 } }));
+    });
+
+    it('offers exactly the three levels', async () => {
+      mockExec.mockResolvedValue(drawState);
+      renderWithProviders(<ContractRummyPage />);
+      const select = await screen.findByLabelText('CPU難易度');
+      const values = [...(select as HTMLSelectElement).options].map((o) => o.value);
+      expect(values).toEqual(['0', '1', '2']);
+    });
+  });
 });
