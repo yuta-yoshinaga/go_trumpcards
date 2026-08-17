@@ -5,6 +5,9 @@ package domain
 import (
 	"encoding/json"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // setteEMezzoDealAttempts caps the reshuffles a test may take while looking for
@@ -908,4 +911,62 @@ func TestSetteEMezzo_BankerStandSettles(t *testing.T) {
 	if !s.GetBankerHand().IsStood() {
 		t.Error("the banker's hand should be marked as stood")
 	}
+}
+
+// #5566: 停止ライン (11 半点 = 5.5 点) は直書きされているだけで、どの画面にも
+// 出ていなかった。定数にしたので、実際に打たせて定数どおりに止まることを見る。
+func TestSetteEMezzoCpuStandsAtTheNamedThreshold(t *testing.T) {
+	// 定数そのものは規則の一部。黙って変わると案内も一緒に変わる。
+	assert.Equal(t, 11, SetteEMezzoCpuStandHalves)
+	assert.Less(t, SetteEMezzoCpuStandHalves, SetteEMezzoTargetHalves,
+		"standing at or above the target would mean the CPU never draws")
+
+	// **止まった手だけを見る。**バーストとデッキ切れは閾値と無関係。
+	for range 300 {
+		s := NewDefaultSetteEMezzo()
+		s.Reset()
+		if err := s.PlaceBet(10); err != nil {
+			continue
+		}
+		for range 10 {
+			if s.GetPhase() != SetteEMezzoPhasePlayerTurn {
+				break
+			}
+			if s.CanStand() {
+				_ = s.Stand()
+				continue
+			}
+			if s.Hit() != nil {
+				break
+			}
+		}
+		if s.GetPhase() != SetteEMezzoPhaseEnd {
+			continue
+		}
+		for i, seat := range s.GetSeats() {
+			if !seat.IsCPU() || i == s.banker {
+				continue
+			}
+			h := seat.hand
+			total := s.handHalves(h)
+			if !h.stood || total > SetteEMezzoTargetHalves {
+				continue
+			}
+			assert.GreaterOrEqual(t, total, SetteEMezzoCpuStandHalves,
+				"a CPU seat stood below the threshold")
+		}
+	}
+}
+
+// ちょうど閾値で止まり、1 つ下では引くこと。境界そのものを固定する。
+func TestSetteEMezzoCpuStandsExactlyAtTheThreshold(t *testing.T) {
+	atThreshold := NewDefaultSetteEMezzo()
+	atThreshold.Reset()
+	h := &SetteEMezzoHand{cards: []*Card{
+		NewCard(CardDesignSpade, 5, true),  // 5 -> 10 halves
+		NewCard(CardDesignHeart, 11, true), // face -> 1 half
+	}}
+	require.Equal(t, SetteEMezzoCpuStandHalves, atThreshold.handHalves(h))
+	atThreshold.playCpuSeat(h)
+	assert.Len(t, h.cards, 2, "a hand already at the threshold does not draw")
 }

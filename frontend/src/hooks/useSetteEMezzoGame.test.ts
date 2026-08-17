@@ -32,6 +32,7 @@ const baseState: SetteEMezzoResponse = {
   lastResult: '',
   phase: 1,
   targetHalves: 15,
+  cpuStandHalves: 11,
   canHit: false,
   canStand: false,
   canSetMatta: false,

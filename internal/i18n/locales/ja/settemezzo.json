@@ -24,5 +24,6 @@
   "optStand": "s=止める",
   "optMatta": "matta=マッタの値",
   "bankPasses": "{{name}} がちょうど7.5を出して親を取りました",
-  "helpExampleBet": "  b 100                   100 チップを賭ける"
+  "helpExampleBet": "  b 100                   100 チップを賭ける",
+  "cpuStandLine": "CPU 席と親は {{total}} 点以上で止まります（{{target}} 点を超えるとバースト）。"
 }

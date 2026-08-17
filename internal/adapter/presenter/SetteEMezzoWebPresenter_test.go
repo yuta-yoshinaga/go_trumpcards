@@ -237,3 +237,16 @@ func TestSetteEMezzoWebPresenter_ActionLogOutput(t *testing.T) {
 		assert.Contains(t, new(SetteEMezzoWebPresenter).ActionLogOutput(g), "deal")
 	})
 }
+
+// #5566: 停止ラインの数字はドメインの定数から来ること。訳文にも TS にも
+// 焼き込まないので、ここが落ちるとクライアントは「0 点で止まる」と書く。
+func TestSetteEMezzoWebPresenter_CarriesTheCpuStandThreshold(t *testing.T) {
+	g := new(interfaces.MockSetteEMezzoGame)
+	setupSemWebMockDefaults(g)
+
+	result := parseSemOutput(t, new(SetteEMezzoWebPresenter).Output(g, nil))
+	assert.Equal(t, domain.SetteEMezzoCpuStandHalves, result.CpuStandHalves)
+	assert.NotZero(t, result.CpuStandHalves)
+	// 目標点とは別の数字であること。同じなら CPU は一度も引かない。
+	assert.NotEqual(t, result.TargetHalves, result.CpuStandHalves)
+}

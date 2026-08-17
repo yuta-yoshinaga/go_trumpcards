@@ -173,6 +173,13 @@ function SetteEMezzoPageContent() {
           <span className="text-sm text-ds-text-muted">
             {t('target')}: {halvesToLabel(state.targetHalves)}
           </span>
+          {/* **相手がいつ引くのをやめるかは、賭け続けるかの判断材料。**
+              ブラックジャックの「17 でスタンド」に当たる数字なのに、どの画面にも
+              出ていなかった (#5566)。半点はサーバから来るので、5.5 という文字列を
+              訳文にも画面にも焼き込まない。 */}
+          <span className="text-sm text-ds-text-muted" data-testid="settemezzo-cpu-stand">
+            {t('cpuStand', { total: halvesToLabel(state.cpuStandHalves) })}
+          </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
       }

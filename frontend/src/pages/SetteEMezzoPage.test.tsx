@@ -46,6 +46,7 @@ function makeState(overrides?: Partial<SetteEMezzoResponse>): SetteEMezzoRespons
     lastResult: '',
     phase: 2,
     targetHalves: 15,
+    cpuStandHalves: 11,
     canHit: true,
     canStand: true,
     canSetMatta: false,
@@ -294,5 +295,27 @@ describe('SetteEMezzoPage keyboard shortcuts', () => {
 
     fireEvent.click(toggle);
     expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
+  });
+});
+
+// #5566: 相手がいつ引くのをやめるかが分からないまま、賭け続けるか降りるかを
+// 決めさせていた。
+describe('SetteEMezzoPage stand threshold', () => {
+  it('shows the threshold in points, not in halves', async () => {
+    mockExec.mockResolvedValue(makeState({}));
+    renderWithProviders(<SetteEMezzoPage />);
+    const line = await screen.findByTestId('settemezzo-cpu-stand');
+    expect(line).toHaveTextContent('5.5');
+    // **半点の内部表現をそのまま出さない。**11 と読めては意味が逆になる。
+    expect(line).not.toHaveTextContent('11');
+  });
+
+  // サーバが別の閾値を返せばそのまま出ること (定数を再実装していない証拠)。
+  it('renders whatever the server sends', async () => {
+    mockExec.mockResolvedValue(makeState({ cpuStandHalves: 13 }));
+    renderWithProviders(<SetteEMezzoPage />);
+    const line = await screen.findByTestId('settemezzo-cpu-stand');
+    expect(line).toHaveTextContent('6.5');
+    expect(line).not.toHaveTextContent('5.5');
   });
 });
