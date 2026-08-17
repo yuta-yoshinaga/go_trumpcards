@@ -30,5 +30,6 @@
   "hintWeakHand": "役が無く A-K にも届かない",
   "helpExampleBet": "  b 10                 アンテ 10 で参加する",
   "helpExamplePlay": "  p                    勝負する (アンテの 2 倍を追加)",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "jackpotHelp": "ジャックポット(任意): フラッシュ以上の役が成立すれば、勝敗に関係なく配当が当たります"
 }
