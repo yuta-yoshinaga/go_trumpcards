@@ -21,5 +21,6 @@
   "hintLine": "Hint: {{from}} → {{to}}",
   "helpExampleHint": "  h                    ask for a move",
   "helpExampleAuto": "  ac                   send everything that can go to a foundation",
-  "helpUndo": "  u                    undo one move"
+  "helpUndo": "  u                    undo one move",
+  "hintDraw": "Hint: nothing else can move -- draw a card from the stock"
 }

@@ -29,4 +29,15 @@ describe('getFortyThievesHint', () => {
     const s = state({ fromZone: 'tableau', fromCol: 2, cardIndex: 0, toZone: 'foundation', toCol: -1 });
     expect(getFortyThievesHint(s)?.targetAction).toBe('foundation');
   });
+
+  // #5525: 盤上に手が無くストックだけ残っている局面。行き詰まりではないので
+  // 「引け」と言う。移動の体裁に落とすと waste--1 が出る。
+  it('tells the player to draw when the server says stock', () => {
+    const s = state({ fromZone: 'stock', fromCol: -1, cardIndex: -1, toZone: 'waste', toCol: -1 });
+    expect(getFortyThievesHint(s)).toEqual({
+      targetAction: 'draw',
+      reason: 'frontendHint.fortythievesDraw',
+      confidence: 'moderate',
+    });
+  });
 });
