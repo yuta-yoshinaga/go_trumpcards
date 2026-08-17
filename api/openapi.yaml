@@ -29485,6 +29485,15 @@ components:
             turn in the play phase.
           items:
             type: integer
+        trumpIndices:
+          type: array
+          description: |
+            Hand indices that are trumps, the six permanent ones included.
+            Those six (Q of clubs and spades, J of every suit) cannot be told
+            from their suit, so the set is sent rather than listed client-side.
+            Empty until a trump is named.
+          items:
+            type: integer
         teamPoints:
           type: array
           description: Card points this hand, per team. Always sums to 120.

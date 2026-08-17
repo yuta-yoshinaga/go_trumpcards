@@ -44,6 +44,7 @@ function makeState(overrides?: Partial<SjavsResponse>): SjavsResponse {
     trick: [],
     trickNo: 0,
     validIndices: [],
+    trumpIndices: [],
     teamPoints: [0, 0],
     remaining: [24, 24],
     crosses: [0, 0],
@@ -242,6 +243,29 @@ describe('SjavsPage', () => {
       renderWithProviders(<SjavsPage />);
       await waitFor(() => expect(screen.getByRole('button', { name: '6枚を申告' })).toBeInTheDocument());
       expect(document.querySelectorAll('[data-hint-bid="true"]')).toHaveLength(0);
+    });
+  });
+
+  // #5575: 常時切札の 6 枚 (♣Q ♠Q ♣J ♠J ♥J ♦J) はスートを見ても分からないのに、
+  // 手札のどれがそれかを示すものが無かった。
+  describe('trump markers', () => {
+    it('marks the indices the server sends', async () => {
+      mockExec.mockResolvedValue(
+        makeState({ phase: SjavsPhase.PLAY, trumpSuit: 2, trumpCount: 13, trumpIndices: [0, 2] }),
+      );
+      renderWithProviders(<SjavsPage />);
+      await waitFor(() => expect(screen.getByTestId('sjavs-trump-0')).toBeInTheDocument());
+      expect(screen.getByTestId('sjavs-trump-2')).toBeInTheDocument();
+      // **送られていない札には付けない。**全部に付ける実装でも上だけなら通る。
+      expect(screen.queryByTestId('sjavs-trump-1')).not.toBeInTheDocument();
+    });
+
+    // 切札未確定 (ビッド前) は出ない。
+    it('marks nothing before a trump is named', async () => {
+      mockExec.mockResolvedValue(makeState({ phase: SjavsPhase.BID, trumpSuit: -1, trumpIndices: [] }));
+      renderWithProviders(<SjavsPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+      expect(screen.queryByTestId('sjavs-trump-0')).not.toBeInTheDocument();
     });
   });
 });

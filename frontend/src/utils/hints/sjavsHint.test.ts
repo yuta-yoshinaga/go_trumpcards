@@ -16,6 +16,7 @@ const base = {
   trick: [],
   trickNo: 0,
   validIndices: [],
+  trumpIndices: [],
   teamPoints: [0, 0],
   remaining: [24, 24],
   crosses: [0, 0],

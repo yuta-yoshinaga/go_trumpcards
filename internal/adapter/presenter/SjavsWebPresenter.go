@@ -62,6 +62,19 @@ func (p *SjavsWebPresenter) buildBase(c interfaces.SjavsGame) *controller.SjavsW
 		resObj.ValidIndices = append(resObj.ValidIndices, valid...)
 	}
 
+	// 切札の添字。**常時切札の 6 枚はスートを見ても分からない**ので、6 枚の
+	// 一覧をクライアントに書き写させず、強さを決めている判定を通す (#5575)。
+	resObj.TrumpIndices = make([]int, 0, domain.SjavsHandSize)
+	if trump := c.GetTrumpSuit(); trump >= 0 {
+		if human := c.GetPlayer(0); human != nil {
+			for j := range human.GetCardsSize() {
+				if domain.SjavsIsTrump(human.GetCard(j), trump) {
+					resObj.TrumpIndices = append(resObj.TrumpIndices, j)
+				}
+			}
+		}
+	}
+
 	if hr := c.GetHandResult(); hr != nil {
 		resObj.HandResult = &controller.SjavsWebOutputHandResult{
 			DeclarerTeam:   hr.DeclarerTeam,

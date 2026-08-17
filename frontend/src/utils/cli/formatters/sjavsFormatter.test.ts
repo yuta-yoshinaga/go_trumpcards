@@ -32,6 +32,7 @@ function makeState(overrides?: Partial<SjavsResponse>): SjavsResponse {
     trick: [],
     trickNo: 0,
     validIndices: [0],
+    trumpIndices: [],
     teamPoints: [30, 20],
     remaining: [24, 24],
     crosses: [0, 0],
