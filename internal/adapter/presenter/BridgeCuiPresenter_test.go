@@ -9,6 +9,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -619,4 +620,60 @@ func TestBridgeCuiPresenter_GuidesTheBidding(t *testing.T) {
 	both := p.Output(build(true, true, true), nil)
 	assert.Contains(t, both, "リダブルできます")
 	assert.NotContains(t, both, "相手のコントラクトにダブルできます")
+}
+
+// #5516: IsHumanTurn はダミーの手番かつ人間がデクレアラーなら true を返すのに、
+// CUI はそれを一度も呼ばず、常に currentIdx の名前を出す。**人間が操作すべき
+// 局面で CPU の名前が出る。** Web は yourTurnDummy で明示している。
+func TestBridgeCuiPresenter_DummyTurnReadsAsTheHumansTurn(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.BridgeCuiPresenter)
+
+	// 人間 (0) がデクレアラー、ダミーは 2。手番はダミー。
+	newDummyTurn := func() *domain.Bridge {
+		b := domain.NewDefaultBridge()
+		b.Reset()
+		b.SetPhase(domain.BridgePhasePlay)
+		b.SetDeclarerIdx(0)
+		b.SetDummyIdx(2)
+		b.SetCurrentPlayerIdx(2)
+		return b
+	}
+
+	t.Run("names the human, not the dummy seat's CPU", func(t *testing.T) {
+		b := newDummyTurn()
+		require.True(t, b.IsHumanTurn(), "前提: ドメインは人間の手番と判定している")
+		out := p.Output(b, nil)
+		assert.Contains(t, out, i18n.Tf("bridge.promptPlayDummy", "seat", "CPU 2"))
+	})
+
+	// **ダミー席というだけでは足りない。** CPU がデクレアラーなら、ダミーの手番でも
+	// 打つのは CPU。席だけで判定すると、人間と無関係な局面で「あなたの手番です」と出る。
+	t.Run("stays quiet on a dummy seat when a CPU is the declarer", func(t *testing.T) {
+		b := domain.NewDefaultBridge()
+		b.Reset()
+		b.SetPhase(domain.BridgePhasePlay)
+		b.SetDeclarerIdx(1) // CPU がデクレアラー
+		b.SetDummyIdx(3)
+		b.SetCurrentPlayerIdx(3) // ダミー席の手番
+		require.False(t, b.IsHumanTurn(), "前提: 人間の手番ではない")
+		assert.NotContains(t, p.Output(b, nil),
+			strings.Split(i18n.T("bridge.promptPlayDummy"), "{{")[0])
+	})
+
+	// **通常の手番表示は変えない。** CPU が本当に打つ番では従来どおり。
+	t.Run("leaves an ordinary CPU turn alone", func(t *testing.T) {
+		b := domain.NewDefaultBridge()
+		b.Reset()
+		b.SetPhase(domain.BridgePhasePlay)
+		b.SetDeclarerIdx(1)
+		b.SetDummyIdx(3)
+		b.SetCurrentPlayerIdx(1)
+		require.False(t, b.IsHumanTurn())
+		// 席名に依らず、ダミー用の文言の骨格が出ていないこと。
+		assert.NotContains(t, p.Output(b, nil),
+			strings.Split(i18n.T("bridge.promptPlayDummy"), "{{")[0])
+	})
 }
