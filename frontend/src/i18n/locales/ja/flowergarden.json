@@ -32,6 +32,7 @@
   "playing": "カードを移動してください",
   "reserve": "ブーケ",
   "reserveCardAriaLabel": "{{card}}（リザーブ枠 {{idx}}）",
+  "rulesNote": "スートは無視。1つ下のランクだけ重ねられます（空のベッドには任意のカード）。",
   "stalemate": "手詰まりです",
   "tableau": "フラワーベッド",
   "tutorial": {
