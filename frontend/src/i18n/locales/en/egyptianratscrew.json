@@ -53,6 +53,8 @@
     "arena": "The center pile. Slap when a pair or sandwich appears.",
     "playerPile": "Your stock. You lose if it empties.",
     "stepButton": "Flip the top card of your stock. Face cards (J/Q/K/A) impose a chance battle on your opponent.",
-    "slapButton": "Slap when the top two match (pair) or the top three form a sandwich (X-Y-X). Wrong slaps cost you a card."
-  }
+    "slapButton": "Slap when the top two match (pair) or the top three form a sandwich (X-Y-X). Wrong slaps cost you a card.",
+    "rule": "The face-card chances and the two ways a slap is legal. This line stays on screen."
+  },
+  "ruleLine": "A face card gives the opponent chances (J={{jack}}, Q={{queen}}, K={{king}}, A={{ace}}). Fail to answer with a face card and they take the pile. You may only slap on a pair (matching the card below) or a sandwich (matching one card down)."
 }

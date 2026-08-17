@@ -21,6 +21,13 @@ func mustEgyptianRatscrewOutputJSON(msg string) string {
 		ChanceFromIdx: -1,
 		CpuDifficulty: int(domain.EgyptianRatscrewCpuNormal),
 		Players:       make([]*controller.EgyptianRatscrewWebPlayer, 0),
+		// 回数は盤面が無くても規則なので、既定の応答にも乗る (#5580)。
+		FaceChances: &controller.EgyptianRatscrewWebFaceChances{
+			Jack:  domain.FaceCardChances(domain.EgyptianRatscrewJackValue),
+			Queen: domain.FaceCardChances(domain.EgyptianRatscrewQueenValue),
+			King:  domain.FaceCardChances(domain.EgyptianRatscrewKingValue),
+			Ace:   domain.FaceCardChances(domain.EgyptianRatscrewAceValue),
+		},
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, _ := json.Marshal(out)
