@@ -29,6 +29,7 @@ import { ClockSolitairePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
+import { CLOCK_PILE_COUNT, completedClockPiles } from '../utils/clockSolitaireProgress';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Clock Solitaire tutorial step definitions. */
@@ -187,8 +188,7 @@ function ClockSolitairePageContent() {
               ? 'OVER'
               : 'Playing';
         lines.push(`Phase: ${phase} | Steps: ${s.stepCount}`);
-        const completed = s.faceUpCount.filter((c) => c >= 4).length;
-        lines.push(`Completed: ${completed}/13`);
+        lines.push(`Completed: ${completedClockPiles(s.faceUpCount).toString()}/${CLOCK_PILE_COUNT.toString()}`);
         if (s.currentCard) {
           lines.push(`Current: ${s.currentCard.design[0]}${s.currentCard.value}`);
         }
@@ -264,6 +264,14 @@ function ClockSolitairePageContent() {
         <>
           <span className="text-sm text-ds-text-muted">
             {t('stepCount')}: {state.stepCount}
+          </span>
+          {/* 「あと何山で揃うか」は CLI ターミナルを開いた人にしか見えない
+              隠れた計算だった (#5523)。 */}
+          <span className="text-sm text-ds-text-muted" data-testid="clock-completed">
+            {t('completedPiles', {
+              completed: completedClockPiles(state.faceUpCount),
+              total: CLOCK_PILE_COUNT,
+            })}
           </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
