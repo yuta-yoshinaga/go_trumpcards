@@ -404,6 +404,31 @@ describe('RussianSolitairePage block move announcement', () => {
     expect(screen.getByRole('button', { name: /♥ 8/ }).getAttribute('aria-label')).toContain('2枚');
   });
 
+  // faceUp なのに card が無いレスポンス (壊れた state) でも落ちず、
+  // 枚数だけは読める。`tc.card ? ... : ''` の空側を通す。
+  it('still announces the block when a face-up entry has no card', async () => {
+    const broken = {
+      ...blockState,
+      tableau: [
+        [
+          { card: null, faceUp: true },
+          { card: card('HEART', 8), faceUp: true },
+        ],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+      ],
+    };
+    mockExec.mockResolvedValue(broken);
+    renderWithProviders(<RussianSolitairePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /♥ 8/ })).toBeInTheDocument());
+    // 先頭の空カードのボタンは名前が枚数だけになる。
+    expect(screen.getByRole('button', { name: '2枚まとめて移動' })).toBeInTheDocument();
+  });
+
   // **列の末尾は 1 枚。**「あと0枚と一緒に」は読み上げても意味がない。
   it('does not announce a block for the bottom card', async () => {
     mockExec.mockResolvedValue(blockState);
