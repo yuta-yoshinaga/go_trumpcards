@@ -4,7 +4,6 @@ package controller
 
 import (
 	"fmt"
-	"math"
 	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
@@ -61,7 +60,7 @@ func (c *TerraceCuiController) handleUndo(args []string) string {
 	if len(args) == 0 {
 		return c.ti.Undo()
 	}
-	out, _ := cuiutil.WithParsedIntKeys(args, "", "terrace.invalidUndoCount", 1, math.MaxInt32, c.ti.UndoN)
+	out, _ := cuiutil.WithParsedIntKeys(args, "", "terrace.invalidUndoCount", 1, cuiutil.NoMax, c.ti.UndoN)
 	return out
 }
 
