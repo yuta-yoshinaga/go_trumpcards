@@ -74,7 +74,7 @@ Monte Carlo Solitaire (モンテカルロ・ソリティア)
 (3,0) CLOVER 11 | (3,1) HEART 3 | (3,2) SPADE 13 | (3,3) CLOVER 13 | (3,4) HEART 6
 (4,0) SPADE 5 | (4,1) HEART 9 | (4,2) CLOVER 2 | (4,3) SPADE 12 | (4,4) SPADE 9
 ----------
-除去可能: 3 組
+除去可能: 5 組
 ==========
 ```
 
