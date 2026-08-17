@@ -53,6 +53,8 @@ type CanastaGame interface {
 	GetPozzettoCount() int
 	// GetIsFrozen 捨て札の山がフリーズ状態かを返す
 	GetIsFrozen() bool
+	// GetDrawFromDiscardBlocker いま捨て札の山を取れない理由 (取れるなら "")
+	GetDrawFromDiscardBlocker() string
 	// GetWinnerIdx 勝者インデックスを取得する
 	GetWinnerIdx() int
 	// GetPlayerCnt プレイヤー数を取得する

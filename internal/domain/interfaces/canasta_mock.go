@@ -51,8 +51,11 @@ func (m *MockCanastaGame) GetDrawPileCount() int    { return m.Called().Int(0) }
 func (m *MockCanastaGame) GetDiscardPileCount() int { return m.Called().Int(0) }
 func (m *MockCanastaGame) GetPozzettoCount() int    { return m.Called().Int(0) }
 func (m *MockCanastaGame) GetIsFrozen() bool        { return m.Called().Bool(0) }
-func (m *MockCanastaGame) GetWinnerIdx() int        { return m.Called().Int(0) }
-func (m *MockCanastaGame) GetPlayerCnt() int        { return m.Called().Int(0) }
+
+// GetDrawFromDiscardBlocker モック
+func (m *MockCanastaGame) GetDrawFromDiscardBlocker() string { return m.Called().String(0) }
+func (m *MockCanastaGame) GetWinnerIdx() int                 { return m.Called().Int(0) }
+func (m *MockCanastaGame) GetPlayerCnt() int                 { return m.Called().Int(0) }
 func (m *MockCanastaGame) GetPlayer(i int) *domain.CanastaPlayer {
 	return m.Called(i).Get(0).(*domain.CanastaPlayer)
 }
