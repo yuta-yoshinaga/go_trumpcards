@@ -332,6 +332,12 @@ function NinetyNinePageContent() {
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
                   dataTutorial="nn-trick-display"
+                  // **サーバは勝者を送っていた。** leadPlayerIdx は常に返っていて型にも
+                  // 入っており、TrickDisplay もバッジを出せるのに、このページだけ渡して
+                  // いなかった (#5515)。次のトリックのリードが直前の勝者なので、Oh Hell と
+                  // 同じ形で使える。決着前は付けない -- リードした人が勝ったように読める。
+                  winnerIdx={isTrickEnd ? state.leadPlayerIdx : undefined}
+                  winnerLabel={t('trickWinnerBadge')}
                 />
               </div>
 

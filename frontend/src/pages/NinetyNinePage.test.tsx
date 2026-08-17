@@ -444,3 +444,47 @@ describe('NinetyNinePage', () => {
     });
   });
 });
+
+// #5515: サーバは leadPlayerIdx を常に返し、型にも入っていて、TrickDisplay は
+// winnerIdx バッジを出す機能を持っているのに、**このページだけ渡していない。**
+// 姉妹の Oh Hell は同じ形で出している。
+describe('NinetyNinePage trick winner badge', () => {
+  it('marks the trick winner once the trick ends', async () => {
+    mockExec.mockResolvedValue({ ...trickEndState, leadPlayerIdx: 1 });
+    renderWithProviders(<NinetyNinePage />);
+    const badge = await screen.findByTestId('trick-winner-badge');
+    expect(badge).toBeInTheDocument();
+  });
+
+  // **勝者は leadPlayerIdx。** 次のトリックのリードが直前の勝者なので、
+  // 固定値を出していれば札の位置が動かない。バッジの付いた札で見分ける。
+  it('follows leadPlayerIdx rather than a fixed seat', async () => {
+    const badgedCardAlt = async () => {
+      const badge = await screen.findByTestId('trick-winner-badge');
+      const cell = badge.closest('[data-trick-winner]');
+      return cell?.querySelector('img')?.getAttribute('alt') ?? null;
+    };
+
+    mockExec.mockResolvedValue({ ...trickEndState, leadPlayerIdx: 0 });
+    const { unmount } = renderWithProviders(<NinetyNinePage />);
+    const first = await badgedCardAlt();
+    expect(first).toBeTruthy();
+    unmount();
+
+    mockExec.mockResolvedValue({ ...trickEndState, leadPlayerIdx: 1 });
+    renderWithProviders(<NinetyNinePage />);
+    expect(await badgedCardAlt()).not.toBe(first);
+  });
+
+  // **プレイ中は出さない。** まだ決着していないトリックに勝者を付けると、
+  // リードした人が勝ったように読める。
+  //
+  // 場に札が出ている状態で確かめる -- currentTrick が空のフィクスチャだと、
+  // バッジを出す実装でも出ないので何も検証できない。
+  it('stays quiet while the trick is still being played', async () => {
+    mockExec.mockResolvedValue({ ...trickEndState, phase: 1, leadPlayerIdx: 1 });
+    renderWithProviders(<NinetyNinePage />);
+    await waitFor(() => expect(screen.getAllByRole('img').length).toBeGreaterThan(0));
+    expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument();
+  });
+});
