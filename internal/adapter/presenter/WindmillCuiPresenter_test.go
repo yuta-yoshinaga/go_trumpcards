@@ -186,3 +186,23 @@ func TestWindmillCuiPresenter_ActionLogOutput(t *testing.T) {
 		assert.Contains(t, new(WindmillCuiPresenter).ActionLogOutput(g), "move")
 	})
 }
+
+// #5558: 四隅は K しか受け取らないというウィンドミル固有のルールが、CUI では
+// 出力にもヘルプにも出ておらず、試行錯誤でしか学べなかった。
+func TestWindmillCuiPresenter_Output_EmptyCornerSaysKingsOnly(t *testing.T) {
+	g := new(interfaces.MockWindmillGame)
+	setupWindmillCuiMockDefaults(g)
+
+	out := new(WindmillCuiPresenter).Output(g, nil)
+	assert.Contains(t, out, i18n.T("windmill.cornerKingsOnly"))
+
+	// **埋まっている四隅の表示は変えない。**カードが乗っていれば規則は自明。
+	filled := new(interfaces.MockWindmillGame)
+	var corners [domain.WindmillCornerCnt][]*domain.Card
+	for i := range domain.WindmillCornerCnt {
+		corners[i] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 13, true)}
+	}
+	filled.On("GetCorners").Return(corners)
+	setupWindmillCuiMockDefaults(filled)
+	assert.NotContains(t, new(WindmillCuiPresenter).Output(filled, nil), i18n.T("windmill.cornerKingsOnly"))
+}

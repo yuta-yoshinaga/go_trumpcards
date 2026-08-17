@@ -36,5 +36,6 @@
   "hintLine": "Hint: {{from}} → {{to}}",
   "undoToEscape": "Undo {{count}} move(s) to escape the dead end (undo {{count}}, or repeat u)",
   "helpExampleHint": "  h                        ask for a move",
-  "helpExampleAuto": "  ac                       send everything that can go to a foundation"
+  "helpExampleAuto": "  ac                       send everything that can go to a foundation",
+  "cornerKingsOnly": " (kings only)"
 }
