@@ -416,7 +416,14 @@ function KingAlbertPageContent() {
                             disabled={!isPlaying || loading || !selectedSource}
                             aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
                             style={{ width: dims.cw, height: dims.ch }}
-                            className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                            // 空の枠は A の唯一の行き先。ここを暗いままにすると、
+                            // 「置ける先には光る」が片側だけ嘘になる。
+                            data-target-candidate={legalTargets.foundation.has(idx) || undefined}
+                            className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite} ${
+                              legalTargets.foundation.has(idx)
+                                ? 'ring-1 ring-ds-info motion-safe:hover:ring-2 focus:ring-2'
+                                : ''
+                            }`}
                           >
                             A
                           </button>

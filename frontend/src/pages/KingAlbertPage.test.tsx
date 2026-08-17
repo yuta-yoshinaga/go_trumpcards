@@ -198,6 +198,27 @@ describe('KingAlbertPage', () => {
     expect(document.querySelectorAll('[data-target-candidate]')).toHaveLength(8);
   });
 
+  // レビュー #5957: 空の組札は A を選んでも光っていなかった ── 「置ける先には付く」の
+  // 反対側の抜け。空の枠こそ A の唯一の行き先なので、ここが暗いと詰まって見える。
+  it('rings an empty foundation when an ace is selected', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue({
+      ...playingState,
+      reserve: [card('DIAMOND', 1), null, null, null, null, null, null],
+      foundation: [[card('SPADE', 1)], [card('CLOVER', 1)], [card('HEART', 1)], []],
+    });
+    renderWithProviders(<KingAlbertPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: '♦ A' }));
+    await waitFor(() => expect(screen.getByLabelText(/空の組札/)).toHaveAttribute('data-target-candidate'));
+    // 既に A が乗っている 3 つは 2 を待っているので、A では光らない。
+    for (const f of screen.getAllByLabelText(/組札 1枚/)) {
+      expect(f).not.toHaveAttribute('data-target-candidate');
+    }
+  });
+
   it('rings the foundation when the selected card is the one it wants', async () => {
     localStorage.clear();
     mockExec.mockReset();
