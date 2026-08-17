@@ -163,3 +163,54 @@ describe('ChineseTenPage', () => {
     expect(document.querySelectorAll('[data-hinted-layout]')).toHaveLength(0);
   });
 });
+
+// #5571: 手札も場札も aria-disabled だけで、なぜ押せないかは支援技術に
+// 一切伝わっていなかった。姉妹ゲームの Toepen は理由を title/aria-label で
+// 伝えている。
+describe('ChineseTenPage blocked reasons', () => {
+  const handButtons = () => screen.getAllByTestId('animated-card').map((c) => c.closest('button'));
+
+  it('says a table card is waiting for a card to be led', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 0 }));
+    renderWithProviders(<ChineseTenPage />);
+    await waitFor(() => expect(screen.getAllByTestId('animated-card').length).toBeGreaterThan(0));
+    const blocked = handButtons().filter((b) => b?.getAttribute('title') === '先に手札を1枚出してください');
+    expect(blocked.length).toBeGreaterThan(0);
+  });
+
+  // **選択中の手札は「相手の番」ではない。**手番ではあるので、そう言うと嘘になる。
+  it('says a hand card is waiting for the selection, not for the turn', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 1, pendingCard: card('SPADE', 1), selectableIndices: [1] }));
+    renderWithProviders(<ChineseTenPage />);
+    await waitFor(() => expect(screen.getAllByTestId('animated-card').length).toBeGreaterThan(0));
+    const titles = handButtons().map((b) => b?.getAttribute('title'));
+    expect(titles).toContain('先に取る札を選んでください');
+    expect(titles).not.toContain('相手の番です');
+  });
+
+  // 取れる札には理由を付けない。付けると「取れない」と読める。
+  it('leaves a takeable card unannotated', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 1, pendingCard: card('SPADE', 1), selectableIndices: [1] }));
+    renderWithProviders(<ChineseTenPage />);
+    await waitFor(() => expect(screen.getAllByTestId('animated-card').length).toBeGreaterThan(0));
+    const takeable = handButtons().filter((b) => b?.getAttribute('aria-disabled') === 'false');
+    expect(takeable.length).toBeGreaterThan(0);
+    for (const b of takeable) {
+      expect(b?.getAttribute('title')).toBeNull();
+    }
+  });
+
+  // 理由は読み上げにも乗ること。title だけではスクリーンリーダーに届かない
+  // 実装があるので、aria-label に札の名前と併記する。
+  it('carries the reason in the accessible name too', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 0 }));
+    renderWithProviders(<ChineseTenPage />);
+    await waitFor(() => expect(screen.getAllByTestId('animated-card').length).toBeGreaterThan(0));
+    const labelled = handButtons().filter((b) =>
+      b?.getAttribute('aria-label')?.includes('先に手札を1枚出してください'),
+    );
+    expect(labelled.length).toBeGreaterThan(0);
+    // 札の名前が消えていないこと。理由だけになると、どの札の話か分からない。
+    expect(labelled[0]?.getAttribute('aria-label')).toMatch(/[♠♥♦♣]/);
+  });
+});
