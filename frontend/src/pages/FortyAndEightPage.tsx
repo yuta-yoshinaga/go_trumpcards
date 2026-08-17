@@ -315,7 +315,7 @@ function FortyAndEightPageContent() {
                   // 1 スートに組札が 2 つあり、どちらに落ちるかは domain の
                   // findFoundation が決める。リングの色だけだと、見えない
                   // プレイヤーには手掛かりが残らない (#5600)。
-                  const eligibleSuffix = isEligible ? `, ${t('foundationEligibleSuffix')}` : '';
+                  const eligibleSuffix = isEligible ? t('foundationEligibleSuffix') : '';
                   return (
                     <div key={`f-${idx.toString()}`} className="text-center">
                       <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>

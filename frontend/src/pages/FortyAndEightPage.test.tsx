@@ -405,7 +405,7 @@ describe('FortyAndEightPage', () => {
     await waitFor(() => expect(container.querySelectorAll('[data-eligible-foundation="true"]')).toHaveLength(1));
 
     const highlighted = container.querySelector('[data-eligible-foundation="true"]') as HTMLElement;
-    expect(highlighted.getAttribute('aria-label')).toContain('ここに置けます');
+    expect(highlighted.getAttribute('aria-label')).toBe('♠ 組札 1 1枚、ここに置けます');
     // 置けない 7 つには付かない ── リングと読み上げが同じ集合を指す。
     expect(screen.getAllByLabelText(/ここに置けます/)).toHaveLength(1);
   });
