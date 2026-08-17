@@ -479,11 +479,21 @@ function FortyThievesPageContent() {
             </div>
 
             {/* Hint display */}
-            <div data-tutorial="ft-hint-display">
+            <div data-tutorial="ft-hint-display" data-testid="ft-hint-display">
               {hint && (
                 <div className="text-ds-warning text-sm mb-2">
-                  {t('hintAvailable')}: {formatHintZone(t, hint.fromZone, hint.fromCol)} →{' '}
-                  {formatHintZone(t, hint.toZone, hint.toCol)}
+                  {/* 引くヒントは列を持たない (#5525)。移動の体裁に落とすと
+                      「タブロー列-1」が出る。 */}
+                  {hint.fromZone === 'stock' ? (
+                    <>
+                      {t('hintAvailable')}: {t('frontendHint.fortythievesDraw')}
+                    </>
+                  ) : (
+                    <>
+                      {t('hintAvailable')}: {formatHintZone(t, hint.fromZone, hint.fromCol)} →{' '}
+                      {formatHintZone(t, hint.toZone, hint.toCol)}
+                    </>
+                  )}
                 </div>
               )}
               {/* Visually hidden so the announcement adds no layout, but the hinted
@@ -492,7 +502,11 @@ function FortyThievesPageContent() {
                   reliably announces the first hint — some readers miss a live region
                   that is inserted already-populated. */}
               <div className="sr-only" role="status" aria-live="polite" data-testid="ft-hint-announcement">
-                {hint ? t('hintAnnouncement', { card: hintCardName, dest: hintDest }) : ''}
+                {hint
+                  ? hint.fromZone === 'stock'
+                    ? t('frontendHint.fortythievesDraw')
+                    : t('hintAnnouncement', { card: hintCardName, dest: hintDest })
+                  : ''}
               </div>
             </div>
             <div className="flex justify-center">
