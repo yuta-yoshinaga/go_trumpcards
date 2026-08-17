@@ -54,6 +54,17 @@ func (p *PinochleWebPresenter) buildBase(g interfaces.PinochleGame, lastErr erro
 	resObj.WinnerTeam = g.GetWinnerTeam()
 	resObj.LeadPlayerIdx = g.GetLeadPlayerIdx()
 
+	// メルド早見表。盤面ではなく固定の参照表なので毎回同じ内容だが、
+	// フロントに数値を持たせないためにサーバから送る (#5519)。
+	table := domain.PinochleMeldTable()
+	resObj.MeldTable = make([]*controller.PinochleWebOutputMeldTableEntry, 0, len(table))
+	for _, e := range table {
+		resObj.MeldTable = append(resObj.MeldTable, &controller.PinochleWebOutputMeldTableEntry{
+			Type:   int(e.Type),
+			Points: e.Points,
+		})
+	}
+
 	// 設定
 	cfg := g.GetConfig()
 	resObj.Config = controller.PinochleWebOutputConfig{

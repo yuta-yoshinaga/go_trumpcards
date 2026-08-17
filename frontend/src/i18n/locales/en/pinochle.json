@@ -78,5 +78,6 @@
   "bidAmountLabel": "Bid amount (min {{min}})",
   "bidTooLow": "Bid must be at least {{min}}.",
   "hintRequested": "Hint available",
-  "noHint": "No hint available"
+  "noHint": "No hint available",
+  "meldTableTitle": "Meld reference"
 }

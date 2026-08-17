@@ -222,6 +222,11 @@ function PinochlePageContent() {
   const humanIdx = humanPlayer ? state.players.indexOf(humanPlayer) : -1;
   const isBidTurn = phase === PinochlePhase.BID && state.players?.[state.bidPlayerIdx]?.isHuman;
   const isTrumpTurn = phase === PinochlePhase.TRUMP && state.players?.[state.currentPlayerIdx]?.isHuman;
+  // 早見表はビッド〜メルド確認の間だけ。プレイ中は盤面を見る場面なので畳む。
+  const meldTable =
+    phase === PinochlePhase.BID || phase === PinochlePhase.TRUMP || phase === PinochlePhase.MELD
+      ? state.meldTable
+      : undefined;
   const isPlayTurn = phase === PinochlePhase.PLAY && state.players?.[state.currentPlayerIdx]?.isHuman;
   // Bids must strictly beat the current highest (or start at 20). Validate on the
   // client so an empty (NaN) or too-low value can't be submitted for a server error.
@@ -343,6 +348,24 @@ function PinochlePageContent() {
                   })}
                 </div>
               </div>
+            )}
+
+            {/* Meld reference: ビッド額を決める段階で「自分の手にいくら分の目が
+                あるか」を見る先がどこにも無かった (#5519)。点数はサーバが送る
+                domain の値そのもので、ここには書き写さない。 */}
+            {meldTable && (
+              <details data-testid="pn-meld-table" className="mb-3 rounded bg-black/30">
+                <summary className="cursor-pointer select-none px-3 py-2 text-ds-text-primary font-bold text-sm">
+                  {t('meldTableTitle')}
+                </summary>
+                <ul className="px-3 pb-2 text-ds-text-muted text-sm grid grid-cols-2 sm:grid-cols-3 gap-x-3">
+                  {meldTable.map((e) => (
+                    <li key={e.type}>
+                      {t(`meldTypes.${e.type}`)} {e.points}
+                    </li>
+                  ))}
+                </ul>
+              </details>
             )}
 
             {/* Melds */}

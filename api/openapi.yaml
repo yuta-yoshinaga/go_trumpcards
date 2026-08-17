@@ -40242,6 +40242,18 @@ components:
           type: array
           items:
             type: integer
+        meldTable:
+          type: array
+          description: >-
+            Points for each of the 15 meld types, cheapest first. Sent by the
+            server so the UI never carries a second copy of the scoring values.
+          items:
+            type: object
+            properties:
+              type:
+                type: integer
+              points:
+                type: integer
         message:
           type: string
         messageCode:
