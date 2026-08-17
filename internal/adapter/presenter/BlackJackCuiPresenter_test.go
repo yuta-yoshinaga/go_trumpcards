@@ -9,8 +9,10 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // setupBJCuiTest creates a BlackJack game with the given chip values, calls Reset, and returns the game + dealer.
@@ -1040,6 +1042,25 @@ func TestBlackJackCuiPresenter_PayoutTable(t *testing.T) {
 		assert.Contains(t, out, "5枚で21 (3:2)")
 		assert.Contains(t, out, "7-7-7")
 		assert.Contains(t, out, "プレイヤー21は常に勝利")
+		// #5550: 両者ナチュラルBJでもプレイヤーが勝つ。Web の配当表は書いているのに
+		// CUI 側の文言にだけ抜けていた。
+		assert.Contains(t, out, i18n.T("spanish21.payoutRef.blackjack"))
+		assert.Contains(t, i18n.T("spanish21.payoutRef.blackjack"), "両者BJ")
+	})
+
+	// **文言と実装が一致していること。**配当表がルールを謳っていても、
+	// バリアントのフラグが false なら嘘の説明になる。
+	t.Run("the blackjack line matches the variant flag", func(t *testing.T) {
+		bj := domain.NewSpanish21BlackJack()
+		bj.Reset()
+		v := bj.GetVariant()
+		require.NotNil(t, v)
+		assert.True(t, v.PlayerBJBeatsDealerBJ, "spanish21 は両者BJでプレイヤー勝ち")
+
+		// 標準ブラックジャックは謳っていないこと (負のコントロール)。
+		std, _ := setupBJCuiTest(1000, 1000)
+		std.Reset()
+		assert.NotContains(t, bjp.Output(std, nil), "両者BJ")
 	})
 
 	t.Run("not listed once the hand is dealt", func(t *testing.T) {
