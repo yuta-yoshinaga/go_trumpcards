@@ -423,12 +423,21 @@ func TestBlackJackSwitch_PlayerKeep_WrongPhase(t *testing.T) {
 func TestBlackJackSwitch_SwitchPreviewMatchesTheActualSwitch(t *testing.T) {
 	bs := NewDefaultBlackJackSwitch()
 	bs.Reset()
-	require.NoError(t, bs.PlayerBet(10))
 
-	// スイッチフェーズに入るまで進める (Reset→Bet で 2 枚ずつ配られる)。
-	if bs.GetPhase() != BJSwitchPhaseSwitch {
-		t.Skipf("deal did not reach the switch phase (phase=%d)", bs.GetPhase())
-	}
+	// **配りに頼らない。**Reset→PlayerBet はシャッフルした実デッキを配るので、
+	// ディーラーがナチュラルを引いた回 (数 %) は即終局してスイッチフェーズに
+	// 入らない。そこを skip で逃がすと、その回はこのテストが何も見なくなる。
+	first0 := NewCard(CardDesignSpade, 10, true)
+	first1 := NewCard(CardDesignHeart, 6, true) // 16
+	second0 := NewCard(CardDesignClover, 9, true)
+	second1 := NewCard(CardDesignDiamond, 5, true) // 14 → 交換すると 15 と 15
+	handA, handB := NewBlackJackHand(), NewBlackJackHand()
+	handA.AddCard(first0)
+	handA.AddCard(first1)
+	handB.AddCard(second0)
+	handB.AddCard(second1)
+	bs.SetHands([]*BlackJackHand{handA, handB})
+	bs.SetPhase(BJSwitchPhaseSwitch)
 
 	first, second, ok := bs.SwitchPreviewScores()
 	require.True(t, ok, "two dealt hands can always be previewed")
