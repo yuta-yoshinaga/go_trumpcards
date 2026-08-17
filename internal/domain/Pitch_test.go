@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
@@ -770,4 +771,70 @@ func pitchRoundScores(p *domain.Pitch) []int {
 		out[i] = p.GetPlayer(i).GetRoundScore()
 	}
 	return out
+}
+
+// レビュー (#5942) の指摘: 内訳を ScoreRound でしか作らないと、**画面に出る時点では
+// まだ前のラウンドの値**（初回はゼロ値＝席0が全部取った形）が残る。
+// 実際の順序 ── 最後のトリックが解決してラウンド終了フェーズになり、そこで表示される ──
+// を通して確かめる。
+func TestPitch_RoundBreakdownIsReadyWhenTheRoundEndScreenAppears(t *testing.T) {
+	p := newTestPitch()
+	p.Reset()
+
+	// 配り直後 (まだ何も争われていない) は誰も取っていないこと。
+	fresh := p.GetRoundBreakdown()
+	assert.Equal(t, domain.PitchNoScorer, fresh.High, "a fresh game has no High winner")
+	assert.Equal(t, domain.PitchNoScorer, fresh.Game, "a fresh game has no Game winner")
+
+	// 最後のトリックまで進める。ここでフェーズが RoundEnd になり、画面に出る。
+	// ResolveTrick は「4 枚出そろった (TrickEnd)」状態からしか動かない。
+	p.SetPhase(domain.PitchPhaseTrickEnd)
+	p.SetTrumpSuit(domain.CardDesignHeart)
+	p.SetTrickNumber(domain.PitchTotalTricks)
+	p.SetLeadPlayerIdx(0)
+	p.SetCurrentPlayerIdx(0)
+	p.GetPlayer(0).AddTrick([]*domain.Card{
+		newPitchCard(domain.CardDesignHeart, 1),
+		newPitchCard(domain.CardDesignHeart, 2),
+	})
+	p.SetCurrentTrick([]*domain.TrickCard{
+		{PlayerIdx: 0, Card: newPitchCard(domain.CardDesignHeart, 11)},
+		{PlayerIdx: 1, Card: newPitchCard(domain.CardDesignSpade, 3)},
+		{PlayerIdx: 2, Card: newPitchCard(domain.CardDesignSpade, 4)},
+		{PlayerIdx: 3, Card: newPitchCard(domain.CardDesignSpade, 5)},
+	})
+	p.ResolveTrick()
+
+	require.Equal(t, domain.PitchPhaseRoundEnd, p.GetPhase(), "the last trick ends the round")
+	bd := p.GetRoundBreakdown()
+	// **ScoreRound を呼ぶ前に**、この画面の内訳が確定していること。
+	assert.Equal(t, 0, bd.High, "P0 holds the ace of trumps")
+	assert.Equal(t, 0, bd.Low, "P0 holds the two of trumps")
+	assert.Equal(t, 0, bd.Jack, "P0 took the jack of trumps in the last trick")
+
+	// ScoreRound を通しても同じ答え。二度数えて食い違わないこと。
+	after := bd
+	p.ScoreRound()
+	assert.Equal(t, after, p.GetRoundBreakdown())
+}
+
+// 得点の確定は棋譜を 1 度だけ書くこと。内訳を 2 箇所で作るようにしたので、
+// ログまで二重にならないことを見る。
+func TestPitch_ScoreRoundLogsEachCategoryOnce(t *testing.T) {
+	p := newTestPitch()
+	p.Reset()
+	p.SetTrumpSuit(domain.CardDesignHeart)
+	p.GetPlayer(0).AddTrick([]*domain.Card{
+		newPitchCard(domain.CardDesignHeart, 1),
+		newPitchCard(domain.CardDesignHeart, 11),
+	})
+	p.SetPhase(domain.PitchPhaseRoundEnd)
+	p.ScoreRound()
+
+	counts := map[string]int{}
+	for _, e := range p.GetActionLog() {
+		counts[e.ActionType]++
+	}
+	assert.Equal(t, 1, counts["score_high"])
+	assert.Equal(t, 1, counts["score_jack"])
 }
