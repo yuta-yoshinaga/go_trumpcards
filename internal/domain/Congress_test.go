@@ -4,6 +4,7 @@ package domain
 
 import (
 	"encoding/json"
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -747,4 +748,120 @@ func TestCongress_FullGameDrive(t *testing.T) {
 			}
 		}
 	}
+}
+
+// #5562: 空き山の規則違反は英語の生文で返っていたので、日本語ロケールの CUI が
+// 英語のまま表示していた。**プレイヤーが踏める手はすべて**コードを名乗ること
+// (issue は 1 件だけ挙げているが、同じ経路の他の拒否も同じように英語で出る)。
+func TestCongress_PlayerFacingErrorsCarryAMessageCode(t *testing.T) {
+	setup := func(fn func(c *Congress)) *Congress {
+		c := newTestCongress()
+		clearCongressBoard(c)
+		fillCongressPiles(c)
+		fn(c)
+		return c
+	}
+
+	cases := []struct {
+		name string
+		code string
+		act  func() error
+	}{
+		{"stock exhausted", "congress.errStockEmptyNoRedeal", func() error {
+			return setup(func(c *Congress) { c.stock = nil }).Draw()
+		}},
+		{"tableau pile empty", "congress.errPileEmpty", func() error {
+			c := setup(func(c *Congress) { c.tableau[0] = nil })
+			return c.MoveTableauToFoundation(0)
+		}},
+		{"no foundation for that card", "congress.errNoFoundationForCard", func() error {
+			c := setup(func(c *Congress) { c.tableau[0] = []*Card{NewCard(CardDesignSpade, 9, true)} })
+			return c.MoveTableauToFoundation(0)
+		}},
+		{"same pile", "congress.errSamePile", func() error {
+			return setup(func(c *Congress) {}).MoveTableauToTableau(1, 1)
+		}},
+		{"source pile empty", "congress.errPileEmpty", func() error {
+			c := setup(func(c *Congress) { c.tableau[0] = nil })
+			return c.MoveTableauToTableau(0, 1)
+		}},
+		{"empty pile from the tableau", "congress.errEmptyPileNeedsStockOrWaste", func() error {
+			c := setup(func(c *Congress) { c.tableau[1] = nil })
+			return c.MoveTableauToTableau(0, 1)
+		}},
+		{"not stackable", "congress.errCannotPlaceOnPile", func() error {
+			c := setup(func(c *Congress) {
+				c.tableau[0] = []*Card{NewCard(CardDesignSpade, 2, true)}
+				c.tableau[1] = []*Card{NewCard(CardDesignHeart, 7, true)}
+			})
+			return c.MoveTableauToTableau(0, 1)
+		}},
+		{"waste empty for the foundation", "congress.errWasteEmpty", func() error {
+			return setup(func(c *Congress) { c.waste = nil }).MoveWasteToFoundation()
+		}},
+		{"waste card has no foundation", "congress.errNoFoundationForCard", func() error {
+			c := setup(func(c *Congress) { c.waste = []*Card{NewCard(CardDesignSpade, 9, true)} })
+			return c.MoveWasteToFoundation()
+		}},
+		{"waste empty for the tableau", "congress.errWasteEmpty", func() error {
+			return setup(func(c *Congress) { c.waste = nil }).MoveWasteToTableau(0)
+		}},
+		{"waste card not stackable", "congress.errCannotPlaceOnPile", func() error {
+			c := setup(func(c *Congress) {
+				c.waste = []*Card{NewCard(CardDesignSpade, 2, true)}
+				c.tableau[0] = []*Card{NewCard(CardDesignHeart, 7, true)}
+			})
+			return c.MoveWasteToTableau(0)
+		}},
+		{"stock empty", "congress.errStockEmpty", func() error {
+			c := setup(func(c *Congress) {
+				c.stock = nil
+				c.tableau[0] = nil
+			})
+			return c.MoveStockToTableau(0)
+		}},
+		{"stock may only fill a gap", "congress.errStockFillsGapsOnly", func() error {
+			c := setup(func(c *Congress) { c.stock = []*Card{NewCard(CardDesignHeart, 3, true)} })
+			return c.MoveStockToTableau(0)
+		}},
+		{"nothing to auto-complete", "congress.errNothingToAutoComplete", func() error {
+			return setup(func(c *Congress) {}).AutoComplete()
+		}},
+		{"nothing to undo", "congress.errNothingToUndo", func() error {
+			c := setup(func(c *Congress) {})
+			c.history = nil
+			return c.Undo()
+		}},
+		{"not playing", "congress.errNotPlaying", func() error {
+			c := setup(func(c *Congress) { c.phase = CongressPhaseGameOver })
+			return c.Draw()
+		}},
+		{"invalid pile", "congress.errInvalidPile", func() error {
+			return setup(func(c *Congress) {}).MoveTableauToFoundation(99)
+		}},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := tc.act()
+			require.Error(t, err)
+			code, _ := ErrorMessageCode(err)
+			assert.Equal(t, tc.code, code)
+			// センチネルは errors.Is で見分けられること。コードだけ足して
+			// 種別を失うと、呼び出し側の分岐が黙って死ぬ。
+			assert.True(t, errors.Is(err, ErrInvalidPlay) || errors.Is(err, ErrWrongPhase) ||
+				errors.Is(err, ErrDeckExhausted), "unexpected sentinel: %v", err)
+		})
+	}
+}
+
+// AutoComplete がプレイ中以外で拒む経路も同じコードを名乗ること
+// (requirePlaying を通らない独自チェックなので、上の表とは別に見る)。
+func TestCongress_AutoCompleteOutsidePlayingCarriesACode(t *testing.T) {
+	c := newTestCongress()
+	c.phase = CongressPhaseGameOver
+	err := c.AutoComplete()
+	require.Error(t, err)
+	code, _ := ErrorMessageCode(err)
+	assert.Equal(t, "congress.errNotPlaying", code)
 }

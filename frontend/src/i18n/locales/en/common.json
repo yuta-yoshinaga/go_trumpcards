@@ -2203,7 +2203,20 @@
     "bisley.errNothingToUndo": "There is nothing to undo",
     "bisley.errBadColumn": "Invalid column index",
     "bisley.errColumnEmpty": "That column is empty",
-    "bisley.errNotPlaying": "The game is not in play"
+    "bisley.errNotPlaying": "The game is not in play",
+    "congress.errStockEmptyNoRedeal": "The stock is empty and this game has no redeal",
+    "congress.errPileEmpty": "Pile {{pile}} is empty",
+    "congress.errNoFoundationForCard": "No foundation accepts that card",
+    "congress.errSamePile": "The source and the destination are the same pile",
+    "congress.errEmptyPileNeedsStockOrWaste": "An empty pile cannot be filled from the tableau (only from the stock or the waste)",
+    "congress.errCannotPlaceOnPile": "That card cannot go on that pile (build down in the same suit)",
+    "congress.errWasteEmpty": "The waste is empty",
+    "congress.errStockEmpty": "The stock is empty",
+    "congress.errStockFillsGapsOnly": "The stock may only fill an empty pile",
+    "congress.errNothingToAutoComplete": "No card can be auto-completed",
+    "congress.errNothingToUndo": "There is nothing to undo",
+    "congress.errNotPlaying": "The game is not in the playing phase",
+    "congress.errInvalidPile": "Invalid pile number: {{pile}}"
   },
   "manual": {
     "ariaLabel": "Game Manual",
