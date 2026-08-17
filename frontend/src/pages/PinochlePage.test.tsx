@@ -46,6 +46,12 @@ const bidPhaseState: PinochleResponse = {
   winnerTeam: -1,
   leadPlayerIdx: -1,
   playerMelds: [[], [], [], []],
+  meldTable: [
+    { type: 0, points: 10 },
+    { type: 1, points: 20 },
+    { type: 2, points: 40 },
+    { type: 14, points: 1500 },
+  ],
   message: '',
   config: { cpuDifficulty: 1, pointLimit: 1500 },
 };
@@ -578,5 +584,37 @@ describe('PinochlePage', () => {
     mockExec.mockResolvedValue({ ...bidPhaseState, bidPlayerIdx: 2 });
     renderWithProviders(<PinochlePage />);
     await waitFor(() => expect(document.querySelectorAll('[data-on-turn]')).toHaveLength(1));
+  });
+});
+
+// #5519: 15種類のメルドが何点なのかを対局中に見る場所がどちらのUIにも無く、
+// ビッド額を決める材料が実質的に無かった。
+describe('PinochlePage meld reference', () => {
+  it('lists the melds and the points the server sent, while bidding', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<PinochlePage />);
+    const panel = await screen.findByTestId('pn-meld-table');
+    // **点数はサーバが送った値をそのまま出す。**画面側に書き写すと、
+    // 加点を直したときに表だけが古いまま残る。
+    expect(panel).toHaveTextContent('ディクス');
+    expect(panel).toHaveTextContent('10');
+    expect(panel).toHaveTextContent('ダブルラン');
+    expect(panel).toHaveTextContent('1500');
+  });
+
+  // **プレイ中は出さない。**盤面を見る場面で15行の参照表は邪魔になる。
+  it('is gone once the cards are being played', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(screen.getByText(/ラウンド/)).toBeInTheDocument());
+    expect(screen.queryByTestId('pn-meld-table')).not.toBeInTheDocument();
+  });
+
+  // 古いサーバや未対応のレスポンスでも落ちないこと。
+  it('renders nothing when the server sent no table', async () => {
+    mockExec.mockResolvedValue({ ...bidPhaseState, meldTable: undefined });
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(screen.getByText(/ラウンド/)).toBeInTheDocument());
+    expect(screen.queryByTestId('pn-meld-table')).not.toBeInTheDocument();
   });
 });

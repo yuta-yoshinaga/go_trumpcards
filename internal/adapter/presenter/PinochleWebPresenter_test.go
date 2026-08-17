@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -207,4 +208,21 @@ func TestPinochleWebPresenterHintOutputMarksTheRequest(t *testing.T) {
 	none.ExpectedCalls = removeMockCall(none.ExpectedCalls, "GetHint")
 	none.On("GetHint").Return((*domain.PinochleHint)(nil))
 	assert.Contains(t, new(presenter.PinochleWebPresenter).HintOutput(none), "pinochle.noHint")
+}
+
+// #5519: 早見表の点数は domain の値をそのまま送る。フロントに書き写すと
+// 加点を直したときに表だけが古いまま残る。
+func TestPinochleWebPresenterOutputCarriesTheMeldTable(t *testing.T) {
+	p := new(presenter.PinochleWebPresenter)
+	m, _ := setupPinochleWebMockWithPlayers()
+
+	var resObj controller.PinochleWebOutput
+	require.NoError(t, json.Unmarshal([]byte(p.Output(m, nil)), &resObj))
+
+	table := domain.PinochleMeldTable()
+	require.Len(t, resObj.MeldTable, len(table))
+	for i, e := range table {
+		assert.Equal(t, int(e.Type), resObj.MeldTable[i].Type, "entry %d type", i)
+		assert.Equal(t, e.Points, resObj.MeldTable[i].Points, "entry %d points", i)
+	}
 }

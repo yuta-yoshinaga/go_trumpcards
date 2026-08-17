@@ -95,6 +95,32 @@ var pinochleMeldPoints = map[PinochleMeldType]int{
 	PinochleMeldDoubleRun:          1500,
 }
 
+// PinochleMeldTableEntry は早見表の1行。メルドの種類とその点数。
+type PinochleMeldTableEntry struct {
+	Type   PinochleMeldType
+	Points int
+}
+
+// PinochleMeldTable はメルド15種類の点数一覧を安い順で返す。同点のときは
+// 種類の定義順。
+//
+// **表示側が点数を書き写さないためにある。**書き写した表は pinochleMeldPoints
+// を1つ直した瞬間に黙って食い違い、プレイヤーはビッドの見積もりを誤った表で
+// 立てることになる (#5519)。
+func PinochleMeldTable() []PinochleMeldTableEntry {
+	table := make([]PinochleMeldTableEntry, 0, len(pinochleMeldPoints))
+	for t, p := range pinochleMeldPoints {
+		table = append(table, PinochleMeldTableEntry{Type: t, Points: p})
+	}
+	sort.Slice(table, func(i, j int) bool {
+		if table[i].Points != table[j].Points {
+			return table[i].Points < table[j].Points
+		}
+		return table[i].Type < table[j].Type
+	})
+	return table
+}
+
 // PinochleHint ヒント情報
 type PinochleHint struct {
 	CardIndex *int   // 推奨カードインデックス (プレイ時)

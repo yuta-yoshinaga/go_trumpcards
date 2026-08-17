@@ -73,8 +73,18 @@ type PinochleWebOutput struct {
 	PlayerMelds      [4][]*PinochleWebOutputMeld `json:"playerMelds"`
 	ValidPlayIndices []int                       `json:"validPlayIndices,omitempty"`
 	Hint             *PinochleWebOutputHint      `json:"hint,omitempty"`
+	// MeldTable はメルド15種類の点数一覧 (安い順)。ビッド額を決めるときの
+	// 早見表として使う。**サーバが domain の値を送る。**フロントに書き写すと、
+	// 加点を直したときに表だけが古いまま残る (#5519)。
+	MeldTable []*PinochleWebOutputMeldTableEntry `json:"meldTable"`
 	WebOutputBase
 	Config PinochleWebOutputConfig `json:"config"`
+}
+
+// PinochleWebOutputMeldTableEntry メルド早見表の1行
+type PinochleWebOutputMeldTableEntry struct {
+	Type   int `json:"type"`
+	Points int `json:"points"`
 }
 
 // PinochleWebOutputConfig ピノクル設定アウトプット

@@ -4,9 +4,12 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -366,5 +369,74 @@ func TestPinochleCuiPresenter_English(t *testing.T) {
 		assert.Contains(t, result, "Dealer: You")
 		assert.Contains(t, result, "Team 0: 0pt")
 		assert.Contains(t, result, "to play")
+	})
+}
+
+// #5519: ビッドを決める段階で、15種類のメルドが何点なのかを見る場所が
+// どちらのUIにも無かった。
+func TestPinochleCuiPresenter_MeldTable(t *testing.T) {
+	p := new(presenter.PinochleCuiPresenter)
+
+	outputInPhase := func(phase domain.PinochlePhase) string {
+		m, _ := setupPinochleCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(phase)
+		return p.Output(m, nil)
+	}
+
+	// 出力から早見表の部分だけを取り出し、"名前 点数" の並びに割る。
+	entriesOf := func(out string) []string {
+		header := i18n.T("pinochle.meldTableHeader")
+		idx := strings.Index(out, header)
+		if idx < 0 {
+			return nil
+		}
+		// ヘッダの後ろから、"名前 点数" の形で読める行だけを拾う。
+		var entries []string
+		for _, line := range strings.Split(out[idx+len(header):], "\n") {
+			lineEntries := strings.Split(strings.TrimSpace(line), " / ")
+			for _, e := range lineEntries {
+				e = strings.TrimSpace(e)
+				fields := strings.Fields(e)
+				if len(fields) < 2 {
+					return entries
+				}
+				if _, err := strconv.Atoi(fields[len(fields)-1]); err != nil {
+					return entries
+				}
+				entries = append(entries, e)
+			}
+		}
+		return entries
+	}
+
+	t.Run("lists every meld with the points the domain scores it at", func(t *testing.T) {
+		entries := entriesOf(outputInPhase(domain.PinochlePhaseBid))
+		table := domain.PinochleMeldTable()
+		require.Len(t, entries, len(table))
+
+		for i, e := range table {
+			// **点数は domain の表から読む。**ここで数字を書くと、
+			// 表示と加点が食い違ってもテストは通ってしまう。
+			assert.True(t, strings.HasSuffix(entries[i], " "+strconv.Itoa(e.Points)),
+				"entry %d = %q, want it to end with %d points", i, entries[i], e.Points)
+			name := strings.TrimSuffix(entries[i], " "+strconv.Itoa(e.Points))
+			// 名前が訳されていること。未訳だとキーか "meld#3" がそのまま出る。
+			assert.NotContains(t, name, "meld#")
+			assert.NotContains(t, name, "pinochle.")
+			assert.NotEmpty(t, name)
+		}
+		// 並びは安い順。1行目がディックス、最後がダブルラン。
+		assert.Equal(t, "ディクス 10", entries[0])
+		assert.Equal(t, "ダブルラン 1500", entries[len(entries)-1])
+	})
+
+	t.Run("is available while choosing melds too", func(t *testing.T) {
+		assert.Contains(t, outputInPhase(domain.PinochlePhaseMeld), i18n.T("pinochle.meldTableHeader"))
+	})
+
+	// **プレイ中は出さない。**毎トリック15行流れると盤面が読めなくなる。
+	t.Run("is not printed once the cards are being played", func(t *testing.T) {
+		assert.NotContains(t, outputInPhase(domain.PinochlePhasePlay), i18n.T("pinochle.meldTableHeader"))
 	})
 }

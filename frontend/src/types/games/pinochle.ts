@@ -16,6 +16,17 @@ export interface PinochleMeldData {
   cards: Card[];
 }
 
+/**
+ * One row of the meld reference table: a meld type and what it scores.
+ *
+ * The server sends it with every state so the UI never carries a second copy
+ * of the scoring values (#5519).
+ */
+export interface PinochleMeldTableEntry {
+  type: number;
+  points: number;
+}
+
 /** Pinochle trick card data. */
 export interface PinochleTrickCard {
   playerIdx: number;
@@ -55,6 +66,7 @@ export interface PinochleResponse extends BaseGameResponse {
   leadPlayerIdx: number;
   playerMelds: PinochleMeldData[][];
   validPlayIndices?: number[];
+  meldTable?: PinochleMeldTableEntry[];
   hint?: {
     cardIndex?: number;
     bidAmount?: number;
