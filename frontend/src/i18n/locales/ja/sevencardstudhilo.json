@@ -87,5 +87,17 @@
     "sevencardstudCallHigh": "高い札がある。コールして様子を見よう",
     "sevencardstudFoldWeak": "高い札もペアも無い。降りよう",
     "sevencardstudCheckLow": "8以下が5枚。払う額は無いので、ただで次の札を見よう"
+  },
+  "style": {
+    "tag": "TAG",
+    "tagTooltip": "Tight Aggressive：参加少なめだが入ったら強気",
+    "lag": "LAG",
+    "lagTooltip": "Loose Aggressive：参加多くかつ攻め志向",
+    "tp": "TP",
+    "tpTooltip": "Tight Passive：参加少なめでコール中心",
+    "lp": "LP",
+    "lpTooltip": "Loose Passive：参加多めだがコール中心",
+    "balanced": "BAL",
+    "balancedTooltip": "バランス型のスタイル"
   }
 }

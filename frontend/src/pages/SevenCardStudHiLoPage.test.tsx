@@ -146,3 +146,25 @@ describe('SevenCardStudHiLoPage', () => {
     expect(screen.queryByTestId('studhilo-split')).not.toBeInTheDocument();
   });
 });
+
+// #5522: Hi-Lo はページを共有するが i18n の名前空間は別。style.* を
+// sevencardstudhilo.json にも入れないと、生キーが画面に出る。
+describe('SevenCardStudHiLoPage HUD stats', () => {
+  it('shows the CPU HUD with translated style names', async () => {
+    const cpu = {
+      ...seat(1, false),
+      totalHands: 20,
+      vpip: 42,
+      pfr: 8,
+      threeBet: 3,
+      af: '2.5',
+    } as unknown as SevenCardStudPlayerData;
+    mockExec.mockResolvedValue(makeState({ players: [seat(0, true), cpu] }));
+    renderWithProviders(<SevenCardStudHiLoPage />);
+    const hud = await screen.findByTestId('hud-stats');
+    expect(hud).toHaveTextContent('42%');
+    const style = screen.getByTestId('hud-overall-style');
+    expect(style).toHaveTextContent('LP');
+    expect(style.textContent).not.toContain('style.');
+  });
+});

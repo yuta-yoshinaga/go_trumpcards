@@ -14,6 +14,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { HudStats } from '../components/HudStats';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
@@ -329,6 +330,12 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
                   <div className="text-ds-text-primary text-sm mb-1">
                     CPU {p.id}
                     <span className="ml-2 text-xs text-ds-text-muted">{p.playStyleName}</span>
+                    {/* サーバは VPIP/PFR/3Bet/AF を毎回返し CUI も毎ターン出しているのに、
+                        Web だけ出していなかった (#5522)。0 ハンドのうちは全部 0% で
+                        情報にならないので他のポーカーページと同じ条件で出す。 */}
+                    {p.totalHands > 0 && (
+                      <HudStats vpip={p.vpip} pfr={p.pfr} threeBet={p.threeBet} af={p.af} namespace={gameKey} />
+                    )}
                     <span className="ml-2 text-xs">
                       {tc('betting.chips')} {p.chips}
                     </span>
