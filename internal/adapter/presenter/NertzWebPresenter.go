@@ -98,6 +98,7 @@ func (p *NertzWebPresenter) buildBase(g interfaces.NertzGame) *controller.NertzW
 		CpuTickMoves:  cfg.ResolvedCpuTickMoves(),
 		Players:       make([]*controller.NertzWebPlayer, 0),
 		Foundations:   make([]*controller.NertzWebFoundation, 0),
+		FoundationMax: domain.NertzFoundationMax,
 	}
 
 	for _, pl := range g.GetPlayers() {

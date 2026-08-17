@@ -241,3 +241,16 @@ func TestNertzWebPresenter_ActionLogOutput(t *testing.T) {
 		assert.NotEmpty(t, new(NertzWebPresenter).ActionLogOutput(g))
 	})
 }
+
+// #5578: 組札の上限はドメインの定数から渡すこと。画面に 13 を焼き込むと、
+// 定数を変えたとき Web だけが嘘になる (CUI は前から定数を使っている)。
+func TestNertzWebPresenter_ShipsTheFoundationMax(t *testing.T) {
+	g := domain.NewDefaultNertz()
+	g.Reset()
+
+	var out controller.NertzWebOutput
+	require.NoError(t, json.Unmarshal([]byte(new(NertzWebPresenter).Output(g, nil)), &out))
+	assert.Equal(t, domain.NertzFoundationMax, out.FoundationMax)
+	// ゼロ値と区別が付かない検査にしない。
+	assert.NotZero(t, out.FoundationMax)
+}
