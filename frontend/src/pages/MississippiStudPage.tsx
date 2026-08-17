@@ -206,7 +206,20 @@ function MississippiStudPageContent() {
             <div className="text-ds-warning font-bold text-center mb-1">
               <span aria-hidden="true">🟡</span> {t('player')}
               {isEndPhase && (
-                <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.handRank] ?? 'handRank.0')})</span>
+                <span className="ml-2 text-sm">
+                  ({t(HAND_RANK_KEYS[state.handRank] ?? 'handRank.0')}
+                  {/* **配当がどの倍率から来たのかを説明していなかった** (#5591)。
+                      サーバは既に送っているのに、画面が読んでいなかった。
+                      プッシュ (-1) とロス (0) は倍率でないので、数字を出すと
+                      「x-1」「x0」という存在しないオッズに読める。 */}
+                  {state.payoutMultiplier > 0 && (
+                    <span data-testid="ms-payout-multiplier">
+                      {', '}
+                      {t('payoutMultiplier', { multiplier: state.payoutMultiplier })}
+                    </span>
+                  )}
+                  )
+                </span>
               )}
             </div>
             <div className="flex justify-center gap-2 flex-wrap">

@@ -253,3 +253,38 @@ func TestMississippiStudCuiPresenter_HintOutput(t *testing.T) {
 		assert.Contains(t, p.HintOutput(game("", nil)), i18n.T("mississippistud.hintNone"))
 	})
 }
+
+// #5591: 「役はフラッシュ、配当800」とは分かっても、その配当が**どの倍率から
+// 来たのか**を両 UI とも説明していなかった。サーバは既に値を持っている。
+func TestMississippiStudCuiPresenter_ShowsThePayoutMultiplier(t *testing.T) {
+	i18n.SetLang("ja")
+	build := func(mult int) string {
+		m := new(interfaces.MockMississippiStudGame)
+		setupMississippiStudCuiMockDefaults(m)
+		m.ExpectedCalls = filterCalls(m.ExpectedCalls, "GetGameEndFlag")
+		m.ExpectedCalls = filterCalls(m.ExpectedCalls, "GetPayoutMultiplier")
+		m.On("GetGameEndFlag").Return(true)
+		m.On("GetPayoutMultiplier").Return(mult)
+		return new(MississippiStudCuiPresenter).Output(m, nil)
+	}
+
+	assert.Contains(t, build(8), i18n.Tf("mississippistud.payoutMultiplierLine", "multiplier", "8"))
+
+	// **プッシュ (-1) とロス (0) は倍率ではない** (受け入れ条件3)。数字を出すと
+	// 「x-1」「x0」という存在しないオッズに読める。
+	head := strings.SplitN(i18n.T("mississippistud.payoutMultiplierLine"), "{{", 2)[0]
+	assert.NotContains(t, build(domain.MississippiStudPayPush), head)
+	assert.NotContains(t, build(domain.MississippiStudPayLoss), head)
+}
+
+// 決着前には出さない。倍率はまだ決まっていない。
+func TestMississippiStudCuiPresenter_HidesTheMultiplierBeforeTheEnd(t *testing.T) {
+	i18n.SetLang("ja")
+	m := new(interfaces.MockMississippiStudGame)
+	setupMississippiStudCuiMockDefaults(m)
+	m.ExpectedCalls = filterCalls(m.ExpectedCalls, "GetPayoutMultiplier")
+	m.On("GetPayoutMultiplier").Return(8).Maybe()
+
+	out := new(MississippiStudCuiPresenter).Output(m, nil)
+	assert.NotContains(t, out, strings.SplitN(i18n.T("mississippistud.payoutMultiplierLine"), "{{", 2)[0])
+}
