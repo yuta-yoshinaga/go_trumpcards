@@ -188,6 +188,22 @@ describe('FlowerGardenPage', () => {
     await waitFor(() => expect(screen.getAllByLabelText(/リザーブ枠 \d+/).length).toBeGreaterThan(0));
     expect(screen.getAllByLabelText(/空のリザーブ枠 \d+/).length).toBeGreaterThan(0);
   });
+
+  // #5599: 「スートを問わない」という他のソリティアと違う規則が、初回だけ出る
+  // チュートリアルにしか書かれていなかった。読み飛ばした後に思い出す手掛かりが
+  // 盤面に無いので、**チュートリアルの状態に関係なく**出る注記を置く。
+  it('states the suit-agnostic packing rule next to the tableau', async () => {
+    localStorage.setItem('tutorial-flowergarden-done', 'true');
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<FlowerGardenPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+
+    const note = screen.getByTestId('fg-rules-note');
+    expect(note).toHaveTextContent('スートは無視');
+    expect(note).toHaveTextContent('1つ下のランク');
+    // 空のベッドの扱いも書く ── 規則の半分だけ出すと、空きに置けないと誤解する。
+    expect(note).toHaveTextContent('任意のカード');
+  });
 });
 
 // Keyboard shortcuts are bound by useActionKeyboardNav and advertised by

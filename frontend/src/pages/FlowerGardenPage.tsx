@@ -397,6 +397,12 @@ function FlowerGardenPageContent() {
               </div>
             </div>
 
+            {/* 他のソリティアと違う規則なので常設で出す。初回だけのチュートリアルに
+                書いてあっても、読み飛ばした後は盤面に手掛かりが無い (#5599)。 */}
+            <div className="mb-1 text-center text-ds-text-muted text-xs" data-testid="fg-rules-note">
+              {t('rulesNote')}
+            </div>
+
             <div className="flex gap-1 sm:gap-2" data-tutorial="fg-tableau">
               {[0, 1, 2, 3, 4, 5].map(renderTableauColumn)}
             </div>
