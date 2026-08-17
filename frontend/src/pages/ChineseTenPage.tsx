@@ -91,6 +91,8 @@ function ChineseTenPageContent() {
   // 判定は既存の isHumanTurn / choosing / selectable をそのまま読む。
   const turnState = { ended, isHumanTurn, choosing };
   const blockedText = (reason: ChineseTenBlockedReason | null) => (reason ? t(`blocked.${reason}`) : undefined);
+  // 手札の理由は札によらないので一度だけ。場札は札ごとに変わるので描画時に引く。
+  const handBlocked = blockedText(chineseTenHandBlockedReason(turnState));
 
   /** One card, annotating the ones that actually score. */
   const renderCard = (card: ChineseTenCard, key: string) => (
@@ -174,6 +176,7 @@ function ChineseTenPageContent() {
               <div className="flex gap-1 justify-center flex-wrap">
                 {state.layout.map((card, i) => {
                   const canTake = choosing && isHumanTurn && selectable.has(i);
+                  const layoutBlocked = blockedText(chineseTenLayoutBlockedReason(turnState, selectable.has(i)));
                   const isHintedLayout = showServerHint && state.hint?.layoutIndex === i;
                   return (
                     <button
@@ -183,13 +186,8 @@ function ChineseTenPageContent() {
                       // Kept focusable while it cannot act so the reason is
                       // announced rather than the control leaving the tab order.
                       aria-disabled={!canTake}
-                      title={blockedText(chineseTenLayoutBlockedReason(turnState, selectable.has(i)))}
-                      aria-label={[
-                        cardAlt(card),
-                        blockedText(chineseTenLayoutBlockedReason(turnState, selectable.has(i))),
-                      ]
-                        .filter(Boolean)
-                        .join(' — ')}
+                      title={layoutBlocked}
+                      aria-label={[cardAlt(card), layoutBlocked].filter(Boolean).join(' — ')}
                       data-hinted-layout={isHintedLayout || undefined}
                       onClick={() => canTake && game.handleSelect(i)}
                       className={[
@@ -241,10 +239,8 @@ function ChineseTenPageContent() {
                     type="button"
                     data-hint-action="play"
                     aria-disabled={!isHumanTurn || choosing}
-                    title={blockedText(chineseTenHandBlockedReason(turnState))}
-                    aria-label={[cardAlt(card), blockedText(chineseTenHandBlockedReason(turnState))]
-                      .filter(Boolean)
-                      .join(' — ')}
+                    title={handBlocked}
+                    aria-label={[cardAlt(card), handBlocked].filter(Boolean).join(' — ')}
                     onClick={() => isHumanTurn && !choosing && game.handlePlay(i)}
                     className={[
                       'rounded transition-transform',
