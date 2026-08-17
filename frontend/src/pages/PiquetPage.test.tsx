@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import i18n from 'i18next';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, piquetApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { PiquetResponse } from '../types/card';
 import { PiquetDeclarationKind, PiquetExchangeTurn, PiquetPhase } from '../types/phases';
@@ -284,6 +285,39 @@ describe('PiquetPage', () => {
     renderWithProviders(<PiquetPage />);
     const hint = await screen.findByTestId('piquet-hint');
     expect(hint).toHaveTextContent('1, 2');
+  });
+
+  // #5603: 出せないカードも押せて、サーバーに move を投げてエラーで返ってくる形
+  // だった。マストフォローの相手は presenter が毎回計算して返しているので、
+  // それをそのまま使う。
+  it('disables the cards that legalPlayIndices leaves out', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: PiquetPhase.PLAY, legalPlayIndices: [1] }));
+    renderWithProviders(<PiquetPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    const cards = await screen.findAllByRole('button', { name: /♠|♥/ });
+    const playable = cards.filter((c) => c.getAttribute('data-hint-action') === 'play');
+    expect(playable).toHaveLength(2);
+    expect(playable[0]).toBeDisabled();
+    expect(playable[1]).not.toBeDisabled();
+
+    mockExec.mockClear();
+    fireEvent.click(playable[0] as HTMLElement);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  // 交換フェーズには legalPlayIndices が載らない。**載っていないことを
+  // 「どれも出せない」と読むと、手札が全部死ぬ。**
+  it('leaves every card usable when no legal set is present', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: PiquetPhase.PLAY }));
+    renderWithProviders(<PiquetPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    const cards = await screen.findAllByRole('button', { name: /♠|♥/ });
+    for (const c of cards.filter((b) => b.getAttribute('data-hint-action') === 'play')) {
+      expect(c).not.toBeDisabled();
+    }
   });
 
   it('does not show the action log view button before the partie ends', async () => {

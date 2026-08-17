@@ -126,6 +126,12 @@ function PiquetPageContent() {
     ((state.exchangeTurn === PiquetExchangeTurn.ELDER && isHumanElder) ||
       (state.exchangeTurn === PiquetExchangeTurn.YOUNGER && !isHumanElder));
   const humanCanPlay = inPlayPhase && human?.id === state.currentPlayerIdx;
+  // presenter がマストフォローの合法手を毎回返している (PiquetWebPresenter.go)。
+  // **空/未設定は「どれも出せない」ではなく「制限なし」。**交換フェーズなど、
+  // そもそも載らない状態で手札を全部殺さないため (#5603)。
+  const legalPlays = state.legalPlayIndices;
+  const isPlayable = (i: number): boolean =>
+    !humanCanPlay || legalPlays === undefined || legalPlays.length === 0 || legalPlays.includes(i);
 
   return (
     <GamePageShell
@@ -192,7 +198,11 @@ function PiquetPageContent() {
                     : 'ring-2 ring-ds-error'
                   : '';
                 const handlePlay = () => game.handlePlay(i);
-                const handleClick = humanCanExchange ? () => toggleDiscard(i) : humanCanPlay ? handlePlay : undefined;
+                const handleClick = humanCanExchange
+                  ? () => toggleDiscard(i)
+                  : humanCanPlay && isPlayable(i)
+                    ? handlePlay
+                    : undefined;
                 return (
                   <button
                     key={`hand-${i}-${c.design}-${c.value}`}
