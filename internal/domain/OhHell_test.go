@@ -1026,3 +1026,117 @@ func TestOhHell_CpuPlay_GameEnded(t *testing.T) {
 
 	o.CpuPlay() // should not panic
 }
+
+// --- Scoring-variant-aware bidding (#5514) ---
+
+// setupOhHellBidHand は指定席に指定の手札だけを持たせ、入札フェーズに置く。
+// ディーラーを席1にするのは、ディーラー制限 (合計ビッド == handSize) が
+// 見積もりそのものを ±1 ずらして測定を汚すため。
+func setupOhHellBidHand(o *domain.OhHell, seat int, cards []*domain.Card) {
+	o.Reset()
+	o.SetDealerIdx(1)
+	setupOhHellBidPhase(o, seat)
+	for i := range 4 {
+		o.GetPlayer(i).Reset()
+		o.GetPlayer(i).SetBid(-1)
+	}
+	p := o.GetPlayer(seat)
+	for _, c := range cards {
+		p.AddCard(c)
+	}
+	o.SetHandSize(len(cards))
+	o.SetTrumpSuit(domain.CardDesignSpade)
+}
+
+// ohHellSpeculativeHand は「確実な札」と「あてずっぽうの札」が両方入った手札。
+// 切り札3枚 (長さボーナスの条件) + 非切り札のQ (ハードCPUがコイントスで
+// 数える札) + 非切り札のK (確実な札)。
+func ohHellSpeculativeHand() []*domain.Card {
+	return []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 11, false),
+		domain.NewCard(domain.CardDesignSpade, 10, false),
+		domain.NewCard(domain.CardDesignSpade, 3, false),
+		domain.NewCard(domain.CardDesignHeart, 12, false),
+		domain.NewCard(domain.CardDesignHeart, 13, false),
+	}
+}
+
+// ohHellHintBid は同じ手札でヒントのビッドを何度も引き、出た値の集合を返す。
+// cpuBidHard はQをコイントスで数えるので、1回引いただけでは
+// 「方式で変わった」のか「たまたま裏が出た」のか区別できない。
+func ohHellHintBids(t *testing.T, variant domain.OhHellScoringVariant) map[int]bool {
+	t.Helper()
+	seen := map[int]bool{}
+	for range 200 {
+		o := newTestOhHell()
+		cfg := domain.DefaultOhHellConfig()
+		cfg.ScoringVariant = variant
+		o.SetConfig(cfg)
+		setupOhHellBidHand(o, 0, ohHellSpeculativeHand())
+		hint := o.GetHint()
+		if assert.NotNil(t, hint) && assert.NotNil(t, hint.Bid) {
+			seen[*hint.Bid] = true
+		}
+	}
+	return seen
+}
+
+// ペナルティ方式では外したぶんだけ減点されるので、ヒントは
+// あてずっぽうの札を数えない ― しかも毎回同じ数を返す。
+func TestOhHell_GetHint_PenaltyBidIsConservativeAndStable(t *testing.T) {
+	standard := ohHellHintBids(t, domain.OhHellScoringStandard)
+	penalty := ohHellHintBids(t, domain.OhHellScoringPenalty)
+
+	// 標準方式: Qのコイントスで2通り出る (200回引いて両方見えないほうがおかしい)
+	assert.Len(t, standard, 2, "standard hint should still be a coin toss: %v", standard)
+	// ペナルティ方式: 確実な札だけなので毎回同じ
+	assert.Len(t, penalty, 1, "penalty hint should be deterministic: %v", penalty)
+
+	for p := range penalty {
+		for s := range standard {
+			assert.Less(t, p, s, "penalty bid %d must be lower than standard bid %d", p, s)
+		}
+	}
+}
+
+// ノーマルCPUも同じ手札で慎重になる。ハードが50%扱いする非切り札のQを
+// ノーマルは確定扱いしていたので、そこが方式で分かれる。
+func TestOhHell_CpuBidNormal_PenaltyDropsTheCoinTossCard(t *testing.T) {
+	bidFor := func(variant domain.OhHellScoringVariant) int {
+		o := newTestOhHell()
+		cfg := domain.DefaultOhHellConfig()
+		cfg.ScoringVariant = variant
+		cfg.CpuDifficulty = domain.OhHellCpuDifficultyNormal
+		o.SetConfig(cfg)
+		setupOhHellBidHand(o, 2, ohHellSpeculativeHand())
+		o.CpuBid()
+		return o.GetPlayer(2).GetBid()
+	}
+
+	standard := bidFor(domain.OhHellScoringStandard)
+	penalty := bidFor(domain.OhHellScoringPenalty)
+	assert.Equal(t, 4, standard, "trump J/10 + off-suit Q/K")
+	assert.Equal(t, 3, penalty, "the off-suit Q is a guess, so penalty scoring drops it")
+}
+
+// 負のコントロール: 確実な札しか無い手札なら方式で差が出ない。
+// 「ペナルティだと必ず下がる」ではなく「あてずっぽうを数えない」が仕様。
+func TestOhHell_CpuBidNormal_CertainCardsAreCountedInBothVariants(t *testing.T) {
+	certain := []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 13, false),
+		domain.NewCard(domain.CardDesignHeart, 13, false),
+		domain.NewCard(domain.CardDesignHeart, 2, false),
+	}
+	bidFor := func(variant domain.OhHellScoringVariant) int {
+		o := newTestOhHell()
+		cfg := domain.DefaultOhHellConfig()
+		cfg.ScoringVariant = variant
+		cfg.CpuDifficulty = domain.OhHellCpuDifficultyNormal
+		o.SetConfig(cfg)
+		setupOhHellBidHand(o, 2, certain)
+		o.CpuBid()
+		return o.GetPlayer(2).GetBid()
+	}
+	assert.Equal(t, 2, bidFor(domain.OhHellScoringStandard))
+	assert.Equal(t, 2, bidFor(domain.OhHellScoringPenalty))
+}
