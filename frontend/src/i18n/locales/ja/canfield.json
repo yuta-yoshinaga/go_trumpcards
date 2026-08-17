@@ -47,5 +47,7 @@
     "resetButton": "新しいゲームを始めるボタンです。"
   },
   "columnActionsFor": "列 {{n}} の操作",
-  "collapseColumnActions": "列の操作ボタンを折りたたむ"
+  "collapseColumnActions": "列の操作ボタンを折りたたむ",
+  "reserveEmptyColumnRule": "リザーブが残っている間は、空いた列に自分でカードを置けません（リザーブから自動補充されます）",
+  "dismissRule": "説明を閉じる"
 }
