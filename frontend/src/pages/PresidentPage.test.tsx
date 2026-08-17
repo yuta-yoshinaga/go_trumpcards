@@ -368,3 +368,46 @@ describe('PresidentPage', () => {
     expect(screen.queryByTestId('exchange-log')).not.toBeInTheDocument();
   });
 });
+
+// #5548: CUI は毎ターン「誰が何を出したか / パスしたか」を出しているのに、
+// Web は場札しか見えず、CPU3人のうち誰が場をこの形にしたのか追えなかった。
+describe('PresidentPage action history', () => {
+  const log = () => screen.getByTestId('pr-action-log');
+
+  it('lists each CPU play and pass', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        cpuActions: [
+          { playerIdx: 1, playedCards: [card('SPADE', 5)] },
+          { playerIdx: 2, playedCards: null },
+        ],
+      }),
+    );
+    renderWithProviders(<PresidentPage />);
+    // CPU の手は 1 手ずつリプレイされるので、全部出そろうまで待つ。
+    await waitFor(() => expect(log()).toHaveTextContent('CPU 2'));
+    expect(log()).toHaveTextContent('CPU 1');
+    // パスは「出した」と書き分ける。
+    expect(log()).toHaveTextContent('パス');
+  });
+
+  it('includes the human action in the same list', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        humanAction: { playerIdx: 0, playedCards: [card('SPADE', 3)] },
+        cpuActions: [{ playerIdx: 1, playedCards: null }],
+      }),
+    );
+    renderWithProviders(<PresidentPage />);
+    await waitFor(() => expect(log()).toHaveTextContent('CPU 1'));
+    expect(log()).toHaveTextContent('あなた');
+  });
+
+  // **何も起きていないうちは出さない。**空の枠は場所を取るだけ。
+  it('renders nothing before anyone has acted', async () => {
+    mockExec.mockResolvedValue(makeState({ cpuActions: [], humanAction: null }));
+    renderWithProviders(<PresidentPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    expect(screen.queryByTestId('pr-action-log')).not.toBeInTheDocument();
+  });
+});
