@@ -421,7 +421,7 @@ describe('BraidPage keyboard shortcuts', () => {
 // 読み上げられていなかった。CUI は黄色で強調し、チュートリアルは太字で警告して
 // いるので、支援技術の利用者だけが自分で探さないと気づけない状態だった。
 describe('BraidPage direction announcement', () => {
-  const liveRegion = () => document.querySelector('[role="status"][aria-live="assertive"]');
+  const liveRegion = () => document.querySelector('[role="alert"][aria-live="assertive"]');
 
   it('announces the direction prompt while it is unset', async () => {
     mockExec.mockResolvedValue(awaitingDirectionState);

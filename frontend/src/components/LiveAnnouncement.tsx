@@ -34,7 +34,15 @@ export function LiveAnnouncement({ message, assertive = false }: LiveAnnouncemen
   }, [message]);
 
   return (
-    <div role="status" aria-live={assertive ? 'assertive' : 'polite'} aria-atomic="true" className="sr-only">
+    // role と aria-live を対で切り替える (GameMessageBox と同じ形)。
+    // role="alert" は暗黙に assertive なので、両方合わせておくと支援技術の
+    // 実装差に影響されにくい。
+    <div
+      role={assertive ? 'alert' : 'status'}
+      aria-live={assertive ? 'assertive' : 'polite'}
+      aria-atomic="true"
+      className="sr-only"
+    >
       {announced}
     </div>
   );

@@ -31,11 +31,19 @@ describe('LiveAnnouncement', () => {
     expect(after).toHaveTextContent('choose a direction');
   });
 
+  // role と aria-live は対。role="alert" は暗黙に assertive なので、
+  // 片方だけ切り替えると宣言が食い違う (GameMessageBox と同じ形にした)。
   it('is polite by default and assertive on request', () => {
-    const { rerender } = render(<LiveAnnouncement message="hi" />);
-    expect(screen.getByRole('status')).toHaveAttribute('aria-live', 'polite');
-    rerender(<LiveAnnouncement message="hi" assertive />);
-    expect(screen.getByRole('status')).toHaveAttribute('aria-live', 'assertive');
+    render(<LiveAnnouncement message="hi" />);
+    const polite = screen.getByRole('status');
+    expect(polite).toHaveAttribute('aria-live', 'polite');
+  });
+
+  it('switches role and aria-live together when assertive', () => {
+    render(<LiveAnnouncement message="hi" assertive />);
+    const alert = screen.getByRole('alert');
+    expect(alert).toHaveAttribute('aria-live', 'assertive');
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 
   it('clears when the message goes away', async () => {
