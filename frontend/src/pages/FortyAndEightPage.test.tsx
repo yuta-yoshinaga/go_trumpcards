@@ -390,6 +390,36 @@ describe('FortyAndEightPage', () => {
     expect(highlighted.className).toContain('ring-ds-info');
   });
 
+  // #5600: 置ける組札の情報がリングの色にしか無かった。1 スートにつき 2 つある
+  // 組札のどちらに落ちるかは domain の findFoundation が決めるので、目で見えない
+  // プレイヤーには**どこにも**手掛かりが無い状態だった。
+  it('says in the label which foundation accepts the selected card', async () => {
+    mockExec.mockResolvedValue(singleTargetState);
+    const { container } = renderWithProviders(<FortyAndEightPage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+
+    // 選択前は誰も「置けます」と言わない。
+    expect(screen.queryAllByLabelText(/ここに置けます/)).toHaveLength(0);
+
+    fireEvent.click(screen.getByAltText('♠ 2').closest('button') as HTMLButtonElement);
+    await waitFor(() => expect(container.querySelectorAll('[data-eligible-foundation="true"]')).toHaveLength(1));
+
+    const highlighted = container.querySelector('[data-eligible-foundation="true"]') as HTMLElement;
+    expect(highlighted.getAttribute('aria-label')).toBe('♠ 組札 1 1枚、ここに置けます');
+    // 置けない 7 つには付かない ── リングと読み上げが同じ集合を指す。
+    expect(screen.getAllByLabelText(/ここに置けます/)).toHaveLength(1);
+  });
+
+  it('labels the empty foundations an ace can start', async () => {
+    mockExec.mockResolvedValue(aceWasteState);
+    renderWithProviders(<FortyAndEightPage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    // 空の組札 8 つすべてが A を受け取れる ── 空の枠の分岐にも文言が要る。
+    await waitFor(() => expect(screen.getAllByLabelText(/ここに置けます/)).toHaveLength(8));
+  });
+
   it('clicking tableau card when source selected dispatches move', async () => {
     renderWithProviders(<FortyAndEightPage />);
     await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());

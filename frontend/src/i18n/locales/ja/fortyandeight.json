@@ -16,6 +16,7 @@
   "empty": "空",
   "foundationAriaLabel": "{{suit}} 組札 {{pile}} {{count}}枚",
   "emptyFoundationAriaLabel": "空の組札 {{suit}} {{pile}}",
+  "foundationEligibleSuffix": "、ここに置けます",
   "landscapeBanner": "横向き表示推奨",
   "hint": "ヒント",
   "autoComplete": "自動完成",
