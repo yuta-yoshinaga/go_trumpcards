@@ -255,8 +255,17 @@ function FiftyOnePageContent() {
             </div>
 
             {/* Stop indicator */}
+            {/* CUI は宣言者と「残り1巡が最終ラウンド」まで出しているのに、Web は
+                「ストップ宣言済み」の一文だけで、誰が宣言したのかも、あと何巡で
+                終わるのかも分からなかった (#5532)。 */}
             {state.stopCallerIdx >= 0 && (
-              <div className="text-center text-ds-warning text-sm font-medium">{t('label.stopCalled')}</div>
+              <div className="text-center text-ds-warning text-sm font-medium" data-testid="fo-stop-called">
+                {t('label.stopCalledBy', {
+                  name: state.players[state.stopCallerIdx]?.isHuman
+                    ? tc('player.you')
+                    : tc('player.cpu', { id: state.stopCallerIdx }),
+                })}
+              </div>
             )}
 
             {/* Human hand */}

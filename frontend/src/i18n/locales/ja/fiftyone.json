@@ -20,7 +20,8 @@
     "stopCalled": "ストップ宣言済み",
     "yourTurn": "あなたのターン",
     "cpuTurn": "CPU{{id}}のターン",
-    "suitScores": "スート別合計"
+    "suitScores": "スート別合計",
+    "stopCalledBy": "ストップ宣言中（{{name}}）— 残り1巡が最終ラウンドです"
   },
   "settings": {
     "cpuDifficulty": "CPU難易度",

@@ -239,3 +239,36 @@ describe('FiftyOnePage', () => {
     expect(heart.className).not.toContain('bg-ds-accent');
   });
 });
+
+// #5532: CUI は「誰が宣言したか」と「残り1巡で終わる」を出しているのに、
+// Web は「ストップ宣言済み」の一文だけで、どちらも分からなかった。
+describe('FiftyOnePage stop indicator', () => {
+  const stopBanner = () => screen.getByTestId('fo-stop-called');
+
+  it('names the CPU that called stop and says it is the last round', async () => {
+    mockExec.mockResolvedValue({ ...baseState, stopCallerIdx: 2 });
+    const { FiftyOnePage } = await import('./FiftyOnePage');
+    renderWithProviders(<FiftyOnePage />);
+    await waitFor(() => expect(stopBanner()).toBeInTheDocument());
+    expect(stopBanner()).toHaveTextContent('CPU 2');
+    expect(stopBanner()).toHaveTextContent('最終');
+  });
+
+  it('names the human when the human called it', async () => {
+    mockExec.mockResolvedValue({ ...baseState, stopCallerIdx: 0 });
+    const { FiftyOnePage } = await import('./FiftyOnePage');
+    renderWithProviders(<FiftyOnePage />);
+    await waitFor(() => expect(stopBanner()).toBeInTheDocument());
+    expect(stopBanner()).toHaveTextContent('あなた');
+    // **CPU 0 と読ませない。**席0は人間。
+    expect(stopBanner()).not.toHaveTextContent('CPU 0');
+  });
+
+  it('shows nothing before anyone calls stop', async () => {
+    mockExec.mockResolvedValue(baseState);
+    const { FiftyOnePage } = await import('./FiftyOnePage');
+    renderWithProviders(<FiftyOnePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('fo-stop-called')).not.toBeInTheDocument();
+  });
+});
