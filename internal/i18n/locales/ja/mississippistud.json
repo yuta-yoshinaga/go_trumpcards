@@ -32,5 +32,6 @@
   "madeHandNotEligible": "配当なし",
   "helpExampleBet": "  b 10                 アンテ 10 で参加する",
   "helpExamplePlay": "  p 1                  1 倍で勝負する",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "payoutMultiplierLine": "配当倍率: x{{multiplier}}"
 }

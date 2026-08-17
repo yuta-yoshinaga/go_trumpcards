@@ -380,4 +380,33 @@ describe('MississippiStudPage keyboard shortcuts', () => {
     await flushPendingDispatch();
     expect(mockApi).not.toHaveBeenCalled();
   });
+
+  // #5591: 「役はフラッシュ、配当800」とは分かっても、その配当が**どの倍率から
+  // 来たのか**を説明していなかった。サーバは既に送っていたのに読んでいなかった。
+  describe('payout multiplier', () => {
+    it('shows the odds next to the hand name', async () => {
+      mockApi.mockResolvedValue({ ...endPhaseWin, payoutMultiplier: 8 });
+      renderWithProviders(<MississippiStudPage />);
+      const odds = await screen.findByTestId('ms-payout-multiplier');
+      expect(odds).toHaveTextContent('8');
+    });
+
+    // **プッシュ (-1) とロス (0) は倍率ではない** (受け入れ条件3)。
+    it.each([
+      ['push', -1],
+      ['loss', 0],
+    ])('says nothing on a %s', async (_name, multiplier) => {
+      mockApi.mockResolvedValue({ ...endPhaseWin, payoutMultiplier: multiplier });
+      renderWithProviders(<MississippiStudPage />);
+      await waitFor(() => expect(mockApi).toHaveBeenCalled());
+      expect(screen.queryByTestId('ms-payout-multiplier')).not.toBeInTheDocument();
+    });
+
+    it('stays hidden before the hand is settled', async () => {
+      mockApi.mockResolvedValue({ ...antePhaseState, payoutMultiplier: 8 });
+      renderWithProviders(<MississippiStudPage />);
+      await waitFor(() => expect(mockApi).toHaveBeenCalled());
+      expect(screen.queryByTestId('ms-payout-multiplier')).not.toBeInTheDocument();
+    });
+  });
 });

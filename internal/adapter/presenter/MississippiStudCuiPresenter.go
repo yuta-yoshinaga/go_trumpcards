@@ -71,6 +71,13 @@ func (mp *MississippiStudCuiPresenter) Output(g interfaces.MississippiStudGame, 
 			if rank := g.GetHandRank(); rank >= 0 && rank < len(domain.PokerHandNames) && !g.GetFolded() {
 				fmt.Fprintf(b, "%s\n", i18n.Tf("mississippistud.handLine", "hand", cuiPokerHandName(rank)))
 			}
+			// **配当がどの倍率から来たのかを説明していなかった** (#5591)。
+			// プッシュ (-1) とロス (0) は倍率ではないので出さない ── 出すと
+			// 「x-1」「x0」という存在しないオッズに読める。
+			if mult := g.GetPayoutMultiplier(); mult > 0 {
+				fmt.Fprintf(b, "%s\n", i18n.Tf("mississippistud.payoutMultiplierLine",
+					"multiplier", strconv.Itoa(mult)))
+			}
 			switch g.GetResult() {
 			case domain.GameResultWin:
 				b.WriteString(color.Green(i18n.T("mississippistud.playerWins")) + "\n")
