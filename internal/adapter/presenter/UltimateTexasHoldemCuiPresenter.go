@@ -16,7 +16,6 @@ import (
 // UltimateTexasHoldemCuiPresenter アルティメット・テキサスホールデムCUIプレゼンタークラス
 type UltimateTexasHoldemCuiPresenter struct{}
 
-// Output ゲーム状態を出力
 // writePayoutRef はブラインドとトリップスの配当表を並べる。
 //
 // 倍率はすべて domain の定数から。フラッシュのブラインドだけ 3:2 なので、
@@ -59,6 +58,7 @@ func (up *UltimateTexasHoldemCuiPresenter) writePayoutRef(sb *strings.Builder) {
 	}
 }
 
+// Output ゲーム状態を出力
 func (up *UltimateTexasHoldemCuiPresenter) Output(g interfaces.UltimateTexasHoldemGame, lastErr error) string {
 	var sb strings.Builder
 

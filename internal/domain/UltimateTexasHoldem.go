@@ -45,7 +45,6 @@ const (
 	// 「3:2」と書き写すと、配当を変えたときに案内だけが古くなる (#5589)。
 	UltimateTexasHoldemBlindPayFlushNum = 3
 	UltimateTexasHoldemBlindPayFlushDen = 2
-	// フラッシュは 3:2 倍（最低ベット10／増分10で整数演算が安全。blindBet*3/2 で計算）
 )
 
 // Trips（オプションのサイドベット）paytable（ディーラーの手・勝敗に関係なく評価）
