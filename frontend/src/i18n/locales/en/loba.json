@@ -36,5 +36,5 @@
   "tutorial.pierna": "A pierna is three or more of a rank, but it needs three DIFFERENT suits. A second card of the same suit does not make the set.",
   "tutorial.joker": "Jokers are not wild. They go only in an escalera, one per run, and cannot be discarded — holding one costs ten.",
   "tutorial.score": "Cards left in hand are penalty points. A player is knocked out at 101, and the last one standing wins.",
-  "layOffTargetHint": "To lay off, click the meld you want to add to as well (only a hand card is selected)"
+  "layOffTargetHint": "Click the meld to add to as well — only a hand card is selected"
 }
