@@ -176,6 +176,30 @@ func (bs *BlackJackSwitch) PlayerSwitch() error {
 	return bs.beginActionPhase()
 }
 
+// SwitchPreviewScores は 2 枚目を入れ替えた場合の両ハンドの得点を返す。
+// ok が false なら入れ替えられない (どちらかが 2 枚に満たない)。
+//
+// **打つまで得か損か分からなかった。**Web はホバーで先読みを出している (#5586)
+// のに、CUI は `switch` を実行して結果を見るまで比べられなかった。得点は
+// 実際に入れ替える PlayerSwitch と同じ CalculateBlackJackScore を通す ──
+// 別に数え直すと、先読みと結果が食い違う。
+func (bs *BlackJackSwitch) SwitchPreviewScores() (first, second int, ok bool) {
+	if bs.hands[0].GetCardsSize() < 2 || bs.hands[1].GetCardsSize() < 2 {
+		return 0, 0, false
+	}
+	swapped := func(h *BlackJackHand, other *BlackJackHand) []*Card {
+		cards := make([]*Card, h.GetCardsSize())
+		for i := range cards {
+			cards[i] = h.GetCard(i)
+		}
+		cards[1] = other.GetCard(1)
+		return cards
+	}
+	return CalculateBlackJackScore(swapped(bs.hands[0], bs.hands[1])),
+		CalculateBlackJackScore(swapped(bs.hands[1], bs.hands[0])),
+		true
+}
+
 // PlayerKeep スイッチを行わず現状のハンドでアクションフェーズへ進む。
 func (bs *BlackJackSwitch) PlayerKeep() error {
 	if bs.phase != BJSwitchPhaseSwitch {

@@ -4,6 +4,12 @@ package domain
 
 import "encoding/json"
 
+// BlackJackBustOver はこれを超えるとバーストになる合計 (21)。
+//
+// 数字そのものは規則。表示側が「21 を超えたらバースト」と書き写すと、
+// 得点の計算と案内が別々の 21 を持つことになる。
+const BlackJackBustOver = 21
+
 // BlackJackHand ブラックジャックハンド（分割対応）
 type BlackJackHand struct {
 	cards       []*Card
@@ -67,7 +73,7 @@ func calcScore(cards []*Card) (score int, isSoft bool) {
 			score += value
 		}
 	}
-	for score > 21 && aceCount > 0 {
+	for score > BlackJackBustOver && aceCount > 0 {
 		score -= 10
 		aceCount--
 	}

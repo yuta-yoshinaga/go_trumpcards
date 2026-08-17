@@ -417,3 +417,34 @@ func TestBlackJackSwitch_PlayerKeep_WrongPhase(t *testing.T) {
 	err := bs.PlayerKeep()
 	require.Error(t, err)
 }
+
+// #5586: 交換すると得か損かは、打つまで分からなかった。先読みは実際に入れ替える
+// PlayerSwitch と**同じ採点**を通ること — 別に数え直すと予告と結果が食い違う。
+func TestBlackJackSwitch_SwitchPreviewMatchesTheActualSwitch(t *testing.T) {
+	bs := NewDefaultBlackJackSwitch()
+	bs.Reset()
+	require.NoError(t, bs.PlayerBet(10))
+
+	// スイッチフェーズに入るまで進める (Reset→Bet で 2 枚ずつ配られる)。
+	if bs.GetPhase() != BJSwitchPhaseSwitch {
+		t.Skipf("deal did not reach the switch phase (phase=%d)", bs.GetPhase())
+	}
+
+	first, second, ok := bs.SwitchPreviewScores()
+	require.True(t, ok, "two dealt hands can always be previewed")
+
+	require.NoError(t, bs.PlayerSwitch())
+	hands := bs.GetHands()
+	// **予告した得点がそのまま出ること。**
+	assert.Equal(t, first, hands[0].GetScore())
+	assert.Equal(t, second, hands[1].GetScore())
+}
+
+// 2 枚に満たないハンドは入れ替えられないので、先読みも返さない。
+func TestBlackJackSwitch_SwitchPreviewRefusesShortHands(t *testing.T) {
+	bs := NewDefaultBlackJackSwitch()
+	bs.Reset()
+
+	_, _, ok := bs.SwitchPreviewScores()
+	assert.False(t, ok, "no cards have been dealt yet")
+}
