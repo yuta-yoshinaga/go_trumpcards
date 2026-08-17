@@ -44,5 +44,6 @@
     "redeal": "Stuck? Use one of the three redeals to reverse every tableau pile.",
     "controls": "Hint, auto-complete, undo, redeal, and give-up sit in the footer."
   },
-  "undo": "Undo"
+  "undo": "Undo",
+  "gameOverSummary": "Reached {{count}}/104 cards on the foundations ({{percent}}%)"
 }

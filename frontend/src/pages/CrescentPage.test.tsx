@@ -417,4 +417,41 @@ describe('CrescentPage keyboard shortcuts', () => {
     await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
+
+  // #5590: 8 組札 (昇順4 + 降順4) は Congress より複雑なのに、どこまで進んで
+  // いたかを自分で数えるしかなかった。
+  describe('game-over summary', () => {
+    it('reports the foundation count and the percentage', async () => {
+      mockExec.mockResolvedValue(gameOverState);
+      renderWithProviders(<CrescentPage />);
+      const summary = await screen.findByTestId('cr-gameover-summary');
+      // 種札 8 枚のみの盤面 → 8/104 = 8%。**部分一致で見ない** ── 分母の 104 に
+      // "10" も "4" も含まれるので、数字だけを探すと何とでも一致してしまう。
+      expect(summary.textContent).toBe('組札 8/104 枚（8%）まで到達');
+    });
+
+    // **数えているのは実際の枚数。**固定値を出す実装では通らない。
+    it('counts what the foundations actually hold', async () => {
+      mockExec.mockResolvedValue({
+        ...gameOverState,
+        foundation: [[card('SPADE', 1), card('SPADE', 2), card('SPADE', 3)], ...gameOverState.foundation.slice(1)],
+      });
+      renderWithProviders(<CrescentPage />);
+      const summary = await screen.findByTestId('cr-gameover-summary');
+      expect(summary.textContent).toBe('組札 10/104 枚（10%）まで到達');
+    });
+
+    it('stays away on a clear and during play', async () => {
+      mockExec.mockResolvedValue(gameClearState);
+      const { unmount } = renderWithProviders(<CrescentPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+      expect(screen.queryByTestId('cr-gameover-summary')).not.toBeInTheDocument();
+      unmount();
+
+      mockExec.mockResolvedValue(playingState);
+      renderWithProviders(<CrescentPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+      expect(screen.queryByTestId('cr-gameover-summary')).not.toBeInTheDocument();
+    });
+  });
 });
