@@ -12698,7 +12698,7 @@ paths:
               properties:
                 command:
                   type: string
-                  enum: [reset, r, move, m, giveup, g, hint, h, undo, u, undo_n, log, l]
+                  enum: [reset, r, move, m, giveup, g, hint, h, undo, u, undo_n, autocomplete, ac, log, l]
                 sessionId:
                   type: string
                 from:

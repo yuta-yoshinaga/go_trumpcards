@@ -477,6 +477,19 @@ describe('AccordionPage', () => {
     );
   });
 
+  // #5546: 独立 CUI には ac があり、グラフィカル側にはボタンがあるのに、
+  // 同じページの CLI モードからだけ一括マージを呼べなかった。
+  it.each(['ac', 'autocomplete'])('CLI mode dispatches %s as autocomplete', async (cmd) => {
+    renderWithProviders(<AccordionPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    fireEvent.click(screen.getByRole('button', { name: /CLI|GUI/i }));
+    const input = await screen.findByLabelText(/コマンドを入力/);
+    mockExec.mockClear();
+    fireEvent.change(input, { target: { value: cmd } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
+  });
+
   it('CLI mode rejects malformed move command', async () => {
     renderWithProviders(<AccordionPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

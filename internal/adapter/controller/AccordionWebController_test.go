@@ -37,6 +37,7 @@ func TestAccordionWebController_Method(t *testing.T) {
 	aiMock.On("Move", 3, 0).Return(mockOutput)
 	aiMock.On("Undo").Return(mockOutput)
 	aiMock.On("UndoN", 3).Return(mockOutput)
+	aiMock.On("AutoComplete").Return(mockOutput)
 
 	factory := func() uc.AccordionInteractorIF { return aiMock }
 	ctrl := controller.NewAccordionWebController(factory)
@@ -133,4 +134,26 @@ func TestAccordionWebController_Method(t *testing.T) {
 		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 	})
+}
+
+// #5546: 独立 CUI には ac があり、Web GUI にもボタンがあるのに、Web の
+// コマンド体系にだけ autocomplete が無く、CLI モードから呼べなかった。
+func TestAccordionWebController_AutoComplete(t *testing.T) {
+	mockOutput := `{"piles":[],"pileCount":0,"phase":0,"moveCount":0,"canUndo":false,"isStalemate":false,"undoToEscape":0,"message":""}`
+
+	for _, cmd := range []string{"ac", "autocomplete"} {
+		t.Run(cmd, func(t *testing.T) {
+			aiMock := new(usecase.MockAccordionInteractor)
+			aiMock.On("AutoComplete").Return(mockOutput)
+			ctrl := controller.NewAccordionWebController(func() uc.AccordionInteractorIF { return aiMock })
+			defer ctrl.Stop()
+
+			var input controller.AccordionWebInput
+			_ = json.Unmarshal([]byte(`{"command":"`+cmd+`","sessionId":"s-ac-`+cmd+`"}`), &input)
+			recorded := execRequest(t, ctrl.Exec, &input)
+			recorded.CodeIs(http.StatusOK)
+			recorded.BodyIs(mockOutput)
+			aiMock.AssertCalled(t, "AutoComplete")
+		})
+	}
 }
