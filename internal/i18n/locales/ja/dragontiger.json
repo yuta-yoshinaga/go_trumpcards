@@ -23,5 +23,7 @@
   "payoutLine": "払戻し: {{payout}}",
   "historyLine": "履歴: {{symbols}}",
   "historyCounts": "集計: D:{{d}} T:{{t}} =:{{tie}}",
-  "helpExampleBet": "  b 100 d              100 をドラゴンに賭ける"
+  "helpExampleBet": "  b 100 d              100 をドラゴンに賭ける",
+  "noPreviousBet": "直前のベットがありません。まず b <額> <種別> で賭けてください",
+  "helpRebet": "  rb                       直前と同じ賭けをもう一度"
 }
