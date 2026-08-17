@@ -222,6 +222,19 @@ describe('evaluateVideoPokerMadeHand for Deuces Wild', () => {
     ).toEqual({ rowKey: null });
   });
 
+  // **Deuces Wild の配当表も全段通す。** 中間の役が1つも通っていないと、
+  // 行キーの取り違えに気づけない (Jacks or Better 側と同じ抜け)。
+  it.each([
+    ['fiveOfAKind', [c('SPADE', 7), c('HEART', 7), c('CLOVER', 7), deuce('DIAMOND'), deuce('SPADE')]],
+    ['straightFlush', [c('SPADE', 9), c('SPADE', 8), c('SPADE', 7), c('SPADE', 6), c('SPADE', 5)]],
+    ['fourOfAKind', [c('SPADE', 7), c('HEART', 7), c('CLOVER', 7), c('DIAMOND', 7), c('SPADE', 9)]],
+    ['fullHouse', [c('SPADE', 7), c('HEART', 7), c('CLOVER', 7), c('DIAMOND', 4), c('SPADE', 4)]],
+    ['flush', [c('SPADE', 9), c('SPADE', 7), c('SPADE', 5), c('SPADE', 4), c('SPADE', 3)]],
+    ['straight', [c('SPADE', 9), c('HEART', 8), c('CLOVER', 7), c('DIAMOND', 6), c('SPADE', 5)]],
+  ] as const)('maps %s to its own Deuces Wild row', (expected, hand) => {
+    expect(evaluateVideoPokerMadeHand('deuceswild', [...hand])).toEqual({ rowKey: expected });
+  });
+
   it('only returns keys that exist in the Deuces Wild paytable', () => {
     const keys = new Set(videoPokerPayoutRows('deuceswild').map((r) => r.key));
     const hands: Card[][] = [
