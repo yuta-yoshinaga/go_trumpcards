@@ -60,6 +60,7 @@ const baseState: EgyptianRatscrewResponse = {
   ],
   cpuDifficulty: 1,
   chanceRemaining: 0,
+  faceChances: { jack: 1, queen: 2, king: 3, ace: 4 },
   chanceFromIdx: -1,
   pendingKind: 0,
   pendingDeadlineMs: 0,
@@ -336,5 +337,38 @@ describe('EgyptianRatscrewPage slap sounds', () => {
     await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
     expect(mockPlaySound).not.toHaveBeenCalledWith('winFanfare');
     expect(mockPlaySound).not.toHaveBeenCalledWith('errorBuzz');
+  });
+
+  // #5580: チャンスもスラップ条件も、成立してから初めて画面に現れていた。
+  // 初見の人は仕組みを推測するしかなかった。
+  describe('permanent rule line', () => {
+    it('states the chances and both slap conditions from the start', async () => {
+      renderWithProviders(<EgyptianRatscrewPage />);
+      const rule = await screen.findByTestId('er-rule');
+      expect(rule).toHaveTextContent('ペア');
+      expect(rule).toHaveTextContent('サンドイッチ');
+      // 回数はサーバから来た値。
+      expect(rule).toHaveTextContent('J=1');
+      expect(rule).toHaveTextContent('A=4');
+    });
+
+    // **回数を訳文に焼き込んでいない証拠。**別の回数を返せばそのまま出る。
+    it('renders whatever chance counts the server sends', async () => {
+      mockExec.mockResolvedValue({ ...baseState, faceChances: { jack: 5, queen: 6, king: 7, ace: 8 } });
+      renderWithProviders(<EgyptianRatscrewPage />);
+      const rule = await screen.findByTestId('er-rule');
+      expect(rule).toHaveTextContent('J=5');
+      expect(rule).toHaveTextContent('A=8');
+      expect(rule).not.toHaveTextContent('J=1');
+    });
+
+    // 動的な表示と重複しないこと (受け入れ条件3)。規則の行はチャンス中も
+    // 変わらず、残り回数は既存のドットが受け持つ。
+    it('stays put during a chance rather than restating the count left', async () => {
+      mockExec.mockResolvedValue(chanceState);
+      renderWithProviders(<EgyptianRatscrewPage />);
+      const rule = await screen.findByTestId('er-rule');
+      expect(rule).toHaveTextContent('J=1');
+    });
   });
 });

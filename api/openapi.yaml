@@ -10857,6 +10857,21 @@ paths:
                     type: integer
                   chanceRemaining:
                     type: integer
+                  faceChances:
+                    type: object
+                    description: >-
+                      Chances each face card gives the opponent. Sent so the
+                      permanent rule text cannot quote figures the game has
+                      stopped using.
+                    properties:
+                      jack:
+                        type: integer
+                      queen:
+                        type: integer
+                      king:
+                        type: integer
+                      ace:
+                        type: integer
                   chanceFromIdx:
                     type: integer
                   pendingKind:

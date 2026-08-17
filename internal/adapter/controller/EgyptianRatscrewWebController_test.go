@@ -21,6 +21,8 @@ func mustEgyptianRatscrewOutputJSON(msg string) string {
 		ChanceFromIdx: -1,
 		CpuDifficulty: int(domain.EgyptianRatscrewCpuNormal),
 		Players:       make([]*controller.EgyptianRatscrewWebPlayer, 0),
+		// 回数は盤面が無くても規則なので、既定の応答にも乗る (#5580)。
+		FaceChances:   controller.NewEgyptianRatscrewWebFaceChances(),
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, _ := json.Marshal(out)
