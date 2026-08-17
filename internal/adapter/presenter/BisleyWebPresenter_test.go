@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -198,4 +199,18 @@ func TestBisleyWebPresenter_ActionLogOutput(t *testing.T) {
 		result := p.ActionLogOutput(bg)
 		assert.Contains(t, result, "move")
 	})
+}
+
+// #5553: ドメインのエラーが i18n キーを名乗るようになった。Error() をそのまま
+// Message に入れると、画面に "bisley.errEmptyColumn" が出る。
+func TestBisleyWebPresenter_Output_CodedErrorGoesOutAsACode(t *testing.T) {
+	bg := new(interfaces.MockBisleyGame)
+	setupBisleyOutputMock(bg)
+
+	err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "bisley.errEmptyColumn", nil)
+	var out controller.BisleyWebOutput
+	require.NoError(t, json.Unmarshal([]byte(new(BisleyWebPresenter).Output(bg, err)), &out))
+
+	assert.Equal(t, "bisley.errEmptyColumn", out.MessageCode)
+	assert.Empty(t, out.Message, "生のキーを message に入れない")
 }

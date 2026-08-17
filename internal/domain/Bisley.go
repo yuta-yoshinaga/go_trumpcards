@@ -153,7 +153,7 @@ func (b *Bisley) MoveTableauToAceFoundation(col int) error {
 	}
 	fIdx := BisleySuitIndex(card.GetDesign())
 	if fIdx < 0 || !b.canPlaceOnAce(card, fIdx) {
-		return errors.New("cannot place card on ascending foundation")
+		return NewDomainErrorCode(ErrInvalidPlay, "bisley.errCannotPlaceAscending", nil)
 	}
 	b.takeSnapshot()
 	b.popTop(col)
@@ -170,7 +170,7 @@ func (b *Bisley) MoveTableauToKingFoundation(col int) error {
 	}
 	fIdx := BisleySuitIndex(card.GetDesign())
 	if fIdx < 0 || !b.canPlaceOnKing(card, fIdx) {
-		return errors.New("cannot place card on descending foundation")
+		return NewDomainErrorCode(ErrInvalidPlay, "bisley.errCannotPlaceDescending", nil)
 	}
 	b.takeSnapshot()
 	b.popTop(col)
@@ -186,19 +186,19 @@ func (b *Bisley) MoveTableauToTableau(fromCol, toCol int) error {
 		return err
 	}
 	if toCol < 0 || toCol >= BisleyTableauCnt {
-		return errors.New("invalid destination column")
+		return NewDomainErrorCode(ErrInvalidPlay, "bisley.errBadToColumn", nil)
 	}
 	if fromCol == toCol {
-		return errors.New("source and destination are the same column")
+		return NewDomainErrorCode(ErrInvalidPlay, "bisley.errSameColumn", nil)
 	}
 	dst := b.tableau[toCol]
 	if len(dst) == 0 {
 		// 空き列は自由置き場ではない。ここを許すと事実上どの札でも掘り出せる。
-		return errors.New("cannot move onto an empty column")
+		return NewDomainErrorCode(ErrInvalidPlay, "bisley.errEmptyColumn", nil)
 	}
 	top := dst[len(dst)-1].Card
 	if top.GetDesign() != card.GetDesign() || abs(top.GetValue()-card.GetValue()) != 1 {
-		return errors.New("tableau builds up or down by one in the same suit")
+		return NewDomainErrorCode(ErrInvalidPlay, "bisley.errNotAdjacentSameSuit", nil)
 	}
 	b.takeSnapshot()
 	b.popTop(fromCol)
@@ -280,7 +280,7 @@ func (b *Bisley) tableauHint() *BisleyHint {
 // タブロー上の移動は行わないので、GetHint ではなく foundationHint を使う。
 func (b *Bisley) AutoComplete() error {
 	if b.phase != BisleyPhasePlaying {
-		return errors.New("game is not in playing phase")
+		return NewDomainErrorCode(ErrWrongPhase, "bisley.errNotPlaying", nil)
 	}
 	moved := false
 	for {
@@ -300,7 +300,7 @@ func (b *Bisley) AutoComplete() error {
 		moved = true
 	}
 	if !moved {
-		return errors.New("no card can be auto-completed")
+		return NewDomainErrorCode(ErrInvalidPlay, "bisley.errNothingToAutoComplete", nil)
 	}
 	return nil
 }
@@ -308,7 +308,7 @@ func (b *Bisley) AutoComplete() error {
 // Undo 直前の 1 手を取り消す
 func (b *Bisley) Undo() error {
 	if len(b.history) == 0 {
-		return errors.New("nothing to undo")
+		return NewDomainErrorCode(ErrInvalidPlay, "bisley.errNothingToUndo", nil)
 	}
 	snap := b.history[len(b.history)-1]
 	b.history = b.history[:len(b.history)-1]
@@ -370,14 +370,14 @@ func abs(v int) int {
 // topOf 指定列の最上段カードを返す（列が空・範囲外ならエラー）
 func (b *Bisley) topOf(col int) (*Card, error) {
 	if b.phase != BisleyPhasePlaying {
-		return nil, errors.New("game is not in playing phase")
+		return nil, NewDomainErrorCode(ErrWrongPhase, "bisley.errNotPlaying", nil)
 	}
 	if col < 0 || col >= BisleyTableauCnt {
-		return nil, errors.New("invalid column index")
+		return nil, NewDomainErrorCode(ErrInvalidPlay, "bisley.errBadColumn", nil)
 	}
 	pile := b.tableau[col]
 	if len(pile) == 0 {
-		return nil, errors.New("column is empty")
+		return nil, NewDomainErrorCode(ErrInvalidPlay, "bisley.errColumnEmpty", nil)
 	}
 	return pile[len(pile)-1].Card, nil
 }

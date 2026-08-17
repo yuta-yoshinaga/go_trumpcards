@@ -18,5 +18,16 @@
   "hintLine": "Hint: {{from}} → {{to}}",
   "undoToEscape": "Undo {{count}} move(s) to escape the dead end (undo {{count}}, or repeat u)",
   "helpExampleHint": "  h                    ask for a move",
-  "helpExampleAuto": "  ac                   send everything that can go to a foundation"
+  "helpExampleAuto": "  ac                   send everything that can go to a foundation",
+  "errCannotPlaceAscending": "That card cannot go on the ascending foundation",
+  "errCannotPlaceDescending": "That card cannot go on the descending foundation",
+  "errBadToColumn": "Invalid destination column",
+  "errSameColumn": "Source and destination are the same column",
+  "errEmptyColumn": "An empty column will not take a card (in Bisley a gap is not a free cell)",
+  "errNotAdjacentSameSuit": "The tableau builds one up or one down in the same suit",
+  "errNothingToAutoComplete": "No card can be sent to a foundation",
+  "errNothingToUndo": "There is nothing to undo",
+  "errBadColumn": "Invalid column index",
+  "errColumnEmpty": "That column is empty",
+  "errNotPlaying": "The game is not in play"
 }

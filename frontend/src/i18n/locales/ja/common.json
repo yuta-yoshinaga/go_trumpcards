@@ -2192,7 +2192,18 @@
     "war.round.humanWin": "あなたがラウンドに勝ちました。",
     "war.round.cpuWin": "CPU がラウンドに勝ちました。",
     "war.round.warBury": "戦争です。伏せ札と表札を出します。",
-    "paigow.foulHighMustBeat": "ファウルです: ローの2枚はハイの5枚より弱くしてください（ローが強いと反則）"
+    "paigow.foulHighMustBeat": "ファウルです: ローの2枚はハイの5枚より弱くしてください（ローが強いと反則）",
+    "bisley.errCannotPlaceAscending": "その札は昇順の基礎札に置けません",
+    "bisley.errCannotPlaceDescending": "その札は降順の基礎札に置けません",
+    "bisley.errBadToColumn": "移動先の列番号が不正です",
+    "bisley.errSameColumn": "移動元と移動先が同じ列です",
+    "bisley.errEmptyColumn": "空いた列には置けません（ビズリーの空き列は自由置き場ではありません）",
+    "bisley.errNotAdjacentSameSuit": "タブローは同じスートで1つ上か1つ下の札にしか重ねられません",
+    "bisley.errNothingToAutoComplete": "自動で基礎札に送れる札がありません",
+    "bisley.errNothingToUndo": "取り消せる手がありません",
+    "bisley.errBadColumn": "列番号が不正です",
+    "bisley.errColumnEmpty": "その列は空です",
+    "bisley.errNotPlaying": "プレイ中ではありません"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",
