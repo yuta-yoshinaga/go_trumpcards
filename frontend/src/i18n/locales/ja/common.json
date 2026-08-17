@@ -2203,7 +2203,20 @@
     "bisley.errNothingToUndo": "取り消せる手がありません",
     "bisley.errBadColumn": "列番号が不正です",
     "bisley.errColumnEmpty": "その列は空です",
-    "bisley.errNotPlaying": "プレイ中ではありません"
+    "bisley.errNotPlaying": "プレイ中ではありません",
+    "congress.errStockEmptyNoRedeal": "山札は空です（このゲームにめくり直しはありません）",
+    "congress.errPileEmpty": "タブロー山{{pile}}は空です",
+    "congress.errNoFoundationForCard": "その札を置ける基礎札がありません",
+    "congress.errSamePile": "移動元と移動先が同じ山です",
+    "congress.errEmptyPileNeedsStockOrWaste": "空き山はタブローからは埋められません（山札か捨て札からのみ）",
+    "congress.errCannotPlaceOnPile": "その山にはその札を置けません（同じスートで1つ下の札の上にのみ置けます）",
+    "congress.errWasteEmpty": "捨て札は空です",
+    "congress.errStockEmpty": "山札は空です",
+    "congress.errStockFillsGapsOnly": "山札から直接置けるのは空き山だけです",
+    "congress.errNothingToAutoComplete": "自動で基礎札に送れる札がありません",
+    "congress.errNothingToUndo": "取り消せる手がありません",
+    "congress.errNotPlaying": "プレイ中ではありません",
+    "congress.errInvalidPile": "無効なタブロー山の番号です: {{pile}}"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // CongressPhase コングレスのゲームフェーズ
@@ -150,7 +151,7 @@ func (c *Congress) Draw() error {
 		return err
 	}
 	if len(c.stock) == 0 {
-		return errors.New("stock is empty and there is no redeal")
+		return NewDomainErrorCode(ErrDeckExhausted, "congress.errStockEmptyNoRedeal", nil)
 	}
 	c.takeSnapshot()
 	card := c.stock[0]
@@ -170,11 +171,11 @@ func (c *Congress) MoveTableauToFoundation(pile int) error {
 	}
 	card := c.tableauTop(pile)
 	if card == nil {
-		return fmt.Errorf("pile %d is empty", pile)
+		return NewDomainErrorCode(ErrInvalidPlay, "congress.errPileEmpty", map[string]string{"pile": strconv.Itoa(pile)})
 	}
 	fIdx := c.findFoundation(card)
 	if fIdx < 0 {
-		return errors.New("card cannot be placed on a foundation")
+		return NewDomainErrorCode(ErrInvalidPlay, "congress.errNoFoundationForCard", nil)
 	}
 	c.takeSnapshot()
 	c.tableau[pile] = c.tableau[pile][:len(c.tableau[pile])-1]
@@ -198,17 +199,17 @@ func (c *Congress) MoveTableauToTableau(fromPile, toPile int) error {
 		return err
 	}
 	if fromPile == toPile {
-		return errors.New("source and destination are the same pile")
+		return NewDomainErrorCode(ErrInvalidPlay, "congress.errSamePile", nil)
 	}
 	card := c.tableauTop(fromPile)
 	if card == nil {
-		return fmt.Errorf("pile %d is empty", fromPile)
+		return NewDomainErrorCode(ErrInvalidPlay, "congress.errPileEmpty", map[string]string{"pile": strconv.Itoa(fromPile)})
 	}
 	if len(c.tableau[toPile]) == 0 {
-		return errors.New("an empty pile can only be filled from the stock or the waste")
+		return NewDomainErrorCode(ErrInvalidPlay, "congress.errEmptyPileNeedsStockOrWaste", nil)
 	}
 	if !c.canPlaceOnTableau(card, toPile) {
-		return errors.New("card cannot be placed on that pile")
+		return NewDomainErrorCode(ErrInvalidPlay, "congress.errCannotPlaceOnPile", nil)
 	}
 	c.takeSnapshot()
 	c.tableau[fromPile] = c.tableau[fromPile][:len(c.tableau[fromPile])-1]
@@ -224,11 +225,11 @@ func (c *Congress) MoveWasteToFoundation() error {
 	}
 	card := c.wasteTop()
 	if card == nil {
-		return errors.New("waste is empty")
+		return NewDomainErrorCode(ErrInvalidPlay, "congress.errWasteEmpty", nil)
 	}
 	fIdx := c.findFoundation(card)
 	if fIdx < 0 {
-		return errors.New("card cannot be placed on a foundation")
+		return NewDomainErrorCode(ErrInvalidPlay, "congress.errNoFoundationForCard", nil)
 	}
 	c.takeSnapshot()
 	c.popWaste()
@@ -247,10 +248,10 @@ func (c *Congress) MoveWasteToTableau(pile int) error {
 	}
 	card := c.wasteTop()
 	if card == nil {
-		return errors.New("waste is empty")
+		return NewDomainErrorCode(ErrInvalidPlay, "congress.errWasteEmpty", nil)
 	}
 	if !c.canPlaceOnTableau(card, pile) {
-		return errors.New("card cannot be placed on that pile")
+		return NewDomainErrorCode(ErrInvalidPlay, "congress.errCannotPlaceOnPile", nil)
 	}
 	c.takeSnapshot()
 	c.popWaste()
@@ -271,10 +272,10 @@ func (c *Congress) MoveStockToTableau(pile int) error {
 		return err
 	}
 	if len(c.stock) == 0 {
-		return errors.New("stock is empty")
+		return NewDomainErrorCode(ErrDeckExhausted, "congress.errStockEmpty", nil)
 	}
 	if len(c.tableau[pile]) != 0 {
-		return errors.New("the stock may only fill an empty pile")
+		return NewDomainErrorCode(ErrInvalidPlay, "congress.errStockFillsGapsOnly", nil)
 	}
 	c.takeSnapshot()
 	card := c.stock[0]
@@ -375,7 +376,7 @@ func (c *Congress) tableauHint() *CongressHint {
 // AutoComplete 基礎札へ送れる札がなくなるまで自動で送る
 func (c *Congress) AutoComplete() error {
 	if c.phase != CongressPhasePlaying {
-		return errors.New("game is not in playing phase")
+		return NewDomainErrorCode(ErrWrongPhase, "congress.errNotPlaying", nil)
 	}
 	moved := false
 	for {
@@ -395,7 +396,7 @@ func (c *Congress) AutoComplete() error {
 		moved = true
 	}
 	if !moved {
-		return errors.New("no card can be auto-completed")
+		return NewDomainErrorCode(ErrInvalidPlay, "congress.errNothingToAutoComplete", nil)
 	}
 	return nil
 }
@@ -403,7 +404,7 @@ func (c *Congress) AutoComplete() error {
 // Undo 直前の 1 手を取り消す
 func (c *Congress) Undo() error {
 	if len(c.history) == 0 {
-		return errors.New("nothing to undo")
+		return NewDomainErrorCode(ErrInvalidPlay, "congress.errNothingToUndo", nil)
 	}
 	snap := c.history[len(c.history)-1]
 	c.history = c.history[:len(c.history)-1]
@@ -462,7 +463,7 @@ func (c *Congress) IsStalemate() bool { return c.isStalemate }
 // requirePlaying プレイ中でなければエラーを返す
 func (c *Congress) requirePlaying() error {
 	if c.phase != CongressPhasePlaying {
-		return errors.New("game is not in playing phase")
+		return NewDomainErrorCode(ErrWrongPhase, "congress.errNotPlaying", nil)
 	}
 	return nil
 }
@@ -470,7 +471,7 @@ func (c *Congress) requirePlaying() error {
 // validCongressPile タブロー山のインデックスを検証する
 func validCongressPile(pile int) error {
 	if pile < 0 || pile >= CongressTableauCnt {
-		return fmt.Errorf("invalid pile: %d", pile)
+		return NewDomainErrorCode(ErrInvalidPlay, "congress.errInvalidPile", map[string]string{"pile": strconv.Itoa(pile)})
 	}
 	return nil
 }

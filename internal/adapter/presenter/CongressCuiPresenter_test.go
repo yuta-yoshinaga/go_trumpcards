@@ -178,3 +178,63 @@ func TestCongressCuiPresenter_ActionLogOutput(t *testing.T) {
 		assert.Contains(t, new(CongressCuiPresenter).ActionLogOutput(g), "move")
 	})
 }
+
+// #5562: 空き山の規則違反は英語の生文で返っていたので、日本語ロケールでも
+// 英語のまま出ていた。**コードを名乗るようにしただけでは足りない** — 訳が
+// 無ければキー文字列がそのまま画面に出る。
+func TestCongressCuiPresenter_ErrorsAreTranslated(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	defer i18n.SetLang("ja")
+
+	codes := []string{
+		"congress.errStockEmptyNoRedeal",
+		"congress.errPileEmpty",
+		"congress.errNoFoundationForCard",
+		"congress.errSamePile",
+		"congress.errEmptyPileNeedsStockOrWaste",
+		"congress.errCannotPlaceOnPile",
+		"congress.errWasteEmpty",
+		"congress.errStockEmpty",
+		"congress.errStockFillsGapsOnly",
+		"congress.errNothingToAutoComplete",
+		"congress.errNothingToUndo",
+		"congress.errNotPlaying",
+		"congress.errInvalidPile",
+	}
+
+	for _, lang := range []string{"ja", "en"} {
+		i18n.SetLang(lang)
+		for _, code := range codes {
+			g := new(interfaces.MockCongressGame)
+			setupCongressCuiMockDefaults(g)
+			err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, code, map[string]string{"pile": "3"})
+			out := new(CongressCuiPresenter).Output(g, err)
+
+			// **キーが画面に出ないこと。**訳の抜けはこれでしか見えない。
+			assert.NotContains(t, out, code, "%s untranslated in %s", code, lang)
+			// 訳文そのものが出ていること (キーが出ないだけなら空でも通る)。
+			assert.Contains(t, out, i18n.Tf(code, "pile", "3"))
+		}
+	}
+
+	// **日本語と英語で違う文が出ること。**両方に同じ英文を入れても上は通る。
+	i18n.SetLang("ja")
+	ja := i18n.T("congress.errEmptyPileNeedsStockOrWaste")
+	i18n.SetLang("en")
+	assert.NotEqual(t, ja, i18n.T("congress.errEmptyPileNeedsStockOrWaste"))
+}
+
+// コードを持たないエラー (逆シリアライズの防御など) は今までどおり素の文言で
+// 出ること。全部を翻訳経路に流すと、キーでない文字列を引いて空行になる。
+func TestCongressCuiPresenter_UncodedErrorsStillPrintTheirPhrase(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+
+	g := new(interfaces.MockCongressGame)
+	setupCongressCuiMockDefaults(g)
+	out := new(CongressCuiPresenter).Output(g, errors.New("congress: snapshot array exceeds maximum allowed size"))
+	assert.Contains(t, out, "snapshot array exceeds maximum allowed size")
+}

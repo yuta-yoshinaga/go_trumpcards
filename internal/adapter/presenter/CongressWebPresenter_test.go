@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -168,4 +169,39 @@ func TestCongressWebPresenter_ActionLogOutput(t *testing.T) {
 
 		assert.Contains(t, new(CongressWebPresenter).ActionLogOutput(g), "move")
 	})
+}
+
+// Web も同じエラーを受け取る。コードを Message に入れるとキー文字列が画面に
+// 出るので、MessageCode に振り分けること (#5562)。
+func TestCongressWebPresenter_ErrorCodesGoToMessageCode(t *testing.T) {
+	g := new(interfaces.MockCongressGame)
+	setupCongressOutputMock(g)
+	err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "congress.errEmptyPileNeedsStockOrWaste", nil)
+
+	var res controller.CongressWebOutput
+	require.NoError(t, json.Unmarshal([]byte(new(CongressWebPresenter).Output(g, err)), &res))
+	assert.Equal(t, "congress.errEmptyPileNeedsStockOrWaste", res.MessageCode)
+	assert.Empty(t, res.Message)
+}
+
+// パラメータ付きのコードは値も渡すこと。落とすと "{{pile}}" が画面に出る。
+func TestCongressWebPresenter_ErrorParamsSurvive(t *testing.T) {
+	g := new(interfaces.MockCongressGame)
+	setupCongressOutputMock(g)
+	err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "congress.errPileEmpty", map[string]string{"pile": "5"})
+
+	var res controller.CongressWebOutput
+	require.NoError(t, json.Unmarshal([]byte(new(CongressWebPresenter).Output(g, err)), &res))
+	assert.Equal(t, map[string]string{"pile": "5"}, res.MessageParams)
+}
+
+// コードを持たないエラーは今までどおり Message に入ること。
+func TestCongressWebPresenter_UncodedErrorsStayInMessage(t *testing.T) {
+	g := new(interfaces.MockCongressGame)
+	setupCongressOutputMock(g)
+
+	var res controller.CongressWebOutput
+	require.NoError(t, json.Unmarshal([]byte(new(CongressWebPresenter).Output(g, errors.New("boom"))), &res))
+	assert.Equal(t, "boom", res.Message)
+	assert.Empty(t, res.MessageCode)
 }
