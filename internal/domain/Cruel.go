@@ -303,28 +303,15 @@ func (c *Cruel) AutoComplete() error {
 	c.takeSnapshot()
 	totalMoved := 0
 	for {
-		moved := false
-		for col := range CruelTableauCnt {
-			if len(c.tableau[col]) == 0 {
-				continue
-			}
-			card := c.tableau[col][len(c.tableau[col])-1].Card
-			fIdx := card.GetDesign() - 1
-			if fIdx < 0 || fIdx >= CruelFoundationCnt {
-				continue
-			}
-			if !c.canPlaceOnFoundation(card, fIdx) {
-				continue
-			}
-			c.tableau[col] = c.tableau[col][:len(c.tableau[col])-1]
-			c.foundation[fIdx] = append(c.foundation[fIdx], card)
-			c.moveCount++
-			moved = true
-			totalMoved++
-		}
-		if !moved {
+		col, fIdx := c.nextAutoCompleteMove()
+		if col < 0 {
 			break
 		}
+		card := c.tableau[col][len(c.tableau[col])-1].Card
+		c.tableau[col] = c.tableau[col][:len(c.tableau[col])-1]
+		c.foundation[fIdx] = append(c.foundation[fIdx], card)
+		c.moveCount++
+		totalMoved++
 	}
 	// **1枚も動かなかったなら、何も起きていない。** 以前は無条件にログを残し、
 	// undo 用のスナップショットも積んでいたので、「オートコンプリートを実行しました」
@@ -436,6 +423,16 @@ func (c *Cruel) CanAutoComplete() bool {
 	if c.phase != CruelPhasePlaying {
 		return false
 	}
+	col, _ := c.nextAutoCompleteMove()
+	return col >= 0
+}
+
+// nextAutoCompleteMove は次にオートコンプリートで送れる (タブロー列, 組札) を返す。
+// 送れる札が無ければ col = -1。
+//
+// **AutoComplete と CanAutoComplete が同じ関数を呼ぶ**ので、ボタンの有効状態と
+// 実際の挙動がずれない (#5496)。同じ条件を2か所に書けば、いずれ片方だけ変わる。
+func (c *Cruel) nextAutoCompleteMove() (int, int) {
 	for col := range CruelTableauCnt {
 		if len(c.tableau[col]) == 0 {
 			continue
@@ -446,12 +443,13 @@ func (c *Cruel) CanAutoComplete() bool {
 			continue
 		}
 		if c.canPlaceOnFoundation(card, fIdx) {
-			return true
+			return col, fIdx
 		}
 	}
-	return false
+	return -1, -1
 }
 
+// canPlaceOnFoundation ファウンデーションにカードを置けるか判定。
 // Reset() で各ファウンデーションに A を1枚配置済みなので、空のケースは通常発生しない。
 func (c *Cruel) canPlaceOnFoundation(card *Card, fIdx int) bool {
 	return canPlaceOnFoundationPile(c.foundation[fIdx], card)
