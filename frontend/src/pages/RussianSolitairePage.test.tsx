@@ -373,3 +373,44 @@ describe('RussianSolitairePage deselect routing (#4439)', () => {
     expect(mockExec).not.toHaveBeenCalled();
   });
 });
+
+// #5534: 選んだ札の上に乗る札は全部まとめて動く (Yukon 系共通)。画面には
+// ハイライトのリングで示していたが、**読み上げには枚数が一切乗っていなかった**。
+describe('RussianSolitairePage block move announcement', () => {
+  const blockState = {
+    ...playingState,
+    tableau: [
+      [
+        { card: card('SPADE', 13), faceUp: true },
+        { card: card('HEART', 8), faceUp: true },
+        { card: card('CLOVER', 5), faceUp: true },
+      ],
+      [{ card: card('DIAMOND', 10), faceUp: true }],
+      [],
+      [],
+      [],
+      [],
+      [],
+    ],
+  };
+
+  it('says how many cards come along with the one being read', async () => {
+    mockExec.mockResolvedValue(blockState);
+    renderWithProviders(<RussianSolitairePage />);
+    // ♠K の上に ♥8 と ♣5 が乗っている → 3枚まとめて動く。
+    await waitFor(() => expect(screen.getByRole('button', { name: /♠ K/ })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: /♠ K/ }).getAttribute('aria-label')).toContain('3枚');
+    // 中間の ♥8 からは 2 枚。
+    expect(screen.getByRole('button', { name: /♥ 8/ }).getAttribute('aria-label')).toContain('2枚');
+  });
+
+  // **列の末尾は 1 枚。**「あと0枚と一緒に」は読み上げても意味がない。
+  it('does not announce a block for the bottom card', async () => {
+    mockExec.mockResolvedValue(blockState);
+    renderWithProviders(<RussianSolitairePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /♣ 5/ })).toBeInTheDocument());
+    const label = screen.getByRole('button', { name: /♣ 5/ }).getAttribute('aria-label') ?? '';
+    expect(label).toContain('♣ 5');
+    expect(label).not.toContain('枚まとめて');
+  });
+});
