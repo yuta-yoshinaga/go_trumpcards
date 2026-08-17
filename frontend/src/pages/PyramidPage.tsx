@@ -360,6 +360,14 @@ function PyramidPageContent() {
                     {t('empty')}
                   </div>
                 )}
+                {/* **配り直しは無い。** Draw は山札を引き切ると二度と引けないのに、
+                    空表示は「なし」としか言わない。標準のピラミッド (3回配り直し可) を
+                    知っているプレイヤーほど手詰まりの原因を誤解する (#5510)。 */}
+                {state.stockCount === 0 && (
+                  <div className="text-game-text-muted text-[10px] mt-1 max-w-[120px]" data-testid="py-no-redeal">
+                    {t('noRedeal')}
+                  </div>
+                )}
               </div>
 
               {/* Waste */}
