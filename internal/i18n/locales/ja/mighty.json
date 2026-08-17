@@ -55,5 +55,6 @@
   "hintReasonPlayTrump": "切り札で勝つ",
   "hintReasonPlayFollow": "リードスートに従う",
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "promptBidNoTrumpExtra": "ノートランプ (nt) を付けると、最低ビッドに +{{points}} 点が上乗せされます"
 }

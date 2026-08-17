@@ -55,5 +55,6 @@
   "hintReasonPlayTrump": "win with trump",
   "hintReasonPlayFollow": "follow the lead suit",
   "helpExamplePlay": "  p 0                  play hand card 0",
-  "helpHint": "  h                    show a hint"
+  "helpHint": "  h                    show a hint",
+  "promptBidNoTrumpExtra": "Adding no-trump (nt) raises the minimum bid by {{points}}"
 }
