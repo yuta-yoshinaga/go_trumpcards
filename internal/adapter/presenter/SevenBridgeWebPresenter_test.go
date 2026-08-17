@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -27,6 +28,7 @@ func setupSevenBridgeWebMock() *interfaces.MockSevenBridgeGame {
 	m.On("GetConfig").Return(domain.DefaultSevenBridgeConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	m.On("GetRoundWinnerIdx").Return(-1)
+	m.On("GetClaimedThisTurn").Return(false).Maybe()
 	return m
 }
 
@@ -171,4 +173,22 @@ func TestSevenBridgeWebPresenter_HintOutput(t *testing.T) {
 	p := new(presenter.SevenBridgeWebPresenter)
 	m, _ := setupSevenBridgeWebMockWithPlayers()
 	assert.Equal(t, p.Output(m, nil), p.HintOutput(m))
+}
+
+// #5547: 割り込みで取ったターンかどうかは保存までされているのに、レスポンスに
+// 載っていなかった。ページはこの値を読んでバッジを出す。
+func TestSevenBridgeWebPresenter_Output_ClaimedThisTurn(t *testing.T) {
+	pres := new(presenter.SevenBridgeWebPresenter)
+
+	outputWith := func(claimed bool) controller.SevenBridgeWebOutput {
+		m, _ := setupSevenBridgeWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetClaimedThisTurn")
+		m.On("GetClaimedThisTurn").Return(claimed)
+		var out controller.SevenBridgeWebOutput
+		require.NoError(t, json.Unmarshal([]byte(pres.Output(m, nil)), &out))
+		return out
+	}
+
+	assert.True(t, outputWith(true).ClaimedThisTurn)
+	assert.False(t, outputWith(false).ClaimedThisTurn)
 }
