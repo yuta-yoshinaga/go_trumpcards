@@ -38,5 +38,6 @@
   "hintStandPat": "推奨: 完成ロー。スタンドパット (s) しましょう。",
   "hintNotYourTurn": "今はあなたのドローフェーズではありません。",
   "helpExampleFold": "  f                    この手を降りる",
-  "helpLog": "  l                    行動ログを表示"
+  "helpLog": "  l                    行動ログを表示",
+  "madeLowWarning": "✨ 8以下のローが完成しています。スタンドパット (s) 推奨 — 崩さないこと"
 }
