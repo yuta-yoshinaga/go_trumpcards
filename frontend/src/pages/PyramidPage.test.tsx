@@ -685,3 +685,24 @@ describe('PyramidPage best-record', () => {
     expect(screen.queryByTestId('py-best-badge')).not.toBeInTheDocument();
   });
 });
+
+// #5510: Draw は山札を引き切ると二度と引けない設計なのに、空表示は「なし」としか
+// 言わない。**標準のピラミッド (3回配り直し可) を知っているプレイヤーほど**、
+// 手詰まりの原因を誤解する。
+describe('PyramidPage no-redeal notice', () => {
+  it('says there is no redeal once the stock is empty', async () => {
+    mockExec.mockResolvedValue({ ...playingState, stockCount: 0 });
+    renderWithProviders(<PyramidPage />);
+    const note = await screen.findByTestId('py-no-redeal');
+    expect(note.textContent).toMatch(/配り直し/);
+  });
+
+  // **山札が残っているうちは出さない。** まだ引けるのに「配り直し無し」と出ると、
+  // もう引けないと読める。
+  it('stays quiet while the stock still has cards', async () => {
+    mockExec.mockResolvedValue({ ...playingState, stockCount: 5 });
+    renderWithProviders(<PyramidPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('py-no-redeal')).not.toBeInTheDocument();
+  });
+});

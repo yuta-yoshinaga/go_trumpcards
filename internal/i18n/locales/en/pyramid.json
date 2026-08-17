@@ -20,5 +20,6 @@
   "exposedKing": "({{row}},{{col}}){{card}}[K]",
   "wasteKing": " | Waste: {{card}}[K]",
   "helpExampleHint": "  h                        ask for a move",
-  "helpUndo": "  u                        undo one move"
+  "helpUndo": "  u                        undo one move",
+  "noRedeal": "(no redeal)"
 }
