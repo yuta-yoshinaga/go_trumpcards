@@ -18,6 +18,14 @@ export interface CruelResponse extends BaseGameResponse {
   foundation: Card[][];
   phase: number;
   moveCount: number;
+  /**
+   * Whether auto-complete can move at least one card right now.
+   *
+   * Decided by the domain with the same check `AutoComplete` runs, so the page
+   * must not guess from the foundation contents -- Cruel deals the aces to the
+   * foundations at the start, so "a foundation has cards" is always true here.
+   */
+  canAutoComplete: boolean;
   canUndo: boolean;
   isStalemate: boolean;
   undoToEscape?: number;

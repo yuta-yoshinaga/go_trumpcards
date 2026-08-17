@@ -34,6 +34,10 @@ type CruelWebOutput struct {
 	Tableau    [][]*KlondikeWebOutputTableauCard `json:"tableau"`
 	Foundation [][]*WebOutputCard                `json:"foundation"`
 	Hint       *CruelWebOutputHint               `json:"hint,omitempty"`
+	// CanAutoComplete は今オートコンプリートで動かせる札があるか。ボタンの
+	// 有効/無効に使う。判定は AutoComplete と同じものを domain で共有している
+	// ので、フロントで組札の中身から推測しない (#5496)。
+	CanAutoComplete bool `json:"canAutoComplete"`
 	SolitaireWebOutputBase
 	WebOutputBase
 }

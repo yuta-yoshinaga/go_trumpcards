@@ -120,6 +120,15 @@ func (p *CanastaCuiPresenter) Output(g interfaces.CanastaGame, lastErr error) st
 			}
 			b.WriteString(i18n.T("canasta.promptDrawHelpStock") + "\n")
 			b.WriteString(i18n.T("canasta.promptDrawHelpDiscard") + "\n")
+			// **取れない理由は、インデックスを打つ前に言う。** Web は選択中の札を
+			// 事前検証して理由を出すのに、CUI は dd を送ってサーバに弾かれて初めて
+			// 1行返る形だった (#5502)。選んだ2枚に依存しない条件だけを見るので、
+			// 「選択」という概念の無い CUI でも同じ案内ができる。
+			if p := g.GetPlayer(currentIdx); p != nil && p.GetIsHuman() {
+				if blocker := g.GetDrawFromDiscardBlocker(); blocker != "" {
+					b.WriteString(color.Yellow(i18n.T("canasta.drawBlocker"+blocker)) + "\n")
+				}
+			}
 		case domain.CanastaPhaseMeld:
 			currentIdx := g.GetCurrentPlayerIdx()
 			b.WriteString(i18n.Tf("canasta.promptMeld",

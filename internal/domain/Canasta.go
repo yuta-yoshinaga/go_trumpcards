@@ -313,6 +313,53 @@ func (g *Canasta) PlayerDrawFromStock() error {
 	return nil
 }
 
+// 捨て札の山を取れない理由コード。空文字は「取れる (あとは正しいペアを選ぶだけ)」。
+const (
+	// CanastaDrawBlockerPileEmpty は捨て札の山が空。
+	CanastaDrawBlockerPileEmpty = "PileEmpty"
+	// CanastaDrawBlockerBlackThree は黒3がトップ。
+	CanastaDrawBlockerBlackThree = "BlackThreeTop"
+	// CanastaDrawBlockerWildTop はワイルドカードがトップ。
+	CanastaDrawBlockerWildTop = "WildTop"
+	// CanastaDrawBlockerNoPair はトップと同ランクの自然札が手札に2枚無い。
+	CanastaDrawBlockerNoPair = "NoPairInHand"
+)
+
+// GetDrawFromDiscardBlocker は、いま捨て札の山を取れない理由を返す (取れるなら "")。
+//
+// **判定は PlayerDrawFromDiscard と同じ順序で同じ条件を見る。**別に書くと、
+// 「取れます」と案内してからサーバに弾かれる (#5502)。選んだ2枚に依存しない
+// 条件だけを見るので、インデックスを入力する前に出せる。
+//
+// **初回メルドの最低点は見ない。** それは選んだ札の点数で決まるので、選択前には
+// 確定しない。Web の canastaDrawDiscardProblem も同じ理由で除外している。
+// つまり "" は「必ず取れる」ではなく「この段階で分かる障害は無い」の意味。
+func (g *Canasta) GetDrawFromDiscardBlocker() string {
+	if len(g.discardPile) == 0 {
+		return CanastaDrawBlockerPileEmpty
+	}
+	top := g.discardPile[len(g.discardPile)-1]
+	if CanastaIsBlack3(top) {
+		return CanastaDrawBlockerBlackThree
+	}
+	if CanastaIsWild(top) {
+		return CanastaDrawBlockerWildTop
+	}
+	// 手札にトップと同ランクの自然札が2枚無ければ、どのインデックスを選んでも通らない。
+	player := g.players[g.currentPlayerIdx]
+	natural := 0
+	for i := 0; i < player.GetCardsSize(); i++ {
+		c := player.GetCard(i)
+		if !CanastaIsWild(c) && c.GetValue() == top.GetValue() {
+			natural++
+		}
+	}
+	if natural < 2 {
+		return CanastaDrawBlockerNoPair
+	}
+	return ""
+}
+
 // PlayerDrawFromDiscard 人間プレイヤーが捨て札の山を取る
 func (g *Canasta) PlayerDrawFromDiscard(naturalPairIndices []int) error {
 	if g.gameEndFlag {

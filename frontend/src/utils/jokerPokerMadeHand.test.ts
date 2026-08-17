@@ -105,6 +105,33 @@ describe('evaluateVideoPokerMadeHand for Jacks or Better', () => {
     ).toEqual({ rowKey: 'royalFlush' });
   });
 
+  // **配当表の全段を通す。** 中間の役 (ストレート〜フォーカード) は1つも
+  // 通っていなかったので、行キーの取り違えに気づけなかった。
+  it.each([
+    ['straightFlush', [c('SPADE', 9), c('SPADE', 8), c('SPADE', 7), c('SPADE', 6), c('SPADE', 5)]],
+    ['fourOfAKind', [c('SPADE', 7), c('HEART', 7), c('CLOVER', 7), c('DIAMOND', 7), c('SPADE', 2)]],
+    ['fullHouse', [c('SPADE', 7), c('HEART', 7), c('CLOVER', 7), c('DIAMOND', 4), c('SPADE', 4)]],
+    ['flush', [c('SPADE', 9), c('SPADE', 7), c('SPADE', 5), c('SPADE', 3), c('SPADE', 2)]],
+    ['straight', [c('SPADE', 9), c('HEART', 8), c('CLOVER', 7), c('DIAMOND', 6), c('SPADE', 5)]],
+    ['threeOfAKind', [c('SPADE', 7), c('HEART', 7), c('CLOVER', 7), c('DIAMOND', 4), c('SPADE', 2)]],
+    ['twoPair', [c('SPADE', 7), c('HEART', 7), c('CLOVER', 4), c('DIAMOND', 4), c('SPADE', 2)]],
+  ] as const)('maps %s to its own paytable row', (expected, hand) => {
+    expect(evaluateVideoPokerMadeHand('videopoker', [...hand])).toEqual({ rowKey: expected });
+  });
+
+  // ハイカードは配当対象外 (default 分岐)。
+  it('pays nothing for a high card', () => {
+    expect(
+      evaluateVideoPokerMadeHand('videopoker', [
+        c('SPADE', 9),
+        c('HEART', 7),
+        c('CLOVER', 5),
+        c('DIAMOND', 3),
+        c('SPADE', 2),
+      ]),
+    ).toEqual({ rowKey: null });
+  });
+
   // **既存の Joker Poker は変わらない。** K 以上のペアが最低ラインのまま。
   it('leaves Joker Poker on its own minimum', () => {
     const pair = (v: number) => [c('SPADE', v), c('HEART', v), c('CLOVER', 3), c('DIAMOND', 7), c('SPADE', 9)];

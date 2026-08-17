@@ -17,6 +17,8 @@ type CruelGame interface {
 	MoveTableauToFoundation(col int) error
 	// Shift タブロー残カードを収集し、左から12列×4枚へ配り直す
 	Shift() error
+	// CanAutoComplete 今オートコンプリートで動かせる札があるか
+	CanAutoComplete() bool
 	// GetHint ヒントを取得する
 	GetHint() *domain.CruelHint
 	// GetPhase 現在のフェーズを取得する
