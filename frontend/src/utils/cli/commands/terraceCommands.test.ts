@@ -71,3 +71,27 @@ describe('parseTerraceCommand', () => {
     if ('error' in result) expect(result.error).toContain('Unknown command');
   });
 });
+
+// #5563: 手詰まりの案内は「undo <n>」と書いているのに、パーサは引数を捨てて
+// 1 手しか戻していなかった。
+describe('parseTerraceCommand undo with a count', () => {
+  it('sends undo_n with the count', () => {
+    expect(parseTerraceCommand('undo 5')).toEqual({ args: ['undo_n', undefined, undefined, 5] });
+    expect(parseTerraceCommand('u 3')).toEqual({ args: ['undo_n', undefined, undefined, 3] });
+  });
+
+  it('keeps the bare form a single undo', () => {
+    expect(parseTerraceCommand('undo')).toEqual({ args: ['undo'] });
+  });
+
+  it('rejects a count that is not a positive whole number', () => {
+    for (const arg of ['0', '-1', 'zz', '1.5']) {
+      expect(parseTerraceCommand(`undo ${arg}`)).toEqual({ error: `Invalid undo count: ${arg}` });
+    }
+  });
+
+  // **上限はここで決めない。**履歴より多ければサーバが答える。CUI 側と同じ扱い。
+  it('passes a large count through', () => {
+    expect(parseTerraceCommand('undo 9999')).toEqual({ args: ['undo_n', undefined, undefined, 9999] });
+  });
+});
