@@ -82,6 +82,71 @@ function jokerPokerRowKey(cards: readonly Card[], rank: number, usedWilds: boole
   }
 }
 
+/** Jack rank value — the Jacks-or-Better pay minimum. */
+const JACK = 11;
+
+/**
+ * Evaluate the five current cards for any video-poker variant.
+ *
+ * Jacks or Better has no wild card, so the same evaluator applies with the
+ * substitution loop finding nothing to substitute; only the pay minimum and the
+ * royal row key differ. The readout was gated on `jokerpoker` and therefore
+ * never appeared on the variant that needs it most — the one where the player
+ * has no wild to bail them out (#5506).
+ *
+ * @param variant - Which paytable to map the rank onto.
+ * @param cards - The five cards currently on the table.
+ * @returns The made hand, or null for any non-5-card input.
+ */
+export function evaluateVideoPokerMadeHand(
+  variant: 'videopoker' | 'jokerpoker',
+  cards: readonly Card[],
+): JokerPokerMadeHand | null {
+  if (cards.length !== 5) return null;
+  if (variant === 'jokerpoker') return evaluateJokerPokerMadeHand(cards);
+  const { rank } = evalWildHand(cards);
+  return { rowKey: jacksOrBetterRowKey(cards, rank) };
+}
+
+/** Map a rank to the Jacks or Better paytable row key (or null if it pays nothing). */
+function jacksOrBetterRowKey(cards: readonly Card[], rank: number): string | null {
+  switch (rank) {
+    case ROYAL_FLUSH:
+      // ワイルドが無いので natural/wild に分かれない。配当表の行も1本。
+      return 'royalFlush';
+    case STRAIGHT_FLUSH:
+      return 'straightFlush';
+    case FOUR_OF_A_KIND:
+      return 'fourOfAKind';
+    case FULL_HOUSE:
+      return 'fullHouse';
+    case FLUSH:
+      return 'flush';
+    case STRAIGHT:
+      return 'straight';
+    case THREE_OF_A_KIND:
+      return 'threeOfAKind';
+    case TWO_PAIR:
+      return 'twoPair';
+    case ONE_PAIR:
+      return isJacksOrBetter(cards) ? 'jacksOrBetter' : null;
+    default:
+      return null;
+  }
+}
+
+/** Whether the pair is jacks or higher (ace counts high) — the Jacks or Better minimum. */
+function isJacksOrBetter(cards: readonly Card[]): boolean {
+  const counts = new Map<number, number>();
+  for (const c of cards) {
+    counts.set(c.value, (counts.get(c.value) ?? 0) + 1);
+  }
+  for (const [value, count] of counts) {
+    if (count >= 2 && (value === ACE || value >= JACK)) return true;
+  }
+  return false;
+}
+
 /** Whether the (non-joker) pair is aces or kings — the Joker Poker pay minimum. */
 function isKingsOrBetter(cards: readonly Card[]): boolean {
   const counts = new Map<number, number>();

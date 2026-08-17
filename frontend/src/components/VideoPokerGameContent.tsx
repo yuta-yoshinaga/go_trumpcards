@@ -16,7 +16,7 @@ import type { Card, VideoPokerResponse } from '../types/card';
 import { VideoPokerPhase } from '../types/phases';
 import type { CliGameConfig } from '../utils/cli/types';
 import { getVideoPokerBaseHint } from '../utils/hints/videoPokerBaseHint';
-import { evaluateJokerPokerMadeHand } from '../utils/jokerPokerMadeHand';
+import { evaluateVideoPokerMadeHand } from '../utils/jokerPokerMadeHand';
 import {
   VIDEO_POKER_MAX_BET,
   videoPokerPayoutCell,
@@ -284,14 +284,18 @@ export function VideoPokerGameContent({
     return t('phase.result');
   }, [isBetPhase, isDrawPhase, t]);
 
-  // Joker Poker only: evaluate the current 5 cards during the draw phase so the
-  // player sees whether they already hold a paying hand (Kings or Better+). The
-  // readout depends solely on the dealt hand, so toggling holds never changes
-  // it, and it disappears once the phase leaves DRAW. `rowKey === null` means
-  // the hand does not reach the pay minimum.
+  // Evaluate the current 5 cards during the draw phase so the player sees whether
+  // they already hold a paying hand. The readout depends solely on the dealt
+  // hand, so toggling holds never changes it, and it disappears once the phase
+  // leaves DRAW. `rowKey === null` means the hand does not reach the pay minimum.
+  //
+  // **Jacks or Better にも出す。** 以前は jokerpoker でしか出しておらず、
+  // ワイルドで救われないぶん現在の役が効くはずの変種で常に非表示だった (#5506)。
+  // deuceswild はワイルド判定 (2) が別なので、対応するまで従来どおり出さない。
   const madeHand = useMemo(() => {
-    if (gameName !== 'jokerpoker' || !isDrawPhase || !state || state.hand.length !== 5) return null;
-    return evaluateJokerPokerMadeHand(state.hand);
+    if (!isDrawPhase || !state || state.hand.length !== 5) return null;
+    if (gameName !== 'jokerpoker' && gameName !== 'videopoker') return null;
+    return evaluateVideoPokerMadeHand(gameName, state.hand);
   }, [gameName, isDrawPhase, state]);
 
   const actionBindings = useMemo(
