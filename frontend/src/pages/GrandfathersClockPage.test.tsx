@@ -116,13 +116,46 @@ describe('GrandfathersClockPage', () => {
   });
 
   // A finished face accepts nothing more, so it must not be a click target.
-  it('disables a completed face as a destination', async () => {
+  //
+  // #5555: ただし native `disabled` はアクセシビリティツリーからボタンごと
+  // 外すので、目標ランクと枚数を含む faceAriaLabel が読み上げられなくなる。
+  // フォーカスは残したまま `aria-disabled` で拒否する。
+  it('marks a completed face aria-disabled but keeps it focusable', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
       foundation: faces.map((f, i) => ({ ...f, complete: i === 0 })),
     });
     renderWithProviders(<GrandfathersClockPage />);
-    await waitFor(() => expect(screen.getByLabelText(/文字盤0 \(1時\)/)).toBeDisabled());
+    // 移動元を選ぶまでは「選択待ち」で全部の文字盤が native disabled。
+    // 完成した文字盤だけが別の理由で拒否されることを見たいので、まず選ぶ。
+    const source = await screen.findByRole('button', { name: /^♠ 6（/ });
+    fireEvent.click(source);
+    await waitFor(() => expect(source).toHaveAttribute('aria-pressed', 'true'));
+
+    const face = screen.getByLabelText(/文字盤0 \(1時\)/);
+    expect(face).toHaveAttribute('aria-disabled', 'true');
+    expect(face).not.toBeDisabled();
+    // ラベルは読み上げ可能なまま (目標ランクと枚数を含む)。
+    expect(face.getAttribute('aria-label')).toMatch(/1時/);
+  });
+
+  // **拒否は維持する。**フォーカスできることと、動かせることは別。
+  it('does not move a card onto a completed face', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: faces.map((f, i) => ({ ...f, complete: i === 0 })),
+    });
+    renderWithProviders(<GrandfathersClockPage />);
+    const source = await screen.findByRole('button', { name: /^♠ 6（/ });
+    fireEvent.click(source);
+    await waitFor(() => expect(source).toHaveAttribute('aria-pressed', 'true'));
+    mockExec.mockClear();
+
+    fireEvent.click(screen.getByLabelText(/文字盤0 \(1時\)/));
+    // ヒントなど別の呼び出しが挟まっても、move だけは飛ばない。
+    fireEvent.click(screen.getByLabelText(/文字盤4 \(5時\)/));
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), { zone: 'foundation', col: 0 });
   });
 
   it('sends the face index with the move', async () => {

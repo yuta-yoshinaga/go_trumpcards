@@ -296,8 +296,16 @@ function GrandfathersClockPageContent() {
                       {top ? (
                         <button
                           type="button"
-                          onClick={() => game.handleSelectTarget(faceZone)}
-                          disabled={!isPlaying || loading || isAutoCompleting || !selectedSource || face.complete}
+                          // 完成した文字盤は受け取らないが、**フォーカスは残す**。
+                          // native disabled はアクセシビリティツリーからボタンごと
+                          // 外すので、目標ランクと枚数を含む faceAriaLabel が
+                          // 読み上げられなくなる (#5555)。
+                          onClick={() => {
+                            if (face.complete) return;
+                            game.handleSelectTarget(faceZone);
+                          }}
+                          disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
+                          aria-disabled={face.complete || undefined}
                           aria-label={t('faceAriaLabel', {
                             idx,
                             hour: CLOCK_HOURS[idx],
