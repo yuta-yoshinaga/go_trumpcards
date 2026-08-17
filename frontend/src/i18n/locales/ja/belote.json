@@ -34,7 +34,7 @@
   "roundPoints": "ラウンド: {{points}}点",
   "beloteRebelote": "ベロート/レベロート +20",
   "tracker": {
-    "dixDeDer": "最終トリック +10",
+    "dixDeDer": "最終トリック +{{points}}",
     "beloteKing": "切り札 K",
     "beloteQueen": "切り札 Q",
     "beloteBonus": "+20",
