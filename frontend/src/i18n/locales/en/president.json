@@ -37,5 +37,10 @@
   "exchange": {
     "title": "[Card Exchange]",
     "entry": "{{from}} → {{to}}: {{cards}}"
+  },
+  "actionPlayed": "{{name}} played: {{cards}}",
+  "actionPassed": "{{name}} passed",
+  "label": {
+    "actionLog": "Action history"
   }
 }

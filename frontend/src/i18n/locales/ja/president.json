@@ -37,5 +37,10 @@
   "exchange": {
     "title": "[カード交換]",
     "entry": "{{from}} → {{to}}: {{cards}}"
+  },
+  "actionPlayed": "{{name}}が出しました: {{cards}}",
+  "actionPassed": "{{name}}がパスしました",
+  "label": {
+    "actionLog": "行動履歴"
   }
 }
