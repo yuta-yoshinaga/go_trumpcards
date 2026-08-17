@@ -10,8 +10,47 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
+// shitheadMagicFormatter は特殊ランクの札に印を付ける整形関数を返す。
+//
+// **どのランクが特殊かは設定次第で変わる。**Web は絵文字バッジと title で
+// 出しているのに、CUI にはその注記も、Go 側ロケールの文言すら無かった (#5577)。
+// 判定は効果を決めている domain.ShitheadIsMagicValue をそのまま呼ぶ ── 一覧を
+// 別に持つと、設定を増やしたとき注記だけが古くなる。
+func shitheadMagicFormatter(cfg domain.ShitheadConfig) func(*domain.Card) string {
+	return func(c *domain.Card) string {
+		str := cuiCardStr(c)
+		if c != nil && domain.ShitheadIsMagicValue(cfg, c.GetValue()) {
+			str += color.Yellow(i18n.T("shithead.magicMark"))
+		}
+		return str
+	}
+}
+
+// shitheadMagicLegend は有効な特殊ランクとその効果を 1 行に並べる。何も有効で
+// なければ空。印だけ出しても、何が起きるかは分からない。
+func shitheadMagicLegend(cfg domain.ShitheadConfig) string {
+	ranks := domain.ShitheadMagicRanks(cfg)
+	if len(ranks) == 0 {
+		return ""
+	}
+	keys := map[int]string{
+		2:  "shithead.magicEffectTwo",
+		7:  "shithead.magicEffectSeven",
+		8:  "shithead.magicEffectEight",
+		10: "shithead.magicEffectTen",
+	}
+	parts := make([]string, 0, len(ranks))
+	for _, v := range ranks {
+		// ランクは番号を添えて出す。効果の文そのものは Web と**同じ文字列**を
+		// 使うので、突き合わせテストが等値で見られる。
+		parts = append(parts, i18n.Tf("shithead.magicLegendItem",
+			"rank", strconv.Itoa(v), "effect", i18n.T(keys[v])))
+	}
+	return i18n.Tf("shithead.magicLegend", "effects", strings.Join(parts, " / ")) + "\n"
+}
+
 // shitheadPlayerStr returns the display string for a single Shithead player.
-func shitheadPlayerStr(player *domain.ShitheadPlayer, idx int, currentTurn int) string {
+func shitheadPlayerStr(player *domain.ShitheadPlayer, idx int, currentTurn int, cfg domain.ShitheadConfig) string {
 	var b strings.Builder
 	name := cuiPlayerName(player, idx)
 	turnSuffix := ""
@@ -32,15 +71,15 @@ func shitheadPlayerStr(player *domain.ShitheadPlayer, idx int, currentTurn int) 
 	if player.GetIsHuman() {
 		if player.GetCardsSize() > 0 {
 			b.WriteString(i18n.T("shithead.handLabel"))
-			b.WriteString(cuiIndexedCardListStr(player) + "\n")
+			b.WriteString(formatCardList(player, shitheadMagicFormatter(cfg), "  ", true) + "\n")
 		}
 		if player.GetFaceUpSize() > 0 {
 			b.WriteString(i18n.T("shithead.faceupLabel"))
-			b.WriteString(cuiCardSliceStr(player.GetFaceUpCards()) + "\n")
+			b.WriteString(formatCardSlice(player.GetFaceUpCards(), shitheadMagicFormatter(cfg), ", ") + "\n")
 		}
 	} else if player.GetFaceUpSize() > 0 {
 		b.WriteString(i18n.T("shithead.faceupLabel"))
-		b.WriteString(cuiCardSliceStr(player.GetFaceUpCards()) + "\n")
+		b.WriteString(formatCardSlice(player.GetFaceUpCards(), shitheadMagicFormatter(cfg), ", ") + "\n")
 	}
 	return b.String()
 }
@@ -51,9 +90,12 @@ type ShitheadCuiPresenter struct{}
 // Output renders the current game state for the active locale (#1699).
 func (p *ShitheadCuiPresenter) Output(sg interfaces.ShitheadGame, lastErr error) string {
 	return buildCuiOutput(i18n.T("shithead.outputTitle"), func(b *strings.Builder) {
+		// 印だけ出しても何が起きるかは分からないので、効果も並べる。
+		b.WriteString(shitheadMagicLegend(sg.GetConfig()))
+
 		currentTurn := sg.GetCurrentTurn()
 		for i := 0; i < sg.GetPlayerCnt(); i++ {
-			b.WriteString(shitheadPlayerStr(sg.GetPlayer(i), i, currentTurn))
+			b.WriteString(shitheadPlayerStr(sg.GetPlayer(i), i, currentTurn, sg.GetConfig()))
 		}
 
 		b.WriteString("----------\n")
@@ -62,7 +104,7 @@ func (p *ShitheadCuiPresenter) Output(sg interfaces.ShitheadGame, lastErr error)
 		discard := sg.GetDiscardPile()
 		if len(discard) > 0 {
 			b.WriteString(i18n.Tf("shithead.discardLine",
-				"cards", cuiCardSliceStr(discard)) + "\n")
+				"cards", formatCardSlice(discard, shitheadMagicFormatter(sg.GetConfig()), ", ")) + "\n")
 		} else {
 			b.WriteString(i18n.T("shithead.discardEmpty") + "\n")
 		}
