@@ -14,5 +14,5 @@ export interface AccordionMoveZone {
 export const accordionApi = createSolitaireMoveApi<
   AccordionResponse,
   AccordionMoveZone,
-  'reset' | 'move' | 'giveup' | 'hint' | 'log' | 'undo' | 'undo_n'
+  'reset' | 'move' | 'giveup' | 'hint' | 'log' | 'undo' | 'undo_n' | 'autocomplete'
 >('accordion');
