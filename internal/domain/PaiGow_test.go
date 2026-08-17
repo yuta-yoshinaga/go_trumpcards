@@ -164,6 +164,12 @@ func TestPaiGow_SetHands_HighMustBeatLow(t *testing.T) {
 	err := pg.SetHands(0, 1)
 	assert.Error(t, err)
 	assert.True(t, errors.Is(err, domain.ErrInvalidPlay))
+
+	// #5526: 生の英文をそのまま画面に出していた。プレイヤーの言語で
+	// ルールを説明できるよう、i18n キーを名乗る形にする。
+	code, _ := domain.ErrorMessageCode(err)
+	assert.Equal(t, "paigow.foulHighMustBeat", code)
+	assert.NotContains(t, err.Error(), "High hand must be stronger")
 }
 
 func TestPaiGow_SetHands_ValidSplit(t *testing.T) {

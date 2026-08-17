@@ -72,9 +72,9 @@ func (pp *PaiGowCuiPresenter) Output(pg interfaces.PaiGowGame, lastErr error) st
 
 	sb.WriteString("----------\n")
 
-	if lastErr != nil {
-		sb.WriteString(i18n.MarkErrorLine(color.Red(lastErr.Error())) + "\n")
-	}
+	// 共通ヘルパに寄せる。ここで lastErr.Error() を直に書いていたので、
+	// i18n キーを名乗るエラーはキーがそのまま画面に出ていた (#5526)。
+	cuiErrorBlock(&sb, lastErr)
 
 	if pg.GetGameEndFlag() {
 		sb.WriteString(i18n.Tf("paigow.betLine", "bet", strconv.Itoa(pg.GetBet())) + "\n")

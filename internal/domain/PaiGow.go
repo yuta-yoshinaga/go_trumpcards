@@ -156,7 +156,9 @@ func (pg *PaiGow) SetHands(lowIdx0, lowIdx1 int) error {
 		// 分割を元に戻す
 		pg.playerHighHand = nil
 		pg.playerLowHand = nil
-		return NewDomainError(ErrInvalidPlay, "High hand must be stronger than or equal to low hand.")
+		// **キーで返す。**完成した英文を返すと、日本語でプレイしていても
+		// 英語の一文だけが出て、なぜ弾かれたのか読めない (#5526)。
+		return NewDomainErrorCode(ErrInvalidPlay, "paigow.foulHighMustBeat", nil)
 	}
 
 	pg.appendLog(0, "set", fmt.Sprintf("low=[%d,%d]", lowIdx0, lowIdx1), pg.playerLowHand)

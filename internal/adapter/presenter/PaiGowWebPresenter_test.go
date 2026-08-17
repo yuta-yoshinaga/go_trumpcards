@@ -65,6 +65,19 @@ func TestPaiGowWebPresenter_Output_Error(t *testing.T) {
 	assert.Equal(t, "test error", result.Message)
 }
 
+// #5526: ファウルのエラーは i18n キーを名乗るようになった。Error() をそのまま
+// Message に入れると、画面に "paigow.foulHighMustBeat" が出る。
+func TestPaiGowWebPresenter_Output_CodedErrorGoesOutAsACode(t *testing.T) {
+	p := new(PaiGowWebPresenter)
+	m := new(interfaces.MockPaiGowGame)
+	setupPaiGowWebMockDefaults(m)
+
+	err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "paigow.foulHighMustBeat", nil)
+	result := parsePaiGowOutput(t, p.Output(m, err))
+	assert.Equal(t, "paigow.foulHighMustBeat", result.MessageCode)
+	assert.Empty(t, result.Message, "生のキーを message に入れない")
+}
+
 func TestPaiGowWebPresenter_Output_PlayerWins(t *testing.T) {
 	p := new(PaiGowWebPresenter)
 	m := new(interfaces.MockPaiGowGame)

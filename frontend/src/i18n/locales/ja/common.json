@@ -2191,7 +2191,8 @@
     "lingerlonger.result.giveUp": "あなたが投了しました。CPU{{idx}} の勝ちです。",
     "war.round.humanWin": "あなたがラウンドに勝ちました。",
     "war.round.cpuWin": "CPU がラウンドに勝ちました。",
-    "war.round.warBury": "戦争です。伏せ札と表札を出します。"
+    "war.round.warBury": "戦争です。伏せ札と表札を出します。",
+    "paigow.foulHighMustBeat": "ファウルです: ローの2枚はハイの5枚より弱くしてください（ローが強いと反則）"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",
