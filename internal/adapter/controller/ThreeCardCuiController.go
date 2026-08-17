@@ -27,7 +27,7 @@ func (tcc *ThreeCardCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
 		func(_ []string) string { return tcc.ti.Reset() },
-		[]string{"b", "bet", "p", "play", "f", "fold", "h", "hint", "log", "l"},
+		[]string{"b", "bet", "rb", "rebet", "p", "play", "f", "fold", "h", "hint", "log", "l"},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bet":
@@ -43,6 +43,11 @@ func (tcc *ThreeCardCuiController) Exec(command string) string {
 					}
 				}
 				return tcc.ti.Bet(ante, pairPlus), true
+			case "rb", "rebet":
+				// **毎ラウンド同じ額を打ち直させない。** Web はワンクリックで
+				// 再ベットできるのに、テキスト側は bet <ante> <pairPlus> を毎回
+				// 手打ちする必要があった (#5513)。
+				return tcc.ti.Rebet(), true
 			case "p", "play":
 				return tcc.ti.Play(), true
 			case "f", "fold":

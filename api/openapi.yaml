@@ -4444,6 +4444,7 @@ paths:
         |---------|---------|-------------|
         | `reset` | `r`     | Start / restart a game |
         | `bet`   | `b`     | Place Ante bet (requires `amount`; optional `pairPlusBet`) |
+        | `rebet` | `rb`    | Repeat last round's Ante and Pair Plus amounts (no `amount` needed) |
         | `play`  | `p`     | Place Play bet (equal to Ante) and see dealer's hand |
         | `fold`  | `f`     | Forfeit Ante and Pair Plus bets |
         | `hint`  | `h`     | Get a hint for the next move |

@@ -22,6 +22,9 @@ func (m *MockThreeCardGame) Bet(ante, pairPlus int) error {
 	return args.Error(0)
 }
 
+// Rebet モック
+func (m *MockThreeCardGame) Rebet() error { return m.Called().Error(0) }
+
 func (m *MockThreeCardGame) Play() error {
 	args := m.Called()
 	return args.Error(0)
