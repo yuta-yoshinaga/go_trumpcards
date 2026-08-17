@@ -11,5 +11,6 @@
   "hintLine": "ヒント: {{card}} を ({{r}},{{c}}) に置く - {{reason}}",
   "hintSynergy": "同じ行・列の既存カードとペア/フラッシュ/ストレートを狙えます",
   "hintAny": "まだ相乗効果はありません。空きセルならどこでも大丈夫です",
-  "gameComplete": "ゲーム終了 合計得点: {{score}}"
+  "gameComplete": "ゲーム終了 合計得点: {{score}}",
+  "undoUnavailable": "（戻せる手はありません）"
 }
