@@ -18,5 +18,16 @@
   "hintLine": "ヒント: {{from}} → {{to}}",
   "undoToEscape": "脱出には {{count}} 手戻す必要があります（undo {{count}} または u を繰り返す）",
   "helpExampleHint": "  h                    次の一手を教えてもらう",
-  "helpExampleAuto": "  ac                   組札へ送れる札を自動で送る"
+  "helpExampleAuto": "  ac                   組札へ送れる札を自動で送る",
+  "errCannotPlaceAscending": "その札は昇順の基礎札に置けません",
+  "errCannotPlaceDescending": "その札は降順の基礎札に置けません",
+  "errBadToColumn": "移動先の列番号が不正です",
+  "errSameColumn": "移動元と移動先が同じ列です",
+  "errEmptyColumn": "空いた列には置けません（ビズリーの空き列は自由置き場ではありません）",
+  "errNotAdjacentSameSuit": "タブローは同じスートで1つ上か1つ下の札にしか重ねられません",
+  "errNothingToAutoComplete": "自動で基礎札に送れる札がありません",
+  "errNothingToUndo": "取り消せる手がありません",
+  "errBadColumn": "列番号が不正です",
+  "errColumnEmpty": "その列は空です",
+  "errNotPlaying": "プレイ中ではありません"
 }

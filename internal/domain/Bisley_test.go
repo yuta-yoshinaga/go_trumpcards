@@ -397,3 +397,39 @@ func TestBisley_AutoCompleteIgnoresTableauMoves(t *testing.T) {
 	assert.Len(t, b.GetTableau()[0], 1, "the board is untouched")
 	assert.Len(t, b.GetTableau()[1], 1)
 }
+
+// #5553: 空列への移動は `errors.New("cannot move onto an empty column")` を返し、
+// cuiErrorBlock がそれをそのまま赤字で出していた。日本語でプレイしていても
+// 英語の一文が画面に混ざる。
+func TestBisley_ErrorsNameI18nKeys(t *testing.T) {
+	b := newTestBisley()
+	b.Reset()
+
+	// 空列への移動。片方の列を空にしてから試す。
+	b.tableau[0] = nil
+	err := b.MoveTableauToTableau(1, 0)
+	require.Error(t, err)
+	code, _ := ErrorMessageCode(err)
+	assert.Equal(t, "bisley.errEmptyColumn", code)
+	// **生の英文が残っていないこと。**
+	assert.NotContains(t, err.Error(), "empty column")
+
+	// 同じ列への移動。
+	code, _ = ErrorMessageCode(b.MoveTableauToTableau(1, 1))
+	assert.Equal(t, "bisley.errSameColumn", code)
+
+	// 範囲外の列。
+	code, _ = ErrorMessageCode(b.MoveTableauToTableau(1, BisleyTableauCnt))
+	assert.Equal(t, "bisley.errBadToColumn", code)
+
+	// 取り消せる手が無いとき。
+	fresh := newTestBisley()
+	fresh.Reset()
+	code, _ = ErrorMessageCode(fresh.Undo())
+	assert.Equal(t, "bisley.errNothingToUndo", code)
+
+	// **プレイ中でないときも。**
+	fresh.GiveUp()
+	code, _ = ErrorMessageCode(fresh.MoveTableauToAceFoundation(0))
+	assert.Equal(t, "bisley.errNotPlaying", code)
+}
