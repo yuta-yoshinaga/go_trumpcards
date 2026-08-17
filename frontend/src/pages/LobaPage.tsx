@@ -249,6 +249,15 @@ function LobaPageContent() {
                 ))}
               </div>
               {acting && isHumanTurn && <div className="text-[10px] text-ds-text-muted mt-1">{t('selectHint')}</div>}
+              {/* **「付ける」だけが二段階。**手札1枚に加えて付け先のメルドも要るのに、
+                  その条件はボタンの disabled にしか書かれておらず、選んだのに押せない
+                  理由が画面のどこにも無かった (#5574)。捨てるつもりの人を急かさないよう、
+                  selectHint を置き換えるのではなく**足りていないときだけ**足す。 */}
+              {acting && isHumanTurn && selected.length === 1 && meldTarget === null && state.melds.length > 0 && (
+                <div className="text-[10px] text-ds-text-muted mt-1" data-testid="loba-layoff-hint">
+                  {t('layOffTargetHint')}
+                </div>
+              )}
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
             </div>
 
