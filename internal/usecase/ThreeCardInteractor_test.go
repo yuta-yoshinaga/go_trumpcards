@@ -131,3 +131,30 @@ func TestThreeCardInteractor_ActionLog(t *testing.T) {
 	result := ti.ActionLog()
 	assert.Equal(t, "log output", result)
 }
+
+// #5513: 直前と同じ額で賭け直す。ドメインの Rebet をそのまま通し、結果を提示する。
+func TestThreeCardInteractor_Rebet(t *testing.T) {
+	mockGame := new(interfaces.MockThreeCardGame)
+	mockPresenter := new(presenter.MockThreeCardPresenter)
+	ti := NewThreeCardInteractor(mockGame, mockPresenter)
+
+	mockGame.On("Rebet").Return(nil)
+	mockPresenter.On("Output", mockGame, nil).Return("rebet output")
+
+	assert.Equal(t, "rebet output", ti.Rebet())
+	mockGame.AssertCalled(t, "Rebet")
+}
+
+// **エラーもそのまま提示に回る。** 握りつぶすと、資金不足で断られたことが
+// プレイヤーに伝わらない。
+func TestThreeCardInteractor_RebetSurfacesTheError(t *testing.T) {
+	mockGame := new(interfaces.MockThreeCardGame)
+	mockPresenter := new(presenter.MockThreeCardPresenter)
+	ti := NewThreeCardInteractor(mockGame, mockPresenter)
+
+	wantErr := errors.New("insufficient chips")
+	mockGame.On("Rebet").Return(wantErr)
+	mockPresenter.On("Output", mockGame, wantErr).Return("error output")
+
+	assert.Equal(t, "error output", ti.Rebet())
+}

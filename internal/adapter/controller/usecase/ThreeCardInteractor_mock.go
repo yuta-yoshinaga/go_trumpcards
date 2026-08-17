@@ -19,6 +19,9 @@ func (m *MockThreeCardInteractor) Bet(ante, pairPlus int) string {
 	return args.String(0)
 }
 
+// Rebet モック
+func (m *MockThreeCardInteractor) Rebet() string { return m.Called().String(0) }
+
 func (m *MockThreeCardInteractor) Play() string {
 	args := m.Called()
 	return args.String(0)

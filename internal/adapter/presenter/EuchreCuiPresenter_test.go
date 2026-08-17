@@ -500,6 +500,24 @@ func TestEuchreCuiPresenter_HintShowsTheScore(t *testing.T) {
 	e.Reset()
 	e.SetPhase(domain.EuchrePhasePickUp)
 	e.SetBidPlayerIdx(0)
+	e.SetDealerIdx(1) // ディーラーはフェイスアップを貰えるので +1 される。席をずらして避ける
+	e.SetFaceUpCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+
+	// **配られた手札のままでは比べられない。** evalHandForTrump は切り札の Q と
+	// 非切り札の A を rand.Intn(2) で数えるので、GetHint を 2 回呼ぶと違う値が返る。
+	// 呼ぶたびに答えが変わる札を 1 枚も含まない手札に差し替える
+	// (右バウアー +2、切り札 K +1、残りは 0 点 = 3 点固定)。
+	hand := e.GetPlayer(0)
+	hand.Reset()
+	for _, c := range []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 11, false),
+		domain.NewCard(domain.CardDesignSpade, 13, false),
+		domain.NewCard(domain.CardDesignHeart, 10, false),
+		domain.NewCard(domain.CardDesignHeart, 9, false),
+		domain.NewCard(domain.CardDesignDiamond, 10, false),
+	} {
+		hand.AddCard(c)
+	}
 
 	hint := e.GetHint()
 	require.NotNil(t, hint)
@@ -514,6 +532,8 @@ func TestEuchreCuiPresenter_HintShowsTheScore(t *testing.T) {
 	// しきい値も文言から読めること。
 	assert.Contains(t, out, strconv.Itoa(domain.EuchreOrderUpScore))
 	assert.Contains(t, out, strconv.Itoa(domain.EuchreGoAloneScore))
+	// 手札が固定なら値も固定 -- 3 点はオーダーアップのしきい値ちょうど。
+	assert.Equal(t, domain.EuchreOrderUpScore, *hint.Score)
 }
 
 // スコアを持たない局面 (カードプレイのヒント) では行を出さない。

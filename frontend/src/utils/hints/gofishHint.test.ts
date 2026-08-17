@@ -63,6 +63,44 @@ describe('getGoFishHint', () => {
     expect(hint?.reason).toBe('hint.askMostCopies');
   });
 
+  // #5518: 文言は「最も多く持っているランク」と言うのに、どのランクかは返って
+  // いなかった。プレイヤーは助言を読んだあと自分で手札を数え直すことになる。
+  it('names the rank it holds most copies of, and points at those cards', () => {
+    const hint = getGoFishHint(makeState()); // H5 S5 D8 C3 -> 5 が2枚
+    expect(hint?.reasonParams).toEqual({ rank: '5' });
+    expect(hint?.targetIndices).toEqual([0, 1]);
+  });
+
+  it('labels a face rank by its letter, not its number', () => {
+    const state = makeState();
+    state.players[0].cards = [card('HEART', 13), card('SPADE', 13), card('DIAMOND', 8)];
+    const hint = getGoFishHint(state);
+    expect(hint?.reasonParams).toEqual({ rank: 'K' });
+    expect(hint?.targetIndices).toEqual([0, 1]);
+  });
+
+  // **同数のときの選び方を固定する。**手札の並び順に任せると、同じ盤面でも
+  // 引き直すたびに違うランクを勧めることになる。
+  it('breaks a tie by the lowest rank, whatever the hand order is', () => {
+    const state = makeState();
+    state.players[0].cards = [card('HEART', 9), card('SPADE', 9), card('DIAMOND', 4), card('CLOVER', 4)];
+    expect(getGoFishHint(state)?.reasonParams).toEqual({ rank: '4' });
+    expect(getGoFishHint(state)?.targetIndices).toEqual([2, 3]);
+
+    state.players[0].cards = [card('DIAMOND', 4), card('CLOVER', 4), card('HEART', 9), card('SPADE', 9)];
+    expect(getGoFishHint(state)?.reasonParams).toEqual({ rank: '4' });
+    expect(getGoFishHint(state)?.targetIndices).toEqual([0, 1]);
+  });
+
+  // A は 1 として持っているが、表示は "A"。数の小さい順のタイブレークでは
+  // 一番若いランクなので先に選ばれる。
+  it('treats the ace as the lowest rank', () => {
+    const state = makeState();
+    state.players[0].cards = [card('HEART', 7), card('SPADE', 7), card('DIAMOND', 1), card('CLOVER', 1)];
+    expect(getGoFishHint(state)?.reasonParams).toEqual({ rank: 'A' });
+    expect(getGoFishHint(state)?.targetIndices).toEqual([2, 3]);
+  });
+
   it('upgrades confidence when a cpu has recently taken a rank the human holds', () => {
     const state = makeState({
       cpuActions: [
@@ -81,6 +119,29 @@ describe('getGoFishHint', () => {
     const hint = getGoFishHint(state);
     expect(hint?.confidence).toBe('strong');
     expect(hint?.reason).toBe('hint.askKnownRank');
+    // 既知のランクも同じで、見つけた値を捨てずに返す。
+    expect(hint?.reasonParams).toEqual({ rank: '5' });
+    expect(hint?.targetIndices).toEqual([0, 1]);
+  });
+
+  // 既知のランクが複数あるときも、手札の並び順ではなく若い順に決める。
+  it('picks the lowest known rank when an opponent revealed several', () => {
+    const state = makeState({
+      cpuActions: [8, 3].map((askRank) => ({
+        askPlayerIdx: 1,
+        askTargetIdx: 2,
+        askRank,
+        success: true,
+        cardsReceived: 1,
+        drawnCard: null,
+        bookFormed: false,
+        bookRank: 0,
+      })),
+    });
+    const hint = getGoFishHint(state); // 手札は H5 S5 D8 C3
+    expect(hint?.reason).toBe('hint.askKnownRank');
+    expect(hint?.reasonParams).toEqual({ rank: '3' });
+    expect(hint?.targetIndices).toEqual([3]);
   });
 
   it('uses lastAsk when available', () => {

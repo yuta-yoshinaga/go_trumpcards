@@ -124,3 +124,26 @@ func TestThreeCardCuiController_Empty(t *testing.T) {
 	result := c.Exec("")
 	assert.Contains(t, result, "'help' でコマンド一覧を表示します。")
 }
+
+// #5513: Web はラウンド終了時にワンクリックで再ベットできるのに、CUI には同等の
+// コマンドが無く毎ラウンド bet <ante> <pairPlus> を手打ちしていた。
+func TestThreeCardCuiController_Rebet(t *testing.T) {
+	for _, cmd := range []string{"rb", "rebet"} {
+		m := new(usecase.MockThreeCardInteractor)
+		m.On("Rebet").Return(`{"phase":1}`)
+		c := controller.NewThreeCardCuiController(m)
+
+		assert.Equal(t, `{"phase":1}`, c.Exec(cmd), cmd)
+		m.AssertCalled(t, "Rebet")
+	}
+}
+
+// **未知のコマンド扱いにしない。** 以前は rebet が「不明なコマンド」で弾かれていた。
+func TestThreeCardCuiController_RebetIsARecognisedVerb(t *testing.T) {
+	m := new(usecase.MockThreeCardInteractor)
+	m.On("Rebet").Return(`{}`)
+	c := controller.NewThreeCardCuiController(m)
+	out := c.Exec("rebet")
+	assert.NotContains(t, out, "Unsupported")
+	assert.NotContains(t, out, "不明")
+}

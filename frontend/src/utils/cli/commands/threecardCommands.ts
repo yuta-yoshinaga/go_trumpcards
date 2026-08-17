@@ -4,7 +4,23 @@ import type { CliParseResult } from '../types';
 
 type ThreeCardArgs = Parameters<typeof threecardApi.exec>;
 
-const VALID_COMMANDS = ['b', 'bet', 'p', 'play', 'f', 'fold', 'log', 'r', 'reset', 'h', 'hint', 'help', '?'];
+const VALID_COMMANDS = [
+  'b',
+  'bet',
+  'rb',
+  'rebet',
+  'p',
+  'play',
+  'f',
+  'fold',
+  'log',
+  'r',
+  'reset',
+  'h',
+  'hint',
+  'help',
+  '?',
+];
 
 /** Parse a Three Card Poker CLI command into API exec arguments. */
 export function parseThreecardCommand(input: string): CliParseResult<ThreeCardArgs> {
@@ -22,6 +38,12 @@ export function parseThreecardCommand(input: string): CliParseResult<ThreeCardAr
       }
       return { args: ['bet', amount.value] };
     }
+    // **毎ラウンド同じ額を打ち直させない。** ボタン (tc-rebet-button) は
+    // ワンクリックなのに、CLI は bet <ante> <pairPlus> を手打ちしていた (#5513)。
+    // 金額はサーバが覚えているので送らない。
+    case 'rb':
+    case 'rebet':
+      return { args: ['rebet'] };
     case 'p':
     case 'play':
       return { args: ['play'] };
@@ -47,6 +69,7 @@ export function parseThreecardCommand(input: string): CliParseResult<ThreeCardAr
 /** Help text for Three Card Poker CLI mode. */
 export const THREECARD_HELP: string[] = [
   'b <amt> [pp] - Ante bet (optional pair plus)',
+  'rb/rebet     - Bet the same as last round',
   'p/play       - Play (match ante)',
   'f/fold       - Fold hand',
   'log          - Show action log',
