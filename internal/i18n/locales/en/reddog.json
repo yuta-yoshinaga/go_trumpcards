@@ -26,5 +26,12 @@
   "hintSpread": "Spread {{spread}} (winning ranks: {{ranks}}) -> {{rec}}",
   "hintBetFirst": "Place a bet first.",
   "hintGameOver": "The game is over.",
-  "helpExampleBet": "  b 100                bet 100 chips"
+  "helpExampleBet": "  b 100                bet 100 chips",
+  "paytableHeader": "Payouts: ",
+  "paySpread1": "spread 1 {{mult}}:1",
+  "paySpread2": "spread 2 {{mult}}:1",
+  "paySpread3": "spread 3 {{mult}}:1",
+  "paySpread4Plus": "spread 4+ {{mult}}:1",
+  "payPair": "pair + matching third {{mult}}:1",
+  "payPush": "consecutive and pair-no-match push"
 }
