@@ -670,3 +670,76 @@ func TestBura_PlayerSnapshotWithoutAnEmbeddedPlayerStillLoads(t *testing.T) {
 	assert.Equal(t, 0, p.GetCardsSize())
 	assert.False(t, p.GetIsHuman())
 }
+
+// #5568: 画面に役の説明を出すにあたり、**役の一覧を画面側で数え直さない**ための
+// 出所。ここが実際の判定と食い違うと、案内が黙って古くなる。
+func TestBuraWinningCombinationsMatchesWhatDetectionCanReturn(t *testing.T) {
+	listed := BuraWinningCombinations()
+	require.NotEmpty(t, listed)
+
+	// 一覧のどれもが実際に成立しうること。手札を組んで検出させる。
+	trump := CardDesignSpade
+	hands := map[BuraCombination][]*Card{
+		BuraCombinationBura: {
+			NewCard(CardDesignSpade, 7, true), NewCard(CardDesignSpade, 8, true), NewCard(CardDesignSpade, 9, true),
+		},
+		BuraCombinationMoscow: {
+			NewCard(CardDesignHeart, 1, true), NewCard(CardDesignClover, 1, true), NewCard(CardDesignDiamond, 1, true),
+		},
+		BuraCombinationLittleMoscow: {
+			NewCard(CardDesignSpade, 6, true), NewCard(CardDesignHeart, 6, true), NewCard(CardDesignClover, 6, true),
+		},
+		BuraCombinationMolodka: {
+			NewCard(CardDesignHeart, 7, true), NewCard(CardDesignHeart, 8, true), NewCard(CardDesignHeart, 9, true),
+		},
+	}
+	for _, c := range listed {
+		hand, ok := hands[c]
+		require.True(t, ok, "combination %d is listed but this test has no hand for it", c)
+		assert.Equal(t, c, BuraDetectCombination(hand, trump))
+		// キーが無いと画面には何も出ない。役だけ足してキーを忘れると黙って消える。
+		assert.NotEmpty(t, c.Key(), "combination %d has no i18n key", c)
+	}
+
+	// キーは役ごとに別であること。使い回すと 2 つの役が同じ説明になる。
+	seen := map[string]bool{}
+	for _, c := range listed {
+		assert.False(t, seen[c.Key()], "duplicate key %q", c.Key())
+		seen[c.Key()] = true
+	}
+
+	// 役なしはキーを持たない。持たせると「役なし」が役として並ぶ。
+	assert.Empty(t, BuraCombinationNone.Key())
+}
+
+// **逆向きも見る。**上のテストは「並べた役が本物か」しか見ておらず、役を 1 つ
+// 落としても素通りする。3 枚の組み合わせを総当たりして、検出器が返しうる役を
+// 実際に数え、一覧と一致することを確かめる。
+func TestBuraWinningCombinationsListsEveryDetectableCombination(t *testing.T) {
+	trump := CardDesignSpade
+	deck := make([]*Card, 0, 36)
+	for _, d := range []int{CardDesignSpade, CardDesignHeart, CardDesignClover, CardDesignDiamond} {
+		for _, v := range []int{1, 6, 7, 8, 9, 10, 11, 12, 13} {
+			deck = append(deck, NewCard(d, v, true))
+		}
+	}
+
+	detectable := map[BuraCombination]bool{}
+	for i := range deck {
+		for j := i + 1; j < len(deck); j++ {
+			for k := j + 1; k < len(deck); k++ {
+				if c := BuraDetectCombination([]*Card{deck[i], deck[j], deck[k]}, trump); c != BuraCombinationNone {
+					detectable[c] = true
+				}
+			}
+		}
+	}
+
+	listed := map[BuraCombination]bool{}
+	for _, c := range BuraWinningCombinations() {
+		listed[c] = true
+	}
+	assert.Equal(t, detectable, listed,
+		"the list the UI reads must be exactly what detection can return")
+	assert.Len(t, detectable, 4, "all four combinations must be reachable from a real deck")
+}

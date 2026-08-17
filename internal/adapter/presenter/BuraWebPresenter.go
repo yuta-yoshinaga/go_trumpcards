@@ -34,6 +34,12 @@ func (p *BuraWebPresenter) buildBase(b interfaces.BuraGame) *controller.BuraWebO
 	resObj.GameEndFlag = b.GetGameEndFlag()
 	resObj.WinnerIdx = b.GetWinnerIdx()
 	resObj.IsDraw = b.IsDraw()
+	// 役の一覧はドメインから。画面側で数え直すと、役を足したとき案内だけが古くなる。
+	combos := domain.BuraWinningCombinations()
+	resObj.WinningCombinations = make([]string, 0, len(combos))
+	for _, c := range combos {
+		resObj.WinningCombinations = append(resObj.WinningCombinations, c.Key())
+	}
 
 	cfg := b.GetConfig()
 	resObj.Config = controller.BuraWebOutputConfig{

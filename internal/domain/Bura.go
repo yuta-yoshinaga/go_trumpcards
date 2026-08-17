@@ -188,6 +188,39 @@ func buraValidateLead(cards []*Card) error {
 	return nil
 }
 
+// BuraWinningCombinations は即勝ちになる役をすべて、判定順に返す。
+//
+// **説明を書く側が役を数え直さないため。**画面の案内が役を 1 つ落としても
+// ゲームは動くので、落としたことは誰にも気づかれない。ここを唯一の出所に
+// しておけば、役を足したときに案内の側が黙って古くなることはない。
+func BuraWinningCombinations() []BuraCombination {
+	return []BuraCombination{
+		BuraCombinationBura,
+		BuraCombinationMoscow,
+		BuraCombinationLittleMoscow,
+		BuraCombinationMolodka,
+	}
+}
+
+// Key は役の i18n キー片を返す。空文字は「役なし」。
+//
+// キーを役の側に置くのは、画面ごとに名前を付け直すと同じ役が CUI と Web で
+// 別物に見えるため。
+func (c BuraCombination) Key() string {
+	switch c {
+	case BuraCombinationBura:
+		return "bura"
+	case BuraCombinationMoscow:
+		return "moscow"
+	case BuraCombinationLittleMoscow:
+		return "littleMoscow"
+	case BuraCombinationMolodka:
+		return "molodka"
+	default:
+		return ""
+	}
+}
+
 // BuraDetectCombination 手札が成立させている即勝ち役を返す。
 // 3 枚ちょうどのときのみ成立しうる。判定順は bura > Moscow > little Moscow >
 // molodka で、切札 3 枚は molodka ではなく bura として扱う。
