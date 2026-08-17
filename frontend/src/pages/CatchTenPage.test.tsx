@@ -216,3 +216,40 @@ describe('CatchTenPage', () => {
     }
   });
 });
+
+// #5536: 読み上げの「+N」に累積チームスコアをそのまま渡していたので、
+// 「+41 (合計 41)」のように増分と合計が同じ数字になっていた。CPU 一覧は
+// 正しい player.roundScore を出しているので、同じ画面で矛盾していた。
+describe('CatchTenPage round announcement', () => {
+  const announce = () => screen.getByRole('status').textContent ?? '';
+
+  const roundEnd = (round: number[], teamTotals: [number, number]) =>
+    makeState({
+      phase: 2,
+      teamScores: teamTotals,
+      players: makeState().players.map((p, i) => ({ ...p, roundScore: round[i] })),
+    });
+
+  it('announces the honours won this round, not the running total', async () => {
+    // チーム0 が 4+3=7 点、チーム1 が 2+0=2 点。累積は 30 / 11。
+    mockExec.mockResolvedValue(roundEnd([4, 2, 3, 0], [30, 11]));
+    renderWithProviders(<CatchTenPage />);
+    await waitFor(() => expect(announce()).toContain('ラウンド終了'));
+
+    expect(announce()).toContain('+7');
+    expect(announce()).toContain('+2');
+    // 合計は累積のまま。
+    expect(announce()).toContain('30');
+    expect(announce()).toContain('11');
+    // **増分に累積を出さない。**"+30" は今回入った点ではない。
+    expect(announce()).not.toContain('+30');
+  });
+
+  it('reads zero for a team that took no honours', async () => {
+    mockExec.mockResolvedValue(roundEnd([0, 5, 0, 6], [12, 25]));
+    renderWithProviders(<CatchTenPage />);
+    await waitFor(() => expect(announce()).toContain('ラウンド終了'));
+    expect(announce()).toContain('+0');
+    expect(announce()).toContain('+11');
+  });
+});
