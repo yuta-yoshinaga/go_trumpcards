@@ -176,6 +176,18 @@ func (p *SevenCardStudCuiPresenter) Output(s interfaces.SevenCardStudGame, lastE
 				}
 				if r.WonAmount > 0 {
 					b.WriteString(i18n.Tf("sevencardstud.wonAmount", "total", strconv.Itoa(r.WonAmount)))
+					// Hi-Lo は合計額だけでは、ハイを取ったのかローを取ったのか、
+					// 両取り (スクープ) なのかが読めない (#5543)。Web の
+					// StudHiLoSplit は 3 通りを別バッジで出している。
+					if s.GetIsHiLo() {
+						high := r.WonAmount - r.WonLow
+						b.WriteString(i18n.Tf("sevencardstud.wonSplit",
+							"high", strconv.Itoa(high),
+							"low", strconv.Itoa(r.WonLow)))
+						if high > 0 && r.WonLow > 0 {
+							b.WriteString(i18n.T("sevencardstud.wonScoop"))
+						}
+					}
 				}
 				b.WriteString("\n")
 			}
