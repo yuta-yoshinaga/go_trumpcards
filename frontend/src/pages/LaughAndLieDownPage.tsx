@@ -146,6 +146,11 @@ function LaughAndLieDownPageContent() {
                     {t('won', { n: o.wonCount })}
                     {o.laidDown && ` · ${t('laidDown')}`}
                     {ended && ` · ${t('score', { n: o.score })}`}
+                    {ended && state.lastInIdx === o.id && (
+                      <span data-testid={`lld-lastin-${o.id.toString()}`}>
+                        {` · ${t('lastIn', { amount: state.lastInBonus })}`}
+                      </span>
+                    )}
                   </div>
                   <div
                     className="flex gap-1 justify-center flex-wrap"
@@ -181,6 +186,11 @@ function LaughAndLieDownPageContent() {
                 {' · '}
                 {t('won', { n: human?.wonCount ?? 0 })}
                 {ended && ` · ${t('score', { n: human?.score ?? 0 })}`}
+                {/* **既に訳文もサーバのデータもあったのに、画面が一度も読んでいなかった**
+                    (#5576)。最終点差の理由の一つがどこにも出ないまま終わっていた。 */}
+                {ended && state.lastInIdx === 0 && (
+                  <span data-testid="lld-lastin-0">{` · ${t('lastIn', { amount: state.lastInBonus })}`}</span>
+                )}
               </div>
               <div className="flex gap-2 justify-center flex-wrap items-start">
                 {(human?.cards ?? []).map((card, i) => {

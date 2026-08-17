@@ -13,7 +13,7 @@
   "opponentHandAriaLabel": "{{name}} の手札 {{n}} 枚（裏向き）",
   "yourHand": "あなたの手札",
   "score": "収支 {{n}}",
-  "lastIn": "最後まで手札を持っていました",
+  "lastIn": "最後まで手札を持っていたので +{{amount}}",
   "landscapeBanner": "横向きにするとカードが見やすくなります",
   "phase.play": "進行中",
   "phase.end": "終了",

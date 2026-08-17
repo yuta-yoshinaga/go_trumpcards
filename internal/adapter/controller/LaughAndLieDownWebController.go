@@ -62,6 +62,9 @@ type LaughAndLieDownWebOutput struct {
 	DealerIdx        int   `json:"dealerIdx"`
 	// LastInIdx は最後まで手札が残っていた人 (-1: 未決着/該当なし)。
 	LastInIdx int `json:"lastInIdx"`
+	// LastInBonus は上の人が受け取る額 (#5576)。CUI は精算行で額まで出しているので、
+	// Web も同じ粒度で出せるよう渡す。訳文に数字を書くと、額を変えたとき片方だけ嘘になる。
+	LastInBonus int `json:"lastInBonus"`
 	// Pot はポットの総額。精算の内訳がこれに一致することが規則の裏取りになる。
 	Pot         int                           `json:"pot"`
 	GameEndFlag bool                          `json:"gameEndFlag"`
@@ -120,6 +123,7 @@ func newLaughAndLieDownDefaultOutput(msg string) *LaughAndLieDownWebOutput {
 		ValidIndices:     make([]int, 0),
 		ThreeTakeIndices: make([]int, 0),
 		LastInIdx:        -1,
+		LastInBonus:      domain.LaughAndLieDownLastInBonus,
 		Pot:              domain.LaughAndLieDownPot,
 		WebOutputBase:    WebOutputBase{Message: msg},
 	}

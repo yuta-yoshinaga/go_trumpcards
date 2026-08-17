@@ -13,7 +13,7 @@
   "opponentHandAriaLabel": "{{name}} holds {{n}} face-down card(s)",
   "yourHand": "Your hand",
   "score": "net {{n}}",
-  "lastIn": "was last in",
+  "lastIn": "was last in: +{{amount}}",
   "landscapeBanner": "Turn your device sideways for a better view",
   "phase.play": "In progress",
   "phase.end": "Finished",
