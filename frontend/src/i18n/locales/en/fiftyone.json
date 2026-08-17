@@ -20,7 +20,8 @@
     "stopCalled": "Stop called",
     "yourTurn": "Your turn",
     "cpuTurn": "CPU {{id}}'s turn",
-    "suitScores": "Suit totals"
+    "suitScores": "Suit totals",
+    "stopCalledBy": "Stop is in effect ({{name}}) — this is the final round"
   },
   "settings": {
     "cpuDifficulty": "CPU Difficulty",
