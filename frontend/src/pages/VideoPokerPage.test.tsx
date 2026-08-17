@@ -152,3 +152,42 @@ describe('VideoPokerPage', () => {
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
   });
 });
+
+// #5506: madeHand は gameName !== 'jokerpoker' で早期 null を返しており、
+// **ワイルドで救われない Jacks or Better では常に非表示**だった。
+describe('VideoPokerPage made-hand readout', () => {
+  const drawTo = async (state: VideoPokerResponse) => {
+    mockExec.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce(state);
+    renderWithProviders(<VideoPokerPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    fireEvent.click(screen.getByRole('button', { name: /ディール/ }));
+    await waitFor(() => expect(screen.getByRole('button', { name: /ドロー/ })).toBeInTheDocument());
+  };
+
+  it('names a paying hand during the draw phase', async () => {
+    await drawTo({
+      ...drawPhaseState,
+      hand: [card('SPADE', 11), card('HEART', 11), card('CLOVER', 5), card('DIAMOND', 8), card('SPADE', 3)],
+    });
+    const made = screen.getByTestId('vp-made-hand');
+    expect(made).toHaveTextContent('現在の役');
+    expect(made).toHaveTextContent('ジャックス・オア・ベター');
+  });
+
+  // **最低ラインに届かない手は「役なし」と出す。** 表示が消えると、評価されて
+  // いないのか届いていないのか区別できない。
+  it('says so when the hand pays nothing', async () => {
+    await drawTo({
+      ...drawPhaseState,
+      hand: [card('SPADE', 10), card('HEART', 10), card('CLOVER', 5), card('DIAMOND', 8), card('SPADE', 3)],
+    });
+    expect(screen.getByTestId('vp-made-hand')).toHaveTextContent('役なし');
+  });
+
+  it('stays hidden before the deal', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<VideoPokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /ディール/ })).toBeInTheDocument());
+    expect(screen.queryByTestId('vp-made-hand')).not.toBeInTheDocument();
+  });
+});
