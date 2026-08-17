@@ -702,3 +702,72 @@ func TestPitchHandPips(t *testing.T) {
 		assert.Equal(t, 10, domain.PitchHandPips([]*domain.Card{nil, card(10), nil}))
 	})
 }
+
+// #5584: 4 種の得点 (High/Low/Jack/Game) はこのゲームの骨格なのに、合計しか
+// 画面に出ていなかった。内訳は**得点そのものと一致していること**が肝心で、
+// 別に数え直すと表示と点数がずれる。
+func TestPitch_RoundBreakdownAgreesWithThePoints(t *testing.T) {
+	p := newTestPitch()
+	p.Reset()
+
+	// 切り札を決めて、全員に取り札を配った状態を作る。
+	p.SetTrumpSuit(domain.CardDesignHeart)
+	// P0: ♥A (High) と ♥2 (Low) と絵札で pip を稼ぐ
+	p.GetPlayer(0).AddTrick([]*domain.Card{
+		newPitchCard(domain.CardDesignHeart, 1),
+		newPitchCard(domain.CardDesignHeart, 2),
+		newPitchCard(domain.CardDesignSpade, 13),
+	})
+	// P1: ♥J (Jack)
+	p.GetPlayer(1).AddTrick([]*domain.Card{newPitchCard(domain.CardDesignHeart, 11)})
+
+	// ビッド勝者がいない (bidWinnerIdx=-1) ので、ラウンド得点は獲得点そのもの。
+	p.SetPhase(domain.PitchPhaseRoundEnd)
+	p.ScoreRound()
+	points := pitchRoundScores(p)
+	bd := p.GetRoundBreakdown()
+
+	// **内訳で名指しされた席は、その分だけ点を得ていること。**
+	counted := make([]int, len(points))
+	for _, idx := range []int{bd.High, bd.Low, bd.Jack, bd.Game} {
+		if idx != domain.PitchNoScorer {
+			counted[idx]++
+		}
+	}
+	assert.Equal(t, points, counted, "the breakdown must account for every point awarded")
+
+	assert.Equal(t, 0, bd.High, "P0 holds the ace of trumps")
+	assert.Equal(t, 0, bd.Low, "P0 holds the two of trumps")
+	assert.Equal(t, 1, bd.Jack, "P1 holds the jack of trumps")
+}
+
+// 切り札が決まらなかったラウンドは誰も取っていない。前のラウンドの内訳が
+// 残ると、取っていない人が取ったように見える。
+func TestPitch_RoundBreakdownResetsWhenNoTrump(t *testing.T) {
+	p := newTestPitch()
+	p.Reset()
+	p.SetTrumpSuit(domain.CardDesignHeart)
+	p.GetPlayer(0).AddTrick([]*domain.Card{newPitchCard(domain.CardDesignHeart, 1)})
+	p.SetPhase(domain.PitchPhaseRoundEnd)
+	p.ScoreRound()
+	assert.NotEqual(t, domain.PitchNoScorer, p.GetRoundBreakdown().High)
+
+	p.SetTrumpSuit(domain.PitchTrumpUnset)
+	p.SetPhase(domain.PitchPhaseRoundEnd)
+	p.ScoreRound()
+	bd := p.GetRoundBreakdown()
+	assert.Equal(t, domain.PitchNoScorer, bd.High)
+	assert.Equal(t, domain.PitchNoScorer, bd.Low)
+	assert.Equal(t, domain.PitchNoScorer, bd.Jack)
+	assert.Equal(t, domain.PitchNoScorer, bd.Game)
+}
+
+// pitchRoundScores は各席のラウンド得点を並べる。ビッド勝者がいない局面では
+// 獲得点そのものになる。
+func pitchRoundScores(p *domain.Pitch) []int {
+	out := make([]int, domain.PitchPlayerCnt)
+	for i := range domain.PitchPlayerCnt {
+		out[i] = p.GetPlayer(i).GetRoundScore()
+	}
+	return out
+}

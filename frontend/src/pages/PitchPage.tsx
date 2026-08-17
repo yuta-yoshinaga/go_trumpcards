@@ -125,6 +125,9 @@ function valueLabel(value: number): string {
 /** Pitch (Setback) game page. */
 export const PitchPage = withTutorial(PitchPageContent, 'pitch', PT_TUTORIAL_STEPS);
 
+/** Sentinel the server sends when nobody took a category (sync: domain.PitchNoScorer). */
+const PITCH_NO_SCORER = -1;
+
 function PitchPageContent() {
   const { t } = useTranslation('pitch');
   const { tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -333,6 +336,29 @@ function PitchPageContent() {
                 </tbody>
               </table>
             </div>
+
+            {/* **4 種の得点がこのゲームの骨格**なのに、合計しか出ていなかった
+                (#5584)。用意されていた scoring.* のキーもどこからも使われて
+                いなかった。獲得者はサーバが得点と同時に記録している。 */}
+            {(isRoundEnd || state.gameEndFlag) && (
+              <div className="text-xs text-ds-text-muted mb-3" data-testid="pitch-score-breakdown">
+                {(
+                  [
+                    ['high', state.roundBreakdown.high],
+                    ['low', state.roundBreakdown.low],
+                    ['jack', state.roundBreakdown.jack],
+                    ['game', state.roundBreakdown.game],
+                  ] as const
+                ).map(([key, idx]) => (
+                  <div key={key} data-testid={`pitch-scoring-${key}`}>
+                    {t(`scoring.${key}`)}:{' '}
+                    {idx === PITCH_NO_SCORER
+                      ? t('scoringNobody')
+                      : playerName(idx, state.players[idx]?.isHuman ?? false)}
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Current trick */}
             <div

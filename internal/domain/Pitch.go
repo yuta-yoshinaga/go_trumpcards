@@ -70,8 +70,29 @@ type Pitch struct {
 	trumpSuit        int // 切り札スート (PitchTrumpUnset=未確定)
 	gameEndFlag      bool
 	winnerIdx        int
+	// roundBreakdown は直近ラウンドの 4 得点を誰が取ったか (#5584)。
+	roundBreakdown PitchRoundBreakdown
 	actionLogBase
 }
+
+// PitchRoundBreakdown は High / Low / Jack / Game をそれぞれ誰が取ったかを表す。
+// -1 は「誰も取っていない」(切り札が出なかった、Game が同点、など)。
+//
+// **4 種の得点はこのゲームの骨格なのに、合計しか画面に出ていなかった** (#5584)。
+// 合計だけでは、1 点差の理由が Jack を取られたからなのか Game で並ばれたからなのか
+// が分からない。
+type PitchRoundBreakdown struct {
+	High int
+	Low  int
+	Jack int
+	Game int
+}
+
+// PitchNoScorer は PitchRoundBreakdown の「誰も取っていない」を表す。
+const PitchNoScorer = -1
+
+// GetRoundBreakdown は直近ラウンドの得点内訳を返す。
+func (p *Pitch) GetRoundBreakdown() PitchRoundBreakdown { return p.roundBreakdown }
 
 // NewPitch コンストラクタ
 func NewPitch(trumpCards *TrumpCards, players []*PitchPlayer, config PitchConfig) *Pitch {
@@ -531,6 +552,11 @@ func (p *Pitch) ScoreRound() {
 // computeRoundPoints 各プレイヤーが獲得したポイント数 (High/Low/Jack/Game) を返す
 func (p *Pitch) computeRoundPoints() []int {
 	points := make([]int, PitchPlayerCnt)
+	// 内訳は毎ラウンド組み直す。前のラウンドの結果が残ると、切り札の出なかった
+	// ラウンドで前回の獲得者が表示される。
+	p.roundBreakdown = PitchRoundBreakdown{
+		High: PitchNoScorer, Low: PitchNoScorer, Jack: PitchNoScorer, Game: PitchNoScorer,
+	}
 	if p.trumpSuit == PitchTrumpUnset {
 		return points
 	}
@@ -565,16 +591,19 @@ func (p *Pitch) computeRoundPoints() []int {
 	}
 	if highPlayer >= 0 {
 		points[highPlayer]++
+		p.roundBreakdown.High = highPlayer
 		p.appendLog(highPlayer, "score_high",
 			fmt.Sprintf("%s scores High", playerName(p.players, highPlayer)), nil)
 	}
 	if lowPlayer >= 0 {
 		points[lowPlayer]++
+		p.roundBreakdown.Low = lowPlayer
 		p.appendLog(lowPlayer, "score_low",
 			fmt.Sprintf("%s scores Low", playerName(p.players, lowPlayer)), nil)
 	}
 	if jackPlayer >= 0 {
 		points[jackPlayer]++
+		p.roundBreakdown.Jack = jackPlayer
 		p.appendLog(jackPlayer, "score_jack",
 			fmt.Sprintf("%s scores Jack", playerName(p.players, jackPlayer)), nil)
 	}
@@ -601,6 +630,7 @@ func (p *Pitch) computeRoundPoints() []int {
 	}
 	if !tied && gameWinner >= 0 && maxTotal > 0 {
 		points[gameWinner]++
+		p.roundBreakdown.Game = gameWinner
 		p.appendLog(gameWinner, "score_game",
 			fmt.Sprintf("%s scores Game (%d pip)", playerName(p.players, gameWinner), maxTotal), nil)
 	}

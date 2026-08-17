@@ -31,5 +31,7 @@
   "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
   "helpSetLimit": "  sl <n>               ポイント上限",
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "scoringLine": "内訳: High={{high}} / Low={{low}} / Jack={{jack}} / Game={{game}}",
+  "scoringNobody": "なし"
 }

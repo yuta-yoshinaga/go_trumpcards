@@ -54,6 +54,12 @@ export interface PitchResponse extends BaseGameResponse {
   gameEndFlag: boolean;
   winnerIdx: number;
   leadPlayerIdx: number;
+  /**
+   * Who took each of the four points last round; -1 for nobody. Sent because
+   * the totals alone do not say whether a one-point gap came from losing Jack
+   * or from tying Game.
+   */
+  roundBreakdown: { high: number; low: number; jack: number; game: number };
   validPlayIndices: number[];
   config: PitchConfig;
   hint?: PitchHint;

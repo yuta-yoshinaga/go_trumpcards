@@ -45147,6 +45147,21 @@ components:
           type: integer
         leadPlayerIdx:
           type: integer
+        roundBreakdown:
+          type: object
+          description: >-
+            Who took each of the four points last round; -1 for nobody. The
+            totals alone do not say whether a one-point gap came from losing
+            Jack or from tying Game.
+          properties:
+            high:
+              type: integer
+            low:
+              type: integer
+            jack:
+              type: integer
+            game:
+              type: integer
         validPlayIndices:
           type: array
           items:
