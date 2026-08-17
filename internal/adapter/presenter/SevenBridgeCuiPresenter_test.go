@@ -12,6 +12,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupSevenBridgeCuiMock() *interfaces.MockSevenBridgeGame {
@@ -24,6 +25,7 @@ func setupSevenBridgeCuiMock() *interfaces.MockSevenBridgeGame {
 	m.On("GetCurrentPlayerIdx").Return(0)
 	m.On("GetWinnerIdx").Return(-1)
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	m.On("GetClaimedThisTurn").Return(false).Maybe()
 	return m
 }
 
@@ -255,4 +257,33 @@ func TestSevenBridgeCuiPresenter_ActionLogOutput(t *testing.T) {
 		assert.Contains(t, result, "棋譜はありません")
 		m.AssertExpectations(t)
 	})
+}
+
+// #5547: ポン/チーで捨て札を割り込んで取ったのか、素直に山から引いたのかが
+// 画面から判別できなかった。`GetClaimedThisTurn()` は保存までされているのに
+// どちらの UI も一度も読んでいない。
+func TestSevenBridgeCuiPresenter_Output_ClaimedThisTurn(t *testing.T) {
+	p := new(presenter.SevenBridgeCuiPresenter)
+
+	outputWith := func(claimed bool) string {
+		m := new(interfaces.MockSevenBridgeGame)
+		m.On("GetClaimedThisTurn").Return(claimed)
+		m.On("GetRoundNumber").Return(1)
+		m.On("GetDrawPileCount").Return(37)
+		m.On("GetDiscardTop").Return((*domain.Card)(nil))
+		m.On("GetGameEndFlag").Return(false)
+		m.On("GetPhase").Return(domain.SevenBridgePhasePlay)
+		m.On("GetCurrentPlayerIdx").Return(0)
+		m.On("GetWinnerIdx").Return(-1)
+		m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+		players := makeSevenBridgePlayers()
+		m.On("GetPlayerCnt").Return(2)
+		m.On("GetPlayer", 0).Return(players[0])
+		m.On("GetPlayer", 1).Return(players[1])
+		return p.Output(m, nil)
+	}
+
+	assert.Contains(t, outputWith(true), i18n.T("sevenbridge.claimedThisTurn"))
+	// **山から引いたターンでは出さない。**毎ターン出ると区別にならない。
+	assert.NotContains(t, outputWith(false), i18n.T("sevenbridge.claimedThisTurn"))
 }
