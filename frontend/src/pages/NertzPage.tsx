@@ -520,7 +520,13 @@ function NertzPageContent() {
                       size={f.size}
                       onClick={() => handleFoundationClick(idx)}
                       disabled={!isHumanTurn || !selection}
-                      ariaLabel={t('labels.foundationN', { n: idx, defaultValue: `Foundation ${idx}` })}
+                      max={state.foundationMax}
+                      ariaLabel={t('labels.foundationN', {
+                        n: idx,
+                        size: f.size,
+                        max: state.foundationMax,
+                        defaultValue: `Foundation ${idx}`,
+                      })}
                       collided={collidedFoundationIdx === idx}
                       placedBy={flash?.placedBy ?? null}
                       placedFlashKey={flash?.key ?? 0}
@@ -693,6 +699,8 @@ interface FoundationCellProps {
   placedBy?: 'human' | 'cpu' | null;
   /** Re-applies the placed flash even when `placedBy` stays the same (e.g., two human placements in a row). */
   placedFlashKey?: number;
+  /** Cards that complete this foundation. Comes from the server so the figure lives in one place. */
+  max: number;
   /** The current selection can legally be placed here → persistent success ring. */
   validTarget?: boolean;
   /** A source is currently selected → invalid destinations are dimmed. */
@@ -703,6 +711,7 @@ function FoundationCell({
   idx,
   top,
   size,
+  max,
   onClick,
   disabled,
   ariaLabel,
@@ -755,7 +764,11 @@ function FoundationCell({
             style={{ width: w, height: Math.round(w * 1.4) }}
           />
         )}
-        <span className="block">({size})</span>
+        {/* **あと何枚で完成するか**は組札の読みどころなのに、現在枚数しか
+            出ておらず暗算させていた (#5578)。CUI は前から "n/13" で出している。 */}
+        <span className="block">
+          ({size}/{max})
+        </span>
       </button>
       {flashOverlayClass && (
         // Remount the overlay (via key) on each new placement so the

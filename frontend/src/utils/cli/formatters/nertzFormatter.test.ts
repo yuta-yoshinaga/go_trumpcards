@@ -38,6 +38,7 @@ function makeState(overrides?: Partial<NertzResponse>): NertzResponse {
       },
     ],
     foundations: [],
+    foundationMax: 13,
     message: '',
     ...overrides,
   };

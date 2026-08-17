@@ -19122,6 +19122,11 @@ paths:
                           type: integer
                         size:
                           type: integer
+                  foundationMax:
+                    type: integer
+                    description: >-
+                      Cards that complete one foundation (A..K = 13). Sent so
+                      the figure is not written into the page as well.
                   hint:
                     nullable: true
                     type: object
