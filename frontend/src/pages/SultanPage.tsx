@@ -330,7 +330,12 @@ function SultanPageContent() {
             </div>
 
             {/* Hint display */}
-            <div data-tutorial="sultan-hint-display">
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで現れるので変化として扱われず、読み上げられない
+              ことがある (#5602)。
+            */}
+            <div data-tutorial="sultan-hint-display" data-testid="sultan-hint-live" role="status" aria-live="polite">
               {hint && (
                 <div className="text-ds-warning text-sm mb-2">
                   {t('hintAvailable')}: {formatHintZone(t, hint.fromZone, hint.fromIdx)} →{' '}
