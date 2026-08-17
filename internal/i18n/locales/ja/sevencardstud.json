@@ -78,5 +78,7 @@
   "hintReasonHiLoLow": "ロー役が狙える (8以下が5枚)",
   "helpExampleFold": "  f                    この手を降りる",
   "helpHint": "  h                    助言を表示",
-  "helpLog": "  l                    行動ログを表示"
+  "helpLog": "  l                    行動ログを表示",
+  "wonSplit": " (ハイ: {{high}} / ロー: {{low}})",
+  "wonScoop": " ★スクープ"
 }
