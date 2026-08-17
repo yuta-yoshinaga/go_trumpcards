@@ -473,6 +473,14 @@ function NapoleonPageContent() {
                     ))
                 )}
 
+                {/* **あと何点で決着するのかが対局中どこにも出ていなかった。**
+                    目標点数は開始前の設定でしか見えず、思い出すには Settings を
+                    開き直すしかなかった (#5504)。設定値はレスポンスに載っているので
+                    そのまま出す。 */}
+                <div className="text-ds-text-muted text-xs mt-2" data-testid="np-point-limit">
+                  {t('pointLimitLine', { limit: state.config.pointLimit })}
+                </div>
+
                 {/* Score table */}
                 {isMobile ? (
                   <details

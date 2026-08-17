@@ -620,3 +620,33 @@ func TestNapoleonCuiPresenter_English(t *testing.T) {
 		assert.Contains(t, result, "p <idx>")
 	})
 }
+
+// #5504: 目標点数は開始前の設定でしか見えず、対局中は round/trick は出るのに
+// 到達条件だけが出ていなかった。**あと何点で決着するのかを知るには Settings を
+// 開き直すしかない。**
+func TestNapoleonCuiPresenter_PointLimitLine(t *testing.T) {
+	p := new(presenter.NapoleonCuiPresenter)
+
+	t.Run("shows the configured target", func(t *testing.T) {
+		n := domain.NewDefaultNapoleon()
+		n.Reset()
+		cfg := n.GetConfig()
+		cfg.PointLimit = 75
+		n.SetConfig(cfg)
+
+		assert.Contains(t, p.Output(n, nil), i18n.Tf("napoleon.pointLimitLine", "limit", "75"))
+	})
+
+	// **設定値を出していること。** 定数を書いているだけなら、変えても表示が動かない。
+	t.Run("follows a settings change", func(t *testing.T) {
+		n := domain.NewDefaultNapoleon()
+		n.Reset()
+		cfg := n.GetConfig()
+		cfg.PointLimit = 30
+		n.SetConfig(cfg)
+
+		out := p.Output(n, nil)
+		assert.Contains(t, out, i18n.Tf("napoleon.pointLimitLine", "limit", "30"))
+		assert.NotContains(t, out, i18n.Tf("napoleon.pointLimitLine", "limit", "75"))
+	})
+}

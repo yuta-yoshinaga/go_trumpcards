@@ -78,6 +78,11 @@ func (p *NapoleonCuiPresenter) Output(n interfaces.NapoleonGame, lastErr error) 
 			"trick", strconv.Itoa(n.GetTrickNumber())))
 		b.WriteString("\n")
 
+		// **あと何点で決着するのかを対局中に出す。** 目標点数は設定でしか見えず、
+		// round/trick は出るのに到達条件だけが出ていなかった (#5504)。
+		b.WriteString(i18n.Tf("napoleon.pointLimitLine",
+			"limit", strconv.Itoa(n.GetConfig().PointLimit)) + "\n")
+
 		if n.GetTrumpSuit() > 0 {
 			b.WriteString(i18n.Tf("napoleon.trump", "suit", napoleonSuitGlyphs[n.GetTrumpSuit()]))
 			b.WriteString("\n")
