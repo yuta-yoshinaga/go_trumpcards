@@ -26,6 +26,8 @@ type SirTommyWebOutputHint struct {
 	FromZone      string `json:"fromZone"`
 	WasteIdx      int    `json:"wasteIdx"`
 	FoundationIdx int    `json:"foundationIdx"`
+	// ToZone は "foundation" か "waste"。"waste" のとき WasteIdx は**置き先** (#5552)。
+	ToZone string `json:"toZone"`
 }
 
 // SirTommyWebOutput サー・トミーWebアウトプット

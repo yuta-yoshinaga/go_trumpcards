@@ -107,6 +107,12 @@ func (p *SirTommyCuiPresenter) HintOutput(g interfaces.SirTommyGame) string {
 	if hint == nil {
 		return i18n.T("cuiHintNone") + "\n"
 	}
+	// ファンデーションに置ける手が無い局面では、山札の札をどのウェイストに
+	// 置くべきかを助言する。ここがこのゲーム唯一の戦略的判断 (#5552)。
+	if hint.ToZone == "waste" {
+		return i18n.Tf("sirtommy.hintPlaceWaste",
+			"waste", strconv.Itoa(hint.WasteIdx)) + "\n"
+	}
 	switch hint.FromZone {
 	case "stock":
 		return i18n.Tf("sirtommy.hintStock",

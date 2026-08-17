@@ -329,8 +329,12 @@ function SirTommyPageContent() {
   // 二重に書くと、ゲートされていない別の変数に貼り付けても安全に見えてしまう
   // (#4608 のレビュー指摘)。
   const requestedHint = isRequestedHint(state) ? state.hint : undefined;
-  const hintFoundation = requestedHint ? requestedHint.foundationIdx : -1;
-  const hintWaste = requestedHint?.fromZone === 'waste' ? requestedHint.wasteIdx : -1;
+  // 置き場所の助言 (#5552) は移動元ではなく**置き先**のウェイストを指す。
+  // 同じ wasteIdx を移動元として光らせると、逆の操作を勧めることになる。
+  const hintPlacesOnWaste = requestedHint?.toZone === 'waste';
+  const hintFoundation = requestedHint && !hintPlacesOnWaste ? requestedHint.foundationIdx : -1;
+  const hintWaste = requestedHint?.fromZone === 'waste' && !hintPlacesOnWaste ? requestedHint.wasteIdx : -1;
+  const hintWasteTarget = hintPlacesOnWaste ? (requestedHint?.wasteIdx ?? -1) : -1;
   const hintStock = requestedHint?.fromZone === 'stock';
 
   return (
@@ -491,6 +495,7 @@ function SirTommyPageContent() {
                 const top = pile[pile.length - 1];
                 const selected = isWasteSelected(idx);
                 const isHintSource = hintWaste === idx;
+                const isHintTarget = hintWasteTarget === idx;
                 const canAcceptStock = sourceIsStock && isPlaying && !loading;
                 // Compact preview of the pile's upper cards (last <=3 array
                 // elements, ending at the playable top) for the hover/focus
@@ -524,7 +529,8 @@ function SirTommyPageContent() {
                       title={wasteRanksLabel}
                       aria-label={wasteAriaLabel}
                       data-testid={`calc-waste-button-${idx.toString()}`}
-                      className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${selected ? 'ring-2 ring-ds-warning' : ''} ${isHintSource ? 'ring-2 ring-ds-success animate-pulse' : ''} ${canAcceptStock ? 'ring-2 ring-ds-info/70' : ''}`}
+                      className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${selected ? 'ring-2 ring-ds-warning' : ''} ${isHintSource || isHintTarget ? 'ring-2 ring-ds-success animate-pulse' : ''} ${canAcceptStock ? 'ring-2 ring-ds-info/70' : ''}`}
+                      data-hint-waste-target={isHintTarget || undefined}
                     >
                       {top ? (
                         <AnimatedCard card={top} width={cardWidth} />
@@ -556,9 +562,13 @@ function SirTommyPageContent() {
                   aria-live="polite"
                 >
                   {t('hintAvailable')}:{' '}
-                  {requestedHint.fromZone === 'stock'
-                    ? `${t('stock')} → ${t('foundation')} ${requestedHint.foundationIdx.toString()}`
-                    : `${t('waste')} ${requestedHint.wasteIdx.toString()} → ${t('foundation')} ${requestedHint.foundationIdx.toString()}`}
+                  {/* 置き場所の助言はファンデーションを指さない。移動の体裁に
+                      落とすと foundationIdx の -1 が出る (#5552)。 */}
+                  {hintPlacesOnWaste
+                    ? `${t('stock')} → ${t('waste')} ${requestedHint.wasteIdx.toString()}`
+                    : requestedHint.fromZone === 'stock'
+                      ? `${t('stock')} → ${t('foundation')} ${requestedHint.foundationIdx.toString()}`
+                      : `${t('waste')} ${requestedHint.wasteIdx.toString()} → ${t('foundation')} ${requestedHint.foundationIdx.toString()}`}
                 </div>
               )}
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
