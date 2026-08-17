@@ -329,4 +329,18 @@ describe('OasisPokerPage keyboard shortcuts', () => {
     await flushPendingDispatch();
     expect(mockApi).not.toHaveBeenCalled();
   });
+
+  // #5595: 配当率も交換手数料も書いてあるのに、**アンティがプッシュになる理由**
+  // （ディーラーの成立条件）だけどこにも無かった。
+  describe('dealer qualification rule', () => {
+    it('states the rule in the payout panel', async () => {
+      mockApi.mockResolvedValue(betPhaseState);
+      renderWithProviders(<OasisPokerPage />);
+      const rule = await screen.findByTestId('oasis-qualify-rule');
+      // 実際の条件 (ワンペア以上 または A+K) の両方に触れていること。
+      expect(rule).toHaveTextContent('ワンペア');
+      expect(rule).toHaveTextContent('A');
+      expect(rule).toHaveTextContent('K');
+    });
+  });
 });

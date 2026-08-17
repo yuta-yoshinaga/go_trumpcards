@@ -55,6 +55,9 @@ func (op *OasisPokerCuiPresenter) Output(g interfaces.OasisPokerGame, lastErr er
 			} else {
 				sb.WriteString(i18n.T("oasispoker.notQualified") + "\n")
 			}
+			// **アンティがプッシュになる理由が読めなかった** (#5595)。成立/不成立の
+			// バッジは出ているのに、その条件はどこにも書かれていなかった。
+			sb.WriteString(i18n.T("oasispoker.qualifyRule") + "\n")
 			parts := make([]string, len(dealerHand))
 			for i, card := range dealerHand {
 				parts[i] = cuiCardStr(card)

@@ -77,7 +77,9 @@
     "jackpotFullHouse": "フルハウス: 100x",
     "jackpotFlush": "フラッシュ: 50x",
     "exchangeHeader": "交換手数料",
-    "exchangeFee": "1枚交換ごとにアンテと同額"
+    "exchangeFee": "1枚交換ごとにアンテと同額",
+    "qualifyHeader": "ディーラーの成立条件",
+    "qualifyRule": "ワンペア以上、または A と K を含む手で成立。不成立ならアンティはプッシュ"
   },
   "dealerQualified": "クオリファイ",
   "dealerNotQualified": "未クオリファイ",
