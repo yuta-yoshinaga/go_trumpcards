@@ -23,6 +23,8 @@ type BakersDozenGame interface {
 	GetMoveCount() int
 	// GetTableau タブローを取得する
 	GetTableau() [domain.BakersDozenTableauCnt][]*domain.BakersDozenTableauCard
+	// LegalTargets 列 fromCol の一番下の札を置ける先 (タブロー列 / 組札)
+	LegalTargets(fromCol int) ([]int, []int)
 	// GetFoundation ファンデーションを取得する
 	GetFoundation() [domain.BakersDozenFoundationCnt][]*domain.Card
 	// AllFaceUp 全カードが表向きかを返す

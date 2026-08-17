@@ -2211,6 +2211,7 @@ var gameRegistry = []GameRegistryEntry{
 			CommandKeys: []string{
 				"bakersdozen.helpMoveTT",
 				"bakersdozen.helpMoveTF",
+				"bakersdozen.helpTargets",
 				"bakersdozen.helpGiveUp",
 				"bakersdozen.helpHint",
 				"bakersdozen.helpAutoComplete", "bakersdozen.helpUndo",
