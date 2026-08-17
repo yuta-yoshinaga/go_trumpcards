@@ -31,5 +31,6 @@
   "hintStock": "Hint: stock → foundation {{foundation}}",
   "hintWaste": "Hint: waste {{waste}} → foundation {{foundation}}",
   "helpExampleHint": "  h                   ask for a move",
-  "helpExampleAuto": "  ac                  play everything that can go up"
+  "helpExampleAuto": "  ac                  play everything that can go up",
+  "hintPlaceWaste": "Hint: put the stock card on waste {{waste}} (nothing can go to a foundation)"
 }

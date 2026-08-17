@@ -179,17 +179,26 @@ func TestSirTommy_Hint(t *testing.T) {
 	s := newTestSirTommy()
 
 	// Deal a stock whose top is not an Ace, with every foundation empty, so
-	// nothing is playable. Asserting this on a freshly shuffled deck would be a
-	// 4-in-52 flake: a real Reset leaves whatever the shuffle put on top, and an
-	// Ace there is a legitimate hint.
+	// nothing can go to a foundation. Asserting this on a freshly shuffled deck
+	// would be a 4-in-52 flake: a real Reset leaves whatever the shuffle put on
+	// top, and an Ace there is a legitimate hint.
+	//
+	// #5552 以降、この局面は **nil ではなく置き場所の助言**を返す。ウェイストに
+	// どう置くかがこのゲーム唯一の戦略的判断で、そこを黙るヒントは最頻出の
+	// 局面で役に立っていなかった。
 	stackDeck(s, []*Card{NewCard(0, 9, true)})
-	assert.Nil(t, s.GetHint(), "no hint while nothing is playable")
+	placement := s.GetHint()
+	require.NotNil(t, placement, "置き場所の助言を返す")
+	assert.Equal(t, "waste", placement.ToZone)
+	assert.GreaterOrEqual(t, placement.WasteIdx, 0)
+	assert.Less(t, placement.WasteIdx, SirTommyWasteCnt)
 
 	// stock top is an Ace -> hint points at the stock
 	stackDeck(s, []*Card{NewCard(0, 1, true)})
 	h := s.GetHint()
 	require.NotNil(t, h)
 	assert.Equal(t, "stock", h.FromZone)
+	assert.Equal(t, "foundation", h.ToZone)
 	assert.Equal(t, -1, h.WasteIdx)
 
 	// waste top fits -> hint points at that waste
@@ -328,4 +337,67 @@ func TestSirTommy_AutoCompleteRefusesWhileStockRemains(t *testing.T) {
 	require.Error(t, s.AutoComplete(), "stock is not empty")
 	assert.Equal(t, 2, s.GetStockCount(), "a refused auto-complete changes nothing")
 	assert.Equal(t, 0, s.GetMoveCount())
+}
+
+// #5552: ドキュメントが「置き場所を選ぶ判断がゲーム性の中心」と書いている当の
+// 局面 — ストックの札をどのウェイストに置くか — でヒントが常に nil だった。
+func TestSirTommy_GetHint_WastePlacement(t *testing.T) {
+	newGame := func(stockTop int, wastes [][]int) *SirTommy {
+		s := newTestSirTommy()
+		s.Reset()
+		s.stock = []*Card{NewCard(CardDesignSpade, stockTop, false)}
+		for i := range SirTommyWasteCnt {
+			pile := make([]*Card, 0, len(wastes[i]))
+			for _, v := range wastes[i] {
+				pile = append(pile, NewCard(CardDesignHeart, v, false))
+			}
+			s.wastes[i] = pile
+		}
+		for i := range SirTommyFoundationCnt {
+			s.foundations[i] = nil
+		}
+		return s
+	}
+
+	t.Run("keeps a waste descending by choosing the tightest higher top", func(t *testing.T) {
+		// 7 を置く。上が 13 / 9 / 3 / 空 → 9 が最も近い上位。
+		s := newGame(7, [][]int{{13}, {9}, {3}, {}})
+		h := s.GetHint()
+		require.NotNil(t, h)
+		assert.Equal(t, "stock", h.FromZone)
+		assert.Equal(t, "waste", h.ToZone)
+		assert.Equal(t, 1, h.WasteIdx)
+		assert.Equal(t, -1, h.FoundationIdx)
+	})
+
+	t.Run("uses an empty pile when nothing higher is on top", func(t *testing.T) {
+		s := newGame(9, [][]int{{5}, {3}, {}, {2}})
+		h := s.GetHint()
+		require.NotNil(t, h)
+		assert.Equal(t, 2, h.WasteIdx)
+	})
+
+	// **どれかを埋めるしかないなら、いちばん高い札の上に置く。**低い札を
+	// 埋めると、それが必要になったときに掘り出せない。
+	t.Run("buries the highest top when every pile is occupied and lower", func(t *testing.T) {
+		s := newGame(9, [][]int{{5}, {8}, {2}, {6}})
+		h := s.GetHint()
+		require.NotNil(t, h)
+		assert.Equal(t, 1, h.WasteIdx)
+	})
+
+	// **ファンデーションに置ける手が優先。**置き場所の助言はその次。
+	t.Run("prefers a foundation move when one exists", func(t *testing.T) {
+		s := newGame(1, [][]int{{5}, {8}, {2}, {6}}) // A はファンデーションへ
+		h := s.GetHint()
+		require.NotNil(t, h)
+		assert.Equal(t, "foundation", h.ToZone)
+		assert.Equal(t, 0, h.FoundationIdx)
+	})
+
+	t.Run("no hint once the stock is empty and nothing plays", func(t *testing.T) {
+		s := newGame(9, [][]int{{5}, {8}, {2}, {6}})
+		s.stock = nil
+		assert.Nil(t, s.GetHint())
+	})
 }

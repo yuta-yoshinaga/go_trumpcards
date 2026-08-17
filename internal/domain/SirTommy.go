@@ -31,10 +31,17 @@ const SirTommyWasteCnt = 4
 type SirTommyHint struct {
 	// FromZone 移動元ゾーン "stock" または "waste"
 	FromZone string
-	// WasteIdx 移動元がウェイストの場合のインデックス、stock の場合は -1
+	// WasteIdx ウェイストのインデックス。ToZone が "foundation" なら移動元
+	// (stock からなら -1)、"waste" なら**置き先**。
 	WasteIdx int
-	// FoundationIdx 移動先ファンデーションのインデックス
+	// FoundationIdx 移動先ファンデーションのインデックス。ToZone が "waste" なら -1。
 	FoundationIdx int
+	// ToZone 移動先ゾーン "foundation" または "waste"。
+	//
+	// **置き場所の助言がこのゲームの本体。**ウェイストは4つあり最上段しか動かせず、
+	// 入れ替えもできないので、山札から引いた非エース札をどこに置くかが唯一の
+	// 戦略的判断。それを扱わないヒントは、最頻出の局面で毎回 nil を返していた (#5552)。
+	ToZone string
 }
 
 // SirTommy サー・トミーゲームクラス。
@@ -191,7 +198,7 @@ func (s *SirTommy) GetHint() *SirTommyHint {
 	if len(s.stock) > 0 {
 		card := s.stock[len(s.stock)-1]
 		if fIdx := s.findFoundation(card); fIdx >= 0 {
-			return &SirTommyHint{FromZone: "stock", WasteIdx: -1, FoundationIdx: fIdx}
+			return &SirTommyHint{FromZone: "stock", WasteIdx: -1, FoundationIdx: fIdx, ToZone: "foundation"}
 		}
 	}
 	for wIdx := range SirTommyWasteCnt {
@@ -200,10 +207,60 @@ func (s *SirTommy) GetHint() *SirTommyHint {
 			continue
 		}
 		if fIdx := s.findFoundation(pile[len(pile)-1]); fIdx >= 0 {
-			return &SirTommyHint{FromZone: "waste", WasteIdx: wIdx, FoundationIdx: fIdx}
+			return &SirTommyHint{FromZone: "waste", WasteIdx: wIdx, FoundationIdx: fIdx, ToZone: "foundation"}
 		}
 	}
+	// ファンデーションに置ける手が無いときは、山札の札をどのウェイストに置くかを
+	// 助言する。ここがこのゲームで唯一の戦略的判断 (#5552)。
+	if wIdx := s.suggestWaste(); wIdx >= 0 {
+		return &SirTommyHint{FromZone: "stock", WasteIdx: wIdx, FoundationIdx: -1, ToZone: "waste"}
+	}
 	return nil
+}
+
+// suggestWaste は山札の一番上の札を置くべきウェイストを選ぶ。山札が空なら -1。
+//
+// 優先順位は「掘り出せなくなる札を作らない」こと:
+//
+//  1. 自分より**上位の札が最上段にあるウェイスト**のうち、差がいちばん小さいもの。
+//     ウェイストは降順に積むほど、下の札が先に必要にならずに済む。
+//  2. 空のウェイスト。
+//  3. どれも埋まっていて自分より下位なら、**最上段がいちばん高い**ウェイスト。
+//     低い札を埋めると、それが必要になったときに掘り出せない。
+func (s *SirTommy) suggestWaste() int {
+	if len(s.stock) == 0 {
+		return -1
+	}
+	v := s.stock[len(s.stock)-1].GetValue()
+	best, bestGap := -1, 0
+	empty := -1
+	highest, highestVal := -1, 0
+	for wIdx := range SirTommyWasteCnt {
+		pile := s.wastes[wIdx]
+		if len(pile) == 0 {
+			if empty < 0 {
+				empty = wIdx
+			}
+			continue
+		}
+		top := pile[len(pile)-1].GetValue()
+		if top > v {
+			if gap := top - v; best < 0 || gap < bestGap {
+				best, bestGap = wIdx, gap
+			}
+		}
+		if top > highestVal {
+			highest, highestVal = wIdx, top
+		}
+	}
+	switch {
+	case best >= 0:
+		return best
+	case empty >= 0:
+		return empty
+	default:
+		return highest
+	}
 }
 
 // AutoComplete 置けるカードがなくなるまで自動でファンデーションへ積む

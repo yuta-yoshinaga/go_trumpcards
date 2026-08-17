@@ -26,6 +26,7 @@ func (p *SirTommyWebPresenter) Output(g interfaces.SirTommyGame, lastErr error) 
 				FromZone:      hint.FromZone,
 				WasteIdx:      hint.WasteIdx,
 				FoundationIdx: hint.FoundationIdx,
+				ToZone:        hint.ToZone,
 			}
 		}
 	}
@@ -62,6 +63,7 @@ func (p *SirTommyWebPresenter) HintOutput(g interfaces.SirTommyGame) string {
 			FromZone:      hint.FromZone,
 			WasteIdx:      hint.WasteIdx,
 			FoundationIdx: hint.FoundationIdx,
+			ToZone:        hint.ToZone,
 		}
 		resObj.MessageCode = "sirtommy.hintAvailable"
 	} else {
