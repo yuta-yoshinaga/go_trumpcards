@@ -16,6 +16,48 @@ import (
 // UltimateTexasHoldemCuiPresenter アルティメット・テキサスホールデムCUIプレゼンタークラス
 type UltimateTexasHoldemCuiPresenter struct{}
 
+// writePayoutRef はブラインドとトリップスの配当表を並べる。
+//
+// 倍率はすべて domain の定数から。フラッシュのブラインドだけ 3:2 なので、
+// 分子・分母をそのまま出す。
+func (up *UltimateTexasHoldemCuiPresenter) writePayoutRef(sb *strings.Builder) {
+	sb.WriteString(color.Bold(i18n.T("ultimatetexasholdem.payoutRefTitle")) + "\n")
+
+	blind := []struct {
+		key  string
+		rate string
+	}{
+		{"payoutRefBlindRoyalFlush", strconv.Itoa(domain.UltimateTexasHoldemBlindPayRoyalFlush)},
+		{"payoutRefBlindStraightFlush", strconv.Itoa(domain.UltimateTexasHoldemBlindPayStraightFlush)},
+		{"payoutRefBlindFourOfAKind", strconv.Itoa(domain.UltimateTexasHoldemBlindPayFourOfAKind)},
+		{"payoutRefBlindFullHouse", strconv.Itoa(domain.UltimateTexasHoldemBlindPayFullHouse)},
+		{"payoutRefBlindFlush", strconv.Itoa(domain.UltimateTexasHoldemBlindPayFlushNum) + ":" +
+			strconv.Itoa(domain.UltimateTexasHoldemBlindPayFlushDen)},
+		{"payoutRefBlindStraight", strconv.Itoa(domain.UltimateTexasHoldemBlindPayStraight)},
+	}
+	sb.WriteString("  " + i18n.T("ultimatetexasholdem.payoutRefBlindHeader") + "\n")
+	for _, row := range blind {
+		sb.WriteString("    " + i18n.Tf("ultimatetexasholdem."+row.key, "rate", row.rate) + "\n")
+	}
+
+	trips := []struct {
+		key  string
+		rate int
+	}{
+		{"payoutRefTripsRoyalFlush", domain.UltimateTexasHoldemTripsPayRoyalFlush},
+		{"payoutRefTripsStraightFlush", domain.UltimateTexasHoldemTripsPayStraightFlush},
+		{"payoutRefTripsFourOfAKind", domain.UltimateTexasHoldemTripsPayFourOfAKind},
+		{"payoutRefTripsFullHouse", domain.UltimateTexasHoldemTripsPayFullHouse},
+		{"payoutRefTripsFlush", domain.UltimateTexasHoldemTripsPayFlush},
+		{"payoutRefTripsStraight", domain.UltimateTexasHoldemTripsPayStraight},
+		{"payoutRefTripsThreeOfAKind", domain.UltimateTexasHoldemTripsPayThreeOfAKind},
+	}
+	sb.WriteString("  " + i18n.T("ultimatetexasholdem.payoutRefTripsHeader") + "\n")
+	for _, row := range trips {
+		sb.WriteString("    " + i18n.Tf("ultimatetexasholdem."+row.key, "rate", strconv.Itoa(row.rate)) + "\n")
+	}
+}
+
 // Output ゲーム状態を出力
 func (up *UltimateTexasHoldemCuiPresenter) Output(g interfaces.UltimateTexasHoldemGame, lastErr error) string {
 	var sb strings.Builder
@@ -35,6 +77,17 @@ func (up *UltimateTexasHoldemCuiPresenter) Output(g interfaces.UltimateTexasHold
 		if play := g.GetPlayBet(); play > 0 {
 			fmt.Fprintf(&sb, "%s\n", i18n.Tf("ultimatetexasholdem.playBetLine", "play", strconv.Itoa(play)))
 		}
+	}
+
+	// **配当を知らないままトリップスの額を決めさせない。**トリップスは
+	// フォールドしても評価される特殊なサイドベットなのに、CUI には倍率を知る
+	// 手段が無かった (#5589)。Baccarat が #5497 で入れたのと同じ形で、倍率は
+	// ドメインの定数から作る ── 文言に書き写すと、配当を変えたとき嘘の表が残る。
+	//
+	// ベットフェーズだけに出す。賭けた後の卓に配当表を並べても、いま起きた
+	// ことが読み取りにくくなるだけ。
+	if g.GetPhase() == domain.UltimateTexasHoldemPhaseBet {
+		up.writePayoutRef(&sb)
 	}
 
 	if community := g.GetCommunity(); len(community) > 0 {
