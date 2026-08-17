@@ -28,5 +28,7 @@
   "overallWin": "overall: net win",
   "overallDraw": "overall: even",
   "overallLose": "overall: net loss",
-  "helpExampleBet": "  b 100                bet 100 chips"
+  "helpExampleBet": "  b 100                bet 100 chips",
+  "switchPreviewLine": "After switching: hand 0 = {{first}} / hand 1 = {{second}}",
+  "switchPreviewBust": "{{score}} (bust)"
 }

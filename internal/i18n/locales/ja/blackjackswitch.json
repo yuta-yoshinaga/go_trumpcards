@@ -28,5 +28,7 @@
   "overallWin": "総合: 勝ち越し",
   "overallDraw": "総合: 引き分け",
   "overallLose": "総合: 負け越し",
-  "helpExampleBet": "  b 100                100 チップを賭ける"
+  "helpExampleBet": "  b 100                100 チップを賭ける",
+  "switchPreviewLine": "交換すると: ハンド0={{first}} / ハンド1={{second}}",
+  "switchPreviewBust": "{{score}}(バースト)"
 }

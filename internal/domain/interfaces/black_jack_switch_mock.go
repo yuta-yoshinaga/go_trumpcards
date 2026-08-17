@@ -37,6 +37,12 @@ func (m *MockBlackJackSwitchGame) GetDealer() *domain.BlackJackPlayer {
 	return args.Get(0).(*domain.BlackJackPlayer)
 }
 
+// SwitchPreviewScores は 2 枚目を入れ替えた場合の両ハンドの得点を返す。
+func (m *MockBlackJackSwitchGame) SwitchPreviewScores() (int, int, bool) {
+	args := m.Called()
+	return args.Int(0), args.Int(1), args.Bool(2)
+}
+
 func (m *MockBlackJackSwitchGame) GetHands() []*domain.BlackJackHand {
 	args := m.Called()
 	if args.Get(0) == nil {
