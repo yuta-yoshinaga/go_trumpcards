@@ -57,8 +57,6 @@ func (dc *DragonTigerCuiController) Exec(command string) string {
 				}
 				// **受け付けた後に覚える。**額や種別が不正なまま覚えると、
 				// `rb` が通らないベットを繰り返す。
-				// **受け付けた後に覚える。**額や種別が不正なまま覚えると、
-				// `rb` が通らないベットを繰り返す。
 				dc.lastBet = &dragonTigerBet{amount: amount, betType: betType}
 				return dc.di.Bet(amount, betType), true
 			case "rb", "rebet":
