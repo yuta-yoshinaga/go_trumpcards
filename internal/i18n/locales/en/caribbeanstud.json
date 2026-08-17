@@ -30,5 +30,6 @@
   "hintWeakHand": "no made hand and nothing as high as Ace-King",
   "helpExampleBet": "  b 10                 ante 10 and get a hand",
   "helpExamplePlay": "  p                    call, placing a play bet of 2x the ante",
-  "helpHint": "  h                    show a hint"
+  "helpHint": "  h                    show a hint",
+  "jackpotHelp": "Jackpot (optional): pays on a flush or better, whether or not you beat the dealer"
 }
