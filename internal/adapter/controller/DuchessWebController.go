@@ -49,8 +49,10 @@ type DuchessWebOutput struct {
 	// BaseRank は 4 つの基礎札が始まるランク。0 は「まだ選ばれていない」。
 	BaseRank int `json:"baseRank"`
 	// AwaitingBaseRank が真の間は、リザーブから 1 枚選ぶ以外に何もできない。
-	AwaitingBaseRank bool                  `json:"awaitingBaseRank"`
-	Hint             *DuchessWebOutputHint `json:"hint,omitempty"`
+	AwaitingBaseRank bool `json:"awaitingBaseRank"`
+	// CanAutoComplete は自動送りがいま 1 枚でも動かせるか。ボタンの活性条件に使う (#5557)。
+	CanAutoComplete bool                  `json:"canAutoComplete"`
+	Hint            *DuchessWebOutputHint `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
 }

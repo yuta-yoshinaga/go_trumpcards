@@ -243,22 +243,36 @@ describe('DuchessPage', () => {
     expect(screen.queryByTestId('du-gameover-summary')).not.toBeInTheDocument();
   });
 
-  // Every foundation opens with the base rank, so one card on a pile is the
-  // starting position — auto-complete only helps past it.
-  it('disables auto-complete until a foundation is past the base rank', async () => {
-    mockExec.mockResolvedValue({ ...playingState, foundation: [[card('SPADE', 5)], [], [], []] });
-    const { unmount } = renderWithProviders(<DuchessPage />);
-    const btn = await screen.findByTestId('autocomplete-button');
-    expect(btn).toBeDisabled();
-    expect(btn).toHaveAttribute('title');
-    unmount();
-
+  // #5557: 活性条件はドメインの `canAutoComplete`。組札の枚数は条件ではない —
+  // 種札を置かないので 1 枚でも次を送れることがあり、逆に高く積まれていても
+  // 送れる札が無ければ AutoComplete は失敗する。
+  it('enables auto-complete when the server says a card can move, even with one card on a pile', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
-      foundation: [[card('SPADE', 5), card('SPADE', 6)], [], [], []],
+      foundation: [[card('SPADE', 5)], [], [], []],
+      canAutoComplete: true,
     });
     renderWithProviders(<DuchessPage />);
     await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeEnabled());
+  });
+
+  it('disables auto-complete when the server says nothing can move, however tall the pile', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [[card('SPADE', 5), card('SPADE', 6), card('SPADE', 7)], [], [], []],
+      canAutoComplete: false,
+    });
+    renderWithProviders(<DuchessPage />);
+    const btn = await screen.findByTestId('autocomplete-button');
+    expect(btn).toBeDisabled();
+    expect(btn).toHaveAttribute('title');
+  });
+
+  // 基準ランク未選択の局面は従来どおり押せない (サーバも false を返す)。
+  it('stays disabled while the base rank is still unchosen', async () => {
+    mockExec.mockResolvedValue({ ...playingState, awaitingBaseRank: true, canAutoComplete: false });
+    renderWithProviders(<DuchessPage />);
+    await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeDisabled());
   });
 
   it('shows StalemateEscapeButton when the stalemate flag is set', async () => {

@@ -32598,6 +32598,11 @@ components:
             While true, `base` is the only command that will be accepted. Sent
             alongside `baseRank` so the client never has to encode the
             "0 means unchosen" convention itself.
+        canAutoComplete:
+          type: boolean
+          description: >-
+            True when auto-complete can move at least one card right now. The
+            client uses it for the button state, so pressing it always succeeds.
         phase:
           type: integer
           description: "0=Playing, 1=GameClear, 2=GameOver"

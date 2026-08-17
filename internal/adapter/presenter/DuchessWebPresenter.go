@@ -65,6 +65,7 @@ func (p *DuchessWebPresenter) Output(d interfaces.DuchessGame, lastErr error) st
 	}
 	resObj.BaseRank = d.GetBaseRank()
 	resObj.AwaitingBaseRank = d.IsAwaitingBaseRank()
+	resObj.CanAutoComplete = d.CanAutoComplete()
 
 	// メッセージ
 	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`

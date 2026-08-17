@@ -39,6 +39,14 @@ export interface DuchessResponse extends BaseGameResponse {
   phase: number;
   moveCount: number;
   canUndo: boolean;
+  /**
+   * Whether auto-complete can move at least one card right now.
+   *
+   * The page used to guess this from foundation pile heights, which is not the
+   * domain's condition: Duchess seeds no foundations, so one card can already be
+   * enough, and a tall pile with nothing to feed it still fails (#5557).
+   */
+  canAutoComplete?: boolean;
   isStalemate: boolean;
   undoToEscape?: number;
   hint?: DuchessHint;

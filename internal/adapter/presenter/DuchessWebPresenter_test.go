@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -20,6 +21,7 @@ func setupDuchessWebMockDefaults(g *interfaces.MockDuchessGame) {
 	g.On("CanUndo").Return(false).Maybe()
 	g.On("IsStalemate").Return(false).Maybe()
 	g.On("UndoToEscape").Return(0).Maybe()
+	g.On("CanAutoComplete").Return(false).Maybe()
 	g.On("GetStockCount").Return(35).Maybe()
 	g.On("GetWaste").Return([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 9, true)}).Maybe()
 	g.On("GetBaseRank").Return(5).Maybe()
@@ -227,4 +229,18 @@ func TestDuchessWebPresenter_ActionLogOutput(t *testing.T) {
 
 		assert.Contains(t, new(DuchessWebPresenter).ActionLogOutput(g), "move")
 	})
+}
+
+// #5557: ボタンの活性条件はドメインの答え。組札の枚数から推測すると、
+// 押せるのに拒否される / 押せないのに送れる が起きる。
+func TestDuchessWebPresenter_Output_CarriesCanAutoComplete(t *testing.T) {
+	for _, can := range []bool{true, false} {
+		g := new(interfaces.MockDuchessGame)
+		g.On("CanAutoComplete").Return(can)
+		setupDuchessOutputMock(g)
+
+		var out controller.DuchessWebOutput
+		require.NoError(t, json.Unmarshal([]byte(new(DuchessWebPresenter).Output(g, nil)), &out))
+		assert.Equal(t, can, out.CanAutoComplete)
+	}
 }
