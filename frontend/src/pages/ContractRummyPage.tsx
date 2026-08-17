@@ -3,6 +3,7 @@ import { contractrummyApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
+import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -31,6 +32,7 @@ import { formatContractRummyState } from '../utils/cli/formatters/contractrummyF
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { evaluateContractSlot, isContractRummyMeld } from '../utils/contractRummyUtils';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Phase identifiers for Contract Rummy. */
 const CR_PHASE = {
@@ -84,6 +86,16 @@ function formatSlot(
 }
 
 /** Inner content of the Contract Rummy page. */
+/**
+ * CPU difficulty values, matching the CUI's `sd` command and
+ * `domain.ContractRummyCpuDifficulty` (0=Easy, 1=Normal, 2=Hard).
+ */
+const CONTRACT_RUMMY_DIFFICULTY_OPTIONS = [
+  { value: 0, label: 'easy' },
+  { value: 1, label: 'normal' },
+  { value: 2, label: 'hard' },
+] as const;
+
 function ContractRummyPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('contractrummy');
@@ -214,10 +226,14 @@ function ContractRummyPageContent() {
     clearSelection();
   }, [execApi, clearSelection]);
 
+  // **リセットでも難易度を持ち越す。**config を付けずに reset すると、サーバは
+  // 既定値 (Normal) に戻す。選んだ直後は効くのに、次に「最初から」を押した時点で
+  // 黙って戻る形になっていた (#5588 のレビュー指摘)。
+  const cpuDifficulty = state?.config.cpuDifficulty;
   const handleReset = useCallback(() => {
-    void execApi('reset');
+    void execApi('reset', cpuDifficulty === undefined ? undefined : { config: { cpuDifficulty } });
     clearSelection();
-  }, [execApi, clearSelection]);
+  }, [execApi, clearSelection, cpuDifficulty]);
 
   const phaseName = useMemo(() => {
     if (!state) return '';
@@ -270,6 +286,32 @@ function ContractRummyPageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
+          {/* **CUI だけが難易度を変えられる状態だった** (`sd` コマンド)。設定は
+              ドメインにもレスポンス型にもあるのに、Web からは触れなかった (#5588)。
+              数値は CUI と同じ 0/1/2。 */}
+          <SettingsPanel
+            title={t('settings.title')}
+            groups={[
+              {
+                items: [
+                  {
+                    type: 'select',
+                    id: 'cpuDifficulty',
+                    label: t('settings.cpuDifficulty'),
+                    value: state.config.cpuDifficulty,
+                    options: CONTRACT_RUMMY_DIFFICULTY_OPTIONS.map((o) => ({
+                      value: o.value,
+                      label: t(`settings.${o.label}`),
+                    })),
+                    // 難易度は配り直しでしか効かないので、reset に載せて渡す。
+                    onSelect: (v) => void execApi('reset', { config: { cpuDifficulty: Number(v) } }),
+                  },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
+                ],
+              },
+            ]}
+          />
+
           {error && <ErrorAlert message={error} onRetry={retry} />}
 
           {/* Scrollable state display: this page had no play area, so its
@@ -429,14 +471,9 @@ function ContractRummyPageContent() {
             )}
           </div>
 
-          <label className="flex items-center gap-1 text-ds-text-primary text-xs px-4 cursor-pointer min-h-[44px]">
-            <input
-              type="checkbox"
-              checked={frontendHintEnabled}
-              onChange={(e) => setFrontendHintEnabled(e.target.checked)}
-            />
-            {tc('hint.toggle', { ns: 'tutorial' })}
-          </label>
+          {/* ヒントの切り替えは設定パネルへ移した (#5588)。同じ状態を切り替える
+              コントロールが 2 つあると、どちらを押しても効くのに片方しか見つけて
+              もらえない。 */}
           <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
           <section className="px-4 py-2 flex flex-wrap gap-2" data-tutorial="cr-actions">

@@ -40,5 +40,12 @@
     "contractrummyMeetContract": "まだ契約を満たしていません。重い札も材料です",
     "contractrummyDiscardHeavy": "繋がっていない札のうち一番重い札です"
   },
-  "invalidExtraMeld": "セットまたはランとして成立していません"
+  "invalidExtraMeld": "セットまたはランとして成立していません",
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  }
 }
