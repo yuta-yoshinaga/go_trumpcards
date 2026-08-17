@@ -37,6 +37,15 @@ func (p *BeloteCuiPresenter) Output(b interfaces.BeloteGame, lastErr error) stri
 		out.WriteString(i18n.Tf("belote.header",
 			"round", strconv.Itoa(b.GetRoundNumber()),
 			"trick", strconv.Itoa(b.GetTrickNumber())) + "\n")
+		// **最終トリックは特別だと、点数計算を見る前に知らせる。**Web は
+		// バッジを点滅させているのに、CUI は自分の手番が最後かどうかも
+		// ボーナスの存在も言っていなかった (#5592)。点数は設定から取る ──
+		// 訳文に 10 と書くと、設定を変えたとき案内だけが嘘になる。
+		if dd := b.GetConfig().DixDeDer; dd > 0 && b.GetTrickNumber() == domain.BeloteHandSize {
+			out.WriteString(color.Yellow(i18n.Tf("belote.dixDeDerNotice",
+				"points", strconv.Itoa(dd))) + "\n")
+		}
+
 		dealerIdx := b.GetDealerIdx()
 		out.WriteString(i18n.Tf("belote.dealer",
 			"name", cuiPlayerName(b.GetPlayer(dealerIdx), dealerIdx)) + "\n")

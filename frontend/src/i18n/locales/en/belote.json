@@ -34,7 +34,7 @@
   "roundPoints": "Round: {{points}} pts",
   "beloteRebelote": "Belote/Rebelote +20",
   "tracker": {
-    "dixDeDer": "Last trick +10",
+    "dixDeDer": "Last trick +{{points}}",
     "beloteKing": "Trump K",
     "beloteQueen": "Trump Q",
     "beloteBonus": "+20",

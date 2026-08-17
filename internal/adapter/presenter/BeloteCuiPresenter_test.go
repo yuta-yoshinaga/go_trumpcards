@@ -2,6 +2,7 @@ package presenter_test
 
 import (
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,6 +11,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupBeloteCuiMock() *interfaces.MockBeloteGame {
@@ -227,4 +229,38 @@ func TestBeloteCuiPresenter_ActionLogOutput(t *testing.T) {
 	result := p.ActionLogOutput(m)
 	// even empty log should not panic; result should be a string
 	assert.NotNil(t, result)
+}
+
+// #5592: 最終トリックが特別だということを、CUI は点数計算を見るまで教えて
+// いなかった。Web はバッジを点滅させている。
+func TestBeloteCuiPresenter_AnnouncesTheDixDeDerOnTheLastTrick(t *testing.T) {
+	i18n.SetLang("ja")
+	build := func(trick, dixDeDer int) string {
+		m, _ := setupBeloteCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTrickNumber")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetConfig")
+		cfg := domain.DefaultBeloteConfig()
+		cfg.DixDeDer = dixDeDer
+		m.On("GetTrickNumber").Return(trick)
+		m.On("GetConfig").Return(cfg)
+		return new(presenter.BeloteCuiPresenter).Output(m, nil)
+	}
+
+	notice := func(points int) string {
+		return i18n.Tf("belote.dixDeDerNotice", "points", strconv.Itoa(points))
+	}
+
+	// 8 トリック目 = 最終。**プレイ前に**出る。
+	assert.Contains(t, build(domain.BeloteHandSize, 10), notice(10))
+	// **点数は設定から。**訳文に 10 と書くと、設定を変えたとき案内だけが嘘になる。
+	assert.Contains(t, build(domain.BeloteHandSize, 25), notice(25))
+
+	// 最終トリック以外では出さない。
+	for _, trick := range []int{1, domain.BeloteHandSize - 1} {
+		assert.NotContains(t, build(trick, 10), notice(10), "trick %d", trick)
+	}
+
+	// 0 に設定されていれば出さない (受け入れ条件2) ── ボーナスが無いので。
+	assert.NotContains(t, build(domain.BeloteHandSize, 0),
+		strings.SplitN(i18n.T("belote.dixDeDerNotice"), "{{", 2)[0])
 }
