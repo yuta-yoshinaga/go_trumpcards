@@ -236,4 +236,61 @@ describe('LobaPage', () => {
       expect(document.querySelectorAll('[data-hint-draw="true"]')).toHaveLength(0);
     });
   });
+
+  // #5574: 「付ける」だけが二段階（手札1枚 + 付け先のメルド）なのに、その条件は
+  // ボタンの disabled にしか無く、選んだのに押せない理由が画面のどこにも無かった。
+  describe('LobaPage lay-off hint', () => {
+    const hint = () => screen.queryByTestId('loba-layoff-hint');
+
+    it('appears once a card is selected and no meld is', async () => {
+      renderWithProviders(<LobaPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+      expect(hint()).not.toBeInTheDocument();
+
+      selectCards([3]);
+      await waitFor(() => expect(hint()).toBeInTheDocument());
+    });
+
+    // **足りているときは黙る。**出したままだと、押せる状態でも押せないように読める。
+    it('goes away once a meld is chosen', async () => {
+      renderWithProviders(<LobaPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+      selectCards([3]);
+      await waitFor(() => expect(hint()).toBeInTheDocument());
+      fireEvent.click(screen.getAllByTestId('loba-meld')[0]);
+      await waitFor(() => expect(hint()).not.toBeInTheDocument());
+    });
+
+    // 2 枚以上を選んでいる人はメルドを作ろうとしている。付ける話をしない。
+    it('stays away while more than one card is selected', async () => {
+      renderWithProviders(<LobaPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+      selectCards([0, 1]);
+      await flushPendingDispatch();
+      expect(hint()).not.toBeInTheDocument();
+    });
+
+    // 付ける先が 1 つも無い局面で「メルドをクリックしてください」は嘘になる。
+    it('stays away when there is no meld to lay off onto', async () => {
+      mockExec.mockResolvedValue(makeState({ melds: [] }));
+      renderWithProviders(<LobaPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+      selectCards([3]);
+      await flushPendingDispatch();
+      expect(hint()).not.toBeInTheDocument();
+    });
+
+    // 常時ヒントは置き換えない。捨てるつもりの人を急かさないため (受け入れ条件2)。
+    it('does not replace the standing hint', async () => {
+      renderWithProviders(<LobaPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+      selectCards([3]);
+      await waitFor(() => expect(hint()).toBeInTheDocument());
+      expect(screen.getByText(/手札をクリックして選び/)).toBeInTheDocument();
+    });
+  });
 });

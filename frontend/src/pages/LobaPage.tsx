@@ -249,6 +249,14 @@ function LobaPageContent() {
                 ))}
               </div>
               {acting && isHumanTurn && <div className="text-[10px] text-ds-text-muted mt-1">{t('selectHint')}</div>}
+              {/* Lay off needs a meld picked too, and that half lived only in the
+                  button's disabled condition (#5574). Added, not substituted: one
+                  selected card is also what a discard looks like. */}
+              {acting && isHumanTurn && selected.length === 1 && meldTarget === null && state.melds.length > 0 && (
+                <div className="text-[10px] text-ds-text-muted mt-1" data-testid="loba-layoff-hint">
+                  {t('layOffTargetHint')}
+                </div>
+              )}
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
             </div>
 
