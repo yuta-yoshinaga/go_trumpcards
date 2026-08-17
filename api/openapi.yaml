@@ -29382,6 +29382,11 @@ components:
         lastInIdx:
           type: integer
           description: "Last seat still holding cards; -1 while undecided"
+        lastInBonus:
+          type: integer
+          description: >-
+            What the seat at `lastInIdx` receives. Sent so the figure is not
+            written into a translation string on one surface only.
         pot:
           type: integer
           description: |
