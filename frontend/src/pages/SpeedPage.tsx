@@ -234,22 +234,41 @@ function SpeedPageContent() {
 
             {/* Center piles — clickable for play (normal) or flip (stuck) */}
             <div className="relative flex items-center justify-center gap-6" data-tutorial="sp-center-piles">
-              {state.centerPiles.map((card, pi) => (
-                <button
-                  type="button"
-                  key={pi}
-                  onClick={isStuck ? handleFlip : () => handlePlay(pi)}
-                  disabled={isStuck ? loading : !isPlayPhase || selectedCardIndices.length !== 1 || loading}
-                  className={`transition-transform hover:scale-105 disabled:opacity-50 ${focusRingCard}${isStuck && !loading ? ' animate-pulse cursor-pointer' : ''}`}
-                  aria-label={
-                    isStuck
-                      ? t('flipCenterPile', { n: pi + 1 })
-                      : t('centerPileCard', { n: pi + 1, card: cardAlt(card) })
-                  }
-                >
-                  {card && <AnimatedCard card={card} width={cardWidth * 1.2} />}
-                </button>
-              ))}
+              {state.centerPiles.map((card, pi) => {
+                // **native disabled はタブ順から外す。** 手札を1枚選ぶまで場札が
+                // 消えるので、スクリーンリーダー利用者は場札の存在自体を発見できな
+                // かった (#5517)。Cribbage のペグ制限札や Oh Hell の制限ビッドと同じ
+                // く aria-disabled で「今は押せない理由」を伝え、フォーカスは残す。
+                // クリックは下の early return で無効化する。
+                const notPlayable = !isStuck && (!isPlayPhase || selectedCardIndices.length !== 1);
+                return (
+                  <button
+                    type="button"
+                    key={pi}
+                    onClick={
+                      isStuck
+                        ? handleFlip
+                        : () => {
+                            if (notPlayable) return;
+                            handlePlay(pi);
+                          }
+                    }
+                    disabled={loading}
+                    aria-disabled={notPlayable || undefined}
+                    title={notPlayable ? t('centerPileNeedsSelection') : undefined}
+                    className={`transition-transform hover:scale-105 disabled:opacity-50 ${focusRingCard}${isStuck && !loading ? ' animate-pulse cursor-pointer' : ''}${notPlayable ? ' opacity-50 cursor-not-allowed' : ''}`}
+                    aria-label={
+                      isStuck
+                        ? t('flipCenterPile', { n: pi + 1 })
+                        : notPlayable
+                          ? `${t('centerPileCard', { n: pi + 1, card: cardAlt(card) })} (${t('centerPileNeedsSelection')})`
+                          : t('centerPileCard', { n: pi + 1, card: cardAlt(card) })
+                    }
+                  >
+                    {card && <AnimatedCard card={card} width={cardWidth * 1.2} />}
+                  </button>
+                );
+              })}
               {isStuck && (
                 // Centering container: keeps the popup glued to the center
                 // even while animate-bounce drives its own transform on the
