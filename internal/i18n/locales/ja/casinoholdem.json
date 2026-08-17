@@ -6,6 +6,7 @@
   "chipsLine": "チップ: {{chips}}",
   "phaseLine": "フェーズ: {{phase}}",
   "handLine": "ハンド: {{hand}}",
+  "currentHandLine": "現在の役: {{hand}}",
   "anteLine": "アンテ: {{ante}}",
   "bonusLine": "AAボーナス: {{bonus}}",
   "callBetLine": "コール: {{call}}",
