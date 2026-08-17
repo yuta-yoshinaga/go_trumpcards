@@ -139,8 +139,12 @@ func (p *TonkCuiPresenter) Output(g interfaces.TonkGame, lastErr error) string {
 			b.WriteString(i18n.T("tonk.promptKnockHelp") + "\n")
 			// **相手の残りが少ないほどノックは裏目。**Web はボタンに警告リングと
 			// ⚠️ を出しているのに、CUI は各行の枚数を見比べさせるだけだった (#5582)。
-			if n, ok := tonkMinOpponentCards(g); ok && n <= domain.TonkUndercutRiskMax {
-				b.WriteString(color.Yellow(i18n.Tf("tonk.knockUndercutWarning", "count", strconv.Itoa(n))) + "\n")
+			// 人間の手番だけに出す。上のデッドウッド表示と同じ条件 ── ノックを
+			// 決めるのは人間なので、CPU の捨て札中に警告しても行動できない。
+			if cur := g.GetPlayer(currentIdx); cur.GetIsHuman() {
+				if n, ok := tonkMinOpponentCards(g); ok && n <= domain.TonkUndercutRiskMax {
+					b.WriteString(color.Yellow(i18n.Tf("tonk.knockUndercutWarning", "count", strconv.Itoa(n))) + "\n")
+				}
 			}
 		case domain.TonkPhaseRoundEnd:
 			if g.GetIsTonk() {

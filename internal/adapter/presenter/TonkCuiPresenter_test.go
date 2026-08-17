@@ -285,3 +285,18 @@ func TestTonkCuiPresenter_DoesNotWarnOutsideTheDiscardPhase(t *testing.T) {
 	out := new(presenter.TonkCuiPresenter).Output(m, nil)
 	assert.NotContains(t, out, i18n.Tf("tonk.knockUndercutWarning", "count", "1"))
 }
+
+// レビュー (#5941) の指摘: ノックを決めるのは人間なので、CPU の捨て札中に
+// 「相手の手札が少ない」と警告しても行動できない。上のデッドウッド表示と同じ条件。
+func TestTonkCuiPresenter_WarnsOnlyOnTheHumanTurn(t *testing.T) {
+	i18n.SetLang("ja")
+	m, players := setupTonkCuiMockWithPlayers()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentPlayerIdx")
+	m.On("GetPhase").Return(domain.TonkPhaseDiscard)
+	m.On("GetCurrentPlayerIdx").Return(1) // CPU の捨て札中
+	players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 3, true))
+
+	out := new(presenter.TonkCuiPresenter).Output(m, nil)
+	assert.NotContains(t, out, i18n.Tf("tonk.knockUndercutWarning", "count", "1"))
+}
