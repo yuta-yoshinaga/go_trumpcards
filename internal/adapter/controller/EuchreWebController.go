@@ -43,6 +43,8 @@ type EuchreWebOutputHint struct {
 	Suit      *int   `json:"suit,omitempty"`
 	GoAlone   *bool  `json:"goAlone,omitempty"`
 	Reason    string `json:"reason"`
+	// Score は判断の元になったハンド強度 (ビッド局面のみ)。CUI と同じ値。
+	Score *int `json:"score,omitempty"`
 }
 
 // EuchreWebOutput ユーカーWebアウトプット

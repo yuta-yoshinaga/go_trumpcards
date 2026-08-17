@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
@@ -1066,4 +1067,178 @@ func TestEuchre_GetValidPlayIndices(t *testing.T) {
 	indices = e.GetValidPlayIndices(0)
 	assert.Equal(t, 1, len(indices))
 	assert.Equal(t, 0, indices[0])
+}
+
+// #5509: GetHint は evalHandForTrump のスコアで判断しておきながら、真偽値と定型の
+// 理由キーしか返さずスコアを捨てていた。プレイヤーは自分の手札が CPU の基準に
+// どれだけ近いかを学べない。
+func TestEuchre_HintCarriesTheScoreItJudgedWith(t *testing.T) {
+	newGame := func() *domain.Euchre {
+		e := domain.NewDefaultEuchre()
+		e.Reset()
+		return e
+	}
+
+	t.Run("pickup hint reports a score", func(t *testing.T) {
+		e := newGame()
+		e.SetPhase(domain.EuchrePhasePickUp)
+		e.SetBidPlayerIdx(0)
+		h := e.GetHint()
+		require.NotNil(t, h)
+		require.NotNil(t, h.Score, "判断に使ったスコアが落ちている")
+		// **判断と数値が矛盾しないこと。** しきい値以上なら勧め、未満なら勧めない。
+		require.NotNil(t, h.OrderUp)
+		assert.Equal(t, *h.Score >= domain.EuchreOrderUpScore, *h.OrderUp)
+		require.NotNil(t, h.GoAlone)
+		assert.Equal(t, *h.Score >= domain.EuchreGoAloneScore, *h.GoAlone)
+		// 既存の理由キーは維持する。
+		assert.Equal(t, "strategic_pickup", h.Reason)
+	})
+
+	t.Run("call-trump hint reports a score", func(t *testing.T) {
+		e := newGame()
+		e.SetPhase(domain.EuchrePhaseCallTrump)
+		e.SetBidPlayerIdx(0)
+		h := e.GetHint()
+		require.NotNil(t, h)
+		require.NotNil(t, h.Score)
+		require.NotNil(t, h.GoAlone)
+		assert.Equal(t, *h.Score >= domain.EuchreGoAloneScore, *h.GoAlone)
+		// スートを勧めるかどうかも同じしきい値に従う。
+		if *h.Score >= domain.EuchreOrderUpScore {
+			assert.NotNil(t, h.Suit)
+			assert.Equal(t, "strategic_call", h.Reason)
+		} else {
+			assert.Nil(t, h.Suit)
+			assert.Equal(t, "pass_recommended", h.Reason)
+		}
+	})
+
+	// **しきい値の順序。** ゴーアローンはオーダーアップより厳しい。
+	// 逆転すると「勧めないのにゴーアローン」という文言が出る。
+	t.Run("go-alone is the stricter threshold", func(t *testing.T) {
+		assert.Greater(t, domain.EuchreGoAloneScore, domain.EuchreOrderUpScore)
+	})
+}
+
+// スコアの3つの帯 (ゴーアローン / オーダーアップ / パス) をすべて通す。
+//
+// **乱数の入る札を避けて組む。** evalHandForTrump は切り札のQと他スートのA に
+// rand.Intn(2) を使うので、それらを手札に入れると同じ配りでもスコアが揺れる。
+// ボワーと切り札のA・K だけで組めば決定的になる。
+func TestEuchre_HintScoreCoversEveryBand(t *testing.T) {
+	card := func(design, value int) *domain.Card { return domain.NewCard(design, value, false) }
+
+	setup := func(hand []*domain.Card) *domain.Euchre {
+		e := domain.NewDefaultEuchre()
+		e.Reset()
+		e.SetPhase(domain.EuchrePhasePickUp)
+		e.SetBidPlayerIdx(0)
+		// ディーラーは別席にする。ディーラーだと +1 のボーナスが乗って帯が変わる。
+		e.SetDealerIdx(1)
+		e.SetFaceUpCard(card(domain.CardDesignSpade, 9))
+		p := e.GetPlayer(0)
+		p.ResetRound()
+		for _, c := range hand {
+			p.AddCard(c)
+		}
+		return e
+	}
+
+	for _, tc := range []struct {
+		name      string
+		hand      []*domain.Card
+		wantScore int
+		wantOrder bool
+		wantAlone bool
+	}{
+		{
+			name: "both bowers and the trump ace go alone",
+			hand: []*domain.Card{
+				card(domain.CardDesignSpade, 11),  // right bower +2
+				card(domain.CardDesignClover, 11), // left bower +2
+				card(domain.CardDesignSpade, 1),   // trump ace +1
+				card(domain.CardDesignHeart, 9), card(domain.CardDesignDiamond, 10),
+			},
+			wantScore: 5, wantOrder: true, wantAlone: true,
+		},
+		{
+			name: "right bower plus the trump ace orders up",
+			hand: []*domain.Card{
+				card(domain.CardDesignSpade, 11), card(domain.CardDesignSpade, 1),
+				card(domain.CardDesignHeart, 9), card(domain.CardDesignDiamond, 10),
+				card(domain.CardDesignHeart, 13),
+			},
+			wantScore: 3, wantOrder: true, wantAlone: false,
+		},
+		{
+			name: "a lone trump king passes",
+			hand: []*domain.Card{
+				card(domain.CardDesignSpade, 13),
+				card(domain.CardDesignHeart, 9), card(domain.CardDesignDiamond, 10),
+				card(domain.CardDesignHeart, 13), card(domain.CardDesignClover, 9),
+			},
+			wantScore: 1, wantOrder: false, wantAlone: false,
+		},
+	} {
+		h := setup(tc.hand).GetHint()
+		require.NotNil(t, h, tc.name)
+		require.NotNil(t, h.Score, tc.name)
+		assert.Equal(t, tc.wantScore, *h.Score, tc.name)
+		require.NotNil(t, h.OrderUp)
+		assert.Equal(t, tc.wantOrder, *h.OrderUp, tc.name)
+		require.NotNil(t, h.GoAlone)
+		assert.Equal(t, tc.wantAlone, *h.GoAlone, tc.name)
+	}
+}
+
+// コールトランプ側も3帯を通す。フェイスアップのスートは選べないので、
+// 別スートで強い手を組む。
+func TestEuchre_CallTrumpHintScoreCoversEveryBand(t *testing.T) {
+	card := func(design, value int) *domain.Card { return domain.NewCard(design, value, false) }
+
+	setup := func(hand []*domain.Card) *domain.Euchre {
+		e := domain.NewDefaultEuchre()
+		e.Reset()
+		e.SetPhase(domain.EuchrePhaseCallTrump)
+		e.SetBidPlayerIdx(0)
+		e.SetDealerIdx(1)
+		// 表向きは♠なので、コールできるのは残り3スート。
+		e.SetFaceUpCard(card(domain.CardDesignSpade, 9))
+		p := e.GetPlayer(0)
+		p.ResetRound()
+		for _, c := range hand {
+			p.AddCard(c)
+		}
+		return e
+	}
+
+	t.Run("both hearts bowers plus the ace go alone", func(t *testing.T) {
+		h := setup([]*domain.Card{
+			card(domain.CardDesignHeart, 11),   // right bower (hearts) +2
+			card(domain.CardDesignDiamond, 11), // left bower (same colour) +2
+			card(domain.CardDesignHeart, 1),    // trump ace +1
+			card(domain.CardDesignClover, 9), card(domain.CardDesignSpade, 10),
+		}).GetHint()
+		require.NotNil(t, h)
+		require.NotNil(t, h.Score)
+		assert.Equal(t, 5, *h.Score)
+		require.NotNil(t, h.GoAlone)
+		assert.True(t, *h.GoAlone)
+		assert.Equal(t, "strategic_call", h.Reason)
+	})
+
+	// **弱ければパスを勧め、スートも出さない。** その局面でも数値は出す。
+	t.Run("a weak hand passes but still reports the score", func(t *testing.T) {
+		h := setup([]*domain.Card{
+			card(domain.CardDesignHeart, 13), card(domain.CardDesignClover, 9),
+			card(domain.CardDesignSpade, 10), card(domain.CardDesignDiamond, 9),
+			card(domain.CardDesignClover, 10),
+		}).GetHint()
+		require.NotNil(t, h)
+		require.NotNil(t, h.Score)
+		assert.Less(t, *h.Score, domain.EuchreOrderUpScore)
+		assert.Nil(t, h.Suit)
+		assert.Equal(t, "pass_recommended", h.Reason)
+	})
 }

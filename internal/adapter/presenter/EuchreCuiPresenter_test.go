@@ -2,11 +2,13 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -487,4 +489,43 @@ func TestEuchreCuiPresenter_MarksPlayableCards(t *testing.T) {
 		out := p.Output(withPlayable([]int{0, 1, 2}, domain.EuchrePhasePickUp, 0), nil)
 		assert.NotContains(t, out, "*")
 	})
+}
+
+// #5509: ヒントは真偽値と定型の理由キーだけで、判断に使ったスコアは捨てられていた。
+// プレイヤーは自分の手札が CPU の基準にどれだけ近いか学べない。
+func TestEuchreCuiPresenter_HintShowsTheScore(t *testing.T) {
+	p := new(presenter.EuchreCuiPresenter)
+
+	e := domain.NewDefaultEuchre()
+	e.Reset()
+	e.SetPhase(domain.EuchrePhasePickUp)
+	e.SetBidPlayerIdx(0)
+
+	hint := e.GetHint()
+	require.NotNil(t, hint)
+	require.NotNil(t, hint.Score)
+
+	out := p.HintOutput(e)
+	// **ドメインが判断に使った値そのものが出ること。**別に計算し直していれば違う数字になる。
+	assert.Contains(t, out, i18n.Tf("euchre.hintScore",
+		"score", strconv.Itoa(*hint.Score),
+		"orderUp", strconv.Itoa(domain.EuchreOrderUpScore),
+		"goAlone", strconv.Itoa(domain.EuchreGoAloneScore)))
+	// しきい値も文言から読めること。
+	assert.Contains(t, out, strconv.Itoa(domain.EuchreOrderUpScore))
+	assert.Contains(t, out, strconv.Itoa(domain.EuchreGoAloneScore))
+}
+
+// スコアを持たない局面 (カードプレイのヒント) では行を出さない。
+func TestEuchreCuiPresenter_HintOmitsTheScoreWhenThereIsNone(t *testing.T) {
+	p := new(presenter.EuchreCuiPresenter)
+
+	e := domain.NewDefaultEuchre()
+	e.Reset()
+	e.SetPhase(domain.EuchrePhasePlay)
+	e.SetCurrentPlayerIdx(0)
+
+	if hint := e.GetHint(); hint != nil && hint.Score == nil {
+		assert.NotContains(t, p.HintOutput(e), i18n.T("euchre.hintScore"))
+	}
 }
