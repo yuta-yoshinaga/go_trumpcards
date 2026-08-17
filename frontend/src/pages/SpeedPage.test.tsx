@@ -608,6 +608,10 @@ describe('SpeedPage centre piles stay reachable', () => {
 
     mockExec.mockClear();
     fireEvent.click(centrePiles()[0]);
+    // **クリック直後の not.toHaveBeenCalled は常に通る** (呼び出しは非同期)。
+    // 通るはずの操作を1つ挟んで、そこまで進んでもなお play が飛んでいないことを見る。
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(mockExec).not.toHaveBeenCalledWith('play', expect.anything(), expect.anything());
   });
 
