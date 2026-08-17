@@ -31,5 +31,6 @@
   "tutorial.trumps": "Both black queens and all four jacks are the highest trumps whatever the trump suit. Believing only the trump suit is trump is the standard mistake.",
   "tutorial.bid": "You bid the LENGTH of your longest trump suit, not a target score. Below five you cannot bid, and at equal length clubs wins.",
   "tutorial.follow": "Trumps form their own suit. With hearts trump the club jack is a trump, so a club lead does not oblige it.",
-  "tutorial.rubber": "A rubber counts DOWN from 24. The first side to reach zero wins it, and if the losers never left 24 it is a double victory."
+  "tutorial.rubber": "A rubber counts DOWN from 24. The first side to reach zero wins it, and if the losers never left 24 it is a double victory.",
+  "trumpMark": "trump"
 }

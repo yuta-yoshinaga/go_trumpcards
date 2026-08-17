@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
@@ -267,4 +268,69 @@ func TestSjavsCuiPresenter_HintReasonKeysAreAllMapped(t *testing.T) {
 
 func TestSjavsCuiPresenter_ActionLog(t *testing.T) {
 	assert.NotEmpty(t, new(SjavsCuiPresenter).ActionLogOutput(sjTestGame(t)))
+}
+
+// #5575: **常時切札の 6 枚 (♣Q ♠Q ♣J ♠J ♥J ♦J) はスートを見ても分からない。**
+// 規則文は出ているのに、手札のどれがそれかは暗記に頼らせていた。
+func TestSjavsWebPresenter_ShipsWhichCardsAreTrumps(t *testing.T) {
+	human := domain.NewSjavsPlayer(true)
+	// ♣Q は常時切札。♥7 は切札が ♥ のときだけ切札。♠8 はどちらでもない。
+	human.AddCard(domain.NewCard(domain.CardDesignClover, 12, true))
+	human.AddCard(domain.NewCard(domain.CardDesignHeart, 7, true))
+	human.AddCard(domain.NewCard(domain.CardDesignSpade, 8, true))
+
+	g := sjStub(domain.SjavsPhasePlay, domain.CardDesignHeart, false, -1)
+	g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetPlayer")
+	g.On("GetPlayer", mock.Anything).Return(human)
+
+	out := sjDecode(t, new(SjavsWebPresenter).Output(g, nil))
+	assert.Equal(t, []any{float64(0), float64(1)}, out["trumpIndices"])
+
+	// **スートが変わると答えも変わる。**常時切札だけは残ること。
+	black := sjStub(domain.SjavsPhasePlay, domain.CardDesignSpade, false, -1)
+	black.ExpectedCalls = filterCalls(black.ExpectedCalls, "GetPlayer")
+	black.On("GetPlayer", mock.Anything).Return(human)
+	blackOut := sjDecode(t, new(SjavsWebPresenter).Output(black, nil))
+	assert.Equal(t, []any{float64(0), float64(2)}, blackOut["trumpIndices"])
+
+	// 切札未確定のうちは空。埋めると、まだ決まっていない切札を推測させる。
+	undecided := sjStub(domain.SjavsPhaseBid, -1, false, -1)
+	undecided.ExpectedCalls = filterCalls(undecided.ExpectedCalls, "GetPlayer")
+	undecided.On("GetPlayer", mock.Anything).Return(human)
+	assert.Empty(t, sjDecode(t, new(SjavsWebPresenter).Output(undecided, nil))["trumpIndices"])
+}
+
+// CUI も同じ判定を通ること。片方だけ印を付けると、同じ手札が画面ごとに違って見える。
+func TestSjavsCuiPresenter_MarksTheTrumpsInHand(t *testing.T) {
+	i18n.SetLang("ja")
+	human := domain.NewSjavsPlayer(true)
+	human.AddCard(domain.NewCard(domain.CardDesignClover, 12, true)) // 常時切札
+	human.AddCard(domain.NewCard(domain.CardDesignSpade, 8, true))   // 平札
+
+	g := sjStub(domain.SjavsPhasePlay, domain.CardDesignHeart, false, -1)
+	g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetPlayers")
+	g.On("GetPlayers").Return([]*domain.SjavsPlayer{
+		human, domain.NewSjavsPlayer(false), domain.NewSjavsPlayer(false), domain.NewSjavsPlayer(false),
+	})
+
+	out := new(SjavsCuiPresenter).Output(g, nil)
+	mark := i18n.T("sjavs.trumpMark")
+	assert.Contains(t, out, cuiCardStr(human.GetCard(0))+color.Yellow(mark))
+	// **平札には付けないこと。**全部に付ける実装でも「含む」検査だけなら通る。
+	assert.NotContains(t, out, cuiCardStr(human.GetCard(1))+color.Yellow(mark))
+}
+
+// ビッド前は印を出さない。切札が決まっていないので、どれが切札かは決まっていない。
+func TestSjavsCuiPresenter_MarksNothingBeforeTheTrumpIsNamed(t *testing.T) {
+	i18n.SetLang("ja")
+	human := domain.NewSjavsPlayer(true)
+	human.AddCard(domain.NewCard(domain.CardDesignClover, 12, true))
+
+	g := sjStub(domain.SjavsPhaseBid, -1, false, -1)
+	g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetPlayers")
+	g.On("GetPlayers").Return([]*domain.SjavsPlayer{
+		human, domain.NewSjavsPlayer(false), domain.NewSjavsPlayer(false), domain.NewSjavsPlayer(false),
+	})
+
+	assert.NotContains(t, new(SjavsCuiPresenter).Output(g, nil), color.Yellow(i18n.T("sjavs.trumpMark")))
 }

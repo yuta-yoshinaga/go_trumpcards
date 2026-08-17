@@ -81,6 +81,7 @@ function SjavsPageContent() {
   // Playability comes from the server, which owns the following rule -- and in
   // this game "trump" is not the same thing as "a card of the trump suit".
   const playable = new Set(state.validIndices);
+  const trumps = new Set(state.trumpIndices);
 
   // Every length the human can legally bid. Below minBid you must pass, and you
   // can never bid more than you hold.
@@ -207,6 +208,7 @@ function SjavsPageContent() {
               <div className="flex gap-1 justify-center flex-wrap">
                 {(human?.cards ?? []).map((card, i) => {
                   const canPlay = isHumanTurn && !bidding && playable.has(i);
+                  const isTrump = trumps.has(i);
                   return (
                     <button
                       key={`hand-${i.toString()}`}
@@ -223,6 +225,18 @@ function SjavsPageContent() {
                       ].join(' ')}
                     >
                       <AnimatedCard card={card} width={cardWidth} draggable={false} />
+                      {/* **常時切札の 6 枚 (♣Q ♠Q ♣J ♠J ♥J ♦J) はスートを見ても
+                          分からない。**規則文は出ているのに、手札のどれがそれかは
+                          暗記に頼らせていた (#5575)。添字はサーバが
+                          SjavsIsTrump から作るので、6 枚の一覧を持たない。 */}
+                      {isTrump && (
+                        <span
+                          className="block text-[10px] text-ds-warning leading-none"
+                          data-testid={`sjavs-trump-${i.toString()}`}
+                        >
+                          {t('trumpMark')}
+                        </span>
+                      )}
                     </button>
                   );
                 })}
