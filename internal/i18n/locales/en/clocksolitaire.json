@@ -14,5 +14,6 @@
   "gameOverLine": "Game over. Steps: {{count}}",
   "actionLogTitle": "Clock Solitaire Action Log",
   "actionLogEntry": "[{{turn}}] {{detail}}",
-  "helpExampleStep": "  s                        turn the next card"
+  "helpExampleStep": "  s                        turn the next card",
+  "completedPiles": "Completed: {{completed}}/{{total}}"
 }

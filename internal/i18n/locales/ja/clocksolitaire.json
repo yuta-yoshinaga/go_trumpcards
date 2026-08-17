@@ -14,5 +14,6 @@
   "gameOverLine": "ゲームオーバー ステップ数: {{count}}",
   "actionLogTitle": "Clock Solitaire Action Log",
   "actionLogEntry": "[{{turn}}] {{detail}}",
-  "helpExampleStep": "  s                        次の 1 枚をめくる"
+  "helpExampleStep": "  s                        次の 1 枚をめくる",
+  "completedPiles": "完成: {{completed}}/{{total}}"
 }

@@ -34,5 +34,6 @@
     "controls": "ステップで1枚ずつ、オートプレイで自動進行します。",
     "resetButton": "リセットボタンで新しいゲームを始められます。"
   },
-  "undo": "元に戻す"
+  "undo": "元に戻す",
+  "completedPiles": "完成: {{completed}}/{{total}}"
 }

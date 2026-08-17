@@ -4,12 +4,14 @@ package presenter
 
 import (
 	"errors"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func TestClockSolitaireCuiPresenterOutput_Playing(t *testing.T) {
@@ -132,4 +134,48 @@ func TestClockSolitaireCuiPresenterActionLog(t *testing.T) {
 
 	assert.Contains(t, result, "Action Log")
 	assert.Contains(t, result, "テスト")
+}
+
+// #5523: 「あと何山で揃うか」は CLI ターミナルを開いたときだけ見える隠れた
+// 計算式で、通常プレイでは CUI にも Web にも出ていなかった。
+func TestClockSolitaireCuiPresenterOutput_CompletedCount(t *testing.T) {
+	outputWithCompleted := func(completed int) string {
+		gg := new(interfaces.MockClockSolitaireGame)
+		setupClockSolitaireWebMockDefaults(gg)
+		gg.ExpectedCalls = nil
+		gg.On("GetPhase").Return(domain.ClockSolitairePhasePlaying)
+		gg.On("GetStepCount").Return(1)
+		gg.On("GetCurrentCard").Return((*domain.Card)(nil))
+
+		var piles [domain.ClockSolitairePileCount][]*domain.ClockSolitaireCard
+		var fuc [domain.ClockSolitairePileCount]int
+		for i := range domain.ClockSolitairePileCount {
+			piles[i] = make([]*domain.ClockSolitaireCard, domain.ClockSolitaireCardsPerPile)
+			for j := range domain.ClockSolitaireCardsPerPile {
+				piles[i][j] = &domain.ClockSolitaireCard{
+					Card:   domain.NewCard(domain.CardDesignSpade, i+1, false),
+					FaceUp: i < completed,
+				}
+			}
+			if i < completed {
+				fuc[i] = domain.ClockSolitaireCardsPerPile
+			}
+		}
+		gg.On("GetPiles").Return(piles)
+		gg.On("GetFaceUpCount").Return(fuc)
+		return (&ClockSolitaireCuiPresenter{}).Output(gg, nil)
+	}
+
+	line := func(completed int) string {
+		return i18n.Tf("clocksolitaire.completedPiles",
+			"completed", strconv.Itoa(completed),
+			"total", strconv.Itoa(domain.ClockSolitairePileCount))
+	}
+
+	assert.Contains(t, outputWithCompleted(0), line(0))
+	assert.Contains(t, outputWithCompleted(5), line(5))
+	// **クリア時は 13/13。**中央のKの山も数に入る。
+	assert.Contains(t, outputWithCompleted(domain.ClockSolitairePileCount), line(domain.ClockSolitairePileCount))
+	// 4枚に届いていない山は数えない。
+	assert.NotContains(t, outputWithCompleted(5), line(6))
 }
