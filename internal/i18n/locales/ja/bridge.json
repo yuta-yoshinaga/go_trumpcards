@@ -40,5 +40,6 @@
   "hintReasonSupportPartner": "パートナーをサポート",
   "hintReasonCompetitiveBid": "競り合い",
   "bidHistory": "オークション: {{bids}}",
-  "bidHistoryEntry": "{{name}}:{{bid}}"
+  "bidHistoryEntry": "{{name}}:{{bid}}",
+  "promptPlayDummy": "あなたの手番です（ダミー {{seat}} の手札から出してください）"
 }

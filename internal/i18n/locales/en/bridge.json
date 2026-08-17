@@ -40,5 +40,6 @@
   "hintReasonSupportPartner": "support partner",
   "hintReasonCompetitiveBid": "competitive bid",
   "bidHistory": "Auction: {{bids}}",
-  "bidHistoryEntry": "{{name}}: {{bid}}"
+  "bidHistoryEntry": "{{name}}: {{bid}}",
+  "promptPlayDummy": "Your turn — play from the dummy's hand ({{seat}})"
 }
