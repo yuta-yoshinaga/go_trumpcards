@@ -476,6 +476,16 @@ describe('TwoTenJackPage round announcement', () => {
     expect(announce()).not.toContain('+50');
   });
 
+  // **席が欠けたレスポンスでも落ちない。**合計は `?? 0` で埋めるので、
+  // その分岐も一度は通しておく (codecov は ?. と ?? を別の枝に数える)。
+  it('treats a missing seat as zero rather than crashing', async () => {
+    const short = makeTwoTenJackState({ phase: 3 });
+    mockExec.mockResolvedValue({ ...short, players: short.players.slice(0, 2) });
+    renderWithProviders(<TwoTenJackPage />);
+    await waitFor(() => expect(screen.getByRole('status').textContent).toContain('ラウンド終了'));
+    expect(screen.getByRole('status').textContent).toContain('+0');
+  });
+
   it('still shows the captured points in the score table', async () => {
     mockExec.mockResolvedValue(
       stateWith({ captured: [12, 30, 8, 20], round: [0, 6, 0, 6], cumulative: [10, 16, 10, 16] }),
