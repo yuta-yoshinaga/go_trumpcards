@@ -289,12 +289,11 @@ export function VideoPokerGameContent({
   // hand, so toggling holds never changes it, and it disappears once the phase
   // leaves DRAW. `rowKey === null` means the hand does not reach the pay minimum.
   //
-  // **Jacks or Better にも出す。** 以前は jokerpoker でしか出しておらず、
-  // ワイルドで救われないぶん現在の役が効くはずの変種で常に非表示だった (#5506)。
-  // deuceswild はワイルド判定 (2) が別なので、対応するまで従来どおり出さない。
+  // **3変種すべてに出す。** 以前は jokerpoker でしか出していなかった (#5506/#5507)。
+  // Deuces Wild はスリーカード以上でしか配当が出ず分散が大きいので、ドロー前に
+  // 配当対象かを知れる価値はむしろ大きい。
   const madeHand = useMemo(() => {
     if (!isDrawPhase || !state || state.hand.length !== 5) return null;
-    if (gameName !== 'jokerpoker' && gameName !== 'videopoker') return null;
     return evaluateVideoPokerMadeHand(gameName, state.hand);
   }, [gameName, isDrawPhase, state]);
 
