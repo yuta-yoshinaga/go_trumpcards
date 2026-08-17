@@ -185,6 +185,12 @@ function TwoTenJackPageContent() {
   const team1Total = (state.players[1]?.cumulativeScore ?? 0) + (state.players[3]?.cumulativeScore ?? 0);
   const team0Captured = (state.players[0]?.capturedPoints ?? 0) + (state.players[2]?.capturedPoints ?? 0);
   const team1Captured = (state.players[1]?.capturedPoints ?? 0) + (state.players[3]?.capturedPoints ?? 0);
+  // **読み上げる「+N」は加点であって、取った点札ではない (#5527)。**契約を
+  // 落としたラウンドは点札を取っていても加点 0 になるので、capturedPoints を
+  // 読み上げると累計の増分と食い違う。cumulativeScore が両席の合計である以上
+  // (domain の checkGameEnd も同じ数え方)、増分も両席の roundScore の合計。
+  const team0RoundScore = (state.players[0]?.roundScore ?? 0) + (state.players[2]?.roundScore ?? 0);
+  const team1RoundScore = (state.players[1]?.roundScore ?? 0) + (state.players[3]?.roundScore ?? 0);
 
   return (
     <GamePageShell
@@ -364,8 +370,8 @@ function TwoTenJackPageContent() {
                 <RoundScoreAnnouncement
                   active={isRoundEnd || isGameEnd}
                   entries={[
-                    { name: t('team0'), roundScore: team0Captured, cumulativeScore: team0Total },
-                    { name: t('team1'), roundScore: team1Captured, cumulativeScore: team1Total },
+                    { name: t('team0'), roundScore: team0RoundScore, cumulativeScore: team0Total },
+                    { name: t('team1'), roundScore: team1RoundScore, cumulativeScore: team1Total },
                   ]}
                 />
               </div>
