@@ -371,6 +371,34 @@ describe('AmericanToadPage destination highlight', () => {
     await waitFor(() => expect(document.querySelector('[data-preview-target]')).not.toBeNull());
   });
 
+  // 山札由来の札 (捨て札) を選んでも同じ判定を通る。ページの previewedCard は
+  // ゾーンごとに分岐しているので、tableau 以外も一度通しておく。
+  it('highlights targets for the waste card too', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      reserve: [],
+      waste: [card('SPADE', 7)],
+      tableau: makeTableau([[{ card: card('SPADE', 8), faceUp: true }]]),
+    });
+    renderWithProviders(<AmericanToadPage />);
+    const waste = await screen.findByRole('button', { name: /♠ 7/ });
+    fireEvent.click(waste);
+    await waitFor(() => expect(document.querySelectorAll('[data-legal-target]').length).toBeGreaterThan(0));
+  });
+
+  // リザーブの札を選んだときも同じ。
+  it('highlights targets for the reserve card too', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      reserve: [card('SPADE', 7)],
+      tableau: makeTableau([[{ card: card('SPADE', 8), faceUp: true }]]),
+    });
+    renderWithProviders(<AmericanToadPage />);
+    const reserve = await screen.findByRole('button', { name: /リザーブ 残り/ });
+    fireEvent.click(reserve);
+    await waitFor(() => expect(document.querySelectorAll('[data-legal-target]').length).toBeGreaterThan(0));
+  });
+
   // **リザーブが残っている間は空列を光らせない。**自動補充の対象で、手では置けない。
   it('does not offer an empty column while the reserve holds cards', async () => {
     mockExec.mockResolvedValue({

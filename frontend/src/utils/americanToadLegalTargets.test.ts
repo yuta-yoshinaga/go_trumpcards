@@ -72,4 +72,21 @@ describe('americanToadLegalTargets', () => {
     const r = americanToadLegalTargets(emptyTableau(), emptyFoundations(), [], 0, card('HEART', 5));
     expect(r.foundation.size).toBe(0);
   });
+
+  // 完成していない基礎札でも、**続きでない札**は受け取らない。
+  it('refuses a card that does not continue the foundation', () => {
+    const foundation = emptyFoundations();
+    foundation[0] = [card('SPADE', 5)];
+    const r = americanToadLegalTargets(emptyTableau(), foundation, [], 5, card('SPADE', 9));
+    expect(r.foundation.has(0)).toBe(false);
+  });
+
+  // タブローの**ランクは合うがスートが違う**札も受け取らない (両方の枝を通す)。
+  it('refuses the right rank in the wrong suit', () => {
+    const tableau = emptyTableau();
+    tableau[0] = col(card('SPADE', 8));
+    // リザーブを残して空列を候補から外し、スート判定だけを見る。
+    const r = americanToadLegalTargets(tableau, emptyFoundations(), [card('SPADE', 2)], 5, card('HEART', 7));
+    expect(r.tableau.size).toBe(0);
+  });
 });
