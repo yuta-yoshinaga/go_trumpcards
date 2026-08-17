@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
@@ -276,4 +277,28 @@ func TestOasisPokerCuiPresenter_HintOutput(t *testing.T) {
 		m.On("GetPhase").Return(domain.OasisPokerPhaseBet)
 		assert.Contains(t, p.HintOutput(m), i18n.T("oasispoker.hintNone"))
 	})
+}
+
+// #5595: 成立/不成立のバッジは出ているのに、その条件はどこにも書かれておらず、
+// アンティがプッシュになる理由が読めなかった。
+func TestOasisPokerCuiPresenter_ExplainsTheQualifyRule(t *testing.T) {
+	i18n.SetLang("ja")
+	g := domain.NewDefaultOasisPoker()
+	g.Reset()
+	require.NoError(t, g.Bet(10, 0))
+	require.NoError(t, g.Stand())
+	require.NoError(t, g.Play()) // 勝負してディーラーの手を開く
+
+	out := new(OasisPokerCuiPresenter).Output(g, nil)
+	// 成立でも不成立でも、条件そのものは出ること。
+	assert.Contains(t, out, i18n.T("oasispoker.qualifyRule"))
+}
+
+// 決着前には出さない。まだディーラーの手が伏せられている。
+func TestOasisPokerCuiPresenter_HidesTheQualifyRuleBeforeTheEnd(t *testing.T) {
+	i18n.SetLang("ja")
+	g := domain.NewDefaultOasisPoker()
+	g.Reset()
+
+	assert.NotContains(t, new(OasisPokerCuiPresenter).Output(g, nil), i18n.T("oasispoker.qualifyRule"))
 }

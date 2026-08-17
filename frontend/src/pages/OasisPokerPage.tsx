@@ -269,6 +269,15 @@ function OasisPokerPageContent() {
                         <li>{t('payoutRef.exchangeFee')}</li>
                       </ul>
                     </div>
+                    {/* **アンティがプッシュになる理由が読めなかった** (#5595)。
+                        配当率も交換手数料も書いてあるのに、肝心の成立条件だけ
+                        どこにも無かった。文言は CUI と同じ 1 か所から引く。 */}
+                    <div>
+                      <div className="font-bold text-ds-text-primary mb-1">{t('payoutRef.qualifyHeader')}</div>
+                      <ul className="space-y-0.5">
+                        <li data-testid="oasis-qualify-rule">{t('payoutRef.qualifyRule')}</li>
+                      </ul>
+                    </div>
                   </div>
                 </details>
               </div>

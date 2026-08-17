@@ -31,5 +31,6 @@
   "hintPlay": "Recommended: Play (p) — a pair or better, or an Ace/King",
   "hintFold": "Recommended: Fold (f) — no qualifying hand",
   "helpExampleBet": "  b 100                bet 100 chips",
-  "helpHint": "  h                    show a hint"
+  "helpHint": "  h                    show a hint",
+  "qualifyRule": "Qualification: one pair or better, or a hand holding both an ace and a king. If the dealer misses, the ante pushes"
 }
