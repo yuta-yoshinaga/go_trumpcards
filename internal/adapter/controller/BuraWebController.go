@@ -58,6 +58,9 @@ type BuraWebOutput struct {
 	WinnerIdx        int                    `json:"winnerIdx"`
 	IsDraw           bool                   `json:"isDraw"`
 	Hint             *BuraWebOutputHint     `json:"hint,omitempty"`
+	// WinningCombinations は即勝ちになる役の識別子を、判定順に並べたもの (#5568)。
+	// 説明を書く側が役を数え直すと、役を足したとき案内だけが古くなる。
+	WinningCombinations []string `json:"winningCombinations"`
 	WebOutputBase
 	Config BuraWebOutputConfig `json:"config"`
 }

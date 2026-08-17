@@ -48,6 +48,7 @@ function makeState(overrides?: Partial<BuraResponse>): BuraResponse {
     gameEndFlag: false,
     winnerIdx: -1,
     isDraw: false,
+    winningCombinations: ['bura', 'moscow', 'littleMoscow', 'molodka'],
     message: '',
     ...overrides,
   };
@@ -146,5 +147,47 @@ describe('BuraPage', () => {
     renderWithProviders(<BuraPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.getByText('切札 ハート（指示カードは引かれた）')).toBeInTheDocument();
+  });
+});
+
+// #5568: claim には失敗時のリスクが title で出ているのに、declare は何が「役」か
+// どこにも書かれておらず、押しても何も起きない理由が分からなかった。
+describe('BuraPage declare tooltip', () => {
+  it('lists every combination the server recognises', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<BuraPage />);
+    const btn = await screen.findByRole('button', { name: '役を宣言' });
+    const title = btn.getAttribute('title') ?? '';
+    expect(title).toContain('ブラ');
+    expect(title).toContain('モスクワ');
+    expect(title).toContain('小モスクワ');
+    expect(title).toContain('モロトカ');
+  });
+
+  // **役の一覧はサーバから。**画面側で数え直していないことを、別の一覧を
+  // 返して確かめる。
+  it('renders only what the server sends', async () => {
+    mockExec.mockResolvedValue({ ...makeState(), winningCombinations: ['bura'] });
+    renderWithProviders(<BuraPage />);
+    const btn = await screen.findByRole('button', { name: '役を宣言' });
+    const title = btn.getAttribute('title') ?? '';
+    expect(title).toContain('ブラ');
+    expect(title).not.toContain('モロトカ');
+  });
+
+  // 訳の無いキーはキー名を出すより落とす。役の説明として読めないので。
+  it('drops a combination it has no wording for', async () => {
+    mockExec.mockResolvedValue({ ...makeState(), winningCombinations: ['bura', 'notARealCombo'] });
+    renderWithProviders(<BuraPage />);
+    const btn = await screen.findByRole('button', { name: '役を宣言' });
+    expect(btn.getAttribute('title') ?? '').not.toContain('notARealCombo');
+  });
+
+  // claim 側は変えていない (受け入れ条件3)。
+  it('leaves the claim warning alone', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<BuraPage />);
+    const claim = await screen.findByRole('button', { name: /点を宣言/ });
+    expect(claim).toHaveAttribute('title', '到達していなければその場で負けます');
   });
 });

@@ -32151,6 +32151,14 @@ components:
           description: |
             True when the stock and both hands emptied with nobody claiming.
             Nobody wins -- points alone never decide a Bura round.
+        winningCombinations:
+          type: array
+          description: >-
+            Identifiers of the combinations that win outright, in the order
+            the server checks them. Sent so an explanation cannot list a
+            different set from the one the rules recognise.
+          items:
+            type: string
         hint:
           type: object
           description: Suggested play for the human seat, sent on every response while it is their turn.

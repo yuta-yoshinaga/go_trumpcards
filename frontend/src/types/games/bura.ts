@@ -53,5 +53,11 @@ export interface BuraResponse extends BaseGameResponse {
   winnerIdx: number;
   /** True when the stock emptied with nobody claiming: nobody wins. */
   isDraw: boolean;
+  /**
+   * Identifiers of the combinations that win outright, in the order the server
+   * checks them. Sent so the explanation cannot list a different set from the
+   * one the rules actually recognise.
+   */
+  winningCombinations: string[];
   hint?: BuraHintPayload;
 }
