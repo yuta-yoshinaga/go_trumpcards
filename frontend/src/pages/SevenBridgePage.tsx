@@ -19,6 +19,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useSevenBridgeGame } from '../hooks/useSevenBridgeGame';
+import { badgeInfoColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -358,6 +359,16 @@ function SevenBridgePageContent() {
               )}
               {isPlayPhase && isHumanTurn && (
                 <>
+                  {/* 割り込みで取ったターンかどうかはメルドを見ても分からない。値は
+                      保存までされているのに、どちらの UI も読んでいなかった (#5547)。 */}
+                  {state.claimedThisTurn && (
+                    <span
+                      className={`rounded px-2 py-0.5 text-xs font-bold ${badgeInfoColors}`}
+                      data-testid="sb-claimed-badge"
+                    >
+                      {t('claimedThisTurn')}
+                    </span>
+                  )}
                   <span id="sb-meld-hint" className="sr-only" data-testid="sb-meld-hint">
                     {selectedCardIndices.length >= 3 ? t('requirementMet') : t('requireThree')}
                   </span>

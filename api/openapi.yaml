@@ -38504,6 +38504,11 @@ components:
         roundWinnerIdx:
           type: integer
           description: Index of the last round winner (-1 for stock-out / not decided)
+        claimedThisTurn:
+          type: boolean
+          description: >-
+            True when this turn took the discard with a pon/chi claim rather
+            than drawing from the stock.
         config:
           type: object
           properties:

@@ -169,3 +169,21 @@ describe('SevenBridgePage', () => {
     localStorage.removeItem('cli-mode-sevenbridge');
   });
 });
+
+// #5547: ポン/チーで割り込んで取ったターンか、山から引いたターンかが
+// 画面から判別できなかった。値は保存までされている。
+describe('SevenBridgePage claim badge', () => {
+  it('marks the turn that took the discard', async () => {
+    mockExec.mockResolvedValue({ ...playState, claimedThisTurn: true });
+    renderWithProviders(<SevenBridgePage />);
+    await waitFor(() => expect(screen.getByTestId('sb-claimed-badge')).toBeInTheDocument());
+  });
+
+  // **山から引いたターンでは出さない。**毎ターン出ると区別にならない。
+  it('shows nothing after an ordinary draw', async () => {
+    mockExec.mockResolvedValue({ ...playState, claimedThisTurn: false });
+    renderWithProviders(<SevenBridgePage />);
+    await waitFor(() => expect(screen.getByTestId('sb-meld-hint')).toBeInTheDocument());
+    expect(screen.queryByTestId('sb-claimed-badge')).not.toBeInTheDocument();
+  });
+});

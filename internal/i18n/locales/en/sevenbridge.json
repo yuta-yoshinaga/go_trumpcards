@@ -33,5 +33,6 @@
   "hintChi": "You can chi with {{idxs}} ({{cards}})",
   "hintDraw": "The discard is no use here; draw from the stock.",
   "helpExampleHint": "  h                    ask for a move",
-  "helpLog": "  l                    show the action log"
+  "helpLog": "  l                    show the action log",
+  "claimedThisTurn": "Note: this turn took the discard with a pon/chi claim"
 }

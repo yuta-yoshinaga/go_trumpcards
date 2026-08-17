@@ -53,5 +53,6 @@
     "meldButton": "Play 3+ cards as a set or run.",
     "discardButton": "Discard one card. 7s can always be discarded.",
     "resetButton": "Reset to start a new game."
-  }
+  },
+  "claimedThisTurn": "Took the discard"
 }

@@ -82,6 +82,12 @@ func (p *SevenBridgeCuiPresenter) Output(g interfaces.SevenBridgeGame, lastErr e
 			currentIdx := g.GetCurrentPlayerIdx()
 			b.WriteString(i18n.Tf("sevenbridge.promptPlay",
 				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
+			// ポン/チーで割り込んで取ったターンか、山から引いたターンかは
+			// メルドを見ても分からない。値は保存までされているのに、どちらの
+			// UI も読んでいなかった (#5547)。
+			if g.GetClaimedThisTurn() {
+				b.WriteString(i18n.T("sevenbridge.claimedThisTurn") + "\n")
+			}
 			b.WriteString(i18n.T("sevenbridge.promptPlayHelpMeld") + "\n")
 			b.WriteString(i18n.T("sevenbridge.promptPlayHelpLayoff") + "\n")
 			b.WriteString(i18n.T("sevenbridge.promptPlayHelpDiscard") + "\n")
