@@ -47,6 +47,14 @@ func (p *SevenCardStudCuiPresenter) Output(s interfaces.SevenCardStudGame, lastE
 		b.WriteString(i18n.Tf("sevencardstud.tableMax", "n", strconv.Itoa(s.GetPlayerCnt())) + "\n")
 		b.WriteString(i18n.Tf("sevencardstud.dealerLine", "idx", strconv.Itoa(s.GetDealerIdx())) + "\n")
 
+		// ブリングイン (強制ベットを払い、3rd street で最初に動く席)。Web は
+		// バッジで示しているのに CUI には手掛かりが無かった (#5542)。Razz は
+		// 「一番強いドアカード」という逆転ルールなので、なおさら知りたい情報。
+		if bi := s.GetBringInPlayerIdx(); bi >= 0 && s.GetPhase() == domain.SevenCardStudPhaseThirdStreet {
+			b.WriteString(i18n.Tf("sevencardstud.bringInLine",
+				"name", cuiPlayerName(s.GetPlayer(bi), bi)) + "\n")
+		}
+
 		b.WriteString(i18n.Tf("sevencardstud.anteLine",
 			"ante", strconv.Itoa(cfg.Ante),
 			"bringIn", strconv.Itoa(cfg.BringIn),

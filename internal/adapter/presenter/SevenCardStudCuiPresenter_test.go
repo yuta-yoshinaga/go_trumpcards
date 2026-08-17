@@ -801,3 +801,34 @@ func TestSevenCardStudCuiPresenter_Output_HiLoSplit(t *testing.T) {
 		assert.NotContains(t, out, strings.SplitN(i18n.T("sevencardstud.wonSplit"), "{{", 2)[0])
 	})
 }
+
+// #5542: Web は 3rd street でブリングイン (強制ベットを払い最初に動く席) に
+// バッジを出すのに、CUI は誰なのかを知る手段が無かった。Razz は「一番強い
+// ドアカード」という逆転ルールなので、なおさら判断材料になる。
+func TestSevenCardStudCuiPresenter_Output_BringIn(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.SevenCardStudCuiPresenter)
+
+	outputWith := func(phase, bringIn int) string {
+		s, players := makeSevenCardStudForPresenter()
+		s.SetPhase(phase)
+		s.SetBringInPlayerIdx(bringIn)
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		return p.Output(s, nil)
+	}
+
+	line := func(idx int) string {
+		return i18n.Tf("sevencardstud.bringInLine", "name", i18n.Tf("cuiPlayerCpu", "idx", strconv.Itoa(idx)))
+	}
+
+	out := outputWith(domain.SevenCardStudPhaseThirdStreet, 2)
+	assert.Contains(t, out, line(2))
+
+	// **他ストリートでは出さない。**強制ベットは 3rd street だけの話。
+	header := strings.SplitN(i18n.T("sevencardstud.bringInLine"), "{{", 2)[0]
+	assert.NotContains(t, outputWith(domain.SevenCardStudPhaseFourthStreet, 2), header)
+	// 未確定 (-1) のときも出さない。
+	assert.NotContains(t, outputWith(domain.SevenCardStudPhaseThirdStreet, -1), header)
+}
