@@ -163,7 +163,10 @@ function DuchessPageContent() {
   const isGameOver = state.phase === DuchessPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
   const foundationCount = isGameOver ? state.foundation.reduce((sum, pile) => sum + pile.length, 0) : 0;
-  const autoCompleteReady = state.foundation.some((pile) => pile.length > 1);
+  // **押せる = 成功する。**組札の枚数で代用していたが、それはドメインの条件では
+  // ない (#5557)。1枚しか乗っていなくても次を送れることがあり、逆に何枚乗っていても
+  // 送れる札が無ければ AutoComplete は失敗する。ドメインの答えをそのまま使う。
+  const autoCompleteReady = state.canAutoComplete ?? false;
   // While any reserve card remains, empty columns are the reserve's exit only.
   const reserveRemaining = state.reserve.reduce((sum, fan) => sum + fan.length, 0);
 

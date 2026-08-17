@@ -53,4 +53,6 @@ type DuchessGame interface {
 	IsStalemate() bool
 	// UndoToEscape 手詰まりから抜けるために必要なアンドゥ回数を取得する
 	UndoToEscape() int
+	// CanAutoComplete いま AutoComplete が 1 枚でも動かせるか (#5557)
+	CanAutoComplete() bool
 }

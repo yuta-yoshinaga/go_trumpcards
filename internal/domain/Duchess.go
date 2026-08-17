@@ -528,6 +528,17 @@ func (d *Duchess) AutoComplete() error {
 	return nil
 }
 
+// CanAutoComplete は AutoComplete がいま 1 枚でも動かせるかを返す。
+//
+// **押せる = 成功する、を UI 側で保証するためにある。**ページは
+// 「組札に何枚か乗っているか」で代用していたが、それはドメインの条件ではない。
+// 種札を置かない Duchess では 1 枚しか乗っていなくても次を送れることがあり、
+// 逆に何枚乗っていても送れる札が無ければ AutoComplete は
+// "no card can be auto-completed" で失敗する (#5557)。
+func (d *Duchess) CanAutoComplete() bool {
+	return d.foundationHint() != nil
+}
+
 // Undo 直前の 1 手を取り消す
 func (d *Duchess) Undo() error {
 	if len(d.history) == 0 {
