@@ -62,5 +62,13 @@
     "trickDisplay": "トリックエリア。3人の出した札がここに並びます。",
     "playerHand": "あなたの手札。出すカードを選択します。",
     "resetButton": "ゲームをリセットします。"
+  },
+  "scoreBreakdown": "内訳: 基礎点 {{base}} × 乗数 {{multiplier}} (マタドール {{matadors}}) = {{value}}",
+  "bonus": {
+    "hand": "ハンド",
+    "schneider": "シュナイダー",
+    "schwarz": "シュヴァルツ",
+    "doubled": "敗北で2倍",
+    "overbid": "オーバービッド"
   }
 }

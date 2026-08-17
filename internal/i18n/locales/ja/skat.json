@@ -51,5 +51,11 @@
   "hintReasonGameChoice": "最適なゲーム選択",
   "hintReasonBestPlay": "最善手",
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "scoreBreakdownLine": "  内訳: 基礎点 {{base}} × 乗数 {{multiplier}} (マタドール {{matadors}}){{bonuses}}",
+  "bonusHand": "ハンド",
+  "bonusSchneider": "シュナイダー",
+  "bonusSchwarz": "シュヴァルツ",
+  "bonusDoubled": "敗北で2倍",
+  "bonusOverbid": "オーバービッド"
 }

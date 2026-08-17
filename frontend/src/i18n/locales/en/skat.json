@@ -62,5 +62,13 @@
     "trickDisplay": "The trick area shows the cards each of the three players plays.",
     "playerHand": "Your hand. Select a card to play.",
     "resetButton": "Resets the game."
+  },
+  "scoreBreakdown": "Breakdown: base {{base}} x multiplier {{multiplier}} (matadors {{matadors}}) = {{value}}",
+  "bonus": {
+    "hand": "hand",
+    "schneider": "schneider",
+    "schwarz": "schwarz",
+    "doubled": "doubled on a loss",
+    "overbid": "overbid"
   }
 }

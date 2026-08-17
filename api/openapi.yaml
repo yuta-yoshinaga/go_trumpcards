@@ -16527,6 +16527,33 @@ paths:
                     type: integer
                   gameValue:
                     type: integer
+                  scoreBreakdown:
+                    type: object
+                    description: >-
+                      How the round score was built. `value` always equals
+                      `gameValue`; the breakdown explains that number rather
+                      than recomputing it.
+                    properties:
+                      base:
+                        type: integer
+                      matadors:
+                        type: integer
+                      multiplier:
+                        type: integer
+                      hand:
+                        type: boolean
+                      schneider:
+                        type: boolean
+                      schwarz:
+                        type: boolean
+                      doubled:
+                        type: boolean
+                      overbid:
+                        type: boolean
+                      value:
+                        type: integer
+                      "null":
+                        type: boolean
                   gameEndFlag:
                     type: boolean
                   leadPlayerIdx:

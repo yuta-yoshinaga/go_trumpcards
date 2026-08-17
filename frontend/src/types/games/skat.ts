@@ -66,6 +66,23 @@ export interface SkatResponse extends BaseGameResponse {
   defendersCardPoints: number;
   winnerSide: number;
   gameValue: number;
+  /**
+   * How the round's score was built: base value, matadors, multiplier and the
+   * bonuses that raised it. `value` always equals {@link SkatResponse.gameValue}
+   * — the breakdown explains that number rather than recomputing it (#5561).
+   */
+  scoreBreakdown?: {
+    base: number;
+    matadors: number;
+    multiplier: number;
+    hand: boolean;
+    schneider: boolean;
+    schwarz: boolean;
+    doubled: boolean;
+    overbid: boolean;
+    value: number;
+    null: boolean;
+  };
   gameEndFlag: boolean;
   leadPlayerIdx: number;
   config: SkatConfig;

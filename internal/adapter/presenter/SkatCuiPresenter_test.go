@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -34,6 +35,7 @@ func setupSkatCuiMock() *interfaces.MockSkatGame {
 	m.On("GetDefendersCardPoints").Return(0)
 	m.On("GetWinnerSide").Return(domain.SkatWinnerUndecided)
 	m.On("GetGameValue").Return(0)
+	m.On("GetScoreBreakdown").Return((*domain.SkatScoreBreakdown)(nil)).Maybe()
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetLeadPlayerIdx").Return(-1)
 	m.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
@@ -416,4 +418,28 @@ func TestSkatCuiPresenter_ShowsTheHandBidEstimate(t *testing.T) {
 
 	// 手札が無い局面では出さない。
 	assert.NotContains(t, p.Output(build(0, nil), nil), "Hand estimate")
+}
+
+// #5561: ラウンド終了行は最終値しか出さず、「なぜこの点数なのか」— とくに
+// マタドール — を説明していなかった。
+func TestSkatCuiPresenter_Output_ScoreBreakdown(t *testing.T) {
+	build := func(bd *domain.SkatScoreBreakdown) string {
+		m := setupSkatCuiMock()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetScoreBreakdown")
+		m.On("GetScoreBreakdown").Return(bd)
+		setupSkatCuiMockPhase(m, domain.SkatPhaseRoundEnd)
+		return new(presenter.SkatCuiPresenter).Output(m, nil)
+	}
+
+	out := build(&domain.SkatScoreBreakdown{Base: 11, Matadors: 2, Multiplier: 4, Hand: true, Value: 44})
+	assert.Contains(t, out, i18n.Tf("skat.scoreBreakdownLine",
+		"base", "11", "matadors", "2", "multiplier", "4",
+		"bonuses", " ("+i18n.T("skat.bonusHand")+")"))
+
+	// **ヌル契約には乗数の概念が無い。**内訳を出すと嘘になる。
+	assert.NotContains(t, build(&domain.SkatScoreBreakdown{Base: 23, Multiplier: 1, Value: 23, Null: true}),
+		strings.SplitN(i18n.T("skat.scoreBreakdownLine"), "{{", 2)[0])
+
+	// 内訳が無いラウンド (未計算) でも落ちない。
+	assert.NotContains(t, build(nil), strings.SplitN(i18n.T("skat.scoreBreakdownLine"), "{{", 2)[0])
 }

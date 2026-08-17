@@ -29,6 +29,20 @@ type SkatWebConfig struct {
 	TargetScore   *int `json:"targetScore,omitempty"`
 }
 
+// SkatWebOutputScoreBreakdown はラウンド得点がどう積み上がったか (#5561)。
+type SkatWebOutputScoreBreakdown struct {
+	Base       int  `json:"base"`
+	Matadors   int  `json:"matadors"`
+	Multiplier int  `json:"multiplier"`
+	Hand       bool `json:"hand"`
+	Schneider  bool `json:"schneider"`
+	Schwarz    bool `json:"schwarz"`
+	Doubled    bool `json:"doubled"`
+	Overbid    bool `json:"overbid"`
+	Value      int  `json:"value"`
+	Null       bool `json:"null"`
+}
+
 // SkatWebOutputPlayer Skat web output player.
 type SkatWebOutputPlayer struct {
 	ID              int              `json:"id"`
@@ -80,9 +94,11 @@ type SkatWebOutput struct {
 	DefendersCardPoints int                    `json:"defendersCardPoints"`
 	WinnerSide          int                    `json:"winnerSide"`
 	GameValue           int                    `json:"gameValue"`
-	GameEndFlag         bool                   `json:"gameEndFlag"`
-	LeadPlayerIdx       int                    `json:"leadPlayerIdx"`
-	Hint                *SkatWebOutputHint     `json:"hint,omitempty"`
+	// ScoreBreakdown はラウンド得点の内訳 (#5561)。ラウンド前は null。
+	ScoreBreakdown *SkatWebOutputScoreBreakdown `json:"scoreBreakdown,omitempty"`
+	GameEndFlag    bool                         `json:"gameEndFlag"`
+	LeadPlayerIdx  int                          `json:"leadPlayerIdx"`
+	Hint           *SkatWebOutputHint           `json:"hint,omitempty"`
 	WebOutputBase
 	Config SkatWebOutputConfig `json:"config"`
 }

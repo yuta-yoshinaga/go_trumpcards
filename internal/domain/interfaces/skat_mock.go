@@ -102,8 +102,17 @@ func (m *MockSkatGame) GetDeclarerCardPoints() int  { return m.Called().Int(0) }
 func (m *MockSkatGame) GetDefendersCardPoints() int { return m.Called().Int(0) }
 func (m *MockSkatGame) GetWinnerSide() int          { return m.Called().Int(0) }
 func (m *MockSkatGame) GetGameValue() int           { return m.Called().Int(0) }
-func (m *MockSkatGame) GetLeadPlayerIdx() int       { return m.Called().Int(0) }
-func (m *MockSkatGame) PickedSkat() bool            { return m.Called().Bool(0) }
+
+// GetScoreBreakdown 直近ラウンドの得点内訳
+func (m *MockSkatGame) GetScoreBreakdown() *domain.SkatScoreBreakdown {
+	args := m.Called()
+	if v, ok := args.Get(0).(*domain.SkatScoreBreakdown); ok {
+		return v
+	}
+	return nil
+}
+func (m *MockSkatGame) GetLeadPlayerIdx() int { return m.Called().Int(0) }
+func (m *MockSkatGame) PickedSkat() bool      { return m.Called().Bool(0) }
 
 func (m *MockSkatGame) GetPlayerCnt() int { return m.Called().Int(0) }
 func (m *MockSkatGame) GetPlayer(i int) *domain.SkatPlayer {

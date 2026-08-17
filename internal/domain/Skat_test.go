@@ -240,6 +240,17 @@ func TestSkatHumanFlowSuitGameWin(t *testing.T) {
 	if g.GetGameValue() <= 0 {
 		t.Fatalf("game value = %d, want > 0", g.GetGameValue())
 	}
+
+	// #5561: 「なぜ 33 点で、別のラウンドは 66 点なのか」をどちらの UI も
+	// 説明していなかった。内訳を残しておけば表示側が計算をやり直さずに済む。
+	bd := g.GetScoreBreakdown()
+	require.NotNil(t, bd)
+	// **合計は必ず GetGameValue() と一致する。**食い違うと画面の内訳と合計が別の話になる。
+	assert.Equal(t, g.GetGameValue(), bd.Value)
+	assert.Positive(t, bd.Base)
+	// 乗数はマタドール数 + 1 から始まる (ハンド/シュナイダー/シュヴァルツで増える)。
+	assert.GreaterOrEqual(t, bd.Multiplier, bd.Matadors+1)
+	assert.Equal(t, bd.Base*bd.Multiplier, bd.Value, "勝ちラウンドは 基礎点 x 乗数")
 }
 
 func TestSkatNextRoundAdvancesDealer(t *testing.T) {
@@ -600,4 +611,10 @@ func TestSkat_BidEstimates(t *testing.T) {
 
 	// 空の手札でも壊れない。ジャックを 1 枚も持たないので without 4 以上。
 	assert.Positive(t, SkatBestBidEstimate(nil).Value)
+}
+
+// ラウンドが終わるまでは内訳が無い。
+func TestSkatScoreBreakdownIsNilBeforeARound(t *testing.T) {
+	g := newSkatForTest(t, DefaultSkatConfig())
+	assert.Nil(t, g.GetScoreBreakdown())
 }

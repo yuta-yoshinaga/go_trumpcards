@@ -42,6 +42,30 @@ func skatPlayerStr(player *domain.SkatPlayer, i int) string {
 	return b.String()
 }
 
+// skatBonusStr は乗数に加算された理由を並べる。何も無ければ空。
+func skatBonusStr(bd *domain.SkatScoreBreakdown) string {
+	parts := make([]string, 0, 4)
+	if bd.Hand {
+		parts = append(parts, i18n.T("skat.bonusHand"))
+	}
+	if bd.Schneider {
+		parts = append(parts, i18n.T("skat.bonusSchneider"))
+	}
+	if bd.Schwarz {
+		parts = append(parts, i18n.T("skat.bonusSchwarz"))
+	}
+	if bd.Doubled {
+		parts = append(parts, i18n.T("skat.bonusDoubled"))
+	}
+	if bd.Overbid {
+		parts = append(parts, i18n.T("skat.bonusOverbid"))
+	}
+	if len(parts) == 0 {
+		return ""
+	}
+	return " (" + strings.Join(parts, ", ") + ")"
+}
+
 // SkatCuiPresenter Skat CUI presenter.
 type SkatCuiPresenter struct{}
 
@@ -133,6 +157,15 @@ func (p *SkatCuiPresenter) Output(s interfaces.SkatGame, lastErr error) string {
 				"declarer", strconv.Itoa(s.GetDeclarerCardPoints()),
 				"defenders", strconv.Itoa(s.GetDefendersCardPoints()),
 				"value", strconv.Itoa(s.GetGameValue())) + "\n")
+			// **なぜこの点数なのか。**マタドール (切り札の連続所持/不所持) は
+			// スカートで最も分かりにくい規則なのに、最終値しか出ていなかった (#5561)。
+			if bd := s.GetScoreBreakdown(); bd != nil && !bd.Null {
+				b.WriteString(i18n.Tf("skat.scoreBreakdownLine",
+					"base", strconv.Itoa(bd.Base),
+					"matadors", strconv.Itoa(bd.Matadors),
+					"multiplier", strconv.Itoa(bd.Multiplier),
+					"bonuses", skatBonusStr(bd)) + "\n")
+			}
 			b.WriteString(i18n.T("skat.promptNextRound") + "\n")
 		}
 	})

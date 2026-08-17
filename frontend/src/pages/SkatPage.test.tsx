@@ -632,3 +632,68 @@ describe('SkatPage', () => {
     expect(estimate.textContent).toContain('⚠️');
   });
 });
+
+// #5561: 「なぜ 44 点なのか」を説明していなかった。マタドールはスカートで最も
+// 分かりにくい規則なので、内訳が出ないと学びようがない。
+describe('SkatPage score breakdown', () => {
+  const withBreakdown = (bd: NonNullable<SkatResponse['scoreBreakdown']>): SkatResponse => ({
+    ...roundEndPhase,
+    gameValue: bd.value,
+    scoreBreakdown: bd,
+  });
+
+  it('shows base, matadors, multiplier and the bonuses at round end', async () => {
+    mockExec.mockResolvedValue(
+      withBreakdown({
+        base: 11,
+        matadors: 2,
+        multiplier: 4,
+        hand: true,
+        schneider: false,
+        schwarz: false,
+        doubled: false,
+        overbid: false,
+        value: 44,
+        null: false,
+      }),
+    );
+    renderWithProviders(<SkatPage />);
+    const bd = await screen.findByTestId('skat-score-breakdown');
+    expect(bd).toHaveTextContent('11');
+    expect(bd).toHaveTextContent('2');
+    expect(bd).toHaveTextContent('4');
+    expect(bd).toHaveTextContent('44');
+    expect(bd).toHaveTextContent('ハンド');
+    // 付いていないボーナスは書かない。
+    expect(bd).not.toHaveTextContent('シュヴァルツ');
+  });
+
+  // **ヌル契約には乗数の概念が無い。**内訳を出すと嘘になる。
+  it('stays hidden for a Null contract', async () => {
+    mockExec.mockResolvedValue(
+      withBreakdown({
+        base: 23,
+        matadors: 0,
+        multiplier: 1,
+        hand: false,
+        schneider: false,
+        schwarz: false,
+        doubled: false,
+        overbid: false,
+        value: 23,
+        null: true,
+      }),
+    );
+    renderWithProviders(<SkatPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('skat-score-breakdown')).not.toBeInTheDocument();
+  });
+
+  // ラウンド途中では出さない。
+  it('stays hidden during play', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseHumanTurn, scoreBreakdown: undefined });
+    renderWithProviders(<SkatPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('skat-score-breakdown')).not.toBeInTheDocument();
+  });
+});

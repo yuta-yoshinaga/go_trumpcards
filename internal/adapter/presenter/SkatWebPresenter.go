@@ -57,6 +57,22 @@ func (p *SkatWebPresenter) buildBaseOutput(s interfaces.SkatGame) *controller.Sk
 	resObj.DefendersCardPoints = s.GetDefendersCardPoints()
 	resObj.WinnerSide = s.GetWinnerSide()
 	resObj.GameValue = s.GetGameValue()
+	// 得点の内訳。マタドールはスカートで最も分かりにくい規則なのに、最終値しか
+	// 出ていなかった (#5561)。計算はドメインが済ませているのでそのまま渡す。
+	if bd := s.GetScoreBreakdown(); bd != nil {
+		resObj.ScoreBreakdown = &controller.SkatWebOutputScoreBreakdown{
+			Base:       bd.Base,
+			Matadors:   bd.Matadors,
+			Multiplier: bd.Multiplier,
+			Hand:       bd.Hand,
+			Schneider:  bd.Schneider,
+			Schwarz:    bd.Schwarz,
+			Doubled:    bd.Doubled,
+			Overbid:    bd.Overbid,
+			Value:      bd.Value,
+			Null:       bd.Null,
+		}
+	}
 	resObj.GameEndFlag = s.GetGameEndFlag()
 	resObj.LeadPlayerIdx = s.GetLeadPlayerIdx()
 

@@ -303,6 +303,41 @@ function SkatPageContent() {
               </table>
             </div>
 
+            {/* 得点の内訳。マタドール (切り札の連続所持/不所持) はスカートで最も
+                分かりにくい規則なのに、どちらの UI も最終値しか出していなかった
+                (#5561)。計算はサーバが済ませているので数字をそのまま並べる。 */}
+            {(isRoundEnd || isGameEnd) && state.scoreBreakdown && !state.scoreBreakdown.null && (
+              <div className="text-ds-text-muted text-xs mt-2" data-testid="skat-score-breakdown">
+                {t('scoreBreakdown', {
+                  base: state.scoreBreakdown.base,
+                  matadors: state.scoreBreakdown.matadors,
+                  multiplier: state.scoreBreakdown.multiplier,
+                  value: state.scoreBreakdown.value,
+                })}
+                {[
+                  state.scoreBreakdown.hand && t('bonus.hand'),
+                  state.scoreBreakdown.schneider && t('bonus.schneider'),
+                  state.scoreBreakdown.schwarz && t('bonus.schwarz'),
+                  state.scoreBreakdown.doubled && t('bonus.doubled'),
+                  state.scoreBreakdown.overbid && t('bonus.overbid'),
+                ].filter(Boolean).length > 0 && (
+                  <span>
+                    {' ('}
+                    {[
+                      state.scoreBreakdown.hand && t('bonus.hand'),
+                      state.scoreBreakdown.schneider && t('bonus.schneider'),
+                      state.scoreBreakdown.schwarz && t('bonus.schwarz'),
+                      state.scoreBreakdown.doubled && t('bonus.doubled'),
+                      state.scoreBreakdown.overbid && t('bonus.overbid'),
+                    ]
+                      .filter(Boolean)
+                      .join(', ')}
+                    {')'}
+                  </span>
+                )}
+              </div>
+            )}
+
             <ActionLogSection
               isEndPhase={isRoundEnd || isGameEnd}
               actionLog={actionLog}
