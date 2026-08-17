@@ -256,6 +256,43 @@ describe('StreetsAndAlleysPage', () => {
     await waitFor(() => expect(sourceBtn).toHaveAttribute('aria-pressed', 'true'));
   });
 
+  // 読み上げられる文全体を固定する。部分一致だと矢印だけ見て通ってしまう。
+  const EXPECTED_HINT_SENTENCE = 'ヒントがあります: タブロー列1 → 組札';
+
+  // #5597: ヒント表示は無言で書き換わっていた。**空のまま先にマウントしてある**
+  // 領域の中身が変わることが読み上げの条件なので、hint がある間だけ現れる内側の
+  // div ではなく、常設のラッパーがライブ領域でなければならない。
+  it('keeps the hint live region mounted before there is any hint to announce', async () => {
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<StreetsAndAlleysPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+
+    const region = screen.getByTestId('sa-hint-live');
+    expect(region).toHaveAttribute('role', 'status');
+    expect(region).toHaveAttribute('aria-live', 'polite');
+    expect(region).toHaveTextContent('');
+  });
+
+  it('announces the recommended move through that same region', async () => {
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<StreetsAndAlleysPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    const region = screen.getByTestId('sa-hint-live');
+    expect(region).toHaveTextContent('');
+
+    mockExec.mockResolvedValue({
+      ...playingState,
+      hint: { fromCol: 1, cardIndex: 0, toZone: 'foundation', toCol: 2 },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    // **同じ要素**の中身が変わる (別の要素が現れるのではない) ことが読み上げの条件。
+    await waitFor(() => expect(region).toHaveTextContent(/→/));
+    expect(region.textContent).toBe(EXPECTED_HINT_SENTENCE);
+  });
+
   it('rings every zone that can accept the selected card', async () => {
     localStorage.clear();
     mockExec.mockReset();

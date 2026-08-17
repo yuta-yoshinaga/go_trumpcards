@@ -370,7 +370,12 @@ function StreetsAndAlleysPageContent() {
               <div className="flex-1 flex gap-1 sm:gap-2">{[4, 5, 6, 7].map(renderTableauColumn)}</div>
             </div>
 
-            <div data-tutorial="sa-hint-display">
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで現れるので変化として扱われず、読み上げられない
+              ことがある (#5597)。
+            */}
+            <div data-tutorial="sa-hint-display" data-testid="sa-hint-live" role="status" aria-live="polite">
               {hint && (
                 <div className="text-ds-warning text-sm mb-2 mt-3">
                   {t('hintAvailable')}: {formatHintZone(t, 'tableau', hint.fromCol)} →{' '}
