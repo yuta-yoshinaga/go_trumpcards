@@ -351,6 +351,30 @@ describe('ScorpionPage', () => {
     expect(hintBox?.textContent).toMatch(/3/);
   });
 
+  // #5544: 裏カードを開ける手を優先しているのに、その理由を言っていなかった。
+  it('says when the suggested move uncovers a face-down card', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      hint: { fromCol: 0, cardIndex: 1, toCol: 3, exposesFaceDown: true },
+      messageCode: 'scorpion.hintAvailable',
+    });
+    renderWithProviders(<ScorpionPage />);
+    await waitFor(() => expect(screen.getByTestId('sc-hint-exposes')).toBeInTheDocument());
+    expect(hintLiveRegion()?.textContent).toContain('裏カード');
+  });
+
+  // **開かない手では言わない。**常に出ると理由として機能しない。
+  it('stays silent when the move uncovers nothing', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      hint: { fromCol: 0, cardIndex: 1, toCol: 3, exposesFaceDown: false },
+      messageCode: 'scorpion.hintAvailable',
+    });
+    renderWithProviders(<ScorpionPage />);
+    await waitFor(() => expect(hintLiveRegion()).not.toBeNull());
+    expect(screen.queryByTestId('sc-hint-exposes')).not.toBeInTheDocument();
+  });
+
   it('renders inline hint for deal when hint.fromCol is -1', async () => {
     mockExec.mockResolvedValue({
       ...playingState,

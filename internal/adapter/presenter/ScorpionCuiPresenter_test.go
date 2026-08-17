@@ -9,6 +9,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupScorpionCuiMockDefaults(sg *interfaces.MockScorpionGame) {
@@ -105,6 +106,24 @@ func TestScorpionCuiPresenter_HintOutput(t *testing.T) {
 		result := p.HintOutput(sg)
 		assert.Contains(t, result, "ヒント")
 		assert.Contains(t, result, "タブロー列3")
+	})
+
+	// #5544: 裏カードを開ける手を優先しているのに、その理由を言っていなかった。
+	t.Run("says when the move uncovers a face-down card", func(t *testing.T) {
+		sg := new(interfaces.MockScorpionGame)
+		sg.On("GetHint").Return(&domain.ScorpionHint{FromCol: 0, CardIndex: 1, ToCol: 3, ExposesFaceDown: true})
+
+		result := new(ScorpionCuiPresenter).HintOutput(sg)
+		assert.Contains(t, result, i18n.T("scorpion.hintExposes"))
+	})
+
+	// **開かない手では言わない。**常に出ると理由として機能しない。
+	t.Run("stays silent when the move uncovers nothing", func(t *testing.T) {
+		sg := new(interfaces.MockScorpionGame)
+		sg.On("GetHint").Return(&domain.ScorpionHint{FromCol: 0, CardIndex: 1, ToCol: 3})
+
+		result := new(ScorpionCuiPresenter).HintOutput(sg)
+		assert.NotContains(t, result, i18n.T("scorpion.hintExposes"))
 	})
 
 	t.Run("deal hint", func(t *testing.T) {

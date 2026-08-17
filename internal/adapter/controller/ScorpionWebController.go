@@ -27,6 +27,8 @@ type ScorpionWebOutputHint struct {
 	FromCol   int `json:"fromCol"`
 	CardIndex int `json:"cardIndex"`
 	ToCol     int `json:"toCol"`
+	// ExposesFaceDown はこの手で裏カードが1枚開くか。ヒントが優先した理由 (#5544)。
+	ExposesFaceDown bool `json:"exposesFaceDown"`
 }
 
 // ScorpionWebOutput スコーピオンWebアウトプット

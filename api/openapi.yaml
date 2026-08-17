@@ -12544,6 +12544,11 @@ paths:
                         type: integer
                       toCol:
                         type: integer
+                      exposesFaceDown:
+                        type: boolean
+                        description: >-
+                          True when the suggested move turns a face-down card up.
+                          This is why the hint prefers it.
                   message:
                     type: string
                   messageCode:

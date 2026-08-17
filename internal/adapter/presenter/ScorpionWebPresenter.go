@@ -23,9 +23,10 @@ func (p *ScorpionWebPresenter) Output(s interfaces.ScorpionGame, lastErr error) 
 	if s.GetPhase() == domain.ScorpionPhasePlaying && !s.IsStalemate() {
 		if hint := s.GetHint(); hint != nil {
 			resObj.Hint = &controller.ScorpionWebOutputHint{
-				FromCol:   hint.FromCol,
-				CardIndex: hint.CardIndex,
-				ToCol:     hint.ToCol,
+				FromCol:         hint.FromCol,
+				CardIndex:       hint.CardIndex,
+				ToCol:           hint.ToCol,
+				ExposesFaceDown: hint.ExposesFaceDown,
 			}
 		}
 	}
@@ -59,9 +60,10 @@ func (p *ScorpionWebPresenter) HintOutput(s interfaces.ScorpionGame) string {
 	hint := s.GetHint()
 	if hint != nil {
 		resObj.Hint = &controller.ScorpionWebOutputHint{
-			FromCol:   hint.FromCol,
-			CardIndex: hint.CardIndex,
-			ToCol:     hint.ToCol,
+			FromCol:         hint.FromCol,
+			CardIndex:       hint.CardIndex,
+			ToCol:           hint.ToCol,
+			ExposesFaceDown: hint.ExposesFaceDown,
 		}
 		resObj.MessageCode = "scorpion.hintAvailable"
 	} else {
