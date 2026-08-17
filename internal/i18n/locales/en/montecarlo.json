@@ -18,5 +18,6 @@
   "hintLineRemove": "Hint: remove ({{r1}},{{c1}}) and ({{r2}},{{c2}})",
   "hintLineRemoveCard": "Hint: remove ({{r1}},{{c1}}){{card1}} and ({{r2}},{{c2}}){{card2}}",
   "hintLineDeal": "Hint: deal from stock",
-  "helpExampleHint": "  h                   ask for a move"
+  "helpExampleHint": "  h                   ask for a move",
+  "removablePairs": "Removable pairs: {{count}}"
 }

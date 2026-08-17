@@ -14,6 +14,12 @@ type MockMonteCarloGame struct {
 }
 
 // Reset モック
+// CountRemovablePairs は取り除ける組の数を返す。
+func (m *MockMonteCarloGame) CountRemovablePairs() int {
+	args := m.Called()
+	return args.Int(0)
+}
+
 func (_m *MockMonteCarloGame) Reset() { _m.Called() }
 
 // Remove モック

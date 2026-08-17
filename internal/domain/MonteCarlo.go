@@ -306,6 +306,24 @@ func (m *MonteCarlo) hasCompressionGap() bool {
 // 8 方向のうち「インデックスが大きい」方のセル (右/下/右下/左下) を確認する。
 // これにより各ペアが一度だけ評価される。
 func (m *MonteCarlo) findAdjacentPair() *MonteCarloHint {
+	var found *MonteCarloHint
+	m.forEachRemovablePair(func(r, c, nr, nc int) bool {
+		found = &MonteCarloHint{
+			Action: MonteCarloHintActionRemove,
+			FromR:  r, FromC: c,
+			ToR: nr, ToC: nc,
+		}
+		return false // 最初の 1 組で止める
+	})
+	return found
+}
+
+// forEachRemovablePair は取り除ける組を 1 回ずつ訪ねる。fn が false を返すと止まる。
+//
+// **前向きの 4 方向だけを見る**ので、同じ組を 2 度数えない (右・左下・下・右下)。
+// ヒントも手詰まり判定も件数もここを通る ── 隣接と同ランクの規則を 3 箇所に
+// 置くと、片方だけ直したときに「取れる組があるのに手詰まり」になる (#5587)。
+func (m *MonteCarlo) forEachRemovablePair(fn func(r, c, nr, nc int) bool) {
 	dirs := []struct{ dr, dc int }{
 		{0, 1},  // right
 		{1, -1}, // down-left
@@ -324,20 +342,28 @@ func (m *MonteCarlo) findAdjacentPair() *MonteCarloHint {
 					continue
 				}
 				b := m.board[nr][nc]
-				if b == nil {
+				if b == nil || a.GetValue() != b.GetValue() {
 					continue
 				}
-				if a.GetValue() == b.GetValue() {
-					return &MonteCarloHint{
-						Action: MonteCarloHintActionRemove,
-						FromR:  r, FromC: c,
-						ToR: nr, ToC: nc,
-					}
+				if !fn(r, c, nr, nc) {
+					return
 				}
 			}
 		}
 	}
-	return nil
+}
+
+// CountRemovablePairs は盤面に残っている取り除ける組の数を返す。
+//
+// **これがこのゲームの判断材料そのもの。**Web は常時カウンタとして出している
+// のに、CUI は 25 マスを目で走査させていた (#5587)。ヒントと同じ走査を使う。
+func (m *MonteCarlo) CountRemovablePairs() int {
+	count := 0
+	m.forEachRemovablePair(func(_, _, _, _ int) bool {
+		count++
+		return true
+	})
+	return count
 }
 
 // checkGameClear はクリア判定。
