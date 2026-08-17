@@ -41,6 +41,10 @@ const (
 	UltimateTexasHoldemBlindPayFourOfAKind   = 10  // フォーカード 10:1
 	UltimateTexasHoldemBlindPayFullHouse     = 3   // フルハウス 3:1
 	UltimateTexasHoldemBlindPayStraight      = 1   // ストレート 1:1
+	// フラッシュは 3:2。整数倍でないので分子・分母に分けて持つ。表示側が
+	// 「3:2」と書き写すと、配当を変えたときに案内だけが古くなる (#5589)。
+	UltimateTexasHoldemBlindPayFlushNum = 3
+	UltimateTexasHoldemBlindPayFlushDen = 2
 	// フラッシュは 3:2 倍（最低ベット10／増分10で整数演算が安全。blindBet*3/2 で計算）
 )
 
@@ -540,7 +544,8 @@ func (u *UltimateTexasHoldem) blindProfit() int {
 	case PokerHandFullHouse:
 		return u.blindBet * UltimateTexasHoldemBlindPayFullHouse
 	case PokerHandFlush:
-		return u.blindBet * 3 / 2 // 3:2（最低ベット10/増分10なので整数演算で正確）
+		// 3:2（最低ベット10/増分10なので整数演算で正確）
+		return u.blindBet * UltimateTexasHoldemBlindPayFlushNum / UltimateTexasHoldemBlindPayFlushDen
 	case PokerHandStraight:
 		return u.blindBet * UltimateTexasHoldemBlindPayStraight
 	default:
