@@ -36,12 +36,22 @@ type SpideretteWebOutputHint struct {
 }
 
 // SpideretteWebOutput スパイダレットWebアウトプット
+// SpideretteWebOutputScoring はスコアの決まり (開始点 / 1手あたりの減点 / スート完成の加点)。
+type SpideretteWebOutputScoring struct {
+	Start       int `json:"start"`
+	MovePenalty int `json:"movePenalty"`
+	SuitBonus   int `json:"suitBonus"`
+}
+
 type SpideretteWebOutput struct {
 	Tableau        [][]*SpideretteWebOutputTableauCard `json:"tableau"`
 	StockCount     int                                 `json:"stockCount"`
 	CompletedSuits int                                 `json:"completedSuits"`
 	Score          int                                 `json:"score"`
-	Hint           *SpideretteWebOutputHint            `json:"hint,omitempty"`
+	// Scoring はスコアの決まり (#5593)。数字が動く理由を説明するのに要る。
+	// 訳文に焼き込むと、計算を変えたとき案内だけが古くなる。
+	Scoring SpideretteWebOutputScoring `json:"scoring"`
+	Hint    *SpideretteWebOutputHint   `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
 }

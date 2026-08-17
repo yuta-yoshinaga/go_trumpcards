@@ -39,5 +39,6 @@
     "revealFaceDown": "カードを動かして裏向きのカードをめくりましょう",
     "useEmptyColumn": "空の列があります — 整理に活用しましょう",
     "dealFromStock": "すぐにできる手がありません — 山札から配ってみましょう"
-  }
+  },
+  "scoreRule": "{{start}} 点から始まり、1 手ごとに -{{penalty}}、スート完成ごとに +{{bonus}}"
 }

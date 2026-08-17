@@ -20,6 +20,11 @@ func (p *SpideretteWebPresenter) Output(s interfaces.SpideretteGame, lastErr err
 	resObj.StockCount = s.GetStockCount()
 	resObj.CompletedSuits = s.GetCompletedSuits()
 	resObj.Score = s.GetScore()
+	resObj.Scoring = controller.SpideretteWebOutputScoring{
+		Start:       domain.SpideretteStartScore,
+		MovePenalty: domain.SpideretteMovePenalty,
+		SuitBonus:   domain.SpideretteSuitBonus,
+	}
 
 	tableau := s.GetTableau()
 	resObj.Tableau = make([][]*controller.SpideretteWebOutputTableauCard, domain.SpideretteTableauCnt)
@@ -88,6 +93,11 @@ func (p *SpideretteWebPresenter) HintOutput(s interfaces.SpideretteGame) string 
 	resObj.StockCount = s.GetStockCount()
 	resObj.CompletedSuits = s.GetCompletedSuits()
 	resObj.Score = s.GetScore()
+	resObj.Scoring = controller.SpideretteWebOutputScoring{
+		Start:       domain.SpideretteStartScore,
+		MovePenalty: domain.SpideretteMovePenalty,
+		SuitBonus:   domain.SpideretteSuitBonus,
+	}
 	resObj.Tableau = make([][]*controller.SpideretteWebOutputTableauCard, 0)
 
 	if hint != nil {

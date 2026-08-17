@@ -39,5 +39,6 @@
     "revealFaceDown": "Move cards to reveal face-down cards underneath",
     "useEmptyColumn": "An empty column is available — use it to reorganize",
     "dealFromStock": "No obvious moves — try dealing from the stock"
-  }
+  },
+  "scoreRule": "Starts at {{start}}, -{{penalty}} per move, +{{bonus}} per completed suit"
 }

@@ -42,6 +42,13 @@ func (p *SpideretteCuiPresenter) Output(s interfaces.SpideretteGame, lastErr err
 		// 切り上げをバッジに出しているのに、CUI は暗算を強いていた。
 		b.WriteString(i18n.Tf("spiderette.dealsRemaining",
 			"count", strconv.Itoa(s.GetDealsRemaining())) + "\n")
+		// **数字が動く理由を推測させない。**スコアは常時出ているのに、
+		// 手数のペナルティとスート完成のボーナスはどこにも書かれていなかった
+		// (#5593)。数字はドメインの定数から差し込む。
+		b.WriteString(i18n.Tf("spiderette.scoreRule",
+			"start", strconv.Itoa(domain.SpideretteStartScore),
+			"penalty", strconv.Itoa(domain.SpideretteMovePenalty),
+			"bonus", strconv.Itoa(domain.SpideretteSuitBonus)) + "\n")
 
 		b.WriteString("----------\n")
 

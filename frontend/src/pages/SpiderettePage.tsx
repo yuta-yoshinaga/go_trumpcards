@@ -217,7 +217,17 @@ function SpiderettePageContent() {
           <span>
             {t('moveCount')}: {state.moveCount}
           </span>
-          <span className="ml-3">
+          {/* **数字が動く理由を推測させない** (#5593)。手数の減点とスート完成の
+              加点は、どちらの画面にも書かれていなかった。数字はサーバから。 */}
+          <span
+            className="ml-3"
+            data-testid="spiderette-score"
+            title={t('scoreRule', {
+              start: state.scoring.start,
+              penalty: state.scoring.movePenalty,
+              bonus: state.scoring.suitBonus,
+            })}
+          >
             {t('score')}: {state.score}
           </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
