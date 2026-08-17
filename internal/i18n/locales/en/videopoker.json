@@ -43,5 +43,7 @@
   "ptJacksOrBetter": "Jacks or Better",
   "ptKingsOrBetter": "Kings or Better",
   "holdRoyalDraw": "Hold four to a royal flush",
-  "helpExampleBet": "  b 5                  bet five coins and deal"
+  "helpExampleBet": "  b 5                  bet five coins and deal",
+  "madeHandLine": "Current hand: {{handName}}",
+  "madeHandNone": "Current hand: no paying hand"
 }

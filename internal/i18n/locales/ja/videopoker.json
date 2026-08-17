@@ -43,5 +43,7 @@
   "ptJacksOrBetter": "ジャックス・オア・ベター",
   "ptKingsOrBetter": "キングス・オア・ベター",
   "holdRoyalDraw": "ロイヤルフラッシュへの4枚を残す",
-  "helpExampleBet": "  b 5                  5 コイン賭けて配る"
+  "helpExampleBet": "  b 5                  5 コイン賭けて配る",
+  "madeHandLine": "現在の役: {{handName}}",
+  "madeHandNone": "現在の役: 役なし（配当対象外）"
 }

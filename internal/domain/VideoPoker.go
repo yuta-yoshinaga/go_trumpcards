@@ -251,6 +251,28 @@ func (vp *VideoPoker) GetHandRank() int { return vp.handRank }
 // GetHandName ハンド名
 func (vp *VideoPoker) GetHandName() string { return vp.handName }
 
+// GetCurrentHandKey はいま手元にある5枚が配当対象の役かを、ロケール非依存の
+// 安定キーで返す (配当が付かないなら空文字)。
+//
+// ドロー中に「現在の役」を出すためのもの。Web は evaluateJokerPokerMadeHand で
+// 同じことをしているのに、CUI は手札とホールド推奨しか出していなかった (#5508)。
+//
+// **評価はバリアント自身の GetResult を通す。**別に書くと、ワイルドの扱いや配当の
+// 下限がバリアントごとにずれる。ベット額は royal のジャックポット段だけに効き、
+// キーには影響しない。
+//
+// **状態を一切変えない。**チップも結果も動かさないので、描画のたびに呼んでよい。
+func (vp *VideoPoker) GetCurrentHandKey() string {
+	if len(vp.hand) != 5 {
+		return ""
+	}
+	// 配当の付かない手は GetResult が名前を返さないので、キーも空になる
+	// (videoPokerHandKey の default)。**その規約はテストで固定してある** --
+	// 破れたら「払われない役名」が現在の役として出てしまう。
+	_, _, handName := vp.config.GetResult(vp.hand, vp.betAmount)
+	return videoPokerHandKey(handName)
+}
+
 // GetHandKey は役の安定キー（ロケール非依存）を返す。役なし時は空文字。
 func (vp *VideoPoker) GetHandKey() string { return vp.handKey }
 

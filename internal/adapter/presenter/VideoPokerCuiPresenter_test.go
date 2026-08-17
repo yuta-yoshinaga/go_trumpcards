@@ -15,6 +15,7 @@ import (
 func setupVideoPokerCuiMockDefaults(m *interfaces.MockVideoPokerGame) {
 	m.On("GetChips").Return(1000).Maybe()
 	m.On("GetPhase").Return(domain.VideoPokerPhaseBet).Maybe()
+	m.On("GetCurrentHandKey").Return("").Maybe()
 	m.On("GetHand").Return(([]*domain.Card)(nil)).Maybe()
 	m.On("GetGameEndFlag").Return(false).Maybe()
 	m.On("GetBetAmount").Return(0).Maybe()
@@ -23,6 +24,7 @@ func setupVideoPokerCuiMockDefaults(m *interfaces.MockVideoPokerGame) {
 	m.On("GetHandRank").Return(0).Maybe()
 	m.On("GetHandName").Return("").Maybe()
 	m.On("GetHandKey").Return("").Maybe()
+	m.On("GetCurrentHandKey").Return("").Maybe()
 	m.On("GetHeldIndices").Return([domain.VideoPokerHandSize]bool{}).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 	m.On("GetVariantName").Return("videopoker").Maybe()
@@ -51,6 +53,7 @@ func TestVideoPokerCuiPresenter_Output_BetPhase_JokerPokerPaytable(t *testing.T)
 	m.ExpectedCalls = nil
 	m.On("GetChips").Return(1000).Maybe()
 	m.On("GetPhase").Return(domain.VideoPokerPhaseBet).Maybe()
+	m.On("GetCurrentHandKey").Return("").Maybe()
 	m.On("GetHand").Return(([]*domain.Card)(nil)).Maybe()
 	m.On("GetGameEndFlag").Return(false).Maybe()
 	m.On("GetVariantName").Return("jokerpoker").Maybe()
@@ -72,6 +75,7 @@ func TestVideoPokerCuiPresenter_Output_BetPhase_Paytable_EnLocale(t *testing.T) 
 	m.ExpectedCalls = nil
 	m.On("GetChips").Return(1000).Maybe()
 	m.On("GetPhase").Return(domain.VideoPokerPhaseBet).Maybe()
+	m.On("GetCurrentHandKey").Return("").Maybe()
 	m.On("GetHand").Return(([]*domain.Card)(nil)).Maybe()
 	m.On("GetGameEndFlag").Return(false).Maybe()
 	m.On("GetVariantName").Return("jokerpoker").Maybe()
@@ -86,6 +90,7 @@ func TestVideoPokerCuiPresenter_Output_DrawPhase_WithHand(t *testing.T) {
 	m := new(interfaces.MockVideoPokerGame)
 	m.On("GetChips").Return(997).Maybe()
 	m.On("GetPhase").Return(domain.VideoPokerPhaseDraw).Maybe()
+	m.On("GetCurrentHandKey").Return("").Maybe()
 	m.On("GetHand").Return([]*domain.Card{
 		domain.NewCard(domain.CardDesignSpade, 1, false),
 		domain.NewCard(domain.CardDesignHeart, 11, false),
@@ -113,6 +118,7 @@ func TestVideoPokerCuiPresenter_Output_ResultPhase_Win(t *testing.T) {
 	m := new(interfaces.MockVideoPokerGame)
 	m.On("GetChips").Return(1025).Maybe()
 	m.On("GetPhase").Return(domain.VideoPokerPhaseResult).Maybe()
+	m.On("GetCurrentHandKey").Return("").Maybe()
 	m.On("GetHand").Return([]*domain.Card{
 		domain.NewCard(domain.CardDesignSpade, 7, false),
 		domain.NewCard(domain.CardDesignClover, 7, false),
@@ -127,6 +133,7 @@ func TestVideoPokerCuiPresenter_Output_ResultPhase_Win(t *testing.T) {
 	m.On("GetHandRank").Return(domain.PokerHandFourOfAKind).Maybe()
 	m.On("GetHandName").Return("Four of a Kind").Maybe()
 	m.On("GetHandKey").Return("fourOfAKind").Maybe()
+	m.On("GetCurrentHandKey").Return("").Maybe()
 	m.On("GetHeldIndices").Return([domain.VideoPokerHandSize]bool{true, true, true, true, false}).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 	m.On("GetVariantName").Return("videopoker").Maybe()
@@ -145,6 +152,7 @@ func TestVideoPokerCuiPresenter_Output_ResultPhase_Win_DeucesWildTranslated(t *t
 		m := new(interfaces.MockVideoPokerGame)
 		m.On("GetChips").Return(1025).Maybe()
 		m.On("GetPhase").Return(domain.VideoPokerPhaseResult).Maybe()
+		m.On("GetCurrentHandKey").Return("").Maybe()
 		m.On("GetHand").Return([]*domain.Card{
 			domain.NewCard(domain.CardDesignSpade, 2, false),
 			domain.NewCard(domain.CardDesignSpade, 10, false),
@@ -159,6 +167,7 @@ func TestVideoPokerCuiPresenter_Output_ResultPhase_Win_DeucesWildTranslated(t *t
 		m.On("GetHandRank").Return(domain.PokerHandRoyalFlush).Maybe()
 		m.On("GetHandName").Return(handName).Maybe()
 		m.On("GetHandKey").Return(handKey).Maybe()
+		m.On("GetCurrentHandKey").Return("").Maybe()
 		m.On("GetHeldIndices").Return([domain.VideoPokerHandSize]bool{}).Maybe()
 		m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 		m.On("GetVariantName").Return(variant).Maybe()
@@ -205,6 +214,7 @@ func TestVideoPokerCuiPresenter_Output_ResultPhase_Lose(t *testing.T) {
 	m := new(interfaces.MockVideoPokerGame)
 	m.On("GetChips").Return(999).Maybe()
 	m.On("GetPhase").Return(domain.VideoPokerPhaseResult).Maybe()
+	m.On("GetCurrentHandKey").Return("").Maybe()
 	m.On("GetHand").Return([]*domain.Card{
 		domain.NewCard(domain.CardDesignSpade, 2, false),
 		domain.NewCard(domain.CardDesignClover, 5, false),
@@ -261,6 +271,7 @@ func TestVideoPokerCuiPresenter_Output_JokerHighlighted(t *testing.T) {
 	m := new(interfaces.MockVideoPokerGame)
 	m.On("GetChips").Return(1000).Maybe()
 	m.On("GetPhase").Return(domain.VideoPokerPhaseDraw).Maybe()
+	m.On("GetCurrentHandKey").Return("").Maybe()
 	m.On("GetGameEndFlag").Return(false).Maybe()
 	m.On("GetHeldIndices").Return([domain.VideoPokerHandSize]bool{}).Maybe()
 	m.On("GetVariantName").Return("jokerpoker").Maybe()
@@ -283,6 +294,7 @@ func TestVideoPokerCuiPresenter_Output_DeucesWildTwosHighlighted(t *testing.T) {
 	m := new(interfaces.MockVideoPokerGame)
 	m.On("GetChips").Return(1000).Maybe()
 	m.On("GetPhase").Return(domain.VideoPokerPhaseDraw).Maybe()
+	m.On("GetCurrentHandKey").Return("").Maybe()
 	m.On("GetGameEndFlag").Return(false).Maybe()
 	m.On("GetHeldIndices").Return([domain.VideoPokerHandSize]bool{}).Maybe()
 	m.On("GetVariantName").Return("deuceswild").Maybe()
@@ -307,6 +319,7 @@ func TestVideoPokerCuiPresenter_Output_PlainVariantTwoNotHighlighted(t *testing.
 	m := new(interfaces.MockVideoPokerGame)
 	m.On("GetChips").Return(1000).Maybe()
 	m.On("GetPhase").Return(domain.VideoPokerPhaseDraw).Maybe()
+	m.On("GetCurrentHandKey").Return("").Maybe()
 	m.On("GetGameEndFlag").Return(false).Maybe()
 	m.On("GetHeldIndices").Return([domain.VideoPokerHandSize]bool{}).Maybe()
 	m.On("GetVariantName").Return("videopoker").Maybe()
@@ -334,6 +347,7 @@ func TestVideoPokerCuiPresenter_HintOutput(t *testing.T) {
 	drawGame := func(variant string, hand []*domain.Card) *interfaces.MockVideoPokerGame {
 		m := new(interfaces.MockVideoPokerGame)
 		m.On("GetPhase").Return(domain.VideoPokerPhaseDraw)
+		m.On("GetCurrentHandKey").Return("").Maybe()
 		m.On("GetVariantName").Return(variant)
 		m.On("GetHand").Return(hand)
 		return m
@@ -517,6 +531,62 @@ func TestVideoPokerCuiPresenter_HintOutput(t *testing.T) {
 	t.Run("no hint outside the draw phase", func(t *testing.T) {
 		m := new(interfaces.MockVideoPokerGame)
 		m.On("GetPhase").Return(domain.VideoPokerPhaseBet)
+		m.On("GetCurrentHandKey").Return("").Maybe()
 		assert.Contains(t, p.HintOutput(m), i18n.T("videopoker.hintNone"))
+	})
+}
+
+// #5508: Web はドロー中の5枚が配当対象の役かをリアルタイムに出すのに、CUI は
+// 手札とホールド推奨しか出しておらず、配当対象かはプレイヤーが自分で判定するしか
+// なかった。
+func TestVideoPokerCuiPresenter_MadeHandLine(t *testing.T) {
+	p := new(VideoPokerCuiPresenter)
+
+	withKey := func(phase int, key string) *interfaces.MockVideoPokerGame {
+		m := new(interfaces.MockVideoPokerGame)
+		m.On("GetChips").Return(997).Maybe()
+		m.On("GetPhase").Return(phase).Maybe()
+		m.On("GetHand").Return([]*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 5, false),
+			domain.NewCard(domain.CardDesignHeart, 5, false),
+			domain.NewCard(domain.CardDesignClover, 5, false),
+			domain.NewCard(domain.CardDesignDiamond, 9, false),
+			domain.NewCard(domain.CardDesignSpade, 12, false),
+		}).Maybe()
+		m.On("GetHeldIndices").Return([5]bool{}).Maybe()
+		m.On("GetBetAmount").Return(3).Maybe()
+		m.On("GetGameEndFlag").Return(false).Maybe()
+		m.On("GetResult").Return(0).Maybe()
+		m.On("GetPayout").Return(0).Maybe()
+		m.On("GetHandName").Return("").Maybe()
+		m.On("GetHandKey").Return("").Maybe()
+		m.On("GetVariantName").Return("jokerpoker").Maybe()
+		m.On("GetCurrentHandKey").Return(key).Maybe()
+		return m
+	}
+
+	t.Run("names the current hand during the draw phase", func(t *testing.T) {
+		out := p.Output(withKey(domain.VideoPokerPhaseDraw, "threeOfAKind"), nil)
+		assert.Contains(t, out, i18n.Tf("videopoker.madeHandLine", "handName", i18n.T("pokerhand.threeOfAKind")))
+		// **生のキーを出さない。** 訳が無いときに "threeOfAKind" が画面に出るのは論外。
+		assert.NotContains(t, out, "pokerhand.")
+	})
+
+	// **配当対象外でも黙らない。** 表示が消えると、評価されていないのか
+	// 届いていないのか区別できない。
+	t.Run("says there is no paying hand when the key is empty", func(t *testing.T) {
+		out := p.Output(withKey(domain.VideoPokerPhaseDraw, ""), nil)
+		assert.Contains(t, out, i18n.T("videopoker.madeHandNone"))
+	})
+
+	// ベット中・結果表示中には出さない。手札が無い/決着済みの局面で
+	// 「現在の役」を出しても意味が無い。
+	t.Run("stays quiet outside the draw phase", func(t *testing.T) {
+		for _, phase := range []int{domain.VideoPokerPhaseBet, domain.VideoPokerPhaseResult} {
+			out := p.Output(withKey(phase, "threeOfAKind"), nil)
+			assert.NotContains(t, out, i18n.T("videopoker.madeHandNone"), "phase %d", phase)
+			assert.NotContains(t, out,
+				i18n.Tf("videopoker.madeHandLine", "handName", i18n.T("pokerhand.threeOfAKind")), "phase %d", phase)
+		}
 	})
 }
