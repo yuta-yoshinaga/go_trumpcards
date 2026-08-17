@@ -30,6 +30,14 @@ func (lp *LetItRideCuiPresenter) Output(lir interfaces.LetItRideGame, lastErr er
 			"amount", strconv.Itoa(lir.GetBetAmount()),
 			"active", strconv.Itoa(lp.activeBetCount(lir)),
 		))
+		// **いま場に出ている総額。**Web は常設で出しているのに、CUI は 1 口の額と
+		// 口数しか出さず、Pull するか決めるたびに暗算が要った (#5537)。
+		// ベット確定前 (BET フェーズ) は出さない。値は GetPullPreview の
+		// RiskBefore と同じ式なので、Pull 確認画面と食い違わない。
+		if lir.GetPhase() != domain.LetItRidePhaseBet {
+			fmt.Fprintf(&sb, "%s\n", i18n.Tf("letitride.totalRiskLine",
+				"risk", strconv.Itoa(lir.GetBetAmount()*lp.activeBetCount(lir))))
+		}
 	}
 
 	playerHand := lir.GetPlayerHand()
