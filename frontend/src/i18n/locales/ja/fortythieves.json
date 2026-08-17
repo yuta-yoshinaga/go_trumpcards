@@ -36,6 +36,7 @@
     "waste": "捨て札",
     "tableau": "タブロー列{{col}}",
     "foundation": "組札",
-    "fortythievesMove": "この札を動かせます"
+    "fortythievesMove": "この札を動かせます",
+    "fortythievesDraw": "他に動かせる札はありません。山札から引きましょう"
   }
 }

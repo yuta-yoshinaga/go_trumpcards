@@ -491,6 +491,43 @@ func TestFortyThieves_GetHint(t *testing.T) {
 		assert.Nil(t, hint)
 	})
 
+	// #5525: 他に手が無くストックだけ残っている局面で「ヒントはありません」を
+	// 返していた。行き詰まりではないのに、プレイヤーには詰んだのか引けば良いのか
+	// 区別が付かない。
+	t.Run("suggests drawing when nothing else moves but stock remains", func(t *testing.T) {
+		ft := newTestFortyThieves()
+		ft.Reset()
+		clearFTTableau(ft)
+		var tableau [domain.FortyThievesTableauCnt][]*domain.FortyThievesTableauCard
+		tableau[0] = []*domain.FortyThievesTableauCard{makeFTTableauCard(domain.CardDesignSpade, 13)}
+		tableau[1] = []*domain.FortyThievesTableauCard{makeFTTableauCard(domain.CardDesignHeart, 13)}
+		ft.SetTableau(tableau)
+		ft.SetStock([]*domain.Card{makeFTCard(domain.CardDesignClover, 7)})
+
+		hint := ft.GetHint()
+		require.NotNil(t, hint)
+		assert.Equal(t, "stock", hint.FromZone)
+		assert.Equal(t, "waste", hint.ToZone)
+		assert.Equal(t, -1, hint.FromCol)
+		assert.Equal(t, -1, hint.ToCol)
+		assert.Equal(t, -1, hint.CardIndex)
+	})
+
+	// **盤上に手があるならそちらが先。**引くのは最後の手段。
+	t.Run("prefers a real move over drawing", func(t *testing.T) {
+		ft := newTestFortyThieves()
+		ft.Reset()
+		clearFTTableau(ft)
+		var tableau [domain.FortyThievesTableauCnt][]*domain.FortyThievesTableauCard
+		tableau[0] = []*domain.FortyThievesTableauCard{makeFTTableauCard(domain.CardDesignSpade, 1)}
+		ft.SetTableau(tableau)
+		ft.SetStock([]*domain.Card{makeFTCard(domain.CardDesignClover, 7)})
+
+		hint := ft.GetHint()
+		require.NotNil(t, hint)
+		assert.Equal(t, "foundation", hint.ToZone)
+	})
+
 	t.Run("no hint when not playing", func(t *testing.T) {
 		ft := newTestFortyThieves()
 		ft.SetPhase(domain.FortyThievesPhaseGameOver)

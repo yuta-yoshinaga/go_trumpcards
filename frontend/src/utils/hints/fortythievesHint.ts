@@ -14,6 +14,12 @@ export function getFortyThievesHint(state: FortyThievesResponse): HintResult | n
   const hint = state.hint;
   if (!hint) return null;
 
+  // 盤上に手が無くストックだけ残っている局面 (#5525)。行き詰まりではないので
+  // 「引け」と言う。移動の体裁に落とすと列を持たない waste--1 が出てしまう。
+  if (hint.fromZone === 'stock') {
+    return { targetAction: 'draw', reason: 'frontendHint.fortythievesDraw', confidence: 'moderate' };
+  }
+
   // **列 0 は正当な列。**真偽値で見ると先頭の山だけ落ちる。ファウンデーション
   // など列を持たないゾーンは -1 で届くので、そこはゾーン名だけにする。
   const target = hint.toCol >= 0 ? `${hint.toZone}-${hint.toCol}` : hint.toZone;

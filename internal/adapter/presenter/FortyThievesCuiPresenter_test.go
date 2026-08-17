@@ -11,6 +11,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupFortyThievesCuiMockDefaults(fg *interfaces.MockFortyThievesGame) {
@@ -156,6 +157,25 @@ func TestFortyThievesCuiPresenter_HintOutput(t *testing.T) {
 		assert.Contains(t, result, "ヒント")
 		assert.Contains(t, result, "タブロー列0")
 		assert.Contains(t, result, "ファンデーション")
+	})
+
+	// #5525: ストックだけ残っている局面は行き詰まりではないので、
+	// 「ヒントはありません」ではなく「引け」と言う。
+	t.Run("stock hint tells the player to draw", func(t *testing.T) {
+		fg := new(interfaces.MockFortyThievesGame)
+		fg.On("GetHint").Return(&domain.FortyThievesHint{
+			FromZone:  "stock",
+			FromCol:   -1,
+			CardIndex: -1,
+			ToZone:    "waste",
+			ToCol:     -1,
+		})
+
+		result := new(FortyThievesCuiPresenter).HintOutput(fg)
+		assert.Contains(t, result, i18n.T("fortythieves.hintDraw"))
+		assert.NotContains(t, result, i18n.T("cuiHintNone"))
+		// 移動ヒントの体裁 (「A → B」) には落とさない。列 -1 が漏れる。
+		assert.NotContains(t, result, "-1")
 	})
 
 	t.Run("waste hint", func(t *testing.T) {

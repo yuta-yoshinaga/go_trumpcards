@@ -36,6 +36,7 @@
     "waste": "Waste",
     "tableau": "Tableau column {{col}}",
     "foundation": "Foundation",
-    "fortythievesMove": "This card can move"
+    "fortythievesMove": "This card can move",
+    "fortythievesDraw": "Nothing else can move — draw from the stock"
   }
 }

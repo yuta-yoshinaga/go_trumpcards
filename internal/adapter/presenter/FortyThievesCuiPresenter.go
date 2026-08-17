@@ -104,6 +104,11 @@ func (p *FortyThievesCuiPresenter) HintOutput(ft interfaces.FortyThievesGame) st
 	if hint == nil {
 		return i18n.T("cuiHintNone") + "\n"
 	}
+	// 盤上に手が無くストックだけ残っている局面。移動の体裁 (「A → B」) に
+	// 落とすと列 -1 が漏れるので、専用の文言で言う (#5525)。
+	if hint.FromZone == "stock" {
+		return i18n.T("fortythieves.hintDraw") + "\n"
+	}
 	var from string
 	if hint.FromZone == "tableau" {
 		from = i18n.Tf("fortythieves.hintFromTableau",
