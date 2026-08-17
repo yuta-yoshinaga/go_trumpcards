@@ -39,5 +39,6 @@
   "hintHand": "ヒント: 手札{{idx}} → ファウンデーション{{foundation}}",
   "hintSide": "ヒント: サイド{{idx}} → ファウンデーション{{foundation}}",
   "helpExampleHint": "  h                   次の一手を教えてもらう",
-  "helpAutoPlay": "  ac                  自動で進める"
+  "helpAutoPlay": "  ac                  自動で進める",
+  "wildMark": "*"
 }

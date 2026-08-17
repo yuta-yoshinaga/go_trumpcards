@@ -29,7 +29,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
-import { isGoalTopPlayableToFoundation } from '../utils/spiteAndMaliceUtils';
+import { isGoalTopPlayableToFoundation, isSpiteAndMaliceWild } from '../utils/spiteAndMaliceUtils';
 
 const samRunner = spiteAndMaliceApi;
 
@@ -387,6 +387,7 @@ function SpiteAndMalicePageContent() {
               label={t('label.hand')}
               emptyLabel={t('empty')}
               hiddenLabel={t('label.hidden')}
+              wildLabel={t('label.wild')}
             />
 
             <SideRow
@@ -620,6 +621,7 @@ function HandRow({
   label,
   emptyLabel,
   hiddenLabel,
+  wildLabel,
 }: {
   hand: (Card | null)[];
   cardWidth: number;
@@ -631,6 +633,7 @@ function HandRow({
   label: string;
   emptyLabel: string;
   hiddenLabel: string;
+  wildLabel: string;
 }) {
   return (
     <div className="flex flex-col items-center" data-tutorial={dataTutorial}>
@@ -651,9 +654,22 @@ function HandRow({
                 className={`${focusRingWhite} relative rounded-lg transition-transform ${ring}`}
                 onClick={() => onSelect(idx)}
                 disabled={card === null}
-                aria-label={`${label} ${(idx + 1).toString()}: ${card ? cardAlt(card) : hiddenLabel}`}
+                aria-label={`${label} ${(idx + 1).toString()}: ${
+                  card ? `${cardAlt(card)}${isSpiteAndMaliceWild(card) ? ` (${wildLabel})` : ''}` : hiddenLabel
+                }`}
               >
                 {card ? <AnimatedCard card={card} width={cardWidth} /> : <FaceDownSlot label="?" width={cardWidth} />}
+                {/* K はどの基礎札にも出せるワイルド。規則はドメインにあるのに、
+                    表示にも読み上げにも出ていなかった (#5560)。 */}
+                {isSpiteAndMaliceWild(card) && (
+                  <span
+                    aria-hidden="true"
+                    data-testid="sam-wild-badge"
+                    className="absolute -top-1 -right-1 rounded px-1 text-[0.6rem] font-bold bg-ds-surface text-ds-warning border border-ds-warning"
+                  >
+                    {wildLabel}
+                  </span>
+                )}
               </button>
             );
           })
