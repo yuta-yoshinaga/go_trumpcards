@@ -9,11 +9,13 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupPokerSquaresCuiMock() *interfaces.MockPokerSquaresGame {
 	pg := new(interfaces.MockPokerSquaresGame)
 	pg.On("GetPhase").Return(domain.PokerSquaresPhasePlaying).Maybe()
+	pg.On("CanUndo").Return(true).Maybe()
 	pg.On("GetPlacedCount").Return(0).Maybe()
 	pg.On("GetCurrentCard").Return(domain.NewCard(domain.CardDesignSpade, 5, false)).Maybe()
 	var board [domain.PokerSquaresGridSize][domain.PokerSquaresGridSize]*domain.Card
@@ -23,6 +25,7 @@ func setupPokerSquaresCuiMock() *interfaces.MockPokerSquaresGame {
 		pg.On("ColScore", i).Return(0).Maybe()
 	}
 	pg.On("TotalScore").Return(0).Maybe()
+	pg.On("CanUndo").Return(true).Maybe()
 	return pg
 }
 
@@ -39,6 +42,7 @@ func TestPokerSquaresCuiPresenter_Output_Playing(t *testing.T) {
 func TestPokerSquaresCuiPresenter_Output_Complete(t *testing.T) {
 	pg := new(interfaces.MockPokerSquaresGame)
 	pg.On("GetPhase").Return(domain.PokerSquaresPhaseComplete).Maybe()
+	pg.On("CanUndo").Return(true).Maybe()
 	pg.On("GetPlacedCount").Return(25).Maybe()
 	pg.On("GetCurrentCard").Return((*domain.Card)(nil)).Maybe()
 	var board [domain.PokerSquaresGridSize][domain.PokerSquaresGridSize]*domain.Card
@@ -102,6 +106,7 @@ func TestPokerSquaresCuiPresenter_Hint_NoCurrentCard(t *testing.T) {
 func TestPokerSquaresCuiPresenter_ActionLog_Playing(t *testing.T) {
 	pg := new(interfaces.MockPokerSquaresGame)
 	pg.On("GetPhase").Return(domain.PokerSquaresPhasePlaying)
+	pg.On("CanUndo").Return(true).Maybe()
 	p := &PokerSquaresCuiPresenter{}
 	assert.Contains(t, p.ActionLogOutput(pg), "棋譜はありません")
 }
@@ -109,10 +114,38 @@ func TestPokerSquaresCuiPresenter_ActionLog_Playing(t *testing.T) {
 func TestPokerSquaresCuiPresenter_ActionLog_Complete(t *testing.T) {
 	pg := new(interfaces.MockPokerSquaresGame)
 	pg.On("GetPhase").Return(domain.PokerSquaresPhaseComplete)
+	pg.On("CanUndo").Return(true).Maybe()
 	pg.On("GetActionLog").Return([]*domain.ActionLogEntry{
 		{TurnNumber: 1, ActionType: "place", Detail: "test"},
 	})
 	p := &PokerSquaresCuiPresenter{}
 	out := p.ActionLogOutput(pg)
 	assert.Contains(t, out, "place")
+}
+
+// #5538: Web は Undo ボタンの disabled で押せないことが見えるのに、CUI は
+// `u` を打ってエラーが返って初めて分かる状態だった。
+func TestPokerSquaresCuiPresenter_Output_UndoAvailability(t *testing.T) {
+	p := &PokerSquaresCuiPresenter{}
+
+	outWith := func(canUndo bool) string {
+		pg := new(interfaces.MockPokerSquaresGame)
+		pg.On("CanUndo").Return(canUndo)
+		pg.On("GetPhase").Return(domain.PokerSquaresPhasePlaying).Maybe()
+		pg.On("GetPlacedCount").Return(0).Maybe()
+		pg.On("GetCurrentCard").Return(domain.NewCard(domain.CardDesignSpade, 5, false)).Maybe()
+		var board [domain.PokerSquaresGridSize][domain.PokerSquaresGridSize]*domain.Card
+		pg.On("GetBoard").Return(board).Maybe()
+		for i := 0; i < domain.PokerSquaresGridSize; i++ {
+			pg.On("RowScore", i).Return(0).Maybe()
+			pg.On("ColScore", i).Return(0).Maybe()
+		}
+		pg.On("TotalScore").Return(0).Maybe()
+		return p.Output(pg, nil)
+	}
+
+	// 戻せないときだけ注記を出す。
+	assert.Contains(t, outWith(false), i18n.T("pokersquares.undoUnavailable"))
+	// **戻せるときは何も足さない。**毎手「戻せます」と言われても情報にならない。
+	assert.NotContains(t, outWith(true), i18n.T("pokersquares.undoUnavailable"))
 }

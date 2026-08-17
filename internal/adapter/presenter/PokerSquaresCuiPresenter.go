@@ -56,6 +56,12 @@ func (pr *PokerSquaresCuiPresenter) Output(p interfaces.PokerSquaresGame, lastEr
 			"placed", strconv.Itoa(p.GetPlacedCount()),
 			"total", strconv.Itoa(domain.PokerSquaresTotalCells),
 			"score", strconv.Itoa(p.TotalScore())) + "\n")
+		// Web は Undo ボタンの disabled で押せないことが見えるが、CUI は `u` を
+		// 打ってエラーが返って初めて分かる状態だった (#5538)。戻せるときは
+		// 何も足さない -- 毎手「戻せます」と言われても情報にならない。
+		if !p.CanUndo() {
+			b.WriteString(i18n.T("pokersquares.undoUnavailable") + "\n")
+		}
 
 		if p.GetPhase() != domain.PokerSquaresPhaseComplete {
 			b.WriteString(i18n.T("pokersquares.cuiPlaceHint") + "\n")
