@@ -118,7 +118,7 @@ flowchart TD
 --- BOARD ---
 S12,S11,S10
 --- PLAYER ---
-現在の役: Straight
+現在の役: Royal Flush
 S01,S13
 --- DEALER ---
 ??,??
