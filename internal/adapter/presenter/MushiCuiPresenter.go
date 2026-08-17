@@ -58,6 +58,10 @@ func (p *MushiCuiPresenter) Output(m interfaces.MushiGame, lastErr error) string
 
 		fieldCards := m.GetField()
 		sb.WriteString(i18n.Tf("mushi.fieldLine", "cards", mushiCardListStr(fieldCards, true)) + "\n")
+		// **ワイルドの唯一の例外がこのゲームの間違いの大半を決める。**Web は
+		// 場札の真下に出しっぱなしにしているのに、CUI はワイルドを選んで
+		// 弾かれるまで教えていなかった (#5569)。同じ場所に、同じ意味で出す。
+		sb.WriteString(color.Yellow(i18n.T("mushi.wildRule")) + "\n")
 
 		for i, player := range m.GetPlayers() {
 			captured := m.GetCaptured(i)

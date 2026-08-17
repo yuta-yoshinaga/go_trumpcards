@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func TestMushiCuiPresenter_ShowsBothCapturesButOnlyTheHumanHand(t *testing.T) {
@@ -227,4 +228,50 @@ func TestMushiCuiPresenter_EveryReasonTheHintCanReturnIsMapped(t *testing.T) {
 		assert.NotEmpty(t, mushiHintReasonKeys[reason], "reason %q has no i18n key", reason)
 	}
 	assert.Len(t, mushiHintReasonKeys, 6, "a new reason needs an entry here too")
+}
+
+// #5569: ワイルドの唯一の例外 (柳だけは取れない) は Web には出しっぱなしなのに、
+// CUI はワイルドを選んで弾かれるまで教えていなかった。
+func TestMushiCuiPresenter_AlwaysShowsTheWildRule(t *testing.T) {
+	m := domain.NewDefaultMushi()
+	m.Reset()
+	assert.Contains(t, new(MushiCuiPresenter).Output(m, nil), i18n.T("mushi.wildRule"))
+
+	// **弾かれた直後こそ要る。**エラー行と一緒に出ること。
+	assert.Contains(t, new(MushiCuiPresenter).Output(m, assert.AnError), i18n.T("mushi.wildRule"))
+
+	// **フェーズが変わっても残ること。**選択中こそ一番要る規則なので、
+	// 手番の途中で消えては意味がない。
+	m2 := domain.NewDefaultMushi()
+	m2.Reset()
+	for range 400 {
+		if m2.GetPhase() == domain.MushiPhaseSelect || m2.GetPhase() == domain.MushiPhaseWildSelect {
+			break
+		}
+		if m2.GetGameEndFlag() {
+			break
+		}
+		idx := m2.GetCurrentPlayerIdx()
+		if !m2.GetPlayer(idx).GetIsHuman() {
+			m2.MushiCpuDecide(idx)
+		}
+		if err := m2.PlayCard(idx, 0); err != nil {
+			break
+		}
+	}
+	assert.Contains(t, new(MushiCuiPresenter).Output(m2, nil), i18n.T("mushi.wildRule"))
+}
+
+// 場札のすぐ下に出ること。Web と同じ位置なので、片方を見て覚えた人が
+// もう片方で探し直さずに済む。
+func TestMushiCuiPresenter_PutsTheWildRuleUnderTheField(t *testing.T) {
+	m := domain.NewDefaultMushi()
+	m.Reset()
+
+	out := new(MushiCuiPresenter).Output(m, nil)
+	fieldAt := strings.Index(out, strings.SplitN(i18n.T("mushi.fieldLine"), "{{", 2)[0])
+	ruleAt := strings.Index(out, i18n.T("mushi.wildRule"))
+	require.NotEqual(t, -1, ruleAt)
+	require.NotEqual(t, -1, fieldAt)
+	assert.Greater(t, ruleAt, fieldAt, "the rule belongs under the field, as on the Web page")
 }
