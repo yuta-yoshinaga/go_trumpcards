@@ -38,5 +38,6 @@
   "hintStandPat": "Suggestion: made low — stand pat (s).",
   "hintNotYourTurn": "It is not your draw phase right now.",
   "helpExampleFold": "  f                    fold this hand",
-  "helpLog": "  l                    show the action log"
+  "helpLog": "  l                    show the action log",
+  "madeLowWarning": "✨ You already have a made 8-or-better low — stand pat (s) rather than break it"
 }
