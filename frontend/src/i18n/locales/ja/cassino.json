@@ -43,5 +43,14 @@
   "tutorial.playerHand": "あなたの手札。1枚だけ選んで [取る] [ビルド] [場に置く] のどれかを押します。",
   "tutorial.actions": "[取る] で場札を獲得、[ビルド] で予約、[場に置く] は次のターンに残します。",
   "tutorial.resetButton": "ゲームをリセットします。",
-  "tutorial.welcome": "カッシーノへようこそ! 手札と場札を組み合わせて点数を稼ぎ、21点を先取したプレイヤーが勝ちます。"
+  "tutorial.welcome": "カッシーノへようこそ! 手札と場札を組み合わせて点数を稼ぎ、21点を先取したプレイヤーが勝ちます。",
+  "action": {
+    "take": "{{name}}: {{played}} で {{count}}枚 捕獲",
+    "takeSweep": "{{name}}: {{played}} で {{count}}枚 捕獲 (スイープ!)",
+    "build": "{{name}}: ビルド値 {{value}} ({{played}})",
+    "trail": "{{name}}: {{played}} を場に置く"
+  },
+  "label": {
+    "actionLog": "行動履歴"
+  }
 }

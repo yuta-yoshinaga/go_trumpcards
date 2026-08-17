@@ -43,5 +43,14 @@
   "tutorial.playerHand": "Your hand. Pick one card, then Take / Build / Trail.",
   "tutorial.actions": "Take captures matching cards, Build commits a sum for later, Trail places the card.",
   "tutorial.resetButton": "Reset the game.",
-  "tutorial.welcome": "Welcome to Cassino! Capture cards to score points; first to 21 wins."
+  "tutorial.welcome": "Welcome to Cassino! Capture cards to score points; first to 21 wins.",
+  "action": {
+    "take": "{{name}}: took {{count}} with {{played}}",
+    "takeSweep": "{{name}}: took {{count}} with {{played}} (sweep!)",
+    "build": "{{name}}: built {{value}} with {{played}}",
+    "trail": "{{name}}: trailed {{played}}"
+  },
+  "label": {
+    "actionLog": "Action history"
+  }
 }
