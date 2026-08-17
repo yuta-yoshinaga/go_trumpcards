@@ -173,7 +173,10 @@ describe('KingAlbertPage', () => {
     await waitFor(() => expect(screen.getByTestId('stalemate-escape-button')).toBeInTheDocument());
   });
 
-  it('rings every zone that can accept the selected card', async () => {
+  // #5598: リングは「選択中」というだけで全部の最上段カードと全部の組札に付いていた。
+  // 光っている先をクリックしてエラーになって初めて置けないと分かる状態だったので、
+  // **置ける先だけ**に付くことを、置けない先を名指しして確かめる。
+  it('rings only the zones that can actually accept the selected card', async () => {
     localStorage.clear();
     mockExec.mockReset();
     mockExec.mockResolvedValue(playingState);
@@ -181,10 +184,33 @@ describe('KingAlbertPage', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     expect(document.querySelectorAll('[data-target-candidate]')).toHaveLength(0);
 
-    const source = screen.getAllByRole('button').find((b) => b.querySelector('img')) as HTMLButtonElement;
-    fireEvent.click(source);
-    // Foundations accept the card as readily as the tableau does.
-    await waitFor(() => expect(document.querySelectorAll('[data-target-candidate]').length).toBeGreaterThan(1));
+    // ♥5 (列0の最上段) を選ぶ。置けるのは ♣6 (交互の色で1つ上) と空き列だけ。
+    fireEvent.click(screen.getByRole('button', { name: '♥ 5' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: '♣ 6' })).toHaveAttribute('data-target-candidate'));
+
+    // ♥5 は組札 (♥A の上) には置けない ── 2 でないので。
+    for (const f of screen.getAllByLabelText(/組札/)) {
+      expect(f).not.toHaveAttribute('data-target-candidate');
+    }
+    // 自分の下の札も、自分自身の列も候補ではない。
+    expect(screen.getByRole('button', { name: '♠ K' })).not.toHaveAttribute('data-target-candidate');
+    // 空き列 7 本 + ♣6 = 8 箇所ちょうど。
+    expect(document.querySelectorAll('[data-target-candidate]')).toHaveLength(8);
+  });
+
+  it('rings the foundation when the selected card is the one it wants', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    // ♦2 を予備に置くと、♦A の組札だけが候補になる。
+    mockExec.mockResolvedValue({ ...playingState, reserve: [card('DIAMOND', 2), null, null, null, null, null, null] });
+    renderWithProviders(<KingAlbertPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: '♦ 2' }));
+    await waitFor(() => {
+      const rung = screen.getAllByLabelText(/組札/).filter((f) => f.hasAttribute('data-target-candidate'));
+      expect(rung).toHaveLength(1);
+    });
   });
 });
 
