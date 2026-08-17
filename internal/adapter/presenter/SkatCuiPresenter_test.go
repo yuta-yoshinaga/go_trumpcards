@@ -443,3 +443,45 @@ func TestSkatCuiPresenter_Output_ScoreBreakdown(t *testing.T) {
 	// 内訳が無いラウンド (未計算) でも落ちない。
 	assert.NotContains(t, build(nil), strings.SplitN(i18n.T("skat.scoreBreakdownLine"), "{{", 2)[0])
 }
+
+// 各ボーナスが独立して並ぶこと。1 本にまとめると、フラグを 1 つ落とす変異が
+// 別のフラグの出力に隠れる。出力面から見るので、内部関数は名指ししない。
+func TestSkatCuiPresenter_ScoreBreakdownListsEachBonusIndependently(t *testing.T) {
+	build := func(bd *domain.SkatScoreBreakdown) string {
+		m := setupSkatCuiMock()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetScoreBreakdown")
+		m.On("GetScoreBreakdown").Return(bd)
+		setupSkatCuiMockPhase(m, domain.SkatPhaseRoundEnd)
+		return new(presenter.SkatCuiPresenter).Output(m, nil)
+	}
+	line := func(bonuses string) string {
+		return i18n.Tf("skat.scoreBreakdownLine",
+			"base", "11", "matadors", "2", "multiplier", "4", "bonuses", bonuses)
+	}
+
+	for _, tc := range []struct {
+		name string
+		bd   domain.SkatScoreBreakdown
+		key  string
+	}{
+		{"hand", domain.SkatScoreBreakdown{Hand: true}, "skat.bonusHand"},
+		{"schneider", domain.SkatScoreBreakdown{Schneider: true}, "skat.bonusSchneider"},
+		{"schwarz", domain.SkatScoreBreakdown{Schwarz: true}, "skat.bonusSchwarz"},
+		{"doubled", domain.SkatScoreBreakdown{Doubled: true}, "skat.bonusDoubled"},
+		{"overbid", domain.SkatScoreBreakdown{Overbid: true}, "skat.bonusOverbid"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			bd := tc.bd
+			bd.Base, bd.Matadors, bd.Multiplier, bd.Value = 11, 2, 4, 44
+			// **完全一致で見る。**「含む」だけだと、全ボーナスを常に並べる実装でも通る。
+			assert.Contains(t, build(&bd), line(" ("+i18n.T(tc.key)+")"))
+		})
+	}
+
+	// 何も付いていなければ丸括弧ごと消えること。空文字を返さないと "… ()" と出る。
+	assert.Contains(t, build(&domain.SkatScoreBreakdown{Base: 11, Matadors: 2, Multiplier: 4, Value: 44}), line(""))
+
+	// 複数付いたらカンマ区切りで、順序は固定 (同じ局面なら毎回同じ行)。
+	multi := domain.SkatScoreBreakdown{Base: 11, Matadors: 2, Multiplier: 4, Value: 44, Hand: true, Schwarz: true, Overbid: true}
+	assert.Contains(t, build(&multi), line(" ("+i18n.T("skat.bonusHand")+", "+i18n.T("skat.bonusSchwarz")+", "+i18n.T("skat.bonusOverbid")+")"))
+}

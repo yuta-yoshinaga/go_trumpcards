@@ -31,6 +31,7 @@ import { formatSkatState } from '../utils/cli/formatters/skatFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { skatBestBidEstimate } from '../utils/skatBidEstimate';
+import { skatScoreBonusKeys } from '../utils/skatScoreBonuses';
 
 /** Suit identifiers matching internal/domain/Card.go (1=Spade, 2=Clover, 3=Heart, 4=Diamond). */
 const SUIT_SPADE = 1;
@@ -314,27 +315,11 @@ function SkatPageContent() {
                   multiplier: state.scoreBreakdown.multiplier,
                   value: state.scoreBreakdown.value,
                 })}
-                {[
-                  state.scoreBreakdown.hand && t('bonus.hand'),
-                  state.scoreBreakdown.schneider && t('bonus.schneider'),
-                  state.scoreBreakdown.schwarz && t('bonus.schwarz'),
-                  state.scoreBreakdown.doubled && t('bonus.doubled'),
-                  state.scoreBreakdown.overbid && t('bonus.overbid'),
-                ].filter(Boolean).length > 0 && (
-                  <span>
-                    {' ('}
-                    {[
-                      state.scoreBreakdown.hand && t('bonus.hand'),
-                      state.scoreBreakdown.schneider && t('bonus.schneider'),
-                      state.scoreBreakdown.schwarz && t('bonus.schwarz'),
-                      state.scoreBreakdown.doubled && t('bonus.doubled'),
-                      state.scoreBreakdown.overbid && t('bonus.overbid'),
-                    ]
-                      .filter(Boolean)
-                      .join(', ')}
-                    {')'}
-                  </span>
-                )}
+                {/* 付いていないボーナスは書かない。丸括弧ごと消える。 */}
+                {skatScoreBonusKeys(state.scoreBreakdown).length > 0 &&
+                  ` (${skatScoreBonusKeys(state.scoreBreakdown)
+                    .map((key) => t(key))
+                    .join(', ')})`}
               </div>
             )}
 

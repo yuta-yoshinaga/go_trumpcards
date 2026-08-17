@@ -618,3 +618,95 @@ func TestSkatScoreBreakdownIsNilBeforeARound(t *testing.T) {
 	g := newSkatForTest(t, DefaultSkatConfig())
 	assert.Nil(t, g.GetScoreBreakdown())
 }
+
+// #5561: 内訳の各ボーナスは、点数を決めている枝と同じ枝で立つ。片方だけ動くと
+// 「44点」と「基礎点11×乗数4」が食い違うので、枝ごとに両方を見る。
+func TestSkatScoreBreakdownFollowsTheBranchThatSetTheValue(t *testing.T) {
+	setup := func(declPts, bid int, pickedSkat bool, tricks int) *Skat {
+		g := newSkatForTest(t, DefaultSkatConfig())
+		resetForControlledPhase(g)
+		declarer := g.GetPlayer(0)
+		declarer.AddCard(NewCard(CardDesignClover, skatValueJack, false))
+		declarer.ResetTricks()
+		for range tricks {
+			declarer.AddTrick([]*Card{NewCard(CardDesignSpade, skatValueAce, false)})
+		}
+		g.round.declarerIdx = 0
+		g.round.gameType = SkatGameSuit
+		g.round.trumpSuit = CardDesignSpade
+		g.round.pickedSkat = pickedSkat
+		g.round.currentBid = bid
+		g.round.declarerCardPts = declPts
+		g.round.defendersCardPts = 120 - declPts
+		return g
+	}
+
+	t.Run("schneider at 90 points", func(t *testing.T) {
+		g := setup(95, 18, true, 5)
+		val, won := g.computeRoundResult()
+		bd := g.GetScoreBreakdown()
+		require.True(t, won)
+		assert.True(t, bd.Schneider)
+		assert.False(t, bd.Schwarz, "five tricks is not schwarz")
+		assert.Equal(t, val, bd.Value)
+		assert.Equal(t, bd.Base*bd.Multiplier, bd.Value)
+	})
+
+	t.Run("schwarz on every trick", func(t *testing.T) {
+		g := setup(120, 18, true, SkatTricksPerRound)
+		val, won := g.computeRoundResult()
+		bd := g.GetScoreBreakdown()
+		require.True(t, won)
+		assert.True(t, bd.Schwarz)
+		assert.Equal(t, val, bd.Value)
+	})
+
+	t.Run("hand when the skat was left alone", func(t *testing.T) {
+		g := setup(75, 18, false, 6)
+		g.computeRoundResult()
+		assert.True(t, g.GetScoreBreakdown().Hand)
+		assert.False(t, setup(75, 18, true, 6).mustCompute().Hand)
+	})
+
+	t.Run("a loss is doubled", func(t *testing.T) {
+		g := setup(40, 18, true, 3)
+		val, won := g.computeRoundResult()
+		bd := g.GetScoreBreakdown()
+		require.False(t, won)
+		assert.True(t, bd.Doubled)
+		assert.Equal(t, val, bd.Value)
+		// 敗北は2倍。内訳の基礎点×乗数だけを読むと半分に見えるので、
+		// Doubled が立っていることが数字の説明になっている。
+		assert.Equal(t, bd.Base*bd.Multiplier*2, bd.Value)
+	})
+
+	// **オーバービッドは値そのものを置き換える。**内訳が置き換え前の
+	// 基礎点×乗数を報告すると、画面の合計と食い違う。
+	t.Run("an overbid replaces the value", func(t *testing.T) {
+		// 入札が最終値 (132) を上回る局面。宣言者は「取れる」と言った分を払う。
+		g := setup(75, 240, true, 6)
+		val, _ := g.computeRoundResult()
+		bd := g.GetScoreBreakdown()
+		assert.True(t, bd.Overbid)
+		assert.Equal(t, val, bd.Value)
+		assert.NotEqual(t, bd.Base*bd.Multiplier, bd.Value)
+	})
+
+	// ヌル契約には乗数が無い。内訳は Null を立てて、表示側に黙らせる。
+	t.Run("null carries no multiplier", func(t *testing.T) {
+		g := newSkatForTest(t, DefaultSkatConfig())
+		g.round.declarerIdx = 0
+		g.round.gameType = SkatGameNull
+		g.GetPlayer(0).ResetTricks()
+		val, _ := g.computeRoundResult()
+		bd := g.GetScoreBreakdown()
+		assert.True(t, bd.Null)
+		assert.Equal(t, val, bd.Value)
+	})
+}
+
+// mustCompute は内訳だけが欲しい呼び出しを短く書くためのヘルパー。
+func (s *Skat) mustCompute() *SkatScoreBreakdown {
+	s.computeRoundResult()
+	return s.GetScoreBreakdown()
+}
