@@ -36,5 +36,6 @@
   },
   "nav": {
     "scorpion": "Scorpion"
-  }
+  },
+  "hintExposes": "(uncovers a face-down card)"
 }

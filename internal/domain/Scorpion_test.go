@@ -399,6 +399,30 @@ func TestScorpion_GetHint(t *testing.T) {
 		assert.Equal(t, 0, hint.FromCol)
 		assert.Equal(t, 1, hint.CardIndex)
 		assert.Equal(t, 1, hint.ToCol)
+		// #5544: **なぜこの手が勧められたのか**をヒント自身が持つこと。
+		// スコーピオンの肝は12枚の裏カードをどれだけ早く開けるかで、
+		// 移動先だけ見せても学べない。
+		assert.True(t, hint.ExposesFaceDown, "裏カードが開く手")
+	})
+
+	// **裏カードが開かない手では立てない。**常に true なら理由にならない。
+	t.Run("hint does not claim an exposure when there is none", func(t *testing.T) {
+		s := newTestScorpion()
+		s.Reset()
+		clearScorpionTableau(s)
+
+		var tab [domain.ScorpionTableauCnt][]*domain.KlondikeTableauCard
+		tab[0] = []*domain.KlondikeTableauCard{
+			makeTableauCard(domain.CardDesignHeart, 5, true),
+		}
+		tab[1] = []*domain.KlondikeTableauCard{
+			makeTableauCard(domain.CardDesignHeart, 6, true),
+		}
+		s.SetTableau(tab)
+
+		hint := s.GetHint()
+		assert.NotNil(t, hint)
+		assert.False(t, hint.ExposesFaceDown)
 	})
 
 	t.Run("hint all face-up", func(t *testing.T) {
