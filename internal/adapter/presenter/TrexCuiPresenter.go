@@ -27,7 +27,11 @@ func trexPenaltyMarkedStr(cards []*domain.Card, contract domain.TrexContract) st
 	for _, c := range cards {
 		str := cuiCardStr(c)
 		if p := domain.TrexCardPenalty(contract, c); p != 0 {
-			str = color.Red(str + i18n.Tf("trex.penaltyMark", "points", strconv.Itoa(p)))
+			// **印だけを色付けする。**cuiCardStr は ♥♦ を既に赤で包んでいて、
+			// その外からもう一度包むと内側のリセットが先に効き、肝心の
+			// 「(失-75)」だけ地の色で出る ── ♥K 契約とダイヤ契約、つまり
+			// この機能が一番効くはずの 2 つで壊れる。
+			str += color.Red(i18n.Tf("trex.penaltyMark", "points", strconv.Itoa(p)))
 		}
 		parts = append(parts, str)
 	}

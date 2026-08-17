@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
@@ -323,8 +324,8 @@ func TestTrexCuiPresenter_MarksThePenaltyCardsOfEachContract(t *testing.T) {
 						want = true
 					}
 				}
-				mark := cuiCardStr(c) + i18n.Tf("trex.penaltyMark",
-					"points", strconv.Itoa(domain.TrexCardPenalty(tc.contract, c)))
+				mark := cuiCardStr(c) + color.Red(i18n.Tf("trex.penaltyMark",
+					"points", strconv.Itoa(domain.TrexCardPenalty(tc.contract, c))))
 				if want {
 					assert.Contains(t, out, mark, "%s must be marked", cuiCardStr(c))
 					continue
@@ -350,4 +351,27 @@ func TestTrexCardPenaltyIsTheOneUsedForScoring(t *testing.T) {
 	assert.Zero(t, domain.TrexCardPenalty(domain.TrexContractKingOfHearts, domain.NewCard(domain.CardDesignHeart, 12, true)))
 	assert.Zero(t, domain.TrexCardPenalty(domain.TrexContractTricks, domain.NewCard(domain.CardDesignHeart, 13, true)))
 	assert.Zero(t, domain.TrexCardPenalty(domain.TrexContractQueens, nil))
+}
+
+// **印そのものが赤で出ること。**cuiCardStr は ♥♦ を既に赤で包んでいるので、
+// その外からもう一度包むと内側のリセットが先に効き、印だけ地の色になる。
+// 上のテストは期待値を同じ組み立て方で作るので、この壊れ方が見えない。
+func TestTrexCuiPresenter_ThePenaltyMarkIsColouredOnItsOwn(t *testing.T) {
+	i18n.SetLang("ja")
+	orig := color.NoColor()
+	color.SetNoColor(false)
+	defer color.SetNoColor(orig)
+
+	// ♥K — cuiCardStr が既に赤を付ける札。ここが壊れやすい。
+	king := domain.NewCard(domain.CardDesignHeart, 13, true)
+	g := txStub(domain.TrexPhasePlay, domain.TrexContractKingOfHearts, 0, false, -1)
+	g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetTrick")
+	g.On("GetTrick").Return([]domain.TrexTrickCard{{PlayerIdx: 0, Card: king}})
+
+	out := new(TrexCuiPresenter).Output(g, nil)
+	mark := i18n.Tf("trex.penaltyMark", "points", strconv.Itoa(domain.TrexKingOfHeartsPenalty))
+	// 印の直前に色開始があること = 印自身が色付けされている。
+	assert.Contains(t, out, color.Red(mark))
+	// 札の色付けが終わったところで印が地の色のまま始まっていないこと。
+	assert.NotContains(t, out, "\x1b[0m"+mark)
 }
