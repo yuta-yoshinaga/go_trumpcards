@@ -90,12 +90,13 @@ type ShitheadCuiPresenter struct{}
 // Output renders the current game state for the active locale (#1699).
 func (p *ShitheadCuiPresenter) Output(sg interfaces.ShitheadGame, lastErr error) string {
 	return buildCuiOutput(i18n.T("shithead.outputTitle"), func(b *strings.Builder) {
+		cfg := sg.GetConfig()
 		// 印だけ出しても何が起きるかは分からないので、効果も並べる。
-		b.WriteString(shitheadMagicLegend(sg.GetConfig()))
+		b.WriteString(shitheadMagicLegend(cfg))
 
 		currentTurn := sg.GetCurrentTurn()
 		for i := 0; i < sg.GetPlayerCnt(); i++ {
-			b.WriteString(shitheadPlayerStr(sg.GetPlayer(i), i, currentTurn, sg.GetConfig()))
+			b.WriteString(shitheadPlayerStr(sg.GetPlayer(i), i, currentTurn, cfg))
 		}
 
 		b.WriteString("----------\n")
@@ -104,7 +105,7 @@ func (p *ShitheadCuiPresenter) Output(sg interfaces.ShitheadGame, lastErr error)
 		discard := sg.GetDiscardPile()
 		if len(discard) > 0 {
 			b.WriteString(i18n.Tf("shithead.discardLine",
-				"cards", formatCardSlice(discard, shitheadMagicFormatter(sg.GetConfig()), ", ")) + "\n")
+				"cards", formatCardSlice(discard, shitheadMagicFormatter(cfg), ", ")) + "\n")
 		} else {
 			b.WriteString(i18n.T("shithead.discardEmpty") + "\n")
 		}
