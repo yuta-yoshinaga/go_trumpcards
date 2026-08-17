@@ -24,6 +24,8 @@ func mustNertzOutputJSON(msg string) string {
 		CpuDifficulty: int(domain.NertzCpuDifficultyNormal),
 		Players:       make([]*controller.NertzWebPlayer, 0),
 		Foundations:   make([]*controller.NertzWebFoundation, 0),
+		// 上限は盤面が無くても規則なので、既定の応答にも乗る (#5578)。
+		FoundationMax: domain.NertzFoundationMax,
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
