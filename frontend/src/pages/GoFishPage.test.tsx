@@ -335,6 +335,28 @@ describe('GoFishPage', () => {
     await waitFor(() => expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument());
   });
 
+  // #5518: 文言は「最も多く持っているランク」と言うのに、どの札のことか
+  // 盤面には出ていなかった。
+  it('marks the cards of the rank the hint names, and only those', async () => {
+    localStorage.setItem('hint_enabled_gofish', 'true');
+    renderWithProviders(<GoFishPage />);
+    await waitFor(() => expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument());
+
+    // 手札は ♠7 ♥7 ♦3 -- 7 が2枚なので 7 の2枚だけに印が付く。
+    expect(screen.getByRole('button', { name: '♠ 7' })).toHaveAttribute('data-hint-card', 'true');
+    expect(screen.getByRole('button', { name: '♥ 7' })).toHaveAttribute('data-hint-card', 'true');
+    expect(screen.getByRole('button', { name: '♦ 3' })).not.toHaveAttribute('data-hint-card');
+    // ツールチップもランクを名指しする。
+    expect(screen.getByTestId('hint-tooltip')).toHaveTextContent('7');
+  });
+
+  it('marks nothing while the hint is switched off', async () => {
+    localStorage.setItem('hint_enabled_gofish', 'false');
+    renderWithProviders(<GoFishPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ 7' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '♠ 7' })).not.toHaveAttribute('data-hint-card');
+  });
+
   it('shows books display when human has books', async () => {
     const stateWithBooks: GoFishResponse = {
       ...baseState,

@@ -340,25 +340,35 @@ function GoFishPageContent() {
             {/* Human cards */}
             {humanPlayer && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="gf-player-hand">
-                {humanPlayer.cards.map((card) => (
-                  <button
-                    type="button"
-                    key={`${card.design}-${card.value}`}
-                    onClick={() => handleSelectRank(card.value)}
-                    aria-label={cardAlt(card)}
-                    aria-pressed={selectedRank === card.value}
-                    className={`transition-transform ${focusRingCard}`}
-                    style={{
-                      background: 'none',
-                      padding: 0,
-                      borderRadius: 8,
-                      ...selectedCardStyle(selectedRank === card.value),
-                      boxSizing: 'border-box',
-                    }}
-                  >
-                    <AnimatedCard card={card} width={cardWidth} />
-                  </button>
-                ))}
+                {humanPlayer.cards.map((card, i) => {
+                  // ヒントが名指ししたランクの札に印を付ける。文言だけでは
+                  // 結局プレイヤーが手札を数え直すことになる (#5518)。
+                  const isSuggested = frontendHintEnabled && (frontendHint?.targetIndices?.includes(i) ?? false);
+                  return (
+                    <button
+                      type="button"
+                      key={`${card.design}-${card.value}`}
+                      onClick={() => handleSelectRank(card.value)}
+                      aria-label={cardAlt(card)}
+                      aria-pressed={selectedRank === card.value}
+                      className={[
+                        'transition-transform',
+                        focusRingCard,
+                        isSuggested ? 'ring-2 ring-ds-warning' : '',
+                      ].join(' ')}
+                      data-hint-card={isSuggested ? 'true' : undefined}
+                      style={{
+                        background: 'none',
+                        padding: 0,
+                        borderRadius: 8,
+                        ...selectedCardStyle(selectedRank === card.value),
+                        boxSizing: 'border-box',
+                      }}
+                    >
+                      <AnimatedCard card={card} width={cardWidth} />
+                    </button>
+                  );
+                })}
               </div>
             )}
 
