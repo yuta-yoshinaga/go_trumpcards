@@ -78,5 +78,6 @@
   "hintReasonHiLoLow": "a qualifying low is live (five cards of eight or lower)",
   "helpExampleFold": "  f                    fold this hand",
   "helpHint": "  h                    show a hint",
-  "helpLog": "  l                    show the action log"
+  "helpLog": "  l                    show the action log",
+  "bringInLine": "Bring-in: {{name}} (forced bet, acts first)"
 }
