@@ -10,7 +10,7 @@
   "bonus.777.samesuit": "7-7-7 (same suit)",
   "bonus.777.spade": "7-7-7 (all spades)",
   "payoutRef.title": "Payouts",
-  "payoutRef.blackjack": "Blackjack (3:2)",
+  "payoutRef.blackjack": "Blackjack (3:2, player BJ beats dealer BJ)",
   "payoutRef.win": "Win (1:1); player 21 always wins",
   "payoutRef.insurance": "Insurance (2:1)",
   "payoutRef.push": "Push (tie: bet returned)",
