@@ -89,5 +89,6 @@
     "discardLowest": "Discard your lowest card"
   },
   "hintRequested": "Hint available",
-  "noHint": "No hint available"
+  "noHint": "No hint available",
+  "trickWinnerBadge": "WIN"
 }
