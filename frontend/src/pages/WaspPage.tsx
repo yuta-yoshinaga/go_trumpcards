@@ -39,6 +39,7 @@ import { cardAlt } from '../utils/cardAlt';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
 import { hintCheckboxItem } from '../utils/settingsItems';
+import { isTableauAllFaceUp } from '../utils/solitaireUtils';
 import { waspLegalTargets } from '../utils/waspUtils';
 
 const noop = () => {};
@@ -290,6 +291,8 @@ function WaspPageContent() {
     [preview.source, state],
   );
   const dealBlockedByEmpty = hasEmptyColumn && (state?.stockCount ?? 0) > 0;
+  // ドメインの AutoComplete は「全カードが表向き」でしか通らない (Scorpion と共有の規則)。
+  const autoCompleteReady = isTableauAllFaceUp(state?.tableau ?? []);
   const handleDealGuarded = useCallback(() => {
     if (dealBlockedByEmpty) {
       setEmptyDealAttemptKey((k) => k + 1);
@@ -591,7 +594,17 @@ function WaspPageContent() {
                   <button type="button" className={btnOutline} onClick={handleHint} disabled={loading}>
                     {t('hint')}
                   </button>
-                  <button type="button" className={btnSuccess} onClick={handleAutoComplete} disabled={loading}>
+                  {/* 兄弟ゲームと同じ準備完了表示。Wasp だけ `disabled={loading}` しか
+                      持たず、押していい合図も押せない理由も無かった (#5545)。判定は
+                      ドメインの AutoComplete と同じ「全カードが表向き」。 */}
+                  <button
+                    type="button"
+                    className={`${btnSuccess}${autoCompleteReady && !loading ? ' animate-pulse ring-2 ring-ds-success' : ''}`}
+                    onClick={handleAutoComplete}
+                    disabled={loading || !autoCompleteReady}
+                    data-testid="autocomplete-button"
+                    title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
+                  >
                     {t('autoComplete')}
                   </button>
                   <button
