@@ -11,6 +11,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupCalculationCuiMockDefaults(g *interfaces.MockCalculationGame) {
@@ -27,6 +28,8 @@ func setupCalculationCuiMockDefaults(g *interfaces.MockCalculationGame) {
 	}
 	g.On("GetFoundations").Return(foundations).Maybe()
 	g.On("GetNextFoundationRank", mock.Anything).Return(0).Maybe()
+	g.On("GetUpcomingFoundationRanks", mock.Anything, mock.Anything).Return([]int(nil)).Maybe()
+	g.On("GetUpcomingFoundationRanks", mock.Anything, mock.Anything).Return([]int(nil)).Maybe()
 
 	var wastes [domain.CalculationWasteCnt][]*domain.Card
 	wastes[0] = []*domain.Card{domain.NewCard(domain.CardDesignHeart, 11, false)}
@@ -65,6 +68,7 @@ func TestCalculationCuiPresenter_Output(t *testing.T) {
 		var foundations [domain.CalculationFoundationCnt][]*domain.Card
 		g.On("GetFoundations").Return(foundations).Maybe()
 		g.On("GetNextFoundationRank", mock.Anything).Return(0).Maybe()
+		g.On("GetUpcomingFoundationRanks", mock.Anything, mock.Anything).Return([]int(nil)).Maybe()
 		var wastes [domain.CalculationWasteCnt][]*domain.Card
 		g.On("GetWastes").Return(wastes).Maybe()
 
@@ -82,6 +86,7 @@ func TestCalculationCuiPresenter_Output(t *testing.T) {
 		var foundations [domain.CalculationFoundationCnt][]*domain.Card
 		g.On("GetFoundations").Return(foundations).Maybe()
 		g.On("GetNextFoundationRank", mock.Anything).Return(0).Maybe()
+		g.On("GetUpcomingFoundationRanks", mock.Anything, mock.Anything).Return([]int(nil)).Maybe()
 		var wastes [domain.CalculationWasteCnt][]*domain.Card
 		g.On("GetWastes").Return(wastes).Maybe()
 
@@ -99,6 +104,7 @@ func TestCalculationCuiPresenter_Output(t *testing.T) {
 		var foundations [domain.CalculationFoundationCnt][]*domain.Card
 		g.On("GetFoundations").Return(foundations).Maybe()
 		g.On("GetNextFoundationRank", mock.Anything).Return(0).Maybe()
+		g.On("GetUpcomingFoundationRanks", mock.Anything, mock.Anything).Return([]int(nil)).Maybe()
 		var wastes [domain.CalculationWasteCnt][]*domain.Card
 		g.On("GetWastes").Return(wastes).Maybe()
 
@@ -170,6 +176,7 @@ func TestCalculationCuiPresenter_NextRank(t *testing.T) {
 			g.On("GetNextFoundationRank", i).Return(r).Maybe()
 		}
 		g.On("GetNextFoundationRank", mock.Anything).Return(0).Maybe()
+		g.On("GetUpcomingFoundationRanks", mock.Anything, mock.Anything).Return([]int(nil)).Maybe()
 		g.On("GetWastes").Return([domain.CalculationWasteCnt][]*domain.Card{}).Maybe()
 		g.On("GetStockCount").Return(0).Maybe()
 		g.On("GetStockTop").Return((*domain.Card)(nil)).Maybe()
@@ -192,4 +199,21 @@ func TestCalculationCuiPresenter_NextRank(t *testing.T) {
 		out := p.Output(withRanks(2, 0, 6, 0), nil)
 		assert.Equal(t, 2, strings.Count(out, "→ 次:"))
 	})
+}
+
+// #5551: +3 の組札で「次の次のまた次」を辿るのは暗算負荷が高い。Web は6手先まで
+// バッジで出しているのに、CUI は1手先しか出していなかった。
+func TestCalculationCuiPresenter_Output_UpcomingRanks(t *testing.T) {
+	p := new(CalculationCuiPresenter)
+
+	g := new(interfaces.MockCalculationGame)
+	// 先に登録した期待が優先されるので、既定より前に置く。
+	g.On("GetUpcomingFoundationRanks", 2, domain.CalculationMaxLookAhead).Return([]int{6, 9, 12, 2, 5, 8})
+	g.On("GetUpcomingFoundationRanks", mock.Anything, mock.Anything).Return([]int{})
+	setupCalculationCuiMockDefaults(g)
+
+	out := p.Output(g, nil)
+	assert.Contains(t, out, i18n.Tf("calculation.upcomingRanks", "ranks", "6 → 9 → 12 → 2 → 5 → 8"))
+	// **先読みが空の組札には行を出さない。**完成した山に「次: 」だけ出しても意味がない。
+	assert.Equal(t, 1, strings.Count(out, i18n.T("calculation.upcomingRanksLabel")))
 }

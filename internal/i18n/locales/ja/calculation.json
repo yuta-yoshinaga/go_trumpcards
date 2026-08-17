@@ -30,5 +30,7 @@
   "hintWaste": "ヒント: ウェイスト{{waste}} → ファンデーション{{foundation}}",
   "nextRank": " → 次: {{rank}}",
   "helpExampleHint": "  h                   次の一手を教えてもらう",
-  "helpExampleAuto": "  ac                  置ける札を自動で送る"
+  "helpExampleAuto": "  ac                  置ける札を自動で送る",
+  "upcomingRanks": " 先読み: {{ranks}}",
+  "upcomingRanksLabel": "先読み:"
 }

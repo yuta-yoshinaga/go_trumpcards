@@ -352,6 +352,33 @@ func (c *Calculation) GetNextFoundationRank(fIdx int) int {
 	return calculationNextValue(pile[len(pile)-1].GetValue(), fIdx+1)
 }
 
+// CalculationMaxLookAhead は先読みで返すランクの最大件数。Web の
+// calculationUpcomingRanks の既定値と同じ 6 手先。
+const CalculationMaxLookAhead = 6
+
+// GetUpcomingFoundationRanks は fIdx の組札にこれから必要になるランクを、
+// 次の1枚から最大 max 件まで順に返す。
+//
+// **+1/+2/+3/+4 を 13 で折り返す歩幅を何手も辿るのは暗算負荷が高い。**Web は
+// 6手先までバッジで出しているのに、CUI は1手先しか出していなかった (#5551)。
+// 13枚に達した時点で打ち切るので、完成した組札では空を返す。
+func (c *Calculation) GetUpcomingFoundationRanks(fIdx, max int) []int {
+	if fIdx < 0 || fIdx >= len(c.foundations) || max <= 0 {
+		return nil
+	}
+	pile := c.foundations[fIdx]
+	if len(pile) == 0 {
+		return nil
+	}
+	v := pile[len(pile)-1].GetValue()
+	out := make([]int, 0, max)
+	for n := len(pile); n < CardValueMax && len(out) < max; n++ {
+		v = calculationNextValue(v, fIdx+1)
+		out = append(out, v)
+	}
+	return out
+}
+
 // calculationNextValue ファンデーションの次に置くべき値を返す（step は 1..4、V は 1..13）。
 // v+step は最大で 13+4 = 17 なので、mod 13 は一度の減算で十分（ループ不要）。
 func calculationNextValue(v, step int) int {
