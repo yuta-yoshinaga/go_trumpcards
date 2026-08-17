@@ -101,6 +101,8 @@ type SkatGame interface {
 	GetWinnerSide() int
 	// GetGameValue returns the round's game value.
 	GetGameValue() int
+	// GetScoreBreakdown 直近ラウンドの得点内訳 (#5561)。ラウンド前は nil
+	GetScoreBreakdown() *domain.SkatScoreBreakdown
 	// GetLeadPlayerIdx returns the lead player's index.
 	GetLeadPlayerIdx() int
 	// PickedSkat reports whether the declarer picked up the skat.

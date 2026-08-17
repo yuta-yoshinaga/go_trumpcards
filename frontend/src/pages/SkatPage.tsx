@@ -31,6 +31,7 @@ import { formatSkatState } from '../utils/cli/formatters/skatFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { skatBestBidEstimate } from '../utils/skatBidEstimate';
+import { skatScoreBonusKeys, skatScoreFormulaKey } from '../utils/skatScoreBonuses';
 
 /** Suit identifiers matching internal/domain/Card.go (1=Spade, 2=Clover, 3=Heart, 4=Diamond). */
 const SUIT_SPADE = 1;
@@ -302,6 +303,26 @@ function SkatPageContent() {
                 </tbody>
               </table>
             </div>
+
+            {/* 得点の内訳。マタドール (切り札の連続所持/不所持) はスカートで最も
+                分かりにくい規則なのに、どちらの UI も最終値しか出していなかった
+                (#5561)。計算はサーバが済ませているので数字をそのまま並べる。 */}
+            {(isRoundEnd || isGameEnd) && state.scoreBreakdown && !state.scoreBreakdown.null && (
+              <div className="text-ds-text-muted text-xs mt-2" data-testid="skat-score-breakdown">
+                {t(skatScoreFormulaKey(state.scoreBreakdown), {
+                  base: state.scoreBreakdown.base,
+                  matadors: state.scoreBreakdown.matadors,
+                  multiplier: state.scoreBreakdown.multiplier,
+                  bid: state.scoreBreakdown.bid,
+                  value: state.scoreBreakdown.value,
+                })}
+                {/* 付いていないボーナスは書かない。丸括弧ごと消える。 */}
+                {skatScoreBonusKeys(state.scoreBreakdown).length > 0 &&
+                  ` (${skatScoreBonusKeys(state.scoreBreakdown)
+                    .map((key) => t(key))
+                    .join(', ')})`}
+              </div>
+            )}
 
             <ActionLogSection
               isEndPhase={isRoundEnd || isGameEnd}

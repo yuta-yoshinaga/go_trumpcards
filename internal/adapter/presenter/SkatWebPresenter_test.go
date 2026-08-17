@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -34,6 +35,7 @@ func setupSkatWebMock() *interfaces.MockSkatGame {
 	m.On("GetDefendersCardPoints").Return(0)
 	m.On("GetWinnerSide").Return(domain.SkatWinnerUndecided)
 	m.On("GetGameValue").Return(0)
+	m.On("GetScoreBreakdown").Return((*domain.SkatScoreBreakdown)(nil)).Maybe()
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetLeadPlayerIdx").Return(-1)
 	m.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
@@ -96,6 +98,9 @@ func TestSkatWebPresenter_OutputRoundEndExposesSkat(t *testing.T) {
 	m.On("GetDefendersCardPoints").Return(50)
 	m.On("GetWinnerSide").Return(domain.SkatWinnerDeclarer)
 	m.On("GetGameValue").Return(22)
+	m.On("GetScoreBreakdown").Return(&domain.SkatScoreBreakdown{
+		Base: 11, Matadors: 1, Multiplier: 2, Value: 22,
+	})
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetLeadPlayerIdx").Return(0)
 	m.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
@@ -152,4 +157,44 @@ func TestSkatWebPresenterOutputCarriesTheHint(t *testing.T) {
 
 	result := new(presenter.SkatWebPresenter).Output(skg, nil)
 	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+}
+
+// #5561: 内訳が Web に載っていること。**合計は GetGameValue と同じ数字**でなければ、
+// 画面の内訳と合計が別の話になる。
+func TestSkatWebPresenter_OutputCarriesTheScoreBreakdown(t *testing.T) {
+	m := setupSkatWebMock()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetScoreBreakdown")
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameValue")
+	m.On("GetGameValue").Return(44)
+	m.On("GetScoreBreakdown").Return(&domain.SkatScoreBreakdown{
+		Base: 11, Matadors: 2, Multiplier: 4, Hand: true, Value: 44,
+	})
+
+	var out controller.SkatWebOutput
+	require.NoError(t, json.Unmarshal([]byte(new(presenter.SkatWebPresenter).Output(m, nil)), &out))
+	require.NotNil(t, out.ScoreBreakdown)
+	assert.Equal(t, 11, out.ScoreBreakdown.Base)
+	assert.Equal(t, 2, out.ScoreBreakdown.Matadors)
+	assert.Equal(t, 4, out.ScoreBreakdown.Multiplier)
+	assert.True(t, out.ScoreBreakdown.Hand)
+	assert.Equal(t, out.GameValue, out.ScoreBreakdown.Value)
+}
+
+// オーバービッドの式は 入札×2。入札を落とすとクライアントが「0 × 2 = 80」と
+// 書くので、フラグだけでなく数字も渡っていること (#5561 のレビュー指摘)。
+func TestSkatWebPresenter_ScoreBreakdownCarriesTheBidOnAnOverbid(t *testing.T) {
+	m := setupSkatWebMock()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetScoreBreakdown")
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameValue")
+	m.On("GetGameValue").Return(80)
+	m.On("GetScoreBreakdown").Return(&domain.SkatScoreBreakdown{
+		Base: 11, Matadors: 2, Multiplier: 3, Overbid: true, Bid: 40, Value: 80,
+	})
+
+	var out controller.SkatWebOutput
+	require.NoError(t, json.Unmarshal([]byte(new(presenter.SkatWebPresenter).Output(m, nil)), &out))
+	require.NotNil(t, out.ScoreBreakdown)
+	assert.True(t, out.ScoreBreakdown.Overbid)
+	assert.Equal(t, 40, out.ScoreBreakdown.Bid)
+	assert.Equal(t, out.ScoreBreakdown.Bid*2, out.ScoreBreakdown.Value)
 }

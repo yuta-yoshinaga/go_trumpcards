@@ -42,6 +42,52 @@ func skatPlayerStr(player *domain.SkatPlayer, i int) string {
 	return b.String()
 }
 
+// skatBonusStr は乗数に加算された理由を並べる。何も無ければ空。
+//
+// 敗北の 2 倍とオーバービッドはここには入れない。どちらも乗数ではなく**式そのもの**を
+// 変えるので、skatBreakdownLine が別の文で言う。
+func skatBonusStr(bd *domain.SkatScoreBreakdown) string {
+	parts := make([]string, 0, 3)
+	if bd.Hand {
+		parts = append(parts, i18n.T("skat.bonusHand"))
+	}
+	if bd.Schneider {
+		parts = append(parts, i18n.T("skat.bonusSchneider"))
+	}
+	if bd.Schwarz {
+		parts = append(parts, i18n.T("skat.bonusSchwarz"))
+	}
+	if len(parts) == 0 {
+		return ""
+	}
+	return " (" + strings.Join(parts, ", ") + ")"
+}
+
+// skatBreakdownLine は得点の式を書く。**式は 3 通りある。**
+//
+// 勝ちなら 基礎点×乗数、負けならその 2 倍、オーバービッドなら基礎点と無関係な
+// 入札×2 に置き換わる。1 つの文に固定すると、負けたラウンド (全体のおよそ半分) で
+// 「11 × 3 = 66」という嘘の式が出る。
+func skatBreakdownLine(bd *domain.SkatScoreBreakdown) string {
+	if bd.Overbid {
+		return i18n.Tf("skat.scoreBreakdownLineOverbid",
+			"bid", strconv.Itoa(bd.Bid),
+			"value", strconv.Itoa(bd.Value),
+			"base", strconv.Itoa(bd.Base),
+			"multiplier", strconv.Itoa(bd.Multiplier))
+	}
+	key := "skat.scoreBreakdownLine"
+	if bd.Doubled {
+		key = "skat.scoreBreakdownLineDoubled"
+	}
+	return i18n.Tf(key,
+		"base", strconv.Itoa(bd.Base),
+		"matadors", strconv.Itoa(bd.Matadors),
+		"multiplier", strconv.Itoa(bd.Multiplier),
+		"value", strconv.Itoa(bd.Value),
+		"bonuses", skatBonusStr(bd))
+}
+
 // SkatCuiPresenter Skat CUI presenter.
 type SkatCuiPresenter struct{}
 
@@ -133,6 +179,11 @@ func (p *SkatCuiPresenter) Output(s interfaces.SkatGame, lastErr error) string {
 				"declarer", strconv.Itoa(s.GetDeclarerCardPoints()),
 				"defenders", strconv.Itoa(s.GetDefendersCardPoints()),
 				"value", strconv.Itoa(s.GetGameValue())) + "\n")
+			// **なぜこの点数なのか。**マタドール (切り札の連続所持/不所持) は
+			// スカートで最も分かりにくい規則なのに、最終値しか出ていなかった (#5561)。
+			if bd := s.GetScoreBreakdown(); bd != nil && !bd.Null {
+				b.WriteString(skatBreakdownLine(bd) + "\n")
+			}
 			b.WriteString(i18n.T("skat.promptNextRound") + "\n")
 		}
 	})

@@ -51,5 +51,11 @@
   "hintReasonGameChoice": "best game choice",
   "hintReasonBestPlay": "best play",
   "helpExamplePlay": "  p 0                  play hand card 0",
-  "helpHint": "  h                    show a hint"
+  "helpHint": "  h                    show a hint",
+  "scoreBreakdownLine": "Breakdown: base {{base}} x multiplier {{multiplier}} (matadors {{matadors}}) = {{value}}{{bonuses}}",
+  "bonusHand": "hand",
+  "bonusSchneider": "schneider",
+  "bonusSchwarz": "schwarz",
+  "scoreBreakdownLineDoubled": "Breakdown: base {{base}} x multiplier {{multiplier}} x 2 (doubled on a loss, matadors {{matadors}}) = {{value}}{{bonuses}}",
+  "scoreBreakdownLineOverbid": "Breakdown: overbid - bid {{bid}} x 2 = {{value}} (base {{base}} x multiplier {{multiplier}} did not reach the bid)"
 }

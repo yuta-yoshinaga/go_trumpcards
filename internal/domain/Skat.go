@@ -114,13 +114,14 @@ type skatRoundState struct {
 	round1Winner     int // survivor of auction round 1 (-1 = unknown)
 	declarerIdx      int // -1 if undecided / passed-out
 	passedAtCall     [SkatPlayerCnt]bool
-	pickedSkat       bool         // declarer picked up the skat
-	gameType         SkatGameType // chosen game type
-	trumpSuit        int          // chosen trump suit (suit games only)
-	skat             []*Card      // 2 face-down cards; possibly post-discard
-	originalSkat     []*Card      // pre-pickup skat snapshot for log
-	declarerHand     []*Card      // declarer hand snapshot at start of play (used for matadors at scoring time)
-	gameValue        int          // game value (positive when declarer wins)
+	pickedSkat       bool                // declarer picked up the skat
+	gameType         SkatGameType        // chosen game type
+	trumpSuit        int                 // chosen trump suit (suit games only)
+	skat             []*Card             // 2 face-down cards; possibly post-discard
+	originalSkat     []*Card             // pre-pickup skat snapshot for log
+	declarerHand     []*Card             // declarer hand snapshot at start of play (used for matadors at scoring time)
+	gameValue        int                 // game value (positive when declarer wins)
+	breakdown        *SkatScoreBreakdown // 得点の内訳 (#5561)
 	declarerCardPts  int
 	defendersCardPts int
 	winnerSide       int // SkatWinner*
@@ -220,6 +221,7 @@ func (s *Skat) startRound() {
 	s.round.declarerCardPts = 0
 	s.round.defendersCardPts = 0
 	s.round.gameValue = 0
+	s.round.breakdown = nil
 	s.round.winnerSide = SkatWinnerUndecided
 	s.round.trickNumber = 0
 	s.round.currentTrick = nil
@@ -767,6 +769,7 @@ func (s *Skat) computeRoundResult() (int, bool) {
 		declarerLostNoTricks := s.players[s.round.declarerIdx].GetTrickCount() == 0
 		// Simplified Null base value.
 		base := 23
+		s.round.breakdown = &SkatScoreBreakdown{Base: base, Multiplier: 1, Value: base, Null: true}
 		if !declarerLostNoTricks {
 			return base, false
 		}
@@ -774,32 +777,79 @@ func (s *Skat) computeRoundResult() (int, bool) {
 	}
 
 	base := s.gameBaseValue()
+	matadors := s.matadorsCount(s.round.declarerHand)
 	multiplier := s.gameMultiplier()
 	declPts := s.round.declarerCardPts
 
 	won := declPts >= 61
+	bd := &SkatScoreBreakdown{Base: base, Matadors: matadors, Hand: !s.round.pickedSkat}
 	var value int
 	// Schneider/Schwarz bonuses (simplified): +1 if 90+ pts (Schneider), +1 if all 10 tricks (Schwarz).
 	if won {
 		if declPts >= 90 {
 			multiplier++
+			bd.Schneider = true
 		}
 		if s.players[s.round.declarerIdx].GetTrickCount() == SkatTricksPerRound {
 			multiplier++
+			bd.Schwarz = true
 		}
 		value = base * multiplier
 	} else {
 		// Loser pays double the game value.
 		value = base * multiplier * 2
+		bd.Doubled = true
 	}
+	bd.Multiplier = multiplier
+	bd.Value = value
+	s.round.breakdown = bd
 
 	// If the declarer overbid (final value < bid), they lose by twice the lowest
 	// multiple of base that meets the bid (simplified to bid * 2).
 	if won && value < s.round.currentBid {
-		return s.round.currentBid * 2, false
+		bd.Overbid = true
+		bd.Bid = s.round.currentBid
+		bd.Value = s.round.currentBid * 2
+		return bd.Value, false
 	}
 
 	return value, won
+}
+
+// SkatScoreBreakdown はラウンド得点がどう積み上がったかの内訳。
+//
+// **なぜ 33 点で、別のラウンドは 66 点なのか。**マタドール (切り札の連続所持/
+// 不所持) はスカートで最も分かりにくい規則なのに、どちらの UI も最終値しか
+// 出していなかった (#5561)。ここに残しておけば、表示側が計算をやり直さずに済む。
+type SkatScoreBreakdown struct {
+	// Base は基礎点 (スート 9〜12 / グランド 24 / ヌル 23)。
+	Base int
+	// Matadors はマタドール数。乗数の出発点。
+	Matadors int
+	// Multiplier は最終的な乗数 (マタドール+1、ハンド・シュナイダー・シュヴァルツで加算)。
+	Multiplier int
+	// Hand / Schneider / Schwarz はそれぞれ乗数に +1 したか。
+	Hand      bool
+	Schneider bool
+	Schwarz   bool
+	// Doubled は敗北による 2 倍。Overbid はオーバービッドで bid*2 に置き換わったこと。
+	//
+	// **どちらも Base*Multiplier では最終得点にならない。**敗北は 2 倍、
+	// オーバービッドは基礎点と無関係な bid*2 に置き換わる。表示側はこの 2 つを
+	// 見て式そのものを変える必要がある (#5561 のレビュー指摘)。
+	Doubled bool
+	Overbid bool
+	// Bid はそのラウンドの最終入札。Overbid のときだけ意味を持つ (Value = Bid*2)。
+	Bid int
+	// Value は最終得点。GetGameValue() と必ず一致する。
+	Value int
+	// Null はヌル契約 (乗数の概念が無い)。
+	Null bool
+}
+
+// GetScoreBreakdown は直近ラウンドの得点内訳を返す。ラウンドが終わっていなければ nil。
+func (s *Skat) GetScoreBreakdown() *SkatScoreBreakdown {
+	return s.round.breakdown
 }
 
 // gameBaseValue returns the base value for the game type.
