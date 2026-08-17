@@ -275,6 +275,48 @@ func TestWhist_ScoreRound(t *testing.T) {
 	assert.Equal(t, 2, w.GetTeamScore(0))
 	// Team 1: 5 - 6 = 0 points (below threshold)
 	assert.Equal(t, 0, w.GetTeamScore(1))
+
+	// #5535: 個人行の得点は死んだ 0 のままだった。CUI の "round"/"cum" も
+	// Web の CPU 一覧も、この値を読んでいる。
+	for _, i := range []int{0, 2} {
+		assert.Equal(t, 2, w.GetPlayer(i).GetRoundScore(), "player %d round", i)
+		assert.Equal(t, 2, w.GetPlayer(i).GetCumulativeScore(), "player %d cum", i)
+	}
+	for _, i := range []int{1, 3} {
+		assert.Equal(t, 0, w.GetPlayer(i).GetRoundScore(), "player %d round", i)
+		assert.Equal(t, 0, w.GetPlayer(i).GetCumulativeScore(), "player %d cum", i)
+	}
+}
+
+// **累積はチームスコアと一致し続ける。**1ラウンド分だけ合わせても、
+// 次のラウンドで足し忘れれば表示はまた嘘になる。
+func TestWhist_ScoreRound_CumulativeTracksTheTeamScoreAcrossRounds(t *testing.T) {
+	w := newTestWhist()
+	w.Reset()
+
+	giveTricks := func(playerIdx, n int) {
+		for i := 0; i < n; i++ {
+			w.GetPlayer(playerIdx).AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignHeart, i+1, false)})
+		}
+	}
+
+	for round := 1; round <= 2; round++ {
+		w.SetPhase(domain.WhistPhaseRoundEnd)
+		for i := range 4 {
+			w.GetPlayer(i).ResetRound()
+		}
+		giveTricks(0, 8) // チーム0が8トリック = 2点
+		giveTricks(1, 5)
+		w.ScoreRound()
+
+		for _, i := range []int{0, 2} {
+			assert.Equal(t, w.GetTeamScore(0), w.GetPlayer(i).GetCumulativeScore(), "round %d player %d", round, i)
+		}
+		for _, i := range []int{1, 3} {
+			assert.Equal(t, w.GetTeamScore(1), w.GetPlayer(i).GetCumulativeScore(), "round %d player %d", round, i)
+		}
+	}
+	assert.Equal(t, 4, w.GetPlayer(0).GetCumulativeScore(), "2ラウンド分たまる")
 }
 
 func TestWhist_ScoreRound_GameEnd(t *testing.T) {
