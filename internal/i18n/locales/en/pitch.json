@@ -31,5 +31,7 @@
   "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
   "helpSetLimit": "  sl <n>               point limit",
   "helpExamplePlay": "  p 0                  play hand card 0",
-  "helpHint": "  h                    show a hint"
+  "helpHint": "  h                    show a hint",
+  "scoringLine": "Points: High={{high}} / Low={{low}} / Jack={{jack}} / Game={{game}}",
+  "scoringNobody": "nobody"
 }

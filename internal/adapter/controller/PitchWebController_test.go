@@ -22,7 +22,14 @@ func mustPitchOutputJSON(msg string) string {
 		LastTrickWinner: -1,
 		WinnerIdx:       -1,
 		BidWinnerIdx:    -1,
-		WebOutputBase:   controller.WebOutputBase{Message: msg},
+		// まだ何も争われていないので、どのカテゴリも「なし」(#5584)。
+		RoundBreakdown: &controller.PitchWebOutputBreakdown{
+			High: domain.PitchNoScorer,
+			Low:  domain.PitchNoScorer,
+			Jack: domain.PitchNoScorer,
+			Game: domain.PitchNoScorer,
+		},
+		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {

@@ -61,6 +61,24 @@ func pitchSuitName(suit int) string {
 type PitchCuiPresenter struct{}
 
 // Output renders the current game state for the active locale (#1699).
+// pitchBreakdownBlock は High/Low/Jack/Game をそれぞれ誰が取ったかを 1 行に並べる。
+// 誰も取っていないカテゴリは「なし」と出す ── 黙って省くと、そのラウンドで
+// そもそも争われなかったのか見落としたのか分からない。
+func pitchBreakdownBlock(g interfaces.PitchGame) string {
+	bd := g.GetRoundBreakdown()
+	name := func(idx int) string {
+		if idx == domain.PitchNoScorer {
+			return i18n.T("pitch.scoringNobody")
+		}
+		return cuiPlayerName(g.GetPlayer(idx), idx)
+	}
+	return i18n.Tf("pitch.scoringLine",
+		"high", name(bd.High),
+		"low", name(bd.Low),
+		"jack", name(bd.Jack),
+		"game", name(bd.Game))
+}
+
 func (p *PitchCuiPresenter) Output(s interfaces.PitchGame, lastErr error) string {
 	return buildCuiOutput(i18n.T("pitch.helpTitle"), func(b *strings.Builder) {
 		b.WriteString(i18n.Tf("pitch.header",
@@ -118,6 +136,10 @@ func (p *PitchCuiPresenter) Output(s interfaces.PitchGame, lastErr error) string
 			b.WriteString(i18n.T("pitch.promptTrickEnd") + "\n")
 			b.WriteString(i18n.T("pitch.promptTrickEndHelp") + "\n")
 		case domain.PitchPhaseRoundEnd:
+			// **4 種の得点がこのゲームの骨格。**合計だけでは、1 点差の理由が
+			// Jack を取られたからなのか Game で並ばれたからなのか分からない
+			// (#5584)。獲得者はドメインが得点と同時に記録している。
+			b.WriteString(pitchBreakdownBlock(s) + "\n")
 			b.WriteString(i18n.T("pitch.promptRoundEnd") + "\n")
 			b.WriteString(i18n.T("pitch.promptRoundEndHelp") + "\n")
 		}

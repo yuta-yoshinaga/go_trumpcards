@@ -4,6 +4,8 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 // PitchGame ピッチゲームインタフェース
 type PitchGame interface {
+	// GetRoundBreakdown 直近ラウンドの High/Low/Jack/Game をそれぞれ誰が取ったか
+	GetRoundBreakdown() domain.PitchRoundBreakdown
 	BaseGame
 	// Reset ゲームを初期化する
 	Reset()

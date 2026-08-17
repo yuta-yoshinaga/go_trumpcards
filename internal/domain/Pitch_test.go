@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
@@ -701,4 +702,139 @@ func TestPitchHandPips(t *testing.T) {
 	t.Run("skips nil entries instead of panicking", func(t *testing.T) {
 		assert.Equal(t, 10, domain.PitchHandPips([]*domain.Card{nil, card(10), nil}))
 	})
+}
+
+// #5584: 4 種の得点 (High/Low/Jack/Game) はこのゲームの骨格なのに、合計しか
+// 画面に出ていなかった。内訳は**得点そのものと一致していること**が肝心で、
+// 別に数え直すと表示と点数がずれる。
+func TestPitch_RoundBreakdownAgreesWithThePoints(t *testing.T) {
+	p := newTestPitch()
+	p.Reset()
+
+	// 切り札を決めて、全員に取り札を配った状態を作る。
+	p.SetTrumpSuit(domain.CardDesignHeart)
+	// P0: ♥A (High) と ♥2 (Low) と絵札で pip を稼ぐ
+	p.GetPlayer(0).AddTrick([]*domain.Card{
+		newPitchCard(domain.CardDesignHeart, 1),
+		newPitchCard(domain.CardDesignHeart, 2),
+		newPitchCard(domain.CardDesignSpade, 13),
+	})
+	// P1: ♥J (Jack)
+	p.GetPlayer(1).AddTrick([]*domain.Card{newPitchCard(domain.CardDesignHeart, 11)})
+
+	// ビッド勝者がいない (bidWinnerIdx=-1) ので、ラウンド得点は獲得点そのもの。
+	p.SetPhase(domain.PitchPhaseRoundEnd)
+	p.ScoreRound()
+	points := pitchRoundScores(p)
+	bd := p.GetRoundBreakdown()
+
+	// **内訳で名指しされた席は、その分だけ点を得ていること。**
+	counted := make([]int, len(points))
+	for _, idx := range []int{bd.High, bd.Low, bd.Jack, bd.Game} {
+		if idx != domain.PitchNoScorer {
+			counted[idx]++
+		}
+	}
+	assert.Equal(t, points, counted, "the breakdown must account for every point awarded")
+
+	assert.Equal(t, 0, bd.High, "P0 holds the ace of trumps")
+	assert.Equal(t, 0, bd.Low, "P0 holds the two of trumps")
+	assert.Equal(t, 1, bd.Jack, "P1 holds the jack of trumps")
+}
+
+// 切り札が決まらなかったラウンドは誰も取っていない。前のラウンドの内訳が
+// 残ると、取っていない人が取ったように見える。
+func TestPitch_RoundBreakdownResetsWhenNoTrump(t *testing.T) {
+	p := newTestPitch()
+	p.Reset()
+	p.SetTrumpSuit(domain.CardDesignHeart)
+	p.GetPlayer(0).AddTrick([]*domain.Card{newPitchCard(domain.CardDesignHeart, 1)})
+	p.SetPhase(domain.PitchPhaseRoundEnd)
+	p.ScoreRound()
+	assert.NotEqual(t, domain.PitchNoScorer, p.GetRoundBreakdown().High)
+
+	p.SetTrumpSuit(domain.PitchTrumpUnset)
+	p.SetPhase(domain.PitchPhaseRoundEnd)
+	p.ScoreRound()
+	bd := p.GetRoundBreakdown()
+	assert.Equal(t, domain.PitchNoScorer, bd.High)
+	assert.Equal(t, domain.PitchNoScorer, bd.Low)
+	assert.Equal(t, domain.PitchNoScorer, bd.Jack)
+	assert.Equal(t, domain.PitchNoScorer, bd.Game)
+}
+
+// pitchRoundScores は各席のラウンド得点を並べる。ビッド勝者がいない局面では
+// 獲得点そのものになる。
+func pitchRoundScores(p *domain.Pitch) []int {
+	out := make([]int, domain.PitchPlayerCnt)
+	for i := range domain.PitchPlayerCnt {
+		out[i] = p.GetPlayer(i).GetRoundScore()
+	}
+	return out
+}
+
+// レビュー (#5942) の指摘: 内訳を ScoreRound でしか作らないと、**画面に出る時点では
+// まだ前のラウンドの値**（初回はゼロ値＝席0が全部取った形）が残る。
+// 実際の順序 ── 最後のトリックが解決してラウンド終了フェーズになり、そこで表示される ──
+// を通して確かめる。
+func TestPitch_RoundBreakdownIsReadyWhenTheRoundEndScreenAppears(t *testing.T) {
+	p := newTestPitch()
+	p.Reset()
+
+	// 配り直後 (まだ何も争われていない) は誰も取っていないこと。
+	fresh := p.GetRoundBreakdown()
+	assert.Equal(t, domain.PitchNoScorer, fresh.High, "a fresh game has no High winner")
+	assert.Equal(t, domain.PitchNoScorer, fresh.Game, "a fresh game has no Game winner")
+
+	// 最後のトリックまで進める。ここでフェーズが RoundEnd になり、画面に出る。
+	// ResolveTrick は「4 枚出そろった (TrickEnd)」状態からしか動かない。
+	p.SetPhase(domain.PitchPhaseTrickEnd)
+	p.SetTrumpSuit(domain.CardDesignHeart)
+	p.SetTrickNumber(domain.PitchTotalTricks)
+	p.SetLeadPlayerIdx(0)
+	p.SetCurrentPlayerIdx(0)
+	p.GetPlayer(0).AddTrick([]*domain.Card{
+		newPitchCard(domain.CardDesignHeart, 1),
+		newPitchCard(domain.CardDesignHeart, 2),
+	})
+	p.SetCurrentTrick([]*domain.TrickCard{
+		{PlayerIdx: 0, Card: newPitchCard(domain.CardDesignHeart, 11)},
+		{PlayerIdx: 1, Card: newPitchCard(domain.CardDesignSpade, 3)},
+		{PlayerIdx: 2, Card: newPitchCard(domain.CardDesignSpade, 4)},
+		{PlayerIdx: 3, Card: newPitchCard(domain.CardDesignSpade, 5)},
+	})
+	p.ResolveTrick()
+
+	require.Equal(t, domain.PitchPhaseRoundEnd, p.GetPhase(), "the last trick ends the round")
+	bd := p.GetRoundBreakdown()
+	// **ScoreRound を呼ぶ前に**、この画面の内訳が確定していること。
+	assert.Equal(t, 0, bd.High, "P0 holds the ace of trumps")
+	assert.Equal(t, 0, bd.Low, "P0 holds the two of trumps")
+	assert.Equal(t, 0, bd.Jack, "P0 took the jack of trumps in the last trick")
+
+	// ScoreRound を通しても同じ答え。二度数えて食い違わないこと。
+	after := bd
+	p.ScoreRound()
+	assert.Equal(t, after, p.GetRoundBreakdown())
+}
+
+// 得点の確定は棋譜を 1 度だけ書くこと。内訳を 2 箇所で作るようにしたので、
+// ログまで二重にならないことを見る。
+func TestPitch_ScoreRoundLogsEachCategoryOnce(t *testing.T) {
+	p := newTestPitch()
+	p.Reset()
+	p.SetTrumpSuit(domain.CardDesignHeart)
+	p.GetPlayer(0).AddTrick([]*domain.Card{
+		newPitchCard(domain.CardDesignHeart, 1),
+		newPitchCard(domain.CardDesignHeart, 11),
+	})
+	p.SetPhase(domain.PitchPhaseRoundEnd)
+	p.ScoreRound()
+
+	counts := map[string]int{}
+	for _, e := range p.GetActionLog() {
+		counts[e.ActionType]++
+	}
+	assert.Equal(t, 1, counts["score_high"])
+	assert.Equal(t, 1, counts["score_jack"])
 }

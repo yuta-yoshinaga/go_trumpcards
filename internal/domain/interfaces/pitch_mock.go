@@ -17,6 +17,13 @@ func (m *MockPitchGame) Reset() {
 	m.Called()
 }
 
+// GetRoundBreakdown は直近ラウンドの得点内訳を返す。
+func (m *MockPitchGame) GetRoundBreakdown() domain.PitchRoundBreakdown {
+	args := m.Called()
+	bd, _ := args.Get(0).(domain.PitchRoundBreakdown)
+	return bd
+}
+
 func (m *MockPitchGame) NextRound() {
 	m.Called()
 }
