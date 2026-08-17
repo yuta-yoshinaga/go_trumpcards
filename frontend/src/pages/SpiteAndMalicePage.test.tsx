@@ -303,3 +303,23 @@ describe('SpiteAndMalicePage', () => {
     }
   });
 });
+
+// #5560: K はどの基礎札にも出せるワイルドだが、その規則が表示にも読み上げにも
+// 出ておらず、初見では気付けなかった。
+describe('SpiteAndMalicePage wild king', () => {
+  it('badges the King in hand and says so in the label', async () => {
+    mockExec.mockResolvedValue(baseState); // 手札に ♣K がある
+    renderWithProviders(<SpiteAndMalicePage />);
+    await waitFor(() => expect(screen.getAllByTestId('sam-wild-badge').length).toBeGreaterThan(0));
+    // 読み上げにも入る。
+    expect(screen.getByRole('button', { name: /♣ K.*ワイルド/ })).toBeInTheDocument();
+  });
+
+  // **K 以外には付かない。**全部に付いたら区別にならない。
+  it('leaves other ranks alone', async () => {
+    mockExec.mockResolvedValue(baseState);
+    renderWithProviders(<SpiteAndMalicePage />);
+    await waitFor(() => expect(screen.getAllByTestId('sam-wild-badge')).toHaveLength(1));
+    expect(screen.queryByRole('button', { name: /♠ 5.*ワイルド/ })).not.toBeInTheDocument();
+  });
+});

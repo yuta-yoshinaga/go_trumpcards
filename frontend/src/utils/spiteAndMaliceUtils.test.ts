@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Card } from '../types/card';
-import { isGoalTopPlayableToFoundation } from './spiteAndMaliceUtils';
+import { isGoalTopPlayableToFoundation, isSpiteAndMaliceWild } from './spiteAndMaliceUtils';
 
 const card = (value: number, design: Card['design'] = 'SPADE'): Card => ({ design, value });
 
@@ -29,5 +29,20 @@ describe('isGoalTopPlayableToFoundation', () => {
 
   it('non-K cannot exceed +1 of any foundation top', () => {
     expect(isGoalTopPlayableToFoundation(card(7), [4, 4, 4, 4])).toBe(false);
+  });
+});
+
+// #5560: K がワイルドという規則が表示に一切出ていなかった。判定はユーティリティ側に
+// 置いて、画面がもう一度 13 を書かないようにする。
+describe('isSpiteAndMaliceWild', () => {
+  it('is true only for the King', () => {
+    expect(isSpiteAndMaliceWild({ value: 13 })).toBe(true);
+    expect(isSpiteAndMaliceWild({ value: 12 })).toBe(false);
+    expect(isSpiteAndMaliceWild({ value: 1 })).toBe(false);
+  });
+
+  it('is false for a missing card', () => {
+    expect(isSpiteAndMaliceWild(null)).toBe(false);
+    expect(isSpiteAndMaliceWild(undefined)).toBe(false);
   });
 });

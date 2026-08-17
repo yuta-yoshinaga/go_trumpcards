@@ -73,9 +73,15 @@ func (p *SpiteAndMaliceCuiPresenter) Output(g interfaces.SpiteAndMaliceGame, las
 				} else {
 					parts := make([]string, len(hand))
 					for k, c := range hand {
+						// K はどの基礎札にも出せるワイルド。規則はドメインにあるのに、
+						// 手札の表記からは他の札と区別が付かなかった (#5560)。
+						cardStr := cuiCardStr(c)
+						if c != nil && c.GetValue() == domain.SpiteAndMaliceWildValue {
+							cardStr += i18n.T("spiteandmalice.wildMark")
+						}
 						parts[k] = i18n.Tf("spiteandmalice.humanHandEntry",
 							"idx", strconv.Itoa(k),
-							"card", cuiCardStr(c))
+							"card", cardStr)
 					}
 					b.WriteString(strings.Join(parts, " "))
 				}
