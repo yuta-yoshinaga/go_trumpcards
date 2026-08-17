@@ -47,5 +47,7 @@
     "resetButton": "Start a new game."
   },
   "columnActionsFor": "Column {{n}} actions",
-  "collapseColumnActions": "Collapse column action buttons"
+  "collapseColumnActions": "Collapse column action buttons",
+  "reserveEmptyColumnRule": "While the reserve still has cards you cannot place a card on an empty column yourself — it is refilled from the reserve",
+  "dismissRule": "Dismiss this note"
 }

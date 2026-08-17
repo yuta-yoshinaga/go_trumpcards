@@ -119,6 +119,10 @@ function CanfieldPageContent() {
   // behind a <details> disclosure, matching the mobile treatment. Persisted so
   // the preference survives reloads. Drag-and-drop is unaffected either way.
   const [collapseColActions, setCollapseColActions] = useLocalStorageToggle('canfield-collapse-col-actions', false);
+  const [reserveRuleDismissed, setReserveRuleDismissed] = useLocalStorageToggle(
+    'canfield-reserve-rule-dismissed',
+    false,
+  );
   const cliConfig: CliGameConfig<CanfieldResponse, Parameters<typeof canfieldApi.exec>> = useMemo(
     () => ({
       gameName: 'canfield',
@@ -378,6 +382,24 @@ function CanfieldPageContent() {
             </div>
 
             {/* Tableau */}
+            {/* 「リザーブが残っている間は空列に自分で置けない (自動補充される)」は
+                canPlaceOnTableau の非自明な規則で、クロンダイクの「空列にはK」という
+                直感と食い違う。書いていないと、プレイヤーは理由の分からない拒否を
+                受け取ることになる (#5531)。RussianSolitaire の rs-facedown-rule と
+                同じ、閉じられる注記。 */}
+            {state.reserve.length > 0 && !reserveRuleDismissed && (
+              <div className="flex items-center justify-center gap-1 mb-1" data-testid="cf-reserve-rule" role="note">
+                <p className="text-ds-text-muted text-xs text-center">{t('reserveEmptyColumnRule')}</p>
+                <button
+                  type="button"
+                  onClick={() => setReserveRuleDismissed(true)}
+                  aria-label={t('dismissRule')}
+                  className={`shrink-0 px-2 py-1 text-ds-text-muted hover:text-ds-text-primary text-sm leading-none ${focusRingWhite} rounded`}
+                >
+                  ×
+                </button>
+              </div>
+            )}
             <div className="mb-3 flex gap-2" data-tutorial="cf-tableau">
               {state.tableau.map((col, i) => {
                 const tZone: CanfieldMoveZone = { zone: 'tableau', col: i };
