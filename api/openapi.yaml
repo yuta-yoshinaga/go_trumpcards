@@ -12414,6 +12414,13 @@ paths:
                     type: integer
                   moveCount:
                     type: integer
+                  canAutoComplete:
+                    type: boolean
+                    description: |
+                      Whether auto-complete can move at least one card right now.
+                      Decided by the same check AutoComplete runs, so clients must
+                      not infer it from the foundation contents (Cruel deals the
+                      aces to the foundations at the start).
                   canUndo:
                     type: boolean
                   isStalemate:

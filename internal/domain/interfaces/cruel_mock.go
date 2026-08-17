@@ -60,6 +60,12 @@ func (_m *MockCruelGame) CanUndo() bool {
 	return ret.Bool(0)
 }
 
+// CanAutoComplete モック
+func (_m *MockCruelGame) CanAutoComplete() bool {
+	ret := _m.Called()
+	return ret.Bool(0)
+}
+
 func (_m *MockCruelGame) UndoToEscape() int {
 	ret := _m.Called()
 	return ret.Int(0)

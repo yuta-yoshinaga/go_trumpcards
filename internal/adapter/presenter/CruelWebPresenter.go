@@ -20,6 +20,7 @@ func (p *CruelWebPresenter) Output(c interfaces.CruelGame, lastErr error) string
 
 	// タブロー
 	tableau := c.GetTableau()
+	resObj.CanAutoComplete = c.CanAutoComplete()
 	resObj.Tableau = make([][]*controller.KlondikeWebOutputTableauCard, domain.CruelTableauCnt)
 	for i := range domain.CruelTableauCnt {
 		colCards := tableau[i]

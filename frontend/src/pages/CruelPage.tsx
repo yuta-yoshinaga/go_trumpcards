@@ -543,11 +543,19 @@ function CruelPageContent() {
                   <button type="button" className={btnOutline} onClick={handleHint} disabled={loading}>
                     {t('hint')}
                   </button>
+                  {/* **押せるのに何も起きないボタンにしない。** 以前は disabled が
+                      loading だけで、動かせる札が無くても押せた (押すと行動ログに
+                      偽の実行記録が残った) (#5496)。判定はサーバが AutoComplete と
+                      同じ検査で返す canAutoComplete をそのまま使う -- Cruel は開始時に
+                      エースを組札へ配るので、Congress のような「組札に何かあるか」
+                      では常に true になってしまう。 */}
                   <button
                     type="button"
-                    className={btnSuccess}
+                    className={`${btnSuccess}${
+                      state.canAutoComplete && !loading ? ' animate-pulse ring-2 ring-ds-success' : ''
+                    }`}
                     onClick={handleAutoComplete}
-                    disabled={loading}
+                    disabled={loading || !state.canAutoComplete}
                     data-testid="autocomplete-button"
                   >
                     {t('autoComplete')}
