@@ -40770,6 +40770,19 @@ components:
           description: Number of suits completed (max 4)
         score:
           type: integer
+        scoring:
+          type: object
+          description: >-
+            How the score moves: where it starts, what a move costs, what a
+            completed suit pays. Sent so an explanation cannot quote figures
+            the game stopped using.
+          properties:
+            start:
+              type: integer
+            movePenalty:
+              type: integer
+            suitBonus:
+              type: integer
         phase:
           type: integer
           enum: [0, 1, 2]

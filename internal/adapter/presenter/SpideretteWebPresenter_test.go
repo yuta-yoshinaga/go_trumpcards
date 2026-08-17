@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -221,4 +222,20 @@ func TestSpideretteWebPresenter_ActionLogOutput(t *testing.T) {
 	p := new(SpideretteWebPresenter)
 	result := p.ActionLogOutput(sg)
 	assert.Contains(t, result, "move")
+}
+
+// #5593: スコアの決まりはドメインの定数から渡すこと。3 つの値を取り違えると、
+// 説明だけが実際の計算と食い違う。
+func TestSpideretteWebPresenter_ShipsTheScoringRule(t *testing.T) {
+	g := domain.NewDefaultSpiderette()
+	g.Reset()
+
+	var out controller.SpideretteWebOutput
+	require.NoError(t, json.Unmarshal([]byte(new(SpideretteWebPresenter).Output(g, nil)), &out))
+	assert.Equal(t, domain.SpideretteStartScore, out.Scoring.Start)
+	assert.Equal(t, domain.SpideretteMovePenalty, out.Scoring.MovePenalty)
+	assert.Equal(t, domain.SpideretteSuitBonus, out.Scoring.SuitBonus)
+	// 3 つが同じ値でないこと (取り違えを見逃さない)。
+	assert.NotEqual(t, out.Scoring.Start, out.Scoring.SuitBonus)
+	assert.NotEqual(t, out.Scoring.MovePenalty, out.Scoring.SuitBonus)
 }
