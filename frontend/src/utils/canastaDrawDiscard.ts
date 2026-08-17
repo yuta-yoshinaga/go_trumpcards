@@ -7,6 +7,7 @@ export type CanastaDrawDiscardProblem =
   | 'tooMany'
   | 'pileEmpty'
   | 'blackThreeTop'
+  | 'wildTop'
   | 'wildInPair'
   | 'rankMismatch';
 
@@ -33,7 +34,7 @@ export function canastaIsBlack3(card: Card): boolean {
 /**
  * Why the selected cards cannot take the discard pile, or null when they can.
  *
- * `PlayerDrawFromDiscard` refuses a black three on top outright, then requires
+ * `PlayerDrawFromDiscard` refuses a black three or a wild on top outright, then requires
  * exactly two cards, both natural, both of the discard top's rank — always, not
  * only while the pile is frozen. Checking only
  * the count made the button look ready for a selection the server would reject.
@@ -57,6 +58,9 @@ export function canastaDrawDiscardProblem(
   // take outright, and two black threes in hand would otherwise pass the rank
   // check (3 === 3) since a black three is not wild.
   if (canastaIsBlack3(discardTop)) return 'blackThreeTop';
+  // ワイルドがトップでも取れない。PlayerDrawFromDiscard は黒3の直後にこれも弾くが、
+  // ここには無かったので「取れます」と見せてからサーバに拒否されていた (#5502)。
+  if (canastaIsWild(discardTop)) return 'wildTop';
   const [a, b] = selected as [Card, Card];
   if (canastaIsWild(a) || canastaIsWild(b)) return 'wildInPair';
   if (a.value !== discardTop.value || b.value !== discardTop.value) return 'rankMismatch';

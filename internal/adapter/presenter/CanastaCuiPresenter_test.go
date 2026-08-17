@@ -13,6 +13,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupCanastaCuiMock() *interfaces.MockCanastaGame {
@@ -22,6 +23,7 @@ func setupCanastaCuiMock() *interfaces.MockCanastaGame {
 	m.On("GetDiscardPileCount").Return(0)
 	m.On("GetDiscardPile").Return(([]*domain.Card)(nil)).Maybe()
 	m.On("GetIsFrozen").Return(false)
+	m.On("GetDrawFromDiscardBlocker").Return("").Maybe()
 	m.On("GetDiscardTop").Return((*domain.Card)(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.CanastaPhaseDraw)
@@ -338,5 +340,39 @@ func TestCanastaCuiPresenter_ActionLogOutput(t *testing.T) {
 		result := p.ActionLogOutput(m)
 		assert.NotEmpty(t, result)
 		m.AssertExpectations(t)
+	})
+}
+
+// #5502: 取れない理由をインデックスを打つ前に出す。
+func TestCanastaCuiPresenter_DrawBlockerLine(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.CanastaCuiPresenter)
+
+	withBlocker := func(code string) *interfaces.MockCanastaGame {
+		m, _ := setupCanastaCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDrawFromDiscardBlocker")
+		m.On("GetDrawFromDiscardBlocker").Return(code)
+		return m
+	}
+
+	t.Run("names the reason the pile cannot be taken", func(t *testing.T) {
+		out := p.Output(withBlocker(domain.CanastaDrawBlockerWildTop), nil)
+		assert.Contains(t, out, i18n.T("canasta.drawBlocker"+domain.CanastaDrawBlockerWildTop))
+	})
+
+	// **問題が無いときは行ごと出さない。** 個別のコードだけを NotContains で見ると、
+	// 空のキー ("canasta.drawBlocker") が生で出ていても気づけない。接頭辞そのものが
+	// 出力に現れないことを見る。
+	t.Run("stays quiet when the pile can be taken", func(t *testing.T) {
+		out := p.Output(withBlocker(""), nil)
+		assert.NotContains(t, out, "canasta.drawBlocker")
+		for _, code := range []string{
+			domain.CanastaDrawBlockerPileEmpty, domain.CanastaDrawBlockerBlackThree,
+			domain.CanastaDrawBlockerWildTop, domain.CanastaDrawBlockerNoPair,
+		} {
+			assert.NotContains(t, out, i18n.T("canasta.drawBlocker"+code))
+		}
 	})
 }

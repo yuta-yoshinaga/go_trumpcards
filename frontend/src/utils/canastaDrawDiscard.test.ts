@@ -69,3 +69,21 @@ describe('canastaDrawDiscardProblem with a black three on top', () => {
     expect(canastaDrawDiscardProblem([c('SPADE', 3), c('CLOVER', 3)], c('HEART', 3))).toBeNull();
   });
 });
+
+// #5502: ドメインは黒3の直後にワイルドトップも弾くのに、ここには無かった。
+// 「取れます」と見せてからサーバに拒否される。
+describe('canastaDrawDiscardProblem wild top', () => {
+  it('refuses a joker on top', () => {
+    expect(canastaDrawDiscardProblem([c('HEART', 9), c('CLOVER', 9)], c('JOKER', 0))).toBe('wildTop');
+  });
+
+  it('refuses a two on top', () => {
+    expect(canastaDrawDiscardProblem([c('HEART', 2), c('CLOVER', 2)], c('SPADE', 2))).toBe('wildTop');
+  });
+
+  // 黒3の判定はワイルドより先。3 はワイルドではないので順序が入れ替わっても
+  // 結果は同じだが、ドメインと同じ順序に揃えておく。
+  it('still reports a black three top first', () => {
+    expect(canastaDrawDiscardProblem([c('HEART', 3), c('DIAMOND', 3)], c('SPADE', 3))).toBe('blackThreeTop');
+  });
+});
