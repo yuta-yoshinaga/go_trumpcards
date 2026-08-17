@@ -486,6 +486,15 @@ describe('TwoTenJackPage round announcement', () => {
     expect(screen.getByRole('status').textContent).toContain('+0');
   });
 
+  // 席が1つも無いレスポンス: 4本の `?.` がすべて短絡する側を通す。
+  it('renders with no players at all', async () => {
+    const short = makeTwoTenJackState({ phase: 3 });
+    mockExec.mockResolvedValue({ ...short, players: [] });
+    renderWithProviders(<TwoTenJackPage />);
+    await waitFor(() => expect(screen.getByRole('status').textContent).toContain('ラウンド終了'));
+    expect(screen.getByRole('status').textContent).toContain('+0');
+  });
+
   it('still shows the captured points in the score table', async () => {
     mockExec.mockResolvedValue(
       stateWith({ captured: [12, 30, 8, 20], round: [0, 6, 0, 6], cumulative: [10, 16, 10, 16] }),
