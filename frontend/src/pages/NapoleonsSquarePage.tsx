@@ -166,8 +166,10 @@ function NapoleonsSquarePageContent() {
   const isGameClear = state.phase === NapoleonsSquarePhase.GAME_CLEAR;
   const isGameOver = state.phase === NapoleonsSquarePhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
-  // Only needed on game over, so skip the reduce during normal play.
-  const foundationCount = isGameOver ? state.foundation.reduce((sum, pile) => sum + pile.length, 0) : 0;
+  // 勝利条件は 8 つの組札を積み切ること。その進捗がゲームが終わるまで見えず、
+  // ヘッダーには無関係な手数しか出ていなかった (#5554)。プレイ中も数える。
+  const foundationCount = state.foundation.reduce((sum, pile) => sum + pile.length, 0);
+  const foundationPercent = Math.round((foundationCount / TOTAL_CARDS) * 100);
   // Every foundation starts seeded with its Ace, so "progress" means a pile grew
   // past that — that is when auto-complete is worth pulsing.
   const autoCompleteReady = state.foundation.some((pile) => pile.length > 1);
@@ -277,6 +279,13 @@ function NapoleonsSquarePageContent() {
         <>
           <span className="text-sm text-ds-text-muted">
             {t('moveCount')}: {state.moveCount}
+          </span>
+          <span className="text-sm text-ds-text-muted" data-testid="ns-foundation-progress">
+            {t('foundationProgress', {
+              count: foundationCount,
+              total: TOTAL_CARDS,
+              percent: foundationPercent,
+            })}
           </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
@@ -410,10 +419,7 @@ function NapoleonsSquarePageContent() {
 
             {isGameOver && (
               <p data-testid="ns-gameover-summary" className="text-ds-text-muted text-sm text-center mt-1">
-                {t('gameOverSummary', {
-                  count: foundationCount,
-                  percent: Math.round((foundationCount / TOTAL_CARDS) * 100),
-                })}
+                {t('gameOverSummary', { count: foundationCount, percent: foundationPercent })}
               </p>
             )}
 

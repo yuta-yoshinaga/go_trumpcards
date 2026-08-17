@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"errors"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -188,4 +189,24 @@ func TestNapoleonsSquareCuiPresenter_ActionLogOutput(t *testing.T) {
 
 		assert.Contains(t, new(NapoleonsSquareCuiPresenter).ActionLogOutput(g), "move")
 	})
+}
+
+// #5554: 勝利条件は 8 つの組札を積み切ることなのに、進捗 (収納枚数) は
+// ゲームオーバーになるまでどちらの UI にも出ていなかった。
+func TestNapoleonsSquareCuiPresenter_Output_FoundationProgress(t *testing.T) {
+	g := new(interfaces.MockNapoleonsSquareGame)
+	// 8 山に 1 枚ずつ + 1 山に 2 枚目 = 9 枚。先に登録した期待が優先される。
+	var f [domain.NapoleonsSquareFoundationCnt][]*domain.Card
+	for i := range domain.NapoleonsSquareFoundationCnt {
+		f[i] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}
+	}
+	f[0] = append(f[0], domain.NewCard(domain.CardDesignSpade, 2, false))
+	g.On("GetFoundation").Return(f)
+	setupNapoleonsSquareCuiMockDefaults(g)
+
+	out := new(NapoleonsSquareCuiPresenter).Output(g, nil)
+	assert.Contains(t, out, i18n.Tf("napoleonssquare.foundationProgress",
+		"count", "9",
+		"total", strconv.Itoa(domain.NapoleonsSquareTotalCards),
+		"percent", "9"))
 }

@@ -323,3 +323,33 @@ describe('NapoleonsSquarePage keyboard shortcuts', () => {
     expect(mockExec).not.toHaveBeenCalled();
   });
 });
+
+// #5554: 勝利条件は 8 つの組札を積み切ることなのに、その進捗はゲームオーバーに
+// なるまで見えず、ヘッダーには無関係な手数しか出ていなかった。
+describe('NapoleonsSquarePage foundation progress', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
+  });
+
+  it('shows the count and percentage during play', async () => {
+    // 8 山にエース + 1 山に 2 枚目 = 9 枚 / 104 = 9%。
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [[card('SPADE', 1), card('SPADE', 2)], ...aces.slice(1)],
+    });
+    renderWithProviders(<NapoleonsSquarePage />);
+    const progress = await screen.findByTestId('ns-foundation-progress');
+    expect(progress).toHaveTextContent('9/104');
+    expect(progress).toHaveTextContent('9%');
+  });
+
+  it('tracks the foundations rather than the move count', async () => {
+    mockExec.mockResolvedValue({ ...playingState, moveCount: 77 });
+    renderWithProviders(<NapoleonsSquarePage />);
+    const progress = await screen.findByTestId('ns-foundation-progress');
+    // 8 枚のエースだけ = 8/104 (8%)。手数 77 とは無関係。
+    expect(progress).toHaveTextContent('8/104');
+    expect(progress).not.toHaveTextContent('77');
+  });
+});

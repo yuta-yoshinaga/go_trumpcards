@@ -47,5 +47,6 @@
     "controls": "めくる・ヒント・元に戻す・自動完成などの操作ボタンです。"
   },
   "undo": "元に戻す",
-  "waste": "捨て札"
+  "waste": "捨て札",
+  "foundationProgress": "収納: {{count}}/{{total}} ({{percent}}%)"
 }
