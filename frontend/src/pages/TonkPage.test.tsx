@@ -42,6 +42,7 @@ function makeState(overrides: Partial<TonkResponse> = {}): TonkResponse {
     opponentMelds: [],
     opponentDeadwood: [],
     isTonk: false,
+    undercutRiskMax: 2,
     isUndercut: false,
     bestDeadwood: -1,
     knockThreshold: 5,
@@ -259,5 +260,33 @@ describe('TonkPage', () => {
 
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.queryByTestId('tonk-deadwood')).not.toBeInTheDocument();
+  });
+
+  // #5582: 閾値はサーバから来ること。画面に 2 を書くと、変えたとき CUI と
+  // 警告の出る局面がずれる。
+  describe('undercut warning threshold', () => {
+    it('warns at the threshold the server sends', async () => {
+      mockExec.mockResolvedValue({
+        ...makeState(),
+        undercutRiskMax: 3,
+        players: [makeState().players[0], { ...makeState().players[1], cardCount: 3 }],
+      });
+      renderWithProviders(<TonkPage />);
+      await waitFor(() =>
+        expect(screen.getByRole('button', { name: /ノック/ })).toHaveAttribute('data-undercut-risk', 'true'),
+      );
+    });
+
+    // 同じ 3 枚でも、閾値が 2 なら警告しない。画面が 2 を持っていない証拠。
+    it('stays quiet above that threshold', async () => {
+      mockExec.mockResolvedValue({
+        ...makeState(),
+        undercutRiskMax: 2,
+        players: [makeState().players[0], { ...makeState().players[1], cardCount: 3 }],
+      });
+      renderWithProviders(<TonkPage />);
+      await waitFor(() => expect(screen.getByRole('button', { name: /ノック/ })).toBeInTheDocument());
+      expect(screen.getByRole('button', { name: /ノック/ })).not.toHaveAttribute('data-undercut-risk');
+    });
   });
 });

@@ -13,6 +13,23 @@ import (
 // tonkBestDeadwood returns the lowest deadwood value the player can reach by
 // discarding one card — the value that gates knocking (<= TonkKnockThreshold).
 
+// tonkMinOpponentCards は相手のうち最も手札が少ない枚数を返す。相手がいなければ false。
+//
+// 人間を除くのは、自分の枚数はアンダーカットのリスクと関係ないから。
+func tonkMinOpponentCards(g interfaces.TonkGame) (int, bool) {
+	minCards, found := 0, false
+	for i := range domain.TonkPlayerCnt {
+		p := g.GetPlayer(i)
+		if p == nil || p.GetIsHuman() {
+			continue
+		}
+		if !found || p.GetCardsSize() < minCards {
+			minCards, found = p.GetCardsSize(), true
+		}
+	}
+	return minCards, found
+}
+
 // tonkPlayerStr returns the display string for a single Tonk player.
 func tonkPlayerStr(player *domain.TonkPlayer, i int) string {
 	var b strings.Builder
@@ -120,6 +137,11 @@ func (p *TonkCuiPresenter) Output(g interfaces.TonkGame, lastErr error) string {
 			}
 			b.WriteString(i18n.T("tonk.promptDiscardHelp") + "\n")
 			b.WriteString(i18n.T("tonk.promptKnockHelp") + "\n")
+			// **相手の残りが少ないほどノックは裏目。**Web はボタンに警告リングと
+			// ⚠️ を出しているのに、CUI は各行の枚数を見比べさせるだけだった (#5582)。
+			if n, ok := tonkMinOpponentCards(g); ok && n <= domain.TonkUndercutRiskMax {
+				b.WriteString(color.Yellow(i18n.Tf("tonk.knockUndercutWarning", "count", strconv.Itoa(n))) + "\n")
+			}
 		case domain.TonkPhaseRoundEnd:
 			if g.GetIsTonk() {
 				b.WriteString(i18n.T("tonk.promptDealtTonk") + "\n")

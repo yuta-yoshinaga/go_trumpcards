@@ -186,7 +186,8 @@ function TonkPageContent() {
   const minOpponentCards = state.players
     .filter((p) => !p.isHuman)
     .reduce((m, p) => Math.min(m, p.cardCount), Number.POSITIVE_INFINITY);
-  const undercutRisk = Number.isFinite(minOpponentCards) && minOpponentCards <= 2;
+  // 閾値はサーバから。画面に 2 を書くと、変えたとき CUI と警告の出る局面がずれる (#5582)。
+  const undercutRisk = Number.isFinite(minOpponentCards) && minOpponentCards <= state.undercutRiskMax;
   const knockBtnClass = undercutRisk ? `${btnPrimary} ring-2 ring-ds-warning motion-safe:animate-pulse` : btnPrimary;
 
   return (

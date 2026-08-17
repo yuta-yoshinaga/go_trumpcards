@@ -24,6 +24,13 @@ const TonkOnDealHigh = 50
 // TonkBonus 配牌時Tonk成立時のボーナス点
 const TonkBonus = 50
 
+// TonkUndercutRiskMax は「アンダーカットされうる」と警告する相手の残り枚数。
+//
+// **ノックは相手の残りが少ないほど裏目になる。**相手が先に上がれば、こちらの
+// デッドウッドが低くても負ける (#1939)。Web はこの閾値でノックボタンに警告を
+// 出しているが、閾値が画面側に書かれていて CUI は何も出していなかった (#5582)。
+const TonkUndercutRiskMax = 2
+
 // TonkUndercutPenalty アンダーカット時のペナルティ点
 const TonkUndercutPenalty = 5
 
