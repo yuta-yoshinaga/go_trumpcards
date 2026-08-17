@@ -226,10 +226,14 @@ function ContractRummyPageContent() {
     clearSelection();
   }, [execApi, clearSelection]);
 
+  // **リセットでも難易度を持ち越す。**config を付けずに reset すると、サーバは
+  // 既定値 (Normal) に戻す。選んだ直後は効くのに、次に「最初から」を押した時点で
+  // 黙って戻る形になっていた (#5588 のレビュー指摘)。
+  const cpuDifficulty = state?.config.cpuDifficulty;
   const handleReset = useCallback(() => {
-    void execApi('reset');
+    void execApi('reset', cpuDifficulty === undefined ? undefined : { config: { cpuDifficulty } });
     clearSelection();
-  }, [execApi, clearSelection]);
+  }, [execApi, clearSelection, cpuDifficulty]);
 
   const phaseName = useMemo(() => {
     if (!state) return '';
