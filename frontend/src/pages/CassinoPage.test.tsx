@@ -436,3 +436,63 @@ describe('CassinoPage', () => {
     localStorage.removeItem('cli-mode-cassino');
   });
 });
+
+// #5549: CUI は「誰が何のカードでテイク(何枚・スイープか)/ビルド/トレイルしたか」を
+// 毎ターン出しているのに、Web はどちらのフィールドも読んでいなかった。
+describe('CassinoPage action history', () => {
+  const log = () => screen.getByTestId('cs-action-log');
+  const card = (design: string, value: number) => ({ design, value }) as never;
+
+  it('shows each action with its kind, and the capture count on a take', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        humanAction: {
+          playerIdx: 0,
+          type: 'take',
+          playedCard: card('SPADE', 7),
+          capturedCards: [card('HEART', 3), card('CLOVER', 4)],
+          buildValue: 0,
+          isSweep: true,
+        },
+        cpuActions: [
+          {
+            playerIdx: 1,
+            type: 'build',
+            playedCard: card('DIAMOND', 5),
+            capturedCards: [],
+            buildValue: 9,
+            isSweep: false,
+          },
+          {
+            playerIdx: 2,
+            type: 'trail',
+            playedCard: card('HEART', 2),
+            capturedCards: [],
+            buildValue: 0,
+            isSweep: false,
+          },
+        ],
+      }),
+    );
+    renderWithProviders(<CassinoPage />);
+    await waitFor(() => expect(log()).toBeInTheDocument());
+
+    expect(log()).toHaveTextContent('あなた');
+    expect(log()).toHaveTextContent('CPU 1');
+    expect(log()).toHaveTextContent('CPU 2');
+    // テイクは捕獲枚数とスイープを出す。
+    expect(log()).toHaveTextContent('2');
+    expect(log()).toHaveTextContent('スイープ');
+    // ビルドは値、トレイルはその旨。
+    expect(log()).toHaveTextContent('9');
+    expect(log()).toHaveTextContent('場に置');
+  });
+
+  // **何も起きていないうちは出さない。**
+  it('renders nothing before anyone has acted', async () => {
+    mockExec.mockResolvedValue(makeState({ cpuActions: [], humanAction: null }));
+    renderWithProviders(<CassinoPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('cs-action-log')).not.toBeInTheDocument();
+  });
+});
