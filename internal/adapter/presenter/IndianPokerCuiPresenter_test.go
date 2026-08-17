@@ -1,15 +1,20 @@
 package presenter_test
 
 import (
+	"encoding/json"
 	"errors"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func makeIndianPokerForPresenter() (*domain.IndianPoker, []*domain.IndianPokerPlayer) {
@@ -399,4 +404,27 @@ func TestIndianPokerCuiPresenter_ActionLogOutput(t *testing.T) {
 		assert.Contains(t, result, "棋譜はありません")
 		mockGame.AssertExpectations(t)
 	})
+}
+
+// #5505: Web は computeIndianPokerEquity という別実装で勝率を出しており、
+// ドメインの estimateOwnStrength とズレていた。**同ランクのスートタイブレークを
+// 数えていない**ぶん低めに出る。CUI と Web が同じ局面で違う数字を出さないよう、
+// 同じ値であることをここで固定する。
+func TestIndianPoker_CuiAndWebShowTheSameEquity(t *testing.T) {
+	cui := new(presenter.IndianPokerCuiPresenter)
+	web := new(presenter.IndianPokerWebPresenter)
+
+	ip := domain.NewDefaultIndianPoker()
+	require.NoError(t, ip.Reset())
+	ip.SetPhase(domain.IndianPokerPhaseBetting)
+
+	var out controller.IndianPokerWebOutput
+	require.NoError(t, json.Unmarshal([]byte(web.Output(ip, nil)), &out))
+
+	// CUI の行に出ている数字と、Web が送る数字が一致すること。
+	assert.Contains(t, cui.Output(ip, nil),
+		i18n.Tf("indianpoker.equityLine", "pct", strconv.Itoa(out.EstimatedStrength)))
+	// 0 固定のフィールドを比べているだけ、にならないよう範囲も確かめる。
+	assert.GreaterOrEqual(t, out.EstimatedStrength, 0)
+	assert.LessOrEqual(t, out.EstimatedStrength, 100)
 }
