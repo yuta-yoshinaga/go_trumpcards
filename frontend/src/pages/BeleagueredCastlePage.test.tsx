@@ -323,6 +323,39 @@ describe('BeleagueredCastlePage destination preview', () => {
     await waitFor(() => expect(targets()).toHaveLength(0));
   });
 
+  // #5596: ヒント表示は無言で書き換わっていた。**空のまま先にマウントしてある**
+  // 領域の中身が変わることが読み上げの条件なので、hint がある間だけ現れる内側の
+  // div ではなく、常設のラッパーがライブ領域でなければならない。
+  it('keeps the hint live region mounted before there is any hint to announce', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BeleagueredCastlePage />);
+    await waitFor(() => expect(screen.getByText(/包囲された城/)).toBeInTheDocument());
+
+    const region = screen.getByTestId('bc-hint-live');
+    expect(region).toHaveAttribute('role', 'status');
+    expect(region).toHaveAttribute('aria-live', 'polite');
+    expect(region).toHaveTextContent('');
+  });
+
+  it('announces the recommended move through that same region', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BeleagueredCastlePage />);
+    await waitFor(() => expect(screen.getByText(/包囲された城/)).toBeInTheDocument());
+
+    const region = screen.getByTestId('bc-hint-live');
+    expect(region).toHaveTextContent('');
+
+    mockExec.mockResolvedValue({
+      ...playingState,
+      hint: { fromCol: 1, cardIndex: 0, toZone: 'foundation', toCol: 2 },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    // **同じ要素**の中身が変わる (別の要素が現れるのではない) ことが読み上げの条件。
+    await waitFor(() => expect(region).toHaveTextContent(/→/));
+    expect(region.textContent).toBe('ヒントがあります: タブロー列1 → 組札');
+  });
+
   // hover と選択で同じ集合を指す ── プレビューが嘘をつかないことの検証。
   it('previews exactly the set the selection then commits to', async () => {
     const spadeFive = await render();
