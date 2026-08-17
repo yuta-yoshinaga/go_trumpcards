@@ -1,12 +1,14 @@
 package presenter
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupTexasHoldemBonusCuiMockDefaults(m *interfaces.MockTexasHoldemBonusGame) {
@@ -363,4 +365,43 @@ func TestTexasHoldemBonusCuiPresenter_BetCostLine(t *testing.T) {
 		out := p.Output(game(domain.TexasHoldemBonusPhaseBet, 0, 0), nil)
 		assert.NotContains(t, out, "チップ / ")
 	})
+}
+
+// #5529: Web は BET フェーズにボーナスの配当表を出しているのに、CUI は
+// "bet <ante> <bonus>" で実チップを賭けさせながら何が当たるのか言っていなかった。
+func TestTexasHoldemBonusCuiPresenter_Output_BonusPaytable(t *testing.T) {
+	p := new(TexasHoldemBonusCuiPresenter)
+
+	outputInPhase := func(phase int) string {
+		m := new(interfaces.MockTexasHoldemBonusGame)
+		m.On("GetPhase").Return(phase)
+		setupTexasHoldemBonusCuiMockDefaults(m)
+		return p.Output(m, nil)
+	}
+
+	betOut := outputInPhase(domain.TexasHoldemBonusPhaseBet)
+	assert.Contains(t, betOut, i18n.T("texasholdembonus.bonusPayHeader"))
+
+	// **倍率はドメインの定数から出す。**画面に書き写すと、配当を1つ直したとき
+	// 表だけが古いまま残る。
+	for _, tc := range []struct {
+		key  string
+		mult int
+	}{
+		{"texasholdembonus.bonusPayAA", domain.TexasHoldemBonusBonusPayAA},
+		{"texasholdembonus.bonusPayAKSuited", domain.TexasHoldemBonusBonusPayAKSuited},
+		{"texasholdembonus.bonusPayAQAJSuited", domain.TexasHoldemBonusBonusPayAQAJSuited},
+		{"texasholdembonus.bonusPayAKOff", domain.TexasHoldemBonusBonusPayAKOff},
+		{"texasholdembonus.bonusPayKKQQJJ", domain.TexasHoldemBonusBonusPayKKQQJJ},
+		{"texasholdembonus.bonusPayAQAJOff", domain.TexasHoldemBonusBonusPayAQAJOff},
+		{"texasholdembonus.bonusPayMediumPair", domain.TexasHoldemBonusBonusPayMediumPair},
+	} {
+		assert.Contains(t, betOut, i18n.Tf(tc.key, "mult", strconv.Itoa(tc.mult)), tc.key)
+	}
+
+	// **賭け終わった後には出さない。**もう選べないものの説明は場所を取るだけ。
+	assert.NotContains(t, outputInPhase(domain.TexasHoldemBonusPhasePreFlop),
+		i18n.T("texasholdembonus.bonusPayHeader"))
+	assert.NotContains(t, outputInPhase(domain.TexasHoldemBonusPhaseEnd),
+		i18n.T("texasholdembonus.bonusPayHeader"))
 }
