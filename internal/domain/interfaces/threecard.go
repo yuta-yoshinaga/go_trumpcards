@@ -11,6 +11,8 @@ type ThreeCardGame interface {
 	Reset()
 	// Bet アンテベットを行いカードを配る
 	Bet(ante, pairPlus int) error
+	// Rebet 直前のラウンドと同じ額で賭け直す
+	Rebet() error
 	// Play プレイベットを置いて勝負する
 	Play() error
 	// Fold フォールドする

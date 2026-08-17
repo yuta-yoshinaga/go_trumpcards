@@ -16,6 +16,8 @@ type ThreeCardInteractorIF interface {
 	Reset() string
 	// Bet アンテベット
 	Bet(ante, pairPlus int) string
+	// Rebet 直前のラウンドと同じ額で賭け直す
+	Rebet() string
 	// Play プレイ
 	Play() string
 	// Fold フォールド
@@ -49,6 +51,11 @@ func (ti *ThreeCardInteractor) Reset() string {
 // Bet アンテベット
 func (ti *ThreeCardInteractor) Bet(ante, pairPlus int) string {
 	return execAndPresent(ti.Game, ti.tp, func() error { return ti.Game.Bet(ante, pairPlus) })
+}
+
+// Rebet 直前のラウンドと同じ額で賭け直す
+func (ti *ThreeCardInteractor) Rebet() string {
+	return execAndPresent(ti.Game, ti.tp, ti.Game.Rebet)
 }
 
 // Play プレイ

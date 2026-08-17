@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseThreecardCommand } from './threecardCommands';
+import { parseThreecardCommand, THREECARD_HELP } from './threecardCommands';
 
 describe('parseThreecardCommand', () => {
   it('parses bet with amount', () => {
@@ -38,5 +38,24 @@ describe('parseThreecardCommand', () => {
   it('returns error for unknown command', () => {
     const result = parseThreecardCommand('xyz');
     expect('error' in result).toBe(true);
+  });
+});
+
+// #5513: ボタン (tc-rebet-button) はワンクリックで直前と同額を賭け直せるのに、
+// CLI には同等のコマンドが無く毎ラウンド bet <ante> <pairPlus> を手打ちしていた。
+describe('parseThreecardCommand rebet', () => {
+  it.each(['rb', 'rebet', 'REBET'])('accepts %j', (input) => {
+    expect(parseThreecardCommand(input)).toEqual({ args: ['rebet'] });
+  });
+
+  // **金額は送らない。** サーバが直前の額を覚えているので、クライアントが
+  // 別に持つと2つの記憶がずれる。
+  it('sends no amount, leaving the server as the source of truth', () => {
+    const result = parseThreecardCommand('rebet');
+    expect('args' in result && result.args).toHaveLength(1);
+  });
+
+  it('documents rebet in the help text', () => {
+    expect(THREECARD_HELP.some((l) => /rebet/.test(l))).toBe(true);
   });
 });

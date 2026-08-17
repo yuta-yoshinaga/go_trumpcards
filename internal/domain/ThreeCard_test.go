@@ -598,3 +598,59 @@ func TestThreeCard_JSON_Unmarshal_OversizedArray(t *testing.T) {
 	err := json.Unmarshal(data, &tc)
 	assert.Error(t, err)
 }
+
+// #5513: Web はラウンド終了時の ante/pairPlus を React 側に覚えてワンクリック
+// 再ベットできるのに、CLI/CUI には同等のコマンドが無く毎回手打ちしていた。
+// **Reset が anteBet/pairPlusBet を消す**ので、覚える場所がドメインに要る。
+func TestThreeCard_Rebet(t *testing.T) {
+	newBetPhase := func() *domain.ThreeCard {
+		tc := domain.NewDefaultThreeCard()
+		tc.Reset()
+		return tc
+	}
+
+	t.Run("repeats the previous round's amounts", func(t *testing.T) {
+		tc := newBetPhase()
+		require.NoError(t, tc.Bet(20, 10))
+		tc.Reset() // 次のラウンドへ
+
+		require.NoError(t, tc.Rebet())
+		assert.Equal(t, 20, tc.GetAnteBet())
+		assert.Equal(t, 10, tc.GetPairPlusBet())
+	})
+
+	// **一度も賭けていなければ、その理由で断る。** ガードが無くても Bet が
+	// 「アンテ額が不正」で弾くのでエラーにはなるが、それは的外れな説明になる
+	// (プレイヤーは額を打っていない)。理由まで見て初めてガードが検証できる。
+	t.Run("refuses before any bet has been placed, and says why", func(t *testing.T) {
+		err := newBetPhase().Rebet()
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "まだ賭けていない")
+	})
+
+	// **チップ不足は明確に断る。** Bet と同じ検査を通すので理由も同じ。
+	t.Run("refuses when the chips no longer cover it", func(t *testing.T) {
+		tc := newBetPhase()
+		require.NoError(t, tc.Bet(20, 10))
+		tc.Reset()
+		tc.SetChips(5)
+		assert.Error(t, tc.Rebet())
+	})
+
+	// **保存に載っていなければ Worker では毎回消える。** KV は毎リクエスト
+	// 状態を往復させるので、スナップショットに入っていない値は 0 で戻る。
+	t.Run("survives a save/load round trip", func(t *testing.T) {
+		tc := newBetPhase()
+		require.NoError(t, tc.Bet(30, 20))
+		tc.Reset()
+
+		data, err := json.Marshal(tc)
+		require.NoError(t, err)
+		restored := domain.NewDefaultThreeCard()
+		require.NoError(t, json.Unmarshal(data, restored))
+
+		require.NoError(t, restored.Rebet())
+		assert.Equal(t, 30, restored.GetAnteBet())
+		assert.Equal(t, 20, restored.GetPairPlusBet())
+	})
+}

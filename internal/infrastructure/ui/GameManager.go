@@ -865,7 +865,7 @@ var gameRegistry = []GameRegistryEntry{
 				"threecard.helpExampleBet",
 				"threecard.helpExamplePlay",
 			},
-			CommandKeys:       []string{"threecard.helpBet", "threecard.helpPlay", "threecard.helpFold", "threecard.helpHint"},
+			CommandKeys:       []string{"threecard.helpBet", "threecard.helpRebet", "threecard.helpPlay", "threecard.helpFold", "threecard.helpHint"},
 			ExtraCommandLines: []string{"  log                  action log"},
 		}),
 	BindCuiFor("ohhell",
