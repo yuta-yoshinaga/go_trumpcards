@@ -41,5 +41,6 @@
     "drawPile": "山札：カードを出すと自動で補充されます",
     "flipButton": "めくるボタン：膠着時に押してカードをめくります"
   },
-  "centerPileCard": "台札{{n}}: {{card}}"
+  "centerPileCard": "台札{{n}}: {{card}}",
+  "centerPileNeedsSelection": "手札を1枚選んでから出してください"
 }

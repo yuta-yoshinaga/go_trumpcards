@@ -194,8 +194,11 @@ describe('SpeedPage', () => {
     renderWithProviders(<SpeedPage />);
     await screen.findByText('手札');
     // Center piles top with ♦5 and ♠9 → the labels name the card to play onto.
-    expect(screen.getByRole('button', { name: '台札1: ♦ 5' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '台札2: ♠ 9' })).toBeInTheDocument();
+    //
+    // 手札未選択のあいだはラベルに「まだ押せない理由」が続く (#5517) ので、
+    // 完全一致ではなく前方一致で見る。**確かめたいのは札名が入っていること。**
+    expect(screen.getByRole('button', { name: /^台札1: ♦ 5/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^台札2: ♠ 9/ })).toBeInTheDocument();
   });
 
   it('auto-plays a card via smart-click when only one valid pile exists', async () => {
@@ -574,5 +577,45 @@ describe('SpeedPage elapsed / best time', () => {
     expect(screen.getByTestId('speed-clear-time')).not.toHaveTextContent('ベスト更新');
     expect(localStorage.getItem('speed_best_time_1')).toBe('1000');
     vi.useRealTimers();
+  });
+});
+
+// #5517: 場札ボタンは手札を1枚選ぶまで HTML の disabled でタブ順から外れており、
+// **スクリーンリーダー利用者は場札2枚の存在自体を発見できない。** Cribbage の
+// ペグ制限札や Oh Hell の制限ビッドは aria-disabled + title で常にフォーカス
+// 可能にしている。
+describe('SpeedPage centre piles stay reachable', () => {
+  const centrePiles = () =>
+    screen.getAllByRole('button').filter((b) => /^台札\d/.test(b.getAttribute('aria-label') ?? ''));
+
+  it('keeps the piles focusable before a card is selected', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(centrePiles().length).toBeGreaterThan(0));
+
+    for (const pile of centrePiles()) {
+      // **native disabled はフォーカスを奪う。** aria-disabled で伝える。
+      expect(pile).not.toBeDisabled();
+      expect(pile).toHaveAttribute('aria-disabled', 'true');
+    }
+  });
+
+  // **押しても何も起きない。** フォーカスできることと、操作が通ることは別。
+  it('does nothing when clicked with no card selected', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(centrePiles().length).toBeGreaterThan(0));
+
+    mockExec.mockClear();
+    fireEvent.click(centrePiles()[0]);
+    expect(mockExec).not.toHaveBeenCalledWith('play', expect.anything(), expect.anything());
+  });
+
+  // 理由が読み上げられること。ラベルが素のままだと、なぜ押せないのか分からない。
+  it('explains why the pile cannot be played yet', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(centrePiles().length).toBeGreaterThan(0));
+    expect(centrePiles()[0].getAttribute('aria-label')).toMatch(/選/);
   });
 });
