@@ -375,17 +375,37 @@ func (s *Shithead) cpuPickFromList(cards []*Card) ([]int, bool) {
 // isMagicValue reports whether a card value triggers a magic effect under
 // the current config.
 func (s *Shithead) isMagicValue(v int) bool {
+	return ShitheadIsMagicValue(s.config, v)
+}
+
+// ShitheadIsMagicValue reports whether v triggers a magic effect under cfg.
+//
+// **表示側が設定の読み方を書き写さないため。**どのランクが特殊かは設定次第で
+// 変わるので、一覧を別に持つと設定を増やしたとき注記だけが古くなる (#5577)。
+func ShitheadIsMagicValue(cfg ShitheadConfig, v int) bool {
 	switch v {
 	case 2:
-		return s.config.MagicTwo
+		return cfg.MagicTwo
 	case 7:
-		return s.config.MagicSeven
+		return cfg.MagicSeven
 	case 8:
-		return s.config.MagicEight
+		return cfg.MagicEight
 	case 10:
-		return s.config.MagicTen
+		return cfg.MagicTen
 	}
 	return false
+}
+
+// ShitheadMagicRanks は cfg で有効になっている特殊ランクを昇順で返す。
+// 案内はこれを回して書く ── ランクの一覧を別に持つと、両者がずれる。
+func ShitheadMagicRanks(cfg ShitheadConfig) []int {
+	out := make([]int, 0, 4)
+	for _, v := range []int{2, 7, 8, 10} {
+		if ShitheadIsMagicValue(cfg, v) {
+			out = append(out, v)
+		}
+	}
+	return out
 }
 
 // playFromSource validates and plays the chosen cards from the source.
