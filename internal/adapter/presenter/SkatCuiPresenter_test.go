@@ -433,7 +433,7 @@ func TestSkatCuiPresenter_Output_ScoreBreakdown(t *testing.T) {
 
 	out := build(&domain.SkatScoreBreakdown{Base: 11, Matadors: 2, Multiplier: 4, Hand: true, Value: 44})
 	assert.Contains(t, out, i18n.Tf("skat.scoreBreakdownLine",
-		"base", "11", "matadors", "2", "multiplier", "4",
+		"base", "11", "matadors", "2", "multiplier", "4", "value", "44",
 		"bonuses", " ("+i18n.T("skat.bonusHand")+")"))
 
 	// **ヌル契約には乗数の概念が無い。**内訳を出すと嘘になる。
@@ -456,7 +456,7 @@ func TestSkatCuiPresenter_ScoreBreakdownListsEachBonusIndependently(t *testing.T
 	}
 	line := func(bonuses string) string {
 		return i18n.Tf("skat.scoreBreakdownLine",
-			"base", "11", "matadors", "2", "multiplier", "4", "bonuses", bonuses)
+			"base", "11", "matadors", "2", "multiplier", "4", "value", "44", "bonuses", bonuses)
 	}
 
 	for _, tc := range []struct {
@@ -467,8 +467,6 @@ func TestSkatCuiPresenter_ScoreBreakdownListsEachBonusIndependently(t *testing.T
 		{"hand", domain.SkatScoreBreakdown{Hand: true}, "skat.bonusHand"},
 		{"schneider", domain.SkatScoreBreakdown{Schneider: true}, "skat.bonusSchneider"},
 		{"schwarz", domain.SkatScoreBreakdown{Schwarz: true}, "skat.bonusSchwarz"},
-		{"doubled", domain.SkatScoreBreakdown{Doubled: true}, "skat.bonusDoubled"},
-		{"overbid", domain.SkatScoreBreakdown{Overbid: true}, "skat.bonusOverbid"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			bd := tc.bd
@@ -482,6 +480,38 @@ func TestSkatCuiPresenter_ScoreBreakdownListsEachBonusIndependently(t *testing.T
 	assert.Contains(t, build(&domain.SkatScoreBreakdown{Base: 11, Matadors: 2, Multiplier: 4, Value: 44}), line(""))
 
 	// 複数付いたらカンマ区切りで、順序は固定 (同じ局面なら毎回同じ行)。
-	multi := domain.SkatScoreBreakdown{Base: 11, Matadors: 2, Multiplier: 4, Value: 44, Hand: true, Schwarz: true, Overbid: true}
-	assert.Contains(t, build(&multi), line(" ("+i18n.T("skat.bonusHand")+", "+i18n.T("skat.bonusSchwarz")+", "+i18n.T("skat.bonusOverbid")+")"))
+	multi := domain.SkatScoreBreakdown{Base: 11, Matadors: 2, Multiplier: 4, Value: 44, Hand: true, Schneider: true, Schwarz: true}
+	assert.Contains(t, build(&multi), line(" ("+i18n.T("skat.bonusHand")+", "+i18n.T("skat.bonusSchneider")+", "+i18n.T("skat.bonusSchwarz")+")"))
+}
+
+// **式は 3 通りある。**勝ちは 基礎点×乗数、負けはその 2 倍、オーバービッドは
+// 基礎点と無関係な 入札×2。1 つの文に固定すると、負けたラウンド (およそ半分) で
+// 「11 × 3 = 66」という嘘の式が出る (#5561 のレビュー指摘)。
+func TestSkatCuiPresenter_ScoreBreakdownStatesTheRightFormula(t *testing.T) {
+	build := func(bd *domain.SkatScoreBreakdown) string {
+		m := setupSkatCuiMock()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetScoreBreakdown")
+		m.On("GetScoreBreakdown").Return(bd)
+		setupSkatCuiMockPhase(m, domain.SkatPhaseRoundEnd)
+		return new(presenter.SkatCuiPresenter).Output(m, nil)
+	}
+
+	won := &domain.SkatScoreBreakdown{Base: 11, Matadors: 2, Multiplier: 3, Value: 33}
+	assert.Contains(t, build(won), i18n.Tf("skat.scoreBreakdownLine",
+		"base", "11", "matadors", "2", "multiplier", "3", "value", "33", "bonuses", ""))
+
+	lost := &domain.SkatScoreBreakdown{Base: 11, Matadors: 2, Multiplier: 3, Value: 66, Doubled: true}
+	out := build(lost)
+	assert.Contains(t, out, i18n.Tf("skat.scoreBreakdownLineDoubled",
+		"base", "11", "matadors", "2", "multiplier", "3", "value", "66", "bonuses", ""))
+	// 勝ちの式 (2 倍を言わない形) が出ていないこと。
+	assert.NotContains(t, out, i18n.Tf("skat.scoreBreakdownLine",
+		"base", "11", "matadors", "2", "multiplier", "3", "value", "66", "bonuses", ""))
+
+	over := &domain.SkatScoreBreakdown{Base: 11, Matadors: 2, Multiplier: 3, Bid: 40, Value: 80, Overbid: true}
+	outOver := build(over)
+	assert.Contains(t, outOver, i18n.Tf("skat.scoreBreakdownLineOverbid",
+		"bid", "40", "value", "80", "base", "11", "multiplier", "3"))
+	assert.NotContains(t, outOver, i18n.Tf("skat.scoreBreakdownLineDoubled",
+		"base", "11", "matadors", "2", "multiplier", "3", "value", "80", "bonuses", ""))
 }

@@ -63,12 +63,12 @@
     "playerHand": "あなたの手札。出すカードを選択します。",
     "resetButton": "ゲームをリセットします。"
   },
-  "scoreBreakdown": "内訳: 基礎点 {{base}} × 乗数 {{multiplier}} (マタドール {{matadors}}) = {{value}}",
+  "scoreBreakdown": "内訳: 基礎点 {{base}} × 乗数 {{multiplier}}（マタドール {{matadors}}）= {{value}}",
   "bonus": {
     "hand": "ハンド",
     "schneider": "シュナイダー",
-    "schwarz": "シュヴァルツ",
-    "doubled": "敗北で2倍",
-    "overbid": "オーバービッド"
-  }
+    "schwarz": "シュヴァルツ"
+  },
+  "scoreBreakdownDoubled": "内訳: 基礎点 {{base}} × 乗数 {{multiplier}} × 2（敗北のため2倍・マタドール {{matadors}}）= {{value}}",
+  "scoreBreakdownOverbid": "内訳: オーバービッド — 入札 {{bid}} × 2 = {{value}}（基礎点 {{base}} × 乗数 {{multiplier}} では入札に届かなかった）"
 }

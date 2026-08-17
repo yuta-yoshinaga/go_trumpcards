@@ -179,3 +179,22 @@ func TestSkatWebPresenter_OutputCarriesTheScoreBreakdown(t *testing.T) {
 	assert.True(t, out.ScoreBreakdown.Hand)
 	assert.Equal(t, out.GameValue, out.ScoreBreakdown.Value)
 }
+
+// オーバービッドの式は 入札×2。入札を落とすとクライアントが「0 × 2 = 80」と
+// 書くので、フラグだけでなく数字も渡っていること (#5561 のレビュー指摘)。
+func TestSkatWebPresenter_ScoreBreakdownCarriesTheBidOnAnOverbid(t *testing.T) {
+	m := setupSkatWebMock()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetScoreBreakdown")
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameValue")
+	m.On("GetGameValue").Return(80)
+	m.On("GetScoreBreakdown").Return(&domain.SkatScoreBreakdown{
+		Base: 11, Matadors: 2, Multiplier: 3, Overbid: true, Bid: 40, Value: 80,
+	})
+
+	var out controller.SkatWebOutput
+	require.NoError(t, json.Unmarshal([]byte(new(presenter.SkatWebPresenter).Output(m, nil)), &out))
+	require.NotNil(t, out.ScoreBreakdown)
+	assert.True(t, out.ScoreBreakdown.Overbid)
+	assert.Equal(t, 40, out.ScoreBreakdown.Bid)
+	assert.Equal(t, out.ScoreBreakdown.Bid*2, out.ScoreBreakdown.Value)
+}

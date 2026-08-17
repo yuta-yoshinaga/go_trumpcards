@@ -69,6 +69,7 @@ func (p *SkatWebPresenter) buildBaseOutput(s interfaces.SkatGame) *controller.Sk
 			Schwarz:    bd.Schwarz,
 			Doubled:    bd.Doubled,
 			Overbid:    bd.Overbid,
+			Bid:        bd.Bid,
 			Value:      bd.Value,
 			Null:       bd.Null,
 		}

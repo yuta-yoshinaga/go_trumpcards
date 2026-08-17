@@ -710,3 +710,47 @@ func (s *Skat) mustCompute() *SkatScoreBreakdown {
 	s.computeRoundResult()
 	return s.GetScoreBreakdown()
 }
+
+// オーバービッドは基礎点と無関係な入札×2 に置き換わるので、表示側が式を書くには
+// 入札そのものが要る。落とすと「入札 0 × 2 = 80」と出る (#5561 のレビュー指摘)。
+func TestSkatScoreBreakdownCarriesTheBidOnAnOverbid(t *testing.T) {
+	g := newSkatForTest(t, DefaultSkatConfig())
+	resetForControlledPhase(g)
+	declarer := g.GetPlayer(0)
+	declarer.AddCard(NewCard(CardDesignClover, skatValueJack, false))
+	declarer.ResetTricks()
+	for range 6 {
+		declarer.AddTrick([]*Card{NewCard(CardDesignSpade, skatValueAce, false)})
+	}
+	g.round.declarerIdx = 0
+	g.round.gameType = SkatGameSuit
+	g.round.trumpSuit = CardDesignSpade
+	g.round.pickedSkat = true
+	g.round.currentBid = 240
+	g.round.declarerCardPts = 75
+	g.round.defendersCardPts = 45
+
+	val, _ := g.computeRoundResult()
+	bd := g.GetScoreBreakdown()
+	require.True(t, bd.Overbid)
+	assert.Equal(t, 240, bd.Bid)
+	assert.Equal(t, bd.Bid*2, bd.Value)
+	assert.Equal(t, val, bd.Value)
+}
+
+// 勝ったラウンドは入札を持ち込まない。0 のままなら、表示側が誤って
+// オーバービッドの文を書いても数字が合わないので気づける。
+func TestSkatScoreBreakdownLeavesTheBidUnsetWhenThereIsNoOverbid(t *testing.T) {
+	g := newSkatForTest(t, DefaultSkatConfig())
+	resetForControlledPhase(g)
+	g.GetPlayer(0).AddCard(NewCard(CardDesignClover, skatValueJack, false))
+	g.round.declarerIdx = 0
+	g.round.gameType = SkatGameSuit
+	g.round.trumpSuit = CardDesignSpade
+	g.round.pickedSkat = true
+	g.round.currentBid = 18
+	g.round.declarerCardPts = 75
+
+	g.computeRoundResult()
+	assert.Zero(t, g.GetScoreBreakdown().Bid)
+}

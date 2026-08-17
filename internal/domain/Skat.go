@@ -808,6 +808,7 @@ func (s *Skat) computeRoundResult() (int, bool) {
 	// multiple of base that meets the bid (simplified to bid * 2).
 	if won && value < s.round.currentBid {
 		bd.Overbid = true
+		bd.Bid = s.round.currentBid
 		bd.Value = s.round.currentBid * 2
 		return bd.Value, false
 	}
@@ -832,8 +833,14 @@ type SkatScoreBreakdown struct {
 	Schneider bool
 	Schwarz   bool
 	// Doubled は敗北による 2 倍。Overbid はオーバービッドで bid*2 に置き換わったこと。
+	//
+	// **どちらも Base*Multiplier では最終得点にならない。**敗北は 2 倍、
+	// オーバービッドは基礎点と無関係な bid*2 に置き換わる。表示側はこの 2 つを
+	// 見て式そのものを変える必要がある (#5561 のレビュー指摘)。
 	Doubled bool
 	Overbid bool
+	// Bid はそのラウンドの最終入札。Overbid のときだけ意味を持つ (Value = Bid*2)。
+	Bid int
 	// Value は最終得点。GetGameValue() と必ず一致する。
 	Value int
 	// Null はヌル契約 (乗数の概念が無い)。

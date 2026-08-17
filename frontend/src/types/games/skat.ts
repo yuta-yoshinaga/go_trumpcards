@@ -80,6 +80,8 @@ export interface SkatResponse extends BaseGameResponse {
     schwarz: boolean;
     doubled: boolean;
     overbid: boolean;
+    /** The final bid. Only meaningful when `overbid` is set: `value` is `bid * 2`. */
+    bid: number;
     value: number;
     null: boolean;
   };

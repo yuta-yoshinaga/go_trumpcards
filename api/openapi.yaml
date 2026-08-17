@@ -16550,6 +16550,11 @@ paths:
                         type: boolean
                       overbid:
                         type: boolean
+                      bid:
+                        type: integer
+                        description: >-
+                          The final bid. Only meaningful when `overbid` is set:
+                          `value` is `bid * 2`.
                       value:
                         type: integer
                       "null":

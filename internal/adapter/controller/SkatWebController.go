@@ -39,8 +39,11 @@ type SkatWebOutputScoreBreakdown struct {
 	Schwarz    bool `json:"schwarz"`
 	Doubled    bool `json:"doubled"`
 	Overbid    bool `json:"overbid"`
-	Value      int  `json:"value"`
-	Null       bool `json:"null"`
+	// Bid は Overbid のときの最終入札。Value = Bid*2 なので、これが無いと
+	// クライアントは式を書けない。
+	Bid   int  `json:"bid"`
+	Value int  `json:"value"`
+	Null  bool `json:"null"`
 }
 
 // SkatWebOutputPlayer Skat web output player.

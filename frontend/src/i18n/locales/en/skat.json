@@ -67,8 +67,8 @@
   "bonus": {
     "hand": "hand",
     "schneider": "schneider",
-    "schwarz": "schwarz",
-    "doubled": "doubled on a loss",
-    "overbid": "overbid"
-  }
+    "schwarz": "schwarz"
+  },
+  "scoreBreakdownDoubled": "Breakdown: base {{base}} x multiplier {{multiplier}} x 2 (doubled on a loss, matadors {{matadors}}) = {{value}}",
+  "scoreBreakdownOverbid": "Breakdown: overbid - bid {{bid}} x 2 = {{value}} (base {{base}} x multiplier {{multiplier}} did not reach the bid)"
 }
