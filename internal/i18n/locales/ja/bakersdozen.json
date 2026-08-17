@@ -15,5 +15,10 @@
   "hintLine": "ヒント: {{from}} → {{to}}",
   "helpExampleHint": "  h                    次の一手を教えてもらう",
   "helpExampleAuto": "  ac                   組札へ送れる札を自動で送る",
-  "helpUndo": "  u 1手戻す"
+  "helpUndo": "  u 1手戻す",
+  "targetsLine": "列{{col}}の札を置ける先: {{targets}}",
+  "targetsNone": "列{{col}}の札を置ける先はありません",
+  "targetTableau": "列{{col}}",
+  "targetFoundation": "組札{{idx}}",
+  "helpTargets": "  t <col>                  その列の札を置ける先を一覧する"
 }

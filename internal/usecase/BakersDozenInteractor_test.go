@@ -249,3 +249,16 @@ func TestBakersDozenInteractorUndoN(t *testing.T) {
 		assert.Equal(t, "error_output", result)
 	})
 }
+
+// #5581: 列番号はプレゼンタまでそのまま渡ること。ここで握りつぶすと、
+// どの列を訊いても同じ答えが返る。
+func TestBakersDozenInteractorTargets(t *testing.T) {
+	bg := newMockBakersDozenGame()
+	bp := newMockBakersDozenPresenter()
+	bi := NewBakersDozenInteractor(bg, bp)
+
+	bp.On("TargetsOutput", mock.Anything, 7).Return("targets_output")
+
+	assert.Equal(t, "targets_output", bi.Targets(7))
+	bp.AssertExpectations(t)
+}

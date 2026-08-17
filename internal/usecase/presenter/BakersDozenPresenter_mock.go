@@ -9,6 +9,12 @@ type MockBakersDozenPresenter struct {
 	MockGamePresenter[interfaces.BakersDozenGame]
 }
 
+// TargetsOutput モック
+func (_m *MockBakersDozenPresenter) TargetsOutput(bd interfaces.BakersDozenGame, col int) string {
+	ret := _m.Called(bd, col)
+	return ret.String(0)
+}
+
 // HintOutput モック
 func (_m *MockBakersDozenPresenter) HintOutput(bd interfaces.BakersDozenGame) string {
 	ret := _m.Called(bd)

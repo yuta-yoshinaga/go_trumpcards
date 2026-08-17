@@ -4,13 +4,17 @@ package presenter
 
 import (
 	"errors"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupBakersDozenCuiMockDefaults(bg *interfaces.MockBakersDozenGame) {
@@ -211,5 +215,41 @@ func TestBakersDozenCuiPresenter_ActionLogOutput(t *testing.T) {
 		p := new(BakersDozenCuiPresenter)
 		result := p.ActionLogOutput(bg)
 		assert.Contains(t, result, "move")
+	})
+}
+
+// #5581: 置ける先が無いときに黙ると、コマンドが効いていないのか置けないのかが
+// 区別できない。
+func TestBakersDozenCuiPresenter_TargetsOutput(t *testing.T) {
+	i18n.SetLang("ja")
+
+	t.Run("lists the columns and foundations", func(t *testing.T) {
+		g := new(interfaces.MockBakersDozenGame)
+		g.On("LegalTargets", 3).Return([]int{1, 7}, []int{2})
+
+		out := new(BakersDozenCuiPresenter).TargetsOutput(g, 3)
+		assert.Contains(t, out, i18n.Tf("bakersdozen.targetTableau", "col", "1"))
+		assert.Contains(t, out, i18n.Tf("bakersdozen.targetTableau", "col", "7"))
+		assert.Contains(t, out, i18n.Tf("bakersdozen.targetFoundation", "idx", "2"))
+	})
+
+	t.Run("says so when there is nowhere to go", func(t *testing.T) {
+		g := new(interfaces.MockBakersDozenGame)
+		g.On("LegalTargets", 3).Return([]int(nil), []int(nil))
+
+		out := new(BakersDozenCuiPresenter).TargetsOutput(g, 3)
+		assert.Contains(t, out, i18n.Tf("bakersdozen.targetsNone", "col", "3"))
+		// 空行で済ませないこと。
+		assert.NotEmpty(t, strings.TrimSpace(out))
+	})
+
+	// **範囲外はドメインに訊く前に断る。**訊いても nil が返るだけだが、
+	// 「置ける先がありません」と答えると、存在しない列があるように読める。
+	t.Run("rejects a column that does not exist", func(t *testing.T) {
+		g := new(interfaces.MockBakersDozenGame)
+		out := new(BakersDozenCuiPresenter).TargetsOutput(g, domain.BakersDozenTableauCnt)
+		assert.Contains(t, out, i18n.Tf("invalidColumn", "val", strconv.Itoa(domain.BakersDozenTableauCnt)))
+		assert.NotContains(t, out, i18n.Tf("bakersdozen.targetsNone", "col", strconv.Itoa(domain.BakersDozenTableauCnt)))
+		g.AssertNotCalled(t, "LegalTargets", mock.Anything)
 	})
 }

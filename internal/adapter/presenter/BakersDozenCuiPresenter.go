@@ -109,6 +109,32 @@ func (p *BakersDozenCuiPresenter) HintOutput(bd interfaces.BakersDozenGame) stri
 	return i18n.Tf("bakersdozen.hintLine", "from", from, "to", to) + "\n"
 }
 
+// TargetsOutput は列 col の一番下の札を置ける先を一覧する。
+//
+// **13 列 + 4 組札は押して試すには広すぎる。**Web は選択の瞬間に置ける先を
+// リングで示しているのに、CUI は打ってサーバに弾かれるまで分からなかった
+// (#5581)。置ける先が無いときは黙らず、無いと言う ── 空行だと、コマンドが
+// 効いていないのか置けないのか区別が付かない。
+func (p *BakersDozenCuiPresenter) TargetsOutput(bd interfaces.BakersDozenGame, col int) string {
+	if col < 0 || col >= domain.BakersDozenTableauCnt {
+		return i18n.MarkError(i18n.Tf("invalidColumn", "val", strconv.Itoa(col))) + "\n"
+	}
+	tableau, foundation := bd.LegalTargets(col)
+	if len(tableau) == 0 && len(foundation) == 0 {
+		return i18n.Tf("bakersdozen.targetsNone", "col", strconv.Itoa(col)) + "\n"
+	}
+	parts := make([]string, 0, len(tableau)+len(foundation))
+	for _, t := range tableau {
+		parts = append(parts, i18n.Tf("bakersdozen.targetTableau", "col", strconv.Itoa(t)))
+	}
+	for _, f := range foundation {
+		parts = append(parts, i18n.Tf("bakersdozen.targetFoundation", "idx", strconv.Itoa(f)))
+	}
+	return i18n.Tf("bakersdozen.targetsLine",
+		"col", strconv.Itoa(col),
+		"targets", strings.Join(parts, " / ")) + "\n"
+}
+
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *BakersDozenCuiPresenter) ActionLogOutput(bd interfaces.BakersDozenGame) string {
 	return actionLogOutputText(bd)

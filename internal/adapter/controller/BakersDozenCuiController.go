@@ -31,7 +31,28 @@ func (c *BakersDozenCuiController) Exec(command string) string {
 		undo:         c.bi.Undo,
 		hint:         c.bi.Hint,
 		actionLog:    c.bi.ActionLog,
+		// **共有の一覧には足さない。**LegalTargets を持たない 5 ゲームにも
+		// 名前だけ生えてしまうので、このゲームの追加コマンドとして登録する。
+		extraCommands: map[string]func([]string) string{
+			"t":       c.handleTargets,
+			"targets": c.handleTargets,
+		},
 	})
+}
+
+// handleTargets は `t <col>` / `targets <col>` を処理する。
+//
+// 13 列 + 4 組札を押して試すのは現実的でない (#5581)。列番号だけを取り、
+// 置ける先はサーバの判定 (LegalTargets) がそのまま答える。
+func (c *BakersDozenCuiController) handleTargets(args []string) string {
+	if len(args) == 0 {
+		return cuiutil.PromptRequest(i18n.T("promptFromColumn"), "t {0}")
+	}
+	col, err := strconv.Atoi(args[0])
+	if err != nil {
+		return invalidArg("invalidColumn", "val", args[0])
+	}
+	return c.bi.Targets(col)
 }
 
 // handleMove 移動コマンドを処理
