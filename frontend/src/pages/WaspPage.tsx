@@ -291,8 +291,10 @@ function WaspPageContent() {
     [preview.source, state],
   );
   const dealBlockedByEmpty = hasEmptyColumn && (state?.stockCount ?? 0) > 0;
-  // ドメインの AutoComplete は「全カードが表向き」でしか通らない (Scorpion と共有の規則)。
-  const autoCompleteReady = isTableauAllFaceUp(state?.tableau ?? []);
+  // ドメインの AllFaceUp は**ストックが空であること**も要求する (Wasp.go)。
+  // 表向きだけで判定すると、山札が残った盤面でボタンが押せてしまい、押すと
+  // "not all cards are face up" で弾かれる — #5545 が直したはずの形に戻る。
+  const autoCompleteReady = (state?.stockCount ?? 0) === 0 && isTableauAllFaceUp(state?.tableau ?? []);
   const handleDealGuarded = useCallback(() => {
     if (dealBlockedByEmpty) {
       setEmptyDealAttemptKey((k) => k + 1);

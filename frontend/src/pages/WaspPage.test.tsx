@@ -249,6 +249,7 @@ describe('WaspPage', () => {
     // AutoComplete が同じ条件で弾くため)。
     mockExec.mockResolvedValue({
       ...playingState,
+      stockCount: 0,
       tableau: playingState.tableau.map((col) => col.map((c) => ({ ...c, faceUp: true }))),
     });
     renderWithProviders(<WaspPage />);
@@ -741,9 +742,25 @@ describe('WaspPage autocomplete readiness', () => {
     expect(button().className).not.toContain('animate-pulse');
   });
 
+  // レビュー指摘 (#5545): ドメインの AllFaceUp は**ストックが空であること**も
+  // 要求する。表向きだけ見ると、山札が残った状態でボタンが押せてしまい、
+  // 押すと "not all cards are face up" で弾かれる — 直したはずのバグに戻る。
+  it('stays disabled while the stock still has cards, even with a fully face-up tableau', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      stockCount: 3,
+      tableau: playingState.tableau.map((col) => col.map((c) => ({ ...c, faceUp: true }))),
+    });
+    renderWithProviders(<WaspPage />);
+    await waitFor(() => expect(button()).toBeInTheDocument());
+    expect(button()).toBeDisabled();
+    expect(button().className).not.toContain('animate-pulse');
+  });
+
   it('pulses once every card is face up', async () => {
     const allUp = {
       ...playingState,
+      stockCount: 0,
       tableau: playingState.tableau.map((col) => col.map((c) => ({ ...c, faceUp: true }))),
     };
     mockExec.mockResolvedValue(allUp);
