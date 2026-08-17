@@ -297,15 +297,26 @@ function PontoonPageContent() {
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
               {/* Only the legal declarations are rendered. The server decides,
-                  so the 15 minimum and the no-buy-after-twist rule live in one
-                  place rather than two. */}
+                  so the stick minimum and the no-buy-after-twist rule live in
+                  one place rather than two. */}
+              {/* **相手がどこで止まるかは判断材料の半分。**自分が 15 未満で
+                  スティックできないことは出ていたのに、相手の停止ラインは
+                  どこにも書かれていなかった (#5565)。
+                  親と CPU 席は**別の規則**で止まる (親は 17、席は 15) ので
+                  両方言う。数字はサーバがドメイン定数から渡すので、訳文にも
+                  画面にも焼き込まない。 */}
+              {isPlayerTurn && (
+                <span className="text-xs text-ds-text-muted" data-testid="pontoon-thresholds">
+                  {t('hint.cpuStick', { cpuMin: state.cpuStickMin, min: state.stickMin })}
+                </span>
+              )}
               {isPlayerTurn && state.canStick && (
                 <button
                   type="button"
                   className={btnSuccess}
                   onClick={game.handleStick}
                   disabled={loading}
-                  title={t('hint.stick')}
+                  title={t('hint.stick', { min: state.stickMin })}
                 >
                   {t('actions.stick')}
                 </button>

@@ -138,7 +138,13 @@ func (pp *PontoonCuiPresenter) actionHints(p interfaces.PontoonGame) string {
 	if len(opts) == 0 {
 		return ""
 	}
-	return i18n.Tf("pontoon.actionsLine", "options", strings.Join(opts, " / ")) + "\n"
+	// **相手がどこで止まるかは判断材料の半分。**15 未満は宣言できないという
+	// 自分側の制約は出ていたのに、CPU と親が 17 で止まることはどこにも
+	// 書かれていなかった (#5565)。数字はドメインの定数から差し込む。
+	return i18n.Tf("pontoon.actionsLine", "options", strings.Join(opts, " / ")) + "\n" +
+		color.Yellow(i18n.Tf("pontoon.cpuStickLine",
+			"cpuMin", strconv.Itoa(domain.PontoonCpuStickMin),
+			"min", strconv.Itoa(domain.PontoonStickMin))) + "\n"
 }
 
 // ActionLogOutput 棋譜をテキスト出力

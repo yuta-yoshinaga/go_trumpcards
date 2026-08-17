@@ -28,5 +28,6 @@
   "optBuy": "buy=バイ",
   "optSplit": "sp=スプリット",
   "bankPasses": "{{name}} がポンツーンで親を取りました",
-  "helpExampleBet": "  b 100                   100 チップを賭ける"
+  "helpExampleBet": "  b 100                   100 チップを賭ける",
+  "cpuStickLine": "親は合計 {{cpuMin}} 以上になるまで引きます。CPU 席は {{min}} 以上で止まります（4枚のときだけ {{cpuMin}} 未満でももう1枚引きます）。"
 }

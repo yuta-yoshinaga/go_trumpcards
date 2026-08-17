@@ -38,6 +38,8 @@ function makeState(overrides?: Partial<PontoonResponse>): PontoonResponse {
     canTwist: true,
     canBuy: false,
     canSplit: false,
+    stickMin: 15,
+    cpuStickMin: 17,
     message: '',
     ...overrides,
   };

@@ -84,6 +84,8 @@ func (pp *PontoonWebPresenter) Output(p interfaces.PontoonGame, lastErr error) s
 	resObj.CanTwist = p.CanTwist()
 	resObj.CanBuy = p.CanBuy()
 	resObj.CanSplit = p.CanSplit()
+	resObj.StickMin = domain.PontoonStickMin
+	resObj.CpuStickMin = domain.PontoonCpuStickMin
 
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()

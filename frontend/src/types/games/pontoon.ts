@@ -57,4 +57,8 @@ export interface PontoonResponse extends BaseGameResponse {
   canTwist: boolean;
   canBuy: boolean;
   canSplit: boolean;
+  /** Lowest total that may stick. */
+  stickMin: number;
+  /** Total at which the CPU seats and the banker stop. */
+  cpuStickMin: number;
 }

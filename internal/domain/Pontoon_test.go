@@ -5,6 +5,9 @@ package domain
 import (
 	"encoding/json"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // pontoonDealAttempts caps the reshuffles a test may take while looking for a
@@ -991,4 +994,125 @@ func TestPontoon_SplitHandsArePlayedInOrder(t *testing.T) {
 	if hands[0].GetBet() != hands[1].GetBet() {
 		t.Errorf("split hands carry different bets: %d vs %d", hands[0].GetBet(), hands[1].GetBet())
 	}
+}
+
+// #5565: 停止ラインは 2 箇所に 17 が直書きされていた。定数にしたので、実際に
+// 打たせて確かめる。
+//
+// **issue の前提は誤りだった。**「CPU 席・CPU 親のどちらも 17 まで引き続ける」と
+// 書かれているが、CPU 席は 15 で止まる (4 枚のときだけファイブカード・トリックを
+// 狙って 17 未満でも引く)。17 まで引くのは親だけ。案内をそのまま書いていたら、
+// 相手の停止ラインについて嘘を教えることになっていた。
+func TestPontoonCpuStopsAtTheNamedThreshold(t *testing.T) {
+	// 定数そのものは規則の一部。黙って変わると案内も一緒に変わってしまうので固定する。
+	assert.Equal(t, 17, PontoonCpuStickMin)
+	assert.Greater(t, PontoonCpuStickMin, PontoonStickMin,
+		"the CPU cannot stop below the total a player is allowed to declare at")
+
+	// 200 局を**最後まで**打たせて、CPU 席と親が閾値未満で止まっていないこと。
+	// 局の途中で見ると、まだ打っていない手を「閾値未満で止まった」と誤読する。
+	for range 200 {
+		p := NewDefaultPontoon()
+		p.Reset()
+		if err := p.PlaceBet(10); err != nil {
+			continue
+		}
+		for range 10 { // 人間の手番を終わらせる。5 枚上限があるので必ず抜ける
+			if p.GetPhase() != PontoonPhasePlayerTurn {
+				break
+			}
+			if p.CanStick() {
+				_ = p.Stick()
+				continue
+			}
+			if p.Twist() != nil {
+				break
+			}
+		}
+		if p.GetPhase() != PontoonPhaseEnd {
+			continue
+		}
+		if bh := p.bankerHand; bh != nil {
+			total := pontoonTotal(bh.cards)
+			if total <= PontoonTarget && len(bh.cards) < PontoonMaxCards {
+				assert.GreaterOrEqual(t, total, PontoonCpuStickMin, "the banker stopped below the threshold")
+			}
+		}
+		for i, s := range p.GetSeats() {
+			// 親の席は席として打たない (手は bankerHand の側)。ここを外すと、
+			// 配ったまま止まっている手を「閾値未満で止まった」と誤読する。
+			if !s.IsCPU() || i == p.banker {
+				continue
+			}
+			for _, h := range s.GetHands() {
+				// **止まった手だけを見る。**バースト・5 枚・局が先に終わって
+				// 打たれなかった手は「閾値未満で止まった」ではない。
+				if !h.stuck {
+					continue
+				}
+				total := pontoonTotal(h.cards)
+				// **CPU 席は 17 ではなく 15 で止まる。**4 枚のときだけ
+				// ファイブカード・トリックを狙って 17 未満でも引く。
+				assert.GreaterOrEqual(t, total, PontoonStickMin,
+					"a CPU seat stopped below the total it is allowed to declare at")
+			}
+		}
+	}
+}
+
+// 4 枚で 15〜16 のとき、CPU 席はファイブカード・トリックを狙ってもう 1 枚引く。
+// 「15 で止まる」とだけ案内すると、この手を見た人が規則を疑うことになる。
+func TestPontoonCpuSeatChasesTheFiveCardTrick(t *testing.T) {
+	p := NewDefaultPontoon()
+	p.Reset()
+	s := p.GetSeats()[1]
+	h := &PontoonHand{cards: []*Card{
+		NewCard(CardDesignSpade, 2, true),
+		NewCard(CardDesignHeart, 3, true),
+		NewCard(CardDesignClover, 4, true),
+		NewCard(CardDesignDiamond, 6, true),
+	}}
+	s.hands = []*PontoonHand{h}
+	require.Equal(t, 15, pontoonTotal(h.cards))
+
+	p.playCpuSeat(s)
+	assert.Len(t, h.cards, PontoonMaxCards, "a four-card 15 draws one more")
+}
+
+// 3 枚で 15 なら止まる。上の手と違うのは枚数だけ。
+func TestPontoonCpuSeatSticksOnFifteenWithThreeCards(t *testing.T) {
+	p := NewDefaultPontoon()
+	p.Reset()
+	s := p.GetSeats()[1]
+	h := &PontoonHand{cards: []*Card{
+		NewCard(CardDesignSpade, 5, true),
+		NewCard(CardDesignHeart, 4, true),
+		NewCard(CardDesignClover, 6, true),
+	}}
+	s.hands = []*PontoonHand{h}
+	require.Equal(t, 15, pontoonTotal(h.cards))
+
+	p.playCpuSeat(s)
+	assert.Len(t, h.cards, 3, "a three-card 15 sticks")
+	assert.True(t, h.stuck)
+}
+
+// 4 枚でも 17 以上なら止まる。ファイブカード・トリック狙いは 17 未満のときだけで、
+// ここを外すと 18 の手を壊してまで 5 枚目を引く。
+func TestPontoonCpuSeatDoesNotChaseFromSeventeen(t *testing.T) {
+	p := NewDefaultPontoon()
+	p.Reset()
+	s := p.GetSeats()[1]
+	h := &PontoonHand{cards: []*Card{
+		NewCard(CardDesignSpade, 5, true),
+		NewCard(CardDesignHeart, 4, true),
+		NewCard(CardDesignClover, 6, true),
+		NewCard(CardDesignDiamond, 3, true),
+	}}
+	s.hands = []*PontoonHand{h}
+	require.Equal(t, 18, pontoonTotal(h.cards))
+
+	p.playCpuSeat(s)
+	assert.Len(t, h.cards, 4, "a four-card 18 sticks rather than chasing the five-card trick")
+	assert.True(t, h.stuck)
 }

@@ -49,6 +49,8 @@ function makeState(overrides?: Partial<PontoonResponse>): PontoonResponse {
     canTwist: true,
     canBuy: false,
     canSplit: false,
+    stickMin: 15,
+    cpuStickMin: 17,
     message: '',
     ...overrides,
   };
@@ -321,5 +323,35 @@ describe('PontoonPage keyboard shortcuts', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
     localStorage.clear();
+  });
+});
+
+// #5565: 「相手がどこで止まるか」は引き続けるかの判断材料の半分なのに、
+// 停止ラインはどこにも出ていなかった。
+describe('PontoonPage stop thresholds', () => {
+  it('shows both thresholds on the player turn', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 2 }));
+    renderWithProviders(<PontoonPage />);
+    const line = await screen.findByTestId('pontoon-thresholds');
+    // **サーバから来た数字が出ること。**訳文に焼き込むと閾値を変えたとき嘘になる。
+    expect(line).toHaveTextContent('17');
+    expect(line).toHaveTextContent('15');
+  });
+
+  // サーバが別の閾値を返せば、そのまま出ること (定数を再実装していない証拠)。
+  it('renders whatever the server sends', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 2, stickMin: 12, cpuStickMin: 19 }));
+    renderWithProviders(<PontoonPage />);
+    const line = await screen.findByTestId('pontoon-thresholds');
+    expect(line).toHaveTextContent('19');
+    expect(line).toHaveTextContent('12');
+    expect(line).not.toHaveTextContent('17');
+  });
+
+  it('says nothing outside the player turn', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 4, lastResult: '親は 18' }));
+    renderWithProviders(<PontoonPage />);
+    await waitFor(() => expect(screen.getByLabelText(/親の手 合計18/)).toBeInTheDocument());
+    expect(screen.queryByTestId('pontoon-thresholds')).not.toBeInTheDocument();
   });
 });

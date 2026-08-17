@@ -261,3 +261,16 @@ func TestPontoonWebPresenter_ActionLogOutput(t *testing.T) {
 		assert.Contains(t, new(PontoonWebPresenter).ActionLogOutput(g), "deal")
 	})
 }
+
+// #5565: 停止ラインの数字はドメインの定数から来ること。訳文にも TS にも
+// 焼き込まないので、ここが落ちるとクライアントは「0 以上で止まる」と書く。
+func TestPontoonWebPresenter_CarriesBothStickThresholds(t *testing.T) {
+	g := new(interfaces.MockPontoonGame)
+	setupPontoonWebMockDefaults(g)
+
+	result := parsePontoonOutput(t, new(PontoonWebPresenter).Output(g, nil))
+	assert.Equal(t, domain.PontoonStickMin, result.StickMin)
+	assert.Equal(t, domain.PontoonCpuStickMin, result.CpuStickMin)
+	// ゼロ値と区別が付かない検査にしない。
+	assert.NotZero(t, result.CpuStickMin)
+}
