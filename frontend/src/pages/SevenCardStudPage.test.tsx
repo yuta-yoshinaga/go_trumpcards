@@ -826,3 +826,34 @@ describe('SevenCardStudPage keyboard shortcuts', () => {
     expect(mockExec).not.toHaveBeenCalled();
   });
 });
+
+// #5522: バックエンドは VPIP/PFR/3Bet/AF を毎回返し、CUI は毎ターン出しているのに、
+// Web だけが playStyleName しか出していなかった。
+describe('SevenCardStudPage HUD stats', () => {
+  const withStats = (n: number) => cpuPlayer(n, { totalHands: 12, vpip: 42, pfr: 8, threeBet: 3, af: '2.5' });
+
+  it('shows the CPU HUD once hands have been played', async () => {
+    mockExec.mockResolvedValue({ ...thirdStreetState, players: [humanPlayer(), withStats(1)] });
+    renderWithProviders(<SevenCardStudPage />);
+    const hud = await screen.findByTestId('hud-stats');
+    expect(hud).toHaveTextContent('42%');
+    expect(hud).toHaveTextContent('2.5');
+    // 傾向バッジも他のポーカーページと同じ判定で色分けされる。
+    expect(screen.getByTestId('hud-vpip-tendency')).toHaveAttribute('data-tendency', 'loose');
+    expect(screen.getByTestId('hud-pfr-tendency')).toHaveAttribute('data-tendency', 'passive');
+    // **スタイル名は翻訳済みであること。**名前空間に style.* が無いと
+    // 生キー ("style.lp") がそのまま画面に出る。
+    const style = screen.getByTestId('hud-overall-style');
+    expect(style).toHaveAttribute('data-style', 'lp');
+    expect(style).toHaveTextContent('LP');
+    expect(style.textContent).not.toContain('style.');
+  });
+
+  // **1ハンドも打っていないうちは出さない。**全部 0% の HUD は情報ではなく雑音。
+  it('stays hidden before the first hand is over', async () => {
+    mockExec.mockResolvedValue({ ...thirdStreetState, players: [humanPlayer(), cpuPlayer(1)] });
+    renderWithProviders(<SevenCardStudPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('hud-stats')).not.toBeInTheDocument();
+  });
+});
