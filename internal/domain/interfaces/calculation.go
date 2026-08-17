@@ -33,6 +33,8 @@ type CalculationGame interface {
 	GetFoundations() [domain.CalculationFoundationCnt][]*domain.Card
 	// GetNextFoundationRank そのファンデーションに次に置けるランクを取得する (0=置けない)
 	GetNextFoundationRank(fIdx int) int
+	// GetUpcomingFoundationRanks これから必要になるランクを最大 max 件返す (#5551)
+	GetUpcomingFoundationRanks(fIdx, max int) []int
 	// IsStalemate 手詰まり状態を取得する
 	IsStalemate() bool
 }

@@ -43,6 +43,16 @@ func (p *CalculationCuiPresenter) Output(g interfaces.CalculationGame, lastErr e
 				b.WriteString(i18n.Tf("calculation.nextRank",
 					"rank", strconv.Itoa(next)))
 			}
+			// 1手先だけでは +3 の列で「次の次のまた次」を辿れない。Web は6手先まで
+			// バッジで出している (#5551)。空の組札には出さない。
+			if upcoming := g.GetUpcomingFoundationRanks(i, domain.CalculationMaxLookAhead); len(upcoming) > 0 {
+				parts := make([]string, len(upcoming))
+				for j, r := range upcoming {
+					parts[j] = strconv.Itoa(r)
+				}
+				b.WriteString(i18n.Tf("calculation.upcomingRanks",
+					"ranks", strings.Join(parts, " → ")))
+			}
 			b.WriteString("\n")
 		}
 		b.WriteString("----------\n")

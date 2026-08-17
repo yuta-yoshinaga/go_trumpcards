@@ -78,6 +78,15 @@ func (_m *MockCalculationGame) GetNextFoundationRank(fIdx int) int {
 	return args.Int(0)
 }
 
+// GetUpcomingFoundationRanks これから必要になるランクを最大 max 件返す
+func (_m *MockCalculationGame) GetUpcomingFoundationRanks(fIdx, max int) []int {
+	args := _m.Called(fIdx, max)
+	if v, ok := args.Get(0).([]int); ok {
+		return v
+	}
+	return nil
+}
+
 func (_m *MockCalculationGame) IsStalemate() bool { return _m.Called().Bool(0) }
 
 func (_m *MockCalculationGame) GetActionLog() []*domain.ActionLogEntry {

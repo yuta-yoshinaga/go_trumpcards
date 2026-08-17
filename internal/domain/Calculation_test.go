@@ -587,3 +587,59 @@ func TestCalculation_GetNextFoundationRank(t *testing.T) {
 		}
 	})
 }
+
+// #5551: +1/+2/+3/+4 の歩幅を何手も辿るのは暗算負荷が高い。Web は最大6手先まで
+// バッジで出しているのに、CUI は 1 手先しか出していなかった。
+func TestCalculation_GetUpcomingFoundationRanks(t *testing.T) {
+	c := NewDefaultCalculation()
+	c.Reset()
+
+	set := func(fIdx int, values ...int) {
+		f := c.GetFoundations()
+		pile := make([]*Card, 0, len(values))
+		for _, v := range values {
+			pile = append(pile, NewCard(CardDesignSpade, v, false))
+		}
+		f[fIdx] = pile
+		c.SetFoundations(f)
+	}
+
+	// +3 の列 (index 2) が 3 で止まっている: 6, 9, 12, 2, 5, 8。
+	set(2, 3)
+	assert.Equal(t, []int{6, 9, 12, 2, 5, 8}, c.GetUpcomingFoundationRanks(2, 6))
+
+	// +1 の列 (index 0) が 1 のとき: 2, 3, 4。
+	set(0, 1)
+	assert.Equal(t, []int{2, 3, 4}, c.GetUpcomingFoundationRanks(0, 3))
+
+	// **13枚に達したら打ち切る。**残り2枚しか置けない山で6手先は返さない。
+	full := make([]int, 0, 11)
+	for v := 1; v <= 11; v++ {
+		full = append(full, v)
+	}
+	set(0, full...)
+	assert.Len(t, c.GetUpcomingFoundationRanks(0, 6), 2)
+
+	// 完成した山は空。
+	full = append(full, 12, 13)
+	set(0, full...)
+	assert.Empty(t, c.GetUpcomingFoundationRanks(0, 6))
+
+	// 範囲外は空。
+	assert.Empty(t, c.GetUpcomingFoundationRanks(-1, 6))
+	assert.Empty(t, c.GetUpcomingFoundationRanks(CalculationFoundationCnt, 6))
+}
+
+// **1手先は既存の GetNextFoundationRank と一致すること。**別々に計算していると、
+// 同じ画面が 2 つの「次のランク」を出すことになる。
+func TestCalculation_UpcomingRanksAgreeWithNextRank(t *testing.T) {
+	c := NewDefaultCalculation()
+	c.Reset()
+	for i := range CalculationFoundationCnt {
+		upcoming := c.GetUpcomingFoundationRanks(i, 6)
+		if next := c.GetNextFoundationRank(i); next > 0 {
+			require.NotEmpty(t, upcoming, "foundation %d", i)
+			assert.Equal(t, next, upcoming[0], "foundation %d", i)
+		}
+	}
+}
