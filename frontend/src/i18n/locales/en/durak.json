@@ -67,5 +67,6 @@
     "defend_beat": "this card beats it",
     "take_cannot_beat": "nothing in hand beats it",
     "pass_no_addition": "nothing left to pile on"
-  }
+  },
+  "finished": "Finished"
 }
