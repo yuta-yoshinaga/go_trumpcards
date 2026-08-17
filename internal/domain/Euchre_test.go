@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
@@ -1066,4 +1067,56 @@ func TestEuchre_GetValidPlayIndices(t *testing.T) {
 	indices = e.GetValidPlayIndices(0)
 	assert.Equal(t, 1, len(indices))
 	assert.Equal(t, 0, indices[0])
+}
+
+// #5509: GetHint は evalHandForTrump のスコアで判断しておきながら、真偽値と定型の
+// 理由キーしか返さずスコアを捨てていた。プレイヤーは自分の手札が CPU の基準に
+// どれだけ近いかを学べない。
+func TestEuchre_HintCarriesTheScoreItJudgedWith(t *testing.T) {
+	newGame := func() *domain.Euchre {
+		e := domain.NewDefaultEuchre()
+		e.Reset()
+		return e
+	}
+
+	t.Run("pickup hint reports a score", func(t *testing.T) {
+		e := newGame()
+		e.SetPhase(domain.EuchrePhasePickUp)
+		e.SetBidPlayerIdx(0)
+		h := e.GetHint()
+		require.NotNil(t, h)
+		require.NotNil(t, h.Score, "判断に使ったスコアが落ちている")
+		// **判断と数値が矛盾しないこと。** しきい値以上なら勧め、未満なら勧めない。
+		require.NotNil(t, h.OrderUp)
+		assert.Equal(t, *h.Score >= domain.EuchreOrderUpScore, *h.OrderUp)
+		require.NotNil(t, h.GoAlone)
+		assert.Equal(t, *h.Score >= domain.EuchreGoAloneScore, *h.GoAlone)
+		// 既存の理由キーは維持する。
+		assert.Equal(t, "strategic_pickup", h.Reason)
+	})
+
+	t.Run("call-trump hint reports a score", func(t *testing.T) {
+		e := newGame()
+		e.SetPhase(domain.EuchrePhaseCallTrump)
+		e.SetBidPlayerIdx(0)
+		h := e.GetHint()
+		require.NotNil(t, h)
+		require.NotNil(t, h.Score)
+		require.NotNil(t, h.GoAlone)
+		assert.Equal(t, *h.Score >= domain.EuchreGoAloneScore, *h.GoAlone)
+		// スートを勧めるかどうかも同じしきい値に従う。
+		if *h.Score >= domain.EuchreOrderUpScore {
+			assert.NotNil(t, h.Suit)
+			assert.Equal(t, "strategic_call", h.Reason)
+		} else {
+			assert.Nil(t, h.Suit)
+			assert.Equal(t, "pass_recommended", h.Reason)
+		}
+	})
+
+	// **しきい値の順序。** ゴーアローンはオーダーアップより厳しい。
+	// 逆転すると「勧めないのにゴーアローン」という文言が出る。
+	t.Run("go-alone is the stricter threshold", func(t *testing.T) {
+		assert.Greater(t, domain.EuchreGoAloneScore, domain.EuchreOrderUpScore)
+	})
 }

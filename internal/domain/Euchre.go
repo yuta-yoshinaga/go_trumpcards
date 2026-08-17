@@ -48,7 +48,20 @@ type EuchreHint struct {
 	Suit      *int   // 推奨スート (コールトランプ時)
 	GoAlone   *bool  // ゴーアローンすべきか
 	Reason    string // ヒント理由キー
+	// Score は判断の元になったハンド強度 (ピックアップ / コールトランプ時のみ)。
+	// ディーラーボーナス込みの、実際に判定へ使った値。
+	Score *int
 }
+
+// ハンド強度スコアのしきい値。evalHandForTrump のスコアをこれと比べて
+// オーダーアップ / ゴーアローンを決める。**ヒントに出す数値と同じ基準**であることを
+// テストで固定してある (#5509)。
+const (
+	// EuchreOrderUpScore はオーダーアップ (トランプを選ぶ) 最低スコア。
+	EuchreOrderUpScore = 3
+	// EuchreGoAloneScore はゴーアローンに踏み切る最低スコア。
+	EuchreGoAloneScore = 5
+)
 
 // Euchre ユーカーゲームクラス
 type Euchre struct {
@@ -905,19 +918,19 @@ func (e *Euchre) GetHint() *EuchreHint {
 		if e.bidPlayerIdx != humanIdx {
 			return nil
 		}
-		orderUp, goAlone := e.cpuEvalPickUp(humanIdx)
-		return &EuchreHint{OrderUp: &orderUp, GoAlone: &goAlone, Reason: "strategic_pickup"}
+		orderUp, goAlone, score := e.cpuEvalPickUpScored(humanIdx)
+		return &EuchreHint{OrderUp: &orderUp, GoAlone: &goAlone, Reason: "strategic_pickup", Score: &score}
 
 	case EuchrePhaseCallTrump:
 		if e.bidPlayerIdx != humanIdx {
 			return nil
 		}
-		suit, goAlone := e.cpuEvalCallTrump(humanIdx)
+		suit, goAlone, score := e.cpuEvalCallTrumpScored(humanIdx)
 		if suit > 0 {
-			return &EuchreHint{Suit: &suit, GoAlone: &goAlone, Reason: "strategic_call"}
+			return &EuchreHint{Suit: &suit, GoAlone: &goAlone, Reason: "strategic_call", Score: &score}
 		}
 		f := false
-		return &EuchreHint{GoAlone: &f, Reason: "pass_recommended"}
+		return &EuchreHint{GoAlone: &f, Reason: "pass_recommended", Score: &score}
 
 	case EuchrePhaseDiscard:
 		if e.dealerIdx != humanIdx {
@@ -1001,7 +1014,7 @@ func (e *Euchre) cpuPickUpEasy(playerIdx int) (bool, bool) {
 // cpuPickUpNormal カードの強さに基づくピックアップ判断
 func (e *Euchre) cpuPickUpNormal(playerIdx int) (bool, bool) {
 	score := e.evalHandForTrump(playerIdx, e.faceUpCard.GetDesign())
-	if score >= 3 {
+	if score >= EuchreOrderUpScore {
 		return true, false
 	}
 	// ディーラーはボーナス (ピックアップで1枚交換できるため)
@@ -1013,6 +1026,13 @@ func (e *Euchre) cpuPickUpNormal(playerIdx int) (bool, bool) {
 
 // cpuEvalPickUp 高度なピックアップ評価
 func (e *Euchre) cpuEvalPickUp(playerIdx int) (bool, bool) {
+	orderUp, goAlone, _ := e.cpuEvalPickUpScored(playerIdx)
+	return orderUp, goAlone
+}
+
+// cpuEvalPickUpScored は判断に加えて、その判断に使ったスコアも返す。
+// **ヒントに出すのはこの値。**別に計算し直すと、説明と判断がずれる。
+func (e *Euchre) cpuEvalPickUpScored(playerIdx int) (bool, bool, int) {
 	score := e.evalHandForTrump(playerIdx, e.faceUpCard.GetDesign())
 
 	// ディーラーはフェイスアップカードを獲得するためボーナス
@@ -1020,13 +1040,13 @@ func (e *Euchre) cpuEvalPickUp(playerIdx int) (bool, bool) {
 		score++
 	}
 
-	if score >= 5 {
-		return true, true // ゴーアローン
+	if score >= EuchreGoAloneScore {
+		return true, true, score // ゴーアローン
 	}
-	if score >= 3 {
-		return true, false
+	if score >= EuchreOrderUpScore {
+		return true, false, score
 	}
-	return false, false
+	return false, false, score
 }
 
 // cpuSelectCallTrump CPUがコールトランプで指名するスートを選択する
@@ -1071,6 +1091,12 @@ func (e *Euchre) cpuCallTrumpNormal(playerIdx int) (int, bool) {
 
 // cpuEvalCallTrump 高度なコール評価
 func (e *Euchre) cpuEvalCallTrump(playerIdx int) (int, bool) {
+	suit, goAlone, _ := e.cpuEvalCallTrumpScored(playerIdx)
+	return suit, goAlone
+}
+
+// cpuEvalCallTrumpScored は判断に加えて、その判断に使った最良スコアも返す。
+func (e *Euchre) cpuEvalCallTrumpScored(playerIdx int) (int, bool, int) {
 	bestSuit := 0
 	bestScore := 0
 	for _, suit := range e.availableCallSuits() {
@@ -1080,13 +1106,13 @@ func (e *Euchre) cpuEvalCallTrump(playerIdx int) (int, bool) {
 			bestSuit = suit
 		}
 	}
-	if bestScore >= 5 {
-		return bestSuit, true // ゴーアローン
+	if bestScore >= EuchreGoAloneScore {
+		return bestSuit, true, bestScore // ゴーアローン
 	}
-	if bestScore >= 3 {
-		return bestSuit, false
+	if bestScore >= EuchreOrderUpScore {
+		return bestSuit, false, bestScore
 	}
-	return 0, false
+	return 0, false, bestScore
 }
 
 // cpuForceCallTrump スタックドディーラー: 強制的にスートを選ぶ

@@ -42,5 +42,6 @@
   "hintReasonDiscardWeakest": "最弱カードを捨てる",
   "sittingOut": " 💤（休み）",
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "hintScore": "  ハンド強度: {{score}} (オーダーアップ {{orderUp}}以上 / ゴーアローン {{goAlone}}以上)"
 }

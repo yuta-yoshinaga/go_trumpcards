@@ -193,15 +193,24 @@ func (p *EuchreCuiPresenter) HintOutput(e interfaces.EuchreGame) string {
 		return i18n.T("euchre.hintNone") + "\n"
 	}
 	reason := hintReasonStr(hint.Reason, euchreHintReasonKeys)
+	// **判断の元になった数値も出す。** 真偽値と定型の理由キーだけでは、自分の手札が
+	// CPU の基準にどれだけ近いのか分からない (#5509)。しきい値も一緒に言う。
+	scoreLine := ""
+	if hint.Score != nil {
+		scoreLine = i18n.Tf("euchre.hintScore",
+			"score", strconv.Itoa(*hint.Score),
+			"orderUp", strconv.Itoa(domain.EuchreOrderUpScore),
+			"goAlone", strconv.Itoa(domain.EuchreGoAloneScore)) + "\n"
+	}
 	if hint.OrderUp != nil {
 		if *hint.OrderUp {
 			key := "euchre.hintOrderUp"
 			if hint.GoAlone != nil && *hint.GoAlone {
 				key = "euchre.hintOrderUpAlone"
 			}
-			return color.Yellow(i18n.Tf(key, "reason", reason)) + "\n"
+			return color.Yellow(i18n.Tf(key, "reason", reason)) + "\n" + scoreLine
 		}
-		return color.Yellow(i18n.Tf("euchre.hintPass", "reason", reason)) + "\n"
+		return color.Yellow(i18n.Tf("euchre.hintPass", "reason", reason)) + "\n" + scoreLine
 	}
 	if hint.Suit != nil {
 		key := "euchre.hintCallSuit"
@@ -210,7 +219,7 @@ func (p *EuchreCuiPresenter) HintOutput(e interfaces.EuchreGame) string {
 		}
 		return color.Yellow(i18n.Tf(key,
 			"suit", cuiSuitName(*hint.Suit),
-			"reason", reason)) + "\n"
+			"reason", reason)) + "\n" + scoreLine
 	}
 	if hint.CardIndex == nil {
 		return i18n.T("euchre.hintNone") + "\n"
