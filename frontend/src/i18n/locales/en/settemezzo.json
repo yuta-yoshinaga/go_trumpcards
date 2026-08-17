@@ -48,5 +48,6 @@
     "settemezzoHitLow": "Still far from seven and a half — draw another card",
     "settemezzoStandClose": "Close to seven and a half; drawing busts you more often than not",
     "settemezzoSetMatta": "You can choose the matta value — set it to reach exactly seven and a half"
-  }
+  },
+  "cpuStand": "They stand at {{total}}"
 }

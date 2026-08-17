@@ -123,7 +123,13 @@ func (sp *SetteEMezzoCuiPresenter) actionHints(s interfaces.SetteEMezzoGame) str
 	if len(opts) == 0 {
 		return ""
 	}
-	return i18n.Tf("settemezzo.actionsLine", "options", strings.Join(opts, " / ")) + "\n"
+	// **相手がいつ引くのをやめるかは、賭け続けるかの判断材料。**その数字は
+	// どの画面にも出ていなかった (#5566)。点は FormatHalves に通す ── 半点単位の
+	// 内部表現をそのまま出すと 11 と読めてしまう。
+	return i18n.Tf("settemezzo.actionsLine", "options", strings.Join(opts, " / ")) + "\n" +
+		color.Yellow(i18n.Tf("settemezzo.cpuStandLine",
+			"total", s.FormatHalves(domain.SetteEMezzoCpuStandHalves),
+			"target", s.FormatHalves(domain.SetteEMezzoTargetHalves))) + "\n"
 }
 
 // ActionLogOutput 棋譜をテキスト出力

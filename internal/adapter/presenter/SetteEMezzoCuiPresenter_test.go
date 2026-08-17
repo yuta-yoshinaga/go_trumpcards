@@ -183,3 +183,38 @@ func TestSetteEMezzoCuiPresenter_ActionLogOutput(t *testing.T) {
 		assert.Contains(t, new(SetteEMezzoCuiPresenter).ActionLogOutput(g), "test detail")
 	})
 }
+
+// #5566: 相手がいつ引くのをやめるかは、賭け続けるかの判断材料。5.5 点という
+// 数字はどの画面にも出ていなかった。
+func TestSetteEMezzoCuiPresenter_ShowsTheCpuStandThreshold(t *testing.T) {
+	g := new(interfaces.MockSetteEMezzoGame)
+	setupSemCuiMockDefaults(g)
+	// **半点をそのまま出さない。**閾値は 11 だが、画面に出るのは 5.5 点。
+	// ドメインの FormatHalves を通していることを、引数ごとの戻り値で確かめる
+	// (既定の総括登録を外してから、引数ごとに積む)。
+	g.ExpectedCalls = filterCalls(g.ExpectedCalls, "FormatHalves")
+	g.On("FormatHalves", domain.SetteEMezzoCpuStandHalves).Return("5.5").Maybe()
+	g.On("FormatHalves", domain.SetteEMezzoTargetHalves).Return("7.5").Maybe()
+	g.On("FormatHalves", mock.Anything).Return("4.5").Maybe()
+
+	out := new(SetteEMezzoCuiPresenter).Output(g, nil)
+	assert.Contains(t, out, i18n.Tf("settemezzo.cpuStandLine", "total", "5.5", "target", "7.5"))
+	assert.NotContains(t, out, i18n.Tf("settemezzo.cpuStandLine", "total", "11", "target", "15"))
+}
+
+// 打てる手が無い局面では出さない。手番でもないのに停止ラインだけ残ると、
+// 誰の話をしているのか分からない。
+func TestSetteEMezzoCuiPresenter_HidesTheThresholdWithNoLegalAction(t *testing.T) {
+	g := new(interfaces.MockSetteEMezzoGame)
+	setupSemCuiMockDefaults(g)
+	g.ExpectedCalls = filterCalls(g.ExpectedCalls, "FormatHalves")
+	g.On("FormatHalves", domain.SetteEMezzoCpuStandHalves).Return("5.5").Maybe()
+	g.On("FormatHalves", domain.SetteEMezzoTargetHalves).Return("7.5").Maybe()
+	g.On("FormatHalves", mock.Anything).Return("4.5").Maybe()
+	for _, name := range []string{"CanHit", "CanStand", "CanSetMatta"} {
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, name)
+		g.On(name).Return(false)
+	}
+	assert.NotContains(t, new(SetteEMezzoCuiPresenter).Output(g, nil),
+		i18n.Tf("settemezzo.cpuStandLine", "total", "5.5", "target", "7.5"))
+}

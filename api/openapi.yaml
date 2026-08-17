@@ -29033,6 +29033,11 @@ components:
         targetHalves:
           type: integer
           description: The target (7.5) in halves, so 15. Sent so the figure is not written down twice.
+        cpuStandHalves:
+          type: integer
+          description: >-
+            The total in halves at which the CPU seats and the banker stand
+            (11, i.e. 5.5). Sent so the figure is not written down twice.
         canHit:
           type: boolean
         canStand:

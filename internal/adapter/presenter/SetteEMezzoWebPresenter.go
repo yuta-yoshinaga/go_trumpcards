@@ -67,6 +67,7 @@ func (sp *SetteEMezzoWebPresenter) Output(s interfaces.SetteEMezzoGame, lastErr 
 	resObj.TargetHalves = domain.SetteEMezzoTargetHalves
 	resObj.CanHit = s.CanHit()
 	resObj.CanStand = s.CanStand()
+	resObj.CpuStandHalves = domain.SetteEMezzoCpuStandHalves
 	resObj.CanSetMatta = s.CanSetMatta()
 
 	if lastErr != nil {
