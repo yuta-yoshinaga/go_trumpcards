@@ -2276,7 +2276,7 @@ var gameRegistry = []GameRegistryEntry{
 			ExampleKeys: []string{
 				"dragontiger.helpExampleBet",
 			},
-			CommandKeys:       []string{"dragontiger.helpBet", "dragontiger.helpClear"},
+			CommandKeys:       []string{"dragontiger.helpBet", "dragontiger.helpRebet", "dragontiger.helpClear"},
 			ExtraCommandLines: []string{"  log                  action log"},
 		}),
 	BindCuiFor("blackjackswitch",
