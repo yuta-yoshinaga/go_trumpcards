@@ -4,6 +4,7 @@ package controller
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
@@ -40,12 +41,28 @@ func (c *TerraceCuiController) Exec(command string) string {
 			case "ac", "autocomplete":
 				return c.ti.AutoComplete(), true
 			case "u", "undo":
-				return c.ti.Undo(), true
+				return c.handleUndo(args), true
 			default:
 				return handleCuiHintAndLog(cmd, c.ti.Hint, c.ti.ActionLog)
 			}
 		},
 	)
+}
+
+// handleUndo アンドゥ。引数なしなら 1 手、`undo <n>` なら n 手まとめて戻す。
+//
+// **手詰まりの案内が既に `undo <count>` と書いている** (terrace.undoToEscape)。
+// 引数を捨てて 1 手だけ戻していたので、案内どおりに打った人は脱出したつもりで
+// 手詰まりのまま置き去りにされていた (#5563)。
+//
+// 回数の上限は決めない。履歴より多ければドメインが答えるので、ここで打ち切ると
+// Web の undo_n (素通し) と答えが食い違う。
+func (c *TerraceCuiController) handleUndo(args []string) string {
+	if len(args) == 0 {
+		return c.ti.Undo()
+	}
+	out, _ := cuiutil.WithParsedIntKeys(args, "", "terrace.invalidUndoCount", 1, math.MaxInt32, c.ti.UndoN)
+	return out
 }
 
 // handleMove 移動コマンドを処理。supported syntax:

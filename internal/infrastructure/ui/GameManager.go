@@ -1875,6 +1875,7 @@ var gameRegistry = []GameRegistryEntry{
 				"terrace.helpHint",
 				"terrace.helpAutoComplete",
 				"terrace.helpUndo",
+				"terrace.helpUndoN",
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),

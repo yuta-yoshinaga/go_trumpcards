@@ -38,5 +38,7 @@
   "hintLine": "ヒント: {{from}} → {{to}}",
   "undoToEscape": "脱出には {{count}} 手戻す必要があります（undo {{count}} または u を繰り返す）",
   "helpExampleHint": "  h                        次の一手を教えてもらう",
-  "helpExampleAuto": "  ac                       組札へ送れる札を自動で送る"
+  "helpExampleAuto": "  ac                       組札へ送れる札を自動で送る",
+  "invalidUndoCount": "無効なアンドゥ回数です: {{val}}（1以上の整数を指定してください）",
+  "helpUndoN": "  undo <n>                 n手まとめて戻す（手詰まりからの脱出用）"
 }
