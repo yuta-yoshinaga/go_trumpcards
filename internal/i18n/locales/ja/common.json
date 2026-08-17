@@ -587,5 +587,6 @@
   "giveExactlyNIndexes": "手札の番号をちょうど {{n}} 個指定してください。",
   "notes": "補足:",
   "hesitationFlagRequired0Off1On": "CPU の迷い時間演出の有無を指定してください (0=OFF, 1=ON)。",
-  "invalidHesitationFlag01": "CPU の迷い時間演出の有無が不正です: {{val}}。0-1 を入力してください。"
+  "invalidHesitationFlag01": "CPU の迷い時間演出の有無が不正です: {{val}}。0-1 を入力してください。",
+  "playerCountRequired26": "プレイヤー数を指定してください (2-6)。"
 }

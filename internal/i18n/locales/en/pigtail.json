@@ -14,5 +14,6 @@
   "gameEndCardSuffix": " ({{count}} cards)",
   "promptCurrentTurn": "{{name}} to act (draw to pull from stock)",
   "helpExampleDraw": "  d                     draw from the circle",
-  "helpLog": "  l                     show the action log"
+  "helpLog": "  l                     show the action log",
+  "helpSetPlayers": "  sp [2-6]              set the player count and reset"
 }
