@@ -991,7 +991,8 @@ func (e *Euchre) getValidPlayIndices(playerIdx int) []int {
 func (e *Euchre) cpuSelectPickUp(playerIdx int) (orderUp bool, goAlone bool) {
 	switch e.config.CpuDifficulty {
 	case EuchreCpuDifficultyHard:
-		return e.cpuEvalPickUp(playerIdx)
+		orderUp, goAlone, _ := e.cpuEvalPickUpScored(playerIdx)
+		return orderUp, goAlone
 	case EuchreCpuDifficultyNormal:
 		return e.cpuPickUpNormal(playerIdx)
 	default:
@@ -1025,11 +1026,6 @@ func (e *Euchre) cpuPickUpNormal(playerIdx int) (bool, bool) {
 }
 
 // cpuEvalPickUp 高度なピックアップ評価
-func (e *Euchre) cpuEvalPickUp(playerIdx int) (bool, bool) {
-	orderUp, goAlone, _ := e.cpuEvalPickUpScored(playerIdx)
-	return orderUp, goAlone
-}
-
 // cpuEvalPickUpScored は判断に加えて、その判断に使ったスコアも返す。
 // **ヒントに出すのはこの値。**別に計算し直すと、説明と判断がずれる。
 func (e *Euchre) cpuEvalPickUpScored(playerIdx int) (bool, bool, int) {
@@ -1053,7 +1049,8 @@ func (e *Euchre) cpuEvalPickUpScored(playerIdx int) (bool, bool, int) {
 func (e *Euchre) cpuSelectCallTrump(playerIdx int) (suit int, goAlone bool) {
 	switch e.config.CpuDifficulty {
 	case EuchreCpuDifficultyHard:
-		return e.cpuEvalCallTrump(playerIdx)
+		suit, goAlone, _ := e.cpuEvalCallTrumpScored(playerIdx)
+		return suit, goAlone
 	case EuchreCpuDifficultyNormal:
 		return e.cpuCallTrumpNormal(playerIdx)
 	default:
@@ -1090,11 +1087,6 @@ func (e *Euchre) cpuCallTrumpNormal(playerIdx int) (int, bool) {
 }
 
 // cpuEvalCallTrump 高度なコール評価
-func (e *Euchre) cpuEvalCallTrump(playerIdx int) (int, bool) {
-	suit, goAlone, _ := e.cpuEvalCallTrumpScored(playerIdx)
-	return suit, goAlone
-}
-
 // cpuEvalCallTrumpScored は判断に加えて、その判断に使った最良スコアも返す。
 func (e *Euchre) cpuEvalCallTrumpScored(playerIdx int) (int, bool, int) {
 	bestSuit := 0
