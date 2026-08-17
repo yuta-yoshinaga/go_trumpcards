@@ -46,5 +46,6 @@
   "hintReasonPlayJoker": "ジョーカーをプレイ",
   "hintReasonDiscardLow": "低いカードを捨てる",
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "pointLimitLine": "目標: ±{{limit}}点で決着"
 }

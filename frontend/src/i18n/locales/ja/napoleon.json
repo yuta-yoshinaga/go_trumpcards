@@ -120,5 +120,6 @@
     "resetButton": "リセットボタンで新しいゲームを始められます。"
   },
   "hintRequested": "ヒントがあります",
-  "noHint": "ヒントはありません"
+  "noHint": "ヒントはありません",
+  "pointLimitLine": "目標: ±{{limit}}点で決着"
 }

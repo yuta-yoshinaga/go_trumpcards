@@ -120,5 +120,6 @@
     "resetButton": "Press the reset button to start a new game."
   },
   "hintRequested": "Hint available",
-  "noHint": "No hint available"
+  "noHint": "No hint available",
+  "pointLimitLine": "Target: game ends at ±{{limit}} points"
 }
