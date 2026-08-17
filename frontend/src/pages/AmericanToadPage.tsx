@@ -22,6 +22,7 @@ import { useAmericanToadGame } from '../hooks/useAmericanToadGame';
 import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
+import { useDestinationPreview } from '../hooks/useDestinationPreview';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
@@ -30,6 +31,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { AmericanToadMoveZone, AmericanToadResponse } from '../types/card';
 import { AmericanToadPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { americanToadLegalTargets, americanToadSourceCard } from '../utils/americanToadLegalTargets';
 import { cardAlt } from '../utils/cardAlt';
 import { AMERICANTOAD_HELP, parseAmericanToadCommand } from '../utils/cli/commands/americantoadCommands';
 import { formatAmericanToadState } from '../utils/cli/formatters/americantoadFormatter';
@@ -153,6 +155,10 @@ function AmericanToadPageContent() {
 
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!isPlayingForKbd && !loading });
 
+  // **フックは早期 return より前に。**移動先プレビューは選択状態しか見ないので、
+  // state が null の初回描画でも安全に呼べる。
+  const preview = useDestinationPreview<AmericanToadMoveZone>(selectedSource);
+
   if (!state) {
     return <GameSkeleton gameKey="americantoad" layout={{ kind: 'tableau', topRow: 8, tableau: TABLEAU_COLS }} />;
   }
@@ -170,6 +176,25 @@ function AmericanToadPageContent() {
   // The stock button doubles as the redeal once the stock runs out.
   const stockActs = state.stockCount > 0 || state.canRedeal;
 
+  // **選択後は押すまで正誤が分からず、クリック→サーバーエラーのループになる
+  // (#5559)。**8列 + 8基礎札 + リザーブ + 捨て札と候補が多く、基礎札は同スート
+  // 2つずつという構造なので、なおさら分かりにくい。
+  //
+  // hover / フォーカス中の札にも**まったく同じ計算**を当てる ── 判定を二重に
+  // 持たないので、プレビューと選択後の表示が食い違わない。
+  const previewSource = preview.source;
+  const previewedCard = americanToadSourceCard(state.tableau, state.reserve, state.waste, previewSource);
+  const legalTargets = americanToadLegalTargets(
+    state.tableau,
+    state.foundation,
+    state.reserve,
+    state.baseRank,
+    previewedCard,
+    previewSource?.zone,
+  );
+  /** Ring for a legal destination: softer while it is only a hover preview. */
+  const targetRing = preview.isPreview ? ' rounded ring-2 ring-ds-success/70' : ' rounded ring-2 ring-ds-success';
+
   const isSourceSelected = (zone: string, col?: number, cardIndex?: number) =>
     selectedSource !== null &&
     selectedSource.zone === zone &&
@@ -180,7 +205,12 @@ function AmericanToadPageContent() {
     const col = state.tableau[colIdx] ?? [];
     const tableauColZone: AmericanToadMoveZone = { zone: 'tableau', col: colIdx };
     return (
-      <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
+      <div
+        key={`col-${colIdx.toString()}`}
+        className={`flex-1 min-w-0${legalTargets.tableau.has(colIdx) ? targetRing : ''}`}
+        data-legal-target={legalTargets.tableau.has(colIdx) ? 'true' : undefined}
+        data-preview-target={legalTargets.tableau.has(colIdx) && preview.isPreview ? 'true' : undefined}
+      >
         <div className="text-center text-xs text-ds-text-muted mb-0.5" aria-hidden="true">
           #{colIdx}
         </div>
@@ -234,6 +264,7 @@ function AmericanToadPageContent() {
                         draggable={isPlaying && !loading}
                         onDragStart={dnd.handleDragStart(cardZone)}
                         onDragEnd={dnd.handleDragEnd}
+                        {...preview.previewProps(cardZone)}
                         className={`p-0 border-0 bg-transparent w-full rounded cursor-pointer ${focusRingWhite} ${isSelected ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
                       >
                         <AnimatedCard
@@ -307,6 +338,7 @@ function AmericanToadPageContent() {
                     draggable={isPlaying && !loading}
                     onDragStart={dnd.handleDragStart(reserveZone)}
                     onDragEnd={dnd.handleDragEnd}
+                    {...preview.previewProps(reserveZone)}
                     className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('reserve', undefined, undefined) ? 'ring-2 ring-ds-warning' : ''}`}
                   >
                     <AnimatedCard card={reserveTop} width={dims.cw} draggable={false} />
@@ -328,7 +360,12 @@ function AmericanToadPageContent() {
                 {state.foundation.map((pile, idx) => {
                   const foundationZone: AmericanToadMoveZone = { zone: 'foundation', col: idx };
                   return (
-                    <div key={`f-${idx.toString()}`} className="text-center">
+                    <div
+                      key={`f-${idx.toString()}`}
+                      className={`text-center${legalTargets.foundation.has(idx) ? targetRing : ''}`}
+                      data-legal-target={legalTargets.foundation.has(idx) ? 'true' : undefined}
+                      data-preview-target={legalTargets.foundation.has(idx) && preview.isPreview ? 'true' : undefined}
+                    >
                       <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
                       <DropZone
                         isDropTarget={dnd.isDropTarget(foundationZone)}
