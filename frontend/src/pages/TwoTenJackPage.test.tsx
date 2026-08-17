@@ -440,3 +440,50 @@ describe('TwoTenJackPage', () => {
     expect(document.querySelectorAll('[data-hint-suggested="true"]')).toHaveLength(0);
   });
 });
+
+// #5527: 読み上げの「+N」に獲得点札の生の合計を渡していた。契約を落とした
+// ラウンドでは実際の加点が 0 でも点札は取っているので、読み上げた数字と
+// 実際に累計へ足された数字が食い違う。
+describe('TwoTenJackPage round announcement', () => {
+  const announce = () => screen.getByRole('status').textContent ?? '';
+
+  const stateWith = (fields: { captured: number[]; round: number[]; cumulative: number[] }) =>
+    makeTwoTenJackState({
+      phase: 3,
+      players: makeTwoTenJackState().players.map((p, i) => ({
+        ...p,
+        capturedPoints: fields.captured[i],
+        roundScore: fields.round[i],
+        cumulativeScore: fields.cumulative[i],
+      })),
+    });
+
+  it('announces the score that was actually added, not the points captured', async () => {
+    // 宣言チーム(0)が 20 点しか取れず契約を落としたラウンド。
+    // 加点はチーム1に 6 点、チーム0 は 0 点。
+    mockExec.mockResolvedValue(
+      stateWith({ captured: [12, 30, 8, 20], round: [0, 6, 0, 6], cumulative: [10, 16, 10, 16] }),
+    );
+    renderWithProviders(<TwoTenJackPage />);
+    await waitFor(() => expect(announce()).toContain('ラウンド終了'));
+
+    // チーム0 は点札を 20 枚分取っているが加点は 0。
+    expect(announce()).toContain('+0');
+    // チーム1 は 2 人分の roundScore の合計 = 累計の増分。
+    expect(announce()).toContain('+12');
+    // 生の獲得点札 (20 / 50) は読み上げに出てこない。
+    expect(announce()).not.toContain('+20');
+    expect(announce()).not.toContain('+50');
+  });
+
+  it('still shows the captured points in the score table', async () => {
+    mockExec.mockResolvedValue(
+      stateWith({ captured: [12, 30, 8, 20], round: [0, 6, 0, 6], cumulative: [10, 16, 10, 16] }),
+    );
+    renderWithProviders(<TwoTenJackPage />);
+    await waitFor(() => expect(screen.getByRole('status').textContent).toContain('ラウンド終了'));
+    // 点札の合計 (12+8=20 / 30+20=50) は表に残す。
+    expect(screen.getAllByText('20').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('50').length).toBeGreaterThan(0);
+  });
+});
