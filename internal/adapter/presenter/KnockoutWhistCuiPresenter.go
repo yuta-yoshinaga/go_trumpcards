@@ -109,6 +109,20 @@ func (p *KnockoutWhistCuiPresenter) Output(g interfaces.KnockoutWhistGame, lastE
 		case domain.KnockoutWhistPhaseRoundEnd:
 			b.WriteString(i18n.Tf("knockoutwhist.promptRoundEnd",
 				"active", strconv.Itoa(g.GetActiveCount())) + "\n")
+			// **毎ラウンド手札が1枚ずつ減り、最後は1枚勝負になる** (#5650)。
+			// Web は kw-next-round-preview で次の形を予告しているのに、CUI は
+			// 生存者数しか出しておらず、何枚勝負に向かうのか分からなかった。
+			if winner := g.GetRoundWinnerIdx(); winner >= 0 {
+				// 1 枚より下がらない。次が 1 枚なら最終ラウンドと明示する。
+				next := max(g.GetHandSize()-1, 1)
+				key := "knockoutwhist.nextRoundPreview"
+				if next == 1 {
+					key = "knockoutwhist.finalRoundPreview"
+				}
+				b.WriteString(i18n.Tf(key,
+					"count", strconv.Itoa(next),
+					"name", cuiPlayerName(g.GetPlayer(winner), winner)) + "\n")
+			}
 			b.WriteString(i18n.T("knockoutwhist.promptRoundEndHelp") + "\n")
 		}
 	})
