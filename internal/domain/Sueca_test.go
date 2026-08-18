@@ -307,3 +307,28 @@ func TestSueca_UnmarshalInvalidPlayers(t *testing.T) {
 		t.Errorf("err = %v, want errSuecaInvalidPlayers", err)
 	}
 }
+
+// SuecaCardPoints は早見表 (#5642) との突き合わせのために公開した。委譲するだけ
+// の関数だが、**公開した以上ここが配点の定義として読まれる**ので、全ての値を
+// 押さえておく。A=11 / 7=10 / K=4 / J=3 / Q=2 / その他=0、1ラウンド合計 120 点。
+func TestSuecaCardPoints(t *testing.T) {
+	want := map[int]int{1: 11, 7: 10, 13: 4, 11: 3, 12: 2}
+	total := 0
+	for value := 1; value <= 13; value++ {
+		got := SuecaCardPoints(value)
+		if exp, ok := want[value]; ok {
+			if got != exp {
+				t.Errorf("SuecaCardPoints(%d) = %d, want %d", value, got, exp)
+			}
+		} else if got != 0 {
+			t.Errorf("SuecaCardPoints(%d) = %d, want 0", value, got)
+		}
+		total += got * 4 // 4 スート
+	}
+	if total != 120 {
+		t.Errorf("1ラウンドの合計 = %d, want 120", total)
+	}
+	if SuecaWinPoints*2 <= total {
+		t.Errorf("勝利ライン %d が合計 %d の過半数になっていない", SuecaWinPoints, total)
+	}
+}

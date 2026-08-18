@@ -62,5 +62,23 @@
     "resetButton": "リセットボタンで新しいゲームを始められます。"
   },
   "hintRequested": "ヒントがあります",
-  "noHint": "ヒントはありません"
+  "noHint": "ヒントはありません",
+  "pointLegend": {
+    "title": "カード得点",
+    "cardCol": "カード",
+    "pointCol": "点数",
+    "ace": "A（エース）",
+    "aceValue": "11点",
+    "seven": "7",
+    "sevenValue": "10点",
+    "king": "K（レイ）",
+    "kingValue": "4点",
+    "jack": "J（バラーテ）",
+    "jackValue": "3点",
+    "queen": "Q（ダーマ）",
+    "queenValue": "2点",
+    "others": "その他（2〜6）",
+    "othersValue": "0点",
+    "note": "1ラウンドの合計は120点。61点以上を取ったチームの勝ち。"
+  }
 }

@@ -62,5 +62,23 @@
     "resetButton": "Use the reset button to start a new game."
   },
   "hintRequested": "Hint available",
-  "noHint": "No hint available"
+  "noHint": "No hint available",
+  "pointLegend": {
+    "title": "Card points",
+    "cardCol": "Card",
+    "pointCol": "Points",
+    "ace": "A (ace)",
+    "aceValue": "11",
+    "seven": "7",
+    "sevenValue": "10",
+    "king": "K (rei)",
+    "kingValue": "4",
+    "jack": "J (valete)",
+    "jackValue": "3",
+    "queen": "Q (dama)",
+    "queenValue": "2",
+    "others": "others (2-6)",
+    "othersValue": "0",
+    "note": "120 points per round; the team with 61 or more wins."
+  }
 }
