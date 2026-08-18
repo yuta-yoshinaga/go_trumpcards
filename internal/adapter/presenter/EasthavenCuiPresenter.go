@@ -15,6 +15,37 @@ import (
 // EasthavenCuiPresenter renders the Easthaven Solitaire CUI view.
 type EasthavenCuiPresenter struct{}
 
+// easthavenWriteDealWarnings writes the reasons the player cannot deal, or the
+// warning that face-down cards remain with no stock to free them.
+//
+// 該当しないときは 1 行も足さない ── 常に出す注意書きは読み飛ばされる。
+func easthavenWriteDealWarnings(b *strings.Builder, e interfaces.EasthavenGame) {
+	tableau := e.GetTableau()
+	emptyCol, faceDown := false, false
+	for col := range domain.EasthavenTableauCnt {
+		if len(tableau[col]) == 0 {
+			emptyCol = true
+			continue
+		}
+		for _, tc := range tableau[col] {
+			if tc != nil && !tc.FaceUp {
+				faceDown = true
+				break
+			}
+		}
+	}
+
+	if e.GetStockCount() > 0 {
+		if emptyCol {
+			b.WriteString(color.Yellow(i18n.T("easthaven.cannotDealEmptyCol")) + "\n")
+		}
+		return
+	}
+	if faceDown {
+		b.WriteString(color.Yellow(i18n.T("easthaven.faceDownLeft")) + "\n")
+	}
+}
+
 // Output renders the current game state for the active locale.
 func (p *EasthavenCuiPresenter) Output(e interfaces.EasthavenGame, lastErr error) string {
 	return buildCuiOutput(i18n.T("easthaven.helpTitle"), func(b *strings.Builder) {
@@ -37,6 +68,16 @@ func (p *EasthavenCuiPresenter) Output(e interfaces.EasthavenGame, lastErr error
 		// Stock
 		b.WriteString(i18n.Tf("easthaven.stockLine", "count", strconv.Itoa(e.GetStockCount())))
 		b.WriteString("\n")
+
+		// **打つ前に規則を伝える。**Deal() は空き列があると拒否するので、CUI では
+		// `deal` を打って初めてそれを知ることになっていた (#5634)。山札が尽きて
+		// いればそもそもめくれないので、空き列の話はしない。
+		//
+		// **プレイ中だけ。**ギブアップ後の画面で「めくれません」と言われても、
+		// もう打てないゲームの遊び方を説明されるだけになる。
+		if e.GetPhase() == domain.EasthavenPhasePlaying {
+			easthavenWriteDealWarnings(b, e)
+		}
 
 		b.WriteString("----------\n")
 
