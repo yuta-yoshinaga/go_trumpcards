@@ -379,6 +379,18 @@ func (g *Rummy500) CpuPlay() {
 
 // cpuDraw CPUがドローする
 func (g *Rummy500) cpuDraw() {
+	// Hard だけ、捨て札のトップが**その場でメルドかレイオフに化ける**なら拾う。
+	// 山札から引くのは 1 枚の賭けだが、見えている札で役が完成するなら確実 (#5611)。
+	if g.config.CpuDifficulty == Rummy500CpuDifficultyHard && g.cpuDiscardTopCompletesAMeld() {
+		top := g.discardPile[len(g.discardPile)-1]
+		g.discardPile = g.discardPile[:len(g.discardPile)-1]
+		g.players[g.currentPlayerIdx].AddCard(top)
+		g.sortHand(g.currentPlayerIdx)
+		g.appendLog(g.currentPlayerIdx, "draw_discard",
+			fmt.Sprintf("%s draws %s from discard", playerName(g.players, g.currentPlayerIdx), cardStr(top)), []*Card{top})
+		g.phase = Rummy500PhasePlay
+		return
+	}
 	// 山札優先（簡易戦略）
 	if len(g.drawPile) > 0 {
 		card := g.drawPile[len(g.drawPile)-1]
@@ -434,7 +446,7 @@ func (g *Rummy500) cpuPlayMelds() {
 		return
 	}
 
-	// ディスカード: 最も高得点のカード（手札に残すと負担になる）を捨てる
+	// ディスカード: どれを切るかは難易度で変わる (cpuChooseDiscard) (#5611)。
 	discardIdx := g.cpuChooseDiscard(idx)
 	discarded := player.RemoveCard(discardIdx)
 	g.discardPile = append(g.discardPile, discarded)
@@ -450,6 +462,34 @@ func (g *Rummy500) cpuPlayMelds() {
 	}
 
 	g.advanceTurn()
+}
+
+// cpuDiscardTopCompletesAMeld は捨て札のトップを取ったら、その場でメルドを
+// 作れるか既存のメルドへ載せられるかを返す。
+func (g *Rummy500) cpuDiscardTopCompletesAMeld() bool {
+	if len(g.discardPile) == 0 {
+		return false
+	}
+	top := g.discardPile[len(g.discardPile)-1]
+	player := g.players[g.currentPlayerIdx]
+	n := player.GetCardsSize()
+	cards := make([]*Card, 0, n+1)
+	for i := range n {
+		cards = append(cards, player.GetCard(i))
+	}
+	// 既存のメルドへ載るなら、それだけで取る価値がある。
+	for owner := range g.players {
+		for _, meld := range g.players[owner].GetLaidMelds() {
+			if Rummy500CanLayoff(meld, top) {
+				return true
+			}
+		}
+	}
+	// **拾う前と後で数え比べる。**「拾ったらメルドが1つ以上ある」だけだと、
+	// 元から作れたメルドを理由に毎回拾ってしまう。
+	before := len(findAllRummy500Melds(cards))
+	after := len(findAllRummy500Melds(append(cards, top)))
+	return after > before
 }
 
 // cpuTryMeld 手札から有効なメルドを1つ探して場に出す。出せたらtrue。
@@ -506,12 +546,87 @@ func (g *Rummy500) cpuTryLayoff(playerIdx int) bool {
 
 // cpuChooseDiscard CPUの捨てカード選択（一番高得点のカードを捨てる）
 func (g *Rummy500) cpuChooseDiscard(playerIdx int) int {
+	switch g.config.CpuDifficulty {
+	case Rummy500CpuDifficultyHard:
+		return g.cpuChooseDiscardHard(playerIdx)
+	case Rummy500CpuDifficultyEasy:
+		// Easy: 一番安い札から手放す。高得点札を抱えたまま相手にあがられると、
+		// その分がまるごと減点になる弱い打ち方。
+		return g.cpuExtremeScoreCard(playerIdx, false, nil)
+	default:
+		// Normal: 抱えると重い高得点札を切る (従来の挙動)。
+		return g.cpuExtremeScoreCard(playerIdx, true, nil)
+	}
+}
+
+// cpuChooseDiscardHard は**メルドに使える札を残して**、残りのうち一番重い札を切る。
+// Normal との差はそこだけ: 素点だけで選ぶと、あと1枚でランになる札まで手放す。
+func (g *Rummy500) cpuChooseDiscardHard(playerIdx int) int {
+	keep := g.cpuMeldMaterial(playerIdx)
+	idx := g.cpuExtremeScoreCard(playerIdx, true, keep)
+	if idx >= 0 {
+		return idx
+	}
+	// 手札が丸ごとメルド候補なら、守るものが無いので素点で選ぶ。
+	return g.cpuExtremeScoreCard(playerIdx, true, nil)
+}
+
+// cpuMeldMaterial はメルド候補・レイオフ候補に含まれる手札インデックスを返す。
+func (g *Rummy500) cpuMeldMaterial(playerIdx int) map[int]bool {
 	player := g.players[playerIdx]
-	bestIdx := 0
-	bestVal := rummy500CardScoreLow(player.GetCard(0))
-	for i := 1; i < player.GetCardsSize(); i++ {
+	n := player.GetCardsSize()
+	cards := make([]*Card, n)
+	for i := range n {
+		cards[i] = player.GetCard(i)
+	}
+
+	material := make(map[int]bool, n)
+	// 3枚以上そろっているメルドだけでなく、**あと1枚で届く2枚組**も守る。
+	for i := range n {
+		for j := i + 1; j < n; j++ {
+			if rummy500PairIsMeldMaterial(cards[i], cards[j]) {
+				material[i] = true
+				material[j] = true
+			}
+		}
+	}
+	// 場に出ているメルドへ載せられる札も残す価値がある。
+	for i := range n {
+		for owner := range g.players {
+			for _, meld := range g.players[owner].GetLaidMelds() {
+				if Rummy500CanLayoff(meld, cards[i]) {
+					material[i] = true
+				}
+			}
+		}
+	}
+	return material
+}
+
+// rummy500PairIsMeldMaterial は 2 枚が同ランク、または同スートの隣接ランクかを返す。
+func rummy500PairIsMeldMaterial(a, b *Card) bool {
+	if a.GetValue() == b.GetValue() {
+		return true
+	}
+	if a.GetDesign() != b.GetDesign() {
+		return false
+	}
+	diff := a.GetValue() - b.GetValue()
+	return diff == 1 || diff == -1
+}
+
+// cpuExtremeScoreCard は素点が最大 (highest=true) または最小の手札インデックスを返す。
+// skip に入っているインデックスは候補から外す。候補が無ければ -1。
+func (g *Rummy500) cpuExtremeScoreCard(playerIdx int, highest bool, skip map[int]bool) int {
+	player := g.players[playerIdx]
+	bestIdx := -1
+	bestVal := 0
+	for i := range player.GetCardsSize() {
+		if skip[i] {
+			continue
+		}
 		v := rummy500CardScoreLow(player.GetCard(i))
-		if v > bestVal {
+		if bestIdx < 0 || (highest && v > bestVal) || (!highest && v < bestVal) {
 			bestVal = v
 			bestIdx = i
 		}
