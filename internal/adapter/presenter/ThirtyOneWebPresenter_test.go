@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -143,4 +144,21 @@ func TestThirtyOneWebPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return(entries)
 	assert.Contains(t, p.ActionLogOutput(m), "knock")
+}
+
+// #5623: 難易度の違いは CPU のノック閾値 (25/27/29) がすべてなのに、Web には
+// Easy/Normal/Hard というラベルしか届いていなかった。数字を画面側に書き写すと
+// 定数を変えたときに黙って古くなるので、レスポンスで運ぶ。
+func TestThirtyOneWebPresenterCarriesTheKnockThresholds(t *testing.T) {
+	g := domain.NewDefaultThirtyOne()
+	g.Reset()
+
+	var out controller.ThirtyOneWebOutput
+	require.NoError(t, json.Unmarshal([]byte(new(presenter.ThirtyOneWebPresenter).Output(g, nil)), &out))
+
+	assert.Equal(t, domain.ThirtyOneKnockThresholdEasy, out.Config.KnockThresholds.Easy)
+	assert.Equal(t, domain.ThirtyOneKnockThresholdNormal, out.Config.KnockThresholds.Normal)
+	assert.Equal(t, domain.ThirtyOneKnockThresholdHard, out.Config.KnockThresholds.Hard)
+	// 難易度を選ぶ意味がある = 3 つが別の数字。
+	assert.NotEqual(t, out.Config.KnockThresholds.Easy, out.Config.KnockThresholds.Hard)
 }

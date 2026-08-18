@@ -33,7 +33,8 @@
   },
   "settings": {
     "cpuDifficulty": "CPU難易度",
-    "initialLives": "初期ライフ"
+    "initialLives": "初期ライフ",
+    "cpuDifficultyHelp": "CPU がノックを検討する合計点。Easy {{easy}} / Normal {{normal}} / Hard {{hard}} — 数字が低いほど CPU は早く勝負に出ます"
   },
   "hint": {
     "knockHigh": "手札が強いです — ノックを検討しましょう",

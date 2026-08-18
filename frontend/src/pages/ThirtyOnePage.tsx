@@ -386,6 +386,13 @@ function ThirtyOnePageContent() {
                     type: 'select' as const,
                     id: 'cpuDifficulty',
                     label: t('settings.cpuDifficulty'),
+                    // **難易度の違いはノック閾値がすべて。**数字はサーバーが
+                    // 運んでくるので、翻訳文に焼き込まない (#5623)。
+                    tooltip: t('settings.cpuDifficultyHelp', {
+                      easy: state.config.knockThresholds.easy,
+                      normal: state.config.knockThresholds.normal,
+                      hard: state.config.knockThresholds.hard,
+                    }),
                     value: String(cpuDifficulty),
                     options: DIFFICULTY_OPTIONS,
                     onSelect: (v: string) => setCpuDifficulty(Number.parseInt(v, 10)),

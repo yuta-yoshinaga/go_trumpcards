@@ -33,7 +33,8 @@
   },
   "settings": {
     "cpuDifficulty": "CPU Difficulty",
-    "initialLives": "Initial Lives"
+    "initialLives": "Initial Lives",
+    "cpuDifficultyHelp": "Hand total at which CPUs consider knocking. Easy {{easy}} / Normal {{normal}} / Hard {{hard}} — the lower the number, the sooner they commit"
   },
   "hint": {
     "knockHigh": "Your hand is strong — consider knocking",
