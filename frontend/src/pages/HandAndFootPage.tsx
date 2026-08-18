@@ -473,7 +473,10 @@ function HandAndFootPageContent() {
                     type="button"
                     className={btnPrimary}
                     onClick={handleMeldSelected}
-                    disabled={loading || selectedCardIndices.length < 3}
+                    // **最低点未達なら押させない** (#5663)。警告テキストは出ていた
+                    // のにボタンはそれを見ておらず、サーバーのバリデーションで
+                    // 弾かれて初めて気づく形だった。
+                    disabled={loading || selectedCardIndices.length < 3 || (meldPointInfo?.below ?? false)}
                     aria-describedby={meldPointInfo?.below ? 'hf-meld-points' : undefined}
                   >
                     {t('meldButton')}

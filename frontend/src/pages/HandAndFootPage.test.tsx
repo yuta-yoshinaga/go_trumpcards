@@ -206,6 +206,56 @@ describe('HandAndFootPage', () => {
     expect(screen.getByTestId('hf-meld-points')).toHaveTextContent('初回メルド最低点: 50 / 選択合計: 20');
   });
 
+  // #5663: 初回メルドの最低点に満たない選択でもボタンが押せてしまい、サーバーの
+  // バリデーションで弾かれて初めて気づいた。警告テキストは既に出ていたのに、
+  // ボタンの無効化条件がそれを見ていなかった。
+  it('blocks the meld button while the selection is under the initial minimum', async () => {
+    mockExec.mockResolvedValue(meldPhaseState);
+    renderWithProviders(<HandAndFootPage />);
+    await waitFor(() => expect(screen.getByTestId('hf-meld-points')).toBeInTheDocument());
+
+    // 3枚選んでも 10+10+5 = 25 で、最低点 50 に届かない。
+    fireEvent.click(screen.getByRole('button', { name: '♠ 10' }));
+    fireEvent.click(screen.getByRole('button', { name: '♣ 10' }));
+    fireEvent.click(screen.getByRole('button', { name: '♠ 7' }));
+
+    await waitFor(() => expect(screen.getByTestId('hf-meld-points')).toHaveTextContent('選択合計: 25'));
+    expect(screen.getByRole('button', { name: 'メルドする' })).toBeDisabled();
+  });
+
+  it('allows the meld once the selection reaches the minimum', async () => {
+    // 累計マイナス -> 最低点 15。7 が3枚でちょうど 15 なので**境界そのもの**。
+    mockExec.mockResolvedValue({
+      ...meldPhaseState,
+      players: [{ ...basePlayers[0], cumulativeScore: -10 }, basePlayers[1]],
+    });
+    renderWithProviders(<HandAndFootPage />);
+    await waitFor(() => expect(screen.getByTestId('hf-meld-points')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: '♠ 7' }));
+    fireEvent.click(screen.getByRole('button', { name: '♣ 7' }));
+    fireEvent.click(screen.getByRole('button', { name: '♥ 7' }));
+
+    await waitFor(() => expect(screen.getByTestId('hf-meld-points')).toHaveTextContent('選択合計: 15'));
+    expect(screen.getByRole('button', { name: 'メルドする' })).toBeEnabled();
+  });
+
+  // 3枚未満の既存の無効化条件はそのまま。
+  it('still blocks a meld of fewer than three cards', async () => {
+    mockExec.mockResolvedValue({
+      ...meldPhaseState,
+      players: [{ ...basePlayers[0], cumulativeScore: -10 }, basePlayers[1]],
+    });
+    renderWithProviders(<HandAndFootPage />);
+    await waitFor(() => expect(screen.getByTestId('hf-meld-points')).toBeInTheDocument());
+
+    // 2枚で 20 点。最低点 15 は超えているのに、枚数が足りないので押せない。
+    fireEvent.click(screen.getByRole('button', { name: '♠ 10' }));
+    fireEvent.click(screen.getByRole('button', { name: '♣ 10' }));
+
+    expect(screen.getByRole('button', { name: 'メルドする' })).toBeDisabled();
+  });
+
   it('highlights the readout in success when the selection meets the minimum', async () => {
     // Negative cumulative score -> minimum 15; selecting the two 10s totals 20.
     mockExec.mockResolvedValue({
