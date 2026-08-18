@@ -65,6 +65,8 @@ type TwentyNineGame interface {
 	GetTeamScores() [domain.TwentyNineTeamCnt]int
 	// GetRoundTeamPoints 現ラウンドのチーム別得点を取得する
 	GetRoundTeamPoints() [domain.TwentyNineTeamCnt]int
+	// GetContractProgress 落札チームの契約達成状況を取得する (落札前は nil)
+	GetContractProgress() *domain.TwentyNineContractProgress
 	// GetWinnerTeam 勝利チームを取得する (-1=未確定)
 	GetWinnerTeam() int
 	// GetPlayerCnt プレイヤー数を取得する
