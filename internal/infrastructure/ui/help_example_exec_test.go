@@ -213,6 +213,15 @@ func TestCuiHelpExamplesAreNotQuietlyRefused(t *testing.T) {
 			if cmd == "" {
 				continue
 			}
+			// **ヒントの返事は拒否ではない。**「フォローできないので低い札を捨てる」
+			// のような助言は、拒否を探す語 (cannot / できません / no ... to) を
+			// 普通に含む。実測でヒント文字列 307 個がこの正規表現に当たり、
+			// acesup の `h` は「配りが手詰まりのときだけ」その文を返すので、
+			// **配り依存で 1/3 ほど落ちる**フレークになっていた (#5620)。
+			// コマンドがヒントなら返事は定義上ヒントなので、ここでは測らない。
+			if cmd == "h" || cmd == "hint" {
+				continue
+			}
 			checked++
 			out := ctrl.Exec(cmd)
 			if _, isErr := i18n.StripErrorPrefix(out); isErr {
