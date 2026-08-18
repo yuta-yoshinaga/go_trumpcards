@@ -446,7 +446,7 @@ func (g *Rummy500) cpuPlayMelds() {
 		return
 	}
 
-	// ディスカード: 最も高得点のカード（手札に残すと負担になる）を捨てる
+	// ディスカード: どれを切るかは難易度で変わる (cpuChooseDiscard) (#5611)。
 	discardIdx := g.cpuChooseDiscard(idx)
 	discarded := player.RemoveCard(discardIdx)
 	g.discardPile = append(g.discardPile, discarded)
