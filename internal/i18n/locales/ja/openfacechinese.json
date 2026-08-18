@@ -21,6 +21,7 @@
   "gameEndDraw": "ゲーム終了！ 引き分け！",
   "promptPlace": "手番: {{name}}  配置するカード: {{card}}",
   "promptPlaceHelp": "place <0/1/2>・・・下段 ≥ 中段 ≥ 上段 を満たすように置く（崩すとファウル）。",
+  "foulRiskWarning": "⚠ 反則になる段: {{rows}}（置くと front≦middle≦back が崩れます）",
   "promptRoundEnd": "ラウンド終了",
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
   "hintNone": "ヒントはありません。",

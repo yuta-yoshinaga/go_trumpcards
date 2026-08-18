@@ -21,6 +21,7 @@
   "gameEndDraw": "Game over! It's a draw!",
   "promptPlace": "Turn: {{name}}  Card to place: {{card}}",
   "promptPlaceHelp": "place <0/1/2> ... keep back >= middle >= front (breaking it fouls your hand).",
+  "foulRiskWarning": "⚠ Fouls if placed in: {{rows}} (breaks front≤middle≤back)",
   "promptRoundEnd": "Round over",
   "promptRoundEndHelp": "nr / nextround ... go to next round",
   "hintNone": "No hint available.",

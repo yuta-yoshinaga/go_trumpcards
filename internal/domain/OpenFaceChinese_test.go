@@ -392,3 +392,47 @@ func TestOpenFaceChinese_PlayerGetters(t *testing.T) {
 		t.Error("winner should start at -1")
 	}
 }
+
+// #5676: OFC の核心ルールは front ≦ middle ≦ back。**置いた瞬間に確定で反則に
+// なる段**が分かるかどうかがプレイの質を決めるのに、その判定はフロントの
+// ofcPlacementFouls にしか無かった。CUI からも問えるようにする。
+func TestOpenFaceChinesePlacementFouls(t *testing.T) {
+	card := func(d, v int) *Card { return NewCard(d, v, false) }
+
+	// middle が埋まって A ハイ、back が埋まって K ハイ = すでに反則。
+	middleAceHigh := []*Card{
+		card(CardDesignSpade, 1), card(CardDesignHeart, 3), card(CardDesignClover, 5),
+		card(CardDesignDiamond, 7), card(CardDesignSpade, 9),
+	}
+	backKingHigh := []*Card{
+		card(CardDesignHeart, 13), card(CardDesignClover, 2), card(CardDesignDiamond, 4),
+		card(CardDesignSpade, 6), card(CardDesignHeart, 8),
+	}
+
+	t.Run("a placement that completes an out-of-order pair of rows fouls", func(t *testing.T) {
+		// back に 1 枚足すと埋まり、middle(A ハイ) > back(K ハイ) で確定的に反則。
+		back4 := backKingHigh[:4]
+		if OpenFaceChinesePlacementFouls(nil, middleAceHigh, back4, card(CardDesignHeart, 8), OpenFaceChineseRowBack) != true {
+			t.Error("middle が back より強くなる配置を反則と判定していない")
+		}
+	})
+
+	t.Run("a placement that keeps the order does not foul", func(t *testing.T) {
+		// back を A ハイより強く埋めるなら反則にならない。
+		strongBack := []*Card{
+			card(CardDesignHeart, 13), card(CardDesignHeart, 12), card(CardDesignHeart, 11),
+			card(CardDesignHeart, 10),
+		}
+		if OpenFaceChinesePlacementFouls(nil, middleAceHigh, strongBack, card(CardDesignHeart, 9), OpenFaceChineseRowBack) {
+			t.Error("順序を保つ配置を反則と判定している")
+		}
+	})
+
+	// **まだ埋まっていない段は判定しない。**「未確定」を反則と呼ぶと、まだ挽回
+	// できる配置を避けさせてしまう。
+	t.Run("an unfilled row is not judged", func(t *testing.T) {
+		if OpenFaceChinesePlacementFouls(nil, middleAceHigh[:2], nil, card(CardDesignSpade, 2), OpenFaceChineseRowMiddle) {
+			t.Error("埋まっていない段の配置を反則と判定している")
+		}
+	})
+}
