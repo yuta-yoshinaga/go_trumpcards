@@ -72,5 +72,17 @@
     "playHighest": "Play your highest card"
   },
   "hintRequested": "Hint available",
-  "noHint": "No hint available"
+  "noHint": "No hint available",
+  "breakdownTitle": "Score breakdown",
+  "breakdownHearts": "Hearts x{{count}}: {{sum}}",
+  "breakdownAllHearts": "All-hearts bonus",
+  "breakdownAceExposed": "Doubled by the exposed ♥A",
+  "breakdownPig": "Pig (♠Q): -100",
+  "breakdownPigExposed": "Pig (♠Q) exposed: -200",
+  "breakdownSheep": "Sheep (♦J): +100",
+  "breakdownSheepExposed": "Sheep (♦J) exposed: +200",
+  "breakdownDoubler": "Doubler (♣10): x{{mult}}",
+  "breakdownDoublerStandalone": "Doubler (♣10) alone: {{points}}",
+  "breakdownSubtotal": "Subtotal: {{subtotal}}",
+  "breakdownTotal": "Total: {{total}}"
 }

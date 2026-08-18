@@ -37,6 +37,23 @@ type GongZhuWebOutputPlayer struct {
 	TrickCount         int              `json:"trickCount"`
 }
 
+// GongZhuWebOutputBreakdown はラウンド得点の内訳。
+type GongZhuWebOutputBreakdown struct {
+	HeartCount        int  `json:"heartCount"`
+	HeartsSum         int  `json:"heartsSum"`
+	AllHearts         bool `json:"allHearts"`
+	AceExposed        bool `json:"aceExposed"`
+	HasPig            bool `json:"hasPig"`
+	PigExposed        bool `json:"pigExposed"`
+	HasSheep          bool `json:"hasSheep"`
+	SheepExposed      bool `json:"sheepExposed"`
+	HasDoubler        bool `json:"hasDoubler"`
+	DoublerMultiplier int  `json:"doublerMultiplier"`
+	DoublerStandalone int  `json:"doublerStandalone"`
+	Subtotal          int  `json:"subtotal"`
+	Total             int  `json:"total"`
+}
+
 // GongZhuWebOutputExposure 公開されたポイントカード
 type GongZhuWebOutputExposure struct {
 	Pig     bool `json:"pig"`
@@ -62,6 +79,9 @@ type GongZhuWebOutput struct {
 	WinnerIdx        int                      `json:"winnerIdx"`
 	LeadPlayerIdx    int                      `json:"leadPlayerIdx"`
 	Hint             *WebOutputCardHint       `json:"hint,omitempty"`
+	// ScoreBreakdowns はラウンド終了時の得点内訳 (プレイヤー順)。
+	// **ドメインの計算そのもの**を運ぶので、画面の説明と実際の点が食い違わない (#5630)。
+	ScoreBreakdowns []*GongZhuWebOutputBreakdown `json:"scoreBreakdowns,omitempty"`
 	WebOutputBase
 	Config GongZhuWebOutputConfig `json:"config"`
 }

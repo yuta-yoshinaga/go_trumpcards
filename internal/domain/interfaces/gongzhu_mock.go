@@ -198,3 +198,12 @@ func (_m *MockGongZhuGame) GetActionLog() []*domain.ActionLogEntry {
 	}
 	return nil
 }
+
+// ScoreBreakdownFor モック
+func (_m *MockGongZhuGame) ScoreBreakdownFor(playerIdx int) domain.GongZhuScoreBreakdown {
+	ret := _m.Called(playerIdx)
+	if val, ok := ret.Get(0).(domain.GongZhuScoreBreakdown); ok {
+		return val
+	}
+	return domain.GongZhuScoreBreakdown{}
+}

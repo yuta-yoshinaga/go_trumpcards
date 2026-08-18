@@ -7,6 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -40,6 +41,8 @@ func setupGongZhuWebMock() *interfaces.MockGongZhuGame {
 	m.On("GetLeadPlayerIdx").Return(0)
 	m.On("GetConfig").Return(domain.DefaultGongZhuConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// 得点内訳の既定値 (#5630)。中身を見るテストは removeMockCall で上書きする。
+	m.On("ScoreBreakdownFor", mock.Anything).Return(domain.GongZhuScoreBreakdown{}).Maybe()
 	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
 	// **base だけに置く。**removeMockCall は最初の 1 件しか外さない。
 	m.On("GetHint").Return(nil).Maybe()
@@ -286,4 +289,33 @@ func TestGongZhuWebPresenter_PlayableIndices(t *testing.T) {
 	var out2 controller.GongZhuWebOutput
 	assert.NoError(t, json.Unmarshal([]byte(new(presenter.GongZhuWebPresenter).Output(m2, nil)), &out2))
 	assert.Empty(t, out2.PlayableIndices)
+}
+
+// #5630: ラウンド終了時の得点内訳を Web にも運ぶ。数字だけでは「なぜその点か」
+// を確かめられない。
+func TestGongZhuWebPresenterCarriesTheBreakdownAtRoundEnd(t *testing.T) {
+	m, _ := setupGongZhuWebMockWithPlayers()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+	m.On("GetPhase").Return(domain.GongZhuPhaseRoundEnd)
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "ScoreBreakdownFor")
+	m.On("ScoreBreakdownFor", mock.Anything).Return(domain.GongZhuScoreBreakdown{
+		HeartCount: 3, HeartsSum: -120, HasPig: true, PigExposed: true, Subtotal: -320, Total: -320,
+	})
+
+	var out controller.GongZhuWebOutput
+	require.NoError(t, json.Unmarshal([]byte(new(presenter.GongZhuWebPresenter).Output(m, nil)), &out))
+
+	require.Len(t, out.ScoreBreakdowns, 4, "プレイヤー全員分")
+	assert.Equal(t, 3, out.ScoreBreakdowns[0].HeartCount)
+	assert.True(t, out.ScoreBreakdowns[0].PigExposed)
+	assert.Equal(t, -320, out.ScoreBreakdowns[0].Total)
+}
+
+// プレイ中は出さない。まだ確定していない数字を並べても読めない。
+func TestGongZhuWebPresenterOmitsTheBreakdownDuringPlay(t *testing.T) {
+	m, _ := setupGongZhuWebMockWithPlayers()
+
+	var out controller.GongZhuWebOutput
+	require.NoError(t, json.Unmarshal([]byte(new(presenter.GongZhuWebPresenter).Output(m, nil)), &out))
+	assert.Empty(t, out.ScoreBreakdowns)
 }
