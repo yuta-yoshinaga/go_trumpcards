@@ -480,6 +480,29 @@ func TestOpenAPIErrorResponseMatchesTheSuccessSchema(t *testing.T) {
 	t.Logf("checked %d paths", checked)
 }
 
+// TestScopaManualTargetScoreRangeMatchesDomain guards the target-score range
+// printed in the Scopa CUI manual against the domain constants (#5619).
+// Same reasoning as the Truco guard below.
+func TestScopaManualTargetScoreRangeMatchesDomain(t *testing.T) {
+	const path = "docs/manual/cui/scopa.md"
+
+	got := struct{ min, max, def int }{
+		min: readDocNumber(t, path, regexp.MustCompile(`目標得点を変更してリセット（(\d+)〜\d+、既定 \d+）`)),
+		max: readDocNumber(t, path, regexp.MustCompile(`目標得点を変更してリセット（\d+〜(\d+)、既定 \d+）`)),
+		def: readDocNumber(t, path, regexp.MustCompile(`目標得点を変更してリセット（\d+〜\d+、既定 (\d+)）`)),
+	}
+
+	if got.min != domain.ScopaMinTargetScore {
+		t.Errorf("%s: min %d, domain %d", path, got.min, domain.ScopaMinTargetScore)
+	}
+	if got.max != domain.ScopaMaxTargetScore {
+		t.Errorf("%s: max %d, domain %d", path, got.max, domain.ScopaMaxTargetScore)
+	}
+	if got.def != domain.ScopaDefaultTargetScore {
+		t.Errorf("%s: default %d, domain %d", path, got.def, domain.ScopaDefaultTargetScore)
+	}
+}
+
 // TestTrucoManualMatchTargetRangeMatchesDomain guards the match-target range
 // printed in the Truco CUI manual against the domain constants the command
 // actually enforces.
