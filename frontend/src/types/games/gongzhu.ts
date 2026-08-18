@@ -42,7 +42,6 @@ export interface GongZhuHint {
   reason: string;
 }
 
-/** Full Gong Zhu game state returned from the API. */
 /** How one player's round score was built up (from the domain's own scorer). */
 export interface GongZhuScoreBreakdown {
   heartCount: number;
@@ -60,6 +59,7 @@ export interface GongZhuScoreBreakdown {
   total: number;
 }
 
+/** Full Gong Zhu game state returned from the API. */
 export interface GongZhuResponse extends BaseGameResponse {
   /**
    * Per-player score breakdown, present only at round end.
