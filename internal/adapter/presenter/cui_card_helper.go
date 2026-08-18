@@ -200,6 +200,12 @@ func cuiPlayableMarkedCardListStr(hand cuiCardList, playable []int) string {
 	return cuiIndexMarkedCardListStr(hand, playable, CuiLegalMark)
 }
 
+// CuiBombMark は「その札はボムを構成できる」ことを示す印 (Tichu)。
+//
+// 合法手の "*" とも交換由来の "+" とも別の記号にする ── 同じ画面で意味の違う
+// 印が同じ形だと、どちらの話をしているのか読めない (#5635)。
+const CuiBombMark = "!"
+
 // CuiKittyMark は「その札は交換で入ってきた」ことを示す印。
 //
 // **合法手の "*" とは別の記号にする。**同じ画面で意味の違う 2 つの印が同じ形だと、

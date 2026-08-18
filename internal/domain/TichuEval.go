@@ -523,3 +523,77 @@ func tichuCompareBombs(cand, table *TichuCombo) bool {
 	// 4枚ボム同士
 	return cand.Rank > table.Rank
 }
+
+// TichuBombIndices は手札のうちボム (同ランク4枚、または同スート5枚以上の連続) を
+// 構成できるカードの位置を返す。
+//
+// **判定そのものは tichuTryBomb4 / tichuTryStraightFlush が持っている。**ここは
+// 「どの組がボムになるか」を数え上げるだけで、成立の可否は必ずその2つに訊く。
+// 数え上げ側でルールを書き直すと、画面が「ボム」と言った組を出そうとして
+// 弾かれる状態が作れる (#5635)。
+func TichuBombIndices(cards []*Card) []int {
+	marked := make(map[int]bool, len(cards))
+
+	// 同ランク4枚。特殊カード (ジョーカー扱い) は参加しない。
+	byRank := make(map[int][]int, len(cards))
+	for i, c := range cards {
+		if c == nil || c.GetDesign() == CardDesignJoker {
+			continue
+		}
+		byRank[tichuRank(c)] = append(byRank[tichuRank(c)], i)
+	}
+	for _, idxs := range byRank {
+		if len(idxs) < 4 {
+			continue
+		}
+		group := make([]*Card, 0, 4)
+		for _, i := range idxs[:4] {
+			group = append(group, cards[i])
+		}
+		if tichuTryBomb4(group, 0) == nil {
+			continue
+		}
+		for _, i := range idxs[:4] {
+			marked[i] = true
+		}
+	}
+
+	// 同スートの連続。長い方から試し、成立した並びを印にする。
+	bySuit := make(map[int][]int, 4)
+	for i, c := range cards {
+		if c == nil || c.GetDesign() == CardDesignJoker {
+			continue
+		}
+		bySuit[c.GetDesign()] = append(bySuit[c.GetDesign()], i)
+	}
+	for _, idxs := range bySuit {
+		sort.Slice(idxs, func(a, b int) bool { return tichuRank(cards[idxs[a]]) < tichuRank(cards[idxs[b]]) })
+		for start := range idxs {
+			for end := len(idxs); end > start; end-- {
+				run := idxs[start:end]
+				if len(run) < 5 {
+					break
+				}
+				group := make([]*Card, 0, len(run))
+				for _, i := range run {
+					group = append(group, cards[i])
+				}
+				if tichuTryStraightFlush(group, 0) == nil {
+					continue
+				}
+				for _, i := range run {
+					marked[i] = true
+				}
+				break
+			}
+		}
+	}
+
+	out := make([]int, 0, len(marked))
+	for i := range cards {
+		if marked[i] {
+			out = append(out, i)
+		}
+	}
+	return out
+}

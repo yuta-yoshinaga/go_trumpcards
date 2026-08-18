@@ -26,7 +26,16 @@ func (p *TichuCuiPresenter) Output(tg interfaces.TichuGame, lastErr error) strin
 		}
 
 		for idx := 0; idx < tg.GetPlayerCnt(); idx++ {
-			b.WriteString(tichuPlayerStr(tg.GetPlayer(idx), idx))
+			// 印は自分の手札にだけ。他家の手札は伏せられている。
+			var bomb []int
+			if p := tg.GetPlayer(idx); p != nil && p.GetIsHuman() {
+				cards := make([]*domain.Card, p.GetCardsSize())
+				for i := range cards {
+					cards[i] = p.GetCard(i)
+				}
+				bomb = domain.TichuBombIndices(cards)
+			}
+			b.WriteString(tichuPlayerStr(tg.GetPlayer(idx), idx, bomb))
 		}
 
 		b.WriteString("----------\n")
@@ -73,7 +82,7 @@ func (p *TichuCuiPresenter) ActionLogOutput(tg interfaces.TichuGame) string {
 	return actionLogOutputText(tg)
 }
 
-func tichuPlayerStr(player *domain.TichuPlayer, idx int) string {
+func tichuPlayerStr(player *domain.TichuPlayer, idx int, bomb []int) string {
 	if player == nil {
 		return ""
 	}
@@ -91,7 +100,9 @@ func tichuPlayerStr(player *domain.TichuPlayer, idx int) string {
 	} else {
 		b.WriteString(i18n.Tf("tichu.playerCardCount", "count", strconv.Itoa(player.GetCardsSize())) + "\n")
 		if player.GetIsHuman() {
-			b.WriteString(cuiIndexedCardListStr(player) + "\n")
+			// **ボムは得点を左右する。**Web は赤いリングと💣で示しているのに、
+			// CUI は手札を目視で数えるしかなかった (#5635)。
+			b.WriteString(cuiIndexMarkedCardListStr(player, bomb, CuiBombMark) + "\n")
 		}
 	}
 	return b.String()
