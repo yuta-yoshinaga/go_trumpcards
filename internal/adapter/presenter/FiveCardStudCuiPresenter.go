@@ -85,7 +85,12 @@ func (p *FiveCardStudCuiPresenter) Output(s interfaces.FiveCardStudGame, lastErr
 
 			// Door cards (face up — visible to all players)
 			if doorCards := player.GetDoorCards(); len(doorCards) > 0 {
-				b.WriteString(i18n.Tf("fivecardstud.doorCards", "cards", cuiCardSliceStrEmoji(doorCards)) + "\n")
+				// **ストリートごとに 1 枚ずつ増える。**末尾が今回公開された札
+				// なので、そこだけ印を付ける (#5674)。Web は同じ 1 枚にリングを
+				// 付けている。CUI は全部を平らに並べていたので、前回の出力と
+				// 見比べないと何が増えたのか分からなかった。
+				b.WriteString(i18n.Tf("fivecardstud.doorCards",
+					"cards", cuiCardSliceStrEmojiNewest(doorCards)) + "\n")
 			}
 
 			// Hole cards (face down — only the human sees them)

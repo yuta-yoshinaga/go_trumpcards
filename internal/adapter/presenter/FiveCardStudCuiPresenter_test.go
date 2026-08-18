@@ -2,14 +2,17 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func TestFiveCardStudCuiPresenter_Output(t *testing.T) {
@@ -430,5 +433,51 @@ func TestFiveCardStudCuiPresenter_ActionLogOutput(t *testing.T) {
 		result := p.ActionLogOutput(mockGame)
 		assert.Contains(t, result, "棋譜はありません")
 		mockGame.AssertExpectations(t)
+	})
+}
+
+// #5674: ドアカードはストリートごとに 1 枚ずつ増える。Web は末尾の 1 枚
+// (今のストリートで公開されたもの) にリングを付けているのに、CUI は全部を平らに
+// 並べるだけで、**前回の出力と見比べないと何が増えたのか分からなかった。**
+func TestFiveCardStudCuiPresenter_MarksTheNewestDoorCard(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.FiveCardStudCuiPresenter)
+
+	t.Run("marks only the last door card", func(t *testing.T) {
+		s, players := makeFiveCardStudForPresenter()
+		s.SetPhase(domain.FiveCardStudPhaseThirdStreet)
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+
+		out := p.Output(s, nil)
+
+		assert.Contains(t, out, "♠9"+presenter.CuiNewestMark)
+		assert.NotContains(t, out, "♣5"+presenter.CuiNewestMark)
+	})
+
+	t.Run("marks the single card on the first door street", func(t *testing.T) {
+		s, players := makeFiveCardStudForPresenter()
+		s.SetPhase(domain.FiveCardStudPhaseSecondStreet)
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignClover, 5, false))
+
+		assert.Contains(t, p.Output(s, nil), "♣5"+presenter.CuiNewestMark)
+	})
+
+	// ホールカードの表示には影響しない (受け入れ条件3)。
+	t.Run("leaves the hole cards alone", func(t *testing.T) {
+		s, players := makeFiveCardStudForPresenter()
+		s.SetPhase(domain.FiveCardStudPhaseThirdStreet)
+		players[0].AddHoleCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignClover, 5, false))
+
+		out := p.Output(s, nil)
+
+		// テンプレートそのものではなく、描画後の前置きで見る。
+		holePrefix, _, ok := strings.Cut(i18n.Tf("fivecardstud.holeCards", "cards", "\x00"), "\x00")
+		require.True(t, ok)
+		assert.Contains(t, out, holePrefix)
+		assert.NotContains(t, out, "♠10"+presenter.CuiNewestMark)
 	})
 }

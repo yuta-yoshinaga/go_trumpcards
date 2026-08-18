@@ -226,6 +226,14 @@ const CuiTrumpMark = "^"
 // どちらの話か読めない (#5643)。
 const CuiTopTrumpMark = "!!"
 
+// CuiNewestMark は「その札は今のストリートで新しく公開された」ことを示す印
+// (Five Card Stud / Soko)。
+//
+// これまでの印 ("*" 合法手 / "!" ボム / "+" 交換由来 / "^" 切り札 / "!!" 最上位
+// 切り札 / "~" ワイルド / "@" 交換候補) とはまた別の記号にする ── 同じ画面で
+// 意味の違う印が同じ形だと、どちらの話をしているのか読めない (#5674)。
+const CuiNewestMark = "<"
+
 // cuiIndexMarkedCardListStr returns an indexed card list where the cards at the
 // given indices carry mark.
 //
@@ -271,6 +279,23 @@ func cuiCardSliceStr(cards []*domain.Card) string {
 // e.g. "♠5  ♥3"
 func cuiCardSliceStrEmoji(cards []*domain.Card) string {
 	return formatCardSlice(cards, cuiCardStrEmoji, "  ")
+}
+
+// cuiCardSliceStrEmojiNewest は cuiCardSliceStrEmoji と同じ並びに、末尾の 1 枚
+// だけ CuiNewestMark を付けて返す。
+//
+// ストリートごとに 1 枚ずつ増える公開札で「今回増えたのはどれか」を示すための
+// もの (#5674)。空スライスは空文字。
+func cuiCardSliceStrEmojiNewest(cards []*domain.Card) string {
+	if len(cards) == 0 {
+		return ""
+	}
+	parts := make([]string, len(cards))
+	for i, c := range cards {
+		parts[i] = cuiCardStrEmoji(c)
+	}
+	parts[len(parts)-1] += CuiNewestMark
+	return strings.Join(parts, "  ")
 }
 
 // cuiCaptureHintLine annotates each hand card with the table cards it can
