@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"errors"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -174,4 +175,36 @@ func TestAcesUpCuiPresenterActionLogOutput(t *testing.T) {
 		p := &AcesUpCuiPresenter{}
 		assert.NotEmpty(t, p.ActionLogOutput(g))
 	})
+}
+
+// #5620: CUI のヒントは「何をするか」だけで、**なぜ**が無かった。Web は同じ
+// 場面で `hintReason.*` の一文を出している (「同スートでより小さい札」など)。
+func TestAcesUpCuiPresenterHintGivesTheReason(t *testing.T) {
+	cases := []struct {
+		name string
+		hint *domain.AcesUpHint
+		key  string
+	}{
+		{"remove", &domain.AcesUpHint{Type: "remove", Col: 0}, "acesup.hintReasonRemove"},
+		{"move", &domain.AcesUpHint{Type: "move", Col: 2}, "acesup.hintReasonMove"},
+		{"draw", &domain.AcesUpHint{Type: "draw", Col: -1}, "acesup.hintReasonDraw"},
+	}
+
+	seen := make(map[string]bool, len(cases))
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			g := new(interfaces.MockAcesUpGame)
+			g.On("GetHint").Return(tc.hint)
+
+			out := (&AcesUpCuiPresenter{}).HintOutput(g)
+			reason := i18n.Tf(tc.key, "col", strconv.Itoa(tc.hint.Col))
+			assert.Contains(t, out, reason)
+			// 生のキーが漏れていない (ロケールに無いと Tf はキーをそのまま返す)。
+			assert.NotContains(t, out, tc.key)
+			seen[reason] = true
+		})
+	}
+	// **3 パターンが別の文になっていること。**同じ文を 3 回出すなら、理由が
+	// 付いていないのと変わらない。
+	assert.Len(t, seen, len(cases))
 }
