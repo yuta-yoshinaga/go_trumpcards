@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -162,7 +161,7 @@ func TestBristolCuiPresenterWarnsOnStalemate(t *testing.T) {
 
 	bg := new(interfaces.MockBristolGame)
 	setupBristolCuiMockDefaults(bg)
-	bg.ExpectedCalls = bristolWithout(bg.ExpectedCalls, "IsStalemate", "UndoToEscape")
+	bg.ExpectedCalls = bristolMockWithout(bg.ExpectedCalls, "IsStalemate", "UndoToEscape")
 	bg.On("IsStalemate").Return(true)
 	bg.On("UndoToEscape").Return(3)
 
@@ -179,21 +178,4 @@ func TestBristolCuiPresenterSaysNothingWhenPlayable(t *testing.T) {
 
 	out := new(BristolCuiPresenter).Output(bg, nil)
 	assert.NotContains(t, out, i18n.T("cuiSolitaireStalemate"))
-}
-
-// bristolWithout drops the listed expectations so a test can override them.
-// testify は最初に一致した期待値を返すので、既定 (.Maybe()) を消さずに足すと
-// 上書きしたつもりのケースが何も確かめない。
-func bristolWithout(calls []*mock.Call, methods ...string) []*mock.Call {
-	drop := make(map[string]bool, len(methods))
-	for _, m := range methods {
-		drop[m] = true
-	}
-	out := calls[:0]
-	for _, c := range calls {
-		if !drop[c.Method] {
-			out = append(out, c)
-		}
-	}
-	return out
 }

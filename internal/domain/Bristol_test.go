@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
@@ -466,7 +467,6 @@ func TestBristolDetectsAStalemate(t *testing.T) {
 	b.SetFan(fan)
 	b.SetFoundation([domain.BristolFoundationCnt][]*domain.Card{})
 
-	b.RecheckStalemate()
 	assert.True(t, b.IsStalemate(), "合法手が1つも無い盤面")
 	assert.Nil(t, b.GetHint(), "前提: ヒントも出ない")
 }
@@ -483,7 +483,6 @@ func TestBristolIsNotStalemateWhileAMoveExists(t *testing.T) {
 	b.SetFan([domain.BristolFanCnt][]*domain.Card{})
 	b.SetFoundation([domain.BristolFoundationCnt][]*domain.Card{})
 
-	b.RecheckStalemate()
 	assert.False(t, b.IsStalemate())
 }
 
@@ -493,4 +492,74 @@ func TestBristolUndoToEscapeIsZeroWhenNotStuck(t *testing.T) {
 	b.Reset()
 	assert.False(t, b.IsStalemate())
 	assert.Equal(t, 0, b.UndoToEscape())
+}
+
+// **実際に配って詰ませる。**テスト用の再判定ヘルパ経由だと「更新される場所が
+// 足りない」バグを見逃す (レビュー #5993 の指摘。初版は Draw() で更新しておらず、
+// 現実的な詰み方 = 最後まで配って手が無い、を検知できなかった)。
+func TestBristolDetectsAStalemateAfterDrawingTheLastCards(t *testing.T) {
+	b := newTestBristol()
+	b.SetPhase(domain.BristolPhasePlaying)
+
+	// タブローもファンも同じランクだけ ── 降順にも組札にも置けない。
+	suits := []int{domain.CardDesignSpade, domain.CardDesignHeart, domain.CardDesignClover, domain.CardDesignDiamond}
+	var tableau [domain.BristolTableauCnt][]*domain.Card
+	for i := range tableau {
+		tableau[i] = []*domain.Card{domain.NewCard(suits[i%len(suits)], 5, true)}
+	}
+	b.SetTableau(tableau)
+	b.SetFan([domain.BristolFanCnt][]*domain.Card{})
+	b.SetFoundation([domain.BristolFoundationCnt][]*domain.Card{})
+	// 配れる札が残っている間は手詰まりではない。
+	b.SetStock([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 5, true),
+		domain.NewCard(domain.CardDesignHeart, 5, true),
+		domain.NewCard(domain.CardDesignClover, 5, true),
+	})
+	assert.False(t, b.IsStalemate(), "まだ配れる")
+
+	require.NoError(t, b.Draw())
+	assert.Equal(t, 0, b.GetStockCount(), "前提: 配り切った")
+	assert.True(t, b.IsStalemate(), "配り切って打つ手が無い")
+}
+
+// UndoToEscape は「打てた盤面まで何手戻すか」を返す。
+func TestBristolUndoToEscapeCountsBackToAPlayableBoard(t *testing.T) {
+	b := newTestBristol()
+	b.SetPhase(domain.BristolPhasePlaying)
+	suits := []int{domain.CardDesignSpade, domain.CardDesignHeart, domain.CardDesignClover, domain.CardDesignDiamond}
+	var tableau [domain.BristolTableauCnt][]*domain.Card
+	for i := range tableau {
+		tableau[i] = []*domain.Card{domain.NewCard(suits[i%len(suits)], 5, true)}
+	}
+	// 0列に ♠A を置いて、組札へ動かせる盤面にしておく。
+	tableau[0] = append(tableau[0], domain.NewCard(domain.CardDesignSpade, 1, true))
+	b.SetTableau(tableau)
+	b.SetFan([domain.BristolFanCnt][]*domain.Card{})
+	b.SetFoundation([domain.BristolFoundationCnt][]*domain.Card{})
+	b.SetStock(nil)
+	require.False(t, b.IsStalemate(), "前提: ♠A を組札へ動かせる")
+
+	// その手を打つと、もう動かせる札が無くなる。
+	require.NoError(t, b.MoveTableauToFoundation(0))
+	require.True(t, b.IsStalemate())
+	assert.Equal(t, 1, b.UndoToEscape(), "1手戻せば打てる盤面に戻る")
+}
+
+// 履歴のどこまで戻っても打てないなら -1 (戻っても無駄だと分かる)。
+func TestBristolUndoToEscapeIsMinusOneWhenNoHistoryHelps(t *testing.T) {
+	b := newTestBristol()
+	b.SetPhase(domain.BristolPhasePlaying)
+	suits := []int{domain.CardDesignSpade, domain.CardDesignHeart, domain.CardDesignClover, domain.CardDesignDiamond}
+	var tableau [domain.BristolTableauCnt][]*domain.Card
+	for i := range tableau {
+		tableau[i] = []*domain.Card{domain.NewCard(suits[i%len(suits)], 5, true)}
+	}
+	b.SetTableau(tableau)
+	b.SetFan([domain.BristolFanCnt][]*domain.Card{})
+	b.SetFoundation([domain.BristolFoundationCnt][]*domain.Card{})
+	b.SetStock(nil)
+
+	require.True(t, b.IsStalemate())
+	assert.Equal(t, -1, b.UndoToEscape(), "履歴が無いので戻りようがない")
 }

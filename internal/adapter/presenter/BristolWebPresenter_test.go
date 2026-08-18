@@ -167,7 +167,7 @@ func TestBristolWebPresenterCarriesTheStalemate(t *testing.T) {
 	bg := new(interfaces.MockBristolGame)
 	// Output は受動ヒントも埋めるので、GetHint を含む Output 用の既定を使う。
 	setupBristolOutputMock(bg)
-	bg.ExpectedCalls = bristolWebWithout(bg.ExpectedCalls, "IsStalemate", "UndoToEscape")
+	bg.ExpectedCalls = bristolMockWithout(bg.ExpectedCalls, "IsStalemate", "UndoToEscape")
 	bg.On("IsStalemate").Return(true)
 	bg.On("UndoToEscape").Return(2)
 
@@ -177,8 +177,8 @@ func TestBristolWebPresenterCarriesTheStalemate(t *testing.T) {
 	assert.Equal(t, 2, out.UndoToEscape)
 }
 
-// bristolWebWithout drops the listed expectations so a test can override them.
-func bristolWebWithout(calls []*mock.Call, methods ...string) []*mock.Call {
+// bristolMockWithout drops the listed expectations so a test can override them.
+func bristolMockWithout(calls []*mock.Call, methods ...string) []*mock.Call {
 	drop := make(map[string]bool, len(methods))
 	for _, m := range methods {
 		drop[m] = true
