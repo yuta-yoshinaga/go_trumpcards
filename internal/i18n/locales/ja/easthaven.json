@@ -19,6 +19,8 @@
   "noHint": "ヒントはありません",
   "foundationHeader": "Foundation: ",
   "stockLine": "Stock: {{count}}",
+  "cannotDealEmptyCol": "空き列があるためめくれません（先に埋めてください）",
+  "faceDownLeft": "山札が尽きました。裏向きのカードが残っている列があります",
   "columnLabel": "列{{col}}:",
   "hintFrom": "タブロー列{{col}}[{{idx}}]",
   "hintToFoundation": "ファンデーション",
