@@ -72,7 +72,12 @@ func (p *EasthavenCuiPresenter) Output(e interfaces.EasthavenGame, lastErr error
 		// **打つ前に規則を伝える。**Deal() は空き列があると拒否するので、CUI では
 		// `deal` を打って初めてそれを知ることになっていた (#5634)。山札が尽きて
 		// いればそもそもめくれないので、空き列の話はしない。
-		easthavenWriteDealWarnings(b, e)
+		//
+		// **プレイ中だけ。**ギブアップ後の画面で「めくれません」と言われても、
+		// もう打てないゲームの遊び方を説明されるだけになる。
+		if e.GetPhase() == domain.EasthavenPhasePlaying {
+			easthavenWriteDealWarnings(b, e)
+		}
 
 		b.WriteString("----------\n")
 

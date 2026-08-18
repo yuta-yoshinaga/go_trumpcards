@@ -207,6 +207,18 @@ func TestEasthavenCuiPresenterWarnsWhileAColumnIsEmpty(t *testing.T) {
 		assert.Contains(t, out, i18n.T("easthaven.faceDownLeft"))
 	})
 
+	// ギブアップ後は言わない。もう打てないゲームの遊び方を説明することになる
+	// (レビュー #5997)。
+	t.Run("says nothing once the game is over", func(t *testing.T) {
+		eg := build(t, 0, false, true)
+		eg.ExpectedCalls = easthavenMockWithout(eg.ExpectedCalls, "GetPhase")
+		eg.On("GetPhase").Return(domain.EasthavenPhaseGameOver)
+
+		out := p.Output(eg, nil)
+		assert.NotContains(t, out, i18n.T("easthaven.faceDownLeft"))
+		assert.NotContains(t, out, i18n.T("easthaven.cannotDealEmptyCol"))
+	})
+
 	// 通常時は余計な行を増やさない。
 	t.Run("stays quiet when neither applies", func(t *testing.T) {
 		out := p.Output(build(t, 20, false, false), nil)
