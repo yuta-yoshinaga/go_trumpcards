@@ -6,6 +6,7 @@
   "chipsLine": "chips: {{chips}}",
   "phaseLine": "phase: {{phase}}",
   "handLine": "hand: {{hand}}",
+  "currentHandLine": "current hand: {{hand}}",
   "anteLine": "ante: {{ante}}",
   "bonusLine": "AA bonus: {{bonus}}",
   "callBetLine": "call: {{call}}",

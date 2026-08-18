@@ -22,7 +22,8 @@ func (cp *CasinoHoldemCuiPresenter) Output(g interfaces.CasinoHoldemGame, lastEr
 
 	sb.WriteString("----------\n")
 	fmt.Fprintf(&sb, "%s\n", i18n.Tf("casinoholdem.chipsLine", "chips", strconv.Itoa(g.GetChips())))
-	fmt.Fprintf(&sb, "%s\n", i18n.Tf("casinoholdem.phaseLine", "phase", cp.phaseStr(g.GetPhase())))
+	phase := g.GetPhase()
+	fmt.Fprintf(&sb, "%s\n", i18n.Tf("casinoholdem.phaseLine", "phase", cp.phaseStr(phase)))
 
 	if community := g.GetCommunity(); len(community) > 0 {
 		sb.WriteString("--- " + color.Bold(i18n.T("casinoholdem.boardHeader")) + " ---\n")
@@ -36,10 +37,17 @@ func (cp *CasinoHoldemCuiPresenter) Output(g interfaces.CasinoHoldemGame, lastEr
 
 	if playerHand := g.GetPlayerHand(); len(playerHand) > 0 {
 		sb.WriteString("--- " + color.Bold(i18n.T("casinoholdem.playerHeader")) + " ---\n")
-		if g.GetPhase() == domain.CasinoHoldemPhaseEnd {
+		// **フロップでも現在の役を出す。**Call/Fold を決めるのはこの時点なので、
+		// 役が END にしか出ないと CUI だけ判断材料を欠く (#5604)。ドメインは
+		// dealFlop で playerHandRank をホール+フロップの 5 枚から更新済み。
+		if phase == domain.CasinoHoldemPhaseEnd || phase == domain.CasinoHoldemPhaseFlop {
 			rank := g.GetPlayerHandRank()
 			if rank >= 0 && rank < len(domain.PokerHandNames) {
-				fmt.Fprintf(&sb, "%s\n", i18n.Tf("casinoholdem.handLine", "hand", domain.PokerHandNames[rank]))
+				key := "casinoholdem.handLine"
+				if phase == domain.CasinoHoldemPhaseFlop {
+					key = "casinoholdem.currentHandLine"
+				}
+				fmt.Fprintf(&sb, "%s\n", i18n.Tf(key, "hand", domain.PokerHandNames[rank]))
 			}
 		}
 		parts := make([]string, len(playerHand))
@@ -52,7 +60,7 @@ func (cp *CasinoHoldemCuiPresenter) Output(g interfaces.CasinoHoldemGame, lastEr
 
 	if dealerHand := g.GetDealerHand(); len(dealerHand) > 0 {
 		sb.WriteString("--- " + color.Bold(i18n.T("casinoholdem.dealerHeader")) + " ---\n")
-		if g.GetPhase() == domain.CasinoHoldemPhaseEnd {
+		if phase == domain.CasinoHoldemPhaseEnd {
 			rank := g.GetDealerHandRank()
 			if rank >= 0 && rank < len(domain.PokerHandNames) {
 				fmt.Fprintf(&sb, "%s\n", i18n.Tf("casinoholdem.handLine", "hand", domain.PokerHandNames[rank]))
