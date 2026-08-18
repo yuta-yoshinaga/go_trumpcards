@@ -354,3 +354,32 @@ describe('OsmosisPage', () => {
     });
   });
 });
+
+// #5625: 置けない段は赤枠と `title` だけで示していた。`title` は支援技術が
+// 読み上げる保証が無いので、キーボード/スクリーンリーダー利用者には**理由が
+// どこにも無い**状態だった。
+describe('OsmosisPage blocked foundation rows', () => {
+  it('puts the reason in the accessible name of the rows that reject the card', async () => {
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(screen.getByTestId('os-allowed-0')).toBeInTheDocument());
+
+    // ♥4 を選ぶ。ベース段 (♠) にも、まだ何も入っていない下の段にも置けない。
+    fireEvent.click(screen.getByRole('button', { name: 'ウェイスト' }));
+
+    // 名前は状態で変えず、理由は説明として結びつける。
+    const row0 = await screen.findByRole('button', { name: '組札 0' });
+    await waitFor(() => expect(row0).toHaveAttribute('aria-describedby'));
+    const id = row0.getAttribute('aria-describedby') as string;
+    expect(document.getElementById(id)).toHaveTextContent('この段には置けません');
+    // 視覚 (赤枠) と支援技術が同じ段を指す。
+    expect(row0.className).toContain('border-ds-error');
+  });
+
+  it('leaves the accessible name alone when nothing is selected', async () => {
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(screen.getByTestId('os-allowed-0')).toBeInTheDocument());
+
+    expect(screen.getByRole('button', { name: '組札 0' })).not.toHaveAttribute('aria-describedby');
+    expect(screen.queryByText('この段には置けません')).not.toBeInTheDocument();
+  });
+});
