@@ -39,6 +39,9 @@ func (p *BarbuCuiPresenter) Output(bg interfaces.BarbuGame, lastErr error) strin
 
 		if bg.GetGameEndFlag() {
 			b.WriteString(i18n.T("barbu.gameEnd") + "\n")
+			// **どのディールで動いた点なのかを残す。**Web は同じ内容を得点表で
+			// 出しており、合計だけでは 7 ディールの経過を振り返れない (#5621)。
+			barbuWriteDealBreakdown(b, bg)
 			for i := 0; i < bg.GetPlayerCnt(); i++ {
 				pl := bg.GetPlayer(i)
 				if pl == nil {
@@ -117,6 +120,37 @@ func barbuPlayerStr(player *domain.BarbuPlayer, i int) string {
 		b.WriteString(cuiIndexedCardListStr(player) + "\n")
 	}
 	return b.String()
+}
+
+// barbuWriteDealBreakdown はディール別の得点内訳を書き出す。履歴が無ければ
+// 何も書かない ── 空の表は「全員 0 点だった」と読めてしまう。
+func barbuWriteDealBreakdown(b *strings.Builder, bg interfaces.BarbuGame) {
+	history := bg.GetDealHistory()
+	if len(history) == 0 {
+		return
+	}
+	b.WriteString(i18n.T("barbu.dealBreakdownHeader") + "\n")
+	for i, d := range history {
+		if d == nil {
+			continue
+		}
+		// トランプ契約だけスートを添える。同じ契約でもスートが違えば別のディール。
+		trump := ""
+		if d.TrumpSuit >= 0 {
+			trump = " " + barbuTrumpLabel(d.TrumpSuit)
+		}
+		scores := make([]string, 0, bg.GetPlayerCnt())
+		for p := 0; p < bg.GetPlayerCnt(); p++ {
+			scores = append(scores, i18n.Tf("barbu.dealBreakdownScore",
+				"name", cuiPlayerName(bg.GetPlayer(p), p),
+				"score", strconv.Itoa(d.Gained[p])))
+		}
+		b.WriteString(i18n.Tf("barbu.dealBreakdownRow",
+			"deal", strconv.Itoa(i+1),
+			"contract", barbuContractLabel(d.Contract),
+			"trump", trump,
+			"scores", strings.Join(scores, " / ")) + "\n")
+	}
 }
 
 // barbuContractLabel はコントラクトの表示名を i18n で返す。

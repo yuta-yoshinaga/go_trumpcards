@@ -7,7 +7,9 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func TestBarbuCuiPresenter_Output(t *testing.T) {
@@ -131,4 +133,46 @@ func TestBarbuCuiPresenter_ActionLog(t *testing.T) {
 	b.Reset()
 	p := new(presenter.BarbuCuiPresenter)
 	assert.NotEmpty(t, p.ActionLogOutput(b))
+}
+
+// #5621: Web は dealHistory からディール×プレイヤーの得点表 (bb-score-matrix) を
+// 出すのに、CUI は合計しか出さず、7 ディールの経過を振り返る手段が無かった。
+func TestBarbuCuiPresenterShowsThePerDealBreakdown(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+
+	b := domain.BarbuTestNew(domain.DefaultBarbuConfig())
+	b.BarbuTestSetGameEnd(true)
+	b.BarbuTestAppendDealHistory(&domain.BarbuDealDetail{
+		Contract: domain.BarbuContractNoHearts, TrumpSuit: -1, DealerIdx: 0,
+		Gained: map[int]int{0: -10, 1: 0, 2: -20, 3: 0},
+	})
+	b.BarbuTestAppendDealHistory(&domain.BarbuDealDetail{
+		Contract: domain.BarbuContractTrumps, TrumpSuit: domain.CardDesignSpade, DealerIdx: 1,
+		Gained: map[int]int{0: 5, 1: 15, 2: 0, 3: 10},
+	})
+
+	out := new(presenter.BarbuCuiPresenter).Output(b, nil)
+
+	// 契約名は既存のラベルを使う (画面の他の場所と同じ表記)。
+	assert.Contains(t, out, i18n.T("barbu.cNoHearts"))
+	assert.Contains(t, out, i18n.T("barbu.cTrumps"))
+	// **トランプ契約はスートも出す。**同じ契約でもスートで別のディールになる。
+	// 表記は他の行と同じ barbuTrumpLabel 由来 (SPADE 等)。
+	assert.Regexp(t, i18n.T("barbu.cTrumps")+` \S`, out)
+	// 各プレイヤーの得失点。合計 (scoreEntry) とは別に、ディールごとの数字が出る。
+	assert.Contains(t, out, "-20")
+	assert.Contains(t, out, "15")
+	// 合計行は従来どおり残っている。
+	assert.Contains(t, out, i18n.T("barbu.gameEnd"))
+}
+
+// 履歴が無いうちは表そのものを出さない (空の表は「0点だった」と読める)。
+func TestBarbuCuiPresenterOmitsTheBreakdownWithoutHistory(t *testing.T) {
+	b := domain.BarbuTestNew(domain.DefaultBarbuConfig())
+	b.BarbuTestSetGameEnd(true)
+
+	out := new(presenter.BarbuCuiPresenter).Output(b, nil)
+	assert.NotContains(t, out, i18n.T("barbu.dealBreakdownHeader"))
 }
