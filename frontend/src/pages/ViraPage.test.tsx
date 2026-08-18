@@ -80,6 +80,31 @@ describe('ViraPage', () => {
     );
   });
 
+  // #5654: pot は「全員パスの流局でも積み上がる唯一の数字」で、CUI は
+  // vira.potLine で毎フレーム出している。Web は state.pot を一度も参照して
+  // いなかった（ロケールの pot / potHint も未使用のまま置かれていた）。
+  it('shows the pot that carries between rounds', async () => {
+    mockExec.mockResolvedValue(makeViraState({ pot: 7 }));
+    renderWithProviders(<ViraPage />);
+
+    const pot = await screen.findByTestId('vira-pot');
+    expect(pot).toHaveTextContent('ポット');
+    expect(pot).toHaveTextContent('7');
+  });
+
+  // 流局でポットが積み上がった状態は、次ラウンドへ進んだ後の画面に出る。
+  it('reflects a pot that grew after an all-pass round', async () => {
+    mockExec.mockResolvedValue(makeViraState({ ...roundEndState, pot: 0 }));
+    renderWithProviders(<ViraPage />);
+    expect(await screen.findByTestId('vira-pot')).toHaveTextContent('0');
+
+    const next = await screen.findByRole('button', { name: '次のラウンド' });
+    mockExec.mockResolvedValue(makeViraState({ pot: 3 }));
+    fireEvent.click(next);
+
+    await waitFor(() => expect(screen.getByTestId('vira-pot')).toHaveTextContent('3'));
+  });
+
   it('shows bid buttons on a human bid turn', async () => {
     renderWithProviders(<ViraPage />);
     await waitFor(() => expect(screen.getByTestId('bid-0')).toBeInTheDocument());
