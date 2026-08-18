@@ -23,6 +23,29 @@ func (p *GongZhuWebPresenter) Output(g interfaces.GongZhuGame, lastErr error) st
 		resObj.Hint = cardHint(hint.CardIndices, hint.Reason)
 	}
 
+	// 得点内訳はラウンド終了でだけ確定する。途中で出すと未確定の数字が並ぶ (#5630)。
+	if g.GetPhase() == domain.GongZhuPhaseRoundEnd {
+		resObj.ScoreBreakdowns = make([]*controller.GongZhuWebOutputBreakdown, 0, g.GetPlayerCnt())
+		for i := 0; i < g.GetPlayerCnt(); i++ {
+			d := g.ScoreBreakdownFor(i)
+			resObj.ScoreBreakdowns = append(resObj.ScoreBreakdowns, &controller.GongZhuWebOutputBreakdown{
+				HeartCount:        d.HeartCount,
+				HeartsSum:         d.HeartsSum,
+				AllHearts:         d.AllHearts,
+				AceExposed:        d.AceExposed,
+				HasPig:            d.HasPig,
+				PigExposed:        d.PigExposed,
+				HasSheep:          d.HasSheep,
+				SheepExposed:      d.SheepExposed,
+				HasDoubler:        d.HasDoubler,
+				DoublerMultiplier: d.DoublerMultiplier,
+				DoublerStandalone: d.DoublerStandalone,
+				Subtotal:          d.Subtotal,
+				Total:             d.Total,
+			})
+		}
+	}
+
 	return marshalOrError(resObj)
 }
 

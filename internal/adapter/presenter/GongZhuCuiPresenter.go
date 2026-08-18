@@ -111,10 +111,58 @@ func (p *GongZhuCuiPresenter) Output(g interfaces.GongZhuGame, lastErr error) st
 			b.WriteString(i18n.T("gongzhu.promptTrickEnd") + "\n")
 			b.WriteString(i18n.T("gongzhu.promptTrickEndHelp") + "\n")
 		case domain.GongZhuPhaseRoundEnd:
+			// **なぜその点なのかを出す。**猪/羊の公開、全ハート、猪抜きの倍率が
+			// 重なるので、最終値だけでは検算できない (#5630)。
+			gongZhuWriteBreakdown(b, g)
 			b.WriteString(i18n.T("gongzhu.promptRoundEnd") + "\n")
 			b.WriteString(i18n.T("gongzhu.promptRoundEndHelp") + "\n")
 		}
 	})
+}
+
+// gongZhuWriteBreakdown writes each player's round-score breakdown.
+//
+// 起きていない項目は書かない ── 取っていない猪の行が出ると、何が起きたのか
+// 読み取れなくなる。
+func gongZhuWriteBreakdown(b *strings.Builder, g interfaces.GongZhuGame) {
+	b.WriteString(i18n.T("gongzhu.breakdownTitle") + "\n")
+	for i := 0; i < g.GetPlayerCnt(); i++ {
+		d := g.ScoreBreakdownFor(i)
+		b.WriteString(cuiPlayerName(g.GetPlayer(i), i) + "\n")
+		if d.HeartCount > 0 {
+			b.WriteString(i18n.Tf("gongzhu.breakdownHearts",
+				"count", strconv.Itoa(d.HeartCount), "sum", strconv.Itoa(d.HeartsSum)) + "\n")
+		}
+		if d.AllHearts {
+			b.WriteString(i18n.T("gongzhu.breakdownAllHearts") + "\n")
+		}
+		if d.AceExposed && d.HeartCount > 0 {
+			b.WriteString(i18n.T("gongzhu.breakdownAceExposed") + "\n")
+		}
+		if d.HasPig {
+			key := "gongzhu.breakdownPig"
+			if d.PigExposed {
+				key = "gongzhu.breakdownPigExposed"
+			}
+			b.WriteString(i18n.T(key) + "\n")
+		}
+		if d.HasSheep {
+			key := "gongzhu.breakdownSheep"
+			if d.SheepExposed {
+				key = "gongzhu.breakdownSheepExposed"
+			}
+			b.WriteString(i18n.T(key) + "\n")
+		}
+		if d.DoublerMultiplier > 0 {
+			b.WriteString(i18n.Tf("gongzhu.breakdownSubtotal", "subtotal", strconv.Itoa(d.Subtotal)) + "\n")
+			b.WriteString(i18n.Tf("gongzhu.breakdownDoubler", "mult", strconv.Itoa(d.DoublerMultiplier)) + "\n")
+		}
+		if d.DoublerStandalone != 0 {
+			b.WriteString(i18n.Tf("gongzhu.breakdownDoublerStandalone",
+				"points", strconv.Itoa(d.DoublerStandalone)) + "\n")
+		}
+		b.WriteString(i18n.Tf("gongzhu.breakdownTotal", "total", strconv.Itoa(d.Total)) + "\n")
+	}
 }
 
 // gongZhuExposureStr renders the localized exposure summary.

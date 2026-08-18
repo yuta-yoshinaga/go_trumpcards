@@ -343,62 +343,109 @@ func (g *GongZhu) ScoreRound() {
 }
 
 // scoreForPlayer プレイヤーのラウンド得点を算出する
-func (g *GongZhu) scoreForPlayer(playerIdx int) int {
-	heartCount := 0
-	heartsSum := 0
-	hasPig, hasSheep, hasDoubler := false, false, false
+// GongZhuScoreBreakdown はラウンド得点がどう積み上がったかを項目別に持つ。
+//
+// **説明用に計算し直したものではない。**得点そのものがこの構造体から出るので、
+// 画面に出す内訳と実際に付く点が食い違うことがない (#5630)。
+type GongZhuScoreBreakdown struct {
+	// HeartCount は取ったハートの枚数。
+	HeartCount int
+	// HeartsSum はハートの合計 (全ハート独占ならボーナス値、♥A 公開なら 2 倍済み)。
+	HeartsSum int
+	// AllHearts は 13 枚すべてのハートを取ってボーナスに置き換わったか。
+	AllHearts bool
+	// AceExposed は ♥A の公開でハート分が 2 倍になったか。
+	AceExposed bool
+	// HasPig / PigExposed は猪 (♠Q) を取ったか、それが公開されていたか。
+	HasPig, PigExposed bool
+	// HasSheep / SheepExposed は羊 (♦J) を取ったか、それが公開されていたか。
+	HasSheep, SheepExposed bool
+	// HasDoubler は猪抜き (♣10) を取ったか。
+	HasDoubler bool
+	// DoublerMultiplier は猪抜きが掛けた倍率 (2 または 4)。単独扱いのときは 0。
+	DoublerMultiplier int
+	// DoublerStandalone は他に得点が無いときの猪抜き単独点 (50 / 100)。適用外は 0。
+	DoublerStandalone int
+	// Subtotal は猪抜きを掛ける前の小計。
+	Subtotal int
+	// Total は最終的なラウンド得点。
+	Total int
+}
 
+// ScoreBreakdownFor は指定プレイヤーのラウンド得点と、その内訳を返す。
+func (g *GongZhu) ScoreBreakdownFor(playerIdx int) GongZhuScoreBreakdown {
+	var b GongZhuScoreBreakdown
+	if playerIdx < 0 || playerIdx >= len(g.players) {
+		return b
+	}
+
+	heartsSum := 0
 	for _, trick := range g.players[playerIdx].GetTricksTaken() {
 		for _, c := range trick {
 			switch {
 			case c.GetDesign() == CardDesignHeart:
-				heartCount++
+				b.HeartCount++
 				heartsSum -= gzHeartPenalty(c.GetValue())
 			case gzIsPig(c):
-				hasPig = true
+				b.HasPig = true
 			case gzIsSheep(c):
-				hasSheep = true
+				b.HasSheep = true
 			case gzIsDoubler(c):
-				hasDoubler = true
+				b.HasDoubler = true
 			}
 		}
 	}
 
-	if heartCount == GongZhuHandSize {
+	if b.HeartCount == GongZhuHandSize {
+		b.AllHearts = true
 		heartsSum = GongZhuAllHeartsBonus
 	}
 	if g.exposed.Ace {
+		b.AceExposed = true
 		heartsSum *= 2
 	}
+	b.HeartsSum = heartsSum
 
 	base := heartsSum
-	if hasPig {
-		if g.exposed.Pig {
+	if b.HasPig {
+		b.PigExposed = g.exposed.Pig
+		if b.PigExposed {
 			base -= 200
 		} else {
 			base -= 100
 		}
 	}
-	if hasSheep {
-		if g.exposed.Sheep {
+	if b.HasSheep {
+		b.SheepExposed = g.exposed.Sheep
+		if b.SheepExposed {
 			base += 200
 		} else {
 			base += 100
 		}
 	}
+	b.Subtotal = base
 
-	if hasDoubler {
+	if b.HasDoubler {
 		mult, standalone := 2, 50
 		if g.exposed.Doubler {
 			mult, standalone = 4, 100
 		}
 		if base == 0 {
+			b.DoublerStandalone = standalone
 			base = standalone
 		} else {
+			b.DoublerMultiplier = mult
 			base *= mult
 		}
 	}
-	return base
+	b.Total = base
+	return b
+}
+
+// scoreForPlayer はラウンド得点を返す。内訳と同じ計算を通すので、画面の説明と
+// 実際の点が食い違わない (#5630)。
+func (g *GongZhu) scoreForPlayer(playerIdx int) int {
+	return g.ScoreBreakdownFor(playerIdx).Total
 }
 
 // --- State getters ---

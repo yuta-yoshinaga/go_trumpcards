@@ -43,7 +43,31 @@ export interface GongZhuHint {
 }
 
 /** Full Gong Zhu game state returned from the API. */
+/** How one player's round score was built up (from the domain's own scorer). */
+export interface GongZhuScoreBreakdown {
+  heartCount: number;
+  heartsSum: number;
+  allHearts: boolean;
+  aceExposed: boolean;
+  hasPig: boolean;
+  pigExposed: boolean;
+  hasSheep: boolean;
+  sheepExposed: boolean;
+  hasDoubler: boolean;
+  doublerMultiplier: number;
+  doublerStandalone: number;
+  subtotal: number;
+  total: number;
+}
+
 export interface GongZhuResponse extends BaseGameResponse {
+  /**
+   * Per-player score breakdown, present only at round end.
+   *
+   * Produced by the same function that assigns the score, so the panel and the
+   * number can never disagree (#5630).
+   */
+  scoreBreakdowns?: GongZhuScoreBreakdown[];
   players: GongZhuPlayerData[];
   phase: number;
   roundNumber: number;

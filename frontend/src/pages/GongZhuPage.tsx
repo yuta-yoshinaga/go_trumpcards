@@ -10,6 +10,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { GongZhuScoreBreakdownPanel } from '../components/GongZhuScoreBreakdownPanel';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
@@ -429,6 +430,14 @@ function GongZhuPageContent() {
                 messageParams={state.messageParams}
               />
             </div>
+
+            {/* Round-end score breakdown (#5630) */}
+            {isRoundEnd && state.scoreBreakdowns && state.scoreBreakdowns.length > 0 && (
+              <GongZhuScoreBreakdownPanel
+                breakdowns={state.scoreBreakdowns}
+                playerName={(idx) => playerName(idx, state.players[idx]?.isHuman ?? false)}
+              />
+            )}
 
             {/* Action log */}
             <ActionLogSection
