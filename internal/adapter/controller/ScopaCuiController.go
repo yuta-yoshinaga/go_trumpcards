@@ -3,6 +3,7 @@
 package controller
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
@@ -34,7 +35,7 @@ func (c *ScopaCuiController) Exec(command string) string {
 			return c.si.ResetWithConfig(cfg)
 		},
 		[]string{
-			"play", "p", "next", "n", "sd", "setdifficulty", "h", "hint", "log", "l",
+			"play", "p", "next", "n", "sd", "setdifficulty", "st", "settarget", "h", "hint", "log", "l",
 		},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
@@ -48,11 +49,32 @@ func (c *ScopaCuiController) Exec(command string) string {
 					cfg.CpuDifficulty = domain.ScopaCpuDifficulty(v)
 					return c.si.ResetWithConfig(cfg)
 				})
+			case "st", "settarget":
+				return c.setTargetScore(args), true
 			default:
 				return handleCuiHintAndLog(cmd, c.si.Hint, c.si.ActionLog)
 			}
 		},
 	)
+}
+
+// setTargetScore は目標点を設定してリセットする。範囲はドメインの Validate と
+// 同じ定数を読むので、片方だけ動くことがない。値は文言に埋め込まず
+// {{min}}/{{max}} で渡す (#5619)。
+func (c *ScopaCuiController) setTargetScore(args []string) string {
+	if len(args) < 1 {
+		return invalidArg("targetScoreRequired")
+	}
+	v, err := strconv.Atoi(args[0])
+	if err != nil || v < domain.ScopaMinTargetScore || v > domain.ScopaMaxTargetScore {
+		return invalidArg("invalidTargetScoreRange",
+			"val", args[0],
+			"min", strconv.Itoa(domain.ScopaMinTargetScore),
+			"max", strconv.Itoa(domain.ScopaMaxTargetScore))
+	}
+	cfg := c.si.GetConfig()
+	cfg.TargetScore = v
+	return c.si.ResetWithConfig(cfg)
 }
 
 // handlePlay は `p <h> [t1 t2 ...]` を処理する。

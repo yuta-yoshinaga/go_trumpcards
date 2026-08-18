@@ -28,6 +28,11 @@ var ScopaDifficultyNames = map[ScopaCpuDifficulty]string{
 const (
 	// ScopaDefaultTargetScore デフォルトの目標点 (11点)
 	ScopaDefaultTargetScore = 11
+
+	// ScopaMinTargetScore 目標点の下限
+	ScopaMinTargetScore = 1
+	// ScopaMaxTargetScore 目標点の上限
+	ScopaMaxTargetScore = 999
 	// ScopaScoreMostCards 最多カード獲得 (carte) ボーナス
 	ScopaScoreMostCards = 1
 	// ScopaScoreMostDiamonds 最多ダイヤ獲得 (denari) ボーナス
@@ -73,7 +78,7 @@ func (c ScopaConfig) Validate() error {
 	); err != nil {
 		return err
 	}
-	return ValidateRange("target score", c.TargetScore, 1, 999)
+	return ValidateRange("target score", c.TargetScore, ScopaMinTargetScore, ScopaMaxTargetScore)
 }
 
 // scopaConfigJSON is the JSON wire format for ScopaConfig.
