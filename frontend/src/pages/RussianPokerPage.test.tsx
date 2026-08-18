@@ -245,6 +245,18 @@ describe('RussianPokerPage paid costs', () => {
     expect(costs).toHaveTextContent('100');
   });
 
+  // 強制交換も同じ扱い。3 本目の分岐だけ未検証だと、そこだけ静かに壊れる。
+  it('keeps the forced-exchange fee on screen', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ phase: RussianPokerPhase.FORCE_QUALIFY, forceExchanged: true, forceExchangeFee: 150 }),
+    );
+    renderWithProviders(<RussianPokerPage />);
+
+    const costs = await screen.findByTestId('rp-paid-costs');
+    expect(costs).toHaveTextContent('強制交換手数料');
+    expect(costs).toHaveTextContent('150');
+  });
+
   it('shows nothing when no cost has been incurred', async () => {
     mockExec.mockResolvedValue(makeState({ phase: RussianPokerPhase.POST_ACTION }));
     renderWithProviders(<RussianPokerPage />);
