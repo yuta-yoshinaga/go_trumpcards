@@ -75,5 +75,6 @@
     "actions": "In the bidding phase, buttons appear for Pass / 15 / 20 / 25 (Jink). Only a bid higher than the current highest is selectable. The highest bidder's team declares trump and plays five tricks. Each trick is worth 5 points. Make the contract to score, miss it to lose your bid. A 25 Jink wins instantly if you take all five tricks."
   },
   "hintRequested": "Hint available",
-  "noHint": "No hint available"
+  "noHint": "No hint available",
+  "topTrumpTitle": "Top trump (five and jack of trumps, ace of hearts). Exempt from following suit."
 }

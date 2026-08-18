@@ -145,6 +145,26 @@ func TestFortyFives_RenegingTopTrump(t *testing.T) {
 	}
 }
 
+// **♥A は切り札スート外でも最上位切り札**なので、それだけを持っている場合も
+// フォロー義務が外れる。既存の RenegingTopTrump は切り札スートの 5 を使って
+// いて、この「スート外なのに免除される」経路を通っていなかった (#5643 で印を
+// 付けるのはまさにこの札)。
+func TestFortyFives_RenegingHeartAceOutsideTheTrumpSuit(t *testing.T) {
+	g := newFfGame(true)
+	g.SetPhase(FortyFivesPhasePlay)
+	g.SetTrumpSuit(CardDesignDiamond)
+	g.SetCurrentPlayerIdx(0)
+	g.SetCurrentTrick([]*TrickCard{{PlayerIdx: 1, Card: ffCard(CardDesignDiamond, 7)}})
+	// 切り札扱いの札は ♥A だけ。フォローせずクラブを出せる。
+	ffSetHand(g.GetPlayer(0), ffCard(CardDesignHeart, 1), ffCard(CardDesignClover, 9))
+	if got := g.GetTopTrumpIndices(0); len(got) != 1 || got[0] != 0 {
+		t.Fatalf("GetTopTrumpIndices = %v, want [0] (♥A)", got)
+	}
+	if err := g.PlayerPlay(1); err != nil {
+		t.Fatalf("reneging on the ace of hearts should be allowed, got: %v", err)
+	}
+}
+
 func TestFortyFives_ResolveTrickFivePointsPerTrick(t *testing.T) {
 	g := newFfGame(false)
 	g.SetTrumpSuit(CardDesignDiamond)
@@ -380,4 +400,54 @@ func TestFortyFives_GetContractProgress(t *testing.T) {
 				"ちょうど届く見込みがあるうちは不成立にしない")
 		}
 	})
+}
+
+// #5643: 「切り札の5・切り札のJ・♥A」の 3 枚は固定で最強で、しかも **♥A は
+// 切り札スートに関係なく常に切り札扱い**。この 3 枚を持っていればマストフォロー
+// を免除される (Reneging) のに、Web も CUI も手札のどれがそれなのか示していな
+// かった。判定 (isTopTrump) は非公開だったので外から問えなかった。
+func TestFortyFivesGetTopTrumpIndices(t *testing.T) {
+	g := newFfGame(true)
+	g.SetTrumpSuit(CardDesignSpade)
+	ffSetHand(g.GetPlayer(0),
+		ffCard(CardDesignSpade, 5),   // 0: 切り札の5 -> top
+		ffCard(CardDesignSpade, 11),  // 1: 切り札のJ -> top
+		ffCard(CardDesignHeart, 1),   // 2: ♥A -> 常に top
+		ffCard(CardDesignSpade, 1),   // 3: 切り札のA だが top ではない
+		ffCard(CardDesignClover, 11), // 4: 他スートのJ
+	)
+
+	got := g.GetTopTrumpIndices(0)
+	want := []int{0, 1, 2}
+	if len(got) != len(want) {
+		t.Fatalf("GetTopTrumpIndices = %v, want %v", got, want)
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Fatalf("GetTopTrumpIndices = %v, want %v", got, want)
+		}
+	}
+}
+
+// ♥A は切り札が♥でなくても top のまま。ここが Forty-Fives 固有の分かりにくさ。
+func TestFortyFivesGetTopTrumpIndicesHeartAceIsAlwaysTop(t *testing.T) {
+	for _, trump := range []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond} {
+		g := newFfGame(true)
+		g.SetTrumpSuit(trump)
+		ffSetHand(g.GetPlayer(0), ffCard(CardDesignHeart, 1))
+
+		if got := g.GetTopTrumpIndices(0); len(got) != 1 || got[0] != 0 {
+			t.Fatalf("trump %d: GetTopTrumpIndices = %v, want [0]", trump, got)
+		}
+	}
+}
+
+// 範囲外は nil。境界そのもの (== プレイヤー数) を含める。
+func TestFortyFivesGetTopTrumpIndicesOutOfRange(t *testing.T) {
+	g := newFfGame(true)
+	for _, idx := range []int{-1, FortyFivesPlayerCnt, 99} {
+		if got := g.GetTopTrumpIndices(idx); got != nil {
+			t.Fatalf("GetTopTrumpIndices(%d) = %v, want nil", idx, got)
+		}
+	}
 }
