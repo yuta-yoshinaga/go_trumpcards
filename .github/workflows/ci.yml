@@ -335,15 +335,31 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}
 
+      # --with-deps も apt を叩くので、キャッシュミス側も同じ理由で有界にする
+      # (#6002)。ブラウザ本体のダウンロードを含むぶん上限は長め。ここで失敗したら
+      # ブラウザが無くテストは動かないので、continue-on-error は付けない。
       - name: Install Playwright browsers
         working-directory: frontend
+        timeout-minutes: 10
+        env:
+          DEBIAN_FRONTEND: noninteractive
         run: bunx playwright install --with-deps chromium
         if: steps.pw-cache.outputs.cache-hit != 'true'
 
       # --with-deps installs OS packages outside the cached directory, so a
       # cache hit still needs them.
+      #
+      # **このステップが2本のPRで連続してジョブの20分を食い潰した** (#6002):
+      # apt がロック待ちや対話プロンプトで固まると、テストが1本も走らないまま
+      # ジョブ全体が timeout で cancel される。3分で切り上げ、非対話で走らせる。
+      # 本当にライブラリが足りなければ後続の playwright test が落ちるので、
+      # ここで失敗しても止めない。
       - name: Install Playwright OS dependencies
         working-directory: frontend
+        timeout-minutes: 3
+        continue-on-error: true
+        env:
+          DEBIAN_FRONTEND: noninteractive
         run: bunx playwright install-deps chromium
         if: steps.pw-cache.outputs.cache-hit == 'true'
 
