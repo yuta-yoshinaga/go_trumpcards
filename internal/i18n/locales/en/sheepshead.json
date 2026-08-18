@@ -29,6 +29,7 @@
   "promptTrickEndHelp": "n / next ... go to the next trick",
   "promptRoundEnd": "Round complete (picker {{pts}} pts, x{{mult}})",
   "promptRoundEndHelp": "nr / nextround ... go to the next round",
+  "roundEndBuried": "Buried",
   "hintNone": "No hint available.",
   "hintCard": "[HINT: {{cards}} ({{reason}})]",
   "hintPick": "[HINT: {{action}} ({{reason}})]",

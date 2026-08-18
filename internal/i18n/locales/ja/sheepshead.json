@@ -29,6 +29,7 @@
   "promptTrickEndHelp": "n / next・・・次のトリックへ",
   "promptRoundEnd": "ラウンド終了（ピッカー組 {{pts}}点, x{{mult}}）",
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
+  "roundEndBuried": "埋め札",
   "hintNone": "ヒントはありません。",
   "hintCard": "[HINT: {{cards}} ({{reason}})]",
   "hintPick": "[HINT: {{action}} ({{reason}})]",
