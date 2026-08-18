@@ -205,3 +205,52 @@ func TestChinchonCuiPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.ChinchonCuiPresenter)
 	assert.NotPanics(t, func() { p.ActionLogOutput(m) })
 }
+
+// #5665: レイオフはノッカーのメルドに札を乗せる操作なので、そのメルドがセット
+// (同ランク) かラン (同スート連番) かで乗せられる札が変わる。Web は
+// chinchonMeldLabel でバッジを出しているのに、CUI は札の羅列だけで、毎回自分で
+// 見分ける必要があった。
+func TestChinchonCuiPresenter_LabelsTheKnockerMelds(t *testing.T) {
+	p := new(presenter.ChinchonCuiPresenter)
+	card := func(design, value int) *domain.Card { return domain.NewCard(design, value, false) }
+
+	layoffMock := func(melds [][]*domain.Card) *interfaces.MockChinchonGame {
+		m, _ := setupChinchonCuiMock(domain.ChinchonPhaseLayoff, false, -1)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetKnockerMelds")
+		m.On("GetKnockerMelds").Return(melds)
+		return m
+	}
+
+	t.Run("a same-rank set is labelled by its rank", func(t *testing.T) {
+		out := p.Output(layoffMock([][]*domain.Card{{
+			card(domain.CardDesignSpade, 7),
+			card(domain.CardDesignHeart, 7),
+			card(domain.CardDesignClover, 7),
+		}}), nil)
+
+		assert.Contains(t, out, i18n.Tf("chinchon.knockerMeldLabelled", "label", "7", "cards", ""))
+	})
+
+	// ランはスート記号と最小-最大。8/9/10 を抜いた40枚デッキなので 7 の次は J。
+	t.Run("a run is labelled with its suit and range", func(t *testing.T) {
+		out := p.Output(layoffMock([][]*domain.Card{{
+			card(domain.CardDesignSpade, 11),
+			card(domain.CardDesignSpade, 7),
+			card(domain.CardDesignSpade, 12),
+		}}), nil)
+
+		assert.Contains(t, out, "♠ 7-Q")
+	})
+
+	// 既存のカード列挙は残す。
+	t.Run("keeps listing the cards themselves", func(t *testing.T) {
+		out := p.Output(layoffMock([][]*domain.Card{{
+			card(domain.CardDesignSpade, 7),
+			card(domain.CardDesignHeart, 7),
+			card(domain.CardDesignClover, 7),
+		}}), nil)
+
+		assert.Contains(t, out, "SPADE 7")
+		assert.Contains(t, out, "HEART 7")
+	})
+}
