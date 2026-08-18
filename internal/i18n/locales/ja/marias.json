@@ -12,6 +12,7 @@
   "promptPlay": "手番: {{name}}",
   "promptPlayHelp": "play <idx>・・・カードを出す（強さ A>10>K>Q>J>9>8>7／マストフォロー、ボイド時は切り札強制）",
   "promptMarriageHelp": "マリッジ: 同スートの K と Q を持つ手札からどちらかをリードすると +20（切り札スートは +40）",
+  "marriageEarned": "結婚成立: {{points}}点獲得",
   "promptTrickEnd": "トリック終了",
   "promptTrickEndHelp": "n / next・・・次のトリックへ",
   "promptRoundEnd": "ラウンド終了（ソリスト {{soloist}}: {{pts}}点）",

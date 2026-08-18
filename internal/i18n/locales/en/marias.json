@@ -12,6 +12,7 @@
   "promptPlay": "Turn: {{name}}",
   "promptPlayHelp": "play <idx> ... play a card (A>10>K>Q>J>9>8>7; must follow suit, then must trump if void)",
   "promptMarriageHelp": "Marriage: leading the K or Q from a same-suit K+Q in hand scores +20 (+40 in the trump suit)",
+  "marriageEarned": "Marriage: {{points}} points",
   "promptTrickEnd": "Trick complete",
   "promptTrickEndHelp": "n / next ... go to the next trick",
   "promptRoundEnd": "Round complete (Soloist {{soloist}}: {{pts}} card pts)",
