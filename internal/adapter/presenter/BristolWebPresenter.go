@@ -120,6 +120,9 @@ func (p *BristolWebPresenter) buildBaseOutput(b interfaces.BristolGame) *control
 		MoveCount:  b.GetMoveCount(),
 		StockCount: b.GetStockCount(),
 		CanUndo:    b.CanUndo(),
+		// 手詰まりは画面に出さないと、動かせる札を探し続けることになる (#5631)。
+		IsStalemate:  b.IsStalemate(),
+		UndoToEscape: b.UndoToEscape(),
 	}
 }
 

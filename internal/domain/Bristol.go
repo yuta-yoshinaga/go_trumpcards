@@ -54,25 +54,27 @@ type BristolHint struct {
 //   - 一度空になったタブロー列にはカードを置けない。
 //   - 4つのファウンデーションはAからKへ昇順（スート不問）。
 type Bristol struct {
-	trumpCards *TrumpCards
-	tableau    [BristolTableauCnt][]*Card
-	fan        [BristolFanCnt][]*Card
-	stock      []*Card
-	foundation [BristolFoundationCnt][]*Card
-	phase      BristolPhase
-	moveCount  int
+	trumpCards  *TrumpCards
+	tableau     [BristolTableauCnt][]*Card
+	fan         [BristolFanCnt][]*Card
+	stock       []*Card
+	foundation  [BristolFoundationCnt][]*Card
+	phase       BristolPhase
+	moveCount   int
+	isStalemate bool
 	actionLogBase
 	history []*bristolSnapshot
 }
 
 // bristolSnapshot アンドゥ用スナップショット
 type bristolSnapshot struct {
-	tableau    [BristolTableauCnt][]*Card
-	fan        [BristolFanCnt][]*Card
-	stock      []*Card
-	foundation [BristolFoundationCnt][]*Card
-	phase      BristolPhase
-	moveCount  int
+	tableau     [BristolTableauCnt][]*Card
+	fan         [BristolFanCnt][]*Card
+	stock       []*Card
+	foundation  [BristolFoundationCnt][]*Card
+	phase       BristolPhase
+	moveCount   int
+	isStalemate bool
 }
 
 // NewBristol コンストラクタ
@@ -93,6 +95,7 @@ func (b *Bristol) Reset() {
 	b.moveCount = 0
 	b.actionLog = nil
 	b.history = nil
+	b.isStalemate = false
 
 	// タブローに配る: 各列3枚、すべて表向き
 	for i := 0; i < BristolTableauCnt; i++ {
@@ -191,6 +194,7 @@ func (b *Bristol) MoveTableauToFoundation(col int) error {
 	b.moveCount++
 	b.appendLog("move", fmt.Sprintf("タブロー列%d→ファウンデーション", col), []*Card{card})
 	b.checkGameClear()
+	b.checkStalemate()
 	return nil
 }
 
@@ -244,6 +248,7 @@ func (b *Bristol) MoveFanToFoundation(fanIdx int) error {
 	b.moveCount++
 	b.appendLog("move", fmt.Sprintf("ファン%d→ファウンデーション", fanIdx), []*Card{card})
 	b.checkGameClear()
+	b.checkStalemate()
 	return nil
 }
 
@@ -361,6 +366,7 @@ func (b *Bristol) AutoComplete() error {
 	}
 	b.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
 	b.checkGameClear()
+	b.checkStalemate()
 	return nil
 }
 
@@ -403,6 +409,38 @@ func (b *Bristol) SetFan(f [BristolFanCnt][]*Card) { b.fan = f }
 func (b *Bristol) SetFoundation(f [BristolFoundationCnt][]*Card) { b.foundation = f }
 
 // Undo 直前の操作を取り消す
+// IsStalemate は合法手が 1 つも無い状態かを返す。
+//
+// **ストックは作り直せない。**Draw() で 3 つのファンへ配り切ると空になるので、
+// どこにも置けない盤面に普通に到達する。他のソリティアと違って検知が無く、
+// プレイヤーは動かせる札を探し続けるしかなかった (#5631)。
+func (b *Bristol) IsStalemate() bool { return b.isStalemate }
+
+// UndoToEscape は膠着状態から抜けるために必要なアンドゥ回数を返す。
+// 膠着状態でなければ 0、脱出不可なら -1。
+func (b *Bristol) UndoToEscape() int {
+	return undoToEscape(b.isStalemate, b.history, func(s *bristolSnapshot) bool { return s.isStalemate })
+}
+
+// RecheckStalemate はテスト用に手詰まり判定を走らせる (盤面を直接組んだ場合)。
+func (b *Bristol) RecheckStalemate() { b.checkStalemate() }
+
+// checkStalemate は合法手の有無から手詰まりを判定する。
+// **判定は GetHint に任せる。**「動かせる手があるか」を 2 か所で数えると、
+// 片方だけ直したときにヒントは出るのに手詰まりと言う (逆も) 状態になる。
+func (b *Bristol) checkStalemate() {
+	if b.phase != BristolPhasePlaying {
+		b.isStalemate = false
+		return
+	}
+	if len(b.stock) > 0 {
+		// 配れる札が残っていれば、まだ手はある。
+		b.isStalemate = false
+		return
+	}
+	b.isStalemate = b.GetHint() == nil
+}
+
 func (b *Bristol) Undo() error {
 	if b.phase != BristolPhasePlaying {
 		return errors.New("cannot undo: game is not in playing phase")
@@ -514,8 +552,9 @@ func (b *Bristol) checkGameClear() {
 
 func (b *Bristol) takeSnapshot() {
 	snap := &bristolSnapshot{
-		phase:     b.phase,
-		moveCount: b.moveCount,
+		phase:       b.phase,
+		moveCount:   b.moveCount,
+		isStalemate: b.isStalemate,
 	}
 	for i := 0; i < BristolTableauCnt; i++ {
 		snap.tableau[i] = make([]*Card, len(b.tableau[i]))
@@ -538,6 +577,7 @@ func (b *Bristol) restoreSnapshot(snap *bristolSnapshot) {
 	b.tableau = snap.tableau
 	b.fan = snap.fan
 	b.stock = snap.stock
+	b.isStalemate = snap.isStalemate
 	b.foundation = snap.foundation
 	b.phase = snap.phase
 	b.moveCount = snap.moveCount

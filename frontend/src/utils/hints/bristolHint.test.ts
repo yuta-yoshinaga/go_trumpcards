@@ -12,6 +12,8 @@ function makeState(overrides: Partial<BristolResponse> = {}): BristolResponse {
     phase: 0,
     moveCount: 0,
     canUndo: false,
+    isStalemate: false,
+    undoToEscape: 0,
     message: '',
     ...overrides,
   };

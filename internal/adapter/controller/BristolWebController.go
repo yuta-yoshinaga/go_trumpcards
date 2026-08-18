@@ -31,14 +31,19 @@ type BristolWebOutputHint struct {
 
 // BristolWebOutput ブリストルWebアウトプット
 type BristolWebOutput struct {
-	Tableau    [][]*WebOutputCard    `json:"tableau"`
-	Fan        [][]*WebOutputCard    `json:"fan"`
-	StockCount int                   `json:"stockCount"`
-	Foundation [][]*WebOutputCard    `json:"foundation"`
-	Phase      int                   `json:"phase"`
-	MoveCount  int                   `json:"moveCount"`
-	CanUndo    bool                  `json:"canUndo"`
-	Hint       *BristolWebOutputHint `json:"hint,omitempty"`
+	Tableau    [][]*WebOutputCard `json:"tableau"`
+	Fan        [][]*WebOutputCard `json:"fan"`
+	StockCount int                `json:"stockCount"`
+	Foundation [][]*WebOutputCard `json:"foundation"`
+	Phase      int                `json:"phase"`
+	MoveCount  int                `json:"moveCount"`
+	CanUndo    bool               `json:"canUndo"`
+	// IsStalemate は合法手が 1 つも無い状態か。ストックを作り直せないので
+	// 普通に到達する (#5631)。
+	IsStalemate bool `json:"isStalemate"`
+	// UndoToEscape は膠着から抜けるのに必要なアンドゥ回数 (膠着でなければ 0)。
+	UndoToEscape int                   `json:"undoToEscape"`
+	Hint         *BristolWebOutputHint `json:"hint,omitempty"`
 	// LegalTargets は移動元ごとの合法な移動先。キーは "tableau-0" / "fan-2"。
 	// 選択中の札で実際に動かせる先だけを画面が示すために使う (#4813)。
 	LegalTargets map[string]BristolWebOutputTargets `json:"legalTargets"`

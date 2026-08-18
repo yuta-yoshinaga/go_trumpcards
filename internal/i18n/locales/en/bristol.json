@@ -26,6 +26,7 @@
   "fanLabel": "Fan {{idx}}:",
   "pileCount": " ({{count}})",
   "stockLine": "Stock: {{count}}",
+  "undoToEscape": "Dead end. Undo (u) {{count}} time(s) to get back to a playable board.",
   "hintFromTableau": "tableau col {{col}}",
   "hintFromFan": "fan {{col}}",
   "hintToFoundation": "foundation {{idx}}",

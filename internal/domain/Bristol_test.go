@@ -444,3 +444,53 @@ func TestBristol_LegalTargets(t *testing.T) {
 		assert.Nil(t, found3, tc.zone)
 	}
 }
+
+// #5631: Bristol にだけ手詰まり検知が無かった。ストックは配り切ると空になり
+// 作り直しも無いので、どこにも合法手が無い盤面には普通に到達する。
+func TestBristolDetectsAStalemate(t *testing.T) {
+	b := newTestBristol()
+	b.SetPhase(domain.BristolPhasePlaying)
+	b.SetStock(nil)
+	// タブローは降順1つ差でしか積めず、組札は同スートで1つ上。どこにも置けない
+	// 並びにする (すべて同じランクなら、タブローにもファンにも置けない)。
+	var tableau [domain.BristolTableauCnt][]*domain.Card
+	suits := []int{domain.CardDesignSpade, domain.CardDesignHeart, domain.CardDesignClover, domain.CardDesignDiamond}
+	for i := range tableau {
+		tableau[i] = []*domain.Card{domain.NewCard(suits[i%len(suits)], 5, true)}
+	}
+	b.SetTableau(tableau)
+	var fan [domain.BristolFanCnt][]*domain.Card
+	for i := range fan {
+		fan[i] = []*domain.Card{domain.NewCard(suits[i%len(suits)], 5, true)}
+	}
+	b.SetFan(fan)
+	b.SetFoundation([domain.BristolFoundationCnt][]*domain.Card{})
+
+	b.RecheckStalemate()
+	assert.True(t, b.IsStalemate(), "合法手が1つも無い盤面")
+	assert.Nil(t, b.GetHint(), "前提: ヒントも出ない")
+}
+
+// 合法手が1つでもあれば手詰まりではない。**「常に true」では検知にならない。**
+func TestBristolIsNotStalemateWhileAMoveExists(t *testing.T) {
+	b := newTestBristol()
+	b.SetPhase(domain.BristolPhasePlaying)
+	b.SetStock(nil)
+	var tableau [domain.BristolTableauCnt][]*domain.Card
+	tableau[0] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, true)}
+	tableau[1] = []*domain.Card{domain.NewCard(domain.CardDesignHeart, 6, true)} // ♠5 を載せられる
+	b.SetTableau(tableau)
+	b.SetFan([domain.BristolFanCnt][]*domain.Card{})
+	b.SetFoundation([domain.BristolFoundationCnt][]*domain.Card{})
+
+	b.RecheckStalemate()
+	assert.False(t, b.IsStalemate())
+}
+
+// 脱出に必要なアンドゥ回数。手詰まりでなければ 0。
+func TestBristolUndoToEscapeIsZeroWhenNotStuck(t *testing.T) {
+	b := newTestBristol()
+	b.Reset()
+	assert.False(t, b.IsStalemate())
+	assert.Equal(t, 0, b.UndoToEscape())
+}
