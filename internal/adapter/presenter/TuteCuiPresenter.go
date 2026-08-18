@@ -81,13 +81,14 @@ func (p *TuteCuiPresenter) Output(g interfaces.TuteGame, lastErr error) string {
 		// 今ラウンドの点を出すようにしたのに、CUI は RoundEnd でしか読んでおらず、
 		// 宣言しても何点入ったのかラウンドが終わるまで確かめられなかった。
 		// RoundEnd は自分の行 (promptRoundEnd) で同じ数字を出すので、そこでは出さない。
-		if phase := g.GetPhase(); phase == domain.TutePhasePlay || phase == domain.TutePhaseTrickEnd {
+		phase := g.GetPhase()
+		if phase == domain.TutePhasePlay || phase == domain.TutePhaseTrickEnd {
 			pts := g.GetRoundTeamPoints()
 			b.WriteString(i18n.Tf("tute.runningPoints",
 				"ptsA", strconv.Itoa(pts[0]),
 				"ptsB", strconv.Itoa(pts[1])) + "\n")
 		}
-		switch g.GetPhase() {
+		switch phase {
 		case domain.TutePhasePlay:
 			currentIdx := g.GetCurrentPlayerIdx()
 			b.WriteString(i18n.Tf("tute.promptPlay",
