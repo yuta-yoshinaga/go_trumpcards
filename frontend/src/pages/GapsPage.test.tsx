@@ -137,6 +137,27 @@ describe('GapsPage', () => {
     await waitFor(() => expect(mockedRun).toHaveBeenCalledWith('undo'));
   });
 
+  // #5609: ドメインも presenter も手詰まりを返しており、CUI は #4800 で赤い警告を
+  // 出すようになったのに、Web 版は何も出さないままだった。動かせる札が見つからず
+  // 困るだけで、脱出手段があることに気づけない。
+  it('offers the stalemate escape when the server reports one', async () => {
+    mockedRun.mockResolvedValue({ ...playingState, isStalemate: true, undoToEscape: 3, canUndo: true });
+    renderWithProviders(<GapsPage />);
+
+    const btn = await screen.findByTestId('stalemate-escape-button');
+    mockedRun.mockClear();
+    fireEvent.click(btn);
+    // undo_n の 4 番目の引数が戻す手数 (gapsApi.exec(command, from, to, n))。
+    await waitFor(() => expect(mockedRun).toHaveBeenCalledWith('undo_n', undefined, undefined, 3));
+  });
+
+  it('shows no escape button while the game is not stuck', async () => {
+    mockedRun.mockResolvedValue({ ...playingState, isStalemate: false, undoToEscape: 3 });
+    renderWithProviders(<GapsPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    expect(screen.queryByTestId('stalemate-escape-button')).not.toBeInTheDocument();
+  });
+
   it('calls run hint when hint clicked', async () => {
     renderWithProviders(<GapsPage />);
     const btn = await screen.findByRole('button', { name: 'ヒント' });
