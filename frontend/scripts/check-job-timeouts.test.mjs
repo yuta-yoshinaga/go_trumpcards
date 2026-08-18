@@ -145,6 +145,33 @@ describe('check-job-timeouts', () => {
     expect(r.status).toBe(0);
   });
 
+  // 実装中に一度これで誤検知した: 次のステップ向けに書いた解説コメントは
+  // **前のステップの塊に入る**ので、素の全文検索だと apt と無関係なステップが
+  // 上限なしとして報告される。コメント除去そのものを固定しておく。
+  it('does not blame the previous step for a comment that describes the next one', () => {
+    const ci = CI_BOUNDED.replace(
+      `  test-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - run: echo hi`,
+      `  test-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Build something
+        run: echo build
+
+      # apt がロック待ちで固まるので次のステップは有界にしてある
+      - name: Install Playwright OS dependencies
+        timeout-minutes: 3
+        run: bunx playwright install-deps chromium`,
+    );
+    const r = runGuard(ci);
+    expect(r.status).toBe(0);
+    expect(r.stderr).not.toContain('Build something');
+  });
+
   it('passes against the real ci.yml', () => {
     const r = spawnSync('bun', [GUARD], { encoding: 'utf8' });
     expect(r.status).toBe(0);
