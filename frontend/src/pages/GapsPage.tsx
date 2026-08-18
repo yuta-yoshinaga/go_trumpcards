@@ -11,6 +11,7 @@ import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { KbdBadge } from '../components/KbdBadge';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -108,6 +109,14 @@ function GapsPageContent() {
   const handleUndo = useCallback(() => {
     void run('undo');
   }, [run]);
+
+  /** Undo N moves at once to escape a stalemate (mirrors Sultan / Forty and Eight). */
+  const handleUndoEscape = useCallback(
+    (n: number) => {
+      void run('undo_n', undefined, undefined, n);
+    },
+    [run],
+  );
 
   const handleRedeal = useCallback(() => {
     void run('redeal');
@@ -346,6 +355,15 @@ function GapsPageContent() {
                 {t('undo')}
                 <KbdBadge label={t('kbd.undo')} />
               </button>
+              {/* 手詰まりはドメインが判定して返している (#5609)。CUI は #4800 で
+                  警告を出しているのに、Web には脱出手段の案内が無かった。 */}
+              {state.isStalemate && (
+                <StalemateEscapeButton
+                  undoToEscape={state.undoToEscape ?? 0}
+                  onEscape={handleUndoEscape}
+                  disabled={loading}
+                />
+              )}
               <button
                 type="button"
                 className={btnPrimary}
