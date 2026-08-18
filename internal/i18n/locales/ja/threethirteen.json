@@ -11,6 +11,7 @@
   "discardLine": "捨て札: {{card}}",
   "discardPreview": "  捨てた後のデッドウッド: {{values}}",
   "playerLine": "{{name}}: 累積{{cum}}点 ラウンド{{round}}点 {{cards}}枚 デッドウッド{{deadwood}}",
+  "wildLegend": "~ = ワイルド札（このラウンドのワイルドランク）",
   "gameEnd": "ゲーム終了！ {{name}}の勝利です！",
   "drawPhase": "山札または捨て札から1枚引いてください",
   "discardPhase": "1枚捨ててください（完全メルドならノック可）",
