@@ -54,9 +54,14 @@ export function splitJobs(src) {
  * @returns {string[]} `timeout-minutes` を持たないジョブ名。
  */
 export function jobsWithoutTimeout(src) {
-  return splitJobs(src)
-    .filter((job) => !/^\s+timeout-minutes:\s*\d+\s*$/m.test(job.body))
-    .map((job) => job.name);
+  return (
+    splitJobs(src)
+      // **ジョブ直下の 4 スペース固定で見る。**任意のインデントを許すと、ステップに
+      // 付いた `timeout-minutes` でジョブ全体が有界だと誤判定する。ステップ側の上限は
+      // そのステップしか止めないので、別のステップで詰まればジョブは 6 時間残る。
+      .filter((job) => !/^ {4}timeout-minutes: *\d+ *$/m.test(job.body))
+      .map((job) => job.name)
+  );
 }
 
 const src = await readFile(CI, 'utf8');

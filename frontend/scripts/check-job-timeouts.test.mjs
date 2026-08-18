@@ -76,6 +76,18 @@ describe('check-job-timeouts', () => {
     expect(r.stderr).not.toContain('test-backend');
   });
 
+  // レビュー #5969: ステップに付いた上限はそのステップしか止めない。ジョブ全体は
+  // 既定の 6 時間のままなので、これを「有界」と読んではいけない。
+  it('does not accept a step-level timeout as a job-level bound', () => {
+    const stepOnly = CI_BOUNDED.replace(
+      '  test-e2e:\n    runs-on: ubuntu-latest\n    timeout-minutes: 20\n    steps:\n      - run: echo hi\n',
+      '  test-e2e:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo hi\n        timeout-minutes: 20\n',
+    );
+    const r = runGuard(stepOnly);
+    expect(r.status).toBe(1);
+    expect(r.stderr).toContain('test-e2e');
+  });
+
   // **0 件で成功と読ませない側。**切り出しが壊れた ci.yml は「違反 0 件」に
   // なるので、ジョブ数の下限で落ちること自体を確かめる。
   it('fails when it cannot find enough jobs to have checked anything', () => {
