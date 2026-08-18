@@ -160,6 +160,52 @@ describe('LaBelleLuciePage', () => {
     expect(screen.queryByTestId('redeal-button')).not.toBeInTheDocument();
   });
 
+  // #5678: どの扇が動かせるかは、ヒント (4秒で消える) を押さないと分からなかった。
+  // 既定の盤面: ♠9 / ♠8 / ♦A — ♠8 は ♠9 の上へ、♦A は空のファウンデーションへ動ける。
+  it('marks the fans that can move without asking for a hint', async () => {
+    renderWithProviders(<LaBelleLuciePage />);
+
+    await waitFor(() => expect(screen.getByTestId('fan-0')).toBeInTheDocument());
+    expect(screen.getByTestId('fan-1')).toHaveAttribute('data-movable', 'true');
+    expect(screen.getByTestId('fan-2')).toHaveAttribute('data-movable', 'true');
+    // ♠9 の行き先 (♠10) は無い。
+    expect(screen.getByTestId('fan-0')).not.toHaveAttribute('data-movable');
+  });
+
+  it('marks nothing when the board is stuck', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ fans: [[card('SPADE', 5)], [card('HEART', 9)]], foundation: [[card('CLOVER', 1)], [], [], []] }),
+    );
+    renderWithProviders(<LaBelleLuciePage />);
+
+    await waitFor(() => expect(screen.getByTestId('fan-0')).toBeInTheDocument());
+    expect(screen.getByTestId('fan-0')).not.toHaveAttribute('data-movable');
+    expect(screen.getByTestId('fan-1')).not.toHaveAttribute('data-movable');
+  });
+
+  // **ヒントの強調とは別物として読めること。**同じ印だと、4秒で消える推奨手と
+  // 常時出ている「動かせる」が区別できない。
+  it('keeps the movable marker distinct from the hint markers', async () => {
+    mockExec.mockResolvedValue(makeState({ hint: { fromFan: 1, toFan: 0, toFoundation: false } }));
+    renderWithProviders(<LaBelleLuciePage />);
+    await screen.findByTestId('hint-button');
+
+    // ヒント前: 控えめな 1px のリングだけ。パルスはしない。
+    const before = screen.getByTestId('fan-1');
+    expect(before).toHaveAttribute('data-movable', 'true');
+    expect(before).not.toHaveAttribute('data-hint-source');
+    expect(before.className).toContain('ring-1');
+    expect(before.className).not.toContain('animate-pulse');
+
+    fireEvent.click(screen.getByTestId('hint-button'));
+
+    // ヒント後: 2px + パルスに変わる。**同じ見た目なら区別が付かない。**
+    await waitFor(() => expect(screen.getByTestId('fan-1')).toHaveAttribute('data-hint-source', 'true'));
+    const after = screen.getByTestId('fan-1');
+    expect(after).toHaveAttribute('data-movable', 'true');
+    expect(after.className).toContain('animate-pulse');
+  });
+
   it('highlights the hint source and destination fans after a hint', async () => {
     mockExec.mockResolvedValue(makeState({ hint: { fromFan: 1, toFan: 0, toFoundation: false } }));
     renderWithProviders(<LaBelleLuciePage />);

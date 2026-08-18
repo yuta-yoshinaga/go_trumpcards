@@ -21,7 +21,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { Card } from '../types/card';
 import { LaBelleLuciePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { labelleLucieHasLegalMove } from '../utils/labelleLucieLegalMove';
+import { labelleLucieHasLegalMove, labelleLucieMovableFans } from '../utils/labelleLucieLegalMove';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** La Belle Lucie tutorial step definitions. */
@@ -99,6 +99,10 @@ function LaBelleLuciePageContent() {
   const isEnd = isClear || isOver;
   const canAct = !isEnd;
   const hasLegalMove = labelleLucieHasLegalMove(state.fans, state.foundation);
+  // **どの扇が動かせるかは、ヒント (4秒で消える) を押さないと分からなかった** (#5678)。
+  // 同バッチの他ゲームと同じく「押す前に分かる」形にする。ヒントの強調とは別の
+  // 控えめなリングにして、推奨手と混ざらないようにする。
+  const movableFans = labelleLucieMovableFans(state.fans, state.foundation);
   // No legal move left but redeals remain: recommend a redeal before the
   // player wastes time hunting for a move that does not exist.
   const stuck = canAct && state.redealsLeft > 0 && !hasLegalMove;
@@ -158,6 +162,9 @@ function LaBelleLuciePageContent() {
     // Source ring (info) and destination ring (success) are additive hint cues.
     // A selected fan keeps its own warning ring; hint rings take visual priority
     // via later class order when both would apply to the same fan.
+    // 動かせる扇は常時 1px の控えめなリング。ヒントの 2px + パルスとは強さで
+    // 区別する (同じ印だと推奨手と混ざる)。
+    const movableRing = movableFans.has(idx) ? ' ring-1 ring-ds-success/60' : '';
     const hintRing = isHintSource
       ? ' ring-2 ring-ds-info motion-safe:animate-pulse'
       : isHintDest
@@ -167,11 +174,12 @@ function LaBelleLuciePageContent() {
       <button
         type="button"
         key={`fan-${idx}`}
-        className={`relative flex flex-col items-center rounded p-1 ${selected === idx ? 'ring-2 ring-ds-warning' : ''}${hintRing} ${canAct ? 'cursor-pointer' : ''}`}
+        className={`relative flex flex-col items-center rounded p-1 ${selected === idx ? 'ring-2 ring-ds-warning' : ''}${hintRing || movableRing} ${canAct ? 'cursor-pointer' : ''}`}
         style={{ minHeight: Math.round(w * 1.4) }}
         onClick={canAct ? () => pickFan(idx) : undefined}
         disabled={!canAct}
         data-testid={`fan-${idx}`}
+        data-movable={movableFans.has(idx) ? 'true' : undefined}
         data-hint-source={isHintSource ? 'true' : undefined}
         data-hint-dest={isHintDest ? 'true' : undefined}
       >

@@ -31,13 +31,35 @@ function canStack(card: Card, dstTop: Card | undefined): boolean {
  * hasAnyLegalMove so the UI can recommend a redeal before the player is stuck.
  */
 export function labelleLucieHasLegalMove(fans: Card[][], foundation: Card[][]): boolean {
+  return labelleLucieMovableFans(fans, foundation).size > 0;
+}
+
+/**
+ * Indices of the fans whose top card can move somewhere right now — onto a
+ * foundation, or onto another fan's top.
+ *
+ * `labelleLucieHasLegalMove` is the same question asked of the whole board, so
+ * it is answered from this set: one rule, two callers (#5678).
+ *
+ * @param fans - The fans, each ordered bottom to top.
+ * @param foundation - The foundation piles.
+ * @returns The set of movable fan indices.
+ */
+export function labelleLucieMovableFans(fans: Card[][], foundation: Card[][]): Set<number> {
+  const movable = new Set<number>();
   for (let i = 0; i < fans.length; i++) {
     const card = fanTop(fans[i]);
     if (!card) continue;
-    if (fitsFoundation(card, foundation)) return true;
+    if (fitsFoundation(card, foundation)) {
+      movable.add(i);
+      continue;
+    }
     for (let j = 0; j < fans.length; j++) {
-      if (i !== j && canStack(card, fanTop(fans[j]))) return true;
+      if (i !== j && canStack(card, fanTop(fans[j]))) {
+        movable.add(i);
+        break;
+      }
     }
   }
-  return false;
+  return movable;
 }
