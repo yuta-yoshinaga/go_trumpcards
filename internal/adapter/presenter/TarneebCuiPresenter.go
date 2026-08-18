@@ -13,7 +13,7 @@ import (
 )
 
 // tarneebPlayerStr returns the display string for a single Tarneeb player.
-func tarneebPlayerStr(player *domain.TarneebPlayer, i int) string {
+func tarneebPlayerStr(player *domain.TarneebPlayer, i int, playable []int) string {
 	var b strings.Builder
 	bidStr := i18n.T("tarneeb.bidPending")
 	switch {
@@ -31,7 +31,10 @@ func tarneebPlayerStr(player *domain.TarneebPlayer, i int) string {
 	))
 	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
-		b.WriteString(cuiIndexedCardListStr(player) + "\n")
+		// **Web は validPlayIndices で出せない札を無効化しているのに、CUI は素の
+		// 一覧だけだった** (#5606, CallBreak #5605 と同型)。playable が空のときは
+		// 目印を付けない (制限が決まっていない状態と区別する)。
+		b.WriteString(cuiPlayableMarkedCardListStr(player, playable) + "\n")
 	}
 	return b.String()
 }
@@ -77,7 +80,12 @@ func (p *TarneebCuiPresenter) Output(t interfaces.TarneebGame, lastErr error) st
 		}
 
 		for i := 0; i < t.GetPlayerCnt(); i++ {
-			b.WriteString(tarneebPlayerStr(t.GetPlayer(i), i))
+			// 目印はプレイフェーズで本人の手番のときだけ。
+			var playable []int
+			if t.GetPhase() == domain.TarneebPhasePlay && t.GetCurrentPlayerIdx() == i {
+				playable = t.GetValidPlayIndices(i)
+			}
+			b.WriteString(tarneebPlayerStr(t.GetPlayer(i), i, playable))
 		}
 
 		b.WriteString("----------\n")
