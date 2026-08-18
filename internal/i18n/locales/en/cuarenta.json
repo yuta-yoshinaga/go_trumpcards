@@ -5,6 +5,7 @@
   "helpSetDifficulty": "  sd [0-2]                 CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
   "teamScoreLine": "Team {{team}}: {{score}} pts",
   "playerLine": "{{name}} (Team {{team}}): hand {{hand}} / captured {{captured}}",
+  "capturePreview": "(takes {{count}})",
   "tableLine": "Table: {{cards}}",
   "tableEmpty": "Table: empty",
   "humanActionLine": "Your move: {{text}}",
