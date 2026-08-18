@@ -44,18 +44,27 @@ func TestHorseRoundTripJSON_MidHand(t *testing.T) {
 		beforeFold[i] = back.GetSeatChips(i)
 	}
 
-	horseFoldOutHand(t, &back)
-	require.Equal(t, HorsePhaseHandEnd, back.GetPhase())
-	assert.Equal(t, beforeChips, horseTotalChips(&back), "総量が変わっている")
-
+	// **1 ハンドでは足りない。**降りたぶんの掛け金がそのまま自分に戻る配りだと、
+	// 全席が打つ前と同じ残高で終わる。それを「回収が繋がっていない」と読むと
+	// 配りに依存して落ちる (#5869 で 3 回観測、いずれも Horse と無関係な PR)。
+	// 回収が本当に切れていれば**何ハンド打っても**動かないので、動くまで数ハンド
+	// 続ける形にする。
 	moved := false
-	for i := range beforeFold {
-		if back.GetSeatChips(i) != beforeFold[i] {
-			moved = true
-			break
+	for hand := 0; hand < 3 && !moved; hand++ {
+		if hand > 0 {
+			require.NoError(t, back.NextHand())
+		}
+		horseFoldOutHand(t, &back)
+		require.Equal(t, HorsePhaseHandEnd, back.GetPhase())
+		assert.Equal(t, beforeChips, horseTotalChips(&back), "総量が変わっている")
+		for i := range beforeFold {
+			if back.GetSeatChips(i) != beforeFold[i] {
+				moved = true
+				break
+			}
 		}
 	}
-	assert.True(t, moved, "ハンドを打ったのに残高が 1 席も動いていない (回収が繋がっていない)")
+	assert.True(t, moved, "3 ハンド打っても残高が 1 席も動いていない (回収が繋がっていない)")
 }
 
 func TestHorseRoundTripJSON_BetweenHands(t *testing.T) {
