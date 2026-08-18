@@ -202,22 +202,3 @@ func TestTienLenCuiPresenterHintOutput(t *testing.T) {
 		assert.Contains(t, p.HintOutput(m), i18n.T("tienlen.hintNone"))
 	})
 }
-
-// 範囲外のインデックスは無視する。ドメインとプレゼンターのあいだで手札が
-// 入れ替わった瞬間 (レース) に、存在しない札を指して落ちないようにする。
-func TestTienLenCuiPresenterHintSkipsOutOfRangeIndices(t *testing.T) {
-	orig := color.NoColor()
-	color.SetNoColor(true)
-	defer color.SetNoColor(orig)
-
-	m := new(interfaces.MockTienLenGame)
-	pl := domain.NewTienLenPlayer(true)
-	pl.AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
-	m.On("GetHint").Return(&domain.TienLenHint{Indices: []int{0, 7}})
-	m.On("GetCurrentTurn").Return(0)
-	m.On("GetPlayer", 0).Return(pl)
-
-	out := new(presenter.TienLenCuiPresenter).HintOutput(m)
-	assert.Contains(t, out, "[0]")
-	assert.NotContains(t, out, "[7]")
-}

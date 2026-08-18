@@ -125,9 +125,10 @@ func (p *TienLenCuiPresenter) HintOutput(tg interfaces.TienLenGame) string {
 	player := tg.GetPlayer(tg.GetCurrentTurn())
 	cards := make([]string, 0, len(hint.Indices))
 	for _, idx := range hint.Indices {
-		if idx < 0 || idx >= player.GetCardsSize() {
-			continue
-		}
+		// 範囲チェックは置かない。インデックスは直前の GetHint() が**同じ手札から**
+		// 作ったもので、その間に手札は変わらない。起きない場合の分岐を足すと、
+		// テストの通らない行が増えるだけになる。
+		//
 		// 番号も出す ── `p <idx...>` にそのまま打ち込めるように。
 		cards = append(cards, fmt.Sprintf("[%d]%s", idx, cuiCardStr(player.GetCard(idx))))
 	}

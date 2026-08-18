@@ -2,7 +2,7 @@
   "helpTitle": "Tien Len (ティエンレン)",
   "hintPlay": "ヒント: {{cards}} を出しましょう",
   "hintPass": "ヒント: 返せる手がないのでパスしましょう",
-  "hintNone": "ヒント: いまは出せません",
+  "hintNone": "ヒントはありません。",
   "helpPlay": "  p [idx ...]          カードを出す (指定なし = パス)",
   "helpHint": "  h                    ヒント (推奨手を表示)",
   "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Normal, 1=Easy, 2=Hard)",
