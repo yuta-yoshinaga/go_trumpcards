@@ -228,6 +228,38 @@ describe('TwentyNinePage', () => {
 
   // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回
   // ヒントを載せるので、`state.hint` だけを見て描画すると常時表示になる (#4605)。
+  // #5644: 落札チームが契約に届くかは目標点・現在点・場に残る点を突き合わせない
+  // と分からない。姉妹ゲームの FortyFives は ff-contract-progress で出している。
+  it('shows how far the declaring team is from its contract', async () => {
+    mockExec.mockResolvedValue(
+      makeTwentyNineState({ ...playPhaseState, declarerIdx: 0, contract: 20, roundTeamPoints: [10, 5] }),
+    );
+    renderWithProviders(<TwentyNinePage />);
+
+    const progress = await screen.findByTestId('tn29-contract-progress');
+    expect(progress).toHaveTextContent('10');
+    expect(progress).toHaveTextContent('20');
+    expect(progress).toHaveTextContent('あと10点');
+  });
+
+  // 場に残るのは 29-(10+15)=4 点。10+4=14 < 20 なので、この時点で確定する。
+  it('says the contract can no longer be made once the remaining points fall short', async () => {
+    mockExec.mockResolvedValue(
+      makeTwentyNineState({ ...playPhaseState, declarerIdx: 0, contract: 20, roundTeamPoints: [10, 15] }),
+    );
+    renderWithProviders(<TwentyNinePage />);
+
+    expect(await screen.findByTestId('tn29-contract-progress')).toHaveTextContent('不成立が確定');
+  });
+
+  it('omits the progress line while nobody has won the bidding', async () => {
+    mockExec.mockResolvedValue(makeTwentyNineState({ ...playPhaseState, declarerIdx: -1, contract: 0 }));
+    renderWithProviders(<TwentyNinePage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('tn29-contract-progress')).not.toBeInTheDocument();
+  });
+
   it('renders no hint banner when the hint was not requested', async () => {
     mockExec.mockResolvedValue({ ...bidPhaseState, hint: { cardIndices: [0], reason: 'x' } });
     renderWithProviders(<TwentyNinePage />);

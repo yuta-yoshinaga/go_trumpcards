@@ -176,6 +176,15 @@ func (_m *MockTwentyNineGame) GetRoundTeamPoints() [domain.TwentyNineTeamCnt]int
 	return ret.Get(0).([domain.TwentyNineTeamCnt]int)
 }
 
+// GetContractProgress モック
+func (_m *MockTwentyNineGame) GetContractProgress() *domain.TwentyNineContractProgress {
+	ret := _m.Called()
+	if v := ret.Get(0); v != nil {
+		return v.(*domain.TwentyNineContractProgress)
+	}
+	return nil
+}
+
 // GetWinnerTeam モック
 func (_m *MockTwentyNineGame) GetWinnerTeam() int {
 	ret := _m.Called()
