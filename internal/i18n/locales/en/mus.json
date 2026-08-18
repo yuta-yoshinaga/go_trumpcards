@@ -13,7 +13,7 @@
   "roundLine": "Round: {{round}}  Team 0: {{t0}} pts  Team 1: {{t1}} pts",
   "playerLine": "{{name}} (Team {{team}}, {{score}} pts): {{cards}} cards",
   "summaryLabel": "Hand",
-  "summaryLine": "Hand: Grande {{grande}} / Chica {{chica}} / Pares {{pares}} / Juego {{juego}}",
+  "summaryLine": "{{label}}: Grande {{grande}} / Chica {{chica}} / Pares {{pares}} / Juego {{juego}}",
   "paresNone": "none",
   "paresPar": "par",
   "paresMedias": "medias (three of a kind)",

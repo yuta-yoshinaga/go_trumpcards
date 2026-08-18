@@ -252,6 +252,7 @@ func TestMusCuiPresenter_ShowsTheHandSummary(t *testing.T) {
 		out := p.Output(m, nil)
 
 		assert.Contains(t, out, i18n.Tf("mus.summaryLine",
+			"label", i18n.T("mus.summaryLabel"),
 			"grande", strconv.Itoa(summary.HighestRank),
 			"chica", strconv.Itoa(summary.LowestRank),
 			"pares", i18n.T("mus.paresDuples"),

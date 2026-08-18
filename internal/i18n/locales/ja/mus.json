@@ -13,7 +13,7 @@
   "roundLine": "ラウンド: {{round}}  チーム0: {{t0}}点  チーム1: {{t1}}点",
   "playerLine": "{{name}} (チーム{{team}}, {{score}}点): {{cards}}枚",
   "summaryLabel": "手役評価",
-  "summaryLine": "手役評価: グランデ {{grande}} / チカ {{chica}} / パレス {{pares}} / フエゴ {{juego}}",
+  "summaryLine": "{{label}}: グランデ {{grande}} / チカ {{chica}} / パレス {{pares}} / フエゴ {{juego}}",
   "paresNone": "なし",
   "paresPar": "ペア",
   "paresMedias": "メディアス（3枚）",

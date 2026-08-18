@@ -116,6 +116,7 @@ func musPlayerStr(g interfaces.MusGame, i int) string {
 	if player.GetIsHuman() {
 		if s := g.GetHandSummary(i); s != nil {
 			b.WriteString(i18n.Tf("mus.summaryLine",
+				"label", i18n.T("mus.summaryLabel"),
 				"grande", strconv.Itoa(s.HighestRank),
 				"chica", strconv.Itoa(s.LowestRank),
 				"pares", musParesLabel(s.ParesCategory),
