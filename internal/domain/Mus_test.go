@@ -795,3 +795,69 @@ func TestMus_UnmarshalOversized(t *testing.T) {
 		t.Errorf("err = %v, want errMusOversized", err)
 	}
 }
+
+// #5640: Web は evalMusHand で Grande/Chica/Pares/Juego を常時パネルに出して
+// いるのに、ドメインの評価は全部非公開で、CUI からは触れなかった。同じ規則を
+// presenter 側に書き写すと二重管理になるので、ドメインから返す。
+func TestMusGetHandSummary(t *testing.T) {
+	g := newMusGame(true)
+	// K K Q Q -> ranks 10,10,9,9 = 2 ペア (duples), 点 40
+	musSetHand(g.GetPlayer(0), musCard(1, 13), musCard(2, 13), musCard(3, 12), musCard(4, 12))
+
+	s := g.GetHandSummary(0)
+
+	if s.HighestRank != 10 || s.LowestRank != 9 {
+		t.Fatalf("ranks = %d/%d, want 10/9", s.HighestRank, s.LowestRank)
+	}
+	if s.ParesCategory != MusParesDuples {
+		t.Fatalf("pares = %d, want duples", s.ParesCategory)
+	}
+	if s.Points != 40 || !s.HasJuego {
+		t.Fatalf("points = %d hasJuego = %v, want 40/true", s.Points, s.HasJuego)
+	}
+}
+
+// 31 未満は Punto 扱い。しきい値そのものを踏む。
+func TestMusGetHandSummaryPuntoBelowThreshold(t *testing.T) {
+	g := newMusGame(true)
+	// A 2 3 4 -> 点 10、ペアなし
+	musSetHand(g.GetPlayer(0), musCard(1, 1), musCard(2, 2), musCard(3, 3), musCard(4, 4))
+
+	s := g.GetHandSummary(0)
+
+	if s.Points != 10 || s.HasJuego {
+		t.Fatalf("points = %d hasJuego = %v, want 10/false", s.Points, s.HasJuego)
+	}
+	if s.ParesCategory != MusParesNone {
+		t.Fatalf("pares = %d, want none", s.ParesCategory)
+	}
+	if s.HighestRank != 4 || s.LowestRank != 1 {
+		t.Fatalf("ranks = %d/%d, want 4/1", s.HighestRank, s.LowestRank)
+	}
+}
+
+// ちょうど 31 点で Juego が立つ (境界そのもの)。
+func TestMusGetHandSummaryExactlyThirtyOne(t *testing.T) {
+	g := newMusGame(true)
+	// K K K A -> 10+10+10+1 = 31, 3 枚同ランク = medias
+	musSetHand(g.GetPlayer(0), musCard(1, 13), musCard(2, 13), musCard(3, 13), musCard(4, 1))
+
+	s := g.GetHandSummary(0)
+
+	if s.Points != MusJuegoThreshold || !s.HasJuego {
+		t.Fatalf("points = %d hasJuego = %v, want %d/true", s.Points, s.HasJuego, MusJuegoThreshold)
+	}
+	if s.ParesCategory != MusParesMedias {
+		t.Fatalf("pares = %d, want medias", s.ParesCategory)
+	}
+}
+
+// 範囲外・空の手札は評価不能。ランクを 0 で返すと「最低ランク 0」と読めてしまう。
+func TestMusGetHandSummaryOutOfRange(t *testing.T) {
+	g := newMusGame(true)
+	for _, idx := range []int{-1, MusPlayerCnt, 99} {
+		if s := g.GetHandSummary(idx); s != nil {
+			t.Fatalf("GetHandSummary(%d) = %v, want nil", idx, s)
+		}
+	}
+}

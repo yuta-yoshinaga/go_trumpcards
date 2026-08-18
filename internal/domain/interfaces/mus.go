@@ -59,6 +59,8 @@ type MusGame interface {
 	GetPlayerCnt() int
 	// GetPlayer 指定インデックスのプレイヤーを取得する
 	GetPlayer(i int) *domain.MusPlayer
+	// GetHandSummary 指定プレイヤーの手役評価 (Grande/Chica/Pares/Juego) を取得する
+	GetHandSummary(i int) *domain.MusHandSummary
 	// GetHint ヒントを取得する
 	GetHint() *domain.MusHint
 }

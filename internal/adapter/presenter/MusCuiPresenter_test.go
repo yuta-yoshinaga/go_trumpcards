@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -50,6 +51,7 @@ func setupMusCuiMockWithPlayers() (*interfaces.MockMusGame, []*domain.MusPlayer)
 	m := setupMusCuiMock()
 	players := makeMusPlayers()
 	m.On("GetPlayerCnt").Return(domain.MusPlayerCnt)
+	m.On("GetHandSummary", mock.Anything).Return((*domain.MusHandSummary)(nil)).Maybe()
 	for i, p := range players {
 		m.On("GetPlayer", i).Return(p)
 	}
@@ -227,4 +229,72 @@ func TestMusCuiPresenter_ActionLogOutput(t *testing.T) {
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, "mus")
+}
+
+// #5640: 4 つの賭けラウンドはそれぞれ手札の別々の側面を見ている。Web は
+// mus-hand-summary で 4 項目を常時出しているのに、CUI は札を並べるだけで、
+// Mus 独自のランク付け (A/K が高位、2/3 が低位) を暗算させていた。
+func TestMusCuiPresenter_ShowsTheHandSummary(t *testing.T) {
+	p := new(presenter.MusCuiPresenter)
+	summary := &domain.MusHandSummary{
+		HighestRank:   10,
+		LowestRank:    9,
+		ParesCategory: domain.MusParesDuples,
+		Points:        40,
+		HasJuego:      true,
+	}
+
+	t.Run("prints all four rounds worth of evaluation", func(t *testing.T) {
+		m, _ := setupMusCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHandSummary")
+		m.On("GetHandSummary", mock.Anything).Return(summary)
+
+		out := p.Output(m, nil)
+
+		assert.Contains(t, out, i18n.Tf("mus.summaryLine",
+			"label", i18n.T("mus.summaryLabel"),
+			"grande", strconv.Itoa(summary.HighestRank),
+			"chica", strconv.Itoa(summary.LowestRank),
+			"pares", i18n.T("mus.paresDuples"),
+			"juego", i18n.Tf("mus.juegoYes", "points", strconv.Itoa(summary.Points))))
+	})
+
+	t.Run("says Punto when the hand is short of the threshold", func(t *testing.T) {
+		m, _ := setupMusCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHandSummary")
+		m.On("GetHandSummary", mock.Anything).Return(&domain.MusHandSummary{
+			HighestRank: 4, LowestRank: 1, ParesCategory: domain.MusParesNone, Points: 10,
+		})
+
+		out := p.Output(m, nil)
+
+		assert.Contains(t, out, i18n.Tf("mus.juegoPunto", "points", "10"))
+		assert.Contains(t, out, i18n.T("mus.paresNone"))
+	})
+
+	// ちょうど 31 は Juego で最強。Web も juegoBest として別扱いにしている。
+	t.Run("calls exactly 31 the best juego", func(t *testing.T) {
+		m, _ := setupMusCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHandSummary")
+		m.On("GetHandSummary", mock.Anything).Return(&domain.MusHandSummary{
+			HighestRank: 10, LowestRank: 1, ParesCategory: domain.MusParesMedias,
+			Points: domain.MusJuegoThreshold, HasJuego: true,
+		})
+
+		out := p.Output(m, nil)
+
+		assert.Contains(t, out, i18n.T("mus.juegoBest"))
+		assert.NotContains(t, out, i18n.Tf("mus.juegoYes", "points", "31"))
+		// 3 枚同ランクは medias。分類ごとにラベルが違うことも同時に固定する。
+		assert.Contains(t, out, i18n.T("mus.paresMedias"))
+		assert.NotContains(t, out, i18n.T("mus.paresPar")+" ")
+	})
+
+	t.Run("prints nothing when the hand cannot be evaluated", func(t *testing.T) {
+		m, _ := setupMusCuiMockWithPlayers() // default GetHandSummary = nil
+
+		out := p.Output(m, nil)
+
+		assert.NotContains(t, out, i18n.T("mus.summaryLabel"))
+	})
 }
