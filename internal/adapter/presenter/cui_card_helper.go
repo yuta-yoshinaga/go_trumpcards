@@ -212,6 +212,12 @@ const CuiBombMark = "!"
 // どちらの話をしているのか読めない (#5632)。
 const CuiKittyMark = "+"
 
+// CuiTrumpMark は「その札は切り札」であることを示す印 (Doppelkopf)。
+//
+// 合法手の "*"、ボムの "!"、交換由来の "+" とはまた別の記号にする ── 同じ画面で
+// 意味の違う印が同じ形だと、どちらの話をしているのか読めない (#5639)。
+const CuiTrumpMark = "^"
+
 // cuiIndexMarkedCardListStr returns an indexed card list where the cards at the
 // given indices carry mark.
 //

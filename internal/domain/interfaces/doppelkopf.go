@@ -73,6 +73,8 @@ type DoppelkopfGame interface {
 	GetPlayer(i int) *domain.DoppelkopfPlayer
 	// GetPlayableIndices プレイ可能なカードのインデックスを取得する
 	GetPlayableIndices(playerIdx int) []int
+	// GetTrumpIndices 指定プレイヤーの手札のうち切り札の位置を取得する
+	GetTrumpIndices(playerIdx int) []int
 	// GetHint ヒントを取得する
 	GetHint() *domain.DoppelkopfHint
 }

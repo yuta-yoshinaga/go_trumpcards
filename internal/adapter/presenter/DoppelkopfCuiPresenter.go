@@ -27,7 +27,15 @@ func doppelkopfPlayerStr(g interfaces.DoppelkopfGame, idx int) string {
 	))
 	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
-		b.WriteString(cuiIndexedCardListStr(player) + "\n")
+		// **切り札は「♦全札 + 全 Q + 全 J + ♥10」で、並びからは判別できない**
+		// (#5639)。Web は該当カードにバッジを付けているのに、CUI は無印で
+		// 並べるだけだった。判定はドメインに任せる (dkIsTrump が正)。
+		trumps := g.GetTrumpIndices(idx)
+		b.WriteString(cuiIndexMarkedCardListStr(player, trumps, CuiTrumpMark) + "\n")
+		if len(trumps) > 0 {
+			b.WriteString(i18n.T("doppelkopf.trumpLegend") + "  " +
+				i18n.T("doppelkopf.trumpOrder") + "\n")
+		}
 	}
 	return b.String()
 }
