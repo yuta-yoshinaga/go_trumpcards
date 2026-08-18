@@ -63,6 +63,34 @@ func musResultKindLabel(kind int) string {
 	}
 }
 
+// musParesLabel は Pares 分類のロケール文字列を返す。
+func musParesLabel(category int) string {
+	switch category {
+	case domain.MusParesDuples:
+		return i18n.T("mus.paresDuples")
+	case domain.MusParesMedias:
+		return i18n.T("mus.paresMedias")
+	case domain.MusParesPar:
+		return i18n.T("mus.paresPar")
+	default:
+		return i18n.T("mus.paresNone")
+	}
+}
+
+// musJuegoLabel は Juego のロケール文字列を返す。
+//
+// ちょうど 31 は Juego の中で最強なので別扱いにする -- Web の juegoBest と同じ。
+func musJuegoLabel(s *domain.MusHandSummary) string {
+	switch {
+	case s.Points == domain.MusJuegoThreshold:
+		return i18n.T("mus.juegoBest")
+	case s.HasJuego:
+		return i18n.Tf("mus.juegoYes", "points", strconv.Itoa(s.Points))
+	default:
+		return i18n.Tf("mus.juegoPunto", "points", strconv.Itoa(s.Points))
+	}
+}
+
 // musPlayerStr returns the display string for a single Mus player.
 func musPlayerStr(g interfaces.MusGame, i int) string {
 	player := g.GetPlayer(i)
@@ -81,6 +109,18 @@ func musPlayerStr(g interfaces.MusGame, i int) string {
 	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
 		b.WriteString(cuiIndexedCardListStr(player) + "\n")
+	}
+	// **4 つの賭けラウンドはそれぞれ手札の別の側面を見ている** (#5640)。Web は
+	// mus-hand-summary で 4 項目を常時出しているのに、CUI は札を並べるだけで、
+	// Mus 独自のランク付け (A/K が高位) を暗算させていた。評価はドメインが持つ。
+	if player.GetIsHuman() {
+		if s := g.GetHandSummary(i); s != nil {
+			b.WriteString(i18n.Tf("mus.summaryLine",
+				"grande", strconv.Itoa(s.HighestRank),
+				"chica", strconv.Itoa(s.LowestRank),
+				"pares", musParesLabel(s.ParesCategory),
+				"juego", musJuegoLabel(s)) + "\n")
+		}
 	}
 	return b.String()
 }

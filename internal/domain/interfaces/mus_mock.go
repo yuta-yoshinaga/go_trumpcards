@@ -161,6 +161,15 @@ func (_m *MockMusGame) GetPlayer(i int) *domain.MusPlayer {
 	return nil
 }
 
+// GetHandSummary モック
+func (_m *MockMusGame) GetHandSummary(i int) *domain.MusHandSummary {
+	ret := _m.Called(i)
+	if v := ret.Get(0); v != nil {
+		return v.(*domain.MusHandSummary)
+	}
+	return nil
+}
+
 // GetHint モック
 func (_m *MockMusGame) GetHint() *domain.MusHint {
 	ret := _m.Called()

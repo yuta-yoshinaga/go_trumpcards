@@ -706,6 +706,62 @@ func musEncode(s []int) int {
 	return v
 }
 
+// Pares の分類。musParesCategory の戻り値に名前を与えたもの。
+//
+// 数値そのものは Web の MusParesCategory (frontend/src/utils/musHandEval.ts)
+// と対応する。
+const (
+	// MusParesNone ペアなし。
+	MusParesNone = 0
+	// MusParesPar 1 ペア。
+	MusParesPar = 1
+	// MusParesMedias 3 枚同ランク。
+	MusParesMedias = 2
+	// MusParesDuples 2 ペアまたは 4 枚同ランク。
+	MusParesDuples = 3
+)
+
+// MusHandSummary は 1 人分の手役評価。4 つの賭けラウンドがそれぞれ何を見て
+// いるかを 1 つにまとめたもの。
+type MusHandSummary struct {
+	// HighestRank Grande で賭ける最高ランク。
+	HighestRank int
+	// LowestRank Chica で賭ける最低ランク。
+	LowestRank int
+	// ParesCategory Pares の分類 (MusParesNone..MusParesDuples)。
+	ParesCategory int
+	// Points Juego の合計点 (A=1,2..7,J/Q/K=10)。
+	Points int
+	// HasJuego 合計点が MusJuegoThreshold 以上か。false なら Punto 勝負。
+	HasJuego bool
+}
+
+// GetHandSummary はプレイヤー i の手役評価を返す。手札が無い / 範囲外なら nil。
+//
+// **評価規則は全部この中に閉じている** (musCardRank / musParesCategory などは
+// 非公開)。Web は同じ規則を evalMusHand に写して持っているが、CUI からは触れる
+// 手段が無く、プレイヤーが暗算するしかなかった (#5640)。presenter 側にもう一度
+// 写すと三重管理になるので、ドメインから返す。
+func (g *Mus) GetHandSummary(i int) *MusHandSummary {
+	if i < 0 || i >= len(g.players) || g.players[i].GetCardsSize() == 0 {
+		return nil
+	}
+	ranks := g.handRanks(i)
+	high, low := ranks[0], ranks[0]
+	for _, r := range ranks[1:] {
+		high = max(high, r)
+		low = min(low, r)
+	}
+	points := g.handPoints(i)
+	return &MusHandSummary{
+		HighestRank:   high,
+		LowestRank:    low,
+		ParesCategory: musParesCategory(ranks),
+		Points:        points,
+		HasJuego:      points >= MusJuegoThreshold,
+	}
+}
+
 // musParesCategory ペアの分類。0=なし, 1=par(1ペア), 2=medias(3カード), 3=duples(2ペア/4カード)。
 func musParesCategory(ranks []int) int {
 	counts := map[int]int{}
