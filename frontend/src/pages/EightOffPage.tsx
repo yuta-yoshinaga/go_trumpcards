@@ -451,10 +451,14 @@ function EightOffPageContent() {
                               // フォーカスが外れると、どこまでが一緒に動くのか
                               // 手がかりが消えるので、選択状態にも追従させる
                               // (Easthaven #4815 と同じ形) (#5612)。
+                              // `?? null` は置かない。タブローの**選択元**は必ず
+                              // cardIndex を持つ (cardIndex 無しの tableau zone は
+                              // 空列を指す移動先専用) ので、埋めようのない分岐が
+                              // 増えるだけになる。
                               const selectedBlockStart =
                                 selectedSource?.zone === 'tableau' && selectedSource.col === colIdx
-                                  ? (selectedSource.cardIndex ?? null)
-                                  : null;
+                                  ? selectedSource.cardIndex
+                                  : undefined;
                               // 上限判定は両方に掛ける ── 動かせない塊を「動く」と
                               // 見せてはいけない。
                               const blockStart =
@@ -462,7 +466,7 @@ function EightOffPageContent() {
                                   ? hoveredStack.cardIdx
                                   : selectedBlockStart;
                               const isInHoveredBlock =
-                                blockStart !== null &&
+                                blockStart !== undefined &&
                                 cardIdx >= blockStart &&
                                 col.length - blockStart <= supermoveLimit;
                               return (
