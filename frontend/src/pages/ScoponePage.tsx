@@ -175,7 +175,11 @@ function ScoponePageContent() {
   const takeCandidateIndices =
     handIndex !== null && isHumanTurn ? captureCandidateIndices(state.handCaptures, handIndex) : new Set<number>();
   const canTake = isHumanTurn && handIndex !== null && tableIndices.length > 0;
-  const canLay = isHumanTurn && handIndex !== null && tableIndices.length === 0;
+  // **取れるのに出すのは反則** (Scopone.go の applyPlay が弾く)。画面はその判定に
+  // 使える handCaptures を場札のハイライトに使いながら、「出す」ボタンでは見て
+  // いなかったので、押してサーバーエラーで初めて気づいた (#5661)。
+  const mustCapture = takeCandidateIndices.size > 0;
+  const canLay = isHumanTurn && handIndex !== null && tableIndices.length === 0 && !mustCapture;
   // Scopone's target moves with the chosen hand card, so the mental arithmetic is
   // heavier than Escoba's fixed 15 — yet only Escoba showed a running total (#4767).
   const selection = scoponeSelectionSum(
@@ -424,9 +428,15 @@ function ScoponePageContent() {
                 disabled={loading || !canLay}
                 className="px-4 py-2 rounded-lg bg-ds-warning text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 data-testid="lay-button"
+                title={mustCapture ? t('mustCapture') : undefined}
               >
                 {t('button.lay')}
               </button>
+              {mustCapture && (
+                <span className="text-ds-warning text-xs self-center" data-testid="scopone-must-capture">
+                  {t('mustCapture')}
+                </span>
+              )}
               {isRoundEnd && (
                 <button
                   type="button"

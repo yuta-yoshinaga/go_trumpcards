@@ -79,7 +79,8 @@ describe('ScoponePage', () => {
     await waitFor(() => expect(screen.getByTestId('lay-button')).toBeInTheDocument());
     expect(screen.getByTestId('lay-button')).toBeDisabled();
 
-    fireEvent.click(screen.getByTestId('hand-card-0'));
+    // **手札1 を選ぶ。**手札0 は場札を取れるので、取り札必須で「出す」は選べない (#5661)。
+    fireEvent.click(screen.getByTestId('hand-card-1'));
     await waitFor(() => expect(screen.getByTestId('lay-button')).not.toBeDisabled());
   });
 
@@ -100,9 +101,10 @@ describe('ScoponePage', () => {
     await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
 
     mockExec.mockClear();
-    fireEvent.click(screen.getByTestId('hand-card-0'));
+    // 取れない手札 (handCaptures[1] は空) を選ぶ。手札0 は取り札必須で出せない。
+    fireEvent.click(screen.getByTestId('hand-card-1'));
     fireEvent.click(screen.getByTestId('lay-button'));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('p', { handIndex: 0, tableIndices: [] }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('p', { handIndex: 1, tableIndices: [] }));
   });
 
   it('disables actions when it is not the human turn', async () => {
@@ -268,8 +270,9 @@ describe('ScoponePage', () => {
 
     // A next round drops scopaCount back to 0 — the badge must disappear. Use Lay
     // (no table selection needed) since the prior play cleared the selection.
+    // 手札1 を選ぶ: 手札0 は場札を取れるので取り札必須で「出す」が押せない (#5661)。
     mockExec.mockResolvedValue(stateWithScopa(0, 0));
-    fireEvent.click(screen.getByTestId('hand-card-0'));
+    fireEvent.click(screen.getByTestId('hand-card-1'));
     fireEvent.click(screen.getByTestId('lay-button'));
     await waitFor(() => expect(screen.queryByTestId('scopone-scopa-celebration')).not.toBeInTheDocument());
   });
@@ -287,6 +290,39 @@ describe('ScoponePage', () => {
 
     fireEvent.click(toggle);
     expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
+  });
+
+  // #5661: 取れる組み合わせがあるのに「出す」を選ぶと domain が
+  // "a capture is available and must be taken" で弾く。画面はその判定に使える
+  // handCaptures を既に持っていて場札のハイライトに使っているのに、「出す」
+  // ボタンは見ておらず、押してサーバーエラーで初めて気づいた。
+  it('blocks laying a card that could capture', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    // handCaptures[0] は [[1]] = 手札0 は場札1 を取れる。
+    mockExec.mockResolvedValue(makeScoponeState());
+    renderWithProviders(<ScoponePage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+
+    expect(screen.getByTestId('lay-button')).toBeDisabled();
+    // 理由が読めること (受け入れ条件3)。
+    expect(await screen.findByTestId('scopone-must-capture')).toBeInTheDocument();
+  });
+
+  it('still lays a card that cannot capture anything', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    // handCaptures[1] は [] = 手札1 では何も取れない。
+    mockExec.mockResolvedValue(makeScoponeState());
+    renderWithProviders(<ScoponePage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-1')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByTestId('hand-card-1'));
+
+    expect(screen.getByTestId('lay-button')).toBeEnabled();
+    expect(screen.queryByTestId('scopone-must-capture')).not.toBeInTheDocument();
   });
 
   it('totals the selected table cards against the chosen hand card', async () => {
