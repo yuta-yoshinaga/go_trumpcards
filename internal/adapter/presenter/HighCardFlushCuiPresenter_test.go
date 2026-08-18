@@ -1,6 +1,7 @@
 package presenter
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -28,6 +29,7 @@ func setupHighCardFlushCuiMockDefaults(m *interfaces.MockHighCardFlushGame) {
 	m.On("GetTotalPayout").Return(0).Maybe()
 	m.On("GetDealerQualified").Return(false).Maybe()
 	m.On("GetPlayerFlushLen").Return(0).Maybe()
+	m.On("GetPlayerFlushSuit").Return(0).Maybe()
 	m.On("GetDealerFlushLen").Return(0).Maybe()
 	m.On("GetPlayerStraightFlushLen").Return(0).Maybe()
 	m.On("MaxRaiseMultiplier").Return(1).Maybe()
@@ -72,6 +74,7 @@ func TestHighCardFlushCuiPresenter_Output_ActionPhase(t *testing.T) {
 	m.On("GetTotalPayout").Return(0).Maybe()
 	m.On("GetDealerQualified").Return(false).Maybe()
 	m.On("GetPlayerFlushLen").Return(3).Maybe()
+	m.On("GetPlayerFlushSuit").Return(0).Maybe()
 	m.On("GetDealerFlushLen").Return(0).Maybe()
 	m.On("GetPlayerStraightFlushLen").Return(0).Maybe()
 	m.On("MaxRaiseMultiplier").Return(1).Maybe()
@@ -119,6 +122,7 @@ func TestHighCardFlushCuiPresenter_Output_EndPhase_PlayerWins(t *testing.T) {
 	m.On("GetTotalPayout").Return(400).Maybe()
 	m.On("GetDealerQualified").Return(true).Maybe()
 	m.On("GetPlayerFlushLen").Return(4).Maybe()
+	m.On("GetPlayerFlushSuit").Return(0).Maybe()
 	m.On("GetDealerFlushLen").Return(3).Maybe()
 	m.On("GetPlayerStraightFlushLen").Return(0).Maybe()
 	m.On("MaxRaiseMultiplier").Return(1).Maybe()
@@ -160,6 +164,7 @@ func TestHighCardFlushCuiPresenter_Output_EndPhase_Fold(t *testing.T) {
 	m.On("GetTotalPayout").Return(0).Maybe()
 	m.On("GetDealerQualified").Return(false).Maybe()
 	m.On("GetPlayerFlushLen").Return(2).Maybe()
+	m.On("GetPlayerFlushSuit").Return(0).Maybe()
 	m.On("GetDealerFlushLen").Return(0).Maybe()
 	m.On("GetPlayerStraightFlushLen").Return(0).Maybe()
 	m.On("MaxRaiseMultiplier").Return(1).Maybe()
@@ -196,6 +201,7 @@ func TestHighCardFlushCuiPresenter_Output_EndPhase_Push(t *testing.T) {
 	m2.On("GetTotalPayout").Return(200).Maybe()
 	m2.On("GetDealerQualified").Return(true).Maybe()
 	m2.On("GetPlayerFlushLen").Return(3).Maybe()
+	m2.On("GetPlayerFlushSuit").Return(0).Maybe()
 	m2.On("GetDealerFlushLen").Return(3).Maybe()
 	m2.On("GetPlayerStraightFlushLen").Return(0).Maybe()
 	m2.On("MaxRaiseMultiplier").Return(1).Maybe()
@@ -230,6 +236,7 @@ func TestHighCardFlushCuiPresenter_Output_DealerWins(t *testing.T) {
 	m.On("GetTotalPayout").Return(0).Maybe()
 	m.On("GetDealerQualified").Return(true).Maybe()
 	m.On("GetPlayerFlushLen").Return(2).Maybe()
+	m.On("GetPlayerFlushSuit").Return(0).Maybe()
 	m.On("GetDealerFlushLen").Return(4).Maybe()
 	m.On("GetPlayerStraightFlushLen").Return(0).Maybe()
 	m.On("MaxRaiseMultiplier").Return(1).Maybe()
@@ -272,6 +279,7 @@ func TestHighCardFlushCuiPresenter_HintOutput(t *testing.T) {
 		m := new(interfaces.MockHighCardFlushGame)
 		m.On("GetPhase").Return(domain.HighCardFlushPhaseAction)
 		m.On("GetPlayerFlushLen").Return(flushLen)
+		m.On("GetPlayerFlushSuit").Return(0)
 		m.On("GetPlayerHand").Return(hand).Maybe()
 		return m
 	}
@@ -319,4 +327,60 @@ func TestHighCardFlushCuiPresenter_HintOutput(t *testing.T) {
 	t.Run("folds when the flush is too short", func(t *testing.T) {
 		assert.Contains(t, p.HintOutput(action(2)), i18n.T("highcardflush.hintFold"))
 	})
+}
+
+// #5607: Web は最長フラッシュを構成する札を浮かせ、他を薄くして一目で分かる。
+// CUI は「4枚フラッシュ」と長さだけ出しており、7 枚のどれがその 4 枚かは
+// 自分で数えるしかなかった。
+func TestHighCardFlushCuiPresenterMarksTheFlushCards(t *testing.T) {
+	hcf := domain.NewDefaultHighCardFlush()
+	hcf.Reset()
+	// ♥ が 4 枚、他はバラバラ。印が付くのは ♥ の 4 枚だけ。
+	hcf.SetPlayerHand([]*domain.Card{
+		domain.NewCard(domain.CardDesignHeart, 13, true),
+		domain.NewCard(domain.CardDesignHeart, 9, true),
+		domain.NewCard(domain.CardDesignHeart, 5, true),
+		domain.NewCard(domain.CardDesignHeart, 2, true),
+		domain.NewCard(domain.CardDesignSpade, 7, true),
+		domain.NewCard(domain.CardDesignClover, 3, true),
+		domain.NewCard(domain.CardDesignDiamond, 11, true),
+	})
+	hcf.SetPhase(domain.HighCardFlushPhaseAction)
+
+	out := new(HighCardFlushCuiPresenter).Output(hcf, nil)
+
+	assert.Equal(t, 4, strings.Count(out, CuiLegalMark), "印はフラッシュの4枚だけに付く")
+	// 長さの行はそのまま残っている。
+	assert.Contains(t, out, i18n.Tf("highcardflush.flushLine", "len", "4"))
+}
+
+// ディーラーの手札には印を付けない。フラッシュのスートはプレイヤー側の値なので、
+// 同じ印を相手の 7 枚に流用すると別のスートを指してしまう。
+func TestHighCardFlushCuiPresenterDoesNotMarkTheDealerHand(t *testing.T) {
+	hcf := domain.NewDefaultHighCardFlush()
+	hcf.Reset()
+	hcf.SetPlayerHand([]*domain.Card{
+		domain.NewCard(domain.CardDesignHeart, 13, true),
+		domain.NewCard(domain.CardDesignHeart, 9, true),
+		domain.NewCard(domain.CardDesignSpade, 7, true),
+		domain.NewCard(domain.CardDesignClover, 3, true),
+		domain.NewCard(domain.CardDesignDiamond, 11, true),
+		domain.NewCard(domain.CardDesignDiamond, 4, true),
+		domain.NewCard(domain.CardDesignClover, 6, true),
+	})
+	hcf.SetDealerHand([]*domain.Card{
+		domain.NewCard(domain.CardDesignHeart, 12, true),
+		domain.NewCard(domain.CardDesignHeart, 8, true),
+		domain.NewCard(domain.CardDesignHeart, 6, true),
+		domain.NewCard(domain.CardDesignHeart, 3, true),
+		domain.NewCard(domain.CardDesignSpade, 2, true),
+		domain.NewCard(domain.CardDesignClover, 9, true),
+		domain.NewCard(domain.CardDesignDiamond, 10, true),
+	})
+	hcf.SetPhase(domain.HighCardFlushPhaseEnd)
+
+	out := new(HighCardFlushCuiPresenter).Output(hcf, nil)
+
+	// プレイヤーの ♦ 2 枚 / ♣ 2 枚 / ♥ 2 枚 -- 最長は 2 枚のどれか。印はその枚数だけ。
+	assert.Equal(t, hcf.GetPlayerFlushLen(), strings.Count(out, CuiLegalMark))
 }

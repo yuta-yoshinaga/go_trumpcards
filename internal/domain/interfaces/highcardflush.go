@@ -50,6 +50,8 @@ type HighCardFlushGame interface {
 	GetDealerQualified() bool
 	// GetPlayerFlushLen プレイヤーの最長フラッシュ長を取得する
 	GetPlayerFlushLen() int
+	// GetPlayerFlushSuit 上の長さを数えたスートを取得する
+	GetPlayerFlushSuit() int
 	// GetDealerFlushLen ディーラーの最長フラッシュ長を取得する
 	GetDealerFlushLen() int
 	// GetPlayerStraightFlushLen プレイヤーの最長ストレートフラッシュ長を取得する
