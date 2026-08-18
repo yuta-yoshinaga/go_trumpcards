@@ -417,6 +417,21 @@ function EcartePageContent() {
                   </span>
                 </>
               )}
+              {/* **損得説明が title と sr-only にしか無かった** (#5658)。タッチ端末は
+                  hover が起きないので、目の見える利用者がこの情報に到達できない。
+                  狭い画面でだけ本文として出す (デスクトップは従来どおりツールチップ)。 */}
+              {(isElderDecide || isDealerRespond) && (
+                <div
+                  className="sm:hidden basis-full text-xs text-ds-text-muted mt-1 space-y-0.5"
+                  data-testid="ecarte-consequences"
+                >
+                  {(isElderDecide ? (['propose', 'stand'] as const) : (['accept', 'refuse'] as const)).map((action) => (
+                    <div key={action}>
+                      {t(`${action}Button`)}: {t(`consequence.${action}`)}
+                    </div>
+                  ))}
+                </div>
+              )}
               {isDiscardStep && (
                 <>
                   <span className="text-xs text-ds-text-muted self-center mr-1">{t('discardPrompt')}</span>
