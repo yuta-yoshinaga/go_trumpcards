@@ -41,6 +41,8 @@ func (pp *ChinesePokerWebPresenter) Output(cp interfaces.ChinesePokerGame, lastE
 	resObj.PlayerRoyalty = cp.GetPlayerRoyalty()
 	resObj.DealerRoyalty = cp.GetDealerRoyalty()
 	resObj.Scoop = cp.GetScoop()
+	// 推奨分割はセットハンドで13枚そろっているときだけ入る (ドメイン側の判定)。
+	resObj.SuggestedArrangement = chinesePokerArrangementOutput(cp.GetSuggestedArrangement())
 
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
@@ -74,6 +76,21 @@ func (pp *ChinesePokerWebPresenter) Output(cp interfaces.ChinesePokerGame, lastE
 // 満たすための実装。
 func (cp *ChinesePokerWebPresenter) HintOutput(g interfaces.ChinesePokerGame) string {
 	return cp.Output(g, nil)
+}
+
+// chinesePokerArrangementOutput はドメインの推奨分割をレスポンス用に写す。
+// **並べ直さない。**presenter で組み直すと、CUI (#4717) と Web が同じ手札で
+// 違う分け方を勧めることになる (#5615)。
+func chinesePokerArrangementOutput(a *domain.ChinesePokerSuggestedArrangement) *controller.ChinesePokerWebOutputArrangement {
+	if a == nil {
+		return nil
+	}
+	return &controller.ChinesePokerWebOutputArrangement{
+		Front:  a.Front,
+		Middle: a.Middle,
+		Back:   a.Back,
+		Foul:   a.Foul,
+	}
 }
 
 // ActionLogOutput 棋譜をJSON出力

@@ -30,4 +30,18 @@ export interface ChinesePokerResponse extends BaseGameResponse {
   playerRoyalty: number;
   dealerRoyalty: number;
   scoop: boolean;
+  /**
+   * The split the server recommends, as indices into `playerCards`.
+   *
+   * Present only during SET_HANDS with a full hand. The CUI has printed this
+   * since #4717; the web page used to derive its own ranking instead, so the
+   * two surfaces could recommend different splits for the same hand (#5615).
+   */
+  suggestedArrangement?: {
+    front: number[];
+    middle: number[];
+    back: number[];
+    /** Whether that split fouls (front > middle, or middle > back). */
+    foul: boolean;
+  };
 }
