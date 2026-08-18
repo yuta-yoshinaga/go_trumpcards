@@ -8,6 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -19,6 +20,8 @@ func setupBristolWebMockDefaults(bg *interfaces.MockBristolGame) {
 	bg.On("GetMoveCount").Return(0).Maybe()
 	bg.On("GetStockCount").Return(28).Maybe()
 	bg.On("CanUndo").Return(false).Maybe()
+	bg.On("IsStalemate").Return(false).Maybe()
+	bg.On("UndoToEscape").Return(0).Maybe()
 	bg.On("LegalTargets", mock.Anything, mock.Anything).Return(([]int)(nil), ([]int)(nil)).Maybe()
 
 	var tableau [domain.BristolTableauCnt][]*domain.Card
@@ -157,4 +160,36 @@ func TestBristolWebPresenter_ActionLogOutput(t *testing.T) {
 		p := new(BristolWebPresenter)
 		_ = p.ActionLogOutput(bg)
 	})
+}
+
+// #5631: 手詰まりと脱出手数をレスポンスに載せる (画面が脱出ボタンを出せるように)。
+func TestBristolWebPresenterCarriesTheStalemate(t *testing.T) {
+	bg := new(interfaces.MockBristolGame)
+	// Output は受動ヒントも埋めるので、GetHint を含む Output 用の既定を使う。
+	setupBristolOutputMock(bg)
+	bg.ExpectedCalls = bristolMockWithout(bg.ExpectedCalls, "IsStalemate", "UndoToEscape")
+	bg.On("IsStalemate").Return(true)
+	bg.On("UndoToEscape").Return(2)
+
+	var out controller.BristolWebOutput
+	require.NoError(t, json.Unmarshal([]byte(new(BristolWebPresenter).Output(bg, nil)), &out))
+	assert.True(t, out.IsStalemate)
+	assert.Equal(t, 2, out.UndoToEscape)
+}
+
+// bristolMockWithout drops the listed expectations so a test can override them.
+func bristolMockWithout(calls []*mock.Call, methods ...string) []*mock.Call {
+	drop := make(map[string]bool, len(methods))
+	for _, m := range methods {
+		drop[m] = true
+	}
+	// **新しいスライスに詰め直す。**`calls[:0]` で書き戻すと、呼び出し側が
+	// 元のスライスを保持している場合に中身が壊れる。
+	out := make([]*mock.Call, 0, len(calls))
+	for _, c := range calls {
+		if !drop[c.Method] {
+			out = append(out, c)
+		}
+	}
+	return out
 }

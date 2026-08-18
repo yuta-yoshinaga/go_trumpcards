@@ -26,6 +26,7 @@
   "fanLabel": "ファン{{idx}}:",
   "pileCount": " ({{count}}枚)",
   "stockLine": "ストック: {{count}}枚",
+  "undoToEscape": "手詰まりです。{{count}} 回アンドゥ (u) すると打てる手に戻れます。",
   "hintFromTableau": "タブロー{{col}}列",
   "hintFromFan": "ファン{{col}}",
   "hintToFoundation": "組札{{idx}}",

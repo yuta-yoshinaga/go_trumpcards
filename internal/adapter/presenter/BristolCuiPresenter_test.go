@@ -10,12 +10,16 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupBristolCuiMockDefaults(bg *interfaces.MockBristolGame) {
 	bg.On("GetPhase").Return(domain.BristolPhasePlaying).Maybe()
 	bg.On("GetMoveCount").Return(0).Maybe()
 	bg.On("CanUndo").Return(false).Maybe()
+	// 手詰まりは既定で無し (#5631)。検知そのものを見るテストは自分で上書きする。
+	bg.On("IsStalemate").Return(false).Maybe()
+	bg.On("UndoToEscape").Return(0).Maybe()
 	bg.On("GetStockCount").Return(28).Maybe()
 
 	var tableau [domain.BristolTableauCnt][]*domain.Card
@@ -146,4 +150,32 @@ func TestBristolCuiPresenter_ActionLogOutput(t *testing.T) {
 		result := p.ActionLogOutput(bg)
 		assert.Contains(t, result, "draw")
 	})
+}
+
+// #5631: 手詰まりを検知しても画面に出さなければ、プレイヤーは動かせる札を
+// 探し続けることになる。
+func TestBristolCuiPresenterWarnsOnStalemate(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+
+	bg := new(interfaces.MockBristolGame)
+	setupBristolCuiMockDefaults(bg)
+	bg.ExpectedCalls = bristolMockWithout(bg.ExpectedCalls, "IsStalemate", "UndoToEscape")
+	bg.On("IsStalemate").Return(true)
+	bg.On("UndoToEscape").Return(3)
+
+	out := new(BristolCuiPresenter).Output(bg, nil)
+	assert.Contains(t, out, i18n.T("cuiSolitaireStalemate"))
+	// 何回戻せば打てるようになるかまで言う (Web の脱出ボタンと同じ情報)。
+	assert.Contains(t, out, i18n.Tf("bristol.undoToEscape", "count", "3"))
+}
+
+// 手詰まりでなければ何も出さない。
+func TestBristolCuiPresenterSaysNothingWhenPlayable(t *testing.T) {
+	bg := new(interfaces.MockBristolGame)
+	setupBristolCuiMockDefaults(bg)
+
+	out := new(BristolCuiPresenter).Output(bg, nil)
+	assert.NotContains(t, out, i18n.T("cuiSolitaireStalemate"))
 }

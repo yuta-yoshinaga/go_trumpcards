@@ -122,3 +122,9 @@ func (_m *MockBristolGame) GetGameEndFlag() bool {
 	ret := _m.Called()
 	return ret.Bool(0)
 }
+
+// IsStalemate モック
+func (_m *MockBristolGame) IsStalemate() bool { return _m.Called().Bool(0) }
+
+// UndoToEscape モック
+func (_m *MockBristolGame) UndoToEscape() int { return _m.Called().Int(0) }
