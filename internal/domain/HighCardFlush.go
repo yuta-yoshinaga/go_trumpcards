@@ -70,10 +70,10 @@ type HighCardFlush struct {
 	flushBonusPayout  int         // Flush Bonus 配当（元ベットを含む合計返却）
 	straightFlushPay  int         // Straight Flush Bonus 配当（元ベットを含む合計返却）
 	dealerQualified   bool        // ディーラークオリファイフラグ
-	playerFlushLen    int
-	playerFlushSuit   int // 上の長さを数えたスート (CardDesign 値)         // プレイヤーのフラッシュ長
-	dealerFlushLen    int // ディーラーのフラッシュ長
-	playerStraightLen int // プレイヤーのストレートフラッシュ長（最大0なら無し）
+	playerFlushLen    int         // プレイヤーのフラッシュ長
+	playerFlushSuit   int         // 上の長さを数えたスート (CardDesign 値)
+	dealerFlushLen    int         // ディーラーのフラッシュ長
+	playerStraightLen int         // プレイヤーのストレートフラッシュ長（最大0なら無し）
 	actionLogBase
 }
 
