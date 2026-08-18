@@ -15,7 +15,7 @@
   "marriageEarned": "Marriage: {{points}} points",
   "promptTrickEnd": "Trick complete",
   "promptTrickEndHelp": "n / next ... go to the next trick",
-  "promptRoundEnd": "Round complete (Soloist {{soloist}}: {{pts}} card pts)",
+  "promptRoundEnd": "Round complete (Soloist {{soloist}}: {{pts}} pts incl. marriage)",
   "promptRoundEndHelp": "nr / nextround ... go to the next round",
   "hintNone": "No hint available.",
   "hintCard": "[HINT: {{cards}} ({{reason}})]",
@@ -23,7 +23,7 @@
   "hintReasonFollowWin": "Points on the table — win the trick",
   "hintReasonFollowDuck": "Cannot/should not win — duck",
   "hintReasonDiscardLow": "Cannot follow suit — discard a low card",
-  "promptRoundEndDefenders": "Defenders total: {{pts}} pts",
+  "promptRoundEndDefenders": "Defenders total: {{pts}} pts incl. marriage",
   "helpExamplePlay": "  play 0                   play hand card 0",
   "helpExampleNext": "  n                        read the trick result, then start the next trick",
   "helpHint": "  h                         show a hint"

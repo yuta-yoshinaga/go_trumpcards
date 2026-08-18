@@ -15,7 +15,7 @@
   "marriageEarned": "結婚成立: {{points}}点獲得",
   "promptTrickEnd": "トリック終了",
   "promptTrickEndHelp": "n / next・・・次のトリックへ",
-  "promptRoundEnd": "ラウンド終了（ソリスト {{soloist}}: {{pts}}点）",
+  "promptRoundEnd": "ラウンド終了（ソリスト {{soloist}}: {{pts}}点／マリアージュ込み）",
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
   "hintNone": "ヒントはありません。",
   "hintCard": "[HINT: {{cards}} ({{reason}})]",
@@ -23,7 +23,7 @@
   "hintReasonFollowWin": "得点があるので勝ちに行く",
   "hintReasonFollowDuck": "取れない／取る価値がないのでダック",
   "hintReasonDiscardLow": "フォローできないので低い札を捨てる",
-  "promptRoundEndDefenders": "ディフェンダー合計: {{pts}}点",
+  "promptRoundEndDefenders": "ディフェンダー合計: {{pts}}点／マリアージュ込み",
   "helpExamplePlay": "  play 0                   手札の 0 番のカードを出す",
   "helpExampleNext": "  n                        トリックの決着を見てから次のトリックへ",
   "helpHint": "  h                         助言を表示"
