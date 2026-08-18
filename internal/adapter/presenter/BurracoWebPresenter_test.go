@@ -8,16 +8,20 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupBurracoWebMock() *interfaces.MockBurracoGame {
 	m := new(interfaces.MockBurracoGame)
 	m.On("GetRoundNumber").Return(1)
+	// ヒントは既定で「なし」。値そのものを見るテストは本物のドメインで確かめる。
+	m.On("GetHint").Return((*domain.BurracoHint)(nil)).Maybe()
 	m.On("GetDrawPileCount").Return(54)
 	m.On("GetDiscardPileCount").Return(0)
 	m.On("GetPozzettoCount").Return(2)
@@ -432,4 +436,65 @@ func TestBurracoWebPresenter_ActionLogOutput(t *testing.T) {
 		assert.Contains(t, result, `"entries":[]`)
 		m.AssertExpectations(t)
 	})
+}
+
+// #5628: CUI は GetHint() を使って「どちらの山から引くか」「どのカードで
+// メルドできるか」を**インデックス付きの理由込み**で返すのに、Web は
+// フロントの大まかな推定 (フェーズ別のアクション名だけ) を使っていた。
+func TestBurracoWebPresenterCarriesTheDomainHint(t *testing.T) {
+	g := domain.NewDefaultBurraco()
+	g.Reset()
+
+	var out controller.BurracoWebOutput
+	require.NoError(t, json.Unmarshal([]byte(new(presenter.BurracoWebPresenter).HintOutput(g)), &out))
+
+	want := g.GetHint()
+	require.NotNil(t, want, "配り直後は人間の引きフェーズなのでヒントが出る")
+	require.NotNil(t, out.Hint)
+	assert.Equal(t, want.Action, out.Hint.Action)
+	assert.Equal(t, want.Indices, out.Hint.Indices)
+
+	// **理由は「そのまま」ではなくキーに直して運ぶ。**ドメインが返すのは
+	// `draw_discard_pair` のような内部識別子で、素通しするとフロントは存在
+	// しないキーを引き、翻訳の代わりに識別子が画面に出る。
+	assert.NotEqual(t, want.Reason, out.Hint.Reason, "内部識別子を素通ししていない")
+	// CUI が同じ盤面で出す文言と一致すること = 2 つの画面が同じ説明をする。
+	assert.Equal(t, i18n.T("burraco."+out.Hint.Reason), i18n.T(burracoCuiReasonKeyForTest(want.Reason)))
+	assert.NotEqual(t, "burraco."+out.Hint.Reason, i18n.T("burraco."+out.Hint.Reason),
+		"翻訳が存在する (キーがそのまま返っていない)")
+}
+
+// CPU の手番などヒントが無い場面ではフィールドごと出さない。
+// 空のオブジェクトだと「行動できない」と読める。
+func TestBurracoWebPresenterOmitsTheHintWhenThereIsNone(t *testing.T) {
+	g := domain.NewDefaultBurraco()
+	g.Reset()
+	g.SetCurrentPlayerIdx(1)
+
+	var out controller.BurracoWebOutput
+	require.NoError(t, json.Unmarshal([]byte(new(presenter.BurracoWebPresenter).HintOutput(g)), &out))
+	assert.Nil(t, out.Hint)
+}
+
+// burracoCuiReasonKeyForTest returns the key the CUI presenter uses for a
+// domain reason, so the web output can be compared against the same sentence.
+func burracoCuiReasonKeyForTest(reason string) string {
+	return map[string]string{
+		"draw_discard_pair": "burraco.hintReasonDrawDiscard",
+		"draw_stock_safe":   "burraco.hintReasonDrawStock",
+		"meld_available":    "burraco.hintReasonMeld",
+		"no_meld":           "burraco.hintReasonNoMeld",
+		"discard_safe":      "burraco.hintReasonDiscard",
+	}[reason]
+}
+
+// **ドメインが返しうる理由をすべて変換できること。**表に載っていない値は
+// 空文字になり、フロントは `hint.` だけのキーを引いて何も出せなくなる。
+func TestBurracoWebPresenterTranslatesEveryHintReason(t *testing.T) {
+	for _, reason := range []string{"draw_discard_pair", "draw_stock_safe", "meld_available", "no_meld", "discard_safe"} {
+		key := presenter.BurracoWebHintReasonKeyForTest(reason)
+		assert.NotEmpty(t, key, "reason %q has no web key", reason)
+		// ロケールに実在すること (i18n.T はキーが無いとキー自身を返す)。
+		assert.NotEqual(t, "burraco."+key, i18n.T("burraco."+key), "burraco.%s is missing from the locale", key)
+	}
 }

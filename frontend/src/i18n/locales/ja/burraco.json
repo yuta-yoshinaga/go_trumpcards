@@ -73,7 +73,12 @@
     "takeDiscardPile": "捨て札の山をまとめて引き取る選択も有効",
     "meldInitial": "初回メルド条件を満たしてメルド推奨",
     "meldExtend": "既存メルドに追加カードを出すと得点が伸びます",
-    "discardHighSafe": "相手に使われにくい高ランクのカードを捨てる"
+    "discardHighSafe": "相手に使われにくい高ランクのカードを捨てる",
+    "hintReasonDrawStock": "捨て札に有効なペアがないため山札から引く",
+    "hintReasonDrawDiscard": "捨て札トップとナチュラルペアが揃うため山を取る",
+    "hintReasonMeld": "メルド可能な組み合わせがある",
+    "hintReasonNoMeld": "有効なメルドがないためスキップ",
+    "hintReasonDiscard": "最も不要なカードを捨てる"
   },
   "sort": {
     "label": "手札の並べ替え",
