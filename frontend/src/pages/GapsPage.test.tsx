@@ -151,6 +151,15 @@ describe('GapsPage', () => {
     await waitFor(() => expect(mockedRun).toHaveBeenCalledWith('undo_n', undefined, undefined, 3));
   });
 
+  // 手詰まりでも手数が来ないことはある (presenter が省略したとき)。ボタン側は
+  // 0 なら何も描かない約束なので、**壊れたボタンではなく無表示**になる。
+  it('renders no escape button when the server omits the undo count', async () => {
+    mockedRun.mockResolvedValue({ ...playingState, isStalemate: true, undoToEscape: undefined });
+    renderWithProviders(<GapsPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    expect(screen.queryByTestId('stalemate-escape-button')).not.toBeInTheDocument();
+  });
+
   it('shows no escape button while the game is not stuck', async () => {
     mockedRun.mockResolvedValue({ ...playingState, isStalemate: false, undoToEscape: 3 });
     renderWithProviders(<GapsPage />);
