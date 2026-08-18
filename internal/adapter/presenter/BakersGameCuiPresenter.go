@@ -85,6 +85,19 @@ func (p *BakersGameCuiPresenter) Output(f interfaces.FreeCellGame, lastErr error
 						"count", strconv.Itoa(n))) + "\n")
 				}
 			}
+			// **同スート限定のベーカーズ・ゲームでは一括移動の上限がより効く** (#5636)。
+			// 上限は FreeCell と同じ (1+空きセル)*2^空き列 で、FreeCell 側は #4777 で
+			// 既に出している。Web はバッジで常時出しているので、CUI だけが暗算だった。
+			b.WriteString(i18n.Tf("bakersgame.supermoveLine",
+				"limit", strconv.Itoa(f.GetMaxMovableCards()),
+				"cells", strconv.Itoa(freeCellEmptyCells(f)),
+				"cols", strconv.Itoa(freeCellEmptyColumns(f))))
+			// 空き列自身は経由地に使えないので、そこへ動かすときの上限は下がる。
+			if toEmpty := f.GetMaxMovableCardsToEmptyColumn(); toEmpty > 0 {
+				b.WriteString(i18n.Tf("bakersgame.supermoveToEmpty",
+					"limit", strconv.Itoa(toEmpty)))
+			}
+			b.WriteString("\n")
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
 				"count", strconv.Itoa(f.GetMoveCount())) + "\n")
 		case domain.FreeCellPhaseGameClear:
