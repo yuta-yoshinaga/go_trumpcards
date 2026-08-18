@@ -28,7 +28,7 @@ func (c *TienLenCuiController) Exec(command string) string {
 			cfg := c.tli.GetConfig()
 			return c.tli.ResetWithConfig(cfg)
 		},
-		[]string{"p", "play", "sd", "setdifficulty", "log", "l"},
+		[]string{"p", "play", "sd", "setdifficulty", "h", "hint", "log", "l"},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "p", "play":
@@ -47,7 +47,7 @@ func (c *TienLenCuiController) Exec(command string) string {
 					return c.tli.ResetWithConfig(cfg)
 				})
 			default:
-				return handleCuiLog(cmd, c.tli.ActionLog)
+				return handleCuiHintAndLog(cmd, c.tli.Hint, c.tli.ActionLog)
 			}
 		},
 	)

@@ -1,6 +1,10 @@
 {
   "helpTitle": "Tien Len",
+  "hintPlay": "Hint: play {{cards}}",
+  "hintPass": "Hint: nothing beats the table — pass",
+  "hintNone": "Hint: not your turn",
   "helpPlay": "  p [idx ...]          play cards (no index = pass)",
+  "helpHint": "  h                    hint (suggested play)",
   "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Normal, 1=Easy, 2=Hard)",
   "playerFinished": ": finished (rank {{rank}})",
   "playerCardCount": ": {{count}} cards",

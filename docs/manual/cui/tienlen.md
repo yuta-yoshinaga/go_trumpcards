@@ -47,6 +47,7 @@ flowchart TD
 | `play` | `p` | パス（場が空でない場合） |
 | `reset` | `r` | ゲームリセット |
 | `setdifficulty <0-2>` | `sd` | CPU難易度変更 (0=Normal, 1=Easy, 2=Hard) |
+| `hint` | `h` | 推奨手を表示（出す札のインデックス付き。返せる手が無ければパスを勧める） |
 | `log` | `l` | 棋譜表示 |
 | `quit` | `q` | 終了 |
 | `help` | `?` | コマンド一覧を表示 |

@@ -109,3 +109,27 @@ func (p *TienLenCuiPresenter) Output(tg interfaces.TienLenGame, lastErr error) s
 func (p *TienLenCuiPresenter) ActionLogOutput(tg interfaces.TienLenGame) string {
 	return actionLogOutputText(tg)
 }
+
+// HintOutput emits the recommended play for the human player.
+//
+// **ドメインの CPU 戦略をそのまま読む。**同じ盤面の判断を presenter 側に
+// 書き直すと、ヒントと CPU が別のことを言い出す (#5624)。
+func (p *TienLenCuiPresenter) HintOutput(tg interfaces.TienLenGame) string {
+	hint := tg.GetHint()
+	if hint == nil {
+		return i18n.T("tienlen.hintNone") + "\n"
+	}
+	if hint.Pass {
+		return i18n.T("tienlen.hintPass") + "\n"
+	}
+	player := tg.GetPlayer(tg.GetCurrentTurn())
+	cards := make([]string, 0, len(hint.Indices))
+	for _, idx := range hint.Indices {
+		if idx < 0 || idx >= player.GetCardsSize() {
+			continue
+		}
+		// 番号も出す ── `p <idx...>` にそのまま打ち込めるように。
+		cards = append(cards, fmt.Sprintf("[%d]%s", idx, cuiCardStr(player.GetCard(idx))))
+	}
+	return i18n.Tf("tienlen.hintPlay", "cards", strings.Join(cards, " ")) + "\n"
+}

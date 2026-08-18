@@ -92,7 +92,7 @@ func tienLenDispatch(bc *baseController, w http.ResponseWriter, tli usecase.Tien
 		}
 		bc.writePresenterResponse(w, tli.Play(indices))
 	default:
-		return dispatchLog(param.Command, bc, w, tli.ActionLog)
+		return dispatchHintAndLog(param.Command, bc, w, tli.Hint, tli.ActionLog)
 	}
 	return true
 }

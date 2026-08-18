@@ -274,3 +274,33 @@ func (tl *TienLen) findStraights(player *TienLenPlayer, exactLen int) [][]int {
 	}
 	return results
 }
+
+// TienLenHint は人間へ勧める着手。Pass が true のときは Indices は空。
+type TienLenHint struct {
+	// Indices は手札のインデックス (出すカード)。
+	Indices []int
+	// Pass は「返せる手が無いのでパス」を意味する。
+	Pass bool
+}
+
+// GetHint は人間の手番で勧める着手を返す。手番でなければ nil。
+//
+// **CPU の着手選択をそのまま使う。**同じ盤面の判断を 2 か所に書くと、片方だけ
+// 直したときにヒントと CPU が別のことを言い出す (#5624)。
+//
+// **難易度は見ない。**難易度は CPU の強さの設定であって、人間へのアドバイスを
+// 弱める設定ではない。Easy を選んだ人が「適当な手」を勧められても困る。
+func (tl *TienLen) GetHint() *TienLenHint {
+	if tl.round.gameEndFlag {
+		return nil
+	}
+	player := tl.players[tl.round.currentTurn]
+	if !player.GetIsHuman() {
+		return nil
+	}
+	indices := tl.findBestPlayNormal(player)
+	if len(indices) == 0 {
+		return &TienLenHint{Pass: true}
+	}
+	return &TienLenHint{Indices: indices}
+}

@@ -89,3 +89,17 @@ func TestTienLenCuiController_Exec(t *testing.T) {
 		assert.Contains(t, c.Exec(""), "'help' でコマンド一覧を表示します。")
 	})
 }
+
+// #5624: `h`/`hint` そのものが無かった。
+func TestTienLenCuiControllerHint(t *testing.T) {
+	for _, alias := range []string{"h", "hint"} {
+		t.Run(alias, func(t *testing.T) {
+			m := new(mockUsecases.MockTienLenInteractor)
+			m.On("Hint").Return("hint-output")
+			c := controller.NewTienLenCuiController(m)
+
+			assert.Equal(t, "hint-output", c.Exec(alias))
+			m.AssertCalled(t, "Hint")
+		})
+	}
+}
