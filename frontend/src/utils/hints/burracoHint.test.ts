@@ -1,3 +1,4 @@
+import i18n from 'i18next';
 import { describe, expect, it } from 'vitest';
 import type { BurracoConfig, BurracoPlayerData, BurracoResponse, Card } from '../../types/card';
 import { BurracoPhase } from '../../types/phases';
@@ -92,8 +93,7 @@ describe('getBurracoHint', () => {
 describe('getBurracoHint with the server hint', () => {
   // サーバーが送るのは locale の接尾辞。**実在するキーであること**まで見る ──
   // 存在しないキーだと i18next は翻訳の代わりにキー自身を表示する。
-  it('builds a key that exists in the catalogue', async () => {
-    const ja = (await import('../../i18n/locales/ja/burraco.json')).default as { hint: Record<string, string> };
+  it('builds a key that exists in the catalogue', () => {
     for (const suffix of [
       'hintReasonDrawStock',
       'hintReasonDrawDiscard',
@@ -103,7 +103,11 @@ describe('getBurracoHint with the server hint', () => {
     ]) {
       const hint = getBurracoHint(makeState({ hint: { action: 'draw_stock', reason: suffix } }));
       expect(hint?.reason).toBe(`hint.${suffix}`);
-      expect(ja.hint[suffix]).toBeTruthy();
+      // **翻訳が実在すること。**i18next はキーが無いとキー自身を返すので、
+      // 返り値がキーと同じなら「訳が無い」ということ。
+      const translated = i18n.t(`burraco:hint.${suffix}`);
+      expect(translated).not.toBe(`hint.${suffix}`);
+      expect(translated).toBeTruthy();
     }
   });
 
