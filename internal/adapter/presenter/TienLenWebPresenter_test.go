@@ -124,3 +124,13 @@ func TestTienLenWebPresenter_ActionLogOutput(t *testing.T) {
 	})
 	assert.Contains(t, p.ActionLogOutput(m), "play")
 }
+
+// Web はヒント専用のレスポンスを持たない (フロントが算出する)。素通しなので
+// 通常の Output と同じものが返ることだけ固定しておく (#5624)。
+func TestTienLenWebPresenterHintOutputMatchesOutput(t *testing.T) {
+	tl := domain.NewDefaultTienLen()
+	tl.Reset()
+	p := new(presenter.TienLenWebPresenter)
+
+	assert.JSONEq(t, p.Output(tl, nil), p.HintOutput(tl))
+}

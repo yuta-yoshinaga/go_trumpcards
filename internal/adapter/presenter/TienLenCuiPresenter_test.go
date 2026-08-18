@@ -164,3 +164,41 @@ func TestTienLen_CpuNamesGoThroughTheSharedHelper(t *testing.T) {
 		assert.NotContains(t, strings.ReplaceAll(out, bold1, ""), "CPU 1")
 	})
 }
+
+// #5624: CUI にヒントが無く、CPU の判断材料 (findBestPlay) を人間向けに
+// 取り出す経路そのものが存在しなかった。
+func TestTienLenCuiPresenterHintOutput(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.TienLenCuiPresenter)
+
+	t.Run("names the cards and their indices", func(t *testing.T) {
+		m := new(interfaces.MockTienLenGame)
+		pl := domain.NewTienLenPlayer(true)
+		pl.AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		pl.AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		m.On("GetHint").Return(&domain.TienLenHint{Indices: []int{1}})
+		m.On("GetCurrentTurn").Return(0)
+		m.On("GetPlayer", 0).Return(pl)
+
+		out := p.HintOutput(m)
+		// 番号を出す ── `p <idx>` にそのまま打ち込めること。
+		assert.Contains(t, out, "[1]")
+		assert.NotContains(t, out, "[0]")
+	})
+
+	t.Run("says to pass when nothing beats the table", func(t *testing.T) {
+		m := new(interfaces.MockTienLenGame)
+		m.On("GetHint").Return(&domain.TienLenHint{Pass: true})
+
+		assert.Contains(t, p.HintOutput(m), i18n.T("tienlen.hintPass"))
+	})
+
+	t.Run("says nothing useful when it is not the human's turn", func(t *testing.T) {
+		m := new(interfaces.MockTienLenGame)
+		m.On("GetHint").Return((*domain.TienLenHint)(nil))
+
+		assert.Contains(t, p.HintOutput(m), i18n.T("tienlen.hintNone"))
+	})
+}

@@ -38,3 +38,9 @@ func (_m *MockTienLenInteractor) Snapshot() ([]byte, error) {
 	ret := _m.Called()
 	return ret.Get(0).([]byte), ret.Error(1)
 }
+
+// Hint モック
+func (_m *MockTienLenInteractor) Hint() string {
+	ret := _m.Called()
+	return ret.String(0)
+}

@@ -20,6 +20,8 @@ type TienLenInteractorIF interface {
 	ResetWithConfig(config domain.TienLenConfig) string
 	// GetConfig 現在の設定を返す
 	GetConfig() domain.TienLenConfig
+	// Hint 推奨手を出力する
+	Hint() string
 	// ActionLog 棋譜を出力する
 	ActionLog() string
 }
@@ -66,6 +68,11 @@ func (ti *TienLenInteractor) GetConfig() domain.TienLenConfig {
 // ResetWithConfig 設定を変更してゲームを初期化
 func (ti *TienLenInteractor) ResetWithConfig(config domain.TienLenConfig) string {
 	return resetWithValidatedConfig(ti.Game, ti.tlp, config, ti.Game.SetConfig, ti.Reset)
+}
+
+// Hint 推奨手を出力する
+func (ti *TienLenInteractor) Hint() string {
+	return ti.tlp.HintOutput(ti.Game)
 }
 
 // ActionLog 棋譜を出力する

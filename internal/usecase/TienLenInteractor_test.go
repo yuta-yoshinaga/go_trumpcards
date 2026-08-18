@@ -163,3 +163,15 @@ func TestRestoreTienLenInteractor_InvalidJSON(t *testing.T) {
 	_, err := usecase.RestoreTienLenInteractor([]byte("not json"), pMock)
 	assert.Error(t, err)
 }
+
+// #5624: Hint はプレゼンターへ素通しするだけだが、その 1 本が繋がっていないと
+// CUI の `h` が何も返さない。
+func TestTienLenInteractor_Hint(t *testing.T) {
+	gMock := new(interfaces.MockTienLenGame)
+	pMock := new(presenter.MockTienLenPresenter)
+	pMock.On("HintOutput", gMock).Return("hint-output")
+
+	ti := usecase.NewTienLenInteractor(gMock, pMock)
+	assert.Equal(t, "hint-output", ti.Hint())
+	pMock.AssertCalled(t, "HintOutput", gMock)
+}

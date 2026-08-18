@@ -2997,7 +2997,7 @@ var gameRegistry = []GameRegistryEntry{
 		controller.NewTienLenCuiController,
 		CuiHelpSpec{
 			TitleKey:    "tienlen.helpTitle",
-			CommandKeys: []string{"tienlen.helpPlay", "tienlen.helpLog"},
+			CommandKeys: []string{"tienlen.helpPlay", "tienlen.helpHint", "tienlen.helpLog"},
 			SettingKeys: []string{"tienlen.helpSetDifficulty"},
 		}),
 	BindCuiFor("osmosis",

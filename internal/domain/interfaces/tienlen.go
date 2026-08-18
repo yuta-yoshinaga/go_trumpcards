@@ -40,6 +40,8 @@ type TienLenGame interface {
 	GetCurrentTurn() int
 	// GetConfig ゲーム設定を取得する
 	GetConfig() domain.TienLenConfig
+	// GetHint 人間の手番で勧める着手を取得する (手番でなければ nil)
+	GetHint() *domain.TienLenHint
 	// GetPassCount パス回数を取得する
 	GetPassCount() int
 }

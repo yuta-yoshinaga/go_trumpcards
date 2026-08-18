@@ -37,6 +37,7 @@ func TestTienLenWebController_Method(t *testing.T) {
 	tiMock.On("Play", []int{0, 1}).Return(mockOutput)
 	tiMock.On("Play", []int{}).Return(mockOutput)
 	tiMock.On("ActionLog").Return(mockOutput)
+	tiMock.On("Hint").Return(mockOutput)
 
 	factory := func() uc.TienLenInteractorIF { return tiMock }
 	ctrl := controller.NewTienLenWebController(factory)
@@ -50,6 +51,20 @@ func TestTienLenWebController_Method(t *testing.T) {
 			recorded.CodeIs(http.StatusOK)
 			recorded.BodyIs(mockOutput)
 		}
+	})
+
+	// #5624: interactor に Hint() が生えたので Web も dispatch する。構造ガード
+	// (TestWebControllersDispatchHintWhenTheInteractorHasIt) はソースを grep する
+	// だけなので、**実際にコマンドが解決して結果が返ること**はここで見る。
+	t.Run("hint", func(t *testing.T) {
+		for _, cmd := range []string{"h", "hint"} {
+			var input controller.TienLenWebInput
+			_ = json.Unmarshal([]byte(fmt.Sprintf(`{"command":"%s","sessionId":"s1"}`, cmd)), &input)
+			recorded := execRequest(t, ctrl.Exec, &input)
+			recorded.CodeIs(http.StatusOK)
+			recorded.BodyIs(mockOutput)
+		}
+		tiMock.AssertCalled(t, "Hint")
 	})
 
 	t.Run("play with indices", func(t *testing.T) {
