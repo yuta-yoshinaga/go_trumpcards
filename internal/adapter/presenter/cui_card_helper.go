@@ -197,18 +197,33 @@ const CuiLegalMark = "*"
 // playable が nil または空のときは目印を付けない -- ビッド中や CPU の手番など、
 // そもそも制限を出していない状態と区別するため (#4725)。
 func cuiPlayableMarkedCardListStr(hand cuiCardList, playable []int) string {
-	if len(playable) == 0 {
+	return cuiIndexMarkedCardListStr(hand, playable, CuiLegalMark)
+}
+
+// CuiKittyMark は「その札は交換で入ってきた」ことを示す印。
+//
+// **合法手の "*" とは別の記号にする。**同じ画面で意味の違う 2 つの印が同じ形だと、
+// どちらの話をしているのか読めない (#5632)。
+const CuiKittyMark = "+"
+
+// cuiIndexMarkedCardListStr returns an indexed card list where the cards at the
+// given indices carry mark.
+//
+// indices が nil または空のときは目印を付けない -- 「制限が無い」状態と
+// 「全部が対象」を取り違えないため。
+func cuiIndexMarkedCardListStr(hand cuiCardList, indices []int, mark string) string {
+	if len(indices) == 0 {
 		return cuiIndexedCardListStr(hand)
 	}
-	marked := make(map[int]bool, len(playable))
-	for _, i := range playable {
+	marked := make(map[int]bool, len(indices))
+	for _, i := range indices {
 		marked[i] = true
 	}
 	parts := make([]string, hand.GetCardsSize())
 	for i := range parts {
 		parts[i] = fmt.Sprintf("[%d]%s", i, cuiCardStr(hand.GetCard(i)))
 		if marked[i] {
-			parts[i] += CuiLegalMark
+			parts[i] += mark
 		}
 	}
 	return strings.Join(parts, "  ")
