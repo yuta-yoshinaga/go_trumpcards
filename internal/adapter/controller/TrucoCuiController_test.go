@@ -150,6 +150,17 @@ func TestTrucoCuiControllerSetsTheMatchTarget(t *testing.T) {
 		m.AssertNotCalled(t, "ResetWithConfig", mock.Anything)
 	})
 
+	// **下限側も踏む。**上限だけだと、`v < min` を落としたミューテーションが
+	// どのテストにも捕まらない (レビュー #5979)。
+	t.Run("rejects a value below the domain range", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewTrucoCuiController(m)
+
+		out := c.Exec("sm " + strconv.Itoa(domain.TrucoMinMatchTarget-1))
+		assert.Contains(t, out, strconv.Itoa(domain.TrucoMinMatchTarget))
+		m.AssertNotCalled(t, "ResetWithConfig", mock.Anything)
+	})
+
 	t.Run("asks for the value when it is missing", func(t *testing.T) {
 		m := newMock()
 		c := controller.NewTrucoCuiController(m)
