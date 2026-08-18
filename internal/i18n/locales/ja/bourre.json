@@ -13,6 +13,7 @@
   "trumpSuit": "切り札",
   "pot": "ポット",
   "carryPot": "繰越",
+  "decidePenalty": "参加して1トリックも取れないと「ブーレ」となり罰金{{penalty}}チップ (降りれば罰金なし)",
   "chips": "チップ",
   "out": "(脱落)",
   "folded": "フォールド",
