@@ -240,6 +240,22 @@ func TestTwentyNineCuiPresenter_ShowsTheContractProgress(t *testing.T) {
 			"status", i18n.Tf("twentynine.contractNeedMore", "remaining", "10")))
 	})
 
+	// Web は TrickEnd でも出しているので、CUI もそこで消さない。
+	t.Run("still shown between tricks", func(t *testing.T) {
+		m, _ := setupTwentyNineCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetContractProgress")
+		m.On("GetPhase").Return(domain.TwentyNinePhaseTrickEnd)
+		m.On("GetContractProgress").Return(&domain.TwentyNineContractProgress{
+			DeclarerTeam: 0, Points: 10, Contract: 20, Remaining: 10,
+			Status: domain.TwentyNineContractNeedMore,
+		})
+
+		out := p.Output(m, nil)
+
+		assert.Contains(t, out, i18n.Tf("twentynine.contractNeedMore", "remaining", "10"))
+	})
+
 	t.Run("already made", func(t *testing.T) {
 		out := p.Output(progressMock(&domain.TwentyNineContractProgress{
 			DeclarerTeam: 1, Points: 20, Contract: 16, Remaining: 0,

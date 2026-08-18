@@ -160,6 +160,9 @@ func (p *TwentyNineCuiPresenter) writePrompt(b *strings.Builder, g interfaces.Tw
 			"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
 		b.WriteString(i18n.T("twentynine.promptPlayHelp") + "\n")
 	case domain.TwentyNinePhaseTrickEnd:
+		// Web は TrickEnd でも進捗パネルを出している。ここで消すと、トリックの
+		// 合間だけ同じ局面が別物に見える (PR #6011 のレビュー指摘)。
+		writeTwentyNineContractProgress(b, g)
 		b.WriteString(i18n.T("twentynine.promptTrickEnd") + "\n")
 		b.WriteString(i18n.T("twentynine.promptTrickEndHelp") + "\n")
 	case domain.TwentyNinePhaseRoundEnd:
