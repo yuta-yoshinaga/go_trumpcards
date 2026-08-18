@@ -626,10 +626,10 @@ func (g *ThirtyOne) humanIdx() int {
 
 // --- Getters ---
 
-// GetPhase 現在のフェーズを取得する
 // GetCpuKnockThreshold は現在の難易度で CPU がノックを検討する合計値を返す。
 func (g *ThirtyOne) GetCpuKnockThreshold() int { return g.cpuKnockThreshold() }
 
+// GetPhase 現在のフェーズを取得する
 func (g *ThirtyOne) GetPhase() ThirtyOnePhase { return g.phase }
 
 // SetPhase フェーズを設定する (テスト用)
