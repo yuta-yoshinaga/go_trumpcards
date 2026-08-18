@@ -71,6 +71,7 @@ type HighCardFlush struct {
 	straightFlushPay  int         // Straight Flush Bonus 配当（元ベットを含む合計返却）
 	dealerQualified   bool        // ディーラークオリファイフラグ
 	playerFlushLen    int         // プレイヤーのフラッシュ長
+	playerFlushSuit   int         // 上の長さを数えたスート (CardDesign 値)
 	dealerFlushLen    int         // ディーラーのフラッシュ長
 	playerStraightLen int         // プレイヤーのストレートフラッシュ長（最大0なら無し）
 	actionLogBase
@@ -229,6 +230,7 @@ func (hcf *HighCardFlush) deal() {
 	}
 	playerBest := evalHighCardFlushHand(hcf.playerHand)
 	hcf.playerFlushLen = playerBest.Length
+	hcf.playerFlushSuit = playerBest.Suit
 	hcf.playerStraightLen = evalLongestStraightFlushLen(hcf.playerHand)
 	hcf.appendLog(-1, "deal", fmt.Sprintf("dealt 7 cards each (player flush=%d)", hcf.playerFlushLen), nil)
 }
@@ -238,6 +240,7 @@ func (hcf *HighCardFlush) resolve() {
 	playerBest := evalHighCardFlushHand(hcf.playerHand)
 	dealerBest := evalHighCardFlushHand(hcf.dealerHand)
 	hcf.playerFlushLen = playerBest.Length
+	hcf.playerFlushSuit = playerBest.Suit
 	hcf.dealerFlushLen = dealerBest.Length
 	hcf.dealerQualified = checkHCFDealerQualifies(dealerBest)
 
@@ -498,6 +501,13 @@ func (hcf *HighCardFlush) GetDealerQualified() bool { return hcf.dealerQualified
 // GetPlayerFlushLen プレイヤーの最長フラッシュ長
 func (hcf *HighCardFlush) GetPlayerFlushLen() int { return hcf.playerFlushLen }
 
+// GetPlayerFlushSuit は GetPlayerFlushLen が数えたスートを返す。
+//
+// **長さだけでは、7 枚のうちどれがその何枚なのか分からない** (#5607)。同着は
+// evalHighCardFlushHand が高い札 → スート順で決めており、その決着をそのまま返す
+// ので、画面の印と長さの行が別のスートを指すことはない。
+func (hcf *HighCardFlush) GetPlayerFlushSuit() int { return hcf.playerFlushSuit }
+
 // GetDealerFlushLen ディーラーの最長フラッシュ長
 func (hcf *HighCardFlush) GetDealerFlushLen() int { return hcf.dealerFlushLen }
 
@@ -515,7 +525,9 @@ func (hcf *HighCardFlush) SetPhase(phase int) { hcf.phase = phase }
 // SetPlayerHand プレイヤーハンド設定（テスト用）
 func (hcf *HighCardFlush) SetPlayerHand(cards []*Card) {
 	hcf.playerHand = cards
-	hcf.playerFlushLen = evalHighCardFlushHand(cards).Length
+	best := evalHighCardFlushHand(cards)
+	hcf.playerFlushLen = best.Length
+	hcf.playerFlushSuit = best.Suit
 	hcf.playerStraightLen = evalLongestStraightFlushLen(cards)
 }
 

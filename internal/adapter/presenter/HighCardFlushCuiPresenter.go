@@ -28,9 +28,16 @@ func (hp *HighCardFlushCuiPresenter) Output(hcf interfaces.HighCardFlushGame, la
 	if len(playerHand) > 0 {
 		sb.WriteString("--- " + color.Bold(i18n.T("highcardflush.playerHeader")) + " ---\n")
 		sb.WriteString(i18n.Tf("highcardflush.flushLine", "len", strconv.Itoa(hcf.GetPlayerFlushLen())) + "\n")
+		// **長さだけでは「7枚のうちどれが」が分からない** (#5607)。数えたスートは
+		// ドメインが持っているので (同着の決着込み)、その札に印を付ける。Web が
+		// 浮かせて見せているのと同じ集合になる。
+		flushSuit := hcf.GetPlayerFlushSuit()
 		parts := make([]string, len(playerHand))
 		for i, card := range playerHand {
 			parts[i] = cuiCardStr(card)
+			if card != nil && card.GetDesign() == flushSuit {
+				parts[i] += CuiLegalMark
+			}
 		}
 		sb.WriteString(strings.Join(parts, ","))
 		sb.WriteString("\n")
