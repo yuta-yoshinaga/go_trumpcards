@@ -71,9 +71,9 @@ func (pp *ChinesePokerWebPresenter) Output(cp interfaces.ChinesePokerGame, lastE
 	return marshalOrError(resObj)
 }
 
-// HintOutput ヒントを出力する。Web ではヒントはクライアント側 (useGameHint) で
-// 算出するため、通常の状態出力を返す。ChinesePokerPresenter インタフェースを
-// 満たすための実装。
+// HintOutput ヒントを出力する。専用のレスポンスは持たず通常の状態出力を返すが、
+// **その状態に推奨分割 (SuggestedArrangement) が載っている** (#5615)。フロントの
+// useGameHint は、載っていればそれを使い、無いときだけ自前の計算に落ちる。
 func (cp *ChinesePokerWebPresenter) HintOutput(g interfaces.ChinesePokerGame) string {
 	return cp.Output(g, nil)
 }
