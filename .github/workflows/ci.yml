@@ -27,6 +27,11 @@ jobs:
   test-hooks:
     name: Hook Tests
     runs-on: ubuntu-latest
+    # ハングしたジョブを止める上限。既定は 6 時間で、その間 PR は pending の
+    # まま誰かが手でキャンセルするまで進まない (#5967 は E2E が 26-46 分走り続けた
+    # 3 例)。値は develop の成功 run 4 本の実測 max 0.2 分 (セットアップ込み) の
+    # おおよそ 2 倍。伸ばす前に、まず実測が伸びたのかハングなのかを確かめること。
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
 
@@ -60,6 +65,11 @@ jobs:
   lint-backend:
     name: Backend Lint (golangci-lint)
     runs-on: ubuntu-latest
+    # ハングしたジョブを止める上限。既定は 6 時間で、その間 PR は pending の
+    # まま誰かが手でキャンセルするまで進まない (#5967 は E2E が 26-46 分走り続けた
+    # 3 例)。値は develop の成功 run 4 本の実測 max 5.5 分 (セットアップ込み) の
+    # おおよそ 2 倍。伸ばす前に、まず実測が伸びたのかハングなのかを確かめること。
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6
 
@@ -76,6 +86,11 @@ jobs:
   test-backend:
     name: Backend Tests
     runs-on: ubuntu-latest
+    # ハングしたジョブを止める上限。既定は 6 時間で、その間 PR は pending の
+    # まま誰かが手でキャンセルするまで進まない (#5967 は E2E が 26-46 分走り続けた
+    # 3 例)。値は develop の成功 run 4 本の実測 max 7.7 分 (セットアップ込み) の
+    # おおよそ 2 倍。伸ばす前に、まず実測が伸びたのかハングなのかを確かめること。
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v6
 
@@ -123,6 +138,11 @@ jobs:
     # 「UNLICENSED: 1」で exit 0 するため使っていない。
     name: Dependency Licenses (Go)
     runs-on: ubuntu-latest
+    # ハングしたジョブを止める上限。既定は 6 時間で、その間 PR は pending の
+    # まま誰かが手でキャンセルするまで進まない (#5967 は E2E が 26-46 分走り続けた
+    # 3 例)。値は develop の成功 run 4 本の実測 max 0.6 分 (セットアップ込み) の
+    # おおよそ 2 倍。伸ばす前に、まず実測が伸びたのかハングなのかを確かめること。
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
 
@@ -163,6 +183,11 @@ jobs:
     # (frontend/CLAUDE.md の "Type checking" 参照)。
     name: Frontend Static (Biome + tsc)
     runs-on: ubuntu-latest
+    # ハングしたジョブを止める上限。既定は 6 時間で、その間 PR は pending の
+    # まま誰かが手でキャンセルするまで進まない (#5967 は E2E が 26-46 分走り続けた
+    # 3 例)。値は develop の成功 run 4 本の実測 max 0.7 分 (セットアップ込み) の
+    # おおよそ 2 倍。伸ばす前に、まず実測が伸びたのかハングなのかを確かめること。
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
 
@@ -198,6 +223,11 @@ jobs:
     # 減ったことも効いているので、戻すなら**同じ本数で測り直してから**にすること。
     name: Frontend Tests (${{ matrix.shard }}/4)
     runs-on: ubuntu-latest
+    # ハングしたジョブを止める上限。既定は 6 時間で、その間 PR は pending の
+    # まま誰かが手でキャンセルするまで進まない (#5967 は E2E が 26-46 分走り続けた
+    # 3 例)。値は develop の成功 run 4 本の実測 max 9.4 分 (セットアップ込み) の
+    # おおよそ 2 倍。伸ばす前に、まず実測が伸びたのかハングなのかを確かめること。
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -254,6 +284,11 @@ jobs:
     # 戻すなら上の 261s/190s ではなく待ち時間の方を、**同じ並走本数で**測ること。
     name: E2E Tests (${{ matrix.shard }}/3)
     runs-on: ubuntu-latest
+    # ハングしたジョブを止める上限。既定は 6 時間で、その間 PR は pending の
+    # まま誰かが手でキャンセルするまで進まない (#5967 は E2E が 26-46 分走り続けた
+    # 3 例)。値は develop の成功 run 4 本の実測 max 7.8 分 (セットアップ込み) の
+    # おおよそ 2 倍。伸ばす前に、まず実測が伸びたのかハングなのかを確かめること。
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
