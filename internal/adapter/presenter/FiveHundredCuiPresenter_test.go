@@ -4,8 +4,11 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func TestFiveHundredCuiPresenter_Output_Phases(t *testing.T) {
@@ -165,4 +168,38 @@ func TestFiveHundredCuiPresenter_HintVariants(t *testing.T) {
 	if out := p.HintOutput(g3); out == "" {
 		t.Errorf("discard hint empty")
 	}
+}
+
+// #5626: ノートランプでジョーカーをリードすると、リーダーが追走スートを指名する。
+// ドメインは `GetJokerLeadSuit()` で保持し presenter (Web) もレスポンスに載せて
+// いたが、**どちらの画面もその値を出していなかった**ので、他の3人は「いま何に
+// 従うのか」を確認できなかった。
+func TestFiveHundredCuiPresenterShowsTheNominatedSuit(t *testing.T) {
+	p := &presenter.FiveHundredCuiPresenter{}
+
+	g := newFiveHundredGame()
+	g.SetContract(domain.FiveHundredContractNoTrump, 7, -1)
+	g.SetPhase(domain.FiveHundredPhasePlay)
+	g.SetCurrentTrick([]*domain.TrickCard{
+		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignJoker, 0, false)},
+	})
+	g.SetJokerLeadSuit(domain.CardDesignHeart)
+
+	out := p.Output(g, nil)
+	assert.Contains(t, out, i18n.Tf("fivehundred.jokerLeadSuit", "suit", "HEART"))
+}
+
+// 指名が無いとき (通常のリード) は行そのものを出さない。
+func TestFiveHundredCuiPresenterOmitsTheNominatedSuitWhenThereIsNone(t *testing.T) {
+	p := &presenter.FiveHundredCuiPresenter{}
+
+	g := newFiveHundredGame()
+	g.SetContract(domain.FiveHundredContractNoTrump, 7, -1)
+	g.SetPhase(domain.FiveHundredPhasePlay)
+	g.SetCurrentTrick([]*domain.TrickCard{
+		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 5, false)},
+	})
+
+	out := p.Output(g, nil)
+	assert.NotContains(t, out, i18n.Tf("fivehundred.jokerLeadSuit", "suit", "HEART"))
 }

@@ -316,3 +316,35 @@ describe('FiveHundredPage', () => {
     expect(screen.queryByTestId('fh-round-result')).not.toBeInTheDocument();
   });
 });
+
+// #5626: ノートランプでジョーカーをリードすると追走スートが指名される。ドメインも
+// レスポンスもその値を持っていたのに、画面に出ていなかった。
+describe('FiveHundredPage joker lead suit', () => {
+  it('names the suit the joker lead called', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2, // PLAY
+        jokerLeadSuit: 3,
+        currentTrick: [{ playerIdx: 0, card: { design: 'JOKER', value: 0 } }],
+      }),
+    );
+    renderWithProviders(<FiveHundredPage />);
+
+    const label = await screen.findByTestId('fh-joker-lead-suit');
+    expect(label).toHaveTextContent('♥');
+  });
+
+  it('shows nothing when the lead named no suit', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2, // PLAY
+        jokerLeadSuit: -1,
+        currentTrick: [{ playerIdx: 0, card: { design: 'HEART', value: 5 } }],
+      }),
+    );
+    renderWithProviders(<FiveHundredPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    expect(screen.queryByTestId('fh-joker-lead-suit')).not.toBeInTheDocument();
+  });
+});

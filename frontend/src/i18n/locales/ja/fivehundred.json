@@ -16,6 +16,7 @@
   "teamShort": "T{{team}}",
   "passed": "パス",
   "currentTrick": "現在のトリック",
+  "jokerLeadSuit": "ジョーカー指名スート: {{suit}}",
   "trickEmpty": "(まだカードがありません)",
   "lead": "リード",
   "tricksLabel": "トリック数",

@@ -256,6 +256,14 @@ function FiveHundredPageContent() {
             {/* Current trick */}
             <div className="py-3 bg-black/20 rounded-lg" data-tutorial="fh-trick">
               <div className="text-center text-xs text-ds-text-muted mb-2">{t('currentTrick')}</div>
+              {/* ジョーカーがリードされた間、他の3人が従うスートはこの指名で
+                  決まる。ドメインもレスポンスも持っていたのに、どちらの画面にも
+                  出ていなかった (#5626)。指名が無いとき (-1) は出さない。 */}
+              {state.jokerLeadSuit > 0 && (
+                <div className="text-center text-sm text-ds-warning mb-2" data-testid="fh-joker-lead-suit">
+                  {t('jokerLeadSuit', { suit: suitGlyph(state.jokerLeadSuit) })}
+                </div>
+              )}
               <div className="flex justify-center gap-2 min-h-[60px]">
                 {state.currentTrick.length === 0 ? (
                   <span className="text-ds-text-muted text-sm self-center">{t('trickEmpty')}</span>
