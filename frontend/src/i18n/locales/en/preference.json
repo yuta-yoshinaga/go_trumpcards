@@ -81,5 +81,6 @@
   "misereBadge": "Special",
   "misereDesc": "Misère is a special contract aiming to win no tricks; failing it costs heavily.",
   "hintRequested": "Hint available",
-  "noHint": "No hint available"
+  "noHint": "No hint available",
+  "trumpAutoNote": "The trump suit is set automatically from the declarer’s longest suit — there is nothing to choose."
 }
