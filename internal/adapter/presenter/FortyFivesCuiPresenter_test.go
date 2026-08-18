@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -49,6 +50,7 @@ func setupFortyFivesCuiMockWithPlayers() (*interfaces.MockFortyFivesGame, []*dom
 	m := setupFortyFivesCuiMock()
 	players := makeFortyFivesPlayers()
 	m.On("GetPlayerCnt").Return(4)
+	m.On("GetTopTrumpIndices", mock.Anything).Return(([]int)(nil)).Maybe()
 	for i := 0; i < 4; i++ {
 		m.On("GetPlayer", i).Return(players[i])
 	}
@@ -199,5 +201,44 @@ func TestFortyFivesCuiPresenter_ContractProgress(t *testing.T) {
 
 	t.Run("shows nothing before the bid is settled", func(t *testing.T) {
 		assert.NotContains(t, p.Output(withProgress(nil), nil), "契約:")
+	})
+}
+
+// #5643: 上位切り札 (切り札の5・切り札のJ・♥A) は固定で最強で、持っていると
+// マストフォローが免除される。**♥A は切り札スート外でも切り札扱い**なので、
+// スート記号を眺めても分からない。Web もこれまで何も出していなかった。
+func TestFortyFivesCuiPresenter_MarksTheTopTrumps(t *testing.T) {
+	p := new(presenter.FortyFivesCuiPresenter)
+
+	handMock := func(tops []int) *interfaces.MockFortyFivesGame {
+		m, players := setupFortyFivesCuiMockWithPlayers()
+		players[0].Reset()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 1, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 9, false))
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTopTrumpIndices")
+		m.On("GetTopTrumpIndices", mock.Anything).Return(tops)
+		return m
+	}
+
+	t.Run("marks only the top trumps", func(t *testing.T) {
+		out := p.Output(handMock([]int{0, 1}), nil)
+
+		assert.Contains(t, out, "[0]SPADE 5"+presenter.CuiTopTrumpMark)
+		assert.Contains(t, out, "[1]"+color.Red("HEART 1")+presenter.CuiTopTrumpMark)
+		assert.NotContains(t, out, "[2]CLOVER 9"+presenter.CuiTopTrumpMark)
+	})
+
+	t.Run("explains the mark, including the reneging exemption", func(t *testing.T) {
+		out := p.Output(handMock([]int{0, 1}), nil)
+
+		assert.Contains(t, out, i18n.T("fortyfives.topTrumpLegend"))
+	})
+
+	t.Run("no top trump in hand leaves the list unmarked", func(t *testing.T) {
+		out := p.Output(handMock(nil), nil)
+
+		assert.NotContains(t, out, presenter.CuiTopTrumpMark)
+		assert.NotContains(t, out, i18n.T("fortyfives.topTrumpLegend"))
 	})
 }

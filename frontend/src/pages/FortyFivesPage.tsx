@@ -31,6 +31,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { FORTY_FIVES_HELP, parseFortyFivesCommand } from '../utils/cli/commands/fortyFivesCommands';
 import { formatFortyFivesState } from '../utils/cli/formatters/fortyFivesFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { fortyFivesTopTrumpIndices } from '../utils/fortyFivesTopTrump';
 import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -145,6 +146,9 @@ function FortyFivesPageContent() {
 
   const canPlay = isPlayPhase && isHumanTurn;
   const trumpSymbol = state.trumpSuit === 0 ? t('noTrump') : (SUIT_SYMBOLS[state.trumpSuit] ?? '?');
+  // 固定の最上位切り札 (切り札の5・切り札のJ・♥A) は手札を見ても分からない。
+  // ♥A は切り札スート外でも切り札扱いで、持っているとフォロー義務が外れる (#5643)。
+  const topTrumpIndices = fortyFivesTopTrumpIndices(humanPlayer?.cards ?? [], state.trumpSuit);
 
   // The current highest (non-pass) bid; a new non-pass bid must beat it.
   const highestBid = Math.max(0, ...state.bids);
@@ -358,6 +362,8 @@ function FortyFivesPageContent() {
                 dataTutorialPrefix="fortyfives"
                 validIndices={canPlay ? state.playableIndices : undefined}
                 restrictedTooltip={t('playButton')}
+                trumpIndices={topTrumpIndices}
+                trumpTitle={t('topTrumpTitle')}
               />
             )}
 

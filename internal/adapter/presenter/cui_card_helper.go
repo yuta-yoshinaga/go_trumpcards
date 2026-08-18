@@ -218,6 +218,14 @@ const CuiKittyMark = "+"
 // 意味の違う印が同じ形だと、どちらの話をしているのか読めない (#5639)。
 const CuiTrumpMark = "^"
 
+// CuiTopTrumpMark は「その札は固定の最上位切り札」であることを示す印
+// (Auction Forty-Fives)。
+//
+// 切り札の印 "^" とも別にする ── Forty-Fives の最上位切り札は「強い」だけでなく
+// **マストフォローが免除される** という別の意味を持つので、同じ形にすると
+// どちらの話か読めない (#5643)。
+const CuiTopTrumpMark = "!!"
+
 // cuiIndexMarkedCardListStr returns an indexed card list where the cards at the
 // given indices carry mark.
 //
