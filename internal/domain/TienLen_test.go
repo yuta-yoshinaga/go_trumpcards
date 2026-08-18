@@ -875,3 +875,13 @@ func TestTienLenGetHintOnlyOnTheHumansTurn(t *testing.T) {
 
 	assert.Nil(t, tl.GetHint())
 }
+
+// ゲームが終わっていればヒントは出さない (手札はもう動かせない)。
+func TestTienLenGetHintNilAfterGameEnd(t *testing.T) {
+	tl := newTestTienLen()
+	tl.players[0].AddCard(cardTL(3, CardDesignSpade))
+	tl.round.currentTurn = 0
+	tl.round.gameEndFlag = true
+
+	assert.Nil(t, tl.GetHint())
+}
