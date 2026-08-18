@@ -77,7 +77,18 @@ func (p *TuteCuiPresenter) Output(g interfaces.TuteGame, lastErr error) string {
 			b.WriteString(color.Green(banner) + "\n")
 			return
 		}
-		switch g.GetPhase() {
+		// **結婚は宣言した瞬間に加点される** (#5641)。Web は #4722 でプレイ中も
+		// 今ラウンドの点を出すようにしたのに、CUI は RoundEnd でしか読んでおらず、
+		// 宣言しても何点入ったのかラウンドが終わるまで確かめられなかった。
+		// RoundEnd は自分の行 (promptRoundEnd) で同じ数字を出すので、そこでは出さない。
+		phase := g.GetPhase()
+		if phase == domain.TutePhasePlay || phase == domain.TutePhaseTrickEnd {
+			pts := g.GetRoundTeamPoints()
+			b.WriteString(i18n.Tf("tute.runningPoints",
+				"ptsA", strconv.Itoa(pts[0]),
+				"ptsB", strconv.Itoa(pts[1])) + "\n")
+		}
+		switch phase {
 		case domain.TutePhasePlay:
 			currentIdx := g.GetCurrentPlayerIdx()
 			b.WriteString(i18n.Tf("tute.promptPlay",
