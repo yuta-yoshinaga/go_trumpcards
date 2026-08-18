@@ -282,6 +282,11 @@ function OsmosisPageContent() {
                       onClick={() => handleFoundationClick(i)}
                       disabled={!isPlaying || !selected || loading}
                       aria-label={`${t('foundation')} ${i}`}
+                      // **理由は読み上げに乗せる。**`title` は支援技術が読み上げる
+                      // 保証が無く、赤枠も見えない人には届かない (#5625)。名前
+                      // 自体は状態で変えない ── 同じ段が選択のたびに別名で呼ばれると
+                      // どれを触っているのか分からなくなる。
+                      aria-describedby={blocked ? `os-foundation-blocked-${i.toString()}` : undefined}
                       title={blocked ? t('cannotPlaceHere') : undefined}
                       className={
                         blocked
@@ -311,6 +316,11 @@ function OsmosisPageContent() {
                             : allowed.map((r) => RANK_LABELS[r]).join(' ')}
                       </span>
                     </button>
+                    {blocked && (
+                      <span id={`os-foundation-blocked-${i.toString()}`} className="sr-only">
+                        {t('cannotPlaceHere')}
+                      </span>
+                    )}
                   </DropZone>
                 );
               })}
