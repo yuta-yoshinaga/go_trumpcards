@@ -6,6 +6,7 @@ import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
+import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
@@ -17,7 +18,7 @@ import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
+import { btnSuccess } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { BriscolaResponse } from '../types/card';
 import { BriscolaPhase } from '../types/phases';
@@ -297,9 +298,13 @@ function BriscolaPageContent() {
               {t('actions.hint')}
             </button>
           )}
-          <button type="button" className={btnPrimary} onClick={() => requestConfirm(handleReset)} disabled={loading}>
-            {t('actions.reset')}
-          </button>
+          {/* 決着後は失うものが無いので確認を挟まない ── 共通ボタンに任せる (#5608)。 */}
+          <GameResetButton
+            isGameEnd={isGameEnd}
+            onReset={handleReset}
+            requestConfirm={requestConfirm}
+            loading={loading}
+          />
         </div>
       </div>
 
