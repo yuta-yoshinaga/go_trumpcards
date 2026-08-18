@@ -23,6 +23,8 @@
   "supermoveLimitTooltip": "Only {{limit}} card(s) can be moved at once ({{cells}} free cell(s), {{cols}} empty column(s))",
   "supermoveBadge": "Max move: {{limit}}",
   "supermoveBadgeTooltip": "Max cards movable at once ({{cells}} free cell(s), {{cols}} empty column(s)). More free space allows moving more",
+  "supermoveToEmpty": "(to an empty column: {{limit}})",
+  "emptyColLimitTooltip": "An empty column takes at most {{limit}} cards (selected: {{size}})",
   "tutorial": {
     "freeCells": "Seven free cells. Three start occupied after the deal. More empty cells allow moving more cards at once.",
     "foundation": "Foundation piles. Build each suit from the base rank upward, wrapping K to A.",

@@ -8,6 +8,8 @@ function makeState(overrides?: Partial<PenguinResponse>): PenguinResponse {
     freeCells: [null, null, null, null, null, null, null],
     foundation: [[], [], [], []],
     baseRank: 5,
+    maxMovableCards: 8,
+    maxMovableCardsToEmptyColumn: 4,
     phase: 0,
     moveCount: 0,
     canUndo: false,

@@ -18,6 +18,13 @@ export interface PenguinResponse extends BaseGameResponse {
   freeCells: (Card | null)[];
   foundation: Card[][];
   baseRank: number;
+  /** How many cards may move as one stack right now (from the domain). */
+  maxMovableCards: number;
+  /**
+   * The same limit when the destination is an empty column -- lower, because
+   * that column cannot also serve as a staging slot. 0 when there is none.
+   */
+  maxMovableCardsToEmptyColumn: number;
   phase: number;
   moveCount: number;
   canUndo: boolean;

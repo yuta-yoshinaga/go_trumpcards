@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -95,6 +96,8 @@ func TestPenguinWebPresenterOutputStalemateWithEscape(t *testing.T) {
 	var foundation [domain.PenguinFoundationCnt][]*domain.Card
 	pg.On("GetFoundation").Return(foundation).Maybe()
 	pg.On("GetBaseRank").Return(1).Maybe()
+	pg.On("GetMaxMovableCards").Return(1).Maybe()
+	pg.On("GetMaxMovableCardsToEmptyColumn").Return(0).Maybe()
 	pg.On("GetActionLog").Return(nil).Maybe()
 	pg.On("GetGameEndFlag").Return(false).Maybe()
 
@@ -224,4 +227,43 @@ func TestPenguinWebPresenterActionLogGameOver(t *testing.T) {
 	err := json.Unmarshal([]byte(result), &out)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, out.Entries)
+}
+
+// #5614: 空き列へ動かすときの上限はドメインが別に持っており (その空き列自身を
+// 経由地に使えないぶん低い)、CUI は #4802 から毎ターン出している。Web の
+// レスポンスには**どちらの上限も入っていなかった**ので、ページは一般式で
+// 計算し直すしかなく、空き列宛ての手をサーバーが弾くまで気づけなかった。
+func TestPenguinWebPresenterCarriesBothMoveLimits(t *testing.T) {
+	p := new(PenguinWebPresenter)
+	g := domain.NewPenguin(domain.NewTrumpCards(0))
+	g.Reset()
+	g.SetPhase(domain.PenguinPhasePlaying)
+
+	var out controller.PenguinWebOutput
+	require.NoError(t, json.Unmarshal([]byte(p.Output(g, nil)), &out))
+
+	// **ドメインの値をそのまま運ぶ。**presenter で数え直すと、空き列の扱いが
+	// 食い違ったときに画面とサーバーで別の答えが出る。
+	assert.Equal(t, g.GetMaxMovableCards(), out.MaxMovableCards)
+	assert.Equal(t, g.GetMaxMovableCardsToEmptyColumn(), out.MaxMovableCardsToEmptyColumn)
+	assert.Positive(t, out.MaxMovableCards, "配り直後は必ず1枚以上動かせる")
+}
+
+// 空き列がある局面では、空き列宛ての上限が一般の上限より**低い**。
+// 同じ値が返るだけなら、フロントが低い方を使う意味が無い。
+func TestPenguinWebPresenterEmptyColumnLimitIsLower(t *testing.T) {
+	p := new(PenguinWebPresenter)
+	g := domain.NewPenguin(domain.NewTrumpCards(0))
+	g.Reset()
+	g.SetPhase(domain.PenguinPhasePlaying)
+	// 1 列空ける。
+	tableau := g.GetTableau()
+	tableau[0] = nil
+	g.SetTableau(tableau)
+
+	var out controller.PenguinWebOutput
+	require.NoError(t, json.Unmarshal([]byte(p.Output(g, nil)), &out))
+
+	assert.Less(t, out.MaxMovableCardsToEmptyColumn, out.MaxMovableCards,
+		"空き列自身を経由地に使えないぶん上限は下がる")
 }
