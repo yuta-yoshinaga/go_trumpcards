@@ -420,3 +420,32 @@ func TestThirtyOne_GetHint(t *testing.T) {
 	}
 	assert.Nil(t, empty.GetHint())
 }
+
+// #5623: CPU がノックしてくる点数は難易度ごとに違うのに、その数字はドメイン内の
+// 非公開定数で、UI からは「Easy/Normal/Hard」としか見えなかった。設定の意味を
+// 説明するには、**数字を画面側に書き写すのではなく**ドメインから出す。
+func TestThirtyOneExposesTheKnockThresholdPerDifficulty(t *testing.T) {
+	want := map[ThirtyOneCpuDifficulty]int{
+		ThirtyOneCpuDifficultyEasy:   ThirtyOneKnockThresholdEasy,
+		ThirtyOneCpuDifficultyNormal: ThirtyOneKnockThresholdNormal,
+		ThirtyOneCpuDifficultyHard:   ThirtyOneKnockThresholdHard,
+	}
+
+	for diff, threshold := range want {
+		g := NewDefaultThirtyOne()
+		cfg := g.GetConfig()
+		cfg.CpuDifficulty = diff
+		g.SetConfig(cfg)
+		assert.Equal(t, threshold, g.GetCpuKnockThreshold(), "difficulty %d", diff)
+	}
+
+	// **3 段階が別の数字であること。**同じ値なら設定の説明にならない。
+	assert.Len(t, map[int]bool{
+		ThirtyOneKnockThresholdEasy:   true,
+		ThirtyOneKnockThresholdNormal: true,
+		ThirtyOneKnockThresholdHard:   true,
+	}, 3)
+	// 易しいほど CPU は高い手でしかノックしない (= 人間に有利)。
+	assert.Greater(t, ThirtyOneKnockThresholdEasy, ThirtyOneKnockThresholdNormal)
+	assert.Greater(t, ThirtyOneKnockThresholdNormal, ThirtyOneKnockThresholdHard)
+}

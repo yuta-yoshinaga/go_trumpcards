@@ -39355,6 +39355,22 @@ components:
               type: integer
             initialLives:
               type: integer
+            knockThresholds:
+              type: object
+              description: >-
+                Hand totals at which each difficulty's CPUs consider knocking.
+                The difficulty setting is exactly these numbers, so clients show
+                them from here instead of hardcoding their own copy.
+              properties:
+                easy:
+                  type: integer
+                  example: 29
+                normal:
+                  type: integer
+                  example: 27
+                hard:
+                  type: integer
+                  example: 25
         message:
           type: string
         messageCode:

@@ -24,6 +24,8 @@ type ThirtyOneGame interface {
 
 	// GetConfig ゲーム設定を取得する
 	GetConfig() domain.ThirtyOneConfig
+	// GetCpuKnockThreshold 現在の難易度で CPU がノックを検討する合計値を取得する
+	GetCpuKnockThreshold() int
 	// SetConfig ゲーム設定をセットする
 	SetConfig(cfg domain.ThirtyOneConfig)
 

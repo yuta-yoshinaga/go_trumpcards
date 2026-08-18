@@ -10,6 +10,7 @@
   "helpSetLives": "  sv <n>               初期ライフ (1-10)",
   "header": "ラウンド: {{round}}  山札: {{stock}}",
   "discardLine": "捨て札: {{card}}",
+  "knockThresholdLine": "CPU は合計 {{score}} 点以上でノックを検討します",
   "playerLine": "{{name}}: ライフ {{lives}}  最高スート {{score}}  手札 {{cards}}枚",
   "gameEnd": "ゲーム終了! {{name}} の勝ち!",
   "promptDraw": "{{name}} の番です (ドローフェーズ)",

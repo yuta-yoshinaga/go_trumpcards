@@ -18,6 +18,18 @@ export interface ThirtyOnePlayerData {
 export interface ThirtyOneConfig {
   cpuDifficulty: number;
   initialLives: number;
+  /**
+   * Hand totals at which each difficulty's CPUs consider knocking.
+   *
+   * The difficulty setting *is* these numbers, so they come from the domain
+   * rather than being written into a translated string that would go stale
+   * the moment a constant moves (#5623).
+   */
+  knockThresholds: {
+    easy: number;
+    normal: number;
+    hard: number;
+  };
 }
 
 /** Full Thirty-One game state returned from the API. */

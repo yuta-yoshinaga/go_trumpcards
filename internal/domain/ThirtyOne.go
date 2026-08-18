@@ -14,11 +14,18 @@ const ThirtyOnePlayerCnt = 4
 // ThirtyOneHandSize 各プレイヤーの手札枚数
 const ThirtyOneHandSize = 3
 
-// CPU ノック閾値 (この点数以上の手札でノックを検討する)
+// CPU ノック閾値 (この点数以上の手札でノックを検討する)。
+//
+// **公開しているのは画面に出すため。**難易度の違いはこの数字がすべてなのに、
+// UI からは Easy/Normal/Hard としか見えず、体験からしか学べなかった (#5623)。
+// 説明文に数字を書き写すのではなく、ここを読ませる。
 const (
-	thirtyOneKnockThresholdEasy   = 29
-	thirtyOneKnockThresholdNormal = 27
-	thirtyOneKnockThresholdHard   = 25
+	// ThirtyOneKnockThresholdEasy Easy の CPU がノックを検討する合計値
+	ThirtyOneKnockThresholdEasy = 29
+	// ThirtyOneKnockThresholdNormal Normal の CPU がノックを検討する合計値
+	ThirtyOneKnockThresholdNormal = 27
+	// ThirtyOneKnockThresholdHard Hard の CPU がノックを検討する合計値
+	ThirtyOneKnockThresholdHard = 25
 )
 
 // ThirtyOnePhase ゲームフェーズ
@@ -421,11 +428,11 @@ func (g *ThirtyOne) cpuWantsDiscard(p *ThirtyOnePlayer) bool {
 func (g *ThirtyOne) cpuKnockThreshold() int {
 	switch g.config.CpuDifficulty {
 	case ThirtyOneCpuDifficultyEasy:
-		return thirtyOneKnockThresholdEasy
+		return ThirtyOneKnockThresholdEasy
 	case ThirtyOneCpuDifficultyHard:
-		return thirtyOneKnockThresholdHard
+		return ThirtyOneKnockThresholdHard
 	default:
-		return thirtyOneKnockThresholdNormal
+		return ThirtyOneKnockThresholdNormal
 	}
 }
 
@@ -620,6 +627,9 @@ func (g *ThirtyOne) humanIdx() int {
 // --- Getters ---
 
 // GetPhase 現在のフェーズを取得する
+// GetCpuKnockThreshold は現在の難易度で CPU がノックを検討する合計値を返す。
+func (g *ThirtyOne) GetCpuKnockThreshold() int { return g.cpuKnockThreshold() }
+
 func (g *ThirtyOne) GetPhase() ThirtyOnePhase { return g.phase }
 
 // SetPhase フェーズを設定する (テスト用)

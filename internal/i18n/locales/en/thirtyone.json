@@ -10,6 +10,7 @@
   "helpSetLives": "  sv <n>               initial lives (1-10)",
   "header": "Round: {{round}}  Stock: {{stock}}",
   "discardLine": "Discard: {{card}}",
+  "knockThresholdLine": "CPUs consider knocking at {{score}} or more",
   "playerLine": "{{name}}: lives {{lives}}  best-suit {{score}}  cards {{cards}}",
   "gameEnd": "Game over! {{name}} wins!",
   "promptDraw": "{{name}} to act (draw phase)",
