@@ -90,6 +90,23 @@ describe('getBurracoHint', () => {
 // メルドできるか」を**インデックス付きの理由込み**で出していたのに、Web は
 // フェーズだけを見た大まかな推定だった。届いているならそれを使う。
 describe('getBurracoHint with the server hint', () => {
+  // サーバーが送るのは locale の接尾辞。**実在するキーであること**まで見る ──
+  // 存在しないキーだと i18next は翻訳の代わりにキー自身を表示する。
+  it('builds a key that exists in the catalogue', async () => {
+    const ja = (await import('../../i18n/locales/ja/burraco.json')).default as { hint: Record<string, string> };
+    for (const suffix of [
+      'hintReasonDrawStock',
+      'hintReasonDrawDiscard',
+      'hintReasonMeld',
+      'hintReasonNoMeld',
+      'hintReasonDiscard',
+    ]) {
+      const hint = getBurracoHint(makeState({ hint: { action: 'draw_stock', reason: suffix } }));
+      expect(hint?.reason).toBe(`hint.${suffix}`);
+      expect(ja.hint[suffix]).toBeTruthy();
+    }
+  });
+
   it('uses the reason and indices the server sent', () => {
     const hint = getBurracoHint(
       makeState({ hint: { action: 'draw_discard', indices: [2, 5], reason: 'hintReasonDrawDiscard' } }),

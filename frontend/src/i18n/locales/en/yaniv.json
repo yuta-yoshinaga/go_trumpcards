@@ -50,5 +50,6 @@
     "playerHand": "Your hand. Keep the total low — discard high cards or matching sets and runs.",
     "actionButtons": "Discard, then draw. When your hand total is 5 or less, call Yaniv to end the round.",
     "resetButton": "Start a new game."
-  }
+  },
+  "nearOut": "Near elimination"
 }
