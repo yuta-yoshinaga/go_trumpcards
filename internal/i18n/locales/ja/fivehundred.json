@@ -21,6 +21,7 @@
   "declarerMark": "★宣言者",
   "passMark": "(パス)",
   "bidSuit": "{{tricks}}{{suit}} ({{value}})",
+  "jokerLeadSuit": "ジョーカー指名スート: {{suit}}",
   "bidNoTrump": "{{tricks}}NT ({{value}})",
   "bidMisere": "ミゼール ({{value}})",
   "bidOpenMisere": "オープンミゼール ({{value}})",

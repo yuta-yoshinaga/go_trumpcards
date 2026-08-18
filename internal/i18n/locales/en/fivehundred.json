@@ -21,6 +21,7 @@
   "declarerMark": "★declarer",
   "passMark": "(pass)",
   "bidSuit": "{{tricks}}{{suit}} ({{value}})",
+  "jokerLeadSuit": "Joker nominated suit: {{suit}}",
   "bidNoTrump": "{{tricks}}NT ({{value}})",
   "bidMisere": "Misere ({{value}})",
   "bidOpenMisere": "Open Misere ({{value}})",

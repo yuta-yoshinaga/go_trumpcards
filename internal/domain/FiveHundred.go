@@ -1152,6 +1152,9 @@ func (g *FiveHundred) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 // SetCurrentTrick トリック設定 (テスト用)
 func (g *FiveHundred) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 
+// SetJokerLeadSuit ジョーカーリードの指名スート設定 (テスト用)
+func (g *FiveHundred) SetJokerLeadSuit(suit int) { g.jokerLeadSuit = suit }
+
 // GetGameEndFlag ゲーム終了フラグ取得
 func (g *FiveHundred) GetGameEndFlag() bool { return g.gameEndFlag }
 

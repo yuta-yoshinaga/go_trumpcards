@@ -109,6 +109,13 @@ func (p *FiveHundredCuiPresenter) Output(g interfaces.FiveHundredGame, lastErr e
 			func(idx int) string { return cuiPlayerName(g.GetPlayer(idx), idx) },
 		)
 
+		// **指名スートはトリックの直後に出す。**ジョーカーが場にある間、他の3人が
+		// 従うべきスートはこの値だけで決まるのに、どちらの画面も出していなかった
+		// (#5626)。指名が無いとき (-1) は行ごと出さない。
+		if suit := g.GetJokerLeadSuit(); suit > 0 && suit < len(suitNames) {
+			b.WriteString(i18n.Tf("fivehundred.jokerLeadSuit", "suit", suitNames[suit]) + "\n")
+		}
+
 		cuiErrorBlock(b, lastErr)
 
 		if g.GetGameEndFlag() {
