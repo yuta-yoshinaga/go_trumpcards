@@ -161,6 +161,7 @@
   "invalidBetAmount": "Invalid bet amount. Please enter a number.",
   "targetScoreRequired": "Target score is required.",
   "invalidTargetScore": "Invalid target score: {{val}}. Please enter 1 or more.",
+  "invalidTargetScoreRange": "Invalid target score: {{val}}. Use {{min}}-{{max}}.",
   "anteAmountRequired": "Ante amount is required.",
   "invalidAnteAmount": "Invalid ante amount. Please enter a number.",
   "playerCountRequired": "Player count is required (2-4).",

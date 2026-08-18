@@ -3,6 +3,7 @@
 package controller_test
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -104,5 +105,67 @@ func TestTrucoCuiController_Exec(t *testing.T) {
 		got := controller.NewTrucoCuiController(newMock()).Exec("xyz")
 		assert.NotEqual(t, "bye.", got)
 		assert.NotEmpty(t, got)
+	})
+}
+
+// #5618: Web は SettingsPanel で目標点 (9/12/15/18/24/30) を選んで reset に
+// 渡せるのに、CUI には目標点を触るコマンドが 1 つも無く、既定の 15 でしか
+// 遊べなかった。
+func TestTrucoCuiControllerSetsTheMatchTarget(t *testing.T) {
+	// **既定と違う設定を持たせる。**既定のままだと「今の設定を読んで書き換える」が
+	// 「既定から作り直す」実装でも通ってしまい、何も確かめない。難易度は現状
+	// Normal しか無いので、目標点そのものを既定から動かして区別する。
+	current := domain.DefaultTrucoConfig()
+	current.MatchTarget = 30
+	newMock := func() *mockUsecases.MockTrucoInteractor {
+		m := new(mockUsecases.MockTrucoInteractor)
+		m.On("GetConfig").Return(current)
+		m.On("ResetWithConfig", mock.Anything).Return(`{"phase":0}`)
+		return m
+	}
+
+	for _, alias := range []string{"sm", "setmatchtarget"} {
+		t.Run(alias, func(t *testing.T) {
+			m := newMock()
+			c := controller.NewTrucoCuiController(m)
+
+			assert.Equal(t, `{"phase":0}`, c.Exec(alias+" 24"))
+			// **設定を書き換えてリセットする。**目標点だけ変えて他の設定は保つ。
+			m.AssertCalled(t, "ResetWithConfig", mock.MatchedBy(func(cfg domain.TrucoConfig) bool {
+				return cfg.MatchTarget == 24
+			}))
+			// **今の設定を土台にする。**既定から作り直すと、他の設定 (将来増える
+			// ぶんも含めて) が黙って戻る。
+			m.AssertCalled(t, "GetConfig")
+		})
+	}
+
+	t.Run("rejects a value outside the domain range", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewTrucoCuiController(m)
+
+		// 上限は domain.TrucoMaxMatchTarget。Web も同じ範囲でクランプしている。
+		out := c.Exec("sm " + strconv.Itoa(domain.TrucoMaxMatchTarget+1))
+		assert.Contains(t, out, strconv.Itoa(domain.TrucoMaxMatchTarget))
+		m.AssertNotCalled(t, "ResetWithConfig", mock.Anything)
+	})
+
+	// **下限側も踏む。**上限だけだと、`v < min` を落としたミューテーションが
+	// どのテストにも捕まらない (レビュー #5979)。
+	t.Run("rejects a value below the domain range", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewTrucoCuiController(m)
+
+		out := c.Exec("sm " + strconv.Itoa(domain.TrucoMinMatchTarget-1))
+		assert.Contains(t, out, strconv.Itoa(domain.TrucoMinMatchTarget))
+		m.AssertNotCalled(t, "ResetWithConfig", mock.Anything)
+	})
+
+	t.Run("asks for the value when it is missing", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewTrucoCuiController(m)
+
+		assert.NotEmpty(t, c.Exec("sm"))
+		m.AssertNotCalled(t, "ResetWithConfig", mock.Anything)
 	})
 }

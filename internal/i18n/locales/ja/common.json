@@ -161,6 +161,7 @@
   "invalidBetAmount": "無効なベット額です。数値を入力してください。",
   "targetScoreRequired": "目標スコアを指定してください。",
   "invalidTargetScore": "無効な目標スコアです: {{val}}。1 以上を指定してください。",
+  "invalidTargetScoreRange": "無効な目標スコアです: {{val}}。{{min}}-{{max}} を指定してください。",
   "anteAmountRequired": "アンティ額を指定してください。",
   "invalidAnteAmount": "無効なアンティ額です。数値を入力してください。",
   "playerCountRequired": "プレイヤー数を指定してください (2-4)。",
