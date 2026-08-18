@@ -1138,3 +1138,59 @@ describe('EightOffPage supermove badge', () => {
     expect(withAllFree).not.toEqual(withTwoUsed);
   });
 });
+
+// #5612: 一括移動される塊のプレビューが `hoveredStack` (onMouseEnter/onFocus) にしか
+// 追従していなかった。タッチ端末にホバーは無いので、タップで選んだ直後にフォーカスが
+// 外れると、どこまでが一緒に動くのか手がかりが消える。Easthaven は #4815 で
+// 選択状態にも追従させている。
+describe('EightOffPage supermove block preview on touch', () => {
+  // 2 枚の列を持ち、空きセル 8 + 空き列 6 → 上限は十分大きいので塊は動かせる。
+  const twoCardCol: EightOffResponse = {
+    ...playingState,
+    tableau: [[card('SPADE', 13), card('HEART', 12)], [card('CLOVER', 13)], [], [], [], [], [], []],
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
+    mockExec.mockResolvedValue(twoCardCol);
+  });
+
+  it('keeps the block marked after a tap selects the stack', async () => {
+    renderWithProviders(<EightOffPage />);
+    const deep = await screen.findByTestId('eo-tableau-0-0');
+
+    // タップ = click。ホバーもフォーカスも無い状態にする。
+    fireEvent.click(deep);
+    await waitFor(() => expect(deep).toHaveAttribute('aria-pressed', 'true'));
+    fireEvent.blur(deep);
+
+    expect(deep).toHaveAttribute('data-supermove-block', 'true');
+    // 選んだ札より下 (後ろ) の札も同じ塊。
+    expect(screen.getByTestId('eo-tableau-0-1')).toHaveAttribute('data-supermove-block', 'true');
+    // 別の列は巻き込まない。
+    expect(screen.getByTestId('eo-tableau-1-0')).not.toHaveAttribute('data-supermove-block');
+  });
+
+  it('still marks the block on hover, as before', async () => {
+    renderWithProviders(<EightOffPage />);
+    const deep = await screen.findByTestId('eo-tableau-0-0');
+
+    fireEvent.mouseEnter(deep);
+    expect(deep).toHaveAttribute('data-supermove-block', 'true');
+    fireEvent.mouseLeave(deep);
+    expect(deep).not.toHaveAttribute('data-supermove-block');
+  });
+
+  // 上限を超える塊は、選んでもハイライトしない ── 動かない塊を「動く」と見せない。
+  it('does not mark a selected stack that exceeds the supermove limit', async () => {
+    mockExec.mockResolvedValue(supermoveBlockedState);
+    renderWithProviders(<EightOffPage />);
+    const deep = await screen.findByTestId('eo-tableau-0-0');
+    expect(deep).toHaveAttribute('data-supermove-blocked', 'true');
+
+    fireEvent.click(deep);
+    fireEvent.blur(deep);
+    expect(deep).not.toHaveAttribute('data-supermove-block');
+  });
+});
