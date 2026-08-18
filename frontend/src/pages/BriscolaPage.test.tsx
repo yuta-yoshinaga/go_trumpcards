@@ -4,6 +4,7 @@ import { briscolaApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BriscolaResponse, Card } from '../types/card';
+import { BriscolaPhase } from '../types/phases';
 import { BriscolaPage } from './BriscolaPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -219,6 +220,23 @@ describe('BriscolaPage', () => {
 
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  // #5608: ゲームが終わった後は失うものが無いので、共通の GameResetButton は
+  // 確認を飛ばして「次のゲーム」になる。Briscola だけ自前ボタンで、決着後も
+  // 毎回確認を要求していた。
+  it('starts the next game without a confirm once the game has ended', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: BriscolaPhase.GAME_END, gameEndFlag: true }));
+    renderWithProviders(<BriscolaPage />);
+
+    const next = await screen.findByRole('button', { name: '次のゲーム' });
+    expect(screen.queryByRole('button', { name: 'リセット' })).not.toBeInTheDocument();
+
+    mockExec.mockClear();
+    fireEvent.click(next);
+    // ダイアログを挟まずに走る。
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
