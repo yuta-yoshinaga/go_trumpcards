@@ -28,7 +28,6 @@ import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { classifyYanivDiscard } from '../utils/yanivCombos';
-import { yanivIsNearOut } from '../utils/yanivNearOut';
 import { isPickupable } from '../utils/yanivPickup';
 
 type YanivArgs = Parameters<typeof yanivApi.exec>;
@@ -231,13 +230,6 @@ function YanivPageContent() {
                     </div>
                     <div className="text-[10px] text-ds-text-muted mb-1">
                       {t('label.score')}: {p.score} · {t('label.hand')}: {reveal ? p.handTotal : '?'}
-                      {/* CUI と同じ閾値で「脱落間近」を出す。値はレスポンスの
-                          scoreLimit を読む (#5629)。脱落済みには出さない。 */}
-                      {!p.isEliminated && yanivIsNearOut(p.score, state.config.scoreLimit) && (
-                        <span className="ml-1 text-ds-warning font-bold" data-testid={`yv-near-out-${p.id.toString()}`}>
-                          ⚠{t('nearOut')}
-                        </span>
-                      )}
                     </div>
                     <div className="flex gap-0.5 justify-center">
                       {reveal
@@ -309,13 +301,7 @@ function YanivPageContent() {
             {/* Human hand */}
             <div className="text-center" data-tutorial="y-player-hand">
               <div className="text-xs text-ds-text-muted mb-1">
-                {tc('player.you')} · {t('label.score')}: {human.score}
-                {!human.isEliminated && yanivIsNearOut(human.score, state.config.scoreLimit) && (
-                  <span className="ml-1 text-ds-warning font-bold" data-testid={`yv-near-out-${human.id.toString()}`}>
-                    ⚠{t('nearOut')}
-                  </span>
-                )}{' '}
-                · {t('label.hand')}:{' '}
+                {tc('player.you')} · {t('label.score')}: {human.score} · {t('label.hand')}:{' '}
                 <span
                   data-testid="hand-total-badge"
                   title={t('handTotalHelp')}
