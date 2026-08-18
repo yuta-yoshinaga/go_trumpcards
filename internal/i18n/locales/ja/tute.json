@@ -16,6 +16,7 @@
   "promptTrickEnd": "トリック終了",
   "promptTrickEndHelp": "n / next・・・次のトリックへ",
   "promptRoundEnd": "ラウンド終了（チームA: {{ptsA}}点, チームB: {{ptsB}}点）",
+  "runningPoints": "今ラウンドの獲得点  チームA: {{ptsA}}点  チームB: {{ptsB}}点",
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
   "hintNone": "ヒントはありません。",
   "hintCard": "[HINT: {{cards}} ({{reason}})]",
