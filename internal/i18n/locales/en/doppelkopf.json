@@ -8,6 +8,8 @@
   "helpSetChips": "  sb <n>               base chip unit (default 2)",
   "round": "Round: {{round}}  Trick: {{trick}}",
   "playerLine": "{{name}}: {{cards}} cards  Chips: {{chips}}  Tricks: {{tricks}}",
+  "trumpLegend": "^ = trump",
+  "trumpOrder": "Trump order: ♥10 > ♣Q > ♠Q > ♥Q > ♦Q > ♣J > ♠J > ♥J > ♦J > ♦A > ♦10 > ♦K > ♦9",
   "gameEnd": "Game over! {{name}} wins!",
   "promptPlay": "Turn: {{name}}",
   "promptPlayHelp": "play <idx> ... play a card (must follow suit)",

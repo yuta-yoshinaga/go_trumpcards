@@ -758,6 +758,26 @@ func (g *Doppelkopf) GetPlayableIndices(playerIdx int) []int {
 	return g.getValidPlayIndices(playerIdx)
 }
 
+// GetTrumpIndices は指定プレイヤーの手札のうち切り札の位置を返す。
+//
+// Doppelkopf の切り札は「♦全札 + 全 Q + 全 J + ♥10」という複合ルールで、
+// 手札の並びを見ても一目では区別できない。判定 (dkIsTrump) は非公開なので、
+// **presenter が自前で条件を書き写さずに済むよう** ドメインから返す (#5639)。
+// フェーズは問わない -- 何が切り札かは配られた時点で決まっている。
+func (g *Doppelkopf) GetTrumpIndices(playerIdx int) []int {
+	if playerIdx < 0 || playerIdx >= len(g.players) {
+		return nil
+	}
+	player := g.players[playerIdx]
+	var indices []int
+	for i := 0; i < player.GetCardsSize(); i++ {
+		if dkIsTrump(player.GetCard(i)) {
+			indices = append(indices, i)
+		}
+	}
+	return indices
+}
+
 // --- Hint ---
 
 // GetHint 人間プレイヤーの手番における推奨プレイを返す。

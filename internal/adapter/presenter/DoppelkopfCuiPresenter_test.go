@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -46,6 +47,7 @@ func setupDoppelkopfCuiMockWithPlayers() (*interfaces.MockDoppelkopfGame, []*dom
 	m := setupDoppelkopfCuiMock()
 	players := makeDoppelkopfPlayers()
 	m.On("GetPlayerCnt").Return(4)
+	m.On("GetTrumpIndices", mock.Anything).Return(([]int)(nil)).Maybe()
 	m.On("GetPlayer", 0).Return(players[0])
 	m.On("GetPlayer", 1).Return(players[1])
 	m.On("GetPlayer", 2).Return(players[2])
@@ -159,4 +161,43 @@ func TestDoppelkopfCuiPresenter_ActionLogOutput(t *testing.T) {
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, "play")
+}
+
+// #5639: 切り札は「♦全部 + 全 Q + 全 J + ♥10」の複合ルールで、手札の並びからは
+// 判別できない。Web は該当カードにバッジを付け、強さ順のパネルまで畳んで置いて
+// いるのに、CUI は無印で並べるだけだった。
+func TestDoppelkopfCuiPresenter_MarksTheTrumpsInHand(t *testing.T) {
+	p := new(presenter.DoppelkopfCuiPresenter)
+
+	handMock := func(trumps []int) *interfaces.MockDoppelkopfGame {
+		m, players := setupDoppelkopfCuiMockWithPlayers()
+		players[0].ResetRound()
+		players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 9, true))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, true))
+		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 12, true))
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTrumpIndices")
+		m.On("GetTrumpIndices", 0).Return(trumps)
+		return m
+	}
+
+	t.Run("marks only the trump indices", func(t *testing.T) {
+		out := p.Output(handMock([]int{0, 2}), nil)
+
+		assert.Contains(t, out, "[0]"+color.Red("DIAMOND 9")+presenter.CuiTrumpMark)
+		assert.Contains(t, out, "[2]"+"CLOVER 12"+presenter.CuiTrumpMark)
+		assert.NotContains(t, out, "[1]"+"SPADE 1"+presenter.CuiTrumpMark)
+	})
+
+	t.Run("explains what the mark means and how the trumps rank", func(t *testing.T) {
+		out := p.Output(handMock([]int{0, 2}), nil)
+
+		assert.Contains(t, out, i18n.T("doppelkopf.trumpLegend"))
+		assert.Contains(t, out, i18n.T("doppelkopf.trumpOrder"))
+	})
+
+	t.Run("no trumps in hand leaves the list unmarked", func(t *testing.T) {
+		out := p.Output(handMock(nil), nil)
+
+		assert.NotContains(t, out, presenter.CuiTrumpMark)
+	})
 }

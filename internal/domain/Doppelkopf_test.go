@@ -454,3 +454,41 @@ func TestDoppelkopf_PlayerPlayErrors(t *testing.T) {
 		t.Errorf("err = %v, want ErrGameEnded", err)
 	}
 }
+
+// #5639: 切り札は「♦全部 + 全 Q + 全 J + ♥10」という複合ルールで、手札を見ても
+// 一目では分からない。Web は isDoppelkopfTrump でバッジを付けているのに、CUI は
+// 判定手段そのものを持っていなかった (dkIsTrump は非公開)。
+func TestDoppelkopfGetTrumpIndices(t *testing.T) {
+	g := newDKGame(true)
+	p := g.GetPlayer(0)
+	p.ResetRound()
+	// ♦9(切り札) / ♠A(フェイル) / ♣Q(切り札) / ♥10(Dulle=切り札) / ♠10(フェイル)
+	p.AddCard(dkCard(CardDesignDiamond, 9))
+	p.AddCard(dkCard(CardDesignSpade, 1))
+	p.AddCard(dkCard(CardDesignClover, 12))
+	p.AddCard(dkCard(CardDesignHeart, 10))
+	p.AddCard(dkCard(CardDesignSpade, 10))
+
+	got := g.GetTrumpIndices(0)
+	want := []int{0, 2, 3}
+	if len(got) != len(want) {
+		t.Fatalf("GetTrumpIndices = %v, want %v", got, want)
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Fatalf("GetTrumpIndices = %v, want %v", got, want)
+		}
+	}
+}
+
+// 範囲外のプレイヤーは nil。呼び出し側で境界を気にせず使えるようにする。
+func TestDoppelkopfGetTrumpIndicesOutOfRange(t *testing.T) {
+	g := newDKGame(true)
+	// **境界そのものを踏む。**99 だけだと `>=` を `>` に緩めても通ってしまい、
+	// 実際に落ちる playerIdx == len(players) が素通りする。
+	for _, idx := range []int{-1, DoppelkopfPlayerCnt, 99} {
+		if got := g.GetTrumpIndices(idx); got != nil {
+			t.Fatalf("GetTrumpIndices(%d) = %v, want nil", idx, got)
+		}
+	}
+}
