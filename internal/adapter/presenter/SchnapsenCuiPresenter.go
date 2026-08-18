@@ -13,7 +13,7 @@ import (
 )
 
 // schnapsenPlayerStr returns the display string for a single Schnapsen player.
-func schnapsenPlayerStr(player *domain.SchnapsenPlayer, idx, points int) string {
+func schnapsenPlayerStr(player *domain.SchnapsenPlayer, idx, points int, playable []int) string {
 	var b strings.Builder
 	b.WriteString(i18n.Tf("schnapsen.playerLine",
 		"name", cuiPlayerName(player, idx),
@@ -23,7 +23,11 @@ func schnapsenPlayerStr(player *domain.SchnapsenPlayer, idx, points int) string 
 	))
 	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
-		b.WriteString(cuiIndexedCardListStr(player) + "\n")
+		// **第2フェーズは3段のマストフォローが効く。**Web は合法手にリングを
+		// 出しているのに、CUI は番号を打ってエラーを踏むまで分からなかった
+		// (#5627)。playable が空のときは印を付けない ── 第1フェーズは自由に
+		// 出せるので、印を出すと「これ以外は出せない」と読める。
+		b.WriteString(cuiPlayableMarkedCardListStr(player, playable) + "\n")
 	}
 	return b.String()
 }
@@ -53,7 +57,12 @@ func (p *SchnapsenCuiPresenter) Output(s interfaces.SchnapsenGame, lastErr error
 			"p1", strconv.Itoa(s.GetPlayerPoints(1))) + "\n")
 
 		for i := 0; i < s.GetPlayerCnt(); i++ {
-			sb.WriteString(schnapsenPlayerStr(s.GetPlayer(i), i, s.GetPlayerPoints(i)))
+			// 目印は第2フェーズ (マストフォローが効く) で本人の手番のときだけ。
+			var playable []int
+			if s.IsEndgame() && s.GetPhase() == domain.SchnapsenPhasePlay && s.GetCurrentPlayerIdx() == i {
+				playable = s.GetValidPlayIndices(i)
+			}
+			sb.WriteString(schnapsenPlayerStr(s.GetPlayer(i), i, s.GetPlayerPoints(i), playable))
 		}
 
 		// マリアージュ宣言が可能なら案内を表示する
