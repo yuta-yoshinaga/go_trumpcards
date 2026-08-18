@@ -1,5 +1,7 @@
 {
   "helpTitle": "Baker's Game (ベーカーズ・ゲーム)",
+  "supermoveLine": "一括移動: 最大{{limit}}枚 (空きセル{{cells}} / 空き列{{cols}})",
+  "supermoveToEmpty": " / 空き列へは{{limit}}枚",
   "helpMove": "  m t <col> t <col>    move tableau top card to tableau",
   "helpMoveTF": "  m t <col> f          move tableau to foundation",
   "helpMoveTT": "  m t <col> <idx> t <col>  move tableau sequence to tableau",

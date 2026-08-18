@@ -28,10 +28,11 @@ func (p *TichuCuiPresenter) Output(tg interfaces.TichuGame, lastErr error) strin
 		for idx := 0; idx < tg.GetPlayerCnt(); idx++ {
 			// 印は自分の手札にだけ。他家の手札は伏せられている。
 			var bomb []int
-			if p := tg.GetPlayer(idx); p != nil && p.GetIsHuman() {
-				cards := make([]*domain.Card, p.GetCardsSize())
+			// 受信者 p を隠さないよう別名にする (レビュー #5998)。
+			if player := tg.GetPlayer(idx); player != nil && player.GetIsHuman() {
+				cards := make([]*domain.Card, player.GetCardsSize())
 				for i := range cards {
-					cards[i] = p.GetCard(i)
+					cards[i] = player.GetCard(i)
 				}
 				bomb = domain.TichuBombIndices(cards)
 			}
