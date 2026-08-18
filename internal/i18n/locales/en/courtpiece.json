@@ -19,6 +19,7 @@
   "promptTrickEnd": "Trick ended",
   "promptTrickEndHelp": "n — advance to the next trick",
   "promptRoundEnd": "Round ended",
+  "roundEndCourt": "Court bonus (sweep or back-to-back win) — 2 points this round",
   "promptRoundEndHelp": "nr — advance to the next round",
   "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
   "hintTrump": "Suggested trump: {{suit}} ({{reason}})",

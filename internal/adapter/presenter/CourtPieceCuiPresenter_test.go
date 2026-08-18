@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 
@@ -189,4 +190,52 @@ func TestCourtPieceCuiPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.CourtPieceCuiPresenter)
 	out := p.ActionLogOutput(cp)
 	assert.NotNil(t, out)
+}
+
+// #5656: 13トリック総取り、または連続でラウンドを取ると Court ボーナスで +2 点
+// 入る。Web はラウンド結果に roundResult.court を出しているのに、CUI は汎用の
+// 「次のラウンドへ」しか出さず、**スコアだけが 2 動く理由が分からなかった**。
+func TestCourtPieceCuiPresenter_RoundEndCallsOutTheCourtBonus(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.CourtPieceCuiPresenter)
+
+	// 13トリック総取りは、その場で Court が成立する経路。
+	t.Run("announces a clean sweep", func(t *testing.T) {
+		cp := newCourtPieceForCuiTest()
+		cp.SetCallerIdx(0)
+		for i := 0; i < 13; i++ {
+			cp.GetPlayer(0).AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 2, false)})
+		}
+		cp.SetPhase(domain.CourtPiecePhaseRoundEnd)
+		cp.ScoreRound()
+		require.True(t, cp.IsLastRoundCourt(), "前提: 13トリック総取りで Court が成立する")
+
+		out := p.Output(cp, nil)
+
+		assert.Contains(t, out, i18n.T("courtpiece.roundEndCourt"))
+		// 既存の案内文は残す。
+		assert.Contains(t, out, i18n.T("courtpiece.promptRoundEndHelp"))
+	})
+
+	// **8-5 で勝った初回は Court ではない。**ここで出してしまうと +1 のラウンドに
+	// +2 の説明が付く。
+	t.Run("stays quiet on an ordinary round win", func(t *testing.T) {
+		cp := newCourtPieceForCuiTest()
+		cp.SetCallerIdx(0)
+		for i := 0; i < 8; i++ {
+			cp.GetPlayer(0).AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 2, false)})
+		}
+		for i := 0; i < 5; i++ {
+			cp.GetPlayer(1).AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 3, false)})
+		}
+		cp.SetPhase(domain.CourtPiecePhaseRoundEnd)
+		cp.ScoreRound()
+		require.False(t, cp.IsLastRoundCourt(), "前提: 初回の通常勝ちは Court ではない")
+
+		out := p.Output(cp, nil)
+
+		assert.NotContains(t, out, i18n.T("courtpiece.roundEndCourt"))
+	})
 }

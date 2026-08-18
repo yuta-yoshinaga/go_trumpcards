@@ -120,6 +120,12 @@ func (p *CourtPieceCuiPresenter) Output(t interfaces.CourtPieceGame, lastErr err
 			b.WriteString(i18n.T("courtpiece.promptTrickEndHelp") + "\n")
 		case domain.CourtPiecePhaseRoundEnd:
 			b.WriteString(i18n.T("courtpiece.promptRoundEnd") + "\n")
+			// **Court は +1 ではなく +2 になるラウンド** (13トリック総取り or 連勝)。
+			// Web は roundResult.court で出しているのに CUI は触れておらず、
+			// スコアだけが 2 動く理由が読めなかった (#5656)。
+			if t.IsLastRoundCourt() {
+				b.WriteString(color.BoldYellow(i18n.T("courtpiece.roundEndCourt")) + "\n")
+			}
 			b.WriteString(i18n.T("courtpiece.promptRoundEndHelp") + "\n")
 		}
 	})
