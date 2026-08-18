@@ -43,6 +43,11 @@
     "forceExchange": "Force exchange fee",
     "total": "Total"
   },
+  "paidCosts": {
+    "exchange": "Exchange fee: {{count}} card(s) -{{fee}}",
+    "buy6th": "6th-card fee -{{fee}}",
+    "forceExchange": "Forced-exchange fee -{{fee}}"
+  },
   "handRank": {
     "0": "High Card",
     "1": "One Pair",

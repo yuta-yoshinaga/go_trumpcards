@@ -214,3 +214,52 @@ describe('RussianPokerPage', () => {
     expect(screen.getByLabelText(/ヒント/)).toBeInTheDocument();
   });
 });
+
+// #5613: 交換手数料も6枚目購入料も、END の payout-breakdown にしか出ていなかった。
+// ACTION 中に見えていた見積もりは交換した瞬間に消えるので、**もう払ったコスト**を
+// 確認する手段が POST_ACTION / SELECT / FORCE_QUALIFY のどこにも無かった。
+// CUI は exchangeLine / buy6thLine を全フェーズで出し続けている。
+describe('RussianPokerPage paid costs', () => {
+  beforeEach(() => {
+    localStorage.removeItem('hint_enabled_russianpoker');
+    vi.clearAllMocks();
+  });
+
+  it('keeps the exchange fee on screen after the exchange', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: RussianPokerPhase.POST_ACTION, exchangeCount: 2, exchangeFee: 200 }));
+    renderWithProviders(<RussianPokerPage />);
+
+    const costs = await screen.findByTestId('rp-paid-costs');
+    expect(costs).toHaveTextContent('交換手数料');
+    expect(costs).toHaveTextContent('200');
+    // 枚数も出す ── CUI の exchangeLine と同じ情報量。
+    expect(costs).toHaveTextContent('2');
+  });
+
+  it('keeps the sixth-card fee on screen in the select phase', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: RussianPokerPhase.SELECT, bought6th: true, buy6thFee: 100 }));
+    renderWithProviders(<RussianPokerPage />);
+
+    const costs = await screen.findByTestId('rp-paid-costs');
+    expect(costs).toHaveTextContent('6枚目手数料');
+    expect(costs).toHaveTextContent('100');
+  });
+
+  it('shows nothing when no cost has been incurred', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: RussianPokerPhase.POST_ACTION }));
+    renderWithProviders(<RussianPokerPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('rp-paid-costs')).not.toBeInTheDocument();
+  });
+
+  // END の内訳は従来どおり別物 ── 二重に同じ金額が並ばないこと。
+  it('leaves the end-phase breakdown as the only summary at showdown', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ phase: RussianPokerPhase.END, exchangeCount: 2, exchangeFee: 200, totalPayout: 0 }),
+    );
+    renderWithProviders(<RussianPokerPage />);
+
+    await waitFor(() => expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument());
+    expect(screen.queryByTestId('rp-paid-costs')).not.toBeInTheDocument();
+  });
+});
