@@ -12,6 +12,10 @@ vi.mock('../api/gameApi', () => ({
 
 const mockExec = vi.mocked(spoilFiveApi.exec);
 
+/** 5人分のプレイヤーを、指定した今ラウンドのトリック数で作る。 */
+const playersWithTricks = (tricks: number[]) =>
+  makeSpoilFiveState().players.map((p, i) => ({ ...p, roundTricks: tricks[i] ?? 0 }));
+
 const playPhaseState = makeSpoilFiveState();
 const trickEndState = makeSpoilFiveState({
   phase: 1,
@@ -162,6 +166,34 @@ describe('SpoilFivePage', () => {
 
   // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回
   // ヒントを載せるので、`state.hint` だけを見て描画すると常時表示になる (#4605)。
+  // #5655: 5トリック中**3トリック先取でその場でラウンドが終わる** (ResolveTrick)。
+  // 画面は獲得数を数字で出すだけで、あと何トリックで勝てるのかも、誰がリーチして
+  // いるのかも見えなかった。
+  it('shows each trick count against the three needed to win', async () => {
+    mockExec.mockResolvedValue(makeSpoilFiveState({ players: playersWithTricks([1, 0, 0, 0, 0]) }));
+    renderWithProviders(<SpoilFivePage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.getByTestId('sf-tricks-0')).toHaveTextContent('1/3');
+  });
+
+  // **2トリック取ったら次で決まる。**そこが見えないと終盤の緊張が伝わらない。
+  it('flags the player one trick away from taking the round', async () => {
+    mockExec.mockResolvedValue(makeSpoilFiveState({ players: playersWithTricks([2, 1, 0, 0, 0]) }));
+    renderWithProviders(<SpoilFivePage />);
+
+    expect(await screen.findByTestId('sf-reach-0')).toBeInTheDocument();
+    expect(screen.queryByTestId('sf-reach-1')).not.toBeInTheDocument();
+  });
+
+  it('does not flag a reach before anyone has two tricks', async () => {
+    mockExec.mockResolvedValue(makeSpoilFiveState({ players: playersWithTricks([1, 1, 1, 0, 0]) }));
+    renderWithProviders(<SpoilFivePage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('sf-reach-0')).not.toBeInTheDocument();
+  });
+
   it('renders no hint banner when the hint was not requested', async () => {
     mockExec.mockResolvedValue({ ...playPhaseState, hint: { cardIndices: [0], reason: 'x' } });
     renderWithProviders(<SpoilFivePage />);

@@ -56,5 +56,7 @@
     "resetButton": "Use the reset button to start a new game."
   },
   "hintRequested": "Hint available",
-  "noHint": "No hint available"
+  "noHint": "No hint available",
+  "roundTricksOf": "{{count}}/{{needed}} tricks this round",
+  "reach": "1 to win"
 }
