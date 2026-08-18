@@ -63,8 +63,25 @@ type BurracoWebOutput struct {
 	IsFrozen         bool                      `json:"isFrozen"`
 	GameEndFlag      bool                      `json:"gameEndFlag"`
 	WinnerIdx        int                       `json:"winnerIdx"`
+	// Hint は人間の手番のときだけ入る。空オブジェクトを返すと「行動できない」と
+	// 読めるので、無いときは省略する。
+	Hint *BurracoWebOutputHint `json:"hint,omitempty"`
 	WebOutputBase
 	Config BurracoWebOutputConfig `json:"config"`
+}
+
+// BurracoWebOutputHint ヒントのアウトプット。
+//
+// **インデックスで運ぶ。**カードそのものを送ると、フロントが手札の並びを
+// 変えたときに別の札を指す。CUI が使うドメインのヒントと同じ値なので、
+// 2 つの画面が同じ盤面で違う手を勧めることがなくなる (#5628)。
+type BurracoWebOutputHint struct {
+	// Action は "draw_stock" / "draw_discard" / "meld" / "skip_meld" / "discard"。
+	Action string `json:"action"`
+	// Indices は対象カードの手札インデックス (draw_stock / skip_meld では空)。
+	Indices []int `json:"indices,omitempty"`
+	// Reason は理由の i18n キー (接頭辞なし)。
+	Reason string `json:"reason"`
 }
 
 // BurracoWebOutputConfig ブラーコ設定アウトプット

@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -18,6 +19,8 @@ import (
 func setupBurracoWebMock() *interfaces.MockBurracoGame {
 	m := new(interfaces.MockBurracoGame)
 	m.On("GetRoundNumber").Return(1)
+	// ヒントは既定で「なし」。値そのものを見るテストは本物のドメインで確かめる。
+	m.On("GetHint").Return((*domain.BurracoHint)(nil)).Maybe()
 	m.On("GetDrawPileCount").Return(54)
 	m.On("GetDiscardPileCount").Return(0)
 	m.On("GetPozzettoCount").Return(2)
@@ -432,4 +435,36 @@ func TestBurracoWebPresenter_ActionLogOutput(t *testing.T) {
 		assert.Contains(t, result, `"entries":[]`)
 		m.AssertExpectations(t)
 	})
+}
+
+// #5628: CUI は GetHint() を使って「どちらの山から引くか」「どのカードで
+// メルドできるか」を**インデックス付きの理由込み**で返すのに、Web は
+// フロントの大まかな推定 (フェーズ別のアクション名だけ) を使っていた。
+func TestBurracoWebPresenterCarriesTheDomainHint(t *testing.T) {
+	g := domain.NewDefaultBurraco()
+	g.Reset()
+
+	var out controller.BurracoWebOutput
+	require.NoError(t, json.Unmarshal([]byte(new(presenter.BurracoWebPresenter).HintOutput(g)), &out))
+
+	want := g.GetHint()
+	require.NotNil(t, want, "配り直後は人間の引きフェーズなのでヒントが出る")
+	require.NotNil(t, out.Hint)
+	// **ドメインの答えをそのまま運ぶ。**presenter で組み直すと CUI と Web が
+	// 同じ盤面で違う手を勧める。
+	assert.Equal(t, want.Action, out.Hint.Action)
+	assert.Equal(t, want.Reason, out.Hint.Reason)
+	assert.Equal(t, want.Indices, out.Hint.Indices)
+}
+
+// CPU の手番などヒントが無い場面ではフィールドごと出さない。
+// 空のオブジェクトだと「行動できない」と読める。
+func TestBurracoWebPresenterOmitsTheHintWhenThereIsNone(t *testing.T) {
+	g := domain.NewDefaultBurraco()
+	g.Reset()
+	g.SetCurrentPlayerIdx(1)
+
+	var out controller.BurracoWebOutput
+	require.NoError(t, json.Unmarshal([]byte(new(presenter.BurracoWebPresenter).HintOutput(g)), &out))
+	assert.Nil(t, out.Hint)
 }

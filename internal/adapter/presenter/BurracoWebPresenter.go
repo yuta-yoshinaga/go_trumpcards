@@ -46,6 +46,15 @@ func (p *BurracoWebPresenter) Output(g interfaces.BurracoGame, lastErr error) st
 	resObj.Players = p.buildPlayersOutput(g)
 	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(g, lastErr)
 
+	// ヒントはドメインが人間の手番でだけ返す。そのまま運ぶ (#5628)。
+	if h := g.GetHint(); h != nil {
+		resObj.Hint = &controller.BurracoWebOutputHint{
+			Action:  h.Action,
+			Indices: h.Indices,
+			Reason:  h.Reason,
+		}
+	}
+
 	return marshalOrError(resObj)
 }
 
@@ -123,9 +132,9 @@ func (p *BurracoWebPresenter) buildMessage(g interfaces.BurracoGame, lastErr err
 	return "", "", nil
 }
 
-// HintOutput ヒント情報をJSON出力する。Web GUI はフロントエンドのヒント推定を
-// 使うためバックエンドヒントは持たず、標準の状態出力をそのまま返す
-// (BurracoPresenter インタフェースを満たすための実装)。
+// HintOutput ヒント情報をJSON出力する。専用のレスポンスは持たず通常の状態出力を
+// 返すが、**その状態にドメインのヒントが載っている** (#5628)。CUI と同じ値なので、
+// 2 つの画面が同じ盤面で違う手を勧めることがない。
 func (p *BurracoWebPresenter) HintOutput(g interfaces.BurracoGame) string {
 	return p.Output(g, nil)
 }

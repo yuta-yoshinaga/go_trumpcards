@@ -85,3 +85,29 @@ describe('getBurracoHint', () => {
     expect(hint?.reason).toBe('hint.discardHighSafe');
   });
 });
+
+// #5628: CUI はドメインの GetHint() を使って「どちらの山から引くか」「どの札で
+// メルドできるか」を**インデックス付きの理由込み**で出していたのに、Web は
+// フェーズだけを見た大まかな推定だった。届いているならそれを使う。
+describe('getBurracoHint with the server hint', () => {
+  it('uses the reason and indices the server sent', () => {
+    const hint = getBurracoHint(
+      makeState({ hint: { action: 'draw_discard', indices: [2, 5], reason: 'hintReasonDrawDiscard' } }),
+    );
+    expect(hint?.reason).toBe('hint.hintReasonDrawDiscard');
+    expect(hint?.targetIndices).toEqual([2, 5]);
+  });
+
+  it('maps the action to the button the page marks', () => {
+    const hint = getBurracoHint(makeState({ hint: { action: 'discard', indices: [3], reason: 'hintReasonDiscard' } }));
+    expect(hint?.targetAction).toBe('discard');
+    expect(hint?.targetIndices).toEqual([3]);
+  });
+
+  // 届いていないときは従来のフェーズ推定のまま (古いサーバー / CPU の手番)。
+  it('falls back to the phase guess when the server sent nothing', () => {
+    const hint = getBurracoHint(makeState());
+    expect(hint?.reason).toBe('hint.drawStock');
+    expect(hint?.targetIndices).toBeUndefined();
+  });
+});
