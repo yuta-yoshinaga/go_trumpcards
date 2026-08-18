@@ -44,7 +44,9 @@ func (p *DoudizhuCuiPresenter) Output(dg interfaces.DoudizhuGame, lastErr error)
 		if phase == domain.DoudizhuPhasePlay || phase == domain.DoudizhuPhaseEnd {
 			landlordIdx := dg.GetLandlordIdx()
 			if landlordIdx >= 0 {
-				fmt.Fprintf(b, "%s: Player %d\n", i18n.T("doudizhu.landlord"), landlordIdx)
+				// **名前は cuiPlayerName に通す。**ここだけ自前で組むと、
+				// 日本語ロケールでも "Player 2" と出て他の行と食い違う (#5617)。
+				fmt.Fprintf(b, "%s: %s\n", i18n.T("doudizhu.landlord"), cuiPlayerName(dg.GetPlayer(landlordIdx), landlordIdx))
 				fmt.Fprintf(b, "%s: %s\n", i18n.T("doudizhu.kittyCards"), cuiCardListStr(doudizhuCardSlice(dg.GetKittyCards())))
 			}
 
