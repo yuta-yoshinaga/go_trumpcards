@@ -26,6 +26,8 @@ func NewScopaCuiController(si usecase.ScopaInteractorIF) *ScopaCuiController {
 //	play <h> [t1 t2 ...]   手札 h を出す (場札 t... を捕獲、無指定なら場に置く)
 //	reset / r / next / n
 //	sd <0-2>               CPU 難易度
+//	st <n>                 目標得点 (変更してリセット)
+//	h / hint
 //	log / l
 func (c *ScopaCuiController) Exec(command string) string {
 	return execCuiCommand(
