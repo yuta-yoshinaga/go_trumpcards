@@ -373,6 +373,15 @@ func slobberhannesRank(c *Card) int {
 
 // slobberhannesIsPenaltyQueen ♣Q かどうか
 func slobberhannesIsPenaltyQueen(c *Card) bool {
+	return SlobberhannesIsPenaltyQueen(c)
+}
+
+// SlobberhannesIsPenaltyQueen は罰点札 (♣Q) かを返す。
+//
+// **位置ではなく中身に効く唯一の罰点。**最初/最後のトリックは番号で警告
+// できるが、♣Q は「今場に出ているか」がリスクの本体なので、画面側にも
+// 同じ判定が要る (#5745)。
+func SlobberhannesIsPenaltyQueen(c *Card) bool {
 	return c != nil && c.GetDesign() == SlobberhannesQueenSuit && c.GetValue() == SlobberhannesQueenValue
 }
 
