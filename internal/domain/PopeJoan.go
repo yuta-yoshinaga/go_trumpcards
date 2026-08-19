@@ -73,6 +73,22 @@ func popeJoanIsPope(c *Card) bool {
 	return c != nil && c.GetDesign() == CardDesignDiamond && c.GetValue() == PopeJoanPopeRank
 }
 
+// PopeJoanHoldsPope は player が Pope (♦9) を抱えているかを返す。
+//
+// **抱えている人はその区画への支払いを免除される**ので、伏せ手でも公開してよい
+// 情報として画面に出す (Web の holdsPope と同じ判定)。
+func PopeJoanHoldsPope(player *PopeJoanPlayer) bool {
+	if player == nil {
+		return false
+	}
+	for j := range player.GetCardsSize() {
+		if popeJoanIsPope(player.GetCard(j)) {
+			return true
+		}
+	}
+	return false
+}
+
 // popeJoanRankOrder は A を最上位に置いた順位を返す。A-K-Q-J-10-…-2。
 func popeJoanRankOrder(rank int) int {
 	if rank == 1 {
