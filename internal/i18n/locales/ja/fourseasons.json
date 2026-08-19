@@ -20,6 +20,7 @@
   "foundationComplete": " → 完成",
   "columnLabel": "[T{{col}}]",
   "columnCard": " {{card}} ({{count}}枚)",
+  "columnAccepts": " → 次に置けるのは {{rank}}",
   "stockLine": "ストック: {{count}}枚",
   "wasteCard": " ウェイスト: {{card}}",
   "wasteEmpty": " ウェイスト: (空)",
