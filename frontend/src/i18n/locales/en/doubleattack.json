@@ -46,5 +46,7 @@
   "frontendHint.doubleAttackStrongUp": "with the tens removed the dealer busts less, so declining is safer",
   "frontendHint.doubleAttackCannotBust": "11 or less cannot bust",
   "frontendHint.doubleAttackStandPat": "17 or more is a standing hand",
-  "frontendHint.doubleAttackBorderline": "an awkward total — it depends on the up-card"
+  "frontendHint.doubleAttackBorderline": "an awkward total — it depends on the up-card",
+  "result.bustItHit": "Bust It hit: +{{n}}",
+  "result.bustItMiss": "Bust It: missed"
 }

@@ -50,11 +50,21 @@ func looPlayerStr(g interfaces.LooGame, idx int) string {
 		"hand", strconv.Itoa(player.GetCardsSize()),
 		"status", looPlayingLabel(player.GetPlaying()),
 		"tricks", strconv.Itoa(player.GetTrickCount()),
-		"chips", strconv.Itoa(player.GetChips())) + "\n")
+		"chips", looChipsStr(player.GetChips())) + "\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
 		b.WriteString(cuiIndexedCardListStr(player) + "\n")
 	}
 	return b.String()
+}
+
+// looChipsStr renders a chip balance, painting it red when it has gone negative.
+// ルーの罰金 (looed) はポット全額で下限クランプが無いので、残高は本当に赤字に
+// なる。素の数字だと「-」を見落としやすい。
+func looChipsStr(chips int) string {
+	if chips < 0 {
+		return color.Red(strconv.Itoa(chips))
+	}
+	return strconv.Itoa(chips)
 }
 
 // Output renders the current game state for the active locale.

@@ -142,10 +142,10 @@ func TestSlobberhannes_GetValidPlayIndicesOutOfRange(t *testing.T) {
 // --- 罰点 ---
 
 func TestSlobberhannes_IsPenaltyQueen(t *testing.T) {
-	assert.True(t, slobberhannesIsPenaltyQueen(NewCard(CardDesignClover, 12, false)))
-	assert.False(t, slobberhannesIsPenaltyQueen(NewCard(CardDesignSpade, 12, false)), "スペードのQは無罰")
-	assert.False(t, slobberhannesIsPenaltyQueen(NewCard(CardDesignClover, 13, false)), "クラブのKは無罰")
-	assert.False(t, slobberhannesIsPenaltyQueen(nil))
+	assert.True(t, SlobberhannesIsPenaltyQueen(NewCard(CardDesignClover, 12, false)))
+	assert.False(t, SlobberhannesIsPenaltyQueen(NewCard(CardDesignSpade, 12, false)), "スペードのQは無罰")
+	assert.False(t, SlobberhannesIsPenaltyQueen(NewCard(CardDesignClover, 13, false)), "クラブのKは無罰")
+	assert.False(t, SlobberhannesIsPenaltyQueen(nil))
 }
 
 // 最初のトリックを取ると罰点。**位置そのものが罰の対象**というのが

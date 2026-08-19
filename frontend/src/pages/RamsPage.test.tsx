@@ -231,3 +231,40 @@ describe('RamsPage', () => {
     expect(await screen.findByText(/参加する価値があります/)).toBeInTheDocument();
   });
 });
+
+// **参加判断もリードも親の左隣から始まる** (#5748)。3〜5 人卓で毎ラウンド
+// 1 つ回るので、誰が親かが出ていないと自分が何番目に決断するのか読めない。
+describe('RamsPage dealer badge', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+  });
+
+  it('marks the dealer seat and no other', async () => {
+    mockExec.mockResolvedValue(makeState({ dealerIdx: 2 }));
+    renderWithProviders(<RamsPage />);
+
+    expect(await screen.findByTestId('rm-dealer-2')).toHaveTextContent('親');
+    for (const id of [0, 1, 3]) {
+      expect(screen.queryByTestId(`rm-dealer-${id}`)).not.toBeInTheDocument();
+    }
+    // 読み上げは「左隣から始まる」ところまで言う。
+    expect(screen.getByTestId('rm-dealer-2')).toHaveTextContent('親の左隣から');
+  });
+
+  // **親は毎ラウンド 1 つ回る。**サーバが返す席が変われば印も移る。
+  it('moves the badge when the deal passes on', async () => {
+    mockExec.mockResolvedValue(makeState({ dealerIdx: 0 }));
+    renderWithProviders(<RamsPage />);
+    expect(await screen.findByTestId('rm-dealer-0')).toBeInTheDocument();
+
+    // 次の応答で親が 1 になる (リセットでも次ラウンドでも経路は同じ)。
+    mockExec.mockResolvedValue(makeState({ dealerIdx: 1 }));
+    fireEvent.click(screen.getByRole('button', { name: /リセット|次のゲーム/ }));
+    const confirm = screen.queryByRole('button', { name: '確認' });
+    if (confirm) fireEvent.click(confirm);
+
+    await waitFor(() => expect(screen.getByTestId('rm-dealer-1')).toBeInTheDocument());
+    expect(screen.queryByTestId('rm-dealer-0')).not.toBeInTheDocument();
+  });
+});

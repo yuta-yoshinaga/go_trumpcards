@@ -41,5 +41,6 @@
   "frontendHint.banLuckChaseFiveDragon": "あと1枚でファイブドラゴンになります",
   "frontendHint.banLuckCannotBust": "11以下なのでバストしません",
   "frontendHint.banLuckStandPat": "17以上あるので立つのが定石です",
-  "frontendHint.banLuckChaseBanker": "止まっても親に届かないので追いかけます"
+  "frontendHint.banLuckChaseBanker": "止まっても親に届かないので追いかけます",
+  "label.roundOf": "ラウンド {{n}} / {{total}}"
 }

@@ -45,6 +45,11 @@ func (_m *MockBidEuchreInteractor) GetConfig() domain.BidEuchreConfig {
 	return _m.Called().Get(0).(domain.BidEuchreConfig)
 }
 
+// Hint モック
+func (_m *MockBidEuchreInteractor) Hint() string {
+	return _m.Called().String(0)
+}
+
 func (_m *MockBidEuchreInteractor) ActionLog() string {
 	return _m.Called().String(0)
 }

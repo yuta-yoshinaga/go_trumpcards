@@ -16,6 +16,7 @@
   "trick": "場: {{cards}}",
   "playable": "出せる札: {{indexes}}",
   "ladderTitle": "序列:",
+  "ladderPayout": "(配当{{n}})",
   "ladderExposedTag": "[公開]",
   "ladderPartnerTag": "[相方]",
   "gameEnd": "ゲーム終了！ {{name}}の勝ち！",

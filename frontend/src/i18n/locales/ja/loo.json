@@ -36,6 +36,7 @@
   "you": "あなた",
   "cpu": "CPU {{id}}",
   "chips": "チップ: {{chips}}",
+  "chipsNegativeAria": "赤字",
   "playButton": "出す",
   "nextDeal": "次のディール",
   "dealResult": {

@@ -36,6 +36,11 @@ export function formatRikkenState(state: RikkenResponse): string {
   if (state.declarerIdx >= 0) {
     lines.push(`declarer: seat ${state.declarerIdx} (${state.declarerTricks} tricks)`);
   }
+  // **Rik のパートナーは指名された札で決まる秘密の相方** (#5772)。カード表示は
+  // 判明前も "hidden" と出しているので、CLI モードも同じ情報量にする。
+  if (state.contract === RikkenContract.RIK) {
+    lines.push(`partner: ${state.partnerIdx >= 0 ? `seat ${state.partnerIdx}` : 'hidden'}`);
+  }
   // **得点は負にもなります。** ゼロサムなので当然そうなります。
   lines.push(`scores: ${state.players.map((p) => `#${p.id}:${p.score}`).join(' ')}`);
 

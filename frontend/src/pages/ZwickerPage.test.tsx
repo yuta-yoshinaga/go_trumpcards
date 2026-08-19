@@ -268,4 +268,14 @@ describe('ZwickerPage', () => {
     await waitFor(() => expect(screen.getAllByTestId('zwicker-table-card').length).toBeGreaterThan(1));
     expect(document.querySelectorAll('[data-hinted-table]')).toHaveLength(0);
   });
+
+  // #5721: ビルドの「所有者」は作った席を記録するだけで、宣言値ちょうどの札を
+  // 出せば誰でも取れる。この一文が無いと、育てている間に取られて手番を失う。
+  it('says a build is not owner-only', async () => {
+    renderWithProviders(<ZwickerPage />);
+
+    const rule = await screen.findByTestId('zwicker-rule-line');
+
+    expect(rule).toHaveTextContent('誰でも取れます');
+  });
 });

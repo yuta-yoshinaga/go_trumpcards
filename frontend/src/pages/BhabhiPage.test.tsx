@@ -224,3 +224,25 @@ describe('BhabhiPage', () => {
     expect(await screen.findByText(/高い札を落としましょう/)).toBeInTheDocument();
   });
 });
+
+// **場札は席数に縛られない** (#5756)。フォローできない人が出るまで精算
+// されないので何十枚にもなり、1 行のままだとページ本体が横スクロールする。
+describe('BhabhiPage long pile layout', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+  });
+
+  it('wraps a pile that would not fit on one row', async () => {
+    const pile = Array.from({ length: 24 }, (_, i) => ({
+      playerIdx: i % 4,
+      card: { design: 'SPADE', value: (i % 13) + 1 },
+    }));
+    mockExec.mockResolvedValue(makeState({ pile } as unknown as Partial<BhabhiResponse>));
+    renderWithProviders(<BhabhiPage />);
+
+    const row = await screen.findByTestId('trick-display-cards');
+    expect(row.className).toContain('flex-wrap');
+    expect(screen.getAllByTestId('animated-card')).toHaveLength(24);
+  });
+});

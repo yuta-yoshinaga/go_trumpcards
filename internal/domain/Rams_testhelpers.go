@@ -32,3 +32,6 @@ func (r *Rams) FinishRoundForTest() { r.finishRound() }
 
 // FinishGameForTest 現在のチップで勝敗を確定させる（テスト用）
 func (r *Rams) FinishGameForTest() { r.finishGame() }
+
+// SetDealerIdxForTest は親の席を差し替える（テスト用）。
+func (r *Rams) SetDealerIdxForTest(i int) { r.dealerIdx = i }
