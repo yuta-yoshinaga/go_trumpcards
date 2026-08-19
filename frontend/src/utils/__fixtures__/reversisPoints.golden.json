@@ -1,0 +1,70 @@
+{
+  "note": "Reversis card penalties (A=4, K=3, Q=2, J=1, rest 0). Asserted by frontend/src/utils/reversisPoints.golden.test.ts and TestReversisCardPenalty_GoldenVectors.",
+  "cases": [
+    {
+      "name": "rank 1 is worth 4",
+      "value": 1,
+      "points": 4
+    },
+    {
+      "name": "rank 2 is worth 0",
+      "value": 2,
+      "points": 0
+    },
+    {
+      "name": "rank 3 is worth 0",
+      "value": 3,
+      "points": 0
+    },
+    {
+      "name": "rank 4 is worth 0",
+      "value": 4,
+      "points": 0
+    },
+    {
+      "name": "rank 5 is worth 0",
+      "value": 5,
+      "points": 0
+    },
+    {
+      "name": "rank 6 is worth 0",
+      "value": 6,
+      "points": 0
+    },
+    {
+      "name": "rank 7 is worth 0",
+      "value": 7,
+      "points": 0
+    },
+    {
+      "name": "rank 8 is worth 0",
+      "value": 8,
+      "points": 0
+    },
+    {
+      "name": "rank 9 is worth 0",
+      "value": 9,
+      "points": 0
+    },
+    {
+      "name": "rank 10 is worth 0",
+      "value": 10,
+      "points": 0
+    },
+    {
+      "name": "rank 11 is worth 1",
+      "value": 11,
+      "points": 1
+    },
+    {
+      "name": "rank 12 is worth 2",
+      "value": 12,
+      "points": 2
+    },
+    {
+      "name": "rank 13 is worth 3",
+      "value": 13,
+      "points": 3
+    }
+  ]
+}

@@ -3,6 +3,7 @@
 package presenter
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -136,3 +137,35 @@ func TestReversisCuiPresenterActionLogOutput(t *testing.T) {
 	r.GiveUp()
 	require.NotEmpty(t, p.ActionLogOutput(r))
 }
+
+// **どの札が何点かを手札に併記する** (#5747)。A=4 / K=3 / Q=2 / J=1 を
+// 暗算し続けるゲームではない。
+func TestReversisCuiPresenterShowsCardPoints(t *testing.T) {
+	p := new(ReversisCuiPresenter)
+	r := newReversisForCui(t)
+	r.SetCurrentPlayerIdxForTest(0)
+
+	human := r.GetPlayer(0)
+	human.ResetRound()
+	for _, c := range []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 1, true),  // A = 4
+		domain.NewCard(domain.CardDesignHeart, 13, true), // K = 3
+		domain.NewCard(domain.CardDesignSpade, 7, true),  // 平札 = 0
+	} {
+		human.AddCard(c)
+	}
+
+	out := reversisPlain(p.Output(r, nil))
+
+	// 札ごとに突き合わせる。どこかに 4 がある、では隣の札の点でも通る。
+	assert.Contains(t, out, i18n.Tf("reversis.handCard", "idx", "0", "card", "SPADE 1", "points", "4"))
+	assert.Contains(t, out, i18n.Tf("reversis.handCard", "idx", "1", "card", "HEART 13", "points", "3"))
+	// **0 点の札も明示する** (受け入れ条件2)。
+	assert.Contains(t, out, i18n.Tf("reversis.handCard", "idx", "2", "card", "SPADE 7", "points", "0"))
+	assert.NotContains(t, out, "{{")
+}
+
+// reversisPlain は色付けのエスケープを落とす。
+var reversisAnsi = regexp.MustCompile(`\x1b\[[0-9;]*m`)
+
+func reversisPlain(s string) string { return reversisAnsi.ReplaceAllString(s, "") }

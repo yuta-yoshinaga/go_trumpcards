@@ -4,6 +4,8 @@ package domain
 
 import (
 	"encoding/json"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -675,4 +677,32 @@ func TestReversis_UnmarshalRejectsNegativePool(t *testing.T) {
 func TestReversis_ActionLog(t *testing.T) {
 	r := newTestReversis(t)
 	assert.NotEmpty(t, r.GetActionLog())
+}
+
+// **手札に出す点数と精算の点数が同じであること** (#5747)。TS 側も同じ
+// 黄金ベクタを読むので、片方だけ変えれば必ずどちらかが落ちる。
+func TestReversisCardPenalty_GoldenVectors(t *testing.T) {
+	raw, err := os.ReadFile(filepath.Join(
+		"..", "..", "frontend", "src", "utils", "__fixtures__", "reversisPoints.golden.json"))
+	if err != nil {
+		t.Fatalf("read the golden vectors: %v", err)
+	}
+	var golden struct {
+		Cases []struct {
+			Name   string `json:"name"`
+			Value  int    `json:"value"`
+			Points int    `json:"points"`
+		} `json:"cases"`
+	}
+	if err := json.Unmarshal(raw, &golden); err != nil {
+		t.Fatalf("parse the golden vectors: %v", err)
+	}
+	if len(golden.Cases) == 0 {
+		t.Fatal("no vectors to check")
+	}
+	for _, c := range golden.Cases {
+		if got := ReversisCardPenalty(NewCard(CardDesignSpade, c.Value, true)); got != c.Points {
+			t.Errorf("%s: got %d", c.Name, got)
+		}
+	}
 }

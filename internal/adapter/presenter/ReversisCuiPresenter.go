@@ -24,9 +24,26 @@ func reversisPlayerStr(player *domain.ReversisPlayer, idx int) string {
 	))
 	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
-		b.WriteString(cuiIndexedCardListStr(player) + "\n")
+		b.WriteString(reversisHandStr(player) + "\n")
 	}
 	return b.String()
+}
+
+// reversisHandStr は手札を、札ごとの失点付きで並べる。
+//
+// **点を取り合うのが核なのに、どの札が何点かは画面に出ていなかった** (#5747)。
+// A=4 / K=3 / Q=2 / J=1 を暗算し続けることになる。値は
+// domain.ReversisCardPenalty から引き、表を写さない。
+func reversisHandStr(player *domain.ReversisPlayer) string {
+	parts := make([]string, 0, player.GetCardsSize())
+	for i := range player.GetCardsSize() {
+		card := player.GetCard(i)
+		parts = append(parts, i18n.Tf("reversis.handCard",
+			"idx", strconv.Itoa(i),
+			"card", cuiCardStr(card),
+			"points", strconv.Itoa(domain.ReversisCardPenalty(card))))
+	}
+	return strings.Join(parts, "  ")
 }
 
 // reversisMarkStr 取ってしまった印付きの札を短く表す
