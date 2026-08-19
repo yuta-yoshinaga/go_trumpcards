@@ -48595,6 +48595,20 @@ components:
           description: >-
             How many cards changed hands for last round's shortfall. Surplus
             tricks buy an opponent's best cards; nothing else shows this.
+        lastExchangePairs:
+          type: array
+          description: >-
+            Who handed cards to whom in the exchange that opened this round. The
+            total alone cannot say whose best card was taken.
+          items:
+            type: object
+            properties:
+              giver:
+                type: integer
+              taker:
+                type: integer
+              count:
+                type: integer
         currentPlayerIdx:
           type: integer
         leadPlayerIdx:
