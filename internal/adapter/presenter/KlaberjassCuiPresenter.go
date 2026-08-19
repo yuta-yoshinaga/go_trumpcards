@@ -142,11 +142,12 @@ func (p *KlaberjassCuiPresenter) Output(g interfaces.KlaberjassGame, lastErr err
 			} else {
 				b.WriteString(i18n.T("klaberjass.sequenceNobody") + "\n")
 			}
+			// belaHolder は belaScored と同時にしか立たない (noteBela)。
+			// h < 0 の分岐はテストできない防御なので置かない。
 			if g.IsBelaScored() {
-				if h := g.GetBelaHolder(); h >= 0 {
-					b.WriteString(i18n.Tf("klaberjass.belaLine",
-						"name", cuiPlayerName(g.GetPlayer(h), h)) + "\n")
-				}
+				h := g.GetBelaHolder()
+				b.WriteString(i18n.Tf("klaberjass.belaLine",
+					"name", cuiPlayerName(g.GetPlayer(h), h)) + "\n")
 			}
 			if g.IsDixUsed() {
 				b.WriteString(i18n.T("klaberjass.dixLine") + "\n")
