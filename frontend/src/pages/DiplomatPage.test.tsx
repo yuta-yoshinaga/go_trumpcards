@@ -191,7 +191,8 @@ describe('DiplomatPage', () => {
   it('sends a pile top to a foundation', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<DiplomatPage />);
-    const ace = await screen.findByRole('button', { name: '♣ A' });
+    // 読み上げ名には行き止まりの注記が続くので、前方一致で拾う (#5741)。
+    const ace = await screen.findByRole('button', { name: /^♣ A/ });
     fireEvent.click(ace);
     await waitFor(() => expect(ace).toHaveAttribute('aria-pressed', 'true'));
     mockExec.mockClear();
@@ -348,5 +349,53 @@ describe('DiplomatPage keyboard shortcuts', () => {
     }
     await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
+  });
+});
+
+// **A で止まった列は受け皿として死んでいる** (#5741)。canPlaceOnTableau は
+// 「一つ下のランク」しか通さないので、A の上に置ける札は存在しない。
+// 空き列が主要な逃げ道なので、詰んだ列が見た目で分かることが判断に効く。
+describe('DiplomatPage dead-end columns', () => {
+  beforeEach(() => {
+    // **CLI モードは localStorage に残る。**前の describe の CLI トグルの
+    // テストが有効のままにするので、消さないと盤面ではなく端末が出る。
+    localStorage.clear();
+    vi.clearAllMocks();
+    vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
+    mockExec.mockResolvedValue(playingState);
+  });
+
+  it('marks only the column whose top card is an Ace', async () => {
+    renderWithProviders(<DiplomatPage />);
+    // 列2 の頭が ♣A、列0/1 は 9 と 8。
+    expect(await screen.findByTestId('diplomat-dead-end-2')).toHaveTextContent('行き止まり');
+    expect(screen.queryByTestId('diplomat-dead-end-0')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('diplomat-dead-end-1')).not.toBeInTheDocument();
+  });
+
+  it('says in the accessible name that the Ace can still go to a foundation', async () => {
+    renderWithProviders(<DiplomatPage />);
+    const ace = await screen.findByRole('button', { name: /この列にはもう積めません/ });
+    expect(ace).toHaveAccessibleName(/組札へ送れます/);
+    // 積めない札 (9) は普通の読み上げのまま。
+    expect(screen.queryByRole('button', { name: /スペードの9.*積めません/ })).not.toBeInTheDocument();
+  });
+
+  it('leaves the Ace selectable, so the marker changes nothing but the reading', async () => {
+    renderWithProviders(<DiplomatPage />);
+    const ace = await screen.findByRole('button', { name: /この列にはもう積めません/ });
+    expect(ace).toBeEnabled();
+    fireEvent.click(ace);
+    await waitFor(() => expect(ace).toHaveAttribute('aria-pressed', 'true'));
+  });
+
+  it('does not mark a buried Ace', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([[card('CLOVER', 1), card('HEART', 9)]]),
+    });
+    renderWithProviders(<DiplomatPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('diplomat-dead-end-0')).not.toBeInTheDocument();
   });
 });

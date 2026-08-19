@@ -39,6 +39,8 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦', '♠', '♣', '♥', '♦'] as const;
 const TABLEAU_PILES = 8;
 const TOTAL_CARDS = 104;
+/** An Ace on top ends a column: `canPlaceOnTableau` only accepts one rank below. */
+const ACE_VALUE = 1;
 
 const CG_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -201,6 +203,11 @@ function DiplomatPageContent() {
               cards.map((card, cardIdx) => {
                 // Only the top card is playable; the ones under it are context.
                 const isTop = cardIdx === cards.length - 1;
+                // **A で止まった列はもう受け皿にならない** (#5741)。
+                // `canPlaceOnTableau` は「一つ下のランク」しか通さないので、
+                // A の上に置ける札は存在しない。空き列が主要な逃げ道なだけに、
+                // 詰んだ列を見た目で区別できるかどうかが判断に効く。
+                const isDeadEnd = isTop && card.value === ACE_VALUE;
                 return (
                   <div
                     key={`c-${pileIdx.toString()}-${cardIdx.toString()}`}
@@ -217,12 +224,13 @@ function DiplomatPageContent() {
                         }
                       }}
                       disabled={!isPlaying || loading || (!isTop && !selectedSource)}
-                      aria-label={cardAlt(card)}
+                      aria-label={isDeadEnd ? t('deadEndAria', { card: cardAlt(card) }) : cardAlt(card)}
+                      title={isDeadEnd ? t('deadEndTitle') : undefined}
                       aria-pressed={isTop ? isSourceSelected('tableau', pileIdx) : undefined}
                       draggable={isTop && isPlaying && !loading}
                       onDragStart={dnd.handleDragStart(pileZone)}
                       onDragEnd={dnd.handleDragEnd}
-                      className={`p-0 border-0 bg-transparent w-full rounded cursor-pointer ${focusRingWhite} ${isTop && isSourceSelected('tableau', pileIdx) ? 'ring-2 ring-ds-warning' : ''}`}
+                      className={`relative p-0 border-0 bg-transparent w-full rounded cursor-pointer ${focusRingWhite} ${isTop && isSourceSelected('tableau', pileIdx) ? 'ring-2 ring-ds-warning' : ''}`}
                     >
                       <AnimatedCard
                         card={card}
@@ -231,6 +239,14 @@ function DiplomatPageContent() {
                         style={{ width: '100%' }}
                         wrapperClassName="block w-full"
                       />
+                      {isDeadEnd && (
+                        <span
+                          data-testid={`diplomat-dead-end-${pileIdx.toString()}`}
+                          className="absolute inset-x-0 bottom-0 rounded-b bg-ds-error/80 text-ds-text-primary text-[10px] leading-tight text-center"
+                        >
+                          {t('deadEndBadge')}
+                        </span>
+                      )}
                     </button>
                   </div>
                 );
