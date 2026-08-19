@@ -15,6 +15,34 @@ import (
 // GutsCuiPresenter renders the Guts CUI view.
 type GutsCuiPresenter struct{}
 
+// gutsDeclareGuideLine は人間の手札の診断行を返す (診断できなければ空文字)。
+// 判定は domain.GutsEvaluateGuide がただ一つの出どころで、Web の
+// evaluateGutsGuide とは golden vector で結び付けてある。
+func gutsDeclareGuideLine(g interfaces.GutsGame) string {
+	human := g.GetPlayer(0)
+	if human == nil || !human.GetIsHuman() {
+		return ""
+	}
+	cards := make([]*domain.Card, 0, human.GetCardsSize())
+	for i := 0; i < human.GetCardsSize(); i++ {
+		cards = append(cards, human.GetCard(i))
+	}
+	guide := domain.GutsEvaluateGuide(cards)
+	if guide == nil {
+		return ""
+	}
+	hand := i18n.T("guts.guideHandHighCard")
+	if guide.Pair {
+		hand = i18n.T("guts.guideHandPair")
+	}
+	tiers := map[string]string{
+		domain.GutsGuideTierHigh:   "guts.guideTierHigh",
+		domain.GutsGuideTierMedium: "guts.guideTierMedium",
+		domain.GutsGuideTierLow:    "guts.guideTierLow",
+	}
+	return i18n.Tf("guts.declareGuide", "hand", hand, "tier", i18n.T(tiers[guide.Tier])) + "\n"
+}
+
 // gutsStatusStr は in/out/脱落の状態ラベルを返す。
 func gutsStatusStr(g interfaces.GutsGame, player *domain.GutsPlayer, idx int) string {
 	switch {
@@ -92,6 +120,11 @@ func (p *GutsCuiPresenter) Output(g interfaces.GutsGame, lastErr error) string {
 
 		switch g.GetPhase() {
 		case domain.GutsPhaseDeclare:
+			// Web は宣言中つねに手役と勝ち目の目安を出している。ヒントの
+			// オン/オフとは無関係のガイドなので、CUI でも常時出す (#5697)。
+			if line := gutsDeclareGuideLine(g); line != "" {
+				b.WriteString(line)
+			}
 			b.WriteString(i18n.T("guts.promptDeclare") + "\n")
 		case domain.GutsPhaseResult:
 			b.WriteString(p.resultLine(g))
