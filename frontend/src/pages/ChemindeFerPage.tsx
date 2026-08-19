@@ -113,6 +113,10 @@ function ChemindeFerPageContent() {
       [ChemindeFerPhase.ROUND_END]: t('phase.roundEnd'),
     }[state.phase] ?? '';
 
+  // 賭けていない回 (親のときや張らなかった回) は 0。行を落とさず「増減なし」と
+  // 言うのは、勝ったのか賭けていなかったのかを区別させるため。
+  const humanNet = state.players.find((p) => p.isHuman)?.lastNet ?? 0;
+
   const resultName =
     {
       [CHEMIN_DE_FER_RESULT.none]: '',
@@ -203,6 +207,24 @@ function ChemindeFerPageContent() {
             {resultName && (
               <div className="text-ds-text-primary text-center text-base font-bold mb-2" data-testid="cdf-result">
                 {resultName}
+              </div>
+            )}
+
+            {/* **卓の結果と自分の損益は別の情報** (#5774)。banker/punter/tie だけ
+                では、自分の賭けが勝ったのか負けたのかはチップの数字を前後で
+                見比べるしかなかった。 */}
+            {resultName && (
+              <div
+                className={`text-center text-sm font-medium mb-2 ${
+                  humanNet > 0 ? 'text-ds-success' : humanNet < 0 ? 'text-ds-error' : 'text-ds-text-muted'
+                }`}
+                data-testid="cdf-net"
+              >
+                {humanNet > 0
+                  ? t('result.netWin', { n: humanNet })
+                  : humanNet < 0
+                    ? t('result.netLoss', { n: -humanNet })
+                    : t('result.netFlat')}
               </div>
             )}
 

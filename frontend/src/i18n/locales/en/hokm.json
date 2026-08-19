@@ -21,7 +21,9 @@
   "currentTrick": "Current trick",
   "handEnd": {
     "normal": "Team {{team}} reached {{need}} tricks and took the hand (+1).",
-    "kot": "Team {{team}} let the others take nothing at all — that is a Kot, +2."
+    "kot": "Team {{team}} let the others take nothing at all — that is a Kot, +2.",
+    "hakemMoves": "the hakem passes to the next seat",
+    "hakemStays": "the hakem keeps the deal"
   },
   "actions": {
     "trump": "Trump {{suit}}",

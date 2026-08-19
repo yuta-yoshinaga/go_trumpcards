@@ -48,10 +48,15 @@ type CucumberWebOutput struct {
 	HighestInTrick int                   `json:"highestInTrick"`
 	CurrentTrick   []*WebOutputTrickCard `json:"currentTrick"`
 	// Forced は「更新できないので低い札に決まっている」場面か。
-	Forced             bool                   `json:"forced"`
-	CurrentPlayerIdx   int                    `json:"currentPlayerIdx"`
-	LeadPlayerIdx      int                    `json:"leadPlayerIdx"`
-	TrickNumber        int                    `json:"trickNumber"`
+	Forced           bool `json:"forced"`
+	CurrentPlayerIdx int  `json:"currentPlayerIdx"`
+	LeadPlayerIdx    int  `json:"leadPlayerIdx"`
+	TrickNumber      int  `json:"trickNumber"`
+	// TotalTricks は 1 ラウンドのトリック数 (= 配り枚数)。
+	//
+	// **失点が出るのは最終トリックだけ。** あと何回で失点判定かは表示から
+	// 読めなければ意味がありません。
+	TotalTricks        int                    `json:"totalTricks"`
 	RoundNumber        int                    `json:"roundNumber"`
 	LastTrickWinnerIdx int                    `json:"lastTrickWinnerIdx"`
 	LastPenalty        int                    `json:"lastPenalty"`
@@ -98,6 +103,7 @@ func newCucumberDefaultOutput(msg string) *CucumberWebOutput {
 		ValidPlays:         make([]int, 0),
 		CurrentTrick:       make([]*WebOutputTrickCard, 0),
 		LastTrickWinnerIdx: -1,
+		TotalTricks:        domain.CucumberHandSize,
 		WinnerIdx:          -1,
 		WebOutputBase:      WebOutputBase{Message: msg},
 	}

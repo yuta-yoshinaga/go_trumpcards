@@ -432,3 +432,30 @@ func TestFiveCardStudCuiPresenter_ActionLogOutput(t *testing.T) {
 		mockGame.AssertExpectations(t)
 	})
 }
+
+// **Soko の役順位は標準ポーカーと違う** (#5737)。チュートリアルを閉じたあとも
+// 読めるよう、対局中は常に出す。Five Card Stud 側には出さない。
+func TestFiveCardStudCuiPresenter_SokoHandRanking(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.FiveCardStudCuiPresenter)
+
+	cfg := domain.DefaultFiveCardStudConfig()
+	cfg.TableSize = 4
+	soko := domain.NewSoko(domain.NewTrumpCards(0), domain.NewFiveCardStudPlayersForTable(cfg.TableSize), cfg)
+	soko.SetPhase(domain.FiveCardStudPhaseSecondStreet)
+
+	out := p.Output(soko, nil)
+	assert.Contains(t, out, "役の強さ")
+	// **4 枚役の挿入位置まで読めること。**名前が並んでいるだけでは足りない。
+	assert.Contains(t, out, "ツーペア > 【4枚フラッシュ】 > 【4枚ストレート】 > ワンペア")
+	assert.Contains(t, out, "ロイヤルフラッシュ >")
+	assert.Contains(t, out, "> ハイカード")
+	assert.NotContains(t, out, "{{")
+
+	// 通常の Five Card Stud には出ない。
+	stud, _ := makeFiveCardStudForPresenter()
+	stud.SetPhase(domain.FiveCardStudPhaseSecondStreet)
+	assert.NotContains(t, p.Output(stud, nil), "役の強さ")
+}

@@ -189,8 +189,15 @@ function StealingBundlesPageContent() {
                   data-testid={`sb-seat-${p.id.toString()}`}
                 >
                   <span className="text-ds-text-primary">{seatName(p.id)}</span>
+                  {/* **盗みは相手の束を丸ごと消す。** 場から取っただけの手と
+                      同じ印にすると、痕跡の残らないこの盤面では区別が付かない
+                      (#5767)。 */}
                   {p.id === state.lastCaptureIdx && (
-                    <span className="ml-1 text-ds-warning">{t('header.lastCapture')}</span>
+                    <span className="ml-1 text-ds-warning" data-testid={`sb-capture-${p.id.toString()}`}>
+                      {state.lastCaptureKind === 'steal'
+                        ? t('header.lastCaptureSteal', { name: seatName(state.lastCaptureVictimIdx) })
+                        : t('header.lastCaptureTake')}
+                    </span>
                   )}
                   {': '}
                   <span>{t('header.cards', { n: String(p.cardCount) })}</span>

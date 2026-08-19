@@ -145,6 +145,9 @@ function KoiKoiPageContent() {
 
   const isPlayPhase = state.phase === KoiKoiPhase.PLAY;
   const isDecisionPhase = state.phase === KoiKoiPhase.KOIKOI_DECISION;
+  // 席が欠けた応答でも 0 になるよう、分岐なしで畳む (optional chain だと
+  // 「席が無い」枝がテストから到達不能な部分適用として残る)。
+  const scoreOf = (isHuman: boolean) => state.players.reduce((n, p) => (p.isHuman === isHuman ? p.score : n), 0);
   // **こいこいを一度でも宣言していれば確定点は 2 倍** (KoiKoi.endRound と同じ)。
   const decisionMultiplier = state.koikoiCount >= 1 ? 2 : 1;
   const isRoundEnd = state.phase === KoiKoiPhase.ROUND_END;
@@ -333,6 +336,11 @@ function KoiKoiPageContent() {
                   {yakuList(state.pendingYaku)} ={' '}
                   {t('decision.points', { points: state.pendingPoints * decisionMultiplier })}
                   {decisionMultiplier > 1 && ` ${t('decision.multiplier', { mult: decisionMultiplier })}`}
+                </div>
+                {/* 続けるか止めるかは確定点だけでなく**両者の累計差**で決まる。
+                    CUI は koikoiDecisionInfoStr で同じ 2 つを出している (#5709)。 */}
+                <div className="text-ds-text-muted text-xs mb-2" data-testid="koikoi-decision-scores">
+                  {t('decision.scores', { you: scoreOf(true), opp: scoreOf(false) })}
                 </div>
                 <div className="flex gap-3 justify-center">
                   <button type="button" className={btnWarning} onClick={callKoiKoi} disabled={loading}>

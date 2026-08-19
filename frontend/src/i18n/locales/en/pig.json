@@ -1,12 +1,17 @@
 {
-  "phase": { "pass": "Passing", "signal": "Signal is out", "roundEnd": "Round over", "gameEnd": "Finished" },
+  "phase": {
+    "pass": "Passing",
+    "signal": "Signal is out",
+    "roundEnd": "Round over",
+    "gameEnd": "Finished"
+  },
   "header": {
     "round": "Round {{n}}",
     "deck": "Deck: {{n}}",
     "pass": "{{n}} passes",
     "rule": "A player who collects four of a kind says nothing and quietly puts a hand to their nose. Everyone else simply copies once they notice -- there is nothing to grab. The last player to notice takes one letter of P-I-G, and three letters put you out. The last player left wins. Hands stay at four cards throughout: everyone passes and receives at the same time.",
     "cards": "{{n}} cards",
-    "letters": "letters [{{word}}]",
+    "letters": "letters [{{word}}/{{target}}]",
     "out": "[out]",
     "noticed": "[noticed {{order}}]",
     "chosen": "[chosen]",

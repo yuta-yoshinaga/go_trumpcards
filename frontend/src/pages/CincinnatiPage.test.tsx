@@ -176,6 +176,34 @@ describe('CincinnatiPage', () => {
     expect(screen.queryByTestId('cin-fold')).not.toBeInTheDocument();
   });
 
+  // **なぜその配当になったのかが最後まで分からなかった** (#5780)。
+  it('ショーダウンで役名とベスト5枚を出す', async () => {
+    const best = [card(10), card(11), card(12), card(13), card(1)];
+    mockApi.mockResolvedValue(
+      withState({
+        phase: CincinnatiPhase.SHOWDOWN,
+        isHumanTurn: false,
+        seats: [
+          seat({ isTurn: false, wonAmount: 80, handRank: 9, bestHand: best }),
+          seat({ name: 'CPU1', isHuman: false, isTurn: false, handRank: 2, bestHand: best }),
+        ],
+      }),
+    );
+    renderWithProviders(<CincinnatiPage />);
+
+    const mine = await screen.findByTestId('cin-showdown-0');
+    expect(mine).toHaveTextContent('ロイヤルフラッシュ');
+    expect(mine.querySelectorAll('img')).toHaveLength(5);
+    expect(screen.getByTestId('cin-showdown-1')).toHaveTextContent('ツーペア');
+  });
+
+  // **負のコントロール: ショーダウン前は出さない。**
+  it('ショーダウン前は役を出さない', async () => {
+    mockApi.mockResolvedValue(base);
+    renderWithProviders(<CincinnatiPage />);
+    await waitFor(() => expect(mockApi).toHaveBeenCalled());
+    expect(screen.queryByTestId('cin-showdown-0')).not.toBeInTheDocument();
+  });
   it('ショーダウンで獲得額と次のハンドを出す', async () => {
     mockApi.mockResolvedValue(
       withState({

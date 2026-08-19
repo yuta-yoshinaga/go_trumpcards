@@ -5,12 +5,14 @@ package presenter
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // newCrazyFourPokerForPresenter は本物のドメインを返す。
@@ -209,4 +211,44 @@ func TestCrazyFourPokerWebPresenter_ErrorAndHint(t *testing.T) {
 	assert.NotEmpty(t, hint.Reason)
 
 	assert.NotEmpty(t, cp.ActionLogOutput(g))
+}
+
+// **賭ける前に見えなければ意味がない** (#5775)。何が当たれば何倍かを知って
+// 額を決めるので、置く前の局面で配当表を出す。
+func TestCrazyFourPokerCuiPresenterShowsTheQueensUpPayouts(t *testing.T) {
+	cp := new(CrazyFourPokerCuiPresenter)
+	g := newCrazyFourPokerForPresenter(t)
+
+	out := cp.Output(g, nil)
+	// 表はドメインから組み立てて突き合わせる。**写した文字列は次の改定で嘘になる。**
+	assert.Contains(t, out, i18n.Tf("crazyfourpoker.queensUpPayoutLine",
+		"table", crazyFourPokerQueensUpTableStr()))
+	for _, r := range domain.CrazyFourPokerQueensUpPayout() {
+		assert.Contains(t, out, fmt.Sprintf("%s %d:1", domain.FourCardHandNames[r.Hand], r.Multiplier))
+	}
+
+	// **負のコントロール: 配り終えたあとは出さない。**
+	require.NoError(t, g.PlaceBet(50, 0))
+	assert.NotContains(t, cp.Output(g, nil), fixedPart("crazyfourpoker.queensUpPayoutLine"))
+}
+
+// Web 側も同じ表を返す。**ページが自前で倍率を持たないことの担保。**
+func TestCrazyFourPokerWebPresenterServesTheQueensUpPayouts(t *testing.T) {
+	g := newCrazyFourPokerForPresenter(t)
+	var out struct {
+		QueensUpPayouts []struct {
+			Hand       int    `json:"hand"`
+			Name       string `json:"name"`
+			Multiplier int    `json:"multiplier"`
+		} `json:"queensUpPayouts"`
+	}
+	require.NoError(t, json.Unmarshal([]byte(new(CrazyFourPokerWebPresenter).Output(g, nil)), &out))
+
+	want := domain.CrazyFourPokerQueensUpPayout()
+	require.Len(t, out.QueensUpPayouts, len(want))
+	for i, w := range want {
+		assert.Equal(t, w.Hand, out.QueensUpPayouts[i].Hand)
+		assert.Equal(t, w.Multiplier, out.QueensUpPayouts[i].Multiplier)
+		assert.Equal(t, domain.FourCardHandNames[w.Hand], out.QueensUpPayouts[i].Name)
+	}
 }

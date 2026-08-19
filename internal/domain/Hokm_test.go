@@ -565,3 +565,33 @@ func TestHokm_ActionLog(t *testing.T) {
 	}
 	assert.True(t, kinds["trump"])
 }
+
+// **親は負けたときだけ交代する** (#5753)。次に切り札を選ぶ席が変わるかどうかを
+// 表示できるよう、その事実を残す。
+func TestHokmRecordsWhetherTheHakemChanged(t *testing.T) {
+	t.Run("the hakem's team loses", func(t *testing.T) {
+		h := newTestHokm(t)
+		before := h.GetHakemIdx()
+		h.FinishHandForTest(1 - HokmTeamOf(before))
+
+		if !h.GetLastHandHakemChanged() {
+			t.Error("losing the hand must move the hakem")
+		}
+		if h.GetHakemIdx() == before {
+			t.Errorf("the hakem stayed at %d", before)
+		}
+	})
+
+	t.Run("the hakem's team wins", func(t *testing.T) {
+		h := newTestHokm(t)
+		before := h.GetHakemIdx()
+		h.FinishHandForTest(HokmTeamOf(before))
+
+		if h.GetLastHandHakemChanged() {
+			t.Error("winning the hand must keep the hakem")
+		}
+		if h.GetHakemIdx() != before {
+			t.Errorf("the hakem moved to %d", h.GetHakemIdx())
+		}
+	})
+}

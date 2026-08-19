@@ -59,6 +59,8 @@ type SambaGame interface {
 	GetTeamCount() int
 	// GetTeamScore チームの累積スコアを取得する
 	GetTeamScore(team int) int
+	// GetMinimumMeldValue 初回メルドに要する最低点を取得する
+	GetMinimumMeldValue(playerIdx int) int
 	// GetDrewFromDiscard 捨て札から引いたかを返す
 	GetDrewFromDiscard() bool
 }

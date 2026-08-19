@@ -189,3 +189,23 @@ func TestHokmCuiPresenterActionLogOutput(t *testing.T) {
 	h.GiveUp()
 	require.NotEmpty(t, p.ActionLogOutput(h))
 }
+
+// **親は負けたときだけ交代する** (#5753)。次に自分が切り札を選べるかを
+// 左右するのに、次ハンドが始まって親バッジが動くまで分からなかった。
+func TestHokmCuiPresenterAnnouncesTheHakemChange(t *testing.T) {
+	p := new(HokmCuiPresenter)
+
+	moved := newHokmForCui(t)
+	moved.FinishHandForTest(1 - domain.HokmTeamOf(moved.GetHakemIdx()))
+	moved.SetPhaseForTest(domain.HokmPhaseHandEnd)
+	movedOut := p.Output(moved, nil)
+	assert.Contains(t, movedOut, i18n.T("hokm.hakemMoves"))
+	assert.NotContains(t, movedOut, i18n.T("hokm.hakemStays"))
+
+	stayed := newHokmForCui(t)
+	stayed.FinishHandForTest(domain.HokmTeamOf(stayed.GetHakemIdx()))
+	stayed.SetPhaseForTest(domain.HokmPhaseHandEnd)
+	stayedOut := p.Output(stayed, nil)
+	assert.Contains(t, stayedOut, i18n.T("hokm.hakemStays"))
+	assert.NotContains(t, stayedOut, i18n.T("hokm.hakemMoves"))
+}

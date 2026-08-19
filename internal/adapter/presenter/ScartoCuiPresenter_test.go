@@ -4,6 +4,8 @@ package presenter_test
 
 import (
 	"errors"
+	"math"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -133,4 +135,64 @@ func TestScartoCuiPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.ScartoCuiPresenter)
 	g := scartoCuiGame()
 	assert.NotEmpty(t, p.ActionLogOutput(g))
+}
+
+// #5717: 精算は「N × (自分のカード点 − 卓平均)」のゼロサム。Web は卓平均・換算式・
+// 各人の平均差まで出しているのに、CUI は勝敗と汎用ヘルプだけで、dealScores の数字が
+// どこから来たのか検算できなかった。
+func TestScartoCuiPresenter_ShowsTheAverageBreakdown(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.ScartoCuiPresenter)
+
+	g := scartoCuiGame()
+	g.SetPhase(domain.ScartoPhaseRoundEnd)
+	// 席 0 にブー (9 ハーフポイント) を 2 枚、席 1 に 1 枚だけ持たせる。
+	bout := func() []*domain.Card {
+		return []*domain.Card{domain.NewCard(domain.ScartoTrumpDesign, 1, false)}
+	}
+	g.GetPlayer(0).AddTrick(bout())
+	g.GetPlayer(0).AddTrick(bout())
+	g.GetPlayer(1).AddTrick(bout())
+
+	out := p.Output(g, nil)
+
+	total := 0
+	for i := 0; i < g.GetPlayerCnt(); i++ {
+		total += g.GetCardPoints(i)
+	}
+	n := g.GetPlayerCnt()
+	assert.Contains(t, out, i18n.T("scarto.roundEndFormulaLine"))
+	// **行ごと組み立てて照合する。**数字だけの Contains は他の行の数字に当たって
+	// 素通りする (「-27」は「27」を含む、など)。
+	avg := float64(total) / float64(n)
+	assert.Contains(t, out, i18n.Tf("scarto.roundEndAverage", "avg", scartoTestPoints(avg)))
+	names := []string{i18n.T("cuiPlayerYou"),
+		i18n.Tf("cuiPlayerCpu", "idx", "1"), i18n.Tf("cuiPlayerCpu", "idx", "2")}
+	for i := 0; i < n; i++ {
+		points := g.GetCardPoints(i)
+		assert.Contains(t, out, i18n.Tf("scarto.roundEndEarned",
+			"name", names[i],
+			"points", strconv.Itoa(points),
+			"diff", scartoTestSigned(float64(points)-avg),
+			"scaled", scartoTestSigned(float64(n*points-total))), "seat %d", i)
+	}
+	assert.NotContains(t, out, "{{")
+}
+
+// scartoTestPoints / scartoTestSigned mirror the presenter's number formatting so the
+// expected lines can be composed here without exporting the helpers.
+func scartoTestPoints(v float64) string {
+	if v == math.Trunc(v) {
+		return strconv.Itoa(int(v))
+	}
+	return strconv.FormatFloat(v, 'f', 1, 64)
+}
+
+func scartoTestSigned(v float64) string {
+	if v > 0 {
+		return "+" + scartoTestPoints(v)
+	}
+	return scartoTestPoints(v)
 }
