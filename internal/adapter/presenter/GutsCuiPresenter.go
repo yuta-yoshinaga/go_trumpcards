@@ -19,8 +19,10 @@ type GutsCuiPresenter struct{}
 // 判定は domain.GutsEvaluateGuide がただ一つの出どころで、Web の
 // evaluateGutsGuide とは golden vector で結び付けてある。
 func gutsDeclareGuideLine(g interfaces.GutsGame) string {
+	// 座席 0 は必ず人間 (gutsNewPlayers)。nil 検査だけ残すのはインタフェース越しに
+	// 呼ばれるため。
 	human := g.GetPlayer(0)
-	if human == nil || !human.GetIsHuman() {
+	if human == nil {
 		return ""
 	}
 	cards := make([]*domain.Card, 0, human.GetCardsSize())
@@ -31,16 +33,19 @@ func gutsDeclareGuideLine(g interfaces.GutsGame) string {
 	if guide == nil {
 		return ""
 	}
-	hand := i18n.T("guts.guideHandHighCard")
+	// 役名は結果表示と同じキーを使う (別に持つと片方だけ直る)。
+	hand := i18n.T("guts.hand.highcard")
 	if guide.Pair {
-		hand = i18n.T("guts.guideHandPair")
+		hand = i18n.T("guts.hand.pair")
 	}
-	tiers := map[string]string{
-		domain.GutsGuideTierHigh:   "guts.guideTierHigh",
-		domain.GutsGuideTierMedium: "guts.guideTierMedium",
-		domain.GutsGuideTierLow:    "guts.guideTierLow",
-	}
-	return i18n.Tf("guts.declareGuide", "hand", hand, "tier", i18n.T(tiers[guide.Tier])) + "\n"
+	return i18n.Tf("guts.declareGuide", "hand", hand, "tier", i18n.T(gutsGuideTierKeys[guide.Tier])) + "\n"
+}
+
+// gutsGuideTierKeys maps guide tiers to i18n keys.
+var gutsGuideTierKeys = map[string]string{
+	domain.GutsGuideTierHigh:   "guts.guideTierHigh",
+	domain.GutsGuideTierMedium: "guts.guideTierMedium",
+	domain.GutsGuideTierLow:    "guts.guideTierLow",
 }
 
 // gutsStatusStr は in/out/脱落の状態ラベルを返す。

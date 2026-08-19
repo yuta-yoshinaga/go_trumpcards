@@ -107,7 +107,7 @@ func TestGutsCuiPresenter_DeclareGuide(t *testing.T) {
 			domain.NewCard(domain.CardDesignHeart, 9, false)), nil)
 
 		assert.Contains(t, out, i18n.Tf("guts.declareGuide",
-			"hand", i18n.T("guts.guideHandPair"),
+			"hand", i18n.T("guts.hand.pair"),
 			"tier", i18n.T("guts.guideTierHigh")))
 	})
 
@@ -118,8 +118,22 @@ func TestGutsCuiPresenter_DeclareGuide(t *testing.T) {
 			domain.NewCard(domain.CardDesignHeart, 4, false)), nil)
 
 		assert.Contains(t, out, i18n.Tf("guts.declareGuide",
-			"hand", i18n.T("guts.guideHandHighCard"),
+			"hand", i18n.T("guts.hand.highcard"),
 			"tier", i18n.T("guts.guideTierLow")))
+	})
+
+	// 手札が 2 枚揃う前 (配り直しの途中など) は診断できないので出さない。
+	t.Run("says nothing before the hand is complete", func(t *testing.T) {
+		g := domain.NewDefaultGuts()
+		g.Reset()
+		g.SetPhase(domain.GutsPhaseDeclare)
+		human := g.GetPlayer(0)
+		human.Reset()
+		human.AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+
+		out := p.Output(g, nil)
+
+		assert.NotContains(t, out, strings.Split(i18n.T("guts.declareGuide"), "{{")[0])
 	})
 
 	t.Run("says nothing once the round is resolved", func(t *testing.T) {

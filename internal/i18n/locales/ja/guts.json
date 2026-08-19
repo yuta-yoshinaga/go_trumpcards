@@ -18,8 +18,6 @@
   "gameEnd": "ゲーム終了 — プレイヤー {{player}} の勝ち！",
   "promptDeclare": "宣言してください: i（イン / 残る）または o（アウト / 降りる）",
   "declareGuide": "手役: {{hand}}  勝率目安: {{tier}}",
-  "guideHandPair": "ペア",
-  "guideHandHighCard": "ハイカード",
   "guideTierHigh": "高い",
   "guideTierMedium": "普通",
   "guideTierLow": "低い",

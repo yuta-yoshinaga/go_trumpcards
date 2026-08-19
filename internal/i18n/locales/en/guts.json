@@ -18,8 +18,6 @@
   "gameEnd": "Game over — player {{player}} wins!",
   "promptDeclare": "Declare: i (in / stay) or o (out / fold)",
   "declareGuide": "Hand: {{hand}}  Win chance: {{tier}}",
-  "guideHandPair": "Pair",
-  "guideHandHighCard": "High card",
   "guideTierHigh": "high",
   "guideTierMedium": "medium",
   "guideTierLow": "low",
