@@ -48063,6 +48063,11 @@ components:
         lastHandKot:
           type: boolean
           description: The previous hand was a Kot (the losers took no trick), worth 2.
+        lastHandHakemChanged:
+          type: boolean
+          description: >-
+            Whether the hakem passed to the next seat after the hand that just
+            settled. It only moves when the hakem's team loses.
         lastHandWinner:
           type: integer
           description: "Team that took the previous hand, or -1 before there is one"
