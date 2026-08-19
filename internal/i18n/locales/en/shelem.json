@@ -12,6 +12,7 @@
   "scoreLine": "Total: your team={{t0}}  theirs={{t1}}",
   "contractUndecided": "Contract: undecided (bidding runs 55 to 100 in fives -- 100 is every card point in the round)",
   "contractLine": "Contract: {{n}} ({{name}} won it; {{got}} so far)",
+  "defenderLine": "defenders: {{got}} of the {{total}} on the table",
   "contractShelem": "Contract: Shelem -- every trick ({{name}} declared it)",
   "trumpLine": "Trump: {{suit}}",
   "widowLine": "Widow: {{n}} cards (they go to whoever wins the bidding)",

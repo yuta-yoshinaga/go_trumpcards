@@ -3,6 +3,8 @@
 package presenter
 
 import (
+	"regexp"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -223,3 +225,30 @@ func TestShelemCuiPresenterActionLogOutput(t *testing.T) {
 	s.GiveUp()
 	require.NotEmpty(t, p.ActionLogOutput(s))
 }
+
+// **守備側の点も出す** (#5754)。契約を阻止できているかは、宣言側の点だけ
+// 見ていても分からない。
+func TestShelemCuiPresenterShowsTheDefenderPoints(t *testing.T) {
+	p := new(ShelemCuiPresenter)
+	s := newShelemForCui(t)
+	s.SetContractForTest(1, 90, false) // 宣言者は席1 = チーム1
+	s.SetRoundPointsForTest(domain.ShelemTeamOf(1), 65)
+	s.SetRoundPointsForTest(1-domain.ShelemTeamOf(1), 35)
+
+	out := shelemPlain(p.Output(s, nil))
+
+	// 宣言側と守備側の両方が、それぞれの値で出る。
+	assert.Contains(t, out, i18n.Tf("shelem.contractLine",
+		"n", "90", "name", shelemPlain(cuiPlayerName(s.GetPlayer(1), 1)), "got", "65"))
+	assert.Contains(t, out, i18n.Tf("shelem.defenderLine",
+		"got", "35", "total", strconv.Itoa(domain.ShelemHandPoints)))
+	// **合計は必ず 100。**片方だけ見て取り違えないことの根拠。
+	assert.Equal(t, domain.ShelemHandPoints,
+		s.GetRoundPoints(0)+s.GetRoundPoints(1))
+	assert.NotContains(t, out, "{{")
+}
+
+// shelemPlain は色付けのエスケープを落とす。
+var shelemAnsi = regexp.MustCompile(`\x1b\[[0-9;]*m`)
+
+func shelemPlain(s string) string { return shelemAnsi.ReplaceAllString(s, "") }
