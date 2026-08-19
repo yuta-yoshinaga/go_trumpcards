@@ -223,3 +223,39 @@ describe('TeenDoPaanchPage', () => {
     expect(await screen.findByText(/いちばん長いスート/)).toBeInTheDocument();
   });
 });
+
+// **合計だけでは、自分の手札から何が抜かれたのか分からない** (#5757)。
+// 誰の最強札が誰に渡ったのかがこのゲームの名物。
+describe('TeenDoPaanchPage exchange breakdown', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+  });
+
+  it('names both sides of every exchange', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        lastExchange: 3,
+        lastExchangePairs: [
+          { giver: 1, taker: 0, count: 2 },
+          { giver: 2, taker: 0, count: 1 },
+        ],
+      } as Partial<TeenDoPaanchResponse>),
+    );
+    renderWithProviders(<TeenDoPaanchPage />);
+
+    const line = await screen.findByTestId('td-exchange');
+    // **複数ペアぶん全部出る** (受け入れ条件2)。
+    expect(line).toHaveTextContent('CPU 1→あなた 2枚');
+    expect(line).toHaveTextContent('CPU 2→あなた 1枚');
+    // 合計も残る。
+    expect(line).toHaveTextContent('3');
+  });
+
+  it('shows nothing when no cards moved', async () => {
+    mockExec.mockResolvedValue(makeState({ lastExchange: 0, lastExchangePairs: [] } as Partial<TeenDoPaanchResponse>));
+    renderWithProviders(<TeenDoPaanchPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('td-exchange')).not.toBeInTheDocument();
+  });
+});
