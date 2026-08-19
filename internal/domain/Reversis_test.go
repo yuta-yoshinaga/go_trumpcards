@@ -690,6 +690,7 @@ func TestReversisCardPenalty_GoldenVectors(t *testing.T) {
 	var golden struct {
 		Cases []struct {
 			Name   string `json:"name"`
+			Design string `json:"design"`
 			Value  int    `json:"value"`
 			Points int    `json:"points"`
 		} `json:"cases"`
@@ -700,8 +701,17 @@ func TestReversisCardPenalty_GoldenVectors(t *testing.T) {
 	if len(golden.Cases) == 0 {
 		t.Fatal("no vectors to check")
 	}
+	designs := map[string]int{
+		"SPADE": CardDesignSpade, "CLOVER": CardDesignClover,
+		"HEART": CardDesignHeart, "DIAMOND": CardDesignDiamond,
+	}
 	for _, c := range golden.Cases {
-		if got := ReversisCardPenalty(NewCard(CardDesignSpade, c.Value, true)); got != c.Points {
+		design, ok := designs[c.Design]
+		if !ok {
+			t.Fatalf("%s: unknown design %q", c.Name, c.Design)
+		}
+		// 印付きの 2 枚は基礎点 + ReversisMarkedPenalty で請求される。
+		if got := ReversisTotalCardPenalty(NewCard(design, c.Value, true)); got != c.Points {
 			t.Errorf("%s: got %d", c.Name, got)
 		}
 	}

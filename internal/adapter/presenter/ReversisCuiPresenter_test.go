@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"regexp"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -169,3 +170,30 @@ func TestReversisCuiPresenterShowsCardPoints(t *testing.T) {
 var reversisAnsi = regexp.MustCompile(`\x1b\[[0-9;]*m`)
 
 func reversisPlain(s string) string { return reversisAnsi.ReplaceAllString(s, "") }
+
+// **印付きの 2 枚は基礎点 + 5** (#5747 レビュー指摘)。ランクだけの数字だと、
+// いちばん重い ♥J と ♦A を軽く見せてしまう。
+func TestReversisCuiPresenterCountsTheMarkedSurcharge(t *testing.T) {
+	p := new(ReversisCuiPresenter)
+	r := newReversisForCui(t)
+	r.SetCurrentPlayerIdxForTest(0)
+
+	human := r.GetPlayer(0)
+	human.ResetRound()
+	for _, c := range []*domain.Card{
+		domain.NewCard(domain.CardDesignHeart, 11, true),  // キノラ = 1 + 5
+		domain.NewCard(domain.CardDesignDiamond, 1, true), // ♦A = 4 + 5
+		domain.NewCard(domain.CardDesignSpade, 11, true),  // ただの J = 1
+	} {
+		human.AddCard(c)
+	}
+
+	out := reversisPlain(p.Output(r, nil))
+
+	assert.Contains(t, out, i18n.Tf("reversis.handCard", "idx", "0", "card", "HEART 11", "points",
+		strconv.Itoa(1+domain.ReversisMarkedPenalty)))
+	assert.Contains(t, out, i18n.Tf("reversis.handCard", "idx", "1", "card", "DIAMOND 1", "points",
+		strconv.Itoa(4+domain.ReversisMarkedPenalty)))
+	// 同じランクでも印が無ければ素の点。
+	assert.Contains(t, out, i18n.Tf("reversis.handCard", "idx", "2", "card", "SPADE 11", "points", "1"))
+}

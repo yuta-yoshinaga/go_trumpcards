@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import type { Card } from '../types/card';
 import golden from './__fixtures__/reversisPoints.golden.json';
 import { reversisCardPoints } from './reversisPoints';
 
@@ -14,7 +15,7 @@ describe('reversisCardPoints golden vectors (shared with the Go domain)', () => 
   });
 
   it.each(golden.cases)('$name', (c) => {
-    expect(reversisCardPoints({ design: 'SPADE', value: c.value })).toBe(c.points);
+    expect(reversisCardPoints({ design: c.design as Card['design'], value: c.value })).toBe(c.points);
   });
 
   it('scores nothing for a missing card', () => {

@@ -208,3 +208,35 @@ describe('ReversisPage card points', () => {
     expect(screen.getByRole('button', { name: '♠ 7（0点）を出す' })).toBeInTheDocument();
   });
 });
+
+// **印付きの 2 枚は基礎点だけでは足りない** (#5747 レビュー指摘)。キノラ (♥J) と
+// ♦A は +5 が乗るので、ランクだけの数字はいちばん重い札を軽く見せてしまう。
+describe('ReversisPage marked-card points', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+  });
+
+  it('adds the marked surcharge to the quinola and the diamond ace', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          seat(0, {
+            cards: [card('HEART', 11), card('DIAMOND', 1), card('SPADE', 11), card('SPADE', 1)],
+            cardCount: 4,
+          }),
+          seat(1),
+          seat(2),
+          seat(3),
+        ],
+      }),
+    );
+    renderWithProviders(<ReversisPage />);
+
+    // ♥J = 1 + 5、♦A = 4 + 5。同じランクでも印が無ければ素の点。
+    expect(await screen.findByTestId('rv-points-0')).toHaveTextContent('6');
+    expect(screen.getByTestId('rv-points-1')).toHaveTextContent('9');
+    expect(screen.getByTestId('rv-points-2')).toHaveTextContent('1');
+    expect(screen.getByTestId('rv-points-3')).toHaveTextContent('4');
+  });
+});

@@ -41,7 +41,7 @@ func reversisHandStr(player *domain.ReversisPlayer) string {
 		parts = append(parts, i18n.Tf("reversis.handCard",
 			"idx", strconv.Itoa(i),
 			"card", cuiCardStr(card),
-			"points", strconv.Itoa(domain.ReversisCardPenalty(card))))
+			"points", strconv.Itoa(domain.ReversisTotalCardPenalty(card))))
 	}
 	return strings.Join(parts, "  ")
 }

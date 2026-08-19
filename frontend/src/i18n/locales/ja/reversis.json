@@ -23,7 +23,6 @@
     "nextRound": "次のラウンドへ",
     "reset": "リセット",
     "giveUp": "投了",
-    "playAria": "{{card}} を出す",
     "playAriaWithPoints": "{{card}}（{{points}}点）を出す"
   },
   "result": {
