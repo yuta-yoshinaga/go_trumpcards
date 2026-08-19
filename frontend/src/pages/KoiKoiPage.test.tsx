@@ -237,6 +237,26 @@ describe('KoiKoiPage', () => {
     expect(scores).toHaveTextContent('7');
   });
 
+  // 対戦相手が居ない状態 (通常は起こらないが、応答が欠けたとき) でも 0 として出す。
+  it('falls back to zero when a seat is missing', async () => {
+    const base = makeKoiKoiState();
+    mockExec.mockResolvedValue(
+      makeKoiKoiState({
+        phase: 1,
+        pendingYaku: [{ key: 'tane', points: 3 }],
+        pendingPoints: 3,
+        koikoiCount: 0,
+        players: base.players.filter((p) => p.isHuman).map((p) => ({ ...p, score: 5 })),
+      }),
+    );
+    renderWithProviders(<KoiKoiPage />);
+
+    const scores = await screen.findByTestId('koikoi-decision-scores');
+
+    expect(scores).toHaveTextContent('5');
+    expect(scores).toHaveTextContent('0');
+  });
+
   describe('decision panel multiplier', () => {
     it('shows the raw points on the first decision', async () => {
       mockExec.mockResolvedValue(
