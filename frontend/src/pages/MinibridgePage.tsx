@@ -247,7 +247,7 @@ function MinibridgePageContent() {
                       CUI は最初から team を出しているのに、Web は契約が決まって
                       デクレアラー/ダミーのタグが付くまで何も出していなかった。 */}
                   <span
-                    className={`ml-1 ${p.team === humanTeam ? 'text-ds-info' : 'text-ds-text-muted'}`}
+                    className={`ml-1 ${teamTagClass(p.team === humanTeam)}`}
                     data-testid={`mb-team-${p.id.toString()}`}
                   >
                     <span aria-hidden="true">{t('header.teamTag', { team: String(p.team) })}</span>
@@ -431,4 +431,14 @@ function MinibridgePageContent() {
 }
 
 /** Minibridge page wrapped with TutorialProvider. */
+/**
+ * Tailwind classes for the seat's team chip. `bg-ds-surface` は不透明で、
+ * 席カードの `bg-black/30` の上でもコントラストが felt の色に左右されない
+ * ——DESIGN.md の opacity ルール（WhistPage の teamBadgeClass と同じ理由）。
+ */
+function teamTagClass(isAlly: boolean): string {
+  const base = 'inline-block rounded border px-1.5 py-0.5 text-xs font-medium bg-ds-surface';
+  return isAlly ? `${base} border-ds-info text-ds-info` : `${base} border-ds-border-subtle text-ds-text-muted`;
+}
+
 export const MinibridgePage = withTutorial(MinibridgePageContent, 'minibridge', MINIBRIDGE_TUTORIAL_STEPS);
