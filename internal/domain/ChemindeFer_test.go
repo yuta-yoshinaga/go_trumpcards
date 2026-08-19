@@ -778,3 +778,54 @@ func TestChemindeFer_NextRoundAdvancesToo(t *testing.T) {
 	assert.True(t, g.IsHumanTurn() || g.GetPhase() == ChemindeFerPhaseRoundEnd || g.GetGameEndFlag(),
 		"NextRound のあとに誰の番でもない場面で止まった (phase=%d)", g.GetPhase())
 }
+
+// **卓の結果と自分の損益は別の情報** (#5774)。banker/punter/tie だけでは、
+// 自分の賭けが勝ったのか負けたのかはチップの数字を見比べるしかない。
+func TestChemindeFer_LastNetSplitsTheSettlementPerSeat(t *testing.T) {
+	cases := []struct {
+		name                 string
+		punter, banker       int
+		wantPunter, wantBank int
+	}{
+		{"子の勝ち", 8, 3, 200, -200},
+		{"親の勝ち", 3, 8, -200, 200},
+		{"引き分け", 5, 5, 0, 0},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			g := newChemindeFerAllCpu(t, 3)
+			g.SetupCoupForTest(tc.punter, tc.banker, ChemindeFerPhaseBankerDraw)
+			bankerIdx := g.GetBankerIdx()
+			g.resolve()
+
+			const seat = 1 // SetupCoupForTest が賭けさせる席。
+			assert.Equal(t, tc.wantPunter, g.GetLastNet(seat), "賭けた席の純増減")
+			assert.Equal(t, tc.wantBank, g.GetLastNet(bankerIdx), "親の純増減")
+			for i := range ChemindeFerSeatCnt {
+				if i == seat || i == bankerIdx {
+					continue
+				}
+				assert.Zero(t, g.GetLastNet(i), "賭けていない席 %d は 0", i)
+			}
+			// **チップの実際の動きと食い違わない。**
+			assert.Equal(t, g.config.InitialChips+tc.wantPunter, g.GetPlayer(seat).GetChips())
+			assert.Equal(t, g.config.InitialChips+tc.wantBank, g.GetPlayer(bankerIdx).GetChips())
+			assert.Zero(t, g.GetLastNet(-1), "範囲外は 0")
+		})
+	}
+}
+
+// **次のラウンドに前のラウンドの損益は残らない。**
+func TestChemindeFer_LastNetClearsOnTheNextRound(t *testing.T) {
+	g := newChemindeFerAllCpu(t, 3)
+	g.SetupCoupForTest(8, 3, ChemindeFerPhaseBankerDraw)
+	g.resolve()
+	require.NotZero(t, g.GetLastNet(1))
+
+	// 公開の NextRound は全員 CPU の卓だと次のクーを最後まで走らせて
+	// 新しい損益を入れてしまうので、ラウンド開始そのものを見る。
+	g.startRound()
+	for i := range ChemindeFerSeatCnt {
+		assert.Zero(t, g.GetLastNet(i), "席 %d", i)
+	}
+}

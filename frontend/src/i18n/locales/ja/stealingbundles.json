@@ -1,5 +1,8 @@
 {
-  "phase": { "play": "プレイ中", "gameEnd": "終了" },
+  "phase": {
+    "play": "プレイ中",
+    "gameEnd": "終了"
+  },
   "header": {
     "turn": "手数 {{n}}",
     "deck": "山札 残り{{n}}枚",
@@ -10,9 +13,10 @@
     "bundleTop": "一番上",
     "bundleEmpty": "なし",
     "cards": "手札{{n}}枚",
-    "lastCapture": "[直前に取った]",
     "you": "あなた",
-    "cpu": "CPU{{idx}}"
+    "cpu": "CPU{{idx}}",
+    "lastCaptureTake": "[直前に場から取った]",
+    "lastCaptureSteal": "[直前に {{name}} の束を盗んだ]"
   },
   "actions": {
     "take": "場から取る",

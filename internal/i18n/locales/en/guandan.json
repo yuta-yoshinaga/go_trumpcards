@@ -37,5 +37,15 @@
   "handFirstSecond": "First and second both taken -- four levels at once",
   "result.humanWin": "Game over! Your team wins!",
   "result.cpuWin": "Game over! The other team wins.",
-  "helpExampleNext": "  n                         read the trick result, then continue"
+  "helpExampleNext": "  n                         read the trick result, then continue",
+  "checkNeedsIndexes": "List the hand indexes you want to check (e.g. ch 0 1 2).",
+  "checkOutOfRange": "Hand index {{val}} is out of range (0-{{max}}; an index cannot be used twice).",
+  "checkInvalid": "That combination is not a valid combo.",
+  "checkCombo": "Combo: {{combo}} ({{size}} cards)",
+  "checkBeatsAll": "IT OUTRANKS EVERY NON-BOMB",
+  "checkLead": "(the table is clear, so it can be led)",
+  "checkBeatsTable": "IT BEATS THE TABLE",
+  "checkLosesToTable": "(it cannot beat the {{combo}} ({{size}}) on the table)",
+  "checkNoHand": "There is no hand to check.",
+  "helpCheck": "  ch <i...>                 check a combo without playing it"
 }

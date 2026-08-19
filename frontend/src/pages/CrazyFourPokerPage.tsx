@@ -234,6 +234,19 @@ function CrazyFourPokerPageContent() {
                     max={Math.max(0, state.chips - ante * 2)}
                     step={CRAZY_FOUR_POKER_ANTE_UNIT}
                   />
+                  {/* **賭ける前に見えなければ意味がない** (#5775)。何が当たれば
+                      何倍かを知って額を決めるもの。倍率はサーバの配当表そのまま。 */}
+                  <table className="text-xs text-ds-text-muted mx-auto" data-testid="c4p-queensup-payouts">
+                    <caption className="sr-only">{t('label.queensUpPayouts')}</caption>
+                    <tbody>
+                      {state.queensUpPayouts.map((row) => (
+                        <tr key={row.hand}>
+                          <td className="pr-3 text-left">{row.name}</td>
+                          <td className="text-right">{t('label.payoutOdds', { n: row.multiplier })}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                   <button type="button" className={btnPrimary} onClick={handleDeal} disabled={loading}>
                     {t('button.deal')}
                   </button>

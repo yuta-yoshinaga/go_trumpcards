@@ -73,7 +73,14 @@ type SergeantMajor struct {
 	roundNumber int
 	trickNumber int
 	// kitty は親が取り込む余り札（取り込むまで 4 枚、以降 0 枚）。
-	kitty            []*Card
+	kitty []*Card
+	// absorbedKitty は取り込んだ 4 枚。捨て札を選ぶあいだだけ保持する。
+	//
+	// **取り込むと手札に紛れて見分けが付かなくなる** (#5759)。捨てる 4 枚を
+	// 選ぶのに「元から持っていた札」と「今入ってきた札」の区別は要るので、
+	// 捨て終わるまで覚えておく。手札は取り込み直後に並べ替えられるため、
+	// 添字ではなく札そのもので持つ。
+	absorbedKitty    []*Card
 	currentTrick     []*TrickCard
 	currentPlayerIdx int
 	leadPlayerIdx    int
@@ -156,6 +163,7 @@ func (s *SergeantMajor) startRound() {
 	}
 	// **余りは 4 枚。** 親が取り込んで 4 枚捨てます。
 	s.kitty = nil
+	s.absorbedKitty = nil
 	for range SergeantMajorKittySize {
 		if c := s.trumpCards.DrawCard(); c != nil {
 			s.kitty = append(s.kitty, c)
@@ -201,6 +209,7 @@ func (s *SergeantMajor) DeclareTrump(suit int) error {
 	}
 	s.trumpSuit = suit
 	// **キティは親の手に入る。** 4 枚捨てて 16 枚に戻します。
+	s.absorbedKitty = append([]*Card(nil), s.kitty...)
 	for _, c := range s.kitty {
 		s.players[s.dealerIdx].AddCard(c)
 	}
@@ -296,6 +305,8 @@ func (s *SergeantMajor) discardBy(playerIdx int, indices []int) error {
 	for _, i := range sorted {
 		p.RemoveCard(i)
 	}
+	// 捨て終われば印は消える。次のラウンドや通常プレイに持ち越さない。
+	s.absorbedKitty = nil
 
 	s.exchangeCards()
 	s.phase = SergeantMajorPhasePlay
@@ -699,6 +710,22 @@ func (s *SergeantMajor) GetTrumpSuit() int { return s.trumpSuit }
 
 // GetKittySize はキティの枚数を返す（取り込み後は 0）。
 func (s *SergeantMajor) GetKittySize() int { return len(s.kitty) }
+
+// IsAbsorbedKittyCard は、その札が今回のキティ由来かを返す。
+//
+// **札そのもので見分ける。**取り込み直後に手札が並べ替えられるので、添字では
+// 追えない。52 枚の中でスートとランクの組は一意なので、これで足りる (#5759)。
+func (s *SergeantMajor) IsAbsorbedKittyCard(c *Card) bool {
+	if c == nil {
+		return false
+	}
+	for _, k := range s.absorbedKitty {
+		if k != nil && k.GetDesign() == c.GetDesign() && k.GetValue() == c.GetValue() {
+			return true
+		}
+	}
+	return false
+}
 
 // GetDiscardCount は親が捨てる枚数を返す。
 func (s *SergeantMajor) GetDiscardCount() int { return SergeantMajorKittySize }

@@ -183,6 +183,23 @@ describe('WattenPage', () => {
     expect(screen.queryByRole('button', { name: /レイズ/ })).not.toBeInTheDocument();
   });
 
+  // #5701: スタークの吊り上げ (レイズ / hold / フォールドの応酬) がこのゲームの
+  // 核心なのに、履歴パネルは live region ではなく、スクリーンリーダー利用者には
+  // 賭け金が動いたことが一切伝わらなかった。
+  it('announces the stake history as a polite live region', async () => {
+    mockActionLog.mockResolvedValue({
+      entries: [logEntry(1, 'declare', 0), logEntry(2, 'raise', 1)],
+    });
+    renderWithProviders(<WattenPage />);
+
+    const panel = await screen.findByTestId('watten-stake-history');
+
+    expect(panel).toHaveAttribute('role', 'status');
+    expect(panel).toHaveAttribute('aria-live', 'polite');
+    // 読み上げ対象の中に、誰がいくらへ上げたかが入っていること。
+    expect(panel).toHaveTextContent('CPU 1 レイズ→3');
+  });
+
   it('renders the stake-escalation mini-history in order when the action log has raises', async () => {
     mockActionLog.mockResolvedValue({
       entries: [

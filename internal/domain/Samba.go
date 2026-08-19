@@ -1393,16 +1393,31 @@ func (g *Samba) minimumMeldValue(playerIdx int) int {
 	if team >= 0 && team < len(g.teamScores) {
 		score = g.teamScores[team]
 	}
+	return SambaMinimumMeldValue(score)
+}
+
+// SambaMinimumMeldValue はチーム累積点から初回メルドの最低点を返す。
+// Web 側は frontend/src/utils/sambaScore.ts の sambaMinMeld で同じ表を持っており、
+// 両者の一致は internal/infrastructure/games のガードが見る。
+func SambaMinimumMeldValue(cumulativeScore int) int {
 	switch {
-	case score < 0:
+	case cumulativeScore < 0:
 		return 15
-	case score < 1500:
+	case cumulativeScore < 1500:
 		return 50
-	case score < 3000:
+	case cumulativeScore < 3000:
 		return 90
 	default:
 		return 120
 	}
+}
+
+// GetMinimumMeldValue は playerIdx のチームに課される初回メルドの最低点を返す。
+func (g *Samba) GetMinimumMeldValue(playerIdx int) int {
+	if playerIdx < 0 || playerIdx >= len(g.players) {
+		return 0
+	}
+	return g.minimumMeldValue(playerIdx)
 }
 
 // --- Card type helpers ---

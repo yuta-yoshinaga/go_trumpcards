@@ -19,6 +19,13 @@ export interface DiplomatHint {
 export interface DiplomatResponse extends BaseGameResponse {
   /** Eight piles, dealt one card each. Only the top card is available. */
   tableau: Card[][];
+  /**
+   * Per column: the top card ends the column, so nothing can be stacked on it.
+   *
+   * Computed by `domain.DiplomatIsDeadEndTop` rather than re-derived here, so
+   * the badge cannot disagree with `canPlaceOnTableau` (#5741).
+   */
+  tableauDeadEnd?: boolean[];
   /** Eight foundations, two per suit, opened by Aces and built up to Kings. */
   foundation: Card[][];
   stockCount: number;

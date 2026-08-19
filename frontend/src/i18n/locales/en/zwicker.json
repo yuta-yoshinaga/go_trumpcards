@@ -1,7 +1,7 @@
 {
   "stock": "Stock",
   "score": "us {{us}} them {{them}} (first to {{target}})",
-  "ruleLine": "A=1/11 J=2/12 Q=3/13 K=4/14 -- you choose / jokers are fixed at 15, 20 and 25 / clearing the table is a Zwick, worth 1",
+  "ruleLine": "A=1/11 J=2/12 Q=3/13 K=4/14 -- you choose / jokers are fixed at 15, 20 and 25 / clearing the table is a Zwick, worth 1 / a build's owner is only who made it - anyone holding the declared value can capture it",
   "table": "Table",
   "emptyTable": "nothing on the table",
   "buildLabel": "build worth {{value}} (seat {{owner}})",

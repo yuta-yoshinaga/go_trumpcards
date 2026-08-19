@@ -15,6 +15,7 @@ import (
 
 func TestGuandanCuiController_Exec(t *testing.T) {
 	mockOutput := `{"phase":1}`
+	checkOutput := "combo: bomb"
 
 	newMock := func() *mockUsecases.MockGuandanInteractor {
 		m := new(mockUsecases.MockGuandanInteractor)
@@ -25,6 +26,7 @@ func TestGuandanCuiController_Exec(t *testing.T) {
 		m.On("ReturnTribute", mock.Anything).Return(mockOutput)
 		m.On("NextHand").Return(mockOutput)
 		m.On("ActionLog").Return(mockOutput)
+		m.On("Check", mock.Anything).Return(checkOutput)
 		return m
 	}
 
@@ -85,4 +87,32 @@ func TestGuandanCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "ActionLog")
 		assert.Contains(t, c.Exec("unknown"), "コマンドが不明です")
 	})
+}
+
+// **出さずに役だけ調べられる** (#5734)。手札は動かない。
+func TestGuandanCuiController_Check(t *testing.T) {
+	mockOutput := `{"phase":0}`
+	checkOutput := "combo: bomb"
+	newMock := func() *mockUsecases.MockGuandanInteractor {
+		m := new(mockUsecases.MockGuandanInteractor)
+		m.On("GetConfig").Return(domain.DefaultGuandanConfig())
+		m.On("PlayCards", mock.Anything).Return(mockOutput)
+		m.On("Check", mock.Anything).Return(checkOutput)
+		return m
+	}
+
+	m := newMock()
+	c := controller.NewGuandanCuiController(m)
+	assert.Equal(t, checkOutput, c.Exec("ch 0 1 2"))
+	m.AssertCalled(t, "Check", []int{0, 1, 2})
+	assert.Equal(t, checkOutput, c.Exec("check 3"))
+	m.AssertCalled(t, "Check", []int{3})
+	// **調べても場には出ない。**
+	m.AssertNotCalled(t, "PlayCards", mock.Anything)
+
+	// 数字でない引数は読み飛ばしたうえで警告が付く。
+	warned := c.Exec("ch 0 x")
+	assert.Contains(t, warned, checkOutput)
+	assert.NotEqual(t, checkOutput, warned)
+	m.AssertCalled(t, "Check", []int{0})
 }

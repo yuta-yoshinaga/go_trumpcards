@@ -9,6 +9,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupCribbageSquaresCuiMock() *interfaces.MockCribbageSquaresGame {
@@ -28,6 +29,8 @@ func setupCribbageSquaresCuiMock() *interfaces.MockCribbageSquaresGame {
 	for i := range domain.CribbageSquaresGridSize {
 		pg.On("RowDetail", i).Return(domain.CribbageScoreDetail{}).Maybe()
 		pg.On("ColDetail", i).Return(domain.CribbageScoreDetail{}).Maybe()
+		pg.On("RowPartialDetail", i).Return(domain.CribbageScoreDetail{}).Maybe()
+		pg.On("ColPartialDetail", i).Return(domain.CribbageScoreDetail{}).Maybe()
 	}
 	return pg
 }
@@ -176,4 +179,48 @@ func TestCribbageSquaresCuiPresenter_ActionLog_Complete(t *testing.T) {
 	p := &CribbageSquaresCuiPresenter{}
 	out := p.ActionLogOutput(pg)
 	assert.Contains(t, out, "place")
+}
+
+// **内訳はプレイ中から出す** (#5740)。Web は毎レスポンスで RowDetails/ColDetails
+// を返し、置いた直後から 15s・ペア・ラン等を出しているのに、CUI は完了まで
+// 合計しか見せていなかった。0 点の行・列を黙るのも Web と同じ扱い。
+func TestCribbageSquaresCuiPresenter_ShowsTheBreakdownWhilePlaying(t *testing.T) {
+	pg := new(interfaces.MockCribbageSquaresGame)
+	// 先に積んだ期待が勝つので、既定より前に置く。
+	pg.On("RowPartialDetail", 0).Return(domain.CribbageScoreDetail{Fifteens: 4, Pairs: 2}).Maybe()
+	pg.On("ColPartialDetail", 2).Return(domain.CribbageScoreDetail{Runs: 3}).Maybe()
+	for i := range domain.CribbageSquaresGridSize {
+		pg.On("RowScore", i).Return(0).Maybe()
+		pg.On("ColScore", i).Return(0).Maybe()
+		pg.On("RowDetail", i).Return(domain.CribbageScoreDetail{}).Maybe()
+		pg.On("ColDetail", i).Return(domain.CribbageScoreDetail{}).Maybe()
+		pg.On("RowPartialDetail", i).Return(domain.CribbageScoreDetail{}).Maybe()
+		pg.On("ColPartialDetail", i).Return(domain.CribbageScoreDetail{}).Maybe()
+	}
+	pg.On("GetPhase").Return(domain.CribbageSquaresPhasePlaying).Maybe()
+	pg.On("GetPlacedCount").Return(5).Maybe()
+	pg.On("GetCurrentCard").Return(domain.NewCard(domain.CardDesignSpade, 5, false)).Maybe()
+	var board [domain.CribbageSquaresGridSize][domain.CribbageSquaresGridSize]*domain.Card
+	pg.On("GetBoard").Return(board).Maybe()
+	pg.On("TotalScore").Return(9).Maybe()
+	pg.On("GetStarter").Return((*domain.Card)(nil)).Maybe()
+	pg.On("IsWin").Return(false).Maybe()
+
+	out := (&CribbageSquaresCuiPresenter{}).Output(pg, nil)
+
+	// 見出しで「確定ぶん」だと分かる。公式の得点はスターターが出るまで 0。
+	assert.Contains(t, out, i18n.T("cribbagesquares.partialHeader"))
+	// 点の付いた行・列だけが、要素ごとに出る。
+	assert.Contains(t, out, cribbageSquaresDetailLine(
+		i18n.Tf("cribbagesquares.rowLabel", "idx", "0"),
+		domain.CribbageScoreDetail{Fifteens: 4, Pairs: 2}))
+	assert.Contains(t, out, cribbageSquaresDetailLine(
+		i18n.Tf("cribbagesquares.colLabel", "idx", "2"),
+		domain.CribbageScoreDetail{Runs: 3}))
+	assert.Contains(t, out, i18n.Tf("cribbagesquares.partFifteens", "n", "4"))
+	assert.Contains(t, out, i18n.Tf("cribbagesquares.partRuns", "n", "3"))
+
+	// **まだ 0 点の行・列は黙る。**「なし」を 8 行並べても読めない (Web も同じ)。
+	assert.NotContains(t, out, i18n.T("cribbagesquares.partNone"))
+	assert.NotContains(t, out, i18n.Tf("cribbagesquares.rowLabel", "idx", "1")+" ")
 }

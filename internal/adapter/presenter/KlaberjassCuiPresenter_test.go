@@ -5,13 +5,16 @@ package presenter_test
 import (
 	"errors"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupKlaberjassCuiMock(phase domain.KlaberjassPhase, trump int, turnUp *domain.Card) *interfaces.MockKlaberjassGame {
@@ -33,6 +36,10 @@ func setupKlaberjassCuiMock(phase domain.KlaberjassPhase, trump int, turnUp *dom
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetWinnerIdx").Return(-1)
 	m.On("IsBete").Return(false)
+	m.On("GetSequenceWinner").Return(-1).Maybe()
+	m.On("IsBelaScored").Return(false).Maybe()
+	m.On("GetBelaHolder").Return(-1).Maybe()
+	m.On("IsDixUsed").Return(false).Maybe()
 	m.On("GetConfig").Return(domain.DefaultKlaberjassConfig())
 	m.On("GetPlayers").Return(players)
 	m.On("IsHumanTurn").Return(true)
@@ -106,6 +113,9 @@ func TestKlaberjassCuiPresenter_NamesBete(t *testing.T) {
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetWinnerIdx").Return(-1)
 	m.On("IsBete").Return(true)
+	m.On("GetSequenceWinner").Return(-1)
+	m.On("IsBelaScored").Return(false)
+	m.On("IsDixUsed").Return(false)
 	m.On("GetConfig").Return(domain.DefaultKlaberjassConfig())
 	m.On("GetPlayers").Return(players)
 	m.On("IsHumanTurn").Return(false)
@@ -135,6 +145,9 @@ func TestKlaberjassCuiPresenter_ErrorAndGameEnd(t *testing.T) {
 	end.On("GetGameEndFlag").Return(true)
 	end.On("GetWinnerIdx").Return(0)
 	end.On("IsBete").Return(false)
+	end.On("GetSequenceWinner").Return(-1).Maybe()
+	end.On("IsBelaScored").Return(false).Maybe()
+	end.On("IsDixUsed").Return(false).Maybe()
 	end.On("GetConfig").Return(domain.DefaultKlaberjassConfig())
 	end.On("GetPlayers").Return(players)
 	end.On("IsHumanTurn").Return(false)
@@ -171,6 +184,9 @@ func TestKlaberjassCuiPresenter_NamesTheLastTrickBonus(t *testing.T) {
 		m.On("GetGameEndFlag").Return(false)
 		m.On("GetWinnerIdx").Return(-1)
 		m.On("IsBete").Return(false)
+		m.On("GetSequenceWinner").Return(-1)
+		m.On("IsBelaScored").Return(false)
+		m.On("IsDixUsed").Return(false)
 		m.On("GetConfig").Return(domain.DefaultKlaberjassConfig())
 		m.On("GetPlayers").Return(players)
 		m.On("IsHumanTurn").Return(false)
@@ -189,4 +205,43 @@ func TestKlaberjassCuiPresenter_NamesTheLastTrickBonus(t *testing.T) {
 
 	// まだ誰も取っていなければ出さない。
 	assert.NotContains(t, p.Output(build(-1), nil), "最終トリック")
+}
+
+// #5726: ハンド精算の得点は bete と最終トリックだけでは説明できない。Web の
+// klaberjass-settlement はシーケンス・ベラ・ディの 3 要素も出しているのに、
+// CUI は丸ごと省いていて handPoints を検算できなかった。
+func TestKlaberjassCuiPresenter_ShowsTheHandBreakdown(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.KlaberjassCuiPresenter)
+
+	handEnd := func(seqWinner int, bela bool, belaHolder int, dix bool) *interfaces.MockKlaberjassGame {
+		m := setupKlaberjassCuiMock(domain.KlaberjassPhaseHandEnd, domain.CardDesignHeart, nil)
+		for name, val := range map[string]any{
+			"GetSequenceWinner": seqWinner, "IsBelaScored": bela,
+			"GetBelaHolder": belaHolder, "IsDixUsed": dix,
+		} {
+			m.ExpectedCalls = removeMockCall(m.ExpectedCalls, name)
+			m.On(name).Return(val)
+		}
+		return m
+	}
+
+	t.Run("names the sequence winner, the bela holder and the dix", func(t *testing.T) {
+		out := p.Output(handEnd(1, true, 0, true), nil)
+
+		assert.Contains(t, out, i18n.Tf("klaberjass.sequenceWinner",
+			"name", i18n.Tf("cuiPlayerCpu", "idx", "1")))
+		assert.Contains(t, out, i18n.Tf("klaberjass.belaLine", "name", i18n.T("cuiPlayerYou")))
+		assert.Contains(t, out, i18n.T("klaberjass.dixLine"))
+	})
+
+	t.Run("says so when the sequence was a draw and nothing else scored", func(t *testing.T) {
+		out := p.Output(handEnd(-1, false, -1, false), nil)
+
+		assert.Contains(t, out, i18n.T("klaberjass.sequenceNobody"))
+		assert.NotContains(t, out, strings.Split(i18n.T("klaberjass.belaLine"), "{{")[0])
+		assert.NotContains(t, out, i18n.T("klaberjass.dixLine"))
+	})
 }

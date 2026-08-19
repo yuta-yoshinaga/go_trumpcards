@@ -154,6 +154,23 @@ func (p *AluetteCuiPresenter) writeRoundEndResult(b *strings.Builder, g interfac
 			"tricks", strconv.Itoa(player.GetTrickCount())))
 	}
 	b.WriteString(i18n.Tf("aluette.roundEndTricks", "list", strings.Join(entries, ", ")) + "\n")
+
+	// 勝敗を決めるのは個人ではなく**チーム合計**なので、足し算を読者にさせない
+	// (settleRound と同じ集計・同じ勝利条件)。
+	tricks := g.GetRoundTricks()
+	var teamTricks [2]int
+	for seat, n := range tricks {
+		teamTricks[domain.AluetteTeamOf(seat)] += n
+	}
+	b.WriteString(i18n.Tf("aluette.roundEndTeamTally",
+		"team0", strconv.Itoa(teamTricks[0]),
+		"team1", strconv.Itoa(teamTricks[1])) + "\n")
+	for team, n := range teamTricks {
+		if n >= domain.AluetteTricksToWin {
+			b.WriteString(i18n.Tf("aluette.roundEndMeineWinner",
+				"team", i18n.Tf("aluette.teamName", "n", strconv.Itoa(team))) + "\n")
+		}
+	}
 }
 
 // HintOutput emits the current Aluette hint.

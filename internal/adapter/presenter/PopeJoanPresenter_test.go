@@ -327,3 +327,53 @@ func TestPopeJoanWebPresenter_ValidPlays(t *testing.T) {
 		t.Fatalf("off-turn validPlays must be empty, got %v", off)
 	}
 }
+
+// #5723: Pope (♦9) を抱えている人はその区画への支払いを免除される。Web は伏せ手の
+// CPU にも holdsPope バッジを出しているのに、CUI は誰が免除されているのかを
+// 一切出しておらず、推測する手段が無かった。
+func TestPopeJoanCuiPresenter_MarksThePopeHolder(t *testing.T) {
+	g := pjStub(domain.PopeJoanPhasePlay, false, -1, nil)
+	players := make([]*domain.PopeJoanPlayer, 0, domain.PopeJoanPlayerCnt)
+	players = append(players, domain.NewPopeJoanPlayer(true))
+	for range domain.PopeJoanPlayerCnt - 1 {
+		players = append(players, domain.NewPopeJoanPlayer(false))
+	}
+	// 席 1 (伏せ手の CPU) が Pope を抱える。
+	players[1].AddCard(domain.NewCard(domain.CardDesignDiamond, domain.PopeJoanPopeRank, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignSpade, domain.PopeJoanPopeRank, false))
+	g.ExpectedCalls = pjWithPlayers(g.ExpectedCalls, players)
+
+	out := new(PopeJoanCuiPresenter).Output(g, nil)
+
+	badge := i18n.T("popejoan.holdsPope")
+	lines := strings.Split(out, "\n")
+	var holder, other string
+	for _, line := range lines {
+		if strings.Contains(line, i18n.Tf("cuiPlayerCpu", "idx", "1")) && holder == "" {
+			holder = line
+		}
+		if strings.Contains(line, i18n.Tf("cuiPlayerCpu", "idx", "2")) && other == "" {
+			other = line
+		}
+	}
+	require.NotEmpty(t, holder)
+	assert.Contains(t, holder, badge, "the Pope holder must be marked even face-down")
+	assert.NotContains(t, other, badge, "a same-rank card in another suit is not the Pope")
+}
+
+// pjWithPlayers replaces the GetPlayers/GetPlayer expectations with the given seats.
+func pjWithPlayers(calls []*mock.Call, players []*domain.PopeJoanPlayer) []*mock.Call {
+	kept := make([]*mock.Call, 0, len(calls))
+	for _, c := range calls {
+		if c.Method == "GetPlayers" || c.Method == "GetPlayer" {
+			continue
+		}
+		kept = append(kept, c)
+	}
+	m := new(mock.Mock)
+	m.On("GetPlayers").Return(players)
+	for i, p := range players {
+		m.On("GetPlayer", i).Return(p)
+	}
+	return append(kept, m.ExpectedCalls...)
+}

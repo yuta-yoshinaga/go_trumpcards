@@ -84,6 +84,28 @@ beforeEach(() => {
 });
 
 describe('TuSacPage', () => {
+  // **5 枚の卒を揃える価値は、狙う前に知りたい** (#5784)。点数はサーバの
+  // meldPointsByKind から出す。
+  it('組み合わせの点数早見表を出す', async () => {
+    mockApi.mockResolvedValue(withState({ meldPointsByKind: [0, 2, 3, 5] }));
+    renderWithProviders(<TuSacPage />);
+
+    const table = await screen.findByTestId('tusac-meld-points');
+    expect(table).toHaveTextContent('同色同種3枚 2点');
+    expect(table).toHaveTextContent('異色の車馬砲 3点');
+    expect(table).toHaveTextContent('卒5枚 5点');
+  });
+
+  // **点数はハードコードしない** (受け入れ条件2)。サーバが別の値を送ればそれが出る。
+  it('サーバが送った点数をそのまま出す', async () => {
+    mockApi.mockResolvedValue(withState({ meldPointsByKind: [0, 7, 8, 9] }));
+    renderWithProviders(<TuSacPage />);
+
+    const table = await screen.findByTestId('tusac-meld-points');
+    expect(table).toHaveTextContent('同色同種3枚 7点');
+    expect(table).toHaveTextContent('卒5枚 9点');
+    expect(table.textContent).not.toContain('5点');
+  });
   it('マウント時に reset を呼ぶ', async () => {
     mockApi.mockResolvedValue(base);
     renderWithProviders(<TuSacPage />);

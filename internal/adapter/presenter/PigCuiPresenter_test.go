@@ -84,6 +84,14 @@ func TestPigCuiPresenterShowsTheRoundResult(t *testing.T) {
 	assert.Contains(t, out, fixedPart("pig.promptRoundEnd"))
 	assert.Contains(t, out, i18n.T("pig.promptNext"))
 	assert.Contains(t, out, "P", "受け取った文字を出す")
+	// **3 文字で脱落**という目標が席行から読める (#5766)。まだ 0 文字の席でも
+	// 出るので、行そのものを組み立てて突き合わせる ("PIG" は溜まった文字の
+	// 側にも現れるため、部分一致では素通りする)。
+	line := i18n.Tf("pig.playerLine",
+		"name", cuiPlayerName(g.GetPlayer(0), 0), "role", "",
+		"cards", strconv.Itoa(g.GetPlayer(0).GetCardsSize()),
+		"letters", g.GetPlayer(0).GetLetterWord(), "target", domain.PigLetterTargetWord)
+	assert.Contains(t, out, line)
 }
 
 // **人間が脱落しても局は続く。**
