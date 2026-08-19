@@ -1,5 +1,8 @@
 {
-  "phase": { "play": "Playing", "gameEnd": "Finished" },
+  "phase": {
+    "play": "Playing",
+    "gameEnd": "Finished"
+  },
   "header": {
     "pile": "Pile: {{n}}",
     "pileEmpty": "Pile empty",
@@ -25,7 +28,11 @@
     "easy": "Slow",
     "normal": "Normal",
     "hard": "Fast",
-    "players": "Players"
+    "players": "Players",
+    "difficultyTip": "How fast the CPU calls Snap. Slow is about 1.4s, normal about 0.9s, fast about 0.5s — each varies, and never beats 0.08s.",
+    "easyHint": "slow (about 1.4s)",
+    "normalHint": "normal (about 0.9s)",
+    "hardHint": "fast (about 0.5s)"
   },
   "result": {
     "you": "You win! You collected every card.",
