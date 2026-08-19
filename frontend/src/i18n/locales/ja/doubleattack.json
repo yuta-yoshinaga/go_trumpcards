@@ -46,5 +46,7 @@
   "frontendHint.doubleAttackStrongUp": "10が抜けているぶんディーラーはバストしにくいので、見送りが無難です",
   "frontendHint.doubleAttackCannotBust": "11以下なのでバストしません",
   "frontendHint.doubleAttackStandPat": "17以上あるので立つのが定石です",
-  "frontendHint.doubleAttackBorderline": "微妙な点数です。ディーラーのアップカード次第です"
+  "frontendHint.doubleAttackBorderline": "微妙な点数です。ディーラーのアップカード次第です",
+  "result.bustItHit": "Bust It 的中: +{{n}}",
+  "result.bustItMiss": "Bust It: 外れ"
 }

@@ -22,6 +22,8 @@ const state = (over: Partial<StealingBundlesResponse> = {}): StealingBundlesResp
     stealTargets: {},
     canCapture: true,
     deckRemaining: 32,
+    lastCaptureKind: '',
+    lastCaptureVictimIdx: -1,
     lastCaptureIdx: -1,
     currentPlayerIdx: 0,
     turnNumber: 2,
@@ -60,9 +62,15 @@ describe('formatStealingBundlesState', () => {
     expect(out).toMatch(/bundle 0, top none/);
   });
 
-  it('marks who captured last', () => {
-    expect(formatStealingBundlesState(state({ lastCaptureIdx: 2 }))).toContain('CPU 2[captured last]');
-    expect(formatStealingBundlesState(state())).not.toContain('[captured last]');
+  it('marks who captured last, and how', () => {
+    expect(formatStealingBundlesState(state({ lastCaptureIdx: 2, lastCaptureKind: 'take' }))).toContain(
+      'CPU 2[took from the table]',
+    );
+    // **盗みは別の出来事** (#5767)。被害者まで出す。
+    expect(
+      formatStealingBundlesState(state({ lastCaptureIdx: 2, lastCaptureKind: 'steal', lastCaptureVictimIdx: 0 })),
+    ).toContain("CPU 2[stole あなた's bundle]");
+    expect(formatStealingBundlesState(state())).not.toContain('[took from the table]');
   });
 
   // **どの札で何ができるかは盤面から読み切れません。**

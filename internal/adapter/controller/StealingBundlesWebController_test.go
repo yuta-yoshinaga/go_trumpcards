@@ -23,8 +23,10 @@ func mustStealingBundlesOutputJSON(msg string) string {
 		TableMatches:   map[string][]int{},
 		StealTargets:   map[string][]int{},
 		LastCaptureIdx: -1,
-		WinnerIdx:      -1,
-		WebOutputBase:  controller.WebOutputBase{Message: msg},
+		// **盗みでない**ことを -1 で言う。0 は「席 0 が奪われた」に読める。
+		LastCaptureVictimIdx: -1,
+		WinnerIdx:            -1,
+		WebOutputBase:        controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {

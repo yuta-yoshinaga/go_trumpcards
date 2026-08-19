@@ -2,6 +2,8 @@ package domain
 
 import (
 	"encoding/json"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -1157,4 +1159,91 @@ func TestZheng_FullGame(t *testing.T) {
 		assert.False(t, seen[r], "duplicate rank")
 		seen[r] = true
 	}
+}
+
+// zhengGolden mirrors frontend/src/utils/__fixtures__/zhengInvalidReason.golden.json.
+type zhengGolden struct {
+	Cases []struct {
+		Name  string `json:"name"`
+		Cards []struct{ Suit, Value int }
+		Table []struct{ Suit, Value int }
+		// TablePlayType は ZhengPlayType の生値。
+		TablePlayType int    `json:"tablePlayType"`
+		Reason        string `json:"reason"`
+	} `json:"cases"`
+}
+
+// #5719: 「出せない理由」は Go (ZhengInvalidReason) と TypeScript
+// (zhengInvalidReason) の 2 か所にある。CUI のエラーと Web のツールチップが
+// 別々の結論を出さないよう、同じ golden vector で縛る。
+func TestZhengInvalidReason_GoldenVectors(t *testing.T) {
+	raw, err := os.ReadFile(filepath.Join(
+		"..", "..", "frontend", "src", "utils", "__fixtures__", "zhengInvalidReason.golden.json"))
+	require.NoError(t, err)
+	var golden zhengGolden
+	require.NoError(t, json.Unmarshal(raw, &golden))
+	require.NotEmpty(t, golden.Cases)
+
+	toCards := func(in []struct{ Suit, Value int }) []*Card {
+		out := make([]*Card, 0, len(in))
+		for _, c := range in {
+			out = append(out, NewCard(c.Suit, c.Value, false))
+		}
+		return out
+	}
+	seen := map[string]bool{}
+	for _, c := range golden.Cases {
+		t.Run(c.Name, func(t *testing.T) {
+			got := ZhengInvalidReason(toCards(c.Cards), toCards(c.Table),
+				ZhengPlayType(c.TablePlayType))
+
+			assert.Equal(t, c.Reason, got)
+		})
+		seen[c.Reason] = true
+	}
+	// 負のコントロール: 6 種類の理由と「出せる」を全部踏んでいること。
+	for _, reason := range []string{"", ZhengInvalidType, ZhengInvalidWrongType,
+		ZhengInvalidWrongCount, ZhengInvalidTooWeak,
+		ZhengInvalidNeedBomb, ZhengInvalidUnbeatable} {
+		assert.True(t, seen[reason], "the golden vectors must exercise %q", reason)
+	}
+}
+
+// #5719: 拒否のメッセージは理由ごとに違うことを固定する (CUI はこの文をそのまま出す)。
+func TestZhengPlayerPlayRejectionMessages(t *testing.T) {
+	cases := []struct {
+		reason string
+		want   string
+	}{
+		{ZhengInvalidType, "選んだ札はどの役にもなりません"},
+		{ZhengInvalidWrongType, "場と同じ役の種類で出してください"},
+		{ZhengInvalidWrongCount, "場と同じ枚数で出してください"},
+		{ZhengInvalidTooWeak, "場より強い役で出してください"},
+		{ZhengInvalidNeedBomb, "場が爆弾です。爆弾でしか切れません"},
+		{ZhengInvalidUnbeatable, "場がジョーカーボムです。勝てる役はありません"},
+	}
+	seen := map[string]bool{}
+	for _, c := range cases {
+		assert.Equal(t, c.want, zhengInvalidReasonMessage(c.reason))
+		assert.False(t, seen[c.want], "each reason needs its own message: %q", c.want)
+		seen[c.want] = true
+	}
+}
+
+// 実際に PlayerPlay を通したときも、一般化された文ではなく理由が返ること。
+func TestZhengPlayerPlayReturnsTheReason(t *testing.T) {
+	z := NewDefaultZheng()
+	z.Reset()
+	human := z.players[0]
+	human.Reset()
+	human.AddCard(NewCard(CardDesignSpade, 5, false))
+	human.AddCard(NewCard(CardDesignClover, 6, false))
+	z.round.currentTurn = 0
+	z.round.tableCards = nil
+
+	err := z.PlayerPlay([]int{0, 1})
+
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), zhengInvalidReasonMessage(ZhengInvalidType))
+	assert.NotContains(t, err.Error(), "cannot be played")
 }

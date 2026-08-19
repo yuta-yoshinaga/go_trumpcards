@@ -2,7 +2,10 @@
 
 package domain
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"sort"
+)
 
 // PolignacPlayer ポリニャックのプレイヤー
 type PolignacPlayer struct {
@@ -46,6 +49,35 @@ func (p *PolignacPlayer) SetScore(n int) { p.score = n }
 
 // GetRoundPenalty このラウンドで受けた失点
 func (p *PolignacPlayer) GetRoundPenalty() int { return p.roundPenalty }
+
+// GetTakenJackSuits はこのラウンドで取ったジャックのスートを、
+// スペードを先頭にした昇順で返す。
+//
+// **合計失点だけでは、♠J を踏んだのか他を 2 枚拾ったのかが分からない** (#5746)。
+// 姉妹ゲームの Slobberhannes / Reversis は取った印付き札を個別に出している。
+// 状態を増やさず、獲得済みトリックから数える (失点の計算と同じ札を見る)。
+func (p *PolignacPlayer) GetTakenJackSuits() []int {
+	suits := make([]int, 0, 4)
+	for _, trick := range p.GetTricksTaken() {
+		for _, c := range trick {
+			if c != nil && c.GetValue() == PolignacJackValue {
+				suits = append(suits, c.GetDesign())
+			}
+		}
+	}
+	sortPolignacSuits(suits)
+	return suits
+}
+
+// sortPolignacSuits は ♠ を先頭に、残りをスート番号の昇順に並べる。
+func sortPolignacSuits(suits []int) {
+	sort.Slice(suits, func(i, j int) bool {
+		if (suits[i] == CardDesignSpade) != (suits[j] == CardDesignSpade) {
+			return suits[i] == CardDesignSpade
+		}
+		return suits[i] < suits[j]
+	})
+}
 
 // AddRoundPenalty このラウンドの失点に加算する
 func (p *PolignacPlayer) AddRoundPenalty(n int) { p.roundPenalty += n }

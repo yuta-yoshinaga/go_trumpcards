@@ -92,6 +92,16 @@ func (_m *MockCribbageSquaresGame) GetStarter() *domain.Card {
 	return ret.Get(0).(*domain.Card)
 }
 
+// RowPartialDetail モック
+func (_m *MockCribbageSquaresGame) RowPartialDetail(r int) domain.CribbageScoreDetail {
+	return _m.Called(r).Get(0).(domain.CribbageScoreDetail)
+}
+
+// ColPartialDetail モック
+func (_m *MockCribbageSquaresGame) ColPartialDetail(col int) domain.CribbageScoreDetail {
+	return _m.Called(col).Get(0).(domain.CribbageScoreDetail)
+}
+
 // RowDetail モック
 func (_m *MockCribbageSquaresGame) RowDetail(r int) domain.CribbageScoreDetail {
 	ret := _m.Called(r)

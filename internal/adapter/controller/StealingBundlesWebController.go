@@ -52,15 +52,23 @@ type StealingBundlesWebOutput struct {
 	// StealTargets は手札の位置ごとに奪える相手の席。
 	StealTargets map[string][]int `json:"stealTargets"`
 	// CanCapture は取れる手があるか。**偽のときだけ場に置けます。**
-	CanCapture       bool                          `json:"canCapture"`
-	DeckRemaining    int                           `json:"deckRemaining"`
-	LastCaptureIdx   int                           `json:"lastCaptureIdx"`
-	CurrentPlayerIdx int                           `json:"currentPlayerIdx"`
-	TurnNumber       int                           `json:"turnNumber"`
-	PacksDealt       int                           `json:"packsDealt"`
-	GameEndFlag      bool                          `json:"gameEndFlag"`
-	WinnerIdx        int                           `json:"winnerIdx"`
-	Hint             *StealingBundlesWebOutputHint `json:"hint,omitempty"`
+	CanCapture     bool `json:"canCapture"`
+	DeckRemaining  int  `json:"deckRemaining"`
+	LastCaptureIdx int  `json:"lastCaptureIdx"`
+	// LastCaptureKind は直前の獲得が場からの取り ("take") か相手の束の盗み
+	// ("steal") か。まだ誰も取っていなければ空。
+	//
+	// **盗みは相手の束を直接減らす。** 印を分けないと、場から取っただけの手と
+	// 同じ重さに見えます。
+	LastCaptureKind string `json:"lastCaptureKind"`
+	// LastCaptureVictimIdx は盗みの被害者席 (盗み以外は -1)。
+	LastCaptureVictimIdx int                           `json:"lastCaptureVictimIdx"`
+	CurrentPlayerIdx     int                           `json:"currentPlayerIdx"`
+	TurnNumber           int                           `json:"turnNumber"`
+	PacksDealt           int                           `json:"packsDealt"`
+	GameEndFlag          bool                          `json:"gameEndFlag"`
+	WinnerIdx            int                           `json:"winnerIdx"`
+	Hint                 *StealingBundlesWebOutputHint `json:"hint,omitempty"`
 	WebOutputBase
 	Config StealingBundlesWebOutputConfig `json:"config"`
 }
@@ -94,13 +102,14 @@ var NewStealingBundlesWebController, NewStealingBundlesWebControllerWithProvider
 
 func newStealingBundlesDefaultOutput(msg string) *StealingBundlesWebOutput {
 	return &StealingBundlesWebOutput{
-		Players:        make([]*StealingBundlesWebOutputPlayer, 0),
-		TableCards:     make([]*WebOutputCard, 0),
-		TableMatches:   map[string][]int{},
-		StealTargets:   map[string][]int{},
-		LastCaptureIdx: -1,
-		WinnerIdx:      -1,
-		WebOutputBase:  WebOutputBase{Message: msg},
+		Players:              make([]*StealingBundlesWebOutputPlayer, 0),
+		TableCards:           make([]*WebOutputCard, 0),
+		TableMatches:         map[string][]int{},
+		StealTargets:         map[string][]int{},
+		LastCaptureIdx:       -1,
+		LastCaptureVictimIdx: -1,
+		WinnerIdx:            -1,
+		WebOutputBase:        WebOutputBase{Message: msg},
 	}
 }
 

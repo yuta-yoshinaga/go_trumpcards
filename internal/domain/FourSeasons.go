@@ -407,14 +407,17 @@ func (f *FourSeasons) canPlaceOnTableau(card *Card, col int) bool {
 		return true
 	}
 	top := pile[len(pile)-1]
-	return card.GetValue() == fourSeasonsPrevRank(top.GetValue())
+	return card.GetValue() == FourSeasonsPrevRank(top.GetValue())
 }
 
 // fourSeasonsNextRank は K の次を A に戻す昇順の次ランク。
 func fourSeasonsNextRank(r int) int { return (r % CardValueMax) + 1 }
 
-// fourSeasonsPrevRank は A の下を K に戻す降順の次ランク。
-func fourSeasonsPrevRank(r int) int { return ((r + CardValueMax - 2) % CardValueMax) + 1 }
+// FourSeasonsPrevRank は A の下を K に戻す降順の次ランク。
+//
+// **十字の列が次に受け付けるランクそのもの。**置けるかどうかを決める規則と、
+// CUI が「次に置けるのは」と案内する値を同じ関数から出す (#5738)。
+func FourSeasonsPrevRank(r int) int { return ((r + CardValueMax - 2) % CardValueMax) + 1 }
 
 func (f *FourSeasons) findFoundation(card *Card) int {
 	for i := range FourSeasonsFoundationCnt {

@@ -39,13 +39,22 @@ func (m *MockTeenDoPaanchGame) GetPhase() domain.TeenDoPaanchPhase {
 	return m.Called().Get(0).(domain.TeenDoPaanchPhase)
 }
 
-func (m *MockTeenDoPaanchGame) IsHumanTurn() bool        { return m.Called().Bool(0) }
-func (m *MockTeenDoPaanchGame) IsHumanTrumpTurn() bool   { return m.Called().Bool(0) }
-func (m *MockTeenDoPaanchGame) GetRoundNumber() int      { return m.Called().Int(0) }
-func (m *MockTeenDoPaanchGame) GetTrickNumber() int      { return m.Called().Int(0) }
-func (m *MockTeenDoPaanchGame) GetTrumpSuit() int        { return m.Called().Int(0) }
-func (m *MockTeenDoPaanchGame) GetFivePlayerIdx() int    { return m.Called().Int(0) }
-func (m *MockTeenDoPaanchGame) GetLastExchange() int     { return m.Called().Int(0) }
+func (m *MockTeenDoPaanchGame) IsHumanTurn() bool      { return m.Called().Bool(0) }
+func (m *MockTeenDoPaanchGame) IsHumanTrumpTurn() bool { return m.Called().Bool(0) }
+func (m *MockTeenDoPaanchGame) GetRoundNumber() int    { return m.Called().Int(0) }
+func (m *MockTeenDoPaanchGame) GetTrickNumber() int    { return m.Called().Int(0) }
+func (m *MockTeenDoPaanchGame) GetTrumpSuit() int      { return m.Called().Int(0) }
+func (m *MockTeenDoPaanchGame) GetFivePlayerIdx() int  { return m.Called().Int(0) }
+func (m *MockTeenDoPaanchGame) GetLastExchange() int   { return m.Called().Int(0) }
+
+// GetLastExchangePairs モック
+func (m *MockTeenDoPaanchGame) GetLastExchangePairs() []domain.TeenDoPaanchExchange {
+	args := m.Called()
+	if args.Get(0) == nil {
+		return nil
+	}
+	return args.Get(0).([]domain.TeenDoPaanchExchange)
+}
 func (m *MockTeenDoPaanchGame) GetCurrentPlayerIdx() int { return m.Called().Int(0) }
 func (m *MockTeenDoPaanchGame) GetLeadPlayerIdx() int    { return m.Called().Int(0) }
 func (m *MockTeenDoPaanchGame) GetPlayerCnt() int        { return m.Called().Int(0) }

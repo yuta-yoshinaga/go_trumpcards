@@ -22,6 +22,7 @@
   "promptBetting": "Act: c (call, need {{need}}) / ra (raise, current {{bet}}→{{raiseTo}}) / f (fold)",
   "promptResult": "Round over. Use n for the next round.",
   "promptHelp": "c / ra / f to act, n for the next round",
+  "handRanking": "Hand ranking: {{fluxus}} (four of one suit) > {{supremus}} (one of each suit, 50+ points) > {{primero}} (one of each suit, under 50) > {{numerus}} (best single-suit total)",
   "result.none": "The round is over.",
   "result.win": "You win the pot!",
   "result.lose": "You lost this round.",

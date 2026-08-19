@@ -16,7 +16,9 @@
     "score": "total {{n}}",
     "dealer": "[dealer / target 8]",
     "you": "You",
-    "cpu": "CPU{{idx}}"
+    "cpu": "CPU{{idx}}",
+    "kittyBadge": "kitty",
+    "kittyAria": "came in from the kitty"
   },
   "currentTrick": "Current trick",
   "actions": {

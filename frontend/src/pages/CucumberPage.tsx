@@ -149,7 +149,12 @@ function CucumberPageContent() {
           <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
             <div className="text-ds-text-primary text-center mb-2" data-testid="cu-header">
               <span className="mr-4">{t('header.round', { n: String(state.roundNumber) })}</span>
-              <span className="mr-4">{t('header.trick', { n: String(state.trickNumber + 1) })}</span>
+              <span className="mr-4">
+                {t('header.trick', {
+                  n: String(state.trickNumber + 1),
+                  total: String(state.totalTricks),
+                })}
+              </span>
               <span>{t('header.target', { n: String(state.config.targetScore) })}</span>
             </div>
 

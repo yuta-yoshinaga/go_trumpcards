@@ -23,7 +23,10 @@ const (
 const PigHandSize = 4
 
 // PigMaxLetters は脱落するまでに溜められる文字数 (P-I-G = 3)。
-const PigMaxLetters = 3
+//
+// **語のほうが規則。** 目標語と数を別々に持つと、片方だけ直したときに
+// 「3 文字で脱落」と表示が食い違う (#5766)。
+const PigMaxLetters = len(PigLetterTargetWord)
 
 // PigMaxRounds はゲーム全体のラウンド数上限 (停止保証のフェイルセーフ)。
 const PigMaxRounds = 200

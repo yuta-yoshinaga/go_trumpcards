@@ -324,6 +324,10 @@ function WattenPageContent() {
                   <div
                     className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
                     data-testid="watten-stake-history"
+                    // 賭け金の吊り上げはこのゲームの核心なので、履歴が伸びるたびに
+                    // 読み上げる。視覚レイアウトは変えない。
+                    role="status"
+                    aria-live="polite"
                   >
                     <div className="text-ds-text-primary mb-1">{t('stakeHistory.title')}</div>
                     <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1">

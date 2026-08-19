@@ -17,6 +17,7 @@
   "promptDrawHelp": "dr・・・山札から1枚引く (ターン終了)",
   "promptNewMeldHelp": "nm <i j k...>・・・手札から新しいメルドを作る",
   "promptLayoffHelp": "layoff <メルドidx> <手札idx>・・・場のメルド({{count}}件)に手札を付ける（例: layoff 0 2）",
+  "promptRearrangeHelp": "ra <グループ> / <手札番号>・・・場を組み替えて手札を出す（例: ra s5,h5,d5;c7,c8,c9 / 2,4。グループは組み替え後の場の全体）",
   "promptRoundEnd": "ラウンド終了",
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
   "turnPhase": "あなたの手番です。引くかプレイしてください。",

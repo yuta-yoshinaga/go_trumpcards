@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { preferenceApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makePreferenceState } from '../test/stateFactories';
+import { PreferenceContract } from '../types/phases';
 import { PreferencePage } from './PreferencePage';
 
 vi.mock('../api/gameApi', () => ({
@@ -251,6 +252,38 @@ describe('PreferencePage', () => {
 
   // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回
   // ヒントを載せるので、`state.hint` だけを見て描画すると常時表示になる (#4605)。
+  // #5652: 切り札はプレイヤーが選ぶのではなく、契約が決まった瞬間に宣言者の最長
+  // スートへ自動設定される (Preference.go の resolveBidding)。切り札選択ボタンを
+  // 持つ Knockout Whist と並べると、初見では「いつ選んだのか」が分からない。
+  it('explains that the trump suit was chosen automatically', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<PreferencePage />);
+
+    expect(await screen.findByTestId('preference-trump-note')).toHaveTextContent('最長スート');
+  });
+
+  // **ミゼールには切り札が無い** (domain は trumpSuit=0 にする)。自動決定の説明を
+  // 出すと、ありもしない切り札があるように読める。
+  it('says nothing about trump selection for a misere contract', async () => {
+    mockExec.mockResolvedValue(
+      makePreferenceState({ ...playPhaseState, contract: PreferenceContract.MISERE, trumpSuit: 0 }),
+    );
+    renderWithProviders(<PreferencePage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('preference-trump-note')).not.toBeInTheDocument();
+  });
+
+  it('says nothing before a contract is settled', async () => {
+    mockExec.mockResolvedValue(
+      makePreferenceState({ ...playPhaseState, declarerIdx: -1, contract: PreferenceContract.PASS }),
+    );
+    renderWithProviders(<PreferencePage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('preference-trump-note')).not.toBeInTheDocument();
+  });
+
   it('renders no hint banner when the hint was not requested', async () => {
     mockExec.mockResolvedValue({ ...bidPhaseState, hint: { cardIndices: [0], reason: 'x' } });
     renderWithProviders(<PreferencePage />);

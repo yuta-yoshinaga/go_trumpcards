@@ -36,6 +36,7 @@
   "you": "You",
   "cpu": "CPU {{id}}",
   "chips": "Chips: {{chips}}",
+  "chipsNegativeAria": "in debt",
   "playButton": "Play",
   "nextDeal": "Next Deal",
   "dealResult": {
