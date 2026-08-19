@@ -714,16 +714,16 @@ func TestCinchBidStrength_GoldenVectors(t *testing.T) {
 			assert.Equal(t, c.MaxPoints, maxPts)
 			assert.Equal(t, c.MinPoints, minPts)
 		})
-		// 負のコントロール: Left Pedro (同色オフスートの 5) を含む case が
-		// 1 件も無ければ、この golden は肝心の規則を守っていない。
+		// 負のコントロール: Left Pedro (**同色**オフスートの 5) を実際に点にしている
+		// case が 1 件も無ければ、この golden は肝心の規則を守っていない。
+		// 「どこか別のスートが 5 点」では、Right Pedro でも満たせてしまう。
+		sameColor := map[int]int{
+			domain.CardDesignSpade: domain.CardDesignClover, domain.CardDesignClover: domain.CardDesignSpade,
+			domain.CardDesignHeart: domain.CardDesignDiamond, domain.CardDesignDiamond: domain.CardDesignHeart,
+		}
 		for _, cd := range c.Cards {
-			if cd.Value != 5 {
-				continue
-			}
-			for suit := domain.CardDesignSpade; suit <= domain.CardDesignDiamond; suit++ {
-				if suit != cd.Suit && c.PointsBySuit[suit] >= 5 {
-					leftPedroCovered = true
-				}
+			if cd.Value == 5 && c.PointsBySuit[sameColor[cd.Suit]] >= 5 {
+				leftPedroCovered = true
 			}
 		}
 	}
