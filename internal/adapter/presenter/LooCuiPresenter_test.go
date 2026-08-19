@@ -2,6 +2,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
@@ -145,4 +147,36 @@ func TestLooCuiPresenter_ActionLog(t *testing.T) {
 	g.Reset()
 	p := new(presenter.LooCuiPresenter)
 	assert.NotEmpty(t, p.ActionLogOutput(g))
+}
+
+// #5693: ルーの罰金 (looed = ポット全額) には下限が無く、チップ残高は負に落ちる。
+// 素の数字で出していたので、赤字になっていることが読み取りにくかった。
+func TestLooCuiPresenter_WarnsAboutNegativeChips(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(false) // 色を出す設定で確かめる
+	defer color.SetNoColor(orig)
+	p := new(presenter.LooCuiPresenter)
+
+	newGame := func(chips int) *domain.Loo {
+		g := domain.NewDefaultLoo()
+		g.Reset()
+		g.GetPlayer(0).ResetChips()
+		g.GetPlayer(0).AddChips(chips)
+		return g
+	}
+
+	t.Run("paints a negative balance red", func(t *testing.T) {
+		out := p.Output(newGame(-12), nil)
+
+		assert.Contains(t, out, color.Red("-12"))
+	})
+
+	t.Run("leaves zero and positive balances neutral", func(t *testing.T) {
+		for _, chips := range []int{0, 7} {
+			out := p.Output(newGame(chips), nil)
+
+			assert.Contains(t, out, strconv.Itoa(chips))
+			assert.NotContains(t, out, color.Red(strconv.Itoa(chips)))
+		}
+	})
 }

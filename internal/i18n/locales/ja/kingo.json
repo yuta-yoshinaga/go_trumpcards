@@ -25,5 +25,6 @@
   "reason.youAreTheBanker": "親は張らず、子の張りを受けます",
   "reason.roundIsOver": "このラウンドは決着しました",
   "result.gameEnd": "ゲームが終わりました",
-  "helpExampleBet": "  bet 100             100 チップを賭ける"
+  "helpExampleBet": "  bet 100             100 チップを賭ける",
+  "rankWithValue": "{{rank}}（{{value}}）"
 }

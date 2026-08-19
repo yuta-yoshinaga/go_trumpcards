@@ -24,6 +24,7 @@
   "outcomeWin": "成功（デクレアラー勝ち）",
   "outcomeLoss": "失敗（連合勝ち）",
   "gameEnd": "ゲーム終了！{{name}}がマッチ勝利！",
+  "coinSettlement": "精算: {{deltas}}",
   "promptBid": "契約宣言 — 手番: {{name}}",
   "promptBidHelp": "bid party <s/c/h/d>・・・パルティ ｜ bid betli・・・ベトリ ｜ bid durchmarsch・・・ドゥルマルス ｜ bid ulti <s/c/h/d>・・・ウルティ（切り札の7で最終トリック勝ち）",
   "promptDiscard": "タロンを拾いました — 手番: {{name}}",

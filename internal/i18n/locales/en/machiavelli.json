@@ -17,6 +17,7 @@
   "promptDrawHelp": "dr: draw one card from stock (ends turn)",
   "promptNewMeldHelp": "nm <i j k...>: form a new meld from your hand",
   "promptLayoffHelp": "layoff <meld idx> <hand idx> ... add a card to a table meld ({{count}} available; e.g. layoff 0 2)",
+  "promptRearrangeHelp": "ra <groups> / <hand indices> ... rebuild the table while playing from hand (e.g. ra s5,h5,d5;c7,c8,c9 / 2,4; the groups spell the whole new table)",
   "promptRoundEnd": "Round complete",
   "promptRoundEndHelp": "nr / nextround: advance to next round",
   "turnPhase": "Your turn. Draw or play.",

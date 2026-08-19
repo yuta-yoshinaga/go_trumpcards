@@ -1,0 +1,733 @@
+{
+  "note": "Tarabish card values: the trump suit uses its own table (J=20 Jass, 9=14 Menel). Asserted by frontend/src/utils/tarabishPoints.golden.test.ts and TestTarabishCardPoints_GoldenVectors.",
+  "cases": [
+    {
+      "name": "SPADE 1 with trump 1",
+      "design": "SPADE",
+      "value": 1,
+      "trumpSuit": 1,
+      "points": 11
+    },
+    {
+      "name": "SPADE 1 with trump 3",
+      "design": "SPADE",
+      "value": 1,
+      "trumpSuit": 3,
+      "points": 11
+    },
+    {
+      "name": "SPADE 2 with trump 1",
+      "design": "SPADE",
+      "value": 2,
+      "trumpSuit": 1,
+      "points": 0
+    },
+    {
+      "name": "SPADE 2 with trump 3",
+      "design": "SPADE",
+      "value": 2,
+      "trumpSuit": 3,
+      "points": 0
+    },
+    {
+      "name": "SPADE 3 with trump 1",
+      "design": "SPADE",
+      "value": 3,
+      "trumpSuit": 1,
+      "points": 0
+    },
+    {
+      "name": "SPADE 3 with trump 3",
+      "design": "SPADE",
+      "value": 3,
+      "trumpSuit": 3,
+      "points": 0
+    },
+    {
+      "name": "SPADE 4 with trump 1",
+      "design": "SPADE",
+      "value": 4,
+      "trumpSuit": 1,
+      "points": 0
+    },
+    {
+      "name": "SPADE 4 with trump 3",
+      "design": "SPADE",
+      "value": 4,
+      "trumpSuit": 3,
+      "points": 0
+    },
+    {
+      "name": "SPADE 5 with trump 1",
+      "design": "SPADE",
+      "value": 5,
+      "trumpSuit": 1,
+      "points": 0
+    },
+    {
+      "name": "SPADE 5 with trump 3",
+      "design": "SPADE",
+      "value": 5,
+      "trumpSuit": 3,
+      "points": 0
+    },
+    {
+      "name": "SPADE 6 with trump 1",
+      "design": "SPADE",
+      "value": 6,
+      "trumpSuit": 1,
+      "points": 0
+    },
+    {
+      "name": "SPADE 6 with trump 3",
+      "design": "SPADE",
+      "value": 6,
+      "trumpSuit": 3,
+      "points": 0
+    },
+    {
+      "name": "SPADE 7 with trump 1",
+      "design": "SPADE",
+      "value": 7,
+      "trumpSuit": 1,
+      "points": 0
+    },
+    {
+      "name": "SPADE 7 with trump 3",
+      "design": "SPADE",
+      "value": 7,
+      "trumpSuit": 3,
+      "points": 0
+    },
+    {
+      "name": "SPADE 8 with trump 1",
+      "design": "SPADE",
+      "value": 8,
+      "trumpSuit": 1,
+      "points": 0
+    },
+    {
+      "name": "SPADE 8 with trump 3",
+      "design": "SPADE",
+      "value": 8,
+      "trumpSuit": 3,
+      "points": 0
+    },
+    {
+      "name": "SPADE 9 with trump 1",
+      "design": "SPADE",
+      "value": 9,
+      "trumpSuit": 1,
+      "points": 14
+    },
+    {
+      "name": "SPADE 9 with trump 3",
+      "design": "SPADE",
+      "value": 9,
+      "trumpSuit": 3,
+      "points": 0
+    },
+    {
+      "name": "SPADE 10 with trump 1",
+      "design": "SPADE",
+      "value": 10,
+      "trumpSuit": 1,
+      "points": 10
+    },
+    {
+      "name": "SPADE 10 with trump 3",
+      "design": "SPADE",
+      "value": 10,
+      "trumpSuit": 3,
+      "points": 10
+    },
+    {
+      "name": "SPADE 11 with trump 1",
+      "design": "SPADE",
+      "value": 11,
+      "trumpSuit": 1,
+      "points": 20
+    },
+    {
+      "name": "SPADE 11 with trump 3",
+      "design": "SPADE",
+      "value": 11,
+      "trumpSuit": 3,
+      "points": 2
+    },
+    {
+      "name": "SPADE 12 with trump 1",
+      "design": "SPADE",
+      "value": 12,
+      "trumpSuit": 1,
+      "points": 3
+    },
+    {
+      "name": "SPADE 12 with trump 3",
+      "design": "SPADE",
+      "value": 12,
+      "trumpSuit": 3,
+      "points": 3
+    },
+    {
+      "name": "SPADE 13 with trump 1",
+      "design": "SPADE",
+      "value": 13,
+      "trumpSuit": 1,
+      "points": 4
+    },
+    {
+      "name": "SPADE 13 with trump 3",
+      "design": "SPADE",
+      "value": 13,
+      "trumpSuit": 3,
+      "points": 4
+    },
+    {
+      "name": "CLOVER 1 with trump 1",
+      "design": "CLOVER",
+      "value": 1,
+      "trumpSuit": 1,
+      "points": 11
+    },
+    {
+      "name": "CLOVER 1 with trump 3",
+      "design": "CLOVER",
+      "value": 1,
+      "trumpSuit": 3,
+      "points": 11
+    },
+    {
+      "name": "CLOVER 2 with trump 1",
+      "design": "CLOVER",
+      "value": 2,
+      "trumpSuit": 1,
+      "points": 0
+    },
+    {
+      "name": "CLOVER 2 with trump 3",
+      "design": "CLOVER",
+      "value": 2,
+      "trumpSuit": 3,
+      "points": 0
+    },
+    {
+      "name": "CLOVER 3 with trump 1",
+      "design": "CLOVER",
+      "value": 3,
+      "trumpSuit": 1,
+      "points": 0
+    },
+    {
+      "name": "CLOVER 3 with trump 3",
+      "design": "CLOVER",
+      "value": 3,
+      "trumpSuit": 3,
+      "points": 0
+    },
+    {
+      "name": "CLOVER 4 with trump 1",
+      "design": "CLOVER",
+      "value": 4,
+      "trumpSuit": 1,
+      "points": 0
+    },
+    {
+      "name": "CLOVER 4 with trump 3",
+      "design": "CLOVER",
+      "value": 4,
+      "trumpSuit": 3,
+      "points": 0
+    },
+    {
+      "name": "CLOVER 5 with trump 1",
+      "design": "CLOVER",
+      "value": 5,
+      "trumpSuit": 1,
+      "points": 0
+    },
+    {
+      "name": "CLOVER 5 with trump 3",
+      "design": "CLOVER",
+      "value": 5,
+      "trumpSuit": 3,
+      "points": 0
+    },
+    {
+      "name": "CLOVER 6 with trump 1",
+      "design": "CLOVER",
+      "value": 6,
+      "trumpSuit": 1,
+      "points": 0
+    },
+    {
+      "name": "CLOVER 6 with trump 3",
+      "design": "CLOVER",
+      "value": 6,
+      "trumpSuit": 3,
+      "points": 0
+    },
+    {
+      "name": "CLOVER 7 with trump 1",
+      "design": "CLOVER",
+      "value": 7,
+      "trumpSuit": 1,
+      "points": 0
+    },
+    {
+      "name": "CLOVER 7 with trump 3",
+      "design": "CLOVER",
+      "value": 7,
+      "trumpSuit": 3,
+      "points": 0
+    },
+    {
+      "name": "CLOVER 8 with trump 1",
+      "design": "CLOVER",
+      "value": 8,
+      "trumpSuit": 1,
+      "points": 0
+    },
+    {
+      "name": "CLOVER 8 with trump 3",
+      "design": "CLOVER",
+      "value": 8,
+      "trumpSuit": 3,
+      "points": 0
+    },
+    {
+      "name": "CLOVER 9 with trump 1",
+      "design": "CLOVER",
+      "value": 9,
+      "trumpSuit": 1,
+      "points": 0
+    },
+    {
+      "name": "CLOVER 9 with trump 3",
+      "design": "CLOVER",
+      "value": 9,
+      "trumpSuit": 3,
+      "points": 0
+    },
+    {
+      "name": "CLOVER 10 with trump 1",
+      "design": "CLOVER",
+      "value": 10,
+      "trumpSuit": 1,
+      "points": 10
+    },
+    {
+      "name": "CLOVER 10 with trump 3",
+      "design": "CLOVER",
+      "value": 10,
+      "trumpSuit": 3,
+      "points": 10
+    },
+    {
+      "name": "CLOVER 11 with trump 1",
+      "design": "CLOVER",
+      "value": 11,
+      "trumpSuit": 1,
+      "points": 2
+    },
+    {
+      "name": "CLOVER 11 with trump 3",
+      "design": "CLOVER",
+      "value": 11,
+      "trumpSuit": 3,
+      "points": 2
+    },
+    {
+      "name": "CLOVER 12 with trump 1",
+      "design": "CLOVER",
+      "value": 12,
+      "trumpSuit": 1,
+      "points": 3
+    },
+    {
+      "name": "CLOVER 12 with trump 3",
+      "design": "CLOVER",
+      "value": 12,
+      "trumpSuit": 3,
+      "points": 3
+    },
+    {
+      "name": "CLOVER 13 with trump 1",
+      "design": "CLOVER",
+      "value": 13,
+      "trumpSuit": 1,
+      "points": 4
+    },
+    {
+      "name": "CLOVER 13 with trump 3",
+      "design": "CLOVER",
+      "value": 13,
+      "trumpSuit": 3,
+      "points": 4
+    },
+    {
+      "name": "HEART 1 with trump 1",
+      "design": "HEART",
+      "value": 1,
+      "trumpSuit": 1,
+      "points": 11
+    },
+    {
+      "name": "HEART 1 with trump 3",
+      "design": "HEART",
+      "value": 1,
+      "trumpSuit": 3,
+      "points": 11
+    },
+    {
+      "name": "HEART 2 with trump 1",
+      "design": "HEART",
+      "value": 2,
+      "trumpSuit": 1,
+      "points": 0
+    },
+    {
+      "name": "HEART 2 with trump 3",
+      "design": "HEART",
+      "value": 2,
+      "trumpSuit": 3,
+      "points": 0
+    },
+    {
+      "name": "HEART 3 with trump 1",
+      "design": "HEART",
+      "value": 3,
+      "trumpSuit": 1,
+      "points": 0
+    },
+    {
+      "name": "HEART 3 with trump 3",
+      "design": "HEART",
+      "value": 3,
+      "trumpSuit": 3,
+      "points": 0
+    },
+    {
+      "name": "HEART 4 with trump 1",
+      "design": "HEART",
+      "value": 4,
+      "trumpSuit": 1,
+      "points": 0
+    },
+    {
+      "name": "HEART 4 with trump 3",
+      "design": "HEART",
+      "value": 4,
+      "trumpSuit": 3,
+      "points": 0
+    },
+    {
+      "name": "HEART 5 with trump 1",
+      "design": "HEART",
+      "value": 5,
+      "trumpSuit": 1,
+      "points": 0
+    },
+    {
+      "name": "HEART 5 with trump 3",
+      "design": "HEART",
+      "value": 5,
+      "trumpSuit": 3,
+      "points": 0
+    },
+    {
+      "name": "HEART 6 with trump 1",
+      "design": "HEART",
+      "value": 6,
+      "trumpSuit": 1,
+      "points": 0
+    },
+    {
+      "name": "HEART 6 with trump 3",
+      "design": "HEART",
+      "value": 6,
+      "trumpSuit": 3,
+      "points": 0
+    },
+    {
+      "name": "HEART 7 with trump 1",
+      "design": "HEART",
+      "value": 7,
+      "trumpSuit": 1,
+      "points": 0
+    },
+    {
+      "name": "HEART 7 with trump 3",
+      "design": "HEART",
+      "value": 7,
+      "trumpSuit": 3,
+      "points": 0
+    },
+    {
+      "name": "HEART 8 with trump 1",
+      "design": "HEART",
+      "value": 8,
+      "trumpSuit": 1,
+      "points": 0
+    },
+    {
+      "name": "HEART 8 with trump 3",
+      "design": "HEART",
+      "value": 8,
+      "trumpSuit": 3,
+      "points": 0
+    },
+    {
+      "name": "HEART 9 with trump 1",
+      "design": "HEART",
+      "value": 9,
+      "trumpSuit": 1,
+      "points": 0
+    },
+    {
+      "name": "HEART 9 with trump 3",
+      "design": "HEART",
+      "value": 9,
+      "trumpSuit": 3,
+      "points": 14
+    },
+    {
+      "name": "HEART 10 with trump 1",
+      "design": "HEART",
+      "value": 10,
+      "trumpSuit": 1,
+      "points": 10
+    },
+    {
+      "name": "HEART 10 with trump 3",
+      "design": "HEART",
+      "value": 10,
+      "trumpSuit": 3,
+      "points": 10
+    },
+    {
+      "name": "HEART 11 with trump 1",
+      "design": "HEART",
+      "value": 11,
+      "trumpSuit": 1,
+      "points": 2
+    },
+    {
+      "name": "HEART 11 with trump 3",
+      "design": "HEART",
+      "value": 11,
+      "trumpSuit": 3,
+      "points": 20
+    },
+    {
+      "name": "HEART 12 with trump 1",
+      "design": "HEART",
+      "value": 12,
+      "trumpSuit": 1,
+      "points": 3
+    },
+    {
+      "name": "HEART 12 with trump 3",
+      "design": "HEART",
+      "value": 12,
+      "trumpSuit": 3,
+      "points": 3
+    },
+    {
+      "name": "HEART 13 with trump 1",
+      "design": "HEART",
+      "value": 13,
+      "trumpSuit": 1,
+      "points": 4
+    },
+    {
+      "name": "HEART 13 with trump 3",
+      "design": "HEART",
+      "value": 13,
+      "trumpSuit": 3,
+      "points": 4
+    },
+    {
+      "name": "DIAMOND 1 with trump 1",
+      "design": "DIAMOND",
+      "value": 1,
+      "trumpSuit": 1,
+      "points": 11
+    },
+    {
+      "name": "DIAMOND 1 with trump 3",
+      "design": "DIAMOND",
+      "value": 1,
+      "trumpSuit": 3,
+      "points": 11
+    },
+    {
+      "name": "DIAMOND 2 with trump 1",
+      "design": "DIAMOND",
+      "value": 2,
+      "trumpSuit": 1,
+      "points": 0
+    },
+    {
+      "name": "DIAMOND 2 with trump 3",
+      "design": "DIAMOND",
+      "value": 2,
+      "trumpSuit": 3,
+      "points": 0
+    },
+    {
+      "name": "DIAMOND 3 with trump 1",
+      "design": "DIAMOND",
+      "value": 3,
+      "trumpSuit": 1,
+      "points": 0
+    },
+    {
+      "name": "DIAMOND 3 with trump 3",
+      "design": "DIAMOND",
+      "value": 3,
+      "trumpSuit": 3,
+      "points": 0
+    },
+    {
+      "name": "DIAMOND 4 with trump 1",
+      "design": "DIAMOND",
+      "value": 4,
+      "trumpSuit": 1,
+      "points": 0
+    },
+    {
+      "name": "DIAMOND 4 with trump 3",
+      "design": "DIAMOND",
+      "value": 4,
+      "trumpSuit": 3,
+      "points": 0
+    },
+    {
+      "name": "DIAMOND 5 with trump 1",
+      "design": "DIAMOND",
+      "value": 5,
+      "trumpSuit": 1,
+      "points": 0
+    },
+    {
+      "name": "DIAMOND 5 with trump 3",
+      "design": "DIAMOND",
+      "value": 5,
+      "trumpSuit": 3,
+      "points": 0
+    },
+    {
+      "name": "DIAMOND 6 with trump 1",
+      "design": "DIAMOND",
+      "value": 6,
+      "trumpSuit": 1,
+      "points": 0
+    },
+    {
+      "name": "DIAMOND 6 with trump 3",
+      "design": "DIAMOND",
+      "value": 6,
+      "trumpSuit": 3,
+      "points": 0
+    },
+    {
+      "name": "DIAMOND 7 with trump 1",
+      "design": "DIAMOND",
+      "value": 7,
+      "trumpSuit": 1,
+      "points": 0
+    },
+    {
+      "name": "DIAMOND 7 with trump 3",
+      "design": "DIAMOND",
+      "value": 7,
+      "trumpSuit": 3,
+      "points": 0
+    },
+    {
+      "name": "DIAMOND 8 with trump 1",
+      "design": "DIAMOND",
+      "value": 8,
+      "trumpSuit": 1,
+      "points": 0
+    },
+    {
+      "name": "DIAMOND 8 with trump 3",
+      "design": "DIAMOND",
+      "value": 8,
+      "trumpSuit": 3,
+      "points": 0
+    },
+    {
+      "name": "DIAMOND 9 with trump 1",
+      "design": "DIAMOND",
+      "value": 9,
+      "trumpSuit": 1,
+      "points": 0
+    },
+    {
+      "name": "DIAMOND 9 with trump 3",
+      "design": "DIAMOND",
+      "value": 9,
+      "trumpSuit": 3,
+      "points": 0
+    },
+    {
+      "name": "DIAMOND 10 with trump 1",
+      "design": "DIAMOND",
+      "value": 10,
+      "trumpSuit": 1,
+      "points": 10
+    },
+    {
+      "name": "DIAMOND 10 with trump 3",
+      "design": "DIAMOND",
+      "value": 10,
+      "trumpSuit": 3,
+      "points": 10
+    },
+    {
+      "name": "DIAMOND 11 with trump 1",
+      "design": "DIAMOND",
+      "value": 11,
+      "trumpSuit": 1,
+      "points": 2
+    },
+    {
+      "name": "DIAMOND 11 with trump 3",
+      "design": "DIAMOND",
+      "value": 11,
+      "trumpSuit": 3,
+      "points": 2
+    },
+    {
+      "name": "DIAMOND 12 with trump 1",
+      "design": "DIAMOND",
+      "value": 12,
+      "trumpSuit": 1,
+      "points": 3
+    },
+    {
+      "name": "DIAMOND 12 with trump 3",
+      "design": "DIAMOND",
+      "value": 12,
+      "trumpSuit": 3,
+      "points": 3
+    },
+    {
+      "name": "DIAMOND 13 with trump 1",
+      "design": "DIAMOND",
+      "value": 13,
+      "trumpSuit": 1,
+      "points": 4
+    },
+    {
+      "name": "DIAMOND 13 with trump 3",
+      "design": "DIAMOND",
+      "value": 13,
+      "trumpSuit": 3,
+      "points": 4
+    }
+  ]
+}

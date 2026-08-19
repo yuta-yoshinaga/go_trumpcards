@@ -23,7 +23,7 @@
     "nextRound": "Next round",
     "reset": "Reset",
     "giveUp": "Give up",
-    "playAria": "Play {{card}}"
+    "playAriaWithPoints": "Play {{card}} (worth {{points}})"
   },
   "result": {
     "youWin": "You win! {{chips}} chips",

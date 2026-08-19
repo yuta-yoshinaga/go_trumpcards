@@ -252,9 +252,21 @@ function CrazyQuiltPageContent() {
               <div className="flex flex-wrap justify-center gap-1 sm:gap-2" data-tutorial="cg-foundation">
                 {state.foundation.map((pile, idx) => {
                   const foundationZone: CrazyQuiltMoveZone = { zone: 'foundation', col: idx };
+                  // **A 始まりと K 始まりが混在する。**向きが出ていないと、
+                  // 途中から見て「次に何が要るのか」が読めない。CUI は
+                  // ↑/↓ を出しているのに Web は foundationAscending を
+                  // 一度も参照していなかった (#5743)。
+                  const ascending = state.foundationAscending?.[idx] !== false;
+                  const directionMark = ascending ? '↑' : '↓';
+                  const directionText = t(ascending ? 'directionAscending' : 'directionDescending');
                   return (
                     <div key={`f-${idx.toString()}`} className="text-center">
-                      <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
+                      <div className="text-game-text-muted text-xs mb-1" data-testid={`cq-foundation-head-${idx}`}>
+                        {FOUNDATION_SUITS[idx]}
+                        <span className="ml-0.5" title={directionText} aria-hidden="true">
+                          {directionMark}
+                        </span>
+                      </div>
                       <DropZone
                         isDropTarget={dnd.isDropTarget(foundationZone)}
                         onDragOver={dnd.handleDragOver(foundationZone)}
@@ -266,11 +278,10 @@ function CrazyQuiltPageContent() {
                             type="button"
                             onClick={() => game.handleSelectTarget(foundationZone)}
                             disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
-                            aria-label={t('foundationAriaLabel', {
-                              suit: FOUNDATION_SUITS[idx],
-                              idx,
-                              count: pile.length,
-                            })}
+                            aria-label={t(
+                              ascending ? 'foundationAscendingAriaLabel' : 'foundationDescendingAriaLabel',
+                              { suit: FOUNDATION_SUITS[idx], idx, count: pile.length },
+                            )}
                             className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
                           >
                             <AnimatedCard
@@ -285,11 +296,15 @@ function CrazyQuiltPageContent() {
                             type="button"
                             onClick={() => game.handleSelectTarget(foundationZone)}
                             disabled={!isPlaying || loading || !selectedSource}
-                            aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx], idx })}
+                            aria-label={t(
+                              ascending ? 'emptyFoundationAscendingAriaLabel' : 'emptyFoundationDescendingAriaLabel',
+                              { suit: FOUNDATION_SUITS[idx], idx },
+                            )}
                             style={{ width: dims.cw, height: dims.ch }}
                             className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                           >
-                            A
+                            {/* 空の組札は「何から始まるか」がそのまま次に要る札。 */}
+                            {ascending ? 'A' : 'K'}
                           </button>
                         )}
                       </DropZone>

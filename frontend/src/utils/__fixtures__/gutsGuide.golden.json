@@ -1,0 +1,47 @@
+{
+  "_comment": "Golden vectors for the Guts declaration guide. Two implementations read this file: internal/domain/Guts_test.go (GutsEvaluateGuide) and frontend/src/utils/gutsGuideUtils.golden.test.ts (evaluateGutsGuide). Changing the guide rules on one side alone fails that side; regenerating these numbers to fix it fails the other. suit: 1=Spade 2=Clover 3=Heart 4=Diamond. A low ace (value 1) ranks 14.",
+  "cases": [
+    {
+      "name": "a pair of twos is still the strong tier",
+      "cards": [{ "suit": 1, "value": 2 }, { "suit": 3, "value": 2 }],
+      "pair": true,
+      "tier": "high"
+    },
+    {
+      "name": "a pair of aces",
+      "cards": [{ "suit": 1, "value": 1 }, { "suit": 4, "value": 1 }],
+      "pair": true,
+      "tier": "high"
+    },
+    {
+      "name": "ace high is medium (the low ace ranks 14, not 1)",
+      "cards": [{ "suit": 2, "value": 1 }, { "suit": 3, "value": 7 }],
+      "pair": false,
+      "tier": "medium"
+    },
+    {
+      "name": "king high is medium",
+      "cards": [{ "suit": 1, "value": 13 }, { "suit": 4, "value": 2 }],
+      "pair": false,
+      "tier": "medium"
+    },
+    {
+      "name": "queen high is low (the boundary is the king)",
+      "cards": [{ "suit": 1, "value": 12 }, { "suit": 4, "value": 11 }],
+      "pair": false,
+      "tier": "low"
+    },
+    {
+      "name": "a jack high is low even though the CPU would stay on it",
+      "cards": [{ "suit": 2, "value": 11 }, { "suit": 3, "value": 4 }],
+      "pair": false,
+      "tier": "low"
+    },
+    {
+      "name": "the worst hand",
+      "cards": [{ "suit": 1, "value": 2 }, { "suit": 3, "value": 3 }],
+      "pair": false,
+      "tier": "low"
+    }
+  ]
+}

@@ -78,10 +78,13 @@ export function formatHoneymoonBridgeState(state: HoneymoonBridgeResponse | null
 
   if (state.phase === HoneymoonBridgePhase.ROUND_END && state.contractLevel > 0) {
     lines.push('----------');
+    // **CLI モードも「何点動いたか」を出す** (#5760 レビュー)。ページのバナーと
+    // Go の CUI が出しているのに、ここだけトリックの過不足で止まっていた。
+    const points = state.lastPoints.toString();
     lines.push(
       state.lastMade
-        ? `contract made: ${state.lastTricks} of ${state.requiredTricks} tricks`
-        : `contract down: ${state.lastTricks} of ${state.requiredTricks} tricks`,
+        ? `contract made: ${state.lastTricks} of ${state.requiredTricks} tricks (+${points} to the declarer)`
+        : `contract down: ${state.lastTricks} of ${state.requiredTricks} tricks (+${points} to the opponent)`,
     );
   }
 

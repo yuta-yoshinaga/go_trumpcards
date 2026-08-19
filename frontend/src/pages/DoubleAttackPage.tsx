@@ -210,6 +210,16 @@ function DoubleAttackPageContent() {
                 <div className={`text-sm font-medium ${net >= 0 ? 'text-ds-success' : 'text-ds-error'}`}>
                   {t('label.net')}: {net}
                 </div>
+                {/* **賭けたのに結果が見えない状態をなくす** (#5776)。合計収支だけ
+                    だと、Bust It が当たったのか外れたのかが読めない。 */}
+                {state.bustItBet > 0 && (
+                  <div
+                    className={`text-sm ${state.bustItPayout > 0 ? 'text-ds-success' : 'text-ds-text-muted'}`}
+                    data-testid="da-bustit-result"
+                  >
+                    {state.bustItPayout > 0 ? t('result.bustItHit', { n: state.bustItPayout }) : t('result.bustItMiss')}
+                  </div>
+                )}
               </div>
             )}
 

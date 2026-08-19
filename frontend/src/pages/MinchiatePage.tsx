@@ -205,6 +205,11 @@ function MinchiatePageContent() {
             >
               {t('trumpCountNote')}
             </div>
+            {/* マットだけが規則の外にいる (取らない・フォロー免除・リードを定めない)。
+                ヒントを切っていると伝わる場所がどこにも無かった (#5715)。 */}
+            <div className="text-center mb-2 text-sm text-ds-text-muted" data-testid="minchiate-matto-note">
+              {t('mattoNote')}
+            </div>
 
             <div className={lgTwoColGrid}>
               <div>

@@ -43,6 +43,10 @@ type StealingBundlesGame interface {
 	GetDeckRemaining() int
 	// GetLastCaptureIdx 最後に取った席を取得する (-1: まだ)
 	GetLastCaptureIdx() int
+	// GetLastCaptureKind 直前の獲得の種別 ("take" / "steal"、まだなら "") を返す
+	GetLastCaptureKind() string
+	// GetLastCaptureVictimIdx 直前の盗みの被害者席を返す (盗み以外は -1)
+	GetLastCaptureVictimIdx() int
 	// GetCurrentPlayerIdx 現在の手番を取得する
 	GetCurrentPlayerIdx() int
 	// GetTurnNumber 打たれた手の数を取得する

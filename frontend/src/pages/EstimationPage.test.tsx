@@ -236,3 +236,51 @@ describe('EstimationPage', () => {
     expect(await screen.findByText(/強い札がありません/)).toBeInTheDocument();
   });
 });
+
+// **得点式が複雑（10+宣言 / Dash Call ±23 / Risk 2倍）** (#5751)。累計だけだと、
+// ラウンドで自分や相手の点がどう動いたのかを差分から暗算することになる。
+describe('EstimationPage round delta', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+  });
+
+  it('shows the signed change for each seat once the round ends', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 3,
+        players: [
+          seat(0, { roundScore: 23 }),
+          seat(1, { roundScore: -23 }),
+          seat(2, { roundScore: 0 }),
+          seat(3, { roundScore: 14 }),
+        ],
+      } as Partial<EstimationResponse>),
+    );
+    renderWithProviders(<EstimationPage />);
+
+    // Dash Call の ±23 と、動かなかった席の ±0 を席ごとに突き合わせる。
+    expect(await screen.findByTestId('est-round-delta-0')).toHaveTextContent('+23');
+    expect(screen.getByTestId('est-round-delta-1')).toHaveTextContent('-23');
+    expect(screen.getByTestId('est-round-delta-2')).toHaveTextContent('±0');
+    expect(screen.getByTestId('est-round-delta-3')).toHaveTextContent('+14');
+    // 減った席だけ赤。
+    expect(screen.getByTestId('est-round-delta-1').className).toContain('text-ds-error');
+    expect(screen.getByTestId('est-round-delta-0').className).toContain('text-ds-success');
+  });
+
+  // **増減が確定するのはラウンド終了時。**プレイ中に出すと前ラウンドの値が
+  // 今の結果に見える。
+  it('does not show it while the round is still being played', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2,
+        trumpSuit: 3,
+        players: [seat(0, { roundScore: 23 }), seat(1), seat(2), seat(3)],
+      } as Partial<EstimationResponse>),
+    );
+    renderWithProviders(<EstimationPage />);
+    await waitFor(() => expect(screen.getByTestId('est-seat-0')).toBeInTheDocument());
+    expect(screen.queryByTestId('est-round-delta-0')).not.toBeInTheDocument();
+  });
+});

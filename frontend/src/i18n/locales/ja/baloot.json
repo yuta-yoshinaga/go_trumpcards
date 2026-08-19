@@ -21,7 +21,8 @@
   },
   "baloot": {
     "none": "役なし",
-    "held": "Baloot（切り札のK+Q）=20点"
+    "held": "Baloot（切り札のK+Q）=20点",
+    "hidden": "不明"
   },
   "currentTrick": "現在のトリック",
   "actions": {

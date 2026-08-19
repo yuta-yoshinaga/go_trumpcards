@@ -20,6 +20,8 @@ func newCucumberForTest(t *testing.T, n int) *Cucumber {
 }
 
 // **7 枚固定。** 52 枚は 3/5/6 人で割り切れないので、人数で割りません。
+// 配り枚数は 1 ラウンドのトリック数そのもの。**人数を変えても 7 枚固定**なので、
+// 画面が出す総トリック数もここで固定される (#5768)。
 func TestCucumberResetDealsSevenEach(t *testing.T) {
 	for n := CucumberPlayerCntMin; n <= CucumberPlayerCntMax; n++ {
 		c := newCucumberForTest(t, n)

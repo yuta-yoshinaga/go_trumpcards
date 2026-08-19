@@ -48,6 +48,12 @@ export interface RollingStoneResponse extends BaseGameResponse {
    * your turn", and the two call for opposite things.
    */
   mustPickUp: boolean;
+  /**
+   * Suit led in the current trick (1=♠ 2=♣ 3=♥ 4=♦), 0 before anyone has played.
+   *
+   * This is *why* a pickup is forced — the seat holds nothing of this suit.
+   */
+  leadSuit: number;
   /** Hand indices you may legally play. Following suit is compulsory. */
   validPlays: number[];
   currentTrick: RollingStoneTrickCard[];

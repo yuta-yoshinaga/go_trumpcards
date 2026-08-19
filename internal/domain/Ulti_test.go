@@ -773,3 +773,53 @@ func TestUltiConfig_Validate(t *testing.T) {
 	assert.Error(t, domain.UltiConfig{CpuDifficulty: 99, TargetRounds: 5}.Validate())
 	assert.Error(t, domain.UltiConfig{CpuDifficulty: domain.UltiCpuDifficultyEasy, TargetRounds: 0}.Validate())
 }
+
+// #5690: Web ページは累積コインを ref に退避して差分を取ることで「+2 / -1」を
+// 出していた。精算額は domain が計算しているので、差分は domain が持つべき。
+func TestUlti_LastDealCoins(t *testing.T) {
+	t.Run("is the change this deal applied, not the running total", func(t *testing.T) {
+		g := newTestUlti()
+		g.SetPlayerCoins([domain.UltiPlayerCnt]int{10, 10, 10}) // 前ディールまでの累積
+		g.SetDeclarerIdx(0)
+		g.SetContract(domain.UltiContractBetli)
+		g.SetPhase(domain.UltiPhaseRoundEnd)
+		ultiGiveTricks(g, 1, 5) // 宣言者が 1 トリックも取らない = 成功
+
+		g.ScoreRound()
+
+		assert.Equal(t, [domain.UltiPlayerCnt]int{10, -5, -5}, g.GetLastDealCoins())
+		assert.Equal(t, [domain.UltiPlayerCnt]int{20, 5, 5}, g.GetPlayerCoins())
+		// 累積 = 前の累積 + 今回の増減。ゼロサムなので合計は動かない。
+		assert.Equal(t, 0, g.GetLastDealCoins()[0]+g.GetLastDealCoins()[1]+g.GetLastDealCoins()[2])
+	})
+
+	t.Run("survives a save/load round trip", func(t *testing.T) {
+		g := newTestUlti()
+		g.SetDeclarerIdx(0)
+		g.SetContract(domain.UltiContractBetli)
+		g.SetPhase(domain.UltiPhaseRoundEnd)
+		ultiGiveTricks(g, 1, 5)
+		g.ScoreRound()
+
+		blob, err := g.MarshalJSON()
+		assert.NoError(t, err)
+		restored := domain.NewDefaultUlti()
+		assert.NoError(t, restored.UnmarshalJSON(blob))
+
+		assert.Equal(t, g.GetLastDealCoins(), restored.GetLastDealCoins())
+	})
+
+	t.Run("is cleared when the next deal starts", func(t *testing.T) {
+		g := newTestUlti()
+		g.SetDeclarerIdx(0)
+		g.SetContract(domain.UltiContractBetli)
+		g.SetPhase(domain.UltiPhaseRoundEnd)
+		ultiGiveTricks(g, 1, 5)
+		g.ScoreRound()
+		assert.NotEqual(t, [domain.UltiPlayerCnt]int{}, g.GetLastDealCoins())
+
+		g.NextRound()
+
+		assert.Equal(t, [domain.UltiPlayerCnt]int{}, g.GetLastDealCoins())
+	})
+}

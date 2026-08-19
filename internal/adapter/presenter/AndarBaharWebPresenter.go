@@ -32,6 +32,8 @@ func (ap *AndarBaharWebPresenter) Output(ab interfaces.AndarBaharGame, lastErr e
 	resObj.Winner = ab.GetWinner()
 	resObj.Result = int(ab.GetResult())
 	resObj.Payout = ab.GetPayout()
+	resObj.MainPayout = ab.GetMainPayout()
+	resObj.SidePayout = ab.GetSidePayout()
 	resObj.History = intSliceOrEmpty(ab.GetHistory())
 
 	if lastErr != nil {

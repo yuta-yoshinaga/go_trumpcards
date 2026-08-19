@@ -9,6 +9,7 @@
   "awardTurnUpLine": "{{name}} がめくり札で {{compartment}} を獲得（{{chips}}）",
   "pileLine": "場に出た札: {{cards}}",
   "playerLine": "{{name}}: チップ{{chips}} 手札{{cards}}枚",
+  "holdsPope": "[Pope保持]",
   "compartment.ace": "A",
   "compartment.king": "K",
   "compartment.queen": "Q",

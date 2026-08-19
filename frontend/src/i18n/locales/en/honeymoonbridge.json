@@ -27,7 +27,9 @@
   "roundResult": {
     "made": "Contract made: {{took}} of the {{need}} tricks needed.",
     "down": "Contract down: only {{took}} of the {{need}} tricks needed.",
-    "passedOut": "Both passed, so the deal was thrown in."
+    "passedOut": "Both passed, so the deal was thrown in.",
+    "madeWithPoints": "Contract made: {{took}} of the {{need}} needed (+{{points}} to the declarer).",
+    "downWithPoints": "Contract down: only {{took}} of the {{need}} needed (+{{points}} to the opponent)."
   },
   "actions": {
     "level": "Level",
