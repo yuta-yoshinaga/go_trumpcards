@@ -253,7 +253,49 @@ describe('DoubleAttackPage', () => {
     await waitFor(() => expect(screen.getByTestId('da-result')).toBeInTheDocument());
     // 賭け 100 + Bust It 20 = 120 に対し払い戻し 200 -> 収支 +80
     expect(screen.getByTestId('da-result')).toHaveTextContent('80');
+    // **賭けたのに結果が見えない状態をなくす** (#5776)。
+    expect(screen.getByTestId('da-bustit-result')).toHaveTextContent('Bust It 的中');
+    expect(screen.getByTestId('da-bustit-result')).toHaveTextContent('60');
     expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument();
+  });
+
+  // **払い戻し 0 でも「外れ」と言う。** 何も出ないと、賭けたこと自体が
+  // 無かったように見える (#5776)。
+  it('Bust It が外れた回もそう言う', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: DoubleAttackPhase.RESULT,
+        anteBet: 50,
+        attackBet: 50,
+        bustItBet: 20,
+        dealerHoleDealt: true,
+        hands: [hand({ result: DOUBLE_ATTACK_RESULT.lose, bet: 100 })],
+        payout: 0,
+        bustItPayout: 0,
+      }),
+    );
+    renderWithProviders(<DoubleAttackPage />);
+    await waitFor(() => expect(screen.getByTestId('da-bustit-result')).toBeInTheDocument());
+    expect(screen.getByTestId('da-bustit-result')).toHaveTextContent('外れ');
+  });
+
+  // **負のコントロール: 賭けていない回に行は出さない。**
+  it('Bust It に賭けていない回は行を出さない', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: DoubleAttackPhase.RESULT,
+        anteBet: 50,
+        attackBet: 50,
+        bustItBet: 0,
+        dealerHoleDealt: true,
+        hands: [hand({ result: DOUBLE_ATTACK_RESULT.win, bet: 100 })],
+        payout: 200,
+        bustItPayout: 0,
+      }),
+    );
+    renderWithProviders(<DoubleAttackPage />);
+    await waitFor(() => expect(screen.getByTestId('da-result')).toBeInTheDocument());
+    expect(screen.queryByTestId('da-bustit-result')).not.toBeInTheDocument();
   });
 
   it('チップを見出しに出す', async () => {
