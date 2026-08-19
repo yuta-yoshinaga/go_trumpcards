@@ -144,6 +144,11 @@ func (p *GoStopCuiPresenter) Output(g interfaces.GoStopGame, lastErr error) stri
 		case domain.GoStopPhaseGoDecision:
 			b.WriteString(i18n.Tf("gostop.promptDecision",
 				"points", strconv.Itoa(g.GetPendingPoints())) + "\n")
+			// 続けるかどうかは「あと何枚でどの役か」で決まる (Web の
+			// gostop-yaku-preview と同じ判定を domain から取る)。
+			if line := gostopNearYakuLine(g.GetPendingBreakdown()); line != "" {
+				b.WriteString(line)
+			}
 		case domain.GoStopPhaseRoundEnd:
 			b.WriteString(gostopRoundResultStr(g) + "\n")
 		case domain.GoStopPhaseGameEnd:
@@ -187,6 +192,22 @@ func gostopBakStr(res *domain.GoStopRoundResult) string {
 		return "-"
 	}
 	return strings.Join(parts, ",")
+}
+
+// gostopNearYakuLine renders the "almost scoring" preview (empty when nothing is close).
+// 役名のキーは Web の preview.<target> と同じ識別子を domain から受け取る。
+func gostopNearYakuLine(bd *domain.GoStopBreakdown) string {
+	near := domain.GoStopComputeNearYaku(bd)
+	if len(near) == 0 {
+		return ""
+	}
+	items := make([]string, 0, len(near))
+	for _, y := range near {
+		items = append(items, i18n.Tf("gostop.previewItem",
+			"name", i18n.T("gostop.preview"+strings.ToUpper(y.Target[:1])+y.Target[1:]),
+			"remaining", strconv.Itoa(y.Remaining)))
+	}
+	return i18n.Tf("gostop.previewTitle", "items", strings.Join(items, ", ")) + "\n"
 }
 
 // HintOutput emits the current Go-Stop hint.
