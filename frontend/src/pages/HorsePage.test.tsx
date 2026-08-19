@@ -100,6 +100,35 @@ describe('HorsePage', () => {
     expect(board).toBeInTheDocument();
   });
 
+  // **同じ数字でも種目で意味が違う** (#5788)。ホールデムの 2 はフロップ、
+  // スタッドの 2 は 4th street。
+  it('names the betting round per discipline', async () => {
+    mockExec.mockResolvedValue(makeHorseState({ disciplineName: 'holdem', tablePhase: 2 }));
+    const { unmount } = renderWithProviders(<HorsePage />);
+    expect(await screen.findByTestId('ho-round')).toHaveTextContent('フロップ');
+    unmount();
+
+    mockExec.mockResolvedValue(
+      makeHorseState({ discipline: 2, disciplineLetter: 'R', disciplineName: 'razz', tablePhase: 2 }),
+    );
+    const razz = renderWithProviders(<HorsePage />);
+    expect(await screen.findByTestId('ho-round')).toHaveTextContent('フォースストリート');
+    razz.unmount();
+
+    // オマハはコミュニティ系。
+    mockExec.mockResolvedValue(makeHorseState({ discipline: 1, disciplineName: 'omahaHiLo', tablePhase: 4 }));
+    renderWithProviders(<HorsePage />);
+    expect(await screen.findByTestId('ho-round')).toHaveTextContent('リバー');
+  });
+
+  // **配る前に名前は無い。** 0 は「まだ開始していない」。
+  it('shows no round name before the hand starts', async () => {
+    mockExec.mockResolvedValue(makeHorseState({ disciplineName: 'holdem', tablePhase: 0 }));
+    renderWithProviders(<HorsePage />);
+    await screen.findByTestId('ho-discipline');
+    expect(screen.queryByTestId('ho-round')).not.toBeInTheDocument();
+  });
+
   // **共有札はスタッド系には無い。** 常に描くと、無いはずの場が出る。
   it('hides the community row in the stud disciplines', async () => {
     mockExec.mockResolvedValue(
