@@ -48587,6 +48587,8 @@ components:
         lastExchange:
           type: integer
           description: >-
+            How many cards changed hands for last round's shortfall. Surplus
+            tricks buy an opponent's best cards; nothing else shows this.
         lastExchangePairs:
           type: array
           description: >-
@@ -48601,8 +48603,6 @@ components:
                 type: integer
               count:
                 type: integer
-            How many cards changed hands for last round's shortfall. Surplus
-            tricks buy an opponent's best cards; nothing else shows this.
         currentPlayerIdx:
           type: integer
         leadPlayerIdx:
