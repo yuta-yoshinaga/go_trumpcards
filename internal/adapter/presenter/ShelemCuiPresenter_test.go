@@ -246,6 +246,14 @@ func TestShelemCuiPresenterShowsTheDefenderPoints(t *testing.T) {
 	assert.Equal(t, domain.ShelemHandPoints,
 		s.GetRoundPoints(0)+s.GetRoundPoints(1))
 	assert.NotContains(t, out, "{{")
+
+	// **Shelem 宣言では出さない** (レビュー指摘 #6098)。成否は全トリック
+	// 独占だけで決まり、カード点は一切見ない。
+	shelem := newShelemForCui(t)
+	shelem.SetContractForTest(1, 0, true)
+	shelem.SetRoundPointsForTest(0, 40)
+	shelem.SetRoundPointsForTest(1, 60)
+	assert.NotContains(t, shelemPlain(p.Output(shelem, nil)), fixedPart("shelem.defenderLine"))
 }
 
 // shelemPlain は色付けのエスケープを落とす。

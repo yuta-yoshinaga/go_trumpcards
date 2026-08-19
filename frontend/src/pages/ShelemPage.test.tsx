@@ -310,6 +310,15 @@ describe('ShelemPage defender points', () => {
     expect(await screen.findByTestId('sh-defenders')).toHaveTextContent('60');
   });
 
+  // **Shelem 宣言では出さない** (レビュー指摘 #6098)。成否は全トリック独占
+  // だけで決まり、カード点は一切見ない。
+  it('shows nothing during a Shelem contract', async () => {
+    mockExec.mockResolvedValue(makeState({ declarerIdx: 1, contract: 0, shelemBid: true, roundPoints: [40, 60] }));
+    renderWithProviders(<ShelemPage />);
+    await waitFor(() => expect(screen.getByTestId('sh-contract')).toBeInTheDocument());
+    expect(screen.queryByTestId('sh-defenders')).not.toBeInTheDocument();
+  });
+
   it('shows nothing before a contract is settled', async () => {
     mockExec.mockResolvedValue(makeState({ declarerIdx: -1 }));
     renderWithProviders(<ShelemPage />);

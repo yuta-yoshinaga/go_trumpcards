@@ -250,7 +250,9 @@ function ShelemPageContent() {
                     })}
               {/* **守備側の点も出す** (#5754)。契約を阻止できているかは、
                   宣言側の点だけ見ていても分からない。合計は必ず 100 点。 */}
-              {state.declarerIdx >= 0 && (
+              {/* Shelem 宣言では成否が全トリック独占だけで決まり、カード点を
+                  一切見ないので出さない (レビュー指摘 #6098)。 */}
+              {state.declarerIdx >= 0 && !state.shelemBid && (
                 <span className="ml-2 text-ds-text-muted" data-testid="sh-defenders">
                   {t('header.defenders', {
                     got: String(state.roundPoints[(state.declarerIdx + 1) % 2] ?? 0),
