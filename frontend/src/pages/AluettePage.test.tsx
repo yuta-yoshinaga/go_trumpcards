@@ -138,8 +138,10 @@ describe('AluettePage', () => {
 
     const tally = await screen.findByTestId('aluette-team-tally');
 
-    expect(tally).toHaveTextContent('3');
-    expect(tally).toHaveTextContent('2');
+    // **数字だけの Contains では素通りする**: 文言自体に「4-1 でも 3-2 でも」と
+    // 3 も 2 も含まれるため、チーム名とセットで照合する。
+    expect(tally).toHaveTextContent('チーム0 3');
+    expect(tally).toHaveTextContent('チーム1 2');
     expect(screen.getByTestId('aluette-meine-winner')).toHaveTextContent('チーム0');
   });
 
