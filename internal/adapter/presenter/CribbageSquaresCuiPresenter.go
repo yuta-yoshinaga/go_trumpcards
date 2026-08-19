@@ -71,8 +71,13 @@ func (pr *CribbageSquaresCuiPresenter) Output(p interfaces.CribbageSquaresGame, 
 
 		cuiErrorBlock(b, lastErr)
 
-		if p.GetPhase() == domain.CribbageSquaresPhaseComplete {
-			// 8 手それぞれの内訳。合計だけでは、どの手が効いたのか分からない。
+		complete := p.GetPhase() == domain.CribbageSquaresPhaseComplete
+		// 8 手それぞれの内訳。合計だけでは、どの手が効いたのか分からない。
+		//
+		// **途中でも出す** (#5740)。ただしスターターは 16 枚置き終えるまで
+		// めくらないので、途中経過は「スターター抜きで確定している点」を出す。
+		// 0 点の行・列は黙る。
+		if complete {
 			for r := range domain.CribbageSquaresGridSize {
 				b.WriteString(cribbageSquaresDetailLine(
 					i18n.Tf("cribbagesquares.rowLabel", "idx", strconv.Itoa(r)), p.RowDetail(r)))
@@ -81,7 +86,32 @@ func (pr *CribbageSquaresCuiPresenter) Output(p interfaces.CribbageSquaresGame, 
 				b.WriteString(cribbageSquaresDetailLine(
 					i18n.Tf("cribbagesquares.colLabel", "idx", strconv.Itoa(c)), p.ColDetail(c)))
 			}
+		} else {
+			// **確定ぶんはスターター抜きで数えられる。**RowDetail は
+			// スターターが出るまで 0 のままなので、途中経過は語れない。
+			// 置かれている札だけを数えた下限を出す (スターターは足すだけ)。
+			partial := make([]string, 0, 2*domain.CribbageSquaresGridSize)
+			for r := range domain.CribbageSquaresGridSize {
+				if d := p.RowPartialDetail(r); cribbageSquaresHasPoints(d) {
+					partial = append(partial, cribbageSquaresDetailLine(
+						i18n.Tf("cribbagesquares.rowLabel", "idx", strconv.Itoa(r)), d))
+				}
+			}
+			for c := range domain.CribbageSquaresGridSize {
+				if d := p.ColPartialDetail(c); cribbageSquaresHasPoints(d) {
+					partial = append(partial, cribbageSquaresDetailLine(
+						i18n.Tf("cribbagesquares.colLabel", "idx", strconv.Itoa(c)), d))
+				}
+			}
+			if len(partial) > 0 {
+				b.WriteString(i18n.T("cribbagesquares.partialHeader") + "\n")
+				for _, line := range partial {
+					b.WriteString(line)
+				}
+			}
+		}
 
+		if complete {
 			line := i18n.Tf("cribbagesquares.gameComplete",
 				"score", strconv.Itoa(p.TotalScore()),
 				"target", strconv.Itoa(domain.CribbageSquaresWinScore))
@@ -92,6 +122,15 @@ func (pr *CribbageSquaresCuiPresenter) Output(p interfaces.CribbageSquaresGame, 
 			}
 		}
 	})
+}
+
+// cribbageSquaresHasPoints reports whether a hand scored anything at all.
+//
+// frontend の cribbageBreakdownParts と同じ判定: 1 つでも 0 でない要素があるか。
+// 空マスだらけの行に「なし」を 8 行並べても読みづらいだけなので、途中経過では
+// 点の付いた行・列だけ出す。
+func cribbageSquaresHasPoints(d domain.CribbageScoreDetail) bool {
+	return d.Fifteens > 0 || d.Pairs > 0 || d.Runs > 0 || d.Flush > 0 || d.Nobs > 0
 }
 
 // cribbageSquaresDetailLine renders one hand's cribbage breakdown.

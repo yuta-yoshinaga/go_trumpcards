@@ -37,6 +37,12 @@ export interface ChemindeFerPlayer {
   name: string;
   isHuman: boolean;
   chips: number;
+  /**
+   * Chips this seat gained or lost in the last settlement; `0` during a round.
+   *
+   * The table-level result (banker/punter/tie) does not say whether *your* bet won.
+   */
+  lastNet: number;
   /** Amount staked this round. Cleared once the coup settles. */
   bet: number;
   isBanker: boolean;

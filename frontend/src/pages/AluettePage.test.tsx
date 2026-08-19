@@ -130,6 +130,21 @@ describe('AluettePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('next'));
   });
 
+  // #5714: メーヌの勝敗は**チーム合計が3以上か**で決まる (4-1 でも 3-2 でも 1 点)。
+  // 個人トリック数の羅列だけでは、自分で足し算しないと結果が分からなかった。
+  it('sums each team and names the mene winner', async () => {
+    mockExec.mockResolvedValue(roundEndState); // 3-1-0-1 → チーム0 が 3、チーム1 が 2
+    renderWithProviders(<AluettePage />);
+
+    const tally = await screen.findByTestId('aluette-team-tally');
+
+    // **数字だけの Contains では素通りする**: 文言自体に「4-1 でも 3-2 でも」と
+    // 3 も 2 も含まれるため、チーム名とセットで照合する。
+    expect(tally).toHaveTextContent('チーム0 3');
+    expect(tally).toHaveTextContent('チーム1 2');
+    expect(screen.getByTestId('aluette-meine-winner')).toHaveTextContent('チーム0');
+  });
+
   it('advances to the next mene and shows the trick tally', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<AluettePage />);

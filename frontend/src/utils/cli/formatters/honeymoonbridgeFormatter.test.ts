@@ -31,6 +31,7 @@ const state = (over: Partial<HoneymoonBridgeResponse> = {}): HoneymoonBridgeResp
     minBidSuit: 0,
     lastMade: false,
     lastTricks: 0,
+    lastPoints: 0,
     currentPlayerIdx: 0,
     leadPlayerIdx: 0,
     dealerIdx: 0,
@@ -118,11 +119,13 @@ describe('formatHoneymoonBridgeState', () => {
 
   // ディール終了の 3 通りすべて。
   it('reports the deal result', () => {
-    expect(formatHoneymoonBridgeState(state({ phase: 3, lastMade: true, lastTricks: 9 }))).toContain(
-      'contract made: 9 of 8 tricks',
+    // **点も書く** (#5760)。トリックの過不足だけでは、そのディールが何点
+    // だったのか読めない。
+    expect(formatHoneymoonBridgeState(state({ phase: 3, lastMade: true, lastTricks: 9, lastPoints: 25 }))).toContain(
+      'contract made: 9 of 8 tricks (+25 to the declarer)',
     );
-    expect(formatHoneymoonBridgeState(state({ phase: 3, lastMade: false, lastTricks: 6 }))).toContain(
-      'contract down: 6 of 8 tricks',
+    expect(formatHoneymoonBridgeState(state({ phase: 3, lastMade: false, lastTricks: 6, lastPoints: 20 }))).toContain(
+      'contract down: 6 of 8 tricks (+20 to the opponent)',
     );
     // 流局は契約が無いので成立/失敗を書かない。
     const passedOut = formatHoneymoonBridgeState(state({ phase: 3, contractLevel: 0, declarerIdx: -1 }));

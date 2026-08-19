@@ -24,5 +24,6 @@
   "pullConfirmPrompt": "Enter y to go ahead (any other command cancels).",
   "pullUnavailable": "You cannot pull right now.",
   "helpExampleBet": "  b 100                bet 100 chips",
-  "totalRiskLine": "At risk right now: {{risk}}"
+  "totalRiskLine": "At risk right now: {{risk}}",
+  "nothingToConfirm": "There is no pull waiting for confirmation."
 }

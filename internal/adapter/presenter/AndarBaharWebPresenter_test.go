@@ -42,6 +42,8 @@ func TestAndarBaharWebPresenter_ArraysAreNeverNull(t *testing.T) {
 			DealtCount  int              `json:"dealtCount"`
 			Winner      int              `json:"winner"`
 			Payout      int              `json:"payout"`
+			MainPayout  int              `json:"mainPayout"`
+			SidePayout  int              `json:"sidePayout"`
 			Chips       int              `json:"chips"`
 			FirstColumn int              `json:"firstColumn"`
 			Phase       int              `json:"phase"`
@@ -56,6 +58,9 @@ func TestAndarBaharWebPresenter_ArraysAreNeverNull(t *testing.T) {
 			"2 列の合計が配った枚数と合わない")
 		assert.Equal(t, game.GetWinner(), out.Winner)
 		assert.Equal(t, game.GetPayout(), out.Payout)
+		assert.Equal(t, game.GetMainPayout(), out.MainPayout)
+		assert.Equal(t, game.GetSidePayout(), out.SidePayout)
+		assert.Equal(t, out.Payout, out.MainPayout+out.SidePayout, "内訳の和が合計")
 		assert.Equal(t, game.GetChips(), out.Chips)
 		assert.Equal(t, game.GetFirstColumn(), out.FirstColumn)
 		assert.Equal(t, domain.AndarBaharPhaseEnd, out.Phase)
@@ -73,6 +78,9 @@ func TestAndarBaharWebPresenter_Output_Fields(t *testing.T) {
 	m.On("GetSideAmount").Return(20)
 	m.On("GetBetAmount").Return(100)
 	m.On("GetPayout").Return(190)
+	// **内訳は合計と一緒に出る** (#5770)。190 = メイン 150 + サイド 40。
+	m.On("GetMainPayout").Return(150)
+	m.On("GetSidePayout").Return(40)
 	m.On("GetWinner").Return(domain.AndarBaharBetBahar)
 	fillAndarBaharCuiDefaults(m)
 

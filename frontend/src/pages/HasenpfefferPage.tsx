@@ -218,6 +218,15 @@ function HasenpfefferPageContent() {
               {t('header.score', { t0: String(state.scores[0] ?? 0), t1: String(state.scores[1] ?? 0) })}
             </div>
 
+            {/* **上限に達すると宣言ボタンが 1 つも出ない** (#5758)。理由が
+                書かれていないと、ボタンが急に消えたようにしか見えない。
+                CUI の promptBidCapped と同じ条件 (次に打てる額が無い) で出す。 */}
+            {isHumanBidTurn && !state.mustBid && state.minBid === 0 && (
+              <div className="text-center mb-3 text-ds-warning text-sm" role="status" data-testid="hpf-bid-capped">
+                {t('header.bidCapped', { max: String(BID_MAX) })}
+              </div>
+            )}
+
             {/* **親は降りられないことがある。** 選択肢が無い場面を言う。 */}
             {isHumanBidTurn && state.mustBid && (
               <div className="text-center mb-3 text-ds-accent text-sm" role="status" data-testid="hpf-must-bid">

@@ -148,3 +148,41 @@ func TestMendikotWebPresenterHintAndLog(t *testing.T) {
 	require.NoError(t, json.Unmarshal([]byte(p.ActionLogOutput(m)), &logOut))
 	assert.Contains(t, logOut, "entries")
 }
+
+// **切り札は宣言ではなく事故で決まる** (#5755)。画面で作り直すのではなく、
+// ドメインの判定をそのまま配る。
+func TestMendikotWebPresenterFlagsTheTrumpSettingTurn(t *testing.T) {
+	setup := func(hand []*domain.Card, trump int) *domain.Mendikot {
+		m := newMendikotForWeb(t)
+		m.SetPhaseForTest(domain.MendikotPhasePlay)
+		m.SetTrumpForTest(trump, -1)
+		m.SetCurrentPlayerIdxForTest(0)
+		m.SetCurrentTrickForTest([]*domain.TrickCard{
+			{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignSpade, 9, true)},
+		})
+		human := m.GetPlayer(0)
+		human.ResetRound()
+		for _, c := range hand {
+			human.AddCard(c)
+		}
+		return m
+	}
+
+	cannotFollow := setup([]*domain.Card{
+		domain.NewCard(domain.CardDesignHeart, 5, true),
+		domain.NewCard(domain.CardDesignClover, 8, true),
+	}, 0)
+	assert.True(t, decodeMendikot(t, new(MendikotWebPresenter).Output(cannotFollow, nil))["willSetTrump"].(bool))
+
+	canFollow := setup([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 3, true),
+		domain.NewCard(domain.CardDesignHeart, 5, true),
+	}, 0)
+	assert.False(t, decodeMendikot(t, new(MendikotWebPresenter).Output(canFollow, nil))["willSetTrump"].(bool))
+
+	decided := setup([]*domain.Card{
+		domain.NewCard(domain.CardDesignHeart, 5, true),
+		domain.NewCard(domain.CardDesignClover, 8, true),
+	}, domain.CardDesignHeart)
+	assert.False(t, decodeMendikot(t, new(MendikotWebPresenter).Output(decided, nil))["willSetTrump"].(bool))
+}

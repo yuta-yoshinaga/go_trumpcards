@@ -55,16 +55,21 @@ type MendikotWebOutput struct {
 	TensInDeck int   `json:"tensInDeck"`
 	Scores     []int `json:"scores"`
 	// LastHandWinner / LastHandKind は直前のハンドの結末 (-1 / "")。
-	LastHandWinner   int                    `json:"lastHandWinner"`
-	LastHandKind     string                 `json:"lastHandKind"`
-	CurrentPlayerIdx int                    `json:"currentPlayerIdx"`
-	LeadPlayerIdx    int                    `json:"leadPlayerIdx"`
-	DealerIdx        int                    `json:"dealerIdx"`
-	CurrentTrick     []*WebOutputTrickCard  `json:"currentTrick"`
-	ValidPlays       []int                  `json:"validPlays"`
-	GameEndFlag      bool                   `json:"gameEndFlag"`
-	WinnerTeam       int                    `json:"winnerTeam"`
-	Hint             *MendikotWebOutputHint `json:"hint,omitempty"`
+	LastHandWinner   int                   `json:"lastHandWinner"`
+	LastHandKind     string                `json:"lastHandKind"`
+	CurrentPlayerIdx int                   `json:"currentPlayerIdx"`
+	LeadPlayerIdx    int                   `json:"leadPlayerIdx"`
+	DealerIdx        int                   `json:"dealerIdx"`
+	CurrentTrick     []*WebOutputTrickCard `json:"currentTrick"`
+	ValidPlays       []int                 `json:"validPlays"`
+	// WillSetTrump は、人間が今出す札で切り札が決まってしまうか。
+	//
+	// **Mendikot に切り札選択フェーズは無い** (#5755)。フォローできなかった
+	// 最初の 1 枚がそのまま切り札になるので、その手番は一度きりの重い選択。
+	WillSetTrump bool                   `json:"willSetTrump"`
+	GameEndFlag  bool                   `json:"gameEndFlag"`
+	WinnerTeam   int                    `json:"winnerTeam"`
+	Hint         *MendikotWebOutputHint `json:"hint,omitempty"`
 	WebOutputBase
 	Config MendikotWebOutputConfig `json:"config"`
 }
