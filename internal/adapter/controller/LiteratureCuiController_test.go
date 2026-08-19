@@ -105,6 +105,19 @@ func TestLiteratureCuiController_Exec(t *testing.T) {
 		m.AssertNotCalled(t, "Claim", 0, []int{0, 0, 2, 2, 4, 4})
 	})
 
+	// **リセットも待ちを消す** (レビュー指摘 #6070)。r / reset は
+	// execCuiCommand が gameHandler より先に拾うので、gameHandler 側の
+	// クリアだけでは配り直した卓に古い宣言が確定してしまう。
+	t.Run("reset drops a claim waiting for confirmation", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewLiteratureCuiController(m)
+
+		c.Exec("c 0 0 0 2 2 4 4")
+		assert.Equal(t, mockOutput, c.Exec("r"))
+		assert.Contains(t, c.Exec("y"), msgStem("literature.nothingToConfirm"))
+		m.AssertNotCalled(t, "Claim", 0, []int{0, 0, 2, 2, 4, 4})
+	})
+
 	// 打ち間違いは待ちを引き継がない。
 	t.Run("an invalid claim clears the pending one", func(t *testing.T) {
 		m := newMock()

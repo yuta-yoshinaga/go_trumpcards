@@ -40,6 +40,10 @@ func (c *LiteratureCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
 		func(_ []string) string {
+			// **r / reset は gameHandler を通らない** (execCuiCommand が先に拾う)。
+			// ここで消さないと、リセット直後の y が配り直す前の宣言を確定させる
+			// (レビュー指摘 #6070)。
+			c.pendingClaim = nil
 			cfg := c.li.GetConfig()
 			return c.li.ResetWithConfig(cfg)
 		},
@@ -124,12 +128,10 @@ func literatureClaimPreview(half int, holders []int) string {
 		if i > 0 {
 			b.WriteString(", ")
 		}
-		rank := "?"
-		if i < len(cards) && cards[i] != nil {
-			rank = strconv.Itoa(cards[i].GetValue())
-		}
+		// 添字は literatureParseClaim が検証済みで、有効な half の
+		// LiteratureHalfSuitCards は必ず 6 枚返る。
 		b.WriteString(i18n.Tf("literature.claimPreviewPair",
-			"rank", rank, "seat", strconv.Itoa(seat)))
+			"rank", strconv.Itoa(cards[i].GetValue()), "seat", strconv.Itoa(seat)))
 	}
 	return i18n.Tf("literature.claimPreview",
 		"half", strconv.Itoa(half), "pairs", b.String())
