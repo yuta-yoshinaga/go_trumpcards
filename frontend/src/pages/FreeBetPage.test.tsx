@@ -153,6 +153,42 @@ describe('FreeBetPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('freesplit'));
   });
 
+  // **このゲームの主役操作がキーボードから届いていなかった** (#5777)。
+  it('無料ダブル / 無料スプリットをキーからも打てる', async () => {
+    mockApi.mockResolvedValue(playing({ canFreeDouble: true, canFreeSplit: true }));
+    renderWithProviders(<FreeBetPage />);
+    await waitFor(() => expect(screen.getByTestId('fb-freedouble')).toBeInTheDocument());
+
+    mockApi.mockClear();
+    fireEvent.keyDown(document.body, { key: 'd' });
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('freedouble'));
+
+    mockApi.mockClear();
+    fireEvent.keyDown(document.body, { key: 'p' });
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('freesplit'));
+
+    // ボタンにキー表示が出ている。
+    expect(screen.getByTestId('fb-freedouble')).toHaveTextContent('D');
+    expect(screen.getByTestId('fb-freesplit')).toHaveTextContent('P');
+    expect(screen.getByTestId('fb-freedouble')).toHaveAttribute('aria-keyshortcuts', 'd');
+  });
+
+  // **押せないときはキーも効かない。** サーバのフラグが唯一の門番 (#5777)。
+  it('フラグが false ならキーでも送らない', async () => {
+    mockApi.mockResolvedValue(playing({ hands: [hand({ score: 10, cards: [card(5), card(5)] })] }));
+    renderWithProviders(<FreeBetPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒット' })).toBeInTheDocument());
+
+    mockApi.mockClear();
+    fireEvent.keyDown(document.body, { key: 'd' });
+    fireEvent.keyDown(document.body, { key: 'p' });
+    // ヒットは効くので、キーボード自体が死んでいるわけではない。
+    fireEvent.keyDown(document.body, { key: 'h' });
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('hit'));
+    expect(mockApi).not.toHaveBeenCalledWith('freedouble');
+    expect(mockApi).not.toHaveBeenCalledWith('freesplit');
+  });
+
   // **自分の金とハウスの金を合算しない。** 合算すると「いくら失うのか」が消える。
   it('ハウスの出資を賭け金と別に出す', async () => {
     mockApi.mockResolvedValue(playing({ hands: [hand({ bet: 50, freeBet: 50, doubled: true })] }));

@@ -105,6 +105,8 @@ func (m *MockChemindeFerGame) GetResult() domain.ChemindeFerResult {
 	return m.Called().Get(0).(domain.ChemindeFerResult)
 }
 
+func (m *MockChemindeFerGame) GetLastNet(i int) int { return m.Called(i).Int(0) }
+
 func (m *MockChemindeFerGame) GetRoundNumber() int { return m.Called().Int(0) }
 
 func (m *MockChemindeFerGame) GetPlayer(i int) *domain.ChemindeFerPlayer {

@@ -57,6 +57,8 @@ type HoneymoonBridgeGame interface {
 	GetLastMade() bool
 	// GetLastTricks 直前のディールで落札者が取ったトリック数を取得する
 	GetLastTricks() int
+	// GetLastPoints 直前のディールで動いた点数を取得する
+	GetLastPoints() int
 	// GetCurrentPlayerIdx 現在のプレイヤーインデックスを取得する
 	GetCurrentPlayerIdx() int
 	// GetLeadPlayerIdx リードプレイヤーインデックスを取得する

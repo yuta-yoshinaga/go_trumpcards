@@ -37,18 +37,19 @@ func (m *MockHokmGame) GetPhase() domain.HokmPhase {
 	return m.Called().Get(0).(domain.HokmPhase)
 }
 
-func (m *MockHokmGame) IsHumanTurn() bool        { return m.Called().Bool(0) }
-func (m *MockHokmGame) IsHumanTrumpTurn() bool   { return m.Called().Bool(0) }
-func (m *MockHokmGame) GetHandNumber() int       { return m.Called().Int(0) }
-func (m *MockHokmGame) GetTrickNumber() int      { return m.Called().Int(0) }
-func (m *MockHokmGame) GetTrumpSuit() int        { return m.Called().Int(0) }
-func (m *MockHokmGame) GetHakemIdx() int         { return m.Called().Int(0) }
-func (m *MockHokmGame) GetLastHandKot() bool     { return m.Called().Bool(0) }
-func (m *MockHokmGame) GetLastHandWinner() int   { return m.Called().Int(0) }
-func (m *MockHokmGame) GetCurrentPlayerIdx() int { return m.Called().Int(0) }
-func (m *MockHokmGame) GetLeadPlayerIdx() int    { return m.Called().Int(0) }
-func (m *MockHokmGame) GetPlayerCnt() int        { return m.Called().Int(0) }
-func (m *MockHokmGame) GetWinnerTeam() int       { return m.Called().Int(0) }
+func (m *MockHokmGame) IsHumanTurn() bool             { return m.Called().Bool(0) }
+func (m *MockHokmGame) IsHumanTrumpTurn() bool        { return m.Called().Bool(0) }
+func (m *MockHokmGame) GetHandNumber() int            { return m.Called().Int(0) }
+func (m *MockHokmGame) GetTrickNumber() int           { return m.Called().Int(0) }
+func (m *MockHokmGame) GetTrumpSuit() int             { return m.Called().Int(0) }
+func (m *MockHokmGame) GetHakemIdx() int              { return m.Called().Int(0) }
+func (m *MockHokmGame) GetLastHandKot() bool          { return m.Called().Bool(0) }
+func (m *MockHokmGame) GetLastHandHakemChanged() bool { return m.Called().Bool(0) }
+func (m *MockHokmGame) GetLastHandWinner() int        { return m.Called().Int(0) }
+func (m *MockHokmGame) GetCurrentPlayerIdx() int      { return m.Called().Int(0) }
+func (m *MockHokmGame) GetLeadPlayerIdx() int         { return m.Called().Int(0) }
+func (m *MockHokmGame) GetPlayerCnt() int             { return m.Called().Int(0) }
+func (m *MockHokmGame) GetWinnerTeam() int            { return m.Called().Int(0) }
 
 func (m *MockHokmGame) GetScore(team int) int   { return m.Called(team).Int(0) }
 func (m *MockHokmGame) TeamTricks(team int) int { return m.Called(team).Int(0) }

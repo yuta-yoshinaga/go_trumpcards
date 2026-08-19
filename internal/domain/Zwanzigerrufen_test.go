@@ -202,15 +202,27 @@ func TestZwanzigerrufenBid_RejectsUndeclarableAndLowBids(t *testing.T) {
 	assert.ErrorContains(t, err, "cannot be declared")
 	assert.Error(t, g.PlayerBid(ZwanzigerrufenBidPass))
 
-	// **上回らない入札は通らない。** CPU が既に Rufer を宣言していれば Solo しか残らない。
-	if g.GetHighestBid() >= ZwanzigerrufenBidRufer {
-		assert.Error(t, g.PlayerBid(ZwanzigerrufenBidRufer), "同額の入札が通っている")
-		require.NoError(t, g.PlayerBid(ZwanzigerrufenBidSolo))
-		assert.Equal(t, ZwanzigerrufenBidSolo, g.GetHighestBid())
+	// **上回らない入札は通らない。**現在の最高入札と同額は必ず弾かれる。
+	//
+	// 配り次第で CPU は Rufer までしか出さないことも Solo まで出すこともある。
+	// 「Rufer が立っているなら Solo が通る」と決め打つと、CPU が既に Solo を
+	// 宣言していた配りでは Solo も同額で弾かれて落ちる。上回れる段があるとき
+	// だけ、上回れることを確かめる。
+	high := g.GetHighestBid()
+	if high >= ZwanzigerrufenBidTrischaken {
+		assert.Error(t, g.PlayerBid(high), "同額の入札が通っている")
+	}
+	if high >= ZwanzigerrufenBidSolo {
+		// 最高段まで出ている配り。上回れる段がもう無い。
 		return
 	}
-	require.NoError(t, g.PlayerBid(ZwanzigerrufenBidRufer))
-	assert.Equal(t, ZwanzigerrufenBidRufer, g.GetHighestBid())
+	next := high + 1
+	if next < ZwanzigerrufenBidRufer {
+		// Trischaken は宣言できないので、打てるのは Rufer から。
+		next = ZwanzigerrufenBidRufer
+	}
+	require.NoError(t, g.PlayerBid(next))
+	assert.Equal(t, next, g.GetHighestBid())
 }
 
 func TestZwanzigerrufenBid_Errors(t *testing.T) {

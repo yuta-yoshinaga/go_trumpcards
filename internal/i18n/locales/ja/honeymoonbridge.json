@@ -35,5 +35,7 @@
   "suitDiamond": "♦",
   "suitNoTrump": "NT",
   "helpExampleGiveUp": "  g                    この局を投了する",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "roundMade": "契約成立: {{need}}トリック必要で {{took}} 取りました（宣言者に +{{points}}点）。",
+  "roundDown": "契約失敗: {{need}}トリック必要で {{took}} しか取れませんでした（相手に +{{points}}点）。"
 }

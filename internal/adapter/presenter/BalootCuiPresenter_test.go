@@ -3,6 +3,9 @@
 package presenter
 
 import (
+	"regexp"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -82,14 +85,17 @@ func TestBalootCuiPresenterDeclarePrompts(t *testing.T) {
 func TestBalootCuiPresenterBalootBonus(t *testing.T) {
 	p := new(BalootCuiPresenter)
 
+	// **開示済みでなければ「不明」になる** (#5750)。ここは開示された後の表示。
 	none := newBalootForCui(t)
 	for i := range domain.BalootPlayerCnt {
 		none.GetPlayer(i).SetHasBaloot(false)
+		none.GetPlayer(i).SetBalootRevealed(true)
 	}
 	assert.Contains(t, p.Output(none, nil), i18n.T("baloot.balootNone"))
 
 	held := newBalootForCui(t)
 	held.GetPlayer(0).SetHasBaloot(true)
+	held.GetPlayer(0).SetBalootRevealed(true)
 	assert.Contains(t, p.Output(held, nil), fixedPart("baloot.balootHeld"))
 }
 
@@ -227,3 +233,31 @@ func TestBalootCuiPresenterActionLogOutput(t *testing.T) {
 	b.GiveUp()
 	require.NotEmpty(t, p.ActionLogOutput(b))
 }
+
+// **開示前の席は「不明」** (#5750)。伏せているものを「役なし」と読ませない。
+func TestBalootCuiPresenterHidesTheBonusUntilItIsPublic(t *testing.T) {
+	p := new(BalootCuiPresenter)
+	b := newBalootForCui(t)
+	b.SetModeForTest(domain.BalootModeHokom)
+	b.SetTrumpSuitForTest(domain.CardDesignSpade)
+
+	b.GetPlayer(0).SetHasBaloot(true)
+	b.GetPlayer(0).SetBalootRevealed(true) // 自分のぶんは見えている
+	b.GetPlayer(1).SetHasBaloot(true)
+	b.GetPlayer(1).SetBalootRevealed(false) // 相手はまだ伏せたまま
+	b.GetPlayer(2).SetHasBaloot(false)
+	b.GetPlayer(2).SetBalootRevealed(true) // 出し切って「無い」と分かった席
+
+	out := balootPlain(p.Output(b, nil))
+
+	assert.Contains(t, out, i18n.Tf("baloot.balootHeld", "points", strconv.Itoa(domain.BalootBonus)))
+	assert.Contains(t, out, i18n.T("baloot.balootHidden"))
+	assert.Contains(t, out, i18n.T("baloot.balootNone"))
+	// 伏せている席の数だけ「不明」が出る (席1 と席3)。
+	assert.Equal(t, 2, strings.Count(out, i18n.T("baloot.balootHidden")))
+}
+
+// balootPlain は色付けのエスケープを落とす。
+var balootAnsi = regexp.MustCompile(`\x1b\[[0-9;]*m`)
+
+func balootPlain(s string) string { return balootAnsi.ReplaceAllString(s, "") }

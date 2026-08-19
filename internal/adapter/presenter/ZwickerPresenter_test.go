@@ -309,3 +309,18 @@ func TestZwickerCuiPresenter_HintReasonKeysAreAllMapped(t *testing.T) {
 func TestZwickerCuiPresenter_ActionLog(t *testing.T) {
 	assert.NotEmpty(t, new(ZwickerCuiPresenter).ActionLogOutput(zwTestGame(t)))
 }
+
+// #5721: ビルドの Owner は作った席を記録するだけで、宣言値ちょうどの札を出せる
+// 誰でも取れる (domain の TestZwickerBuildIsNotOwnerOnly)。「所有者」という語だけを
+// 出すと「持ち主しか取れない」と誤解され、育てている間に取られて手番を失う。
+func TestZwickerCuiPresenter_SaysBuildsAreNotOwnerOnly(t *testing.T) {
+	p := new(ZwickerCuiPresenter)
+	g := domain.NewDefaultZwicker()
+	g.Reset()
+
+	out := p.Output(g, nil)
+
+	rule := i18n.T("zwicker.ruleLine")
+	assert.Contains(t, out, rule)
+	assert.Contains(t, rule, "誰でも", "the rule line must say builds are not owner-only")
+}

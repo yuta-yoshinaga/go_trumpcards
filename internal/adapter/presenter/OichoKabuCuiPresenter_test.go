@@ -4,6 +4,8 @@ package presenter
 
 import (
 	"errors"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -142,4 +144,53 @@ func TestOichoKabuCuiPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetGameEndFlag").Return(false)
 	result := p.ActionLogOutput(m)
 	assert.NotEmpty(t, result)
+}
+
+// #5707: 親は「目が 6 以下なら引く」固定ルールで動くのに、CUI は結果の手札と目を
+// 出すだけで、なぜ引いた/止まったのかが分からなかった (Web は dealer-policy として
+// 明示している)。
+func TestOichoKabuCuiPresenter_ExplainsTheBankerPolicy(t *testing.T) {
+	p := new(OichoKabuCuiPresenter)
+
+	newGame := func(bankerHand []*domain.Card, bankerRank, phase int, revealed bool) *interfaces.MockOichoKabuGame {
+		m := new(interfaces.MockOichoKabuGame)
+		m.On("GetChips").Return(1000)
+		m.On("GetPhase").Return(phase)
+		m.On("GetPlayerHand").Return([]*domain.Card{domain.NewCard(1, 9, true)})
+		m.On("GetBankerHand").Return(bankerHand)
+		// 子と親の目は**わざとずらす**。同じ値だと「親の目」を出すつもりで
+		// 子の目を出しても通ってしまう。
+		m.On("GetPlayerRank").Return(7)
+		m.On("GetBankerRank").Return(bankerRank)
+		m.On("GetGameEndFlag").Return(revealed)
+		m.On("GetBet").Return(100)
+		m.On("GetResult").Return(domain.OichoKabuResultWin)
+		m.On("GetTotalPayout").Return(200)
+		return m
+	}
+	card := func(v int) *domain.Card { return domain.NewCard(domain.CardDesignSpade, v, true) }
+
+	// 3 枚 = 引いた。2 枚 = 止まった (両者とも常に 2 枚配られるため枚数で判る)。
+	t.Run("says the banker drew on a three-card hand", func(t *testing.T) {
+		out := p.Output(newGame([]*domain.Card{card(2), card(3), card(4)}, 9, domain.OichoKabuPhaseEnd, true), nil)
+
+		assert.Contains(t, out, i18n.Tf("oichokabu.dealerPolicyDrew",
+			"threshold", strconv.Itoa(domain.OichoKabuBankerDrawThreshold)))
+	})
+
+	t.Run("says the banker stood, with the rank it stood on", func(t *testing.T) {
+		out := p.Output(newGame([]*domain.Card{card(8), card(1)}, 9, domain.OichoKabuPhaseEnd, true), nil)
+
+		assert.Contains(t, out, i18n.Tf("oichokabu.dealerPolicyStood",
+			"rank", "9",
+			"threshold", strconv.Itoa(domain.OichoKabuBankerDrawThreshold)))
+	})
+
+	// 結果が出るまでは親の手も方針も伏せたまま。
+	t.Run("stays hidden before the reveal", func(t *testing.T) {
+		out := p.Output(newGame([]*domain.Card{card(8), card(1)}, 9, domain.OichoKabuPhaseDraw, false), nil)
+
+		assert.NotContains(t, out, strings.Split(i18n.T("oichokabu.dealerPolicyStood"), "{{")[0])
+		assert.NotContains(t, out, strings.Split(i18n.T("oichokabu.dealerPolicyDrew"), "{{")[0])
+	})
 }

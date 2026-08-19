@@ -214,3 +214,62 @@ describe('TarabishPage', () => {
     expect(await screen.findByText(/引き受けてよいでしょう/)).toBeInTheDocument();
   });
 });
+
+// **切り札だけ点数表が入れ替わるのがこの系統の肝** (#5749)。同じ J でも
+// 切り札なら 20 点 (Jass)、そうでなければ 2 点。暗算させるとパートナーに
+// 寄せる札を間違える。
+describe('TarabishPage card points', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+  });
+
+  it('scores the trump jack and nine by the trump table', async () => {
+    // 切り札 = ♥。手札は ♥J(Jass) / ♥9(Menel) / ♠J / ♠9。
+    mockExec.mockResolvedValue(
+      makeState({
+        trumpSuit: 3,
+        players: [
+          seat(0, {
+            cards: [card('HEART', 11), card('HEART', 9), card('SPADE', 11), card('SPADE', 9)],
+            cardCount: 4,
+          }),
+          seat(1),
+          seat(2),
+          seat(3),
+        ],
+      }),
+    );
+    renderWithProviders(<TarabishPage />);
+
+    expect(await screen.findByTestId('tb-points-0')).toHaveTextContent('20');
+    expect(screen.getByTestId('tb-points-1')).toHaveTextContent('14');
+    // 同じランクでも切り札でなければ別の表。
+    expect(screen.getByTestId('tb-points-2')).toHaveTextContent('2');
+    expect(screen.getByTestId('tb-points-3')).toHaveTextContent('0');
+  });
+
+  it('says the points in the accessible name too', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        trumpSuit: 3,
+        players: [seat(0, { cards: [card('HEART', 11)], cardCount: 1 }), seat(1), seat(2), seat(3)],
+      }),
+    );
+    renderWithProviders(<TarabishPage />);
+    expect(await screen.findByRole('button', { name: '♥ J（20点）を出す' })).toBeInTheDocument();
+  });
+
+  // **切り札が決まるまで点は定まらない。**入札中に出すと嘘になる。
+  it('shows no points until a trump suit is called', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        trumpSuit: 0,
+        players: [seat(0, { cards: [card('HEART', 11)], cardCount: 1 }), seat(1), seat(2), seat(3)],
+      }),
+    );
+    renderWithProviders(<TarabishPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('tb-points-0')).not.toBeInTheDocument();
+  });
+});

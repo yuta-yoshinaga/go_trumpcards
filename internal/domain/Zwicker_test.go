@@ -769,3 +769,30 @@ func TestZwickerCaptureSearchIsBounded(t *testing.T) {
 		t.Errorf("table = %d, want it untouched at %d", got, len(table))
 	}
 }
+
+// TestZwickerBuildIsNotOwnerOnly は、ビルドが**作成者専用ではない**ことを確かめる。
+// Owner は作った席を記録するだけで、Take は宣言値ちょうどの札を出せる誰でも通す。
+// 画面の注記 (zwicker.ruleLine) はこの事実を書いているので、実装が変わったら
+// 注記も嘘になる — その組を、ここで固定しておく (#5721)。
+func TestZwickerBuildIsNotOwnerOnly(t *testing.T) {
+	z := zwReady(t, 0)
+	z.SetTableCardsForTest([]*Card{zwCard(CardDesignHeart, 4)})
+	setZwHand(z, 0, []*Card{zwCard(CardDesignSpade, 5), zwCard(CardDesignDiamond, 9)})
+	if err := z.Build(0, 0, []int{0}, 9); err != nil {
+		t.Fatalf("Build: %v", err)
+	}
+	if z.GetBuilds()[0].Owner != 0 {
+		t.Fatalf("the build should be recorded as seat 0's")
+	}
+
+	// 席 1 が同じ値の札で取りにいく。
+	z.SetCurrentPlayerForTest(1)
+	setZwHand(z, 1, []*Card{zwCard(CardDesignClover, 9)})
+
+	if err := z.Take(1, 0, 9, nil, []int{0}); err != nil {
+		t.Fatalf("another seat must be able to capture the build: %v", err)
+	}
+	if len(z.GetBuilds()) != 0 {
+		t.Error("the build should have been captured")
+	}
+}

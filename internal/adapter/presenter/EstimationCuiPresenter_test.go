@@ -3,6 +3,7 @@
 package presenter
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -216,3 +217,33 @@ func TestEstimationCuiPresenterActionLogOutput(t *testing.T) {
 	e.GiveUp()
 	require.NotEmpty(t, p.ActionLogOutput(e))
 }
+
+// **累計だけでは、そのラウンドで何点動いたのかが読めない** (#5751)。
+// 得点式が 10+宣言 / Dash Call ±23 / Risk 2倍 と複雑なので暗算は重い。
+func TestEstimationCuiPresenterShowsTheRoundDelta(t *testing.T) {
+	p := new(EstimationCuiPresenter)
+	e := newEstimationForCui(t)
+	e.SetPhaseForTest(domain.EstimationPhaseRoundEnd)
+	e.GetPlayer(0).SetRoundScore(23)
+	e.GetPlayer(1).SetRoundScore(-23)
+	e.GetPlayer(2).SetRoundScore(0)
+
+	out := estimationPlain(p.Output(e, nil))
+
+	assert.Contains(t, out, i18n.Tf("estimation.roundDelta", "delta", "+23"))
+	assert.Contains(t, out, i18n.Tf("estimation.roundDelta", "delta", "-23"))
+	// **0 は「動かなかった」。**空欄にすると出し忘れと区別が付かない。
+	assert.Contains(t, out, i18n.Tf("estimation.roundDelta", "delta", "±0"))
+	assert.NotContains(t, out, "{{")
+
+	// プレイ中は出さない (増減が確定していない)。
+	playing := newEstimationForCui(t)
+	playing.SetPhaseForTest(domain.EstimationPhasePlay)
+	playing.GetPlayer(0).SetRoundScore(23)
+	assert.NotContains(t, estimationPlain(p.Output(playing, nil)), fixedPart("estimation.roundDelta"))
+}
+
+// estimationPlain は色付けのエスケープを落とす。
+var estimationAnsi = regexp.MustCompile(`\x1b\[[0-9;]*m`)
+
+func estimationPlain(s string) string { return estimationAnsi.ReplaceAllString(s, "") }

@@ -52,5 +52,8 @@
   "emptySlotAriaLabel": "空の枠 {{slot}} (山札か捨て札から埋められます)",
   "emptyReserveAriaLabel": "空のリザーブ {{pile}} (二度と埋まりません)",
   "emptyReserve": "空",
-  "reserve": "リザーブ"
+  "reserve": "リザーブ",
+  "slotCardAriaLabel": "枠 {{slot}} {{card}}",
+  "reserveCardAriaLabel": "リザーブ {{pile}} {{card}}（一番上）",
+  "reserveBuriedAriaLabel": "リザーブ {{pile}} {{card}}（下に埋まっています）"
 }

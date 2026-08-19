@@ -54,14 +54,18 @@ type TeenDoPaanchWebOutput struct {
 	TrumpSuit     int `json:"trumpSuit"`
 	FivePlayerIdx int `json:"fivePlayerIdx"`
 	// LastExchange は直前のラウンド間で動いた札の枚数。
-	LastExchange     int                        `json:"lastExchange"`
-	CurrentPlayerIdx int                        `json:"currentPlayerIdx"`
-	LeadPlayerIdx    int                        `json:"leadPlayerIdx"`
-	CurrentTrick     []*WebOutputTrickCard      `json:"currentTrick"`
-	ValidPlays       []int                      `json:"validPlays"`
-	GameEndFlag      bool                       `json:"gameEndFlag"`
-	WinnerIdx        int                        `json:"winnerIdx"`
-	Hint             *TeenDoPaanchWebOutputHint `json:"hint,omitempty"`
+	LastExchange int `json:"lastExchange"`
+	// LastExchangePairs は直前のやり取りの内訳（誰から誰へ何枚）。
+	//
+	// **合計だけでは、自分の手札から何が抜かれたのか分からない** (#5757)。
+	LastExchangePairs []domain.TeenDoPaanchExchange `json:"lastExchangePairs"`
+	CurrentPlayerIdx  int                           `json:"currentPlayerIdx"`
+	LeadPlayerIdx     int                           `json:"leadPlayerIdx"`
+	CurrentTrick      []*WebOutputTrickCard         `json:"currentTrick"`
+	ValidPlays        []int                         `json:"validPlays"`
+	GameEndFlag       bool                          `json:"gameEndFlag"`
+	WinnerIdx         int                           `json:"winnerIdx"`
+	Hint              *TeenDoPaanchWebOutputHint    `json:"hint,omitempty"`
 	WebOutputBase
 	Config TeenDoPaanchWebOutputConfig `json:"config"`
 }

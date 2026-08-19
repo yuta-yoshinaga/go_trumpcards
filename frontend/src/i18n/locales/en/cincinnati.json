@@ -41,5 +41,17 @@
   "frontendHint.cincinnatiWorthACall": "you have a made hand, and this price is fair",
   "frontendHint.cincinnatiCheapToStay": "it is cheap enough to see one more card",
   "frontendHint.cincinnatiSeeAnotherCard": "the next card is free",
-  "frontendHint.cincinnatiNotWorthIt": "no made hand, and the rounds left are not worth the price"
+  "frontendHint.cincinnatiNotWorthIt": "no made hand, and the rounds left are not worth the price",
+  "hand": {
+    "highCard": "High Card",
+    "onePair": "One Pair",
+    "twoPair": "Two Pair",
+    "threeOfAKind": "Three of a Kind",
+    "straight": "Straight",
+    "flush": "Flush",
+    "fullHouse": "Full House",
+    "fourOfAKind": "Four of a Kind",
+    "straightFlush": "Straight Flush",
+    "royalFlush": "Royal Flush"
+  }
 }

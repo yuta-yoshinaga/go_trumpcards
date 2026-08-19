@@ -101,6 +101,14 @@ type IsraeliWhist struct {
 
 	gameEndFlag bool
 	winnerIdx   int
+	// roundDoubled は直前のラウンドで 2 倍が発動したか。
+	//
+	// **全員的中と全員外しはどちらも 2 倍**という起伏が、これまでアクション
+	// ログにしか残っていなかった。畳まれたログを開かないと、点が普段の倍
+	// 動いた理由が分からない (#5752)。
+	roundDoubled bool
+	// roundAllExact は 2 倍の理由が「全員的中」か「全員外し」か。
+	roundAllExact bool
 
 	actionLogBase
 }
@@ -140,6 +148,8 @@ func israeliWhistSuitRank(suit int) int {
 // Reset ゲーム全体を初期化する
 func (w *IsraeliWhist) Reset() {
 	w.roundNumber = 1
+	w.roundDoubled = false
+	w.roundAllExact = false
 	w.dealerIdx = 0
 	w.gameEndFlag = false
 	w.winnerIdx = -1
@@ -653,6 +663,8 @@ func (w *IsraeliWhist) finishRound() {
 	// **全員的中と全員外しはどちらも 2 倍。** 4 人が同じ結末になるのは珍しく、
 	// そこだけ跳ねるのがこのゲームの起伏。
 	doubled := exact == IsraeliWhistPlayerCnt || exact == 0
+	w.roundDoubled = doubled
+	w.roundAllExact = exact == IsraeliWhistPlayerCnt
 
 	for i, p := range w.players {
 		score := IsraeliWhistScoreFor(p.GetBid(), p.GetTrickCount(), doubled)
@@ -873,6 +885,12 @@ func (w *IsraeliWhist) SetConfig(c IsraeliWhistConfig) { w.config = c }
 // GetRoundNumber 現在のラウンド番号（1 起点）
 func (w *IsraeliWhist) GetRoundNumber() int { return w.roundNumber }
 
+// GetRoundDoubled 直前のラウンドで得点が 2 倍になったか
+func (w *IsraeliWhist) GetRoundDoubled() bool { return w.roundDoubled }
+
+// GetRoundAllExact 2 倍の理由が「全員的中」か（false なら全員外し）
+func (w *IsraeliWhist) GetRoundAllExact() bool { return w.roundAllExact }
+
 // GetTrickNumber 現在のトリック番号（0 起点）
 func (w *IsraeliWhist) GetTrickNumber() int { return w.trickNumber }
 
@@ -975,6 +993,8 @@ type israeliWhistJSON struct {
 	DealerIdx        int                   `json:"di"`
 	GameEndFlag      bool                  `json:"ge"`
 	WinnerIdx        int                   `json:"wi"`
+	RoundDoubled     bool                  `json:"rd"`
+	RoundAllExact    bool                  `json:"ra"`
 	ActionLog        []*ActionLogEntry     `json:"al"`
 }
 
@@ -986,6 +1006,8 @@ func (w *IsraeliWhist) MarshalJSON() ([]byte, error) {
 		Config:           w.config,
 		Phase:            w.phase,
 		RoundNumber:      w.roundNumber,
+		RoundDoubled:     w.roundDoubled,
+		RoundAllExact:    w.roundAllExact,
 		TrickNumber:      w.trickNumber,
 		TrumpSuit:        w.trumpSuit,
 		DeclarerIdx:      w.declarerIdx,
@@ -1066,6 +1088,8 @@ func (w *IsraeliWhist) UnmarshalJSON(data []byte) error {
 	w.config = j.Config
 	w.phase = j.Phase
 	w.roundNumber = j.RoundNumber
+	w.roundDoubled = j.RoundDoubled
+	w.roundAllExact = j.RoundAllExact
 	w.trickNumber = j.TrickNumber
 	w.trumpSuit = j.TrumpSuit
 	w.declarerIdx = j.DeclarerIdx

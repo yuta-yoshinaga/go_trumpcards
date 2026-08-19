@@ -73,6 +73,8 @@ type ChemindeFerGame interface {
 	GetPunterDrew() bool
 	// GetResult ラウンドの決着
 	GetResult() domain.ChemindeFerResult
+	// GetLastNet 直前の決済での席の純増減 (ラウンド中は 0)
+	GetLastNet(i int) int
 
 	// GetRoundNumber ラウンド数
 	GetRoundNumber() int

@@ -126,6 +126,12 @@ type AndarBahar struct {
 	winner int
 	result GameResult
 	payout int
+	// mainPayout / sidePayout は payout の内訳。
+	//
+	// **サイドベットは別の賭け。** 合計だけでは、外したのがメインなのかサイドなのか
+	// 画面から読めません (#5770)。合計は常に両者の和です。
+	mainPayout int
+	sidePayout int
 	actionLogBase
 	// history は罫線用の勝ち列の履歴。
 	history []int
@@ -164,6 +170,8 @@ func (ab *AndarBahar) Reset() {
 	ab.winner = -1
 	ab.result = 0
 	ab.payout = 0
+	ab.mainPayout = 0
+	ab.sidePayout = 0
 	ab.actionLog = nil
 	if ab.chips.GetChips() < AndarBaharMinBet {
 		ab.chips.SetChips(AndarBaharDefaultChips)
@@ -289,7 +297,8 @@ func (ab *AndarBahar) judge() {
 	} else {
 		ab.result = GameResultLose
 	}
-	ab.payout = ab.calculatePayout()
+	ab.mainPayout, ab.sidePayout = ab.calculatePayout()
+	ab.payout = ab.mainPayout + ab.sidePayout
 	ab.chips.AddChips(ab.payout)
 	ab.appendLog(-1, "result",
 		fmt.Sprintf("%s の勝ち。払い戻し %d", andarBaharColumnName(ab.winner), ab.payout), nil)
@@ -298,23 +307,25 @@ func (ab *AndarBahar) judge() {
 	ab.phase = AndarBaharPhaseEnd
 }
 
-// calculatePayout は払戻総額 (賭け金の返還を含む) を返す。
+// calculatePayout はメイン・サイドそれぞれの払戻 (賭け金の返還を含む) を返す。
 //
 // **先に配る列は 0.9:1、後の列は 1:1。** 先の列が 51.50% で勝つので、同じ配当にすると
 // プレイヤー有利になってしまいます。
-func (ab *AndarBahar) calculatePayout() int {
-	total := 0
+//
+// **サイドベットは独立した賭け。** 内訳で返すのは、メインを外してサイドで取り返した
+// 回とその逆を、画面が区別できるようにするためです (#5770)。
+func (ab *AndarBahar) calculatePayout() (main, side int) {
 	if ab.winner == ab.betTarget {
 		rate := AndarBaharSecondColumnPayout
 		if ab.betTarget == ab.firstColumn {
 			rate = AndarBaharFirstColumnPayout
 		}
-		total += ab.betAmount * rate / AndarBaharPayoutScale
+		main = ab.betAmount * rate / AndarBaharPayoutScale
 	}
 	if ab.sideBand != AndarBaharSideNone && ab.sideBand == ab.SideBandOf(ab.DealtCount()) {
-		total += ab.sideAmount * andarBaharSidePayouts[ab.sideBand] / AndarBaharPayoutScale
+		side = ab.sideAmount * andarBaharSidePayouts[ab.sideBand] / AndarBaharPayoutScale
 	}
-	return total
+	return main, side
 }
 
 // SideBandOf は決着枚数が属するサイドベットの帯を返す (該当なしは AndarBaharSideNone)。
@@ -399,6 +410,12 @@ func (ab *AndarBahar) GetResult() GameResult { return ab.result }
 // GetPayout は払戻総額を返す。
 func (ab *AndarBahar) GetPayout() int { return ab.payout }
 
+// GetMainPayout はメインベットぶんの払戻を返す。外れたら 0。
+func (ab *AndarBahar) GetMainPayout() int { return ab.mainPayout }
+
+// GetSidePayout はサイドベットぶんの払戻を返す。張っていない・外れたら 0。
+func (ab *AndarBahar) GetSidePayout() int { return ab.sidePayout }
+
 // GetChips はチップを返す。
 func (ab *AndarBahar) GetChips() int { return ab.chips.GetChips() }
 
@@ -464,6 +481,8 @@ type andarBaharJSON struct {
 	Winner      int               `json:"wn"`
 	Result      GameResult        `json:"rs"`
 	Payout      int               `json:"po"`
+	MainPayout  int               `json:"pm"`
+	SidePayout  int               `json:"pd"`
 	ActionLog   []*ActionLogEntry `json:"al"`
 	History     []int             `json:"hi"`
 }
@@ -486,6 +505,8 @@ func (ab *AndarBahar) MarshalJSON() ([]byte, error) {
 		Winner:      ab.winner,
 		Result:      ab.result,
 		Payout:      ab.payout,
+		MainPayout:  ab.mainPayout,
+		SidePayout:  ab.sidePayout,
 		ActionLog:   ab.actionLog,
 		History:     ab.history,
 	})
@@ -525,6 +546,8 @@ func (ab *AndarBahar) UnmarshalJSON(data []byte) error {
 	ab.winner = j.Winner
 	ab.result = j.Result
 	ab.payout = j.Payout
+	ab.mainPayout = j.MainPayout
+	ab.sidePayout = j.SidePayout
 	ab.actionLog = j.ActionLog
 	if ab.actionLog == nil {
 		ab.actionLog = make([]*ActionLogEntry, 0)
@@ -595,6 +618,19 @@ func andarBaharValidateBets(j *andarBaharJSON) error {
 	}
 	if j.Phase == AndarBaharPhaseBet && j.Payout != 0 {
 		return fmt.Errorf("andarbahar: %d paid out before the round was dealt", j.Payout)
+	}
+	// **内訳は合計と食い違えない。** 片方だけ書き換わった保存を通すと、画面が
+	// 「メインは当たったのに合計は減っている」と表示してしまう。
+	if j.MainPayout < 0 || j.SidePayout < 0 {
+		return fmt.Errorf("andarbahar: payout breakdown cannot be negative: main=%d side=%d",
+			j.MainPayout, j.SidePayout)
+	}
+	if j.MainPayout+j.SidePayout != j.Payout {
+		return fmt.Errorf("andarbahar: payout breakdown %d+%d does not add up to %d",
+			j.MainPayout, j.SidePayout, j.Payout)
+	}
+	if j.SidePayout != 0 && j.SideBand == AndarBaharSideNone {
+		return fmt.Errorf("andarbahar: %d paid on a side bet that was never placed", j.SidePayout)
 	}
 	return nil
 }

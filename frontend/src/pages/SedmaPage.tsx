@@ -242,8 +242,14 @@ function SedmaPageContent() {
 
               {/* Right: info sidebar */}
               <div data-tutorial="sedma-info">
-                {/* Team match scores */}
-                <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
+                {/* Team match scores. ラウンドが確定すると増える値なので、カード点
+                    パネルと同じく読み上げ対象にする (#5648)。 */}
+                <div
+                  className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                  data-testid="sedma-team-scores"
+                  role="status"
+                  aria-live="polite"
+                >
                   <div>{t('teamScore', { team: t('team.a'), score: state.teamScores[0] ?? 0 })}</div>
                   <div>{t('teamScore', { team: t('team.b'), score: state.teamScores[1] ?? 0 })}</div>
                   <div className="mt-1">

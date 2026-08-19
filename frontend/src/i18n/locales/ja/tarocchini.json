@@ -36,7 +36,9 @@
   "nextRound": "次のラウンド",
   "roundResult": {
     "title": "ラウンド結果",
-    "tricks": "{{name}} トリック: {{count}}"
+    "tricks": "{{name}} トリック: {{count}}",
+    "lastTrick": "最終トリックボーナス: チーム{{team}} に +{{bonus}}",
+    "scarto": "スカルト加点: チーム{{team}}（ディーラー側）に +{{count}}"
   },
   "hintAvailable": "ヒント",
   "hint": {

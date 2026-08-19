@@ -191,3 +191,49 @@ describe('CrazyQuiltPage', () => {
     expect(screen.queryByTestId('cq-cell-0')).not.toBeInTheDocument();
   });
 });
+
+// **組札は A 始まりと K 始まりが混在する** (#5743)。向きが出ていないと
+// 途中から見て次に何が要るのか読めない。CUI は ↑/↓ を出していたのに、
+// Web は foundationAscending を一度も参照していなかった。
+describe('CrazyQuiltPage foundation direction', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+    mockExec.mockResolvedValue(playingState);
+  });
+
+  it('marks the first four foundations up and the last four down', async () => {
+    renderWithProviders(<CrazyQuiltPage />);
+    // 0-3 が昇順、4-7 が降順という fixture の並びをそのまま突き合わせる。
+    for (const idx of [0, 1, 2, 3]) {
+      expect(await screen.findByTestId(`cq-foundation-head-${idx}`)).toHaveTextContent('↑');
+    }
+    for (const idx of [4, 5, 6, 7]) {
+      expect(screen.getByTestId(`cq-foundation-head-${idx}`)).toHaveTextContent('↓');
+    }
+  });
+
+  it('says the direction in the accessible name of an empty foundation', async () => {
+    renderWithProviders(<CrazyQuiltPage />);
+    expect(await screen.findByRole('button', { name: '空の組札0（♠、A から昇順）' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '空の組札4（♠、K から降順）' })).toBeInTheDocument();
+  });
+
+  it('says the direction in the accessible name of a filled foundation', async () => {
+    const foundation = Array.from({ length: 8 }, () => [] as Card[]);
+    foundation[0] = [card('SPADE', 1)];
+    foundation[4] = [card('SPADE', 13)];
+    mockExec.mockResolvedValue({ ...playingState, foundation });
+    renderWithProviders(<CrazyQuiltPage />);
+
+    expect(await screen.findByRole('button', { name: '♠ 組札0（A から昇順）1枚' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♠ 組札4（K から降順）1枚' })).toBeInTheDocument();
+  });
+
+  it('shows K rather than A in an empty descending foundation', async () => {
+    renderWithProviders(<CrazyQuiltPage />);
+    const ascending = await screen.findByRole('button', { name: /空の組札0/ });
+    expect(ascending).toHaveTextContent('A');
+    expect(screen.getByRole('button', { name: /空の組札4/ })).toHaveTextContent('K');
+  });
+});

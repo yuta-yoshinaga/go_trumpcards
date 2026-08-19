@@ -31,6 +31,8 @@ function makeState(overrides?: Partial<PochResponse>): PochResponse {
     turnUp: card('SPADE', 9),
     stakingAwards: [{ pool: 'marriage', player: 1, chips: 12 }],
     betTarget: 1,
+    yourBestComboSize: 0,
+    yourBestComboRank: 0,
     pochenWinner: -1,
     pochenPot: 0,
     playedPile: [],

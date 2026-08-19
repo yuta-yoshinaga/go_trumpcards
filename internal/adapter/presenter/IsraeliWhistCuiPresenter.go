@@ -122,6 +122,15 @@ func (p *IsraeliWhistCuiPresenter) Output(w interfaces.IsraeliWhistGame, lastErr
 			}
 			return
 		case domain.IsraeliWhistPhaseRoundEnd:
+			// **2 倍はこのゲームの起伏そのもの。**これまで畳まれたアクション
+			// ログにしか残っておらず、点が普段の倍動いた理由が読めなかった (#5752)。
+			if w.GetRoundDoubled() {
+				key := "israeliwhist.doubledAllMissed"
+				if w.GetRoundAllExact() {
+					key = "israeliwhist.doubledAllExact"
+				}
+				sb.WriteString(color.Yellow(i18n.T(key)) + "\n")
+			}
 			sb.WriteString(i18n.T("israeliwhist.promptRoundEnd") + "\n")
 			sb.WriteString(i18n.T("israeliwhist.promptNext") + "\n")
 			return
