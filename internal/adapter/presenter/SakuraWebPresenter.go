@@ -27,10 +27,10 @@ func sakuraCardToOutput(c *domain.Card) *controller.WebOutputCard {
 
 // sakuraHandToOutput は手札を点数つきで返す。**人間の席だけ中身を出す。**
 func sakuraHandToOutput(player *domain.SakuraPlayer) []*controller.WebOutputCard {
-	cards := make([]*controller.WebOutputCard, 0, player.GetCardsSize())
 	if !player.GetIsHuman() {
-		return cards
+		return make([]*controller.WebOutputCard, 0)
 	}
+	cards := make([]*controller.WebOutputCard, 0, player.GetCardsSize())
 	for i := 0; i < player.GetCardsSize(); i++ {
 		cards = append(cards, sakuraCardToOutput(player.GetCard(i)))
 	}

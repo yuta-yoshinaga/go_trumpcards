@@ -40,7 +40,6 @@ const SEAT_OPTIONS = [2, 3, 4] as const;
 /** Round-count options offered in the settings panel. */
 const ROUND_OPTIONS = [1, 3, 6, 12] as const;
 
-/** Renders the Sakura (さくら/肥後花) page: a hanafuda matching game scored by counting cards. */
 /**
  * A card with its point value in the corner.
  *
@@ -64,6 +63,7 @@ function SakuraCard({ card, width }: { card: Card; width: number }) {
   );
 }
 
+/** Renders the Sakura (さくら/肥後花) page: a hanafuda matching game scored by counting cards. */
 export const SakuraPage = withTutorial(SakuraPageContent, 'sakura', SAKURA_TUTORIAL_STEPS);
 
 /** Inner content of the Sakura page, wrapped by TutorialWrapper. */
