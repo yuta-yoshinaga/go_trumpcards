@@ -334,6 +334,11 @@ function KoiKoiPageContent() {
                   {t('decision.points', { points: state.pendingPoints * decisionMultiplier })}
                   {decisionMultiplier > 1 && ` ${t('decision.multiplier', { mult: decisionMultiplier })}`}
                 </div>
+                {/* 続けるか止めるかは確定点だけでなく**両者の累計差**で決まる。
+                    CUI は koikoiDecisionInfoStr で同じ 2 つを出している (#5709)。 */}
+                <div className="text-ds-text-muted text-xs mb-2" data-testid="koikoi-decision-scores">
+                  {t('decision.scores', { you: human?.score ?? 0, opp: cpu?.score ?? 0 })}
+                </div>
                 <div className="flex gap-3 justify-center">
                   <button type="button" className={btnWarning} onClick={callKoiKoi} disabled={loading}>
                     {t('decision.koikoi')}

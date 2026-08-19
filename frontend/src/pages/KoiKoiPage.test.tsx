@@ -215,6 +215,28 @@ describe('KoiKoiPage', () => {
 
   // **こいこいを一度でも宣言していれば確定点は 2 倍。**生の pendingPoints を
   // 出すと、実際より低い「今止めた場合の点数」を見せることになる (#4929)。
+  // #5709: こいこいを続けるかは「今止めた場合の点」だけでなく**両者の累計差**で
+  // 決まる。CUI は koikoiDecisionInfoStr で両者のスコアも出しているのに、Web は
+  // 確定点だけで、決断のたびに画面をスクロールして確認する必要があった。
+  it('shows both cumulative scores in the decision panel', async () => {
+    mockExec.mockResolvedValue(
+      makeKoiKoiState({
+        phase: 1,
+        pendingYaku: [{ key: 'tane', points: 3 }],
+        pendingPoints: 3,
+        koikoiCount: 0,
+        // 素点は factory の既定を使い、**累計だけ**を動かす。
+        players: makeKoiKoiState().players.map((p) => ({ ...p, score: p.isHuman ? 12 : 7 })),
+      }),
+    );
+    renderWithProviders(<KoiKoiPage />);
+
+    const scores = await screen.findByTestId('koikoi-decision-scores');
+
+    expect(scores).toHaveTextContent('12');
+    expect(scores).toHaveTextContent('7');
+  });
+
   describe('decision panel multiplier', () => {
     it('shows the raw points on the first decision', async () => {
       mockExec.mockResolvedValue(
