@@ -58,8 +58,24 @@ type CrazyFourPokerWebOutput struct {
 	RemainingCards  int  `json:"remainingCards"`
 	GameEndFlag     bool `json:"gameEndFlag"`
 
+	// QueensUpPayouts は Queens Up サイドベットの配当表 (配当の高い順)。
+	//
+	// **賭ける前に見えなければ意味がない。** いくら置くかは、何が当たれば
+	// 何倍かを知って決めるものです。
+	QueensUpPayouts []*CrazyFourPokerPayoutRow `json:"queensUpPayouts"`
+
 	Config *CrazyFourPokerWebOutCfg `json:"config,omitempty"`
 	WebOutputBase
+}
+
+// CrazyFourPokerPayoutRow は配当表の 1 行。
+type CrazyFourPokerPayoutRow struct {
+	// Hand は 4 枚役のランク (domain.FourCardHand*)。
+	Hand int `json:"hand"`
+	// Name は役の表示名。
+	Name string `json:"name"`
+	// Multiplier は X:1 の X。
+	Multiplier int `json:"multiplier"`
 }
 
 // CrazyFourPokerWebController クレイジー 4 ポーカーWebコントローラークラス
