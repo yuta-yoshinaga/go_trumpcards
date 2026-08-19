@@ -40,6 +40,7 @@ func (p *PigWebPresenter) buildBase(s interfaces.PigGame) *controller.PigWebOutp
 	resObj.NoticedCnt = s.GetNoticedCnt()
 	resObj.RoundLoserIdx = s.GetRoundLoserIdx()
 	resObj.RoundNumber = s.GetRoundNumber()
+	resObj.LetterTarget = domain.PigLetterTargetWord
 	resObj.PassCount = s.GetPassCount()
 	resObj.DeckSize = s.GetDeckSize()
 	resObj.CurrentPlayerIdx = s.GetCurrentPlayerIdx()

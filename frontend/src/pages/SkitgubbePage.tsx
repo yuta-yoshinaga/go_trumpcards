@@ -25,6 +25,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { SkitgubbeResponse } from '../types/card';
 import { SkitgubbePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { parseSkitgubbeCommand, SKITGUBBE_HELP } from '../utils/cli/commands/skitgubbeCommands';
 import { formatSkitgubbeState } from '../utils/cli/formatters/skitgubbeFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -163,6 +164,11 @@ function SkitgubbePageContent() {
               <div className="flex gap-1 justify-center flex-wrap">
                 {(human?.cards ?? []).map((card, i) => {
                   const canPlay = isHumanTurn && playable.has(i);
+                  // **「出せない」だけでは理由が分からない** (#5573)。この
+                  // ゲームの beat 規則 (同スートの上位か切札) はサーバが持つので、
+                  // 画面は「手番でない」のか「規則に負けている」のかだけを言う。
+                  const blockedByBeat = isHumanTurn && !playable.has(i);
+                  const reason = blockedByBeat ? t('cannotBeatAria') : canPlay ? '' : t('notYourTurnAria');
                   return (
                     <button
                       key={`hand-${i.toString()}`}
@@ -171,6 +177,8 @@ function SkitgubbePageContent() {
                       // Kept focusable while it cannot act so the reason is
                       // announced rather than the control leaving the tab order.
                       aria-disabled={!canPlay}
+                      title={blockedByBeat ? t('cannotBeatTooltip') : undefined}
+                      aria-label={reason ? `${cardAlt(card)} (${reason})` : cardAlt(card)}
                       onClick={() => canPlay && game.handlePlay(i)}
                       className={[
                         'rounded transition-transform',

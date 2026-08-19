@@ -34,6 +34,9 @@ import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
+/** メーヌを取るのに必要なトリック数 (5 戦 3 勝)。domain の AluetteTricksToWin と同じ値。 */
+const ALUETTE_TRICKS_TO_WIN = 3;
+
 /** Aluette tutorial step definitions. */
 const ALUETTE_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="aluette-info"]', messageKey: 'tutorial.info', placement: 'bottom', advanceOn: 'next' },
@@ -136,6 +139,18 @@ function AluettePageContent() {
   const isPlayPhase = state.phase === AluettePhase.PLAY;
   const isTrickEnd = state.phase === AluettePhase.TRICK_END;
   const isRoundEnd = state.phase === AluettePhase.ROUND_END;
+
+  // チーム分けはサーバが player.team として返しているので、席番号から
+  // 計算し直さない (対面同士という規則が変わっても追随する)。
+  const meneTeamTricks = state.players.reduce<number[]>(
+    (acc, p) => {
+      acc[p.team] += state.roundTricks[p.id] ?? 0;
+      return acc;
+    },
+    [0, 0],
+  );
+  const winnerIdx = meneTeamTricks.findIndex((n) => n >= ALUETTE_TRICKS_TO_WIN);
+  const meneWinner = winnerIdx >= 0 ? winnerIdx : null;
   const isGameEnd = state.phase === AluettePhase.GAME_END || state.gameEndFlag;
 
   const canPlay = isPlayPhase && isHumanTurn;
@@ -276,6 +291,14 @@ function AluettePageContent() {
                         })}
                       </div>
                     ))}
+                    {/* 勝敗を決めるのは個人ではなく**チーム合計**なので、足し算を
+                        読者にさせない (バックエンドの settleRound と同じ条件)。 */}
+                    <div className="mt-1 text-ds-text-primary" data-testid="aluette-team-tally">
+                      {t('roundResult.teamTally', { team0: meneTeamTricks[0], team1: meneTeamTricks[1] })}
+                    </div>
+                    {meneWinner !== null && (
+                      <div data-testid="aluette-meine-winner">{t('roundResult.meineWinner', { team: meneWinner })}</div>
+                    )}
                   </div>
                 )}
               </div>

@@ -527,6 +527,7 @@
   "usageMcABCDEFGHIOneSlotPerArg": "Usage: mc <a,b,c> <d,e,f> [<g,h,i>]  (one slot per arg)",
   "usageMtSrcCol": "Usage: mt <src> <col>.",
   "usageNmIJKAtLeast3HandIndices": "Usage: nm <i> <j> <k> ...  (at least 3 hand indices)",
+  "usageRaRearrangeGroups": "Usage: ra <groups> / <hand indices>  (e.g. ra s5,h5,d5;c7,c8,c9 / 2,4). Groups spell the WHOLE new table separated by ;, each card as suit (s/c/h/d) + rank (1-13 or A/J/Q/K)",
   "usagePHandidx": "Usage: p <handIdx>",
   "usagePHandidx1ToPassInDominoes": "Usage: p <handIdx> (-1 to pass in Dominoes)",
   "usagePHandidxTableidxMany": "Usage: p <handIdx> [tableIdx...]",

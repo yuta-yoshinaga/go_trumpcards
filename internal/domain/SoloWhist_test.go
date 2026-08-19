@@ -323,3 +323,82 @@ func TestSoloWhist_UnmarshalErrors(t *testing.T) {
 		t.Error("expected nil-player error")
 	}
 }
+
+// #5649: ミゼールは1トリック取った瞬間に失敗が確定する。Web は
+// solowhist-contract-progress で常時出しているのに、CUI はラウンドが終わるまで
+// 達成可否を出していなかった。同じ入札制の Nap は #4763 で解決済み。
+func TestSoloWhistGetDeclarerProgress(t *testing.T) {
+	cases := []struct {
+		name        string
+		contract    SoloWhistBid
+		won         int
+		played      int
+		wantNeeded  int
+		wantMisere  bool
+		wantUnreach bool
+		wantMade    bool
+	}{
+		{"ソロ: まだ届く", SoloWhistBidSolo, 5, 8, 8, false, false, false},
+		{"ソロ: 達成", SoloWhistBidSolo, 8, 10, 8, false, false, true},
+		// 残り 13-11=2 トリック。5+2=7 < 8 なのでこの時点で不成立が確定する。
+		{"ソロ: 残り全部取っても届かない", SoloWhistBidSolo, 5, 11, 8, false, true, false},
+		// ちょうど届く境界: 残り 3 で 5+3 = 8。まだ失敗にしてはいけない。
+		{"ソロ: ちょうど届く境界", SoloWhistBidSolo, 5, 10, 8, false, false, false},
+		{"ミゼール: 無傷", SoloWhistBidMisere, 0, 5, 0, true, false, false},
+		// **1トリックでも取れば即失敗。**残りトリックは関係ない。
+		{"ミゼール: 1トリックで即失敗", SoloWhistBidMisere, 1, 5, 0, true, true, false},
+		{"ミゼール: 最後まで無傷なら達成", SoloWhistBidMisere, 0, SoloWhistTrickCount, 0, true, false, true},
+		{"アバンダンス: 達成", SoloWhistBidAbundance, 9, 11, 9, false, false, true},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			g := newSwGame(true)
+			g.SetPhase(SoloWhistPhasePlay)
+			g.SetDeclarerIdx(0)
+			g.SetContract(c.contract)
+			tricks := [SoloWhistPlayerCnt]int{}
+			tricks[0] = c.won
+			// 残りは「配られた13から消化済みを引いた分」。宣言者以外の取得分は
+			// 席1にまとめる (どの席が取ったかは進捗に影響しない)。
+			tricks[1] = c.played - c.won
+			g.SetRoundTricks(tricks)
+
+			p := g.GetDeclarerProgress()
+			if p == nil {
+				t.Fatal("GetDeclarerProgress = nil, want a progress")
+			}
+			if p.Won != c.won || p.Needed != c.wantNeeded {
+				t.Errorf("Won/Needed = %d/%d, want %d/%d", p.Won, p.Needed, c.won, c.wantNeeded)
+			}
+			if p.IsMisere != c.wantMisere {
+				t.Errorf("IsMisere = %v, want %v", p.IsMisere, c.wantMisere)
+			}
+			if p.Unreachable != c.wantUnreach {
+				t.Errorf("Unreachable = %v, want %v", p.Unreachable, c.wantUnreach)
+			}
+			if p.Made != c.wantMade {
+				t.Errorf("Made = %v, want %v", p.Made, c.wantMade)
+			}
+		})
+	}
+}
+
+// 入札中やラウンド終了後、宣言者未確定なら進捗そのものが無い。
+func TestSoloWhistGetDeclarerProgressNilOutsidePlay(t *testing.T) {
+	g := newSwGame(true)
+	g.SetDeclarerIdx(0)
+	g.SetContract(SoloWhistBidSolo)
+	for _, ph := range []SoloWhistPhase{SoloWhistPhaseBid, SoloWhistPhaseRoundEnd} {
+		g.SetPhase(ph)
+		if p := g.GetDeclarerProgress(); p != nil {
+			t.Errorf("phase %v: got %+v, want nil", ph, p)
+		}
+	}
+
+	g.SetPhase(SoloWhistPhasePlay)
+	g.SetDeclarerIdx(-1)
+	if p := g.GetDeclarerProgress(); p != nil {
+		t.Errorf("no declarer: got %+v, want nil", p)
+	}
+}

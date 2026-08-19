@@ -105,6 +105,14 @@ func (p *PrimeroCuiPresenter) Output(g interfaces.PrimeroGame, lastErr error) st
 			b.WriteString(p.resultLine(g))
 			b.WriteString(i18n.T("primero.promptResult") + "\n")
 		}
+		// fluxus / supremus は一般的なポーカー用語ではないので、強い順と条件を
+		// 1 行で添える (Web の常設 legend と同じ内容)。並び順は domain の
+		// PrimeroHand* 定数の降順で、その一致は infrastructure のガードが見る。
+		b.WriteString(i18n.Tf("primero.handRanking",
+			"fluxus", i18n.T("primero.hand."+primeroCategoryLabel(domain.PrimeroHandFluxus)),
+			"supremus", i18n.T("primero.hand."+primeroCategoryLabel(domain.PrimeroHandSupremus)),
+			"primero", i18n.T("primero.hand."+primeroCategoryLabel(domain.PrimeroHandPrimero)),
+			"numerus", i18n.T("primero.hand."+primeroCategoryLabel(domain.PrimeroHandNumerus))) + "\n")
 		b.WriteString(i18n.T("primero.promptHelp") + "\n")
 	})
 }

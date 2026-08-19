@@ -27,6 +27,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { parseTeenDoPaanchCommand, TEENDOPAANCH_HELP } from '../utils/cli/commands/teendopaanchCommands';
 import { formatTeenDoPaanchState } from '../utils/cli/formatters/teendopaanchFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { findPlayerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Suit code (1=♠ 2=♣ 3=♥ 4=♦) to its symbol. */
@@ -186,6 +187,20 @@ function TeenDoPaanchPageContent() {
             {state.lastExchange > 0 && (
               <div className="text-center mb-3 text-ds-accent text-sm" role="status" data-testid="td-exchange">
                 {t('header.exchange', { n: String(state.lastExchange) })}
+                {/* **合計だけでは、自分の手札から何が抜かれたのか分からない** (#5757)。
+                    誰の最強札が誰に渡ったのかがこのゲームの名物。 */}
+                {(state.lastExchangePairs?.length ?? 0) > 0 &&
+                  t('header.exchangeDetail', {
+                    pairs: (state.lastExchangePairs ?? [])
+                      .map((ex) =>
+                        t('header.exchangePair', {
+                          giver: findPlayerName(state.players, ex.giver),
+                          taker: findPlayerName(state.players, ex.taker),
+                          n: String(ex.count),
+                        }),
+                      )
+                      .join(', '),
+                  })}
               </div>
             )}
 

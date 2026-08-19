@@ -32,11 +32,13 @@ func makeKarnoffelPlayers(hands ...[]*domain.Card) []*domain.KarnoffelPlayer {
 
 // karnoffelMockOpts tunes the parts of the stub that individual tests vary.
 type karnoffelMockOpts struct {
-	phase   domain.KarnoffelPhase
-	chosen  int
-	result  *domain.KarnoffelHandResult
-	gameEnd bool
-	winner  int
+	phase  domain.KarnoffelPhase
+	chosen int
+	// humanHand overrides seat 0's hand; nil keeps the default single card.
+	humanHand []*domain.Card
+	result    *domain.KarnoffelHandResult
+	gameEnd   bool
+	winner    int
 }
 
 func setupKarnoffelWebMock(o karnoffelMockOpts) *interfaces.MockKarnoffelGame {

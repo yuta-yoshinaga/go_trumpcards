@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -13,6 +14,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupPanCuiMock() (*interfaces.MockPanGame, []*domain.PanPlayer) {
@@ -149,4 +151,36 @@ func TestPanCuiPresenter_MarksValleMelds(t *testing.T) {
 	out := new(presenter.PanCuiPresenter).Output(m, nil)
 	assert.Contains(t, out, "★バジェ")
 	assert.Equal(t, 1, strings.Count(out, "★バジェ"))
+}
+
+// #5705: 「11 枚メルドしたら上がり」が勝利条件なのに、CUI は各自のメルド枚数しか
+// 出しておらず、**目標枚数そのもの**がどこにも無かった (Web は winMeld として常時
+// 出し、進捗バーと「あと N 枚」まで出している)。
+func TestPanCuiPresenter_ShowsTheMeldGoal(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true) // 名前を素の文字列で照合するため
+	defer color.SetNoColor(origNoColor)
+	g := domain.NewDefaultPan()
+	g.Reset()
+	p := new(presenter.PanCuiPresenter)
+
+	out := p.Output(g, nil)
+
+	goal := strconv.Itoa(domain.PanWinMeldCount)
+	assert.Contains(t, out, i18n.Tf("pan.header",
+		"round", strconv.Itoa(g.GetRoundNumber()),
+		"total", strconv.Itoa(g.GetTargetRounds()),
+		"stock", strconv.Itoa(g.GetDrawPileCount()),
+		"goal", goal))
+	// 各プレイヤー行も「現在数/目標数」で読めること。
+	human := g.GetPlayer(0)
+	assert.Contains(t, out, i18n.Tf("pan.playerLine",
+		"name", i18n.T("cuiPlayerYou"),
+		"cum", strconv.Itoa(human.GetCumulativeScore()),
+		"round", strconv.Itoa(human.GetRoundScore()),
+		"chips", strconv.Itoa(human.GetChips()),
+		"melded", strconv.Itoa(human.GetMeldedCardCount()),
+		"goal", goal,
+		"cards", strconv.Itoa(human.GetCardsSize())))
+	assert.NotContains(t, out, "{{")
 }

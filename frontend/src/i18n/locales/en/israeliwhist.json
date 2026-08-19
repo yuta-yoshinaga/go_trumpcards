@@ -55,5 +55,9 @@
     "twoStage": "Bidding happens **twice**. First an auction for \"n tricks + a trump suit\" (minimum 5; suits rank ♣ < ♦ < ♥ < ♠), then **everyone, the winner included, calls their own target**. The winner must call at least their quota, and whoever calls last may not make the total 13.",
     "seats": "Each seat's **auction standing** (won / passed / bidding) and **its own call**, tricks taken and running total. The two bidding rounds are separate, so both stay on screen.",
     "hand": "Your hand. Legal cards get a green ring. Once you have your call, the play is to duck everything else."
+  },
+  "doubled": {
+    "allExact": "Every seat hit its bid — scores for this round are doubled",
+    "allMissed": "Every seat missed — penalties for this round are doubled"
   }
 }

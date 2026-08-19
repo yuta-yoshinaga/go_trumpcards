@@ -992,6 +992,24 @@ func koenigrufenIsCalledKing(c *Card, calledSuit int) bool {
 	return calledSuit >= 1 && koenigrufenIsKing(c) && c.GetDesign() == calledSuit
 }
 
+// KoenigrufenHoldsCalledKing は playerIdx が呼ばれたスートのキングを持っているかを返す。
+//
+// **自分の手札と公開済みの呼びスートだけ**から導けるので、パートナー未公開の段階で
+// これを本人に伝えても情報漏れにはならない (宣言者は自分が持つキングを呼べないため、
+// 宣言者にとっては常に false)。
+func (g *Koenigrufen) KoenigrufenHoldsCalledKing(playerIdx int) bool {
+	if playerIdx < 0 || playerIdx >= len(g.players) || playerIdx == g.declarerIdx {
+		return false
+	}
+	p := g.players[playerIdx]
+	for i := 0; i < p.GetCardsSize(); i++ {
+		if koenigrufenIsCalledKing(p.GetCard(i), g.calledKing) {
+			return true
+		}
+	}
+	return false
+}
+
 // koenigrufenTrumpValue 切り札札のトリック比較用の値を返す (スキュース=22 で最強、非切り札=0)。
 func koenigrufenTrumpValue(c *Card) int {
 	if koenigrufenIsSkus(c) {

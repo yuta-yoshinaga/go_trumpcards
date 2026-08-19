@@ -21,7 +21,8 @@
     "lastTrick": "Last trick",
     "tricks": "Tricks",
     "hand": "Hand",
-    "cards": "cards"
+    "cards": "cards",
+    "teamPair": "you {{yours}} / them {{theirs}}"
   },
   "trump": {
     "spade": "Spades",

@@ -1,0 +1,110 @@
+{
+  "_comment": "Golden vectors for the Zheng Shangyou 'why can't I play this' classification. Two implementations read this file: internal/domain/ZhengEval_test.go (ZhengInvalidReason) and frontend/src/utils/zhengComboValidator.golden.test.ts (zhengInvalidReason). Cards are {suit,value} with suit 0 = JOKER (value 1 = small, 2 = big), 1=Spade 2=Clover 3=Heart 4=Diamond. tablePlayType uses the ZhengPlayType constants: 0 invalid, 1 single, 2 pair, 3 triple, 4 straight, 5 pairRun, 6 bomb, 7 jokerBomb. reason is \"\" when the play is legal.",
+  "cases": [
+    {
+      "name": "leading any legal combo is fine",
+      "cards": [{ "suit": 1, "value": 5 }, { "suit": 2, "value": 5 }],
+      "table": [],
+      "tablePlayType": 0,
+      "reason": ""
+    },
+    {
+      "name": "a mismatched pair is not a combination at all",
+      "cards": [{ "suit": 1, "value": 5 }, { "suit": 2, "value": 6 }],
+      "table": [],
+      "tablePlayType": 0,
+      "reason": "invalidType"
+    },
+    {
+      "name": "a pair cannot answer a single",
+      "cards": [{ "suit": 1, "value": 9 }, { "suit": 2, "value": 9 }],
+      "table": [{ "suit": 3, "value": 5 }],
+      "tablePlayType": 1,
+      "reason": "wrongType"
+    },
+    {
+      "name": "a longer straight does not answer a shorter one",
+      "cards": [
+        { "suit": 1, "value": 5 },
+        { "suit": 2, "value": 6 },
+        { "suit": 3, "value": 7 },
+        { "suit": 4, "value": 8 }
+      ],
+      "table": [{ "suit": 1, "value": 9 }, { "suit": 2, "value": 10 }, { "suit": 3, "value": 11 }],
+      "tablePlayType": 4,
+      "reason": "wrongCount"
+    },
+    {
+      "name": "the same type and count but weaker",
+      "cards": [{ "suit": 1, "value": 5 }, { "suit": 2, "value": 5 }],
+      "table": [{ "suit": 3, "value": 9 }, { "suit": 4, "value": 9 }],
+      "tablePlayType": 2,
+      "reason": "tooWeak"
+    },
+    {
+      "name": "a normal play cannot cut a bomb",
+      "cards": [{ "suit": 1, "value": 13 }, { "suit": 2, "value": 13 }],
+      "table": [
+        { "suit": 1, "value": 4 },
+        { "suit": 2, "value": 4 },
+        { "suit": 3, "value": 4 },
+        { "suit": 4, "value": 4 }
+      ],
+      "tablePlayType": 6,
+      "reason": "needBomb"
+    },
+    {
+      "name": "a bomb cuts a normal play",
+      "cards": [
+        { "suit": 1, "value": 4 },
+        { "suit": 2, "value": 4 },
+        { "suit": 3, "value": 4 },
+        { "suit": 4, "value": 4 }
+      ],
+      "table": [{ "suit": 3, "value": 9 }, { "suit": 4, "value": 9 }],
+      "tablePlayType": 2,
+      "reason": ""
+    },
+    {
+      "name": "a weaker bomb does not beat a stronger one",
+      "cards": [
+        { "suit": 1, "value": 4 },
+        { "suit": 2, "value": 4 },
+        { "suit": 3, "value": 4 },
+        { "suit": 4, "value": 4 }
+      ],
+      "table": [
+        { "suit": 1, "value": 8 },
+        { "suit": 2, "value": 8 },
+        { "suit": 3, "value": 8 },
+        { "suit": 4, "value": 8 }
+      ],
+      "tablePlayType": 6,
+      "reason": "tooWeak"
+    },
+    {
+      "name": "nothing beats a joker bomb",
+      "cards": [
+        { "suit": 1, "value": 4 },
+        { "suit": 2, "value": 4 },
+        { "suit": 3, "value": 4 },
+        { "suit": 4, "value": 4 }
+      ],
+      "table": [{ "suit": 0, "value": 1 }, { "suit": 0, "value": 2 }],
+      "tablePlayType": 7,
+      "reason": "unbeatable"
+    },
+    {
+      "name": "the joker bomb itself beats everything",
+      "cards": [{ "suit": 0, "value": 1 }, { "suit": 0, "value": 2 }],
+      "table": [
+        { "suit": 1, "value": 8 },
+        { "suit": 2, "value": 8 },
+        { "suit": 3, "value": 8 },
+        { "suit": 4, "value": 8 }
+      ],
+      "tablePlayType": 6,
+      "reason": ""
+    }
+  ]
+}

@@ -19,6 +19,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, useTablanetGame } from '../hooks/useTablanetGame';
+import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { TablanetResponse } from '../types/card';
@@ -105,6 +106,11 @@ function TablanetPageContent() {
   const prevPerPlayerRef = useRef<{ captured: number; tabla: number }[] | null>(null);
   const [captureAnnounce, setCaptureAnnounce] = useState('');
   const [announceNonce, setAnnounceNonce] = useState(0);
+  // タブラは Basra の basraCount と同じ「自分の名を冠した一掃スコア」で、CPU の
+  // 速い手番の中では見逃しやすい。sr-only のアナウンスだけでなく、Basra と同じ
+  // バッジ + リング + winFanfare でも知らせる (#5695 / Basra は #3626)。
+  const [tablaCelebration, setTablaCelebration] = useState<{ key: number; own: boolean; seat: number } | null>(null);
+  const { playSound } = useSound();
   // biome-ignore lint/correctness/useExhaustiveDependencies: react to each state update; reads the t snapshot deliberately.
   useEffect(() => {
     if (!state) return;
@@ -123,6 +129,13 @@ function TablanetPageContent() {
     if (tablaPlayers.length > 0) {
       setCaptureAnnounce(t('tablaAnnounce', { player: tablaPlayers.map(nameOf).join(t('listSeparator')) }));
       setAnnounceNonce((n) => n + 1);
+      const seat = tablaPlayers[tablaPlayers.length - 1];
+      setTablaCelebration((c) => ({ key: (c?.key ?? 0) + 1, own: state.players[seat]?.isHuman ?? false, seat }));
+      playSound('winFanfare', { pitchVariation: 0.05 });
+    } else if (cur.some((c, i) => c.tabla < (prev[i]?.tabla ?? c.tabla))) {
+      // リセット / 次ゲームは tablaCount を 0 に戻す。古いバッジをここで消さないと
+      // 次のゲームへ演出が漏れる。
+      setTablaCelebration(null);
     } else if (capturePlayers.length > 0) {
       setCaptureAnnounce(t('captureAnnounce', { player: capturePlayers.map(nameOf).join(t('listSeparator')) }));
       setAnnounceNonce((n) => n + 1);
@@ -175,9 +188,14 @@ function TablanetPageContent() {
 
   const winnerNames = state.winners.map((i) => (state.players[i]?.isHuman ? t('you') : t('cpu', { id: i }))).join(', ');
 
+  // タブラ数だけは強調の対象になるので、文字列に混ぜず個別の要素で出す。
   const humanStats = human
-    ? `${t('cards', { count: human.cardCount })} · ${t('captured', { count: human.capturedCount })} · ${t('tabla', { count: human.tablaCount })}`
+    ? `${t('cards', { count: human.cardCount })} · ${t('captured', { count: human.capturedCount })}`
     : '';
+
+  // 直近の一掃を祝っているあいだ、その席のタブラ数を強調する。
+  const tablaEmphasisClass =
+    'inline-block rounded px-1 ring-2 ring-ds-accent text-ds-accent font-bold motion-safe:animate-pulse';
 
   return (
     <GamePageShell
@@ -212,7 +230,13 @@ function TablanetPageContent() {
                   <div key={p.id} className="text-center">
                     <div className="text-xs text-ds-text-muted mb-1">
                       {t('cpu', { id: p.id })} — {t('captured', { count: p.capturedCount })} ·{' '}
-                      {t('tabla', { count: p.tablaCount })}
+                      <span
+                        className={tablaCelebration?.seat === p.id ? tablaEmphasisClass : undefined}
+                        data-testid={`tablanet-tabla-count-${p.id}`}
+                        data-emphasised={tablaCelebration?.seat === p.id || undefined}
+                      >
+                        {t('tabla', { count: p.tablaCount })}
+                      </span>
                     </div>
                     <div className="flex gap-0.5 justify-center">
                       {Array.from({ length: Math.min(p.cardCount, 8) }, (_, i) => (
@@ -225,12 +249,25 @@ function TablanetPageContent() {
 
             {/* Table cards */}
             <div
-              className={`py-3 rounded-lg transition-all ${
+              className={`relative py-3 rounded-lg transition-all ${
                 tablaPossible ? 'bg-ds-success/20 ring-2 ring-ds-success motion-safe:animate-pulse' : 'bg-black/20'
               }`}
               data-tutorial="tablanet-table-cards"
               data-tabla-ready={tablaPossible || undefined}
             >
+              {tablaCelebration && (
+                <div
+                  key={tablaCelebration.key}
+                  className="absolute inset-x-0 -top-3 z-10 flex justify-center motion-safe:animate-bounce pointer-events-none"
+                  role="status"
+                  aria-live="polite"
+                  data-testid="tablanet-celebration"
+                >
+                  <span className="rounded-full px-3 py-1 text-sm font-bold shadow-lg bg-ds-accent text-ds-text-on-accent ring-2 ring-ds-accent">
+                    {tablaCelebration.own ? t('tablaBadgeOwn') : t('tablaBadge')}
+                  </span>
+                </div>
+              )}
               <div className="text-center text-xs text-ds-text-muted mb-2">
                 {t('table')}
                 {tablaPossible && (
@@ -286,6 +323,18 @@ function TablanetPageContent() {
             <div className="text-center" data-tutorial="tablanet-player-hand">
               <div className="text-xs text-ds-text-muted mb-1">
                 {t('you')} — {humanStats}
+                {human && (
+                  <>
+                    {' · '}
+                    <span
+                      className={tablaCelebration?.seat === human.id ? tablaEmphasisClass : undefined}
+                      data-testid={`tablanet-tabla-count-${human.id}`}
+                      data-emphasised={tablaCelebration?.seat === human.id || undefined}
+                    >
+                      {t('tabla', { count: human.tablaCount })}
+                    </span>
+                  </>
+                )}
               </div>
               <div className="flex flex-wrap justify-center gap-2">
                 {human?.cards.map((c, i) => (

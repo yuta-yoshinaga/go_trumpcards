@@ -18,6 +18,7 @@
   "promptPlay": "Turn: {{name}}",
   "promptPlayHelp": "play <idx> ... play a card (A>10>K>Q>J>9; must follow suit, then must trump if void)",
   "promptMarriageHelp": "Marriage: leading the K or Q of a same-suit K+Q sets that suit as trump and scores ♠40/♣60/♦80/♥100",
+  "promptMarriageReady": "Marriages you can declare now: {{suits}}",
   "promptTrickEnd": "Trick complete",
   "promptTrickEndHelp": "n / next ... go to the next trick",
   "promptRoundEnd": "Round complete (Declarer {{declarer}}: contract {{contract}})",

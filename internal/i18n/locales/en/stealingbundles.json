@@ -9,7 +9,7 @@
   "table": "Table: {{cards}}",
   "tableEmpty": "(empty)",
   "bundleEmpty": "none",
-  "playerLine": "{{name}}: {{cards}} cards, bundle {{bundle}}, top [{{top}}]",
+  "playerLine": "{{name}}{{role}}: {{cards}} cards, bundle {{bundle}}, top [{{top}}]",
   "promptCurrentPlayer": "Turn: {{name}}",
   "promptMustCapture": "A capture is available. You cannot place a card on the table.",
   "promptTake": "take <idx> ... capture from the table",
@@ -25,5 +25,7 @@
   "hintReasonTake": "Captures from the table",
   "hintReasonTrail": "Nothing to capture, so play what is least likely to be taken",
   "helpExampleGiveUp": "  g                    give the round up",
-  "helpHint": "  h                    show a hint"
+  "helpHint": "  h                    show a hint",
+  "roleLastCaptureTake": "[took from the table]",
+  "roleLastCaptureSteal": "[stole {{name}}'s bundle]"
 }

@@ -786,3 +786,35 @@ func TestRollingStone_ActionLogCapCoversTheLongestPossibleGame(t *testing.T) {
 	assert.GreaterOrEqual(t, rollingStoneMaxSliceLen, worst,
 		"膠着上限まで走った局の棋譜（最大 %d 行）を読み直せる必要がある", worst)
 }
+
+// **引き取りの理由はリードスート。** 画面もCUIもこれを出すので、
+// 「トリックの先頭札のスート」であることをドメイン側で固定する (#5764)。
+func TestRollingStoneGetLeadSuitFollowsTheFirstTrickCard(t *testing.T) {
+	g := newTestRollingStone(t)
+
+	if got := g.GetLeadSuit(); got != 0 {
+		t.Errorf("GetLeadSuit() with an empty trick = %d, want 0", got)
+	}
+
+	idx := g.GetValidPlayIndices(g.GetCurrentPlayerIdx())
+	if len(idx) == 0 {
+		t.Fatal("the leader must have a playable card")
+	}
+	want := g.GetPlayer(g.GetCurrentPlayerIdx()).GetCard(idx[0]).GetDesign()
+	if err := g.play(g.GetCurrentPlayerIdx(), idx[0]); err != nil {
+		t.Fatalf("play: %v", err)
+	}
+	if got := g.GetLeadSuit(); got != want {
+		t.Errorf("GetLeadSuit() = %d, want %d (the design of the led card)", got, want)
+	}
+
+	// **先頭札であって直近の札ではない。** 1 枚だけの場では両者が一致してしまい、
+	// 取り違えを検出できない。
+	g.SetCurrentTrickForTest([]*TrickCard{
+		{PlayerIdx: 1, Card: NewCard(CardDesignClover, 5, false)},
+		{PlayerIdx: 2, Card: NewCard(CardDesignHeart, 7, false)},
+	})
+	if got := g.GetLeadSuit(); got != CardDesignClover {
+		t.Errorf("GetLeadSuit() with a 2-card trick = %d, want %d (the first card)", got, CardDesignClover)
+	}
+}
