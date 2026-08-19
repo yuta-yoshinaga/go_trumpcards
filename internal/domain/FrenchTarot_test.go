@@ -734,3 +734,59 @@ func TestFrenchTarotDiscardRejectsEveryUnburiableReason(t *testing.T) {
 		})
 	}
 }
+
+// #5712: 案内 (CUI/Web) と検証 (validateDiscards) が同じ判定を使うので、その判定
+// 自体をここで直接固定する。
+func TestFrenchTarotUnburiableReason(t *testing.T) {
+	cases := []struct {
+		name string
+		card *domain.Card
+		want string
+	}{
+		{"pip is free", frenchTarotSuitCard(1, 5), ""},
+		{"king", frenchTarotSuitCard(1, domain.FrenchTarotKingValue), domain.FrenchTarotUnburiableKing},
+		{"excuse", frenchTarotExcuseCard(), domain.FrenchTarotUnburiableExcuse},
+		{"petit", frenchTarotTrumpCard(1), domain.FrenchTarotUnburiableBout},
+		{"twenty-one", frenchTarotTrumpCard(domain.FrenchTarotMaxTrump), domain.FrenchTarotUnburiableBout},
+		{"plain trump", frenchTarotTrumpCard(9), domain.FrenchTarotUnburiableTrump},
+		{"nil", nil, ""},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			assert.Equal(t, c.want, domain.FrenchTarotUnburiableReason(c.card))
+		})
+	}
+}
+
+// 切り札は「自由に捨てられる札が 6 枚に満たないとき」だけ候補に入る (validateDiscards と同条件)。
+func TestFrenchTarotBuriableIndices(t *testing.T) {
+	build := func(cards ...*domain.Card) *domain.FrenchTarotPlayer {
+		g := frenchTarotNewReset()
+		frenchTarotSetHand(g, 0, cards...)
+		return g.GetPlayer(0)
+	}
+
+	t.Run("skips kings, the Excuse and the bouts", func(t *testing.T) {
+		p := build(
+			frenchTarotSuitCard(1, 2), frenchTarotSuitCard(1, domain.FrenchTarotKingValue),
+			frenchTarotExcuseCard(), frenchTarotTrumpCard(1), frenchTarotTrumpCard(9),
+			frenchTarotSuitCard(1, 3), frenchTarotSuitCard(1, 4), frenchTarotSuitCard(1, 5),
+			frenchTarotSuitCard(1, 6), frenchTarotSuitCard(1, 7),
+		)
+
+		assert.Equal(t, []int{0, 5, 6, 7, 8, 9}, domain.FrenchTarotBuriableIndices(p))
+	})
+
+	t.Run("allows trumps only when the free cards run short", func(t *testing.T) {
+		p := build(
+			frenchTarotSuitCard(1, 2), frenchTarotSuitCard(1, 3),
+			frenchTarotTrumpCard(9), frenchTarotTrumpCard(10),
+		)
+
+		assert.Equal(t, []int{0, 1, 2, 3}, domain.FrenchTarotBuriableIndices(p))
+	})
+
+	t.Run("nil player yields nothing", func(t *testing.T) {
+		assert.Empty(t, domain.FrenchTarotBuriableIndices(nil))
+	})
+}
