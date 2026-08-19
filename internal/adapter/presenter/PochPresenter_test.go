@@ -71,6 +71,7 @@ func pcStub(phase domain.PochPhase, gameEnd bool, winner int, awards []*domain.P
 	g.On("GetPlayer", mock.Anything).Return(domain.NewPochPlayer(false))
 	g.On("GetActionLog").Return([]*domain.ActionLogEntry{})
 	g.On("PochCpuDecide", mock.Anything).Return(domain.PochCpuAction{Type: "fold", HandIdx: -1})
+	g.On("GetBestCombo", mock.Anything).Return(domain.PochCombo{}).Maybe()
 	return g
 }
 
@@ -337,4 +338,37 @@ func TestPochWebPresenter_ValidPlays(t *testing.T) {
 	if len(off) != 0 {
 		t.Fatalf("off-turn validPlays must be empty, got %v", off)
 	}
+}
+
+// pcStubWithCombo は pochen フェーズのスタブに、自分の組だけ差し替えて返す。
+// **期待値は既定より先に登録する** (testify は先に一致したものを使う)。
+func pcStubWithCombo(combo domain.PochCombo) *interfaces.MockPochGame {
+	g := new(interfaces.MockPochGame)
+	g.On("GetBestCombo", mock.Anything).Return(combo)
+	base := pcStub(domain.PochPhasePochen, false, -1, nil)
+	g.ExpectedCalls = append(g.ExpectedCalls, base.ExpectedCalls...)
+	return g
+}
+
+// #5722: pochen は「自分の組の強さ」を比べる賭け合いなのに、その組が何かを
+// 画面が教えず、自分の手札を数えてから賭けるか降りるかを決める必要があった
+// (自分の手札は自分にとって既知の情報なので、隠す理由がない)。
+func TestPochCuiPresenter_ShowsYourBestCombo(t *testing.T) {
+	p := new(PochCuiPresenter)
+
+	t.Run("names the pair you hold", func(t *testing.T) {
+		g := pcStubWithCombo(domain.PochCombo{Size: 2, Rank: 9})
+
+		out := p.Output(g, nil)
+
+		assert.Contains(t, out, i18n.Tf("poch.yourCombo", "size", "2", "rank", "9"))
+	})
+
+	t.Run("says so when you hold no set at all", func(t *testing.T) {
+		g := pcStubWithCombo(domain.PochCombo{})
+
+		out := p.Output(g, nil)
+
+		assert.Contains(t, out, i18n.T("poch.yourComboNone"))
+	})
 }

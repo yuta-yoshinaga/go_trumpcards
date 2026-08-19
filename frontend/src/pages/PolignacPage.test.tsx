@@ -188,3 +188,50 @@ describe('PolignacPage', () => {
     expect(await screen.findByText(/ジャックが乗っています/)).toBeInTheDocument();
   });
 });
+
+// **合計失点だけでは、♠J を踏んだのか他を 2 枚拾ったのかが分からない** (#5746)。
+// 姉妹ゲームの Slobberhannes / Reversis は取った印付き札を個別に出している。
+describe('PolignacPage jack breakdown', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+  });
+
+  it('lists the jacks a seat took, spade first', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [seat(0, { roundPenalty: 3, takenJackSuits: [1, 3] }), seat(1), seat(2), seat(3)],
+      }),
+    );
+    renderWithProviders(<PolignacPage />);
+
+    const jacks = await screen.findByTestId('pg-jacks-0');
+    expect(jacks).toHaveTextContent('♠J');
+    expect(jacks).toHaveTextContent('♥J');
+    // ♠ が先。重い方から読めないと内訳の意味が薄い。
+    expect(jacks.textContent?.indexOf('♠J')).toBeLessThan(jacks.textContent?.indexOf('♥J') ?? -1);
+    // 読み上げは失点まで言う。
+    expect(jacks).toHaveTextContent('スペードのジャック（2失点）');
+    expect(jacks).toHaveTextContent('ハートのジャック（1失点）');
+  });
+
+  it('shows nothing for a seat that took no jack', async () => {
+    mockExec.mockResolvedValue(makeState({ players: [seat(0, { takenJackSuits: [] }), seat(1), seat(2), seat(3)] }));
+    renderWithProviders(<PolignacPage />);
+    await waitFor(() => expect(screen.getByTestId('pg-seat-0')).toBeInTheDocument());
+    expect(screen.queryByTestId('pg-jacks-0')).not.toBeInTheDocument();
+  });
+
+  it('emphasises the spade jack and not the others', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ players: [seat(0, { takenJackSuits: [1, 4] }), seat(1), seat(2), seat(3)] }),
+    );
+    renderWithProviders(<PolignacPage />);
+    const jacks = await screen.findByTestId('pg-jacks-0');
+    const emphasised = Array.from(jacks.querySelectorAll('span')).filter((el) =>
+      el.className.includes('text-ds-error'),
+    );
+    expect(emphasised).toHaveLength(1);
+    expect(emphasised[0]).toHaveTextContent('♠J');
+  });
+});

@@ -37,5 +37,6 @@
   "suitHeart": "Hearts",
   "suitDiamond": "Diamonds",
   "helpExampleNext": "  n                    read the trick result, then continue",
-  "helpHint": "  h                    show a hint"
+  "helpHint": "  h                    show a hint",
+  "handCard": "[{{idx}}]{{card}} ({{points}})"
 }

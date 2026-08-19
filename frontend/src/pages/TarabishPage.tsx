@@ -18,6 +18,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { badgeInfoColors, badgeWarningColors } from '../styles/badgeStyles';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { TarabishPlayer, TarabishResponse } from '../types/card';
@@ -28,6 +29,7 @@ import { parseTarabishCommand, TARABISH_HELP } from '../utils/cli/commands/tarab
 import { formatTarabishState } from '../utils/cli/formatters/tarabishFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
+import { tarabishCardPoints } from '../utils/tarabishPoints';
 
 /** Tricks per round (nine cards each). */
 const TRICKS_PER_ROUND = 9;
@@ -270,10 +272,34 @@ function TarabishPageContent() {
                       type="button"
                       onClick={() => handlePlay(idx)}
                       disabled={loading || !isHumanTurn}
-                      aria-label={t('actions.playAria', { card: cardAlt(card) })}
-                      className={`disabled:opacity-50 ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
+                      // **切り札だけ点数表が入れ替わる** (#5749)。同じ J でも
+                      // 切り札なら 20 点、そうでなければ 2 点。暗算させると
+                      // パートナーに寄せる札を間違える。
+                      aria-label={
+                        state.trumpSuit > 0
+                          ? t('actions.playAriaWithPoints', {
+                              card: cardAlt(card),
+                              points: tarabishCardPoints(card, state.trumpSuit),
+                            })
+                          : t('actions.playAria', { card: cardAlt(card) })
+                      }
+                      className={`relative disabled:opacity-50 ${
+                        legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''
+                      }`}
                     >
                       <CardImage card={card} width={cardWidth} />
+                      {/* 切り札が決まるまでは点が定まらないので出さない。 */}
+                      {state.trumpSuit > 0 && (
+                        <span
+                          data-testid={`tb-points-${idx.toString()}`}
+                          aria-hidden="true"
+                          className={`absolute top-0 right-0 rounded-bl px-1 text-[10px] leading-tight ${
+                            tarabishCardPoints(card, state.trumpSuit) > 0 ? badgeWarningColors : badgeInfoColors
+                          }`}
+                        >
+                          {tarabishCardPoints(card, state.trumpSuit)}
+                        </span>
+                      )}
                     </button>
                   ))}
                 </div>

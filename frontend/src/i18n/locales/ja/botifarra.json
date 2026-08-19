@@ -21,7 +21,8 @@
     "lastTrick": "直前のトリック",
     "tricks": "トリック",
     "hand": "手札",
-    "cards": "枚"
+    "cards": "枚",
+    "teamPair": "あなた {{yours}} / 相手 {{theirs}}"
   },
   "trump": {
     "spade": "スペード",

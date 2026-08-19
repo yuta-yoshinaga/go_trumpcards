@@ -4,14 +4,18 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupGanjifaCuiMock() *interfaces.MockGanjifaGame {
@@ -34,6 +38,7 @@ func setupGanjifaCuiMockWithPlayers() (*interfaces.MockGanjifaGame, []*domain.Ga
 	m := setupGanjifaCuiMock()
 	players := makeGanjifaPlayers()
 	m.On("GetPlayerCnt").Return(3)
+	m.On("GetLeadPlayerIdx").Return(-1).Maybe()
 	for i := 0; i < 3; i++ {
 		m.On("GetPlayer", i).Return(players[i])
 	}
@@ -196,4 +201,48 @@ func TestGanjifaCuiPresenter_ActionLogOutput(t *testing.T) {
 		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You plays Taj 12"},
 	})
 	assert.Contains(t, p.ActionLogOutput(m), "play")
+}
+
+// #5653: Web は TrickDisplay に winnerIdx を渡してトリック勝者にバッジを出して
+// いるのに、CUI は「次のトリックへ」としか言わず誰が取ったのか示していなかった。
+// 同じトリックテイキングの Sedma は sedma.trickWinner で既に出している。
+func TestGanjifaCuiPresenter_TrickEndNamesTheWinner(t *testing.T) {
+	p := new(presenter.GanjifaCuiPresenter)
+
+	trickEndMock := func(winner int) *interfaces.MockGanjifaGame {
+		m, _ := setupGanjifaCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLeadPlayerIdx")
+		m.On("GetPhase").Return(domain.GanjifaPhaseTrickEnd)
+		m.On("GetLeadPlayerIdx").Return(winner)
+		return m
+	}
+
+	// **3 人全員分を確かめる。**席0 だけ見ていると、常に自分を勝者と呼ぶ実装が通る。
+	names := []string{
+		color.Bold(i18n.T("cuiPlayerYou")),
+		color.Bold(i18n.Tf("cuiPlayerCpu", "idx", "1")),
+		color.Bold(i18n.Tf("cuiPlayerCpu", "idx", "2")),
+	}
+	for idx, name := range names {
+		t.Run("names seat "+strconv.Itoa(idx), func(t *testing.T) {
+			out := p.Output(trickEndMock(idx), nil)
+
+			assert.Contains(t, out, i18n.Tf("ganjifa.trickWinner", "name", name))
+			// 既存の案内文は残す。
+			assert.Contains(t, out, i18n.T("ganjifa.promptTrickEndHelp"))
+		})
+	}
+
+	t.Run("says nothing before anyone has led", func(t *testing.T) {
+		out := p.Output(trickEndMock(-1), nil)
+
+		// **この文言は {{name}} で始まる**ので前置きが空になる。空文字で
+		// NotContains を掛けても常に失敗する (= 何も確かめられない)。名前の
+		// 後ろ側「がトリックを獲得」で見る。
+		_, suffix, ok := strings.Cut(i18n.Tf("ganjifa.trickWinner", "name", "\x00"), "\x00")
+		require.True(t, ok)
+		require.NotEmpty(t, strings.TrimSpace(suffix))
+		assert.NotContains(t, out, suffix)
+	})
 }

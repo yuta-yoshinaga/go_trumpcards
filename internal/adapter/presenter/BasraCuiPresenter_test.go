@@ -2,12 +2,18 @@ package presenter_test
 
 import (
 	"errors"
+	"fmt"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func TestBasraCuiPresenter_Output_PlayPhase(t *testing.T) {
@@ -106,4 +112,85 @@ func TestBasraCuiPresenter_ActionLog(t *testing.T) {
 	g.Reset()
 	p := new(presenter.BasraCuiPresenter)
 	assert.NotEmpty(t, p.ActionLogOutput(g))
+}
+
+// cuiLineContaining returns the first line of out that contains marker.
+// 出力全体に対する Contains だと、別の行 (プレイヤー一覧など) に当たって
+// 検査したい 1 行を素通りしてしまうので、行を取り出してから調べる。
+func cuiLineContaining(out, marker string) string {
+	for _, line := range strings.Split(out, "\n") {
+		if strings.Contains(line, marker) {
+			return line
+		}
+	}
+	return ""
+}
+
+// basraPlayToGameEnd plays a whole game out and returns it sitting in GameEnd.
+func basraPlayToGameEnd(t *testing.T) *domain.Basra {
+	t.Helper()
+	g := domain.NewDefaultBasra()
+	g.Reset()
+	for i := 0; i < 4000 && !g.GetGameEndFlag(); i++ {
+		switch {
+		case g.IsHumanTurn():
+			valid := g.GetPlayableIndices(g.GetCurrentTurn())
+			require.NotEmpty(t, valid)
+			require.NoError(t, g.PlayerPlay(valid[0], nil))
+		default:
+			g.CpuPlay()
+		}
+	}
+	require.True(t, g.GetGameEndFlag())
+	return g
+}
+
+// #5694: Web の basra-result は勝者と最終得点を出すのに、CUI の GameEnd は
+// 「ゲーム終了。nr で…」という案内だけで、誰が勝ったのかも何点だったのかも
+// 画面のどこにも出ていなかった。
+func TestBasraCuiPresenter_GameEndShowsWinnerAndScores(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true) // 名前と点の組を素の文字列で照合するため
+	defer color.SetNoColor(orig)
+	g := basraPlayToGameEnd(t)
+	p := new(presenter.BasraCuiPresenter)
+
+	out := p.Output(g, nil)
+
+	playerLabel := func(idx int) string {
+		if g.GetPlayer(idx).GetIsHuman() {
+			return i18n.T("cuiPlayerYou")
+		}
+		return i18n.Tf("cuiPlayerCpu", "idx", strconv.Itoa(idx))
+	}
+
+	winners := g.GetWinners()
+	require.NotEmpty(t, winners)
+	winnerLine := cuiLineContaining(out, strings.Split(i18n.T("basra.resultWinner"), "{{")[0])
+	require.NotEmpty(t, winnerLine, "the winner must be named")
+	for _, w := range winners {
+		assert.Contains(t, winnerLine, playerLabel(w))
+	}
+
+	scoreLine := cuiLineContaining(out, strings.Split(i18n.T("basra.resultScores"), "{{")[0])
+	require.NotEmpty(t, scoreLine)
+	// **名前と点を組で照合する。**行に 4 つ数字が並ぶので、単独の Contains だと
+	// 別のプレイヤーの数字や捕獲枚数に当たって素通りする。
+	for i := 0; i < g.GetPlayerCnt(); i++ {
+		want := fmt.Sprintf("%s %d", playerLabel(i), g.GetPlayer(i).GetScore())
+		assert.Contains(t, scoreLine, want)
+	}
+}
+
+// #5694: まだ終わっていない局面では出さない。
+func TestBasraCuiPresenter_NoResultBeforeTheEnd(t *testing.T) {
+	g := domain.NewDefaultBasra()
+	g.Reset()
+	g.SetPhase(domain.BasraPhasePlay)
+	p := new(presenter.BasraCuiPresenter)
+
+	out := p.Output(g, nil)
+
+	assert.NotContains(t, out, strings.Split(i18n.T("basra.resultWinner"), "{{")[0])
+	assert.NotContains(t, out, strings.Split(i18n.T("basra.resultScores"), "{{")[0])
 }

@@ -13,7 +13,7 @@
   "phaseLine": "フェーズ: {{phase}}",
   "handLine": "ハンド: {{hand}}（ポット: {{pot}}）",
   "streetLine": "ストリート: {{street}} / {{total}}",
-  "wildLine": "3 と 9 はワイルド。表の 4 は追加札、表の 3 は買い増し",
+  "wildLine": "{{wilds}} はワイルド。表の {{bonus}} は追加札、表の {{buyIn}} は買い増し",
   "seatLine": "{{mark}}{{name}}{{state}} チップ {{chips}} / 賭け {{bet}}{{bonus}} : {{cards}}",
   "hidden": "[??]",
   "foldedMark": "（降り）",

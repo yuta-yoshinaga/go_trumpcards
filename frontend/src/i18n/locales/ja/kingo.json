@@ -29,5 +29,6 @@
   "frontendHint.kingoNoInformationYet": "配る前なので手札は見えません。額は好みで構いません",
   "frontendHint.kingoStackIsShort": "手持ちが心もとないので、最小額に抑えるのが無難です",
   "frontendHint.kingoYouAreTheBanker": "親は張りません。配ってください",
-  "frontendHint.kingoRoundIsOver": "このラウンドは決着しました"
+  "frontendHint.kingoRoundIsOver": "このラウンドは決着しました",
+  "rank.withValue": "{{rank}}（{{value}}）"
 }

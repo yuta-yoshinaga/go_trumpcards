@@ -671,3 +671,49 @@ func TestSergeantMajor_AccessorsAndBounds(t *testing.T) {
 	assert.Zero(t, s.GetLastExchange())
 	assert.Equal(t, s.GetDealerIdx(), s.GetLeadPlayerIdx())
 }
+
+// **取り込むと手札に紛れて見分けが付かなくなる** (#5759)。捨てる 4 枚を選ぶ
+// あいだだけ、どれがキティ由来かを覚えておく。
+func TestSergeantMajorRemembersTheAbsorbedKitty(t *testing.T) {
+	s := newTestSergeantMajor(t)
+	s.Reset()
+	s.SetPhaseForTest(SergeantMajorPhaseTrump)
+	s.SetDealerIdxForTest(0)
+
+	kitty := append([]*Card(nil), s.GetKittyForTest()...)
+	if len(kitty) != SergeantMajorKittySize {
+		t.Fatalf("the kitty holds %d cards, want %d", len(kitty), SergeantMajorKittySize)
+	}
+
+	if err := s.DeclareTrump(CardDesignSpade); err != nil {
+		t.Fatalf("declaring the trump: %v", err)
+	}
+
+	// 取り込んだ 4 枚はすべて印が付く。
+	for _, c := range kitty {
+		if !s.IsAbsorbedKittyCard(c) {
+			t.Errorf("%v came from the kitty but is not marked", c)
+		}
+	}
+	// **元から持っていた札には付かない。**印の意味が無くなる。
+	marked := 0
+	dealer := s.GetPlayer(0)
+	for i := range dealer.GetCardsSize() {
+		if s.IsAbsorbedKittyCard(dealer.GetCard(i)) {
+			marked++
+		}
+	}
+	if marked != SergeantMajorKittySize {
+		t.Errorf("%d cards in hand are marked, want %d", marked, SergeantMajorKittySize)
+	}
+
+	// 捨て終われば印は消える (受け入れ条件3)。
+	if err := s.DiscardForTest(0, []int{0, 1, 2, 3}); err != nil {
+		t.Fatalf("discarding: %v", err)
+	}
+	for _, c := range kitty {
+		if s.IsAbsorbedKittyCard(c) {
+			t.Errorf("%v is still marked after the discard", c)
+		}
+	}
+}

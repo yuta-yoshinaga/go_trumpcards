@@ -54,9 +54,12 @@ type PigWebOutput struct {
 	Phase      int                   `json:"phase"`
 	ValidPlays []int                 `json:"validPlays"`
 	// SignallerIdx は最初に合図した席 (-1 = 合図なし)。
-	SignallerIdx     int               `json:"signallerIdx"`
-	NoticedCnt       int               `json:"noticedCnt"`
-	RoundLoserIdx    int               `json:"roundLoserIdx"`
+	SignallerIdx  int `json:"signallerIdx"`
+	NoticedCnt    int `json:"noticedCnt"`
+	RoundLoserIdx int `json:"roundLoserIdx"`
+	// LetterTarget は脱落までに溜まる語 ("PIG")。**3 文字で脱落**が規則なので、
+	// 画面はこれを進捗の分母として出します。
+	LetterTarget     string            `json:"letterTarget"`
 	RoundNumber      int               `json:"roundNumber"`
 	PassCount        int               `json:"passCount"`
 	DeckSize         int               `json:"deckSize"`

@@ -39,6 +39,10 @@ type CribbageSquaresGame interface {
 	GetStarter() *domain.Card
 	// RowDetail 行のクリベッジ得点内訳を返す
 	RowDetail(r int) domain.CribbageScoreDetail
+	// RowPartialDetail 行の現時点で確定している内訳を返す (スターター抜き)
+	RowPartialDetail(r int) domain.CribbageScoreDetail
+	// ColPartialDetail 列の現時点で確定している内訳を返す (スターター抜き)
+	ColPartialDetail(col int) domain.CribbageScoreDetail
 	// ColDetail 列のクリベッジ得点内訳を返す
 	ColDetail(c int) domain.CribbageScoreDetail
 	// IsWin 合計得点がクリア基準に達したかを返す

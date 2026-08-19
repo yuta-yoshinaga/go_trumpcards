@@ -29,5 +29,6 @@
   "frontendHint.kingoNoInformationYet": "nothing is dealt yet, so the amount is yours to choose",
   "frontendHint.kingoStackIsShort": "your stack is short, so the minimum is the safe call",
   "frontendHint.kingoYouAreTheBanker": "the banker does not bet — deal to continue",
-  "frontendHint.kingoRoundIsOver": "this round is decided"
+  "frontendHint.kingoRoundIsOver": "this round is decided",
+  "rank.withValue": "{{rank}} ({{value}})"
 }

@@ -46,6 +46,7 @@ func (p *CucumberCuiPresenter) Output(s interfaces.CucumberGame, lastErr error) 
 		sb.WriteString(i18n.Tf("cucumber.header",
 			"round", strconv.Itoa(s.GetRoundNumber()),
 			"trick", strconv.Itoa(s.GetTrickNumber()+1),
+			"total", strconv.Itoa(domain.CucumberHandSize),
 			"target", strconv.Itoa(s.GetConfig().TargetScore)) + "\n")
 		// **スート無関係・失点は最終トリックだけ、が規則そのもの。** 毎回書く。
 		sb.WriteString(i18n.T("cucumber.rule") + "\n")

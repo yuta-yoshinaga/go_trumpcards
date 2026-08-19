@@ -237,3 +237,22 @@ func TestHasenpfefferCuiPresenterActionLog(t *testing.T) {
 	p := new(HasenpfefferCuiPresenter)
 	assert.NotEmpty(t, p.ActionLogOutput(newHasenpfefferForCui(t)))
 }
+
+// **Web の打ち止めバナーと同じ条件・同じ意味であること** (#5758)。
+// CUI は promptBidCapped、Web は minBid === 0 && !mustBid で出す。
+func TestHasenpfefferCuiPresenterCappedPromptMatchesTheWebCondition(t *testing.T) {
+	p := new(HasenpfefferCuiPresenter)
+	h := newHasenpfefferForCui(t)
+	h.SetPhaseForTest(domain.HasenpfefferPhaseBid)
+	h.SetCurrentPlayerIdxForTest(0)
+	// 上限が立っている = 次に打てる額が無い (NextBid が 0)。
+	h.SetContractForTest(1, domain.HasenpfefferMaxBid)
+
+	// **Web が見る値と同じ条件であることを、その値ごと確認する。**
+	assert.Equal(t, 0, h.NextBid(), "minBid = 0 が Web の打ち止め条件")
+	assert.False(t, h.MustBid(0))
+
+	out := p.Output(h, nil)
+	assert.Contains(t, out, fixedPart("hasenpfeffer.promptBidCapped"))
+	assert.NotContains(t, out, fixedPart("hasenpfeffer.promptMustBid"))
+}

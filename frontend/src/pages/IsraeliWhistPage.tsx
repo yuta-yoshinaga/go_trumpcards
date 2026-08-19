@@ -276,6 +276,18 @@ function IsraeliWhistPageContent() {
               />
             </div>
 
+            {/* **2 倍はこのゲームの起伏そのもの** (#5752)。畳まれたアクション
+                ログを開かないと、点が普段の倍動いた理由が分からなかった。 */}
+            {isRoundEnd && state.doubled === true && (
+              <div
+                className="my-3 rounded bg-black/30 border border-ds-warning px-3 py-2 text-center text-ds-text-primary"
+                role="status"
+                data-testid="iw-doubled-banner"
+              >
+                {state.doubledAllExact ? t('doubled.allExact') : t('doubled.allMissed')}
+              </div>
+            )}
+
             {resultBanner && (
               <div className="text-center text-xl my-4 text-ds-accent font-semibold" role="status">
                 {resultBanner}

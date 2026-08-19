@@ -47,7 +47,11 @@ type RollingStoneWebOutput struct {
 	// MustPickUp は人間がフォローできず引き取るしかないか。
 	//
 	// **これが真なら出せる札は無い。** ページは validPlays を見る前にこれを見ます。
-	MustPickUp       bool                       `json:"mustPickUp"`
+	MustPickUp bool `json:"mustPickUp"`
+	// LeadSuit はこのトリックのリードスート (1..4、まだ誰も出していなければ 0)。
+	//
+	// **引き取りの理由。** ページは「♠ に追従できない」と出せるようになります。
+	LeadSuit         int                        `json:"leadSuit"`
 	ValidPlays       []int                      `json:"validPlays"`
 	CurrentTrick     []*WebOutputTrickCard      `json:"currentTrick"`
 	CurrentPlayerIdx int                        `json:"currentPlayerIdx"`

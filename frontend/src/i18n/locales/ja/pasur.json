@@ -24,7 +24,9 @@
     "cancel": "選び直す",
     "reset": "リセット",
     "giveUp": "投了",
-    "selectAria": "{{card}} を選ぶ"
+    "selectAria": "{{card}} を選ぶ",
+    "takeSoor": "スール",
+    "takeSoorAria": "この選択で場が空になり、取った札は 2 倍になります"
   },
   "result": {
     "you": "あなたの勝ち！",

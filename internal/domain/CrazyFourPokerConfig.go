@@ -2,7 +2,10 @@
 
 package domain
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"sort"
+)
 
 // 卓の構成。
 const (
@@ -89,6 +92,32 @@ var crazyFourPokerQueensUpPayouts = map[int]int{
 	FourCardHandStraight:      3,
 	FourCardHandTwoPair:       2,
 	FourCardHandPair:          1, // クイーンのペア以上のみ
+}
+
+// CrazyFourPokerQueensUpPayout は Queens Up サイドベットの配当表を、
+// **配当の高い順**に返す。
+//
+// **賭ける前に見えなければ意味がない** (#5775)。画面と CUI はこの 1 箇所から
+// 引くので、表を写した定数がもう 1 つできることはない。
+func CrazyFourPokerQueensUpPayout() []CrazyFourPokerPayoutRow {
+	rows := make([]CrazyFourPokerPayoutRow, 0, len(crazyFourPokerQueensUpPayouts))
+	for hand, mult := range crazyFourPokerQueensUpPayouts {
+		rows = append(rows, CrazyFourPokerPayoutRow{Hand: hand, Multiplier: mult})
+	}
+	// 倍率の降順。同率は役の強い順で決める (map の走査順は毎回変わる)。
+	sort.Slice(rows, func(i, j int) bool {
+		if rows[i].Multiplier != rows[j].Multiplier {
+			return rows[i].Multiplier > rows[j].Multiplier
+		}
+		return rows[i].Hand > rows[j].Hand
+	})
+	return rows
+}
+
+// CrazyFourPokerPayoutRow は配当表の 1 行 (役と X:1 の X)。
+type CrazyFourPokerPayoutRow struct {
+	Hand       int
+	Multiplier int
 }
 
 // CrazyFourPokerQueensUpMinPair は Queens Up が成立する最低のペア (クイーン)。

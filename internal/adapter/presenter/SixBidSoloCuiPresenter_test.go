@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -234,4 +235,37 @@ func TestSixBidSoloCuiPresenter_ActionLogOutput(t *testing.T) {
 	m := setupSixBidSoloCuiMock(defaultSixBidSoloOpts())
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{})
 	assert.NotNil(t, new(presenter.SixBidSoloCuiPresenter).ActionLogOutput(m))
+}
+
+// **各段の必要点数を梯子に併記する** (#5731)。
+// doc コメントは「目標点も一緒に出す」と言っていたのに、実装は段の名前を
+// 並べるだけで domain.SixBidSoloTargetPoints を一度も呼んでいなかった。
+// Web は <select> の各行に毎回出しているので、CUI だけが表を引く羽目になる。
+func TestSixBidSoloCuiPresenter_ShowsTheLadderTargets(t *testing.T) {
+	o := defaultSixBidSoloOpts()
+	o.phase = domain.SixBidSoloPhaseBid
+	o.highBid = nil
+	out := new(presenter.SixBidSoloCuiPresenter).Output(setupSixBidSoloCuiMock(o), nil)
+
+	// 通常ビッドとコール・ソロは切札に依らず一意。
+	// **段名の直後に続くこと**まで見る。部分一致だけだと、取られた印を全段に
+	// 付けるミューテーション ("[1:ソロ（目標61点）]") が素通りする。
+	assert.Contains(t, out, "ビッドの序列: 1:ソロ（目標"+strconv.Itoa(domain.SixBidSoloBaseTarget+1)+"点） < ")
+	assert.Contains(t, out, "6:コール・ソロ（目標"+strconv.Itoa(domain.SixBidSoloTotalPoints)+"点）")
+	// **ギャランティーだけ切札で変わる。**入札中は切札が未確定なので両方出す。
+	assert.Contains(t, out, "4:ギャランティー・ソロ（目標 ♥"+
+		strconv.Itoa(domain.SixBidSoloGuaranteeHeart)+"点/他"+
+		strconv.Itoa(domain.SixBidSoloGuaranteeOther)+"点）")
+	// ミゼール系は「取らない」ことが目標。0点と書くと取りに行く指示に読める。
+	assert.Contains(t, out, "3:ミゼール（1点も取らない）")
+	assert.Contains(t, out, "5:スプレッド・ミゼール（1点も取らない）")
+	// 74 と 80 は別物として出ていること (片方だけ書いても上の Contains は通る)。
+	assert.NotEqual(t, domain.SixBidSoloGuaranteeHeart, domain.SixBidSoloGuaranteeOther)
+
+	// 取られた段の印は段名だけを包む。目標点は括弧の外に出す。
+	taken := defaultSixBidSoloOpts()
+	taken.phase = domain.SixBidSoloPhaseBid
+	taken.highBid = &domain.SixBidSoloBid{Kind: domain.SixBidSoloBidMisere}
+	tout := new(presenter.SixBidSoloCuiPresenter).Output(setupSixBidSoloCuiMock(taken), nil)
+	assert.Contains(t, tout, "ビッドの序列: [1:ソロ]（目標"+strconv.Itoa(domain.SixBidSoloBaseTarget+1)+"点） < ")
 }

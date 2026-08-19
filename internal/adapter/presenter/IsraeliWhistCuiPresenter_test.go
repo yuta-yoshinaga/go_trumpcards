@@ -222,3 +222,38 @@ func TestIsraeliWhistCuiPresenterActionLogOutput(t *testing.T) {
 	w.GiveUp()
 	require.NotEmpty(t, p.ActionLogOutput(w))
 }
+
+// **2 倍はこのゲームの起伏そのもの** (#5752)。これまで畳まれたアクション
+// ログにしか残っておらず、点が普段の倍動いた理由が読めなかった。
+func TestIsraeliWhistCuiPresenterAnnouncesTheDoubledRound(t *testing.T) {
+	p := new(IsraeliWhistCuiPresenter)
+
+	setRound := func(bids, tricks [domain.IsraeliWhistPlayerCnt]int) *domain.IsraeliWhist {
+		w := newIsraeliWhistForCui(t)
+		for i := range domain.IsraeliWhistPlayerCnt {
+			pl := w.GetPlayer(i)
+			pl.SetBid(bids[i])
+			pl.ResetTricks()
+			for range tricks[i] {
+				pl.AddTrick([]*domain.Card{})
+			}
+		}
+		w.FinishRoundForTest()
+		return w
+	}
+
+	allExact := setRound([domain.IsraeliWhistPlayerCnt]int{3, 4, 3, 3}, [domain.IsraeliWhistPlayerCnt]int{3, 4, 3, 3})
+	assert.Contains(t, p.Output(allExact, nil), fixedPart("israeliwhist.doubledAllExact"))
+
+	allMissed := setRound([domain.IsraeliWhistPlayerCnt]int{3, 4, 3, 3}, [domain.IsraeliWhistPlayerCnt]int{0, 1, 5, 7})
+	missedOut := p.Output(allMissed, nil)
+	assert.Contains(t, missedOut, fixedPart("israeliwhist.doubledAllMissed"))
+	// **理由を取り違えない。**全員外しなのに「全員的中」と出したら嘘になる。
+	assert.NotContains(t, missedOut, fixedPart("israeliwhist.doubledAllExact"))
+
+	// 通常ラウンドでは何も出ない (負のコントロール)。
+	mixed := setRound([domain.IsraeliWhistPlayerCnt]int{3, 4, 3, 3}, [domain.IsraeliWhistPlayerCnt]int{3, 0, 5, 5})
+	mixedOut := p.Output(mixed, nil)
+	assert.NotContains(t, mixedOut, fixedPart("israeliwhist.doubledAllExact"))
+	assert.NotContains(t, mixedOut, fixedPart("israeliwhist.doubledAllMissed"))
+}

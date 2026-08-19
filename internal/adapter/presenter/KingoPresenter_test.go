@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // newKingoForPresenter は本物のドメインを返す。
@@ -97,6 +98,50 @@ func kingoRankLabel(r domain.KingoRank) string {
 	default:
 		return "役なし"
 	}
+}
+
+// **同じ「嵐」でも K 3 枚と A 3 枚では強さの実感が違う** (#5783)。
+func TestKingoCuiPresenter_ShowsWhichValueWasMatched(t *testing.T) {
+	cp := new(KingoCuiPresenter)
+	// 役の付く局に当たるまで配り直す。**3 枚のうち 2 枚そろう確率は低くない**が、
+	// 1 局で保証はできない。
+	var g *domain.Kingo
+	for attempt := 0; ; attempt++ {
+		require.Less(t, attempt, 200, "役の付いた席がある局を引けなかった")
+		g = kingoSettled(t)
+		ranked := false
+		for _, p := range g.GetPlayers() {
+			if len(p.GetCards()) > 0 && p.GetRank() != domain.KingoRankNone {
+				ranked = true
+				break
+			}
+		}
+		if ranked {
+			break
+		}
+	}
+	out := cp.Output(g, nil)
+
+	checked := 0
+	for _, p := range g.GetPlayers() {
+		if len(p.GetCards()) == 0 {
+			continue
+		}
+		label := i18n.T("kingo.rank." + domain.KingoRankName(p.GetRank()))
+		if p.GetRank() == domain.KingoRankNone {
+			// **役なしの席には数字を出さない。**
+			assert.NotContains(t, out, i18n.Tf("kingo.rankWithValue",
+				"rank", label,
+				"value", cuiRankLabel(domain.KingoMatchedValue(p.GetCards()))))
+			continue
+		}
+		checked++
+		assert.Contains(t, out, i18n.Tf("kingo.rankWithValue",
+			"rank", label,
+			"value", cuiRankLabel(domain.KingoMatchedValue(p.GetCards()))),
+			"%s の数字が出ていない", p.GetName())
+	}
+	require.Positive(t, checked, "役の付いた席が 1 つも無い局を引いた")
 }
 
 // **親と子で求める操作が違う。** 親には配るよう、子には張るよう促す。

@@ -4,6 +4,8 @@ package domain
 
 import (
 	"encoding/json"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -801,4 +803,42 @@ func TestTarabish_CpuLeadPrefersNonTrumpOnTie(t *testing.T) {
 		NewCard(CardDesignSpade, 8, false)) // 0 点の非切り札
 
 	assert.Equal(t, 1, tb.chooseCpuCard(1))
+}
+
+// **切り札だけ点数表が入れ替わる** (#5749)。手札に出す点と精算の点が
+// 同じ関数から来ることを、TS と共有する黄金ベクタで固定する。
+func TestTarabishCardPoints_GoldenVectors(t *testing.T) {
+	raw, err := os.ReadFile(filepath.Join(
+		"..", "..", "frontend", "src", "utils", "__fixtures__", "tarabishPoints.golden.json"))
+	if err != nil {
+		t.Fatalf("read the golden vectors: %v", err)
+	}
+	var golden struct {
+		Cases []struct {
+			Name      string `json:"name"`
+			Design    string `json:"design"`
+			Value     int    `json:"value"`
+			TrumpSuit int    `json:"trumpSuit"`
+			Points    int    `json:"points"`
+		} `json:"cases"`
+	}
+	if err := json.Unmarshal(raw, &golden); err != nil {
+		t.Fatalf("parse the golden vectors: %v", err)
+	}
+	if len(golden.Cases) == 0 {
+		t.Fatal("no vectors to check")
+	}
+	designs := map[string]int{
+		"SPADE": CardDesignSpade, "CLOVER": CardDesignClover,
+		"HEART": CardDesignHeart, "DIAMOND": CardDesignDiamond,
+	}
+	for _, c := range golden.Cases {
+		design, ok := designs[c.Design]
+		if !ok {
+			t.Fatalf("%s: unknown design %q", c.Name, c.Design)
+		}
+		if got := TarabishCardPoints(NewCard(design, c.Value, true), c.TrumpSuit); got != c.Points {
+			t.Errorf("%s: got %d, want %d", c.Name, got, c.Points)
+		}
+	}
 }
