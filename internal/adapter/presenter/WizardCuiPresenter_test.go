@@ -319,7 +319,7 @@ func TestWizardCuiPresenter_BidAccuracySummary(t *testing.T) {
 		assert.Contains(t, out, wantLine)
 		// 未ビッドの席は契約が無いので**この行には**出さない (Web の bid >= 0 と同じ)。
 		// プレイヤー一覧には出るので、行を取り出してから見る。
-		summary := basraLineContaining(out, strings.Split(i18n.T("wizard.bidAccuracyLine"), "{{")[0])
+		summary := cuiLineContaining(out, strings.Split(i18n.T("wizard.bidAccuracyLine"), "{{")[0])
 		assert.NotContains(t, summary, "CPU 3")
 	})
 

@@ -114,8 +114,10 @@ func TestBasraCuiPresenter_ActionLog(t *testing.T) {
 	assert.NotEmpty(t, p.ActionLogOutput(g))
 }
 
-// basraLineContaining returns the first line of out that contains marker.
-func basraLineContaining(out, marker string) string {
+// cuiLineContaining returns the first line of out that contains marker.
+// 出力全体に対する Contains だと、別の行 (プレイヤー一覧など) に当たって
+// 検査したい 1 行を素通りしてしまうので、行を取り出してから調べる。
+func cuiLineContaining(out, marker string) string {
 	for _, line := range strings.Split(out, "\n") {
 		if strings.Contains(line, marker) {
 			return line
@@ -164,13 +166,13 @@ func TestBasraCuiPresenter_GameEndShowsWinnerAndScores(t *testing.T) {
 
 	winners := g.GetWinners()
 	require.NotEmpty(t, winners)
-	winnerLine := basraLineContaining(out, strings.Split(i18n.T("basra.resultWinner"), "{{")[0])
+	winnerLine := cuiLineContaining(out, strings.Split(i18n.T("basra.resultWinner"), "{{")[0])
 	require.NotEmpty(t, winnerLine, "the winner must be named")
 	for _, w := range winners {
 		assert.Contains(t, winnerLine, playerLabel(w))
 	}
 
-	scoreLine := basraLineContaining(out, strings.Split(i18n.T("basra.resultScores"), "{{")[0])
+	scoreLine := cuiLineContaining(out, strings.Split(i18n.T("basra.resultScores"), "{{")[0])
 	require.NotEmpty(t, scoreLine)
 	// **名前と点を組で照合する。**行に 4 つ数字が並ぶので、単独の Contains だと
 	// 別のプレイヤーの数字や捕獲枚数に当たって素通りする。
