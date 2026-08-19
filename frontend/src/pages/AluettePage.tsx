@@ -140,10 +140,11 @@ function AluettePageContent() {
   const isTrickEnd = state.phase === AluettePhase.TRICK_END;
   const isRoundEnd = state.phase === AluettePhase.ROUND_END;
 
-  // 対面同士が組む (席 0/2 と 1/3)。3 トリック以上でそのメーヌを取る。
-  const meneTeamTricks = state.roundTricks.reduce<[number, number]>(
-    (acc, n, seat) => {
-      acc[seat % 2] += n;
+  // チーム分けはサーバが player.team として返しているので、席番号から
+  // 計算し直さない (対面同士という規則が変わっても追随する)。
+  const meneTeamTricks = state.players.reduce<number[]>(
+    (acc, p) => {
+      acc[p.team] += state.roundTricks[p.id] ?? 0;
       return acc;
     },
     [0, 0],
