@@ -3,7 +3,9 @@
 package domain
 
 import (
+	"bytes"
 	"encoding/json"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -281,4 +283,69 @@ func TestStealingBundles_EveryReachableStateSurvivesARoundTrip(t *testing.T) {
 			}
 		}
 	}
+}
+
+// **盗みは相手の束を直接減らす。** 場から取るのと同じ印では区別が付かないので、
+// 種別と被害者を状態として持つ (#5767)。
+func TestStealingBundlesRecordsWhichKindOfCaptureItWas(t *testing.T) {
+	s := newStealingBundlesForTest(t, 4)
+	assert.Empty(t, s.GetLastCaptureKind(), "まだ誰も取っていない")
+	assert.Equal(t, -1, s.GetLastCaptureVictimIdx())
+
+	s.SetCurrentPlayerIdxForTest(0)
+	s.SetTableCardsForTest([]*Card{NewCard(CardDesignHeart, 7, false)})
+	s.GiveHandForTest(0, NewCard(CardDesignSpade, 7, false))
+	require.NoError(t, s.PlayerTake(0))
+	assert.Equal(t, StealingBundlesCaptureTake, s.GetLastCaptureKind())
+	assert.Equal(t, -1, s.GetLastCaptureVictimIdx(), "取りに被害者はいない")
+
+	// 盗みは種別も被害者も差し替える。
+	s.SetCurrentPlayerIdxForTest(2)
+	s.SetTableCardsForTest(nil)
+	s.GiveHandForTest(2, NewCard(CardDesignClover, 7, false))
+	s.GetPlayer(1).SetBundle([]*Card{NewCard(CardDesignDiamond, 7, false)})
+	require.NoError(t, s.StealForTest(2, 0, 1))
+	assert.Equal(t, StealingBundlesCaptureSteal, s.GetLastCaptureKind())
+	assert.Equal(t, 1, s.GetLastCaptureVictimIdx())
+	assert.Equal(t, 2, s.GetLastCaptureIdx())
+}
+
+// **種別と被害者は一緒に決まる。** 片方だけの保存は印を誤らせる。
+func TestStealingBundlesRejectsAnInconsistentCaptureRecord(t *testing.T) {
+	// 実際に盗みが起きるまで打つ。手で束を差し替えると 52 枚の不変条件が壊れ、
+	// 弾かれた理由が種別なのか枚数なのか分からなくなる。
+	s := newStealingBundlesForTest(t, 4)
+	for turns := 0; s.GetLastCaptureKind() != StealingBundlesCaptureSteal; turns++ {
+		require.Less(t, turns, 500, "盗みが 1 度も起きなかった")
+		require.False(t, s.GetGameEndFlag(), "盗みが 1 度も起きずに終わった")
+		idx := s.GetCurrentPlayerIdx()
+		card, victim := s.CpuChoiceForTest(idx)
+		switch {
+		case victim >= 0:
+			require.NoError(t, s.StealForTest(idx, card, victim))
+		case len(s.GetTableMatches(idx, card)) > 0:
+			require.NoError(t, s.TakeForTest(idx, card))
+		default:
+			require.NoError(t, s.TrailForTest(idx, card))
+		}
+	}
+	victim := s.GetLastCaptureVictimIdx()
+	require.GreaterOrEqual(t, victim, 0)
+
+	data, err := json.Marshal(s)
+	require.NoError(t, err)
+	var back StealingBundles
+	require.NoError(t, json.Unmarshal(data, &back))
+	assert.Equal(t, StealingBundlesCaptureSteal, back.GetLastCaptureKind())
+	assert.Equal(t, victim, back.GetLastCaptureVictimIdx())
+
+	// 盗みなのに被害者が居ない保存は弾く。
+	broken := bytes.Replace(data, []byte(`"lv":`+strconv.Itoa(victim)), []byte(`"lv":-1`), 1)
+	require.NotEqual(t, string(data), string(broken), "置換が当たっていない")
+	assert.Error(t, json.Unmarshal(broken, new(StealingBundles)))
+
+	// 知らない種別も弾く。
+	unknown := bytes.Replace(data, []byte(`"lk":"steal"`), []byte(`"lk":"rob"`), 1)
+	require.NotEqual(t, string(data), string(unknown), "置換が当たっていない")
+	assert.Error(t, json.Unmarshal(unknown, new(StealingBundles)))
 }

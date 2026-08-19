@@ -28,6 +28,14 @@ const (
 // stealingBundlesMaxSliceLen は復元時に受け付けるスライス長の上限。
 const stealingBundlesMaxSliceLen = 2000
 
+// 直前の獲得の種別。ロケール非依存のキーで、画面と CUI が印を出し分けます。
+const (
+	// StealingBundlesCaptureTake は場から合計を揃えて取った獲得。
+	StealingBundlesCaptureTake = "take"
+	// StealingBundlesCaptureSteal は相手の束を丸ごと奪った獲得。
+	StealingBundlesCaptureSteal = "steal"
+)
+
 // StealingBundlesHint は人間への助言。
 type StealingBundlesHint struct {
 	// CardIndex は出すべき手札の位置。
@@ -71,12 +79,20 @@ type StealingBundles struct {
 	// lastCaptureIdx は最後に取った席 (-1 = まだ誰も取っていない)。
 	//
 	// **場に残った札の行き先。** 盤面には痕跡が残らないので明示的に持ちます。
-	lastCaptureIdx   int
-	currentPlayerIdx int
-	packsDealt       int
-	turnNumber       int
-	gameEndFlag      bool
-	winnerIdx        int
+	lastCaptureIdx int
+	// lastCaptureKind は直前の獲得が場からの「取り」("take") か、相手の束を
+	// 丸ごと奪った「盗み」("steal") か。まだ誰も取っていなければ空。
+	//
+	// **盗みは相手の束を直接減らす。** 場から取るのとは重さが違うので、席に
+	// 出す印も分けます (#5767)。
+	lastCaptureKind string
+	// lastCaptureVictimIdx は盗みの被害者の席 (盗み以外は -1)。
+	lastCaptureVictimIdx int
+	currentPlayerIdx     int
+	packsDealt           int
+	turnNumber           int
+	gameEndFlag          bool
+	winnerIdx            int
 	actionLogBase
 }
 
@@ -119,6 +135,8 @@ func (s *StealingBundles) Reset() {
 	s.phase = StealingBundlesPhasePlay
 	s.tableCards = nil
 	s.lastCaptureIdx = -1
+	s.lastCaptureKind = ""
+	s.lastCaptureVictimIdx = -1
 	s.currentPlayerIdx = 0
 	s.packsDealt = 0
 	s.turnNumber = 0
@@ -305,6 +323,8 @@ func (s *StealingBundles) take(playerIdx, cardIndex int) error {
 	// **出した札が一番上になる。** 次に狙われるランクはこれです。
 	p.AddToBundle(played)
 	s.lastCaptureIdx = playerIdx
+	s.lastCaptureKind = StealingBundlesCaptureTake
+	s.lastCaptureVictimIdx = -1
 	s.addLog(playerIdx, "take", fmt.Sprintf("場から %d 枚取りました", len(taken)), taken)
 	s.finishTurn()
 	return nil
@@ -328,6 +348,8 @@ func (s *StealingBundles) steal(playerIdx, cardIndex, victimIdx int) error {
 	p.AddToBundle(stolen...)
 	p.AddToBundle(played)
 	s.lastCaptureIdx = playerIdx
+	s.lastCaptureKind = StealingBundlesCaptureSteal
+	s.lastCaptureVictimIdx = victimIdx
 	s.addLog(playerIdx, "steal", fmt.Sprintf("席 %d の束 %d 枚を奪いました", victimIdx, len(stolen)), stolen)
 	s.finishTurn()
 	return nil
@@ -541,6 +563,12 @@ func (s *StealingBundles) GetDeckRemaining() int {
 	return s.trumpCards.GetRemainingCount()
 }
 
+// GetLastCaptureKind は直前の獲得の種別 ("take" / "steal"、まだなら "") を返す。
+func (s *StealingBundles) GetLastCaptureKind() string { return s.lastCaptureKind }
+
+// GetLastCaptureVictimIdx は直前の盗みの被害者席を返す。盗み以外は -1。
+func (s *StealingBundles) GetLastCaptureVictimIdx() int { return s.lastCaptureVictimIdx }
+
 // GetLastCaptureIdx は最後に取った席を返す (-1 = まだ)。
 func (s *StealingBundles) GetLastCaptureIdx() int { return s.lastCaptureIdx }
 
@@ -569,35 +597,39 @@ func (s *StealingBundles) GetWinnerIdx() int { return s.winnerIdx }
 
 // stealingBundlesJSON is the JSON wire format for StealingBundles.
 type stealingBundlesJSON struct {
-	Players        []*StealingBundlesPlayer `json:"pl"`
-	Config         StealingBundlesConfig    `json:"cf"`
-	Phase          StealingBundlesPhase     `json:"ph"`
-	TableCards     []*Card                  `json:"tb"`
-	Deck           *TrumpCards              `json:"dk"`
-	LastCaptureIdx int                      `json:"lc"`
-	CurrentIdx     int                      `json:"ci"`
-	PacksDealt     int                      `json:"pd"`
-	TurnNumber     int                      `json:"tn"`
-	GameEndFlag    bool                     `json:"ge"`
-	WinnerIdx      int                      `json:"wi"`
-	ActionLog      []*ActionLogEntry        `json:"al"`
+	Players              []*StealingBundlesPlayer `json:"pl"`
+	Config               StealingBundlesConfig    `json:"cf"`
+	Phase                StealingBundlesPhase     `json:"ph"`
+	TableCards           []*Card                  `json:"tb"`
+	Deck                 *TrumpCards              `json:"dk"`
+	LastCaptureIdx       int                      `json:"lc"`
+	LastCaptureKind      string                   `json:"lk"`
+	LastCaptureVictimIdx int                      `json:"lv"`
+	CurrentIdx           int                      `json:"ci"`
+	PacksDealt           int                      `json:"pd"`
+	TurnNumber           int                      `json:"tn"`
+	GameEndFlag          bool                     `json:"ge"`
+	WinnerIdx            int                      `json:"wi"`
+	ActionLog            []*ActionLogEntry        `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.
 func (s *StealingBundles) MarshalJSON() ([]byte, error) {
 	return json.Marshal(stealingBundlesJSON{
-		Players:        s.players,
-		Config:         s.config,
-		Phase:          s.phase,
-		TableCards:     s.tableCards,
-		Deck:           s.trumpCards,
-		LastCaptureIdx: s.lastCaptureIdx,
-		CurrentIdx:     s.currentPlayerIdx,
-		PacksDealt:     s.packsDealt,
-		TurnNumber:     s.turnNumber,
-		GameEndFlag:    s.gameEndFlag,
-		WinnerIdx:      s.winnerIdx,
-		ActionLog:      s.actionLog,
+		Players:              s.players,
+		Config:               s.config,
+		Phase:                s.phase,
+		TableCards:           s.tableCards,
+		Deck:                 s.trumpCards,
+		LastCaptureIdx:       s.lastCaptureIdx,
+		LastCaptureKind:      s.lastCaptureKind,
+		LastCaptureVictimIdx: s.lastCaptureVictimIdx,
+		CurrentIdx:           s.currentPlayerIdx,
+		PacksDealt:           s.packsDealt,
+		TurnNumber:           s.turnNumber,
+		GameEndFlag:          s.gameEndFlag,
+		WinnerIdx:            s.winnerIdx,
+		ActionLog:            s.actionLog,
 	})
 }
 
@@ -632,6 +664,25 @@ func (s *StealingBundles) UnmarshalJSON(data []byte) error {
 	}
 	if j.LastCaptureIdx < -1 || j.LastCaptureIdx >= len(j.Players) {
 		return fmt.Errorf("last capture index out of range: %d", j.LastCaptureIdx)
+	}
+	// **種別と席は一緒に決まる。** 盗みなのに被害者がいない (あるいはその逆) の
+	// 復元は、印を誤って出すので弾きます。
+	switch j.LastCaptureKind {
+	case "":
+		if j.LastCaptureIdx >= 0 {
+			return fmt.Errorf("seat %d is recorded as having captured with no capture kind", j.LastCaptureIdx)
+		}
+	case StealingBundlesCaptureTake:
+		if j.LastCaptureVictimIdx != -1 {
+			return fmt.Errorf("a take cannot have a victim: %d", j.LastCaptureVictimIdx)
+		}
+	case StealingBundlesCaptureSteal:
+		if j.LastCaptureVictimIdx < 0 || j.LastCaptureVictimIdx >= len(j.Players) ||
+			j.LastCaptureVictimIdx == j.LastCaptureIdx {
+			return fmt.Errorf("steal victim index out of range: %d", j.LastCaptureVictimIdx)
+		}
+	default:
+		return fmt.Errorf("unknown capture kind: %q", j.LastCaptureKind)
 	}
 	if j.WinnerIdx < -1 || j.WinnerIdx >= len(j.Players) {
 		return fmt.Errorf("winner index out of range: %d", j.WinnerIdx)
@@ -680,6 +731,8 @@ func (s *StealingBundles) UnmarshalJSON(data []byte) error {
 		s.trumpCards = NewTrumpCards(0)
 	}
 	s.lastCaptureIdx = j.LastCaptureIdx
+	s.lastCaptureKind = j.LastCaptureKind
+	s.lastCaptureVictimIdx = j.LastCaptureVictimIdx
 	s.currentPlayerIdx = j.CurrentIdx
 	s.packsDealt = j.PacksDealt
 	s.turnNumber = j.TurnNumber

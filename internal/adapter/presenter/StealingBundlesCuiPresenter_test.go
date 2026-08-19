@@ -139,3 +139,30 @@ func TestStealingBundlesCuiPresenterActionLogOutput(t *testing.T) {
 	s.GiveUp()
 	assert.NotEmpty(t, p.ActionLogOutput(s))
 }
+
+// **盗みは相手の束を丸ごと消す。** 場から取っただけの手と同じ印では、盤面に
+// 痕跡が残らないこのゲームで区別が付かない (#5767)。
+func TestStealingBundlesCuiPresenterDistinguishesTakesFromSteals(t *testing.T) {
+	p := new(StealingBundlesCuiPresenter)
+
+	took := newStealingBundlesForCui(t)
+	took.SetCurrentPlayerIdxForTest(0)
+	took.SetTableCardsForTest([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 7, false)})
+	took.GiveHandForTest(0, domain.NewCard(domain.CardDesignSpade, 7, false))
+	require.NoError(t, took.PlayerTake(0))
+	out := p.Output(took, nil)
+	assert.Contains(t, out, i18n.T("stealingbundles.roleLastCaptureTake"))
+	assert.NotContains(t, out, fixedPart("stealingbundles.roleLastCaptureSteal"))
+
+	stole := newStealingBundlesForCui(t)
+	stole.SetCurrentPlayerIdxForTest(0)
+	stole.SetTableCardsForTest(nil)
+	stole.GiveHandForTest(0, domain.NewCard(domain.CardDesignSpade, 9, false))
+	stole.GetPlayer(1).SetBundle([]*domain.Card{domain.NewCard(domain.CardDesignDiamond, 9, false)})
+	require.NoError(t, stole.PlayerSteal(0, 1))
+	out = p.Output(stole, nil)
+	// 被害者の席まで出す。
+	assert.Contains(t, out, i18n.Tf("stealingbundles.roleLastCaptureSteal",
+		"name", cuiPlayerName(stole.GetPlayer(1), 1)))
+	assert.NotContains(t, out, i18n.T("stealingbundles.roleLastCaptureTake"))
+}
