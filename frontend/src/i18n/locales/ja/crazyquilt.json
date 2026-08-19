@@ -12,8 +12,6 @@
   "moveCount": "手数",
   "giveup": "ギブアップ",
   "empty": "空",
-  "foundationAriaLabel": "{{suit}} 組札{{idx}} {{count}}枚",
-  "emptyFoundationAriaLabel": "空の組札{{idx}} ({{suit}}、A から)",
   "emptyPileAriaLabel": "空の山 {{pile}} (山札か捨て札からのみ置けます)",
   "stockAriaLabel": "山札 残り{{count}}枚",
   "emptyStockAriaLabel": "山札は空です（めくり直しはありません）",

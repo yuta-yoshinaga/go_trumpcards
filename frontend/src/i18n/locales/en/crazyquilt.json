@@ -12,8 +12,6 @@
   "moveCount": "Moves",
   "giveup": "Give up",
   "empty": "Empty",
-  "foundationAriaLabel": "{{suit}} foundation {{idx}}, {{count}} cards",
-  "emptyFoundationAriaLabel": "Empty foundation {{idx}} ({{suit}}, starts at the Ace)",
   "emptyPileAriaLabel": "Empty pile {{pile}} (stock or waste only)",
   "stockAriaLabel": "Stock, {{count}} cards left",
   "emptyStockAriaLabel": "The stock is empty (there is no redeal)",
