@@ -24,6 +24,7 @@
   "outcomeWin": "Made (declarer wins)",
   "outcomeLoss": "Failed (coalition wins)",
   "gameEnd": "Game over! {{name}} wins the match!",
+  "coinSettlement": "Settlement: {{deltas}}",
   "promptBid": "Declare a contract — Turn: {{name}}",
   "promptBidHelp": "bid party <s/c/h/d> ... Party  |  bid betli ... Betli  |  bid durchmarsch ... Durchmarsch  |  bid ulti <s/c/h/d> ... Ulti (win the last trick with the trump 7)",
   "promptDiscard": "Talon taken — Turn: {{name}}",

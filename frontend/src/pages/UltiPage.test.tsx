@@ -186,16 +186,17 @@ describe('UltiPage', () => {
   });
 
   it('shows signed coin deltas and announces the round result on settlement', async () => {
-    // Start at trick-end (coins all 0) so the pre-settlement snapshot is captured,
-    // then settle into round-end with new balances.
+    // 精算額はサーバが lastDealCoins で返す。累積 coins は前ディールぶんを含むので、
+    // 「累積 -1 だが今回は +2 動いた」形にしてどちらを読んでいるかを確かめる。
     const settledState = makeUltiState({
       phase: 4,
       isHumanTurn: false,
       outcome: 1,
+      lastDealCoins: [2, -1, -1],
       players: [
-        { id: 0, isHuman: true, cardCount: 0, cards: [], trickCount: 0, cardPoints: 0, coins: 2, isDeclarer: true },
-        { id: 1, isHuman: false, cardCount: 0, cards: [], trickCount: 0, cardPoints: 0, coins: -1, isDeclarer: false },
-        { id: 2, isHuman: false, cardCount: 0, cards: [], trickCount: 0, cardPoints: 0, coins: -1, isDeclarer: false },
+        { id: 0, isHuman: true, cardCount: 0, cards: [], trickCount: 0, cardPoints: 0, coins: 9, isDeclarer: true },
+        { id: 1, isHuman: false, cardCount: 0, cards: [], trickCount: 0, cardPoints: 0, coins: -4, isDeclarer: false },
+        { id: 2, isHuman: false, cardCount: 0, cards: [], trickCount: 0, cardPoints: 0, coins: -5, isDeclarer: false },
       ],
     });
     mockExec.mockResolvedValueOnce(trickEndState); // mount → trick end
@@ -218,13 +219,14 @@ describe('UltiPage', () => {
     // The match-deciding round settles straight into GAME_END (no ROUND_END).
     const finalSettle = makeUltiState({
       phase: 5,
+      lastDealCoins: [3, -3, 0],
       isHumanTurn: false,
       gameEndFlag: true,
       outcome: 1,
       winnerPlayer: 0,
       players: [
-        { id: 0, isHuman: true, cardCount: 0, cards: [], trickCount: 0, cardPoints: 0, coins: 3, isDeclarer: true },
-        { id: 1, isHuman: false, cardCount: 0, cards: [], trickCount: 0, cardPoints: 0, coins: -3, isDeclarer: false },
+        { id: 0, isHuman: true, cardCount: 0, cards: [], trickCount: 0, cardPoints: 0, coins: 12, isDeclarer: true },
+        { id: 1, isHuman: false, cardCount: 0, cards: [], trickCount: 0, cardPoints: 0, coins: -6, isDeclarer: false },
         { id: 2, isHuman: false, cardCount: 0, cards: [], trickCount: 0, cardPoints: 0, coins: 0, isDeclarer: false },
       ],
     });

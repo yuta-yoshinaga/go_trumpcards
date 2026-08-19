@@ -73,6 +73,8 @@ export interface UltiResponse extends BaseGameResponse {
   currentTrick: UltiTrickCard[];
   /** Cumulative coin balance per player — [p0, p1, p2]. */
   playerCoins: number[];
+  /** 直近ディールの精算による符号付き増減。次のディールが始まると全員 0 に戻る。 */
+  lastDealCoins: number[];
   /** Seat index of the last trick winner, or -1. */
   lastTrickWinner: number;
   /** Deal outcome (0=None, 1=Win/contract made, 2=Loss/contract failed). */
