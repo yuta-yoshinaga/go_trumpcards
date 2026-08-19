@@ -683,7 +683,9 @@ type cinchGolden struct {
 // domain を呼んで一致を保証しているのに、Web 側は同じ規則を独自実装しており、
 // 片方だけ直せば黙ってずれる。同じ golden vector を両方から検証してそれを防ぐ。
 func TestCinchBidStrength_GoldenVectors(t *testing.T) {
-	raw, err := os.ReadFile(filepath.Join("testdata", "cinch_bid_strength.json"))
+	// TS 側は import で読むので、fixture は frontend 側に置く (guandanCombo.golden の前例)。
+	raw, err := os.ReadFile(filepath.Join(
+		"..", "..", "frontend", "src", "utils", "__fixtures__", "cinchBidStrength.golden.json"))
 	require.NoError(t, err)
 	var golden cinchGolden
 	require.NoError(t, json.Unmarshal(raw, &golden))

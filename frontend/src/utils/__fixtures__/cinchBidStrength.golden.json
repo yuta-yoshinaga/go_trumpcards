@@ -50,11 +50,7 @@
     },
     {
       "name": "the 5 of hearts is the Left Pedro in diamonds, making diamonds the best suit",
-      "cards": [
-        { "suit": 3, "value": 5 },
-        { "suit": 4, "value": 13 },
-        { "suit": 4, "value": 10 }
-      ],
+      "cards": [{ "suit": 3, "value": 5 }, { "suit": 4, "value": 13 }, { "suit": 4, "value": 10 }],
       "pointsBySuit": [0, 0, 0, 5, 7],
       "bestSuit": 4,
       "maxPoints": 7,

@@ -258,7 +258,7 @@ func cinchPointValue(c *Card, trumpSuit int) int {
 //
 // The Web GUI re-implements this in TypeScript (frontend/src/utils/cinchBidStrength.ts);
 // the two are held together by the golden vectors in
-// testdata/cinch_bid_strength.json, which both test suites assert against.
+// frontend/src/utils/__fixtures__/cinchBidStrength.golden.json, which both test suites assert against.
 //
 // Holding a point card is not the same as capturing it, so this is a bidding
 // guide, not a promise. The Web GUI has shown the same table since the game

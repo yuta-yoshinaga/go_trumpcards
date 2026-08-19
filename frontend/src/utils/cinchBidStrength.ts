@@ -14,7 +14,7 @@ export const CINCH_TRUMP_SUITS = [1, 2, 3, 4] as const;
  *
  * Mirrors `cinchPointValue` in `internal/domain/Cinch.go`, and the two are held
  * together by the shared golden vectors in
- * `internal/domain/testdata/cinch_bid_strength.json` (asserted here by
+ * `frontend/src/utils/__fixtures__/cinchBidStrength.golden.json` (asserted here by
  * `cinchBidStrength.golden.test.ts` and there by `Cinch_test.go`): the trump A/K/10/J
  * are worth 1 each ("High"/"King"/"Ten (Game)"/"Jack"), the Right Pedro (5 of
  * trump) is worth 5, and the Left Pedro (5 of the same-color off-suit) is worth
