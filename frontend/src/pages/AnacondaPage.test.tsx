@@ -272,4 +272,33 @@ describe('AnacondaPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(document.querySelectorAll('[data-hint-card="true"]')).toHaveLength(0);
   });
+
+  // #5703: 「左隣」は脱落者を飛ばすので席番号 +1 とは限らない。CUI は受取人を
+  // 名指ししていたのに、Web は「左隣へ」としか出しておらず、実際に誰へ渡るのかが
+  // 卓の状況次第で分からなかった。
+  it('names the seat that will receive the passed cards', async () => {
+    mockExec.mockResolvedValue(passState);
+    renderWithProviders(<AnacondaPage />);
+
+    const notice = await screen.findByTestId('anaconda-pass-notice');
+
+    expect(notice).toHaveTextContent('CPU 1');
+  });
+
+  it('skips eliminated seats when naming the recipient', async () => {
+    mockExec.mockResolvedValue(
+      makeAnacondaState({
+        phase: 0,
+        passCount: 3,
+        isHumanTurn: true,
+        players: passState.players.map((p) => (p.id === 1 ? { ...p, out: true } : p)),
+      }),
+    );
+    renderWithProviders(<AnacondaPage />);
+
+    const notice = await screen.findByTestId('anaconda-pass-notice');
+
+    expect(notice).toHaveTextContent('CPU 2');
+    expect(notice).not.toHaveTextContent('CPU 1');
+  });
 });
