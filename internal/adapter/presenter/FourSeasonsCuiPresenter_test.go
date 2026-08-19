@@ -171,11 +171,13 @@ func TestFourSeasonsCuiPresenter_TableauAnnouncesTheNextRank(t *testing.T) {
 
 // **Web と同じ規則であること** (#5738)。同じ黄金ベクタを
 // frontend/src/utils/fourseasonsTableauNextRank.golden.test.ts も読む。
+// 見ているのは置けるかどうかを決める domain の関数そのものなので、案内と
+// 判定がずれることがない。
 func TestFourSeasonsTableauNextRank_GoldenVectors(t *testing.T) {
 	golden := readFourSeasonsGolden(t)
 	assert.NotEmpty(t, golden.Cases, "no vectors to check")
 	for _, c := range golden.Cases {
-		assert.Equal(t, c.Next, FourSeasonsTableauNextRank(c.Top), c.Name)
+		assert.Equal(t, c.Next, domain.FourSeasonsPrevRank(c.Top), c.Name)
 	}
 }
 
