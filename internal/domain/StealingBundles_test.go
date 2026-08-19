@@ -344,6 +344,16 @@ func TestStealingBundlesRejectsAnInconsistentCaptureRecord(t *testing.T) {
 	require.NotEqual(t, string(data), string(broken), "置換が当たっていない")
 	assert.Error(t, json.Unmarshal(broken, new(StealingBundles)))
 
+	// **取った席が居ないのに種別だけある**保存も弾く（レビュー指摘）。
+	// 束を持っている盤面だと「誰も取っていないのに束がある」の側で落ちてしまい、
+	// この検査を通ったことにならない——まだ誰も取っていない局面で試す。
+	fresh, err := json.Marshal(newStealingBundlesForTest(t, 4))
+	require.NoError(t, err)
+	require.NoError(t, json.Unmarshal(fresh, new(StealingBundles)), "元の保存は通る")
+	orphan := bytes.Replace(fresh, []byte(`"lk":""`), []byte(`"lk":"take"`), 1)
+	require.NotEqual(t, string(fresh), string(orphan), "置換が当たっていない")
+	assert.Error(t, json.Unmarshal(orphan, new(StealingBundles)))
+
 	// 知らない種別も弾く。
 	unknown := bytes.Replace(data, []byte(`"lk":"steal"`), []byte(`"lk":"rob"`), 1)
 	require.NotEqual(t, string(data), string(unknown), "置換が当たっていない")

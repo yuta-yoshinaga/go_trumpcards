@@ -673,10 +673,16 @@ func (s *StealingBundles) UnmarshalJSON(data []byte) error {
 			return fmt.Errorf("seat %d is recorded as having captured with no capture kind", j.LastCaptureIdx)
 		}
 	case StealingBundlesCaptureTake:
+		if j.LastCaptureIdx < 0 {
+			return fmt.Errorf("capture kind %q recorded with no capturing seat", j.LastCaptureKind)
+		}
 		if j.LastCaptureVictimIdx != -1 {
 			return fmt.Errorf("a take cannot have a victim: %d", j.LastCaptureVictimIdx)
 		}
 	case StealingBundlesCaptureSteal:
+		if j.LastCaptureIdx < 0 {
+			return fmt.Errorf("capture kind %q recorded with no capturing seat", j.LastCaptureKind)
+		}
 		if j.LastCaptureVictimIdx < 0 || j.LastCaptureVictimIdx >= len(j.Players) ||
 			j.LastCaptureVictimIdx == j.LastCaptureIdx {
 			return fmt.Errorf("steal victim index out of range: %d", j.LastCaptureVictimIdx)
