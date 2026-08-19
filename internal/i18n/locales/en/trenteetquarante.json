@@ -26,6 +26,7 @@
   "result.lose": "You lose.",
   "result.push": "Push — your stake is returned.",
   "result.refait": "Refait at 31 — half your stake goes to the house.",
+  "result.refaitWhy": "Ties from 32 to 40 push in full; only a tie at 31 gives the bank half the stake — the game’s single house edge.",
   "hintNone": "No hint available.",
   "hintBet": "[HINT: {{bet}} ({{reason}})]",
   "hintReasonEvenOdds": "All bets pay even money; the Refait (tie at 31) is the house edge",
