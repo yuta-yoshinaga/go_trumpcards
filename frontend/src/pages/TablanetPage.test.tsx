@@ -10,6 +10,17 @@ vi.mock('../api/gameApi', () => ({
   actionLogApi: { tablanet: vi.fn() },
 }));
 
+const mockPlaySound = vi.fn();
+const mockSoundValue = { playSound: mockPlaySound, muted: false, toggleMute: vi.fn() };
+/** 中央のタップ (useGameApi / GamePageShell) も同じ mock を通るので、名前で絞る。 */
+const soundCalls = (name: string) => mockPlaySound.mock.calls.filter((c) => c[0] === name).length;
+
+vi.mock('../providers/SoundProvider', () => ({
+  SoundProvider: ({ children }: { children: React.ReactNode }) => children,
+  useSound: () => mockSoundValue,
+  useOptionalSound: () => mockSoundValue,
+}));
+
 const mockExec = vi.mocked(tablanetApi.exec);
 
 const playPhaseState = makeTablanetState();
@@ -46,6 +57,7 @@ const tablaReadyState = makeTablanetState({
 beforeEach(() => {
   localStorage.clear();
   mockExec.mockReset();
+  mockPlaySound.mockClear();
   mockExec.mockResolvedValue(playPhaseState);
 });
 
@@ -218,5 +230,64 @@ describe('TablanetPage', () => {
     expect(first).toHaveAttribute('aria-pressed', 'false');
     fireEvent.click(first);
     await waitFor(() => expect(screen.getByTestId('table-card-0')).toHaveAttribute('aria-pressed', 'true'));
+  });
+
+  // #5695: タブラは Basra と同じ「自分の名を冠した一掃スコア」なのに、
+  // 達成の瞬間は sr-only のライブリージョンにしか出ておらず、晴眼のプレイヤーには
+  // 音もアニメーションも目立つバッジも無かった (Basra は #3626 で入れている)。
+  const withTabla = (seat: number) =>
+    makeTablanetState({
+      players: playPhaseState.players.map((p, i) => (i === seat ? { ...p, tablaCount: 1 } : p)),
+    });
+
+  const playInto = async (next: ReturnType<typeof makeTablanetState>) => {
+    const handCard = await screen.findByTestId('hand-card-0');
+    fireEvent.click(handCard);
+    fireEvent.click(screen.getByTestId('table-card-0'));
+    mockExec.mockResolvedValue(next);
+    fireEvent.click(screen.getByRole('button', { name: '捕獲' }));
+  };
+
+  it('shows no tabla celebration on a steady play state', async () => {
+    renderWithProviders(<TablanetPage />);
+    await screen.findByTestId('hand-card-0');
+
+    expect(screen.queryByTestId('tablanet-celebration')).not.toBeInTheDocument();
+    expect(screen.getByTestId('tablanet-tabla-count-1')).not.toHaveAttribute('data-emphasised');
+  });
+
+  it('celebrates the human tabla with a badge, a fanfare and the counter emphasised', async () => {
+    renderWithProviders(<TablanetPage />);
+    await playInto(withTabla(0));
+
+    const badge = await screen.findByTestId('tablanet-celebration');
+    expect(badge).toHaveAttribute('role', 'status');
+    expect(badge).toHaveTextContent('あなた');
+    expect(soundCalls('winFanfare')).toBe(1);
+    // 既存の sr-only アナウンスは残す。
+    expect(screen.getByTestId('tablanet-live-region')).toHaveTextContent('タブラ');
+  });
+
+  it('celebrates a CPU tabla with the neutral badge and emphasises that seat', async () => {
+    renderWithProviders(<TablanetPage />);
+    await playInto(withTabla(1));
+
+    const badge = await screen.findByTestId('tablanet-celebration');
+    expect(badge).toHaveTextContent('場を一掃');
+    expect(await screen.findByTestId('tablanet-tabla-count-1')).toHaveAttribute('data-emphasised', 'true');
+    expect(screen.getByTestId('tablanet-tabla-count-2')).not.toHaveAttribute('data-emphasised');
+  });
+
+  // リセットは tablaCount を 0 に戻すので、そこで演出が残ると次のゲームに漏れる。
+  it('clears the celebration when a reset drops the counts back to zero', async () => {
+    renderWithProviders(<TablanetPage />);
+    await playInto(withTabla(0));
+    await screen.findByTestId('tablanet-celebration');
+
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' })); // 確認ダイアログを開く
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+    await waitFor(() => expect(screen.queryByTestId('tablanet-celebration')).not.toBeInTheDocument());
   });
 });
