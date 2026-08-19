@@ -85,6 +85,24 @@ describe('RookPage', () => {
     expect(screen.getByTestId('bid-button')).toBeEnabled();
   });
 
+  // #5708: 他ページは buttonStyles.ts の共通トークンを使うのに、Rook だけ生の
+  // Tailwind クラスを直書きしていた。共通トークンには 44px の最小タップ領域と
+  // フォーカスリングが入っており、直書きの側にはそれが無かった。
+  it('styles its action buttons with the shared button tokens', async () => {
+    renderWithProviders(<RookPage />);
+
+    const bid = await screen.findByTestId('bid-button');
+    const pass = screen.getByTestId('pass-button');
+
+    for (const button of [bid, pass]) {
+      expect(button.className).toContain('min-h-[44px]'); // 共通トークンの最小タップ領域
+      expect(button.className).toContain('focus-visible:ring-ds-accent');
+      expect(button.className).not.toContain('bg-ds-info'); // 直書きの色は残さない
+    }
+    expect(bid.className).toContain('bg-ds-accent');
+    expect(pass.className).toContain('bg-ds-warning');
+  });
+
   it('shows a visible label associated with the bid selector', async () => {
     renderWithProviders(<RookPage />);
     const label = await screen.findByTestId('rook-bid-label');
