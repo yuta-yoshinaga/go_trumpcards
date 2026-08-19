@@ -3,6 +3,7 @@
 package presenter_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -275,4 +276,62 @@ func TestWizardCuiPresenter_ActionLogOutput(t *testing.T) {
 	})
 	result := p.ActionLogOutput(m)
 	assert.NotEmpty(t, result)
+}
+
+// #5706: ビッドと実獲得トリックの一致/乖離が得点を決めるゲームなのに、CUI の
+// ラウンド終了は案内文だけで、各プレイヤーの的中判定は行を見比べて暗算するしか
+// なかった (Web は wiz-bid-accuracy パネルにまとめている)。
+func TestWizardCuiPresenter_BidAccuracySummary(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.WizardCuiPresenter)
+
+	// 席0: 的中 (2/2)、席1: 超過 (1 → 3)、席2: 未達 (2 → 0)、席3: 未ビッド。
+	build := func(phase domain.WizardPhase, gameEnd bool) *interfaces.MockWizardGame {
+		m, players := setupWizardCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(phase)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
+		m.On("GetGameEndFlag").Return(gameEnd)
+		if gameEnd {
+			m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetWinnerIdx")
+			m.On("GetWinnerIdx").Return(0)
+		}
+		bids := []int{2, 1, 2, -1}
+		tricks := []int{2, 3, 0, 0}
+		for i, pl := range players {
+			pl.SetBid(bids[i])
+			for range tricks[i] {
+				pl.AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, false)})
+			}
+		}
+		return m
+	}
+	wantLine := i18n.Tf("wizard.bidAccuracyLine", "entries",
+		i18n.Tf("wizard.bidAccuracyMade", "name", "あなた", "bid", "2")+" / "+
+			i18n.Tf("wizard.bidAccuracyOver", "name", "CPU 1", "bid", "1", "tricks", "3")+" / "+
+			i18n.Tf("wizard.bidAccuracyUnder", "name", "CPU 2", "bid", "2", "tricks", "0"))
+
+	t.Run("summarises made, over and under at round end", func(t *testing.T) {
+		out := p.Output(build(domain.WizardPhaseRoundEnd, false), nil)
+
+		assert.Contains(t, out, wantLine)
+		// 未ビッドの席は契約が無いので**この行には**出さない (Web の bid >= 0 と同じ)。
+		// プレイヤー一覧には出るので、行を取り出してから見る。
+		summary := basraLineContaining(out, strings.Split(i18n.T("wizard.bidAccuracyLine"), "{{")[0])
+		assert.NotContains(t, summary, "CPU 3")
+	})
+
+	t.Run("summarises at game end too", func(t *testing.T) {
+		out := p.Output(build(domain.WizardPhaseRoundEnd, true), nil)
+
+		assert.Contains(t, out, wantLine)
+	})
+
+	t.Run("says nothing mid-round", func(t *testing.T) {
+		out := p.Output(build(domain.WizardPhasePlay, false), nil)
+
+		assert.NotContains(t, out, strings.Split(i18n.T("wizard.bidAccuracyLine"), "{{")[0])
+	})
 }
