@@ -1,0 +1,64 @@
+{
+  "_comment": "Golden vectors for the Cinch bid-strength estimate. Two implementations read this file: internal/domain/Cinch_test.go (CinchHandPointsBySuit / CinchBestTrumpSuit) and frontend/src/utils/cinchBidStrength.golden.test.ts (estimateCinchBidStrength). Changing the point rules on one side alone fails that side's test; regenerating these numbers to fix it fails the other side. suit: 1=Spade 2=Clover 3=Heart 4=Diamond. pointsBySuit is indexed by suit, index 0 unused.",
+  "cases": [
+    {
+      "name": "empty hand holds nothing and falls back to the lowest suit",
+      "cards": [],
+      "pointsBySuit": [0, 0, 0, 0, 0],
+      "bestSuit": 1,
+      "maxPoints": 0,
+      "minPoints": 0
+    },
+    {
+      "name": "no point cards at all",
+      "cards": [{ "suit": 3, "value": 9 }, { "suit": 4, "value": 2 }],
+      "pointsBySuit": [0, 0, 0, 0, 0],
+      "bestSuit": 1,
+      "maxPoints": 0,
+      "minPoints": 0
+    },
+    {
+      "name": "a lone 5 of diamonds is the Right Pedro in diamonds and the Left Pedro in hearts",
+      "cards": [{ "suit": 4, "value": 5 }],
+      "pointsBySuit": [0, 0, 0, 5, 5],
+      "bestSuit": 3,
+      "maxPoints": 5,
+      "minPoints": 0
+    },
+    {
+      "name": "all fourteen points in spades, the 5 of clubs still counting as the Left Pedro in clubs",
+      "cards": [
+        { "suit": 1, "value": 1 },
+        { "suit": 1, "value": 13 },
+        { "suit": 1, "value": 10 },
+        { "suit": 1, "value": 11 },
+        { "suit": 1, "value": 5 },
+        { "suit": 2, "value": 5 }
+      ],
+      "pointsBySuit": [0, 14, 10, 0, 0],
+      "bestSuit": 1,
+      "maxPoints": 14,
+      "minPoints": 0
+    },
+    {
+      "name": "a tie between spades and clubs goes to the lower suit index",
+      "cards": [{ "suit": 1, "value": 1 }, { "suit": 2, "value": 1 }],
+      "pointsBySuit": [0, 1, 1, 0, 0],
+      "bestSuit": 1,
+      "maxPoints": 1,
+      "minPoints": 0
+    },
+    {
+      "name": "the 5 of hearts is the Left Pedro in diamonds, making diamonds the best suit",
+      "cards": [
+        { "suit": 3, "value": 5 },
+        { "suit": 4, "value": 13 },
+        { "suit": 4, "value": 10 }
+      ],
+      "pointsBySuit": [0, 0, 0, 5, 7],
+      "bestSuit": 4,
+      "maxPoints": 7,
+      "minPoints": 0
+    }
+  ]
+}
