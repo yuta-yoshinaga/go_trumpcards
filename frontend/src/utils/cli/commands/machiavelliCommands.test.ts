@@ -96,6 +96,29 @@ describe('parseMachiavelliCommand', () => {
     });
   });
 
+  it('tolerates spacing and empty segments in rearrange', () => {
+    expect(parseMachiavelliCommand('ra  s5, h5 , d5 ; ; c7,c8,c9 ,  / 2 , 4 ,')).toEqual({
+      args: [
+        'play',
+        {
+          tableMelds: [
+            [
+              { design: 1, value: 5 },
+              { design: 3, value: 5 },
+              { design: 4, value: 5 },
+            ],
+            [
+              { design: 2, value: 7 },
+              { design: 2, value: 8 },
+              { design: 2, value: 9 },
+            ],
+          ],
+          handIndices: [2, 4],
+        },
+      ],
+    });
+  });
+
   it.each(['ra', 'ra s5,h5,d5', 'ra / 1', 'ra s5,x9 / 1', 'ra s5,h5,d5 / x', 'ra s5,h5,d5 /', 'ra s5 / 1 / 2'])(
     'rejects malformed rearrange: %s',
     (input) => {

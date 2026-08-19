@@ -170,6 +170,27 @@ func TestMachiavelliCuiController_Exec(t *testing.T) {
 		}, []int{0})
 	})
 
+	// 余分な空白と空グループは黙って読み飛ばす (手で打つコマンドなので)。
+	t.Run("rearrange tolerates spacing and empty segments", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewMachiavelliCuiController(m)
+
+		assert.Equal(t, mockOutput, c.Exec("ra  s5, h5 , d5 ; ; c7,c8,c9 ,  / 2 , 4 ,"))
+
+		m.AssertCalled(t, "Play", [][]domain.MachiavelliCardRef{
+			{
+				{Design: domain.CardDesignSpade, Value: 5},
+				{Design: domain.CardDesignHeart, Value: 5},
+				{Design: domain.CardDesignDiamond, Value: 5},
+			},
+			{
+				{Design: domain.CardDesignClover, Value: 7},
+				{Design: domain.CardDesignClover, Value: 8},
+				{Design: domain.CardDesignClover, Value: 9},
+			},
+		}, []int{2, 4})
+	})
+
 	t.Run("rearrange rejects malformed input without calling the interactor", func(t *testing.T) {
 		// 手札を 1 枚も出さない組み替えはルール違反なので、ここで弾く。
 		for _, arg := range []string{"ra", "ra s5,h5,d5", "ra / 1", "ra s5,x9 / 1", "ra s5,h5,d5 / x", "ra s5,h5,d5 /"} {
