@@ -159,7 +159,14 @@ describe('BalootPage', () => {
   // **チーム番号と Baloot 役は盤面から読めない。** 席ごとに出す。
   it('labels each seat with its team and Baloot bonus', async () => {
     mockExec.mockResolvedValue(
-      makeState({ players: [seat(0, { hasBaloot: true }), seat(1), seat(2), seat(3)] } as Partial<BalootResponse>),
+      makeState({
+        players: [
+          seat(0, { hasBaloot: true, balootRevealed: true }),
+          seat(1, { balootRevealed: true }),
+          seat(2),
+          seat(3),
+        ],
+      } as Partial<BalootResponse>),
     );
     renderWithProviders(<BalootPage />);
 
