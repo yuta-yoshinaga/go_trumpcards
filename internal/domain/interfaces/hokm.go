@@ -49,6 +49,8 @@ type HokmGame interface {
 	TeamTricks(team int) int
 	// GetLastHandKot 直前のハンドが Kot だったかを取得する
 	GetLastHandKot() bool
+	// GetLastHandHakemChanged 直前のハンドで親が交代したかを取得する
+	GetLastHandHakemChanged() bool
 	// GetLastHandWinner 直前のハンドを制したチームを取得する (-1: まだ無い)
 	GetLastHandWinner() int
 	// GetCurrentPlayerIdx 現在のプレイヤーインデックスを取得する
