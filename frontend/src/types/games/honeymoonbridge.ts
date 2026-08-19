@@ -82,6 +82,13 @@ export interface HoneymoonBridgeResponse extends BaseGameResponse {
   lastMade: boolean;
   /** Tricks the declarer took in the last deal. */
   lastTricks: number;
+  /**
+   * Points the deal that just ended actually moved.
+   *
+   * Scoring is level x 10 plus 5 an overtrick (or 10 a trick short to the
+   * opponent), so the trick counts alone do not say what it was worth (#5760).
+   */
+  lastPoints: number;
   currentPlayerIdx: number;
   leadPlayerIdx: number;
   dealerIdx: number;

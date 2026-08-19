@@ -26,6 +26,7 @@
   "result.lose": "あなたの負け。",
   "result.push": "プッシュ — ステークは返却されます。",
   "result.refait": "31 での Refait — ステークの半額が胴元に渡ります。",
+  "result.refaitWhy": "32〜40 での同点は全額返却（プッシュ）ですが、31 だけは半額を胴元が取ります — これがこのゲーム唯一のハウスエッジです。",
   "hintNone": "ヒントはありません。",
   "hintBet": "[HINT: {{bet}} ({{reason}})]",
   "hintReasonEvenOdds": "すべてのベットはイーブンマネー。Refait（31 の同点）が胴元のエッジ",

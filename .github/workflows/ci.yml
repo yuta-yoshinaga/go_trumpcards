@@ -82,6 +82,17 @@ jobs:
         uses: golangci/golangci-lint-action@v9
         with:
           args: --build-tags test
+          # **キャッシュを復元した run だけ staticcheck が誤検知する。**
+          # 2026-08-20、触っていない PR が軒並み SA5011 (t.Fatal の直後の
+          # 参照を「nil 参照の可能性」と読む) 6 件で落ちた。同じ
+          # golangci-lint 2.12.2 / Go 1.26.5 をローカルで走らせると 0 件、
+          # CI もキャッシュを消した直後の run は 0 件、その run が保存した
+          # キャッシュを復元した次の run からまた 6 件になる、という再現性が
+          # あった (max-same-issues=3 の既定で毎回ちょうど 6 件に丸められ、
+          # 直すたびに別ファイルが出てくる)。
+          # lint は 5-6 分の job なので、キャッシュを捨てて毎回冷えた状態で
+          # 走らせるほうが、緑の意味が保てる。
+          skip-cache: true
 
   test-backend:
     name: Backend Tests

@@ -238,3 +238,38 @@ describe('SergeantMajorPage', () => {
     expect(await screen.findByTestId('hint-tooltip')).toHaveTextContent(/いちばん強いスート/);
   });
 });
+
+// **取り込むと手札に紛れて見分けが付かなくなる** (#5759)。捨てる 4 枚を選ぶ
+// のに「元から持っていた札」と「今入ってきた札」の区別が要る。
+describe('SergeantMajorPage kitty markers', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+  });
+
+  it('marks only the cards that came in from the kitty', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ phase: 1, isHumanDiscardTurn: true, kittyIndices: [1, 3] } as Partial<SergeantMajorResponse>),
+    );
+    renderWithProviders(<SergeantMajorPage />);
+
+    expect(await screen.findByTestId('sm-kitty-1')).toBeInTheDocument();
+    expect(screen.getByTestId('sm-kitty-3')).toBeInTheDocument();
+    expect(screen.queryByTestId('sm-kitty-0')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('sm-kitty-2')).not.toBeInTheDocument();
+    // 読み上げにも由来が入る。
+    expect(screen.getByTestId('sm-kitty-1')).toHaveTextContent('キティ');
+  });
+
+  // **捨て終われば元に戻る** (受け入れ条件3)。
+  it('shows no markers once the discard is done', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ phase: 2, isHumanDiscardTurn: false, kittyIndices: [] } as Partial<SergeantMajorResponse>),
+    );
+    renderWithProviders(<SergeantMajorPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    for (const idx of [0, 1, 2, 3]) {
+      expect(screen.queryByTestId(`sm-kitty-${idx}`)).not.toBeInTheDocument();
+    }
+  });
+});

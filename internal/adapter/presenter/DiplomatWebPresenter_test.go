@@ -169,3 +169,23 @@ func TestDiplomatWebPresenter_ActionLogOutput(t *testing.T) {
 		assert.Contains(t, new(DiplomatWebPresenter).ActionLogOutput(g), "move")
 	})
 }
+
+// **行き止まり判定はサーバが返す** (#5741)。画面で作り直すと、置ける規則が
+// 変わったときに片方だけ古いままになる。
+func TestDiplomatWebPresenter_MarksDeadEndColumns(t *testing.T) {
+	g := new(interfaces.MockDiplomatGame)
+	var tableau [domain.DiplomatTableauCnt][]*domain.Card
+	tableau[0] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 9, true)}
+	tableau[1] = []*domain.Card{domain.NewCard(domain.CardDesignHeart, 5, true), domain.NewCard(domain.CardDesignClover, 1, true)}
+	tableau[2] = []*domain.Card{domain.NewCard(domain.CardDesignClover, 1, true), domain.NewCard(domain.CardDesignHeart, 9, true)}
+	g.On("GetTableau").Return(tableau).Maybe()
+	setupDiplomatOutputMock(g)
+
+	out := parseDiplomatOutput(t, new(DiplomatWebPresenter).Output(g, nil))
+
+	assert.Len(t, out.TableauDeadEnd, domain.DiplomatTableauCnt)
+	assert.False(t, out.TableauDeadEnd[0], "a 9 on top takes an 8")
+	assert.True(t, out.TableauDeadEnd[1], "an Ace on top takes nothing")
+	assert.False(t, out.TableauDeadEnd[2], "a buried Ace does not end the column")
+	assert.False(t, out.TableauDeadEnd[3], "an empty column takes any card")
+}

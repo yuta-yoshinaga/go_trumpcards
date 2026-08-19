@@ -45,5 +45,7 @@
   "reason.discardTheLoneCard": "let go of the card with the fewest partners",
   "reason.roundIsOver": "this round is decided",
   "result.gameEnd": "The game is over",
-  "helpExampleDraw": "  draw                 draw one card from the stock"
+  "helpExampleDraw": "  draw                 draw one card from the stock",
+  "meldPointsLine": "Meld points: {{table}}",
+  "meld.points": "{{points}} pts"
 }

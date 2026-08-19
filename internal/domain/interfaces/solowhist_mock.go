@@ -140,6 +140,15 @@ func (_m *MockSoloWhistGame) GetDeclarerIdx() int {
 	return ret.Get(0).(int)
 }
 
+// GetDeclarerProgress モック
+func (_m *MockSoloWhistGame) GetDeclarerProgress() *domain.SoloWhistDeclarerProgress {
+	ret := _m.Called()
+	if v := ret.Get(0); v != nil {
+		return v.(*domain.SoloWhistDeclarerProgress)
+	}
+	return nil
+}
+
 // GetContract モック
 func (_m *MockSoloWhistGame) GetContract() domain.SoloWhistBid {
 	ret := _m.Called()

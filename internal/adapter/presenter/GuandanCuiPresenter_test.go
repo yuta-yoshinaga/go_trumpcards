@@ -11,6 +11,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // **レベル札が A より強いことがこのゲームの肝。**画面に書いていないと読めない。
@@ -162,4 +163,79 @@ func TestGuandanCuiPresenter_Error(t *testing.T) {
 func TestGuandanCuiPresenter_ActionLogOutput(t *testing.T) {
 	out := new(presenter.GuandanCuiPresenter).ActionLogOutput(setupGuandanMock(defaultGuandanOpts()))
 	assert.True(t, strings.TrimSpace(out) != "")
+}
+
+// **CUI は打って初めて拒否される** (#5734)。Web は選択に合わせて役名と
+// 「場のどの役にも勝つ」を出しているのに、CUI には判定手段が無かった。
+func TestGuandanCuiPresenter_CheckOutput(t *testing.T) {
+	p := new(presenter.GuandanCuiPresenter)
+	// 4 枚同ランク = ボム。場に何もなければリードできる。
+	bombOpts := defaultGuandanOpts()
+	bombOpts.humanHand = []*domain.Card{
+		gdTestCard(domain.CardDesignSpade, 5),
+		gdTestCard(domain.CardDesignHeart, 5),
+		gdTestCard(domain.CardDesignClover, 5),
+		gdTestCard(domain.CardDesignDiamond, 5),
+		gdTestCard(domain.CardDesignSpade, 9),
+	}
+	bomb := p.CheckOutput(setupGuandanMock(bombOpts), []int{0, 1, 2, 3})
+	assert.Contains(t, bomb, i18n.Tf("guandan.checkCombo",
+		"combo", i18n.T("guandan.comboBomb"), "size", "4"))
+	assert.Contains(t, bomb, i18n.T("guandan.checkBeatsAll"))
+	assert.Contains(t, bomb, i18n.T("guandan.checkLead"))
+
+	// 単札は役として成立する。ボムではないので「すべて上回る」は出ない。
+	single := p.CheckOutput(setupGuandanMock(bombOpts), []int{4})
+	assert.Contains(t, single, i18n.Tf("guandan.checkCombo",
+		"combo", i18n.T("guandan.comboSingle"), "size", "1"))
+	assert.NotContains(t, single, i18n.T("guandan.checkBeatsAll"))
+
+	// 場のペアには単札では勝てない。
+	tableOpts := bombOpts
+	tableOpts.combo = &domain.GuandanCombo{Kind: domain.GuandanComboPair, Rank: 13, Size: 2}
+	loses := p.CheckOutput(setupGuandanMock(tableOpts), []int{4})
+	assert.Contains(t, loses, i18n.Tf("guandan.checkLosesToTable",
+		"combo", i18n.T("guandan.comboPair"), "size", "2"))
+	assert.NotContains(t, loses, i18n.T("guandan.checkBeatsTable"))
+
+	// ボムは場のペアを飛び越す。
+	beats := p.CheckOutput(setupGuandanMock(tableOpts), []int{0, 1, 2, 3})
+	assert.Contains(t, beats, i18n.T("guandan.checkBeatsTable"))
+
+	// 役にならない組み合わせ。
+	invalidOpts := defaultGuandanOpts()
+	invalidOpts.humanHand = []*domain.Card{
+		gdTestCard(domain.CardDesignSpade, 5),
+		gdTestCard(domain.CardDesignHeart, 9),
+		gdTestCard(domain.CardDesignClover, 13),
+	}
+	assert.Contains(t, p.CheckOutput(setupGuandanMock(invalidOpts), []int{0, 1, 2}),
+		i18n.T("guandan.checkInvalid"))
+
+	// 添字が無い / 範囲外 / 重複。
+	assert.Contains(t, p.CheckOutput(setupGuandanMock(invalidOpts), nil),
+		i18n.T("guandan.checkNeedsIndexes"))
+	assert.Contains(t, p.CheckOutput(setupGuandanMock(invalidOpts), []int{9}),
+		i18n.Tf("guandan.checkOutOfRange", "val", "9", "max", "2"))
+	// **同じ添字を 2 度書いてもペアにはならない。**手札は 1 枚しかない。
+	assert.Contains(t, p.CheckOutput(setupGuandanMock(invalidOpts), []int{0, 0}),
+		i18n.Tf("guandan.checkOutOfRange", "val", "0", "max", "2"))
+
+	// 人間の席が無い卓 (Worker が CPU だけで回している状態) でも落ちない。
+	noHumanOpts := defaultGuandanOpts()
+	noHumanOpts.noHuman = true
+	assert.Contains(t, p.CheckOutput(setupGuandanMock(noHumanOpts), []int{0}),
+		i18n.T("guandan.checkNoHand"))
+
+	// レベル札はワイルドになるので、判定は GetLevel を見ていること。
+	wildOpts := defaultGuandanOpts()
+	wildOpts.level = 5
+	wildOpts.humanHand = []*domain.Card{
+		gdTestCard(domain.CardDesignSpade, 13),
+		gdTestCard(domain.CardDesignHeart, 5), // level card = wild
+	}
+	wild := p.CheckOutput(setupGuandanMock(wildOpts), []int{0, 1})
+	assert.Contains(t, wild, i18n.Tf("guandan.checkCombo",
+		"combo", i18n.T("guandan.comboPair"), "size", "2"),
+		"レベル札はワイルドなので K とペアになる (level=%d)", wildOpts.level)
 }

@@ -21,6 +21,14 @@ export interface BalootPlayer {
   cards: Card[];
   /** Holds the trump K and Q — worth 20, and possible in Hokom only. */
   hasBaloot: boolean;
+  /**
+   * Whether this seat's Baloot standing is public yet.
+   *
+   * The server sends `hasBaloot: false` while it is hidden, so read this first —
+   * "no Baloot" and "not shown yet" are different things (#5750). A missing
+   * field reads as hidden: showing a concealed Baloot would be the worse failure.
+   */
+  balootRevealed?: boolean;
   /** Has already declared or passed this round. */
   declared: boolean;
   trickCount: number;

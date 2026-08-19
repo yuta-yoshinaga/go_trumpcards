@@ -145,7 +145,12 @@ function BanLuckPageContent() {
             />
 
             <div className="text-ds-text-primary text-center text-sm mb-2" data-testid="bl-round-line">
-              {t('label.round')}: {state.roundNumber}
+              {/* **親が全席を一巡するまで何ラウンドあるか**は CUI にだけ出て
+                  いた (#5778)。config が来る前の初回描画でも壊れないよう、
+                  総数が読めないうちは番号だけ出す。 */}
+              {state.config
+                ? t('label.roundOf', { n: state.roundNumber, total: state.config.rounds })
+                : `${t('label.round')}: ${state.roundNumber}`}
               {' · '}
               <span data-testid="bl-banker">
                 {t('label.banker')}: {state.seats[state.bankerSeat]?.name ?? '?'}

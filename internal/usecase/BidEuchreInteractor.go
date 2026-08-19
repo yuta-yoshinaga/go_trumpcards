@@ -28,6 +28,8 @@ type BidEuchreInteractorIF interface {
 	NextHand() string
 	// GetConfig 現在の設定を取得
 	GetConfig() domain.BidEuchreConfig
+	// Hint ヒントを出力する
+	Hint() string
 	// ActionLog 棋譜を出力する
 	ActionLog() string
 }
@@ -106,6 +108,9 @@ func (bi *BidEuchreInteractor) NextHand() string {
 func (bi *BidEuchreInteractor) GetConfig() domain.BidEuchreConfig {
 	return bi.Game.GetConfig()
 }
+
+// Hint ヒントを出力する
+func (bi *BidEuchreInteractor) Hint() string { return bi.gp.HintOutput(bi.Game) }
 
 // ActionLog 棋譜を出力する
 func (bi *BidEuchreInteractor) ActionLog() string {

@@ -30,5 +30,6 @@
   "hintReasonTakeTrick": "まだ0トリック。追加支払いを避けるため取りに行く",
   "hintReasonAlreadySafe": "1トリック確保済み。あとは取れるだけ取る",
   "helpExampleIn": "  in                   配られた手で勝負すると宣言する",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "dealerMark": "[親]"
 }

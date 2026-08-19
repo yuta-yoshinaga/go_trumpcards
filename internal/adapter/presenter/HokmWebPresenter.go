@@ -34,6 +34,7 @@ func (p *HokmWebPresenter) buildBase(h interfaces.HokmGame) *controller.HokmWebO
 	resObj.HakemIdx = h.GetHakemIdx()
 	resObj.TricksToWin = domain.HokmTricksToWin
 	resObj.LastHandKot = h.GetLastHandKot()
+	resObj.LastHandHakemChanged = h.GetLastHandHakemChanged()
 	resObj.LastHandWinner = h.GetLastHandWinner()
 	resObj.CurrentPlayerIdx = h.GetCurrentPlayerIdx()
 	resObj.LeadPlayerIdx = h.GetLeadPlayerIdx()

@@ -4,6 +4,8 @@ package domain_test
 
 import (
 	"encoding/json"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -662,4 +664,68 @@ func TestCinchHandPointsBySuit(t *testing.T) {
 	empty := domain.CinchHandPointsBySuit(nil)
 	assert.Equal(t, 0, empty[domain.CardDesignSpade])
 	assert.Equal(t, domain.CardDesignSpade, domain.CinchBestTrumpSuit(empty))
+}
+
+// cinchGolden mirrors internal/domain/testdata/cinch_bid_strength.json.
+type cinchGolden struct {
+	Cases []struct {
+		Name         string `json:"name"`
+		Cards        []struct{ Suit, Value int }
+		PointsBySuit [domain.CardDesignDiamond + 1]int `json:"pointsBySuit"`
+		BestSuit     int                               `json:"bestSuit"`
+		MaxPoints    int                               `json:"maxPoints"`
+		MinPoints    int                               `json:"minPoints"`
+	} `json:"cases"`
+}
+
+// #5692: ビッド強度の点数計算は Go (CinchHandPointsBySuit) と TypeScript
+// (frontend/src/utils/cinchBidStrength.ts) の 2 か所にある。CUI 側はわざわざ
+// domain を呼んで一致を保証しているのに、Web 側は同じ規則を独自実装しており、
+// 片方だけ直せば黙ってずれる。同じ golden vector を両方から検証してそれを防ぐ。
+func TestCinchBidStrength_GoldenVectors(t *testing.T) {
+	// TS 側は import で読むので、fixture は frontend 側に置く (guandanCombo.golden の前例)。
+	raw, err := os.ReadFile(filepath.Join(
+		"..", "..", "frontend", "src", "utils", "__fixtures__", "cinchBidStrength.golden.json"))
+	require.NoError(t, err)
+	var golden cinchGolden
+	require.NoError(t, json.Unmarshal(raw, &golden))
+	require.NotEmpty(t, golden.Cases)
+
+	leftPedroCovered := false
+	for _, c := range golden.Cases {
+		t.Run(c.Name, func(t *testing.T) {
+			cards := make([]*domain.Card, 0, len(c.Cards))
+			for _, cd := range c.Cards {
+				cards = append(cards, domain.NewCard(cd.Suit, cd.Value, false))
+			}
+			points := domain.CinchHandPointsBySuit(cards)
+			assert.Equal(t, c.PointsBySuit, points)
+			assert.Equal(t, c.BestSuit, domain.CinchBestTrumpSuit(points))
+
+			maxPts, minPts := points[domain.CardDesignSpade], points[domain.CardDesignSpade]
+			for suit := domain.CardDesignSpade; suit <= domain.CardDesignDiamond; suit++ {
+				if points[suit] > maxPts {
+					maxPts = points[suit]
+				}
+				if points[suit] < minPts {
+					minPts = points[suit]
+				}
+			}
+			assert.Equal(t, c.MaxPoints, maxPts)
+			assert.Equal(t, c.MinPoints, minPts)
+		})
+		// 負のコントロール: Left Pedro (**同色**オフスートの 5) を実際に点にしている
+		// case が 1 件も無ければ、この golden は肝心の規則を守っていない。
+		// 「どこか別のスートが 5 点」では、Right Pedro でも満たせてしまう。
+		sameColor := map[int]int{
+			domain.CardDesignSpade: domain.CardDesignClover, domain.CardDesignClover: domain.CardDesignSpade,
+			domain.CardDesignHeart: domain.CardDesignDiamond, domain.CardDesignDiamond: domain.CardDesignHeart,
+		}
+		for _, cd := range c.Cards {
+			if cd.Value == 5 && c.PointsBySuit[sameColor[cd.Suit]] >= 5 {
+				leftPedroCovered = true
+			}
+		}
+	}
+	assert.True(t, leftPedroCovered, "the golden vectors must exercise the Left Pedro")
 }

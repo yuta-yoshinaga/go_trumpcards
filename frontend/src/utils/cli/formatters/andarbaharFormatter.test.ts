@@ -18,6 +18,8 @@ const base: AndarBaharResponse = {
   winner: -1,
   result: 0,
   payout: 0,
+  mainPayout: 0,
+  sidePayout: 0,
   history: [],
   message: '',
 };
@@ -53,6 +55,8 @@ describe('formatAndarBaharState', () => {
       sideBand: AndarBaharSideBand.TWO_TO_FIVE,
       winner: AndarBaharColumn.ANDAR,
       payout: 190,
+      mainPayout: 190,
+      sidePayout: 0,
       history: [AndarBaharColumn.ANDAR, AndarBaharColumn.BAHAR],
     });
     expect(out).toContain('bet: 100 on Andar');
@@ -61,6 +65,23 @@ describe('formatAndarBaharState', () => {
     expect(out).toContain('winner: Andar');
     expect(out).toContain('payout: 190');
     expect(out).toContain('history: Andar Bahar');
+    // **サイドベットは別の賭け** (#5770)。メインで取ってサイドを外した回だと読める。
+    expect(out).toContain('breakdown: main 190 / side 0');
+  });
+
+  // **負のコントロール: 張っていない回に内訳は出ない** (受け入れ条件3)。
+  it('leaves the breakdown out when no side bet was placed', () => {
+    const out = formatAndarBaharState({
+      ...base,
+      phase: AndarBaharPhase.END,
+      betAmount: 100,
+      winner: AndarBaharColumn.ANDAR,
+      payout: 190,
+      mainPayout: 190,
+      sidePayout: 0,
+    });
+    expect(out).toContain('payout: 190');
+    expect(out).not.toContain('breakdown:');
   });
 
   it('renders the single-card band without a range', () => {

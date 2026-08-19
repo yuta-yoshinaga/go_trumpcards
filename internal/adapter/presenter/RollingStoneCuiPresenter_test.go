@@ -71,6 +71,11 @@ func TestRollingStoneCuiPresenterPromptsForAPickUp(t *testing.T) {
 	out := p.Output(r, nil)
 	assert.Contains(t, out, fixedPart("rollingstone.promptPickUp"))
 	assert.NotContains(t, out, i18n.T("rollingstone.promptPlay"))
+	// **どのスートに追従できなかったのかまで出す** (#5764)。枚数だけでは、
+	// 場の先頭札を目で確かめないと理由が分からない。表記はこの presenter が
+	// 札を "SPADE 9" と出すのに合わせる。
+	assert.Contains(t, out, i18n.Tf("rollingstone.promptPickUp",
+		"suit", cuiSuitName(domain.CardDesignSpade), "n", "1"))
 
 	// **負のコントロール: フォローできるなら通常の促し。**
 	r.GiveHandForTest(0, domain.NewCard(domain.CardDesignSpade, 8, false))
