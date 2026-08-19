@@ -253,7 +253,7 @@ func (s *Slobberhannes) resolveTrick() {
 	hasQueen := false
 	for _, tc := range s.currentTrick {
 		cards = append(cards, tc.Card)
-		if slobberhannesIsPenaltyQueen(tc.Card) {
+		if SlobberhannesIsPenaltyQueen(tc.Card) {
 			hasQueen = true
 		}
 	}
@@ -371,11 +371,6 @@ func slobberhannesRank(c *Card) int {
 	return c.GetValue()
 }
 
-// slobberhannesIsPenaltyQueen ♣Q かどうか
-func slobberhannesIsPenaltyQueen(c *Card) bool {
-	return SlobberhannesIsPenaltyQueen(c)
-}
-
 // SlobberhannesIsPenaltyQueen は罰点札 (♣Q) かを返す。
 //
 // **位置ではなく中身に効く唯一の罰点。**最初/最後のトリックは番号で警告
@@ -459,7 +454,7 @@ func (s *Slobberhannes) wouldWin(c *Card) bool {
 // findPenaltyQueen 合法手のなかの ♣Q を探す
 func (s *Slobberhannes) findPenaltyQueen(p *SlobberhannesPlayer, valid []int) (int, bool) {
 	for _, i := range valid {
-		if slobberhannesIsPenaltyQueen(p.GetCard(i)) {
+		if SlobberhannesIsPenaltyQueen(p.GetCard(i)) {
 			return i, true
 		}
 	}
@@ -566,7 +561,7 @@ func (s *Slobberhannes) trickIsDangerous() bool {
 		return true
 	}
 	for _, tc := range s.currentTrick {
-		if slobberhannesIsPenaltyQueen(tc.Card) {
+		if SlobberhannesIsPenaltyQueen(tc.Card) {
 			return true
 		}
 	}
