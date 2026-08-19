@@ -25,7 +25,13 @@ export function formatStealingBundlesState(state: StealingBundlesResponse | null
 
   state.players.forEach((p) => {
     const marker = p.id === state.currentPlayerIdx && !state.gameEndFlag ? '>' : ' ';
-    const role = p.id === state.lastCaptureIdx ? '[captured last]' : '';
+    // 盗みは相手の束を丸ごと消すので、場から取っただけの手とは分ける (#5767)。
+    const role =
+      p.id === state.lastCaptureIdx
+        ? state.lastCaptureKind === 'steal'
+          ? `[stole ${formatPlayerName(state.lastCaptureVictimIdx, state.lastCaptureVictimIdx === 0)}'s bundle]`
+          : '[took from the table]'
+        : '';
     // **一番上は全員に見えます。** そこが狙われる場所だからです。
     const top = p.bundleTop ? formatCard(p.bundleTop) : 'none';
     lines.push(

@@ -51459,6 +51459,16 @@ components:
         phase:
           type: integer
           description: "1=Bet, 2=End"
+        mainPayout:
+          type: integer
+          description: >-
+            The main-bet half of payout; 0 when it missed. A side bet is a
+            separate wager -- the total alone cannot say which one lost.
+        sidePayout:
+          type: integer
+          description: >-
+            The side-bet half of payout; 0 when no side bet was placed or it
+            missed.
         chips:
           type: integer
         betAmount:
@@ -51626,6 +51636,12 @@ components:
           type: integer
         trickNumber:
           type: integer
+        totalTricks:
+          type: integer
+          description: >-
+            Tricks in one round (= cards dealt to each seat). Only the last
+            trick scores penalties, so how many are left is the number that
+            matters.
         roundNumber:
           type: integer
         lastTrickWinnerIdx:
@@ -51733,6 +51749,18 @@ components:
         lastCaptureIdx:
           type: integer
           description: The seat that captured last, or -1. It receives whatever is left on the table.
+        lastCaptureKind:
+          type: string
+          description: >-
+            Whether the last capture was a plain table take ("take") or a whole
+            bundle stolen off another seat ("steal"); empty before anyone has
+            captured. A steal empties someone else's bundle, so it is not the
+            same event as a take.
+        lastCaptureVictimIdx:
+          type: integer
+          description: >-
+            The seat robbed by the last steal, or -1 when the last capture was a
+            take.
         currentPlayerIdx:
           type: integer
         turnNumber:
@@ -51831,6 +51859,12 @@ components:
         roundLoserIdx:
           type: integer
           description: The seat that took a letter at the end of the last round, or -1.
+        letterTarget:
+          type: string
+          description: >-
+            The word letters accumulate towards ("PIG"). Three letters and the
+            seat is out, so the page shows it as the denominator of each
+            seat's progress.
         roundNumber:
           type: integer
         passCount:
