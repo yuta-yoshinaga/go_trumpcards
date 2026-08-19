@@ -18,7 +18,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { badgeWarning } from '../styles/badgeStyles';
+import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { RamsPlayer, RamsResponse } from '../types/card';
@@ -219,7 +219,10 @@ function RamsPageContent() {
                       毎ラウンド 1 つ回るので、誰が親かが出ていないと自分が何番目に
                       決断するのか読めない。 */}
                   {p.id === state.dealerIdx && (
-                    <span className={`ml-1 ${badgeWarning}`} data-testid={`rm-dealer-${p.id.toString()}`}>
+                    <span
+                      className={`ml-1 rounded px-1.5 py-0.5 text-xs ${badgeWarningColors}`}
+                      data-testid={`rm-dealer-${p.id.toString()}`}
+                    >
                       <span aria-hidden="true">{t('dealerBadge')}</span>
                       <span className="sr-only">{t('dealerAria')}</span>
                     </span>
