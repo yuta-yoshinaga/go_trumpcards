@@ -5074,6 +5074,7 @@ var gameRegistry = []GameRegistryEntry{
 			CommandKeys: []string{
 				"literature.helpAsk",
 				"literature.helpClaim",
+				"literature.helpConfirm",
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),
