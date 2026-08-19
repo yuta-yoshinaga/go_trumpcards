@@ -48856,6 +48856,9 @@ components:
         kittySize:
           type: integer
           description: >-
+            Cards still face down. 52 does not divide by three, so the four
+            left over go to the dealer, who discards discardCount after naming
+            trump.
         kittyIndices:
           type: array
           description: >-
@@ -48863,9 +48866,6 @@ components:
             the dealer has discarded.
           items:
             type: integer
-            Cards still face down. 52 does not divide by three, so the four
-            left over go to the dealer, who discards discardCount after naming
-            trump.
         discardCount:
           type: integer
           description: How many cards the dealer must discard (4).
