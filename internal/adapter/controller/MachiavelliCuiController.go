@@ -32,6 +32,7 @@ func (c *MachiavelliCuiController) Exec(command string) string {
 			"dr", "draw",
 			"nm", "newmeld",
 			"lo", "layoff",
+			"ra", "rearrange",
 			"nr", "nextround",
 			"pc", "setplayers", "sd", "setdifficulty", "sr", "setrounds", "log", "l",
 		},
@@ -51,6 +52,12 @@ func (c *MachiavelliCuiController) Exec(command string) string {
 					return invalidArg("usageLoMeldidxHandindex"), true
 				}
 				return c.ci.Layoff(idx[0], idx[1]), true
+			case "ra", "rearrange":
+				refs, handIndices, ok := parseMachiavelliRearrange(args)
+				if !ok {
+					return invalidArg("usageRaRearrangeGroups"), true
+				}
+				return c.ci.Play(refs, handIndices), true
 			case "nr", "nextround":
 				return c.ci.NextRound(), true
 			case "pc", "setplayers":
