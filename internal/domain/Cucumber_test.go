@@ -295,4 +295,3 @@ func TestCucumberIsForcedLowest(t *testing.T) {
 	c.SetPhaseForTest(CucumberPhaseRoundEnd)
 	assert.False(t, c.IsForcedLowest(0))
 }
-
