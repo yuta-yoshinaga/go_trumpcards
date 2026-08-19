@@ -18,6 +18,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { badgeInfoColors } from '../styles/badgeStyles';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { SergeantMajorResponse } from '../types/card';
@@ -149,6 +150,8 @@ function SergeantMajorPageContent() {
 
   // 出せる札に緑の枠を足すだけで、押せなくはしない（サーバが必ず検証する）。
   const legalRing = new Set(isHumanTurn ? state.validPlays : []);
+  // キティ由来の位置はサーバが解決して送る (手札は取り込み時に並べ替わる)。
+  const kittyIndices = new Set(state.kittyIndices ?? []);
 
   const togglePicked = (idx: number) => {
     setPicked((prev) => (prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]));
@@ -273,7 +276,7 @@ function SergeantMajorPageContent() {
                           ? t('actions.discardAria', { card: cardAlt(card) })
                           : t('actions.playAria', { card: cardAlt(card) })
                       }
-                      className={`disabled:opacity-50 ${
+                      className={`relative disabled:opacity-50 ${
                         picked.includes(idx)
                           ? 'rounded-lg ring-2 ring-ds-warning'
                           : legalRing.has(idx)
@@ -282,6 +285,18 @@ function SergeantMajorPageContent() {
                       }`}
                     >
                       <CardImage card={card} width={cardWidth} />
+                      {/* **取り込むと手札に紛れて見分けが付かなくなる** (#5759)。
+                          捨てる 4 枚を選ぶのに、元から持っていた札との区別が要る。
+                          捨て終わると kittyIndices が空になり、印も消える。 */}
+                      {kittyIndices.has(idx) && (
+                        <span
+                          data-testid={`sm-kitty-${idx.toString()}`}
+                          className={`absolute top-0 left-0 rounded-br px-1 text-[10px] leading-tight ${badgeInfoColors}`}
+                        >
+                          <span aria-hidden="true">{t('header.kittyBadge')}</span>
+                          <span className="sr-only">{t('header.kittyAria')}</span>
+                        </span>
+                      )}
                     </button>
                   ))}
                 </div>

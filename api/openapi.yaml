@@ -48856,6 +48856,13 @@ components:
         kittySize:
           type: integer
           description: >-
+        kittyIndices:
+          type: array
+          description: >-
+            Positions in the human's hand that came in from the kitty. Empty once
+            the dealer has discarded.
+          items:
+            type: integer
             Cards still face down. 52 does not divide by three, so the four
             left over go to the dealer, who discards discardCount after naming
             trump.

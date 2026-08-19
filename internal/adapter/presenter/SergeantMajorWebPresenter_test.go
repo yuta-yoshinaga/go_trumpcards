@@ -183,3 +183,30 @@ func TestSergeantMajorWebPresenterHintAndLog(t *testing.T) {
 	require.NoError(t, json.Unmarshal([]byte(p.ActionLogOutput(s)), &logOut))
 	assert.Contains(t, logOut, "entries")
 }
+
+// **取り込むと手札に紛れて見分けが付かなくなる** (#5759)。位置は presenter が
+// 解決して送る (手札は取り込み時に並べ替わるので、画面では追えない)。
+func TestSergeantMajorWebPresenterMarksTheKittyCards(t *testing.T) {
+	s := newSergeantMajorForWeb(t)
+	s.SetPhaseForTest(domain.SergeantMajorPhaseTrump)
+	s.SetDealerIdxForTest(0)
+	require.NoError(t, s.DeclareTrump(domain.CardDesignSpade))
+
+	out := decodeSergeantMajor(t, new(SergeantMajorWebPresenter).Output(s, nil))
+	raw, ok := out["kittyIndices"].([]any)
+	require.True(t, ok, "kittyIndices must be sent")
+	assert.Len(t, raw, domain.SergeantMajorKittySize)
+
+	// 送った位置の札が、実際にキティ由来であること。
+	human := s.GetPlayer(0)
+	for _, v := range raw {
+		idx := int(v.(float64))
+		assert.True(t, s.IsAbsorbedKittyCard(human.GetCard(idx)),
+			"index %d is not a kitty card", idx)
+	}
+
+	// 捨て終われば空になる (受け入れ条件3)。
+	require.NoError(t, s.DiscardForTest(0, []int{0, 1, 2, 3}))
+	after := decodeSergeantMajor(t, new(SergeantMajorWebPresenter).Output(s, nil))
+	assert.Empty(t, after["kittyIndices"])
+}
