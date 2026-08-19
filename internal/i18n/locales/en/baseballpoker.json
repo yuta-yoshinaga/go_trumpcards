@@ -13,7 +13,7 @@
   "phaseLine": "Phase: {{phase}}",
   "handLine": "Hand: {{hand}} (pot: {{pot}})",
   "streetLine": "Street: {{street}} of {{total}}",
-  "wildLine": "3s and 9s are wild. A face-up 4 pays a card, a face-up 3 charges the pot",
+  "wildLine": "{{wilds}}s are wild. A face-up {{bonus}} pays a card, a face-up {{buyIn}} charges the pot",
   "seatLine": "{{mark}}{{name}}{{state}} chips {{chips}} / bet {{bet}}{{bonus}} : {{cards}}",
   "hidden": "[??]",
   "foldedMark": " (folded)",

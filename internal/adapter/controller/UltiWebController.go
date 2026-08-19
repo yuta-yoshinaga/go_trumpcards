@@ -60,15 +60,17 @@ type UltiWebOutput struct {
 	DiscardCount     int                       `json:"discardCount"`
 	CurrentTrick     []*WebOutputTrickCard     `json:"currentTrick"`
 	PlayerCoins      [domain.UltiPlayerCnt]int `json:"playerCoins"`
-	LastTrickWinner  int                       `json:"lastTrickWinner"`
-	Outcome          int                       `json:"outcome"`
-	Result           int                       `json:"result"`
-	PlayableIndices  []int                     `json:"playableIndices"`
-	GameEndFlag      bool                      `json:"gameEndFlag"`
-	WinnerPlayer     int                       `json:"winnerPlayer"`
-	IsHumanTurn      bool                      `json:"isHumanTurn"`
-	IsHumanBidTurn   bool                      `json:"isHumanBidTurn"`
-	Hint             *WebOutputCardHint        `json:"hint,omitempty"`
+	// LastDealCoins は直近ディールの精算による符号付き増減。累積からは読めない。
+	LastDealCoins   [domain.UltiPlayerCnt]int `json:"lastDealCoins"`
+	LastTrickWinner int                       `json:"lastTrickWinner"`
+	Outcome         int                       `json:"outcome"`
+	Result          int                       `json:"result"`
+	PlayableIndices []int                     `json:"playableIndices"`
+	GameEndFlag     bool                      `json:"gameEndFlag"`
+	WinnerPlayer    int                       `json:"winnerPlayer"`
+	IsHumanTurn     bool                      `json:"isHumanTurn"`
+	IsHumanBidTurn  bool                      `json:"isHumanBidTurn"`
+	Hint            *WebOutputCardHint        `json:"hint,omitempty"`
 	WebOutputBase
 	Config UltiWebOutputConfig `json:"config"`
 }

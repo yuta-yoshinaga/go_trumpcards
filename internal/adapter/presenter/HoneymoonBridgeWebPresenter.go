@@ -51,6 +51,7 @@ func (p *HoneymoonBridgeWebPresenter) buildBase(s interfaces.HoneymoonBridgeGame
 	}
 	resObj.LastMade = s.GetLastMade()
 	resObj.LastTricks = s.GetLastTricks()
+	resObj.LastPoints = s.GetLastPoints()
 	resObj.CurrentPlayerIdx = s.GetCurrentPlayerIdx()
 	resObj.LeadPlayerIdx = s.GetLeadPlayerIdx()
 	resObj.DealerIdx = s.GetDealerIdx()

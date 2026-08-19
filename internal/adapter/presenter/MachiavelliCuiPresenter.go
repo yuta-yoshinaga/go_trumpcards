@@ -88,6 +88,9 @@ func (p *MachiavelliCuiPresenter) Output(g interfaces.MachiavelliGame, lastErr e
 			if meldCount := len(g.GetTable()); meldCount > 0 {
 				b.WriteString(i18n.Tf("machiavelli.promptLayoffHelp",
 					"count", strconv.Itoa(meldCount)) + "\n")
+				// 場の組み替えはこのゲームの核心だが、場が空なら組み替える対象が
+				// 無いので layoff と同じ条件で出す。
+				b.WriteString(i18n.T("machiavelli.promptRearrangeHelp") + "\n")
 			} else {
 				b.WriteString(i18n.T("machiavelli.promptLayoffNone") + "\n")
 			}

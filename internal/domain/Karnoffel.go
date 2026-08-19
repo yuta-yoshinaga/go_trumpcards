@@ -55,6 +55,32 @@ const (
 	KarnoffelFarbenstecher = 5
 )
 
+// KarnoffelTitleKeys は選ばれたスートの称号札とその i18n キー接尾辞。
+//
+// frontend/src/utils/karnoffelRanks.ts の KARNOFFEL_RANK_KEYS と対になる。
+// 称号は**選ばれたスートの札にしか付かない**ので、同じ数字でも他スートなら
+// ただの平札になる。
+var KarnoffelTitleKeys = map[int]string{
+	KarnoffelKarnoffel:     "karnoffel",
+	KarnoffelDevil:         "devil",
+	KarnoffelPope:          "pope",
+	KarnoffelKaiser:        "kaiser",
+	KarnoffelOberstecher:   "oberstecher",
+	KarnoffelUnterstecher:  "unterstecher",
+	KarnoffelFarbenstecher: "farbenstecher",
+}
+
+// KarnoffelTitleKey は c が持つ称号の i18n キー接尾辞を返す。称号が無ければ "".
+//
+// **カルニッフェルの難しさは序列が毎局変わること。**目の前の札のどれが法王かは
+// 固定文の序列説明では答えられない (#4773 / #5732)。
+func KarnoffelTitleKey(c *Card, chosenSuit int) string {
+	if c == nil || chosenSuit == 0 || c.GetDesign() != chosenSuit {
+		return ""
+	}
+	return KarnoffelTitleKeys[c.GetValue()]
+}
+
 // karnoffelPlainOrder は平スートの序列 (強い順)。
 //
 // **A は入っていない。**K > Q > J > 10 > 9 > 8 > 7 > 6 > 5 > 4 > 3 > 2。

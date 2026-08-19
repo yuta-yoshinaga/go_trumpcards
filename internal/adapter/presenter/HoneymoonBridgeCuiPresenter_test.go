@@ -188,3 +188,43 @@ func TestHoneymoonBridgeCuiPresenterActionLogOutput(t *testing.T) {
 	h.GiveUp()
 	assert.NotEmpty(t, p.ActionLogOutput(h))
 }
+
+// **トリックの過不足だけでは何点動いたか読めない** (#5760)。
+func TestHoneymoonBridgeCuiPresenterShowsTheRoundPoints(t *testing.T) {
+	p := new(HoneymoonBridgeCuiPresenter)
+
+	made := newHoneymoonBridgeForCui(t)
+	made.SetContractForTest(0, 3, domain.CardDesignSpade)
+	hbCuiGiveTricks(made, 0, made.RequiredTricks()+2)
+	made.FinishRoundForTest()
+	made.SetPhaseForTest(domain.HoneymoonBridgePhaseRoundEnd)
+
+	madeOut := p.Output(made, nil)
+	assert.Contains(t, madeOut, i18n.Tf("honeymoonbridge.roundMade",
+		"need", strconv.Itoa(made.RequiredTricks()),
+		"took", strconv.Itoa(made.GetLastTricks()),
+		"points", strconv.Itoa(3*10+2*5)))
+	assert.NotContains(t, madeOut, fixedPart("honeymoonbridge.roundDown"))
+
+	down := newHoneymoonBridgeForCui(t)
+	down.SetContractForTest(0, 4, domain.CardDesignHeart)
+	hbCuiGiveTricks(down, 0, down.RequiredTricks()-3)
+	down.FinishRoundForTest()
+	down.SetPhaseForTest(domain.HoneymoonBridgePhaseRoundEnd)
+
+	downOut := p.Output(down, nil)
+	assert.Contains(t, downOut, i18n.Tf("honeymoonbridge.roundDown",
+		"need", strconv.Itoa(down.RequiredTricks()),
+		"took", strconv.Itoa(down.GetLastTricks()),
+		"points", strconv.Itoa(3*10)))
+	assert.NotContains(t, downOut, "{{")
+}
+
+// hbCuiGiveTricks は指定席に n トリック持たせる。
+func hbCuiGiveTricks(h *domain.HoneymoonBridge, idx, n int) {
+	p := h.GetPlayer(idx)
+	p.ResetTricks()
+	for range n {
+		p.AddTrick([]*domain.Card{})
+	}
+}

@@ -296,11 +296,15 @@ function SnapPageContent() {
                       type: 'select',
                       id: 'snap-difficulty',
                       label: t('actions.difficulty'),
+                      // **反射ゲームの核心は相手の反応速度** (#5763)。ラベルだけでは
+                      // 何が変わるのか分からないので、目安の秒数まで出す。
+                      // 値 (0/1/2) と挙動は変えていない。
+                      tooltip: t('actions.difficultyTip'),
                       value: String(difficulty),
                       options: [
-                        { value: '0', label: t('actions.easy') },
-                        { value: '1', label: t('actions.normal') },
-                        { value: '2', label: t('actions.hard') },
+                        { value: '0', label: t('actions.easyHint') },
+                        { value: '1', label: t('actions.normalHint') },
+                        { value: '2', label: t('actions.hardHint') },
                       ],
                       onSelect: (v: string) => setDifficulty(Number(v)),
                       testId: 'sp-difficulty-select',

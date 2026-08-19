@@ -39,6 +39,8 @@ func TestCucumberWebPresenterOutput(t *testing.T) {
 	assert.Zero(t, m["highestInTrick"], "リードの前は基準が無い")
 	assert.False(t, m["forced"].(bool))
 	assert.Equal(t, float64(1), m["roundNumber"])
+	// **失点は最終トリックだけ** (#5768)。あと何回かを画面が出せるよう総数も返す。
+	assert.Equal(t, float64(domain.CucumberHandSize), m["totalTricks"])
 
 	players := m["players"].([]any)
 	require.Len(t, players, domain.CucumberDefaultPlayerCnt)

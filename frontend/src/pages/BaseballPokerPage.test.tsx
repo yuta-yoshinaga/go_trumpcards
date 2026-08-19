@@ -142,6 +142,19 @@ describe('BaseballPokerPage', () => {
     expect(screen.getByTestId('bb-seat-cards-1').children).toHaveLength(3);
   });
 
+  // **説明文も同じ値から作る** (#5782)。印だけ動いて文言が固定だと、規則が
+  // 変わったとき片方だけ嘘になる。
+  it('ワイルドの説明文もサーバの値から作る', async () => {
+    mockApi.mockResolvedValue(withState({ wildValues: [2, 7], bonusValue: 5, buyInValue: 6 }));
+    renderWithProviders(<BaseballPokerPage />);
+
+    const notice = await screen.findByTestId('bb-wild-notice');
+    expect(notice).toHaveTextContent('2 / 7');
+    expect(notice).toHaveTextContent('5');
+    expect(notice).toHaveTextContent('6');
+    expect(notice.textContent).not.toContain('3 と 9');
+  });
+
   // **ワイルドの印はサーバが送った値から出す。** ページが 3 と 9 を持たない。
   it('サーバが送ったワイルドの値に印を付ける', async () => {
     mockApi.mockResolvedValue(

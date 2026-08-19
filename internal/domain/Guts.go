@@ -381,6 +381,47 @@ func gutsEvalPlayer(p *GutsPlayer) (int, []int) {
 	return GutsEval(cards)
 }
 
+// Guts の宣言ガイドの強さ区分。Web (frontend/src/utils/gutsGuideUtils.ts) と
+// 同じ値を返す必要があるため、両者は
+// frontend/src/utils/__fixtures__/gutsGuide.golden.json を共有して検証している。
+const (
+	// GutsGuideTierHigh ペアあり (どのペアでも強い)。
+	GutsGuideTierHigh = "high"
+	// GutsGuideTierMedium ノーペアだが最高札が K か A。
+	GutsGuideTierMedium = "medium"
+	// GutsGuideTierLow それ以外のノーペア。
+	GutsGuideTierLow = "low"
+)
+
+// gutsGuideMediumRank はノーペアが "medium" になる最低ランク (K=13)。
+// CPU の in 判断 (gutsCpuStayHighCard = 11) とは別の基準であることに注意。
+const gutsGuideMediumRank = 13
+
+// GutsGuide は宣言前の手役診断 (役の有無と勝ち目の目安)。
+type GutsGuide struct {
+	// Pair は手がペアかどうか。false はハイカード。
+	Pair bool
+	// Tier は勝ち目の目安 (GutsGuideTier*)。
+	Tier string
+}
+
+// GutsEvaluateGuide は手札から宣言ガイドを返す。手札が揃っていなければ nil。
+// 判定は Web の evaluateGutsGuide と一致していなければならない。
+func GutsEvaluateGuide(cards []*Card) *GutsGuide {
+	cat, tb := GutsEval(cards)
+	if cat < 0 {
+		return nil
+	}
+	if cat == GutsHandPair {
+		return &GutsGuide{Pair: true, Tier: GutsGuideTierHigh}
+	}
+	tier := GutsGuideTierLow
+	if len(tb) > 0 && tb[0] >= gutsGuideMediumRank {
+		tier = GutsGuideTierMedium
+	}
+	return &GutsGuide{Pair: false, Tier: tier}
+}
+
 // GutsCompare は手 a が手 b に勝てば 1、負ければ -1、引き分けは 0 を返す。
 func GutsCompare(catA int, tbA []int, catB int, tbB []int) int {
 	if catA != catB {

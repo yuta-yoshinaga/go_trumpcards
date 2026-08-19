@@ -211,39 +211,70 @@ func zhengCandidateStrength(cards []*Card) int {
 // 通常役は場と同タイプ・同枚数でより高いキーのみ。爆弾 (フォーカード) は
 // 任意の非爆弾役を切れる。爆弾同士はランク比較。ジョーカーボムは爆弾を含む
 // 全てに勝つ。爆弾・ジョーカーボムはリードでも出せる。
-func zhengIsPlayable(cards []*Card, tableCards []*Card, tablePlayType ZhengPlayType) bool {
+// エカルトではなく「出せない理由」の識別子。Web (frontend/src/utils/zhengComboValidator.ts
+// の ZhengInvalidReason) と同じ語を使い、両者は golden vector で縛ってある。
+const (
+	// ZhengInvalidType どの役にもならない組み合わせ。
+	ZhengInvalidType = "invalidType"
+	// ZhengInvalidWrongType 役にはなるが、場と役の種類が違う。
+	ZhengInvalidWrongType = "wrongType"
+	// ZhengInvalidWrongCount 役の種類は同じだが枚数が違う。
+	ZhengInvalidWrongCount = "wrongCount"
+	// ZhengInvalidTooWeak 種類も枚数も合っているが場より弱い。
+	ZhengInvalidTooWeak = "tooWeak"
+	// ZhengInvalidNeedBomb 場が爆弾なので通常役では切れない。
+	ZhengInvalidNeedBomb = "needBomb"
+	// ZhengInvalidUnbeatable 場がジョーカーボムなので何も勝てない。
+	ZhengInvalidUnbeatable = "unbeatable"
+)
+
+// ZhengInvalidReason は cards を場に出せない理由を返す (出せるなら "")。
+// 判定順は zhengIsPlayable と同じで、そちらはこの関数に委譲している。
+func ZhengInvalidReason(cards []*Card, tableCards []*Card, tablePlayType ZhengPlayType) string {
 	playType := zhengClassifyPlay(cards)
 	if playType == ZhengPlayInvalid {
-		return false
+		return ZhengInvalidType
 	}
-
 	// リード時は任意の有効な組み合わせを出せる。
 	if len(tableCards) == 0 {
-		return true
+		return ""
 	}
-
 	// ジョーカーボムは全てに勝つ (ジョーカーボム同士は物理的に発生しない)。
 	if playType == ZhengPlayJokerBomb {
-		return tablePlayType != ZhengPlayJokerBomb
+		if tablePlayType == ZhengPlayJokerBomb {
+			return ZhengInvalidUnbeatable
+		}
+		return ""
 	}
 	if tablePlayType == ZhengPlayJokerBomb {
-		return false
+		return ZhengInvalidUnbeatable
 	}
-
 	// 爆弾は非爆弾役をタイプ・枚数無視で切れる。爆弾同士はランク比較。
 	if playType == ZhengPlayBomb {
 		if tablePlayType != ZhengPlayBomb {
-			return true
+			return ""
 		}
-		return zhengPlayStrength(cards, playType) > zhengPlayStrength(tableCards, tablePlayType)
+		if zhengPlayStrength(cards, playType) > zhengPlayStrength(tableCards, tablePlayType) {
+			return ""
+		}
+		return ZhengInvalidTooWeak
 	}
 	if tablePlayType == ZhengPlayBomb {
-		return false
+		return ZhengInvalidNeedBomb
 	}
-
 	// 通常役: タイプと枚数が一致し、キーが厳密に高い場合のみ。
-	if playType != tablePlayType || len(cards) != len(tableCards) {
-		return false
+	if playType != tablePlayType {
+		return ZhengInvalidWrongType
 	}
-	return zhengPlayStrength(cards, playType) > zhengPlayStrength(tableCards, tablePlayType)
+	if len(cards) != len(tableCards) {
+		return ZhengInvalidWrongCount
+	}
+	if zhengPlayStrength(cards, playType) > zhengPlayStrength(tableCards, tablePlayType) {
+		return ""
+	}
+	return ZhengInvalidTooWeak
+}
+
+func zhengIsPlayable(cards []*Card, tableCards []*Card, tablePlayType ZhengPlayType) bool {
+	return ZhengInvalidReason(cards, tableCards, tablePlayType) == ""
 }

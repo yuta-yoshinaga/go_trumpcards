@@ -198,7 +198,16 @@ function BhabhiPageContent() {
             </div>
 
             <div data-tutorial="bh-trick">
-              <TrickDisplay currentTrick={state.pile} players={state.players} cardWidth={cardWidth} label={t('pile')} />
+              {/* **場札はフォローできない人が出るまで精算されない** (#5756)。
+                  席数までしか積まれない他のゲームと違って何十枚にもなるので、
+                  折り返さないとページ本体が横スクロールしてしまう。 */}
+              <TrickDisplay
+                currentTrick={state.pile}
+                players={state.players}
+                cardWidth={cardWidth}
+                label={t('pile')}
+                wrap
+              />
             </div>
 
             {/* **直前の引き取りは盤面に痕跡が残らない。** */}

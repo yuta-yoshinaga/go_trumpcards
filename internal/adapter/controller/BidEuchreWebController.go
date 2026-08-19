@@ -159,7 +159,7 @@ func bidEuchreDispatch(bc *baseController, w http.ResponseWriter, bi usecase.Bid
 	case "n", "next":
 		bc.writePresenterResponse(w, bi.NextHand())
 	default:
-		return dispatchLog(param.Command, bc, w, bi.ActionLog)
+		return dispatchHintAndLog(param.Command, bc, w, bi.Hint, bi.ActionLog)
 	}
 	return true
 }

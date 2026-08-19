@@ -230,6 +230,26 @@ describe('BanLuckPage', () => {
     expect(screen.getByTestId('bl-round-line')).toHaveTextContent('4');
   });
 
+  // **親が全席を一巡するまで何ラウンドあるか** (#5778)。CUI にだけ出ていた。
+  it('総ラウンド数まで出す', async () => {
+    mockApi.mockResolvedValue(
+      withState({ roundNumber: 4, config: { seats: 4, initialChips: 1000, rounds: 12, defaultBet: 10 } }),
+    );
+    renderWithProviders(<BanLuckPage />);
+
+    await waitFor(() => expect(screen.getByTestId('bl-round-line')).toHaveTextContent('4 / 12'));
+  });
+
+  // **config が来る前の初回描画でも壊れない。**
+  it('総数が読めないうちは番号だけ出す', async () => {
+    mockApi.mockResolvedValue(withState({ roundNumber: 4 }));
+    renderWithProviders(<BanLuckPage />);
+
+    const line = await screen.findByTestId('bl-round-line');
+    expect(line).toHaveTextContent('4');
+    expect(line.textContent).not.toContain('/ ');
+  });
+
   it('CLIモードでは端末を出す', async () => {
     mockUseCliMode.mockReturnValue({
       cliEnabled: true,

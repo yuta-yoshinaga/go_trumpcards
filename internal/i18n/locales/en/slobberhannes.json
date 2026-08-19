@@ -7,6 +7,7 @@
   "noTrumpLine": "No trump. The highest card of the led suit takes the trick.",
   "warnFirst": "! This is the FIRST trick. Taking it costs 1 point.",
   "warnLast": "! This is the LAST trick. Taking it costs 1 point.",
+  "warnQueen": "! THE QUEEN OF CLUBS IS ON THE TABLE. Taking this trick costs -1.",
   "playerLine": "{{name}}: {{score}} pts [{{penalties}}] {{cards}} in hand",
   "markFirst": "1st",
   "markLast": "last",

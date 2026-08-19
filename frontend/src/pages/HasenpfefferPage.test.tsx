@@ -260,3 +260,48 @@ describe('HasenpfefferPage', () => {
     expect(await screen.findByTestId('hint-tooltip')).toHaveTextContent(/最低額で受けましょう/);
   });
 });
+
+// **上限に達すると宣言ボタンが 1 つも出ない** (#5758)。理由が書かれていないと、
+// ボタンが急に消えたようにしか見えない。
+describe('HasenpfefferPage capped bidding', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+  });
+
+  it('explains why no bid button is offered', async () => {
+    mockExec.mockResolvedValue(makeState({ minBid: 0, mustBid: false }));
+    renderWithProviders(<HasenpfefferPage />);
+
+    const banner = await screen.findByTestId('hpf-bid-capped');
+    expect(banner).toHaveTextContent('上限');
+    expect(banner).toHaveTextContent('6');
+    // 強制ビッドのバナーとは別物 (受け入れ条件2)。
+    expect(screen.queryByTestId('hpf-must-bid')).not.toBeInTheDocument();
+    // 宣言ボタンは 1 つも無い。
+    expect(screen.queryByTestId('hpf-bid-6-btn')).not.toBeInTheDocument();
+  });
+
+  it('shows the forced-bid banner instead when the dealer cannot pass', async () => {
+    mockExec.mockResolvedValue(makeState({ minBid: 2, mustBid: true }));
+    renderWithProviders(<HasenpfefferPage />);
+    expect(await screen.findByTestId('hpf-must-bid')).toBeInTheDocument();
+    expect(screen.queryByTestId('hpf-bid-capped')).not.toBeInTheDocument();
+  });
+
+  // **強制ビッドが優先される。**CUI の switch も MustBid を先に見る。矛盾する
+  // 2 枚のバナーを同時に出さないことを、両方立った応答で押さえる。
+  it('never shows both banners at once', async () => {
+    mockExec.mockResolvedValue(makeState({ minBid: 0, mustBid: true }));
+    renderWithProviders(<HasenpfefferPage />);
+    expect(await screen.findByTestId('hpf-must-bid')).toBeInTheDocument();
+    expect(screen.queryByTestId('hpf-bid-capped')).not.toBeInTheDocument();
+  });
+
+  it('stays quiet while bids can still be made', async () => {
+    mockExec.mockResolvedValue(makeState({ minBid: 3, mustBid: false }));
+    renderWithProviders(<HasenpfefferPage />);
+    await waitFor(() => expect(screen.getByTestId('hpf-bid-3-btn')).toBeInTheDocument());
+    expect(screen.queryByTestId('hpf-bid-capped')).not.toBeInTheDocument();
+  });
+});

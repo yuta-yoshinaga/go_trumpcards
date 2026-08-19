@@ -31,6 +31,8 @@ func (p *IsraeliWhistWebPresenter) buildBase(w interfaces.IsraeliWhistGame) *con
 	resObj := new(controller.IsraeliWhistWebOutput)
 	resObj.Phase = int(w.GetPhase())
 	resObj.RoundNumber = w.GetRoundNumber()
+	resObj.Doubled = w.GetRoundDoubled()
+	resObj.DoubledAllExact = w.GetRoundAllExact()
 	resObj.TrickNumber = w.GetTrickNumber()
 	resObj.TrumpSuit = w.GetTrumpSuit()
 	resObj.DeclarerIdx = w.GetDeclarerIdx()

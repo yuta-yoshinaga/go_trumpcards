@@ -5,12 +5,14 @@ package presenter
 import (
 	"encoding/json"
 	"errors"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // newMonteBankForPresenter は本物のドメインを返す。
@@ -76,6 +78,23 @@ func TestMonteBankCuiPresenter_AnnotatesEachLayoutCard(t *testing.T) {
 		}
 	}
 	t.Fatalf("1 枚だけのスートがある局面が出なかった")
+}
+
+// **賭けの良し悪しは場の枚数と山の残りの両方で決まる** (#5779)。場だけでは半分。
+func TestMonteBankCuiPresenter_ShowsHowManyOfTheSuitRemain(t *testing.T) {
+	cp := new(MonteBankCuiPresenter)
+	g := newMonteBankForPresenter(t)
+	out := cp.Output(g, nil)
+
+	for _, card := range g.GetLayout() {
+		if card == nil {
+			continue
+		}
+		assert.Contains(t, out, i18n.Tf("montebank.layoutRemaining",
+			"remaining", strconv.Itoa(g.RemainingOfSuit(card.GetDesign()))),
+			"%s の山残りが出ていない", cuiCardStr(card))
+	}
+	assert.NotContains(t, out, "montebank.")
 }
 
 func TestMonteBankCuiPresenter_ShowsGateAndResult(t *testing.T) {

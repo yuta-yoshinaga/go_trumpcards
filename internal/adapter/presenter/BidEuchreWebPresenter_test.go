@@ -298,3 +298,17 @@ func TestBidEuchreWebPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{})
 	assert.NotEmpty(t, new(presenter.BidEuchreWebPresenter).ActionLogOutput(m))
 }
+
+// **Web の hint は状態出力と同じ** (#5730)。ヒント文は CUI 専用なので、
+// Web CLI の hint は 400 を返さずに現在の盤面をそのまま返す。
+func TestBidEuchreWebPresenter_HintFallsBackToTheState(t *testing.T) {
+	m := setupBidEuchreWebMock(defaultBidEuchreOpts())
+	p := new(presenter.BidEuchreWebPresenter)
+
+	hint := p.HintOutput(m)
+
+	assert.Equal(t, p.Output(m, nil), hint)
+	// 空文字や固定文ではなく、実際に盤面が入っていること。
+	parsed := parseBidEuchreOutput(t, hint)
+	assert.Len(t, parsed.Players, 4)
+}

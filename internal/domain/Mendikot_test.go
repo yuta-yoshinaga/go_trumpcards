@@ -592,3 +592,54 @@ func TestMendikot_ActionLog(t *testing.T) {
 	}
 	assert.True(t, kinds["play"])
 }
+
+// **切り札は宣言ではなく事故で決まる** (#5755)。フォローできなかった最初の
+// 1 枚のスートがそのままハンドの切り札になる。警告はこの判定を根拠にする。
+func TestMendikotWillSetTrump(t *testing.T) {
+	m := NewDefaultMendikot()
+	m.Reset()
+	m.SetTrumpForTest(0, -1)
+
+	lead := NewCard(CardDesignSpade, 9, true)
+	m.SetCurrentTrickForTest([]*TrickCard{{PlayerIdx: 0, Card: lead}})
+
+	// リード色を持っていればフォローするので、切り札は決まらない。
+	mendikotSetHand(m, 1, NewCard(CardDesignSpade, 3, true), NewCard(CardDesignHeart, 5, true))
+	if m.WillSetTrump(1) {
+		t.Error("a seat holding the lead suit must follow, so it cannot set the trump")
+	}
+
+	// 1 枚も持っていなければ、出した札のスートが切り札になる。
+	mendikotSetHand(m, 1, NewCard(CardDesignHeart, 5, true), NewCard(CardDesignClover, 8, true))
+	if !m.WillSetTrump(1) {
+		t.Error("a seat that cannot follow sets the trump with whatever it plays")
+	}
+
+	// **リードそのものでは決まらない。**条件はフォロー不能であること。
+	m.SetCurrentTrickForTest(nil)
+	if m.WillSetTrump(1) {
+		t.Error("leading a trick does not set the trump")
+	}
+
+	// 切り札が決まったあとは、もう起きない。
+	m.SetCurrentTrickForTest([]*TrickCard{{PlayerIdx: 0, Card: lead}})
+	m.SetTrumpForTest(CardDesignHeart, 1)
+	if m.WillSetTrump(1) {
+		t.Error("the trump is set once per hand")
+	}
+
+	// 範囲外の席は false。
+	m.SetTrumpForTest(0, -1)
+	if m.WillSetTrump(-1) || m.WillSetTrump(MendikotPlayerCnt) {
+		t.Error("an out-of-range seat must not claim to set the trump")
+	}
+}
+
+// mendikotSetHand は指定席の手札を差し替える。
+func mendikotSetHand(m *Mendikot, idx int, cards ...*Card) {
+	p := m.GetPlayer(idx)
+	p.ResetRound()
+	for _, c := range cards {
+		p.AddCard(c)
+	}
+}

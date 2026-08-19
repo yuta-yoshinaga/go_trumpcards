@@ -704,3 +704,50 @@ func TestTeenDoPaanch_GetPlayerBounds(t *testing.T) {
 	assert.Empty(t, g.GetValidPlayIndices(99))
 	assert.Equal(t, TeenDoPaanchPlayerCnt, g.GetPlayerCnt())
 }
+
+// **合計だけでは、誰の最強札が誰に渡ったのか分からない** (#5757)。
+// 席の対応を残す。
+func TestTeenDoPaanchExchangePairs(t *testing.T) {
+	g := newTestTeenDoPaanch(t)
+	g.SetPhaseForTest(TeenDoPaanchPhasePlay)
+	teenDoPaanchHandOf(g, 0, NewCard(CardDesignClover, 8, false), NewCard(CardDesignClover, 9, false))
+	teenDoPaanchHandOf(g, 1, NewCard(CardDesignHeart, 1, false))
+	teenDoPaanchHandOf(g, 2, NewCard(CardDesignSpade, 13, false))
+
+	// 席0 が 2 枚超過、席1 と席2 が 1 枚ずつ不足。
+	g.SetSurplusForTest([]int{2, -1, -1})
+	g.ExchangeForTest()
+
+	pairs := g.GetLastExchangePairs()
+	if g.GetLastExchange() != 2 {
+		t.Fatalf("moved %d cards, want 2", g.GetLastExchange())
+	}
+	// **複数ペアぶん全部残る** (受け入れ条件2)。
+	if len(pairs) != 2 {
+		t.Fatalf("pairs = %v, want two entries", pairs)
+	}
+	total := 0
+	for _, ex := range pairs {
+		if ex.Taker != 0 {
+			t.Errorf("taker = %d, want the surplus seat 0", ex.Taker)
+		}
+		if ex.Giver != 1 && ex.Giver != 2 {
+			t.Errorf("giver = %d, want a deficit seat", ex.Giver)
+		}
+		total += ex.Count
+	}
+	// **内訳の合計は動いた枚数と一致する。**
+	if total != g.GetLastExchange() {
+		t.Errorf("the breakdown sums to %d but %d cards moved", total, g.GetLastExchange())
+	}
+
+	// 交換が起きなければ内訳も空 (負のコントロール)。
+	quiet := newTestTeenDoPaanch(t)
+	quiet.SetPhaseForTest(TeenDoPaanchPhasePlay)
+	teenDoPaanchHandOf(quiet, 0, NewCard(CardDesignClover, 8, false))
+	quiet.SetSurplusForTest([]int{0, 0, 0})
+	quiet.ExchangeForTest()
+	if len(quiet.GetLastExchangePairs()) != 0 {
+		t.Errorf("pairs = %v, want none", quiet.GetLastExchangePairs())
+	}
+}

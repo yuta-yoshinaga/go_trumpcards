@@ -20,7 +20,10 @@
     "cpu": "CPU{{idx}}",
     "dummyHand": "Dummy's hand",
     "yourTurn": "Your turn",
-    "dummyTurn": "The dummy's turn (you play it)"
+    "dummyTurn": "The dummy's turn (you play it)",
+    "teamTag": "T{{team}}",
+    "teamAllyAria": "your partner",
+    "teamFoeAria": "the opposing team"
   },
   "currentTrick": "Current trick",
   "roundResult": {

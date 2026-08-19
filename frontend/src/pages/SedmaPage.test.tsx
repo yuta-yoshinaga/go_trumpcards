@@ -84,6 +84,28 @@ describe('SedmaPage', () => {
     expect(panel).toHaveTextContent('チームBのカード点: 20');
   });
 
+  // #5648: ラウンド中のカード点は role="status" で読み上げられるのに、その上の
+  // チーム通算得点には role も aria-live も無く、ラウンドが確定して点が動いても
+  // スクリーンリーダー利用者には何も伝わらなかった。
+  it('announces the match score so a round settling is heard', async () => {
+    mockExec.mockResolvedValue(makeSedmaState({ teamScores: [3, 1] }));
+    renderWithProviders(<SedmaPage />);
+
+    const panel = await screen.findByTestId('sedma-team-scores');
+    expect(panel).toHaveAttribute('role', 'status');
+    expect(panel).toHaveAttribute('aria-live', 'polite');
+    expect(panel).toHaveTextContent('チームA: 3');
+    expect(panel).toHaveTextContent('チームB: 1');
+  });
+
+  // 読み上げ対象が2つに増えても、既存のカード点パネルはそのまま。
+  it('leaves the round-points panel announcing on its own', async () => {
+    mockExec.mockResolvedValue(makeSedmaState({ roundCardPoints: [40, 20] }));
+    renderWithProviders(<SedmaPage />);
+
+    expect(await screen.findByTestId('sedma-round-points')).toHaveAttribute('role', 'status');
+  });
+
   it('hides the live captured card points once the round ends', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<SedmaPage />);
