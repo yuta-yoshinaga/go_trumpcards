@@ -49030,6 +49030,11 @@ components:
         lastTricks:
           type: integer
           description: Tricks the declarer took in the last deal.
+        lastPoints:
+          type: integer
+          description: >-
+            Points the deal that just ended actually moved: level x 10 plus 5 an
+            overtrick when made, or 10 a trick short to the opponent.
         currentPlayerIdx:
           type: integer
         leadPlayerIdx:
