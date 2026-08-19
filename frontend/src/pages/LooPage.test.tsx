@@ -74,6 +74,33 @@ describe('LooPage', () => {
     expect(passing).toHaveAttribute('aria-label', expect.stringContaining('降り'));
   });
 
+  // #5693: ルーの罰金 (looed = ポット全額) には下限が無いので、チップ残高は
+  // 実際に赤字になる。色だけに頼らず、記号と aria-label でも警告する。
+  it('warns when a chip balance has gone negative', async () => {
+    mockExec.mockResolvedValue(
+      makeLooState({
+        players: [
+          { id: 0, isHuman: true, cardCount: 3, cards: [], trickCount: 0, playing: true, chips: -12 },
+          { id: 1, isHuman: false, cardCount: 3, cards: [], trickCount: 0, playing: true, chips: 0 },
+          { id: 2, isHuman: false, cardCount: 3, cards: [], trickCount: 0, playing: true, chips: 5 },
+          { id: 3, isHuman: false, cardCount: 3, cards: [], trickCount: 0, playing: false, chips: -1 },
+        ],
+      }),
+    );
+    renderWithProviders(<LooPage />);
+
+    const inDebt = await screen.findByTestId('loo-chips-0');
+    expect(inDebt).toHaveClass('text-ds-error');
+    expect(inDebt).toHaveTextContent('▼');
+    expect(inDebt).toHaveAttribute('aria-label', expect.stringContaining('12'));
+
+    // 0 と正の残高は現状どおり中立。
+    expect(screen.getByTestId('loo-chips-1')).not.toHaveClass('text-ds-error');
+    expect(screen.getByTestId('loo-chips-1')).not.toHaveTextContent('▼');
+    expect(screen.getByTestId('loo-chips-2')).not.toHaveClass('text-ds-error');
+    expect(screen.getByTestId('loo-chips-3')).toHaveClass('text-ds-error');
+  });
+
   it('renders the decide phase with play and pass buttons', async () => {
     mockExec.mockResolvedValue(decidePhaseState);
     renderWithProviders(<LooPage />);

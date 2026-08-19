@@ -219,7 +219,18 @@ function LooPageContent() {
                 <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
                   {state.players.map((p) => (
                     <div key={p.id} className="py-0.5 flex items-center gap-2">
-                      <span>
+                      {/* ルーの罰金には下限が無いのでチップは負に落ちる。色だけの
+                          警告にならないよう ▼ と aria-label も添える。 */}
+                      <span
+                        className={p.chips < 0 ? 'text-ds-error font-semibold' : undefined}
+                        data-testid={`loo-chips-${p.id}`}
+                        aria-label={
+                          p.chips < 0
+                            ? t('chipsNegativeAria', { name: playerName(p.id, p.isHuman), chips: p.chips })
+                            : undefined
+                        }
+                      >
+                        {p.chips < 0 && <span aria-hidden="true">▼ </span>}
                         {playerName(p.id, p.isHuman)}: {t('chips', { chips: p.chips })}
                       </span>
                       <span
