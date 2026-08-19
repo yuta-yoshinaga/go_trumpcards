@@ -80,9 +80,7 @@ describe('ViraPage', () => {
     );
   });
 
-  // #5654: pot は「全員パスの流局でも積み上がる唯一の数字」で、CUI は
-  // vira.potLine で毎フレーム出している。Web は state.pot を一度も参照して
-  // いなかった（ロケールの pot / potHint も未使用のまま置かれていた）。
+  // pot は全員パスの流局でも積み上がるので、ラウンドを跨いでも消えない。
   it('shows the pot that carries between rounds', async () => {
     mockExec.mockResolvedValue(makeViraState({ pot: 7 }));
     renderWithProviders(<ViraPage />);

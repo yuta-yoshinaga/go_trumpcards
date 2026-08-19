@@ -283,9 +283,7 @@ function ViraPageContent() {
               <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
               <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
               <span className="mr-4">{t('trump', { suit: trumpSymbol })}</span>
-              {/* ポットはラウンドをまたいで持ち越され、全員パスの流局でも積み上がる。
-                  CUI は vira.potLine で毎フレーム出しているのに、Web は state.pot を
-                  一度も参照していなかった (#5654)。 */}
+              {/* ポットはラウンドをまたいで持ち越され、全員パスの流局でも積み上がる。 */}
               <span className="mr-4" data-testid="vira-pot" title={t('potHint')}>
                 {t('pot', { pot: state.pot })}
               </span>
