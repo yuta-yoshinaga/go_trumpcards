@@ -109,10 +109,10 @@ func (bi *BidEuchreInteractor) GetConfig() domain.BidEuchreConfig {
 	return bi.Game.GetConfig()
 }
 
-// ActionLog 棋譜を出力する
 // Hint ヒントを出力する
 func (bi *BidEuchreInteractor) Hint() string { return bi.gp.HintOutput(bi.Game) }
 
+// ActionLog 棋譜を出力する
 func (bi *BidEuchreInteractor) ActionLog() string {
 	return bi.gp.ActionLogOutput(bi.Game)
 }
