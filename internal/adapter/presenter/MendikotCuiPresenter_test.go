@@ -157,3 +157,45 @@ func TestMendikotCuiPresenterActionLog(t *testing.T) {
 	m := newMendikotForCui(t)
 	assert.NotEmpty(t, p.ActionLogOutput(m))
 }
+
+// **切り札は宣言ではなく事故で決まる** (#5755)。CUI にも同じ警告を出す。
+func TestMendikotCuiPresenterWarnsBeforeTheTrumpIsSet(t *testing.T) {
+	p := new(MendikotCuiPresenter)
+
+	setup := func(hand []*domain.Card, trump int) *domain.Mendikot {
+		m := newMendikotForCui(t)
+		m.SetPhaseForTest(domain.MendikotPhasePlay)
+		m.SetTrumpForTest(trump, -1)
+		m.SetCurrentPlayerIdxForTest(0)
+		m.SetCurrentTrickForTest([]*domain.TrickCard{
+			{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignSpade, 9, true)},
+		})
+		human := m.GetPlayer(0)
+		human.ResetRound()
+		for _, c := range hand {
+			human.AddCard(c)
+		}
+		return m
+	}
+
+	// フォローできない手番: 警告が出る。
+	cannotFollow := setup([]*domain.Card{
+		domain.NewCard(domain.CardDesignHeart, 5, true),
+		domain.NewCard(domain.CardDesignClover, 8, true),
+	}, 0)
+	assert.Contains(t, p.Output(cannotFollow, nil), fixedPart("mendikot.warnSetsTrump"))
+
+	// フォローできる手番: 出ない (切り札に影響しない)。
+	canFollow := setup([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 3, true),
+		domain.NewCard(domain.CardDesignHeart, 5, true),
+	}, 0)
+	assert.NotContains(t, p.Output(canFollow, nil), fixedPart("mendikot.warnSetsTrump"))
+
+	// 切り札が決まったあと: 出ない。
+	decided := setup([]*domain.Card{
+		domain.NewCard(domain.CardDesignHeart, 5, true),
+		domain.NewCard(domain.CardDesignClover, 8, true),
+	}, domain.CardDesignHeart)
+	assert.NotContains(t, p.Output(decided, nil), fixedPart("mendikot.warnSetsTrump"))
+}
