@@ -20,5 +20,7 @@
   "hintReasonCapture": "It takes cards that score",
   "hintReasonTrail": "Nothing adds to 11; lay down your least valuable card",
   "helpExampleGiveUp": "  g                    give the round up",
-  "helpHint": "  h                    show a hint"
+  "helpHint": "  h                    show a hint",
+  "soorNote": "{{n}} cards on the table. TAKING ALL {{n}} AT ONCE IS A SOOR, doubling what you take (x{{mult}}).",
+  "hintSoorMark": " <- soor (x{{mult}})"
 }
