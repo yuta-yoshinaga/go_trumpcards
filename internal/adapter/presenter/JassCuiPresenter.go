@@ -79,6 +79,21 @@ func (p *JassCuiPresenter) Output(g interfaces.JassGame, lastErr error) string {
 			func(idx int) string { return cuiPlayerName(g.GetPlayer(idx), idx) },
 		)
 
+		// **直前のトリックを振り返る手段が log コマンドしか無かった** (#5685)。
+		// Web は ja-previous-trick で常に開ける。復元は Web と同じ jassLastTrick
+		// から取るので、同じ局面が画面によって違って見えることはない。
+		if plays, winner := jassLastTrick(g); len(plays) > 0 {
+			out.WriteString(i18n.T("jass.previousTrick") + "\n")
+			for _, pl := range plays {
+				out.WriteString("  " + cuiPlayerName(g.GetPlayer(pl.PlayerIdx), pl.PlayerIdx) +
+					": " + cuiCardStr(pl.Card) + "\n")
+			}
+			if winner >= 0 {
+				out.WriteString(i18n.Tf("jass.previousTrickWinner",
+					"name", cuiPlayerName(g.GetPlayer(winner), winner)) + "\n")
+			}
+		}
+
 		cuiErrorBlock(out, lastErr)
 
 		if g.GetGameEndFlag() {
