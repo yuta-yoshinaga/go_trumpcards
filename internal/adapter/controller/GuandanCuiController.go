@@ -28,7 +28,7 @@ func (c *GuandanCuiController) Exec(command string) string {
 			cfg := c.gi.GetConfig()
 			return c.gi.ResetWithConfig(cfg)
 		},
-		[]string{"p", "play", "ps", "pass", "t", "tribute", "n", "next", "log", "l"},
+		[]string{"p", "play", "ps", "pass", "t", "tribute", "n", "next", "ch", "check", "log", "l"},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "p", "play":
@@ -42,6 +42,10 @@ func (c *GuandanCuiController) Exec(command string) string {
 					})
 			case "n", "next":
 				return c.gi.NextHand(), true
+			case "ch", "check":
+				// **出さずに調べるだけ。**手札は動かない。
+				idxs, skipped := cuiutil.ParseIntSlice(args)
+				return cuiutil.PrependSkippedWarning(c.gi.Check(idxs), skipped), true
 			default:
 				return handleCuiLog(cmd, c.gi.ActionLog)
 			}

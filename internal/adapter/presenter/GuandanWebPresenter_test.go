@@ -41,12 +41,18 @@ type guandanMockOpts struct {
 	tributes   []*domain.GuandanTribute
 	cancelled  bool
 	lastResult *domain.GuandanHandResult
+	// humanHand overrides seat 0's hand; nil keeps the default two cards.
+	humanHand []*domain.Card
 }
 
 func setupGuandanMock(o guandanMockOpts) *interfaces.MockGuandanGame {
 	m := new(interfaces.MockGuandanGame)
+	humanHand := o.humanHand
+	if humanHand == nil {
+		humanHand = []*domain.Card{gdTestCard(domain.CardDesignSpade, 2), gdTestCard(domain.CardDesignHeart, 1)}
+	}
 	players := makeGuandanPlayers(
-		[]*domain.Card{gdTestCard(domain.CardDesignSpade, 2), gdTestCard(domain.CardDesignHeart, 1)},
+		humanHand,
 		[]*domain.Card{gdTestCard(domain.CardDesignSpade, 3)},
 		[]*domain.Card{gdTestCard(domain.CardDesignSpade, 4)},
 		[]*domain.Card{gdTestCard(domain.CardDesignSpade, 5)},

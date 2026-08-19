@@ -35,6 +35,9 @@ func (_m *MockGuandanInteractor) GetConfig() domain.GuandanConfig {
 	return _m.Called().Get(0).(domain.GuandanConfig)
 }
 
+// Check モック
+func (_m *MockGuandanInteractor) Check(idxs []int) string { return _m.Called(idxs).String(0) }
+
 func (_m *MockGuandanInteractor) ActionLog() string { return _m.Called().String(0) }
 
 // Snapshot モック

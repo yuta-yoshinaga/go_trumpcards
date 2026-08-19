@@ -5092,6 +5092,7 @@ var gameRegistry = []GameRegistryEntry{
 				"guandan.helpPass",
 				"guandan.helpTribute",
 				"guandan.helpNext",
+				"guandan.helpCheck",
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),
