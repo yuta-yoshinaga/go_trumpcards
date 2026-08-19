@@ -489,17 +489,9 @@ func (p *PopeJoan) finishDeal(winner int) {
 }
 
 // holdsPope は seat が Pope を手札に持っているかを返す。
+// 支払い免除も表示も PopeJoanHoldsPope 一本に寄せる（片方だけ直る事故を防ぐ）。
 func (p *PopeJoan) holdsPope(seat int) bool {
-	pl := p.GetPlayer(seat)
-	if pl == nil {
-		return false
-	}
-	for i := range pl.GetCardsSize() {
-		if popeJoanIsPope(pl.GetCard(i)) {
-			return true
-		}
-	}
-	return false
+	return PopeJoanHoldsPope(p.GetPlayer(seat))
 }
 
 // finishGame は最終集計する。チップが最も多い人の勝ち。
