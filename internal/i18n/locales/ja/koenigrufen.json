@@ -12,6 +12,7 @@
   "playerLine": "{{name}} ({{role}}): {{cards}} 枚  得点: {{score}}  トリック: {{tricks}}",
   "roleDeclarer": "デクレアラー",
   "rolePartner": "パートナー",
+  "youArePartner": "あなたが呼ばれたパートナーです（呼びスートのキングを持っています）",
   "roleOpponent": "対戦側",
   "bidNone": "-",
   "bidRufer": "ルーファー",
