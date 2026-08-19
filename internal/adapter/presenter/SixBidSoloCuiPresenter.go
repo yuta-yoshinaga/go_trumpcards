@@ -216,6 +216,8 @@ func sixBidSoloLadderLine(g interfaces.SixBidSoloGame) string {
 // 目標が変わるので、暫定表示として両方を並べる (#5731)。値は
 // domain.SixBidSoloTargetPoints から引き、数字を写さない。
 func sixBidSoloLadderTarget(k domain.SixBidSoloBidKind) string {
+	// ♠ は「♥ 以外」の代表。目標がスートで変わるのはギャランティーだけで、
+	// その分岐も ♥ かどうかしか見ない (SixBidSoloTargetPoints)。
 	heart := domain.SixBidSoloTargetPoints(k, domain.CardDesignHeart)
 	other := domain.SixBidSoloTargetPoints(k, domain.CardDesignSpade)
 	switch {
