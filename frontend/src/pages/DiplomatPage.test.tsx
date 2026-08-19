@@ -26,6 +26,8 @@ function makeTableau(piles: Card[][]): Card[][] {
 
 const playingState: DiplomatResponse = {
   tableau: makeTableau([[card('SPADE', 9)], [card('HEART', 8)], [card('CLOVER', 1)]]),
+  // サーバが返す判定 (domain.DiplomatIsDeadEndTop)。列2 の頭が ♣A。
+  tableauDeadEnd: [false, false, true, false, false, false, false, false],
   foundation: Array.from({ length: 8 }, () => []),
   stockCount: 72,
   waste: [],
@@ -393,6 +395,8 @@ describe('DiplomatPage dead-end columns', () => {
     mockExec.mockResolvedValue({
       ...playingState,
       tableau: makeTableau([[card('CLOVER', 1), card('HEART', 9)]]),
+      // 一番上は ♥9 なので、サーバも行き止まりとは言わない。
+      tableauDeadEnd: [false, false, false, false, false, false, false, false],
     });
     renderWithProviders(<DiplomatPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());

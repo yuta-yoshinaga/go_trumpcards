@@ -52555,6 +52555,13 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/Card'
+        tableauDeadEnd:
+          type: array
+          description: >-
+            Per column: true when the top card is an Ace, so nothing can be
+            stacked on it any more (the Ace itself can still go to a foundation).
+          items:
+            type: boolean
         foundation:
           type: array
           description: The eight foundations, each building up in suit from the Ace.

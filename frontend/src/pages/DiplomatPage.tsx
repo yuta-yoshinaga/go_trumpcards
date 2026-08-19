@@ -25,6 +25,7 @@ import { useDiplomatGame } from '../hooks/useDiplomatGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
+import { badgeErrorColors } from '../styles/badgeStyles';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { DiplomatMoveZone, DiplomatResponse } from '../types/card';
@@ -39,8 +40,6 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦', '♠', '♣', '♥', '♦'] as const;
 const TABLEAU_PILES = 8;
 const TOTAL_CARDS = 104;
-/** An Ace on top ends a column: `canPlaceOnTableau` only accepts one rank below. */
-const ACE_VALUE = 1;
 
 const CG_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -204,10 +203,9 @@ function DiplomatPageContent() {
                 // Only the top card is playable; the ones under it are context.
                 const isTop = cardIdx === cards.length - 1;
                 // **A で止まった列はもう受け皿にならない** (#5741)。
-                // `canPlaceOnTableau` は「一つ下のランク」しか通さないので、
-                // A の上に置ける札は存在しない。空き列が主要な逃げ道なだけに、
-                // 詰んだ列を見た目で区別できるかどうかが判断に効く。
-                const isDeadEnd = isTop && card.value === ACE_VALUE;
+                // 判定はドメイン (`DiplomatIsDeadEndTop`) が返す。ここで
+                // 作り直すと、置ける規則が変わったときに片方だけ古くなる。
+                const isDeadEnd = isTop && state.tableauDeadEnd?.[pileIdx] === true;
                 return (
                   <div
                     key={`c-${pileIdx.toString()}-${cardIdx.toString()}`}
@@ -242,7 +240,7 @@ function DiplomatPageContent() {
                       {isDeadEnd && (
                         <span
                           data-testid={`diplomat-dead-end-${pileIdx.toString()}`}
-                          className="absolute inset-x-0 bottom-0 rounded-b bg-ds-error/80 text-ds-text-primary text-[10px] leading-tight text-center"
+                          className={`absolute inset-x-0 bottom-0 rounded-b text-[10px] leading-tight text-center ${badgeErrorColors}`}
                         >
                           {t('deadEndBadge')}
                         </span>
