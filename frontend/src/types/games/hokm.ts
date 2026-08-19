@@ -69,7 +69,7 @@ export interface HokmResponse extends BaseGameResponse {
    * The hakem only moves when its team loses, and which seat calls the trump
    * next is worth knowing before the next hand starts (#5753).
    */
-  lastHandHakemChanged?: boolean;
+  lastHandHakemChanged: boolean;
   /** Team that took the previous hand, or `-1` before there is one. */
   lastHandWinner: number;
   currentPlayerIdx: number;
