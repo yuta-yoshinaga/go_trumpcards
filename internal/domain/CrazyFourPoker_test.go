@@ -644,3 +644,37 @@ func TestCrazyFourPoker_ActionLogIsBounded(t *testing.T) {
 	}
 	assert.Len(t, g.GetActionLog(), crazyFourPokerMaxSliceLen)
 }
+
+// **賭ける前に見えなければ意味がない** (#5775)。表は 1 か所からしか引かない。
+func TestCrazyFourPokerQueensUpPayoutIsOrderedAndComplete(t *testing.T) {
+	rows := CrazyFourPokerQueensUpPayout()
+	if len(rows) != len(crazyFourPokerQueensUpPayouts) {
+		t.Fatalf("配当表の行数 %d, want %d", len(rows), len(crazyFourPokerQueensUpPayouts))
+	}
+	for i, r := range rows {
+		want, ok := crazyFourPokerQueensUpPayouts[r.Hand]
+		if !ok {
+			t.Errorf("行 %d: 役 %d は配当表に無い", i, r.Hand)
+			continue
+		}
+		if r.Multiplier != want {
+			t.Errorf("役 %d の倍率 = %d, want %d", r.Hand, r.Multiplier, want)
+		}
+		if i > 0 && rows[i-1].Multiplier < r.Multiplier {
+			t.Errorf("行 %d: 配当が降順になっていない (%d の次に %d)", i, rows[i-1].Multiplier, r.Multiplier)
+		}
+	}
+	// **フォーカードがストレートフラッシュより上。** 4 枚役では 4K のほうが希少。
+	if rows[0].Hand != FourCardHandFourOfAKind {
+		t.Errorf("先頭の役 = %d, want フォーカード", rows[0].Hand)
+	}
+	// 走査順に依存しない (map の順は毎回変わる)。
+	for range 20 {
+		again := CrazyFourPokerQueensUpPayout()
+		for i := range rows {
+			if again[i] != rows[i] {
+				t.Fatalf("行 %d が呼ぶたびに変わる: %+v / %+v", i, rows[i], again[i])
+			}
+		}
+	}
+}

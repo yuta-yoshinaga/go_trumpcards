@@ -118,6 +118,51 @@ describe('KingoPage', () => {
     expect(screen.getByTestId('kingo-won-0')).toHaveTextContent('10');
   });
 
+  // 知らない役番号が来ても表示が消えない（サーバが役を増やしたときの保険）。
+  it('知らない役番号は役なし扱いで描く', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: KingoPhase.RESULT,
+        isHumanTurn: false,
+        seats: [
+          seat({ cards: [card(3), card(3), card(8)], rank: 9, matchedValue: 3 }),
+          seat({ name: 'CPU1', isHuman: false, cards: [card(2), card(6), card(10)], rank: 9, matchedValue: 10 }),
+        ],
+      }),
+    );
+    renderWithProviders(<KingoPage />);
+
+    // 役名は既定の「役なし」に落ちるが、数字は付く（rank > 0 なので）。
+    const line = await screen.findByTestId('kingo-rank-0');
+    expect(line).toHaveTextContent('役なし');
+    expect(line).toHaveTextContent('3');
+  });
+
+  // **同じ「嵐」でも K 3 枚と A 3 枚では強さの実感が違う** (#5783)。
+  it('そろえた数字まで出す', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: KingoPhase.RESULT,
+        isHumanTurn: false,
+        seats: [
+          seat({ cards: [card(3), card(3), card(8)], rank: 1, matchedValue: 3 }),
+          seat({ name: 'CPU1', isHuman: false, cards: [card(13), card(13), card(13)], rank: 2, matchedValue: 13 }),
+          seat({ name: 'CPU2', isHuman: false, cards: [card(1), card(1), card(1)], rank: 2, matchedValue: 1 }),
+          seat({ name: 'CPU3', isHuman: false, cards: [card(2), card(6), card(10)], rank: 0, matchedValue: 10 }),
+        ],
+      }),
+    );
+    renderWithProviders(<KingoPage />);
+
+    await waitFor(() => expect(screen.getByTestId('kingo-rank-0')).toHaveTextContent('3'));
+    // 絵札は札の表記で出す。K の嵐と A の嵐が見分けられる。
+    expect(screen.getByTestId('kingo-rank-1')).toHaveTextContent('嵐（K）');
+    expect(screen.getByTestId('kingo-rank-2')).toHaveTextContent('嵐（A）');
+    // **役なしの席には数字を出さない**（受け入れ条件3）。
+    expect(screen.getByTestId('kingo-rank-3')).toHaveTextContent('役なし');
+    expect(screen.getByTestId('kingo-rank-3').textContent).not.toContain('10');
+  });
+
   // **親と子で出す操作が変わる。** サーバの isHumanBanker に従う。
   it('子には張る、親には配るを出す', async () => {
     mockApi.mockResolvedValue(base);

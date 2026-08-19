@@ -27,6 +27,11 @@ type ChemindeFerWebOutputPlayer struct {
 	IsHuman bool   `json:"isHuman"`
 	Chips   int    `json:"chips"`
 	Bet     int    `json:"bet"`
+	// LastNet は直前の決済でこの席が増減させたチップ。ラウンド中は 0。
+	//
+	// **卓の結果 (banker/punter/tie) だけでは、自分の賭けが勝ったのか負けたのかが
+	// 分からない。** チップの数字を前後で見比べさせないための値です。
+	LastNet int `json:"lastNet"`
 	// IsBanker は親かどうか。**席では決まらず、ラウンドごとに回る。**
 	IsBanker bool `json:"isBanker"`
 	// IsRepresentative は子側の代表 (最高額ベッター) かどうか。

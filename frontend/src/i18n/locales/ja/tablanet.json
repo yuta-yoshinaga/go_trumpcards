@@ -39,6 +39,8 @@
   "tablaAnnounce": "{{player}} がタブラ（場を一掃）を達成しました",
   "tablaButton": "タブラ捕獲！",
   "tablaReady": "タブラ！",
+  "tablaBadge": "タブラ！場を一掃",
+  "tablaBadgeOwn": "タブラ！あなたが一掃",
   "table": "場",
   "tableCandidateAria": "{{card}}、キャプチャ可能",
   "tableEmpty": "（なし）",

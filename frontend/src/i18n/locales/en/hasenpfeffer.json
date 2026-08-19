@@ -22,7 +22,8 @@
     "team": "T{{team}}",
     "declarer": "[declarer]",
     "you": "You",
-    "cpu": "CPU{{idx}}"
+    "cpu": "CPU{{idx}}",
+    "bidCapped": "The bidding has hit its ceiling ({{max}}), so nothing can beat it — pass."
   },
   "currentTrick": "Current trick",
   "handEnd": {

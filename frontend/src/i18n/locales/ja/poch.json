@@ -21,6 +21,8 @@
   "yourHand": "あなたの手札",
   "yourChips": "チップ{{n}}",
   "yourBet": "賭け{{n}}（現在 {{target}}）",
+  "yourCombo": "あなたの組: {{rank}} の {{size}}枚",
+  "yourComboNone": "あなたの組: なし",
   "selectFollow": "同じスートの次に高い札を選んでください",
   "selectFreeLead": "並びが止まっています。好きな札から始められます",
   "bet": "賭ける",

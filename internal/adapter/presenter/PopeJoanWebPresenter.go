@@ -104,17 +104,13 @@ func (p *PopeJoanWebPresenter) buildPlayersOutput(c interfaces.PopeJoanGame) []*
 		}
 		reveal := player.GetIsHuman() || c.GetGameEndFlag()
 		cards := make([]*controller.WebOutputCard, 0, player.GetCardsSize())
-		holdsPope := false
-		for j := range player.GetCardsSize() {
-			card := player.GetCard(j)
-			if card == nil {
-				continue
-			}
-			if card.GetDesign() == domain.CardDesignDiamond && card.GetValue() == domain.PopeJoanPopeRank {
-				holdsPope = true
-			}
-			if reveal {
-				cards = append(cards, cardToOutput(card))
+		// 判定は domain がただ一つの出どころ (CUI も同じものを使う)。
+		holdsPope := domain.PopeJoanHoldsPope(player)
+		if reveal {
+			for j := range player.GetCardsSize() {
+				if card := player.GetCard(j); card != nil {
+					cards = append(cards, cardToOutput(card))
+				}
 			}
 		}
 		out = append(out, &controller.PopeJoanWebOutputPlayer{

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { ultiApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -138,28 +138,10 @@ function UltiPageContent() {
     reset();
   }, []);
 
-  // Per-player coin change at settlement. We remember the pre-settlement balances
-  // (the last snapshot taken outside ROUND_END) so that when the round settles we
-  // can show each player's signed delta — the settlement is otherwise invisible.
-  const prevCoinsRef = useRef<number[] | null>(null);
-  const [coinDeltas, setCoinDeltas] = useState<number[] | null>(null);
-  useEffect(() => {
-    if (!state) return;
-    const coins = state.players.map((p) => p.coins);
-    // The backend skips ROUND_END on the match-deciding round (it settles then
-    // jumps straight to GAME_END), so treat GAME_END as a settlement too or the
-    // final round's deltas would never appear.
-    const isSettlement = state.phase === UltiPhase.ROUND_END || state.phase === UltiPhase.GAME_END || state.gameEndFlag;
-    if (isSettlement) {
-      if (prevCoinsRef.current) {
-        const prev = prevCoinsRef.current;
-        setCoinDeltas(coins.map((c, i) => c - (prev[i] ?? c)));
-      }
-    } else {
-      prevCoinsRef.current = coins;
-      setCoinDeltas(null);
-    }
-  }, [state]);
+  // Per-player coin change at settlement, straight from the deal that applied it.
+  // The running balance alone cannot show it, and the backend clears this back to
+  // zeros when the next deal starts.
+  const coinDeltas = state?.lastDealCoins ?? null;
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('ulti');

@@ -55,6 +55,10 @@ type SergeantMajorWebOutput struct {
 	TrickNumber int                             `json:"trickNumber"`
 	// TrumpSuit は 0 のあいだ未宣言。決めるのは親（ノルマ 8 の席）だけ。
 	TrumpSuit int `json:"trumpSuit"`
+	// KittyIndices は人間の手札のうち、今回のキティから入ってきた札の位置。
+	//
+	// **取り込むと手札に紛れて見分けが付かなくなる** (#5759)。捨て終われば空。
+	KittyIndices []int `json:"kittyIndices"`
 	// KittySize は親が取り込む余り札、DiscardCount は捨てる枚数。
 	KittySize    int `json:"kittySize"`
 	DiscardCount int `json:"discardCount"`

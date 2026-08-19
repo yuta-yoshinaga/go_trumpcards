@@ -65,6 +65,14 @@ export interface SergeantMajorResponse extends BaseGameResponse {
    * go to the dealer, who discards `discardCount` after naming trump.
    */
   kittySize: number;
+  /**
+   * Positions in the human's hand that came in from the kitty.
+   *
+   * Absorbing the kitty mixes four new cards into a re-sorted hand, so nothing
+   * distinguishes them while the dealer picks four to throw away (#5759). Empty
+   * once the discard is done.
+   */
+  kittyIndices?: number[];
   /** How many cards the dealer must discard (4). */
   discardCount: number;
   /**

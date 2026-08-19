@@ -20,5 +20,7 @@
   "hintReasonCapture": "点になる札を取れる",
   "hintReasonTrail": "取れる組み合わせが無い。いちばん点にならない札を置く",
   "helpExampleGiveUp": "  g                    この局を投了する",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "soorNote": "場は {{n}} 枚。**この {{n}} 枚を一度に取り切るとスール**で、取った札は {{mult}} 倍になります。",
+  "hintSoorMark": " ← スール（{{mult}}倍）"
 }

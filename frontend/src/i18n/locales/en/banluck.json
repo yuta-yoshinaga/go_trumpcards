@@ -41,5 +41,6 @@
   "frontendHint.banLuckChaseFiveDragon": "one more card makes a Five Dragon",
   "frontendHint.banLuckCannotBust": "11 or less cannot bust",
   "frontendHint.banLuckStandPat": "17 or more is a standing hand",
-  "frontendHint.banLuckChaseBanker": "standing will not reach the banker"
+  "frontendHint.banLuckChaseBanker": "standing will not reach the banker",
+  "label.roundOf": "Round {{n}} / {{total}}"
 }

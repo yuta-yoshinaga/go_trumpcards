@@ -15,7 +15,8 @@
     "took": "{{n}} taken",
     "total": "{{n}} total",
     "you": "You",
-    "cpu": "CPU{{idx}}"
+    "cpu": "CPU{{idx}}",
+    "roundDelta": "this round {{delta}}"
   },
   "bid": {
     "none": "no call",

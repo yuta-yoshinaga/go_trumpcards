@@ -7,11 +7,35 @@ import (
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // stealingBundlesPlayerStr returns the display string for a single seat.
+// stealingBundlesCaptureRole は直前の獲得の印を返す。取っていない席は空。
+//
+// **盗みは相手の束を丸ごと消す。** 場から取っただけの手と同じ印にすると、盤面に
+// 何も残らないこのゲームでは区別が付きません (#5767)。
+func stealingBundlesCaptureRole(s interfaces.StealingBundlesGame, idx int) string {
+	if s.GetLastCaptureIdx() != idx {
+		return ""
+	}
+	switch s.GetLastCaptureKind() {
+	case domain.StealingBundlesCaptureSteal:
+		victim := s.GetLastCaptureVictimIdx()
+		if victim < 0 || victim >= s.GetPlayerCnt() {
+			return i18n.T("stealingbundles.roleLastCaptureTake")
+		}
+		return i18n.Tf("stealingbundles.roleLastCaptureSteal",
+			"name", cuiPlayerName(s.GetPlayer(victim), victim))
+	case domain.StealingBundlesCaptureTake:
+		return i18n.T("stealingbundles.roleLastCaptureTake")
+	default:
+		return ""
+	}
+}
+
 func stealingBundlesPlayerStr(s interfaces.StealingBundlesGame, idx int, current bool) string {
 	player := s.GetPlayer(idx)
 	var b strings.Builder
@@ -26,6 +50,7 @@ func stealingBundlesPlayerStr(s interfaces.StealingBundlesGame, idx int, current
 	}
 	b.WriteString(marker + i18n.Tf("stealingbundles.playerLine",
 		"name", cuiPlayerName(player, idx),
+		"role", stealingBundlesCaptureRole(s, idx),
 		"cards", strconv.Itoa(player.GetCardsSize()),
 		"bundle", strconv.Itoa(player.GetBundleSize()),
 		"top", top,

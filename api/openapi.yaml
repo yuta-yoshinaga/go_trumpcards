@@ -32846,6 +32846,12 @@ components:
           minimum: 0
           maximum: 13
           example: 7
+        points:
+          type: integer
+          description: >-
+            Points this single card is worth. Only games scored by adding up
+            cards set it (Sakura: 20/10/5/1); in yaku-scored games a per-card
+            number would be meaningless, so the field is absent.
 
     # -------------------------------------------------------------------------
     # BlackJack
@@ -44073,9 +44079,8 @@ components:
         wonLow:
           type: integer
           description: |
-            Hi-Lo only. Chips won as the low half. `wonAmount` is the high and
-            low winnings combined.
-          description: Chips won from the pot
+            Hi-Lo only. Chips won as the low half, out of the pot. `wonAmount` is
+            the high and low winnings combined.
           example: 40
         mucked:
           type: boolean
@@ -47618,6 +47623,12 @@ components:
         hasBaloot:
           type: boolean
           description: Holds the trump K and Q -- worth 20, and possible in Hokom only.
+        balootRevealed:
+          type: boolean
+          description: >-
+            Whether this seat's Baloot standing is public yet. hasBaloot is sent as
+            false while it is hidden, so read this first: "no Baloot" and "not
+            shown yet" are different.
         declared:
           type: boolean
           description: Has already declared or passed this round.
@@ -47895,6 +47906,16 @@ components:
           description: "0=Auction, 1=Bid, 2=Play, 3=RoundEnd, 4=GameEnd"
         roundNumber:
           type: integer
+        doubled:
+          type: boolean
+          description: >-
+            Whether the round that just ended scored double (all four seats hit
+            their bid, or all four missed).
+        doubledAllExact:
+          type: boolean
+          description: >-
+            True when the doubling came from every seat hitting; false when it
+            came from every seat missing.
         trickNumber:
           type: integer
         trumpSuit:
@@ -48047,6 +48068,11 @@ components:
         lastHandKot:
           type: boolean
           description: The previous hand was a Kot (the losers took no trick), worth 2.
+        lastHandHakemChanged:
+          type: boolean
+          description: >-
+            Whether the hakem passed to the next seat after the hand that just
+            settled. It only moves when the hakem's team loses.
         lastHandWinner:
           type: integer
           description: "Team that took the previous hand, or -1 before there is one"
@@ -48348,6 +48374,12 @@ components:
           description: Hand indices you may legally play. Following suit is compulsory.
           items:
             type: integer
+        willSetTrump:
+          type: boolean
+          description: >-
+            Whether the card the human plays now decides the trump. Mendikot has
+            no trump-choosing phase: the first player who cannot follow sets it
+            with whatever they play.
         gameEndFlag:
           type: boolean
         winnerTeam:
@@ -48568,6 +48600,20 @@ components:
           description: >-
             How many cards changed hands for last round's shortfall. Surplus
             tricks buy an opponent's best cards; nothing else shows this.
+        lastExchangePairs:
+          type: array
+          description: >-
+            Who handed cards to whom in the exchange that opened this round. The
+            total alone cannot say whose best card was taken.
+          items:
+            type: object
+            properties:
+              giver:
+                type: integer
+              taker:
+                type: integer
+              count:
+                type: integer
         currentPlayerIdx:
           type: integer
         leadPlayerIdx:
@@ -48832,6 +48878,13 @@ components:
             Cards still face down. 52 does not divide by three, so the four
             left over go to the dealer, who discards discardCount after naming
             trump.
+        kittyIndices:
+          type: array
+          description: >-
+            Positions in the human's hand that came in from the kitty. Empty once
+            the dealer has discarded.
+          items:
+            type: integer
         discardCount:
           type: integer
           description: How many cards the dealer must discard (4).
@@ -48983,6 +49036,11 @@ components:
         lastTricks:
           type: integer
           description: Tricks the declarer took in the last deal.
+        lastPoints:
+          type: integer
+          description: >-
+            Points the deal that just ended actually moved: level x 10 plus 5 an
+            overtrick when made, or 10 a trick short to the opponent.
         currentPlayerIdx:
           type: integer
         leadPlayerIdx:
@@ -49408,6 +49466,12 @@ components:
             Whether you cannot follow and must take the trick into your hand.
             **Read this before validPlays** -- an empty validPlays also means
             "not your turn", and the two call for opposite things.
+        leadSuit:
+          type: integer
+          description: >-
+            Suit led in the current trick (1=spade, 2=club, 3=heart, 4=diamond),
+            0 before anyone has played. This is why a pickup is forced -- the
+            seat holds nothing of this suit.
         validPlays:
           type: array
           description: Hand indices you may legally play. Following suit is compulsory.
@@ -50997,6 +51061,20 @@ components:
           type: integer
         gameEndFlag:
           type: boolean
+        queensUpPayouts:
+          type: array
+          description: >-
+            Queens Up side-bet payouts, highest first. Served rather than
+            hardcoded: the multipliers live in the Go domain.
+          items:
+            type: object
+            properties:
+              hand:
+                type: integer
+              name:
+                type: string
+              multiplier:
+                type: integer
         config:
           type: object
           properties:
@@ -51028,6 +51106,12 @@ components:
                 type: integer
               bet:
                 type: integer
+              lastNet:
+                type: integer
+                description: >-
+                  Chips this seat gained or lost in the last settlement; 0
+                  during a round. The table-level result
+                  (banker/punter/tie) does not say whether your own bet won.
               isBanker:
                 type: boolean
               isRepresentative:
@@ -51401,6 +51485,16 @@ components:
         phase:
           type: integer
           description: "1=Bet, 2=End"
+        mainPayout:
+          type: integer
+          description: >-
+            The main-bet half of payout; 0 when it missed. A side bet is a
+            separate wager -- the total alone cannot say which one lost.
+        sidePayout:
+          type: integer
+          description: >-
+            The side-bet half of payout; 0 when no side bet was placed or it
+            missed.
         chips:
           type: integer
         betAmount:
@@ -51568,6 +51662,12 @@ components:
           type: integer
         trickNumber:
           type: integer
+        totalTricks:
+          type: integer
+          description: >-
+            Tricks in one round (= cards dealt to each seat). Only the last
+            trick scores penalties, so how many are left is the number that
+            matters.
         roundNumber:
           type: integer
         lastTrickWinnerIdx:
@@ -51675,6 +51775,18 @@ components:
         lastCaptureIdx:
           type: integer
           description: The seat that captured last, or -1. It receives whatever is left on the table.
+        lastCaptureKind:
+          type: string
+          description: >-
+            Whether the last capture was a plain table take ("take") or a whole
+            bundle stolen off another seat ("steal"); empty before anyone has
+            captured. A steal empties someone else's bundle, so it is not the
+            same event as a take.
+        lastCaptureVictimIdx:
+          type: integer
+          description: >-
+            The seat robbed by the last steal, or -1 when the last capture was a
+            take.
         currentPlayerIdx:
           type: integer
         turnNumber:
@@ -51773,6 +51885,12 @@ components:
         roundLoserIdx:
           type: integer
           description: The seat that took a letter at the end of the last round, or -1.
+        letterTarget:
+          type: string
+          description: >-
+            The word letters accumulate towards ("PIG"). Three letters and the
+            seat is out, so the page shows it as the denominator of each
+            seat's progress.
         roundNumber:
           type: integer
         passCount:
@@ -52192,6 +52310,14 @@ components:
         roundPenalty:
           type: integer
           description: Penalty taken in the current round.
+        takenJackSuits:
+          type: array
+          description: >-
+            Suits of the jacks this seat took this round, spade first. The total
+            alone cannot say whether a seat stepped on the spade jack (-2) or
+            picked up two of the others.
+          items:
+            type: integer
         trickCount:
           type: integer
         declaredCapot:
@@ -52555,6 +52681,13 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/Card'
+        tableauDeadEnd:
+          type: array
+          description: >-
+            Per column: true when the top card is an Ace, so nothing can be
+            stacked on it any more (the Ace itself can still go to a foundation).
+          items:
+            type: boolean
         foundation:
           type: array
           description: The eight foundations, each building up in suit from the Ace.

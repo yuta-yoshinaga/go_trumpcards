@@ -16,6 +16,7 @@
   "trick": "Trick: {{cards}}",
   "playable": "Playable: {{indexes}}",
   "ladderTitle": "Ladder:",
+  "ladderPayout": "(pays {{n}})",
   "ladderExposedTag": "[exposed]",
   "ladderPartnerTag": "[can call partner]",
   "gameEnd": "Game over! {{name}} wins!",

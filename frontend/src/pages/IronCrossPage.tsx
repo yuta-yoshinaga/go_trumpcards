@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ironcrossApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -85,6 +85,17 @@ function IronCrossPageContent() {
   const facingBet = (state?.toCall ?? 0) > 0;
   // **選ぶ場面かどうかはサーバが決める。** フェーズ番号から割り出さない。
   const isChoosing = !!state?.isChoosing;
+  // **後戻りできない一発勝負の選択** (#5781)。どの 3 枚が使われるかを、
+  // 押す前に十字の上で示す。位置はサーバの verticalIndexes / horizontalIndexes
+  // をそのまま使う——ページで並びを決め直すと、腕を取り違えても誰も気づかない。
+  const [previewLine, setPreviewLine] = useState<'vertical' | 'horizontal' | null>(null);
+
+  // **列を選ぶ場面が終わったら畳む。** クリックでボタンが消えるとき、環境に
+  // よっては mouseleave も blur も飛ばない (Safari はクリックでフォーカスしない)。
+  // 残したままだと、次の手で誰も触っていないのに光ったままになる。
+  useEffect(() => {
+    if (!isChoosing) setPreviewLine(null);
+  }, [isChoosing]);
 
   const handleBet = useCallback(() => execApi('bet', { amount }), [execApi, amount]);
   const handleRaise = useCallback(() => execApi('raise', { amount }), [execApi, amount]);
@@ -121,21 +132,27 @@ function IronCrossPageContent() {
   const humanWon = gameOver && state.winnerSeat === state.humanSeat;
 
   /** Renders one slot of the cross, or a placeholder while it is face down. */
+  const previewIndexes =
+    previewLine === 'vertical' ? state.verticalIndexes : previewLine === 'horizontal' ? state.horizontalIndexes : [];
+
   const crossSlot = (index: number) => {
     const card: Card | null = state.cross[index] ?? null;
+    const previewed = previewIndexes.includes(index);
+    const ring = previewed ? ' ring-2 ring-ds-success' : '';
     if (!card) {
       return (
         <div
-          className="rounded border-2 border-dashed border-ds-border"
+          className={`rounded border-2 border-dashed border-ds-border${ring}`}
           style={{ width: cardWidth, height: Math.round(cardWidth * 1.4) }}
           data-testid={`ic-cross-${index}`}
+          data-previewed={previewed ? 'true' : undefined}
           role="img"
           aria-label={t('label.hidden')}
         />
       );
     }
     return (
-      <div data-testid={`ic-cross-${index}`}>
+      <div className={ring.trim()} data-testid={`ic-cross-${index}`} data-previewed={previewed ? 'true' : undefined}>
         <AnimatedCard card={card} width={cardWidth} />
       </div>
     );
@@ -298,6 +315,10 @@ function IronCrossPageContent() {
                       data-hint-action="line"
                       onClick={() => execApi('vertical')}
                       disabled={loading}
+                      onMouseEnter={() => setPreviewLine('vertical')}
+                      onMouseLeave={() => setPreviewLine(null)}
+                      onFocus={() => setPreviewLine('vertical')}
+                      onBlur={() => setPreviewLine(null)}
                     >
                       {t('button.vertical')}
                     </button>
@@ -308,6 +329,10 @@ function IronCrossPageContent() {
                       data-hint-action="line"
                       onClick={() => execApi('horizontal')}
                       disabled={loading}
+                      onMouseEnter={() => setPreviewLine('horizontal')}
+                      onMouseLeave={() => setPreviewLine(null)}
+                      onFocus={() => setPreviewLine('horizontal')}
+                      onBlur={() => setPreviewLine(null)}
                     >
                       {t('button.horizontal')}
                     </button>

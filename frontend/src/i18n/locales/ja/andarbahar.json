@@ -48,7 +48,9 @@
     "firstColumnBadge": "先に配る列 0.9:1（51.50%）",
     "secondColumnBadge": "後に配る列 1:1（48.50%）",
     "sideHit": "サイドベット的中 (+{{amount}})",
-    "sideMiss": "サイドベットは外れました"
+    "sideMiss": "サイドベットは外れました",
+    "mainHit": "メインベット的中 (+{{amount}})",
+    "mainMiss": "メインベットは外れました"
   },
   "band": {
     "exact": "{{count}}枚ちょうど",

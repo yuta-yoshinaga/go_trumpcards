@@ -602,3 +602,54 @@ func TestHoneymoonBridge_AccessorsAndBounds(t *testing.T) {
 	assert.Equal(t, "NT", honeymoonBridgeContractSuitStr(0))
 	assert.NotEqual(t, "NT", honeymoonBridgeContractSuitStr(CardDesignHeart))
 }
+
+// **得点式は細かい** (契約レベル×10 + オーバートリック×5 / 失敗は不足×10)。
+// 画面に出せるよう、実際に動いた点を残す (#5760)。
+func TestHoneymoonBridgeRecordsTheRoundPoints(t *testing.T) {
+	t.Run("made with overtricks", func(t *testing.T) {
+		h := newTestHoneymoonBridge(t)
+		h.SetContractForTest(0, 3, CardDesignSpade)
+		need := h.RequiredTricks()
+		// 必要数 +2 取る。
+		hbGiveTricks(h, 0, need+2)
+		before := h.GetPlayer(0).GetScore()
+
+		h.FinishRoundForTest()
+
+		want := 3*10 + 2*5
+		if h.GetLastPoints() != want {
+			t.Errorf("lastPoints = %d, want %d", h.GetLastPoints(), want)
+		}
+		// **累計スコアの動きと一致する** (受け入れ条件4)。
+		if got := h.GetPlayer(0).GetScore() - before; got != want {
+			t.Errorf("the declarer's score moved by %d, want %d", got, want)
+		}
+	})
+
+	t.Run("down", func(t *testing.T) {
+		h := newTestHoneymoonBridge(t)
+		h.SetContractForTest(0, 4, CardDesignHeart)
+		need := h.RequiredTricks()
+		hbGiveTricks(h, 0, need-3)
+		before := h.GetPlayer(1).GetScore()
+
+		h.FinishRoundForTest()
+
+		want := 3 * 10
+		if h.GetLastPoints() != want {
+			t.Errorf("lastPoints = %d, want %d", h.GetLastPoints(), want)
+		}
+		if got := h.GetPlayer(1).GetScore() - before; got != want {
+			t.Errorf("the opponent's score moved by %d, want %d", got, want)
+		}
+	})
+}
+
+// hbGiveTricks は指定席に n トリック持たせる。
+func hbGiveTricks(h *HoneymoonBridge, idx, n int) {
+	p := h.GetPlayer(idx)
+	p.ResetTricks()
+	for range n {
+		p.AddTrick([]*Card{})
+	}
+}

@@ -42,6 +42,8 @@ const betState: AndarBaharResponse = {
   winner: -1,
   result: 0,
   payout: 0,
+  mainPayout: 0,
+  sidePayout: 0,
   history: [],
   message: '',
 };
@@ -171,6 +173,32 @@ describe('AndarBaharPage', () => {
 
     // 払戻 190 - メイン 100 - サイド 50 = +40
     await waitFor(() => expect(screen.getByTestId('payout-diff')).toHaveTextContent('40'));
+  });
+
+  // **サイドベットは別の賭け** (#5770)。合計だけでは、外したのがメインなのか
+  // サイドなのか読めない。
+  it('says which of the two bets hit', async () => {
+    mockApi.mockResolvedValue({
+      ...andarWinState,
+      sideAmount: 50,
+      sideBand: AndarBaharSideBand.TWO_TO_FIVE,
+      mainPayout: 190,
+      sidePayout: 0,
+    });
+    renderWithProviders(<AndarBaharPage />);
+
+    await waitFor(() => expect(screen.getByTestId('payout-main')).toHaveTextContent('メインベット的中'));
+    expect(screen.getByTestId('payout-main')).toHaveTextContent('190');
+    expect(screen.getByTestId('payout-side')).toHaveTextContent('サイドベットは外れました');
+  });
+
+  // **負のコントロール: 張っていない回は従来どおり** (受け入れ条件3)。
+  it('leaves the breakdown out when no side bet was placed', async () => {
+    mockApi.mockResolvedValue({ ...andarWinState, mainPayout: 190, sidePayout: 0 });
+    renderWithProviders(<AndarBaharPage />);
+
+    await waitFor(() => expect(screen.getByTestId('payout-result')).toBeInTheDocument());
+    expect(screen.queryByTestId('payout-bet-breakdown')).not.toBeInTheDocument();
   });
 
   it('replays the last bet without its side bet', async () => {

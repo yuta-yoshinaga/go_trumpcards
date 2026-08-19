@@ -464,6 +464,7 @@ func TestGetHint_FindsAnchorMove(t *testing.T) {
 	h := g.GetHint()
 	if h == nil {
 		t.Fatal("expected a hint")
+		return
 	}
 	// Anchor move: any 2 → (0,0). 2S is at (0,1) actually — no, grid[0] = 2S,3S,... and we punched
 	// grid[0][0] to nil. So grid[0][1]=3S. The 2 of Spade lives... actually with our
