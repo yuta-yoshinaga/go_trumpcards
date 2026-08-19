@@ -21,4 +21,11 @@ describe('tarabishCardPoints golden vectors (shared with the Go domain)', () => 
   it('scores nothing for a missing card', () => {
     expect(tarabishCardPoints(null, 1)).toBe(0);
   });
+
+  // 黄金ベクタが踏まない唯一の枝: 未知のデザイン (ジョーカー等) は
+  // 切り札扱いにならず、平札の表で 0 になる。
+  it('treats an unknown design as a plain card', () => {
+    expect(tarabishCardPoints({ design: 'JOKER' as Card['design'], value: 11 }, 1)).toBe(2);
+    expect(tarabishCardPoints({ design: 'JOKER' as Card['design'], value: 9 }, 1)).toBe(0);
+  });
 });
