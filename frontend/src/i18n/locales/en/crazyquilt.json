@@ -50,5 +50,11 @@
     "fillGap": "Fill the empty pile straight from the stock and save a waste card",
     "draw": "Nothing can move, so turn a card from the stock"
   },
-  "wasteDropAriaLabel": "play onto the waste (next to {{card}})"
+  "wasteDropAriaLabel": "play onto the waste (next to {{card}})",
+  "foundationAscendingAriaLabel": "{{suit}} foundation {{idx}} (up from the Ace), {{count}} cards",
+  "foundationDescendingAriaLabel": "{{suit}} foundation {{idx}} (down from the King), {{count}} cards",
+  "emptyFoundationAscendingAriaLabel": "empty foundation {{idx}} ({{suit}}, up from the Ace)",
+  "emptyFoundationDescendingAriaLabel": "empty foundation {{idx}} ({{suit}}, down from the King)",
+  "directionAscending": "up from the Ace",
+  "directionDescending": "down from the King"
 }
