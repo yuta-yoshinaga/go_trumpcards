@@ -62,6 +62,15 @@ export interface IsraeliWhistResponse extends BaseGameResponse {
   /** `0` = Auction, `1` = Bid, `2` = Play, `3` = RoundEnd, `4` = GameEnd. */
   phase: number;
   roundNumber: number;
+  /**
+   * Whether the round that just ended scored double.
+   *
+   * All four hitting their bid, or all four missing, doubles everyone's change —
+   * the swing that used to live only in the action log (#5752).
+   */
+  doubled?: boolean;
+  /** True when the doubling came from every seat hitting (false: every seat missing). */
+  doubledAllExact?: boolean;
   trickNumber: number;
   /** `0` until the auction closes. */
   trumpSuit: number;
