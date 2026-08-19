@@ -261,6 +261,40 @@ describe('IronCrossPage', () => {
     expect(screen.getByTestId('ic-cross-3')).not.toHaveAttribute('data-previewed');
   });
 
+  // 選択フェーズが終わったらプレビューは畳む（レビュー指摘）。クリックで
+  // ボタンが消えるとき mouseleave も blur も飛ばない環境がある。
+  it('列を選び終えたらハイライトを畳む', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: IronCrossPhase.CHOOSE_LINE,
+        isChoosing: true,
+        isHumanTurn: false,
+        cross: [card(13), card(12), card(11), card(10), card(9)],
+        revealedCount: 5,
+      }),
+    );
+    renderWithProviders(<IronCrossPage />);
+    await waitFor(() => expect(screen.getByTestId('ic-vertical')).toBeInTheDocument());
+
+    fireEvent.mouseEnter(screen.getByTestId('ic-vertical'));
+    expect(screen.getByTestId('ic-cross-1')).toHaveAttribute('data-previewed', 'true');
+
+    // 次の応答で選択フェーズが終わる。
+    mockApi.mockResolvedValue(
+      withState({
+        phase: IronCrossPhase.SHOWDOWN,
+        isChoosing: false,
+        isHumanTurn: false,
+        cross: [card(13), card(12), card(11), card(10), card(9)],
+        revealedCount: 5,
+      }),
+    );
+    fireEvent.click(screen.getByTestId('ic-vertical'));
+
+    await waitFor(() => expect(screen.queryByTestId('ic-vertical')).not.toBeInTheDocument());
+    expect(screen.getByTestId('ic-cross-1')).not.toHaveAttribute('data-previewed');
+  });
+
   // **配列はサーバのものを使う。** 位置をページで決め直さない。
   it('サーバが別の位置を送ってきたらそちらを光らせる', async () => {
     mockApi.mockResolvedValue(

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ironcrossApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -90,6 +90,13 @@ function IronCrossPageContent() {
   // をそのまま使う——ページで並びを決め直すと、腕を取り違えても誰も気づかない。
   const [previewLine, setPreviewLine] = useState<'vertical' | 'horizontal' | null>(null);
 
+  // **列を選ぶ場面が終わったら畳む。** クリックでボタンが消えるとき、環境に
+  // よっては mouseleave も blur も飛ばない (Safari はクリックでフォーカスしない)。
+  // 残したままだと、次の手で誰も触っていないのに光ったままになる。
+  useEffect(() => {
+    if (!isChoosing) setPreviewLine(null);
+  }, [isChoosing]);
+
   const handleBet = useCallback(() => execApi('bet', { amount }), [execApi, amount]);
   const handleRaise = useCallback(() => execApi('raise', { amount }), [execApi, amount]);
 
@@ -131,7 +138,7 @@ function IronCrossPageContent() {
   const crossSlot = (index: number) => {
     const card: Card | null = state.cross[index] ?? null;
     const previewed = previewIndexes.includes(index);
-    const ring = previewed ? ' ring-2 ring-ds-success rounded' : '';
+    const ring = previewed ? ' ring-2 ring-ds-success' : '';
     if (!card) {
       return (
         <div
