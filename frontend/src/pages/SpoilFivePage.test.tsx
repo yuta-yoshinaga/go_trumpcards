@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { spoilFiveApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeSpoilFiveState } from '../test/stateFactories';
+import { SpoilFivePhase } from '../types/phases';
 import { SpoilFivePage } from './SpoilFivePage';
 
 vi.mock('../api/gameApi', () => ({
@@ -184,6 +185,21 @@ describe('SpoilFivePage', () => {
 
     expect(await screen.findByTestId('sf-reach-0')).toBeInTheDocument();
     expect(screen.queryByTestId('sf-reach-1')).not.toBeInTheDocument();
+  });
+
+  // **決着した局面では煽らない。** ラウンドが終わっているのに「あと1」と
+  // 出ていると、まだ続くように読める（レビュー指摘）。
+  it('drops the reach badge once the round is over', async () => {
+    mockExec.mockResolvedValue(
+      makeSpoilFiveState({
+        phase: SpoilFivePhase.ROUND_END,
+        players: playersWithTricks([2, 1, 0, 0, 0]),
+      }),
+    );
+    renderWithProviders(<SpoilFivePage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('sf-reach-0')).not.toBeInTheDocument();
   });
 
   it('does not flag a reach before anyone has two tricks', async () => {

@@ -20,7 +20,6 @@
   "potIncreaseAnnounce": "ポット +{{delta}}（合計 {{total}}）",
   "target": "目標 {{n}}点",
   "cards": "{{count}}枚",
-  "roundTricks": "今ラウンド {{count}}トリック",
   "score": "{{count}}点",
   "currentTrick": "現在のトリック",
   "players": "プレイヤー",
