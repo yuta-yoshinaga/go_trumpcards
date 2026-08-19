@@ -9,6 +9,7 @@
   "header": "Round: {{round}}  Trick: {{trick}}",
   "dealer": "Dealer: {{name}}",
   "trumpLine": "Trump: {{suit}} (Stock: {{stock}})",
+  "trumpLineWithCard": "Trump: {{suit}} (turn-up: {{card}}) (stock: {{stock}})",
   "trumpUndecided": "Trump: undecided",
   "teamScoreLine": "Team 0: {{t0}}  Team 1: {{t1}}",
   "playerLine": "{{name}}: Team {{team}} tricks={{tricks}} cards={{cards}}",
