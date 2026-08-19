@@ -88,7 +88,7 @@ export interface HoneymoonBridgeResponse extends BaseGameResponse {
    * Scoring is level x 10 plus 5 an overtrick (or 10 a trick short to the
    * opponent), so the trick counts alone do not say what it was worth (#5760).
    */
-  lastPoints?: number;
+  lastPoints: number;
   currentPlayerIdx: number;
   leadPlayerIdx: number;
   dealerIdx: number;

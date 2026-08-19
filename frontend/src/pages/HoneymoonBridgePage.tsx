@@ -189,7 +189,7 @@ function HoneymoonBridgePageContent() {
     const params = {
       need: String(state.requiredTricks),
       took: String(state.lastTricks),
-      points: String(state.lastPoints ?? 0),
+      points: String(state.lastPoints),
     };
     return state.lastMade ? t('roundResult.madeWithPoints', params) : t('roundResult.downWithPoints', params);
   })();
