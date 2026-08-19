@@ -5,7 +5,7 @@
   "helpTrail": "  tr <i>                   put hand card i on the table",
   "helpNext": "  n                        deal the next hand",
   "header": "stock {{stock}} · us {{us}} them {{them}} (first to {{target}})",
-  "ruleLine": "A=1/11 J=2/12 Q=3/13 K=4/14 -- the player chooses / jokers are fixed at 15, 20 and 25 / clearing the table is a Zwick, worth 1",
+  "ruleLine": "A=1/11 J=2/12 Q=3/13 K=4/14 -- the player chooses / jokers are fixed at 15, 20 and 25 / clearing the table is a Zwick, worth 1 / a build's owner is only who made it - anyone holding the declared value can capture it",
   "tableLine": "Table: {{cards}}",
   "buildLine": "Build[{{idx}}] worth {{value}} (seat {{owner}}): {{cards}}",
   "playerLine": "{{name}} (team {{team}}): {{cards}} in hand, {{taken}} taken, {{zwicks}} Zwick(s)",

@@ -713,3 +713,30 @@ func TestKoenigrufenHintPhases(t *testing.T) {
 	g4.SetCurrentPlayerIdx(0)
 	assert.NotNil(t, g4.GetHint())
 }
+
+// #5713: 呼びスートの王を持っているかは、その本人に伝えてよい情報 (自分の手札と
+// 公開済みの呼びスートだけから分かる)。宣言者は自分が持つ王を呼べないので常に false。
+func TestKoenigrufenHoldsCalledKing(t *testing.T) {
+	king := func(suit int) *domain.Card { return domain.NewCard(suit, domain.KoenigrufenKingValue, false) }
+
+	g := koenigrufenNewReset()
+	g.SetDeclarerIdx(0)
+	g.SetCalledKing(domain.CardDesignHeart)
+	koenigrufenSetHand(g, 0, king(domain.CardDesignHeart))                     // 宣言者 (呼べないはずの状態)
+	koenigrufenSetHand(g, 1, king(domain.CardDesignHeart))                     // 呼ばれた王の持ち主
+	koenigrufenSetHand(g, 2, king(domain.CardDesignSpade))                     // 別スートの王
+	koenigrufenSetHand(g, 3, domain.NewCard(domain.CardDesignHeart, 1, false)) // 王ではない
+
+	assert.False(t, g.KoenigrufenHoldsCalledKing(0), "the declarer is never told")
+	assert.True(t, g.KoenigrufenHoldsCalledKing(1))
+	assert.False(t, g.KoenigrufenHoldsCalledKing(2), "another suit's King does not count")
+	assert.False(t, g.KoenigrufenHoldsCalledKing(3))
+
+	// 範囲外の添字は false (呼び出し側が席を取り違えても panic しない)。
+	assert.False(t, g.KoenigrufenHoldsCalledKing(-1))
+	assert.False(t, g.KoenigrufenHoldsCalledKing(domain.KoenigrufenPlayerCnt))
+
+	// 王を呼んでいないラウンド (単独) では誰も該当しない。
+	g.SetCalledKing(-1)
+	assert.False(t, g.KoenigrufenHoldsCalledKing(1))
+}

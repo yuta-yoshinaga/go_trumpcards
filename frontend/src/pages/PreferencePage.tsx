@@ -291,6 +291,18 @@ function PreferencePageContent() {
                 : t('contractUndecided')}
             </div>
 
+            {/* 切り札は選ぶものではなく、契約成立と同時に宣言者の最長スートへ
+                自動設定される (Preference.go の resolveBidding)。切り札選択ボタンの
+                あるゲームと並ぶと、いつ選んだのか分からない (#5652)。
+                ミゼールは切り札そのものが無いので出さない。 */}
+            {/* declarerIdx は contract と同時に設定・解除される (resolveBidding) ので、
+                契約だけを見れば足りる。両方見ると片方が死んだ分岐になる。 */}
+            {state.contract !== PreferenceContract.PASS && state.contract !== PreferenceContract.MISERE && (
+              <div className="text-ds-text-muted text-center mb-2 text-xs" data-testid="preference-trump-note">
+                {t('trumpAutoNote')}
+              </div>
+            )}
+
             {contractProgress && (
               <div
                 className={`text-center mb-2 text-sm font-semibold ${CONTRACT_STATUS_COLOR[contractProgress.status]}`}

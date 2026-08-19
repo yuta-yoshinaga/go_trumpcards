@@ -29,6 +29,7 @@
   "promptDrawHelpDiscard": "dd <idx,idx>・・・捨て札の山を取る (ナチュラルペアのインデックス)",
   "promptMeld": "手番: {{name}} (メルドフェーズ)",
   "promptMeldHelp": "m <idx,idx,idx;idx,idx,idx>・・・メルドを出す (;でグループ区切り)",
+  "promptMeldMinimum": "初回メルドの最低点: {{points}} 点（この点に届くまでメルドできません）",
   "promptSkipMeld": "sm・・・メルドせずにスキップ",
   "promptDiscard": "手番: {{name}} (ディスカードフェーズ)",
   "promptDiscardHelp": "d <idx>・・・カードを捨てる",

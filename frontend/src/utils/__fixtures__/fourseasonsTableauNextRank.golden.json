@@ -1,0 +1,70 @@
+{
+  "note": "Four Seasons tableau builds down with a wrap (an Ace accepts a King). Asserted by both frontend/src/utils/fourseasonsTableauNextRank.golden.test.ts and TestFourSeasonsTableauNextRank_GoldenVectors, which checks domain.FourSeasonsPrevRank -- the function that decides whether a card may be placed.",
+  "cases": [
+    {
+      "name": "top 1 accepts 13",
+      "top": 1,
+      "next": 13
+    },
+    {
+      "name": "top 2 accepts 1",
+      "top": 2,
+      "next": 1
+    },
+    {
+      "name": "top 3 accepts 2",
+      "top": 3,
+      "next": 2
+    },
+    {
+      "name": "top 4 accepts 3",
+      "top": 4,
+      "next": 3
+    },
+    {
+      "name": "top 5 accepts 4",
+      "top": 5,
+      "next": 4
+    },
+    {
+      "name": "top 6 accepts 5",
+      "top": 6,
+      "next": 5
+    },
+    {
+      "name": "top 7 accepts 6",
+      "top": 7,
+      "next": 6
+    },
+    {
+      "name": "top 8 accepts 7",
+      "top": 8,
+      "next": 7
+    },
+    {
+      "name": "top 9 accepts 8",
+      "top": 9,
+      "next": 8
+    },
+    {
+      "name": "top 10 accepts 9",
+      "top": 10,
+      "next": 9
+    },
+    {
+      "name": "top 11 accepts 10",
+      "top": 11,
+      "next": 10
+    },
+    {
+      "name": "top 12 accepts 11",
+      "top": 12,
+      "next": 11
+    },
+    {
+      "name": "top 13 accepts 12",
+      "top": 13,
+      "next": 12
+    }
+  ]
+}

@@ -23,5 +23,6 @@
   "hintReasonLeadSafe": "失点にならない低い札でリードする",
   "hintReasonDumpHigh": "安全なうちに高い札を処分する",
   "helpExampleGiveUp": "  g                    この局を投了する",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "handCard": "[{{idx}}]{{card}}({{points}}点)"
 }

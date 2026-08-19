@@ -1,0 +1,44 @@
+{
+  "_comment": "Golden vectors for the Go-Stop near-yaku preview. Two implementations read this file: internal/domain/GoStop_test.go (GoStopComputeNearYaku) and frontend/src/utils/gostopYaku.golden.test.ts (computeNearYaku). Counts are the captured-card counts from the score breakdown; month-specific yaku are deliberately out of scope on both sides.",
+  "cases": [
+    {
+      "name": "nothing captured yet is too far from every threshold",
+      "counts": { "bright": 0, "ribbon": 0, "animal": 0, "pi": 0 },
+      "near": []
+    },
+    {
+      "name": "one bright away from samgwang",
+      "counts": { "bright": 2, "ribbon": 0, "animal": 0, "pi": 0 },
+      "near": [{ "category": "gwang", "target": "samgwang", "current": 2, "remaining": 1 }]
+    },
+    {
+      "name": "three brights already scored: the next rung is sagwang",
+      "counts": { "bright": 3, "ribbon": 0, "animal": 0, "pi": 0 },
+      "near": [{ "category": "gwang", "target": "sagwang", "current": 3, "remaining": 1 }]
+    },
+    {
+      "name": "all five brights: nothing left to reach",
+      "counts": { "bright": 5, "ribbon": 0, "animal": 0, "pi": 0 },
+      "near": []
+    },
+    {
+      "name": "ribbons, animals and junk can all be near at once",
+      "counts": { "bright": 0, "ribbon": 4, "animal": 3, "pi": 9 },
+      "near": [
+        { "category": "tti", "target": "tti", "current": 4, "remaining": 1 },
+        { "category": "yeol", "target": "yeol", "current": 3, "remaining": 2 },
+        { "category": "pi", "target": "pi", "current": 9, "remaining": 1 }
+      ]
+    },
+    {
+      "name": "a category already past its threshold is not previewed again",
+      "counts": { "bright": 0, "ribbon": 6, "animal": 5, "pi": 12 },
+      "near": []
+    },
+    {
+      "name": "three away is beyond the preview window",
+      "counts": { "bright": 0, "ribbon": 2, "animal": 2, "pi": 7 },
+      "near": []
+    }
+  ]
+}

@@ -35,6 +35,10 @@ func (p *TeenDoPaanchWebPresenter) buildBase(g interfaces.TeenDoPaanchGame) *con
 	resObj.TrumpSuit = g.GetTrumpSuit()
 	resObj.FivePlayerIdx = g.GetFivePlayerIdx()
 	resObj.LastExchange = g.GetLastExchange()
+	resObj.LastExchangePairs = g.GetLastExchangePairs()
+	if resObj.LastExchangePairs == nil {
+		resObj.LastExchangePairs = []domain.TeenDoPaanchExchange{}
+	}
 	resObj.CurrentPlayerIdx = g.GetCurrentPlayerIdx()
 	resObj.LeadPlayerIdx = g.GetLeadPlayerIdx()
 	resObj.ValidPlays = intSliceOrEmpty(g.GetValidPlayIndices(0))

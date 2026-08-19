@@ -92,6 +92,7 @@ func (p *RollingStoneCuiPresenter) Output(s interfaces.RollingStoneGame, lastErr
 		// **出せる札が無い局面はそう名乗る。** 黙っていると打てない理由が分からない。
 		if s.MustPickUp(0) && currentIdx == 0 {
 			sb.WriteString(color.Yellow(i18n.Tf("rollingstone.promptPickUp",
+				"suit", cuiSuitName(s.GetLeadSuit()),
 				"n", strconv.Itoa(len(s.GetCurrentTrick())))) + "\n")
 			return
 		}

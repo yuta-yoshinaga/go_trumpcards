@@ -11,6 +11,7 @@
   "promptHelp": "p <h> [f] to play (f = field card on a 2-way match). nr=next round",
   "roundEnd": "Round settled (raw - 88 = delta):",
   "scoreLine": "  {{name}}: raw {{raw}} + yaku {{bonus}} - 88 = {{delta}}",
+  "roundBestMark": "* best this round",
   "roundDraw": "Round drawn.",
   "hintNone": "No hint available.",
   "hintCard": "[HINT: {{card}} ({{reason}})]",

@@ -12,6 +12,7 @@
   "playerLine": "{{name}} ({{role}}): {{cards}} cards  Score: {{score}}  Tricks: {{tricks}}",
   "roleDeclarer": "Declarer",
   "rolePartner": "Partner",
+  "youArePartner": "You are the called partner (you hold the called King)",
   "roleOpponent": "Opponent",
   "bidNone": "-",
   "bidRufer": "Rufer",
