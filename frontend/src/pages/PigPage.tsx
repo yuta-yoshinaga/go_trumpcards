@@ -211,7 +211,9 @@ function PigPageContent() {
                   {': '}
                   <span className="text-ds-accent">{t('header.cards', { n: String(p.cardCount) })}</span>
                   {' / '}
-                  {t('header.letters', { word: p.letterWord || '-' })}
+                  {/* **3 文字で脱落**が規則そのものなのに、溜まった文字しか
+                      出していなかった (#5766)。目標語を分母として併記する。 */}
+                  {t('header.letters', { word: p.letterWord || '-', target: state.letterTarget })}
                 </div>
               ))}
             </div>

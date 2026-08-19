@@ -51831,6 +51831,12 @@ components:
         roundLoserIdx:
           type: integer
           description: The seat that took a letter at the end of the last round, or -1.
+        letterTarget:
+          type: string
+          description: >-
+            The word letters accumulate towards ("PIG"). Three letters and the
+            seat is out, so the page shows it as the denominator of each
+            seat's progress.
         roundNumber:
           type: integer
         passCount:
