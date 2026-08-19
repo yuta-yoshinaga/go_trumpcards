@@ -199,6 +199,61 @@ describe('IronCrossPage', () => {
     expect(screen.queryByTestId('ic-fold')).not.toBeInTheDocument();
   });
 
+  // **後戻りできない一発勝負の選択** (#5781)。押す前にどの 3 枚が使われるかを
+  // 十字の上で示す。位置はサーバの配列そのままで、ページで並べ直さない。
+  it('列ボタンにホバー/フォーカスで使う3枚を示す', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: IronCrossPhase.CHOOSE_LINE,
+        isChoosing: true,
+        isHumanTurn: false,
+        cross: [card(13), card(12), card(11), card(10), card(9)],
+        revealedCount: 5,
+        verticalIndexes: [1, 0, 2],
+        horizontalIndexes: [3, 0, 4],
+      }),
+    );
+    renderWithProviders(<IronCrossPage />);
+    await waitFor(() => expect(screen.getByTestId('ic-vertical')).toBeInTheDocument());
+
+    const previewed = () =>
+      [0, 1, 2, 3, 4].filter((i) => screen.getByTestId(`ic-cross-${i}`).getAttribute('data-previewed') === 'true');
+    expect(previewed()).toEqual([]);
+
+    fireEvent.mouseEnter(screen.getByTestId('ic-vertical'));
+    expect(previewed()).toEqual([0, 1, 2]);
+
+    fireEvent.mouseLeave(screen.getByTestId('ic-vertical'));
+    expect(previewed()).toEqual([]);
+
+    fireEvent.focus(screen.getByTestId('ic-horizontal'));
+    expect(previewed()).toEqual([0, 3, 4]);
+
+    fireEvent.blur(screen.getByTestId('ic-horizontal'));
+    expect(previewed()).toEqual([]);
+  });
+
+  // **配列はサーバのものを使う。** 位置をページで決め直さない。
+  it('サーバが別の位置を送ってきたらそちらを光らせる', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: IronCrossPhase.CHOOSE_LINE,
+        isChoosing: true,
+        isHumanTurn: false,
+        cross: [card(13), card(12), card(11), card(10), card(9)],
+        revealedCount: 5,
+        verticalIndexes: [3, 4],
+        horizontalIndexes: [1, 2],
+      }),
+    );
+    renderWithProviders(<IronCrossPage />);
+    await waitFor(() => expect(screen.getByTestId('ic-vertical')).toBeInTheDocument());
+
+    fireEvent.mouseEnter(screen.getByTestId('ic-vertical'));
+    expect(screen.getByTestId('ic-cross-3')).toHaveAttribute('data-previewed', 'true');
+    expect(screen.getByTestId('ic-cross-1')).not.toHaveAttribute('data-previewed');
+  });
+
   // **選んだ列がそのまま送られる。** 強いほうに直したりしない。
   it('押した列をそのまま送る', async () => {
     mockApi.mockResolvedValue(withState({ phase: IronCrossPhase.CHOOSE_LINE, isChoosing: true, isHumanTurn: false }));
