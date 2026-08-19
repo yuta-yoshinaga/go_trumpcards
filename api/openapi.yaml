@@ -51459,6 +51459,16 @@ components:
         phase:
           type: integer
           description: "1=Bet, 2=End"
+        mainPayout:
+          type: integer
+          description: >-
+            The main-bet half of payout; 0 when it missed. A side bet is a
+            separate wager -- the total alone cannot say which one lost.
+        sidePayout:
+          type: integer
+          description: >-
+            The side-bet half of payout; 0 when no side bet was placed or it
+            missed.
         chips:
           type: integer
         betAmount:

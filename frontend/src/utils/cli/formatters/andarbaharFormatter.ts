@@ -44,6 +44,10 @@ export function formatAndarBaharState(state: AndarBaharResponse): string {
 
   if (state.phase === AndarBaharPhase.END) {
     lines.push(`winner: ${COLUMN_NAMES[state.winner] ?? '?'}  payout: ${state.payout}`);
+    // **サイドベットは別の賭け** (#5770)。張った回だけ内訳を出す。
+    if (state.sideBand !== AndarBaharSideBand.NONE) {
+      lines.push(`  breakdown: main ${state.mainPayout} / side ${state.sidePayout}`);
+    }
   }
 
   if (state.history.length > 0) {

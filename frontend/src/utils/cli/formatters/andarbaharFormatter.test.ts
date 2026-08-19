@@ -18,6 +18,8 @@ const base: AndarBaharResponse = {
   winner: -1,
   result: 0,
   payout: 0,
+  mainPayout: 0,
+  sidePayout: 0,
   history: [],
   message: '',
 };
