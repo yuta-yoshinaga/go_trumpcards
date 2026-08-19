@@ -1,5 +1,8 @@
 {
-  "phase": { "play": "プレイ中", "gameEnd": "終了" },
+  "phase": {
+    "play": "プレイ中",
+    "gameEnd": "終了"
+  },
   "header": {
     "trick": "トリック {{n}}",
     "deck": "デッキ {{deck}}枚（場に残り {{left}}枚）",
@@ -10,7 +13,7 @@
     "pickedUp": "[直前に引き取り]",
     "you": "あなた",
     "cpu": "CPU{{idx}}",
-    "mustPickUp": "フォローできる札がありません。場札 {{n}} 枚を引き取ってください。"
+    "mustPickUp": "フォローできる {{suit}} の札がありません。場札 {{n}} 枚を引き取ってください。"
   },
   "currentTrick": "現在のトリック",
   "actions": {

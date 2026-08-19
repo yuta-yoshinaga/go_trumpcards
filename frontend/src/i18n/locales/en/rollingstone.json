@@ -1,5 +1,8 @@
 {
-  "phase": { "play": "Playing", "gameEnd": "Finished" },
+  "phase": {
+    "play": "Playing",
+    "gameEnd": "Finished"
+  },
   "header": {
     "trick": "Trick {{n}}",
     "deck": "Deck {{deck}} ({{left}} still in play)",
@@ -10,7 +13,7 @@
     "pickedUp": "[just picked up]",
     "you": "You",
     "cpu": "CPU{{idx}}",
-    "mustPickUp": "You cannot follow. Take the {{n}} cards on the table."
+    "mustPickUp": "You have no {{suit}} to follow with. Take the {{n}} card(s) on the table."
   },
   "currentTrick": "Current trick",
   "actions": {
