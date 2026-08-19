@@ -60,14 +60,17 @@ func (p *BalootWebPresenter) buildPlayersOutput(b interfaces.BalootGame) []*cont
 	for i := 0; i < b.GetPlayerCnt(); i++ {
 		player := b.GetPlayer(i)
 		out = append(out, &controller.BalootWebOutputPlayer{
-			ID:         i,
-			IsHuman:    player.GetIsHuman(),
-			Team:       domain.BalootTeamOf(i),
-			CardCount:  player.GetCardsSize(),
-			Cards:      playerCardsToOutput(player, player.GetIsHuman()),
-			HasBaloot:  player.GetHasBaloot(),
-			Declared:   player.GetDeclared(),
-			TrickCount: player.GetTrickCount(),
+			ID:        i,
+			IsHuman:   player.GetIsHuman(),
+			Team:      domain.BalootTeamOf(i),
+			CardCount: player.GetCardsSize(),
+			Cards:     playerCardsToOutput(player, player.GetIsHuman()),
+			// **伏せている席は保有そのものを送らない。**フロントで隠すだけだと
+			// レスポンスを見れば分かってしまう (#5750)。
+			HasBaloot:      player.GetBalootRevealed() && player.GetHasBaloot(),
+			BalootRevealed: player.GetBalootRevealed(),
+			Declared:       player.GetDeclared(),
+			TrickCount:     player.GetTrickCount(),
 		})
 	}
 	return out

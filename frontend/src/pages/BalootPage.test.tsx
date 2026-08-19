@@ -227,3 +227,50 @@ describe('BalootPage', () => {
     expect(await screen.findByText(/Hokom が有利/)).toBeInTheDocument();
   });
 });
+
+// **配られた瞬間に相手の手の内が割れるのは体験を壊す** (#5750)。
+// 切り札の K か Q が実際に出る (かラウンドが終わる) まで伏せる。
+describe('BalootPage hidden Baloot', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+  });
+
+  it('says unknown for a seat whose Baloot is not public yet', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          seat(0, { hasBaloot: true, balootRevealed: true }),
+          seat(1, { hasBaloot: false, balootRevealed: false }),
+          seat(2),
+          seat(3),
+        ],
+      } as Partial<BalootResponse>),
+    );
+    renderWithProviders(<BalootPage />);
+
+    // 自分のぶんは最初から見えている。
+    expect(await screen.findByTestId('bl-baloot-0')).toHaveTextContent(/Baloot/);
+    // 相手は「不明」。**「役なし」と読ませない**のが要点。
+    expect(screen.getByTestId('bl-baloot-1')).toHaveTextContent('不明');
+    expect(screen.getByTestId('bl-baloot-1')).not.toHaveTextContent('役なし');
+  });
+
+  it('shows the standing once it becomes public', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          seat(0),
+          seat(1, { hasBaloot: true, balootRevealed: true }),
+          seat(2, { hasBaloot: false, balootRevealed: true }),
+          seat(3),
+        ],
+      } as Partial<BalootResponse>),
+    );
+    renderWithProviders(<BalootPage />);
+
+    expect(await screen.findByTestId('bl-baloot-1')).toHaveTextContent(/Baloot/);
+    expect(screen.getByTestId('bl-baloot-2')).toHaveTextContent('役なし');
+    expect(screen.getByTestId('bl-baloot-2')).not.toHaveTextContent('不明');
+  });
+});

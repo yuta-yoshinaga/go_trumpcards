@@ -30,7 +30,13 @@ func balootPlayerStr(player *domain.BalootPlayer, idx int) string {
 }
 
 // balootBonusStr Baloot（切り札の K+Q）の有無を短く表す
+//
+// **開示前の席は「不明」。**配られた瞬間に相手の手の内が割れるのは体験を
+// 壊すので、切り札の K か Q が実際に出るまで伏せる (#5750)。
 func balootBonusStr(player *domain.BalootPlayer) string {
+	if !player.GetBalootRevealed() {
+		return i18n.T("baloot.balootHidden")
+	}
 	if !player.GetHasBaloot() {
 		return i18n.T("baloot.balootNone")
 	}

@@ -47618,6 +47618,12 @@ components:
         hasBaloot:
           type: boolean
           description: Holds the trump K and Q -- worth 20, and possible in Hokom only.
+        balootRevealed:
+          type: boolean
+          description: >-
+            Whether this seat's Baloot standing is public yet. hasBaloot is sent as
+            false while it is hidden, so read this first: "no Baloot" and "not
+            shown yet" are different.
         declared:
           type: boolean
           description: Has already declared or passed this round.
