@@ -424,6 +424,10 @@ function EcartePageContent() {
                 <div
                   className="sm:hidden basis-full text-xs text-ds-text-muted mt-1 space-y-0.5"
                   data-testid="ecarte-consequences"
+                  // 同じ文はボタンの aria-describedby から既に読まれる。
+                  // ここは**見た目の側だけ**なので、読み上げからは外して
+                  // 二重に聞こえるのを避ける (レビュー指摘)。
+                  aria-hidden="true"
                 >
                   {(isElderDecide ? (['propose', 'stand'] as const) : (['accept', 'refuse'] as const)).map((action) => (
                     <div key={action}>
