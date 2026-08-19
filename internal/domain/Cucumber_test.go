@@ -20,6 +20,8 @@ func newCucumberForTest(t *testing.T, n int) *Cucumber {
 }
 
 // **7 枚固定。** 52 枚は 3/5/6 人で割り切れないので、人数で割りません。
+// 配り枚数は 1 ラウンドのトリック数そのもの。**人数を変えても 7 枚固定**なので、
+// 画面が出す総トリック数もここで固定される (#5768)。
 func TestCucumberResetDealsSevenEach(t *testing.T) {
 	for n := CucumberPlayerCntMin; n <= CucumberPlayerCntMax; n++ {
 		c := newCucumberForTest(t, n)
@@ -294,18 +296,3 @@ func TestCucumberIsForcedLowest(t *testing.T) {
 	assert.False(t, c.IsForcedLowest(0))
 }
 
-// **1 ラウンドのトリック数は配り枚数。** 人数を変えても 7 枚固定なので、
-// 表示する総数もそれに一致する (#5768)。
-func TestCucumberDealsTheSameHandSizeAtEveryTableSize(t *testing.T) {
-	for n := CucumberPlayerCntMin; n <= CucumberPlayerCntMax; n++ {
-		cfg := DefaultCucumberConfig()
-		cfg.PlayerCnt = n
-		c := NewCucumber(nil, cfg)
-		c.Reset()
-		for i := range n {
-			if got := c.GetPlayer(i).GetCardsSize(); got != CucumberHandSize {
-				t.Errorf("%d 人卓: 席 %d の手札 %d 枚, want %d", n, i, got, CucumberHandSize)
-			}
-		}
-	}
-}
