@@ -308,3 +308,42 @@ describe('MinibridgePage', () => {
     expect(await screen.findByTestId('hint-tooltip')).toHaveTextContent(/ダミーの手番/);
   });
 });
+
+// **競りが無いぶん、味方が誰かは席表示でしか分からない** (#5761)。CUI は
+// 最初から team を出しているのに、Web は契約が決まるまで何も出していなかった。
+describe('MinibridgePage team tags', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+  });
+
+  it('tags every seat with its team before a contract exists', async () => {
+    mockExec.mockResolvedValue(makeState({ declarerIdx: -1, dummyIdx: -1 }));
+    renderWithProviders(<MinibridgePage />);
+
+    // 席 0/2 が T0、1/3 が T1 という並び。
+    expect(await screen.findByTestId('mb-team-0')).toHaveTextContent('T0');
+    expect(screen.getByTestId('mb-team-1')).toHaveTextContent('T1');
+    expect(screen.getByTestId('mb-team-2')).toHaveTextContent('T0');
+    expect(screen.getByTestId('mb-team-3')).toHaveTextContent('T1');
+    // 読み上げでは味方かどうかが言葉で分かる。
+    expect(screen.getByTestId('mb-team-2')).toHaveTextContent('あなたの味方');
+    expect(screen.getByTestId('mb-team-1')).toHaveTextContent('相手チーム');
+    // 味方だけ色が付く。全席同じ色だと、タグを読むまで区別が付かない。
+    expect(screen.getByTestId('mb-team-2').className).toContain('text-ds-info');
+    expect(screen.getByTestId('mb-team-1').className).not.toContain('text-ds-info');
+  });
+
+  // **デクレアラー/ダミーのタグと共存する** (受け入れ条件2)。
+  it('coexists with the declarer and dummy tags', async () => {
+    mockExec.mockResolvedValue(makeState({ declarerIdx: 1, dummyIdx: 3 }));
+    renderWithProviders(<MinibridgePage />);
+
+    const declarerSeat = await screen.findByTestId('mb-seat-1');
+    expect(declarerSeat).toHaveTextContent('T1');
+    expect(declarerSeat).toHaveTextContent('デクレアラー');
+    const dummySeat = screen.getByTestId('mb-seat-3');
+    expect(dummySeat).toHaveTextContent('T1');
+    expect(dummySeat).toHaveTextContent('ダミー');
+  });
+});
