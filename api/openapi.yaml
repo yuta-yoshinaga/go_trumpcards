@@ -51086,6 +51086,12 @@ components:
                 type: integer
               bet:
                 type: integer
+              lastNet:
+                type: integer
+                description: >-
+                  Chips this seat gained or lost in the last settlement; 0
+                  during a round. The table-level result
+                  (banker/punter/tie) does not say whether your own bet won.
               isBanker:
                 type: boolean
               isRepresentative:
