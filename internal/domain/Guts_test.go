@@ -5,6 +5,8 @@ package domain_test
 import (
 	"encoding/json"
 	"errors"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -286,4 +288,53 @@ func TestGuts_UnmarshalDefaults(t *testing.T) {
 	assert.Equal(t, 2, g.GetPlayerCnt())
 	assert.NotNil(t, g.GetMatchers())
 	assert.NotNil(t, g.GetActionLog())
+}
+
+// gutsGolden mirrors frontend/src/utils/__fixtures__/gutsGuide.golden.json.
+type gutsGolden struct {
+	Cases []struct {
+		Name  string `json:"name"`
+		Cards []struct{ Suit, Value int }
+		Pair  bool   `json:"pair"`
+		Tier  string `json:"tier"`
+	} `json:"cases"`
+}
+
+// #5697: 宣言ガイドは Go (GutsEvaluateGuide) と TypeScript (evaluateGutsGuide) の
+// 2 か所にある。片方だけ直せば CUI と Web が違う診断を出すので、同じ golden vector を
+// 両方から検証して防ぐ。
+func TestGutsEvaluateGuide_GoldenVectors(t *testing.T) {
+	raw, err := os.ReadFile(filepath.Join(
+		"..", "..", "frontend", "src", "utils", "__fixtures__", "gutsGuide.golden.json"))
+	require.NoError(t, err)
+	var golden gutsGolden
+	require.NoError(t, json.Unmarshal(raw, &golden))
+	require.NotEmpty(t, golden.Cases)
+
+	tiers := map[string]bool{}
+	for _, c := range golden.Cases {
+		t.Run(c.Name, func(t *testing.T) {
+			cards := make([]*domain.Card, 0, len(c.Cards))
+			for _, cd := range c.Cards {
+				cards = append(cards, domain.NewCard(cd.Suit, cd.Value, false))
+			}
+
+			guide := domain.GutsEvaluateGuide(cards)
+
+			require.NotNil(t, guide)
+			assert.Equal(t, c.Pair, guide.Pair)
+			assert.Equal(t, c.Tier, guide.Tier)
+		})
+		tiers[c.Tier] = true
+	}
+	// 負のコントロール: 3 区分すべてを踏んでいない golden は境界を守れない。
+	assert.Equal(t, map[string]bool{
+		domain.GutsGuideTierHigh: true, domain.GutsGuideTierMedium: true, domain.GutsGuideTierLow: true,
+	}, tiers)
+}
+
+// 手札が揃っていないときは診断できない (GutsEval が -1 を返す)。
+func TestGutsEvaluateGuide_IncompleteHand(t *testing.T) {
+	assert.Nil(t, domain.GutsEvaluateGuide(nil))
+	assert.Nil(t, domain.GutsEvaluateGuide([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, false)}))
 }
