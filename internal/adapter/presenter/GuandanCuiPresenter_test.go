@@ -221,6 +221,12 @@ func TestGuandanCuiPresenter_CheckOutput(t *testing.T) {
 	assert.Contains(t, p.CheckOutput(setupGuandanMock(invalidOpts), []int{0, 0}),
 		i18n.Tf("guandan.checkOutOfRange", "val", "0", "max", "2"))
 
+	// 人間の席が無い卓 (Worker が CPU だけで回している状態) でも落ちない。
+	noHumanOpts := defaultGuandanOpts()
+	noHumanOpts.noHuman = true
+	assert.Contains(t, p.CheckOutput(setupGuandanMock(noHumanOpts), []int{0}),
+		i18n.T("guandan.checkNoHand"))
+
 	// レベル札はワイルドになるので、判定は GetLevel を見ていること。
 	wildOpts := defaultGuandanOpts()
 	wildOpts.level = 5

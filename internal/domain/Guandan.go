@@ -761,12 +761,12 @@ func GuandanBeats(c, prev *GuandanCombo) bool {
 	return c.Rank > prev.Rank
 }
 
-// guandanBombTier は爆弾の階層を返す (0 なら通常役)。
 // GuandanIsBomb は役が通常役をすべて上回るか (爆弾系か) を返す。
 //
 // frontend/src/utils/guandanCombo.ts の guandanIsBomb と対になる。
 func GuandanIsBomb(k GuandanComboKind) bool { return guandanBombTier(k) > 0 }
 
+// guandanBombTier は爆弾の階層を返す (0 なら通常役)。
 func guandanBombTier(k GuandanComboKind) int {
 	switch k {
 	case GuandanComboBomb:

@@ -17,11 +17,13 @@ import (
 
 func gdTestCard(suit, value int) *domain.Card { return domain.NewCard(suit, value, true) }
 
-// makeGuandanPlayers builds four seats, the first human, with the given hands.
-func makeGuandanPlayers(hands ...[]*domain.Card) []*domain.GuandanPlayer {
+// makeGuandanSeats builds four seats; withHuman decides whether seat 0 is the
+// human. An all-CPU table is what a Worker session looks like before a human
+// joins, and CheckOutput has to answer something there too.
+func makeGuandanSeats(withHuman bool, hands ...[]*domain.Card) []*domain.GuandanPlayer {
 	out := make([]*domain.GuandanPlayer, 0, len(hands))
 	for i, hand := range hands {
-		p := domain.NewGuandanPlayer(i == 0)
+		p := domain.NewGuandanPlayer(withHuman && i == 0)
 		for _, c := range hand {
 			p.AddCard(c)
 		}
@@ -43,6 +45,8 @@ type guandanMockOpts struct {
 	lastResult *domain.GuandanHandResult
 	// humanHand overrides seat 0's hand; nil keeps the default two cards.
 	humanHand []*domain.Card
+	// noHuman makes every seat a CPU (there is no human to read a hand from).
+	noHuman bool
 }
 
 func setupGuandanMock(o guandanMockOpts) *interfaces.MockGuandanGame {
@@ -51,7 +55,7 @@ func setupGuandanMock(o guandanMockOpts) *interfaces.MockGuandanGame {
 	if humanHand == nil {
 		humanHand = []*domain.Card{gdTestCard(domain.CardDesignSpade, 2), gdTestCard(domain.CardDesignHeart, 1)}
 	}
-	players := makeGuandanPlayers(
+	players := makeGuandanSeats(!o.noHuman,
 		humanHand,
 		[]*domain.Card{gdTestCard(domain.CardDesignSpade, 3)},
 		[]*domain.Card{gdTestCard(domain.CardDesignSpade, 4)},
@@ -235,4 +239,14 @@ func TestGuandanWebPresenter_Output(t *testing.T) {
 func TestGuandanWebPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.GuandanWebPresenter)
 	assert.JSONEq(t, `{"entries":[]}`, p.ActionLogOutput(setupGuandanMock(defaultGuandanOpts())))
+}
+
+// **Web の check は状態出力と同じ** (#5734)。役の下読みは CUI 専用なので、
+// Web CLI から来ても 400 にせず現在の盤面を返す。
+func TestGuandanWebPresenter_CheckFallsBackToTheState(t *testing.T) {
+	m := setupGuandanMock(defaultGuandanOpts())
+	p := new(presenter.GuandanWebPresenter)
+
+	assert.Equal(t, p.Output(m, nil), p.CheckOutput(m, []int{0, 1}))
+	assert.Len(t, parseGuandanOutput(t, p.CheckOutput(m, nil)).Players, 4)
 }
