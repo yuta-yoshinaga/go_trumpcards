@@ -30,5 +30,6 @@
   "hintReasonTakeTrick": "no trick yet: take one to avoid the extra payment",
   "hintReasonAlreadySafe": "one trick is banked -- now take what you can",
   "helpExampleIn": "  in                   declare that you will play this hand",
-  "helpHint": "  h                    show a hint"
+  "helpHint": "  h                    show a hint",
+  "dealerMark": "[dealer]"
 }
