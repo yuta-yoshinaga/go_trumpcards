@@ -24,7 +24,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { ZwanzigerrufenResponse } from '../types/card';
-import { ZwanzigerrufenPhase } from '../types/phases';
+import { ZwanzigerrufenBid, ZwanzigerrufenPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { parseZwanzigerrufenCommand, ZWANZIGERRUFEN_HELP } from '../utils/cli/commands/zwanzigerrufenCommands';
 import { formatZwanzigerrufenState } from '../utils/cli/formatters/zwanzigerrufenFormatter';
@@ -49,6 +49,14 @@ const ZWANZIGERRUFEN_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Number of cards buried in the talon exchange. */
+/** Contract identifiers by bid value, for naming the current highest bid. */
+const BID_NAMES: Record<number, string> = {
+  [ZwanzigerrufenBid.PASS]: 'pass',
+  [ZwanzigerrufenBid.TRISCHAKEN]: 'trischaken',
+  [ZwanzigerrufenBid.RUFER]: 'rufer',
+  [ZwanzigerrufenBid.SOLO]: 'solo',
+};
+
 const DISCARD_COUNT = 6;
 
 /** CPU difficulty options. */
@@ -174,6 +182,16 @@ function ZwanzigerrufenPageContent() {
               <span className="mr-3">{t('trick', { n: state.trickNumber })}</span>
               <span>{t('contract', { name: t(`contract.${state.contractName}`, { defaultValue: '-' }) })}</span>
             </div>
+
+            {/* **入札は「上回る」ものなので、現在の最高が見えないと選べない**
+                (#5786)。CUI の promptBid は最初から出している。 */}
+            {isBid && (
+              <div className="text-center text-xs text-ds-accent" data-testid="zw-highest-bid">
+                {t('highestBid', {
+                  name: t(`contract.${BID_NAMES[state.highestBid] ?? 'pass'}`, { defaultValue: '-' }),
+                })}
+              </div>
+            )}
 
             {/* **The called trump is public; who holds it is not.** */}
             {state.calledTrump > 0 && (
@@ -309,11 +327,14 @@ function ZwanzigerrufenPageContent() {
             <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="zw-actions">
               {isBid && isHumanTurn && (
                 <>
+                  {/* **押せるかは規則が決める** (#5786)。ドメインは「現在の最高
+                      入札を上回らない入札」を拒むので、上回れない側は押させない。
+                      押せてしまうとサーバのエラーで返ってくるだけになる。 */}
                   <button
                     type="button"
                     className={btnPrimary}
                     onClick={() => callApi('bid', { bid: 'rufer' })}
-                    disabled={loading}
+                    disabled={loading || state.highestBid >= ZwanzigerrufenBid.RUFER}
                     data-testid="zw-bid-rufer"
                   >
                     {t('bidRufer')}
@@ -322,7 +343,7 @@ function ZwanzigerrufenPageContent() {
                     type="button"
                     className={btnSecondary}
                     onClick={() => callApi('bid', { bid: 'solo' })}
-                    disabled={loading}
+                    disabled={loading || state.highestBid >= ZwanzigerrufenBid.SOLO}
                     data-testid="zw-bid-solo"
                   >
                     {t('bidSolo')}

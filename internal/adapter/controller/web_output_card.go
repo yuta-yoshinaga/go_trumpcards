@@ -19,4 +19,7 @@ type WebOutputCard struct {
 	Color string `json:"color,omitempty"`
 	// Deck はデッキ系統ID（例 "wizard"）。非空なら手続き描画へ切り替える。
 	Deck string `json:"deck,omitempty"`
+	// Points はその札 1 枚の点数。**点数の合計で競うゲームだけが設定する**
+	// (さくら: 20/10/5/1)。役で競うゲームでは意味が無いので省く。
+	Points *int `json:"points,omitempty"`
 }

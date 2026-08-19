@@ -32846,6 +32846,12 @@ components:
           minimum: 0
           maximum: 13
           example: 7
+        points:
+          type: integer
+          description: >-
+            Points this single card is worth. Only games scored by adding up
+            cards set it (Sakura: 20/10/5/1); in yaku-scored games a per-card
+            number would be meaningless, so the field is absent.
 
     # -------------------------------------------------------------------------
     # BlackJack

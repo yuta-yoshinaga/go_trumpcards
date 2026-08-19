@@ -37,5 +37,15 @@
   "frontendHint.horseDisciplineChanged": "種目が変わりました。規則を確かめてから打ってください",
   "frontendHint.horseOmahaUsesTwo": "オマハは手札からちょうど2枚を使います",
   "frontendHint.horseRazzWantsLow": "ラズは最も低い手が勝ちます",
-  "frontendHint.horsePlayTheDiscipline": "いまの種目の規則で打ってください"
+  "frontendHint.horsePlayTheDiscipline": "いまの種目の規則で打ってください",
+  "round.preflop": "プリフロップ",
+  "round.flop": "フロップ",
+  "round.turn": "ターン",
+  "round.river": "リバー",
+  "round.showdown": "ショーダウン",
+  "round.third": "サードストリート",
+  "round.fourth": "フォースストリート",
+  "round.fifth": "フィフスストリート",
+  "round.sixth": "シックスストリート",
+  "round.seventh": "セブンスストリート"
 }
