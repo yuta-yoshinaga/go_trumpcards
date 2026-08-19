@@ -63,4 +63,6 @@ type PochGame interface {
 	GetPlayers() []*domain.PochPlayer
 	// GetPlayer 指定インデックスのプレイヤーを取得する
 	GetPlayer(idx int) *domain.PochPlayer
+	// GetBestCombo 指定プレイヤー自身の最強の組を取得する
+	GetBestCombo(playerIdx int) domain.PochCombo
 }
