@@ -148,6 +148,17 @@ describe('RollingStonePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('pickup'));
   });
 
+  // 場が空のまま引き取りが立つことは規則上ありえないが、そのときでも
+  // バナー自体は壊れない。
+  it('falls back to a placeholder when no suit has been led', async () => {
+    mockExec.mockResolvedValue(forcedPickUp({ leadSuit: 0, currentTrick: [] }));
+    renderWithProviders(<RollingStonePage />);
+
+    const banner = await screen.findByTestId('rs-must-pickup');
+    expect(banner).toHaveTextContent('?');
+    expect(banner).not.toHaveTextContent('♦');
+  });
+
   // **負のコントロール: フォローできるなら引き取りは出さない。**
   it('hides the pickup button while you can still follow', async () => {
     renderWithProviders(<RollingStonePage />);

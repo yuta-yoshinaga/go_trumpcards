@@ -92,6 +92,11 @@ describe('formatRollingStoneState', () => {
     expect(out).toContain('1 cards');
     // **追従できなかったスートまで言う** (#5764)。
     expect(out).toContain('cannot follow ♣');
+    // リードが無いまま引き取りが立つことは規則上ないが、そのときも壊れない。
+    const noLead = formatRollingStoneState(
+      state({ mustPickUp: true, validPlays: [], currentTrick: [], leadSuit: 0 } as Partial<RollingStoneResponse>),
+    );
+    expect(noLead).toContain('cannot follow ?');
   });
 
   it('shows the current trick when there is one', () => {
