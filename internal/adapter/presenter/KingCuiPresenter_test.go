@@ -195,3 +195,51 @@ func TestKingCuiPresenter_DealEndBreakdown(t *testing.T) {
 		assert.NotContains(t, p.Output(g, nil), gainedPrefix)
 	})
 }
+
+// レビュー指摘 (#6026): 7 ディール目は finishDeal が gameEndFlag を立てて
+// DealEnd を飛ばすので、DealEnd 分岐だけに置くと**最後のディールの内訳が出ない**。
+// 決着を決めた 1 ディールこそ見たいので、GameEnd でも出す。
+func TestKingCuiPresenter_DealEndBreakdownOnTheDecidingDeal(t *testing.T) {
+	p := new(presenter.KingCuiPresenter)
+	g := domain.NewDefaultKing()
+	g.Reset()
+	for i := 0; i < 4000 && !g.GetGameEndFlag(); i++ {
+		switch g.GetPhase() {
+		case domain.KingPhaseSelectContract:
+			if g.GetPlayer(g.GetDealerIdx()).GetIsHuman() {
+				used := g.GetUsedContracts()
+				c := 0
+				for c < domain.KingContractCnt && used[c] {
+					c++
+				}
+				trump := -1
+				if c == domain.KingContractKingTrump {
+					trump = domain.CardDesignSpade
+				}
+				require.NoError(t, g.SelectContract(c, trump))
+			} else {
+				g.CpuPlay()
+			}
+		case domain.KingPhasePlay:
+			if g.IsHumanTurn() {
+				valid := g.GetPlayableIndices(g.GetCurrentTurn())
+				require.NotEmpty(t, valid)
+				require.NoError(t, g.PlayerPlay(valid[0]))
+			} else {
+				g.CpuPlay()
+			}
+		case domain.KingPhaseDealEnd:
+			g.NextDeal()
+		}
+	}
+	require.True(t, g.GetGameEndFlag())
+	gained := g.GetLastDealDetail().Gained
+
+	line := kingLineContaining(p.Output(g, nil),
+		strings.Split(i18n.T("king.dealResultGained"), "{{")[0])
+
+	require.NotEmpty(t, line, "the deciding deal must show its breakdown too")
+	for i := 0; i < domain.KingPlayerCnt; i++ {
+		assert.Contains(t, line, strconv.Itoa(gained[i]))
+	}
+}

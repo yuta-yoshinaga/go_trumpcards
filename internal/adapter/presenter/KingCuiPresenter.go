@@ -50,6 +50,9 @@ func (p *KingCuiPresenter) Output(kg interfaces.KingGame, lastErr error) string 
 		cuiErrorBlock(b, lastErr)
 
 		if kg.GetGameEndFlag() {
+			// 最後のディールは finishDeal が直接 GameEnd へ移すので DealEnd を通らない。
+			// ここで出さないと、決着を決めた 1 ディールの内訳だけ見えない。
+			kingDealGainedLine(b, kg)
 			b.WriteString(i18n.T("king.gameEnd") + "\n")
 			for i := 0; i < kg.GetPlayerCnt(); i++ {
 				pl := kg.GetPlayer(i)
@@ -80,17 +83,7 @@ func (p *KingCuiPresenter) Output(kg interfaces.KingGame, lastErr error) string 
 					"contracts", strings.Join(remaining, ", ")) + "\n")
 			}
 		} else if kg.GetPhase() == domain.KingPhaseDealEnd {
-			// プレイヤー行に出ているのは**累計**なので、このディールで動いた分は
-			// 内訳を読まないと分からない (Web の king-deal-breakdown と同じ情報)。
-			if detail := kg.GetLastDealDetail(); detail != nil {
-				gains := make([]string, 0, kg.GetPlayerCnt())
-				for i := 0; i < kg.GetPlayerCnt(); i++ {
-					gains = append(gains, fmt.Sprintf("%s %d",
-						cuiPlayerName(kg.GetPlayer(i), i), detail.Gained[i]))
-				}
-				b.WriteString(i18n.Tf("king.dealResultGained",
-					"gains", strings.Join(gains, " / ")) + "\n")
-			}
+			kingDealGainedLine(b, kg)
 			b.WriteString(i18n.T("king.dealEndPrompt") + "\n")
 		} else {
 			b.WriteString(i18n.Tf("king.promptCurrentTurn",
@@ -115,6 +108,22 @@ func kingPlayerStr(player *domain.KingPlayer, i int) string {
 		b.WriteString(cuiIndexedCardListStr(player) + "\n")
 	}
 	return b.String()
+}
+
+// kingDealGainedLine writes what each player gained on the settled deal.
+// プレイヤー行に出ているのは**累計**なので、このディールで動いた分は内訳を
+// 読まないと分からない (Web の king-deal-breakdown と同じ情報)。
+func kingDealGainedLine(b *strings.Builder, kg interfaces.KingGame) {
+	detail := kg.GetLastDealDetail()
+	if detail == nil {
+		return
+	}
+	gains := make([]string, 0, kg.GetPlayerCnt())
+	for i := 0; i < kg.GetPlayerCnt(); i++ {
+		gains = append(gains, fmt.Sprintf("%s %d",
+			cuiPlayerName(kg.GetPlayer(i), i), detail.Gained[i]))
+	}
+	b.WriteString(i18n.Tf("king.dealResultGained", "gains", strings.Join(gains, " / ")) + "\n")
 }
 
 // kingContractLabel はコントラクトの表示名を i18n で返す。
