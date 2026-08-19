@@ -190,3 +190,108 @@ func bidEuchreTrumpMenuLine() string {
 func (p *BidEuchreCuiPresenter) ActionLogOutput(g interfaces.BidEuchreGame) string {
 	return actionLogOutputText(g)
 }
+
+// bidEuchreHumanIdx は人間の席を返す (居なければ -1)。
+func bidEuchreHumanIdx(g interfaces.BidEuchreGame) int {
+	for i, p := range g.GetPlayers() {
+		if p != nil && p.GetIsHuman() {
+			return i
+		}
+	}
+	return -1
+}
+
+// bidEuchreLongestSuits は手札で最も長いスートを返す (同数なら複数)。
+func bidEuchreLongestSuits(p *domain.BidEuchrePlayer) []int {
+	counts := map[int]int{}
+	for j := range p.GetCardsSize() {
+		if c := p.GetCard(j); c != nil {
+			counts[c.GetDesign()]++
+		}
+	}
+	best := 0
+	for _, n := range counts {
+		if n > best {
+			best = n
+		}
+	}
+	var out []int
+	for suit := domain.CardDesignSpade; suit <= domain.CardDesignDiamond; suit++ {
+		if counts[suit] == best && best > 0 {
+			out = append(out, suit)
+		}
+	}
+	return out
+}
+
+// bidEuchreHintKey は局面ごとの助言キーと、添える手札インデックス／スートを返す。
+//
+// **Kaiser (#4938) と同じ構造。**入札 → 切札 → プレイの多段判断はどちらも同じで、
+// CUI では出せる札も通せる宣言も自分で数えるしかないため。
+func bidEuchreHintKey(g interfaces.BidEuchreGame) (key string, idxs []int, suits []int) {
+	if g.GetGameEndFlag() {
+		return "bideuchre.hintGameEnd", nil, nil
+	}
+	human := bidEuchreHumanIdx(g)
+	if human < 0 {
+		return "bideuchre.hintNone", nil, nil
+	}
+	p := g.GetPlayer(human)
+
+	switch g.GetPhase() {
+	case domain.BidEuchrePhaseBid:
+		if g.GetBidPlayerIdx() != human {
+			return "bideuchre.hintNotYourTurn", nil, nil
+		}
+		// 通せる最低額はドメインが知っている。通せないならパスしかない。
+		if minBid, ok := g.BidEuchreMinLegalBid(human); ok {
+			return i18n.Tf("bideuchre.hintBid", "bid", strconv.Itoa(minBid)), nil, nil
+		}
+		return "bideuchre.hintPass", nil, nil
+	case domain.BidEuchrePhaseChooseTrump:
+		if g.GetDeclarerIdx() != human {
+			return "bideuchre.hintNotYourTurn", nil, nil
+		}
+		return "bideuchre.hintTrump", nil, bidEuchreLongestSuits(p)
+	case domain.BidEuchrePhasePlay:
+		if g.GetCurrentPlayerIdx() != human {
+			return "bideuchre.hintNotYourTurn", nil, nil
+		}
+		plays := g.BidEuchreValidPlays(human)
+		switch len(plays) {
+		case 0:
+			return "bideuchre.hintNone", nil, nil
+		case 1:
+			return "bideuchre.hintForced", plays, nil
+		default:
+			return "bideuchre.hintChoose", plays, nil
+		}
+	case domain.BidEuchrePhaseHandEnd:
+		return "bideuchre.hintHandEnd", nil, nil
+	}
+	return "bideuchre.hintNone", nil, nil
+}
+
+// HintOutput emits the current Bid Euchre hint.
+func (p *BidEuchreCuiPresenter) HintOutput(g interfaces.BidEuchreGame) string {
+	key, idxs, suits := bidEuchreHintKey(g)
+	if key == "" {
+		key = "bideuchre.hintNone"
+	}
+	// bidEuchreHintKey は組み立て済みの文を返すことがある (最低宣言額入り)。
+	msg := key
+	if strings.HasPrefix(key, "bideuchre.") {
+		msg = i18n.T(key)
+	}
+	parts := make([]string, 0, len(idxs)+len(suits))
+	for _, v := range idxs {
+		parts = append(parts, "["+strconv.Itoa(v)+"]")
+	}
+	for _, s := range suits {
+		parts = append(parts, cuiSuitName(s))
+	}
+	if len(parts) > 0 {
+		msg = i18n.Tf("bideuchre.hintWith", "hint", msg, "list", strings.Join(parts, ", "))
+	}
+	return color.Yellow(msg) + "\n"
+}

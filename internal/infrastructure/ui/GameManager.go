@@ -5025,6 +5025,7 @@ var gameRegistry = []GameRegistryEntry{
 				"bideuchre.helpTrump",
 				"bideuchre.helpPlay",
 				"bideuchre.helpNext",
+				"bideuchre.helpHint",
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),
