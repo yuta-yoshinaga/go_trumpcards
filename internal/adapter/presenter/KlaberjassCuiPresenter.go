@@ -134,6 +134,23 @@ func (p *KlaberjassCuiPresenter) Output(g interfaces.KlaberjassGame, lastErr err
 					"name", cuiPlayerName(g.GetPlayer(w), w),
 					"points", strconv.Itoa(domain.KlaberjassLastTrickBonus)) + "\n")
 			}
+			// **得点は bete と最終トリックだけでは説明できない。**シーケンス・ベラ・
+			// ディも handPoints に乗るので、Web の精算パネルと同じ 3 要素を出す。
+			if w := g.GetSequenceWinner(); w >= 0 {
+				b.WriteString(i18n.Tf("klaberjass.sequenceWinner",
+					"name", cuiPlayerName(g.GetPlayer(w), w)) + "\n")
+			} else {
+				b.WriteString(i18n.T("klaberjass.sequenceNobody") + "\n")
+			}
+			if g.IsBelaScored() {
+				if h := g.GetBelaHolder(); h >= 0 {
+					b.WriteString(i18n.Tf("klaberjass.belaLine",
+						"name", cuiPlayerName(g.GetPlayer(h), h)) + "\n")
+				}
+			}
+			if g.IsDixUsed() {
+				b.WriteString(i18n.T("klaberjass.dixLine") + "\n")
+			}
 			b.WriteString(i18n.T("klaberjass.promptHandEndHelp") + "\n")
 		}
 	})
