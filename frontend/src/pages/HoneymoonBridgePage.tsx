@@ -184,8 +184,14 @@ function HoneymoonBridgePageContent() {
   const roundResult = (() => {
     if (!isRoundEnd) return null;
     if (state.contractLevel === 0) return t('roundResult.passedOut');
-    const params = { need: String(state.requiredTricks), took: String(state.lastTricks) };
-    return state.lastMade ? t('roundResult.made', params) : t('roundResult.down', params);
+    // **得点式は細かい (契約レベル×10 + オーバートリック×5 / 失敗は不足×10)。**
+    // トリックの過不足だけでは、そのディールが何点だったのか読めない (#5760)。
+    const params = {
+      need: String(state.requiredTricks),
+      took: String(state.lastTricks),
+      points: String(state.lastPoints ?? 0),
+    };
+    return state.lastMade ? t('roundResult.madeWithPoints', params) : t('roundResult.downWithPoints', params);
   })();
 
   return (
