@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { looApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -92,7 +92,7 @@ describe('LooPage', () => {
     const inDebt = await screen.findByTestId('loo-chips-0');
     expect(inDebt).toHaveClass('text-ds-error');
     expect(inDebt).toHaveTextContent('▼');
-    expect(inDebt).toHaveAttribute('aria-label', expect.stringContaining('12'));
+    expect(within(inDebt).getByRole('img')).toHaveAccessibleName('赤字');
 
     // 0 と正の残高は現状どおり中立。
     expect(screen.getByTestId('loo-chips-1')).not.toHaveClass('text-ds-error');

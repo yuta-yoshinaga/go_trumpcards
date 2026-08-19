@@ -224,13 +224,14 @@ function LooPageContent() {
                       <span
                         className={p.chips < 0 ? 'text-ds-error font-semibold' : undefined}
                         data-testid={`loo-chips-${p.id}`}
-                        aria-label={
-                          p.chips < 0
-                            ? t('chipsNegativeAria', { name: playerName(p.id, p.isHuman), chips: p.chips })
-                            : undefined
-                        }
                       >
-                        {p.chips < 0 && <span aria-hidden="true">▼ </span>}
+                        {p.chips < 0 && (
+                          // role="img" + aria-label なので、色を見ない読者にも「赤字」が届く
+                          // (素の span は aria-label を取れない)。
+                          <span role="img" aria-label={t('chipsNegativeAria')}>
+                            ▼{' '}
+                          </span>
+                        )}
                         {playerName(p.id, p.isHuman)}: {t('chips', { chips: p.chips })}
                       </span>
                       <span
