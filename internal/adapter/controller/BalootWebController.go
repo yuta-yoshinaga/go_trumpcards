@@ -31,9 +31,14 @@ type BalootWebOutputPlayer struct {
 	CardCount int              `json:"cardCount"`
 	Cards     []*WebOutputCard `json:"cards"`
 	// HasBaloot は Hokom で切り札の K+Q を持っているか (20点)。
-	HasBaloot  bool `json:"hasBaloot"`
-	Declared   bool `json:"declared"`
-	TrickCount int  `json:"trickCount"`
+	//
+	// **BalootRevealed が false のあいだは意味を持たない。**開示前の席は
+	// 常に false で出る (伏せているので「無い」と読ませない) (#5750)。
+	HasBaloot bool `json:"hasBaloot"`
+	// BalootRevealed は Baloot の有無が公開済みかどうか。
+	BalootRevealed bool `json:"balootRevealed"`
+	Declared       bool `json:"declared"`
+	TrickCount     int  `json:"trickCount"`
 }
 
 // BalootWebOutputHint ヒント出力

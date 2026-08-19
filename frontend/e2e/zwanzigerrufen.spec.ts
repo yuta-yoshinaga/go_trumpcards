@@ -33,6 +33,9 @@ test.describe('Zwanzigerrufen E2E', () => {
   test('takes the talon after winning the auction', async ({ page }) => {
     await navigateTo(page, '/zwanzigerrufen');
     await expect(page.getByTestId('zw-bid-solo')).toBeVisible({ timeout: TIMEOUT_TRANSITION });
+    // **上回れない入札は押せない** (#5786)。ソロは最高の入札なので、誰かが
+    // 先にソロを宣言していた回だけ無効になる。
+    if (await page.getByTestId('zw-bid-solo').isDisabled()) return;
     await page.getByTestId('zw-bid-solo').click();
     await waitForLoaded(page);
 
@@ -44,6 +47,8 @@ test.describe('Zwanzigerrufen E2E', () => {
   test('buries six cards when the talon exchange is offered', async ({ page }) => {
     await navigateTo(page, '/zwanzigerrufen');
     await expect(page.getByTestId('zw-bid-rufer')).toBeVisible({ timeout: TIMEOUT_TRANSITION });
+    // 他の席が先に 20番呼び以上を宣言していれば、このボタンは押せない (#5786)。
+    if (await page.getByTestId('zw-bid-rufer').isDisabled()) return;
     await page.getByTestId('zw-bid-rufer').click();
     await waitForLoaded(page);
 

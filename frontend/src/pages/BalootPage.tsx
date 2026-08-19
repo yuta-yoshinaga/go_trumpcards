@@ -233,7 +233,13 @@ function BalootPageContent() {
                   </span>
                   <span className="ml-1 text-ds-accent">{t('header.team', { team: String(p.team) })}</span>
                   {': '}
-                  {p.hasBaloot ? t('baloot.held') : t('baloot.none')}
+                  {/* **配られた瞬間に相手の手の内が割れるのは体験を壊す** (#5750)。
+                      切り札の K か Q が実際に出る (かラウンドが終わる) まで伏せる。 */}
+                  <span data-testid={`bl-baloot-${p.id.toString()}`}>
+                    {/* **既定は「不明」**。項目が欠けたレスポンスで伏せた Baloot を
+                        公開扱いにするより、伏せたままにするほうが安全側 (レビュー #6094)。 */}
+                    {!p.balootRevealed ? t('baloot.hidden') : p.hasBaloot ? t('baloot.held') : t('baloot.none')}
+                  </span>
                 </div>
               ))}
             </div>

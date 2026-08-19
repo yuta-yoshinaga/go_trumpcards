@@ -4,10 +4,12 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -41,6 +43,7 @@ func setupSoloWhistCuiMock() *interfaces.MockSoloWhistGame {
 	m.On("GetWinnerPlayer").Return(-1)
 	m.On("GetPlayerScores").Return([domain.SoloWhistPlayerCnt]int{0, 0, 0, 0})
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	m.On("GetDeclarerProgress").Return((*domain.SoloWhistDeclarerProgress)(nil)).Maybe()
 	return m
 }
 
@@ -160,4 +163,72 @@ func TestSoloWhistCuiPresenter_ActionLogOutput(t *testing.T) {
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, "play")
+}
+
+// #5649: **ミゼールは1トリック取った瞬間に失敗が確定する**のに、CUI はラウンドが
+// 終わるまで達成可否を出していなかった。Web は solowhist-contract-progress で
+// 常時出しており、同じ入札制の Nap も #4763 で解決済み。
+func TestSoloWhistCuiPresenter_ShowsTheDeclarerProgress(t *testing.T) {
+	p := new(presenter.SoloWhistCuiPresenter)
+
+	progressMock := func(phase domain.SoloWhistPhase, pr *domain.SoloWhistDeclarerProgress) *interfaces.MockSoloWhistGame {
+		m, _ := setupSoloWhistCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDeclarerProgress")
+		m.On("GetPhase").Return(phase)
+		m.On("GetDeclarerProgress").Return(pr)
+		return m
+	}
+
+	inProgress := &domain.SoloWhistDeclarerProgress{Won: 5, Needed: 8, Remaining: 3}
+
+	for _, phase := range []domain.SoloWhistPhase{domain.SoloWhistPhasePlay, domain.SoloWhistPhaseTrickEnd} {
+		t.Run("shows tricks won during phase "+strconv.Itoa(int(phase)), func(t *testing.T) {
+			out := p.Output(progressMock(phase, inProgress), nil)
+
+			assert.Contains(t, out, i18n.Tf("solowhist.declarerProgress",
+				"won", "5", "needed", "8", "remaining", "3"))
+		})
+	}
+
+	// ミゼールは必要トリック 0。「0/0」ではなく専用の文言で出す。
+	t.Run("misere reads as a clean sheet, not a target", func(t *testing.T) {
+		out := p.Output(progressMock(domain.SoloWhistPhasePlay,
+			&domain.SoloWhistDeclarerProgress{Won: 0, Needed: 0, Remaining: 7, IsMisere: true}), nil)
+
+		assert.Contains(t, out, i18n.Tf("solowhist.misereProgress", "won", "0", "remaining", "7"))
+		assert.NotContains(t, out, i18n.Tf("solowhist.declarerProgress",
+			"won", "0", "needed", "0", "remaining", "7"))
+	})
+
+	// **1トリックで即失敗。**そこが分からないと、無意味な残り手札を打ち続ける。
+	t.Run("misere failure is called out the moment a trick is taken", func(t *testing.T) {
+		out := p.Output(progressMock(domain.SoloWhistPhasePlay,
+			&domain.SoloWhistDeclarerProgress{Won: 1, Needed: 0, Remaining: 6, IsMisere: true, Unreachable: true}), nil)
+
+		assert.Contains(t, out, i18n.T("solowhist.contractUnreachable"))
+	})
+
+	t.Run("a settled contract is called out too", func(t *testing.T) {
+		out := p.Output(progressMock(domain.SoloWhistPhasePlay,
+			&domain.SoloWhistDeclarerProgress{Won: 8, Needed: 8, Remaining: 2, Made: true}), nil)
+
+		assert.Contains(t, out, i18n.T("solowhist.contractMade"))
+	})
+
+	t.Run("nothing outside play", func(t *testing.T) {
+		out := p.Output(progressMock(domain.SoloWhistPhaseRoundEnd, nil), nil)
+
+		// **前置きは使えない。**画面の上部に「宣言者: あなた — ソロ」という別の行が
+		// あり、"宣言者: " で照合すると常に一致してしまう。数字に挟まれた中間部分
+		// (「/」「トリック (残り」) はこの行にしか出ない。
+		rendered := i18n.Tf("solowhist.declarerProgress",
+			"won", "\x00", "needed", "\x01", "remaining", "\x02")
+		_, rest, ok := strings.Cut(rendered, "\x01")
+		require.True(t, ok)
+		middle, _, ok := strings.Cut(rest, "\x02")
+		require.True(t, ok)
+		require.NotEmpty(t, strings.TrimSpace(middle))
+		assert.NotContains(t, out, middle)
+	})
 }

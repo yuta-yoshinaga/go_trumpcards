@@ -180,4 +180,46 @@ describe('NainJaunePage', () => {
       }
     });
   });
+
+  // #5724: CPU の手番は無言で進むので、手番が自分に回ってきたこと自体が
+  // スクリーンリーダー利用者に伝わらなかった (姉妹ゲーム Zheng には既にある仕組み)。
+  describe('live region', () => {
+    it('is a polite status region and starts empty', async () => {
+      mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
+      renderWithProviders(<NainJaunePage />);
+
+      const live = await screen.findByTestId('nainjaune-turn-announce');
+
+      expect(live).toHaveAttribute('role', 'status');
+      expect(live).toHaveAttribute('aria-live', 'polite');
+      expect(live).toHaveTextContent('');
+    });
+
+    it('announces the human turn arriving after CPU turns', async () => {
+      mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
+      renderWithProviders(<NainJaunePage />);
+      await screen.findByTestId('nainjaune-turn-announce');
+
+      // CPU 手番 → 人間の手番へ遷移させる。
+      mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 0 }));
+      fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+      fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+      await waitFor(() => expect(screen.getByTestId('nainjaune-turn-announce')).toHaveTextContent('あなたの手番です'));
+    });
+
+    it('announces the end of the deal', async () => {
+      mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
+      renderWithProviders(<NainJaunePage />);
+      await screen.findByTestId('nainjaune-turn-announce');
+
+      mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1, dealWinner: 2 }));
+      fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+      fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+      await waitFor(() =>
+        expect(screen.getByTestId('nainjaune-turn-announce')).toHaveTextContent('ディールが終了しました'),
+      );
+    });
+  });
 });

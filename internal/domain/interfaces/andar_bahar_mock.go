@@ -105,6 +105,16 @@ func (m *MockAndarBaharGame) GetPayout() int {
 	return args.Int(0)
 }
 
+func (m *MockAndarBaharGame) GetMainPayout() int {
+	args := m.Called()
+	return args.Int(0)
+}
+
+func (m *MockAndarBaharGame) GetSidePayout() int {
+	args := m.Called()
+	return args.Int(0)
+}
+
 func (m *MockAndarBaharGame) GetChips() int {
 	args := m.Called()
 	return args.Int(0)

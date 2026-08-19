@@ -159,15 +159,18 @@ func TestAndarBaharSideBetPaysOnlyItsBand(t *testing.T) {
 		// メインベットは外れても構わないので、サイドベットだけを見る。
 		require.NoError(t, ab.Bet(AndarBaharMinBet, AndarBaharBetAndar, side, AndarBaharSide6To10))
 
-		mainPayout := 0
+		wantMain := 0
 		if ab.GetResult() == GameResultWin {
 			rate := AndarBaharSecondColumnPayout
 			if ab.GetBetTarget() == ab.GetFirstColumn() {
 				rate = AndarBaharFirstColumnPayout
 			}
-			mainPayout = AndarBaharMinBet * rate / AndarBaharPayoutScale
+			wantMain = AndarBaharMinBet * rate / AndarBaharPayoutScale
 		}
-		sidePayout := ab.GetPayout() - mainPayout
+		// **内訳は引き算で作らない** (#5770)。ドメインが持つ値そのものを見る。
+		assert.Equal(t, wantMain, ab.GetMainPayout())
+		sidePayout := ab.GetSidePayout()
+		assert.Equal(t, ab.GetPayout(), ab.GetMainPayout()+ab.GetSidePayout(), "内訳の和が合計")
 
 		n := ab.DealtCount()
 		if n >= 6 && n <= 10 {

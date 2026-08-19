@@ -100,6 +100,14 @@ func (_m *MockPochGame) GetPlayer(idx int) *domain.PochPlayer {
 	return nil
 }
 
+// GetBestCombo モック
+func (_m *MockPochGame) GetBestCombo(playerIdx int) domain.PochCombo {
+	if v, ok := _m.Called(playerIdx).Get(0).(domain.PochCombo); ok {
+		return v
+	}
+	return domain.PochCombo{}
+}
+
 func (_m *MockPochGame) GetActionLog() []*domain.ActionLogEntry {
 	if v, ok := _m.Called().Get(0).([]*domain.ActionLogEntry); ok {
 		return v

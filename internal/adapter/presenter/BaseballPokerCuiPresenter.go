@@ -12,6 +12,20 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
+// baseballPokerWildValuesStr はワイルドのランクを "3 / 9" で返す。
+//
+// **説明文もドメインの値から作る** (#5782)。判定は BaseballIsWild が持って
+// いるので、文言だけが古い定数を写していると片方だけ嘘になる。
+func baseballPokerWildValuesStr() string {
+	parts := make([]string, 0, 2)
+	for v := 1; v <= 13; v++ {
+		if domain.BaseballIsWild(domain.NewCard(domain.CardDesignSpade, v, false)) {
+			parts = append(parts, strconv.Itoa(v))
+		}
+	}
+	return strings.Join(parts, " / ")
+}
+
 // BaseballPokerCuiPresenter ベースボールポーカーCUIプレゼンタークラス
 type BaseballPokerCuiPresenter struct{}
 
@@ -25,7 +39,12 @@ func (cp *BaseballPokerCuiPresenter) Output(c interfaces.BaseballPokerGame, last
 		sb.WriteString(i18n.Tf("baseballpoker.streetLine",
 			"street", strconv.Itoa(c.GetStreet()),
 			"total", strconv.Itoa(domain.BaseballUpCards)) + "\n")
-		sb.WriteString(i18n.T("baseballpoker.wildLine") + "\n")
+		// **説明文だけ数値を固定しない** (#5782)。規則が変わったとき、
+		// 判定は動くのに文言だけ嘘になる。
+		sb.WriteString(i18n.Tf("baseballpoker.wildLine",
+			"wilds", baseballPokerWildValuesStr(),
+			"bonus", strconv.Itoa(domain.BaseballBonusFour),
+			"buyIn", strconv.Itoa(domain.BaseballWildThree)) + "\n")
 		cp.writeSeats(sb, c)
 		cp.writeBetLine(sb, c)
 		cuiErrorBlock(sb, lastErr)

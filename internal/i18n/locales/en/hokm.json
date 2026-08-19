@@ -32,5 +32,7 @@
   "suitHeart": "Hearts",
   "suitDiamond": "Diamonds",
   "helpExamplePlay": "  p 0                  play hand card 0",
-  "helpHint": "  h                    show a hint"
+  "helpHint": "  h                    show a hint",
+  "hakemMoves": "The hakem passes to the next seat, so a different seat calls the trump.",
+  "hakemStays": "The hakem keeps the deal and calls the trump again."
 }

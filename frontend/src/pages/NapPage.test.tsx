@@ -89,6 +89,43 @@ describe('NapPage', () => {
     expect(screen.getByTestId('bid-5')).toBeInTheDocument();
   });
 
+  // #5651: Nap 契約だけ賭け金が非対称 (達成 +10 / 失敗は相手が各 +5)。他は契約数
+  // と同じ数が動く。この差が宣言するかどうかの判断そのものなのに、ボタンには
+  // 契約名しか出ていなかった。
+  it('puts each contract stake on its bid button', async () => {
+    renderWithProviders(<NapPage />);
+
+    expect(await screen.findByTestId('bid-2')).toHaveTextContent('+2/+2');
+    expect(screen.getByTestId('bid-3')).toHaveTextContent('+3/+3');
+    expect(screen.getByTestId('bid-4')).toHaveTextContent('+4/+4');
+    // ナップだけ非対称。
+    expect(screen.getByTestId('bid-5')).toHaveTextContent('+10/+5');
+    // パスは賭けないので数字を出さない。
+    expect(screen.getByTestId('bid-0')).not.toHaveTextContent('+');
+  });
+
+  it('reports the chips the round actually moved', async () => {
+    mockExec.mockResolvedValue(
+      makeNapState({ ...roundEndState, declarerIdx: 0, contract: 5, roundTricks: [5, 0, 0, 0] }),
+    );
+    renderWithProviders(<NapPage />);
+
+    const panel = await screen.findByTestId('nap-round-payout');
+    // 5トリック全取り = ナップ達成。宣言者が +10。
+    expect(panel).toHaveTextContent('10');
+  });
+
+  // **失敗時に減るのは宣言者ではなく、増えるのが相手。**「-5」と書くと嘘になる。
+  it('says the opponents gain when the contract fails', async () => {
+    mockExec.mockResolvedValue(
+      makeNapState({ ...roundEndState, declarerIdx: 0, contract: 5, roundTricks: [3, 1, 1, 0] }),
+    );
+    renderWithProviders(<NapPage />);
+
+    const panel = await screen.findByTestId('nap-round-payout');
+    expect(panel).toHaveTextContent('5');
+  });
+
   it('dispatches a bid when a bid button is clicked', async () => {
     renderWithProviders(<NapPage />);
     const bidTwo = await screen.findByTestId('bid-2');

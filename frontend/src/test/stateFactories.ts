@@ -1220,6 +1220,7 @@ const baseUltiState: UltiResponse = {
   discardCount: 2,
   currentTrick: [],
   playerCoins: [0, 0, 0],
+  lastDealCoins: [0, 0, 0],
   lastTrickWinner: -1,
   outcome: 0,
   result: 0,

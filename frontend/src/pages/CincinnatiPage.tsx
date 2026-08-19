@@ -31,6 +31,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { CINCINNATI_CLI_HELP, parseCincinnatiCommand } from '../utils/cli/commands/cincinnatiCommands';
 import { formatCincinnatiState } from '../utils/cli/formatters/cincinnatiFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { type PokerHandRank, pokerHandKey } from '../utils/pokerSquaresUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const CIN_TUTORIAL_STEPS: TutorialStep[] = [
@@ -67,6 +68,12 @@ function CincinnatiPageContent() {
   const phase = state?.phase;
   const isBetting = phase === CincinnatiPhase.BETTING;
   const isShowdown = phase === CincinnatiPhase.SHOWDOWN;
+  // 役名はランクから引く。**サーバは英語名を送っていない**ので、共通の
+  // ポーカー役キーで訳す (未知のランクは番号のまま出して黙って消えないように)。
+  const handLabel = (rank: number): string => {
+    const key = rank >= 0 && rank <= 9 ? pokerHandKey(rank as PokerHandRank) : undefined;
+    return key ? t(`hand.${key}`) : String(rank);
+  };
   const gameOver = !!state?.gameEndFlag;
   const canAct = !!state?.isHumanTurn && isBetting;
   const facingBet = (state?.toCall ?? 0) > 0;
@@ -205,6 +212,23 @@ function CincinnatiPageContent() {
                       ) : (
                         <span className="text-ds-text-muted text-xs">{t('label.hidden')}</span>
                       )}
+                    </div>
+                  )}
+                  {/* **なぜその配当になったのかが最後まで分からなかった** (#5780)。
+                      5 枚の手札だけで成立する役も普通にあるので、ショーダウンでは
+                      役名と、10 枚から選ばれたベスト 5 枚を出す。 */}
+                  {isShowdown && seat.bestHand.length > 0 && (
+                    <div className="mt-1" data-testid={`cin-showdown-${i}`}>
+                      <span className="text-ds-accent text-xs">{handLabel(seat.handRank)}</span>
+                      <div className="flex justify-center gap-1 flex-wrap mt-1">
+                        {seat.bestHand.map((card, k) => (
+                          <AnimatedCard
+                            key={`b${i}-${card.design}-${card.value}-${k}`}
+                            card={card}
+                            width={Math.round(cardWidth * 0.5)}
+                          />
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>

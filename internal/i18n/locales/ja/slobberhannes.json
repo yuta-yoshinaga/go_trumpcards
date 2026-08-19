@@ -7,6 +7,7 @@
   "noTrumpLine": "切り札なし。リードのスートの最強札がトリックを取ります。",
   "warnFirst": "！ 最初のトリックです。取ると -1 点。",
   "warnLast": "！ 最後のトリックです。取ると -1 点。",
+  "warnQueen": "！ ♣Q が場に出ています。このトリックを取ると -1 点。",
   "playerLine": "{{name}}: {{score}}点 [{{penalties}}] 手札{{cards}}枚",
   "markFirst": "初",
   "markLast": "終",

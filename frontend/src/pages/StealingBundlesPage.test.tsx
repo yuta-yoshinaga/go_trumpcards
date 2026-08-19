@@ -41,6 +41,8 @@ function makeState(overrides: Partial<StealingBundlesResponse> = {}): StealingBu
     canCapture: true,
     deckRemaining: 32,
     lastCaptureIdx: -1,
+    lastCaptureKind: '',
+    lastCaptureVictimIdx: -1,
     currentPlayerIdx: 0,
     turnNumber: 2,
     packsDealt: 1,
@@ -101,12 +103,24 @@ describe('StealingBundlesPage', () => {
   it('marks who captured last', async () => {
     const { unmount } = renderWithProviders(<StealingBundlesPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    expect(screen.getByTestId('sb-seat-2')).not.toHaveTextContent(/直前に取った/);
+    expect(screen.queryByTestId('sb-capture-2')).not.toBeInTheDocument();
     unmount();
 
-    mockExec.mockResolvedValue(makeState({ lastCaptureIdx: 2 }));
+    mockExec.mockResolvedValue(makeState({ lastCaptureIdx: 2, lastCaptureKind: 'take' }));
     renderWithProviders(<StealingBundlesPage />);
-    expect(await screen.findByTestId('sb-seat-2')).toHaveTextContent(/直前に取った/);
+    expect(await screen.findByTestId('sb-capture-2')).toHaveTextContent('[直前に場から取った]');
+  });
+
+  // **盗みは相手の束を丸ごと消す** (#5767)。場から取っただけの手と同じ印では、
+  // 痕跡の残らないこの盤面で何が起きたのか読めない。
+  it('says whose bundle was stolen', async () => {
+    mockExec.mockResolvedValue(makeState({ lastCaptureIdx: 2, lastCaptureKind: 'steal', lastCaptureVictimIdx: 0 }));
+    renderWithProviders(<StealingBundlesPage />);
+
+    const badge = await screen.findByTestId('sb-capture-2');
+    expect(badge).toHaveTextContent('あなた');
+    expect(badge).toHaveTextContent('盗んだ');
+    expect(badge).not.toHaveTextContent('場から取った');
   });
 
   // **選んだ札でできることだけを出す。** できない手は押させません。
