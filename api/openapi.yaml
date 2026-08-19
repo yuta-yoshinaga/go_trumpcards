@@ -51055,6 +51055,20 @@ components:
           type: integer
         gameEndFlag:
           type: boolean
+        queensUpPayouts:
+          type: array
+          description: >-
+            Queens Up side-bet payouts, highest first. Served rather than
+            hardcoded: the multipliers live in the Go domain.
+          items:
+            type: object
+            properties:
+              hand:
+                type: integer
+              name:
+                type: string
+              multiplier:
+                type: integer
         config:
           type: object
           properties:
