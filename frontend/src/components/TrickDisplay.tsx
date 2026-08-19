@@ -77,7 +77,7 @@ export function TrickDisplay({
       <div className="text-ds-text-muted text-sm mb-1">{label}</div>
       {/* wrap の既定は false。通常のトリックは席数までしか積まれないので
           1 行に収まり、これまでの見た目のまま。 */}
-      <div className={`flex gap-2 ${wrap ? 'flex-wrap' : ''}`} data-testid="trick-display-cards">
+      <div className={wrap ? 'flex gap-2 flex-wrap' : 'flex gap-2'} data-testid="trick-display-cards">
         {currentTrick.map((trickCard) => {
           const player = players[trickCard.playerIdx];
           const team = player?.team;
