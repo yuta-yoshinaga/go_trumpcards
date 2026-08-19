@@ -25,5 +25,6 @@
   "reason.youAreTheBanker": "the banker does not bet — it takes the bets",
   "reason.roundIsOver": "this round is decided",
   "result.gameEnd": "The game is over",
-  "helpExampleBet": "  bet 100              bet 100 chips"
+  "helpExampleBet": "  bet 100              bet 100 chips",
+  "rankWithValue": "{{rank}} ({{value}})"
 }
