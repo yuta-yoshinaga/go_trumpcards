@@ -24,16 +24,6 @@ func TestKingCuiPresenter_Output(t *testing.T) {
 	assert.Contains(t, out, "[0]") // human indexed hand
 }
 
-// kingLineContaining returns the first line of out that contains marker.
-func kingLineContaining(out, marker string) string {
-	for _, line := range strings.Split(out, "\n") {
-		if strings.Contains(line, marker) {
-			return line
-		}
-	}
-	return ""
-}
-
 func TestKingCuiPresenter_RemainingContracts(t *testing.T) {
 	p := new(presenter.KingCuiPresenter)
 	prefix := strings.Split(i18n.T("king.remainingContracts"), "{{")[0]
@@ -41,7 +31,7 @@ func TestKingCuiPresenter_RemainingContracts(t *testing.T) {
 	// Right after reset every contract is available.
 	g := domain.NewDefaultKing()
 	g.Reset()
-	remaining := kingLineContaining(p.Output(g, nil), prefix)
+	remaining := cuiLineContaining(p.Output(g, nil), prefix)
 	assert.Contains(t, remaining, "[0]")
 	assert.Contains(t, remaining, "[6]")
 
@@ -51,7 +41,7 @@ func TestKingCuiPresenter_RemainingContracts(t *testing.T) {
 	g2.SetDealerIdx(0) // human dealer
 	require.NoError(t, g2.SelectContract(domain.KingContractNoTricks, 0))
 	g2.SetPhase(domain.KingPhaseSelectContract) // force back to the selection view
-	remaining2 := kingLineContaining(p.Output(g2, nil), prefix)
+	remaining2 := cuiLineContaining(p.Output(g2, nil), prefix)
 	assert.NotContains(t, remaining2, "[0]") // used contract 0 excluded
 	assert.Contains(t, remaining2, "[6]")
 }
@@ -161,7 +151,7 @@ func TestKingCuiPresenter_DealEndBreakdown(t *testing.T) {
 		detail := g.GetLastDealDetail()
 		require.NotNil(t, detail)
 
-		line := kingLineContaining(p.Output(g, nil), gainedPrefix)
+		line := cuiLineContaining(p.Output(g, nil), gainedPrefix)
 
 		for i := 0; i < domain.KingPlayerCnt; i++ {
 			assert.Contains(t, line, strconv.Itoa(detail.Gained[i]),
@@ -179,7 +169,7 @@ func TestKingCuiPresenter_DealEndBreakdown(t *testing.T) {
 			g.GetPlayer(i).AddScore(5000 + i*111)
 		}
 
-		line := kingLineContaining(p.Output(g, nil), gainedPrefix)
+		line := cuiLineContaining(p.Output(g, nil), gainedPrefix)
 
 		for i := 0; i < domain.KingPlayerCnt; i++ {
 			assert.Contains(t, line, strconv.Itoa(gained[i]))
@@ -235,7 +225,7 @@ func TestKingCuiPresenter_DealEndBreakdownOnTheDecidingDeal(t *testing.T) {
 	require.True(t, g.GetGameEndFlag())
 	gained := g.GetLastDealDetail().Gained
 
-	line := kingLineContaining(p.Output(g, nil),
+	line := cuiLineContaining(p.Output(g, nil),
 		strings.Split(i18n.T("king.dealResultGained"), "{{")[0])
 
 	require.NotEmpty(t, line, "the deciding deal must show its breakdown too")
