@@ -21,6 +21,13 @@ export interface PolignacPlayer {
   score: number;
   /** Penalty taken in the current round. */
   roundPenalty: number;
+  /**
+   * Suits of the jacks this seat took this round, spade first.
+   *
+   * The total alone cannot say whether a seat stepped on the spade jack (-2) or
+   * picked up two of the others (#5746).
+   */
+  takenJackSuits?: number[];
   trickCount: number;
   /** Declared capot this round. */
   declaredCapot: boolean;

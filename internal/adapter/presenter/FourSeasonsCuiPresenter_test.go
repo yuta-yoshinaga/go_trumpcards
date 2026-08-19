@@ -3,6 +3,10 @@
 package presenter
 
 import (
+	"encoding/json"
+	"os"
+	"path/filepath"
+	"regexp"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -140,3 +144,69 @@ func TestFourSeasonsCuiPresenter_ActionLogOutput(t *testing.T) {
 		assert.Contains(t, new(FourSeasonsCuiPresenter).ActionLogOutput(g), "draw")
 	})
 }
+
+// **十字も暗算させない** (#5738)。組札には「次: 」を出しているのに、
+// タブロー列は先頭カードと枚数だけで、A の下が K に折り返すことを
+// 毎回自分で数えることになっていた。
+func TestFourSeasonsCuiPresenter_TableauAnnouncesTheNextRank(t *testing.T) {
+	g := new(interfaces.MockFourSeasonsGame)
+
+	// **先に積んだ期待が勝つ** (testify)。既定の GetTableau より前に置く。
+	var tab [domain.FourSeasonsTableauCnt][]*domain.Card
+	tab[0] = []*domain.Card{domain.NewCard(domain.CardDesignHeart, 12, false)} // Q → J
+	tab[1] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}  // A → K (折り返し)
+	g.On("GetTableau").Return(tab).Maybe()
+	setupFourSeasonsCuiMockDefaults(g)
+
+	out := new(FourSeasonsCuiPresenter).Output(g, nil)
+
+	// 列ごとに突き合わせる。ランク名がどこかにある、では隣の列の値でも通る。
+	assert.Contains(t, plainFourSeasons(out), "[T0] HEART 12 (1枚) → 次に置けるのは J")
+	assert.Contains(t, out, "[T1] SPADE 1 (1枚) → 次に置けるのは K")
+	// 空列は現状のまま。
+	assert.Contains(t, out, "[T2] [空]")
+	assert.NotContains(t, out, "[空] → 次に置けるのは")
+	assert.NotContains(t, out, "{{")
+}
+
+// **Web と同じ規則であること** (#5738)。同じ黄金ベクタを
+// frontend/src/utils/fourseasonsTableauNextRank.golden.test.ts も読む。
+// 見ているのは置けるかどうかを決める domain の関数そのものなので、案内と
+// 判定がずれることがない。
+func TestFourSeasonsTableauNextRank_GoldenVectors(t *testing.T) {
+	golden := readFourSeasonsGolden(t)
+	assert.NotEmpty(t, golden.Cases, "no vectors to check")
+	for _, c := range golden.Cases {
+		assert.Equal(t, c.Next, domain.FourSeasonsPrevRank(c.Top), c.Name)
+	}
+}
+
+// fourSeasonsGolden は黄金ベクタの器。
+type fourSeasonsGolden struct {
+	Cases []struct {
+		Name string `json:"name"`
+		Top  int    `json:"top"`
+		Next int    `json:"next"`
+	} `json:"cases"`
+}
+
+// readFourSeasonsGolden は TS と共有する黄金ベクタを読む。
+// TS 側は import で読むので、fixture は frontend 側に置く (guandanCombo.golden の前例)。
+func readFourSeasonsGolden(t *testing.T) fourSeasonsGolden {
+	t.Helper()
+	raw, err := os.ReadFile(filepath.Join(
+		"..", "..", "..", "frontend", "src", "utils", "__fixtures__", "fourseasonsTableauNextRank.golden.json"))
+	if err != nil {
+		t.Fatalf("read the golden vectors: %v", err)
+	}
+	var golden fourSeasonsGolden
+	if err := json.Unmarshal(raw, &golden); err != nil {
+		t.Fatalf("parse the golden vectors: %v", err)
+	}
+	return golden
+}
+
+// plainFourSeasons は赤スートの色付けを落とす。
+var fourSeasonsAnsi = regexp.MustCompile(`\x1b\[[0-9;]*m`)
+
+func plainFourSeasons(s string) string { return fourSeasonsAnsi.ReplaceAllString(s, "") }

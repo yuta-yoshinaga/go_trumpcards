@@ -45,8 +45,29 @@ func (p *SergeantMajorWebPresenter) buildBase(s interfaces.SergeantMajorGame) *c
 	resObj.WinnerIdx = s.GetWinnerIdx()
 	resObj.CurrentTrick = trickCardsToOutput(s.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(s)
+	resObj.KittyIndices = sergeantMajorKittyIndices(s)
 	resObj.Config = controller.SergeantMajorWebOutputConfig{Rounds: s.GetConfig().Rounds}
 	return resObj
+}
+
+// sergeantMajorKittyIndices は人間の手札のうちキティ由来の位置を返す。
+//
+// **添字は presenter で解決する。**手札は取り込み直後に並べ替えられるので、
+// 画面側で札を突き合わせるより、送る側で 1 度だけ解いたほうが確か (#5759)。
+func sergeantMajorKittyIndices(s interfaces.SergeantMajorGame) []int {
+	out := make([]int, 0, domain.SergeantMajorKittySize)
+	for i := 0; i < s.GetPlayerCnt(); i++ {
+		player := s.GetPlayer(i)
+		if !player.GetIsHuman() {
+			continue
+		}
+		for j := range player.GetCardsSize() {
+			if s.IsAbsorbedKittyCard(player.GetCard(j)) {
+				out = append(out, j)
+			}
+		}
+	}
+	return out
 }
 
 // buildPlayersOutput プレイヤー情報を構築

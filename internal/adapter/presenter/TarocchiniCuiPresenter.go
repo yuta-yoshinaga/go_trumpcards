@@ -153,6 +153,19 @@ func (p *TarocchiniCuiPresenter) writeRoundEndResult(b *strings.Builder, g inter
 			"tricks", strconv.Itoa(player.GetTrickCount())))
 	}
 	b.WriteString(i18n.Tf("tarocchini.roundEndTricks", "list", strings.Join(entries, ", ")) + "\n")
+
+	// 得点はトリック数だけではない (settleRound は最終トリック +2 とスカルト加点も
+	// 足す)。内訳を出さないと teamScores の増分と突き合わせて検算できない。
+	if winner := g.GetLastTrickWinner(); winner >= 0 {
+		b.WriteString(i18n.Tf("tarocchini.roundEndLastTrick",
+			"team", i18n.Tf("tarocchini.teamName", "n", strconv.Itoa(domain.TarocchiniTeamOf(winner))),
+			"bonus", strconv.Itoa(domain.TarocchiniLastTrickBonus)) + "\n")
+	}
+	if scarto := g.GetScartoSize(); scarto > 0 {
+		b.WriteString(i18n.Tf("tarocchini.roundEndScarto",
+			"team", i18n.Tf("tarocchini.teamName", "n", strconv.Itoa(domain.TarocchiniTeamOf(g.GetDealerIdx()))),
+			"count", strconv.Itoa(scarto)) + "\n")
+	}
 }
 
 // HintOutput emits the current Tarocchini hint.

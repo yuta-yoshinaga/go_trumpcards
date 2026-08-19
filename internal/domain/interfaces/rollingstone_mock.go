@@ -37,6 +37,7 @@ func (m *MockRollingStoneGame) GetPhase() domain.RollingStonePhase {
 
 func (m *MockRollingStoneGame) IsHumanTurn() bool             { return m.Called().Bool(0) }
 func (m *MockRollingStoneGame) MustPickUp(playerIdx int) bool { return m.Called(playerIdx).Bool(0) }
+func (m *MockRollingStoneGame) GetLeadSuit() int              { return m.Called().Int(0) }
 func (m *MockRollingStoneGame) GetCurrentPlayerIdx() int      { return m.Called().Int(0) }
 func (m *MockRollingStoneGame) GetLeadPlayerIdx() int         { return m.Called().Int(0) }
 func (m *MockRollingStoneGame) GetTrickNumber() int           { return m.Called().Int(0) }

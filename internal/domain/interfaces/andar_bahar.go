@@ -42,6 +42,10 @@ type AndarBaharGame interface {
 	GetResult() domain.GameResult
 	// GetPayout 払戻総額
 	GetPayout() int
+	// GetMainPayout メインベットぶんの払戻 (外れたら 0)
+	GetMainPayout() int
+	// GetSidePayout サイドベットぶんの払戻 (張っていない・外れたら 0)
+	GetSidePayout() int
 	// GetChips チップ
 	GetChips() int
 	// GetHistory 罫線履歴

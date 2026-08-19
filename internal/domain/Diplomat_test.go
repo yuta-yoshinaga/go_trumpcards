@@ -711,3 +711,36 @@ func TestDiplomat_UnmarshalJSON_RejectsOversizedArrays(t *testing.T) {
 		assert.Error(t, s.UnmarshalJSON([]byte(`{`)))
 	})
 }
+
+// **A の上には何も置けない** (#5741)。行き止まりの印はこの規則を根拠にする
+// ので、規則が変わったら印の意味も変わる — その連動をここで固定する。
+func TestDiplomatIsDeadEndTop_MatchesTheTableauRule(t *testing.T) {
+	c := NewDefaultDiplomat()
+	c.Reset()
+
+	for topValue := 1; topValue <= CardValueMax; topValue++ {
+		top := NewCard(CardDesignSpade, topValue, true)
+		c.tableau[0] = []*Card{top}
+
+		accepted := 0
+		for v := 1; v <= CardValueMax; v++ {
+			if c.canPlaceOnTableau(NewCard(CardDesignHeart, v, true), 0) {
+				accepted++
+			}
+		}
+
+		if DiplomatIsDeadEndTop(top) {
+			if accepted != 0 {
+				t.Errorf("top %d is marked a dead end but accepts %d ranks", topValue, accepted)
+			}
+			continue
+		}
+		if accepted == 0 {
+			t.Errorf("top %d accepts nothing but is not marked a dead end", topValue)
+		}
+	}
+
+	if DiplomatIsDeadEndTop(nil) {
+		t.Error("an empty pile is not a dead end")
+	}
+}

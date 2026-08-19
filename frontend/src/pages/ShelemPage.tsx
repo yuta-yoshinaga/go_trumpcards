@@ -29,6 +29,9 @@ import { formatShelemState } from '../utils/cli/formatters/shelemFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
+/** Card points on the table each round (`ShelemHandPoints` in the domain). */
+const SHELEM_HAND_POINTS = 100;
+
 /** Tricks per round (twelve cards each). */
 const TRICKS_PER_ROUND = 12;
 
@@ -245,6 +248,18 @@ function ShelemPageContent() {
                       n: String(state.contract),
                       got: String(state.roundPoints[state.declarerIdx % 2] ?? 0),
                     })}
+              {/* **守備側の点も出す** (#5754)。契約を阻止できているかは、
+                  宣言側の点だけ見ていても分からない。合計は必ず 100 点。 */}
+              {/* Shelem 宣言では成否が全トリック独占だけで決まり、カード点を
+                  一切見ないので出さない (レビュー指摘 #6098)。 */}
+              {state.declarerIdx >= 0 && !state.shelemBid && (
+                <span className="ml-2 text-ds-text-muted" data-testid="sh-defenders">
+                  {t('header.defenders', {
+                    got: String(state.roundPoints[(state.declarerIdx + 1) % 2] ?? 0),
+                    total: String(SHELEM_HAND_POINTS),
+                  })}
+                </span>
+              )}
               {state.trumpSuit > 0 && ` / ${t('header.trump', { suit: SUIT_SYMBOLS[state.trumpSuit] ?? '?' })}`}
             </div>
 

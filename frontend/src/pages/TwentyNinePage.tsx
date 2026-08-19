@@ -34,6 +34,7 @@ import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
+import { twentyNineContractProgress } from '../utils/twentyNineContract';
 
 /** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 = no trump). */
 const SUIT_SYMBOLS = ['', '♠', '♣', '♥', '♦'] as const;
@@ -158,6 +159,13 @@ function TwentyNinePageContent() {
   const isPlayPhase = state.phase === TwentyNinePhase.PLAY;
   const isTrickEnd = state.phase === TwentyNinePhase.TRICK_END;
   const isRoundEnd = state.phase === TwentyNinePhase.ROUND_END;
+  const contractProgress = twentyNineContractProgress(state.declarerIdx, state.contract, state.roundTeamPoints);
+  const contractStatusColor =
+    contractProgress?.status === 'made'
+      ? 'text-ds-success'
+      : contractProgress?.status === 'failed'
+        ? 'text-ds-danger'
+        : 'text-ds-warning';
   const isGameEnd = state.phase === TwentyNinePhase.GAME_END || state.gameEndFlag;
 
   const canPlay = isPlayPhase && isHumanTurn;
@@ -305,6 +313,23 @@ function TwentyNinePageContent() {
                     <div className="mb-1 text-ds-text-primary">{t('roundPointsTitle')}</div>
                     <div>{t('roundResult.teamA', { points: state.roundTeamPoints[0] })}</div>
                     <div>{t('roundResult.teamB', { points: state.roundTeamPoints[1] })}</div>
+                    {/* 契約に届くかは目標点・現在点・場に残る点を突き合わせないと
+                        分からない。姉妹ゲームの FortyFives は #4724 で出している (#5644)。 */}
+                    {contractProgress && (
+                      <div className="mt-1 text-ds-text-primary" data-testid="tn29-contract-progress">
+                        {t('contractProgress', {
+                          team: contractProgress.declarerTeam === 0 ? t('team.a') : t('team.b'),
+                          got: contractProgress.points,
+                          contract: contractProgress.contract,
+                        })}
+                        {' — '}
+                        <span className={contractStatusColor}>
+                          {t(`contractStatus.${contractProgress.status}`, {
+                            remaining: contractProgress.remaining,
+                          })}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 )}
 

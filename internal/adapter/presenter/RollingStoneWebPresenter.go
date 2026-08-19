@@ -37,6 +37,7 @@ func (p *RollingStoneWebPresenter) buildBase(s interfaces.RollingStoneGame) *con
 	// **出せる札が無いことを別のフラグで出す。** 空の validPlays は「まだ手番でない」
 	// とも読めてしまうので、引き取りが要る局面はそう名乗ります。
 	resObj.MustPickUp = s.MustPickUp(0)
+	resObj.LeadSuit = s.GetLeadSuit()
 	resObj.ValidPlays = intSliceOrEmpty(s.GetValidPlayIndices(0))
 	resObj.CurrentTrick = trickCardsToOutput(s.GetCurrentTrick())
 	resObj.CurrentPlayerIdx = s.GetCurrentPlayerIdx()

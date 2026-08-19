@@ -313,3 +313,46 @@ describe('HoneymoonBridgePage', () => {
     expect(await screen.findByTestId('hint-tooltip')).toHaveTextContent(/長いスート/);
   });
 });
+
+// **得点式は細かい** (契約レベル×10 + オーバートリック×5 / 失敗は不足×10)。
+// トリックの過不足だけでは、そのディールが何点だったのか読めない (#5760)。
+describe('HoneymoonBridgePage round points', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+  });
+
+  it('states what a made contract was worth, overtricks included', async () => {
+    mockExec.mockResolvedValue(
+      playing({
+        phase: 3,
+        contractLevel: 3,
+        requiredTricks: 9,
+        lastTricks: 11,
+        lastMade: true,
+        lastPoints: 40,
+      } as Partial<HoneymoonBridgeResponse>),
+    );
+    renderWithProviders(<HoneymoonBridgePage />);
+    const banner = await screen.findByTestId('hb-round-result');
+    expect(banner).toHaveTextContent('+40点');
+    expect(banner).toHaveTextContent('11');
+  });
+
+  it('states what going down handed the opponent', async () => {
+    mockExec.mockResolvedValue(
+      playing({
+        phase: 3,
+        contractLevel: 4,
+        requiredTricks: 10,
+        lastTricks: 7,
+        lastMade: false,
+        lastPoints: 30,
+      } as Partial<HoneymoonBridgeResponse>),
+    );
+    renderWithProviders(<HoneymoonBridgePage />);
+    const banner = await screen.findByTestId('hb-round-result');
+    expect(banner).toHaveTextContent('+30点');
+    expect(banner).toHaveTextContent('相手に');
+  });
+});

@@ -5,12 +5,14 @@ package presenter
 import (
 	"encoding/json"
 	"errors"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // newTuSacForPresenter は本物のドメインを返す。
@@ -292,4 +294,19 @@ func TestTuSacWebPresenter_ShipsProceduralCardFaces(t *testing.T) {
 
 	assert.Equal(t, "tusac", got.DiscardTop.Deck, "捨て札が手続き描画に乗っていない")
 	assert.NotEmpty(t, got.DiscardTop.Glyph)
+}
+
+// **5 枚の卒を揃える価値は、狙う前に知りたい** (#5784)。点数は写した表では
+// なくドメインから作る。
+func TestTuSacCuiPresenter_ShowsTheMeldPointsTable(t *testing.T) {
+	cp := new(TuSacCuiPresenter)
+	out := cp.Output(newTuSacForPresenter(t), nil)
+
+	assert.Contains(t, out, i18n.Tf("tusac.meldPointsLine", "table", tuSacMeldPointsTableStr()))
+	for k := domain.TuSacMeldNone + 1; k <= domain.TuSacMeldKindMax; k++ {
+		assert.Contains(t, out, i18n.T("tusac.meld."+domain.TuSacMeldKindName(k))+" "+
+			i18n.Tf("tusac.meld.points", "points", strconv.Itoa(domain.TuSacMeldPoints(k))),
+			"種別 %d の点が出ていない", k)
+	}
+	assert.NotContains(t, out, "tusac.")
 }

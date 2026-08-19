@@ -83,6 +83,17 @@ func koenigrufenRoleLabel(g interfaces.KoenigrufenGame, idx int) string {
 	return i18n.T("koenigrufen.roleOpponent")
 }
 
+// koenigrufenHumanIsCalledPartner は人間が呼ばれたキングを持っているかを返す。
+func koenigrufenHumanIsCalledPartner(g interfaces.KoenigrufenGame) bool {
+	for i := 0; i < g.GetPlayerCnt(); i++ {
+		p := g.GetPlayer(i)
+		if p != nil && p.GetIsHuman() {
+			return g.KoenigrufenHoldsCalledKing(i)
+		}
+	}
+	return false
+}
+
 // koenigrufenPlayerStr プレイヤー 1 行分の状態文字列を返す。
 func koenigrufenPlayerStr(g interfaces.KoenigrufenGame, idx int) string {
 	player := g.GetPlayer(idx)
@@ -167,6 +178,12 @@ func (p *KoenigrufenCuiPresenter) writePrompt(b *strings.Builder, g interfaces.K
 		currentIdx := g.GetCurrentPlayerIdx()
 		b.WriteString(i18n.Tf("koenigrufen.promptPlay",
 			"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
+		// 呼びスートのキングを自分が持っていれば、自分が秘密のパートナーだと
+		// **自分の手札と公開済みの呼びスートだけ**から分かる (ズルではない)。
+		// 公開後は役割ラベルが出るので、この行は未公開のあいだだけ。
+		if !g.GetPartnerRevealed() && koenigrufenHumanIsCalledPartner(g) {
+			b.WriteString(i18n.T("koenigrufen.youArePartner") + "\n")
+		}
 		b.WriteString(i18n.T("koenigrufen.promptPlayHelp") + "\n")
 	case domain.KoenigrufenPhaseTrickEnd:
 		b.WriteString(i18n.T("koenigrufen.promptTrickEnd") + "\n")

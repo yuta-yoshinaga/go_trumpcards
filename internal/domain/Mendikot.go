@@ -266,6 +266,29 @@ func (m *Mendikot) canPlay(playerIdx int, card *Card) bool {
 	return true
 }
 
+// WillSetTrump は、その席が今出す札で切り札が決まってしまうかを返す。
+//
+// **Mendikot に切り札選択フェーズは無い。**リード色をフォローできなかった
+// 最初の 1 枚のスートが、そのままハンド中の切り札になる。つまり「フォローで
+// きない手番」は一度きりの重い選択なのに、画面には何の警告も出ていなかった
+// (#5755)。リードそのものでは決まらない (フォロー不能が条件)。
+func (m *Mendikot) WillSetTrump(playerIdx int) bool {
+	if m.trumpSuit > 0 || len(m.currentTrick) == 0 {
+		return false
+	}
+	if playerIdx < 0 || playerIdx >= len(m.players) {
+		return false
+	}
+	leadSuit := m.currentTrick[0].Card.GetDesign()
+	p := m.players[playerIdx]
+	for i := range p.GetCardsSize() {
+		if p.GetCard(i).GetDesign() == leadSuit {
+			return false
+		}
+	}
+	return p.GetCardsSize() > 0
+}
+
 // GetValidPlayIndices 出せる手札のインデックスを返す
 func (m *Mendikot) GetValidPlayIndices(playerIdx int) []int {
 	if playerIdx < 0 || playerIdx >= len(m.players) {

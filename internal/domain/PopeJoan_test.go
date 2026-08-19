@@ -5,6 +5,8 @@ package domain
 import (
 	"encoding/json"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func pjCard(design, value int) *Card { return NewCard(design, value, true) }
@@ -838,4 +840,28 @@ func TestPopeJoan_PopeJoanValidPlays(t *testing.T) {
 	if got := g.PopeJoanValidPlays(1); got != nil {
 		t.Fatalf("off-turn must be nil, got %v", got)
 	}
+}
+
+// #5723: Pope (♦9) を抱えている人はその区画への支払いを免除される。表示側 (CUI/Web)
+// がこの判定を共有するので、判定そのものをここで固定する。
+func TestPopeJoanHoldsPope(t *testing.T) {
+	card := func(design, value int) *Card { return NewCard(design, value, false) }
+
+	holder := NewPopeJoanPlayer(false)
+	holder.AddCard(card(CardDesignSpade, 3))
+	holder.AddCard(card(CardDesignDiamond, PopeJoanPopeRank))
+	assert.True(t, PopeJoanHoldsPope(holder))
+
+	// **同じランクでもスートが違えば Pope ではない。**
+	sameRank := NewPopeJoanPlayer(false)
+	sameRank.AddCard(card(CardDesignSpade, PopeJoanPopeRank))
+	assert.False(t, PopeJoanHoldsPope(sameRank))
+
+	// 同じスートでもランクが違えば Pope ではない。
+	sameSuit := NewPopeJoanPlayer(false)
+	sameSuit.AddCard(card(CardDesignDiamond, PopeJoanPopeRank+1))
+	assert.False(t, PopeJoanHoldsPope(sameSuit))
+
+	assert.False(t, PopeJoanHoldsPope(NewPopeJoanPlayer(true)), "an empty hand holds nothing")
+	assert.False(t, PopeJoanHoldsPope(nil))
 }

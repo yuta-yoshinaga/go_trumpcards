@@ -38,5 +38,8 @@
   "punterFive": "drawing on 5 is the standard play",
   "bankerDraw": "drawing is the stronger play at this total",
   "bankerStand": "standing is the stronger play at this total",
-  "helpExampleBet": "  bet 100              bet 100 chips"
+  "helpExampleBet": "  bet 100              bet 100 chips",
+  "netWinLine": "your result: +{{n}} chips",
+  "netLossLine": "your result: -{{n}} chips",
+  "netFlatLine": "your result: no change"
 }

@@ -30,7 +30,8 @@
     "nextRound": "Next round",
     "reset": "Reset",
     "giveUp": "Give up",
-    "playAria": "Play {{card}}"
+    "playAria": "Play {{card}}",
+    "playAriaWithPoints": "Play {{card}} (worth {{points}})"
   },
   "dealerStuck": "You are the dealer. The dealer cannot pass.",
   "result": {

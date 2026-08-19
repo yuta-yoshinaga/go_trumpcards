@@ -822,6 +822,7 @@ func TestGuandanHandEndsWhenThreeAreOut(t *testing.T) {
 	res := g.GetLastResult()
 	if res == nil {
 		t.Fatal("the hand must settle")
+		return
 	}
 	// 残り 1 人が最下位に入る。
 	if res.Order[3] != 3 {
@@ -879,6 +880,7 @@ func TestGuandanCpuDrivesAFullHand(t *testing.T) {
 		res := g.GetLastResult()
 		if res == nil {
 			t.Fatalf("attempt %d: no settlement", attempt)
+			return
 		}
 		// **全席が順位に現れる。**
 		seen := map[int]bool{}
