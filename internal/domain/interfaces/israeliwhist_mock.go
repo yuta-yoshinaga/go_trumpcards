@@ -48,6 +48,8 @@ func (m *MockIsraeliWhistGame) IsHumanBidTurn() bool      { return m.Called().Bo
 func (m *MockIsraeliWhistGame) MinimumBidFor(idx int) int { return m.Called(idx).Int(0) }
 func (m *MockIsraeliWhistGame) GetRestrictedBid() int     { return m.Called().Int(0) }
 func (m *MockIsraeliWhistGame) GetRoundNumber() int       { return m.Called().Int(0) }
+func (m *MockIsraeliWhistGame) GetRoundDoubled() bool     { return m.Called().Bool(0) }
+func (m *MockIsraeliWhistGame) GetRoundAllExact() bool    { return m.Called().Bool(0) }
 func (m *MockIsraeliWhistGame) GetTrickNumber() int       { return m.Called().Int(0) }
 func (m *MockIsraeliWhistGame) GetTrumpSuit() int         { return m.Called().Int(0) }
 func (m *MockIsraeliWhistGame) GetDeclarerIdx() int       { return m.Called().Int(0) }

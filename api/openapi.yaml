@@ -47901,6 +47901,16 @@ components:
           description: "0=Auction, 1=Bid, 2=Play, 3=RoundEnd, 4=GameEnd"
         roundNumber:
           type: integer
+        doubled:
+          type: boolean
+          description: >-
+            Whether the round that just ended scored double (all four seats hit
+            their bid, or all four missed).
+        doubledAllExact:
+          type: boolean
+          description: >-
+            True when the doubling came from every seat hitting; false when it
+            came from every seat missing.
         trickNumber:
           type: integer
         trumpSuit:
