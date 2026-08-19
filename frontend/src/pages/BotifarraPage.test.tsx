@@ -192,6 +192,21 @@ describe('BotifarraPage', () => {
     expect(screen.getByTestId('botifarra-round-points')).toHaveTextContent('相手 32');
   });
 
+  // 席が読めない応答でも 0 で埋めて描画は続ける（数値の欠けで画面を落とさない）。
+  it('falls back to zeroes when no seat is the human', async () => {
+    mockApi.mockResolvedValue({
+      ...playState,
+      scores: [],
+      roundPoints: [],
+      players: [{ id: 0, isHuman: false, team: 0, cardCount: 12, cards: [], trickCount: 0 }],
+    });
+    renderWithProviders(<BotifarraPage />);
+
+    const score = await screen.findByTestId('botifarra-score');
+    expect(score).toHaveTextContent('あなた 0');
+    expect(score).toHaveTextContent('相手 0');
+  });
+
   // **人間が組 1 の席のこともある。** 添字 0 決め打ちだと逆さまに出る。
   it('follows the human seat team, not index 0', async () => {
     mockApi.mockResolvedValue({

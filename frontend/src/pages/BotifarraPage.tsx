@@ -142,8 +142,8 @@ function BotifarraPageContent() {
       phaseName={phaseName}
       gamePath="/botifarra"
       gameEndFlag={state.gameEndFlag}
-      winShow={state.gameEndFlag && state.winnerTeam === 0}
-      lossShow={state.gameEndFlag && state.winnerTeam === 1}
+      winShow={state.gameEndFlag && state.winnerTeam === humanTeam}
+      lossShow={state.gameEndFlag && state.winnerTeam === 1 - humanTeam}
       loading={loading}
       isHumanTurn={state.isHumanTurn}
       confirmOpen={confirmOpen}
