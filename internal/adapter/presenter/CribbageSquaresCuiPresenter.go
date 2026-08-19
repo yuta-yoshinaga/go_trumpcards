@@ -71,17 +71,28 @@ func (pr *CribbageSquaresCuiPresenter) Output(p interfaces.CribbageSquaresGame, 
 
 		cuiErrorBlock(b, lastErr)
 
-		if p.GetPhase() == domain.CribbageSquaresPhaseComplete {
-			// 8 手それぞれの内訳。合計だけでは、どの手が効いたのか分からない。
-			for r := range domain.CribbageSquaresGridSize {
+		complete := p.GetPhase() == domain.CribbageSquaresPhaseComplete
+		// 8 手それぞれの内訳。合計だけでは、どの手が効いたのか分からない。
+		//
+		// **途中でも出す** (#5740)。Web は毎レスポンスで RowDetails/ColDetails を
+		// 返し、プレイ中から内訳を出しているのに、CUI は完了まで合計しか
+		// 見せていなかった。まだ 0 点の行・列は Web と同じく黙っている。
+		for r := range domain.CribbageSquaresGridSize {
+			d := p.RowDetail(r)
+			if complete || cribbageSquaresHasPoints(d) {
 				b.WriteString(cribbageSquaresDetailLine(
-					i18n.Tf("cribbagesquares.rowLabel", "idx", strconv.Itoa(r)), p.RowDetail(r)))
+					i18n.Tf("cribbagesquares.rowLabel", "idx", strconv.Itoa(r)), d))
 			}
-			for c := range domain.CribbageSquaresGridSize {
+		}
+		for c := range domain.CribbageSquaresGridSize {
+			d := p.ColDetail(c)
+			if complete || cribbageSquaresHasPoints(d) {
 				b.WriteString(cribbageSquaresDetailLine(
-					i18n.Tf("cribbagesquares.colLabel", "idx", strconv.Itoa(c)), p.ColDetail(c)))
+					i18n.Tf("cribbagesquares.colLabel", "idx", strconv.Itoa(c)), d))
 			}
+		}
 
+		if complete {
 			line := i18n.Tf("cribbagesquares.gameComplete",
 				"score", strconv.Itoa(p.TotalScore()),
 				"target", strconv.Itoa(domain.CribbageSquaresWinScore))
@@ -92,6 +103,15 @@ func (pr *CribbageSquaresCuiPresenter) Output(p interfaces.CribbageSquaresGame, 
 			}
 		}
 	})
+}
+
+// cribbageSquaresHasPoints reports whether a hand scored anything at all.
+//
+// frontend の cribbageBreakdownParts と同じ判定: 1 つでも 0 でない要素があるか。
+// 空マスだらけの行に「なし」を 8 行並べても読みづらいだけなので、途中経過では
+// 点の付いた行・列だけ出す。
+func cribbageSquaresHasPoints(d domain.CribbageScoreDetail) bool {
+	return d.Fifteens > 0 || d.Pairs > 0 || d.Runs > 0 || d.Flush > 0 || d.Nobs > 0
 }
 
 // cribbageSquaresDetailLine renders one hand's cribbage breakdown.
