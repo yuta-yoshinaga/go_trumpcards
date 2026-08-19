@@ -81,6 +81,7 @@ func chemindeFerPlayersToOutput(c interfaces.ChemindeFerGame) []*controller.Chem
 			Name:             p.GetName(),
 			IsHuman:          p.GetIsHuman(),
 			Chips:            p.GetChips(),
+			LastNet:          c.GetLastNet(i),
 			Bet:              p.GetBet(),
 			IsBanker:         i == c.GetBankerIdx(),
 			IsRepresentative: i == c.GetRepresentativeIdx(),
