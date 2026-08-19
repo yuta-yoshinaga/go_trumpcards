@@ -85,10 +85,13 @@ describe('formatRollingStoneState', () => {
         mustPickUp: true,
         validPlays: [],
         currentTrick: [{ playerIdx: 1, card: card('CLOVER', 9) }],
+        leadSuit: 2,
       } as Partial<RollingStoneResponse>),
     );
     expect(out).toContain('cannot follow');
     expect(out).toContain('1 cards');
+    // **追従できなかったスートまで言う** (#5764)。
+    expect(out).toContain('cannot follow ♣');
   });
 
   it('shows the current trick when there is one', () => {

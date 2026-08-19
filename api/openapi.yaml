@@ -49455,6 +49455,12 @@ components:
             Whether you cannot follow and must take the trick into your hand.
             **Read this before validPlays** -- an empty validPlays also means
             "not your turn", and the two call for opposite things.
+        leadSuit:
+          type: integer
+          description: >-
+            Suit led in the current trick (1=spade, 2=club, 3=heart, 4=diamond),
+            0 before anyone has played. This is why a pickup is forced -- the
+            seat holds nothing of this suit.
         validPlays:
           type: array
           description: Hand indices you may legally play. Following suit is compulsory.

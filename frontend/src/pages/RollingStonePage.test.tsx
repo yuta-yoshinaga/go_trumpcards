@@ -59,6 +59,7 @@ const forcedPickUp = (over: Partial<RollingStoneResponse> = {}) =>
     mustPickUp: true,
     validPlays: [],
     currentTrick: [{ playerIdx: 1, card: card('DIAMOND', 9) }],
+    leadSuit: 4,
     ...over,
   } as Partial<RollingStoneResponse>);
 
@@ -131,7 +132,11 @@ describe('RollingStonePage', () => {
     mockExec.mockResolvedValue(forcedPickUp());
     renderWithProviders(<RollingStonePage />);
 
-    expect(await screen.findByTestId('rs-must-pickup')).toHaveTextContent('1');
+    // **枚数だけでは、なぜ出せないのかが分からない** (#5764)。追従できなかった
+    // スートまで書く。
+    const banner = await screen.findByTestId('rs-must-pickup');
+    expect(banner).toHaveTextContent('1');
+    expect(banner).toHaveTextContent('♦');
     const pickup = screen.getByTestId('rs-pickup-btn');
     expect(pickup).toBeEnabled();
     const cards = screen.getAllByRole('button', { name: /を出す$/ });
