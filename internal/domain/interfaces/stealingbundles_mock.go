@@ -44,6 +44,8 @@ func (m *MockStealingBundlesGame) IsHumanTurn() bool             { return m.Call
 func (m *MockStealingBundlesGame) CanCapture(playerIdx int) bool { return m.Called(playerIdx).Bool(0) }
 func (m *MockStealingBundlesGame) GetDeckRemaining() int         { return m.Called().Int(0) }
 func (m *MockStealingBundlesGame) GetLastCaptureIdx() int        { return m.Called().Int(0) }
+func (m *MockStealingBundlesGame) GetLastCaptureKind() string    { return m.Called().String(0) }
+func (m *MockStealingBundlesGame) GetLastCaptureVictimIdx() int  { return m.Called().Int(0) }
 func (m *MockStealingBundlesGame) GetCurrentPlayerIdx() int      { return m.Called().Int(0) }
 func (m *MockStealingBundlesGame) GetTurnNumber() int            { return m.Called().Int(0) }
 func (m *MockStealingBundlesGame) GetPacksDealt() int            { return m.Called().Int(0) }

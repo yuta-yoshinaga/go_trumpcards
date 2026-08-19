@@ -8,6 +8,23 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
+// crazyFourPokerQueensUpRows はドメインの配当表を出力形に変換する。
+//
+// **表を写さない** (#5775)。倍率も並び順も domain.CrazyFourPokerQueensUpPayout が
+// 唯一の出所で、ここは名前を付けるだけ。
+func crazyFourPokerQueensUpRows() []*controller.CrazyFourPokerPayoutRow {
+	src := domain.CrazyFourPokerQueensUpPayout()
+	out := make([]*controller.CrazyFourPokerPayoutRow, 0, len(src))
+	for _, r := range src {
+		name := ""
+		if r.Hand >= 0 && r.Hand < len(domain.FourCardHandNames) {
+			name = domain.FourCardHandNames[r.Hand]
+		}
+		out = append(out, &controller.CrazyFourPokerPayoutRow{Hand: r.Hand, Name: name, Multiplier: r.Multiplier})
+	}
+	return out
+}
+
 // CrazyFourPokerWebPresenter クレイジー 4 ポーカーWebプレゼンタークラス
 type CrazyFourPokerWebPresenter struct{}
 
@@ -46,6 +63,7 @@ func (cp *CrazyFourPokerWebPresenter) Output(c interfaces.CrazyFourPokerGame, la
 	resObj.Chips = c.GetChips()
 	resObj.MinTotalWager = c.GetMinTotalWager()
 	resObj.RoundNumber = c.GetRoundNumber()
+	resObj.QueensUpPayouts = crazyFourPokerQueensUpRows()
 	resObj.RemainingCards = c.GetRemainingCards()
 	resObj.GameEndFlag = c.GetGameEndFlag()
 	resObj.Config = &controller.CrazyFourPokerWebOutCfg{

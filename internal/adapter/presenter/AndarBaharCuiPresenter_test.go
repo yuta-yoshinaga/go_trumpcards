@@ -9,6 +9,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // fillAndarBaharCuiDefaults は未設定の呼び出しに既定値を与える。
@@ -31,6 +32,8 @@ func fillAndarBaharCuiDefaults(m *interfaces.MockAndarBaharGame) {
 	m.On("GetWinner").Return(-1).Maybe()
 	m.On("GetResult").Return(domain.GameResult(0)).Maybe()
 	m.On("GetPayout").Return(0).Maybe()
+	m.On("GetMainPayout").Return(0).Maybe()
+	m.On("GetSidePayout").Return(0).Maybe()
 	m.On("GetHistory").Return(([]int)(nil)).Maybe()
 	m.On("GetHint").Return("andarBaharHintAndarFirst").Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
@@ -86,6 +89,10 @@ func TestAndarBaharCuiPresenter_Output_Result(t *testing.T) {
 	m.On("GetBetAmount").Return(100)
 	m.On("GetSideBand").Return(domain.AndarBaharSide2To5)
 	m.On("GetSideAmount").Return(50)
+	// **内訳は合計より前に登録する。** testify は先に一致した期待を返すので、
+	// fillAndarBaharCuiDefaults の 0 が先だと内訳が出ない。
+	m.On("GetMainPayout").Return(190)
+	m.On("GetSidePayout").Return(0)
 	fillAndarBaharCuiDefaults(m)
 
 	result := new(AndarBaharCuiPresenter).Output(m, nil)
@@ -94,6 +101,26 @@ func TestAndarBaharCuiPresenter_Output_Result(t *testing.T) {
 	assert.Contains(t, result, "払い戻し: 190")
 	assert.Contains(t, result, "ベット: 100 (アンダー)")
 	assert.Contains(t, result, "サイドベット: 50 (2〜5 枚)")
+	// **サイドベットは別の賭け** (#5770)。メインで取ってサイドを外した回だと
+	// 分かる形で内訳を出す。
+	assert.Contains(t, result, i18n.Tf("andarbahar.payoutBreakdownLine", "main", "190", "side", "0"))
+}
+
+// **負のコントロール: 張っていない回に内訳は出ない** (受け入れ条件3)。
+func TestAndarBaharCuiPresenter_Output_NoBreakdownWithoutASideBet(t *testing.T) {
+	m := new(interfaces.MockAndarBaharGame)
+	m.On("GetPhase").Return(domain.AndarBaharPhaseEnd)
+	m.On("GetGameEndFlag").Return(true)
+	m.On("GetWinner").Return(domain.AndarBaharBetBahar)
+	m.On("GetResult").Return(domain.GameResultWin)
+	m.On("GetPayout").Return(190)
+	m.On("GetMainPayout").Return(190)
+	m.On("GetSidePayout").Return(0)
+	fillAndarBaharCuiDefaults(m)
+
+	result := new(AndarBaharCuiPresenter).Output(m, nil)
+	assert.Contains(t, result, "払い戻し: 190")
+	assert.NotContains(t, result, fixedPart("andarbahar.payoutBreakdownLine"))
 }
 
 func TestAndarBaharCuiPresenter_Output_Error(t *testing.T) {

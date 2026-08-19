@@ -15,6 +15,7 @@ import (
 
 func TestBidEuchreCuiController_Exec(t *testing.T) {
 	mockOutput := `{"phase":0}`
+	hintOutput := "hint: bid 3"
 
 	newMock := func() *mockUsecases.MockBidEuchreInteractor {
 		m := new(mockUsecases.MockBidEuchreInteractor)
@@ -26,8 +27,23 @@ func TestBidEuchreCuiController_Exec(t *testing.T) {
 		m.On("PlayCard", mock.Anything).Return(mockOutput)
 		m.On("NextHand").Return(mockOutput)
 		m.On("ActionLog").Return(mockOutput)
+		m.On("Hint").Return(hintOutput)
 		return m
 	}
+
+	// **ヒントは CUI から呼べて初めて意味がある** (#5730)。
+	// プレゼンターに HintOutput を足しただけでは h / hint は
+	// 「そんなコマンドは無い」で弾かれる。
+	t.Run("hint", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewBidEuchreCuiController(m)
+		assert.Equal(t, hintOutput, c.Exec("h"))
+		assert.Equal(t, hintOutput, c.Exec("hint"))
+		m.AssertNumberOfCalls(t, "Hint", 2)
+		// 既存コマンドは巻き添えを食わない。
+		assert.Equal(t, mockOutput, c.Exec("log"))
+		m.AssertCalled(t, "ActionLog")
+	})
 
 	t.Run("quit and reset", func(t *testing.T) {
 		m := newMock()

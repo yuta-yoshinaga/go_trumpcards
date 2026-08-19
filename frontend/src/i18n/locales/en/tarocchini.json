@@ -36,7 +36,9 @@
   "nextRound": "Next Round",
   "roundResult": {
     "title": "Round Result",
-    "tricks": "{{name}} tricks: {{count}}"
+    "tricks": "{{name}} tricks: {{count}}",
+    "lastTrick": "Last-trick bonus: +{{bonus}} to Team {{team}}",
+    "scarto": "Scarto: +{{count}} to Team {{team}} (the dealer side)"
   },
   "hintAvailable": "Hint",
   "hint": {

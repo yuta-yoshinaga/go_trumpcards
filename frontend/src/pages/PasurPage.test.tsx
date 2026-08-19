@@ -206,3 +206,39 @@ describe('PasurPage', () => {
     expect(await screen.findByTestId('hint-tooltip')).toHaveTextContent(/場を空に/);
   });
 });
+
+// **スールは「取った結果、場が空になる」こと** (#5762)。倍化を狙うなら、どの
+// 選択肢がそれに当たるかがボタンから読めないと選べない。
+describe('PasurPage soor options', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+  });
+
+  it('badges the option that clears the table and not the partial one', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        table: [card('SPADE', 3), card('HEART', 4), card('CLOVER', 7)],
+        // 手札 0 で「場を全部」か「1 枚だけ」かを選べる状況。
+        captureOptions: [[[0, 1, 2], [0]], [], [], []],
+      } as Partial<PasurResponse>),
+    );
+    renderWithProviders(<PasurPage />);
+
+    // 手札の 1 枚目を選ぶと、その札の取得候補がボタンになる。
+    const handButtons = await screen.findAllByRole('button', { name: /を選ぶ/ });
+    fireEvent.click(handButtons[0]);
+
+    expect(await screen.findByTestId('ps-soor-0-1-2')).toHaveTextContent('スール');
+    expect(screen.queryByTestId('ps-soor-0')).not.toBeInTheDocument();
+    // 読み上げには倍化まで入る。
+    expect(screen.getByTestId('ps-soor-0-1-2')).toHaveTextContent('2 倍');
+  });
+
+  it('does not badge a full-length option when the table is empty', async () => {
+    mockExec.mockResolvedValue(makeState({ table: [], captureOptions: [[], [], [], []] } as Partial<PasurResponse>));
+    renderWithProviders(<PasurPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('ps-options')).not.toBeInTheDocument();
+  });
+});

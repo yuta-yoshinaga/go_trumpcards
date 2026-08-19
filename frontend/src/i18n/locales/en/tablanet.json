@@ -39,6 +39,8 @@
   "tablaAnnounce": "{{player}} scored a tabla (cleared the table)",
   "tablaButton": "Tabla Capture!",
   "tablaReady": "Tabla!",
+  "tablaBadge": "Tabla! Table swept",
+  "tablaBadgeOwn": "Tabla! You swept it",
   "table": "Table",
   "tableCandidateAria": "{{card}}, capturable",
   "tableEmpty": "(empty)",

@@ -13,7 +13,7 @@ import (
 )
 
 // estimationPlayerStr returns the display string for a single player.
-func estimationPlayerStr(player *domain.EstimationPlayer, idx int) string {
+func estimationPlayerStr(player *domain.EstimationPlayer, idx int, roundEnd bool) string {
 	var b strings.Builder
 	b.WriteString(i18n.Tf("estimation.playerLine",
 		"name", cuiPlayerName(player, idx),
@@ -22,11 +22,29 @@ func estimationPlayerStr(player *domain.EstimationPlayer, idx int) string {
 		"total", strconv.Itoa(player.GetTotalScore()),
 		"cards", strconv.Itoa(player.GetCardsSize()),
 	))
+	// **得点式が複雑（10+宣言 / Dash Call ±23 / Risk 2倍）なので、累計の差分を
+	// 暗算させない** (#5751)。増減が確定するラウンド終了時にだけ出す。
+	if roundEnd {
+		b.WriteString(" " + i18n.Tf("estimation.roundDelta",
+			"delta", estimationSignedScore(player.GetRoundScore())))
+	}
 	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
 		b.WriteString(cuiIndexedCardListStr(player) + "\n")
 	}
 	return b.String()
+}
+
+// estimationSignedScore は増減を符号付きで表す。**+ は自分で付ける。**
+// 0 は「動かなかった」ことを示すので ±0 と書く。
+func estimationSignedScore(n int) string {
+	if n > 0 {
+		return "+" + strconv.Itoa(n)
+	}
+	if n == 0 {
+		return "±0"
+	}
+	return strconv.Itoa(n)
 }
 
 // estimationBidStr 宣言を種類つきで短く表す
@@ -65,7 +83,8 @@ func (p *EstimationCuiPresenter) Output(e interfaces.EstimationGame, lastErr err
 		}
 
 		for i := 0; i < e.GetPlayerCnt(); i++ {
-			sb.WriteString(estimationPlayerStr(e.GetPlayer(i), i))
+			sb.WriteString(estimationPlayerStr(e.GetPlayer(i), i,
+				e.GetPhase() == domain.EstimationPhaseRoundEnd))
 		}
 
 		sb.WriteString("----------\n")

@@ -42,6 +42,8 @@ func (p *StealingBundlesWebPresenter) buildBase(s interfaces.StealingBundlesGame
 	resObj.CanCapture = s.CanCapture(0)
 	resObj.DeckRemaining = s.GetDeckRemaining()
 	resObj.LastCaptureIdx = s.GetLastCaptureIdx()
+	resObj.LastCaptureKind = s.GetLastCaptureKind()
+	resObj.LastCaptureVictimIdx = s.GetLastCaptureVictimIdx()
 	resObj.CurrentPlayerIdx = s.GetCurrentPlayerIdx()
 	resObj.TurnNumber = s.GetTurnNumber()
 	resObj.PacksDealt = s.GetPacksDealt()

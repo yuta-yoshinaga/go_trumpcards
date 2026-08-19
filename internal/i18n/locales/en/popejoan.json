@@ -9,6 +9,7 @@
   "awardTurnUpLine": "{{name}} takes {{compartment}} from the turn-up ({{chips}})",
   "pileLine": "Played: {{cards}}",
   "playerLine": "{{name}}: {{chips}} chips, {{cards}} card(s)",
+  "holdsPope": "[holds Pope]",
   "compartment.ace": "Ace",
   "compartment.king": "King",
   "compartment.queen": "Queen",

@@ -122,6 +122,20 @@ describe('MonteBankPage', () => {
     await waitFor(() => expect(screen.getByTestId('mb-count-0')).toHaveTextContent('2'));
   });
 
+  // **賭けの良し悪しは場の枚数と山の残りの両方で決まる** (#5779)。
+  it('山に残る同スート枚数も出す', async () => {
+    mockApi.mockResolvedValue({
+      ...base,
+      layout: [entry({ suitCount: 2, remainingOfSuit: 7 }), entry({ card: card('HEART', 5), remainingOfSuit: 11 })],
+    });
+    renderWithProviders(<MonteBankPage />);
+
+    await waitFor(() => expect(screen.getByTestId('mb-remaining-0')).toHaveTextContent('7'));
+    expect(screen.getByTestId('mb-remaining-1')).toHaveTextContent('11');
+    // 場の枚数の表示は残っている（受け入れ条件3）。
+    expect(screen.getByTestId('mb-count-0')).toHaveTextContent('2');
+  });
+
   // **選んだ位置は 0 始まりでそのまま送る。** 0 は正当な値。
   it('既定では場札0に賭ける', async () => {
     mockApi.mockResolvedValue(base);

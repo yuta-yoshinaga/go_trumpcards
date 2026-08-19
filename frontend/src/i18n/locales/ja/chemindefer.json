@@ -47,5 +47,10 @@
   "tutorial.bet": "子はバンク額を分け合って賭けます。最高額の席が子側の判断をします",
   "tutorial.draw": "3 枚目は子の 0〜4 と 6〜7 だけが規則で決まっていて、5 の子と親は自由です",
   "frontendHint.chemindeferPunterFive": "合計 5 は引くのが定石です",
-  "frontendHint.chemindeferBankerFree": "親は表に縛られません。子の 3 枚目から判断します"
+  "frontendHint.chemindeferBankerFree": "親は表に縛られません。子の 3 枚目から判断します",
+  "result": {
+    "netWin": "あなたの結果: +{{n}} チップ",
+    "netLoss": "あなたの結果: -{{n}} チップ",
+    "netFlat": "あなたの結果: 増減なし"
+  }
 }

@@ -85,6 +85,9 @@ func (p *MinchiateCuiPresenter) Output(g interfaces.MinchiateGame, lastErr error
 		// 「まだ上に何枚残っているか」の見積もりで、そこが読めないと切札を切る
 		// タイミングを誤る。
 		b.WriteString(i18n.T("minchiate.trumpCountNote") + "\n")
+		// **マットだけが規則の外にいる。**取らない・フォローしない・リードも定めない
+		// という 3 点は、ヒントを切っていると伝わる場所がどこにも無かった (#5715)。
+		b.WriteString(i18n.T("minchiate.mattoNote") + "\n")
 
 		for i := 0; i < g.GetPlayerCnt(); i++ {
 			b.WriteString(minchiatePlayerStr(g, i))

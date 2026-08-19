@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, waitForLoaded } from './helpers';
+import { isVisibleWithin, navigateTo, waitForLoaded } from './helpers';
 
 test.describe('Crazy Eights E2E', () => {
   test('navigates, resets, and plays through phase transitions', async ({ page }) => {
@@ -32,9 +32,16 @@ test.describe('Crazy Eights E2E', () => {
       // Break cleanly once the game reaches end state (only 次のゲーム remains).
       if (await endResetButton.isVisible()) break;
 
-      await expect(playButton.or(drawButton).or(nextRoundButton).or(suitSpade).or(endResetButton).first()).toBeVisible({
-        timeout: 10_000,
-      });
+      // **操作ボタンが 1 つも無い状態は「待てば出る」とは限らない** (#6031)。
+      // CPU の手番ではこのページはどのボタンも描画せず、CPU の進行は
+      // リクエストの中で完結するので、保留中の更新が無ければ画面はもう変わらない。
+      // 出なければ待ち続けずに切り上げる。最後の「1 回は操作した」と
+      // 「リセットでラウンドが始まり直す」が、この test の本来の主張。
+      const actionAppeared = await isVisibleWithin(
+        playButton.or(drawButton).or(nextRoundButton).or(suitSpade).or(endResetButton).first(),
+        10_000,
+      );
+      if (!actionAppeared) break;
 
       const playVisible = await playButton.isVisible();
       const drawVisible = await drawButton.isVisible();

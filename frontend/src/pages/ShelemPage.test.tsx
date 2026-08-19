@@ -283,3 +283,46 @@ describe('ShelemPage', () => {
     expect(await screen.findByText(/競り落とす価値があります/)).toBeInTheDocument();
   });
 });
+
+// **守備側の点も出す** (#5754)。契約を阻止できているかは、宣言側の点だけ
+// 見ていても分からない。
+describe('ShelemPage defender points', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+  });
+
+  it('shows the defending team total next to the contract', async () => {
+    mockExec.mockResolvedValue(makeState({ declarerIdx: 1, contract: 90, shelemBid: false, roundPoints: [35, 65] }));
+    renderWithProviders(<ShelemPage />);
+
+    // 宣言者は席1 = チーム1 なので、守備側はチーム0 の 35 点。
+    const defenders = await screen.findByTestId('sh-defenders');
+    expect(defenders).toHaveTextContent('35');
+    expect(defenders).toHaveTextContent('100');
+    // 宣言側の点 (65) を守備側の欄に出していない。
+    expect(defenders).not.toHaveTextContent('65');
+  });
+
+  it('reads the other team when the declarer sits on the even side', async () => {
+    mockExec.mockResolvedValue(makeState({ declarerIdx: 0, contract: 85, shelemBid: false, roundPoints: [40, 60] }));
+    renderWithProviders(<ShelemPage />);
+    expect(await screen.findByTestId('sh-defenders')).toHaveTextContent('60');
+  });
+
+  // **Shelem 宣言では出さない** (レビュー指摘 #6098)。成否は全トリック独占
+  // だけで決まり、カード点は一切見ない。
+  it('shows nothing during a Shelem contract', async () => {
+    mockExec.mockResolvedValue(makeState({ declarerIdx: 1, contract: 0, shelemBid: true, roundPoints: [40, 60] }));
+    renderWithProviders(<ShelemPage />);
+    await waitFor(() => expect(screen.getByTestId('sh-contract')).toBeInTheDocument());
+    expect(screen.queryByTestId('sh-defenders')).not.toBeInTheDocument();
+  });
+
+  it('shows nothing before a contract is settled', async () => {
+    mockExec.mockResolvedValue(makeState({ declarerIdx: -1 }));
+    renderWithProviders(<ShelemPage />);
+    await waitFor(() => expect(screen.getByTestId('sh-contract')).toBeInTheDocument());
+    expect(screen.queryByTestId('sh-defenders')).not.toBeInTheDocument();
+  });
+});

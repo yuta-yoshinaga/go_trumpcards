@@ -318,6 +318,19 @@ func ReversisCardPenalty(c *Card) int {
 	}
 }
 
+// ReversisTotalCardPenalty はその札を取ったときに実際に付く失点を返す。
+//
+// **印付きの 2 枚は基礎点だけでは足りない。**キノラ (♥J) と ♦A は
+// ReversisMarkedPenalty がさらに乗る (resolveTrick の chargeMarked)。手札に
+// 出す数字が基礎点だけだと、いちばん重い 2 枚を軽く見せることになる (#5747)。
+func ReversisTotalCardPenalty(c *Card) int {
+	penalty := ReversisCardPenalty(c)
+	if ReversisIsQuinola(c) || ReversisIsDiamondAce(c) {
+		penalty += ReversisMarkedPenalty
+	}
+	return penalty
+}
+
 // ReversisIsQuinola キノラ（♥J）かどうか
 func ReversisIsQuinola(c *Card) bool {
 	return c != nil && c.GetDesign() == ReversisQuinolaSuit && c.GetValue() == ReversisQuinolaValue

@@ -715,3 +715,42 @@ func TestPolignac_ActionLog(t *testing.T) {
 	p := newTestPolignac(t)
 	assert.NotEmpty(t, p.GetActionLog())
 }
+
+// **合計失点と内訳が食い違わないこと** (#5746)。内訳は獲得済みトリックから
+// 数え、失点は resolveTrick が積む。別々に育つ 2 つの値なので、一致は
+// 偶然ではなく規則。
+func TestPolignacTakenJackSuits_MatchTheRoundPenalty(t *testing.T) {
+	p := NewDefaultPolignac()
+	p.Reset()
+
+	player := p.GetPlayer(0)
+	// ♠J (2点) と ♥J (1点)、それに失点しない札を混ぜて取らせる。
+	player.AddTrick([]*Card{
+		NewCard(CardDesignHeart, PolignacJackValue, true),
+		NewCard(CardDesignHeart, 3, true),
+	})
+	player.AddTrick([]*Card{
+		NewCard(CardDesignSpade, PolignacJackValue, true),
+		NewCard(CardDesignClover, 9, true),
+	})
+	player.AddRoundPenalty(PolignacSpadeJackPenalty + PolignacJackPenalty)
+
+	suits := player.GetTakenJackSuits()
+	// **♠ が先頭。**重い方から読めないと、内訳を出す意味が薄い。
+	if len(suits) != 2 || suits[0] != CardDesignSpade || suits[1] != CardDesignHeart {
+		t.Fatalf("suits = %v, want [spade heart]", suits)
+	}
+
+	total := 0
+	for _, suit := range suits {
+		total += PolignacCardPenalty(NewCard(suit, PolignacJackValue, true))
+	}
+	if total != player.GetRoundPenalty() {
+		t.Errorf("the breakdown sums to %d but the round penalty is %d", total, player.GetRoundPenalty())
+	}
+
+	// 失点しない札しか取っていない席は内訳も空。
+	if got := p.GetPlayer(1).GetTakenJackSuits(); len(got) != 0 {
+		t.Errorf("suits = %v, want none", got)
+	}
+}
