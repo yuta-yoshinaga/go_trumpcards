@@ -74,3 +74,6 @@ func sergeantMajorHandOf(s *SergeantMajor, playerIdx int, cards ...*Card) {
 		p.AddCard(c)
 	}
 }
+
+// GetKittyForTest は取り込む前のキティを返す。
+func (s *SergeantMajor) GetKittyForTest() []*Card { return s.kitty }

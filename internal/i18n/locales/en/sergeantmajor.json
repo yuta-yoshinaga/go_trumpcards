@@ -35,5 +35,7 @@
   "suitHeart": "Hearts",
   "suitDiamond": "Diamonds",
   "helpExamplePlay": "  p 0                  play hand card 0",
-  "helpHint": "  h                    show a hint"
+  "helpHint": "  h                    show a hint",
+  "kittyCard": "{{card}}*",
+  "kittyNote": "(* marks the four cards that came in from the kitty)"
 }
