@@ -51733,6 +51733,18 @@ components:
         lastCaptureIdx:
           type: integer
           description: The seat that captured last, or -1. It receives whatever is left on the table.
+        lastCaptureKind:
+          type: string
+          description: >-
+            Whether the last capture was a plain table take ("take") or a whole
+            bundle stolen off another seat ("steal"); empty before anyone has
+            captured. A steal empties someone else's bundle, so it is not the
+            same event as a take.
+        lastCaptureVictimIdx:
+          type: integer
+          description: >-
+            The seat robbed by the last steal, or -1 when the last capture was a
+            take.
         currentPlayerIdx:
           type: integer
         turnNumber:
