@@ -68,6 +68,35 @@ describe('ZwanzigerrufenPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', { bid: 'rufer' }));
   });
 
+  // **押せるかは規則が決める** (#5786)。上回れない入札を押させると、サーバの
+  // エラーで返ってくるだけになる。
+  it('disables bids that cannot beat the current highest', async () => {
+    mockExec.mockResolvedValue(makeZwanzigerrufenState({ highestBid: 2 }));
+    const { unmount } = renderWithProviders(<ZwanzigerrufenPage />);
+    // 20番呼び (2) が出ているので、同じ 20番呼びはもう打てない。ソロ (3) は打てる。
+    expect(await screen.findByTestId('zw-bid-rufer')).toBeDisabled();
+    expect(screen.getByTestId('zw-bid-solo')).toBeEnabled();
+    expect(screen.getByTestId('zw-pass')).toBeEnabled();
+    expect(screen.getByTestId('zw-highest-bid')).toHaveTextContent('20番呼び');
+    unmount();
+
+    // ソロまで出ていれば、上回れる入札はもう無い。
+    mockExec.mockResolvedValue(makeZwanzigerrufenState({ highestBid: 3 }));
+    renderWithProviders(<ZwanzigerrufenPage />);
+    expect(await screen.findByTestId('zw-bid-solo')).toBeDisabled();
+    expect(screen.getByTestId('zw-bid-rufer')).toBeDisabled();
+    expect(screen.getByTestId('zw-pass')).toBeEnabled();
+    expect(screen.getByTestId('zw-highest-bid')).toHaveTextContent('ソロ');
+  });
+
+  // **まだ誰も入札していなければ両方押せる。**
+  it('keeps both bids live before anyone has bid', async () => {
+    renderWithProviders(<ZwanzigerrufenPage />);
+    expect(await screen.findByTestId('zw-bid-rufer')).toBeEnabled();
+    expect(screen.getByTestId('zw-bid-solo')).toBeEnabled();
+    expect(screen.getByTestId('zw-highest-bid')).toHaveTextContent('-');
+  });
+
   it('sends solo and pass', async () => {
     renderWithProviders(<ZwanzigerrufenPage />);
     fireEvent.click(await screen.findByTestId('zw-bid-solo'));
