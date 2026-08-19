@@ -46,17 +46,20 @@ func (m *MockHoneymoonBridgeGame) NextBid() (int, int) {
 	return args.Int(0), args.Int(1)
 }
 
-func (m *MockHoneymoonBridgeGame) IsHumanTurn() bool        { return m.Called().Bool(0) }
-func (m *MockHoneymoonBridgeGame) IsHumanBidTurn() bool     { return m.Called().Bool(0) }
-func (m *MockHoneymoonBridgeGame) GetRoundNumber() int      { return m.Called().Int(0) }
-func (m *MockHoneymoonBridgeGame) GetTrickNumber() int      { return m.Called().Int(0) }
-func (m *MockHoneymoonBridgeGame) GetStockSize() int        { return m.Called().Int(0) }
-func (m *MockHoneymoonBridgeGame) GetTrumpSuit() int        { return m.Called().Int(0) }
-func (m *MockHoneymoonBridgeGame) GetDeclarerIdx() int      { return m.Called().Int(0) }
-func (m *MockHoneymoonBridgeGame) GetContractLevel() int    { return m.Called().Int(0) }
-func (m *MockHoneymoonBridgeGame) RequiredTricks() int      { return m.Called().Int(0) }
-func (m *MockHoneymoonBridgeGame) GetLastMade() bool        { return m.Called().Bool(0) }
-func (m *MockHoneymoonBridgeGame) GetLastTricks() int       { return m.Called().Int(0) }
+func (m *MockHoneymoonBridgeGame) IsHumanTurn() bool     { return m.Called().Bool(0) }
+func (m *MockHoneymoonBridgeGame) IsHumanBidTurn() bool  { return m.Called().Bool(0) }
+func (m *MockHoneymoonBridgeGame) GetRoundNumber() int   { return m.Called().Int(0) }
+func (m *MockHoneymoonBridgeGame) GetTrickNumber() int   { return m.Called().Int(0) }
+func (m *MockHoneymoonBridgeGame) GetStockSize() int     { return m.Called().Int(0) }
+func (m *MockHoneymoonBridgeGame) GetTrumpSuit() int     { return m.Called().Int(0) }
+func (m *MockHoneymoonBridgeGame) GetDeclarerIdx() int   { return m.Called().Int(0) }
+func (m *MockHoneymoonBridgeGame) GetContractLevel() int { return m.Called().Int(0) }
+func (m *MockHoneymoonBridgeGame) RequiredTricks() int   { return m.Called().Int(0) }
+func (m *MockHoneymoonBridgeGame) GetLastMade() bool     { return m.Called().Bool(0) }
+func (m *MockHoneymoonBridgeGame) GetLastTricks() int    { return m.Called().Int(0) }
+
+// GetLastPoints モック
+func (m *MockHoneymoonBridgeGame) GetLastPoints() int       { return m.Called().Int(0) }
 func (m *MockHoneymoonBridgeGame) GetCurrentPlayerIdx() int { return m.Called().Int(0) }
 func (m *MockHoneymoonBridgeGame) GetLeadPlayerIdx() int    { return m.Called().Int(0) }
 func (m *MockHoneymoonBridgeGame) GetDealerIdx() int        { return m.Called().Int(0) }

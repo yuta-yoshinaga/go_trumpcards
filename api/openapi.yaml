@@ -44073,9 +44073,8 @@ components:
         wonLow:
           type: integer
           description: |
-            Hi-Lo only. Chips won as the low half. `wonAmount` is the high and
-            low winnings combined.
-          description: Chips won from the pot
+            Hi-Lo only. Chips won as the low half, out of the pot. `wonAmount` is
+            the high and low winnings combined.
           example: 40
         mucked:
           type: boolean
@@ -48873,6 +48872,13 @@ components:
             Cards still face down. 52 does not divide by three, so the four
             left over go to the dealer, who discards discardCount after naming
             trump.
+        kittyIndices:
+          type: array
+          description: >-
+            Positions in the human's hand that came in from the kitty. Empty once
+            the dealer has discarded.
+          items:
+            type: integer
         discardCount:
           type: integer
           description: How many cards the dealer must discard (4).
@@ -49024,6 +49030,11 @@ components:
         lastTricks:
           type: integer
           description: Tricks the declarer took in the last deal.
+        lastPoints:
+          type: integer
+          description: >-
+            Points the deal that just ended actually moved: level x 10 plus 5 an
+            overtrick when made, or 10 a trick short to the opponent.
         currentPlayerIdx:
           type: integer
         leadPlayerIdx:
