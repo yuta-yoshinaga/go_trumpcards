@@ -39,6 +39,7 @@ func (p *MendikotWebPresenter) buildBase(m interfaces.MendikotGame) *controller.
 	resObj.LeadPlayerIdx = m.GetLeadPlayerIdx()
 	resObj.DealerIdx = m.GetDealerIdx()
 	resObj.ValidPlays = intSliceOrEmpty(m.GetValidPlayIndices(0))
+	resObj.WillSetTrump = m.IsHumanTurn() && m.WillSetTrump(m.GetCurrentPlayerIdx())
 	resObj.GameEndFlag = m.GetGameEndFlag()
 	resObj.WinnerTeam = m.GetWinnerTeam()
 	resObj.CurrentTrick = trickCardsToOutput(m.GetCurrentTrick())

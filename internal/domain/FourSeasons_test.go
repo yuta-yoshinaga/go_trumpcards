@@ -433,8 +433,8 @@ func TestFourSeasons_Foundation_RejectsWhenComplete(t *testing.T) {
 func TestFourSeasons_RankWraparound(t *testing.T) {
 	assert.Equal(t, 1, fourSeasonsNextRank(CardValueMax), "K -> A")
 	assert.Equal(t, 2, fourSeasonsNextRank(1), "A -> 2")
-	assert.Equal(t, CardValueMax, fourSeasonsPrevRank(1), "A -> K going down")
-	assert.Equal(t, 1, fourSeasonsPrevRank(2), "2 -> A going down")
+	assert.Equal(t, CardValueMax, FourSeasonsPrevRank(1), "A -> K going down")
+	assert.Equal(t, 1, FourSeasonsPrevRank(2), "2 -> A going down")
 }
 
 // The hint prefers a tableau card over the waste, because a tableau top blocks

@@ -38,7 +38,8 @@
     "points": "{{points}} pts",
     "koikoi": "Koi-Koi",
     "shobu": "Shobu",
-    "multiplier": "(x{{mult}})"
+    "multiplier": "(x{{mult}})",
+    "scores": "Cumulative: you {{you}} vs opponent {{opp}}"
   },
   "roundResult": {
     "title": "Round Result",

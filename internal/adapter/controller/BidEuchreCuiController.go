@@ -26,7 +26,7 @@ func (c *BidEuchreCuiController) Exec(command string) string {
 			cfg := c.bi.GetConfig()
 			return c.bi.ResetWithConfig(cfg)
 		},
-		[]string{"b", "bid", "ps", "pass", "t", "trump", "p", "play", "n", "next", "log", "l"},
+		[]string{"b", "bid", "ps", "pass", "t", "trump", "p", "play", "n", "next", "h", "hint", "log", "l"},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bid":
@@ -48,7 +48,7 @@ func (c *BidEuchreCuiController) Exec(command string) string {
 			case "n", "next":
 				return c.bi.NextHand(), true
 			default:
-				return handleCuiLog(cmd, c.bi.ActionLog)
+				return handleCuiHintAndLog(cmd, c.bi.Hint, c.bi.ActionLog)
 			}
 		},
 	)

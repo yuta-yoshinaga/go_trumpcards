@@ -67,6 +67,8 @@ type UltiGame interface {
 	GetDiscardCount() int
 	// GetPlayerCoins プレイヤー別累積コインを取得する
 	GetPlayerCoins() [domain.UltiPlayerCnt]int
+	// GetLastDealCoins 直近ディールの精算による符号付きコイン増減を取得する
+	GetLastDealCoins() [domain.UltiPlayerCnt]int
 	// GetCardPoints プレイヤー i の獲得カードポイントを取得する
 	GetCardPoints(i int) int
 	// GetOutcome 直近ディールの結果を取得する

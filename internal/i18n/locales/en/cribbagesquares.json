@@ -27,5 +27,6 @@
   "hintSynergy": "it makes fifteens, pairs or runs with what is already in that row or column",
   "hintAny": "nothing combines yet; any empty cell will do",
   "gameComplete": "Game over. Total score: {{score}} (target {{target}})",
-  "helpExampleHint": "  h                        ask for a move"
+  "helpExampleHint": "  h                        ask for a move",
+  "partialHeader": "--- so far (points already locked in without the starter; the starter can only add) ---"
 }

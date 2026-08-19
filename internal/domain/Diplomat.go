@@ -488,6 +488,16 @@ func (c *Diplomat) canPlaceOnTableau(card *Card, pile int) bool {
 	return card.GetValue() == top.GetValue()-1
 }
 
+// DiplomatIsDeadEndTop は、その札が一番上にある列がタブロー間移動の
+// 受け皿として死んでいるかを返す。
+//
+// **A の上には何も置けない** (canPlaceOnTableau は top-1 しか通さないので、
+// A のとき通る値は 0 = 存在しないランク)。空き列が主要な逃げ道なので、
+// 詰んだ列を早く見分けられるかどうかは実際の判断に効く (#5741)。
+func DiplomatIsDeadEndTop(card *Card) bool {
+	return card != nil && card.GetValue() == 1
+}
+
 // canPlaceOnFoundation 基礎札に置けるか（空なら A、以降は同スートで 1 つ上）
 func (c *Diplomat) canPlaceOnFoundation(card *Card, fIdx int) bool {
 	if card == nil {

@@ -4,9 +4,12 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -29,6 +32,7 @@ func setupSambaCuiMock() *interfaces.MockSambaGame {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	m.On("GetTeamScore", 0).Return(0)
 	m.On("GetTeamScore", 1).Return(0)
+	m.On("GetMinimumMeldValue", mock.Anything).Return(50)
 	return m
 }
 
@@ -188,5 +192,39 @@ func TestSambaCuiPresenter_ActionLogOutput(t *testing.T) {
 		result := p.ActionLogOutput(m)
 		assert.NotEmpty(t, result)
 		m.AssertExpectations(t)
+	})
+}
+
+// #5702: 初回メルドの最低点はチーム累積点で 15/50/90/120 と変わる。Web は
+// sa-meld-points に「必要点数」を常時出しているのに、CUI は一般的な案内文だけで、
+// 足りているかはメルドを試すまで分からなかった。
+func TestSambaCuiPresenter_ShowsTheInitialMeldRequirement(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.SambaCuiPresenter)
+
+	meldTurn := func(minValue int, melded bool) *interfaces.MockSambaGame {
+		m, players := setupSambaCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.SambaPhaseMeld)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetMinimumMeldValue")
+		m.On("GetMinimumMeldValue", mock.Anything).Return(minValue)
+		players[0].SetHasInitMeld(melded)
+		return m
+	}
+
+	// スコア帯ごとの値はドメインが決める。表示側はそれをそのまま出す。
+	for _, minValue := range []int{15, 50, 90, 120} {
+		out := p.Output(meldTurn(minValue, false), nil)
+
+		assert.Contains(t, out, i18n.Tf("samba.promptMeldMinimum",
+			"points", strconv.Itoa(minValue)))
+	}
+
+	t.Run("says nothing once the team has melded", func(t *testing.T) {
+		out := p.Output(meldTurn(90, true), nil)
+
+		assert.NotContains(t, out, strings.Split(i18n.T("samba.promptMeldMinimum"), "{{")[0])
 	})
 }

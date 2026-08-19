@@ -20,7 +20,10 @@
     "cpu": "CPU{{idx}}",
     "dummyHand": "ダミーの手札",
     "yourTurn": "あなたの番",
-    "dummyTurn": "ダミーの番（あなたが出します）"
+    "dummyTurn": "ダミーの番（あなたが出します）",
+    "teamTag": "T{{team}}",
+    "teamAllyAria": "あなたの味方",
+    "teamFoeAria": "相手チーム"
   },
   "currentTrick": "現在のトリック",
   "roundResult": {

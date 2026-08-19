@@ -162,3 +162,8 @@ func (p *BidEuchreWebPresenter) buildMessage(g interfaces.BidEuchreGame, lastErr
 func (p *BidEuchreWebPresenter) ActionLogOutput(g interfaces.BidEuchreGame) string {
 	return actionLogOutputJSON(g)
 }
+
+// HintOutput は Web では通常の状態出力と同じ (ヒントは CUI 専用)。
+func (p *BidEuchreWebPresenter) HintOutput(g interfaces.BidEuchreGame) string {
+	return p.Output(g, nil)
+}

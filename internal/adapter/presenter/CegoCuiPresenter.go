@@ -182,6 +182,14 @@ func (p *CegoCuiPresenter) writePrompt(b *strings.Builder, g interfaces.CegoGame
 		b.WriteString(i18n.Tf("cego.promptExchange",
 			"name", cuiPlayerName(g.GetPlayer(g.GetDeclarerIdx()), g.GetDeclarerIdx())) + "\n")
 		b.WriteString(i18n.T("cego.promptExchangeHelp") + "\n")
+		// 交換は 2 段階 (1枚だけ残す → ブラインドを受け取る)。Web は番号付きの
+		// ウィザードで出しているのに、CUI は「何枚伏せて何枚戻るのか」が
+		// どこにも無かった (#5718)。枚数はすべてドメインの定数から取る。
+		b.WriteString(i18n.Tf("cego.promptExchangeStep1",
+			"keep", strconv.Itoa(domain.CegoKeepCount),
+			"laydown", strconv.Itoa(domain.CegoLayDownCount)) + "\n")
+		b.WriteString(i18n.Tf("cego.promptExchangeStep2",
+			"blind", strconv.Itoa(g.GetBlindCount())) + "\n")
 	case domain.CegoPhasePlay:
 		currentIdx := g.GetCurrentPlayerIdx()
 		b.WriteString(i18n.Tf("cego.promptPlay",

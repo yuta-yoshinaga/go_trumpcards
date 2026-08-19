@@ -20,6 +20,7 @@
   "promptBidHelp": "bid pass・・・降りる ｜ bid chiamo・・・キアーモ(ステーク1) ｜ bid solo・・・ソロ(ステーク2)",
   "promptDiscard": "モンテ交換 — ソリスト: {{name}}",
   "promptDiscardHelp": "d <idx>・・・4枚を捨てて12枚にする",
+  "promptDiscardRemaining": "あと {{n}} 枚捨てる（手札 {{size}} 枚 → {{target}} 枚）",
   "promptPlay": "手番: {{name}}",
   "promptPlayHelp": "play <idx>・・・カードを出す（強さ 3>2>A>K>Q>J>7>6>5>4／マストフォロー）",
   "promptTrickEnd": "トリック終了",

@@ -188,6 +188,16 @@ func (_m *MockTysiacGame) GetRoundMarriage() [domain.TysiacPlayerCnt]int {
 	return ret.Get(0).([domain.TysiacPlayerCnt]int)
 }
 
+// GetMarriageOptions モック
+func (_m *MockTysiacGame) GetMarriageOptions(playerIdx int) []domain.TysiacMarriageOption {
+	ret := _m.Called(playerIdx)
+	v := ret.Get(0)
+	if v == nil {
+		return nil
+	}
+	return v.([]domain.TysiacMarriageOption)
+}
+
 // GetWinnerPlayer モック
 func (_m *MockTysiacGame) GetWinnerPlayer() int {
 	ret := _m.Called()

@@ -71,5 +71,11 @@
     "actions": "In the bidding phase, buttons appear for Pass / 16 / 20 / 24 / 28. Only a bid higher than the current highest is selectable. The highest bidder's team picks a hidden trump and plays eight tricks. If the bidding team captures at least its bid in card points it scores +1 game point; otherwise the other team scores +1. The first team to the target game points wins."
   },
   "hintRequested": "Hint available",
-  "noHint": "No hint available"
+  "noHint": "No hint available",
+  "contractProgress": "Contract: {{team}} {{got}}/{{contract}}",
+  "contractStatus": {
+    "made": "made",
+    "failed": "cannot be made",
+    "needMore": "{{remaining}} more"
+  }
 }

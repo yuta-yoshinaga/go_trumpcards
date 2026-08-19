@@ -24,6 +24,7 @@ func setupGaigelCuiMock() *interfaces.MockGaigelGame {
 	m.On("GetDealerIdx").Return(0)
 	m.On("GetTrumpSuit").Return(1)
 	m.On("GetStockRemaining").Return(27)
+	m.On("GetTrumpCard").Return((*domain.Card)(nil))
 	m.On("GetTeamScore", 0).Return(0)
 	m.On("GetTeamScore", 1).Return(0)
 	m.On("GetWinnerTeam").Return(-1)
@@ -171,4 +172,38 @@ func TestGaigelCuiPresenter_ActionLogOutput(t *testing.T) {
 	m := setupGaigelCuiMock()
 	p := new(presenter.GaigelCuiPresenter)
 	assert.NotNil(t, p.ActionLogOutput(m))
+}
+
+// #5686: 山札の下に置かれた表向きの1枚が切り札を決める。Web はその実カードを
+// 画像で出しているのに、CUI はスート記号しか出しておらず、**その札が最後に山から
+// 引かれる1枚である**ことが見えなかった。
+func TestGaigelCuiPresenter_ShowsTheTrumpCard(t *testing.T) {
+	p := new(presenter.GaigelCuiPresenter)
+
+	build := func(card *domain.Card) *interfaces.MockGaigelGame {
+		m, _ := setupGaigelCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTrumpCard")
+		m.On("GetTrumpCard").Return(card)
+		return m
+	}
+
+	t.Run("names the face-up card that set the trump", func(t *testing.T) {
+		out := p.Output(build(domain.NewCard(domain.CardDesignSpade, 13, false)), nil)
+
+		assert.Contains(t, out, i18n.Tf("gaigel.trumpLineWithCard",
+			"suit", "SPADE",
+			"card", "SPADE 13",
+			"stock", "27"))
+	})
+
+	// **山札が尽きると表示カードは引かれて無くなる** (受け入れ条件2)。
+	t.Run("falls back to the suit alone once the card is gone", func(t *testing.T) {
+		out := p.Output(build(nil), nil)
+
+		assert.Contains(t, out, i18n.Tf("gaigel.trumpLine",
+			"suit", "SPADE", "stock", "27"))
+		// 表示カード入りの行は出ない。
+		assert.NotContains(t, out, i18n.Tf("gaigel.trumpLineWithCard",
+			"suit", "SPADE", "card", "SPADE 13", "stock", "27"))
+	})
 }

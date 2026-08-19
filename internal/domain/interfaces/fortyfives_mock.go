@@ -214,6 +214,16 @@ func (_m *MockFortyFivesGame) GetPlayableIndices(playerIdx int) []int {
 	return nil
 }
 
+// GetTopTrumpIndices モック
+func (_m *MockFortyFivesGame) GetTopTrumpIndices(playerIdx int) []int {
+	ret := _m.Called(playerIdx)
+	v := ret.Get(0)
+	if v == nil {
+		return nil
+	}
+	return v.([]int)
+}
+
 // GetHint モック
 func (_m *MockFortyFivesGame) GetHint() *domain.FortyFivesHint {
 	ret := _m.Called()

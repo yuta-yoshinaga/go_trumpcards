@@ -363,3 +363,37 @@ describe('IsraeliWhistPage', () => {
     expect(await screen.findByText(/競り落とす価値があります/)).toBeInTheDocument();
   });
 });
+
+// **2 倍はこのゲームの起伏そのもの** (#5752)。畳まれたアクションログを
+// 開かないと、点が普段の倍動いた理由が分からなかった。
+describe('IsraeliWhistPage doubled-round banner', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+  });
+
+  it('announces a round where every seat hit its bid', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ phase: 3, doubled: true, doubledAllExact: true } as Partial<IsraeliWhistResponse>),
+    );
+    renderWithProviders(<IsraeliWhistPage />);
+    expect(await screen.findByTestId('iw-doubled-banner')).toHaveTextContent('全員が宣言通り');
+  });
+
+  it('announces a round where every seat missed, without swapping the reason', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ phase: 3, doubled: true, doubledAllExact: false } as Partial<IsraeliWhistResponse>),
+    );
+    renderWithProviders(<IsraeliWhistPage />);
+    const banner = await screen.findByTestId('iw-doubled-banner');
+    expect(banner).toHaveTextContent('全員が外した');
+    expect(banner).not.toHaveTextContent('全員が宣言通り');
+  });
+
+  it('stays quiet on an ordinary round', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 3, doubled: false } as Partial<IsraeliWhistResponse>));
+    renderWithProviders(<IsraeliWhistPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('iw-doubled-banner')).not.toBeInTheDocument();
+  });
+});

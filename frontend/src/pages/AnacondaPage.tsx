@@ -34,6 +34,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { AnacondaResponse } from '../types/card';
 import { AnacondaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { anacondaPassRecipient } from '../utils/anacondaPass';
 import { ANACONDA_HELP, parseAnacondaCommand } from '../utils/cli/commands/anacondaCommands';
 import { formatAnacondaState } from '../utils/cli/formatters/anacondaFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -174,6 +175,9 @@ function AnacondaPageContent() {
   const humanTurn = state.isHumanTurn && !isGameEnd;
   const humanWonMatch = state.matchWinnerIdx >= 0 && (state.players[state.matchWinnerIdx]?.isHuman ?? false);
 
+  // 受取人は「左隣」ではなく「脱落者を飛ばした次の現存プレイヤー」。
+  const passRecipient = anacondaPassRecipient(state.players);
+
   const canSelectCards = (isPassPhase || isSetPhase) && humanTurn;
   const passReady = isPassPhase && humanTurn && selected.length === state.passCount;
   const keepReady = isSetPhase && humanTurn && selected.length === KEEP_SIZE;
@@ -304,8 +308,18 @@ function AnacondaPageContent() {
             </div>
 
             {isPassPhase && humanTurn && (
-              <div className="text-ds-text-muted text-center mb-2 text-sm font-semibold">
-                {t('passNotice', { count: state.passCount })}
+              <div
+                className="text-ds-text-muted text-center mb-2 text-sm font-semibold"
+                data-testid="anaconda-pass-notice"
+              >
+                {/* 「左隣」は脱落者を飛ばすので席番号 +1 とは限らない。CUI は
+                    受取人を名指ししているので、Web でも同じ相手を出す。 */}
+                {passRecipient >= 0
+                  ? t('passNoticeTo', {
+                      count: state.passCount,
+                      name: playerLabel(passRecipient, state.players[passRecipient]?.isHuman ?? false),
+                    })
+                  : t('passNotice', { count: state.passCount })}
               </div>
             )}
             {isSetPhase && humanTurn && (

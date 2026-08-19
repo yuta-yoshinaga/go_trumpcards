@@ -472,6 +472,27 @@ func (g *FortyFives) isTopTrump(card *Card) bool {
 	return d == CardDesignHeart && v == 1
 }
 
+// GetTopTrumpIndices は指定プレイヤーの手札のうち上位切り札の位置を返す。
+//
+// 上位切り札 (切り札の 5・切り札の J・♥A) は固定で最強なうえ、**持っていると
+// マストフォローを免除される** (Reneging, validatePlay)。とくに ♥A は切り札
+// スートに関係なく常に切り札扱いで、記号だけでは読み取れない。判定
+// (isTopTrump) は非公開なので、画面が条件を書き写さずに済むよう位置を返す
+// (#5643)。
+func (g *FortyFives) GetTopTrumpIndices(playerIdx int) []int {
+	if playerIdx < 0 || playerIdx >= len(g.players) {
+		return nil
+	}
+	player := g.players[playerIdx]
+	var indices []int
+	for i := 0; i < player.GetCardsSize(); i++ {
+		if g.isTopTrump(player.GetCard(i)) {
+			indices = append(indices, i)
+		}
+	}
+	return indices
+}
+
 // isTrumpCard 切り札扱いの札か (切り札スート、または ♥A)。
 func (g *FortyFives) isTrumpCard(card *Card) bool {
 	return card.GetDesign() == g.trumpSuit || (card.GetDesign() == CardDesignHeart && card.GetValue() == 1)

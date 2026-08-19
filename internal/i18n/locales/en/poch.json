@@ -22,6 +22,8 @@
   "pool.centre": "Centre",
   "promptStaking": "settling the pools",
   "promptPochen": "b to bet (currently {{target}}) / f to fold",
+  "yourCombo": "Your set: {{size}} of a kind, rank {{rank}}",
+  "yourComboNone": "Your set: none (a single card is not a set)",
   "promptFollow": "p <i> to play the next higher card of the same suit",
   "promptFreeLead": "The run is stopped. p <i> to start again with any card",
   "promptNext": "n for the next deal",

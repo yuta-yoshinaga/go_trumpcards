@@ -914,3 +914,35 @@ func TestSambaPlayer_ResetRound(t *testing.T) {
 	assert.False(t, p.GetHasInitMeld())
 	assert.Equal(t, 0, p.GetRoundScore())
 }
+
+// #5702: 初回メルドの最低点はチーム累積点の帯で決まる。CUI と Web の両方が
+// この値を出すので、帯の境界そのものをここで固定する。
+func TestSambaMinimumMeldValue(t *testing.T) {
+	cases := []struct {
+		score int
+		want  int
+	}{
+		{-1, 15}, {-500, 15},
+		{0, 50}, {1499, 50},
+		{1500, 90}, {2999, 90},
+		{3000, 120}, {10000, 120},
+	}
+	for _, c := range cases {
+		assert.Equal(t, c.want, domain.SambaMinimumMeldValue(c.score), "score %d", c.score)
+	}
+}
+
+// GetMinimumMeldValue は席のチームの累積点を引いて同じ表を使う。
+func TestSamba_GetMinimumMeldValue(t *testing.T) {
+	g := domain.NewDefaultSamba()
+	g.Reset()
+
+	assert.Equal(t, 50, g.GetMinimumMeldValue(0), "fresh game starts at 0 points")
+
+	g.SetTeamScore(g.GetPlayer(0).GetTeam(), 1500)
+	assert.Equal(t, 90, g.GetMinimumMeldValue(0))
+
+	// 範囲外の添字は 0 (呼び出し側が席を取り違えても panic しない)。
+	assert.Equal(t, 0, g.GetMinimumMeldValue(-1))
+	assert.Equal(t, 0, g.GetMinimumMeldValue(99))
+}

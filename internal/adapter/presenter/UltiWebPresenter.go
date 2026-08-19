@@ -50,6 +50,7 @@ func (p *UltiWebPresenter) buildBase(g interfaces.UltiGame) *controller.UltiWebO
 	resObj.GameEndFlag = g.GetGameEndFlag()
 	resObj.WinnerPlayer = g.GetWinnerPlayer()
 	resObj.PlayerCoins = g.GetPlayerCoins()
+	resObj.LastDealCoins = g.GetLastDealCoins()
 	resObj.LastTrickWinner = -1
 	resObj.IsHumanTurn = g.IsHumanTurn()
 	resObj.IsHumanBidTurn = g.IsHumanBidTurn()

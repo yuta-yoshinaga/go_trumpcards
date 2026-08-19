@@ -47,5 +47,7 @@
     "decide": "Look at your hand and the trump card, then choose. **Dropping costs only the ante**; playing and taking no trick costs more.",
     "trick": "Cards played this trick appear here. Trump beats everything, then the led suit.",
     "hand": "Your hand. Legal cards carry a green ring. The first goal is simply to bank one trick."
-  }
+  },
+  "dealerBadge": "dealer",
+  "dealerAria": "the dealer this round (deciding and leading start to their left)"
 }

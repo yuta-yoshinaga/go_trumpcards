@@ -51,6 +51,11 @@ func (m *MockSergeantMajorGame) GetRoundNumber() int      { return m.Called().In
 func (m *MockSergeantMajorGame) GetTrickNumber() int      { return m.Called().Int(0) }
 func (m *MockSergeantMajorGame) GetTrumpSuit() int        { return m.Called().Int(0) }
 func (m *MockSergeantMajorGame) GetKittySize() int        { return m.Called().Int(0) }
+
+// IsAbsorbedKittyCard モック
+func (m *MockSergeantMajorGame) IsAbsorbedKittyCard(c *domain.Card) bool {
+	return m.Called(c).Bool(0)
+}
 func (m *MockSergeantMajorGame) GetDiscardCount() int     { return m.Called().Int(0) }
 func (m *MockSergeantMajorGame) GetLastExchange() int     { return m.Called().Int(0) }
 func (m *MockSergeantMajorGame) GetCurrentPlayerIdx() int { return m.Called().Int(0) }

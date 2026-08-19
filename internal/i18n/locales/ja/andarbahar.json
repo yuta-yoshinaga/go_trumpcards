@@ -30,5 +30,6 @@
   "andarBaharHintAndarFirst": "アンダーから配ります。アンダーは 51.50% で当たりますが配当は 0.9:1 です",
   "andarBaharHintBaharFirst": "バハールから配ります。バハールは 51.50% で当たりますが配当は 0.9:1 です",
   "andarBaharHintWaitNextRound": "決着しました。次のラウンドを始めてください",
-  "helpExampleBet": "  b 100 a                       100 をアンダーに賭ける"
+  "helpExampleBet": "  b 100 a                       100 をアンダーに賭ける",
+  "payoutBreakdownLine": "　内訳: メイン {{main}} / サイド {{side}}"
 }

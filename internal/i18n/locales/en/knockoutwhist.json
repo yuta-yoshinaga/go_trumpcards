@@ -13,6 +13,8 @@
   "promptTrickEnd": "Trick complete",
   "promptTrickEndHelp": "n / next ... go to the next trick",
   "promptRoundEnd": "Round complete ({{active}} players still in)",
+  "nextRoundPreview": "Next round: {{count}} cards / trump chosen by {{name}}",
+  "finalRoundPreview": "Final round: {{count}} card / trump chosen by {{name}}",
   "promptRoundEndHelp": "nr / nextround ... go to the next round (players with no tricks lose a dogbone or are knocked out, and hands shrink by one card)",
   "promptTrumpSelect": "{{name}} won the round. Choose the trump suit for the next round.",
   "promptTrumpSelectHelp": "st <1-4> ... select trump (1=Spades, 2=Clubs, 3=Hearts, 4=Diamonds)",

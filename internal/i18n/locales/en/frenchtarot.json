@@ -24,6 +24,8 @@
   "promptBidHelp": "bid petite|garde|gardesans|gardecontre ... place a bid  |  pass ... pass",
   "promptChien": "Chien revealed — Turn: {{name}}",
   "promptChienHelp": "discard <i0> ... <i5> ... put 6 cards face down (no kings/trumps/Excuse)",
+  "promptChienBuriable": "Buriable cards: {{cards}}",
+  "promptChienLegend": "Kings, the Excuse, the Petit and the 21 can never be buried; trumps only when six other cards are not available",
   "promptPlay": "Turn: {{name}}  (follow suit; if void play a trump; overtrump if able)",
   "promptPlayHelp": "play <idx> ... play a card",
   "promptTrickEnd": "Trick complete",

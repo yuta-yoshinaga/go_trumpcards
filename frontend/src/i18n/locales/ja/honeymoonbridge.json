@@ -27,7 +27,9 @@
   "roundResult": {
     "made": "契約成立: {{need}}トリック必要で {{took}} 取りました。",
     "down": "契約失敗: {{need}}トリック必要で {{took}} しか取れませんでした。",
-    "passedOut": "両者パスのため、このディールは流れました。"
+    "passedOut": "両者パスのため、このディールは流れました。",
+    "madeWithPoints": "契約成立: {{need}}トリック必要で {{took}} 取りました（宣言者に +{{points}}点）。",
+    "downWithPoints": "契約失敗: {{need}}トリック必要で {{took}} しか取れませんでした（相手に +{{points}}点）。"
   },
   "actions": {
     "level": "レベル",

@@ -15,7 +15,9 @@
     "met": "達成{{n}}回",
     "declarer": "[切り札決定]",
     "you": "あなた",
-    "cpu": "CPU{{idx}}"
+    "cpu": "CPU{{idx}}",
+    "exchangeDetail": "（{{pairs}}）",
+    "exchangePair": "{{giver}}→{{taker}} {{n}}枚"
   },
   "currentTrick": "現在のトリック",
   "actions": {

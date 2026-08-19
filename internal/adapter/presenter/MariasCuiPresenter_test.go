@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -36,6 +37,7 @@ func setupMariasCuiMock() *interfaces.MockMariasGame {
 	m.On("GetSoloistIdx").Return(0)
 	m.On("GetWinnerPlayer").Return(-1)
 	m.On("GetRoundCardPoints").Return([domain.MariasPlayerCnt]int{0, 0, 0})
+	m.On("GetRoundMarriage").Return([domain.MariasPlayerCnt]int{0, 0, 0}).Maybe()
 	m.On("GetPlayerScores").Return([domain.MariasPlayerCnt]int{0, 0, 0})
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	return m
@@ -141,4 +143,75 @@ func TestMariasCuiPresenter_ActionLogOutput(t *testing.T) {
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, "play")
+}
+
+// #5647: 結婚 (K+Q) は配札直後に確定し、**ドメインは roundCardPts + roundMarriage
+// で勝敗を決める** (Marias.go の settle)。ところが CUI のラウンド終了行はカード点
+// しか合算しておらず、結婚点で勝ったソロイストを負けたように読ませていた。
+func TestMariasCuiPresenter_RoundEndCountsTheMarriagePoints(t *testing.T) {
+	p := new(presenter.MariasCuiPresenter)
+
+	roundEndMock := func(card, marriage [domain.MariasPlayerCnt]int) *interfaces.MockMariasGame {
+		m, _ := setupMariasCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundCardPoints")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundMarriage")
+		m.On("GetPhase").Return(domain.MariasPhaseRoundEnd)
+		m.On("GetRoundCardPoints").Return(card)
+		m.On("GetRoundMarriage").Return(marriage)
+		return m
+	}
+
+	// ソロイスト(席0) はカード 45 + 結婚 40 = 85、守備は 45+10=55。カード点だけ
+	// 見ると 45 対 45 で引き分けに読めるが、実際はソロイストの勝ち。
+	t.Run("adds each side's marriage points to the totals", func(t *testing.T) {
+		out := p.Output(roundEndMock(
+			[domain.MariasPlayerCnt]int{45, 30, 15},
+			[domain.MariasPlayerCnt]int{40, 10, 0},
+		), nil)
+
+		assert.Contains(t, out, i18n.Tf("marias.promptRoundEnd",
+			"soloist", color.Bold(i18n.T("cuiPlayerYou")), "pts", "85"))
+		assert.Contains(t, out, i18n.Tf("marias.promptRoundEndDefenders", "pts", "55"))
+	})
+
+	t.Run("unchanged when nobody had a marriage", func(t *testing.T) {
+		out := p.Output(roundEndMock(
+			[domain.MariasPlayerCnt]int{45, 30, 15},
+			[domain.MariasPlayerCnt]int{0, 0, 0},
+		), nil)
+
+		assert.Contains(t, out, i18n.Tf("marias.promptRoundEnd",
+			"soloist", color.Bold(i18n.T("cuiPlayerYou")), "pts", "45"))
+		assert.Contains(t, out, i18n.Tf("marias.promptRoundEndDefenders", "pts", "45"))
+	})
+}
+
+// Play 中も結婚が成立したことを知らせる。Web は marias-marriage バナーで
+// 「{{points}}点獲得」と常時出している。
+func TestMariasCuiPresenter_PlayShowsTheMarriageEarned(t *testing.T) {
+	p := new(presenter.MariasCuiPresenter)
+
+	playMock := func(marriage [domain.MariasPlayerCnt]int) *interfaces.MockMariasGame {
+		m, _ := setupMariasCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundMarriage")
+		m.On("GetRoundMarriage").Return(marriage)
+		return m
+	}
+
+	t.Run("announces the human's marriage points", func(t *testing.T) {
+		out := p.Output(playMock([domain.MariasPlayerCnt]int{40, 0, 0}), nil)
+
+		assert.Contains(t, out, i18n.Tf("marias.marriageEarned", "points", "40"))
+	})
+
+	t.Run("says nothing without a marriage", func(t *testing.T) {
+		out := p.Output(playMock([domain.MariasPlayerCnt]int{0, 20, 0}), nil)
+
+		// **点数を伏せた前置きで見る。**別の数字だけを除外すると、0 点のバナーを
+		// 出す実装が素通りする (実際に一度素通りした)。
+		prefix, _, ok := strings.Cut(i18n.Tf("marias.marriageEarned", "points", "\x00"), "\x00")
+		require.True(t, ok)
+		assert.NotContains(t, out, prefix)
+	})
 }

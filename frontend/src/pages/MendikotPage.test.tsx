@@ -215,3 +215,32 @@ describe('MendikotPage', () => {
     expect(await screen.findByText(/10 が場に出ています/)).toBeInTheDocument();
   });
 });
+
+// **切り札は宣言ではなく事故で決まる** (#5755)。フォローできない手番は
+// ハンド全体を左右する一度きりの選択なのに、警告が無かった。
+describe('MendikotPage trump-setting warning', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+  });
+
+  it('warns when the human cannot follow and the trump is still open', async () => {
+    mockExec.mockResolvedValue(makeState({ trumpSuit: 0, willSetTrump: true }));
+    renderWithProviders(<MendikotPage />);
+    expect(await screen.findByTestId('md-sets-trump-warning')).toHaveTextContent('切り札になります');
+  });
+
+  it('stays quiet when the human can follow', async () => {
+    mockExec.mockResolvedValue(makeState({ trumpSuit: 0, willSetTrump: false }));
+    renderWithProviders(<MendikotPage />);
+    await waitFor(() => expect(screen.getByTestId('md-trump')).toBeInTheDocument());
+    expect(screen.queryByTestId('md-sets-trump-warning')).not.toBeInTheDocument();
+  });
+
+  it('stays quiet once the trump is decided', async () => {
+    mockExec.mockResolvedValue(makeState({ trumpSuit: 3, willSetTrump: false }));
+    renderWithProviders(<MendikotPage />);
+    await waitFor(() => expect(screen.getByTestId('md-trump')).toBeInTheDocument());
+    expect(screen.queryByTestId('md-sets-trump-warning')).not.toBeInTheDocument();
+  });
+});

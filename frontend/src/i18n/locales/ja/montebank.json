@@ -27,5 +27,6 @@
   "tutorial.even": "同じスートが場札に1枚だけなら「互角」。2枚以上出ていると、選ぶだけで損になります",
   "tutorial.gate": "次にめくる1枚（ゲート）とスートが一致すれば3:1です",
   "frontendHint.monteBankLoneSuit": "場札に1枚だけのスートなので、3:1でちょうど互角です",
-  "frontendHint.monteBankAllDuplicated": "どのスートも2枚以上出ているので、どれを選んでも不利です"
+  "frontendHint.monteBankAllDuplicated": "どのスートも2枚以上出ているので、どれを選んでも不利です",
+  "label.remainingOfSuit": "山残り{{count}}枚"
 }

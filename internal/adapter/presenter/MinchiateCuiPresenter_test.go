@@ -13,6 +13,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupMinchiateCuiMock() *interfaces.MockMinchiateGame {
@@ -191,4 +192,19 @@ func TestMinchiateCuiPresenter_ActionLogOutput(t *testing.T) {
 		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You play Angelo"},
 	})
 	assert.Contains(t, p.ActionLogOutput(m), "play")
+}
+
+// #5715: マットは「トリックを取らず、フォロー義務も免れ、リードスートも定めない」
+// という他の全カードと違う挙動なのに、その説明はヒント文言の中にしか無く、
+// ヒントを切っている人には伝わらなかった (切札40枚の注記は常設なのに)。
+func TestMinchiateCuiPresenter_AlwaysExplainsTheMatto(t *testing.T) {
+	p := new(presenter.MinchiateCuiPresenter)
+	g := domain.NewDefaultMinchiate()
+	g.Reset()
+
+	out := p.Output(g, nil)
+
+	assert.Contains(t, out, i18n.T("minchiate.mattoNote"))
+	// 切札の注記と並んで、常に出ること。
+	assert.Contains(t, out, i18n.T("minchiate.trumpCountNote"))
 }

@@ -156,6 +156,18 @@ function MendikotPageContent() {
               </span>
             </div>
 
+            {/* **切り札は宣言ではなく事故で決まる** (#5755)。フォローできない
+                手番はハンド全体を左右する一度きりの選択なのに、警告が無かった。 */}
+            {state.willSetTrump && (
+              <div
+                className="mb-3 rounded bg-black/30 border border-ds-warning px-3 py-2 text-ds-text-primary text-center"
+                role="status"
+                data-testid="md-sets-trump-warning"
+              >
+                {t('warn.setsTrump')}
+              </div>
+            )}
+
             {/* **勝敗は 10 の枚数で決まる。** 盤面から読めないので先頭に出す。 */}
             <div
               className="mb-3 rounded bg-black/30 px-3 py-2 text-ds-text-primary text-center"
