@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -146,4 +147,38 @@ func TestPasurCuiPresenterActionLogOutput(t *testing.T) {
 	g := newPasurForCui(t)
 	g.GiveUp()
 	assert.NotEmpty(t, p.ActionLogOutput(g))
+}
+
+// **スールは「取った結果、場が空になる」こと** (#5762)。倍化を狙えるかを
+// その場で判断できるよう、CUI は場の枚数と、ヒントが空にするかどうかを出す。
+func TestPasurCuiPresenterSpellsOutTheSoorOpportunity(t *testing.T) {
+	p := new(PasurCuiPresenter)
+	g := newPasurForCui(t)
+	g.SetCurrentPlayerIdxForTest(0)
+	g.SetTableForTest([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 7, false),
+		domain.NewCard(domain.CardDesignHeart, 9, false),
+	})
+
+	// 促しには「この N 枚を取り切るとスール」の N と倍率が入る。
+	assert.Contains(t, p.Output(g, nil), i18n.Tf("pasur.soorNote",
+		"n", "2", "mult", strconv.Itoa(domain.PasurSoorMultiplier)))
+
+	// **場が空なら基準そのものが無い。** 負のコントロール。
+	g.SetTableForTest(nil)
+	assert.NotContains(t, p.Output(g, nil), fixedPart("pasur.soorNote"))
+
+	// ヒントが場を空にする取り方を勧めているときだけ印が付く。
+	g.SetTableForTest([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 7, false)})
+	g.SetHumanHandForTest(domain.NewCard(domain.CardDesignDiamond, 4, false))
+	mark := i18n.Tf("pasur.hintSoorMark", "mult", strconv.Itoa(domain.PasurSoorMultiplier))
+	assert.Contains(t, p.HintOutput(g), mark)
+
+	// 場に 1 枚残る取り方なら印は付かない。
+	g.SetTableForTest([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 7, false),
+		domain.NewCard(domain.CardDesignHeart, 13, false),
+	})
+	g.SetHumanHandForTest(domain.NewCard(domain.CardDesignDiamond, 4, false))
+	assert.NotContains(t, p.HintOutput(g), mark)
 }

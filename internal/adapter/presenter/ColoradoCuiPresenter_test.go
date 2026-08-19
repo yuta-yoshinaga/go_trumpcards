@@ -185,3 +185,34 @@ func TestColoradoCuiPresenter_ActionLogOutput(t *testing.T) {
 		assert.Contains(t, new(ColoradoCuiPresenter).ActionLogOutput(g), "move")
 	})
 }
+
+// **添字は指定できるように見せていただけ** (#5739)。`m t <山>` は山番号しか
+// 取らず、動かせるのは常に一番上の 1 枚。埋まった札に [1] などの番号を振ると、
+// 指定できない札を指定できるように見せることになる。
+func TestColoradoCuiPresenter_MarksOnlyTheMovableCard(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+
+	g := new(interfaces.MockColoradoGame)
+	var tableau [domain.ColoradoTableauCnt][]*domain.Card
+	tableau[0] = []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 4, true),
+		domain.NewCard(domain.CardDesignClover, 7, true),
+		domain.NewCard(domain.CardDesignSpade, 11, true), // 一番上 = 唯一動かせる札
+	}
+	g.On("GetTableau").Return(tableau).Maybe()
+	setupColoradoCuiMockDefaults(g)
+
+	out := new(ColoradoCuiPresenter).Output(g, nil)
+
+	// 一番上だけが囲まれ、下の 2 枚は地の文で並ぶ。
+	assert.Contains(t, out, "山0: SPADE 4  CLOVER 7  <SPADE 11>")
+	// 添字はどのカードにも付かない。
+	assert.NotContains(t, out, "[0]SPADE 4")
+	assert.NotContains(t, out, "[1]CLOVER 7")
+	assert.NotContains(t, out, "[2]SPADE 11")
+	// 読み方の説明も出す。
+	assert.Contains(t, out, i18n.T("colorado.pileTopNote"))
+	assert.NotContains(t, out, "{{")
+}

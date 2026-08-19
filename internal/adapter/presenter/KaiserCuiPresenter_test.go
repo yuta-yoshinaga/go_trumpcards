@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
@@ -36,6 +37,8 @@ func setupKaiserCuiMock(phase domain.KaiserPhase, trump int, contract domain.Kai
 	m.On("IsBidMade").Return(true)
 	m.On("GetTargetScore").Return(domain.KaiserTargetScore)
 	m.On("GetHighBid").Return(highBid)
+	m.On("GetHeartFiveBy").Return(-1).Maybe()
+	m.On("GetSpadeThreeBy").Return(-1).Maybe()
 	m.On("GetPlayers").Return(players)
 	m.On("IsHumanTurn").Return(true)
 	m.On("KaiserValidPlays", 0).Return([]int{1})
@@ -134,6 +137,8 @@ func TestKaiserCuiPresenter_TellsASetHandApart(t *testing.T) {
 	m.On("IsBidMade").Return(false)
 	m.On("GetTargetScore").Return(domain.KaiserTargetScore)
 	m.On("GetHighBid").Return(&domain.KaiserBid{Player: 1, Value: 8})
+	m.On("GetHeartFiveBy").Return(-1).Maybe()
+	m.On("GetSpadeThreeBy").Return(-1).Maybe()
 	m.On("GetPlayers").Return(players)
 	m.On("IsHumanTurn").Return(false)
 	for i := range players {
@@ -167,6 +172,8 @@ func TestKaiserCuiPresenter_ErrorAndGameEnd(t *testing.T) {
 	end.On("IsBidMade").Return(true)
 	end.On("GetTargetScore").Return(domain.KaiserTargetScore)
 	end.On("GetHighBid").Return((*domain.KaiserBid)(nil))
+	end.On("GetHeartFiveBy").Return(-1)
+	end.On("GetSpadeThreeBy").Return(-1)
 	end.On("GetPlayers").Return(players)
 	end.On("IsHumanTurn").Return(false)
 	for i := range players {
@@ -329,4 +336,40 @@ func TestKaiserHintKeys_TranslatedInBothLanguages(t *testing.T) {
 		assert.NotEqual(t, key, en, "%s missing from en", key)
 		assert.NotEqual(t, ja, en, "%s is the same in both languages", key)
 	}
+}
+
+// #5727: ♥5(+5) と ♠3(-3) はこの 2 枚だけで局の点差が決まる。Web は取られた
+// 時点で誰が取ったかを出しているのに、CUI は精算まで行方が分からなかった。
+func TestKaiserCuiPresenter_TracksTheTwoSpecialCards(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.KaiserCuiPresenter)
+
+	build := func(heartFive, spadeThree int) *interfaces.MockKaiserGame {
+		m := setupKaiserCuiMock(domain.KaiserPhasePlay, domain.CardDesignHeart,
+			domain.KaiserContractTrump, &domain.KaiserBid{Value: 7})
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHeartFiveBy")
+		m.On("GetHeartFiveBy").Return(heartFive)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetSpadeThreeBy")
+		m.On("GetSpadeThreeBy").Return(spadeThree)
+		return m
+	}
+
+	t.Run("names who took each card as soon as it is taken", func(t *testing.T) {
+		out := p.Output(build(0, 2), nil)
+
+		assert.Contains(t, out, i18n.Tf("kaiser.heartFiveTaken", "name", i18n.T("cuiPlayerYou")))
+		assert.Contains(t, out, i18n.Tf("kaiser.spadeThreeTaken",
+			"name", i18n.Tf("cuiPlayerCpu", "idx", "2")))
+	})
+
+	// **まだ出ていないことも情報**なので、未取得と明示する (行を出さないと
+	// 「誰かが取ったが表示されていない」と読めてしまう)。
+	t.Run("says outstanding while the cards are still unplayed", func(t *testing.T) {
+		out := p.Output(build(-1, -1), nil)
+
+		assert.Contains(t, out, i18n.Tf("kaiser.heartFiveTaken", "name", i18n.T("kaiser.notTakenYet")))
+		assert.Contains(t, out, i18n.Tf("kaiser.spadeThreeTaken", "name", i18n.T("kaiser.notTakenYet")))
+	})
 }

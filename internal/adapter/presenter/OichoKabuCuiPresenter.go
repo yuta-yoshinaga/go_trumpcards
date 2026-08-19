@@ -65,6 +65,17 @@ func (p *OichoKabuCuiPresenter) Output(o interfaces.OichoKabuGame, lastErr error
 	if o.GetGameEndFlag() {
 		sb.WriteString(i18n.Tf("oichokabu.handLine", "cards", oichoKabuHandStr(o.GetBankerHand())) + "\n")
 		sb.WriteString(i18n.Tf("oichokabu.rankLine", "rank", strconv.Itoa(o.GetBankerRank())) + "\n")
+		// 親は「目が閾値以下なら引く」固定ルールで動く。**両者とも常に 2 枚配られる**
+		// ので、3 枚あれば引いた、2 枚なら止まった、と手札枚数から判る
+		// (Web の oichokabuDealerPolicy と同じ導出)。
+		if len(o.GetBankerHand()) > domain.OichoKabuHandInitial {
+			sb.WriteString(i18n.Tf("oichokabu.dealerPolicyDrew",
+				"threshold", strconv.Itoa(domain.OichoKabuBankerDrawThreshold)) + "\n")
+		} else {
+			sb.WriteString(i18n.Tf("oichokabu.dealerPolicyStood",
+				"rank", strconv.Itoa(o.GetBankerRank()),
+				"threshold", strconv.Itoa(domain.OichoKabuBankerDrawThreshold)) + "\n")
+		}
 	} else {
 		sb.WriteString(i18n.T("oichokabu.hidden") + "\n")
 	}

@@ -171,10 +171,11 @@ type Ulti struct {
 	talonTaken       bool         // タロンを拾ったか
 	discards         []*Card      // デクレアラーが伏せて捨てた 2 枚
 	playerCoins      [UltiPlayerCnt]int
-	lastTrickWinner  int         // 最終トリック勝者 (-1=未確定)
-	outcome          UltiOutcome // 直近ディールの結果
-	result           UltiResult  // 人間視点のマッチ結果
-	scored           bool        // 当該ディールの得点計算済みか (RoundEnd 突入時に一度だけ)
+	lastDealCoins    [UltiPlayerCnt]int // 直近ディールの精算 (符号付き増減、ゼロサム)
+	lastTrickWinner  int                // 最終トリック勝者 (-1=未確定)
+	outcome          UltiOutcome        // 直近ディールの結果
+	result           UltiResult         // 人間視点のマッチ結果
+	scored           bool               // 当該ディールの得点計算済みか (RoundEnd 突入時に一度だけ)
 	gameEndFlag      bool
 	winnerPlayer     int // -1=未確定
 	actionLogBase
@@ -235,6 +236,7 @@ func (g *Ulti) NextRound() {
 
 // startRound 手札を配り、宣言フェーズを開始する。
 func (g *Ulti) startRound() {
+	g.lastDealCoins = [UltiPlayerCnt]int{}
 	g.trickNumber = 1
 	g.currentTrick = nil
 	g.lastTrickWinner = -1
@@ -545,6 +547,7 @@ func (g *Ulti) applyScores(outcome UltiOutcome) {
 	if outcome == UltiOutcomeNone {
 		return
 	}
+	before := g.playerCoins
 	stake := ultiContractStake(g.contract)
 	declWon := outcome == UltiOutcomeWin
 	// ウルティは失敗時に倍払い。
@@ -565,6 +568,10 @@ func (g *Ulti) applyScores(outcome UltiOutcome) {
 				g.playerCoins[i] += stake
 			}
 		}
+	}
+	// 精算額そのものを残す。累積からは「今回いくら動いたか」が読めない。
+	for i := 0; i < UltiPlayerCnt; i++ {
+		g.lastDealCoins[i] = g.playerCoins[i] - before[i]
 	}
 }
 
@@ -1188,6 +1195,10 @@ func (g *Ulti) GetDiscardCount() int { return len(g.discards) }
 // GetPlayerCoins プレイヤー別累積コイン取得
 func (g *Ulti) GetPlayerCoins() [UltiPlayerCnt]int { return g.playerCoins }
 
+// GetLastDealCoins 直近ディールの精算による符号付きコイン増減を取得する。
+// 次のディールが始まると 0 に戻る (マッチ終了後は最終ディール分が残る)。
+func (g *Ulti) GetLastDealCoins() [UltiPlayerCnt]int { return g.lastDealCoins }
+
 // SetPlayerCoins プレイヤー別累積コイン設定 (テスト用)
 func (g *Ulti) SetPlayerCoins(s [UltiPlayerCnt]int) { g.playerCoins = s }
 
@@ -1278,6 +1289,7 @@ type ultiJSON struct {
 	TalonTaken       bool               `json:"tt"`
 	Discards         []*Card            `json:"ds"`
 	PlayerCoins      [UltiPlayerCnt]int `json:"sc"`
+	LastDealCoins    [UltiPlayerCnt]int `json:"ld"`
 	LastTrickWinner  int                `json:"lt"`
 	Outcome          UltiOutcome        `json:"oc"`
 	Result           UltiResult         `json:"rs"`
@@ -1307,6 +1319,7 @@ func (g *Ulti) MarshalJSON() ([]byte, error) {
 		TalonTaken:       g.talonTaken,
 		Discards:         g.discards,
 		PlayerCoins:      g.playerCoins,
+		LastDealCoins:    g.lastDealCoins,
 		LastTrickWinner:  g.lastTrickWinner,
 		Outcome:          g.outcome,
 		Result:           g.result,
@@ -1471,6 +1484,7 @@ func (g *Ulti) UnmarshalJSON(data []byte) error {
 		g.discards = make([]*Card, 0)
 	}
 	g.playerCoins = j.PlayerCoins
+	g.lastDealCoins = j.LastDealCoins
 	g.lastTrickWinner = j.LastTrickWinner
 	g.outcome = j.Outcome
 	g.result = j.Result

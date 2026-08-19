@@ -112,8 +112,10 @@ describe('RoyalCotillionPage', () => {
     // まだ何も選んでいなければ、当然押せない。
     expect(empty).toBeDisabled();
 
-    fireEvent.click(screen.getByRole('button', { name: '♠ 9' }));
-    await waitFor(() => expect(screen.getByRole('button', { name: '♠ 9' })).toHaveAttribute('aria-pressed', 'true'));
+    fireEvent.click(screen.getByRole('button', { name: '枠 0 ♠ 9' }));
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: '枠 0 ♠ 9' })).toHaveAttribute('aria-pressed', 'true'),
+    );
     // タブローの札を選んでも押せないまま。
     expect(empty).toBeDisabled();
   });
@@ -135,11 +137,11 @@ describe('RoyalCotillionPage', () => {
 
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<RoyalCotillionPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '♠ 9' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: '枠 0 ♠ 9' })).toBeInTheDocument());
     mockExec.mockClear();
 
     const dataTransfer = buildDataTransfer();
-    fireEvent.dragStart(screen.getByRole('button', { name: '♠ 9' }), { dataTransfer });
+    fireEvent.dragStart(screen.getByRole('button', { name: '枠 0 ♠ 9' }), { dataTransfer });
     const empty = screen.getByRole('button', { name: /空の枠 3/ });
     fireEvent.dragOver(empty, { dataTransfer });
     fireEvent.drop(empty, { dataTransfer });
@@ -184,7 +186,8 @@ describe('RoyalCotillionPage', () => {
   it('sends a reserve top to a foundation', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<RoyalCotillionPage />);
-    const reserveCard = await screen.findByRole('button', { name: '♥ 2' });
+    // 読み上げ名に山番号が付いた (#5742)。番号ごと指定して取り違えを防ぐ。
+    const reserveCard = await screen.findByRole('button', { name: 'リザーブ 0 ♥ 2（一番上）' });
     fireEvent.click(reserveCard);
     await waitFor(() => expect(reserveCard).toHaveAttribute('aria-pressed', 'true'));
     mockExec.mockClear();
@@ -219,11 +222,11 @@ describe('RoyalCotillionPage', () => {
 
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<RoyalCotillionPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '♥ 2' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リザーブ 0 ♥ 2（一番上）' })).toBeInTheDocument());
     mockExec.mockClear();
 
     const dataTransfer = buildDataTransfer();
-    fireEvent.dragStart(screen.getAllByRole('button', { name: '♥ 2' })[0], { dataTransfer });
+    fireEvent.dragStart(screen.getAllByRole('button', { name: 'リザーブ 0 ♥ 2（一番上）' })[0], { dataTransfer });
     const empty = screen.getByRole('button', { name: /空の枠 3/ });
     fireEvent.dragOver(empty, { dataTransfer });
     fireEvent.drop(empty, { dataTransfer });
@@ -237,8 +240,10 @@ describe('RoyalCotillionPage', () => {
     renderWithProviders(<RoyalCotillionPage />);
     const stock = await screen.findByRole('button', { name: /山札 残り76枚/ });
     // First click draws, so select something else to enter selection mode.
-    fireEvent.click(screen.getByRole('button', { name: '♠ 9' }));
-    await waitFor(() => expect(screen.getByRole('button', { name: '♠ 9' })).toHaveAttribute('aria-pressed', 'true'));
+    fireEvent.click(screen.getByRole('button', { name: '枠 0 ♠ 9' }));
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: '枠 0 ♠ 9' })).toHaveAttribute('aria-pressed', 'true'),
+    );
     fireEvent.click(stock);
     await waitFor(() => expect(stock).toHaveAttribute('aria-pressed', 'true'));
     mockExec.mockClear();
@@ -250,7 +255,8 @@ describe('RoyalCotillionPage', () => {
   it('sends a pile top to a foundation', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<RoyalCotillionPage />);
-    const ace = await screen.findByRole('button', { name: '♣ A' });
+    // 読み上げ名に枠番号が付いた (#5742)。
+    const ace = await screen.findByRole('button', { name: '枠 2 ♣ A' });
     fireEvent.click(ace);
     await waitFor(() => expect(ace).toHaveAttribute('aria-pressed', 'true'));
     mockExec.mockClear();
@@ -406,5 +412,39 @@ describe('RoyalCotillionPage keyboard shortcuts', () => {
     }
     await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
+  });
+});
+
+// **16 枠 4 リザーブを番号で指定する設計なのに、読み上げには番号が無かった**
+// (#5742)。空き枠には番号が入っていたので、埋まった瞬間に位置が読めなくなる。
+describe('RoyalCotillionPage slot numbers in the accessible names', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+    mockExec.mockResolvedValue(playingState);
+  });
+
+  it('names the slot a filled tableau card sits in', async () => {
+    renderWithProviders(<RoyalCotillionPage />);
+    expect(await screen.findByRole('button', { name: '枠 0 ♠ 9' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '枠 1 ♥ 8' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '枠 2 ♣ A' })).toBeInTheDocument();
+    // 空き枠の形式は変えない (受け入れ条件3)。
+    expect(screen.getByRole('button', { name: /^空の枠 3/ })).toBeInTheDocument();
+  });
+
+  it('names the reserve pile a card sits in, and says which card is on top', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      reserve: [[card('SPADE', 3), card('HEART', 2)], [], [], []],
+    });
+    renderWithProviders(<RoyalCotillionPage />);
+
+    expect(await screen.findByRole('button', { name: 'リザーブ 0 ♥ 2（一番上）' })).toBeInTheDocument();
+    // 埋もれた札も山番号で位置が分かる。押せないことは disabled が示す。
+    const buried = screen.getByRole('button', { name: 'リザーブ 0 ♠ 3（下に埋まっています）' });
+    expect(buried).toBeDisabled();
+    // 空のリザーブの読み上げは従来のまま。
+    expect(screen.getByText(/空のリザーブ 1/)).toBeInTheDocument();
   });
 });

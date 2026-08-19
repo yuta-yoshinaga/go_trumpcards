@@ -115,6 +115,18 @@ func (p *TysiacCuiPresenter) Output(g interfaces.TysiacGame, lastErr error) stri
 				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
 			b.WriteString(i18n.T("tysiac.promptPlayHelp") + "\n")
 			b.WriteString(i18n.T("tysiac.promptMarriageHelp") + "\n")
+			// 宣言できるスートは手札を数えないと分からないので、Web のバナーと同じく
+			// 具体的に挙げる。CPU 番では出さない (手札が読めてしまう)。
+			if player := g.GetPlayer(currentIdx); player != nil && player.GetIsHuman() {
+				if opts := g.GetMarriageOptions(currentIdx); len(opts) > 0 {
+					suits := make([]string, len(opts))
+					for i, opt := range opts {
+						suits[i] = cuiSuitName(opt.Suit) + " K-Q (+" + strconv.Itoa(opt.Points) + ")"
+					}
+					b.WriteString(i18n.Tf("tysiac.promptMarriageReady",
+						"suits", strings.Join(suits, ", ")) + "\n")
+				}
+			}
 		case domain.TysiacPhaseTrickEnd:
 			b.WriteString(i18n.T("tysiac.promptTrickEnd") + "\n")
 			b.WriteString(i18n.T("tysiac.promptTrickEndHelp") + "\n")

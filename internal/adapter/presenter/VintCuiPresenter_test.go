@@ -10,8 +10,10 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupVintCuiMock(o vintMockOpts) *interfaces.MockVintGame {
@@ -165,4 +167,42 @@ func TestVintCuiPresenter_ActionLogOutput(t *testing.T) {
 	m := setupVintCuiMock(defaultVintOpts())
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{})
 	assert.NotNil(t, new(presenter.VintCuiPresenter).ActionLogOutput(m))
+}
+
+// #5729: 局の得点は「線下のトリック点」だけではない。オナー・エース・ペナルティも
+// domain.VintResult に入っているのに、CUI は前 2 行しか出しておらず、自分の名誉札点や
+// ペナルティがいくらだったのかを知りようがなかった (Web は 3 つとも出している)。
+func TestVintCuiPresenter_ShowsTheHonourAceAndPenalty(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.VintCuiPresenter)
+
+	build := func(penalty [domain.VintTeamCnt]int) *interfaces.MockVintGame {
+		o := vintMockOpts{phase: domain.VintPhaseHandEnd, declarer: 0, winner: -1}
+		o.result = &domain.VintHandResult{
+			Made:           true,
+			DeclarerTricks: 8,
+			TrickPoints:    [domain.VintTeamCnt]int{80, 40},
+			HonourPoints:   [domain.VintTeamCnt]int{500, 0},
+			AcePoints:      [domain.VintTeamCnt]int{0, 250},
+			Penalty:        penalty,
+		}
+		return setupVintCuiMock(o)
+	}
+
+	t.Run("shows honour and ace points for both teams", func(t *testing.T) {
+		out := p.Output(build([domain.VintTeamCnt]int{}), nil)
+
+		assert.Contains(t, out, i18n.Tf("vint.honourLine", "t0", "500", "t1", "0"))
+		assert.Contains(t, out, i18n.Tf("vint.aceLine", "t0", "0", "t1", "250"))
+		// ペナルティが無い局では行ごと出さない (Web と同じ条件)。
+		assert.NotContains(t, out, strings.Split(i18n.T("vint.penaltyLine"), "{{")[0])
+	})
+
+	t.Run("shows the penalty only when there is one", func(t *testing.T) {
+		out := p.Output(build([domain.VintTeamCnt]int{0, 1500}), nil)
+
+		assert.Contains(t, out, i18n.Tf("vint.penaltyLine", "t0", "0", "t1", "1500"))
+	})
 }

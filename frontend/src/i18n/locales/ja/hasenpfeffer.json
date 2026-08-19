@@ -22,7 +22,8 @@
     "team": "T{{team}}",
     "declarer": "[落札]",
     "you": "あなた",
-    "cpu": "CPU{{idx}}"
+    "cpu": "CPU{{idx}}",
+    "bidCapped": "上限（{{max}}）が立っているのでもう上回れません。パスしてください。"
   },
   "currentTrick": "現在のトリック",
   "handEnd": {

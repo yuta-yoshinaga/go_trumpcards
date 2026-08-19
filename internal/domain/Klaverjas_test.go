@@ -364,3 +364,57 @@ func TestKlaverjas_UnmarshalErrors(t *testing.T) {
 		t.Errorf("err = %v, want errKlaverjasOversized", err)
 	}
 }
+
+// #5645: 切り札と非切り札で強さも配点も別系統という、Klaverjas でいちばん
+// 覚えにくいところ。Web は #4757 で 2 つの表を出したが、その値は TS 側に
+// 手で写されている。CUI にも同じ説明を出すにあたり、**3 つ目の写しを作らない**
+// よう、順序と配点をドメインから問えるようにする。
+func TestKlaverjasRankTable(t *testing.T) {
+	trump := KlaverjasRankTable(true)
+	plain := KlaverjasRankTable(false)
+
+	wantTrump := []KlaverjasRankRow{
+		{Value: 11, Points: 20}, {Value: 9, Points: 14}, {Value: 1, Points: 11}, {Value: 10, Points: 10},
+		{Value: 13, Points: 4}, {Value: 12, Points: 3}, {Value: 8, Points: 0}, {Value: 7, Points: 0},
+	}
+	wantPlain := []KlaverjasRankRow{
+		{Value: 1, Points: 11}, {Value: 10, Points: 10}, {Value: 13, Points: 4}, {Value: 12, Points: 3},
+		{Value: 11, Points: 2}, {Value: 9, Points: 0}, {Value: 8, Points: 0}, {Value: 7, Points: 0},
+	}
+	for _, c := range []struct {
+		name string
+		got  []KlaverjasRankRow
+		want []KlaverjasRankRow
+	}{{"trump", trump, wantTrump}, {"plain", plain, wantPlain}} {
+		if len(c.got) != len(c.want) {
+			t.Fatalf("%s: len = %d, want %d", c.name, len(c.got), len(c.want))
+		}
+		for i := range c.want {
+			if c.got[i] != c.want[i] {
+				t.Errorf("%s[%d] = %+v, want %+v", c.name, i, c.got[i], c.want[i])
+			}
+		}
+	}
+}
+
+// 表は実際の勝敗判定と同じ順序でなければ意味がない。**強い順に並んでいること**を
+// 判定関数そのもので確かめる (表を手で書き写しただけでは、順序が逆でも通る)。
+func TestKlaverjasRankTableIsSortedByTheRealStrength(t *testing.T) {
+	g := newKlavGame(true)
+	g.SetTrumpSuit(CardDesignSpade)
+	for _, isTrump := range []bool{true, false} {
+		rows := KlaverjasRankTable(isTrump)
+		for i := 1; i < len(rows); i++ {
+			prev, cur := rows[i-1].Value, rows[i].Value
+			var ps, cs int
+			if isTrump {
+				ps, cs = g.trumpStrength(prev), g.trumpStrength(cur)
+			} else {
+				ps, cs = klaverjasPlainStrength(prev), klaverjasPlainStrength(cur)
+			}
+			if ps <= cs {
+				t.Errorf("trump=%v: %d は %d より強くない (%d <= %d)", isTrump, prev, cur, ps, cs)
+			}
+		}
+	}
+}
