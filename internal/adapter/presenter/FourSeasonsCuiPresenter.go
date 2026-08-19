@@ -61,6 +61,11 @@ func (p *FourSeasonsCuiPresenter) Output(f interfaces.FourSeasonsGame, lastErr e
 				b.WriteString(i18n.Tf("fourseasons.columnCard",
 					"card", cuiCardStr(top),
 					"count", strconv.Itoa(len(pile))))
+				// **組札では暗算させないのに、十字だけ暗算させていた** (#5738)。
+				// タブローは下り (A の下は K) なので、折り返しを毎回自分で
+				// 数えることになる。
+				b.WriteString(i18n.Tf("fourseasons.columnAccepts",
+					"rank", cuiRankLabel(FourSeasonsTableauNextRank(top.GetValue()))))
 			}
 			b.WriteString("\n")
 		}
@@ -95,6 +100,16 @@ func (p *FourSeasonsCuiPresenter) Output(f interfaces.FourSeasonsGame, lastErr e
 // ドメイン側の同名ロジックと同じ規則だが、あちらは solo タグ内の非公開関数なので
 // ここで同じ式を持つ。ずれると「次: 」の案内だけが嘘になる。
 func fourSeasonsCuiNextRank(r int) int { return (r % domain.CardValueMax) + 1 }
+
+// FourSeasonsTableauNextRank は十字のタブロー列が次に受け付けるランクを返す。
+//
+// **タブローは下り、組札は上り。**A の下は K へ折り返す。frontend の
+// fourseasonsTableauNextRank と同じ規則で、
+// frontend/src/utils/__fixtures__/fourseasonsTableauNextRank.golden.json が
+// 両実装を突き合わせる。
+func FourSeasonsTableauNextRank(r int) int {
+	return ((r + domain.CardValueMax - 2) % domain.CardValueMax) + 1
+}
 
 // HintOutput emits the current Four Seasons hint.
 func (p *FourSeasonsCuiPresenter) HintOutput(f interfaces.FourSeasonsGame) string {
