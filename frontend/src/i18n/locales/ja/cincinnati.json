@@ -41,5 +41,18 @@
   "frontendHint.cincinnatiWorthACall": "役はあるので、この額なら見る価値があります",
   "frontendHint.cincinnatiCheapToStay": "安いので、次の1枚を見る価値があります",
   "frontendHint.cincinnatiSeeAnotherCard": "ただで次の1枚を見られます",
-  "frontendHint.cincinnatiNotWorthIt": "役が無く、残り回数ぶんのベットに見合いません"
+  "frontendHint.cincinnatiNotWorthIt": "役が無く、残り回数ぶんのベットに見合いません",
+  "hand": {
+    "highCard": "ハイカード",
+    "onePair": "ワンペア",
+    "twoPair": "ツーペア",
+    "threeOfAKind": "スリーカード",
+    "straight": "ストレート",
+    "flush": "フラッシュ",
+    "fullHouse": "フルハウス",
+    "fourOfAKind": "フォーカード",
+    "straightFlush": "ストレートフラッシュ",
+    "royalFlush": "ロイヤルフラッシュ"
+  },
+  "label.bestFive": "ベスト5枚"
 }
