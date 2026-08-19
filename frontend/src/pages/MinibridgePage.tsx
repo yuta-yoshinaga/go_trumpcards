@@ -122,6 +122,8 @@ function MinibridgePageContent() {
   }
 
   const human = state.players.find((p) => p.isHuman);
+  // 味方かどうかは人間のチーム番号との一致で決まる。
+  const humanTeam = human?.team;
   const isContract = state.phase === MinibridgePhase.CONTRACT;
   const isRoundEnd = state.phase === MinibridgePhase.ROUND_END;
   const isGameEnd = state.phase === MinibridgePhase.GAME_END || state.gameEndFlag;
@@ -240,6 +242,18 @@ function MinibridgePageContent() {
                 >
                   <span className="text-ds-text-primary">
                     {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
+                  </span>
+                  {/* **競りが無いぶん、味方が誰かは席表示でしか分からない** (#5761)。
+                      CUI は最初から team を出しているのに、Web は契約が決まって
+                      デクレアラー/ダミーのタグが付くまで何も出していなかった。 */}
+                  <span
+                    className={`ml-1 ${p.team === humanTeam ? 'text-ds-info' : 'text-ds-text-muted'}`}
+                    data-testid={`mb-team-${p.id.toString()}`}
+                  >
+                    <span aria-hidden="true">{t('header.teamTag', { team: String(p.team) })}</span>
+                    <span className="sr-only">
+                      {p.team === humanTeam ? t('header.teamAllyAria') : t('header.teamFoeAria')}
+                    </span>
                   </span>
                   {p.id === state.declarerIdx && <span className="ml-1 text-ds-accent">{t('header.declarer')}</span>}
                   {p.id === state.dummyIdx && <span className="ml-1 text-ds-accent">{t('header.dummy')}</span>}
