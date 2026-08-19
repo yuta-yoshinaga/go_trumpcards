@@ -264,6 +264,8 @@ describe('TablanetPage', () => {
     expect(badge).toHaveAttribute('role', 'status');
     expect(badge).toHaveTextContent('あなた');
     expect(soundCalls('winFanfare')).toBe(1);
+    // 自分の席のタブラ数も CPU と同じく強調する (レビュー指摘: 自分だけ演出が薄かった)。
+    expect(screen.getByTestId('tablanet-tabla-count-0')).toHaveAttribute('data-emphasised', 'true');
     // 既存の sr-only アナウンスは残す。
     expect(screen.getByTestId('tablanet-live-region')).toHaveTextContent('タブラ');
   });

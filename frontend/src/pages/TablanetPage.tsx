@@ -188,8 +188,9 @@ function TablanetPageContent() {
 
   const winnerNames = state.winners.map((i) => (state.players[i]?.isHuman ? t('you') : t('cpu', { id: i }))).join(', ');
 
+  // タブラ数だけは強調の対象になるので、文字列に混ぜず個別の要素で出す。
   const humanStats = human
-    ? `${t('cards', { count: human.cardCount })} · ${t('captured', { count: human.capturedCount })} · ${t('tabla', { count: human.tablaCount })}`
+    ? `${t('cards', { count: human.cardCount })} · ${t('captured', { count: human.capturedCount })}`
     : '';
 
   // 直近の一掃を祝っているあいだ、その席のタブラ数を強調する。
@@ -322,6 +323,18 @@ function TablanetPageContent() {
             <div className="text-center" data-tutorial="tablanet-player-hand">
               <div className="text-xs text-ds-text-muted mb-1">
                 {t('you')} — {humanStats}
+                {human && (
+                  <>
+                    {' · '}
+                    <span
+                      className={tablaCelebration?.seat === human.id ? tablaEmphasisClass : undefined}
+                      data-testid={`tablanet-tabla-count-${human.id}`}
+                      data-emphasised={tablaCelebration?.seat === human.id || undefined}
+                    >
+                      {t('tabla', { count: human.tablaCount })}
+                    </span>
+                  </>
+                )}
               </div>
               <div className="flex flex-wrap justify-center gap-2">
                 {human?.cards.map((c, i) => (
