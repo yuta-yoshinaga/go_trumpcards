@@ -51626,6 +51626,12 @@ components:
           type: integer
         trickNumber:
           type: integer
+        totalTricks:
+          type: integer
+          description: >-
+            Tricks in one round (= cards dealt to each seat). Only the last
+            trick scores penalties, so how many are left is the number that
+            matters.
         roundNumber:
           type: integer
         lastTrickWinnerIdx:

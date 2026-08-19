@@ -41,6 +41,7 @@ function makeState(overrides: Partial<CucumberResponse> = {}): CucumberResponse 
     currentTrick: [{ playerIdx: 1, card: card('DIAMOND', 9) }],
     currentPlayerIdx: 0,
     leadPlayerIdx: 1,
+    totalTricks: 7,
     trickNumber: 2,
     roundNumber: 3,
     lastTrickWinnerIdx: -1,
@@ -65,6 +66,15 @@ describe('CucumberPage', () => {
   });
 
   // **スート無関係・失点は最終トリックだけ、が規則そのもの。**
+  // **失点が出るのは最終トリックだけ** (#5768)。あと何回で失点判定かが
+  // ヘッダーから読めなければ、番号だけ出しても意味がない。
+  it('shows how many tricks the round has, not just the current one', async () => {
+    mockExec.mockResolvedValue(makeState({ trickNumber: 2 }));
+    renderWithProviders(<CucumberPage />);
+
+    expect(await screen.findByText('トリック 3/7')).toBeInTheDocument();
+  });
+
   it('states the comparison rule and that only the last trick scores', async () => {
     renderWithProviders(<CucumberPage />);
     const rule = await screen.findByTestId('cu-rule');
