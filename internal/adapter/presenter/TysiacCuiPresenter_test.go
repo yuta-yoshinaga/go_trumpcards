@@ -186,8 +186,7 @@ func TestTysiacCuiPresenter_MarriageOptions(t *testing.T) {
 	p := new(presenter.TysiacCuiPresenter)
 
 	withOptions := func(idx int, opts ...domain.TysiacMarriageOption) *interfaces.MockTysiacGame {
-		m, players := setupTysiacCuiMockWithPlayers()
-		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 13, false))
+		m, _ := setupTysiacCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentPlayerIdx")
 		m.On("GetCurrentPlayerIdx").Return(idx)
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetMarriageOptions")
