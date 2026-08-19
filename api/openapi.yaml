@@ -52192,6 +52192,14 @@ components:
         roundPenalty:
           type: integer
           description: Penalty taken in the current round.
+        takenJackSuits:
+          type: array
+          description: >-
+            Suits of the jacks this seat took this round, spade first. The total
+            alone cannot say whether a seat stepped on the spade jack (-2) or
+            picked up two of the others.
+          items:
+            type: integer
         trickCount:
           type: integer
         declaredCapot:
