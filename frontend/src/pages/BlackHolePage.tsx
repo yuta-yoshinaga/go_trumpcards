@@ -24,6 +24,9 @@ import { cardAlt } from '../utils/cardAlt';
 import { valueName } from '../utils/cardUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
+/** 1 デッキの総枚数。`BlackHoleTotalCards` (internal/domain/BlackHole.go) と同じ。 */
+const BLACKHOLE_TOTAL_CARDS = 52;
+
 /** Black Hole tutorial step definitions. */
 const BH_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="bh-hole"]', messageKey: 'tutorial.board', placement: 'bottom', advanceOn: 'next' },
@@ -256,6 +259,11 @@ function BlackHolePageContent() {
             {holeTop ? <CardImage card={holeTop} width={w} /> : null}
           </div>
           <div className="text-ds-text-muted text-xs">{t('moveCount', { count: state.moveCount })}</div>
+          {/* **17個の扇を掘る長いゲーム**なのに、あと何枚で終わるかが出ていなかった
+              (#5681)。勝利条件は52枚すべてを吸い込むこと。 */}
+          <div className="text-ds-text-muted text-xs" data-testid="bh-progress">
+            {t('progress', { count: state.blackHole.length, total: BLACKHOLE_TOTAL_CARDS })}
+          </div>
           {/* Always-on readout of which rank(s) the hole accepts next, plus the
               current legal-move count (warning colour when no move remains). */}
           <div className="flex flex-col gap-0.5 text-xs" data-testid="bh-acceptable">

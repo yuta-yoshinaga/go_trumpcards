@@ -31,6 +31,11 @@ func bhPileStr(pile []*domain.Card) string {
 func (p *BlackHoleCuiPresenter) Output(g interfaces.BlackHoleGame, lastErr error) string {
 	return buildCuiOutput(i18n.T("blackhole.helpTitle"), func(sb *strings.Builder) {
 		sb.WriteString(i18n.T("blackhole.blackHoleLabel") + " " + bhPileStr(g.GetBlackHole()) + "\n")
+		// **17 個の扇を掘り進める長いゲーム**なのに、あと何枚で終わるかがどこにも
+		// 出ていなかった (#5681)。勝利条件は 52 枚すべてを吸い込むこと。
+		sb.WriteString(i18n.Tf("blackhole.progress",
+			"count", strconv.Itoa(len(g.GetBlackHole())),
+			"total", strconv.Itoa(domain.BlackHoleTotalCards)) + "\n")
 		for i, fan := range g.GetFans() {
 			sb.WriteString(i18n.Tf("blackhole.fanLabel", "idx", strconv.Itoa(i)))
 			sb.WriteString(" " + bhPileStr(fan) + "\n")
