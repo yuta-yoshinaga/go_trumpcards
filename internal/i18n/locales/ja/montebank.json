@@ -24,5 +24,6 @@
   "reason.loneSuit": "このスートは場札に1枚だけなので、3:1でちょうど互角です",
   "reason.allDuplicated": "どのスートも場札に2枚以上出ているので、どれを選んでも不利です",
   "result.gameEnd": "山が尽きました",
-  "helpExampleBet": "  bet 1 100         1 番の場札に 100 賭ける"
+  "helpExampleBet": "  bet 1 100         1 番の場札に 100 賭ける",
+  "layoutRemaining": "（山残り{{remaining}}枚）"
 }
