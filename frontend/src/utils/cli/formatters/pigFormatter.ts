@@ -35,7 +35,7 @@ export function formatPigState(state: PigResponse | null): string {
           ? '[has chosen]'
           : '';
     lines.push(
-      `${marker}${formatPlayerName(p.id, p.isHuman)}${role}: ${p.cardCount} cards, letters [${p.letterWord || '-'}]`,
+      `${marker}${formatPlayerName(p.id, p.isHuman)}${role}: ${p.cardCount} cards, letters [${p.letterWord || '-'}/${state.letterTarget}]`,
     );
   });
 
