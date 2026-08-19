@@ -35,7 +35,13 @@ type AndarBaharWebOutput struct {
 	Winner      int              `json:"winner"`
 	Result      int              `json:"result"`
 	Payout      int              `json:"payout"`
-	History     []int            `json:"history"`
+	// MainPayout / SidePayout は Payout の内訳。
+	//
+	// **サイドベットは別の賭け。** 合計だけでは、外したのがメインなのかサイドなのか
+	// 画面から読めません。合計は常に両者の和です。
+	MainPayout int   `json:"mainPayout"`
+	SidePayout int   `json:"sidePayout"`
+	History    []int `json:"history"`
 	WebOutputBase
 }
 

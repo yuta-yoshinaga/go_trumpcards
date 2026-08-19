@@ -57,6 +57,10 @@ const base: CrazyFourPokerResponse = {
   roundNumber: 1,
   remainingCards: 52,
   gameEndFlag: false,
+  queensUpPayouts: [
+    { hand: 8, name: 'Four of a Kind', multiplier: 50 },
+    { hand: 2, name: 'Pair', multiplier: 1 },
+  ],
   message: '',
 };
 
@@ -88,6 +92,25 @@ beforeEach(() => {
 });
 
 describe('CrazyFourPokerPage', () => {
+  // **賭ける前に見えなければ意味がない** (#5775)。倍率はサーバの配当表そのまま。
+  it('shows the Queens Up payout table while betting', async () => {
+    mockApi.mockResolvedValue(base);
+    renderWithProviders(<CrazyFourPokerPage />);
+
+    const table = await screen.findByTestId('c4p-queensup-payouts');
+    expect(table).toHaveTextContent('Four of a Kind');
+    expect(table).toHaveTextContent('50倍');
+    expect(table).toHaveTextContent('Pair');
+    expect(table).toHaveTextContent('1倍');
+  });
+
+  // **負のコントロール: 配り終えたあとは出さない。**
+  it('drops the payout table once the hand is dealt', async () => {
+    mockApi.mockResolvedValue(dealt());
+    renderWithProviders(<CrazyFourPokerPage />);
+    await waitFor(() => expect(mockApi).toHaveBeenCalled());
+    expect(screen.queryByTestId('c4p-queensup-payouts')).not.toBeInTheDocument();
+  });
   it('マウント時に reset を呼ぶ', async () => {
     mockApi.mockResolvedValue(base);
     renderWithProviders(<CrazyFourPokerPage />);

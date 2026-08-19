@@ -90,7 +90,12 @@ type TeenDoPaanch struct {
 	surplus []int
 	// lastExchange は直前に動いた札の枚数（0 = やり取り無し）。
 	lastExchange int
-	gameEndFlag  bool
+	// lastExchangePairs は直前のやり取りの内訳（誰から誰へ何枚）。
+	//
+	// **枚数の合計だけでは、自分の手札から何が抜かれたのか分からない** (#5757)。
+	// 誰の最強札が誰に渡ったのかがこのゲームの名物なので、席の対応を残す。
+	lastExchangePairs []TeenDoPaanchExchange
+	gameEndFlag       bool
 	// winnerIdx は勝者 (-1: 未確定/同点)。
 	winnerIdx int
 	actionLogBase
@@ -131,6 +136,7 @@ func (g *TeenDoPaanch) Reset() {
 	g.fivePlayerIdx = 0
 	g.surplus = make([]int, TeenDoPaanchPlayerCnt)
 	g.lastExchange = 0
+	g.lastExchangePairs = nil
 	g.gameEndFlag = false
 	g.winnerIdx = -1
 	g.actionLog = nil
@@ -149,6 +155,7 @@ func (g *TeenDoPaanch) startRound() {
 	g.trickNumber = 0
 	g.currentTrick = nil
 	g.lastExchange = 0
+	g.lastExchangePairs = nil
 	for _, p := range g.players {
 		p.ResetRound()
 	}
@@ -258,6 +265,15 @@ func (g *TeenDoPaanch) completeDeal() {
 	g.sortAllHands()
 }
 
+// TeenDoPaanchExchange は 1 組の受け渡し（giver の最強札が taker へ）。
+type TeenDoPaanchExchange struct {
+	// Giver は札を取られた席、Taker は取った席。
+	Giver int `json:"giver"`
+	Taker int `json:"taker"`
+	// Count は動いた枚数。
+	Count int `json:"count"`
+}
+
 // exchangeCards は前ラウンドの過不足で札をやり取りする。
 //
 // **ノルマを超えた人が、届かなかった人の良い札を召し上げます。** 超過ぶんだけ
@@ -265,6 +281,9 @@ func (g *TeenDoPaanch) completeDeal() {
 // 生まれるのはここだけで、そのラウンドの得点にはなりません。
 func (g *TeenDoPaanch) exchangeCards() {
 	moved := 0
+	// 同じ組み合わせが続くことがあるので、席の組ごとにまとめる。
+	counts := map[[2]int]int{}
+	order := make([][2]int, 0, TeenDoPaanchPlayerCnt)
 	for taker := range TeenDoPaanchPlayerCnt {
 		for g.surplus[taker] > 0 {
 			giver := g.nextDeficit()
@@ -275,10 +294,20 @@ func (g *TeenDoPaanch) exchangeCards() {
 			g.surplus[taker]--
 			g.surplus[giver]++
 			moved++
+			key := [2]int{giver, taker}
+			if counts[key] == 0 {
+				order = append(order, key)
+			}
+			counts[key]++
 		}
 	}
 	g.surplus = make([]int, TeenDoPaanchPlayerCnt)
 	g.lastExchange = moved
+	g.lastExchangePairs = make([]TeenDoPaanchExchange, 0, len(order))
+	for _, key := range order {
+		g.lastExchangePairs = append(g.lastExchangePairs,
+			TeenDoPaanchExchange{Giver: key[0], Taker: key[1], Count: counts[key]})
+	}
 	if moved > 0 {
 		g.sortAllHands()
 		g.addLog(-1, "exchange", fmt.Sprintf("前ラウンドの過不足で %d 枚を移しました", moved), nil)
@@ -636,6 +665,9 @@ func (g *TeenDoPaanch) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
 // GetLastExchange は直前のラウンド間で動いた札の枚数を返す。
 func (g *TeenDoPaanch) GetLastExchange() int { return g.lastExchange }
+
+// GetLastExchangePairs は直前のやり取りの内訳（誰から誰へ何枚）を返す。
+func (g *TeenDoPaanch) GetLastExchangePairs() []TeenDoPaanchExchange { return g.lastExchangePairs }
 
 // GetPlayerCnt はプレイヤー数を返す。
 func (g *TeenDoPaanch) GetPlayerCnt() int { return TeenDoPaanchPlayerCnt }

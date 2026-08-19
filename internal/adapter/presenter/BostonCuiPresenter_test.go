@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -73,13 +74,13 @@ func TestBostonCuiPresenter_LadderTagsExposedAndPartnerLevels(t *testing.T) {
 	assert.Contains(t, out, "1:5トリック[相方]")
 	assert.Contains(t, out, "2:6トリック[相方]")
 	// 11 トリック以上は単独固定。呼べない。
-	assert.Contains(t, out, "12:11トリック <")
+	assert.Contains(t, out, "12:11トリック"+bostonLadderPayoutForTest(12)+" <")
 	// ミゼールの公開版は晒す側。味方は呼べない。
 	assert.Contains(t, out, "9:リトル・ミゼール（公開）[公開]")
 	assert.Contains(t, out, "11:グランド・ミゼール（公開）[公開]")
 	// 素のミゼールにはどちらも付かない。
-	assert.Contains(t, out, "3:リトル・ミゼール <")
-	assert.Contains(t, out, "7:グランド・ミゼール <")
+	assert.Contains(t, out, "3:リトル・ミゼール"+bostonLadderPayoutForTest(3)+" <")
+	assert.Contains(t, out, "7:グランド・ミゼール"+bostonLadderPayoutForTest(7)+" <")
 	// 最上段のシュレム（公開）も晒す側。
 	assert.Contains(t, out, "15:シュレム（公開）[公開]")
 	// 既存の区切り記号とレベル番号の形式は変えない (受け入れ条件3)。
@@ -216,4 +217,32 @@ func TestBostonCuiPresenter_ActionLogOutput(t *testing.T) {
 	m := setupBostonCuiMock(defaultBostonOpts())
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{})
 	assert.NotNil(t, new(presenter.BostonCuiPresenter).ActionLogOutput(m))
+}
+
+// #5728: 梯子の各段は払い戻し額が違う (BostonBidPayout)。Web は段ごとに配当を
+// 並べているのに、CUI は段名とタグだけで、いくらのために競っているのか分からなかった。
+func TestBostonCuiPresenter_LadderShowsThePayouts(t *testing.T) {
+	o := defaultBostonOpts()
+	o.phase = domain.BostonPhaseBid
+	o.highBid = nil
+
+	out := new(presenter.BostonCuiPresenter).Output(setupBostonCuiMock(o), nil)
+
+	// 段ごとに違う額が付くこと。値は domain がただ一つの出どころ。
+	for _, level := range []domain.BostonBidLevel{
+		domain.BostonBidFive, domain.BostonBidLevelCount - 1,
+	} {
+		assert.Contains(t, out, i18n.Tf("boston.ladderPayout",
+			"n", strconv.Itoa(domain.BostonBidPayout(level))),
+			"level %d payout missing", level)
+	}
+	// 5 トリックと最上段では額が違う (同じ数字を貼っただけでは通らない)。
+	assert.NotEqual(t, domain.BostonBidPayout(domain.BostonBidFive),
+		domain.BostonBidPayout(domain.BostonBidLevelCount-1))
+}
+
+// bostonLadderPayoutForTest は梯子行に挟まる配当表記を組み立てる。
+func bostonLadderPayoutForTest(level int) string {
+	return i18n.Tf("boston.ladderPayout",
+		"n", strconv.Itoa(domain.BostonBidPayout(domain.BostonBidLevel(level))))
 }

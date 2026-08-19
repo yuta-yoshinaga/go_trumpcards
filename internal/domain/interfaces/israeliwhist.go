@@ -49,6 +49,10 @@ type IsraeliWhistGame interface {
 	GetRestrictedBid() int
 	// GetRoundNumber 現在のラウンド番号を取得する
 	GetRoundNumber() int
+	// GetRoundDoubled 直前のラウンドで得点が 2 倍になったかを取得する
+	GetRoundDoubled() bool
+	// GetRoundAllExact 2 倍の理由が全員的中かを取得する (false なら全員外し)
+	GetRoundAllExact() bool
 	// GetTrickNumber 現在のトリック番号を取得する
 	GetTrickNumber() int
 	// GetTrumpSuit 切り札のスートを取得する (オークション中は 0)

@@ -180,6 +180,77 @@ describe('BotifarraPage', () => {
     expect(screen.getByTestId('botifarra-round-points')).toHaveTextContent('72');
   });
 
+  // **ゼロサムで動く 2 つの数字** (#5771)。どちらが自分の組かをラベルで言う。
+  it('labels which score is yours', async () => {
+    mockApi.mockResolvedValue({ ...playState, scores: [3, 8], roundPoints: [40, 32] });
+    renderWithProviders(<BotifarraPage />);
+
+    const score = await screen.findByTestId('botifarra-score');
+    expect(score).toHaveTextContent('あなた 3');
+    expect(score).toHaveTextContent('相手 8');
+    expect(screen.getByTestId('botifarra-round-points')).toHaveTextContent('あなた 40');
+    expect(screen.getByTestId('botifarra-round-points')).toHaveTextContent('相手 32');
+  });
+
+  // **勝利演出も自分の組で決まる。** 添字 0 決め打ちだと、組 1 の席に座った
+  // ときに勝ったのに祝われない (レビュー指摘)。
+  it('celebrates only when the human team wins', async () => {
+    mockApi.mockResolvedValue({
+      ...playState,
+      gameEndFlag: true,
+      winnerTeam: 1,
+      players: [
+        { id: 0, isHuman: false, team: 0, cardCount: 0, cards: [], trickCount: 0 },
+        { id: 1, isHuman: true, team: 1, cardCount: 0, cards: [], trickCount: 0 },
+        { id: 2, isHuman: false, team: 0, cardCount: 0, cards: [], trickCount: 0 },
+        { id: 3, isHuman: false, team: 1, cardCount: 0, cards: [], trickCount: 0 },
+      ],
+    });
+    const { unmount } = renderWithProviders(<BotifarraPage />);
+    expect(await screen.findByTestId('win-celebration')).toBeInTheDocument();
+    unmount();
+
+    // 同じ勝ちチームでも、人間が組 0 なら負け。
+    mockApi.mockResolvedValue({ ...playState, gameEndFlag: true, winnerTeam: 1 });
+    renderWithProviders(<BotifarraPage />);
+    await waitFor(() => expect(screen.getByTestId('botifarra-score')).toBeInTheDocument());
+    expect(screen.queryByTestId('win-celebration')).not.toBeInTheDocument();
+  });
+
+  // 席が読めない応答でも 0 で埋めて描画は続ける（数値の欠けで画面を落とさない）。
+  it('falls back to zeroes when no seat is the human', async () => {
+    mockApi.mockResolvedValue({
+      ...playState,
+      scores: [],
+      roundPoints: [],
+      players: [{ id: 0, isHuman: false, team: 0, cardCount: 12, cards: [], trickCount: 0 }],
+    });
+    renderWithProviders(<BotifarraPage />);
+
+    const score = await screen.findByTestId('botifarra-score');
+    expect(score).toHaveTextContent('あなた 0');
+    expect(score).toHaveTextContent('相手 0');
+  });
+
+  // **人間が組 1 の席のこともある。** 添字 0 決め打ちだと逆さまに出る。
+  it('follows the human seat team, not index 0', async () => {
+    mockApi.mockResolvedValue({
+      ...playState,
+      scores: [3, 8],
+      players: [
+        { id: 0, isHuman: false, team: 0, cardCount: 12, cards: [], trickCount: 0 },
+        { id: 1, isHuman: true, team: 1, cardCount: 12, cards: hand, trickCount: 0 },
+        { id: 2, isHuman: false, team: 0, cardCount: 12, cards: [], trickCount: 0 },
+        { id: 3, isHuman: false, team: 1, cardCount: 12, cards: [], trickCount: 0 },
+      ],
+    });
+    renderWithProviders(<BotifarraPage />);
+
+    const score = await screen.findByTestId('botifarra-score');
+    expect(score).toHaveTextContent('あなた 8');
+    expect(score).toHaveTextContent('相手 3');
+  });
+
   it('renders the current trick', async () => {
     mockApi.mockResolvedValue(playState);
     renderWithProviders(<BotifarraPage />);

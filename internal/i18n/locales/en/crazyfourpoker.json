@@ -34,5 +34,6 @@
   "acesOrBetter": "a pair of aces or better lets you raise to the cap",
   "marginal": "king high or better is worth the minimum raise",
   "fold": "not even king high, so the odds are against you",
-  "helpExampleBet": "  bet 100              bet 100 chips"
+  "helpExampleBet": "  bet 100              bet 100 chips",
+  "queensUpPayoutLine": "Queens Up pays: {{table}}"
 }

@@ -155,7 +155,11 @@ function ZwickerPageContent() {
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
             {/* Permanent, not tutorial-only: the two-valued courts and what a
                 Zwick actually is are the two rules a player gets wrong. */}
-            <div className="text-center text-xs text-ds-warning mb-3 font-medium" data-tutorial="zw-rule">
+            <div
+              className="text-center text-xs text-ds-warning mb-3 font-medium"
+              data-tutorial="zw-rule"
+              data-testid="zwicker-rule-line"
+            >
               {t('ruleLine')}
             </div>
 

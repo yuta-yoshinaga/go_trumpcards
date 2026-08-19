@@ -21,6 +21,8 @@
   "yourHand": "Your hand",
   "yourChips": "{{n}} chips",
   "yourBet": "bet {{n}} (currently {{target}})",
+  "yourCombo": "Your set: {{size}} of a kind, rank {{rank}}",
+  "yourComboNone": "Your set: none",
   "selectFollow": "Pick the next higher card of the same suit",
   "selectFreeLead": "The run is stopped -- you may lead any card",
   "bet": "Bet",

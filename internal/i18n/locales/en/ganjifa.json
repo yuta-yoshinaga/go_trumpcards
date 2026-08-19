@@ -16,6 +16,7 @@
   "promptRoundEnd": "Round complete",
   "promptRoundEndHelp": "nr / nextround ... score and go to the next round",
   "promptTrickEnd": "Trick complete",
+  "trickWinner": "{{name}} takes the trick",
   "promptTrickEndHelp": "n / next ... go to the next trick",
   "round": "Round: {{round}}  Trick: {{trick}}  Trump: {{trump}}",
   "roundEndTrickEntry": "{{name}} {{tricks}}",

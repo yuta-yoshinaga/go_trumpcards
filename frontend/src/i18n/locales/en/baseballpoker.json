@@ -1,6 +1,6 @@
 {
   "title": "Baseball Poker",
-  "wildNotice": "3s and 9s are wild. A face-up 4 pays a card, a face-up 3 buys the pot",
+  "wildNotice": "{{wilds}}s are wild. A face-up {{bonus}} pays a card, a face-up {{buyIn}} buys the pot",
   "label.chips": "Chips",
   "label.bet": "Bet",
   "label.pot": "Pot",

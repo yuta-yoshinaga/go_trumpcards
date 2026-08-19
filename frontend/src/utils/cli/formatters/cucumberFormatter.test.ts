@@ -23,6 +23,7 @@ const state = (over: Partial<CucumberResponse> = {}): CucumberResponse =>
     currentTrick: [{ playerIdx: 1, card: card('DIAMOND', 9) }],
     currentPlayerIdx: 0,
     leadPlayerIdx: 1,
+    totalTricks: 7,
     trickNumber: 2,
     roundNumber: 3,
     lastTrickWinnerIdx: -1,
@@ -42,7 +43,8 @@ describe('formatCucumberState', () => {
   it('shows the round, trick, target and the rule', () => {
     const out = formatCucumberState(state());
     expect(out).toContain('round 3');
-    expect(out).toContain('trick 3');
+    // **失点が出るのは最終トリックだけ** (#5768)。あと何回かが読めること。
+    expect(out).toContain('trick 3/7');
     expect(out).toContain('ends at 30');
     expect(out).toMatch(/suits are irrelevant/);
   });

@@ -50,14 +50,15 @@ func (p *PolignacWebPresenter) buildPlayersOutput(g interfaces.PolignacGame) []*
 	for i := 0; i < g.GetPlayerCnt(); i++ {
 		player := g.GetPlayer(i)
 		out = append(out, &controller.PolignacWebOutputPlayer{
-			ID:            i,
-			IsHuman:       player.GetIsHuman(),
-			CardCount:     player.GetCardsSize(),
-			Cards:         playerCardsToOutput(player, player.GetIsHuman()),
-			Score:         player.GetScore(),
-			RoundPenalty:  player.GetRoundPenalty(),
-			TrickCount:    player.GetTrickCount(),
-			DeclaredCapot: player.GetDeclaredCapot(),
+			ID:             i,
+			IsHuman:        player.GetIsHuman(),
+			CardCount:      player.GetCardsSize(),
+			Cards:          playerCardsToOutput(player, player.GetIsHuman()),
+			Score:          player.GetScore(),
+			RoundPenalty:   player.GetRoundPenalty(),
+			TakenJackSuits: player.GetTakenJackSuits(),
+			TrickCount:     player.GetTrickCount(),
+			DeclaredCapot:  player.GetDeclaredCapot(),
 		})
 	}
 	return out

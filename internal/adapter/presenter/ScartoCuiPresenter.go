@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 
@@ -172,7 +173,51 @@ func (p *ScartoCuiPresenter) writePrompt(b *strings.Builder, g interfaces.Scarto
 	case domain.ScartoPhaseRoundEnd:
 		b.WriteString(i18n.Tf("scarto.promptRoundEnd",
 			"outcome", scartoOutcomeLabel(g.GetOutcome())) + "\n")
+		// 精算は N × (自分のカード点 − 卓平均) のゼロサム。平均と式を出さないと
+		// dealScores の数字がどこから来たのか検算できない (Web は出している)。
+		scartoWriteAverageBreakdown(b, g)
 		b.WriteString(i18n.T("scarto.promptRoundEndHelp") + "\n")
+	}
+}
+
+// scartoPointsStr renders a half-point figure, dropping a trailing ".0".
+func scartoPointsStr(v float64) string {
+	if v == math.Trunc(v) {
+		return strconv.Itoa(int(v))
+	}
+	return strconv.FormatFloat(v, 'f', 1, 64)
+}
+
+// scartoSignedPointsStr renders a signed difference ("+3", "-1.5").
+func scartoSignedPointsStr(v float64) string {
+	if v > 0 {
+		return "+" + scartoPointsStr(v)
+	}
+	return scartoPointsStr(v)
+}
+
+// scartoWriteAverageBreakdown appends the table average, the conversion formula
+// and each seat's difference from it, mirroring the Web's scarto-breakdown.
+func scartoWriteAverageBreakdown(b *strings.Builder, g interfaces.ScartoGame) {
+	n := g.GetPlayerCnt()
+	if n == 0 {
+		return
+	}
+	total := 0
+	for i := 0; i < n; i++ {
+		total += g.GetCardPoints(i)
+	}
+	avg := float64(total) / float64(n)
+	b.WriteString(i18n.Tf("scarto.roundEndAverage", "avg", scartoPointsStr(avg)) + "\n")
+	b.WriteString(i18n.T("scarto.roundEndFormulaLine") + "\n")
+	for i := 0; i < n; i++ {
+		points := g.GetCardPoints(i)
+		// 変動は整数になる (N×h_i − Σh)。平均差のほうは割り切れないことがある。
+		b.WriteString(i18n.Tf("scarto.roundEndEarned",
+			"name", cuiPlayerName(g.GetPlayer(i), i),
+			"points", strconv.Itoa(points),
+			"diff", scartoSignedPointsStr(float64(points)-avg),
+			"scaled", scartoSignedPointsStr(float64(n*points-total))) + "\n")
 	}
 }
 
