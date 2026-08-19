@@ -557,21 +557,22 @@ func (g *FrenchTarot) validateDiscards(player *FrenchTarotPlayer, cardIndices []
 		}
 	}
 	allowTrump := discardable < FrenchTarotChienSize
+	// 判定は FrenchTarotUnburiableReason ただ一つ。CUI/Web が出す案内と、ここで
+	// 実際に弾く条件が別々に書かれていると、片方だけ直ったときに黙ってずれる。
 	for _, idx := range cardIndices {
-		c := player.GetCard(idx)
-		if frenchTarotIsExcuse(c) {
+		switch FrenchTarotUnburiableReason(player.GetCard(idx)) {
+		case FrenchTarotUnburiableExcuse:
 			return NewDomainError(ErrInvalidPlay, "エクスキューズは捨てられません")
-		}
-		// プティ (切り札1) と 21 は bout であり、公式ルール上いかなる場合も écart に
-		// 出せない (手札24枚中 bout は最大3枚なので、除外しても捨て札6枚は必ず確保できる)。
-		if frenchTarotIsTrump(c) && frenchTarotIsBout(c) {
+		case FrenchTarotUnburiableBout:
+			// プティ (切り札1) と 21 は bout であり、公式ルール上いかなる場合も écart に
+			// 出せない (手札24枚中 bout は最大3枚なので、除外しても捨て札6枚は必ず確保できる)。
 			return NewDomainError(ErrInvalidPlay, "プティ・21 は捨てられません")
-		}
-		if !frenchTarotIsTrump(c) && c.GetValue() == FrenchTarotKingValue {
+		case FrenchTarotUnburiableKing:
 			return NewDomainError(ErrInvalidPlay, "キングは捨てられません")
-		}
-		if frenchTarotIsTrump(c) && !allowTrump {
-			return NewDomainError(ErrInvalidPlay, "切り札は (やむを得ない場合を除き) 捨てられません")
+		case FrenchTarotUnburiableTrump:
+			if !allowTrump {
+				return NewDomainError(ErrInvalidPlay, "切り札は (やむを得ない場合を除き) 捨てられません")
+			}
 		}
 	}
 	return nil
