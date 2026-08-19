@@ -118,6 +118,26 @@ describe('KingoPage', () => {
     expect(screen.getByTestId('kingo-won-0')).toHaveTextContent('10');
   });
 
+  // 知らない役番号が来ても表示が消えない（サーバが役を増やしたときの保険）。
+  it('知らない役番号は役なし扱いで描く', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: KingoPhase.RESULT,
+        isHumanTurn: false,
+        seats: [
+          seat({ cards: [card(3), card(3), card(8)], rank: 9, matchedValue: 3 }),
+          seat({ name: 'CPU1', isHuman: false, cards: [card(2), card(6), card(10)], rank: 9, matchedValue: 10 }),
+        ],
+      }),
+    );
+    renderWithProviders(<KingoPage />);
+
+    // 役名は既定の「役なし」に落ちるが、数字は付く（rank > 0 なので）。
+    const line = await screen.findByTestId('kingo-rank-0');
+    expect(line).toHaveTextContent('役なし');
+    expect(line).toHaveTextContent('3');
+  });
+
   // **同じ「嵐」でも K 3 枚と A 3 枚では強さの実感が違う** (#5783)。
   it('そろえた数字まで出す', async () => {
     mockApi.mockResolvedValue(
