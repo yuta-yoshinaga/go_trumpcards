@@ -233,6 +233,34 @@ describe('IronCrossPage', () => {
     expect(previewed()).toEqual([]);
   });
 
+  // 4 つのハンドラすべてが同じ状態を触る。**片方の列だけ配線を忘れる**のが
+  // ありがちな取りこぼしなので、縦=フォーカス / 横=ホバーの側も見る。
+  it('縦はフォーカスでも、横はホバーでも光る', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: IronCrossPhase.CHOOSE_LINE,
+        isChoosing: true,
+        isHumanTurn: false,
+        // **伏せたままの位置でも光る。** 開いた札だけ光ると、まだ見えていない
+        // 枝がどちらの列に属すのか読めない。
+        cross: [card(13), null, card(11), null, card(9)],
+        revealedCount: 3,
+      }),
+    );
+    renderWithProviders(<IronCrossPage />);
+    await waitFor(() => expect(screen.getByTestId('ic-vertical')).toBeInTheDocument());
+
+    fireEvent.focus(screen.getByTestId('ic-vertical'));
+    expect(screen.getByTestId('ic-cross-1')).toHaveAttribute('data-previewed', 'true');
+    fireEvent.blur(screen.getByTestId('ic-vertical'));
+    expect(screen.getByTestId('ic-cross-1')).not.toHaveAttribute('data-previewed');
+
+    fireEvent.mouseEnter(screen.getByTestId('ic-horizontal'));
+    expect(screen.getByTestId('ic-cross-3')).toHaveAttribute('data-previewed', 'true');
+    fireEvent.mouseLeave(screen.getByTestId('ic-horizontal'));
+    expect(screen.getByTestId('ic-cross-3')).not.toHaveAttribute('data-previewed');
+  });
+
   // **配列はサーバのものを使う。** 位置をページで決め直さない。
   it('サーバが別の位置を送ってきたらそちらを光らせる', async () => {
     mockApi.mockResolvedValue(
