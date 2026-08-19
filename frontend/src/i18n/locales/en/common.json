@@ -2278,6 +2278,7 @@
       "autoComplete": "Auto-complete",
       "autoSet": "Auto-set the hands",
       "bet": "Bet",
+      "buy": "Buy",
       "buy6th": "Buy a 6th card",
       "call": "Call",
       "check": "Check",
@@ -2298,6 +2299,7 @@
       "letitride": "Let it ride",
       "next": "Advance",
       "nextRank": "Next rank",
+      "pass": "Pass",
       "play": "Play a card",
       "prevRank": "Previous rank",
       "pull": "Pull",
@@ -2315,12 +2317,11 @@
       "split": "Split",
       "stand": "Stand",
       "stay": "Stay",
+      "stick": "Stick",
       "surrender": "Surrender",
       "truco": "Call Truco",
-      "undo": "Undo one move",
-      "stick": "Stick",
       "twist": "Twist",
-      "buy": "Buy"
+      "undo": "Undo one move"
     }
   },
   "legal": {

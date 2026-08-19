@@ -65,5 +65,6 @@
   "frontendHint.zwanzigerrufenBidNeedsTrumps": "bid only with plenty of trumps",
   "frontendHint.zwanzigerrufenBuryCheap": "bury the six cheapest cards",
   "frontendHint.zwanzigerrufenAvoidPoints": "under Trischaken, taking points loses the deal",
-  "frontendHint.zwanzigerrufenFollowSuit": "follow the led suit, or trump when void"
+  "frontendHint.zwanzigerrufenFollowSuit": "follow the led suit, or trump when void",
+  "highestBid": "Highest bid: {{name}}"
 }

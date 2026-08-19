@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"regexp"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -26,7 +27,14 @@ func TestCucumberCuiPresenterOutput(t *testing.T) {
 	out := p.Output(c, nil)
 
 	assert.Contains(t, out, i18n.T("cucumber.helpTitle"))
-	assert.Contains(t, out, fixedPart("cucumber.header"))
+	// **失点が出るのは最終トリックだけ** (#5768)。ヘッダーは現在番号だけでなく
+	// 総トリック数まで出す。行そのものを組み立てて突き合わせる ("7" は失点や
+	// 手札の枚数としても出るので、部分一致では素通りする)。
+	assert.Contains(t, out, i18n.Tf("cucumber.header",
+		"round", strconv.Itoa(c.GetRoundNumber()),
+		"trick", strconv.Itoa(c.GetTrickNumber()+1),
+		"total", strconv.Itoa(domain.CucumberHandSize),
+		"target", strconv.Itoa(c.GetConfig().TargetScore)))
 	// **スート無関係・失点は最終トリックだけ、が規則そのもの。**
 	assert.Contains(t, out, i18n.T("cucumber.rule"))
 	assert.Len(t, regexp.MustCompile(`手札\d+枚 失点\d+点`).FindAllString(out, -1),

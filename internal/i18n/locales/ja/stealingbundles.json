@@ -9,7 +9,7 @@
   "table": "場: {{cards}}",
   "tableEmpty": "（なし）",
   "bundleEmpty": "なし",
-  "playerLine": "{{name}}: 手札{{cards}}枚 束{{bundle}}枚 一番上[{{top}}]",
+  "playerLine": "{{name}}{{role}}: 手札{{cards}}枚 束{{bundle}}枚 一番上[{{top}}]",
   "promptCurrentPlayer": "手番: {{name}}",
   "promptMustCapture": "取れる手があります。場に置くことはできません。",
   "promptTake": "take <idx>・・・場札を取る",
@@ -25,5 +25,7 @@
   "hintReasonTake": "場から取れる",
   "hintReasonTrail": "取れないので、狙われにくい札を置く",
   "helpExampleGiveUp": "  g                    この局を投了する",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "roleLastCaptureTake": "[直前に場から取った]",
+  "roleLastCaptureSteal": "[直前に {{name}} の束を盗んだ]"
 }

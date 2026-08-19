@@ -49,14 +49,19 @@ type ChemindeFer struct {
 	//
 	// 席番号の剰余計算を毎回やると、親がどこに居るかで条件が変わって読めなくなる。
 	// 順番を 1 本の配列にしてしまえば「次は betOrder[betPos+1]」で済む。
-	betOrder    []int
-	betPos      int // betOrder のどこまで進んだか。-1 = 賭けは終わっている
-	stake       int
-	represIdx   int // 子側の代表 (最高額ベッター)。-1 = 未定
-	bankerHand  []*Card
-	punterHand  []*Card
-	punterDrew  bool
-	result      ChemindeFerResult
+	betOrder   []int
+	betPos     int // betOrder のどこまで進んだか。-1 = 賭けは終わっている
+	stake      int
+	represIdx  int // 子側の代表 (最高額ベッター)。-1 = 未定
+	bankerHand []*Card
+	punterHand []*Card
+	punterDrew bool
+	result     ChemindeFerResult
+	// lastNet は直前の決済での席ごとの純増減。ラウンドを始めると 0 に戻る。
+	//
+	// **卓の結果と自分の損益は別の情報。** banker/punter/tie だけでは、自分の
+	// 賭けが勝ったのか負けたのかはチップの数字を前後で見比べるしかない (#5774)。
+	lastNet     []int
 	roundNumber int
 	gameEndFlag bool
 	actionLog   []*ActionLogEntry
@@ -138,6 +143,7 @@ func (g *ChemindeFer) startRound() {
 	g.punterHand = nil
 	g.punterDrew = false
 	g.result = ChemindeFerResultNone
+	g.lastNet = make([]int, len(g.players))
 	g.betOrder = nil
 	g.betPos = -1
 	g.phase = ChemindeFerPhaseStake
@@ -586,6 +592,7 @@ func (g *ChemindeFer) resolve() {
 // 超えず、その間に親の手持ちは動かないため。
 func (g *ChemindeFer) settle() {
 	banker := g.players[g.bankerIdx]
+	g.lastNet = make([]int, len(g.players))
 	for i, p := range g.players {
 		if i == g.bankerIdx || p.GetBet() == 0 {
 			continue
@@ -595,9 +602,14 @@ func (g *ChemindeFer) settle() {
 		switch g.result {
 		case ChemindeFerResultBanker:
 			banker.AddChips(bet)
+			// 賭け金は張った時点で手元から引かれているので、負けの純増減は -bet。
+			g.lastNet[i] = -bet
+			g.lastNet[g.bankerIdx] += bet
 		case ChemindeFerResultPunter:
 			banker.SubtractChips(bet)
 			p.AddChips(bet * 2) // 賭け金の返却 + 同額の配当 (1 対 1)
+			g.lastNet[i] = bet
+			g.lastNet[g.bankerIdx] -= bet
 		default:
 			p.AddChips(bet) // 引き分け: 賭け金を返す
 		}
@@ -606,6 +618,17 @@ func (g *ChemindeFer) settle() {
 	if g.result == ChemindeFerResultPunter {
 		g.passBank()
 	}
+}
+
+// GetLastNet は直前の決済での席の純増減を返す。ラウンド中は 0。
+//
+// **卓の結果 (banker/punter/tie) と自分の損益は別の情報。** 賭けていない席や
+// 引き分けは 0 で、勝てば正、負ければ負になります。
+func (g *ChemindeFer) GetLastNet(i int) int {
+	if i < 0 || i >= len(g.lastNet) {
+		return 0
+	}
+	return g.lastNet[i]
 }
 
 // passBank はバンクを次の (張れるだけのチップを持つ) 席へ渡す。
@@ -899,6 +922,7 @@ type chemindeFerJSON struct {
 	PunterHand  []*Card              `json:"pn"`
 	PunterDrew  bool                 `json:"pd"`
 	Result      int                  `json:"rs"`
+	LastNet     []int                `json:"ln"`
 	RoundNumber int                  `json:"rn"`
 	GameEndFlag bool                 `json:"ge"`
 	ActionLog   []*ActionLogEntry    `json:"al"`
@@ -921,6 +945,7 @@ func (g *ChemindeFer) MarshalJSON() ([]byte, error) {
 		PunterHand:  g.punterHand,
 		PunterDrew:  g.punterDrew,
 		Result:      int(g.result),
+		LastNet:     g.lastNet,
 		RoundNumber: g.roundNumber,
 		GameEndFlag: g.gameEndFlag,
 		ActionLog:   g.actionLog,
@@ -966,6 +991,11 @@ func (g *ChemindeFer) UnmarshalJSON(data []byte) error {
 	g.punterHand = j.PunterHand
 	g.punterDrew = j.PunterDrew
 	g.result = ChemindeFerResult(j.Result)
+	g.lastNet = j.LastNet
+	if len(g.lastNet) != len(g.players) {
+		// **長さが席数と合わない保存は損益を席に貼り違える。** 0 で埋め直す。
+		g.lastNet = make([]int, len(g.players))
+	}
 	g.roundNumber = j.RoundNumber
 	g.gameEndFlag = j.GameEndFlag
 	g.actionLog = j.ActionLog

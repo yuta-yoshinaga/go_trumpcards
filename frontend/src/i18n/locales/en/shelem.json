@@ -19,7 +19,8 @@
     "took": "{{n}} taken",
     "team": "T{{team}}",
     "you": "You",
-    "cpu": "CPU{{idx}}"
+    "cpu": "CPU{{idx}}",
+    "defenders": "defenders {{got}} of {{total}}"
   },
   "role": {
     "declarer": "won {{n}}",

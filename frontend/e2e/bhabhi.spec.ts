@@ -1,5 +1,5 @@
 import { expect, type Page, test } from '@playwright/test';
-import { navigateTo, TIMEOUT_ACTION, TIMEOUT_TRANSITION } from './helpers';
+import { isVisibleWithin, navigateTo, TIMEOUT_ACTION, TIMEOUT_QUICK, TIMEOUT_TRANSITION } from './helpers';
 
 // **合法な札だけを選ぶ。** カードは意図的に disabled にしていないので、
 // フォロー義務を満たさない札を押すとサーバが拒否して盤面が動かない。
@@ -94,5 +94,28 @@ test.describe('Bhabhi E2E', () => {
       .first()
       .click();
     await expect(page.getByTestId('bh-result')).toBeVisible({ timeout: TIMEOUT_ACTION });
+  });
+});
+
+// **場札は席数に縛られない** (#5756)。フォローできない人が出るまで精算
+// されないので、375px 幅では 1 行のままだとページ本体が横に伸びる。
+test.describe('Bhabhi pile layout', () => {
+  test('keeps the page from scrolling sideways on a phone', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 667 });
+    await navigateTo(page, '/bhabhi');
+    await expect(page.getByTestId('bh-trick')).toBeVisible({ timeout: TIMEOUT_TRANSITION });
+
+    // 場札が積み上がるまで、合法な札を押せるだけ押す。
+    for (let i = 0; i < 12; i++) {
+      const card = legalCard(page).first();
+      if (!(await isVisibleWithin(card, TIMEOUT_QUICK))) break;
+      await card.click();
+      await page.waitForTimeout(TIMEOUT_ACTION / 10);
+    }
+
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(overflow).toBeLessThanOrEqual(1);
   });
 });

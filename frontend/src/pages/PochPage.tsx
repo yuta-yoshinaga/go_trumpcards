@@ -223,6 +223,16 @@ function PochPageContent() {
                 {' · '}
                 {t('yourChips', { n: human?.chips ?? 0 })}
                 {betting && ` · ${t('yourBet', { n: human?.bet ?? 0, target: state.betTarget })}`}
+                {/* pochen は組の比べ合い。自分の組は自分にとって既知の情報なので、
+                    賭ける前に見せる (#5722)。判定はサーバ (PochBestCombo) が唯一の出どころ。 */}
+                {betting && (
+                  <span data-testid="poch-your-combo">
+                    {' · '}
+                    {state.yourBestComboSize > 0
+                      ? t('yourCombo', { size: state.yourBestComboSize, rank: state.yourBestComboRank })
+                      : t('yourComboNone')}
+                  </span>
+                )}
               </div>
               <div className="flex gap-1 justify-center flex-wrap">
                 {(human?.cards ?? []).map((card, i) => {

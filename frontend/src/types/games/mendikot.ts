@@ -75,6 +75,13 @@ export interface MendikotResponse extends BaseGameResponse {
   currentTrick: MendikotTrickCard[];
   /** Hand indices you may legally play. Following suit is compulsory. */
   validPlays: number[];
+  /**
+   * Whether the card the human plays now decides the trump for the hand.
+   *
+   * Mendikot has no trump-choosing phase: the first player who cannot follow
+   * sets it with whatever they play (#5755).
+   */
+  willSetTrump: boolean;
   gameEndFlag: boolean;
   /** `-1` until decided, and `-1` on a tie. */
   winnerTeam: number;

@@ -3,6 +3,7 @@
 package presenter
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -179,3 +180,44 @@ func TestTarabishCuiPresenterActionLogOutput(t *testing.T) {
 	tb.GiveUp()
 	require.NotEmpty(t, p.ActionLogOutput(tb))
 }
+
+// **切り札だけ点数表が入れ替わる** (#5749)。CUI の手札にも同じ点を出す。
+func TestTarabishCuiPresenterShowsCardPoints(t *testing.T) {
+	p := new(TarabishCuiPresenter)
+	g := newTarabishForCui(t)
+	g.SetTrumpSuitForTest(domain.CardDesignHeart)
+	g.SetPhaseForTest(domain.TarabishPhasePlay)
+
+	human := g.GetPlayer(0)
+	human.ResetRound()
+	for _, c := range []*domain.Card{
+		domain.NewCard(domain.CardDesignHeart, 11, true), // Jass = 20
+		domain.NewCard(domain.CardDesignHeart, 9, true),  // Menel = 14
+		domain.NewCard(domain.CardDesignSpade, 11, true), // ただの J = 2
+	} {
+		human.AddCard(c)
+	}
+
+	out := tarabishPlain(p.Output(g, nil))
+
+	assert.Contains(t, out, i18n.Tf("tarabish.handCard", "idx", "0", "card", "HEART 11", "points", "20"))
+	assert.Contains(t, out, i18n.Tf("tarabish.handCard", "idx", "1", "card", "HEART 9", "points", "14"))
+	assert.Contains(t, out, i18n.Tf("tarabish.handCard", "idx", "2", "card", "SPADE 11", "points", "2"))
+	assert.NotContains(t, out, "{{")
+
+	// **切り札が決まるまでは点が定まらない。**入札中に出すと嘘になる。
+	bidding := newTarabishForCui(t)
+	bidding.SetTrumpSuitForTest(0)
+	biddingHuman := bidding.GetPlayer(0)
+	biddingHuman.ResetRound()
+	biddingHuman.AddCard(domain.NewCard(domain.CardDesignHeart, 11, true))
+	biddingOut := tarabishPlain(p.Output(bidding, nil))
+	assert.Contains(t, biddingOut, "[0]HEART 11")
+	assert.NotContains(t, biddingOut, i18n.Tf("tarabish.handCard", "idx", "0", "card", "HEART 11", "points", "2"))
+	assert.NotContains(t, biddingOut, "点)")
+}
+
+// tarabishPlain は色付けのエスケープを落とす。
+var tarabishAnsi = regexp.MustCompile(`\x1b\[[0-9;]*m`)
+
+func tarabishPlain(s string) string { return tarabishAnsi.ReplaceAllString(s, "") }

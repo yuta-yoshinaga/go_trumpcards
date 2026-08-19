@@ -261,3 +261,14 @@ func TestBidEuchreInteractor_SnapshotAndRestore(t *testing.T) {
 	_, err = usecase.RestoreBidEuchreInteractor([]byte(`{`), pMock)
 	assert.Error(t, err)
 }
+
+// **CUI のヒントはここを通る。**presenter の HintOutput に素通しする (#5730)。
+func TestBidEuchreInteractor_Hint(t *testing.T) {
+	pMock := new(presenter.MockBidEuchrePresenter)
+	pMock.On("HintOutput", mock.Anything).Return("advice")
+	gameMock := new(interfaces.MockBidEuchreGame)
+
+	bi := usecase.NewBidEuchreInteractor(gameMock, pMock)
+	assert.Equal(t, "advice", bi.Hint())
+	pMock.AssertCalled(t, "HintOutput", gameMock)
+}

@@ -1,0 +1,55 @@
+{
+  "_comment": "Golden vectors for the Anaconda pass recipient. Two implementations read this file: internal/adapter/presenter/AnacondaCuiPresenter_test.go (anacondaPassRecipient) and frontend/src/utils/anacondaPass.test.ts (anacondaPassRecipient). Seats are listed in table order; `human` marks the human seat and `out` marks eliminated seats. `recipient` is the seat index the human passes to, or -1 when nobody can receive.",
+  "cases": [
+    {
+      "name": "four seats, nobody out: the human passes to the next seat",
+      "seats": [
+        { "human": true, "out": false },
+        { "human": false, "out": false },
+        { "human": false, "out": false },
+        { "human": false, "out": false }
+      ],
+      "recipient": 1
+    },
+    {
+      "name": "the seat on the left is out, so the pass skips to the one beyond it",
+      "seats": [
+        { "human": true, "out": false },
+        { "human": false, "out": true },
+        { "human": false, "out": false },
+        { "human": false, "out": false }
+      ],
+      "recipient": 2
+    },
+    {
+      "name": "every other seat but one is out",
+      "seats": [
+        { "human": true, "out": false },
+        { "human": false, "out": true },
+        { "human": false, "out": true },
+        { "human": false, "out": false }
+      ],
+      "recipient": 3
+    },
+    {
+      "name": "the human is the last seat and wraps around to the first survivor",
+      "seats": [
+        { "human": false, "out": true },
+        { "human": false, "out": false },
+        { "human": false, "out": false },
+        { "human": true, "out": false }
+      ],
+      "recipient": 1
+    },
+    {
+      "name": "the human is the only survivor: nobody to pass to",
+      "seats": [{ "human": true, "out": false }, { "human": false, "out": true }, { "human": false, "out": true }],
+      "recipient": -1
+    },
+    {
+      "name": "the human is out: nothing to pass",
+      "seats": [{ "human": true, "out": true }, { "human": false, "out": false }, { "human": false, "out": false }],
+      "recipient": -1
+    }
+  ]
+}

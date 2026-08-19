@@ -4,13 +4,16 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupKilleCuiMock(phase domain.KillePhase, players []*domain.KillePlayer) *interfaces.MockKilleGame {
@@ -28,6 +31,7 @@ func setupKilleCuiMock(phase domain.KillePhase, players []*domain.KillePlayer) *
 	for i := range players {
 		m.On("GetPlayer", i).Return(players[i])
 	}
+	m.On("GetEvents").Return(([]*domain.KilleEvent)(nil)).Maybe()
 	return m
 }
 
@@ -78,6 +82,7 @@ func TestKilleCuiPresenter_DealerGetsItsOwnPrompt(t *testing.T) {
 	for i := range players {
 		m.On("GetPlayer", i).Return(players[i])
 	}
+	m.On("GetEvents").Return(([]*domain.KilleEvent)(nil))
 
 	out := new(presenter.KilleCuiPresenter).Output(m, nil)
 	assert.Contains(t, out, "山札から引いて交換")
@@ -110,6 +115,7 @@ func TestKilleCuiPresenter_ErrorAndGameEnd(t *testing.T) {
 	end.On("GetGameEndFlag").Return(true)
 	end.On("GetWinnerIdx").Return(0)
 	end.On("GetLoserIdxs").Return([]int{1, 2, 3})
+	end.On("GetEvents").Return(([]*domain.KilleEvent)(nil))
 	end.On("GetPlayers").Return(players)
 	for i := range players {
 		end.On("GetPlayer", i).Return(players[i])
@@ -122,4 +128,44 @@ func TestKilleCuiPresenter_ActionLogOutput(t *testing.T) {
 	m := setupKilleCuiMock(domain.KillePhaseExchange, players)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{})
 	assert.NotNil(t, new(presenter.KilleCuiPresenter).ActionLogOutput(m))
+}
+
+// #5725: Web は kille-events で交換の実況を、reentriesUsed で買い戻し回数を出して
+// いるのに、CUI は GetEvents() も GetReentries() も呼んでおらず、誰が誰と交換し、
+// 誰が何回買い戻したのかを画面から読み取れなかった。
+func TestKilleCuiPresenter_ShowsExchangesAndReentries(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true) // 名前は Bold で装飾されるので、素の文字列で照合する
+	defer color.SetNoColor(orig)
+	players := makeKillePlayers(domain.KilleNum5, domain.KillePig, domain.KilleCuckoo, domain.KilleNum9)
+	// 席 1 が 2 回買い戻している。
+	players[1].AddReentry()
+	players[1].AddReentry()
+	m := setupKilleCuiMock(domain.KillePhaseExchange, players)
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetEvents")
+	m.On("GetEvents").Return([]*domain.KilleEvent{
+		{Kind: "swap", Actor: 0, Target: 1},
+		{Kind: "stock", Actor: 3, Target: -1},
+	})
+
+	out := new(presenter.KilleCuiPresenter).Output(m, nil)
+
+	assert.Contains(t, out, i18n.T("kille.eventsTitle"))
+	assert.Contains(t, out, i18n.Tf("kille.event.swap",
+		"actor", i18n.T("cuiPlayerYou"), "target", i18n.Tf("cuiPlayerCpu", "idx", "1")))
+	assert.Contains(t, out, i18n.Tf("kille.event.stock",
+		"actor", i18n.Tf("cuiPlayerCpu", "idx", "3")))
+	// 買い戻し回数は上限つきで出す (残り回数が判断材料になる)。
+	assert.Contains(t, out, i18n.Tf("kille.reentriesUsed",
+		"used", "2", "max", strconv.Itoa(domain.KilleMaxReentries)))
+}
+
+// 交換が起きていないラウンドでは一覧ごと出さない。
+func TestKilleCuiPresenter_NoEventBlockWhenNothingHappened(t *testing.T) {
+	players := makeKillePlayers(domain.KilleNum5, domain.KillePig, domain.KilleCuckoo, domain.KilleNum9)
+	m := setupKilleCuiMock(domain.KillePhaseExchange, players)
+
+	out := new(presenter.KilleCuiPresenter).Output(m, nil)
+
+	assert.NotContains(t, out, i18n.T("kille.eventsTitle"))
 }

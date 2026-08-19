@@ -58,6 +58,12 @@ func (p *FiveCardStudCuiPresenter) Output(s interfaces.FiveCardStudGame, lastErr
 			b.WriteString(i18n.Tf("fivecardstud.limitLine", "name", domain.BettingLimitNames[cfg.BettingLimit]) + "\n")
 		}
 
+		// **Soko の役順位は標準ポーカーと違う。**チュートリアルを閉じると
+		// 確認する手段が無くなるので、対局中いつでも読めるよう常設で出す (#5737)。
+		if s.GetIsSoko() {
+			b.WriteString(sokoRankingLine() + "\n")
+		}
+
 		b.WriteString("----------\n")
 		for i := 0; i < s.GetPlayerCnt(); i++ {
 			player := s.GetPlayer(i)
@@ -178,6 +184,23 @@ func (p *FiveCardStudCuiPresenter) Output(s interfaces.FiveCardStudGame, lastErr
 			b.WriteString(i18n.T("fivecardstud.gameEnd") + "\n")
 		}
 	})
+}
+
+// sokoRankingLine は Soko の役順位を強い順に 1 行で返す。
+//
+// **順序も名前も表を写さない。**役名は showdown と同じ sokoHandRank<N> を引き、
+// 並びは domain の定数そのものを強い順にたどる。4 枚役だけは標準ポーカーとの
+// 違いなので目印を付ける。
+func sokoRankingLine() string {
+	parts := make([]string, 0, domain.SokoHandRoyalFlush+1)
+	for rank := domain.SokoHandRoyalFlush; rank >= domain.SokoHandHighCard; rank-- {
+		name := i18n.T("sokoHandRank" + strconv.Itoa(rank))
+		if rank == domain.SokoHandFourStraight || rank == domain.SokoHandFourFlush {
+			name = i18n.Tf("fivecardstud.sokoRankingInserted", "name", name)
+		}
+		parts = append(parts, name)
+	}
+	return i18n.Tf("fivecardstud.sokoRanking", "list", strings.Join(parts, " > "))
 }
 
 // cuiHandNameForStud はファイブカード・スタッド系の役名をローカライズして返す。

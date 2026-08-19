@@ -31,9 +31,13 @@ type PolignacWebOutputPlayer struct {
 	// Score は全ラウンドの累計**失点**。小さいほど良い。
 	Score int `json:"score"`
 	// RoundPenalty はこのラウンドで受けた失点。
-	RoundPenalty  int  `json:"roundPenalty"`
-	TrickCount    int  `json:"trickCount"`
-	DeclaredCapot bool `json:"declaredCapot"`
+	RoundPenalty int `json:"roundPenalty"`
+	// TakenJackSuits はこのラウンドで取ったジャックのスート (♠ が先頭)。
+	//
+	// **合計失点だけでは ♠J を踏んだのか他を 2 枚拾ったのかが分からない** (#5746)。
+	TakenJackSuits []int `json:"takenJackSuits"`
+	TrickCount     int   `json:"trickCount"`
+	DeclaredCapot  bool  `json:"declaredCapot"`
 }
 
 // PolignacWebOutputHint ヒント出力

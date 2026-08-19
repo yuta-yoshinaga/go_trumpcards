@@ -28,6 +28,7 @@
   "selectionOver": "{{n}} 枚外してください（{{selected}}/{{required}}）",
   "selectionReady": "選択完了（{{selected}}/{{required}}）",
   "passNotice": "パスフェーズ — 左隣へ渡すカードを {{count}} 枚選んでください。",
+  "passNoticeTo": "パスフェーズ — {{name}} へ渡すカードを {{count}} 枚選んでください。",
   "setNotice": "セットフェーズ — 残す5枚を選んでください（2枚を捨てる）。",
   "rollNotice": "ロールフェーズ — {{revealed}}/5 公開。コール・レイズ・フォールドを選択。",
   "badge": {

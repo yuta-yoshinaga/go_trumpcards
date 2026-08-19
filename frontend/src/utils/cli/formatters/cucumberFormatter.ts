@@ -15,7 +15,7 @@ export function formatCucumberState(state: CucumberResponse | null): string {
 
   lines.push(formatHeader('Cucumber'));
   lines.push(
-    `round ${state.roundNumber} | trick ${state.trickNumber + 1} | ends at ${state.config.targetScore} | ${
+    `round ${state.roundNumber} | trick ${state.trickNumber + 1}/${state.totalTricks} | ends at ${state.config.targetScore} | ${
       PHASE_NAMES[state.phase] ?? state.phase
     }`,
   );

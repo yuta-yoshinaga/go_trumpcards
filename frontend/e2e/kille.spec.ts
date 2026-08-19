@@ -19,10 +19,19 @@ test.describe('Kille E2E', () => {
 
     // Either action is legal on the human's turn; the dealer's exchange button
     // reads differently because it swaps with the stock.
+    //
+    // **The human does not always get a turn.** Reset makes seat 0 the dealer,
+    // so the human acts LAST, and a CPU that exchanges into the human's Pig
+    // knocks the original holder out before then (internal/domain/Kille.go).
+    // An eliminated seat renders no action buttons, so waiting longer would
+    // never help -- wait for the turn OR for the round to have moved on (#6071).
     const stand = page.getByRole('button', { name: '交換しない' });
-    await expect(stand).toBeVisible({ timeout: TIMEOUT_GAME_LOOP });
-    await stand.click();
-    await waitForLoaded(page);
+    const roundOver = page.getByTestId('kille-showdown').or(page.getByRole('button', { name: '次のラウンドへ' }));
+    await expect(stand.or(roundOver).first()).toBeVisible({ timeout: TIMEOUT_GAME_LOOP });
+    if (await stand.isVisible()) {
+      await stand.click();
+      await waitForLoaded(page);
+    }
 
     // The turn resolves to a showdown or to another seat's turn -- either way
     // the round advances rather than hanging.

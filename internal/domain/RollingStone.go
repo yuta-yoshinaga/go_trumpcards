@@ -195,8 +195,11 @@ func (r *RollingStone) sortAllHands() {
 	}
 }
 
-// leadSuit はこのトリックのリードスートを返す（誰も出していなければ 0）。
-func (r *RollingStone) leadSuit() int {
+// GetLeadSuit はこのトリックのリードスートを返す（誰も出していなければ 0）。
+//
+// **引き取りの理由そのもの。** 画面と CUI はこれを「♦に追従できない」と出すので、
+// 「先頭札のスート」という規則をここ 1 箇所に置きます (#5764)。
+func (r *RollingStone) GetLeadSuit() int {
 	if len(r.currentTrick) == 0 {
 		return 0
 	}
@@ -212,7 +215,7 @@ func (r *RollingStone) GetValidPlayIndices(playerIdx int) []int {
 		return nil
 	}
 	p := r.players[playerIdx]
-	lead := r.leadSuit()
+	lead := r.GetLeadSuit()
 	out := make([]int, 0, p.GetCardsSize())
 	for i := range p.GetCardsSize() {
 		if lead == 0 || p.GetCard(i).GetDesign() == lead {

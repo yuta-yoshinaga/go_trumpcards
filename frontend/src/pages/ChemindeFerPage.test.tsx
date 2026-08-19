@@ -40,6 +40,7 @@ const seat = (id: number, over: Partial<ChemindeFerResponse['players'][number]> 
   bet: 0,
   isBanker: id === 0,
   isRepresentative: false,
+  lastNet: 0,
   ...over,
 });
 
@@ -193,6 +194,44 @@ describe('ChemindeFerPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'バンクを渡す' })).toBeInTheDocument();
     expect(screen.getByTestId('cdf-result')).toHaveTextContent('親の勝ち');
+  });
+
+  // **卓の結果と自分の損益は別の情報** (#5774)。
+  it('自分の賭けが勝ったか負けたかを金額付きで出す', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: ChemindeFerPhase.ROUND_END,
+        result: 2,
+        isHumanTurn: false,
+        players: [seat(0, { isHuman: true, lastNet: 200 }), seat(1, { isBanker: true, lastNet: -200 })],
+      }),
+    );
+    renderWithProviders(<ChemindeFerPage />);
+
+    const net = await screen.findByTestId('cdf-net');
+    expect(net).toHaveTextContent('+200');
+    expect(net.className).toContain('text-ds-success');
+  });
+
+  it('負けた回は赤で、賭けていない回は増減なしと出す', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: ChemindeFerPhase.ROUND_END,
+        result: 1,
+        isHumanTurn: false,
+        players: [seat(0, { isHuman: true, lastNet: -50 }), seat(1, { isBanker: true, lastNet: 50 })],
+      }),
+    );
+    const { unmount } = renderWithProviders(<ChemindeFerPage />);
+    const lost = await screen.findByTestId('cdf-net');
+    expect(lost).toHaveTextContent('-50');
+    expect(lost.className).toContain('text-ds-error');
+    unmount();
+
+    // **賭けていない回に行ごと消すと、勝ったのか賭けていないのかが読めない。**
+    mockApi.mockResolvedValue(withState({ phase: ChemindeFerPhase.ROUND_END, result: 3, isHumanTurn: false }));
+    renderWithProviders(<ChemindeFerPage />);
+    expect(await screen.findByTestId('cdf-net')).toHaveTextContent('増減なし');
   });
 
   it('親でなければバンクを渡すは出ない', async () => {

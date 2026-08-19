@@ -47,5 +47,8 @@
     "trump": "**There is no step where anyone chooses trump.** The suit is fixed by whatever card the first player who cannot follow chooses to play -- so you cannot pretend to be void in the suit you want.",
     "mendikot": "Only a two-apiece split falls back to the trick count. **All four tens is a Mendikot, worth 2**; **all thirteen tricks is a Whitewash, worth 3.**",
     "hand": "Your hand. Playable cards get a green ring. When your partner (T0) already has the trick, put a ten on it."
+  },
+  "warn": {
+    "setsTrump": "The suit you play now becomes the trump for this hand — you cannot follow"
   }
 }
