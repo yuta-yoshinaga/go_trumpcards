@@ -74,21 +74,40 @@ func (pr *CribbageSquaresCuiPresenter) Output(p interfaces.CribbageSquaresGame, 
 		complete := p.GetPhase() == domain.CribbageSquaresPhaseComplete
 		// 8 手それぞれの内訳。合計だけでは、どの手が効いたのか分からない。
 		//
-		// **途中でも出す** (#5740)。Web は毎レスポンスで RowDetails/ColDetails を
-		// 返し、プレイ中から内訳を出しているのに、CUI は完了まで合計しか
-		// 見せていなかった。まだ 0 点の行・列は Web と同じく黙っている。
-		for r := range domain.CribbageSquaresGridSize {
-			d := p.RowDetail(r)
-			if complete || cribbageSquaresHasPoints(d) {
+		// **途中でも出す** (#5740)。ただしスターターは 16 枚置き終えるまで
+		// めくらないので、途中経過は「スターター抜きで確定している点」を出す。
+		// 0 点の行・列は黙る。
+		if complete {
+			for r := range domain.CribbageSquaresGridSize {
 				b.WriteString(cribbageSquaresDetailLine(
-					i18n.Tf("cribbagesquares.rowLabel", "idx", strconv.Itoa(r)), d))
+					i18n.Tf("cribbagesquares.rowLabel", "idx", strconv.Itoa(r)), p.RowDetail(r)))
 			}
-		}
-		for c := range domain.CribbageSquaresGridSize {
-			d := p.ColDetail(c)
-			if complete || cribbageSquaresHasPoints(d) {
+			for c := range domain.CribbageSquaresGridSize {
 				b.WriteString(cribbageSquaresDetailLine(
-					i18n.Tf("cribbagesquares.colLabel", "idx", strconv.Itoa(c)), d))
+					i18n.Tf("cribbagesquares.colLabel", "idx", strconv.Itoa(c)), p.ColDetail(c)))
+			}
+		} else {
+			// **確定ぶんはスターター抜きで数えられる。**RowDetail は
+			// スターターが出るまで 0 のままなので、途中経過は語れない。
+			// 置かれている札だけを数えた下限を出す (スターターは足すだけ)。
+			partial := make([]string, 0, 2*domain.CribbageSquaresGridSize)
+			for r := range domain.CribbageSquaresGridSize {
+				if d := p.RowPartialDetail(r); cribbageSquaresHasPoints(d) {
+					partial = append(partial, cribbageSquaresDetailLine(
+						i18n.Tf("cribbagesquares.rowLabel", "idx", strconv.Itoa(r)), d))
+				}
+			}
+			for c := range domain.CribbageSquaresGridSize {
+				if d := p.ColPartialDetail(c); cribbageSquaresHasPoints(d) {
+					partial = append(partial, cribbageSquaresDetailLine(
+						i18n.Tf("cribbagesquares.colLabel", "idx", strconv.Itoa(c)), d))
+				}
+			}
+			if len(partial) > 0 {
+				b.WriteString(i18n.T("cribbagesquares.partialHeader") + "\n")
+				for _, line := range partial {
+					b.WriteString(line)
+				}
 			}
 		}
 

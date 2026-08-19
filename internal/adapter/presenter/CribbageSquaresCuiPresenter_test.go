@@ -29,6 +29,8 @@ func setupCribbageSquaresCuiMock() *interfaces.MockCribbageSquaresGame {
 	for i := range domain.CribbageSquaresGridSize {
 		pg.On("RowDetail", i).Return(domain.CribbageScoreDetail{}).Maybe()
 		pg.On("ColDetail", i).Return(domain.CribbageScoreDetail{}).Maybe()
+		pg.On("RowPartialDetail", i).Return(domain.CribbageScoreDetail{}).Maybe()
+		pg.On("ColPartialDetail", i).Return(domain.CribbageScoreDetail{}).Maybe()
 	}
 	return pg
 }
@@ -185,13 +187,15 @@ func TestCribbageSquaresCuiPresenter_ActionLog_Complete(t *testing.T) {
 func TestCribbageSquaresCuiPresenter_ShowsTheBreakdownWhilePlaying(t *testing.T) {
 	pg := new(interfaces.MockCribbageSquaresGame)
 	// 先に積んだ期待が勝つので、既定より前に置く。
-	pg.On("RowDetail", 0).Return(domain.CribbageScoreDetail{Fifteens: 4, Pairs: 2}).Maybe()
-	pg.On("ColDetail", 2).Return(domain.CribbageScoreDetail{Runs: 3}).Maybe()
+	pg.On("RowPartialDetail", 0).Return(domain.CribbageScoreDetail{Fifteens: 4, Pairs: 2}).Maybe()
+	pg.On("ColPartialDetail", 2).Return(domain.CribbageScoreDetail{Runs: 3}).Maybe()
 	for i := range domain.CribbageSquaresGridSize {
 		pg.On("RowScore", i).Return(0).Maybe()
 		pg.On("ColScore", i).Return(0).Maybe()
 		pg.On("RowDetail", i).Return(domain.CribbageScoreDetail{}).Maybe()
 		pg.On("ColDetail", i).Return(domain.CribbageScoreDetail{}).Maybe()
+		pg.On("RowPartialDetail", i).Return(domain.CribbageScoreDetail{}).Maybe()
+		pg.On("ColPartialDetail", i).Return(domain.CribbageScoreDetail{}).Maybe()
 	}
 	pg.On("GetPhase").Return(domain.CribbageSquaresPhasePlaying).Maybe()
 	pg.On("GetPlacedCount").Return(5).Maybe()
@@ -204,6 +208,8 @@ func TestCribbageSquaresCuiPresenter_ShowsTheBreakdownWhilePlaying(t *testing.T)
 
 	out := (&CribbageSquaresCuiPresenter{}).Output(pg, nil)
 
+	// 見出しで「確定ぶん」だと分かる。公式の得点はスターターが出るまで 0。
+	assert.Contains(t, out, i18n.T("cribbagesquares.partialHeader"))
 	// 点の付いた行・列だけが、要素ごとに出る。
 	assert.Contains(t, out, cribbageSquaresDetailLine(
 		i18n.Tf("cribbagesquares.rowLabel", "idx", "0"),
