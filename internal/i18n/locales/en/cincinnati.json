@@ -38,6 +38,5 @@
   "reason.seeAnotherCard": "your hand is still weak, so take the free card",
   "reason.notWorthIt": "no made hand, and the price is not cheap",
   "result.gameEnd": "The game is over",
-  "helpExampleBet": "  bet 100              bet 100 chips",
-  "handUnknown": "unknown hand"
+  "helpExampleBet": "  bet 100              bet 100 chips"
 }

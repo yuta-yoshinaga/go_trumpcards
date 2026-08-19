@@ -109,8 +109,11 @@ func (cp *CincinnatiCuiPresenter) writeResult(sb *strings.Builder, c interfaces.
 		}
 		// **なぜその配当になったのかを言う** (#5780)。5 枚の手札だけで成立する
 		// 役も普通にあるので、金額だけでは読めない。
-		hand := i18n.T("cincinnati.handUnknown")
-		if rank := players[i].GetHandRank(); rank >= 0 && rank < len(domain.PokerHandNames) {
+		// 役名は評価器が付けたランクから引く。範囲外は番号のまま出す
+		// ——Web 側の handLabel と同じ振る舞いで、黙って消えないようにする。
+		rank := players[i].GetHandRank()
+		hand := strconv.Itoa(rank)
+		if rank >= 0 && rank < len(domain.PokerHandNames) {
 			hand = domain.PokerHandNames[rank]
 		}
 		sb.WriteString(color.Green(i18n.Tf("cincinnati.wonLine",

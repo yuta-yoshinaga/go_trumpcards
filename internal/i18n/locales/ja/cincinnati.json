@@ -38,6 +38,5 @@
   "reason.seeAnotherCard": "まだ役が弱いので、ただで次の1枚を見ましょう",
   "reason.notWorthIt": "役が無く、額も安くありません",
   "result.gameEnd": "ゲームが終わりました",
-  "helpExampleBet": "  bet 100             100 チップを賭ける",
-  "handUnknown": "役不明"
+  "helpExampleBet": "  bet 100             100 チップを賭ける"
 }
