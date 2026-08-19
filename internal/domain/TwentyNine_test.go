@@ -343,3 +343,70 @@ func TestTwentyNine_UnmarshalRejectsInvalidBid(t *testing.T) {
 		}
 	}
 }
+
+// #5644: 姉妹ゲームの FortyFives は GetContractProgress で落札チームの達成状況を
+// 返し、Web も CUI も常時出している。29 には相当するものが無く、プレイヤーが
+// 「目標 - 現在点」を暗算し、場に残る点数と突き合わせて可否を判断していた。
+func TestTwentyNineGetContractProgress(t *testing.T) {
+	cases := []struct {
+		name         string
+		declarer     int
+		contract     TwentyNineBid
+		points       [TwentyNineTeamCnt]int
+		wantStatus   string
+		wantRemained int
+	}{
+		{"届いた", 0, TwentyNineBidSixteen, [TwentyNineTeamCnt]int{16, 5}, TwentyNineContractMade, 0},
+		{"超えた", 0, TwentyNineBidSixteen, [TwentyNineTeamCnt]int{20, 5}, TwentyNineContractMade, 0},
+		{"まだ届くが足りない", 0, TwentyNineBidTwenty, [TwentyNineTeamCnt]int{10, 5}, TwentyNineContractNeedMore, 10},
+		// 場に残るのは 29-(10+15)=4 点。10+4=14 < 20 なので、この時点で不成立が確定する。
+		{"残り全部取っても届かない", 0, TwentyNineBidTwenty, [TwentyNineTeamCnt]int{10, 15}, TwentyNineContractFailed, 10},
+		// ちょうど届く境界: 残り 4 点で 16+4 = 20。まだ failed にしてはいけない。
+		{"ちょうど届く境界", 0, TwentyNineBidTwenty, [TwentyNineTeamCnt]int{16, 9}, TwentyNineContractNeedMore, 4},
+		// **落札者が席1 ならチーム1 の点を見る。**チーム0 の 5 点を見てしまうと
+		// 「16点に対して5点」と読めてしまい、達成済みを未達成と報告する。
+		{"落札チームの点を見る", 1, TwentyNineBidSixteen, [TwentyNineTeamCnt]int{5, 16}, TwentyNineContractMade, 0},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			g := newTnGame(true)
+			g.SetDeclarerIdx(c.declarer)
+			g.SetContract(c.contract)
+			g.SetRoundTeamPoints(c.points)
+
+			p := g.GetContractProgress()
+			if p == nil {
+				t.Fatal("GetContractProgress = nil, want a progress")
+			}
+			if p.Status != c.wantStatus {
+				t.Errorf("Status = %q, want %q", p.Status, c.wantStatus)
+			}
+			if p.Remaining != c.wantRemained {
+				t.Errorf("Remaining = %d, want %d", p.Remaining, c.wantRemained)
+			}
+			if p.DeclarerTeam != TwentyNineTeamOf(c.declarer) {
+				t.Errorf("DeclarerTeam = %d, want %d", p.DeclarerTeam, TwentyNineTeamOf(c.declarer))
+			}
+			if p.Contract != int(c.contract) {
+				t.Errorf("Contract = %d, want %d", p.Contract, int(c.contract))
+			}
+		})
+	}
+}
+
+// 落札が決まっていない (全パス / 入札中) 間は進捗そのものが存在しない。
+func TestTwentyNineGetContractProgressNilBeforeAContractExists(t *testing.T) {
+	g := newTnGame(true)
+	g.SetDeclarerIdx(-1)
+	g.SetContract(TwentyNineBidSixteen)
+	if p := g.GetContractProgress(); p != nil {
+		t.Fatalf("no declarer: got %+v, want nil", p)
+	}
+
+	g.SetDeclarerIdx(0)
+	g.SetContract(TwentyNineBidPass)
+	if p := g.GetContractProgress(); p != nil {
+		t.Fatalf("no contract: got %+v, want nil", p)
+	}
+}

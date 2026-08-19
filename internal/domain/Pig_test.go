@@ -380,3 +380,19 @@ func TestPigTimeoutFallbackDoesNotShieldTheLowestSeat(t *testing.T) {
 	assert.True(t, seen[0], "打ち切りラウンドで席 0 が文字をもらう場合がある")
 	assert.Greater(t, len(seen), 1, "敗者が 1 席に固定されていない")
 }
+
+// **目標語は規則そのもの。** 3 文字揃うと脱落なので、切り出し元と表示の目標が
+// 同じ語であることを固定する (#5766)。
+func TestPigLetterTargetWordIsWhatTheLettersComeFrom(t *testing.T) {
+	if PigLetterTargetWord != "PIG" {
+		t.Fatalf("PigLetterTargetWord = %q, want PIG", PigLetterTargetWord)
+	}
+	p := NewPigPlayer(true)
+	for i := range len(PigLetterTargetWord) + 1 {
+		p.SetLetters(i)
+		want := PigLetterTargetWord[:min(i, len(PigLetterTargetWord))]
+		if got := p.GetLetterWord(); got != want {
+			t.Errorf("letters=%d: GetLetterWord() = %q, want %q", i, got, want)
+		}
+	}
+}

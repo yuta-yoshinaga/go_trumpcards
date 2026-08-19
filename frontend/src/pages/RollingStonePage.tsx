@@ -30,6 +30,10 @@ import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Guided tutorial steps (the inverted goal, the penalty, the deck, your hand). */
+// 追従できなかったスートを引き取りバナーに出すため (#5764)。他ページと同じ
+// 数値→記号の対応。
+const SUIT_SYMBOLS: Record<number, string> = { 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
+
 const ROLLINGSTONE_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="rs-rule"]', messageKey: 'tutorial.rule', placement: 'bottom', advanceOn: 'next' },
   { target: '[data-tutorial="rs-seats"]', messageKey: 'tutorial.penalty', placement: 'bottom', advanceOn: 'next' },
@@ -215,7 +219,10 @@ function RollingStonePageContent() {
             {/* **出せる札が無いことははっきり言う。** 黙っていると打てない理由が分からない。 */}
             {mustPickUp && (
               <div className="mt-3 text-center text-ds-warning" role="status" data-testid="rs-must-pickup">
-                {t('header.mustPickUp', { n: String(state.currentTrick.length) })}
+                {t('header.mustPickUp', {
+                  suit: SUIT_SYMBOLS[state.leadSuit] ?? '?',
+                  n: String(state.currentTrick.length),
+                })}
               </div>
             )}
 

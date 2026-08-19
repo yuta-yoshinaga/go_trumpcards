@@ -27,5 +27,6 @@
   "tutorial.even": "A suit showing once is an even bet. Two or more showing costs you before the gate is even turned",
   "tutorial.gate": "The next card off the deck settles it — a suit match pays 3:1",
   "frontendHint.monteBankLoneSuit": "only one of this suit is showing, so 3:1 makes it an even bet",
-  "frontendHint.monteBankAllDuplicated": "every suit is showing at least twice, so no bet here is even"
+  "frontendHint.monteBankAllDuplicated": "every suit is showing at least twice, so no bet here is even",
+  "label.remainingOfSuit": "{{count}} left in the deck"
 }

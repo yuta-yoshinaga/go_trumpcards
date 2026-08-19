@@ -104,6 +104,13 @@ export const FiveCardStudPage = withTutorial(
   FCS_TUTORIAL_STEPS,
 );
 /** Inner content of the Five Card Stud page, wrapped by TutorialProvider. */
+/**
+ * Indexes (strongest-first) of the two hands Soko inserts into the standard
+ * ranking. The list itself lives in `soko.json`; a Go guard keeps it in step
+ * with `sokoHandRank<N>`, which is what the showdown badge and the CUI use.
+ */
+const SOKO_INSERTED_RANKS = [8, 9];
+
 export function FiveCardStudPageContent({ gameKey }: { gameKey: FcsPageGameKey }) {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup(gameKey);
@@ -276,6 +283,25 @@ export function FiveCardStudPageContent({ gameKey }: { gameKey: FcsPageGameKey }
         <>
           {/* Scrollable: CPU players */}
           <div className={`flex-1 overflow-y-auto pt-4 px-5 lg:px-8 ${lgCardAreaConstraint}`}>
+            {/*
+              Soko inserts two four-card hands between One Pair and Two Pair, and
+              the tutorial explains that exactly once. Once it is closed there is
+              nothing on screen that says the ranking differs from standard poker
+              (#5737), so keep the table on the page for Soko only.
+            */}
+            {gameKey === 'soko' && (
+              <div className="mb-3 p-2 rounded bg-black/30 text-xs" data-testid="soko-hand-ranking">
+                <div className="mb-1 text-ds-text-primary">{t('ranking.title')}</div>
+                <ol className="flex flex-wrap gap-x-2 gap-y-0.5 text-ds-text-secondary">
+                  {(t('ranking.hands', { returnObjects: true }) as string[]).map((name, i) => (
+                    <li key={name} className={SOKO_INSERTED_RANKS.includes(i) ? 'font-bold text-ds-accent' : ''}>
+                      {i + 1}. {name}
+                    </li>
+                  ))}
+                </ol>
+                <div className="mt-1 text-ds-text-muted">{t('ranking.note')}</div>
+              </div>
+            )}
             {/* CPU players */}
             <CpuAccordion playerCount={cpuPlayers.length} dataTutorial="fcs-cpu-area">
               {cpuPlayers.map((p) => (

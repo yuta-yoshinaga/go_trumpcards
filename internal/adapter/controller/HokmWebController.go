@@ -56,15 +56,20 @@ type HokmWebOutput struct {
 	TeamTricks  []int `json:"teamTricks"`
 	TricksToWin int   `json:"tricksToWin"`
 	// LastHandKot は直前のハンドが Kot だったか、LastHandWinner はその勝者 (-1: 無し)。
-	LastHandKot      bool                  `json:"lastHandKot"`
-	LastHandWinner   int                   `json:"lastHandWinner"`
-	CurrentPlayerIdx int                   `json:"currentPlayerIdx"`
-	LeadPlayerIdx    int                   `json:"leadPlayerIdx"`
-	CurrentTrick     []*WebOutputTrickCard `json:"currentTrick"`
-	ValidPlays       []int                 `json:"validPlays"`
-	GameEndFlag      bool                  `json:"gameEndFlag"`
-	WinnerTeam       int                   `json:"winnerTeam"`
-	Hint             *HokmWebOutputHint    `json:"hint,omitempty"`
+	LastHandKot bool `json:"lastHandKot"`
+	// LastHandHakemChanged は直前のハンドで親が交代したか。
+	//
+	// **次に自分が切り札を選べるかを左右する。**これまでは次ハンドが始まって
+	// 親バッジが動くのを見るまで分からなかった (#5753)。
+	LastHandHakemChanged bool                  `json:"lastHandHakemChanged"`
+	LastHandWinner       int                   `json:"lastHandWinner"`
+	CurrentPlayerIdx     int                   `json:"currentPlayerIdx"`
+	LeadPlayerIdx        int                   `json:"leadPlayerIdx"`
+	CurrentTrick         []*WebOutputTrickCard `json:"currentTrick"`
+	ValidPlays           []int                 `json:"validPlays"`
+	GameEndFlag          bool                  `json:"gameEndFlag"`
+	WinnerTeam           int                   `json:"winnerTeam"`
+	Hint                 *HokmWebOutputHint    `json:"hint,omitempty"`
 	WebOutputBase
 	Config HokmWebOutputConfig `json:"config"`
 }

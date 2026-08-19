@@ -49,6 +49,8 @@ type SergeantMajorGame interface {
 	GetTrumpSuit() int
 	// GetKittySize キティの枚数を取得する
 	GetKittySize() int
+	// IsAbsorbedKittyCard その札が今回のキティ由来かを返す
+	IsAbsorbedKittyCard(c *domain.Card) bool
 	// GetDiscardCount 親が捨てる枚数を取得する
 	GetDiscardCount() int
 	// GetLastExchange 直前のラウンド間で動いた札の枚数を取得する

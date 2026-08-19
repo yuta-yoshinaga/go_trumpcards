@@ -44,7 +44,9 @@
   "nextRound": "Next Mene",
   "roundResult": {
     "title": "Mene Result",
-    "tricks": "{{name}} tricks: {{count}}"
+    "tricks": "{{name}} tricks: {{count}}",
+    "teamTally": "Team totals: Team 0 {{team0}} / Team 1 {{team1}} (three tricks take the meine; 4-1 and 3-2 both score 1)",
+    "meineWinner": "Team {{team}} took this meine"
   },
   "hintAvailable": "Hint",
   "hint": {

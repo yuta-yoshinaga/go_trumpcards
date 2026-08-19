@@ -13,7 +13,9 @@ import (
 )
 
 // sergeantMajorPlayerStr returns the display string for a single player.
-func sergeantMajorPlayerStr(player *domain.SergeantMajorPlayer, idx int, isDealer, current bool) string {
+func sergeantMajorPlayerStr(
+	player *domain.SergeantMajorPlayer, idx int, isDealer, current bool, fromKitty func(*domain.Card) bool,
+) string {
 	var b strings.Builder
 	role := ""
 	if isDealer {
@@ -34,9 +36,27 @@ func sergeantMajorPlayerStr(player *domain.SergeantMajorPlayer, idx int, isDeale
 	))
 	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
-		b.WriteString(cuiIndexedCardListStr(player) + "\n")
+		b.WriteString(sergeantMajorHandStr(player, fromKitty) + "\n")
 	}
 	return b.String()
+}
+
+// sergeantMajorHandStr は手札を並べ、キティ由来の札に印を付ける。
+//
+// **取り込むと手札に紛れて見分けが付かなくなる** (#5759)。捨てる 4 枚を選ぶ
+// のに「元から持っていた札」と「今入ってきた札」の区別は要る。捨て終われば
+// fromKitty が偽になるので、印も自然に消える。
+func sergeantMajorHandStr(player *domain.SergeantMajorPlayer, fromKitty func(*domain.Card) bool) string {
+	parts := make([]string, 0, player.GetCardsSize())
+	for i := range player.GetCardsSize() {
+		card := player.GetCard(i)
+		entry := "[" + strconv.Itoa(i) + "]" + cuiCardStr(card)
+		if fromKitty != nil && fromKitty(card) {
+			entry = i18n.Tf("sergeantmajor.kittyCard", "card", entry)
+		}
+		parts = append(parts, entry)
+	}
+	return strings.Join(parts, "  ")
 }
 
 // SergeantMajorCuiPresenter renders the Sergeant Major CUI view.
@@ -71,7 +91,8 @@ func (p *SergeantMajorCuiPresenter) Output(s interfaces.SergeantMajorGame, lastE
 		for i := 0; i < s.GetPlayerCnt(); i++ {
 			sb.WriteString(sergeantMajorPlayerStr(s.GetPlayer(i), i,
 				i == s.GetDealerIdx(),
-				i == s.GetCurrentPlayerIdx() && !s.GetGameEndFlag()))
+				i == s.GetCurrentPlayerIdx() && !s.GetGameEndFlag(),
+				s.IsAbsorbedKittyCard))
 		}
 
 		sb.WriteString("----------\n")
@@ -108,6 +129,7 @@ func (p *SergeantMajorCuiPresenter) Output(s interfaces.SergeantMajorGame, lastE
 			}
 		case domain.SergeantMajorPhaseDiscard:
 			if s.IsHumanDiscardTurn() {
+				sb.WriteString(i18n.T("sergeantmajor.kittyNote") + "\n")
 				sb.WriteString(i18n.Tf("sergeantmajor.promptDiscard",
 					"kitty", strconv.Itoa(domain.SergeantMajorKittySize),
 					"n", strconv.Itoa(s.GetDiscardCount())) + "\n")

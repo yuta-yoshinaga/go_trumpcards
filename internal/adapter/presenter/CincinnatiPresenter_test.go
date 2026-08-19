@@ -5,12 +5,14 @@ package presenter
 import (
 	"encoding/json"
 	"errors"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // newCincinnatiForPresenter は本物のドメインを返す。
@@ -110,6 +112,32 @@ func TestCincinnatiCuiPresenter_ShowsBetGuidanceAndResult(t *testing.T) {
 	settled := cp.Output(cincinnatiSettled(t), nil)
 	assert.Contains(t, settled, "獲得", "決着の獲得額が出ていない")
 	assert.NotContains(t, settled, "cincinnati.")
+}
+
+// **なぜその配当になったのかを言う** (#5780)。5 枚の手札だけで成立する役も
+// 普通にあるので、金額だけでは読めない。
+func TestCincinnatiCuiPresenter_NamesTheWinningHand(t *testing.T) {
+	cp := new(CincinnatiCuiPresenter)
+	g := cincinnatiSettled(t)
+	out := cp.Output(g, nil)
+
+	// 勝った席の役名がそのまま出ている。**盤面から引いて突き合わせる**ので、
+	// 表を写した文字列にはならない。
+	won := 0
+	for i, r := range g.GetResults() {
+		if r.WonAmount <= 0 {
+			continue
+		}
+		won++
+		rank := g.GetPlayers()[i].GetHandRank()
+		require.GreaterOrEqual(t, rank, 0)
+		require.Less(t, rank, len(domain.PokerHandNames))
+		assert.Contains(t, out, i18n.Tf("cincinnati.wonLine",
+			"name", g.GetPlayers()[i].GetName(),
+			"amount", strconv.Itoa(r.WonAmount),
+			"hand", domain.PokerHandNames[rank]))
+	}
+	require.Positive(t, won, "獲得した席が 1 つも無い")
 }
 
 func TestCincinnatiCuiPresenter_ErrorsAndHint(t *testing.T) {

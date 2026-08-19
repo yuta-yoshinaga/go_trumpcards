@@ -395,6 +395,22 @@ func (p *Poch) settlePochenIfDone() bool {
 	return true
 }
 
+// GetBestCombo は playerIdx 自身の手札から最も強い組を返す (組が無ければ Size 0)。
+//
+// **自分の手札は自分にとって既知の情報**なので、pochen の賭け判断のために
+// 見せてよい。勝敗判定 (bestComboSeat) と同じ PochBestCombo を使う。
+func (p *Poch) GetBestCombo(playerIdx int) PochCombo {
+	if playerIdx < 0 || playerIdx >= len(p.players) {
+		return PochCombo{}
+	}
+	player := p.players[playerIdx]
+	hand := make([]*Card, 0, player.GetCardsSize())
+	for j := range player.GetCardsSize() {
+		hand = append(hand, player.GetCard(j))
+	}
+	return PochBestCombo(hand)
+}
+
 // bestComboSeat は生存者のうち最も強い組を持つ席を返す。
 //
 // **宣言でもブラフでもなく、手札の組の比べ合い。**組が無い者しか残らなければ

@@ -911,6 +911,9 @@ func (g *HachiHachi) GetRemainingDeck() int { return len(g.state.drawPile) }
 // GetRoundNumber は現在のラウンド番号を返す。
 func (g *HachiHachi) GetRoundNumber() int { return g.state.roundNumber }
 
+// SetLastRoundResult は直近ラウンド結果を設定する (テスト用)。
+func (g *HachiHachi) SetLastRoundResult(r *HachiHachiRoundResult) { g.state.lastRoundResult = r }
+
 // GetLastRoundResult は直近ラウンド結果を返す (nil の場合もある)。
 func (g *HachiHachi) GetLastRoundResult() *HachiHachiRoundResult { return g.state.lastRoundResult }
 

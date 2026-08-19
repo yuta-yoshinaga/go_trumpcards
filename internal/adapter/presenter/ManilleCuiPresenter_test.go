@@ -44,6 +44,7 @@ func setupManilleCuiMockWithPlayers() (*interfaces.MockManilleGame, []*domain.Ma
 	m := setupManilleCuiMock()
 	players := makeManillePlayers()
 	m.On("GetPlayerCnt").Return(4)
+	m.On("GetLeadPlayerIdx").Return(-1).Maybe()
 	m.On("GetPlayer", 0).Return(players[0])
 	m.On("GetPlayer", 1).Return(players[1])
 	m.On("GetPlayer", 2).Return(players[2])
@@ -137,4 +138,48 @@ func TestManilleCuiPresenter_ActionLogOutput(t *testing.T) {
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, "play")
+}
+
+// #5646: トリックを取ったのが誰かは、次にリードするのが誰かでもある。Web は
+// manille-trick-winner で名前とチームを出し、自チームなら色まで変えているのに、
+// CUI は「次のトリックへ」としか言わず勝者に触れていなかった。姉妹の Sueca は
+// 同じ場面で GetLeadPlayerIdx から勝者名を組み立てている。
+func TestManilleCuiPresenter_TrickEndNamesTheWinner(t *testing.T) {
+	p := new(presenter.ManilleCuiPresenter)
+
+	trickEndMock := func(winner int) *interfaces.MockManilleGame {
+		m, _ := setupManilleCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.ManillePhaseTrickEnd)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLeadPlayerIdx")
+		m.On("GetLeadPlayerIdx").Return(winner)
+		return m
+	}
+
+	t.Run("names the winner and their team", func(t *testing.T) {
+		out := p.Output(trickEndMock(0), nil)
+
+		assert.Contains(t, out, i18n.Tf("manille.trickWinner",
+			"name", color.Bold(i18n.T("cuiPlayerYou")), "team", i18n.T("manille.teamA")))
+	})
+
+	// 席1 はチームB。席の偶奇でチームが決まるので、片方だけ見ていると気づけない。
+	t.Run("reads the team from the seat", func(t *testing.T) {
+		out := p.Output(trickEndMock(1), nil)
+
+		// **名前も席のもの。**チーム名だけ見ていると、常に席0を名乗る実装を
+		// 見逃す (実際に一度見逃した)。
+		assert.Contains(t, out, i18n.Tf("manille.trickWinner",
+			"name", color.Bold(i18n.Tf("cuiPlayerCpu", "idx", "1")),
+			"team", i18n.T("manille.teamB")))
+		assert.NotContains(t, out, i18n.T("manille.teamA"))
+	})
+
+	// まだ誰も取っていない (リード未確定) 局面では出さない。
+	t.Run("says nothing when no one has led yet", func(t *testing.T) {
+		out := p.Output(trickEndMock(-1), nil)
+
+		assert.NotContains(t, out, i18n.T("manille.teamA"))
+		assert.NotContains(t, out, i18n.T("manille.teamB"))
+	})
 }

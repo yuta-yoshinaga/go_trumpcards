@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -88,6 +89,32 @@ func TestChemindeFerCuiPresenter_ShowsHandsAndResult(t *testing.T) {
 	assert.Contains(t, out, "親:")
 	assert.Contains(t, out, "決着:")
 	assert.Contains(t, out, "子側の勝ち")
+}
+
+// **卓の結果と自分の損益は別の情報** (#5774)。人間は席 0 で、この局面では
+// 親。子側の勝ち = 自分の負け、という取り違えやすい向きをそのまま見る。
+func TestChemindeFerCuiPresenter_ShowsYourOwnNet(t *testing.T) {
+	cp := new(ChemindeFerCuiPresenter)
+
+	lost := chemindeFerPresenterPosition(t, 7, 3, domain.ChemindeFerPhaseBankerDraw)
+	require.Equal(t, 0, lost.GetBankerIdx(), "人間の席が親")
+	// **子側が勝つとバンクは隣へ渡る。** 席番号は決着後に変わるので先に見る。
+	require.NoError(t, lost.BankerStand())
+	require.Negative(t, lost.GetLastNet(0))
+	out := cp.Output(lost, nil)
+	assert.Contains(t, out, "子側の勝ち")
+	assert.Contains(t, out, i18n.Tf("chemindefer.netLossLine", "n", strconv.Itoa(-lost.GetLastNet(0))))
+	assert.NotContains(t, out, fixedPart("chemindefer.netWinLine"))
+
+	won := chemindeFerPresenterPosition(t, 3, 7, domain.ChemindeFerPhaseBankerDraw)
+	require.NoError(t, won.BankerStand())
+	assert.Contains(t, cp.Output(won, nil),
+		i18n.Tf("chemindefer.netWinLine", "n", strconv.Itoa(won.GetLastNet(0))))
+
+	// **賭けが動かない回も行は出す。** 消すと、勝ったのか賭けていないのかが読めない。
+	flat := chemindeFerPresenterPosition(t, 5, 5, domain.ChemindeFerPhaseBankerDraw)
+	require.NoError(t, flat.BankerStand())
+	assert.Contains(t, cp.Output(flat, nil), i18n.T("chemindefer.netFlatLine"))
 }
 
 func TestChemindeFerCuiPresenter_ShowsErrors(t *testing.T) {

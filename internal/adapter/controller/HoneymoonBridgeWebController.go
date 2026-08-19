@@ -65,8 +65,13 @@ type HoneymoonBridgeWebOutput struct {
 	MinBidLevel int `json:"minBidLevel"`
 	MinBidSuit  int `json:"minBidSuit"`
 	// LastMade / LastTricks は直前のディールの結果。
-	LastMade         bool                          `json:"lastMade"`
-	LastTricks       int                           `json:"lastTricks"`
+	LastMade   bool `json:"lastMade"`
+	LastTricks int  `json:"lastTricks"`
+	// LastPoints は直前のディールで動いた点数。
+	//
+	// **得点式は細かい (契約レベル×10 + オーバートリック×5 / 失敗は不足×10)。**
+	// トリックの過不足だけでは何点動いたか読めない (#5760)。
+	LastPoints       int                           `json:"lastPoints"`
 	CurrentPlayerIdx int                           `json:"currentPlayerIdx"`
 	LeadPlayerIdx    int                           `json:"leadPlayerIdx"`
 	DealerIdx        int                           `json:"dealerIdx"`
