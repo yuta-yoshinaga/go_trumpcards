@@ -48364,6 +48364,12 @@ components:
           description: Hand indices you may legally play. Following suit is compulsory.
           items:
             type: integer
+        willSetTrump:
+          type: boolean
+          description: >-
+            Whether the card the human plays now decides the trump. Mendikot has
+            no trump-choosing phase: the first player who cannot follow sets it
+            with whatever they play.
         gameEndFlag:
           type: boolean
         winnerTeam:
