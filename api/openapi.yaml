@@ -44073,9 +44073,8 @@ components:
         wonLow:
           type: integer
           description: |
-            Hi-Lo only. Chips won as the low half. `wonAmount` is the high and
-            low winnings combined.
-          description: Chips won from the pot
+            Hi-Lo only. Chips won as the low half, out of the pot. `wonAmount` is
+            the high and low winnings combined.
           example: 40
         mucked:
           type: boolean
