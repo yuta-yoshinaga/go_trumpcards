@@ -32,11 +32,9 @@ func setupCribbageSquaresWebMockDefaults(pg *interfaces.MockCribbageSquaresGame)
 	for i := range domain.CribbageSquaresGridSize {
 		pg.On("RowDetail", i).Return(domain.CribbageScoreDetail{}).Maybe()
 		pg.On("ColDetail", i).Return(domain.CribbageScoreDetail{}).Maybe()
-		pg.On("RowPartialDetail", i).Return(domain.CribbageScoreDetail{}).Maybe()
-		pg.On("ColPartialDetail", i).Return(domain.CribbageScoreDetail{}).Maybe()
-		// **確定ぶんは呼び出し側が先に登録できるよう、既定は後から積む。**
-		// testify は最初に一致した登録を返すので、テストが局面を述べたい行は
-		// setupCribbageSquaresWebMockDefaults より前に登録しておけばよい。
+		// **確定ぶんは呼び出し側が先に登録できる。**testify は最初に一致した
+		// 登録を返すので、テストが局面を述べたい行はこのヘルパより前に
+		// 登録しておけばよい。
 		pg.On("RowPartialDetail", i).Return(domain.CribbageScoreDetail{}).Maybe()
 		pg.On("ColPartialDetail", i).Return(domain.CribbageScoreDetail{}).Maybe()
 	}
