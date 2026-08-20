@@ -150,7 +150,7 @@ var spoilFiveHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *SpoilFiveCuiPresenter) ActionLogOutput(g interfaces.SpoilFiveGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextWithNames(g, func(idx int) string { return cuiPlayerName(g.GetPlayer(idx), idx) })
 }
 
 // writeSpoilFiveTopTrumps は固定序列を強い順に1行で書く。

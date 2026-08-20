@@ -167,5 +167,5 @@ var tarneebHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *TarneebCuiPresenter) ActionLogOutput(t interfaces.TarneebGame) string {
-	return actionLogOutputText(t)
+	return actionLogOutputTextWithNames(t, func(idx int) string { return cuiPlayerName(t.GetPlayer(idx), idx) })
 }

@@ -183,5 +183,5 @@ var trogguHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *TrogguCuiPresenter) ActionLogOutput(g interfaces.TrogguGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextWithNames(g, func(idx int) string { return cuiPlayerName(g.GetPlayer(idx), idx) })
 }

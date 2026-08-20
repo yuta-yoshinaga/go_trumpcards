@@ -115,7 +115,7 @@ var lingerLongerHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *LingerLongerCuiPresenter) ActionLogOutput(s interfaces.LingerLongerGame) string {
-	return actionLogOutputText(s)
+	return actionLogOutputTextWithNames(s, func(idx int) string { return cuiPlayerName(s.GetPlayer(idx), idx) })
 }
 
 // lingerLongerEndBanner は決着の見出しを勝因に合わせて組み立てる。

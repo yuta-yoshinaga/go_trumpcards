@@ -143,5 +143,5 @@ var trucoHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *TrucoCuiPresenter) ActionLogOutput(g interfaces.TrucoGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextWithNames(g, func(idx int) string { return cuiPlayerName(g.GetPlayer(idx), idx) })
 }

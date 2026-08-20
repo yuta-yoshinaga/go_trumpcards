@@ -195,5 +195,5 @@ var ganjifaHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *GanjifaCuiPresenter) ActionLogOutput(g interfaces.GanjifaGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextWithNames(g, func(idx int) string { return cuiPlayerName(g.GetPlayer(idx), idx) })
 }

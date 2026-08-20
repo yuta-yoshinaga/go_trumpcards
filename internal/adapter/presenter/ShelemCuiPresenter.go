@@ -202,5 +202,5 @@ var shelemHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *ShelemCuiPresenter) ActionLogOutput(s interfaces.ShelemGame) string {
-	return actionLogOutputText(s)
+	return actionLogOutputTextWithNames(s, func(idx int) string { return cuiPlayerName(s.GetPlayer(idx), idx) })
 }

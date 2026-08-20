@@ -134,7 +134,7 @@ var heartsHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *HeartsCuiPresenter) ActionLogOutput(h interfaces.HeartsGame) string {
-	return actionLogOutputText(h)
+	return actionLogOutputTextWithNames(h, func(idx int) string { return cuiPlayerName(h.GetPlayer(idx), idx) })
 }
 
 // cuiPassDirectionStr returns the localized label for a Hearts pass direction.

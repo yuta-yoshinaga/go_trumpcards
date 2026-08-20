@@ -154,5 +154,5 @@ func (p *BeloteCuiPresenter) HintOutput(b interfaces.BeloteGame) string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *BeloteCuiPresenter) ActionLogOutput(b interfaces.BeloteGame) string {
-	return actionLogOutputText(b)
+	return actionLogOutputTextWithNames(b, func(idx int) string { return cuiPlayerName(b.GetPlayer(idx), idx) })
 }

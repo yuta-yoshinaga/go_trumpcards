@@ -162,5 +162,5 @@ func (p *OhHellCuiPresenter) HintOutput(o interfaces.OhHellGame) string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *OhHellCuiPresenter) ActionLogOutput(o interfaces.OhHellGame) string {
-	return actionLogOutputText(o)
+	return actionLogOutputTextWithNames(o, func(idx int) string { return cuiPlayerName(o.GetPlayer(idx), idx) })
 }

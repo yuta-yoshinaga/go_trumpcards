@@ -152,5 +152,5 @@ var mendikotHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *MendikotCuiPresenter) ActionLogOutput(m interfaces.MendikotGame) string {
-	return actionLogOutputText(m)
+	return actionLogOutputTextWithNames(m, func(idx int) string { return cuiPlayerName(m.GetPlayer(idx), idx) })
 }

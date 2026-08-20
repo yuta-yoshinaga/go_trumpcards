@@ -193,5 +193,5 @@ var estimationHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *EstimationCuiPresenter) ActionLogOutput(e interfaces.EstimationGame) string {
-	return actionLogOutputText(e)
+	return actionLogOutputTextWithNames(e, func(idx int) string { return cuiPlayerName(e.GetPlayer(idx), idx) })
 }

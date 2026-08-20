@@ -138,7 +138,7 @@ func (p *GaigelCuiPresenter) HintOutput(g interfaces.GaigelGame) string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *GaigelCuiPresenter) ActionLogOutput(g interfaces.GaigelGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextWithNames(g, func(idx int) string { return cuiPlayerName(g.GetPlayer(idx), idx) })
 }
 
 // gaigelHintReasonKeys maps Gaigel-specific hint-reason identifiers to their

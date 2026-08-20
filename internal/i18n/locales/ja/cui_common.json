@@ -52,5 +52,9 @@
   "sokoHandRank10": "ストレートフラッシュ",
   "sokoHandRank11": "ロイヤルフラッシュ",
   "cuiSolitaireUndoAvailable": "（u で 1 手戻せます）",
-  "cuiSolitaireUndoUnavailable": "（戻せる手はありません）"
+  "cuiSolitaireUndoUnavailable": "（戻せる手はありません）",
+  "cuiActionLogEmpty": "棋譜はありません。",
+  "cuiActionLogHeader": "========== 棋譜 ==========",
+  "cuiActionLogSystem": "システム",
+  "cuiActionLogPlayer": "座席{{idx}}"
 }

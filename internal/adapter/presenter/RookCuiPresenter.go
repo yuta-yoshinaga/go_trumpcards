@@ -221,7 +221,7 @@ func (p *RookCuiPresenter) HintOutput(g interfaces.RookGame) string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *RookCuiPresenter) ActionLogOutput(g interfaces.RookGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextWithNames(g, func(idx int) string { return cuiPlayerName(g.GetPlayer(idx), idx) })
 }
 
 // rookJoinInts formats an int slice as a space-separated string.

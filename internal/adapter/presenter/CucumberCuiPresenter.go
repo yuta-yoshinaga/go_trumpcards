@@ -137,5 +137,5 @@ var cucumberHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *CucumberCuiPresenter) ActionLogOutput(s interfaces.CucumberGame) string {
-	return actionLogOutputText(s)
+	return actionLogOutputTextWithNames(s, func(idx int) string { return cuiPlayerName(s.GetPlayer(idx), idx) })
 }

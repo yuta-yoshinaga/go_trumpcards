@@ -52,5 +52,9 @@
   "sokoHandRank10": "Straight Flush",
   "sokoHandRank11": "Royal Flush",
   "cuiSolitaireUndoAvailable": "(u undoes one move)",
-  "cuiSolitaireUndoUnavailable": "(nothing to undo)"
+  "cuiSolitaireUndoUnavailable": "(nothing to undo)",
+  "cuiActionLogEmpty": "No actions recorded.",
+  "cuiActionLogHeader": "========== Action Log ==========",
+  "cuiActionLogSystem": "SYSTEM",
+  "cuiActionLogPlayer": "Player {{idx}}"
 }

@@ -139,5 +139,5 @@ var reversisHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *ReversisCuiPresenter) ActionLogOutput(r interfaces.ReversisGame) string {
-	return actionLogOutputText(r)
+	return actionLogOutputTextWithNames(r, func(idx int) string { return cuiPlayerName(r.GetPlayer(idx), idx) })
 }

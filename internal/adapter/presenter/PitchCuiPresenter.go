@@ -190,7 +190,7 @@ var pitchHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *PitchCuiPresenter) ActionLogOutput(s interfaces.PitchGame) string {
-	return actionLogOutputText(s)
+	return actionLogOutputTextWithNames(s, func(idx int) string { return cuiPlayerName(s.GetPlayer(idx), idx) })
 }
 
 // writePitchHandPips は人間の手札のゲームピップ合計と内訳を書く。

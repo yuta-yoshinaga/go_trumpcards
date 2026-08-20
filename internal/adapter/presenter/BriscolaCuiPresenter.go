@@ -116,5 +116,5 @@ var briscolaHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *BriscolaCuiPresenter) ActionLogOutput(b interfaces.BriscolaGame) string {
-	return actionLogOutputText(b)
+	return actionLogOutputTextWithNames(b, func(idx int) string { return cuiPlayerName(b.GetPlayer(idx), idx) })
 }

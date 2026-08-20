@@ -206,5 +206,5 @@ var beziqueHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *BeziqueCuiPresenter) ActionLogOutput(b interfaces.BeziqueGame) string {
-	return actionLogOutputText(b)
+	return actionLogOutputTextWithNames(b, func(idx int) string { return cuiPlayerName(b.GetPlayer(idx), idx) })
 }

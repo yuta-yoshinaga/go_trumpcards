@@ -241,5 +241,5 @@ var euchreHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *EuchreCuiPresenter) ActionLogOutput(e interfaces.EuchreGame) string {
-	return actionLogOutputText(e)
+	return actionLogOutputTextWithNames(e, func(idx int) string { return cuiPlayerName(e.GetPlayer(idx), idx) })
 }
