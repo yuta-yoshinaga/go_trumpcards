@@ -18,7 +18,7 @@ on:
       - 'internal/**'
 
 # **同じ ref の古いビルドを打ち切る。**このワークフローは `internal/**` の変更で
-# 発火し、6 つの Worker を TinyGo でビルドする —— CI の中で最も 1 ジョブが重い。
+# 発火し、7 つの Worker を TinyGo でビルドする —— CI の中で最も 1 ジョブが重い。
 # バックエンドを触る PR は押すたびに 6 ジョブを二重に積んでいた。
 #
 # サイズ検査が目的で成果物を配布しないので、途中で切っても失われるものはない。
@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        worker: [casino, classic, solo, extra, extra2, extra3]
+        worker: [casino, classic, solo, extra, extra2, extra3, extra4]
     steps:
       - uses: actions/checkout@v6
 

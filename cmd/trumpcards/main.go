@@ -192,7 +192,7 @@ func validCategory(s string) bool {
 }
 
 // categoryDisplayNames returns the canonical category names in display order
-// (casino, classic, solo, extra, extra2, extra3), sourced from
+// (casino, classic, solo, extra, extra2, extra3, extra4), sourced from
 // games.AllCategories() so the
 // help/usage text listing the `--category` values cannot drift from the
 // registry when a category is added. See issue #4308.
@@ -215,7 +215,7 @@ var categoryFilterPipe = strings.Join(categoryDisplayNames(), "|")
 var categoryFilterProse = joinOr(categoryDisplayNames())
 
 // categoryFilterList is the same list comma-separated without a conjunction
-// (e.g. "casino, classic, solo, extra, extra2, extra3"), for interpolation into
+// (e.g. "casino, classic, solo, extra, extra2, extra3, extra4"), for interpolation into
 // localized
 // messages where the surrounding grammar is supplied by the locale file.
 var categoryFilterList = strings.Join(categoryDisplayNames(), ", ")

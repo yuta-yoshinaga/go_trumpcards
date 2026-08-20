@@ -271,14 +271,6 @@ func init() {
 			return usecase.RestoreSpoilFiveInteractor(data, new(presenter.SpoilFiveWebPresenter))
 		},
 		controller.NewSpoilFiveWebControllerWithProvider)
-	games.RegisterKVGame("doudizhu", games.CategoryClassic,
-		func() usecase.DoudizhuInteractorIF {
-			return usecase.NewDoudizhuInteractor(domain.NewDefaultDoudizhu(), new(presenter.DoudizhuWebPresenter))
-		},
-		func(data []byte) (usecase.DoudizhuInteractorIF, error) {
-			return usecase.RestoreDoudizhuInteractor(data, new(presenter.DoudizhuWebPresenter))
-		},
-		controller.NewDoudizhuWebControllerWithProvider)
 	games.RegisterKVGame("scopa", games.CategoryClassic,
 		func() usecase.ScopaInteractorIF {
 			return usecase.NewScopaInteractor(domain.NewDefaultScopa(), new(presenter.ScopaWebPresenter))
@@ -287,14 +279,6 @@ func init() {
 			return usecase.RestoreScopaInteractor(data, new(presenter.ScopaWebPresenter))
 		},
 		controller.NewScopaWebControllerWithProvider)
-	games.RegisterKVGame("bezique", games.CategoryClassic,
-		func() usecase.BeziqueInteractorIF {
-			return usecase.NewBeziqueInteractor(domain.NewDefaultBezique(), new(presenter.BeziqueWebPresenter))
-		},
-		func(data []byte) (usecase.BeziqueInteractorIF, error) {
-			return usecase.RestoreBeziqueInteractor(data, new(presenter.BeziqueWebPresenter))
-		},
-		controller.NewBeziqueWebControllerWithProvider)
 	games.RegisterKVGame("scopone", games.CategoryClassic,
 		func() usecase.ScoponeInteractorIF {
 			return usecase.NewScoponeInteractor(domain.NewDefaultScopone(), new(presenter.ScoponeWebPresenter))
@@ -356,14 +340,6 @@ func init() {
 			return usecase.RestoreKarnoffelInteractor(data, new(presenter.KarnoffelWebPresenter))
 		},
 		controller.NewKarnoffelWebControllerWithProvider)
-	games.RegisterKVGame("shengji", games.CategoryClassic,
-		func() usecase.ShengJiInteractorIF {
-			return usecase.NewShengJiInteractor(domain.NewDefaultShengJi(), new(presenter.ShengJiWebPresenter))
-		},
-		func(data []byte) (usecase.ShengJiInteractorIF, error) {
-			return usecase.RestoreShengJiInteractor(data, new(presenter.ShengJiWebPresenter))
-		},
-		controller.NewShengJiWebControllerWithProvider)
 	games.RegisterKVGame("colorado", games.CategoryClassic,
 		func() usecase.ColoradoInteractorIF {
 			return usecase.NewColoradoInteractor(domain.NewDefaultColorado(), new(presenter.ColoradoWebPresenter))

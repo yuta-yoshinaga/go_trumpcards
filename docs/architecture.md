@@ -70,13 +70,13 @@ Go source (//go:build js && wasm)
   → wrangler deploy (Cloudflare Workers)
 ```
 
-Build commands: `make build-worker-{casino,classic,solo,extra,extra2,extra3}` or `make build-workers`.
+Build commands: `make build-worker-{casino,classic,solo,extra,extra2,extra3,extra4}` or `make build-workers`.
 
 ### Size buckets
 
-Games are distributed across **six** Workers to stay under the 1 MB gzip size limit per Worker
-(`casino`, `classic`, `solo`, `extra`, `extra2`, `extra3`; see [ADR-0032](adr/0032-fourth-worker-capacity.md)
-and [ADR-0036](adr/0036-fifth-sixth-worker-capacity.md)). A `Category` is purely a binary-size
+Games are distributed across **seven** Workers to stay under the 1 MB gzip size limit per Worker
+(`casino`, `classic`, `solo`, `extra`, `extra2`, `extra3`, `extra4`; see [ADR-0032](adr/0032-fourth-worker-capacity.md)
+[ADR-0036](adr/0036-fifth-sixth-worker-capacity.md) and [ADR-0037](adr/0037-seventh-worker-capacity.md)). A `Category` is purely a binary-size
 bucket, **not** a user-facing taxonomy, and games move between buckets whenever one nears the
 limit.
 

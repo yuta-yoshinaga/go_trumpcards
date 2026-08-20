@@ -21,14 +21,6 @@ import (
 )
 
 func init() {
-	games.RegisterKVGame("mighty", games.CategoryExtra2,
-		func() usecase.MightyInteractorIF {
-			return usecase.NewMightyInteractor(domain.NewDefaultMighty(), new(presenter.MightyWebPresenter))
-		},
-		func(data []byte) (usecase.MightyInteractorIF, error) {
-			return usecase.RestoreMightyInteractor(data, new(presenter.MightyWebPresenter))
-		},
-		controller.NewMightyWebControllerWithProvider)
 	games.RegisterKVGame("chineseten", games.CategoryExtra2,
 		func() usecase.ChineseTenInteractorIF {
 			return usecase.NewChineseTenInteractor(domain.NewDefaultChineseTen(), new(presenter.ChineseTenWebPresenter))
@@ -349,14 +341,6 @@ func init() {
 			return usecase.RestoreBidEuchreInteractor(data, new(presenter.BidEuchreWebPresenter))
 		},
 		controller.NewBidEuchreWebControllerWithProvider)
-	games.RegisterKVGame("sixbidsolo", games.CategoryExtra2,
-		func() usecase.SixBidSoloInteractorIF {
-			return usecase.NewSixBidSoloInteractor(domain.NewDefaultSixBidSolo(), new(presenter.SixBidSoloWebPresenter))
-		},
-		func(data []byte) (usecase.SixBidSoloInteractorIF, error) {
-			return usecase.RestoreSixBidSoloInteractor(data, new(presenter.SixBidSoloWebPresenter))
-		},
-		controller.NewSixBidSoloWebControllerWithProvider)
 	games.RegisterKVGame("guandan", games.CategoryExtra2,
 		func() usecase.GuandanInteractorIF {
 			return usecase.NewGuandanInteractor(domain.NewDefaultGuandan(), new(presenter.GuandanWebPresenter))
@@ -405,14 +389,6 @@ func init() {
 			return usecase.RestoreBalootInteractor(data, new(presenter.BalootWebPresenter))
 		},
 		controller.NewBalootWebControllerWithProvider)
-	games.RegisterKVGame("israeliwhist", games.CategoryExtra2,
-		func() usecase.IsraeliWhistInteractorIF {
-			return usecase.NewIsraeliWhistInteractor(domain.NewDefaultIsraeliWhist(), new(presenter.IsraeliWhistWebPresenter))
-		},
-		func(data []byte) (usecase.IsraeliWhistInteractorIF, error) {
-			return usecase.RestoreIsraeliWhistInteractor(data, new(presenter.IsraeliWhistWebPresenter))
-		},
-		controller.NewIsraeliWhistWebControllerWithProvider)
 	games.RegisterKVGame("shelem", games.CategoryExtra2,
 		func() usecase.ShelemInteractorIF {
 			return usecase.NewShelemInteractor(domain.NewDefaultShelem(), new(presenter.ShelemWebPresenter))

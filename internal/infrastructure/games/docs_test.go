@@ -73,8 +73,11 @@ func TestDocsMatchRegistry(t *testing.T) {
 		}
 	}
 
-	if len(documented) != 6 {
-		t.Errorf("expected 6 worker rows, parsed %d", len(documented))
+	// Derived from the registry, not hardcoded: this assertion read `!= 6` when
+	// ADR-0037 added the seventh bucket, so the guard failed on a correct table
+	// rather than on a stale one.
+	if want := len(games.AllCategories()); len(documented) != want {
+		t.Errorf("expected %d worker rows, parsed %d", want, len(documented))
 	}
 }
 

@@ -1,0 +1,115 @@
+# ADR-0037: 7 つ目の Cloudflare Worker（容量バケット）の追加
+
+## Status
+
+Accepted
+
+## Date
+
+2026-08-21
+
+## Context
+
+[ADR-0036](0036-fifth-sixth-worker-capacity.md) で 5・6 つ目の Worker (`extra2` / `extra3`) を
+追加してから 318 ゲームまで増え、**6 Worker すべてが再び上限間際**になった。
+
+CI 実測（develop `e2932afb`, 2026-08-20, `cloudflare-workers-build.yml` の `tinygo-build` ログ）。
+無料枠の上限は **1,048,576 B (1 MB gzip)**:
+
+| Worker | ゲーム数 | gzip | 上限比 | 余裕 |
+|--------|---------|------|--------|------|
+| solo | 54 | 999,982 | 95.4% | 47.5 KB |
+| extra2 | 52 | 1,007,804 | 96.1% | 39.8 KB |
+| classic | 53 | 1,017,309 | **97.0%** | 30.5 KB |
+| casino | 68 | 1,032,679 | **98.5%** | 15.5 KB |
+| extra | 46 | 1,034,672 | **98.7%** | 13.6 KB |
+| extra3 | 45 | 1,048,388 | **99.98%** | **188 B** |
+
+**合計余裕 約 147 KB。**
+
+起票時（[#5421](https://github.com/yuta-yoshinaga/go_trumpcards/issues/5421), 2026-08-16 の
+`7ef87f28`）の実測は合計 220 KB だったので、**5 日で 73 KB 減っている**。とくに `extra3` は
+**残り 188 バイト**で、バックエンドに何か足す次のコミットが `Check size limit` を
+赤にする位置にある。issue 本文の表をそのまま採用せず測り直したことでこれが分かった。
+
+ADR-0036 で分離したとおり、**中身ゼロの Worker が 233 KB**（Go ランタイム +
+syumai/workers + 共有ヘルパー）で、これはゲーム数によらず固定でかかる。今回も空の
+`extra4` を実際にビルドして確認した: **233,341 B gzip / 余裕 796.1 KB**。
+
+新規ゲーム候補 49 件（[#5422](https://github.com/yuta-yoshinaga/go_trumpcards/issues/5422)–[#5470](https://github.com/yuta-yoshinaga/go_trumpcards/issues/5470)）は
+1 ゲーム平均 14.4 KB として概算 **約 706 KB**。現在の合計余裕 147 KB では到底入らず、
+**容量が新規ゲーム追加のブロッカー**という ADR-0032 / ADR-0036 と同じ状況が三度目になった。
+
+### 検討した代替案
+
+1. **既存 6 Worker の間で詰め替えるだけ** — 合計余裕は 147 KB のまま増えないので 49 件は入らない。`extra3` の 188 B を延命するだけで、ブロッカーは解けない。
+2. **有料プランに移行して分割自体をやめる** — 上限が 10 MB になり分割が不要になる。技術的には最も単純だが、本プロジェクトは無料枠で運用する前提であり、課金判断は技術的決定の範囲外（ADR-0036 と同じ理由）。
+3. **コードサイズ削減で凌ぐ** — ADR-0032 / ADR-0036 で二度検討し「数 KB 規模で足りない」と結論済み。706 KB の不足には桁が合わない。
+4. **7 つ目を 1 つ追加し、同時に既存 6 つから再バケットする** — 空の Worker が 796 KB 持つので、49 件（706 KB）を吸収したうえで既存 6 Worker の余裕も回復できる。
+
+## Decision
+
+**案 4 を採る。** size バケットを 1 つ追加する:
+
+| Category 定数 | Worker 名 | Cloudflare 名 |
+|---------------|-----------|---------------|
+| `CategoryExtra4` | `extra4` | `go-trumpcards-extra4` |
+
+`Category` が **ユーザー向け分類ではなく純粋なサイズバケット**である原則は
+ADR-0027 / ADR-0032 / ADR-0036 から変わらない。`extra4` という無味乾燥な名前も同じ理由で
+意図的に選んでいる。
+
+### フェーズを分けない
+
+ADR-0032 / ADR-0036 は「Phase 1 で空のバケットを足し、Phase 2 で中身を動かす」という
+2 フェーズを採ったが、**今回は 1 つの PR でバケット追加と再バケットを同時に行う**。
+
+理由は 2 つある。
+
+1. **`extra3` に 188 バイトしか残っていない。** 空の `extra4` を足すだけの Phase 1 では
+   `extra3` は 1 バイトも回復しないので、Phase 1 と Phase 2 の間に入る任意のバックエンド
+   変更が CI を赤にしうる。この危険区間を作らない。
+2. **2 フェーズの目的だったリスク低減が、今は別の手段で得られる。** Phase 分割は
+   「デプロイ経路が通るか分からない」ことへの保険だった。ADR-0036 で KV namespace と
+   deploy variables の手順が確立し、`GOOS=js GOARCH=wasm go build -tags <w> ./cmd/workers/<w>`
+   という数秒で終わる型検査（後述）でバケット境界の破綻を事前に潰せるようになったため、
+   保険の価値が下がった。
+
+なお ADR-0036 が「**プレースホルダのまま deploy matrix に足してはいけない**」と
+記録した制約は健在である。今回は KV namespace 3 つと deploy variables 2 つを
+**コミット前に実物として用意した**ので、matrix への追加と同時に行ってよい。
+
+### バケット境界の破綻を数秒で検出する
+
+再バケットで最も見つけにくい失敗は「移したゲームが置いていったシンボルを参照している」
+形で、これは **`go build ./...` では絶対に出ない**。全ファイルが `!js || !wasm` で
+無条件に入るためである。従来は TinyGo ビルド（1 Worker 3.5 分 × 7）で初めて分かっていた。
+
+```sh
+GOOS=js GOARCH=wasm go build -tags <worker> -o /dev/null ./cmd/workers/<worker>
+```
+
+これで **7 Worker 分が数秒**で型検査できる。今回この検査が実際に 5 件の見落としを検出した
+（`internal/domain/interfaces/{let_it_ride,andar_bahar,casino_war,dragon_tiger,red_dog}.go`）。
+いずれも `move-game.py` が拾えないファイルである。**理由は命名規則**で、
+`move-game.py` はゲームの Go 型名（`LetItRide`）でファイルを探すが、
+`internal/domain/interfaces/` だけは snake_case（`let_it_ride.go`）を使っている。
+`crossrefs.py` も 0 件と報告していた。手順書に `rebucket-game` の検証ステップとして追加した。
+
+### `casino` は目標に届かない（既知の制約）
+
+issue #5421 は「全 Worker が 100 KB 以上の余裕を持つ状態にする」を要求したが、
+**`casino` だけは達成できない。** casino の 56 実装ユニットのうち、他ユニットとシンボルを
+共有せずに動かせる（依存クラスタが 3 ユニット以下の）ものは **8 コンポーネント / 364 KB
+分しかない**。`GameResult` が `BlackJack.go` に、`compareHighCardsSlice` が
+`HoldemPlayer.go` にあるといった形で、casino のゲームは互いに溶接されている
+（ADR-0036 の制約 2 と同じ理由）。
+
+今回はその **動かせる分をすべて動かした**（9 ゲーム）。結果は下表のとおりで、
+casino は 15.5 KB → 88.6 KB まで回復したが 100 KB には届かない。これ以上を求めるなら
+`BlackJack.go` / `HoldemPlayer.go` の共有シンボルを独立したタグなしファイルへ切り出す
+リファクタが要る。それは本 ADR の範囲外とし、casino が再び逼迫した時点で改めて判断する。
+
+## 実測結果
+
+（本節はコミット前に実測値で更新する）
