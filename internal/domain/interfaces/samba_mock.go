@@ -56,6 +56,11 @@ func (m *MockSambaGame) GetTeamCount() int { return m.Called().Int(0) }
 func (m *MockSambaGame) GetTeamScore(team int) int {
 	return m.Called(team).Int(0)
 }
+
+// GetMinimumMeldValue モック
+func (m *MockSambaGame) GetMinimumMeldValue(playerIdx int) int {
+	return m.Called(playerIdx).Int(0)
+}
 func (m *MockSambaGame) GetActionLog() []*domain.ActionLogEntry {
 	return m.Called().Get(0).([]*domain.ActionLogEntry)
 }

@@ -29,6 +29,7 @@
   "promptDrawHelpDiscard": "dd <idx,idx>: take the discard pile (natural pair indices)",
   "promptMeld": "{{name}} to act (meld phase)",
   "promptMeldHelp": "m <idx,idx,idx;idx,idx,idx>: lay down meld(s) (; separates groups)",
+  "promptMeldMinimum": "Initial meld needs at least {{points}} points (nothing melds below it)",
   "promptSkipMeld": "sm: skip melding",
   "promptDiscard": "{{name}} to act (discard phase)",
   "promptDiscardHelp": "d <idx>: discard a card",

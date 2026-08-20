@@ -190,7 +190,13 @@ function BaseballPokerPageContent() {
             {/* **ワイルドとイベントの札はサーバが教えてくれる。** 画面が 3 と 9 を
                 持つと、役の判定と印が別々に育って食い違う。 */}
             <p className="text-ds-text-muted text-center text-xs mb-3" data-testid="bb-wild-notice">
-              {t('wildNotice')}
+              {/* **説明文だけ数値を固定しない** (#5782)。バッジは wildValues から
+                  動くのに、文言だけ静的だと規則が変わったとき片方だけ嘘になる。 */}
+              {t('wildNotice', {
+                wilds: state.wildValues.join(' / '),
+                bonus: state.bonusValue,
+                buyIn: state.buyInValue,
+              })}
             </p>
 
             <div className="mb-3" data-tutorial="bb-hand">

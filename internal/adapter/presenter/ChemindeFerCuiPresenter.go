@@ -108,10 +108,35 @@ func (cp *ChemindeFerCuiPresenter) writeChips(sb *strings.Builder, c interfaces.
 	sb.WriteString(i18n.Tf("chemindefer.chipsLine", "chips", strings.Join(parts, " ")) + "\n")
 }
 
+// chemindeFerNetLine は人間の席の純増減を 1 行で返す。
+//
+// 賭けていない (親のときや張らなかった回) は 0 なので「増減なし」と言う——
+// 行そのものを落とすと、勝ったのか賭けていなかったのかが区別できない。
+func chemindeFerNetLine(c interfaces.ChemindeFerGame) string {
+	idx := 0
+	for i := range domain.ChemindeFerSeatCnt {
+		if p := c.GetPlayer(i); p != nil && p.GetIsHuman() {
+			idx = i
+			break
+		}
+	}
+	switch net := c.GetLastNet(idx); {
+	case net > 0:
+		return i18n.Tf("chemindefer.netWinLine", "n", strconv.Itoa(net))
+	case net < 0:
+		return i18n.Tf("chemindefer.netLossLine", "n", strconv.Itoa(-net))
+	default:
+		return i18n.T("chemindefer.netFlatLine")
+	}
+}
+
 // writeResult は決着と終局を書き出す。
 func (cp *ChemindeFerCuiPresenter) writeResult(sb *strings.Builder, c interfaces.ChemindeFerGame) {
 	if r := c.GetResult(); r != domain.ChemindeFerResultNone {
 		sb.WriteString(i18n.Tf("chemindefer.resultLine", "result", cp.resultStr(r)) + "\n")
+		// **卓の結果と自分の損益は別の情報** (#5774)。banker/punter/tie だけでは、
+		// 自分の賭けが勝ったのか負けたのかはチップを見比べるしかない。
+		sb.WriteString(chemindeFerNetLine(c) + "\n")
 	}
 	if !c.GetGameEndFlag() {
 		return

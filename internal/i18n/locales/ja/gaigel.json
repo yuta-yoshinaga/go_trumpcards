@@ -9,6 +9,7 @@
   "header": "ラウンド: {{round}}  トリック: {{trick}}",
   "dealer": "ディーラー: {{name}}",
   "trumpLine": "切り札: {{suit}} (山札: {{stock}})",
+  "trumpLineWithCard": "切り札: {{suit}}（表示カード: {{card}}） (山札: {{stock}})",
   "trumpUndecided": "切り札: 未確定",
   "teamScoreLine": "チーム0: {{t0}}  チーム1: {{t1}}",
   "playerLine": "{{name}}: チーム {{team}} トリック={{tricks}} 手札={{cards}}",

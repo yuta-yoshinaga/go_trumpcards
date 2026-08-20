@@ -20,6 +20,7 @@
   "promptBidHelp": "bid pass ... drop out  |  bid chiamo ... call (stake 1)  |  bid solo ... solo (stake 2)",
   "promptDiscard": "Monte exchange — Soloist: {{name}}",
   "promptDiscardHelp": "d <idx> ... discard four cards down to twelve",
+  "promptDiscardRemaining": "{{n}} more to discard (hand {{size}} -> {{target}})",
   "promptPlay": "Turn: {{name}}",
   "promptPlayHelp": "play <idx> ... play a card (3>2>A>K>Q>J>7>6>5>4; must follow suit)",
   "promptTrickEnd": "Trick complete",

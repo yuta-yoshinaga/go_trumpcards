@@ -31,6 +31,8 @@ type RollingStoneGame interface {
 	IsHumanTurn() bool
 	// MustPickUp 指定席がフォローできず引き取るしかないかを返す
 	MustPickUp(playerIdx int) bool
+	// GetLeadSuit このトリックのリードスートを返す（誰も出していなければ 0）
+	GetLeadSuit() int
 	// GetValidPlayIndices プレイ可能なカードのインデックスリストを返す
 	GetValidPlayIndices(playerIdx int) []int
 	// GetCurrentTrick 現在のトリックを取得する

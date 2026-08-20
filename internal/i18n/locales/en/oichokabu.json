@@ -8,6 +8,8 @@
   "betLine": "bet: {{bet}}",
   "handLine": "hand: {{cards}}",
   "rankLine": "rank: {{rank}}",
+  "dealerPolicyDrew": "Banker policy: drew a third card because the rank was at or below {{threshold}}",
+  "dealerPolicyStood": "Banker policy: stood on {{rank}}, above the {{threshold}} draw threshold",
   "playerHeader": "Player (You)",
   "bankerHeader": "Banker (House)",
   "hidden": "?? (hidden)",

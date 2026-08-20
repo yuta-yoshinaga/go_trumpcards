@@ -58,6 +58,9 @@ export function formatChemindeFerState(state: ChemindeFerResponse): string {
 
   if (state.result !== CHEMIN_DE_FER_RESULT.none) {
     lines.push(`Result: ${RESULT_NAMES[state.result] ?? '?'}`);
+    // **卓の結果と自分の損益は別の情報** (#5774)。
+    const net = state.players.find((p) => p.isHuman)?.lastNet ?? 0;
+    lines.push(`your result: ${net > 0 ? `+${net}` : net < 0 ? `${net}` : 'no change'}`);
   }
   if (state.gameEndFlag) lines.push('Game over.');
 

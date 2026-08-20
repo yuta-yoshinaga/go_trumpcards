@@ -5,6 +5,8 @@ package domain
 import (
 	"encoding/json"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func pcCard(design, value int) *Card { return NewCard(design, value, true) }
@@ -815,4 +817,36 @@ func TestPoch_PochValidPlays(t *testing.T) {
 	if got := g.PochValidPlays(0); got != nil {
 		t.Fatalf("outside the stops phase must be nil, got %v", got)
 	}
+}
+
+// #5722: pochen の賭け判断のために、自分自身の最強の組を返すアクセサ。
+// 勝敗判定 (bestComboSeat) と同じ PochBestCombo を通ることを固定する。
+func TestPochGetBestCombo(t *testing.T) {
+	p := NewDefaultPoch()
+	p.Reset()
+
+	setHand := func(seat int, cards ...*Card) {
+		pl := p.GetPlayer(seat)
+		pl.Reset()
+		for _, c := range cards {
+			pl.AddCard(c)
+		}
+	}
+	card := func(design, value int) *Card { return NewCard(design, value, false) }
+
+	setHand(0, card(CardDesignSpade, 9), card(CardDesignHeart, 9), card(CardDesignClover, 4))
+	assert.Equal(t, PochCombo{Size: 2, Rank: 9}, p.GetBestCombo(0))
+
+	// 3 枚組はペアより強い (Beats は枚数が先)。
+	setHand(1, card(CardDesignSpade, 3), card(CardDesignHeart, 3), card(CardDesignClover, 3),
+		card(CardDesignDiamond, 13), card(CardDesignSpade, 13))
+	assert.Equal(t, PochCombo{Size: 3, Rank: 3}, p.GetBestCombo(1))
+
+	// 単札しかなければ組なし。
+	setHand(2, card(CardDesignSpade, 2), card(CardDesignHeart, 7))
+	assert.Equal(t, PochCombo{}, p.GetBestCombo(2))
+
+	// 範囲外の添字は組なし (呼び出し側が席を取り違えても panic しない)。
+	assert.Equal(t, PochCombo{}, p.GetBestCombo(-1))
+	assert.Equal(t, PochCombo{}, p.GetBestCombo(PochPlayerCnt))
 }

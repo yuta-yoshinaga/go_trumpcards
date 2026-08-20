@@ -130,3 +130,45 @@ func TestGoStopCuiPresenter_RoundResult_CpuWinner(t *testing.T) {
 	require.NotEmpty(t, winLine, "round-win line missing from output: %q", out)
 	assert.Contains(t, winLine, bold1)
 }
+
+// #5710: 「あと何枚でどの役が揃うか」は Go/Stop 判断の材料そのもので、Web は
+// gostop-yaku-preview として出しているのに、CUI は確定点しか出していなかった。
+func TestGoStopCuiPresenter_NearYakuPreview(t *testing.T) {
+	p := new(presenter.GoStopCuiPresenter)
+
+	atDecision := func(bd *domain.GoStopBreakdown) *domain.GoStop {
+		g := domain.NewDefaultGoStop()
+		g.Reset()
+		g.SetCurrentTurn(0)
+		g.SetPhase(domain.GoStopPhaseGoDecision)
+		g.SetPendingBreakdown(bd)
+		return g
+	}
+
+	t.Run("lists every yaku within reach", func(t *testing.T) {
+		out := p.Output(atDecision(&domain.GoStopBreakdown{
+			BrightCount: 2, RibbonCount: 4, AnimalCount: 3, PiCount: 9,
+		}), nil)
+
+		assert.Contains(t, out, i18n.Tf("gostop.previewItem",
+			"name", i18n.T("gostop.previewSamgwang"), "remaining", "1"))
+		assert.Contains(t, out, i18n.Tf("gostop.previewItem",
+			"name", i18n.T("gostop.previewYeol"), "remaining", "2"))
+		assert.NotContains(t, out, "{{")
+	})
+
+	t.Run("says nothing when no yaku is close", func(t *testing.T) {
+		out := p.Output(atDecision(&domain.GoStopBreakdown{
+			BrightCount: 0, RibbonCount: 0, AnimalCount: 0, PiCount: 0,
+		}), nil)
+
+		assert.NotContains(t, out, strings.Split(i18n.T("gostop.previewTitle"), "{{")[0])
+	})
+
+	// 内訳がまだ無い局面 (決断前) でも落ちない。
+	t.Run("survives a missing breakdown", func(t *testing.T) {
+		out := p.Output(atDecision(nil), nil)
+
+		assert.NotContains(t, out, strings.Split(i18n.T("gostop.previewTitle"), "{{")[0])
+	})
+}

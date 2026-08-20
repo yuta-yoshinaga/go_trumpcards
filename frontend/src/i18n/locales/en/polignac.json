@@ -43,5 +43,18 @@
     "scores": "Each seat's running penalty total and what it has taken this round. **The lowest total wins.**",
     "trick": "Cards played this trick appear here. There is no trump — the highest card of the led suit wins.",
     "hand": "Your hand. Legal cards carry a green ring. Getting rid of the J of spades early is the standard play."
+  },
+  "jacks": {
+    "label": "jacks",
+    "spade": "♠J",
+    "other": "{{suit}}J",
+    "spadeAria": "the spade jack (-2)",
+    "otherAria": "the {{suitName}} jack (-1)",
+    "suitName": {
+      "spade": "spade",
+      "clover": "club",
+      "heart": "heart",
+      "diamond": "diamond"
+    }
   }
 }

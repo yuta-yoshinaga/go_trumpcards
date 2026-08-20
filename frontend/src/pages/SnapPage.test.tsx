@@ -220,3 +220,25 @@ describe('SnapPage', () => {
     expect(await screen.findByTestId('hint-tooltip')).toHaveTextContent(/いま宣言/);
   });
 });
+
+// **反射ゲームの核心は相手の反応速度** (#5763)。ラベルだけでは何が変わるのか
+// 分からず、単なる名前の選択に見えていた。
+describe('SnapPage difficulty explanation', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+  });
+
+  it('spells out how fast each difficulty reacts', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<SnapPage />);
+
+    const select = await screen.findByTestId('sp-difficulty-select');
+    const labels = Array.from(select.querySelectorAll('option')).map((o) => o.textContent ?? '');
+    expect(labels[0]).toContain('1.4秒');
+    expect(labels[1]).toContain('0.9秒');
+    expect(labels[2]).toContain('0.5秒');
+    // **値は変えない** (受け入れ条件3)。
+    expect(Array.from(select.querySelectorAll('option')).map((o) => o.getAttribute('value'))).toEqual(['0', '1', '2']);
+  });
+});

@@ -13,6 +13,7 @@
   "scoreEntry": "  {{name}}: {{score}}",
   "selectPrompt": "{{name}} selects a contract (c <0-6> [trump])",
   "dealEndPrompt": "Deal finished. Press n for the next deal.",
+  "dealResultGained": "Gained this deal: {{gains}}",
   "promptCurrentTurn": "Turn: {{name}}",
   "promptHelp": "play <idx>... play a card (must follow, A>K>Q>J>10>...>2)",
   "cNoTricks": "No Tricks (penalty per trick taken)",

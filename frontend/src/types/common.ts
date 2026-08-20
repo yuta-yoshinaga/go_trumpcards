@@ -43,6 +43,13 @@ export interface Card {
   color?: string;
   /** Deck family id (e.g. "wizard"); when set, the card renders procedurally. */
   deck?: string;
+  /**
+   * Points this single card is worth.
+   *
+   * **Only games scored by adding up cards set it** (Sakura: 20/10/5/1) —
+   * in yaku-scored games a per-card number would be meaningless.
+   */
+  points?: number;
 }
 
 /** A face-down card sentinel returned by the backend when the card must remain hidden

@@ -20,11 +20,15 @@ func (p *DiplomatWebPresenter) Output(c interfaces.DiplomatGame, lastErr error) 
 
 	tableau := c.GetTableau()
 	resObj.Tableau = make([][]*controller.WebOutputCard, domain.DiplomatTableauCnt)
+	resObj.TableauDeadEnd = make([]bool, domain.DiplomatTableauCnt)
 	for i := range domain.DiplomatTableauCnt {
 		pile := tableau[i]
 		resObj.Tableau[i] = make([]*controller.WebOutputCard, len(pile))
 		for j, card := range pile {
 			resObj.Tableau[i][j] = cardToOutput(card)
+		}
+		if len(pile) > 0 {
+			resObj.TableauDeadEnd[i] = domain.DiplomatIsDeadEndTop(pile[len(pile)-1])
 		}
 	}
 

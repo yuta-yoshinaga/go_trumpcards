@@ -772,3 +772,33 @@ func TestKarnoffelRejectsBadJSON(t *testing.T) {
 		})
 	}
 }
+
+// **称号は選ばれたスートの札にしか付かない** (#5732)。
+func TestKarnoffelTitleKey(t *testing.T) {
+	chosen := CardDesignHeart
+
+	for value, want := range KarnoffelTitleKeys {
+		if got := KarnoffelTitleKey(knCard(chosen, value), chosen); got != want {
+			t.Errorf("chosen suit value %d: got %q, want %q", value, got, want)
+		}
+		// 同じ数字でも他スートならただの平札。
+		if got := KarnoffelTitleKey(knCard(CardDesignSpade, value), chosen); got != "" {
+			t.Errorf("another suit value %d: got %q, want none", value, got)
+		}
+	}
+
+	// 選ばれたスートでも称号を持たない札がある (K/Q/10/9/8)。
+	for _, value := range []int{13, 12, 10, 9, 8} {
+		if got := KarnoffelTitleKey(knCard(chosen, value), chosen); got != "" {
+			t.Errorf("plain card value %d: got %q, want none", value, got)
+		}
+	}
+
+	// スート未確定と nil は称号なし。
+	if got := KarnoffelTitleKey(knCard(chosen, KarnoffelPope), 0); got != "" {
+		t.Errorf("undecided suit: got %q, want none", got)
+	}
+	if got := KarnoffelTitleKey(nil, chosen); got != "" {
+		t.Errorf("nil card: got %q, want none", got)
+	}
+}

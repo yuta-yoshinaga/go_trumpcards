@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -139,6 +140,13 @@ func TestShengJiCuiPresenter_KittyPrompt(t *testing.T) {
 	out := new(presenter.ShengJiCuiPresenter).Output(setupShengJiMock(o), nil)
 	assert.Contains(t, out, "底牌に8枚埋め戻します")
 	assert.Contains(t, out, "得点札と切札は埋めないでください")
+	// **禁止だけでなく理由まで出す** (#5735)。Web の kittyRules は
+	// 「守備側が最終トリックを取ると倍率つきで相手に入る」まで説明していた。
+	assert.Contains(t, out, "守備側が最終トリックを取ると")
+	// 倍率はドメイン定数から出す。文言に数字を写していないこと。
+	assert.Contains(t, out,
+		"【最終トリックの枚数×"+strconv.Itoa(domain.ShengJiKittyMultiplierPerCard)+"】倍")
+	assert.NotContains(t, out, "{{")
 }
 
 func TestShengJiCuiPresenter_HandEnd(t *testing.T) {

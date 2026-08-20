@@ -57,6 +57,11 @@ export interface PigResponse extends BaseGameResponse {
   noticedCnt: number;
   /** The seat that took a letter at the end of the last round, or `-1`. */
   roundLoserIdx: number;
+  /**
+   * The word letters accumulate towards (`"PIG"`). Three letters and you are out —
+   * the page shows it as the denominator of each seat's progress.
+   */
+  letterTarget: string;
   roundNumber: number;
   /** Passes made this round. */
   passCount: number;

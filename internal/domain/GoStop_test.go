@@ -4,6 +4,8 @@ package domain_test
 
 import (
 	"encoding/json"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -641,4 +643,66 @@ func TestGoStopPlayerJSON(t *testing.T) {
 	assert.True(t, restored.GetCalledGo())
 	assert.Equal(t, 3, restored.GetLastScorePoints())
 	assert.Equal(t, 1, restored.CapturedCount())
+}
+
+// gostopGolden mirrors frontend/src/utils/__fixtures__/gostopNearYaku.golden.json.
+type gostopGolden struct {
+	Cases []struct {
+		Name   string `json:"name"`
+		Counts struct {
+			Bright, Ribbon, Animal, Pi int
+		} `json:"counts"`
+		Near []struct {
+			Category  string `json:"category"`
+			Target    string `json:"target"`
+			Current   int    `json:"current"`
+			Remaining int    `json:"remaining"`
+		} `json:"near"`
+	} `json:"cases"`
+}
+
+// #5710: 「あと何枚でどの役か」は Go/Stop の判断材料そのもので、Web は
+// computeNearYaku で出している。CUI 側にも同じ判定が要るので、両者を同じ
+// golden vector で縛る。
+func TestGoStopComputeNearYaku_GoldenVectors(t *testing.T) {
+	raw, err := os.ReadFile(filepath.Join(
+		"..", "..", "frontend", "src", "utils", "__fixtures__", "gostopNearYaku.golden.json"))
+	require.NoError(t, err)
+	var golden gostopGolden
+	require.NoError(t, json.Unmarshal(raw, &golden))
+	require.NotEmpty(t, golden.Cases)
+
+	sawEmpty, sawMultiple := false, false
+	for _, c := range golden.Cases {
+		t.Run(c.Name, func(t *testing.T) {
+			got := domain.GoStopComputeNearYaku(&domain.GoStopBreakdown{
+				BrightCount: c.Counts.Bright,
+				RibbonCount: c.Counts.Ribbon,
+				AnimalCount: c.Counts.Animal,
+				PiCount:     c.Counts.Pi,
+			})
+
+			require.Len(t, got, len(c.Near))
+			for i, want := range c.Near {
+				assert.Equal(t, want.Category, got[i].Category)
+				assert.Equal(t, want.Target, got[i].Target)
+				assert.Equal(t, want.Current, got[i].Current)
+				assert.Equal(t, want.Remaining, got[i].Remaining)
+			}
+		})
+		if len(c.Near) == 0 {
+			sawEmpty = true
+		}
+		if len(c.Near) > 1 {
+			sawMultiple = true
+		}
+	}
+	// 負のコントロール: 何も近くない case と複数同時の case が要る。
+	assert.True(t, sawEmpty, "the golden vectors must include a hand with nothing near")
+	assert.True(t, sawMultiple, "the golden vectors must include several near yaku at once")
+}
+
+// 内訳が無い局面 (まだ得点していない) では何も返さない。
+func TestGoStopComputeNearYaku_NilBreakdown(t *testing.T) {
+	assert.Empty(t, domain.GoStopComputeNearYaku(nil))
 }

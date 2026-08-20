@@ -47,5 +47,10 @@
   "tutorial.bet": "Punters share the bank between them. The highest bettor decides for the side",
   "tutorial.draw": "Only the punter's 0-4 and 6-7 are fixed; a 5 and the banker choose freely",
   "frontendHint.chemindeferPunterFive": "Drawing on 5 is the standard play",
-  "frontendHint.chemindeferBankerFree": "The banker is not bound by the table. Read the punter's third card"
+  "frontendHint.chemindeferBankerFree": "The banker is not bound by the table. Read the punter's third card",
+  "result": {
+    "netWin": "Your result: +{{n}} chips",
+    "netLoss": "Your result: -{{n}} chips",
+    "netFlat": "Your result: no change"
+  }
 }

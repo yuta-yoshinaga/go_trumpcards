@@ -14,6 +14,7 @@ const seat = (id: number, over: Record<string, unknown> = {}) => ({
   bet: 0,
   isBanker: id === 0,
   isRepresentative: false,
+  lastNet: 0,
   ...over,
 });
 
@@ -128,5 +129,23 @@ describe('formatChemindeFerState', () => {
     expect(formatChemindeFerState(at({ result: 2 }))).toContain('punters win');
     expect(formatChemindeFerState(at({ result: 3 }))).toContain('a tie');
     expect(formatChemindeFerState(at({ gameEndFlag: true }))).toContain('Game over.');
+  });
+
+  // **卓の結果と自分の損益は別の情報** (#5774)。
+  it('自分の純増減も出す', () => {
+    const won = formatChemindeFerState(
+      at({ result: 2, players: [seat(0, { isHuman: true, lastNet: 200 }), seat(1, { isBanker: true })] }),
+    );
+    expect(won).toContain('your result: +200');
+
+    const lost = formatChemindeFerState(
+      at({ result: 1, players: [seat(0, { isHuman: true, lastNet: -50 }), seat(1, { isBanker: true })] }),
+    );
+    expect(lost).toContain('your result: -50');
+
+    // 賭けていない回は行を落とさず「増減なし」と言う。
+    expect(formatChemindeFerState(at({ result: 3 }))).toContain('your result: no change');
+    // ラウンド中は決着行ごと出ない。
+    expect(formatChemindeFerState(at({ result: 0 }))).not.toContain('your result:');
   });
 });

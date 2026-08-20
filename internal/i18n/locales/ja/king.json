@@ -13,6 +13,7 @@
   "scoreEntry": "  {{name}}: {{score}}点",
   "selectPrompt": "{{name}} がコントラクトを選択します（c <0-6> [trump]）",
   "dealEndPrompt": "ディール終了。n で次のディールへ。",
+  "dealResultGained": "このディールの得点: {{gains}}",
   "promptCurrentTurn": "手番: {{name}}",
   "promptHelp": "play <idx>・・・カードを出す（マストフォロー、A>K>Q>J>10>...>2）",
   "cNoTricks": "ノートリック（取ったトリックごとに減点）",
