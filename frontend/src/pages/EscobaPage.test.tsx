@@ -79,6 +79,18 @@ describe('EscobaPage', () => {
     await waitFor(() => expect(screen.getByTestId('lay-button')).not.toBeDisabled());
   });
 
+  // 捕獲候補がまだ届いていない応答 (配列が手札より短い) でも、置く手は塞がない。
+  // **「分からない」を「取れる」と読むと、置くしかない場面で操作が消える。**
+  it('lets you lay when the server sent no capture options', async () => {
+    mockExec.mockResolvedValue(makeEscobaState({ handCaptures: [] }));
+    renderWithProviders(<EscobaPage />);
+    await waitFor(() => expect(screen.getByTestId('lay-button')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    await waitFor(() => expect(screen.getByTestId('lay-button')).not.toBeDisabled());
+    expect(screen.queryByTestId('escoba-must-capture')).not.toBeInTheDocument();
+  });
+
   // **エスコバは強制捕獲** (#6163)。取れる札で「場に置く」を押せてしまうと、
   // サーバまで飛んでエラーで返るだけだった。
   it('blocks Lay while the selected card can capture', async () => {
