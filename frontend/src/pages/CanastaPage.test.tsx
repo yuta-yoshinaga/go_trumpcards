@@ -212,7 +212,14 @@ describe('CanastaPage', () => {
     mockExec.mockClear();
     fireEvent.keyDown(document.body, { key: 'Enter' });
     await waitFor(() => expect(screen.getByTestId('ca-meld-points')).toBeInTheDocument());
-    expect(mockExec).not.toHaveBeenCalledWith('meld', expect.anything());
+    // **どの引数でも meld を送っていないこと。** 引数まで書くと、形が変わった
+    // ときに「呼ばれていない」と読み違える。
+    expect(mockExec.mock.calls.some((c) => c[0] === 'meld')).toBe(false);
+
+    // **キーボード自体は生きている。** 上の断言が「Enter が届いていない」で
+    // 通っていないことを、押せる場面で確かめる。
+    fireEvent.click(screen.getByRole('button', { name: '♠ 10' }));
+    await waitFor(() => expect(screen.getByTestId('ca-meld-points')).toHaveTextContent('選択合計: 25'));
   });
 
   // **既に上がっているチームには最低点が無い。** ここまで無効化すると、
