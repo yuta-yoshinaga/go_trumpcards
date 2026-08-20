@@ -227,6 +227,26 @@ describe('BeleagueredCastlePage', () => {
       expect(markedColumns().sort()).toEqual(['#1', '#2', '#3', '#4', '#5', '#6', '#7']);
     });
 
+    // **空の組札の唯一の受け手は A。**そこが光らないと、A にとって置き先が
+    // 無いように見える (#5958)。リングは組札を包む要素側にあるので closest で辿る。
+    it('marks the empty foundations when an ace is selected', async () => {
+      mockExec.mockResolvedValue({
+        ...playingState,
+        tableau: makeTableau([[{ card: card('SPADE', 1), faceUp: true }]]),
+        foundation: [[], [], [], []],
+      });
+      renderWithProviders(<BeleagueredCastlePage />);
+      fireEvent.click(await screen.findByRole('button', { name: '♠ A' }));
+
+      await waitFor(() =>
+        expect(
+          screen.getByRole('button', { name: '空の組札 (♠)' }).closest('[data-legal-target="true"]'),
+        ).not.toBeNull(),
+      );
+      // 組札 4 つ + 空き列 7 つ。組札側が 0 なら 7 で止まる。
+      expect(document.querySelectorAll('[data-legal-target="true"]')).toHaveLength(11);
+    });
+
     // ファンデーションは A の上に同スートの 2 だけ。♠5 では光らない。
     it('marks a foundation only for the card that continues it', async () => {
       mockExec.mockResolvedValue(playingState);

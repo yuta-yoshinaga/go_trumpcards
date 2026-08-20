@@ -335,6 +335,26 @@ describe('AmericanToadPage keyboard shortcuts', () => {
 describe('AmericanToadPage destination highlight', () => {
   const targets = () => document.querySelectorAll('[data-legal-target]');
 
+  // **空の組札の唯一の受け手は基準ランクの札。**そこが光らないと、置き先が
+  // 無いように見える (#5958)。リングは組札を包む要素側にあるので closest で辿る。
+  it('rings the empty foundations of the matching suit for a base-rank card', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      reserve: [],
+      tableau: makeTableau([[{ card: card('SPADE', 5), faceUp: true }]]),
+    });
+    renderWithProviders(<AmericanToadPage />);
+    fireEvent.click(await screen.findByRole('button', { name: /♠ 5/ }));
+
+    await waitFor(() =>
+      expect(
+        screen.getAllByRole('button', { name: /^空の組札\d+ \(♠\)$/ })[0]?.closest('[data-legal-target="true"]'),
+      ).not.toBeNull(),
+    );
+    // ♠ の組札は 2 つ (2 デッキ)。他スートの 6 つは光らない。
+    expect(targets()).toHaveLength(2);
+  });
+
   it('rings the legal column once a card is selected', async () => {
     // ♠8 を選ぶと ♠9 の上には置けない (降順なので ♠7 が要る) が、
     // 別の列の ♣4 の上でもない。合法な列だけが光ること。
