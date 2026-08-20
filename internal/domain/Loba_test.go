@@ -394,6 +394,27 @@ func TestLoba_RejectsIllegalRequests(t *testing.T) {
 }
 
 // lbPlayRound drives one round with CPU decisions. Returns false if it stalls.
+// lbFreshRoundPlayed は「1 ラウンド打ち切れる配り」を引くまで卓を配り直し、
+// 打ち切れた卓を返す。
+//
+// **打ち切れるかどうかは配り次第。** CPU の駆動が捨て札を選べない配りや、
+// 2000 手で終わらない配りが混ざると、単発の require.True は無関係な PR の
+// CI で落ちる (#5869)。**どの配りでも打ち切れないなら本当の詰まり**なので、
+// そのときは落とす。
+func lbFreshRoundPlayed(t *testing.T) *Loba {
+	t.Helper()
+	for attempt := range 20 {
+		l := NewDefaultLoba()
+		l.Reset()
+		if lbPlayRound(t, l) {
+			return l
+		}
+		t.Logf("配り %d は打ち切れなかった。引き直す", attempt)
+	}
+	t.Fatal("20 卓すべてでラウンドを打ち切れなかった (駆動ではなく規則側の詰まり)")
+	return nil
+}
+
 func lbPlayRound(t *testing.T, l *Loba) bool {
 	t.Helper()
 	for range 2000 {
@@ -420,26 +441,37 @@ func lbPlayRound(t *testing.T, l *Loba) bool {
 }
 
 func TestLoba_ARoundPlaysOutToSomebodyGoingOut(t *testing.T) {
-	l := NewDefaultLoba()
-	l.Reset()
-	require.True(t, lbPlayRound(t, l))
+	l := lbFreshRoundPlayed(t)
 	assert.GreaterOrEqual(t, l.GetRoundWinner(), 0)
 	assert.Zero(t, l.GetPlayer(l.GetRoundWinner()).GetCardsSize())
 	assert.Equal(t, 1, l.GetRoundNumber())
 }
 
 func TestLoba_TheGameRunsUntilOnePlayerIsLeft(t *testing.T) {
-	l := NewDefaultLoba()
-	l.Reset()
-	for range 200 {
-		if l.GetGameEndFlag() {
+	// **打ち切れない配りに当たったら卓ごと引き直す** (#5869)。途中のラウンドだけ
+	// 配り直すことはできないので、リトライは 1 局まるごとの単位になる。
+	var l *Loba
+	for attempt := 0; ; attempt++ {
+		require.Less(t, attempt, 20, "20 局すべてでラウンドを打ち切れなかった")
+		l = NewDefaultLoba()
+		l.Reset()
+		stuck := false
+		for range 200 {
+			if l.GetGameEndFlag() {
+				break
+			}
+			if !lbPlayRound(t, l) {
+				stuck = true
+				break
+			}
+			if l.GetGameEndFlag() {
+				break
+			}
+			require.NoError(t, l.NextRound())
+		}
+		if !stuck && l.GetGameEndFlag() {
 			break
 		}
-		require.True(t, lbPlayRound(t, l))
-		if l.GetGameEndFlag() {
-			break
-		}
-		require.NoError(t, l.NextRound())
 	}
 	require.True(t, l.GetGameEndFlag())
 
@@ -454,9 +486,7 @@ func TestLoba_TheGameRunsUntilOnePlayerIsLeft(t *testing.T) {
 }
 
 func TestLoba_SurvivesAKVRoundTrip(t *testing.T) {
-	l := NewDefaultLoba()
-	l.Reset()
-	require.True(t, lbPlayRound(t, l))
+	l := lbFreshRoundPlayed(t)
 
 	data, err := json.Marshal(l)
 	require.NoError(t, err)
