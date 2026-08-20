@@ -142,8 +142,13 @@ function CanastaPageContent() {
 
   // Meld phase: surface the initial-meld minimum (by score band) and the
   // selected cards' running point total so the player can tell if they qualify.
+  // **メルドフェーズ以外では 0 点・未達なしを返す。** null を返すと、この値を
+  // 読むたびに「無いかもしれない」分岐が増え、押せるかどうかの判断が追いにくい
+  // (#6165、ハンド＆フットと同じ形)。
   const meldPointInfo = useMemo(() => {
-    if (!isMeldPhase || !humanPlayer) return null;
+    if (!isMeldPhase || !humanPlayer) {
+      return { selectedPoints: 0, needInitial: false, minMeld: 0, below: false };
+    }
     const selectedCards = selectedCardIndices.map((i) => humanPlayer.cards[i]).filter((c): c is Card => Boolean(c));
     const selectedPoints = canastaSelectionPoints(selectedCards);
     const needInitial = !humanPlayer.hasInitMeld;
@@ -461,7 +466,7 @@ function CanastaPageContent() {
               )}
               {isMeldPhase && isHumanTurn && (
                 <>
-                  {meldPointInfo && (
+                  {
                     <div
                       id="ca-meld-points"
                       data-testid="ca-meld-points"
@@ -474,13 +479,16 @@ function CanastaPageContent() {
                           })
                         : t('meldPoints.selected', { points: meldPointInfo.selectedPoints })}
                     </div>
-                  )}
+                  }
                   <button
                     type="button"
                     className={btnPrimary}
                     onClick={handleMeldSelected}
-                    disabled={loading || selectedCardIndices.length < 3}
-                    aria-describedby={meldPointInfo?.below ? 'ca-meld-points' : undefined}
+                    // **最低点未達なら押させない** (#6165)。警告テキストは出て
+                    // いたのにボタンはそれを見ておらず、サーバのバリデーションで
+                    // 弾かれて初めて気づく形だった。
+                    disabled={loading || selectedCardIndices.length < 3 || meldPointInfo.below}
+                    aria-describedby={meldPointInfo.below ? 'ca-meld-points' : undefined}
                   >
                     {t('meldButton')}
                   </button>
