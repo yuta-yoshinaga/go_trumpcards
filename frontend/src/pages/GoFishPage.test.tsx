@@ -346,6 +346,11 @@ describe('GoFishPage', () => {
     expect(screen.getByRole('button', { name: '♠ 7' })).toHaveAttribute('data-hint-card', 'true');
     expect(screen.getByRole('button', { name: '♥ 7' })).toHaveAttribute('data-hint-card', 'true');
     expect(screen.getByRole('button', { name: '♦ 3' })).not.toHaveAttribute('data-hint-card');
+    // **リングはインラインで置く。**手札には selectedCardStyle の
+    // `boxShadow: 'none'` が乗るので、Tailwind の ring-* (同じ box-shadow) は
+    // 未選択のあいだ潰される。印だけ見ていても気づけない。
+    expect(screen.getByRole('button', { name: '♠ 7' }).style.outline).toContain('var(--color-ds-warning)');
+    expect(screen.getByRole('button', { name: '♦ 3' }).style.outline).toBe('');
     // ツールチップもランクを名指しする。
     expect(screen.getByTestId('hint-tooltip')).toHaveTextContent('7');
   });

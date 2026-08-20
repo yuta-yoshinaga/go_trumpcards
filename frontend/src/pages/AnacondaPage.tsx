@@ -28,7 +28,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess, focusRingAccent } from '../styles/buttonStyles';
-import { selectedCardStyle } from '../styles/cardStyles';
+import { hintRingStyle, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { AnacondaResponse } from '../types/card';
@@ -462,7 +462,7 @@ function AnacondaPageContent() {
                         aria-pressed={isSelected}
                         disabled={!canSelectCards || loading}
                         onClick={() => toggle(i)}
-                        className={[focusRingAccent, 'rounded', isSuggested ? 'ring-2 ring-ds-warning' : ''].join(' ')}
+                        className={[focusRingAccent, 'rounded'].join(' ')}
                         data-hint-card={isSuggested ? 'true' : undefined}
                         style={{
                           background: 'none',
@@ -470,6 +470,10 @@ function AnacondaPageContent() {
                           cursor: canSelectCards ? 'pointer' : 'default',
                           borderRadius: 8,
                           ...selectedCardStyle(isSelected),
+                          // **ring-* では出ない。**上の selectedCardStyle が
+                          // 未選択時に `boxShadow: 'none'` をインラインで置くので、
+                          // 同じ box-shadow を使う Tailwind の ring は潰される。
+                          ...(isSuggested ? hintRingStyle() : {}),
                           boxSizing: 'border-box',
                         }}
                       >
