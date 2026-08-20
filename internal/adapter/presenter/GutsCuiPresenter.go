@@ -178,5 +178,5 @@ var gutsHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *GutsCuiPresenter) ActionLogOutput(g interfaces.GutsGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.GutsPlayer](g)
 }

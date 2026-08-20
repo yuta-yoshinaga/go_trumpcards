@@ -138,5 +138,5 @@ func (p *CariocaCuiPresenter) Output(g interfaces.CariocaGame, lastErr error) st
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *CariocaCuiPresenter) ActionLogOutput(g interfaces.CariocaGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.CariocaPlayer](g)
 }

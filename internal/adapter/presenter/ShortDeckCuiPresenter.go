@@ -30,7 +30,7 @@ type ShortDeckCuiPresenter struct{}
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *ShortDeckCuiPresenter) ActionLogOutput(o interfaces.ShortDeckGame) string {
-	return actionLogOutputText(o)
+	return actionLogOutputTextForSeats[*domain.ShortDeckPlayer](o)
 }
 
 // Output renders the current game state for the active locale (#1699).

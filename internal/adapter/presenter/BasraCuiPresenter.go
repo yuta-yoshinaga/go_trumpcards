@@ -130,5 +130,5 @@ var basraHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *BasraCuiPresenter) ActionLogOutput(g interfaces.BasraGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.BasraPlayer](g)
 }

@@ -111,7 +111,7 @@ func (p *KempsCuiPresenter) Output(g interfaces.KempsGame, lastErr error) string
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *KempsCuiPresenter) ActionLogOutput(g interfaces.KempsGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.KempsPlayer](g)
 }
 
 // kempsCardSlice wraps []*Card to satisfy the cuiCardList interface.

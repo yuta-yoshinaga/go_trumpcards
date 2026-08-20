@@ -159,5 +159,5 @@ func (p *PrimeroCuiPresenter) HintOutput(g interfaces.PrimeroGame) string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *PrimeroCuiPresenter) ActionLogOutput(g interfaces.PrimeroGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.PrimeroPlayer](g)
 }

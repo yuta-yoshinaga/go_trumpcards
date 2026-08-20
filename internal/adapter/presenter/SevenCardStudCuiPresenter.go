@@ -18,7 +18,7 @@ type SevenCardStudCuiPresenter struct{}
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *SevenCardStudCuiPresenter) ActionLogOutput(s interfaces.SevenCardStudGame) string {
-	return actionLogOutputText(s)
+	return actionLogOutputTextForSeats[*domain.SevenCardStudPlayer](s)
 }
 
 // Output renders the current game state for the active locale (#1699).

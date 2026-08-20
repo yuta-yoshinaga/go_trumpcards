@@ -155,5 +155,5 @@ func rbHintSourceName(h *domain.RussianBankHint) string {
 
 // ActionLogOutput 棋譜をテキスト出力する。
 func (p *RussianBankCuiPresenter) ActionLogOutput(g interfaces.RussianBankGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.RussianBankPlayer](g)
 }

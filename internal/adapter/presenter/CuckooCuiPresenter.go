@@ -94,5 +94,5 @@ func (p *CuckooCuiPresenter) Output(g interfaces.CuckooGame, lastErr error) stri
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *CuckooCuiPresenter) ActionLogOutput(g interfaces.CuckooGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.CuckooPlayer](g)
 }

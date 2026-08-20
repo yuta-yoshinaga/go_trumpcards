@@ -102,5 +102,5 @@ func (p *ConquianCuiPresenter) Output(g interfaces.ConquianGame, lastErr error) 
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *ConquianCuiPresenter) ActionLogOutput(g interfaces.ConquianGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.ConquianPlayer](g)
 }

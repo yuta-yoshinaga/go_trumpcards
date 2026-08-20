@@ -242,5 +242,5 @@ var gostopHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *GoStopCuiPresenter) ActionLogOutput(g interfaces.GoStopGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.GoStopPlayer](g)
 }

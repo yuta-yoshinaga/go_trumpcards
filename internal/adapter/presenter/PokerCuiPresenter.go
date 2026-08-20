@@ -172,7 +172,7 @@ func pokerPhaseName(phase int) string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (pcp *PokerCuiPresenter) ActionLogOutput(p interfaces.PokerGame) string {
-	return actionLogOutputText(p)
+	return actionLogOutputTextForSeatList(p, p.GetPlayers())
 }
 
 // OutputWithOdds appends the draw-odds table to the standard Output.

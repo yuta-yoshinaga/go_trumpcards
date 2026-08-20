@@ -18,7 +18,7 @@ type HoldemCuiPresenter struct{}
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *HoldemCuiPresenter) ActionLogOutput(h interfaces.HoldemGame) string {
-	return actionLogOutputText(h)
+	return actionLogOutputTextForSeats[*domain.HoldemPlayer](h)
 }
 
 // Output renders the current game state for the active locale (#1699).

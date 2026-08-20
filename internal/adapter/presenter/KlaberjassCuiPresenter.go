@@ -159,5 +159,5 @@ func (p *KlaberjassCuiPresenter) Output(g interfaces.KlaberjassGame, lastErr err
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *KlaberjassCuiPresenter) ActionLogOutput(g interfaces.KlaberjassGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.KlaberjassPlayer](g)
 }

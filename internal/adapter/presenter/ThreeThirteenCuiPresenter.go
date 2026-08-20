@@ -122,5 +122,5 @@ func (p *ThreeThirteenCuiPresenter) Output(g interfaces.ThreeThirteenGame, lastE
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *ThreeThirteenCuiPresenter) ActionLogOutput(g interfaces.ThreeThirteenGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.ThreeThirteenPlayer](g)
 }

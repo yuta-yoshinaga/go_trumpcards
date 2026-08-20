@@ -184,5 +184,5 @@ func burracoJoinInts(xs []int) string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *BurracoCuiPresenter) ActionLogOutput(g interfaces.BurracoGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.CanastaPlayer](g)
 }

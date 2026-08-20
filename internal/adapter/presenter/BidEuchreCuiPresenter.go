@@ -188,7 +188,7 @@ func bidEuchreTrumpMenuLine() string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *BidEuchreCuiPresenter) ActionLogOutput(g interfaces.BidEuchreGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.BidEuchrePlayer](g)
 }
 
 // bidEuchreHumanIdx は人間の席を返す (居なければ -1)。

@@ -211,5 +211,5 @@ func (p *MichiganCuiPresenter) HintOutput(g interfaces.MichiganGame) string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *MichiganCuiPresenter) ActionLogOutput(g interfaces.MichiganGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.MichiganPlayer](g)
 }

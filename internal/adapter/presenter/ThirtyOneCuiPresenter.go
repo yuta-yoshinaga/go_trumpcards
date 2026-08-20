@@ -131,7 +131,7 @@ func (p *ThirtyOneCuiPresenter) Output(g interfaces.ThirtyOneGame, lastErr error
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *ThirtyOneCuiPresenter) ActionLogOutput(g interfaces.ThirtyOneGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.ThirtyOnePlayer](g)
 }
 
 // HintOutput emits the recommended move for the human player.

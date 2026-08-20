@@ -169,7 +169,7 @@ func (bcp *BadugiCuiPresenter) Output(g interfaces.BadugiGame, lastErr error) st
 
 // ActionLogOutput renders the action log as plain text.
 func (bcp *BadugiCuiPresenter) ActionLogOutput(g interfaces.BadugiGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeatList(g, g.GetPlayers())
 }
 
 // HintOutput emits a draw-phase recommendation: which cards form the current

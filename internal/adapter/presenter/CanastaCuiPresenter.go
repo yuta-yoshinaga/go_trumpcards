@@ -157,5 +157,5 @@ func (p *CanastaCuiPresenter) Output(g interfaces.CanastaGame, lastErr error) st
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *CanastaCuiPresenter) ActionLogOutput(g interfaces.CanastaGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.CanastaPlayer](g)
 }

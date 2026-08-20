@@ -164,5 +164,5 @@ var sakuraHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *SakuraCuiPresenter) ActionLogOutput(g interfaces.SakuraGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.SakuraPlayer](g)
 }

@@ -193,5 +193,5 @@ func formatShitheadAction(sg interfaces.ShitheadGame, action *domain.ShitheadCpu
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *ShitheadCuiPresenter) ActionLogOutput(sg interfaces.ShitheadGame) string {
-	return actionLogOutputText(sg)
+	return actionLogOutputTextForSeats[*domain.ShitheadPlayer](sg)
 }

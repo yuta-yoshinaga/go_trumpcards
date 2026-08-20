@@ -139,5 +139,5 @@ var pigHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *PigCuiPresenter) ActionLogOutput(s interfaces.PigGame) string {
-	return actionLogOutputText(s)
+	return actionLogOutputTextForSeats[*domain.PigPlayer](s)
 }

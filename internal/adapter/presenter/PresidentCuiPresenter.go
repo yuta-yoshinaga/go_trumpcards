@@ -139,5 +139,5 @@ func (p *PresidentCuiPresenter) HintOutput(pg interfaces.PresidentGame) string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *PresidentCuiPresenter) ActionLogOutput(pg interfaces.PresidentGame) string {
-	return actionLogOutputText(pg)
+	return actionLogOutputTextForSeats[*domain.PresidentPlayer](pg)
 }

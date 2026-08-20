@@ -125,7 +125,7 @@ type SevensCuiPresenter struct{}
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *SevensCuiPresenter) ActionLogOutput(s interfaces.SevensGame) string {
-	return actionLogOutputText(s)
+	return actionLogOutputTextForSeats[*domain.SevensPlayer](s)
 }
 
 // Output renders the current game state for the active locale (#1699).

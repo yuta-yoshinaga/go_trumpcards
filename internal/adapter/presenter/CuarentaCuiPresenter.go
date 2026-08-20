@@ -150,5 +150,5 @@ func cuarentaCardShort(c *domain.Card) string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *CuarentaCuiPresenter) ActionLogOutput(cg interfaces.CuarentaGame) string {
-	return actionLogOutputText(cg)
+	return actionLogOutputTextForSeats[*domain.CuarentaPlayer](cg)
 }

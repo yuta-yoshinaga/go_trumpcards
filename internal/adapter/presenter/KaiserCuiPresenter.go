@@ -167,7 +167,7 @@ func (p *KaiserCuiPresenter) Output(g interfaces.KaiserGame, lastErr error) stri
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *KaiserCuiPresenter) ActionLogOutput(g interfaces.KaiserGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.KaiserPlayer](g)
 }
 
 // kaiserHintKey は今の局面で出すべき助言の i18n キーと、必要なら添える手札

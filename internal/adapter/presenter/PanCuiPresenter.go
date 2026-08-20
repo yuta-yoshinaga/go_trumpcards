@@ -106,5 +106,5 @@ func (p *PanCuiPresenter) Output(g interfaces.PanGame, lastErr error) string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *PanCuiPresenter) ActionLogOutput(g interfaces.PanGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.PanPlayer](g)
 }

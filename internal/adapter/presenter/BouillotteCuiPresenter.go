@@ -163,5 +163,5 @@ func (p *BouillotteCuiPresenter) HintOutput(g interfaces.BouillotteGame) string 
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *BouillotteCuiPresenter) ActionLogOutput(g interfaces.BouillotteGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.BouillottePlayer](g)
 }

@@ -132,7 +132,7 @@ func (p *SevenBridgeCuiPresenter) HintOutput(g interfaces.SevenBridgeGame) strin
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *SevenBridgeCuiPresenter) ActionLogOutput(g interfaces.SevenBridgeGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.SevenBridgePlayer](g)
 }
 
 // sevenBridgeDrawHint はドローフェーズの助言を返す。

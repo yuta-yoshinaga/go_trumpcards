@@ -172,5 +172,5 @@ var hachihachiHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *HachiHachiCuiPresenter) ActionLogOutput(g interfaces.HachiHachiGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.HachiHachiPlayer](g)
 }

@@ -80,7 +80,7 @@ func (p *TichuCuiPresenter) Output(tg interfaces.TichuGame, lastErr error) strin
 
 // ActionLogOutput 棋譜をCUI出力
 func (p *TichuCuiPresenter) ActionLogOutput(tg interfaces.TichuGame) string {
-	return actionLogOutputText(tg)
+	return actionLogOutputTextForSeats[*domain.TichuPlayer](tg)
 }
 
 func tichuPlayerStr(player *domain.TichuPlayer, idx int, bomb []int) string {

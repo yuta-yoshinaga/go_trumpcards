@@ -215,5 +215,5 @@ func (p *ChinchonCuiPresenter) Output(g interfaces.ChinchonGame, lastErr error) 
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *ChinchonCuiPresenter) ActionLogOutput(g interfaces.ChinchonGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.ChinchonPlayer](g)
 }

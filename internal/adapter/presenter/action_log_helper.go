@@ -53,6 +53,24 @@ func actionLogOutputTextForSeats[P cuiPlayer, G seatedGame[P]](game G) string {
 	return actionLogOutputTextWithNames(game, func(idx int) string { return cuiPlayerName(game.GetPlayer(idx), idx) })
 }
 
+// actionLogOutputTextForSeatList is actionLogOutputTextForSeats for the games
+// whose interface exposes the seats as a slice rather than by index.
+func actionLogOutputTextForSeatList[P cuiPlayer](game gameEndLogger, players []P) string {
+	return actionLogOutputTextWithNames(game, func(idx int) string {
+		if idx < 0 || idx >= len(players) {
+			return ""
+		}
+		return cuiPlayerName(players[idx], idx)
+	})
+}
+
+// actionLogOutputTextNamedBy is the escape hatch for the games whose seats do
+// not satisfy cuiPlayer (SixCardGolf's player carries IsCpu rather than
+// GetIsHuman) but that still have their own naming function.
+func actionLogOutputTextNamedBy(game gameEndLogger, nameOf func(idx int) string) string {
+	return actionLogOutputTextWithNames(game, nameOf)
+}
+
 // actionLogOutputJSON returns the action log as JSON, or an empty log if the game is not finished.
 func actionLogOutputJSON(game gameEndLogger) string {
 	if !game.GetGameEndFlag() {

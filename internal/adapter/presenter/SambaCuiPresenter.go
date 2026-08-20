@@ -150,5 +150,5 @@ func (p *SambaCuiPresenter) Output(g interfaces.SambaGame, lastErr error) string
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *SambaCuiPresenter) ActionLogOutput(g interfaces.SambaGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.SambaPlayer](g)
 }

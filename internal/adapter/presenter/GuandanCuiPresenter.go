@@ -184,7 +184,7 @@ func (p *GuandanCuiPresenter) writeHandEnd(b *strings.Builder, g interfaces.Guan
 
 // ActionLogOutput は棋譜をテキストで出力する。
 func (p *GuandanCuiPresenter) ActionLogOutput(g interfaces.GuandanGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.GuandanPlayer](g)
 }
 
 // guandanHumanIdx は人間の席を返す (いなければ -1)。

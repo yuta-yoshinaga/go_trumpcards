@@ -143,5 +143,5 @@ var pasurHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *PasurCuiPresenter) ActionLogOutput(s interfaces.PasurGame) string {
-	return actionLogOutputText(s)
+	return actionLogOutputTextForSeats[*domain.PasurPlayer](s)
 }

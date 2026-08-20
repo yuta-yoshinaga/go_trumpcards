@@ -92,5 +92,5 @@ func (p *BeggarMyNeighbourCuiPresenter) Output(g interfaces.BeggarMyNeighbourGam
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *BeggarMyNeighbourCuiPresenter) ActionLogOutput(g interfaces.BeggarMyNeighbourGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.BeggarMyNeighbourPlayer](g)
 }

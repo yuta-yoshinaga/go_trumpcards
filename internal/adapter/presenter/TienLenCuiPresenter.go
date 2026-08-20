@@ -107,7 +107,7 @@ func (p *TienLenCuiPresenter) Output(tg interfaces.TienLenGame, lastErr error) s
 
 // ActionLogOutput 棋譜を出力
 func (p *TienLenCuiPresenter) ActionLogOutput(tg interfaces.TienLenGame) string {
-	return actionLogOutputText(tg)
+	return actionLogOutputTextForSeats[*domain.TienLenPlayer](tg)
 }
 
 // HintOutput emits the recommended play for the human player.

@@ -132,5 +132,5 @@ var buraHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *BuraCuiPresenter) ActionLogOutput(b interfaces.BuraGame) string {
-	return actionLogOutputText(b)
+	return actionLogOutputTextForSeats[*domain.BuraPlayer](b)
 }

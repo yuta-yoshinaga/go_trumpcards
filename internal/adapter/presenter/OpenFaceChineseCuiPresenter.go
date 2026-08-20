@@ -170,5 +170,5 @@ var openFaceChineseHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *OpenFaceChineseCuiPresenter) ActionLogOutput(g interfaces.OpenFaceChineseGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.OpenFaceChinesePlayer](g)
 }

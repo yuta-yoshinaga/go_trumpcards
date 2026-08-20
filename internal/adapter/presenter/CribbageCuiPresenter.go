@@ -172,7 +172,7 @@ func (p *CribbageCuiPresenter) writeShowDetails(b *strings.Builder, g interfaces
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *CribbageCuiPresenter) ActionLogOutput(g interfaces.CribbageGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.CribbagePlayer](g)
 }
 
 // HintOutput ヒントを出力（ディスカード推奨2枚 or ペギング推奨1枚）

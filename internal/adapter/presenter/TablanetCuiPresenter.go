@@ -111,5 +111,5 @@ var tablanetHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *TablanetCuiPresenter) ActionLogOutput(g interfaces.TablanetGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.TablanetPlayer](g)
 }

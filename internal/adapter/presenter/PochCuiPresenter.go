@@ -188,5 +188,5 @@ var pochHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *PochCuiPresenter) ActionLogOutput(c interfaces.PochGame) string {
-	return actionLogOutputText(c)
+	return actionLogOutputTextForSeats[*domain.PochPlayer](c)
 }

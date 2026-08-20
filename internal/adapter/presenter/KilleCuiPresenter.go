@@ -139,5 +139,5 @@ func (p *KilleCuiPresenter) Output(g interfaces.KilleGame, lastErr error) string
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *KilleCuiPresenter) ActionLogOutput(g interfaces.KilleGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.KillePlayer](g)
 }

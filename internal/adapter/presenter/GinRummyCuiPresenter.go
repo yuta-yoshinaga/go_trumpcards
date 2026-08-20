@@ -153,5 +153,5 @@ func writeGinRummyKnockerMelds(b *strings.Builder, melds [][]*domain.Card) {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *GinRummyCuiPresenter) ActionLogOutput(g interfaces.GinRummyGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.GinRummyPlayer](g)
 }

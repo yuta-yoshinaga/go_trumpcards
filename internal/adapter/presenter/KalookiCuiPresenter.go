@@ -101,5 +101,5 @@ func (p *KalookiCuiPresenter) Output(g interfaces.KalookiGame, lastErr error) st
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *KalookiCuiPresenter) ActionLogOutput(g interfaces.KalookiGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.KalookiPlayer](g)
 }

@@ -170,5 +170,5 @@ func (dcp *DeuceToSevenCuiPresenter) HintOutput(g interfaces.DeuceToSevenGame) s
 
 // ActionLogOutput renders the action log as plain text.
 func (dcp *DeuceToSevenCuiPresenter) ActionLogOutput(g interfaces.DeuceToSevenGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeatList(g, g.GetPlayers())
 }
