@@ -13,6 +13,7 @@
   "signalSound": "Sound",
   "signalBlink": "Blink",
   "fieldLabel": "Field:",
+  "swapLegend": "@ matches a card in your hand (swap candidate)",
   "teamLabel": "[Team {{team}}]",
   "cpuHandLine": "{{name}}: {{count}} cards",
   "promptExchange": "Your turn. Use s <h> <f> to swap, p to pass.",
