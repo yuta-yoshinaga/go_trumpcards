@@ -113,6 +113,38 @@ describe('BeziquePage', () => {
     expect(screen.getByTestId('meld-skip')).toBeInTheDocument();
   });
 
+  // #5657: マッチ進捗は role="status" で読み上げられるのに、**メルド宣言フェーズに
+  // 入ったこと自体**を知らせるライブリージョンが無かった。選べる状態になったのに
+  // 画面を都度確かめるしかない。
+  it('announces how many melds became declarable', async () => {
+    mockExec.mockResolvedValue(meldPhaseState);
+    renderWithProviders(<BeziquePage />);
+
+    const live = await screen.findByTestId('bezique-meld-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toHaveTextContent('2');
+  });
+
+  // **0件でも読み上げる。**沈黙は「まだ自分の番でない」と区別が付かない。
+  it('announces that nothing can be declared when the list is empty', async () => {
+    mockExec.mockResolvedValue(makeBeziqueState({ ...meldPhaseState, availableMelds: [] }));
+    renderWithProviders(<BeziquePage />);
+
+    const live = await screen.findByTestId('bezique-meld-live');
+    expect(live).toHaveTextContent('宣言できるメルドはありません');
+    // スキップは引き続き押せる。
+    expect(screen.getByTestId('meld-skip')).toBeInTheDocument();
+  });
+
+  it('keeps the live region out of the way outside the meld phase', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<BeziquePage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('bezique-meld-live')).not.toBeInTheDocument();
+  });
+
   it('gives each meld button a suit-named aria-label inside a labelled group', async () => {
     mockExec.mockResolvedValue(meldPhaseState);
     renderWithProviders(<BeziquePage />);

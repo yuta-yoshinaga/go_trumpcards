@@ -226,6 +226,25 @@ const CuiTrumpMark = "^"
 // どちらの話か読めない (#5643)。
 const CuiTopTrumpMark = "!!"
 
+// CuiWildMark は「その札はこのラウンドのワイルド」であることを示す印
+// (Three Thirteen)。
+//
+// 合法手の "*"、ボムの "!"、交換由来の "+"、切り札の "^"、最上位切り札の "!!" とは
+// また別の記号にする ── 同じ画面で意味の違う印が同じ形だと、どちらの話をして
+// いるのか読めない (#5667)。
+const CuiWildMark = "~"
+
+// CuiSwapMark は「その場札は手札のどれかと同ランク = 交換候補」であることを
+// 示す印 (Kemps)。
+//
+// 合法手の "*"、ボムの "!"、交換由来の "+"、切り札の "^"、最上位切り札の "!!"、
+// ワイルドの "~" とはまた別の記号にする ── 同じ画面で意味の違う印が同じ形だと、
+// どちらの話をしているのか読めない (#5670)。
+//
+// **"=" は使えない。**ヘルプ行に "0=音, 1=瞬き" のような等号が出るので、印として
+// 拾うと本文と区別が付かない (テストで実際に衝突した)。
+const CuiSwapMark = "@"
+
 // cuiIndexMarkedCardListStr returns an indexed card list where the cards at the
 // given indices carry mark.
 //

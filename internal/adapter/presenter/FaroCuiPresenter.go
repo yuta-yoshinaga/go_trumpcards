@@ -85,6 +85,14 @@ func (fp *FaroCuiPresenter) Output(f interfaces.FaroGame, lastErr error) string 
 	}
 	if f.GetGameEndFlag() {
 		sb.WriteString(color.Red(i18n.T("faro.gameEnd")) + "\n")
+		return sb.String()
+	}
+
+	// **他ゲームの CUI はフェーズごとに「何が打てるか」を必ず出している** のに、
+	// Faro はフェーズ名を 1 行出すだけで、有効なコマンドは help を別途叩くしか
+	// なかった (#5675)。
+	if prompt := fp.phasePrompt(f.GetPhase()); prompt != "" {
+		sb.WriteString(prompt + "\n")
 	}
 
 	return sb.String()
@@ -93,6 +101,23 @@ func (fp *FaroCuiPresenter) Output(f interfaces.FaroGame, lastErr error) string 
 // ActionLogOutput 棋譜をテキスト出力する。
 func (fp *FaroCuiPresenter) ActionLogOutput(f interfaces.FaroGame) string {
 	return actionLogOutputText(f)
+}
+
+// phasePrompt はそのフェーズで打てるコマンドの案内を返す。案内が無いフェーズは
+// 空文字 (ゲーム終了時は上でバナーを出して戻るので、ここには来ない)。
+func (fp *FaroCuiPresenter) phasePrompt(phase int) string {
+	switch phase {
+	case domain.FaroPhaseBetting:
+		return i18n.T("faro.promptBetting")
+	case domain.FaroPhaseTurn:
+		return i18n.T("faro.promptTurn")
+	case domain.FaroPhaseCall:
+		return i18n.T("faro.promptCall")
+	case domain.FaroPhaseRoundEnd:
+		return i18n.T("faro.promptRoundEnd")
+	default:
+		return ""
+	}
 }
 
 // phaseStr フェーズ文字列。

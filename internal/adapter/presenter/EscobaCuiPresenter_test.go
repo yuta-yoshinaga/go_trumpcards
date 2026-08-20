@@ -4,8 +4,12 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func escobaBuildCuiGame(t *testing.T) *domain.Escoba {
@@ -105,4 +109,70 @@ func TestEscobaCuiPresenter_OutputGameEnd(t *testing.T) {
 	if out == "" {
 		t.Fatal("expected non-empty output at game end")
 	}
+}
+
+// #5662: Web は captured-viewer で獲得札の実カードをいつでも開けるのに、CUI は
+// 枚数の数字だけだった。「7 は取れているか」「espadas は何枚か」は得点計算に
+// 直結するのに、数字からは読み取れない。
+func TestEscobaCuiPresenter_ListsTheCapturedCards(t *testing.T) {
+	p := &presenter.EscobaCuiPresenter{}
+
+	t.Run("lists the human's captured cards", func(t *testing.T) {
+		e := escobaBuildCuiGame(t)
+		captured := []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 7, false),
+			domain.NewCard(domain.CardDesignClover, 1, false),
+		}
+		e.GetPlayer(0).AddCaptured(captured)
+
+		out := p.Output(e, nil)
+
+		// 色付けは cuiCardStr の担当。スート名と数字だけを見る。
+		prefix, _, ok := strings.Cut(i18n.Tf("escoba.capturedLine", "cards", "\x00"), "\x00")
+		require.True(t, ok)
+		assert.Contains(t, out, prefix)
+		assert.Contains(t, out, "SPADE 7")
+		assert.Contains(t, out, "CLOVER 1")
+		_ = captured
+	})
+
+	// 取り札が増えたら表示も増える (ラウンド途中でも都度更新される)。
+	t.Run("keeps up as more cards are captured", func(t *testing.T) {
+		e := escobaBuildCuiGame(t)
+		e.GetPlayer(0).AddCaptured([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 7, false)})
+		before := p.Output(e, nil)
+
+		e.GetPlayer(0).AddCaptured([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 3, false)})
+		after := p.Output(e, nil)
+
+		assert.NotEqual(t, before, after)
+		assert.NotContains(t, before, "HEART 3")
+		assert.Contains(t, after, "HEART 3")
+		assert.Contains(t, after, "SPADE 7", "先に取った札も残る")
+	})
+
+	// **1枚も取っていないうちは出さない。**空の一覧は「取れていない」と
+	// 「表示が壊れている」の区別が付かない。
+	t.Run("says nothing before anything is captured", func(t *testing.T) {
+		e := escobaBuildCuiGame(t)
+
+		out := p.Output(e, nil)
+
+		prefix, _, ok := strings.Cut(i18n.Tf("escoba.capturedLine", "cards", "\x00"), "\x00")
+		require.True(t, ok)
+		require.NotEmpty(t, strings.TrimSpace(prefix))
+		assert.NotContains(t, out, prefix)
+	})
+
+	// CPU の獲得札は伏せたまま (手札と同じ扱い)。
+	t.Run("does not reveal a CPU's captured cards", func(t *testing.T) {
+		e := escobaBuildCuiGame(t)
+		e.GetPlayer(1).AddCaptured([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 7, false)})
+
+		out := p.Output(e, nil)
+
+		prefix, _, ok := strings.Cut(i18n.Tf("escoba.capturedLine", "cards", "\x00"), "\x00")
+		require.True(t, ok)
+		assert.NotContains(t, out, prefix)
+	})
 }
