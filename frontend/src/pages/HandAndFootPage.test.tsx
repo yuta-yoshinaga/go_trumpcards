@@ -134,7 +134,10 @@ describe('HandAndFootPage', () => {
   it('keeps the meld button live for a team that has already opened', async () => {
     mockExec.mockResolvedValue({
       ...meldPhaseState,
-      teams: [{ ...meldPhaseState.teams[0], melds: [{ rank: 5, cards: [], isCanasta: false, isNatural: true }] }, meldPhaseState.teams[1]],
+      teams: [
+        { ...meldPhaseState.teams[0], melds: [{ rank: 5, cards: [], isCanasta: false, isNatural: true }] },
+        meldPhaseState.teams[1],
+      ],
     });
     renderWithProviders(<HandAndFootPage />);
     await waitFor(() => expect(screen.getByTestId('hf-meld-points')).toBeInTheDocument());
