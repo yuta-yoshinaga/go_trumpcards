@@ -37,5 +37,15 @@
   "frontendHint.horseDisciplineChanged": "The discipline just changed; check the rules before you act",
   "frontendHint.horseOmahaUsesTwo": "Omaha uses exactly two of your hole cards",
   "frontendHint.horseRazzWantsLow": "In Razz the lowest hand wins",
-  "frontendHint.horsePlayTheDiscipline": "Play by the rules of the current discipline"
+  "frontendHint.horsePlayTheDiscipline": "Play by the rules of the current discipline",
+  "round.preflop": "Pre-flop",
+  "round.flop": "Flop",
+  "round.turn": "Turn",
+  "round.river": "River",
+  "round.showdown": "Showdown",
+  "round.third": "3rd street",
+  "round.fourth": "4th street",
+  "round.fifth": "5th street",
+  "round.sixth": "6th street",
+  "round.seventh": "7th street"
 }

@@ -35,5 +35,7 @@
   "suitDiamond": "D",
   "suitNoTrump": "NT",
   "helpExampleGiveUp": "  g                    give the round up",
-  "helpHint": "  h                    show a hint"
+  "helpHint": "  h                    show a hint",
+  "roundMade": "Contract made: {{took}} of the {{need}} needed (+{{points}} to the declarer).",
+  "roundDown": "Contract down: only {{took}} of the {{need}} needed (+{{points}} to the opponent)."
 }

@@ -11,6 +11,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
+import { KbdBadge } from '../components/KbdBadge';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -77,9 +78,14 @@ function FreeBetPageContent() {
     () => [
       { key: 'h', action: () => execApi('hit'), enabled: isPlayPhase },
       { key: 's', action: () => execApi('stand'), enabled: isPlayPhase },
+      // **このゲームの主役操作がキーボードから届いていなかった** (#5777)。
+      // 押せるかどうかはサーバの canFreeDouble / canFreeSplit がそのまま決める
+      // ので、ボタンの表示条件とキーの有効条件がずれることはない。
+      { key: 'd', action: () => execApi('freedouble'), enabled: isPlayPhase && !!state?.canFreeDouble },
+      { key: 'p', action: () => execApi('freesplit'), enabled: isPlayPhase && !!state?.canFreeSplit },
       { key: 'n', action: () => execApi('next'), enabled: isResultPhase && !gameOver },
     ],
-    [execApi, isPlayPhase, isResultPhase, gameOver],
+    [execApi, isPlayPhase, isResultPhase, gameOver, state?.canFreeDouble, state?.canFreeSplit],
   );
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading });
 
@@ -273,8 +279,10 @@ function FreeBetPageContent() {
                         data-hint-action="freedouble"
                         onClick={() => execApi('freedouble')}
                         disabled={loading}
+                        aria-keyshortcuts="d"
                       >
                         {t('button.freeDouble')}
+                        <KbdBadge label={t('kbd.freeDouble')} />
                       </button>
                     )}
                     {state.canFreeSplit && (
@@ -285,8 +293,10 @@ function FreeBetPageContent() {
                         data-hint-action="freesplit"
                         onClick={() => execApi('freesplit')}
                         disabled={loading}
+                        aria-keyshortcuts="p"
                       >
                         {t('button.freeSplit')}
+                        <KbdBadge label={t('kbd.freeSplit')} />
                       </button>
                     )}
                   </div>

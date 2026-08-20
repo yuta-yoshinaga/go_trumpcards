@@ -365,3 +365,62 @@ func TestNap_GetDeclarerProgress(t *testing.T) {
 		}
 	})
 }
+
+// #5651: Nap 契約だけ賭け金が非対称 (達成 +10 / 失敗は相手が各 +5)。他の契約は
+// 達成・失敗とも契約数と同じ数が動く。**この非対称さが Nap を宣言するか否かの
+// 判断そのもの**なのに、入札ボタンには契約名しか出ていなかった。
+func TestNapBidPayout(t *testing.T) {
+	cases := []struct {
+		bid            NapBid
+		wantMake, fail int
+	}{
+		{NapBidTwo, 2, 2},
+		{NapBidThree, 3, 3},
+		{NapBidFour, 4, 4},
+		// **ここだけ非対称。**達成すれば 10 だが、失敗しても相手が得るのは各 5。
+		{NapBidNap, 10, 5},
+	}
+	for _, c := range cases {
+		gotMake, gotFail := NapBidPayout(c.bid)
+		if gotMake != c.wantMake || gotFail != c.fail {
+			t.Errorf("NapBidPayout(%v) = %d/%d, want %d/%d", c.bid, gotMake, gotFail, c.wantMake, c.fail)
+		}
+	}
+}
+
+// 表と実際の精算が食い違わないこと。ラウンドを実際に精算させて突き合わせる。
+func TestNapBidPayoutMatchesTheSettlement(t *testing.T) {
+	for _, bid := range []NapBid{NapBidTwo, NapBidThree, NapBidFour, NapBidNap} {
+		wantMake, wantFail := NapBidPayout(bid)
+
+		// 達成: 宣言者が必要トリック数を取った状態で精算する。
+		g := newNapGame(true)
+		g.SetPhase(NapPhaseRoundEnd)
+		g.SetDeclarerIdx(0)
+		g.SetContract(bid)
+		tricks := [NapPlayerCnt]int{}
+		tricks[0] = napBidTarget(bid)
+		g.SetRoundTricks(tricks)
+		before := g.GetPlayerScores()
+		g.ScoreRound()
+		if got := g.GetPlayerScores()[0] - before[0]; got != wantMake {
+			t.Errorf("%v made: declarer gained %d, want %d", bid, got, wantMake)
+		}
+
+		// 失敗: 1 トリックも取らせずに精算する。相手それぞれが failValue を得る。
+		g2 := newNapGame(true)
+		g2.SetPhase(NapPhaseRoundEnd)
+		g2.SetDeclarerIdx(0)
+		g2.SetContract(bid)
+		g2.SetRoundTricks([NapPlayerCnt]int{})
+		before2 := g2.GetPlayerScores()
+		g2.ScoreRound()
+		after2 := g2.GetPlayerScores()
+		if got := after2[0] - before2[0]; got != 0 {
+			t.Errorf("%v failed: declarer moved by %d, want 0 (相手が得る側)", bid, got)
+		}
+		if got := after2[1] - before2[1]; got != wantFail {
+			t.Errorf("%v failed: opponent gained %d, want %d", bid, got, wantFail)
+		}
+	}
+}

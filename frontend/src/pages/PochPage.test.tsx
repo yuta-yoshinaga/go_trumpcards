@@ -43,6 +43,8 @@ function makeState(overrides?: Partial<PochResponse>): PochResponse {
     turnUp: card('SPADE', 9),
     stakingAwards: [{ pool: 'marriage', player: 1, chips: 12 }],
     betTarget: 1,
+    yourBestComboSize: 0,
+    yourBestComboRank: 0,
     pochenWinner: -1,
     pochenPot: 0,
     playedPile: [],
@@ -196,5 +198,25 @@ describe('PochPage', () => {
         expect(b).not.toBeDisabled();
       }
     });
+  });
+
+  // #5722: pochen は組の比べ合いなので、賭ける前に自分の組が分かる必要がある。
+  it('shows your own strongest set while betting', async () => {
+    mockExec.mockResolvedValue(makeState({ yourBestComboSize: 2, yourBestComboRank: 9 }));
+    renderWithProviders(<PochPage />);
+
+    const combo = await screen.findByTestId('poch-your-combo');
+
+    expect(combo).toHaveTextContent('9');
+    expect(combo).toHaveTextContent('2枚');
+  });
+
+  it('says so when you hold no set', async () => {
+    mockExec.mockResolvedValue(makeState({ yourBestComboSize: 0, yourBestComboRank: 0 }));
+    renderWithProviders(<PochPage />);
+
+    const combo = await screen.findByTestId('poch-your-combo');
+
+    expect(combo).toHaveTextContent('なし');
   });
 });

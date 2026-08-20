@@ -45,6 +45,8 @@ type TeenDoPaanchGame interface {
 	GetFivePlayerIdx() int
 	// GetLastExchange 直前のラウンド間で動いた札の枚数を取得する
 	GetLastExchange() int
+	// GetLastExchangePairs 直前のやり取りの内訳（誰から誰へ何枚）を取得する
+	GetLastExchangePairs() []domain.TeenDoPaanchExchange
 	// GetCurrentPlayerIdx 現在のプレイヤーインデックスを取得する
 	GetCurrentPlayerIdx() int
 	// GetLeadPlayerIdx リードプレイヤーインデックスを取得する

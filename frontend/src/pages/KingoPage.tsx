@@ -28,6 +28,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { KingoResponse } from '../types/card';
 import { KingoPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { valueName } from '../utils/cardUtils';
 import { KINGO_CLI_HELP, parseKingoCommand } from '../utils/cli/commands/kingoCommands';
 import { formatKingoState } from '../utils/cli/formatters/kingoFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -201,7 +202,14 @@ function KingoPageContent() {
                   </div>
                   {seat.cards.length > 0 && (
                     <div className="text-ds-text-primary text-xs mt-1" data-testid={`kingo-rank-${i}`}>
-                      {t(RANK_KEYS[seat.rank] ?? 'rank.none')}
+                      {/* **同じ「嵐」でも K 3 枚と A 3 枚では強さの実感が違う**
+                          (#5783)。役が付いた席には、そろえた数字まで出す。 */}
+                      {seat.rank > 0
+                        ? t('rank.withValue', {
+                            rank: t(RANK_KEYS[seat.rank] ?? 'rank.none'),
+                            value: valueName(seat.matchedValue),
+                          })
+                        : t(RANK_KEYS[seat.rank] ?? 'rank.none')}
                     </div>
                   )}
                 </div>

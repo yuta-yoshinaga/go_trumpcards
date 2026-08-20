@@ -21,7 +21,8 @@
   },
   "baloot": {
     "none": "no bonus",
-    "held": "Baloot (trump K+Q) = 20"
+    "held": "Baloot (trump K+Q) = 20",
+    "hidden": "unknown"
   },
   "currentTrick": "Current trick",
   "actions": {

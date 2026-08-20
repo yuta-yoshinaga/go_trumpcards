@@ -40,5 +40,7 @@
   "frontendHint.freeBetCannotBust": "11 or less cannot bust",
   "frontendHint.freeBetStandPat": "17 or more is a standing hand",
   "frontendHint.freeBetDealerMayBust": "the dealer's 22 only pushes, so busting yourself costs more here",
-  "frontendHint.freeBetChaseDealer": "the dealer is strong, so you have to chase"
+  "frontendHint.freeBetChaseDealer": "the dealer is strong, so you have to chase",
+  "kbd.freeDouble": "D",
+  "kbd.freeSplit": "P"
 }

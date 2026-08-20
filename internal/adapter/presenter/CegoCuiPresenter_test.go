@@ -184,3 +184,28 @@ func TestCegoCuiPresenter_HintAndLog(t *testing.T) {
 	g2.SetPhase(domain.CegoPhaseContract)
 	assert.NotEmpty(t, p.HintOutput(g2))
 }
+
+// #5718: 交換は「1枚だけ残す → 残りを伏せる → ブラインドを受け取る」という
+// 2 段階の手順なのに、CUI は 1 行の汎用ヘルプだけで、何枚伏せて何枚戻るのかが
+// 分からなかった (Web は番号付きウィザードで常設表示している)。
+func TestCegoCuiPresenter_ExplainsTheExchangeSteps(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.CegoCuiPresenter)
+
+	g := cegoCuiGame()
+	g.SetDeclarerIdx(0)
+	g.SetContract(domain.CegoBidPlay)
+	g.SetContractType(domain.CegoContractCego)
+	g.SetPhase(domain.CegoPhaseExchange)
+
+	out := p.Output(g, nil)
+
+	assert.Contains(t, out, i18n.Tf("cego.promptExchangeStep1",
+		"keep", strconv.Itoa(domain.CegoKeepCount),
+		"laydown", strconv.Itoa(domain.CegoLayDownCount)))
+	assert.Contains(t, out, i18n.Tf("cego.promptExchangeStep2",
+		"blind", strconv.Itoa(g.GetBlindCount())))
+	assert.NotContains(t, out, "{{")
+}

@@ -15,7 +15,9 @@
     "met": "met {{n}}",
     "declarer": "[declares trump]",
     "you": "You",
-    "cpu": "CPU{{idx}}"
+    "cpu": "CPU{{idx}}",
+    "exchangeDetail": " ({{pairs}})",
+    "exchangePair": "{{giver}} to {{taker}}: {{n}}"
   },
   "currentTrick": "Current trick",
   "actions": {

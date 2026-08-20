@@ -8,6 +8,9 @@ func (s *StealingBundles) SetCurrentPlayerIdxForTest(i int) { s.currentPlayerIdx
 // SetTableCardsForTest は場札を設定する
 func (s *StealingBundles) SetTableCardsForTest(cards []*Card) { s.tableCards = cards }
 
+// SetLastCaptureVictimIdxForTest は直前の盗みの被害者席を設定する (改竄の再現用)
+func (s *StealingBundles) SetLastCaptureVictimIdxForTest(i int) { s.lastCaptureVictimIdx = i }
+
 // GiveHandForTest は指定席の手札を cards ちょうどに置き換える
 func (s *StealingBundles) GiveHandForTest(playerIdx int, cards ...*Card) {
 	p := s.players[playerIdx]
