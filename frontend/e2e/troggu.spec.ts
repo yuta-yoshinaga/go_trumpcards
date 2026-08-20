@@ -14,6 +14,25 @@ const hand = (page: Parameters<typeof navigateTo>[0]) =>
 const playableCards = (page: Parameters<typeof navigateTo>[0]) =>
   page.locator('[data-tutorial="tg-player-hand"] button[aria-pressed]:not([aria-disabled="true"])');
 
+/**
+ * Declare whatever the human is allowed to declare right now, or pass.
+ *
+ * **ソロが常に打てるとは限らない。**ミゼール(4) はソロ(2) より上なので、CPU が
+ * 先にミゼールを宣言した配りではソロのボタンは disabled になる。決め打ちで
+ * クリックすると、その配りを引いた回だけ actionability 待ちでタイムアウトする
+ * (#5808)。
+ */
+async function declareOrPass(page: Parameters<typeof navigateTo>[0]) {
+  for (const bid of ['misere', 'piccolo', 'solo', 'trois']) {
+    const button = page.getByTestId(`tg-bid-${bid}`);
+    if (await button.isDisabled()) continue;
+    await button.click();
+    return;
+  }
+  // ミゼールが立っていれば人間はもう入札できない。残るのはパスだけ。
+  await page.getByTestId('tg-pass').click();
+}
+
 test.describe('Troggu E2E', () => {
   test('deals eighteen cards and offers all four contracts', async ({ page }) => {
     await navigateTo(page, '/troggu');
@@ -39,18 +58,7 @@ test.describe('Troggu E2E', () => {
     await navigateTo(page, '/troggu');
     await expect(page.getByTestId('tg-bid-solo')).toBeVisible({ timeout: TIMEOUT_TRANSITION });
 
-    const bids = ['misere', 'piccolo', 'solo', 'trois'];
-    let declared = false;
-    for (const bid of bids) {
-      const button = page.getByTestId(`tg-bid-${bid}`);
-      if (await button.isDisabled()) continue;
-      await button.click();
-      declared = true;
-      break;
-    }
-    // 全部 disabled になることはない: ミゼールが出ていれば人間はもう入札できず、
-    // その場合はパスしか残らない。そのときはプレイに入ることだけを見る。
-    if (!declared) await page.getByTestId('tg-pass').click();
+    await declareOrPass(page);
     await waitForLoaded(page);
 
     await expect(page.getByTestId('tg-bid-solo')).toHaveCount(0);
@@ -61,7 +69,7 @@ test.describe('Troggu E2E', () => {
   test('plays a card and the hand shrinks', async ({ page }) => {
     await navigateTo(page, '/troggu');
     await expect(page.getByTestId('tg-bid-solo')).toBeVisible({ timeout: TIMEOUT_TRANSITION });
-    await page.getByTestId('tg-bid-solo').click();
+    await declareOrPass(page);
     await waitForLoaded(page);
 
     // **自分の手番になるまで押さない。** 手番でない間は制限が付かないので、
