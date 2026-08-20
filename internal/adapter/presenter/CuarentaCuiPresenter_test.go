@@ -1,9 +1,13 @@
 package presenter_test
 
 import (
+	"encoding/json"
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -123,4 +127,96 @@ func TestCuarentaCuiPresenter_ShowsTheTeamCaptureTotals(t *testing.T) {
 	if !strings.Contains(near, color.Yellow(line(0, domain.CuarentaMostCardsThreshold-1))) {
 		t.Fatalf("one card short of the bonus should be highlighted: %q", near)
 	}
+}
+
+// cuarentaSetField は JSON 経由で内部状態を差し替える (テスト用)。
+func cuarentaSetField(g *domain.Cuarenta, fields map[string]any) {
+	data, _ := json.Marshal(g)
+	var raw map[string]json.RawMessage
+	_ = json.Unmarshal(data, &raw)
+	for k, v := range fields {
+		raw[k], _ = json.Marshal(v)
+	}
+	newData, _ := json.Marshal(raw)
+	_ = json.Unmarshal(newData, g)
+}
+
+// #5673: 同ランクの場札はまとめて捕獲できる。Web は手札にフォーカスすると捕獲
+// 対象の場札にリングを出すのに、CUI にはそれに当たる情報が無く、どの札を出すと
+// 何枚取れるのかを手探りで確かめるしかなかった。
+func TestCuarentaCuiPresenter_PreviewsTheCapture(t *testing.T) {
+	p := &presenter.CuarentaCuiPresenter{}
+	card := func(d, v int) *domain.Card { return domain.NewCard(d, v, false) }
+
+	seed := func(hand []*domain.Card, table []*domain.Card, turn int) *domain.Cuarenta {
+		g := buildPlayedCuarenta(t)
+		human := g.GetPlayer(0)
+		human.Reset()
+		for _, c := range hand {
+			human.AddCard(c)
+		}
+		raw := make([]map[string]any, len(table))
+		for i, c := range table {
+			raw[i] = map[string]any{"d": c.GetDesign(), "v": c.GetValue(), "o": false}
+		}
+		cuarentaSetField(g, map[string]any{"tb": raw, "ct": turn})
+		return g
+	}
+
+	t.Run("counts how many table cards each hand card would take", func(t *testing.T) {
+		g := seed(
+			[]*domain.Card{card(domain.CardDesignSpade, 7), card(domain.CardDesignClover, 3)},
+			[]*domain.Card{
+				card(domain.CardDesignHeart, 7),
+				card(domain.CardDesignDiamond, 7),
+				card(domain.CardDesignSpade, 5),
+			},
+			0,
+		)
+
+		out := p.Output(g, nil)
+
+		assert.Contains(t, out, i18n.Tf("cuarenta.capturePreview", "count", "2"))
+	})
+
+	// **取れない札には何も付けない。**0 枚と書くと「取れる手がある」と読める。
+	t.Run("says nothing for a card that takes nothing", func(t *testing.T) {
+		g := seed(
+			[]*domain.Card{card(domain.CardDesignClover, 3)},
+			[]*domain.Card{card(domain.CardDesignHeart, 7)},
+			0,
+		)
+
+		out := p.Output(g, nil)
+
+		prefix, _, ok := strings.Cut(i18n.Tf("cuarenta.capturePreview", "count", "\x00"), "\x00")
+		require.True(t, ok)
+		require.NotEmpty(t, strings.TrimSpace(prefix))
+		assert.NotContains(t, out, prefix)
+	})
+
+	t.Run("says nothing when it is not your turn", func(t *testing.T) {
+		g := seed(
+			[]*domain.Card{card(domain.CardDesignSpade, 7)},
+			[]*domain.Card{card(domain.CardDesignHeart, 7)},
+			1,
+		)
+
+		out := p.Output(g, nil)
+
+		prefix, _, ok := strings.Cut(i18n.Tf("cuarenta.capturePreview", "count", "\x00"), "\x00")
+		require.True(t, ok)
+		assert.NotContains(t, out, prefix)
+	})
+
+	// 既存の場札表示は残す。
+	t.Run("keeps the table line", func(t *testing.T) {
+		g := seed(
+			[]*domain.Card{card(domain.CardDesignSpade, 7)},
+			[]*domain.Card{card(domain.CardDesignHeart, 7)},
+			0,
+		)
+
+		assert.Contains(t, p.Output(g, nil), i18n.Tf("cuarenta.tableLine", "cards", color.Red("HEART 7")))
+	})
 }

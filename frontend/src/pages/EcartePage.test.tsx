@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ecarteApi } from '../api/gameApi';
+import ja from '../i18n/locales/ja/ecarte.json';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeEcarteState } from '../test/stateFactories';
 import { EcartePage } from './EcartePage';
@@ -55,6 +56,36 @@ describe('EcartePage', () => {
     renderWithProviders(<EcartePage />);
     await waitFor(() => expect(screen.getByTestId('ecarte-propose')).toBeInTheDocument());
     expect(screen.getByTestId('ecarte-stand')).toBeInTheDocument();
+  });
+
+  // #5658: 損得説明はネイティブツールチップ (title) と sr-only にしか無く、
+  // **タッチ端末では hover が起きない**ので目の見える利用者が読めなかった。
+  it('shows the propose/stand consequences as visible text for touch users', async () => {
+    renderWithProviders(<EcartePage />);
+
+    const block = await screen.findByTestId('ecarte-consequences');
+    expect(block).toHaveTextContent(ja.consequence.propose);
+    expect(block).toHaveTextContent(ja.consequence.stand);
+    // デスクトップでは従来どおりツールチップに任せる。
+    expect(block).toHaveClass('sm:hidden');
+  });
+
+  it('shows the accept/refuse consequences for touch users too', async () => {
+    mockExec.mockResolvedValue(dealerRespondState);
+    renderWithProviders(<EcartePage />);
+
+    const block = await screen.findByTestId('ecarte-consequences');
+    expect(block).toHaveTextContent(ja.consequence.accept);
+    expect(block).toHaveTextContent(ja.consequence.refuse);
+  });
+
+  // 既存のホバー/スクリーンリーダー向けの実装は残す。
+  it('keeps the tooltip and the described-by text on the buttons', async () => {
+    renderWithProviders(<EcartePage />);
+
+    const propose = await screen.findByTestId('ecarte-propose');
+    expect(propose).toHaveAttribute('title', ja.consequence.propose);
+    expect(propose).toHaveAttribute('aria-describedby', 'ecarte-propose-desc');
   });
 
   it('dispatches propose when the propose button is clicked', async () => {

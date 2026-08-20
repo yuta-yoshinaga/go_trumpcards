@@ -4,14 +4,18 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func makeConquianPlayers() []*domain.ConquianPlayer {
@@ -125,4 +129,76 @@ func TestConquianCuiPresenter_ActionLogOutput(t *testing.T) {
 	m, _ := setupConquianCuiMock(domain.ConquianPhaseDraw, false, -1)
 	p := new(presenter.ConquianCuiPresenter)
 	assert.NotPanics(t, func() { p.ActionLogOutput(m) })
+}
+
+// #5664: 勝利は「メルドで 11 枚並べきる」こと。Web は進捗バーで合計と残りを出し、
+// 残り2枚以下を警告色にしているのに、CUI はメルドの中身を並べるだけで、**毎回
+// 目で数えないと勝利がどれだけ近いか分からなかった。**
+func TestConquianCuiPresenter_ShowsMeldProgress(t *testing.T) {
+	p := new(presenter.ConquianCuiPresenter)
+	card := func(v int) *domain.Card { return domain.NewCard(domain.CardDesignSpade, v, false) }
+
+	// n 枚ぶんのメルドを作る (3枚組 + 端数)。
+	meldsOf := func(n int) [][]*domain.Card {
+		var melds [][]*domain.Card
+		for n > 0 {
+			size := 3
+			if n < 3 {
+				size = n
+			}
+			meld := make([]*domain.Card, size)
+			for i := range meld {
+				meld[i] = card(i + 1)
+			}
+			melds = append(melds, meld)
+			n -= size
+		}
+		return melds
+	}
+
+	t.Run("counts the melded cards toward the target", func(t *testing.T) {
+		m, players := setupConquianCuiMock(domain.ConquianPhaseMeld, false, -1)
+		players[0].SetMelds(meldsOf(6))
+
+		out := p.Output(m, nil)
+
+		assert.Contains(t, out, i18n.Tf("conquian.meldProgress",
+			"count", "6", "total", strconv.Itoa(domain.ConquianMeldTarget)))
+	})
+
+	// **残り2枚以下は Web と同じ基準で強調する。**
+	t.Run("warns in the final stretch", func(t *testing.T) {
+		m, players := setupConquianCuiMock(domain.ConquianPhaseMeld, false, -1)
+		players[0].SetMelds(meldsOf(domain.ConquianMeldTarget - 2))
+
+		out := p.Output(m, nil)
+
+		assert.Contains(t, out, i18n.Tf("conquian.meldRemaining", "count", "2"))
+	})
+
+	t.Run("stays quiet while more than two are missing", func(t *testing.T) {
+		m, players := setupConquianCuiMock(domain.ConquianPhaseMeld, false, -1)
+		players[0].SetMelds(meldsOf(domain.ConquianMeldTarget - 3))
+
+		out := p.Output(m, nil)
+
+		// 警告の閾値は残り2枚以下。3枚残っているうちは出さない。
+		prefix, _, ok := strings.Cut(i18n.Tf("conquian.meldRemaining", "count", "\x00"), "\x00")
+		require.True(t, ok)
+		require.NotEmpty(t, strings.TrimSpace(prefix))
+		assert.NotContains(t, out, prefix)
+		// 進捗そのものは出る。
+		assert.Contains(t, out, i18n.Tf("conquian.meldProgress",
+			"count", strconv.Itoa(domain.ConquianMeldTarget-3), "total", strconv.Itoa(domain.ConquianMeldTarget)))
+	})
+
+	// 既存のメルド内容の表示は残す。
+	t.Run("keeps listing what is in each meld", func(t *testing.T) {
+		m, players := setupConquianCuiMock(domain.ConquianPhaseMeld, false, -1)
+		players[0].SetMelds(meldsOf(3))
+
+		out := p.Output(m, nil)
+
+		assert.Contains(t, out, "SPADE 1")
+	})
 }

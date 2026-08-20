@@ -7,6 +7,14 @@ import "math/rand"
 // cuarentaRankMatchIndexes は playedCard と同じランク (GetValue) を持つ
 // 場札のインデックスを全て返す。クアレンタの捕獲は純粋なランク一致であり、
 // 一致するカードは全て同時に捕獲される。
+// CuarentaCaptureCount は playedCard を出したときに捕獲できる場札の枚数を返す。
+//
+// **同ランクの場札はまとめて捕獲する** (applyPlay)。画面はどの札で何枚取れるかを
+// 出すが、判定を書き写すと実際の捕獲とずれるので、同じ関数から数える (#5673)。
+func CuarentaCaptureCount(playedCard *Card, tableCards []*Card) int {
+	return len(cuarentaRankMatchIndexes(playedCard, tableCards))
+}
+
 func cuarentaRankMatchIndexes(playedCard *Card, tableCards []*Card) []int {
 	if playedCard == nil {
 		return nil

@@ -65,5 +65,6 @@
     "scoponeCaptureMost": "一番多く取れる札です",
     "scoponeLayLow": "取れる組み合わせがありません。一番小さい札を置きましょう"
   },
-  "sumIndicator": "合計 {{sum}} / {{target}}"
+  "sumIndicator": "合計 {{sum}} / {{target}}",
+  "mustCapture": "取れる組み合わせがあるので「出す」は選べません（取り札が必須）"
 }
