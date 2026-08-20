@@ -1901,10 +1901,11 @@ classDiagram
     note for KVSessionProvider~T~ "Worker 用。リクエスト毎に KV から復元し、\nGameBase.Snapshot() の JSON を書き戻す。\nプロセスが持続しないので状態は毎回 KV 往復する"
 ```
 
-Worker 側はゲームをカテゴリ単位で 6 バイナリに分割している。
+Worker 側はゲームをカテゴリ単位で 7 バイナリに分割している。
 `Category` は**バイナリのサイズバケットであってユーザ向けの分類ではない**
 （[ADR-0032](../adr/0032-fourth-worker-capacity.md) /
-[ADR-0036](../adr/0036-fifth-sixth-worker-capacity.md)）。
+[ADR-0036](../adr/0036-fifth-sixth-worker-capacity.md) /
+[ADR-0037](../adr/0037-seventh-worker-capacity.md)）。
 
 ```mermaid
 classDiagram
@@ -1921,12 +1922,13 @@ classDiagram
         CategoryExtra
         CategoryExtra2
         CategoryExtra3
+        CategoryExtra4
     }
 
     Game --> Category : size bucket
 
     note for Game "registry.go が 318 件の Name+Category だけを持つ。\nゲーム実装への参照は持たないので、TinyGo が\n他カテゴリを dead-code elimination できる"
-    note for Category "6 バケットは 1 MB gzip 無料枠に収めるための分割。\n各 Worker は自分のカテゴリだけを blank import する"
+    note for Category "7 バケットは 1 MB gzip 無料枠に収めるための分割。\n各 Worker は自分のカテゴリだけを blank import する"
 ```
 
 詳細な per-worker のゲーム一覧とビルド手順は
