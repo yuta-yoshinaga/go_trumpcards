@@ -116,8 +116,9 @@ describe('PrsiPage', () => {
   it('highlights legal cards and dims illegal ones on the human turn', async () => {
     // Discard top ♥7; hand has ♥J (legal — same suit) and ♠A (illegal).
     renderWithProviders(<PrsiPage />);
-    const legal = await screen.findByLabelText('♥ J');
-    const illegal = screen.getByLabelText('♠ A');
+    // aria-label には合法/非合法が入るようになったので (#5684)、カード名で引く。
+    const legal = (await screen.findByAltText('♥ J')).closest('button') as HTMLButtonElement;
+    const illegal = screen.getByAltText('♠ A').closest('button') as HTMLButtonElement;
     expect(legal).toHaveAttribute('data-legal', 'true');
     expect(legal.className).toContain('ring-ds-success');
     expect(illegal).toHaveAttribute('data-legal', 'false');
@@ -174,6 +175,48 @@ describe('PrsiPage', () => {
     await waitFor(() => expect(screen.getByText('捨て札')).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '引く' })).not.toBeInTheDocument();
+  });
+
+  // #5684: 合法/非合法は緑リングと不透明度、そして title でしか区別されていな
+  // かった。**title はスクリーンリーダーで安定して読まれる保証がなく、data-legal
+  // はアクセシビリティツリーに出ない。**CUI は「出せる札」を本文で出している。
+  it('says in the aria-label whether a card can be played', async () => {
+    renderWithProviders(<PrsiPage />);
+
+    // 捨て札は ♥7。♠A は不一致で出せない。
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    const illegal = screen.getByAltText('♠ A').closest('button') as HTMLButtonElement;
+    expect(illegal.getAttribute('aria-label')).toContain('出せません');
+  });
+
+  it('says a legal card is playable', async () => {
+    renderWithProviders(<PrsiPage />);
+
+    // ♥J は捨て札 ♥7 とスートが一致するので出せる。
+    await waitFor(() => expect(screen.getByAltText('♥ J')).toBeInTheDocument());
+    const legal = screen.getByAltText('♥ J').closest('button') as HTMLButtonElement;
+    expect(legal.getAttribute('aria-label')).toContain('出せます');
+    expect(legal.getAttribute('aria-label')).not.toContain('出せません');
+  });
+
+  // **7ペナルティ中は理由が変わる。**「スートが違うから」ではなく「7しか出せない」。
+  it('explains the seven penalty in the aria-label', async () => {
+    mockExec.mockResolvedValue(penaltyState);
+    renderWithProviders(<PrsiPage />);
+
+    await waitFor(() => expect(screen.getByAltText('♥ J')).toBeInTheDocument());
+    // ♥J はスート一致でも、ペナルティ中は 7 以外を出せない。
+    const underPenalty = screen.getByAltText('♥ J').closest('button') as HTMLButtonElement;
+    expect(underPenalty.getAttribute('aria-label')).toContain('7');
+  });
+
+  // 見た目は変えない (受け入れ条件3)。
+  it('keeps the ring and dimming unchanged', async () => {
+    renderWithProviders(<PrsiPage />);
+
+    await waitFor(() => expect(screen.getByAltText('♥ J')).toBeInTheDocument());
+    expect(screen.getByAltText('♥ J').closest('button')?.className).toContain('ring-ds-success');
+    expect(screen.getByAltText('♠ A').closest('button')?.className).toContain('opacity-50');
   });
 
   it('shows the penalty indicator when penaltyDrawCount > 0', async () => {

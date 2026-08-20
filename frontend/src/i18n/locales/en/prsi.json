@@ -38,5 +38,8 @@
     "drawCard": "No playable cards — draw from the pile"
   },
   "illegalHint": "Can't play this card (no matching suit or rank)",
-  "pendingSkips": "Skips pending: {{count}} — stack an Ace/Jack or lose your turn"
+  "pendingSkips": "Skips pending: {{count}} — stack an Ace/Jack or lose your turn",
+  "cardAriaPlayable": "{{card}}, playable",
+  "cardAriaIllegal": "{{card}}, cannot be played",
+  "cardAriaPenalty": "{{card}}, cannot be played (only a 7 answers the seven penalty)"
 }

@@ -1,5 +1,7 @@
 {
   "helpTitle": "Jass (Schieber)",
+  "previousTrick": "Previous trick",
+  "previousTrickWinner": "  → taken by {{name}}",
   "helpCall": "  c <suit>             choose trump (1=S,2=C,3=H,4=D)",
   "helpSchieben": "  sc                   schieben (pass choice to partner)",
   "helpPlay": "  p <idx>              play a card",

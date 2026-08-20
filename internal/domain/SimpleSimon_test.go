@@ -5,6 +5,8 @@ package domain
 import (
 	"encoding/json"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func simonCard(design, value int) *Card { return NewCard(design, value, true) }
@@ -226,4 +228,49 @@ func TestSimpleSimon_JSONRoundTrip(t *testing.T) {
 	if err := json.Unmarshal([]byte(`{"cs":9}`), NewDefaultSimpleSimon()); err == nil {
 		t.Error("expected error for invalid completed suits")
 	}
+}
+
+// **まとめて掴めるのは末尾の同スート降順だけ** (#5679)。画面はその境界を出すので、
+// 位置を返すこの関数がずれると、掴めない札まで掴めるように見える。
+func TestSimpleSimonMovableFrom(t *testing.T) {
+	card := func(d, v int) *Card { return NewCard(d, v, false) }
+
+	t.Run("an empty column has no boundary", func(t *testing.T) {
+		assert.Equal(t, 0, SimpleSimonMovableFrom(nil))
+	})
+
+	t.Run("a single card is the whole run", func(t *testing.T) {
+		assert.Equal(t, 0, SimpleSimonMovableFrom([]*Card{card(CardDesignSpade, 5)}))
+	})
+
+	// ♠K ♥9 ♠8 ♠7 → 末尾 2 枚だけが同スート降順。
+	t.Run("stops where the suit breaks", func(t *testing.T) {
+		col := []*Card{
+			card(CardDesignSpade, 13),
+			card(CardDesignHeart, 9),
+			card(CardDesignSpade, 8),
+			card(CardDesignSpade, 7),
+		}
+		assert.Equal(t, 2, SimpleSimonMovableFrom(col))
+	})
+
+	// ♠9 ♠8 ♠6 → ランクが飛ぶので末尾 1 枚だけ。
+	t.Run("stops where the rank skips", func(t *testing.T) {
+		col := []*Card{
+			card(CardDesignSpade, 9),
+			card(CardDesignSpade, 8),
+			card(CardDesignSpade, 6),
+		}
+		assert.Equal(t, 2, SimpleSimonMovableFrom(col))
+	})
+
+	// 列全体が 1 つの並びなら先頭から掴める。
+	t.Run("a column that is entirely one run starts at zero", func(t *testing.T) {
+		col := []*Card{
+			card(CardDesignSpade, 5),
+			card(CardDesignSpade, 4),
+			card(CardDesignSpade, 3),
+		}
+		assert.Equal(t, 0, SimpleSimonMovableFrom(col))
+	})
 }

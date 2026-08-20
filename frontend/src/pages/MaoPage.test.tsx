@@ -76,6 +76,14 @@ beforeEach(() => {
   mockExec.mockResolvedValue(playPhaseState);
 });
 
+/**
+ * 唱えた言葉の読み上げ用リージョン。
+ *
+ * **LiveAnnouncement は中身より先に mount される**ので (領域と本文が同じ
+ * コミットで現れると読み上げられない)、testid ではなく role と aria-live で引く。
+ */
+const sayWordLive = () => document.querySelector('[role="status"][aria-live="polite"][aria-atomic="true"]');
+
 describe('MaoPage', () => {
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
@@ -243,6 +251,59 @@ describe('MaoPage', () => {
     expect(row).toHaveTextContent('♥ 7');
     expect(screen.getByTestId('sayword-outcome-correct')).toHaveTextContent('正解');
     expect(screen.queryByTestId('sayword-outcome-penalty')).not.toBeInTheDocument();
+  });
+
+  // #5668: 違反は role="status" の rule-penalty とブザー音で強く伝わるのに、成功は
+  // 折りたたみ履歴に静かに積まれるだけだった。**隠しルールを試行錯誤で学ぶゲーム**
+  // なので、耳に届く情報が違反だけなのは学習の材料として非対称。
+  it('announces an accepted say-word through a live region', async () => {
+    renderWithProviders(<MaoPage />);
+    const input = await screen.findByLabelText('唱える言葉を入力…');
+    fireEvent.change(input, { target: { value: 'mao' } });
+    mockExec.mockResolvedValueOnce({ ...playPhaseState, rulePenalty: false, correctCount: 1 });
+    fireEvent.click(screen.getByRole('button', { name: '発言する' }));
+
+    // **領域は中身より先に mount される** ので、testid ではなく role で引く。
+    await waitFor(() => expect(sayWordLive()).toHaveTextContent('mao'));
+    expect(sayWordLive()).toHaveAttribute('aria-live', 'polite');
+    expect(sayWordLive()).toHaveAttribute('aria-atomic', 'true');
+    expect(sayWordLive()).toHaveTextContent('正解');
+  });
+
+  it('announces a penalty through the same live region', async () => {
+    renderWithProviders(<MaoPage />);
+    const input = await screen.findByLabelText('唱える言葉を入力…');
+    fireEvent.change(input, { target: { value: 'oops' } });
+    mockExec.mockResolvedValueOnce({ ...playPhaseState, rulePenalty: true });
+    fireEvent.click(screen.getByRole('button', { name: '発言する' }));
+
+    await waitFor(() => expect(sayWordLive()).toHaveTextContent('ペナルティ'));
+  });
+
+  // **2回目以降は最新を読む。**1件だけのテストは、先頭を読む実装でも末尾を読む
+  // 実装でも通ってしまう。
+  it('announces the newest attempt, not the first', async () => {
+    renderWithProviders(<MaoPage />);
+    const input = await screen.findByLabelText('唱える言葉を入力…');
+
+    fireEvent.change(input, { target: { value: 'first' } });
+    mockExec.mockResolvedValueOnce({ ...playPhaseState, rulePenalty: false, correctCount: 1 });
+    fireEvent.click(screen.getByRole('button', { name: '発言する' }));
+    await waitFor(() => expect(sayWordLive()).toHaveTextContent('first'));
+
+    fireEvent.change(input, { target: { value: 'second' } });
+    mockExec.mockResolvedValueOnce({ ...playPhaseState, rulePenalty: true, correctCount: 1 });
+    fireEvent.click(screen.getByRole('button', { name: '発言する' }));
+
+    await waitFor(() => expect(sayWordLive()).toHaveTextContent('second'));
+    expect(sayWordLive()).toHaveTextContent('ペナルティ');
+  });
+
+  it('says nothing before any word is declared', async () => {
+    renderWithProviders(<MaoPage />);
+    await waitFor(() => expect(screen.getByTestId('mao-rule-panel')).toBeInTheDocument());
+
+    expect(screen.queryByTestId('sayword-live')).not.toBeInTheDocument();
   });
 
   it('color-codes a penalty say-word attempt in the history panel', async () => {

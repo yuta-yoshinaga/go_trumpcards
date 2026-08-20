@@ -77,5 +77,6 @@
     "maoPlayWild": "出せる札がありません。8 なら出せます",
     "maoDraw": "出せる札がありません。山から引きましょう",
     "maoChooseSuit": "手札に一番多いスートを指定すると、次も出しやすくなります"
-  }
+  },
+  "sayWordAnnounce": "「{{word}}」 — {{outcome}}"
 }

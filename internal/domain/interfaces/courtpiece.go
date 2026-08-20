@@ -61,6 +61,8 @@ type CourtPieceGame interface {
 	GetLastWinnerTeam() int
 	// IsLastRoundCourt 直前ラウンドが Court ボーナスだったかを返す
 	IsLastRoundCourt() bool
+	// IsRoundEndCourt いま終わったラウンドが Court (+2) かを返す (集計前でも読める)
+	IsRoundEndCourt() bool
 	// GetTeamScore チームスコアを取得する
 	GetTeamScore(team int) int
 	// GetWinnerTeam 勝利チームを取得する (-1 = 未確定)

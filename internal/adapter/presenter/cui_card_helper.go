@@ -245,6 +245,14 @@ const CuiWildMark = "~"
 // 拾うと本文と区別が付かない (テストで実際に衝突した)。
 const CuiSwapMark = "@"
 
+// CuiRunMark は「ここから先が 1 つの塊としてまとめて動かせる」ことを示す区切り
+// (Simple Simon)。
+//
+// これまでの印 ("*" 合法手 / "!" ボム / "+" 交換由来 / "^" 切り札 / "!!" 最上位
+// 切り札 / "~" ワイルド / "@" 交換候補) と違い、**カードに付く印ではなく列の
+// 途中に入る区切り**なので、縦棒を使う (#5679)。
+const CuiRunMark = "|"
+
 // cuiIndexMarkedCardListStr returns an indexed card list where the cards at the
 // given indices carry mark.
 //

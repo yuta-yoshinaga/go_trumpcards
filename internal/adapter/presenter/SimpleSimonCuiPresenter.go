@@ -20,9 +20,16 @@ func ssColumnStr(pile []*domain.Card) string {
 	if len(pile) == 0 {
 		return i18n.T("cuiEmptyCol")
 	}
-	parts := make([]string, len(pile))
+	// **まとめて動かせるのは末尾から続く run だけ** (#5679)。Web はその起点に
+	// リングを付けているのに、CUI は平らに並べるだけで毎回目視させていた。
+	// 列全体が run なら区切る意味がないので入れない。
+	from := domain.SimpleSimonMovableFrom(pile)
+	parts := make([]string, 0, len(pile)+1)
 	for i, c := range pile {
-		parts[i] = cuiCardStr(c)
+		if i == from && from > 0 {
+			parts = append(parts, CuiRunMark)
+		}
+		parts = append(parts, cuiCardStr(c))
 	}
 	return strings.Join(parts, " ")
 }
