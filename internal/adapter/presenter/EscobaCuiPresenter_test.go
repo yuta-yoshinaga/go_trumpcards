@@ -114,6 +114,22 @@ func TestEscobaCuiPresenter_OutputGameEnd(t *testing.T) {
 // #5662: Web は captured-viewer で獲得札の実カードをいつでも開けるのに、CUI は
 // 枚数の数字だけだった。「7 は取れているか」「espadas は何枚か」は得点計算に
 // 直結するのに、数字からは読み取れない。
+// escobaCapturedLine は出力から取り札の行だけを切り出す。
+//
+// **同じ札は場にも並ぶ。** 画面全体を対象に "この札は出ていない" と断言すると、
+// 配り次第で落ちる。
+func escobaCapturedLine(t *testing.T, out string) string {
+	t.Helper()
+	prefix, _, ok := strings.Cut(i18n.Tf("escoba.capturedLine", "cards", "\x00"), "\x00")
+	require.True(t, ok)
+	for _, line := range strings.Split(out, "\n") {
+		if strings.Contains(line, prefix) {
+			return line
+		}
+	}
+	return ""
+}
+
 func TestEscobaCuiPresenter_ListsTheCapturedCards(t *testing.T) {
 	p := &presenter.EscobaCuiPresenter{}
 
@@ -146,9 +162,12 @@ func TestEscobaCuiPresenter_ListsTheCapturedCards(t *testing.T) {
 		after := p.Output(e, nil)
 
 		assert.NotEqual(t, before, after)
-		assert.NotContains(t, before, "HEART 3")
-		assert.Contains(t, after, "HEART 3")
-		assert.Contains(t, after, "SPADE 7", "先に取った札も残る")
+		// **画面全体で探さない。** 同じ札は場にも出るので、配り次第で
+		// "まだ取っていない" 側の断言が落ちる (CI で実際に落ちた)。
+		// 取り札の行だけを切り出して見る。
+		assert.NotContains(t, escobaCapturedLine(t, before), "HEART 3")
+		assert.Contains(t, escobaCapturedLine(t, after), "HEART 3")
+		assert.Contains(t, escobaCapturedLine(t, after), "SPADE 7", "先に取った札も残る")
 	})
 
 	// **1枚も取っていないうちは出さない。**空の一覧は「取れていない」と
