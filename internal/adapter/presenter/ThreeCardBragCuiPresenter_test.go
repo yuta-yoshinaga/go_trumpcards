@@ -188,3 +188,41 @@ func TestThreeCardBragCuiPresenter_ActionLogOutput(t *testing.T) {
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, "bet")
 }
+
+// #5659: 通常のプレイヤー表示は cuiPlayerName で「あなた」「CPU 1」と出している
+// のに、**勝者を出す2箇所だけ生の席番号**を埋めていた。他のゲームは全部名前を
+// 出しているので、ここだけ「Player 0 の勝ち」に見える。
+func TestThreeCardBragCuiPresenter_NamesTheWinner(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.ThreeCardBragCuiPresenter)
+
+	t.Run("round end names the winner", func(t *testing.T) {
+		m, _ := tcbSetupMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundWinnerIdx")
+		m.On("GetPhase").Return(domain.ThreeCardBragPhaseRoundEnd)
+		m.On("GetRoundWinnerIdx").Return(1)
+
+		out := p.Output(m, nil)
+
+		assert.Contains(t, out, i18n.Tf("threecardbrag.promptRoundEnd",
+			"player", i18n.Tf("cuiPlayerCpu", "idx", "1")))
+		assert.NotContains(t, out, i18n.Tf("threecardbrag.promptRoundEnd", "player", "1"))
+	})
+
+	// **人間が勝ったら「あなた」。**席番号のままだと自分が勝ったのかも読み取れない。
+	t.Run("the human wins as あなた, not as seat 0", func(t *testing.T) {
+		m, _ := tcbSetupMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetMatchWinnerIdx")
+		m.On("GetGameEndFlag").Return(true)
+		m.On("GetMatchWinnerIdx").Return(0)
+
+		out := p.Output(m, nil)
+
+		assert.Contains(t, out, i18n.Tf("threecardbrag.gameEnd", "player", i18n.T("cuiPlayerYou")))
+		assert.NotContains(t, out, i18n.Tf("threecardbrag.gameEnd", "player", "0"))
+	})
+}

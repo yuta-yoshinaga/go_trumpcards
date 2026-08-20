@@ -11,6 +11,32 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
+// sakuraCardToOutput は札に点数を添えて出力形へ変換する。
+//
+// **点数を札そのものに書く** (#5785)。さくらは役ではなく点数の合計で競うので、
+// どの札が何点かが読めないと打ち手を決められない——CUI は最初からそう出している。
+func sakuraCardToOutput(c *domain.Card) *controller.WebOutputCard {
+	out := cardToOutputWithFace(c, koikoiFace)
+	if out == nil {
+		return nil
+	}
+	points := domain.SakuraCardPoints(c)
+	out.Points = &points
+	return out
+}
+
+// sakuraHandToOutput は手札を点数つきで返す。**人間の席だけ中身を出す。**
+func sakuraHandToOutput(player *domain.SakuraPlayer) []*controller.WebOutputCard {
+	if !player.GetIsHuman() {
+		return make([]*controller.WebOutputCard, 0)
+	}
+	cards := make([]*controller.WebOutputCard, 0, player.GetCardsSize())
+	for i := 0; i < player.GetCardsSize(); i++ {
+		cards = append(cards, sakuraCardToOutput(player.GetCard(i)))
+	}
+	return cards
+}
+
 // SakuraWebPresenter はさくら (肥後花) の Web プレゼンタークラス。
 type SakuraWebPresenter struct{}
 
@@ -65,7 +91,7 @@ func (p *SakuraWebPresenter) buildBase(g interfaces.SakuraGame) *controller.Saku
 
 	fieldOut := make([]*controller.WebOutputCard, 0, len(g.GetField()))
 	for _, c := range g.GetField() {
-		fieldOut = append(fieldOut, cardToOutputWithFace(c, koikoiFace))
+		fieldOut = append(fieldOut, sakuraCardToOutput(c))
 	}
 	resObj.FieldCards = fieldOut
 
@@ -97,14 +123,14 @@ func (p *SakuraWebPresenter) buildBase(g interfaces.SakuraGame) *controller.Saku
 		}
 		taken := make([]*controller.WebOutputCard, 0, len(player.GetTaken()))
 		for _, c := range player.GetTaken() {
-			taken = append(taken, cardToOutputWithFace(c, koikoiFace))
+			taken = append(taken, sakuraCardToOutput(c))
 		}
 		resObj.Players = append(resObj.Players, &controller.SakuraWebOutputPlayer{
 			ID:          i,
 			Name:        player.GetName(),
 			IsHuman:     player.GetIsHuman(),
 			CardCount:   player.GetCardsSize(),
-			Cards:       playerCardsToOutputWithFace(player, player.GetIsHuman(), koikoiFace),
+			Cards:       sakuraHandToOutput(player),
 			Taken:       taken,
 			TakenCount:  len(player.GetTaken()),
 			CardPoints:  player.CardPoints(),

@@ -1,4 +1,6 @@
 {
+  "cannotBeatAria": "場の札を上回れません",
+  "cannotBeatTooltip": "場の札を上回れません（同スートの上位か切札が要ります）",
   "collected": "集めた札 {{n}} 枚",
   "duel": "一騎打ちの場",
   "forcedPickUpNotice": "場のカードに勝てる札がありません。引き取ってください。",
@@ -6,6 +8,7 @@
   "hint.duel": "この札で一騎打ちを取れます",
   "hint.pickup": "上回れる札が1枚もないので引き取るしかありません",
   "landscapeBanner": "横向きにするとカードが見やすくなります",
+  "notYourTurnAria": "いまは自分の番ではありません",
   "opponentHand": "{{name}} の手札 {{n}} 枚",
   "opponentHandAriaLabel": "{{name}} の手札 {{n}} 枚（裏向き）",
   "phase.end": "終了",
