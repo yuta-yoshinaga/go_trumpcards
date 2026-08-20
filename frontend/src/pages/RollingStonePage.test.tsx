@@ -59,6 +59,7 @@ const forcedPickUp = (over: Partial<RollingStoneResponse> = {}) =>
     mustPickUp: true,
     validPlays: [],
     currentTrick: [{ playerIdx: 1, card: card('DIAMOND', 9) }],
+    leadSuit: 4,
     ...over,
   } as Partial<RollingStoneResponse>);
 
@@ -131,7 +132,11 @@ describe('RollingStonePage', () => {
     mockExec.mockResolvedValue(forcedPickUp());
     renderWithProviders(<RollingStonePage />);
 
-    expect(await screen.findByTestId('rs-must-pickup')).toHaveTextContent('1');
+    // **枚数だけでは、なぜ出せないのかが分からない** (#5764)。追従できなかった
+    // スートまで書く。
+    const banner = await screen.findByTestId('rs-must-pickup');
+    expect(banner).toHaveTextContent('1');
+    expect(banner).toHaveTextContent('♦');
     const pickup = screen.getByTestId('rs-pickup-btn');
     expect(pickup).toBeEnabled();
     const cards = screen.getAllByRole('button', { name: /を出す$/ });
@@ -141,6 +146,17 @@ describe('RollingStonePage', () => {
     fireEvent.click(pickup);
     // **引き取りは別のコマンド。** cardIndex は送らない。
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('pickup'));
+  });
+
+  // 場が空のまま引き取りが立つことは規則上ありえないが、そのときでも
+  // バナー自体は壊れない。
+  it('falls back to a placeholder when no suit has been led', async () => {
+    mockExec.mockResolvedValue(forcedPickUp({ leadSuit: 0, currentTrick: [] }));
+    renderWithProviders(<RollingStonePage />);
+
+    const banner = await screen.findByTestId('rs-must-pickup');
+    expect(banner).toHaveTextContent('?');
+    expect(banner).not.toHaveTextContent('♦');
   });
 
   // **負のコントロール: フォローできるなら引き取りは出さない。**

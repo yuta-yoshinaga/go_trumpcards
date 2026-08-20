@@ -163,3 +163,80 @@ describe('ReversisPage', () => {
     expect(await screen.findByText(/キノラか♦Aが乗っています/)).toBeInTheDocument();
   });
 });
+
+// **点を取り合うのが核なのに、どの札が何点かは出ていなかった** (#5747)。
+// A=4 / K=3 / Q=2 / J=1 を暗算し続けることになる。
+describe('ReversisPage card points', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+  });
+
+  it('badges every card in hand with what it costs to take', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          seat(0, {
+            cards: [card('SPADE', 1), card('HEART', 13), card('CLOVER', 12), card('DIAMOND', 11), card('SPADE', 7)],
+            cardCount: 5,
+          }),
+          seat(1),
+          seat(2),
+          seat(3),
+        ],
+      }),
+    );
+    renderWithProviders(<ReversisPage />);
+
+    // A=4 / K=3 / Q=2 / J=1 / 平札=0 を札ごとに突き合わせる。
+    expect(await screen.findByTestId('rv-points-0')).toHaveTextContent('4');
+    expect(screen.getByTestId('rv-points-1')).toHaveTextContent('3');
+    expect(screen.getByTestId('rv-points-2')).toHaveTextContent('2');
+    expect(screen.getByTestId('rv-points-3')).toHaveTextContent('1');
+    // **0 点の札も「無点」と分かるように出す** (受け入れ条件2)。
+    expect(screen.getByTestId('rv-points-4')).toHaveTextContent('0');
+  });
+
+  it('says the points in the accessible name too', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [seat(0, { cards: [card('SPADE', 1), card('SPADE', 7)], cardCount: 2 }), seat(1), seat(2), seat(3)],
+      }),
+    );
+    renderWithProviders(<ReversisPage />);
+    expect(await screen.findByRole('button', { name: '♠ A（4点）を出す' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♠ 7（0点）を出す' })).toBeInTheDocument();
+  });
+});
+
+// **印付きの 2 枚は基礎点だけでは足りない** (#5747 レビュー指摘)。キノラ (♥J) と
+// ♦A は +5 が乗るので、ランクだけの数字はいちばん重い札を軽く見せてしまう。
+describe('ReversisPage marked-card points', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+  });
+
+  it('adds the marked surcharge to the quinola and the diamond ace', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          seat(0, {
+            cards: [card('HEART', 11), card('DIAMOND', 1), card('SPADE', 11), card('SPADE', 1)],
+            cardCount: 4,
+          }),
+          seat(1),
+          seat(2),
+          seat(3),
+        ],
+      }),
+    );
+    renderWithProviders(<ReversisPage />);
+
+    // ♥J = 1 + 5、♦A = 4 + 5。同じランクでも印が無ければ素の点。
+    expect(await screen.findByTestId('rv-points-0')).toHaveTextContent('6');
+    expect(screen.getByTestId('rv-points-1')).toHaveTextContent('9');
+    expect(screen.getByTestId('rv-points-2')).toHaveTextContent('1');
+    expect(screen.getByTestId('rv-points-3')).toHaveTextContent('4');
+  });
+});

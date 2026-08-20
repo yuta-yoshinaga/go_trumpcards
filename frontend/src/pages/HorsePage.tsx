@@ -31,6 +31,22 @@ import { formatHorseState } from '../utils/cli/formatters/horseFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
+/**
+ * Round names by discipline family, indexed by the running discipline's phase.
+ *
+ * **The five disciplines do not share a betting structure** (#5788): the
+ * community-card games run pre-flop→river, the stud games run 3rd→7th street.
+ * Index 0 is "not dealt yet", so it has no label.
+ *
+ * Phase numbers come from the domain (`HoldemPhase*` / `SevenCardStudPhase*`);
+ * `horse_round_labels_test.go` pins these two arrays against those constants.
+ */
+const COMMUNITY_ROUND_KEYS = ['', 'preflop', 'flop', 'turn', 'river', 'showdown'] as const;
+const STUD_ROUND_KEYS = ['', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'showdown'] as const;
+
+/** Disciplines whose betting rounds are named after community cards. */
+const COMMUNITY_DISCIPLINES = new Set(['holdem', 'omahaHiLo']);
+
 /** H.O.R.S.E. tutorial step definitions. */
 const HORSE_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -111,6 +127,11 @@ function HorsePageContent() {
   const humanWon = isGameEnd && state.winnerSeat === state.humanSeat;
   const phaseName = isGameEnd ? t('phase.gameEnd') : isHandEnd ? t('phase.handEnd') : t('phase.play');
   const disciplineName = t(`discipline.${state.disciplineName}`, { defaultValue: state.disciplineName });
+  // **いま何回戦目のベットなのかを出す** (#5788)。生の数字ではなく種目に
+  // 応じた名前にする——同じ 2 でもホールデムはフロップ、スタッドは 4th street。
+  const roundKeys = COMMUNITY_DISCIPLINES.has(state.disciplineName) ? COMMUNITY_ROUND_KEYS : STUD_ROUND_KEYS;
+  const roundKey: string | undefined = roundKeys[state.tablePhase];
+  const roundLabel = roundKey ? t(`round.${roundKey}`) : '';
 
   return (
     <GamePageShell
@@ -147,6 +168,11 @@ function HorsePageContent() {
               <span className="mr-3">
                 {t('hand', { n: state.handInDiscipline, total: state.config.handsPerDiscipline })}
               </span>
+              {roundLabel && (
+                <span className="mr-3 text-ds-accent" data-testid="ho-round">
+                  {roundLabel}
+                </span>
+              )}
               <span className="mr-3">{t('handTotal', { n: state.handNumber })}</span>
               <span data-testid="ho-pot">{t('pot', { pot: state.pot })}</span>
             </div>

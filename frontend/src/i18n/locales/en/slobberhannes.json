@@ -14,7 +14,9 @@
   },
   "warn": {
     "first": "This is the FIRST trick. Taking it costs 1 point.",
-    "last": "This is the LAST trick. Taking it costs 1 point."
+    "last": "This is the LAST trick. Taking it costs 1 point.",
+    "queen": "The Queen of clubs is on the table: taking this trick costs -1.",
+    "queenInHand": "You hold the Queen of clubs (whoever takes the trick it is played in loses a point)."
   },
   "marks": {
     "first": "1st",

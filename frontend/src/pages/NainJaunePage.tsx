@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { nainjauneApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardBack } from '../components/CardImage';
@@ -48,6 +48,28 @@ function NainJaunePageContent() {
   const { state, loading, error, retry } = game;
 
   const [handIdx, setHandIdx] = useState<number | null>(null);
+
+  // CPU の手番は無言で進むので、**手番が自分に回ってきたこと自体**が
+  // スクリーンリーダー利用者に伝わらない (Zheng で確立した liveMsg と同じ形)。
+  const [liveMsg, setLiveMsg] = useState('');
+  const prevAnnounceRef = useRef<{ turn: boolean; dealOver: boolean; awards: number } | null>(null);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: react to each state update; reads the t snapshot deliberately.
+  useEffect(() => {
+    if (!state) return;
+    const turn = state.currentPlayerIdx === 0 && !state.gameEndFlag;
+    const dealOver = state.dealWinner >= 0;
+    const awards = state.awards.length;
+    const prev = prevAnnounceRef.current;
+    prevAnnounceRef.current = { turn, dealOver, awards };
+    if (!prev) return;
+    if (dealOver && !prev.dealOver) {
+      setLiveMsg(t('announceDealEnd'));
+    } else if (awards > prev.awards) {
+      setLiveMsg(t('announceAward'));
+    } else if (turn && !prev.turn) {
+      setLiveMsg(t('announceYourTurn'));
+    }
+  }, [state]);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('nainjaune');
   const cliConfig: CliGameConfig<NainJauneResponse, Parameters<typeof nainjauneApi.exec>> = useMemo(
@@ -256,6 +278,10 @@ function NainJaunePageContent() {
           </div>
 
           <GameFooter className={`${gameTheme.nainjaune.footer} px-4 py-2.5`}>
+            {/* Polite live region: turn arrival, compartment payouts, deal end. */}
+            <span className="sr-only" role="status" aria-live="polite" data-testid="nainjaune-turn-announce">
+              {liveMsg}
+            </span>
             <ErrorAlert message={error} onRetry={retry} />
             <div className="flex gap-2 items-center flex-wrap">
               {isHumanTurn && (

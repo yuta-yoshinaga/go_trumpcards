@@ -156,8 +156,10 @@ func (z *Zheng) PlayerPlay(indices []int) error {
 		selectedCards[i] = card
 	}
 
-	if !zhengIsPlayable(selectedCards, z.round.tableCards, z.round.tablePlayType) {
-		return NewDomainError(ErrInvalidPlay, "selected cards cannot be played")
+	// **何が悪いのかまで返す。**一律 "cannot be played" だと、枚数・役の種類・強さの
+	// どれで弾かれたのかが CUI からは分からない (Web は理由を出し分けている)。
+	if reason := ZhengInvalidReason(selectedCards, z.round.tableCards, z.round.tablePlayType); reason != "" {
+		return NewDomainError(ErrInvalidPlay, zhengInvalidReasonMessage(reason))
 	}
 
 	cards := player.RemoveCards(indices)
@@ -525,4 +527,24 @@ func (z *Zheng) UnmarshalJSON(data []byte) error {
 		z.round.actionLog = make([]*ActionLogEntry, 0)
 	}
 	return nil
+}
+
+// zhengInvalidReasonMessage は出せない理由の識別子を人間向けの文にする。
+func zhengInvalidReasonMessage(reason string) string {
+	switch reason {
+	case ZhengInvalidType:
+		return "選んだ札はどの役にもなりません"
+	case ZhengInvalidWrongType:
+		return "場と同じ役の種類で出してください"
+	case ZhengInvalidWrongCount:
+		return "場と同じ枚数で出してください"
+	case ZhengInvalidTooWeak:
+		return "場より強い役で出してください"
+	case ZhengInvalidNeedBomb:
+		return "場が爆弾です。爆弾でしか切れません"
+	case ZhengInvalidUnbeatable:
+		return "場がジョーカーボムです。勝てる役はありません"
+	default:
+		return "selected cards cannot be played"
+	}
 }

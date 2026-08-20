@@ -52,6 +52,18 @@ describe('formatRikkenState', () => {
     expect(out).toContain('round: 2 / 8');
     expect(out).toContain('contract: Solo (trump: Hearts)');
     expect(out).toContain('declarer: seat 0 (2 tricks)');
+    // **負のコントロール: Rik 以外にパートナーはいない** (受け入れ条件3)。
+    expect(out).not.toContain('partner:');
+  });
+
+  // **Rik のパートナーは指名札で決まる秘密の相方** (#5772)。カード表示は判明前も
+  // "hidden" と出しているので、CLI モードだけ黙っているのは情報量の差になる。
+  it('names the Rik partner, and says hidden until they are known', () => {
+    const known = formatRikkenState({ ...base, contract: RikkenContract.RIK, partnerIdx: 2 });
+    expect(known).toContain('partner: seat 2');
+
+    const unknown = formatRikkenState({ ...base, contract: RikkenContract.RIK, partnerIdx: -1 });
+    expect(unknown).toContain('partner: hidden');
   });
 
   // **切り札なしは名前で出す。** -1 をそのまま表示しません。

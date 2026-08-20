@@ -5,12 +5,15 @@ package presenter
 import (
 	"encoding/json"
 	"errors"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // newBaseballForPresenter は本物のドメインを返す。
@@ -134,9 +137,27 @@ func TestBaseballPokerCuiPresenter_ShowsUpCardsAndHidesDownCards(t *testing.T) {
 func TestBaseballPokerCuiPresenter_ExplainsTheWildsAndEvents(t *testing.T) {
 	cp := new(BaseballPokerCuiPresenter)
 	out := cp.Output(newBaseballForPresenter(t), nil)
-	assert.Contains(t, out, "3 と 9 はワイルド")
+	// **文言もドメインの値から作る** (#5782)。行そのものを組み立てて突き合わせる
+	// ——"3" も "4" も盤面の札として出るので、部分一致では素通りする。
+	assert.Contains(t, out, i18n.Tf("baseballpoker.wildLine",
+		"wilds", baseballPokerWildValuesStr(),
+		"bonus", strconv.Itoa(domain.BaseballBonusFour),
+		"buyIn", strconv.Itoa(domain.BaseballWildThree)))
 	assert.Contains(t, out, "追加札")
 	assert.Contains(t, out, "買い増し")
+}
+
+// **ワイルドの並びは判定そのものから作る。** 写した定数だと片方だけ古くなる。
+func TestBaseballPokerWildValuesStrFollowsTheEvaluator(t *testing.T) {
+	got := baseballPokerWildValuesStr()
+	want := make([]string, 0, 2)
+	for v := 1; v <= 13; v++ {
+		if domain.BaseballIsWild(domain.NewCard(domain.CardDesignSpade, v, false)) {
+			want = append(want, strconv.Itoa(v))
+		}
+	}
+	require.Len(t, want, 2, "ワイルドは 2 種のはず")
+	assert.Equal(t, strings.Join(want, " / "), got)
 }
 
 // **買い増しの場面ではそう言い、額まで出す。**

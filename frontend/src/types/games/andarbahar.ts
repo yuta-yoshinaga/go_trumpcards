@@ -78,6 +78,14 @@ export interface AndarBaharResponse extends BaseGameResponse {
   result: number;
   /** Total returned to the player, stake included. */
   payout: number;
+  /**
+   * The main-bet half of {@link AndarBaharResponse.payout}; `0` when it missed.
+   *
+   * A side bet is a separate wager — the total alone cannot say which one lost.
+   */
+  mainPayout: number;
+  /** The side-bet half of the payout; `0` when no side bet was placed or it missed. */
+  sidePayout: number;
   /** Winning column per round. Always an array. */
   history: number[];
 }

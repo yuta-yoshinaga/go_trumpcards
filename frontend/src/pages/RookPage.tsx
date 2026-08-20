@@ -18,6 +18,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useRookGame } from '../hooks/useRookGame';
+import { btnPrimary, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { RookResponse } from '../types/card';
 import { RookPhase } from '../types/phases';
@@ -439,7 +440,7 @@ function RookPageContent() {
                     onClick={() => bid(effectiveBid)}
                     disabled={loading || bidOptions.length === 0}
                     data-testid="bid-button"
-                    className="px-4 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                    className={btnPrimary}
                   >
                     {t('bidButton')}
                   </button>
@@ -447,7 +448,7 @@ function RookPageContent() {
                     type="button"
                     onClick={pass}
                     disabled={loading}
-                    className="px-4 py-2 rounded-lg bg-ds-warning text-white text-sm disabled:opacity-40"
+                    className={btnWarning}
                     data-testid="pass-button"
                   >
                     {t('passButton')}
@@ -481,7 +482,7 @@ function RookPageContent() {
                     type="button"
                     onClick={handleExchange}
                     disabled={loading || selectedCardIndices.length !== ROOK_DISCARD_COUNT || trumpChoice === null}
-                    className="px-4 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                    className={btnPrimary}
                     data-testid="exchange-button"
                   >
                     {t('exchangeButton', { count: selectedCardIndices.length })}
@@ -494,7 +495,7 @@ function RookPageContent() {
                   type="button"
                   onClick={handlePlay}
                   disabled={loading || selectedCardIndices[0] === undefined}
-                  className="px-4 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                  className={btnPrimary}
                   data-testid="play-button"
                 >
                   {t('playButton')}
@@ -506,7 +507,7 @@ function RookPageContent() {
                   type="button"
                   onClick={nextTrick}
                   disabled={loading}
-                  className="px-4 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                  className={btnPrimary}
                   data-testid="next-button"
                 >
                   {t('nextTrickButton')}
@@ -518,7 +519,7 @@ function RookPageContent() {
                   type="button"
                   onClick={nextRound}
                   disabled={loading}
-                  className="px-4 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                  className={btnPrimary}
                   data-testid="nextround-button"
                 >
                   {t('nextRoundButton')}
