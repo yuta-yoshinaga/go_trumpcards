@@ -53,6 +53,9 @@ func (cp *MonteBankCuiPresenter) writeLayout(sb *strings.Builder, c interfaces.M
 		if count == 1 {
 			note = i18n.T("montebank.suitEvenNote")
 		}
+		// **山の残りも賭けの良し悪しを決める** (#5779)。場の枚数だけでは半分。
+		note += i18n.Tf("montebank.layoutRemaining",
+			"remaining", strconv.Itoa(c.RemainingOfSuit(card.GetDesign())))
 		sb.WriteString(i18n.Tf("montebank.layoutLine",
 			"mark", mark,
 			"idx", strconv.Itoa(i+1),

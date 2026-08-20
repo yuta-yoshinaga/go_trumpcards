@@ -3,6 +3,7 @@
 package presenter
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -158,3 +159,36 @@ func TestPolignacCuiPresenterActionLogOutput(t *testing.T) {
 	g.GiveUp()
 	require.NotEmpty(t, p.ActionLogOutput(g))
 }
+
+// **合計失点だけでは、♠J を踏んだのか他を 2 枚拾ったのかが分からない** (#5746)。
+func TestPolignacCuiPresenterShowsTheJackBreakdown(t *testing.T) {
+	p := new(PolignacCuiPresenter)
+	g := newPolignacForCui(t)
+
+	player := g.GetPlayer(0)
+	player.AddTrick([]*domain.Card{
+		domain.NewCard(domain.CardDesignHeart, domain.PolignacJackValue, true),
+		domain.NewCard(domain.CardDesignHeart, 3, true),
+	})
+	player.AddTrick([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, domain.PolignacJackValue, true),
+	})
+
+	// 赤スートは色付けされるので、比較前に落とす。
+	out := polignacPlain(p.Output(g, nil))
+
+	// ♠ が先に、続けて ♥ が並ぶ。1 行として突き合わせる。
+	assert.Contains(t, out, i18n.Tf("polignac.jackMarks",
+		"jacks", i18n.T("polignac.jackSpade")+" "+
+			i18n.Tf("polignac.jackOther", "suit", "HEART 11")))
+	assert.NotContains(t, out, "{{")
+
+	// 何も取っていない席には内訳が出ない (負のコントロール)。
+	quiet := newPolignacForCui(t)
+	assert.NotContains(t, p.Output(quiet, nil), fixedPart("polignac.jackMarks"))
+}
+
+// polignacPlain は色付けのエスケープを落とす。
+var polignacAnsi = regexp.MustCompile(`\x1b\[[0-9;]*m`)
+
+func polignacPlain(s string) string { return polignacAnsi.ReplaceAllString(s, "") }

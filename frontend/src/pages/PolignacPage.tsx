@@ -29,6 +29,13 @@ import { formatPolignacState } from '../utils/cli/formatters/polignacFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
+/** Suit symbols indexed by the domain's design constant (1..4). */
+const SUIT_SYMBOLS = ['', '♠', '♣', '♥', '♦'] as const;
+/** Domain constant for spades — the jack that costs two points. */
+const SPADE_DESIGN = 1;
+/** Suit names for the accessible reading, indexed like SUIT_SYMBOLS. */
+const SUIT_ARIA_KEYS = ['', 'spade', 'clover', 'heart', 'diamond'] as const;
+
 /** Tricks per round. Capot means taking all of them. */
 const TRICKS_PER_ROUND = 8;
 
@@ -214,6 +221,32 @@ function PolignacPageContent() {
                   {p.declaredCapot && <span className="ml-1 text-ds-warning">{t('capot.mark')}</span>}
                   {': '}
                   {t('header.score', { score: String(p.score), round: String(p.roundPenalty) })}
+                  {/* **合計だけでは ♠J を踏んだのか他を 2 枚拾ったのかが分からない** (#5746)。
+                      姉妹ゲームの Slobberhannes / Reversis は取った印付き札を個別に出している。 */}
+                  {(p.takenJackSuits?.length ?? 0) > 0 && (
+                    <span className="ml-2" data-testid={`pg-jacks-${p.id.toString()}`}>
+                      {t('jacks.label')}:{' '}
+                      {p.takenJackSuits?.map((suit) => (
+                        <span
+                          key={`${p.id.toString()}-jack-${suit.toString()}`}
+                          className={suit === SPADE_DESIGN ? 'ml-1 font-bold text-ds-error' : 'ml-1'}
+                        >
+                          <span aria-hidden="true">
+                            {suit === SPADE_DESIGN
+                              ? t('jacks.spade')
+                              : t('jacks.other', { suit: SUIT_SYMBOLS[suit] ?? '?' })}
+                          </span>
+                          <span className="sr-only">
+                            {suit === SPADE_DESIGN
+                              ? t('jacks.spadeAria')
+                              : t('jacks.otherAria', {
+                                  suitName: t(`jacks.suitName.${SUIT_ARIA_KEYS[suit] ?? 'spade'}`),
+                                })}
+                          </span>
+                        </span>
+                      ))}
+                    </span>
+                  )}
                 </div>
               ))}
             </div>

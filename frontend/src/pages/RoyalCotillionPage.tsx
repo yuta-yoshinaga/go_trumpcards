@@ -218,7 +218,10 @@ function RoyalCotillionPageContent() {
               type="button"
               onClick={() => game.handleSelectSource(slotZone)}
               disabled={!isPlaying || loading}
-              aria-label={cardAlt(card)}
+              // **枠番号は視覚だけで、読み上げには乗っていなかった** (#5742)。
+              // 16 枠 4 リザーブを番号で指定する設計なので、カード名だけでは
+              // フォーカスするたびに前後の見た目と突き合わせる羽目になる。
+              aria-label={t('slotCardAriaLabel', { slot, card: cardAlt(card) })}
               aria-pressed={isSourceSelected('tableau', slot)}
               draggable={isPlaying && !loading}
               onDragStart={dnd.handleDragStart(slotZone)}
@@ -265,7 +268,10 @@ function RoyalCotillionPageContent() {
                     type="button"
                     onClick={() => isTop && game.handleSelectSource(reserveZone)}
                     disabled={!isPlaying || loading || !isTop}
-                    aria-label={cardAlt(card)}
+                    aria-label={t(isTop ? 'reserveCardAriaLabel' : 'reserveBuriedAriaLabel', {
+                      pile: pileIdx,
+                      card: cardAlt(card),
+                    })}
                     aria-pressed={isTop ? isSourceSelected('reserve', pileIdx) : undefined}
                     draggable={isTop && isPlaying && !loading}
                     onDragStart={dnd.handleDragStart(reserveZone)}

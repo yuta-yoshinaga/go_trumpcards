@@ -67,6 +67,13 @@ func (ap *AndarBaharCuiPresenter) Output(ab interfaces.AndarBaharGame, lastErr e
 			}
 			b.WriteString(i18n.Tf("andarbahar.payoutLine",
 				"payout", strconv.Itoa(ab.GetPayout())) + "\n")
+			// **サイドベットは別の賭け** (#5770)。合計だけでは、外したのが
+			// メインなのかサイドなのか分からない。張った回だけ内訳を出す。
+			if ab.GetSideBand() != domain.AndarBaharSideNone {
+				b.WriteString(i18n.Tf("andarbahar.payoutBreakdownLine",
+					"main", strconv.Itoa(ab.GetMainPayout()),
+					"side", strconv.Itoa(ab.GetSidePayout())) + "\n")
+			}
 		}
 
 		ap.writeHistory(b, ab.GetHistory())

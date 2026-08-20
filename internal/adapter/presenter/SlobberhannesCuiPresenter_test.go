@@ -174,3 +174,41 @@ func TestSlobberhannesCuiPresenterActionLogOutput(t *testing.T) {
 	s.GiveUp()
 	require.NotEmpty(t, p.ActionLogOutput(s))
 }
+
+// **♣Q は位置ではなく中身の罰点** (#5745)。場に出た瞬間に言わないと、
+// 取ってから penaltyMarks で気づくことになる。
+func TestSlobberhannesCuiPresenterQueenWarning(t *testing.T) {
+	p := new(SlobberhannesCuiPresenter)
+
+	s := newSlobberhannesForCui(t)
+	s.SetTrickNumberForTest(3) // 位置の警告が出ない中間のトリック
+	s.SetCurrentPlayerIdxForTest(0)
+	s.SetCurrentTrickForTest([]*domain.TrickCard{
+		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 12, true)},
+	})
+
+	out := p.Output(s, nil)
+	assert.Contains(t, out, fixedPart("slobberhannes.warnQueen"))
+	// 位置の警告は出ていない (中間のトリック)。
+	assert.NotContains(t, out, fixedPart("slobberhannes.warnFirst"))
+
+	// 負のコントロール: 別スートの Q では出ない。
+	other := newSlobberhannesForCui(t)
+	other.SetTrickNumberForTest(3)
+	other.SetCurrentPlayerIdxForTest(0)
+	other.SetCurrentTrickForTest([]*domain.TrickCard{
+		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 12, true)},
+	})
+	assert.NotContains(t, p.Output(other, nil), fixedPart("slobberhannes.warnQueen"))
+
+	// 最初のトリックと同時でも両方出る (受け入れ条件4)。
+	both := newSlobberhannesForCui(t)
+	both.SetTrickNumberForTest(0)
+	both.SetCurrentPlayerIdxForTest(0)
+	both.SetCurrentTrickForTest([]*domain.TrickCard{
+		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 12, true)},
+	})
+	bothOut := p.Output(both, nil)
+	assert.Contains(t, bothOut, fixedPart("slobberhannes.warnFirst"))
+	assert.Contains(t, bothOut, fixedPart("slobberhannes.warnQueen"))
+}

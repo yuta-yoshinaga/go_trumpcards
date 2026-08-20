@@ -46,6 +46,13 @@ func (cp *KingoCuiPresenter) writeSeats(sb *strings.Builder, c interfaces.KingoG
 		if shown && len(p.GetCards()) > 0 {
 			cards = kingoCardsStr(p.GetCards())
 			rank = i18n.T("kingo.rank." + domain.KingoRankName(p.GetRank()))
+			// **同じ「嵐」でも K 3 枚と A 3 枚では強さの実感が違う** (#5783)。
+			// 役が付いた席には、そろえた数字まで出す。
+			if p.GetRank() > domain.KingoRankNone {
+				rank = i18n.Tf("kingo.rankWithValue",
+					"rank", rank,
+					"value", cuiRankLabel(domain.KingoMatchedValue(p.GetCards())))
+			}
 		}
 		bet := "-"
 		if p.GetBet() > 0 {

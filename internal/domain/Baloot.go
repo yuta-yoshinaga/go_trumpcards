@@ -320,6 +320,9 @@ func (b *Baloot) markBaloot() {
 		}
 		if k && q {
 			p.SetHasBaloot(true)
+			// **自分の手札は自分には見えている。**対戦相手のぶんは、実際に
+			// 切り札の K か Q を出すまで伏せる (#5750)。
+			p.SetBalootRevealed(p.GetIsHuman())
 			b.appendLog(i, "baloot", fmt.Sprintf("Baloot（切り札のK+Q）+%d", BalootBonus), nil)
 		}
 	}
@@ -426,6 +429,11 @@ func (b *Baloot) play(playerIdx, cardIndex int) error {
 	p.RemoveCard(cardIndex)
 	b.currentTrick = append(b.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	b.appendLog(playerIdx, "play", cardStr(card), []*Card{card})
+	// **K か Q を出した時点で Baloot は明かされる。**それまでは伏せておく。
+	if b.balootRevealingCard(card) && p.GetHasBaloot() && !p.GetBalootRevealed() {
+		p.SetBalootRevealed(true)
+		b.appendLog(playerIdx, "baloot", "Baloot を公開", nil)
+	}
 
 	if len(b.currentTrick) < BalootPlayerCnt {
 		b.currentPlayerIdx = (playerIdx + 1) % BalootPlayerCnt
@@ -433,6 +441,17 @@ func (b *Baloot) play(playerIdx, cardIndex int) error {
 	}
 	b.resolveTrick()
 	return nil
+}
+
+// balootRevealingCard は、その札を出すと Baloot が明かされるかを返す。
+//
+// **Baloot は切り札の K+Q。**どちらか一方を出せば、残り一方を持っていたことが
+// 分かるので、そこで初めて公開する (#5750)。Sun には Baloot が無い。
+func (b *Baloot) balootRevealingCard(c *Card) bool {
+	if c == nil || b.mode != BalootModeHokom || c.GetDesign() != b.trumpSuit {
+		return false
+	}
+	return c.GetValue() == 13 || c.GetValue() == 12
 }
 
 // canPlay フォロー義務を満たすか
@@ -541,6 +560,10 @@ func BalootCardPoints(c *Card, mode BalootMode, trumpSuit int) int {
 // finishRound カード点と Baloot ボーナスを足してチーム得点を確定させる
 func (b *Baloot) finishRound() {
 	for i, p := range b.players {
+		// 精算では加点の根拠になるので、全員ぶんを開く。
+		if p.GetHasBaloot() {
+			p.SetBalootRevealed(true)
+		}
 		if p.GetHasBaloot() {
 			b.roundPoints[BalootTeamOf(i)] += BalootBonus
 		}

@@ -162,6 +162,10 @@ func bostonLadderLine() string {
 		if domain.BostonBidCanCallPartner(l) {
 			b.WriteString(i18n.T("boston.ladderPartnerTag"))
 		}
+		// **段ごとに配当が違う。**いくらのために競っているのかが分からないと、
+		// 上の段へ行く価値を測れない。値は domain がただ一つの出どころ。
+		b.WriteString(i18n.Tf("boston.ladderPayout",
+			"n", strconv.Itoa(domain.BostonBidPayout(l))))
 	}
 	return b.String()
 }

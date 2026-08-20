@@ -12,8 +12,10 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupBidEuchreCuiMock(o bidEuchreMockOpts) *interfaces.MockBidEuchreGame {
@@ -225,4 +227,115 @@ func TestBidEuchreCuiPresenter_ShowsTheLegalBidRange(t *testing.T) {
 	top := build(0, false, 1)
 	assert.Contains(t, top, "これ以上の入札はできません")
 	assert.NotContains(t, top, "有効な入札:")
+}
+
+// #5730: Kaiser は同じ「入札 → 切札 → プレイ」の多段判断に CUI ヒントを持つのに、
+// 構造がほぼ同じ Bid Euchre には HintOutput が無く、入札額も切札も自力判断だった。
+func TestBidEuchreCuiPresenter_HintOutput(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.BidEuchreCuiPresenter)
+
+	t.Run("bid phase advises the minimum legal bid on the human's turn", func(t *testing.T) {
+		o := defaultBidEuchreOpts()
+		o.phase = domain.BidEuchrePhaseBid
+		m := setupBidEuchreCuiMock(o)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetBidPlayerIdx")
+		m.On("GetBidPlayerIdx").Return(0)
+
+		out := p.HintOutput(m)
+
+		assert.Contains(t, out, i18n.Tf("bideuchre.hintBid",
+			"bid", strconv.Itoa(domain.BidEuchreMinBid)))
+	})
+
+	t.Run("says it is not your turn while another seat bids", func(t *testing.T) {
+		o := defaultBidEuchreOpts()
+		o.phase = domain.BidEuchrePhaseBid
+		out := p.HintOutput(setupBidEuchreCuiMock(o)) // GetBidPlayerIdx = 1
+
+		assert.Contains(t, out, i18n.T("bideuchre.hintNotYourTurn"))
+	})
+
+	t.Run("trump phase points at the longest suit for the declarer", func(t *testing.T) {
+		o := defaultBidEuchreOpts()
+		o.phase = domain.BidEuchrePhaseChooseTrump
+		o.declarer = 0
+		out := p.HintOutput(setupBidEuchreCuiMock(o))
+
+		assert.Contains(t, out, i18n.T("bideuchre.hintTrump"))
+	})
+
+	t.Run("play phase recommends a legal card", func(t *testing.T) {
+		o := defaultBidEuchreOpts()
+		o.phase = domain.BidEuchrePhasePlay
+		out := p.HintOutput(setupBidEuchreCuiMock(o))
+
+		// 出せる札が 1 枚だけの局面なので「これしか出せない」を返す。
+		assert.Contains(t, out, i18n.T("bideuchre.hintForced"))
+		assert.Contains(t, out, "[0]")
+	})
+
+	t.Run("advises passing when no bid is legal any more", func(t *testing.T) {
+		o := defaultBidEuchreOpts()
+		o.phase = domain.BidEuchrePhaseBid
+		m := setupBidEuchreCuiMock(o)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetBidPlayerIdx")
+		m.On("GetBidPlayerIdx").Return(0)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "BidEuchreMinLegalBid")
+		m.On("BidEuchreMinLegalBid", mock.Anything).Return(0, false)
+
+		out := p.HintOutput(m)
+
+		assert.Contains(t, out, i18n.T("bideuchre.hintPass"))
+	})
+
+	t.Run("trump and play phases also say when it is not your turn", func(t *testing.T) {
+		trump := defaultBidEuchreOpts()
+		trump.phase = domain.BidEuchrePhaseChooseTrump
+		trump.declarer = 2
+		assert.Contains(t, p.HintOutput(setupBidEuchreCuiMock(trump)), i18n.T("bideuchre.hintNotYourTurn"))
+
+		play := defaultBidEuchreOpts()
+		play.phase = domain.BidEuchrePhasePlay
+		m := setupBidEuchreCuiMock(play)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentPlayerIdx")
+		m.On("GetCurrentPlayerIdx").Return(2)
+		assert.Contains(t, p.HintOutput(m), i18n.T("bideuchre.hintNotYourTurn"))
+	})
+
+	t.Run("play phase lists the choices when several cards are legal", func(t *testing.T) {
+		o := defaultBidEuchreOpts()
+		o.phase = domain.BidEuchrePhasePlay
+		m := setupBidEuchreCuiMock(o)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "BidEuchreValidPlays")
+		m.On("BidEuchreValidPlays", 0).Return([]int{0, 2, 3})
+
+		out := p.HintOutput(m)
+
+		assert.Contains(t, out, i18n.T("bideuchre.hintChoose"))
+		assert.Contains(t, out, "[2]")
+	})
+
+	// 出せる札が 1 枚も無い局面 (脱落済みなど) では助言できない。
+	t.Run("says nothing useful when there is no legal card", func(t *testing.T) {
+		o := defaultBidEuchreOpts()
+		o.phase = domain.BidEuchrePhasePlay
+		m := setupBidEuchreCuiMock(o)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "BidEuchreValidPlays")
+		m.On("BidEuchreValidPlays", 0).Return([]int{})
+
+		assert.Contains(t, p.HintOutput(m), i18n.T("bideuchre.hintNone"))
+	})
+
+	t.Run("game end and hand end have their own lines", func(t *testing.T) {
+		o := defaultBidEuchreOpts()
+		o.phase = domain.BidEuchrePhaseHandEnd
+		assert.Contains(t, p.HintOutput(setupBidEuchreCuiMock(o)), i18n.T("bideuchre.hintHandEnd"))
+
+		o = defaultBidEuchreOpts()
+		o.gameEnd = true
+		assert.Contains(t, p.HintOutput(setupBidEuchreCuiMock(o)), i18n.T("bideuchre.hintGameEnd"))
+	})
 }

@@ -3,6 +3,7 @@
 package presenter
 
 import (
+	"regexp"
 	"strings"
 	"testing"
 
@@ -159,3 +160,29 @@ func TestRamsCuiPresenterActionLogOutput(t *testing.T) {
 	r.GiveUp()
 	require.NotEmpty(t, p.ActionLogOutput(r))
 }
+
+// **参加判断もリードも親の左隣から始まる** (#5748)。誰が親かが出ていないと、
+// 自分が何番目に決断するのかが読めない。
+func TestRamsCuiPresenterMarksTheDealer(t *testing.T) {
+	p := new(RamsCuiPresenter)
+	r := newRamsForCui(t)
+	r.SetDealerIdxForTest(2)
+
+	out := ramsPlain(p.Output(r, nil))
+
+	// 印が付くのは 1 席だけ。行ごとに突き合わせる。
+	assert.Contains(t, out, ramsPlain(cuiPlayerName(r.GetPlayer(2), 2))+i18n.T("rams.dealerMark"))
+	assert.Equal(t, 1, strings.Count(out, i18n.T("rams.dealerMark")))
+
+	// 親が移れば印も移る。
+	moved := newRamsForCui(t)
+	moved.SetDealerIdxForTest(0)
+	movedOut := ramsPlain(p.Output(moved, nil))
+	assert.Contains(t, movedOut, ramsPlain(cuiPlayerName(moved.GetPlayer(0), 0))+i18n.T("rams.dealerMark"))
+	assert.NotContains(t, movedOut, ramsPlain(cuiPlayerName(moved.GetPlayer(2), 2))+i18n.T("rams.dealerMark"))
+}
+
+// ramsPlain は色付けのエスケープを落とす。
+var ramsAnsi = regexp.MustCompile(`\x1b\[[0-9;]*m`)
+
+func ramsPlain(s string) string { return ramsAnsi.ReplaceAllString(s, "") }

@@ -881,3 +881,82 @@ func TestBaloot_ActionLog(t *testing.T) {
 	assert.True(t, kinds["declare"])
 	assert.True(t, kinds["play"])
 }
+
+// **配られた瞬間に相手の Baloot が割れるのは体験を壊す** (#5750)。
+// 切り札の K か Q を実際に出した時点で初めて開く。
+func TestBalootRevealsTheBonusOnlyWhenTheKingOrQueenIsPlayed(t *testing.T) {
+	b := newTestBaloot(t)
+	b.SetModeForTest(BalootModeHokom)
+	b.SetTrumpSuitForTest(CardDesignSpade)
+	b.SetPhaseForTest(BalootPhasePlay)
+	b.SetCurrentPlayerIdxForTest(1)
+	b.SetCurrentTrickForTest(nil)
+
+	// CPU1 が Baloot 持ち。人間 (0) も持っているが、こちらは最初から見えている。
+	balootHandOf(b, 1, NewCard(CardDesignSpade, 13, true), NewCard(CardDesignSpade, 12, true))
+	balootHandOf(b, 0, NewCard(CardDesignHeart, 13, true), NewCard(CardDesignHeart, 12, true))
+	b.GetPlayer(1).SetHasBaloot(true)
+	b.GetPlayer(1).SetBalootRevealed(false)
+	b.GetPlayer(0).SetHasBaloot(true)
+	b.GetPlayer(0).SetBalootRevealed(true)
+
+	// **印を付けるのは markBaloot。**そこで開示まで済ませてしまうと、配った
+	// 瞬間に相手の手の内が割れる。実際に markBaloot を通して確かめる。
+	marked := newTestBaloot(t)
+	marked.SetModeForTest(BalootModeHokom)
+	marked.SetTrumpSuitForTest(CardDesignSpade)
+	balootHandOf(marked, 0, NewCard(CardDesignSpade, 13, true), NewCard(CardDesignSpade, 12, true))
+	balootHandOf(marked, 1, NewCard(CardDesignSpade, 13, true), NewCard(CardDesignSpade, 12, true))
+	marked.markBaloot()
+	if !marked.GetPlayer(0).GetHasBaloot() || !marked.GetPlayer(1).GetHasBaloot() {
+		t.Fatal("markBaloot must flag both hands holding the trump king and queen")
+	}
+	if !marked.GetPlayer(0).GetBalootRevealed() {
+		t.Error("the human's own Baloot is visible from the moment it is dealt")
+	}
+	if marked.GetPlayer(1).GetBalootRevealed() {
+		t.Error("a CPU's Baloot must not be public just because it was dealt")
+	}
+
+	if b.GetPlayer(1).GetBalootRevealed() {
+		t.Fatal("the CPU's Baloot must stay hidden before it plays the king or the queen")
+	}
+	if !b.GetPlayer(0).GetBalootRevealed() {
+		t.Fatal("the human's own Baloot is visible to the human from the start")
+	}
+
+	// 切り札でない札を出しても開かない (負のコントロール)。
+	balootHandOf(b, 1, NewCard(CardDesignHeart, 7, true), NewCard(CardDesignSpade, 13, true))
+	if err := b.play(1, 0); err != nil {
+		t.Fatalf("playing a plain card: %v", err)
+	}
+	if b.GetPlayer(1).GetBalootRevealed() {
+		t.Error("a plain card must not reveal the Baloot")
+	}
+
+	// 切り札の K を出したら開く。
+	b.SetCurrentPlayerIdxForTest(1)
+	b.SetCurrentTrickForTest(nil)
+	balootHandOf(b, 1, NewCard(CardDesignSpade, 13, true))
+	if err := b.play(1, 0); err != nil {
+		t.Fatalf("playing the trump king: %v", err)
+	}
+	if !b.GetPlayer(1).GetBalootRevealed() {
+		t.Error("playing the trump king must reveal the Baloot")
+	}
+}
+
+// **精算では全員ぶんが開く。**加点の根拠になるので伏せたままにはできない。
+func TestBalootRevealsEveryBonusAtTheSettlement(t *testing.T) {
+	b := newTestBaloot(t)
+	b.SetModeForTest(BalootModeHokom)
+	b.SetTrumpSuitForTest(CardDesignSpade)
+	b.GetPlayer(2).SetHasBaloot(true)
+	b.GetPlayer(2).SetBalootRevealed(false)
+
+	b.finishRound()
+
+	if !b.GetPlayer(2).GetBalootRevealed() {
+		t.Error("the settlement must reveal every Baloot")
+	}
+}

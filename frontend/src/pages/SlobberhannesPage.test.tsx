@@ -165,3 +165,58 @@ describe('SlobberhannesPage', () => {
     expect(await screen.findByText(/取らないように/)).toBeInTheDocument();
   });
 });
+
+// **♣Q は位置ではなく中身の罰点** (#5745)。最初/最後のトリックは
+// trickNumber から警告できるが、♣Q は「今場に出ているか」がリスクの本体で、
+// これまでは取ってから penaltyMarks で気づくしかなかった。
+describe('SlobberhannesPage queen of clubs warning', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+  });
+
+  it('warns while the queen is on the table', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        currentTrick: [{ playerIdx: 1, card: card('CLOVER', 12) }],
+      } as unknown as Partial<SlobberhannesResponse>),
+    );
+    renderWithProviders(<SlobberhannesPage />);
+    expect(await screen.findByTestId('sh-queen-warning')).toHaveTextContent('♣Q が場に出ています');
+  });
+
+  it('stays quiet for any other card on the table', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        currentTrick: [{ playerIdx: 1, card: card('SPADE', 12) }],
+      } as unknown as Partial<SlobberhannesResponse>),
+    );
+    renderWithProviders(<SlobberhannesPage />);
+    await waitFor(() => expect(screen.getByTestId('sh-seat-0')).toBeInTheDocument());
+    expect(screen.queryByTestId('sh-queen-warning')).not.toBeInTheDocument();
+  });
+
+  // 位置の警告と同時に出ても壊れない (受け入れ条件4)。
+  it('shows the position warning alongside it on the first trick', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        trickNumber: 0,
+        currentTrick: [{ playerIdx: 1, card: card('CLOVER', 12) }],
+      } as unknown as Partial<SlobberhannesResponse>),
+    );
+    renderWithProviders(<SlobberhannesPage />);
+    expect(await screen.findByTestId('sh-queen-warning')).toBeInTheDocument();
+    expect(screen.getByTestId('sh-position-warning')).toHaveTextContent('最初のトリック');
+  });
+
+  it('marks the queen in the human hand', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<SlobberhannesPage />);
+    // fixture の手札は ♠A / ♥10 / ♣Q。印が付くのは 1 枚だけ。
+    expect(await screen.findByTestId('sh-queen-in-hand')).toBeInTheDocument();
+    expect(screen.getAllByTestId('sh-queen-in-hand')).toHaveLength(1);
+    const queenButton = screen.getByRole('button', { name: /♣ Q を出す/ });
+    expect(queenButton).toHaveAccessibleName(/♣Q を持っています/);
+    expect(queenButton.className).toContain('outline-ds-error');
+  });
+});

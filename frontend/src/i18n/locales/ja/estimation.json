@@ -15,7 +15,8 @@
     "took": "獲得{{n}}",
     "total": "累計{{n}}",
     "you": "あなた",
-    "cpu": "CPU{{idx}}"
+    "cpu": "CPU{{idx}}",
+    "roundDelta": "今回 {{delta}}"
   },
   "bid": {
     "none": "未宣言",

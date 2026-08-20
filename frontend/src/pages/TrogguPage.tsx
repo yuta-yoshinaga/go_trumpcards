@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { trogguApi as TrogguApi } from '../api/gameApi';
 import { trogguApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -15,6 +16,7 @@ import { PlayerHandSection } from '../components/PlayerHandSection';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -102,6 +104,28 @@ function TrogguPageContent() {
   );
   const { handleCommand } = useCliGame(callApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
+  // **キーボードから届かない操作を残さない** (#5787)。有効条件はボタンの
+  // 表示条件と同じ値なので、押せないのにキーだけ通ることはない。
+  //
+  // **フックは早期 return より上。** `if (!state)` の下に置くと初回レンダーだけ
+  // フック数が変わる (#4561)。
+  const phaseForKbd = state?.phase;
+  const gameEndForKbd = !!state?.gameEndFlag;
+  const canPassForKbd = phaseForKbd === TrogguPhase.BID && !!state?.isHumanTurn && !gameEndForKbd;
+  const isTrickEndForKbd = phaseForKbd === TrogguPhase.TRICK_END;
+  const canAdvanceForKbd = isTrickEndForKbd || (phaseForKbd === TrogguPhase.ROUND_END && !gameEndForKbd);
+  const advanceAction = useCallback(() => {
+    callApi(isTrickEndForKbd ? 'next' : 'nextround');
+  }, [callApi, isTrickEndForKbd]);
+  const actionBindings = useMemo(
+    () => [
+      { key: 'p', action: () => callApi('pass'), enabled: canPassForKbd, label: 'pass' },
+      { key: 'n', action: advanceAction, enabled: canAdvanceForKbd, label: 'next' },
+    ],
+    [callApi, canPassForKbd, advanceAction, canAdvanceForKbd],
+  );
+  useActionKeyboardNav({ bindings: actionBindings, enabled: !loading });
+
   if (!state) {
     return <GameSkeleton gameKey="troggu" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 18 }} />;
   }
@@ -112,6 +136,7 @@ function TrogguPageContent() {
   const isTrickEnd = state.phase === TrogguPhase.TRICK_END;
   const isRoundEnd = state.phase === TrogguPhase.ROUND_END;
   const isGameEnd = state.gameEndFlag;
+
   const isHumanTurn = state.isHumanTurn && !isGameEnd;
   const humanWon = isGameEnd && state.winnerPlayer === (human?.id ?? 0);
   const phaseName = isGameEnd
@@ -293,6 +318,7 @@ function TrogguPageContent() {
           />
 
           <GameFooter className={`${gameTheme.troggu.footer} px-4 py-2.5`}>
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="tg-kbd-shortcuts" />
             <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="tg-actions">
               {isBid &&
                 isHumanTurn &&
