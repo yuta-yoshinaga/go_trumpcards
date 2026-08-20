@@ -24,7 +24,9 @@
     "cancel": "Choose again",
     "reset": "Reset",
     "giveUp": "Give up",
-    "selectAria": "Select {{card}}"
+    "selectAria": "Select {{card}}",
+    "takeSoor": "soor",
+    "takeSoorAria": "this choice empties the table, doubling the cards you take"
   },
   "result": {
     "you": "You win!",

@@ -65,8 +65,20 @@ func (p *TeenDoPaanchCuiPresenter) Output(g interfaces.TeenDoPaanchGame, lastErr
 
 		// **前ラウンドの札のやり取りは盤面に痕跡が残らない。**
 		if g.GetLastExchange() > 0 {
-			sb.WriteString(i18n.Tf("teendopaanch.exchangeLine",
-				"n", strconv.Itoa(g.GetLastExchange())) + "\n")
+			line := i18n.Tf("teendopaanch.exchangeLine", "n", strconv.Itoa(g.GetLastExchange()))
+			// **合計だけでは、自分の手札から何が抜かれたのか分からない** (#5757)。
+			// 誰の最強札が誰に渡ったのかがこのゲームの名物。
+			if pairs := g.GetLastExchangePairs(); len(pairs) > 0 {
+				parts := make([]string, 0, len(pairs))
+				for _, ex := range pairs {
+					parts = append(parts, i18n.Tf("teendopaanch.exchangePair",
+						"giver", cuiPlayerName(g.GetPlayer(ex.Giver), ex.Giver),
+						"taker", cuiPlayerName(g.GetPlayer(ex.Taker), ex.Taker),
+						"n", strconv.Itoa(ex.Count)))
+				}
+				line += i18n.Tf("teendopaanch.exchangeDetail", "pairs", strings.Join(parts, ", "))
+			}
+			sb.WriteString(line + "\n")
 		}
 
 		for i := 0; i < g.GetPlayerCnt(); i++ {

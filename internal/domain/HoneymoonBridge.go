@@ -90,7 +90,13 @@ type HoneymoonBridge struct {
 	// lastMade は直前のディールで契約が成立したか。
 	lastMade bool
 	// lastTricks は直前のディールで落札者が取ったトリック数。
-	lastTricks  int
+	lastTricks int
+	// lastPoints は直前のディールで動いた点数。
+	//
+	// **得点式は契約レベル×10 + オーバートリック×5 / 失敗は不足×10** と細かい
+	// のに、画面はトリックの過不足しか出しておらず、実際に何点動いたのかは
+	// 累計の差を自分で引くしかなかった (#5760)。
+	lastPoints  int
 	gameEndFlag bool
 	winnerIdx   int
 	actionLogBase
@@ -142,6 +148,7 @@ func (h *HoneymoonBridge) Reset() {
 	h.winnerIdx = -1
 	h.lastMade = false
 	h.lastTricks = 0
+	h.lastPoints = 0
 	h.actionLog = nil
 	for _, p := range h.players {
 		p.ResetGame()
@@ -573,6 +580,7 @@ func (h *HoneymoonBridge) finishRound() {
 		points += (took - need) * 5
 		decl.AddScore(points)
 		h.lastMade = true
+		h.lastPoints = points
 		h.addLog(h.declarerIdx, "score",
 			fmt.Sprintf("契約 %d に対し %d トリック：成立 (+%d)", need, took, points), nil)
 	} else {
@@ -580,6 +588,7 @@ func (h *HoneymoonBridge) finishRound() {
 		points := (need - took) * 10
 		h.players[other].AddScore(points)
 		h.lastMade = false
+		h.lastPoints = points
 		h.addLog(h.declarerIdx, "score",
 			fmt.Sprintf("契約 %d に対し %d トリック：失敗、相手に +%d", need, took, points), nil)
 	}
@@ -750,6 +759,9 @@ func (h *HoneymoonBridge) GetLastMade() bool { return h.lastMade }
 
 // GetLastTricks は直前のディールで落札者が取ったトリック数を返す。
 func (h *HoneymoonBridge) GetLastTricks() int { return h.lastTricks }
+
+// GetLastPoints は直前のディールで動いた点数を返す。
+func (h *HoneymoonBridge) GetLastPoints() int { return h.lastPoints }
 
 // GetPlayerCnt はプレイヤー数を返す。
 func (h *HoneymoonBridge) GetPlayerCnt() int { return HoneymoonBridgePlayerCnt }

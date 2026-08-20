@@ -3,6 +3,7 @@
 package presenter
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -11,6 +12,22 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
+
+// crazyFourPokerQueensUpTableStr は配当表を "Four of a Kind 50:1 / ..." で返す。
+//
+// **表を写さない** (#5775)。ドメインの CrazyFourPokerQueensUpPayout が唯一の出所。
+func crazyFourPokerQueensUpTableStr() string {
+	rows := domain.CrazyFourPokerQueensUpPayout()
+	parts := make([]string, 0, len(rows))
+	for _, r := range rows {
+		name := ""
+		if r.Hand >= 0 && r.Hand < len(domain.FourCardHandNames) {
+			name = domain.FourCardHandNames[r.Hand]
+		}
+		parts = append(parts, fmt.Sprintf("%s %d:1", name, r.Multiplier))
+	}
+	return strings.Join(parts, " / ")
+}
 
 // CrazyFourPokerCuiPresenter クレイジー 4 ポーカーCUIプレゼンタークラス
 type CrazyFourPokerCuiPresenter struct{}
@@ -23,6 +40,12 @@ func (cp *CrazyFourPokerCuiPresenter) Output(c interfaces.CrazyFourPokerGame, la
 			"round", strconv.Itoa(c.GetRoundNumber()),
 			"chips", strconv.Itoa(c.GetChips())) + "\n")
 
+		// **賭ける前に見えなければ意味がない** (#5775)。何が当たれば何倍かを
+		// 知って額を決めるものなので、置く前の局面で出す。
+		if c.GetPhase() == domain.CrazyFourPokerPhaseBet {
+			sb.WriteString(i18n.Tf("crazyfourpoker.queensUpPayoutLine",
+				"table", crazyFourPokerQueensUpTableStr()) + "\n")
+		}
 		if c.GetAnteBet() > 0 {
 			sb.WriteString(i18n.Tf("crazyfourpoker.betLine",
 				"ante", strconv.Itoa(c.GetAnteBet()),

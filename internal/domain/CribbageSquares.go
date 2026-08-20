@@ -264,6 +264,52 @@ func (c *CribbageSquares) ColDetail(col int) CribbageScoreDetail {
 	return c.lineDetail(c.ColCards(col))
 }
 
+// RowPlacedCards は指定行に置かれている札だけを返す (空マスは飛ばす)。
+func (c *CribbageSquares) RowPlacedCards(r int) []*Card {
+	if r < 0 || r >= CribbageSquaresGridSize {
+		return nil
+	}
+	return cribbageSquaresPlaced(c.board[r][:])
+}
+
+// ColPlacedCards は指定列に置かれている札だけを返す (空マスは飛ばす)。
+func (c *CribbageSquares) ColPlacedCards(col int) []*Card {
+	if col < 0 || col >= CribbageSquaresGridSize {
+		return nil
+	}
+	cards := make([]*Card, 0, CribbageSquaresGridSize)
+	for r := range CribbageSquaresGridSize {
+		cards = append(cards, c.board[r][col])
+	}
+	return cribbageSquaresPlaced(cards)
+}
+
+// cribbageSquaresPlaced は nil を除いた並びを返す。
+func cribbageSquaresPlaced(cells []*Card) []*Card {
+	out := make([]*Card, 0, len(cells))
+	for _, card := range cells {
+		if card != nil {
+			out = append(out, card)
+		}
+	}
+	return out
+}
+
+// RowPartialDetail は指定行の**現時点で確定している**内訳を返す。
+//
+// **スターターは 16 枚置き終えるまでめくらない。**そのため RowDetail は
+// 完成まで 0 のままで、途中経過は何も語らない (#5740)。ここではスターター
+// 抜きで、置かれている札だけを数える。スターターは点を足すことしかしない
+// (ノブと 5 枚フラッシュ) ので、この値は最終点の下限になる。
+func (c *CribbageSquares) RowPartialDetail(r int) CribbageScoreDetail {
+	return CribbageScoreHand(c.RowPlacedCards(r), nil, false)
+}
+
+// ColPartialDetail は指定列の現時点で確定している内訳を返す。
+func (c *CribbageSquares) ColPartialDetail(col int) CribbageScoreDetail {
+	return CribbageScoreHand(c.ColPlacedCards(col), nil, false)
+}
+
 // lineDetail は 1 手ぶんの内訳を返す。クリブではないので isCrib は false。
 func (c *CribbageSquares) lineDetail(cards []*Card) CribbageScoreDetail {
 	if cards == nil || c.starter == nil {

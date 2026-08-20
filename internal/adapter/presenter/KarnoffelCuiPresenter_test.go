@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -14,10 +15,20 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
+// karnoffelAnsi は色付けのエスケープを落とす。赤スートは cuiCardStr が色を
+// 付けるので、そのままだと "HEART 6" すら部分一致しない。
+var karnoffelAnsi = regexp.MustCompile(`\x1b\[[0-9;]*m`)
+
+func karnoffelPlain(s string) string { return karnoffelAnsi.ReplaceAllString(s, "") }
+
 func setupKarnoffelCuiMock(o karnoffelMockOpts) *interfaces.MockKarnoffelGame {
 	m := new(interfaces.MockKarnoffelGame)
+	humanHand := o.humanHand
+	if humanHand == nil {
+		humanHand = []*domain.Card{knTestCard(domain.CardDesignSpade, 13)}
+	}
 	players := makeKarnoffelPlayers(
-		[]*domain.Card{knTestCard(domain.CardDesignSpade, 13)},
+		humanHand,
 		[]*domain.Card{knTestCard(domain.CardDesignHeart, 11)},
 		[]*domain.Card{knTestCard(domain.CardDesignClover, 6)},
 		[]*domain.Card{knTestCard(domain.CardDesignDiamond, 2)},
@@ -144,4 +155,64 @@ func TestKarnoffelCuiPresenter_ActionLogOutput(t *testing.T) {
 	m := setupKarnoffelCuiMock(defaultKarnoffelOpts())
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{})
 	assert.NotNil(t, new(presenter.KarnoffelCuiPresenter).ActionLogOutput(m))
+}
+
+// **どの札が法王かは毎局変わる** (#5732)。Web はカード下にバッジを出すのに、
+// CUI は固定文の序列説明を 1 行返すだけで、スートと数字から自力で照合させていた。
+func TestKarnoffelCuiPresenter_NamesTheTitledCards(t *testing.T) {
+	o := defaultKarnoffelOpts() // chosen = ♥
+	o.humanHand = []*domain.Card{
+		knTestCard(domain.CardDesignHeart, domain.KarnoffelKarnoffel),
+		knTestCard(domain.CardDesignHeart, domain.KarnoffelDevil),
+		knTestCard(domain.CardDesignHeart, domain.KarnoffelPope),
+		knTestCard(domain.CardDesignHeart, domain.KarnoffelKaiser),
+		knTestCard(domain.CardDesignHeart, domain.KarnoffelOberstecher),
+		knTestCard(domain.CardDesignHeart, domain.KarnoffelUnterstecher),
+		knTestCard(domain.CardDesignHeart, domain.KarnoffelFarbenstecher),
+		knTestCard(domain.CardDesignHeart, 13),                        // 選ばれたスートでも称号なし
+		knTestCard(domain.CardDesignSpade, domain.KarnoffelPope),      // 他スートの 6
+		knTestCard(domain.CardDesignSpade, domain.KarnoffelKarnoffel), // 他スートの J
+	}
+	out := new(presenter.KarnoffelCuiPresenter).Output(setupKarnoffelCuiMock(o), nil)
+
+	// **札ごとに突き合わせる。**称号名が行のどこかにある、では他の札の
+	// 称号を写しても通ってしまう。
+	for _, want := range []string{
+		"[0]HEART 11[カルニッフェル]",
+		"[1]HEART 7[悪魔]",
+		"[2]HEART 6[法王]",
+		"[3]HEART 2[皇帝]",
+		"[4]HEART 3[オーバー]",
+		"[5]HEART 4[ウンター]",
+		"[6]HEART 5[ファルベン]",
+	} {
+		assert.Contains(t, karnoffelPlain(out), want)
+	}
+	// 選ばれたスートでも称号を持たない札、他スートの同ランクには付かない。
+	for _, plain := range []string{"[7]HEART 13 ", "[8]SPADE 6 ", "[9]SPADE 11\n"} {
+		assert.Contains(t, karnoffelPlain(out), plain)
+	}
+	plainOut := karnoffelPlain(out)
+	assert.Equal(t, 7, strings.Count(plainOut, "[法王]")+
+		strings.Count(plainOut, "[カルニッフェル]")+
+		strings.Count(plainOut, "[悪魔]")+
+		strings.Count(plainOut, "[皇帝]")+
+		strings.Count(plainOut, "[オーバー]")+
+		strings.Count(plainOut, "[ウンター]")+
+		strings.Count(plainOut, "[ファルベン]"),
+		"称号は 7 枚ぶんだけ。他家の手札は伏せたままなので増えない")
+}
+
+// **他スートでは称号にならない** (#5732)。
+func TestKarnoffelCuiPresenter_LeavesTheOtherSuitsPlain(t *testing.T) {
+	o := defaultKarnoffelOpts()
+	o.chosen = domain.CardDesignSpade
+	o.humanHand = []*domain.Card{
+		knTestCard(domain.CardDesignHeart, domain.KarnoffelPope),
+		knTestCard(domain.CardDesignSpade, domain.KarnoffelPope),
+	}
+	out := karnoffelPlain(new(presenter.KarnoffelCuiPresenter).Output(setupKarnoffelCuiMock(o), nil))
+
+	assert.Contains(t, out, "[0]HEART 6 ")
+	assert.Contains(t, out, "[1]SPADE 6[法王]")
 }

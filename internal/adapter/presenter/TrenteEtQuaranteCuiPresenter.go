@@ -103,7 +103,10 @@ func (p *TrenteEtQuaranteCuiPresenter) Output(g interfaces.TrenteEtQuaranteGame,
 // resultLine はラウンド結果の 1 行 (色付き) を返す。
 func (p *TrenteEtQuaranteCuiPresenter) resultLine(g interfaces.TrenteEtQuaranteGame) string {
 	if g.GetRefait() {
-		return color.Yellow(i18n.T("trenteetquarante.result.refait")) + "\n"
+		// 半額を取られること自体はラベルに出ているが、**なぜ 31 だけ違うのか**は
+		// Web の refait explainer にしか無かった (#5696)。
+		return color.Yellow(i18n.T("trenteetquarante.result.refait")) + "\n" +
+			i18n.T("trenteetquarante.result.refaitWhy") + "\n"
 	}
 	switch g.GetResult() {
 	case domain.TrenteEtQuaranteResultWin:

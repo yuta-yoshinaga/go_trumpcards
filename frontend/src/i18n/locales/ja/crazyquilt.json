@@ -12,8 +12,6 @@
   "moveCount": "手数",
   "giveup": "ギブアップ",
   "empty": "空",
-  "foundationAriaLabel": "{{suit}} 組札{{idx}} {{count}}枚",
-  "emptyFoundationAriaLabel": "空の組札{{idx}} ({{suit}}、A から)",
   "emptyPileAriaLabel": "空の山 {{pile}} (山札か捨て札からのみ置けます)",
   "stockAriaLabel": "山札 残り{{count}}枚",
   "emptyStockAriaLabel": "山札は空です（めくり直しはありません）",
@@ -50,5 +48,11 @@
     "fillGap": "空き山を山札から直接埋められます（捨て札を1枚節約できます）",
     "draw": "動かせる札が無いので、山札をめくって手を増やしましょう"
   },
-  "wasteDropAriaLabel": "捨て札に置く（{{card}} の隣の数字）"
+  "wasteDropAriaLabel": "捨て札に置く（{{card}} の隣の数字）",
+  "foundationAscendingAriaLabel": "{{suit}} 組札{{idx}}（A から昇順）{{count}}枚",
+  "foundationDescendingAriaLabel": "{{suit}} 組札{{idx}}（K から降順）{{count}}枚",
+  "emptyFoundationAscendingAriaLabel": "空の組札{{idx}}（{{suit}}、A から昇順）",
+  "emptyFoundationDescendingAriaLabel": "空の組札{{idx}}（{{suit}}、K から降順）",
+  "directionAscending": "A から昇順",
+  "directionDescending": "K から降順"
 }

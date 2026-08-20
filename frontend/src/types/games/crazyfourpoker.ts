@@ -79,5 +79,21 @@ export interface CrazyFourPokerResponse extends BaseGameResponse {
   roundNumber: number;
   remainingCards: number;
   gameEndFlag: boolean;
+  /**
+   * Queens Up side-bet payouts, highest first.
+   *
+   * Served rather than hardcoded: the multipliers live in the Go domain.
+   */
+  queensUpPayouts: CrazyFourPokerPayoutRow[];
   config?: CrazyFourPokerConfig;
+}
+
+/** One row of the Queens Up payout table. */
+export interface CrazyFourPokerPayoutRow {
+  /** 4-card hand rank. */
+  hand: number;
+  /** Display name of the hand. */
+  name: string;
+  /** The X in X:1. */
+  multiplier: number;
 }

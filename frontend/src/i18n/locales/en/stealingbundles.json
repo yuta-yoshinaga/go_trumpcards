@@ -1,5 +1,8 @@
 {
-  "phase": { "play": "Playing", "gameEnd": "Finished" },
+  "phase": {
+    "play": "Playing",
+    "gameEnd": "Finished"
+  },
   "header": {
     "turn": "Turn {{n}}",
     "deck": "Deck: {{n}} left",
@@ -10,9 +13,10 @@
     "bundleTop": "top",
     "bundleEmpty": "none",
     "cards": "{{n}} cards",
-    "lastCapture": "[captured last]",
     "you": "You",
-    "cpu": "CPU{{idx}}"
+    "cpu": "CPU{{idx}}",
+    "lastCaptureTake": "[took from the table]",
+    "lastCaptureSteal": "[stole {{name}}'s bundle]"
   },
   "actions": {
     "take": "Capture from the table",

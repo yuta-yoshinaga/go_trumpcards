@@ -191,8 +191,19 @@ function GoofspielPageContent() {
                       <CardImage card={p.revealedBid} width={cardWidth} />
                     </div>
                   )}
+                  {/* **勝負はランクの大小比較そのもの** (#5769)。CPU の残り札も
+                      公開情報なので、alt 文字列の羅列ではなく自分の手札と同じ絵で
+                      並べる。枚数が多い局面 (13枚) でも折り返せるよう flex-wrap。 */}
                   {!p.isHuman && p.cards.length > 0 && (
-                    <div className="mt-1 text-xs text-ds-text-muted">{p.cards.map((c) => cardAlt(c)).join(' ')}</div>
+                    <div className="mt-1 flex flex-wrap gap-1" data-testid={`gs-hand-${p.id.toString()}`}>
+                      {p.cards.map((c) => (
+                        <CardImage
+                          key={`${c.design}-${c.value.toString()}`}
+                          card={c}
+                          width={Math.round(cardWidth * 0.5)}
+                        />
+                      ))}
+                    </div>
                   )}
                 </div>
               ))}

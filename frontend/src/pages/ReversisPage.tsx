@@ -18,6 +18,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { badgeErrorColors, badgeInfoColors } from '../styles/badgeStyles';
 import { btnDanger, btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { ReversisPlayer, ReversisResponse } from '../types/card';
@@ -27,6 +28,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { parseReversisCommand, REVERSIS_HELP } from '../utils/cli/commands/reversisCommands';
 import { formatReversisState } from '../utils/cli/formatters/reversisFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { reversisCardPoints } from '../utils/reversisPoints';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Tricks per round (12 cards each on a 48-card pack). */
@@ -231,10 +233,26 @@ function ReversisPageContent() {
                       type="button"
                       onClick={() => handlePlay(idx)}
                       disabled={loading || !isHumanTurn}
-                      aria-label={t('actions.playAria', { card: cardAlt(card) })}
-                      className={`disabled:opacity-50 ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
+                      // **点を取り合うのが核なのに、どの札が何点かは出ていなかった**
+                      // (#5747)。A=4 / K=3 / Q=2 / J=1 を暗算し続けることになる。
+                      aria-label={t('actions.playAriaWithPoints', {
+                        card: cardAlt(card),
+                        points: reversisCardPoints(card),
+                      })}
+                      className={`relative disabled:opacity-50 ${
+                        legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''
+                      }`}
                     >
                       <CardImage card={card} width={cardWidth} />
+                      <span
+                        data-testid={`rv-points-${idx.toString()}`}
+                        aria-hidden="true"
+                        className={`absolute top-0 right-0 rounded-bl px-1 text-[10px] leading-tight ${
+                          reversisCardPoints(card) > 0 ? badgeErrorColors : badgeInfoColors
+                        }`}
+                      >
+                        {reversisCardPoints(card)}
+                      </span>
                     </button>
                   ))}
                 </div>

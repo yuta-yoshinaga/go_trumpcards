@@ -17,7 +17,7 @@
   "allInMark": " (all in)",
   "toCallLine": "{{amount}} to call",
   "canCheckLine": "You may check",
-  "wonLine": "{{name}} wins {{amount}}",
+  "wonLine": "{{name}} wins {{amount}} ({{hand}})",
   "gameEndLine": "Winner: {{name}}",
   "phaseDeal": "DEAL",
   "phaseBetting": "BETTING",

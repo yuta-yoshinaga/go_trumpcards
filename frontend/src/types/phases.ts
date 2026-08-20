@@ -2045,6 +2045,19 @@ export const ZwanzigerrufenPhase = {
   GAME_END: 5,
 } as const;
 
+/**
+ * Zwanzigerrufen bid constants (sync: internal/domain/Zwanzigerrufen.go).
+ *
+ * **Higher value wins**: the domain rejects any bid that does not exceed the
+ * current highest one, so the page uses these to gate the buttons.
+ */
+export const ZwanzigerrufenBid = {
+  PASS: 0,
+  TRISCHAKEN: 1,
+  RUFER: 2,
+  SOLO: 3,
+} as const;
+
 /** Troggu phase constants (sync: internal/domain/Troggu.go). */
 export const TrogguPhase = {
   BID: 0,

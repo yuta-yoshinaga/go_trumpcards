@@ -41,6 +41,13 @@ const TUSAC_TUTORIAL_STEPS: TutorialStep[] = [
 /** Meld i18n keys, matching the Go domain's kind order. */
 const MELD_KEYS = ['meld.sameColorSet', 'meld.sameColorSet', 'meld.chariotTrio', 'meld.soldierSet'] as const;
 
+/**
+ * Kinds shown in the points table, in the order the rules introduce them.
+ *
+ * Index 0 is "not a meld", so it never appears here.
+ */
+const MELD_KINDS = [1, 2, 3] as const;
+
 /** Renders the Tu Sac game page (#5281). */
 export const TuSacPage = withTutorial(TuSacPageContent, 'tusac', TUSAC_TUTORIAL_STEPS);
 
@@ -164,8 +171,18 @@ function TuSacPageContent() {
               <span data-testid="tusac-stock">{t('label.stock', { count: state.stockCount })}</span>
             </div>
 
-            <p className="text-ds-text-muted text-center text-xs mb-3" data-testid="tusac-notice">
+            <p className="text-ds-text-muted text-center text-xs mb-1" data-testid="tusac-notice">
               {t('notice')}
+            </p>
+
+            {/* **5 枚の卒を揃える価値は、狙う前に知りたい** (#5784)。点数は
+                サーバが送る meldPointsByKind から出す——写した表は、確率から
+                導いた点数が変わったときに片方だけ嘘になる。 */}
+            <p className="text-ds-text-muted text-center text-xs mb-3" data-testid="tusac-meld-points">
+              {MELD_KINDS.map(
+                (kind) =>
+                  `${t(MELD_KEYS[kind] ?? 'meld.sameColorSet')} ${t('meld.points', { points: state.meldPointsByKind[kind] ?? 0 })}`,
+              ).join(' · ')}
             </p>
 
             {/* **捨て札の一番上は拾う判断の材料。** 何が取れるかを出す。 */}

@@ -5025,6 +5025,7 @@ var gameRegistry = []GameRegistryEntry{
 				"bideuchre.helpTrump",
 				"bideuchre.helpPlay",
 				"bideuchre.helpNext",
+				"bideuchre.helpHint",
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),
@@ -5074,6 +5075,7 @@ var gameRegistry = []GameRegistryEntry{
 			CommandKeys: []string{
 				"literature.helpAsk",
 				"literature.helpClaim",
+				"literature.helpConfirm",
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),
@@ -5092,6 +5094,7 @@ var gameRegistry = []GameRegistryEntry{
 				"guandan.helpPass",
 				"guandan.helpTribute",
 				"guandan.helpNext",
+				"guandan.helpCheck",
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),

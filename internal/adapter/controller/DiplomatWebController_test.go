@@ -15,10 +15,11 @@ import (
 
 func mustDiplomatOutputJSON(msg string) string {
 	out := &controller.DiplomatWebOutput{
-		Tableau:       [][]*controller.WebOutputCard{},
-		Foundation:    [][]*controller.WebOutputCard{},
-		Waste:         []*controller.WebOutputCard{},
-		WebOutputBase: controller.WebOutputBase{Message: msg},
+		Tableau:        [][]*controller.WebOutputCard{},
+		TableauDeadEnd: []bool{},
+		Foundation:     [][]*controller.WebOutputCard{},
+		Waste:          []*controller.WebOutputCard{},
+		WebOutputBase:  controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {

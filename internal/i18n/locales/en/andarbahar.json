@@ -30,5 +30,6 @@
   "andarBaharHintAndarFirst": "Andar is dealt first: it wins 51.50% of the time but only pays 0.9:1",
   "andarBaharHintBaharFirst": "Bahar is dealt first: it wins 51.50% of the time but only pays 0.9:1",
   "andarBaharHintWaitNextRound": "The round is settled. Start the next one",
-  "helpExampleBet": "  b 100 a                       bet 100 on Andar"
+  "helpExampleBet": "  b 100 a                       bet 100 on Andar",
+  "payoutBreakdownLine": "  breakdown: main {{main}} / side {{side}}"
 }

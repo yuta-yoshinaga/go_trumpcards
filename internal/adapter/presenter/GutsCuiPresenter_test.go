@@ -3,6 +3,7 @@ package presenter_test
 import (
 	"errors"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func TestGutsCuiPresenter_OutputDeclarePhase(t *testing.T) {
@@ -81,4 +83,67 @@ func TestGutsCuiPresenter_ActionLog(t *testing.T) {
 	require.NoError(t, g.Declare(true))
 	p := new(presenter.GutsCuiPresenter)
 	assert.NotEmpty(t, p.ActionLogOutput(g))
+}
+
+// #5697: Web は宣言フェーズで手役と勝ち目の目安を**常時**出しているのに、CUI は
+// 「i か o を選んでください」だけで、同じ診断は hint コマンドを打たないと出なかった。
+func TestGutsCuiPresenter_DeclareGuide(t *testing.T) {
+	p := new(presenter.GutsCuiPresenter)
+
+	handOf := func(a, b *domain.Card) *domain.Guts {
+		g := domain.NewDefaultGuts()
+		g.Reset()
+		g.SetPhase(domain.GutsPhaseDeclare)
+		human := g.GetPlayer(0)
+		human.Reset()
+		human.AddCard(a)
+		human.AddCard(b)
+		return g
+	}
+
+	t.Run("names the hand and the tier for a pair", func(t *testing.T) {
+		out := p.Output(handOf(
+			domain.NewCard(domain.CardDesignSpade, 9, false),
+			domain.NewCard(domain.CardDesignHeart, 9, false)), nil)
+
+		assert.Contains(t, out, i18n.Tf("guts.declareGuide",
+			"hand", i18n.T("guts.hand.pair"),
+			"tier", i18n.T("guts.guideTierHigh")))
+	})
+
+	// K/A のノーペアだけが medium。CPU の in 基準 (J 以上) とは違う。
+	t.Run("calls a jack-high hand low, not medium", func(t *testing.T) {
+		out := p.Output(handOf(
+			domain.NewCard(domain.CardDesignSpade, 11, false),
+			domain.NewCard(domain.CardDesignHeart, 4, false)), nil)
+
+		assert.Contains(t, out, i18n.Tf("guts.declareGuide",
+			"hand", i18n.T("guts.hand.highcard"),
+			"tier", i18n.T("guts.guideTierLow")))
+	})
+
+	// 手札が 2 枚揃う前 (配り直しの途中など) は診断できないので出さない。
+	t.Run("says nothing before the hand is complete", func(t *testing.T) {
+		g := domain.NewDefaultGuts()
+		g.Reset()
+		g.SetPhase(domain.GutsPhaseDeclare)
+		human := g.GetPlayer(0)
+		human.Reset()
+		human.AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+
+		out := p.Output(g, nil)
+
+		assert.NotContains(t, out, strings.Split(i18n.T("guts.declareGuide"), "{{")[0])
+	})
+
+	t.Run("says nothing once the round is resolved", func(t *testing.T) {
+		g := handOf(
+			domain.NewCard(domain.CardDesignSpade, 9, false),
+			domain.NewCard(domain.CardDesignHeart, 9, false))
+		g.SetPhase(domain.GutsPhaseResult)
+
+		out := p.Output(g, nil)
+
+		assert.NotContains(t, out, strings.Split(i18n.T("guts.declareGuide"), "{{")[0])
+	})
 }

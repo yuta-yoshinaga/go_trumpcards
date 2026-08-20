@@ -112,6 +112,40 @@ describe('SkitgubbePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 2));
   });
 
+  // **「出せない」だけでは理由が分からない** (#5573)。規則はサーバが持つので、
+  // 画面は「規則に負けている」のか「手番でない」のかを言う。
+  it('tells the screen reader why a card cannot be played', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 1, pile: [card('SPADE', 10)], validIndices: [2] }));
+    renderWithProviders(<SkitgubbePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    const handButtons = screen.getAllByRole('button').filter((b) => b.dataset.hintAction === 'play');
+    expect(handButtons[0]).toHaveAttribute('title', '場の札を上回れません（同スートの上位か切札が要ります）');
+    expect(handButtons[0].getAttribute('aria-label')).toContain('場の札を上回れません');
+    // 出せる札には理由を付けない。
+    expect(handButtons[2]).not.toHaveAttribute('title');
+    expect(handButtons[2].getAttribute('aria-label')).not.toContain('上回れません');
+  });
+
+  // **手番でないだけの札を「規則に負けている」と言わない。**
+  it('says it is not your turn instead of blaming the beat rule', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ phase: 1, pile: [card('SPADE', 10)], validIndices: [2], currentPlayerIdx: 1 }),
+    );
+    renderWithProviders(<SkitgubbePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    const handButtons = screen.getAllByRole('button').filter((b) => b.dataset.hintAction === 'play');
+    expect(handButtons[2]).not.toHaveAttribute('title');
+    expect(handButtons[2].getAttribute('aria-label')).toContain('いまは自分の番ではありません');
+    // **サーバが出せないと言っている札でも、手番でなければ理由はそちら。**
+    // 相手の番に「規則で負けている」と読み上げると、次の自分の番に出せる札まで
+    // 出せないものとして覚えてしまう。
+    expect(handButtons[0]).not.toHaveAttribute('title');
+    expect(handButtons[0].getAttribute('aria-label')).toContain('いまは自分の番ではありません');
+    expect(handButtons[0].getAttribute('aria-label')).not.toContain('上回れません');
+  });
+
   it('enables the pick-up only when the server says nothing beats the pile', async () => {
     renderWithProviders(<SkitgubbePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());

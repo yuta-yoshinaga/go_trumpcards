@@ -38,7 +38,8 @@
     "points": "{{points}}文",
     "koikoi": "こいこい",
     "shobu": "勝負",
-    "multiplier": "（倍率×{{mult}}）"
+    "multiplier": "（倍率×{{mult}}）",
+    "scores": "現在の累計: あなた {{you}} 対 相手 {{opp}}"
   },
   "roundResult": {
     "title": "ラウンド結果",
