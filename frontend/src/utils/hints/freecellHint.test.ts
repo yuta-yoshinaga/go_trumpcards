@@ -17,6 +17,8 @@ function makeState(overrides: Partial<FreeCellResponse> = {}): FreeCellResponse 
     tableau: [[card(S, 7), card(H, 6)], [card(D, 10), card(C, 9)], [card(S, 3)], [card(H, 5)], [], [], [], []],
     freeCells: [null, null, null, null],
     foundation: [[], [], [], []],
+    maxMovableCards: 80,
+    maxMovableCardsToEmptyColumn: 40,
     phase: FreeCellPhase.PLAYING,
     moveCount: 0,
     canUndo: false,

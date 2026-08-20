@@ -24,6 +24,9 @@ const defaultState: FreeCellResponse = {
   tableau: [[], [], [], [], [], [], [], []],
   freeCells: [null, null, null, null],
   foundation: [[], [], [], []],
+  // 空きセル4 + 空き列8 → (1+4) * 2^8 = 1280。空き列宛てはその列を除いて 640。
+  maxMovableCards: 1280,
+  maxMovableCardsToEmptyColumn: 640,
   phase: 0,
   moveCount: 0,
   canUndo: false,

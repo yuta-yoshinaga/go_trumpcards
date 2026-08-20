@@ -36729,6 +36729,8 @@ components:
         - tableau
         - freeCells
         - foundation
+        - maxMovableCards
+        - maxMovableCardsToEmptyColumn
         - phase
         - moveCount
         - canUndo
@@ -36756,6 +36758,19 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/Card'
+        maxMovableCards:
+          type: integer
+          description: >-
+            How many cards may move as one stack right now, from the domain's
+            own calculation. The web client must not recompute this.
+          example: 5
+        maxMovableCardsToEmptyColumn:
+          type: integer
+          description: >-
+            The same limit when the destination is an empty column, which is
+            lower because that column cannot also serve as a staging slot.
+            0 when there is no empty column.
+          example: 2
         phase:
           type: integer
           description: "Game phase: 0 = Playing, 1 = GameClear, 2 = GameOver"

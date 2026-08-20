@@ -62,6 +62,10 @@ func (p *FreeCellWebPresenter) Output(f interfaces.FreeCellGame, lastErr error) 
 		}
 	}
 
+	// 一度に動かせる枚数。空き列宛ては別枠 (#5975)。
+	resObj.MaxMovableCards = f.GetMaxMovableCards()
+	resObj.MaxMovableCardsToEmptyColumn = f.GetMaxMovableCardsToEmptyColumn()
+
 	// メッセージ
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
