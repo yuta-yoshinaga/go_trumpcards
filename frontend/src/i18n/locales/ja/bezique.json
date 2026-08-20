@@ -73,5 +73,7 @@
   "hintRequested": "ヒントがあります",
   "noHint": "ヒントはありません",
   "matchProgress": "{{current}} / {{target}}（あと{{remaining}}点）",
-  "matchProgressReached": "{{current}} / {{target}}（到達）"
+  "matchProgressReached": "{{current}} / {{target}}（到達）",
+  "meldLiveCount": "宣言できるメルドが{{count}}件あります",
+  "meldLiveNone": "宣言できるメルドはありません"
 }

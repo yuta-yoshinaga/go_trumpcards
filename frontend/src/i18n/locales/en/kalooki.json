@@ -50,5 +50,6 @@
     "kalookiDiscardHeavy": "Your heaviest unconnected card",
     "kalookiOpenFirst": "You have not opened yet — the threshold has to be met in one go, so keep building"
   },
-  "openingProgress": "Opening: {{points}} / {{threshold}} points"
+  "openingProgress": "Opening: {{points}} / {{threshold}} points",
+  "jokerBadge": "JOKER"
 }
