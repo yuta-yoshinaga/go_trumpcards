@@ -262,6 +262,8 @@ tags:
   - name: yukon
     description: Yukon (ユーコン) game
   - name: cruel
+  - name: alaska
+    description: Alaska (アラスカ) game - Yukon variant building same-suit in either direction, any card to an empty column
   - name: russiansolitaire
     description: Russian Solitaire (ロシアンソリティア) game - Yukon variant requiring same-suit descending tableau moves
   - name: letitride
@@ -12051,6 +12053,110 @@ paths:
         | `undo_n`         | —       | Undo N moves (requires `n`) |
         | `log`            | `l`     | View action log |
       operationId: russianSolitaireExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, undo_n, log, l]
+                sessionId:
+                  type: string
+                from:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [tableau]
+                    col:
+                      type: integer
+                    cardIndex:
+                      type: integer
+                to:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [tableau, foundation]
+                    col:
+                      type: integer
+                n:
+                  type: integer
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tableau:
+                    type: array
+                  foundation:
+                    type: array
+                  phase:
+                    type: integer
+                  moveCount:
+                    type: integer
+                  canUndo:
+                    type: boolean
+                  isStalemate:
+                    type: boolean
+                  undoToEscape:
+                    type: integer
+                  hint:
+                    type: object
+                    properties:
+                      fromCol:
+                        type: integer
+                      cardIndex:
+                        type: integer
+                      toZone:
+                        type: string
+                      toCol:
+                        type: integer
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+        '400':
+          description: Bad request
+
+  /alaska/exec:
+    post:
+      tags:
+        - alaska
+      summary: Execute an Alaska (アラスカ) game command
+      description: |
+        Send a command to advance an Alaska session identified by `sessionId`.
+        Alaska is a Yukon variant: identical deal and "move any face-up card with everything
+        stacked on top" mechanic. Tableau-to-tableau moves require the **same suit** and an
+        **adjacent rank in either direction** (Alaska builds up as well as down), and an empty
+        column accepts **any** card rather than only a King. Build foundations by suit Ace to King.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Playing   | 0     | Game in progress |
+        | GameClear | 1     | All foundations complete |
+        | GameOver  | 2     | Player gave up or stalemate |
+
+        | Command          | Aliases | Description |
+        |------------------|---------|-------------|
+        | `reset`          | `r`     | Start / restart a game |
+        | `move`           | `m`     | Move card(s) between zones (requires `from`, `to`) |
+        | `giveup`         | `g`     | Give up the current game |
+        | `hint`           | `h`     | Get a move suggestion |
+        | `autocomplete`   | `ac`    | Auto-complete to foundations |
+        | `undo`           | `u`     | Undo last move |
+        | `undo_n`         | —       | Undo N moves (requires `n`) |
+        | `log`            | `l`     | View action log |
+      operationId: alaskaExec
       requestBody:
         required: true
         content:

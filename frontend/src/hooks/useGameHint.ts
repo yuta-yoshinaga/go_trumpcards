@@ -4,6 +4,7 @@ import type {
   AccordionResponse,
   AcesUpResponse,
   AgnesResponse,
+  AlaskaResponse,
   AllFoursResponse,
   AluetteResponse,
   AmericanToadResponse,
@@ -311,6 +312,7 @@ import type { HintResult } from '../types/hint';
 import { getAccordionHint } from '../utils/hints/accordionHint';
 import { getAcesUpHint } from '../utils/hints/acesupHint';
 import { getAgnesHint } from '../utils/hints/agnesHint';
+import { getAlaskaHint } from '../utils/hints/alaskaHint';
 import { getAllFoursHint } from '../utils/hints/allfoursHint';
 import { getAluetteHint } from '../utils/hints/aluetteHint';
 import { getAmericanToadHint } from '../utils/hints/americantoadHint';
@@ -823,6 +825,7 @@ export const hintFactories = {
   whist: (s) => getWhistHint(s as WhistResponse),
   catchten: (s) => getCatchTenHint(s as CatchTenResponse),
   yukon: (s) => getYukonHint(s as YukonResponse),
+  alaska: (s) => getAlaskaHint(s as AlaskaResponse),
   russiansolitaire: (s) => getRussianSolitaireHint(s as RussianSolitaireResponse),
   cruel: (s) => getCruelHint(s as CruelResponse),
   scopone: (s) => getScoponeHint(s as ScoponeResponse),

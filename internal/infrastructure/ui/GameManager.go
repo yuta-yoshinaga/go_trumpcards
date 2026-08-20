@@ -6141,6 +6141,27 @@ var gameRegistry = []GameRegistryEntry{
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys:       []string{"horse.helpSetSeats", "horse.helpSetHands"},
 		}),
+	BindCuiFor("alaska",
+		func() usecase.AlaskaInteractorIF {
+			return usecase.NewAlaskaInteractor(domain.NewDefaultAlaska(), new(presenter.AlaskaCuiPresenter))
+		},
+		controller.NewAlaskaCuiController,
+		CuiHelpSpec{
+			TitleKey: "alaska.helpTitle",
+			ExampleKeys: []string{
+				"alaska.helpExampleHint",
+				"alaska.helpExampleAuto",
+			},
+			CommandKeys: []string{
+				"alaska.helpMove",
+				"alaska.helpMoveTF",
+				"alaska.helpMoveTT",
+				"alaska.helpGiveUp",
+				"alaska.helpHint",
+				"alaska.helpAutoComplete", "alaska.helpUndo",
+			},
+			ExtraCommandLines: []string{"  l                        action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

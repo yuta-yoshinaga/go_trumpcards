@@ -1,0 +1,46 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "title": "Alaska",
+  "foundation": "Foundation",
+  "tableau": "Tableau",
+  "moveCount": "Moves",
+  "giveup": "Give Up",
+  "hint": "Hint",
+  "autoComplete": "Auto Complete",
+  "autoCompleteNotReady": "Available once every card is face up",
+  "undo": "Undo",
+  "empty": "Empty",
+  "gameClear": "Game Clear! Moves: {{moveCount}}",
+  "gameOver": "Game Over",
+  "playing": "Playing",
+  "noHint": "No hint available",
+  "hintAvailable": "Hint available",
+  "hintFromAria": "Hint: move this card to {{dest}}",
+  "hintToAria": "Hint: destination for the hinted card",
+  "hintAnnouncement": "Hint: move {{card}} to {{dest}}",
+  "foundationAriaLabel": "{{suit}} foundation {{count}} cards",
+  "emptyFoundationAriaLabel": "Empty foundation ({{suit}})",
+  "stalemate": "Stalemate",
+  "frontendHint": {
+    "moveToFoundation": "A card can be moved to the foundation",
+    "moveToTableau": "A card can be moved between tableau columns"
+  },
+  "tutorial": {
+    "foundation": "Build up cards A→K by suit here.",
+    "tableau": "Cards are dealt here. Click or drag face-up cards. Tableau-to-tableau moves require the SAME suit, descending.",
+    "controls": "Action buttons: hint, give up, undo.",
+    "resetButton": "Start a new game."
+  },
+  "nav": {
+    "alaska": "Russian Solitaire"
+  },
+  "tableauRule": "Tableau moves must be the same suit, one rank up OR down — unlike Yukon, alternating colours will not connect, but Alaska builds in both directions. Any card may go to an empty column. Face-down cards can't be moved.",
+  "faceDownRule": "Face-down cards can't be moved — only face-up cards are playable",
+  "dismissRule": "Dismiss rule note",
+  "faceDownCardLabel": "Column {{col}}, card {{pos}} from top, face down",
+  "blockMoveLabel": "moves as a block of {{n}} cards"
+}

@@ -12,6 +12,7 @@ export * from './gameExec';
 export * from './games/accordion';
 export * from './games/acesup';
 export * from './games/agnes';
+export * from './games/alaska';
 export * from './games/allfours';
 export * from './games/aluette';
 export * from './games/americantoad';
@@ -495,6 +496,7 @@ export const games = [
   'osmosis',
   'fivehundred',
   'yukon',
+  'alaska',
   'russiansolitaire',
   'scorpion',
   'wasp',

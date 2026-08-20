@@ -245,6 +245,7 @@ export type GameKey =
   | 'blackhole'
   | 'bidwhist'
   | 'yukon'
+  | 'alaska'
   | 'russiansolitaire'
   | 'cruel'
   | 'scorpion'
@@ -816,6 +817,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   blackhole: GREEN,
   bidwhist: GREEN,
   yukon: CASINO,
+  alaska: CASINO,
   russiansolitaire: CASINO,
   cruel: CASINO,
   scorpion: CASINO,
