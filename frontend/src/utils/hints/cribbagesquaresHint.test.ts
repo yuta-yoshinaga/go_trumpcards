@@ -16,6 +16,8 @@ function makeState(overrides: Partial<CribbageSquaresResponse> = {}): CribbageSq
     colScores: [0, 0, 0, 0],
     rowDetails: [zero(), zero(), zero(), zero()],
     colDetails: [zero(), zero(), zero(), zero()],
+    rowPartialDetails: [zero(), zero(), zero(), zero()],
+    colPartialDetails: [zero(), zero(), zero(), zero()],
     totalScore: 0,
     winScore: 61,
     isWin: false,

@@ -42,9 +42,14 @@ func (pr *CribbageSquaresWebPresenter) Output(p interfaces.CribbageSquaresGame, 
 	resObj.ColScores = make([]int, domain.CribbageSquaresGridSize)
 	resObj.RowDetails = make([]*controller.CribbageSquaresWebOutputScore, domain.CribbageSquaresGridSize)
 	resObj.ColDetails = make([]*controller.CribbageSquaresWebOutputScore, domain.CribbageSquaresGridSize)
+	// 確定ぶんは別枠。公式のスコアはスターターが出るまで 0 のまま据え置く (#6088)。
+	resObj.RowPartialDetails = make([]*controller.CribbageSquaresWebOutputScore, domain.CribbageSquaresGridSize)
+	resObj.ColPartialDetails = make([]*controller.CribbageSquaresWebOutputScore, domain.CribbageSquaresGridSize)
 	for i := range domain.CribbageSquaresGridSize {
 		resObj.RowDetails[i] = cribbageSquaresScoreOutput(p.RowDetail(i))
 		resObj.ColDetails[i] = cribbageSquaresScoreOutput(p.ColDetail(i))
+		resObj.RowPartialDetails[i] = cribbageSquaresScoreOutput(p.RowPartialDetail(i))
+		resObj.ColPartialDetails[i] = cribbageSquaresScoreOutput(p.ColPartialDetail(i))
 		resObj.RowScores[i] = resObj.RowDetails[i].Total
 		resObj.ColScores[i] = resObj.ColDetails[i].Total
 		resObj.TotalScore += resObj.RowScores[i] + resObj.ColScores[i]

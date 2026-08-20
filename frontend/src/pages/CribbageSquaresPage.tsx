@@ -294,6 +294,11 @@ function CribbageSquaresPageContent() {
                       >
                         {state.rowScores.map((s, i) => {
                           const parts = cribbageBreakdownParts(state.rowDetails?.[i], breakdownLabel);
+                          // **公式の内訳はスターターまで必ず 0。**対局中に語れるのは
+                          // スターター抜きで確定しているぶんだけ (#6088)。
+                          const partial = isPlaying
+                            ? cribbageBreakdownParts(state.rowPartialDetails?.[i], breakdownLabel)
+                            : [];
                           return (
                             <div
                               key={`row-score-${i}`}
@@ -316,6 +321,15 @@ function CribbageSquaresPageContent() {
                                   {parts.join(' ')}
                                 </div>
                               )}
+                              {partial.length > 0 && (
+                                <div
+                                  data-testid={`row-partial-${i}`}
+                                  title={t('partialTooltip')}
+                                  className="text-[10px] text-ds-text-muted/80 leading-none mt-0.5 text-center"
+                                >
+                                  {t('partialPrefix')} {partial.join(' ')}
+                                </div>
+                              )}
                             </div>
                           );
                         })}
@@ -328,6 +342,11 @@ function CribbageSquaresPageContent() {
                     >
                       {state.colScores.map((s, i) => {
                         const parts = cribbageBreakdownParts(state.colDetails?.[i], breakdownLabel);
+                        // **公式の内訳はスターターまで必ず 0。**対局中に語れるのは
+                        // スターター抜きで確定しているぶんだけ (#6088)。
+                        const partial = isPlaying
+                          ? cribbageBreakdownParts(state.colPartialDetails?.[i], breakdownLabel)
+                          : [];
                         return (
                           <div
                             key={`col-score-${i}`}
@@ -348,6 +367,15 @@ function CribbageSquaresPageContent() {
                                 className="text-[10px] text-ds-text-muted leading-none mt-0.5"
                               >
                                 {parts.join(' ')}
+                              </div>
+                            )}
+                            {partial.length > 0 && (
+                              <div
+                                data-testid={`col-partial-${i}`}
+                                title={t('partialTooltip')}
+                                className="text-[10px] text-ds-text-muted/80 leading-none mt-0.5"
+                              >
+                                {t('partialPrefix')} {partial.join(' ')}
                               </div>
                             )}
                           </div>
