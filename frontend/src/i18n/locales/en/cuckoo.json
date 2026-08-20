@@ -55,5 +55,7 @@
     "cuckooKeepKing": "A King is unbeatable and can refuse a swap. Always keep it",
     "cuckooRefuseKing": "Show the King to block the swap and keep the best card",
     "cuckooAcceptNoKing": "Without a King you cannot refuse — accept the swap"
-  }
+  },
+  "swapTargetPreview": "Swaps with {{name}}",
+  "swapTargetStock": "Swaps with the stock"
 }
