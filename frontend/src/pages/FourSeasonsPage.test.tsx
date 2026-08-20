@@ -182,7 +182,11 @@ describe('FourSeasonsPage', () => {
     );
     renderWithProviders(<FourSeasonsPage />);
     await waitFor(() => expect(screen.getByTestId('fs-draw-button')).toBeInTheDocument());
-    expect(hintLiveRegion()).not.toBeInTheDocument();
+    // **領域は常設で中身が空。**読み上げは「既にある領域の変化」でしか起きない
+    // ので、領域ごと消してはいけない (#5955)。文言が出ていないことを見る。
+    expect(hintLiveRegion()).toBeInTheDocument();
+    expect(hintLiveRegion()).toHaveTextContent('');
+    expect(screen.queryByText(/ヒントがあります/)).not.toBeInTheDocument();
   });
 
   it('hides the playing controls once the game clears', async () => {
