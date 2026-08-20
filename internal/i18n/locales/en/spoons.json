@@ -7,6 +7,7 @@
   "labelCpu": "CPU",
   "roundLine": "Round {{round}}  Spoons left: {{spoons}}",
   "lettersLabel": "[{{letters}}]",
+  "feederTag": "[feeder]",
   "hasSpoon": "got a spoon",
   "playerEliminated": "{{name}}: eliminated (SPOONS)",
   "cpuHandLine": "{{name}}: {{count}} cards",

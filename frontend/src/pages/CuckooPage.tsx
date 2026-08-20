@@ -34,6 +34,7 @@ import { CUCKOO_HELP, parseCuckooCommand } from '../utils/cli/commands/cuckooCom
 import { formatCuckooState } from '../utils/cli/formatters/cuckooFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
+import { cuckooSwapTarget } from '../utils/cuckooSwapTarget';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** CPU difficulty options for the Cuckoo settings panel. */
@@ -195,6 +196,18 @@ function CuckooPageContent() {
   const humanHasKing = humanPlayer?.card?.value === CUCKOO_KING_VALUE;
 
   const playerLabel = (id: number, isHuman: boolean): string => (isHuman ? t('you') : t('cpu', { id }));
+  // **脱落者はターン順から飛ばされるので「隣」が席順の隣とは限らない** (#5671)。
+  // ディーラーは山札と交換する。
+  const swapTargetLabel = (() => {
+    // 表示自体は JSX 側の isHumanTurn ガードの内側にあるので、ここで手番を
+    // 二重に見ない (片方が死んだ分岐になる)。
+    if (!humanPlayer) return null;
+    if (humanIsDealer) return t('swapTargetStock');
+    const targetIdx = cuckooSwapTarget(state.players, humanPlayer.id);
+    if (targetIdx === null) return null;
+    const target = state.players[targetIdx];
+    return t('swapTargetPreview', { name: playerLabel(target.id, target.isHuman) });
+  })();
 
   const handleManualReset = () => {
     hideActionLog();
@@ -341,6 +354,12 @@ function CuckooPageContent() {
                     {humanIsDealer ? t('swapDealerButton') : t('swapButton')}
                     <KbdBadge label="S" />
                   </button>
+                  {/* 押す前に誰と交換するのかを出す (#5671)。 */}
+                  {swapTargetLabel && (
+                    <span className="text-ds-text-muted text-xs" data-testid="cuckoo-swap-target">
+                      {swapTargetLabel}
+                    </span>
+                  )}
                 </>
               )}
 
