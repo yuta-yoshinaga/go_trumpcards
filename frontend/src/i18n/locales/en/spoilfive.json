@@ -20,7 +20,6 @@
   "potIncreaseAnnounce": "Pot +{{delta}} (total {{total}})",
   "target": "Target {{n}}",
   "cards": "{{count}} cards",
-  "roundTricks": "{{count}} round tricks",
   "score": "{{count}} pts",
   "currentTrick": "Current Trick",
   "players": "Players",
@@ -56,5 +55,7 @@
     "resetButton": "Use the reset button to start a new game."
   },
   "hintRequested": "Hint available",
-  "noHint": "No hint available"
+  "noHint": "No hint available",
+  "roundTricksOf": "{{count}}/{{needed}} tricks this round",
+  "reach": "1 to win"
 }
