@@ -87,6 +87,8 @@ func TestBakersGameWebPresenterOutputStalemateWithEscape(t *testing.T) {
 	fg.On("GetFreeCells").Return(freeCells).Maybe()
 	var foundation [domain.FreeCellFoundationCnt][]*domain.Card
 	fg.On("GetFoundation").Return(foundation).Maybe()
+	fg.On("GetMaxMovableCards").Return(1).Maybe()
+	fg.On("GetMaxMovableCardsToEmptyColumn").Return(0).Maybe()
 
 	result := p.Output(fg, nil)
 
@@ -190,4 +192,39 @@ func TestBakersGameWebPresenterActionLog(t *testing.T) {
 	var over controller.ActionLogWebOutput
 	assert.NoError(t, json.Unmarshal([]byte(p.ActionLogOutput(f)), &over))
 	assert.NotEmpty(t, over.Entries)
+}
+
+// #5975 のレビュー指摘。**Baker's Game は FreeCell と同じ FreeCellWebOutput を
+// 返すが、埋めるのは別の presenter。**上限を入れ忘れると 0 のまま届き、ページは
+// 「1 枚も動かせない」と読んで全部の札を掴めなくする ── レスポンスをモックする
+// ページテストでは絶対に出ない壊れ方。
+func TestBakersGameWebPresenterCarriesBothMoveLimits(t *testing.T) {
+	p := new(BakersGameWebPresenter)
+	f := domain.NewDefaultBakersGame()
+	f.Reset()
+	f.SetPhase(domain.FreeCellPhasePlaying)
+
+	var out controller.FreeCellWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(p.Output(f, nil)), &out))
+
+	assert.Equal(t, f.GetMaxMovableCards(), out.MaxMovableCards)
+	assert.Equal(t, f.GetMaxMovableCardsToEmptyColumn(), out.MaxMovableCardsToEmptyColumn)
+	assert.Positive(t, out.MaxMovableCards, "配り直後は必ず1枚以上動かせる")
+}
+
+// 空き列がある局面では、空き列宛ての上限が一般の上限より低い。
+func TestBakersGameWebPresenterEmptyColumnLimitIsLower(t *testing.T) {
+	p := new(BakersGameWebPresenter)
+	f := domain.NewDefaultBakersGame()
+	f.Reset()
+	f.SetPhase(domain.FreeCellPhasePlaying)
+	tableau := f.GetTableau()
+	tableau[0] = nil
+	f.SetTableau(tableau)
+
+	var out controller.FreeCellWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(p.Output(f, nil)), &out))
+
+	assert.Less(t, out.MaxMovableCardsToEmptyColumn, out.MaxMovableCards,
+		"空き列自身を経由地に使えないぶん上限は下がる")
 }
