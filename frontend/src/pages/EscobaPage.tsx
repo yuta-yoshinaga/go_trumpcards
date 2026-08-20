@@ -186,7 +186,12 @@ function EscobaPageContent() {
   const takeCandidateIndices =
     handIndex !== null && isHumanTurn ? captureCandidateIndices(state.handCaptures, handIndex) : new Set<number>();
   const canTake = isHumanTurn && handIndex !== null && tableIndices.length > 0;
-  const canLay = isHumanTurn && handIndex !== null && tableIndices.length === 0;
+  // **エスコバは強制捕獲** (#6163)。合計 15 を作れる組が場にあるなら、
+  // ドメイン (Escoba.go の applyPlay) はその札を置く手を拒む。押せてしまうと
+  // サーバまで飛んでエラーで返るだけなので、押させない。判定は既に配られて
+  // いる handCaptures をそのまま読む——15 の組み合わせを画面で数え直さない。
+  const mustCapture = handIndex !== null && (state.handCaptures[handIndex]?.length ?? 0) > 0;
+  const canLay = isHumanTurn && handIndex !== null && tableIndices.length === 0 && !mustCapture;
   // Live 15-counter: once a hand card is picked, show its value plus the selected table cards.
   const selectedHandCard = handIndex !== null ? (human.cards[handIndex] ?? null) : null;
   const selectionSum = selectedHandCard ? escobaSelectionSum(selectedHandCard, state.tableCards, tableIndices) : null;
@@ -467,6 +472,11 @@ function EscobaPageContent() {
               >
                 {t('button.lay')}
               </button>
+              {isHumanTurn && mustCapture && (
+                <span className="text-xs text-ds-warning" data-testid="escoba-must-capture">
+                  {t('mustCapture')}
+                </span>
+              )}
               {isRoundEnd && (
                 <button
                   type="button"

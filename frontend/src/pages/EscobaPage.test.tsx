@@ -74,8 +74,25 @@ describe('EscobaPage', () => {
     await waitFor(() => expect(screen.getByTestId('lay-button')).toBeInTheDocument());
     expect(screen.getByTestId('lay-button')).toBeDisabled();
 
-    fireEvent.click(screen.getByTestId('hand-card-0'));
+    // **手札 0 は 15 を作れる**ので置けない (強制捕獲、#6163)。作れない札で見る。
+    fireEvent.click(screen.getByTestId('hand-card-1'));
     await waitFor(() => expect(screen.getByTestId('lay-button')).not.toBeDisabled());
+  });
+
+  // **エスコバは強制捕獲** (#6163)。取れる札で「場に置く」を押せてしまうと、
+  // サーバまで飛んでエラーで返るだけだった。
+  it('blocks Lay while the selected card can capture', async () => {
+    renderWithProviders(<EscobaPage />);
+    await waitFor(() => expect(screen.getByTestId('lay-button')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    await waitFor(() => expect(screen.getByTestId('lay-button')).toBeDisabled());
+    expect(screen.getByTestId('escoba-must-capture')).toBeInTheDocument();
+
+    // 取れない札に持ち替えれば置ける。案内も消える。
+    fireEvent.click(screen.getByTestId('hand-card-1'));
+    await waitFor(() => expect(screen.getByTestId('lay-button')).not.toBeDisabled());
+    expect(screen.queryByTestId('escoba-must-capture')).not.toBeInTheDocument();
   });
 
   it('plays "p" with sorted table indices when Take is clicked', async () => {
@@ -95,9 +112,10 @@ describe('EscobaPage', () => {
     await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
 
     mockExec.mockClear();
-    fireEvent.click(screen.getByTestId('hand-card-0'));
+    // 手札 0 は取れる札なので置けない (#6163)。取れない手札 1 で送る。
+    fireEvent.click(screen.getByTestId('hand-card-1'));
     fireEvent.click(screen.getByTestId('lay-button'));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('p', { handIndex: 0, tableIndices: [] }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('p', { handIndex: 1, tableIndices: [] }));
   });
 
   it('disables actions when it is not the human turn', async () => {
