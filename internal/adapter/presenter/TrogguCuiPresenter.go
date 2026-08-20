@@ -25,6 +25,25 @@ func trogguIndexedHand(p *domain.TrogguPlayer) string {
 }
 
 // trogguContractLabel 契約の i18n ラベルを返す。
+// trogguAvailableBids は今の最高入札を上回れる契約のコマンド名を並べる。
+//
+// 空にはならない: ミゼールが最高でも「もう入札できない」ことを言えるように、
+// 呼び出し側の文言はパスだけを案内する形にしてある。
+func trogguAvailableBids(highest domain.TrogguBid) string {
+	names := make([]string, 0, 4)
+	for _, bid := range []domain.TrogguBid{
+		domain.TrogguBidTrois, domain.TrogguBidSolo, domain.TrogguBidPiccolo, domain.TrogguBidMisere,
+	} {
+		if bid > highest {
+			names = append(names, domain.TrogguBidName(bid))
+		}
+	}
+	if len(names) == 0 {
+		return i18n.T("troggu.noBidBeatsIt")
+	}
+	return strings.Join(names, "|")
+}
+
 func trogguContractLabel(bid domain.TrogguBid) string {
 	return i18n.T("troggu.contract." + domain.TrogguBidName(bid))
 }
@@ -97,7 +116,9 @@ func (p *TrogguCuiPresenter) writePrompt(b *strings.Builder, g interfaces.Troggu
 		b.WriteString(i18n.Tf("troggu.promptBid",
 			"name", cuiPlayerName(g.GetPlayer(idx), idx),
 			"high", trogguContractLabel(g.GetHighestBid())) + "\n")
-		b.WriteString(i18n.T("troggu.promptBidHelp") + "\n")
+		// **超えられない契約は挙げない。**bid <= highestBid はドメインが却下する
+		// ので、並べたままだと「打てるのに弾かれる」ように見える (#5808)。
+		b.WriteString(i18n.Tf("troggu.promptBidHelp", "bids", trogguAvailableBids(g.GetHighestBid())) + "\n")
 	case domain.TrogguPhasePlay:
 		idx := g.GetCurrentPlayerIdx()
 		b.WriteString(i18n.Tf("troggu.promptPlay",

@@ -30,10 +30,27 @@ test.describe('Troggu E2E', () => {
   });
 
   // **落札するとプレイに入る。** 場札交換のフェーズは無い。
+  //
+  // **ソロが常に打てるとは限らない。**ミゼール(4) はソロ(2) より上なので、CPU が
+  // 先にミゼールを宣言した配りではソロは却下される。以前はそれでもクリックして
+  // プレイ移行を待っていたので、配りによって落ちていた (#5808)。いまはボタンが
+  // disabled になるので、打てる契約を選ぶ。
   test('starts play after winning the auction', async ({ page }) => {
     await navigateTo(page, '/troggu');
     await expect(page.getByTestId('tg-bid-solo')).toBeVisible({ timeout: TIMEOUT_TRANSITION });
-    await page.getByTestId('tg-bid-solo').click();
+
+    const bids = ['misere', 'piccolo', 'solo', 'trois'];
+    let declared = false;
+    for (const bid of bids) {
+      const button = page.getByTestId(`tg-bid-${bid}`);
+      if (await button.isDisabled()) continue;
+      await button.click();
+      declared = true;
+      break;
+    }
+    // 全部 disabled になることはない: ミゼールが出ていれば人間はもう入札できず、
+    // その場合はパスしか残らない。そのときはプレイに入ることだけを見る。
+    if (!declared) await page.getByTestId('tg-pass').click();
     await waitForLoaded(page);
 
     await expect(page.getByTestId('tg-bid-solo')).toHaveCount(0);
