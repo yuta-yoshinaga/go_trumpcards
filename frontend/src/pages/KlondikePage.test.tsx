@@ -508,6 +508,23 @@ describe('KlondikePage', () => {
     expect(screen.getByTestId('kl-hint-card')).toBeInTheDocument();
   });
 
+  // #5955: ヒントは無言で現れていた。**空のまま先にマウントしてある**領域の中身が
+  // 変わることが読み上げの条件なので、hint がある間だけ現れる内側の div ではなく、
+  // 常設のラッパーがライブ領域でなければならない。
+  it('announces the hint through a region that was already mounted', async () => {
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    const region = screen.getByTestId('kl-hint-live');
+    expect(region).toHaveAttribute('role', 'status');
+    expect(region).toHaveAttribute('aria-live', 'polite');
+    expect(region).toHaveTextContent('');
+
+    mockExec.mockResolvedValue(withHintState);
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    // **同じ要素**の中身が変わる (別の要素が現れるのではない)。
+    await waitFor(() => expect(region).toHaveTextContent(/ヒントがあります/));
+  });
+
   it('shows hint text from tableau after clicking hint', async () => {
     renderWithProviders(<KlondikePage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());

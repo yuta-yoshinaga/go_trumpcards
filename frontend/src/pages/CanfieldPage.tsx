@@ -517,12 +517,19 @@ function CanfieldPageContent() {
                 are also ring-highlighted above. Clears automatically once the move is
                 played (the next response omits the hint field). */}
             <div data-testid="cf-hint-display">
-              {hint && (
-                <div className="text-sm text-ds-text-muted">
-                  {t('hintAvailable')}: {formatCanfieldHintZone(t, hint.fromZone, hint.fromCol)} →{' '}
-                  {formatCanfieldHintZone(t, hint.toZone, hint.toCol)}
-                </div>
-              )}
+              {/*
+                ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+                領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+                られないことがある (#5955)。
+              */}
+              <div data-testid="canfield-hint-live" role="status" aria-live="polite">
+                {hint && (
+                  <div className="text-sm text-ds-text-muted">
+                    {t('hintAvailable')}: {formatCanfieldHintZone(t, hint.fromZone, hint.fromCol)} →{' '}
+                    {formatCanfieldHintZone(t, hint.toZone, hint.toCol)}
+                  </div>
+                )}
+              </div>
               <div className="sr-only" role="status" aria-live="polite" data-testid="cf-hint-announcement">
                 {hint ? t('hintAnnouncement', { card: hintCardName, dest: hintDest }) : ''}
               </div>

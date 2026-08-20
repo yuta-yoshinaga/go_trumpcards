@@ -358,15 +358,22 @@ function ThreeCardBragPageContent() {
                 一度も読んでいなかった (#4728)。**設定にヒントのチェックボックスは
                 あるのに、サーバーの提案自体は画面に出ていなかった。他の全ゲームと
                 同じく、明示的に要求されたときだけ出す。 */}
-            {state.hint && isRequestedHint(state) && (
-              <div className="text-ds-warning text-sm mb-2" data-testid="tcb-server-hint">
-                {t('hintAvailable')}: {t(`hint.${state.hint.reason}`, { defaultValue: state.hint.reason })}
-                {/* **識別子をそのまま出さない。**訳が無ければ識別子に落とす
-                    (キー文字列は出さない)。 */}
-                {state.hint.action != null &&
-                  ` (${t(`hint.${state.hint.action}`, { defaultValue: state.hint.action })})`}
-              </div>
-            )}
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-testid="threecardbrag-hint-live" role="status" aria-live="polite">
+              {state.hint && isRequestedHint(state) && (
+                <div className="text-ds-warning text-sm mb-2" data-testid="tcb-server-hint">
+                  {t('hintAvailable')}: {t(`hint.${state.hint.reason}`, { defaultValue: state.hint.reason })}
+                  {/* **識別子をそのまま出さない。**訳が無ければ識別子に落とす
+                      (キー文字列は出さない)。 */}
+                  {state.hint.action != null &&
+                    ` (${t(`hint.${state.hint.action}`, { defaultValue: state.hint.action })})`}
+                </div>
+              )}
+            </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="threecardbrag-action-buttons">

@@ -440,7 +440,12 @@ function BakersDozenPageContent() {
             </div>
 
             {/* Hint display */}
-            <div data-tutorial="bd-hint-display">
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-tutorial="bd-hint-display" data-testid="bd-hint-live" role="status" aria-live="polite">
               {hint && (
                 <div className="text-ds-warning text-sm mb-2">
                   {t('hintAvailable')}: {formatHintZone(t, 'tableau', hint.fromCol)} →{' '}

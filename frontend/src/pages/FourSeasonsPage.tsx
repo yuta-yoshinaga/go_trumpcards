@@ -408,19 +408,22 @@ function FourSeasonsPageContent() {
                 messageParams={state.messageParams}
               />
 
-              {requestedHint && (
-                <div
-                  className="text-sm text-ds-accent bg-ds-surface/90 border border-ds-accent rounded px-3 py-1.5 mt-1"
-                  role="status"
-                  aria-live="polite"
-                >
-                  {t('hintAvailable')}:{' '}
-                  {requestedHint.fromZone === 'waste'
-                    ? t('waste')
-                    : `${t('cross')} ${requestedHint.fromIdx.toString()}`}{' '}
-                  → {t('foundation')} {requestedHint.toIdx.toString()}
-                </div>
-              )}
+              {/*
+                ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+                領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+                られないことがある (#5955)。
+              */}
+              <div data-testid="fourseasons-hint-live" role="status" aria-live="polite">
+                {requestedHint && (
+                  <div className="text-sm text-ds-accent bg-ds-surface/90 border border-ds-accent rounded px-3 py-1.5 mt-1">
+                    {t('hintAvailable')}:{' '}
+                    {requestedHint.fromZone === 'waste'
+                      ? t('waste')
+                      : `${t('cross')} ${requestedHint.fromIdx.toString()}`}{' '}
+                    → {t('foundation')} {requestedHint.toIdx.toString()}
+                  </div>
+                )}
+              </div>
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
               {source && (
