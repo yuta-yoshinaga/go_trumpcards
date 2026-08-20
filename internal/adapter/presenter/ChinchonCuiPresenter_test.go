@@ -9,6 +9,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -240,6 +241,33 @@ func TestChinchonCuiPresenter_LabelsTheKnockerMelds(t *testing.T) {
 		}}), nil)
 
 		assert.Contains(t, out, "♠ 7-Q")
+	})
+
+	// **4 スートすべてに記号がある。** 1 スートだけ試すと、残り 3 つが
+	// 空文字を返していても気づかない。
+	t.Run("labels a run in every suit", func(t *testing.T) {
+		for design, symbol := range map[int]string{
+			domain.CardDesignSpade:   "♠",
+			domain.CardDesignClover:  "♣",
+			domain.CardDesignHeart:   "♥",
+			domain.CardDesignDiamond: "♦",
+		} {
+			out := p.Output(layoffMock([][]*domain.Card{{
+				card(design, 4),
+				card(design, 5),
+				card(design, 6),
+			}}), nil)
+			assert.Contains(t, out, symbol+" 4-6", "スート %d の記号が出ていない", design)
+		}
+	})
+
+	// **空のメルドでも壊れない。** ラベルは出さず、行そのものも増やさない。
+	t.Run("says nothing for an empty meld", func(t *testing.T) {
+		out := p.Output(layoffMock([][]*domain.Card{{}}), nil)
+		// テンプレートの前置きで見る (描画後の文字列から取る)。
+		prefix, _, ok := strings.Cut(i18n.Tf("chinchon.knockerMeldLabelled", "label", "\x00", "cards", ""), "\x00")
+		require.True(t, ok)
+		assert.NotContains(t, out, prefix)
 	})
 
 	// 既存のカード列挙は残す。

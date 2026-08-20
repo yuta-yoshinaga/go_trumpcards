@@ -157,6 +157,10 @@ func (p *ChinchonCuiPresenter) Output(g interfaces.ChinchonGame, lastErr error) 
 		// レイオフフェーズではノッカーのメルドを表示する。
 		if g.GetPhase() == domain.ChinchonPhaseLayoff {
 			for _, meld := range g.GetKnockerMelds() {
+				// 空のメルドに乗せる札は無い。行だけ出しても読めるものが無い。
+				if len(meld) == 0 {
+					continue
+				}
 				// **レイオフはこのメルドに札を乗せる操作**で、セット (同ランク) か
 				// ラン (同スート連番) かで乗せられる札が変わる (#5665)。Web は
 				// chinchonMeldLabel でバッジを出しているのに、CUI は札の羅列だけで
