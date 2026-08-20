@@ -270,6 +270,17 @@ func TestChinchonCuiPresenter_LabelsTheKnockerMelds(t *testing.T) {
 		assert.NotContains(t, out, prefix)
 	})
 
+	// **絵札は文字で出す。** 11/12/13 と出ると、そのランクの札があるように読める。
+	t.Run("names the court cards by letter", func(t *testing.T) {
+		out := p.Output(layoffMock([][]*domain.Card{
+			{card(domain.CardDesignSpade, 1), card(domain.CardDesignHeart, 1), card(domain.CardDesignClover, 1)},
+			{card(domain.CardDesignHeart, 11), card(domain.CardDesignHeart, 12), card(domain.CardDesignHeart, 13)},
+		}), nil)
+
+		assert.Contains(t, out, i18n.Tf("chinchon.knockerMeldLabelled", "label", "A", "cards", ""))
+		assert.Contains(t, out, "♥ J-K")
+	})
+
 	// 既存のカード列挙は残す。
 	t.Run("keeps listing the cards themselves", func(t *testing.T) {
 		out := p.Output(layoffMock([][]*domain.Card{{

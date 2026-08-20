@@ -29,11 +29,6 @@ const (
 	ChinchonPhaseGameEnd ChinchonPhase = 4
 )
 
-// chinchonRankPosition は 8・9・10 を除いた40枚デッキでのランクの「隣接位置」を返す。
-//
-// Chinchón は 8/9/10 を抜いた40枚のラテンデッキを使うため、ラン (連続) の判定では
-// A,2,3,4,5,6,7,J,Q,K を連続したランクとして扱う。すなわち 7 と J は隣接する。
-// 戻り値: A=1,2=2,...,7=7,J=8,Q=9,K=10。デッキに存在しないランク(8/9/10/Joker)は 0。
 // ChinchonRankPosition は chinchonRankPosition の公開版。
 //
 // **メルドが「セット (同ランク)」か「ラン (同スート連番)」か**は、レイオフで
@@ -41,6 +36,11 @@ const (
 // 公開する (#5665) -- 8/9/10 を抜いた 40 枚デッキなので、7 の次は J になる。
 func ChinchonRankPosition(value int) int { return chinchonRankPosition(value) }
 
+// chinchonRankPosition は 8・9・10 を除いた40枚デッキでのランクの「隣接位置」を返す。
+//
+// Chinchón は 8/9/10 を抜いた40枚のラテンデッキを使うため、ラン (連続) の判定では
+// A,2,3,4,5,6,7,J,Q,K を連続したランクとして扱う。すなわち 7 と J は隣接する。
+// 戻り値: A=1,2=2,...,7=7,J=8,Q=9,K=10。デッキに存在しないランク(8/9/10/Joker)は 0。
 func chinchonRankPosition(value int) int {
 	switch {
 	case value >= 1 && value <= 7: // A..7
