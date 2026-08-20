@@ -11,6 +11,8 @@
   "discardLine": "捨て札: {{card}}",
   "playerLine": "{{name}}: 勝利{{wins}} 手札{{cards}}枚",
   "meldLine": "  メルド: {{cards}}",
+  "meldProgress": "メルド {{count}}/{{total}}",
+  "meldRemaining": "あと {{count}} 枚",
   "gameEnd": "ゲーム終了！ {{name}}の勝利です！",
   "drawBanner": "ゲーム終了！ 引き分けです (山札切れ)",
   "draw": "引き分けです (山札切れ)",
