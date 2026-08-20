@@ -8,6 +8,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupFaroCuiMockDefaults(m *interfaces.MockFaroGame) {
@@ -250,4 +251,68 @@ func TestFaroCuiPresenter_ShowsTheCaseKeeper(t *testing.T) {
 	assert.Contains(t, out, "A:0")
 	assert.Contains(t, out, "K:2")
 	assert.Contains(t, out, "2:4")
+}
+
+// #5675: 他ゲームの CUI はフェーズごとに「何が打てるか」を必ず出すのに、Faro は
+// フェーズ名を1行出すだけで、有効なコマンドは help を別途叩くしかなかった。
+func TestFaroCuiPresenter_PhasePrompts(t *testing.T) {
+	p := new(FaroCuiPresenter)
+
+	build := func(phase int) *interfaces.MockFaroGame {
+		m := new(interfaces.MockFaroGame)
+		// **先に登録した期待が勝つ** (testify)。defaults の GetPhase は .Maybe()
+		// なので、こちらを先に置けば上書きになる。
+		m.On("GetPhase").Return(phase)
+		setupFaroCuiMockDefaults(m)
+		return m
+	}
+
+	cases := []struct {
+		name  string
+		phase int
+		key   string
+	}{
+		{"betting", domain.FaroPhaseBetting, "faro.promptBetting"},
+		{"turn", domain.FaroPhaseTurn, "faro.promptTurn"},
+		{"call", domain.FaroPhaseCall, "faro.promptCall"},
+		{"round end", domain.FaroPhaseRoundEnd, "faro.promptRoundEnd"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			out := p.Output(build(c.phase), nil)
+			assert.Contains(t, out, i18n.T(c.key))
+		})
+	}
+
+	// **フェーズごとに別の案内。**同じ文言を出すなら分岐する意味がない。
+	t.Run("each phase says something different", func(t *testing.T) {
+		seen := map[string]bool{}
+		for _, c := range cases {
+			line := i18n.T(c.key)
+			assert.False(t, seen[line], "%s prompt duplicates another phase", c.name)
+			seen[line] = true
+		}
+	})
+
+	// **ゲームが終わったら案内は出さない。**打てるコマンドが無いのに「d でめくる」
+	// と書くと、終わったことが伝わらない。
+	t.Run("stays quiet once the game is over", func(t *testing.T) {
+		m := new(interfaces.MockFaroGame)
+		m.On("GetPhase").Return(domain.FaroPhaseBetting)
+		m.On("GetGameEndFlag").Return(true)
+		setupFaroCuiMockDefaults(m)
+
+		out := p.Output(m, nil)
+
+		assert.Contains(t, out, i18n.T("faro.gameEnd"))
+		assert.NotContains(t, out, i18n.T("faro.promptBetting"))
+	})
+
+	// 案内には実際に打てるコマンドが入っている。
+	t.Run("names the command you can type", func(t *testing.T) {
+		assert.Contains(t, i18n.T("faro.promptBetting"), "b ")
+		assert.Contains(t, i18n.T("faro.promptTurn"), "d")
+		assert.Contains(t, i18n.T("faro.promptCall"), "call")
+		assert.Contains(t, i18n.T("faro.promptRoundEnd"), "n")
+	})
 }

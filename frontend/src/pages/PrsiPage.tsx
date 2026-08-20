@@ -29,7 +29,7 @@ import { btnPrimary } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { PrsiResponse } from '../types/card';
+import type { Card, PrsiResponse } from '../types/card';
 import { PrsiPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
@@ -308,12 +308,23 @@ function PrsiPageContent() {
                   // On the human's turn, highlight legal cards (matching suit/rank, or a 7 under
                   // penalty) and dim the rest with a reason tooltip, so the rule is visible at a glance.
                   const legal = !isHumanTurn || isPrsiLegalPlay(card, state.discardTop, state.penaltyDrawCount);
+                  // **合法/非合法が title と見た目にしか無かった** (#5684)。title は
+                  // スクリーンリーダーで安定して読まれる保証がなく、data-legal は
+                  // アクセシビリティツリーに出ない。CUI は本文で出している。
+                  const prsiCardAria = (c: Card, isLegal: boolean): string => {
+                    if (!isHumanTurn) return cardAlt(c);
+                    if (isLegal) return t('cardAriaPlayable', { card: cardAlt(c) });
+                    // ペナルティ中は理由が変わる: スート違いではなく「7しか出せない」。
+                    return state.penaltyDrawCount > 0
+                      ? t('cardAriaPenalty', { card: cardAlt(c) })
+                      : t('cardAriaIllegal', { card: cardAlt(c) });
+                  };
                   return (
                     <button
                       type="button"
                       key={`${card.design}-${card.value}-${idx}`}
                       onClick={() => toggleCard(idx)}
-                      aria-label={cardAlt(card)}
+                      aria-label={prsiCardAria(card, legal)}
                       aria-pressed={selectedCardIndices.includes(idx)}
                       title={isHumanTurn && !legal ? t('illegalHint') : undefined}
                       data-legal={isHumanTurn ? legal : undefined}

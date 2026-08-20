@@ -4,6 +4,8 @@ package presenter_test
 
 import (
 	"encoding/json"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -11,6 +13,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // bhState builds a BlackHole in an arbitrary state via JSON restore.
@@ -81,5 +84,38 @@ func TestBlackHoleCuiPresenter_Output(t *testing.T) {
 		g := domain.NewDefaultBlackHole()
 		g.Reset()
 		assert.NotEmpty(t, p.ActionLogOutput(g))
+	})
+}
+
+// #5681: 勝利条件は 52 枚すべてを穴へ吸い込むこと。17 個の扇を掘り進める長い
+// ゲームなのに、**あと何枚で終わるか**が Web にも CUI にも出ていなかった。
+func TestBlackHoleCuiPresenter_ShowsProgress(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.BlackHoleCuiPresenter)
+
+	t.Run("counts the cards swallowed against the deck", func(t *testing.T) {
+		board := `{"ph":0,"bh":[{"d":1,"v":7},{"d":3,"v":8}],"fn":[[{"d":2,"v":2}]]}`
+
+		out := p.Output(bhState(t, board), nil)
+
+		assert.Contains(t, out, i18n.Tf("blackhole.progress",
+			"count", "2", "total", strconv.Itoa(domain.BlackHoleTotalCards)))
+	})
+
+	// **クリア直前と直後で数字が正しく動く。**残り1枚を出し切ったら 52/52。
+	t.Run("reads 52 of 52 once the board is cleared", func(t *testing.T) {
+		cards := make([]string, domain.BlackHoleTotalCards)
+		for i := range cards {
+			cards[i] = `{"d":1,"v":1}`
+		}
+		board := `{"ph":1,"bh":[` + strings.Join(cards, ",") + `],"fn":[]}`
+
+		out := p.Output(bhState(t, board), nil)
+
+		assert.Contains(t, out, i18n.Tf("blackhole.progress",
+			"count", strconv.Itoa(domain.BlackHoleTotalCards),
+			"total", strconv.Itoa(domain.BlackHoleTotalCards)))
 	})
 }

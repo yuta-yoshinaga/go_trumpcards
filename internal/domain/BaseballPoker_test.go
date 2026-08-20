@@ -228,29 +228,43 @@ func TestBaseballPoker_FaceUpThreeAsksToBuyThePot(t *testing.T) {
 	require.Positive(t, saw, "30 局で表の 3 が一度も出なかった")
 }
 
+// baseballAdvanceToBuyIn は買い増しの場面まで進める。
+//
+// **表の 3 が出るかどうかは配り次第。** 1 卓を 200 手回すだけだと、たまたま
+// 出ない配りを引いた回に「到達しなかった」で落ちる (CI で実際に 1 度落ちた)。
+// 卓ごと引き直す外側のループを持つことで、確率の低い配りに当たっても
+// テストの結論が変わらないようにする。
+func baseballAdvanceToBuyIn(t *testing.T) *BaseballPoker {
+	t.Helper()
+	for attempt := range 50 {
+		g := newBaseballForTest(t)
+		for range 200 {
+			if g.GetPhase() == BaseballPhaseBuyIn {
+				return g
+			}
+			if g.GetPhase() == BaseballPhaseShowdown || g.GetGameEndFlag() {
+				if err := g.NextHand(); err != nil {
+					break // この卓はもう続けられない。引き直す。
+				}
+				continue
+			}
+			if g.IsHumanTurn() {
+				if err := g.PlayerAction(BaseballActionCheck, 0); err != nil {
+					require.NoError(t, g.PlayerAction(BaseballActionCall, 0))
+				}
+				continue
+			}
+			g.CpuPlay()
+		}
+		_ = attempt
+	}
+	t.Fatal("買い増しの場面まで到達しなかった (50 卓 × 200 手)")
+	return nil
+}
+
 // **買い増しの返事はポットとチップに正しく効く。**
 func TestBaseballPoker_BuyInMovesChips(t *testing.T) {
-	g := newBaseballForTest(t)
-	// 買い増しの場面に当たるまで進める。
-	found := false
-	for range 200 {
-		if g.GetPhase() == BaseballPhaseBuyIn {
-			found = true
-			break
-		}
-		if g.GetPhase() == BaseballPhaseShowdown || g.GetGameEndFlag() {
-			require.NoError(t, g.NextHand())
-			continue
-		}
-		if g.IsHumanTurn() {
-			if err := g.PlayerAction(BaseballActionCheck, 0); err != nil {
-				require.NoError(t, g.PlayerAction(BaseballActionCall, 0))
-			}
-			continue
-		}
-		g.CpuPlay()
-	}
-	require.True(t, found, "買い増しの場面まで到達しなかった")
+	g := baseballAdvanceToBuyIn(t)
 
 	buyer := g.GetBuyerSeat()
 	p := g.GetPlayers()[buyer]
@@ -264,26 +278,7 @@ func TestBaseballPoker_BuyInMovesChips(t *testing.T) {
 
 // **降りる返事はその席を降ろす。** 両方向を踏む。
 func TestBaseballPoker_BuyInFoldDropsTheSeat(t *testing.T) {
-	g := newBaseballForTest(t)
-	found := false
-	for range 200 {
-		if g.GetPhase() == BaseballPhaseBuyIn {
-			found = true
-			break
-		}
-		if g.GetPhase() == BaseballPhaseShowdown || g.GetGameEndFlag() {
-			require.NoError(t, g.NextHand())
-			continue
-		}
-		if g.IsHumanTurn() {
-			if err := g.PlayerAction(BaseballActionCheck, 0); err != nil {
-				require.NoError(t, g.PlayerAction(BaseballActionCall, 0))
-			}
-			continue
-		}
-		g.CpuPlay()
-	}
-	require.True(t, found, "買い増しの場面まで到達しなかった")
+	g := baseballAdvanceToBuyIn(t)
 
 	buyer := g.GetBuyerSeat()
 	p := g.GetPlayers()[buyer]

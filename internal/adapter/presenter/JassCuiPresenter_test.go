@@ -9,6 +9,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupJassCuiMock() *interfaces.MockJassGame {
@@ -208,4 +209,71 @@ func TestJassCuiPresenter_ActionLogOutput(t *testing.T) {
 	m := setupJassCuiMock()
 	p := new(presenter.JassCuiPresenter)
 	assert.NotNil(t, p.ActionLogOutput(m))
+}
+
+// #5685: Web は ja-previous-trick で直前トリックの4枚と勝者を常に振り返れるのに、
+// CUI は現在のトリックしか出さず、**生の棋譜を自分でスクロールして探すしかなかった。**
+func TestJassCuiPresenter_ShowsThePreviousTrick(t *testing.T) {
+	p := new(presenter.JassCuiPresenter)
+	card := func(d, v int) *domain.Card { return domain.NewCard(d, v, false) }
+
+	// 直前トリック: 席0 ♠A → 席1 ♠9 → 席2 ♠7 → 席3 ♠8、勝者は席0。
+	trickLog := []*domain.ActionLogEntry{
+		{PlayerIdx: 0, ActionType: "play", Cards: []*domain.Card{card(domain.CardDesignSpade, 1)}},
+		{PlayerIdx: 1, ActionType: "play", Cards: []*domain.Card{card(domain.CardDesignSpade, 9)}},
+		{PlayerIdx: 2, ActionType: "play", Cards: []*domain.Card{card(domain.CardDesignSpade, 7)}},
+		{PlayerIdx: 3, ActionType: "play", Cards: []*domain.Card{card(domain.CardDesignSpade, 8)}},
+		{PlayerIdx: 0, ActionType: "trick_win"},
+	}
+
+	build := func(trickNo int, log []*domain.ActionLogEntry) *interfaces.MockJassGame {
+		m, _ := setupJassCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTrickNumber")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetActionLog")
+		m.On("GetTrickNumber").Return(trickNo)
+		m.On("GetActionLog").Return(log)
+		return m
+	}
+
+	t.Run("lists the four cards and the winner", func(t *testing.T) {
+		out := p.Output(build(2, trickLog), nil)
+
+		assert.Contains(t, out, i18n.T("jass.previousTrick"))
+		assert.Contains(t, out, "SPADE 1")
+		assert.Contains(t, out, "SPADE 9")
+		assert.Contains(t, out, i18n.Tf("jass.previousTrickWinner",
+			"name", color.Bold(i18n.T("cuiPlayerYou"))))
+	})
+
+	// **直近のトリックを取る。**棋譜はゲーム全体で累積するので、先頭から4枚を
+	// 取ると 1 トリック目をいつまでも表示し続ける。
+	t.Run("takes the most recent trick, not the first", func(t *testing.T) {
+		twoTricks := append(append([]*domain.ActionLogEntry(nil), trickLog...),
+			&domain.ActionLogEntry{PlayerIdx: 0, ActionType: "play", Cards: []*domain.Card{card(domain.CardDesignHeart, 13)}},
+			&domain.ActionLogEntry{PlayerIdx: 1, ActionType: "play", Cards: []*domain.Card{card(domain.CardDesignHeart, 12)}},
+			&domain.ActionLogEntry{PlayerIdx: 2, ActionType: "play", Cards: []*domain.Card{card(domain.CardDesignHeart, 11)}},
+			&domain.ActionLogEntry{PlayerIdx: 3, ActionType: "play", Cards: []*domain.Card{card(domain.CardDesignHeart, 10)}},
+			&domain.ActionLogEntry{PlayerIdx: 1, ActionType: "trick_win"},
+		)
+
+		out := p.Output(build(3, twoTricks), nil)
+
+		assert.Contains(t, out, color.Red("HEART 13"), "2 トリック目の札が出る")
+		assert.NotContains(t, out, "SPADE 1", "1 トリック目の札は出ない")
+		assert.Contains(t, out, i18n.Tf("jass.previousTrickWinner",
+			"name", color.Bold(i18n.Tf("cuiPlayerCpu", "idx", "1"))))
+	})
+
+	// **ラウンド最初のトリック中はまだ確定済みトリックが無い** (受け入れ条件2)。
+	t.Run("says nothing on the first trick of a round", func(t *testing.T) {
+		out := p.Output(build(1, trickLog), nil)
+
+		assert.NotContains(t, out, i18n.T("jass.previousTrick"))
+	})
+
+	t.Run("says nothing when the log has no resolved trick", func(t *testing.T) {
+		out := p.Output(build(2, nil), nil)
+
+		assert.NotContains(t, out, i18n.T("jass.previousTrick"))
+	})
 }

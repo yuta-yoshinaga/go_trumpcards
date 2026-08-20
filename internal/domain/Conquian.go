@@ -15,6 +15,14 @@ const ConquianPlayerCnt = 2
 // ConquianHandSize 初期配布枚数 (各プレイヤー10枚)
 const ConquianHandSize = 10
 
+// ConquianMeldTarget は上がりに必要なメルド枚数。
+//
+// 手札 10 枚を全部並べ、引いた 1 枚も並べ終えた時点で手札が尽きて勝ち
+// (applyMeld の「手札を使い切ったら勝利」) なので、配布枚数 + 1 になる。
+// **画面はこの枚数に対する進捗を出す** ので、11 を直接書かずに配布枚数から
+// 導く (#5664)。
+const ConquianMeldTarget = ConquianHandSize + 1
+
 // ConquianPhase ゲームフェーズ
 type ConquianPhase int
 

@@ -435,6 +435,73 @@ func ofcValidRows(p *OpenFaceChinesePlayer) bool {
 	return cpValidateHands(p.front, p.middle, p.back)
 }
 
+// OpenFaceChinesePlacementFouls は card を row に置くと **確定的に** 反則
+// (front > middle または middle > back) になるかを返す。
+//
+// **OFC の核心ルールは front ≦ middle ≦ back** で、破ると全段負け扱いになる。
+// 置いた瞬間に確定する反則を事前に知らせるための判定 (#5676) -- Web は
+// ofcPlacementFouls で同じことをしている。
+//
+// **まだ埋まっていない段は判定しない。**未確定を反則と呼ぶと、まだ挽回できる
+// 配置まで避けさせてしまう。埋まった 2 段だけを比べるときは、残る段に比較を
+// 無効化する手を仮置きする。
+func OpenFaceChinesePlacementFouls(front, middle, back []*Card, card *Card, row int) bool {
+	next := func(rowCards []*Card, target int) []*Card {
+		if row != target {
+			return rowCards
+		}
+		return append(append([]*Card(nil), rowCards...), card)
+	}
+	return ofcRowsAlreadyFouled(
+		next(front, OpenFaceChineseRowFront),
+		next(middle, OpenFaceChineseRowMiddle),
+		next(back, OpenFaceChineseRowBack),
+	)
+}
+
+// ofcRowsAlreadyFouled は埋まっている段どうしの強さの順がすでに崩れているかを返す。
+func ofcRowsAlreadyFouled(front, middle, back []*Card) bool {
+	frontFull := len(front) == OpenFaceChineseFrontSize
+	middleFull := len(middle) == OpenFaceChineseMiddleSize
+	backFull := len(back) == OpenFaceChineseBackSize
+
+	switch {
+	case frontFull && middleFull && backFull:
+		return !cpValidateHands(front, middle, back)
+	case middleFull && backFull:
+		// front を無効化して middle と back だけを比べる。
+		return !cpValidateHands(ofcNeutralFront(), middle, back)
+	case frontFull && middleFull:
+		// back を無効化して front と middle だけを比べる。
+		return !cpValidateHands(front, middle, ofcStrongestBack())
+	default:
+		return false
+	}
+}
+
+// ofcNeutralFront は比較を無効化するための最弱の上段を返す。
+//
+// **2-3-4 は使えない** -- 3 枚でも連番はストレートに数えられ、ハイカードの中段を
+// 上回ってしまう。連番にもペアにもならない 2-4-7 を別スートで置く。
+func ofcNeutralFront() []*Card {
+	return []*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignHeart, 4, false),
+		NewCard(CardDesignClover, 7, false),
+	}
+}
+
+// ofcStrongestBack は比較を無効化するための最強の下段 (ロイヤルストレートフラッシュ)。
+func ofcStrongestBack() []*Card {
+	return []*Card{
+		NewCard(CardDesignSpade, 1, false),
+		NewCard(CardDesignSpade, 13, false),
+		NewCard(CardDesignSpade, 12, false),
+		NewCard(CardDesignSpade, 11, false),
+		NewCard(CardDesignSpade, 10, false),
+	}
+}
+
 // ofcPlayerRoyalty 3 段のロイヤリティ合計を返す（Chinese Poker 共通ヘルパー流用）。
 func ofcPlayerRoyalty(p *OpenFaceChinesePlayer) int {
 	fr := evalThreeCardHand(p.front)
