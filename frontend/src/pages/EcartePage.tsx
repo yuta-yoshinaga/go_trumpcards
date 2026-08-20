@@ -329,17 +329,24 @@ function EcartePageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {state.hint && isRequestedHint(state) && (
-              <div className="text-ds-warning text-sm mb-2">
-                {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
-                {state.hint.cardIndex != null && ` ([${state.hint.cardIndex}])`}
-                {/* **識別子をそのまま出さない。**`propose` のような英語が
-                    日本語 UI に混ざる (#4727)。訳が無ければ識別子に落とす
-                    (キー文字列は出さない)。 */}
-                {state.hint.action != null &&
-                  ` (${t(`action.${state.hint.action}`, { defaultValue: state.hint.action })})`}
-              </div>
-            )}
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-testid="ecarte-hint-live" role="status" aria-live="polite">
+              {state.hint && isRequestedHint(state) && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
+                  {state.hint.cardIndex != null && ` ([${state.hint.cardIndex}])`}
+                  {/* **識別子をそのまま出さない。**`propose` のような英語が
+                      日本語 UI に混ざる (#4727)。訳が無ければ識別子に落とす
+                      (キー文字列は出さない)。 */}
+                  {state.hint.action != null &&
+                    ` (${t(`action.${state.hint.action}`, { defaultValue: state.hint.action })})`}
+                </div>
+              )}
+            </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="ecarte-action-buttons">

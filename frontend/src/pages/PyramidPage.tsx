@@ -400,7 +400,12 @@ function PyramidPageContent() {
             </div>
 
             {/* Hint display */}
-            <div data-tutorial="py-hint-display">
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-tutorial="py-hint-display" data-testid="py-hint-live" role="status" aria-live="polite">
               {hint && (
                 <div className="text-ds-warning text-sm mb-2 text-center">
                   {t('hintAvailable')}: {t(`hintType.${hint.type}`)}

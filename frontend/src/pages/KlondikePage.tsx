@@ -540,7 +540,12 @@ function KlondikePageContent() {
             </div>
 
             {/* Hint display */}
-            <div data-tutorial="kl-hint-display">
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-tutorial="kl-hint-display" data-testid="kl-hint-live" role="status" aria-live="polite">
               {hint &&
                 (() => {
                   const fromCard =

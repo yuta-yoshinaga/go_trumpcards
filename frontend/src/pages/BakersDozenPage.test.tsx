@@ -251,6 +251,24 @@ describe('BakersDozenPage', () => {
     await waitFor(() => expect(screen.getByText(/ヒントがあります/)).toBeInTheDocument());
   });
 
+  // #5955: ヒントは無言で現れていた。**空のまま先にマウントしてある**領域の中身が
+  // 変わることが読み上げの条件なので、hint がある間だけ現れる内側の div ではなく、
+  // 常設のラッパーがライブ領域でなければならない。
+  it('announces the hint through a region that was already mounted', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BakersDozenPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    const region = screen.getByTestId('bd-hint-live');
+    expect(region).toHaveAttribute('role', 'status');
+    expect(region).toHaveAttribute('aria-live', 'polite');
+    expect(region).toHaveTextContent('');
+
+    mockExec.mockResolvedValue({ ...playingState, hint: { fromCol: 0, cardIndex: 0, toZone: 'tableau', toCol: 1 } });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    // **同じ要素**の中身が変わる (別の要素が現れるのではない)。
+    await waitFor(() => expect(region).toHaveTextContent(/ヒントがあります/));
+  });
+
   it('selecting a tableau card marks it as selected', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BakersDozenPage />);

@@ -393,7 +393,12 @@ function DiplomatPageContent() {
               {Array.from({ length: TABLEAU_PILES }, (_, i) => i).map(renderPile)}
             </div>
 
-            <div data-tutorial="cg-hint-display">
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-tutorial="cg-hint-display" data-testid="cg-hint-live" role="status" aria-live="polite">
               {hint && (
                 <div className="text-ds-warning text-sm mb-2 mt-3">
                   {t('hintAvailable')}: {formatHintZone(t, hint.fromZone, hint.fromIdx)} →{' '}

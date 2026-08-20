@@ -508,15 +508,22 @@ function BakersGamePageContent() {
             </div>
 
             {/* Hint display */}
-            {hint && (
-              <div className="text-ds-warning text-sm mb-2">
-                {/* Zone identifiers (tableau/freecell/foundation) double as i18n
-                    keys, so they localize instead of showing raw English. */}
-                {t('hintAvailable')}: {t(hint.fromZone)}
-                {hint.fromCol >= 0 ? ` ${hint.fromCol}` : ''} → {t(hint.toZone)}
-                {hint.toCol >= 0 ? ` ${hint.toCol}` : ''}
-              </div>
-            )}
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-testid="bakersgame-hint-live" role="status" aria-live="polite">
+              {hint && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {/* Zone identifiers (tableau/freecell/foundation) double as i18n
+                      keys, so they localize instead of showing raw English. */}
+                  {t('hintAvailable')}: {t(hint.fromZone)}
+                  {hint.fromCol >= 0 ? ` ${hint.fromCol}` : ''} → {t(hint.toZone)}
+                  {hint.toCol >= 0 ? ` ${hint.toCol}` : ''}
+                </div>
+              )}
+            </div>
             <div className="flex justify-center">
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
             </div>

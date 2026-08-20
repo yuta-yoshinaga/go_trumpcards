@@ -513,16 +513,19 @@ function AuldLangSynePageContent() {
                 messageParams={state.messageParams}
               />
 
-              {requestedHint && (
-                <div
-                  className="text-sm text-ds-accent bg-ds-surface/90 border border-ds-accent rounded px-3 py-1.5 mt-1"
-                  role="status"
-                  aria-live="polite"
-                >
-                  {t('hintAvailable')}: {t('waste')} {requestedHint.wasteIdx.toString()} → {t('foundation')}{' '}
-                  {requestedHint.foundationIdx.toString()}
-                </div>
-              )}
+              {/*
+                ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+                領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+                られないことがある (#5955)。
+              */}
+              <div data-testid="auldlangsyne-hint-live" role="status" aria-live="polite">
+                {requestedHint && (
+                  <div className="text-sm text-ds-accent bg-ds-surface/90 border border-ds-accent rounded px-3 py-1.5 mt-1">
+                    {t('hintAvailable')}: {t('waste')} {requestedHint.wasteIdx.toString()} → {t('foundation')}{' '}
+                    {requestedHint.foundationIdx.toString()}
+                  </div>
+                )}
+              </div>
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
               {selectedWaste !== null && (

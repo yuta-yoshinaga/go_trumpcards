@@ -439,7 +439,12 @@ function KingAlbertPageContent() {
               {[0, 1, 2, 3, 4, 5, 6, 7, 8].map(renderTableauColumn)}
             </div>
 
-            <div data-tutorial="ka-hint-display">
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-tutorial="ka-hint-display" data-testid="ka-hint-live" role="status" aria-live="polite">
               {hint && (
                 <div className="text-ds-warning text-sm mb-2 mt-3">
                   {t('hintAvailable')}: {formatHintZone(t, hint.fromZone, hint.fromCol)} →{' '}
