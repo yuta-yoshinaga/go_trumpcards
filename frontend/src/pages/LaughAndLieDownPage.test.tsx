@@ -229,3 +229,24 @@ describe('LaughAndLieDownPage', () => {
     });
   });
 });
+
+// #5936: チュートリアルの精算ステップは「ポットから5を受け取る」と訳文に
+// 数字を書いていた。ドメイン定数を変えると盤面だけが追随し、チュートリアルは
+// 古い数字を教え続ける。**盤面と同じ値**を補間で渡す。
+describe('LaughAndLieDownPage tutorial amount', () => {
+  it('teaches the amount the server sent, not a number baked into the translation', async () => {
+    mockExec.mockResolvedValue(makeState({ lastInBonus: 9 }));
+    renderWithProviders(<LaughAndLieDownPage />);
+    await waitFor(() => expect(document.querySelector('[data-tutorial="lld-table"]')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'チュートリアル' }));
+    // 精算は最後のステップ。手前の 3 つを送る。
+    for (let i = 0; i < 3; i += 1) {
+      fireEvent.click(await screen.findByRole('button', { name: '次へ' }));
+    }
+
+    const tooltip = await screen.findByText(/ポットから/);
+    expect(tooltip).toHaveTextContent('9');
+    expect(tooltip).not.toHaveTextContent('5を受け取ります');
+  });
+});
