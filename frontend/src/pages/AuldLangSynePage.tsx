@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { auldlangsyneApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -16,6 +17,7 @@ import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -282,6 +284,22 @@ function AuldLangSynePageContent() {
     [runApi],
   );
 
+  // **キーボードだけで遊べるようにする** (#5736)。同じ 4 基礎札 + 4 ウェイスト
+  // 系のページ (AcesUp / American Toad など) と同じ束ね方に揃える。
+  // 早期 return より前に置く: biome の useHookAtTopLevel。
+  const actionBindings = useMemo(
+    () => [
+      { key: 'd', action: handleDeal, label: 'deal' },
+      { key: 'h', action: handleHint, label: 'hint' },
+      { key: 'u', action: handleUndo, label: 'undo' },
+      { key: 'a', action: handleAutoComplete, label: 'autoComplete' },
+      { key: 'g', action: confirmGiveUpAction, label: 'giveUp' },
+    ],
+    [handleDeal, handleHint, handleUndo, handleAutoComplete, confirmGiveUpAction],
+  );
+  const isPlayingForKbd = state?.phase === AuldLangSynePhase.PLAYING;
+  useActionKeyboardNav({ bindings: actionBindings, enabled: !!isPlayingForKbd && !loading });
+
   const playToFoundation = useCallback(
     (foundationIdx: number) => {
       if (selectedWaste === null) return;
@@ -495,16 +513,19 @@ function AuldLangSynePageContent() {
                 messageParams={state.messageParams}
               />
 
-              {requestedHint && (
-                <div
-                  className="text-sm text-ds-accent bg-ds-surface/90 border border-ds-accent rounded px-3 py-1.5 mt-1"
-                  role="status"
-                  aria-live="polite"
-                >
-                  {t('hintAvailable')}: {t('waste')} {requestedHint.wasteIdx.toString()} → {t('foundation')}{' '}
-                  {requestedHint.foundationIdx.toString()}
-                </div>
-              )}
+              {/*
+                ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+                領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+                られないことがある (#5955)。
+              */}
+              <div data-testid="auldlangsyne-hint-live" role="status" aria-live="polite">
+                {requestedHint && (
+                  <div className="text-sm text-ds-accent bg-ds-surface/90 border border-ds-accent rounded px-3 py-1.5 mt-1">
+                    {t('hintAvailable')}: {t('waste')} {requestedHint.wasteIdx.toString()} → {t('foundation')}{' '}
+                    {requestedHint.foundationIdx.toString()}
+                  </div>
+                )}
+              </div>
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
               {selectedWaste !== null && (
@@ -579,6 +600,7 @@ function AuldLangSynePageContent() {
                 </>
               )}
             </div>
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="als-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

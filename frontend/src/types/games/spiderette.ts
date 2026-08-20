@@ -22,6 +22,12 @@ export interface SpideretteResponse extends BaseGameResponse {
   stockCount: number;
   completedSuits: number;
   score: number;
+  /**
+   * How the score moves: where it starts, what a move costs, what a completed
+   * suit pays. Sent so the explanation cannot quote figures the game stopped
+   * using.
+   */
+  scoring: { start: number; movePenalty: number; suitBonus: number };
   phase: number;
   moveCount: number;
   canUndo: boolean;

@@ -116,7 +116,7 @@ func scoponeDispatch(bc *baseController, w http.ResponseWriter, si usecase.Scopo
 			bc.writePresenterResponse(w, si.Reset())
 		}
 	default:
-		return dispatchLog(param.Command, bc, w, si.ActionLog)
+		return dispatchHintAndLog(param.Command, bc, w, si.Hint, si.ActionLog)
 	}
 	return true
 }

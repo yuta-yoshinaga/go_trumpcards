@@ -6,7 +6,6 @@
   "helpKemps": "  k, kemps             declare Kemps",
   "helpCounter": "  c <seat>, counter <seat>  declare Counter-Kemps on opponent seat",
   "helpNext": "  n, next              advance to the next round",
-  "helpSetDifficulty": "  sd <n>               set CPU difficulty (0=Easy, 1=Normal, 2=Hard) and reset",
   "labelHuman": "You",
   "labelCpu": "CPU",
   "roundLine": "Round {{round}}  Team A: {{teamA}}  Team B: {{teamB}}",
@@ -14,6 +13,7 @@
   "signalSound": "Sound",
   "signalBlink": "Blink",
   "fieldLabel": "Field:",
+  "swapLegend": "@ matches a card in your hand (swap candidate)",
   "teamLabel": "[Team {{team}}]",
   "cpuHandLine": "{{name}}: {{count}} cards",
   "promptExchange": "Your turn. Use s <h> <f> to swap, p to pass.",
@@ -26,5 +26,6 @@
   "winCpu": "The opposing team wins...",
   "result.humanWin": "Your team wins!",
   "result.cpuWin": "The opposing team wins...",
-  "fourOfAKindReady": "* Four of a kind! You may declare Kemps (declare / d)"
+  "fourOfAKindReady": "* Four of a kind! You may declare Kemps (declare / d)",
+  "helpExamplePass": "  p                    skip the swap"
 }

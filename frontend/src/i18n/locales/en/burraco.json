@@ -73,7 +73,12 @@
     "takeDiscardPile": "Consider taking the discard pile",
     "meldInitial": "Make your initial meld to open",
     "meldExtend": "Extend an existing meld for more points",
-    "discardHighSafe": "Discard a high-rank card the opponent cannot use"
+    "discardHighSafe": "Discard a high-rank card the opponent cannot use",
+    "hintReasonDrawStock": "No useful pair on the discard — draw from the stock",
+    "hintReasonDrawDiscard": "You hold a natural pair for the discard top — take the pile",
+    "hintReasonMeld": "You have a meldable combination",
+    "hintReasonNoMeld": "No valid meld — skip",
+    "hintReasonDiscard": "Discard the least useful card"
   },
   "sort": {
     "label": "Sort hand",

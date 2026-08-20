@@ -101,3 +101,41 @@ func TestChinesePokerWebPresenter_ActionLogOutput(t *testing.T) {
 	result := pp.ActionLogOutput(cp)
 	assert.Contains(t, result, "[")
 }
+
+// #5615: CUI は #4717 から `GetSuggestedArrangement()` の具体的な分け方 (どの札を
+// どの列へ) とファウル警告を出しているのに、Web の HintOutput は Output() を
+// そのまま返すだけで、ページはフロント独自のランク降順スライスを使っていた。
+// 同じ盤面で違う答えが出る状態だった。
+func TestChinesePokerWebPresenterCarriesTheSuggestedArrangement(t *testing.T) {
+	pp := &ChinesePokerWebPresenter{}
+	cp := domain.NewDefaultChinesePoker()
+	require.NoError(t, cp.Bet(100))
+
+	var out controller.ChinesePokerWebOutput
+	require.NoError(t, json.Unmarshal([]byte(pp.HintOutput(cp)), &out))
+
+	want := cp.GetSuggestedArrangement()
+	require.NotNil(t, want, "セットハンドで13枚そろっていれば必ず案が出る")
+	require.NotNil(t, out.SuggestedArrangement)
+	// **ドメインの答えをそのまま運ぶ。**presenter で並べ直すと、CUI と Web が
+	// 同じ手札で違う分け方を勧めることになる。
+	assert.Equal(t, want.Front, out.SuggestedArrangement.Front)
+	assert.Equal(t, want.Middle, out.SuggestedArrangement.Middle)
+	assert.Equal(t, want.Back, out.SuggestedArrangement.Back)
+	assert.Equal(t, want.Foul, out.SuggestedArrangement.Foul)
+	// 3/5/5 の形も固定しておく (取り違えると列がずれる)。
+	assert.Len(t, out.SuggestedArrangement.Front, 3)
+	assert.Len(t, out.SuggestedArrangement.Middle, 5)
+	assert.Len(t, out.SuggestedArrangement.Back, 5)
+}
+
+// セットハンドでない (= 13枚そろっていない) ときは載せない。
+// 空の配列を返すと、フロントには「前列に置く札が無い」と読める。
+func TestChinesePokerWebPresenterOmitsTheArrangementOutsideSetHands(t *testing.T) {
+	pp := &ChinesePokerWebPresenter{}
+	cp := domain.NewDefaultChinesePoker()
+
+	var out controller.ChinesePokerWebOutput
+	require.NoError(t, json.Unmarshal([]byte(pp.HintOutput(cp)), &out))
+	assert.Nil(t, out.SuggestedArrangement)
+}

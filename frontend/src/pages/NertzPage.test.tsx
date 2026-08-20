@@ -23,6 +23,7 @@ const baseConfig = {
 };
 
 const playingState: NertzResponse = {
+  foundationMax: 13,
   phase: NertzPhase.PLAYING,
   roundNumber: 1,
   winnerIdx: -1,
@@ -559,5 +560,43 @@ describe('NertzPage', () => {
 
     await waitFor(() => expect(screen.getByText(/ナッツ から ファウンデーション2 へ移動/)).toBeInTheDocument());
     expect(screen.queryByText('移動先のファウンデーションかタブローを選んでください')).not.toBeInTheDocument();
+  });
+
+  // #5578: あと何枚で完成するかは組札の読みどころなのに、現在枚数しか出ておらず
+  // 暗算させていた。CUI は前から "n/13" で出している。
+  describe('foundation capacity', () => {
+    it('shows the size against the maximum', async () => {
+      mockExec.mockResolvedValue({
+        ...playingState,
+        foundations: [{ top: { design: 'SPADE', value: 5 }, suit: 1, size: 5 }],
+      });
+      renderWithProviders(<NertzPage />);
+      const cell = await screen.findByTestId('nertz-foundation-0');
+      expect(cell).toHaveTextContent('(5/13)');
+    });
+
+    // **上限はサーバから。**画面に 13 を焼き込むと、定数を変えたとき嘘になる。
+    it('renders whatever maximum the server sends', async () => {
+      mockExec.mockResolvedValue({
+        ...playingState,
+        foundationMax: 10,
+        foundations: [{ top: { design: 'SPADE', value: 5 }, suit: 1, size: 5 }],
+      });
+      renderWithProviders(<NertzPage />);
+      const cell = await screen.findByTestId('nertz-foundation-0');
+      expect(cell).toHaveTextContent('(5/10)');
+      expect(cell).not.toHaveTextContent('/13');
+    });
+
+    // 読み上げにも枚数が乗ること。見えている数字だけでは支援技術に届かない。
+    it('carries the count in the accessible name', async () => {
+      mockExec.mockResolvedValue({
+        ...playingState,
+        foundations: [{ top: { design: 'SPADE', value: 5 }, suit: 1, size: 5 }],
+      });
+      renderWithProviders(<NertzPage />);
+      const cell = await screen.findByTestId('nertz-foundation-0');
+      expect(cell.getAttribute('aria-label')).toContain('5/13');
+    });
   });
 });

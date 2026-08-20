@@ -29,5 +29,9 @@
   "hintFold": "推奨: フォールド",
   "madeHandLine": "現在の役: {{hand}} ({{eligible}})",
   "madeHandEligible": "配当あり",
-  "madeHandNotEligible": "配当なし"
+  "madeHandNotEligible": "配当なし",
+  "helpExampleBet": "  b 10                 アンテ 10 で参加する",
+  "helpExamplePlay": "  p 1                  1 倍で勝負する",
+  "helpHint": "  h                    助言を表示",
+  "payoutMultiplierLine": "配当倍率: x{{multiplier}}"
 }

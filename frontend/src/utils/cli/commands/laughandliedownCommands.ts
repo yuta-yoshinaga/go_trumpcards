@@ -28,6 +28,9 @@ export function parseLaughAndLieDownCommand(input: string): CliParseResult<Laugh
     case 'r':
     case 'reset':
       return { args: ['reset'] };
+    case 'h':
+    case 'hint':
+      return { args: ['hint'] };
     default: {
       const suggestion = suggestCommand(cmd, VALID_COMMANDS);
       if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
@@ -42,4 +45,5 @@ export const LAUGHANDLIEDOWN_HELP: string[] = [
   'p <i> 3         - Capture three of that rank (only when three are on the table)',
   'log             - Show action log',
   'r/reset         - New game',
+  'h/hint      - Get a hint',
 ];

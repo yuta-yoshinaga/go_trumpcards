@@ -46,19 +46,18 @@ func (c *FortyFivesCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bid":
-				return cuiutil.WithParsedInt(args, "Bid is required (0=Pass, 15, 20, 25).",
-					"Invalid bid: %s. Please enter 0, 15, 20 or 25.",
+				return cuiutil.WithParsedIntKeys(args, "bidRequired15", "invalidBid15",
 					int(domain.FortyFivesBidPass), int(domain.FortyFivesBidTwentyFive), c.di.Bid)
 			case "pass":
 				return c.di.Bid(int(domain.FortyFivesBidPass)), true
 			case "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.di.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.di.Play)
 			case "n", "next":
 				return c.di.NextTrick(), true
 			case "nr", "nextround":
 				return c.di.NextRound(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.di.GetConfig()
 					cfg.CpuDifficulty = domain.FortyFivesCpuDifficulty(v)
 					return c.di.ResetWithConfig(cfg)

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { isVisibleWithin, navigateTo, TIMEOUT_ACTION, waitForLoaded } from './helpers';
+import { isVisibleWithin, navigateTo, TIMEOUT_ACTION, TIMEOUT_GAME_LOOP, waitForLoaded } from './helpers';
 
 test.describe('BlackJack E2E', () => {
   test('plays a round: bet → stand → result', async ({ page }) => {
@@ -19,14 +19,23 @@ test.describe('BlackJack E2E', () => {
       await waitForLoaded(page);
     }
 
-    // ACTION phase: click スタンド
+    // A natural blackjack (dealer's, or every player hand) settles the round in
+    // checkNaturalBlackJack without ever entering the ACTION phase, so スタンド
+    // never appears on those deals -- wait for either state rather than assuming
+    // one (#6063).
     const standButton = page.getByRole('button', { name: 'スタンド' });
-    await expect(standButton).toBeVisible({ timeout: 5_000 });
-    await standButton.click();
-    await waitForLoaded(page);
-
-    // END phase: 次のゲーム button should be visible
     const resetButton = page.getByRole('button', { name: '次のゲーム' });
-    await expect(resetButton).toBeVisible({ timeout: 10_000 });
+    // **配り直後の遷移にはサーバー往復が乗る。**5 秒は負荷の高いランナーでは
+    // 足りず、Blackjack と無関係な PR で 2 回落ちている (#6181)。どちらの回も
+    // 同じシャードの別 spec も一緒に落ちていた。
+    await expect(standButton.or(resetButton).first()).toBeVisible({ timeout: TIMEOUT_GAME_LOOP });
+
+    if (await standButton.isVisible()) {
+      await standButton.click();
+      await waitForLoaded(page);
+    }
+
+    // END phase: 次のゲーム button should be visible either way
+    await expect(resetButton).toBeVisible({ timeout: TIMEOUT_GAME_LOOP });
   });
 });

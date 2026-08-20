@@ -29,7 +29,19 @@ func threeThirteenPlayerStr(g interfaces.ThreeThirteenGame, player *domain.Three
 		"cards", strconv.Itoa(player.GetCardsSize()),
 		"deadwood", deadwoodStr) + "\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
-		b.WriteString(cuiIndexedCardListStr(player) + "\n")
+		// **ワイルドランクは毎ラウンド変わる** (#5667)。Web は該当札にバッジと
+		// リングを付けているのに、CUI はヘッダーの wild 値と 1 枚ずつ照合させて
+		// いた。判定はドメインの WildRank に従う。
+		var wild []int
+		for idx := 0; idx < player.GetCardsSize(); idx++ {
+			if player.GetCard(idx).GetValue() == g.WildRank() {
+				wild = append(wild, idx)
+			}
+		}
+		b.WriteString(cuiIndexMarkedCardListStr(player, wild, CuiWildMark) + "\n")
+		if len(wild) > 0 {
+			b.WriteString(i18n.T("threethirteen.wildLegend") + "\n")
+		}
 		if line := threeThirteenDiscardPreview(g, player, i); line != "" {
 			b.WriteString(line + "\n")
 		}
@@ -110,5 +122,5 @@ func (p *ThreeThirteenCuiPresenter) Output(g interfaces.ThreeThirteenGame, lastE
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *ThreeThirteenCuiPresenter) ActionLogOutput(g interfaces.ThreeThirteenGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.ThreeThirteenPlayer](g)
 }

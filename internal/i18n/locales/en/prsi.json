@@ -13,5 +13,6 @@
   "promptDrawHelp": "draw: draw when stuck (takes the whole 7-penalty stack)",
   "legalPlays": "Playable: {{cards}}",
   "noLegalPlay": "No playable card → use draw to take a card",
-  "pendingSkips": " / skips pending: {{count}}"
+  "pendingSkips": " / skips pending: {{count}}",
+  "helpExamplePlay": "  p 0                  play hand card 0"
 }

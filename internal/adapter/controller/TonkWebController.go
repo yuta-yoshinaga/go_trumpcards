@@ -52,7 +52,10 @@ type TonkWebOutput struct {
 	OpponentMelds    []*TonkWebOutputMeld   `json:"opponentMelds"`
 	OpponentDeadwood []*WebOutputCard       `json:"opponentDeadwood"`
 	IsTonk           bool                   `json:"isTonk"`
-	IsUndercut       bool                   `json:"isUndercut"`
+	// UndercutRiskMax は「アンダーカットされうる」と警告する相手の残り枚数 (#5582)。
+	// 閾値を画面に焼き込むと、変えたとき Web と CUI で警告の出る局面がずれる。
+	UndercutRiskMax int  `json:"undercutRiskMax"`
+	IsUndercut      bool `json:"isUndercut"`
 	// BestDeadwood は1枚捨てて到達できる最小デッドウッド。CUI は毎ターン
 	// これを閾値と比べて「ノック可能/不可」を出しているのに、Web は同じ判断を
 	// プレイヤーの手計算に任せていた。人間のディスカードフェーズ以外は -1。
@@ -101,7 +104,9 @@ func newTonkDefaultOutput(msg string) *TonkWebOutput {
 		KnockerDeadwood:  make([]*WebOutputCard, 0),
 		OpponentMelds:    make([]*TonkWebOutputMeld, 0),
 		OpponentDeadwood: make([]*WebOutputCard, 0),
-		WebOutputBase:    WebOutputBase{Message: msg},
+		// 閾値は盤面が無くても規則なので、既定の応答にも乗せる。
+		UndercutRiskMax: domain.TonkUndercutRiskMax,
+		WebOutputBase:   WebOutputBase{Message: msg},
 	}
 }
 

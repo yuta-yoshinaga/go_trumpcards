@@ -676,8 +676,12 @@ func (ns *NapoleonsSquare) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// napoleonsSquareTotalCards 2 デッキ分の総枚数
-const napoleonsSquareTotalCards = CardCnt * 2
+// NapoleonsSquareTotalCards 2 デッキ分の総枚数。勝利は 8 つの組札にこの枚数を
+// 積み切ることなので、進捗の分母そのもの (#5554)。
+const NapoleonsSquareTotalCards = CardCnt * 2
+
+// napoleonsSquareTotalCards は旧名。内部の境界チェックが使う。
+const napoleonsSquareTotalCards = NapoleonsSquareTotalCards
 
 // UnmarshalJSON KV スナップショットからの復元。KV には以前のバージョンが書いた任意の
 // バイト列が入りうるので、壊れた状態でゲームを開始させないよう値域を検証する。

@@ -201,7 +201,17 @@ function PenguinPageContent() {
 
   const emptyFreeCells = state.freeCells.filter((c) => c === null).length;
   const emptyTableauCols = state.tableau.filter((col: (Card | null)[]) => col.length === 0).length;
-  const supermoveLimit = (1 + emptyFreeCells) * 2 ** emptyTableauCols;
+  // **上限はドメインが決める。**ここで一般式を持つと、空き列自身を経由地に
+  // 使えないぶんの差 (maxMovableCardsToEmptyColumn) が抜け、空き列宛ての束を
+  // 「動かせる」と見せてサーバーに弾かれる (#5614)。
+  const supermoveLimit = state.maxMovableCards;
+  const emptyColLimit = state.maxMovableCardsToEmptyColumn;
+
+  // 選択中の束の枚数。空き列が受け取れるかはこれと emptyColLimit で決まる。
+  const selectedStackSize =
+    selectedSource?.zone === 'tableau' && selectedSource.col !== undefined && selectedSource.cardIndex !== undefined
+      ? (state.tableau[selectedSource.col]?.length ?? 0) - selectedSource.cardIndex
+      : 0;
 
   const emptyColPlaceholder = prevRankLabel(state.baseRank);
 
@@ -246,6 +256,7 @@ function PenguinPageContent() {
               cells: emptyFreeCells,
               cols: emptyTableauCols,
             })}
+            {emptyColLimit > 0 && <> {t('supermoveToEmpty', { limit: emptyColLimit })}</>}
           </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
@@ -406,7 +417,18 @@ function PenguinPageContent() {
                               disabled={!isPlaying || loading || !selectedSource}
                               aria-label={t('emptyColumnAriaLabel', { rank: emptyColPlaceholder })}
                               style={{ height: cardHeight }}
-                              className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                              data-testid={`pg-empty-col-${colIdx.toString()}`}
+                              // 空き列だけ上限が低い。選んだ束が超えているなら、
+                              // クリックする前に分かるようにする (#5614)。
+                              data-empty-col-blocked={selectedStackSize > emptyColLimit ? 'true' : undefined}
+                              title={
+                                selectedStackSize > emptyColLimit
+                                  ? t('emptyColLimitTooltip', { limit: emptyColLimit, size: selectedStackSize })
+                                  : undefined
+                              }
+                              className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite} ${
+                                selectedStackSize > emptyColLimit ? 'opacity-50' : ''
+                              }`}
                             >
                               {emptyColPlaceholder}
                             </button>
@@ -441,7 +463,14 @@ function PenguinPageContent() {
                                         }
                                       }}
                                       disabled={!isPlaying || loading}
-                                      aria-label={cardAlt(card)}
+                                      // 上限超過は title とリングだけで示していたので、
+                                      // ホバーできる人にしか届かない。draggable も落として
+                                      // いるのに、動かせない理由が読み上げに出ない (#5820)。
+                                      aria-label={
+                                        exceedsSupermove
+                                          ? `${cardAlt(card)} — ${t('supermoveLimitTooltip', { limit: supermoveLimit, cells: emptyFreeCells, cols: emptyTableauCols })}`
+                                          : cardAlt(card)
+                                      }
                                       aria-pressed={isSourceSelected('tableau', colIdx, undefined, cardIdx)}
                                       data-testid={`pg-tableau-${colIdx.toString()}-${cardIdx.toString()}`}
                                       draggable={isPlaying && !loading && !exceedsSupermove}

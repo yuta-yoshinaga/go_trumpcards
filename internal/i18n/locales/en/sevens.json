@@ -28,5 +28,8 @@
   "turnLine": "Turn: {{name}}",
   "playHint": "p [index] to play a card / p to pass",
   "jokerHint": "j [card index] [suit] [value] to place a joker",
-  "boardSuitLine": "  {{suit}}: {{cells}}"
+  "boardSuitLine": "  {{suit}}: {{cells}}",
+  "helpExamplePass": "  p                    pass when you cannot play",
+  "helpLog": "  l                    show the action log",
+  "noPlayable": "No playable card -- pass with p"
 }

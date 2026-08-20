@@ -72,5 +72,7 @@ export interface NertzResponse extends BaseGameResponse {
   cpuTickMoves: number;
   players: NertzPlayerData[];
   foundations: NertzFoundationData[];
+  /** Cards that complete one foundation (A..K = 13). Sent so the figure is not written down twice. */
+  foundationMax: number;
   hint?: NertzHint;
 }

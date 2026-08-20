@@ -95,5 +95,6 @@
     "straightFlush": "Straight Flush",
     "royalFlush": "Royal Flush"
   },
-  "exposedNotice": "The first board card is already face up before the opening bet"
+  "exposedNotice": "The first board card is already face up before the opening bet",
+  "livePreviewAria": "Current best hand: {{hand}}"
 }

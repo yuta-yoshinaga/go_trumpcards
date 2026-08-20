@@ -25,6 +25,8 @@ const defaultState: TriPeaksResponse = {
   waste: [],
   phase: 0,
   moveCount: 0,
+  score: 0,
+  combo: 0,
   canUndo: false,
   isStalemate: false,
   message: '',

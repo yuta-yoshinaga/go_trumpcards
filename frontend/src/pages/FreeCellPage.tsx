@@ -79,6 +79,24 @@ const FC_TUTORIAL_STEPS: TutorialStep[] = [
 /** Renders the FreeCell solitaire game page with tableau, free cells, and foundation. */
 export const FreeCellPage = withTutorial(FreeCellPageContent, 'freecell', FC_TUTORIAL_STEPS);
 /** Inner content of the FreeCell page, wrapped by TutorialProvider. */
+/**
+ * Render one side of a hint as "<zone> <col>", or just the zone when the hint
+ * carries no column.
+ *
+ * **ゾーン識別子を i18n キーに使わない。** ドメインが返す "tableau" などをそのまま
+ * `t()` に渡していたので、ゾーン名を変えたり足したりすると翻訳キーが静かに壊れ、
+ * コンパイルでも型でも検出できなかった (#5494)。姉妹の Solitaire 系ページ
+ * (FlowerGarden ほか) と同じ frontendHint.* 名前空間に寄せる。
+ *
+ * 未知のゾーンはキーではなく識別子そのものを返す -- 生の "tableau" が出るほうが、
+ * 翻訳キー文字列が画面に出るより読める。
+ */
+function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => string, zone: string, col: number): string {
+  const label =
+    zone === 'tableau' || zone === 'freecell' || zone === 'foundation' ? t(`frontendHint.zone.${zone}`) : zone;
+  return col >= 0 ? `${label} ${col}` : label;
+}
+
 function FreeCellPageContent() {
   const {
     t,
@@ -192,14 +210,19 @@ function FreeCellPageContent() {
   const isGameOver = state.phase === FreeCellPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
 
-  // Supermove limit: a tableau stack of N cards can only move when
-  // (1 + freeCells) * 2^emptyCols >= N. We compute the upper-bound limit (the
-  // optimistic case where the destination is NOT one of the empty columns) and
-  // mark anything deeper than that as undraggable, with a red ring + tooltip
-  // so the player sees the cap before the engine rejects the move.
-  const emptyFreeCells = state.freeCells.filter((c) => c === null).length;
-  const emptyTableauCols = state.tableau.filter((col: (Card | null)[]) => col.length === 0).length;
-  const supermoveLimit = (1 + emptyFreeCells) * 2 ** emptyTableauCols;
+  // Supermove limit: a tableau stack of N cards can only move when the domain
+  // says so. **上限はドメインが決める。**ここで一般式 ((1 + freeCells) *
+  // 2^emptyCols) を持つと、空き列自身を経由地に使えないぶんの差
+  // (maxMovableCardsToEmptyColumn) が抜け、空き列宛ての束を「動かせる」と
+  // 見せてサーバーに弾かれる (#5975)。
+  const supermoveLimit = state.maxMovableCards;
+  const emptyColLimit = state.maxMovableCardsToEmptyColumn;
+
+  // 選択中の束の枚数。空き列が受け取れるかはこれと emptyColLimit で決まる。
+  const selectedStackSize =
+    selectedSource?.zone === 'tableau' && selectedSource.col !== undefined && selectedSource.cardIndex !== undefined
+      ? (state.tableau[selectedSource.col]?.length ?? 0) - selectedSource.cardIndex
+      : 0;
   // Auto-complete will deterministically win once every column is descending.
   const autoCompleteReady = freeCellAutoCompleteReady(state.tableau);
 
@@ -358,6 +381,7 @@ function FreeCellPageContent() {
             {/* Max bulk-move (supermove) limit, derived from empty free cells/columns */}
             <div className="text-game-text-muted text-xs mb-2" data-testid="fc-supermove-limit">
               {t('supermoveLimitLabel', { limit: supermoveLimit })}
+              {emptyColLimit > 0 && <> {t('supermoveToEmpty', { limit: emptyColLimit })}</>}
             </div>
 
             {/* Tableau */}
@@ -381,7 +405,18 @@ function FreeCellPageContent() {
                               onClick={() => handleSelectTarget(tableauColZone)}
                               disabled={!isPlaying || loading || !selectedSource}
                               style={{ height: cardHeight }}
-                              className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                              data-testid={`fc-empty-col-${colIdx.toString()}`}
+                              // 空き列だけ上限が低い。選んだ束が超えているなら、
+                              // クリックする前に分かるようにする (#5975)。
+                              data-empty-col-blocked={selectedStackSize > emptyColLimit ? 'true' : undefined}
+                              title={
+                                selectedStackSize > emptyColLimit
+                                  ? t('emptyColLimitTooltip', { limit: emptyColLimit, size: selectedStackSize })
+                                  : undefined
+                              }
+                              className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite} ${
+                                selectedStackSize > emptyColLimit ? 'opacity-50' : ''
+                              }`}
                             >
                               K
                             </button>
@@ -428,7 +463,14 @@ function FreeCellPageContent() {
                                           : undefined
                                       }
                                       disabled={!isPlaying || loading}
-                                      aria-label={cardAlt(card)}
+                                      // 上限超過は title とリングだけで示していたので、
+                                      // ホバーできる人にしか届かない。draggable も落として
+                                      // いるのに、動かせない理由が読み上げに出ない (#5820)。
+                                      aria-label={
+                                        exceedsSupermove
+                                          ? `${cardAlt(card)} — ${t('supermoveLimitTooltip', { limit: supermoveLimit })}`
+                                          : cardAlt(card)
+                                      }
                                       aria-pressed={isSourceSelected('tableau', colIdx, undefined, cardIdx)}
                                       draggable={isPlaying && !loading && !exceedsSupermove}
                                       onDragStart={dnd.handleDragStart(cardZone)}
@@ -480,15 +522,19 @@ function FreeCellPageContent() {
             </div>
 
             {/* Hint display */}
-            {hint && (
-              <div className="text-ds-warning text-sm mb-2">
-                {/* Zone identifiers (tableau/freecell/foundation) double as i18n
-                    keys, so they localize instead of showing raw English. */}
-                {t('hintAvailable')}: {t(hint.fromZone)}
-                {hint.fromCol >= 0 ? ` ${hint.fromCol}` : ''} → {t(hint.toZone)}
-                {hint.toCol >= 0 ? ` ${hint.toCol}` : ''}
-              </div>
-            )}
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-testid="freecell-hint-live" role="status" aria-live="polite">
+              {hint && (
+                <div className="text-ds-warning text-sm mb-2" data-testid="fc-hint-line">
+                  {t('hintAvailable')}: {formatHintZone(t, hint.fromZone, hint.fromCol)} →{' '}
+                  {formatHintZone(t, hint.toZone, hint.toCol)}
+                </div>
+              )}
+            </div>
             <div className="flex justify-center">
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
             </div>

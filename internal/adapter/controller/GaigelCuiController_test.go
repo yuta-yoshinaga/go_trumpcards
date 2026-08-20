@@ -50,7 +50,7 @@ func TestGaigelCuiController_Exec(t *testing.T) {
 
 	t.Run("play no args", func(t *testing.T) {
 		c := controller.NewGaigelCuiController(newMock())
-		assert.Contains(t, c.Exec("p"), "Card index is required")
+		assert.Contains(t, c.Exec("p"), msgCardIndexRequired())
 	})
 
 	t.Run("marriage m with index", func(t *testing.T) {
@@ -69,7 +69,7 @@ func TestGaigelCuiController_Exec(t *testing.T) {
 
 	t.Run("marriage no args", func(t *testing.T) {
 		c := controller.NewGaigelCuiController(newMock())
-		assert.Contains(t, c.Exec("m"), "Card index is required")
+		assert.Contains(t, c.Exec("m"), msgCardIndexRequired())
 	})
 
 	t.Run("next n", func(t *testing.T) {
@@ -106,7 +106,7 @@ func TestGaigelCuiController_Exec(t *testing.T) {
 
 	t.Run("settarget invalid", func(t *testing.T) {
 		c := controller.NewGaigelCuiController(newMock())
-		assert.Contains(t, c.Exec("st 0"), "Invalid target score: 0")
+		assert.Contains(t, c.Exec("st 0"), msgInvalidTargetScore("0"))
 	})
 
 	t.Run("hint h", func(t *testing.T) {

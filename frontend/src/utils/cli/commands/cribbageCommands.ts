@@ -18,6 +18,8 @@ const VALID_COMMANDS = [
   'log',
   'r',
   'reset',
+  'h',
+  'hint',
   'help',
   '?',
 ];
@@ -54,6 +56,9 @@ export function parseCribbageCommand(input: string): CliParseResult<CribbageArgs
     case 'r':
     case 'reset':
       return { args: ['reset'] };
+    case 'h':
+    case 'hint':
+      return { args: ['hint'] };
     default: {
       const suggestion = suggestCommand(cmd, VALID_COMMANDS);
       if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
@@ -72,4 +77,5 @@ export const CRIBBAGE_HELP: string[] = [
   'nr/nextround   - Next round',
   'log            - Show action log',
   'r/reset        - Reset game',
+  'h/hint         - Get a hint',
 ];

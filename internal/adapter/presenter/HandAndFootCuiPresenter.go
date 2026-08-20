@@ -189,5 +189,5 @@ func (p *HandAndFootCuiPresenter) HintOutput(g interfaces.HandAndFootGame) strin
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *HandAndFootCuiPresenter) ActionLogOutput(g interfaces.HandAndFootGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.HandAndFootPlayer](g)
 }

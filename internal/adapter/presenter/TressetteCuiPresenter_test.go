@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -27,6 +28,8 @@ func setupTressetteCuiMock() *interfaces.MockTressetteGame {
 	m.On("GetCurrentPlayerIdx").Return(0)
 	m.On("GetWinnerTeam").Return(-1)
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// 合法手の目印 (#5633)。既定は「制限なし」= 印を出さない状態。
+	m.On("GetPlayableIndices", mock.Anything).Return([]int(nil)).Maybe()
 	return m
 }
 
@@ -127,6 +130,67 @@ func TestTressetteCuiPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
 		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "plays ♠3"},
 	})
+	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+	m.On("GetPlayer", mock.Anything).Return(domain.NewTressettePlayer(true)).Maybe()
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, "play")
+}
+
+// #5633: Web は playableIndices で出せる札をリング表示しているのに、CUI は
+// 素の一覧だけで、番号を打ってエラーを踏むまで分からなかった。
+func TestTressetteCuiPresenterMarksThePlayableCards(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.TressetteCuiPresenter)
+
+	// **既定 (.Maybe()) を先に消す。**testify は最初に一致した期待値を返すので、
+	// 消さずに足すと上書きしたつもりのケースが何も確かめない。
+	setup := func(t *testing.T, phase domain.TressettePhase, turn int, playable []int) *interfaces.MockTressetteGame {
+		t.Helper()
+		m, players := setupTressetteCuiMockWithPlayers()
+		for _, c := range []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 1, false),
+			domain.NewCard(domain.CardDesignHeart, 3, false),
+			domain.NewCard(domain.CardDesignClover, 7, false),
+		} {
+			players[0].AddCard(c)
+		}
+		m.ExpectedCalls = tressetteMockWithout(m.ExpectedCalls, "GetPhase", "GetCurrentPlayerIdx", "GetPlayableIndices")
+		m.On("GetPhase").Return(phase)
+		m.On("GetCurrentPlayerIdx").Return(turn)
+		m.On("GetPlayableIndices", mock.Anything).Return(playable)
+		return m
+	}
+
+	t.Run("marks only what the follow rule allows", func(t *testing.T) {
+		m := setup(t, domain.TressettePhasePlay, 0, []int{0, 2})
+		out := p.Output(m, nil)
+		assert.Equal(t, 2, strings.Count(out, presenter.CuiLegalMark))
+	})
+
+	t.Run("marks nothing on another player's turn", func(t *testing.T) {
+		m := setup(t, domain.TressettePhasePlay, 1, []int{0, 2})
+		assert.NotContains(t, p.Output(m, nil), presenter.CuiLegalMark)
+	})
+
+	t.Run("marks nothing outside the play phase", func(t *testing.T) {
+		m := setup(t, domain.TressettePhaseRoundEnd, 0, []int{0, 2})
+		assert.NotContains(t, p.Output(m, nil), presenter.CuiLegalMark)
+	})
+}
+
+// tressetteMockWithout drops the listed expectations so a test can override them.
+func tressetteMockWithout(calls []*mock.Call, methods ...string) []*mock.Call {
+	drop := make(map[string]bool, len(methods))
+	for _, m := range methods {
+		drop[m] = true
+	}
+	out := make([]*mock.Call, 0, len(calls))
+	for _, c := range calls {
+		if !drop[c.Method] {
+			out = append(out, c)
+		}
+	}
+	return out
 }

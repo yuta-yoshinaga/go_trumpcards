@@ -15,5 +15,7 @@
   "playerFinished": " (上がり)",
   "playerCardCount": " ({{count}}枚)",
   "currentBidder": "現在の入札者: {{name}}",
-  "promptBid": "入札してください（b 0-3、0=パス）"
+  "promptBid": "入札してください（b 0-3、0=パス）",
+  "helpExampleBid": "  b 0                  地主の入札をパスする",
+  "helpLog": "  l                    行動ログを表示"
 }

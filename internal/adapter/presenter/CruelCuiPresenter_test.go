@@ -15,6 +15,7 @@ func setupCruelCuiMockDefaults(cg *interfaces.MockCruelGame) {
 	cg.On("GetPhase").Return(domain.CruelPhasePlaying).Maybe()
 	cg.On("GetMoveCount").Return(0).Maybe()
 	cg.On("IsStalemate").Return(false).Maybe()
+	cg.On("UndoToEscape").Return(0).Maybe()
 
 	var tableau [domain.CruelTableauCnt][]*domain.KlondikeTableauCard
 	for i := range domain.CruelTableauCnt {
@@ -57,6 +58,7 @@ func TestCruelCuiPresenter_Output(t *testing.T) {
 		cg.On("GetPhase").Return(domain.CruelPhasePlaying).Maybe()
 		cg.On("GetMoveCount").Return(5).Maybe()
 		cg.On("IsStalemate").Return(true).Maybe()
+		cg.On("UndoToEscape").Return(0).Maybe()
 		var tableau [domain.CruelTableauCnt][]*domain.KlondikeTableauCard
 		cg.On("GetTableau").Return(tableau).Maybe()
 		var foundation [domain.CruelFoundationCnt][]*domain.Card

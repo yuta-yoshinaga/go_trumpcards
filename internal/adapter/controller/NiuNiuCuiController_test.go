@@ -48,8 +48,8 @@ func TestNiuNiuCuiControllerBet(t *testing.T) {
 
 func TestNiuNiuCuiControllerRejectsBadAmounts(t *testing.T) {
 	for _, tc := range []struct{ cmd, contains string }{
-		{"b", "required."},
-		{"b abc", "Invalid"},
+		{"b", msgBetAmountRequired()},
+		{"b abc", msgInvalidBetAmountPrefix()},
 	} {
 		t.Run(tc.cmd, func(t *testing.T) {
 			c := NewNiuNiuCuiController(newMockNiuNiuInteractor())

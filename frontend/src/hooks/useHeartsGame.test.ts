@@ -31,6 +31,7 @@ const defaultState: HeartsResponse = {
       cumulativeScore: 0,
       trickCount: 0,
       penaltyCards: [],
+      tookOmnibusJD: false,
     },
     {
       id: 1,
@@ -41,6 +42,7 @@ const defaultState: HeartsResponse = {
       cumulativeScore: 0,
       trickCount: 0,
       penaltyCards: [],
+      tookOmnibusJD: false,
     },
     {
       id: 2,
@@ -51,6 +53,7 @@ const defaultState: HeartsResponse = {
       cumulativeScore: 0,
       trickCount: 0,
       penaltyCards: [],
+      tookOmnibusJD: false,
     },
     {
       id: 3,
@@ -61,6 +64,7 @@ const defaultState: HeartsResponse = {
       cumulativeScore: 0,
       trickCount: 0,
       penaltyCards: [],
+      tookOmnibusJD: false,
     },
   ],
   phase: 1,

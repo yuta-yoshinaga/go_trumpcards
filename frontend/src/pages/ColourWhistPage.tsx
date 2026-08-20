@@ -32,6 +32,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { COLOURWHIST_CLI_HELP, parseColourWhistCommand } from '../utils/cli/commands/colourwhistCommands';
 import { formatColourWhistState } from '../utils/cli/formatters/colourwhistFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { colourWhistHasPartner } from '../utils/colourWhistPartner';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const CW_TUTORIAL_STEPS: TutorialStep[] = [
@@ -188,7 +189,10 @@ function ColourWhistPageContent() {
                   {t('label.declarer')}: #{state.declarerIdx} ({t('label.declarerTricks')} {state.declarerTricks})
                 </div>
               )}
-              {state.contract !== ColourWhistContract.NONE && (
+              {/* Alleen と Miserie には相方がいない。partnerIdx は「相方なし」も
+                  「相方はいるが未公開」も -1 なので、契約で判定しないと単独契約に
+                  「相方: 非公開」と出て、隠れた味方がいると誤解させる (#5773)。 */}
+              {colourWhistHasPartner(state.contract) && (
                 <div data-testid="colourwhist-partner">
                   {t('label.partner')}: {state.partnerIdx >= 0 ? `#${state.partnerIdx}` : t('label.hidden')}
                 </div>

@@ -46,6 +46,19 @@ func (p *BurracoWebPresenter) Output(g interfaces.BurracoGame, lastErr error) st
 	resObj.Players = p.buildPlayersOutput(g)
 	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(g, lastErr)
 
+	// ヒントはドメインが人間の手番でだけ返す (#5628)。
+	//
+	// **理由はキーに直してから運ぶ。**ドメインが返すのは `draw_discard_pair` の
+	// ような内部識別子で、そのまま渡すとフロントは存在しないキーを引き、翻訳の
+	// 代わりに生の識別子が画面に出る。CUI 側も同じ対応表を通している。
+	if h := g.GetHint(); h != nil {
+		resObj.Hint = &controller.BurracoWebOutputHint{
+			Action:  h.Action,
+			Indices: h.Indices,
+			Reason:  burracoWebHintReasonKeys[h.Reason],
+		}
+	}
+
 	return marshalOrError(resObj)
 }
 
@@ -123,9 +136,20 @@ func (p *BurracoWebPresenter) buildMessage(g interfaces.BurracoGame, lastErr err
 	return "", "", nil
 }
 
-// HintOutput ヒント情報をJSON出力する。Web GUI はフロントエンドのヒント推定を
-// 使うためバックエンドヒントは持たず、標準の状態出力をそのまま返す
-// (BurracoPresenter インタフェースを満たすための実装)。
+// burracoWebHintReasonKeys maps the domain's internal hint reasons to the
+// locale suffixes the web catalogue uses. Same pairs as the CUI's
+// burracoHintReasonKeys, without the `burraco.` prefix (the page adds `hint.`).
+var burracoWebHintReasonKeys = map[string]string{
+	"draw_discard_pair": "hintReasonDrawDiscard",
+	"draw_stock_safe":   "hintReasonDrawStock",
+	"meld_available":    "hintReasonMeld",
+	"no_meld":           "hintReasonNoMeld",
+	"discard_safe":      "hintReasonDiscard",
+}
+
+// HintOutput ヒント情報をJSON出力する。専用のレスポンスは持たず通常の状態出力を
+// 返すが、**その状態にドメインのヒントが載っている** (#5628)。CUI と同じ値なので、
+// 2 つの画面が同じ盤面で違う手を勧めることがない。
 func (p *BurracoWebPresenter) HintOutput(g interfaces.BurracoGame) string {
 	return p.Output(g, nil)
 }
@@ -134,3 +158,7 @@ func (p *BurracoWebPresenter) HintOutput(g interfaces.BurracoGame) string {
 func (p *BurracoWebPresenter) ActionLogOutput(g interfaces.BurracoGame) string {
 	return actionLogOutputJSON(g)
 }
+
+// BurracoWebHintReasonKeyForTest exposes the reason mapping to tests in the
+// external test package.
+func BurracoWebHintReasonKeyForTest(reason string) string { return burracoWebHintReasonKeys[reason] }

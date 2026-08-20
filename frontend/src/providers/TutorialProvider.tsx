@@ -1,4 +1,4 @@
-import { createContext, type ReactNode, useCallback, useContext, useState } from 'react';
+import { createContext, type ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 import { TutorialOverlay } from '../components/tutorial/TutorialOverlay';
 import { TutorialSuggestDialog } from '../components/tutorial/TutorialSuggestDialog';
 import { useFirstVisit } from '../hooks/useFirstVisit';
@@ -20,13 +20,38 @@ export interface TutorialProviderProps {
   /** Tutorial configuration with game name and steps. */
   config: TutorialConfig;
   /** Optional function to translate step messageKey values. Defaults to identity. */
-  translateMessage?: (key: string) => string;
+  translateMessage?: (key: string, params?: Record<string, string | number>) => string;
   /** Child elements that can access the tutorial context. */
   children: ReactNode;
 }
 
 /** Identity function used as default translateMessage. */
 const identity = (key: string) => key;
+
+/** Interpolation values a page feeds into the current step's message. */
+export type TutorialMessageParams = Record<string, string | number>;
+
+const TutorialMessageParamsContext = createContext<((params: TutorialMessageParams) => void) | null>(null);
+
+/**
+ * Feeds interpolation values into the running tutorial's messages.
+ *
+ * Steps are module-level constants, so a number the **response** carries
+ * (a bonus, an ante) cannot be written into them. Call this from the page with
+ * the value it already renders, and the tutorial says the same number the board
+ * does (#5936).
+ *
+ * @param params - Values for the current step's `{{placeholders}}`.
+ */
+export function useTutorialMessageParams(params: TutorialMessageParams): void {
+  const setParams = useContext(TutorialMessageParamsContext);
+  // **値で比較する。**呼び出し側はほぼ必ずリテラルを渡すので、参照で比較すると
+  // 毎レンダリング更新して無限ループになる。
+  const serialized = JSON.stringify(params);
+  useEffect(() => {
+    setParams?.(JSON.parse(serialized) as TutorialMessageParams);
+  }, [serialized, setParams]);
+}
 
 /** Provides tutorial state, first-visit suggestion, and renders the overlay when active. */
 export function TutorialProvider({ config, translateMessage = identity, children }: TutorialProviderProps) {
@@ -52,12 +77,20 @@ export function TutorialProvider({ config, translateMessage = identity, children
     dismissDialog();
   }, [dismissDialog]);
 
+  const [dynamicParams, setDynamicParams] = useState<TutorialMessageParams>({});
+
   const currentStep = tutorial.currentStep;
-  const translatedStep = currentStep ? { ...currentStep, messageKey: translateMessage(currentStep.messageKey) } : null;
+  const translatedStep = currentStep
+    ? {
+        ...currentStep,
+        // ページが渡した値が後勝ち。ステップ側の値は既定にすぎない。
+        messageKey: translateMessage(currentStep.messageKey, { ...currentStep.messageParams, ...dynamicParams }),
+      }
+    : null;
 
   return (
     <TutorialContext.Provider value={tutorial}>
-      {children}
+      <TutorialMessageParamsContext.Provider value={setDynamicParams}>{children}</TutorialMessageParamsContext.Provider>
       {tutorial.isActive && translatedStep && (
         <TutorialOverlay
           step={translatedStep}

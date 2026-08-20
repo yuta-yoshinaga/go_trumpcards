@@ -25,6 +25,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BourreResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
 import { isRedSuitDesign, isSuitDesign, suitSymbol } from '../utils/cardAlt';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -134,7 +135,23 @@ function BourrePageContent() {
     retry,
   } = useGameApi<BourreResponse, [ApiArgs]>((...args) => bourreApi.exec(...args));
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('bourre');
-  const { handleCommand } = useCliGame<BourreResponse, [ApiArgs]>(apiCall, cliConfig, state, {
+  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
+  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('bourre', state);
+  // The module-level config cannot see `frontendHint`: hints are computed per render.
+  // Layer the local answer on here rather than restructuring the shared const.
+  const cliConfigWithHint = useMemo(
+    () => ({
+      ...cliConfig,
+      localCommand: hintLocalCommand(frontendHint),
+    }),
+    [frontendHint],
+  );
+  const { handleCommand } = useCliGame<BourreResponse, [ApiArgs]>(apiCall, cliConfigWithHint, state, {
     addInput,
     addOutput,
     addError,
@@ -155,6 +172,14 @@ function BourrePageContent() {
   const humanIdx = state?.players?.findIndex((p) => p.isHuman) ?? 0;
   const humanPlayer = state?.players?.[humanIdx];
   const isHumanTurn = state ? state.currentPlayerIdx === humanIdx : false;
+  // **罰金は払える額まで。** ドメインは min(ポット, 手持ち) を取る
+  // (Bourre.go の bourré 処理) ので、手持ちがポットより少ないときに
+  // ポット額を警告すると、払えない額を告げることになる (#6001)。
+  //
+  // 繰越ポットは足さない。配り直しの時点で carryPot は pot に畳み込まれて
+  // いる (Bourre.nextHand) ので、decide の間は常に 0 ——足すと将来の
+  // 二重計上の芽になる。
+  const penalty = Math.min(state?.pot ?? 0, humanPlayer?.chips ?? 0);
   const humanWon = isGameEnd && !!state && state.winnerIdx === humanIdx;
   const validPlays = useMemo(() => new Set(state?.validPlays ?? []), [state]);
 
@@ -224,14 +249,6 @@ function BourrePageContent() {
     if (p.bourreed) return t('label.bourreed');
     return `${p.tricks} ${t('label.tricks')}`;
   };
-
-  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
-  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('bourre', state);
 
   if (!state) return <GameSkeleton gameKey="bourre" layout={{ kind: 'card-grid', count: 5, cols: 'grid-cols-5' }} />;
 
@@ -350,19 +367,12 @@ function BourrePageContent() {
           {phase === 'decide' && isHumanTurn && (
             <p
               data-testid="bourre-decide-summary"
-              title={t('decideSummaryHelp', {
-                penalty: state.pot + state.carryPot,
-              })}
+              title={t('decideSummaryHelp', { penalty })}
               className={`mt-1 text-center text-xs ${
-                state.pot + state.carryPot >= BOURRE_PENALTY_WARN_THRESHOLD
-                  ? 'text-ds-warning font-medium'
-                  : 'text-ds-text-muted'
+                penalty >= BOURRE_PENALTY_WARN_THRESHOLD ? 'text-ds-warning font-medium' : 'text-ds-text-muted'
               }`}
             >
-              {t('decideSummary', {
-                pot: state.pot,
-                penalty: state.pot + state.carryPot,
-              })}
+              {t('decideSummary', { pot: state.pot, penalty })}
             </p>
           )}
 

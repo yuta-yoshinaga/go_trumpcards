@@ -18,5 +18,6 @@
   "gameEnd": "Game Over!",
   "rankN": "Rank {{rank}}",
   "yourTurn": "Your turn",
-  "actionPass": "pass"
+  "actionPass": "pass",
+  "helpLog": "  l                    show the action log"
 }

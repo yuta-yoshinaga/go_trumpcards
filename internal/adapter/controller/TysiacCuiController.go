@@ -47,7 +47,7 @@ func (c *TysiacCuiController) Exec(command string) string {
 			switch cmd {
 			case "bid":
 				if len(args) == 0 {
-					return "Bid action is required (raise or pass).", true
+					return invalidArg("bidActionRequiredRaise"), true
 				}
 				switch args[0] {
 				case "raise", "r":
@@ -55,18 +55,18 @@ func (c *TysiacCuiController) Exec(command string) string {
 				case "pass", "p":
 					return c.di.Bid(false), true
 				default:
-					return "Invalid bid action: " + args[0] + ". Please enter raise or pass.", true
+					return invalidArg("invalidBidActionRaisePass", "val", args[0]), true
 				}
 			case "d", "discard":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.di.Discard)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.di.Discard)
 			case "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.di.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.di.Play)
 			case "n", "next":
 				return c.di.NextTrick(), true
 			case "nr", "nextround":
 				return c.di.NextRound(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.di.GetConfig()
 					cfg.CpuDifficulty = domain.TysiacCpuDifficulty(v)
 					return c.di.ResetWithConfig(cfg)

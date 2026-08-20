@@ -2,8 +2,10 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, ginrummyApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { GinRummyResponse } from '../types/card';
+import { GinRummyCpu } from '../types/phases';
 import { GinRummyPage } from './GinRummyPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -1029,5 +1031,45 @@ describe('GinRummyPage', () => {
     renderWithProviders(<GinRummyPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(document.querySelectorAll('[data-layoff]')).toHaveLength(0);
+  });
+});
+
+// #5500: 難易度で変わるのは CPU のノック判断と捨て札の拾い方なのに、選択肢には
+// Easy/Normal/Hard のラベルしか出ておらず、実際の判断基準はプレイヤーから見えない。
+describe('GinRummyPage difficulty policies', () => {
+  it('summarises what each difficulty actually does', async () => {
+    mockExec.mockResolvedValue(drawPhaseState);
+    renderWithProviders(<GinRummyPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    fireEvent.click(screen.getByText('設定'));
+
+    const select = screen.getByRole('combobox', { name: 'CPU難易度' });
+    const labels = Array.from(select.querySelectorAll('option')).map((o) => o.textContent ?? '');
+    expect(labels).toHaveLength(3);
+
+    // **数値は GinRummyCpu から補間される。** ラベルに直接書くと domain と乖離する。
+    expect(labels[1]).toContain(String(GinRummyCpu.KNOCK_DEADWOOD_NORMAL));
+    expect(labels[2]).toContain(String(GinRummyCpu.KNOCK_DEADWOOD_HARD));
+    // Easy は法定上限でノックし、拾いは確率。
+    expect(labels[0]).toContain(String(GinRummyCpu.KNOCK_THRESHOLD));
+    expect(labels[0]).toContain(String(GinRummyCpu.EASY_PICK_ONE_IN));
+    // 3つとも素のラベルのままではないこと。
+    for (const label of labels) {
+      expect(label).toMatch(/ノック/);
+    }
+  });
+});
+
+// レビュー指摘 (#5863)。括弧を JSX で書くと、全角がそのまま英語表示にも混ざる。
+// ロケール側に持たせたことを、英語に切り替えて確かめる。
+describe('GinRummyPage difficulty label punctuation', () => {
+  it('uses the locale-owned wrapper rather than hardcoded full-width parens', async () => {
+    const prev = i18n.language;
+    await i18n.changeLanguage('en');
+    const label = i18n.t('ginrummy:settings.difficultyWithPolicy', { level: 'Easy', policy: 'knocks early' });
+    expect(label).not.toMatch(/[（）]/);
+    expect(label).toContain('(');
+    await i18n.changeLanguage(prev);
+    expect(i18n.t('ginrummy:settings.difficultyWithPolicy', { level: 'Easy', policy: 'x' })).toMatch(/（/);
   });
 });

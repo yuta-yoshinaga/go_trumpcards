@@ -26,6 +26,8 @@ type GuandanInteractorIF interface {
 	NextHand() string
 	// GetConfig 現在の設定を取得
 	GetConfig() domain.GuandanConfig
+	// Check 手札の組み合わせが何の役になるかを調べる
+	Check(idxs []int) string
 	// ActionLog 棋譜を出力する
 	ActionLog() string
 }
@@ -99,6 +101,9 @@ func (gi *GuandanInteractor) GetConfig() domain.GuandanConfig {
 }
 
 // ActionLog 棋譜を出力する
+// Check 手札の組み合わせが何の役になるかを調べる
+func (gi *GuandanInteractor) Check(idxs []int) string { return gi.gp.CheckOutput(gi.Game, idxs) }
+
 func (gi *GuandanInteractor) ActionLog() string {
 	return gi.gp.ActionLogOutput(gi.Game)
 }

@@ -24,6 +24,7 @@ func setupAuldLangSyneCuiMockDefaults(g *interfaces.MockAuldLangSyneGame) {
 	g.On("GetPhase").Return(domain.AuldLangSynePhasePlaying).Maybe()
 	g.On("GetMoveCount").Return(0).Maybe()
 	g.On("IsStalemate").Return(false).Maybe()
+	g.On("UndoToEscape").Return(0).Maybe()
 	g.On("GetStockCount").Return(44).Maybe()
 	g.On("GetFoundations").Return(acesOnMockFoundations()).Maybe()
 
@@ -83,6 +84,7 @@ func TestAuldLangSyneCuiPresenter_Output(t *testing.T) {
 	t.Run("stalemate", func(t *testing.T) {
 		g := new(interfaces.MockAuldLangSyneGame)
 		g.On("IsStalemate").Return(true)
+		g.On("UndoToEscape").Return(0).Maybe()
 		setupAuldLangSyneCuiMockDefaults(g)
 		p := new(AuldLangSyneCuiPresenter)
 

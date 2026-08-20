@@ -8,11 +8,14 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func makeKnockoutWhistPlayers() []*domain.KnockoutWhistPlayer {
@@ -142,6 +145,8 @@ func TestKnockoutWhistCuiPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
 		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You plays ♠K"},
 	})
+	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+	m.On("GetPlayer", mock.Anything).Return(domain.NewKnockoutWhistPlayer(true)).Maybe()
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, "play")
 }
@@ -201,5 +206,58 @@ func TestKnockoutWhistCuiPresenter_LeaderAndWinnerMarks(t *testing.T) {
 		out := p.Output(withSeats(-1, -1), nil)
 		assert.NotContains(t, out, "▶(リード)")
 		assert.NotContains(t, out, "★(勝者)")
+	})
+}
+
+// #5650: Knockout Whist は毎ラウンド手札が1枚ずつ減り、最後は1枚勝負になる。
+// Web は kw-next-round-preview で「次は何枚か / 切り札を選ぶのは誰か」を予告して
+// いるのに、CUI は生存者数しか出しておらず、次ラウンドの形が分からなかった。
+func TestKnockoutWhistCuiPresenter_RoundEndPreviewsTheNextRound(t *testing.T) {
+	p := new(presenter.KnockoutWhistCuiPresenter)
+
+	roundEndMock := func(handSize, winner int) *interfaces.MockKnockoutWhistGame {
+		m, _ := setupKnockoutWhistCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHandSize")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundWinnerIdx")
+		m.On("GetPhase").Return(domain.KnockoutWhistPhaseRoundEnd)
+		m.On("GetHandSize").Return(handSize)
+		m.On("GetRoundWinnerIdx").Return(winner)
+		return m
+	}
+
+	t.Run("announces the smaller hand and who picks trump", func(t *testing.T) {
+		out := p.Output(roundEndMock(7, 0), nil)
+
+		assert.Contains(t, out, i18n.Tf("knockoutwhist.nextRoundPreview",
+			"count", "6", "name", color.Bold(i18n.T("cuiPlayerYou"))))
+	})
+
+	// **手札1枚は最終ラウンド。**同じ文言だと「次もまだ続く」と読めてしまう。
+	t.Run("calls the one-card round final", func(t *testing.T) {
+		out := p.Output(roundEndMock(2, 1), nil)
+
+		assert.Contains(t, out, i18n.Tf("knockoutwhist.finalRoundPreview",
+			"count", "1", "name", color.Bold(i18n.Tf("cuiPlayerCpu", "idx", "1"))))
+		assert.NotContains(t, out, i18n.Tf("knockoutwhist.nextRoundPreview",
+			"count", "1", "name", color.Bold(i18n.Tf("cuiPlayerCpu", "idx", "1"))))
+	})
+
+	// 手札は1枚より下がらない。1枚ラウンドの後も1枚のまま予告する。
+	t.Run("never previews fewer than one card", func(t *testing.T) {
+		out := p.Output(roundEndMock(1, 0), nil)
+
+		assert.Contains(t, out, i18n.Tf("knockoutwhist.finalRoundPreview",
+			"count", "1", "name", color.Bold(i18n.T("cuiPlayerYou"))))
+	})
+
+	// 勝者が未確定なら誰が切り札を選ぶか言えない。
+	t.Run("says nothing before a round winner is known", func(t *testing.T) {
+		out := p.Output(roundEndMock(7, -1), nil)
+
+		prefix, _, ok := strings.Cut(i18n.Tf("knockoutwhist.nextRoundPreview",
+			"count", "\x00", "name", "x"), "\x00")
+		require.True(t, ok)
+		assert.NotContains(t, out, prefix)
 	})
 }

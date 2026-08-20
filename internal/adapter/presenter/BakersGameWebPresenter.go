@@ -50,6 +50,13 @@ func (p *BakersGameWebPresenter) Output(f interfaces.FreeCellGame, lastErr error
 		}
 	}
 
+	// 一度に動かせる枚数。空き列宛ては別枠 (#5975)。
+	// **FreeCellWebPresenter と同じ FreeCellWebOutput を返すが、埋めるのは
+	// こちら側。**入れ忘れると 0 のまま届き、ページは「1 枚も動かせない」と
+	// 読んで全部の札を掴めなくする。
+	resObj.MaxMovableCards = f.GetMaxMovableCards()
+	resObj.MaxMovableCardsToEmptyColumn = f.GetMaxMovableCardsToEmptyColumn()
+
 	// メッセージ
 	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
 	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと

@@ -76,14 +76,14 @@ func (c *SpiderCuiController) handleMove(args []string) string {
 		return c.handleMoveShorthand(args)
 	}
 	if args[0] != "t" {
-		return i18n.T("spider.moveUsage")
+		return i18n.MarkError(i18n.T("spider.moveUsage"))
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("promptFromColumn"), "m t {0}")
 	}
 	fromCol, err := strconv.Atoi(args[1])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[1])
+		return invalidArg("invalidColumn", "val", args[1])
 	}
 	if len(args) < 3 {
 		return cuiutil.PromptRequest(i18n.T("promptCardIndex"), fmt.Sprintf("m t %d {0} t", fromCol))
@@ -92,15 +92,15 @@ func (c *SpiderCuiController) handleMove(args []string) string {
 		if len(args) == 3 || (len(args) == 4 && args[3] == "t") {
 			return cuiutil.PromptRequest(i18n.T("promptToColumn"), fmt.Sprintf("m t %d %s t {0}", fromCol, args[2]))
 		}
-		return i18n.T("spider.moveUsage")
+		return i18n.MarkError(i18n.T("spider.moveUsage"))
 	}
 	cardIdx, err := strconv.Atoi(args[2])
 	if err != nil {
-		return i18n.Tf("invalidCardIndex", "val", args[2])
+		return invalidArg("invalidCardIndex", "val", args[2])
 	}
 	toCol, err := strconv.Atoi(args[4])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[4])
+		return invalidArg("invalidColumn", "val", args[4])
 	}
 	return c.si.MoveTableauToTableau(fromCol, cardIdx, toCol)
 }
@@ -114,18 +114,18 @@ func (c *SpiderCuiController) handleMoveShorthand(args []string) string {
 	if len(args) == 2 {
 		toCol, err := strconv.Atoi(args[1])
 		if err != nil {
-			return i18n.Tf("invalidColumn", "val", args[1])
+			return invalidArg("invalidColumn", "val", args[1])
 		}
 		return c.si.MoveTableauToTableau(fromCol, -1, toCol)
 	}
 	// m <fromCol> <cardIdx> <toCol>
 	cardIdx, err := strconv.Atoi(args[1])
 	if err != nil {
-		return i18n.Tf("invalidCardIndex", "val", args[1])
+		return invalidArg("invalidCardIndex", "val", args[1])
 	}
 	toCol, err := strconv.Atoi(args[2])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[2])
+		return invalidArg("invalidColumn", "val", args[2])
 	}
 	return c.si.MoveTableauToTableau(fromCol, cardIdx, toCol)
 }

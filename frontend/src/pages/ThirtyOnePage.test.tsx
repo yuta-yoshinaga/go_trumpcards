@@ -41,7 +41,7 @@ function makeState(overrides: Partial<ThirtyOneResponse> = {}): ThirtyOneRespons
     roundWinnerIdx: -1,
     roundLosers: [],
     message: '',
-    config: { cpuDifficulty: 1, initialLives: 3 },
+    config: { cpuDifficulty: 1, initialLives: 3, knockThresholds: { easy: 29, normal: 27, hard: 25 } },
     ...overrides,
   };
 }
@@ -309,5 +309,42 @@ describe('ThirtyOnePage', () => {
     mockExec.mockResolvedValue(makeState());
     fireEvent.click(retry);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawstock'));
+  });
+});
+
+// #5623: 難易度セレクトは Easy/Normal/Hard としか言わず、何が変わるのか
+// (CPU がノックしてくる点数) は体験からしか学べなかった。数字はサーバーが
+// 運んでくるので、説明文に書き写さない。
+describe('ThirtyOnePage difficulty help', () => {
+  it('explains the difficulty with the thresholds the server sent', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ config: { cpuDifficulty: 1, initialLives: 3, knockThresholds: { easy: 29, normal: 27, hard: 25 } } }),
+    );
+    renderWithProviders(<ThirtyOnePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    fireEvent.click(screen.getByText('設定'));
+    fireEvent.click(screen.getAllByRole('button', { name: '説明を表示' })[0] as HTMLElement);
+
+    const tip = await screen.findByRole('tooltip');
+    expect(tip).toHaveTextContent('29');
+    expect(tip).toHaveTextContent('27');
+    expect(tip).toHaveTextContent('25');
+  });
+
+  // **サーバーの値を出す。**画面に焼き込んだ数字だと、定数が動いても気づけない。
+  it('follows the server when the thresholds differ', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ config: { cpuDifficulty: 1, initialLives: 3, knockThresholds: { easy: 31, normal: 30, hard: 28 } } }),
+    );
+    renderWithProviders(<ThirtyOnePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    fireEvent.click(screen.getByText('設定'));
+    fireEvent.click(screen.getAllByRole('button', { name: '説明を表示' })[0] as HTMLElement);
+
+    const tip = await screen.findByRole('tooltip');
+    expect(tip).toHaveTextContent('31');
+    expect(tip).not.toHaveTextContent('29');
   });
 });

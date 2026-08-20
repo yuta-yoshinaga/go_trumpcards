@@ -9,9 +9,9 @@
   "helpSetPlayers": "  pc [3-6]             player count",
   "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
   "helpSetRounds": "  sr <n>               number of rounds",
-  "header": "Round: {{round}}/{{total}}  Stock: {{stock}}",
+  "header": "Round: {{round}}/{{total}}  Stock: {{stock}}  Go out at: {{goal}} melded",
   "discardLine": "Discard: {{card}}",
-  "playerLine": "{{name}}: cumulative {{cum}} round {{round}} chips {{chips}} melded {{melded}} hand {{cards}}",
+  "playerLine": "{{name}}: cumulative {{cum}} round {{round}} chips {{chips}} melded {{melded}}/{{goal}} hand {{cards}}",
   "valleTag": "★valle",
   "meldLine": "  meld[{{idx}}]: {{cards}}",
   "gameEnd": "Game over! {{name}} wins!",
@@ -24,5 +24,7 @@
   "promptPlayHelpDiscard": "d <idx>: discard a card (e.g. d 4)",
   "promptPlayHelpNote": "A meld is 3+ cards of the same rank or a same-suit run. Melds containing valle (special) cards collect chips.",
   "promptRoundEnd": "Round complete",
-  "promptRoundEndHelp": "nr / nextround: advance to next round"
+  "promptRoundEndHelp": "nr / nextround: advance to next round",
+  "helpExampleDraw": "  ds                   start the turn by drawing from the stock",
+  "helpExampleDiscard": "  d 0                  discard hand card 0"
 }

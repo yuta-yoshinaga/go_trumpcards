@@ -61,9 +61,16 @@ func (pr *AcesUpCuiPresenter) Output(g interfaces.AcesUpGame, lastErr error) str
 		case domain.AcesUpPhasePlaying:
 			if g.IsStalemate() {
 				b.WriteString(color.Red(i18n.T("cuiSolitaireStalemate")) + "\n")
+				// Tell the player how many undos escape the dead end, matching the
+				// web StalemateEscapeButton.
+				if n := g.UndoToEscape(); n > 0 {
+					b.WriteString(color.Yellow(i18n.Tf("cuiSolitaireUndoToEscape",
+						"count", strconv.Itoa(n))) + "\n")
+				}
 			}
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
-				"count", strconv.Itoa(g.GetMoveCount())) + "\n")
+				"count", strconv.Itoa(g.GetMoveCount())) +
+				cuiSolitaireUndoHint(g.CanUndo()) + "\n")
 		case domain.AcesUpPhaseGameClear:
 			b.WriteString(color.Green(i18n.T("cuiSolitaireGameClear")) + " " +
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(g.GetMoveCount())) + "\n")
@@ -79,13 +86,19 @@ func (pr *AcesUpCuiPresenter) HintOutput(g interfaces.AcesUpGame) string {
 	if hint == nil {
 		return i18n.T("cuiHintNone") + "\n"
 	}
+	col := strconv.Itoa(hint.Col)
+	// **手だけでなく理由も出す。**Web は同じ場面で hintReason.* の一文を
+	// 添えており、CUI だけ「何をするか」しか分からなかった (#5620)。
 	switch hint.Type {
 	case "remove":
-		return i18n.Tf("acesup.hintRemove", "col", strconv.Itoa(hint.Col)) + "\n"
+		return i18n.Tf("acesup.hintRemove", "col", col) + "\n" +
+			i18n.Tf("acesup.hintReasonRemove", "col", col) + "\n"
 	case "move":
-		return i18n.Tf("acesup.hintMove", "col", strconv.Itoa(hint.Col)) + "\n"
+		return i18n.Tf("acesup.hintMove", "col", col) + "\n" +
+			i18n.Tf("acesup.hintReasonMove", "col", col) + "\n"
 	case "draw":
-		return i18n.T("acesup.hintDraw") + "\n"
+		return i18n.T("acesup.hintDraw") + "\n" +
+			i18n.T("acesup.hintReasonDraw") + "\n"
 	default:
 		return i18n.T("acesup.hintUnknown") + "\n"
 	}

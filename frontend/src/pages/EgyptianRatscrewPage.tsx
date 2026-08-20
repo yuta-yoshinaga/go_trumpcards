@@ -34,6 +34,7 @@ import {
 } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { formatEgyptianRatscrewState } from '../utils/cli/formatters/egyptianratscrewFormatter';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -45,6 +46,7 @@ const ER_TICK_INTERVAL_MS = 100;
 
 /** Tutorial steps for the Egyptian Ratscrew page. */
 const ER_TUTORIAL_STEPS: TutorialStep[] = [
+  { target: '[data-tutorial="er-rule"]', messageKey: 'tutorial.rule', placement: 'bottom', advanceOn: 'next' },
   { target: '[data-tutorial="er-cpu-pile"]', messageKey: 'tutorial.cpuPile', placement: 'bottom', advanceOn: 'next' },
   { target: '[data-tutorial="er-arena"]', messageKey: 'tutorial.arena', placement: 'bottom', advanceOn: 'next' },
   {
@@ -174,8 +176,9 @@ function EgyptianRatscrewPageContent() {
         'r/reset - Reset game',
         'l/log   - Show action log',
       ],
+      localCommand: hintLocalCommand(frontendHint),
     }),
-    [],
+    [frontendHint],
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
@@ -256,6 +259,23 @@ function EgyptianRatscrewPageContent() {
                   />
                 )}
               </div>
+            </div>
+
+            {/* **チャンスもスラップ条件も、成立してから初めて現れていた** (#5580)。
+                初見の人は仕組みを推測するしかない。姉妹ゲーム (sj-rule / sg-rule /
+                lb-rule) と同じく常時表示にする。回数はサーバから来るので、訳文に
+                焼き込まない。 */}
+            <div
+              className="text-center text-xs text-ds-warning mb-3 font-medium"
+              data-tutorial="er-rule"
+              data-testid="er-rule"
+            >
+              {t('ruleLine', {
+                jack: state.faceChances.jack,
+                queen: state.faceChances.queen,
+                king: state.faceChances.king,
+                ace: state.faceChances.ace,
+              })}
             </div>
 
             {/* Center pile / arena */}

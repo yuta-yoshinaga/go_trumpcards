@@ -32,6 +32,7 @@ func (c *MachiavelliCuiController) Exec(command string) string {
 			"dr", "draw",
 			"nm", "newmeld",
 			"lo", "layoff",
+			"ra", "rearrange",
 			"nr", "nextround",
 			"pc", "setplayers", "sd", "setdifficulty", "sr", "setrounds", "log", "l",
 		},
@@ -42,31 +43,37 @@ func (c *MachiavelliCuiController) Exec(command string) string {
 			case "nm", "newmeld":
 				idx := parseIntList(args)
 				if len(idx) < domain.MachiavelliMeldMin {
-					return "Usage: nm <i> <j> <k> ...  (at least 3 hand indices)", true
+					return invalidArg("usageNmIJKAtLeast3HandIndices"), true
 				}
 				return c.ci.NewMeld(idx), true
 			case "lo", "layoff":
 				idx := parseIntList(args)
 				if len(idx) < 2 {
-					return "Usage: lo <meldIdx> <handIndex>", true
+					return invalidArg("usageLoMeldidxHandindex"), true
 				}
 				return c.ci.Layoff(idx[0], idx[1]), true
+			case "ra", "rearrange":
+				refs, handIndices, ok := parseMachiavelliRearrange(args)
+				if !ok {
+					return invalidArg("usageRaRearrangeGroups"), true
+				}
+				return c.ci.Play(refs, handIndices), true
 			case "nr", "nextround":
 				return c.ci.NextRound(), true
 			case "pc", "setplayers":
-				return cuiutil.WithParsedInt(args, "Player count is required (2-5).", "Invalid player count: %s. Please enter 2-5.", domain.MachiavelliPlayerCountMin, domain.MachiavelliPlayerCountMax, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "playerCountRequired25", "invalidPlayerCount25", domain.MachiavelliPlayerCountMin, domain.MachiavelliPlayerCountMax, func(v int) string {
 					cfg := c.ci.GetConfig()
 					cfg.PlayerCount = v
 					return c.ci.ResetWithConfig(cfg)
 				})
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.ci.GetConfig()
 					cfg.CpuDifficulty = domain.MachiavelliCpuDifficulty(v)
 					return c.ci.ResetWithConfig(cfg)
 				})
 			case "sr", "setrounds":
-				return cuiutil.WithParsedInt(args, "Target rounds is required.", "Invalid target rounds: %s. Please enter 1 or more.", 1, math.MaxInt, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "targetRoundsRequiredPlain", "invalidTargetRounds1OrMore", 1, math.MaxInt, func(v int) string {
 					cfg := c.ci.GetConfig()
 					cfg.TargetRounds = v
 					return c.ci.ResetWithConfig(cfg)

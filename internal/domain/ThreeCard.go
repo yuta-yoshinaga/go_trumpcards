@@ -46,6 +46,8 @@ type ThreeCard struct {
 	chips           ChipHolder  // チップ
 	anteBet         int         // アンテベット額
 	pairPlusBet     int         // ペアプラスベット額
+	lastAnteBet     int         // 直前ラウンドのアンテ額 (Reset を跨いで残す)
+	lastPairPlusBet int         // 直前ラウンドのペアプラス額 (Reset を跨いで残す)
 	playBet         int         // プレイベット額
 	phase           int         // 現在のフェーズ
 	gameEndFlag     bool        // ゲーム終了フラグ
@@ -76,6 +78,18 @@ func NewDefaultThreeCard() *ThreeCard {
 	return tc
 }
 
+// Rebet は直前のラウンドと同じ額で賭け直す (#5513)。
+//
+// Web はラウンド終了時の額を React 側に覚えてワンクリック再ベットできるが、
+// CLI/CUI には同等の手段が無く毎ラウンド手打ちしていた。**検査は Bet に任せる** --
+// 別に書くと、チップ不足や上限の扱いが通常のベットとずれる。
+func (tc *ThreeCard) Rebet() error {
+	if tc.lastAnteBet <= 0 {
+		return NewDomainError(ErrInvalidPlay, "まだ賭けていないので再ベットできません")
+	}
+	return tc.Bet(tc.lastAnteBet, tc.lastPairPlusBet)
+}
+
 // Reset ゲーム初期化
 func (tc *ThreeCard) Reset() {
 	tc.gameEndFlag = false
@@ -84,6 +98,8 @@ func (tc *ThreeCard) Reset() {
 	tc.dealerHand = nil
 	tc.anteBet = 0
 	tc.pairPlusBet = 0
+	// lastAnteBet / lastPairPlusBet はここで消さない。次のラウンドで Rebet が
+	// 参照する唯一の手掛かりで、Web が React 側に持つ lastBet に当たる。
 	tc.playBet = 0
 	tc.result = 0
 	tc.antePayout = 0
@@ -122,7 +138,9 @@ func (tc *ThreeCard) Bet(ante, pairPlus int) error {
 		return NewDomainError(ErrInsufficientChips, "Insufficient chips.")
 	}
 	tc.anteBet = ante
+	tc.lastAnteBet = ante
 	tc.pairPlusBet = pairPlus
+	tc.lastPairPlusBet = pairPlus
 	tc.appendLog(0, "bet", fmt.Sprintf("ante=%d pairplus=%d", ante, pairPlus), nil)
 
 	// ディール: 3枚ずつ配る
@@ -400,6 +418,8 @@ type threeCardJSON struct {
 	Chips           *ChipHolder       `json:"ch"`
 	AnteBet         int               `json:"ab"`
 	PairPlusBet     int               `json:"pp"`
+	LastAnteBet     int               `json:"lab"`
+	LastPairPlusBet int               `json:"lpp"`
 	PlayBet         int               `json:"pb"`
 	Phase           int               `json:"ps"`
 	GameEndFlag     bool              `json:"ge"`
@@ -423,6 +443,8 @@ func (tc *ThreeCard) MarshalJSON() ([]byte, error) {
 		Chips:           &tc.chips,
 		AnteBet:         tc.anteBet,
 		PairPlusBet:     tc.pairPlusBet,
+		LastAnteBet:     tc.lastAnteBet,
+		LastPairPlusBet: tc.lastPairPlusBet,
 		PlayBet:         tc.playBet,
 		Phase:           tc.phase,
 		GameEndFlag:     tc.gameEndFlag,
@@ -469,6 +491,8 @@ func (tc *ThreeCard) UnmarshalJSON(data []byte) error {
 	}
 	tc.anteBet = j.AnteBet
 	tc.pairPlusBet = j.PairPlusBet
+	tc.lastAnteBet = j.LastAnteBet
+	tc.lastPairPlusBet = j.LastPairPlusBet
 	tc.playBet = j.PlayBet
 	tc.phase = j.Phase
 	tc.gameEndFlag = j.GameEndFlag

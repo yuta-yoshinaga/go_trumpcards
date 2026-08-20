@@ -50,7 +50,7 @@ func TestDoppelkopfCuiController_Exec(t *testing.T) {
 
 	t.Run("play no args", func(t *testing.T) {
 		result := controller.NewDoppelkopfCuiController(newMock()).Exec("play")
-		assert.Contains(t, result, "Card index is required")
+		assert.Contains(t, result, msgCardIndexRequired())
 	})
 
 	t.Run("announce shorthand a", func(t *testing.T) {
@@ -87,7 +87,7 @@ func TestDoppelkopfCuiController_Exec(t *testing.T) {
 
 	t.Run("setdifficulty invalid", func(t *testing.T) {
 		result := controller.NewDoppelkopfCuiController(newMock()).Exec("sd 9")
-		assert.Contains(t, result, "Invalid CPU difficulty")
+		assert.Contains(t, result, msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("setchips", func(t *testing.T) {
@@ -101,7 +101,7 @@ func TestDoppelkopfCuiController_Exec(t *testing.T) {
 
 	t.Run("setchips invalid", func(t *testing.T) {
 		result := controller.NewDoppelkopfCuiController(newMock()).Exec("sb 0")
-		assert.Contains(t, result, "Invalid base chips")
+		assert.Contains(t, result, msgStem("invalidBaseChips1OrMore"))
 	})
 
 	t.Run("hint / log", func(t *testing.T) {

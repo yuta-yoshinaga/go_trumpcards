@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -328,6 +329,8 @@ func TestMemoryCuiPresenterActionLog(t *testing.T) {
 		mg.On("GetActionLog").Return([]*domain.ActionLogEntry{
 			{TurnNumber: 1, PlayerIdx: 0, ActionType: "match", Detail: "ペア獲得"},
 		})
+		// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+		mg.On("GetPlayer", mock.Anything).Return(domain.NewMemoryPlayer(true)).Maybe()
 
 		p := new(MemoryCuiPresenter)
 		result := p.ActionLogOutput(mg)
@@ -339,6 +342,8 @@ func TestMemoryCuiPresenterActionLog(t *testing.T) {
 		mg.On("GetGameEndFlag").Return(true)
 		var nilLog []*domain.ActionLogEntry
 		mg.On("GetActionLog").Return(nilLog)
+		// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+		mg.On("GetPlayer", mock.Anything).Return(domain.NewMemoryPlayer(true)).Maybe()
 
 		p := new(MemoryCuiPresenter)
 		result := p.ActionLogOutput(mg)

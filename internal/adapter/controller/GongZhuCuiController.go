@@ -2,6 +2,7 @@ package controller
 
 import (
 	"math"
+	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -46,21 +47,27 @@ func (c *GongZhuCuiController) Exec(command string) string {
 			switch cmd {
 			case "expose":
 				indices, skipped := cuiutil.ParseIntSlice(args)
-				return cuiutil.PrependSkippedWarning(c.gi.Expose(indices), skipped), true
+				// Refuse before playing. PrependSkippedWarning ran the move first and
+				// put the warning above the new board, so a mistyped index was dropped
+				// and the remaining ones played as a different, legal move (issue #5390).
+				if len(skipped) > 0 {
+					return invalidArg("invalidCardIndex", "val", strings.Join(skipped, ", ")), true
+				}
+				return c.gi.Expose(indices), true
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.gi.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.gi.Play)
 			case "n", "next":
 				return c.gi.NextTrick(), true
 			case "nr", "nextround":
 				return c.gi.NextRound(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.gi.GetConfig()
 					cfg.CpuDifficulty = domain.GongZhuCpuDifficulty(v)
 					return c.gi.ResetWithConfig(cfg)
 				})
 			case "sl", "setlimit":
-				return cuiutil.WithParsedInt(args, "Point limit is required.", "Invalid point limit: %s. Please enter 1 or more.", 1, math.MaxInt, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "pointLimitRequired", "invalidPointLimit", 1, math.MaxInt, func(v int) string {
 					cfg := c.gi.GetConfig()
 					cfg.PointLimit = v
 					return c.gi.ResetWithConfig(cfg)

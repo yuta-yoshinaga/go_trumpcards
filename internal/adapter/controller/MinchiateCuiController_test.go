@@ -68,7 +68,7 @@ func TestMinchiateCuiController_Exec(t *testing.T) {
 	// 変わったときに案内だけ古くなる。
 	t.Run("scarto with too few indices names the required count", func(t *testing.T) {
 		out := controller.NewMinchiateCuiController(newMock()).Exec("scarto 0")
-		assert.Contains(t, out, fmt.Sprintf("%d card indices are required", domain.MinchiateSurplus))
+		assert.Contains(t, out, msgKey("cardIndicesRequiredScartoN", "n", fmt.Sprint(domain.MinchiateSurplus)))
 	})
 
 	// **枚数は足りているが中身が数字でない場合。**引数を 2 個だけ渡すと枚数検査で
@@ -76,7 +76,7 @@ func TestMinchiateCuiController_Exec(t *testing.T) {
 	t.Run("scarto with a non-numeric index", func(t *testing.T) {
 		args, _ := surplusArgs()
 		out := controller.NewMinchiateCuiController(newMock()).Exec("scarto" + args + " x")
-		assert.Contains(t, out, "Invalid card index")
+		assert.Contains(t, out, msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("play card", func(t *testing.T) {
@@ -86,7 +86,7 @@ func TestMinchiateCuiController_Exec(t *testing.T) {
 	})
 
 	t.Run("play no args", func(t *testing.T) {
-		assert.Contains(t, controller.NewMinchiateCuiController(newMock()).Exec("play"), "Card index is required")
+		assert.Contains(t, controller.NewMinchiateCuiController(newMock()).Exec("play"), msgCardIndexRequired())
 	})
 
 	// このゲームに入札は無い。bid/pass が黙って別の動作に落ちてはならない。
@@ -114,7 +114,7 @@ func TestMinchiateCuiController_Exec(t *testing.T) {
 	})
 
 	t.Run("setdifficulty invalid", func(t *testing.T) {
-		assert.Contains(t, controller.NewMinchiateCuiController(newMock()).Exec("sd 9"), "Invalid CPU difficulty")
+		assert.Contains(t, controller.NewMinchiateCuiController(newMock()).Exec("sd 9"), msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("hint / log", func(t *testing.T) {

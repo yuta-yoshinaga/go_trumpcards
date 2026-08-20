@@ -125,5 +125,5 @@ var laughAndLieDownHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *LaughAndLieDownCuiPresenter) ActionLogOutput(c interfaces.LaughAndLieDownGame) string {
-	return actionLogOutputText(c)
+	return actionLogOutputTextForSeats[*domain.LaughAndLieDownPlayer](c)
 }

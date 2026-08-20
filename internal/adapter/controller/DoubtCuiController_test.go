@@ -148,25 +148,25 @@ func TestDoubtCuiController_Exec(t *testing.T) {
 	t.Run("setwindow no args", func(t *testing.T) {
 		c := controller.NewDoubtCuiController(newMock())
 		result := c.Exec("sw")
-		assert.Contains(t, result, "required")
+		assert.True(t, msgRejected(result))
 	})
 
 	t.Run("setwindow invalid value", func(t *testing.T) {
 		c := controller.NewDoubtCuiController(newMock())
 		result := c.Exec("sw abc")
-		assert.Contains(t, result, "Invalid doubt window")
+		assert.Contains(t, result, msgStem("invalidDoubtWindow160"))
 	})
 
 	t.Run("setwindow zero", func(t *testing.T) {
 		c := controller.NewDoubtCuiController(newMock())
 		result := c.Exec("sw 0")
-		assert.Contains(t, result, "Invalid doubt window")
+		assert.Contains(t, result, msgStem("invalidDoubtWindow160"))
 	})
 
 	t.Run("setwindow over 60", func(t *testing.T) {
 		c := controller.NewDoubtCuiController(newMock())
 		result := c.Exec("sw 61")
-		assert.Contains(t, result, "Invalid doubt window")
+		assert.Contains(t, result, msgStem("invalidDoubtWindow160"))
 	})
 
 	// setmemory tests
@@ -193,25 +193,25 @@ func TestDoubtCuiController_Exec(t *testing.T) {
 	t.Run("setmemory no args", func(t *testing.T) {
 		c := controller.NewDoubtCuiController(newMock())
 		result := c.Exec("sm")
-		assert.Contains(t, result, "required")
+		assert.True(t, msgRejected(result))
 	})
 
 	t.Run("setmemory invalid value", func(t *testing.T) {
 		c := controller.NewDoubtCuiController(newMock())
 		result := c.Exec("sm abc")
-		assert.Contains(t, result, "Invalid CPU memory level")
+		assert.Contains(t, result, msgStem("invalidCpuMemoryLevel02"))
 	})
 
 	t.Run("setmemory negative", func(t *testing.T) {
 		c := controller.NewDoubtCuiController(newMock())
 		result := c.Exec("sm -1")
-		assert.Contains(t, result, "Invalid CPU memory level")
+		assert.Contains(t, result, msgStem("invalidCpuMemoryLevel02"))
 	})
 
 	t.Run("setmemory over 2", func(t *testing.T) {
 		c := controller.NewDoubtCuiController(newMock())
 		result := c.Exec("sm 3")
-		assert.Contains(t, result, "Invalid CPU memory level")
+		assert.Contains(t, result, msgStem("invalidCpuMemoryLevel02"))
 	})
 
 	// setpenalty tests
@@ -238,19 +238,19 @@ func TestDoubtCuiController_Exec(t *testing.T) {
 	t.Run("setpenalty no args", func(t *testing.T) {
 		c := controller.NewDoubtCuiController(newMock())
 		result := c.Exec("sp")
-		assert.Contains(t, result, "required")
+		assert.True(t, msgRejected(result))
 	})
 
 	t.Run("setpenalty invalid value", func(t *testing.T) {
 		c := controller.NewDoubtCuiController(newMock())
 		result := c.Exec("sp abc")
-		assert.Contains(t, result, "Invalid penalty draw limit")
+		assert.Contains(t, result, msgStem("invalidPenaltyDrawLimit0OrMore"))
 	})
 
 	t.Run("setpenalty negative", func(t *testing.T) {
 		c := controller.NewDoubtCuiController(newMock())
 		result := c.Exec("sp -1")
-		assert.Contains(t, result, "Invalid penalty draw limit")
+		assert.Contains(t, result, msgStem("invalidPenaltyDrawLimit0OrMore"))
 	})
 
 	// smetaai / smai tests
@@ -277,14 +277,14 @@ func TestDoubtCuiController_Exec(t *testing.T) {
 	t.Run("smetaai no args", func(t *testing.T) {
 		c := controller.NewDoubtCuiController(newMock())
 		result := c.Exec("smetaai")
-		assert.Contains(t, result, "Meta-AI flag is required")
+		assert.Contains(t, result, msgStem("metaAiFlagRequired0Off1On"))
 	})
 
 	t.Run("smetaai invalid value", func(t *testing.T) {
 		c := controller.NewDoubtCuiController(newMock())
-		assert.Contains(t, c.Exec("smetaai 2"), "Invalid meta-AI flag")
-		assert.Contains(t, c.Exec("smai abc"), "Invalid meta-AI flag")
-		assert.Contains(t, c.Exec("smai -1"), "Invalid meta-AI flag")
+		assert.Contains(t, c.Exec("smetaai 2"), msgStem("invalidMetaAiFlag01"))
+		assert.Contains(t, c.Exec("smai abc"), msgStem("invalidMetaAiFlag01"))
+		assert.Contains(t, c.Exec("smai -1"), msgStem("invalidMetaAiFlag01"))
 	})
 
 	// rp / resetprofile tests
@@ -306,22 +306,20 @@ func TestDoubtCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "ResetProfile")
 	})
 
-	t.Run("play command with invalid card args shows warning", func(t *testing.T) {
+	t.Run("play command refuses invalid card args", func(t *testing.T) {
 		m := newMock()
 		c := controller.NewDoubtCuiController(m)
 		result := c.Exec("p 5 abc 2")
-		assert.Contains(t, result, "'abc'")
-		assert.Contains(t, result, mockOutput)
-		m.AssertCalled(t, "Play", []int{2}, 5, 0)
+		assert.Contains(t, result, "abc")
+		m.AssertNotCalled(t, "Play", mock.Anything, mock.Anything, mock.Anything)
 	})
 
-	t.Run("doubt command with invalid args shows warning", func(t *testing.T) {
+	t.Run("doubt command refuses invalid args", func(t *testing.T) {
 		m := newMock()
 		c := controller.NewDoubtCuiController(m)
 		result := c.Exec("d xyz 1")
-		assert.Contains(t, result, "'xyz'")
-		assert.Contains(t, result, mockOutput)
-		m.AssertCalled(t, "ResolveDoubt", []int{1})
+		assert.Contains(t, result, "xyz")
+		m.AssertNotCalled(t, "ResolveDoubt", mock.Anything)
 	})
 
 	t.Run("unknown command", func(t *testing.T) {
@@ -335,4 +333,46 @@ func TestDoubtCuiController_Exec(t *testing.T) {
 		result := c.Exec("")
 		assert.Contains(t, result, "'help' でコマンド一覧を表示します。")
 	})
+
+	t.Run("sh 1 turns the delay on", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewDoubtCuiController(m)
+		assert.Equal(t, mockOutput, c.Exec("sh 1"))
+		expected := domain.DefaultDoubtConfig()
+		expected.CpuHesitationEnabled = true
+		m.AssertCalled(t, "ResetWithConfig", expected, mock.Anything)
+	})
+
+	t.Run("sethesitation 0 turns it off", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewDoubtCuiController(m)
+		assert.Equal(t, mockOutput, c.Exec("sethesitation 0"))
+		expected := domain.DefaultDoubtConfig()
+		expected.CpuHesitationEnabled = false
+		m.AssertCalled(t, "ResetWithConfig", expected, mock.Anything)
+	})
+
+	t.Run("sh with no argument is refused", func(t *testing.T) {
+		c := controller.NewDoubtCuiController(newMock())
+		assert.True(t, msgRejected(c.Exec("sh")))
+	})
+
+	t.Run("sh rejects a non-boolean value", func(t *testing.T) {
+		c := controller.NewDoubtCuiController(newMock())
+		for _, bad := range []string{"abc", "-1", "2"} {
+			assert.Contains(t, c.Exec("sh "+bad), msgStem("invalidHesitationFlag01"), bad)
+		}
+	})
+}
+
+// #5390: `p abc` は宣言する値を 0 に落として通っていた。
+func TestDoubtCuiController_PlayRefusesMistypedValue(t *testing.T) {
+	mockOutput := `{"players":[]}`
+	m := new(mockUsecases.MockDoubtInteractor)
+	m.On("Reset").Return(mockOutput)
+	m.On("Play", mock.Anything, mock.Anything, mock.Anything).Return(mockOutput)
+
+	out := controller.NewDoubtCuiController(m).Exec("p abc")
+	assert.Equal(t, msgKey("invalidClaimedValue", "val", "abc"), out)
+	m.AssertNotCalled(t, "Play", mock.Anything, mock.Anything, mock.Anything)
 }

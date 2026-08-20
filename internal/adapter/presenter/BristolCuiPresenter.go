@@ -71,7 +71,16 @@ func (p *BristolCuiPresenter) Output(b interfaces.BristolGame, lastErr error) st
 
 		switch b.GetPhase() {
 		case domain.BristolPhasePlaying:
-			sb.WriteString(i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(b.GetMoveCount())) + "\n")
+			// **ストックは作り直せない。**配り切ると手詰まりに普通に到達するので、
+			// 他のソリティアと同じように知らせる (#5631)。
+			if b.IsStalemate() {
+				sb.WriteString(color.Red(i18n.T("cuiSolitaireStalemate")) + "\n")
+				if n := b.UndoToEscape(); n > 0 {
+					sb.WriteString(color.Yellow(i18n.Tf("bristol.undoToEscape", "count", strconv.Itoa(n))) + "\n")
+				}
+			}
+			sb.WriteString(i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(b.GetMoveCount())) +
+				cuiSolitaireUndoHint(b.CanUndo()) + "\n")
 		case domain.BristolPhaseGameClear:
 			sb.WriteString(color.Green(i18n.T("cuiSolitaireGameClear")) + " " +
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(b.GetMoveCount())) + "\n")

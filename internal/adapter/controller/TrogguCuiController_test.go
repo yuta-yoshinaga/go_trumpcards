@@ -61,13 +61,13 @@ func TestTrogguCuiController_Exec(t *testing.T) {
 	t.Run("bid rejects an unknown contract", func(t *testing.T) {
 		m := newMock()
 		out := controller.NewTrogguCuiController(m).Exec("bid nonsense")
-		assert.Contains(t, out, "Invalid bid")
+		assert.Contains(t, out, msgStem("invalidBidTrois"))
 		m.AssertNotCalled(t, "Bid", mock.Anything)
 	})
 	t.Run("bid needs an argument", func(t *testing.T) {
 		m := newMock()
 		out := controller.NewTrogguCuiController(m).Exec("bid")
-		assert.Contains(t, out, "Bid is required")
+		assert.Contains(t, out, msgStem("bidRequiredTrois"))
 		m.AssertNotCalled(t, "Bid", mock.Anything)
 	})
 	t.Run("pass", func(t *testing.T) {
@@ -83,7 +83,7 @@ func TestTrogguCuiController_Exec(t *testing.T) {
 	t.Run("play rejects a non-numeric index", func(t *testing.T) {
 		m := newMock()
 		out := controller.NewTrogguCuiController(m).Exec("play x")
-		assert.Contains(t, out, "Invalid card index")
+		assert.Contains(t, out, msgInvalidCardIndexPrefix())
 		m.AssertNotCalled(t, "Play", mock.Anything)
 	})
 	t.Run("next trick and next round", func(t *testing.T) {
@@ -104,7 +104,7 @@ func TestTrogguCuiController_Exec(t *testing.T) {
 	t.Run("set difficulty rejects out-of-range", func(t *testing.T) {
 		m := newMock()
 		out := controller.NewTrogguCuiController(m).Exec("sd 9")
-		assert.Contains(t, out, "Invalid CPU difficulty")
+		assert.Contains(t, out, msgInvalidCpuDifficultyPrefix())
 		m.AssertNotCalled(t, "ResetWithConfig", mock.Anything)
 	})
 	t.Run("set deals", func(t *testing.T) {
@@ -117,7 +117,7 @@ func TestTrogguCuiController_Exec(t *testing.T) {
 	t.Run("set deals rejects out-of-range", func(t *testing.T) {
 		m := newMock()
 		out := controller.NewTrogguCuiController(m).Exec("st 99")
-		assert.Contains(t, out, "Invalid number of deals")
+		assert.Contains(t, out, msgStem("invalidNumberOfDeals112"))
 		m.AssertNotCalled(t, "ResetWithConfig", mock.Anything)
 	})
 	t.Run("hint and log", func(t *testing.T) {

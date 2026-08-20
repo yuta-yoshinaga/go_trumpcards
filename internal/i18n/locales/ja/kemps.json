@@ -6,7 +6,6 @@
   "helpKemps": "  k, kemps             Kemps を宣言する",
   "helpCounter": "  c <seat>, counter <seat>  相手 seat に Counter-Kemps を宣言する",
   "helpNext": "  n, next              次のラウンドへ進む",
-  "helpSetDifficulty": "  sd <n>               CPU難易度 (0=Easy, 1=Normal, 2=Hard) を設定してリセット",
   "labelHuman": "あなた",
   "labelCpu": "CPU",
   "roundLine": "ラウンド{{round}}  チームA: {{teamA}}点  チームB: {{teamB}}点",
@@ -14,6 +13,7 @@
   "signalSound": "音",
   "signalBlink": "瞬き",
   "fieldLabel": "フィールド:",
+  "swapLegend": "@ 手札と同ランク（交換候補）",
   "teamLabel": "[チーム{{team}}]",
   "cpuHandLine": "{{name}}: 手札{{count}}枚",
   "promptExchange": "あなたの番です。s <h> <f> で交換、p でパスしてください",
@@ -26,5 +26,6 @@
   "winCpu": "相手チームの勝ちです...",
   "result.humanWin": "あなたのチームの勝ちです！",
   "result.cpuWin": "相手チームの勝ちです...",
-  "fourOfAKindReady": "★ 4枚が同ランクです！ ケンプスを宣言できます（declare / d）"
+  "fourOfAKindReady": "★ 4枚が同ランクです！ ケンプスを宣言できます（declare / d）",
+  "helpExamplePass": "  p                    交換を見送る"
 }

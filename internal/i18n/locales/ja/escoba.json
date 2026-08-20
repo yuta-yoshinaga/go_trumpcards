@@ -10,6 +10,7 @@
   "helpSetTarget": "  st <n>                   目標スコア (デフォルト10)",
   "roundLine": "ラウンド {{round}} (山札 残り{{stock}}枚)",
   "playerLine": "{{name}}: 手札{{hand}}枚 / 捕獲{{captured}}枚 / エスコバ{{escoba}} / {{score}}点",
+  "capturedLine": "獲得札: {{cards}}",
   "tableLine": "場: {{cards}}",
   "tableEmpty": "場: なし",
   "gameEnd": "ゲーム終了！",
@@ -19,5 +20,6 @@
   "specialLine": "  剣のA: P{{ace}} / 剣の7: P{{sete}} (-1=なし)",
   "promptNext": "n で次のラウンドを開始する",
   "promptCurrentTurn": "手番: {{name}}",
-  "promptHelp": "p <hand> [table...] で捕獲または場に置く / n で次のラウンド"
+  "promptHelp": "p <hand> [table...] で捕獲または場に置く / n で次のラウンド",
+  "helpExampleNext": "  n                        ラウンドの結果を見てから次へ"
 }

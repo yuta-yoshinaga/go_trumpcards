@@ -361,6 +361,33 @@ func (bd *BakersDozen) canPlaceOnFoundation(card *Card, fIdx int) bool {
 	return canPlaceOnFoundationPile(bd.foundation[fIdx], card)
 }
 
+// LegalTargets は列 fromCol の一番下の札を置ける先を返す。
+//
+// **13 列 + 4 組札は押して試すには広すぎる。**Web は選択・hover の瞬間に
+// 置ける先をリングで示している (#4795, #4454) のに、CUI は `m <from> <to>` を
+// 打ってサーバに弾かれるまで分からなかった (#5581)。判定は canPlaceOnTableau /
+// canPlaceOnFoundation をそのまま使う ── 規則を二重に持たない。
+func (bd *BakersDozen) LegalTargets(fromCol int) (tableau []int, foundation []int) {
+	if fromCol < 0 || fromCol >= BakersDozenTableauCnt || len(bd.tableau[fromCol]) == 0 {
+		return nil, nil
+	}
+	card := bd.tableau[fromCol][len(bd.tableau[fromCol])-1].Card
+	// 自分の列を明示的に飛ばす分岐は置かない。一番下の札は自分自身なので
+	// 「1 つ下のランク」にはならず、canPlaceOnTableau が必ず false を返す
+	// (テストで固定してある)。置いてもどのテストでも区別できない分岐になる。
+	for col := range BakersDozenTableauCnt {
+		if bd.canPlaceOnTableau(card, col) {
+			tableau = append(tableau, col)
+		}
+	}
+	for f := range BakersDozenFoundationCnt {
+		if bd.canPlaceOnFoundation(card, f) {
+			foundation = append(foundation, f)
+		}
+	}
+	return tableau, foundation
+}
+
 // findFoundation カードを置けるファンデーションのインデックスを探す（見つからない場合-1）
 func (bd *BakersDozen) findFoundation(card *Card) int {
 	for i := range BakersDozenFoundationCnt {

@@ -67,7 +67,7 @@ func (c *WindmillCuiController) handleMove(args []string) string {
 	case "k":
 		return c.handleMoveFromCorner(args[1:])
 	default:
-		return i18n.Tf("windmill.invalidFromZone", "val", args[0])
+		return invalidArg("windmill.invalidFromZone", "val", args[0])
 	}
 }
 
@@ -77,7 +77,7 @@ func (c *WindmillCuiController) handleMoveFromSail(args []string) string {
 	}
 	sail, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("windmill.invalidSailIdx", "val", args[0])
+		return invalidArg("windmill.invalidSailIdx", "val", args[0])
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("windmill.promptToZone"), fmt.Sprintf("m s %s {0}", args[0]))
@@ -91,11 +91,11 @@ func (c *WindmillCuiController) handleMoveFromSail(args []string) string {
 		}
 		corner, err := strconv.Atoi(args[2])
 		if err != nil {
-			return i18n.Tf("windmill.invalidCornerIdx", "val", args[2])
+			return invalidArg("windmill.invalidCornerIdx", "val", args[2])
 		}
 		return c.wi.MoveSailToCorner(sail, corner)
 	default:
-		return i18n.Tf("windmill.invalidToZone", "val", args[1])
+		return invalidArg("windmill.invalidToZone", "val", args[1])
 	}
 }
 
@@ -112,11 +112,11 @@ func (c *WindmillCuiController) handleMoveFromWaste(args []string) string {
 		}
 		corner, err := strconv.Atoi(args[1])
 		if err != nil {
-			return i18n.Tf("windmill.invalidCornerIdx", "val", args[1])
+			return invalidArg("windmill.invalidCornerIdx", "val", args[1])
 		}
 		return c.wi.MoveWasteToCorner(corner)
 	default:
-		return i18n.Tf("windmill.invalidToZone", "val", args[0])
+		return invalidArg("windmill.invalidToZone", "val", args[0])
 	}
 }
 
@@ -128,13 +128,13 @@ func (c *WindmillCuiController) handleMoveFromCorner(args []string) string {
 	}
 	corner, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("windmill.invalidCornerIdx", "val", args[0])
+		return invalidArg("windmill.invalidCornerIdx", "val", args[0])
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("windmill.promptToZone"), fmt.Sprintf("m k %s {0}", args[0]))
 	}
 	if args[1] != "c" {
-		return i18n.Tf("windmill.invalidToZone", "val", args[1])
+		return invalidArg("windmill.invalidToZone", "val", args[1])
 	}
 	return c.wi.MoveCornerToCenter(corner)
 }

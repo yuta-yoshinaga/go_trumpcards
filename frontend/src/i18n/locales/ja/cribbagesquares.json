@@ -16,6 +16,8 @@
     "win": "クリア！",
     "lose": "未達成"
   },
+  "partialPrefix": "途中",
+  "partialTooltip": "スターター抜きで確定している点。スターターで増えることはあっても減りません",
   "part": {
     "fifteens": "15が{{n}}",
     "pairs": "ペア{{n}}",

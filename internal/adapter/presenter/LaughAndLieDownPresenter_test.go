@@ -254,3 +254,13 @@ func TestLaughAndLieDownCuiPresenter_HintReasonKeysAreAllMapped(t *testing.T) {
 func TestLaughAndLieDownCuiPresenter_ActionLog(t *testing.T) {
 	assert.NotEmpty(t, new(LaughAndLieDownCuiPresenter).ActionLogOutput(lldTestGame(t)))
 }
+
+// #5576: ラストインのボーナス額は CUI の精算行には出ているが Web には無く、
+// 画面は `lastInIdx` すら読んでいなかった。額は**ドメインの定数から**渡すこと ──
+// 訳文に数字を書くと、額を変えたとき片方だけ嘘になる。
+func TestLaughAndLieDownWebPresenter_ShipsTheLastInBonus(t *testing.T) {
+	out := lldDecode(t, new(LaughAndLieDownWebPresenter).Output(lldTestGame(t), nil))
+	assert.Equal(t, float64(domain.LaughAndLieDownLastInBonus), out["lastInBonus"])
+	// ゼロ値と区別が付かない検査にしない。
+	assert.NotZero(t, out["lastInBonus"])
+}

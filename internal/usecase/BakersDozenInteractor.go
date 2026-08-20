@@ -22,6 +22,8 @@ type BakersDozenInteractorIF interface {
 	GiveUp() string
 	// Hint ヒント取得
 	Hint() string
+	// Targets 列 col の一番下の札を置ける先を一覧する
+	Targets(col int) string
 	// AutoComplete オートコンプリート
 	AutoComplete() string
 	// ActionLog 棋譜を出力する
@@ -67,6 +69,11 @@ func (bi *BakersDozenInteractor) MoveTableauToFoundation(col int) string {
 // Hint ヒント取得
 func (bi *BakersDozenInteractor) Hint() string {
 	return bi.bdp.HintOutput(bi.Game)
+}
+
+// Targets 列 col の一番下の札を置ける先を一覧する
+func (bi *BakersDozenInteractor) Targets(col int) string {
+	return bi.bdp.TargetsOutput(bi.Game, col)
 }
 
 // ActionLog 棋譜を出力する

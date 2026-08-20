@@ -164,6 +164,27 @@ describe('ColourWhistPage', () => {
     expect(screen.getByTestId('colourwhist-partner')).toHaveTextContent('未公開');
   });
 
+  // **単独契約には相方がいない。** partnerIdx は「いない」も「いるが未公開」も
+  // -1 なので、契約で判定しないと「相方: 非公開」と出て、隠れた味方がいると
+  // 誤解させる (#5773)。
+  it.each([
+    ['alleen', ColourWhistContract.ALLEEN],
+    ['miserie', ColourWhistContract.MISERIE],
+  ])('shows no partner row for the solo contract %s', async (_name, contract) => {
+    mockApi.mockResolvedValue({ ...playState, contract, partnerIdx: -1 });
+    renderWithProviders(<ColourWhistPage />);
+
+    await waitFor(() => expect(screen.getByTestId('colourwhist-contract')).toBeInTheDocument());
+    expect(screen.queryByTestId('colourwhist-partner')).not.toBeInTheDocument();
+  });
+
+  it('still shows the partner row once Troel reveals it', async () => {
+    mockApi.mockResolvedValue({ ...playState, contract: ColourWhistContract.TROEL, partnerIdx: 2 });
+    renderWithProviders(<ColourWhistPage />);
+
+    await waitFor(() => expect(screen.getByTestId('colourwhist-partner')).toHaveTextContent('#2'));
+  });
+
   it('offers the four trumps in the call phase', async () => {
     mockApi.mockResolvedValue({
       ...bidState,

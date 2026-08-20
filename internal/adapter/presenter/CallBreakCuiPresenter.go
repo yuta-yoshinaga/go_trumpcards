@@ -11,7 +11,7 @@ import (
 )
 
 // callBreakPlayerStr returns the display string for a single Call Break player.
-func callBreakPlayerStr(player *domain.CallBreakPlayer, i int) string {
+func callBreakPlayerStr(player *domain.CallBreakPlayer, i int, playable []int) string {
 	var b strings.Builder
 	bidStr := i18n.T("callbreak.bidPending")
 	if player.GetBid() >= 0 {
@@ -30,7 +30,11 @@ func callBreakPlayerStr(player *domain.CallBreakPlayer, i int) string {
 	))
 	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
-		b.WriteString(cuiIndexedCardListStr(player) + "\n")
+		// **Web は validPlayIndices で出せない札を無効化しているのに、CUI は素の
+		// 一覧だけだった。**マストフォロー/マストトランプで何が出せるかは、番号を
+		// 打ってエラーを踏むまで分からなかった (#5605)。playable が空のときは
+		// 目印を付けない (制限が決まっていない状態と区別する)。
+		b.WriteString(cuiPlayableMarkedCardListStr(player, playable) + "\n")
 	}
 	return b.String()
 }
@@ -53,7 +57,12 @@ func (p *CallBreakCuiPresenter) Output(cb interfaces.CallBreakGame, lastErr erro
 		}
 
 		for i := 0; i < cb.GetPlayerCnt(); i++ {
-			b.WriteString(callBreakPlayerStr(cb.GetPlayer(i), i))
+			// 目印はプレイフェーズで本人の手番のときだけ。
+			var playable []int
+			if cb.GetPhase() == domain.CallBreakPhasePlay && cb.GetCurrentPlayerIdx() == i {
+				playable = cb.GetValidPlayIndices(i)
+			}
+			b.WriteString(callBreakPlayerStr(cb.GetPlayer(i), i, playable))
 		}
 
 		b.WriteString("----------\n")
@@ -127,5 +136,5 @@ var callBreakHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *CallBreakCuiPresenter) ActionLogOutput(cb interfaces.CallBreakGame) string {
-	return actionLogOutputText(cb)
+	return actionLogOutputTextForSeats[*domain.CallBreakPlayer](cb)
 }

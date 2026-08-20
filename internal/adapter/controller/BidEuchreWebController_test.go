@@ -16,6 +16,7 @@ import (
 
 func TestBidEuchreWebController_Method(t *testing.T) {
 	mockOutput := `{"players":[],"phase":0}`
+	hintOutput := `{"players":[],"phase":1}`
 
 	siMock := new(usecase.MockBidEuchreInteractor)
 	siMock.On("ResetWithConfig", domain.DefaultBidEuchreConfig()).Return(mockOutput)
@@ -25,6 +26,7 @@ func TestBidEuchreWebController_Method(t *testing.T) {
 	siMock.On("PlayCard", 4).Return(mockOutput)
 	siMock.On("NextHand").Return(mockOutput)
 	siMock.On("ActionLog").Return(mockOutput)
+	siMock.On("Hint").Return(hintOutput)
 
 	factory := func() uc.BidEuchreInteractorIF { return siMock }
 	ctrl := controller.NewBidEuchreWebController(factory)
@@ -37,6 +39,18 @@ func TestBidEuchreWebController_Method(t *testing.T) {
 			recorded := execRequest(t, ctrl.Exec, &input)
 			recorded.CodeIs(http.StatusOK)
 			recorded.BodyIs(mockOutput)
+		}
+	})
+
+	// **Web CLI の hint も同じ経路を通る** (#5730)。CUI だけ足して Web の
+	// dispatch を落とすと 400 "Unsupported command." になる。
+	t.Run("hint", func(t *testing.T) {
+		for _, cmd := range []string{"h", "hint"} {
+			var input controller.BidEuchreWebInput
+			_ = json.Unmarshal([]byte(fmt.Sprintf(`{"command":"%s","sessionId":"s1"}`, cmd)), &input)
+			recorded := execRequest(t, ctrl.Exec, &input)
+			recorded.CodeIs(http.StatusOK)
+			recorded.BodyIs(hintOutput)
 		}
 	})
 

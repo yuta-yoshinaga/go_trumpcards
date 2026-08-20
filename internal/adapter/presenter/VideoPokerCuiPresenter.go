@@ -47,10 +47,23 @@ func (vpp *VideoPokerCuiPresenter) Output(vp interfaces.VideoPokerGame, lastErr 
 		sb.WriteString(vpp.paytableStr(vp.GetVariantName()))
 	}
 
+	// **いま何の役になっているかをドロー中に出す。** Web は vp-made-hand で
+	// リアルタイムに見せているのに、CUI は手札とホールド推奨しか出しておらず、
+	// 配当対象かどうかはプレイヤーが自分で判定するしかなかった (#5508)。
+	// 評価はバリアント自身の GetResult を通すので、3変種とも下限がずれない。
+	if vp.GetPhase() == domain.VideoPokerPhaseDraw {
+		if key := vp.GetCurrentHandKey(); key != "" {
+			sb.WriteString(i18n.Tf("videopoker.madeHandLine",
+				"handName", vpp.translateHandKey(key)) + "\n")
+		} else {
+			sb.WriteString(i18n.T("videopoker.madeHandNone") + "\n")
+		}
+	}
+
 	sb.WriteString("----------\n")
 
 	if lastErr != nil {
-		sb.WriteString(color.Red(lastErr.Error()) + "\n")
+		sb.WriteString(i18n.MarkErrorLine(color.Red(lastErr.Error())) + "\n")
 	}
 
 	if vp.GetGameEndFlag() {
@@ -115,11 +128,20 @@ func (vpp *VideoPokerCuiPresenter) handNameForWin(vp interfaces.VideoPokerGame) 
 	if key == "" {
 		return vp.GetHandName()
 	}
+	if name := vpp.translateHandKey(key); name != "" {
+		return name
+	}
+	return vp.GetHandName()
+}
+
+// translateHandKey は安定キーを pokerhand.* で訳す。訳が無ければ空文字を返す
+// -- 生のキーを画面に出さないため。
+func (vpp *VideoPokerCuiPresenter) translateHandKey(key string) string {
 	full := "pokerhand." + key
 	if name := i18n.T(full); name != full {
 		return name
 	}
-	return vp.GetHandName()
+	return ""
 }
 
 // phaseStr フェーズ文字列

@@ -27,5 +27,7 @@
   "hintRaise3x": "Recommended: raise 3x (flush of 6 or more)",
   "hintRaise2x": "Recommended: raise 2x (flush of 5)",
   "hintRaise1x": "Recommended: raise 1x (flush of 4)",
-  "hintRaise1xMarginal": "Recommended: raise 1x (only 3, but the high card is Queen or better)"
+  "hintRaise1xMarginal": "Recommended: raise 1x (only 3, but the high card is Queen or better)",
+  "helpExampleBet": "  b 100                                   bet 100 chips",
+  "helpHint": "  h                                       show a hint"
 }

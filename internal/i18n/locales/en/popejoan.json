@@ -9,6 +9,7 @@
   "awardTurnUpLine": "{{name}} takes {{compartment}} from the turn-up ({{chips}})",
   "pileLine": "Played: {{cards}}",
   "playerLine": "{{name}}: {{chips}} chips, {{cards}} card(s)",
+  "holdsPope": "[holds Pope]",
   "compartment.ace": "Ace",
   "compartment.king": "King",
   "compartment.queen": "Queen",
@@ -29,5 +30,7 @@
   "hintReasonDealEnd": "this deal is already over",
   "hintReasonNotYourTurn": "it is not your turn",
   "hintReasonLead": "the run is stopped, so lead your lowest card",
-  "hintReasonFollow": "the next higher card of the same suit"
+  "hintReasonFollow": "the next higher card of the same suit",
+  "helpExampleNext": "  n                        read the trick result, then continue",
+  "helpHint": "  h                        show a hint"
 }

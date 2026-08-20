@@ -12,5 +12,8 @@
   "hintLine": "[HINT: {{from}}{{fromCol}} -> {{to}}{{toCol}}]",
   "zoneWaste": "Waste",
   "zoneTableau": "Tableau",
-  "zoneFoundation": "Foundation"
+  "zoneFoundation": "Foundation",
+  "helpExampleDraw": "  d                     turn one card from the stock",
+  "helpHint": "  h                     show a hint",
+  "helpLog": "  l                     show the action log"
 }

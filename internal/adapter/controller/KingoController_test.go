@@ -187,8 +187,8 @@ func TestKingoCuiController(t *testing.T) {
 	m.AssertCalled(t, "Deal")
 	assert.NotEmpty(t, c.Exec("d"))
 
-	assert.Contains(t, c.Exec("bet"), "required")
-	assert.Contains(t, c.Exec("bet xyz"), "Invalid")
+	assert.Contains(t, c.Exec("bet"), msgAmountRequired())
+	assert.Contains(t, c.Exec("bet xyz"), msgInvalidAmountPrefix())
 
 	for _, cmd := range []string{"next", "hint", "log"} {
 		assert.NotEmpty(t, c.Exec(cmd), "command %s produced nothing", cmd)

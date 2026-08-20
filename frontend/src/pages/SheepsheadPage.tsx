@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import type { sheepsheadApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardImage } from '../components/CardImage';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
@@ -324,6 +325,15 @@ function SheepsheadPageContent() {
                     <div>{t('roundResult.pickerPoints', { points: state.roundPickerPoints })}</div>
                     <div>{t('roundResult.multiplier', { multiplier: state.roundMultiplier })}</div>
                     <div>{state.roundPickerWon ? t('roundResult.pickerWon') : t('roundResult.pickerLost')}</div>
+                    {/* 埋め札はラウンド終了で公開される。得点の内訳そのものなので出す (#5638)。 */}
+                    {state.buried.length > 0 && (
+                      <div className="mt-1 flex items-center gap-2">
+                        <span>{t('roundResult.buried')}</span>
+                        {state.buried.map((c) => (
+                          <CardImage key={`buried-${c.design}-${c.value}`} card={c} width={cardWidth * 0.6} />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -361,12 +371,19 @@ function SheepsheadPageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {state.hint && isRequestedHint(state) && (
-              <div className="text-ds-warning text-sm mb-2">
-                {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
-                {state.hint.cardIndices.length > 0 && ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
-              </div>
-            )}
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-testid="sheepshead-hint-live" role="status" aria-live="polite">
+              {state.hint && isRequestedHint(state) && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
+                  {state.hint.cardIndices.length > 0 && ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
+                </div>
+              )}
+            </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="sh-action-buttons">

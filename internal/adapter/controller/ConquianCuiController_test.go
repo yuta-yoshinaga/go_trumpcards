@@ -72,12 +72,12 @@ func TestConquianCuiController_Exec(t *testing.T) {
 
 	t.Run("discard d no args", func(t *testing.T) {
 		result := controller.NewConquianCuiController(newMock()).Exec("d")
-		assert.Contains(t, result, "Card index is required")
+		assert.Contains(t, result, msgCardIndexRequired())
 	})
 
 	t.Run("discard d invalid", func(t *testing.T) {
 		result := controller.NewConquianCuiController(newMock()).Exec("d abc")
-		assert.Contains(t, result, "Invalid card index")
+		assert.Contains(t, result, msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("nextround nr", func(t *testing.T) {
@@ -97,12 +97,12 @@ func TestConquianCuiController_Exec(t *testing.T) {
 
 	t.Run("setdifficulty sd no args", func(t *testing.T) {
 		result := controller.NewConquianCuiController(newMock()).Exec("sd")
-		assert.Contains(t, result, "required")
+		assert.Contains(t, result, msgCpuDifficultyRequired())
 	})
 
 	t.Run("setdifficulty sd over 2", func(t *testing.T) {
 		result := controller.NewConquianCuiController(newMock()).Exec("sd 3")
-		assert.Equal(t, "Invalid CPU difficulty: 3. Please enter 0-2.", result)
+		assert.Equal(t, msgInvalidCpuDifficulty("3"), result)
 	})
 
 	t.Run("setwins sw valid", func(t *testing.T) {
@@ -116,7 +116,7 @@ func TestConquianCuiController_Exec(t *testing.T) {
 
 	t.Run("setwins sw zero", func(t *testing.T) {
 		result := controller.NewConquianCuiController(newMock()).Exec("sw 0")
-		assert.Equal(t, "Invalid target wins: 0. Please enter 1 or more.", result)
+		assert.Equal(t, msgKey("invalidTargetWins1OrMore", "val", "0"), result)
 	})
 
 	t.Run("log", func(t *testing.T) {

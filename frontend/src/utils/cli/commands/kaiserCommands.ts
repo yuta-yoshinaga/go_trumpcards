@@ -22,6 +22,8 @@ const VALID_COMMANDS = [
   'log',
   'r',
   'reset',
+  'h',
+  'hint',
   'help',
   '?',
 ];
@@ -106,6 +108,9 @@ export function parseKaiserCommand(input: string): CliParseResult<KaiserCliArgs>
     case 'r':
     case 'reset':
       return { args: ['reset'] };
+    case 'h':
+    case 'hint':
+      return { args: ['hint'] };
     default: {
       const suggestion = suggestCommand(cmd, VALID_COMMANDS);
       if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
@@ -124,4 +129,5 @@ export const KAISER_HELP: string[] = [
   'n / next            - Deal the next hand',
   'l / log             - Show action log',
   'r / reset           - Reset game',
+  'h/hint       - Get a hint',
 ];

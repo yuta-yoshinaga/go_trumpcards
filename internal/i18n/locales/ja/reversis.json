@@ -21,5 +21,8 @@
   "hintReasonAvoidMarked": "キノラか♦Aが乗っている。絶対に取らない",
   "hintReasonAvoidPoints": "失点札が乗っているので取らない",
   "hintReasonLeadSafe": "失点にならない低い札でリードする",
-  "hintReasonDumpHigh": "安全なうちに高い札を処分する"
+  "hintReasonDumpHigh": "安全なうちに高い札を処分する",
+  "helpExampleGiveUp": "  g                    この局を投了する",
+  "helpHint": "  h                    助言を表示",
+  "handCard": "[{{idx}}]{{card}}({{points}}点)"
 }

@@ -14,6 +14,7 @@ function makeState(overrides?: Partial<HeartsResponse>): HeartsResponse {
         cumulativeScore: 0,
         trickCount: 0,
         penaltyCards: [],
+        tookOmnibusJD: false,
       },
       {
         id: 1,
@@ -24,6 +25,7 @@ function makeState(overrides?: Partial<HeartsResponse>): HeartsResponse {
         cumulativeScore: 0,
         trickCount: 0,
         penaltyCards: [],
+        tookOmnibusJD: false,
       },
       {
         id: 2,
@@ -34,6 +36,7 @@ function makeState(overrides?: Partial<HeartsResponse>): HeartsResponse {
         cumulativeScore: 0,
         trickCount: 0,
         penaltyCards: [],
+        tookOmnibusJD: false,
       },
       {
         id: 3,
@@ -44,6 +47,7 @@ function makeState(overrides?: Partial<HeartsResponse>): HeartsResponse {
         cumulativeScore: 0,
         trickCount: 0,
         penaltyCards: [],
+        tookOmnibusJD: false,
       },
     ],
     phase: 1,

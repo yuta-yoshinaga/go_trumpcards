@@ -826,3 +826,62 @@ func TestTienLen_FullGame(t *testing.T) {
 
 	assert.True(t, tl.GetGameEndFlag(), "game should end within 2000 iterations")
 }
+
+// #5624: CPU の着手選択はドメインにあるのに、それを人間向けに取り出す経路が
+// 無く、CUI には hint が存在しなかった (Web はフロント独自のヒューリスティック)。
+func TestTienLenGetHintRecommendsAPlayableSet(t *testing.T) {
+	tl := newTestTienLen()
+	players := tl.players
+	players[0].AddCard(cardTL(3, CardDesignSpade))
+	players[0].AddCard(cardTL(5, CardDesignSpade))
+	players[1].AddCard(cardTL(4, CardDesignSpade))
+	players[2].AddCard(cardTL(6, CardDesignSpade))
+	players[3].AddCard(cardTL(7, CardDesignSpade))
+	tl.round.currentTurn = 0
+
+	hint := tl.GetHint()
+	require.NotNil(t, hint)
+	assert.False(t, hint.Pass, "出せる手があるならパスを勧めない")
+	require.NotEmpty(t, hint.Indices)
+	// **勧める手は実際に通ること。**ここがずれると、ヒント通りに打ってエラーになる。
+	assert.NoError(t, tl.PlayerPlay(hint.Indices))
+}
+
+// 出せる手が無ければパスを勧める。
+func TestTienLenGetHintSuggestsPassWhenNothingBeats(t *testing.T) {
+	tl := newTestTienLen()
+	players := tl.players
+	players[0].AddCard(cardTL(3, CardDesignSpade))
+	players[1].AddCard(cardTL(4, CardDesignSpade))
+	players[2].AddCard(cardTL(6, CardDesignSpade))
+	players[3].AddCard(cardTL(7, CardDesignSpade))
+	// 場に ♥2 (最強) が出ている状態。♠3 では返せない。
+	tl.round.tableCards = []*Card{cardTL(2, CardDesignHeart)}
+	tl.round.tablePlayType = TienLenPlaySingle
+	tl.round.lastPlayPlayerIdx = 1
+	tl.round.currentTurn = 0
+
+	hint := tl.GetHint()
+	require.NotNil(t, hint)
+	assert.True(t, hint.Pass)
+	assert.Empty(t, hint.Indices)
+}
+
+// 人間の手番でなければヒントを出さない。相手の手札を推測させる材料になる。
+func TestTienLenGetHintOnlyOnTheHumansTurn(t *testing.T) {
+	tl := newTestTienLen()
+	tl.players[0].AddCard(cardTL(3, CardDesignSpade))
+	tl.round.currentTurn = 1
+
+	assert.Nil(t, tl.GetHint())
+}
+
+// ゲームが終わっていればヒントは出さない (手札はもう動かせない)。
+func TestTienLenGetHintNilAfterGameEnd(t *testing.T) {
+	tl := newTestTienLen()
+	tl.players[0].AddCard(cardTL(3, CardDesignSpade))
+	tl.round.currentTurn = 0
+	tl.round.gameEndFlag = true
+
+	assert.Nil(t, tl.GetHint())
+}

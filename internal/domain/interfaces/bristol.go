@@ -25,6 +25,10 @@ type BristolGame interface {
 	GiveUp()
 	// GetHint ヒント取得
 	GetHint() *domain.BristolHint
+	// IsStalemate 合法手が1つも無い状態かを取得する
+	IsStalemate() bool
+	// UndoToEscape 膠着から抜けるのに必要なアンドゥ回数を取得する
+	UndoToEscape() int
 	// AutoComplete 自動完了
 	AutoComplete() error
 	// Undo アンドゥ

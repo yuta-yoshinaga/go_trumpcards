@@ -15,6 +15,7 @@ import { KbdBadge } from '../components/KbdBadge';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
+import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -136,6 +137,8 @@ function BristolPageContent() {
   const handleHint = useCallback(() => execApi('hint'), [execApi]);
   const handleAutoComplete = useCallback(() => execApi('autocomplete'), [execApi]);
   const handleUndo = useCallback(() => execApi('undo'), [execApi]);
+  /** Undo N moves at once to escape a stalemate (mirrors the sibling solitaires). */
+  const handleUndoEscape = useCallback((n: number) => execApi('undo_n', undefined, undefined, n), [execApi]);
 
   const handleTableauClick = useCallback(
     (col: number) => {
@@ -519,6 +522,15 @@ function BristolPageContent() {
                     {t('undo')}
                     <KbdBadge label={t('kbd.undo')} />
                   </button>
+                  {/* ストックは作り直せないので手詰まりに到達する。他のソリティアと
+                      同じく、何回戻せば打てるかを示して脱出させる (#5631)。 */}
+                  {state.isStalemate && (
+                    <StalemateEscapeButton
+                      undoToEscape={state.undoToEscape}
+                      onEscape={handleUndoEscape}
+                      disabled={loading}
+                    />
+                  )}
                   <button
                     type="button"
                     className={`${btnDanger} ${focusRingWhite}`}

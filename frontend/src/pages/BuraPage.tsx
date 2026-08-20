@@ -71,6 +71,12 @@ function BuraPageContent() {
   }
 
   const ended = state.phase === BuraPhase.GAME_END;
+  // 役の一覧はサーバが判定順に送ってくる。訳の無いキーが来ても、キー名を
+  // そのまま出すより黙って落とす方がまし ── 役の説明として読めないので。
+  const declareTitle = [
+    t('declareHint'),
+    ...state.winningCombinations.map((key) => t(`combo.${key}`, { defaultValue: '' })).filter(Boolean),
+  ].join('\n');
   const human = state.players.find((p) => p.isHuman);
   const opponents = state.players.filter((p) => !p.isHuman);
   const isHumanTurn = !ended && state.currentPlayerIdx === 0;
@@ -244,12 +250,18 @@ function BuraPageContent() {
               >
                 {t('claim', { target: state.winThreshold })}
               </button>
+              {/* **何が「役」かはどこにも書かれていなかった。**claim には
+                  失敗時のリスクが title で出ているのに、declare は押しても
+                  何も起きない理由が分からないままだった (#5568)。役の一覧は
+                  サーバから来る ── 画面側で数え直すと、役を足したとき案内だけが
+                  古くなる。 */}
               <button
                 type="button"
                 className={btnSecondary}
                 data-hint-action="declare"
                 onClick={game.handleDeclare}
                 disabled={loading || ended}
+                title={declareTitle}
               >
                 {t('declare')}
               </button>

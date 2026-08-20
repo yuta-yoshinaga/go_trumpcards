@@ -84,17 +84,17 @@ func TestMightyCuiController_Exec(t *testing.T) {
 
 	t.Run("bid no args errors", func(t *testing.T) {
 		c := controller.NewMightyCuiController(newMightyCuiMock(mockOutput))
-		assert.Contains(t, c.Exec("b"), "Bid value is required")
+		assert.Contains(t, c.Exec("b"), msgStem("bidValueRequiredPass1320"))
 	})
 
 	t.Run("bid invalid", func(t *testing.T) {
 		c := controller.NewMightyCuiController(newMightyCuiMock(mockOutput))
-		assert.Contains(t, c.Exec("b abc"), "Invalid bid value")
+		assert.Contains(t, c.Exec("b abc"), msgStem("invalidBidValue"))
 	})
 
 	t.Run("bid over max", func(t *testing.T) {
 		c := controller.NewMightyCuiController(newMightyCuiMock(mockOutput))
-		assert.Contains(t, c.Exec("b 21"), "Invalid bid value: 21")
+		assert.Contains(t, c.Exec("b 21"), msgKey("invalidBidValue", "val", "21"))
 	})
 
 	// trump+friend
@@ -121,27 +121,27 @@ func TestMightyCuiController_Exec(t *testing.T) {
 
 	t.Run("trump no args", func(t *testing.T) {
 		c := controller.NewMightyCuiController(newMightyCuiMock(mockOutput))
-		assert.Contains(t, c.Exec("t"), "Usage: trump")
+		assert.Contains(t, c.Exec("t"), msgUsage("usageTrumpSuitPartnersuitPartnervalSuit1NoTrump1Spad"))
 	})
 
 	t.Run("trump partial args", func(t *testing.T) {
 		c := controller.NewMightyCuiController(newMightyCuiMock(mockOutput))
-		assert.Contains(t, c.Exec("t 1 2"), "Usage: trump")
+		assert.Contains(t, c.Exec("t 1 2"), msgUsage("usageTrumpSuitPartnersuitPartnervalSuit1NoTrump1Spad"))
 	})
 
 	t.Run("trump invalid suit value", func(t *testing.T) {
 		c := controller.NewMightyCuiController(newMightyCuiMock(mockOutput))
-		assert.Contains(t, c.Exec("t 5 2 13"), "Invalid suit: 5")
+		assert.Contains(t, c.Exec("t 5 2 13"), msgKey("invalidSuit", "val", "5"))
 	})
 
 	t.Run("trump invalid partner suit", func(t *testing.T) {
 		c := controller.NewMightyCuiController(newMightyCuiMock(mockOutput))
-		assert.Contains(t, c.Exec("t 1 5 13"), "Invalid partner suit: 5")
+		assert.Contains(t, c.Exec("t 1 5 13"), msgKey("invalidPartnerSuit", "val", "5"))
 	})
 
 	t.Run("trump invalid partner value", func(t *testing.T) {
 		c := controller.NewMightyCuiController(newMightyCuiMock(mockOutput))
-		assert.Contains(t, c.Exec("t 1 2 0"), "Invalid partner value: 0")
+		assert.Contains(t, c.Exec("t 1 2 0"), msgKey("invalidPartnerValue", "val", "0"))
 	})
 
 	// exchange: three indices
@@ -161,17 +161,17 @@ func TestMightyCuiController_Exec(t *testing.T) {
 
 	t.Run("exchange no args", func(t *testing.T) {
 		c := controller.NewMightyCuiController(newMightyCuiMock(mockOutput))
-		assert.Contains(t, c.Exec("e"), "Usage: exchange")
+		assert.Contains(t, c.Exec("e"), msgUsage("usageExchangeIJKThreeCardIndicesToDiscardFromKittyPi"))
 	})
 
 	t.Run("exchange only two args (insufficient)", func(t *testing.T) {
 		c := controller.NewMightyCuiController(newMightyCuiMock(mockOutput))
-		assert.Contains(t, c.Exec("e 1 2"), "Usage: exchange")
+		assert.Contains(t, c.Exec("e 1 2"), msgUsage("usageExchangeIJKThreeCardIndicesToDiscardFromKittyPi"))
 	})
 
 	t.Run("exchange invalid index", func(t *testing.T) {
 		c := controller.NewMightyCuiController(newMightyCuiMock(mockOutput))
-		assert.Contains(t, c.Exec("e abc 1 2"), "Invalid card index")
+		assert.Contains(t, c.Exec("e abc 1 2"), msgInvalidCardIndexPrefix())
 	})
 
 	// play
@@ -184,12 +184,12 @@ func TestMightyCuiController_Exec(t *testing.T) {
 
 	t.Run("play no args", func(t *testing.T) {
 		c := controller.NewMightyCuiController(newMightyCuiMock(mockOutput))
-		assert.Contains(t, c.Exec("p"), "Card index is required")
+		assert.Contains(t, c.Exec("p"), msgCardIndexRequired())
 	})
 
 	t.Run("play invalid", func(t *testing.T) {
 		c := controller.NewMightyCuiController(newMightyCuiMock(mockOutput))
-		assert.Contains(t, c.Exec("play foo"), "Invalid card index")
+		assert.Contains(t, c.Exec("play foo"), msgInvalidCardIndexPrefix())
 	})
 
 	// jokerlead (Mighty-specific)
@@ -209,17 +209,17 @@ func TestMightyCuiController_Exec(t *testing.T) {
 
 	t.Run("jokerlead no args", func(t *testing.T) {
 		c := controller.NewMightyCuiController(newMightyCuiMock(mockOutput))
-		assert.Contains(t, c.Exec("jl"), "Usage: jokerlead")
+		assert.Contains(t, c.Exec("jl"), msgUsage("usageJokerleadCardindexDemandsuitDemandsuit1Spade2Cl"))
 	})
 
 	t.Run("jokerlead missing demand suit", func(t *testing.T) {
 		c := controller.NewMightyCuiController(newMightyCuiMock(mockOutput))
-		assert.Contains(t, c.Exec("jl 1"), "Usage: jokerlead")
+		assert.Contains(t, c.Exec("jl 1"), msgUsage("usageJokerleadCardindexDemandsuitDemandsuit1Spade2Cl"))
 	})
 
 	t.Run("jokerlead invalid demand suit", func(t *testing.T) {
 		c := controller.NewMightyCuiController(newMightyCuiMock(mockOutput))
-		assert.Contains(t, c.Exec("jl 1 5"), "Invalid demand suit: 5")
+		assert.Contains(t, c.Exec("jl 1 5"), msgKey("invalidDemandSuit", "val", "5"))
 	})
 
 	// next / nextround
@@ -249,12 +249,12 @@ func TestMightyCuiController_Exec(t *testing.T) {
 
 	t.Run("setdifficulty over range", func(t *testing.T) {
 		c := controller.NewMightyCuiController(newMightyCuiMock(mockOutput))
-		assert.Equal(t, "Invalid CPU difficulty: 3. Please enter 0-2.", c.Exec("sd 3"))
+		assert.Equal(t, msgInvalidCpuDifficulty("3"), c.Exec("sd 3"))
 	})
 
 	t.Run("setdifficulty negative", func(t *testing.T) {
 		c := controller.NewMightyCuiController(newMightyCuiMock(mockOutput))
-		assert.Equal(t, "Invalid CPU difficulty: -1. Please enter 0-2.", c.Exec("sd -1"))
+		assert.Equal(t, msgInvalidCpuDifficulty("-1"), c.Exec("sd -1"))
 	})
 
 	t.Run("setlimit valid", func(t *testing.T) {
@@ -268,7 +268,7 @@ func TestMightyCuiController_Exec(t *testing.T) {
 
 	t.Run("setlimit zero", func(t *testing.T) {
 		c := controller.NewMightyCuiController(newMightyCuiMock(mockOutput))
-		assert.Contains(t, c.Exec("sl 0"), "Invalid point limit")
+		assert.Contains(t, c.Exec("sl 0"), msgInvalidPointLimitPrefix())
 	})
 
 	t.Run("setminbid valid", func(t *testing.T) {
@@ -282,7 +282,7 @@ func TestMightyCuiController_Exec(t *testing.T) {
 
 	t.Run("setminbid over max", func(t *testing.T) {
 		c := controller.NewMightyCuiController(newMightyCuiMock(mockOutput))
-		assert.Contains(t, c.Exec("sm 21"), "Invalid min bid: 21")
+		assert.Contains(t, c.Exec("sm 21"), msgKey("invalidMinBid", "val", "21"))
 	})
 
 	t.Run("setnotrumpextra valid", func(t *testing.T) {
@@ -296,12 +296,12 @@ func TestMightyCuiController_Exec(t *testing.T) {
 
 	t.Run("setnotrumpextra no args", func(t *testing.T) {
 		c := controller.NewMightyCuiController(newMightyCuiMock(mockOutput))
-		assert.Contains(t, c.Exec("sn"), "required")
+		assert.Contains(t, c.Exec("sn"), msgStem("noTrumpExtraRequired"))
 	})
 
 	t.Run("setnotrumpextra over max", func(t *testing.T) {
 		c := controller.NewMightyCuiController(newMightyCuiMock(mockOutput))
-		assert.Contains(t, c.Exec("sn 20"), "Invalid no-trump extra: 20")
+		assert.Contains(t, c.Exec("sn 20"), msgKey("invalidNoTrumpExtra", "val", "20"))
 	})
 
 	// log / hint

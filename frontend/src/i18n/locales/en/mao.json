@@ -77,5 +77,6 @@
     "maoPlayWild": "Nothing ordinary is playable, but an 8 always is",
     "maoDraw": "Nothing is playable — draw from the stock",
     "maoChooseSuit": "Call the suit you hold most of, so your next turn has an out"
-  }
+  },
+  "sayWordAnnounce": "“{{word}}” — {{outcome}}"
 }

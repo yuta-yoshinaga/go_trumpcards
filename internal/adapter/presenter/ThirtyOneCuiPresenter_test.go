@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -23,6 +24,7 @@ func setupThirtyOneCuiMock() (*interfaces.MockThirtyOneGame, []*domain.ThirtyOne
 	m.On("GetDiscardTop").Return((*domain.Card)(nil))
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.ThirtyOnePhaseDraw)
+	m.On("GetCpuKnockThreshold").Return(domain.ThirtyOneKnockThresholdNormal).Maybe()
 	m.On("GetCurrentPlayerIdx").Return(0)
 	m.On("GetWinnerIdx").Return(-1)
 	m.On("GetKnockerIdx").Return(-1)
@@ -107,6 +109,7 @@ func TestThirtyOneCuiPresenter_Output(t *testing.T) {
 		m, _ := setupThirtyOneCuiMock()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.On("GetPhase").Return(domain.ThirtyOnePhaseDiscard)
+		m.On("GetCpuKnockThreshold").Return(domain.ThirtyOneKnockThresholdNormal).Maybe()
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "ディスカードフェーズ")
 		assert.Contains(t, result, "d <idx>")
@@ -117,6 +120,7 @@ func TestThirtyOneCuiPresenter_Output(t *testing.T) {
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetThirtyOneIdx")
 		m.On("GetPhase").Return(domain.ThirtyOnePhaseRoundEnd)
+		m.On("GetCpuKnockThreshold").Return(domain.ThirtyOneKnockThresholdNormal).Maybe()
 		m.On("GetThirtyOneIdx").Return(0)
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "31を達成")
@@ -145,6 +149,8 @@ func TestThirtyOneCuiPresenter_ActionLogOutput(t *testing.T) {
 	}
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return(entries)
+	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+	m.On("GetPlayer", mock.Anything).Return(domain.NewThirtyOnePlayer(true)).Maybe()
 	assert.Contains(t, p.ActionLogOutput(m), "knock")
 }
 

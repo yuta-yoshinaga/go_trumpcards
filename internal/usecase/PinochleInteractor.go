@@ -159,7 +159,10 @@ func (pi *PinochleInteractor) ActionLog() string {
 
 // runCpuBids ビッドおよびトランプ宣言フェーズでCPUを自動実行する
 func (pi *PinochleInteractor) runCpuBids() {
-	for !pi.Game.GetGameEndFlag() {
+	for i := 0; i < MaxCpuIterations; i++ {
+		if pi.Game.GetGameEndFlag() {
+			return
+		}
 		phase := pi.Game.GetPhase()
 		if phase == domain.PinochlePhaseBid {
 			if pi.Game.IsHumanBidTurn() {

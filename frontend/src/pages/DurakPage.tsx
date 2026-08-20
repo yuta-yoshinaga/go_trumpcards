@@ -375,7 +375,17 @@ function DurakPageContent() {
                           <span className="text-ds-info text-xs ml-1">({t('defender')})</span>
                         )}
                       </div>
-                      <div className="text-game-text-muted text-xs">{player.cardCount}</div>
+                      {/* 上がった相手は CUI では手札欄が「上がり」に差し替わるのに、
+                          Web は枚数を出すだけで対局中の CPU と見分けが付かなかった
+                          (#5524)。**枚数 0 では代用できない** -- 配り直しの直前など、
+                          まだ抜けていないのに 0 枚の瞬間がある。 */}
+                      {player.isFinished ? (
+                        <div className="text-ds-success text-xs font-bold" data-testid={`cpu-finished-${player.id}`}>
+                          {t('finished')}
+                        </div>
+                      ) : (
+                        <div className="text-game-text-muted text-xs">{player.cardCount}</div>
+                      )}
                     </div>
                   ))}
                 </div>

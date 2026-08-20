@@ -75,6 +75,8 @@ type FortyFivesGame interface {
 	GetPlayer(i int) *domain.FortyFivesPlayer
 	// GetPlayableIndices プレイ可能なカードのインデックスを取得する
 	GetPlayableIndices(playerIdx int) []int
+	// GetTopTrumpIndices 手札のうち固定の最上位切り札の位置を取得する
+	GetTopTrumpIndices(playerIdx int) []int
 	// GetHint ヒントを取得する
 	GetHint() *domain.FortyFivesHint
 }

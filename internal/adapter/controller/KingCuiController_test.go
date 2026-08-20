@@ -64,12 +64,12 @@ func TestKingCuiController_Exec(t *testing.T) {
 
 	t.Run("select contract missing arg", func(t *testing.T) {
 		c := controller.NewKingCuiController(newMock())
-		assert.Contains(t, c.Exec("c"), "Usage")
+		assert.True(t, msgRejected(c.Exec("c")))
 	})
 
 	t.Run("select contract invalid arg", func(t *testing.T) {
 		c := controller.NewKingCuiController(newMock())
-		assert.Contains(t, c.Exec("c abc"), "Invalid contract")
+		assert.Contains(t, c.Exec("c abc"), msgStem("invalidContractRaw"))
 	})
 
 	t.Run("play a card", func(t *testing.T) {
@@ -81,12 +81,12 @@ func TestKingCuiController_Exec(t *testing.T) {
 
 	t.Run("play missing arg", func(t *testing.T) {
 		c := controller.NewKingCuiController(newMock())
-		assert.Contains(t, c.Exec("p"), "Usage")
+		assert.True(t, msgRejected(c.Exec("p")))
 	})
 
 	t.Run("play invalid arg", func(t *testing.T) {
 		c := controller.NewKingCuiController(newMock())
-		assert.Contains(t, c.Exec("p xyz"), "Invalid hand index")
+		assert.Contains(t, c.Exec("p xyz"), msgStem("invalidHandIndexRaw"))
 	})
 
 	t.Run("set difficulty", func(t *testing.T) {

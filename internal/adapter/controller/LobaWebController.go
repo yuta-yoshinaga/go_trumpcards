@@ -156,9 +156,3 @@ func lobaDispatch(bc *baseController, w http.ResponseWriter, li usecase.LobaInte
 	}
 	return true
 }
-
-// NewLobaDefaultOutputForTest exposes the default-output builder to the
-// external controller_test package.
-func NewLobaDefaultOutputForTest(msg string) *LobaWebOutput {
-	return newLobaDefaultOutput(msg)
-}

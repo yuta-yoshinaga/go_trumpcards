@@ -25,7 +25,9 @@
     "previewHand": "Tentative hand",
     "candidateHand": "If also discarded",
     "limitReached": "You can select up to {{count}} card(s). Deselect one first.",
-    "limitDescription": "You can select at most {{count}} card(s) to discard."
+    "limitDescription": "You can select at most {{count}} card(s) to discard.",
+    "previewAria": "Keeping: {{cards}}",
+    "previewAriaWithHand": "Keeping: {{cards}}. Hand: {{hand}}"
   },
   "rebuy": {
     "prompt": "Rebuy? ({{chips}} chips, {{used}}/{{max}} used)",
@@ -106,5 +108,6 @@
     "fourOfAKind": "Four of a Kind",
     "straightFlush": "Straight Flush",
     "royalFlush": "Royal Flush"
-  }
+  },
+  "livePreview": "Current hand:"
 }

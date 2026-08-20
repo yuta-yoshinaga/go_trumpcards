@@ -10,6 +10,9 @@
   "capotActive": "！ {{name}} が capot 宣言中（獲得 {{tricks}}/8）。1トリック取れば潰せます。",
   "capotMark": "[capot]",
   "playerLine": "{{name}}: 累計{{score}}失点 (今ラウンド{{round}}) 手札{{cards}}枚",
+  "jackMarks": " 取ったJ: {{jacks}}",
+  "jackSpade": "♠J(2失点)",
+  "jackOther": "{{suit}}",
   "promptCurrentPlayer": "手番: {{name}}",
   "promptPlay": "play <idx>・・・カードを出す",
   "promptDeclare": "capot を宣言しますか？",
@@ -24,5 +27,7 @@
   "hintReasonDumpJack": "安全なうちにジャックを処分する",
   "hintReasonLeadSafe": "ジャック以外の低い札でリードする",
   "hintReasonBlockCapot": "capot を潰すためにこのトリックを取る",
-  "hintReasonWinCapot": "自分の capot。全トリック取るしかないので、確実に取れる札を出す"
+  "hintReasonWinCapot": "自分の capot。全トリック取るしかないので、確実に取れる札を出す",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
+  "helpHint": "  h                    助言を表示"
 }

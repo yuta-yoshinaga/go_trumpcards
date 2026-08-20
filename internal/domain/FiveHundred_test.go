@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
 
@@ -877,4 +879,16 @@ func TestFiveHundred_AccessorsAndOpenMisereBid(t *testing.T) {
 	if err := g2.PlayerBid(domain.FiveHundredContractSuit, 6, domain.CardDesignSpade); err == nil {
 		t.Errorf("expected rejection of a lower bid after open misère")
 	}
+}
+
+// #5626: 指名スートは画面が読む値なので、設定と取得が同じフィールドを指すこと
+// だけは固定しておく (取り違えると、指名と違うスートを画面が出す)。
+func TestFiveHundredJokerLeadSuitRoundTrips(t *testing.T) {
+	g := newFiveHundredForTest()
+	g.Reset()
+	// Reset 直後は「指名なし」。
+	assert.Equal(t, -1, g.GetJokerLeadSuit())
+
+	g.SetJokerLeadSuit(domain.CardDesignHeart)
+	assert.Equal(t, domain.CardDesignHeart, g.GetJokerLeadSuit())
 }

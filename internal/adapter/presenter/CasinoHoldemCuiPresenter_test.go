@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
@@ -331,4 +332,41 @@ func TestCasinoHoldemCuiPresenter_HintOutput(t *testing.T) {
 		m.On("GetPhase").Return(domain.CasinoHoldemPhaseBet)
 		assert.Contains(t, p.HintOutput(m), i18n.T("casinoholdem.hintNone"))
 	})
+}
+
+// #5604: フロップは手札 2 枚 + ボード 3 枚が見えた時点で Call/Fold を決める場面
+// なのに、CUI は札を並べるだけで役を出していなかった (役は END フェーズだけ)。
+// Web は同じ場面で「現在の役」を出しているので、CUI だけ判断材料が欠けていた。
+func TestCasinoHoldemCuiPresenterShowsTheCurrentHandAtTheFlop(t *testing.T) {
+	// **本物のドメインで確かめる。**モックに役を答えさせると、presenter が
+	// 正しい値を読んでいるかは分かっても、その値がフロップ時点で更新されて
+	// いるかは何も確かめられない。
+	g := domain.NewDefaultCasinoHoldem()
+	g.Reset()
+	require.NoError(t, g.Bet(100, 0))
+	require.Equal(t, domain.CasinoHoldemPhaseFlop, g.GetPhase())
+
+	p := new(CasinoHoldemCuiPresenter)
+	out := p.Output(g, nil)
+
+	rank := g.GetPlayerHandRank()
+	require.GreaterOrEqual(t, rank, 0)
+	require.Less(t, rank, len(domain.PokerHandNames))
+	// 配りに依存しないよう、ドメインが持っている役名そのものと突き合わせる。
+	assert.Contains(t, out, domain.PokerHandNames[rank])
+	// **「現在の」役だと分かる見出しで出す。**ショーダウンの確定役と同じ行だと、
+	// まだ 2 枚めくられることが読み取れない。
+	assert.Contains(t, out, i18n.Tf("casinoholdem.currentHandLine", "hand", domain.PokerHandNames[rank]))
+	assert.NotContains(t, out, i18n.Tf("casinoholdem.handLine", "hand", domain.PokerHandNames[rank]))
+}
+
+// ディーラーの役は伏せたまま。フロップで出すのはプレイヤー側だけで、
+// 相手の 2 枚は "??" のまま伏せられている。
+func TestCasinoHoldemCuiPresenterKeepsTheDealerHiddenAtTheFlop(t *testing.T) {
+	g := domain.NewDefaultCasinoHoldem()
+	g.Reset()
+	require.NoError(t, g.Bet(100, 0))
+
+	out := new(CasinoHoldemCuiPresenter).Output(g, nil)
+	assert.Contains(t, out, "??")
 }

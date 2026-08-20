@@ -43,6 +43,11 @@
     "forceExchange": "強制交換手数料",
     "total": "合計"
   },
+  "paidCosts": {
+    "exchange": "交換手数料: {{count}}枚 -{{fee}}",
+    "buy6th": "6枚目手数料 -{{fee}}",
+    "forceExchange": "強制交換手数料 -{{fee}}"
+  },
   "handRank": {
     "0": "ハイカード",
     "1": "ワンペア",

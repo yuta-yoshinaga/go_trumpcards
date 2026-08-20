@@ -11,6 +11,7 @@
   "teamScores": "Scores — Team A: {{teamA}}  Team B: {{teamB}}",
   "contractLine": "Declarer: {{name}} (Team {{team}}) — {{contract}}",
   "playerLine": "{{name}} (Team {{team}}, {{role}}): {{cards}} cards  Team Score: {{score}}  Tricks: {{tricks}}",
+  "topTrumpLegend": "!! = top trump (five and jack of trumps, ace of hearts); exempt from following suit",
   "roleDeclarer": "Declarer",
   "roleDefender": "Defender",
   "bid.pass": "Pass",
@@ -44,5 +45,7 @@
   "contractProgress": "Contract: {{team}} {{got}}/{{contract}} points - {{status}}",
   "contractMade": "made",
   "contractFailed": "can no longer be made",
-  "contractNeedMore": "{{remaining}} more needed"
+  "contractNeedMore": "{{remaining}} more needed",
+  "helpExampleBid": "  pass                      drop out of the bidding",
+  "helpHint": "  h                         show a hint"
 }

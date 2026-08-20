@@ -33,6 +33,8 @@ const playingState: BristolResponse = {
   phase: 0,
   moveCount: 0,
   canUndo: false,
+  isStalemate: false,
+  undoToEscape: 0,
   message: '',
   messageCode: 'bristol.playing',
 };
@@ -433,5 +435,29 @@ describe('BristolPage destination preview', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     fireEvent.mouseEnter(screen.getByRole('button', { name: '降順ビルド列 2（1枚）' }));
     expect(targets()).toHaveLength(0);
+  });
+});
+
+// #5631: Bristol にだけ手詰まりの表示が無かった。ストックは作り直せないので、
+// 動かせる札を探し続けるしかない盤面に普通に到達する。
+describe('BristolPage stalemate', () => {
+  it('offers the escape when the server reports a dead end', async () => {
+    mockExec.mockResolvedValue({ ...playingState, isStalemate: true, undoToEscape: 2, canUndo: true });
+    renderWithProviders(<BristolPage />);
+
+    const btn = await screen.findByTestId('stalemate-escape-button');
+    mockExec.mockClear();
+    fireEvent.click(btn);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo_n', undefined, undefined, 2));
+  });
+
+  it('shows no escape while the board is playable', async () => {
+    // **undoToEscape は 0 以外にする。**0 だとボタン側の自前ガードで消えるので、
+    // isStalemate の判定が外れていても通ってしまう。
+    mockExec.mockResolvedValue({ ...playingState, isStalemate: false, undoToEscape: 2 });
+    renderWithProviders(<BristolPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    expect(screen.queryByTestId('stalemate-escape-button')).not.toBeInTheDocument();
   });
 });

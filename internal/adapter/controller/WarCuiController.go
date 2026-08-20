@@ -39,7 +39,10 @@ func (c *WarCuiController) Exec(command string) string {
 			case "a", "autoplay":
 				return c.wi.AutoPlay(), true
 			case "sm", "setmax":
-				val := cuiutil.ParseOptionalInt(args, 0, domain.WarDefaultMaxRounds)
+				val, errMsg, ok := cuiutil.ParseOptionalIntKeys(args, 0, domain.WarDefaultMaxRounds, "invalidMaxRounds")
+				if !ok {
+					return errMsg, true
+				}
 				cfg := c.wi.GetConfig()
 				cfg.MaxRounds = val
 				return c.wi.ResetWithConfig(cfg), true

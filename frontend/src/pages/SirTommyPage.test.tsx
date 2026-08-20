@@ -284,6 +284,22 @@ describe('SirTommyPage', () => {
     expect(screen.getByText(/ストック → ファンデーション 2/)).toBeInTheDocument();
   });
 
+  // #5552: ファンデーションに置けない局面 — このゲームで最頻出 — では
+  // どのウェイストに置くかを助言する。
+  it('shows the waste-placement hint and rings the destination pile', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      hint: { fromZone: 'stock', wasteIdx: 2, foundationIdx: -1, toZone: 'waste' },
+      messageCode: 'sirtommy.hintAvailable',
+    });
+    renderWithProviders(<SirTommyPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.getByText(/ストック → ウェイスト 2/)).toBeInTheDocument();
+    // **-1 を出さない。**移動の体裁に落とすと foundationIdx が漏れる。
+    expect(screen.queryByText(/-1/)).not.toBeInTheDocument();
+    expect(document.querySelectorAll('[data-hint-waste-target]')).toHaveLength(1);
+  });
+
   // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回
   // ヒントを載せるので、`state.hint` だけを見て描画すると常時表示になる (#4605)。
   it('hides the hint when it was not requested', async () => {

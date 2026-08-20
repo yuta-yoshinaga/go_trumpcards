@@ -66,6 +66,7 @@ const initState: PokerResponse = {
   dealerIdx: 0,
   currentTurn: 0,
   phase: 0,
+  exchangeRead: false,
   gameEndFlag: false,
   lastBet: 0,
   minRaise: 10,
@@ -89,6 +90,7 @@ const dealState: PokerResponse = {
   dealerIdx: 3,
   currentTurn: 0,
   phase: 1,
+  exchangeRead: false,
   gameEndFlag: false,
   lastBet: 0,
   minRaise: 10,
@@ -151,6 +153,7 @@ const endState: PokerResponse = {
   dealerIdx: 2,
   currentTurn: -1,
   phase: 4,
+  exchangeRead: false,
   gameEndFlag: false,
   lastBet: 0,
   minRaise: 0,
@@ -1286,6 +1289,7 @@ describe('PokerPage', () => {
 
   it('handles action log visibility and API fetch', async () => {
     mockExec.mockResolvedValue({
+      exchangeRead: false,
       gameEndFlag: true,
       phase: 3, // PokerPhase.END
       currentTurn: 0,
@@ -1548,5 +1552,27 @@ describe('PokerPage', () => {
 
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.queryByTestId('equity-display')).not.toBeInTheDocument();
+  });
+});
+
+// #5475: 交換枚数が3枚未満だと CPU のフォールド閾値が1ランク上がるという実在の
+// 戦略要素が、画面のどこにも説明されていなかった (frontend を grep しても
+// exchangeRead は0件だった)。プレイヤーは読まれていることを知りようがない。
+describe('PokerPage exchange read', () => {
+  it('explains that a small exchange is being read', async () => {
+    mockExec.mockResolvedValue({ ...secondBetState, exchangeRead: true });
+    renderWithProviders(<PokerPage />);
+    const note = await screen.findByTestId('poker-exchange-read');
+    expect(note).toHaveAttribute('role', 'status');
+    expect(note.textContent).toMatch(/3枚未満/);
+  });
+
+  // **判定はサーバが返す exchangeRead だけを見る。** 交換枚数から数え直すと
+  // domain の閾値とずれる。ここでは 1 枚交換していても false なら出さない。
+  it('does not re-derive the verdict from the exchange count', async () => {
+    mockExec.mockResolvedValue({ ...secondBetState, exchangeRead: false });
+    renderWithProviders(<PokerPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('poker-exchange-read')).not.toBeInTheDocument();
   });
 });

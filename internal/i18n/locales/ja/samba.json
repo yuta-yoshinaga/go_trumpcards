@@ -29,11 +29,15 @@
   "promptDrawHelpDiscard": "dd <idx,idx>・・・捨て札の山を取る (ナチュラルペアのインデックス)",
   "promptMeld": "手番: {{name}} (メルドフェーズ)",
   "promptMeldHelp": "m <idx,idx,idx;idx,idx,idx>・・・メルドを出す (;でグループ区切り)",
+  "promptMeldMinimum": "初回メルドの最低点: {{points}} 点（この点に届くまでメルドできません）",
   "promptSkipMeld": "sm・・・メルドせずにスキップ",
   "promptDiscard": "手番: {{name}} (ディスカードフェーズ)",
   "promptDiscardHelp": "d <idx>・・・カードを捨てる",
   "promptGoOutHelp": "go・・・上がる (チームで2個以上の完成メルドが必要)",
   "promptRoundEnd": "ラウンド終了",
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
-  "promptDrawHelpFrozen": "  ※凍結中: 捨札の取得には手札から同ランクの札2枚の提示が必要"
+  "promptDrawHelpFrozen": "  ※凍結中: 捨札の取得には手札から同ランクの札2枚の提示が必要",
+  "helpExampleDraw": "  ds                   手番の最初に山札から 1 枚引く",
+  "helpExampleDiscard": "  d 0                  手札の 0 番を捨てる",
+  "helpLog": "  l                    行動ログを表示"
 }

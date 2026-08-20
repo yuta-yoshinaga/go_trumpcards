@@ -30,5 +30,20 @@
   "hintToTableau": "tableau pile {{pile}}",
   "hintToWaste": "turn it to the waste",
   "hintLine": "Hint: {{from}} → {{to}}",
-  "undoToEscape": "Undo {{count}} move(s) to escape the dead end (undo {{count}}, or repeat u)"
+  "undoToEscape": "Undo {{count}} move(s) to escape the dead end (undo {{count}}, or repeat u)",
+  "helpExampleHint": "  h                        ask for a move",
+  "helpExampleAuto": "  ac                       send everything that can go to a foundation",
+  "errStockEmptyNoRedeal": "The stock is empty and this game has no redeal",
+  "errPileEmpty": "Pile {{pile}} is empty",
+  "errNoFoundationForCard": "No foundation accepts that card",
+  "errSamePile": "The source and the destination are the same pile",
+  "errEmptyPileNeedsStockOrWaste": "An empty pile cannot be filled from the tableau (only from the stock or the waste)",
+  "errCannotPlaceOnPile": "That card cannot go on that pile (build down in the same suit)",
+  "errWasteEmpty": "The waste is empty",
+  "errStockEmpty": "The stock is empty",
+  "errStockFillsGapsOnly": "The stock may only fill an empty pile",
+  "errNothingToAutoComplete": "No card can be auto-completed",
+  "errNothingToUndo": "There is nothing to undo",
+  "errNotPlaying": "The game is not in the playing phase",
+  "errInvalidPile": "Invalid pile number: {{pile}}"
 }

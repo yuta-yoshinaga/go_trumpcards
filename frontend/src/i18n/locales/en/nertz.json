@@ -12,7 +12,7 @@
     "waste": "Waste",
     "stock": "Stock",
     "foundation": "Foundation",
-    "foundationN": "Foundation {{n}}",
+    "foundationN": "Foundation {{n}} ({{size}}/{{max}} cards)",
     "remaining": "left",
     "size": ""
   },

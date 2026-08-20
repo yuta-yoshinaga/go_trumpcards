@@ -55,12 +55,39 @@ func killePlayerStr(g interfaces.KilleGame, player *domain.KillePlayer, i int) s
 	case player.IsSatisfied():
 		state = " " + i18n.T("kille.satisfiedTag")
 	}
+	// 買い戻しは上限つき (KilleMaxReentries)。**残り回数が判断材料**なので、
+	// 使った回数だけでなく上限も添える (Web の reentriesUsed と同じ)。
+	if used := player.GetReentries(); used > 0 {
+		state += " " + i18n.Tf("kille.reentriesUsed",
+			"used", strconv.Itoa(used), "max", strconv.Itoa(domain.KilleMaxReentries))
+	}
 	return i18n.Tf("kille.playerLine",
 		"name", cuiPlayerName(player, i),
 		"chips", strconv.Itoa(player.GetChips()),
 		"card", card,
 		"role", role,
 		"state", state) + "\n"
+}
+
+// killeWriteEvents appends this round's exchange log (nothing when the round is quiet).
+func killeWriteEvents(b *strings.Builder, g interfaces.KilleGame) {
+	events := g.GetEvents()
+	if len(events) == 0 {
+		return
+	}
+	b.WriteString(i18n.T("kille.eventsTitle") + "\n")
+	for _, e := range events {
+		if e == nil {
+			continue
+		}
+		target := i18n.T("kille.stockLabel")
+		if e.Target >= 0 {
+			target = cuiPlayerName(g.GetPlayer(e.Target), e.Target)
+		}
+		b.WriteString("  " + i18n.Tf("kille.event."+e.Kind,
+			"actor", cuiPlayerName(g.GetPlayer(e.Actor), e.Actor),
+			"target", target) + "\n")
+	}
 }
 
 // KilleCuiPresenter renders the Kille CUI view.
@@ -77,6 +104,10 @@ func (p *KilleCuiPresenter) Output(g interfaces.KilleGame, lastErr error) string
 		for i := range g.GetPlayers() {
 			b.WriteString(killePlayerStr(g, g.GetPlayer(i), i))
 		}
+
+		// 誰が誰と交換したかはこのゲームの読みの中心 (カッコウ・軽騎兵・豚の
+		// 判明状況がここにしか出ない)。Web は kille-events で出している。
+		killeWriteEvents(b, g)
 
 		b.WriteString("----------\n")
 
@@ -108,5 +139,5 @@ func (p *KilleCuiPresenter) Output(g interfaces.KilleGame, lastErr error) string
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *KilleCuiPresenter) ActionLogOutput(g interfaces.KilleGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.KillePlayer](g)
 }

@@ -137,9 +137,3 @@ func chineseTenDispatch(bc *baseController, w http.ResponseWriter, ci usecase.Ch
 	}
 	return true
 }
-
-// NewChineseTenDefaultOutputForTest exposes the default-output builder to the
-// external controller_test package.
-func NewChineseTenDefaultOutputForTest(msg string) *ChineseTenWebOutput {
-	return newChineseTenDefaultOutput(msg)
-}

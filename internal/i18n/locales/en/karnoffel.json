@@ -12,6 +12,14 @@
   "trick": "Trick: {{cards}}",
   "playable": "Playable: {{indexes}}",
   "ladder": "Ranking: THE JACK (Karnöffel) > THE SEVEN (devil, ONLY WHEN LED) > 6 (Pope) > 2 (Kaiser) > 3 > 4 > 5 > K > Q > 10 > 9 > 8. THE THREE LOSES TO KINGS, THE FOUR TO KINGS AND QUEENS, THE FIVE TO EVERY FACE CARD. A seven played in follow loses to every card",
+  "title.karnoffel": "Karnoffel",
+  "title.devil": "devil",
+  "title.pope": "Pope",
+  "title.kaiser": "Kaiser",
+  "title.oberstecher": "Oberstecher",
+  "title.unterstecher": "Unterstecher",
+  "title.farbenstecher": "Farbenstecher",
+  "handTitle": "[{{title}}]",
   "gameEnd": "Game over! Team {{team}} wins!",
   "promptPlay": "Turn: {{name}}",
   "promptPlayHelp": "p <i> ... play card i (THERE IS NO OBLIGATION TO FOLLOW SUIT, but the devil cannot lead the first trick)",
@@ -22,5 +30,7 @@
   "handEnd": "Hand over",
   "handDrawn": "Hand over — neither side reached three tricks",
   "result.humanWin": "Game over! Your team wins!",
-  "result.cpuWin": "Game over! The other team wins."
+  "result.cpuWin": "Game over! The other team wins.",
+  "helpExamplePlay": "  p 0                       play hand card 0",
+  "helpExampleNext": "  n                         read the trick result, then continue"
 }

@@ -160,5 +160,5 @@ func (p *OldMaidCuiPresenter) Output(om interfaces.OldMaidGame, lastErr error) s
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *OldMaidCuiPresenter) ActionLogOutput(om interfaces.OldMaidGame) string {
-	return actionLogOutputText(om)
+	return actionLogOutputTextForSeats[*domain.OldMaidPlayer](om)
 }

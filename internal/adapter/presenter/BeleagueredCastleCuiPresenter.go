@@ -81,6 +81,9 @@ func (p *BeleagueredCastleCuiPresenter) Output(bc interfaces.BeleagueredCastleGa
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(bc.GetMoveCount())) + "\n")
 		case domain.BeleagueredCastlePhaseGameOver:
 			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
+			fnd := bc.GetFoundation()
+			b.WriteString(color.Yellow(cuiSolitaireGameOverSummary(
+				cuiCountPileCards(fnd[:]...), domain.BeleagueredCastleFoundationCnt*domain.CardValueMax)) + "\n")
 		}
 	})
 }

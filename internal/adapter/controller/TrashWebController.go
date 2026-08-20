@@ -67,7 +67,7 @@ func trashDispatch(bc *baseController, w http.ResponseWriter, ti usecase.TrashIn
 	case "cpu":
 		bc.writePresenterResponse(w, ti.CpuStep())
 	default:
-		return dispatchResetAndLog(param.Command, bc, w, ti.Reset, ti.ActionLog)
+		return dispatchResetHintAndLog(param.Command, bc, w, ti.Reset, ti.Hint, ti.ActionLog)
 	}
 	return true
 }

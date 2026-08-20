@@ -85,17 +85,17 @@ func TestBeloteCuiController_Exec(t *testing.T) {
 
 	t.Run("call no args", func(t *testing.T) {
 		c := controller.NewBeloteCuiController(newMock())
-		assert.Contains(t, c.Exec("c"), "Suit is required")
+		assert.Contains(t, c.Exec("c"), msgStem("suitRequiredRange"))
 	})
 
 	t.Run("call invalid arg", func(t *testing.T) {
 		c := controller.NewBeloteCuiController(newMock())
-		assert.Contains(t, c.Exec("c abc"), "Invalid suit")
+		assert.Contains(t, c.Exec("c abc"), msgStem("invalidSuit"))
 	})
 
 	t.Run("call out of range", func(t *testing.T) {
 		c := controller.NewBeloteCuiController(newMock())
-		assert.Contains(t, c.Exec("c 5"), "Invalid suit: 5")
+		assert.Contains(t, c.Exec("c 5"), msgKey("invalidSuit", "val", "5"))
 	})
 
 	t.Run("play p with index", func(t *testing.T) {
@@ -107,12 +107,12 @@ func TestBeloteCuiController_Exec(t *testing.T) {
 
 	t.Run("play no args", func(t *testing.T) {
 		c := controller.NewBeloteCuiController(newMock())
-		assert.Contains(t, c.Exec("p"), "Card index is required")
+		assert.Contains(t, c.Exec("p"), msgCardIndexRequired())
 	})
 
 	t.Run("play invalid arg", func(t *testing.T) {
 		c := controller.NewBeloteCuiController(newMock())
-		assert.Contains(t, c.Exec("p abc"), "Invalid card index")
+		assert.Contains(t, c.Exec("p abc"), msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("next n", func(t *testing.T) {
@@ -140,12 +140,12 @@ func TestBeloteCuiController_Exec(t *testing.T) {
 
 	t.Run("setdifficulty invalid", func(t *testing.T) {
 		c := controller.NewBeloteCuiController(newMock())
-		assert.Contains(t, c.Exec("sd abc"), "Invalid CPU difficulty")
+		assert.Contains(t, c.Exec("sd abc"), msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("setdifficulty no args", func(t *testing.T) {
 		c := controller.NewBeloteCuiController(newMock())
-		assert.Contains(t, c.Exec("sd"), "required")
+		assert.Contains(t, c.Exec("sd"), msgCpuDifficultyRequired())
 	})
 
 	t.Run("settarget valid", func(t *testing.T) {
@@ -159,12 +159,12 @@ func TestBeloteCuiController_Exec(t *testing.T) {
 
 	t.Run("settarget no args", func(t *testing.T) {
 		c := controller.NewBeloteCuiController(newMock())
-		assert.Contains(t, c.Exec("st"), "required")
+		assert.Contains(t, c.Exec("st"), msgTargetScoreRequired())
 	})
 
 	t.Run("settarget invalid", func(t *testing.T) {
 		c := controller.NewBeloteCuiController(newMock())
-		assert.Contains(t, c.Exec("st 0"), "Invalid target score: 0")
+		assert.Contains(t, c.Exec("st 0"), msgInvalidTargetScore("0"))
 	})
 
 	t.Run("hint h", func(t *testing.T) {

@@ -24,6 +24,14 @@
 # `git restore --staged <path>` only rewrites the index, so it is left alone.
 #
 # Reads the hook payload on stdin, writes a hook decision object on stdout.
+#
+# Decision shape: this guard denies ONE tool call, so it emits
+# hookSpecificOutput.permissionDecision = "deny". It must never emit
+# {"continue": false}, which is the kill switch: that ends the whole turn, and
+# its stopReason is documented as "Not shown to Claude" -- so the agent is
+# stopped without ever learning why, and the Stop hook does not run either.
+# Every guard in this repo used the kill switch until 2026-08-16; that is what
+# was behind the recurring "a hook block ended my turn" failures.
 set -uo pipefail
 
 payload=$(cat)
@@ -75,10 +83,13 @@ esac
 # waving it through is worst.
 if [ "$parse_failed" -eq 1 ]; then
   jq -nc '{
-    continue: false,
-    stopReason: ("Blocked: could not parse the paths out of this restore command (unbalanced quotes?), " +
+    hookSpecificOutput: {
+      hookEventName: "PreToolUse",
+      permissionDecision: "deny",
+      permissionDecisionReason: ("Blocked: could not parse the paths out of this restore command (unbalanced quotes?), " +
                  "so it cannot be checked for uncommitted work. Refusing to guess -- rerun with simple " +
                  "quoting, or use `git stash push -- <paths>` which is recoverable either way.")
+    }
   }'
   exit 0
 fi
@@ -101,11 +112,14 @@ if [ -z "$at_risk" ]; then
 fi
 
 jq -nc --arg files "$(printf '%s' "$at_risk" | sed '/^$/d')" '{
-  continue: false,
-  stopReason: ("Blocked: this would discard uncommitted changes with no way back. " +
+  hookSpecificOutput: {
+    hookEventName: "PreToolUse",
+    permissionDecision: "deny",
+    permissionDecisionReason: ("Blocked: this would discard uncommitted changes with no way back. " +
                "It prints nothing on success, so the loss is silent and the next green " +
                "test run reads like confirmation.\n\nAt risk:\n" + $files +
                "\n\nUse `git stash push -- <paths>` instead (recoverable via `git stash pop`), " +
                "or commit first. If you are restoring a file you deliberately broke for a " +
                "test, stash before breaking it rather than restoring after.")
+  }
 }'

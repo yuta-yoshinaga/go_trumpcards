@@ -7,6 +7,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupCaribbeanStudCuiMockDefaults(m *interfaces.MockCaribbeanStudGame) {
@@ -267,4 +268,30 @@ func TestCaribbeanStudCuiPresenter_HintOutput(t *testing.T) {
 			p.HintOutput(game(domain.CaribbeanStudPhaseAction, domain.PokerHandHighCard, nil)),
 			"ヒントを出せません")
 	})
+}
+
+// #5528: Web には常設の説明があるのに、CUI は "b <ante> <jackpot>" で
+// 実チップを賭けさせながら、何が当たれば配当されるのか一言も言っていなかった。
+func TestCaribbeanStudCuiPresenter_Output_JackpotIsExplainedBeforeBetting(t *testing.T) {
+	p := new(CaribbeanStudCuiPresenter)
+
+	// GetPhase を先に登録する。testify は最初に一致した期待を返すので、
+	// defaults の .Maybe() より前に置けば差し替えになる。
+	outputInPhase := func(phase int) string {
+		m := new(interfaces.MockCaribbeanStudGame)
+		m.On("GetPhase").Return(phase)
+		setupCaribbeanStudCuiMockDefaults(m)
+		return p.Output(m, nil)
+	}
+
+	betOut := outputInPhase(domain.CaribbeanStudPhaseBet)
+	assert.Contains(t, betOut, i18n.T("caribbeanstud.jackpotHelp"))
+	// Web の説明と揃っていること: フラッシュ以上で、勝敗に関係なく配当。
+	assert.Contains(t, i18n.T("caribbeanstud.jackpotHelp"), "フラッシュ")
+
+	// **賭け終わった後には出さない。**もう選べないものの説明は場所を取るだけ。
+	assert.NotContains(t, outputInPhase(domain.CaribbeanStudPhaseAction),
+		i18n.T("caribbeanstud.jackpotHelp"))
+	assert.NotContains(t, outputInPhase(domain.CaribbeanStudPhaseEnd),
+		i18n.T("caribbeanstud.jackpotHelp"))
 }

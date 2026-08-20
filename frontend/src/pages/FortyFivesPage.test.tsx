@@ -216,6 +216,44 @@ describe('FortyFivesPage', () => {
 
   // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回
   // ヒントを載せるので、`state.hint` だけを見て描画すると常時表示になる (#4605)。
+  // #5643: 「切り札の5・切り札のJ・♥A」は固定で最強で、持っているとマスト
+  // フォローを免除される (Reneging)。とくに ♥A は切り札スートに関係なく常に
+  // 切り札扱いで、スート記号を見ても分からない。
+  it('rings the fixed top trumps in hand', async () => {
+    mockExec.mockResolvedValue(
+      makeFortyFivesState({
+        ...playPhaseState,
+        trumpSuit: 1, // ♠
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            cardCount: 4,
+            cards: [
+              { design: 'SPADE', value: 5 }, // 切り札の5
+              { design: 'HEART', value: 1 }, // ♥A (切り札スート外でも最上位)
+              { design: 'SPADE', value: 1 }, // 切り札のA だが最上位ではない
+              { design: 'CLOVER', value: 11 }, // 他スートのJ
+            ],
+            trickCount: 0,
+            teamScore: 0,
+            isDeclarer: true,
+          },
+          ...playPhaseState.players.slice(1),
+        ],
+      }),
+    );
+    renderWithProviders(<FortyFivesPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    for (const alt of ['♠ 5', '♥ A']) {
+      expect(screen.getByAltText(alt).closest('button')).toHaveAttribute('data-trump', 'true');
+    }
+    for (const alt of ['♠ A', '♣ J']) {
+      expect(screen.getByAltText(alt).closest('button')).not.toHaveAttribute('data-trump');
+    }
+  });
+
   it('renders no hint banner when the hint was not requested', async () => {
     mockExec.mockResolvedValue({ ...bidPhaseState, hint: { cardIndices: [0], reason: 'x' } });
     renderWithProviders(<FortyFivesPage />);

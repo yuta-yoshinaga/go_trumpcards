@@ -269,7 +269,9 @@ function BelotePageContent() {
                         : 'px-2 py-0.5 rounded-full font-medium border bg-ds-surface text-ds-text-muted border-ds-border'
                     }
                   >
-                    👑 {t('tracker.dixDeDer')}
+                    {/* 点数は設定から。訳文に +10 と書くと、設定を変えたとき
+                        バッジだけが古い数字を出す (#5592)。 */}
+                    👑 {t('tracker.dixDeDer', { points: state.config.dixDeDer })}
                   </span>
                 )}
                 {state.config.enableBeloteRebelote && (

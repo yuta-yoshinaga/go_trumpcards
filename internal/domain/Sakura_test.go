@@ -803,14 +803,23 @@ func TestSakuraRoundTripJSON_MidGame(t *testing.T) {
 func sakuraTamper(t *testing.T, mutate func(m map[string]any)) error {
 	t.Helper()
 	g := newSakuraForTest(t, 3)
-	for range 4 {
-		if g.IsHumanTurn() {
-			h := g.GetHint()
-			require.NoError(t, g.PlayerPlay(h.CardIndex, h.FieldIndex))
-			continue
-		}
-		g.CpuPlay()
-	}
+
+	// **4 手進めてはいけない。** さくらは場札を取り合う釣り系なので、序盤に場が空に
+	// なる配りがある。改竄ケースの多くは `fd[0]` / `st[0]` を書き換えるため、空だと
+	// アサーション以前に index out of range で panic していた (#5798)。
+	//
+	// Reset 直後の枚数は配りに依らず定数で決まる:
+	//   場札 = SakuraFieldSize = 6
+	//   山札 = SakuraDeckSize - seats*SakuraHandSize - SakuraFieldSize
+	//        = 48 - 3*7 - 6 = 21
+	// 一方 4 手進めた後は配り次第で、実測 (2026-08-16, 3,000 局) では
+	// 場札が 0 枚になる局が 27 局 = 0.9% あった。ここが panic の原因。
+	//
+	// 検証対象は Unmarshal の構造チェック（フェーズ・手番・親・重複・枚数など）で、
+	// どれも局の進行を必要としない。だから配り直後の状態をそのまま使う。
+	require.NotEmpty(t, g.GetField(), "改竄対象の場札が無い")
+	require.NotEmpty(t, g.stock, "改竄対象の山札が無い")
+
 	b, err := json.Marshal(g)
 	require.NoError(t, err)
 	var m map[string]any
@@ -870,6 +879,14 @@ func TestSakuraUnmarshal_RejectsTamperedState(t *testing.T) {
 			m["st"] = append(m["st"].([]any), m["st"].([]any)...)
 		}, "duplicate card"},
 	}
+	// **負のコントロール。** 改竄しなければ通ることを先に確かめる。これが無いと、
+	// 土台の状態が別の理由で不正でも全ケースが「エラーが出た」で緑になり、
+	// 改竄を検知しているのか土台が壊れているのか区別がつかない。
+	t.Run("改竄しなければ通る", func(t *testing.T) {
+		require.NoError(t, sakuraTamper(t, func(map[string]any) {}),
+			"土台の状態がそもそも Unmarshal を通らない")
+	})
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			err := sakuraTamper(t, tt.mutate)

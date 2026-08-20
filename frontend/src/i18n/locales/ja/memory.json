@@ -18,7 +18,12 @@
       "slow": "2秒"
     },
     "pairCount": "ペア数",
-    "pairCountOption": "{{pairs}}ペア（{{cards}}枚）"
+    "pairCountOption": "{{pairs}}ペア（{{cards}}枚）",
+    "difficultyOption": "{{level}}（{{memory}}）",
+    "memoryEasy": "よく忘れる",
+    "memoryNormal": "ときどき忘れる",
+    "memoryHard": "ほとんど忘れない",
+    "difficultyTooltip": "難易度は CPU の記憶力を変えます。めくったカードを覚えている確率と、手番ごとに忘れる確率が難易度で変わります。"
   },
   "scores": "スコア",
   "cardFaceDown": "{{position}}枚目のカード（裏向き）",

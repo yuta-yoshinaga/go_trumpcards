@@ -30,6 +30,7 @@ func (p *EuchreWebPresenter) Output(e interfaces.EuchreGame, lastErr error) stri
 			Suit:      hint.Suit,
 			GoAlone:   hint.GoAlone,
 			Reason:    hint.Reason,
+			Score:     hint.Score,
 		}
 	}
 
@@ -128,6 +129,7 @@ func (p *EuchreWebPresenter) HintOutput(e interfaces.EuchreGame) string {
 			Suit:      hint.Suit,
 			GoAlone:   hint.GoAlone,
 			Reason:    hint.Reason,
+			Score:     hint.Score,
 		}
 	}
 	// **「頼んだヒントか」を CLI が見分けられるようにする。**このゲーム群の

@@ -86,6 +86,11 @@ type SjavsWebOutput struct {
 	// ValidIndices は出せる手札の添字。切札が独立したスートになる追随規則を
 	// クライアントに再実装させない。
 	ValidIndices []int `json:"validIndices"`
+	// TrumpIndices は人間の手札のうち切札の添字 (#5575)。**常時切札の 6 枚
+	// (♣Q ♠Q ♣J ♠J ♥J ♦J) はスートを見ても分からない**ので、6 枚の一覧を
+	// クライアントに書き写させず、強さを決めている判定の結果を渡す。
+	// 切札未確定 (ビッド前) は空。
+	TrumpIndices []int `json:"trumpIndices"`
 	// TeamPoints は今ハンドのチーム別獲得点。合計は常に 120。
 	TeamPoints []int `json:"teamPoints"`
 	// Remaining は 24 からの残り。0 以下でラバー勝ち。
@@ -171,10 +176,4 @@ func sjavsDispatch(bc *baseController, w http.ResponseWriter, si usecase.SjavsIn
 		return dispatchHintAndLog(param.Command, bc, w, si.Hint, si.ActionLog)
 	}
 	return true
-}
-
-// NewSjavsDefaultOutputForTest exposes the default-output builder to the
-// external controller_test package.
-func NewSjavsDefaultOutputForTest(msg string) *SjavsWebOutput {
-	return newSjavsDefaultOutput(msg)
 }

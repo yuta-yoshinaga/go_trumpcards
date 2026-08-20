@@ -20,6 +20,10 @@
   "splitLine": "スプリット (バンカーが半額を取得)",
   "callHeader": "コール (残り3枚)",
   "phaseBetting": "BETTING",
+  "promptBetting": "ベットを置いてください: b <ランク> <金額> [c]（c でカッパー）／ cb <ランク> 取消 ／ ca 全取消 ／ d でめくる",
+  "promptTurn": "d でこのターンの2枚をめくります",
+  "promptCall": "最後の3枚の順序を予想: call <r1> <r2> <r3>（引数なしで見送り）",
+  "promptRoundEnd": "n で次のディールを開始します",
   "phaseTurn": "TURN",
   "phaseCall": "CALL",
   "phaseRoundEnd": "ROUND END",
@@ -32,5 +36,6 @@
   "errBetArgs": "ベットにはランクと金額が必要です。例: b 7 100 [c]",
   "errRank": "ランクが不正です。1(A)〜13(K)を指定してください。",
   "errAmount": "金額が不正です。数値を入力してください。",
-  "errCallArgs": "コールにはランクの並びが必要です。例: call 3 9 12"
+  "errCallArgs": "コールにはランクの並びが必要です。例: call 3 9 12",
+  "helpExampleBet": "  b 1 100           A に 100 賭ける"
 }

@@ -33,5 +33,9 @@
   "suitSpade": "スペード",
   "suitClover": "クラブ",
   "suitHeart": "ハート",
-  "suitDiamond": "ダイヤ"
+  "suitDiamond": "ダイヤ",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
+  "helpHint": "  h                    助言を表示",
+  "kittyCard": "{{card}}*",
+  "kittyNote": "（* が付いた札がキティから入ってきた 4 枚です）"
 }

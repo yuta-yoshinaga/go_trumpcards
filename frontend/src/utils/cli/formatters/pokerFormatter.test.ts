@@ -40,6 +40,7 @@ function makeState(overrides?: Partial<PokerResponse>): PokerResponse {
     dealerIdx: 0,
     currentTurn: 0,
     phase: 1,
+    exchangeRead: false,
     gameEndFlag: false,
     lastBet: 10,
     minRaise: 20,
@@ -78,6 +79,7 @@ describe('formatPokerState', () => {
   it('shows hand results at game end', () => {
     const output = formatPokerState(
       makeState({
+        exchangeRead: false,
         gameEndFlag: true,
         roundResults: [{ playerIdx: 0, handName: 'Full House', wonAmount: 20, handRank: 6, kickers: '' }],
       }),

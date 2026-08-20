@@ -22,5 +22,7 @@
   "hintReasonDeclare": "手札に役が揃っています。d で宣言すれば即勝ちです",
   "hintReasonClaim": "31点に到達しています。c で宣言してください",
   "hintReasonRespond": "この組み合わせなら受けきれます",
-  "hintReasonLead": "まとめて出せば一度に多くの点を取れます"
+  "hintReasonLead": "まとめて出せば一度に多くの点を取れます",
+  "helpExamplePlay": "  p 0                      手札の 0 番のカードを出す",
+  "helpHint": "  h                        助言を表示"
 }

@@ -183,7 +183,9 @@ func filterByPrefix(candidates []string, token string) []string {
 func RunInteractiveCuiLoop(manager *GameManager) int {
 	initMsg := manager.InitCurrentGame()
 	if initMsg != "" {
-		fmt.Println(initMsg)
+		// through printResult, not fmt.Println: the first deal is the one place
+		// a raw marker would reach the screen unnoticed.
+		printResult(initMsg)
 	}
 	fmt.Println(i18n.T("typeHelp"))
 	reader := newDefaultLineReader()
@@ -224,7 +226,10 @@ func printResult(res string) {
 		fmt.Fprintln(os.Stderr, color.RedStderr(body))
 		return
 	}
-	fmt.Println(res)
+	// A board carrying a refusal line stays on stdout -- it is a board. The
+	// marker exists so callers can tell, not to change where it goes.
+	body, _ := i18n.StripErrorLines(res)
+	fmt.Println(body)
 }
 
 // RunCuiLoop runs a single-game CUI loop. gameName is shown in the prompt
@@ -236,7 +241,7 @@ func printResult(res string) {
 // Returns 0 on normal exit (EOF, "quit", QuitSentinel) and 1 when stdin
 // reads fail with a non-EOF I/O error (issue #1839). See issue #1605.
 func RunCuiLoop(gameName string, controller CuiExecer, helpLines []string) int {
-	fmt.Println(controller.Exec("r"))
+	printResult(controller.Exec("r"))
 	fmt.Println(i18n.T("typeHelp"))
 	reader := newDefaultLineReader()
 	defer func() { _ = reader.Close() }()

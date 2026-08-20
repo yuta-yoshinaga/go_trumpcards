@@ -24,10 +24,7 @@ func (p *SuecaWebPresenter) Output(g interfaces.SuecaGame, lastErr error) string
 	// **フェーズと手番はここでは見ない。**Sueca.GetHint() が自分で
 	// 「プレイ中かつ人間の手番」を確かめて nil を返す。
 	if hint := g.GetHint(); hint != nil {
-		resObj.Hint = &controller.WebOutputCardHint{
-			CardIndices: hint.CardIndices,
-			Reason:      hint.Reason,
-		}
+		resObj.Hint = cardHint(hint.CardIndices, hint.Reason)
 	}
 
 	return marshalOrError(resObj)
@@ -142,10 +139,7 @@ func (p *SuecaWebPresenter) HintOutput(g interfaces.SuecaGame) string {
 	hint := g.GetHint()
 	resObj := p.buildBase(g)
 	if hint != nil {
-		resObj.Hint = &controller.WebOutputCardHint{
-			CardIndices: hint.CardIndices,
-			Reason:      hint.Reason,
-		}
+		resObj.Hint = cardHint(hint.CardIndices, hint.Reason)
 	}
 	// **「頼んだヒントか」を CLI が見分けられるようにする。**このゲーム群の
 	// `hintAvailable` は画面のラベルとして既に使われているので、別キーを出す (#4483)。

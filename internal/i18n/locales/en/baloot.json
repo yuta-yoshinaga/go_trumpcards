@@ -15,6 +15,7 @@
   "orderHokom": "Trump: J=20 > 9=14 > A=11 > 10 > K=4 > Q=3 > 8 > 7. Plain suits as in Sun (152 per round)",
   "playerLine": "{{name}}[T{{team}}]: {{baloot}}, {{tricks}} tricks, {{cards}} in hand",
   "balootNone": "no bonus",
+  "balootHidden": "Baloot: unknown",
   "balootHeld": "Baloot (K+Q)={{points}}",
   "promptCurrentPlayer": "Turn: {{name}}",
   "promptPlay": "play <idx> ... Play a card",
@@ -38,5 +39,7 @@
   "suitSpade": "Spades",
   "suitClover": "Clubs",
   "suitHeart": "Hearts",
-  "suitDiamond": "Diamonds"
+  "suitDiamond": "Diamonds",
+  "helpExampleGiveUp": "  g                    give the round up",
+  "helpHint": "  h                    show a hint"
 }

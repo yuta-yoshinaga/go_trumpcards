@@ -34,6 +34,9 @@ import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
+/** 最終トリックボーナス。domain の TarocchiniLastTrickBonus と同じ値。 */
+const TAROCCHINI_LAST_TRICK_BONUS = 2;
+
 /** Tarocchini tutorial step definitions. */
 const TAROCCHINI_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="tarocchini-info"]', messageKey: 'tutorial.info', placement: 'bottom', advanceOn: 'next' },
@@ -128,6 +131,10 @@ function TarocchiniPageContent() {
   const isPlayPhase = state.phase === TarocchiniPhase.PLAY;
   const isTrickEnd = state.phase === TarocchiniPhase.TRICK_END;
   const isRoundEnd = state.phase === TarocchiniPhase.ROUND_END;
+  // チーム分けはサーバの player.team を使う (席番号から計算し直さない)。
+  const teamOfSeat = (seat: number) => state.players.find((p) => p.id === seat)?.team ?? null;
+  const lastTrickTeam = state.lastTrickWinner >= 0 ? teamOfSeat(state.lastTrickWinner) : null;
+  const dealerTeam = teamOfSeat(state.dealerIdx);
   const isGameEnd = state.phase === TarocchiniPhase.GAME_END || state.gameEndFlag;
 
   const canPlay = isPlayPhase && isHumanTurn;
@@ -272,6 +279,21 @@ function TarocchiniPageContent() {
                         })}
                       </div>
                     ))}
+                    {/* 得点はトリック数だけではない (最終トリック +2 とスカルト加点)。
+                        内訳が無いと teamScores の増分と突き合わせて検算できない。 */}
+                    {lastTrickTeam !== null && (
+                      <div data-testid="tarocchini-last-trick-bonus">
+                        {t('roundResult.lastTrick', {
+                          team: lastTrickTeam,
+                          bonus: TAROCCHINI_LAST_TRICK_BONUS,
+                        })}
+                      </div>
+                    )}
+                    {state.scartoCount > 0 && dealerTeam !== null && (
+                      <div data-testid="tarocchini-scarto-bonus">
+                        {t('roundResult.scarto', { team: dealerTeam, count: state.scartoCount })}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -314,14 +336,21 @@ function TarocchiniPageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {state.hint && isRequestedHint(state) && (
-              <div className="text-ds-warning text-sm mb-2">
-                {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
-                {state.hint.cardIndices &&
-                  state.hint.cardIndices.length > 0 &&
-                  ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
-              </div>
-            )}
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-testid="tarocchini-hint-live" role="status" aria-live="polite">
+              {state.hint && isRequestedHint(state) && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
+                  {state.hint.cardIndices &&
+                    state.hint.cardIndices.length > 0 &&
+                    ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
+                </div>
+              )}
+            </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="tarocchini-action-buttons">

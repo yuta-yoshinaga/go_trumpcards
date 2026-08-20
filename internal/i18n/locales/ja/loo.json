@@ -24,5 +24,7 @@
   "hintReasonDiscardLow": "取れないので低い札を捨てる",
   "result.chips": "ディール終了！ チップ: {{chips}}",
   "looedList": "ルー（罰）: {{names}}",
-  "chipDeltaLine": "  {{name}}: {{delta}}"
+  "chipDeltaLine": "  {{name}}: {{delta}}",
+  "helpExamplePlay": "  p 0                       手札の 0 番のカードを出す",
+  "helpHint": "  h                         助言を表示"
 }

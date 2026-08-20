@@ -65,22 +65,22 @@ func TestUltiCuiController_Exec(t *testing.T) {
 
 	t.Run("bid party missing suit", func(t *testing.T) {
 		result := controller.NewUltiCuiController(newMock()).Exec("bid party")
-		assert.Contains(t, result, "Trump suit is required")
+		assert.Contains(t, result, msgStem("trumpSuitRequiredWords"))
 	})
 
 	t.Run("bid party invalid suit", func(t *testing.T) {
 		result := controller.NewUltiCuiController(newMock()).Exec("bid party zzz")
-		assert.Contains(t, result, "Invalid trump suit")
+		assert.Contains(t, result, msgStem("invalidTrumpSuitSCHD"))
 	})
 
 	t.Run("bid no args", func(t *testing.T) {
 		result := controller.NewUltiCuiController(newMock()).Exec("bid")
-		assert.Contains(t, result, "Bid action is required")
+		assert.Contains(t, result, msgStem("bidActionRequiredParty"))
 	})
 
 	t.Run("bid invalid", func(t *testing.T) {
 		result := controller.NewUltiCuiController(newMock()).Exec("bid zzz")
-		assert.Contains(t, result, "Invalid bid action")
+		assert.Contains(t, result, msgStem("invalidBidActionParty"))
 	})
 
 	t.Run("discard two cards", func(t *testing.T) {
@@ -92,12 +92,12 @@ func TestUltiCuiController_Exec(t *testing.T) {
 
 	t.Run("discard too few", func(t *testing.T) {
 		result := controller.NewUltiCuiController(newMock()).Exec("discard 0")
-		assert.Contains(t, result, "Two card indices are required")
+		assert.Contains(t, result, msgStem("twoIndicesRequiredDiscard"))
 	})
 
 	t.Run("discard invalid index", func(t *testing.T) {
 		result := controller.NewUltiCuiController(newMock()).Exec("discard 0 x")
-		assert.Contains(t, result, "Invalid card index")
+		assert.Contains(t, result, msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("play card", func(t *testing.T) {
@@ -109,7 +109,7 @@ func TestUltiCuiController_Exec(t *testing.T) {
 
 	t.Run("play no args", func(t *testing.T) {
 		result := controller.NewUltiCuiController(newMock()).Exec("play")
-		assert.Contains(t, result, "Card index is required")
+		assert.Contains(t, result, msgCardIndexRequired())
 	})
 
 	t.Run("next / nextround", func(t *testing.T) {
@@ -132,7 +132,7 @@ func TestUltiCuiController_Exec(t *testing.T) {
 
 	t.Run("setdifficulty invalid", func(t *testing.T) {
 		result := controller.NewUltiCuiController(newMock()).Exec("sd 9")
-		assert.Contains(t, result, "Invalid CPU difficulty")
+		assert.Contains(t, result, msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("hint / log", func(t *testing.T) {

@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
@@ -76,6 +77,36 @@ func TestAgnesWebPresenter_Output(t *testing.T) {
 
 // **受動ヒントは Output() に載る。**Agnes は実ドメインオブジェクトを使うので
 // モックの差し替えが要らないぶん、ヒントを検証するテストが無いまま通っていた。
+// **手詰まりの判定はドメインが持つ。** 以前は載せておらず、フロントが
+// agnesHasLegalMove() で同じ規則を実装し直していた (#5601)。
+func TestAgnesWebPresenter_OutputCarriesTheStalemateFlag(t *testing.T) {
+	t.Run("stock left is never a stalemate", func(t *testing.T) {
+		a := newWebAgnes() // 山札 1 枚 = 必ず配れる
+		require.False(t, a.IsStalemate())
+		assert.Contains(t, new(AgnesWebPresenter).Output(a, nil), `"isStalemate":false`)
+	})
+
+	t.Run("no stock and no move is a stalemate", func(t *testing.T) {
+		a := newWebAgnes()
+		a.SetStock(nil)
+		// place できない盤面にする: 各列 1 枚で、組札にも積めない値。
+		var tab [domain.AgnesTableauCnt][]*domain.AgnesTableauCard
+		for i := range tab {
+			tab[i] = []*domain.AgnesTableauCard{
+				{Card: domain.NewCard(domain.CardDesignSpade, 2, false), FaceUp: true},
+			}
+		}
+		a.SetTableau(tab)
+		var f [domain.AgnesFoundationCnt][]*domain.Card
+		a.SetFoundation(f)
+
+		// ドメインがそう言うことを先に確かめる。ここが false のままだと、
+		// 出力の検査は「たまたま false」を見ているだけになる。
+		require.True(t, a.IsStalemate())
+		assert.Contains(t, new(AgnesWebPresenter).Output(a, nil), `"isStalemate":true`)
+	})
+}
+
 func TestAgnesWebPresenter_OutputCarriesTheHint(t *testing.T) {
 	t.Run("while the game is playable", func(t *testing.T) {
 		a := domain.NewDefaultAgnes()

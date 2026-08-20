@@ -12,6 +12,15 @@
   "helpSetDifficulty": "  sd [0-2]              CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
   "roundLine": "ラウンド: {{round}}  チーム0: {{t0}}点  チーム1: {{t1}}点",
   "playerLine": "{{name}} (チーム{{team}}, {{score}}点): {{cards}}枚",
+  "summaryLabel": "手役評価",
+  "summaryLine": "{{label}}: グランデ {{grande}} / チカ {{chica}} / パレス {{pares}} / フエゴ {{juego}}",
+  "paresNone": "なし",
+  "paresPar": "ペア",
+  "paresMedias": "メディアス（3枚）",
+  "paresDuples": "デュプレス（2ペア）",
+  "juegoBest": "31点 ★（最強）",
+  "juegoYes": "{{points}}点（フエゴあり）",
+  "juegoPunto": "プント {{points}}点（フエゴなし）",
   "resultLine": "  {{round}}: 種別={{kind}} 賭け={{stake}}",
   "gameEnd": "ゲーム終了！チーム{{team}}の勝利！",
   "promptMus": "Mus か Corte か？",
@@ -48,5 +57,7 @@
   "resultDeferred": "パソ（ショーダウン持ち越し）",
   "resultAccepted": "キエロ（ショーダウン）",
   "resultAwarded": "ノキエロ（即時獲得）",
-  "resultOrdago": "オルダゴ受諾"
+  "resultOrdago": "オルダゴ受諾",
+  "helpExampleMus": "  m                     ムスを宣言して手札を交換する",
+  "helpHint": "  h                     助言を表示"
 }

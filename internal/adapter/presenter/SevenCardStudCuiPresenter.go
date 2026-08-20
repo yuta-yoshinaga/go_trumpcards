@@ -18,7 +18,7 @@ type SevenCardStudCuiPresenter struct{}
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *SevenCardStudCuiPresenter) ActionLogOutput(s interfaces.SevenCardStudGame) string {
-	return actionLogOutputText(s)
+	return actionLogOutputTextForSeats[*domain.SevenCardStudPlayer](s)
 }
 
 // Output renders the current game state for the active locale (#1699).
@@ -46,6 +46,14 @@ func (p *SevenCardStudCuiPresenter) Output(s interfaces.SevenCardStudGame, lastE
 
 		b.WriteString(i18n.Tf("sevencardstud.tableMax", "n", strconv.Itoa(s.GetPlayerCnt())) + "\n")
 		b.WriteString(i18n.Tf("sevencardstud.dealerLine", "idx", strconv.Itoa(s.GetDealerIdx())) + "\n")
+
+		// ブリングイン (強制ベットを払い、3rd street で最初に動く席)。Web は
+		// バッジで示しているのに CUI には手掛かりが無かった (#5542)。Razz は
+		// 「一番強いドアカード」という逆転ルールなので、なおさら知りたい情報。
+		if bi := s.GetBringInPlayerIdx(); bi >= 0 && s.GetPhase() == domain.SevenCardStudPhaseThirdStreet {
+			b.WriteString(i18n.Tf("sevencardstud.bringInLine",
+				"name", cuiPlayerName(s.GetPlayer(bi), bi)) + "\n")
+		}
 
 		b.WriteString(i18n.Tf("sevencardstud.anteLine",
 			"ante", strconv.Itoa(cfg.Ante),
@@ -176,6 +184,18 @@ func (p *SevenCardStudCuiPresenter) Output(s interfaces.SevenCardStudGame, lastE
 				}
 				if r.WonAmount > 0 {
 					b.WriteString(i18n.Tf("sevencardstud.wonAmount", "total", strconv.Itoa(r.WonAmount)))
+					// Hi-Lo は合計額だけでは、ハイを取ったのかローを取ったのか、
+					// 両取り (スクープ) なのかが読めない (#5543)。Web の
+					// StudHiLoSplit は 3 通りを別バッジで出している。
+					if s.GetIsHiLo() {
+						high := r.WonAmount - r.WonLow
+						b.WriteString(i18n.Tf("sevencardstud.wonSplit",
+							"high", strconv.Itoa(high),
+							"low", strconv.Itoa(r.WonLow)))
+						if high > 0 && r.WonLow > 0 {
+							b.WriteString(i18n.T("sevencardstud.wonScoop"))
+						}
+					}
 				}
 				b.WriteString("\n")
 			}

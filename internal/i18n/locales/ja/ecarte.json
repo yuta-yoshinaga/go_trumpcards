@@ -35,5 +35,13 @@
   "suitSpade": "スペード",
   "suitClover": "クラブ",
   "suitHeart": "ハート",
-  "suitDiamond": "ダイヤ"
+  "suitDiamond": "ダイヤ",
+  "helpPropose": "  pr                   交換を提案する (エルダー)",
+  "helpStand": "  st                   交換せず勝負する (エルダー)",
+  "helpDiscard": "  d <i j k>            指定した札を捨てて引き直す",
+  "helpPlay": "  p <idx>              カードを出す",
+  "helpNext": "  n                    次のトリック／ディールへ",
+  "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
+  "helpHint": "  h                    助言を表示"
 }

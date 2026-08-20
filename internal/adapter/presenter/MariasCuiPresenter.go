@@ -90,23 +90,34 @@ func (p *MariasCuiPresenter) Output(g interfaces.MariasGame, lastErr error) stri
 				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
 			b.WriteString(i18n.T("marias.promptPlayHelp") + "\n")
 			b.WriteString(i18n.T("marias.promptMarriageHelp") + "\n")
+			// **結婚は配札直後に確定して点が入る** (#5647)。Web は marias-marriage
+			// バナーで常時出しているのに、CUI にはそれが成立したという表示が無く、
+			// ラウンドが終わるまで自分の点に何が乗っているのか分からなかった。
+			if marriage := g.GetRoundMarriage(); marriage[currentIdx] > 0 && g.GetPlayer(currentIdx).GetIsHuman() {
+				b.WriteString(i18n.Tf("marias.marriageEarned",
+					"points", strconv.Itoa(marriage[currentIdx])) + "\n")
+			}
 		case domain.MariasPhaseTrickEnd:
 			b.WriteString(i18n.T("marias.promptTrickEnd") + "\n")
 			b.WriteString(i18n.T("marias.promptTrickEndHelp") + "\n")
 		case domain.MariasPhaseRoundEnd:
 			pts := g.GetRoundCardPoints()
+			// **勝敗はカード点 + 結婚点で決まる** (Marias.go の settle)。カード点
+			// だけを合算していたので、結婚で勝ったソロイストが負けたように読めた
+			// (#5647)。ドメインと同じ足し方にする。
+			marriage := g.GetRoundMarriage()
 			soloist := g.GetSoloistIdx()
-			// Sum the two defenders' card points so the outcome (soloist won or
+			// Sum the two defenders' points so the outcome (soloist won or
 			// lost the round) is readable from this line alone.
 			defenderPts := 0
 			for i := 0; i < g.GetPlayerCnt(); i++ {
 				if i != soloist {
-					defenderPts += pts[i]
+					defenderPts += pts[i] + marriage[i]
 				}
 			}
 			b.WriteString(i18n.Tf("marias.promptRoundEnd",
 				"soloist", cuiPlayerName(g.GetPlayer(soloist), soloist),
-				"pts", strconv.Itoa(pts[soloist])) + "\n")
+				"pts", strconv.Itoa(pts[soloist]+marriage[soloist])) + "\n")
 			b.WriteString(i18n.Tf("marias.promptRoundEndDefenders",
 				"pts", strconv.Itoa(defenderPts)) + "\n")
 			b.WriteString(i18n.T("marias.promptRoundEndHelp") + "\n")
@@ -151,5 +162,5 @@ var mariasHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *MariasCuiPresenter) ActionLogOutput(g interfaces.MariasGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.MariasPlayer](g)
 }

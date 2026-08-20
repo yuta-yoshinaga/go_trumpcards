@@ -33,6 +33,11 @@ func (p *ThirtyOneWebPresenter) Output(g interfaces.ThirtyOneGame, lastErr error
 	resObj.Config = controller.ThirtyOneWebOutputConfig{
 		CpuDifficulty: int(cfg.CpuDifficulty),
 		InitialLives:  cfg.InitialLives,
+		KnockThresholds: controller.ThirtyOneWebOutputKnockThresholds{
+			Easy:   domain.ThirtyOneKnockThresholdEasy,
+			Normal: domain.ThirtyOneKnockThresholdNormal,
+			Hard:   domain.ThirtyOneKnockThresholdHard,
+		},
 	}
 
 	resObj.Players = p.buildPlayersOutput(g)

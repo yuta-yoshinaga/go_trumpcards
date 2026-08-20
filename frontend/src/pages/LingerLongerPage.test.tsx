@@ -47,6 +47,7 @@ function makeState(overrides: Partial<LingerLongerResponse> = {}): LingerLongerR
     discarded: 6,
     gameEndFlag: false,
     winnerIdx: -1,
+    winReason: '',
     config: { playerCnt: 4 },
     message: '',
     ...overrides,
@@ -212,5 +213,43 @@ describe('LingerLongerPage', () => {
     });
     renderWithProviders(<LingerLongerPage />);
     expect(await screen.findByTestId('hint-tooltip')).toHaveTextContent(/1枚補充できます/);
+  });
+
+  // **勝因を取り違えると規則そのものを誤って説明することになる。** 山札が尽きて
+  // 全員が同時に手札 0 枚になった局には「最後まで持ち続けた人」が存在せず、勝ちは
+  // 最後のトリックで決まる。以前はどの勝ちでも同じ文言だった (#5765)。
+  describe('the result names the actual reason', () => {
+    const endState = (over: Record<string, unknown>) =>
+      makeState({ gameEndFlag: true, phase: 1, ...over } as Partial<LingerLongerResponse>);
+
+    it('says "held cards longest" only for a normal win', async () => {
+      mockExec.mockResolvedValue(endState({ winnerIdx: 0, winReason: 'lasted' }));
+      renderWithProviders(<LingerLongerPage />);
+      expect(await screen.findByTestId('ll-result')).toHaveTextContent('最後まで手札を持ち続けました');
+    });
+
+    it('credits the last trick when everyone ran out at once', async () => {
+      mockExec.mockResolvedValue(endState({ winnerIdx: 2, winReason: 'lastTrick' }));
+      renderWithProviders(<LingerLongerPage />);
+      const el = await screen.findByTestId('ll-result');
+      expect(el).toHaveTextContent('最後のトリック');
+      // 持ちこたえた人はいないのだから、そう言ってはいけない。
+      expect(el).not.toHaveTextContent('持ち続け');
+    });
+
+    it('says so when the human gave up', async () => {
+      mockExec.mockResolvedValue(endState({ winnerIdx: 1, winReason: 'giveUp' }));
+      renderWithProviders(<LingerLongerPage />);
+      const el = await screen.findByTestId('ll-result');
+      expect(el).toHaveTextContent('投了');
+      expect(el).not.toHaveTextContent('持ち続け');
+    });
+
+    // 未知・未設定の勝因は通常勝ちに寄せる。CUI の lingerLongerEndBanner と同じ。
+    it('falls back to the normal wording for an unknown reason', async () => {
+      mockExec.mockResolvedValue(endState({ winnerIdx: 0, winReason: '' }));
+      renderWithProviders(<LingerLongerPage />);
+      expect(await screen.findByTestId('ll-result')).toHaveTextContent('最後まで手札を持ち続けました');
+    });
   });
 });

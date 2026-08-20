@@ -50,6 +50,10 @@ func (p *PenguinWebPresenter) Output(pg interfaces.PenguinGame, lastErr error) s
 	// ベースランク
 	resObj.BaseRank = pg.GetBaseRank()
 
+	// 一度に動かせる枚数。空き列宛ては別枠 (#5614)。
+	resObj.MaxMovableCards = pg.GetMaxMovableCards()
+	resObj.MaxMovableCardsToEmptyColumn = pg.GetMaxMovableCardsToEmptyColumn()
+
 	// メッセージ
 	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
 	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと

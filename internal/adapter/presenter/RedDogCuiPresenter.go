@@ -78,6 +78,12 @@ func (rp *RedDogCuiPresenter) Output(rd interfaces.RedDogGame, lastErr error) st
 			"ranks", redDogWinningRanksStr(rd.GetInitialCards())) + "\n")
 	}
 
+	// 配当表。Web はベット前に常設しているのに、CUI はベット額を決める材料が
+	// スプレッドの広さだけだった (#5539)。賭け終わった後は出さない。
+	if rd.GetPhase() == domain.RedDogPhaseBet {
+		sb.WriteString(redDogPaytableStr())
+	}
+
 	initial := rd.GetInitialCards()
 	if len(initial) > 0 {
 		sb.WriteString("--- " + color.Bold(i18n.T("reddog.initialHeader")) + " ---\n")
@@ -98,7 +104,7 @@ func (rp *RedDogCuiPresenter) Output(rd interfaces.RedDogGame, lastErr error) st
 	sb.WriteString("----------\n")
 
 	if lastErr != nil {
-		sb.WriteString(color.Red(lastErr.Error()) + "\n")
+		sb.WriteString(i18n.MarkErrorLine(color.Red(lastErr.Error())) + "\n")
 	}
 
 	if rd.GetGameEndFlag() {
@@ -144,6 +150,29 @@ func (rp *RedDogCuiPresenter) HintOutput(rd interfaces.RedDogGame) string {
 // ActionLogOutput 棋譜をテキスト出力
 func (rp *RedDogCuiPresenter) ActionLogOutput(rd interfaces.RedDogGame) string {
 	return actionLogOutputText(rd)
+}
+
+// redDogPaytableStr renders the payout table shown before the ante is placed.
+//
+// **倍率はドメインの定数から読む。**文言に書き写すと、配当を1つ直したときに
+// 表だけが古いまま残り、プレイヤーは違う倍率を見て賭ける (#5539)。
+func redDogPaytableStr() string {
+	rows := []struct {
+		key  string
+		mult int
+	}{
+		{"reddog.paySpread1", domain.RedDogPaySpread1},
+		{"reddog.paySpread2", domain.RedDogPaySpread2},
+		{"reddog.paySpread3", domain.RedDogPaySpread3},
+		{"reddog.paySpread4Plus", domain.RedDogPaySpread4},
+		{"reddog.payPair", domain.RedDogPayPair},
+	}
+	parts := make([]string, 0, len(rows)+1)
+	for _, r := range rows {
+		parts = append(parts, i18n.Tf(r.key, "mult", strconv.Itoa(r.mult)))
+	}
+	parts = append(parts, i18n.T("reddog.payPush"))
+	return i18n.T("reddog.paytableHeader") + strings.Join(parts, " / ") + "\n"
 }
 
 // phaseStr フェーズ文字列

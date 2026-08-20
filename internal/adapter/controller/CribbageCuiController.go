@@ -42,7 +42,7 @@ func (c *CribbageCuiController) Exec(command string) string {
 			case "c", "cut":
 				return c.ci.Cut(), true
 			case "p", "peg":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.ci.Peg)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.ci.Peg)
 			case "go":
 				return c.ci.Go(), true
 			case "h", "hint":
@@ -52,13 +52,13 @@ func (c *CribbageCuiController) Exec(command string) string {
 			case "nr", "nextround":
 				return c.ci.NextRound(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.ci.GetConfig()
 					cfg.CpuDifficulty = domain.CribbageCpuDifficulty(v)
 					return c.ci.ResetWithConfig(cfg)
 				})
 			case "sl", "setlimit":
-				return cuiutil.WithParsedInt(args, "Point limit is required.", "Invalid point limit: %s. Please enter 1 or more.", 1, math.MaxInt, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "pointLimitRequired", "invalidPointLimit", 1, math.MaxInt, func(v int) string {
 					cfg := c.ci.GetConfig()
 					cfg.PointLimit = v
 					return c.ci.ResetWithConfig(cfg)

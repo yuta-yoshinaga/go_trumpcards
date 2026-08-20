@@ -19,9 +19,14 @@
   "noHint": "No hint available",
   "foundationHeader": "Foundation: ",
   "stockLine": "Stock: {{count}}",
+  "cannotDealEmptyCol": "Cannot deal while a column is empty (fill it first)",
+  "faceDownLeft": "The stock is gone and some columns still hold face-down cards",
   "columnLabel": "Col {{col}}:",
   "hintFrom": "tableau col {{col}}[{{idx}}]",
   "hintToFoundation": "foundation",
   "hintToTableau": "tableau col {{col}}",
-  "hintLine": "Hint: {{from}} -> {{to}}"
+  "hintLine": "Hint: {{from}} -> {{to}}",
+  "helpExampleHint": "  h                    ask for a move",
+  "helpExampleAuto": "  ac                   send everything that can go to a foundation",
+  "helpUndo": "  u undo one move"
 }

@@ -8,6 +8,8 @@
   "betLine": "掛け金: {{bet}}",
   "handLine": "手札: {{cards}}",
   "rankLine": "目: {{rank}}",
+  "dealerPolicyDrew": "親のドロー方針: 目が規定値（{{threshold}}）以下だったため3枚目を引きました",
+  "dealerPolicyStood": "親のドロー方針: 目{{rank}}で規定値（{{threshold}}）を超えていたため引きませんでした",
   "playerHeader": "子 (あなた)",
   "bankerHeader": "親 (胴元)",
   "hidden": "?? (伏せ札)",
@@ -20,5 +22,7 @@
   "push": "引き分け (プッシュ)。",
   "totalPayoutLine": "合計払戻し: {{payout}}",
   "maxBetHint": "最大ベット: {{max}}（bet <額> で賭ける）",
-  "drawHint": "draw で1枚引く / stand で確定"
+  "drawHint": "draw で1枚引く / stand で確定",
+  "helpExampleBet": "  b 100              100 チップを賭ける",
+  "helpSort": "  s                    手札を並べ替える"
 }

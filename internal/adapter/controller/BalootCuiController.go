@@ -41,12 +41,12 @@ func (c *BalootCuiController) Exec(command string) string {
 			case "sun":
 				return c.bi.DeclareSun(), true
 			case "hokom":
-				return cuiutil.WithParsedInt(args, "Suit is required.", "Invalid suit: %s.",
+				return cuiutil.WithParsedIntKeys(args, "suitRequired", "invalidSuit",
 					domain.CardDesignSpade, domain.CardDesignMax, c.bi.DeclareHokom)
 			case "pass":
 				return c.bi.PassDeclaration(), true
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.bi.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.bi.Play)
 			case "n", "next":
 				return c.bi.NextRound(), true
 			case "g", "giveup":

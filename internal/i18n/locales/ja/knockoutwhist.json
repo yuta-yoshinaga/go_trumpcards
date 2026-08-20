@@ -13,6 +13,8 @@
   "promptTrickEnd": "トリック終了",
   "promptTrickEndHelp": "n / next・・・次のトリックへ",
   "promptRoundEnd": "ラウンド終了（残り{{active}}人）",
+  "nextRoundPreview": "次ラウンド: 手札{{count}}枚 / 切り札選択: {{name}}",
+  "finalRoundPreview": "最終ラウンド: 手札{{count}}枚 / 切り札選択: {{name}}",
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ（0トリックのプレイヤーはDogboneを消費／使い切ると脱落。手札は1枚ずつ減る）",
   "promptTrumpSelect": "{{name}} がラウンド勝者です。次ラウンドの切り札を選んでください。",
   "promptTrumpSelectHelp": "st <1-4>・・・切り札を選択 (1=♠ 2=♣ 3=♥ 4=♦)",
@@ -23,5 +25,8 @@
   "hintReasonFollowDuck": "取れないのでリードスートの低い札で受ける",
   "hintReasonDiscardLow": "リードに従えないので低い札を捨てる",
   "leaderMark": "▶(リード) ",
-  "winnerMark": "★(勝者) "
+  "winnerMark": "★(勝者) ",
+  "helpExamplePlay": "  play 0                   手札の 0 番のカードを出す",
+  "helpExampleNext": "  n                        トリックの決着を見てから次のトリックへ",
+  "helpHint": "  h                         助言を表示"
 }

@@ -4,14 +4,17 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupCribbageCuiMock() *interfaces.MockCribbageGame {
@@ -269,6 +272,8 @@ func TestCribbageCuiPresenter_ActionLogOutput(t *testing.T) {
 		}
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return(entries)
+		// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+		m.On("GetPlayer", mock.Anything).Return(domain.NewCribbagePlayer(true)).Maybe()
 
 		result := p.ActionLogOutput(m)
 		assert.Contains(t, result, "棋譜")
@@ -281,6 +286,8 @@ func TestCribbageCuiPresenter_ActionLogOutput(t *testing.T) {
 		m := new(interfaces.MockCribbageGame)
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+		// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+		m.On("GetPlayer", mock.Anything).Return(domain.NewCribbagePlayer(true)).Maybe()
 
 		result := p.ActionLogOutput(m)
 		assert.Contains(t, result, "棋譜はありません")
@@ -340,4 +347,47 @@ func TestCribbageCuiPresenter_HintOutput(t *testing.T) {
 		m.On("GetHint").Return(&domain.CribbageHint{Type: "play"})
 		assert.Contains(t, p.HintOutput(m), "ヒントはありません")
 	})
+}
+
+// #5512: ゲーム終了時は勝者バナーの手前で早期 return しており、writeShowDetails に
+// 到達しない。**`n` を連打すると、最終ラウンドの内訳を一度も見ないまま終わる。**
+// Web は (isShowPhase || isRoundEnd || isGameEnd) で内訳表を出している。
+func TestCribbageCuiPresenter_ShowsTheBreakdownAtGameEnd(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.CribbageCuiPresenter)
+
+	withEnd := func() *interfaces.MockCribbageGame {
+		m, _ := setupCribbageCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetWinnerIdx")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHandScoreDetails")
+		m.On("GetGameEndFlag").Return(true)
+		m.On("GetWinnerIdx").Return(0)
+		m.On("GetPhase").Return(domain.CribbagePhaseRoundEnd)
+		m.On("GetHandScoreDetails").Return([3]*domain.CribbageScoreDetail{
+			{Total: 8, Fifteens: 4, Pairs: 2, Runs: 2, Flush: 0, Nobs: 0},
+			{Total: 5, Fifteens: 2, Pairs: 0, Runs: 3, Flush: 0, Nobs: 0},
+			{Total: 3, Fifteens: 2, Pairs: 0, Runs: 0, Flush: 0, Nobs: 1},
+		})
+		return m
+	}
+
+	out := p.Output(withEnd(), nil)
+
+	// 最終ラウンドの内訳が3行とも出ること。
+	for _, want := range []struct{ label, total string }{
+		{i18n.T("cribbage.showLabelPone"), "8"},
+		{i18n.T("cribbage.showLabelDealer"), "5"},
+		{i18n.T("cribbage.showLabelCrib"), "3"},
+	} {
+		assert.Contains(t, out, want.label)
+		assert.Contains(t, out, want.total)
+	}
+
+	// **勝者バナーは今までどおり出る。** 内訳を足したせいで消えていないこと。
+	// 勝者名は presenter 内部のヘルパで作るので、ここでは文言の骨格だけ確かめる。
+	assert.Contains(t, out, strings.Split(i18n.T("cribbage.gameEnd"), "{{")[0])
 }

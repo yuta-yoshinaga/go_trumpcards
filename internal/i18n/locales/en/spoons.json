@@ -3,11 +3,11 @@
   "helpPass": "  p <n>, pass <n>      pass hand card n to the next player",
   "helpGrab": "  g, grab              grab a spoon",
   "helpNext": "  n, next              advance to the next round",
-  "helpSetDifficulty": "  sd <n>               set CPU difficulty (0=Easy, 1=Normal, 2=Hard) and reset",
   "labelHuman": "You",
   "labelCpu": "CPU",
   "roundLine": "Round {{round}}  Spoons left: {{spoons}}",
   "lettersLabel": "[{{letters}}]",
+  "feederTag": "[feeder]",
   "hasSpoon": "got a spoon",
   "playerEliminated": "{{name}}: eliminated (SPOONS)",
   "cpuHandLine": "{{name}}: {{count}} cards",
@@ -20,5 +20,6 @@
   "winCpu": "{{name}} wins...",
   "result.humanWin": "You win!",
   "result.cpuWin": "CPU wins...",
-  "rankGroup": "(x{{count}})"
+  "rankGroup": "(x{{count}})",
+  "helpExamplePass": "  p 0                  pass hand card 0 along"
 }

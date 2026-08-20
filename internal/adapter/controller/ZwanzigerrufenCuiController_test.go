@@ -55,13 +55,13 @@ func TestZwanzigerrufenCuiController_Exec(t *testing.T) {
 	t.Run("bid trischaken is rejected", func(t *testing.T) {
 		m := newMock()
 		out := controller.NewZwanzigerrufenCuiController(m).Exec("bid trischaken")
-		assert.Contains(t, out, "Invalid bid")
+		assert.Contains(t, out, msgStem("invalidBidRuferOrSolo"))
 		m.AssertNotCalled(t, "Bid", mock.Anything)
 	})
 	t.Run("bid needs an argument", func(t *testing.T) {
 		m := newMock()
 		out := controller.NewZwanzigerrufenCuiController(m).Exec("bid")
-		assert.Contains(t, out, "Bid is required")
+		assert.Contains(t, out, msgStem("bidRequiredRuferOrSolo"))
 		m.AssertNotCalled(t, "Bid", mock.Anything)
 	})
 	t.Run("pass", func(t *testing.T) {
@@ -78,13 +78,13 @@ func TestZwanzigerrufenCuiController_Exec(t *testing.T) {
 	t.Run("discard needs six indices", func(t *testing.T) {
 		m := newMock()
 		out := controller.NewZwanzigerrufenCuiController(m).Exec("discard 0 1 2")
-		assert.Contains(t, out, "Six card indices")
+		assert.Contains(t, out, msgStem("sixIndicesRequiredDiscard"))
 		m.AssertNotCalled(t, "Discard", mock.Anything)
 	})
 	t.Run("discard rejects a non-numeric index", func(t *testing.T) {
 		m := newMock()
 		out := controller.NewZwanzigerrufenCuiController(m).Exec("discard 0 1 2 3 4 x")
-		assert.Contains(t, out, "Invalid card index")
+		assert.Contains(t, out, msgInvalidCardIndexPrefix())
 		m.AssertNotCalled(t, "Discard", mock.Anything)
 	})
 	t.Run("play", func(t *testing.T) {
@@ -95,7 +95,7 @@ func TestZwanzigerrufenCuiController_Exec(t *testing.T) {
 	t.Run("play rejects a non-numeric index", func(t *testing.T) {
 		m := newMock()
 		out := controller.NewZwanzigerrufenCuiController(m).Exec("play x")
-		assert.Contains(t, out, "Invalid card index")
+		assert.Contains(t, out, msgInvalidCardIndexPrefix())
 		m.AssertNotCalled(t, "Play", mock.Anything)
 	})
 	t.Run("next trick and next round", func(t *testing.T) {
@@ -116,7 +116,7 @@ func TestZwanzigerrufenCuiController_Exec(t *testing.T) {
 	t.Run("set difficulty rejects out-of-range", func(t *testing.T) {
 		m := newMock()
 		out := controller.NewZwanzigerrufenCuiController(m).Exec("sd 9")
-		assert.Contains(t, out, "Invalid CPU difficulty")
+		assert.Contains(t, out, msgInvalidCpuDifficultyPrefix())
 		m.AssertNotCalled(t, "ResetWithConfig", mock.Anything)
 	})
 	t.Run("set deals", func(t *testing.T) {
@@ -129,7 +129,7 @@ func TestZwanzigerrufenCuiController_Exec(t *testing.T) {
 	t.Run("set deals rejects out-of-range", func(t *testing.T) {
 		m := newMock()
 		out := controller.NewZwanzigerrufenCuiController(m).Exec("st 99")
-		assert.Contains(t, out, "Invalid number of deals")
+		assert.Contains(t, out, msgStem("invalidNumberOfDeals112"))
 		m.AssertNotCalled(t, "ResetWithConfig", mock.Anything)
 	})
 	t.Run("hint and log", func(t *testing.T) {

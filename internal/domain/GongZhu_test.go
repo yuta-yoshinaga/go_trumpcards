@@ -574,3 +574,85 @@ func TestGongZhu_GetPlayableIndices(t *testing.T) {
 	// 範囲外は nil。
 	assert.Nil(t, g.GetPlayableIndices(99))
 }
+
+// #5630: 得点は「ハート合計 → 全ハートボーナス → ♥A 公開で倍 → 猪/羊 → 猪抜きの
+// 倍率」と何段も重なるのに、画面には最終値しか出ない。内訳を**別に計算し直す**と
+// 説明と点数がずれるので、得点そのものを内訳から組み立てる。
+func TestGongZhuBreakdownExplainsTheScoreItProduces(t *testing.T) {
+	cases := []struct {
+		name     string
+		tricks   []*domain.Card
+		exposure domain.GongZhuExposure
+	}{
+		{"hearts only", []*domain.Card{gzCard(domain.CardDesignHeart, 1), gzCard(domain.CardDesignHeart, 13)}, domain.GongZhuExposure{}},
+		{"pig", []*domain.Card{gzCard(domain.CardDesignSpade, 12)}, domain.GongZhuExposure{}},
+		{"exposed pig", []*domain.Card{gzCard(domain.CardDesignSpade, 12)}, domain.GongZhuExposure{Pig: true}},
+		{"sheep", []*domain.Card{gzCard(domain.CardDesignDiamond, 11)}, domain.GongZhuExposure{}},
+		{"doubler alone", []*domain.Card{gzCard(domain.CardDesignClover, 10)}, domain.GongZhuExposure{}},
+		{
+			"pig with exposed doubler",
+			[]*domain.Card{gzCard(domain.CardDesignSpade, 12), gzCard(domain.CardDesignClover, 10)},
+			domain.GongZhuExposure{Doubler: true},
+		},
+		{
+			"hearts with exposed ace",
+			[]*domain.Card{gzCard(domain.CardDesignHeart, 1), gzCard(domain.CardDesignHeart, 13)},
+			domain.GongZhuExposure{Ace: true},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			g := newTestGongZhu()
+			gzWithHighLimit(g)
+			g.SetExposure(tc.exposure)
+			g.GetPlayer(0).AddTrick(tc.tricks)
+
+			b := g.ScoreBreakdownFor(0)
+			g.SetPhase(domain.GongZhuPhaseRoundEnd)
+			g.ScoreRound()
+
+			// **内訳の合計が、実際に付いた点と一致する。**説明と点数が別計算だと、
+			// 片方だけ直したときに画面が嘘をつく。
+			assert.Equal(t, g.GetPlayer(0).GetRoundScore(), b.Total)
+		})
+	}
+}
+
+// 内訳の各項目が「何が起きたか」を実際に伝えている。
+func TestGongZhuBreakdownReportsWhatHappened(t *testing.T) {
+	g := newTestGongZhu()
+	gzWithHighLimit(g)
+	g.SetExposure(domain.GongZhuExposure{Pig: true, Doubler: true})
+	g.GetPlayer(0).AddTrick([]*domain.Card{
+		gzCard(domain.CardDesignSpade, 12),   // 猪
+		gzCard(domain.CardDesignDiamond, 11), // 羊
+		gzCard(domain.CardDesignClover, 10),  // 猪抜き
+		gzCard(domain.CardDesignHeart, 1),    // ハート
+	})
+
+	b := g.ScoreBreakdownFor(0)
+	assert.True(t, b.HasPig)
+	assert.True(t, b.PigExposed)
+	assert.True(t, b.HasSheep)
+	assert.False(t, b.SheepExposed, "羊は公開していない")
+	assert.True(t, b.HasDoubler)
+	assert.Equal(t, 4, b.DoublerMultiplier, "公開された猪抜きは4倍")
+	assert.Equal(t, 1, b.HeartCount)
+	assert.False(t, b.AllHearts)
+}
+
+// 全ハート独占はボーナスに置き換わる (合計ではなく固定値)。
+func TestGongZhuBreakdownMarksTheAllHeartsBonus(t *testing.T) {
+	g := newTestGongZhu()
+	gzWithHighLimit(g)
+	hearts := make([]*domain.Card, 0, domain.GongZhuHandSize)
+	for v := 1; v <= domain.GongZhuHandSize; v++ {
+		hearts = append(hearts, gzCard(domain.CardDesignHeart, v))
+	}
+	g.GetPlayer(0).AddTrick(hearts)
+
+	b := g.ScoreBreakdownFor(0)
+	assert.True(t, b.AllHearts)
+	assert.Equal(t, domain.GongZhuAllHeartsBonus, b.HeartsSum)
+}

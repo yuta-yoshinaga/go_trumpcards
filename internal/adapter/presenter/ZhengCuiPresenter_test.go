@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -108,6 +109,8 @@ func TestZhengCuiPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
 		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "played 1 card(s)"},
 	})
+	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+	m.On("GetPlayer", mock.Anything).Return(domain.NewZhengPlayer(true)).Maybe()
 	assert.Contains(t, p.ActionLogOutput(m), "play")
 }
 
@@ -142,4 +145,22 @@ func TestZhengCuiPresenter_ErrorIsRed(t *testing.T) {
 	m, _ := setupZhengCuiMock()
 	out := new(presenter.ZhengCuiPresenter).Output(m, errors.New("invalid play"))
 	assert.Contains(t, out, color.Red("invalid play"))
+}
+
+// #5719: 出せない理由が一律 "selected cards cannot be played" だったので、
+// 枚数・役の種類・強さのどれで弾かれたのか CUI からは分からなかった。
+// ドメインが具体的な理由を返すようになったので、それが画面に出ることを固定する。
+func TestZhengCuiPresenter_ShowsWhyThePlayWasRejected(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+
+	m, _ := setupZhengCuiMock()
+	// ドメインが返す具体的な理由 (Zheng_test.go 側で文言を固定している)。
+	err := domain.NewDomainError(domain.ErrInvalidPlay, "場と同じ枚数で出してください")
+
+	out := new(presenter.ZhengCuiPresenter).Output(m, err)
+
+	assert.Contains(t, out, "場と同じ枚数で出してください")
+	assert.NotContains(t, out, "cannot be played")
 }

@@ -8,6 +8,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupPaiGowCuiMockDefaults(m *interfaces.MockPaiGowGame) {
@@ -318,4 +319,19 @@ func TestPaiGowCuiPresenter_HintOutput(t *testing.T) {
 	t.Run("says so when no hint is available", func(t *testing.T) {
 		assert.Contains(t, p.HintOutput(withHint(nil)), "ヒントを出せません")
 	})
+}
+
+// #5526: ファウルのエラーは英語の一文で出ていて、CUI にはルールの説明が
+// どこにも無かった。
+func TestPaiGowCuiPresenter_Output_FoulIsExplainedInTheLocale(t *testing.T) {
+	p := new(PaiGowCuiPresenter)
+	m := new(interfaces.MockPaiGowGame)
+	setupPaiGowCuiMockDefaults(m)
+
+	err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "paigow.foulHighMustBeat", nil)
+	result := p.Output(m, err)
+
+	assert.Contains(t, result, i18n.T("paigow.foulHighMustBeat"))
+	// **キーがそのまま出ていないこと。**翻訳を通していないと "paigow.foul..." が画面に出る。
+	assert.NotContains(t, result, "paigow.foulHighMustBeat")
 }

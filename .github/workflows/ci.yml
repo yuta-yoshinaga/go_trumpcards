@@ -24,9 +24,52 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
 jobs:
+  test-hooks:
+    name: Hook Tests
+    runs-on: ubuntu-latest
+    # ハングしたジョブを止める上限。既定は 6 時間で、その間 PR は pending の
+    # まま誰かが手でキャンセルするまで進まない (#5967 は E2E が 26-46 分走り続けた
+    # 3 例)。値は develop の成功 run 4 本の実測 max 0.2 分 (セットアップ込み) の
+    # おおよそ 2 倍。伸ばす前に、まず実測が伸びたのかハングなのかを確かめること。
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+
+      # The hooks are the thing that stops a broken commit reaching CI, and they
+      # fail silently: a guard that no longer matches anything exits 0 and looks
+      # healthy. On 2026-08-16 one emitted invalid JSON for weeks and another
+      # never fired at all, and `bash -n` passed on both. Only running them and
+      # checking the output catches that, so run them here.
+      - name: Run hook tests
+        run: |
+          set -e
+          found=0
+          for t in .claude/hooks/*.test.sh; do
+            [ -e "$t" ] || continue
+            found=$((found + 1))
+            echo "== $t"
+            bash "$t" | tee -a /tmp/hook-test-out
+          done
+          # A loop over a glob that matched nothing exits 0 and reads as success.
+          if [ "$found" -eq 0 ]; then
+            echo "no hook tests were found -- the glob or the directory moved" >&2
+            exit 1
+          fi
+          echo "ran $found hook test file(s)"
+          # A test that skipped is not a test that passed. Say so in the log --
+          # "skip" scrolling past in a green job is how a permanently-inert
+          # check survives (see feedback_guard_silent_skip).
+          skipped=$(grep -c '^skip ' /tmp/hook-test-out 2>/dev/null || true)
+          [ "${skipped:-0}" -gt 0 ] && echo "note: $skipped test file(s) skipped -- they verified nothing here"
+
   lint-backend:
     name: Backend Lint (golangci-lint)
     runs-on: ubuntu-latest
+    # ハングしたジョブを止める上限。既定は 6 時間で、その間 PR は pending の
+    # まま誰かが手でキャンセルするまで進まない (#5967 は E2E が 26-46 分走り続けた
+    # 3 例)。値は develop の成功 run 4 本の実測 max 5.5 分 (セットアップ込み) の
+    # おおよそ 2 倍。伸ばす前に、まず実測が伸びたのかハングなのかを確かめること。
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6
 
@@ -39,10 +82,26 @@ jobs:
         uses: golangci/golangci-lint-action@v9
         with:
           args: --build-tags test
+          # **キャッシュを復元した run だけ staticcheck が誤検知する。**
+          # 2026-08-20、触っていない PR が軒並み SA5011 (t.Fatal の直後の
+          # 参照を「nil 参照の可能性」と読む) 6 件で落ちた。同じ
+          # golangci-lint 2.12.2 / Go 1.26.5 をローカルで走らせると 0 件、
+          # CI もキャッシュを消した直後の run は 0 件、その run が保存した
+          # キャッシュを復元した次の run からまた 6 件になる、という再現性が
+          # あった (max-same-issues=3 の既定で毎回ちょうど 6 件に丸められ、
+          # 直すたびに別ファイルが出てくる)。
+          # lint は 5-6 分の job なので、キャッシュを捨てて毎回冷えた状態で
+          # 走らせるほうが、緑の意味が保てる。
+          skip-cache: true
 
   test-backend:
     name: Backend Tests
     runs-on: ubuntu-latest
+    # ハングしたジョブを止める上限。既定は 6 時間で、その間 PR は pending の
+    # まま誰かが手でキャンセルするまで進まない (#5967 は E2E が 26-46 分走り続けた
+    # 3 例)。値は develop の成功 run 4 本の実測 max 7.7 分 (セットアップ込み) の
+    # おおよそ 2 倍。伸ばす前に、まず実測が伸びたのかハングなのかを確かめること。
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v6
 
@@ -90,6 +149,11 @@ jobs:
     # 「UNLICENSED: 1」で exit 0 するため使っていない。
     name: Dependency Licenses (Go)
     runs-on: ubuntu-latest
+    # ハングしたジョブを止める上限。既定は 6 時間で、その間 PR は pending の
+    # まま誰かが手でキャンセルするまで進まない (#5967 は E2E が 26-46 分走り続けた
+    # 3 例)。値は develop の成功 run 4 本の実測 max 0.6 分 (セットアップ込み) の
+    # おおよそ 2 倍。伸ばす前に、まず実測が伸びたのかハングなのかを確かめること。
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
 
@@ -130,6 +194,11 @@ jobs:
     # (frontend/CLAUDE.md の "Type checking" 参照)。
     name: Frontend Static (Biome + tsc)
     runs-on: ubuntu-latest
+    # ハングしたジョブを止める上限。既定は 6 時間で、その間 PR は pending の
+    # まま誰かが手でキャンセルするまで進まない (#5967 は E2E が 26-46 分走り続けた
+    # 3 例)。値は develop の成功 run 4 本の実測 max 0.7 分 (セットアップ込み) の
+    # おおよそ 2 倍。伸ばす前に、まず実測が伸びたのかハングなのかを確かめること。
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
 
@@ -165,6 +234,11 @@ jobs:
     # 減ったことも効いているので、戻すなら**同じ本数で測り直してから**にすること。
     name: Frontend Tests (${{ matrix.shard }}/4)
     runs-on: ubuntu-latest
+    # ハングしたジョブを止める上限。既定は 6 時間で、その間 PR は pending の
+    # まま誰かが手でキャンセルするまで進まない (#5967 は E2E が 26-46 分走り続けた
+    # 3 例)。値は develop の成功 run 4 本の実測 max 9.4 分 (セットアップ込み) の
+    # おおよそ 2 倍。伸ばす前に、まず実測が伸びたのかハングなのかを確かめること。
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -221,6 +295,11 @@ jobs:
     # 戻すなら上の 261s/190s ではなく待ち時間の方を、**同じ並走本数で**測ること。
     name: E2E Tests (${{ matrix.shard }}/3)
     runs-on: ubuntu-latest
+    # ハングしたジョブを止める上限。既定は 6 時間で、その間 PR は pending の
+    # まま誰かが手でキャンセルするまで進まない (#5967 は E2E が 26-46 分走り続けた
+    # 3 例)。値は develop の成功 run 4 本の実測 max 7.8 分 (セットアップ込み) の
+    # おおよそ 2 倍。伸ばす前に、まず実測が伸びたのかハングなのかを確かめること。
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -267,15 +346,31 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}
 
+      # --with-deps も apt を叩くので、キャッシュミス側も同じ理由で有界にする
+      # (#6002)。ブラウザ本体のダウンロードを含むぶん上限は長め。ここで失敗したら
+      # ブラウザが無くテストは動かないので、continue-on-error は付けない。
       - name: Install Playwright browsers
         working-directory: frontend
+        timeout-minutes: 10
+        env:
+          DEBIAN_FRONTEND: noninteractive
         run: bunx playwright install --with-deps chromium
         if: steps.pw-cache.outputs.cache-hit != 'true'
 
       # --with-deps installs OS packages outside the cached directory, so a
       # cache hit still needs them.
+      #
+      # **このステップが2本のPRで連続してジョブの20分を食い潰した** (#6002):
+      # apt がロック待ちや対話プロンプトで固まると、テストが1本も走らないまま
+      # ジョブ全体が timeout で cancel される。3分で切り上げ、非対話で走らせる。
+      # 本当にライブラリが足りなければ後続の playwright test が落ちるので、
+      # ここで失敗しても止めない。
       - name: Install Playwright OS dependencies
         working-directory: frontend
+        timeout-minutes: 3
+        continue-on-error: true
+        env:
+          DEBIAN_FRONTEND: noninteractive
         run: bunx playwright install-deps chromium
         if: steps.pw-cache.outputs.cache-hit == 'true'
 

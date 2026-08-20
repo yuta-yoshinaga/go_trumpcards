@@ -169,9 +169,3 @@ func trexDispatch(bc *baseController, w http.ResponseWriter, ti usecase.TrexInte
 	}
 	return true
 }
-
-// NewTrexDefaultOutputForTest exposes the default-output builder to the
-// external controller_test package.
-func NewTrexDefaultOutputForTest(msg string) *TrexWebOutput {
-	return newTrexDefaultOutput(msg)
-}

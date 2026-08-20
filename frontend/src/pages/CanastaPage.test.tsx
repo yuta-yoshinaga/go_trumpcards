@@ -181,6 +181,79 @@ describe('CanastaPage', () => {
     expect(info).not.toHaveTextContent('初回メルド最低点');
   });
 
+  // **最低点に届かない選択でボタンが押せてしまい、サーバのバリデーションで
+  // 弾かれて初めて気づく形だった** (#6165)。警告テキストは既に出ていた。
+  it('blocks the meld while the selection is under the initial minimum', async () => {
+    mockExec.mockResolvedValue(meldPhaseState); // 累計 0 → 最低点 50
+    renderWithProviders(<CanastaPage />);
+    await screen.findByTestId('ca-meld-points');
+
+    // 7 が 3 枚 = 15 点。初回最低点 50 に届かない。
+    fireEvent.click(screen.getByRole('button', { name: '♠ 7' }));
+    fireEvent.click(screen.getByRole('button', { name: '♣ 7' }));
+    fireEvent.click(screen.getByRole('button', { name: '♥ 7' }));
+
+    await waitFor(() => expect(screen.getByTestId('ca-meld-points')).toHaveTextContent('選択合計: 15'));
+    expect(screen.getByRole('button', { name: 'メルドする' })).toBeDisabled();
+  });
+
+  // **キーボードの確定も同じ門番を通す** (#6165 レビュー指摘)。ボタンだけ
+  // 無効化しても Enter が素通りすれば、直したはずのサーバ拒否が残る。
+  it('does not meld from the keyboard while the selection is under the minimum', async () => {
+    mockExec.mockResolvedValue(meldPhaseState);
+    renderWithProviders(<CanastaPage />);
+    await screen.findByTestId('ca-meld-points');
+
+    fireEvent.click(screen.getByRole('button', { name: '♠ 7' }));
+    fireEvent.click(screen.getByRole('button', { name: '♣ 7' }));
+    fireEvent.click(screen.getByRole('button', { name: '♥ 7' }));
+    await waitFor(() => expect(screen.getByTestId('ca-meld-points')).toHaveTextContent('選択合計: 15'));
+
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'Enter' });
+    await waitFor(() => expect(screen.getByTestId('ca-meld-points')).toBeInTheDocument());
+    // **どの引数でも meld を送っていないこと。** 引数まで書くと、形が変わった
+    // ときに「呼ばれていない」と読み違える。
+    expect(mockExec.mock.calls.some((c) => c[0] === 'meld')).toBe(false);
+
+    // **キーボード自体は生きている。** 上の断言が「Enter が届いていない」で
+    // 通っていないことを、押せる場面で確かめる。
+    fireEvent.click(screen.getByRole('button', { name: '♠ 10' }));
+    await waitFor(() => expect(screen.getByTestId('ca-meld-points')).toHaveTextContent('選択合計: 25'));
+  });
+
+  // **既に上がっているチームには最低点が無い。** ここまで無効化すると、
+  // 開いた後のメルドが打てなくなる。
+  it('keeps the meld live once the initial meld is made', async () => {
+    mockExec.mockResolvedValue({
+      ...meldPhaseState,
+      players: [{ ...basePlayers[0], hasInitMeld: true }, basePlayers[1]],
+    });
+    renderWithProviders(<CanastaPage />);
+    await screen.findByTestId('ca-meld-points');
+
+    fireEvent.click(screen.getByRole('button', { name: '♠ 7' }));
+    fireEvent.click(screen.getByRole('button', { name: '♣ 7' }));
+    fireEvent.click(screen.getByRole('button', { name: '♥ 7' }));
+
+    await waitFor(() => expect(screen.getByTestId('ca-meld-points')).toHaveTextContent('選択合計: 15'));
+    expect(screen.getByRole('button', { name: 'メルドする' })).toBeEnabled();
+  });
+
+  // 3 枚未満の既存の無効化条件はそのまま。
+  it('still blocks a meld of fewer than three cards', async () => {
+    mockExec.mockResolvedValue({
+      ...meldPhaseState,
+      players: [{ ...basePlayers[0], hasInitMeld: true }, basePlayers[1]],
+    });
+    renderWithProviders(<CanastaPage />);
+    await screen.findByTestId('ca-meld-points');
+
+    fireEvent.click(screen.getByRole('button', { name: '♠ 7' }));
+    fireEvent.click(screen.getByRole('button', { name: '♣ 7' }));
+    expect(screen.getByRole('button', { name: 'メルドする' })).toBeDisabled();
+  });
+
   it('calls skipmeld command when skip button clicked', async () => {
     mockExec.mockResolvedValue(meldPhaseState);
     renderWithProviders(<CanastaPage />);

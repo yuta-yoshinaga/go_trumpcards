@@ -13,7 +13,7 @@
   "phaseLine": "Phase: {{phase}}",
   "handLine": "Hand: {{hand}} (pot: {{pot}})",
   "streetLine": "Street: {{street}} of {{total}}",
-  "wildLine": "3s and 9s are wild. A face-up 4 pays a card, a face-up 3 charges the pot",
+  "wildLine": "{{wilds}}s are wild. A face-up {{bonus}} pays a card, a face-up {{buyIn}} charges the pot",
   "seatLine": "{{mark}}{{name}}{{state}} chips {{chips}} / bet {{bet}}{{bonus}} : {{cards}}",
   "hidden": "[??]",
   "foldedMark": " (folded)",
@@ -47,5 +47,6 @@
   "reason.cheapToStay": "it is cheap enough to see one more card",
   "reason.seeAnotherCard": "your hand is still weak, so take the free card",
   "reason.wildsRaiseTheBar": "with eight wilds in the deck this hand does not meet the going rate",
-  "result.gameEnd": "The game is over"
+  "result.gameEnd": "The game is over",
+  "helpExampleBet": "  bet 100              bet 100 chips"
 }

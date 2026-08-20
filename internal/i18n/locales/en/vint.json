@@ -23,11 +23,15 @@
   "madeLine": "Contract made ({{tricks}} tricks)",
   "setLine": "Contract failed ({{tricks}} tricks). Undertricks x level x 500 go above the opponents' line",
   "trickPointsLine": "Below the line: team 0 +{{t0}} / team 1 +{{t1}} (BOTH sides score the tricks they took)",
+  "honourLine": "Honours: Team 0 +{{t0}} / Team 1 +{{t1}} (three or more of trump A K Q J 10)",
+  "aceLine": "Aces: Team 0 +{{t0}} / Team 1 +{{t1}} (the side holding more takes it all)",
+  "penaltyLine": "Penalty: Team 0 +{{t0}} / Team 1 +{{t1}} (undertricks x level x 500)",
   "promptHandEndHelp": "n / next ... deal the next hand",
   "bidPhase": "Bidding",
   "playPhase": "Play phase",
   "handMade": "Contract made",
   "handSet": "Contract failed; undertricks x level x 500 go above the opponents' line",
   "result.humanWin": "Rubber over! Your team wins!",
-  "result.cpuWin": "Rubber over! The other team wins."
+  "result.cpuWin": "Rubber over! The other team wins.",
+  "helpExamplePlay": "  p 0                       play hand card 0"
 }

@@ -294,6 +294,56 @@ function SuecaPageContent() {
                   </div>
                 )}
 
+                {/* 配点そのものが画面のどこにも無かった (#5642)。A=11 / 7=10 は
+                    直感に反するのに、出ているのは 61 点という目標だけだった。
+                    姉妹ゲームの Tressette と同じ折りたたみ式にする。 */}
+                <details className="my-3 p-2 rounded bg-black/30" data-testid="sueca-point-legend">
+                  <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
+                    {t('pointLegend.title')}
+                  </summary>
+                  <div className="mt-1 text-ds-text-muted text-xs">
+                    <table className="w-full">
+                      <thead>
+                        <tr>
+                          <th scope="col" className="text-left font-normal">
+                            {t('pointLegend.cardCol')}
+                          </th>
+                          <th scope="col" className="text-right font-normal">
+                            {t('pointLegend.pointCol')}
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>{t('pointLegend.ace')}</td>
+                          <td className="text-right">{t('pointLegend.aceValue')}</td>
+                        </tr>
+                        <tr>
+                          <td>{t('pointLegend.seven')}</td>
+                          <td className="text-right">{t('pointLegend.sevenValue')}</td>
+                        </tr>
+                        <tr>
+                          <td>{t('pointLegend.king')}</td>
+                          <td className="text-right">{t('pointLegend.kingValue')}</td>
+                        </tr>
+                        <tr>
+                          <td>{t('pointLegend.jack')}</td>
+                          <td className="text-right">{t('pointLegend.jackValue')}</td>
+                        </tr>
+                        <tr>
+                          <td>{t('pointLegend.queen')}</td>
+                          <td className="text-right">{t('pointLegend.queenValue')}</td>
+                        </tr>
+                        <tr>
+                          <td>{t('pointLegend.others')}</td>
+                          <td className="text-right">{t('pointLegend.othersValue')}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <div className="mt-1">{t('pointLegend.note')}</div>
+                  </div>
+                </details>
+
                 {/* Round result */}
                 {(isRoundEnd || isGameEnd) && (
                   <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
@@ -349,14 +399,21 @@ function SuecaPageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {state.hint && isRequestedHint(state) && (
-              <div className="text-ds-warning text-sm mb-2">
-                {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
-                {state.hint.cardIndices &&
-                  state.hint.cardIndices.length > 0 &&
-                  ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
-              </div>
-            )}
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-testid="sueca-hint-live" role="status" aria-live="polite">
+              {state.hint && isRequestedHint(state) && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
+                  {state.hint.cardIndices &&
+                    state.hint.cardIndices.length > 0 &&
+                    ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
+                </div>
+              )}
+            </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="sueca-action-buttons">

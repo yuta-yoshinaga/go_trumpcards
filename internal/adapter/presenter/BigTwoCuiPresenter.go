@@ -108,5 +108,5 @@ func (p *BigTwoCuiPresenter) Output(bg interfaces.BigTwoGame, lastErr error) str
 
 // ActionLogOutput 棋譜を出力
 func (p *BigTwoCuiPresenter) ActionLogOutput(bg interfaces.BigTwoGame) string {
-	return actionLogOutputText(bg)
+	return actionLogOutputTextForSeats[*domain.BigTwoPlayer](bg)
 }

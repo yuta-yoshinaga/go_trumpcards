@@ -84,27 +84,15 @@ func beleagueredCastleDispatch(bc *baseController, w http.ResponseWriter, bi use
 }
 
 func beleagueredCastleMoveDispatch(bc *baseController, w http.ResponseWriter, bi usecase.BeleagueredCastleInteractorIF, param BeleagueredCastleWebInput, newDefault func(string) *BeleagueredCastleWebOutput) bool {
-	if !requireParam(bc, w, newDefault, param.From == nil || param.To == nil, "param error: from and to are required.") {
-		return true
+	mv := topCardMove{haveFrom: param.From != nil, haveTo: param.To != nil}
+	if param.From != nil {
+		mv.fromZone, mv.fromCol = param.From.Zone, param.From.Col
 	}
-	fromZone := param.From.Zone
-	toZone := param.To.Zone
-
-	switch {
-	case fromZone == "tableau" && toZone == "tableau":
-		if !requireParam(bc, w, newDefault, param.From.Col == nil || param.To.Col == nil, "param error: from.col and to.col are required.") {
-			return true
-		}
-		// Beleaguered Castle only ever moves the top card; pass -1 so the
-		// domain resolves the index from its own state.
-		bc.writePresenterResponse(w, bi.MoveTableauToTableau(*param.From.Col, -1, *param.To.Col))
-	case fromZone == "tableau" && toZone == "foundation":
-		if !requireParam(bc, w, newDefault, param.From.Col == nil, "param error: from.col is required.") {
-			return true
-		}
-		bc.writePresenterResponse(w, bi.MoveTableauToFoundation(*param.From.Col))
-	default:
-		bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: invalid move zones."))
+	if param.To != nil {
+		mv.toZone, mv.toCol = param.To.Zone, param.To.Col
 	}
-	return true
+	return dispatchTopCardMove(bc, w, mv, topCardMoveFns{
+		tableauToTableau:    bi.MoveTableauToTableau,
+		tableauToFoundation: bi.MoveTableauToFoundation,
+	}, newDefault)
 }

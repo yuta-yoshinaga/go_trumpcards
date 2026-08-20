@@ -163,7 +163,13 @@ func (c *DaifugoCuiController) Exec(command string) string {
 			switch cmd {
 			case "p", "play":
 				indices, skipped := cuiutil.ParseIntSlice(args)
-				return cuiutil.PrependSkippedWarning(c.dgi.Play(indices), skipped), true
+				// Refuse before playing. PrependSkippedWarning ran the move first and
+				// put the warning above the new board, so a mistyped index was dropped
+				// and the remaining ones played as a different, legal move (issue #5390).
+				if len(skipped) > 0 {
+					return invalidArg("invalidCardIndex", "val", strings.Join(skipped, ", ")), true
+				}
+				return c.dgi.Play(indices), true
 			case "sort":
 				mode := domain.DaifugoSortByStrength
 				if len(args) > 0 {
@@ -173,13 +179,13 @@ func (c *DaifugoCuiController) Exec(command string) string {
 				}
 				return c.dgi.Sort(mode), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Normal, 1=Easy, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequiredAlt", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.dgi.GetConfig()
 					cfg.CpuDifficulty = domain.DaifugoCpuDifficulty(v)
 					return c.dgi.ResetWithConfig(cfg)
 				})
 			case "sj", "setjoker":
-				return cuiutil.WithParsedInt(args, "Joker count is required (0-2).", "Invalid joker count: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "jokerCountRequired02", "invalidJokerCount02", 0, 2, func(v int) string {
 					cfg := c.dgi.GetConfig()
 					cfg.JokerCount = v
 					return c.dgi.ResetWithConfig(cfg)
@@ -190,26 +196,26 @@ func (c *DaifugoCuiController) Exec(command string) string {
 					return "Rules:\n" + formatDaifugoRuleList(&cfg), true
 				}
 				if len(args) < 2 {
-					return "Usage: sr <rule> <0|1> | sr list\nRules: " + strings.Join(daifugoRuleKeys, ", ") + ".\nUse 'suitlockmode' for suit lock (0-2), '5skipcount' for skip count.", true
+					return invalidArg("usageSrRuleDaifugo", "val", strings.Join(daifugoRuleKeys, ", ")), true
 				}
 				if !setDaifugoRule(nil, args[0], false) {
-					return fmt.Sprintf("Unknown rule: %s.", args[0]), true
+					return invalidArg("unknownRule", "val", fmt.Sprint(args[0])), true
 				}
 				v, err := strconv.Atoi(args[1])
 				if err != nil || v < 0 || v > 1 {
-					return fmt.Sprintf("Invalid value: %s. Please enter 0 or 1.", args[1]), true
+					return invalidArg("invalidValue0Or1Raw", "val", fmt.Sprint(args[1])), true
 				}
 				cfg := c.dgi.GetConfig()
 				setDaifugoRule(&cfg, args[0], v == 1)
 				return c.dgi.ResetWithConfig(cfg), true
 			case "suitlockmode":
-				return cuiutil.WithParsedInt(args, "Suit lock mode is required (0=none, 1=partial, 2=full).", "Invalid suit lock mode: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "suitLockModeRequired", "invalidSuitLockMode", 0, 2, func(v int) string {
 					cfg := c.dgi.GetConfig()
 					cfg.SuitLockMode = domain.DaifugoSuitLockMode(v)
 					return c.dgi.ResetWithConfig(cfg)
 				})
 			case "5skipcount":
-				return cuiutil.WithParsedInt(args, "Five skip count is required (1-5).", "Invalid five skip count: %s. Please enter 1-5.", 1, 5, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "fiveSkipCountRequired15", "invalidFiveSkipCount15", 1, 5, func(v int) string {
 					cfg := c.dgi.GetConfig()
 					cfg.FiveSkipCount = v
 					return c.dgi.ResetWithConfig(cfg)

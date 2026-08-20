@@ -34,19 +34,19 @@ func (c *GoFishCuiController) Exec(command string) string {
 			switch cmd {
 			case "ask":
 				if len(args) < 2 {
-					return "Usage: ask <targetIdx> <rank>", true
+					return invalidArg("usageAskTargetidxRank"), true
 				}
 				targetIdx, err1 := strconv.Atoi(args[0])
 				rank, err2 := strconv.Atoi(args[1])
 				if err1 != nil {
-					return fmt.Sprintf("Invalid target index: %s", args[0]), true
+					return invalidArg("invalidTargetIndexRaw", "val", fmt.Sprint(args[0])), true
 				}
 				if err2 != nil {
-					return fmt.Sprintf("Invalid rank: %s", args[1]), true
+					return invalidArg("invalidRankRaw", "val", fmt.Sprint(args[1])), true
 				}
 				return c.gi.Ask(targetIdx, rank), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.gi.GetConfig()
 					cfg.CpuDifficulty = domain.GoFishCpuDifficulty(v)
 					return c.gi.Reset(cfg)

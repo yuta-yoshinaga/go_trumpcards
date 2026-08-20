@@ -29,13 +29,13 @@ func (rc *RedDogCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bet":
-				amount, errMsg, ok := cuiutil.ParseIntArg(args, "Bet amount is required.", "Invalid bet amount. Please enter a number.", 1, math.MaxInt)
+				amount, errMsg, ok := cuiutil.ParseIntArgKeys(args, "betAmountRequired", "invalidBetAmount", 1, math.MaxInt)
 				if !ok {
 					return errMsg, true
 				}
 				return rc.ci.Bet(amount), true
 			case "raise":
-				amount, errMsg, ok := cuiutil.ParseIntArg(args, "Raise amount is required.", "Invalid raise amount. Please enter a number.", 1, math.MaxInt)
+				amount, errMsg, ok := cuiutil.ParseIntArgKeys(args, "raiseAmountRequired", "invalidRaiseAmountANumber", 1, math.MaxInt)
 				if !ok {
 					return errMsg, true
 				}

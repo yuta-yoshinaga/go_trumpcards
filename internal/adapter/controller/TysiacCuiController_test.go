@@ -58,12 +58,12 @@ func TestTysiacCuiController_Exec(t *testing.T) {
 
 	t.Run("bid no args", func(t *testing.T) {
 		result := controller.NewTysiacCuiController(newMock()).Exec("bid")
-		assert.Contains(t, result, "Bid action is required")
+		assert.Contains(t, result, msgStem("bidActionRequiredRaise"))
 	})
 
 	t.Run("bid invalid", func(t *testing.T) {
 		result := controller.NewTysiacCuiController(newMock()).Exec("bid zzz")
-		assert.Contains(t, result, "Invalid bid action")
+		assert.Contains(t, result, msgStem("invalidBidActionRaisePass"))
 	})
 
 	t.Run("discard card", func(t *testing.T) {
@@ -75,7 +75,7 @@ func TestTysiacCuiController_Exec(t *testing.T) {
 
 	t.Run("discard no args", func(t *testing.T) {
 		result := controller.NewTysiacCuiController(newMock()).Exec("discard")
-		assert.Contains(t, result, "Card index is required")
+		assert.Contains(t, result, msgCardIndexRequired())
 	})
 
 	t.Run("play card", func(t *testing.T) {
@@ -87,7 +87,7 @@ func TestTysiacCuiController_Exec(t *testing.T) {
 
 	t.Run("play no args", func(t *testing.T) {
 		result := controller.NewTysiacCuiController(newMock()).Exec("play")
-		assert.Contains(t, result, "Card index is required")
+		assert.Contains(t, result, msgCardIndexRequired())
 	})
 
 	t.Run("next / nextround", func(t *testing.T) {
@@ -110,7 +110,7 @@ func TestTysiacCuiController_Exec(t *testing.T) {
 
 	t.Run("setdifficulty invalid", func(t *testing.T) {
 		result := controller.NewTysiacCuiController(newMock()).Exec("sd 9")
-		assert.Contains(t, result, "Invalid CPU difficulty")
+		assert.Contains(t, result, msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("hint / log", func(t *testing.T) {

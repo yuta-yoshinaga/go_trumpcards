@@ -63,6 +63,8 @@ export function parseCassinoCommand(input: string): CliParseResult<CassinoCliArg
     return { args: ['trail', { handIndex: hand }] };
   }
 
+  if (cmd === 'hint' || cmd === 'h') return { args: ['hint'] };
+
   return { error: `Unknown command: ${cmd}` };
 }
 
@@ -93,4 +95,5 @@ export const CASSINO_HELP = [
   'n/next                        - Start next round',
   'r/reset                       - Reset game',
   'l/log                         - Show action log',
+  'h/hint                        - Get a hint',
 ] as const;

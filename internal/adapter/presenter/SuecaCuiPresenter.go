@@ -153,5 +153,5 @@ var suecaHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *SuecaCuiPresenter) ActionLogOutput(g interfaces.SuecaGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.SuecaPlayer](g)
 }

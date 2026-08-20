@@ -46,9 +46,9 @@ func (c *TuteCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.di.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.di.Play)
 			case "m", "marriage":
-				return cuiutil.WithParsedInt(args, "Suit is required (1=♠ 2=♣ 3=♥ 4=♦).", "Invalid suit: %s. Please enter 1-4.", 1, domain.CardDesignMax, c.di.DeclareMarriage)
+				return cuiutil.WithParsedIntKeys(args, "suitRequiredSymbolsPlain", "invalidSuitRange", 1, domain.CardDesignMax, c.di.DeclareMarriage)
 			case "tute":
 				return c.di.DeclareTute(), true
 			case "n", "next":
@@ -56,7 +56,7 @@ func (c *TuteCuiController) Exec(command string) string {
 			case "nr", "nextround":
 				return c.di.NextRound(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.di.GetConfig()
 					cfg.CpuDifficulty = domain.TuteCpuDifficulty(v)
 					return c.di.ResetWithConfig(cfg)

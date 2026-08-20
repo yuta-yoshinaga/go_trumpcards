@@ -82,6 +82,17 @@ describe('MichiganPage', () => {
     );
   });
 
+  // **数字だけでは謎の数でしかない。** 用語もその意味もどこにも説明が
+  // 無かった (#5700)。
+  it('explains what the dead hand is', async () => {
+    renderWithProviders(<MichiganPage />);
+    const help = await screen.findByTestId('michigan-deadhand-help');
+    expect(help).toHaveTextContent('デッドハンドとは');
+    expect(help).toHaveTextContent('誰の手にも入らず');
+    // 枚数の表示は残っていること。説明で置き換えると枚数が消える。
+    expect(screen.getByText(/デッドハンド: /)).toBeInTheDocument();
+  });
+
   it('shows the place-bets button on the human bet turn', async () => {
     renderWithProviders(<MichiganPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '賭ける' })).toBeInTheDocument());

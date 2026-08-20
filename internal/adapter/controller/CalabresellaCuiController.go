@@ -47,7 +47,7 @@ func (c *CalabresellaCuiController) Exec(command string) string {
 			switch cmd {
 			case "bid":
 				if len(args) == 0 {
-					return "Bid action is required (pass, chiamo, or solo).", true
+					return invalidArg("bidActionRequiredChiamo"), true
 				}
 				switch args[0] {
 				case "pass", "p":
@@ -57,18 +57,18 @@ func (c *CalabresellaCuiController) Exec(command string) string {
 				case "solo", "s":
 					return c.di.Bid(domain.CalabresellaBidSolo), true
 				default:
-					return "Invalid bid action: " + args[0] + ". Please enter pass, chiamo, or solo.", true
+					return invalidArg("invalidBidActionChiamo", "val", args[0]), true
 				}
 			case "d", "discard":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.di.Discard)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.di.Discard)
 			case "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.di.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.di.Play)
 			case "n", "next":
 				return c.di.NextTrick(), true
 			case "nr", "nextround":
 				return c.di.NextRound(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.di.GetConfig()
 					cfg.CpuDifficulty = domain.CalabresellaCpuDifficulty(v)
 					return c.di.ResetWithConfig(cfg)

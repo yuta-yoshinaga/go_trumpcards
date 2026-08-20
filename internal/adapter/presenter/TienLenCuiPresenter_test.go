@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -141,6 +142,8 @@ func TestTienLenCuiPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
 		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "played 1 card(s)"},
 	})
+	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+	m.On("GetPlayer", mock.Anything).Return(domain.NewTienLenPlayer(true)).Maybe()
 	assert.Contains(t, p.ActionLogOutput(m), "play")
 }
 
@@ -162,5 +165,43 @@ func TestTienLen_CpuNamesGoThroughTheSharedHelper(t *testing.T) {
 		assert.Contains(t, out, bold1)
 		// 素の "CPU 1" が太字の外に残っていないこと。
 		assert.NotContains(t, strings.ReplaceAll(out, bold1, ""), "CPU 1")
+	})
+}
+
+// #5624: CUI にヒントが無く、CPU の判断材料 (findBestPlay) を人間向けに
+// 取り出す経路そのものが存在しなかった。
+func TestTienLenCuiPresenterHintOutput(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.TienLenCuiPresenter)
+
+	t.Run("names the cards and their indices", func(t *testing.T) {
+		m := new(interfaces.MockTienLenGame)
+		pl := domain.NewTienLenPlayer(true)
+		pl.AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		pl.AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		m.On("GetHint").Return(&domain.TienLenHint{Indices: []int{1}})
+		m.On("GetCurrentTurn").Return(0)
+		m.On("GetPlayer", 0).Return(pl)
+
+		out := p.HintOutput(m)
+		// 番号を出す ── `p <idx>` にそのまま打ち込めること。
+		assert.Contains(t, out, "[1]")
+		assert.NotContains(t, out, "[0]")
+	})
+
+	t.Run("says to pass when nothing beats the table", func(t *testing.T) {
+		m := new(interfaces.MockTienLenGame)
+		m.On("GetHint").Return(&domain.TienLenHint{Pass: true})
+
+		assert.Contains(t, p.HintOutput(m), i18n.T("tienlen.hintPass"))
+	})
+
+	t.Run("says nothing useful when it is not the human's turn", func(t *testing.T) {
+		m := new(interfaces.MockTienLenGame)
+		m.On("GetHint").Return((*domain.TienLenHint)(nil))
+
+		assert.Contains(t, p.HintOutput(m), i18n.T("tienlen.hintNone"))
 	})
 }

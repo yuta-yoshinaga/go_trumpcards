@@ -7,6 +7,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	mockusecase "github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func newMockCrescentInteractor() *mockusecase.MockCrescentInteractor {
@@ -107,4 +108,15 @@ func TestCrescentCuiControllerMovePrompts(t *testing.T) {
 	assert.True(t, cuiutil.IsPromptRequest(c.Exec("m t 3")))
 	assert.True(t, cuiutil.IsPromptRequest(c.Exec("m t 3 t")))
 	assert.True(t, cuiutil.IsPromptRequest(c.Exec("m t 3 f")))
+}
+
+// codecov: the default arm of the move parser -- an `m` shape the game does
+// not have answers with the usage line.
+func TestCrescentCuiControllerMoveUsage(t *testing.T) {
+	ci := newMockCrescentInteractor()
+	c := NewCrescentCuiController(ci)
+	out := c.Exec("m t 0 x 1")
+	body, isErr := i18n.StripErrorPrefix(out)
+	assert.True(t, isErr, "a usage line means the move did not happen")
+	assert.Equal(t, i18n.T("crescent.moveUsage"), body)
 }

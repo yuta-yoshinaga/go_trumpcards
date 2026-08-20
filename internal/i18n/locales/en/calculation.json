@@ -28,5 +28,9 @@
   "stockNext": " next: {{card}}",
   "hintStock": "Hint: stock → foundation {{foundation}}",
   "hintWaste": "Hint: waste {{waste}} → foundation {{foundation}}",
-  "nextRank": " -> next: {{rank}}"
+  "nextRank": " -> next: {{rank}}",
+  "helpExampleHint": "  h                   ask for a move",
+  "helpExampleAuto": "  ac                  play everything that can go up",
+  "upcomingRanks": " upcoming: {{ranks}}",
+  "upcomingRanksLabel": "Upcoming:"
 }

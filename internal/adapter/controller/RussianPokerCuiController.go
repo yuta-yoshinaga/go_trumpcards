@@ -4,6 +4,7 @@ package controller
 
 import (
 	"math"
+	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
@@ -31,18 +32,24 @@ func (rc *RussianPokerCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bet":
-				ante, errMsg, ok := cuiutil.ParseIntArg(args, "Ante amount is required.", "Invalid ante amount. Please enter a number.", 1, math.MaxInt)
+				ante, errMsg, ok := cuiutil.ParseIntArgKeys(args, "anteAmountRequired", "invalidAnteAmount", 1, math.MaxInt)
 				if !ok {
 					return errMsg, true
 				}
 				return rc.ri.Bet(ante), true
 			case "e", "exchange":
 				indices, skipped := cuiutil.ParseBoundedIntSlice(args, 0, 4)
-				return cuiutil.PrependSkippedWarning(rc.ri.Exchange(indices), skipped), true
+				// Refuse before playing. PrependSkippedWarning ran the move first and
+				// put the warning above the new board, so a mistyped index was dropped
+				// and the remaining ones played as a different, legal move (issue #5390).
+				if len(skipped) > 0 {
+					return invalidArg("invalidCardIndex", "val", strings.Join(skipped, ", ")), true
+				}
+				return rc.ri.Exchange(indices), true
 			case "6", "buy6th":
 				return rc.ri.Buy6th(), true
 			case "sel", "select":
-				idx, errMsg, ok := cuiutil.ParseIntArg(args, "Discard index is required.", "Invalid index. Please enter a number.", 0, 5)
+				idx, errMsg, ok := cuiutil.ParseIntArgKeys(args, "discardIndexRequired", "invalidIndexANumber", 0, 5)
 				if !ok {
 					return errMsg, true
 				}

@@ -5,12 +5,14 @@ package presenter
 import (
 	"encoding/json"
 	"errors"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
@@ -277,4 +279,99 @@ func TestTrexCuiPresenter_HintReasonKeysAreAllMapped(t *testing.T) {
 
 func TestTrexCuiPresenter_ActionLog(t *testing.T) {
 	assert.NotEmpty(t, new(TrexCuiPresenter).ActionLogOutput(txTestGame(t)))
+}
+
+// #5572: どの札が失点かは 5 つの契約で入れ替わるので覚えられない (#4911)。Web は
+// 赤いリングで印を付けているのに、CUI は素で並べるだけで暗算を強いていた。
+func TestTrexCuiPresenter_MarksThePenaltyCardsOfEachContract(t *testing.T) {
+	i18n.SetLang("ja")
+	trick := func(cards ...*domain.Card) []domain.TrexTrickCard {
+		out := make([]domain.TrexTrickCard, 0, len(cards))
+		for i, c := range cards {
+			out = append(out, domain.TrexTrickCard{PlayerIdx: i, Card: c})
+		}
+		return out
+	}
+	kingHeart := domain.NewCard(domain.CardDesignHeart, 13, true)
+	queenSpade := domain.NewCard(domain.CardDesignSpade, 12, true)
+	twoDiamond := domain.NewCard(domain.CardDesignDiamond, 2, true)
+	nineClover := domain.NewCard(domain.CardDesignClover, 9, true)
+
+	cards := []*domain.Card{kingHeart, queenSpade, twoDiamond, nineClover}
+
+	for _, tc := range []struct {
+		name     string
+		contract domain.TrexContract
+		marked   []*domain.Card
+	}{
+		{"king of hearts", domain.TrexContractKingOfHearts, []*domain.Card{kingHeart}},
+		{"diamonds", domain.TrexContractDiamonds, []*domain.Card{twoDiamond}},
+		{"queens", domain.TrexContractQueens, []*domain.Card{queenSpade}},
+		// 個別札の減点が無い契約は何も印を付けない。トリックそのものが点を持つ。
+		{"tricks", domain.TrexContractTricks, nil},
+		{"trix", domain.TrexContractTrix, nil},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			g := txStub(domain.TrexPhasePlay, tc.contract, 0, false, -1)
+			g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetTrick")
+			g.On("GetTrick").Return(trick(cards...))
+
+			out := new(TrexCuiPresenter).Output(g, nil)
+			for _, c := range cards {
+				want := false
+				for _, m := range tc.marked {
+					if m == c {
+						want = true
+					}
+				}
+				mark := cuiCardStr(c) + color.Red(i18n.Tf("trex.penaltyMark",
+					"points", strconv.Itoa(domain.TrexCardPenalty(tc.contract, c))))
+				if want {
+					assert.Contains(t, out, mark, "%s must be marked", cuiCardStr(c))
+					continue
+				}
+				// **印の付いていない札に印を付けない。**全部に付ける実装でも
+				// 「含む」検査だけなら通ってしまう。
+				assert.NotContains(t, out, cuiCardStr(c)+"(", "%s must not be marked", cuiCardStr(c))
+			}
+		})
+	}
+}
+
+// 印の数字は得点を決めている関数から来ること。書き写すと、印と実際の失点が
+// ずれても誰も気づけない。
+func TestTrexCardPenaltyIsTheOneUsedForScoring(t *testing.T) {
+	assert.Equal(t, domain.TrexKingOfHeartsPenalty,
+		domain.TrexCardPenalty(domain.TrexContractKingOfHearts, domain.NewCard(domain.CardDesignHeart, 13, true)))
+	assert.Equal(t, domain.TrexDiamondPenalty,
+		domain.TrexCardPenalty(domain.TrexContractDiamonds, domain.NewCard(domain.CardDesignDiamond, 5, true)))
+	assert.Equal(t, domain.TrexQueenPenalty,
+		domain.TrexCardPenalty(domain.TrexContractQueens, domain.NewCard(domain.CardDesignClover, 12, true)))
+	// ♥K 契約の ♥Q は失点でない (クイーン契約と混ざらないこと)。
+	assert.Zero(t, domain.TrexCardPenalty(domain.TrexContractKingOfHearts, domain.NewCard(domain.CardDesignHeart, 12, true)))
+	assert.Zero(t, domain.TrexCardPenalty(domain.TrexContractTricks, domain.NewCard(domain.CardDesignHeart, 13, true)))
+	assert.Zero(t, domain.TrexCardPenalty(domain.TrexContractQueens, nil))
+}
+
+// **印そのものが赤で出ること。**cuiCardStr は ♥♦ を既に赤で包んでいるので、
+// その外からもう一度包むと内側のリセットが先に効き、印だけ地の色になる。
+// 上のテストは期待値を同じ組み立て方で作るので、この壊れ方が見えない。
+func TestTrexCuiPresenter_ThePenaltyMarkIsColouredOnItsOwn(t *testing.T) {
+	i18n.SetLang("ja")
+	orig := color.NoColor()
+	color.SetNoColor(false)
+	defer color.SetNoColor(orig)
+
+	// ♥K — cuiCardStr が既に赤を付ける札。ここが壊れやすい。
+	king := domain.NewCard(domain.CardDesignHeart, 13, true)
+	g := txStub(domain.TrexPhasePlay, domain.TrexContractKingOfHearts, 0, false, -1)
+	g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetTrick")
+	g.On("GetTrick").Return([]domain.TrexTrickCard{{PlayerIdx: 0, Card: king}})
+
+	out := new(TrexCuiPresenter).Output(g, nil)
+	mark := i18n.Tf("trex.penaltyMark", "points", strconv.Itoa(domain.TrexKingOfHeartsPenalty))
+	// 印の直前に色開始があること = 印自身が色付けされている。
+	assert.Contains(t, out, color.Red(mark))
+	// 札の色付けが終わったところで印が地の色のまま始まっていないこと。
+	assert.NotContains(t, out, "\x1b[0m"+mark)
 }

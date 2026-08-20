@@ -25,6 +25,9 @@ import { gameTheme } from '../styles/gameTheme';
 import type { ChineseTenCard, ChineseTenResponse } from '../types/card';
 import { ChineseTenPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
+import type { ChineseTenBlockedReason } from '../utils/chineseTenDisabledReason';
+import { chineseTenHandBlockedReason, chineseTenLayoutBlockedReason } from '../utils/chineseTenDisabledReason';
 import { CHINESETEN_HELP, parseChineseTenCommand } from '../utils/cli/commands/chinesetenCommands';
 import { formatChineseTenState } from '../utils/cli/formatters/chinesetenFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -83,6 +86,13 @@ function ChineseTenPageContent() {
   // Re-deriving them here would put a pair of non-overlapping rules in two
   // places.
   const selectable = new Set(state.selectableIndices);
+  // **aria-disabled は「押しても何も起きない」までしか言わない。**待つのか、
+  // 別の札を選ぶのか、先に手を出すのかは理由が分からないと決められない (#5571)。
+  // 判定は既存の isHumanTurn / choosing / selectable をそのまま読む。
+  const turnState = { ended, isHumanTurn, choosing };
+  const blockedText = (reason: ChineseTenBlockedReason | null) => (reason ? t(`blocked.${reason}`) : undefined);
+  // 手札の理由は札によらないので一度だけ。場札は札ごとに変わるので描画時に引く。
+  const handBlocked = blockedText(chineseTenHandBlockedReason(turnState));
 
   /** One card, annotating the ones that actually score. */
   const renderCard = (card: ChineseTenCard, key: string) => (
@@ -166,6 +176,7 @@ function ChineseTenPageContent() {
               <div className="flex gap-1 justify-center flex-wrap">
                 {state.layout.map((card, i) => {
                   const canTake = choosing && isHumanTurn && selectable.has(i);
+                  const layoutBlocked = blockedText(chineseTenLayoutBlockedReason(turnState, selectable.has(i)));
                   const isHintedLayout = showServerHint && state.hint?.layoutIndex === i;
                   return (
                     <button
@@ -175,6 +186,8 @@ function ChineseTenPageContent() {
                       // Kept focusable while it cannot act so the reason is
                       // announced rather than the control leaving the tab order.
                       aria-disabled={!canTake}
+                      title={layoutBlocked}
+                      aria-label={[cardAlt(card), layoutBlocked].filter(Boolean).join(' — ')}
                       data-hinted-layout={isHintedLayout || undefined}
                       onClick={() => canTake && game.handleSelect(i)}
                       className={[
@@ -226,6 +239,8 @@ function ChineseTenPageContent() {
                     type="button"
                     data-hint-action="play"
                     aria-disabled={!isHumanTurn || choosing}
+                    title={handBlocked}
+                    aria-label={[cardAlt(card), handBlocked].filter(Boolean).join(' — ')}
                     onClick={() => isHumanTurn && !choosing && game.handlePlay(i)}
                     className={[
                       'rounded transition-transform',

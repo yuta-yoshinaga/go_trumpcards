@@ -62,6 +62,19 @@ func TestUndoToEscape_ClosureReadsEachGamesOwnSnapshot(t *testing.T) {
 			}
 			return g.UndoToEscape()
 		}},
+		{"Bristol", func(stale []bool) int {
+			// Bristol は手詰まりをフィールドに持たず毎回計算する (#5993 のレビュー)。
+			// 実際に詰んだ盤面を組んでから履歴を積む。
+			g := &Bristol{phase: BristolPhasePlaying}
+			suits := []int{CardDesignSpade, CardDesignHeart, CardDesignClover, CardDesignDiamond}
+			for i := range g.tableau {
+				g.tableau[i] = []*Card{NewCard(suits[i%len(suits)], 5, true)}
+			}
+			for _, st := range stale {
+				g.history = append(g.history, &bristolSnapshot{isStalemate: st})
+			}
+			return g.UndoToEscape()
+		}},
 		{"Bisley", func(stale []bool) int {
 			g := &Bisley{isStalemate: true}
 			for _, s := range stale {
@@ -322,7 +335,7 @@ func TestUndoToEscape_ClosureReadsEachGamesOwnSnapshot(t *testing.T) {
 		{"no escape anywhere", []bool{true, true}, -1},
 	}
 
-	assert.Len(t, games, 41, "every game delegating to undoToEscape must be listed")
+	assert.Len(t, games, 42, "every game delegating to undoToEscape must be listed")
 
 	for _, g := range games {
 		for _, sc := range scenarios {

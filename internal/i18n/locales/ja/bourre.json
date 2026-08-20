@@ -13,6 +13,7 @@
   "trumpSuit": "切り札",
   "pot": "ポット",
   "carryPot": "繰越",
+  "decidePenalty": "参加して1トリックも取れないと「ブーレ」となり罰金{{penalty}}チップ (降りれば罰金なし)",
   "chips": "チップ",
   "out": "(脱落)",
   "folded": "フォールド",
@@ -21,5 +22,6 @@
   "tricksTaken": " (獲得{{count}}トリック)",
   "handResult": "ハンド結果",
   "gameEndWinner": "{{name}} の勝利！",
-  "you": "あなた"
+  "you": "あなた",
+  "helpExampleDecide": "  d 1                  このハンドに参加する"
 }

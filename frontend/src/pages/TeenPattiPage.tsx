@@ -465,6 +465,15 @@ function TeenPattiPageContent() {
                     >
                       {t('raiseButton', { amount: raiseStake })}
                     </button>
+                    {/* **範囲を出さないと、+/- を連打してボタンが無効になる位置を
+                        探るしかない (#5660)。** 姉妹の Three Card Brag は
+                        tcb-raise-range で常時出しており、CUI も promptRaiseRange で
+                        min/max を出している。 */}
+                    <span className="text-ds-text-muted text-xs ml-1" data-testid="tp-raise-range">
+                      {state.canRaise
+                        ? t('raiseRange', { min: state.minRaise, max: state.maxRaise })
+                        : t('raiseUnavailable')}
+                    </span>
                   </div>
                   <button type="button" className={btnDanger} onClick={handleFold} disabled={loading}>
                     {t('foldButton')}

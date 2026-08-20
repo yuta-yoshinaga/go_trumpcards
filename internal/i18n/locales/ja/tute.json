@@ -16,6 +16,7 @@
   "promptTrickEnd": "トリック終了",
   "promptTrickEndHelp": "n / next・・・次のトリックへ",
   "promptRoundEnd": "ラウンド終了（チームA: {{ptsA}}点, チームB: {{ptsB}}点）",
+  "runningPoints": "今ラウンドの獲得点  チームA: {{ptsA}}点  チームB: {{ptsB}}点",
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
   "hintNone": "ヒントはありません。",
   "hintCard": "[HINT: {{cards}} ({{reason}})]",
@@ -27,5 +28,7 @@
   "hintReasonDeclareMarriage": "結婚宣言でボーナス点を獲得する",
   "hintReasonDeclareTute": "Tute 宣言で即勝利！",
   "promptMarriageSuits": "宣言可能: {{suits}}",
-  "marriageTrumpMark": "(切り札+40)"
+  "marriageTrumpMark": "(切り札+40)",
+  "helpExamplePlay": "  play 0                   手札の 0 番のカードを出す",
+  "helpHint": "  h                         助言を表示"
 }

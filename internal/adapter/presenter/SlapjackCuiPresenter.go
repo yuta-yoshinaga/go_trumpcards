@@ -13,11 +13,32 @@ import (
 // SlapjackCuiPresenter renders the Slapjack CUI view.
 type SlapjackCuiPresenter struct{}
 
+// slapjackDifficultyStr は難易度の表示名を返す。Web のセレクトと同じ 3 つ。
+//
+// 未知の値は番号のまま出す ── 「Easy」に丸めると、設定が壊れていることが
+// 画面から消える。
+func slapjackDifficultyStr(d domain.SlapjackCpuDifficulty) string {
+	switch d {
+	case domain.SlapjackCpuEasy:
+		return i18n.T("slapjack.difficultyEasy")
+	case domain.SlapjackCpuNormal:
+		return i18n.T("slapjack.difficultyNormal")
+	case domain.SlapjackCpuHard:
+		return i18n.T("slapjack.difficultyHard")
+	}
+	return strconv.Itoa(int(d))
+}
+
 // Output renders the current game state for the active locale (#1699).
 func (p *SlapjackCuiPresenter) Output(g interfaces.SlapjackGame, lastErr error) string {
 	return buildCuiOutput(i18n.T("slapjack.helpTitle"), func(b *strings.Builder) {
 		cpu := g.GetPlayer(1)
 		human := g.GetPlayer(0)
+
+		// **難易度は変えられるのに、変えた結果を確かめる手段が無かった** (#5579)。
+		// `sd` コマンドは前からあり、Web は選択中の値を常に出している。
+		b.WriteString(i18n.Tf("slapjack.difficultyLine",
+			"difficulty", slapjackDifficultyStr(g.GetConfig().CpuDifficulty)) + "\n")
 
 		b.WriteString(i18n.Tf("slapjack.cpuStockLine",
 			"count", strconv.Itoa(cpu.GetStockSize())) + "\n")
@@ -72,5 +93,5 @@ func (p *SlapjackCuiPresenter) Output(g interfaces.SlapjackGame, lastErr error) 
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *SlapjackCuiPresenter) ActionLogOutput(g interfaces.SlapjackGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.SlapjackPlayer](g)
 }

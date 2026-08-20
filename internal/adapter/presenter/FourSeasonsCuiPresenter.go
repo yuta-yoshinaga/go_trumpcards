@@ -61,6 +61,11 @@ func (p *FourSeasonsCuiPresenter) Output(f interfaces.FourSeasonsGame, lastErr e
 				b.WriteString(i18n.Tf("fourseasons.columnCard",
 					"card", cuiCardStr(top),
 					"count", strconv.Itoa(len(pile))))
+				// **組札では暗算させないのに、十字だけ暗算させていた** (#5738)。
+				// タブローは下り (A の下は K) なので、折り返しを毎回自分で
+				// 数えることになる。
+				b.WriteString(i18n.Tf("fourseasons.columnAccepts",
+					"rank", cuiRankLabel(domain.FourSeasonsPrevRank(top.GetValue()))))
 			}
 			b.WriteString("\n")
 		}
@@ -80,7 +85,8 @@ func (p *FourSeasonsCuiPresenter) Output(f interfaces.FourSeasonsGame, lastErr e
 		switch f.GetPhase() {
 		case domain.FourSeasonsPhasePlaying:
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
-				"count", strconv.Itoa(f.GetMoveCount())) + "\n")
+				"count", strconv.Itoa(f.GetMoveCount())) +
+				cuiSolitaireUndoHint(f.CanUndo()) + "\n")
 		case domain.FourSeasonsPhaseGameClear:
 			b.WriteString(color.Green(i18n.T("cuiSolitaireGameClear")) + " " +
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(f.GetMoveCount())) + "\n")

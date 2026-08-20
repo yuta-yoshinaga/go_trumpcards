@@ -30,7 +30,7 @@ func TestChinesePokerCuiController_Exec_BetMissingAmount(t *testing.T) {
 	mock := new(mockusecase.MockChinesePokerInteractor)
 	cc := NewChinesePokerCuiController(mock)
 	result := cc.Exec("b")
-	assert.Contains(t, result, "required")
+	assert.Contains(t, result, msgBetAmountRequired())
 }
 
 func TestChinesePokerCuiController_Exec_Set(t *testing.T) {
@@ -45,21 +45,21 @@ func TestChinesePokerCuiController_Exec_SetMissingArgs(t *testing.T) {
 	mock := new(mockusecase.MockChinesePokerInteractor)
 	cc := NewChinesePokerCuiController(mock)
 	result := cc.Exec("s 0 1 2")
-	assert.Contains(t, result, "8 card indices")
+	assert.Contains(t, result, msgStem("cardIndicesRequired8FrontMiddle"))
 }
 
 func TestChinesePokerCuiController_Exec_SetInvalidFrontIndex(t *testing.T) {
 	mock := new(mockusecase.MockChinesePokerInteractor)
 	cc := NewChinesePokerCuiController(mock)
 	result := cc.Exec("s a 1 2 3 4 5 6 7")
-	assert.Contains(t, result, "Invalid front index")
+	assert.Contains(t, result, msgStem("invalidFrontIndexRaw"))
 }
 
 func TestChinesePokerCuiController_Exec_SetInvalidMiddleIndex(t *testing.T) {
 	mock := new(mockusecase.MockChinesePokerInteractor)
 	cc := NewChinesePokerCuiController(mock)
 	result := cc.Exec("s 0 1 2 x 4 5 6 7")
-	assert.Contains(t, result, "Invalid middle index")
+	assert.Contains(t, result, msgStem("invalidMiddleIndexRaw"))
 }
 
 func TestChinesePokerCuiController_Exec_Log(t *testing.T) {

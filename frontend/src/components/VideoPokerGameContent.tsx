@@ -16,7 +16,7 @@ import type { Card, VideoPokerResponse } from '../types/card';
 import { VideoPokerPhase } from '../types/phases';
 import type { CliGameConfig } from '../utils/cli/types';
 import { getVideoPokerBaseHint } from '../utils/hints/videoPokerBaseHint';
-import { evaluateJokerPokerMadeHand } from '../utils/jokerPokerMadeHand';
+import { evaluateVideoPokerMadeHand } from '../utils/jokerPokerMadeHand';
 import {
   VIDEO_POKER_MAX_BET,
   videoPokerPayoutCell,
@@ -284,14 +284,17 @@ export function VideoPokerGameContent({
     return t('phase.result');
   }, [isBetPhase, isDrawPhase, t]);
 
-  // Joker Poker only: evaluate the current 5 cards during the draw phase so the
-  // player sees whether they already hold a paying hand (Kings or Better+). The
-  // readout depends solely on the dealt hand, so toggling holds never changes
-  // it, and it disappears once the phase leaves DRAW. `rowKey === null` means
-  // the hand does not reach the pay minimum.
+  // Evaluate the current 5 cards during the draw phase so the player sees whether
+  // they already hold a paying hand. The readout depends solely on the dealt
+  // hand, so toggling holds never changes it, and it disappears once the phase
+  // leaves DRAW. `rowKey === null` means the hand does not reach the pay minimum.
+  //
+  // **3変種すべてに出す。** 以前は jokerpoker でしか出していなかった (#5506/#5507)。
+  // Deuces Wild はスリーカード以上でしか配当が出ず分散が大きいので、ドロー前に
+  // 配当対象かを知れる価値はむしろ大きい。
   const madeHand = useMemo(() => {
-    if (gameName !== 'jokerpoker' || !isDrawPhase || !state || state.hand.length !== 5) return null;
-    return evaluateJokerPokerMadeHand(state.hand);
+    if (!isDrawPhase || !state || state.hand.length !== 5) return null;
+    return evaluateVideoPokerMadeHand(gameName, state.hand);
   }, [gameName, isDrawPhase, state]);
 
   const actionBindings = useMemo(

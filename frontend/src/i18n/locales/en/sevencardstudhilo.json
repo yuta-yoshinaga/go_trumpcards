@@ -87,5 +87,17 @@
     "sevencardstudCallHigh": "You hold a high card — call and see the next street",
     "sevencardstudFoldWeak": "No pair and no high card — fold",
     "sevencardstudCheckLow": "Five cards of eight or lower and nothing to call — take the next card for free"
+  },
+  "style": {
+    "tag": "TAG",
+    "tagTooltip": "Tight Aggressive: plays few hands but bets strongly when in",
+    "lag": "LAG",
+    "lagTooltip": "Loose Aggressive: plays many hands and bets strongly",
+    "tp": "TP",
+    "tpTooltip": "Tight Passive: plays few hands, mostly calls",
+    "lp": "LP",
+    "lpTooltip": "Loose Passive: plays many hands but rarely raises",
+    "balanced": "BAL",
+    "balancedTooltip": "Balanced style"
   }
 }

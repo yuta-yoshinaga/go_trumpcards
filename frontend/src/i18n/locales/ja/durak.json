@@ -67,5 +67,6 @@
     "defend_beat": "この札で返せる",
     "take_cannot_beat": "返せる札が無い",
     "pass_no_addition": "追撃できる札が無い"
-  }
+  },
+  "finished": "上がり"
 }

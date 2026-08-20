@@ -20,6 +20,7 @@ function makePlayer(overrides: Partial<IndianPokerResponse['players'][0]> = {}) 
 
 function makeState(overrides: Partial<IndianPokerResponse> = {}): IndianPokerResponse {
   return {
+    estimatedStrength: 50,
     players: [
       makePlayer(),
       makePlayer({ id: 1, isHuman: false, cardRank: 7 }),

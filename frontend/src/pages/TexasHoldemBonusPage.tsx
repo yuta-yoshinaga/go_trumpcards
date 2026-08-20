@@ -33,6 +33,7 @@ import { TexasHoldemBonusPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { parseTexasholdembonusCommand, TEXASHOLDEMBONUS_HELP } from '../utils/cli/commands/texasholdembonusCommands';
 import { formatTexasholdembonusState } from '../utils/cli/formatters/texasholdembonusFormatter';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import {
   TEXASHOLDEMBONUS_FLOP_MULTIPLIER,
@@ -106,8 +107,9 @@ function TexasHoldemBonusPageContent() {
       parseCommand: parseTexasholdembonusCommand,
       formatResponse: formatTexasholdembonusState,
       helpText: TEXASHOLDEMBONUS_HELP,
+      localCommand: hintLocalCommand(frontendHint),
     }),
-    [],
+    [frontendHint],
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 

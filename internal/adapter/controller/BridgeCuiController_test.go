@@ -79,25 +79,25 @@ func TestBridgeCuiController_Exec(t *testing.T) {
 	t.Run("bid command b no args", func(t *testing.T) {
 		c := controller.NewBridgeCuiController(newMock())
 		result := c.Exec("b")
-		assert.Contains(t, result, "Bid type is required")
+		assert.Contains(t, result, msgStem("bidTypeRequired"))
 	})
 
 	t.Run("bid command b invalid arg", func(t *testing.T) {
 		c := controller.NewBridgeCuiController(newMock())
 		result := c.Exec("b abc")
-		assert.Contains(t, result, "Invalid bid type")
+		assert.Contains(t, result, msgStem("invalidBidType"))
 	})
 
 	t.Run("bid command b out of range", func(t *testing.T) {
 		c := controller.NewBridgeCuiController(newMock())
 		result := c.Exec("b 4")
-		assert.Contains(t, result, "Invalid bid type: 4")
+		assert.Contains(t, result, msgKey("invalidBidType", "val", "4"))
 	})
 
 	t.Run("bid command b below range", func(t *testing.T) {
 		c := controller.NewBridgeCuiController(newMock())
 		result := c.Exec("b -1")
-		assert.Contains(t, result, "Invalid bid type: -1")
+		assert.Contains(t, result, msgKey("invalidBidType", "val", "-1"))
 	})
 
 	// play
@@ -120,13 +120,13 @@ func TestBridgeCuiController_Exec(t *testing.T) {
 	t.Run("play command p no args", func(t *testing.T) {
 		c := controller.NewBridgeCuiController(newMock())
 		result := c.Exec("p")
-		assert.Contains(t, result, "Card index is required")
+		assert.Contains(t, result, msgCardIndexRequired())
 	})
 
 	t.Run("play command p invalid arg", func(t *testing.T) {
 		c := controller.NewBridgeCuiController(newMock())
 		result := c.Exec("p abc")
-		assert.Contains(t, result, "Invalid card index")
+		assert.Contains(t, result, msgInvalidCardIndexPrefix())
 	})
 
 	// next
@@ -187,25 +187,25 @@ func TestBridgeCuiController_Exec(t *testing.T) {
 	t.Run("setdifficulty no args", func(t *testing.T) {
 		c := controller.NewBridgeCuiController(newMock())
 		result := c.Exec("sd")
-		assert.Contains(t, result, "required")
+		assert.Contains(t, result, msgCpuDifficultyRequired())
 	})
 
 	t.Run("setdifficulty invalid value", func(t *testing.T) {
 		c := controller.NewBridgeCuiController(newMock())
 		result := c.Exec("sd abc")
-		assert.Contains(t, result, "Invalid CPU difficulty")
+		assert.Contains(t, result, msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("setdifficulty negative", func(t *testing.T) {
 		c := controller.NewBridgeCuiController(newMock())
 		result := c.Exec("sd -1")
-		assert.Equal(t, "Invalid CPU difficulty: -1. Please enter 0-2.", result)
+		assert.Equal(t, msgInvalidCpuDifficulty("-1"), result)
 	})
 
 	t.Run("setdifficulty over 2", func(t *testing.T) {
 		c := controller.NewBridgeCuiController(newMock())
 		result := c.Exec("sd 3")
-		assert.Equal(t, "Invalid CPU difficulty: 3. Please enter 0-2.", result)
+		assert.Equal(t, msgInvalidCpuDifficulty("3"), result)
 	})
 
 	// log
@@ -253,5 +253,36 @@ func TestBridgeCuiController_Exec(t *testing.T) {
 		c := controller.NewBridgeCuiController(newMock())
 		result := c.Exec("")
 		assert.Contains(t, result, "'help' でコマンド一覧を表示します。")
+	})
+}
+
+// #5390: `b 0 abc` は入札レベルを 0 に落として通っていた。
+func TestBridgeCuiController_BidRefusesMistypedOptionalArgs(t *testing.T) {
+	newMock := func() *mockUsecases.MockBridgeInteractor {
+		m := new(mockUsecases.MockBridgeInteractor)
+		m.On("Reset").Return("ok")
+		m.On("Bid", mock.Anything, mock.Anything, mock.Anything).Return("bid-ok")
+		return m
+	}
+
+	t.Run("bid level", func(t *testing.T) {
+		m := newMock()
+		out := controller.NewBridgeCuiController(m).Exec("b 0 abc")
+		assert.Equal(t, msgKey("invalidBidLevel", "val", "abc"), out)
+		m.AssertNotCalled(t, "Bid", mock.Anything, mock.Anything, mock.Anything)
+	})
+
+	t.Run("bid suit", func(t *testing.T) {
+		m := newMock()
+		out := controller.NewBridgeCuiController(m).Exec("b 0 1 xyz")
+		assert.Equal(t, msgKey("invalidSuit", "val", "xyz"), out)
+		m.AssertNotCalled(t, "Bid", mock.Anything, mock.Anything, mock.Anything)
+	})
+
+	// **省略形も一緒に見る。** 断る側だけ直して既定値を消しても緑になるので。
+	t.Run("both omitted still bids", func(t *testing.T) {
+		m := newMock()
+		assert.Equal(t, "bid-ok", controller.NewBridgeCuiController(m).Exec("b 0"))
+		m.AssertCalled(t, "Bid", 0, 0, 0)
 	})
 }

@@ -186,4 +186,43 @@ describe('BigTwoPage', () => {
     const label = await screen.findByTestId('bt-table-playtype');
     expect(label).toHaveTextContent('フラッシュ');
   });
+
+  // **currentTurn は届いていたのに isHumanTurn の判定にしか使われていなかった。**
+  // 誰の番かが画面に出ておらず、Daifugo / Sevens だけがハイライトしていた (#5478)。
+  it('highlights the CPU whose turn it is', async () => {
+    mockExec.mockResolvedValue(makeState({ currentTurn: 2 }));
+    renderWithProviders(<BigTwoPage />);
+
+    const active = await screen.findByTestId('bt-cpu-2');
+    expect(active.className).toContain('border-game-status-waiting');
+    // 負のコントロール: 手番でない CPU には付かない。ここを見ないと
+    // 「全員に枠が付く」実装でも通る。
+    expect(screen.getByTestId('bt-cpu-1').className).not.toContain('border-game-status-waiting');
+    expect(screen.getByTestId('bt-cpu-3').className).not.toContain('border-game-status-waiting');
+  });
+
+  it('does not highlight anyone once the game is over', async () => {
+    mockExec.mockResolvedValue(makeState({ currentTurn: 2, gameEndFlag: true }));
+    renderWithProviders(<BigTwoPage />);
+    await waitFor(() => expect(screen.getByTestId('bt-cpu-2')).toBeInTheDocument());
+    expect(screen.getByTestId('bt-cpu-2').className).not.toContain('border-game-status-waiting');
+  });
+
+  it('dims a finished CPU instead of highlighting it', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        currentTurn: 2,
+        players: [
+          player(0, true, [card('SPADE', 3)]),
+          player(1, false, [card('HEART', 4)]),
+          player(2, false, [], { isFinished: true, rank: 1 }),
+          player(3, false, [card('CLOVER', 6)]),
+        ],
+      }),
+    );
+    renderWithProviders(<BigTwoPage />);
+    const finished = await screen.findByTestId('bt-cpu-2');
+    expect(finished.className).toContain('opacity-50');
+    expect(finished.className).not.toContain('border-game-status-waiting');
+  });
 });

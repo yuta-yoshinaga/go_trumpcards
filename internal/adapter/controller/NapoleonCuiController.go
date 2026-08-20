@@ -52,46 +52,46 @@ func (c *NapoleonCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bid":
-				return cuiutil.WithParsedInt(args, "Bid value is required (0=pass, 12-17).", "Invalid bid value: %s.", 0, domain.NapoleonMaxPictureCards, c.ni.Bid)
+				return cuiutil.WithParsedIntKeys(args, "bidValueRequiredPass1217", "invalidBidValue", 0, domain.NapoleonMaxPictureCards, c.ni.Bid)
 			case "t", "trump":
 				if len(args) < 3 {
-					return "Usage: trump <suit> <adjSuit> <adjVal>\n  suit: 1=Spade 2=Club 3=Heart 4=Diamond\n  adjSuit: 0=Joker 1=Spade 2=Club 3=Heart 4=Diamond\n  adjVal: 1=A 2-10 11=J 12=Q 13=K (Joker: 1)\n", true
+					return invalidArg("usageTrumpSuitAdjsuitAdjvalSuit1Spade2Club3Heart4Dia"), true
 				}
-				suit, errMsg, ok := cuiutil.ParseIntArg(args[:1], "", "Invalid suit: %s.", 1, 4)
+				suit, errMsg, ok := cuiutil.ParseIntArgKeys(args[:1], "", "invalidSuit", 1, 4)
 				if !ok {
 					return errMsg, true
 				}
-				adjSuit, errMsg, ok := cuiutil.ParseIntArg(args[1:2], "", "Invalid adjutant suit: %s.", 0, 4)
+				adjSuit, errMsg, ok := cuiutil.ParseIntArgKeys(args[1:2], "", "invalidAdjutantSuit", 0, 4)
 				if !ok {
 					return errMsg, true
 				}
-				adjVal, errMsg, ok := cuiutil.ParseIntArg(args[2:3], "", "Invalid adjutant value: %s.", 1, 13)
+				adjVal, errMsg, ok := cuiutil.ParseIntArgKeys(args[2:3], "", "invalidAdjutantValue", 1, 13)
 				if !ok {
 					return errMsg, true
 				}
 				return c.ni.DeclareTrump(suit, adjSuit, adjVal), true
 			case "e", "exchange":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.ni.ExchangeKitty)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.ni.ExchangeKitty)
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.ni.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.ni.Play)
 			case "n", "next":
 				return c.ni.NextTrick(), true
 			case "nr", "nextround":
 				return c.ni.NextRound(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.ni.GetConfig()
 					cfg.CpuDifficulty = domain.NapoleonCpuDifficulty(v)
 					return c.ni.ResetWithConfig(cfg)
 				})
 			case "sl", "setlimit":
-				return cuiutil.WithParsedInt(args, "Point limit is required.", "Invalid point limit: %s. Please enter 1 or more.", 1, math.MaxInt, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "pointLimitRequired", "invalidPointLimit", 1, math.MaxInt, func(v int) string {
 					cfg := c.ni.GetConfig()
 					cfg.PointLimit = v
 					return c.ni.ResetWithConfig(cfg)
 				})
 			case "sm", "setminbid":
-				return cuiutil.WithParsedInt(args, "Min bid is required.", "Invalid min bid: %s.", 1, domain.NapoleonMaxPictureCards, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "minBidRequired", "invalidMinBid", 1, domain.NapoleonMaxPictureCards, func(v int) string {
 					cfg := c.ni.GetConfig()
 					cfg.MinBid = v
 					return c.ni.ResetWithConfig(cfg)

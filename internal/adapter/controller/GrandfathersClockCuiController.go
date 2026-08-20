@@ -59,7 +59,7 @@ func (c *GrandfathersClockCuiController) handleMove(args []string) string {
 	}
 	fromCol, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[0])
+		return invalidArg("invalidColumn", "val", args[0])
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("grandfathersclock.promptToZone"), fmt.Sprintf("m %s {0}", args[0]))
@@ -71,13 +71,13 @@ func (c *GrandfathersClockCuiController) handleMove(args []string) string {
 		}
 		fIdx, err := strconv.Atoi(args[2])
 		if err != nil {
-			return i18n.Tf("grandfathersclock.invalidFaceIdx", "val", args[2])
+			return invalidArg("grandfathersclock.invalidFaceIdx", "val", args[2])
 		}
 		return c.gi.MoveTableauToFoundation(fromCol, fIdx)
 	}
 	toCol, err := strconv.Atoi(args[1])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[1])
+		return invalidArg("invalidColumn", "val", args[1])
 	}
 	return c.gi.MoveTableauToTableau(fromCol, toCol)
 }

@@ -56,6 +56,8 @@ export interface LaughAndLieDownResponse extends BaseGameResponse {
   dealerIdx: number;
   /** Last seat still holding cards; -1 while undecided. */
   lastInIdx: number;
+  /** What the player at `lastInIdx` receives. Sent so the figure is not written down twice. */
+  lastInBonus: number;
   /**
    * Total staked. Equals the last-in award plus the over/short total, which is
    * what verifies the settlement table.

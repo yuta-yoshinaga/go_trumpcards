@@ -85,7 +85,7 @@ func TestMusCuiController_Exec(t *testing.T) {
 
 	t.Run("discard invalid index", func(t *testing.T) {
 		result := controller.NewMusCuiController(newMock()).Exec("d abc")
-		assert.Contains(t, result, "Invalid")
+		assert.True(t, msgRejected(result))
 	})
 
 	t.Run("paso", func(t *testing.T) {
@@ -111,7 +111,7 @@ func TestMusCuiController_Exec(t *testing.T) {
 
 	t.Run("envido no args", func(t *testing.T) {
 		result := controller.NewMusCuiController(newMock()).Exec("e")
-		assert.Contains(t, result, "Amount is required")
+		assert.Contains(t, result, msgKey("amountRequiredEGE2"))
 	})
 
 	t.Run("ordago", func(t *testing.T) {
@@ -167,7 +167,7 @@ func TestMusCuiController_Exec(t *testing.T) {
 
 	t.Run("setdifficulty invalid", func(t *testing.T) {
 		result := controller.NewMusCuiController(newMock()).Exec("sd 9")
-		assert.Contains(t, result, "Invalid CPU difficulty")
+		assert.Contains(t, result, msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("hint / log", func(t *testing.T) {

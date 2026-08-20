@@ -35,5 +35,8 @@
   "suitSpade": "スペード",
   "suitClover": "クラブ",
   "suitHeart": "ハート",
-  "suitDiamond": "ダイヤ"
+  "suitDiamond": "ダイヤ",
+  "helpExampleNext": "  n                    トリックの決着を見てから次へ",
+  "helpHint": "  h                    助言を表示",
+  "handCard": "[{{idx}}]{{card}}({{points}}点)"
 }

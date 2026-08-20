@@ -44,5 +44,9 @@
   "suitClover": "クラブ",
   "suitHeart": "ハート",
   "suitDiamond": "ダイヤ",
-  "suitNone": "なし"
+  "suitNone": "なし",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
+  "helpHint": "  h                    助言を表示",
+  "doubledAllExact": "！ 全員が宣言通り。このラウンドの得点は 2 倍です。",
+  "doubledAllMissed": "！ 全員が外しました。このラウンドの減点は 2 倍です。"
 }

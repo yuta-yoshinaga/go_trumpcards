@@ -66,27 +66,27 @@ func TestOasisPokerCuiController_Bet_Errors(t *testing.T) {
 
 	t.Run("missing args", func(t *testing.T) {
 		result := c.Exec("b")
-		assert.Contains(t, result, "Ante amount is required")
+		assert.Contains(t, result, msgAnteAmountRequired())
 	})
 
 	t.Run("invalid amount", func(t *testing.T) {
 		result := c.Exec("b abc")
-		assert.Contains(t, result, "Invalid ante amount")
+		assert.Contains(t, result, msgInvalidAnteAmountPrefix())
 	})
 
 	t.Run("zero amount", func(t *testing.T) {
 		result := c.Exec("b 0")
-		assert.Contains(t, result, "Invalid ante amount")
+		assert.Contains(t, result, msgInvalidAnteAmountPrefix())
 	})
 
 	t.Run("negative amount", func(t *testing.T) {
 		result := c.Exec("b -10")
-		assert.Contains(t, result, "Invalid ante amount")
+		assert.Contains(t, result, msgInvalidAnteAmountPrefix())
 	})
 
 	t.Run("invalid jackpot", func(t *testing.T) {
 		result := c.Exec("b 100 abc")
-		assert.Contains(t, result, "Invalid jackpot amount")
+		assert.Contains(t, result, msgStem("invalidJackpotAmount"))
 	})
 }
 
@@ -162,4 +162,13 @@ func TestOasisPokerCuiController_Hint(t *testing.T) {
 	assert.Equal(t, "hint result", c.Exec("h"))
 	assert.Equal(t, "hint result", c.Exec("hint"))
 	m.AssertCalled(t, "Hint")
+}
+
+// **落として残りで実行しない。** 打ち間違いを捨てると、プレイヤーが選んで
+// いない組み合わせが実行される (issue #5390)。
+func TestOasisPokerCuiController_RefusesMistypedIndex(t *testing.T) {
+	m := newMockOasisPokerInteractor()
+	c := controller.NewOasisPokerCuiController(m)
+	assert.Contains(t, c.Exec("e 0 zz"), msgInvalidCardIndexPrefix(),
+		"a mistyped index must be refused, not dropped")
 }

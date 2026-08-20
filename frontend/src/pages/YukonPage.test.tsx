@@ -183,6 +183,35 @@ describe('YukonPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
   });
 
+  // **自動完成中は他の操作を止める。** 複数手が続けて動く間に Undo や
+  // ギブアップを押されると、表示中のアニメーションとサーバ状態がずれる (#5533)。
+  it('locks undo, hint and give-up while auto-complete is running', async () => {
+    const readyState: YukonResponse = {
+      ...playingState,
+      canUndo: true,
+      tableau: [
+        [{ card: card('SPADE', 1), faceUp: true }],
+        [{ card: card('HEART', 7), faceUp: true }],
+        [{ card: card('CLOVER', 2), faceUp: true }],
+      ],
+    };
+    mockExec.mockResolvedValue(readyState);
+    renderWithProviders(<YukonPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    // **押す前は使える。** ここを確かめないと、単に常時無効なだけの実装でも通る。
+    expect(screen.getByRole('button', { name: 'ヒント' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: '元に戻す' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'ギブアップ' })).toBeEnabled();
+
+    fireEvent.click(screen.getByTestId('autocomplete-button'));
+
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeDisabled());
+    expect(screen.getByRole('button', { name: '元に戻す' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'ギブアップ' })).toBeDisabled();
+    expect(screen.getByTestId('autocomplete-button')).toBeDisabled();
+  });
+
   it('autocomplete button is disabled while face-down cards exist', async () => {
     renderWithProviders(<YukonPage />);
     await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeInTheDocument());

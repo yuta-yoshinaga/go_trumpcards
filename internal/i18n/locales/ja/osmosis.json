@@ -29,5 +29,8 @@
   "hintToFoundation": "組札{{idx}}段",
   "allowedRanks": "[置ける: {{ranks}}]",
   "anyRank": "任意ランク",
-  "hintLine": "ヒント: {{from}} → {{to}} (配置可能: {{allowed}})"
+  "hintLine": "ヒント: {{from}} → {{to}} (配置可能: {{allowed}})",
+  "helpExampleHint": "  h                    次の一手を教えてもらう",
+  "helpExampleAuto": "  ac                   組札へ送れる札を自動で送る",
+  "helpUndo": "  u                    1手戻す"
 }

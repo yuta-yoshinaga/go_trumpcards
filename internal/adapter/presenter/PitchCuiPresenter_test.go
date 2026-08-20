@@ -2,14 +2,17 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupPitchCuiMock() *interfaces.MockPitchGame {
@@ -27,6 +30,10 @@ func setupPitchCuiMock() *interfaces.MockPitchGame {
 	m.On("GetBidPlayerIdx").Return(0)
 	m.On("GetWinnerIdx").Return(-1)
 	m.On("GetLeadPlayerIdx").Return(-1)
+	m.On("GetRoundBreakdown").Return(domain.PitchRoundBreakdown{
+		High: domain.PitchNoScorer, Low: domain.PitchNoScorer,
+		Jack: domain.PitchNoScorer, Game: domain.PitchNoScorer,
+	}).Maybe()
 	m.On("GetConfig").Return(domain.DefaultPitchConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	return m
@@ -155,6 +162,8 @@ func TestPitchCuiPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
 		{TurnNumber: 1, PlayerIdx: 0, ActionType: "bid", Detail: "You bid 3"},
 	})
+	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+	m.On("GetPlayer", mock.Anything).Return(domain.NewPitchPlayer(true)).Maybe()
 	out := p.ActionLogOutput(m)
 	assert.Contains(t, out, "You bid 3")
 }
@@ -206,4 +215,45 @@ func TestPitchCuiPresenter_HandPips(t *testing.T) {
 		m.On("GetPhase").Return(domain.PitchPhasePlay)
 		assert.NotContains(t, p.Output(m, nil), "手札のゲーム得点")
 	})
+}
+
+// #5584: 4 種の得点 (High/Low/Jack/Game) はこのゲームの骨格なのに、CUI も
+// 合計しか出していなかった。
+func TestPitchCuiPresenter_ShowsTheRoundBreakdown(t *testing.T) {
+	i18n.SetLang("ja")
+	build := func(bd domain.PitchRoundBreakdown) string {
+		m, _ := setupPitchCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundBreakdown")
+		m.On("GetPhase").Return(domain.PitchPhaseRoundEnd)
+		m.On("GetRoundBreakdown").Return(bd)
+		return new(presenter.PitchCuiPresenter).Output(m, nil)
+	}
+
+	out := build(domain.PitchRoundBreakdown{High: 0, Low: 1, Jack: 0, Game: domain.PitchNoScorer})
+	// 4 カテゴリすべてが並ぶこと。
+	for _, label := range []string{"High", "Low", "Jack", "Game"} {
+		assert.Contains(t, out, label)
+	}
+	// **誰も取っていないカテゴリは「なし」。**黙って省くと、争われなかったのか
+	// 見落としたのか区別が付かない。
+	assert.Contains(t, out, i18n.T("pitch.scoringNobody"))
+
+	// 全部「なし」の局面でも 4 つとも出る。
+	none := domain.PitchRoundBreakdown{
+		High: domain.PitchNoScorer, Low: domain.PitchNoScorer,
+		Jack: domain.PitchNoScorer, Game: domain.PitchNoScorer,
+	}
+	assert.Equal(t, 4, strings.Count(build(none), i18n.T("pitch.scoringNobody")))
+}
+
+// ラウンド途中では出さない。まだ確定していない。
+func TestPitchCuiPresenter_HidesTheBreakdownMidRound(t *testing.T) {
+	i18n.SetLang("ja")
+	m, _ := setupPitchCuiMockWithPlayers()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+	m.On("GetPhase").Return(domain.PitchPhasePlay)
+
+	out := new(presenter.PitchCuiPresenter).Output(m, nil)
+	assert.NotContains(t, out, strings.SplitN(i18n.T("pitch.scoringLine"), "{{", 2)[0])
 }

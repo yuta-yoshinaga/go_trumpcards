@@ -90,11 +90,17 @@ func (c *PresidentCuiController) Exec(command string) string {
 			switch cmd {
 			case "p", "play":
 				indices, skipped := cuiutil.ParseIntSlice(args)
-				return cuiutil.PrependSkippedWarning(c.pi.Play(indices), skipped), true
+				// Refuse before playing. PrependSkippedWarning ran the move first and
+				// put the warning above the new board, so a mistyped index was dropped
+				// and the remaining ones played as a different, legal move (issue #5390).
+				if len(skipped) > 0 {
+					return invalidArg("invalidCardIndex", "val", strings.Join(skipped, ", ")), true
+				}
+				return c.pi.Play(indices), true
 			case "h", "hint":
 				return c.pi.Hint(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.pi.GetConfig()
 					cfg.CpuDifficulty = domain.PresidentCpuDifficulty(v)
 					return c.pi.ResetWithConfig(cfg)
@@ -105,13 +111,13 @@ func (c *PresidentCuiController) Exec(command string) string {
 					return "Rules:\n" + formatPresidentRuleList(&cfg), true
 				}
 				if len(args) < 2 {
-					return "Usage: sr <rule> <0|1> | sr list\nRules: " + strings.Join(presidentRuleKeys, ", "), true
+					return invalidArg("usageSrRule01SrListRules") + strings.Join(presidentRuleKeys, ", "), true
 				}
 				if !setPresidentRule(nil, args[0], false) {
-					return fmt.Sprintf("Unknown rule: %s.", args[0]), true
+					return invalidArg("unknownRule", "val", fmt.Sprint(args[0])), true
 				}
 				if args[1] != "0" && args[1] != "1" {
-					return fmt.Sprintf("Invalid value: %s. Please enter 0 or 1.", args[1]), true
+					return invalidArg("invalidValue0Or1Raw", "val", fmt.Sprint(args[1])), true
 				}
 				cfg := c.pi.GetConfig()
 				setPresidentRule(&cfg, args[0], args[1] == "1")

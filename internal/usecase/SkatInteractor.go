@@ -170,7 +170,10 @@ func (si *SkatInteractor) runCpuBids() {
 // runCpuDeclarerPhases drives skat-pickup, discard, and game-declaration when
 // the declarer is a CPU.
 func (si *SkatInteractor) runCpuDeclarerPhases() {
-	for !si.Game.GetGameEndFlag() {
+	for i := 0; i < MaxCpuIterations; i++ {
+		if si.Game.GetGameEndFlag() {
+			return
+		}
 		phase := si.Game.GetPhase()
 		switch phase {
 		case domain.SkatPhaseSkatPickup:

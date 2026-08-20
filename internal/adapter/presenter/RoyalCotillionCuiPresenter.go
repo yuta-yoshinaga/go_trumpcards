@@ -114,6 +114,9 @@ func (p *RoyalCotillionCuiPresenter) Output(c interfaces.RoyalCotillionGame, las
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(c.GetMoveCount())) + "\n")
 		case domain.RoyalCotillionPhaseGameOver:
 			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
+			fnd := c.GetFoundation()
+			b.WriteString(color.Yellow(cuiSolitaireGameOverSummary(
+				cuiCountPileCards(fnd[:]...), domain.RoyalCotillionTotalCards)) + "\n")
 		}
 	})
 }

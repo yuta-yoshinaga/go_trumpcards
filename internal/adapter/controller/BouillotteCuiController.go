@@ -57,25 +57,25 @@ func (c *BouillotteCuiController) Exec(command string) string {
 			case "n", "next", "nr", "nextround":
 				return c.ti.NextRound(), true
 			case "sp", "setplayers":
-				return cuiutil.WithParsedInt(args, "Player count is required (e.g. sp 4).", "Invalid player count: %s. Please enter 3-4.", domain.BouillotteMinPlayerCount, domain.BouillotteMaxPlayerCount, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "playerCountRequiredEGSp4", "invalidPlayerCount34", domain.BouillotteMinPlayerCount, domain.BouillotteMaxPlayerCount, func(v int) string {
 					cfg := c.ti.GetConfig()
 					cfg.PlayerCount = v
 					return c.ti.ResetWithConfig(cfg)
 				})
 			case "sa", "setante":
-				return cuiutil.WithParsedInt(args, "Ante is required (e.g. sa 10).", "Invalid ante: %s.", domain.BouillotteMinAnte, domain.BouillotteMaxAnte, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "anteRequired", "invalidAnte", domain.BouillotteMinAnte, domain.BouillotteMaxAnte, func(v int) string {
 					cfg := c.ti.GetConfig()
 					cfg.Ante = v
 					return c.ti.ResetWithConfig(cfg)
 				})
 			case "sc", "setchips":
-				return cuiutil.WithParsedInt(args, "Starting chips is required (e.g. sc 200).", "Invalid starting chips: %s.", domain.BouillotteMinStartingChips, domain.BouillotteMaxStartingChips, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "startingChipsRequired", "invalidStartingChips", domain.BouillotteMinStartingChips, domain.BouillotteMaxStartingChips, func(v int) string {
 					cfg := c.ti.GetConfig()
 					cfg.StartingChips = v
 					return c.ti.ResetWithConfig(cfg)
 				})
 			case "st", "setrounds":
-				return cuiutil.WithParsedInt(args, "Target rounds is required (e.g. st 10).", "Invalid target rounds: %s.", domain.BouillotteMinTargetRounds, domain.BouillotteMaxTargetRounds, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "targetRoundsRequired", "invalidTargetRounds", domain.BouillotteMinTargetRounds, domain.BouillotteMaxTargetRounds, func(v int) string {
 					cfg := c.ti.GetConfig()
 					cfg.TargetRounds = v
 					return c.ti.ResetWithConfig(cfg)

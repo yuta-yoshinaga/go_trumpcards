@@ -6,7 +6,7 @@
   "helpGiveUp": "  g                    Give up",
   "header": "Round: {{round}}  Deck: {{deck}}  Passes this round: {{pass}}",
   "rule": "A player who collects four of a kind says nothing and quietly puts a hand to their nose. Everyone else simply copies once they notice -- there is nothing to grab. The last player to notice takes one letter of P-I-G, and three letters put you out. The last player left wins. Hands stay at four cards throughout: everyone passes and receives at the same time.",
-  "playerLine": "{{name}}{{role}}: {{cards}} cards, letters [{{letters}}]",
+  "playerLine": "{{name}}{{role}}: {{cards}} cards, letters [{{letters}}/{{target}}]",
   "roleOut": "[out]",
   "roleNoticed": "[noticed {{order}}]",
   "roleChosen": "[has chosen]",
@@ -25,5 +25,7 @@
   "hintSignal": "[HINT: {{reason}}]",
   "hintReasonSignal": "Signal now -- say you noticed",
   "hintReasonDiscardOdd": "Let go of a rank you are not collecting",
-  "hintReasonNoSingleton": "Everything is evenly split, so break the least useful one"
+  "hintReasonNoSingleton": "Everything is evenly split, so break the least useful one",
+  "helpExamplePass": "  p 0                  pass hand card 0 to the left",
+  "helpHint": "  h                    show a hint"
 }

@@ -34,5 +34,7 @@
   "reason.cannotBust": "11 or less cannot bust",
   "reason.standPat": "17 or more is a standing hand",
   "reason.chaseBanker": "you cannot reach the banker by standing",
-  "result.gameEnd": "All rounds are finished"
+  "result.gameEnd": "All rounds are finished",
+  "helpExampleBet": "  bet 100              bet 100 chips",
+  "helpSort": "  s                    sort the hand"
 }

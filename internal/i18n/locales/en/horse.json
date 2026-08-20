@@ -22,5 +22,7 @@
   "hintNone": "No hint available.",
   "hintNextHand": "[HINT: press n to go to the next hand]",
   "hintDiscipline": "[HINT: the current discipline is {{name}}; its own rules apply]",
-  "result.winner": "Game over! {{name}} wins"
+  "result.winner": "Game over! {{name}} wins",
+  "helpExampleFold": "  f                                       fold this hand",
+  "helpHint": "  h                         show a hint"
 }

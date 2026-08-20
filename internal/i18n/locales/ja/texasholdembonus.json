@@ -27,5 +27,14 @@
   "totalPayoutLine": "合計払戻し: {{payout}}",
   "betCostLine": "アンテ: {{ante}} / {{action}}: {{cost}} チップ",
   "costPlay": "プレイ",
-  "costRaise": "レイズ"
+  "costRaise": "レイズ",
+  "helpExampleBet": "  b 100                100 チップを賭ける",
+  "bonusPayHeader": "ボーナス配当(ホールカード): ",
+  "bonusPayAA": "AA {{mult}}:1",
+  "bonusPayAKSuited": "AK スーテッド {{mult}}:1",
+  "bonusPayAQAJSuited": "AQ/AJ スーテッド {{mult}}:1",
+  "bonusPayAKOff": "AK オフ {{mult}}:1",
+  "bonusPayKKQQJJ": "KK/QQ/JJ {{mult}}:1",
+  "bonusPayAQAJOff": "AQ/AJ オフ {{mult}}:1",
+  "bonusPayMediumPair": "22〜TT {{mult}}:1"
 }

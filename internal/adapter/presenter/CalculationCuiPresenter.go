@@ -43,6 +43,16 @@ func (p *CalculationCuiPresenter) Output(g interfaces.CalculationGame, lastErr e
 				b.WriteString(i18n.Tf("calculation.nextRank",
 					"rank", strconv.Itoa(next)))
 			}
+			// 1手先だけでは +3 の列で「次の次のまた次」を辿れない。Web は6手先まで
+			// バッジで出している (#5551)。空の組札には出さない。
+			if upcoming := g.GetUpcomingFoundationRanks(i, domain.CalculationMaxLookAhead); len(upcoming) > 0 {
+				parts := make([]string, len(upcoming))
+				for j, r := range upcoming {
+					parts[j] = strconv.Itoa(r)
+				}
+				b.WriteString(i18n.Tf("calculation.upcomingRanks",
+					"ranks", strings.Join(parts, " → ")))
+			}
 			b.WriteString("\n")
 		}
 		b.WriteString("----------\n")
@@ -78,6 +88,12 @@ func (p *CalculationCuiPresenter) Output(g interfaces.CalculationGame, lastErr e
 		case domain.CalculationPhasePlaying:
 			if g.IsStalemate() {
 				b.WriteString(color.Red(i18n.T("cuiSolitaireStalemate")) + "\n")
+				// Tell the player how many undos escape the dead end, matching the
+				// web StalemateEscapeButton.
+				if n := g.UndoToEscape(); n > 0 {
+					b.WriteString(color.Yellow(i18n.Tf("cuiSolitaireUndoToEscape",
+						"count", strconv.Itoa(n))) + "\n")
+				}
 			}
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
 				"count", strconv.Itoa(g.GetMoveCount())) + "\n")

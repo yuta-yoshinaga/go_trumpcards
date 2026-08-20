@@ -128,5 +128,5 @@ var skitgubbeHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *SkitgubbeCuiPresenter) ActionLogOutput(c interfaces.SkitgubbeGame) string {
-	return actionLogOutputText(c)
+	return actionLogOutputTextForSeats[*domain.SkitgubbePlayer](c)
 }

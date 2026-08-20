@@ -88,17 +88,17 @@ func TestNinetyNineCuiController_Exec_Errors(t *testing.T) {
 	m := newNinetyNineCuiMock()
 	c := controller.NewNinetyNineCuiController(m)
 
-	assert.Contains(t, c.Exec("b"), "required")
-	assert.Contains(t, c.Exec("b 0 1"), "required")
-	assert.Contains(t, c.Exec("b a b c"), "Invalid")
-	assert.Contains(t, c.Exec("p"), "required")
-	assert.Contains(t, c.Exec("sd"), "required")
-	assert.Contains(t, c.Exec("st"), "required")
+	assert.True(t, msgRejected(c.Exec("b")))
+	assert.True(t, msgRejected(c.Exec("b 0 1")))
+	assert.True(t, msgRejected(c.Exec("b a b c")))
+	assert.Contains(t, c.Exec("p"), msgCardIndexRequired())
+	assert.Contains(t, c.Exec("sd"), msgCpuDifficultyRequired())
+	assert.True(t, msgRejected(c.Exec("st")))
 
-	assert.Contains(t, c.Exec("p abc"), "Invalid")
-	assert.Contains(t, c.Exec("sd 99"), "Invalid")
-	assert.Contains(t, c.Exec("st 5"), "Invalid")
-	assert.Contains(t, c.Exec("st 9999"), "Invalid")
+	assert.Contains(t, c.Exec("p abc"), msgInvalidCardIndexPrefix())
+	assert.Contains(t, c.Exec("sd 99"), msgInvalidCpuDifficultyPrefix())
+	assert.True(t, msgRejected(c.Exec("st 5")))
+	assert.True(t, msgRejected(c.Exec("st 9999")))
 }
 
 func TestNinetyNineCuiController_Exec_UnknownCommand(t *testing.T) {

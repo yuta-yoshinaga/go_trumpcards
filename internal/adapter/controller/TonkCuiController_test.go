@@ -70,8 +70,8 @@ func TestTonkCuiController_Exec(t *testing.T) {
 
 	t.Run("discard no args", func(t *testing.T) {
 		c := controller.NewTonkCuiController(newMock())
-		assert.Contains(t, c.Exec("d"), "Card index is required")
-		assert.Contains(t, c.Exec("d abc"), "Invalid card index")
+		assert.Contains(t, c.Exec("d"), msgCardIndexRequired())
+		assert.Contains(t, c.Exec("d abc"), msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("knock with index", func(t *testing.T) {
@@ -85,8 +85,8 @@ func TestTonkCuiController_Exec(t *testing.T) {
 
 	t.Run("knock no args", func(t *testing.T) {
 		c := controller.NewTonkCuiController(newMock())
-		assert.Contains(t, c.Exec("k"), "Card index is required")
-		assert.Contains(t, c.Exec("k abc"), "Invalid card index")
+		assert.Contains(t, c.Exec("k"), msgCardIndexRequired())
+		assert.Contains(t, c.Exec("k abc"), msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("nextround", func(t *testing.T) {
@@ -108,10 +108,10 @@ func TestTonkCuiController_Exec(t *testing.T) {
 
 	t.Run("setdifficulty errors", func(t *testing.T) {
 		c := controller.NewTonkCuiController(newMock())
-		assert.Contains(t, c.Exec("sd"), "required")
-		assert.Contains(t, c.Exec("sd abc"), "Invalid CPU difficulty")
-		assert.Equal(t, "Invalid CPU difficulty: -1. Please enter 0-2.", c.Exec("sd -1"))
-		assert.Equal(t, "Invalid CPU difficulty: 3. Please enter 0-2.", c.Exec("sd 3"))
+		assert.Contains(t, c.Exec("sd"), msgCpuDifficultyRequired())
+		assert.Contains(t, c.Exec("sd abc"), msgInvalidCpuDifficultyPrefix())
+		assert.Equal(t, msgInvalidCpuDifficulty("-1"), c.Exec("sd -1"))
+		assert.Equal(t, msgInvalidCpuDifficulty("3"), c.Exec("sd 3"))
 	})
 
 	t.Run("setlimit valid", func(t *testing.T) {
@@ -125,9 +125,9 @@ func TestTonkCuiController_Exec(t *testing.T) {
 
 	t.Run("setlimit errors", func(t *testing.T) {
 		c := controller.NewTonkCuiController(newMock())
-		assert.Contains(t, c.Exec("sl"), "required")
-		assert.Contains(t, c.Exec("sl abc"), "Invalid point limit")
-		assert.Equal(t, "Invalid point limit: 0. Please enter 1 or more.", c.Exec("sl 0"))
+		assert.Contains(t, c.Exec("sl"), msgPointLimitRequired())
+		assert.Contains(t, c.Exec("sl abc"), msgInvalidPointLimitPrefix())
+		assert.Equal(t, msgInvalidPointLimit("0"), c.Exec("sl 0"))
 	})
 
 	t.Run("log", func(t *testing.T) {

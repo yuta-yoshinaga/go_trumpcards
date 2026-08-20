@@ -90,16 +90,16 @@ func TestOhHellCuiController_Exec_Errors(t *testing.T) {
 	c := controller.NewOhHellCuiController(m)
 
 	// Missing args
-	assert.Contains(t, c.Exec("b"), "required")
-	assert.Contains(t, c.Exec("p"), "required")
-	assert.Contains(t, c.Exec("sd"), "required")
-	assert.Contains(t, c.Exec("sm"), "required")
+	assert.Contains(t, c.Exec("b"), msgStem("bidValueRequired"))
+	assert.Contains(t, c.Exec("p"), msgCardIndexRequired())
+	assert.Contains(t, c.Exec("sd"), msgCpuDifficultyRequired())
+	assert.True(t, msgRejected(c.Exec("sm")))
 
 	// Invalid args
-	assert.Contains(t, c.Exec("b abc"), "Invalid")
-	assert.Contains(t, c.Exec("sd 99"), "Invalid")
-	assert.Contains(t, c.Exec("sm 0"), "Invalid")
-	assert.Contains(t, c.Exec("sm 14"), "Invalid")
+	assert.Contains(t, c.Exec("b abc"), msgStem("invalidBidValue"))
+	assert.Contains(t, c.Exec("sd 99"), msgInvalidCpuDifficultyPrefix())
+	assert.True(t, msgRejected(c.Exec("sm 0")))
+	assert.True(t, msgRejected(c.Exec("sm 14")))
 }
 
 func TestOhHellCuiController_Exec_UnknownCommand(t *testing.T) {

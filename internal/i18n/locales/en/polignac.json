@@ -10,6 +10,9 @@
   "capotActive": "! {{name}} has declared capot ({{tricks}}/8 taken). One trick breaks it.",
   "capotMark": "[capot]",
   "playerLine": "{{name}}: {{score}} pts total (this round {{round}}) {{cards}} in hand",
+  "jackMarks": " jacks taken: {{jacks}}",
+  "jackSpade": "SPADE J (-2)",
+  "jackOther": "{{suit}}",
   "promptCurrentPlayer": "Turn: {{name}}",
   "promptPlay": "play <idx> ... Play a card",
   "promptDeclare": "Declare capot?",
@@ -24,5 +27,7 @@
   "hintReasonDumpJack": "safe trick: shed a jack now",
   "hintReasonLeadSafe": "lead a low card that isn't a jack",
   "hintReasonBlockCapot": "take this trick to break the capot",
-  "hintReasonWinCapot": "your own capot: you must win every trick, so take this one"
+  "hintReasonWinCapot": "your own capot: you must win every trick, so take this one",
+  "helpExamplePlay": "  p 0                  play hand card 0",
+  "helpHint": "  h                    show a hint"
 }

@@ -16,6 +16,7 @@
   "empty": "Empty",
   "foundationAriaLabel": "{{suit}} foundation {{pile}}, {{count}} cards",
   "emptyFoundationAriaLabel": "Empty {{suit}} foundation {{pile}}",
+  "foundationEligibleSuffix": ", can accept the selected card",
   "landscapeBanner": "Landscape mode recommended",
   "hint": "Hint",
   "autoComplete": "Auto Complete",

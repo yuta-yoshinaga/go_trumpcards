@@ -16,6 +16,7 @@
   "trick": "場: {{cards}}",
   "playable": "出せる札: {{indexes}}",
   "ladderTitle": "序列:",
+  "ladderPayout": "(配当{{n}})",
   "ladderExposedTag": "[公開]",
   "ladderPartnerTag": "[相方]",
   "gameEnd": "ゲーム終了！ {{name}}の勝ち！",
@@ -50,5 +51,6 @@
   "bid.eleven": "11トリック",
   "bid.twelve": "12トリック",
   "bid.chelem": "シュレム（13トリック）",
-  "bid.chelemTable": "シュレム（公開）"
+  "bid.chelemTable": "シュレム（公開）",
+  "helpExamplePlay": "  p 0                       手札の 0 番のカードを出す"
 }

@@ -15,6 +15,7 @@ const base = {
   gameEndFlag: false,
   winnerIdx: -1,
   isDraw: false,
+  winningCombinations: ['bura', 'moscow', 'littleMoscow', 'molodka'],
   message: '',
 };
 

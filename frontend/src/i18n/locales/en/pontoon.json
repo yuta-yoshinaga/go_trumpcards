@@ -32,10 +32,11 @@
     "buyRange": "{{min}}–{{max}} chips"
   },
   "hint": {
-    "stick": "Only on a total of 15 or more",
+    "stick": "You may only stick at {{min}} or more",
     "twist": "Draw one; the stake does not change",
     "buy": "Raise and draw; closed once the hand has twisted",
-    "split": "Split two cards of equal rank"
+    "split": "Split two cards of equal rank",
+    "cpuStick": "The banker draws until {{cpuMin}} or more. A CPU seat sticks at {{min}} or more (on four cards it takes one more below {{cpuMin}})"
   },
   "betLabel": "Choose your stake",
   "betAmount": "{{amount}}",

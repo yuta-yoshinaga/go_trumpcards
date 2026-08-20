@@ -8,6 +8,8 @@
   "playerLine": "{{name}}: {{hand}} cards  Captured: {{captured}}  Basra: {{basra}}",
   "promptPlay": "Turn: {{name}}",
   "promptGameEnd": "Game over. Use nr to start a new game.",
+  "resultWinner": "Winner: {{names}}",
+  "resultScores": "Final scores: {{scores}}",
   "promptHelp": "p <h> [t...] to play (omit t to trail; a Jack sweeps the table)",
   "hintNone": "No hint available.",
   "hintCard": "[HINT: {{cards}} ({{reason}})]",
@@ -16,5 +18,7 @@
   "hintReasonCapture": "Capture the most valuable table cards",
   "hintReasonTrail": "No capture — trail a low card",
   "result.scores": "Game over! Scores: {{scores}}",
-  "captureHint": "{{hand}} → table {{table}}"
+  "captureHint": "{{hand}} → table {{table}}",
+  "helpExamplePlay": "  p 0                       lay hand card 0 on the table, capturing nothing",
+  "helpExampleNext": "  nr                        start a new game"
 }

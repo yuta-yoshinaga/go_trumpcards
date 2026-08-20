@@ -64,19 +64,19 @@ func (c *PinochleCuiController) Exec(command string) string {
 			}
 			switch cmd {
 			case "b", "bid":
-				return cuiutil.WithParsedInt(args, "Bid amount is required.", "Invalid bid amount: %s.", domain.PinochleMinBid, math.MaxInt, c.pi.Bid)
+				return cuiutil.WithParsedIntKeys(args, "bidAmountRequired", "invalidBidAmount", domain.PinochleMinBid, math.MaxInt, c.pi.Bid)
 			case "t", "trump":
-				return cuiutil.WithParsedInt(args, "Suit is required (1-4).", "Invalid suit: %s.", 1, 4, c.pi.CallTrump)
+				return cuiutil.WithParsedIntKeys(args, "suitRequiredRange", "invalidSuit", 1, 4, c.pi.CallTrump)
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.pi.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.pi.Play)
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.pi.GetConfig()
 					cfg.CpuDifficulty = domain.PinochleCpuDifficulty(v)
 					return c.pi.ResetWithConfig(cfg)
 				})
 			case "sl", "setlimit":
-				return cuiutil.WithParsedInt(args, "Point limit is required.", "Invalid point limit: %s.", 1, math.MaxInt, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "pointLimitRequired", "invalidPointLimitPlain", 1, math.MaxInt, func(v int) string {
 					cfg := c.pi.GetConfig()
 					cfg.PointLimit = v
 					return c.pi.ResetWithConfig(cfg)

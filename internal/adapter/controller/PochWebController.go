@@ -79,6 +79,10 @@ type PochWebOutput struct {
 	// これでしか読めない。
 	StakingAwards []*PochWebOutputAward `json:"stakingAwards"`
 	BetTarget     int                   `json:"betTarget"`
+	// YourBestComboSize / YourBestComboRank は**人間自身の**最強の組 (0 = 組なし)。
+	// pochen は組の比べ合いなので、賭ける前に自分の組を知る必要がある。
+	YourBestComboSize int `json:"yourBestComboSize"`
+	YourBestComboRank int `json:"yourBestComboRank"`
 	// PochenWinner は組の比べ合いを制した席 (-1: 未決着)。**宣言ではない。**
 	PochenWinner int `json:"pochenWinner"`
 	PochenPot    int `json:"pochenPot"`
@@ -166,10 +170,4 @@ func pochDispatch(bc *baseController, w http.ResponseWriter, pi usecase.PochInte
 		return dispatchHintAndLog(param.Command, bc, w, pi.Hint, pi.ActionLog)
 	}
 	return true
-}
-
-// NewPochDefaultOutputForTest exposes the default-output builder to the
-// external controller_test package.
-func NewPochDefaultOutputForTest(msg string) *PochWebOutput {
-	return newPochDefaultOutput(msg)
 }

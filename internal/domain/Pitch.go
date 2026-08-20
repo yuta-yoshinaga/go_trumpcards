@@ -70,8 +70,29 @@ type Pitch struct {
 	trumpSuit        int // 切り札スート (PitchTrumpUnset=未確定)
 	gameEndFlag      bool
 	winnerIdx        int
+	// roundBreakdown は直近ラウンドの 4 得点を誰が取ったか (#5584)。
+	roundBreakdown PitchRoundBreakdown
 	actionLogBase
 }
+
+// PitchRoundBreakdown は High / Low / Jack / Game をそれぞれ誰が取ったかを表す。
+// -1 は「誰も取っていない」(切り札が出なかった、Game が同点、など)。
+//
+// **4 種の得点はこのゲームの骨格なのに、合計しか画面に出ていなかった** (#5584)。
+// 合計だけでは、1 点差の理由が Jack を取られたからなのか Game で並ばれたからなのか
+// が分からない。
+type PitchRoundBreakdown struct {
+	High int
+	Low  int
+	Jack int
+	Game int
+}
+
+// PitchNoScorer は PitchRoundBreakdown の「誰も取っていない」を表す。
+const PitchNoScorer = -1
+
+// GetRoundBreakdown は直近ラウンドの得点内訳を返す。
+func (p *Pitch) GetRoundBreakdown() PitchRoundBreakdown { return p.roundBreakdown }
 
 // NewPitch コンストラクタ
 func NewPitch(trumpCards *TrumpCards, players []*PitchPlayer, config PitchConfig) *Pitch {
@@ -128,6 +149,10 @@ func (p *Pitch) Reset() {
 	p.sortAllHands()
 
 	p.phase = PitchPhaseBid
+	// 新しいゲームでは誰も取っていない。ゼロ値のままだと席 0 が全部取ったように出る。
+	p.roundBreakdown = PitchRoundBreakdown{
+		High: PitchNoScorer, Low: PitchNoScorer, Jack: PitchNoScorer, Game: PitchNoScorer,
+	}
 }
 
 // dealRound Pitch 用に各プレイヤーへ PitchHandSize 枚配る (52枚デッキから 24枚のみ使用)
@@ -394,6 +419,10 @@ func (p *Pitch) ResolveTrick() {
 	p.leadPlayerIdx = winnerIdx
 	if p.trickNumber >= PitchTotalTricks {
 		p.phase = PitchPhaseRoundEnd
+		// **内訳は画面に出る時点で確定していること。**得点の確定 (ScoreRound) は
+		// プレイヤーが次のラウンドへ進めたときに走るので、そこで初めて作ると、
+		// ラウンド終了画面には前のラウンドの内訳 (初回はゼロ値) が出る (#5584)。
+		p.roundBreakdown = p.computeRoundBreakdown()
 	} else {
 		p.phase = PitchPhaseTrickEnd
 	}
@@ -531,8 +560,55 @@ func (p *Pitch) ScoreRound() {
 // computeRoundPoints 各プレイヤーが獲得したポイント数 (High/Low/Jack/Game) を返す
 func (p *Pitch) computeRoundPoints() []int {
 	points := make([]int, PitchPlayerCnt)
+	bd := p.computeRoundBreakdown()
+	p.roundBreakdown = bd
+	for _, idx := range []int{bd.High, bd.Low, bd.Jack, bd.Game} {
+		if idx != PitchNoScorer {
+			points[idx]++
+		}
+	}
+	if bd.High != PitchNoScorer {
+		p.appendLog(bd.High, "score_high",
+			fmt.Sprintf("%s scores High", playerName(p.players, bd.High)), nil)
+	}
+	if bd.Low != PitchNoScorer {
+		p.appendLog(bd.Low, "score_low",
+			fmt.Sprintf("%s scores Low", playerName(p.players, bd.Low)), nil)
+	}
+	if bd.Jack != PitchNoScorer {
+		p.appendLog(bd.Jack, "score_jack",
+			fmt.Sprintf("%s scores Jack", playerName(p.players, bd.Jack)), nil)
+	}
+	if bd.Game != PitchNoScorer {
+		p.appendLog(bd.Game, "score_game",
+			fmt.Sprintf("%s scores Game (%d pip)", playerName(p.players, bd.Game), p.gamePipTotal(bd.Game)), nil)
+	}
+	return points
+}
+
+// gamePipTotal は席 idx が取った札のピップ合計。Game ポイントの根拠を棋譜に残すため。
+func (p *Pitch) gamePipTotal(idx int) int {
+	total := 0
+	for _, trick := range p.players[idx].GetTricksTaken() {
+		for _, card := range trick {
+			total += pitchPipValue(card.GetValue())
+		}
+	}
+	return total
+}
+
+// computeRoundBreakdown は High/Low/Jack/Game をそれぞれ誰が取ったかを数える。
+//
+// **副作用を持たない。**ラウンドが終わった時点 (ResolveTrick) と、点を確定する
+// 時点 (ScoreRound) の両方から呼ぶので、棋譜に書いたり得点を動かしたりしない
+// (#5584 のレビュー指摘: 内訳を ScoreRound でしか作らないと、画面に出る
+// ラウンド終了時にはまだ前のラウンドの値が残っている)。
+func (p *Pitch) computeRoundBreakdown() PitchRoundBreakdown {
+	bd := PitchRoundBreakdown{
+		High: PitchNoScorer, Low: PitchNoScorer, Jack: PitchNoScorer, Game: PitchNoScorer,
+	}
 	if p.trumpSuit == PitchTrumpUnset {
-		return points
+		return bd
 	}
 	// 全カード走査でトランプの最高/最低と J of trump 所有者を特定
 	highPlayer := -1
@@ -564,19 +640,13 @@ func (p *Pitch) computeRoundPoints() []int {
 		}
 	}
 	if highPlayer >= 0 {
-		points[highPlayer]++
-		p.appendLog(highPlayer, "score_high",
-			fmt.Sprintf("%s scores High", playerName(p.players, highPlayer)), nil)
+		bd.High = highPlayer
 	}
 	if lowPlayer >= 0 {
-		points[lowPlayer]++
-		p.appendLog(lowPlayer, "score_low",
-			fmt.Sprintf("%s scores Low", playerName(p.players, lowPlayer)), nil)
+		bd.Low = lowPlayer
 	}
 	if jackPlayer >= 0 {
-		points[jackPlayer]++
-		p.appendLog(jackPlayer, "score_jack",
-			fmt.Sprintf("%s scores Jack", playerName(p.players, jackPlayer)), nil)
+		bd.Jack = jackPlayer
 	}
 	// Game ポイント: 全カードのピップ値合計, 最大が単独なら +1
 	gameTotals := make([]int, PitchPlayerCnt)
@@ -600,11 +670,9 @@ func (p *Pitch) computeRoundPoints() []int {
 		}
 	}
 	if !tied && gameWinner >= 0 && maxTotal > 0 {
-		points[gameWinner]++
-		p.appendLog(gameWinner, "score_game",
-			fmt.Sprintf("%s scores Game (%d pip)", playerName(p.players, gameWinner), maxTotal), nil)
+		bd.Game = gameWinner
 	}
-	return points
+	return bd
 }
 
 // checkGameEnd ゲーム終了判定: PointLimit 到達者がいれば終了。

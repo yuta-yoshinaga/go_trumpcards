@@ -33,6 +33,7 @@ const playingState: AgnesResponse = {
   phase: 0,
   moveCount: 0,
   canUndo: false,
+  isStalemate: false,
   message: '',
   messageCode: 'agnes.playing',
 };
@@ -336,12 +337,9 @@ describe('AgnesPage', () => {
   // --- Stalemate detection + undo-escape (issue #3289) ---
 
   it('shows the stalemate banner when no legal move remains', async () => {
-    const stuck: AgnesResponse = {
-      ...playingState,
-      stockCount: 0,
-      tableau: [[up('SPADE', 8)], [up('HEART', 3)]],
-      foundation: [[], [], [], []],
-    };
+    // 手詰まりかどうかはドメインが決める。盤面を組み直しても、フロントは
+    // もう自前で判定しない (#5601)。
+    const stuck: AgnesResponse = { ...playingState, stockCount: 0, isStalemate: true };
     mockExec.mockResolvedValue(stuck);
     renderWithProviders(<AgnesPage />);
     await waitFor(() => expect(screen.getByTestId('ag-stalemate-banner')).toBeInTheDocument());
@@ -355,13 +353,7 @@ describe('AgnesPage', () => {
   });
 
   it('offers an undo-to-escape button in the stalemate banner and fires undo', async () => {
-    const stuck: AgnesResponse = {
-      ...playingState,
-      stockCount: 0,
-      canUndo: true,
-      tableau: [[up('SPADE', 8)], [up('HEART', 3)]],
-      foundation: [[], [], [], []],
-    };
+    const stuck: AgnesResponse = { ...playingState, stockCount: 0, canUndo: true, isStalemate: true };
     mockExec.mockResolvedValue(stuck);
     renderWithProviders(<AgnesPage />);
     const escapeBtn = await screen.findByTestId('ag-stalemate-undo');
@@ -371,13 +363,7 @@ describe('AgnesPage', () => {
   });
 
   it('hides the undo-to-escape button when there is nothing to undo', async () => {
-    const stuck: AgnesResponse = {
-      ...playingState,
-      stockCount: 0,
-      canUndo: false,
-      tableau: [[up('SPADE', 8)], [up('HEART', 3)]],
-      foundation: [[], [], [], []],
-    };
+    const stuck: AgnesResponse = { ...playingState, stockCount: 0, canUndo: false, isStalemate: true };
     mockExec.mockResolvedValue(stuck);
     renderWithProviders(<AgnesPage />);
     await waitFor(() => expect(screen.getByTestId('ag-stalemate-banner')).toBeInTheDocument());

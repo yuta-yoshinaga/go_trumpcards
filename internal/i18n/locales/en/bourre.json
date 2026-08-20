@@ -13,6 +13,7 @@
   "trumpSuit": "Trump",
   "pot": "Pot",
   "carryPot": "carry",
+  "decidePenalty": "Play and win no trick and you are bourréd: a {{penalty}} chip penalty (folding costs nothing).",
   "chips": "chips",
   "out": "(out)",
   "folded": "folded",
@@ -21,5 +22,6 @@
   "tricksTaken": " ({{count}} tricks)",
   "handResult": "Hand result",
   "gameEndWinner": "{{name}} wins the game!",
-  "you": "You"
+  "you": "You",
+  "helpExampleDecide": "  d 1                  stay in for this hand"
 }

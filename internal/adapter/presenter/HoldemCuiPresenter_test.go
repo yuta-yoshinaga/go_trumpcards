@@ -2,14 +2,17 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func makeHoldemForPresenter() (*domain.Holdem, []*domain.HoldemPlayer) {
@@ -753,6 +756,8 @@ func TestHoldemCuiPresenter_ActionLogOutput(t *testing.T) {
 		}
 		mockGame.On("GetGameEndFlag").Return(true)
 		mockGame.On("GetActionLog").Return(entries)
+		// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+		mockGame.On("GetPlayer", mock.Anything).Return(domain.NewHoldemPlayer(true, domain.HoldemPlayStyle(0))).Maybe()
 
 		result := p.ActionLogOutput(mockGame)
 
@@ -766,6 +771,8 @@ func TestHoldemCuiPresenter_ActionLogOutput(t *testing.T) {
 		mockGame := new(interfaces.MockHoldemGame)
 		mockGame.On("GetGameEndFlag").Return(true)
 		mockGame.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+		// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+		mockGame.On("GetPlayer", mock.Anything).Return(domain.NewHoldemPlayer(true, domain.HoldemPlayStyle(0))).Maybe()
 
 		result := p.ActionLogOutput(mockGame)
 
@@ -781,5 +788,52 @@ func TestHoldemCuiPresenter_ActionLogOutput(t *testing.T) {
 
 		assert.Contains(t, result, "棋譜はありません")
 		mockGame.AssertExpectations(t)
+	})
+}
+
+// #5481: SB/BB は tournamentLine の中にしか無く、トーナメントでない大半のプレイ
+// ではブラインド額が CUI に一切出ない。Web の HoldemPage.tsx はモードに関わらず
+// ヘッダーに出している。額はモードによらず使われる値 (minRaise = BigBlind)。
+func TestHoldemCuiPresenter_BlindsAlwaysShown(t *testing.T) {
+	p := new(presenter.HoldemCuiPresenter)
+
+	t.Run("shows the blinds outside tournament mode", func(t *testing.T) {
+		h, _ := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhasePreFlop)
+		h.SetConfig(domain.HoldemConfig{SmallBlind: 10, BigBlind: 20, InitChips: 1000})
+
+		out := p.Output(h, nil)
+		assert.Contains(t, out, i18n.Tf("holdem.blindsLine", "sb", "10", "bb", "20"))
+		// トーナメント表示は出さない。
+		assert.NotContains(t, out, i18n.T("holdem.tournamentLine"))
+	})
+
+	// **トーナメントでは二重に出さない。** tournamentLine が同じ SB/BB を含む。
+	t.Run("does not repeat the blinds in tournament mode", func(t *testing.T) {
+		h, _ := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhasePreFlop)
+		h.SetConfig(domain.HoldemConfig{
+			SmallBlind: 10, BigBlind: 20, InitChips: 1000,
+			TournamentMode: true, BlindLevelHands: 5, BlindMultiplier: 200,
+		})
+		h.SetHandCount(3)
+
+		out := p.Output(h, nil)
+		// blindsLine は tournamentLine の部分文字列なので Contains では区別が
+		// 付かない。**出現回数で見る。**独立行を足していれば 2 回になる。
+		assert.Equal(t, 1, strings.Count(out, i18n.Tf("holdem.blindsLine", "sb", "10", "bb", "20")))
+		// 既存のトーナメント表示は変わらない。
+		assert.Contains(t, out, "トーナメント ハンド#3 SB:10 BB:20 (レベルアップ:5ハンド毎)")
+	})
+
+	// 額が変われば表示も変わる。定数を書いているだけのテストにしない。
+	t.Run("reports the configured amounts, not fixed ones", func(t *testing.T) {
+		h, _ := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhasePreFlop)
+		h.SetConfig(domain.HoldemConfig{SmallBlind: 25, BigBlind: 50, InitChips: 1000})
+
+		out := p.Output(h, nil)
+		assert.Contains(t, out, i18n.Tf("holdem.blindsLine", "sb", "25", "bb", "50"))
+		assert.NotContains(t, out, i18n.Tf("holdem.blindsLine", "sb", "10", "bb", "20"))
 	})
 }

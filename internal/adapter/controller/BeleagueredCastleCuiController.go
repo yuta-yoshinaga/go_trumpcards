@@ -23,27 +23,15 @@ func NewBeleagueredCastleCuiController(bi usecase.BeleagueredCastleInteractorIF)
 
 // Exec コマンド実行
 func (c *BeleagueredCastleCuiController) Exec(command string) string {
-	return execCuiCommand(
-		command,
-		func(_ []string) string {
-			return c.bi.Reset()
-		},
-		[]string{"m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"},
-		func(cmd string, args []string) (string, bool) {
-			switch cmd {
-			case "m", "move":
-				return c.handleMove(args), true
-			case "g", "giveup":
-				return c.bi.GiveUp(), true
-			case "ac", "autocomplete":
-				return c.bi.AutoComplete(), true
-			case "u", "undo":
-				return c.bi.Undo(), true
-			default:
-				return handleCuiHintAndLog(cmd, c.bi.Hint, c.bi.ActionLog)
-			}
-		},
-	)
+	return execSolitaireCui(command, solitaireCuiFns{
+		reset:        c.bi.Reset,
+		move:         c.handleMove,
+		giveUp:       c.bi.GiveUp,
+		autoComplete: c.bi.AutoComplete,
+		undo:         c.bi.Undo,
+		hint:         c.bi.Hint,
+		actionLog:    c.bi.ActionLog,
+	})
 }
 
 // handleMove 移動コマンドを処理
@@ -57,7 +45,7 @@ func (c *BeleagueredCastleCuiController) handleMove(args []string) string {
 	}
 	fromCol, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[0])
+		return invalidArg("invalidColumn", "val", args[0])
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("beleagueredcastle.promptToZone"), fmt.Sprintf("m %s {0}", args[0]))
@@ -67,7 +55,7 @@ func (c *BeleagueredCastleCuiController) handleMove(args []string) string {
 	}
 	toCol, err := strconv.Atoi(args[1])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[1])
+		return invalidArg("invalidColumn", "val", args[1])
 	}
 	return c.bi.MoveTableauToTableau(fromCol, -1, toCol)
 }

@@ -32,6 +32,10 @@ type TriPeaksGame interface {
 	GetPhase() domain.TriPeaksPhase
 	// GetMoveCount 移動回数を取得する
 	GetMoveCount() int
+	// GetScore は累計点を取得する。
+	GetScore() int
+	// GetCombo は途切れていない連続除去の長さを取得する。
+	GetCombo() int
 	// GetStockCount 山札の残り枚数を取得する
 	GetStockCount() int
 	// GetWaste ウェイストのカード一覧を取得する

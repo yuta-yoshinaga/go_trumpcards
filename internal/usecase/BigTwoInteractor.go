@@ -73,9 +73,7 @@ func (bi *BigTwoInteractor) ActionLog() string {
 
 // runCpuTurns ゲームが終わるか人間の手番になるまでCPUターンを実行
 func (bi *BigTwoInteractor) runCpuTurns() {
-	for !bi.Game.GetGameEndFlag() && !bi.Game.IsHumanTurn() {
-		bi.Game.CpuPlay()
-	}
+	runCpuTurnsCapped(bi.Game, bi.Game.CpuPlay)
 }
 
 // RestoreBigTwoInteractor deserialises JSON into a BigTwoInteractor.

@@ -3,6 +3,8 @@
 package controller
 
 import (
+	"strings"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
@@ -36,23 +38,29 @@ func (c *YanivCuiController) Exec(command string) string {
 			switch cmd {
 			case "d", "discard":
 				indices, skipped := cuiutil.ParseIntSlice(args)
-				return cuiutil.PrependSkippedWarning(c.ci.Discard(indices), skipped), true
+				// Refuse before playing. PrependSkippedWarning ran the move first and
+				// put the warning above the new board, so a mistyped index was dropped
+				// and the remaining ones played as a different, legal move (issue #5390).
+				if len(skipped) > 0 {
+					return invalidArg("invalidCardIndex", "val", strings.Join(skipped, ", ")), true
+				}
+				return c.ci.Discard(indices), true
 			case "y", "yaniv":
 				return c.ci.DeclareYaniv(), true
 			case "ds", "drawstock":
 				return c.ci.DrawFromStock(), true
 			case "dp", "drawpickup":
-				return cuiutil.WithParsedInt(args, "Pickup end is required (0=first, 1=last).", "Invalid pickup end: %s. Please enter 0 or 1.", 0, 1, c.ci.DrawFromPickup)
+				return cuiutil.WithParsedIntKeys(args, "pickupEndRequired0First1Last", "invalidPickupEnd0Or1", 0, 1, c.ci.DrawFromPickup)
 			case "nr", "nextround":
 				return c.ci.NextRound(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.ci.GetConfig()
 					cfg.CpuDifficulty = domain.YanivCpuDifficulty(v)
 					return c.ci.ResetWithConfig(cfg)
 				})
 			case "sl", "setlimit":
-				return cuiutil.WithParsedInt(args, "Score limit is required.", "Invalid score limit: %s.", domain.YanivMinScoreLimit, domain.YanivMaxScoreLimit, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "scoreLimitRequired", "invalidScoreLimit", domain.YanivMinScoreLimit, domain.YanivMaxScoreLimit, func(v int) string {
 					cfg := c.ci.GetConfig()
 					cfg.ScoreLimit = v
 					return c.ci.ResetWithConfig(cfg)

@@ -38,6 +38,13 @@ func (tp *TexasHoldemBonusCuiPresenter) Output(g interfaces.TexasHoldemBonusGame
 			"cost", strconv.Itoa(cost)))
 	}
 
+	// ボーナスは任意の追加ベット。Web は BET フェーズに配当表を出しているのに、
+	// CUI は "bet <ante> <bonus>" で実チップを賭けさせながら何が当たるのか
+	// 言っていなかった (#5529)。賭け終わった後は出さない。
+	if g.GetPhase() == domain.TexasHoldemBonusPhaseBet {
+		sb.WriteString(texasHoldemBonusPaytableStr())
+	}
+
 	if community := g.GetCommunity(); len(community) > 0 {
 		sb.WriteString("--- " + color.Bold(i18n.T("texasholdembonus.boardHeader")) + " ---\n")
 		parts := make([]string, len(community))
@@ -90,7 +97,7 @@ func (tp *TexasHoldemBonusCuiPresenter) Output(g interfaces.TexasHoldemBonusGame
 	sb.WriteString("----------\n")
 
 	if lastErr != nil {
-		fmt.Fprintf(&sb, "%s\n", color.Red(lastErr.Error()))
+		fmt.Fprintf(&sb, "%s\n", i18n.MarkErrorLine(color.Red(lastErr.Error())))
 	}
 
 	if g.GetGameEndFlag() {
@@ -124,6 +131,30 @@ func (tp *TexasHoldemBonusCuiPresenter) Output(g interfaces.TexasHoldemBonusGame
 // ActionLogOutput 棋譜をテキスト出力
 func (tp *TexasHoldemBonusCuiPresenter) ActionLogOutput(g interfaces.TexasHoldemBonusGame) string {
 	return actionLogOutputText(g)
+}
+
+// texasHoldemBonusPaytableStr renders the bonus side-bet paytable.
+//
+// **倍率はドメインの定数から読む。**文言に書き写すと、配当を1つ直したときに
+// 表だけが古いまま残り、プレイヤーは違う倍率を見て賭けることになる (#5529)。
+func texasHoldemBonusPaytableStr() string {
+	rows := []struct {
+		key  string
+		mult int
+	}{
+		{"texasholdembonus.bonusPayAA", domain.TexasHoldemBonusBonusPayAA},
+		{"texasholdembonus.bonusPayAKSuited", domain.TexasHoldemBonusBonusPayAKSuited},
+		{"texasholdembonus.bonusPayAQAJSuited", domain.TexasHoldemBonusBonusPayAQAJSuited},
+		{"texasholdembonus.bonusPayAKOff", domain.TexasHoldemBonusBonusPayAKOff},
+		{"texasholdembonus.bonusPayKKQQJJ", domain.TexasHoldemBonusBonusPayKKQQJJ},
+		{"texasholdembonus.bonusPayAQAJOff", domain.TexasHoldemBonusBonusPayAQAJOff},
+		{"texasholdembonus.bonusPayMediumPair", domain.TexasHoldemBonusBonusPayMediumPair},
+	}
+	parts := make([]string, len(rows))
+	for i, r := range rows {
+		parts[i] = i18n.Tf(r.key, "mult", strconv.Itoa(r.mult))
+	}
+	return i18n.T("texasholdembonus.bonusPayHeader") + strings.Join(parts, " / ") + "\n"
 }
 
 // phaseStr フェーズ文字列

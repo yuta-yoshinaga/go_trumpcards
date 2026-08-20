@@ -47,6 +47,18 @@ describe('formatFortythievesState', () => {
     expect(out).toContain('HINT: t0[1] → foundation2');
   });
 
+  // #5525: 引くヒントは列を持たない。移動の体裁に落とすと t-1[-1] が出る。
+  it('renders the draw hint without leaking the -1 columns', () => {
+    const out = formatFortythievesState(
+      baseState({
+        hint: { fromZone: 'stock', fromCol: -1, cardIndex: -1, toZone: 'waste', toCol: -1 },
+        messageCode: 'fortythieves.hintAvailable',
+      }),
+    );
+    expect(out).toContain('HINT: draw from stock');
+    expect(out).not.toContain('-1');
+  });
+
   it('renders a waste hint source', () => {
     const out = formatFortythievesState(
       baseState({

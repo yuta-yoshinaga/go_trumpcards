@@ -916,3 +916,84 @@ func TestCanasta_GetHint(t *testing.T) {
 		assert.Nil(t, g.GetHint())
 	})
 }
+
+// #5502: Web は選択中の札を事前検証して理由を出すのに、CUI は dd を送って
+// サーバに弾かれて初めて1行返る形だった。選んだ2枚に依存しない条件だけなら、
+// インデックスを入力する前に言える。
+func TestCanasta_GetDrawFromDiscardBlocker(t *testing.T) {
+	setup := func(top *domain.Card, hand []*domain.Card) *domain.Canasta {
+		g := newTestCanasta()
+		g.Reset()
+		setupCanastaDrawPhase(g, 0)
+		if top == nil {
+			g.SetDiscardPile(nil)
+		} else {
+			g.SetDiscardPile([]*domain.Card{top})
+		}
+		p := g.GetPlayer(0)
+		p.Reset()
+		for _, c := range hand {
+			p.AddCard(c)
+		}
+		return g
+	}
+	card := func(design, value int) *domain.Card { return domain.NewCard(design, value, false) }
+	pair := []*domain.Card{card(domain.CardDesignHeart, 9), card(domain.CardDesignClover, 9)}
+
+	t.Run("empty pile", func(t *testing.T) {
+		assert.Equal(t, domain.CanastaDrawBlockerPileEmpty, setup(nil, pair).GetDrawFromDiscardBlocker())
+	})
+
+	t.Run("black three on top", func(t *testing.T) {
+		g := setup(card(domain.CardDesignSpade, 3), []*domain.Card{card(domain.CardDesignHeart, 3), card(domain.CardDesignDiamond, 3)})
+		assert.Equal(t, domain.CanastaDrawBlockerBlackThree, g.GetDrawFromDiscardBlocker())
+	})
+
+	// **ワイルドがトップでも取れない。** PlayerDrawFromDiscard はこれも弾くが、
+	// Web の事前検証はこの条件を見ていなかった。
+	t.Run("wild on top", func(t *testing.T) {
+		g := setup(domain.NewCard(domain.CardDesignJoker, 0, true), pair)
+		assert.Equal(t, domain.CanastaDrawBlockerWildTop, g.GetDrawFromDiscardBlocker())
+	})
+
+	t.Run("no natural pair of the top rank in hand", func(t *testing.T) {
+		g := setup(card(domain.CardDesignSpade, 9), []*domain.Card{card(domain.CardDesignHeart, 9), card(domain.CardDesignHeart, 5)})
+		assert.Equal(t, domain.CanastaDrawBlockerNoPair, g.GetDrawFromDiscardBlocker())
+	})
+
+	// ジョーカーを持っていても自然札のペアにはならない。
+	//
+	// なお実装の `!CanastaIsWild(c)` フィルタ自体は、この配りでは効いていない
+	// (ジョーカーの値は 0 で、そもそもトップのランクと一致しない)。ワイルドが
+	// トップと同じ値になるのは 2 のときだけで、その場合は先に WildTop で弾かれる。
+	// PlayerDrawFromDiscard 側の同じ検査と形を合わせるために残している。
+	t.Run("a joker in hand does not make a natural pair", func(t *testing.T) {
+		g := setup(card(domain.CardDesignSpade, 9), []*domain.Card{card(domain.CardDesignHeart, 9), domain.NewCard(domain.CardDesignJoker, 0, true)})
+		assert.Equal(t, domain.CanastaDrawBlockerNoPair, g.GetDrawFromDiscardBlocker())
+	})
+
+	t.Run("no blocker when a natural pair is held", func(t *testing.T) {
+		g := setup(card(domain.CardDesignSpade, 9), pair)
+		assert.Empty(t, g.GetDrawFromDiscardBlocker())
+	})
+
+	// **理由を出したなら、実際に弾かれること。** 「取れません」と言っておいて通るのは
+	// 案内として最悪。逆向き (理由が無ければ必ず通る) は成り立たない -- 初回メルドの
+	// 最低点は選んだ札の点数で決まるので、この判定はそこを見ていない (Web の
+	// canastaDrawDiscardProblem も同じ理由で除外している)。
+	t.Run("every blocker it reports is really refused", func(t *testing.T) {
+		for _, tc := range []struct {
+			name string
+			top  *domain.Card
+			hand []*domain.Card
+		}{
+			{"wild top", domain.NewCard(domain.CardDesignJoker, 0, true), pair},
+			{"black three top", card(domain.CardDesignSpade, 3), pair},
+			{"no pair", card(domain.CardDesignSpade, 9), []*domain.Card{card(domain.CardDesignHeart, 9), card(domain.CardDesignHeart, 5)}},
+		} {
+			g := setup(tc.top, tc.hand)
+			require.NotEmpty(t, g.GetDrawFromDiscardBlocker(), tc.name)
+			assert.Error(t, g.PlayerDrawFromDiscard([]int{0, 1}), tc.name)
+		}
+	})
+}

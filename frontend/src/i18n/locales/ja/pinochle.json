@@ -78,5 +78,6 @@
   "bidAmountLabel": "ビッド額（最低 {{min}}）",
   "bidTooLow": "ビッド額は {{min}} 以上にしてください",
   "hintRequested": "ヒントがあります",
-  "noHint": "ヒントはありません"
+  "noHint": "ヒントはありません",
+  "meldTableTitle": "メルド早見表"
 }

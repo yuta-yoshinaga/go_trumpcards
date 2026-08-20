@@ -29,5 +29,9 @@
   "hintFold": "Recommended: fold",
   "madeHandLine": "Current hand: {{hand}} ({{eligible}})",
   "madeHandEligible": "pays",
-  "madeHandNotEligible": "does not pay"
+  "madeHandNotEligible": "does not pay",
+  "helpExampleBet": "  b 10                 ante 10 and get a hand",
+  "helpExamplePlay": "  p 1                  play at 1x the ante",
+  "helpHint": "  h                    show a hint",
+  "payoutMultiplierLine": "Payout odds: {{multiplier}}:1"
 }

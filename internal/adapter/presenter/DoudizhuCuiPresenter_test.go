@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
@@ -79,4 +80,35 @@ func TestDoudizhuCuiPresenter_ActionLogOutput(t *testing.T) {
 
 	p := new(presenter.DoudizhuCuiPresenter)
 	assert.NotEmpty(t, p.ActionLogOutput(dg))
+}
+
+// #5617: 地主の行だけ `Player %d` を直接組み立てており、日本語ロケールでも
+// "Player 2" と出ていた。同じ画面の他の行は全部 cuiPlayerName を通っている。
+func TestDoudizhuCuiPresenterNamesTheLandlordLikeEveryOtherLine(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+
+	t.Run("human landlord reads as you", func(t *testing.T) {
+		dg := newDoudizhuForPresenter()
+		dg.SetPhase(domain.DoudizhuPhasePlay)
+		dg.SetLandlordIdx(0) // 0 は人間
+		dg.SetCurrentTurn(0)
+
+		out := new(presenter.DoudizhuCuiPresenter).Output(dg, nil)
+		assert.Contains(t, out, i18n.T("doudizhu.landlord")+": "+i18n.T("cuiPlayerYou"))
+		// **英語の直書きが残っていないこと。**日本語ロケールで "Player 0" は出ない。
+		assert.NotContains(t, out, "Player 0")
+	})
+
+	t.Run("cpu landlord reads like the other cpu lines", func(t *testing.T) {
+		dg := newDoudizhuForPresenter()
+		dg.SetPhase(domain.DoudizhuPhasePlay)
+		dg.SetLandlordIdx(2)
+		dg.SetCurrentTurn(0)
+
+		out := new(presenter.DoudizhuCuiPresenter).Output(dg, nil)
+		assert.Contains(t, out, i18n.T("doudizhu.landlord")+": "+i18n.Tf("cuiPlayerCpu", "idx", "2"))
+		assert.NotContains(t, out, "Player 2")
+	})
 }

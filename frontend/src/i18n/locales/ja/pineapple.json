@@ -25,7 +25,9 @@
     "featurePair": "ペア",
     "featureSuited": "スーテッド",
     "featureConnector": "コネクター",
-    "featureHighcard": "ハイカード"
+    "featureHighcard": "ハイカード",
+    "previewAria": "残す2枚: {{cards}}",
+    "previewAriaWithHand": "残す2枚: {{cards}}。成立する役: {{hand}}"
   },
   "rebuy": {
     "prompt": "リバイしますか? ({{chips}}チップ, {{used}}/{{max}}回使用済)",
@@ -94,5 +96,18 @@
     "decentHandRank": "まずまずのハンド — コール推奨",
     "weakHandRank": "弱いハンド — フォールド推奨",
     "discardWeakest": "最も弱いカードを捨てましょう"
-  }
+  },
+  "hand": {
+    "highCard": "ハイカード",
+    "onePair": "ワンペア",
+    "twoPair": "ツーペア",
+    "threeOfAKind": "スリーカード",
+    "straight": "ストレート",
+    "flush": "フラッシュ",
+    "fullHouse": "フルハウス",
+    "fourOfAKind": "フォーカード",
+    "straightFlush": "ストレートフラッシュ",
+    "royalFlush": "ロイヤルフラッシュ"
+  },
+  "livePreview": "現在の役:"
 }

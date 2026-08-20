@@ -26,11 +26,11 @@ func (c *BidEuchreCuiController) Exec(command string) string {
 			cfg := c.bi.GetConfig()
 			return c.bi.ResetWithConfig(cfg)
 		},
-		[]string{"b", "bid", "ps", "pass", "t", "trump", "p", "play", "n", "next", "log", "l"},
+		[]string{"b", "bid", "ps", "pass", "t", "trump", "p", "play", "n", "next", "h", "hint", "log", "l"},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bid":
-				return cuiutil.WithParsedInt(args, "Bid value is required.", "Invalid bid: %s.",
+				return cuiutil.WithParsedIntKeys(args, "bidValueRequired", "invalidBid",
 					domain.BidEuchreMinBid, domain.BidEuchreMaxBid, func(v int) string {
 						return c.bi.Bid(v)
 					})
@@ -38,18 +38,17 @@ func (c *BidEuchreCuiController) Exec(command string) string {
 				return c.bi.PassBid(), true
 			case "t", "trump":
 				// **0=S 1=C 2=D 3=H 4=NT-high 5=NT-low。**ノートランプが 2 種類ある。
-				return cuiutil.WithParsedInt(args, "Trump declaration is required (0=S 1=C 2=D 3=H 4=NT-high 5=NT-low).",
-					"Invalid trump: %s.", 0, int(domain.BidEuchreTrumpCount)-1, func(v int) string {
-						return c.bi.ChooseTrump(v)
-					})
+				return cuiutil.WithParsedIntKeys(args, "trumpDeclarationRequired", "invalidTrump", 0, int(domain.BidEuchreTrumpCount)-1, func(v int) string {
+					return c.bi.ChooseTrump(v)
+				})
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", 0, domain.BidEuchreHandSize-1, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", 0, domain.BidEuchreHandSize-1, func(v int) string {
 					return c.bi.PlayCard(v)
 				})
 			case "n", "next":
 				return c.bi.NextHand(), true
 			default:
-				return handleCuiLog(cmd, c.bi.ActionLog)
+				return handleCuiHintAndLog(cmd, c.bi.Hint, c.bi.ActionLog)
 			}
 		},
 	)

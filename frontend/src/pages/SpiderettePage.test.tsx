@@ -64,6 +64,7 @@ const playingState: SpideretteResponse = {
   stockCount: 24,
   completedSuits: 0,
   score: 500,
+  scoring: { start: 500, movePenalty: 1, suitBonus: 100 },
   phase: 0,
   moveCount: 5,
   canUndo: false,
@@ -238,5 +239,28 @@ describe('SpiderettePage keyboard shortcuts', () => {
     }
     await flushPendingDispatch();
     expect(mockSend).not.toHaveBeenCalled();
+  });
+
+  // #5593: スコアが動く理由（手数の減点・スート完成の加点）はどこにも書かれて
+  // いなかった。
+  describe('score rule tooltip', () => {
+    it('explains the arithmetic with the figures the server sent', async () => {
+      mockSend.mockResolvedValue({ ...playingState, scoring: { start: 500, movePenalty: 1, suitBonus: 100 } });
+      renderWithProviders(<SpiderettePage />);
+      const score = await screen.findByTestId('spiderette-score');
+      const tip = score.getAttribute('title') ?? '';
+      expect(tip).toContain('500');
+      expect(tip).toContain('100');
+    });
+
+    // **数字を焼き込んでいない証拠。**別の決まりを返せばそのまま出る。
+    it('renders whatever rule the server sends', async () => {
+      mockSend.mockResolvedValue({ ...playingState, scoring: { start: 900, movePenalty: 5, suitBonus: 250 } });
+      renderWithProviders(<SpiderettePage />);
+      const tip = (await screen.findByTestId('spiderette-score')).getAttribute('title') ?? '';
+      expect(tip).toContain('900');
+      expect(tip).toContain('250');
+      expect(tip).not.toContain('500');
+    });
   });
 });

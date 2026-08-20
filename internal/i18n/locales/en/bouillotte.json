@@ -18,7 +18,7 @@
   "hand.brelan": "Brelan",
   "hand.highcard": "High card",
   "gameEnd": "Game over — {{name}} wins!",
-  "promptBetting": "Act: c (call) / ra (raise, current {{bet}}) / f (fold)",
+  "promptBetting": "Act: c (call, need {{need}}) / ra (raise, current {{bet}}→{{raiseTo}}) / f (fold)",
   "promptResult": "Round over. Use n for the next round.",
   "promptHelp": "c / ra / f to act, n for the next round",
   "result.none": "The round is over.",
@@ -32,5 +32,7 @@
   "hint": "[HINT: {{action}} ({{reason}})]",
   "hintReasonStrongHand": "strong hand — worth pressing",
   "hintReasonMediumHand": "decent hand — call and see",
-  "hintReasonWeakHand": "weak hand — better to fold"
+  "hintReasonWeakHand": "weak hand — better to fold",
+  "helpExampleCall": "  c                         call the current bet",
+  "helpHint": "  h                         show a hint"
 }

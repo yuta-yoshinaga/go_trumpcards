@@ -7,7 +7,6 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	mockusecase "github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func newMockDiplomatInteractor() *mockusecase.MockDiplomatInteractor {
@@ -78,7 +77,7 @@ func TestDiplomatCuiControllerMoves(t *testing.T) {
 	t.Run("rejects the stock as a source", func(t *testing.T) {
 		ci := newMockDiplomatInteractor()
 		c := NewDiplomatCuiController(ci)
-		assert.Equal(t, i18n.Tf("diplomat.invalidFromZone", "val", "s"), c.Exec("m s t 3"))
+		assert.Equal(t, invalidArg("diplomat.invalidFromZone", "val", "s"), c.Exec("m s t 3"))
 		ci.AssertExpectations(t)
 	})
 }

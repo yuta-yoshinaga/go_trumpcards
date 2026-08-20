@@ -41,6 +41,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { POKER_HELP, parsePokerCommand } from '../utils/cli/commands/pokerCommands';
 import { formatPokerState } from '../utils/cli/formatters/pokerFormatter';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { findPlayerName } from '../utils/playerUtils';
 
@@ -119,8 +120,9 @@ function PokerPageContent() {
       parseCommand: parsePokerCommand,
       formatResponse: formatPokerState,
       helpText: POKER_HELP,
+      localCommand: hintLocalCommand(hint),
     }),
-    [],
+    [hint],
   );
   const { handleCommand } = useCliGame(exec, pokerCliConfig, state, { addInput, addOutput, addError, clearLog });
   const [betAmount, setBetAmount] = useState(10);
@@ -268,6 +270,22 @@ function PokerPageContent() {
 
             {/* CPU actions: toast on mobile, inline log on desktop */}
             {isMobile ? <CpuActionToast actions={state?.cpuActions} /> : <CpuActionLog actions={state?.cpuActions} />}
+
+            {/* **交換枚数は読まれている。** 枚数が閾値未満だと CPU のフォールド
+                閾値が1ランク上がる (domain の calcExchangeWarning)。実在の戦略要素
+                なのに画面には交換枚数のログしかなく、それがどう読まれるかは
+                説明されていなかった (#5475)。判定は domain が返す exchangeRead を
+                そのまま使う -- ここで枚数から数え直すと CPU の挙動とずれる。 */}
+            {state?.exchangeRead && (
+              <div
+                className="bg-ds-warning/10 border border-ds-warning rounded p-2 mb-3 text-ds-text-primary text-xs"
+                role="status"
+                aria-live="polite"
+                data-testid="poker-exchange-read"
+              >
+                {t('exchangeRead')}
+              </div>
+            )}
 
             {/* CPU exchanges log */}
             {state?.cpuExchanges && state.cpuExchanges.length > 0 && (

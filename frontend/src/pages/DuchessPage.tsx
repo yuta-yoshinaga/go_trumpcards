@@ -163,7 +163,10 @@ function DuchessPageContent() {
   const isGameOver = state.phase === DuchessPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
   const foundationCount = isGameOver ? state.foundation.reduce((sum, pile) => sum + pile.length, 0) : 0;
-  const autoCompleteReady = state.foundation.some((pile) => pile.length > 1);
+  // **押せる = 成功する。**組札の枚数で代用していたが、それはドメインの条件では
+  // ない (#5557)。1枚しか乗っていなくても次を送れることがあり、逆に何枚乗っていても
+  // 送れる札が無ければ AutoComplete は失敗する。ドメインの答えをそのまま使う。
+  const autoCompleteReady = state.canAutoComplete ?? false;
   // While any reserve card remains, empty columns are the reserve's exit only.
   const reserveRemaining = state.reserve.reduce((sum, fan) => sum + fan.length, 0);
 
@@ -447,7 +450,12 @@ function DuchessPageContent() {
               {Array.from({ length: TABLEAU_COLS }, (_, i) => i).map(renderTableauColumn)}
             </div>
 
-            <div data-tutorial="du-hint-display">
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-tutorial="du-hint-display" data-testid="du-hint-live" role="status" aria-live="polite">
               {hint && (
                 <div className="text-ds-warning text-sm mb-2 mt-3">
                   {t('hintAvailable')}: {formatHintZone(t, hint.fromZone, hint.fromIdx)} →{' '}

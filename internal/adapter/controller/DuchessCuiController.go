@@ -57,7 +57,7 @@ func (c *DuchessCuiController) handleBase(args []string) string {
 	}
 	fan, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("duchess.invalidFanIdx", "val", args[0])
+		return invalidArg("duchess.invalidFanIdx", "val", args[0])
 	}
 	return c.di.ChooseBaseRank(fan)
 }
@@ -82,7 +82,7 @@ func (c *DuchessCuiController) handleMove(args []string) string {
 	case "t":
 		return c.handleMoveFromTableau(args[1:])
 	default:
-		return i18n.Tf("duchess.invalidFromZone", "val", args[0])
+		return invalidArg("duchess.invalidFromZone", "val", args[0])
 	}
 }
 
@@ -92,7 +92,7 @@ func (c *DuchessCuiController) handleMoveFromReserve(args []string) string {
 	}
 	fan, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("duchess.invalidFanIdx", "val", args[0])
+		return invalidArg("duchess.invalidFanIdx", "val", args[0])
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("duchess.promptToZone"), fmt.Sprintf("m r %s {0}", args[0]))
@@ -106,11 +106,11 @@ func (c *DuchessCuiController) handleMoveFromReserve(args []string) string {
 		}
 		col, err := strconv.Atoi(args[2])
 		if err != nil {
-			return i18n.Tf("invalidColumn", "val", args[2])
+			return invalidArg("invalidColumn", "val", args[2])
 		}
 		return c.di.MoveReserveToTableau(fan, col)
 	default:
-		return i18n.Tf("duchess.invalidToZone", "val", args[1])
+		return invalidArg("duchess.invalidToZone", "val", args[1])
 	}
 }
 
@@ -127,11 +127,11 @@ func (c *DuchessCuiController) handleMoveFromWaste(args []string) string {
 		}
 		col, err := strconv.Atoi(args[1])
 		if err != nil {
-			return i18n.Tf("invalidColumn", "val", args[1])
+			return invalidArg("invalidColumn", "val", args[1])
 		}
 		return c.di.MoveWasteToTableau(col)
 	default:
-		return i18n.Tf("duchess.invalidToZone", "val", args[0])
+		return invalidArg("duchess.invalidToZone", "val", args[0])
 	}
 }
 
@@ -141,7 +141,7 @@ func (c *DuchessCuiController) handleMoveFromTableau(args []string) string {
 	}
 	fromCol, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[0])
+		return invalidArg("invalidColumn", "val", args[0])
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("duchess.promptToZone"), fmt.Sprintf("m t %s {0}", args[0]))
@@ -155,19 +155,19 @@ func (c *DuchessCuiController) handleMoveFromTableau(args []string) string {
 		}
 		toCol, err := strconv.Atoi(args[2])
 		if err != nil {
-			return i18n.Tf("invalidColumn", "val", args[2])
+			return invalidArg("invalidColumn", "val", args[2])
 		}
 		// 連番グループの先頭。省略時は -1 = 最上段 1 枚。
 		cardIndex := -1
 		if len(args) >= 4 {
 			idx, err := strconv.Atoi(args[3])
 			if err != nil {
-				return i18n.Tf("duchess.invalidCardIndex", "val", args[3])
+				return invalidArg("duchess.invalidCardIndex", "val", args[3])
 			}
 			cardIndex = idx
 		}
 		return c.di.MoveTableauToTableau(fromCol, cardIndex, toCol)
 	default:
-		return i18n.Tf("duchess.invalidToZone", "val", args[1])
+		return invalidArg("duchess.invalidToZone", "val", args[1])
 	}
 }

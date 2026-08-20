@@ -389,3 +389,28 @@ describe('ClockSolitairePage', () => {
     await waitFor(() => expect(screen.getByTestId('cs-live-region')).toHaveTextContent(/中央/));
   });
 });
+
+// #5523: 「あと何山で揃うか」は CLI ターミナルを開いたときだけ見える計算だった。
+describe('ClockSolitairePage progress', () => {
+  it('shows how many piles are finished in the header', async () => {
+    mockExec.mockResolvedValue(playingState); // 1枚だけ表なので完成 0
+    renderWithProviders(<ClockSolitairePage />);
+    await waitFor(() => expect(screen.getByTestId('clock-completed')).toHaveTextContent('完成: 0/13'));
+  });
+
+  it('counts a pile only once all four cards are up', async () => {
+    const fuc = Array(13).fill(0);
+    fuc[0] = 4;
+    fuc[1] = 4;
+    fuc[2] = 3; // あと1枚 -- 数に入れない
+    mockExec.mockResolvedValue({ ...playingState, faceUpCount: fuc });
+    renderWithProviders(<ClockSolitairePage />);
+    await waitFor(() => expect(screen.getByTestId('clock-completed')).toHaveTextContent('完成: 2/13'));
+  });
+
+  it('reads 13/13 on a clear', async () => {
+    mockExec.mockResolvedValue({ ...gameClearState, faceUpCount: Array(13).fill(4) });
+    renderWithProviders(<ClockSolitairePage />);
+    await waitFor(() => expect(screen.getByTestId('clock-completed')).toHaveTextContent('完成: 13/13'));
+  });
+});

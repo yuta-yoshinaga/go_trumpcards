@@ -43,7 +43,7 @@ export function parseTerraceCommand(input: string): CliParseResult<TerraceArgs> 
       return { args: ['autocomplete'] };
     case 'u':
     case 'undo':
-      return { args: ['undo'] };
+      return parseUndoCommand(args);
     case 'h':
     case 'hint':
       return { args: ['hint'] };
@@ -110,8 +110,24 @@ export const TERRACE_HELP: string[] = [
   'm t<p> t<p>     - Move one card between piles',
   'ac/autocomplete - Auto-complete to the foundations',
   'u/undo          - Undo last move',
+  'undo <n>        - Undo n moves at once (to escape a dead end)',
   'h/hint          - Show suggested move',
   'g/giveup        - Give up',
   'log             - Show action log',
   'r/reset         - Reset game',
 ];
+
+/**
+ * Parse `undo` / `undo <n>`.
+ *
+ * The dead-end banner already tells the player to undo a named number of moves,
+ * so the count has to be accepted here too — dropping it left them one move
+ * back and still stuck (#5563). No upper bound: the server answers when the
+ * history is shorter than the count asked for.
+ */
+function parseUndoCommand(args: string[]): CliParseResult<TerraceArgs> {
+  if (args.length === 0) return { args: ['undo'] };
+  const n = Number(args[0]);
+  if (!Number.isInteger(n) || n < 1) return { error: `Invalid undo count: ${args[0]}` };
+  return { args: ['undo_n', undefined, undefined, n] };
+}

@@ -72,7 +72,7 @@ func (c *BristolCuiController) handleMove(args []string) string {
 	case "n":
 		return c.handleMoveFromFan(args[1:])
 	default:
-		return i18n.Tf("bristol.invalidFromZone", "val", from)
+		return invalidArg("bristol.invalidFromZone", "val", from)
 	}
 }
 
@@ -83,7 +83,7 @@ func (c *BristolCuiController) handleMoveFromTableau(args []string) string {
 	}
 	fromCol, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[0])
+		return invalidArg("invalidColumn", "val", args[0])
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("bristol.promptDestination"), "m t "+args[0]+" {0}")
@@ -95,13 +95,13 @@ func (c *BristolCuiController) handleMoveFromTableau(args []string) string {
 		}
 		toCol, err := strconv.Atoi(args[2])
 		if err != nil {
-			return i18n.Tf("invalidColumn", "val", args[2])
+			return invalidArg("invalidColumn", "val", args[2])
 		}
 		return c.bi.MoveTableauToTableau(fromCol, toCol)
 	case "f":
 		return c.bi.MoveTableauToFoundation(fromCol)
 	default:
-		return i18n.T("bristol.moveUsage")
+		return i18n.MarkError(i18n.T("bristol.moveUsage"))
 	}
 }
 
@@ -112,7 +112,7 @@ func (c *BristolCuiController) handleMoveFromFan(args []string) string {
 	}
 	fanIdx, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[0])
+		return invalidArg("invalidColumn", "val", args[0])
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("bristol.promptDestination"), "m n "+args[0]+" {0}")
@@ -124,12 +124,12 @@ func (c *BristolCuiController) handleMoveFromFan(args []string) string {
 		}
 		toCol, err := strconv.Atoi(args[2])
 		if err != nil {
-			return i18n.Tf("invalidColumn", "val", args[2])
+			return invalidArg("invalidColumn", "val", args[2])
 		}
 		return c.bi.MoveFanToTableau(fanIdx, toCol)
 	case "f":
 		return c.bi.MoveFanToFoundation(fanIdx)
 	default:
-		return i18n.T("bristol.moveUsage")
+		return i18n.MarkError(i18n.T("bristol.moveUsage"))
 	}
 }

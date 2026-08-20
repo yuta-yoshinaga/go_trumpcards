@@ -22,6 +22,17 @@ const (
 )
 
 // SpideretteTableauCnt タブローの列数 (Klondike と同じ7列)
+// スコアの決まり。**説明はこの 3 つから書く。**数字を訳文に焼き込むと、
+// 計算を変えたとき案内だけが古くなる (#5593)。
+const (
+	// SpideretteStartScore は開始時のスコア。
+	SpideretteStartScore = 500
+	// SpideretteMovePenalty は 1 手ごとに引かれる点。
+	SpideretteMovePenalty = 1
+	// SpideretteSuitBonus はスートを 1 組完成させるたびに入る点。
+	SpideretteSuitBonus = 100
+)
+
 const SpideretteTableauCnt = 7
 
 // SpideretteFoundationCnt 完成スート数 (1デッキ4スート)
@@ -91,7 +102,7 @@ func (s *Spiderette) Reset() {
 	s.trumpCards.Shuffle()
 	s.phase = SpiderettePhasePlaying
 	s.moveCount = 0
-	s.score = 500
+	s.score = SpideretteStartScore
 	s.actionLog = nil
 	s.history = nil
 	s.isStalemate = false
@@ -162,7 +173,7 @@ func (s *Spiderette) Deal() error {
 		s.tableau[i] = append(s.tableau[i], &SpideretteTableauCard{Card: card, FaceUp: true})
 	}
 	s.moveCount++
-	s.score--
+	s.score -= SpideretteMovePenalty
 	s.appendLog("deal", "ストックから各列にカードを配りました", nil)
 	for i := range SpideretteTableauCnt {
 		s.checkAndRemoveCompletedSuit(i)
@@ -216,7 +227,7 @@ func (s *Spiderette) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 	s.tableau[fromCol] = fromCards[:cardIndex]
 	s.autoFlipTableau(fromCol)
 	s.moveCount++
-	s.score--
+	s.score -= SpideretteMovePenalty
 	s.appendLog("move", fmt.Sprintf("タブロー列%d→タブロー列%d", fromCol, toCol), movedCards)
 	s.checkAndRemoveCompletedSuit(toCol)
 	s.checkSpideretteStalemate()
@@ -465,7 +476,7 @@ func (s *Spiderette) checkAndRemoveCompletedSuit(col int) bool {
 
 	s.tableau[col] = cards[:startIdx]
 	s.completedSuits++
-	s.score += 100
+	s.score += SpideretteSuitBonus
 	s.appendLog("complete", fmt.Sprintf("タブロー列%dでスートが完成しました", col), nil)
 
 	s.autoFlipTableau(col)

@@ -90,6 +90,12 @@ func (_m *MockDuchessGame) UndoToEscape() int {
 	return ret.Int(0)
 }
 
+// CanAutoComplete いま AutoComplete が 1 枚でも動かせるか
+func (_m *MockDuchessGame) CanAutoComplete() bool {
+	ret := _m.Called()
+	return ret.Bool(0)
+}
+
 func (_m *MockDuchessGame) UndoN(n int) error {
 	ret := _m.Called(n)
 	return ret.Error(0)

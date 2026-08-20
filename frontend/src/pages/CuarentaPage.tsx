@@ -30,6 +30,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { CUARENTA_HELP, parseCuarentaCommand } from '../utils/cli/commands/cuarentaCommands';
 import { formatCuarentaState } from '../utils/cli/formatters/cuarentaFormatter';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { cuarentaCaptureIndices } from '../utils/cuarentaCapture';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -122,14 +123,23 @@ function CuarentaPageContent() {
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('cuarenta');
+
+  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
+  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('cuarenta', state);
   const cliConfig: CliGameConfig<CuarentaResponse, Parameters<typeof cuarentaApi.exec>> = useMemo(
     () => ({
       gameName: 'cuarenta',
       parseCommand: parseCuarentaCommand,
       formatResponse: formatCuarentaState,
       helpText: CUARENTA_HELP,
+      localCommand: hintLocalCommand(frontendHint),
     }),
-    [],
+    [frontendHint],
   );
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
@@ -158,14 +168,6 @@ function CuarentaPageContent() {
       }
     }
   }, [humanActionSig, humanBonus, playSound]);
-
-  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
-  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('cuarenta', state);
 
   if (!state)
     return <GameSkeleton gameKey="cuarenta" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 5 }} />;

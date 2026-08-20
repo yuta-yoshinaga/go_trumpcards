@@ -156,7 +156,7 @@ func (p *ScopaCuiPresenter) HintOutput(sg interfaces.ScopaGame) string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *ScopaCuiPresenter) ActionLogOutput(sg interfaces.ScopaGame) string {
-	return actionLogOutputText(sg)
+	return actionLogOutputTextForSeats[*domain.ScopaPlayer](sg)
 }
 
 // writeScopaBreakdown は直前ラウンドの得点内訳を書く。まだ1ラウンドも

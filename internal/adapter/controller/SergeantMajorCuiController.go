@@ -40,12 +40,12 @@ func (c *SergeantMajorCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "t", "trump":
-				return cuiutil.WithParsedInt(args, "Suit is required.", "Invalid suit: %s.",
+				return cuiutil.WithParsedIntKeys(args, "suitRequired", "invalidSuit",
 					domain.CardDesignSpade, domain.CardDesignMax, c.si.DeclareTrump)
 			case "d", "discard":
 				return c.discard(args)
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.si.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.si.Play)
 			case "n", "next":
 				return c.si.NextRound(), true
 			case "g", "giveup":
@@ -62,11 +62,11 @@ func (c *SergeantMajorCuiController) Exec(command string) string {
 // **既定値で埋めない。** 埋めると捨てていない札が捨てられる。
 func (c *SergeantMajorCuiController) discard(args []string) (string, bool) {
 	if len(args) < domain.SergeantMajorKittySize {
-		return "Four card indices are required.", true
+		return invalidArg("fourIndicesRequired"), true
 	}
 	indices := make([]int, 0, domain.SergeantMajorKittySize)
 	for i := range domain.SergeantMajorKittySize {
-		v, errMsg, ok := cuiutil.ParseIntArg(args[i:], "Card index is required.", "Invalid card index: %s.",
+		v, errMsg, ok := cuiutil.ParseIntArgKeys(args[i:], "cardIndexRequired", "invalidCardIndex",
 			cuiutil.NoMin, cuiutil.NoMax)
 		if !ok {
 			return errMsg, true

@@ -2,7 +2,12 @@
 
 package domain
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+)
 
 func tcNorm(value, design int) *Card { return NewCard(design, value, true) }
 func tcMahjong() *Card               { return NewCard(CardDesignJoker, TichuMahjong, true) }
@@ -218,4 +223,96 @@ func TestTichuCanBeatTypeMismatch(t *testing.T) {
 	if TichuCanBeat(st6, st5) {
 		t.Error("straights of different length must not compare")
 	}
+}
+
+// #5635: Web はボムを構成する札に赤いリングと💣を出しているのに、CUI は無印の
+// 一覧だけで、手札を目視で数えるしかなかった。
+func TestTichuBombIndicesFindsFourOfAKind(t *testing.T) {
+	cards := []*Card{
+		NewCard(CardDesignSpade, 7, false),
+		NewCard(CardDesignHeart, 7, false),
+		NewCard(CardDesignClover, 7, false),
+		NewCard(CardDesignDiamond, 7, false),
+		NewCard(CardDesignSpade, 2, false),
+	}
+	assert.Equal(t, []int{0, 1, 2, 3}, TichuBombIndices(cards))
+}
+
+func TestTichuBombIndicesFindsAStraightFlush(t *testing.T) {
+	cards := []*Card{
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignHeart, 4, false),
+		NewCard(CardDesignHeart, 5, false),
+		NewCard(CardDesignHeart, 6, false),
+		NewCard(CardDesignHeart, 7, false),
+		NewCard(CardDesignSpade, 9, false),
+	}
+	assert.Equal(t, []int{0, 1, 2, 3, 4}, TichuBombIndices(cards))
+}
+
+// 4枚に届かない・5枚に届かない手札では 1 枚も印を付けない。
+func TestTichuBombIndicesFindsNothingWithoutABomb(t *testing.T) {
+	cards := []*Card{
+		NewCard(CardDesignSpade, 7, false),
+		NewCard(CardDesignHeart, 7, false),
+		NewCard(CardDesignClover, 7, false),
+		NewCard(CardDesignHeart, 4, false),
+		NewCard(CardDesignHeart, 5, false),
+		NewCard(CardDesignHeart, 6, false),
+	}
+	assert.Empty(t, TichuBombIndices(cards))
+}
+
+// **同スート5枚でも連続していなければボムではない。**数え上げ側で長さだけ見て
+// 印を付けると、出せない組を「ボム」と呼ぶことになる。
+func TestTichuBombIndicesRejectsAGappedFlush(t *testing.T) {
+	cards := []*Card{
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignHeart, 4, false),
+		NewCard(CardDesignHeart, 5, false),
+		NewCard(CardDesignHeart, 6, false),
+		NewCard(CardDesignHeart, 9, false), // 7,8 が無いので連続しない
+	}
+	assert.Empty(t, TichuBombIndices(cards))
+}
+
+// **数え上げた組は、実際に評価器がボムとして受け取ること。**ここがずれると、
+// 画面が「ボム」と言った組を出そうとして弾かれる。
+func TestTichuBombIndicesAgreeWithTheEvaluator(t *testing.T) {
+	cards := []*Card{
+		NewCard(CardDesignSpade, 9, false),
+		NewCard(CardDesignHeart, 9, false),
+		NewCard(CardDesignClover, 9, false),
+		NewCard(CardDesignDiamond, 9, false),
+		NewCard(CardDesignSpade, 3, false),
+		NewCard(CardDesignSpade, 4, false),
+		NewCard(CardDesignSpade, 5, false),
+		NewCard(CardDesignSpade, 6, false),
+		NewCard(CardDesignSpade, 7, false),
+	}
+	idx := TichuBombIndices(cards)
+	require.NotEmpty(t, idx)
+
+	group := make([]*Card, 0, len(idx))
+	for _, i := range idx[:4] {
+		group = append(group, cards[i])
+	}
+	assert.NotNil(t, tichuTryBomb4(group, 0), "4枚組が評価器に通る")
+
+	sf := make([]*Card, 0, 5)
+	for _, i := range idx[4:] {
+		sf = append(sf, cards[i])
+	}
+	assert.NotNil(t, tichuTryStraightFlush(sf, 0), "ストレートフラッシュが評価器に通る")
+}
+
+// 特殊カード (龍・鳳凰・麻雀・犬) はボムに参加しない。
+func TestTichuBombIndicesIgnoresSpecials(t *testing.T) {
+	cards := []*Card{
+		NewCard(CardDesignJoker, 1, false),
+		NewCard(CardDesignJoker, 2, false),
+		NewCard(CardDesignJoker, 3, false),
+		NewCard(CardDesignJoker, 4, false),
+	}
+	assert.Empty(t, TichuBombIndices(cards))
 }

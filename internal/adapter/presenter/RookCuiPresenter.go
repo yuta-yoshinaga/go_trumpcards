@@ -195,7 +195,7 @@ func (p *RookCuiPresenter) HintOutput(g interfaces.RookGame) string {
 	if hint == nil {
 		return i18n.T("rook.hintNone") + "\n"
 	}
-	reason := lookupHintReason(hint.Reason, rookCuiHintReasonKeys)
+	reason := hintReasonStr(hint.Reason, rookCuiHintReasonKeys)
 	switch {
 	case hint.Pass != nil && *hint.Pass:
 		return color.Yellow(i18n.Tf("rook.hintPass", "reason", reason)) + "\n"
@@ -221,7 +221,7 @@ func (p *RookCuiPresenter) HintOutput(g interfaces.RookGame) string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *RookCuiPresenter) ActionLogOutput(g interfaces.RookGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.RookPlayer](g)
 }
 
 // rookJoinInts formats an int slice as a space-separated string.

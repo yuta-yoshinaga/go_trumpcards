@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -377,6 +378,8 @@ func TestDoubtCuiPresenter_ActionLogOutput(t *testing.T) {
 		}
 		mockGame.On("GetGameEndFlag").Return(true)
 		mockGame.On("GetActionLog").Return(entries)
+		// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+		mockGame.On("GetPlayer", mock.Anything).Return(domain.NewDoubtPlayer(true)).Maybe()
 
 		result := p.ActionLogOutput(mockGame)
 
@@ -390,6 +393,8 @@ func TestDoubtCuiPresenter_ActionLogOutput(t *testing.T) {
 		mockGame := new(interfaces.MockDoubtGame)
 		mockGame.On("GetGameEndFlag").Return(true)
 		mockGame.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+		// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+		mockGame.On("GetPlayer", mock.Anything).Return(domain.NewDoubtPlayer(true)).Maybe()
 
 		result := p.ActionLogOutput(mockGame)
 
@@ -405,5 +410,43 @@ func TestDoubtCuiPresenter_ActionLogOutput(t *testing.T) {
 
 		assert.Contains(t, result, "棋譜はありません")
 		mockGame.AssertExpectations(t)
+	})
+}
+
+// #5480: CpuHesitationEnabled は HesitationMs を生むだけで、それを読んでいるのは
+// Web の useDoubtGame.ts だけだった。CUI は値を無視するので、設定を ON にしても
+// CUI では何も変わらない。**Web のプレイヤーは間の長さでブラフを読める。**
+// ブラフは 300-500ms (60%) か 1200-1800ms、正直は 600-1000ms と範囲が重ならない。
+func TestDoubtCuiPresenter_HesitationTime(t *testing.T) {
+	p := new(presenter.DoubtCuiPresenter)
+
+	t.Run("shows how long the CPU took when the setting produced a delay", func(t *testing.T) {
+		game, _ := makeDoubtGameForPresenter()
+		game.SetCpuActions([]*domain.DoubtCpuAction{
+			{PlayerIdx: 1, ClaimedValue: 3, CardCount: 2, HesitationMs: 1400},
+		})
+		assert.Contains(t, p.Output(game, nil), i18n.Tf("doubt.cpuThinkTime", "sec", "1.4"))
+	})
+
+	// **設定 OFF では HesitationMs が 0 のまま。**そこで「0.0秒」と出すと、
+	// 計測した結果が 0 だったように読めてしまう。何も出さないのが正しい。
+	t.Run("says nothing when the setting is off", func(t *testing.T) {
+		game, _ := makeDoubtGameForPresenter()
+		game.SetCpuActions([]*domain.DoubtCpuAction{
+			{PlayerIdx: 1, ClaimedValue: 3, CardCount: 2, HesitationMs: 0},
+		})
+		out := p.Output(game, nil)
+		assert.NotContains(t, out, i18n.Tf("doubt.cpuThinkTime", "sec", "0.0"))
+		assert.NotContains(t, out, "秒")
+	})
+
+	// 速い側の間も出る。**速さもブラフの合図。**300-500ms を落とすと、
+	// ブラフの 6 割が無印になる。
+	t.Run("shows a fast answer too, not only a long think", func(t *testing.T) {
+		game, _ := makeDoubtGameForPresenter()
+		game.SetCpuActions([]*domain.DoubtCpuAction{
+			{PlayerIdx: 1, ClaimedValue: 3, CardCount: 2, HesitationMs: 400},
+		})
+		assert.Contains(t, p.Output(game, nil), i18n.Tf("doubt.cpuThinkTime", "sec", "0.4"))
 	})
 }

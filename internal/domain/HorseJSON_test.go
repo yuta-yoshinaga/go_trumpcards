@@ -34,18 +34,37 @@ func TestHorseRoundTripJSON_MidHand(t *testing.T) {
 	// フェーズが進むことだけを見ても足りない ── 回収の配線を繋ぎ直さなくても
 	// `settleIfHandOver` は nil を素通りして HandEnd にするので、**チップが
 	// 動いたか**まで見る (1 ハンド打てばブラインド/アンティは必ず動く)。
-	horseFoldOutHand(t, &back)
-	require.Equal(t, HorsePhaseHandEnd, back.GetPhase())
-	assert.Equal(t, beforeChips, horseTotalChips(&back), "総量が変わっている")
+	// **打つ直前の残高と比べる。** 以前は InitialChips と比べており、
+	// 打った結果たまたま全席が初期値へ戻る配りだと「1 席も動いていない」と
+	// 誤検知した (#5812 で 2 回観測、どちらも Horse と無関係な PR)。
+	// 見たいのは「このハンドでチップが動いたか」なので、基準は初期値ではなく
+	// 打つ直前の残高。
+	beforeFold := make([]int, back.GetSeatCount())
+	for i := range beforeFold {
+		beforeFold[i] = back.GetSeatChips(i)
+	}
 
+	// **1 ハンドでは足りない。**降りたぶんの掛け金がそのまま自分に戻る配りだと、
+	// 全席が打つ前と同じ残高で終わる。それを「回収が繋がっていない」と読むと
+	// 配りに依存して落ちる (#5869 で 3 回観測、いずれも Horse と無関係な PR)。
+	// 回収が本当に切れていれば**何ハンド打っても**動かないので、動くまで数ハンド
+	// 続ける形にする。
 	moved := false
-	for i := 0; i < back.GetSeatCount(); i++ {
-		if back.GetSeatChips(i) != back.GetConfig().InitialChips {
-			moved = true
-			break
+	for hand := 0; hand < 3 && !moved; hand++ {
+		if hand > 0 {
+			require.NoError(t, back.NextHand())
+		}
+		horseFoldOutHand(t, &back)
+		require.Equal(t, HorsePhaseHandEnd, back.GetPhase())
+		assert.Equal(t, beforeChips, horseTotalChips(&back), "総量が変わっている")
+		for i := range beforeFold {
+			if back.GetSeatChips(i) != beforeFold[i] {
+				moved = true
+				break
+			}
 		}
 	}
-	assert.True(t, moved, "ハンドを打ったのに正本の残高が 1 席も動いていない (回収が繋がっていない)")
+	assert.True(t, moved, "3 ハンド打っても残高が 1 席も動いていない (回収が繋がっていない)")
 }
 
 func TestHorseRoundTripJSON_BetweenHands(t *testing.T) {

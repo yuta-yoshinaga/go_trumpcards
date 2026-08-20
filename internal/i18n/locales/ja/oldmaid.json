@@ -1,6 +1,6 @@
 {
   "helpTitle": "Old Maid (ババ抜き)",
-  "helpDraw": "  d                    draw a card",
+  "helpDraw": "  d [idx]              札を引く (idx で相手の何枚目かを指定、省略でランダム)",
   "helpShuffle": "  s                    shuffle hand",
   "helpReorder": "  ro [i0 i1 ...]       reorder hand",
   "helpSetMode": "  sm [0-1]             set mode (0=Normal, 1=JijiNuki)",
@@ -24,5 +24,7 @@
   "gameEndLoser": "{{name}}の負け！",
   "gameEndJijiNukiSuffix": "（除外カード: {{card}}）",
   "promptCurrentTurnWithTarget": "手番: {{name}} → {{target}}から引きます",
-  "promptCurrentTurn": "手番: {{name}}"
+  "promptCurrentTurn": "手番: {{name}}",
+  "helpExampleD": "  d                    相手から 1 枚引く (無作為)",
+  "helpLog": "  l                    行動ログを表示"
 }

@@ -221,5 +221,5 @@ var ombreHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *OmbreCuiPresenter) ActionLogOutput(g interfaces.OmbreGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.OmbrePlayer](g)
 }

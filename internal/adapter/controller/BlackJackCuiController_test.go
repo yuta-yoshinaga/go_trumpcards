@@ -53,16 +53,16 @@ func TestBlackJackCuiController_Method(t *testing.T) {
 		assert.Equal(t, mockOutput, tbc.Exec("bet 100"))
 	})
 	t.Run("error Exec b without amount", func(t *testing.T) {
-		assert.Equal(t, "Bet amount is required.", tbc.Exec("b"))
+		assert.Equal(t, msgBetAmountRequired(), tbc.Exec("b"))
 	})
 	t.Run("error Exec b with invalid amount", func(t *testing.T) {
-		assert.Equal(t, "Invalid bet amount. Please enter a number.", tbc.Exec("b foo"))
+		assert.Equal(t, msgInvalidBetAmount(""), tbc.Exec("b foo"))
 	})
 	t.Run("error Exec b with negative amount", func(t *testing.T) {
-		assert.Equal(t, "Invalid bet amount. Please enter a number.", tbc.Exec("b -100"))
+		assert.Equal(t, msgInvalidBetAmount(""), tbc.Exec("b -100"))
 	})
 	t.Run("error Exec b with zero amount", func(t *testing.T) {
-		assert.Equal(t, "Invalid bet amount. Please enter a number.", tbc.Exec("b 0"))
+		assert.Equal(t, msgInvalidBetAmount(""), tbc.Exec("b 0"))
 	})
 	t.Run("success Exec d", func(t *testing.T) {
 		assert.Equal(t, mockOutput, tbc.Exec("d"))
@@ -125,16 +125,16 @@ func TestBlackJackCuiController_NewCommands(t *testing.T) {
 		assert.Equal(t, mockOutput, tbc.Exec("setdeckcount 6"))
 	})
 	t.Run("sd without count", func(t *testing.T) {
-		assert.Equal(t, "Deck count is required.", tbc.Exec("sd"))
+		assert.Equal(t, msgKey("deckCountRequired"), tbc.Exec("sd"))
 	})
 	t.Run("sd with invalid count", func(t *testing.T) {
-		assert.Equal(t, "Invalid deck count. Please enter a number.", tbc.Exec("sd abc"))
+		assert.Equal(t, msgKey("invalidDeckCountANumber"), tbc.Exec("sd abc"))
 	})
 	t.Run("sd with negative count", func(t *testing.T) {
-		assert.Equal(t, "Invalid deck count. Please enter a number.", tbc.Exec("sd -1"))
+		assert.Equal(t, msgKey("invalidDeckCountANumber"), tbc.Exec("sd -1"))
 	})
 	t.Run("sd with zero count", func(t *testing.T) {
-		assert.Equal(t, "Invalid deck count. Please enter a number.", tbc.Exec("sd 0"))
+		assert.Equal(t, msgKey("invalidDeckCountANumber"), tbc.Exec("sd 0"))
 	})
 }
 
@@ -151,16 +151,16 @@ func TestBlackJackCuiController_SetCountingSystem(t *testing.T) {
 		assert.Equal(t, mockOutput, tbc.Exec("setcountingsystem 2"))
 	})
 	t.Run("scs without arg", func(t *testing.T) {
-		assert.Equal(t, "Counting system is required.", tbc.Exec("scs"))
+		assert.Equal(t, msgKey("countingSystemRequired"), tbc.Exec("scs"))
 	})
 	t.Run("scs with invalid arg", func(t *testing.T) {
-		assert.Equal(t, "Invalid counting system: abc. Please enter a number (0-3).", tbc.Exec("scs abc"))
+		assert.Equal(t, msgKey("invalidCountingSystemANumber03", "val", "abc"), tbc.Exec("scs abc"))
 	})
 	t.Run("scs with negative arg", func(t *testing.T) {
-		assert.Equal(t, "Invalid counting system: -1. Please enter a number (0-3).", tbc.Exec("scs -1"))
+		assert.Equal(t, msgKey("invalidCountingSystemANumber03", "val", "-1"), tbc.Exec("scs -1"))
 	})
 	t.Run("scs with out-of-range arg", func(t *testing.T) {
-		assert.Equal(t, "Invalid counting system: 4. Please enter a number (0-3).", tbc.Exec("scs 4"))
+		assert.Equal(t, msgKey("invalidCountingSystemANumber03", "val", "4"), tbc.Exec("scs 4"))
 	})
 }
 
@@ -178,11 +178,13 @@ func TestBlackJackCuiController_BetWithSideBets(t *testing.T) {
 	t.Run("bet with PP only", func(t *testing.T) {
 		assert.Equal(t, mockOutput, tbc.Exec("b 100 10"))
 	})
-	t.Run("bet with invalid PP (ignored)", func(t *testing.T) {
-		assert.Equal(t, mockOutput, tbc.Exec("b 100 abc"))
+	// 打ち間違いは 0 に落とさず断る。落とすと「サイドベットを賭けたつもりが
+	// 賭けていない」局が静かに成立し、収支だけが合わなくなる。
+	t.Run("bet refuses a mistyped PP", func(t *testing.T) {
+		assert.Equal(t, msgKey("invalidPairPlusBet", "val", "abc"), tbc.Exec("b 100 abc"))
 	})
-	t.Run("bet with PP and invalid T3 (ignored)", func(t *testing.T) {
-		assert.Equal(t, mockOutput, tbc.Exec("b 100 10 xyz"))
+	t.Run("bet refuses a mistyped T3", func(t *testing.T) {
+		assert.Equal(t, msgKey("invalidTripsBet", "val", "xyz"), tbc.Exec("b 100 10 xyz"))
 	})
 }
 
@@ -200,8 +202,8 @@ func TestBlackJackCuiController_BetWithHandCount(t *testing.T) {
 	t.Run("bet with side bets and handCount", func(t *testing.T) {
 		assert.Equal(t, mockOutput, tbc.Exec("b 100 10 20 3"))
 	})
-	t.Run("bet with invalid handCount (ignored)", func(t *testing.T) {
-		assert.Equal(t, mockOutput, tbc.Exec("b 100 0 0 abc"))
+	t.Run("bet refuses a mistyped hand count", func(t *testing.T) {
+		assert.Equal(t, msgKey("invalidHandCount", "val", "abc"), tbc.Exec("b 100 0 0 abc"))
 	})
 }
 
@@ -246,16 +248,16 @@ func TestBlackJackCuiController_SetCpuPlayerCount(t *testing.T) {
 		assert.Equal(t, mockOutput, tbc.Exec("setcpucount 2"))
 	})
 	t.Run("scc without arg", func(t *testing.T) {
-		assert.Equal(t, "CPU player count is required.", tbc.Exec("scc"))
+		assert.Equal(t, msgKey("cpuPlayerCountRequired"), tbc.Exec("scc"))
 	})
 	t.Run("scc with invalid arg", func(t *testing.T) {
-		assert.Equal(t, "Invalid CPU player count: abc. Please enter a number (0-3).", tbc.Exec("scc abc"))
+		assert.Equal(t, msgKey("invalidCpuPlayerCountANumber03", "val", "abc"), tbc.Exec("scc abc"))
 	})
 	t.Run("scc with negative arg", func(t *testing.T) {
-		assert.Equal(t, "Invalid CPU player count: -1. Please enter a number (0-3).", tbc.Exec("scc -1"))
+		assert.Equal(t, msgKey("invalidCpuPlayerCountANumber03", "val", "-1"), tbc.Exec("scc -1"))
 	})
 	t.Run("scc with out-of-range arg", func(t *testing.T) {
-		assert.Equal(t, "Invalid CPU player count: 4. Please enter a number (0-3).", tbc.Exec("scc 4"))
+		assert.Equal(t, msgKey("invalidCpuPlayerCountANumber03", "val", "4"), tbc.Exec("scc 4"))
 	})
 	t.Run("scc with zero (valid)", func(t *testing.T) {
 		bjiMock.On("SetCpuPlayerCount", 0).Return(mockOutput)
@@ -282,13 +284,13 @@ func TestBlackJackCuiController_SetPenetration_75(t *testing.T) {
 func TestBlackJackCuiController_SetPenetration_MissingArg(t *testing.T) {
 	bjiMock := new(usecase.MockBlackJackInteractor)
 	tbc := controller.NewBlackJackCuiController(bjiMock)
-	assert.Equal(t, "Penetration rate is required.", tbc.Exec("pen"))
+	assert.Equal(t, msgKey("penetrationRateRequired"), tbc.Exec("pen"))
 }
 
 func TestBlackJackCuiController_SetPenetration_NonNumeric(t *testing.T) {
 	bjiMock := new(usecase.MockBlackJackInteractor)
 	tbc := controller.NewBlackJackCuiController(bjiMock)
-	assert.Equal(t, "Invalid penetration rate. Please enter a number.", tbc.Exec("pen abc"))
+	assert.Equal(t, msgKey("invalidPenetrationRateANumber"), tbc.Exec("pen abc"))
 }
 
 func TestBlackJackCuiController_SetPenetration_InvalidValue(t *testing.T) {
@@ -348,15 +350,15 @@ func TestBlackJackCuiController_SetSurrenderRule(t *testing.T) {
 		assert.Equal(t, mockOutput, tbc.Exec("setsurrenderrule 1"))
 	})
 	t.Run("ssr without arg", func(t *testing.T) {
-		assert.Equal(t, "Surrender rule is required.", tbc.Exec("ssr"))
+		assert.Equal(t, msgKey("surrenderRuleRequired"), tbc.Exec("ssr"))
 	})
 	t.Run("ssr with invalid arg", func(t *testing.T) {
-		assert.Equal(t, "Invalid surrender rule: abc. Please enter a number (0-2).", tbc.Exec("ssr abc"))
+		assert.Equal(t, msgKey("invalidSurrenderRuleANumber02", "val", "abc"), tbc.Exec("ssr abc"))
 	})
 	t.Run("ssr with negative arg", func(t *testing.T) {
-		assert.Equal(t, "Invalid surrender rule: -1. Please enter a number (0-2).", tbc.Exec("ssr -1"))
+		assert.Equal(t, msgKey("invalidSurrenderRuleANumber02", "val", "-1"), tbc.Exec("ssr -1"))
 	})
 	t.Run("ssr with out-of-range arg", func(t *testing.T) {
-		assert.Equal(t, "Invalid surrender rule: 3. Please enter a number (0-2).", tbc.Exec("ssr 3"))
+		assert.Equal(t, msgKey("invalidSurrenderRuleANumber02", "val", "3"), tbc.Exec("ssr 3"))
 	})
 }

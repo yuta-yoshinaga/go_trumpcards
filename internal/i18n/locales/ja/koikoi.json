@@ -36,5 +36,6 @@
   "yaku.tane": "タネ",
   "yaku.kasu": "カス",
   "yaku.hanami": "花見酒",
-  "yaku.tsukimi": "月見酒"
+  "yaku.tsukimi": "月見酒",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
 }

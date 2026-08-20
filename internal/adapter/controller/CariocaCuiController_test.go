@@ -73,7 +73,7 @@ func TestCariocaCuiController_Exec(t *testing.T) {
 		m := newMock()
 		c := controller.NewCariocaCuiController(m)
 		out := c.Exec("mc")
-		assert.Contains(t, out, "Usage: mc")
+		assert.Contains(t, out, msgUsage("usageMcABCDEFGHIOneSlotPerArg"))
 		m.AssertNotCalled(t, "MeldContract", mock.Anything)
 	})
 
@@ -81,7 +81,7 @@ func TestCariocaCuiController_Exec(t *testing.T) {
 		m := newMock()
 		c := controller.NewCariocaCuiController(m)
 		out := c.Exec("mc 0,X,2")
-		assert.Contains(t, out, "Usage: mc")
+		assert.Contains(t, out, msgUsage("usageMcABCDEFGHIOneSlotPerArg"))
 		m.AssertNotCalled(t, "MeldContract", mock.Anything)
 	})
 
@@ -103,7 +103,7 @@ func TestCariocaCuiController_Exec(t *testing.T) {
 		m := newMock()
 		c := controller.NewCariocaCuiController(m)
 		out := c.Exec("lo 1")
-		assert.Contains(t, out, "Usage: lo")
+		assert.Contains(t, out, msgUsage("usageLoTargetplayeridxMeldidxCardindex"))
 		m.AssertNotCalled(t, "Layoff", mock.Anything, mock.Anything, mock.Anything)
 	})
 

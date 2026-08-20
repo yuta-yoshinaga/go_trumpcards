@@ -606,3 +606,25 @@ func TestChinchon_GetPlayerMeldSplit(t *testing.T) {
 	assert.Nil(t, m2)
 	assert.Nil(t, d2)
 }
+
+// **8/9/10 を抜いた 40 枚デッキなので、7 の次は J。** 公開版が内部の定義から
+// ずれると、画面のラン判定だけが古い並びで動く (#5665)。
+func TestChinchonRankPositionIsContiguousOverTheDeck(t *testing.T) {
+	// A..7 → 1..7、J/Q/K → 8..10 と隙間なく並ぶ。
+	want := map[int]int{1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 11: 8, 12: 9, 13: 10}
+	for value, pos := range want {
+		if got := domain.ChinchonRankPosition(value); got != pos {
+			t.Errorf("domain.ChinchonRankPosition(%d) = %d, want %d", value, got, pos)
+		}
+	}
+	// **7 と J は隣り合う。** ここが 4 空くと、♠7-♠J のランが組めなくなる。
+	if domain.ChinchonRankPosition(11)-domain.ChinchonRankPosition(7) != 1 {
+		t.Errorf("7 と J が隣接していない: %d → %d", domain.ChinchonRankPosition(7), domain.ChinchonRankPosition(11))
+	}
+	// デッキに無いランクは並びの外。
+	for _, value := range []int{0, 8, 9, 10, 14} {
+		if got := domain.ChinchonRankPosition(value); got > 0 && got <= 10 {
+			t.Errorf("domain.ChinchonRankPosition(%d) = %d, デッキに無いランクが並びに入っている", value, got)
+		}
+	}
+}

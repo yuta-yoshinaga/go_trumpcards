@@ -31,8 +31,7 @@ func (cc *BanLuckCuiController) Exec(command string) string {
 			switch cmd {
 			case "b", "bet":
 				// **0 を弾かない。** 親のラウンドでは 0 が正しい入力。
-				bet, errMsg, ok := cuiutil.ParseIntArg(args,
-					"Bet is required.", "Invalid bet. Please enter a number.", 0, math.MaxInt)
+				bet, errMsg, ok := cuiutil.ParseIntArgKeys(args, "betRequired", "invalidBetANumber", 0, math.MaxInt)
 				if !ok {
 					return errMsg, true
 				}

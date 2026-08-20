@@ -3,6 +3,7 @@
 package presenter
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -71,6 +72,23 @@ func (p *BasraCuiPresenter) Output(g interfaces.BasraGame, lastErr error) string
 			b.WriteString(i18n.Tf("basra.promptPlay",
 				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
 		case domain.BasraPhaseGameEnd:
+			// 勝者も最終得点も CUI のどこにも出ていなかった (Web の basra-result と
+			// 同じ情報源: GetWinners と各プレイヤーの GetScore)。
+			winners := make([]string, 0, len(g.GetWinners()))
+			for _, w := range g.GetWinners() {
+				winners = append(winners, cuiPlayerName(g.GetPlayer(w), w))
+			}
+			if len(winners) > 0 {
+				b.WriteString(i18n.Tf("basra.resultWinner",
+					"names", strings.Join(winners, ", ")) + "\n")
+			}
+			scores := make([]string, 0, g.GetPlayerCnt())
+			for i := 0; i < g.GetPlayerCnt(); i++ {
+				scores = append(scores, fmt.Sprintf("%s %d",
+					cuiPlayerName(g.GetPlayer(i), i), g.GetPlayer(i).GetScore()))
+			}
+			b.WriteString(i18n.Tf("basra.resultScores",
+				"scores", strings.Join(scores, " / ")) + "\n")
 			b.WriteString(i18n.T("basra.promptGameEnd") + "\n")
 		}
 		b.WriteString(i18n.T("basra.promptHelp") + "\n")
@@ -112,5 +130,5 @@ var basraHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *BasraCuiPresenter) ActionLogOutput(g interfaces.BasraGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.BasraPlayer](g)
 }

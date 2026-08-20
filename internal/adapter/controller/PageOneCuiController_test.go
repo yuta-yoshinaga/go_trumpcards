@@ -56,11 +56,11 @@ func TestPageOneCuiController_Exec(t *testing.T) {
 	})
 	t.Run("play no args", func(t *testing.T) {
 		c := controller.NewPageOneCuiController(newMock())
-		assert.Contains(t, c.Exec("p"), "Card index is required")
+		assert.Contains(t, c.Exec("p"), msgCardIndexRequired())
 	})
 	t.Run("play invalid", func(t *testing.T) {
 		c := controller.NewPageOneCuiController(newMock())
-		assert.Contains(t, c.Exec("p abc"), "Invalid card index")
+		assert.Contains(t, c.Exec("p abc"), msgInvalidCardIndexPrefix())
 	})
 	t.Run("draw d", func(t *testing.T) {
 		m := newMock()
@@ -108,11 +108,11 @@ func TestPageOneCuiController_Exec(t *testing.T) {
 	})
 	t.Run("setdifficulty no args", func(t *testing.T) {
 		c := controller.NewPageOneCuiController(newMock())
-		assert.Contains(t, c.Exec("sd"), "required")
+		assert.Contains(t, c.Exec("sd"), msgCpuDifficultyRequired())
 	})
 	t.Run("setdifficulty out of range", func(t *testing.T) {
 		c := controller.NewPageOneCuiController(newMock())
-		assert.Contains(t, c.Exec("sd 3"), "Invalid CPU difficulty")
+		assert.Contains(t, c.Exec("sd 3"), msgInvalidCpuDifficultyPrefix())
 	})
 	t.Run("setlimit valid", func(t *testing.T) {
 		m := newMock()
@@ -124,7 +124,7 @@ func TestPageOneCuiController_Exec(t *testing.T) {
 	})
 	t.Run("setlimit zero", func(t *testing.T) {
 		c := controller.NewPageOneCuiController(newMock())
-		assert.Contains(t, c.Exec("sl 0"), "Invalid point limit")
+		assert.Contains(t, c.Exec("sl 0"), msgInvalidPointLimitPrefix())
 	})
 	t.Run("log", func(t *testing.T) {
 		m := newMock()

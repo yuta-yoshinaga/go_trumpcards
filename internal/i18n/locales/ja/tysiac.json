@@ -18,6 +18,7 @@
   "promptPlay": "手番: {{name}}",
   "promptPlayHelp": "play <idx>・・・カードを出す（強さ A>10>K>Q>J>9／マストフォロー、ボイド時は切り札強制）",
   "promptMarriageHelp": "マリッジ: 同スートの K と Q を持ち K か Q をリードするとそのスートが切り札になり ♠40/♣60/♦80/♥100 を得る",
+  "promptMarriageReady": "いま宣言できるマリッジ: {{suits}}",
   "promptTrickEnd": "トリック終了",
   "promptTrickEndHelp": "n / next・・・次のトリックへ",
   "promptRoundEnd": "ラウンド終了（デクレアラー {{declarer}}: コントラクト {{contract}}）",
@@ -33,5 +34,9 @@
   "hintReasonBidPass": "弱い手なのでパスする",
   "hintReasonTalonDiscard": "最も弱い札を渡す",
   "headerInfo": "契約: {{contract}} / 目標: {{target}}",
-  "headerBid": "現在ビッド: {{bid}}"
+  "headerBid": "現在ビッド: {{bid}}",
+  "helpExampleBid": "  bid pass                  入札を降りる",
+  "helpExamplePlay": "  play 0                    手札の 0 番のカードを出す",
+  "helpExampleNext": "  n                         トリックの決着を見てから次へ",
+  "helpHint": "  h                         助言を表示"
 }

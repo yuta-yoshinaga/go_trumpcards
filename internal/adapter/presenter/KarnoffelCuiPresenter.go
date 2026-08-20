@@ -43,7 +43,15 @@ func karnoffelPlayerStr(g interfaces.KarnoffelGame, i int) string {
 	if player.GetIsHuman() || karnoffelReveal(g) {
 		var b strings.Builder
 		for j := range player.GetCardsSize() {
-			b.WriteString("[" + strconv.Itoa(j) + "]" + cuiCardStr(player.GetCard(j)) + " ")
+			// **どの札が法王かは毎局変わる。**選ばれたスートの称号札に名前を
+			// 付ける。Web はカード下のバッジで出しているのに、CUI だけ
+			// スートと数字から自力で照合させていた (#5732)。
+			c := player.GetCard(j)
+			title := ""
+			if key := domain.KarnoffelTitleKey(c, g.GetChosenSuit()); key != "" {
+				title = i18n.Tf("karnoffel.handTitle", "title", i18n.T("karnoffel.title."+key))
+			}
+			b.WriteString("[" + strconv.Itoa(j) + "]" + cuiCardStr(c) + title + " ")
 		}
 		hand = strings.TrimSpace(b.String())
 	}
@@ -144,5 +152,5 @@ func karnoffelLadderLine() string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *KarnoffelCuiPresenter) ActionLogOutput(g interfaces.KarnoffelGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.KarnoffelPlayer](g)
 }

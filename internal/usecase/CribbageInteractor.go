@@ -131,12 +131,7 @@ func (ci *CribbageInteractor) ShowNext() string {
 
 // NextRound 次のラウンドへ進む
 func (ci *CribbageInteractor) NextRound() string {
-	if out, blocked := guardGameEnd(ci.Game, ci.gp); blocked {
-		return out
-	}
-	ci.Game.NextRound()
-	ci.runCpuTurns()
-	return ci.gp.Output(ci.Game, nil)
+	return advanceRound(ci.Game, ci.gp, ci.runCpuTurns)
 }
 
 // GetConfig 現在の設定を取得
@@ -151,17 +146,10 @@ func (ci *CribbageInteractor) ActionLog() string {
 
 // runCpuTurns CPUターンを実行
 func (ci *CribbageInteractor) runCpuTurns() {
-	for !ci.Game.GetGameEndFlag() {
+	runCpuTurnsUntil(ci.Game, func() bool {
 		phase := ci.Game.GetPhase()
-		if phase == domain.CribbagePhaseRoundEnd || phase == domain.CribbagePhaseGameEnd ||
-			phase == domain.CribbagePhaseShow {
-			break
-		}
-		if ci.Game.IsHumanTurn() {
-			break
-		}
-		ci.Game.CpuPlay()
-	}
+		return phase == domain.CribbagePhaseRoundEnd || phase == domain.CribbagePhaseGameEnd || phase == domain.CribbagePhaseShow || ci.Game.IsHumanTurn()
+	}, ci.Game.CpuPlay)
 }
 
 // RestoreCribbageInteractor deserialises JSON into a CribbageInteractor.

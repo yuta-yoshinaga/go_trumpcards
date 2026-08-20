@@ -564,3 +564,47 @@ func TestDuchess_SuitIndexAndRunHelpers(t *testing.T) {
 		{Card: NewCard(CardDesignSpade, 1, true)}, {Card: NewCard(CardDesignHeart, CardValueMax, true)},
 	}), "A then K wraps around")
 }
+
+// #5557: ページは「組札に2枚以上乗っているか」で自動送りボタンを活性化していたが、
+// それはドメインの条件ではない。Duchess は種札を置かないので 1 枚でも次を送れる
+// ことがあり、逆に何枚乗っていても送れる札が無ければ AutoComplete は失敗する。
+func TestDuchess_CanAutoComplete(t *testing.T) {
+	d := NewDuchess(NewTrumpCards(0))
+	d.Reset()
+
+	// 基準ランク未選択のうちは何も送れない。
+	assert.False(t, d.CanAutoComplete(), "基準ランク未選択")
+
+	// 基準ランクを選ぶと、その1枚が組札に乗る。
+	require.NoError(t, d.ChooseBaseRank(0))
+	require.False(t, d.IsAwaitingBaseRank())
+
+	// **CanAutoComplete と AutoComplete の可否が一致すること。**
+	// ここが食い違うと「押せるのに拒否される」か「押せないのに送れる」になる。
+	can := d.CanAutoComplete()
+	err := d.AutoComplete()
+	if can {
+		assert.NoError(t, err)
+	} else {
+		assert.Error(t, err)
+	}
+}
+
+// **どの局面でも一致していること。**1局面の一致は偶然でも起きる。
+func TestDuchess_CanAutoCompleteMatchesAutoComplete(t *testing.T) {
+	for seed := 0; seed < 20; seed++ {
+		d := NewDuchess(NewTrumpCards(0))
+		d.Reset()
+		require.NoError(t, d.ChooseBaseRank(seed%DuchessReserveCnt))
+		for step := 0; step < 5; step++ {
+			can := d.CanAutoComplete()
+			err := d.AutoComplete()
+			if can {
+				require.NoError(t, err, "seed %d step %d", seed, step)
+			} else {
+				require.Error(t, err, "seed %d step %d", seed, step)
+				break
+			}
+		}
+	}
+}

@@ -22,6 +22,18 @@
   "promptTrickEnd": "トリック終了",
   "promptTrickEndHelp": "next・・・次のトリックへ",
   "promptRoundEnd": "ラウンド終了",
+  "breakdownTitle": "得点内訳",
+  "breakdownHearts": "  ハート {{count}}枚: {{sum}}",
+  "breakdownAllHearts": "  全ハート独占ボーナス",
+  "breakdownAceExposed": "  ♥A 公開により2倍",
+  "breakdownPig": "  猪 (♠Q): -100",
+  "breakdownPigExposed": "  猪 (♠Q) 公開: -200",
+  "breakdownSheep": "  羊 (♦J): +100",
+  "breakdownSheepExposed": "  羊 (♦J) 公開: +200",
+  "breakdownDoubler": "  猪抜き (♣10): {{mult}}倍",
+  "breakdownDoublerStandalone": "  猪抜き (♣10) 単独: {{points}}",
+  "breakdownSubtotal": "  小計: {{subtotal}}",
+  "breakdownTotal": "  合計: {{total}}",
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
   "hintNone": "ヒントはありません。",
   "hintCard": "[HINT: {{cards}} ({{reason}})]",
@@ -29,5 +41,7 @@
   "hintReasonExposeNone": "公開せず様子を見る",
   "hintReasonDiscardPig": "♠Q（豚）を捨てるチャンス",
   "hintReasonDiscardHearts": "ハートを捨てる",
-  "capturedLine": "  獲得: {{cards}}"
+  "capturedLine": "  獲得: {{cards}}",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
+  "helpHint": "  h                    助言を表示"
 }

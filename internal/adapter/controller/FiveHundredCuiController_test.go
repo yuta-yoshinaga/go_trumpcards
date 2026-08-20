@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -70,13 +72,13 @@ func TestFiveHundredCuiController_Quit(t *testing.T) {
 
 func TestFiveHundredCuiController_Usage(t *testing.T) {
 	c, _ := newFiveHundredCui()
-	if got := c.Exec("b"); !strings.Contains(got, "Usage") {
+	if got := c.Exec("b"); !msgRejected(got) {
 		t.Errorf("bid without args should show usage, got %q", got)
 	}
-	if got := c.Exec("e 0"); !strings.Contains(got, "Usage") {
+	if got := c.Exec("e 0"); !msgRejected(got) {
 		t.Errorf("exchange with one arg should show usage, got %q", got)
 	}
-	if got := c.Exec("p"); !strings.Contains(got, "required") {
+	if got := c.Exec("p"); !strings.Contains(got, msgCardIndexRequired()) {
 		t.Errorf("play without args should require index, got %q", got)
 	}
 }
@@ -94,4 +96,15 @@ func TestFiveHundredCuiController_Settings(t *testing.T) {
 	if got := c.Exec("st 300"); !strings.Contains(got, "st") {
 		t.Errorf("settarget = %q", got)
 	}
+}
+
+// #5390: `p 3 abc` はジョーカーのスートを -1 に落として通っていた。
+func TestFiveHundredCuiController_PlayRefusesMistypedJokerSuit(t *testing.T) {
+	c, m := newFiveHundredCui()
+	assert.Equal(t, msgKey("invalidSuit", "val", "abc"), c.Exec("p 3 abc"))
+	m.AssertNotCalled(t, "Play", 3, -1)
+
+	// 省略形は今までどおり -1 (ジョーカーの指定なし)。
+	assert.Equal(t, "play", c.Exec("p 3"))
+	m.AssertCalled(t, "Play", 3, -1)
 }

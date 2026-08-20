@@ -61,11 +61,11 @@ func TestMacauCuiController_Exec(t *testing.T) {
 	})
 
 	t.Run("play no args", func(t *testing.T) {
-		assert.Contains(t, controller.NewMacauCuiController(newMock()).Exec("p"), "Card index is required")
+		assert.Contains(t, controller.NewMacauCuiController(newMock()).Exec("p"), msgCardIndexRequired())
 	})
 
 	t.Run("play invalid arg", func(t *testing.T) {
-		assert.Contains(t, controller.NewMacauCuiController(newMock()).Exec("p abc"), "Invalid card index")
+		assert.Contains(t, controller.NewMacauCuiController(newMock()).Exec("p abc"), msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("playing an 8 inlines a suit prompt", func(t *testing.T) {
@@ -115,7 +115,7 @@ func TestMacauCuiController_Exec(t *testing.T) {
 	})
 
 	t.Run("suit below range", func(t *testing.T) {
-		assert.Contains(t, controller.NewMacauCuiController(newMock()).Exec("s 0"), "Invalid suit: 0")
+		assert.Contains(t, controller.NewMacauCuiController(newMock()).Exec("s 0"), msgKey("invalidSuitRange", "val", "0"))
 	})
 
 	t.Run("declare dc", func(t *testing.T) {
@@ -163,7 +163,7 @@ func TestMacauCuiController_Exec(t *testing.T) {
 	})
 
 	t.Run("setdifficulty out of range", func(t *testing.T) {
-		assert.Equal(t, "Invalid CPU difficulty: 3. Please enter 0-2.", controller.NewMacauCuiController(newMock()).Exec("sd 3"))
+		assert.Equal(t, msgInvalidCpuDifficulty("3"), controller.NewMacauCuiController(newMock()).Exec("sd 3"))
 	})
 
 	t.Run("setlimit valid", func(t *testing.T) {
@@ -176,7 +176,7 @@ func TestMacauCuiController_Exec(t *testing.T) {
 	})
 
 	t.Run("setlimit zero", func(t *testing.T) {
-		assert.Equal(t, "Invalid point limit: 0. Please enter 1-1000.", controller.NewMacauCuiController(newMock()).Exec("sl 0"))
+		assert.Equal(t, msgKey("invalidPointLimit11000", "val", "0"), controller.NewMacauCuiController(newMock()).Exec("sl 0"))
 	})
 
 	t.Run("log", func(t *testing.T) {

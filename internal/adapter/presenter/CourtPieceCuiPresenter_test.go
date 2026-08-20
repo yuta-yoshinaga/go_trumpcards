@@ -8,6 +8,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -31,7 +34,8 @@ func TestCourtPieceCuiPresenter_Output_PhaseLabels(t *testing.T) {
 		cp.SetPhase(domain.CourtPiecePhaseTrumpDeclaration)
 		cp.SetCallerIdx(0)
 		out := p.Output(cp, nil)
-		assert.Contains(t, out, "courtpiece")
+		assert.Contains(t, out, i18n.T("courtpiece.promptTrumpHelp"))
+		assert.NotContains(t, out, "courtpiece.", "a raw i18n key reached the screen")
 	})
 
 	t.Run("play phase prompt", func(t *testing.T) {
@@ -39,9 +43,8 @@ func TestCourtPieceCuiPresenter_Output_PhaseLabels(t *testing.T) {
 		cp.SetPhase(domain.CourtPiecePhasePlay)
 		cp.SetTrumpSuit(domain.CardDesignSpade)
 		out := p.Output(cp, nil)
-		// i18n placeholders are emitted literally in tests; key the assertion to a
-		// section we know is present regardless of locale.
-		assert.Contains(t, out, "courtpiece.promptPlay")
+		assert.Contains(t, out, i18n.T("courtpiece.promptPlayHelp"))
+		assert.NotContains(t, out, "courtpiece.", "a raw i18n key reached the screen")
 	})
 
 	t.Run("trick end prompt", func(t *testing.T) {
@@ -78,11 +81,14 @@ func TestCourtPieceCuiPresenter_Output_PhaseLabels(t *testing.T) {
 		cp.SetTrumpSuit(domain.CardDesignSpade)
 		cp.SetCallerIdx(0)
 		out := p.Output(cp, nil)
-		// The caller line (which now carries the caller's team) and one player
-		// line per seat are rendered. Assertions key on the section markers
-		// because i18n templates resolve to their literal keys in tests.
-		assert.Contains(t, out, "courtpiece.callerLine")
-		assert.Contains(t, out, "courtpiece.playerLine")
+		// The caller line carries the caller's team, and one player line per seat
+		// is rendered. Asserted through i18n rather than on the key names: the
+		// previous version matched "courtpiece.callerLine", which only held
+		// because the key had no translation (issue #5380).
+		assert.Contains(t, out, i18n.Tf("courtpiece.callerLine", "name", "あなた", "team", "A"))
+		assert.Contains(t, out, i18n.Tf("courtpiece.playerLine",
+			"name", "あなた", "team", "A", "tricks", "0", "cards", "5"))
+		assert.NotContains(t, out, "courtpiece.", "a raw i18n key reached the screen")
 	})
 }
 
@@ -175,7 +181,7 @@ func TestCourtPieceCuiPresenter_HintOutput(t *testing.T) {
 		cp.SetPhase(domain.CourtPiecePhasePlay)
 		cp.SetCurrentPlayerIdx(1) // CPU's turn
 		out := p.HintOutput(cp)
-		assert.Contains(t, strings.ToLower(out), "hint")
+		assert.Contains(t, out, i18n.T("courtpiece.hintNone"))
 	})
 }
 
@@ -184,4 +190,106 @@ func TestCourtPieceCuiPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.CourtPieceCuiPresenter)
 	out := p.ActionLogOutput(cp)
 	assert.NotNil(t, out)
+}
+
+// #5656: 13トリック総取り、または連続でラウンドを取ると Court ボーナスで +2 点
+// 入る。Web はラウンド結果に roundResult.court を出しているのに、CUI は汎用の
+// 「次のラウンドへ」しか出さず、**スコアだけが 2 動く理由が分からなかった**。
+func TestCourtPieceCuiPresenter_RoundEndCallsOutTheCourtBonus(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.CourtPieceCuiPresenter)
+
+	// **集計 (ScoreRound) は画面より後に走る。** 実際の呼び順は
+	// ResolveTrick → Output → (nr を打ってから) ScoreRound なので、
+	// テストも ScoreRound を呼ばずに描く。
+	t.Run("announces a clean sweep", func(t *testing.T) {
+		cp := newCourtPieceForCuiTest()
+		cp.SetCallerIdx(0)
+		for i := 0; i < 13; i++ {
+			cp.GetPlayer(0).AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 2, false)})
+		}
+		cp.SetPhase(domain.CourtPiecePhaseRoundEnd)
+
+		out := p.Output(cp, nil)
+
+		assert.Contains(t, out, i18n.T("courtpiece.roundEndCourt"))
+		// 既存の案内文は残す。
+		assert.Contains(t, out, i18n.T("courtpiece.promptRoundEndHelp"))
+	})
+
+	// **8-5 で勝った初回は Court ではない。**ここで出してしまうと +1 のラウンドに
+	// +2 の説明が付く。
+	t.Run("stays quiet on an ordinary round win", func(t *testing.T) {
+		cp := newCourtPieceForCuiTest()
+		cp.SetCallerIdx(0)
+		for i := 0; i < 8; i++ {
+			cp.GetPlayer(0).AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 2, false)})
+		}
+		for i := 0; i < 5; i++ {
+			cp.GetPlayer(1).AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 3, false)})
+		}
+		cp.SetPhase(domain.CourtPiecePhaseRoundEnd)
+
+		out := p.Output(cp, nil)
+
+		assert.NotContains(t, out, i18n.T("courtpiece.roundEndCourt"))
+	})
+
+	// **前のラウンドの Court を持ち越さない。** 集計済みのフラグを読むと、
+	// 直前が Court だったせいで今回の +1 のラウンドにも説明が付く。
+	t.Run("does not carry over the previous round's Court", func(t *testing.T) {
+		cp := newCourtPieceForCuiTest()
+		cp.SetCallerIdx(0)
+		// 1 ラウンド目: 13 トリック総取り = Court。ここで集計まで走らせる。
+		for i := 0; i < 13; i++ {
+			cp.GetPlayer(0).AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 2, false)})
+		}
+		cp.SetPhase(domain.CourtPiecePhaseRoundEnd)
+		cp.ScoreRound()
+		require.True(t, cp.IsLastRoundCourt(), "前提: 1 ラウンド目は Court")
+
+		// 2 ラウンド目: 相手チームが 8-5 で勝つ。連勝ではないので Court ではない。
+		for _, seat := range []int{0, 1, 2, 3} {
+			cp.GetPlayer(seat).ResetRound()
+		}
+		for i := 0; i < 8; i++ {
+			cp.GetPlayer(1).AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 3, false)})
+		}
+		for i := 0; i < 5; i++ {
+			cp.GetPlayer(0).AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 4, false)})
+		}
+		cp.SetPhase(domain.CourtPiecePhaseRoundEnd)
+
+		assert.NotContains(t, p.Output(cp, nil), i18n.T("courtpiece.roundEndCourt"))
+	})
+
+	// **連勝は集計前でも読める。** 同じチームが 2 ラウンド続けて勝てば Court。
+	t.Run("announces back-to-back wins before scoring", func(t *testing.T) {
+		cp := newCourtPieceForCuiTest()
+		cp.SetCallerIdx(0)
+		for i := 0; i < 8; i++ {
+			cp.GetPlayer(0).AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 2, false)})
+		}
+		for i := 0; i < 5; i++ {
+			cp.GetPlayer(1).AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 3, false)})
+		}
+		cp.SetPhase(domain.CourtPiecePhaseRoundEnd)
+		cp.ScoreRound() // 1 勝目 (Court ではない)
+		require.False(t, cp.IsLastRoundCourt())
+
+		for _, seat := range []int{0, 1, 2, 3} {
+			cp.GetPlayer(seat).ResetRound()
+		}
+		for i := 0; i < 7; i++ {
+			cp.GetPlayer(0).AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, false)})
+		}
+		for i := 0; i < 6; i++ {
+			cp.GetPlayer(1).AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 6, false)})
+		}
+		cp.SetPhase(domain.CourtPiecePhaseRoundEnd)
+
+		assert.Contains(t, p.Output(cp, nil), i18n.T("courtpiece.roundEndCourt"))
+	})
 }

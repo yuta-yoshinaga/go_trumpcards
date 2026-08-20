@@ -27,6 +27,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { ThirtyOneResponse } from '../types/card';
 import { ThirtyOnePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { fiftyOneBestSuit, fiftyOneSuitScores } from '../utils/fiftyOneSuitScores';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -170,8 +171,9 @@ function ThirtyOnePageContent() {
         'r / reset        - Reset game',
         'l / log          - Show action log',
       ],
+      localCommand: hintLocalCommand(frontendHint),
     }),
-    [],
+    [frontendHint],
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
@@ -384,6 +386,13 @@ function ThirtyOnePageContent() {
                     type: 'select' as const,
                     id: 'cpuDifficulty',
                     label: t('settings.cpuDifficulty'),
+                    // **難易度の違いはノック閾値がすべて。**数字はサーバーが
+                    // 運んでくるので、翻訳文に焼き込まない (#5623)。
+                    tooltip: t('settings.cpuDifficultyHelp', {
+                      easy: state.config.knockThresholds.easy,
+                      normal: state.config.knockThresholds.normal,
+                      hard: state.config.knockThresholds.hard,
+                    }),
                     value: String(cpuDifficulty),
                     options: DIFFICULTY_OPTIONS,
                     onSelect: (v: string) => setCpuDifficulty(Number.parseInt(v, 10)),

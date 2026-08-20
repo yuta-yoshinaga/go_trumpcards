@@ -109,6 +109,13 @@ func (p *FiveHundredCuiPresenter) Output(g interfaces.FiveHundredGame, lastErr e
 			func(idx int) string { return cuiPlayerName(g.GetPlayer(idx), idx) },
 		)
 
+		// **指名スートはトリックの直後に出す。**ジョーカーが場にある間、他の3人が
+		// 従うべきスートはこの値だけで決まるのに、どちらの画面も出していなかった
+		// (#5626)。指名が無いとき (-1) は行ごと出さない。
+		if suit := g.GetJokerLeadSuit(); suit > 0 && suit < len(suitNames) {
+			b.WriteString(i18n.Tf("fivehundred.jokerLeadSuit", "suit", suitNames[suit]) + "\n")
+		}
+
 		cuiErrorBlock(b, lastErr)
 
 		if g.GetGameEndFlag() {
@@ -146,7 +153,7 @@ func (p *FiveHundredCuiPresenter) HintOutput(g interfaces.FiveHundredGame) strin
 	if hint == nil {
 		return i18n.T("fivehundred.hintNone") + "\n"
 	}
-	reason := lookupHintReason(hint.Reason, fiveHundredHintReasonKeys)
+	reason := hintReasonStr(hint.Reason, fiveHundredHintReasonKeys)
 	switch {
 	case hint.Pass != nil && *hint.Pass:
 		return color.Yellow(i18n.Tf("fivehundred.hintPass", "reason", reason)) + "\n"
@@ -173,7 +180,7 @@ func (p *FiveHundredCuiPresenter) HintOutput(g interfaces.FiveHundredGame) strin
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *FiveHundredCuiPresenter) ActionLogOutput(g interfaces.FiveHundredGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.FiveHundredPlayer](g)
 }
 
 // ptrOrZero returns *p or 0 when p is nil.

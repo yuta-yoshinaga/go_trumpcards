@@ -47,17 +47,17 @@ func (c *ConquianCuiController) Exec(command string) string {
 			case "m", "meld":
 				return c.ci.Meld(parseMeldGroups(args)), true
 			case "d", "discard":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.ci.Discard)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.ci.Discard)
 			case "nr", "nextround":
 				return c.ci.NextRound(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.ci.GetConfig()
 					cfg.CpuDifficulty = domain.ConquianCpuDifficulty(v)
 					return c.ci.ResetWithConfig(cfg)
 				})
 			case "sw", "setwins":
-				return cuiutil.WithParsedInt(args, "Target wins is required.", "Invalid target wins: %s. Please enter 1 or more.", 1, math.MaxInt, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "targetWinsRequired", "invalidTargetWins1OrMore", 1, math.MaxInt, func(v int) string {
 					cfg := c.ci.GetConfig()
 					cfg.TargetWins = v
 					return c.ci.ResetWithConfig(cfg)

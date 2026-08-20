@@ -35,6 +35,9 @@ import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
+/** ラウンド勝利に必要なトリック数。`SpoilFiveWinTricks` (internal/domain/SpoilFive.go) と同じ。 */
+const SPOILFIVE_WIN_TRICKS = 3;
+
 /** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 unused). */
 const SUIT_SYMBOLS = ['', '♠', '♣', '♥', '♦'] as const;
 
@@ -190,10 +193,18 @@ function SpoilFivePageContent() {
     const isRoundWinner = (isRoundEnd || isGameEnd) && state.roundWinnerIdx === p.id;
     return (
       <div key={p.id} className="py-0.5 flex items-center gap-2">
-        <span className="text-ds-text-muted">
+        {/* **3トリック先取でその場でラウンドが終わる** (SpoilFive.go の ResolveTrick)。
+            獲得数だけでは、あと何トリックで決まるのかが読めない (#5655)。 */}
+        <span className="text-ds-text-muted" data-testid={`sf-tricks-${p.id}`}>
           {playerName(p.id, p.isHuman)}
-          {` — ${t('roundTricks', { count: p.roundTricks })} · ${t('score', { count: p.score })}`}
+          {` — ${t('roundTricksOf', { count: p.roundTricks, needed: SPOILFIVE_WIN_TRICKS })} · ${t('score', { count: p.score })}`}
         </span>
+        {/* 残り1トリックで決まる状態は、終盤でいちばん重要な情報。 */}
+        {!isRoundEnd && !isGameEnd && p.roundTricks === SPOILFIVE_WIN_TRICKS - 1 && (
+          <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`} data-testid={`sf-reach-${p.id}`}>
+            {t('reach')}
+          </span>
+        )}
         {isLeader && (
           <span className="px-1.5 py-0.5 rounded bg-white/20 text-ds-text-primary text-xs">{t('leader')}</span>
         )}
@@ -369,14 +380,21 @@ function SpoilFivePageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {state.hint && isRequestedHint(state) && (
-              <div className="text-ds-warning text-sm mb-2">
-                {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
-                {state.hint.cardIndices &&
-                  state.hint.cardIndices.length > 0 &&
-                  ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
-              </div>
-            )}
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-testid="spoilfive-hint-live" role="status" aria-live="polite">
+              {state.hint && isRequestedHint(state) && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
+                  {state.hint.cardIndices &&
+                    state.hint.cardIndices.length > 0 &&
+                    ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
+                </div>
+              )}
+            </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="spoilfive-action-buttons">

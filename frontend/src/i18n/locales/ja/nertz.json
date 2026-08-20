@@ -12,7 +12,7 @@
     "waste": "ウェイスト",
     "stock": "ストック",
     "foundation": "ファウンデーション",
-    "foundationN": "ファウンデーション{{n}}",
+    "foundationN": "ファウンデーション{{n}}（{{size}}/{{max}}枚）",
     "remaining": "残り",
     "size": "枚"
   },

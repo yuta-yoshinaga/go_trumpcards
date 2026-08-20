@@ -63,6 +63,7 @@ function makeState(overrides: Partial<PineappleResponse> = {}): PineappleRespons
     isDiscardPhase: false,
     discardDone: [false],
     initialDealCount: 4,
+    liveBestHand: '',
     ...overrides,
   };
 }

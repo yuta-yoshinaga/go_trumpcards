@@ -176,6 +176,12 @@ func (_m *MockUltiGame) GetDiscardCount() int {
 	return ret.Get(0).(int)
 }
 
+// GetLastDealCoins モック
+func (_m *MockUltiGame) GetLastDealCoins() [domain.UltiPlayerCnt]int {
+	ret := _m.Called()
+	return ret.Get(0).([domain.UltiPlayerCnt]int)
+}
+
 // GetPlayerCoins モック
 func (_m *MockUltiGame) GetPlayerCoins() [domain.UltiPlayerCnt]int {
 	ret := _m.Called()

@@ -376,7 +376,12 @@ function WindmillPageContent() {
               {Array.from({ length: SAIL_CNT }, (_, i) => i).map(renderSail)}
             </div>
 
-            <div data-tutorial="wm-hint-display">
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-tutorial="wm-hint-display" data-testid="wm-hint-live" role="status" aria-live="polite">
               {hint && (
                 <div className="text-ds-warning text-sm mb-2 mt-3">
                   {t('hintAvailable')}: {formatHintZone(t, hint.fromZone, hint.fromIdx)} →{' '}

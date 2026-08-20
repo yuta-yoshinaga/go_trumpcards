@@ -18,7 +18,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { gameTheme } from '../styles/gameTheme';
-import type { CassinoResponse } from '../types/card';
+import type { CassinoAction, CassinoResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { cassinoTakeCandidates } from '../utils/cassinoTakeCandidates';
@@ -130,6 +130,27 @@ function CassinoPageContent() {
   // is still null.
   const human = state && state.players.length >= 4 ? state.players[0] : null;
   const isHumanTurn = !!state && state.currentTurn === 0 && !state.gameEndFlag;
+  // 自分と CPU の手を 1 本の時系列に。文言は CUI の cassinoActionStr と同じ組み立て
+  // (テイクは捕獲枚数とスイープ、ビルドは値、トレイルはその旨)。
+  const describeAction = (a: CassinoAction): string => {
+    const name = a.playerIdx === 0 ? tc('player.you') : tc('player.cpu', { id: a.playerIdx });
+    const played = a.playedCard ? cardAlt(a.playedCard) : '';
+    switch (a.type) {
+      case 'take':
+        return t(a.isSweep ? 'action.takeSweep' : 'action.take', {
+          name,
+          played,
+          count: a.capturedCards.length,
+        });
+      case 'build':
+        return t('action.build', { name, played, value: a.buildValue });
+      default:
+        return t('action.trail', { name, played });
+    }
+  };
+  const actionHistory = [...(state?.humanAction ? [state.humanAction] : []), ...(state?.cpuActions ?? [])].map(
+    describeAction,
+  );
 
   const suggestion = useMemo(
     () =>
@@ -299,6 +320,22 @@ function CassinoPageContent() {
                 </div>
               )}
             </div>
+
+            {/* Action history: CUI は毎ターン「誰が何のカードでテイク(何枚・スイープか)/
+                ビルド/トレイルしたか」を出しているのに、Web はどちらのフィールドも
+                読んでいなかった (#5549)。テイク・ビルド・トレイルと選択肢が多く、
+                場の変化を追いにくいゲームなので効く。 */}
+            {actionHistory.length > 0 && (
+              <div
+                role="log"
+                aria-live="polite"
+                aria-label={t('label.actionLog')}
+                className="bg-black/40 rounded-lg text-ds-text-primary py-2 px-3.5 my-2 whitespace-pre-line text-xs"
+                data-testid="cs-action-log"
+              >
+                {actionHistory.join('\n')}
+              </div>
+            )}
 
             {/* Human hand */}
             <div className="text-center" data-tutorial="cs-player-hand">

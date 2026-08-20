@@ -46,17 +46,21 @@ type LingerLongerWebOutput struct {
 	Phase      int                            `json:"phase"`
 	ValidPlays []int                          `json:"validPlays"`
 	// StockSize は山札の残り。**0 になると誰も補充できず、脱落が一気に進みます。**
-	StockSize        int                        `json:"stockSize"`
-	CurrentTrick     []*WebOutputTrickCard      `json:"currentTrick"`
-	CurrentPlayerIdx int                        `json:"currentPlayerIdx"`
-	LeadPlayerIdx    int                        `json:"leadPlayerIdx"`
-	TrickNumber      int                        `json:"trickNumber"`
-	LastDrawIdx      int                        `json:"lastDrawIdx"`
-	EliminatedCnt    int                        `json:"eliminatedCnt"`
-	Discarded        int                        `json:"discarded"`
-	GameEndFlag      bool                       `json:"gameEndFlag"`
-	WinnerIdx        int                        `json:"winnerIdx"`
-	Hint             *LingerLongerWebOutputHint `json:"hint,omitempty"`
+	StockSize        int                   `json:"stockSize"`
+	CurrentTrick     []*WebOutputTrickCard `json:"currentTrick"`
+	CurrentPlayerIdx int                   `json:"currentPlayerIdx"`
+	LeadPlayerIdx    int                   `json:"leadPlayerIdx"`
+	TrickNumber      int                   `json:"trickNumber"`
+	LastDrawIdx      int                   `json:"lastDrawIdx"`
+	EliminatedCnt    int                   `json:"eliminatedCnt"`
+	Discarded        int                   `json:"discarded"`
+	GameEndFlag      bool                  `json:"gameEndFlag"`
+	WinnerIdx        int                   `json:"winnerIdx"`
+	// WinReason は決着の理由のロケール非依存キー ("lasted" / "lastTrick" /
+	// "giveUp")。決着前は空。ページは winnerIdx だけを見て「最後まで持ち続けた」
+	// と書いていたが、全員が同時に出し切った局ではそれが事実に反する (#5765)。
+	WinReason string                     `json:"winReason"`
+	Hint      *LingerLongerWebOutputHint `json:"hint,omitempty"`
 	WebOutputBase
 	Config LingerLongerWebOutputConfig `json:"config"`
 }

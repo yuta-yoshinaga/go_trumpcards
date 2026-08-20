@@ -217,7 +217,17 @@ function SpiderettePageContent() {
           <span>
             {t('moveCount')}: {state.moveCount}
           </span>
-          <span className="ml-3">
+          {/* **数字が動く理由を推測させない** (#5593)。手数の減点とスート完成の
+              加点は、どちらの画面にも書かれていなかった。数字はサーバから。 */}
+          <span
+            className="ml-3"
+            data-testid="spiderette-score"
+            title={t('scoreRule', {
+              start: state.scoring.start,
+              penalty: state.scoring.movePenalty,
+              bonus: state.scoring.suitBonus,
+            })}
+          >
             {t('score')}: {state.score}
           </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
@@ -352,11 +362,18 @@ function SpiderettePageContent() {
               </div>
             </div>
 
-            {hint && (
-              <div className="text-ds-warning text-sm mb-2" role="status" aria-live="polite">
-                {t('hintAvailable')}: {t('tableau')} {hint.fromCol} [{hint.cardIndex}] → {t('tableau')} {hint.toCol}
-              </div>
-            )}
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-testid="spiderette-hint-live" role="status" aria-live="polite">
+              {hint && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {t('hintAvailable')}: {t('tableau')} {hint.fromCol} [{hint.cardIndex}] → {t('tableau')} {hint.toCol}
+                </div>
+              )}
+            </div>
             <div className="flex justify-center">
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
             </div>

@@ -71,5 +71,9 @@
     "holdOn": "Hold card {{index}}",
     "holdOff": "Release card {{index}}",
     "kbdHint": "Press number keys 1-5 to toggle holding each card"
+  },
+  "madeHand": {
+    "label": "Current hand",
+    "none": "No paying hand"
   }
 }

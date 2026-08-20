@@ -35,9 +35,9 @@ func TestDoubleKlondikeCuiController_Exec(t *testing.T) {
 	})
 	t.Run("invalid move args", func(t *testing.T) {
 		c := newDkCui()
-		assert.Contains(t, c.Exec("mwt"), "Invalid")
-		assert.Contains(t, c.Exec("mtt 0 0"), "Invalid")
-		assert.Contains(t, c.Exec("mwt x"), "not an integer")
+		assert.True(t, msgRejected(c.Exec("mwt")))
+		assert.True(t, msgRejected(c.Exec("mtt 0 0")))
+		assert.Equal(t, msgKey("invalidArgumentNotInteger", "val", "x"), c.Exec("mwt x"))
 	})
 	t.Run("giveup + unknown", func(t *testing.T) {
 		assert.NotEmpty(t, newDkCui().Exec("g"))

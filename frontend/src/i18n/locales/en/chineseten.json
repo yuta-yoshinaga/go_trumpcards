@@ -20,5 +20,12 @@
   "tutorial.layout": "The centre is the layout. Play a card that pairs with one of them and you take both.",
   "tutorial.flip": "After you play, a card is turned from the stock and captures on the same terms. That is why there is no redeal -- hand and stock empty together.",
   "tutorial.red": "Only the red cards score. Those are the ones showing a number; black cards are worth nothing however many you take.",
-  "tutorial.tie": "The red cards are worth 210 between them, so 105 draws and 106 wins."
+  "tutorial.tie": "The red cards are worth 210 between them, so 105 draws and 106 wins.",
+  "blocked": {
+    "notYourTurn": "It is the opponent's turn",
+    "gameOver": "This round is over",
+    "chooseFirst": "Choose the card to take first",
+    "playFirst": "Play a card from your hand first",
+    "noMatch": "This card cannot be taken (A-9 pair to ten, 10-K match rank)"
+  }
 }

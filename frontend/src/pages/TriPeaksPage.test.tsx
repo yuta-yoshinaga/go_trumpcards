@@ -63,6 +63,8 @@ const playingState: TriPeaksResponse = {
   waste: [card('CLOVER', 4)],
   phase: 0,
   moveCount: 3,
+  score: 0,
+  combo: 0,
   canUndo: true,
   isStalemate: false,
   message: '',
@@ -350,6 +352,24 @@ describe('TriPeaksPage', () => {
     expect(screen.queryByTestId('combo-badge')).not.toBeInTheDocument();
   });
 
+  // **コンボは色とテキストだけで示されていた。** Golf と同じ欠落 (#5821 / #5520)。
+  it('announces a running combo to screen readers', async () => {
+    mockCombo.mockReturnValue(3);
+    renderWithProviders(<TriPeaksPage />);
+    const live = await screen.findByTestId('tripeaks-combo-announce');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toHaveTextContent('3');
+  });
+
+  it('stays silent while there is no combo', async () => {
+    mockCombo.mockReturnValue(1);
+    renderWithProviders(<TriPeaksPage />);
+    const live = await screen.findByTestId('tripeaks-combo-announce');
+    // 領域は常設し、中身だけ空にする（出し入れすると読み上げが飛ぶ）。
+    expect(live).toBeEmptyDOMElement();
+  });
+
   it('renders the combo badge with blue styling when combo is 2', async () => {
     mockCombo.mockReturnValue(2);
     renderWithProviders(<TriPeaksPage />);
@@ -423,8 +443,9 @@ describe('TriPeaksPage chain-bonus score & best record (#3087)', () => {
   it('adds chain-bonus points after removing a card', async () => {
     renderWithProviders(<TriPeaksPage />);
     await waitFor(() => expect(screen.getByLabelText('♠ 5')).toBeInTheDocument());
-    // Removing a card (moveCount rises, stock unchanged) scores 1 × 100.
-    mockExec.mockResolvedValueOnce({ ...playingState, moveCount: 4 });
+    // **得点はサーバが数える。** ページは state.score を映すだけ (#5511)。
+    // 連鎖倍率とピークボーナスの式そのものは domain のテストが押さえている。
+    mockExec.mockResolvedValueOnce({ ...playingState, moveCount: 4, score: 100, combo: 1 });
     fireEvent.click(screen.getByLabelText('♠ 5'));
     await waitFor(() => expect(screen.getByTestId('tp-score')).toHaveTextContent('100'));
   });
@@ -444,6 +465,8 @@ describe('TriPeaksPage chain-bonus score & best record (#3087)', () => {
     mockExec.mockResolvedValueOnce({
       ...playingState,
       moveCount: 4,
+      score: 100,
+      combo: 1,
       phase: 1,
       messageCode: 'tripeaks.gameClear',
       messageParams: { moveCount: '4' },

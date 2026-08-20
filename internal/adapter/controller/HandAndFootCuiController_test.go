@@ -90,12 +90,12 @@ func TestHandAndFootCuiController_Exec(t *testing.T) {
 
 	t.Run("discard d no args", func(t *testing.T) {
 		c := controller.NewHandAndFootCuiController(newMock())
-		assert.Contains(t, c.Exec("d"), "Card index is required")
+		assert.Contains(t, c.Exec("d"), msgCardIndexRequired())
 	})
 
 	t.Run("discard d invalid arg", func(t *testing.T) {
 		c := controller.NewHandAndFootCuiController(newMock())
-		assert.Contains(t, c.Exec("d abc"), "Invalid card index")
+		assert.Contains(t, c.Exec("d abc"), msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("goout go", func(t *testing.T) {
@@ -123,7 +123,7 @@ func TestHandAndFootCuiController_Exec(t *testing.T) {
 
 	t.Run("setdifficulty invalid", func(t *testing.T) {
 		c := controller.NewHandAndFootCuiController(newMock())
-		assert.Contains(t, c.Exec("sd abc"), "Invalid CPU difficulty")
+		assert.Contains(t, c.Exec("sd abc"), msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("setlimit sl valid", func(t *testing.T) {
@@ -137,7 +137,7 @@ func TestHandAndFootCuiController_Exec(t *testing.T) {
 
 	t.Run("setlimit zero invalid", func(t *testing.T) {
 		c := controller.NewHandAndFootCuiController(newMock())
-		assert.Contains(t, c.Exec("sl 0"), "Invalid point limit")
+		assert.Contains(t, c.Exec("sl 0"), msgInvalidPointLimitPrefix())
 	})
 
 	t.Run("log l", func(t *testing.T) {

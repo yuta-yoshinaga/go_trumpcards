@@ -360,6 +360,14 @@ function PyramidPageContent() {
                     {t('empty')}
                   </div>
                 )}
+                {/* **配り直しは無い。** Draw は山札を引き切ると二度と引けないのに、
+                    空表示は「なし」としか言わない。標準のピラミッド (3回配り直し可) を
+                    知っているプレイヤーほど手詰まりの原因を誤解する (#5510)。 */}
+                {state.stockCount === 0 && (
+                  <div className="text-game-text-muted text-[10px] mt-1 max-w-[120px]" data-testid="py-no-redeal">
+                    {t('noRedeal')}
+                  </div>
+                )}
               </div>
 
               {/* Waste */}
@@ -392,7 +400,12 @@ function PyramidPageContent() {
             </div>
 
             {/* Hint display */}
-            <div data-tutorial="py-hint-display">
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-tutorial="py-hint-display" data-testid="py-hint-live" role="status" aria-live="polite">
               {hint && (
                 <div className="text-ds-warning text-sm mb-2 text-center">
                   {t('hintAvailable')}: {t(`hintType.${hint.type}`)}

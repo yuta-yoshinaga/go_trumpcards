@@ -15,6 +15,7 @@ import (
 
 func TestGuandanCuiController_Exec(t *testing.T) {
 	mockOutput := `{"phase":1}`
+	checkOutput := "combo: bomb"
 
 	newMock := func() *mockUsecases.MockGuandanInteractor {
 		m := new(mockUsecases.MockGuandanInteractor)
@@ -25,6 +26,7 @@ func TestGuandanCuiController_Exec(t *testing.T) {
 		m.On("ReturnTribute", mock.Anything).Return(mockOutput)
 		m.On("NextHand").Return(mockOutput)
 		m.On("ActionLog").Return(mockOutput)
+		m.On("Check", mock.Anything).Return(checkOutput)
 		return m
 	}
 
@@ -48,10 +50,10 @@ func TestGuandanCuiController_Exec(t *testing.T) {
 
 	t.Run("play rejects bad input", func(t *testing.T) {
 		c := controller.NewGuandanCuiController(newMock())
-		assert.Contains(t, c.Exec("p"), "Card indexes are required")
-		assert.Contains(t, c.Exec("p abc"), "Invalid card index")
-		assert.Contains(t, c.Exec("p -1"), "Invalid card index")
-		assert.Contains(t, c.Exec("p 27"), "Invalid card index")
+		assert.Contains(t, c.Exec("p"), msgStem("cardIndexesRequiredTriple"))
+		assert.Contains(t, c.Exec("p abc"), msgInvalidCardIndexPrefix())
+		assert.Contains(t, c.Exec("p -1"), msgInvalidCardIndexPrefix())
+		assert.Contains(t, c.Exec("p 27"), msgInvalidCardIndexPrefix())
 		// **同じ札を 2 回数えられない。**通すとペアが 1 枚から作れてしまう。
 		assert.Contains(t, c.Exec("p 1 1"), "twice")
 	})
@@ -73,9 +75,9 @@ func TestGuandanCuiController_Exec(t *testing.T) {
 
 	t.Run("tribute rejects bad input", func(t *testing.T) {
 		c := controller.NewGuandanCuiController(newMock())
-		assert.Contains(t, c.Exec("t"), "Card index is required")
-		assert.Contains(t, c.Exec("t abc"), "Invalid card index")
-		assert.Contains(t, c.Exec("t 27"), "Invalid card index")
+		assert.Contains(t, c.Exec("t"), msgCardIndexRequired())
+		assert.Contains(t, c.Exec("t abc"), msgInvalidCardIndexPrefix())
+		assert.Contains(t, c.Exec("t 27"), msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("log and unknown", func(t *testing.T) {
@@ -85,4 +87,32 @@ func TestGuandanCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "ActionLog")
 		assert.Contains(t, c.Exec("unknown"), "コマンドが不明です")
 	})
+}
+
+// **出さずに役だけ調べられる** (#5734)。手札は動かない。
+func TestGuandanCuiController_Check(t *testing.T) {
+	mockOutput := `{"phase":0}`
+	checkOutput := "combo: bomb"
+	newMock := func() *mockUsecases.MockGuandanInteractor {
+		m := new(mockUsecases.MockGuandanInteractor)
+		m.On("GetConfig").Return(domain.DefaultGuandanConfig())
+		m.On("PlayCards", mock.Anything).Return(mockOutput)
+		m.On("Check", mock.Anything).Return(checkOutput)
+		return m
+	}
+
+	m := newMock()
+	c := controller.NewGuandanCuiController(m)
+	assert.Equal(t, checkOutput, c.Exec("ch 0 1 2"))
+	m.AssertCalled(t, "Check", []int{0, 1, 2})
+	assert.Equal(t, checkOutput, c.Exec("check 3"))
+	m.AssertCalled(t, "Check", []int{3})
+	// **調べても場には出ない。**
+	m.AssertNotCalled(t, "PlayCards", mock.Anything)
+
+	// 数字でない引数は読み飛ばしたうえで警告が付く。
+	warned := c.Exec("ch 0 x")
+	assert.Contains(t, warned, checkOutput)
+	assert.NotEqual(t, checkOutput, warned)
+	m.AssertCalled(t, "Check", []int{0})
 }

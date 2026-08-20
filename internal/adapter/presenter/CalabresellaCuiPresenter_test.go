@@ -4,9 +4,12 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -203,6 +206,46 @@ func TestCalabresellaCuiPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
 		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You plays ♠K"},
 	})
+	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+	m.On("GetPlayer", mock.Anything).Return(domain.NewCalabresellaPlayer(true)).Maybe()
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, "play")
+}
+
+// #5688: ソリストはモンテを取って 16 枚になった手札を 12 枚まで捨てる。
+// Web は残り枚数をバナーとボタン名で毎レンダー更新しているのに、CUI の
+// 固定文言 (「4枚を捨てて12枚にする」) は 1 枚捨てても変わらず、
+// 利用者は自分が何枚捨てたかを暗算し続けるしかなかった。
+func TestCalabresellaCuiPresenter_DiscardRemaining(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.CalabresellaCuiPresenter)
+
+	outputWithHand := func(handSize int) string {
+		m, players := setupCalabresellaCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.CalabresellaPhaseDiscard)
+		for i := 0; i < handSize; i++ {
+			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, i%13+1, false))
+		}
+		return p.Output(m, nil)
+	}
+
+	// 16 枚から 1 枚ずつ捨てるあいだ、残りは 4 → 3 → … と減る。
+	for handSize, want := range map[int]int{16: 4, 15: 3, 13: 1} {
+		assert.Contains(t, outputWithHand(handSize),
+			i18n.Tf("calabresella.promptDiscardRemaining",
+				"n", strconv.Itoa(want),
+				"size", strconv.Itoa(handSize),
+				"target", strconv.Itoa(domain.CalabresellaHandSize)),
+			"hand of %d should show %d left", handSize, want)
+	}
+
+	t.Run("says nothing once the hand is down to twelve", func(t *testing.T) {
+		result := outputWithHand(domain.CalabresellaHandSize)
+
+		assert.NotContains(t, result,
+			strings.Split(i18n.T("calabresella.promptDiscardRemaining"), "{{")[0])
+	})
 }

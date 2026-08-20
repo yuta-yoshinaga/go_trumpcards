@@ -33,6 +33,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { parseTonkCommand, TONK_HELP } from '../utils/cli/commands/tonkCommands';
 import { formatTonkState } from '../utils/cli/formatters/tonkFormatter';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -116,8 +117,9 @@ function TonkPageContent() {
       parseCommand: parseTonkCommand,
       formatResponse: formatTonkState,
       helpText: TONK_HELP,
+      localCommand: hintLocalCommand(frontendHint),
     }),
-    [],
+    [frontendHint],
   );
   const { handleCommand } = useCliGame(gameExec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
@@ -184,7 +186,8 @@ function TonkPageContent() {
   const minOpponentCards = state.players
     .filter((p) => !p.isHuman)
     .reduce((m, p) => Math.min(m, p.cardCount), Number.POSITIVE_INFINITY);
-  const undercutRisk = Number.isFinite(minOpponentCards) && minOpponentCards <= 2;
+  // 閾値はサーバから。画面に 2 を書くと、変えたとき CUI と警告の出る局面がずれる (#5582)。
+  const undercutRisk = Number.isFinite(minOpponentCards) && minOpponentCards <= state.undercutRiskMax;
   const knockBtnClass = undercutRisk ? `${btnPrimary} ring-2 ring-ds-warning motion-safe:animate-pulse` : btnPrimary;
 
   return (

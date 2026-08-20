@@ -21,6 +21,8 @@ const VALID_COMMANDS = [
   'nextround',
   'r',
   'reset',
+  'h',
+  'hint',
   'help',
   '?',
 ];
@@ -63,6 +65,9 @@ export function parseRookCommand(input: string): CliParseResult<RookCliArgs> {
     case 'r':
     case 'reset':
       return { args: ['reset'] };
+    case 'h':
+    case 'hint':
+      return { args: ['hint'] };
     default: {
       const suggestion = suggestCommand(cmd, VALID_COMMANDS);
       if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
@@ -105,4 +110,5 @@ export const ROOK_HELP = [
   'p <idx>                 - Play a card',
   'n / nr                  - Next trick / next round',
   'r/reset                 - Reset game',
+  'h/hint                  - Get a hint',
 ] as const;

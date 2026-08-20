@@ -81,9 +81,9 @@ ADR-0032 は「ゲームを移す手順」しか残していなかったため�
 7. `.github/workflows/cloudflare-workers-build.yml` — matrix
 8. `.github/workflows/deploy-cloudflare.yml` — URL 変数。**matrix への追加は KV ID を
    実物に差し替える変更と同時に行うこと**（下記）
-9. `frontend/src/api/gameExec.ts` — `WORKER_<NAME>` 定数
-10. `frontend/vite-env.d.ts` — `VITE_WORKER_<NAME>_URL`
-11. `docs/cloudflare-workers.md` — 一覧
+9. `frontend/src/api/gameExec.ts` — `WORKER_<NAME>` 定数（`VITE_WORKER_<NAME>_URL` の
+   読み出しもここ。環境変数の型は `vite/client` が供給するため専用の `.d.ts` は不要）
+10. `docs/cloudflare-workers.md` — 一覧
 
 **Cloudflare アカウント側（コードでは完結しない）**
 

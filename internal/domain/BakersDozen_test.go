@@ -541,3 +541,64 @@ func TestBakersDozen_ActionLog(t *testing.T) {
 	log := bd.GetActionLog()
 	assert.NotEmpty(t, log)
 }
+
+// #5581: 13 列 + 4 組札を押して試すのは現実的でない。判定は既存の
+// canPlaceOnTableau / canPlaceOnFoundation をそのまま使う。
+func TestBakersDozen_LegalTargets(t *testing.T) {
+	build := func() *domain.BakersDozen {
+		bd := newTestBakersDozen()
+		bd.Reset()
+		clearBDTableau(bd)
+		var tableau [domain.BakersDozenTableauCnt][]*domain.BakersDozenTableauCard
+		// ♥4 を動かす。♠5 と ♣5 の上には置ける (ランクだけを見る)。
+		tableau[0] = []*domain.BakersDozenTableauCard{makeBDTableauCard(domain.CardDesignHeart, 4)}
+		tableau[1] = []*domain.BakersDozenTableauCard{makeBDTableauCard(domain.CardDesignSpade, 5)}
+		tableau[2] = []*domain.BakersDozenTableauCard{makeBDTableauCard(domain.CardDesignClover, 5)}
+		tableau[3] = []*domain.BakersDozenTableauCard{makeBDTableauCard(domain.CardDesignDiamond, 9)}
+		bd.SetTableau(tableau)
+		return bd
+	}
+
+	t.Run("lists every column whose rank is one higher", func(t *testing.T) {
+		tab, found := build().LegalTargets(0)
+		assert.Equal(t, []int{1, 2}, tab)
+		assert.Empty(t, found, "no foundation accepts a 4 while they are all empty")
+	})
+
+	// **空列は候補でない。**Baker's Dozen は空き列を埋められない。
+	t.Run("never offers an empty column", func(t *testing.T) {
+		bd := build()
+		tab, _ := bd.LegalTargets(0)
+		for _, col := range tab {
+			assert.NotEmpty(t, bd.GetTableau()[col], "column %d is empty", col)
+		}
+	})
+
+	// 自分の列は返らない。ランク判定でも弾かれるが、明示的に確かめる。
+	t.Run("never offers the column the card came from", func(t *testing.T) {
+		tab, _ := build().LegalTargets(0)
+		assert.NotContains(t, tab, 0)
+	})
+
+	t.Run("lists a foundation that accepts the card", func(t *testing.T) {
+		bd := newTestBakersDozen()
+		bd.Reset()
+		clearBDTableau(bd)
+		var tableau [domain.BakersDozenTableauCnt][]*domain.BakersDozenTableauCard
+		tableau[0] = []*domain.BakersDozenTableauCard{makeBDTableauCard(domain.CardDesignHeart, 1)}
+		bd.SetTableau(tableau)
+
+		tab, found := bd.LegalTargets(0)
+		assert.Empty(t, tab)
+		assert.NotEmpty(t, found, "an ace opens a foundation")
+	})
+
+	t.Run("answers nothing for an empty or out-of-range column", func(t *testing.T) {
+		bd := build()
+		for _, col := range []int{4, -1, domain.BakersDozenTableauCnt} {
+			tab, found := bd.LegalTargets(col)
+			assert.Nil(t, tab, "col %d", col)
+			assert.Nil(t, found, "col %d", col)
+		}
+	})
+}

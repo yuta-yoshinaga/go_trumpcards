@@ -28,5 +28,7 @@
   "promptLayoffHelp": "lo <idx,idx,...>: choose cards to lay off",
   "promptLayoffSkip": "lo: skip layoff and score",
   "promptRoundEnd": "Round complete",
-  "promptRoundEndHelp": "nr / nextround: advance to next round"
+  "promptRoundEndHelp": "nr / nextround: advance to next round",
+  "helpExampleDraw": "  ds                   start the turn by drawing from the stock",
+  "helpExampleDiscard": "  d 0                  discard hand card 0"
 }

@@ -37,6 +37,12 @@ type CribbageSquaresWebOutput struct {
 	// 稼いだのかを見せないと、合計だけでは上達のしようがない。
 	RowDetails []*CribbageSquaresWebOutputScore `json:"rowDetails"`
 	ColDetails []*CribbageSquaresWebOutputScore `json:"colDetails"`
+	// RowPartialDetails / ColPartialDetails はスターター抜きで**既に確定して
+	// いる**ぶん。RowDetails はスターターがめくれる 16 枚目まで必ず 0 なので、
+	// これが無いと対局中の内訳を何も出せない (#6088)。スターターは点を足す
+	// ことしかしないので、この値は最終点の下限になる。
+	RowPartialDetails []*CribbageSquaresWebOutputScore `json:"rowPartialDetails"`
+	ColPartialDetails []*CribbageSquaresWebOutputScore `json:"colPartialDetails"`
 	// WinScore はクリア基準（61 点）。フロントで数値を持ち直さない。
 	WinScore int                           `json:"winScore"`
 	IsWin    bool                          `json:"isWin"`
@@ -77,13 +83,16 @@ var NewCribbageSquaresWebController, NewCribbageSquaresWebControllerWithProvider
 
 func newCribbageSquaresDefaultOutput(msg string) *CribbageSquaresWebOutput {
 	return &CribbageSquaresWebOutput{
-		Board:         make([][]*CribbageSquaresWebOutputCard, 0),
-		RowScores:     make([]int, 0),
-		ColScores:     make([]int, 0),
-		RowDetails:    make([]*CribbageSquaresWebOutputScore, 0),
-		ColDetails:    make([]*CribbageSquaresWebOutputScore, 0),
-		WinScore:      domain.CribbageSquaresWinScore,
-		WebOutputBase: WebOutputBase{Message: msg},
+		Board:      make([][]*CribbageSquaresWebOutputCard, 0),
+		RowScores:  make([]int, 0),
+		ColScores:  make([]int, 0),
+		RowDetails: make([]*CribbageSquaresWebOutputScore, 0),
+		ColDetails: make([]*CribbageSquaresWebOutputScore, 0),
+		// **配列は必ず空配列で返す。**null を返すと、フロントの map が落ちる。
+		RowPartialDetails: make([]*CribbageSquaresWebOutputScore, 0),
+		ColPartialDetails: make([]*CribbageSquaresWebOutputScore, 0),
+		WinScore:          domain.CribbageSquaresWinScore,
+		WebOutputBase:     WebOutputBase{Message: msg},
 	}
 }
 

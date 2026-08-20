@@ -68,7 +68,14 @@ func fortyFivesPlayerStr(g interfaces.FortyFivesGame, idx int) string {
 	))
 	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
-		b.WriteString(cuiIndexedCardListStr(player) + "\n")
+		// **最上位切り札は「強い」だけでなくフォロー義務を外す** (#5643)。
+		// とくに ♥A は切り札スート外でも切り札扱いなので、スート記号を見ても
+		// 分からない。判定はドメインに任せる (isTopTrump が正)。
+		tops := g.GetTopTrumpIndices(idx)
+		b.WriteString(cuiIndexMarkedCardListStr(player, tops, CuiTopTrumpMark) + "\n")
+		if len(tops) > 0 {
+			b.WriteString(i18n.T("fortyfives.topTrumpLegend") + "\n")
+		}
 	}
 	return b.String()
 }
@@ -233,5 +240,5 @@ var fortyFivesHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *FortyFivesCuiPresenter) ActionLogOutput(g interfaces.FortyFivesGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.FortyFivesPlayer](g)
 }

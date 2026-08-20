@@ -81,6 +81,7 @@ flowchart TD
 | `accept` | `a` | 宣言を受諾（Quiero） |
 | `decline` | `d` | 宣言を拒否（No Quiero） |
 | `next` | `n` | 次のバサ / マノへ進む |
+| `setmatchtarget <n>` | `sm` | マッチ目標点を変更してリセット（1〜60、既定 15） |
 | `hint` | `h` | ヒントを表示 |
 | `log` | `l` | 棋譜を表示 |
 | `quit` | `q` | ゲーム終了 |

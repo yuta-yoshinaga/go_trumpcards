@@ -48,6 +48,12 @@ type ScorpionHint struct {
 	FromCol   int
 	CardIndex int
 	ToCol     int
+	// ExposesFaceDown はこの手を打つと裏向きカードが1枚表になるかどうか。
+	//
+	// **ヒントが優先した理由そのもの。**スコーピオンの肝は12枚の裏カードを
+	// どれだけ早く開けるかで、GetHint は裏カードを開ける手を先に探している。
+	// 移動先だけ伝えても、プレイヤーはなぜその手なのか学べない (#5544)。
+	ExposesFaceDown bool
 }
 
 // IsDeal は「ストックから配る」ヒントかどうかを返す。
@@ -269,6 +275,8 @@ func (s *Scorpion) GetHint() *ScorpionHint {
 						FromCol:   fromCol,
 						CardIndex: startIdx,
 						ToCol:     toCol,
+						// 動かす札のすぐ下に裏カードが残るなら、この手で1枚開く。
+						ExposesFaceDown: startIdx > 0 && !fromCards[startIdx-1].FaceUp,
 					}
 				}
 			}

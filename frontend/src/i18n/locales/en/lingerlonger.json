@@ -25,7 +25,10 @@
   "result": {
     "you": "You win! You held cards longest.",
     "cpu": "{{name}} held cards longest.",
-    "eliminated": "You are out. The remaining players will finish it between them."
+    "eliminated": "You are out. The remaining players will finish it between them.",
+    "lastTrickYou": "You win! Everyone ran out at once and you took the last trick.",
+    "lastTrickCpu": "Everyone ran out at once and {{name}} took the last trick.",
+    "giveUp": "You gave up. {{name}} wins."
   },
   "hint": {
     "lingerlongerWinTrick": "This card takes the trick, and taking it draws you a replacement.",

@@ -52,17 +52,17 @@ func (c *LaughAndLieDownCuiController) Exec(command string) string {
 // 選択肢なので、毎回打たせるのは無駄が多い。
 func (c *LaughAndLieDownCuiController) play(args []string) (string, bool) {
 	if len(args) == 0 {
-		return "Card index is required.", true
+		return invalidArg("cardIndexRequired"), true
 	}
 	handIdx, err := strconv.Atoi(args[0])
 	if err != nil || handIdx < 0 {
-		return "Invalid card index: " + args[0] + ".", true
+		return invalidArg("invalidCardIndex", "val", args[0]), true
 	}
 	take := 1
 	if len(args) > 1 {
 		take, err = strconv.Atoi(args[1])
 		if err != nil {
-			return "Invalid take count: " + args[1] + ".", true
+			return invalidArg("invalidTakeCountDot", "val", args[1]), true
 		}
 	}
 	return c.li.Play(handIdx, take), true

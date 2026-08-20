@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, waitForLoaded } from './helpers';
+import { isVisibleWithin, navigateTo, TIMEOUT_GAME_LOOP, TIMEOUT_LOADED, waitForLoaded } from './helpers';
 
 test.describe('Crazy Eights E2E', () => {
   test('navigates, resets, and plays through phase transitions', async ({ page }) => {
@@ -32,9 +32,20 @@ test.describe('Crazy Eights E2E', () => {
       // Break cleanly once the game reaches end state (only 次のゲーム remains).
       if (await endResetButton.isVisible()) break;
 
-      await expect(playButton.or(drawButton).or(nextRoundButton).or(suitSpade).or(endResetButton).first()).toBeVisible({
-        timeout: 10_000,
-      });
+      // **操作ボタンが 1 つも無い状態は「待てば出る」とは限らない** (#6031)。
+      // CPU の手番ではこのページはどのボタンも描画せず、CPU の進行は
+      // リクエストの中で完結するので、保留中の更新が無ければ画面はもう変わらない。
+      // 出なければ待ち続けずに切り上げる。最後の「1 回は操作した」と
+      // 「リセットでラウンドが始まり直す」が、この test の本来の主張。
+      // **最初の 1 回だけ予算を長く取る。**ここには盤面の初回描画とリセット直後の
+      // 往復が乗るので、負荷の高いランナーでは 10 秒では足りず、1 度も操作しない
+      // まま抜けて `interactions > 0` が落ちていた (#6031 の続き。4 回とも
+      // Crazy Eights と無関係な PR で、同じシャードの別 spec も一緒に落ちている)。
+      const actionAppeared = await isVisibleWithin(
+        playButton.or(drawButton).or(nextRoundButton).or(suitSpade).or(endResetButton).first(),
+        turn === 0 ? TIMEOUT_LOADED : TIMEOUT_GAME_LOOP,
+      );
+      if (!actionAppeared) break;
 
       const playVisible = await playButton.isVisible();
       const drawVisible = await drawButton.isVisible();

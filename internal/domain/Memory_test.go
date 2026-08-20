@@ -451,3 +451,33 @@ func TestMemoryConfig_ClampPairCount(t *testing.T) {
 		assert.Equal(t, c.want, cfg.NormalizedPairCount(), "入力 %d", c.in)
 	}
 }
+
+// #5492: 難易度セレクタには Easy/Normal/Hard としか出ておらず、Hard がほぼ完璧に
+// 覚えている (95%保持・1%減衰) のに対し Easy はよく忘れる (30%保持・15%減衰) という
+// 実際の差が説明されていなかった。UI に説明を足すなら、**その説明が実装の順序と
+// 一致していることを機械で確かめる。**定数を入れ替えたら文言が嘘になる。
+func TestMemory_DifficultyOrderingMatchesTheDescription(t *testing.T) {
+	chance := func(d MemoryCpuDifficulty) (float64, float64) {
+		m := NewDefaultMemory()
+		cfg := m.GetConfig()
+		cfg.CpuDifficulty = d
+		m.SetConfig(cfg)
+		return m.retentionChance(), m.decayRate()
+	}
+
+	easyRet, easyDecay := chance(MemoryCpuDifficultyEasy)
+	normalRet, normalDecay := chance(MemoryCpuDifficultyNormal)
+	hardRet, hardDecay := chance(MemoryCpuDifficultyHard)
+
+	// 覚えている確率は Easy < Normal < Hard。
+	assert.Less(t, easyRet, normalRet)
+	assert.Less(t, normalRet, hardRet)
+	// 忘れる確率はその逆。
+	assert.Greater(t, easyDecay, normalDecay)
+	assert.Greater(t, normalDecay, hardDecay)
+
+	// 「Hard はほぼ忘れない」「Easy はよく忘れる」と書くための下限・上限。
+	assert.GreaterOrEqual(t, hardRet, 0.9, "Hard を『ほぼ覚えている』と書ける水準か")
+	assert.LessOrEqual(t, hardDecay, 0.05, "Hard を『ほとんど忘れない』と書ける水準か")
+	assert.LessOrEqual(t, easyRet, 0.5, "Easy を『よく忘れる』と書ける水準か")
+}

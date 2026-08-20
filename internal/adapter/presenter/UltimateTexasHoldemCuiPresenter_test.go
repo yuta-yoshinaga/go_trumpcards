@@ -2,6 +2,7 @@ package presenter
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -242,4 +243,55 @@ func TestUltimateTexasHoldemCuiPresenter_HintOutput(t *testing.T) {
 	t.Run("says so when there is no decision to make", func(t *testing.T) {
 		assert.Contains(t, p.HintOutput(game("")), i18n.T("ultimatetexasholdem.hintNone"))
 	})
+}
+
+// #5589: トリップスは**フォールドしても評価される**特殊なサイドベットなのに、
+// CUI には倍率を知る手段が無く、賭け額を決める材料が欠けていた。
+func TestUltimateTexasHoldemCuiPresenter_ShowsThePayoutTable(t *testing.T) {
+	i18n.SetLang("ja")
+	build := func(phase int) string {
+		m := new(interfaces.MockUltimateTexasHoldemGame)
+		setupUltimateTexasHoldemCuiMockDefaults(m)
+		m.ExpectedCalls = filterCalls(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(phase)
+		return new(UltimateTexasHoldemCuiPresenter).Output(m, nil)
+	}
+
+	out := build(domain.UltimateTexasHoldemPhaseBet)
+	assert.Contains(t, out, i18n.T("ultimatetexasholdem.payoutRefTitle"))
+	// **倍率はドメインの定数から。**文言に書き写すと、配当を変えたとき嘘の表が残る。
+	assert.Contains(t, out, i18n.Tf("ultimatetexasholdem.payoutRefBlindRoyalFlush",
+		"rate", strconv.Itoa(domain.UltimateTexasHoldemBlindPayRoyalFlush)))
+	assert.Contains(t, out, i18n.Tf("ultimatetexasholdem.payoutRefTripsThreeOfAKind",
+		"rate", strconv.Itoa(domain.UltimateTexasHoldemTripsPayThreeOfAKind)))
+	// フラッシュのブラインドだけ 3:2。整数倍として出すと配当が変わる。
+	assert.Contains(t, out, i18n.Tf("ultimatetexasholdem.payoutRefBlindFlush",
+		"rate", strconv.Itoa(domain.UltimateTexasHoldemBlindPayFlushNum)+":"+
+			strconv.Itoa(domain.UltimateTexasHoldemBlindPayFlushDen)))
+
+	// **ブラインドとトリップスは倍率が違う。**同じ表を 2 度出す実装を弾く。
+	assert.NotEqual(t, domain.UltimateTexasHoldemBlindPayRoyalFlush,
+		domain.UltimateTexasHoldemTripsPayRoyalFlush)
+	assert.Contains(t, out, i18n.Tf("ultimatetexasholdem.payoutRefTripsRoyalFlush",
+		"rate", strconv.Itoa(domain.UltimateTexasHoldemTripsPayRoyalFlush)))
+}
+
+// ベットフェーズ以外では出さない (受け入れ条件3)。賭けた後の卓に配当表を並べても、
+// いま起きたことが読み取りにくくなるだけ。
+func TestUltimateTexasHoldemCuiPresenter_HidesThePayoutTableAfterTheBet(t *testing.T) {
+	i18n.SetLang("ja")
+	for _, phase := range []int{
+		domain.UltimateTexasHoldemPhasePreFlop,
+		domain.UltimateTexasHoldemPhaseFlop,
+		domain.UltimateTexasHoldemPhaseRiver,
+		domain.UltimateTexasHoldemPhaseEnd,
+	} {
+		m := new(interfaces.MockUltimateTexasHoldemGame)
+		setupUltimateTexasHoldemCuiMockDefaults(m)
+		m.ExpectedCalls = filterCalls(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(phase)
+
+		assert.NotContains(t, new(UltimateTexasHoldemCuiPresenter).Output(m, nil),
+			i18n.T("ultimatetexasholdem.payoutRefTitle"), "phase %d", phase)
+	}
 }

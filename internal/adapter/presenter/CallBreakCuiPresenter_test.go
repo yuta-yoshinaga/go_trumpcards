@@ -2,9 +2,11 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -26,6 +28,9 @@ func setupCallBreakCuiMock() *interfaces.MockCallBreakGame {
 	m.On("GetLeadPlayerIdx").Return(0)
 	m.On("GetConfig").Return(domain.DefaultCallBreakConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// 合法手の目印 (#5605)。既定は「制限なし」= 目印を出さない状態にしておき、
+	// 目印そのものを見るテストは本物のドメインで確かめる。
+	m.On("GetValidPlayIndices", mock.Anything).Return([]int(nil))
 	return m
 }
 
@@ -167,9 +172,12 @@ func TestCallBreakCuiPresenter_ActionLogOutput(t *testing.T) {
 		}
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return(entries)
+		// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+		m.On("GetPlayer", mock.Anything).Return(domain.NewCallBreakPlayer(true)).Maybe()
 		result := p.ActionLogOutput(m)
 		assert.Contains(t, result, "棋譜")
 		assert.Contains(t, result, "play")
+		assert.Contains(t, result, "あなた", "棋譜の座席名が他の行と揃っていない")
 	})
 
 	t.Run("game not ended yields placeholder", func(t *testing.T) {
@@ -226,5 +234,66 @@ func TestCallBreakCuiPresenter_HintOutput(t *testing.T) {
 		m.On("GetPlayer", 0).Return(player)
 		result := (&presenter.CallBreakCuiPresenter{}).HintOutput(m)
 		assert.Contains(t, result, "リードスートに追随")
+	})
+}
+
+// #5605: Web は validPlayIndices で出せない札を無効化しツールチップまで出すのに、
+// CUI は番号付きの一覧を並べるだけだった。マストフォロー/マストトランプで
+// 何が出せるかは、番号を打ってエラーを踏むまで分からない。
+func TestCallBreakCuiPresenterMarksThePlayableCards(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.CallBreakCuiPresenter)
+
+	// 人間が持っているスートをリードさせると、そのスートだけが合法になる。
+	setup := func(t *testing.T) *domain.CallBreak {
+		t.Helper()
+		cb := domain.NewDefaultCallBreak()
+		cb.Reset()
+		cb.SetPhase(domain.CallBreakPhasePlay)
+		cb.SetCurrentPlayerIdx(0)
+		human := cb.GetPlayer(0)
+		if human.GetCardsSize() == 0 {
+			t.Fatal("前提: 人間に手札が配られていること")
+		}
+		leadSuit := human.GetCard(0).GetDesign()
+		cb.SetCurrentTrick([]*domain.TrickCard{
+			{PlayerIdx: 1, Card: domain.NewCard(leadSuit, 5, false)},
+		})
+		return cb
+	}
+
+	t.Run("human play turn marks only the legal cards", func(t *testing.T) {
+		cb := setup(t)
+		playable := cb.GetValidPlayIndices(0)
+		// **配りに賭けてはいない。**リードスートは人間の1枚目のスートなので合法手は
+		// 必ず1枚以上ある。「全部合法」になるのは13枚が同一スートの配りのときだけ。
+		if len(playable) == 0 || len(playable) == cb.GetPlayer(0).GetCardsSize() {
+			t.Skipf("13枚同一スートの配り (%d/%d) -- 目印の有無を区別できない",
+				len(playable), cb.GetPlayer(0).GetCardsSize())
+		}
+
+		out := p.Output(cb, nil)
+		assert.Equal(t, len(playable), strings.Count(out, presenter.CuiLegalMark),
+			"目印の数が合法手の数と一致する")
+	})
+
+	// **目印を出さない側も踏む。**ビッド中は制限そのものが決まっていない。
+	t.Run("bid phase leaves the hand unmarked", func(t *testing.T) {
+		cb := setup(t)
+		cb.SetPhase(domain.CallBreakPhaseBid)
+
+		out := p.Output(cb, nil)
+		assert.NotContains(t, out, presenter.CuiLegalMark, "ビッド中は目印を出さない")
+	})
+
+	// CPU の手番でも出さない。人間の手札に「今出せる札」の印が付くのは自分の番だけ。
+	t.Run("another player's turn leaves the hand unmarked", func(t *testing.T) {
+		cb := setup(t)
+		cb.SetCurrentPlayerIdx(1)
+
+		out := p.Output(cb, nil)
+		assert.NotContains(t, out, presenter.CuiLegalMark, "他家の手番では目印を出さない")
 	})
 }

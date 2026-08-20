@@ -28,6 +28,7 @@ import { parseSlobberhannesCommand, SLOBBERHANNES_HELP } from '../utils/cli/comm
 import { formatSlobberhannesState } from '../utils/cli/formatters/slobberhannesFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
+import { isPenaltyQueen } from '../utils/slobberhannesQueen';
 
 /** Tricks per round. The last one carries a penalty, so this count is load-bearing. */
 const TRICKS_PER_ROUND = 8;
@@ -132,6 +133,11 @@ function SlobberhannesPageContent() {
   const legalRing = new Set(isHumanTurn ? state.validPlays : []);
 
   const isFirstTrick = state.trickNumber === 0;
+  // **♣Q だけは位置ではなく中身の罰点** (#5745)。最初/最後は番号で警告できるが、
+  // ♣Q は「今場に出ているか」がリスクの本体で、取ってから penaltyMarks で
+  // 気づくのでは遅い。
+  const queenOnTable = state.currentTrick.some((tc) => isPenaltyQueen(tc.card));
+  const queenInHandIdx = human?.cards.findIndex((card) => isPenaltyQueen(card)) ?? -1;
   const isLastTrick = state.trickNumber === TRICKS_PER_ROUND - 1;
 
   /** The three penalty marks a seat has already taken this round. */
@@ -182,6 +188,17 @@ function SlobberhannesPageContent() {
               </span>
               <span className="text-ds-accent">{t('header.noTrump')}</span>
             </div>
+
+            {/* ♣Q が場に出ている間は、位置の警告と並べて出す。 */}
+            {!isGameEnd && !isRoundEnd && queenOnTable && (
+              <div
+                className="mb-3 rounded bg-black/30 border border-ds-error px-3 py-2 text-ds-text-primary text-sm text-center"
+                role="status"
+                data-testid="sh-queen-warning"
+              >
+                {t('warn.queen')}
+              </div>
+            )}
 
             {/* 最初と最後のトリックは中身に関係なく罰点対象。盤面には出ない情報。 */}
             {!isGameEnd && !isRoundEnd && (isFirstTrick || isLastTrick) && (
@@ -245,10 +262,21 @@ function SlobberhannesPageContent() {
                       type="button"
                       onClick={() => handlePlay(idx)}
                       disabled={loading || !isHumanTurn}
-                      aria-label={t('actions.playAria', { card: cardAlt(card) })}
-                      className={`disabled:opacity-50 ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
+                      aria-label={
+                        idx === queenInHandIdx
+                          ? `${t('actions.playAria', { card: cardAlt(card) })} - ${t('warn.queenInHand')}`
+                          : t('actions.playAria', { card: cardAlt(card) })
+                      }
+                      className={`disabled:opacity-50 ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''} ${
+                        idx === queenInHandIdx ? 'rounded-lg outline outline-2 outline-ds-error' : ''
+                      }`}
                     >
                       <CardImage card={card} width={cardWidth} />
+                      {idx === queenInHandIdx && (
+                        <span className="sr-only" data-testid="sh-queen-in-hand">
+                          {t('warn.queenInHand')}
+                        </span>
+                      )}
                     </button>
                   ))}
                 </div>

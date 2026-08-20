@@ -106,3 +106,10 @@ func (p *TienLenWebPresenter) buildRankings(tg interfaces.TienLenGame) string {
 func (p *TienLenWebPresenter) ActionLogOutput(tg interfaces.TienLenGame) string {
 	return actionLogOutputJSON(tg)
 }
+
+// HintOutput はヒント専用のレスポンスを持たないので通常の状態出力を返す。
+// Web のヒントは `useGameHint` がクライアント側で出しており、CUI (#5624) が
+// 使うドメインのヒントとは別経路。
+func (p *TienLenWebPresenter) HintOutput(tg interfaces.TienLenGame) string {
+	return p.Output(tg, nil)
+}

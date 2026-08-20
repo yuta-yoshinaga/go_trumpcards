@@ -46,5 +46,7 @@
     "complete": "9ホール終了！ 合計スコア: {{total}}（少ないほど好成績）",
     "restart": "新しいスコアカード",
     "pending": "-"
-  }
+  },
+  "comboAnnounce": "コンボ ×{{count}} 継続中",
+  "comboEnded": "コンボが途切れました"
 }

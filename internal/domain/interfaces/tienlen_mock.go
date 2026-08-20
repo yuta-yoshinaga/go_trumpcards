@@ -132,3 +132,13 @@ func (_m *MockTienLenGame) GetActionLog() []*domain.ActionLogEntry {
 	}
 	return nil
 }
+
+// GetHint モック
+func (_m *MockTienLenGame) GetHint() *domain.TienLenHint {
+	ret := _m.Called()
+	v := ret.Get(0)
+	if v == nil {
+		return nil
+	}
+	return v.(*domain.TienLenHint)
+}

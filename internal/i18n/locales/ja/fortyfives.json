@@ -11,6 +11,7 @@
   "teamScores": "得点 — チームA: {{teamA}}  チームB: {{teamB}}",
   "contractLine": "落札者: {{name}}（チーム{{team}}） — {{contract}}",
   "playerLine": "{{name}}（チーム{{team}}・{{role}}）: {{cards}}枚  チーム得点: {{score}}  トリック: {{tricks}}",
+  "topTrumpLegend": "!! = 最上位の切り札（切り札の5・切り札のJ・♥A）。持っているとマストフォローが免除されます",
   "roleDeclarer": "落札者",
   "roleDefender": "ディフェンダー",
   "bid.pass": "パス",
@@ -44,5 +45,7 @@
   "contractProgress": "契約: {{team}} {{got}}/{{contract}} 点 — {{status}}",
   "contractMade": "成立",
   "contractFailed": "不成立が確定",
-  "contractNeedMore": "あと{{remaining}}点"
+  "contractNeedMore": "あと{{remaining}}点",
+  "helpExampleBid": "  pass                      入札を降りる",
+  "helpHint": "  h                         助言を表示"
 }

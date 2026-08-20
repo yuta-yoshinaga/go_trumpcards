@@ -69,13 +69,13 @@ func (c *DoubleKlondikeCuiController) Exec(command string) string {
 // withInts parses the first `count` args as ints and calls fn.
 func (c *DoubleKlondikeCuiController) withInts(args []string, count int, fn func([]int) string) string {
 	if len(args) < count {
-		return "Invalid arguments: expected " + strconv.Itoa(count) + " integer(s)."
+		return invalidArg("invalidArgsExpectedIntegers", "val", strconv.Itoa(count))
 	}
 	nums := make([]int, count)
 	for i := 0; i < count; i++ {
 		n, err := strconv.Atoi(args[i])
 		if err != nil {
-			return "Invalid argument: " + args[i] + " is not an integer."
+			return invalidArg("invalidArgumentNotInteger", "val", args[i])
 		}
 		nums[i] = n
 	}

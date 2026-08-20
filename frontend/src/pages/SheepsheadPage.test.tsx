@@ -168,6 +168,50 @@ describe('SheepsheadPage', () => {
     expect(screen.getByText('ラウンド結果')).toBeInTheDocument();
   });
 
+  // #5638: ピッカーが埋めた 2 枚は API が buried で送っているのに、ラウンド結果は
+  // 得点と倍率しか描いていなかった。ロケールの roundResult.buried も未使用のまま
+  // 置かれていた。
+  it('reveals the buried cards in the round result', async () => {
+    mockExec.mockResolvedValue(
+      makeSheepsheadState({
+        ...roundEndState,
+        buried: [
+          { design: 'HEART', value: 1 },
+          { design: 'CLOVER', value: 10 },
+        ],
+      }),
+    );
+    renderWithProviders(<SheepsheadPage />);
+
+    expect(await screen.findByText('埋め札')).toBeInTheDocument();
+    expect(screen.getByAltText('♥ A')).toBeInTheDocument();
+    expect(screen.getByAltText('♣ 10')).toBeInTheDocument();
+  });
+
+  it('keeps the buried cards hidden while the hand is still being played', async () => {
+    mockExec.mockResolvedValue(
+      makeSheepsheadState({
+        buried: [
+          { design: 'HEART', value: 1 },
+          { design: 'CLOVER', value: 10 },
+        ],
+      }),
+    );
+    renderWithProviders(<SheepsheadPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByText('埋め札')).not.toBeInTheDocument();
+    expect(screen.queryByAltText('♥ A')).not.toBeInTheDocument();
+  });
+
+  it('omits the buried block when the round ended with nothing buried', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<SheepsheadPage />);
+
+    await waitFor(() => expect(screen.getByText('ラウンド結果')).toBeInTheDocument());
+    expect(screen.queryByText('埋め札')).not.toBeInTheDocument();
+  });
+
   it('renders the game end message', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<SheepsheadPage />);

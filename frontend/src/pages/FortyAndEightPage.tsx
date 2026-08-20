@@ -312,6 +312,10 @@ function FortyAndEightPageContent() {
                 {state.foundation.map((pile, idx) => {
                   const foundationZone: FortyAndEightMoveZone = { zone: 'foundation', col: idx };
                   const isEligible = eligibleFoundations.has(idx);
+                  // 1 スートに組札が 2 つあり、どちらに落ちるかは domain の
+                  // findFoundation が決める。リングの色だけだと、見えない
+                  // プレイヤーには手掛かりが残らない (#5600)。
+                  const eligibleSuffix = isEligible ? t('foundationEligibleSuffix') : '';
                   return (
                     <div key={`f-${idx.toString()}`} className="text-center">
                       <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
@@ -326,13 +330,13 @@ function FortyAndEightPageContent() {
                             type="button"
                             onClick={() => handleSelectTarget(foundationZone)}
                             disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
-                            aria-label={t('foundationAriaLabel', {
+                            aria-label={`${t('foundationAriaLabel', {
                               suit: FOUNDATION_SUITS[idx],
                               // Two piles per suit (idx pairs 0/1, 2/3, …); number
                               // them 1/2 so the duplicate-suit piles read distinctly.
                               pile: (idx % 2) + 1,
                               count: pile.length,
-                            })}
+                            })}${eligibleSuffix}`}
                             data-eligible-foundation={isEligible ? 'true' : undefined}
                             className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isEligible ? 'ring-2 ring-ds-info' : ''}`}
                           >
@@ -348,10 +352,10 @@ function FortyAndEightPageContent() {
                             type="button"
                             onClick={() => handleSelectTarget(foundationZone)}
                             disabled={!isPlaying || loading || !selectedSource}
-                            aria-label={t('emptyFoundationAriaLabel', {
+                            aria-label={`${t('emptyFoundationAriaLabel', {
                               suit: FOUNDATION_SUITS[idx],
                               pile: (idx % 2) + 1,
-                            })}
+                            })}${eligibleSuffix}`}
                             data-eligible-foundation={isEligible ? 'true' : undefined}
                             style={{ width: f8.cw, height: f8.ch }}
                             className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite} ${isEligible ? 'ring-2 ring-ds-info' : ''}`}
@@ -445,7 +449,12 @@ function FortyAndEightPageContent() {
             </div>
 
             {/* Hint display */}
-            <div data-tutorial="f8-hint-display">
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-tutorial="f8-hint-display" data-testid="f8-hint-live" role="status" aria-live="polite">
               {hint && (
                 <div className="text-ds-warning text-sm mb-2">
                   {t('hintAvailable')}: {formatHintZone(t, hint.fromZone, hint.fromCol)} →{' '}

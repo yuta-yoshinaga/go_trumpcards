@@ -73,5 +73,6 @@
     "escobaEscoba": "This clears the whole table — an escoba, worth a point on its own",
     "escobaCaptureMost": "The card that captures the most",
     "escobaLayLow": "Nothing sums to fifteen — lay off your lowest card"
-  }
+  },
+  "mustCapture": "You must capture: a combination summing to 15 is on the table"
 }

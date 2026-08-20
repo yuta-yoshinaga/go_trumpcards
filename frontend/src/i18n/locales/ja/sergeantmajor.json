@@ -16,7 +16,9 @@
     "score": "累計{{n}}",
     "dealer": "[親/ノルマ8]",
     "you": "あなた",
-    "cpu": "CPU{{idx}}"
+    "cpu": "CPU{{idx}}",
+    "kittyBadge": "キティ",
+    "kittyAria": "キティから入ってきた札"
   },
   "currentTrick": "現在のトリック",
   "actions": {

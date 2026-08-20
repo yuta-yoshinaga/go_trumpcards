@@ -50,6 +50,7 @@ const baseState: DaifugoResponse = {
   numberLocked: false,
   sequenceLocked: false,
   sortMode: 0,
+  playableCardIndices: null,
 };
 
 describe('useDaifugoGame onSuccess replay skip', () => {

@@ -23,5 +23,8 @@
   "tableSizeRequired": "テーブルサイズが必要です (4, 6, または 9)。",
   "invalidTableSize": "無効なテーブルサイズです: {{val}}。4, 6, または 9 を入力してください。",
   "discardIdxRequired": "ディスカードするカードのインデックスが必要です。",
-  "invalidDiscardIdx": "無効なカードインデックスです: {{val}}"
+  "invalidDiscardIdx": "無効なカードインデックスです: {{val}}",
+  "helpExampleRaise": "  ra 200               合計 200 チップになるようレイズする",
+  "helpExampleCall": "  c                    現在のベットにコールする",
+  "helpLog": "  l                    行動ログを表示"
 }

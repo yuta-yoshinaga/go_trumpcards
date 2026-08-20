@@ -362,13 +362,34 @@ function CrazyEightsPageContent() {
                       </tr>
                     </thead>
                     <tbody>
-                      {state.players.map((p) => (
-                        <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
-                          <td>{playerName(p.id, p.isHuman)}</td>
-                          <td className="text-center">{p.roundScore}</td>
-                          <td className="text-center">{p.cumulativeScore}</td>
-                        </tr>
-                      ))}
+                      {state.players.map((p) => {
+                        // **勝者は「自分かどうか」とは別の軸。** 行の色分けは
+                        // isHuman だけで、誰が勝ったかは表に出ていなかった
+                        // (winnerIdx は届いていて文章にだけ反映されていた)。CUI は
+                        // 勝者名を緑のバナーで出しており、そちらのほうが明確だった (#5499)。
+                        // 決着前は出さない -- 途中経過の首位を勝者と読ませない。
+                        const isWinner = isGameEnd && p.id === state.winnerIdx;
+                        return (
+                          <tr
+                            key={p.id}
+                            data-testid={`ce-score-row-${p.id}`}
+                            data-winner={isWinner ? 'true' : undefined}
+                            className={`${p.isHuman ? 'text-ds-accent' : ''}${
+                              isWinner ? ' bg-ds-success/15 font-bold' : ''
+                            }`}
+                          >
+                            <td>
+                              {playerName(p.id, p.isHuman)}
+                              {/* 色だけでは伝わらないので、勝者はテキストでも示す。 */}
+                              {isWinner && (
+                                <span className="ml-1 text-ds-success text-xs font-bold">{t('winnerBadge')}</span>
+                              )}
+                            </td>
+                            <td className="text-center">{p.roundScore}</td>
+                            <td className="text-center">{p.cumulativeScore}</td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>

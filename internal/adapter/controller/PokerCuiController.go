@@ -4,6 +4,7 @@ package controller
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -40,25 +41,41 @@ func (pcc *PokerCuiController) Exec(command string) string {
 			switch cmd {
 			case "e", "exchange":
 				indices, skipped := cuiutil.ParseBoundedIntSlice(args, 0, 4)
-				return cuiutil.PrependSkippedWarning(pcc.pi.Exchange(indices), skipped), true
+				// Refuse before playing. PrependSkippedWarning ran the move first and
+				// put the warning above the new board, so a mistyped index was dropped
+				// and the remaining ones played as a different, legal move (issue #5390).
+				if len(skipped) > 0 {
+					return invalidArg("invalidCardIndex", "val", strings.Join(skipped, ", ")), true
+				}
+				return pcc.pi.Exchange(indices), true
 			case "s", "stand":
 				return pcc.pi.Stand(), true
 			case "b", "bet":
+				// No argument keeps the "bet zero" shorthand; a typed amount that does
+				// not parse, or is not positive, is refused rather than silently turned
+				// into zero -- the player asked to bet (issue #5390).
 				amount := 0
 				if len(args) > 0 {
-					if a, err := strconv.Atoi(args[0]); err == nil && a > 0 {
-						amount = a
+					a, err := strconv.Atoi(args[0])
+					if err != nil || a <= 0 {
+						return invalidArg("invalidBetAmount", "val", args[0]), true
 					}
+					amount = a
 				}
 				return pcc.pi.Action(domain.PokerActionBet, amount, 0), true
 			case "c", "call":
 				return pcc.pi.Action(domain.PokerActionCall, 0, 0), true
 			case "ra", "raise":
+				// No argument keeps the "bet zero" shorthand; a typed amount that does
+				// not parse, or is not positive, is refused rather than silently turned
+				// into zero -- the player asked to bet (issue #5390).
 				amount := 0
 				if len(args) > 0 {
-					if a, err := strconv.Atoi(args[0]); err == nil && a > 0 {
-						amount = a
+					a, err := strconv.Atoi(args[0])
+					if err != nil || a <= 0 {
+						return invalidArg("invalidBetAmount", "val", args[0]), true
 					}
+					amount = a
 				}
 				return pcc.pi.Action(domain.PokerActionRaise, amount, 0), true
 			case "f", "fold":
@@ -68,26 +85,32 @@ func (pcc *PokerCuiController) Exec(command string) string {
 			case "a", "allin":
 				return pcc.pi.Action(domain.PokerActionAllIn, 0, 0), true
 			case "bl", "bettinglimit":
-				return cuiutil.WithParsedInt(args, "Betting limit type is required (0=Fixed, 1=PotLimit, 2=NoLimit).", "Invalid betting limit: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "bettingLimitTypeRequired0Fixed1Potlimit2Nolimit", "invalidBettingLimit02", 0, 2, func(v int) string {
 					cfg := pcc.pi.GetConfig()
 					cfg.BettingLimit = domain.BettingLimitType(v)
 					return pcc.pi.ResetWithConfig(cfg, nil)
 				})
 			case "scc", "setcpucount":
-				return cuiutil.WithParsedInt(args, "CPU player count is required.", "Invalid CPU player count: %s. Please enter 1-3.", 1, 3, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuPlayerCountRequired", "invalidCpuPlayerCount13", 1, 3, func(v int) string {
 					cfg := pcc.pi.GetConfig()
 					cfg.CpuCount = v
 					return pcc.pi.ResetWithConfig(cfg, nil)
 				})
 			case "sjc", "setjokercount":
-				return cuiutil.WithParsedInt(args, "Joker count is required.", "Invalid joker count: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "jokerCountRequired", "invalidJokerCount02", 0, 2, func(v int) string {
 					cfg := pcc.pi.GetConfig()
 					cfg.JokerCount = v
 					return pcc.pi.ResetWithConfig(cfg, nil)
 				})
 			case "o", "odds":
 				indices, skipped := cuiutil.ParseBoundedIntSlice(args, 0, 4)
-				return cuiutil.PrependSkippedWarning(pcc.pi.Odds(indices), skipped), true
+				// Refuse before playing. PrependSkippedWarning ran the move first and
+				// put the warning above the new board, so a mistyped index was dropped
+				// and the remaining ones played as a different, legal move (issue #5390).
+				if len(skipped) > 0 {
+					return invalidArg("invalidCardIndex", "val", strings.Join(skipped, ", ")), true
+				}
+				return pcc.pi.Odds(indices), true
 			case "lw", "lowball":
 				cfg := pcc.pi.GetConfig()
 				cfg.IsLowball = !cfg.IsLowball
@@ -98,7 +121,7 @@ func (pcc *PokerCuiController) Exec(command string) string {
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 0 || v > 1 {
-					return i18n.Tf("invalidMetaAI", "val", args[0]), true
+					return invalidArg("invalidMetaAI", "val", args[0]), true
 				}
 				cfg := pcc.pi.GetConfig()
 				cfg.CpuMetaAI = v == 1

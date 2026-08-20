@@ -84,3 +84,9 @@ func (b *Barbu) BarbuTestScoreDeal() *BarbuDealDetail { return b.scoreDeal() }
 
 // BarbuTestFinishDeal はテスト用に finishDeal を直接呼ぶ。
 func (b *Barbu) BarbuTestFinishDeal() { b.finishDeal() }
+
+// BarbuTestAppendDealHistory はテスト用に完了ディールの内訳を積む。
+// 7 ディール分を実際に打たせずに、集計表示だけを確かめられるようにする。
+func (b *Barbu) BarbuTestAppendDealHistory(detail *BarbuDealDetail) {
+	b.dealHistory = append(b.dealHistory, detail)
+}

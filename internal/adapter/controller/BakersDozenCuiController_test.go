@@ -4,9 +4,11 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	mockusecase "github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func newMockBakersDozenInteractor() *mockusecase.MockBakersDozenInteractor {
@@ -110,4 +112,43 @@ func TestBakersDozenCuiControllerMoveErrors(t *testing.T) {
 		result := c.Exec("m 0 xyz")
 		assert.Contains(t, result, "xyz")
 	})
+}
+
+// #5581: 13 列 + 4 組札を「押して弾かれる」で探るしかなかった。
+func TestBakersDozenCuiControllerTargets(t *testing.T) {
+	for _, alias := range []string{"t", "targets"} {
+		t.Run(alias, func(t *testing.T) {
+			bi := newMockBakersDozenInteractor()
+			c := NewBakersDozenCuiController(bi)
+			bi.On("Targets", 3).Return("targets_output")
+			assert.Equal(t, "targets_output", c.Exec(alias+" 3"))
+			bi.AssertExpectations(t)
+		})
+	}
+}
+
+// 列番号が無ければ訊き返す。勝手に 0 列目を答えると、訊いていない答えが返る。
+func TestBakersDozenCuiControllerTargetsAsksForTheColumn(t *testing.T) {
+	bi := newMockBakersDozenInteractor()
+	c := NewBakersDozenCuiController(bi)
+	out := c.Exec("t")
+	assert.Contains(t, out, i18n.T("promptFromColumn"))
+	bi.AssertNotCalled(t, "Targets", mock.Anything)
+}
+
+// 数字でない引数は拒否して、何も問い合わせない。
+func TestBakersDozenCuiControllerTargetsRejectsANonNumber(t *testing.T) {
+	bi := newMockBakersDozenInteractor()
+	c := NewBakersDozenCuiController(bi)
+	out := c.Exec("t zz")
+	assert.Contains(t, out, i18n.Tf("invalidColumn", "val", "zz"))
+	bi.AssertNotCalled(t, "Targets", mock.Anything)
+}
+
+// **追加コマンドが候補一覧に入っていること。**入っていないと、打ち間違いが
+// 「もしかして」で拾われず、存在しないコマンド扱いになる。
+func TestBakersDozenCuiControllerSuggestsTargets(t *testing.T) {
+	bi := newMockBakersDozenInteractor()
+	c := NewBakersDozenCuiController(bi)
+	assert.Contains(t, c.Exec("target 3"), "targets")
 }

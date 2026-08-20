@@ -64,7 +64,8 @@ func (p *DoubleKlondikeCuiPresenter) Output(g interfaces.DoubleKlondikeGame, las
 
 		switch g.GetPhase() {
 		case domain.DoubleKlondikePhasePlaying:
-			sb.WriteString(i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(g.GetMoveCount())) + "\n")
+			sb.WriteString(i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(g.GetMoveCount())) +
+				cuiSolitaireUndoHint(g.CanUndo()) + "\n")
 		case domain.DoubleKlondikePhaseGameClear:
 			sb.WriteString(color.Green(i18n.T("cuiSolitaireGameClear")) + " " +
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(g.GetMoveCount())) + "\n")

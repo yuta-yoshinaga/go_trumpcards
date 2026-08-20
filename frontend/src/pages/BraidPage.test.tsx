@@ -416,3 +416,34 @@ describe('BraidPage keyboard shortcuts', () => {
     expect(mockExec).not.toHaveBeenCalled();
   });
 });
+
+// #5564: 方向は一度きりで取り消せないのに、その分岐点がページに現れたことが
+// 読み上げられていなかった。CUI は黄色で強調し、チュートリアルは太字で警告して
+// いるので、支援技術の利用者だけが自分で探さないと気づけない状態だった。
+describe('BraidPage direction announcement', () => {
+  const liveRegion = () => document.querySelector('[role="alert"][aria-live="assertive"]');
+
+  it('announces the direction prompt while it is unset', async () => {
+    mockExec.mockResolvedValue(awaitingDirectionState);
+    renderWithProviders(<BraidPage />);
+    await waitFor(() => expect(screen.getByTestId('direction-up')).toBeInTheDocument());
+    // 見えている案内と同じ文言が、読み上げ用にも出ていること。
+    await waitFor(() => expect(liveRegion()).toHaveTextContent(/組札/));
+  });
+
+  // **選んだ後は黙ること。**空にしないと、以後の操作のたびに読み上げが残る。
+  it('says nothing once the direction is fixed', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BraidPage />);
+    await waitFor(() => expect(screen.getByText(/向き: 昇順/)).toBeInTheDocument());
+    expect(liveRegion()).toHaveTextContent('');
+  });
+
+  // 見た目は変えない (受け入れ条件3)。案内の <p> はそのまま。
+  it('leaves the visible banner in place', async () => {
+    mockExec.mockResolvedValue(awaitingDirectionState);
+    renderWithProviders(<BraidPage />);
+    const banner = await screen.findByTestId('direction-up');
+    expect(banner.closest('[data-tutorial="br-direction"]')).not.toBeNull();
+  });
+});

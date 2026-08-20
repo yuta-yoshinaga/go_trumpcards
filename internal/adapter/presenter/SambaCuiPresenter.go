@@ -126,6 +126,13 @@ func (p *SambaCuiPresenter) Output(g interfaces.SambaGame, lastErr error) string
 			currentIdx := g.GetCurrentPlayerIdx()
 			b.WriteString(i18n.Tf("samba.promptMeld",
 				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
+			// 初回メルドの最低点はチーム累積点で 15/50/90/120 と変わる。届いて
+			// いるかをメルドしてみるまで分からないのは酷なので、先に出す。
+			// 初回メルドを済ませた席には課されないので出さない。
+			if player := g.GetPlayer(currentIdx); player != nil && !player.GetHasInitMeld() {
+				b.WriteString(i18n.Tf("samba.promptMeldMinimum",
+					"points", strconv.Itoa(g.GetMinimumMeldValue(currentIdx))) + "\n")
+			}
 			b.WriteString(i18n.T("samba.promptMeldHelp") + "\n")
 			b.WriteString(i18n.T("samba.promptSkipMeld") + "\n")
 		case domain.SambaPhaseDiscard:
@@ -143,5 +150,5 @@ func (p *SambaCuiPresenter) Output(g interfaces.SambaGame, lastErr error) string
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *SambaCuiPresenter) ActionLogOutput(g interfaces.SambaGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.SambaPlayer](g)
 }

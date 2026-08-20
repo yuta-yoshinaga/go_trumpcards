@@ -106,12 +106,7 @@ func (ci *ThreeThirteenInteractor) Knock(cardIndex int) string {
 
 // NextRound 次のラウンドへ進む
 func (ci *ThreeThirteenInteractor) NextRound() string {
-	if out, blocked := guardGameEnd(ci.Game, ci.gp); blocked {
-		return out
-	}
-	ci.Game.NextRound()
-	ci.runCpuTurns()
-	return ci.gp.Output(ci.Game, nil)
+	return advanceRound(ci.Game, ci.gp, ci.runCpuTurns)
 }
 
 // GetConfig 現在の設定を取得
@@ -126,16 +121,10 @@ func (ci *ThreeThirteenInteractor) ActionLog() string {
 
 // runCpuTurns CPU ターンを連続で処理する
 func (ci *ThreeThirteenInteractor) runCpuTurns() {
-	for !ci.Game.GetGameEndFlag() {
+	runCpuTurnsUntil(ci.Game, func() bool {
 		phase := ci.Game.GetPhase()
-		if phase == domain.ThreeThirteenPhaseRoundEnd || phase == domain.ThreeThirteenPhaseGameEnd {
-			break
-		}
-		if ci.Game.IsHumanTurn() {
-			break
-		}
-		ci.Game.CpuPlay()
-	}
+		return phase == domain.ThreeThirteenPhaseRoundEnd || phase == domain.ThreeThirteenPhaseGameEnd || ci.Game.IsHumanTurn()
+	}, ci.Game.CpuPlay)
 }
 
 // RestoreThreeThirteenInteractor JSON から ThreeThirteenInteractor を復元する

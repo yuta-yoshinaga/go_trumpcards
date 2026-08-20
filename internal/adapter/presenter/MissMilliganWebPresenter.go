@@ -71,7 +71,15 @@ func (p *MissMilliganWebPresenter) Output(mm interfaces.MissMilliganGame, lastEr
 	}
 
 	if lastErr != nil {
-		resObj.Message = lastErr.Error()
+		// コードを持つエラーはクライアントの i18n に組み立てさせる。以前は
+		// lastErr.Error() をそのまま Message に入れており、ドメインが英語で
+		// 書いた文がロケールに関係なく出ていた (#5556)。
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			resObj.MessageCode = code
+			resObj.MessageParams = params
+		} else {
+			resObj.Message = lastErr.Error()
+		}
 	} else {
 		switch mm.GetPhase() {
 		case domain.MissMilliganPhasePlaying:

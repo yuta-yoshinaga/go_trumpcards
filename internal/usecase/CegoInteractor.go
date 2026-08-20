@@ -174,17 +174,13 @@ func (ci *CegoInteractor) ActionLog() string {
 func (ci *CegoInteractor) advance() {
 	runCpuBidsLoop[domain.CegoPhase](ci.Game, domain.CegoPhaseBid)
 	// CPU デクレアラーのコントラクト選択を自動実行する。
-	for !ci.Game.GetGameEndFlag() &&
-		ci.Game.GetPhase() == domain.CegoPhaseContract &&
-		!ci.Game.IsHumanContractTurn() {
-		ci.Game.CpuChooseContract()
-	}
+	runCpuTurnsUntil(ci.Game, func() bool {
+		return ci.Game.GetPhase() != domain.CegoPhaseContract || ci.Game.IsHumanContractTurn()
+	}, ci.Game.CpuChooseContract)
 	// CPU デクレアラーの場札交換を自動実行する。
-	for !ci.Game.GetGameEndFlag() &&
-		ci.Game.GetPhase() == domain.CegoPhaseExchange &&
-		!ci.Game.IsHumanExchangeTurn() {
-		ci.Game.CpuDiscard()
-	}
+	runCpuTurnsUntil(ci.Game, func() bool {
+		return ci.Game.GetPhase() != domain.CegoPhaseExchange || ci.Game.IsHumanExchangeTurn()
+	}, ci.Game.CpuDiscard)
 	runCpuTurnsLoop(ci.Game, cegoTrickPhases())
 }
 

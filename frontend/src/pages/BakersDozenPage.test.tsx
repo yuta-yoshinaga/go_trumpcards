@@ -251,6 +251,24 @@ describe('BakersDozenPage', () => {
     await waitFor(() => expect(screen.getByText(/ヒントがあります/)).toBeInTheDocument());
   });
 
+  // #5955: ヒントは無言で現れていた。**空のまま先にマウントしてある**領域の中身が
+  // 変わることが読み上げの条件なので、hint がある間だけ現れる内側の div ではなく、
+  // 常設のラッパーがライブ領域でなければならない。
+  it('announces the hint through a region that was already mounted', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BakersDozenPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    const region = screen.getByTestId('bd-hint-live');
+    expect(region).toHaveAttribute('role', 'status');
+    expect(region).toHaveAttribute('aria-live', 'polite');
+    expect(region).toHaveTextContent('');
+
+    mockExec.mockResolvedValue({ ...playingState, hint: { fromCol: 0, cardIndex: 0, toZone: 'tableau', toCol: 1 } });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    // **同じ要素**の中身が変わる (別の要素が現れるのではない)。
+    await waitFor(() => expect(region).toHaveTextContent(/ヒントがあります/));
+  });
+
   it('selecting a tableau card marks it as selected', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BakersDozenPage />);
@@ -349,6 +367,24 @@ describe('BakersDozenPage legal targets', () => {
   it('never rings an empty column', async () => {
     await selectSpadeFive();
     await waitFor(() => expect(document.querySelectorAll('[data-legal-target="true"]').length).toBe(1));
+  });
+
+  // **A の唯一の行き先は空の組札。**そこが光らないと「置ける先が無い」と
+  // 読めてしまう (#5958)。リングは組札を包む要素側に付いているので、空札の
+  // ボタンからは closest で辿る。
+  it('rings the empty foundations when an ace is selected', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([[{ card: card('SPADE', 1), faceUp: true }]]),
+    });
+    renderWithProviders(<BakersDozenPage />);
+    fireEvent.click(await screen.findByRole('button', { name: '♠ A' }));
+
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: '空の組札 (♠)' }).closest('[data-legal-target="true"]')).not.toBeNull(),
+    );
+    // A はどの組札にも置ける。4 つとも光る。
+    expect(document.querySelectorAll('[data-legal-target="true"]').length).toBe(4);
   });
 
   it('rings nothing before a card is selected', async () => {

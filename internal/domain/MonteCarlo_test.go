@@ -413,3 +413,82 @@ func TestMonteCarlo_JSON_UnmarshalRejectsHugeActionLog(t *testing.T) {
 	g := newMonteCarloForTest()
 	assert.Error(t, json.Unmarshal(data, g))
 }
+
+// #5587: 取り除ける組の数はこのゲームの判断材料そのもの。ヒント・手詰まり判定と
+// **同じ走査**から出ること — 規則を 3 箇所に置くと、片方だけ直したときに
+// 「取れる組があるのに手詰まり」になる。
+func TestMonteCarlo_CountRemovablePairs(t *testing.T) {
+	m := NewDefaultMonteCarlo()
+	m.Reset()
+
+	board := m.GetBoard()
+	// 盤面を作り直す: 同ランクを隣接させた 2 組と、離れた同ランク 1 組。
+	for r := range board {
+		for c := range board[r] {
+			board[r][c] = nil
+		}
+	}
+	board[0][0] = NewCard(CardDesignSpade, 5, true)
+	board[0][1] = NewCard(CardDesignHeart, 5, true)   // 右隣: 1 組
+	board[1][0] = NewCard(CardDesignClover, 5, true)  // 下と右下: さらに 2 組
+	board[4][4] = NewCard(CardDesignDiamond, 9, true) // 離れた同ランク
+	board[0][3] = NewCard(CardDesignSpade, 9, true)
+	m.SetBoard(board)
+
+	// (0,0)-(0,1), (0,0)-(1,0), (0,1)-(1,0) の 3 組。9 は隣接していないので数えない。
+	assert.Equal(t, 3, m.CountRemovablePairs())
+
+	// **ヒントと矛盾しないこと。**組があるならヒントは取り除きを勧める。
+	hint := m.Hint()
+	if assert.NotNil(t, hint) {
+		assert.Equal(t, MonteCarloHintActionRemove, hint.Action)
+	}
+}
+
+// 0 組の盤面ではヒントが取り除きを勧めないこと。数え方と判定が食い違わない。
+func TestMonteCarlo_CountRemovablePairsAgreesWithTheHint(t *testing.T) {
+	m := NewDefaultMonteCarlo()
+	m.Reset()
+
+	board := m.GetBoard()
+	for r := range board {
+		for c := range board[r] {
+			board[r][c] = nil
+		}
+	}
+	board[0][0] = NewCard(CardDesignSpade, 5, true)
+	board[2][2] = NewCard(CardDesignHeart, 5, true) // 隣接していない
+	m.SetBoard(board)
+
+	assert.Zero(t, m.CountRemovablePairs())
+	if hint := m.Hint(); hint != nil {
+		assert.NotEqual(t, MonteCarloHintActionRemove, hint.Action,
+			"nothing is removable, so the hint must not suggest a removal")
+	}
+}
+
+// ヒントは走査順で**最初の**組を返す。共有の走査に早期終了が無いと最後の組に
+// 変わり、盤面が同じでも案内が動く。
+func TestMonteCarlo_HintReturnsTheFirstPairInScanOrder(t *testing.T) {
+	m := NewDefaultMonteCarlo()
+	m.Reset()
+
+	board := m.GetBoard()
+	for r := range board {
+		for c := range board[r] {
+			board[r][c] = nil
+		}
+	}
+	// 走査は行優先。(0,0)-(0,1) が最初、(3,3)-(3,4) が後。
+	board[0][0] = NewCard(CardDesignSpade, 4, true)
+	board[0][1] = NewCard(CardDesignHeart, 4, true)
+	board[3][3] = NewCard(CardDesignClover, 9, true)
+	board[3][4] = NewCard(CardDesignDiamond, 9, true)
+	m.SetBoard(board)
+
+	hint := m.Hint()
+	require.NotNil(t, hint)
+	assert.Equal(t, MonteCarloHintActionRemove, hint.Action)
+	assert.Equal(t, 0, hint.FromR)
+	assert.Equal(t, 0, hint.FromC)
+}

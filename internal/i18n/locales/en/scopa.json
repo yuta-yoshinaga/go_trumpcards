@@ -27,5 +27,7 @@
   "category.cards": "Carte (most cards)",
   "category.denari": "Denari (most diamonds)",
   "category.primiera": "Primiera (most sevens)",
-  "category.settebello": "Settebello (7 of diamonds)"
+  "category.settebello": "Settebello (7 of diamonds)",
+  "helpExampleNext": "  n                        read the round result, then continue",
+  "helpLog": "  l                        show the action log"
 }

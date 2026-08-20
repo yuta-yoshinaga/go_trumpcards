@@ -81,7 +81,8 @@ func (p *AgnesCuiPresenter) Output(c interfaces.AgnesGame, lastErr error) string
 				b.WriteString(color.Red(i18n.T("cuiSolitaireStalemate")) + "\n")
 			}
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
-				"count", strconv.Itoa(c.GetMoveCount())) + "\n")
+				"count", strconv.Itoa(c.GetMoveCount())) +
+				cuiSolitaireUndoHint(c.CanUndo()) + "\n")
 		case domain.AgnesPhaseGameClear:
 			b.WriteString(color.Green(i18n.T("cuiSolitaireGameClear")) + " " +
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(c.GetMoveCount())) + "\n")

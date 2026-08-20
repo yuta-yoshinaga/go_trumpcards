@@ -3,6 +3,8 @@
 package controller
 
 import (
+	"strings"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
@@ -26,20 +28,26 @@ func (c *TienLenCuiController) Exec(command string) string {
 			cfg := c.tli.GetConfig()
 			return c.tli.ResetWithConfig(cfg)
 		},
-		[]string{"p", "play", "sd", "setdifficulty", "log", "l"},
+		[]string{"p", "play", "sd", "setdifficulty", "h", "hint", "log", "l"},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "p", "play":
 				indices, skipped := cuiutil.ParseIntSlice(args)
-				return cuiutil.PrependSkippedWarning(c.tli.Play(indices), skipped), true
+				// Refuse before playing. PrependSkippedWarning ran the move first and
+				// put the warning above the new board, so a mistyped index was dropped
+				// and the remaining ones played as a different, legal move (issue #5390).
+				if len(skipped) > 0 {
+					return invalidArg("invalidCardIndex", "val", strings.Join(skipped, ", ")), true
+				}
+				return c.tli.Play(indices), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Normal, 1=Easy, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequiredAlt", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.tli.GetConfig()
 					cfg.CpuDifficulty = domain.TienLenCpuDifficulty(v)
 					return c.tli.ResetWithConfig(cfg)
 				})
 			default:
-				return handleCuiLog(cmd, c.tli.ActionLog)
+				return handleCuiHintAndLog(cmd, c.tli.Hint, c.tli.ActionLog)
 			}
 		},
 	)

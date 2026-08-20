@@ -6,6 +6,8 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 // MonteCarloGame はモンテカルロ・ソリティアのインタフェース。
 type MonteCarloGame interface {
+	// CountRemovablePairs 盤面に残っている取り除ける組の数
+	CountRemovablePairs() int
 	BaseGame
 	// GetGameEndFlag reports whether the game has left the playing phase.
 	GetGameEndFlag() bool

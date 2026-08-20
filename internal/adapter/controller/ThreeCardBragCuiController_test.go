@@ -75,7 +75,7 @@ func TestThreeCardBragCuiController_Exec(t *testing.T) {
 
 	t.Run("raise missing amount", func(t *testing.T) {
 		result := controller.NewThreeCardBragCuiController(newMock()).Exec("rs")
-		assert.Contains(t, result, "Stake is required")
+		assert.Contains(t, result, msgStem("stakeRequiredEGRs4"))
 	})
 
 	t.Run("fold and alias", func(t *testing.T) {
@@ -114,7 +114,7 @@ func TestThreeCardBragCuiController_Exec(t *testing.T) {
 
 	t.Run("setdifficulty invalid", func(t *testing.T) {
 		result := controller.NewThreeCardBragCuiController(newMock()).Exec("sd 9")
-		assert.Contains(t, result, "Invalid CPU difficulty")
+		assert.Contains(t, result, msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("setante", func(t *testing.T) {

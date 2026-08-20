@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -40,6 +41,7 @@ func setupTysiacCuiMock() *interfaces.MockTysiacGame {
 	m.On("GetWinnerPlayer").Return(-1)
 	m.On("GetRoundCardPoints").Return([domain.TysiacPlayerCnt]int{0, 0, 0})
 	m.On("GetPlayerScores").Return([domain.TysiacPlayerCnt]int{0, 0, 0})
+	m.On("GetMarriageOptions", mock.Anything).Return(([]domain.TysiacMarriageOption)(nil))
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	return m
 }
@@ -170,6 +172,51 @@ func TestTysiacCuiPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
 		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You plays ♠K"},
 	})
+	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+	m.On("GetPlayer", mock.Anything).Return(domain.NewTysiacPlayer(true)).Maybe()
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, "play")
+}
+
+// #5687: Web ページは K+Q を揃えたスートをバナーで出しているのに、CUI は
+// 「同スートの K と Q を持ち…」という一般論しか出しておらず、いまどのスートで
+// 宣言できるかは手札を目で数えるしかなかった。
+func TestTysiacCuiPresenter_MarriageOptions(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.TysiacCuiPresenter)
+
+	withOptions := func(idx int, opts ...domain.TysiacMarriageOption) *interfaces.MockTysiacGame {
+		m, _ := setupTysiacCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentPlayerIdx")
+		m.On("GetCurrentPlayerIdx").Return(idx)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetMarriageOptions")
+		m.On("GetMarriageOptions", mock.Anything).Return(opts)
+		return m
+	}
+	spadeAndClub := []domain.TysiacMarriageOption{
+		{Suit: domain.CardDesignSpade, Points: 40},
+		{Suit: domain.CardDesignClover, Points: 60},
+	}
+
+	t.Run("names every declarable suit on the human turn", func(t *testing.T) {
+		result := p.Output(withOptions(0, spadeAndClub...), nil)
+
+		assert.Contains(t, result, i18n.Tf("tysiac.promptMarriageReady",
+			"suits", "SPADE K-Q (+40), CLOVER K-Q (+60)"))
+	})
+
+	t.Run("adds nothing when no suit is paired", func(t *testing.T) {
+		result := p.Output(withOptions(0), nil)
+
+		assert.NotContains(t, result, strings.Split(i18n.T("tysiac.promptMarriageReady"), "{{")[0])
+	})
+
+	// CPU の手札は伏せたまま。点だけでも「相手が♥のK+Qを持つ」と読めてしまう。
+	t.Run("never leaks a CPU hand", func(t *testing.T) {
+		result := p.Output(withOptions(1, spadeAndClub...), nil)
+
+		assert.NotContains(t, result, strings.Split(i18n.T("tysiac.promptMarriageReady"), "{{")[0])
+	})
 }

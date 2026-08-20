@@ -47,5 +47,7 @@
   "hintReasonMediumHand": "decent hand — call to see more",
   "hintReasonWeakHand": "weak hand — better to fold",
   "promptPassTo": "→ pass {{count}} card(s) left to {{name}}",
-  "hintCards": "cards: {{cards}}"
+  "hintCards": "cards: {{cards}}",
+  "helpExampleCall": "  c                         call the current bet",
+  "helpHint": "  h                         show a hint"
 }

@@ -12,6 +12,12 @@
   "roundPoints": "This round — Team A: {{teamA}}  Team B: {{teamB}}",
   "contractLine": "Declarer: {{name}} (Team {{team}}) — {{contract}}",
   "playerLine": "{{name}} (Team {{team}}, {{role}}): {{cards}} cards  Game Points: {{score}}  Tricks: {{tricks}}",
+  "contractProgress": "Contract: {{team}} {{got}}/{{contract}} — {{status}}",
+  "contractMade": "made",
+  "contractFailed": "cannot be made",
+  "contractNeedMore": "{{remaining}} more",
+  "teamA": "Team A",
+  "teamB": "Team B",
   "roleDeclarer": "Declarer",
   "roleDefender": "Defender",
   "bid.pass": "Pass",
@@ -40,5 +46,7 @@
   "trickEnd": "Trick complete",
   "roundEnd": "Round complete",
   "result.humanWin": "Game over! Your team wins!",
-  "result.cpuWin": "Game over! Team {{team}} wins!"
+  "result.cpuWin": "Game over! Team {{team}} wins!",
+  "helpExampleBid": "  pass                      drop out of the bidding",
+  "helpHint": "  h                         show a hint"
 }

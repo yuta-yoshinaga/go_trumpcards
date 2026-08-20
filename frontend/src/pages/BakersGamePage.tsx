@@ -193,14 +193,18 @@ function BakersGamePageContent() {
   const isGameOver = state.phase === FreeCellPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
 
-  // Supermove limit: a tableau stack of N cards can only move when
-  // (1 + freeCells) * 2^emptyCols >= N. We compute the upper-bound limit (the
-  // optimistic case where the destination is NOT one of the empty columns) and
-  // mark anything deeper than that as undraggable, with a red ring + tooltip
-  // so the player sees the cap before the engine rejects the move.
-  const emptyFreeCells = state.freeCells.filter((c) => c === null).length;
-  const emptyTableauCols = state.tableau.filter((col: (Card | null)[]) => col.length === 0).length;
-  const supermoveLimit = (1 + emptyFreeCells) * 2 ** emptyTableauCols;
+  // Supermove limit: **上限はドメインが決める。**ここで一般式
+  // ((1 + freeCells) * 2^emptyCols) を持つと、空き列自身を経由地に使えない
+  // ぶんの差が抜け、空き列宛ての束を「動かせる」と見せてサーバーに弾かれる
+  // (#5975)。Baker's Game は FreeCell と同じレスポンスを使う。
+  const supermoveLimit = state.maxMovableCards;
+  const emptyColLimit = state.maxMovableCardsToEmptyColumn;
+
+  // 選択中の束の枚数。空き列が受け取れるかはこれと emptyColLimit で決まる。
+  const selectedStackSize =
+    selectedSource?.zone === 'tableau' && selectedSource.col !== undefined && selectedSource.cardIndex !== undefined
+      ? (state.tableau[selectedSource.col]?.length ?? 0) - selectedSource.cardIndex
+      : 0;
 
   const isSourceSelected = (zone: string, col?: number, cell?: number, cardIndex?: number) =>
     selectedSource !== null &&
@@ -387,7 +391,18 @@ function BakersGamePageContent() {
                               onClick={() => handleSelectTarget(tableauColZone)}
                               disabled={!isPlaying || loading || !selectedSource}
                               style={{ height: cardHeight }}
-                              className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                              data-testid={`bg-empty-col-${colIdx.toString()}`}
+                              // 空き列だけ上限が低い。選んだ束が超えているなら、
+                              // クリックする前に分かるようにする (#5975)。
+                              data-empty-col-blocked={selectedStackSize > emptyColLimit ? 'true' : undefined}
+                              title={
+                                selectedStackSize > emptyColLimit
+                                  ? t('emptyColLimitTooltip', { limit: emptyColLimit, size: selectedStackSize })
+                                  : undefined
+                              }
+                              className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite} ${
+                                selectedStackSize > emptyColLimit ? 'opacity-50' : ''
+                              }`}
                               aria-label={t('emptyTableauColumnAriaLabel', { idx: String(colIdx) })}
                             >
                               {t('emptyTableauColumnLabel')}
@@ -434,7 +449,14 @@ function BakersGamePageContent() {
                                           : undefined
                                       }
                                       disabled={!isPlaying || loading}
-                                      aria-label={cardAlt(card)}
+                                      // 上限超過は title とリングだけで示していたので、
+                                      // ホバーできる人にしか届かない。draggable も落として
+                                      // いるのに、動かせない理由が読み上げに出ない (#5820)。
+                                      aria-label={
+                                        exceedsSupermove
+                                          ? `${cardAlt(card)} — ${t('supermoveLimitTooltip', { limit: supermoveLimit })}`
+                                          : cardAlt(card)
+                                      }
                                       aria-pressed={isSourceSelected('tableau', colIdx, undefined, cardIdx)}
                                       draggable={isPlaying && !loading && !exceedsSupermove}
                                       onDragStart={dnd.handleDragStart(cardZone)}
@@ -486,15 +508,22 @@ function BakersGamePageContent() {
             </div>
 
             {/* Hint display */}
-            {hint && (
-              <div className="text-ds-warning text-sm mb-2">
-                {/* Zone identifiers (tableau/freecell/foundation) double as i18n
-                    keys, so they localize instead of showing raw English. */}
-                {t('hintAvailable')}: {t(hint.fromZone)}
-                {hint.fromCol >= 0 ? ` ${hint.fromCol}` : ''} → {t(hint.toZone)}
-                {hint.toCol >= 0 ? ` ${hint.toCol}` : ''}
-              </div>
-            )}
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-testid="bakersgame-hint-live" role="status" aria-live="polite">
+              {hint && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {/* Zone identifiers (tableau/freecell/foundation) double as i18n
+                      keys, so they localize instead of showing raw English. */}
+                  {t('hintAvailable')}: {t(hint.fromZone)}
+                  {hint.fromCol >= 0 ? ` ${hint.fromCol}` : ''} → {t(hint.toZone)}
+                  {hint.toCol >= 0 ? ` ${hint.toCol}` : ''}
+                </div>
+              )}
+            </div>
             <div className="flex justify-center">
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
             </div>
@@ -533,6 +562,7 @@ function BakersGamePageContent() {
                   className="text-ds-text-primary text-xs font-medium bg-ds-surface-elevated rounded px-2 py-1"
                 >
                   {t('movableCount', { count: supermoveLimit })}
+                  {emptyColLimit > 0 && <> {t('supermoveToEmpty', { limit: emptyColLimit })}</>}
                 </span>
               )}
               {isPlaying && (

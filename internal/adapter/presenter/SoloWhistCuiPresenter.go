@@ -130,16 +130,50 @@ func (p *SoloWhistCuiPresenter) writePrompt(b *strings.Builder, g interfaces.Sol
 			"bids", strings.Join(entries, ", ")) + "\n")
 		b.WriteString(i18n.T("solowhist.promptBidHelp") + "\n")
 	case domain.SoloWhistPhasePlay:
+		writeSoloWhistDeclarerProgress(b, g)
 		currentIdx := g.GetCurrentPlayerIdx()
 		b.WriteString(i18n.Tf("solowhist.promptPlay",
 			"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
 		b.WriteString(i18n.T("solowhist.promptPlayHelp") + "\n")
 	case domain.SoloWhistPhaseTrickEnd:
+		writeSoloWhistDeclarerProgress(b, g)
 		b.WriteString(i18n.T("solowhist.promptTrickEnd") + "\n")
 		b.WriteString(i18n.T("solowhist.promptTrickEndHelp") + "\n")
 	case domain.SoloWhistPhaseRoundEnd:
 		b.WriteString(i18n.T("solowhist.promptRoundEnd") + "\n")
 		b.WriteString(i18n.T("solowhist.promptRoundEndHelp") + "\n")
+	}
+}
+
+// writeSoloWhistDeclarerProgress は宣言者の契約達成状況を1行で書く。
+// 宣言者が決まっていない、プレイ中以外のフェーズでは何も書かない。
+//
+// **ミゼールは1トリック取った瞬間に失敗が確定する** (#5649)。Web は
+// solowhist-contract-progress で常時出しているのに、CUI はラウンドが終わるまで
+// 何も言わず、決着済みのラウンドを最後まで打たせていた。
+func writeSoloWhistDeclarerProgress(b *strings.Builder, g interfaces.SoloWhistGame) {
+	pr := g.GetDeclarerProgress()
+	if pr == nil {
+		return
+	}
+	// ミゼールの必要トリックは 0 なので「0/0」と出しても意味を成さない。
+	// 「1つでも取ると失敗」という規則そのものを書く。
+	line := i18n.Tf("solowhist.declarerProgress",
+		"won", strconv.Itoa(pr.Won),
+		"needed", strconv.Itoa(pr.Needed),
+		"remaining", strconv.Itoa(pr.Remaining))
+	if pr.IsMisere {
+		line = i18n.Tf("solowhist.misereProgress",
+			"won", strconv.Itoa(pr.Won),
+			"remaining", strconv.Itoa(pr.Remaining))
+	}
+	switch {
+	case pr.Unreachable:
+		b.WriteString(color.BoldYellow(line+i18n.T("solowhist.contractUnreachable")) + "\n")
+	case pr.Made:
+		b.WriteString(color.Green(line+i18n.T("solowhist.contractMade")) + "\n")
+	default:
+		b.WriteString(line + "\n")
 	}
 }
 
@@ -180,5 +214,5 @@ var soloWhistHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *SoloWhistCuiPresenter) ActionLogOutput(g interfaces.SoloWhistGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.SoloWhistPlayer](g)
 }

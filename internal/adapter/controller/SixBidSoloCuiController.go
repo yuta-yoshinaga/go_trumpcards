@@ -33,17 +33,15 @@ func (c *SixBidSoloCuiController) Exec(command string) string {
 			switch cmd {
 			case "b", "bid":
 				// **1=ソロ 2=ハートソロ 3=ミゼール 4=ギャランティー 5=スプレッド 6=コール。**
-				return cuiutil.WithParsedInt(args,
-					"Bid is required (1=solo 2=heart solo 3=misere 4=guarantee 5=spread misere 6=call solo).",
-					"Invalid bid: %s.", int(domain.SixBidSoloMinBid), int(domain.SixBidSoloMaxBid), func(v int) string {
-						return c.si.Bid(v)
-					})
+				return cuiutil.WithParsedIntKeys(args, "bidRequiredSolo", "invalidBid", int(domain.SixBidSoloMinBid), int(domain.SixBidSoloMaxBid), func(v int) string {
+					return c.si.Bid(v)
+				})
 			case "ps", "pass":
 				return c.si.PassBid(), true
 			case "d", "declare":
 				return sixBidSoloParseDeclare(args, c.si)
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.",
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex",
 					0, domain.SixBidSoloHandSize-1, func(v int) string {
 						return c.si.PlayCard(v)
 					})
@@ -61,11 +59,11 @@ func (c *SixBidSoloCuiController) Exec(command string) string {
 // **指名札はコール・ソロのときだけ要る。**スートは 1=♠ 2=♣ 3=♥ 4=♦。
 func sixBidSoloParseDeclare(args []string, si usecase.SixBidSoloInteractorIF) (string, bool) {
 	if len(args) < 1 {
-		return "Trump suit is required (1=S 2=C 3=H 4=D).", true
+		return invalidArg("trumpSuitRequiredLettersPlainRaw"), true
 	}
 	suit, err := strconv.Atoi(args[0])
 	if err != nil || suit < domain.CardDesignSpade || suit > domain.CardDesignDiamond {
-		return "Invalid suit: " + args[0] + ". Please enter 1-4 (1=S 2=C 3=H 4=D).", true
+		return invalidArg("invalidSuit14Letters", "val", args[0]), true
 	}
 	if len(args) == 1 {
 		return si.Declare(suit, 0, 0), true
@@ -75,11 +73,11 @@ func sixBidSoloParseDeclare(args []string, si usecase.SixBidSoloInteractorIF) (s
 	}
 	calledSuit, err := strconv.Atoi(args[1])
 	if err != nil || calledSuit < domain.CardDesignSpade || calledSuit > domain.CardDesignDiamond {
-		return "Invalid called suit: " + args[1] + ". Please enter 1-4.", true
+		return invalidArg("invalidCalledSuit14", "val", args[1]), true
 	}
 	calledValue, err := strconv.Atoi(args[2])
 	if err != nil || calledValue < 1 || calledValue > 13 {
-		return "Invalid called value: " + args[2] + ". Please enter 1-13.", true
+		return invalidArg("invalidCalledValue113", "val", args[2]), true
 	}
 	return si.Declare(suit, calledSuit, calledValue), true
 }

@@ -18,5 +18,6 @@
   "gameEnd": "ゲーム終了！",
   "rankN": "{{rank}}位",
   "yourTurn": "あなたのターンです",
-  "actionPass": "パス"
+  "actionPass": "パス",
+  "helpLog": "  l                    行動ログを表示"
 }

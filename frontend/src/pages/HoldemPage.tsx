@@ -42,6 +42,7 @@ import { HoldemPhase, HoldemRebuyPhaseType } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { HOLDEM_HELP, parseHoldemCommand } from '../utils/cli/commands/holdemCommands';
 import { formatHoldemState } from '../utils/cli/formatters/holdemFormatter';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { holdemBestFive } from '../utils/holdemBestFive';
 import { findPlayerName } from '../utils/playerUtils';
@@ -115,16 +116,6 @@ function HoldemPageContent() {
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('holdem');
-  const cliConfig: CliGameConfig<HoldemResponse, Parameters<typeof holdemApi.exec>> = useMemo(
-    () => ({
-      gameName: 'holdem',
-      parseCommand: parseHoldemCommand,
-      formatResponse: formatHoldemState,
-      helpText: HOLDEM_HELP,
-    }),
-    [],
-  );
-  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   const [betAmount, setBetAmount] = useState(20);
   const [learningMode, setLearningMode] = useState(false);
@@ -133,6 +124,17 @@ function HoldemPageContent() {
   const [rebuyEnabled, setRebuyEnabled] = useState(false);
   const [addonEnabled, setAddonEnabled] = useState(false);
   const { hint, hintEnabled, setHintEnabled } = useGameHint('holdem', state);
+  const cliConfig: CliGameConfig<HoldemResponse, Parameters<typeof holdemApi.exec>> = useMemo(
+    () => ({
+      gameName: 'holdem',
+      parseCommand: parseHoldemCommand,
+      formatResponse: formatHoldemState,
+      helpText: HOLDEM_HELP,
+      localCommand: hintLocalCommand(hint),
+    }),
+    [hint],
+  );
+  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const turnStartRef = useRef(0);
 
   useMountReset(exec);

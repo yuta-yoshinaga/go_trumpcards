@@ -41,9 +41,9 @@ func TestOichoKabuCuiController_Bet(t *testing.T) {
 
 func TestOichoKabuCuiController_Bet_Errors(t *testing.T) {
 	c := controller.NewOichoKabuCuiController(newMockOichoKabuInteractor())
-	assert.Contains(t, c.Exec("b"), "Bet amount is required")
-	assert.Contains(t, c.Exec("b abc"), "Invalid bet amount")
-	assert.Contains(t, c.Exec("b 0"), "Invalid bet amount")
+	assert.Contains(t, c.Exec("b"), msgBetAmountRequired())
+	assert.Contains(t, c.Exec("b abc"), msgInvalidBetAmountPrefix())
+	assert.Contains(t, c.Exec("b 0"), msgInvalidBetAmountPrefix())
 }
 
 func TestOichoKabuCuiController_Draw(t *testing.T) {

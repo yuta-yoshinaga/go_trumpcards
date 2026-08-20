@@ -23,6 +23,13 @@
   "promptTrickEnd": "トリック終了",
   "promptTrickEndHelp": "next・・・次のトリックへ",
   "promptRoundEnd": "ディール終了",
+  "breakdownTitle": "得点内訳",
+  "breakdownHigh": "  High: {{name}}",
+  "breakdownLow": "  Low: {{name}}",
+  "breakdownJack": "  Jack: {{name}}",
+  "breakdownGame": "  Game: {{name}}",
+  "breakdownNone": "なし",
+  "breakdownProvisional": "（暫定。残りの切り札で High/Low は入れ替わります）",
   "promptRoundEndHelp": "nr / nextround・・・次のディールへ",
   "hintNone": "ヒントはありません。",
   "hintDecision": "[HINT: {{action}} を推奨 ({{reason}})]",
@@ -36,5 +43,8 @@
   "hintReasonBegBeg": "弱い手札なのでベグ",
   "hintReasonBegStand": "十分な手札なのでスタンド",
   "hintReasonGiftGift": "強い手札なのでギフトで進める",
-  "hintReasonGiftRun": "弱い手札なので引き直す"
+  "hintReasonGiftRun": "弱い手札なので引き直す",
+  "helpExamplePlay": "  play 0               手札の 0 番のカードを出す",
+  "helpHint": "  h                    助言を表示",
+  "helpLog": "  l                    行動ログを表示"
 }

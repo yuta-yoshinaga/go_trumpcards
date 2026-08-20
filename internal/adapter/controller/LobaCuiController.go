@@ -52,7 +52,7 @@ func (c *LobaCuiController) Exec(command string) string {
 			case "o", "layoff":
 				return c.layOff(args)
 			case "d", "discard":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.li.Discard)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.li.Discard)
 			case "n", "next":
 				return c.li.NextRound(), true
 			default:
@@ -66,14 +66,14 @@ func (c *LobaCuiController) Exec(command string) string {
 // 指定する必要があるため。
 func (c *LobaCuiController) meld(args []string) (string, bool) {
 	if len(args) == 0 {
-		return "Card indices are required (for example: m 0,2,5).", true
+		return invalidArg("cardIndicesRequiredMeld"), true
 	}
 	parts := strings.Split(args[0], ",")
 	idxs := make([]int, 0, len(parts))
 	for _, p := range parts {
 		n, err := strconv.Atoi(strings.TrimSpace(p))
 		if err != nil || n < 0 {
-			return "Invalid card index: " + p + ".", true
+			return invalidArg("invalidCardIndex", "val", p), true
 		}
 		idxs = append(idxs, n)
 	}
@@ -83,15 +83,15 @@ func (c *LobaCuiController) meld(args []string) (string, bool) {
 // layOff は `o <card> <meld>` を解釈する。
 func (c *LobaCuiController) layOff(args []string) (string, bool) {
 	if len(args) < 2 {
-		return "Card index and meld index are required (for example: o 0 1).", true
+		return invalidArg("cardAndMeldIndexRequired"), true
 	}
 	card, err := strconv.Atoi(args[0])
 	if err != nil || card < 0 {
-		return "Invalid card index: " + args[0] + ".", true
+		return invalidArg("invalidCardIndex", "val", args[0]), true
 	}
 	meld, err := strconv.Atoi(args[1])
 	if err != nil || meld < 0 {
-		return "Invalid meld index: " + args[1] + ".", true
+		return invalidArg("invalidMeldIndexDot", "val", args[1]), true
 	}
 	return c.li.LayOff(card, meld), true
 }

@@ -123,6 +123,12 @@ func (m *MockHighCardFlushGame) GetPlayerFlushLen() int {
 	return args.Int(0)
 }
 
+// GetPlayerFlushSuit モック
+func (m *MockHighCardFlushGame) GetPlayerFlushSuit() int {
+	args := m.Called()
+	return args.Int(0)
+}
+
 func (m *MockHighCardFlushGame) GetDealerFlushLen() int {
 	args := m.Called()
 	return args.Int(0)

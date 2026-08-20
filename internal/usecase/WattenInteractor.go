@@ -139,7 +139,10 @@ func (wi *WattenInteractor) ActionLog() string {
 // 生成的な runCpuTurnsLoop では Respond フェーズを扱えないため専用ループを持つ。
 func (wi *WattenInteractor) runCpu() {
 	g := wi.Game
-	for !g.GetGameEndFlag() {
+	for i := 0; i < MaxCpuIterations; i++ {
+		if g.GetGameEndFlag() {
+			return
+		}
 		switch g.GetPhase() {
 		case domain.WattenPhaseDeclare:
 			if g.IsHumanDeclareTurn() {

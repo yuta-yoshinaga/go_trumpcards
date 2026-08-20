@@ -74,7 +74,7 @@ func TestCassinoCuiController_Exec(t *testing.T) {
 		m := newMock()
 		c := controller.NewCassinoCuiController(m)
 		out := c.Exec("t")
-		assert.Contains(t, out, "Usage:")
+		assert.True(t, msgRejected(out))
 	})
 
 	t.Run("build command", func(t *testing.T) {
@@ -88,7 +88,7 @@ func TestCassinoCuiController_Exec(t *testing.T) {
 		m := newMock()
 		c := controller.NewCassinoCuiController(m)
 		out := c.Exec("b 0 xyz 1")
-		assert.Contains(t, out, "Invalid")
+		assert.True(t, msgRejected(out))
 	})
 
 	t.Run("trail command", func(t *testing.T) {
@@ -102,7 +102,7 @@ func TestCassinoCuiController_Exec(t *testing.T) {
 		m := newMock()
 		c := controller.NewCassinoCuiController(m)
 		out := c.Exec("tr")
-		assert.Contains(t, out, "Usage:")
+		assert.True(t, msgRejected(out))
 	})
 
 	t.Run("sd (difficulty)", func(t *testing.T) {
@@ -134,21 +134,21 @@ func TestCassinoCuiController_Exec(t *testing.T) {
 		m := newMock()
 		c := controller.NewCassinoCuiController(m)
 		out := c.Exec("sr")
-		assert.Contains(t, out, "Usage:")
+		assert.True(t, msgRejected(out))
 	})
 
 	t.Run("sr unknown rule", func(t *testing.T) {
 		m := newMock()
 		c := controller.NewCassinoCuiController(m)
 		out := c.Exec("sr garbage 1")
-		assert.Contains(t, out, "Unknown rule")
+		assert.Contains(t, out, msgStem("unknownRule"))
 	})
 
 	t.Run("sr bad value", func(t *testing.T) {
 		m := newMock()
 		c := controller.NewCassinoCuiController(m)
 		out := c.Exec("sr multibuild 2")
-		assert.Contains(t, out, "Invalid value")
+		assert.Contains(t, out, msgStem("invalidValue0Or1Raw"))
 	})
 
 	t.Run("log command", func(t *testing.T) {
@@ -156,4 +156,57 @@ func TestCassinoCuiController_Exec(t *testing.T) {
 		c := controller.NewCassinoCuiController(m)
 		assert.Equal(t, "log", c.Exec("log"))
 	})
+
+	// **落として残りで実行しない。** 打ち間違いを捨てると、プレイヤーが
+	// 選んでいない組み合わせが実行される (issue #5390)。
+	t.Run("refuses a mistyped index", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewCassinoCuiController(m)
+		assert.Contains(t, c.Exec("t 0 zz"), msgInvalidCardIndexPrefix(),
+			"a mistyped index must be refused, not dropped")
+		assert.Contains(t, c.Exec("t 0 b zz"), msgInvalidCardIndexPrefix(),
+			"a mistyped index must be refused, not dropped")
+	})
+}
+
+// codecov flagged these two: the rule-setter's own rejections. Both are the
+// only thing standing between a mistyped rule name and a config write.
+func TestCassinoCuiController_SetRuleRejections(t *testing.T) {
+	mockOutput := `{"players":[]}`
+	newMock := func() *mockUsecases.MockCassinoInteractor {
+		m := new(mockUsecases.MockCassinoInteractor)
+		m.On("Reset").Return(mockOutput)
+		m.On("GetConfig").Return(domain.DefaultCassinoConfig())
+		m.On("ResetWithConfig", mock.Anything).Return(mockOutput)
+		return m
+	}
+
+	t.Run("unknown rule name", func(t *testing.T) {
+		m := newMock()
+		out := controller.NewCassinoCuiController(m).Exec("sr nosuchrule 1")
+		assert.Equal(t, msgKey("unknownRule", "val", "nosuchrule"), out)
+		m.AssertNotCalled(t, "ResetWithConfig", mock.Anything)
+	})
+
+	// **2 でも 1 扱いにしない。** 真偽値の設定で 0/1 以外を通すと、指定した覚えの
+	// ない側に倒れたまま局が進む。
+	t.Run("value outside 0/1", func(t *testing.T) {
+		m := newMock()
+		out := controller.NewCassinoCuiController(m).Exec("sr sweepbonus 2")
+		assert.Equal(t, msgKey("invalidValue0Or1Raw", "val", "2"), out)
+		m.AssertNotCalled(t, "ResetWithConfig", mock.Anything)
+	})
+}
+
+// codecov: `tr` with no argument answers with its usage line, and nothing
+// exercised that branch.
+func TestCassinoCuiController_TrailNeedsAnIndex(t *testing.T) {
+	mockOutput := `{"players":[]}`
+	m := new(mockUsecases.MockCassinoInteractor)
+	m.On("Reset").Return(mockOutput)
+	m.On("Trail", mock.Anything).Return(mockOutput)
+
+	out := controller.NewCassinoCuiController(m).Exec("tr")
+	assert.Equal(t, msgUsage("usageTrHandidx"), out)
+	m.AssertNotCalled(t, "Trail", mock.Anything)
 }

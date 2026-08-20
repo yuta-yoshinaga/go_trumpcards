@@ -33,5 +33,13 @@
   "roleDefender": "ディフェンダー",
   "round": "ラウンド: {{round}}  トリック: {{trick}}  切り札: {{trump}}",
   "roundEndTrickEntry": "{{name}} {{tricks}}",
-  "roundEndTricks": "各プレイヤーのトリック数: {{list}}"
+  "roundEndTricks": "各プレイヤーのトリック数: {{list}}",
+  "helpBid": "  b <0-4>              入札 (0=Pass, 1=Gask, 2=Solo, 3=Misère, 4=Vira)",
+  "helpPass": "  pass                 パス (bid 0 と同じ)",
+  "helpPlay": "  play <idx>           カードを出す",
+  "helpNext": "  n                    次のトリックへ",
+  "helpNextRound": "  nr                   次のラウンドへ",
+  "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
+  "helpExampleBid": "  pass                 入札を降りる",
+  "helpHint": "  h                    助言を表示"
 }

@@ -39,7 +39,7 @@ func (c *HasenpfefferCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bid":
-				return cuiutil.WithParsedInt(args, "Bid is required.", "Invalid bid: %s.",
+				return cuiutil.WithParsedIntKeys(args, "bidRequired", "invalidBid",
 					domain.HasenpfefferMinBid, domain.HasenpfefferMaxBid, c.hi.Bid)
 			case "pass":
 				// **降りるのは専用コマンド。** `bid 0` を通すと下限の検査が要らなく
@@ -48,7 +48,7 @@ func (c *HasenpfefferCuiController) Exec(command string) string {
 			case "d", "discard":
 				return c.discard(args)
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.hi.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.hi.Play)
 			case "n", "next":
 				return c.hi.NextHand(), true
 			case "g", "giveup":
@@ -65,12 +65,12 @@ func (c *HasenpfefferCuiController) Exec(command string) string {
 // **どちらも既定値で埋めない。** 埋めると捨てていない札が捨てられたり、
 // 選んでいないスートが切り札になる。
 func (c *HasenpfefferCuiController) discard(args []string) (string, bool) {
-	idx, errMsg, ok := cuiutil.ParseIntArg(args, "Card index is required.", "Invalid card index: %s.",
+	idx, errMsg, ok := cuiutil.ParseIntArgKeys(args, "cardIndexRequired", "invalidCardIndex",
 		cuiutil.NoMin, cuiutil.NoMax)
 	if !ok {
 		return errMsg, true
 	}
-	suit, errMsg, ok := cuiutil.ParseIntArg(args[1:], "Suit is required.", "Invalid suit: %s.",
+	suit, errMsg, ok := cuiutil.ParseIntArgKeys(args[1:], "suitRequired", "invalidSuit",
 		domain.CardDesignSpade, domain.CardDesignMax)
 	if !ok {
 		return errMsg, true

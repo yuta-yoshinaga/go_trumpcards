@@ -37,5 +37,6 @@
   "hintPlay": "Card {{index}} looks best ({{reason}})",
   "rikkenBidStrength": "based on your hand's strength",
   "rikkenFollowSuit": "you must follow suit",
-  "openHandLine": "Open hand (seat {{seat}}): {{cards}}"
+  "openHandLine": "Open hand (seat {{seat}}): {{cards}}",
+  "helpExampleHint": "  hint                 ask for a move"
 }

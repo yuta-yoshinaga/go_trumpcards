@@ -51,7 +51,7 @@ func TestBourreCuiController_Exec(t *testing.T) {
 	})
 	t.Run("decide invalid", func(t *testing.T) {
 		c := controller.NewBourreCuiController(newMock())
-		assert.Contains(t, c.Exec("d 9"), "Invalid decision")
+		assert.Contains(t, c.Exec("d 9"), msgStem("invalidDecision0Or1"))
 	})
 	t.Run("draw indices", func(t *testing.T) {
 		m := newMock()
@@ -79,11 +79,20 @@ func TestBourreCuiController_Exec(t *testing.T) {
 	})
 	t.Run("setdifficulty invalid", func(t *testing.T) {
 		c := controller.NewBourreCuiController(newMock())
-		assert.Contains(t, c.Exec("sd 9"), "Invalid CPU difficulty")
+		assert.Contains(t, c.Exec("sd 9"), msgInvalidCpuDifficultyPrefix())
 	})
 	t.Run("log", func(t *testing.T) {
 		m := newMock()
 		c := controller.NewBourreCuiController(m)
 		assert.Equal(t, `{"entries":[]}`, c.Exec("log"))
+	})
+
+	// **落として残りで実行しない。** 打ち間違いを捨てると、プレイヤーが
+	// 選んでいない組み合わせが実行される (issue #5390)。
+	t.Run("refuses a mistyped index", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewBourreCuiController(m)
+		assert.Contains(t, c.Exec("dr 0 zz"), msgInvalidCardIndexPrefix(),
+			"a mistyped index must be refused, not dropped")
 	})
 }

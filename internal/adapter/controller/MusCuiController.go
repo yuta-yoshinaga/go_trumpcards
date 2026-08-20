@@ -65,7 +65,7 @@ func (c *MusCuiController) Exec(command string) string {
 			case "paso":
 				return c.mi.Bet(domain.MusActionPaso, 0), true
 			case "e", "envido":
-				return cuiutil.WithParsedInt(args, "Amount is required (e.g. e 2).", "Invalid amount: %s.", 1, 40, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "amountRequiredEGE2", "invalidAmount", 1, 40, func(v int) string {
 					return c.mi.Bet(domain.MusActionEnvido, v)
 				})
 			case "ordago":
@@ -77,7 +77,7 @@ func (c *MusCuiController) Exec(command string) string {
 			case "n", "next":
 				return c.mi.NextRound(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.mi.GetConfig()
 					cfg.CpuDifficulty = domain.MusCpuDifficulty(v)
 					return c.mi.ResetWithConfig(cfg)
@@ -93,9 +93,9 @@ func (c *MusCuiController) Exec(command string) string {
 func (c *MusCuiController) handleDiscard(args []string) (string, bool) {
 	indices := make([]int, 0, len(args))
 	for _, a := range args {
-		v, _, ok := cuiutil.ParseIntArg([]string{a}, "Index required.", "Invalid index: %s.", 0, 3)
+		v, _, ok := cuiutil.ParseIntArgKeys([]string{a}, "indexRequired", "invalidIndexPlain", 0, 3)
 		if !ok {
-			return "Invalid card index. Usage: d <idx>...", true
+			return invalidArg("invalidCardIndexUsageD"), true
 		}
 		indices = append(indices, v)
 	}

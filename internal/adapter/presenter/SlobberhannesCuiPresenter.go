@@ -66,6 +66,14 @@ func (p *SlobberhannesCuiPresenter) Output(s interfaces.SlobberhannesGame, lastE
 		case domain.SlobberhannesTricksPerRound - 1:
 			sb.WriteString(color.Yellow(i18n.T("slobberhannes.warnLast")) + "\n")
 		}
+		// **♣Q は位置ではなく中身の罰点。**場に出た瞬間に言わないと、
+		// 取ってから penaltyMarks で気づくことになる (#5745)。
+		for _, tc := range s.GetCurrentTrick() {
+			if tc != nil && domain.SlobberhannesIsPenaltyQueen(tc.Card) {
+				sb.WriteString(color.Yellow(i18n.T("slobberhannes.warnQueen")) + "\n")
+				break
+			}
+		}
 
 		for i := 0; i < s.GetPlayerCnt(); i++ {
 			sb.WriteString(slobberhannesPlayerStr(s.GetPlayer(i), i))
@@ -129,5 +137,5 @@ var slobberhannesHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *SlobberhannesCuiPresenter) ActionLogOutput(s interfaces.SlobberhannesGame) string {
-	return actionLogOutputText(s)
+	return actionLogOutputTextForSeats[*domain.SlobberhannesPlayer](s)
 }

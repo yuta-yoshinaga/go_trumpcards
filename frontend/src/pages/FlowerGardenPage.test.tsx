@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 import { flowerGardenApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -187,6 +187,27 @@ describe('FlowerGardenPage', () => {
     // the number alone, so no slot is a nameless blank to a screen reader.
     await waitFor(() => expect(screen.getAllByLabelText(/リザーブ枠 \d+/).length).toBeGreaterThan(0));
     expect(screen.getAllByLabelText(/空のリザーブ枠 \d+/).length).toBeGreaterThan(0);
+  });
+
+  // #5599: 「スートを問わない」という他のソリティアと違う規則が、初回だけ出る
+  // チュートリアルにしか書かれていなかった。読み飛ばした後に思い出す手掛かりが
+  // 盤面に無いので、**チュートリアルの状態に関係なく**出る注記を置く。
+  it('states the suit-agnostic packing rule next to the tableau', async () => {
+    // 既読フラグは**このテストの中だけ**の状態。残すと、順序を変えた瞬間に別の
+    // テストがチュートリアル無しで走る隠れた依存になる。
+    localStorage.setItem('tutorial-flowergarden-done', 'true');
+    onTestFinished(() => {
+      localStorage.clear();
+    });
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<FlowerGardenPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+
+    const note = screen.getByTestId('fg-rules-note');
+    expect(note).toHaveTextContent('スートは無視');
+    expect(note).toHaveTextContent('1つ下のランク');
+    // 空のベッドの扱いも書く ── 規則の半分だけ出すと、空きに置けないと誤解する。
+    expect(note).toHaveTextContent('任意のカード');
   });
 });
 

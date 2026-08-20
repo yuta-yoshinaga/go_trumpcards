@@ -76,5 +76,6 @@
     "play_wild": "8 でスートを変えられる",
     "play_valid": "出せる札",
     "choose_longest_suit": "手札に一番多いスート"
-  }
+  },
+  "winnerBadge": "(勝者)"
 }

@@ -11,6 +11,7 @@ function makeState(overrides: Partial<AgnesResponse> = {}): AgnesResponse {
     phase: 0,
     moveCount: 0,
     canUndo: false,
+    isStalemate: false,
     message: '',
     ...overrides,
   };

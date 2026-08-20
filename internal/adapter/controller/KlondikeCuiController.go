@@ -78,7 +78,7 @@ func (c *KlondikeCuiController) handleMove(args []string) string {
 	}
 	from := args[0]
 	if from != "w" && from != "t" {
-		return i18n.Tf("klondike.invalidFromZone", "val", from)
+		return invalidArg("klondike.invalidFromZone", "val", from)
 	}
 	if len(args) < 2 {
 		switch from {
@@ -105,13 +105,13 @@ func (c *KlondikeCuiController) handleMoveFromWaste(args []string) string {
 		}
 		col, err := strconv.Atoi(args[1])
 		if err != nil {
-			return i18n.Tf("invalidColumn", "val", args[1])
+			return invalidArg("invalidColumn", "val", args[1])
 		}
 		return c.ki.MoveWasteToTableau(col)
 	case "f":
 		return c.ki.MoveWasteToFoundation()
 	default:
-		return i18n.Tf("klondike.invalidToZone", "val", to)
+		return invalidArg("klondike.invalidToZone", "val", to)
 	}
 }
 
@@ -124,7 +124,7 @@ func (c *KlondikeCuiController) handleMoveFromTableau(args []string) string {
 	}
 	fromCol, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[0])
+		return invalidArg("invalidColumn", "val", args[0])
 	}
 
 	if args[1] == "f" {
@@ -137,17 +137,17 @@ func (c *KlondikeCuiController) handleMoveFromTableau(args []string) string {
 			// Wizard state: m t <fromCol> <cardIdx> t — prompt for destination column
 			return cuiutil.PromptRequest(i18n.T("promptToColumn"), fmt.Sprintf("m t %s %s t {0}", args[0], args[1]))
 		}
-		return i18n.T("klondike.moveUsage")
+		return i18n.MarkError(i18n.T("klondike.moveUsage"))
 	}
 
 	cardIdx, err := strconv.Atoi(args[1])
 	if err != nil {
-		return i18n.Tf("invalidCardIndex", "val", args[1])
+		return invalidArg("invalidCardIndex", "val", args[1])
 	}
 
 	toCol, err := strconv.Atoi(args[3])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[3])
+		return invalidArg("invalidColumn", "val", args[3])
 	}
 
 	return c.ki.MoveTableauToTableau(fromCol, cardIdx, toCol)
@@ -160,7 +160,7 @@ func (c *KlondikeCuiController) handleFoundationShorthand(args []string) string 
 	}
 	col, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[0])
+		return invalidArg("invalidColumn", "val", args[0])
 	}
 	return c.ki.MoveTableauToFoundation(col)
 }
@@ -172,7 +172,7 @@ func (c *KlondikeCuiController) handleMoveShorthand(args []string) string {
 	}
 	toCol, err := strconv.Atoi(args[1])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[1])
+		return invalidArg("invalidColumn", "val", args[1])
 	}
 	return c.ki.MoveTableauToTableau(fromCol, -1, toCol)
 }

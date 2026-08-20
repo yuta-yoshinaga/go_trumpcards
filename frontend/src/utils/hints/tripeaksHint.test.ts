@@ -13,6 +13,8 @@ function makeState(overrides: Partial<TriPeaksResponse> = {}): TriPeaksResponse 
     waste: [{ design: 'DIAMOND', value: 4 }],
     phase: TriPeaksPhase.PLAYING,
     moveCount: 0,
+    score: 0,
+    combo: 0,
     canUndo: false,
     isStalemate: false,
     message: '',

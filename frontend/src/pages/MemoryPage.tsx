@@ -30,11 +30,13 @@ import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, MemoryResponse } from '../types/card';
+import type { HintResult } from '../types/hint';
 import { MemoryPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { MEMORY_HELP, parseMemoryCommand } from '../utils/cli/commands/memoryCommands';
 import { formatMemoryState } from '../utils/cli/formatters/memoryFormatter';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { type GridDir, moveFocus } from '../utils/gridNav';
 import { getMemoryHint } from '../utils/hints/memoryHint';
@@ -121,12 +123,18 @@ function MemoryPageContent() {
   const { hintEnabled: frontendHintEnabled, setHintEnabled: setFrontendHintEnabled } = useGameHint('memory', state);
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('memory');
+  // frontendHint is computed further down (it needs `seen` and knownMatchIdx, both
+  // declared after this config). A ref lets the CLI read the current hint at command
+  // time without reordering hooks around a useState.
+  const hintRef = useRef<HintResult | null>(null);
+
   const cliConfig: CliGameConfig<MemoryResponse, Parameters<typeof memoryApi.exec>> = useMemo(
     () => ({
       gameName: 'memory',
       parseCommand: parseMemoryCommand,
       formatResponse: formatMemoryState,
       helpText: MEMORY_HELP,
+      localCommand: hintLocalCommand(hintRef.current),
     }),
     [],
   );
@@ -237,6 +245,9 @@ function MemoryPageContent() {
     () => (frontendHintEnabled && state ? getMemoryHint(state, knownMatchIdx) : null),
     [frontendHintEnabled, state, knownMatchIdx],
   );
+  useEffect(() => {
+    hintRef.current = frontendHint;
+  }, [frontendHint]);
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
@@ -295,10 +306,19 @@ function MemoryPageContent() {
                     id: 'cpuDifficulty',
                     label: t('settings.cpuDifficulty'),
                     value: memoryConfig.cpuDifficulty,
+                    // **強さの差は「CPU がどれだけ覚えているか」の差。** domain の
+                    // retentionChance / decayRate が難易度ごとに 30%/60%/95% 保持、
+                    // 15%/5%/1% 減衰と切り替わるのに、選択肢は Easy/Normal/Hard と
+                    // しか出ておらず、何が変わるのか分からなかった (#5492)。
+                    // 数値は出さない -- 実装が変われば嘘になる。順序だけを言う。
                     options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
                       value: o.value,
-                      label: t(`settings.${o.label.toLowerCase()}`),
+                      label: t('settings.difficultyOption', {
+                        level: t(`settings.${o.label.toLowerCase()}`),
+                        memory: t(`settings.memory${o.label}`),
+                      }),
                     })),
+                    tooltip: t('settings.difficultyTooltip'),
                     onSelect: (v) => handleConfigChange('cpuDifficulty', v),
                   },
                   {

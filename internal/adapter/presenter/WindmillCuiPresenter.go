@@ -41,7 +41,9 @@ func (p *WindmillCuiPresenter) Output(w interfaces.WindmillGame, lastErr error) 
 			pile := corners[i]
 			b.WriteString("#" + strconv.Itoa(i) + " ")
 			if len(pile) == 0 {
-				b.WriteString(i18n.T("cuiEmptyCol"))
+				// 四隅は K しか受け取らない。この固有ルールが CUI では出力にも
+				// ヘルプにも無く、試行錯誤でしか学べなかった (#5558)。
+				b.WriteString(i18n.T("cuiEmptyCol") + i18n.T("windmill.cornerKingsOnly"))
 			} else {
 				b.WriteString(i18n.Tf("windmill.pileEntry",
 					"card", cuiCardStr(pile[len(pile)-1]),
@@ -101,6 +103,10 @@ func (p *WindmillCuiPresenter) Output(w interfaces.WindmillGame, lastErr error) 
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(w.GetMoveCount())) + "\n")
 		case domain.WindmillPhaseGameOver:
 			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
+			corners := w.GetCorners()
+			b.WriteString(color.Yellow(cuiSolitaireGameOverSummary(
+				len(w.GetCenter())+cuiCountPileCards(corners[:]...),
+				domain.WindmillTotalCards)) + "\n")
 		}
 	})
 }

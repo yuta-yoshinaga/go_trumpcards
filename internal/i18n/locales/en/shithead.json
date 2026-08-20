@@ -26,5 +26,13 @@
   "rankShithead": " (Shithead!)",
   "promptCurrentTurn": "{{name}} to act (source: {{source}})",
   "promptPlayHelp": "p [indices...] to play / p to pick up the pile",
-  "facedownSlots": "Blind slots: {{slots}}"
+  "facedownSlots": "Blind slots: {{slots}}",
+  "helpExamplePlay": "  p 0                  play hand card 0",
+  "magicMark": "*",
+  "magicLegend": "Magic cards (*): {{effects}}",
+  "magicEffectTwo": "Reset: next player may play anything",
+  "magicEffectSeven": "Forced down: next play must be 7 or lower",
+  "magicEffectEight": "Skip: skip the next player's turn",
+  "magicEffectTen": "Burn: clear the discard pile and play again",
+  "magicLegendItem": "{{rank}} = {{effect}}"
 }

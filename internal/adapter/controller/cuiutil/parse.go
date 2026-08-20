@@ -48,6 +48,24 @@ func WithParsedInt(args []string, missingMsg, invalidMsg string, min, max int, f
 	return fn(v), true
 }
 
+// ParseOptionalIntKeys parses an optional argument. An absent argument takes
+// defaultVal, but a present-but-unparseable one is refused rather than
+// silently replaced: `p abc` used to play card 0, which is a move the player
+// never asked for.
+//
+// It returns (value, "", true) when the argument is absent or valid, and
+// (0, message, false) when it is present and cannot be parsed.
+func ParseOptionalIntKeys(args []string, idx, defaultVal int, invalidKey string) (int, string, bool) {
+	if len(args) <= idx {
+		return defaultVal, "", true
+	}
+	v, err := strconv.Atoi(args[idx])
+	if err != nil {
+		return 0, i18n.MarkError(i18n.Tf(invalidKey, "val", args[idx])), false
+	}
+	return v, "", true
+}
+
 // ParseOptionalInt parses args[idx] as an integer, returning defaultVal if absent or invalid.
 func ParseOptionalInt(args []string, idx, defaultVal int) int {
 	if len(args) <= idx {
@@ -108,4 +126,41 @@ func PrependSkippedWarning(result string, skipped []string) string {
 		return w + "\n" + result
 	}
 	return result
+}
+
+// ParseIntArgKeys is ParseIntArg with i18n keys instead of message strings.
+//
+// ParseIntArg takes the two messages as Go literals, and all 588 call sites
+// passed English ones -- so a player running in Japanese got a Japanese board,
+// Japanese prompts and a Japanese "unknown command", then `Invalid card index:
+// zz.` the moment they mistyped an argument (issue #5384). Taking keys instead
+// puts these messages through the same i18n path as every other string the CUI
+// prints.
+//
+// invalidKey is rendered with the offending argument as {{val}}; a message that
+// does not name the value simply omits the placeholder.
+// An empty missingKey means "this call cannot be reached with no argument";
+// it yields an empty message rather than i18n.T("")'s literal empty key.
+func ParseIntArgKeys(args []string, missingKey, invalidKey string, min, max int) (int, string, bool) {
+	if len(args) < 1 {
+		if missingKey == "" {
+			return 0, "", false
+		}
+		return 0, i18n.MarkError(i18n.T(missingKey)), false
+	}
+	v, err := strconv.Atoi(args[0])
+	if err != nil || v < min || v > max {
+		return 0, i18n.MarkError(i18n.Tf(invalidKey, "val", args[0])), false
+	}
+	return v, "", true
+}
+
+// WithParsedIntKeys is WithParsedInt with i18n keys instead of message strings.
+// See ParseIntArgKeys.
+func WithParsedIntKeys(args []string, missingKey, invalidKey string, min, max int, fn func(int) string) (string, bool) {
+	v, errMsg, ok := ParseIntArgKeys(args, missingKey, invalidKey, min, max)
+	if !ok {
+		return errMsg, true
+	}
+	return fn(v), true
 }

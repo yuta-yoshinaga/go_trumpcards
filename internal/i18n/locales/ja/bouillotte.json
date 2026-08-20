@@ -18,7 +18,7 @@
   "hand.brelan": "ブルラン",
   "hand.highcard": "ハイカード",
   "gameEnd": "ゲーム終了 — {{name}} の勝ち！",
-  "promptBetting": "アクションしてください: c（コール）/ ra（レイズ・現在 {{bet}}）/ f（フォールド）",
+  "promptBetting": "アクションしてください: c（コール・必要 {{need}}）/ ra（レイズ・現在 {{bet}}→{{raiseTo}}）/ f（フォールド）",
   "promptResult": "ラウンド終了。n で次のラウンドへ。",
   "promptHelp": "c / ra / f でアクション、n で次のラウンド",
   "result.none": "ラウンド終了。",
@@ -32,5 +32,7 @@
   "hint": "[HINT: {{action}}（{{reason}}）]",
   "hintReasonStrongHand": "強い手 — 攻める価値あり",
   "hintReasonMediumHand": "そこそこの手 — 様子を見てコール",
-  "hintReasonWeakHand": "弱い手 — 降りるのが無難"
+  "hintReasonWeakHand": "弱い手 — 降りるのが無難",
+  "helpExampleCall": "  c                         現在のベットにコールする",
+  "helpHint": "  h                         助言を表示"
 }

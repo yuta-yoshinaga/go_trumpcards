@@ -227,5 +227,5 @@ var viraHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *ViraCuiPresenter) ActionLogOutput(g interfaces.ViraGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.ViraPlayer](g)
 }

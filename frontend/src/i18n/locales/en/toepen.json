@@ -30,5 +30,6 @@
   "tutorial.ranking": "This ranking IS the game. The ten is the strongest card and J/Q/K/A are the four weakest -- the standard order turned inside out.",
   "tutorial.toep": "A toep raises the stake by one. Opponents stay in or fold, and folding costs the stake BEFORE the raise.",
   "you": "You",
-  "yourHand": "Your hand"
+  "yourHand": "Your hand",
+  "toepedBy": "{{name}} toeps -- the stake is {{stake}}"
 }

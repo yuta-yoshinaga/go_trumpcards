@@ -34,6 +34,8 @@ type VideoPokerGame interface {
 	GetHandName() string
 	// GetHandKey 役の安定キー（ロケール非依存）を取得する
 	GetHandKey() string
+	// GetCurrentHandKey いま手元の5枚が配当対象の役かを安定キーで返す (無ければ "")
+	GetCurrentHandKey() string
 	// GetHeldIndices ホールドインデックスを取得する
 	GetHeldIndices() [domain.VideoPokerHandSize]bool
 	// GetVariantName バリアント名を取得する

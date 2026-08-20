@@ -42,9 +42,9 @@ func TestRedDogCuiController_Bet(t *testing.T) {
 
 func TestRedDogCuiController_Bet_Errors(t *testing.T) {
 	c := controller.NewRedDogCuiController(newMockRedDogInteractor())
-	assert.Contains(t, c.Exec("b"), "Bet amount is required")
-	assert.Contains(t, c.Exec("b abc"), "Invalid bet amount")
-	assert.Contains(t, c.Exec("b 0"), "Invalid bet amount")
+	assert.Contains(t, c.Exec("b"), msgBetAmountRequired())
+	assert.Contains(t, c.Exec("b abc"), msgInvalidBetAmountPrefix())
+	assert.Contains(t, c.Exec("b 0"), msgInvalidBetAmountPrefix())
 }
 
 func TestRedDogCuiController_Raise(t *testing.T) {
@@ -54,8 +54,8 @@ func TestRedDogCuiController_Raise(t *testing.T) {
 
 func TestRedDogCuiController_Raise_Errors(t *testing.T) {
 	c := controller.NewRedDogCuiController(newMockRedDogInteractor())
-	assert.Contains(t, c.Exec("raise"), "Raise amount is required")
-	assert.Contains(t, c.Exec("raise abc"), "Invalid raise amount")
+	assert.Contains(t, c.Exec("raise"), msgStem("raiseAmountRequired"))
+	assert.Contains(t, c.Exec("raise abc"), msgStem("invalidRaiseAmountANumber"))
 }
 
 func TestRedDogCuiController_Stay(t *testing.T) {

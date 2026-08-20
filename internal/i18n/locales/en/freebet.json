@@ -39,5 +39,7 @@
   "cannotBust": "11 or less cannot bust",
   "standPat": "17 or more is a standing hand",
   "dealerMayBust": "the dealer is likely to bust",
-  "chaseDealer": "the dealer is strong, so you have to chase"
+  "chaseDealer": "the dealer is strong, so you have to chase",
+  "helpExampleBet": "  bet 100              bet 100 chips",
+  "helpSort": "  s                    sort the hand"
 }

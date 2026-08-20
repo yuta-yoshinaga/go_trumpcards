@@ -4,9 +4,12 @@
   "helpUndo": "  u / undo             直近の手を取り消す",
   "helpGiveUp": "  g / giveup           投了する",
   "blackHoleLabel": "ブラックホール:",
+  "progress": "吸い込み: {{count}}/{{total}}枚",
   "fanLabel": "扇{{idx}}:",
   "hintLine": "[HINT: 扇{{fan}} を積めます]",
   "acceptableRanks": "出せるランク: {{ranks}}",
   "acceptableRanksNone": "出せるランク: なし",
-  "legalMoveCount": "残り合法手: {{count}}"
+  "legalMoveCount": "残り合法手: {{count}}",
+  "helpHint": "  h                    助言を表示",
+  "helpLog": "  l                    行動ログを表示"
 }

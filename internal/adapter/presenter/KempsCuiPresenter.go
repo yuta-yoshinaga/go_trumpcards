@@ -31,7 +31,26 @@ func (p *KempsCuiPresenter) Output(g interfaces.KempsGame, lastErr error) string
 		for i := 0; i < g.GetFieldSize(); i++ {
 			field = append(field, g.GetFieldCard(i))
 		}
-		b.WriteString(i18n.T("kemps.fieldLabel") + " " + cuiIndexedCardListStr(kempsCardSlice(field)) + "\n")
+		// **交換候補は「手札と同ランクの場札」** (#5670)。Web は手札を選ぶと
+		// 同ランクの場札にリングを付けるのに、CUI は素の一覧で、毎回ランクを
+		// 目で照合させていた。
+		var swappable []int
+		if human := g.GetPlayer(0); human != nil {
+			inHand := make(map[int]bool, human.GetCardsSize())
+			for i := 0; i < human.GetCardsSize(); i++ {
+				inHand[human.GetCard(i).GetValue()] = true
+			}
+			for i, c := range field {
+				if c != nil && inHand[c.GetValue()] {
+					swappable = append(swappable, i)
+				}
+			}
+		}
+		b.WriteString(i18n.T("kemps.fieldLabel") + " " +
+			cuiIndexMarkedCardListStr(kempsCardSlice(field), swappable, CuiSwapMark) + "\n")
+		if len(swappable) > 0 {
+			b.WriteString(i18n.T("kemps.swapLegend") + "\n")
+		}
 		b.WriteString("----------\n")
 
 		for i := 0; i < g.GetPlayerCnt(); i++ {
@@ -92,7 +111,7 @@ func (p *KempsCuiPresenter) Output(g interfaces.KempsGame, lastErr error) string
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *KempsCuiPresenter) ActionLogOutput(g interfaces.KempsGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.KempsPlayer](g)
 }
 
 // kempsCardSlice wraps []*Card to satisfy the cuiCardList interface.

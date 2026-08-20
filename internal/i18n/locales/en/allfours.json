@@ -23,6 +23,13 @@
   "promptTrickEnd": "Trick over",
   "promptTrickEndHelp": "next = next trick",
   "promptRoundEnd": "Deal over",
+  "breakdownTitle": "Score breakdown",
+  "breakdownHigh": "  High: {{name}}",
+  "breakdownLow": "  Low: {{name}}",
+  "breakdownJack": "  Jack: {{name}}",
+  "breakdownGame": "  Game: {{name}}",
+  "breakdownNone": "none",
+  "breakdownProvisional": "(provisional — remaining trumps can still take High/Low)",
   "promptRoundEndHelp": "nr / nextround = next deal",
   "hintNone": "No hint available.",
   "hintDecision": "[HINT: recommend {{action}} ({{reason}})]",
@@ -36,5 +43,8 @@
   "hintReasonBegBeg": "weak hand, so beg",
   "hintReasonBegStand": "decent hand, so stand",
   "hintReasonGiftGift": "strong hand, so gift and play on",
-  "hintReasonGiftRun": "weak hand, so re-deal"
+  "hintReasonGiftRun": "weak hand, so re-deal",
+  "helpExamplePlay": "  play 0               play hand card 0",
+  "helpHint": "  h                    show a hint",
+  "helpLog": "  l                    show the action log"
 }

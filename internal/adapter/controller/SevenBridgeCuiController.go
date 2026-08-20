@@ -51,23 +51,23 @@ func (c *SevenBridgeCuiController) Exec(command string) string {
 			case "lo", "layoff":
 				idx := parseIntList(args)
 				if len(idx) < 3 {
-					return "Usage: lo <targetPlayerIdx> <meldIdx> <cardIndex>", true
+					return invalidArg("usageLoTargetplayeridxMeldidxCardindex"), true
 				}
 				return c.ci.Layoff(idx[0], idx[1], idx[2]), true
 			case "d", "discard":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.ci.Discard)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.ci.Discard)
 			case "nr", "nextround":
 				return c.ci.NextRound(), true
 			case "h", "hint":
 				return c.ci.Hint(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.ci.GetConfig()
 					cfg.CpuDifficulty = domain.SevenBridgeCpuDifficulty(v)
 					return c.ci.ResetWithConfig(cfg)
 				})
 			case "sl", "setlimit":
-				return cuiutil.WithParsedInt(args, "Point limit is required.", "Invalid point limit: %s. Please enter 1 or more.", 1, math.MaxInt, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "pointLimitRequired", "invalidPointLimit", 1, math.MaxInt, func(v int) string {
 					cfg := c.ci.GetConfig()
 					cfg.PointLimit = v
 					return c.ci.ResetWithConfig(cfg)

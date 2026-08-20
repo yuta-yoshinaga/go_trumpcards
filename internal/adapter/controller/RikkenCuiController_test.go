@@ -41,8 +41,8 @@ func TestRikkenCuiController_Play(t *testing.T) {
 	c := controller.NewRikkenCuiController(newMockRikkenInteractor())
 	assert.Equal(t, "played 3", c.Exec("p 3"))
 	assert.Equal(t, "played 3", c.Exec("play 3"))
-	assert.Contains(t, c.Exec("p"), "required")
-	assert.Contains(t, c.Exec("p abc"), "Invalid card index")
+	assert.Contains(t, c.Exec("p"), msgCardIndexRequired())
+	assert.Contains(t, c.Exec("p abc"), msgInvalidCardIndexPrefix())
 }
 
 // **4 種類の契約とパスが全部通る。** パスは契約 0 で、別経路にはしていません。
@@ -57,8 +57,8 @@ func TestRikkenCuiController_Bid(t *testing.T) {
 	assert.Equal(t, "passed", c.Exec("bid pass"))
 	assert.Equal(t, "passed", c.Exec("pass"))
 
-	assert.Contains(t, c.Exec("bid"), "Invalid contract")
-	assert.Contains(t, c.Exec("bid nonsense"), "Invalid contract")
+	assert.Contains(t, c.Exec("bid"), msgStem("invalidContractRik"))
+	assert.Contains(t, c.Exec("bid nonsense"), msgStem("invalidContractRik"))
 }
 
 func TestRikkenCuiController_Call(t *testing.T) {
@@ -66,8 +66,8 @@ func TestRikkenCuiController_Call(t *testing.T) {
 	assert.Equal(t, "called spade", c.Exec("call s"))
 	assert.Equal(t, "called spade", c.Exec("call spade"))
 	assert.Equal(t, "called heart", c.Exec("call h"))
-	assert.Contains(t, c.Exec("call"), "Invalid trump")
-	assert.Contains(t, c.Exec("call x"), "Invalid trump")
+	assert.Contains(t, c.Exec("call"), msgStem("invalidTrumpSCHD"))
+	assert.Contains(t, c.Exec("call x"), msgStem("invalidTrumpSCHD"))
 }
 
 func TestRikkenCuiController_OtherCommands(t *testing.T) {

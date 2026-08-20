@@ -26,5 +26,13 @@
   "rankShithead": " (Shithead!)",
   "promptCurrentTurn": "手番: {{name}} (出すソース: {{source}})",
   "promptPlayHelp": "p [インデックス...] でカードを出す / p で場札を引き取る",
-  "facedownSlots": "ブラインド選択: {{slots}}"
+  "facedownSlots": "ブラインド選択: {{slots}}",
+  "helpExamplePlay": "  p 0             手札の 0 番のカードを出す",
+  "magicMark": "*",
+  "magicLegend": "特殊札(*): {{effects}}",
+  "magicEffectTwo": "リセット: 次のプレイヤーは何でも出せます",
+  "magicEffectSeven": "強制ダウン: 次のプレイヤーは7以下しか出せません",
+  "magicEffectEight": "スキップ: 次のプレイヤーの番を飛ばします",
+  "magicEffectTen": "焼却: 場札を全て捨てて、もう一度あなたの番になります",
+  "magicLegendItem": "{{rank}}={{effect}}"
 }

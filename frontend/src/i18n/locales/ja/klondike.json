@@ -54,5 +54,6 @@
     "bestTime": "ベスト {{time}}",
     "fewestMoves": "最少 {{moves}}手",
     "newBest": "自己ベスト更新！"
-  }
+  },
+  "vegasFormula": "ベガス方式: 買い切り {{buyIn}} 点から始まり、組札に1枚送るごとに +{{perCard}} 点"
 }

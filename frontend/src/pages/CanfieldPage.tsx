@@ -119,6 +119,10 @@ function CanfieldPageContent() {
   // behind a <details> disclosure, matching the mobile treatment. Persisted so
   // the preference survives reloads. Drag-and-drop is unaffected either way.
   const [collapseColActions, setCollapseColActions] = useLocalStorageToggle('canfield-collapse-col-actions', false);
+  const [reserveRuleDismissed, setReserveRuleDismissed] = useLocalStorageToggle(
+    'canfield-reserve-rule-dismissed',
+    false,
+  );
   const cliConfig: CliGameConfig<CanfieldResponse, Parameters<typeof canfieldApi.exec>> = useMemo(
     () => ({
       gameName: 'canfield',
@@ -378,6 +382,24 @@ function CanfieldPageContent() {
             </div>
 
             {/* Tableau */}
+            {/* 「リザーブが残っている間は空列に自分で置けない (自動補充される)」は
+                canPlaceOnTableau の非自明な規則で、クロンダイクの「空列にはK」という
+                直感と食い違う。書いていないと、プレイヤーは理由の分からない拒否を
+                受け取ることになる (#5531)。RussianSolitaire の rs-facedown-rule と
+                同じ、閉じられる注記。 */}
+            {state.reserve.length > 0 && !reserveRuleDismissed && (
+              <div className="flex items-center justify-center gap-1 mb-1" data-testid="cf-reserve-rule" role="note">
+                <p className="text-ds-text-muted text-xs text-center">{t('reserveEmptyColumnRule')}</p>
+                <button
+                  type="button"
+                  onClick={() => setReserveRuleDismissed(true)}
+                  aria-label={t('dismissRule')}
+                  className={`shrink-0 px-2 py-1 text-ds-text-muted hover:text-ds-text-primary text-sm leading-none ${focusRingWhite} rounded`}
+                >
+                  ×
+                </button>
+              </div>
+            )}
             <div className="mb-3 flex gap-2" data-tutorial="cf-tableau">
               {state.tableau.map((col, i) => {
                 const tZone: CanfieldMoveZone = { zone: 'tableau', col: i };
@@ -495,12 +517,19 @@ function CanfieldPageContent() {
                 are also ring-highlighted above. Clears automatically once the move is
                 played (the next response omits the hint field). */}
             <div data-testid="cf-hint-display">
-              {hint && (
-                <div className="text-sm text-ds-text-muted">
-                  {t('hintAvailable')}: {formatCanfieldHintZone(t, hint.fromZone, hint.fromCol)} →{' '}
-                  {formatCanfieldHintZone(t, hint.toZone, hint.toCol)}
-                </div>
-              )}
+              {/*
+                ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+                領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+                られないことがある (#5955)。
+              */}
+              <div data-testid="canfield-hint-live" role="status" aria-live="polite">
+                {hint && (
+                  <div className="text-sm text-ds-text-muted">
+                    {t('hintAvailable')}: {formatCanfieldHintZone(t, hint.fromZone, hint.fromCol)} →{' '}
+                    {formatCanfieldHintZone(t, hint.toZone, hint.toCol)}
+                  </div>
+                )}
+              </div>
               <div className="sr-only" role="status" aria-live="polite" data-testid="cf-hint-announcement">
                 {hint ? t('hintAnnouncement', { card: hintCardName, dest: hintDest }) : ''}
               </div>

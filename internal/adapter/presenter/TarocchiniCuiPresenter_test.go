@@ -4,14 +4,18 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupTarocchiniCuiMock() *interfaces.MockTarocchiniGame {
@@ -27,6 +31,8 @@ func setupTarocchiniCuiMock() *interfaces.MockTarocchiniGame {
 	m.On("GetWinnerTeam").Return(-1)
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	m.On("GetHint").Return(nil).Maybe()
+	m.On("GetLastTrickWinner").Return(-1).Maybe()
+	m.On("GetScartoSize").Return(0).Maybe()
 	return m
 }
 
@@ -188,5 +194,53 @@ func TestTarocchiniCuiPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
 		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You play Papa"},
 	})
+	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+	m.On("GetPlayer", mock.Anything).Return(domain.NewTarocchiniPlayer(true)).Maybe()
 	assert.Contains(t, p.ActionLogOutput(m), "play")
+}
+
+// #5716: ラウンド得点は「トリック数 + 最終トリック +2 + スカルト加点」の 3 要素で
+// 決まるのに、画面はトリック数しか出しておらず、teamScores の増分と突き合わせて
+// 検算できなかった。
+func TestTarocchiniCuiPresenter_ShowsTheRoundBreakdown(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.TarocchiniCuiPresenter)
+
+	atRoundEnd := func(lastTrickWinner, scarto, dealer int) *interfaces.MockTarocchiniGame {
+		m, players := setupTarocchiniCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.TarocchiniPhaseRoundEnd)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDealerIdx")
+		m.On("GetDealerIdx").Return(dealer)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastTrickWinner")
+		m.On("GetLastTrickWinner").Return(lastTrickWinner)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetScartoSize")
+		m.On("GetScartoSize").Return(scarto)
+		for i := range players {
+			players[i].AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)})
+		}
+		return m
+	}
+
+	// 席 1 が最終トリック → チーム1 に +2。ディーラーは席 0 (チーム0) でスカルト 2 枚。
+	t.Run("names who took the last trick and where the scarto went", func(t *testing.T) {
+		out := p.Output(atRoundEnd(1, 2, 0), nil)
+
+		assert.Contains(t, out, i18n.Tf("tarocchini.roundEndLastTrick",
+			"team", i18n.Tf("tarocchini.teamName", "n", "1"),
+			"bonus", strconv.Itoa(domain.TarocchiniLastTrickBonus)))
+		assert.Contains(t, out, i18n.Tf("tarocchini.roundEndScarto",
+			"team", i18n.Tf("tarocchini.teamName", "n", "0"),
+			"count", "2"))
+	})
+
+	// 最終トリックが未確定 (-1) / スカルトなしのラウンドでは、その行を出さない。
+	t.Run("omits the lines that do not apply", func(t *testing.T) {
+		out := p.Output(atRoundEnd(-1, 0, 0), nil)
+
+		assert.NotContains(t, out, strings.Split(i18n.T("tarocchini.roundEndLastTrick"), "{{")[0])
+		assert.NotContains(t, out, strings.Split(i18n.T("tarocchini.roundEndScarto"), "{{")[0])
+	})
 }

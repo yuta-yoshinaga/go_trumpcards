@@ -133,25 +133,25 @@ func TestEuchreCuiController_Exec(t *testing.T) {
 	t.Run("call command c no args", func(t *testing.T) {
 		c := controller.NewEuchreCuiController(newMock())
 		result := c.Exec("c")
-		assert.Contains(t, result, "Suit is required")
+		assert.Contains(t, result, msgStem("suitRequiredRange"))
 	})
 
 	t.Run("call command c invalid arg", func(t *testing.T) {
 		c := controller.NewEuchreCuiController(newMock())
 		result := c.Exec("c abc")
-		assert.Contains(t, result, "Invalid suit")
+		assert.Contains(t, result, msgStem("invalidSuit"))
 	})
 
 	t.Run("call command c out of range", func(t *testing.T) {
 		c := controller.NewEuchreCuiController(newMock())
 		result := c.Exec("c 5")
-		assert.Contains(t, result, "Invalid suit: 5")
+		assert.Contains(t, result, msgKey("invalidSuit", "val", "5"))
 	})
 
 	t.Run("call command c below range", func(t *testing.T) {
 		c := controller.NewEuchreCuiController(newMock())
 		result := c.Exec("c 0")
-		assert.Contains(t, result, "Invalid suit: 0")
+		assert.Contains(t, result, msgKey("invalidSuit", "val", "0"))
 	})
 
 	// callalone
@@ -174,7 +174,7 @@ func TestEuchreCuiController_Exec(t *testing.T) {
 	t.Run("callalone command ca no args", func(t *testing.T) {
 		c := controller.NewEuchreCuiController(newMock())
 		result := c.Exec("ca")
-		assert.Contains(t, result, "Suit is required")
+		assert.Contains(t, result, msgStem("suitRequiredRange"))
 	})
 
 	// discard
@@ -197,13 +197,13 @@ func TestEuchreCuiController_Exec(t *testing.T) {
 	t.Run("discard command d no args", func(t *testing.T) {
 		c := controller.NewEuchreCuiController(newMock())
 		result := c.Exec("d")
-		assert.Contains(t, result, "Card index is required")
+		assert.Contains(t, result, msgCardIndexRequired())
 	})
 
 	t.Run("discard command d invalid arg", func(t *testing.T) {
 		c := controller.NewEuchreCuiController(newMock())
 		result := c.Exec("d abc")
-		assert.Contains(t, result, "Invalid card index")
+		assert.Contains(t, result, msgInvalidCardIndexPrefix())
 	})
 
 	// play
@@ -226,13 +226,13 @@ func TestEuchreCuiController_Exec(t *testing.T) {
 	t.Run("play command p no args", func(t *testing.T) {
 		c := controller.NewEuchreCuiController(newMock())
 		result := c.Exec("p")
-		assert.Contains(t, result, "Card index is required")
+		assert.Contains(t, result, msgCardIndexRequired())
 	})
 
 	t.Run("play command p invalid arg", func(t *testing.T) {
 		c := controller.NewEuchreCuiController(newMock())
 		result := c.Exec("p abc")
-		assert.Contains(t, result, "Invalid card index")
+		assert.Contains(t, result, msgInvalidCardIndexPrefix())
 	})
 
 	// next
@@ -293,25 +293,25 @@ func TestEuchreCuiController_Exec(t *testing.T) {
 	t.Run("setdifficulty no args", func(t *testing.T) {
 		c := controller.NewEuchreCuiController(newMock())
 		result := c.Exec("sd")
-		assert.Contains(t, result, "required")
+		assert.Contains(t, result, msgCpuDifficultyRequired())
 	})
 
 	t.Run("setdifficulty invalid value", func(t *testing.T) {
 		c := controller.NewEuchreCuiController(newMock())
 		result := c.Exec("sd abc")
-		assert.Contains(t, result, "Invalid CPU difficulty")
+		assert.Contains(t, result, msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("setdifficulty negative", func(t *testing.T) {
 		c := controller.NewEuchreCuiController(newMock())
 		result := c.Exec("sd -1")
-		assert.Equal(t, "Invalid CPU difficulty: -1. Please enter 0-2.", result)
+		assert.Equal(t, msgInvalidCpuDifficulty("-1"), result)
 	})
 
 	t.Run("setdifficulty over 2", func(t *testing.T) {
 		c := controller.NewEuchreCuiController(newMock())
 		result := c.Exec("sd 3")
-		assert.Equal(t, "Invalid CPU difficulty: 3. Please enter 0-2.", result)
+		assert.Equal(t, msgInvalidCpuDifficulty("3"), result)
 	})
 
 	// setlimit
@@ -338,25 +338,25 @@ func TestEuchreCuiController_Exec(t *testing.T) {
 	t.Run("setlimit no args", func(t *testing.T) {
 		c := controller.NewEuchreCuiController(newMock())
 		result := c.Exec("sl")
-		assert.Contains(t, result, "required")
+		assert.Contains(t, result, msgPointLimitRequired())
 	})
 
 	t.Run("setlimit invalid value", func(t *testing.T) {
 		c := controller.NewEuchreCuiController(newMock())
 		result := c.Exec("sl abc")
-		assert.Contains(t, result, "Invalid point limit")
+		assert.Contains(t, result, msgInvalidPointLimitPrefix())
 	})
 
 	t.Run("setlimit zero", func(t *testing.T) {
 		c := controller.NewEuchreCuiController(newMock())
 		result := c.Exec("sl 0")
-		assert.Equal(t, "Invalid point limit: 0. Please enter 1 or more.", result)
+		assert.Equal(t, msgInvalidPointLimit("0"), result)
 	})
 
 	t.Run("setlimit negative", func(t *testing.T) {
 		c := controller.NewEuchreCuiController(newMock())
 		result := c.Exec("sl -1")
-		assert.Equal(t, "Invalid point limit: -1. Please enter 1 or more.", result)
+		assert.Equal(t, msgInvalidPointLimit("-1"), result)
 	})
 
 	// log

@@ -29,5 +29,7 @@
   "hintReasonNotYourTurn": "it is not your turn",
   "hintReasonDraw": "you must draw first",
   "hintReasonMeld": "these three make a meld",
-  "hintReasonDiscard": "this card connects to nothing"
+  "hintReasonDiscard": "this card connects to nothing",
+  "helpExampleDraw": "  ds                       start the turn by drawing from the stock",
+  "helpHint": "  h                        show a hint"
 }

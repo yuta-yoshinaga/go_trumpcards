@@ -135,5 +135,5 @@ var sedmaHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *SedmaCuiPresenter) ActionLogOutput(g interfaces.SedmaGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.SedmaPlayer](g)
 }

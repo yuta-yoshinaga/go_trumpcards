@@ -28,7 +28,7 @@ func (c *GuandanCuiController) Exec(command string) string {
 			cfg := c.gi.GetConfig()
 			return c.gi.ResetWithConfig(cfg)
 		},
-		[]string{"p", "play", "ps", "pass", "t", "tribute", "n", "next", "log", "l"},
+		[]string{"p", "play", "ps", "pass", "t", "tribute", "n", "next", "ch", "check", "log", "l"},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "p", "play":
@@ -36,12 +36,16 @@ func (c *GuandanCuiController) Exec(command string) string {
 			case "ps", "pass":
 				return c.gi.Pass(), true
 			case "t", "tribute":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.",
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex",
 					0, domain.GuandanHandSize-1, func(v int) string {
 						return c.gi.ReturnTribute(v)
 					})
 			case "n", "next":
 				return c.gi.NextHand(), true
+			case "ch", "check":
+				// **出さずに調べるだけ。**手札は動かない。
+				idxs, skipped := cuiutil.ParseIntSlice(args)
+				return cuiutil.PrependSkippedWarning(c.gi.Check(idxs), skipped), true
 			default:
 				return handleCuiLog(cmd, c.gi.ActionLog)
 			}
@@ -54,15 +58,14 @@ func (c *GuandanCuiController) Exec(command string) string {
 // **役は複数枚で出す**ので、単一の添字では足りない。
 func guandanParsePlay(args []string, gi usecase.GuandanInteractorIF) (string, bool) {
 	if len(args) == 0 {
-		return "Card indexes are required (e.g. p 0 1 2 for a triple).", true
+		return invalidArg("cardIndexesRequiredTriple"), true
 	}
 	idxs := make([]int, 0, len(args))
 	seen := map[int]bool{}
 	for _, a := range args {
 		v, err := strconv.Atoi(a)
 		if err != nil || v < 0 || v >= domain.GuandanHandSize {
-			return "Invalid card index: " + a + ". Please enter 0-" +
-				strconv.Itoa(domain.GuandanHandSize-1) + ".", true
+			return invalidArg("invalidCardIndexRange", "val", a, "max", strconv.Itoa(domain.GuandanHandSize-1)), true
 		}
 		// **同じ札を 2 回数えられない。**
 		if seen[v] {

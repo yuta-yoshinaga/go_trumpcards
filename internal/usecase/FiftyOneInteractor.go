@@ -95,9 +95,7 @@ func (fi *FiftyOneInteractor) ActionLog() string {
 
 // runCpuTurns ゲームが終わるか人間の手番になるまでCPUターンを実行
 func (fi *FiftyOneInteractor) runCpuTurns() {
-	for !fi.Game.GetGameEndFlag() && !fi.Game.IsHumanTurn() {
-		_ = fi.Game.CpuPlay()
-	}
+	runCpuTurnsCapped(fi.Game, func() { _ = fi.Game.CpuPlay() })
 }
 
 // RestoreFiftyOneInteractor deserialises JSON into a FiftyOneInteractor.

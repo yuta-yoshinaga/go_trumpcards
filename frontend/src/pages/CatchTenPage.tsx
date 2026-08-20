@@ -194,6 +194,11 @@ function CatchTenPageContent() {
   const isRoundEnd = state.phase === CatchTenPhase.ROUND_END;
   const isGameEnd = state.phase === CatchTenPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
+  // **読み上げる「+N」はこのラウンドで入った点。**teamScores は累積で、渡すと
+  // 「+41 (合計 41)」のように増分と合計が同じ数字になる (#5536)。ドメインは
+  // ちょうどこの合計を teamScores に足しているので、両者は必ず整合する。
+  const teamRoundScore = (team: number) =>
+    state.players.reduce((sum, p) => (p.team === team ? sum + p.roundScore : sum), 0);
 
   // The human sits at seat 0, so team 0 is the human team. A draw
   // (CatchTenDrawTeam → winnerTeam < 0) never satisfies this, so the
@@ -427,12 +432,12 @@ function CatchTenPageContent() {
                   entries={[
                     {
                       name: t('team', { n: 0 }),
-                      roundScore: state.teamScores[0],
+                      roundScore: teamRoundScore(0),
                       cumulativeScore: state.teamScores[0],
                     },
                     {
                       name: t('team', { n: 1 }),
-                      roundScore: state.teamScores[1],
+                      roundScore: teamRoundScore(1),
                       cumulativeScore: state.teamScores[1],
                     },
                   ]}

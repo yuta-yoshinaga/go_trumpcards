@@ -40,8 +40,8 @@ import { IndianPokerPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { INDIANPOKER_HELP, parseIndianpokerCommand } from '../utils/cli/commands/indianpokerCommands';
 import { formatIndianpokerState } from '../utils/cli/formatters/indianpokerFormatter';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
-import { computeIndianPokerEquity } from '../utils/indianPokerEquity';
 import { findPlayerName } from '../utils/playerUtils';
 
 /** Indian Poker tutorial step definitions. */
@@ -105,8 +105,9 @@ function IndianPokerPageContent() {
       parseCommand: parseIndianpokerCommand,
       formatResponse: formatIndianpokerState,
       helpText: INDIANPOKER_HELP,
+      localCommand: hintLocalCommand(hint),
     }),
-    [],
+    [hint],
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
@@ -169,13 +170,16 @@ function IndianPokerPageContent() {
 
   const humanFolded = humanPlayer?.folded ?? false;
   const humanAllIn = humanPlayer?.allIn ?? false;
-  const equity = useMemo(() => {
+  // **勝率はサーバの値をそのまま出す。** 以前はフロントで計算し直しており、
+  // エースの扱いを誤って最も危険な場面ほど高く見せるバグ (#4690) を出したうえ、
+  // ショーダウンが実際に行うスートのタイブレークを数えていなかった (#5505)。
+  // 相手が全員降りている / ショーダウン後は出さない。
+  const equityPct = useMemo(() => {
     if (!state || isShowdown) return null;
-    const opponentRanks = state.players.filter((p) => !p.isHuman && !p.folded && p.cardRank > 0).map((p) => p.cardRank);
-    if (opponentRanks.length === 0) return null;
-    return computeIndianPokerEquity(opponentRanks);
+    const opponentsShowing = state.players.some((p) => !p.isHuman && !p.folded && p.cardRank > 0);
+    if (!opponentsShowing) return null;
+    return state.estimatedStrength;
   }, [state, isShowdown]);
-  const equityPct = equity === null ? null : Math.round(equity * 100);
   const canAct = isBetting && !humanFolded && !humanAllIn && state?.currentTurn === humanPlayer?.id;
   const hasOutstandingBet = (state?.lastBet ?? 0) > (humanPlayer?.currentBet ?? 0);
   const minRaise = state?.minRaise ?? 0;

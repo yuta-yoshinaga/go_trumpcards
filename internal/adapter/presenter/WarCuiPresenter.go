@@ -84,5 +84,5 @@ func (p *WarCuiPresenter) Output(w interfaces.WarGame, lastErr error) string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *WarCuiPresenter) ActionLogOutput(w interfaces.WarGame) string {
-	return actionLogOutputText(w)
+	return actionLogOutputTextForSeats[*domain.WarPlayer](w)
 }

@@ -314,6 +314,8 @@ func TestHeartsCuiPresenter_ActionLogOutput(t *testing.T) {
 		}
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return(entries)
+		// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+		m.On("GetPlayer", mock.Anything).Return(domain.NewHeartsPlayer(true)).Maybe()
 
 		result := p.ActionLogOutput(m)
 		assert.Contains(t, result, "棋譜")
@@ -326,6 +328,8 @@ func TestHeartsCuiPresenter_ActionLogOutput(t *testing.T) {
 		m := new(interfaces.MockHeartsGame)
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+		// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+		m.On("GetPlayer", mock.Anything).Return(domain.NewHeartsPlayer(true)).Maybe()
 
 		result := p.ActionLogOutput(m)
 		assert.Contains(t, result, "棋譜はありません")

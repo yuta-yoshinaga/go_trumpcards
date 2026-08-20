@@ -52,11 +52,11 @@ func TestBostonCuiController_Exec(t *testing.T) {
 
 	t.Run("bid rejects a bad step or suit", func(t *testing.T) {
 		c := controller.NewBostonCuiController(newMock())
-		assert.Contains(t, c.Exec("b"), "required")
-		assert.Contains(t, c.Exec("b abc"), "Invalid bid level")
-		assert.Contains(t, c.Exec("b 0"), "Invalid bid level")
-		assert.Contains(t, c.Exec("b 99"), "Invalid bid level")
-		assert.Contains(t, c.Exec("b 1 9"), "Invalid suit")
+		assert.True(t, msgRejected(c.Exec("b")))
+		assert.Contains(t, c.Exec("b abc"), msgStem("invalidBidLevel1Max"))
+		assert.Contains(t, c.Exec("b 0"), msgStem("invalidBidLevel1Max"))
+		assert.Contains(t, c.Exec("b 99"), msgStem("invalidBidLevel1Max"))
+		assert.Contains(t, c.Exec("b 1 9"), msgStem("invalidSuit14Plain"))
 	})
 
 	// **-1 は「単独で戦う」という有効な選択。**
@@ -67,10 +67,10 @@ func TestBostonCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "CallPartner", 2)
 		assert.Equal(t, mockOutput, c.Exec("cp -1"))
 		m.AssertCalled(t, "CallPartner", -1)
-		assert.Contains(t, c.Exec("cp"), "required")
-		assert.Contains(t, c.Exec("cp abc"), "Invalid partner")
-		assert.Contains(t, c.Exec("cp 9"), "Invalid partner")
-		assert.Contains(t, c.Exec("cp -2"), "Invalid partner")
+		assert.True(t, msgRejected(c.Exec("cp")))
+		assert.Contains(t, c.Exec("cp abc"), msgStem("invalidPartnerMinus1Max"))
+		assert.Contains(t, c.Exec("cp 9"), msgStem("invalidPartnerMinus1Max"))
+		assert.Contains(t, c.Exec("cp -2"), msgStem("invalidPartnerMinus1Max"))
 	})
 
 	t.Run("play and next", func(t *testing.T) {
@@ -80,8 +80,8 @@ func TestBostonCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "PlayCard", 12)
 		assert.Equal(t, mockOutput, c.Exec("n"))
 		m.AssertCalled(t, "NextHand")
-		assert.Contains(t, c.Exec("p abc"), "Invalid card index")
-		assert.Contains(t, c.Exec("p 13"), "Invalid card index")
+		assert.Contains(t, c.Exec("p abc"), msgInvalidCardIndexPrefix())
+		assert.Contains(t, c.Exec("p 13"), msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("log and unknown", func(t *testing.T) {

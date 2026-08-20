@@ -29,6 +29,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { KALOOKI_HELP, parseKalookiCommand } from '../utils/cli/commands/kalookiCommands';
 import { formatKalookiState } from '../utils/cli/formatters/kalookiFormatter';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { kalookiOpeningPoints } from '../utils/kalookiScore';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -119,6 +120,20 @@ function KalookiPageContent() {
 
   const humanIdx = 0;
   const humanPlayer = state?.players[humanIdx];
+
+  // **ジョーカーはメルド点を 1.5 倍にするワイルド札** (kalookiMeldValue) なのに、
+  // 手札では通常札と見分けが付かなかった (#5666)。同種の概念を持つ ThreeThirteen
+  // は wildBadge を出している。aria-label は cardAlt が既に「ジョーカー」と読む。
+  const jokerBadge = (card: Card) =>
+    card.design === 'JOKER' ? (
+      <span
+        aria-hidden="true"
+        className="absolute top-0.5 right-0.5 px-1 rounded bg-ds-accent text-ds-text-on-accent text-[8px] font-extrabold tracking-wider shadow-md pointer-events-none"
+        data-testid="kalooki-joker-badge"
+      >
+        {t('jokerBadge')}
+      </span>
+    ) : null;
   // Points the staged groups are worth toward the opening requirement. Hand and
   // Foot shows the same readout; Kalooki only stated the target (#4839).
   const openingPoints = useMemo(
@@ -136,14 +151,23 @@ function KalookiPageContent() {
 
   // CLI mode wiring (mirrors ConquianPage).
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('kalooki');
+
+  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
+  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('kalooki', state);
   const cliConfig: CliGameConfig<KalookiResponse, Parameters<typeof kalookiApi.exec>> = useMemo(
     () => ({
       gameName: 'kalooki',
       parseCommand: parseKalookiCommand,
       formatResponse: formatKalookiState,
       helpText: KALOOKI_HELP,
+      localCommand: hintLocalCommand(frontendHint),
     }),
-    [],
+    [frontendHint],
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
@@ -232,14 +256,6 @@ function KalookiPageContent() {
     if (!state) return '';
     return phaseNames[state.phase] ?? '';
   }, [phaseNames, state]);
-
-  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
-  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('kalooki', state);
 
   if (!state) {
     return (
@@ -388,7 +404,10 @@ function KalookiPageContent() {
                             }`}
                           >
                             {m.cards.map((c, ci) => (
-                              <AnimatedCard key={`${p.id}-${mi}-${ci}`} card={c} width={cardWidth * 0.6} />
+                              <span key={`${p.id}-${mi}-${ci}`} className="relative inline-block">
+                                <AnimatedCard card={c} width={cardWidth * 0.6} />
+                                {jokerBadge(c)}
+                              </span>
                             ))}
                           </button>
                         );
@@ -445,7 +464,10 @@ function KalookiPageContent() {
                           isInGroup ? 'opacity-40' : ''
                         }`}
                       >
-                        <AnimatedCard card={c} width={cardWidth} />
+                        <span className="relative inline-block">
+                          <AnimatedCard card={c} width={cardWidth} />
+                          {jokerBadge(c)}
+                        </span>
                       </button>
                     );
                   })}

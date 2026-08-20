@@ -178,6 +178,13 @@ func cuiIndexedCardListStr(hand cuiCardList) string {
 	return formatCardList(hand, cuiCardStr, "  ", true)
 }
 
+// CuiHoleMark は「その札は自分の手札から出したもの」を示す印。ショーダウンで
+// ベストハンド5枚を並べたとき、どれがボード由来でどれが手札由来かを分ける。
+//
+// **オマハ系は手札から使う枚数が固定** (通常4枚のうち2枚、Big O は5枚のうち2枚)
+// なので、10通りの組み合わせのどれが役になったのかは印が無いと追えない (#5484)。
+const CuiHoleMark = "*"
+
 // CuiLegalMark は「この札は今出せる」ことを示す印。CrazyEights / Wizard /
 // Mushi / GoFish が以前から使っている後置の "*" に合わせている。
 const CuiLegalMark = "*"
@@ -190,18 +197,88 @@ const CuiLegalMark = "*"
 // playable が nil または空のときは目印を付けない -- ビッド中や CPU の手番など、
 // そもそも制限を出していない状態と区別するため (#4725)。
 func cuiPlayableMarkedCardListStr(hand cuiCardList, playable []int) string {
-	if len(playable) == 0 {
+	return cuiIndexMarkedCardListStr(hand, playable, CuiLegalMark)
+}
+
+// CuiBombMark は「その札はボムを構成できる」ことを示す印 (Tichu)。
+//
+// 合法手の "*" とも交換由来の "+" とも別の記号にする ── 同じ画面で意味の違う
+// 印が同じ形だと、どちらの話をしているのか読めない (#5635)。
+const CuiBombMark = "!"
+
+// CuiKittyMark は「その札は交換で入ってきた」ことを示す印。
+//
+// **合法手の "*" とは別の記号にする。**同じ画面で意味の違う 2 つの印が同じ形だと、
+// どちらの話をしているのか読めない (#5632)。
+const CuiKittyMark = "+"
+
+// CuiTrumpMark は「その札は切り札」であることを示す印 (Doppelkopf)。
+//
+// 合法手の "*"、ボムの "!"、交換由来の "+" とはまた別の記号にする ── 同じ画面で
+// 意味の違う印が同じ形だと、どちらの話をしているのか読めない (#5639)。
+const CuiTrumpMark = "^"
+
+// CuiTopTrumpMark は「その札は固定の最上位切り札」であることを示す印
+// (Auction Forty-Fives)。
+//
+// 切り札の印 "^" とも別にする ── Forty-Fives の最上位切り札は「強い」だけでなく
+// **マストフォローが免除される** という別の意味を持つので、同じ形にすると
+// どちらの話か読めない (#5643)。
+const CuiTopTrumpMark = "!!"
+
+// CuiWildMark は「その札はこのラウンドのワイルド」であることを示す印
+// (Three Thirteen)。
+//
+// 合法手の "*"、ボムの "!"、交換由来の "+"、切り札の "^"、最上位切り札の "!!" とは
+// また別の記号にする ── 同じ画面で意味の違う印が同じ形だと、どちらの話をして
+// いるのか読めない (#5667)。
+const CuiWildMark = "~"
+
+// CuiSwapMark は「その場札は手札のどれかと同ランク = 交換候補」であることを
+// 示す印 (Kemps)。
+//
+// 合法手の "*"、ボムの "!"、交換由来の "+"、切り札の "^"、最上位切り札の "!!"、
+// ワイルドの "~" とはまた別の記号にする ── 同じ画面で意味の違う印が同じ形だと、
+// どちらの話をしているのか読めない (#5670)。
+//
+// **"=" は使えない。**ヘルプ行に "0=音, 1=瞬き" のような等号が出るので、印として
+// 拾うと本文と区別が付かない (テストで実際に衝突した)。
+const CuiSwapMark = "@"
+
+// CuiRunMark は「ここから先が 1 つの塊としてまとめて動かせる」ことを示す区切り
+// (Simple Simon)。
+//
+// これまでの印 ("*" 合法手 / "!" ボム / "+" 交換由来 / "^" 切り札 / "!!" 最上位
+// 切り札 / "~" ワイルド / "@" 交換候補) と違い、**カードに付く印ではなく列の
+// 途中に入る区切り**なので、縦棒を使う (#5679)。
+const CuiRunMark = "|"
+
+// CuiNewestMark は「その札は今のストリートで新しく公開された」ことを示す印
+// (Five Card Stud / Soko)。
+//
+// これまでの印 ("*" 合法手 / "!" ボム / "+" 交換由来 / "^" 切り札 / "!!" 最上位
+// 切り札 / "~" ワイルド / "@" 交換候補) とはまた別の記号にする ── 同じ画面で
+// 意味の違う印が同じ形だと、どちらの話をしているのか読めない (#5674)。
+const CuiNewestMark = "<"
+
+// cuiIndexMarkedCardListStr returns an indexed card list where the cards at the
+// given indices carry mark.
+//
+// indices が nil または空のときは目印を付けない -- 「制限が無い」状態と
+// 「全部が対象」を取り違えないため。
+func cuiIndexMarkedCardListStr(hand cuiCardList, indices []int, mark string) string {
+	if len(indices) == 0 {
 		return cuiIndexedCardListStr(hand)
 	}
-	marked := make(map[int]bool, len(playable))
-	for _, i := range playable {
+	marked := make(map[int]bool, len(indices))
+	for _, i := range indices {
 		marked[i] = true
 	}
 	parts := make([]string, hand.GetCardsSize())
 	for i := range parts {
 		parts[i] = fmt.Sprintf("[%d]%s", i, cuiCardStr(hand.GetCard(i)))
 		if marked[i] {
-			parts[i] += CuiLegalMark
+			parts[i] += mark
 		}
 	}
 	return strings.Join(parts, "  ")
@@ -229,6 +306,23 @@ func cuiCardSliceStr(cards []*domain.Card) string {
 // e.g. "♠5  ♥3"
 func cuiCardSliceStrEmoji(cards []*domain.Card) string {
 	return formatCardSlice(cards, cuiCardStrEmoji, "  ")
+}
+
+// cuiCardSliceStrEmojiNewest は cuiCardSliceStrEmoji と同じ並びに、末尾の 1 枚
+// だけ CuiNewestMark を付けて返す。
+//
+// ストリートごとに 1 枚ずつ増える公開札で「今回増えたのはどれか」を示すための
+// もの (#5674)。空スライスは空文字。
+func cuiCardSliceStrEmojiNewest(cards []*domain.Card) string {
+	if len(cards) == 0 {
+		return ""
+	}
+	parts := make([]string, len(cards))
+	for i, c := range cards {
+		parts[i] = cuiCardStrEmoji(c)
+	}
+	parts[len(parts)-1] += CuiNewestMark
+	return strings.Join(parts, "  ")
 }
 
 // cuiCaptureHintLine annotates each hand card with the table cards it can

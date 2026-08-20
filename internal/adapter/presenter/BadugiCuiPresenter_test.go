@@ -2,6 +2,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -9,6 +10,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func TestBadugiCuiPresenter_Output_ContainsGameTitle(t *testing.T) {
@@ -231,4 +233,62 @@ func TestBadugiCuiPresenter_LocalizedHandNames(t *testing.T) {
 			assert.NotContains(t, out, "-card")
 		})
 	}
+}
+
+// **完成しているなら、訊かれなくても言う。**
+//
+// Web は交換フェーズに入ると完成バナーを自動で出すが、CUI では hint を明示的に
+// 打ったときの hintStandPat でしか出ておらず、完成した手を無自覚に崩せた (#5540)。
+func TestBadugiCuiPresenter_WarnsAboutACompleteBadugiWithoutBeingAsked(t *testing.T) {
+	warn := func(size int) string {
+		return i18n.Tf("badugi.completeBadugiWarning", "size", strconv.Itoa(size))
+	}
+
+	t.Run("a complete badugi warns during the draw phase", func(t *testing.T) {
+		pres := new(presenter.BadugiCuiPresenter)
+		bd, players := makeBadugiForPresenter()
+		bd.SetPhase(domain.BadugiPhaseDraw)
+		bd.SetCurrentTurn(0)
+		// 4 枚すべてランクもスートも異なる = 完成。
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 4, false))
+
+		assert.Contains(t, pres.Output(bd, nil), warn(4))
+	})
+
+	// **負のコントロール。** 未完成で出ると「完成した」と誤解させる。
+	t.Run("an incomplete hand stays silent", func(t *testing.T) {
+		pres := new(presenter.BadugiCuiPresenter)
+		bd, players := makeBadugiForPresenter()
+		bd.SetPhase(domain.BadugiPhaseDraw)
+		bd.SetCurrentTurn(0)
+		// スート被り 2 組 → 最良でも 2 枚。
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+
+		out := pres.Output(bd, nil)
+		assert.NotContains(t, out, warn(4))
+		assert.NotContains(t, out, warn(2))
+	})
+
+	// 交換フェーズ以外では出さない。配る前や決着後に「交換すると弱くなる」と
+	// 言っても意味がない。
+	t.Run("other phases stay silent", func(t *testing.T) {
+		for _, ph := range []int{domain.BadugiPhaseDeal, domain.BadugiPhaseEnd} {
+			pres := new(presenter.BadugiCuiPresenter)
+			bd, players := makeBadugiForPresenter()
+			bd.SetPhase(ph)
+			bd.SetCurrentTurn(0)
+			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+			players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+			players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 3, false))
+			players[0].AddCard(domain.NewCard(domain.CardDesignClover, 4, false))
+
+			assert.NotContains(t, pres.Output(bd, nil), warn(4), "phase %d", ph)
+		}
+	})
 }

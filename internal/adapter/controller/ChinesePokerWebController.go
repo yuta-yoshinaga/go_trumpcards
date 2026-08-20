@@ -16,6 +16,18 @@ type ChinesePokerWebInput struct {
 	MiddleIndices []int `json:"middleIndices,omitempty"`
 }
 
+// ChinesePokerWebOutputArrangement は推奨する13枚の分け方。**インデックスは
+// playerCards のもの**で、カードそのものではない (フロントが手札の並びを
+// 変えても、同じ札を指し続ける)。
+type ChinesePokerWebOutputArrangement struct {
+	Front  []int `json:"front"`
+	Middle []int `json:"middle"`
+	Back   []int `json:"back"`
+	// Foul はこの分け方がファウルになるか。ランク順に切るだけでは合法とは
+	// 限らないので、勧めると同時に危険も伝える (#5615)。
+	Foul bool `json:"foul"`
+}
+
 // ChinesePokerWebOutput チャイニーズポーカーWebアウトプット
 type ChinesePokerWebOutput struct {
 	PlayerCards      []*WebOutputCard `json:"playerCards"`
@@ -43,6 +55,9 @@ type ChinesePokerWebOutput struct {
 	PlayerRoyalty    int              `json:"playerRoyalty"`
 	DealerRoyalty    int              `json:"dealerRoyalty"`
 	Scoop            bool             `json:"scoop"`
+	// SuggestedArrangement はセットハンドで13枚そろっているときだけ入る。
+	// 空配列ではなく省略するのは、「前列に置く札が無い」と読めてしまうため。
+	SuggestedArrangement *ChinesePokerWebOutputArrangement `json:"suggestedArrangement,omitempty"`
 	WebOutputBase
 }
 
@@ -76,7 +91,7 @@ func chinesePokerDispatch(bc *baseController, w http.ResponseWriter, ci usecase.
 	case "s", "set":
 		bc.writePresenterResponse(w, ci.SetHands(param.FrontIndices, param.MiddleIndices))
 	default:
-		return dispatchResetAndLog(param.Command, bc, w, ci.Reset, ci.ActionLog)
+		return dispatchResetHintAndLog(param.Command, bc, w, ci.Reset, ci.Hint, ci.ActionLog)
 	}
 	return true
 }

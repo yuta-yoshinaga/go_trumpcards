@@ -11,6 +11,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	mockUsecases "github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func TestMachiavelliCuiController_Exec(t *testing.T) {
@@ -24,6 +25,7 @@ func TestMachiavelliCuiController_Exec(t *testing.T) {
 		m.On("NewMeld", mock.Anything).Return(mockOutput)
 		m.On("Layoff", mock.Anything, mock.Anything).Return(mockOutput)
 		m.On("NextRound").Return(mockOutput)
+		m.On("Play", mock.Anything, mock.Anything).Return(mockOutput)
 		m.On("ActionLog").Return(mockOutput)
 		return m
 	}
@@ -61,7 +63,7 @@ func TestMachiavelliCuiController_Exec(t *testing.T) {
 		m := newMock()
 		c := controller.NewMachiavelliCuiController(m)
 		out := c.Exec("nm 0 1")
-		assert.Contains(t, out, "Usage: nm")
+		assert.Contains(t, out, msgUsage("usageNmIJKAtLeast3HandIndices"))
 		m.AssertNotCalled(t, "NewMeld", mock.Anything)
 	})
 
@@ -76,7 +78,7 @@ func TestMachiavelliCuiController_Exec(t *testing.T) {
 		m := newMock()
 		c := controller.NewMachiavelliCuiController(m)
 		out := c.Exec("lo 0")
-		assert.Contains(t, out, "Usage: lo")
+		assert.Contains(t, out, msgUsage("usageLoMeldidxHandindex"))
 		m.AssertNotCalled(t, "Layoff", mock.Anything, mock.Anything)
 	})
 
@@ -128,5 +130,77 @@ func TestMachiavelliCuiController_Exec(t *testing.T) {
 		c := controller.NewMachiavelliCuiController(m)
 		out := c.Exec("blarghhh")
 		assert.NotEmpty(t, out)
+	})
+
+	// #5704: 「手札を出せるなら場のメルドを自由に組み替えてよい」がこのゲームの
+	// 核心ルールで、Web は丸ごと 1 機能として実装しているのに、CUI にはコマンドが
+	// 無く、代表的な戦略行為を実行する手段が無かった。
+	t.Run("rearrange rebuilds the table and plays from hand", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewMachiavelliCuiController(m)
+
+		assert.Equal(t, mockOutput, c.Exec("ra s5,h5,d5;c7,c8,c9 / 2,4"))
+
+		m.AssertCalled(t, "Play", [][]domain.MachiavelliCardRef{
+			{
+				{Design: domain.CardDesignSpade, Value: 5},
+				{Design: domain.CardDesignHeart, Value: 5},
+				{Design: domain.CardDesignDiamond, Value: 5},
+			},
+			{
+				{Design: domain.CardDesignClover, Value: 7},
+				{Design: domain.CardDesignClover, Value: 8},
+				{Design: domain.CardDesignClover, Value: 9},
+			},
+		}, []int{2, 4})
+	})
+
+	t.Run("rearrange accepts the long form and rank letters", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewMachiavelliCuiController(m)
+
+		assert.Equal(t, mockOutput, c.Exec("rearrange sA,hA,dA / 0"))
+
+		m.AssertCalled(t, "Play", [][]domain.MachiavelliCardRef{
+			{
+				{Design: domain.CardDesignSpade, Value: 1},
+				{Design: domain.CardDesignHeart, Value: 1},
+				{Design: domain.CardDesignDiamond, Value: 1},
+			},
+		}, []int{0})
+	})
+
+	// 余分な空白と空グループは黙って読み飛ばす (手で打つコマンドなので)。
+	t.Run("rearrange tolerates spacing and empty segments", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewMachiavelliCuiController(m)
+
+		assert.Equal(t, mockOutput, c.Exec("ra  s5, h5 , d5 ; ; c7,c8,c9 ,  / 2 , 4 ,"))
+
+		m.AssertCalled(t, "Play", [][]domain.MachiavelliCardRef{
+			{
+				{Design: domain.CardDesignSpade, Value: 5},
+				{Design: domain.CardDesignHeart, Value: 5},
+				{Design: domain.CardDesignDiamond, Value: 5},
+			},
+			{
+				{Design: domain.CardDesignClover, Value: 7},
+				{Design: domain.CardDesignClover, Value: 8},
+				{Design: domain.CardDesignClover, Value: 9},
+			},
+		}, []int{2, 4})
+	})
+
+	t.Run("rearrange rejects malformed input without calling the interactor", func(t *testing.T) {
+		// 手札を 1 枚も出さない組み替えはルール違反なので、ここで弾く。
+		for _, arg := range []string{"ra", "ra s5,h5,d5", "ra / 1", "ra s5,x9 / 1", "ra s5,h5,d5 / x", "ra s5,h5,d5 /"} {
+			m := newMock()
+			c := controller.NewMachiavelliCuiController(m)
+
+			out := c.Exec(arg)
+
+			assert.Contains(t, out, i18n.T("usageRaRearrangeGroups"), "input %q", arg)
+			m.AssertNotCalled(t, "Play", mock.Anything, mock.Anything)
+		}
 	})
 }

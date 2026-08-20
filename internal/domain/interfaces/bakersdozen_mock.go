@@ -80,6 +80,14 @@ func (_m *MockBakersDozenGame) GetTableau() [domain.BakersDozenTableauCnt][]*dom
 	return ret.Get(0).([domain.BakersDozenTableauCnt][]*domain.BakersDozenTableauCard)
 }
 
+// LegalTargets は列 fromCol の一番下の札を置ける先を返す。
+func (_m *MockBakersDozenGame) LegalTargets(fromCol int) ([]int, []int) {
+	ret := _m.Called(fromCol)
+	tab, _ := ret.Get(0).([]int)
+	found, _ := ret.Get(1).([]int)
+	return tab, found
+}
+
 func (_m *MockBakersDozenGame) GetFoundation() [domain.BakersDozenFoundationCnt][]*domain.Card {
 	ret := _m.Called()
 	return ret.Get(0).([domain.BakersDozenFoundationCnt][]*domain.Card)

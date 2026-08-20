@@ -131,3 +131,34 @@ describe('DeucesWildPage', () => {
     expect(screen.queryByTestId('vp-hold-badge-2')).not.toBeInTheDocument();
   });
 });
+
+// #5507: madeHand は jokerpoker でしか出ておらず、Deuces Wild では常に無効だった。
+// スリーカード以上でしか配当が出ない=分散が大きい変種なので、ドロー前に配当対象かを
+// 知れる価値はむしろ大きい。
+describe('DeucesWildPage made-hand readout', () => {
+  const drawTo = async (hand: VideoPokerResponse['hand']) => {
+    mockExec.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce({ ...drawPhaseState, hand });
+    renderWithProviders(<DeucesWildPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    fireEvent.click(screen.getByRole('button', { name: /ディール/ }));
+    await waitFor(() => expect(screen.getByRole('button', { name: /ドロー/ })).toBeInTheDocument());
+  };
+
+  it('counts a two as wild when naming the hand', async () => {
+    await drawTo([card('SPADE', 5), card('HEART', 5), card('CLOVER', 2), card('DIAMOND', 9), card('SPADE', 12)]);
+    const made = screen.getByTestId('vp-made-hand');
+    expect(made).toHaveTextContent('現在の役');
+    expect(made).toHaveTextContent('スリーカード');
+  });
+
+  // **配当の下限はスリーカード。** ツーペアでは「役なし」。
+  it('says nothing pays below three of a kind', async () => {
+    await drawTo([card('SPADE', 5), card('HEART', 5), card('CLOVER', 9), card('DIAMOND', 9), card('SPADE', 12)]);
+    expect(screen.getByTestId('vp-made-hand')).toHaveTextContent('役なし');
+  });
+
+  it('names four deuces on its own row', async () => {
+    await drawTo([card('SPADE', 2), card('HEART', 2), card('CLOVER', 2), card('DIAMOND', 2), card('SPADE', 9)]);
+    expect(screen.getByTestId('vp-made-hand')).toHaveTextContent('フォーデューシーズ');
+  });
+});

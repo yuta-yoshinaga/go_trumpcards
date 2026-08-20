@@ -27,6 +27,12 @@ export interface AgnesResponse extends BaseGameResponse {
   phase: number;
   moveCount: number;
   canUndo: boolean;
+  /**
+   * Whether no legal move remains. Decided by the domain's `Agnes.IsStalemate()`
+   * -- the page used to re-derive it from the move rules in TypeScript, so the
+   * same rule lived in two places and could drift (#5601).
+   */
+  isStalemate: boolean;
   hint?: AgnesHint;
 }
 

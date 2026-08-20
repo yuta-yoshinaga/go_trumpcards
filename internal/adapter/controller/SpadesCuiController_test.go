@@ -79,25 +79,25 @@ func TestSpadesCuiController_Exec(t *testing.T) {
 	t.Run("bid command b no args", func(t *testing.T) {
 		c := controller.NewSpadesCuiController(newMock())
 		result := c.Exec("b")
-		assert.Contains(t, result, "Bid value is required")
+		assert.Contains(t, result, msgStem("bidValueRequired013"))
 	})
 
 	t.Run("bid command b invalid arg", func(t *testing.T) {
 		c := controller.NewSpadesCuiController(newMock())
 		result := c.Exec("b abc")
-		assert.Contains(t, result, "Invalid bid value")
+		assert.Contains(t, result, msgStem("invalidBidValue"))
 	})
 
 	t.Run("bid command b out of range negative", func(t *testing.T) {
 		c := controller.NewSpadesCuiController(newMock())
 		result := c.Exec("b -1")
-		assert.Contains(t, result, "Invalid bid value: -1")
+		assert.Contains(t, result, msgKey("invalidBidValue", "val", "-1"))
 	})
 
 	t.Run("bid command b out of range over 13", func(t *testing.T) {
 		c := controller.NewSpadesCuiController(newMock())
 		result := c.Exec("b 14")
-		assert.Contains(t, result, "Invalid bid value: 14")
+		assert.Contains(t, result, msgKey("invalidBidValue", "val", "14"))
 	})
 
 	// play
@@ -120,13 +120,13 @@ func TestSpadesCuiController_Exec(t *testing.T) {
 	t.Run("play command p no args", func(t *testing.T) {
 		c := controller.NewSpadesCuiController(newMock())
 		result := c.Exec("p")
-		assert.Contains(t, result, "Card index is required")
+		assert.Contains(t, result, msgCardIndexRequired())
 	})
 
 	t.Run("play command p invalid arg", func(t *testing.T) {
 		c := controller.NewSpadesCuiController(newMock())
 		result := c.Exec("p abc")
-		assert.Contains(t, result, "Invalid card index")
+		assert.Contains(t, result, msgInvalidCardIndexPrefix())
 	})
 
 	// next
@@ -187,25 +187,25 @@ func TestSpadesCuiController_Exec(t *testing.T) {
 	t.Run("setdifficulty no args", func(t *testing.T) {
 		c := controller.NewSpadesCuiController(newMock())
 		result := c.Exec("sd")
-		assert.Contains(t, result, "required")
+		assert.Contains(t, result, msgCpuDifficultyRequired())
 	})
 
 	t.Run("setdifficulty invalid value", func(t *testing.T) {
 		c := controller.NewSpadesCuiController(newMock())
 		result := c.Exec("sd abc")
-		assert.Contains(t, result, "Invalid CPU difficulty")
+		assert.Contains(t, result, msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("setdifficulty negative", func(t *testing.T) {
 		c := controller.NewSpadesCuiController(newMock())
 		result := c.Exec("sd -1")
-		assert.Equal(t, "Invalid CPU difficulty: -1. Please enter 0-2.", result)
+		assert.Equal(t, msgInvalidCpuDifficulty("-1"), result)
 	})
 
 	t.Run("setdifficulty over 2", func(t *testing.T) {
 		c := controller.NewSpadesCuiController(newMock())
 		result := c.Exec("sd 3")
-		assert.Equal(t, "Invalid CPU difficulty: 3. Please enter 0-2.", result)
+		assert.Equal(t, msgInvalidCpuDifficulty("3"), result)
 	})
 
 	// setlimit
@@ -232,25 +232,25 @@ func TestSpadesCuiController_Exec(t *testing.T) {
 	t.Run("setlimit no args", func(t *testing.T) {
 		c := controller.NewSpadesCuiController(newMock())
 		result := c.Exec("sl")
-		assert.Contains(t, result, "required")
+		assert.Contains(t, result, msgPointLimitRequired())
 	})
 
 	t.Run("setlimit invalid value", func(t *testing.T) {
 		c := controller.NewSpadesCuiController(newMock())
 		result := c.Exec("sl abc")
-		assert.Contains(t, result, "Invalid point limit")
+		assert.Contains(t, result, msgInvalidPointLimitPrefix())
 	})
 
 	t.Run("setlimit zero", func(t *testing.T) {
 		c := controller.NewSpadesCuiController(newMock())
 		result := c.Exec("sl 0")
-		assert.Equal(t, "Invalid point limit: 0. Please enter 1 or more.", result)
+		assert.Equal(t, msgInvalidPointLimit("0"), result)
 	})
 
 	t.Run("setlimit negative", func(t *testing.T) {
 		c := controller.NewSpadesCuiController(newMock())
 		result := c.Exec("sl -1")
-		assert.Equal(t, "Invalid point limit: -1. Please enter 1 or more.", result)
+		assert.Equal(t, msgInvalidPointLimit("-1"), result)
 	})
 
 	// log

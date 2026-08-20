@@ -2655,6 +2655,7 @@ paths:
         | `declare`     | `dc`    | Declare "Macau!" (one card left) |
         | `skipdeclare` | `sk`    | Skip the declaration and take the penalty |
         | `nextround`   | `nr`    | Score the round and start the next |
+        | `hint`        | `h`     | Get a hint for the next move |
         | `log`         | `l`     | View action log |
       operationId: macauExec
       requestBody:
@@ -3216,6 +3217,7 @@ paths:
         | `layoff`      | `lo`    | Add one card to an existing meld (`targetPlayerIdx`, `meldIdx`, `cardIndex`) |
         | `discard`     | `d`     | Discard a card (`cardIndex`) |
         | `nextround`   | `nr`    | Start the next round |
+        | `hint`        | `h`     | Get a hint for the next move |
         | `log`         | `l`     | View action log |
       operationId: sevenbridgeExec
       requestBody:
@@ -3394,6 +3396,7 @@ paths:
         | `discard`      | `d`     | Discard a card (requires `cardIndex`) |
         | `goout`        | `go`    | Go out (requires 1 red and 1 black canasta) |
         | `nextround`    | `nr`    | Score the round and start the next |
+        | `hint`         | `h`     | Get a hint for the next move |
         | `log`          | `l`     | View action log |
       operationId: handAndFootExec
       requestBody:
@@ -3480,6 +3483,7 @@ paths:
         | `discard`      | `d`     | Discard a card (requires `cardIndex`) |
         | `goout`        | `go`    | Go out (requires the pozzetto and at least 1 burraco) |
         | `nextround`    | `nr`    | Score the round and start the next |
+        | `hint`         | `h`     | Get a hint for the next move |
         | `log`          | `l`     | View action log |
       operationId: burracoExec
       requestBody:
@@ -3862,6 +3866,7 @@ paths:
         | `reset` | `r`     | Start / restart a game |
         | `bet`   | `b`     | Place a bet (requires `amount`: 1-5) |
         | `hold`  | `h`     | Hold cards and draw (requires `indices`: array of card positions 0-4) |
+        | `hint`  | `h`     | Get a hint for the next move |
         | `log`   | `l`     | View action log |
       operationId: videoPokerExec
       requestBody:
@@ -4350,6 +4355,7 @@ paths:
         | `nextround`      | `nr`  | Start the next round |
         | `setdifficulty`  | `sd`  | Set CPU difficulty (0=Easy, 1=Normal, 2=Hard) |
         | `setlimit`       | `sl`  | Set point limit |
+        | `hint`           | `h`   | Get a hint for the next move |
         | `log`            | `l`   | View action log |
       operationId: cribbageExec
       requestBody:
@@ -4438,8 +4444,10 @@ paths:
         |---------|---------|-------------|
         | `reset` | `r`     | Start / restart a game |
         | `bet`   | `b`     | Place Ante bet (requires `amount`; optional `pairPlusBet`) |
+        | `rebet` | `rb`    | Repeat last round's Ante and Pair Plus amounts (no `amount` needed) |
         | `play`  | `p`     | Place Play bet (equal to Ante) and see dealer's hand |
         | `fold`  | `f`     | Forfeit Ante and Pair Plus bets |
+        | `hint`  | `h`     | Get a hint for the next move |
         | `log`   | `l`     | View action log |
       operationId: threecardExec
       requestBody:
@@ -4614,6 +4622,7 @@ paths:
         | `layoff`      | `lo`    | Lay off a card onto an existing meld |
         | `discard`     | `d`     | Discard a card to end the turn |
         | `nextround`   | `nr`    | Advance to the next round after RoundEnd |
+        | `hint`        | `h`     | Get a hint for the next move |
         | `log`         | `l`     | View action log |
       operationId: rummy500Exec
       requestBody:
@@ -4775,6 +4784,7 @@ paths:
         | `bet`   | `b`     | Place Ante bet (requires `amount`; optional `jackpotBet`) |
         | `play`  | `p`     | Call: place Play bet (2x Ante) and reveal dealer hand |
         | `fold`  | `f`     | Forfeit Ante bet |
+        | `hint`  | `h`     | Get a hint for the next move |
         | `log`   | `l`     | View action log |
       operationId: caribbeanstudExec
       requestBody:
@@ -4976,6 +4986,7 @@ paths:
         | `bet`   | `b`     | Place Ante bet (requires `amount`; optional `bonusBet`) |
         | `call`  | `c`     | Bet 2x Ante and reveal turn/river |
         | `fold`  | `f`     | Forfeit Ante (AA Bonus still resolves) |
+        | `hint`  | `h`     | Get a hint for the next move |
         | `log`   | `l`     | View action log |
       operationId: casinoholdemExec
       requestBody:
@@ -5938,6 +5949,7 @@ paths:
         | `muck`  | `m`     | Muck (hide) hand at showdown |
         | `show`  | `sh`    | Show hand at showdown |
         | `log`   | `l`     | View action log |
+        | `hint`  | `h`     | Get a hint for the next move |
         | `quit`  | `q`     | End the session |
       operationId: sevencardstudExec
       requestBody:
@@ -10489,6 +10501,7 @@ paths:
         | `reset` | `r`     | Start / restart a game |
         | `bet`   | `b`     | Place bet (requires `amount`) |
         | `set`   | `s`     | Set low hand cards (requires `low0`, `low1` as card indices) |
+        | `hint`  | `h`     | Get a hint for the next move |
         | `log`   | `l`     | View action log |
       operationId: paigowExec
       requestBody:
@@ -10574,6 +10587,7 @@ paths:
         | `reset` | `r`     | Start / restart a game |
         | `bet`   | `b`     | Place bet (requires `amount`) |
         | `set`   | `s`     | Set hands (requires `frontIndices` [3] and `middleIndices` [5]) |
+        | `hint`  | `h`     | Get a hint for the next move |
         | `log`   | `l`     | View action log |
       operationId: chinesepokerExec
       requestBody:
@@ -10843,6 +10857,21 @@ paths:
                     type: integer
                   chanceRemaining:
                     type: integer
+                  faceChances:
+                    type: object
+                    description: >-
+                      Chances each face card gives the opponent. Sent so the
+                      permanent rule text cannot quote figures the game has
+                      stopped using.
+                    properties:
+                      jack:
+                        type: integer
+                      queen:
+                        type: integer
+                      king:
+                        type: integer
+                      ace:
+                        type: integer
                   chanceFromIdx:
                     type: integer
                   pendingKind:
@@ -12401,6 +12430,13 @@ paths:
                     type: integer
                   moveCount:
                     type: integer
+                  canAutoComplete:
+                    type: boolean
+                    description: |
+                      Whether auto-complete can move at least one card right now.
+                      Decided by the same check AutoComplete runs, so clients must
+                      not infer it from the foundation contents (Cruel deals the
+                      aces to the foundations at the start).
                   canUndo:
                     type: boolean
                   isStalemate:
@@ -12523,6 +12559,11 @@ paths:
                         type: integer
                       toCol:
                         type: integer
+                      exposesFaceDown:
+                        type: boolean
+                        description: >-
+                          True when the suggested move turns a face-down card up.
+                          This is why the hint prefers it.
                   message:
                     type: string
                   messageCode:
@@ -12677,7 +12718,7 @@ paths:
               properties:
                 command:
                   type: string
-                  enum: [reset, r, move, m, giveup, g, hint, h, undo, u, undo_n, log, l]
+                  enum: [reset, r, move, m, giveup, g, hint, h, undo, u, undo_n, autocomplete, ac, log, l]
                 sessionId:
                   type: string
                 from:
@@ -12769,6 +12810,7 @@ paths:
         | `draw`  | `d`     | Draw one card from the stock |
         | `place` | `p`     | Place the pending wild at `position` (1..10) |
         | `cpu`   | —       | Advance the CPU turn by one step |
+        | `hint`  | `h`     | Get a hint for the next move |
         | `log`   | `l`     | View action log (available after game over) |
       operationId: trashExec
       requestBody:
@@ -12781,7 +12823,7 @@ paths:
               properties:
                 command:
                   type: string
-                  enum: [reset, r, draw, d, place, p, cpu, log, l, quit, q]
+                  enum: [reset, r, draw, d, place, p, cpu, log, l, quit, q, hint, h]
                 sessionId:
                   type: string
                 position:
@@ -13211,6 +13253,7 @@ paths:
         | `bet`   | `b`     | Place ante (requires `amount`) |
         | `raise` | —       | Raise before third card (requires `amount`, max ante) |
         | `stay`  | `s`     | Stay (no raise) and draw third card |
+        | `hint`  | `h`     | Get a hint for the next move |
         | `log`   | —       | View action log |
       operationId: reddogExec
       requestBody:
@@ -13493,6 +13536,7 @@ paths:
         | `allin`  | `a`     | Go all-in |
         | `exchange` | `e`   | Draw the cards at `indices` (0..3) |
         | `stand`  | `s`     | Stand pat (no exchange) |
+        | `hint`   | `h`     | Get a hint for the next move |
         | `log`    | `l`     | View action log |
       operationId: badugiExec
       requestBody:
@@ -13505,7 +13549,7 @@ paths:
               properties:
                 command:
                   type: string
-                  enum: [reset, r, fold, f, check, ck, call, c, bet, b, raise, ra, allin, a, exchange, e, stand, s, log, l]
+                  enum: [reset, r, fold, f, check, ck, call, c, bet, b, raise, ra, allin, a, exchange, e, stand, s, log, l, hint, h]
                 sessionId:
                   type: string
                 amount:
@@ -13602,6 +13646,7 @@ paths:
         | `allin`  | `a`     | Go all-in |
         | `exchange` | `e`   | Draw the cards at `indices` (0..4) |
         | `stand`  | `s`     | Stand pat (no exchange) |
+        | `hint`   | `h`     | Get a hint for the next move |
         | `log`    | `l`     | View action log |
       operationId: deuceToSevenExec
       requestBody:
@@ -13614,7 +13659,7 @@ paths:
               properties:
                 command:
                   type: string
-                  enum: [reset, r, fold, f, check, ck, call, c, bet, b, raise, ra, allin, a, exchange, e, stand, s, log, l]
+                  enum: [reset, r, fold, f, check, ck, call, c, bet, b, raise, ra, allin, a, exchange, e, stand, s, log, l, hint, h]
                 sessionId:
                   type: string
                 amount:
@@ -13693,6 +13738,7 @@ paths:
         |----------|---------|-------------|
         | `reset`  | `r`     | Start / restart a game |
         | `play`   | `p`     | Play cards at `indices` (empty = pass) |
+        | `hint`   | `h`     | Get a hint for the next move |
         | `log`    | `l`     | View action log |
       operationId: presidentExec
       requestBody:
@@ -13753,6 +13799,7 @@ paths:
         | `build` | `b`     | Create or extend a build of declared value |
         | `trail` | `tr`    | Place the played hand card on the table without capture |
         | `next`  | `n`     | Start the next round |
+        | `hint`  | `h`     | Get a hint for the next move |
         | `log`   | `l`     | View action log |
       operationId: cassinoExec
       requestBody:
@@ -13822,6 +13869,7 @@ paths:
         | `reset` | `r`     | Start / restart a game |
         | `next`  | `n`     | Start the next round |
         | `play`  | `p`     | Play a hand card to capture table cards or lay it |
+        | `hint`  | `h`     | Get a hint for the next move |
         | `log`   | `l`     | View action log |
       operationId: scopaExec
       requestBody:
@@ -13887,6 +13935,7 @@ paths:
         | `play`          | `p`  | Play a hand card to capture table cards or lay it |
         | `setdifficulty` | `sd` | Set CPU difficulty (0-2) |
         | `settarget`     | `st` | Set the target score |
+        | `hint`          | `h`  | Get a hint for the next move |
         | `log`           | `l`  | View action log |
       operationId: scoponeExec
       requestBody:
@@ -13953,6 +14002,7 @@ paths:
         | `play`          | `p`  | Play a hand card to capture table cards or lay it |
         | `setdifficulty` | `sd` | Set CPU difficulty (0-2) |
         | `settarget`     | `st` | Set the target score |
+        | `hint`          | `h`  | Get a hint for the next move |
         | `log`           | `l`  | View action log |
       operationId: escobaExec
       requestBody:
@@ -14012,6 +14062,7 @@ paths:
         | `next`     | `n`     | Start the next deal |
         | `contract` | `c`     | Dealer picks a contract (trumpSuit only for Trumps) |
         | `play`     | `p`     | Play a hand card (handIndex -1 to pass in Dominoes) |
+        | `hint`     | `h`     | Get a hint for the next move |
         | `log`      | `l`     | View action log |
       operationId: barbuExec
       requestBody:
@@ -16491,6 +16542,38 @@ paths:
                     type: integer
                   gameValue:
                     type: integer
+                  scoreBreakdown:
+                    type: object
+                    description: >-
+                      How the round score was built. `value` always equals
+                      `gameValue`; the breakdown explains that number rather
+                      than recomputing it.
+                    properties:
+                      base:
+                        type: integer
+                      matadors:
+                        type: integer
+                      multiplier:
+                        type: integer
+                      hand:
+                        type: boolean
+                      schneider:
+                        type: boolean
+                      schwarz:
+                        type: boolean
+                      doubled:
+                        type: boolean
+                      overbid:
+                        type: boolean
+                      bid:
+                        type: integer
+                        description: >-
+                          The final bid. Only meaningful when `overbid` is set:
+                          `value` is `bid * 2`.
+                      value:
+                        type: integer
+                      "null":
+                        type: boolean
                   gameEndFlag:
                     type: boolean
                   leadPlayerIdx:
@@ -17806,6 +17889,7 @@ paths:
         | `discard` | `d`     | Discard the two hand `indices` |
         | `play`    | `p`     | Play `cardIndex` |
         | `next`    | `n`     | Deal the next hand |
+        | `hint`    | `h`     | Get a hint for the next move |
         | `log`     | `l`     | Action-log transcript |
       operationId: kaiserExec
       requestBody:
@@ -17820,7 +17904,7 @@ paths:
               properties:
                 command:
                   type: string
-                  enum: [reset, r, bid, b, pass, ps, trump, t, discard, d, play, p, next, n, log, l]
+                  enum: [reset, r, bid, b, pass, ps, trump, t, discard, d, play, p, next, n, log, l, hint, h]
                 sessionId:
                   type: string
                 bid:
@@ -19053,6 +19137,11 @@ paths:
                           type: integer
                         size:
                           type: integer
+                  foundationMax:
+                    type: integer
+                    description: >-
+                      Cards that complete one foundation (A..K = 13). Sent so
+                      the figure is not written into the page as well.
                   hint:
                     nullable: true
                     type: object
@@ -19176,6 +19265,7 @@ paths:
         | `discard`     | `d`     | Discard a card (requires `cardIndex`) |
         | `knock`       | `k`     | Knock (stand pat) |
         | `nextround`   | `nr`    | Score the round and start the next |
+        | `hint`        | `h`     | Get a hint for the next move |
         | `log`         | `l`     | View action log |
       operationId: thirtyoneExec
       requestBody:
@@ -19903,6 +19993,7 @@ paths:
         | `play`  | `p`     | Place Play bet (`multiplier` ∈ {1, 2, 3, 4}) |
         | `check` | `c`     | Pre-flop / Flop: advance without an additional bet |
         | `fold`  | `f`     | River: forfeit Ante + Blind |
+        | `hint`  | `h`     | Get a hint for the next move |
         | `log`   | `l`     | View action log |
       operationId: ultimatetexasholdemExec
       requestBody:
@@ -19983,6 +20074,7 @@ paths:
         | `bet`   | `b`     | Place Ante (`amount`) |
         | `play`  | `p`     | Place street bet (`multiplier` ∈ {1, 2, 3}) |
         | `fold`  | `f`     | Forfeit all bets on the table |
+        | `hint`  | `h`     | Get a hint for the next move |
         | `log`   | `l`     | View action log |
       operationId: mississippistudExec
       requestBody:
@@ -20331,6 +20423,7 @@ paths:
         | `stand`    | `s`     | Skip exchange, advance to action |
         | `play`     | `p`     | Call: place Play bet (2x Ante) and reveal dealer hand |
         | `fold`     | `f`     | Forfeit Ante bet and exchange fee |
+        | `hint`     | `h`     | Get a hint for the next move |
         | `log`      | `l`     | View action log |
       operationId: oasispokerExec
       requestBody:
@@ -20987,6 +21080,7 @@ paths:
         | `bet` / `b`     |         | Place Ante + optional Flush Bonus + Straight Flush Bonus |
         | `raise` / `ra`  |         | Raise with multiplier 1..MaxRaiseMultiplier |
         | `fold` / `f`    |         | Fold and forfeit the Ante (side bets still evaluate) |
+        | `hint` / `h`    |         | Get a hint for the next move |
         | `log` / `l`     |         | View action log |
       operationId: highcardflushExec
       requestBody:
@@ -21001,7 +21095,7 @@ paths:
               properties:
                 command:
                   type: string
-                  enum: [reset, r, bet, b, raise, ra, fold, f, log, l]
+                  enum: [reset, r, bet, b, raise, ra, fold, f, log, l, hint, h]
                 amount:
                   type: integer
                   description: Ante amount for `bet`/`b`
@@ -21091,6 +21185,7 @@ paths:
         | `flip`        | `fl`    | Flip a face-down grid card (requires `position`) |
         | `skipflip`    | `sf`    | Skip the optional flip |
         | `nextround`   | `nr`    | Advance to the next round |
+        | `hint`        | `h`     | Get a hint for the next move |
         | `log`         | `l`     | View action log |
       operationId: sixcardgolfExec
       requestBody:
@@ -21105,7 +21200,7 @@ paths:
               properties:
                 command:
                   type: string
-                  enum: [reset, r, flipinitial, fi, drawstock, ds, drawdiscard, dd, swap, sw, discard, di, flip, fl, skipflip, sf, nextround, nr, log, l]
+                  enum: [reset, r, flipinitial, fi, drawstock, ds, drawdiscard, dd, swap, sw, discard, di, flip, fl, skipflip, sf, nextround, nr, log, l, hint, h]
                 position:
                   type: integer
                   description: Grid slot index (0-5) for flipinitial, swap, and flip commands
@@ -28890,6 +28985,16 @@ components:
           type: boolean
         canSplit:
           type: boolean
+        stickMin:
+          type: integer
+          description: >-
+            Lowest total that may stick. Sent rather than hardcoded so the
+            wording on screen cannot drift from the rule.
+        cpuStickMin:
+          type: integer
+          description: >-
+            Total at which the banker stops drawing. A CPU seat sticks at
+            `stickMin`, taking one more card below this only on four cards.
         message:
           type: string
         messageCode:
@@ -28948,6 +29053,11 @@ components:
         targetHalves:
           type: integer
           description: The target (7.5) in halves, so 15. Sent so the figure is not written down twice.
+        cpuStandHalves:
+          type: integer
+          description: >-
+            The total in halves at which the CPU seats and the banker stand
+            (11, i.e. 5.5). Sent so the figure is not written down twice.
         canHit:
           type: boolean
         canStand:
@@ -28981,8 +29091,12 @@ components:
         rank:
           type: integer
           description: "0=no bull, 1-9=niu 1 through niu 9, 10=niu niu. 0 while hidden."
-        rankLabel:
+        rankKey:
           type: string
+          description: |
+            Locale-independent rank key: `none`, `niuniu`, or `n1`..`n9`. Empty
+            while hidden. The client renders the wording; the server used to send
+            the Japanese label itself, which ignored the locale.
         multiplier:
           type: integer
         payout:
@@ -29017,8 +29131,12 @@ components:
             `chips / maxMultiplier`, NOT `chips` -- a banker's niu niu takes
             three times the stake, so betting the whole stack leaves the player
             unable to pay. Sent so that division is not reinvented client-side.
-        lastResult:
+        bankerRankKey:
           type: string
+          description: |
+            The banker's rank key once the round settles, empty before that.
+            Replaces the pre-built Japanese summary previously sent as
+            `lastResult`.
         phase:
           type: integer
           description: "1=Bet, 2=End"
@@ -29284,6 +29402,11 @@ components:
         lastInIdx:
           type: integer
           description: "Last seat still holding cards; -1 while undecided"
+        lastInBonus:
+          type: integer
+          description: >-
+            What the seat at `lastInIdx` receives. Sent so the figure is not
+            written into a translation string on one surface only.
         pot:
           type: integer
           description: |
@@ -29385,6 +29508,15 @@ components:
             Hand indices that may be played. Carries the following rule,
             including that trumps form their own suit. Empty outside the human's
             turn in the play phase.
+          items:
+            type: integer
+        trumpIndices:
+          type: array
+          description: |
+            Hand indices that are trumps, the six permanent ones included.
+            Those six (Q of clubs and spades, J of every suit) cannot be told
+            from their suit, so the set is sent rather than listed client-side.
+            Empty until a trump is named.
           items:
             type: integer
         teamPoints:
@@ -32068,6 +32200,14 @@ components:
           description: |
             True when the stock and both hands emptied with nobody claiming.
             Nobody wins -- points alone never decide a Bura round.
+        winningCombinations:
+          type: array
+          description: >-
+            Identifiers of the combinations that win outright, in the order
+            the server checks them. Sent so an explanation cannot list a
+            different set from the one the rules recognise.
+          items:
+            type: string
         hint:
           type: object
           description: Suggested play for the human seat, sent on every response while it is their turn.
@@ -32547,6 +32687,11 @@ components:
             While true, `base` is the only command that will be accepted. Sent
             alongside `baseRank` so the client never has to encode the
             "0 means unchosen" convention itself.
+        canAutoComplete:
+          type: boolean
+          description: >-
+            True when auto-complete can move at least one card right now. The
+            client uses it for the button state, so pressing it always succeeds.
         phase:
           type: integer
           description: "0=Playing, 1=GameClear, 2=GameOver"
@@ -32701,6 +32846,12 @@ components:
           minimum: 0
           maximum: 13
           example: 7
+        points:
+          type: integer
+          description: >-
+            Points this single card is worth. Only games scored by adding up
+            cards set it (Sakura: 20/10/5/1); in yaku-scored games a per-card
+            number would be meaningless, so the field is absent.
 
     # -------------------------------------------------------------------------
     # BlackJack
@@ -33367,6 +33518,7 @@ components:
         - dealerIdx
         - currentTurn
         - phase
+        - exchangeRead
         - gameEndFlag
         - lastBet
         - minRaise
@@ -33402,6 +33554,13 @@ components:
             - `3` — SecondBet (second betting round)
             - `4` — End (showdown; all hands visible)
           enum: [0, 1, 2, 3, 4]
+        exchangeRead:
+          type: boolean
+          description: |
+            Whether the human's exchange count is currently raising the CPUs' guard.
+            True during the second betting round when the human exchanged fewer
+            than 3 cards; every CPU then raises its fold threshold by one rank.
+          example: false
         gameEndFlag:
           type: boolean
         lastBet:
@@ -33984,6 +34143,7 @@ components:
         - numberLocked
         - sequenceLocked
         - sortMode
+        - playableCardIndices
       properties:
         players:
           type: array
@@ -34090,6 +34250,20 @@ components:
             Current sort mode for the human player's hand.
             0 = by strength, 1 = by suit, 2 = by number.
           example: 0
+        playableCardIndices:
+          type: array
+          nullable: true
+          description: |
+            Hand indices of the human player that appear in at least one legal
+            play right now — the same set the CUI marks with `*`. Accounts for
+            revolution, eleven-back, suit lock and sequence lock.
+
+            `null` means the server did not decide (not the human's turn, a
+            pending action is open, or the combination count exceeded the search
+            cap) — **not** that nothing is playable.
+          items:
+            type: integer
+          example: [0, 2]
 
     # -------------------------------------------------------------------------
     # Dou Dizhu (斗地主)
@@ -36026,6 +36200,20 @@ components:
           type: integer
           description: Number of cards in hand
           example: 13
+        penaltyCards:
+          type: array
+          description: |
+            Penalty cards this player has captured: every heart plus the Q♠.
+            The omnibus J♦ is deliberately absent -- it is a bonus, not a
+            penalty; see tookOmnibusJD.
+          items:
+            $ref: '#/components/schemas/Card'
+        tookOmnibusJD:
+          type: boolean
+          description: |
+            True when the omnibus rule is enabled and this player captured the
+            J♦ (-10). Always false while the rule is off.
+          example: false
 
     HeartsTrickCard:
       type: object
@@ -36541,6 +36729,8 @@ components:
         - tableau
         - freeCells
         - foundation
+        - maxMovableCards
+        - maxMovableCardsToEmptyColumn
         - phase
         - moveCount
         - canUndo
@@ -36568,6 +36758,19 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/Card'
+        maxMovableCards:
+          type: integer
+          description: >-
+            How many cards may move as one stack right now, from the domain's
+            own calculation. The web client must not recompute this.
+          example: 5
+        maxMovableCardsToEmptyColumn:
+          type: integer
+          description: >-
+            The same limit when the destination is an empty column, which is
+            lower because that column cannot also serve as a staging slot.
+            0 when there is no empty column.
+          example: 2
         phase:
           type: integer
           description: "Game phase: 0 = Playing, 1 = GameClear, 2 = GameOver"
@@ -37962,8 +38165,8 @@ components:
           description: |
             Game command.  Accepted values: `reset` (`r`), `play` (`p`),
             `draw` (`d`), `suit` (`s`), `declare` (`dc`), `skipdeclare` (`sk`),
-            `nextround` (`nr`), `log` (`l`).
-          enum: [reset, r, play, p, draw, d, suit, s, declare, dc, skipdeclare, sk, nextround, nr, log, l]
+            `nextround` (`nr`), `log` (`l`), `hint` (`h`).
+          enum: [reset, r, play, p, draw, d, suit, s, declare, dc, skipdeclare, sk, nextround, nr, log, l, hint, h]
           example: reset
         cardIndex:
           type: integer
@@ -38227,8 +38430,8 @@ components:
           description: |
             Game command.  Accepted values: `reset` (`r`), `play` (`p`),
             `draw` (`d`), `declare` (`dc`), `skip` (`sk`),
-            `nextround` (`nr`), `log` (`l`).
-          enum: [reset, r, play, p, draw, d, declare, dc, skip, sk, nextround, nr, log, l]
+            `nextround` (`nr`), `log` (`l`), `hint` (`h`).
+          enum: [reset, r, play, p, draw, d, declare, dc, skip, sk, nextround, nr, log, l, hint, h]
           example: reset
         cardIndex:
           type: integer
@@ -38325,8 +38528,8 @@ components:
           description: |
             Seven Bridge command. Accepted values: `reset` (`r`),
             `drawstock` (`ds`), `pon`, `chi`, `meld` (`m`),
-            `layoff` (`lo`), `discard` (`d`), `nextround` (`nr`), `log` (`l`).
-          enum: [reset, r, drawstock, ds, pon, chi, meld, m, layoff, lo, discard, d, nextround, nr, log, l]
+            `layoff` (`lo`), `discard` (`d`), `nextround` (`nr`), `log` (`l`), `hint` (`h`).
+          enum: [reset, r, drawstock, ds, pon, chi, meld, m, layoff, lo, discard, d, nextround, nr, log, l, hint, h]
           example: reset
         cardIndex:
           type: integer
@@ -38416,6 +38619,11 @@ components:
         roundWinnerIdx:
           type: integer
           description: Index of the last round winner (-1 for stock-out / not decided)
+        claimedThisTurn:
+          type: boolean
+          description: >-
+            True when this turn took the discard with a pon/chi claim rather
+            than drawing from the stock.
         config:
           type: object
           properties:
@@ -39046,6 +39254,11 @@ components:
         isUndercut:
           type: boolean
           description: Whether the opponent undercut the knocker
+        undercutRiskMax:
+          type: integer
+          description: >-
+            Opponent hand size at or below which knocking risks an undercut.
+            Sent so the warning fires on the same board state in both UIs.
         config:
           type: object
           properties:
@@ -39076,8 +39289,8 @@ components:
           description: |
             Game command. Accepted values: `reset` (`r`), `drawstock` (`ds`),
             `drawdiscard` (`dd`), `discard` (`d`), `knock` (`k`),
-            `nextround` (`nr`), `log` (`l`).
-          enum: [reset, r, drawstock, ds, drawdiscard, dd, discard, d, knock, k, nextround, nr, log, l]
+            `nextround` (`nr`), `log` (`l`), `hint` (`h`).
+          enum: [reset, r, drawstock, ds, drawdiscard, dd, discard, d, knock, k, nextround, nr, log, l, hint, h]
           example: reset
         cardIndex:
           type: integer
@@ -39163,6 +39376,22 @@ components:
               type: integer
             initialLives:
               type: integer
+            knockThresholds:
+              type: object
+              description: >-
+                Hand totals at which each difficulty's CPUs consider knocking.
+                The difficulty setting is exactly these numbers, so clients show
+                them from here instead of hardcoding their own copy.
+              properties:
+                easy:
+                  type: integer
+                  example: 29
+                normal:
+                  type: integer
+                  example: 27
+                hard:
+                  type: integer
+                  example: 25
         message:
           type: string
         messageCode:
@@ -39719,8 +39948,8 @@ components:
           description: |
             Game command.  Accepted values: `reset` (`r`), `drawstock` (`ds`),
             `drawdiscard` (`dd`), `meld` (`m`), `skipmeld` (`sm`),
-            `discard` (`d`), `goout` (`go`), `nextround` (`nr`), `log` (`l`).
-          enum: [reset, r, drawstock, ds, drawdiscard, dd, meld, m, skipmeld, sm, discard, d, goout, go, nextround, nr, log, l]
+            `discard` (`d`), `goout` (`go`), `nextround` (`nr`), `log` (`l`), `hint` (`h`).
+          enum: [reset, r, drawstock, ds, drawdiscard, dd, meld, m, skipmeld, sm, discard, d, goout, go, nextround, nr, log, l, hint, h]
           example: reset
         cardIndex:
           type: integer
@@ -39879,8 +40108,8 @@ components:
           description: |
             Game command.  Accepted values: `reset` (`r`), `drawstock` (`ds`),
             `drawdiscard` (`dd`), `meld` (`m`), `skipmeld` (`sm`),
-            `discard` (`d`), `goout` (`go`), `nextround` (`nr`), `log` (`l`).
-          enum: [reset, r, drawstock, ds, drawdiscard, dd, meld, m, skipmeld, sm, discard, d, goout, go, nextround, nr, log, l]
+            `discard` (`d`), `goout` (`go`), `nextround` (`nr`), `log` (`l`), `hint` (`h`).
+          enum: [reset, r, drawstock, ds, drawdiscard, dd, meld, m, skipmeld, sm, discard, d, goout, go, nextround, nr, log, l, hint, h]
           example: reset
         cardIndex:
           type: integer
@@ -40159,6 +40388,18 @@ components:
           type: array
           items:
             type: integer
+        meldTable:
+          type: array
+          description: >-
+            Points for each of the 15 meld types, cheapest first. Sent by the
+            server so the UI never carries a second copy of the scoring values.
+          items:
+            type: object
+            properties:
+              type:
+                type: integer
+              points:
+                type: integer
         message:
           type: string
         messageCode:
@@ -40547,6 +40788,7 @@ components:
         - stockCount
         - completedSuits
         - score
+        - scoring
         - phase
         - moveCount
         - canUndo
@@ -40566,6 +40808,19 @@ components:
           description: Number of suits completed (max 4)
         score:
           type: integer
+        scoring:
+          type: object
+          description: >-
+            How the score moves: where it starts, what a move costs, what a
+            completed suit pays. Sent so an explanation cannot quote figures
+            the game stopped using.
+          properties:
+            start:
+              type: integer
+            movePenalty:
+              type: integer
+            suitBonus:
+              type: integer
         phase:
           type: integer
           enum: [0, 1, 2]
@@ -40864,6 +41119,15 @@ components:
         currentTurn:
           type: integer
           description: Index of the player whose turn it is
+        estimatedStrength:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: |
+            The human player's estimated win equity as a percentage. Computed by
+            the domain (the same value the CUI prints); clients must not recompute
+            it from the visible opponent cards.
+          example: 42
         phase:
           type: integer
           description: "Game phase: 0 = Init, 1 = Ante, 2 = Betting, 3 = Showdown, 4 = End"
@@ -40943,8 +41207,8 @@ components:
           type: string
           description: |
             Game command.  Accepted values: `reset` (`r`), `bet` (`b`),
-            `hold` (`h`), `log` (`l`).
-          enum: [reset, r, bet, b, hold, h, log, l]
+            `hold` (`h`), `log` (`l`), `hint` (`h`).
+          enum: [reset, r, bet, b, hold, h, log, l, hint, h]
           example: reset
         amount:
           type: integer
@@ -41414,6 +41678,17 @@ components:
           type: integer
           description: Total number of moves made in the current game
           example: 0
+        score:
+          type: integer
+          description: |
+            Chain-bonus score. The nth consecutive removal scores n x 100, and
+            clearing a peak adds 500. Drawing or undoing breaks the chain but
+            keeps the points.
+          example: 0
+        combo:
+          type: integer
+          description: Length of the unbroken removal chain; 0 after a draw or an undo
+          example: 0
         canUndo:
           type: boolean
           description: Whether the undo action is available
@@ -41460,8 +41735,8 @@ components:
           description: |
             Game command.  Accepted values: `reset` (`r`), `discard` (`d`),
             `peg` (`p`), `go`, `shownext` (`sn`), `nextround` (`nr`),
-            `setdifficulty` (`sd`), `setlimit` (`sl`), `log` (`l`).
-          enum: [reset, r, discard, d, peg, p, go, shownext, sn, nextround, nr, setdifficulty, sd, setlimit, sl, log, l]
+            `setdifficulty` (`sd`), `setlimit` (`sl`), `log` (`l`), `hint` (`h`).
+          enum: [reset, r, discard, d, peg, p, go, shownext, sn, nextround, nr, setdifficulty, sd, setlimit, sl, log, l, hint, h]
           example: discard
         cardIndex:
           type: integer
@@ -41670,8 +41945,8 @@ components:
           type: string
           description: |
             Game command.  Accepted values: `reset` (`r`), `bet` (`b`),
-            `play` (`p`), `fold` (`f`), `log` (`l`).
-          enum: [r, reset, b, bet, p, play, f, fold, log, l]
+            `play` (`p`), `fold` (`f`), `log` (`l`), `hint` (`h`).
+          enum: [r, reset, b, bet, p, play, f, fold, log, l, hint, h]
           example: bet
         amount:
           type: integer
@@ -41958,8 +42233,8 @@ components:
           type: string
           description: |
             Game command. Accepted values: `reset` (`r`), `bet` (`b`),
-            `play` (`p`), `fold` (`f`), `log` (`l`).
-          enum: [r, reset, b, bet, p, play, f, fold, log, l]
+            `play` (`p`), `fold` (`f`), `log` (`l`), `hint` (`h`).
+          enum: [r, reset, b, bet, p, play, f, fold, log, l, hint, h]
           example: bet
         amount:
           type: integer
@@ -42241,8 +42516,8 @@ components:
           type: string
           description: |
             Game command. Accepted values: `reset` (`r`), `bet` (`b`),
-            `call` (`c`), `fold` (`f`), `log` (`l`).
-          enum: [r, reset, b, bet, c, call, f, fold, log, l]
+            `call` (`c`), `fold` (`f`), `log` (`l`), `hint` (`h`).
+          enum: [r, reset, b, bet, c, call, f, fold, log, l, hint, h]
           example: bet
         amount:
           type: integer
@@ -43173,6 +43448,13 @@ components:
           format: double
           description: Pot odds percentage (0-100).
           example: 33.33
+        liveBestHand:
+          type: string
+          description: |
+            i18n key of the human's best hand so far (`straightFlush` etc.).
+            Empty before five cards exist, once the hand reaches showdown, and
+            when the human has folded. The client renders the wording.
+          example: fullHouse
 
     # -------------------------------------------------------------------------
     # Speed
@@ -43480,7 +43762,7 @@ components:
             `allin` (`a`), `rebuy` (`rb`), `skiprebuy` (`sr`),
             `addon` (`ad`), `skipaddon` (`sa`), `muck` (`m`),
             `show` (`sh`), `log` (`l`), `quit` (`q`).
-          enum: [r, reset, f, fold, ck, check, c, call, b, bet, ra, raise, a, allin, rb, rebuy, sr, skiprebuy, ad, addon, sa, skipaddon, m, muck, sh, show, log, l, q, quit]
+          enum: [r, reset, f, fold, ck, check, c, call, b, bet, ra, raise, a, allin, rb, rebuy, sr, skiprebuy, ad, addon, sa, skipaddon, m, muck, sh, show, log, l, q, quit, hint, h]
           example: bet
         amount:
           type: integer
@@ -43812,9 +44094,8 @@ components:
         wonLow:
           type: integer
           description: |
-            Hi-Lo only. Chips won as the low half. `wonAmount` is the high and
-            low winnings combined.
-          description: Chips won from the pot
+            Hi-Lo only. Chips won as the low half, out of the pot. `wonAmount` is
+            the high and low winnings combined.
           example: 40
         mucked:
           type: boolean
@@ -44052,8 +44333,8 @@ components:
           type: string
           description: |
             Game command.  Accepted values: `reset` (`r`), `bet` (`b`),
-            `set` (`s`), `log` (`l`).
-          enum: [r, reset, b, bet, s, set, log, l]
+            `set` (`s`), `log` (`l`), `hint` (`h`).
+          enum: [r, reset, b, bet, s, set, log, l, hint, h]
           example: bet
         amount:
           type: integer
@@ -44478,7 +44759,7 @@ components:
       properties:
         command:
           type: string
-          enum: [reset, r, bet, b, raise, stay, s, log]
+          enum: [reset, r, bet, b, raise, stay, s, log, hint, h]
           description: Game command to execute.
         amount:
           type: integer
@@ -44921,6 +45202,21 @@ components:
           type: integer
         leadPlayerIdx:
           type: integer
+        roundBreakdown:
+          type: object
+          description: >-
+            Who took each of the four points last round; -1 for nobody. The
+            totals alone do not say whether a one-point gap came from losing
+            Jack or from tying Game.
+          properties:
+            high:
+              type: integer
+            low:
+              type: integer
+            jack:
+              type: integer
+            game:
+              type: integer
         validPlayIndices:
           type: array
           items:
@@ -45998,7 +46294,7 @@ components:
         command:
           type: string
           description: President command. Accepted values. `reset` (`r`), `play` (`p`), `log` (`l`).
-          enum: [reset, r, play, p, log, l]
+          enum: [reset, r, play, p, log, l, hint, h]
           example: reset
         indices:
           type: array
@@ -46112,7 +46408,7 @@ components:
         command:
           type: string
           description: Cassino command. Accepted values. `reset` (`r`), `take` (`t`), `build` (`b`), `trail` (`tr`), `next` (`n`), `log` (`l`).
-          enum: [reset, r, take, t, build, b, trail, tr, next, n, log, l]
+          enum: [reset, r, take, t, build, b, trail, tr, next, n, log, l, hint, h]
           example: take
         handIndex:
           type: integer
@@ -46291,7 +46587,7 @@ components:
         command:
           type: string
           description: Scopa command. Accepted values. `reset` (`r`), `next` (`n`), `play` (`p`), `log` (`l`).
-          enum: [reset, r, next, n, play, p, log, l]
+          enum: [reset, r, next, n, play, p, log, l, hint, h]
           example: play
         handIndex:
           type: integer
@@ -46441,7 +46737,7 @@ components:
         command:
           type: string
           description: Scopone command. Accepted values. `reset` (`r`), `next` (`n`), `play` (`p`), `setdifficulty` (`sd`), `settarget` (`st`), `log` (`l`).
-          enum: [reset, r, next, n, play, p, setdifficulty, sd, settarget, st, log, l]
+          enum: [reset, r, next, n, play, p, setdifficulty, sd, settarget, st, log, l, hint, h]
           example: play
         handIndex:
           type: integer
@@ -46589,7 +46885,7 @@ components:
         command:
           type: string
           description: Escoba command. Accepted values. `reset` (`r`), `next` (`n`), `play` (`p`), `setdifficulty` (`sd`), `settarget` (`st`), `log` (`l`).
-          enum: [reset, r, next, n, play, p, setdifficulty, sd, settarget, st, log, l]
+          enum: [reset, r, next, n, play, p, setdifficulty, sd, settarget, st, log, l, hint, h]
           example: play
         handIndex:
           type: integer
@@ -46744,7 +47040,7 @@ components:
         command:
           type: string
           description: Barbu command. Accepted values. `reset` (`r`), `next` (`n`), `contract` (`c`), `play` (`p`), `log` (`l`).
-          enum: [reset, r, next, n, contract, c, play, p, log, l]
+          enum: [reset, r, next, n, contract, c, play, p, log, l, hint, h]
           example: play
         contract:
           type: integer
@@ -47342,6 +47638,12 @@ components:
         hasBaloot:
           type: boolean
           description: Holds the trump K and Q -- worth 20, and possible in Hokom only.
+        balootRevealed:
+          type: boolean
+          description: >-
+            Whether this seat's Baloot standing is public yet. hasBaloot is sent as
+            false while it is hidden, so read this first: "no Baloot" and "not
+            shown yet" are different.
         declared:
           type: boolean
           description: Has already declared or passed this round.
@@ -47619,6 +47921,16 @@ components:
           description: "0=Auction, 1=Bid, 2=Play, 3=RoundEnd, 4=GameEnd"
         roundNumber:
           type: integer
+        doubled:
+          type: boolean
+          description: >-
+            Whether the round that just ended scored double (all four seats hit
+            their bid, or all four missed).
+        doubledAllExact:
+          type: boolean
+          description: >-
+            True when the doubling came from every seat hitting; false when it
+            came from every seat missing.
         trickNumber:
           type: integer
         trumpSuit:
@@ -47771,6 +48083,11 @@ components:
         lastHandKot:
           type: boolean
           description: The previous hand was a Kot (the losers took no trick), worth 2.
+        lastHandHakemChanged:
+          type: boolean
+          description: >-
+            Whether the hakem passed to the next seat after the hand that just
+            settled. It only moves when the hakem's team loses.
         lastHandWinner:
           type: integer
           description: "Team that took the previous hand, or -1 before there is one"
@@ -48072,6 +48389,12 @@ components:
           description: Hand indices you may legally play. Following suit is compulsory.
           items:
             type: integer
+        willSetTrump:
+          type: boolean
+          description: >-
+            Whether the card the human plays now decides the trump. Mendikot has
+            no trump-choosing phase: the first player who cannot follow sets it
+            with whatever they play.
         gameEndFlag:
           type: boolean
         winnerTeam:
@@ -48292,6 +48615,20 @@ components:
           description: >-
             How many cards changed hands for last round's shortfall. Surplus
             tricks buy an opponent's best cards; nothing else shows this.
+        lastExchangePairs:
+          type: array
+          description: >-
+            Who handed cards to whom in the exchange that opened this round. The
+            total alone cannot say whose best card was taken.
+          items:
+            type: object
+            properties:
+              giver:
+                type: integer
+              taker:
+                type: integer
+              count:
+                type: integer
         currentPlayerIdx:
           type: integer
         leadPlayerIdx:
@@ -48556,6 +48893,13 @@ components:
             Cards still face down. 52 does not divide by three, so the four
             left over go to the dealer, who discards discardCount after naming
             trump.
+        kittyIndices:
+          type: array
+          description: >-
+            Positions in the human's hand that came in from the kitty. Empty once
+            the dealer has discarded.
+          items:
+            type: integer
         discardCount:
           type: integer
           description: How many cards the dealer must discard (4).
@@ -48707,6 +49051,11 @@ components:
         lastTricks:
           type: integer
           description: Tricks the declarer took in the last deal.
+        lastPoints:
+          type: integer
+          description: >-
+            Points the deal that just ended actually moved: level x 10 plus 5 an
+            overtrick when made, or 10 a trick short to the opponent.
         currentPlayerIdx:
           type: integer
         leadPlayerIdx:
@@ -49132,6 +49481,12 @@ components:
             Whether you cannot follow and must take the trick into your hand.
             **Read this before validPlays** -- an empty validPlays also means
             "not your turn", and the two call for opposite things.
+        leadSuit:
+          type: integer
+          description: >-
+            Suit led in the current trick (1=spade, 2=club, 3=heart, 4=diamond),
+            0 before anyone has played. This is why a pickup is forced -- the
+            seat holds nothing of this suit.
         validPlays:
           type: array
           description: Hand indices you may legally play. Following suit is compulsory.
@@ -50721,6 +51076,20 @@ components:
           type: integer
         gameEndFlag:
           type: boolean
+        queensUpPayouts:
+          type: array
+          description: >-
+            Queens Up side-bet payouts, highest first. Served rather than
+            hardcoded: the multipliers live in the Go domain.
+          items:
+            type: object
+            properties:
+              hand:
+                type: integer
+              name:
+                type: string
+              multiplier:
+                type: integer
         config:
           type: object
           properties:
@@ -50752,6 +51121,12 @@ components:
                 type: integer
               bet:
                 type: integer
+              lastNet:
+                type: integer
+                description: >-
+                  Chips this seat gained or lost in the last settlement; 0
+                  during a round. The table-level result
+                  (banker/punter/tie) does not say whether your own bet won.
               isBanker:
                 type: boolean
               isRepresentative:
@@ -51125,6 +51500,16 @@ components:
         phase:
           type: integer
           description: "1=Bet, 2=End"
+        mainPayout:
+          type: integer
+          description: >-
+            The main-bet half of payout; 0 when it missed. A side bet is a
+            separate wager -- the total alone cannot say which one lost.
+        sidePayout:
+          type: integer
+          description: >-
+            The side-bet half of payout; 0 when no side bet was placed or it
+            missed.
         chips:
           type: integer
         betAmount:
@@ -51292,6 +51677,12 @@ components:
           type: integer
         trickNumber:
           type: integer
+        totalTricks:
+          type: integer
+          description: >-
+            Tricks in one round (= cards dealt to each seat). Only the last
+            trick scores penalties, so how many are left is the number that
+            matters.
         roundNumber:
           type: integer
         lastTrickWinnerIdx:
@@ -51399,6 +51790,18 @@ components:
         lastCaptureIdx:
           type: integer
           description: The seat that captured last, or -1. It receives whatever is left on the table.
+        lastCaptureKind:
+          type: string
+          description: >-
+            Whether the last capture was a plain table take ("take") or a whole
+            bundle stolen off another seat ("steal"); empty before anyone has
+            captured. A steal empties someone else's bundle, so it is not the
+            same event as a take.
+        lastCaptureVictimIdx:
+          type: integer
+          description: >-
+            The seat robbed by the last steal, or -1 when the last capture was a
+            take.
         currentPlayerIdx:
           type: integer
         turnNumber:
@@ -51497,6 +51900,12 @@ components:
         roundLoserIdx:
           type: integer
           description: The seat that took a letter at the end of the last round, or -1.
+        letterTarget:
+          type: string
+          description: >-
+            The word letters accumulate towards ("PIG"). Three letters and the
+            seat is out, so the page shows it as the denominator of each
+            seat's progress.
         roundNumber:
           type: integer
         passCount:
@@ -51916,6 +52325,14 @@ components:
         roundPenalty:
           type: integer
           description: Penalty taken in the current round.
+        takenJackSuits:
+          type: array
+          description: >-
+            Suits of the jacks this seat took this round, spade first. The total
+            alone cannot say whether a seat stepped on the spade jack (-2) or
+            picked up two of the others.
+          items:
+            type: integer
         trickCount:
           type: integer
         declaredCapot:
@@ -52279,6 +52696,13 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/Card'
+        tableauDeadEnd:
+          type: array
+          description: >-
+            Per column: true when the top card is an Ace, so nothing can be
+            stacked on it any more (the Ace itself can still go to a foundation).
+          items:
+            type: boolean
         foundation:
           type: array
           description: The eight foundations, each building up in suit from the Ace.
@@ -52370,6 +52794,20 @@ components:
             $ref: '#/components/schemas/CribbageSquaresScore'
         colDetails:
           type: array
+          items:
+            $ref: '#/components/schemas/CribbageSquaresScore'
+        rowPartialDetails:
+          type: array
+          description: >-
+            Per-row score that is already locked in without the starter. The
+            official rowDetails stay 0 until the 16th card is placed, so this
+            is the only in-play breakdown. It is a lower bound: the starter can
+            only add.
+          items:
+            $ref: '#/components/schemas/CribbageSquaresScore'
+        colPartialDetails:
+          type: array
+          description: The same locked-in breakdown per column.
           items:
             $ref: '#/components/schemas/CribbageSquaresScore'
         totalScore:
@@ -53125,8 +53563,8 @@ components:
           type: string
           description: |
             Game command. Accepted values: `reset` (`r`), `bet` (`b`),
-            `play` (`p`), `check` (`c`), `fold` (`f`), `log` (`l`).
-          enum: [r, reset, b, bet, p, play, c, check, f, fold, log, l]
+            `play` (`p`), `check` (`c`), `fold` (`f`), `log` (`l`), `hint` (`h`).
+          enum: [r, reset, b, bet, p, play, c, check, f, fold, log, l, hint, h]
           example: bet
         amount:
           type: integer
@@ -53286,8 +53724,8 @@ components:
           type: string
           description: |
             Game command. Accepted values: `reset` (`r`), `bet` (`b`),
-            `play` (`p`), `fold` (`f`), `log` (`l`).
-          enum: [r, reset, b, bet, p, play, f, fold, log, l]
+            `play` (`p`), `fold` (`f`), `log` (`l`), `hint` (`h`).
+          enum: [r, reset, b, bet, p, play, f, fold, log, l, hint, h]
           example: bet
         amount:
           type: integer
@@ -53916,8 +54354,8 @@ components:
           description: |
             Game command. Accepted values: `reset` (`r`), `bet` (`b`),
             `exchange` (`e`), `stand` (`s`), `play` (`p`), `fold` (`f`),
-            `log` (`l`).
-          enum: [r, reset, b, bet, e, exchange, s, stand, p, play, f, fold, log, l]
+            `log` (`l`), `hint` (`h`).
+          enum: [r, reset, b, bet, e, exchange, s, stand, p, play, f, fold, log, l, hint, h]
           example: exchange
         amount:
           type: integer
@@ -54276,7 +54714,7 @@ components:
       properties:
         command:
           type: string
-          enum: [reset, r, drawstock, ds, drawdiscard, dd, meld, m, layoff, lo, discard, d, nextround, nr, log, l, quit, q]
+          enum: [reset, r, drawstock, ds, drawdiscard, dd, meld, m, layoff, lo, discard, d, nextround, nr, log, l, quit, q, hint, h]
           description: Game command alias.
         sessionId:
           type: string
@@ -54458,6 +54896,8 @@ components:
         - freeCells
         - foundation
         - baseRank
+        - maxMovableCards
+        - maxMovableCardsToEmptyColumn
         - phase
         - moveCount
         - canUndo
@@ -54488,6 +54928,19 @@ components:
           type: integer
           description: The base rank for foundations (1-13, determined by the first dealt card)
           example: 5
+        maxMovableCards:
+          type: integer
+          description: >-
+            How many cards may move as one stack right now, from the domain's
+            own calculation. The web client must not recompute this.
+          example: 4
+        maxMovableCardsToEmptyColumn:
+          type: integer
+          description: >-
+            The same limit when the destination is an empty column, which is
+            lower because that column cannot also serve as a staging slot.
+            0 when there is no empty column.
+          example: 2
         phase:
           type: integer
           description: "Game phase: 0 = Playing, 1 = GameClear, 2 = GameOver"

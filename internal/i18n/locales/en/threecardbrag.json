@@ -20,5 +20,14 @@
   "hintReasonSeeFirst": "see your hand first",
   "hintReasonStrongHand": "strong hand",
   "hintReasonMediumHand": "decent hand",
-  "hintReasonWeakHand": "weak hand"
+  "hintReasonWeakHand": "weak hand",
+  "helpSee": "  s                    look at your hand and become seen (while blind)",
+  "helpBet": "  b                    call the current stake",
+  "helpRaise": "  rs <n>               raise the stake and call",
+  "helpFold": "  f                    fold",
+  "helpShow": "  sh                   call a showdown (two players left)",
+  "helpNext": "  n                    go to the next deal",
+  "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
+  "helpExampleSee": "  s                    look at your hand and become seen",
+  "helpHint": "  h                    show a hint"
 }

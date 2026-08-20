@@ -13,7 +13,7 @@
   "opponentHandAriaLabel": "{{name}} holds {{n}} face-down card(s)",
   "yourHand": "Your hand",
   "score": "net {{n}}",
-  "lastIn": "was last in",
+  "lastIn": "was last in: +{{amount}}",
   "landscapeBanner": "Turn your device sideways for a better view",
   "phase.play": "In progress",
   "phase.end": "Finished",
@@ -23,5 +23,5 @@
   "tutorial.table": "All twelve table cards are face up from the start -- there is no face-down stock. You capture while watching how many of each rank remain.",
   "tutorial.capture": "Play one card from hand to capture table cards of the same rank. You take one or three; never two, never four.",
   "tutorial.liedown": "When nothing in your hand matches, your whole hand goes to the table and you are out. Those cards become everyone else's prey, so this is more than elimination.",
-  "tutorial.settle": "You settle on captured cards against eight, and whoever was last in takes 5 from the pot."
+  "tutorial.settle": "You settle on captured cards against eight, and whoever was last in takes {{amount}} from the pot."
 }

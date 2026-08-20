@@ -77,7 +77,9 @@
     "jackpotFullHouse": "Full House: 100x",
     "jackpotFlush": "Flush: 50x",
     "exchangeHeader": "Exchange fee",
-    "exchangeFee": "1x ante per exchanged card"
+    "exchangeFee": "1x ante per exchanged card",
+    "qualifyHeader": "Dealer qualification",
+    "qualifyRule": "One pair or better, or a hand holding both an ace and a king. If the dealer misses, the ante pushes"
   },
   "dealerQualified": "Qualified",
   "dealerNotQualified": "Not qualified",

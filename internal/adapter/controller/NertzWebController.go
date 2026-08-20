@@ -84,7 +84,11 @@ type NertzWebOutput struct {
 	CpuTickMoves  int                   `json:"cpuTickMoves"`
 	Players       []*NertzWebPlayer     `json:"players"`
 	Foundations   []*NertzWebFoundation `json:"foundations"`
-	Hint          *NertzWebHint         `json:"hint,omitempty"`
+	// FoundationMax は組札が完成する枚数 (A..K = 13)。CUI は枚数を "n/13" で
+	// 出しているのに Web は現在枚数だけで、あと何枚かを暗算させていた (#5578)。
+	// 数字を画面に焼き込まず、ドメインの定数を渡す。
+	FoundationMax int           `json:"foundationMax"`
+	Hint          *NertzWebHint `json:"hint,omitempty"`
 	WebOutputBase
 }
 
@@ -107,6 +111,7 @@ func newNertzDefaultOutput(msg string) *NertzWebOutput {
 		CpuDifficulty: int(domain.NertzCpuDifficultyNormal),
 		Players:       make([]*NertzWebPlayer, 0),
 		Foundations:   make([]*NertzWebFoundation, 0),
+		FoundationMax: domain.NertzFoundationMax,
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }

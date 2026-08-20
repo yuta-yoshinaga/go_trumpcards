@@ -57,21 +57,21 @@ func (c *SheepsheadCuiController) Exec(command string) string {
 			case "b", "bury":
 				return c.handleBury(args)
 			case "c", "call":
-				return cuiutil.WithParsedInt(args, "Suit is required (1=♠ 2=♣ 3=♥).", "Invalid suit: %s. Please enter 1-3.", domain.CardDesignSpade, domain.CardDesignHeart, c.si.Call)
+				return cuiutil.WithParsedIntKeys(args, "suitRequiredThree", "invalidSuitThree", domain.CardDesignSpade, domain.CardDesignHeart, c.si.Call)
 			case "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.si.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.si.Play)
 			case "n", "next":
 				return c.si.NextTrick(), true
 			case "nr", "nextround":
 				return c.si.NextRound(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.si.GetConfig()
 					cfg.CpuDifficulty = domain.SheepsheadCpuDifficulty(v)
 					return c.si.ResetWithConfig(cfg)
 				})
 			case "sb", "setchips":
-				return cuiutil.WithParsedInt(args, "Base chips is required.", "Invalid base chips: %s. Please enter 1 or more.", 1, math.MaxInt, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "baseChipsRequired", "invalidBaseChips1OrMore", 1, math.MaxInt, func(v int) string {
 					cfg := c.si.GetConfig()
 					cfg.BaseChips = v
 					return c.si.ResetWithConfig(cfg)
@@ -86,12 +86,12 @@ func (c *SheepsheadCuiController) Exec(command string) string {
 // handleBury は "b <i> <j>" コマンドを処理する。
 func (c *SheepsheadCuiController) handleBury(args []string) (string, bool) {
 	if len(args) < 2 {
-		return "Usage: b <idx1> <idx2> — specify two card indices to bury.", true
+		return invalidArg("usageBIdx1Idx2SpecifyTwoCardIndicesToBury"), true
 	}
-	idx1, _, ok1 := cuiutil.ParseIntArg(args[:1], "First card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax)
-	idx2, _, ok2 := cuiutil.ParseIntArg(args[1:2], "Second card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax)
+	idx1, _, ok1 := cuiutil.ParseIntArgKeys(args[:1], "firstCardIndexRequired", "invalidCardIndexPlain", cuiutil.NoMin, cuiutil.NoMax)
+	idx2, _, ok2 := cuiutil.ParseIntArgKeys(args[1:2], "secondCardIndexRequired", "invalidCardIndexPlain", cuiutil.NoMin, cuiutil.NoMax)
 	if !ok1 || !ok2 {
-		return "Invalid card indices. Usage: b <idx1> <idx2>", true
+		return invalidArg("invalidCardIndicesUsageB"), true
 	}
 	return c.si.Bury([]int{idx1, idx2}), true
 }

@@ -42,6 +42,19 @@ export function getChinesePokerHint(state: ChinesePokerResponse): HintResult | n
   if (state.phase !== ChinesePokerPhase.SET_HANDS) return null;
   if (state.playerCards.length !== FULL_HAND) return null;
 
+  // **サーバーの案があるならそれを使う。**ドメインは同じ計算を CUI 向けに
+  // 出しており (#4717)、ここで並べ直すと同じ手札で違う分け方を勧めることに
+  // なる。targetIndices を付けるので、ページはどの札かを名指しできる (#5615)。
+  const suggested = state.suggestedArrangement;
+  if (suggested) {
+    return {
+      targetAction: 'setHands',
+      reason: suggested.foul ? 'frontendHint.chinesepokerFoulRisk' : 'frontendHint.chinesepokerSplit',
+      confidence: 'moderate',
+      targetIndices: suggested.front,
+    };
+  }
+
   const sorted = [...state.playerCards].sort((a, b) => rank(b) - rank(a));
   const back = sorted.slice(0, MIDDLE_SIZE);
   const middle = sorted.slice(MIDDLE_SIZE, MIDDLE_SIZE * 2);

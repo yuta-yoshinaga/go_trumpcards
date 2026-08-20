@@ -4,7 +4,7 @@ import type { CliParseResult } from '../types';
 
 type OpenFaceChineseArgs = Parameters<typeof openfacechineseApi.exec>;
 
-const VALID_COMMANDS = ['p', 'place', 'n', 'next', 'nextround', 'log', 'r', 'reset', 'help', '?'];
+const VALID_COMMANDS = ['p', 'place', 'n', 'next', 'nextround', 'log', 'r', 'reset', 'h', 'hint', 'help', '?'];
 
 /** Maps a row token (name / initial / index) to the backend row index, or null if invalid. */
 function parseRow(token: string | undefined): number | null {
@@ -47,6 +47,9 @@ export function parseOpenfacechineseCommand(input: string): CliParseResult<OpenF
     case 'r':
     case 'reset':
       return { args: ['reset'] };
+    case 'h':
+    case 'hint':
+      return { args: ['hint'] };
     default: {
       const suggestion = suggestCommand(cmd, VALID_COMMANDS);
       if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
@@ -61,4 +64,5 @@ export const OPENFACECHINESE_HELP: string[] = [
   'n/next          - Deal the next round',
   'log             - Show action log',
   'r/reset         - Reset game',
+  'h/hint      - Get a hint',
 ];

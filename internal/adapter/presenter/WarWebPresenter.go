@@ -2,6 +2,7 @@ package presenter
 
 import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
@@ -55,6 +56,19 @@ func buildWarMessage(w interfaces.WarGame, lastErr error) (string, string, map[s
 			return "", "war.result.humanWin", nil
 		}
 		return "", "war.result.cpuWin", nil
+	}
+	// **各ラウンドの決着も伝える。** 以前は最終勝敗のときしかコードを返さず、
+	// 盤面の変化はリング色と不透明度だけだった。読み上げ利用者はどのラウンドで
+	// 誰が勝ったのかも、いつ戦争になったのかも知りようがない (#5530)。
+	// CUI の WarCuiPresenter は毎ラウンド promptResolved*/promptWarBury を出している。
+	switch w.GetPhase() {
+	case domain.WarPhaseResolved:
+		if w.GetLastWinnerIdx() == 0 {
+			return "", "war.round.humanWin", nil
+		}
+		return "", "war.round.cpuWin", nil
+	case domain.WarPhaseWarBury:
+		return "", "war.round.warBury", nil
 	}
 	return "", "", nil
 }

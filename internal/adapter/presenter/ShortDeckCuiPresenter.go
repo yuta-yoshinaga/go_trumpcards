@@ -3,6 +3,7 @@
 package presenter
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -29,7 +30,7 @@ type ShortDeckCuiPresenter struct{}
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *ShortDeckCuiPresenter) ActionLogOutput(o interfaces.ShortDeckGame) string {
-	return actionLogOutputText(o)
+	return actionLogOutputTextForSeats[*domain.ShortDeckPlayer](o)
 }
 
 // Output renders the current game state for the active locale (#1699).
@@ -103,6 +104,30 @@ func (p *ShortDeckCuiPresenter) Output(o interfaces.ShortDeckGame, lastErr error
 
 			if player.GetIsHuman() && !player.GetFolded() {
 				b.WriteString(i18n.Tf("shortdeck.humanHand", "cards", cuiCardListStrEmoji(player)) + "\n")
+			}
+		}
+
+		// **学習モードの値は Web にしか出ていなかった (#5487)。** GetEquity /
+		// GetPotOdds はインターフェースにあり Holdem / Omaha の CUI は既に出して
+		// いるのに、ショートデックだけ2メソッドを一度も呼んでいなかった。
+		// GetEquity は人間が降りている局面などで nil を返し、そのとき表示は消える。
+		if o.IsHumanTurn() {
+			if eq := o.GetEquity(); eq != nil {
+				potOdds := o.GetPotOdds()
+				b.WriteString("----------\n")
+				b.WriteString(color.Bold(i18n.T("shortdeck.learningHeader")) + "\n")
+				b.WriteString(i18n.Tf("shortdeck.learningLine",
+					"equity", fmt.Sprintf("%.1f", eq.Equity*100),
+					"potodds", fmt.Sprintf("%.1f", potOdds)) + "\n")
+				// **コール額が無ければ判定しない。** ポットオッズ 0 のときに
+				// 「+EV」と出すと、何もコールしていない局面で有利判定が出る。
+				if potOdds > 0 {
+					if eq.Equity*100 > potOdds {
+						b.WriteString(i18n.T("shortdeck.learningEvPlus") + "\n")
+					} else {
+						b.WriteString(i18n.T("shortdeck.learningEvMinus") + "\n")
+					}
+				}
 			}
 		}
 

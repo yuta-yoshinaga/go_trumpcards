@@ -160,5 +160,5 @@ func (p *LiteratureCuiPresenter) Output(g interfaces.LiteratureGame, lastErr err
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *LiteratureCuiPresenter) ActionLogOutput(g interfaces.LiteratureGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.LiteraturePlayer](g)
 }

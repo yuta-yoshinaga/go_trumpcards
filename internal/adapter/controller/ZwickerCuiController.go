@@ -46,7 +46,7 @@ func (c *ZwickerCuiController) Exec(command string) string {
 			case "b", "build":
 				return c.build(args)
 			case "tr", "trail":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.zi.Trail)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.zi.Trail)
 			case "n", "next":
 				return c.zi.NextRound(), true
 			default:
@@ -62,21 +62,21 @@ func (c *ZwickerCuiController) Exec(command string) string {
 // どちらのつもりか決まらない。
 func (c *ZwickerCuiController) take(args []string) (string, bool) {
 	if len(args) < 2 {
-		return "Card index and value are required (for example: t 0 7 t:1,2).", true
+		return invalidArg("cardIndexAndValueRequired"), true
 	}
 	hand, ok := zwickerParseIdx(args[0])
 	if !ok {
-		return "Invalid card index: " + args[0] + ".", true
+		return invalidArg("invalidCardIndex", "val", args[0]), true
 	}
 	value, err := strconv.Atoi(strings.TrimSpace(args[1]))
 	if err != nil || value <= 0 {
-		return "Invalid value: " + args[1] + ".", true
+		return invalidArg("invalidValueDot", "val", args[1]), true
 	}
 	var tableIdxs, buildIdxs []int
 	for _, a := range args[2:] {
 		list, prefix, ok := zwickerParseList(a)
 		if !ok {
-			return "Invalid selection: " + a + ".", true
+			return invalidArg("invalidSelectionDot", "val", a), true
 		}
 		if prefix == "b" {
 			buildIdxs = append(buildIdxs, list...)
@@ -93,19 +93,19 @@ func (c *ZwickerCuiController) take(args []string) (string, bool) {
 // build は `b <hand> <a,b> <value>` を解釈する。
 func (c *ZwickerCuiController) build(args []string) (string, bool) {
 	if len(args) < 3 {
-		return "Card index, table cards and a value are required (for example: b 0 1,2 9).", true
+		return invalidArg("cardTableAndValueRequired"), true
 	}
 	hand, ok := zwickerParseIdx(args[0])
 	if !ok {
-		return "Invalid card index: " + args[0] + ".", true
+		return invalidArg("invalidCardIndex", "val", args[0]), true
 	}
 	table, _, ok := zwickerParseList(args[1])
 	if !ok || len(table) == 0 {
-		return "Invalid table selection: " + args[1] + ".", true
+		return invalidArg("invalidTableSelectionDot", "val", args[1]), true
 	}
 	value, err := strconv.Atoi(strings.TrimSpace(args[2]))
 	if err != nil || value <= 0 {
-		return "Invalid value: " + args[2] + ".", true
+		return invalidArg("invalidValueDot", "val", args[2]), true
 	}
 	return c.zi.Build(hand, table, value), true
 }

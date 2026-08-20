@@ -14,7 +14,9 @@ import (
 func setupAccordionCuiMockDefaults(ag *interfaces.MockAccordionGame) {
 	ag.On("GetPhase").Return(domain.AccordionPhasePlaying).Maybe()
 	ag.On("GetMoveCount").Return(0).Maybe()
+	ag.On("CanUndo").Return(false).Maybe()
 	ag.On("IsStalemate").Return(false).Maybe()
+	ag.On("UndoToEscape").Return(0).Maybe()
 	ag.On("GetPileCount").Return(3).Maybe()
 	piles := [][]*domain.Card{
 		{domain.NewCard(domain.CardDesignSpade, 1, false)},
@@ -51,7 +53,9 @@ func TestAccordionCuiPresenter_Output(t *testing.T) {
 		ag := new(interfaces.MockAccordionGame)
 		ag.On("GetPhase").Return(domain.AccordionPhasePlaying).Maybe()
 		ag.On("GetMoveCount").Return(5).Maybe()
+		ag.On("CanUndo").Return(true).Maybe()
 		ag.On("IsStalemate").Return(true).Maybe()
+		ag.On("UndoToEscape").Return(0).Maybe()
 		ag.On("GetPileCount").Return(40).Maybe()
 		ag.On("GetPiles").Return([][]*domain.Card{}).Maybe()
 
@@ -64,6 +68,7 @@ func TestAccordionCuiPresenter_Output(t *testing.T) {
 		ag := new(interfaces.MockAccordionGame)
 		ag.On("GetPhase").Return(domain.AccordionPhaseGameClear).Maybe()
 		ag.On("GetMoveCount").Return(51).Maybe()
+		ag.On("CanUndo").Return(false).Maybe()
 		ag.On("IsStalemate").Return(false).Maybe()
 		ag.On("GetPileCount").Return(1).Maybe()
 		ag.On("GetPiles").Return([][]*domain.Card{}).Maybe()
@@ -77,6 +82,7 @@ func TestAccordionCuiPresenter_Output(t *testing.T) {
 		ag := new(interfaces.MockAccordionGame)
 		ag.On("GetPhase").Return(domain.AccordionPhaseGameOver).Maybe()
 		ag.On("GetMoveCount").Return(10).Maybe()
+		ag.On("CanUndo").Return(false).Maybe()
 		ag.On("IsStalemate").Return(false).Maybe()
 		ag.On("GetPileCount").Return(40).Maybe()
 		ag.On("GetPiles").Return([][]*domain.Card{}).Maybe()

@@ -11,6 +11,8 @@
   "discardLine": "捨て札: {{card}}",
   "playerLine": "{{name}}: 勝利{{wins}} 手札{{cards}}枚",
   "meldLine": "  メルド: {{cards}}",
+  "meldProgress": "メルド {{count}}/{{total}}",
+  "meldRemaining": "あと {{count}} 枚",
   "gameEnd": "ゲーム終了！ {{name}}の勝利です！",
   "drawBanner": "ゲーム終了！ 引き分けです (山札切れ)",
   "draw": "引き分けです (山札切れ)",
@@ -27,5 +29,7 @@
   "promptRoundEnd": "ラウンド終了",
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
   "result.humanWin": "ゲーム終了！ あなたの勝ち！",
-  "result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！"
+  "result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
+  "helpExampleDraw": "  ds                   手番の最初に山札から 1 枚引く",
+  "helpExampleDiscard": "  d 0                  手札の 0 番を捨てる"
 }

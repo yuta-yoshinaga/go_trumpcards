@@ -1157,3 +1157,23 @@ describe('NapoleonPage', () => {
     }
   });
 });
+
+// #5504: 目標点数は開始前の設定でしか見えず、対局中は Settings を開き直さない限り
+// あと何点で決着するのか分からなかった。
+describe('NapoleonPage point limit', () => {
+  it('shows the configured target during play', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, config: { ...playPhaseState.config, pointLimit: 75 } });
+    renderWithProviders(<NapoleonPage />);
+    const line = await screen.findByTestId('np-point-limit');
+    expect(line.textContent).toContain('75');
+  });
+
+  // **設定値を出していること。** 定数を書いているだけなら、変えても表示が動かない。
+  it('follows a settings change', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, config: { ...playPhaseState.config, pointLimit: 30 } });
+    renderWithProviders(<NapoleonPage />);
+    const line = await screen.findByTestId('np-point-limit');
+    expect(line.textContent).toContain('30');
+    expect(line.textContent).not.toContain('75');
+  });
+});

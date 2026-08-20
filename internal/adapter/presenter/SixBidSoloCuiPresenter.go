@@ -201,7 +201,7 @@ func sixBidSoloLadderLine(g interfaces.SixBidSoloGame) string {
 			// 消さずに残す。序列そのものは判断材料なので。
 			entry = i18n.Tf("sixbidsolo.ladderTaken", "bid", entry)
 		}
-		b.WriteString(entry)
+		b.WriteString(entry + sixBidSoloLadderTarget(k))
 	}
 	// 最高段階まで取られたら「選べる段階はもう無い」と言い切る。
 	if high != nil && high.Kind >= domain.SixBidSoloMaxBid {
@@ -210,7 +210,30 @@ func sixBidSoloLadderLine(g interfaces.SixBidSoloGame) string {
 	return b.String()
 }
 
+// sixBidSoloLadderTarget は 1 段ぶんの必要点数表記を返す。
+//
+// **切札は入札が終わるまで決まらない。**ギャランティーだけ ♥ とそれ以外で
+// 目標が変わるので、暫定表示として両方を並べる (#5731)。値は
+// domain.SixBidSoloTargetPoints から引き、数字を写さない。
+func sixBidSoloLadderTarget(k domain.SixBidSoloBidKind) string {
+	// ♠ は「♥ 以外」の代表。目標がスートで変わるのはギャランティーだけで、
+	// その分岐も ♥ かどうかしか見ない (SixBidSoloTargetPoints)。
+	heart := domain.SixBidSoloTargetPoints(k, domain.CardDesignHeart)
+	other := domain.SixBidSoloTargetPoints(k, domain.CardDesignSpade)
+	switch {
+	case heart == 0 && other == 0:
+		// **ミゼール系の目標は「0点」ではなく「取らないこと」。**
+		// 数字で書くと取りに行く指示に読める。
+		return i18n.T("sixbidsolo.ladderTargetZero")
+	case heart != other:
+		return i18n.Tf("sixbidsolo.ladderTargetSuit",
+			"heart", strconv.Itoa(heart), "other", strconv.Itoa(other))
+	default:
+		return i18n.Tf("sixbidsolo.ladderTarget", "n", strconv.Itoa(heart))
+	}
+}
+
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *SixBidSoloCuiPresenter) ActionLogOutput(g interfaces.SixBidSoloGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.SixBidSoloPlayer](g)
 }

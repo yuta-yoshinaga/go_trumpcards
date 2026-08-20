@@ -21,5 +21,7 @@
   "result.scores": "ゲーム終了！ 得点: {{scores}}",
   "bonus.sakuraSake": "桜酒",
   "bonus.allBrights": "五光",
-  "bonus.none": "なし"
+  "bonus.none": "なし",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
+  "helpNext": "  n                    次へ進む"
 }

@@ -166,13 +166,13 @@ func TestBurracoCuiController_Exec(t *testing.T) {
 	t.Run("discard command d no args", func(t *testing.T) {
 		c := controller.NewBurracoCuiController(newMock())
 		result := c.Exec("d")
-		assert.Contains(t, result, "Card index is required")
+		assert.Contains(t, result, msgCardIndexRequired())
 	})
 
 	t.Run("discard command d invalid arg", func(t *testing.T) {
 		c := controller.NewBurracoCuiController(newMock())
 		result := c.Exec("d abc")
-		assert.Contains(t, result, "Invalid card index")
+		assert.Contains(t, result, msgInvalidCardIndexPrefix())
 	})
 
 	// goout
@@ -233,19 +233,19 @@ func TestBurracoCuiController_Exec(t *testing.T) {
 	t.Run("setdifficulty no args", func(t *testing.T) {
 		c := controller.NewBurracoCuiController(newMock())
 		result := c.Exec("sd")
-		assert.Contains(t, result, "required")
+		assert.Contains(t, result, msgCpuDifficultyRequired())
 	})
 
 	t.Run("setdifficulty invalid value", func(t *testing.T) {
 		c := controller.NewBurracoCuiController(newMock())
 		result := c.Exec("sd abc")
-		assert.Contains(t, result, "Invalid CPU difficulty")
+		assert.Contains(t, result, msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("setdifficulty negative", func(t *testing.T) {
 		c := controller.NewBurracoCuiController(newMock())
 		result := c.Exec("sd -1")
-		assert.Contains(t, result, "Invalid CPU difficulty")
+		assert.Contains(t, result, msgInvalidCpuDifficultyPrefix())
 	})
 
 	// setlimit
@@ -272,19 +272,19 @@ func TestBurracoCuiController_Exec(t *testing.T) {
 	t.Run("setlimit no args", func(t *testing.T) {
 		c := controller.NewBurracoCuiController(newMock())
 		result := c.Exec("sl")
-		assert.Contains(t, result, "required")
+		assert.Contains(t, result, msgPointLimitRequired())
 	})
 
 	t.Run("setlimit invalid value", func(t *testing.T) {
 		c := controller.NewBurracoCuiController(newMock())
 		result := c.Exec("sl abc")
-		assert.Contains(t, result, "Invalid point limit")
+		assert.Contains(t, result, msgInvalidPointLimitPrefix())
 	})
 
 	t.Run("setlimit zero is invalid", func(t *testing.T) {
 		c := controller.NewBurracoCuiController(newMock())
 		result := c.Exec("sl 0")
-		assert.Contains(t, result, "Invalid point limit")
+		assert.Contains(t, result, msgInvalidPointLimitPrefix())
 	})
 
 	// log

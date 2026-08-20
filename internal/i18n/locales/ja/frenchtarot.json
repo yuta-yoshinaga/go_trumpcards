@@ -24,6 +24,8 @@
   "promptBidHelp": "bid petite|garde|gardesans|gardecontre ... 入札  |  pass ... パス",
   "promptChien": "シアン公開 — 手番: {{name}}",
   "promptChienHelp": "discard <i0> ... <i5> ... 6 枚を伏せて捨てる (キング/切り札/エクスキューズ不可)",
+  "promptChienBuriable": "捨てられる札: {{cards}}",
+  "promptChienLegend": "キング・エクスキューズ・プティ・21 は捨てられません。切り札は他に6枚揃わないときだけ捨てられます",
   "promptPlay": "手番: {{name}}  (リードスートに従う。ボイド時は切り札。可能ならオーバートランプ)",
   "promptPlayHelp": "play <idx> ... カードを出す",
   "promptTrickEnd": "トリック完了",
@@ -40,5 +42,7 @@
   "hintReasonFollowWin": "勝てる — トリックを取る",
   "hintReasonFollowDuck": "勝てない/取るべきでない — 低い札を出す",
   "hintReasonPlayExcuse": "エクスキューズを出す — 自分で保持し、取られない",
-  "promptBidLegend": "契約倍率: プティット×1 / ガルド×2 / ガルド・サン×4 / ガルド・コントル×6（現在の最高ビッドを上回る契約のみ入札可）"
+  "promptBidLegend": "契約倍率: プティット×1 / ガルド×2 / ガルド・サン×4 / ガルド・コントル×6（現在の最高ビッドを上回る契約のみ入札可）",
+  "helpExamplePlay": "  play 0                    手札の 0 番のカードを出す",
+  "helpHint": "  h                         助言を表示"
 }

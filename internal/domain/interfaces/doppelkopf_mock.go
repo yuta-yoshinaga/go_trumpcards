@@ -207,6 +207,16 @@ func (_m *MockDoppelkopfGame) GetPlayableIndices(playerIdx int) []int {
 	return nil
 }
 
+// GetTrumpIndices モック
+func (_m *MockDoppelkopfGame) GetTrumpIndices(playerIdx int) []int {
+	ret := _m.Called(playerIdx)
+	v := ret.Get(0)
+	if v == nil {
+		return nil
+	}
+	return v.([]int)
+}
+
 // GetHint モック
 func (_m *MockDoppelkopfGame) GetHint() *domain.DoppelkopfHint {
 	ret := _m.Called()

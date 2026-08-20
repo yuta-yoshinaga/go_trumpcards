@@ -43,5 +43,8 @@
   "phaseSecondBet": "Second bet",
   "phaseEnd": "End",
   "promptBet": "Commands: bet <amount> / call / raise <amount> / fold",
-  "promptExchange": "Commands: exchange <card indices> (exchange alone to keep all)"
+  "promptExchange": "Commands: exchange <card indices> (exchange alone to keep all)",
+  "helpExampleFold": "  f                    fold this hand",
+  "helpLog": "  l                    show the action log",
+  "exchangeRead": "⚠ Your small exchange reads as a strong hand -- the CPUs grow wary below 3 cards and fold more readily"
 }

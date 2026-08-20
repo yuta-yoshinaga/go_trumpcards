@@ -1022,7 +1022,7 @@ func (g *Cego) trumpFollowIndices(player *CegoPlayer, highestTrump int) []int {
 	if len(trumps) == 0 {
 		return g.allIndices(player)
 	}
-	higher := cegoFilter(trumps, func(idx int) bool {
+	higher := filterIndices(trumps, func(idx int) bool {
 		return cegoTrumpValue(player.GetCard(idx)) > highestTrump
 	})
 	if len(higher) > 0 {
@@ -1041,7 +1041,7 @@ func (g *Cego) suitFollowIndices(player *CegoPlayer, led, highestTrump int) []in
 	if len(trumps) == 0 {
 		return g.allIndices(player)
 	}
-	higher := cegoFilter(trumps, func(idx int) bool {
+	higher := filterIndices(trumps, func(idx int) bool {
 		return cegoTrumpValue(player.GetCard(idx)) > highestTrump
 	})
 	if highestTrump > 0 && len(higher) > 0 {
@@ -1201,7 +1201,7 @@ func (g *Cego) cpuPlaySmart(playerIdx int, valid []int) int {
 	winCard := g.currentTrick[g.indexInTrick(winnerIdx)].Card
 	winnerSide := g.isDeclarerSide(winnerIdx)
 	mySide := g.isDeclarerSide(playerIdx)
-	winners := cegoFilter(valid, func(idx int) bool {
+	winners := filterIndices(valid, func(idx int) bool {
 		return cegoWinRank(p.GetCard(idx), led) > cegoWinRank(winCard, led)
 	})
 	if winnerSide == mySide {
@@ -1453,17 +1453,6 @@ func cegoValidBid(bid CegoBid) bool {
 // cegoValidBidVal bid が定義済みの入札値 (Pass 含む) か。
 func cegoValidBidVal(bid CegoBid) bool {
 	return bid >= CegoBidPass && bid <= CegoBidPlay
-}
-
-// cegoFilter 述語を満たすインデックスを抽出する。
-func cegoFilter(indices []int, pred func(int) bool) []int {
-	var out []int
-	for _, idx := range indices {
-		if pred(idx) {
-			out = append(out, idx)
-		}
-	}
-	return out
 }
 
 // --- State getters / setters ---

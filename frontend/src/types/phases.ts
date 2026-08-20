@@ -182,6 +182,33 @@ export const KlondikeScoringMode = {
   VEGAS: 1,
 } as const;
 
+/**
+ * Klondike Vegas scoring constants (sync: internal/domain/Klondike.go).
+ *
+ * `GetScore` computes `BUY_IN + PER_CARD * foundationCards`. A Go test asserts
+ * these numbers against the domain constants **and** against the wording in the
+ * locale files, so the formula shown on screen cannot drift from the one played.
+ */
+export const KlondikeVegas = {
+  BUY_IN: -52,
+  PER_CARD: 5,
+} as const;
+
+/**
+ * Gin Rummy CPU policy constants (sync: internal/domain/GinRummy.go).
+ *
+ * `cpuDiscardOrKnock` / `cpuDraw` branch on difficulty with these numbers. The
+ * settings panel quotes them, and a Go test asserts this object against the
+ * domain constants so the explanation cannot drift from the behaviour.
+ */
+export const GinRummyCpu = {
+  KNOCK_DEADWOOD_NORMAL: 7,
+  KNOCK_DEADWOOD_HARD: 5,
+  DISCARD_GAIN_NORMAL: 5,
+  EASY_PICK_ONE_IN: 3,
+  KNOCK_THRESHOLD: 10,
+} as const;
+
 /** Canfield phase constants (sync: internal/domain/Canfield.go). */
 export const CanfieldPhase = {
   PLAYING: 0,
@@ -2016,6 +2043,19 @@ export const ZwanzigerrufenPhase = {
   TRICK_END: 3,
   ROUND_END: 4,
   GAME_END: 5,
+} as const;
+
+/**
+ * Zwanzigerrufen bid constants (sync: internal/domain/Zwanzigerrufen.go).
+ *
+ * **Higher value wins**: the domain rejects any bid that does not exceed the
+ * current highest one, so the page uses these to gate the buttons.
+ */
+export const ZwanzigerrufenBid = {
+  PASS: 0,
+  TRISCHAKEN: 1,
+  RUFER: 2,
+  SOLO: 3,
 } as const;
 
 /** Troggu phase constants (sync: internal/domain/Troggu.go). */

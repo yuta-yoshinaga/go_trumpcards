@@ -58,12 +58,16 @@ func threeCardDispatch(bc *baseController, w http.ResponseWriter, ti usecase.Thr
 	case "b", "bet":
 		ppBet := deref(param.PairPlusBet)
 		bc.writePresenterResponse(w, ti.Bet(param.Amount, ppBet))
+	case "rb", "rebet":
+		// 直前と同じ額で賭け直す。金額はサーバが覚えているので、CLI は額を
+		// 送らなくてよい (#5513)。
+		bc.writePresenterResponse(w, ti.Rebet())
 	case "p", "play":
 		bc.writePresenterResponse(w, ti.Play())
 	case "f", "fold":
 		bc.writePresenterResponse(w, ti.Fold())
 	default:
-		return dispatchResetAndLog(param.Command, bc, w, ti.Reset, ti.ActionLog)
+		return dispatchResetHintAndLog(param.Command, bc, w, ti.Reset, ti.Hint, ti.ActionLog)
 	}
 	return true
 }

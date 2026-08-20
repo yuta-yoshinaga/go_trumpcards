@@ -65,12 +65,12 @@ func TestCalabresellaCuiController_Exec(t *testing.T) {
 
 	t.Run("bid no args", func(t *testing.T) {
 		result := controller.NewCalabresellaCuiController(newMock()).Exec("bid")
-		assert.Contains(t, result, "Bid action is required")
+		assert.Contains(t, result, msgStem("bidActionRequiredChiamo"))
 	})
 
 	t.Run("bid invalid", func(t *testing.T) {
 		result := controller.NewCalabresellaCuiController(newMock()).Exec("bid zzz")
-		assert.Contains(t, result, "Invalid bid action")
+		assert.Contains(t, result, msgStem("invalidBidActionChiamo"))
 	})
 
 	t.Run("discard card", func(t *testing.T) {
@@ -82,7 +82,7 @@ func TestCalabresellaCuiController_Exec(t *testing.T) {
 
 	t.Run("discard no args", func(t *testing.T) {
 		result := controller.NewCalabresellaCuiController(newMock()).Exec("discard")
-		assert.Contains(t, result, "Card index is required")
+		assert.Contains(t, result, msgCardIndexRequired())
 	})
 
 	t.Run("play card", func(t *testing.T) {
@@ -94,7 +94,7 @@ func TestCalabresellaCuiController_Exec(t *testing.T) {
 
 	t.Run("play no args", func(t *testing.T) {
 		result := controller.NewCalabresellaCuiController(newMock()).Exec("play")
-		assert.Contains(t, result, "Card index is required")
+		assert.Contains(t, result, msgCardIndexRequired())
 	})
 
 	t.Run("next / nextround", func(t *testing.T) {
@@ -117,7 +117,7 @@ func TestCalabresellaCuiController_Exec(t *testing.T) {
 
 	t.Run("setdifficulty invalid", func(t *testing.T) {
 		result := controller.NewCalabresellaCuiController(newMock()).Exec("sd 9")
-		assert.Contains(t, result, "Invalid CPU difficulty")
+		assert.Contains(t, result, msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("hint / log", func(t *testing.T) {

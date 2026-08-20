@@ -24,6 +24,13 @@ func (cp *CaribbeanStudCuiPresenter) Output(cs interfaces.CaribbeanStudGame, las
 	sb.WriteString(i18n.Tf("caribbeanstud.chipsLine", "chips", strconv.Itoa(cs.GetChips())) + "\n")
 	sb.WriteString(i18n.Tf("caribbeanstud.phaseLine", "phase", cp.phaseStr(cs.GetPhase())) + "\n")
 
+	// ジャックポットは任意の追加ベット。Web には常設の説明があるのに CUI には
+	// 一言も無く、"b <ante> <jackpot>" で実チップを賭けさせていた (#5528)。
+	// 賭け終わった後は出さない -- もう選べないものの説明は場所を取るだけ。
+	if cs.GetPhase() == domain.CaribbeanStudPhaseBet {
+		sb.WriteString(i18n.T("caribbeanstud.jackpotHelp") + "\n")
+	}
+
 	playerHand := cs.GetPlayerHand()
 	if len(playerHand) > 0 {
 		sb.WriteString("--- " + color.Bold(i18n.T("caribbeanstud.playerHeader")) + " ---\n")
@@ -73,7 +80,7 @@ func (cp *CaribbeanStudCuiPresenter) Output(cs interfaces.CaribbeanStudGame, las
 	sb.WriteString("----------\n")
 
 	if lastErr != nil {
-		sb.WriteString(color.Red(lastErr.Error()) + "\n")
+		sb.WriteString(i18n.MarkErrorLine(color.Red(lastErr.Error())) + "\n")
 	}
 
 	if cs.GetGameEndFlag() {

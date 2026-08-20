@@ -10,6 +10,9 @@
   "promptPlay": "Turn: {{name}}",
   "promptPlayHelp": "play <idx> ... play a card (10=Manille is strongest, A=Manillon next; must follow suit)",
   "promptTrickEnd": "Trick complete",
+  "trickWinner": "{{name}} ({{team}}) takes the trick",
+  "teamA": "Team A",
+  "teamB": "Team B",
   "promptTrickEndHelp": "n / next ... go to the next trick",
   "promptRoundEnd": "Round complete (Team A: {{ptsA}} card pts, Team B: {{ptsB}} card pts)",
   "promptRoundEndHelp": "nr / nextround ... go to the next round",
@@ -19,5 +22,8 @@
   "hintReasonFollowWin": "Points on the table — win the trick",
   "hintReasonFollowDuck": "Cannot/should not win — duck",
   "hintReasonDiscardLow": "Cannot follow suit — discard a low card",
-  "rankHelp": "Rank order: 10 > A > K > Q > J > 9 > 8 > 7 (points: 10=5, A=4, K=3, Q=2, J=1)"
+  "rankHelp": "Rank order: 10 > A > K > Q > J > 9 > 8 > 7 (points: 10=5, A=4, K=3, Q=2, J=1)",
+  "helpExamplePlay": "  play 0                   play hand card 0",
+  "helpExampleNext": "  n                        read the trick result, then start the next trick",
+  "helpHint": "  h                         show a hint"
 }

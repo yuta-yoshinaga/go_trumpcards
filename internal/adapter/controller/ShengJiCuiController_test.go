@@ -48,10 +48,10 @@ func TestShengJiCuiController_Exec(t *testing.T) {
 
 	t.Run("declare rejects bad input", func(t *testing.T) {
 		c := controller.NewShengJiCuiController(newMock())
-		assert.Contains(t, c.Exec("d"), "Suit is required")
-		assert.Contains(t, c.Exec("d abc"), "Invalid suit")
-		assert.Contains(t, c.Exec("d 5"), "Invalid suit")
-		assert.Contains(t, c.Exec("d -1"), "Invalid suit")
+		assert.Contains(t, c.Exec("d"), msgStem("suitRequiredOrPass"))
+		assert.Contains(t, c.Exec("d abc"), msgStem("invalidSuit"))
+		assert.Contains(t, c.Exec("d 5"), msgStem("invalidSuit"))
+		assert.Contains(t, c.Exec("d -1"), msgStem("invalidSuit"))
 	})
 
 	// **底牌はちょうど 8 枚。**
@@ -62,9 +62,9 @@ func TestShengJiCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "BuryKitty", []int{0, 1, 2, 3, 4, 5, 6, 7})
 		// **底牌を拾った直後は 25 + 8 枚**あるので、埋め戻しの上限は広い。
 		assert.Equal(t, mockOutput, c.Exec("b 25 26 27 28 29 30 31 32"))
-		assert.Contains(t, c.Exec("b 33 0 1 2 3 4 5 6"), "Invalid card index")
-		assert.Contains(t, c.Exec("b 0 1"), "exactly 8")
-		assert.Contains(t, c.Exec("b"), "Card indexes are required")
+		assert.Contains(t, c.Exec("b 33 0 1 2 3 4 5 6"), msgInvalidCardIndexPrefix())
+		assert.Contains(t, c.Exec("b 0 1"), msgKey("giveExactlyNIndexes", "n", "8"))
+		assert.Contains(t, c.Exec("b"), msgStem("cardIndexesRequiredPair"))
 	})
 
 	t.Run("plays any number of cards", func(t *testing.T) {
@@ -78,12 +78,12 @@ func TestShengJiCuiController_Exec(t *testing.T) {
 
 	t.Run("play rejects bad input", func(t *testing.T) {
 		c := controller.NewShengJiCuiController(newMock())
-		assert.Contains(t, c.Exec("p"), "Card indexes are required")
-		assert.Contains(t, c.Exec("p abc"), "Invalid card index")
-		assert.Contains(t, c.Exec("p -1"), "Invalid card index")
-		assert.Contains(t, c.Exec("p 99"), "Invalid card index")
+		assert.Contains(t, c.Exec("p"), msgStem("cardIndexesRequiredPair"))
+		assert.Contains(t, c.Exec("p abc"), msgInvalidCardIndexPrefix())
+		assert.Contains(t, c.Exec("p -1"), msgInvalidCardIndexPrefix())
+		assert.Contains(t, c.Exec("p 99"), msgInvalidCardIndexPrefix())
 		// **プレイ中の手札は 25 枚。**底牌を拾った直後の上限 (32) を使い回すと緩い。
-		assert.Contains(t, c.Exec("p 25"), "Invalid card index")
+		assert.Contains(t, c.Exec("p 25"), msgInvalidCardIndexPrefix())
 		assert.Equal(t, mockOutput, c.Exec("p 24"))
 		// **同じ札を 2 回数えられない。**通すと 1 枚から対子が作れてしまう。
 		assert.Contains(t, c.Exec("p 1 1"), "twice")

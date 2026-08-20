@@ -82,6 +82,110 @@ function jokerPokerRowKey(cards: readonly Card[], rank: number, usedWilds: boole
   }
 }
 
+/** Jack rank value — the Jacks-or-Better pay minimum. */
+const JACK = 11;
+
+/** Deuce rank value — wild in Deuces Wild. */
+const DEUCE = 2;
+
+/**
+ * Evaluate the five current cards for any video-poker variant.
+ *
+ * Jacks or Better has no wild card, so the same evaluator applies with the
+ * substitution loop finding nothing to substitute; only the pay minimum and the
+ * royal row key differ. The readout was gated on `jokerpoker` and therefore
+ * never appeared on the variant that needs it most — the one where the player
+ * has no wild to bail them out (#5506).
+ *
+ * @param variant - Which paytable to map the rank onto.
+ * @param cards - The five cards currently on the table.
+ * @returns The made hand, or null for any non-5-card input.
+ */
+export function evaluateVideoPokerMadeHand(
+  variant: 'videopoker' | 'deuceswild' | 'jokerpoker',
+  cards: readonly Card[],
+): JokerPokerMadeHand | null {
+  if (cards.length !== 5) return null;
+  if (variant === 'jokerpoker') return evaluateJokerPokerMadeHand(cards);
+  if (variant === 'deuceswild') {
+    const { rank, usedWilds } = evalWildHand(cards, isDeuce);
+    return { rowKey: deucesWildRowKey(cards, rank, usedWilds) };
+  }
+  const { rank } = evalWildHand(cards, () => false);
+  return { rowKey: jacksOrBetterRowKey(cards, rank) };
+}
+
+/** Deuces Wild treats every two as wild. */
+function isDeuce(card: Card): boolean {
+  return card.value === DEUCE;
+}
+
+/** Map a rank + wild usage to the Deuces Wild paytable row key (null when it pays nothing). */
+function deucesWildRowKey(cards: readonly Card[], rank: number, usedWilds: boolean): string | null {
+  // **四枚の2はランクより先に見る。** evalWildHand はワイルド4枚を必ず
+  // Five of a Kind に落とすので、順番を逆にすると専用の行に辿り着けない。
+  if (cards.filter(isDeuce).length === 4) return 'fourDeuces';
+  if (rank === ROYAL_FLUSH) return usedWilds ? 'wildRoyalFlush' : 'naturalRoyalFlush';
+  switch (rank) {
+    case FIVE_OF_A_KIND:
+      return 'fiveOfAKind';
+    case STRAIGHT_FLUSH:
+      return 'straightFlush';
+    case FOUR_OF_A_KIND:
+      return 'fourOfAKind';
+    case FULL_HOUSE:
+      return 'fullHouse';
+    case FLUSH:
+      return 'flush';
+    case STRAIGHT:
+      return 'straight';
+    case THREE_OF_A_KIND:
+      // 配当の下限。ツーペア以下は払わない。
+      return 'threeOfAKind';
+    default:
+      return null;
+  }
+}
+
+/** Map a rank to the Jacks or Better paytable row key (or null if it pays nothing). */
+function jacksOrBetterRowKey(cards: readonly Card[], rank: number): string | null {
+  switch (rank) {
+    case ROYAL_FLUSH:
+      // ワイルドが無いので natural/wild に分かれない。配当表の行も1本。
+      return 'royalFlush';
+    case STRAIGHT_FLUSH:
+      return 'straightFlush';
+    case FOUR_OF_A_KIND:
+      return 'fourOfAKind';
+    case FULL_HOUSE:
+      return 'fullHouse';
+    case FLUSH:
+      return 'flush';
+    case STRAIGHT:
+      return 'straight';
+    case THREE_OF_A_KIND:
+      return 'threeOfAKind';
+    case TWO_PAIR:
+      return 'twoPair';
+    case ONE_PAIR:
+      return isJacksOrBetter(cards) ? 'jacksOrBetter' : null;
+    default:
+      return null;
+  }
+}
+
+/** Whether the pair is jacks or higher (ace counts high) — the Jacks or Better minimum. */
+function isJacksOrBetter(cards: readonly Card[]): boolean {
+  const counts = new Map<number, number>();
+  for (const c of cards) {
+    counts.set(c.value, (counts.get(c.value) ?? 0) + 1);
+  }
+  for (const [value, count] of counts) {
+    if (count >= 2 && (value === ACE || value >= JACK)) return true;
+  }
+  return false;
+}
+
 /** Whether the (non-joker) pair is aces or kings — the Joker Poker pay minimum. */
 function isKingsOrBetter(cards: readonly Card[]): boolean {
   const counts = new Map<number, number>();
@@ -100,8 +204,11 @@ function isKingsOrBetter(cards: readonly Card[]): boolean {
  * and whether any wild was used to form it. Substitutes each Joker with all 52
  * standard cards and keeps the best rank (mirrors the Go `evalWildHand`).
  */
-function evalWildHand(cards: readonly Card[]): { rank: number; usedWilds: boolean } {
-  const nonWilds = cards.filter((c) => c.design !== 'JOKER');
+function evalWildHand(
+  cards: readonly Card[],
+  isWild: (card: Card) => boolean = (c) => c.design === 'JOKER',
+): { rank: number; usedWilds: boolean } {
+  const nonWilds = cards.filter((c) => !isWild(c));
   const numWilds = cards.length - nonWilds.length;
 
   if (numWilds === 0) return { rank: evalFiveCardHand(cards), usedWilds: false };

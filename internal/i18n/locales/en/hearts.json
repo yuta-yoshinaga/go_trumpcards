@@ -29,5 +29,8 @@
   "hintCard": "[HINT: {{cards}} ({{reason}})]",
   "hintReasonPassHighRisk": "pass high-risk cards",
   "hintReasonDiscardQueenSpades": "discard the Q♠",
-  "hintReasonDiscardHearts": "discard hearts"
+  "hintReasonDiscardHearts": "discard hearts",
+  "helpExamplePass": "  pass 0 3 7           pass hand cards 0, 3 and 7",
+  "helpExamplePlay": "  p 0                  play hand card 0",
+  "helpHint": "  h                    show a hint"
 }

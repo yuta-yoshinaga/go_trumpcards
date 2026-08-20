@@ -26,6 +26,18 @@ func (p *BourreCuiPresenter) Output(bg interfaces.BourreGame, lastErr error) str
 		if bg.GetCarryPot() > 0 {
 			fmt.Fprintf(b, " (+%d %s)", bg.GetCarryPot(), i18n.T("bourre.carryPot"))
 		}
+		// **参加の代償が画面のどこにも出ていなかった** (#5637)。0 トリックで
+		// 「ブーレ」となり、domain は min(ポット, 手持ち) を罰金として取る。
+		// 繰越ポットは配り直しの時点で pot に畳み込まれている (Bourre.nextHand)
+		// ので、ここで足すと二重に数える。
+		if phase == domain.BourrePhaseDecide && bg.IsHumanTurn() {
+			penalty := bg.GetPot()
+			if human := bg.GetPlayer(bg.GetCurrentPlayerIdx()); human != nil {
+				penalty = min(penalty, human.GetChips())
+			}
+			b.WriteString("\n" + color.Yellow(i18n.Tf("bourre.decidePenalty",
+				"penalty", strconv.Itoa(penalty))))
+		}
 		b.WriteString("\n----------\n")
 
 		for idx := 0; idx < bg.GetPlayerCnt(); idx++ {
@@ -66,7 +78,7 @@ func (p *BourreCuiPresenter) Output(bg interfaces.BourreGame, lastErr error) str
 
 // ActionLogOutput 棋譜をCUI出力
 func (p *BourreCuiPresenter) ActionLogOutput(bg interfaces.BourreGame) string {
-	return actionLogOutputText(bg)
+	return actionLogOutputTextForSeats[*domain.BourrePlayer](bg)
 }
 
 func bourrePlayerStr(bg interfaces.BourreGame, player *domain.BourrePlayer, idx int) string {

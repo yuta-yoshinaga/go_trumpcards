@@ -25,6 +25,10 @@
   "promptPlay": "手番: {{name}}",
   "promptPlayHelp": "p <i> ・・・手札 i を出す（追随・切札・上乗せは強制です）",
   "beteLine": "宣言側が相手を上回れず、ベート。得点は全部相手のものになります",
+  "sequenceWinner": "シーケンス役: {{name}} が総取り",
+  "sequenceNobody": "シーケンス役: 引き分けでどちらも得点なし",
+  "belaLine": "ベラ成立: {{name}}（+20）",
+  "dixLine": "切札の7を表向きカードと交換しました",
   "promptHandEndHelp": "n / next ・・・次のディールへ",
   "bidTurnUp": "ビッド（表向きのスート）",
   "bidFree": "ビッド（好きなスート）",
@@ -34,5 +38,6 @@
   "bete": "ベート：宣言側が相手を上回れませんでした",
   "result.humanWin": "ゲーム終了！ あなたの勝ち！",
   "result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
-  "lastTrickBonus": "最終トリック: {{name}} に +{{points}}点"
+  "lastTrickBonus": "最終トリック: {{name}} に +{{points}}点",
+  "helpExamplePlay": "  p 0                       手札の 0 番のカードを出す"
 }

@@ -23,5 +23,8 @@
   "srcOppReserve": "opponent reserve",
   "srcWaste": "your waste",
   "srcOppWaste": "opponent waste",
-  "srcTableau": "tableau {{col}}"
+  "srcTableau": "tableau {{col}}",
+  "helpExampleDiscard": "  d                    discard one card and end the turn",
+  "helpHint": "  h                    show a hint",
+  "helpLog": "  l                    show the action log"
 }

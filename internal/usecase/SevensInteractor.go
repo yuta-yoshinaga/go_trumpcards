@@ -85,7 +85,10 @@ func (si *SevensInteractor) ActionLog() string {
 // runCpuTurns ゲームが終わるか人間の手番になるまでCPUターンを実行
 // 人間の手番になった場合でも選択肢がなければ自動処理する
 func (si *SevensInteractor) runCpuTurns() {
-	for !si.Game.GetGameEndFlag() {
+	for i := 0; i < MaxCpuIterations; i++ {
+		if si.Game.GetGameEndFlag() {
+			return
+		}
 		if si.Game.IsHumanTurn() {
 			// 人間に選択肢がなければ自動処理 (失格)
 			if !si.Game.HasAnyOption(si.Game.GetCurrentTurn()) {

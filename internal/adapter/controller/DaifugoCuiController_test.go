@@ -130,13 +130,14 @@ func TestDaifugoCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "Sort", domain.DaifugoSortByStrength)
 	})
 
-	t.Run("play command ignores non-numeric index with warning", func(t *testing.T) {
+	// **打ち間違いを捨てて残りで出さない。** 3 枚のつもりが 2 枚として通ると、
+	// 単札とペアのように別の合法手になってしまう (issue #5390)。
+	t.Run("play command refuses a non-numeric index", func(t *testing.T) {
 		m := newMock()
 		c := controller.NewDaifugoCuiController(m)
 		result := c.Exec("p 0 abc 2")
-		assert.Contains(t, result, "'abc'")
-		assert.Contains(t, result, mockOutput)
-		m.AssertCalled(t, "Play", []int{0, 2})
+		assert.Contains(t, result, "abc")
+		m.AssertNotCalled(t, "Play", mock.Anything)
 	})
 
 	t.Run("play command no warning when all valid", func(t *testing.T) {
@@ -173,17 +174,17 @@ func TestDaifugoCuiController_SetDifficulty_LongCommand(t *testing.T) {
 func TestDaifugoCuiController_SetDifficulty_NoArgs(t *testing.T) {
 	mi := new(mockUsecases.MockDaifugoInteractor)
 	c := controller.NewDaifugoCuiController(mi)
-	assert.Contains(t, c.Exec("sd"), "CPU difficulty is required")
+	assert.Contains(t, c.Exec("sd"), msgCpuDifficultyRequiredAlt())
 }
 
 func TestDaifugoCuiController_SetDifficulty_InvalidValue(t *testing.T) {
 	mi := new(mockUsecases.MockDaifugoInteractor)
 	c := controller.NewDaifugoCuiController(mi)
 	// non-numeric: controller catches
-	assert.Contains(t, c.Exec("sd abc"), "Invalid CPU difficulty: abc")
+	assert.Contains(t, c.Exec("sd abc"), msgInvalidCpuDifficultyPrefix())
 	// numeric out-of-range: controller catches via ParseIntArg bounds
-	assert.Equal(t, "Invalid CPU difficulty: 3. Please enter 0-2.", c.Exec("sd 3"))
-	assert.Equal(t, "Invalid CPU difficulty: -1. Please enter 0-2.", c.Exec("sd -1"))
+	assert.Equal(t, msgInvalidCpuDifficulty("3"), c.Exec("sd 3"))
+	assert.Equal(t, msgInvalidCpuDifficulty("-1"), c.Exec("sd -1"))
 }
 
 // --- setjoker ---
@@ -211,17 +212,17 @@ func TestDaifugoCuiController_SetJoker_LongCommand(t *testing.T) {
 func TestDaifugoCuiController_SetJoker_NoArgs(t *testing.T) {
 	mi := new(mockUsecases.MockDaifugoInteractor)
 	c := controller.NewDaifugoCuiController(mi)
-	assert.Contains(t, c.Exec("sj"), "Joker count is required")
+	assert.Contains(t, c.Exec("sj"), msgStem("jokerCountRequired02"))
 }
 
 func TestDaifugoCuiController_SetJoker_InvalidValue(t *testing.T) {
 	mi := new(mockUsecases.MockDaifugoInteractor)
 	c := controller.NewDaifugoCuiController(mi)
 	// non-numeric: controller catches
-	assert.Contains(t, c.Exec("sj abc"), "Invalid joker count: abc")
+	assert.Contains(t, c.Exec("sj abc"), msgKey("invalidJokerCount02", "val", "abc"))
 	// numeric out-of-range: controller catches via ParseIntArg bounds
-	assert.Equal(t, "Invalid joker count: 3. Please enter 0-2.", c.Exec("sj 3"))
-	assert.Equal(t, "Invalid joker count: -1. Please enter 0-2.", c.Exec("sj -1"))
+	assert.Equal(t, msgKey("invalidJokerCount02", "val", "3"), c.Exec("sj 3"))
+	assert.Equal(t, msgKey("invalidJokerCount02", "val", "-1"), c.Exec("sj -1"))
 }
 
 // --- setrule ---
@@ -250,7 +251,7 @@ func TestDaifugoCuiController_SetRule_NoArgs(t *testing.T) {
 	mi := new(mockUsecases.MockDaifugoInteractor)
 	c := controller.NewDaifugoCuiController(mi)
 	result := c.Exec("sr")
-	assert.Contains(t, result, "Usage: sr <rule> <0|1> | sr list")
+	assert.Contains(t, result, msgStem("usageSrRuleDaifugo"))
 	assert.Contains(t, result, "8cut")
 }
 
@@ -278,21 +279,21 @@ func TestDaifugoCuiController_SetRule_List_LongCommand(t *testing.T) {
 func TestDaifugoCuiController_SetRule_OneArg(t *testing.T) {
 	mi := new(mockUsecases.MockDaifugoInteractor)
 	c := controller.NewDaifugoCuiController(mi)
-	assert.Contains(t, c.Exec("sr 8cut"), "Usage: sr <rule> <0|1> | sr list")
+	assert.Contains(t, c.Exec("sr 8cut"), msgStem("usageSrRuleDaifugo"))
 }
 
 func TestDaifugoCuiController_SetRule_UnknownRule(t *testing.T) {
 	mi := new(mockUsecases.MockDaifugoInteractor)
 	c := controller.NewDaifugoCuiController(mi)
-	assert.Contains(t, c.Exec("sr unknown 1"), "Unknown rule: unknown")
+	assert.Contains(t, c.Exec("sr unknown 1"), msgKey("unknownRule", "val", "unknown"))
 }
 
 func TestDaifugoCuiController_SetRule_InvalidValue(t *testing.T) {
 	mi := new(mockUsecases.MockDaifugoInteractor)
 	c := controller.NewDaifugoCuiController(mi)
-	assert.Contains(t, c.Exec("sr 8cut 2"), "Invalid value: 2")
-	assert.Contains(t, c.Exec("sr 8cut abc"), "Invalid value: abc")
-	assert.Contains(t, c.Exec("sr 8cut -1"), "Invalid value: -1")
+	assert.Contains(t, c.Exec("sr 8cut 2"), msgKey("invalidValue0Or1Raw", "val", "2"))
+	assert.Contains(t, c.Exec("sr 8cut abc"), msgKey("invalidValue0Or1Raw", "val", "abc"))
+	assert.Contains(t, c.Exec("sr 8cut -1"), msgKey("invalidValue0Or1Raw", "val", "-1"))
 }
 
 func TestDaifugoCuiController_SetRule_AllKeys(t *testing.T) {
@@ -362,17 +363,17 @@ func TestDaifugoCuiController_SuitLockMode_Valid(t *testing.T) {
 func TestDaifugoCuiController_SuitLockMode_NoArgs(t *testing.T) {
 	mi := new(mockUsecases.MockDaifugoInteractor)
 	c := controller.NewDaifugoCuiController(mi)
-	assert.Contains(t, c.Exec("suitlockmode"), "Suit lock mode is required")
+	assert.Contains(t, c.Exec("suitlockmode"), msgStem("suitLockModeRequired"))
 }
 
 func TestDaifugoCuiController_SuitLockMode_InvalidValue(t *testing.T) {
 	mi := new(mockUsecases.MockDaifugoInteractor)
 	c := controller.NewDaifugoCuiController(mi)
 	// non-numeric: controller catches
-	assert.Contains(t, c.Exec("suitlockmode abc"), "Invalid suit lock mode: abc")
+	assert.Contains(t, c.Exec("suitlockmode abc"), msgKey("invalidSuitLockMode", "val", "abc"))
 	// numeric out-of-range: controller catches via ParseIntArg bounds
-	assert.Equal(t, "Invalid suit lock mode: 3. Please enter 0-2.", c.Exec("suitlockmode 3"))
-	assert.Equal(t, "Invalid suit lock mode: -1. Please enter 0-2.", c.Exec("suitlockmode -1"))
+	assert.Equal(t, msgKey("invalidSuitLockMode", "val", "3"), c.Exec("suitlockmode 3"))
+	assert.Equal(t, msgKey("invalidSuitLockMode", "val", "-1"), c.Exec("suitlockmode -1"))
 }
 
 // --- 5skipcount ---
@@ -390,15 +391,15 @@ func TestDaifugoCuiController_FiveSkipCount_Valid(t *testing.T) {
 func TestDaifugoCuiController_FiveSkipCount_NoArgs(t *testing.T) {
 	mi := new(mockUsecases.MockDaifugoInteractor)
 	c := controller.NewDaifugoCuiController(mi)
-	assert.Contains(t, c.Exec("5skipcount"), "Five skip count is required")
+	assert.Contains(t, c.Exec("5skipcount"), msgStem("fiveSkipCountRequired15"))
 }
 
 func TestDaifugoCuiController_FiveSkipCount_InvalidValue(t *testing.T) {
 	mi := new(mockUsecases.MockDaifugoInteractor)
 	c := controller.NewDaifugoCuiController(mi)
 	// non-numeric: controller catches
-	assert.Contains(t, c.Exec("5skipcount abc"), "Invalid five skip count: abc")
+	assert.Contains(t, c.Exec("5skipcount abc"), msgKey("invalidFiveSkipCount15", "val", "abc"))
 	// numeric out-of-range: controller catches via ParseIntArg bounds
-	assert.Equal(t, "Invalid five skip count: 0. Please enter 1-5.", c.Exec("5skipcount 0"))
-	assert.Equal(t, "Invalid five skip count: 6. Please enter 1-5.", c.Exec("5skipcount 6"))
+	assert.Equal(t, msgKey("invalidFiveSkipCount15", "val", "0"), c.Exec("5skipcount 0"))
+	assert.Equal(t, msgKey("invalidFiveSkipCount15", "val", "6"), c.Exec("5skipcount 6"))
 }

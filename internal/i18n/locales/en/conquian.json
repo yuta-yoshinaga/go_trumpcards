@@ -11,6 +11,8 @@
   "discardLine": "Discard: {{card}}",
   "playerLine": "{{name}}: wins {{wins}} hand {{cards}}",
   "meldLine": "  meld: {{cards}}",
+  "meldProgress": "Melded {{count}}/{{total}}",
+  "meldRemaining": "{{count}} to go",
   "gameEnd": "Game over! {{name}} wins!",
   "drawBanner": "Game over! It's a draw (stock exhausted)",
   "draw": "It's a draw (stock exhausted)",
@@ -27,5 +29,7 @@
   "promptRoundEnd": "Round complete",
   "promptRoundEndHelp": "nr / nextround: advance to next round",
   "result.humanWin": "Game over! You win!",
-  "result.cpuWin": "Game over! CPU {{cpuId}} wins!"
+  "result.cpuWin": "Game over! CPU {{cpuId}} wins!",
+  "helpExampleDraw": "  ds                   start the turn by drawing from the stock",
+  "helpExampleDiscard": "  d 0                  discard hand card 0"
 }

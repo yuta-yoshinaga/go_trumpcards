@@ -119,7 +119,7 @@ func (p *CrazyEightsCuiPresenter) Output(g interfaces.CrazyEightsGame, lastErr e
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *CrazyEightsCuiPresenter) ActionLogOutput(g interfaces.CrazyEightsGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.CrazyEightsPlayer](g)
 }
 
 // suitDisplayName returns the suit display string.

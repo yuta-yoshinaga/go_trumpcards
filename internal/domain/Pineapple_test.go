@@ -738,3 +738,138 @@ func TestPineapple_GetHumanDiscardPairPreviews(t *testing.T) {
 		assert.Nil(t, p.GetHumanDiscardPairPreviews())
 	})
 }
+
+// #5489: Crazy Pineapple はフロップのベッティングが終わってから1枚捨てるので、
+// ベッティング中の手はまだ3枚ある。GetEquity はその3枚をそのまま CalcEquity に
+// 渡していて、内部の evalBestFromSeven は3枚全部を自由に組み合わせて最善役を
+// 探す。**実際には2枚しか残せないのに3枚分の勝率が出る。**しかもその誤差が
+// 乗るのは、まさにベット判断の要であるフロップのベッティング中。
+//
+// 選ぶ側のロジックはここで決定的に検査する。勝率そのものはモンテカルロなので、
+// **2つの推定値を細かい差で比べるテストは配りでなく乱数で落ちる。**
+func TestPineapple_bestKeepAfterDiscard(t *testing.T) {
+	board := []*Card{
+		NewCard(CardDesignHeart, 2, false),
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignDiamond, 13, false),
+	}
+	withBoard := func() *Pineapple {
+		p := newTestPineapple()
+		p.communityCards = board
+		return p
+	}
+
+	t.Run("keeps the two cards that make the strongest hand", func(t *testing.T) {
+		p := withBoard()
+		hole := []*Card{
+			NewCard(CardDesignHeart, 4, false),    // ♥4: フラッシュ/ストレートドロー
+			NewCard(CardDesignHeart, 5, false),    // ♥5: 同上
+			NewCard(CardDesignDiamond, 13, false), // ♦K: ボードの K とペア
+		}
+		keep := p.bestKeepAfterDiscard(hole)
+		assert.Len(t, keep, 2, "捨てたあとに残るのは2枚")
+		// ペアが立つ組み合わせが最強なので ♦K は残る。
+		assert.Contains(t, keep, hole[2])
+	})
+
+	// **既に2枚ならそのまま。**捨て終わったあとに呼ばれても札を落とさない。
+	t.Run("leaves a two-card hand untouched", func(t *testing.T) {
+		hole := []*Card{NewCard(CardDesignSpade, 14, false), NewCard(CardDesignSpade, 13, false)}
+		assert.Equal(t, hole, withBoard().bestKeepAfterDiscard(hole))
+	})
+
+	// Irish Poker は4枚配って2枚捨てる。同じ経路で2枚に絞られる。
+	t.Run("reduces an Irish Poker hand from four to two", func(t *testing.T) {
+		hole := []*Card{
+			NewCard(CardDesignSpade, 7, false), NewCard(CardDesignClover, 8, false),
+			NewCard(CardDesignDiamond, 13, false), NewCard(CardDesignSpade, 13, false),
+		}
+		keep := withBoard().bestKeepAfterDiscard(hole)
+		assert.Len(t, keep, 2)
+		// K が2枚あればボードの K と合わせてスリーカード。両方残るのが最強。
+		assert.Contains(t, keep, hole[2])
+		assert.Contains(t, keep, hole[3])
+	})
+}
+
+// 統合側は「水増しが消えたか」だけを見る。**24.8 ポイントの誤差に対して
+// 10 ポイントの余裕**なので、モンテカルロの揺れ (σ≒1.1 ポイント) では落ちない。
+func TestPineapple_GetEquityDoesNotCountUndiscardedCards(t *testing.T) {
+	board := []*Card{
+		NewCard(CardDesignHeart, 2, false),
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignDiamond, 13, false),
+	}
+	fixture := func(hole []*Card) *Pineapple {
+		p := newTestPineapple()
+		p.discardAfterFlopBetting = true
+		p.phase = PineapplePhaseFlop
+		p.communityCards = board
+		p.players[0].Reset()
+		for _, c := range hole {
+			p.players[0].AddCard(c)
+		}
+		for i := 1; i < len(p.players); i++ {
+			p.players[i].Reset()
+			p.players[i].AddCard(NewCard(CardDesignClover, 3, false))
+			p.players[i].AddCard(NewCard(CardDesignClover, 8, false))
+		}
+		return p
+	}
+
+	three := []*Card{
+		NewCard(CardDesignHeart, 4, false),
+		NewCard(CardDesignHeart, 5, false),
+		NewCard(CardDesignDiamond, 13, false),
+	}
+	got := fixture(three).GetEquity()
+	require.NotNil(t, got)
+
+	best := 0.0
+	for k := 0; k < 3; k++ {
+		keep := make([]*Card, 0, 2)
+		for i, c := range three {
+			if i != k {
+				keep = append(keep, c)
+			}
+		}
+		e := fixture(keep).GetEquity()
+		require.NotNil(t, e)
+		if e.Equity > best {
+			best = e.Equity
+		}
+	}
+	// 修正前はこの配りで 79.1% (実際に残せる2枚の上限は 54.3%) が出ていた。
+	assert.LessOrEqual(t, got.Equity, best+0.10,
+		"3枚分の組み合わせで計算すると、実際に残せる2枚のどれよりも高い勝率が出る")
+}
+
+// 通常の Pineapple もフロップ前に捨てるだけで、プリフロップのベッティング中は
+// 3枚持っている。**起票時の受け入れ条件は「通常版には影響しない」と書いていたが、
+// 通常版にも同じ水増しがある。**枚数だけを見て絞るので両方直る。
+func TestPineapple_GetEquityWorksForThePlainVariant(t *testing.T) {
+	p := newTestPineapple() // discardAfterFlopBetting = false
+	p.phase = PineapplePhasePreFlop
+	p.players[0].Reset()
+	for _, c := range []*Card{
+		NewCard(CardDesignSpade, 14, false),
+		NewCard(CardDesignSpade, 13, false),
+		NewCard(CardDesignHeart, 14, false),
+	} {
+		p.players[0].AddCard(c)
+	}
+	for i := 1; i < len(p.players); i++ {
+		p.players[i].Reset()
+		p.players[i].AddCard(NewCard(CardDesignClover, 3, false))
+		p.players[i].AddCard(NewCard(CardDesignClover, 4, false))
+	}
+	eq := p.GetEquity()
+	require.NotNil(t, eq)
+	assert.Greater(t, eq.Equity, 0.0)
+	// プリフロップでも3枚のままでは計算しない。
+	assert.Len(t, p.bestKeepAfterDiscard([]*Card{
+		NewCard(CardDesignSpade, 14, false),
+		NewCard(CardDesignSpade, 13, false),
+		NewCard(CardDesignHeart, 14, false),
+	}), 2)
+}

@@ -35,5 +35,6 @@
   "showLabelCrib": "Crib",
   "showDetailLine": "  {{label}}: {{total}} points (15s={{fifteens}}, pairs={{pairs}}, runs={{runs}}, flush={{flush}}, nobs={{nobs}})",
   "hintDiscard": "Hint: discarding indices {{i}} and {{j}} to the crib is recommended.",
-  "hintPlay": "Hint: playing the card at index {{i}} is recommended."
+  "hintPlay": "Hint: playing the card at index {{i}} is recommended.",
+  "helpExampleDiscard": "  d 0                  put hand card 0 into the crib"
 }

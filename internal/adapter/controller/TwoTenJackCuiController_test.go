@@ -54,18 +54,18 @@ func TestTwoTenJackCuiController_Exec(t *testing.T) {
 
 	t.Run("declare missing arg", func(t *testing.T) {
 		c := controller.NewTwoTenJackCuiController(newMock())
-		assert.Contains(t, c.Exec("d"), "Trump suit is required")
+		assert.Contains(t, c.Exec("d"), msgStem("trumpSuitRequiredLetters"))
 	})
 
 	t.Run("declare invalid arg", func(t *testing.T) {
 		c := controller.NewTwoTenJackCuiController(newMock())
-		assert.Contains(t, c.Exec("d abc"), "Invalid trump suit")
+		assert.Contains(t, c.Exec("d abc"), msgStem("invalidTrumpSuit"))
 	})
 
 	t.Run("declare out of range", func(t *testing.T) {
 		c := controller.NewTwoTenJackCuiController(newMock())
-		assert.Contains(t, c.Exec("d 0"), "Invalid trump suit")
-		assert.Contains(t, c.Exec("d 5"), "Invalid trump suit")
+		assert.Contains(t, c.Exec("d 0"), msgStem("invalidTrumpSuit"))
+		assert.Contains(t, c.Exec("d 5"), msgStem("invalidTrumpSuit"))
 	})
 
 	t.Run("play", func(t *testing.T) {
@@ -79,12 +79,12 @@ func TestTwoTenJackCuiController_Exec(t *testing.T) {
 
 	t.Run("play missing arg", func(t *testing.T) {
 		c := controller.NewTwoTenJackCuiController(newMock())
-		assert.Contains(t, c.Exec("p"), "Card index is required")
+		assert.Contains(t, c.Exec("p"), msgCardIndexRequired())
 	})
 
 	t.Run("play invalid arg", func(t *testing.T) {
 		c := controller.NewTwoTenJackCuiController(newMock())
-		assert.Contains(t, c.Exec("p abc"), "Invalid card index")
+		assert.Contains(t, c.Exec("p abc"), msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("next/nextround", func(t *testing.T) {
@@ -105,9 +105,9 @@ func TestTwoTenJackCuiController_Exec(t *testing.T) {
 		expected := domain.DefaultTwoTenJackConfig()
 		expected.CpuDifficulty = domain.TwoTenJackCpuDifficultyHard
 		m.AssertCalled(t, "ResetWithConfig", expected)
-		assert.Contains(t, c.Exec("sd"), "required")
-		assert.Contains(t, c.Exec("sd abc"), "Invalid CPU difficulty")
-		assert.Contains(t, c.Exec("sd 3"), "Invalid CPU difficulty")
+		assert.Contains(t, c.Exec("sd"), msgCpuDifficultyRequired())
+		assert.Contains(t, c.Exec("sd abc"), msgInvalidCpuDifficultyPrefix())
+		assert.Contains(t, c.Exec("sd 3"), msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("setlimit", func(t *testing.T) {
@@ -117,9 +117,9 @@ func TestTwoTenJackCuiController_Exec(t *testing.T) {
 		expected := domain.DefaultTwoTenJackConfig()
 		expected.PointLimit = 100
 		m.AssertCalled(t, "ResetWithConfig", expected)
-		assert.Contains(t, c.Exec("sl"), "required")
-		assert.Contains(t, c.Exec("sl abc"), "Invalid point limit")
-		assert.Contains(t, c.Exec("sl 0"), "Invalid point limit")
+		assert.Contains(t, c.Exec("sl"), msgPointLimitRequired())
+		assert.Contains(t, c.Exec("sl abc"), msgInvalidPointLimitPrefix())
+		assert.Contains(t, c.Exec("sl 0"), msgInvalidPointLimitPrefix())
 	})
 
 	t.Run("hint and log", func(t *testing.T) {

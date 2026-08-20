@@ -6,6 +6,7 @@
   "chipsLine": "chips: {{chips}}",
   "phaseLine": "phase: {{phase}}",
   "handLine": "hand: {{hand}}",
+  "currentHandLine": "current hand: {{hand}}",
   "anteLine": "ante: {{ante}}",
   "bonusLine": "AA bonus: {{bonus}}",
   "callBetLine": "call: {{call}}",
@@ -25,5 +26,7 @@
   "totalPayoutLine": "total payout: {{payout}}",
   "hintNone": "No hint available.",
   "hintCall": "Recommended: Call (2x ante) — a pair or better, or an Ace/King",
-  "hintFold": "Recommended: Fold — no qualifying hand"
+  "hintFold": "Recommended: Fold — no qualifying hand",
+  "helpExampleBet": "  b 100                bet 100 chips",
+  "helpHint": "  h                    show a hint"
 }

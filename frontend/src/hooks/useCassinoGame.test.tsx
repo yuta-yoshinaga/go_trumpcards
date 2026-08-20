@@ -47,7 +47,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 // Use renderWithProviders' Provider tree by wrapping a placeholder.
 // renderHook needs a wrapper element, so we forward the providers manually.
 import type { ReactNode } from 'react';
-import { MemoryRouter } from 'react-router';
+import { MemoryRouter } from 'react-router-dom';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 
 function Hookwrapper({ children }: { children: ReactNode }) {

@@ -5,6 +5,7 @@
   "helpSetMax": "  sm <n>               set MaxRounds (10-50000) and reset",
   "cpuStats": "CPU: deck {{draw}} / discard {{discard}} (total {{total}})",
   "humanStats": "You: deck {{draw}} / discard {{discard}} (total {{total}})",
+  "share": "Share: you {{you}}% / CPU {{cpu}}%",
   "boardLabel": "[Central Pile]",
   "boardPile": "Pile: {{count}} cards",
   "boardLastCard": "Last card: {{card}}",
@@ -15,5 +16,7 @@
   "gameWinHuman": "You win!",
   "gameWinCpu": "CPU wins...",
   "gameDraw": "It's a draw!",
-  "roundProgress": "Round {{played}} of {{max}} (a draw is called at the cap)"
+  "roundProgress": "Round {{played}} of {{max}} (a draw is called at the cap)",
+  "helpExampleStep": "  s                    turn the next card",
+  "helpLog": "  l                    show the action log"
 }

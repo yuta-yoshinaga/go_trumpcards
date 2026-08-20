@@ -47,19 +47,25 @@ func (c *BridgeCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bid":
-				return cuiutil.WithParsedInt(args, "Bid type is required (0=Pass, 1=Normal, 2=Double, 3=Redouble).", "Invalid bid type: %s.", 0, 3, func(bidType int) string {
-					bidLevel := cuiutil.ParseOptionalInt(args, 1, 0)
-					bidSuit := cuiutil.ParseOptionalInt(args, 2, 0)
+				return cuiutil.WithParsedIntKeys(args, "bidTypeRequired", "invalidBidType", 0, 3, func(bidType int) string {
+					bidLevel, errMsg, ok := cuiutil.ParseOptionalIntKeys(args, 1, 0, "invalidBidLevel")
+					if !ok {
+						return errMsg
+					}
+					bidSuit, errMsg, ok := cuiutil.ParseOptionalIntKeys(args, 2, 0, "invalidSuit")
+					if !ok {
+						return errMsg
+					}
 					return c.bi.Bid(bidType, bidLevel, bidSuit)
 				})
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.bi.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.bi.Play)
 			case "n", "next":
 				return c.bi.NextTrick(), true
 			case "nr", "nextround":
 				return c.bi.NextRound(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.bi.GetConfig()
 					cfg.CpuDifficulty = domain.BridgeCpuDifficulty(v)
 					return c.bi.ResetWithConfig(cfg)

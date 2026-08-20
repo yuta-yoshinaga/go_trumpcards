@@ -140,12 +140,7 @@ func (ci *SambaInteractor) GoOut() string {
 
 // NextRound 次のラウンドへ進む
 func (ci *SambaInteractor) NextRound() string {
-	if out, blocked := guardGameEnd(ci.Game, ci.gp); blocked {
-		return out
-	}
-	ci.Game.NextRound()
-	ci.runCpuTurns()
-	return ci.gp.Output(ci.Game, nil)
+	return advanceRound(ci.Game, ci.gp, ci.runCpuTurns)
 }
 
 // GetConfig 現在の設定を取得
@@ -160,16 +155,10 @@ func (ci *SambaInteractor) ActionLog() string {
 
 // runCpuTurns CPUターンを実行
 func (ci *SambaInteractor) runCpuTurns() {
-	for !ci.Game.GetGameEndFlag() {
+	runCpuTurnsUntil(ci.Game, func() bool {
 		phase := ci.Game.GetPhase()
-		if phase == domain.SambaPhaseRoundEnd || phase == domain.SambaPhaseGameEnd {
-			break
-		}
-		if ci.Game.IsHumanTurn() {
-			break
-		}
-		ci.Game.CpuPlay()
-	}
+		return phase == domain.SambaPhaseRoundEnd || phase == domain.SambaPhaseGameEnd || ci.Game.IsHumanTurn()
+	}, ci.Game.CpuPlay)
 }
 
 // RestoreSambaInteractor deserialises JSON into a SambaInteractor.

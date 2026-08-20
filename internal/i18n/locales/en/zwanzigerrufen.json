@@ -41,5 +41,7 @@
   "hintReasonBury": "bury the cheapest cards",
   "hintReasonPlayLow": "let the cheapest card go",
   "hintReasonAvoidPoints": "Trischaken — avoid taking points",
-  "result.scores": "Game over! Scores: {{scores}}"
+  "result.scores": "Game over! Scores: {{scores}}",
+  "helpExamplePlay": "  play 0                    play hand card 0",
+  "helpHint": "  h                         show a hint"
 }

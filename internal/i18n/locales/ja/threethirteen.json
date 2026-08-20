@@ -11,6 +11,7 @@
   "discardLine": "捨て札: {{card}}",
   "discardPreview": "  捨てた後のデッドウッド: {{values}}",
   "playerLine": "{{name}}: 累積{{cum}}点 ラウンド{{round}}点 {{cards}}枚 デッドウッド{{deadwood}}",
+  "wildLegend": "~ = ワイルド札（このラウンドのワイルドランク）",
   "gameEnd": "ゲーム終了！ {{name}}の勝利です！",
   "drawPhase": "山札または捨て札から1枚引いてください",
   "discardPhase": "1枚捨ててください（完全メルドならノック可）",
@@ -24,5 +25,7 @@
   "promptRoundEnd": "ラウンド終了",
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
   "result.humanWin": "あなたの勝利です！",
-  "result.cpuWin": "CPU {{cpuId}}の勝利です"
+  "result.cpuWin": "CPU {{cpuId}}の勝利です",
+  "helpExampleDraw": "  ds                   手番の最初に山札から 1 枚引く",
+  "helpExampleDiscard": "  d 0                  手札の 0 番を捨てる"
 }

@@ -22,6 +22,8 @@
   "pool.centre": "センター",
   "promptStaking": "区画の精算中です",
   "promptPochen": "b で賭ける（現在 {{target}}）／f で降りる",
+  "yourCombo": "あなたの組: {{rank}} の {{size}}枚",
+  "yourComboNone": "あなたの組: なし（ペア未満は組になりません）",
   "promptFollow": "p <i> で「同じスートの次に高い札」を出す",
   "promptFreeLead": "並びが止まっています。p <i> で好きな札から始められます",
   "promptNext": "n で次のディールへ",
@@ -38,5 +40,7 @@
   "hintReasonNotYourTurn": "あなたの手番ではありません",
   "hintReasonBet": "勝てる組を持っています",
   "hintReasonFold": "組がなく、追いつくのに払いが要ります",
-  "hintReasonPlay": "出せる中で最も低い札です"
+  "hintReasonPlay": "出せる中で最も低い札です",
+  "helpExamplePlay": "  p 0                      手札の 0 番のカードを出す",
+  "helpHint": "  h                        助言を表示"
 }

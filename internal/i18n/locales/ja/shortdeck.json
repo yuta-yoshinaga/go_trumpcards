@@ -47,5 +47,12 @@
   "handRank6": "フラッシュ",
   "handRank7": "フォーカード",
   "handRank8": "ストレートフラッシュ",
-  "handRank9": "ロイヤルフラッシュ"
+  "handRank9": "ロイヤルフラッシュ",
+  "helpExampleRaise": "  ra 200               合計 200 チップになるようレイズする",
+  "helpExampleCall": "  c                    現在のベットにコールする",
+  "helpLog": "  l                    行動ログを表示",
+  "learningHeader": "[学習モード]",
+  "learningLine": "  勝率: {{equity}}% / ポットオッズ: {{potodds}}%",
+  "learningEvPlus": "  +EV (勝率がポットオッズを上回っています。コール有利)",
+  "learningEvMinus": "  -EV (勝率がポットオッズ以下です。コール不利)"
 }

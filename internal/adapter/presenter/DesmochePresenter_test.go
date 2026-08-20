@@ -263,3 +263,29 @@ func TestDesmocheCuiPresenter_HintReasonKeysAreAllMapped(t *testing.T) {
 func TestDesmocheCuiPresenter_ActionLog(t *testing.T) {
 	assert.NotEmpty(t, new(DesmocheCuiPresenter).ActionLogOutput(dsTestGame(t)))
 }
+
+// **10 枚上がりが勝利条件なのに、他家のメルドへ付けても自分の枚数は増えない。**
+// Web は foreignMeldWarning で警告しているが、CUI には対応する文言が無く、
+// `o <i> <m>` を打つ人はそれに気づけなかった (#5720)。
+func TestDesmocheCuiPresenter_WarnsThatForeignLayoffsDoNotCount(t *testing.T) {
+	melds := []*domain.DesmocheMeld{
+		{Owner: 1, Kind: domain.DesmocheMeldRun, Cards: []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 5, true),
+			domain.NewCard(domain.CardDesignSpade, 6, true),
+			domain.NewCard(domain.CardDesignSpade, 7, true),
+		}},
+	}
+	g := dsStub(domain.DesmochePhaseAct, false, -1, melds)
+	out := new(DesmocheCuiPresenter).Output(g, nil)
+
+	assert.Contains(t, out, i18n.T("desmoche.promptActLayoffNote"))
+	// コマンド一覧そのものは残っていること。注記で置き換えては打ち方が消える。
+	assert.Contains(t, out, i18n.T("desmoche.promptAct"))
+
+	// 英語ロケールでも出て、日本語が漏れないこと。
+	i18n.SetLang("en")
+	defer i18n.SetLang("ja")
+	en := new(DesmocheCuiPresenter).Output(g, nil)
+	assert.Contains(t, en, "does not count toward your 10")
+	assert.NotContains(t, en, "他家のメルド")
+}

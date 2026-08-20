@@ -96,6 +96,9 @@ func (p *MissMilliganCuiPresenter) Output(mm interfaces.MissMilliganGame, lastEr
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(mm.GetMoveCount())) + "\n")
 		case domain.MissMilliganPhaseGameOver:
 			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
+			fnd := mm.GetFoundation()
+			b.WriteString(color.Yellow(cuiSolitaireGameOverSummary(
+				cuiCountPileCards(fnd[:]...), domain.MissMilliganFoundationCnt*domain.CardValueMax)) + "\n")
 		}
 	})
 }

@@ -37,7 +37,7 @@ func (c *KlaberjassCuiController) Exec(command string) string {
 			case "a", "accept":
 				return c.ki.AcceptTrump(), true
 			case "c", "call":
-				return cuiutil.WithParsedInt(args, "Suit is required (1=S, 2=C, 3=H, 4=D).", "Invalid suit: %s. Please enter 1-4.", domain.CardDesignSpade, domain.CardDesignDiamond, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "suitRequiredLetters", "invalidSuitRange", domain.CardDesignSpade, domain.CardDesignDiamond, func(v int) string {
 					return c.ki.CallTrump(v)
 				})
 			case "ps", "pass":
@@ -49,13 +49,13 @@ func (c *KlaberjassCuiController) Exec(command string) string {
 			case "no":
 				return c.ki.AnswerSchmeiss(false), true
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", 0, 8, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", 0, 8, func(v int) string {
 					return c.ki.PlayCard(v)
 				})
 			case "n", "next":
 				return c.ki.NextDeal(), true
 			case "st", "settarget":
-				return cuiutil.WithParsedInt(args, "Target score is required.", "Invalid target score: %s.", domain.KlaberjassTargetScoreMin, domain.KlaberjassTargetScoreMax, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "targetScoreRequired", "invalidTargetScorePlain", domain.KlaberjassTargetScoreMin, domain.KlaberjassTargetScoreMax, func(v int) string {
 					cfg := c.ki.GetConfig()
 					cfg.TargetScore = v
 					return c.ki.ResetWithConfig(cfg)

@@ -47,6 +47,15 @@ func (pr *MonteCarloCuiPresenter) Output(g interfaces.MonteCarloGame, lastErr er
 
 		switch g.GetPhase() {
 		case domain.MonteCarloPhasePlaying:
+			// **これがこのゲームの判断材料そのもの。**Web は常時カウンタとして
+			// 出しているのに、CUI は 25 マスを目で走査させていた (#5587)。
+			// 0 になったら補充する合図なので、そこだけ色を変える。
+			pairs := g.CountRemovablePairs()
+			line := i18n.Tf("montecarlo.removablePairs", "count", strconv.Itoa(pairs))
+			if pairs == 0 {
+				line = color.Yellow(line)
+			}
+			b.WriteString(line + "\n")
 			if g.IsStalemate() {
 				b.WriteString(color.Red(i18n.T("montecarlo.stalemate")) + "\n")
 			}

@@ -36,12 +36,22 @@ type SpideretteWebOutputHint struct {
 }
 
 // SpideretteWebOutput スパイダレットWebアウトプット
+// SpideretteWebOutputScoring はスコアの決まり (開始点 / 1手あたりの減点 / スート完成の加点)。
+type SpideretteWebOutputScoring struct {
+	Start       int `json:"start"`
+	MovePenalty int `json:"movePenalty"`
+	SuitBonus   int `json:"suitBonus"`
+}
+
 type SpideretteWebOutput struct {
 	Tableau        [][]*SpideretteWebOutputTableauCard `json:"tableau"`
 	StockCount     int                                 `json:"stockCount"`
 	CompletedSuits int                                 `json:"completedSuits"`
 	Score          int                                 `json:"score"`
-	Hint           *SpideretteWebOutputHint            `json:"hint,omitempty"`
+	// Scoring はスコアの決まり (#5593)。数字が動く理由を説明するのに要る。
+	// 訳文に焼き込むと、計算を変えたとき案内だけが古くなる。
+	Scoring SpideretteWebOutputScoring `json:"scoring"`
+	Hint    *SpideretteWebOutputHint   `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
 }
@@ -88,15 +98,12 @@ func spideretteDispatch(bc *baseController, w http.ResponseWriter, si usecase.Sp
 }
 
 func spideretteMoveDispatch(bc *baseController, w http.ResponseWriter, si usecase.SpideretteInteractorIF, param SpideretteWebInput, newDefault func(string) *SpideretteWebOutput) bool {
-	if !requireParam(bc, w, newDefault, param.From == nil || param.To == nil, "param error: from and to are required.") {
-		return true
+	mv := tableauMove{haveFrom: param.From != nil, haveTo: param.To != nil}
+	if param.From != nil {
+		mv.fromZone, mv.fromCol, mv.fromCardIndex = param.From.Zone, param.From.Col, param.From.CardIndex
 	}
-	if !requireParam(bc, w, newDefault, param.From.Zone != "tableau" || param.To.Zone != "tableau", "param error: invalid move zones. Only tableau to tableau is supported.") {
-		return true
+	if param.To != nil {
+		mv.toZone, mv.toCol = param.To.Zone, param.To.Col
 	}
-	if !requireParam(bc, w, newDefault, param.From.Col == nil || param.From.CardIndex == nil || param.To.Col == nil, "param error: from.col, from.cardIndex, to.col are required.") {
-		return true
-	}
-	bc.writePresenterResponse(w, si.MoveTableauToTableau(*param.From.Col, *param.From.CardIndex, *param.To.Col))
-	return true
+	return dispatchTableauOnlyMove(bc, w, mv, si.MoveTableauToTableau, newDefault)
 }

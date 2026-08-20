@@ -27,11 +27,12 @@ import { focusRingCard, meldCardStyle, selectedCardStyle } from '../styles/cardS
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { GinRummyResponse } from '../types/card';
-import { GinRummyPhase } from '../types/phases';
+import { GinRummyCpu, GinRummyPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { GINRUMMY_HELP, parseGinrummyCommand } from '../utils/cli/commands/ginrummyCommands';
 import { formatGinrummyState } from '../utils/cli/formatters/ginrummyFormatter';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import {
   bestDeadwoodValue,
@@ -89,6 +90,15 @@ const GR_TUTORIAL_STEPS: TutorialStep[] = [
 /** Renders the Gin Rummy game page with draw, discard, knock, and layoff phases. */
 export const GinRummyPage = withTutorial(GinRummyPageContent, 'ginrummy', GR_TUTORIAL_STEPS);
 /** Inner content of the Gin Rummy page, wrapped by TutorialProvider. */
+/** Interpolation values for the CPU policy descriptions, kept next to the constants. */
+const GIN_RUMMY_POLICY_VALUES = {
+  knockNormal: GinRummyCpu.KNOCK_DEADWOOD_NORMAL,
+  knockHard: GinRummyCpu.KNOCK_DEADWOOD_HARD,
+  gainNormal: GinRummyCpu.DISCARD_GAIN_NORMAL,
+  easyOneIn: GinRummyCpu.EASY_PICK_ONE_IN,
+  knockLimit: GinRummyCpu.KNOCK_THRESHOLD,
+};
+
 function GinRummyPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('ginrummy');
@@ -125,8 +135,9 @@ function GinRummyPageContent() {
       parseCommand: parseGinrummyCommand,
       formatResponse: formatGinrummyState,
       helpText: GINRUMMY_HELP,
+      localCommand: hintLocalCommand(frontendHint),
     }),
-    [],
+    [frontendHint],
   );
   const { handleCommand } = useCliGame(gameExec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
@@ -260,10 +271,20 @@ function GinRummyPageContent() {
                     id: 'cpuDifficulty',
                     label: t('settings.cpuDifficulty'),
                     value: ginRummyConfig.cpuDifficulty,
+                    // **難易度で変わるのはノックと拾いの基準。** Easy/Normal/Hard の
+                    // ラベルしか出ておらず、実際の判断基準はプレイヤーから見えな
+                    // かった (#5500)。数値は GinRummyCpu から取る -- domain 定数と
+                    // 突き合わせる Go のテストがあるので、片方だけ変えると落ちる。
                     options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
                       value: o.value,
-                      label: t(`settings.${o.label.toLowerCase()}`),
+                      // 括弧はロケール側に持たせる。JSX で全角括弧を書くと英語表示にも
+                      // 混ざる (Memory の difficultyOption と同じ形にそろえた)。
+                      label: t('settings.difficultyWithPolicy', {
+                        level: t(`settings.${o.label.toLowerCase()}`),
+                        policy: t(`settings.policy${o.label}`, GIN_RUMMY_POLICY_VALUES),
+                      }),
                     })),
+                    tooltip: t('settings.policyTooltip', GIN_RUMMY_POLICY_VALUES),
                     onSelect: (v) => handleConfigChange('cpuDifficulty', v),
                   },
                   {

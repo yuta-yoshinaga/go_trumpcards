@@ -151,6 +151,49 @@ func TestHeartsWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 12, pen[2].Value)
 	})
 
+	// オムニバス J♦ は -10 点という単独最大級のスイングを持つのに、
+	// penaltyCards からは意図的に除かれている (ペナルティではなくボーナスのため)。
+	// そのため誰が取ったかを示す手段が画面に無かった (#5491)。
+	t.Run("the omnibus J-diamond is reported per player when the rule is on", func(t *testing.T) {
+		m, players := setupHeartsWebMockWithPlayers()
+		m.ExpectedCalls = removeWebMockCall(m.ExpectedCalls, "GetConfig")
+		m.On("GetConfig").Return(domain.HeartsConfig{PointLimit: 100, OmnibusJD: true})
+		players[1].AddTrick([]*domain.Card{
+			domain.NewCard(domain.CardDesignDiamond, 11, false), // J♦
+			domain.NewCard(domain.CardDesignHeart, 5, false),
+		})
+		// 別のダイヤ、別のスートの J は取り違えの元なので明示的に外す。
+		players[2].AddTrick([]*domain.Card{
+			domain.NewCard(domain.CardDesignDiamond, 12, false), // Q♦
+			domain.NewCard(domain.CardDesignSpade, 11, false),   // J♠
+		})
+
+		result := p.Output(m, nil)
+		var resObj controller.HeartsWebOutput
+		_ = json.Unmarshal([]byte(result), &resObj)
+
+		assert.True(t, resObj.Players[1].TookOmnibusJD)
+		assert.False(t, resObj.Players[0].TookOmnibusJD)
+		assert.False(t, resObj.Players[2].TookOmnibusJD, "Q♦ と J♠ は J♦ ではない")
+		// ペナルティ一覧の意味は変えない。J♦ はボーナスなので入らないまま。
+		assert.Len(t, resObj.Players[1].PenaltyCards, 1)
+		assert.Equal(t, "HEART", resObj.Players[1].PenaltyCards[0].Design)
+	})
+
+	t.Run("the omnibus J-diamond is not reported when the rule is off", func(t *testing.T) {
+		m, players := setupHeartsWebMockWithPlayers()
+		m.ExpectedCalls = removeWebMockCall(m.ExpectedCalls, "GetConfig")
+		m.On("GetConfig").Return(domain.HeartsConfig{PointLimit: 100, OmnibusJD: false})
+		players[1].AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignDiamond, 11, false)})
+
+		result := p.Output(m, nil)
+		var resObj controller.HeartsWebOutput
+		_ = json.Unmarshal([]byte(result), &resObj)
+
+		// 規則が無効なら J♦ はただの札。取っていても表示する理由がない。
+		assert.False(t, resObj.Players[1].TookOmnibusJD)
+	})
+
 	t.Run("current trick populated", func(t *testing.T) {
 		m, _ := setupHeartsWebMockWithPlayers()
 		m.ExpectedCalls = removeWebMockCall(m.ExpectedCalls, "GetCurrentTrick")

@@ -132,8 +132,11 @@ func (p *ShengJiCuiPresenter) Output(g interfaces.ShengJiGame, lastErr error) st
 		case domain.ShengJiPhaseDeclare:
 			p.writeDeclare(b, g)
 		case domain.ShengJiPhaseKitty:
+			// **なぜ埋めてはいけないのかまで言う。**Web は kittyRules で
+			// 倍率リスクを説明しているのに、CUI は禁止だけを伝えていた (#5735)。
 			b.WriteString(i18n.Tf("shengji.kittyPrompt",
-				"count", strconv.Itoa(domain.ShengJiKittySize)) + "\n")
+				"count", strconv.Itoa(domain.ShengJiKittySize),
+				"mult", strconv.Itoa(domain.ShengJiKittyMultiplierPerCard)) + "\n")
 		case domain.ShengJiPhaseHandEnd:
 			p.writeHandEnd(b, g)
 		default:
@@ -221,5 +224,5 @@ func (p *ShengJiCuiPresenter) writeHandEnd(b *strings.Builder, g interfaces.Shen
 
 // ActionLogOutput は棋譜をテキストで出力する。
 func (p *ShengJiCuiPresenter) ActionLogOutput(g interfaces.ShengJiGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.ShengJiPlayer](g)
 }

@@ -96,7 +96,7 @@ func TestSevenBridgeCuiController_Exec(t *testing.T) {
 		m := newMock()
 		c := controller.NewSevenBridgeCuiController(m)
 		out := c.Exec("lo 0 1")
-		assert.Contains(t, out, "Usage: lo")
+		assert.Contains(t, out, msgUsage("usageLoTargetplayeridxMeldidxCardindex"))
 		m.AssertNotCalled(t, "Layoff", mock.Anything, mock.Anything, mock.Anything)
 	})
 
@@ -116,12 +116,12 @@ func TestSevenBridgeCuiController_Exec(t *testing.T) {
 
 	t.Run("discard no args", func(t *testing.T) {
 		c := controller.NewSevenBridgeCuiController(newMock())
-		assert.Contains(t, c.Exec("d"), "Card index is required")
+		assert.Contains(t, c.Exec("d"), msgCardIndexRequired())
 	})
 
 	t.Run("discard invalid", func(t *testing.T) {
 		c := controller.NewSevenBridgeCuiController(newMock())
-		assert.Contains(t, c.Exec("d abc"), "Invalid card index")
+		assert.Contains(t, c.Exec("d abc"), msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("nextround aliases", func(t *testing.T) {
@@ -144,12 +144,12 @@ func TestSevenBridgeCuiController_Exec(t *testing.T) {
 
 	t.Run("setdifficulty out of range", func(t *testing.T) {
 		c := controller.NewSevenBridgeCuiController(newMock())
-		assert.Contains(t, c.Exec("sd 9"), "Invalid CPU difficulty")
+		assert.Contains(t, c.Exec("sd 9"), msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("setdifficulty no args", func(t *testing.T) {
 		c := controller.NewSevenBridgeCuiController(newMock())
-		assert.Contains(t, c.Exec("sd"), "CPU difficulty is required")
+		assert.Contains(t, c.Exec("sd"), msgCpuDifficultyRequired())
 	})
 
 	t.Run("setlimit valid", func(t *testing.T) {
@@ -163,12 +163,12 @@ func TestSevenBridgeCuiController_Exec(t *testing.T) {
 
 	t.Run("setlimit below min", func(t *testing.T) {
 		c := controller.NewSevenBridgeCuiController(newMock())
-		assert.Contains(t, c.Exec("sl 0"), "Invalid point limit")
+		assert.Contains(t, c.Exec("sl 0"), msgInvalidPointLimitPrefix())
 	})
 
 	t.Run("setlimit no args", func(t *testing.T) {
 		c := controller.NewSevenBridgeCuiController(newMock())
-		assert.Contains(t, c.Exec("sl"), "Point limit is required")
+		assert.Contains(t, c.Exec("sl"), msgPointLimitRequired())
 	})
 
 	t.Run("log command", func(t *testing.T) {

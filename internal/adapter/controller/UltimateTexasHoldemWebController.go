@@ -70,7 +70,7 @@ func ultimateTexasHoldemDispatch(bc *baseController, w http.ResponseWriter, ui u
 	case "f", "fold":
 		bc.writePresenterResponse(w, ui.Fold())
 	default:
-		return dispatchResetAndLog(param.Command, bc, w, ui.Reset, ui.ActionLog)
+		return dispatchResetHintAndLog(param.Command, bc, w, ui.Reset, ui.Hint, ui.ActionLog)
 	}
 	return true
 }

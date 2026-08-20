@@ -21,6 +21,7 @@
   "gameEndDraw": "ゲーム終了！ 引き分け！",
   "promptPlace": "手番: {{name}}  配置するカード: {{card}}",
   "promptPlaceHelp": "place <0/1/2>・・・下段 ≥ 中段 ≥ 上段 を満たすように置く（崩すとファウル）。",
+  "foulRiskWarning": "⚠ 反則になる段: {{rows}}（置くと front≦middle≦back が崩れます）",
   "promptRoundEnd": "ラウンド終了",
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
   "hintNone": "ヒントはありません。",
@@ -32,5 +33,8 @@
   "roundEnd": "ラウンド終了",
   "result.humanWin": "ゲーム終了！ あなたの勝ち！",
   "result.cpuWin": "ゲーム終了！ CPU {{player}} の勝ち！",
-  "result.draw": "ゲーム終了！ 引き分け！"
+  "result.draw": "ゲーム終了！ 引き分け！",
+  "helpExampleFront": "  front                     配られた札を上段に置く",
+  "helpHint": "  h                         助言を表示",
+  "helpLog": "  l                         行動ログを表示"
 }

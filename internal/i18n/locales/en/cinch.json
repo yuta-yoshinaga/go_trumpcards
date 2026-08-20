@@ -30,5 +30,7 @@
   "hintReasonDiscardLow": "discard a low card that gives no points",
   "result.scores": "Game over! Scores: {{scores}}",
   "result.humanWin": "Game over! You win!",
-  "result.cpuWin": "Game over! Player {{player}} wins!"
+  "result.cpuWin": "Game over! Player {{player}} wins!",
+  "helpExamplePlay": "  p 0                       play hand card 0",
+  "helpHint": "  h                         show a hint"
 }

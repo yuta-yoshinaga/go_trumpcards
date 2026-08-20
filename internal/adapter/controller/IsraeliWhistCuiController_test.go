@@ -57,12 +57,12 @@ func TestIsraeliWhistCuiControllerAuctionTakesBothArguments(t *testing.T) {
 // **最低入札を下回る／スート欠けは弾く。** 既定値で埋めない。
 func TestIsraeliWhistCuiControllerAuctionRejectsBadArgs(t *testing.T) {
 	for _, tc := range []struct{ name, cmd, want string }{
-		{"missing both", "a", "Bid is required."},
-		{"missing suit", "a 7", "Suit is required."},
-		{"non-numeric bid", "a x 1", "Invalid bid: x."},
-		{"non-numeric suit", "a 7 x", "Invalid suit: x."},
-		{"below the minimum", "a 4 1", "Invalid bid: 4."},
-		{"suit out of range", "a 7 5", "Invalid suit: 5."},
+		{"missing both", "a", msgKey("bidRequired")},
+		{"missing suit", "a 7", msgKey("suitRequired")},
+		{"non-numeric bid", "a x 1", msgKey("invalidBid", "val", "x")},
+		{"non-numeric suit", "a 7 x", msgKey("invalidSuit", "val", "x")},
+		{"below the minimum", "a 4 1", msgKey("invalidBid", "val", "4")},
+		{"suit out of range", "a 7 5", msgKey("invalidSuit", "val", "5")},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			wi := newMockIsraeliWhistInteractor()
@@ -102,10 +102,10 @@ func TestIsraeliWhistCuiControllerBidAcceptsZeroAndThirteen(t *testing.T) {
 
 func TestIsraeliWhistCuiControllerBidRejectsBadArgs(t *testing.T) {
 	for _, tc := range []struct{ name, cmd, want string }{
-		{"missing bid", "b", "Bid is required."},
-		{"non-numeric", "b x", "Invalid bid: x."},
-		{"negative", "b -1", "Invalid bid: -1."},
-		{"above the hand size", "b 14", "Invalid bid: 14."},
+		{"missing bid", "b", msgKey("bidRequired")},
+		{"non-numeric", "b x", msgKey("invalidBid", "val", "x")},
+		{"negative", "b -1", msgKey("invalidBid", "val", "-1")},
+		{"above the hand size", "b 14", msgKey("invalidBid", "val", "14")},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			wi := newMockIsraeliWhistInteractor()
@@ -149,8 +149,8 @@ func TestIsraeliWhistCuiControllerPlay(t *testing.T) {
 
 func TestIsraeliWhistCuiControllerPlayRejectsBadArgs(t *testing.T) {
 	for _, tc := range []struct{ name, cmd, want string }{
-		{"missing index", "p", "Card index is required."},
-		{"non-numeric", "p abc", "Invalid card index: abc."},
+		{"missing index", "p", msgCardIndexRequired()},
+		{"non-numeric", "p abc", msgInvalidCardIndex("abc")},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			wi := newMockIsraeliWhistInteractor()

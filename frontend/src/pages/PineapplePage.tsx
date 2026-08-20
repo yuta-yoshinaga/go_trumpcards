@@ -45,6 +45,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { PINEAPPLE_HELP, parsePineappleCommand } from '../utils/cli/commands/pineappleCommands';
 import { formatPineappleState } from '../utils/cli/formatters/pineappleFormatter';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { holdemBestFive } from '../utils/holdemBestFive';
 import { type PineappleKeepFeature, pineappleKeepFeatures } from '../utils/pineappleDiscardHint';
@@ -165,8 +166,9 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
       parseCommand: parsePineappleCommand,
       formatResponse: formatPineappleState,
       helpText: PINEAPPLE_HELP,
+      localCommand: hintLocalCommand(hint),
     }),
-    [variant],
+    [variant, hint],
   );
   const { handleCommand } = useCliGame(apiExec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
@@ -546,6 +548,20 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
             {/* Human player */}
             {humanPlayer && (
               <div className="mb-2" data-tutorial="pn-player-hand">
+                {/* **3 枚配って 1 枚捨てる game なので、どの 2 枚を残すかの判断材料が要る。**
+                    Omaha は暫定ベストを常時出しているのに Pineapple には無かった (#5488)。
+                    役の判定はサーバ (PeekBestHand) が答える。 */}
+                {state.liveBestHand && (
+                  <div className="mb-1" data-testid="pineapple-live-besthand">
+                    <span className="text-ds-text-primary text-xs">{t('livePreview')}</span>
+                    <span
+                      className={`inline-block ml-1.5 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}
+                      data-testid="pineapple-live-besthand-name"
+                    >
+                      {t(`hand.${state.liveBestHand}`)}
+                    </span>
+                  </div>
+                )}
                 <div className="text-ds-text-primary text-lg mb-1">
                   {t('yourHand')}
                   <span className="ml-3 text-xs">
@@ -680,6 +696,26 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
               <div className="mb-2 text-center" data-testid="discard-controls" data-tutorial="pn-discard-controls">
                 {discardPreview && (
                   <div className="mb-2 text-sm" data-testid="irishpoker-discard-preview">
+                    {/* **見えている行は読み上げ向きではない。** ラベル・札・役が
+                        別々の要素に割れていて、順に読まれても対応が取れない。1文に
+                        まとめた sr-only の live region を別に置く。上限超過通知
+                        (pn-discard-limit-announce) だけが aria-live を持っていて、
+                        こちらは無音だった (#5490)。視覚表示は変えていない。 */}
+                    <div
+                      className="sr-only"
+                      role="status"
+                      aria-live="polite"
+                      data-testid="irishpoker-discard-preview-announce"
+                    >
+                      {discardPreview.handKey
+                        ? t('discard.previewAriaWithHand', {
+                            cards: discardPreview.kept.map((c) => cardAlt(c)).join(', '),
+                            hand: t(`hand.${discardPreview.handKey}`),
+                          })
+                        : t('discard.previewAria', {
+                            cards: discardPreview.kept.map((c) => cardAlt(c)).join(', '),
+                          })}
+                    </div>
                     <span className="text-ds-text-muted">{`${t('discard.keepLabel')}: `}</span>
                     <span className="text-ds-text-primary font-semibold">
                       {discardPreview.kept.map((c) => cardAlt(c)).join('  ')}

@@ -62,5 +62,9 @@
   "discardUpcoming": "You will discard {{count}} card(s) after the flop betting round",
   "discardCandidate": "  [{{idx}}] discard this and you keep: {{hand}}",
   "discardRecommended": " <- recommended",
-  "discardCandidatePair": "  discard [{{idx0}}] [{{idx1}}] and you keep: {{hand}}"
+  "discardCandidatePair": "  discard [{{idx0}}] [{{idx1}}] and you keep: {{hand}}",
+  "helpExampleRaise": "  ra 200               raise to 200 chips total",
+  "helpExampleCall": "  c                    call the current bet",
+  "helpLog": "  l                    show the action log",
+  "currentBestHand": "Best hand so far: {{hand}} ({{cards}})"
 }

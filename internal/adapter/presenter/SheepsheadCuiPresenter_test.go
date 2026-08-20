@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -35,6 +36,7 @@ func setupSheepsheadCuiMock() *interfaces.MockSheepsheadGame {
 	m.On("GetCalledSuit").Return(0)
 	m.On("GetCallableSuits").Return([]int{domain.CardDesignSpade, domain.CardDesignHeart})
 	m.On("GetBlind").Return([]*domain.Card(nil))
+	m.On("GetBuried").Return([]*domain.Card(nil))
 	m.On("GetPassCount").Return(0)
 	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
 	m.On("GetGameEndFlag").Return(false)
@@ -254,6 +256,57 @@ func TestSheepsheadCuiPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
 		{TurnNumber: 1, PlayerIdx: 0, ActionType: "pick", Detail: "You picks up the blind"},
 	})
+	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+	m.On("GetPlayer", mock.Anything).Return(domain.NewSheepsheadPlayer(true, 0)).Maybe()
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, "pick")
+}
+
+// #5638: ピッカーがブラインドから伏せた 2 枚は domain が保持していて Web API も
+// 送っているのに、CUI のラウンド終了表示は得点と倍率しか出していなかった。何を
+// 埋めたかは得点の内訳そのものなので、公開されるラウンド終了時には出す。
+func TestSheepsheadCuiPresenter_RoundEndShowsTheBuriedCards(t *testing.T) {
+	p := new(presenter.SheepsheadCuiPresenter)
+	buried := []*domain.Card{
+		domain.NewCard(domain.CardDesignHeart, 1, true),
+		domain.NewCard(domain.CardDesignClover, 10, true),
+	}
+
+	t.Run("round end lists them", func(t *testing.T) {
+		m, _ := setupSheepsheadCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetBuried")
+		m.On("GetPhase").Return(domain.SheepsheadPhaseRoundEnd)
+		m.On("GetBuried").Return(buried)
+
+		out := p.Output(m, nil)
+
+		assert.Contains(t, out, i18n.T("sheepshead.roundEndBuried"))
+		// 色付けは cuiCardStr の担当なので、スート名と数字だけを見る。
+		assert.Contains(t, out, "HEART 1")
+		assert.Contains(t, out, "CLOVER 10")
+	})
+
+	t.Run("play phase keeps them hidden", func(t *testing.T) {
+		m, _ := setupSheepsheadCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetBuried")
+		m.On("GetPhase").Return(domain.SheepsheadPhasePlay)
+		m.On("GetBuried").Return(buried)
+
+		out := p.Output(m, nil)
+
+		assert.NotContains(t, out, i18n.T("sheepshead.roundEndBuried"))
+		assert.NotContains(t, out, "HEART 1", "埋め札はプレイ中は伏せたまま")
+	})
+
+	t.Run("no buried cards yields no line", func(t *testing.T) {
+		m, _ := setupSheepsheadCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.SheepsheadPhaseRoundEnd)
+
+		out := p.Output(m, nil) // default GetBuried = nil
+
+		assert.NotContains(t, out, i18n.T("sheepshead.roundEndBuried"))
+	})
 }

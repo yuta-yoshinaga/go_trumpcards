@@ -17,7 +17,7 @@
   "allInMark": "（全ツッパ）",
   "toCallLine": "コールに {{amount}} 必要です",
   "canCheckLine": "チェックできます",
-  "wonLine": "{{name}} が {{amount}} を獲得",
+  "wonLine": "{{name}} が {{amount}} を獲得（{{hand}}）",
   "gameEndLine": "勝者: {{name}}",
   "phaseDeal": "DEAL",
   "phaseBetting": "BETTING",
@@ -37,5 +37,6 @@
   "reason.cheapToStay": "安いので、次の1枚を見る価値があります",
   "reason.seeAnotherCard": "まだ役が弱いので、ただで次の1枚を見ましょう",
   "reason.notWorthIt": "役が無く、額も安くありません",
-  "result.gameEnd": "ゲームが終わりました"
+  "result.gameEnd": "ゲームが終わりました",
+  "helpExampleBet": "  bet 100             100 チップを賭ける"
 }

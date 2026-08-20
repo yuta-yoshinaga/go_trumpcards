@@ -32,6 +32,15 @@ export interface TrickDisplayProps {
   winnerIdx?: number;
   /** Localised badge/announcement text for the winning card (defaults to "WIN"). */
   winnerLabel?: string;
+  /**
+   * Let the row wrap instead of running off the side.
+   *
+   * Ordinary tricks hold at most one card per seat, so a single row always fits.
+   * Bhabhi's pile is not settled until someone cannot follow, so it grows without
+   * a bound and would push the page itself sideways (#5756). Off by default so
+   * the existing games render exactly as before.
+   */
+  wrap?: boolean;
 }
 
 /**
@@ -53,6 +62,7 @@ export function TrickDisplay({
   dataTutorial,
   winnerIdx,
   winnerLabel,
+  wrap = false,
 }: TrickDisplayProps) {
   if (currentTrick.length === 0) {
     return null;
@@ -65,7 +75,9 @@ export function TrickDisplay({
   return (
     <div className="my-3 p-3 rounded bg-black/40" data-tutorial={dataTutorial}>
       <div className="text-ds-text-muted text-sm mb-1">{label}</div>
-      <div className="flex gap-2">
+      {/* wrap の既定は false。通常のトリックは席数までしか積まれないので
+          1 行に収まり、これまでの見た目のまま。 */}
+      <div className={wrap ? 'flex gap-2 flex-wrap' : 'flex gap-2'} data-testid="trick-display-cards">
         {currentTrick.map((trickCard) => {
           const player = players[trickCard.playerIdx];
           const team = player?.team;

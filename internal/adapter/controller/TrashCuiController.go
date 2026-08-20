@@ -50,7 +50,7 @@ func (c *TrashCuiController) handlePlace(args []string) string {
 	}
 	pos, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidIndex", "val", args[0])
+		return invalidArg("invalidIndex", "val", args[0])
 	}
 	return c.ti.PlaceWild(pos)
 }

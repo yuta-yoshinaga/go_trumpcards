@@ -3,6 +3,8 @@
 package controller
 
 import (
+	"strings"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
@@ -33,20 +35,26 @@ func (c *BourreCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "d", "decide":
-				return cuiutil.WithParsedInt(args, "Decision is required (1=play, 0=fold).", "Invalid decision: %s. Please enter 0 or 1.", 0, 1, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "decisionRequired1Play0Fold", "invalidDecision0Or1", 0, 1, func(v int) string {
 					return c.bgi.Decide(v == 1)
 				})
 			case "dr", "draw":
 				indices, skipped := cuiutil.ParseIntSlice(args)
-				return cuiutil.PrependSkippedWarning(c.bgi.Draw(indices), skipped), true
+				// Refuse before playing. PrependSkippedWarning ran the move first and
+				// put the warning above the new board, so a mistyped index was dropped
+				// and the remaining ones played as a different, legal move (issue #5390).
+				if len(skipped) > 0 {
+					return invalidArg("invalidCardIndex", "val", strings.Join(skipped, ", ")), true
+				}
+				return c.bgi.Draw(indices), true
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", 0, 4, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", 0, 4, func(v int) string {
 					return c.bgi.Play(v)
 				})
 			case "n", "next":
 				return c.bgi.NextHand(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Normal, 1=Easy, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequiredAlt", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.bgi.GetConfig()
 					cfg.CpuDifficulty = domain.BourreCpuDifficulty(v)
 					return c.bgi.ResetWithConfig(cfg)

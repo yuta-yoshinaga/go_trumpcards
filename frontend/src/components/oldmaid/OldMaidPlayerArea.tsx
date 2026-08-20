@@ -25,7 +25,6 @@ export interface PlayerAreaProps {
   isHumanTurn: boolean;
   gameEndFlag: boolean;
   loading: boolean;
-  highlightedCardIdx: number;
   isSuspect?: boolean;
   onToggleSuspect?: () => void;
   onDraw: (drawIdx: number) => void;
@@ -47,13 +46,26 @@ export interface PlayerAreaProps {
 }
 
 /** Renders a player area for Old Maid with draw targets, hand display, and reorder support. */
+/**
+ * すべての CPU カードに同じ見た目を与える。
+ *
+ * cpuPlacementStrategy は「人間が引きたくなる位置に奇数札を置く」誘い込みなので、
+ * その位置だけ枠や影を変えると、引く前に避けるべき札を教える案内に反転する (#5476)。
+ * 1 枚でも見た目が違えばそれが手がかりになるため、定数を全枚に使い回す。
+ */
+const NEUTRAL_CARD_STYLE: React.CSSProperties = {
+  border: '2px solid transparent',
+  borderRadius: 4,
+  cursor: 'pointer',
+  transition: 'transform 0.2s, border-color 0.2s, box-shadow 0.2s',
+};
+
 export function OldMaidPlayerArea({
   player,
   isTarget,
   isHumanTurn,
   gameEndFlag,
   loading,
-  highlightedCardIdx,
   isSuspect,
   onToggleSuspect,
   onDraw,
@@ -267,24 +279,12 @@ export function OldMaidPlayerArea({
         ) : showSelectable ? (
           <>
             {Array.from({ length: showCount }, (_, i) => {
-              const isHighlighted = isTarget && !player.isHuman && i === highlightedCardIdx;
-              const cardStyle: React.CSSProperties = {
-                border: isHighlighted ? '2px solid var(--color-ds-accent)' : '2px solid transparent',
-                borderRadius: 4,
-                cursor: 'pointer',
-                transition: 'transform 0.2s, border-color 0.2s, box-shadow 0.2s',
-                ...(isHighlighted
-                  ? {
-                      transform: 'translateY(-8px)',
-                      boxShadow: 'var(--shadow-ds-accent-glow)',
-                    }
-                  : {}),
-              };
+              // 全カードを同一スタイルで描く。罠の位置を光らせない (#5476)。
               return (
                 <CardBack
                   key={i}
                   width={cardWidth}
-                  style={cardStyle}
+                  style={NEUTRAL_CARD_STYLE}
                   onClick={() => onDraw(i)}
                   ariaLabel={t('drawCardAriaLabel', { idx: i + 1 })}
                 />

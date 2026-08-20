@@ -74,6 +74,9 @@ type LingerLonger struct {
 	gameEndFlag bool
 	// winnerIdx は勝った席（-1 = 未確定）。
 	winnerIdx int
+
+	// winReason は決着の理由。決着前は空。
+	winReason string
 }
 
 // NewLingerLonger はコンストラクタ。
@@ -114,6 +117,7 @@ func (l *LingerLonger) Reset() {
 	l.lastDrawIdx = -1
 	l.discarded = 0
 	l.gameEndFlag = false
+	l.winReason = ""
 	l.winnerIdx = -1
 	l.actionLog = nil
 
@@ -338,6 +342,19 @@ func lingerLongerContains(xs []int, v int) bool {
 	return false
 }
 
+// 勝因。**このゲームの主題は「持ちこたえる」ことなので、勝因を取り違えると
+// 規則そのものを誤って説明することになる** (#5765)。ロケール非依存のキーで持ち、
+// 文言は presenter の i18n が組み立てる。
+const (
+	// LingerLongerWinLasted は最後まで手札を持ち続けた勝ち。
+	LingerLongerWinLasted = "lasted"
+	// LingerLongerWinLastTrick は山札が尽きて全員が同時に手札 0 枚になり、
+	// 最後のトリックを取ったことで決まった勝ち。持ち続けた人は存在しない。
+	LingerLongerWinLastTrick = "lastTrick"
+	// LingerLongerWinGiveUp は人間の投了によって決まった勝ち。
+	LingerLongerWinGiveUp = "giveUp"
+)
+
 // activeSeats はまだ脱落していない席を返す。
 func (l *LingerLonger) activeSeats() []int {
 	out := make([]int, 0, l.config.PlayerCnt)
@@ -372,10 +389,11 @@ func (l *LingerLonger) checkGameEnd(lastTrickWinner int) bool {
 	active := l.activeSeats()
 	switch {
 	case len(active) == 1:
-		l.finish(active[0])
+		l.finish(active[0], LingerLongerWinLasted)
 		return true
 	case len(active) == 0:
-		l.finish(lastTrickWinner)
+		// 誰も持ちこたえていないので、この勝ちを「持ち続けた」とは呼べない。
+		l.finish(lastTrickWinner, LingerLongerWinLastTrick)
 		return true
 	default:
 		return false
@@ -383,12 +401,20 @@ func (l *LingerLonger) checkGameEnd(lastTrickWinner int) bool {
 }
 
 // finish は終局処理。
-func (l *LingerLonger) finish(winner int) {
+func (l *LingerLonger) finish(winner int, reason string) {
 	l.phase = LingerLongerPhaseGameEnd
 	l.gameEndFlag = true
 	l.winnerIdx = winner
-	l.addLog(winner, "result", "最後まで手札を持ち続けました", nil)
+	l.winReason = reason
+	detail := "最後まで手札を持ち続けました"
+	if reason == LingerLongerWinLastTrick {
+		detail = "全員が同時に手札を出し切り、最後のトリックを取りました"
+	}
+	l.addLog(winner, "result", detail, nil)
 }
+
+// GetWinReason は決着の理由をロケール非依存のキーで返す。決着前は空。
+func (l *LingerLonger) GetWinReason() string { return l.winReason }
 
 // GiveUp は投了する。
 func (l *LingerLonger) GiveUp() {
@@ -405,6 +431,7 @@ func (l *LingerLonger) GiveUp() {
 		}
 	}
 	l.winnerIdx = best
+	l.winReason = LingerLongerWinGiveUp
 	l.addLog(0, "giveup", "投了しました", nil)
 }
 
@@ -557,7 +584,11 @@ type lingerLongerJSON struct {
 	LastDrawIdx      int                   `json:"ld"`
 	GameEndFlag      bool                  `json:"ge"`
 	WinnerIdx        int                   `json:"wi"`
-	ActionLog        []*ActionLogEntry     `json:"al"`
+	// WinReason を載せないと、KV に保存して次のリクエストで復元した時点で
+	// 勝因が消え、presenter が通常勝ちに寄せてしまう。決着の表示は決着後の
+	// リクエストで読まれるので、ここが抜けていると本番でだけ直っていない。
+	WinReason string            `json:"wr"`
+	ActionLog []*ActionLogEntry `json:"al"`
 }
 
 // MarshalJSON KV スナップショット用のシリアライズ
@@ -567,7 +598,8 @@ func (l *LingerLonger) MarshalJSON() ([]byte, error) {
 		CurrentTrick: l.currentTrick, CurrentPlayerIdx: l.currentPlayerIdx,
 		LeadPlayerIdx: l.leadPlayerIdx, TrickNumber: l.trickNumber,
 		EliminatedCnt: l.eliminatedCnt, Discarded: l.discarded, LastDrawIdx: l.lastDrawIdx,
-		GameEndFlag: l.gameEndFlag, WinnerIdx: l.winnerIdx, ActionLog: l.actionLog,
+		GameEndFlag: l.gameEndFlag, WinnerIdx: l.winnerIdx, WinReason: l.winReason,
+		ActionLog: l.actionLog,
 	})
 }
 
@@ -591,6 +623,21 @@ func (l *LingerLonger) UnmarshalJSON(data []byte) error {
 	}
 	if j.GameEndFlag != (j.WinnerIdx >= 0) {
 		return fmt.Errorf("winner %d disagrees with game end flag %v", j.WinnerIdx, j.GameEndFlag)
+	}
+	// **決着しているなら勝因も揃っている。** ここを見ないと、勝因を載せ忘れた
+	// スナップショットが「通常勝ち」として黙って復元され、同時脱落の局が
+	// また「最後まで持ち続けました」と説明される (#5765)。
+	switch j.WinReason {
+	case "":
+		if j.GameEndFlag {
+			return errors.New("game ended but no win reason was recorded")
+		}
+	case LingerLongerWinLasted, LingerLongerWinLastTrick, LingerLongerWinGiveUp:
+		if !j.GameEndFlag {
+			return fmt.Errorf("win reason %q on a game that has not ended", j.WinReason)
+		}
+	default:
+		return fmt.Errorf("unknown win reason: %q", j.WinReason)
 	}
 	if j.TrumpCards == nil {
 		return errors.New("missing trump cards")
@@ -688,5 +735,6 @@ func (l *LingerLonger) UnmarshalJSON(data []byte) error {
 	l.eliminatedCnt, l.lastDrawIdx = j.EliminatedCnt, j.LastDrawIdx
 	l.discarded = j.Discarded
 	l.gameEndFlag, l.winnerIdx, l.actionLog = j.GameEndFlag, j.WinnerIdx, j.ActionLog
+	l.winReason = j.WinReason
 	return nil
 }

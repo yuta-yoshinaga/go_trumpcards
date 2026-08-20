@@ -58,17 +58,17 @@ func TestHasenpfefferCuiControllerPassIsItsOwnCommand(t *testing.T) {
 	// bid 0 は下限未満として弾かれる。
 	other := newMockHasenpfefferInteractor()
 	c2 := NewHasenpfefferCuiController(other)
-	assert.Equal(t, "Invalid bid: 0.", c2.Exec("b 0"))
+	assert.Equal(t, msgKey("invalidBid", "val", "0"), c2.Exec("b 0"))
 	other.AssertNotCalled(t, "Bid", mock.Anything)
 }
 
 // **範囲外の宣言は弾く。**
 func TestHasenpfefferCuiControllerBidRejectsBadArgs(t *testing.T) {
 	for _, tc := range []struct{ name, cmd, want string }{
-		{"missing bid", "b", "Bid is required."},
-		{"non-numeric", "b x", "Invalid bid: x."},
-		{"below the minimum", "b 2", "Invalid bid: 2."},
-		{"above the maximum", "b 7", "Invalid bid: 7."},
+		{"missing bid", "b", msgKey("bidRequired")},
+		{"non-numeric", "b x", msgKey("invalidBid", "val", "x")},
+		{"below the minimum", "b 2", msgKey("invalidBid", "val", "2")},
+		{"above the maximum", "b 7", msgKey("invalidBid", "val", "7")},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			hi := newMockHasenpfefferInteractor()
@@ -94,12 +94,12 @@ func TestHasenpfefferCuiControllerDiscard(t *testing.T) {
 // **どちらの引数も既定値で埋めない。** 埋めると選んでいないスートが切り札になる。
 func TestHasenpfefferCuiControllerDiscardRejectsBadArgs(t *testing.T) {
 	for _, tc := range []struct{ name, cmd, want string }{
-		{"no args", "d", "Card index is required."},
-		{"only the index", "d 2", "Suit is required."},
-		{"non-numeric index", "d x 3", "Invalid card index: x."},
-		{"non-numeric suit", "d 2 x", "Invalid suit: x."},
-		{"suit below the range", "d 2 0", "Invalid suit: 0."},
-		{"suit above the range", "d 2 5", "Invalid suit: 5."},
+		{"no args", "d", msgCardIndexRequired()},
+		{"only the index", "d 2", msgKey("suitRequired")},
+		{"non-numeric index", "d x 3", msgInvalidCardIndex("x")},
+		{"non-numeric suit", "d 2 x", msgKey("invalidSuit", "val", "x")},
+		{"suit below the range", "d 2 0", msgKey("invalidSuit", "val", "0")},
+		{"suit above the range", "d 2 5", msgKey("invalidSuit", "val", "5")},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			hi := newMockHasenpfefferInteractor()
@@ -124,8 +124,8 @@ func TestHasenpfefferCuiControllerPlay(t *testing.T) {
 
 func TestHasenpfefferCuiControllerPlayRejectsBadArgs(t *testing.T) {
 	for _, tc := range []struct{ name, cmd, want string }{
-		{"missing index", "p", "Card index is required."},
-		{"non-numeric", "p abc", "Invalid card index: abc."},
+		{"missing index", "p", msgCardIndexRequired()},
+		{"non-numeric", "p abc", msgInvalidCardIndex("abc")},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			hi := newMockHasenpfefferInteractor()

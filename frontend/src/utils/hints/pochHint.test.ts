@@ -22,6 +22,8 @@ const base = {
   gameEndFlag: false,
   winnerIdx: -1,
   message: '',
+  yourBestComboSize: 0,
+  yourBestComboRank: 0,
 };
 
 const state = (reason?: string, extra?: Record<string, unknown>): PochResponse =>

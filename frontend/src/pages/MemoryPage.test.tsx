@@ -729,3 +729,27 @@ describe('MemoryPage', () => {
     expect(screen.getByTestId('mem-flip-announce')).toHaveTextContent('');
   });
 });
+
+// #5492: 難易度は Easy/Normal/Hard としか出ておらず、Hard がほぼ完璧に覚えている
+// (95%保持・1%減衰) のに対し Easy はよく忘れる (30%保持・15%減衰) という実際の差が
+// 説明されていなかった。強さの差が「CPU の記憶力」だと分からないと選びようがない。
+describe('MemoryPage difficulty descriptions', () => {
+  it('describes each difficulty in terms of how well the CPU remembers', async () => {
+    mockExec.mockResolvedValue(flip1State);
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    fireEvent.click(screen.getByText('設定'));
+
+    const select = screen.getByRole('combobox', { name: 'CPU難易度' });
+    const labels = Array.from(select.querySelectorAll('option')).map((o) => o.textContent ?? '');
+    expect(labels).toHaveLength(3);
+    // **3つとも説明が付いていること。** 1つでも素の "Easy" のままだと、
+    // 並べたときにその選択肢だけ意味が分からない。
+    for (const label of labels) {
+      expect(label).toMatch(/忘れ|覚え/);
+    }
+    // 順序どおりの言葉が付く (domain の retentionChance と同じ向き)。
+    expect(labels[0]).toContain('よく忘れる');
+    expect(labels[2]).toContain('ほとんど忘れない');
+  });
+});

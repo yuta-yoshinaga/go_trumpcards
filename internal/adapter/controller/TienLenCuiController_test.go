@@ -66,9 +66,9 @@ func TestTienLenCuiController_Exec(t *testing.T) {
 
 	t.Run("setdifficulty errors", func(t *testing.T) {
 		c := controller.NewTienLenCuiController(newMock())
-		assert.Contains(t, c.Exec("sd"), "required")
-		assert.Contains(t, c.Exec("sd abc"), "Invalid CPU difficulty")
-		assert.Contains(t, c.Exec("sd 9"), "Invalid CPU difficulty")
+		assert.Contains(t, c.Exec("sd"), msgCpuDifficultyRequiredAlt())
+		assert.Contains(t, c.Exec("sd abc"), msgInvalidCpuDifficultyPrefix())
+		assert.Contains(t, c.Exec("sd 9"), msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("log", func(t *testing.T) {
@@ -88,4 +88,18 @@ func TestTienLenCuiController_Exec(t *testing.T) {
 		c := controller.NewTienLenCuiController(newMock())
 		assert.Contains(t, c.Exec(""), "'help' でコマンド一覧を表示します。")
 	})
+}
+
+// #5624: `h`/`hint` そのものが無かった。
+func TestTienLenCuiControllerHint(t *testing.T) {
+	for _, alias := range []string{"h", "hint"} {
+		t.Run(alias, func(t *testing.T) {
+			m := new(mockUsecases.MockTienLenInteractor)
+			m.On("Hint").Return("hint-output")
+			c := controller.NewTienLenCuiController(m)
+
+			assert.Equal(t, "hint-output", c.Exec(alias))
+			m.AssertCalled(t, "Hint")
+		})
+	}
 }

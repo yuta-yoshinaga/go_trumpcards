@@ -5,6 +5,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, KlondikeResponse, KlondikeTableauCard } from '../types/card';
+import { KlondikeVegas } from '../types/phases';
 import { KlondikePage } from './KlondikePage';
 
 vi.mock('../api/gameApi', () => ({
@@ -505,6 +506,23 @@ describe('KlondikePage', () => {
     await waitFor(() => expect(screen.getByText(/ヒントがあります/)).toBeInTheDocument());
     // The hint band shows the source card image (not just an abstract string).
     expect(screen.getByTestId('kl-hint-card')).toBeInTheDocument();
+  });
+
+  // #5955: ヒントは無言で現れていた。**空のまま先にマウントしてある**領域の中身が
+  // 変わることが読み上げの条件なので、hint がある間だけ現れる内側の div ではなく、
+  // 常設のラッパーがライブ領域でなければならない。
+  it('announces the hint through a region that was already mounted', async () => {
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    const region = screen.getByTestId('kl-hint-live');
+    expect(region).toHaveAttribute('role', 'status');
+    expect(region).toHaveAttribute('aria-live', 'polite');
+    expect(region).toHaveTextContent('');
+
+    mockExec.mockResolvedValue(withHintState);
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    // **同じ要素**の中身が変わる (別の要素が現れるのではない)。
+    await waitFor(() => expect(region).toHaveTextContent(/ヒントがあります/));
   });
 
   it('shows hint text from tableau after clicking hint', async () => {
@@ -1148,5 +1166,32 @@ describe('KlondikePage', () => {
       });
       expect(screen.queryByTestId('kl-best-badge')).not.toBeInTheDocument();
     });
+  });
+});
+
+// #5493: Vegas を選んだプレイヤーは、なぜスコアがマイナスから始まるのか・1枚あたり
+// 何点かを知る手段が無かった。ヘッダーは生の数字だけで、チュートリアルにも
+// スコアリングの説明が無い。
+describe('KlondikePage Vegas formula', () => {
+  it('spells out the formula while Vegas scoring is on', async () => {
+    mockExec.mockResolvedValue({ ...playingState, scoringMode: 1 });
+    renderWithProviders(<KlondikePage />);
+    const note = await screen.findByTestId('kl-vegas-formula');
+    // 数値は KlondikeVegas から補間される。文言に直接書くと定数と乖離する。
+    //
+    // **`toContain('5')` は無意味だった** -- 買い切りの "-52" が "5" を含むので、
+    // 1枚あたりの点が抜けていても通る。1枚あたりは符号付きで、買い切りの数字の
+    // 一部として現れない形で確かめる。
+    expect(note.textContent).toContain(`${KlondikeVegas.BUY_IN}`);
+    expect(note.textContent).toMatch(new RegExp(`\\+${KlondikeVegas.PER_CARD}(?![0-9])`));
+  });
+
+  // **None モードでは出さない。** ベガス方式の説明が常時出ていると、
+  // スコアの付かないモードでも点が入ると読める。
+  it('says nothing when scoring is off', async () => {
+    mockExec.mockResolvedValue({ ...playingState, scoringMode: 0 });
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('kl-vegas-formula')).not.toBeInTheDocument();
   });
 });

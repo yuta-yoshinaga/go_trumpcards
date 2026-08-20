@@ -581,3 +581,106 @@ func TestCruel_GetActionLog(t *testing.T) {
 	require.Len(t, log, 1)
 	assert.Equal(t, "move", log[0].ActionType)
 }
+
+// #5496: AutoComplete は1枚も動かなくても「オートコンプリートを実行しました」を
+// 行動ログに残し、undo 用のスナップショットまで積んでいた。**何も起きていないのに
+// 記録だけが残る。**
+func TestCruel_AutoCompleteRecordsNothingWhenNothingMoves(t *testing.T) {
+	c := setupPlayingCruel()
+	clearCruelTableau(c)
+	// Reset は各組札にエースを置く。タブローの一番上が5なら、次に要る2ではない
+	// のでどこにも置けない。
+	var tab [domain.CruelTableauCnt][]*domain.KlondikeTableauCard
+	tab[0] = []*domain.KlondikeTableauCard{{Card: makeCard(domain.CardDesignSpade, 5), FaceUp: true}}
+	c.SetTableau(tab)
+
+	logsBefore := len(c.GetActionLog())
+	movesBefore := c.GetMoveCount()
+	canUndoBefore := c.CanUndo()
+
+	require.NoError(t, c.AutoComplete())
+
+	assert.Equal(t, movesBefore, c.GetMoveCount(), "1枚も動いていない")
+	assert.Len(t, c.GetActionLog(), logsBefore, "動いていないのに実行記録が残っている")
+	assert.Equal(t, canUndoBefore, c.CanUndo(), "何もしていないのに undo 先が積まれている")
+}
+
+// 正常系は今までどおり記録する。上のテストが「常にログを残さない」実装でも
+// 通ってしまわないための負のコントロール。
+func TestCruel_AutoCompleteStillRecordsWhenCardsMove(t *testing.T) {
+	c := setupPlayingCruel()
+	clearCruelTableau(c)
+	var tab [domain.CruelTableauCnt][]*domain.KlondikeTableauCard
+	// 組札の♠はエースまで出ているので、次に置けるのは2。
+	tab[0] = []*domain.KlondikeTableauCard{{Card: makeCard(domain.CardDesignSpade, 2), FaceUp: true}}
+	c.SetTableau(tab)
+
+	logsBefore := len(c.GetActionLog())
+	require.NoError(t, c.AutoComplete())
+
+	assert.Positive(t, c.GetMoveCount())
+	assert.Greater(t, len(c.GetActionLog()), logsBefore)
+	assert.True(t, c.CanUndo())
+}
+
+// CanAutoComplete はボタンの有効/無効に使う。**AutoComplete と同じ判定**でないと、
+// 押せるのに何も起きない (あるいはその逆の) ボタンになる。
+func TestCruel_CanAutoComplete(t *testing.T) {
+	newBoard := func(top *domain.Card) *domain.Cruel {
+		c := setupPlayingCruel()
+		clearCruelTableau(c)
+		var tab [domain.CruelTableauCnt][]*domain.KlondikeTableauCard
+		if top != nil {
+			tab[0] = []*domain.KlondikeTableauCard{{Card: top, FaceUp: true}}
+		}
+		c.SetTableau(tab)
+		return c
+	}
+
+	t.Run("true when a tableau top can go to a foundation", func(t *testing.T) {
+		// Reset は各組札にエースを置くので、♠2 が次に置ける。
+		assert.True(t, newBoard(makeCard(domain.CardDesignSpade, 2)).CanAutoComplete())
+	})
+
+	t.Run("false when no top card fits", func(t *testing.T) {
+		assert.False(t, newBoard(makeCard(domain.CardDesignSpade, 5)).CanAutoComplete())
+	})
+
+	t.Run("false on an empty tableau", func(t *testing.T) {
+		assert.False(t, newBoard(nil).CanAutoComplete())
+	})
+
+	// **AutoComplete と食い違わないこと。** true のときは必ず1枚以上動き、
+	// false のときは1枚も動かない。ボタンの有効状態と挙動が一致している。
+	t.Run("agrees with what AutoComplete actually does", func(t *testing.T) {
+		for _, tc := range []struct {
+			name string
+			top  *domain.Card
+		}{
+			{"placeable", makeCard(domain.CardDesignSpade, 2)},
+			{"not placeable", makeCard(domain.CardDesignSpade, 5)},
+		} {
+			c := newBoard(tc.top)
+			ready := c.CanAutoComplete()
+			before := c.GetMoveCount()
+			require.NoError(t, c.AutoComplete())
+			moved := c.GetMoveCount() > before
+			assert.Equal(t, ready, moved, tc.name)
+		}
+	})
+
+	// **スートの無い札は組札のインデックスにならない。** Cruel は52枚デッキなので
+	// ジョーカーは配られないが、fIdx はそのまま配列の添字になるので、範囲外を
+	// 弾かないと panic する。AutoComplete 側にも同じガードがある。
+	t.Run("skips a card whose suit has no foundation instead of panicking", func(t *testing.T) {
+		c := newBoard(domain.NewCard(domain.CardDesignJoker, 0, true))
+		assert.NotPanics(t, func() { assert.False(t, c.CanAutoComplete()) })
+		assert.NotPanics(t, func() { require.NoError(t, c.AutoComplete()) })
+	})
+
+	t.Run("false once the game is no longer playing", func(t *testing.T) {
+		c := newBoard(makeCard(domain.CardDesignSpade, 2))
+		c.SetPhase(domain.CruelPhaseGameClear)
+		assert.False(t, c.CanAutoComplete())
+	})
+}

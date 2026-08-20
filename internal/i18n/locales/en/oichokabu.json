@@ -8,6 +8,8 @@
   "betLine": "bet: {{bet}}",
   "handLine": "hand: {{cards}}",
   "rankLine": "rank: {{rank}}",
+  "dealerPolicyDrew": "Banker policy: drew a third card because the rank was at or below {{threshold}}",
+  "dealerPolicyStood": "Banker policy: stood on {{rank}}, above the {{threshold}} draw threshold",
   "playerHeader": "Player (You)",
   "bankerHeader": "Banker (House)",
   "hidden": "?? (hidden)",
@@ -20,5 +22,7 @@
   "push": "Push.",
   "totalPayoutLine": "total payout: {{payout}}",
   "maxBetHint": "Max bet: {{max}} (bet <amount> to wager)",
-  "drawHint": "draw to take a card / stand to hold"
+  "drawHint": "draw to take a card / stand to hold",
+  "helpExampleBet": "  b 100                bet 100 chips",
+  "helpSort": "  s                    sort the hand"
 }

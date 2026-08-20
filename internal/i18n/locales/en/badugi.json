@@ -43,5 +43,9 @@
   "handRank2": "2-card",
   "handRank3": "3-card",
   "handRank4": "Badugi",
-  "handRankUnknown": "Unknown"
+  "handRankUnknown": "Unknown",
+  "helpExampleCall": "  c                    call the current bet",
+  "helpHint": "  h                    show a hint",
+  "helpLog": "  l                    show the action log",
+  "completeBadugiWarning": "✨ Badugi complete ({{size}} cards). Drawing now can only weaken it"
 }

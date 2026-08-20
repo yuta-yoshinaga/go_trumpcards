@@ -67,11 +67,11 @@ func TestKaiserCuiController_Exec(t *testing.T) {
 	// **最低は 7。**6 以下はドメインへ行く前に弾く。
 	t.Run("bid rejects a value outside 7-12", func(t *testing.T) {
 		c := controller.NewKaiserCuiController(newMock())
-		assert.Contains(t, c.Exec("b"), "required")
-		assert.Contains(t, c.Exec("b abc"), "Invalid bid")
-		assert.Contains(t, c.Exec("b 6"), "Invalid bid")
-		assert.Contains(t, c.Exec("b 13"), "Invalid bid")
-		assert.Contains(t, c.Exec("b 8 9"), "Invalid contract")
+		assert.True(t, msgRejected(c.Exec("b")))
+		assert.Contains(t, c.Exec("b abc"), msgStem("invalidBidMinMax"))
+		assert.Contains(t, c.Exec("b 6"), msgStem("invalidBidMinMax"))
+		assert.Contains(t, c.Exec("b 13"), msgStem("invalidBidMinMax"))
+		assert.Contains(t, c.Exec("b 8 9"), msgStem("invalidContract02"))
 	})
 
 	t.Run("trump", func(t *testing.T) {
@@ -79,8 +79,8 @@ func TestKaiserCuiController_Exec(t *testing.T) {
 		c := controller.NewKaiserCuiController(m)
 		assert.Equal(t, mockOutput, c.Exec("t 3"))
 		m.AssertCalled(t, "SetTrump", domain.CardDesignHeart)
-		assert.Contains(t, c.Exec("t"), "required")
-		assert.Contains(t, c.Exec("t 5"), "Invalid suit")
+		assert.Contains(t, c.Exec("t"), msgStem("suitRequiredLetters"))
+		assert.Contains(t, c.Exec("t 5"), msgStem("invalidSuitRange"))
 	})
 
 	// **捨て札は必ず 2 枚。**キティと同数でなければ手札が合わなくなる。
@@ -89,9 +89,9 @@ func TestKaiserCuiController_Exec(t *testing.T) {
 		c := controller.NewKaiserCuiController(m)
 		assert.Equal(t, mockOutput, c.Exec("d 0 3"))
 		m.AssertCalled(t, "Discard", []int{0, 3})
-		assert.Contains(t, c.Exec("d 0"), "Two card indices")
-		assert.Contains(t, c.Exec("d"), "Two card indices")
-		assert.Contains(t, c.Exec("d a b"), "Invalid card index")
+		assert.Contains(t, c.Exec("d 0"), msgStem("twoIndicesRequired"))
+		assert.Contains(t, c.Exec("d"), msgStem("twoIndicesRequired"))
+		assert.Contains(t, c.Exec("d a b"), msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("play and next", func(t *testing.T) {
@@ -101,7 +101,7 @@ func TestKaiserCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "PlayCard", 2)
 		assert.Equal(t, mockOutput, c.Exec("n"))
 		m.AssertCalled(t, "NextHand")
-		assert.Contains(t, c.Exec("p abc"), "Invalid card index")
+		assert.Contains(t, c.Exec("p abc"), msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("log and unknown", func(t *testing.T) {

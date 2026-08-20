@@ -7,6 +7,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	mockusecase "github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func newMockBraidInteractor() *mockusecase.MockBraidInteractor {
@@ -79,6 +80,27 @@ func TestBraidCuiControllerMoves(t *testing.T) {
 		c := NewBraidCuiController(bi)
 		bi.On("MoveFieldToFoundation", 2).Return("ff")
 		assert.Equal(t, "ff", c.Exec("m fd 2 f"))
+	})
+
+	// The braid and the slots have exactly one destination, so anything but `f`
+	// is refused. Both refusals go through invalidArg, so the reply carries the
+	// error marker and names the token that was rejected.
+	t.Run("rejects a braid destination other than a foundation", func(t *testing.T) {
+		c := NewBraidCuiController(newMockBraidInteractor())
+
+		body, isErr := i18n.StripErrorPrefix(c.Exec("m br t"))
+
+		assert.True(t, isErr, "a refused destination must be marked as an error")
+		assert.Equal(t, i18n.Tf("braid.onlyToFoundation", "val", "t"), body)
+	})
+
+	t.Run("rejects a slot destination other than a foundation", func(t *testing.T) {
+		c := NewBraidCuiController(newMockBraidInteractor())
+
+		body, isErr := i18n.StripErrorPrefix(c.Exec("m fd 2 t"))
+
+		assert.True(t, isErr, "a refused destination must be marked as an error")
+		assert.Equal(t, i18n.Tf("braid.onlyToFoundation", "val", "t"), body)
 	})
 
 	t.Run("helper to a foundation", func(t *testing.T) {

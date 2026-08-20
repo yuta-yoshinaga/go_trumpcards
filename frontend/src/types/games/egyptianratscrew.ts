@@ -24,6 +24,11 @@ export interface EgyptianRatscrewResponse extends BaseGameResponse {
   players: EgyptianRatscrewPlayerData[];
   cpuDifficulty: number;
   chanceRemaining: number;
+  /**
+   * How many chances each face card gives the opponent. Sent so the permanent
+   * rule text cannot quote figures the game has stopped using.
+   */
+  faceChances: { jack: number; queen: number; king: number; ace: number };
   chanceFromIdx: number;
   pendingKind: number;
   pendingDeadlineMs: number;

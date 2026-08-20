@@ -76,6 +76,12 @@ export interface SjavsResponse extends BaseGameResponse {
    * that trumps form their own suit.
    */
   validIndices: number[];
+  /**
+   * Indices of the human's hand that are trumps, including the six permanent
+   * ones. Empty until a trump is named. Sent because those six cannot be
+   * recognised from their suit, and the client must not keep its own list.
+   */
+  trumpIndices: number[];
   /** Card points this hand, per team. Always sums to 120. */
   teamPoints: number[];
   /** Each team's distance from winning the rubber, counted DOWN from 24. */

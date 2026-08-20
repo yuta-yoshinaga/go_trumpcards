@@ -23,6 +23,8 @@ type PokerGame interface {
 	GetPlayers() []*domain.PokerPlayer
 	// GetPhase 現在のフェーズを取得する
 	GetPhase() int
+	// IsExchangeRead 指定プレイヤーの交換枚数が CPU の警戒を引き上げているか
+	IsExchangeRead(playerIdx int) bool
 	// GetPot ポット額を取得する
 	GetPot() int
 	// GetSidePots サイドポット一覧を取得する

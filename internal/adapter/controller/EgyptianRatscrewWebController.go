@@ -25,26 +25,50 @@ type EgyptianRatscrewWebPlayer struct {
 	StockSize int    `json:"stockSize"`
 }
 
+// EgyptianRatscrewWebFaceChances は絵札ごとのチャンス回数。
+type EgyptianRatscrewWebFaceChances struct {
+	Jack  int `json:"jack"`
+	Queen int `json:"queen"`
+	King  int `json:"king"`
+	Ace   int `json:"ace"`
+}
+
+// NewEgyptianRatscrewWebFaceChances はドメインの FaceCardChances から回数を組む。
+//
+// 既定の応答とプレゼンタの両方が同じものを返す必要があるので、literal を 2 箇所に
+// 書かない ── 片方だけ直すと、盤面のある応答と無い応答で規則の説明が食い違う。
+func NewEgyptianRatscrewWebFaceChances() *EgyptianRatscrewWebFaceChances {
+	return &EgyptianRatscrewWebFaceChances{
+		Jack:  domain.FaceCardChances(domain.EgyptianRatscrewJackValue),
+		Queen: domain.FaceCardChances(domain.EgyptianRatscrewQueenValue),
+		King:  domain.FaceCardChances(domain.EgyptianRatscrewKingValue),
+		Ace:   domain.FaceCardChances(domain.EgyptianRatscrewAceValue),
+	}
+}
+
 // EgyptianRatscrewWebOutput エジプシャン・ラットスクリュー Web 出力
 type EgyptianRatscrewWebOutput struct {
-	Phase              int                          `json:"phase"`
-	GameEndFlag        bool                         `json:"gameEndFlag"`
-	WinnerIdx          int                          `json:"winnerIdx"`
-	CurrentTurnIdx     int                          `json:"currentTurnIdx"`
-	IsHumanTurn        bool                         `json:"isHumanTurn"`
-	IsTopFaceCard      bool                         `json:"isTopFaceCard"`
-	IsSlappable        bool                         `json:"isSlappable"`
-	CenterPileSize     int                          `json:"centerPileSize"`
-	TopCard            *WebOutputCard               `json:"topCard,omitempty"`
-	Players            []*EgyptianRatscrewWebPlayer `json:"players"`
-	CpuDifficulty      int                          `json:"cpuDifficulty"`
-	ChanceRemaining    int                          `json:"chanceRemaining"`
-	ChanceFromIdx      int                          `json:"chanceFromIdx"`
-	PendingKind        int                          `json:"pendingKind"`
-	PendingDeadlineMs  int64                        `json:"pendingDeadlineMs"`
-	LastEventKind      int                          `json:"lastEventKind"`
-	LastEventPlayerIdx int                          `json:"lastEventPlayerIdx"`
-	LastSlapReason     int                          `json:"lastSlapReason"`
+	Phase           int                          `json:"phase"`
+	GameEndFlag     bool                         `json:"gameEndFlag"`
+	WinnerIdx       int                          `json:"winnerIdx"`
+	CurrentTurnIdx  int                          `json:"currentTurnIdx"`
+	IsHumanTurn     bool                         `json:"isHumanTurn"`
+	IsTopFaceCard   bool                         `json:"isTopFaceCard"`
+	IsSlappable     bool                         `json:"isSlappable"`
+	CenterPileSize  int                          `json:"centerPileSize"`
+	TopCard         *WebOutputCard               `json:"topCard,omitempty"`
+	Players         []*EgyptianRatscrewWebPlayer `json:"players"`
+	CpuDifficulty   int                          `json:"cpuDifficulty"`
+	ChanceRemaining int                          `json:"chanceRemaining"`
+	// FaceChances は絵札ごとに相手へ課すチャンスの回数 (#5580)。規則の説明を
+	// 画面に書くのに要る。数字を訳文に焼き込むと、回数を変えたとき説明だけが嘘になる。
+	FaceChances        *EgyptianRatscrewWebFaceChances `json:"faceChances"`
+	ChanceFromIdx      int                             `json:"chanceFromIdx"`
+	PendingKind        int                             `json:"pendingKind"`
+	PendingDeadlineMs  int64                           `json:"pendingDeadlineMs"`
+	LastEventKind      int                             `json:"lastEventKind"`
+	LastEventPlayerIdx int                             `json:"lastEventPlayerIdx"`
+	LastSlapReason     int                             `json:"lastSlapReason"`
 	WebOutputBase
 }
 
@@ -63,6 +87,8 @@ func newEgyptianRatscrewDefaultOutput(msg string) *EgyptianRatscrewWebOutput {
 		ChanceFromIdx: -1,
 		CpuDifficulty: int(domain.EgyptianRatscrewCpuNormal),
 		Players:       make([]*EgyptianRatscrewWebPlayer, 0),
+		// 回数は盤面が無くても規則なので、既定の応答にも乗せる。
+		FaceChances:   NewEgyptianRatscrewWebFaceChances(),
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }

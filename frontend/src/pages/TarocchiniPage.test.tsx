@@ -84,6 +84,48 @@ describe('TarocchiniPage', () => {
     expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
   });
 
+  // #5716: ラウンド得点は「トリック数 + 最終トリック +2 + スカルト加点」の合算。
+  // トリック数だけでは teamScores の増分と突き合わせて検算できなかった。
+  it('breaks the round score down into its three parts', async () => {
+    mockExec.mockResolvedValue(
+      makeTarocchiniState({
+        phase: 3,
+        isHumanTurn: false,
+        playableIndices: [],
+        roundTricks: [5, 4, 3, 3],
+        lastTrickWinner: 1, // 席1 = チーム1
+        dealerIdx: 0, // 席0 = チーム0
+        scartoCount: 2,
+      }),
+    );
+    renderWithProviders(<TarocchiniPage />);
+
+    const lastTrick = await screen.findByTestId('tarocchini-last-trick-bonus');
+    expect(lastTrick).toHaveTextContent('チーム1');
+    expect(lastTrick).toHaveTextContent('+2');
+    const scarto = screen.getByTestId('tarocchini-scarto-bonus');
+    expect(scarto).toHaveTextContent('チーム0');
+    expect(scarto).toHaveTextContent('+2');
+  });
+
+  it('omits the breakdown lines that do not apply', async () => {
+    mockExec.mockResolvedValue(
+      makeTarocchiniState({
+        phase: 3,
+        isHumanTurn: false,
+        playableIndices: [],
+        roundTricks: [5, 4, 3, 3],
+        lastTrickWinner: -1,
+        scartoCount: 0,
+      }),
+    );
+    renderWithProviders(<TarocchiniPage />);
+    await screen.findByText('ラウンド結果');
+
+    expect(screen.queryByTestId('tarocchini-last-trick-bonus')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('tarocchini-scarto-bonus')).not.toBeInTheDocument();
+  });
+
   describe('scarto phase', () => {
     it('prompts for exactly two cards and dispatches both', async () => {
       mockExec.mockResolvedValue(scartoState);

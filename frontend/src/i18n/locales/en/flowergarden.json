@@ -32,6 +32,7 @@
   "playing": "Move cards to build foundations",
   "reserve": "Bouquet",
   "reserveCardAriaLabel": "{{card}} (reserve slot {{idx}})",
+  "rulesNote": "Suit is ignored — only the next rank down stacks. An empty bed takes any card.",
   "stalemate": "Stalemate",
   "tableau": "Flower bed",
   "tutorial": {

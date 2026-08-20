@@ -16,6 +16,7 @@
   "teamShort": "T{{team}}",
   "passed": "pass",
   "currentTrick": "Current trick",
+  "jokerLeadSuit": "Joker named suit: {{suit}}",
   "trickEmpty": "(no cards yet)",
   "lead": "Lead",
   "tricksLabel": "Tricks",

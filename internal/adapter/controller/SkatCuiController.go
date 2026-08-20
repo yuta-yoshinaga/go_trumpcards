@@ -54,37 +54,37 @@ func (c *SkatCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bid":
-				return cuiutil.WithParsedInt(args, "Bid step is required (0=pass, 1=accept).", "Invalid bid step: %s.", 0, 1, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "bidStepRequired", "invalidBidStep", 0, 1, func(v int) string {
 					return c.si.Bid(v == 1)
 				})
 			case "ps", "pickskat":
-				return cuiutil.WithParsedInt(args, "Pickup decision is required (0=decline, 1=pick up).", "Invalid pickup decision: %s.", 0, 1, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "pickupDecisionRequired0Decline1PickUp", "invalidPickupDecision", 0, 1, func(v int) string {
 					return c.si.PickSkat(v == 1)
 				})
 			case "d", "discard":
 				if len(args) < 2 {
-					return "Usage: discard <i> <j> (two card indices)\n", true
+					return invalidArg("usageDiscardIJTwoCardIndices"), true
 				}
-				idxA, errMsg, ok := cuiutil.ParseIntArg(args[:1], "", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax)
+				idxA, errMsg, ok := cuiutil.ParseIntArgKeys(args[:1], "", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax)
 				if !ok {
 					return errMsg, true
 				}
-				idxB, errMsg, ok := cuiutil.ParseIntArg(args[1:2], "", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax)
+				idxB, errMsg, ok := cuiutil.ParseIntArgKeys(args[1:2], "", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax)
 				if !ok {
 					return errMsg, true
 				}
 				return c.si.Discard(idxA, idxB), true
 			case "g", "game":
 				if len(args) < 1 {
-					return "Usage: game <type> [trumpSuit]\n  type: 1=Suit 2=Grand 3=Null\n  trumpSuit (suit only): 1=♠ 2=♣ 3=♥ 4=♦\n", true
+					return invalidArg("usageGameTypeTrumpsuitType1Suit2Grand3NullTrumpsuitS"), true
 				}
-				gt, errMsg, ok := cuiutil.ParseIntArg(args[:1], "", "Invalid game type: %s.", 1, 3)
+				gt, errMsg, ok := cuiutil.ParseIntArgKeys(args[:1], "", "invalidGameType", 1, 3)
 				if !ok {
 					return errMsg, true
 				}
 				trump := 0
 				if len(args) >= 2 {
-					t, msg, tok := cuiutil.ParseIntArg(args[1:2], "", "Invalid trump suit: %s.", 1, 4)
+					t, msg, tok := cuiutil.ParseIntArgKeys(args[1:2], "", "invalidTrumpSuit", 1, 4)
 					if !tok {
 						return msg, true
 					}
@@ -92,19 +92,19 @@ func (c *SkatCuiController) Exec(command string) string {
 				}
 				return c.si.DeclareGame(domain.SkatGameType(gt), trump), true
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.si.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.si.Play)
 			case "n", "next":
 				return c.si.NextTrick(), true
 			case "nr", "nextround":
 				return c.si.NextRound(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.si.GetConfig()
 					cfg.CpuDifficulty = domain.SkatCpuDifficulty(v)
 					return c.si.ResetWithConfig(cfg)
 				})
 			case "sl", "settarget":
-				return cuiutil.WithParsedInt(args, "Target score is required.", "Invalid target score: %s. Please enter 1 or more.", 1, math.MaxInt, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "targetScoreRequired", "invalidTargetScore", 1, math.MaxInt, func(v int) string {
 					cfg := c.si.GetConfig()
 					cfg.TargetScore = v
 					return c.si.ResetWithConfig(cfg)

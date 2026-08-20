@@ -399,6 +399,23 @@ describe('PyramidPage', () => {
     await waitFor(() => expect(screen.getByText(/ヒントがあります/)).toBeInTheDocument());
   });
 
+  // #5955: ヒントは無言で現れていた。**空のまま先にマウントしてある**領域の中身が
+  // 変わることが読み上げの条件なので、hint がある間だけ現れる内側の div ではなく、
+  // 常設のラッパーがライブ領域でなければならない。
+  it('announces the hint through a region that was already mounted', async () => {
+    renderWithProviders(<PyramidPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    const region = screen.getByTestId('py-hint-live');
+    expect(region).toHaveAttribute('role', 'status');
+    expect(region).toHaveAttribute('aria-live', 'polite');
+    expect(region).toHaveTextContent('');
+
+    mockExec.mockResolvedValue(withHintState);
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    // **同じ要素**の中身が変わる (別の要素が現れるのではない)。
+    await waitFor(() => expect(region).toHaveTextContent(/ヒントがあります/));
+  });
+
   it('game clear shows action log button', async () => {
     mockExec.mockResolvedValue(gameClearState);
     renderWithProviders(<PyramidPage />);
@@ -683,5 +700,26 @@ describe('PyramidPage best-record', () => {
     expect(screen.getByTestId('py-stats-panel')).toHaveTextContent('—');
     expect(screen.queryByTestId('py-best-moves')).not.toBeInTheDocument();
     expect(screen.queryByTestId('py-best-badge')).not.toBeInTheDocument();
+  });
+});
+
+// #5510: Draw は山札を引き切ると二度と引けない設計なのに、空表示は「なし」としか
+// 言わない。**標準のピラミッド (3回配り直し可) を知っているプレイヤーほど**、
+// 手詰まりの原因を誤解する。
+describe('PyramidPage no-redeal notice', () => {
+  it('says there is no redeal once the stock is empty', async () => {
+    mockExec.mockResolvedValue({ ...playingState, stockCount: 0 });
+    renderWithProviders(<PyramidPage />);
+    const note = await screen.findByTestId('py-no-redeal');
+    expect(note.textContent).toMatch(/配り直し/);
+  });
+
+  // **山札が残っているうちは出さない。** まだ引けるのに「配り直し無し」と出ると、
+  // もう引けないと読める。
+  it('stays quiet while the stock still has cards', async () => {
+    mockExec.mockResolvedValue({ ...playingState, stockCount: 5 });
+    renderWithProviders(<PyramidPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('py-no-redeal')).not.toBeInTheDocument();
   });
 });

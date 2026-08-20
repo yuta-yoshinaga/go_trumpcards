@@ -118,8 +118,19 @@ func (p *CalabresellaCuiPresenter) Output(g interfaces.CalabresellaGame, lastErr
 			b.WriteString(i18n.T("calabresella.promptBidHelp") + "\n")
 		case domain.CalabresellaPhaseDiscard:
 			soloistIdx := g.GetSoloistIdx()
+			soloist := g.GetPlayer(soloistIdx)
 			b.WriteString(i18n.Tf("calabresella.promptDiscard",
-				"name", cuiPlayerName(g.GetPlayer(soloistIdx), soloistIdx)) + "\n")
+				"name", cuiPlayerName(soloist, soloistIdx)) + "\n")
+			// 固定文言の「4枚」は捨てても減らないので、実際の手札枚数から残りを出す
+			// (Web の discardRemaining と同じ式)。12 枚ちょうどになったら出さない。
+			if soloist != nil {
+				if remaining := soloist.GetCardsSize() - domain.CalabresellaHandSize; remaining > 0 {
+					b.WriteString(i18n.Tf("calabresella.promptDiscardRemaining",
+						"n", strconv.Itoa(remaining),
+						"size", strconv.Itoa(soloist.GetCardsSize()),
+						"target", strconv.Itoa(domain.CalabresellaHandSize)) + "\n")
+				}
+			}
 			b.WriteString(i18n.T("calabresella.promptDiscardHelp") + "\n")
 		case domain.CalabresellaPhasePlay:
 			currentIdx := g.GetCurrentPlayerIdx()
@@ -198,5 +209,5 @@ var calabresellaHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *CalabresellaCuiPresenter) ActionLogOutput(g interfaces.CalabresellaGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.CalabresellaPlayer](g)
 }

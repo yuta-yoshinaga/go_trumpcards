@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -92,4 +93,21 @@ func TestEgyptianRatscrewWebPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.EgyptianRatscrewWebPresenter)
 	g := setupEgyptianRatscrewTest()
 	assert.NotEmpty(t, p.ActionLogOutput(g))
+}
+
+// #5580: 規則の説明に使う回数はドメインの FaceCardChances から渡すこと。
+// 直書きすると、回数を変えたとき説明だけが嘘になる。
+func TestEgyptianRatscrewWebPresenter_ShipsTheFaceCardChances(t *testing.T) {
+	g := domain.NewDefaultEgyptianRatscrew()
+	g.Reset()
+
+	var out controller.EgyptianRatscrewWebOutput
+	require.NoError(t, json.Unmarshal([]byte(new(presenter.EgyptianRatscrewWebPresenter).Output(g, nil)), &out))
+	require.NotNil(t, out.FaceChances)
+	assert.Equal(t, domain.FaceCardChances(domain.EgyptianRatscrewJackValue), out.FaceChances.Jack)
+	assert.Equal(t, domain.FaceCardChances(domain.EgyptianRatscrewQueenValue), out.FaceChances.Queen)
+	assert.Equal(t, domain.FaceCardChances(domain.EgyptianRatscrewKingValue), out.FaceChances.King)
+	assert.Equal(t, domain.FaceCardChances(domain.EgyptianRatscrewAceValue), out.FaceChances.Ace)
+	// **4 つが同じ数字ではないこと。**全部 1 を返す実装でも上の検査は通りうる。
+	assert.NotEqual(t, out.FaceChances.Jack, out.FaceChances.Ace)
 }

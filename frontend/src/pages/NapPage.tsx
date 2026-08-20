@@ -32,6 +32,7 @@ import { NAP_HELP, parseNapCommand } from '../utils/cli/commands/napCommands';
 import { formatNapState } from '../utils/cli/formatters/napFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
+import { napPayout } from '../utils/napPayout';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -153,6 +154,14 @@ function NapPageContent() {
   const isPlayPhase = state.phase === NapPhase.PLAY;
   const isTrickEnd = state.phase === NapPhase.TRICK_END;
   const isRoundEnd = state.phase === NapPhase.ROUND_END;
+  // ラウンドで実際に動いたチップ。達成なら宣言者が make を得て、失敗なら相手が
+  // それぞれ fail を得る (減るのは宣言者ではない)。
+  const roundPayout = (() => {
+    const payout = napPayout(state.contract);
+    if (!payout || state.declarerIdx < 0) return null;
+    const made = (state.roundTricks[state.declarerIdx] ?? 0) >= state.contract;
+    return { made, chips: made ? payout.make : payout.fail };
+  })();
   const isGameEnd = state.phase === NapPhase.GAME_END || state.gameEndFlag;
 
   const canPlay = isPlayPhase && isHumanTurn;
@@ -331,6 +340,16 @@ function NapPageContent() {
                         })}
                       </div>
                     ))}
+                    {/* トリック数だけでは、そのラウンドでチップがいくら動いたのか
+                        分からない。達成なら宣言者が、失敗なら相手それぞれが得る (#5651)。 */}
+                    {roundPayout && (
+                      <div className="mt-1 text-ds-text-primary" data-testid="nap-round-payout">
+                        {t(roundPayout.made ? 'roundResult.payoutMade' : 'roundResult.payoutFailed', {
+                          name: playerName(state.declarerIdx, state.players[state.declarerIdx]?.isHuman ?? false),
+                          chips: roundPayout.chips,
+                        })}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -368,14 +387,21 @@ function NapPageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {state.hint && isRequestedHint(state) && (
-              <div className="text-ds-warning text-sm mb-2">
-                {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
-                {state.hint.cardIndices &&
-                  state.hint.cardIndices.length > 0 &&
-                  ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
-              </div>
-            )}
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-testid="nap-hint-live" role="status" aria-live="polite">
+              {state.hint && isRequestedHint(state) && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
+                  {state.hint.cardIndices &&
+                    state.hint.cardIndices.length > 0 &&
+                    ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
+                </div>
+              )}
+            </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="nap-action-buttons">
@@ -396,6 +422,7 @@ function NapPageContent() {
                       : undefined;
                     // The title lives on the wrapping span: browsers suppress native tooltips and
                     // hover events on disabled buttons, so hovering the span still surfaces the reason.
+                    const payout = napPayout(b.value);
                     return (
                       <span key={b.value} title={reason} data-testid={`bid-wrap-${b.value}`}>
                         <button
@@ -408,6 +435,13 @@ function NapPageContent() {
                           data-testid={`bid-${b.value}`}
                         >
                           {t(b.key)}
+                          {/* 賭け金は契約ごとに違い、ナップだけ非対称 (#5651)。
+                              失敗時に動くのは「相手それぞれが得る」数。 */}
+                          {payout && (
+                            <span className="ml-1 text-xs opacity-80">
+                              {t('bidStake', { make: payout.make, fail: payout.fail })}
+                            </span>
+                          )}
                         </button>
                       </span>
                     );

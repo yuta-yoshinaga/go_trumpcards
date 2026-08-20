@@ -144,5 +144,5 @@ var bhabhiHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *BhabhiCuiPresenter) ActionLogOutput(b interfaces.BhabhiGame) string {
-	return actionLogOutputText(b)
+	return actionLogOutputTextForSeats[*domain.BhabhiPlayer](b)
 }

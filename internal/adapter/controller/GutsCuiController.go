@@ -54,25 +54,25 @@ func (c *GutsCuiController) Exec(command string) string {
 			case "n", "next", "nr", "nextround":
 				return c.ti.NextRound(), true
 			case "sp", "setplayers":
-				return cuiutil.WithParsedInt(args, "Player count is required (e.g. sp 4).", "Invalid player count: %s. Please enter 2-7.", domain.GutsMinPlayerCount, domain.GutsMaxPlayerCount, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "playerCountRequiredEGSp4", "invalidPlayerCount27", domain.GutsMinPlayerCount, domain.GutsMaxPlayerCount, func(v int) string {
 					cfg := c.ti.GetConfig()
 					cfg.PlayerCount = v
 					return c.ti.ResetWithConfig(cfg)
 				})
 			case "sa", "setante":
-				return cuiutil.WithParsedInt(args, "Ante is required (e.g. sa 10).", "Invalid ante: %s.", domain.GutsMinAnte, domain.GutsMaxAnte, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "anteRequired", "invalidAnte", domain.GutsMinAnte, domain.GutsMaxAnte, func(v int) string {
 					cfg := c.ti.GetConfig()
 					cfg.Ante = v
 					return c.ti.ResetWithConfig(cfg)
 				})
 			case "sc", "setchips":
-				return cuiutil.WithParsedInt(args, "Starting chips is required (e.g. sc 200).", "Invalid starting chips: %s.", domain.GutsMinStartingChips, domain.GutsMaxStartingChips, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "startingChipsRequired", "invalidStartingChips", domain.GutsMinStartingChips, domain.GutsMaxStartingChips, func(v int) string {
 					cfg := c.ti.GetConfig()
 					cfg.StartingChips = v
 					return c.ti.ResetWithConfig(cfg)
 				})
 			case "st", "setrounds":
-				return cuiutil.WithParsedInt(args, "Target rounds is required (e.g. st 10).", "Invalid target rounds: %s.", domain.GutsMinTargetRounds, domain.GutsMaxTargetRounds, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "targetRoundsRequired", "invalidTargetRounds", domain.GutsMinTargetRounds, domain.GutsMaxTargetRounds, func(v int) string {
 					cfg := c.ti.GetConfig()
 					cfg.TargetRounds = v
 					return c.ti.ResetWithConfig(cfg)

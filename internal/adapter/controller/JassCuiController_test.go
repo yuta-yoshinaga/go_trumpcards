@@ -58,12 +58,12 @@ func TestJassCuiController_Exec(t *testing.T) {
 
 	t.Run("call no args", func(t *testing.T) {
 		c := controller.NewJassCuiController(newMock())
-		assert.Contains(t, c.Exec("c"), "Suit is required")
+		assert.Contains(t, c.Exec("c"), msgStem("suitRequiredRange"))
 	})
 
 	t.Run("call out of range", func(t *testing.T) {
 		c := controller.NewJassCuiController(newMock())
-		assert.Contains(t, c.Exec("c 5"), "Invalid suit: 5")
+		assert.Contains(t, c.Exec("c 5"), msgKey("invalidSuit", "val", "5"))
 	})
 
 	t.Run("schieben sc", func(t *testing.T) {
@@ -89,7 +89,7 @@ func TestJassCuiController_Exec(t *testing.T) {
 
 	t.Run("play no args", func(t *testing.T) {
 		c := controller.NewJassCuiController(newMock())
-		assert.Contains(t, c.Exec("p"), "Card index is required")
+		assert.Contains(t, c.Exec("p"), msgCardIndexRequired())
 	})
 
 	t.Run("next n", func(t *testing.T) {
@@ -126,7 +126,7 @@ func TestJassCuiController_Exec(t *testing.T) {
 
 	t.Run("settarget invalid", func(t *testing.T) {
 		c := controller.NewJassCuiController(newMock())
-		assert.Contains(t, c.Exec("st 0"), "Invalid target score: 0")
+		assert.Contains(t, c.Exec("st 0"), msgInvalidTargetScore("0"))
 	})
 
 	t.Run("hint h", func(t *testing.T) {

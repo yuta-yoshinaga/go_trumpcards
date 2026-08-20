@@ -154,7 +154,10 @@ func (si *SheepsheadInteractor) ActionLog() string {
 // runCpuTurns ゲーム終了・人間の手番・トリック/ラウンド終了になるまで CPU ターンを
 // 実行する。ピック/埋め/呼びの各フェーズも CPU が自動進行する。
 func (si *SheepsheadInteractor) runCpuTurns() {
-	for !si.Game.GetGameEndFlag() {
+	for i := 0; i < MaxCpuIterations; i++ {
+		if si.Game.GetGameEndFlag() {
+			return
+		}
 		switch si.Game.GetPhase() {
 		case domain.SheepsheadPhasePick, domain.SheepsheadPhaseBury, domain.SheepsheadPhaseCall:
 			if si.Game.IsHumanTurn() {

@@ -65,6 +65,8 @@ type SoloWhistGame interface {
 	GetPlayerScores() [domain.SoloWhistPlayerCnt]int
 	// GetRoundTricks 現ラウンドのプレイヤー別獲得トリック数を取得する
 	GetRoundTricks() [domain.SoloWhistPlayerCnt]int
+	// GetDeclarerProgress 宣言者の契約達成状況を取得する (プレイ中以外は nil)
+	GetDeclarerProgress() *domain.SoloWhistDeclarerProgress
 	// GetWinnerPlayer 勝利プレイヤーを取得する (-1=未確定)
 	GetWinnerPlayer() int
 	// GetPlayerCnt プレイヤー数を取得する

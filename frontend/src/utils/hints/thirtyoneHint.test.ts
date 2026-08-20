@@ -4,7 +4,11 @@ import { getThirtyOneHint } from './thirtyoneHint';
 
 const card = (design: Card['design'], value: number): Card => ({ design, value });
 
-const defaultConfig: ThirtyOneConfig = { cpuDifficulty: 1, initialLives: 3 };
+const defaultConfig: ThirtyOneConfig = {
+  cpuDifficulty: 1,
+  initialLives: 3,
+  knockThresholds: { easy: 29, normal: 27, hard: 25 },
+};
 
 function makeState(overrides: Partial<ThirtyOneResponse> = {}): ThirtyOneResponse {
   return {

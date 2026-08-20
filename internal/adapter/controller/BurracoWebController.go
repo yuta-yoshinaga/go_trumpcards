@@ -63,8 +63,25 @@ type BurracoWebOutput struct {
 	IsFrozen         bool                      `json:"isFrozen"`
 	GameEndFlag      bool                      `json:"gameEndFlag"`
 	WinnerIdx        int                       `json:"winnerIdx"`
+	// Hint は人間の手番のときだけ入る。空オブジェクトを返すと「行動できない」と
+	// 読めるので、無いときは省略する。
+	Hint *BurracoWebOutputHint `json:"hint,omitempty"`
 	WebOutputBase
 	Config BurracoWebOutputConfig `json:"config"`
+}
+
+// BurracoWebOutputHint ヒントのアウトプット。
+//
+// **インデックスで運ぶ。**カードそのものを送ると、フロントが手札の並びを
+// 変えたときに別の札を指す。CUI が使うドメインのヒントと同じ値なので、
+// 2 つの画面が同じ盤面で違う手を勧めることがなくなる (#5628)。
+type BurracoWebOutputHint struct {
+	// Action は "draw_stock" / "draw_discard" / "meld" / "skip_meld" / "discard"。
+	Action string `json:"action"`
+	// Indices は対象カードの手札インデックス (draw_stock / skip_meld では空)。
+	Indices []int `json:"indices,omitempty"`
+	// Reason は理由の i18n キー (接頭辞なし)。
+	Reason string `json:"reason"`
 }
 
 // BurracoWebOutputConfig ブラーコ設定アウトプット
@@ -104,28 +121,16 @@ func newBurracoDefaultOutput(msg string) *BurracoWebOutput {
 }
 
 func burracoDispatch(bc *baseController, w http.ResponseWriter, ci usecase.BurracoInteractorIF, param BurracoWebInput, newDefault func(string) *BurracoWebOutput) bool {
-	switch param.Command {
-	case "r", "reset":
-		bc.writePresenterResponse(w, ci.ResetWithConfig(param.ToConfig()))
-	case "ds", "drawstock":
-		bc.writePresenterResponse(w, ci.DrawFromStock())
-	case "dd", "drawdiscard":
-		bc.writePresenterResponse(w, ci.DrawFromDiscard(param.NaturalPairIndices))
-	case "m", "meld":
-		bc.writePresenterResponse(w, ci.Meld(param.MeldGroups))
-	case "sm", "skipmeld":
-		bc.writePresenterResponse(w, ci.SkipMeld())
-	case "d", "discard":
-		if !requireParam(bc, w, newDefault, param.CardIndex == nil, "param error: cardIndex is required.") {
-			return true
-		}
-		bc.writePresenterResponse(w, ci.Discard(*param.CardIndex))
-	case "go", "goout":
-		bc.writePresenterResponse(w, ci.GoOut())
-	case "nr", "nextround":
-		bc.writePresenterResponse(w, ci.NextRound())
-	default:
-		return dispatchLog(param.Command, bc, w, ci.ActionLog)
-	}
-	return true
+	return dispatchRummyMeld(param.Command, bc, w, rummyMeldFns{
+		resetWithConfig: func() string { return ci.ResetWithConfig(param.ToConfig()) },
+		drawFromStock:   ci.DrawFromStock,
+		drawFromDiscard: func() string { return ci.DrawFromDiscard(param.NaturalPairIndices) },
+		meld:            func() string { return ci.Meld(param.MeldGroups) },
+		skipMeld:        ci.SkipMeld,
+		discard:         ci.Discard,
+		goOut:           ci.GoOut,
+		nextRound:       ci.NextRound,
+		actionLog:       ci.ActionLog,
+		hint:            ci.Hint,
+	}, param.CardIndex, newDefault)
 }

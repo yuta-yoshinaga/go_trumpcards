@@ -24,10 +24,7 @@ func (p *UltiWebPresenter) Output(g interfaces.UltiGame, lastErr error) string {
 	// **フェーズと手番はここでは見ない。**Ulti.GetHint() が自分で
 	// 「人間の手番で、かつ行動を選べる状態か」を確かめて nil を返す。
 	if hint := g.GetHint(); hint != nil {
-		resObj.Hint = &controller.WebOutputCardHint{
-			CardIndices: hint.CardIndices,
-			Reason:      hint.Reason,
-		}
+		resObj.Hint = cardHint(hint.CardIndices, hint.Reason)
 	}
 
 	return marshalOrError(resObj)
@@ -53,6 +50,7 @@ func (p *UltiWebPresenter) buildBase(g interfaces.UltiGame) *controller.UltiWebO
 	resObj.GameEndFlag = g.GetGameEndFlag()
 	resObj.WinnerPlayer = g.GetWinnerPlayer()
 	resObj.PlayerCoins = g.GetPlayerCoins()
+	resObj.LastDealCoins = g.GetLastDealCoins()
 	resObj.LastTrickWinner = -1
 	resObj.IsHumanTurn = g.IsHumanTurn()
 	resObj.IsHumanBidTurn = g.IsHumanBidTurn()
@@ -166,10 +164,7 @@ func (p *UltiWebPresenter) HintOutput(g interfaces.UltiGame) string {
 	hint := g.GetHint()
 	resObj := p.buildBase(g)
 	if hint != nil {
-		resObj.Hint = &controller.WebOutputCardHint{
-			CardIndices: hint.CardIndices,
-			Reason:      hint.Reason,
-		}
+		resObj.Hint = cardHint(hint.CardIndices, hint.Reason)
 	}
 	// **「頼んだヒントか」を CLI が見分けられるようにする。**このゲーム群の
 	// `hintAvailable` は画面のラベルとして既に使われているので、別キーを出す (#4483)。

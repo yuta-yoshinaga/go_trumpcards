@@ -43,15 +43,15 @@ func TestTrenteEtQuaranteCuiController_Exec(t *testing.T) {
 	})
 	t.Run("bet missing args", func(t *testing.T) {
 		out := controller.NewTrenteEtQuaranteCuiController(newMock()).Exec("b")
-		assert.Contains(t, out, "required")
+		assert.True(t, msgRejected(out))
 	})
 	t.Run("bet invalid type", func(t *testing.T) {
 		out := controller.NewTrenteEtQuaranteCuiController(newMock()).Exec("b 9 100")
-		assert.Contains(t, out, "Invalid bet type")
+		assert.Contains(t, out, msgStem("invalidBetTypeNoir"))
 	})
 	t.Run("bet invalid stake", func(t *testing.T) {
 		out := controller.NewTrenteEtQuaranteCuiController(newMock()).Exec("b 0 xyz")
-		assert.Contains(t, out, "Invalid stake")
+		assert.Contains(t, out, msgStem("invalidStakeDot"))
 	})
 	t.Run("next round", func(t *testing.T) {
 		m := newMock()

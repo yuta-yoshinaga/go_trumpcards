@@ -31,5 +31,7 @@
   "hintReasonLead": "lead the trick",
   "hintReasonFollowSuit": "follow the lead suit",
   "hintReasonTrumpCut": "cut with trump",
-  "hintReasonDiscard": "discard a non-essential card"
+  "hintReasonDiscard": "discard a non-essential card",
+  "helpExamplePlay": "  p 0                  play hand card 0",
+  "helpHint": "  h                    show a hint"
 }

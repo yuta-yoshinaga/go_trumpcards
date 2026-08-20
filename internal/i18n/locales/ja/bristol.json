@@ -26,9 +26,13 @@
   "fanLabel": "ファン{{idx}}:",
   "pileCount": " ({{count}}枚)",
   "stockLine": "ストック: {{count}}枚",
+  "undoToEscape": "手詰まりです。{{count}} 回アンドゥ (u) すると打てる手に戻れます。",
   "hintFromTableau": "タブロー{{col}}列",
   "hintFromFan": "ファン{{col}}",
   "hintToFoundation": "組札{{idx}}",
   "hintToTableau": "タブロー{{idx}}列",
-  "hintLine": "ヒント: {{from}} → {{to}}"
+  "hintLine": "ヒント: {{from}} → {{to}}",
+  "helpExampleHint": "  h                    次の一手を教えてもらう",
+  "helpExampleAuto": "  ac                   組札へ送れる札を自動で送る",
+  "helpUndo": "  u                    1手戻す"
 }

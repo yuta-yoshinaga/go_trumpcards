@@ -49,29 +49,27 @@ func (ac *AndarBaharCuiController) Exec(command string) string {
 // execBet は "b <金額> <a|b> [サイド金額 サイド帯]" を解釈する。
 func (ac *AndarBaharCuiController) execBet(args []string) (string, bool) {
 	if len(args) < 2 {
-		return "Bet amount and target (a/b) are required.", true
+		return invalidArg("betAmountAndTargetRequired"), true
 	}
-	amount, errMsg, ok := cuiutil.ParseIntArg(args[:1],
-		"Bet amount is required.", "Invalid bet amount. Please enter a number.",
+	amount, errMsg, ok := cuiutil.ParseIntArgKeys(args[:1],
+		"betAmountRequired", "invalidBetAmount",
 		domain.AndarBaharMinBet, math.MaxInt)
 	if !ok {
 		return errMsg, true
 	}
 	target, ok := andarBaharParseTarget(args[1])
 	if !ok {
-		return "Invalid bet target. Use a (andar) / b (bahar).", true
+		return invalidArg("invalidBetTargetAndarBahar"), true
 	}
 
 	sideAmount, sideBand := 0, domain.AndarBaharSideNone
 	if len(args) >= 4 {
-		sideAmount, errMsg, ok = cuiutil.ParseIntArg(args[2:3],
-			"Side bet amount is required.", "Invalid side bet amount. Please enter a number.",
+		sideAmount, errMsg, ok = cuiutil.ParseIntArgKeys(args[2:3], "sideBetAmountRequired", "invalidSideBetAmountANumber",
 			domain.AndarBaharMinBet, math.MaxInt)
 		if !ok {
 			return errMsg, true
 		}
-		sideBand, errMsg, ok = cuiutil.ParseIntArg(args[3:4],
-			"Side bet band is required.", "Invalid side bet band. Please enter a number.",
+		sideBand, errMsg, ok = cuiutil.ParseIntArgKeys(args[3:4], "sideBetBandRequired", "invalidSideBetBandANumber",
 			domain.AndarBaharSideFirst, domain.AndarBaharSide36Plus)
 		if !ok {
 			return errMsg, true

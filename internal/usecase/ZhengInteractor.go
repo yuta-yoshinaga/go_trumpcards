@@ -75,9 +75,7 @@ func (zi *ZhengInteractor) ActionLog() string {
 
 // runCpuTurns ゲームが終わるか人間の手番になるまでCPUターンを実行
 func (zi *ZhengInteractor) runCpuTurns() {
-	for !zi.Game.GetGameEndFlag() && !zi.Game.IsHumanTurn() {
-		zi.Game.CpuPlay()
-	}
+	runCpuTurnsCapped(zi.Game, zi.Game.CpuPlay)
 }
 
 // RestoreZhengInteractor deserialises JSON into a ZhengInteractor.

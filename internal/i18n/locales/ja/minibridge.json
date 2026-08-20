@@ -32,5 +32,7 @@
   "suitClover": "♣",
   "suitHeart": "♥",
   "suitDiamond": "♦",
-  "suitNoTrump": "NT"
+  "suitNoTrump": "NT",
+  "helpExampleGiveUp": "  g                    この局を投了する",
+  "helpHint": "  h                    助言を表示"
 }

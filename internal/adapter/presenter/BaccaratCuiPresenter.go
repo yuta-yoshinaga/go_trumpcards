@@ -73,7 +73,25 @@ func (bp *BaccaratCuiPresenter) Output(b interfaces.BaccaratGame, lastErr error)
 	sb.WriteString("----------\n")
 
 	if lastErr != nil {
-		sb.WriteString(color.Red(lastErr.Error()) + "\n")
+		sb.WriteString(i18n.MarkErrorLine(color.Red(lastErr.Error())) + "\n")
+	}
+
+	// **配当を知らないままベットタイプを選ばせない。** Web はベット前に payoutRef
+	// パネルで倍率を出しているのに、CUI には出す手段が無かった (#5497)。BlackJack が
+	// #4677 で入れたのと同じ形。倍率はドメインの定数から作る -- 文言に直接書くと、
+	// コミッション率や配当率を変えたときに嘘の表が残る。
+	//
+	// 結果表示中は重ねない。決着した卓に配当表を並べると、いま起きたことが読み取り
+	// にくくなる。次のベット前にまた出る。
+	if !b.GetGameEndFlag() {
+		sb.WriteString(color.Bold(i18n.T("baccarat.payoutRefTitle")) + "\n")
+		sb.WriteString("  " + i18n.T("baccarat.payoutRefPlayer") + "\n")
+		sb.WriteString("  " + i18n.Tf("baccarat.payoutRefBanker",
+			"commission", strconv.Itoa(domain.BaccaratCommissionRate)) + "\n")
+		sb.WriteString("  " + i18n.Tf("baccarat.payoutRefTie",
+			"rate", strconv.Itoa(domain.BaccaratTiePayoutRate)) + "\n")
+		sb.WriteString("  " + i18n.Tf("baccarat.payoutRefPair",
+			"rate", strconv.Itoa(domain.BacPairPayoutRate)) + "\n")
 	}
 
 	if b.GetGameEndFlag() {

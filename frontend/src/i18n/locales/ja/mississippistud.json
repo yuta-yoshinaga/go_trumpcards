@@ -73,5 +73,6 @@
     "raiseBig": "強いハンド — 3倍ベット推奨",
     "raiseSmall": "微妙なハンド — 1倍ベット推奨",
     "fold": "弱いハンド — フォールド推奨"
-  }
+  },
+  "payoutMultiplier": "配当倍率 x{{multiplier}}"
 }

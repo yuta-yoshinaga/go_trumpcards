@@ -32,5 +32,7 @@
   "promptSevenPass": "【7渡し】渡すカードを選択してください (p [インデックス])",
   "promptTenDiscard": "【10捨て】捨てるカードを選択してください (p [インデックス])",
   "promptQueenBomber": "【12ボンバー】除去するカードの数字を入力してください (p [1-13])",
-  "promptPlay": "p [インデックス...] でカードを出す / p でパス"
+  "promptPlay": "p [インデックス...] でカードを出す / p でパス",
+  "helpExamplePass": "  p                    出せる手が無いときはパスする",
+  "helpLog": "  l                    行動ログを表示"
 }

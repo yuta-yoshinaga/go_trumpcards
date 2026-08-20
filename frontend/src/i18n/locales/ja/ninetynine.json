@@ -89,5 +89,6 @@
     "discardLowest": "一番低いカードを捨てましょう"
   },
   "hintRequested": "ヒントがあります",
-  "noHint": "ヒントはありません"
+  "noHint": "ヒントはありません",
+  "trickWinnerBadge": "勝ち"
 }

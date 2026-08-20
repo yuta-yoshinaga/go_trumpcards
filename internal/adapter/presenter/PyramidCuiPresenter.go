@@ -61,6 +61,12 @@ func (pr *PyramidCuiPresenter) Output(p interfaces.PyramidGame, lastErr error) s
 		// Stock + waste
 		b.WriteString(i18n.Tf("pyramid.stockLine",
 			"count", strconv.Itoa(p.GetStockCount())))
+		// **配り直しは無い。** Draw は山札を引き切ると二度と引けない設計なのに、
+		// 残り枚数しか出しておらず、標準のピラミッド (3回配り直し可) を知っている
+		// プレイヤーほど手詰まりの原因を誤解する (#5510)。
+		if p.GetStockCount() == 0 {
+			b.WriteString(" " + color.Yellow(i18n.T("pyramid.noRedeal")))
+		}
 		waste := p.GetWaste()
 		if len(waste) > 0 {
 			wasteKey := "pyramid.wasteCard"
@@ -82,9 +88,16 @@ func (pr *PyramidCuiPresenter) Output(p interfaces.PyramidGame, lastErr error) s
 		case domain.PyramidPhasePlaying:
 			if p.IsStalemate() {
 				b.WriteString(color.Red(i18n.T("cuiSolitaireStalemate")) + "\n")
+				// Tell the player how many undos escape the dead end, matching the
+				// web StalemateEscapeButton.
+				if n := p.UndoToEscape(); n > 0 {
+					b.WriteString(color.Yellow(i18n.Tf("cuiSolitaireUndoToEscape",
+						"count", strconv.Itoa(n))) + "\n")
+				}
 			}
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
-				"count", strconv.Itoa(p.GetMoveCount())) + "\n")
+				"count", strconv.Itoa(p.GetMoveCount())) +
+				cuiSolitaireUndoHint(p.CanUndo()) + "\n")
 		case domain.PyramidPhaseGameClear:
 			b.WriteString(color.Green(i18n.T("cuiSolitaireGameClear")) + " " +
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(p.GetMoveCount())) + "\n")

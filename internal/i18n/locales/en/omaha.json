@@ -46,5 +46,19 @@
   "addonPrompt": "Add-on? ({{chips}} chips) (ad=addon / sa=skip)",
   "gameEnd": "Game over",
   "hiLoRuleLine": "Low: five distinct cards 8-or-lower (8 or Better); if none qualifies, Hi takes the whole pot",
-  "currentBestHand": "Best hand so far: {{hand}} ({{cards}})"
+  "currentBestHand": "Best hand so far: {{hand}} ({{cards}})",
+  "helpExampleRaise": "  ra 200               raise to 200 chips total",
+  "helpExampleCall": "  c                    call the current bet",
+  "helpLog": "  l                    show the action log",
+  "learningHeader": "[Learning mode]",
+  "learningLine": "  Equity: {{equity}}% / Pot odds: {{potodds}}%",
+  "learningEvPlus": "  +EV (equity beats pot odds; calling is favorable)",
+  "learningEvMinus": "  -EV (equity at or below pot odds; calling is unfavorable)",
+  "resultBest": " / Best: {{cards}}",
+  "resultBestLabel": "Best:",
+  "resultBestLegend": "  (* = card used from the hole)",
+  "boardLowLive": "Low: live (3 low ranks on the board)",
+  "boardLowPossible": "Low: possible ({{needed}} more low rank(s) needed)",
+  "boardLowImpossible": "Low: dead",
+  "scoop": "🏆 Scoop! took both the high and the low"
 }

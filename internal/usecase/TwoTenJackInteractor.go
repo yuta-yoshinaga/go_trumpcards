@@ -123,7 +123,10 @@ func (ti *TwoTenJackInteractor) ActionLog() string {
 
 // runCpuDeclares ゲームが終わるか人間の宣言番または宣言フェーズが終了するまでCPU宣言を実行
 func (ti *TwoTenJackInteractor) runCpuDeclares() {
-	for !ti.Game.GetGameEndFlag() {
+	for i := 0; i < MaxCpuIterations; i++ {
+		if ti.Game.GetGameEndFlag() {
+			return
+		}
 		if ti.Game.GetPhase() != domain.TwoTenJackPhaseDeclare {
 			break
 		}

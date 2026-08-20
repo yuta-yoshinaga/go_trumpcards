@@ -12,6 +12,14 @@
   "trick": "場: {{cards}}",
   "playable": "出せる札: {{indexes}}",
   "ladder": "序列: 【J(カルニッフェル)】 > 【7(悪魔・リード時のみ)】 > 6(法王) > 2(皇帝) > 3 > 4 > 5 > K > Q > 10 > 9 > 8。【3はKに、4はK/Qに、5は絵札すべてに負けます】。追随して出した7はあらゆる札に負けます",
+  "title.karnoffel": "カルニッフェル",
+  "title.devil": "悪魔",
+  "title.pope": "法王",
+  "title.kaiser": "皇帝",
+  "title.oberstecher": "オーバー",
+  "title.unterstecher": "ウンター",
+  "title.farbenstecher": "ファルベン",
+  "handTitle": "[{{title}}]",
   "gameEnd": "ゲーム終了！ チーム{{team}}の勝ち！",
   "promptPlay": "手番: {{name}}",
   "promptPlayHelp": "p <i> ・・・手札 i を出す（【追随の義務はありません】。ただし第1トリックのリードに悪魔は使えません）",
@@ -22,5 +30,7 @@
   "handEnd": "局終了",
   "handDrawn": "局終了（どちらも3トリックに届かず）",
   "result.humanWin": "ゲーム終了！ あなたのチームの勝ちです！",
-  "result.cpuWin": "ゲーム終了！ 相手チームの勝ちです。"
+  "result.cpuWin": "ゲーム終了！ 相手チームの勝ちです。",
+  "helpExamplePlay": "  p 0                       手札の 0 番のカードを出す",
+  "helpExampleNext": "  n                         トリックの決着を見てから次へ"
 }

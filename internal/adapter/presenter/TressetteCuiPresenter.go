@@ -13,7 +13,7 @@ import (
 )
 
 // tressettePlayerStr returns the display string for a single Tressette player.
-func tressettePlayerStr(player *domain.TressettePlayer, i int) string {
+func tressettePlayerStr(player *domain.TressettePlayer, i int, playable []int) string {
 	var b strings.Builder
 	b.WriteString(i18n.Tf("tressette.playerLine",
 		"name", cuiPlayerName(player, i),
@@ -23,7 +23,10 @@ func tressettePlayerStr(player *domain.TressettePlayer, i int) string {
 	))
 	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
-		b.WriteString(cuiIndexedCardListStr(player) + "\n")
+		// **マストフォローで何が出せるかを示す。**Web はリング表示しているのに、
+		// CUI は番号を打ってエラーを踏むまで分からなかった (#5633)。playable が
+		// 空なら無印 (制限が決まっていない状態と区別する)。
+		b.WriteString(cuiPlayableMarkedCardListStr(player, playable) + "\n")
 	}
 	return b.String()
 }
@@ -57,7 +60,12 @@ func (p *TressetteCuiPresenter) Output(g interfaces.TressetteGame, lastErr error
 
 		for i := 0; i < g.GetPlayerCnt(); i++ {
 			if player := g.GetPlayer(i); player != nil {
-				b.WriteString(tressettePlayerStr(player, i))
+				// 目印はプレイフェーズで本人の手番のときだけ。
+				var playable []int
+				if g.GetPhase() == domain.TressettePhasePlay && g.GetCurrentPlayerIdx() == i {
+					playable = g.GetPlayableIndices(i)
+				}
+				b.WriteString(tressettePlayerStr(player, i, playable))
 			}
 		}
 
@@ -129,5 +137,5 @@ var tressetteHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *TressetteCuiPresenter) ActionLogOutput(g interfaces.TressetteGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.TressettePlayer](g)
 }

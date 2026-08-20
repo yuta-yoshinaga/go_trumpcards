@@ -24,5 +24,7 @@
   "reason.stackIsShort": "手持ちが心もとないので、最小額に抑えるのが無難です",
   "reason.youAreTheBanker": "親は張らず、子の張りを受けます",
   "reason.roundIsOver": "このラウンドは決着しました",
-  "result.gameEnd": "ゲームが終わりました"
+  "result.gameEnd": "ゲームが終わりました",
+  "helpExampleBet": "  bet 100             100 チップを賭ける",
+  "rankWithValue": "{{rank}}（{{value}}）"
 }

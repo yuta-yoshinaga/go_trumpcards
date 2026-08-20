@@ -60,10 +60,18 @@ func (cp *CasinoWarCuiPresenter) Output(cw interfaces.CasinoWarGame, lastErr err
 		}
 	}
 
+	// **選ぶ前に分かること。** Web は同じ比較で警告を出し War ボタンを disabled に
+	// するが、CUI にはそれが無く、"war" を打って初めてドメインのエラーで気づく
+	// 作りだった (#5583)。ちょうど足りる場合は払えるので警告しない。
+	if cw.GetPhase() == domain.CasinoWarPhaseTieDecision && cw.GetChips() < cw.GetAnte() {
+		sb.WriteString(color.Yellow(i18n.Tf("casinowar.warInsufficientChips",
+			"ante", strconv.Itoa(cw.GetAnte()))) + "\n")
+	}
+
 	sb.WriteString("----------\n")
 
 	if lastErr != nil {
-		sb.WriteString(color.Red(lastErr.Error()) + "\n")
+		sb.WriteString(i18n.MarkErrorLine(color.Red(lastErr.Error())) + "\n")
 	}
 
 	if cw.GetGameEndFlag() {

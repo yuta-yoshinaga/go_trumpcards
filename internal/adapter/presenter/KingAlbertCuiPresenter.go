@@ -100,6 +100,9 @@ func (p *KingAlbertCuiPresenter) Output(bc interfaces.KingAlbertGame, lastErr er
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(bc.GetMoveCount())) + "\n")
 		case domain.KingAlbertPhaseGameOver:
 			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
+			fnd := bc.GetFoundation()
+			b.WriteString(color.Yellow(cuiSolitaireGameOverSummary(
+				cuiCountPileCards(fnd[:]...), domain.KingAlbertFoundationCnt*domain.CardValueMax)) + "\n")
 		}
 	})
 }

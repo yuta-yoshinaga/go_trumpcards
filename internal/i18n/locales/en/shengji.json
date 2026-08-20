@@ -24,7 +24,7 @@
   "declarable": "you can declare: {{suits}}",
   "noDeclarable": "You hold no level card, so you cannot declare.",
   "declarePrompt": "d <0-4> to declare (0 passes; only a stronger showing overrides)",
-  "kittyPrompt": "b <idx x{{count}}> to bury {{count}} cards. Keep your points and trumps out of the kitty",
+  "kittyPrompt": "b <idx x{{count}}> to bury {{count}} cards. Keep your points and trumps out of the kitty: if the defenders take the last trick, the kitty's points reach them multiplied by (cards in the last trick x {{mult}})",
   "promptTurn": "turn: {{name}}",
   "promptHelp": "p <idx...> to play (you must follow the led suit while you hold it)",
   "promptNext": "n for the next hand",
@@ -38,5 +38,6 @@
   "handHeld": "The declarers held",
   "handTaken": "The defenders reached eighty and took the deal",
   "result.humanWin": "Game over! Your team wins!",
-  "result.cpuWin": "Game over! The other team wins."
+  "result.cpuWin": "Game over! The other team wins.",
+  "helpExampleDeclare": "  d 0                       pass on declaring a trump"
 }

@@ -13,5 +13,7 @@
   "promptStuck": "膠着状態です。flip コマンドでカードをめくってください。",
   "promptStuckHelp": "操作: f / flip → お互いが山札から新しいカードをめくり、膠着を解消します",
   "winHuman": "あなたの勝ちです！",
-  "winCpu": "CPUの勝ちです..."
+  "winCpu": "CPUの勝ちです...",
+  "helpExampleHint": "  h                    次の一手を教えてもらう",
+  "helpLog": "  l                    行動ログを表示"
 }

@@ -44,6 +44,30 @@ func allFoursPlayerStr(player *domain.AllFoursPlayer, i int) string {
 	return b.String()
 }
 
+// writeAllFoursBreakdown は High / Low / Jack / Game の獲得者を書く。
+// プレイ中と確定後以外は何も書かない。
+func writeAllFoursBreakdown(b *strings.Builder, s interfaces.AllFoursGame) {
+	bd := allFoursComputeBreakdown(s)
+	if bd == nil {
+		return
+	}
+	name := func(idx int) string {
+		if idx < 0 {
+			return i18n.T("allfours.breakdownNone")
+		}
+		return cuiPlayerName(s.GetPlayer(idx), idx)
+	}
+	b.WriteString(i18n.T("allfours.breakdownTitle"))
+	if bd.Provisional {
+		b.WriteString(" " + i18n.T("allfours.breakdownProvisional"))
+	}
+	b.WriteString("\n")
+	b.WriteString(i18n.Tf("allfours.breakdownHigh", "name", name(bd.HighIdx)) + "\n")
+	b.WriteString(i18n.Tf("allfours.breakdownLow", "name", name(bd.LowIdx)) + "\n")
+	b.WriteString(i18n.Tf("allfours.breakdownJack", "name", name(bd.JackIdx)) + "\n")
+	b.WriteString(i18n.Tf("allfours.breakdownGame", "name", name(bd.GameIdx)) + "\n")
+}
+
 // AllFoursCuiPresenter renders the All Fours CUI view.
 type AllFoursCuiPresenter struct{}
 
@@ -84,6 +108,12 @@ func (p *AllFoursCuiPresenter) Output(s interfaces.AllFoursGame, lastErr error) 
 			b.WriteString(color.Green(banner) + "\n")
 			return
 		}
+		// **得点は High / Low / Jack / Game の4項目で決まる** (#5683)。合計点の
+		// 増減だけでは、なぜその点差になったのか読み取れなかった。Web は
+		// af-breakdown で同じ内訳を出している。判定は共通関数から取るので、
+		// 同じ局面が画面によって別の結果に見えることはない。
+		writeAllFoursBreakdown(b, s)
+
 		switch s.GetPhase() {
 		case domain.AllFoursPhaseBeg:
 			b.WriteString(i18n.T("allfours.promptBeg") + "\n")
@@ -161,5 +191,5 @@ var allFoursHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *AllFoursCuiPresenter) ActionLogOutput(s interfaces.AllFoursGame) string {
-	return actionLogOutputText(s)
+	return actionLogOutputTextForSeats[*domain.AllFoursPlayer](s)
 }

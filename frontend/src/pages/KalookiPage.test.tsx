@@ -376,6 +376,51 @@ describe('KalookiPage', () => {
     expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
   });
 
+  // #5666: ジョーカーはメルド点を 1.5 倍にするワイルド札なのに、手札では通常札と
+  // 見分けが付かなかった。同種の概念を持つ ThreeThirteen は wildBadge を出している。
+  it('badges a joker in hand', async () => {
+    mockExec.mockResolvedValue({
+      ...drawState,
+      players: [{ ...drawState.players[0], cards: [card('JOKER', 0), card('SPADE', 5)] }, cpu(1), cpu(2)],
+    });
+    renderWithProviders(<KalookiPage />);
+
+    await waitFor(() => expect(screen.getByTestId('kalooki-hand-0')).toBeInTheDocument());
+    expect(screen.getAllByTestId('kalooki-joker-badge').length).toBeGreaterThan(0);
+    // 通常札には付かない。
+    expect(screen.getByTestId('kalooki-hand-1').querySelector('[data-testid="kalooki-joker-badge"]')).toBeNull();
+  });
+
+  it('says the card is a joker in its aria-label', async () => {
+    mockExec.mockResolvedValue({
+      ...drawState,
+      players: [{ ...drawState.players[0], cards: [card('JOKER', 0)] }, cpu(1), cpu(2)],
+    });
+    renderWithProviders(<KalookiPage />);
+
+    const jokerButton = await screen.findByTestId('kalooki-hand-0');
+    expect(jokerButton.getAttribute('aria-label')).toContain('ジョーカー');
+  });
+
+  // 卓上メルドの中のジョーカーにも同じ印を付ける (受け入れ条件2)。
+  it('badges a joker inside a table meld', async () => {
+    mockExec.mockResolvedValue({
+      ...openedState,
+      players: [
+        { ...openedState.players[0], hasOpened: true },
+        {
+          ...cpu(1),
+          hasOpened: true,
+          melds: [{ cards: [card('SPADE', 5), card('HEART', 5), card('JOKER', 0)] }],
+        },
+        cpu(2),
+      ],
+    });
+    renderWithProviders(<KalookiPage />);
+
+    await waitFor(() => expect(screen.getAllByTestId('kalooki-joker-badge').length).toBeGreaterThan(0));
+  });
+
   it('totals the staged groups against the opening threshold', async () => {
     mockExec.mockResolvedValue(meldState);
     renderWithProviders(<KalookiPage />);

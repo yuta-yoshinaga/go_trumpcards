@@ -91,12 +91,33 @@ if (!rmBlock.includes('*,') || !rmBlock.includes('animation-duration: 0.01ms')) 
   process.exit(1);
 }
 
+// Card focus-indicator guard (issue #5359): the keyboard focus ring for card
+// buttons must live in a stylesheet rule carrying `!important`, not in a
+// Tailwind utility. Card buttons set inline styles on both `boxShadow` and
+// `outline`, and inline declarations beat class-based ones, so a utility-based
+// indicator is erased in exactly the states a keyboard user is navigating.
+// The first fix for #5359 swapped `ring` for `outline` and hit the same wall
+// from the other side, which is why this asserts the mechanism, not the colour.
+const focusIdx = indexCss.indexOf('.card-focus-ring:focus-visible');
+const focusEnd = focusIdx === -1 ? -1 : indexCss.indexOf('\n}', focusIdx);
+const focusBlock = focusIdx === -1 || focusEnd === -1 ? '' : indexCss.slice(focusIdx, focusEnd + 2);
+if (!focusBlock.includes('outline:') || !focusBlock.includes('!important')) {
+  console.error(
+    '\ncard-focus-ring: index.css must define `.card-focus-ring:focus-visible` with an\n' +
+      '`outline` marked `!important`. Card buttons set `outline` AND `boxShadow` inline,\n' +
+      'so any class-based focus utility is silently overridden and keyboard focus becomes\n' +
+      'invisible. See issue #5359.',
+  );
+  process.exit(1);
+}
+
 // 2020 source files under src/ today. Each sub-guard below floors its own walk: this file
 // holds eight independent checks, and a floor on one of them says nothing about the other
 // seven.
 assertFloor('design-tokens', files.length, 1200, 'source files scanned');
 console.log(`design-tokens: OK (${files.length} source files scanned, test files skipped).`);
 console.log('reduced-motion: OK (index.css uses the universal prefers-reduced-motion block).');
+console.log('card-focus-ring: OK (index.css defines the !important focus indicator for card buttons).');
 
 // Tap-target guard (issue #4368): DESIGN.md's "Interactive Element Minimum
 // Size" rule requires every interactive control to hit a 44x44 CSS px target

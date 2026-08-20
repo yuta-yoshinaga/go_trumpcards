@@ -2,9 +2,12 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -712,6 +715,8 @@ func TestOmahaCuiPresenter_ActionLogOutput(t *testing.T) {
 		}
 		mockGame.On("GetGameEndFlag").Return(true)
 		mockGame.On("GetActionLog").Return(entries)
+		// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+		mockGame.On("GetPlayer", mock.Anything).Return(domain.NewOmahaPlayer(true, domain.HoldemPlayStyle(0))).Maybe()
 
 		result := p.ActionLogOutput(mockGame)
 
@@ -725,6 +730,8 @@ func TestOmahaCuiPresenter_ActionLogOutput(t *testing.T) {
 		mockGame := new(interfaces.MockOmahaGame)
 		mockGame.On("GetGameEndFlag").Return(true)
 		mockGame.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+		// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+		mockGame.On("GetPlayer", mock.Anything).Return(domain.NewOmahaPlayer(true, domain.HoldemPlayStyle(0))).Maybe()
 
 		result := p.ActionLogOutput(mockGame)
 
@@ -885,5 +892,318 @@ func TestOmahaCuiPresenter_English(t *testing.T) {
 		out := p.Output(o, nil)
 		assert.Contains(t, out, "Game over")
 		assert.NotContains(t, out, "ゲーム終了")
+	})
+}
+
+// **学習モードの値は Web にしか出ていなかった (#5482)。** GetEquity /
+// GetPotOdds は共有ヘルパ経由で Web へ送られ、Holdem 系の CUI も出しているのに、
+// Omaha の CUI だけが取り残されていた。
+func TestOmahaCuiPresenter_ShowsEquityAndPotOdds(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.OmahaCuiPresenter)
+
+	t.Run("on the human's turn the learning block appears", func(t *testing.T) {
+		h, players := makeOmahaForPresenter()
+		h.SetPhase(domain.OmahaPhaseFlop)
+		h.SetCurrentTurn(0)
+		for _, v := range []int{14, 13, 12, 11} {
+			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, v, false))
+		}
+
+		// **前提をドメインで確かめてから出力を見る。** ここが nil のままだと、
+		// 表示が出ないことを「正しい」と読んでしまう。
+		require.True(t, h.IsHumanTurn())
+		require.NotNil(t, h.GetEquity())
+
+		out := p.Output(h, nil)
+		assert.Contains(t, out, i18n.T("omaha.learningHeader"))
+		assert.Contains(t, out, "勝率")
+		assert.Contains(t, out, "ポットオッズ")
+	})
+
+	// **負のコントロール: 降りていれば出ない。** GetEquity が nil を返す局面。
+	t.Run("a folded human gets no learning block", func(t *testing.T) {
+		h, players := makeOmahaForPresenter()
+		h.SetPhase(domain.OmahaPhaseFlop)
+		h.SetCurrentTurn(0)
+		for _, v := range []int{14, 13, 12, 11} {
+			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, v, false))
+		}
+		players[0].SetFolded(true)
+		require.Nil(t, h.GetEquity())
+
+		assert.NotContains(t, p.Output(h, nil), i18n.T("omaha.learningHeader"))
+	})
+
+	// CPU の手番でも出さない。相手の番に自分の勝率を出しても意味がない。
+	t.Run("no learning block on a CPU turn", func(t *testing.T) {
+		h, players := makeOmahaForPresenter()
+		h.SetPhase(domain.OmahaPhaseFlop)
+		h.SetCurrentTurn(1)
+		for _, v := range []int{14, 13, 12, 11} {
+			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, v, false))
+		}
+		require.False(t, h.IsHumanTurn())
+
+		assert.NotContains(t, p.Output(h, nil), i18n.T("omaha.learningHeader"))
+	})
+}
+
+// **+EV / -EV の 2 本の腕。** #5482 では見出しと数値だけを見ており、この分岐が
+// 一度も実行されていなかった (codecov が patch 61.5% で指摘)。
+func TestOmahaCuiPresenter_ShowsWhetherCallingIsPlusEV(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.OmahaCuiPresenter)
+
+	// ポットとコール額から必要勝率が決まる。極端な値を置いて 2 本の腕を狙う。
+	render := func(pot, lastBet int) string {
+		h, players := makeOmahaForPresenter()
+		h.SetPhase(domain.OmahaPhaseRiver)
+		h.SetCurrentTurn(0)
+		for _, v := range []int{14, 13, 12, 11} {
+			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, v, false))
+		}
+		h.SetPot(pot)
+		h.SetLastBet(lastBet)
+		require.True(t, h.IsHumanTurn())
+		require.NotNil(t, h.GetEquity())
+		return p.Output(h, nil)
+	}
+
+	t.Run("a cheap call is +EV", func(t *testing.T) {
+		// ポット 1000 に対しコール 1 → 必要勝率はほぼ 0%。どんな手でも +EV。
+		out := render(1000, 1)
+		require.Contains(t, out, i18n.T("omaha.learningHeader"))
+		assert.Contains(t, out, i18n.T("omaha.learningEvPlus"))
+		assert.NotContains(t, out, i18n.T("omaha.learningEvMinus"))
+	})
+
+	t.Run("an expensive call is -EV", func(t *testing.T) {
+		// ポット 1 に対しコール 1000 → 必要勝率はほぼ 100%。どんな手でも -EV。
+		out := render(1, 1000)
+		require.Contains(t, out, i18n.T("omaha.learningHeader"))
+		assert.Contains(t, out, i18n.T("omaha.learningEvMinus"))
+		assert.NotContains(t, out, i18n.T("omaha.learningEvPlus"))
+	})
+
+	// **負のコントロール: コール額 0 なら判定しない。** ポットオッズが 0 のとき
+	// +EV/-EV を出すと、賭けていない局面で「コール有利」と言うことになる。
+	t.Run("nothing to call means no verdict", func(t *testing.T) {
+		out := render(100, 0)
+		require.Contains(t, out, i18n.T("omaha.learningHeader"))
+		assert.NotContains(t, out, i18n.T("omaha.learningEvPlus"))
+		assert.NotContains(t, out, i18n.T("omaha.learningEvMinus"))
+	})
+}
+
+// #5483: Web の OmahaHiLoPage は BoardLowBadge でベッティング中ずっとロー成立
+// 可能性を出しているのに、CUI はショーダウンの resultLow でしか見せない。
+// CUI プレイヤーはベットのたびに自力で低ランクを数えることになる。
+// assertNoBoardLowLine は見通しの3行がどれも出ていないことを確かめる。
+//
+// **「ロー:」で探してはいけない。** HiLo の卓は見出しに「※ロー: 8以下5枚…」という
+// ルール説明を常に出しているので、接頭辞で探すとそちらに当たって常に通る。
+func assertNoBoardLowLine(t *testing.T, out string) {
+	t.Helper()
+	for _, key := range []string{"omaha.boardLowLive", "omaha.boardLowImpossible"} {
+		assert.NotContains(t, out, i18n.T(key))
+	}
+	assert.NotContains(t, out, i18n.Tf("omaha.boardLowPossible", "needed", "1"))
+	assert.NotContains(t, out, i18n.Tf("omaha.boardLowPossible", "needed", "2"))
+	assert.NotContains(t, out, i18n.Tf("omaha.boardLowPossible", "needed", "3"))
+}
+
+func TestOmahaCuiPresenter_BoardLowOutlook(t *testing.T) {
+	p := new(presenter.OmahaCuiPresenter)
+	card := func(design, value int) *domain.Card { return domain.NewCard(design, value, false) }
+
+	hiLoAt := func(phase int, cards ...*domain.Card) string {
+		h := makeOmahaHiLoForPresenter()
+		h.SetPhase(phase)
+		h.SetCommunityCards(cards)
+		return p.Output(h, nil)
+	}
+
+	t.Run("reports a live low on the flop", func(t *testing.T) {
+		out := hiLoAt(domain.OmahaPhaseFlop,
+			card(domain.CardDesignSpade, 2), card(domain.CardDesignHeart, 5), card(domain.CardDesignClover, 7))
+		assert.Contains(t, out, i18n.T("omaha.boardLowLive"))
+	})
+
+	t.Run("reports how many more ranks a low still needs", func(t *testing.T) {
+		out := hiLoAt(domain.OmahaPhaseFlop,
+			card(domain.CardDesignSpade, 2), card(domain.CardDesignHeart, 11), card(domain.CardDesignClover, 12))
+		assert.Contains(t, out, i18n.Tf("omaha.boardLowPossible", "needed", "2"))
+	})
+
+	t.Run("says a low is dead once the board cannot reach three ranks", func(t *testing.T) {
+		out := hiLoAt(domain.OmahaPhaseFlop,
+			card(domain.CardDesignSpade, 10), card(domain.CardDesignHeart, 11), card(domain.CardDesignClover, 12))
+		assert.Contains(t, out, i18n.T("omaha.boardLowImpossible"))
+	})
+
+	// **プリフロップでは出さない。**ボードが空なら「まだ可能」以外に言うことがなく、
+	// 毎ハンド必ず出る行は情報でなく雑音になる。Web のバッジもフロップ以降だけ。
+	t.Run("stays quiet before the flop", func(t *testing.T) {
+		assertNoBoardLowLine(t, hiLoAt(domain.OmahaPhasePreFlop))
+	})
+
+	// ショーダウンでは resultLow が実際の結果を出すので、見通しは要らない。
+	t.Run("stays quiet at showdown, where the actual result is shown", func(t *testing.T) {
+		assertNoBoardLowLine(t, hiLoAt(domain.OmahaPhaseShowdown,
+			card(domain.CardDesignSpade, 2), card(domain.CardDesignHeart, 5), card(domain.CardDesignClover, 7)))
+	})
+
+	// **通常のオマハにはローが無い。**同じ presenter を共有しているので、
+	// hiLo でない卓に出すと存在しないルールを説明することになる。
+	t.Run("stays quiet in plain Omaha, which has no low", func(t *testing.T) {
+		h, _ := makeOmahaForPresenter()
+		h.SetPhase(domain.OmahaPhaseFlop)
+		h.SetCommunityCards([]*domain.Card{
+			card(domain.CardDesignSpade, 2), card(domain.CardDesignHeart, 5), card(domain.CardDesignClover, 7),
+		})
+		assertNoBoardLowLine(t, p.Output(h, nil))
+	})
+}
+
+// #5484: Big O は5枚のホールカードから必ず2枚だけ使う。10通りの組み合わせの
+// どれが役になったのかを Web は cardUsed/cardUnused で示すのに、CUI の結果表示は
+// 役名とキッカーだけで、RoundResult.BestHand を一度も使っていなかった。
+func TestOmahaCuiPresenter_ResultBestHand(t *testing.T) {
+	p := new(presenter.OmahaCuiPresenter)
+	card := func(design, value int) *domain.Card { return domain.NewCard(design, value, false) }
+
+	t.Run("shows the five cards and marks the two that came from the hole", func(t *testing.T) {
+		h, players := makeOmahaForPresenter()
+		h.SetPhase(domain.OmahaPhaseEnd)
+		// ホール5枚 (Big O)。うち ♠A と ♠K がベストに入る。
+		for _, c := range []*domain.Card{
+			card(domain.CardDesignSpade, 1), card(domain.CardDesignSpade, 13),
+			card(domain.CardDesignHeart, 2), card(domain.CardDesignHeart, 3),
+			card(domain.CardDesignClover, 4),
+		} {
+			players[0].AddCard(c)
+		}
+		best := []*domain.Card{
+			card(domain.CardDesignSpade, 1), card(domain.CardDesignSpade, 13),
+			card(domain.CardDesignSpade, 12), card(domain.CardDesignSpade, 11), card(domain.CardDesignSpade, 10),
+		}
+		h.SetRoundResults([]domain.HoldemResult{
+			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: best},
+		})
+
+		out := p.Output(h, nil)
+		// 5枚とも出る (♠ は黒スートなので色コードが付かない)。
+		for _, want := range []string{"♠1", "♠13", "♠12", "♠11", "♠10"} {
+			assert.Contains(t, out, want)
+		}
+		// **ホール由来の2枚にだけ印。**印が5個なら、どれを使ったのか分からない
+		// のと同じ。
+		line := ""
+		for _, l := range strings.Split(out, "\n") {
+			if strings.Contains(l, i18n.T("omaha.resultBestLabel")) {
+				line = l
+			}
+		}
+		assert.NotEmpty(t, line, "ベストハンドの行が出ていない")
+		assert.Equal(t, 2, strings.Count(line, presenter.CuiHoleMark))
+	})
+
+	// マックしたプレイヤーは手を見せない。BestHand が残っていても出さない。
+	t.Run("says nothing for a mucked hand", func(t *testing.T) {
+		h, players := makeOmahaForPresenter()
+		h.SetPhase(domain.OmahaPhaseEnd)
+		players[0].AddCard(card(domain.CardDesignSpade, 1))
+		h.SetRoundResults([]domain.HoldemResult{
+			{PlayerIdx: 0, Mucked: true, BestHand: []*domain.Card{card(domain.CardDesignSpade, 1)}},
+		})
+		assert.NotContains(t, p.Output(h, nil), i18n.T("omaha.resultBestLabel"))
+	})
+
+	// BestHand が空の結果 (フォールド勝ちなど) では行ごと出さない。
+	t.Run("says nothing when there is no best hand", func(t *testing.T) {
+		h, _ := makeOmahaForPresenter()
+		h.SetPhase(domain.OmahaPhaseEnd)
+		h.SetRoundResults([]domain.HoldemResult{
+			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
+		})
+		assert.NotContains(t, p.Output(h, nil), i18n.T("omaha.resultBestLabel"))
+	})
+}
+
+// 凡例は1度だけ。4人ショーダウンで同じ注記が4回並ぶと読みにくい。
+func TestOmahaCuiPresenter_ResultBestLegendShownOnce(t *testing.T) {
+	p := new(presenter.OmahaCuiPresenter)
+	card := func(design, value int) *domain.Card { return domain.NewCard(design, value, false) }
+
+	h, players := makeOmahaForPresenter()
+	h.SetPhase(domain.OmahaPhaseEnd)
+	best := []*domain.Card{
+		card(domain.CardDesignSpade, 1), card(domain.CardDesignSpade, 13),
+		card(domain.CardDesignSpade, 12), card(domain.CardDesignSpade, 11), card(domain.CardDesignSpade, 10),
+	}
+	players[0].AddCard(card(domain.CardDesignSpade, 1))
+	players[1].AddCard(card(domain.CardDesignSpade, 13))
+	h.SetRoundResults([]domain.HoldemResult{
+		{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush", BestHand: best},
+		{PlayerIdx: 1, HandRank: domain.PokerHandFlush, HandName: "Flush", BestHand: best},
+	})
+
+	out := p.Output(h, nil)
+	assert.Equal(t, 1, strings.Count(out, i18n.T("omaha.resultBestLegend")))
+	// それでも各プレイヤーの行にはベストが出る。
+	assert.Equal(t, 2, strings.Count(out, i18n.T("omaha.resultBestLabel")))
+}
+
+// #5485: Hi と Lo の両取り (スクープ) は Web では専用バッジ + 人間なら
+// パルスアニメーションで強調されるのに、CUI は wonHiLoBoth で金額の内訳を
+// 出すだけで、それが特別な結果だとは一言も言っていなかった。
+func TestOmahaCuiPresenter_Scoop(t *testing.T) {
+	p := new(presenter.OmahaCuiPresenter)
+
+	render := func(results []domain.HoldemResult) string {
+		h := makeOmahaHiLoForPresenter()
+		h.SetPhase(domain.OmahaPhaseEnd)
+		h.SetRoundResults(results)
+		return p.Output(h, nil)
+	}
+
+	t.Run("calls out a scoop when one player takes both halves", func(t *testing.T) {
+		out := render([]domain.HoldemResult{
+			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush",
+				WonAmount: 100, HiWonAmount: 60, LowWonAmount: 40},
+		})
+		assert.Contains(t, out, i18n.T("omaha.scoop"))
+		// 内訳は今までどおり残る。スクープ表示で置き換えては情報が減る。
+		assert.Contains(t, out, i18n.Tf("omaha.wonHiLoBoth", "total", "100", "hi", "60", "lo", "40"))
+	})
+
+	// **片取りでは出さない。** Hi だけ・Lo だけの勝ちをスクープと呼ぶと、
+	// 一番強い結果の意味が薄れる。
+	t.Run("stays quiet when only the high half is won", func(t *testing.T) {
+		assert.NotContains(t, render([]domain.HoldemResult{
+			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush",
+				WonAmount: 60, HiWonAmount: 60},
+		}), i18n.T("omaha.scoop"))
+	})
+
+	t.Run("stays quiet when only the low half is won", func(t *testing.T) {
+		assert.NotContains(t, render([]domain.HoldemResult{
+			{PlayerIdx: 0, HandRank: domain.PokerHandHighCard, HandName: "High Card",
+				WonAmount: 40, LowWonAmount: 40},
+		}), i18n.T("omaha.scoop"))
+	})
+
+	// ロー不成立でハイが総取りしたときは「スクープ」ではない。LowWonAmount が
+	// 0 なので上の判定で弾かれる -- 金額が全額でも両取りとは呼ばない。
+	t.Run("stays quiet when the low never qualified", func(t *testing.T) {
+		assert.NotContains(t, render([]domain.HoldemResult{
+			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush",
+				WonAmount: 100, HiWonAmount: 100},
+		}), i18n.T("omaha.scoop"))
 	})
 }

@@ -52,17 +52,17 @@ func (c *KoenigrufenCuiController) Exec(command string) string {
 			case "pass":
 				return c.di.Pass(), true
 			case "ck", "callking":
-				return cuiutil.WithParsedInt(args, "King suit is required (1-4).", "Invalid suit: %s. Please enter 1-4.", 1, domain.KoenigrufenSuitCnt, c.di.CallKing)
+				return cuiutil.WithParsedIntKeys(args, "kingSuitRequired", "invalidSuitRange", 1, domain.KoenigrufenSuitCnt, c.di.CallKing)
 			case "discard":
 				return c.execDiscard(args)
 			case "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.di.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.di.Play)
 			case "n", "next":
 				return c.di.NextTrick(), true
 			case "nr", "nextround":
 				return c.di.NextRound(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.di.GetConfig()
 					cfg.CpuDifficulty = domain.KoenigrufenCpuDifficulty(v)
 					return c.di.ResetWithConfig(cfg)
@@ -77,11 +77,11 @@ func (c *KoenigrufenCuiController) Exec(command string) string {
 // execBid bid サブコマンドを解釈する。
 func (c *KoenigrufenCuiController) execBid(args []string) (string, bool) {
 	if len(args) == 0 {
-		return "Bid is required (rufer).", true
+		return invalidArg("bidRequiredRufer"), true
 	}
 	bid := koenigrufenParseBid(args[0])
 	if bid == domain.KoenigrufenBidPass {
-		return "Invalid bid: " + args[0] + ". Please enter rufer.", true
+		return invalidArg("invalidBidRufer", "val", args[0]), true
 	}
 	return c.di.Bid(bid), true
 }
@@ -89,11 +89,11 @@ func (c *KoenigrufenCuiController) execBid(args []string) (string, bool) {
 // execDiscard discard サブコマンドを解釈する (6 枚のインデックス)。
 func (c *KoenigrufenCuiController) execDiscard(args []string) (string, bool) {
 	if len(args) < domain.KoenigrufenTalonSize {
-		return "Six card indices are required (e.g. discard 0 1 2 3 4 5).", true
+		return invalidArg("sixIndicesRequiredDiscard"), true
 	}
 	indices, skipped := cuiutil.ParseIntSlice(args)
 	if len(skipped) > 0 {
-		return "Invalid card index: " + skipped[0] + ".", true
+		return invalidArg("invalidCardIndex", "val", skipped[0]), true
 	}
 	return c.di.Discard(indices), true
 }

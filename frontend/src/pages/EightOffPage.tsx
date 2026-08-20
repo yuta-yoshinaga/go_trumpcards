@@ -447,11 +447,28 @@ function EightOffPageContent() {
                               const stackSize = col.length - cardIdx;
                               const exceedsSupermove = stackSize > supermoveLimit;
                               const isTopCard = cardIdx === col.length - 1;
+                              // **タッチにはホバーが無い。**タップで選んだ直後に
+                              // フォーカスが外れると、どこまでが一緒に動くのか
+                              // 手がかりが消えるので、選択状態にも追従させる
+                              // (Easthaven #4815 と同じ形) (#5612)。
+                              // `?? null` は置かない。タブローの**選択元**は必ず
+                              // cardIndex を持つ (cardIndex 無しの tableau zone は
+                              // 空列を指す移動先専用) ので、埋めようのない分岐が
+                              // 増えるだけになる。
+                              const selectedBlockStart =
+                                selectedSource?.zone === 'tableau' && selectedSource.col === colIdx
+                                  ? selectedSource.cardIndex
+                                  : undefined;
+                              // 上限判定は両方に掛ける ── 動かせない塊を「動く」と
+                              // 見せてはいけない。
+                              const blockStart =
+                                hoveredStack !== null && hoveredStack.col === colIdx
+                                  ? hoveredStack.cardIdx
+                                  : selectedBlockStart;
                               const isInHoveredBlock =
-                                hoveredStack !== null &&
-                                hoveredStack.col === colIdx &&
-                                cardIdx >= hoveredStack.cardIdx &&
-                                col.length - hoveredStack.cardIdx <= supermoveLimit;
+                                blockStart !== undefined &&
+                                cardIdx >= blockStart &&
+                                col.length - blockStart <= supermoveLimit;
                               return (
                                 <div
                                   key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
@@ -479,7 +496,14 @@ function EightOffPageContent() {
                                         isTopCard ? () => handleFoundationShortcut(cardZone, card) : undefined
                                       }
                                       disabled={!isPlaying || loading}
-                                      aria-label={cardAlt(card)}
+                                      // 上限超過は title とリングだけで示していたので、
+                                      // ホバーできる人にしか届かない。draggable も落として
+                                      // いるのに、動かせない理由が読み上げに出ない (#5820)。
+                                      aria-label={
+                                        exceedsSupermove
+                                          ? `${cardAlt(card)} — ${t('supermoveLimitTooltip', { limit: supermoveLimit, cells: emptyFreeCells, cols: emptyTableauCols })}`
+                                          : cardAlt(card)
+                                      }
                                       data-testid={`eo-tableau-${colIdx.toString()}-${cardIdx.toString()}`}
                                       aria-pressed={isSourceSelected('tableau', colIdx, undefined, cardIdx)}
                                       draggable={isPlaying && !loading && !exceedsSupermove}

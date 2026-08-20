@@ -198,5 +198,5 @@ var napHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *NapCuiPresenter) ActionLogOutput(g interfaces.NapGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.NapPlayer](g)
 }

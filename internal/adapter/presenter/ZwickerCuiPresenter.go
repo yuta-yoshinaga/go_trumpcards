@@ -167,5 +167,5 @@ var zwickerHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *ZwickerCuiPresenter) ActionLogOutput(c interfaces.ZwickerGame) string {
-	return actionLogOutputText(c)
+	return actionLogOutputTextForSeats[*domain.ZwickerPlayer](c)
 }

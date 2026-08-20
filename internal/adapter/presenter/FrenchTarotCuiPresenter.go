@@ -160,6 +160,21 @@ func (p *FrenchTarotCuiPresenter) writePrompt(b *strings.Builder, g interfaces.F
 		b.WriteString(i18n.Tf("frenchtarot.promptChien",
 			"name", cuiPlayerName(g.GetPlayer(g.GetDeclarerIdx()), g.GetDeclarerIdx())) + "\n")
 		b.WriteString(i18n.T("frenchtarot.promptChienHelp") + "\n")
+		// **どの札が捨てられるか**を先に見せる。Web はカードごとのツールチップで
+		// 理由を出しているのに、CUI はサーバに拒否されるまで分からなかった (#5712)。
+		// 判定は domain の FrenchTarotBuriableIndices が唯一の出どころ。
+		if human := g.GetPlayer(g.GetDeclarerIdx()); human != nil && human.GetIsHuman() {
+			idxs := domain.FrenchTarotBuriableIndices(human)
+			cards := make([]string, 0, len(idxs))
+			for _, i := range idxs {
+				cards = append(cards, "["+strconv.Itoa(i)+"]")
+			}
+			if len(cards) > 0 {
+				b.WriteString(i18n.Tf("frenchtarot.promptChienBuriable",
+					"cards", strings.Join(cards, " ")) + "\n")
+			}
+			b.WriteString(i18n.T("frenchtarot.promptChienLegend") + "\n")
+		}
 	case domain.FrenchTarotPhasePlay:
 		currentIdx := g.GetCurrentPlayerIdx()
 		b.WriteString(i18n.Tf("frenchtarot.promptPlay",
@@ -218,5 +233,5 @@ var frenchTarotHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *FrenchTarotCuiPresenter) ActionLogOutput(g interfaces.FrenchTarotGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.FrenchTarotPlayer](g)
 }

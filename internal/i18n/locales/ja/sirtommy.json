@@ -29,5 +29,8 @@
   "stockLine": "ストック: {{count}}枚",
   "stockNext": " 次のカード: {{card}}",
   "hintStock": "ヒント: ストック → ファンデーション{{foundation}}",
-  "hintWaste": "ヒント: ウェイスト{{waste}} → ファンデーション{{foundation}}"
+  "hintWaste": "ヒント: ウェイスト{{waste}} → ファンデーション{{foundation}}",
+  "helpExampleHint": "  h                   次の一手を教えてもらう",
+  "helpExampleAuto": "  ac                  置ける札を自動で送る",
+  "hintPlaceWaste": "ヒント: 山札の札はウェイスト {{waste}} に置きましょう (ファンデーションに置ける札はありません)"
 }

@@ -31,7 +31,13 @@ func NewLetItRideCuiController(ci usecase.LetItRideInteractorIF) *LetItRideCuiCo
 func (lc *LetItRideCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
-		func(_ []string) string { return lc.ci.Reset() },
+		func(_ []string) string {
+			// **r / reset は gameHandler を通らない** (execCuiCommand が先に拾う)。
+			// ここで消さないと、リセット直後の "y" が配り直した卓に Pull を
+			// 走らせる (#6076)。
+			lc.pullPending = false
+			return lc.ci.Reset()
+		},
 		[]string{"b", "bet", "p", "pull", "y", "yes", "l", "letitride", "log"},
 		func(cmd string, args []string) (string, bool) {
 			// **確認待ちは "y" 以外のどのコマンドでも取り消す。**残したままだと、
@@ -43,7 +49,7 @@ func (lc *LetItRideCuiController) Exec(command string) string {
 
 			switch cmd {
 			case "b", "bet":
-				amount, errMsg, ok := cuiutil.ParseIntArg(args, "Bet amount is required.", "Invalid bet amount. Please enter a number.", 1, math.MaxInt)
+				amount, errMsg, ok := cuiutil.ParseIntArgKeys(args, "betAmountRequired", "invalidBetAmount", 1, math.MaxInt)
 				if !ok {
 					return errMsg, true
 				}
@@ -53,7 +59,8 @@ func (lc *LetItRideCuiController) Exec(command string) string {
 				return lc.ci.PullConfirm(), true
 			case "y", "yes":
 				if !pending {
-					return "Nothing to confirm.", true
+					// **日本語モードでも英語で返っていた。**
+					return invalidArg("letitride.nothingToConfirm"), true
 				}
 				lc.pullPending = false
 				return lc.ci.Pull(), true

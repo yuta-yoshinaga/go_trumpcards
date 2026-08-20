@@ -7,9 +7,11 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // addPyramidExposedExpectations marks only the bottom row as exposed, so tests
@@ -27,9 +29,11 @@ func setupPyramidCuiMock() *interfaces.MockPyramidGame {
 	pg := new(interfaces.MockPyramidGame)
 	pg.On("GetPhase").Return(domain.PyramidPhasePlaying).Maybe()
 	pg.On("GetMoveCount").Return(0).Maybe()
+	pg.On("CanUndo").Return(false).Maybe()
 	pg.On("GetStockCount").Return(24).Maybe()
 	pg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	pg.On("IsStalemate").Return(false).Maybe()
+	pg.On("UndoToEscape").Return(0).Maybe()
 	pg.On("IsWasteKingRemovable").Return(false).Maybe()
 	addPyramidExposedExpectations(pg)
 
@@ -76,6 +80,7 @@ func TestPyramidCuiPresenterOutput_GameClear(t *testing.T) {
 	pg.ExpectedCalls = nil
 	pg.On("GetPhase").Return(domain.PyramidPhaseGameClear).Maybe()
 	pg.On("GetMoveCount").Return(15).Maybe()
+	pg.On("CanUndo").Return(false).Maybe()
 	pg.On("GetStockCount").Return(0).Maybe()
 	pg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	pg.On("IsStalemate").Return(false).Maybe()
@@ -103,6 +108,7 @@ func TestPyramidCuiPresenterOutput_GameOver(t *testing.T) {
 	pg.ExpectedCalls = nil
 	pg.On("GetPhase").Return(domain.PyramidPhaseGameOver).Maybe()
 	pg.On("GetMoveCount").Return(5).Maybe()
+	pg.On("CanUndo").Return(false).Maybe()
 	pg.On("GetStockCount").Return(0).Maybe()
 	pg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	pg.On("IsStalemate").Return(false).Maybe()
@@ -181,12 +187,14 @@ func TestPyramidCuiPresenterOutput_StalemateAndNonEmptyWaste(t *testing.T) {
 	pg.ExpectedCalls = nil
 	pg.On("GetPhase").Return(domain.PyramidPhasePlaying).Maybe()
 	pg.On("GetMoveCount").Return(7).Maybe()
+	pg.On("CanUndo").Return(false).Maybe()
 	pg.On("GetStockCount").Return(0).Maybe()
 	// Non-nil waste with one card exercises the wasteCard branch.
 	pg.On("GetWaste").Return([]*domain.Card{
 		domain.NewCard(domain.CardDesignSpade, 7, false),
 	}).Maybe()
 	pg.On("IsStalemate").Return(true).Maybe()
+	pg.On("UndoToEscape").Return(0).Maybe()
 	pg.On("IsWasteKingRemovable").Return(false).Maybe()
 	addPyramidExposedExpectations(pg)
 
@@ -226,6 +234,7 @@ func TestPyramidCuiPresenterOutput_MarksRemovableKings(t *testing.T) {
 		pg := new(interfaces.MockPyramidGame)
 		pg.On("GetPhase").Return(domain.PyramidPhasePlaying).Maybe()
 		pg.On("GetMoveCount").Return(0).Maybe()
+		pg.On("CanUndo").Return(false).Maybe()
 		pg.On("GetStockCount").Return(24).Maybe()
 		pg.On("GetWaste").Return(waste).Maybe()
 		pg.On("IsStalemate").Return(false).Maybe()
@@ -265,5 +274,26 @@ func TestPyramidCuiPresenterOutput_MarksRemovableKings(t *testing.T) {
 	t.Run("does not mark a non-king waste card", func(t *testing.T) {
 		out := p.Output(board(-1, []*domain.Card{domain.NewCard(domain.CardDesignSpade, 7, false)}, false), nil)
 		assert.NotContains(t, out, "[K]")
+	})
+}
+
+// #5510: 山札を引き切ったあとは二度と引けないのに、CUI は残り枚数しか出さない。
+func TestPyramidCuiPresenter_NoRedealNotice(t *testing.T) {
+	p := new(PyramidCuiPresenter)
+
+	t.Run("says so once the stock is empty", func(t *testing.T) {
+		g := domain.NewDefaultPyramid()
+		g.Reset()
+		g.SetStock(nil)
+		assert.Contains(t, p.Output(g, nil), i18n.T("pyramid.noRedeal"))
+	})
+
+	// **残っているうちは出さない。** まだ引けるのに「配り直し無し」と出ると、
+	// もう引けないと読める。
+	t.Run("stays quiet while cards remain", func(t *testing.T) {
+		g := domain.NewDefaultPyramid()
+		g.Reset()
+		require.Positive(t, g.GetStockCount(), "配り直したばかりなら山札はある")
+		assert.NotContains(t, p.Output(g, nil), i18n.T("pyramid.noRedeal"))
 	})
 }

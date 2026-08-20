@@ -16,6 +16,7 @@
   "promptTrickEnd": "Trick complete",
   "promptTrickEndHelp": "n / next ... go to the next trick",
   "promptRoundEnd": "Round complete (Team A: {{ptsA}} pts, Team B: {{ptsB}} pts)",
+  "runningPoints": "This round  Team A: {{ptsA}}  Team B: {{ptsB}}",
   "promptRoundEndHelp": "nr / nextround ... go to the next round",
   "hintNone": "No hint available.",
   "hintCard": "[HINT: {{cards}} ({{reason}})]",
@@ -27,5 +28,7 @@
   "hintReasonDeclareMarriage": "Declare a marriage for bonus points",
   "hintReasonDeclareTute": "Declare Tute for an instant win!",
   "promptMarriageSuits": "Declarable: {{suits}}",
-  "marriageTrumpMark": "(trump +40)"
+  "marriageTrumpMark": "(trump +40)",
+  "helpExamplePlay": "  play 0                   play hand card 0",
+  "helpHint": "  h                         show a hint"
 }

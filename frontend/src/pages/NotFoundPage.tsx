@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { btnPrimary, btnSecondary, focusRingWhite } from '../styles/buttonStyles';
 
 /**
@@ -10,6 +11,7 @@ import { btnPrimary, btnSecondary, focusRingWhite } from '../styles/buttonStyles
  */
 export function NotFoundPage() {
   const { t } = useTranslation('common');
+  useDocumentTitle(t('notFound.title'));
   const location = useLocation();
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 gap-6 bg-ds-surface text-ds-text-primary">

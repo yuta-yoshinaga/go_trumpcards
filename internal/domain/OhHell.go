@@ -695,9 +695,30 @@ func (o *OhHell) cpuBidEasy(_ int) int {
 	return rand.Intn(o.handSize + 1)
 }
 
+// cpuBidsConservatively はビッドを外した罰があるかどうかを返す。
+//
+// 標準方式で外しても 0 点で済むので、当たれば 10+bid 点になる読み筋は
+// 外れる側に賭ける価値がある。ペナルティ方式は外したぶんだけ減点する
+// (ScoreRound を参照) ので、同じ賭けが期待値の上で割に合わない。
+// **この違いを見ないかぎり、設定を変えても CPU の宣言は一枚も動かない。**
+func (o *OhHell) cpuBidsConservatively() bool {
+	return o.config.ScoringVariant == OhHellScoringPenalty
+}
+
+// ohHellOffSuitCertainValue は非切り札で「確実」と数える最小の値。
+// このゲームのトリック判定 (trickWinner → ResolveTrickWinner) は素の
+// カード値で比べるので、そのスートで最強なのは K だけ。Q はその K に
+// 負ける ― cpuBidHard が Q をコイントスで数えているのはそのため。
+const ohHellOffSuitCertainValue = 13
+
 // cpuBidNormal カードの強さに基づくビッド
 func (o *OhHell) cpuBidNormal(playerIdx int) int {
 	player := o.players[playerIdx]
+	// 慎重に見積もるときは、K に負ける Q を確定トリックに数えない。
+	offSuitMin := 12
+	if o.cpuBidsConservatively() {
+		offSuitMin = ohHellOffSuitCertainValue
+	}
 	bid := 0
 	for i := 0; i < player.GetCardsSize(); i++ {
 		card := player.GetCard(i)
@@ -706,8 +727,8 @@ func (o *OhHell) cpuBidNormal(playerIdx int) int {
 			if card.GetValue() >= 10 {
 				bid++
 			}
-		} else if card.GetValue() >= 12 {
-			// 他のスートのK, A
+		} else if card.GetValue() >= offSuitMin {
+			// 他のスートの Q, K (慎重に見積もるときは K のみ)
 			bid++
 		}
 	}
@@ -720,6 +741,7 @@ func (o *OhHell) cpuBidNormal(playerIdx int) int {
 // cpuBidHard 戦略的なビッド
 func (o *OhHell) cpuBidHard(playerIdx int) int {
 	player := o.players[playerIdx]
+	conservative := o.cpuBidsConservatively()
 	bid := 0
 
 	trumpCount := 0
@@ -734,8 +756,8 @@ func (o *OhHell) cpuBidHard(playerIdx int) int {
 			// A, K は確実なトリック
 			if card.GetValue() == 1 || card.GetValue() == 13 {
 				bid++
-			} else if card.GetValue() == 12 {
-				// Qは半確実
+			} else if card.GetValue() == 12 && !conservative {
+				// Qは半確実。外して減点される方式では賭けない。
 				if rand.Intn(2) == 0 {
 					bid++
 				}
@@ -743,8 +765,9 @@ func (o *OhHell) cpuBidHard(playerIdx int) int {
 		}
 	}
 
-	// トランプが多い場合は追加トリックを見込む
-	if trumpCount >= 3 {
+	// トランプが多い場合は追加トリックを見込む。どの札で取るとも言えない
+	// 上積みなので、こちらも慎重な見積もりでは数えない。
+	if trumpCount >= 3 && !conservative {
 		bid++
 	}
 

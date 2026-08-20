@@ -38,6 +38,7 @@ func pigPlayerStr(s interfaces.PigGame, idx int, current bool) string {
 		"role", role,
 		"cards", strconv.Itoa(player.GetCardsSize()),
 		"letters", letters,
+		"target", domain.PigLetterTargetWord,
 	))
 	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
@@ -138,5 +139,5 @@ var pigHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *PigCuiPresenter) ActionLogOutput(s interfaces.PigGame) string {
-	return actionLogOutputText(s)
+	return actionLogOutputTextForSeats[*domain.PigPlayer](s)
 }

@@ -23,6 +23,7 @@ func (bp *BlackJackSwitchCuiPresenter) Output(g interfaces.BlackJackSwitchGame, 
 
 		bp.writeDealer(b, g)
 		bp.writeHands(b, g)
+		bp.writeSwitchPreview(b, g)
 
 		if g.IsSwitched() {
 			b.WriteString(i18n.T("blackjackswitch.switchedLine") + "\n")
@@ -78,6 +79,34 @@ func (bp *BlackJackSwitchCuiPresenter) writeHands(b *strings.Builder, g interfac
 		)
 		b.WriteString(marker + line + "\n")
 	}
+}
+
+// writeSwitchPreview は 2 枚目を入れ替えたときの両ハンドの得点を先に見せる。
+//
+// **打つまで得か損か分からなかった。**Web はホバーで先読みを出しているのに、
+// CUI は `switch` を実行して結果を見るまで比べられなかった (#5586)。
+// スイッチフェーズ以外では出さない ── 入れ替えられない局面で得点だけ出しても
+// 意味が無く、確定した得点と読み違える。
+func (bp *BlackJackSwitchCuiPresenter) writeSwitchPreview(b *strings.Builder, g interfaces.BlackJackSwitchGame) {
+	if g.GetPhase() != domain.BJSwitchPhaseSwitch {
+		return
+	}
+	first, second, ok := g.SwitchPreviewScores()
+	if !ok {
+		return
+	}
+	b.WriteString(color.Yellow(i18n.Tf("blackjackswitch.switchPreviewLine",
+		"first", bjSwitchPreviewScoreStr(first),
+		"second", bjSwitchPreviewScoreStr(second))) + "\n")
+}
+
+// bjSwitchPreviewScoreStr は得点を出す。21 を超えるならバストと分かる形にする ──
+// 数字だけでは、良くなったのか壊れたのかが読み取りにくい。
+func bjSwitchPreviewScoreStr(score int) string {
+	if score > domain.BlackJackBustOver {
+		return i18n.Tf("blackjackswitch.switchPreviewBust", "score", strconv.Itoa(score))
+	}
+	return strconv.Itoa(score)
 }
 
 func (bp *BlackJackSwitchCuiPresenter) writeEndSummary(b *strings.Builder, g interfaces.BlackJackSwitchGame) {

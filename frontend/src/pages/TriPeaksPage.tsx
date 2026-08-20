@@ -26,7 +26,6 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useTriPeaksGame } from '../hooks/useTriPeaksGame';
-import { useTriPeaksScore } from '../hooks/useTriPeaksScore';
 import { useTriPeaksStats } from '../hooks/useTriPeaksStats';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
@@ -38,6 +37,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { parseTripeaksCommand, TRIPEAKS_HELP } from '../utils/cli/commands/tripeaksCommands';
 import { formatTripeaksState } from '../utils/cli/formatters/tripeaksFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { comboAnnouncement } from '../utils/comboAnnounce';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { triPeaksPlayableCells } from '../utils/triPeaksPlayable';
 
@@ -199,6 +199,18 @@ function TriPeaksPageContent() {
 
   const combo = useChainCombo(state?.moveCount, state?.stockCount);
 
+  // **バッジは combo >= 2 のときだけ描かれる。** 消えることは live region では
+  // 伝わらないので、領域は常設して中身を差し替える。判断は Golf と共有の
+  // 純関数に任せる (#5821, もとは #5520)。
+  const [comboAnnounce, setComboAnnounce] = useState('');
+  const prevCombo = useRef(0);
+  useEffect(() => {
+    const was = prevCombo.current;
+    prevCombo.current = combo;
+    const next = comboAnnouncement(combo, was);
+    setComboAnnounce(next ? t(next.key, { count: next.count }) : '');
+  }, [combo, t]);
+
   // Remaining-card count per peak, derived from the board layout (issue #3085).
   const peakRemaining = useMemo(() => computePeakRemaining(state?.layout), [state?.layout]);
   const isPlayingForPeaks = state?.phase === TriPeaksPhase.PLAYING;
@@ -218,9 +230,10 @@ function TriPeaksPageContent() {
     prevPeakRemaining.current = peakRemaining;
   }, [peakRemaining, isPlayingForPeaks, playSound]);
 
-  // Chain-bonus score, derived on the frontend from board transitions (issue #3087).
-  const peaksCleared = useMemo(() => peakRemaining.filter((n) => n === 0).length, [peakRemaining]);
-  const { score } = useTriPeaksScore(state?.moveCount, state?.stockCount, peaksCleared);
+  // **得点はサーバが数える。** 以前はフロントの useTriPeaksScore が盤面の遷移から
+  // 計算しており、同じ式がドメインに無いせいで CUI からは得点に手が届かなかった
+  // (#5511)。式は internal/domain/TriPeaks.go に移してある。
+  const score = state?.score ?? 0;
 
   // Best-record persistence in localStorage (issue #3087).
   const { stats, recordResult } = useTriPeaksStats();
@@ -325,6 +338,9 @@ function TriPeaksPageContent() {
               {t('combo', { count: combo })}
             </span>
           )}
+          <span className="sr-only" role="status" aria-live="polite" data-testid="tripeaks-combo-announce">
+            {comboAnnounce}
+          </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
       }
@@ -427,7 +443,12 @@ function TriPeaksPageContent() {
             </div>
 
             {/* Hint display */}
-            <div data-tutorial="tp-hint-display">
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-tutorial="tp-hint-display" data-testid="tp-hint-live" role="status" aria-live="polite">
               {hint && (
                 <div className="text-ds-warning text-sm mb-2 text-center">
                   {t('hintAvailable')}: {t(`hintType.${hint.type}`)}

@@ -419,17 +419,38 @@ func (s *Shelem) PlayerDiscard(indices []int, suit int) error {
 			}
 		}
 	}
+	discarded := make([]*Card, 0, len(sorted))
 	for _, i := range sorted {
+		discarded = append(discarded, p.GetCard(i))
 		p.RemoveCard(i)
 	}
+	s.creditDiscard(discarded)
 	s.acceptTrump(suit)
 	return nil
+}
+
+// creditDiscard は捨て札のカード点を落札者チームに加える。
+//
+// カード点は 52 枚全体で ShelemHandPoints (100) 点あり、そのうち 4 枚はウィドウに
+// 伏せられている。落札者がウィドウを取り込んで 4 枚捨てたあと、その札の点を誰にも
+// 加算しないと、点札が捨て札に入った分だけラウンド合計が 100 を割る (#5795)。
+// ウィドウ・キティ系の通例どおり、捨てた点は落札者チームのものとして扱う。
+func (s *Shelem) creditDiscard(cards []*Card) {
+	// declarerIdx の防御は置かない。PlayerDiscard は declarerIdx != 0 で早期 return し、
+	// cpuDiscardAndTrump は declarerIdx != 0 の分岐の中でしか呼ばれない。到達しない
+	// 分岐は codecov にも残る。
+	pts := 0
+	for _, c := range cards {
+		pts += ShelemCardPoints(c)
+	}
+	s.roundPoints[ShelemTeamOf(s.declarerIdx)] += pts
 }
 
 // cpuDiscardAndTrump CPU の落札者が点にならない札を捨て、長いスートを切り札にする
 func (s *Shelem) cpuDiscardAndTrump() {
 	suit := s.longestSuit(s.declarerIdx)
 	p := s.players[s.declarerIdx]
+	discarded := make([]*Card, 0, ShelemWidowSize)
 	// **切り札でなく、点にもならない札から捨てる。**
 	for p.GetCardsSize() > ShelemHandSize {
 		worst, worstScore := 0, 1<<30
@@ -443,8 +464,10 @@ func (s *Shelem) cpuDiscardAndTrump() {
 				worst, worstScore = i, score
 			}
 		}
+		discarded = append(discarded, p.GetCard(worst))
 		p.RemoveCard(worst)
 	}
+	s.creditDiscard(discarded)
 	s.acceptTrump(suit)
 }
 

@@ -126,7 +126,7 @@ func (p *DurakCuiPresenter) Output(dg interfaces.DurakGame, lastErr error) strin
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *DurakCuiPresenter) ActionLogOutput(dg interfaces.DurakGame) string {
-	return actionLogOutputText(dg)
+	return actionLogOutputTextForSeats[*domain.DurakPlayer](dg)
 }
 
 // HintOutput emits the current Durak hint.

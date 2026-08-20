@@ -196,3 +196,16 @@ func TestBakersDozenWebPresenter_ActionLogOutput(t *testing.T) {
 		assert.Contains(t, result, "move")
 	})
 }
+
+// #5581: Web には `targets` に当たる操作が無く、置ける先は盤面から
+// `bakersDozenLegalTargets` が作る。TargetsOutput は通常の盤面をそのまま返すこと ──
+// CUI 専用の応答が Web の経路に紛れ込まないように。
+func TestBakersDozenWebPresenter_TargetsOutputIsTheOrdinaryBoard(t *testing.T) {
+	g := domain.NewDefaultBakersDozen()
+	g.Reset()
+	p := new(BakersDozenWebPresenter)
+
+	assert.JSONEq(t, p.Output(g, nil), p.TargetsOutput(g, 3))
+	// 列番号で答えが変わらないこと (盤面を返すだけなので)。
+	assert.JSONEq(t, p.TargetsOutput(g, 0), p.TargetsOutput(g, 12))
+}

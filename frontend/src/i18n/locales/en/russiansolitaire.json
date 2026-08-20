@@ -41,5 +41,6 @@
   "tableauRule": "Tableau moves must be same suit, one rank down — unlike Yukon, alternating colours will not connect. Face-down cards can't be moved.",
   "faceDownRule": "Face-down cards can't be moved — only face-up cards are playable",
   "dismissRule": "Dismiss rule note",
-  "faceDownCardLabel": "Column {{col}}, card {{pos}} from top, face down"
+  "faceDownCardLabel": "Column {{col}}, card {{pos}} from top, face down",
+  "blockMoveLabel": "moves as a block of {{n}} cards"
 }

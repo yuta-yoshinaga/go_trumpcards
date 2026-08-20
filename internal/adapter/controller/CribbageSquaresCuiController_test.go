@@ -39,10 +39,10 @@ func TestCribbageSquaresCuiController_PlaceInvalid(t *testing.T) {
 	pi := newMockCribbageSquaresInteractor()
 	c := NewCribbageSquaresCuiController(pi)
 
-	assert.Contains(t, c.Exec("p"), "Usage:")
-	assert.Contains(t, c.Exec("p 1"), "Usage:")
-	assert.Contains(t, c.Exec("p abc 0"), "Invalid")
-	assert.Contains(t, c.Exec("p 0 abc"), "Invalid")
+	assert.Contains(t, c.Exec("p"), msgUsage("usagePRowCol"))
+	assert.Contains(t, c.Exec("p 1"), msgUsage("usagePRowCol"))
+	assert.True(t, msgRejected(c.Exec("p abc 0")))
+	assert.True(t, msgRejected(c.Exec("p 0 abc")))
 }
 
 func TestCribbageSquaresCuiController_Undo(t *testing.T) {

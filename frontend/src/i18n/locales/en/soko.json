@@ -74,5 +74,23 @@
     "balanced": "BAL",
     "balancedTooltip": "Balanced style"
   },
-  "helpTitle": "Soko (Canadian Stud)"
+  "helpTitle": "Soko (Canadian Stud)",
+  "ranking": {
+    "title": "Hand ranking (strongest first)",
+    "note": "The two highlighted hands are Soko's own: STRONGER THAN ONE PAIR, WEAKER THAN TWO PAIR, so hands you would fold in standard poker can fight here.",
+    "hands": [
+      "Royal Flush",
+      "Straight Flush",
+      "Four of a Kind",
+      "Full House",
+      "Flush",
+      "Straight",
+      "Three of a Kind",
+      "Two Pair",
+      "Four-Card Flush",
+      "Four-Card Straight",
+      "One Pair",
+      "High Card"
+    ]
+  }
 }

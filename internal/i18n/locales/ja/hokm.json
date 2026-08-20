@@ -30,5 +30,9 @@
   "suitSpade": "スペード",
   "suitClover": "クラブ",
   "suitHeart": "ハート",
-  "suitDiamond": "ダイヤ"
+  "suitDiamond": "ダイヤ",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
+  "helpHint": "  h                    助言を表示",
+  "hakemMoves": "親が次の席に移ります（切り札を選ぶ席が変わります）。",
+  "hakemStays": "親は交代しません（同じ席が切り札を選び続けます）。"
 }

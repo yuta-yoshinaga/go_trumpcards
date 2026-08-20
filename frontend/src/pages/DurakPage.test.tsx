@@ -405,3 +405,30 @@ describe('DurakPage', () => {
     expect(screen.queryByTestId('durak-server-hint')).not.toBeInTheDocument();
   });
 });
+
+// #5524: CUI は上がった相手の手札欄を「上がり」に差し替えるのに、Web は
+// カード枚数を出すだけで、勝ち抜けた CPU と対局中の CPU の区別が付かなかった。
+describe('DurakPage finished players', () => {
+  it('badges the CPU that has gone out, and only that one', async () => {
+    const players = baseState.players.map((p) => ({ ...p }));
+    players[1] = { ...players[1], isFinished: true, cardCount: 0 };
+    mockExec.mockResolvedValue({ ...baseState, players });
+    renderWithProviders(<DurakPage />);
+
+    const finished = await screen.findByTestId('cpu-finished-1');
+    expect(finished).toHaveTextContent('上がり');
+    expect(screen.queryByTestId('cpu-finished-2')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('cpu-finished-3')).not.toBeInTheDocument();
+  });
+
+  // **枚数の 0 では代用できない。**配り直しの直前など、まだ抜けていないのに
+  // 0 枚の瞬間がある。
+  it('does not badge a player who merely has no cards yet', async () => {
+    const players = baseState.players.map((p) => ({ ...p }));
+    players[2] = { ...players[2], cardCount: 0 };
+    mockExec.mockResolvedValue({ ...baseState, players });
+    renderWithProviders(<DurakPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('cpu-finished-2')).not.toBeInTheDocument();
+  });
+});

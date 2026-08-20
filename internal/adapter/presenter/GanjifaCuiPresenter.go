@@ -122,6 +122,13 @@ func (p *GanjifaCuiPresenter) writePrompt(b *strings.Builder, g interfaces.Ganji
 			"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
 		b.WriteString(i18n.T("ganjifa.promptPlayHelp") + "\n")
 	case domain.GanjifaPhaseTrickEnd:
+		// **取ったのが誰かは次にリードするのが誰かでもある** (#5653)。Web は
+		// TrickDisplay の winnerIdx でバッジを出しているのに、CUI は「次のトリック
+		// へ」としか言っていなかった。Sedma は同じ場面で既に名前を出している。
+		if winnerIdx := g.GetLeadPlayerIdx(); winnerIdx >= 0 {
+			b.WriteString(i18n.Tf("ganjifa.trickWinner",
+				"name", cuiPlayerName(g.GetPlayer(winnerIdx), winnerIdx)) + "\n")
+		}
 		b.WriteString(i18n.T("ganjifa.promptTrickEnd") + "\n")
 		b.WriteString(i18n.T("ganjifa.promptTrickEndHelp") + "\n")
 	case domain.GanjifaPhaseRoundEnd:
@@ -188,5 +195,5 @@ var ganjifaHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *GanjifaCuiPresenter) ActionLogOutput(g interfaces.GanjifaGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.GanjifaPlayer](g)
 }

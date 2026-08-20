@@ -58,12 +58,12 @@ func TestWattenCuiController_Exec(t *testing.T) {
 
 	t.Run("declare missing args", func(t *testing.T) {
 		c := controller.NewWattenCuiController(newMock())
-		assert.Contains(t, c.Exec("d"), "Rank and suit are required")
+		assert.Contains(t, c.Exec("d"), msgStem("rankAndSuitRequired"))
 	})
 
 	t.Run("declare bad suit", func(t *testing.T) {
 		c := controller.NewWattenCuiController(newMock())
-		assert.Contains(t, c.Exec("d 10 9"), "Invalid suit")
+		assert.Contains(t, c.Exec("d 10 9"), msgStem("invalidSuit"))
 	})
 
 	t.Run("play p index", func(t *testing.T) {
@@ -75,7 +75,7 @@ func TestWattenCuiController_Exec(t *testing.T) {
 
 	t.Run("play no args", func(t *testing.T) {
 		c := controller.NewWattenCuiController(newMock())
-		assert.Contains(t, c.Exec("p"), "Card index is required")
+		assert.Contains(t, c.Exec("p"), msgCardIndexRequired())
 	})
 
 	t.Run("raise rz", func(t *testing.T) {
@@ -101,12 +101,12 @@ func TestWattenCuiController_Exec(t *testing.T) {
 
 	t.Run("respond missing", func(t *testing.T) {
 		c := controller.NewWattenCuiController(newMock())
-		assert.Contains(t, c.Exec("resp"), "Response is required")
+		assert.Contains(t, c.Exec("resp"), msgStem("responseRequiredHoldFold"))
 	})
 
 	t.Run("respond invalid", func(t *testing.T) {
 		c := controller.NewWattenCuiController(newMock())
-		assert.Contains(t, c.Exec("resp x"), "Invalid response")
+		assert.Contains(t, c.Exec("resp x"), msgStem("invalidResponseHoldFold"))
 	})
 
 	t.Run("nextround nr", func(t *testing.T) {
@@ -136,7 +136,7 @@ func TestWattenCuiController_Exec(t *testing.T) {
 
 	t.Run("settarget invalid", func(t *testing.T) {
 		c := controller.NewWattenCuiController(newMock())
-		assert.Contains(t, c.Exec("st 0"), "Invalid target score: 0")
+		assert.Contains(t, c.Exec("st 0"), msgInvalidTargetScore("0"))
 	})
 
 	t.Run("hint h", func(t *testing.T) {

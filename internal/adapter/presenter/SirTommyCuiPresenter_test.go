@@ -9,12 +9,14 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupSirTommyCuiMockDefaults(g *interfaces.MockSirTommyGame) {
 	g.On("GetPhase").Return(domain.SirTommyPhasePlaying).Maybe()
 	g.On("GetMoveCount").Return(0).Maybe()
 	g.On("IsStalemate").Return(false).Maybe()
+	g.On("UndoToEscape").Return(0).Maybe()
 	g.On("GetStockCount").Return(5).Maybe()
 	g.On("GetStockTop").Return(domain.NewCard(domain.CardDesignSpade, 7, false)).Maybe()
 
@@ -82,6 +84,7 @@ func TestSirTommyCuiPresenter_Output(t *testing.T) {
 		g.On("GetPhase").Return(domain.SirTommyPhasePlaying).Maybe()
 		g.On("GetMoveCount").Return(1).Maybe()
 		g.On("IsStalemate").Return(true).Maybe()
+		g.On("UndoToEscape").Return(0).Maybe()
 		g.On("GetStockCount").Return(0).Maybe()
 		g.On("GetStockTop").Return((*domain.Card)(nil)).Maybe()
 		var foundations [domain.SirTommyFoundationCnt][]*domain.Card
@@ -129,15 +132,26 @@ func TestSirTommyCuiPresenter_Output(t *testing.T) {
 func TestSirTommyCuiPresenter_HintOutput(t *testing.T) {
 	t.Run("stock hint", func(t *testing.T) {
 		g := new(interfaces.MockSirTommyGame)
-		g.On("GetHint").Return(&domain.SirTommyHint{FromZone: "stock", WasteIdx: -1, FoundationIdx: 2})
+		g.On("GetHint").Return(&domain.SirTommyHint{FromZone: "stock", WasteIdx: -1, FoundationIdx: 2, ToZone: "foundation"})
 		result := new(SirTommyCuiPresenter).HintOutput(g)
 		assert.Contains(t, result, "ストック")
 		assert.Contains(t, result, "ファンデーション2")
 	})
 
+	// #5552: ファンデーションに置けない局面 — このゲームで最も頻繁に起きる —
+	// では、どのウェイストに置くかを助言する。
+	t.Run("waste placement hint", func(t *testing.T) {
+		g := new(interfaces.MockSirTommyGame)
+		g.On("GetHint").Return(&domain.SirTommyHint{FromZone: "stock", WasteIdx: 3, FoundationIdx: -1, ToZone: "waste"})
+		result := new(SirTommyCuiPresenter).HintOutput(g)
+		assert.Contains(t, result, i18n.Tf("sirtommy.hintPlaceWaste", "waste", "3"))
+		// **ファンデーションの案内には落とさない。**-1 が漏れる。
+		assert.NotContains(t, result, "-1")
+	})
+
 	t.Run("waste hint", func(t *testing.T) {
 		g := new(interfaces.MockSirTommyGame)
-		g.On("GetHint").Return(&domain.SirTommyHint{FromZone: "waste", WasteIdx: 1, FoundationIdx: 0})
+		g.On("GetHint").Return(&domain.SirTommyHint{FromZone: "waste", WasteIdx: 1, FoundationIdx: 0, ToZone: "foundation"})
 		result := new(SirTommyCuiPresenter).HintOutput(g)
 		assert.Contains(t, result, "ウェイスト1")
 		assert.Contains(t, result, "ファンデーション0")

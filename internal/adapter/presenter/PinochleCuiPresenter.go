@@ -41,6 +41,33 @@ func pinochleMeldName(t domain.PinochleMeldType) string {
 	return fmt.Sprintf("meld#%d", int(t))
 }
 
+// pinochleMeldTablePerLine は早見表の1行に並べるメルドの数。
+const pinochleMeldTablePerLine = 5
+
+// pinochleMeldTableStr renders the 15 meld types and their points, cheapest
+// first, wrapped a few per line.
+//
+// **点数は domain.PinochleMeldTable() から引く。**ここに書き写すと、加点の値を
+// 直したときに表だけが古いまま残る (#5519)。
+func pinochleMeldTableStr() string {
+	var b strings.Builder
+	b.WriteString(i18n.T("pinochle.meldTableHeader"))
+	for i, e := range domain.PinochleMeldTable() {
+		switch {
+		case i == 0:
+		case i%pinochleMeldTablePerLine == 0:
+			b.WriteString("\n  ")
+		default:
+			b.WriteString(" / ")
+		}
+		b.WriteString(i18n.Tf("pinochle.meldTableEntry",
+			"type", pinochleMeldName(e.Type),
+			"points", strconv.Itoa(e.Points)))
+	}
+	b.WriteString("\n")
+	return b.String()
+}
+
 // pinochlePlayerStr returns the display string for a single Pinochle player.
 // legalIndices, when non-nil, lists the hand positions the human may legally
 // play this turn and is rendered as a follow-rule legend below their hand.
@@ -136,6 +163,13 @@ func (p *PinochleCuiPresenter) Output(g interfaces.PinochleGame, lastErr error) 
 			}
 		}
 
+		// メルド早見表: ビッド〜メルド確認の間だけ。ビッド額を決めるときに
+		// 「自分の手にいくら分の目があるか」を見る先がどこにも無かった (#5519)。
+		// プレイ中は毎トリック流れて盤面が読めなくなるので出さない。
+		if phase == domain.PinochlePhaseBid || phase == domain.PinochlePhaseTrump || phase == domain.PinochlePhaseMeld {
+			b.WriteString(pinochleMeldTableStr())
+		}
+
 		// Current trick
 		trick := g.GetCurrentTrick()
 		if len(trick) > 0 {
@@ -183,7 +217,7 @@ func (p *PinochleCuiPresenter) HintOutput(g interfaces.PinochleGame) string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *PinochleCuiPresenter) ActionLogOutput(g interfaces.PinochleGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.PinochlePlayer](g)
 }
 
 // buildCuiMessage writes the per-phase prompt or end-of-game banner.

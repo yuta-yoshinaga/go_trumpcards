@@ -36,7 +36,7 @@ func (c *VintCuiController) Exec(command string) string {
 			case "ps", "pass":
 				return c.vi.PassBid(), true
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", 0, domain.VintHandSize-1, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", 0, domain.VintHandSize-1, func(v int) string {
 					return c.vi.PlayCard(v)
 				})
 			case "n", "next":
@@ -53,17 +53,15 @@ func (c *VintCuiController) Exec(command string) string {
 // **denom は 0=♠ 1=♣ 2=♦ 3=♥ 4=NT。**ブリッジとは序列が違うので番号で指す。
 func vintParseBid(args []string, vi usecase.VintInteractorIF) (string, bool) {
 	if len(args) < 2 {
-		return "Bid level and denomination are required (e.g. b 3 4 for 3 no trump).", true
+		return invalidArg("bidLevelAndDenominationRequired"), true
 	}
 	level, err := strconv.Atoi(args[0])
 	if err != nil || level < domain.VintMinLevel || level > domain.VintMaxLevel {
-		return "Invalid bid level: " + args[0] + ". Please enter " +
-			strconv.Itoa(domain.VintMinLevel) + "-" + strconv.Itoa(domain.VintMaxLevel) + ".", true
+		return invalidArg("invalidBidLevelMinMax", "val", args[0], "max", strconv.Itoa(domain.VintMinLevel)+"-"+strconv.Itoa(domain.VintMaxLevel)), true
 	}
 	denom, err := strconv.Atoi(args[1])
 	if err != nil || denom < 0 || denom >= domain.VintDenomCount {
-		return "Invalid denomination: " + args[1] + ". Please enter 0-" +
-			strconv.Itoa(domain.VintDenomCount-1) + " (0=S 1=C 2=D 3=H 4=NT).", true
+		return invalidArg("invalidDenomination0Max", "val", args[1], "max", strconv.Itoa(domain.VintDenomCount-1)), true
 	}
 	return vi.Bid(level, denom), true
 }

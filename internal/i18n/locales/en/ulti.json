@@ -24,6 +24,7 @@
   "outcomeWin": "Made (declarer wins)",
   "outcomeLoss": "Failed (coalition wins)",
   "gameEnd": "Game over! {{name}} wins the match!",
+  "coinSettlement": "Settlement: {{deltas}}",
   "promptBid": "Declare a contract — Turn: {{name}}",
   "promptBidHelp": "bid party <s/c/h/d> ... Party  |  bid betli ... Betli  |  bid durchmarsch ... Durchmarsch  |  bid ulti <s/c/h/d> ... Ulti (win the last trick with the trump 7)",
   "promptDiscard": "Talon taken — Turn: {{name}}",
@@ -45,5 +46,9 @@
   "hintReasonBidParty": "Point-rich hand — declare Party",
   "hintReasonBidBetli": "Mostly low cards — declare Betli",
   "hintReasonBidDurchmarsch": "Mostly high cards — declare Durchmarsch",
-  "hintReasonBidUlti": "A long suit holding the trump 7 — declare Ulti"
+  "hintReasonBidUlti": "A long suit holding the trump 7 — declare Ulti",
+  "helpExampleBid": "  bid betli                 declare Betli",
+  "helpExamplePlay": "  play 0                    play hand card 0",
+  "helpExampleNext": "  n                         read the trick result, then continue",
+  "helpHint": "  h                         show a hint"
 }

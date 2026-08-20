@@ -62,6 +62,7 @@ const bidState: PitchResponse = {
   gameEndFlag: false,
   winnerIdx: -1,
   leadPlayerIdx: -1,
+  roundBreakdown: { high: -1, low: -1, jack: -1, game: -1 },
   validPlayIndices: [],
   message: '',
   config: baseConfig,
@@ -321,5 +322,44 @@ describe('PitchPage', () => {
     renderWithProviders(<PitchPage />);
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
     expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
+  });
+
+  // #5584: 4 種の得点 (High/Low/Jack/Game) はこのゲームの骨格なのに、スコア表は
+  // 合計しか出しておらず、用意されていた scoring.* のキーも未使用だった。
+  describe('round score breakdown', () => {
+    const roundEnd = (bd: PitchResponse['roundBreakdown']): PitchResponse => ({
+      ...playState,
+      phase: PitchPhase.ROUND_END,
+      roundBreakdown: bd,
+    });
+
+    it('names who took each category', async () => {
+      mockApi.mockResolvedValue(roundEnd({ high: 0, low: 1, jack: 0, game: 2 }));
+      renderWithProviders(<PitchPage />);
+      await waitFor(() => expect(screen.getByTestId('pitch-score-breakdown')).toBeInTheDocument());
+      // ラベルは既存の未使用キーを使う (受け入れ条件2)。
+      expect(screen.getByTestId('pitch-scoring-high')).toHaveTextContent('High');
+      // **カテゴリごとに違う席が出ること。**1 席に固定する実装でも「含む」だけなら通る。
+      expect(screen.getByTestId('pitch-scoring-low')).not.toHaveTextContent(
+        screen.getByTestId('pitch-scoring-game').textContent ?? '',
+      );
+    });
+
+    // -1 は「誰も取っていない」。黙って省くと、争われなかったのか見落としたのか
+    // 区別が付かない。
+    it('says nobody took a category the server left at -1', async () => {
+      mockApi.mockResolvedValue(roundEnd({ high: 0, low: 0, jack: -1, game: -1 }));
+      renderWithProviders(<PitchPage />);
+      const jack = await screen.findByTestId('pitch-scoring-jack');
+      expect(jack).toHaveTextContent('なし');
+    });
+
+    // ラウンド途中では出さない。まだ確定していない。
+    it('stays hidden while the round is running', async () => {
+      mockApi.mockResolvedValue(playState);
+      renderWithProviders(<PitchPage />);
+      await waitFor(() => expect(mockApi).toHaveBeenCalled());
+      expect(screen.queryByTestId('pitch-score-breakdown')).not.toBeInTheDocument();
+    });
   });
 });

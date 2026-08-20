@@ -5,6 +5,7 @@
   "helpSetMax": "  sm <n>               MaxRounds (10-50000) を設定してリセット",
   "cpuStats": "CPU: 山札{{draw}}枚 / 捨札{{discard}}枚 (計{{total}}枚)",
   "humanStats": "あなた: 山札{{draw}}枚 / 捨札{{discard}}枚 (計{{total}}枚)",
+  "share": "優劣: あなた {{you}}% / CPU {{cpu}}%",
   "boardLabel": "[場の山]",
   "boardPile": "場のカード: {{count}}枚",
   "boardLastCard": "最後に出たカード: {{card}}",
@@ -15,5 +16,7 @@
   "gameWinHuman": "あなたの勝ちです！",
   "gameWinCpu": "CPUの勝ちです...",
   "gameDraw": "引き分けです！",
-  "roundProgress": "ラウンド: {{played}} / {{max}}（上限で引き分け）"
+  "roundProgress": "ラウンド: {{played}} / {{max}}（上限で引き分け）",
+  "helpExampleStep": "  s                    次の 1 枚をめくる",
+  "helpLog": "  l                    行動ログを表示"
 }

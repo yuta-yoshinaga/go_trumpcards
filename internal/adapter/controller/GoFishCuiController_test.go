@@ -37,19 +37,19 @@ func TestGoFishCuiController_Ask(t *testing.T) {
 func TestGoFishCuiController_Ask_MissingArgs(t *testing.T) {
 	ctrl, _ := newGoFishCuiController()
 	result := ctrl.Exec("ask")
-	assert.Contains(t, result, "Usage")
+	assert.True(t, msgRejected(result))
 }
 
 func TestGoFishCuiController_Ask_InvalidTarget(t *testing.T) {
 	ctrl, _ := newGoFishCuiController()
 	result := ctrl.Exec("ask abc 3")
-	assert.Contains(t, result, "Invalid target")
+	assert.Contains(t, result, msgStem("invalidTargetIndexRaw"))
 }
 
 func TestGoFishCuiController_Ask_InvalidRank(t *testing.T) {
 	ctrl, _ := newGoFishCuiController()
 	result := ctrl.Exec("ask 1 abc")
-	assert.Contains(t, result, "Invalid rank")
+	assert.Contains(t, result, msgStem("invalidRankRaw"))
 }
 
 func TestGoFishCuiController_SetDifficulty(t *testing.T) {

@@ -82,17 +82,17 @@ func TestPaiGowCuiController_Bet_Errors(t *testing.T) {
 
 	t.Run("missing args", func(t *testing.T) {
 		result := c.Exec("b")
-		assert.Contains(t, result, "Bet amount is required")
+		assert.Contains(t, result, msgBetAmountRequired())
 	})
 
 	t.Run("invalid amount", func(t *testing.T) {
 		result := c.Exec("b abc")
-		assert.Contains(t, result, "Invalid bet amount")
+		assert.Contains(t, result, msgInvalidBetAmountPrefix())
 	})
 
 	t.Run("zero amount", func(t *testing.T) {
 		result := c.Exec("b 0")
-		assert.Contains(t, result, "Invalid bet amount")
+		assert.Contains(t, result, msgInvalidBetAmountPrefix())
 	})
 }
 
@@ -110,22 +110,22 @@ func TestPaiGowCuiController_Set_Errors(t *testing.T) {
 
 	t.Run("missing args", func(t *testing.T) {
 		result := c.Exec("s")
-		assert.Contains(t, result, "Two card indices are required")
+		assert.Contains(t, result, msgStem("twoCardIndicesAreRequired"))
 	})
 
 	t.Run("missing second", func(t *testing.T) {
 		result := c.Exec("s 0")
-		assert.Contains(t, result, "Two card indices are required")
+		assert.Contains(t, result, msgStem("twoIndicesRequired"))
 	})
 
 	t.Run("invalid first", func(t *testing.T) {
 		result := c.Exec("s abc 1")
-		assert.Contains(t, result, "Invalid first index")
+		assert.Contains(t, result, msgStem("invalidFirstIndex"))
 	})
 
 	t.Run("invalid second", func(t *testing.T) {
 		result := c.Exec("s 0 abc")
-		assert.Contains(t, result, "Invalid second index")
+		assert.Contains(t, result, msgStem("invalidSecondIndex"))
 	})
 }
 

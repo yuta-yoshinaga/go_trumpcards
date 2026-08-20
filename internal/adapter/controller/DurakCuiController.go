@@ -34,25 +34,36 @@ func (c *DurakCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "a", "attack":
+				// No argument keeps the index-0 shorthand; a typed argument that does
+				// not parse is refused rather than silently read as 0, which played a
+				// card the player never chose (issue #5390).
 				idx := 0
 				if len(args) > 0 {
-					if v, err := strconv.Atoi(args[0]); err == nil {
-						idx = v
+					v, err := strconv.Atoi(args[0])
+					if err != nil {
+						return invalidArg("invalidCardIndex", "val", args[0]), true
 					}
+					idx = v
 				}
 				return c.di.Attack(idx), true
 			case "d", "defend":
+				// Same rule as attack: a typed argument that does not parse is
+				// refused rather than read as 0 (issue #5390).
 				atkIdx := 0
 				handIdx := 0
 				if len(args) > 0 {
-					if v, err := strconv.Atoi(args[0]); err == nil {
-						atkIdx = v
+					v, err := strconv.Atoi(args[0])
+					if err != nil {
+						return invalidArg("invalidCardIndex", "val", args[0]), true
 					}
+					atkIdx = v
 				}
 				if len(args) > 1 {
-					if v, err := strconv.Atoi(args[1]); err == nil {
-						handIdx = v
+					v, err := strconv.Atoi(args[1])
+					if err != nil {
+						return invalidArg("invalidCardIndex", "val", args[1]), true
 					}
+					handIdx = v
 				}
 				return c.di.Defend(atkIdx, handIdx), true
 			case "p", "pass":
@@ -68,7 +79,7 @@ func (c *DurakCuiController) Exec(command string) string {
 				}
 				return c.di.Sort(mode), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Normal, 1=Easy, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequiredAlt", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.di.GetConfig()
 					cfg.CpuDifficulty = domain.DurakCpuDifficulty(v)
 					return c.di.ResetWithConfig(cfg)

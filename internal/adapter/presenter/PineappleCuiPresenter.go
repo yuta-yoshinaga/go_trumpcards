@@ -31,7 +31,7 @@ type PineappleCuiPresenter struct{}
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (pp *PineappleCuiPresenter) ActionLogOutput(p interfaces.PineappleGame) string {
-	return actionLogOutputText(p)
+	return actionLogOutputTextForSeats[*domain.PineapplePlayer](p)
 }
 
 // Output renders the current game state for the active locale (#1699).
@@ -110,6 +110,14 @@ func (pp *PineappleCuiPresenter) Output(p interfaces.PineappleGame, lastErr erro
 					}
 				}
 				b.WriteString(i18n.Tf("pineapple.humanHand", "cards", cards) + "\n")
+				// **Omaha は暫定ベストを常時出しているのに Pineapple には無かった
+				// (#5488)。** 3 枚配って 1 枚捨てる game なので、どの 2 枚を残すかの
+				// 判断材料になる。PeekBestHand は状態を変えない。
+				if rank, best := player.PeekBestHand(cc); len(best) > 0 {
+					b.WriteString(i18n.Tf("pineapple.currentBestHand",
+						"hand", cuiPokerHandName(rank),
+						"cards", cuiCardSliceStrEmoji(best)) + "\n")
+				}
 			}
 		}
 

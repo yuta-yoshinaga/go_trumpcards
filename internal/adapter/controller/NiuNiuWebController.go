@@ -23,8 +23,10 @@ type NiuNiuWebOutputHand struct {
 	// ためのもので、クライアントに組み合わせ探索をやり直させないために送る。
 	ComboIdx []int `json:"comboIdx"`
 	// Rank は 0=無牛 / 1..9=牛1..牛9 / 10=牛牛。
-	Rank      int    `json:"rank"`
-	RankLabel string `json:"rankLabel"`
+	Rank int `json:"rank"`
+	// RankKey は格のロケール非依存な識別子 ("none" / "niuniu" / "n1".."n9")。
+	// 以前は表示文字列 "牛牛" を送っており、英語ロケールでも日本語が出ていた (#5567)。
+	RankKey string `json:"rankKey"`
 	// Multiplier はこの格で勝ったときの配当倍率。
 	Multiplier int `json:"multiplier"`
 	Payout     int `json:"payout"`
@@ -48,8 +50,11 @@ type NiuNiuWebOutput struct {
 	// MaxMultiplier は最大の配当倍率。**賭けられる上限は残高そのものではなく
 	// 残高÷これ**になる。親が牛牛なら賭け金の 3 倍を取られるので、残高ちょうどを
 	// 賭けると払えない。クライアントにこの割り算を再発明させないために送る。
-	MaxMultiplier int    `json:"maxMultiplier"`
-	LastResult    string `json:"lastResult"`
+	MaxMultiplier int `json:"maxMultiplier"`
+	// BankerRankKey は親の格のロケール非依存な識別子。以前はここに完成済みの
+	// 日本語 "親: 牛牛" (lastResult) を載せており、英語ロケールでもそのまま
+	// 画面と CLI に出ていた (#5567)。文言はクライアントの i18n が組み立てる。
+	BankerRankKey string `json:"bankerRankKey"`
 	Phase         int    `json:"phase"`
 	WebOutputBase
 }

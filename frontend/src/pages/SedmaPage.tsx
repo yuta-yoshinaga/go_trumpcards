@@ -242,8 +242,14 @@ function SedmaPageContent() {
 
               {/* Right: info sidebar */}
               <div data-tutorial="sedma-info">
-                {/* Team match scores */}
-                <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
+                {/* Team match scores. ラウンドが確定すると増える値なので、カード点
+                    パネルと同じく読み上げ対象にする (#5648)。 */}
+                <div
+                  className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                  data-testid="sedma-team-scores"
+                  role="status"
+                  aria-live="polite"
+                >
                   <div>{t('teamScore', { team: t('team.a'), score: state.teamScores[0] ?? 0 })}</div>
                   <div>{t('teamScore', { team: t('team.b'), score: state.teamScores[1] ?? 0 })}</div>
                   <div className="mt-1">
@@ -319,14 +325,21 @@ function SedmaPageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {state.hint && isRequestedHint(state) && (
-              <div className="text-ds-warning text-sm mb-2">
-                {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
-                {state.hint.cardIndices &&
-                  state.hint.cardIndices.length > 0 &&
-                  ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
-              </div>
-            )}
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-testid="sedma-hint-live" role="status" aria-live="polite">
+              {state.hint && isRequestedHint(state) && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
+                  {state.hint.cardIndices &&
+                    state.hint.cardIndices.length > 0 &&
+                    ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
+                </div>
+              )}
+            </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="sedma-action-buttons">

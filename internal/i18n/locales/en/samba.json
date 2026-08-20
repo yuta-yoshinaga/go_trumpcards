@@ -29,11 +29,15 @@
   "promptDrawHelpDiscard": "dd <idx,idx>: take the discard pile (natural pair indices)",
   "promptMeld": "{{name}} to act (meld phase)",
   "promptMeldHelp": "m <idx,idx,idx;idx,idx,idx>: lay down meld(s) (; separates groups)",
+  "promptMeldMinimum": "Initial meld needs at least {{points}} points (nothing melds below it)",
   "promptSkipMeld": "sm: skip melding",
   "promptDiscard": "{{name}} to act (discard phase)",
   "promptDiscardHelp": "d <idx>: discard a card",
   "promptGoOutHelp": "go: go out (team needs 2+ completed melds)",
   "promptRoundEnd": "Round complete",
   "promptRoundEndHelp": "nr / nextround: advance to next round",
-  "promptDrawHelpFrozen": "  Note (frozen): taking the discard requires showing two natural matching cards from hand"
+  "promptDrawHelpFrozen": "  Note (frozen): taking the discard requires showing two natural matching cards from hand",
+  "helpExampleDraw": "  ds                   start the turn by drawing from the stock",
+  "helpExampleDiscard": "  d 0                  discard hand card 0",
+  "helpLog": "  l                    show the action log"
 }

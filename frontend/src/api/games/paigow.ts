@@ -6,6 +6,6 @@ import { gameExec } from '../gameExec';
 
 /** API client for the Pai Gow Poker /paigow/exec endpoint. */
 export const paigowApi = {
-  exec: (command: 'reset' | 'bet' | 'set' | 'log', amount?: number, low0?: number, low1?: number) =>
+  exec: (command: 'reset' | 'bet' | 'set' | 'log' | 'hint', amount?: number, low0?: number, low1?: number) =>
     gameExec<PaiGowResponse>('paigow', { command, amount, low0, low1 }),
 };

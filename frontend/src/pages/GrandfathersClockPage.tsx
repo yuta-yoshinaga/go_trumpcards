@@ -296,8 +296,16 @@ function GrandfathersClockPageContent() {
                       {top ? (
                         <button
                           type="button"
-                          onClick={() => game.handleSelectTarget(faceZone)}
-                          disabled={!isPlaying || loading || isAutoCompleting || !selectedSource || face.complete}
+                          // 完成した文字盤は受け取らないが、**フォーカスは残す**。
+                          // native disabled はアクセシビリティツリーからボタンごと
+                          // 外すので、目標ランクと枚数を含む faceAriaLabel が
+                          // 読み上げられなくなる (#5555)。
+                          onClick={() => {
+                            if (face.complete) return;
+                            game.handleSelectTarget(faceZone);
+                          }}
+                          disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
+                          aria-disabled={face.complete || undefined}
                           aria-label={t('faceAriaLabel', {
                             idx,
                             hour: CLOCK_HOURS[idx],
@@ -342,7 +350,12 @@ function GrandfathersClockPageContent() {
               {Array.from({ length: TABLEAU_COLS }, (_, i) => i).map(renderTableauColumn)}
             </div>
 
-            <div data-tutorial="gc-hint-display">
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-tutorial="gc-hint-display" data-testid="gc-hint-live" role="status" aria-live="polite">
               {hint && (
                 <div className="text-ds-warning text-sm mb-2 mt-3">
                   {t('hintAvailable')}: {formatHintZone(t, 'tableau', hint.fromCol)} →{' '}

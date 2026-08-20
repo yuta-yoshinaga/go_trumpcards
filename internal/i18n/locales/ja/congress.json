@@ -30,5 +30,20 @@
   "hintToTableau": "タブロー山{{pile}}",
   "hintToWaste": "捨て札へめくる",
   "hintLine": "ヒント: {{from}} → {{to}}",
-  "undoToEscape": "脱出には {{count}} 手戻す必要があります（undo {{count}} または u を繰り返す）"
+  "undoToEscape": "脱出には {{count}} 手戻す必要があります（undo {{count}} または u を繰り返す）",
+  "helpExampleHint": "  h                        次の一手を教えてもらう",
+  "helpExampleAuto": "  ac                       組札へ送れる札を自動で送る",
+  "errStockEmptyNoRedeal": "山札は空です（このゲームにめくり直しはありません）",
+  "errPileEmpty": "タブロー山{{pile}}は空です",
+  "errNoFoundationForCard": "その札を置ける基礎札がありません",
+  "errSamePile": "移動元と移動先が同じ山です",
+  "errEmptyPileNeedsStockOrWaste": "空き山はタブローからは埋められません（山札か捨て札からのみ）",
+  "errCannotPlaceOnPile": "その山にはその札を置けません（同じスートで1つ下の札の上にのみ置けます）",
+  "errWasteEmpty": "捨て札は空です",
+  "errStockEmpty": "山札は空です",
+  "errStockFillsGapsOnly": "山札から直接置けるのは空き山だけです",
+  "errNothingToAutoComplete": "自動で基礎札に送れる札がありません",
+  "errNothingToUndo": "取り消せる手がありません",
+  "errNotPlaying": "プレイ中ではありません",
+  "errInvalidPile": "無効なタブロー山の番号です: {{pile}}"
 }

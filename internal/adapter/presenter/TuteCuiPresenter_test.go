@@ -4,10 +4,12 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -181,6 +183,42 @@ func TestTuteCuiPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
 		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You plays ♠K"},
 	})
+	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+	m.On("GetPlayer", mock.Anything).Return(domain.NewTutePlayer(true)).Maybe()
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, "play")
+}
+
+// #5641: 結婚 (同スートの K+Q) は宣言した瞬間に加点される。Web は #4722 を受けて
+// プレイ中も tute-running-points で今ラウンドの点を出しているのに、CUI は
+// GetRoundTeamPoints を RoundEnd でしか読んでおらず、宣言しても何点入ったのか
+// ラウンドが終わるまで分からなかった。
+func TestTuteCuiPresenter_ShowsTheRunningRoundPoints(t *testing.T) {
+	p := new(presenter.TuteCuiPresenter)
+
+	phaseMock := func(phase domain.TutePhase) *interfaces.MockTuteGame {
+		m, _ := setupTuteCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundTeamPoints")
+		m.On("GetPhase").Return(phase)
+		m.On("GetRoundTeamPoints").Return([domain.TuteTeamCnt]int{42, 17})
+		return m
+	}
+
+	for _, phase := range []domain.TutePhase{domain.TutePhasePlay, domain.TutePhaseTrickEnd} {
+		t.Run("running points during "+strconv.Itoa(int(phase)), func(t *testing.T) {
+			out := p.Output(phaseMock(phase), nil)
+
+			assert.Contains(t, out, i18n.Tf("tute.runningPoints",
+				"ptsA", "42", "ptsB", "17"))
+		})
+	}
+
+	// RoundEnd は自分の行を持っているので、同じ数字を二度出さない。
+	t.Run("round end keeps its own single line", func(t *testing.T) {
+		out := p.Output(phaseMock(domain.TutePhaseRoundEnd), nil)
+
+		assert.Contains(t, out, i18n.Tf("tute.promptRoundEnd", "ptsA", "42", "ptsB", "17"))
+		assert.NotContains(t, out, i18n.Tf("tute.runningPoints", "ptsA", "42", "ptsB", "17"))
+	})
 }

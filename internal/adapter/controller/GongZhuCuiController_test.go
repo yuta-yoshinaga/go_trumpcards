@@ -55,12 +55,12 @@ func TestGongZhuCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "Expose", []int{})
 	})
 
-	t.Run("expose with invalid arg shows warning", func(t *testing.T) {
+	t.Run("expose refuses an invalid arg", func(t *testing.T) {
 		m := newMock()
 		c := controller.NewGongZhuCuiController(m)
 		result := c.Exec("expose 0 x 1")
-		assert.Contains(t, result, "'x'")
-		m.AssertCalled(t, "Expose", []int{0, 1})
+		assert.Contains(t, result, "x")
+		m.AssertNotCalled(t, "Expose", mock.Anything)
 	})
 
 	t.Run("play", func(t *testing.T) {
@@ -72,7 +72,7 @@ func TestGongZhuCuiController_Exec(t *testing.T) {
 
 	t.Run("play no args", func(t *testing.T) {
 		result := controller.NewGongZhuCuiController(newMock()).Exec("p")
-		assert.Contains(t, result, "Card index is required")
+		assert.Contains(t, result, msgCardIndexRequired())
 	})
 
 	t.Run("next / nextround", func(t *testing.T) {
@@ -95,7 +95,7 @@ func TestGongZhuCuiController_Exec(t *testing.T) {
 
 	t.Run("setdifficulty invalid", func(t *testing.T) {
 		result := controller.NewGongZhuCuiController(newMock()).Exec("sd 9")
-		assert.Contains(t, result, "Invalid CPU difficulty")
+		assert.Contains(t, result, msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("setlimit", func(t *testing.T) {
@@ -109,7 +109,7 @@ func TestGongZhuCuiController_Exec(t *testing.T) {
 
 	t.Run("setlimit invalid", func(t *testing.T) {
 		result := controller.NewGongZhuCuiController(newMock()).Exec("sl 0")
-		assert.Contains(t, result, "Invalid point limit")
+		assert.Contains(t, result, msgInvalidPointLimitPrefix())
 	})
 
 	t.Run("hint / log", func(t *testing.T) {

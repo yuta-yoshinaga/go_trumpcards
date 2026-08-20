@@ -397,11 +397,22 @@ function FlowerGardenPageContent() {
               </div>
             </div>
 
+            {/* 他のソリティアと違う規則なので常設で出す。初回だけのチュートリアルに
+                書いてあっても、読み飛ばした後は盤面に手掛かりが無い (#5599)。 */}
+            <div className="mb-1 text-center text-ds-text-muted text-xs" data-testid="fg-rules-note">
+              {t('rulesNote')}
+            </div>
+
             <div className="flex gap-1 sm:gap-2" data-tutorial="fg-tableau">
               {[0, 1, 2, 3, 4, 5].map(renderTableauColumn)}
             </div>
 
-            <div data-tutorial="fg-hint-display">
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-tutorial="fg-hint-display" data-testid="fg-hint-live" role="status" aria-live="polite">
               {hint && (
                 <div className="text-ds-warning text-sm mb-2 mt-3">
                   {t('hintAvailable')}: {formatHintZone(t, hint.fromZone, hint.fromCol)} →{' '}

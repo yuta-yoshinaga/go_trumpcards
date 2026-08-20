@@ -25,5 +25,7 @@
   "hintNone": "No hint is available now.",
   "hintSplit": "Recommended: put [{{idx0}}] [{{idx1}}] ({{cards}}) in the low hand - {{reason}}",
   "hintReasonPair": "the strongest split where a pair in the low hand still does not foul",
-  "hintReasonHigh": "maximises the low hand without fouling"
+  "hintReasonHigh": "maximises the low hand without fouling",
+  "helpExampleBet": "  b 100                bet 100 chips",
+  "foulHighMustBeat": "Foul: the two-card low hand must be weaker than the five-card high hand"
 }

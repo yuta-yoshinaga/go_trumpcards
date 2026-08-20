@@ -62,5 +62,9 @@
   "discardUpcoming": "フロップベット終了後にカードを{{count}}枚捨てます",
   "discardCandidate": "  [{{idx}}] これを捨てると: {{hand}}",
   "discardRecommended": " ← おすすめ",
-  "discardCandidatePair": "  [{{idx0}}] [{{idx1}}] を捨てると: {{hand}}"
+  "discardCandidatePair": "  [{{idx0}}] [{{idx1}}] を捨てると: {{hand}}",
+  "helpExampleRaise": "  ra 200               合計 200 チップになるようレイズする",
+  "helpExampleCall": "  c                    現在のベットにコールする",
+  "helpLog": "  l                    行動ログを表示",
+  "currentBestHand": "現在の最善役: {{hand}} ({{cards}})"
 }

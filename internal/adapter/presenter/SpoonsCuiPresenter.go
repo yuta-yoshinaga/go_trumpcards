@@ -38,6 +38,12 @@ func (p *SpoonsCuiPresenter) Output(g interfaces.SpoonsGame, lastErr error) stri
 			if player.GetHasSpoon() {
 				spoon = " " + color.Green(i18n.T("spoons.hasSpoon"))
 			}
+			// **配り手は札を供給し続ける役**で、他プレイヤーの手札が増えるペースを
+			// 読む材料になる (#5669)。Web は badge.feeder を出しているのに、CUI は
+			// GetFeederIdx を一度も読んでいなかった。
+			if i == g.GetFeederIdx() {
+				spoon += " " + i18n.T("spoons.feederTag")
+			}
 			if i == 0 {
 				// 人間の手札のみ公開表示する。
 				b.WriteString(name + " " + letters + spoon + "\n")
@@ -87,7 +93,7 @@ func (p *SpoonsCuiPresenter) Output(g interfaces.SpoonsGame, lastErr error) stri
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *SpoonsCuiPresenter) ActionLogOutput(g interfaces.SpoonsGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.SpoonsPlayer](g)
 }
 
 // spoonsLetters は文字数を "S-P-O-O-N-S" の取得済み接頭辞として表示する。

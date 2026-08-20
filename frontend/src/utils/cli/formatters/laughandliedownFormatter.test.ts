@@ -36,6 +36,7 @@ function makeState(overrides?: Partial<LaughAndLieDownResponse>): LaughAndLieDow
     threeTakeIndices: [],
     dealerIdx: 0,
     lastInIdx: -1,
+    lastInBonus: 5,
     pot: 11,
     gameEndFlag: false,
     message: '',

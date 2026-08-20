@@ -28,6 +28,7 @@ import {
   ZHENG_HELP,
   type ZhengCliArgs,
 } from '../utils/cli/commands/zhengCommands';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { isValidZhengCombo, zhengInvalidReason } from '../utils/zhengComboValidator';
@@ -129,8 +130,9 @@ function ZhengPageContent() {
       parseCommand: parseZhengCommand,
       formatResponse: formatZhengState,
       helpText: [...ZHENG_HELP],
+      localCommand: hintLocalCommand(frontendHint),
     }),
-    [],
+    [frontendHint],
   );
   const { handleCommand } = useCliGame(callApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 

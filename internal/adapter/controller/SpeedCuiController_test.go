@@ -98,3 +98,35 @@ func TestSpeedCuiController_Exec(t *testing.T) {
 		assert.NotEmpty(t, result)
 	})
 }
+
+// #5390: `p abc` が 0 番を出し、`sd abc` が Normal でゲームを配り直していた。
+func TestSpeedCuiController_RefusesMistypedOptionalArgs(t *testing.T) {
+	t.Run("play refuses a mistyped card index", func(t *testing.T) {
+		m := newSpeedCuiMock()
+		out := controller.NewSpeedCuiController(m).Exec("p abc")
+		assert.Equal(t, msgKey("invalidCardIndex", "val", "abc"), out)
+		m.AssertNotCalled(t, "Play", mock.Anything, mock.Anything)
+	})
+
+	t.Run("play refuses a mistyped pile index", func(t *testing.T) {
+		m := newSpeedCuiMock()
+		out := controller.NewSpeedCuiController(m).Exec("p 0 xyz")
+		assert.Equal(t, msgKey("invalidPileIndex", "val", "xyz"), out)
+		m.AssertNotCalled(t, "Play", mock.Anything, mock.Anything)
+	})
+
+	t.Run("play with no argument still plays the first card onto the first pile", func(t *testing.T) {
+		m := newSpeedCuiMock()
+		assert.Equal(t, "play-ok", controller.NewSpeedCuiController(m).Exec("p"))
+		m.AssertCalled(t, "Play", 0, 0)
+	})
+
+	// **設定コマンドは特に静か。** 断らないと打ち間違いが Normal での配り直しに
+	// なり、盤面が変わったこと以外に手掛かりが残らない。
+	t.Run("setdifficulty refuses a mistyped level", func(t *testing.T) {
+		m := newSpeedCuiMock()
+		out := controller.NewSpeedCuiController(m).Exec("sd abc")
+		assert.Equal(t, msgKey("invalidCpuDifficulty", "val", "abc"), out)
+		m.AssertNotCalled(t, "ResetWithConfig", mock.Anything)
+	})
+}

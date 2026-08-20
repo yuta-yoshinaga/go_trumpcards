@@ -10,6 +10,7 @@
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
+  - [1.6 セッションと Cloudflare Worker 層](#16-セッションと-cloudflare-worker-層)
 - [2. シーケンス図](#2-シーケンス図)
   - [2.1 CUIゲーム実行フロー](#21-cuiゲーム実行フロー)
   - [2.2 Web APIゲーム実行フロー](#22-web-apiゲーム実行フロー)
@@ -23,14 +24,14 @@
   - [2.10 GoFish 要求フロー](#210-gofish-要求フロ���)
   - [2.11 PigsTail ドローフロー](#211-pigstail-ドローフロー)
   - [2.12 FiftyOne 交換フロー](#212-fiftyone-交換フロー)
-  - [2.17 Yukon ムーブフロー](#217-yukon-ムーブフロー)
-  - [2.18 RussianSolitaire ムーブフロー](#218-russiansolitaire-ムーブフロー)
   - [2.13 SevenCardStud ベッティングフロー](#213-sevencardstud-ベッティングフロー)
   - [2.14 Durak アタック・ディフェンスフロー](#214-durak-アタックディフェンスフロー)
   - [2.15 FortyThieves ドロー・ムーブフロー](#215-fortythieves-ドロームーブフロー)
   - [2.16 PaiGow ベット・セットフロー](#216-paigow-ベットセットフロー)
-  - [2.17 RedDog ベット・スプレッドフロー](#217-reddog-ベットスプレッドフロー)
-  - [2.18 Mighty ビッド・宣言・トリックフロー](#218-mighty-ビッド宣言トリックフロー)
+  - [2.17 Yukon ムーブフロー](#217-yukon-ムーブフロー)
+  - [2.18 RussianSolitaire ムーブフロー](#218-russiansolitaire-ムーブフロー)
+  - [2.19 RedDog ベット・スプレッドフロー](#219-reddog-ベットスプレッドフロー)
+  - [2.20 Mighty ビッド・宣言・トリックフロー](#220-mighty-ビッド宣言トリックフロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 BlackJack フェーズ遷移](#31-blackjack-フェーズ遷移)
   - [3.2 Poker フェーズ遷移](#32-poker-フェーズ遷移)
@@ -85,6 +86,11 @@
   - [3.49 RussianSolitaire フェーズ遷移](#349-russiansolitaire-フェーズ遷移)
   - [3.50 CasinoWar フェーズ遷移](#350-casinowar-フェーズ遷移)
   - [3.51 Mighty フェーズ遷移](#351-mighty-フェーズ遷移)
+  - [3.52 Penguin フェーズ遷移](#352-penguin-フェーズ遷移)
+  - [3.53 EightOff フェーズ遷移](#353-eightoff-フェーズ遷移)
+  - [3.54 RussianPoker フェーズ遷移](#354-russianpoker-フェーズ遷移)
+  - [3.55 Doudizhu フェーズ遷移](#355-doudizhu-フェーズ遷移)
+  - [3.56 Truco フェーズ遷移](#356-truco-フェーズ遷移)
   - [3.57 Scopa フェーズ遷移](#357-scopa-フェーズ遷移)
   - [3.58 Barbu フェーズ遷移](#358-barbu-フェーズ遷移)
 
@@ -152,6 +158,48 @@ classDiagram
     RankedGamePlayer --|> GamePlayer : extends
     GamePlayer *-- ChipHolder : mixin
 ```
+
+#### 共有ミックスイン
+
+318 ゲームの多くが同じ関心事を持つので、以下は**埋め込みで共有**している。
+§1.2 以降の per-game クラス図に現れる `GetActionLog()` / `GetTricksTaken()` /
+`GetRoundScore()` などは、たいていここから昇格してきたメソッドで、
+per-game 型が自前で定義しているわけではない。
+
+```mermaid
+classDiagram
+    class actionLogBase {
+        +GetActionLog() []*ActionLogEntry
+    }
+
+    class TrickHolder {
+        +GetTricksTaken() [][]*Card
+        +GetTrickCount() int
+        +AddTrick(cards) void
+        +ResetTricks() void
+        +MarshalJSON() []byte, error
+        +UnmarshalJSON(data) error
+    }
+
+    class RoundScoreHolder {
+        +GetRoundScore() int
+        +SetRoundScore(score) void
+        +GetCumulativeScore() int
+        +SetCumulativeScore(score) void
+        +CommitRoundScore() void
+        +MarshalJSON() []byte, error
+        +UnmarshalJSON(data) error
+    }
+
+    note for actionLogBase "272 ファイルが埋め込む (domain/action_log_base.go)。\n非公開の appendLog / appendLogAt で行を足し\nGetActionLog で読み出す"
+    note for TrickHolder "89 ファイル (domain/TrickHolder.go)。\nトリックテイキング系の取り札を保持"
+    note for RoundScoreHolder "39 ファイル (domain/RoundScoreHolder.go)。\nラウンド得点と累計得点、CommitRoundScore で確定"
+```
+
+`TrickHolder` と `RoundScoreHolder` が自前の `MarshalJSON` / `UnmarshalJSON` を
+持つのは、非公開フィールドが KV セッションの往復で消えないようにするため。
+新しいゲームでこれらを埋め込む場合、ゲーム側のコーデックがこの往復を壊していないか
+確認すること（[ADR-0031](../adr/0031-registry-consolidation.md) の登録手順を参照）。
 
 ### 1.2 ゲームドメイン (全318ゲーム)
 
@@ -1643,15 +1691,16 @@ classDiagram
     }
 
     class BlackJackInteractor {
-        -game BlackJackGame
-        -presenter BlackJackPresenter
+        -GameBase~BlackJackGame~
+        -bjp BlackJackPresenter
         +Reset() string
         +Hit() string
         +Stand() string
-        +Bet(amount int) string
+        +Bet(amount, ppBet, t3Bet, handCount int) string
         +DoubleDown() string
         +Split() string
-        +Insurance(accept bool) string
+        +Insurance() string
+        +DeclineInsurance() string
         +Surrender() string
         +ActionLog() string
     }
@@ -1694,19 +1743,30 @@ classDiagram
         ゲーム固有アクション() string
     }
 
+    class GameBase~G~ {
+        +Game G
+        +Snapshot() []byte, error
+    }
+
     class GameInteractor {
-        -game GameInterface
-        -presenter GamePresenter
-        +execAndPresent(fn) string
-        +runAndPresent(fn) string
+        -bjp GamePresenter
     }
 
     GameInteractor ..|> GameInteractorIF : implements
+    GameInteractor --|> GameBase~G~ : embeds
     GameInteractor --> GamePresenter~G~ : uses
     GameInteractor --> GameInterface : uses
 
-    note for GameInteractor "execAndPresent: error返却アクション実行後Presenter呼出\nrunAndPresent: void アクション実行後Presenter呼出"
+    note for GameBase~G~ "全 305 interactor が埋め込む総称基底\n(usecase/interactor_base.go)。Snapshot が\nKV 永続化用の JSON 化を一手に引き受ける"
+    note for GameInteractor "GameInteractor はここでは 305 個の per-game\ninteractor を代表する placeholder。実体は\nBlackJackInteractor などで、いずれも\nGameBase[G] を埋め込み Presenter を1つ持つ"
 ```
+
+`execAndPresent` / `runAndPresent` は **Interactor のメソッドではなく
+`usecase/interactor_helper.go` のパッケージレベル総称関数**で、
+`execAndPresent(game, presenter, action)` の形で呼ぶ
+（`resetWithValidatedConfig` も同じ場所にある同種のヘルパ）。
+per-game interactor が `GameBase[G]` を埋め込むことで `Snapshot()` を得ており、
+これが Cloudflare Worker の KV 永続化の土台になっている（§1.6）。
 
 ### 1.4 アダプタ層 (Controller・Presenter実装)
 
@@ -1736,7 +1796,7 @@ classDiagram
     }
 
     class GameWebController {
-        -store *SessionStore~GameInteractorIF~
+        -provider SessionProvider~GameInteractorIF~
         +Exec(w http.ResponseWriter, r *http.Request)
     }
 
@@ -1757,8 +1817,8 @@ classDiagram
     GameCuiPresenter ..|> GamePresenter : implements
     GameWebPresenter ..|> GamePresenter : implements
 
-    note for GameCuiController "318ゲーム × CUI/Web = 636 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
-    note for GameCuiPresenter "318ゲーム × CUI/Web = 636 Presenter 実装"
+    note for GameCuiController "318ゲーム × CUI/Web = 636 バインディング\n実装型は 610 種類 (CuiController 305 + WebController 305)\n差分は複数ゲームで共有される Controller\n(総称基底 GameWebController[I,P,O] は別)"
+    note for GameCuiPresenter "318ゲーム × CUI/Web = 636 バインディング\n実装型は 612 種類 (CuiPresenter 306 + WebPresenter 306)"
 ```
 
 ### 1.5 インフラストラクチャ層
@@ -1803,6 +1863,75 @@ classDiagram
     GameCui --> GameCuiController : delegates
 ```
 
+### 1.6 セッションと Cloudflare Worker 層
+
+Web リクエストが interactor に届くまでの経路は、HTTP サーバと Worker で
+**同じ `SessionProvider` インタフェースの差し替え**で実現している。
+`GameWebController` は `SessionStore` を直接触らず、必ず provider 越しに取る。
+
+```mermaid
+classDiagram
+    class SessionProvider~T~ {
+        <<interface>>
+        +Acquire(id, factory) T, SessionRelease, bool
+        +Stop() void
+    }
+
+    class MemorySessionProvider~T~ {
+        +Acquire(id, factory) T, SessionRelease, bool
+        +Stop() void
+        +Store() *SessionStore~T~
+    }
+
+    class KVSessionProvider~T~ {
+        +Acquire(id, factory) T, SessionRelease, bool
+        +Stop() void
+    }
+
+    class SessionStore~T~ {
+        +GetWithLock(id, factory) T, bool
+    }
+
+    MemorySessionProvider~T~ ..|> SessionProvider~T~ : implements
+    KVSessionProvider~T~ ..|> SessionProvider~T~ : implements
+    MemorySessionProvider~T~ --> SessionStore~T~ : wraps
+
+    note for SessionProvider~T~ "Acquire は解放コールバック SessionRelease を返す。\n呼び出し側は必ず defer で解放する"
+    note for MemorySessionProvider~T~ "HTTP サーバ用。プロセス内 map + per-session mutex"
+    note for KVSessionProvider~T~ "Worker 用。リクエスト毎に KV から復元し、\nGameBase.Snapshot() の JSON を書き戻す。\nプロセスが持続しないので状態は毎回 KV 往復する"
+```
+
+Worker 側はゲームをカテゴリ単位で 6 バイナリに分割している。
+`Category` は**バイナリのサイズバケットであってユーザ向けの分類ではない**
+（[ADR-0032](../adr/0032-fourth-worker-capacity.md) /
+[ADR-0036](../adr/0036-fifth-sixth-worker-capacity.md)）。
+
+```mermaid
+classDiagram
+    class Game {
+        +Name string
+        +Category Category
+    }
+
+    class Category {
+        <<enumeration>>
+        CategoryCasino
+        CategoryClassic
+        CategorySolo
+        CategoryExtra
+        CategoryExtra2
+        CategoryExtra3
+    }
+
+    Game --> Category : size bucket
+
+    note for Game "registry.go が 318 件の Name+Category だけを持つ。\nゲーム実装への参照は持たないので、TinyGo が\n他カテゴリを dead-code elimination できる"
+    note for Category "6 バケットは 1 MB gzip 無料枠に収めるための分割。\n各 Worker は自分のカテゴリだけを blank import する"
+```
+
+詳細な per-worker のゲーム一覧とビルド手順は
+[`docs/cloudflare-workers.md`](../cloudflare-workers.md) を参照。
+
 ---
 
 ## 2. シーケンス図
@@ -1822,7 +1951,7 @@ sequenceDiagram
 
     User->>Main: go run ./cmd/trumpcards
     Main->>GM: NewGameManager()
-    Main->>GM: RunInteractiveCuiLoop()
+    Main->>GM: ui.RunInteractiveCuiLoop(manager)
 
     loop REPL ループ
         User->>GM: コマンド入力 (例: "hit")
@@ -1859,7 +1988,7 @@ sequenceDiagram
 
     WebCtrl->>Store: GetWithLock("abc123", factory)
     alt 新規セッション
-        Store->>Store: factory() でInteractor生成
+        Store->>Store: factory フィールドで Interactor 生成
         Store-->>WebCtrl: 新規Interactor
     else 既存セッション
         Store-->>WebCtrl: 既存Interactor (mutex lock)
@@ -1882,28 +2011,39 @@ sequenceDiagram
     participant C1 as クライアント A
     participant C2 as クライアント B
     participant WebCtrl as WebController
+    participant Prov as MemorySessionProvider
     participant Store as SessionStore
 
     C1->>WebCtrl: POST {"sessionId":"sess-1","cmd":"reset"}
-    WebCtrl->>Store: GetWithLock("sess-1")
+    WebCtrl->>Prov: execWithSession → Acquire("sess-1", factory)
+    Prov->>Store: GetWithLock("sess-1")
     Store->>Store: entries["sess-1"] 作成 + mutex lock
     Note over Store: Interactor A 生成
-    Store-->>WebCtrl: Interactor A (locked)
-    WebCtrl->>WebCtrl: Reset() 実行
-    WebCtrl->>Store: mutex unlock
+    Store-->>Prov: Interactor A (locked)
+    Prov-->>WebCtrl: Interactor A + SessionRelease
+    WebCtrl->>WebCtrl: reset コマンドを dispatch
+    WebCtrl->>Prov: defer で SessionRelease を呼ぶ
     WebCtrl-->>C1: レスポンス
 
     C2->>WebCtrl: POST {"sessionId":"sess-2","cmd":"reset"}
-    WebCtrl->>Store: GetWithLock("sess-2")
-    Store->>Store: sessions["sess-2"] 作成 + mutex lock
+    WebCtrl->>Prov: execWithSession → Acquire("sess-2", factory)
+    Prov->>Store: GetWithLock("sess-2")
+    Store->>Store: entries["sess-2"] 作成 + mutex lock
     Note over Store: Interactor B 生成 (独立)
-    Store-->>WebCtrl: Interactor B (locked)
-    WebCtrl->>WebCtrl: Reset() 実行
-    WebCtrl->>Store: mutex unlock
+    Store-->>Prov: Interactor B (locked)
+    Prov-->>WebCtrl: Interactor B + SessionRelease
+    WebCtrl->>WebCtrl: reset コマンドを dispatch
+    WebCtrl->>Prov: defer で SessionRelease を呼ぶ
     WebCtrl-->>C2: レスポンス
 
     Note over Store: 各セッションは独立した<br/>ゲーム状態を保持
 ```
+
+Controller は `SessionStore` を直接触らない。`execWithSession`
+(`adapter/controller/base_controller.go:92`) が provider から
+interactor と解放コールバックを受け取り、`defer release()` で必ず解放する。
+Cloudflare Worker ではこの `MemorySessionProvider` が `KVSessionProvider` に
+差し替わり、`GetWithLock` の代わりに KV からの復元と書き戻しが走る（§1.6）。
 
 ### 2.4 VideoPoker ベット・ホールドフロー
 
@@ -1952,7 +2092,7 @@ sequenceDiagram
     Note over User,Pres: ベットフロー
     User->>Ctrl: bet 100 50
     Ctrl->>Interactor: Bet(100, 50)
-    Interactor->>Domain: PlayerBet(100, 50)
+    Interactor->>Domain: Bet(100, 50)
     Domain->>Domain: チップ減算 → 3枚ずつ配布 → phase=Action
     Domain-->>Interactor: nil
     Interactor->>Pres: Output(game, nil)
@@ -1961,7 +2101,7 @@ sequenceDiagram
     Note over User,Pres: プレイフロー
     User->>Ctrl: play
     Ctrl->>Interactor: Play()
-    Interactor->>Domain: PlayerPlay()
+    Interactor->>Domain: Play()
     Domain->>Domain: プレイベット = アンティ額
     Domain->>Eval: evalThreeCardHand(playerHand)
     Eval-->>Domain: playerRank
@@ -2017,7 +2157,7 @@ sequenceDiagram
     Note over User,Pres: オークションフロー
     User->>Ctrl: bid 1 1 5
     Ctrl->>Interactor: Bid(1, 1, 5)
-    Interactor->>Domain: Bid(BidTypeNormal, 1, NoTrump)
+    Interactor->>Domain: PlayerBid(BidTypeNormal, 1, NoTrump)
     Domain->>Domain: ビッド記録 → CPU自動ビッド → コントラクト確定 → phase=Play
     Domain-->>Interactor: nil
     Interactor->>Pres: Output(game, nil)
@@ -2026,7 +2166,7 @@ sequenceDiagram
     Note over User,Pres: トリックプレイフロー
     User->>Ctrl: play 3
     Ctrl->>Interactor: Play(3)
-    Interactor->>Domain: PlayCard(3)
+    Interactor->>Domain: PlayerPlay(3)
     Domain->>Domain: フォロースート検証 → カード出し → CPU/ダミー自動プレイ
     Domain->>Domain: トリック勝者判定 → phase=TrickEnd
     Domain-->>Interactor: nil
@@ -2047,7 +2187,7 @@ sequenceDiagram
     Note over User,Pres: フロップベッティング完了 → ディスカードフェーズ
     User->>Ctrl: discard 1
     Ctrl->>Interactor: Discard(1)
-    Interactor->>Domain: PlayerDiscard(1)
+    Interactor->>Domain: DiscardCard(1)
     Domain->>Domain: ホールカード[1]を除去 → CPU自動ディスカード → phase=Turn
     Domain-->>Interactor: nil
     Interactor->>Pres: Output(game, nil)
@@ -2067,7 +2207,7 @@ sequenceDiagram
     Note over User,Pres: プレイフロー
     User->>Ctrl: play 0 1
     Ctrl->>Interactor: Play(0, 1)
-    Interactor->>Domain: Play(0, 1)
+    Interactor->>Domain: PlayerPlay(0, 1)
     Domain->>Domain: 手札[0]を場札[1]に出す → 手札補充 → CPU自動プレイ
     Domain-->>Interactor: nil
     Interactor->>Pres: Output(game, nil)
@@ -2096,7 +2236,7 @@ sequenceDiagram
     Note over User,Pres: 要求フロー
     User->>Ctrl: ask 1 7
     Ctrl->>Interactor: Ask(1, 7)
-    Interactor->>Domain: Ask(1, 7)
+    Interactor->>Domain: PlayerAsk(1, 7)
     Domain->>Domain: 相手が持っていればカード移動 → ブックチェック → CPU自動プレイ
     Domain-->>Interactor: nil
     Interactor->>Pres: Output(game, nil)
@@ -2105,7 +2245,7 @@ sequenceDiagram
     Note over User,Pres: Go Fish (相手が持っていない場合)
     User->>Ctrl: ask 2 13
     Ctrl->>Interactor: Ask(2, 13)
-    Interactor->>Domain: Ask(2, 13)
+    Interactor->>Domain: PlayerAsk(2, 13)
     Domain->>Domain: 相手が持っていない → 山札から1枚引く → ブックチェック → CPU自動プレイ
     Domain-->>Interactor: nil
     Interactor->>Pres: Output(game, nil)
@@ -2124,8 +2264,8 @@ sequenceDiagram
 
     Note over User,Pres: ドローフロー
     User->>Ctrl: draw
-    Ctrl->>Interactor: Draw()
-    Interactor->>Domain: Draw()
+    Ctrl->>Interactor: Action()
+    Interactor->>Domain: PlayerAction()
     Domain->>Domain: 山札から1枚引く → スート一致判定 → ペナルティ or 場に置く → CPU自動プレイ
     Domain-->>Interactor: nil
     Interactor->>Pres: Output(game, nil)
@@ -2203,7 +2343,7 @@ sequenceDiagram
     Note over User,Pres: アタックフロー
     User->>Ctrl: attack 0
     Ctrl->>Interactor: Attack(0)
-    Interactor->>Domain: Attack(0)
+    Interactor->>Domain: PlayerAttack(0)
     Domain->>Domain: カード出す → テーブルに配置 → CPU自動ディフェンス判定
     Domain-->>Interactor: nil
     Interactor->>Pres: Output(game, nil)
@@ -2212,7 +2352,7 @@ sequenceDiagram
     Note over User,Pres: ディフェンスフロー
     User->>Ctrl: defend 2
     Ctrl->>Interactor: Defend(2)
-    Interactor->>Domain: Defend(2)
+    Interactor->>Domain: PlayerDefend(2)
     Domain->>Domain: 防御カード配置 → 切り札/同スート判定 → ビート成否
     Domain-->>Interactor: nil
     Interactor->>Pres: Output(game, nil)
@@ -2220,8 +2360,8 @@ sequenceDiagram
 
     Note over User,Pres: ピックアップ (防御失敗)
     User->>Ctrl: pickup
-    Ctrl->>Interactor: PickUp()
-    Interactor->>Domain: PickUp()
+    Ctrl->>Interactor: TakeCards()
+    Interactor->>Domain: PlayerTakeCards()
     Domain->>Domain: テーブルカード全て手札に追加 → デッキ補充 → 次のバウト
     Domain-->>Interactor: nil
     Interactor->>Pres: Output(game, nil)
@@ -2249,8 +2389,8 @@ sequenceDiagram
 
     Note over User,Pres: ムーブフロー
     User->>Ctrl: move w f1
-    Ctrl->>Interactor: Move("w", "f1")
-    Interactor->>Domain: Move("w", "f1")
+    Ctrl->>Interactor: MoveWasteToFoundation()
+    Interactor->>Domain: MoveWasteToFoundation()
     Domain->>Domain: ウェスト → 組札1へ移動 → 同スート昇順チェック
     Domain-->>Interactor: nil
     Interactor->>Pres: Output(game, nil)
@@ -2274,7 +2414,7 @@ sequenceDiagram
     participant Ctrl as Controller
     participant Interactor as PaiGowInteractor
     participant Domain as PaiGow
-    participant Eval as evalFiveCardHand / evalPaiGowLow
+    participant Eval as evalPaiGowHighHand / evalPaiGowLowHand
     participant Pres as Presenter
 
     Note over User,Pres: ベットフロー
@@ -2292,9 +2432,9 @@ sequenceDiagram
     Interactor->>Domain: SetHands(2, 5)
     Domain->>Domain: ローハンド(2枚) / ハイハンド(5枚) 分離
     Domain->>Domain: ディーラーハウスウェイ設定
-    Domain->>Eval: evalFiveCardHand(playerHighHand)
+    Domain->>Eval: evalPaiGowHighHand(playerHighHand)
     Eval-->>Domain: playerHighRank
-    Domain->>Eval: evalFiveCardHand(dealerHighHand)
+    Domain->>Eval: evalPaiGowHighHand(dealerHighHand)
     Eval-->>Domain: dealerHighRank
     Domain->>Domain: ハイハンド比較 → ローハンド比較
     Domain->>Domain: 勝敗判定 → 配当計算(5%コミッション) → phase=End
@@ -2381,7 +2521,7 @@ sequenceDiagram
 
 Yukon との違いはタブロー移動時の積み重ねルールのみ (alternating color → same suit)。それ以外のフローはまったく同じ。
 
-### 2.17 RedDog ベット・スプレッドフロー
+### 2.19 RedDog ベット・スプレッドフロー
 
 ```mermaid
 sequenceDiagram
@@ -2425,7 +2565,7 @@ sequenceDiagram
     Pres-->>User: ベット画面
 ```
 
-### 2.18 Mighty ビッド・宣言・トリックフロー
+### 2.20 Mighty ビッド・宣言・トリックフロー
 
 ```mermaid
 sequenceDiagram
@@ -2480,7 +2620,7 @@ sequenceDiagram
 
     Note over User,Pres: トリック終了 (phase=TrickEnd)
     User->>Ctrl: next
-    Ctrl->>Interactor: Next()
+    Ctrl->>Interactor: NextTrick()
     Interactor->>Domain: NextTrick()
     Domain->>Domain: 10トリック未満なら phase=Play
     Domain->>Domain: 10トリック完了で phase=RoundEnd
@@ -2500,6 +2640,17 @@ sequenceDiagram
 ---
 
 ## 3. ステートマシン図
+
+遷移ラベルのメソッド名と `note` のフェーズ定数名は、
+`TestDesignDocStateTransitionsExistInGo` と `TestDesignDocStateConstantsExistInGo`
+が節見出しのゲーム名を持ち主として実コードと照合している（
+`internal/infrastructure/games/design_doc_diagrams_test.go`）。
+
+末尾に `*` を付けた `Move*()` は**兄弟メソッド群の略記**で、ラベルに列挙するには
+長すぎる場合にだけ使う（例: `MoveTableauToTableau` / `MoveTableauToFoundation` /
+`MoveTableauToFreeCell` / `MoveFreeCellToTableau` / `MoveFreeCellToFoundation`）。
+ガードは `*` 付きを実メソッド名として照合しない。逆に言えば、`*` の無い名前は
+すべて実在するメソッドでなければならない。
 
 ### 3.1 BlackJack フェーズ遷移
 
@@ -2634,10 +2785,10 @@ stateDiagram-v2
 ```mermaid
 stateDiagram-v2
     [*] --> Playing : Reset()
-    Playing --> Playing : Move / Draw / Deal / Remove / Step / Undo / Redeal
+    Playing --> Playing : Move / Draw / Deal / Remove / Step / Undo / Shift
     Playing --> GameClear : 全カードをFoundation/Pyramid/Tableau除去完了または全表向き
     Playing --> GameClear : AutoComplete成功 (Klondike/FreeCell/SeahavenTowers/Spider のみ)
-    Playing --> GameOver : GiveUp / 4枚目のK表向き(ClockSolitaire) / Redeal不可かつ手詰まり(Cruel)
+    Playing --> GameOver : GiveUp / 4枚目のK表向き(ClockSolitaire) / Shift不可かつ手詰まり(Cruel)
     GameClear --> [*]
     GameOver --> [*]
 
@@ -2656,7 +2807,7 @@ ClockSolitaire 固有のアクション: `Step` / `AutoPlay`。52枚を13山に4
 
 SeahavenTowers 固有のアクション: `MoveTableauToTableau` / `MoveTableauToFoundation` / `MoveTableauToFreeCell` / `MoveFreeCellToTableau` / `MoveFreeCellToFoundation` / `Undo` / `AutoComplete`。FreeCell 派生の 4 セル + 10 タブロー構成。タブローへ置けるのは K のみで、自由セルは 4 枚まで。全 52 枚を Foundation に積み上げてクリア。
 
-Cruel 固有のアクション: `Move` / `Redeal` / `Undo`。タブロー 12 山 × 4 枚に配置されたカードを Foundation へ送る。詰まったら `Redeal` で残りカードを再配置（回数無制限）。Foundation に全 52 枚揃えればクリア、Redeal 後も手詰まりなら GameOver。
+Cruel 固有のアクション: `MoveTableauToTableau` / `MoveTableauToFoundation` / `Shift` / `Undo`。タブロー 12 山 × 4 枚に配置されたカードを Foundation へ送る。詰まったら `Shift` で残りカードを再配置（回数無制限）。Foundation に全 52 枚揃えればクリア、Shift 後も手詰まりなら GameOver。
 
 各ゲームのフェーズ定数名: `KlondikePhasePlaying` / `FreeCellPhasePlaying` / `SeahavenTowersPhasePlaying` / `CruelPhasePlaying` / `SpiderPhasePlaying` / `PyramidPhasePlaying` / `TriPeaksPhasePlaying` / `GolfPhasePlaying` / `ClockSolitairePhasePlaying` = 0、`…GameClear` = 1、`…GameOver` = 2。
 
@@ -2975,7 +3126,7 @@ stateDiagram-v2
 ```mermaid
 stateDiagram-v2
     [*] --> Play : Reset()
-    Play --> Play : Draw() → スート不一致 or 一致ペナルティ → CPU自動プレイ
+    Play --> Play : Action() → スート不一致 or 一致ペナルティ → CPU自動プレイ
     Play --> GameEnd : 山札が空
     GameEnd --> [*]
 
@@ -3007,11 +3158,11 @@ stateDiagram-v2
     End --> [*] : ゲーム終了
 
     note right of Init : SevenCardStudPhaseInit = 0
-    note right of ThirdSt : SevenCardStudPhaseThirdSt = 1
-    note right of FourthSt : SevenCardStudPhaseFourthSt = 2
-    note right of FifthSt : SevenCardStudPhaseFifthSt = 3
-    note right of SixthSt : SevenCardStudPhaseSixthSt = 4
-    note right of SeventhSt : SevenCardStudPhaseSeventhSt = 5
+    note right of ThirdSt : SevenCardStudPhaseThirdStreet = 1
+    note right of FourthSt : SevenCardStudPhaseFourthStreet = 2
+    note right of FifthSt : SevenCardStudPhaseFifthStreet = 3
+    note right of SixthSt : SevenCardStudPhaseSixthStreet = 4
+    note right of SeventhSt : SevenCardStudPhaseSeventhStreet = 5
     note right of Showdown : SevenCardStudPhaseShowdown = 6
     note right of End : SevenCardStudPhaseEnd = 7
     note right of Rebuy : SevenCardStudPhaseRebuy = 8
@@ -3023,9 +3174,9 @@ stateDiagram-v2
 stateDiagram-v2
     [*] --> Attack : Reset()
     Attack --> Defend : Attack() カード配置
-    Attack --> BoutEnd : Done() アタック終了
+    Attack --> BoutEnd : Pass() アタック終了
     Defend --> Attack : Defend() 全カードをビート → 追加アタック可能
-    Defend --> BoutEnd : PickUp() 防御失敗
+    Defend --> BoutEnd : TakeCards() 防御失敗
     BoutEnd --> Attack : デッキ補充 → 次のバウト
     BoutEnd --> GameEnd : 1人以外全員手札なし
     GameEnd --> [*]
@@ -3041,15 +3192,15 @@ stateDiagram-v2
 ```mermaid
 stateDiagram-v2
     [*] --> Playing : Reset()
-    Playing --> Playing : Draw() / Move() / Undo() / Hint() / AutoComplete()
+    Playing --> Playing : Draw() / Move*() / Undo() / Hint() / AutoComplete()
     Playing --> GameClear : 8組札すべて完成
     Playing --> GameOver : 移動可能な手なし
     GameOver --> [*]
     GameClear --> [*]
 
-    note right of Playing : FortyThievesPlaying = 0
-    note right of GameClear : FortyThievesGameClear = 1
-    note right of GameOver : FortyThievesGameOver = 2
+    note right of Playing : FortyThievesPhasePlaying = 0
+    note right of GameClear : FortyThievesPhaseGameClear = 1
+    note right of GameOver : FortyThievesPhaseGameOver = 2
 ```
 
 ### 3.30 PaiGow フェーズ遷移
@@ -3188,8 +3339,8 @@ stateDiagram-v2
     End --> [*]
 
     note right of Bet : LetItRidePhaseBet = 1
-    note right of Decision1 : LetItRidePhaseDecision1 = 2
-    note right of Decision2 : LetItRidePhaseDecision2 = 3
+    note right of Decision1 : LetItRidePhaseFirstDecision = 2
+    note right of Decision2 : LetItRidePhaseSecondDecision = 3
     note right of End : LetItRidePhaseEnd = 4
 ```
 
@@ -3306,7 +3457,7 @@ stateDiagram-v2
     [*] --> Playing : Reset()
     Playing --> Playing : PlayFromHand / PlayFromGoal / PlayFromSide
     Playing --> Playing : Discard() (ターン終了)
-    Playing --> Playing : DrawHand() (手札補充)
+    Playing --> Playing : 手札は各手番の開始時に自動補充
     Playing --> Playing : CpuStep() (CPUターン)
     Playing --> GameOver : ゴールパイルを出し切った
     GameOver --> [*]
@@ -3315,7 +3466,7 @@ stateDiagram-v2
     note right of GameOver : SpiteAndMalicePhaseGameOver = 1
 ```
 
-SpiteAndMalice 固有のアクション: `PlayFromHand` / `PlayFromGoal` / `PlayFromSide` / `Discard` / `DrawHand` / `CpuStep` / `Reset()`。2人プレイヤー (人間 vs CPU)、52枚×2デッキ (104枚) を共有ストックとして使用。
+SpiteAndMalice 固有のアクション: `PlayFromHand` / `PlayFromGoal` / `PlayFromSide` / `Discard` / `CpuStep` / `AutoComplete` / `Reset()`（手札補充は非公開の `drawToHand` が自動で行う）。2人プレイヤー (人間 vs CPU)、52枚×2デッキ (104枚) を共有ストックとして使用。
 各プレイヤーは伏せたゴールパイル (5〜30 枚, 既定 20) と 4 列のサイドパイル、最大 5 枚の手札を持つ。中央には 4 つの共有ファウンデーションがあり、A から始まり昇順、Q (12) で完成して `completed` に回収。K はワイルドで任意のランクとしてプレイ可能。手札 5 枚をディスカード (サイドパイルへ) するとターンが交代し、共有ストックが尽きた場合は `completed` をシャッフルしてストックを補充。ゴールパイルを最初に出し切ったプレイヤーが勝利。
 
 ### 3.43 Accordion フェーズ遷移
@@ -3368,9 +3519,9 @@ Badugi はトリプルドロー A-5 ロー (バドゥギ役) のポーカー。�
 ```mermaid
 stateDiagram-v2
     [*] --> Playing : Reset()
-    Playing --> Playing : MoveStockToFoundation(idx) (配置可能なら昇順でファウンデーションへ)
-    Playing --> Playing : MoveStockToWaste(idx) (4 列のウェイストパイルへ退避)
-    Playing --> Playing : MoveWasteToFoundation(wasteIdx, foundIdx)
+    Playing --> Playing : PlayStockToFoundation(fIdx) (配置可能なら昇順でファウンデーションへ)
+    Playing --> Playing : PlayStockToWaste(wasteIdx) (4 列のウェイストパイルへ退避)
+    Playing --> Playing : PlayWasteToFoundation(wasteIdx, fIdx)
     Playing --> Playing : Undo() / GetHint()
     Playing --> GameClear : 4 ファウンデーションが完成 (各 13 枚)
     Playing --> GameOver : GiveUp()
@@ -3383,19 +3534,19 @@ stateDiagram-v2
     note right of GameOver : CalculationPhaseGameOver = 2
 ```
 
-Calculation 固有のアクション: `MoveStockToFoundation` / `MoveStockToWaste` / `MoveWasteToFoundation` / `Undo` / `GiveUp` / `GetHint` / `Reset()`。1 デッキ 52 枚のうち A・2・3・4 を 4 つのファウンデーション基底とし、それぞれ +1, +2, +3, +4 ステップで昇順 (mod 13) に積み上げるシングルプレイヤーソリティア。ストックから引いたカードはファウンデーションか 4 列のウェイストパイルのいずれかに置く。
+Calculation 固有のアクション: `PlayStockToFoundation` / `PlayStockToWaste` / `PlayWasteToFoundation` / `Undo` / `GiveUp` / `GetHint` / `Reset()`。1 デッキ 52 枚のうち A・2・3・4 を 4 つのファウンデーション基底とし、それぞれ +1, +2, +3, +4 ステップで昇順 (mod 13) に積み上げるシングルプレイヤーソリティア。ストックから引いたカードはファウンデーションか 4 列のウェイストパイルのいずれかに置く。
 
 ### 3.46 Cassino フェーズ遷移
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Dealing : Reset() / NewRound() (4 枚ハンド + 4 枚テーブル配布)
+    [*] --> Dealing : Reset() / NextRound() (4 枚ハンド + 4 枚テーブル配布)
     Dealing --> PlayerTurn : 配札完了
     PlayerTurn --> PlayerTurn : Trail / Capture / Build (ターン交代)
-    PlayerTurn --> PlayerTurn : CpuStep() (CPU ターン)
+    PlayerTurn --> PlayerTurn : CpuPlay() (CPU ターン)
     PlayerTurn --> Dealing : 全員手札 0 → 再配布 (山札残あり)
     PlayerTurn --> RoundEnd : 山札・手札ともに尽きた
-    RoundEnd --> Dealing : NewRound() (継続)
+    RoundEnd --> Dealing : NextRound() (継続)
     RoundEnd --> GameEnd : TargetScore 到達
     GameEnd --> [*]
 
@@ -3405,7 +3556,7 @@ stateDiagram-v2
     note right of GameEnd : CassinoPhaseGameEnd = "gameEnd"
 ```
 
-Cassino のフェーズ定数は文字列 (string) で定義されている点が他のゲームと異なる。固有アクション: `Trail(handIdx)` / `Capture(handIdx, [tableIdxs])` / `Build(handIdx, [tableIdxs], targetValue)` / `CpuStep()` / `NewRound()` / `Reset()`。手札と場札の合計でキャプチャやビルドを行うトリック系で、ラウンド終了時に最も多く取ったカード・スペード・特定札 (Big/Little Casino, Aces) でポイントを獲得し、TargetScore に達するとゲーム終了。
+Cassino のフェーズ定数は文字列 (string) で定義されている点が他のゲームと異なる。固有アクション: `Trail(handIdx)` / `Take(handIdx, [tableIdxs], [buildIdxs])` / `Build(handIdx, [tableIdxs], targetValue)` / `CpuPlay()` / `NextRound()` / `Reset()`。手札と場札の合計でキャプチャやビルドを行うトリック系で、ラウンド終了時に最も多く取ったカード・スペード・特定札 (Big/Little Casino, Aces) でポイントを獲得し、TargetScore に達するとゲーム終了。
 
 ### 3.47 PageOne フェーズ遷移
 
@@ -3417,7 +3568,7 @@ stateDiagram-v2
     MustDeclare --> Play : Declare("ページワン!")
     MustDeclare --> Play : Declare 失敗 (ペナルティ後通常進行)
     Play --> RoundEnd : 手札 0 (上がり) / 山札枯渇でラウンド終了
-    RoundEnd --> Play : NewRound() (継続)
+    RoundEnd --> Play : NextRound() (継続)
     RoundEnd --> GameEnd : 終了条件達成
     GameEnd --> [*]
 
@@ -3438,7 +3589,7 @@ stateDiagram-v2
     Play --> Play : Meld / Layoff / DiscardWithoutMeld
     Play --> Draw : Discard (ターン交代)
     Play --> RoundEnd : 手札 0 / 山札枯渇
-    RoundEnd --> Draw : NewRound() (継続)
+    RoundEnd --> Draw : NextRound() (継続)
     RoundEnd --> GameEnd : 終了条件達成
     GameEnd --> [*]
 
@@ -3520,7 +3671,7 @@ stateDiagram-v2
 ```mermaid
 stateDiagram-v2
     [*] --> Playing : Reset()
-    Playing --> Playing : Move() / Undo() / Hint() / AutoComplete()
+    Playing --> Playing : Move*() / Undo() / Hint() / AutoComplete()
     Playing --> GameClear : 組札4スート全完成
     Playing --> GameOver : GiveUp()
     GameClear --> [*]
@@ -3538,7 +3689,7 @@ Penguin は FreeCell のバリアントで、最初に配られたカードの�
 ```mermaid
 stateDiagram-v2
     [*] --> Playing : Reset()
-    Playing --> Playing : Move() / Undo() / Hint() / AutoComplete()
+    Playing --> Playing : Move*() / Undo() / Hint() / AutoComplete()
     Playing --> GameClear : 組札4スート全完成
     Playing --> GameOver : GiveUp()
     GameClear --> [*]
@@ -3625,13 +3776,13 @@ stateDiagram-v2
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Dealing : Reset() / NewRound() (3 枚ハンド + 4 枚テーブル配布)
+    [*] --> Dealing : Reset() / NextRound() (3 枚ハンド + 4 枚テーブル配布)
     Dealing --> PlayerTurn : 配札完了
     PlayerTurn --> PlayerTurn : Play(handIdx, [tableIdxs]) (取る/場に置く ターン交代)
-    PlayerTurn --> PlayerTurn : CpuStep() (CPU ターン)
+    PlayerTurn --> PlayerTurn : CpuPlay() (CPU ターン)
     PlayerTurn --> Dealing : 全員手札 0 → 再配布 (山札残あり)
     PlayerTurn --> RoundEnd : 山札・手札ともに尽きた
-    RoundEnd --> Dealing : NewRound() (継続)
+    RoundEnd --> Dealing : NextRound() (継続)
     RoundEnd --> GameEnd : TargetScore 到達
     GameEnd --> [*]
 
@@ -3649,7 +3800,7 @@ stateDiagram-v2
 stateDiagram-v2
     [*] --> SelectContract : Reset() / NextDeal() (52 枚を 13 枚ずつ配布)
     SelectContract --> Play : SelectContract(c, trump) (ディーラーが選択)
-    Play --> Play : Play(handIdx) / CpuStep() (トリック or 7 並べ)
+    Play --> Play : Play(handIdx) / CpuPlay() (トリック or 7 並べ)
     Play --> DealEnd : ディール終了 (得点計算)
     DealEnd --> SelectContract : NextDeal() (継続)
     DealEnd --> GameEnd : 28 ディール完了

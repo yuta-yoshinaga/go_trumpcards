@@ -35,6 +35,19 @@ export interface BurracoPlayerData {
 
 /** Full Burraco game state returned from the API. */
 export interface BurracoResponse extends BaseGameResponse {
+  /**
+   * The hint the domain computed for the human's turn, when there is one.
+   *
+   * The CUI has always shown this (which pile to draw from, which cards meld,
+   * which discard is safe) with card indices and a reason; the web page used
+   * to guess from the phase alone, so the two could disagree (#5628).
+   */
+  hint?: {
+    action: string;
+    indices?: number[];
+    reason: string;
+  };
+
   players: BurracoPlayerData[];
   phase: number;
   roundNumber: number;

@@ -10,7 +10,7 @@
   "rolePickedUp": "[直前に引き取り]",
   "promptCurrentPlayer": "手番: {{name}}",
   "promptPlay": "play <idx>・・・カードを出す",
-  "promptPickUp": "フォローできる札がありません。pickup で場札 {{n}} 枚を引き取ってください。",
+  "promptPickUp": "フォローできる {{suit}} の札がありません。pickup で場札 {{n}} 枚を引き取ってください。",
   "gameEndYou": "ゲーム終了！ あなたが先に出し切りました。",
   "gameEndCpu": "ゲーム終了！ {{name}} が先に出し切りました。",
   "gameEndStalemate": "ゲーム終了！ 決着が付かなかったので、手札のいちばん少ない {{name}}（{{n}}枚）の勝ちとします。",
@@ -19,5 +19,7 @@
   "hintPickUp": "[HINT: 引き取るしかありません ({{reason}})]",
   "hintReasonLead": "長いスートから出す。短いスートを残すと引き取りやすい",
   "hintReasonFollow": "取っても得にはならないので安い札から",
-  "hintReasonPickUp": "フォローできる札が無い"
+  "hintReasonPickUp": "フォローできる札が無い",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
+  "helpHint": "  h                    助言を表示"
 }

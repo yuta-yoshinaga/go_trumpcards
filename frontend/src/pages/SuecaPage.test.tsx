@@ -149,6 +149,30 @@ describe('SuecaPage', () => {
 
   // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回
   // ヒントを載せるので、`state.hint` だけを見て描画すると常時表示になる (#4605)。
+  // #5642: 配点は A=11 / 7=10 / K=4 / J=3 / Q=2 と直感に反するのに、画面には
+  // 61点という目標だけが出ていた。姉妹ゲームの Tressette には既に tr-point-legend
+  // がある。
+  it('lists what each card is worth in a collapsed legend', async () => {
+    renderWithProviders(<SuecaPage />);
+
+    const legend = await screen.findByTestId('sueca-point-legend');
+    expect(legend).toHaveTextContent('カード得点');
+    // suecaCardPoints (internal/domain/Sueca.go) と同じ値。
+    expect(legend).toHaveTextContent('11点');
+    expect(legend).toHaveTextContent('10点');
+    expect(legend).toHaveTextContent('4点');
+    expect(legend).toHaveTextContent('3点');
+    expect(legend).toHaveTextContent('2点');
+    expect(legend).toHaveTextContent('0点');
+  });
+
+  it('keeps the point legend collapsed by default', async () => {
+    renderWithProviders(<SuecaPage />);
+
+    const legend = await screen.findByTestId('sueca-point-legend');
+    expect(legend).not.toHaveAttribute('open');
+  });
+
   it('renders no hint banner when the hint was not requested', async () => {
     mockExec.mockResolvedValue({ ...playPhaseState, hint: { cardIndices: [0], reason: 'x' } });
     renderWithProviders(<SuecaPage />);

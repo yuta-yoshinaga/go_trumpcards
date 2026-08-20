@@ -4,7 +4,24 @@ import type { CliParseResult } from '../types';
 
 type HighCardFlushArgs = Parameters<typeof highcardflushApi.exec>;
 
-const VALID_COMMANDS = ['b', 'bet', 'ra', 'raise', '1', '2', '3', 'f', 'fold', 'log', 'r', 'reset', 'help', '?'];
+const VALID_COMMANDS = [
+  'b',
+  'bet',
+  'ra',
+  'raise',
+  '1',
+  '2',
+  '3',
+  'f',
+  'fold',
+  'log',
+  'r',
+  'reset',
+  'h',
+  'hint',
+  'help',
+  '?',
+];
 
 /** Parse a raise multiplier (1-3) into the API exec arguments. */
 function raiseArgs(multiplier: number): CliParseResult<HighCardFlushArgs> {
@@ -55,6 +72,9 @@ export function parseHighcardflushCommand(input: string): CliParseResult<HighCar
     case 'r':
     case 'reset':
       return { args: ['reset'] };
+    case 'h':
+    case 'hint':
+      return { args: ['hint'] };
     default: {
       const suggestion = suggestCommand(cmd, VALID_COMMANDS);
       if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
@@ -71,4 +91,5 @@ export const HIGHCARDFLUSH_HELP: string[] = [
   'f/fold             - Fold',
   'log                - Show action log',
   'r/reset            - Reset game',
+  'h/hint             - Get a hint',
 ];

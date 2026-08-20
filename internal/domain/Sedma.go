@@ -376,7 +376,7 @@ func (g *Sedma) cpuPlaySmart(playerIdx int, valid []int) int {
 	}
 	currentWinner := g.trickWinner()
 	partnerWinning := SedmaTeamOf(currentWinner) == SedmaTeamOf(playerIdx) && currentWinner != playerIdx
-	captures := sedmaFilter(valid, func(idx int) bool {
+	captures := filterIndices(valid, func(idx int) bool {
 		v := player.GetCard(idx).GetValue()
 		return v == leadRank || v == SedmaWildValue
 	})
@@ -386,7 +386,7 @@ func (g *Sedma) cpuPlaySmart(playerIdx int, valid []int) int {
 	}
 	// ポイントがあり奪取できるなら、まず同ランク、無ければ 7 で奪取。
 	if trickPts > 0 && len(captures) > 0 {
-		nonWild := sedmaFilter(captures, func(idx int) bool { return player.GetCard(idx).GetValue() != SedmaWildValue })
+		nonWild := filterIndices(captures, func(idx int) bool { return player.GetCard(idx).GetValue() != SedmaWildValue })
 		if len(nonWild) > 0 {
 			return nonWild[0]
 		}
@@ -402,17 +402,6 @@ func sedmaLeadCost(c *Card) int {
 		return 100 // 7 は最後まで温存
 	}
 	return sedmaCardPoints(c)*10 + sedmaSortRank(c.GetValue())
-}
-
-// sedmaFilter 述語を満たすインデックスを抽出する。
-func sedmaFilter(indices []int, pred func(int) bool) []int {
-	var out []int
-	for _, idx := range indices {
-		if pred(idx) {
-			out = append(out, idx)
-		}
-	}
-	return out
 }
 
 // --- Hint ---

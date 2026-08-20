@@ -26,7 +26,10 @@ func (m *MockThirtyOneGame) GetConfig() domain.ThirtyOneConfig {
 	return m.Called().Get(0).(domain.ThirtyOneConfig)
 }
 func (m *MockThirtyOneGame) SetConfig(cfg domain.ThirtyOneConfig) { m.Called(cfg) }
-func (m *MockThirtyOneGame) GetGameEndFlag() bool                 { return m.Called().Bool(0) }
+
+// GetCpuKnockThreshold モック
+func (m *MockThirtyOneGame) GetCpuKnockThreshold() int { return m.Called().Int(0) }
+func (m *MockThirtyOneGame) GetGameEndFlag() bool      { return m.Called().Bool(0) }
 func (m *MockThirtyOneGame) GetPhase() domain.ThirtyOnePhase {
 	return m.Called().Get(0).(domain.ThirtyOnePhase)
 }

@@ -53,14 +53,14 @@ func TestHoneymoonBridgeCuiController_Commands(t *testing.T) {
 // **引数を既定値で埋めない。** 埋めると宣言していない契約を落札してしまう。
 func TestHoneymoonBridgeCuiController_BidRejectsBadArgs(t *testing.T) {
 	for _, tc := range []struct{ name, cmd, want string }{
-		{"level missing", "b", "Level is required."},
-		{"suit missing", "b 3", "Suit is required."},
-		{"level not a number", "b x 0", "Invalid level: x."},
-		{"suit not a number", "b 3 x", "Invalid suit: x."},
-		{"level below the minimum", "b 0 0", "Invalid level: 0."},
-		{"level above the maximum", "b 8 0", "Invalid level: 8."},
-		{"suit below the minimum", "b 3 -1", "Invalid suit: -1."},
-		{"suit above the maximum", "b 3 5", "Invalid suit: 5."},
+		{"level missing", "b", msgKey("levelRequired")},
+		{"suit missing", "b 3", msgKey("suitRequired")},
+		{"level not a number", "b x 0", msgKey("invalidLevel", "val", "x")},
+		{"suit not a number", "b 3 x", msgKey("invalidSuit", "val", "x")},
+		{"level below the minimum", "b 0 0", msgKey("invalidLevel", "val", "0")},
+		{"level above the maximum", "b 8 0", msgKey("invalidLevel", "val", "8")},
+		{"suit below the minimum", "b 3 -1", msgKey("invalidSuit", "val", "-1")},
+		{"suit above the maximum", "b 3 5", msgKey("invalidSuit", "val", "5")},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			c, hi := newHoneymoonBridgeCui()
@@ -72,8 +72,8 @@ func TestHoneymoonBridgeCuiController_BidRejectsBadArgs(t *testing.T) {
 
 func TestHoneymoonBridgeCuiController_PlayRejectsBadArgs(t *testing.T) {
 	for _, tc := range []struct{ name, cmd, want string }{
-		{"index missing", "p", "Card index is required."},
-		{"index not a number", "p x", "Invalid card index: x."},
+		{"index missing", "p", msgCardIndexRequired()},
+		{"index not a number", "p x", msgInvalidCardIndex("x")},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			c, hi := newHoneymoonBridgeCui()

@@ -155,6 +155,9 @@ func (p *WizardCuiPresenter) Output(o interfaces.WizardGame, lastErr error) stri
 			player := o.GetPlayer(winnerIdx)
 			banner := i18n.Tf("wizard.gameEnd", "name", cuiPlayerName(player, winnerIdx))
 			b.WriteString(color.Green(banner) + "\n")
+			// 最終ラウンドの的中もここで見たい (ゲーム終了は RoundEnd を経由せずに
+			// 出ることがある)。
+			wizardBidAccuracyLine(b, o)
 			return
 		}
 		switch o.GetPhase() {
@@ -191,9 +194,41 @@ func (p *WizardCuiPresenter) Output(o interfaces.WizardGame, lastErr error) stri
 			b.WriteString(i18n.T("wizard.promptTrickEndHelp") + "\n")
 		case domain.WizardPhaseRoundEnd:
 			b.WriteString(i18n.T("wizard.promptRoundEnd") + "\n")
+			wizardBidAccuracyLine(b, o)
 			b.WriteString(i18n.T("wizard.promptRoundEndHelp") + "\n")
 		}
 	})
+}
+
+// wizardBidAccuracyLine writes the bid-vs-actual summary for the finished round.
+// 得点はビッドとの一致で決まるので、各行を見比べさせずにまとめて出す
+// (Web の wizardBidAccuracy と同じ判定: delta = トリック - ビッド、
+// 未ビッド (bid < 0) の席は契約が無いので対象外)。
+func wizardBidAccuracyLine(b *strings.Builder, o interfaces.WizardGame) {
+	entries := make([]string, 0, o.GetPlayerCnt())
+	for i := 0; i < o.GetPlayerCnt(); i++ {
+		player := o.GetPlayer(i)
+		if player == nil || player.GetBid() < 0 {
+			continue
+		}
+		name := cuiPlayerName(player, i)
+		bid, tricks := player.GetBid(), player.GetTrickCount()
+		switch {
+		case tricks == bid:
+			entries = append(entries, i18n.Tf("wizard.bidAccuracyMade",
+				"name", name, "bid", strconv.Itoa(bid)))
+		case tricks > bid:
+			entries = append(entries, i18n.Tf("wizard.bidAccuracyOver",
+				"name", name, "bid", strconv.Itoa(bid), "tricks", strconv.Itoa(tricks)))
+		default:
+			entries = append(entries, i18n.Tf("wizard.bidAccuracyUnder",
+				"name", name, "bid", strconv.Itoa(bid), "tricks", strconv.Itoa(tricks)))
+		}
+	}
+	if len(entries) == 0 {
+		return
+	}
+	b.WriteString(i18n.Tf("wizard.bidAccuracyLine", "entries", strings.Join(entries, " / ")) + "\n")
 }
 
 // HintOutput emits the current Wizard hint.
@@ -230,5 +265,5 @@ func (p *WizardCuiPresenter) HintOutput(o interfaces.WizardGame) string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *WizardCuiPresenter) ActionLogOutput(o interfaces.WizardGame) string {
-	return actionLogOutputText(o)
+	return actionLogOutputTextForSeats[*domain.WizardPlayer](o)
 }

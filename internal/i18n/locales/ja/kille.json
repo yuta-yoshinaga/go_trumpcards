@@ -14,6 +14,16 @@
   "satisfiedTag": "[満足]",
   "dealerTag": "[親]",
   "playerLine": "{{name}}{{role}}: 収支 {{chips}}  カード: {{card}}{{state}}",
+  "eventsTitle": "このラウンドの交換:",
+  "stockLabel": "山札",
+  "reentriesUsed": "買い戻し {{used}}/{{max}}",
+  "event.swap": "{{actor}} が {{target}} と交換しました",
+  "event.satisfied": "{{actor}} は交換しませんでした",
+  "event.cuckoo": "{{target}} のカッコウ — 交換は成立せず、その場でラウンド終了",
+  "event.hussar": "{{target}} の軽騎兵 — 仕掛けた {{actor}} が脱落",
+  "event.pig": "{{target}} の豚 — 交換は巻き戻り、{{target}} 自身が脱落",
+  "event.pass": "{{actor}} の交換は次の席へ回されました",
+  "event.stock": "{{actor}} が山札と交換しました",
   "gameEnd": "ゲーム終了！ {{name}}の勝ち！",
   "promptTurn": "手番: {{name}}",
   "promptTurnHelp": "e / exchange ・・・左隣と交換／s / satisfied ・・・交換しない",
@@ -24,5 +34,6 @@
   "dealerTurn": "親の手番（山札と交換できます）",
   "showdown": "公開",
   "result.humanWin": "ゲーム終了！ あなたの勝ち！",
-  "result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！"
+  "result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
+  "helpExampleSatisfied": "  s                         交換しないと宣言する"
 }

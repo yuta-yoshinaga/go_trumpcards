@@ -108,6 +108,9 @@ func (p *BraidCuiPresenter) Output(b interfaces.BraidGame, lastErr error) string
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(b.GetMoveCount())) + "\n")
 		case domain.BraidPhaseGameOver:
 			sb.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
+			fnd := b.GetFoundation()
+			sb.WriteString(color.Yellow(cuiSolitaireGameOverSummary(
+				cuiCountPileCards(fnd[:]...), domain.BraidTotalCards)) + "\n")
 		}
 	})
 }

@@ -47,5 +47,7 @@
   "hintActionPass": "Pass",
   "matadorSpadille": "Spadille",
   "matadorManille": "Manille",
-  "matadorBasto": "Basto"
+  "matadorBasto": "Basto",
+  "helpExamplePlay": "  play 0                    play hand card 0",
+  "helpHint": "  h                         show a hint"
 }

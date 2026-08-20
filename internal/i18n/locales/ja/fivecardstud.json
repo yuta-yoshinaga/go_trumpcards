@@ -54,5 +54,9 @@
   "muckPrompt": "マックしますか? (m=マック / sh=ショー)",
   "rebuyPrompt": "リバイしますか? ({{chips}}チップ, {{used}}/{{max}}回使用済) (rb=リバイ / sr=スキップ)",
   "addonPrompt": "アドオンしますか? ({{chips}}チップ) (ad=アドオン / sa=スキップ)",
-  "gameEnd": "ゲーム終了"
+  "gameEnd": "ゲーム終了",
+  "helpExampleFold": "  f                    この手を降りる",
+  "helpLog": "  l                    行動ログを表示",
+  "sokoRanking": "役の強さ: {{list}}（【】が Soko 独自の 4 枚役。ワンペアとツーペアの間に入ります）",
+  "sokoRankingInserted": "【{{name}}】"
 }

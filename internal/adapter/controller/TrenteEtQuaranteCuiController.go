@@ -49,7 +49,7 @@ func (c *TrenteEtQuaranteCuiController) Exec(command string) string {
 			case "n", "next", "nr", "nextround":
 				return c.bi.NextRound(), true
 			case "sb", "setdefaultbet":
-				return cuiutil.WithParsedInt(args, "Default bet is required (0=Noir, 1=Rouge, 2=Couleur, 3=Inverse).", "Invalid bet: %s. Please enter 0-3.", 0, 3, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "defaultBetRequired0Noir1Rouge2Couleur3Inverse", "invalidBet03", 0, 3, func(v int) string {
 					cfg := c.bi.GetConfig()
 					cfg.DefaultBet = domain.TrenteEtQuaranteBet(v)
 					return c.bi.ResetWithConfig(cfg)
@@ -64,15 +64,15 @@ func (c *TrenteEtQuaranteCuiController) Exec(command string) string {
 // handleBet は "b <betType> <stake>" を解析して Bet を呼ぶ。
 func (c *TrenteEtQuaranteCuiController) handleBet(args []string) string {
 	if len(args) < 2 {
-		return "Bet type and stake are required (e.g. b 0 100 — 0=Noir, 1=Rouge, 2=Couleur, 3=Inverse)."
+		return invalidArg("betTypeAndStakeRequired")
 	}
 	bet, err := strconv.Atoi(args[0])
 	if err != nil || bet < int(domain.TrenteEtQuaranteBetNoir) || bet > int(domain.TrenteEtQuaranteBetInverse) {
-		return "Invalid bet type: " + args[0] + " (0=Noir, 1=Rouge, 2=Couleur, 3=Inverse)."
+		return invalidArg("invalidBetTypeNoir", "val", args[0])
 	}
 	stake, err := strconv.Atoi(args[1])
 	if err != nil {
-		return "Invalid stake: " + args[1] + "."
+		return invalidArg("invalidStakeDot", "val", args[1])
 	}
 	return c.bi.Bet(domain.TrenteEtQuaranteBet(bet), stake)
 }

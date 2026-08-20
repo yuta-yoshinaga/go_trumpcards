@@ -58,23 +58,23 @@ func (c *BeloteCuiController) Exec(command string) string {
 			case "pa", "pass":
 				return c.bi.Pass(), true
 			case "c", "call":
-				return cuiutil.WithParsedInt(args, "Suit is required (1-4).", "Invalid suit: %s.", 1, 4, func(suit int) string {
+				return cuiutil.WithParsedIntKeys(args, "suitRequiredRange", "invalidSuit", 1, 4, func(suit int) string {
 					return c.bi.CallTrump(suit)
 				})
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.bi.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.bi.Play)
 			case "n", "next":
 				return c.bi.NextTrick(), true
 			case "nr", "nextround":
 				return c.bi.NextRound(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.bi.GetConfig()
 					cfg.CpuDifficulty = domain.BeloteCpuDifficulty(v)
 					return c.bi.ResetWithConfig(cfg)
 				})
 			case "st", "settarget":
-				return cuiutil.WithParsedInt(args, "Target score is required.", "Invalid target score: %s. Please enter 1 or more.", 1, math.MaxInt, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "targetScoreRequired", "invalidTargetScore", 1, math.MaxInt, func(v int) string {
 					cfg := c.bi.GetConfig()
 					cfg.TargetScore = v
 					return c.bi.ResetWithConfig(cfg)

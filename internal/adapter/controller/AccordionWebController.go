@@ -68,6 +68,10 @@ func accordionDispatch(bc *baseController, w http.ResponseWriter, ai usecase.Acc
 		bc.writePresenterResponse(w, ai.GiveUp())
 	case "u", "undo":
 		bc.writePresenterResponse(w, ai.Undo())
+	case "ac", "autocomplete":
+		// 独立 CUI には最初からある一括マージ。Web 側はページが自前でループを
+		// 回していて、同じページの CLI モードからは呼べなかった (#5546)。
+		bc.writePresenterResponse(w, ai.AutoComplete())
 	case "undo_n":
 		if !requireParam(bc, w, newDefault, param.N == nil, "param error: n is required.") {
 			return true

@@ -90,6 +90,19 @@ func (p *ManilleCuiPresenter) Output(g interfaces.ManilleGame, lastErr error) st
 			// face value — spell out the order and each card's point worth.
 			b.WriteString(i18n.T("manille.rankHelp") + "\n")
 		case domain.ManillePhaseTrickEnd:
+			// **トリックを取ったのが誰かは、次にリードするのが誰かでもある** (#5646)。
+			// Web は manille-trick-winner で名前とチームを出しているのに、CUI は
+			// 「次のトリックへ」としか言わず、手番を見失いやすかった。姉妹の Sueca
+			// は同じ場面で GetLeadPlayerIdx から組み立てている。
+			if winnerIdx := g.GetLeadPlayerIdx(); winnerIdx >= 0 {
+				teamKey := "manille.teamA"
+				if domain.ManilleTeamOf(winnerIdx) == 1 {
+					teamKey = "manille.teamB"
+				}
+				b.WriteString(i18n.Tf("manille.trickWinner",
+					"name", cuiPlayerName(g.GetPlayer(winnerIdx), winnerIdx),
+					"team", i18n.T(teamKey)) + "\n")
+			}
 			b.WriteString(i18n.T("manille.promptTrickEnd") + "\n")
 			b.WriteString(i18n.T("manille.promptTrickEndHelp") + "\n")
 		case domain.ManillePhaseRoundEnd:
@@ -139,5 +152,5 @@ var manilleHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *ManilleCuiPresenter) ActionLogOutput(g interfaces.ManilleGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.ManillePlayer](g)
 }

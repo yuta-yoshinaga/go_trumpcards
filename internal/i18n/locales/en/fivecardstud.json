@@ -54,5 +54,9 @@
   "muckPrompt": "Muck? (m=muck / sh=show)",
   "rebuyPrompt": "Rebuy? ({{chips}} chips, used {{used}}/{{max}}) (rb=rebuy / sr=skip)",
   "addonPrompt": "Add-on? ({{chips}} chips) (ad=addon / sa=skip)",
-  "gameEnd": "Game over"
+  "gameEnd": "Game over",
+  "helpExampleFold": "  f                    fold this hand",
+  "helpLog": "  l                    show the action log",
+  "sokoRanking": "Hand ranking: {{list}} (the bracketed four-card hands are Soko's own, sitting between One Pair and Two Pair)",
+  "sokoRankingInserted": "[{{name}}]"
 }

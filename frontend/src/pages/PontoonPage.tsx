@@ -29,6 +29,7 @@ import { PontoonPhase, PontoonRank } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { PONTOON_HELP, parsePontoonCommand } from '../utils/cli/commands/pontoonCommands';
 import { formatPontoonState } from '../utils/cli/formatters/pontoonFormatter';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { PONTOON_MIN_BET, pontoonBuyChoices, pontoonClampBuy, pontoonMaxBuy } from '../utils/pontoonBet';
 
@@ -61,14 +62,23 @@ function PontoonPageContent() {
   const { state, loading, error, retry } = game;
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('pontoon');
+
+  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
+  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('pontoon', state);
   const cliConfig: CliGameConfig<PontoonResponse, Parameters<typeof pontoonApi.exec>> = useMemo(
     () => ({
       gameName: 'pontoon',
       parseCommand: parsePontoonCommand,
       formatResponse: formatPontoonState,
       helpText: PONTOON_HELP,
+      localCommand: hintLocalCommand(frontendHint),
     }),
-    [],
+    [frontendHint],
   );
   const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const { cardWidth } = useCardDimensions();
@@ -101,14 +111,6 @@ function PontoonPageContent() {
   );
 
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!isPlayerTurn && !loading });
-
-  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
-  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('pontoon', state);
 
   if (!state) {
     return <GameSkeleton gameKey="pontoon" layout={{ kind: 'tableau', topRow: 2, tableau: 3 }} />;
@@ -295,15 +297,26 @@ function PontoonPageContent() {
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
               {/* Only the legal declarations are rendered. The server decides,
-                  so the 15 minimum and the no-buy-after-twist rule live in one
-                  place rather than two. */}
+                  so the stick minimum and the no-buy-after-twist rule live in
+                  one place rather than two. */}
+              {/* **相手がどこで止まるかは判断材料の半分。**自分が 15 未満で
+                  スティックできないことは出ていたのに、相手の停止ラインは
+                  どこにも書かれていなかった (#5565)。
+                  親と CPU 席は**別の規則**で止まる (親は 17、席は 15) ので
+                  両方言う。数字はサーバがドメイン定数から渡すので、訳文にも
+                  画面にも焼き込まない。 */}
+              {isPlayerTurn && (
+                <span className="text-xs text-ds-text-muted" data-testid="pontoon-thresholds">
+                  {t('hint.cpuStick', { cpuMin: state.cpuStickMin, min: state.stickMin })}
+                </span>
+              )}
               {isPlayerTurn && state.canStick && (
                 <button
                   type="button"
                   className={btnSuccess}
                   onClick={game.handleStick}
                   disabled={loading}
-                  title={t('hint.stick')}
+                  title={t('hint.stick', { min: state.stickMin })}
                 >
                   {t('actions.stick')}
                 </button>

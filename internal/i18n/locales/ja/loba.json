@@ -29,5 +29,7 @@
   "hintReasonNotYourTurn": "あなたの手番ではありません",
   "hintReasonDraw": "まず1枚引いてください",
   "hintReasonMeld": "この3枚でメルドになります",
-  "hintReasonDiscard": "どこにも繋がらない札です"
+  "hintReasonDiscard": "どこにも繋がらない札です",
+  "helpExampleDraw": "  ds                       手番の最初に山札から 1 枚引く",
+  "helpHint": "  h                        助言を表示"
 }

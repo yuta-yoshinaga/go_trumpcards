@@ -2,11 +2,13 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -269,10 +271,13 @@ func TestEuchreCuiPresenter_ActionLogOutput(t *testing.T) {
 		}
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return(entries)
+		// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+		m.On("GetPlayer", mock.Anything).Return(domain.NewEuchrePlayer(true, 0)).Maybe()
 
 		result := p.ActionLogOutput(m)
 		assert.Contains(t, result, "棋譜")
 		assert.Contains(t, result, "play")
+		assert.Contains(t, result, "あなた", "棋譜の座席名が他の行と揃っていない")
 		assert.Contains(t, result, "played SPADE 5")
 		m.AssertExpectations(t)
 	})
@@ -487,4 +492,63 @@ func TestEuchreCuiPresenter_MarksPlayableCards(t *testing.T) {
 		out := p.Output(withPlayable([]int{0, 1, 2}, domain.EuchrePhasePickUp, 0), nil)
 		assert.NotContains(t, out, "*")
 	})
+}
+
+// #5509: ヒントは真偽値と定型の理由キーだけで、判断に使ったスコアは捨てられていた。
+// プレイヤーは自分の手札が CPU の基準にどれだけ近いか学べない。
+func TestEuchreCuiPresenter_HintShowsTheScore(t *testing.T) {
+	p := new(presenter.EuchreCuiPresenter)
+
+	e := domain.NewDefaultEuchre()
+	e.Reset()
+	e.SetPhase(domain.EuchrePhasePickUp)
+	e.SetBidPlayerIdx(0)
+	e.SetDealerIdx(1) // ディーラーはフェイスアップを貰えるので +1 される。席をずらして避ける
+	e.SetFaceUpCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+
+	// **配られた手札のままでは比べられない。** evalHandForTrump は切り札の Q と
+	// 非切り札の A を rand.Intn(2) で数えるので、GetHint を 2 回呼ぶと違う値が返る。
+	// 呼ぶたびに答えが変わる札を 1 枚も含まない手札に差し替える
+	// (右バウアー +2、切り札 K +1、残りは 0 点 = 3 点固定)。
+	hand := e.GetPlayer(0)
+	hand.Reset()
+	for _, c := range []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 11, false),
+		domain.NewCard(domain.CardDesignSpade, 13, false),
+		domain.NewCard(domain.CardDesignHeart, 10, false),
+		domain.NewCard(domain.CardDesignHeart, 9, false),
+		domain.NewCard(domain.CardDesignDiamond, 10, false),
+	} {
+		hand.AddCard(c)
+	}
+
+	hint := e.GetHint()
+	require.NotNil(t, hint)
+	require.NotNil(t, hint.Score)
+
+	out := p.HintOutput(e)
+	// **ドメインが判断に使った値そのものが出ること。**別に計算し直していれば違う数字になる。
+	assert.Contains(t, out, i18n.Tf("euchre.hintScore",
+		"score", strconv.Itoa(*hint.Score),
+		"orderUp", strconv.Itoa(domain.EuchreOrderUpScore),
+		"goAlone", strconv.Itoa(domain.EuchreGoAloneScore)))
+	// しきい値も文言から読めること。
+	assert.Contains(t, out, strconv.Itoa(domain.EuchreOrderUpScore))
+	assert.Contains(t, out, strconv.Itoa(domain.EuchreGoAloneScore))
+	// 手札が固定なら値も固定 -- 3 点はオーダーアップのしきい値ちょうど。
+	assert.Equal(t, domain.EuchreOrderUpScore, *hint.Score)
+}
+
+// スコアを持たない局面 (カードプレイのヒント) では行を出さない。
+func TestEuchreCuiPresenter_HintOmitsTheScoreWhenThereIsNone(t *testing.T) {
+	p := new(presenter.EuchreCuiPresenter)
+
+	e := domain.NewDefaultEuchre()
+	e.Reset()
+	e.SetPhase(domain.EuchrePhasePlay)
+	e.SetCurrentPlayerIdx(0)
+
+	if hint := e.GetHint(); hint != nil && hint.Score == nil {
+		assert.NotContains(t, p.HintOutput(e), i18n.T("euchre.hintScore"))
+	}
 }

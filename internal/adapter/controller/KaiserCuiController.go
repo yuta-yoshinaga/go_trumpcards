@@ -40,13 +40,13 @@ func (c *KaiserCuiController) Exec(command string) string {
 			case "ps", "pass":
 				return c.ki.PassBid(), true
 			case "t", "trump":
-				return cuiutil.WithParsedInt(args, "Suit is required (1=S, 2=C, 3=H, 4=D).", "Invalid suit: %s. Please enter 1-4.", domain.CardDesignSpade, domain.CardDesignDiamond, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "suitRequiredLetters", "invalidSuitRange", domain.CardDesignSpade, domain.CardDesignDiamond, func(v int) string {
 					return c.ki.SetTrump(v)
 				})
 			case "d", "discard":
 				return kaiserParseDiscard(args, c.ki)
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", 0, domain.KaiserHandSize+domain.KaiserKittySize-1, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", 0, domain.KaiserHandSize+domain.KaiserKittySize-1, func(v int) string {
 					return c.ki.PlayCard(v)
 				})
 			case "n", "next":
@@ -63,18 +63,17 @@ func (c *KaiserCuiController) Exec(command string) string {
 // 第 2 引数は契約種別 (0=切札, 1=ノートランプ, 2=ロー・ノートランプ)。省略時は切札。
 func kaiserParseBid(args []string, ki usecase.KaiserInteractorIF) (string, bool) {
 	if len(args) == 0 {
-		return "Bid value is required (7-12).", true
+		return invalidArg("bidValueRequired712"), true
 	}
 	value, err := strconv.Atoi(args[0])
 	if err != nil || value < domain.KaiserMinBid || value > domain.KaiserMaxBid {
-		return "Invalid bid: " + args[0] + ". Please enter " +
-			strconv.Itoa(domain.KaiserMinBid) + "-" + strconv.Itoa(domain.KaiserMaxBid) + ".", true
+		return invalidArg("invalidBidMinMax", "val", args[0], "max", strconv.Itoa(domain.KaiserMinBid)+"-"+strconv.Itoa(domain.KaiserMaxBid)), true
 	}
 	contract := 0
 	if len(args) > 1 {
 		contract, err = strconv.Atoi(args[1])
 		if err != nil || contract < int(domain.KaiserContractTrump) || contract > int(domain.KaiserContractLowNoTrump) {
-			return "Invalid contract: " + args[1] + ". Please enter 0-2.", true
+			return invalidArg("invalidContract02", "val", args[1]), true
 		}
 	}
 	return ki.Bid(value, domain.KaiserContract(contract)), true
@@ -83,13 +82,13 @@ func kaiserParseBid(args []string, ki usecase.KaiserInteractorIF) (string, bool)
 // kaiserParseDiscard は `d <i> <j>` を解釈する。
 func kaiserParseDiscard(args []string, ki usecase.KaiserInteractorIF) (string, bool) {
 	if len(args) < domain.KaiserKittySize {
-		return "Two card indices are required.", true
+		return invalidArg("twoIndicesRequired"), true
 	}
 	idxs := make([]int, 0, domain.KaiserKittySize)
 	for _, a := range args[:domain.KaiserKittySize] {
 		v, err := strconv.Atoi(strings.TrimSpace(a))
 		if err != nil || v < 0 {
-			return "Invalid card index: " + a + ".", true
+			return invalidArg("invalidCardIndex", "val", a), true
 		}
 		idxs = append(idxs, v)
 	}

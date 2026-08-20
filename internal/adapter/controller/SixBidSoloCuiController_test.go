@@ -51,10 +51,10 @@ func TestSixBidSoloCuiController_Exec(t *testing.T) {
 
 	t.Run("bid rejects a value outside 1-6", func(t *testing.T) {
 		c := controller.NewSixBidSoloCuiController(newMock())
-		assert.Contains(t, c.Exec("b"), "required")
-		assert.Contains(t, c.Exec("b abc"), "Invalid bid")
-		assert.Contains(t, c.Exec("b 0"), "Invalid bid")
-		assert.Contains(t, c.Exec("b 7"), "Invalid bid")
+		assert.Contains(t, c.Exec("b"), msgStem("bidRequiredSolo"))
+		assert.Contains(t, c.Exec("b abc"), msgStem("invalidBid"))
+		assert.Contains(t, c.Exec("b 0"), msgStem("invalidBid"))
+		assert.Contains(t, c.Exec("b 7"), msgStem("invalidBid"))
 	})
 
 	t.Run("declares a trump", func(t *testing.T) {
@@ -76,17 +76,17 @@ func TestSixBidSoloCuiController_Exec(t *testing.T) {
 
 	t.Run("declare rejects bad input", func(t *testing.T) {
 		c := controller.NewSixBidSoloCuiController(newMock())
-		assert.Contains(t, c.Exec("d"), "required")
-		assert.Contains(t, c.Exec("d abc"), "Invalid suit")
-		assert.Contains(t, c.Exec("d 0"), "Invalid suit")
-		assert.Contains(t, c.Exec("d 5"), "Invalid suit")
+		assert.True(t, msgRejected(c.Exec("d")))
+		assert.Contains(t, c.Exec("d abc"), msgStem("invalidSuit14Letters"))
+		assert.Contains(t, c.Exec("d 0"), msgStem("invalidSuit14Letters"))
+		assert.Contains(t, c.Exec("d 5"), msgStem("invalidSuit14Letters"))
 		// スートだけ来てランクが無い。
 		assert.Contains(t, c.Exec("d 1 3"), "both the called suit")
-		assert.Contains(t, c.Exec("d 1 9 1"), "Invalid called suit")
-		assert.Contains(t, c.Exec("d 1 3 0"), "Invalid called value")
-		assert.Contains(t, c.Exec("d 1 3 14"), "Invalid called value")
-		assert.Contains(t, c.Exec("d 1 3 abc"), "Invalid called value")
-		assert.Contains(t, c.Exec("d 1 abc 1"), "Invalid called suit")
+		assert.Contains(t, c.Exec("d 1 9 1"), msgStem("invalidCalledSuit14"))
+		assert.Contains(t, c.Exec("d 1 3 0"), msgStem("invalidCalledValue113"))
+		assert.Contains(t, c.Exec("d 1 3 14"), msgStem("invalidCalledValue113"))
+		assert.Contains(t, c.Exec("d 1 3 abc"), msgStem("invalidCalledValue113"))
+		assert.Contains(t, c.Exec("d 1 abc 1"), msgStem("invalidCalledSuit14"))
 	})
 
 	// **手札は 11 枚。**
@@ -97,8 +97,8 @@ func TestSixBidSoloCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "PlayCard", 10)
 		assert.Equal(t, mockOutput, c.Exec("n"))
 		m.AssertCalled(t, "NextHand")
-		assert.Contains(t, c.Exec("p abc"), "Invalid card index")
-		assert.Contains(t, c.Exec("p 11"), "Invalid card index")
+		assert.Contains(t, c.Exec("p abc"), msgInvalidCardIndexPrefix())
+		assert.Contains(t, c.Exec("p 11"), msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("log and unknown", func(t *testing.T) {

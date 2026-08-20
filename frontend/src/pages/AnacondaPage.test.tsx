@@ -262,6 +262,11 @@ describe('AnacondaPage', () => {
     fireEvent.click(toggle);
 
     await waitFor(() => expect(document.querySelectorAll('[data-hint-card="true"]')).toHaveLength(2));
+    // **リングはインラインで置く。**手札には selectedCardStyle の
+    // `boxShadow: 'none'` が乗るので、Tailwind の ring-* (同じ box-shadow) は
+    // 未選択のあいだ潰される。印だけ見ていても気づけない。
+    const ringed = document.querySelector('[data-hint-card="true"]') as HTMLElement;
+    expect(ringed.style.outline).toContain('var(--color-ds-warning)');
   });
 
   it('rings nothing for a betting suggestion or while hints are off', async () => {
@@ -271,5 +276,34 @@ describe('AnacondaPage', () => {
     fireEvent.click(toggle);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(document.querySelectorAll('[data-hint-card="true"]')).toHaveLength(0);
+  });
+
+  // #5703: 「左隣」は脱落者を飛ばすので席番号 +1 とは限らない。CUI は受取人を
+  // 名指ししていたのに、Web は「左隣へ」としか出しておらず、実際に誰へ渡るのかが
+  // 卓の状況次第で分からなかった。
+  it('names the seat that will receive the passed cards', async () => {
+    mockExec.mockResolvedValue(passState);
+    renderWithProviders(<AnacondaPage />);
+
+    const notice = await screen.findByTestId('anaconda-pass-notice');
+
+    expect(notice).toHaveTextContent('CPU 1');
+  });
+
+  it('skips eliminated seats when naming the recipient', async () => {
+    mockExec.mockResolvedValue(
+      makeAnacondaState({
+        phase: 0,
+        passCount: 3,
+        isHumanTurn: true,
+        players: passState.players.map((p) => (p.id === 1 ? { ...p, out: true } : p)),
+      }),
+    );
+    renderWithProviders(<AnacondaPage />);
+
+    const notice = await screen.findByTestId('anaconda-pass-notice');
+
+    expect(notice).toHaveTextContent('CPU 2');
+    expect(notice).not.toHaveTextContent('CPU 1');
   });
 });

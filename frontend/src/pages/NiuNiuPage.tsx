@@ -27,7 +27,9 @@ import { NiuNiuPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { NIUNIU_HELP, parseNiuNiuCommand } from '../utils/cli/commands/niuniuCommands';
 import { formatNiuNiuState } from '../utils/cli/formatters/niuniuFormatter';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
+import { niuniuRankText } from '../utils/niuniuRankText';
 
 const BET_OPTIONS = [10, 50, 100, 500];
 
@@ -49,17 +51,6 @@ function NiuNiuPageContent() {
   const { state, loading, error, retry } = game;
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('niuniu');
-  const cliConfig: CliGameConfig<NiuNiuResponse, Parameters<typeof niuniuApi.exec>> = useMemo(
-    () => ({
-      gameName: 'niuniu',
-      parseCommand: parseNiuNiuCommand,
-      formatResponse: formatNiuNiuState,
-      helpText: NIUNIU_HELP,
-    }),
-    [],
-  );
-  const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
-  const { cardWidth } = useCardDimensions();
 
   // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
   // だけフック数が変わってページが骨組みのまま固まる (#4561)。
@@ -68,6 +59,18 @@ function NiuNiuPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('niuniu', state);
+  const cliConfig: CliGameConfig<NiuNiuResponse, Parameters<typeof niuniuApi.exec>> = useMemo(
+    () => ({
+      gameName: 'niuniu',
+      parseCommand: parseNiuNiuCommand,
+      formatResponse: formatNiuNiuState,
+      helpText: NIUNIU_HELP,
+      localCommand: hintLocalCommand(frontendHint),
+    }),
+    [frontendHint],
+  );
+  const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
+  const { cardWidth } = useCardDimensions();
 
   if (!state) {
     return <GameSkeleton gameKey="niuniu" layout={{ kind: 'tableau', topRow: 5, tableau: 3 }} />;
@@ -91,7 +94,7 @@ function NiuNiuPageContent() {
         <div
           className="flex gap-1 justify-center"
           role="img"
-          aria-label={hand.hidden ? label : t('seatAriaLabel', { name: label, rank: hand.rankLabel })}
+          aria-label={hand.hidden ? label : t('seatAriaLabel', { name: label, rank: niuniuRankText(hand.rankKey) })}
         >
           {hand.cards.map((card, i) => (
             <div
@@ -108,7 +111,7 @@ function NiuNiuPageContent() {
         </div>
         {!hand.hidden && (
           <div className="text-game-text-muted text-xs mt-1">
-            <span className="text-ds-warning font-bold">{hand.rankLabel}</span>
+            <span className="text-ds-warning font-bold">{niuniuRankText(hand.rankKey)}</span>
             {hand.multiplier > 1 && <span className="ml-1">{t('multiplier', { mult: hand.multiplier })}</span>}
           </div>
         )}
@@ -150,7 +153,7 @@ function NiuNiuPageContent() {
                   state.bankerHand,
                   state.bankerHand.hidden
                     ? t('hiddenBankerHandAriaLabel')
-                    : t('bankerHandAriaLabel', { rank: state.bankerHand.rankLabel }),
+                    : t('bankerHandAriaLabel', { rank: niuniuRankText(state.bankerHand.rankKey) }),
                   'banker',
                 )
               ) : (

@@ -28,5 +28,6 @@
   "rankUnknown": "unknown",
   "hintPlay": "Suggestion: play hand [{{idxs}}] ({{cards}})",
   "hintPass": "Suggestion: no legal play — pass (p).",
-  "hintNotYourTurn": "It is not your turn right now."
+  "hintNotYourTurn": "It is not your turn right now.",
+  "helpExampleHint": "  h                    ask for a move"
 }

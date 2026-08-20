@@ -37,6 +37,7 @@ func TestThreeCardWebController_Method(t *testing.T) {
 	tiMock.On("Reset").Return(mockOutput)
 	tiMock.On("Bet", 100, 0).Return(mockOutput)
 	tiMock.On("Bet", 100, 50).Return(mockOutput)
+	tiMock.On("Rebet").Return(mockOutput)
 	tiMock.On("Play").Return(mockOutput)
 	tiMock.On("Fold").Return(mockOutput)
 	tiMock.On("ActionLog").Return(mockOutput)
@@ -82,6 +83,17 @@ func TestThreeCardWebController_Method(t *testing.T) {
 		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.BodyIs(expectedBody)
+	})
+
+	// #5513: 直前と同じ額で賭け直す。額はサーバが覚えているので送らない。
+	t.Run("rebet", func(t *testing.T) {
+		for _, cmd := range []string{"rebet", "rb"} {
+			var input controller.ThreeCardWebInput
+			_ = json.Unmarshal([]byte(`{"command":"`+cmd+`","sessionId":"s-rebet"}`), &input)
+			recorded := execRequest(t, ctrl.Exec, &input)
+			recorded.CodeIs(http.StatusOK)
+			recorded.BodyIs(expectedBody)
+		}
 	})
 
 	t.Run("bet b", func(t *testing.T) {

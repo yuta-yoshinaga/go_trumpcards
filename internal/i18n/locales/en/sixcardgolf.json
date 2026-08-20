@@ -27,5 +27,8 @@
   "hintDrawStock": "Recommended: draw from the stock (ds)",
   "hintSwap": "Recommended: swap the drawn card into position {{pos}} (sw {{pos}})",
   "hintSwapPair": "Recommended: swap into position {{pos}} (sw {{pos}}) — completes a column pair",
-  "hintDiscard": "Recommended: discard the drawn card (di)"
+  "hintDiscard": "Recommended: discard the drawn card (di)",
+  "helpExampleDraw": "  ds                   start the turn by drawing from the stock",
+  "helpHint": "  h                    show a hint",
+  "helpLog": "  l                    show the action log"
 }

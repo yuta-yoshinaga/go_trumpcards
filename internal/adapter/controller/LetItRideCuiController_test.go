@@ -57,22 +57,22 @@ func TestLetItRideCuiController_Bet_Errors(t *testing.T) {
 
 	t.Run("missing args", func(t *testing.T) {
 		result := c.Exec("b")
-		assert.Contains(t, result, "Bet amount is required")
+		assert.Contains(t, result, msgBetAmountRequired())
 	})
 
 	t.Run("invalid amount", func(t *testing.T) {
 		result := c.Exec("b abc")
-		assert.Contains(t, result, "Invalid bet amount")
+		assert.Contains(t, result, msgInvalidBetAmountPrefix())
 	})
 
 	t.Run("zero amount", func(t *testing.T) {
 		result := c.Exec("b 0")
-		assert.Contains(t, result, "Invalid bet amount")
+		assert.Contains(t, result, msgInvalidBetAmountPrefix())
 	})
 
 	t.Run("negative amount", func(t *testing.T) {
 		result := c.Exec("b -10")
-		assert.Contains(t, result, "Invalid bet amount")
+		assert.Contains(t, result, msgInvalidBetAmountPrefix())
 	})
 }
 
@@ -105,7 +105,20 @@ func TestLetItRideCuiController_Pull_AnyOtherCommandCancels(t *testing.T) {
 
 	c.Exec("p")
 	assert.Equal(t, "letitride result", c.Exec("l"))
-	assert.Equal(t, "Nothing to confirm.", c.Exec("y"))
+	assert.Contains(t, c.Exec("y"), msgStem("letitride.nothingToConfirm"))
+	m.AssertNotCalled(t, "Pull")
+}
+
+// **リセットも確認待ちを消す** (#6076)。r / reset は execCuiCommand が
+// gameHandler より先に拾うので、gameHandler 側のクリアだけでは待ちが残り、
+// 配り直した卓に Pull が走っていた。
+func TestLetItRideCuiController_Pull_ResetCancels(t *testing.T) {
+	m := newMockLetItRideInteractor()
+	c := controller.NewLetItRideCuiController(m)
+
+	c.Exec("p")
+	assert.Equal(t, "reset result", c.Exec("r"))
+	assert.Contains(t, c.Exec("y"), msgStem("letitride.nothingToConfirm"))
 	m.AssertNotCalled(t, "Pull")
 }
 
@@ -113,7 +126,7 @@ func TestLetItRideCuiController_Confirm_WithoutPendingPull(t *testing.T) {
 	m := newMockLetItRideInteractor()
 	c := controller.NewLetItRideCuiController(m)
 
-	assert.Equal(t, "Nothing to confirm.", c.Exec("y"))
+	assert.Contains(t, c.Exec("y"), msgStem("letitride.nothingToConfirm"))
 	m.AssertNotCalled(t, "Pull")
 }
 

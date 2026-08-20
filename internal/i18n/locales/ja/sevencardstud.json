@@ -75,5 +75,11 @@
   "hintReasonRazzStrong": "ロー札が十分そろっている",
   "hintReasonRazzDecent": "ロー札はそこそこある",
   "hintReasonRazzWeak": "ロー札が足りない",
-  "hintReasonHiLoLow": "ロー役が狙える (8以下が5枚)"
+  "hintReasonHiLoLow": "ロー役が狙える (8以下が5枚)",
+  "helpExampleFold": "  f                    この手を降りる",
+  "helpHint": "  h                    助言を表示",
+  "helpLog": "  l                    行動ログを表示",
+  "bringInLine": "ブリングイン: {{name}} (強制ベット、最初に行動)",
+  "wonSplit": " (ハイ: {{high}} / ロー: {{low}})",
+  "wonScoop": " ★スクープ"
 }

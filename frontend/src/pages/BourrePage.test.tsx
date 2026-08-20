@@ -179,19 +179,47 @@ describe('BourrePage', () => {
     expect(summary).toHaveAttribute('title');
   });
 
-  it('decide phase: penalty includes carryPot', async () => {
+  // **繰越ポットは足さない** (#6001)。配り直しの時点で carryPot は pot に
+  // 畳み込まれている (Bourre.nextHand) ので、decide の間は常に 0。足すと
+  // 将来の二重計上になる。
+  it('decide phase: ignores carryPot, which is already folded into the pot', async () => {
     mockExec.mockResolvedValue(makeState({ pot: 25, carryPot: 5 }));
     renderWithProviders(<BourrePage />);
     const summary = await screen.findByTestId('bourre-decide-summary');
-    expect(summary).toHaveTextContent('30'); // penalty = pot + carryPot
+    expect(summary).toHaveTextContent('25');
+    expect(summary.textContent).not.toContain('30');
   });
 
-  it('decide phase: carryPot can push a small pot over the warning threshold', async () => {
-    mockExec.mockResolvedValue(makeState({ pot: 5, carryPot: 6 }));
+  // **払える額までしか取られない** (#6001)。ドメインは min(ポット, 手持ち)。
+  it('decide phase: caps the penalty at the chips you actually hold', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        pot: 25,
+        players: [player({ id: 0, isHuman: true, chips: 7 }), player({ id: 1 }), player({ id: 2 })],
+      }),
+    );
     renderWithProviders(<BourrePage />);
+
     const summary = await screen.findByTestId('bourre-decide-summary');
-    expect(summary).toHaveTextContent('11'); // 5 + 6 >= 10
-    expect(summary).toHaveClass('text-ds-warning');
+    // ポットは 25 のまま出るが、罰金は手持ちの 7。
+    expect(summary).toHaveTextContent('25');
+    expect(summary).toHaveTextContent('7');
+    expect(summary).toHaveAttribute('title', expect.stringContaining('7'));
+  });
+
+  // 手持ちが少なければ警告色にもならない (実際に失うのは 7 チップ)。
+  it('decide phase: a capped penalty below the threshold is not flagged', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        pot: 25,
+        players: [player({ id: 0, isHuman: true, chips: 3 }), player({ id: 1 }), player({ id: 2 })],
+      }),
+    );
+    renderWithProviders(<BourrePage />);
+
+    const summary = await screen.findByTestId('bourre-decide-summary');
+    expect(summary).toHaveClass('text-ds-text-muted');
+    expect(summary).not.toHaveClass('text-ds-warning');
   });
 
   it('does not show the decide summary outside the decide phase', async () => {

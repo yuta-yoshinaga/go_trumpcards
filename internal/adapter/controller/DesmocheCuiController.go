@@ -55,7 +55,7 @@ func (c *DesmocheCuiController) Exec(command string) string {
 			case "x", "desmoche":
 				return c.desmoche(args)
 			case "d", "discard":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.di.Discard)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.di.Discard)
 			case "n", "next":
 				return c.di.NextRound(), true
 			default:
@@ -69,14 +69,14 @@ func (c *DesmocheCuiController) Exec(command string) string {
 // 指定する必要があるため。
 func (c *DesmocheCuiController) meld(args []string) (string, bool) {
 	if len(args) == 0 {
-		return "Card indices are required (for example: m 0,2,5).", true
+		return invalidArg("cardIndicesRequiredMeld"), true
 	}
 	parts := strings.Split(args[0], ",")
 	idxs := make([]int, 0, len(parts))
 	for _, p := range parts {
 		n, err := strconv.Atoi(strings.TrimSpace(p))
 		if err != nil || n < 0 {
-			return "Invalid card index: " + p + ".", true
+			return invalidArg("invalidCardIndex", "val", p), true
 		}
 		idxs = append(idxs, n)
 	}
@@ -86,15 +86,15 @@ func (c *DesmocheCuiController) meld(args []string) (string, bool) {
 // layOff は `o <card> <meld>` を解釈する。
 func (c *DesmocheCuiController) layOff(args []string) (string, bool) {
 	if len(args) < 2 {
-		return "Card index and meld index are required (for example: o 0 1).", true
+		return invalidArg("cardAndMeldIndexRequired"), true
 	}
 	card, ok := desmocheParseIdx(args[0])
 	if !ok {
-		return "Invalid card index: " + args[0] + ".", true
+		return invalidArg("invalidCardIndex", "val", args[0]), true
 	}
 	meld, ok := desmocheParseIdx(args[1])
 	if !ok {
-		return "Invalid meld index: " + args[1] + ".", true
+		return invalidArg("invalidMeldIndexDot", "val", args[1]), true
 	}
 	return c.di.LayOff(card, meld), true
 }
@@ -102,19 +102,19 @@ func (c *DesmocheCuiController) layOff(args []string) (string, bool) {
 // desmoche は `x <from> <card> <to>` を解釈する。
 func (c *DesmocheCuiController) desmoche(args []string) (string, bool) {
 	if len(args) < 3 {
-		return "Source meld, card index and target meld are required (for example: x 0 2 1).", true
+		return invalidArg("sourceMeldCardTargetRequired"), true
 	}
 	from, ok := desmocheParseIdx(args[0])
 	if !ok {
-		return "Invalid meld index: " + args[0] + ".", true
+		return invalidArg("invalidMeldIndexDot", "val", args[0]), true
 	}
 	card, ok := desmocheParseIdx(args[1])
 	if !ok {
-		return "Invalid card index: " + args[1] + ".", true
+		return invalidArg("invalidCardIndex", "val", args[1]), true
 	}
 	to, ok := desmocheParseIdx(args[2])
 	if !ok {
-		return "Invalid meld index: " + args[2] + ".", true
+		return invalidArg("invalidMeldIndexDot", "val", args[2]), true
 	}
 	return c.di.Desmoche(from, card, to), true
 }

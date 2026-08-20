@@ -3,7 +3,7 @@
   "helpPlay": "  p <idx>              手札の idx 番目を出す",
   "helpNext": "  n                    次のラウンドを配る",
   "helpGiveUp": "  g                    投了する",
-  "header": "ラウンド: {{round}}  トリック: {{trick}}  終了失点: {{target}}点",
+  "header": "ラウンド: {{round}}  トリック: {{trick}}/{{total}}  終了失点: {{target}}点",
   "rule": "スートは一切関係ありません。いま出ている最高ランクより高い札を持っていれば必ずそれを出し、無ければ手札のいちばん低い札を出します。選べるのは「どの高い札を出すか」だけです。トリックは最高ランクを出した人が取りますが、失点が付くのは最終トリックを取った1人だけで、そのトリックを取った札のランクぶん失点します。途中のトリックは何枚取っても0点です。失点がいちばん少ない人の勝ちです。",
   "highest": "いまの最高ランク: {{n}}",
   "playerLine": "{{name}}{{role}}: 手札{{cards}}枚 失点{{penalty}}点",
@@ -21,5 +21,7 @@
   "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
   "hintReasonLead": "リードなので何を出してもよい",
   "hintReasonBeat": "更新できる中でいちばん低い札。高い札は終盤に残さない",
-  "hintReasonForced": "更新できないので、この札に決まっている"
+  "hintReasonForced": "更新できないので、この札に決まっている",
+  "helpExampleGiveUp": "  g                    この局を投了する",
+  "helpHint": "  h                    助言を表示"
 }

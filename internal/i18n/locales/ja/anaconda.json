@@ -47,5 +47,7 @@
   "hintReasonMediumHand": "そこそこの手 — コールで様子見",
   "hintReasonWeakHand": "弱い手 — 降りるのが無難",
   "promptPassTo": "→ 左隣の {{name}} へ {{count}} 枚渡す",
-  "hintCards": "対象: {{cards}}"
+  "hintCards": "対象: {{cards}}",
+  "helpExampleCall": "  c                         現在のベットにコールする",
+  "helpHint": "  h                         助言を表示"
 }

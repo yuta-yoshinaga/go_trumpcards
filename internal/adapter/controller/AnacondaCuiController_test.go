@@ -77,11 +77,11 @@ func TestAnacondaCuiController_Exec(t *testing.T) {
 	})
 	t.Run("set players missing arg", func(t *testing.T) {
 		out := controller.NewAnacondaCuiController(newMock()).Exec("sp")
-		assert.Contains(t, out, "required")
+		assert.Contains(t, out, msgStem("playerCountRequiredEGSp4"))
 	})
 	t.Run("set players invalid", func(t *testing.T) {
 		out := controller.NewAnacondaCuiController(newMock()).Exec("sp 99")
-		assert.Contains(t, out, "Invalid")
+		assert.Contains(t, out, msgStem("invalidPlayerCount37"))
 	})
 	t.Run("set ante", func(t *testing.T) {
 		m := newMock()
@@ -110,5 +110,16 @@ func TestAnacondaCuiController_Exec(t *testing.T) {
 	})
 	t.Run("unknown", func(t *testing.T) {
 		assert.NotEmpty(t, controller.NewAnacondaCuiController(newMock()).Exec("zzz"))
+	})
+
+	// **落として残りで実行しない。** 打ち間違いを捨てると、プレイヤーが
+	// 選んでいない組み合わせが実行される (issue #5390)。
+	t.Run("refuses a mistyped index", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewAnacondaCuiController(m)
+		assert.Contains(t, c.Exec("p 0 zz"), msgInvalidCardIndexPrefix(),
+			"a mistyped index must be refused, not dropped")
+		assert.Contains(t, c.Exec("k 0 zz"), msgInvalidCardIndexPrefix(),
+			"a mistyped index must be refused, not dropped")
 	})
 }

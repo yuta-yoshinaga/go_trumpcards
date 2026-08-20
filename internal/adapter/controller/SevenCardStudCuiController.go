@@ -92,7 +92,7 @@ func (c *SevenCardStudCuiController) Exec(command string) string {
 				}
 				bl, err := strconv.Atoi(args[0])
 				if err != nil {
-					return i18n.Tf("holdem.invalidBettingLimit", "val", args[0]), true
+					return invalidArg("holdem.invalidBettingLimit", "val", args[0]), true
 				}
 				cfg := c.si.GetConfig()
 				cfg.BettingLimit = domain.BettingLimitType(bl)
@@ -103,7 +103,7 @@ func (c *SevenCardStudCuiController) Exec(command string) string {
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 0 || v > 1 {
-					return i18n.Tf("holdem.invalidTournamentMode", "val", args[0]), true
+					return invalidArg("holdem.invalidTournamentMode", "val", args[0]), true
 				}
 				cfg := c.si.GetConfig()
 				cfg.TournamentMode = v == 1
@@ -114,7 +114,7 @@ func (c *SevenCardStudCuiController) Exec(command string) string {
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil {
-					return i18n.Tf("sevencardstud.invalidAnte", "val", args[0]), true
+					return invalidArg("sevencardstud.invalidAnte", "val", args[0]), true
 				}
 				cfg := c.si.GetConfig()
 				cfg.Ante = v
@@ -125,7 +125,7 @@ func (c *SevenCardStudCuiController) Exec(command string) string {
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil {
-					return i18n.Tf("sevencardstud.invalidBringIn", "val", args[0]), true
+					return invalidArg("sevencardstud.invalidBringIn", "val", args[0]), true
 				}
 				cfg := c.si.GetConfig()
 				cfg.BringIn = v
@@ -136,7 +136,7 @@ func (c *SevenCardStudCuiController) Exec(command string) string {
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil {
-					return i18n.Tf("sevencardstud.invalidSmallBet", "val", args[0]), true
+					return invalidArg("sevencardstud.invalidSmallBet", "val", args[0]), true
 				}
 				cfg := c.si.GetConfig()
 				cfg.SmallBet = v
@@ -147,7 +147,7 @@ func (c *SevenCardStudCuiController) Exec(command string) string {
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil {
-					return i18n.Tf("sevencardstud.invalidBigBet", "val", args[0]), true
+					return invalidArg("sevencardstud.invalidBigBet", "val", args[0]), true
 				}
 				cfg := c.si.GetConfig()
 				cfg.BigBet = v
@@ -158,7 +158,7 @@ func (c *SevenCardStudCuiController) Exec(command string) string {
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil {
-					return i18n.Tf("holdem.invalidLevelHand", "val", args[0]), true
+					return invalidArg("holdem.invalidLevelHand", "val", args[0]), true
 				}
 				cfg := c.si.GetConfig()
 				cfg.AnteLevelHands = v
@@ -169,7 +169,7 @@ func (c *SevenCardStudCuiController) Exec(command string) string {
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil {
-					return i18n.Tf("holdem.invalidTableSize", "val", args[0]), true
+					return invalidArg("holdem.invalidTableSize", "val", args[0]), true
 				}
 				cfg := c.si.GetConfig()
 				cfg.TableSize = v
@@ -180,7 +180,7 @@ func (c *SevenCardStudCuiController) Exec(command string) string {
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 0 || v > 1 {
-					return i18n.Tf("invalidMetaAI", "val", args[0]), true
+					return invalidArg("invalidMetaAI", "val", args[0]), true
 				}
 				cfg := c.si.GetConfig()
 				cfg.CpuMetaAI = v == 1

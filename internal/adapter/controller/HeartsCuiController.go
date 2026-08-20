@@ -2,6 +2,7 @@ package controller
 
 import (
 	"math"
+	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -46,27 +47,29 @@ func (c *HeartsCuiController) Exec(command string) string {
 			switch cmd {
 			case "pass":
 				indices, skipped := cuiutil.ParseIntSlice(args)
-				var result string
-				if len(indices) != 3 {
-					result = "Pass requires exactly 3 card indices."
-				} else {
-					result = c.hi.Pass(indices)
+				// Refuse before counting: dropping a mistyped index could leave
+				// exactly three and pass a hand the player never chose (#5390).
+				if len(skipped) > 0 {
+					return invalidArg("invalidCardIndex", "val", strings.Join(skipped, ", ")), true
 				}
-				return cuiutil.PrependSkippedWarning(result, skipped), true
+				if len(indices) != 3 {
+					return "Pass requires exactly 3 card indices.", true
+				}
+				return c.hi.Pass(indices), true
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.hi.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.hi.Play)
 			case "n", "next":
 				return c.hi.NextTrick(), true
 			case "nr", "nextround":
 				return c.hi.NextRound(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.hi.GetConfig()
 					cfg.CpuDifficulty = domain.HeartsCpuDifficulty(v)
 					return c.hi.ResetWithConfig(cfg)
 				})
 			case "sl", "setlimit":
-				return cuiutil.WithParsedInt(args, "Point limit is required.", "Invalid point limit: %s. Please enter 1 or more.", 1, math.MaxInt, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "pointLimitRequired", "invalidPointLimit", 1, math.MaxInt, func(v int) string {
 					cfg := c.hi.GetConfig()
 					cfg.PointLimit = v
 					return c.hi.ResetWithConfig(cfg)

@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { sixcardgolfApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
+import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -19,9 +20,9 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { focusRingWhite } from '../styles/buttonStyles';
+import { btnSecondary, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { SixCardGolfResponse, SixCardGolfSlot } from '../types/card';
+import type { SixCardGolfConfig, SixCardGolfResponse, SixCardGolfSlot } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { parseSixCardGolfCommand } from '../utils/cli/commands/sixcardgolfCommands';
@@ -121,7 +122,20 @@ function SixCardGolfPageContent() {
   const handleFlip = useCallback((pos: number) => apiCall({ command: 'flip', position: pos }), [apiCall]);
   const handleSkipFlip = useCallback(() => apiCall({ command: 'skipflip' }), [apiCall]);
   const handleNextRound = useCallback(() => apiCall({ command: 'nextround' }), [apiCall]);
-  const handleReset = useCallback(() => apiCall({ command: 'reset' }), [apiCall]);
+
+  // CUI の sd/sp/sr と同じ 3 つを Web でも選べるようにする。設定は「適用」を
+  // 押したときだけ送る -- 選んだ瞬間に配り直すと、進行中の局が黙って消える。
+  const [config, setConfig] = useState<SixCardGolfConfig>({ playerCount: 2, cpuDifficulty: 1, rounds: 9 });
+  const setConfigField = useCallback(
+    (key: keyof SixCardGolfConfig, value: string) =>
+      setConfig((prev) => ({ ...prev, [key]: Number.parseInt(value, 10) })),
+    [],
+  );
+  const handleApplySettings = useCallback(() => apiCall({ command: 'reset', config }), [apiCall, config]);
+  // 設定を選んだあとにフッタの「リセット/次のゲーム」を押しても、選んだ設定で
+  // 配り直す。ここで config を落とすと、選択が**黙って**既定に戻る -- この
+  // ページが避けようとしているのがまさにそれ。
+  const handleReset = useCallback(() => apiCall({ command: 'reset', config }), [apiCall, config]);
 
   const phaseName = useMemo(() => {
     if (!state) return '';
@@ -191,6 +205,7 @@ function SixCardGolfPageContent() {
           {state.players.map((player, pIdx) => (
             <div
               key={player.id}
+              data-testid={`scg-seat-${player.id}`}
               className={`rounded-lg p-2 ${pIdx === state.currentPlayerIdx ? 'ring-2 ring-ds-warning' : ''}`}
             >
               <div className="text-sm font-bold mb-1">
@@ -316,6 +331,59 @@ function SixCardGolfPageContent() {
           />
         </div>
       )}
+      <SettingsPanel
+        title={t('settings.title')}
+        groups={[
+          {
+            items: [
+              {
+                type: 'select',
+                id: 'scg-player-count',
+                label: t('settings.playerCount'),
+                value: String(config.playerCount),
+                // 2〜4 は SixCardGolfConfig の許す範囲そのもの。
+                options: [2, 3, 4].map((n) => ({ value: String(n), label: String(n) })),
+                onSelect: (v: string) => setConfigField('playerCount', v),
+                testId: 'scg-player-count',
+              },
+              {
+                type: 'select',
+                id: 'scg-cpu-difficulty',
+                label: t('settings.cpuDifficulty'),
+                value: String(config.cpuDifficulty),
+                options: [
+                  { value: '0', label: t('settings.difficultyOptions.easy') },
+                  { value: '1', label: t('settings.difficultyOptions.normal') },
+                  { value: '2', label: t('settings.difficultyOptions.hard') },
+                ],
+                onSelect: (v: string) => setConfigField('cpuDifficulty', v),
+                testId: 'scg-cpu-difficulty',
+              },
+              {
+                type: 'select',
+                id: 'scg-rounds',
+                label: t('settings.rounds'),
+                value: String(config.rounds),
+                options: [3, 6, 9, 18].map((n) => ({ value: String(n), label: String(n) })),
+                onSelect: (v: string) => setConfigField('rounds', v),
+                testId: 'scg-rounds',
+              },
+            ],
+          },
+        ]}
+      />
+      <div className="flex justify-center">
+        <button
+          type="button"
+          data-testid="scg-apply-settings"
+          className={btnSecondary}
+          onClick={handleApplySettings}
+          disabled={loading}
+        >
+          {t('settings.apply')}
+        </button>
+      </div>
+
       <GameFooter className={gameTheme.sixcardgolf.footer}>
         <GameResetButton
           isGameEnd={isGameEnd}

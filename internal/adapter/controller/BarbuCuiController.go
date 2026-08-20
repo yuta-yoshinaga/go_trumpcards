@@ -44,7 +44,7 @@ func (c *BarbuCuiController) Exec(command string) string {
 			case "n", "next":
 				return c.bi.NextDeal(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.bi.GetConfig()
 					cfg.CpuDifficulty = domain.BarbuCpuDifficulty(v)
 					return c.bi.ResetWithConfig(cfg)
@@ -59,15 +59,15 @@ func (c *BarbuCuiController) Exec(command string) string {
 // handleSelectContract は `c <contract> [trump]` を処理する。
 func (c *BarbuCuiController) handleSelectContract(args []string) (string, bool) {
 	if len(args) < 1 {
-		return "Usage: c <contract 0-6> [trumpSuit 1-4 for Trumps]", true
+		return invalidArg("usageCContract06Trumpsuit14ForTrumps"), true
 	}
-	contract, _, ok := cuiutil.ParseIntArg([]string{args[0]}, "contract is required", "Invalid contract: %s", 0, domain.BarbuContractCnt-1)
+	contract, _, ok := cuiutil.ParseIntArgKeys([]string{args[0]}, "contractRequired", "invalidContract", 0, domain.BarbuContractCnt-1)
 	if !ok {
-		return "Invalid contract: " + args[0], true
+		return invalidArg("invalidContractRaw", "val", args[0]), true
 	}
 	trump := -1
 	if len(args) >= 2 {
-		t, _, tok := cuiutil.ParseIntArg([]string{args[1]}, "trump suit", "Invalid trump suit: %s", domain.CardDesignSpade, domain.CardDesignDiamond)
+		t, _, tok := cuiutil.ParseIntArgKeys([]string{args[1]}, "", "invalidTrumpSuitNoPeriod", domain.CardDesignSpade, domain.CardDesignDiamond)
 		if tok {
 			trump = t
 		}
@@ -78,11 +78,11 @@ func (c *BarbuCuiController) handleSelectContract(args []string) (string, bool) 
 // handlePlay は `p <h>` (Dominoes では `p -1` でパス) を処理する。
 func (c *BarbuCuiController) handlePlay(args []string) (string, bool) {
 	if len(args) < 1 {
-		return "Usage: p <handIdx> (-1 to pass in Dominoes)", true
+		return invalidArg("usagePHandidx1ToPassInDominoes"), true
 	}
-	handIdx, _, ok := cuiutil.ParseIntArg([]string{args[0]}, "hand index is required", "Invalid hand index: %s", -1, domain.BarbuHandSize-1)
+	handIdx, _, ok := cuiutil.ParseIntArgKeys([]string{args[0]}, "handIndexRequired", "invalidHandIndex", -1, domain.BarbuHandSize-1)
 	if !ok {
-		return "Invalid hand index: " + args[0], true
+		return invalidArg("invalidHandIndexRaw", "val", args[0]), true
 	}
 	return c.bi.Play(handIdx, nil), true
 }

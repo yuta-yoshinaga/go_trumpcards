@@ -11,6 +11,7 @@
   "discardLine": "Discard: {{card}}",
   "discardPreview": "  Deadwood after discarding: {{values}}",
   "playerLine": "{{name}}: cumulative {{cum}} round {{round}} cards {{cards}} deadwood {{deadwood}}",
+  "wildLegend": "~ = wild card (this round’s wild rank)",
   "gameEnd": "Game over! {{name}} wins!",
   "drawPhase": "Draw a card from the stock or the discard pile",
   "discardPhase": "Discard one card (knock if your hand fully melds)",
@@ -24,5 +25,7 @@
   "promptRoundEnd": "Round complete",
   "promptRoundEndHelp": "nr / nextround: advance to next round",
   "result.humanWin": "You win!",
-  "result.cpuWin": "CPU {{cpuId}} wins"
+  "result.cpuWin": "CPU {{cpuId}} wins",
+  "helpExampleDraw": "  ds                   start the turn by drawing from the stock",
+  "helpExampleDiscard": "  d 0                  discard hand card 0"
 }

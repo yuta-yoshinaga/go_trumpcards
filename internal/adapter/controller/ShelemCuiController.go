@@ -40,7 +40,7 @@ func (c *ShelemCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bid":
-				return cuiutil.WithParsedInt(args, "Bid is required.", "Invalid bid: %s.",
+				return cuiutil.WithParsedIntKeys(args, "bidRequired", "invalidBid",
 					domain.ShelemMinBid, domain.ShelemMaxBid, c.si.Bid)
 			case "shelem":
 				return c.si.BidShelem(), true
@@ -49,7 +49,7 @@ func (c *ShelemCuiController) Exec(command string) string {
 			case "d", "discard":
 				return c.discard(args)
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.si.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.si.Play)
 			case "n", "next":
 				return c.si.NextRound(), true
 			case "g", "giveup":
@@ -67,18 +67,18 @@ func (c *ShelemCuiController) Exec(command string) string {
 // 選んでいないスートが切り札になる。
 func (c *ShelemCuiController) discard(args []string) (string, bool) {
 	if len(args) < domain.ShelemWidowSize+1 {
-		return "Four card indices and a suit are required.", true
+		return invalidArg("fourIndicesAndSuitRequired"), true
 	}
 	indices := make([]int, 0, domain.ShelemWidowSize)
 	for i := range domain.ShelemWidowSize {
-		v, errMsg, ok := cuiutil.ParseIntArg(args[i:], "Card index is required.", "Invalid card index: %s.",
+		v, errMsg, ok := cuiutil.ParseIntArgKeys(args[i:], "cardIndexRequired", "invalidCardIndex",
 			cuiutil.NoMin, cuiutil.NoMax)
 		if !ok {
 			return errMsg, true
 		}
 		indices = append(indices, v)
 	}
-	suit, errMsg, ok := cuiutil.ParseIntArg(args[domain.ShelemWidowSize:], "Suit is required.", "Invalid suit: %s.",
+	suit, errMsg, ok := cuiutil.ParseIntArgKeys(args[domain.ShelemWidowSize:], "suitRequired", "invalidSuit",
 		domain.CardDesignSpade, domain.CardDesignMax)
 	if !ok {
 		return errMsg, true

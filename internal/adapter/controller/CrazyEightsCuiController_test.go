@@ -82,13 +82,13 @@ func TestCrazyEightsCuiController_Exec(t *testing.T) {
 	t.Run("play command p no args", func(t *testing.T) {
 		c := controller.NewCrazyEightsCuiController(newMock())
 		result := c.Exec("p")
-		assert.Contains(t, result, "Card index is required")
+		assert.Contains(t, result, msgCardIndexRequired())
 	})
 
 	t.Run("play command p invalid arg", func(t *testing.T) {
 		c := controller.NewCrazyEightsCuiController(newMock())
 		result := c.Exec("p abc")
-		assert.Contains(t, result, "Invalid card index")
+		assert.Contains(t, result, msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("playing an 8 inlines a suit prompt instead of forcing 's' on the next line", func(t *testing.T) {
@@ -152,25 +152,25 @@ func TestCrazyEightsCuiController_Exec(t *testing.T) {
 	t.Run("suit command s no args", func(t *testing.T) {
 		c := controller.NewCrazyEightsCuiController(newMock())
 		result := c.Exec("s")
-		assert.Contains(t, result, "Suit is required")
+		assert.Contains(t, result, msgStem("suitRequiredSymbols"))
 	})
 
 	t.Run("suit command s invalid arg", func(t *testing.T) {
 		c := controller.NewCrazyEightsCuiController(newMock())
 		result := c.Exec("s abc")
-		assert.Contains(t, result, "Invalid suit")
+		assert.Contains(t, result, msgStem("invalidSuitRange"))
 	})
 
 	t.Run("suit command s below range", func(t *testing.T) {
 		c := controller.NewCrazyEightsCuiController(newMock())
 		result := c.Exec("s 0")
-		assert.Contains(t, result, "Invalid suit: 0")
+		assert.Contains(t, result, msgKey("invalidSuitRange", "val", "0"))
 	})
 
 	t.Run("suit command s above range", func(t *testing.T) {
 		c := controller.NewCrazyEightsCuiController(newMock())
 		result := c.Exec("s 5")
-		assert.Contains(t, result, "Invalid suit: 5")
+		assert.Contains(t, result, msgKey("invalidSuitRange", "val", "5"))
 	})
 
 	// nextround
@@ -214,25 +214,25 @@ func TestCrazyEightsCuiController_Exec(t *testing.T) {
 	t.Run("setdifficulty no args", func(t *testing.T) {
 		c := controller.NewCrazyEightsCuiController(newMock())
 		result := c.Exec("sd")
-		assert.Contains(t, result, "required")
+		assert.Contains(t, result, msgCpuDifficultyRequired())
 	})
 
 	t.Run("setdifficulty invalid value", func(t *testing.T) {
 		c := controller.NewCrazyEightsCuiController(newMock())
 		result := c.Exec("sd abc")
-		assert.Contains(t, result, "Invalid CPU difficulty")
+		assert.Contains(t, result, msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("setdifficulty negative", func(t *testing.T) {
 		c := controller.NewCrazyEightsCuiController(newMock())
 		result := c.Exec("sd -1")
-		assert.Equal(t, "Invalid CPU difficulty: -1. Please enter 0-2.", result)
+		assert.Equal(t, msgInvalidCpuDifficulty("-1"), result)
 	})
 
 	t.Run("setdifficulty over 2", func(t *testing.T) {
 		c := controller.NewCrazyEightsCuiController(newMock())
 		result := c.Exec("sd 3")
-		assert.Equal(t, "Invalid CPU difficulty: 3. Please enter 0-2.", result)
+		assert.Equal(t, msgInvalidCpuDifficulty("3"), result)
 	})
 
 	// setlimit
@@ -259,25 +259,25 @@ func TestCrazyEightsCuiController_Exec(t *testing.T) {
 	t.Run("setlimit no args", func(t *testing.T) {
 		c := controller.NewCrazyEightsCuiController(newMock())
 		result := c.Exec("sl")
-		assert.Contains(t, result, "required")
+		assert.Contains(t, result, msgPointLimitRequired())
 	})
 
 	t.Run("setlimit invalid value", func(t *testing.T) {
 		c := controller.NewCrazyEightsCuiController(newMock())
 		result := c.Exec("sl abc")
-		assert.Contains(t, result, "Invalid point limit")
+		assert.Contains(t, result, msgInvalidPointLimitPrefix())
 	})
 
 	t.Run("setlimit zero", func(t *testing.T) {
 		c := controller.NewCrazyEightsCuiController(newMock())
 		result := c.Exec("sl 0")
-		assert.Equal(t, "Invalid point limit: 0. Please enter 1 or more.", result)
+		assert.Equal(t, msgInvalidPointLimit("0"), result)
 	})
 
 	t.Run("setlimit negative", func(t *testing.T) {
 		c := controller.NewCrazyEightsCuiController(newMock())
 		result := c.Exec("sl -1")
-		assert.Equal(t, "Invalid point limit: -1. Please enter 1 or more.", result)
+		assert.Equal(t, msgInvalidPointLimit("-1"), result)
 	})
 
 	// log

@@ -73,14 +73,9 @@ func (p *LingerLongerCuiPresenter) Output(s interfaces.LingerLongerGame, lastErr
 		cuiErrorBlock(sb, lastErr)
 
 		if s.GetGameEndFlag() {
-			var banner string
-			if s.GetWinnerIdx() == 0 {
-				banner = i18n.T("lingerlonger.gameEndYou")
-			} else {
-				banner = i18n.Tf("lingerlonger.gameEndCpu",
-					"name", cuiPlayerName(s.GetPlayer(s.GetWinnerIdx()), s.GetWinnerIdx()))
-			}
-			sb.WriteString(color.Green(banner) + "\n")
+			winner := s.GetWinnerIdx()
+			name := cuiPlayerName(s.GetPlayer(winner), winner)
+			sb.WriteString(color.Green(lingerLongerEndBanner(s.GetWinReason(), winner, name)) + "\n")
 			return
 		}
 
@@ -120,5 +115,29 @@ var lingerLongerHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *LingerLongerCuiPresenter) ActionLogOutput(s interfaces.LingerLongerGame) string {
-	return actionLogOutputText(s)
+	return actionLogOutputTextForSeats[*domain.LingerLongerPlayer](s)
+}
+
+// lingerLongerEndBanner は決着の見出しを勝因に合わせて組み立てる。
+//
+// **勝因を取り違えると規則そのものを誤って説明することになる。** 山札が尽きて
+// 全員が同時に手札 0 枚になった局では「最後まで持ち続けた人」は存在せず、勝ちは
+// 最後のトリックで決まる。以前はどちらの勝ちでも同じ文言を出していた (#5765)。
+// 未知の勝因は「持ち続けた」に寄せる -- 通常勝ちが圧倒的多数なので、そこへ倒す
+// ほうが誤りが小さい。
+func lingerLongerEndBanner(reason string, winnerIdx int, name string) string {
+	switch reason {
+	case domain.LingerLongerWinLastTrick:
+		if winnerIdx == 0 {
+			return i18n.T("lingerlonger.gameEndLastTrickYou")
+		}
+		return i18n.Tf("lingerlonger.gameEndLastTrickCpu", "name", name)
+	case domain.LingerLongerWinGiveUp:
+		return i18n.Tf("lingerlonger.gameEndGiveUp", "name", name)
+	default:
+		if winnerIdx == 0 {
+			return i18n.T("lingerlonger.gameEndYou")
+		}
+		return i18n.Tf("lingerlonger.gameEndCpu", "name", name)
+	}
 }

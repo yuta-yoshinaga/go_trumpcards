@@ -301,28 +301,24 @@ func (c *Cruel) AutoComplete() error {
 		return errors.New("game is not in playing phase")
 	}
 	c.takeSnapshot()
+	totalMoved := 0
 	for {
-		moved := false
-		for col := range CruelTableauCnt {
-			if len(c.tableau[col]) == 0 {
-				continue
-			}
-			card := c.tableau[col][len(c.tableau[col])-1].Card
-			fIdx := card.GetDesign() - 1
-			if fIdx < 0 || fIdx >= CruelFoundationCnt {
-				continue
-			}
-			if !c.canPlaceOnFoundation(card, fIdx) {
-				continue
-			}
-			c.tableau[col] = c.tableau[col][:len(c.tableau[col])-1]
-			c.foundation[fIdx] = append(c.foundation[fIdx], card)
-			c.moveCount++
-			moved = true
-		}
-		if !moved {
+		col, fIdx := c.nextAutoCompleteMove()
+		if col < 0 {
 			break
 		}
+		card := c.tableau[col][len(c.tableau[col])-1].Card
+		c.tableau[col] = c.tableau[col][:len(c.tableau[col])-1]
+		c.foundation[fIdx] = append(c.foundation[fIdx], card)
+		c.moveCount++
+		totalMoved++
+	}
+	// **1枚も動かなかったなら、何も起きていない。** 以前は無条件にログを残し、
+	// undo 用のスナップショットも積んでいたので、「オートコンプリートを実行しました」
+	// という記録だけが残り、undo を1回空振りさせていた (#5496)。
+	if totalMoved == 0 {
+		c.history = c.history[:len(c.history)-1]
+		return nil
 	}
 	c.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
 	c.checkGameClear()
@@ -416,6 +412,41 @@ func (c *Cruel) canPlaceOnTableau(card *Card, col int) bool {
 	}
 	topCard := colCards[len(colCards)-1].Card
 	return card.GetDesign() == topCard.GetDesign() && card.GetValue() == topCard.GetValue()-1
+}
+
+// canPlaceOnFoundation ファウンデーションにカードを置けるか判定。
+// CanAutoComplete はいまオートコンプリートで動かせる札があるかを返す。
+//
+// **判定は AutoComplete が使うものと同じ。**別に書くと、押せるのに何も起きない
+// (あるいはその逆の) ボタンになる (#5496)。
+func (c *Cruel) CanAutoComplete() bool {
+	if c.phase != CruelPhasePlaying {
+		return false
+	}
+	col, _ := c.nextAutoCompleteMove()
+	return col >= 0
+}
+
+// nextAutoCompleteMove は次にオートコンプリートで送れる (タブロー列, 組札) を返す。
+// 送れる札が無ければ col = -1。
+//
+// **AutoComplete と CanAutoComplete が同じ関数を呼ぶ**ので、ボタンの有効状態と
+// 実際の挙動がずれない (#5496)。同じ条件を2か所に書けば、いずれ片方だけ変わる。
+func (c *Cruel) nextAutoCompleteMove() (int, int) {
+	for col := range CruelTableauCnt {
+		if len(c.tableau[col]) == 0 {
+			continue
+		}
+		card := c.tableau[col][len(c.tableau[col])-1].Card
+		fIdx := card.GetDesign() - 1
+		if fIdx < 0 || fIdx >= CruelFoundationCnt {
+			continue
+		}
+		if c.canPlaceOnFoundation(card, fIdx) {
+			return col, fIdx
+		}
+	}
+	return -1, -1
 }
 
 // canPlaceOnFoundation ファウンデーションにカードを置けるか判定。

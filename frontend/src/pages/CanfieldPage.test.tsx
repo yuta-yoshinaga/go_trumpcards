@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { canfieldApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -442,5 +442,38 @@ describe('CanfieldPage', () => {
         ),
       );
     });
+  });
+});
+
+// #5531: 「リザーブが残っている間は空列に自分で置けない (自動補充される)」は
+// クロンダイクの直感と食い違う固有ルールなのに、画面のどこにも書いていなかった。
+describe('CanfieldPage reserve rule note', () => {
+  it('explains the empty-column restriction while the reserve has cards', async () => {
+    mockExec.mockResolvedValue(playingState); // reserve に1枚ある
+    renderWithProviders(<CanfieldPage />);
+    const note = await screen.findByTestId('cf-reserve-rule');
+    expect(note).toHaveAttribute('role', 'note');
+    expect(note).toHaveTextContent('自動補充');
+  });
+
+  // **リザーブが尽きたら制限も消える。**残しておくと嘘の説明になる。
+  it('is gone once the reserve is empty', async () => {
+    mockExec.mockResolvedValue({ ...playingState, reserve: [] });
+    renderWithProviders(<CanfieldPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('cf-reserve-rule')).not.toBeInTheDocument();
+  });
+
+  it('can be dismissed and stays dismissed', async () => {
+    mockExec.mockResolvedValue(playingState);
+    const { unmount } = renderWithProviders(<CanfieldPage />);
+    const note = await screen.findByTestId('cf-reserve-rule');
+    fireEvent.click(within(note).getByRole('button'));
+    await waitFor(() => expect(screen.queryByTestId('cf-reserve-rule')).not.toBeInTheDocument());
+
+    unmount();
+    renderWithProviders(<CanfieldPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('cf-reserve-rule')).not.toBeInTheDocument();
   });
 });

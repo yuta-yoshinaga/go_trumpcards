@@ -45,6 +45,11 @@ func (p *PitchWebPresenter) buildBase(s interfaces.PitchGame) *controller.PitchW
 	resObj.GameEndFlag = s.GetGameEndFlag()
 	resObj.WinnerIdx = s.GetWinnerIdx()
 	resObj.LeadPlayerIdx = s.GetLeadPlayerIdx()
+	// 得点内訳。ドメインが得点と同時に記録しているので、画面が数え直さない (#5584)。
+	bd := s.GetRoundBreakdown()
+	resObj.RoundBreakdown = &controller.PitchWebOutputBreakdown{
+		High: bd.High, Low: bd.Low, Jack: bd.Jack, Game: bd.Game,
+	}
 
 	cfg := s.GetConfig()
 	resObj.Config = controller.PitchWebOutputConfig{

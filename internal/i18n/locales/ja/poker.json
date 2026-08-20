@@ -43,5 +43,8 @@
   "phaseSecondBet": "第2ベット",
   "phaseEnd": "終了",
   "promptBet": "操作: bet <額> / call / raise <額> / fold",
-  "promptExchange": "操作: exchange <カード番号...>（交換なしは exchange のみ）"
+  "promptExchange": "操作: exchange <カード番号...>（交換なしは exchange のみ）",
+  "helpExampleFold": "  f                    この手を降りる",
+  "helpLog": "  l                    行動ログを表示",
+  "exchangeRead": "⚠ 交換枚数が少ないため、CPU に「強い手」と読まれています (3枚未満で警戒。CPU は降りやすくなります)"
 }

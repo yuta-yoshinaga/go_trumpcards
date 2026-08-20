@@ -21,6 +21,9 @@
   "wasteEmpty": "捨て札: なし",
   "wasteTop": "捨て札: {{card}} ({{count}}枚)",
   "pileLabel": "山{{pile}}:",
+  "pileTop": "<{{card}}>",
+  "pileBuried": "{{card}}",
+  "pileTopNote": "（各山は <> の 1 枚だけが動かせます。m t <山> で基礎札へ送ります）",
   "emptyPile": "[空]",
   "hintFromWaste": "捨て札",
   "hintFromStock": "山札",
@@ -29,5 +32,7 @@
   "hintToTableau": "タブロー山{{pile}}",
   "hintToWaste": "捨て札へめくる",
   "hintLine": "ヒント: {{from}} → {{to}}",
-  "undoToEscape": "脱出には {{count}} 手戻す必要があります（undo {{count}} または u を繰り返す）"
+  "undoToEscape": "脱出には {{count}} 手戻す必要があります（undo {{count}} または u を繰り返す）",
+  "helpExampleHint": "  h                        次の一手を教えてもらう",
+  "helpExampleAuto": "  ac                       組札へ送れる札を自動で送る"
 }

@@ -20,6 +20,9 @@
   "playable": "出せる札: {{indexes}}",
   "ladderTitle": "ビッドの序列:",
   "ladderTaken": "[{{bid}}]",
+  "ladderTarget": "（目標{{n}}点）",
+  "ladderTargetSuit": "（目標 ♥{{heart}}点/他{{other}}点）",
+  "ladderTargetZero": "（1点も取らない）",
   "ladderNoneLeft": "（これ以上の段階はありません。パスのみ）",
   "bid.pass": "パス",
   "bid.solo": "ソロ",
@@ -46,5 +49,6 @@
   "handMade": "宣言達成",
   "handSet": "宣言失敗",
   "result.humanWin": "ゲーム終了！ あなたの勝ちです！",
-  "result.cpuWin": "ゲーム終了！ CPUの勝ちです。"
+  "result.cpuWin": "ゲーム終了！ CPUの勝ちです。",
+  "helpExamplePlay": "  p 0                       手札の 0 番のカードを出す"
 }

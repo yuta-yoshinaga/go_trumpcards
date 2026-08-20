@@ -134,12 +134,7 @@ func (ci *ContractRummyInteractor) Discard(cardIndex int) string {
 
 // NextRound 次のラウンドへ進む
 func (ci *ContractRummyInteractor) NextRound() string {
-	if out, blocked := guardGameEnd(ci.Game, ci.gp); blocked {
-		return out
-	}
-	ci.Game.NextRound()
-	ci.runCpuTurns()
-	return ci.gp.Output(ci.Game, nil)
+	return advanceRound(ci.Game, ci.gp, ci.runCpuTurns)
 }
 
 // GetConfig 現在の設定を取得
@@ -154,16 +149,10 @@ func (ci *ContractRummyInteractor) ActionLog() string {
 
 // runCpuTurns CPU ターンを連続で処理する
 func (ci *ContractRummyInteractor) runCpuTurns() {
-	for !ci.Game.GetGameEndFlag() {
+	runCpuTurnsUntil(ci.Game, func() bool {
 		phase := ci.Game.GetPhase()
-		if phase == domain.ContractRummyPhaseRoundEnd || phase == domain.ContractRummyPhaseGameEnd {
-			break
-		}
-		if ci.Game.IsHumanTurn() {
-			break
-		}
-		ci.Game.CpuPlay()
-	}
+		return phase == domain.ContractRummyPhaseRoundEnd || phase == domain.ContractRummyPhaseGameEnd || ci.Game.IsHumanTurn()
+	}, ci.Game.CpuPlay)
 }
 
 // RestoreContractRummyInteractor JSON から ContractRummyInteractor を復元する

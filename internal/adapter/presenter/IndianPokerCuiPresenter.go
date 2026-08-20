@@ -17,7 +17,7 @@ type IndianPokerCuiPresenter struct{}
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *IndianPokerCuiPresenter) ActionLogOutput(ip interfaces.IndianPokerGame) string {
-	return actionLogOutputText(ip)
+	return actionLogOutputTextForSeats[*domain.IndianPokerPlayer](ip)
 }
 
 // Output renders the current game state for the active locale (#1699).

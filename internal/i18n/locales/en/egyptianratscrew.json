@@ -33,5 +33,6 @@
   "responderCpu": "CPU",
   "chanceTrigger": "Triggered by: {{card}}",
   "difficultyRequired": "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).",
-  "difficultyInvalid": "Invalid CPU difficulty: %s. Please enter 0-2."
+  "difficultyInvalid": "Invalid CPU difficulty: %s. Please enter 0-2.",
+  "helpExampleStep": "  s                    turn the next card"
 }

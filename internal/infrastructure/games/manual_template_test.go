@@ -3,6 +3,9 @@ package games_test
 import (
 	"encoding/json"
 	"fmt"
+	"go/ast"
+	"go/parser"
+	"go/token"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -535,6 +538,13 @@ var manualUniversalCommands = map[string]bool{
 // a literal used for something else would pass -- because the alternative
 // (parsing each controller's switch) breaks on the games whose arguments are
 // matched in a nested switch.
+//
+// Since #5375 a controller may hand its whole command set to a shared helper
+// (execSolitaireCui takes the six tableau-solitaire games), which moves the
+// literals out of the controller file and made this guard report all six as
+// documenting commands they "never receive". So the literals of a helper the
+// controller calls count as the controller's own -- delegation does not change
+// which commands reach the dispatcher.
 func TestManualCommandsAreDispatchable(t *testing.T) {
 	src, err := os.ReadFile(filepath.Join(repoRoot, "internal/infrastructure/ui/GameManager.go"))
 	if err != nil {
@@ -549,6 +559,8 @@ func TestManualCommandsAreDispatchable(t *testing.T) {
 			"fix manualBindCuiRe rather than trusting a clean run", len(owner), len(games.All()))
 	}
 
+	helperLiterals := manualControllerHelperLiterals(t)
+
 	checked := 0
 	for _, g := range games.All() {
 		typ, ok := owner[g.Name]
@@ -559,10 +571,13 @@ func TestManualCommandsAreDispatchable(t *testing.T) {
 		if err != nil {
 			continue
 		}
-		literals := map[string]bool{}
-		for _, q := range manualGoStringRe.FindAllString(string(ctl), -1) {
-			if s, err := strconv.Unquote(q); err == nil {
-				literals[s] = true
+		literals := manualStringLiterals(string(ctl))
+		for name, lits := range helperLiterals {
+			if !strings.Contains(string(ctl), name) {
+				continue
+			}
+			for lit := range lits {
+				literals[lit] = true
 			}
 		}
 		rel := filepath.Join("docs/manual/cui", g.Name+".md")
@@ -695,4 +710,66 @@ func TestManualGoStringReSurvivesEscapes(t *testing.T) {
 	if !slices.Contains(got, "take") || !slices.Contains(got, "t") {
 		t.Errorf("lost a literal after an escaped one: %v", got)
 	}
+}
+
+// manualStringLiterals returns every Go string literal in src.
+func manualStringLiterals(src string) map[string]bool {
+	out := map[string]bool{}
+	for _, q := range manualGoStringRe.FindAllString(src, -1) {
+		if s, err := strconv.Unquote(q); err == nil {
+			out[s] = true
+		}
+	}
+	return out
+}
+
+// manualControllerHelperLiterals maps each top-level function declared in a
+// *_helper.go of internal/adapter/controller to the string literals in its
+// body, so a controller that delegates its dispatch to one of them still
+// accounts for the commands that helper accepts.
+//
+// Per function rather than per file: a whole-file union would let any manual
+// document any token mentioned anywhere in the helper file, which is looser
+// than this guard is anywhere else.
+func manualControllerHelperLiterals(t *testing.T) map[string]map[string]bool {
+	t.Helper()
+	dir := filepath.Join(repoRoot, "internal/adapter/controller")
+	paths, err := filepath.Glob(filepath.Join(dir, "*_helper.go"))
+	if err != nil || len(paths) == 0 {
+		t.Fatalf("no *_helper.go found under %s (err=%v) -- the delegation lookup would silently do nothing", dir, err)
+	}
+	out := map[string]map[string]bool{}
+	for _, path := range paths {
+		data, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatalf("read %s: %v", path, err)
+		}
+		fset := token.NewFileSet()
+		file, err := parser.ParseFile(fset, path, data, 0)
+		if err != nil {
+			t.Fatalf("parse %s: %v", path, err)
+		}
+		for _, decl := range file.Decls {
+			fn, ok := decl.(*ast.FuncDecl)
+			if !ok || fn.Body == nil {
+				continue
+			}
+			lits := map[string]bool{}
+			ast.Inspect(fn.Body, func(n ast.Node) bool {
+				if lit, ok := n.(*ast.BasicLit); ok && lit.Kind == token.STRING {
+					if s, err := strconv.Unquote(lit.Value); err == nil {
+						lits[s] = true
+					}
+				}
+				return true
+			})
+			if len(lits) > 0 {
+				out[fn.Name.Name] = lits
+			}
+		}
+	}
+	if len(out) == 0 {
+		t.Fatal("no helper function contributed a string literal -- the AST walk broke")
+	}
+	return out
 }

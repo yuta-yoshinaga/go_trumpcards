@@ -40,5 +40,8 @@
   "hintCallSuitAlone": "[HINT: call {{suit}} (go alone) ({{reason}})]",
   "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
   "hintReasonDiscardWeakest": "discard the weakest card",
-  "sittingOut": " 💤(sitting out)"
+  "sittingOut": " 💤(sitting out)",
+  "helpExamplePlay": "  p 0                  play hand card 0",
+  "helpHint": "  h                    show a hint",
+  "hintScore": "  Hand strength: {{score}} (order up at {{orderUp}}+, go alone at {{goAlone}}+)"
 }

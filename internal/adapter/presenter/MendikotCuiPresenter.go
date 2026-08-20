@@ -105,6 +105,11 @@ func (p *MendikotCuiPresenter) Output(m interfaces.MendikotGame, lastErr error) 
 		currentIdx := m.GetCurrentPlayerIdx()
 		sb.WriteString(i18n.Tf("mendikot.promptCurrentPlayer",
 			"name", cuiPlayerName(m.GetPlayer(currentIdx), currentIdx)) + "\n")
+		// **切り札は宣言ではなく事故で決まる** (#5755)。フォローできない
+		// 手番はハンド全体を左右する一度きりの選択なのに、警告が無かった。
+		if m.IsHumanTurn() && m.WillSetTrump(currentIdx) {
+			sb.WriteString(color.Yellow(i18n.T("mendikot.warnSetsTrump")) + "\n")
+		}
 		sb.WriteString(i18n.T("mendikot.promptPlay") + "\n")
 	})
 }
@@ -147,5 +152,5 @@ var mendikotHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *MendikotCuiPresenter) ActionLogOutput(m interfaces.MendikotGame) string {
-	return actionLogOutputText(m)
+	return actionLogOutputTextForSeats[*domain.MendikotPlayer](m)
 }

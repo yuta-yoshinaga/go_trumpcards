@@ -69,7 +69,7 @@ func oasisPokerDispatch(bc *baseController, w http.ResponseWriter, oi usecase.Oa
 	case "f", "fold":
 		bc.writePresenterResponse(w, oi.Fold())
 	default:
-		return dispatchResetAndLog(param.Command, bc, w, oi.Reset, oi.ActionLog)
+		return dispatchResetHintAndLog(param.Command, bc, w, oi.Reset, oi.Hint, oi.ActionLog)
 	}
 	return true
 }

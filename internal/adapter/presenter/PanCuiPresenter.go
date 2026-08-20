@@ -37,6 +37,8 @@ func panPlayerStr(player *domain.PanPlayer, i int) string {
 		"round", strconv.Itoa(player.GetRoundScore()),
 		"chips", strconv.Itoa(player.GetChips()),
 		"melded", strconv.Itoa(player.GetMeldedCardCount()),
+		// 目標枚数を添えないと、メルド数だけ見ても勝ちまでの距離が分からない。
+		"goal", strconv.Itoa(domain.PanWinMeldCount),
 		"cards", strconv.Itoa(player.GetCardsSize())) + "\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
 		b.WriteString(cuiIndexedCardListStr(player) + "\n")
@@ -58,7 +60,8 @@ func (p *PanCuiPresenter) Output(g interfaces.PanGame, lastErr error) string {
 		b.WriteString(i18n.Tf("pan.header",
 			"round", strconv.Itoa(g.GetRoundNumber()),
 			"total", strconv.Itoa(g.GetTargetRounds()),
-			"stock", strconv.Itoa(g.GetDrawPileCount())) + "\n")
+			"stock", strconv.Itoa(g.GetDrawPileCount()),
+			"goal", strconv.Itoa(domain.PanWinMeldCount)) + "\n")
 
 		if top := g.GetDiscardTop(); top != nil {
 			b.WriteString(i18n.Tf("pan.discardLine", "card", cuiCardStr(top)) + "\n")
@@ -103,5 +106,5 @@ func (p *PanCuiPresenter) Output(g interfaces.PanGame, lastErr error) string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *PanCuiPresenter) ActionLogOutput(g interfaces.PanGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.PanPlayer](g)
 }

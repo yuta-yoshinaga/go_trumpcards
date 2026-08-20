@@ -20,6 +20,7 @@ function baseState(overrides: Partial<EgyptianRatscrewResponse> = {}): EgyptianR
     ],
     cpuDifficulty: 1,
     chanceRemaining: 0,
+    faceChances: { jack: 1, queen: 2, king: 3, ace: 4 },
     chanceFromIdx: -1,
     pendingKind: 0,
     pendingDeadlineMs: 0,

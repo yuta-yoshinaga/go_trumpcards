@@ -4,6 +4,7 @@ package controller
 
 import (
 	"math"
+	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
@@ -31,13 +32,13 @@ func (oc *OasisPokerCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bet":
-				ante, errMsg, ok := cuiutil.ParseIntArg(args, "Ante amount is required.", "Invalid ante amount. Please enter a number.", 1, math.MaxInt)
+				ante, errMsg, ok := cuiutil.ParseIntArgKeys(args, "anteAmountRequired", "invalidAnteAmount", 1, math.MaxInt)
 				if !ok {
 					return errMsg, true
 				}
 				jackpot := 0
 				if len(args) > 1 {
-					jackpot, errMsg, ok = cuiutil.ParseIntArg(args[1:], "", "Invalid jackpot amount.", 0, math.MaxInt)
+					jackpot, errMsg, ok = cuiutil.ParseIntArgKeys(args[1:], "", "invalidJackpotAmount", 0, math.MaxInt)
 					if !ok {
 						return errMsg, true
 					}
@@ -45,7 +46,13 @@ func (oc *OasisPokerCuiController) Exec(command string) string {
 				return oc.oi.Bet(ante, jackpot), true
 			case "e", "exchange":
 				indices, skipped := cuiutil.ParseBoundedIntSlice(args, 0, 4)
-				return cuiutil.PrependSkippedWarning(oc.oi.Exchange(indices), skipped), true
+				// Refuse before playing. PrependSkippedWarning ran the move first and
+				// put the warning above the new board, so a mistyped index was dropped
+				// and the remaining ones played as a different, legal move (issue #5390).
+				if len(skipped) > 0 {
+					return invalidArg("invalidCardIndex", "val", strings.Join(skipped, ", ")), true
+				}
+				return oc.oi.Exchange(indices), true
 			case "s", "stand":
 				return oc.oi.Stand(), true
 			case "p", "play":

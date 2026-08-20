@@ -233,3 +233,67 @@ describe('GongZhuPage', () => {
     await waitFor(() => expect(document.querySelectorAll('[aria-disabled="true"]').length).toBe(1));
   });
 });
+
+// #5630: ラウンド終了時に「なぜその点なのか」を出す。
+describe('GongZhuPage score breakdown', () => {
+  it('shows the breakdown at round end', async () => {
+    mockExec.mockResolvedValue(
+      makeGongZhuState({
+        phase: 3, // ROUND_END
+        scoreBreakdowns: [
+          {
+            heartCount: 2,
+            heartsSum: -90,
+            allHearts: false,
+            aceExposed: false,
+            hasPig: true,
+            pigExposed: false,
+            hasSheep: false,
+            sheepExposed: false,
+            hasDoubler: false,
+            doublerMultiplier: 0,
+            doublerStandalone: 0,
+            subtotal: -190,
+            total: -190,
+          },
+        ],
+      }),
+    );
+    renderWithProviders(<GongZhuPage />);
+
+    const panel = await screen.findByTestId('gz-score-breakdown');
+    expect(panel).toHaveTextContent('猪 (♠Q): -100');
+    expect(panel).toHaveTextContent('合計: -190');
+  });
+
+  // プレイ中は出さない。未確定の数字を並べても読めない。
+  it('shows nothing during play', async () => {
+    // **内訳を渡した上で**プレイ中を見る。渡さないと、フェーズ判定が消えていても
+    // 「そもそもデータが無いから出ない」で通ってしまう。
+    mockExec.mockResolvedValue(
+      makeGongZhuState({
+        scoreBreakdowns: [
+          {
+            heartCount: 2,
+            heartsSum: -90,
+            allHearts: false,
+            aceExposed: false,
+            hasPig: false,
+            pigExposed: false,
+            hasSheep: false,
+            sheepExposed: false,
+            hasDoubler: false,
+            doublerMultiplier: 0,
+            doublerStandalone: 0,
+            subtotal: -90,
+            total: -90,
+          },
+        ],
+      }),
+    );
+    renderWithProviders(<GongZhuPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    expect(screen.queryByTestId('gz-score-breakdown')).not.toBeInTheDocument();
+  });
+});

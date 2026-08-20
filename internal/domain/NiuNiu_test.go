@@ -597,8 +597,8 @@ func TestNiuNiu_ActionLog(t *testing.T) {
 
 func TestNiuNiu_DisplayHelpers(t *testing.T) {
 	n := newTestNiuNiu()
-	if n.GetRankLabel(NiuNiuRankNiuNiu) != "牛牛" {
-		t.Error("GetRankLabel should mirror NiuNiuRankLabel")
+	if n.GetBankerRankKey() != "" {
+		t.Error("GetBankerRankKey should be empty before the banker hand exists")
 	}
 	if n.GetMultiplier(NiuNiuRankNiuNiu) != 3 {
 		t.Error("GetMultiplier should mirror niuNiuMultiplier")
@@ -784,6 +784,35 @@ func TestNiuNiu_EveryDealtHandIsSelfConsistent(t *testing.T) {
 			}
 			if sum%10 != 0 {
 				t.Fatalf("combo sums to %d, not a multiple of ten", sum)
+			}
+		}
+	}
+}
+
+// 親の格は表示文字列ではなくキーで運ぶ。
+//
+// settle() が "親: 牛牛" という日本語を組み立てて presenter がそれをそのまま流していたため、
+// 英語ロケールでも日本語が出ていた (#5567)。ロケールに依存しない識別子を返し、
+// 文言の組み立ては各 presenter の i18n に任せる。
+func TestNiuNiuRankKey_IsLocaleIndependent(t *testing.T) {
+	cases := []struct {
+		rank NiuNiuRank
+		want string
+	}{
+		{NiuNiuRankNone, "none"},
+		{NiuNiuRankNiuNiu, "niuniu"},
+		{NiuNiuRank(1), "n1"},
+		{NiuNiuRank(9), "n9"},
+	}
+	for _, c := range cases {
+		got := NiuNiuRankKey(c.rank)
+		if got != c.want {
+			t.Errorf("NiuNiuRankKey(%v) = %q, want %q", c.rank, got, c.want)
+		}
+		// キーに日本語が混ざっていたら、それは表示文字列であってキーではない。
+		for _, r := range got {
+			if r >= 128 {
+				t.Errorf("キーに非ASCIIが混ざっている: %q", got)
 			}
 		}
 	}

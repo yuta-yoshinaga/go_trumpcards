@@ -38,13 +38,13 @@ func (c *EstimationCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "t", "trump":
-				return cuiutil.WithParsedInt(args, "Suit is required.", "Invalid suit: %s.",
+				return cuiutil.WithParsedIntKeys(args, "suitRequired", "invalidSuit",
 					domain.CardDesignSpade, domain.CardDesignMax, c.ei.SelectTrump)
 			case "b", "bid":
-				return cuiutil.WithParsedInt(args, "Bid is required.", "Invalid bid: %s.",
+				return cuiutil.WithParsedIntKeys(args, "bidRequired", "invalidBid",
 					0, domain.EstimationHandSize, c.ei.Bid)
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.ei.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.ei.Play)
 			case "n", "next":
 				return c.ei.NextRound(), true
 			case "g", "giveup":

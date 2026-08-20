@@ -110,12 +110,12 @@ func TestEcarteCuiController_Exec(t *testing.T) {
 
 	t.Run("play missing index", func(t *testing.T) {
 		c := controller.NewEcarteCuiController(newMock())
-		assert.Contains(t, c.Exec("p"), "Card index is required")
+		assert.Contains(t, c.Exec("p"), msgCardIndexRequired())
 	})
 
 	t.Run("play invalid index", func(t *testing.T) {
 		c := controller.NewEcarteCuiController(newMock())
-		assert.Contains(t, c.Exec("p abc"), "Invalid card index")
+		assert.Contains(t, c.Exec("p abc"), msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("next short", func(t *testing.T) {
@@ -175,5 +175,14 @@ func TestEcarteCuiController_Exec(t *testing.T) {
 		got := c.Exec("xyz")
 		assert.NotEqual(t, "bye.", got)
 		assert.NotEmpty(t, got)
+	})
+
+	// **落として残りで実行しない。** 打ち間違いを捨てると、プレイヤーが
+	// 選んでいない組み合わせが実行される (issue #5390)。
+	t.Run("refuses a mistyped index", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewEcarteCuiController(m)
+		assert.Contains(t, c.Exec("d 0 zz"), msgInvalidCardIndexPrefix(),
+			"a mistyped index must be refused, not dropped")
 	})
 }

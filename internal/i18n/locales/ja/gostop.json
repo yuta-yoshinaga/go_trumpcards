@@ -10,6 +10,14 @@
   "playerLine": "{{name}}: 手札{{hand}}枚  取り札: {{captured}}  得点: {{score}}  ゴー: {{go}}  役: {{breakdown}}",
   "promptPlay": "手番: {{name}}",
   "promptDecision": "{{points}}点に到達。go（ゴー）で続行、st（ストップ）で確定。",
+  "previewTitle": "あと少しで成立する役: {{items}}",
+  "previewItem": "{{name}} あと{{remaining}}枚",
+  "previewSamgwang": "三光",
+  "previewSagwang": "四光",
+  "previewOgwang": "五光",
+  "previewTti": "띠(5枚)",
+  "previewYeol": "열끗(5枚)",
+  "previewPi": "피(10枚)",
   "promptGameEnd": "ゲーム終了。nr で新しいゲームを始めます。",
   "promptHelp": "p <h> [f] でプレイ（f は 2 枚一致時の場札）。go=ゴー, st=ストップ, nr=次へ",
   "roundWin": "{{name}} がラウンド勝利！ {{score}} → {{total}}点（박×{{bak}}: {{bakinfo}}）",
@@ -32,5 +40,6 @@
   "bak.gwang": "光박",
   "bak.pi": "피박",
   "bak.go": "고박",
-  "categoryCounts": "  獲得内訳: 光{{gwang}} 열끗{{yeol}} 띠{{tti}} 피{{pi}}"
+  "categoryCounts": "  獲得内訳: 光{{gwang}} 열끗{{yeol}} 띠{{tti}} 피{{pi}}",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
 }

@@ -49,24 +49,22 @@ func (c *TrogguCuiController) Exec(command string) string {
 			case "pass":
 				return c.ti.Pass(), true
 			case "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.",
-					"Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.ti.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired",
+					"invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.ti.Play)
 			case "n", "next":
 				return c.ti.NextTrick(), true
 			case "nr", "nextround":
 				return c.ti.NextRound(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args,
-					"CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).",
-					"Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args,
+					"cpuDifficultyRequired",
+					"invalidCpuDifficulty", 0, 2, func(v int) string {
 						cfg := c.ti.GetConfig()
 						cfg.CpuDifficulty = domain.TrogguCpuDifficulty(v)
 						return c.ti.ResetWithConfig(cfg)
 					})
 			case "st", "setdeals":
-				return cuiutil.WithParsedInt(args,
-					"Number of deals is required (1-12).",
-					"Invalid number of deals: %s. Please enter 1-12.",
+				return cuiutil.WithParsedIntKeys(args, "numberOfDealsRequired112", "invalidNumberOfDeals112",
 					domain.TrogguMinDeals, domain.TrogguMaxDeals, func(v int) string {
 						cfg := c.ti.GetConfig()
 						cfg.TargetDeals = v
@@ -82,11 +80,11 @@ func (c *TrogguCuiController) Exec(command string) string {
 // execBid bid サブコマンドを解釈する。
 func (c *TrogguCuiController) execBid(args []string) (string, bool) {
 	if len(args) == 0 {
-		return "Bid is required (trois, solo, piccolo or misere).", true
+		return invalidArg("bidRequiredTrois"), true
 	}
 	bid := trogguParseBid(args[0])
 	if bid == domain.TrogguBidPass {
-		return "Invalid bid: " + args[0] + ". Please enter trois, solo, piccolo or misere.", true
+		return invalidArg("invalidBidTrois", "val", args[0]), true
 	}
 	return c.ti.Bid(bid), true
 }

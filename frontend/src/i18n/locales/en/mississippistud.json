@@ -73,5 +73,6 @@
     "raiseBig": "Strong made hand — 3x recommended",
     "raiseSmall": "Marginal hand — 1x recommended",
     "fold": "Weak hand — Fold recommended"
-  }
+  },
+  "payoutMultiplier": "pays {{multiplier}}:1"
 }

@@ -218,7 +218,10 @@ function RoyalCotillionPageContent() {
               type="button"
               onClick={() => game.handleSelectSource(slotZone)}
               disabled={!isPlaying || loading}
-              aria-label={cardAlt(card)}
+              // **枠番号は視覚だけで、読み上げには乗っていなかった** (#5742)。
+              // 16 枠 4 リザーブを番号で指定する設計なので、カード名だけでは
+              // フォーカスするたびに前後の見た目と突き合わせる羽目になる。
+              aria-label={t('slotCardAriaLabel', { slot, card: cardAlt(card) })}
               aria-pressed={isSourceSelected('tableau', slot)}
               draggable={isPlaying && !loading}
               onDragStart={dnd.handleDragStart(slotZone)}
@@ -265,7 +268,10 @@ function RoyalCotillionPageContent() {
                     type="button"
                     onClick={() => isTop && game.handleSelectSource(reserveZone)}
                     disabled={!isPlaying || loading || !isTop}
-                    aria-label={cardAlt(card)}
+                    aria-label={t(isTop ? 'reserveCardAriaLabel' : 'reserveBuriedAriaLabel', {
+                      pile: pileIdx,
+                      card: cardAlt(card),
+                    })}
                     aria-pressed={isTop ? isSourceSelected('reserve', pileIdx) : undefined}
                     draggable={isTop && isPlaying && !loading}
                     onDragStart={dnd.handleDragStart(reserveZone)}
@@ -438,7 +444,12 @@ function RoyalCotillionPageContent() {
               {Array.from({ length: RESERVE_PILES }, (_, i) => i).map(renderReserve)}
             </div>
 
-            <div data-tutorial="cg-hint-display">
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-tutorial="cg-hint-display" data-testid="cg-hint-live" role="status" aria-live="polite">
               {hint && (
                 <div className="text-ds-warning text-sm mb-2 mt-3">
                   {t('hintAvailable')}: {formatHintZone(t, hint.fromZone, hint.fromIdx)} →{' '}

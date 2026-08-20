@@ -29,13 +29,13 @@ func (mc *MississippiStudCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bet":
-				amount, errMsg, ok := cuiutil.ParseIntArg(args, "Bet amount is required.", "Invalid bet amount. Please enter a number.", 1, math.MaxInt)
+				amount, errMsg, ok := cuiutil.ParseIntArgKeys(args, "betAmountRequired", "invalidBetAmount", 1, math.MaxInt)
 				if !ok {
 					return errMsg, true
 				}
 				return mc.ci.Bet(amount), true
 			case "p", "play":
-				mult, errMsg, ok := cuiutil.ParseIntArg(args, "Multiplier (1, 2 or 3) is required.", "Invalid multiplier. Please enter a number.", 1, 3)
+				mult, errMsg, ok := cuiutil.ParseIntArgKeys(args, "multiplier12Or3Required", "invalidMultiplierANumber", 1, 3)
 				if !ok {
 					return errMsg, true
 				}

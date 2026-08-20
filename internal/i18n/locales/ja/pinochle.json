@@ -51,5 +51,9 @@
   "promptPlay": "{{name}}の番です。(play <i>)",
   "legalPlayLegend": "合法手: {{indices}}",
   "promptTrickEnd": "トリック終了。(next で次のトリックへ)",
-  "promptRoundEnd": "ラウンド終了。(nextround で次のラウンドへ)"
+  "promptRoundEnd": "ラウンド終了。(nextround で次のラウンドへ)",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
+  "helpHint": "  h                    助言を表示",
+  "meldTableHeader": "メルド早見表:\n  ",
+  "meldTableEntry": "{{type}} {{points}}"
 }

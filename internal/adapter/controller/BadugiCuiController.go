@@ -4,6 +4,7 @@ package controller
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -50,7 +51,13 @@ func (bcc *BadugiCuiController) Exec(command string) string {
 			switch cmd {
 			case "e", "exchange":
 				indices, skipped := cuiutil.ParseBoundedIntSlice(args, 0, domain.BadugiHandSize-1)
-				return cuiutil.PrependSkippedWarning(bcc.bi.Exchange(indices), skipped), true
+				// Refuse before playing. PrependSkippedWarning ran the move first and
+				// put the warning above the new board, so a mistyped index was dropped
+				// and the remaining ones played as a different, legal move (issue #5390).
+				if len(skipped) > 0 {
+					return invalidArg("invalidCardIndex", "val", strings.Join(skipped, ", ")), true
+				}
+				return bcc.bi.Exchange(indices), true
 			case "s", "stand":
 				return bcc.bi.Stand(), true
 			case "b", "bet":
@@ -68,13 +75,13 @@ func (bcc *BadugiCuiController) Exec(command string) string {
 			case "a", "allin":
 				return bcc.bi.Action(domain.BadugiActionAllIn, 0, 0), true
 			case "bl", "bettinglimit":
-				return cuiutil.WithParsedInt(args, "Betting limit type is required (0=Fixed, 1=PotLimit, 2=NoLimit).", "Invalid betting limit: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "bettingLimitTypeRequired0Fixed1Potlimit2Nolimit", "invalidBettingLimit02", 0, 2, func(v int) string {
 					cfg := bcc.bi.GetConfig()
 					cfg.BettingLimit = domain.BettingLimitType(v)
 					return bcc.bi.ResetWithConfig(cfg, nil)
 				})
 			case "scc", "setcpucount":
-				return cuiutil.WithParsedInt(args, "CPU player count is required.", "Invalid CPU player count: %s. Please enter 1-3.", domain.BadugiCpuCountMin, domain.BadugiCpuCountMax, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuPlayerCountRequired", "invalidCpuPlayerCount13", domain.BadugiCpuCountMin, domain.BadugiCpuCountMax, func(v int) string {
 					cfg := bcc.bi.GetConfig()
 					cfg.CpuCount = v
 					return bcc.bi.ResetWithConfig(cfg, nil)
@@ -85,7 +92,7 @@ func (bcc *BadugiCuiController) Exec(command string) string {
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 0 || v > 1 {
-					return i18n.Tf("invalidMetaAI", "val", args[0]), true
+					return invalidArg("invalidMetaAI", "val", args[0]), true
 				}
 				cfg := bcc.bi.GetConfig()
 				cfg.CpuMetaAI = v == 1

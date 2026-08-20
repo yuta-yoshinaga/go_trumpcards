@@ -28,6 +28,10 @@ func setupPitchWebMock() *interfaces.MockPitchGame {
 	m.On("GetBidPlayerIdx").Return(0)
 	m.On("GetWinnerIdx").Return(-1)
 	m.On("GetLeadPlayerIdx").Return(0)
+	m.On("GetRoundBreakdown").Return(domain.PitchRoundBreakdown{
+		High: domain.PitchNoScorer, Low: domain.PitchNoScorer,
+		Jack: domain.PitchNoScorer, Game: domain.PitchNoScorer,
+	}).Maybe()
 	m.On("GetConfig").Return(domain.DefaultPitchConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	m.On("GetValidPlayIndices", 0).Return([]int{0, 1})
@@ -152,6 +156,10 @@ func setupPitchWebMockCustom(phase domain.PitchPhase, trickNumber int, log []*do
 	m.On("GetBidPlayerIdx").Return(0)
 	m.On("GetWinnerIdx").Return(-1)
 	m.On("GetLeadPlayerIdx").Return(0)
+	m.On("GetRoundBreakdown").Return(domain.PitchRoundBreakdown{
+		High: domain.PitchNoScorer, Low: domain.PitchNoScorer,
+		Jack: domain.PitchNoScorer, Game: domain.PitchNoScorer,
+	}).Maybe()
 	m.On("GetConfig").Return(domain.DefaultPitchConfig())
 	m.On("GetActionLog").Return(log)
 	m.On("GetValidPlayIndices", 0).Return([]int{0})

@@ -25,6 +25,7 @@ import { useDiplomatGame } from '../hooks/useDiplomatGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
+import { badgeErrorColors } from '../styles/badgeStyles';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { DiplomatMoveZone, DiplomatResponse } from '../types/card';
@@ -201,6 +202,10 @@ function DiplomatPageContent() {
               cards.map((card, cardIdx) => {
                 // Only the top card is playable; the ones under it are context.
                 const isTop = cardIdx === cards.length - 1;
+                // **A で止まった列はもう受け皿にならない** (#5741)。
+                // 判定はドメイン (`DiplomatIsDeadEndTop`) が返す。ここで
+                // 作り直すと、置ける規則が変わったときに片方だけ古くなる。
+                const isDeadEnd = isTop && state.tableauDeadEnd?.[pileIdx] === true;
                 return (
                   <div
                     key={`c-${pileIdx.toString()}-${cardIdx.toString()}`}
@@ -217,12 +222,13 @@ function DiplomatPageContent() {
                         }
                       }}
                       disabled={!isPlaying || loading || (!isTop && !selectedSource)}
-                      aria-label={cardAlt(card)}
+                      aria-label={isDeadEnd ? t('deadEndAria', { card: cardAlt(card) }) : cardAlt(card)}
+                      title={isDeadEnd ? t('deadEndTitle') : undefined}
                       aria-pressed={isTop ? isSourceSelected('tableau', pileIdx) : undefined}
                       draggable={isTop && isPlaying && !loading}
                       onDragStart={dnd.handleDragStart(pileZone)}
                       onDragEnd={dnd.handleDragEnd}
-                      className={`p-0 border-0 bg-transparent w-full rounded cursor-pointer ${focusRingWhite} ${isTop && isSourceSelected('tableau', pileIdx) ? 'ring-2 ring-ds-warning' : ''}`}
+                      className={`relative p-0 border-0 bg-transparent w-full rounded cursor-pointer ${focusRingWhite} ${isTop && isSourceSelected('tableau', pileIdx) ? 'ring-2 ring-ds-warning' : ''}`}
                     >
                       <AnimatedCard
                         card={card}
@@ -231,6 +237,14 @@ function DiplomatPageContent() {
                         style={{ width: '100%' }}
                         wrapperClassName="block w-full"
                       />
+                      {isDeadEnd && (
+                        <span
+                          data-testid={`diplomat-dead-end-${pileIdx.toString()}`}
+                          className={`absolute inset-x-0 bottom-0 rounded-b text-[10px] leading-tight text-center ${badgeErrorColors}`}
+                        >
+                          {t('deadEndBadge')}
+                        </span>
+                      )}
                     </button>
                   </div>
                 );
@@ -379,7 +393,12 @@ function DiplomatPageContent() {
               {Array.from({ length: TABLEAU_PILES }, (_, i) => i).map(renderPile)}
             </div>
 
-            <div data-tutorial="cg-hint-display">
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-tutorial="cg-hint-display" data-testid="cg-hint-live" role="status" aria-live="polite">
               {hint && (
                 <div className="text-ds-warning text-sm mb-2 mt-3">
                   {t('hintAvailable')}: {formatHintZone(t, hint.fromZone, hint.fromIdx)} →{' '}

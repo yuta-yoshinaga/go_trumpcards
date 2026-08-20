@@ -53,16 +53,16 @@ func TestCallBreakCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "Bid", 5)
 	})
 	t.Run("bid no args", func(t *testing.T) {
-		assert.Contains(t, controller.NewCallBreakCuiController(newMock()).Exec("b"), "Bid value is required")
+		assert.Contains(t, controller.NewCallBreakCuiController(newMock()).Exec("b"), msgStem("bidValueRequired113"))
 	})
 	t.Run("bid invalid arg", func(t *testing.T) {
-		assert.Contains(t, controller.NewCallBreakCuiController(newMock()).Exec("b abc"), "Invalid bid value")
+		assert.Contains(t, controller.NewCallBreakCuiController(newMock()).Exec("b abc"), msgStem("invalidBidValue"))
 	})
 	t.Run("bid below min", func(t *testing.T) {
-		assert.Contains(t, controller.NewCallBreakCuiController(newMock()).Exec("b 0"), "Invalid bid value: 0")
+		assert.Contains(t, controller.NewCallBreakCuiController(newMock()).Exec("b 0"), msgKey("invalidBidValue", "val", "0"))
 	})
 	t.Run("bid above max", func(t *testing.T) {
-		assert.Contains(t, controller.NewCallBreakCuiController(newMock()).Exec("b 14"), "Invalid bid value: 14")
+		assert.Contains(t, controller.NewCallBreakCuiController(newMock()).Exec("b 14"), msgKey("invalidBidValue", "val", "14"))
 	})
 
 	t.Run("play valid", func(t *testing.T) {
@@ -76,10 +76,10 @@ func TestCallBreakCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "Play", 5)
 	})
 	t.Run("play no args", func(t *testing.T) {
-		assert.Contains(t, controller.NewCallBreakCuiController(newMock()).Exec("p"), "Card index is required")
+		assert.Contains(t, controller.NewCallBreakCuiController(newMock()).Exec("p"), msgCardIndexRequired())
 	})
 	t.Run("play invalid arg", func(t *testing.T) {
-		assert.Contains(t, controller.NewCallBreakCuiController(newMock()).Exec("p abc"), "Invalid card index")
+		assert.Contains(t, controller.NewCallBreakCuiController(newMock()).Exec("p abc"), msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("next n", func(t *testing.T) {
@@ -101,10 +101,10 @@ func TestCallBreakCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "ResetWithConfig", expected)
 	})
 	t.Run("setdifficulty invalid", func(t *testing.T) {
-		assert.Contains(t, controller.NewCallBreakCuiController(newMock()).Exec("sd 5"), "Invalid CPU difficulty")
+		assert.Contains(t, controller.NewCallBreakCuiController(newMock()).Exec("sd 5"), msgInvalidCpuDifficultyPrefix())
 	})
 	t.Run("setdifficulty no args", func(t *testing.T) {
-		assert.Contains(t, controller.NewCallBreakCuiController(newMock()).Exec("sd"), "required")
+		assert.Contains(t, controller.NewCallBreakCuiController(newMock()).Exec("sd"), msgCpuDifficultyRequired())
 	})
 
 	t.Run("setrounds valid", func(t *testing.T) {
@@ -115,7 +115,7 @@ func TestCallBreakCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "ResetWithConfig", expected)
 	})
 	t.Run("setrounds zero is invalid", func(t *testing.T) {
-		assert.Contains(t, controller.NewCallBreakCuiController(newMock()).Exec("sr 0"), "Invalid round count")
+		assert.Contains(t, controller.NewCallBreakCuiController(newMock()).Exec("sr 0"), msgStem("invalidRoundCount1OrMore"))
 	})
 	t.Run("setrounds long form", func(t *testing.T) {
 		m := newMock()
@@ -125,7 +125,7 @@ func TestCallBreakCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "ResetWithConfig", expected)
 	})
 	t.Run("setrounds no args", func(t *testing.T) {
-		assert.Contains(t, controller.NewCallBreakCuiController(newMock()).Exec("sr"), "required")
+		assert.True(t, msgRejected(controller.NewCallBreakCuiController(newMock()).Exec("sr")))
 	})
 
 	t.Run("log", func(t *testing.T) {

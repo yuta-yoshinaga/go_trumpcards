@@ -86,27 +86,37 @@ func TestHeartsCuiController_Exec(t *testing.T) {
 		assert.Contains(t, result, "exactly 3")
 	})
 
-	t.Run("pass with non-numeric args shows warning", func(t *testing.T) {
+	t.Run("pass refuses non-numeric args", func(t *testing.T) {
 		c := controller.NewHeartsCuiController(newMock())
 		result := c.Exec("pass a b c")
-		assert.Contains(t, result, "exactly 3")
-		assert.Contains(t, result, "'a'")
+		assert.Contains(t, result, "a")
+		assert.NotContains(t, result, "exactly 3",
+			"the count is only meaningful once every index parsed")
 	})
 
-	t.Run("pass with mixed numeric and non-numeric args shows warning", func(t *testing.T) {
-		c := controller.NewHeartsCuiController(newMock())
-		result := c.Exec("pass 0 a 2")
-		assert.Contains(t, result, "exactly 3")
-		assert.Contains(t, result, "'a'")
-	})
-
-	t.Run("pass with 3 valid and invalid args shows warning", func(t *testing.T) {
+	// **落として数えない。** `pass 0 a 2 3` は a を捨てると 3 枚になり、
+	// プレイヤーが選んでいない組み合わせを渡してしまう (issue #5390)。
+	t.Run("pass refuses a mistyped index instead of dropping it", func(t *testing.T) {
 		m := newMock()
 		c := controller.NewHeartsCuiController(m)
+
+		result := c.Exec("pass 0 a 2 3")
+
+		assert.Contains(t, result, "a")
+		m.AssertNotCalled(t, "Pass", mock.Anything)
+	})
+
+	// This is the case the drop-and-continue behaviour was worst for: `abc` is
+	// discarded, the remaining three happen to be a legal pass, and a hand the
+	// player never chose goes across (issue #5390).
+	t.Run("pass refuses even when the survivors number three", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewHeartsCuiController(m)
+
 		result := c.Exec("pass 0 abc 1 2")
-		assert.Contains(t, result, "'abc'")
-		assert.Contains(t, result, mockOutput)
-		m.AssertCalled(t, "Pass", []int{0, 1, 2})
+
+		assert.Contains(t, result, "abc")
+		m.AssertNotCalled(t, "Pass", mock.Anything)
 	})
 
 	// play
@@ -129,13 +139,13 @@ func TestHeartsCuiController_Exec(t *testing.T) {
 	t.Run("play command p no args", func(t *testing.T) {
 		c := controller.NewHeartsCuiController(newMock())
 		result := c.Exec("p")
-		assert.Contains(t, result, "Card index is required")
+		assert.Contains(t, result, msgCardIndexRequired())
 	})
 
 	t.Run("play command p invalid arg", func(t *testing.T) {
 		c := controller.NewHeartsCuiController(newMock())
 		result := c.Exec("p abc")
-		assert.Contains(t, result, "Invalid card index")
+		assert.Contains(t, result, msgInvalidCardIndexPrefix())
 	})
 
 	// next
@@ -196,25 +206,25 @@ func TestHeartsCuiController_Exec(t *testing.T) {
 	t.Run("setdifficulty no args", func(t *testing.T) {
 		c := controller.NewHeartsCuiController(newMock())
 		result := c.Exec("sd")
-		assert.Contains(t, result, "required")
+		assert.Contains(t, result, msgCpuDifficultyRequired())
 	})
 
 	t.Run("setdifficulty invalid value", func(t *testing.T) {
 		c := controller.NewHeartsCuiController(newMock())
 		result := c.Exec("sd abc")
-		assert.Contains(t, result, "Invalid CPU difficulty")
+		assert.Contains(t, result, msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("setdifficulty negative", func(t *testing.T) {
 		c := controller.NewHeartsCuiController(newMock())
 		result := c.Exec("sd -1")
-		assert.Equal(t, "Invalid CPU difficulty: -1. Please enter 0-2.", result)
+		assert.Equal(t, msgInvalidCpuDifficulty("-1"), result)
 	})
 
 	t.Run("setdifficulty over 2", func(t *testing.T) {
 		c := controller.NewHeartsCuiController(newMock())
 		result := c.Exec("sd 3")
-		assert.Equal(t, "Invalid CPU difficulty: 3. Please enter 0-2.", result)
+		assert.Equal(t, msgInvalidCpuDifficulty("3"), result)
 	})
 
 	// setlimit
@@ -241,25 +251,25 @@ func TestHeartsCuiController_Exec(t *testing.T) {
 	t.Run("setlimit no args", func(t *testing.T) {
 		c := controller.NewHeartsCuiController(newMock())
 		result := c.Exec("sl")
-		assert.Contains(t, result, "required")
+		assert.Contains(t, result, msgPointLimitRequired())
 	})
 
 	t.Run("setlimit invalid value", func(t *testing.T) {
 		c := controller.NewHeartsCuiController(newMock())
 		result := c.Exec("sl abc")
-		assert.Contains(t, result, "Invalid point limit")
+		assert.Contains(t, result, msgInvalidPointLimitPrefix())
 	})
 
 	t.Run("setlimit zero", func(t *testing.T) {
 		c := controller.NewHeartsCuiController(newMock())
 		result := c.Exec("sl 0")
-		assert.Equal(t, "Invalid point limit: 0. Please enter 1 or more.", result)
+		assert.Equal(t, msgInvalidPointLimit("0"), result)
 	})
 
 	t.Run("setlimit negative", func(t *testing.T) {
 		c := controller.NewHeartsCuiController(newMock())
 		result := c.Exec("sl -1")
-		assert.Equal(t, "Invalid point limit: -1. Please enter 1 or more.", result)
+		assert.Equal(t, msgInvalidPointLimit("-1"), result)
 	})
 
 	// log

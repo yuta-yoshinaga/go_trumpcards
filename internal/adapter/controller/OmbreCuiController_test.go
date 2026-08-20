@@ -64,22 +64,22 @@ func TestOmbreCuiController_Exec(t *testing.T) {
 
 	t.Run("bid entrar missing suit", func(t *testing.T) {
 		result := controller.NewOmbreCuiController(newMock()).Exec("bid entrar")
-		assert.Contains(t, result, "Trump suit is required")
+		assert.Contains(t, result, msgStem("trumpSuitRequiredWords"))
 	})
 
 	t.Run("bid entrar invalid suit", func(t *testing.T) {
 		result := controller.NewOmbreCuiController(newMock()).Exec("bid entrar zzz")
-		assert.Contains(t, result, "Invalid trump suit")
+		assert.Contains(t, result, msgStem("invalidTrumpSuitSCHD"))
 	})
 
 	t.Run("bid no args", func(t *testing.T) {
 		result := controller.NewOmbreCuiController(newMock()).Exec("bid")
-		assert.Contains(t, result, "Bid action is required")
+		assert.Contains(t, result, msgStem("bidActionRequiredEntrar"))
 	})
 
 	t.Run("bid invalid", func(t *testing.T) {
 		result := controller.NewOmbreCuiController(newMock()).Exec("bid zzz")
-		assert.Contains(t, result, "Invalid bid action")
+		assert.Contains(t, result, msgStem("invalidBidActionEntrar"))
 	})
 
 	t.Run("play card", func(t *testing.T) {
@@ -91,7 +91,7 @@ func TestOmbreCuiController_Exec(t *testing.T) {
 
 	t.Run("play no args", func(t *testing.T) {
 		result := controller.NewOmbreCuiController(newMock()).Exec("play")
-		assert.Contains(t, result, "Card index is required")
+		assert.Contains(t, result, msgCardIndexRequired())
 	})
 
 	t.Run("next / nextround", func(t *testing.T) {
@@ -114,7 +114,7 @@ func TestOmbreCuiController_Exec(t *testing.T) {
 
 	t.Run("setdifficulty invalid", func(t *testing.T) {
 		result := controller.NewOmbreCuiController(newMock()).Exec("sd 9")
-		assert.Contains(t, result, "Invalid CPU difficulty")
+		assert.Contains(t, result, msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("hint / log", func(t *testing.T) {

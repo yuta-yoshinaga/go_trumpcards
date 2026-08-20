@@ -49,10 +49,9 @@ func TestDeuceToSevenCuiController_Exchange_OutOfRangeSkipped(t *testing.T) {
 	mi := newDeuceToSevenMockInteractor()
 	c := NewDeuceToSevenCuiController(mi)
 	// 2-7 uses 5 cards, valid range 0..4. 5 is skipped, 1 is valid.
-	mi.On("Exchange", []int{1}).Return("exchange ok")
 	result := c.Exec("e 5 1")
-	assert.Contains(t, result, "'5'")
-	assert.Contains(t, result, "exchange ok")
+	assert.Contains(t, result, "5")
+	mi.AssertNotCalled(t, "Exchange", mock.Anything)
 }
 
 func TestDeuceToSevenCuiController_Exchange_NoIndices(t *testing.T) {
@@ -112,7 +111,7 @@ func TestDeuceToSevenCuiController_BettingLimit_NoArg(t *testing.T) {
 	mi := newDeuceToSevenMockInteractor()
 	c := NewDeuceToSevenCuiController(mi)
 	result := c.Exec("bl")
-	assert.Contains(t, result, "Betting limit type is required")
+	assert.Contains(t, result, msgStem("bettingLimitTypeRequired0Fixed1Potlimit2Nolimit"))
 }
 
 func TestDeuceToSevenCuiController_BettingLimit_Valid(t *testing.T) {
@@ -130,7 +129,7 @@ func TestDeuceToSevenCuiController_BettingLimit_Invalid(t *testing.T) {
 	mi := newDeuceToSevenMockInteractor()
 	c := NewDeuceToSevenCuiController(mi)
 	result := c.Exec("bl 7")
-	assert.Contains(t, result, "Invalid betting limit")
+	assert.Contains(t, result, msgStem("invalidBettingLimit02"))
 }
 
 func TestDeuceToSevenCuiController_SetCpuCount(t *testing.T) {
@@ -165,7 +164,7 @@ func TestDeuceToSevenCuiController_MetaAI_Invalid(t *testing.T) {
 	mi := newDeuceToSevenMockInteractor()
 	c := NewDeuceToSevenCuiController(mi)
 	result := c.Exec("mai abc")
-	assert.Equal(t, i18n.Tf("invalidMetaAI", "val", "abc"), result)
+	assert.Equal(t, invalidArg("invalidMetaAI", "val", "abc"), result)
 }
 
 func TestDeuceToSevenCuiController_Log(t *testing.T) {

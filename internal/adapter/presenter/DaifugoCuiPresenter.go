@@ -142,7 +142,7 @@ func (p *DaifugoCuiPresenter) Output(dg interfaces.DaifugoGame, lastErr error) s
 		}
 
 		if lastErr != nil {
-			fmt.Fprintf(b, "%s\n", color.Red(lastErr.Error()))
+			fmt.Fprintf(b, "%s\n", i18n.MarkErrorLine(color.Red(lastErr.Error())))
 		}
 
 		if dg.GetGameEndFlag() {
@@ -178,5 +178,5 @@ func (p *DaifugoCuiPresenter) Output(dg interfaces.DaifugoGame, lastErr error) s
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *DaifugoCuiPresenter) ActionLogOutput(dg interfaces.DaifugoGame) string {
-	return actionLogOutputText(dg)
+	return actionLogOutputTextForSeats[*domain.DaifugoPlayer](dg)
 }

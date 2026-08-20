@@ -35,6 +35,7 @@ function makeState(overrides?: Partial<SetteEMezzoResponse>): SetteEMezzoRespons
     lastResult: '',
     phase: 2,
     targetHalves: 15,
+    cpuStandHalves: 11,
     canHit: true,
     canStand: true,
     canSetMatta: false,

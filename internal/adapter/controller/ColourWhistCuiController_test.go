@@ -37,8 +37,8 @@ func TestColourWhistCuiController_QuitAndReset(t *testing.T) {
 func TestColourWhistCuiController_Play(t *testing.T) {
 	c := controller.NewColourWhistCuiController(newMockColourWhistInteractor())
 	assert.Equal(t, "played 2", c.Exec("p 2"))
-	assert.Contains(t, c.Exec("p"), "required")
-	assert.Contains(t, c.Exec("p abc"), "Invalid card index")
+	assert.Contains(t, c.Exec("p"), msgCardIndexRequired())
+	assert.Contains(t, c.Exec("p abc"), msgInvalidCardIndexPrefix())
 }
 
 // **競れる契約は3つだけ。** troel は配りでしか成立しないので語彙に入れません。
@@ -53,19 +53,19 @@ func TestColourWhistCuiController_Bid(t *testing.T) {
 
 	// **troel は競れない。** 語彙に無いのでパーサが弾きます。
 	out := c.Exec("bid troel")
-	assert.Contains(t, out, "Invalid contract")
-	assert.Contains(t, out, "troel is dealt, not bid")
+	assert.Contains(t, out, msgStem("invalidContractSamen"))
+	assert.Contains(t, out, msgStem("invalidContractSamen"))
 
-	assert.Contains(t, c.Exec("bid"), "Invalid contract")
-	assert.Contains(t, c.Exec("bid nonsense"), "Invalid contract")
+	assert.Contains(t, c.Exec("bid"), msgStem("invalidContractSamen"))
+	assert.Contains(t, c.Exec("bid nonsense"), msgStem("invalidContractSamen"))
 }
 
 func TestColourWhistCuiController_CallAndOthers(t *testing.T) {
 	c := controller.NewColourWhistCuiController(newMockColourWhistInteractor())
 	assert.Equal(t, "called heart", c.Exec("call h"))
 	assert.Equal(t, "called heart", c.Exec("call heart"))
-	assert.Contains(t, c.Exec("call"), "Invalid trump")
-	assert.Contains(t, c.Exec("call x"), "Invalid trump")
+	assert.Contains(t, c.Exec("call"), msgStem("invalidTrumpSCHD"))
+	assert.Contains(t, c.Exec("call x"), msgStem("invalidTrumpSCHD"))
 
 	assert.Equal(t, "next round", c.Exec("next"))
 	assert.Equal(t, "gave up", c.Exec("giveup"))

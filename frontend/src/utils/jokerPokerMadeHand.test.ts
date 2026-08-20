@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Card } from '../types/card';
-import { evaluateJokerPokerMadeHand } from './jokerPokerMadeHand';
+import { evaluateJokerPokerMadeHand, evaluateVideoPokerMadeHand } from './jokerPokerMadeHand';
+import { videoPokerPayoutRows } from './videoPokerPayout';
 
 /** Build a card from a suit + value shorthand. */
 const c = (design: Card['design'], value: number): Card => ({ design, value });
@@ -63,5 +64,188 @@ describe('evaluateJokerPokerMadeHand', () => {
     // pair of aces/kings (jokers excluded), so this pays nothing — matching Go.
     const hand = [JOKER, c('SPADE', 2), c('HEART', 5), c('DIAMOND', 9), c('CLOVER', 12)];
     expect(evaluateJokerPokerMadeHand(hand)?.rowKey).toBeNull();
+  });
+});
+
+// #5506: Jacks or Better では madeHand が常に null だった。ワイルドが無いだけで
+// 評価器自体は流用でき、配当最低ラインが J 以上のペアに変わるだけ。
+describe('evaluateVideoPokerMadeHand for Jacks or Better', () => {
+  it('names a paying hand', () => {
+    expect(
+      evaluateVideoPokerMadeHand('videopoker', [
+        c('SPADE', 5),
+        c('HEART', 5),
+        c('CLOVER', 5),
+        c('DIAMOND', 9),
+        c('SPADE', 2),
+      ]),
+    ).toEqual({ rowKey: 'threeOfAKind' });
+  });
+
+  // **最低ラインは J 以上のペア。** Joker Poker の K 以上とは違う。
+  it('pays a pair of jacks but not a pair of tens', () => {
+    const pair = (v: number) => [c('SPADE', v), c('HEART', v), c('CLOVER', 3), c('DIAMOND', 7), c('SPADE', 9)];
+    expect(evaluateVideoPokerMadeHand('videopoker', pair(11))).toEqual({ rowKey: 'jacksOrBetter' });
+    expect(evaluateVideoPokerMadeHand('videopoker', pair(12))).toEqual({ rowKey: 'jacksOrBetter' });
+    expect(evaluateVideoPokerMadeHand('videopoker', pair(13))).toEqual({ rowKey: 'jacksOrBetter' });
+    expect(evaluateVideoPokerMadeHand('videopoker', pair(1))).toEqual({ rowKey: 'jacksOrBetter' });
+    expect(evaluateVideoPokerMadeHand('videopoker', pair(10))).toEqual({ rowKey: null });
+  });
+
+  // ワイルドが無いので、ロイヤルは natural/wild に分かれず 'royalFlush' 1本。
+  it('uses the single royalFlush row rather than the wild split', () => {
+    expect(
+      evaluateVideoPokerMadeHand('videopoker', [
+        c('SPADE', 1),
+        c('SPADE', 13),
+        c('SPADE', 12),
+        c('SPADE', 11),
+        c('SPADE', 10),
+      ]),
+    ).toEqual({ rowKey: 'royalFlush' });
+  });
+
+  // **配当表の全段を通す。** 中間の役 (ストレート〜フォーカード) は1つも
+  // 通っていなかったので、行キーの取り違えに気づけなかった。
+  it.each([
+    ['straightFlush', [c('SPADE', 9), c('SPADE', 8), c('SPADE', 7), c('SPADE', 6), c('SPADE', 5)]],
+    ['fourOfAKind', [c('SPADE', 7), c('HEART', 7), c('CLOVER', 7), c('DIAMOND', 7), c('SPADE', 2)]],
+    ['fullHouse', [c('SPADE', 7), c('HEART', 7), c('CLOVER', 7), c('DIAMOND', 4), c('SPADE', 4)]],
+    ['flush', [c('SPADE', 9), c('SPADE', 7), c('SPADE', 5), c('SPADE', 3), c('SPADE', 2)]],
+    ['straight', [c('SPADE', 9), c('HEART', 8), c('CLOVER', 7), c('DIAMOND', 6), c('SPADE', 5)]],
+    ['threeOfAKind', [c('SPADE', 7), c('HEART', 7), c('CLOVER', 7), c('DIAMOND', 4), c('SPADE', 2)]],
+    ['twoPair', [c('SPADE', 7), c('HEART', 7), c('CLOVER', 4), c('DIAMOND', 4), c('SPADE', 2)]],
+  ] as const)('maps %s to its own paytable row', (expected, hand) => {
+    expect(evaluateVideoPokerMadeHand('videopoker', [...hand])).toEqual({ rowKey: expected });
+  });
+
+  // ハイカードは配当対象外 (default 分岐)。
+  it('pays nothing for a high card', () => {
+    expect(
+      evaluateVideoPokerMadeHand('videopoker', [
+        c('SPADE', 9),
+        c('HEART', 7),
+        c('CLOVER', 5),
+        c('DIAMOND', 3),
+        c('SPADE', 2),
+      ]),
+    ).toEqual({ rowKey: null });
+  });
+
+  // **既存の Joker Poker は変わらない。** K 以上のペアが最低ラインのまま。
+  it('leaves Joker Poker on its own minimum', () => {
+    const pair = (v: number) => [c('SPADE', v), c('HEART', v), c('CLOVER', 3), c('DIAMOND', 7), c('SPADE', 9)];
+    expect(evaluateVideoPokerMadeHand('jokerpoker', pair(13))).toEqual({ rowKey: 'kingsOrBetter' });
+    expect(evaluateVideoPokerMadeHand('jokerpoker', pair(11))).toEqual({ rowKey: null });
+  });
+
+  // 出力する行キーが、実際の配当表に存在すること。存在しないキーを返すと
+  // 画面に生キーが出る。
+  it('only returns keys that exist in the variant paytable', () => {
+    for (const variant of ['videopoker', 'jokerpoker'] as const) {
+      const keys = new Set(videoPokerPayoutRows(variant).map((r) => r.key));
+      const hands: Card[][] = [
+        [c('SPADE', 1), c('SPADE', 13), c('SPADE', 12), c('SPADE', 11), c('SPADE', 10)],
+        [c('SPADE', 5), c('HEART', 5), c('CLOVER', 5), c('DIAMOND', 5), c('SPADE', 2)],
+        [c('SPADE', 11), c('HEART', 11), c('CLOVER', 3), c('DIAMOND', 7), c('SPADE', 9)],
+        [c('SPADE', 13), c('HEART', 13), c('CLOVER', 3), c('DIAMOND', 7), c('SPADE', 9)],
+      ];
+      for (const hand of hands) {
+        const made = evaluateVideoPokerMadeHand(variant, hand);
+        if (made?.rowKey) expect(keys).toContain(made.rowKey);
+      }
+    }
+  });
+});
+
+// #5507: Deuces Wild でも madeHand が常に無効だった。スリーカード以上でしか配当が
+// 出ない=分散が大きい変種なので、ドロー前に配当対象かを知れる価値はむしろ大きい。
+describe('evaluateVideoPokerMadeHand for Deuces Wild', () => {
+  const deuce = (design: Card['design']) => c(design, 2);
+
+  it('treats twos as wild', () => {
+    expect(
+      evaluateVideoPokerMadeHand('deuceswild', [
+        c('SPADE', 5),
+        c('HEART', 5),
+        deuce('CLOVER'),
+        c('DIAMOND', 9),
+        c('SPADE', 12),
+      ]),
+    ).toEqual({ rowKey: 'threeOfAKind' });
+  });
+
+  // **四枚の2は専用の行。** 素直にランクへ落とすと fiveOfAKind になってしまう。
+  it('reports four deuces on its own row', () => {
+    expect(
+      evaluateVideoPokerMadeHand('deuceswild', [
+        deuce('SPADE'),
+        deuce('HEART'),
+        deuce('CLOVER'),
+        deuce('DIAMOND'),
+        c('SPADE', 9),
+      ]),
+    ).toEqual({ rowKey: 'fourDeuces' });
+  });
+
+  it('splits the royal into natural and wild', () => {
+    expect(
+      evaluateVideoPokerMadeHand('deuceswild', [
+        c('SPADE', 1),
+        c('SPADE', 13),
+        c('SPADE', 12),
+        c('SPADE', 11),
+        c('SPADE', 10),
+      ]),
+    ).toEqual({ rowKey: 'naturalRoyalFlush' });
+    expect(
+      evaluateVideoPokerMadeHand('deuceswild', [
+        deuce('HEART'),
+        c('SPADE', 13),
+        c('SPADE', 12),
+        c('SPADE', 11),
+        c('SPADE', 10),
+      ]),
+    ).toEqual({ rowKey: 'wildRoyalFlush' });
+  });
+
+  // **最低ラインはスリーカード。** ツーペアでは配当が無い。
+  it('pays nothing below three of a kind', () => {
+    expect(
+      evaluateVideoPokerMadeHand('deuceswild', [
+        c('SPADE', 5),
+        c('HEART', 5),
+        c('CLOVER', 9),
+        c('DIAMOND', 9),
+        c('SPADE', 12),
+      ]),
+    ).toEqual({ rowKey: null });
+  });
+
+  // **Deuces Wild の配当表も全段通す。** 中間の役が1つも通っていないと、
+  // 行キーの取り違えに気づけない (Jacks or Better 側と同じ抜け)。
+  it.each([
+    ['fiveOfAKind', [c('SPADE', 7), c('HEART', 7), c('CLOVER', 7), deuce('DIAMOND'), deuce('SPADE')]],
+    ['straightFlush', [c('SPADE', 9), c('SPADE', 8), c('SPADE', 7), c('SPADE', 6), c('SPADE', 5)]],
+    ['fourOfAKind', [c('SPADE', 7), c('HEART', 7), c('CLOVER', 7), c('DIAMOND', 7), c('SPADE', 9)]],
+    ['fullHouse', [c('SPADE', 7), c('HEART', 7), c('CLOVER', 7), c('DIAMOND', 4), c('SPADE', 4)]],
+    ['flush', [c('SPADE', 9), c('SPADE', 7), c('SPADE', 5), c('SPADE', 4), c('SPADE', 3)]],
+    ['straight', [c('SPADE', 9), c('HEART', 8), c('CLOVER', 7), c('DIAMOND', 6), c('SPADE', 5)]],
+  ] as const)('maps %s to its own Deuces Wild row', (expected, hand) => {
+    expect(evaluateVideoPokerMadeHand('deuceswild', [...hand])).toEqual({ rowKey: expected });
+  });
+
+  it('only returns keys that exist in the Deuces Wild paytable', () => {
+    const keys = new Set(videoPokerPayoutRows('deuceswild').map((r) => r.key));
+    const hands: Card[][] = [
+      [deuce('SPADE'), deuce('HEART'), deuce('CLOVER'), deuce('DIAMOND'), c('SPADE', 9)],
+      [deuce('HEART'), c('SPADE', 13), c('SPADE', 12), c('SPADE', 11), c('SPADE', 10)],
+      [c('SPADE', 1), c('SPADE', 13), c('SPADE', 12), c('SPADE', 11), c('SPADE', 10)],
+      [c('SPADE', 5), c('HEART', 5), deuce('CLOVER'), c('DIAMOND', 9), c('SPADE', 12)],
+    ];
+    for (const hand of hands) {
+      const made = evaluateVideoPokerMadeHand('deuceswild', hand);
+      if (made?.rowKey) expect(keys).toContain(made.rowKey);
+    }
   });
 });

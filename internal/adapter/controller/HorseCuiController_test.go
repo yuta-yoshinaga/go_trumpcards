@@ -62,13 +62,13 @@ func TestHorseCuiController_Exec(t *testing.T) {
 	t.Run("bet needs an amount", func(t *testing.T) {
 		m := newMock()
 		out := controller.NewHorseCuiController(m).Exec("b")
-		assert.Contains(t, out, "amount is required")
+		assert.Contains(t, out, msgStem("betAmountRequired"))
 		m.AssertNotCalled(t, "Action", mock.Anything, mock.Anything, mock.Anything)
 	})
 	t.Run("bet rejects a non-numeric amount", func(t *testing.T) {
 		m := newMock()
 		out := controller.NewHorseCuiController(m).Exec("b x")
-		assert.Contains(t, out, "Invalid amount")
+		assert.Contains(t, out, msgStem("invalidAmount"))
 		m.AssertNotCalled(t, "Action", mock.Anything, mock.Anything, mock.Anything)
 	})
 	t.Run("next hand", func(t *testing.T) {
@@ -88,11 +88,19 @@ func TestHorseCuiController_Exec(t *testing.T) {
 			m.AssertCalled(t, "ResetWithConfig", cfg)
 		})
 	}
+	// **引数なしの経路は別物。** WithParsedIntKeys の missing 分岐ではなく手前の
+	// ガードが返すので、鍵を足しただけでは到達せず英語のまま残る。
+	t.Run("set seats with no argument asks for one", func(t *testing.T) {
+		m := newMock()
+		out := controller.NewHorseCuiController(m).Exec("ss")
+		assert.Equal(t, msgKey("numberOfSeatsRequired469"), out)
+		m.AssertNotCalled(t, "ResetWithConfig", mock.Anything)
+	})
 	for _, seats := range []string{"3", "5", "8", "10"} {
 		t.Run("set seats rejects "+seats, func(t *testing.T) {
 			m := newMock()
 			out := controller.NewHorseCuiController(m).Exec("ss " + seats)
-			assert.Contains(t, out, "4, 6 or 9")
+			assert.Contains(t, out, msgKey("invalidNumberOfSeats469"))
 			m.AssertNotCalled(t, "ResetWithConfig", mock.Anything)
 		})
 	}
@@ -106,7 +114,7 @@ func TestHorseCuiController_Exec(t *testing.T) {
 	t.Run("set hands rejects out-of-range", func(t *testing.T) {
 		m := newMock()
 		out := controller.NewHorseCuiController(m).Exec("sh 99")
-		assert.Contains(t, out, "Invalid number of hands")
+		assert.Contains(t, out, msgStem("invalidNumberOfHands110"))
 		m.AssertNotCalled(t, "ResetWithConfig", mock.Anything)
 	})
 	t.Run("hint and log", func(t *testing.T) {

@@ -11,7 +11,7 @@ export interface EscobaConfigInput {
 }
 
 /** Command verbs accepted by the Escoba /escoba/exec endpoint (short forms). */
-export type EscobaCommand = 'r' | 'n' | 'p' | 'log';
+export type EscobaCommand = 'r' | 'n' | 'p' | 'log' | 'hint';
 
 /** Extra payload fields for the Escoba /escoba/exec endpoint. */
 export interface EscobaExecParams {

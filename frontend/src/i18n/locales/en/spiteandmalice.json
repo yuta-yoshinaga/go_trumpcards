@@ -18,7 +18,8 @@
     "cpuGoal": "CPU goal: {{count}}",
     "foundation": "Foundation",
     "stock": "Stock",
-    "completed": "Completed"
+    "completed": "Completed",
+    "wild": "wild"
   },
   "moveCount": "Moves",
   "endTurn": "End turn",

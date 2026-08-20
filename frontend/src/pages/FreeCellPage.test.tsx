@@ -24,6 +24,9 @@ const playingState: FreeCellResponse = {
   tableau: [[card('SPADE', 13)], [card('HEART', 12)], [], [], [], [], [], []],
   freeCells: [null, null, null, null],
   foundation: [[], [], [], []],
+  // 空きセル4 + 空き列6 → (1+4) * 2^6 = 320。空き列宛てはその列を経由地に使えず 160。
+  maxMovableCards: 320,
+  maxMovableCardsToEmptyColumn: 160,
   phase: 0,
   moveCount: 5,
   canUndo: true,
@@ -459,6 +462,38 @@ describe('FreeCellPage', () => {
     await waitFor(() => expect(screen.getByText(/フリーセル.*→.*タブロー 3/)).toBeInTheDocument());
   });
 
+  // #5494: ゾーン識別子 ("tableau"/"freecell"/"foundation") をそのまま i18n キーに
+  // 使っていた。ドメイン側がゾーン名を変えたり足したりすると翻訳キーが静かに壊れ、
+  // コンパイルでは検出できない。専用キーへ移す前に**今の文字列を1文字単位で固定**する。
+  it('renders the hint line exactly as before the zone keys moved', async () => {
+    renderWithProviders(<FreeCellPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+    mockExec.mockResolvedValue(withHintFromColState);
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    const line = await screen.findByTestId('fc-hint-line');
+    expect(line.textContent).toBe('ヒント: タブロー 2 → ファンデーション');
+  });
+
+  // **未知のゾーンでも翻訳キー文字列を画面に出さない。** ドメインが新しいゾーンを
+  // 返し始めたとき、生の "reserve" が出るほうが "frontendHint.zone.reserve" が
+  // 出るよりまだ読める。
+  it('falls back to the raw zone name for an unknown zone', async () => {
+    renderWithProviders(<FreeCellPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+    mockExec.mockResolvedValue({
+      ...playingState,
+      hint: { fromZone: 'reserve', fromCol: 1, cardIndex: 0, toZone: 'foundation', toCol: -1 },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    const line = await screen.findByTestId('fc-hint-line');
+    expect(line.textContent).toBe('ヒント: reserve 1 → ファンデーション');
+    expect(line.textContent).not.toContain('frontendHint');
+  });
+
   it('hint display shows fromCol when fromCol is non-negative', async () => {
     renderWithProviders(<FreeCellPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
@@ -855,6 +890,9 @@ describe('FreeCellPage', () => {
           [card('HEART', 7)],
         ],
         freeCells: [card('DIAMOND', 8), card('CLOVER', 9), card('SPADE', 10), card('HEART', 11)],
+        // 空きセル 0 + 空き列 0 → 1 枚。空き列が無いので空き列宛ては 0。
+        maxMovableCards: 1,
+        maxMovableCardsToEmptyColumn: 0,
       };
       mockExec.mockResolvedValue(tightState);
       renderWithProviders(<FreeCellPage />);
@@ -870,6 +908,13 @@ describe('FreeCellPage', () => {
       expect(middleButton).toHaveAttribute('data-supermove-blocked', 'true');
       expect(topButton).toHaveAttribute('draggable', 'false');
       expect(topButton).toHaveAttribute('data-supermove-blocked', 'true');
+
+      // **動かせない理由が読み上げにも出る。** title はホバー時にしか読まれない
+      // ので、キーボード/読み上げ利用者には draggable=false の理由が届かなかった
+      // (#5820)。
+      expect(topButton.getAttribute('aria-label')).toContain('一度に動かせるのは');
+      // 負のコントロール: 動かせる札に理由が混ざってはいけない。
+      expect(bottomButton.getAttribute('aria-label')).not.toContain('一度に動かせるのは');
     });
 
     it('highlights the in-limit block under the cursor', async () => {
@@ -965,5 +1010,55 @@ describe('FreeCellPage', () => {
         ),
       );
     });
+  });
+});
+
+// #5975: 空き列へ動かすときの上限はドメインが別に持っている (その空き列自身を
+// 経由地に使えないぶん低い)。ページは一般式 (1 + 空きセル) * 2^空き列 で計算し
+// 直していたので、空き列宛ての束を「動かせる」と見せてサーバーに弾かれていた。
+describe('FreeCellPage empty-column move limit', () => {
+  it('shows the server limits instead of recomputing them', async () => {
+    // 一般式なら (1 + 4) * 2^6 = 320。サーバーは 8 と言っている。
+    mockExec.mockResolvedValue({ ...playingState, maxMovableCards: 8, maxMovableCardsToEmptyColumn: 4 });
+    renderWithProviders(<FreeCellPage />);
+
+    const limit = await screen.findByTestId('fc-supermove-limit');
+    expect(limit).toHaveTextContent('8');
+    // 空き列宛ての低い方も出す。
+    expect(limit).toHaveTextContent('4');
+    expect(limit).not.toHaveTextContent('320');
+  });
+
+  it('marks the empty column as out of reach for a stack that only the lower limit blocks', async () => {
+    // 3 枚の束: 一般上限 8 なら動かせるが、空き列上限 2 は超える。
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [[card('SPADE', 13), card('HEART', 12), card('CLOVER', 11)], [], [], [], [], [], [], []],
+      maxMovableCards: 8,
+      maxMovableCardsToEmptyColumn: 2,
+    });
+    renderWithProviders(<FreeCellPage />);
+
+    const deep = (await screen.findByAltText('♠ K')).closest('button') as HTMLButtonElement;
+    // 一般上限では動く ── 札そのものはブロックしない。
+    expect(deep).not.toHaveAttribute('data-supermove-blocked');
+
+    fireEvent.click(deep);
+    const emptyCol = await screen.findByTestId('fc-empty-col-1');
+    await waitFor(() => expect(emptyCol).toHaveAttribute('data-empty-col-blocked', 'true'));
+    expect(emptyCol.getAttribute('title') ?? '').toContain('2');
+  });
+
+  it('leaves the empty column usable when the stack fits the lower limit', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [[card('SPADE', 13), card('HEART', 12)], [], [], [], [], [], [], []],
+      maxMovableCards: 8,
+      maxMovableCardsToEmptyColumn: 2,
+    });
+    renderWithProviders(<FreeCellPage />);
+
+    fireEvent.click((await screen.findByAltText('♠ K')).closest('button') as HTMLButtonElement);
+    expect(await screen.findByTestId('fc-empty-col-1')).not.toHaveAttribute('data-empty-col-blocked');
   });
 });

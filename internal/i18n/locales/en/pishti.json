@@ -6,6 +6,7 @@
   "helpSetDifficulty": "  sd [0-2]                 CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
   "helpSetPlayers": "  sp [2-4]                 set the number of players",
   "playerLine": "{{name}}: hand {{hand}} / captured {{captured}} / Pişti {{pisti}}",
+  "captureLegend": "* = captures the pile (matches the top card, or a jack sweeps it)",
   "pileLine": "Pile: top={{top}} ({{count}} cards)",
   "pileEmpty": "Pile: empty",
   "deckLine": "Stock: {{count}} left",
@@ -15,5 +16,6 @@
   "promptHelp": "p <hand> to play a card (capture the pile by matching rank or with a Jack)",
   "result.scores": "Game over. Scores: {{scores}}",
   "provisional": "{{name}} provisional: {{score}}",
-  "provisionalNote": "Provisional totals count only pisti bonuses and most-cards (+3); card points are added at scoring"
+  "provisionalNote": "Provisional totals count only pisti bonuses and most-cards (+3); card points are added at scoring",
+  "helpExamplePlay": "  p 0                      play hand card 0"
 }

@@ -57,17 +57,17 @@ func (c *CegoCuiController) Exec(command string) string {
 			case "handspiel", "solo":
 				return c.di.ChooseContract(domain.CegoContractHandspiel), true
 			case "discard":
-				return cuiutil.WithParsedInt(args, "Card index to keep is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cardIndexToKeepRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, func(v int) string {
 					return c.di.Discard([]int{v})
 				})
 			case "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.di.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.di.Play)
 			case "n", "next":
 				return c.di.NextTrick(), true
 			case "nr", "nextround":
 				return c.di.NextRound(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.di.GetConfig()
 					cfg.CpuDifficulty = domain.CegoCpuDifficulty(v)
 					return c.di.ResetWithConfig(cfg)
@@ -82,11 +82,11 @@ func (c *CegoCuiController) Exec(command string) string {
 // execBid bid サブコマンドを解釈する。
 func (c *CegoCuiController) execBid(args []string) (string, bool) {
 	if len(args) == 0 {
-		return "Bid is required (play).", true
+		return invalidArg("bidRequiredPlay"), true
 	}
 	bid := cegoParseBid(args[0])
 	if bid == domain.CegoBidPass {
-		return "Invalid bid: " + args[0] + ". Please enter play.", true
+		return invalidArg("invalidBidPlay", "val", args[0]), true
 	}
 	return c.di.Bid(bid), true
 }

@@ -35,11 +35,14 @@ type FortyThievesTableauCard struct {
 
 // FortyThievesHint ヒント
 type FortyThievesHint struct {
-	FromZone  string // "waste" or "tableau"
+	// FromZone は "waste" / "tableau"、どこにも手が無くストックが残っている
+	// ときは "stock" (= 引くことを勧める、#5525)。
+	FromZone  string
 	FromCol   int
 	CardIndex int
-	ToZone    string // "tableau" or "foundation"
-	ToCol     int
+	// ToZone は "tableau" / "foundation"、FromZone が "stock" のときは "waste"。
+	ToZone string
+	ToCol  int
 }
 
 // FortyThievesConfig フォーティシーブスゲーム設定
@@ -330,6 +333,21 @@ func (ft *FortyThieves) GetHint() *FortyThievesHint {
 					ToCol:     toCol,
 				}
 			}
+		}
+	}
+	// 優先度5: 盤上に手が無く、ストックが残っているなら「引く」。
+	//
+	// **ここで nil を返すと「ヒントはありません」になる。**行き詰まり判定
+	// (checkFortyThievesStalemate) はストックが残っていれば手詰まりではないと
+	// 正しく扱うのに、ヒントだけが同じ局面で黙っていた。プレイヤーからは
+	// 「詰んだ」のか「引けば良いだけ」なのか区別が付かない (#5525)。
+	if len(ft.stock) > 0 {
+		return &FortyThievesHint{
+			FromZone:  "stock",
+			FromCol:   -1,
+			CardIndex: -1,
+			ToZone:    "waste",
+			ToCol:     -1,
 		}
 	}
 	return nil

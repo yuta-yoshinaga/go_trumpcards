@@ -54,5 +54,7 @@ export interface SetteEMezzoResponse extends BaseGameResponse {
   targetHalves: number;
   canHit: boolean;
   canStand: boolean;
+  /** Total (in halves) at which the CPU seats and the banker stand. */
+  cpuStandHalves: number;
   canSetMatta: boolean;
 }

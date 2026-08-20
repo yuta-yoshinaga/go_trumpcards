@@ -15,6 +15,39 @@ import (
 // GutsCuiPresenter renders the Guts CUI view.
 type GutsCuiPresenter struct{}
 
+// gutsDeclareGuideLine は人間の手札の診断行を返す (診断できなければ空文字)。
+// 判定は domain.GutsEvaluateGuide がただ一つの出どころで、Web の
+// evaluateGutsGuide とは golden vector で結び付けてある。
+func gutsDeclareGuideLine(g interfaces.GutsGame) string {
+	// 座席 0 は必ず人間 (gutsNewPlayers)。nil 検査だけ残すのはインタフェース越しに
+	// 呼ばれるため。
+	human := g.GetPlayer(0)
+	if human == nil {
+		return ""
+	}
+	cards := make([]*domain.Card, 0, human.GetCardsSize())
+	for i := 0; i < human.GetCardsSize(); i++ {
+		cards = append(cards, human.GetCard(i))
+	}
+	guide := domain.GutsEvaluateGuide(cards)
+	if guide == nil {
+		return ""
+	}
+	// 役名は結果表示と同じキーを使う (別に持つと片方だけ直る)。
+	hand := i18n.T("guts.hand.highcard")
+	if guide.Pair {
+		hand = i18n.T("guts.hand.pair")
+	}
+	return i18n.Tf("guts.declareGuide", "hand", hand, "tier", i18n.T(gutsGuideTierKeys[guide.Tier])) + "\n"
+}
+
+// gutsGuideTierKeys maps guide tiers to i18n keys.
+var gutsGuideTierKeys = map[string]string{
+	domain.GutsGuideTierHigh:   "guts.guideTierHigh",
+	domain.GutsGuideTierMedium: "guts.guideTierMedium",
+	domain.GutsGuideTierLow:    "guts.guideTierLow",
+}
+
 // gutsStatusStr は in/out/脱落の状態ラベルを返す。
 func gutsStatusStr(g interfaces.GutsGame, player *domain.GutsPlayer, idx int) string {
 	switch {
@@ -92,6 +125,11 @@ func (p *GutsCuiPresenter) Output(g interfaces.GutsGame, lastErr error) string {
 
 		switch g.GetPhase() {
 		case domain.GutsPhaseDeclare:
+			// Web は宣言中つねに手役と勝ち目の目安を出している。ヒントの
+			// オン/オフとは無関係のガイドなので、CUI でも常時出す (#5697)。
+			if line := gutsDeclareGuideLine(g); line != "" {
+				b.WriteString(line)
+			}
 			b.WriteString(i18n.T("guts.promptDeclare") + "\n")
 		case domain.GutsPhaseResult:
 			b.WriteString(p.resultLine(g))
@@ -140,5 +178,5 @@ var gutsHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *GutsCuiPresenter) ActionLogOutput(g interfaces.GutsGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.GutsPlayer](g)
 }

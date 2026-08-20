@@ -41,8 +41,8 @@
     "resetButton": "Press reset to start a new game."
   },
   "hint": {
-    "askKnownRank": "Ask for the rank an opponent recently took",
-    "askMostCopies": "Ask for the rank you hold most copies of"
+    "askKnownRank": "Ask for rank {{rank}} — an opponent took it recently",
+    "askMostCopies": "Ask for rank {{rank}} — you hold the most copies of it"
   },
   "a11y": {
     "targetSelected": "Selected {{name}}",

@@ -17,6 +17,10 @@
   "hand.highcard": "High card",
   "gameEnd": "Game over — player {{player}} wins!",
   "promptDeclare": "Declare: i (in / stay) or o (out / fold)",
+  "declareGuide": "Hand: {{hand}}  Win chance: {{tier}}",
+  "guideTierHigh": "high",
+  "guideTierMedium": "medium",
+  "guideTierLow": "low",
   "promptResult": "Round over. Use n for the next round.",
   "promptHelp": "i / o to declare, n for the next round",
   "result.carry": "Everyone out — pot {{pot}} carries over to the next round ({{count}} in a row).",
@@ -28,5 +32,7 @@
   "hintNone": "No hint available.",
   "hint": "[HINT: {{action}} ({{reason}})]",
   "hintReasonStrongHand": "strong hand — worth staying in",
-  "hintReasonWeakHand": "weak hand — better to fold"
+  "hintReasonWeakHand": "weak hand — better to fold",
+  "helpExampleNext": "  n                         read the round result, then continue",
+  "helpHint": "  h                         show a hint"
 }

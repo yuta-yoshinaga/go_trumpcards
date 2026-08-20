@@ -171,6 +171,24 @@ describe('BelotePage', () => {
     await waitFor(() => expect(screen.getByTestId('dix-de-der-badge')).toHaveAttribute('data-active', 'true'));
   });
 
+  // #5592: バッジの点数は設定から。訳文に +10 と書くと、設定を変えたとき
+  // バッジだけが古い数字を出す。
+  it('shows the configured dix-de-der points, not a hardcoded 10', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: BelotePhase.PLAY,
+        trumpSuit: 1,
+        trickNumber: 8,
+        makerTeam: 0,
+        config: { ...makeState().config, dixDeDer: 25 },
+      }),
+    );
+    renderWithProviders(<BelotePage />);
+    const badge = await screen.findByTestId('dix-de-der-badge');
+    expect(badge).toHaveTextContent('25');
+    expect(badge).not.toHaveTextContent('10');
+  });
+
   it('activates the belote/rebelote badge once the maker team earns the bonus', async () => {
     mockExec.mockResolvedValue(
       makeState({ phase: BelotePhase.PLAY, trumpSuit: 1, trickNumber: 5, makerTeam: 0, roundBeloteBonus: [20, 0] }),

@@ -30,8 +30,8 @@ func (cc *KingoCuiController) Exec(command string) string {
 			switch cmd {
 			case "bet", "b":
 				// **額が要る手。** 省略は拒む。
-				amount, errMsg, ok := cuiutil.ParseIntArg(args,
-					"Amount is required.", "Invalid amount. Please enter a number.", 0, math.MaxInt)
+				amount, errMsg, ok := cuiutil.ParseIntArgKeys(args,
+					"amountRequired", "invalidAmountNotANumber", 0, math.MaxInt)
 				if !ok {
 					return errMsg, true
 				}

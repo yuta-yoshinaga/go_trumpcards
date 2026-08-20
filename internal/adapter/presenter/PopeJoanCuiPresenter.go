@@ -80,10 +80,16 @@ func (p *PopeJoanCuiPresenter) Output(c interfaces.PopeJoanGame, lastErr error) 
 			if player == nil {
 				continue
 			}
-			sb.WriteString(i18n.Tf("popejoan.playerLine",
+			line := i18n.Tf("popejoan.playerLine",
 				"name", cuiPlayerName(player, i),
 				"chips", strconv.Itoa(player.GetChips()),
-				"cards", strconv.Itoa(player.GetCardsSize())) + "\n")
+				"cards", strconv.Itoa(player.GetCardsSize()))
+			// **Pope を抱えている人はその区画への支払いを免除される**ので、
+			// 伏せ手でも公開してよい情報 (Web も CPU に出している)。
+			if domain.PopeJoanHoldsPope(player) {
+				line += "  " + i18n.T("popejoan.holdsPope")
+			}
+			sb.WriteString(line + "\n")
 			if player.GetIsHuman() && player.GetCardsSize() > 0 {
 				hand := make([]*domain.Card, 0, player.GetCardsSize())
 				for j := range player.GetCardsSize() {
@@ -157,5 +163,5 @@ var popeJoanHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *PopeJoanCuiPresenter) ActionLogOutput(c interfaces.PopeJoanGame) string {
-	return actionLogOutputText(c)
+	return actionLogOutputTextForSeats[*domain.PopeJoanPlayer](c)
 }

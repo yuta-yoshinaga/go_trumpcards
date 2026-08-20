@@ -20,6 +20,7 @@
   "foundationComplete": " → complete",
   "columnLabel": "[T{{col}}]",
   "columnCard": " {{card}} ({{count}})",
+  "columnAccepts": " -> accepts {{rank}} next",
   "stockLine": "Stock: {{count}}",
   "wasteCard": " waste: {{card}}",
   "wasteEmpty": " waste: (empty)",
@@ -31,5 +32,7 @@
   "gameClear": "Game Clear! Moves: {{moveCount}}",
   "gameOver": "Game Over",
   "hintAvailable": "Hint available",
-  "noHint": "No hint"
+  "noHint": "No hint",
+  "helpExampleHint": "  h                                              ask for a move",
+  "helpExampleAuto": "  ac                                             send everything that can go to a foundation"
 }

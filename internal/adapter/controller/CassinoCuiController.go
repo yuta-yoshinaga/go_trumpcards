@@ -103,7 +103,7 @@ func (c *CassinoCuiController) Exec(command string) string {
 			case "h", "hint":
 				return c.ci.Hint(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.ci.GetConfig()
 					cfg.CpuDifficulty = domain.CassinoCpuDifficulty(v)
 					return c.ci.ResetWithConfig(cfg)
@@ -114,13 +114,13 @@ func (c *CassinoCuiController) Exec(command string) string {
 					return "Rules:\n" + formatCassinoRuleList(&cfg), true
 				}
 				if len(args) < 2 {
-					return "Usage: sr <rule> <0|1> | sr list\nRules: " + strings.Join(cassinoRuleKeys, ", "), true
+					return invalidArg("usageSrRule01SrListRules") + strings.Join(cassinoRuleKeys, ", "), true
 				}
 				if !setCassinoRule(nil, args[0], false) {
-					return fmt.Sprintf("Unknown rule: %s.", args[0]), true
+					return invalidArg("unknownRule", "val", fmt.Sprint(args[0])), true
 				}
 				if args[1] != "0" && args[1] != "1" {
-					return fmt.Sprintf("Invalid value: %s. Please enter 0 or 1.", args[1]), true
+					return invalidArg("invalidValue0Or1Raw", "val", fmt.Sprint(args[1])), true
 				}
 				cfg := c.ci.GetConfig()
 				setCassinoRule(&cfg, args[0], args[1] == "1")
@@ -136,12 +136,12 @@ func (c *CassinoCuiController) Exec(command string) string {
 // "b" 区切り以降はビルド捕獲インデックスとして扱う。
 func (c *CassinoCuiController) handleTake(args []string) (string, bool) {
 	if len(args) < 1 {
-		return "Usage: t <handIdx> <tableIdx...> [b <buildIdx...>]", true
+		return invalidArg("usageTHandidxTableidxBBuildidx"), true
 	}
 	handStr := args[0]
-	handIdx, _, ok := cuiutil.ParseIntArg([]string{handStr}, "hand index is required", "Invalid hand index: %s", 0, 51)
+	handIdx, _, ok := cuiutil.ParseIntArgKeys([]string{handStr}, "handIndexRequired", "invalidHandIndex", 0, 51)
 	if !ok {
-		return "Invalid hand index: " + handStr, true
+		return invalidArg("invalidHandIndexRaw", "val", handStr), true
 	}
 	rest := args[1:]
 	tableArgs := rest
@@ -156,34 +156,40 @@ func (c *CassinoCuiController) handleTake(args []string) (string, bool) {
 	tableIdxs, skippedT := parseIntListArg(tableArgs)
 	buildIdxs, skippedB := parseIntListArg(buildArgs)
 	skipped := append(skippedT, skippedB...)
-	return cuiutil.PrependSkippedWarning(c.ci.Take(handIdx, tableIdxs, buildIdxs), skipped), true
+	if len(skipped) > 0 {
+		return invalidArg("invalidCardIndex", "val", strings.Join(skipped, ", ")), true
+	}
+	return c.ci.Take(handIdx, tableIdxs, buildIdxs), true
 }
 
 // handleBuild は `b <h> <value> <t1 t2 ...>` を処理する。
 func (c *CassinoCuiController) handleBuild(args []string) (string, bool) {
 	if len(args) < 3 {
-		return "Usage: b <handIdx> <value> <tableIdx...>", true
+		return invalidArg("usageBHandidxValueTableidx"), true
 	}
-	handIdx, _, ok := cuiutil.ParseIntArg([]string{args[0]}, "hand index is required", "Invalid hand index: %s", 0, 51)
+	handIdx, _, ok := cuiutil.ParseIntArgKeys([]string{args[0]}, "handIndexRequired", "invalidHandIndex", 0, 51)
 	if !ok {
-		return "Invalid hand index: " + args[0], true
+		return invalidArg("invalidHandIndexRaw", "val", args[0]), true
 	}
-	value, _, ok := cuiutil.ParseIntArg([]string{args[1]}, "build value is required", "Invalid build value: %s", 2, 10)
+	value, _, ok := cuiutil.ParseIntArgKeys([]string{args[1]}, "buildValueRequired", "invalidBuildValue", 2, 10)
 	if !ok {
-		return "Invalid build value: " + args[1], true
+		return invalidArg("invalidBuildValueRaw", "val", args[1]), true
 	}
 	tableIdxs, skipped := parseIntListArg(args[2:])
-	return cuiutil.PrependSkippedWarning(c.ci.Build(handIdx, tableIdxs, value), skipped), true
+	if len(skipped) > 0 {
+		return invalidArg("invalidCardIndex", "val", strings.Join(skipped, ", ")), true
+	}
+	return c.ci.Build(handIdx, tableIdxs, value), true
 }
 
 // handleTrail は `tr <h>` を処理する。
 func (c *CassinoCuiController) handleTrail(args []string) (string, bool) {
 	if len(args) < 1 {
-		return "Usage: tr <handIdx>", true
+		return invalidArg("usageTrHandidx"), true
 	}
-	handIdx, _, ok := cuiutil.ParseIntArg([]string{args[0]}, "hand index is required", "Invalid hand index: %s", 0, 51)
+	handIdx, _, ok := cuiutil.ParseIntArgKeys([]string{args[0]}, "handIndexRequired", "invalidHandIndex", 0, 51)
 	if !ok {
-		return "Invalid hand index: " + args[0], true
+		return invalidArg("invalidHandIndexRaw", "val", args[0]), true
 	}
 	return c.ci.Trail(handIdx), true
 }

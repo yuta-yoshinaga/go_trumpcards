@@ -4,6 +4,7 @@ package controller
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -36,18 +37,24 @@ func (c *DoudizhuCuiController) Exec(command string) string {
 			switch cmd {
 			case "p", "play":
 				indices, skipped := cuiutil.ParseIntSlice(args)
-				return cuiutil.PrependSkippedWarning(c.dgi.Play(indices), skipped), true
+				// Refuse before playing. PrependSkippedWarning ran the move first and
+				// put the warning above the new board, so a mistyped index was dropped
+				// and the remaining ones played as a different, legal move (issue #5390).
+				if len(skipped) > 0 {
+					return invalidArg("invalidCardIndex", "val", strings.Join(skipped, ", ")), true
+				}
+				return c.dgi.Play(indices), true
 			case "b", "bid":
 				if len(args) == 0 {
 					return c.dgi.Bid(0), true
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 0 || v > domain.DoudizhuMaxBid {
-					return "Invalid bid value. Please enter 0-3 (0=pass).", true
+					return invalidArg("invalidBidValue03Pass"), true
 				}
 				return c.dgi.Bid(v), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Normal, 1=Easy, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequiredAlt", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.dgi.GetConfig()
 					cfg.CpuDifficulty = domain.DoudizhuCpuDifficulty(v)
 					return c.dgi.ResetWithConfig(cfg)

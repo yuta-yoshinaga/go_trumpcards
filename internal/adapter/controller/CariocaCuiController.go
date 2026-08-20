@@ -45,7 +45,7 @@ func (c *CariocaCuiController) Exec(command string) string {
 			case "mc", "meldcontract":
 				slots, ok := parseSlotIndices(args)
 				if !ok {
-					return "Usage: mc <a,b,c> <d,e,f> [<g,h,i>]  (one slot per arg)", true
+					return invalidArg("usageMcABCDEFGHIOneSlotPerArg"), true
 				}
 				return c.ci.MeldContract(slots), true
 			case "me", "meldextra":
@@ -53,27 +53,27 @@ func (c *CariocaCuiController) Exec(command string) string {
 			case "lo", "layoff":
 				idx := parseIntList(args)
 				if len(idx) < 3 {
-					return "Usage: lo <targetPlayerIdx> <meldIdx> <cardIndex>", true
+					return invalidArg("usageLoTargetplayeridxMeldidxCardindex"), true
 				}
 				return c.ci.Layoff(idx[0], idx[1], idx[2]), true
 			case "d", "discard":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.ci.Discard)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.ci.Discard)
 			case "nr", "nextround":
 				return c.ci.NextRound(), true
 			case "pc", "setplayers":
-				return cuiutil.WithParsedInt(args, "Player count is required (3-6).", "Invalid player count: %s. Please enter 3-6.", domain.CariocaPlayerCountMin, domain.CariocaPlayerCountMax, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "playerCountRequired36", "invalidPlayerCount36", domain.CariocaPlayerCountMin, domain.CariocaPlayerCountMax, func(v int) string {
 					cfg := c.ci.GetConfig()
 					cfg.PlayerCount = v
 					return c.ci.ResetWithConfig(cfg)
 				})
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.ci.GetConfig()
 					cfg.CpuDifficulty = domain.CariocaCpuDifficulty(v)
 					return c.ci.ResetWithConfig(cfg)
 				})
 			case "sp", "setpenalty":
-				return cuiutil.WithParsedInt(args, "Fail penalty is required.", "Invalid fail penalty: %s. Please enter 0 or more.", 0, 1000, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "failPenaltyRequired", "invalidFailPenalty0OrMore", 0, 1000, func(v int) string {
 					cfg := c.ci.GetConfig()
 					cfg.FailContractPenalty = v
 					return c.ci.ResetWithConfig(cfg)

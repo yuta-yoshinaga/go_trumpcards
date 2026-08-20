@@ -329,3 +329,139 @@ describe('AmericanToadPage keyboard shortcuts', () => {
     expect(mockExec).not.toHaveBeenCalled();
   });
 });
+
+// #5559: 8列 + 8基礎札 + リザーブ + 捨て札と候補が多いのに、どこに置けるかは
+// クリックしてサーバーのエラーを見るまで分からなかった。
+describe('AmericanToadPage destination highlight', () => {
+  const targets = () => document.querySelectorAll('[data-legal-target]');
+
+  // **空の組札の唯一の受け手は基準ランクの札。**そこが光らないと、置き先が
+  // 無いように見える (#5958)。リングは組札を包む要素側にあるので closest で辿る。
+  it('rings the empty foundations of the matching suit for a base-rank card', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      reserve: [],
+      tableau: makeTableau([[{ card: card('SPADE', 5), faceUp: true }]]),
+    });
+    renderWithProviders(<AmericanToadPage />);
+    fireEvent.click(await screen.findByRole('button', { name: /♠ 5/ }));
+
+    await waitFor(() =>
+      expect(
+        screen.getAllByRole('button', { name: /^空の組札\d+ \(♠\)$/ })[0]?.closest('[data-legal-target="true"]'),
+      ).not.toBeNull(),
+    );
+    // ♠ の組札は 2 つ (2 デッキ)。他スートの 6 つは光らない。
+    expect(targets()).toHaveLength(2);
+  });
+
+  it('rings the legal column once a card is selected', async () => {
+    // ♠8 を選ぶと ♠9 の上には置けない (降順なので ♠7 が要る) が、
+    // 別の列の ♣4 の上でもない。合法な列だけが光ること。
+    mockExec.mockResolvedValue({
+      ...playingState,
+      reserve: [],
+      tableau: makeTableau([
+        [{ card: card('SPADE', 8), faceUp: true }],
+        [{ card: card('SPADE', 9), faceUp: true }],
+        [{ card: card('CLOVER', 4), faceUp: true }],
+      ]),
+    });
+    renderWithProviders(<AmericanToadPage />);
+    const source = await screen.findByRole('button', { name: /♠ 8/ });
+    fireEvent.click(source);
+    await waitFor(() => expect(source).toHaveAttribute('aria-pressed', 'true'));
+
+    // ♠9 の列 (index 1) **だけ**がリング。♣4 は不一致、空列はタブロー由来の札を
+    // 受け取らない (下の回帰テスト)。
+    expect(targets()).toHaveLength(1);
+    expect(document.querySelector('[data-preview-target]')).toBeNull();
+  });
+
+  // **判定を二重に持たない。**hover のプレビューも同じ計算を通る。
+  it('previews the same targets on hover, marked as a preview', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      reserve: [],
+      tableau: makeTableau([[{ card: card('SPADE', 8), faceUp: true }], [{ card: card('SPADE', 9), faceUp: true }]]),
+    });
+    renderWithProviders(<AmericanToadPage />);
+    const source = await screen.findByRole('button', { name: /♠ 8/ });
+    fireEvent.mouseEnter(source);
+    await waitFor(() => expect(document.querySelector('[data-preview-target]')).not.toBeNull());
+  });
+
+  // 山札由来の札 (捨て札) を選んでも同じ判定を通る。ページの previewedCard は
+  // ゾーンごとに分岐しているので、tableau 以外も一度通しておく。
+  it('highlights targets for the waste card too', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      reserve: [],
+      waste: [card('SPADE', 7)],
+      tableau: makeTableau([[{ card: card('SPADE', 8), faceUp: true }]]),
+    });
+    renderWithProviders(<AmericanToadPage />);
+    const waste = await screen.findByRole('button', { name: /♠ 7/ });
+    fireEvent.click(waste);
+    await waitFor(() => expect(document.querySelectorAll('[data-legal-target]').length).toBeGreaterThan(0));
+  });
+
+  // リザーブの札を選んだときも同じ。
+  it('highlights targets for the reserve card too', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      reserve: [card('SPADE', 7)],
+      tableau: makeTableau([[{ card: card('SPADE', 8), faceUp: true }]]),
+    });
+    renderWithProviders(<AmericanToadPage />);
+    const reserve = await screen.findByRole('button', { name: /リザーブ 残り/ });
+    fireEvent.click(reserve);
+    await waitFor(() => expect(document.querySelectorAll('[data-legal-target]').length).toBeGreaterThan(0));
+  });
+
+  // **リザーブが残っている間は空列を光らせない。**自動補充の対象で、手では置けない。
+  it('does not offer an empty column while the reserve holds cards', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      reserve: [card('CLOVER', 3)],
+      tableau: makeTableau([[{ card: card('SPADE', 8), faceUp: true }]]),
+    });
+    renderWithProviders(<AmericanToadPage />);
+    const source = await screen.findByRole('button', { name: /♠ 8/ });
+    fireEvent.click(source);
+    await waitFor(() => expect(source).toHaveAttribute('aria-pressed', 'true'));
+    // 空列は 7 つあるが、どれも光らない。♠8 の下に置ける札も無い。
+    expect(targets()).toHaveLength(0);
+  });
+
+  // **リザーブが尽きても、空列はタブロー由来の札には開かない。**
+  // `MoveTableauToTableau` が拒む (#4417) ので、光らせると押して弾かれる —
+  // このPRが消そうとしているループそのものが残る。
+  it('does not offer an empty column to a tableau card once the reserve is gone', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      reserve: [],
+      tableau: makeTableau([[{ card: card('SPADE', 8), faceUp: true }]]),
+    });
+    renderWithProviders(<AmericanToadPage />);
+    const source = await screen.findByRole('button', { name: /♠ 8/ });
+    fireEvent.click(source);
+    await waitFor(() => expect(source).toHaveAttribute('aria-pressed', 'true'));
+    expect(targets()).toHaveLength(0);
+  });
+
+  // 負のコントロール: 同じ空列が、捨て札からなら開く。上のテストが
+  // 「空列を常に光らせない」だけの実装でも通ってしまわないこと。
+  it('does offer those empty columns to the waste card', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      reserve: [],
+      waste: [card('DIAMOND', 9)],
+      tableau: makeTableau([[{ card: card('SPADE', 8), faceUp: true }]]),
+    });
+    renderWithProviders(<AmericanToadPage />);
+    const waste = await screen.findByRole('button', { name: /♦ 9/ });
+    fireEvent.click(waste);
+    await waitFor(() => expect(targets().length).toBeGreaterThan(0));
+  });
+});

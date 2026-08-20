@@ -20,5 +20,7 @@
   "scoreEntry": "  {{name}}: {{score}}",
   "winHuman": "You win!",
   "winCpu": "CPU {{idx}} wins!",
-  "promptHumanTurn": "Your turn: p <handIdx> <tableIdx> / a (swap all) / stop"
+  "promptHumanTurn": "Your turn: p <handIdx> <tableIdx> / a (swap all) / stop",
+  "helpExampleAll": "  a                      swap all five cards",
+  "helpLog": "  l                      show the action log"
 }

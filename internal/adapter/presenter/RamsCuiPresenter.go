@@ -13,10 +13,16 @@ import (
 )
 
 // ramsPlayerStr returns the display string for a single player.
-func ramsPlayerStr(player *domain.RamsPlayer, idx int) string {
+func ramsPlayerStr(player *domain.RamsPlayer, idx int, isDealer bool) string {
 	var b strings.Builder
+	// **参加判断もリードも親の左隣から始まる** (#5748)。誰が親かが出ていないと、
+	// 自分が何番目に決断するのかが読めない。3〜5 人卓で毎ラウンド 1 つ回る。
+	name := cuiPlayerName(player, idx)
+	if isDealer {
+		name += i18n.T("rams.dealerMark")
+	}
 	b.WriteString(i18n.Tf("rams.playerLine",
-		"name", cuiPlayerName(player, idx),
+		"name", name,
 		"chips", strconv.Itoa(player.GetChips()),
 		"status", ramsStatusStr(player),
 		"tricks", strconv.Itoa(player.GetRoundTricks()),
@@ -61,7 +67,7 @@ func (p *RamsCuiPresenter) Output(r interfaces.RamsGame, lastErr error) string {
 		sb.WriteString(i18n.Tf("rams.riskLine", "penalty", strconv.Itoa(domain.RamsMissPenalty)) + "\n")
 
 		for i := 0; i < r.GetPlayerCnt(); i++ {
-			sb.WriteString(ramsPlayerStr(r.GetPlayer(i), i))
+			sb.WriteString(ramsPlayerStr(r.GetPlayer(i), i, i == r.GetDealerIdx()))
 		}
 
 		sb.WriteString("----------\n")
@@ -139,5 +145,5 @@ var ramsHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *RamsCuiPresenter) ActionLogOutput(r interfaces.RamsGame) string {
-	return actionLogOutputText(r)
+	return actionLogOutputTextForSeats[*domain.RamsPlayer](r)
 }

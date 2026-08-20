@@ -18,6 +18,7 @@ const baseState: SpideretteResponse = {
   stockCount: 20,
   completedSuits: 1,
   score: 40,
+  scoring: { start: 500, movePenalty: 1, suitBonus: 100 },
   phase: 0,
   moveCount: 3,
   canUndo: true,

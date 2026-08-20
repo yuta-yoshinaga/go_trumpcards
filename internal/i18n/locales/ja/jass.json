@@ -1,5 +1,7 @@
 {
   "helpTitle": "Jass (Schieber) (ヤス/シーバー)",
+  "previousTrick": "直前のトリック",
+  "previousTrickWinner": "  → {{name}} が獲得",
   "helpCall": "  c <suit>             切り札を選ぶ (1=S,2=C,3=H,4=D)",
   "helpSchieben": "  sc                   シーベン (パートナーへ委譲)",
   "helpPlay": "  p <idx>              カードをプレイ",
@@ -28,5 +30,7 @@
   "hintNone": "ヒントはありません。",
   "hintSchieben": "[HINT: シーベン ({{reason}})]",
   "hintTrump": "[HINT: {{suit}}を切り札に ({{reason}})]",
-  "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]"
+  "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
+  "helpHint": "  h                    助言を表示"
 }

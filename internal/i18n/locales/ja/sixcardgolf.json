@@ -27,5 +27,8 @@
   "hintDrawStock": "推奨: 山札から引く（ds）",
   "hintSwap": "推奨: 引いたカードを位置 {{pos}} と交換（sw {{pos}}）",
   "hintSwapPair": "推奨: 位置 {{pos}} と交換（sw {{pos}}）— 列ペアが成立します",
-  "hintDiscard": "推奨: 引いたカードを捨てる（di）"
+  "hintDiscard": "推奨: 引いたカードを捨てる（di）",
+  "helpExampleDraw": "  ds                   手番の最初に山札から 1 枚引く",
+  "helpHint": "  h                    助言を表示",
+  "helpLog": "  l                    行動ログを表示"
 }

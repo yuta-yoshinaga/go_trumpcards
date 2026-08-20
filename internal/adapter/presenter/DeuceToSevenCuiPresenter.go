@@ -56,6 +56,13 @@ func (dcp *DeuceToSevenCuiPresenter) Output(g interfaces.DeuceToSevenGame, lastE
 			b.WriteString("\n")
 
 			if pl.GetIsHuman() && !pl.GetFolded() {
+				// 完成ローは自動で警告する。Web は交換フェーズでバナーを出すのに、
+				// CUI は `hint` を打った人にしか伝わらず、既にできているローを
+				// 崩す事故が「訊かなかった人」だけに起きていた (#5541)。
+				if g.GetPhase() == domain.DeuceToSevenPhaseDraw &&
+					g.GetCurrentTurn() == i && len(g.SuggestExchange(i)) == 0 {
+					b.WriteString(color.BoldYellow(i18n.T("deucetoseven.madeLowWarning")) + "\n")
+				}
 				handStr := cuiIndexedCardListStrEmoji(pl)
 				if isEnd {
 					b.WriteString(i18n.Tf("deucetoseven.humanHandWithName",
@@ -163,5 +170,5 @@ func (dcp *DeuceToSevenCuiPresenter) HintOutput(g interfaces.DeuceToSevenGame) s
 
 // ActionLogOutput renders the action log as plain text.
 func (dcp *DeuceToSevenCuiPresenter) ActionLogOutput(g interfaces.DeuceToSevenGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeatList(g, g.GetPlayers())
 }

@@ -107,10 +107,11 @@ func (p *AgnesWebPresenter) ActionLogOutput(c interfaces.AgnesGame) string {
 
 func (p *AgnesWebPresenter) buildBaseOutput(c interfaces.AgnesGame) *controller.AgnesWebOutput {
 	return &controller.AgnesWebOutput{
-		BaseRank:   c.GetBaseRank(),
-		Phase:      int(c.GetPhase()),
-		MoveCount:  c.GetMoveCount(),
-		StockCount: c.GetStockCount(),
-		CanUndo:    c.CanUndo(),
+		BaseRank:    c.GetBaseRank(),
+		Phase:       int(c.GetPhase()),
+		MoveCount:   c.GetMoveCount(),
+		StockCount:  c.GetStockCount(),
+		CanUndo:     c.CanUndo(),
+		IsStalemate: c.IsStalemate(),
 	}
 }

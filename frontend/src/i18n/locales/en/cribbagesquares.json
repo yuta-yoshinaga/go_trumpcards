@@ -16,6 +16,8 @@
     "win": "Cleared!",
     "lose": "Short"
   },
+  "partialPrefix": "so far",
+  "partialTooltip": "Locked in without the starter. The starter can only add to it.",
   "part": {
     "fifteens": "15s {{n}}",
     "pairs": "pairs {{n}}",

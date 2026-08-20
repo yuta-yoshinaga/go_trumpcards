@@ -125,12 +125,7 @@ func (ci *GinRummyInteractor) Layoff(cardIndices []int) string {
 
 // NextRound 次のラウンドへ進む
 func (ci *GinRummyInteractor) NextRound() string {
-	if out, blocked := guardGameEnd(ci.Game, ci.gp); blocked {
-		return out
-	}
-	ci.Game.NextRound()
-	ci.runCpuTurns()
-	return ci.gp.Output(ci.Game, nil)
+	return advanceRound(ci.Game, ci.gp, ci.runCpuTurns)
 }
 
 // GetConfig 現在の設定を取得
@@ -145,16 +140,10 @@ func (ci *GinRummyInteractor) ActionLog() string {
 
 // runCpuTurns CPUターンを実行
 func (ci *GinRummyInteractor) runCpuTurns() {
-	for !ci.Game.GetGameEndFlag() {
+	runCpuTurnsUntil(ci.Game, func() bool {
 		phase := ci.Game.GetPhase()
-		if phase == domain.GinRummyPhaseRoundEnd || phase == domain.GinRummyPhaseGameEnd {
-			break
-		}
-		if ci.Game.IsHumanTurn() {
-			break
-		}
-		ci.Game.CpuPlay()
-	}
+		return phase == domain.GinRummyPhaseRoundEnd || phase == domain.GinRummyPhaseGameEnd || ci.Game.IsHumanTurn()
+	}, ci.Game.CpuPlay)
 }
 
 // RestoreGinRummyInteractor deserialises JSON into a GinRummyInteractor.

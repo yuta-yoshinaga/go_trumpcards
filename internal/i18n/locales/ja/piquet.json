@@ -29,5 +29,6 @@
   "declTied": "{{kind}}: タイ (無得点)",
   "hintPlay": "ヒント: [{{idx}}] のカードをプレイ",
   "hintDiscard": "ヒント: 手札 {{idxs}} を捨ててください",
-  "promptCardIndex": "プレイするカードのインデックス"
+  "promptCardIndex": "プレイするカードのインデックス",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
 }

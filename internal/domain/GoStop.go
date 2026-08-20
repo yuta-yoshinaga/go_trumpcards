@@ -267,6 +267,69 @@ type GoStopBreakdown struct {
 	PiCount     int `json:"piCount"`     // 피枚数 (バク判定用)
 }
 
+// GoStopYakuPreviewDistance は「あと何枚まで」を近い役として出すかの上限。
+const GoStopYakuPreviewDistance = 2
+
+// GoStopNearYaku は完成が近い役 1 件。
+type GoStopNearYaku struct {
+	// Category は内訳のカテゴリ (gwang / tti / yeol / pi)。
+	Category string
+	// Target は次の閾値で成立する役の識別子 (i18n キーの一部)。
+	Target string
+	// Current はそのカテゴリの現在の取り札枚数。
+	Current int
+	// Remaining は次の閾値まで残り何枚か。
+	Remaining int
+}
+
+// gostopGwangThresholds は光の枚数とそこで成立する役。
+var gostopGwangThresholds = []struct {
+	count  int
+	target string
+}{
+	{3, "samgwang"}, {4, "sagwang"}, {5, "ogwang"},
+}
+
+// gostopNearEntry は閾値までの距離が preview の範囲内なら 1 件を作る。
+func gostopNearEntry(category, target string, current, threshold int) *GoStopNearYaku {
+	remaining := threshold - current
+	if remaining < 1 || remaining > GoStopYakuPreviewDistance {
+		return nil
+	}
+	return &GoStopNearYaku{Category: category, Target: target, Current: current, Remaining: remaining}
+}
+
+// GoStopComputeNearYaku は得点内訳から「あと少しで成立する役」を返す。
+//
+// 枚数だけで判る 光/띠/열끗/피 のみを見る。고도리・홍단・청단・초단 は特定の月の
+// 札が要るので、枚数からは証明できない (Web の computeNearYaku と同じ方針で、
+// 両者は frontend/src/utils/__fixtures__/gostopNearYaku.golden.json で縛ってある)。
+func GoStopComputeNearYaku(bd *GoStopBreakdown) []GoStopNearYaku {
+	if bd == nil {
+		return nil
+	}
+	var out []GoStopNearYaku
+	for _, th := range gostopGwangThresholds {
+		if th.count <= bd.BrightCount {
+			continue
+		}
+		if e := gostopNearEntry("gwang", th.target, bd.BrightCount, th.count); e != nil {
+			out = append(out, *e)
+		}
+		break
+	}
+	if e := gostopNearEntry("tti", "tti", bd.RibbonCount, gostopTtiThreshold); e != nil {
+		out = append(out, *e)
+	}
+	if e := gostopNearEntry("yeol", "yeol", bd.AnimalCount, gostopYeolThreshold); e != nil {
+		out = append(out, *e)
+	}
+	if e := gostopNearEntry("pi", "pi", bd.PiCount, gostopPiThreshold); e != nil {
+		out = append(out, *e)
+	}
+	return out
+}
+
 // gostopScoreAfterGo はカテゴリ合計 base とゴー回数 goCount から掛け金・倍率を適用する。
 //
 //	(base + goCount) × 2^max(0, goCount-2)
@@ -1052,6 +1115,9 @@ func (g *GoStop) GetFieldCards() []*Card { return g.state.fieldCards }
 
 // SetFieldCards は場札を設定する (テスト用)。
 func (g *GoStop) SetFieldCards(cards []*Card) { g.state.fieldCards = cards }
+
+// SetPendingBreakdown は決断フェーズの得点内訳を設定する (テスト用)。
+func (g *GoStop) SetPendingBreakdown(bd *GoStopBreakdown) { g.state.pendingBreakdown = bd }
 
 // GetRemainingDeck は山札の残り枚数を返す。
 func (g *GoStop) GetRemainingDeck() int { return len(g.state.drawPile) }

@@ -58,7 +58,7 @@ func (c *EightOffCuiController) handleMove(args []string) string {
 	}
 	from := args[0]
 	if from != "t" && from != "c" {
-		return i18n.Tf("eightoff.invalidFromZone", "val", from)
+		return invalidArg("eightoff.invalidFromZone", "val", from)
 	}
 	if len(args) < 2 {
 		switch from {
@@ -85,7 +85,7 @@ func (c *EightOffCuiController) handleMoveFromTableau(args []string) string {
 	}
 	fromCol, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[0])
+		return invalidArg("invalidColumn", "val", args[0])
 	}
 
 	switch args[1] {
@@ -97,7 +97,7 @@ func (c *EightOffCuiController) handleMoveFromTableau(args []string) string {
 		}
 		toCol, err := strconv.Atoi(args[2])
 		if err != nil {
-			return i18n.Tf("invalidColumn", "val", args[2])
+			return invalidArg("invalidColumn", "val", args[2])
 		}
 		return c.ei.MoveTableauToTableau(fromCol, -1, toCol)
 	case "c":
@@ -106,23 +106,23 @@ func (c *EightOffCuiController) handleMoveFromTableau(args []string) string {
 		}
 		cell, err := strconv.Atoi(args[2])
 		if err != nil {
-			return i18n.Tf("invalidCell", "val", args[2])
+			return invalidArg("invalidCell", "val", args[2])
 		}
 		return c.ei.MoveTableauToFreeCell(fromCol, cell)
 	default:
 		cardIdx, err := strconv.Atoi(args[1])
 		if err != nil {
-			return i18n.T("eightoff.moveUsage")
+			return i18n.MarkError(i18n.T("eightoff.moveUsage"))
 		}
 		if len(args) < 4 || args[2] != "t" {
 			if len(args) == 3 && args[2] == "t" {
 				return cuiutil.PromptRequest(i18n.T("promptToColumn"), fmt.Sprintf("m t %s %s t {0}", args[0], args[1]))
 			}
-			return i18n.T("eightoff.moveUsage")
+			return i18n.MarkError(i18n.T("eightoff.moveUsage"))
 		}
 		toCol, err := strconv.Atoi(args[3])
 		if err != nil {
-			return i18n.Tf("invalidColumn", "val", args[3])
+			return invalidArg("invalidColumn", "val", args[3])
 		}
 		return c.ei.MoveTableauToTableau(fromCol, cardIdx, toCol)
 	}
@@ -137,7 +137,7 @@ func (c *EightOffCuiController) handleMoveFromFreeCell(args []string) string {
 	}
 	cell, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidCell", "val", args[0])
+		return invalidArg("invalidCell", "val", args[0])
 	}
 
 	switch args[1] {
@@ -147,13 +147,13 @@ func (c *EightOffCuiController) handleMoveFromFreeCell(args []string) string {
 		}
 		col, err := strconv.Atoi(args[2])
 		if err != nil {
-			return i18n.Tf("invalidColumn", "val", args[2])
+			return invalidArg("invalidColumn", "val", args[2])
 		}
 		return c.ei.MoveFreeCellToTableau(cell, col)
 	case "f":
 		return c.ei.MoveFreeCellToFoundation(cell)
 	default:
-		return i18n.Tf("eightoff.invalidToZone", "val", args[1])
+		return invalidArg("eightoff.invalidToZone", "val", args[1])
 	}
 }
 
@@ -164,7 +164,7 @@ func (c *EightOffCuiController) handleFoundationShorthand(args []string) string 
 	}
 	col, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[0])
+		return invalidArg("invalidColumn", "val", args[0])
 	}
 	return c.ei.MoveTableauToFoundation(col)
 }
@@ -176,7 +176,7 @@ func (c *EightOffCuiController) handleMoveShorthand(args []string) string {
 	}
 	toCol, err := strconv.Atoi(args[1])
 	if err != nil {
-		return i18n.Tf("invalidColumn", "val", args[1])
+		return invalidArg("invalidColumn", "val", args[1])
 	}
 	return c.ei.MoveTableauToTableau(fromCol, -1, toCol)
 }

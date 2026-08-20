@@ -9,12 +9,14 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupScorpionCuiMockDefaults(sg *interfaces.MockScorpionGame) {
 	sg.On("GetPhase").Return(domain.ScorpionPhasePlaying).Maybe()
 	sg.On("GetMoveCount").Return(0).Maybe()
 	sg.On("IsStalemate").Return(false).Maybe()
+	sg.On("UndoToEscape").Return(0).Maybe()
 	sg.On("GetCompletedSuits").Return(0).Maybe()
 	sg.On("GetStockCount").Return(3).Maybe()
 
@@ -53,6 +55,7 @@ func TestScorpionCuiPresenter_Output(t *testing.T) {
 		sg.On("GetPhase").Return(domain.ScorpionPhasePlaying).Maybe()
 		sg.On("GetMoveCount").Return(5).Maybe()
 		sg.On("IsStalemate").Return(true).Maybe()
+		sg.On("UndoToEscape").Return(0).Maybe()
 		sg.On("GetCompletedSuits").Return(0).Maybe()
 		sg.On("GetStockCount").Return(0).Maybe()
 		var tableau [domain.ScorpionTableauCnt][]*domain.KlondikeTableauCard
@@ -103,6 +106,24 @@ func TestScorpionCuiPresenter_HintOutput(t *testing.T) {
 		result := p.HintOutput(sg)
 		assert.Contains(t, result, "ヒント")
 		assert.Contains(t, result, "タブロー列3")
+	})
+
+	// #5544: 裏カードを開ける手を優先しているのに、その理由を言っていなかった。
+	t.Run("says when the move uncovers a face-down card", func(t *testing.T) {
+		sg := new(interfaces.MockScorpionGame)
+		sg.On("GetHint").Return(&domain.ScorpionHint{FromCol: 0, CardIndex: 1, ToCol: 3, ExposesFaceDown: true})
+
+		result := new(ScorpionCuiPresenter).HintOutput(sg)
+		assert.Contains(t, result, i18n.T("scorpion.hintExposes"))
+	})
+
+	// **開かない手では言わない。**常に出ると理由として機能しない。
+	t.Run("stays silent when the move uncovers nothing", func(t *testing.T) {
+		sg := new(interfaces.MockScorpionGame)
+		sg.On("GetHint").Return(&domain.ScorpionHint{FromCol: 0, CardIndex: 1, ToCol: 3})
+
+		result := new(ScorpionCuiPresenter).HintOutput(sg)
+		assert.NotContains(t, result, i18n.T("scorpion.hintExposes"))
 	})
 
 	t.Run("deal hint", func(t *testing.T) {

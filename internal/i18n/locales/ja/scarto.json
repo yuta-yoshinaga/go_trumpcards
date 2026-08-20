@@ -20,6 +20,9 @@
   "promptTrickEnd": "トリック完了",
   "promptTrickEndHelp": "n / next ... 次のトリックへ",
   "promptRoundEnd": "ディール完了 ({{outcome}})",
+  "roundEndAverage": "全体平均: {{avg}}点",
+  "roundEndFormulaLine": "変動 = 平均差 × プレイヤー数",
+  "roundEndEarned": "{{name}}: 獲得 {{points}}点（平均差 {{diff}} → 変動 {{scaled}}）",
   "promptRoundEndHelp": "nr / nextround ... 次のディールへ",
   "hintNone": "ヒントはありません。",
   "hintCard": "[ヒント: {{cards}} ({{reason}})]",
@@ -30,5 +33,8 @@
   "hintReasonPlayExcuse": "エクスキューズを出す — 自分で保持し、取られない",
   "discardableList": "捨て可能: {{cards}}",
   "discardableNone": "なし",
-  "discardableLegend": "※ 切り札・エクスキューズ・絵札は捨てられません"
+  "discardableLegend": "※ 切り札・エクスキューズ・絵札は捨てられません",
+  "helpExamplePlay": "  play 0                    手札の 0 番のカードを出す",
+  "helpExampleNext": "  n                         トリックの決着を見てから次へ",
+  "helpHint": "  h                         助言を表示"
 }

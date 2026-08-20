@@ -25,5 +25,7 @@
   "hintToFoundation": "ファンデーション",
   "hintToTableau": "タブロー列{{col}}",
   "hintLine": "ヒント: {{from}} → {{to}}",
-  "autoCompleteReady": "オートコンプリート可能です (ac)"
+  "autoCompleteReady": "オートコンプリート可能です (ac)",
+  "helpExampleDraw": "  d                    山札から1枚めくる",
+  "helpUndo": "  u                    1手戻す"
 }

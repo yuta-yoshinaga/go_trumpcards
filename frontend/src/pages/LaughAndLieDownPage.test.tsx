@@ -4,6 +4,7 @@ import { laughandliedownApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, LaughAndLieDownPlayer, LaughAndLieDownResponse } from '../types/card';
+import { LaughAndLieDownPhase } from '../types/phases';
 import { LaughAndLieDownPage } from './LaughAndLieDownPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -53,6 +54,7 @@ function makeState(overrides?: Partial<LaughAndLieDownResponse>): LaughAndLieDow
     threeTakeIndices: [],
     dealerIdx: 0,
     lastInIdx: -1,
+    lastInBonus: 5,
     pot: 11,
     gameEndFlag: false,
     message: '',
@@ -180,5 +182,71 @@ describe('LaughAndLieDownPage', () => {
       renderWithProviders(<LaughAndLieDownPage />);
       await waitFor(() => expect(screen.getAllByText(text).length).toBeGreaterThan(0));
     }
+  });
+
+  // #5576: 訳文 (`lastIn`) もサーバのデータ (`lastInIdx`) も既にあったのに、
+  // 画面が一度も読んでいなかった。最終点差の理由の一つが出ないまま終わっていた。
+  describe('last-in bonus', () => {
+    it('names the opponent who was last in, with the amount', async () => {
+      mockExec.mockResolvedValue(makeState({ phase: LaughAndLieDownPhase.GAME_END, lastInIdx: 1, lastInBonus: 5 }));
+      renderWithProviders(<LaughAndLieDownPage />);
+      const row = await screen.findByTestId('lld-lastin-1');
+      expect(row).toHaveTextContent('5');
+      // 他の席には出ない。全員に出すと誰が受け取ったか分からない。
+      expect(screen.queryByTestId('lld-lastin-0')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('lld-lastin-2')).not.toBeInTheDocument();
+    });
+
+    it('names the human seat when it was last in', async () => {
+      mockExec.mockResolvedValue(makeState({ phase: LaughAndLieDownPhase.GAME_END, lastInIdx: 0, lastInBonus: 5 }));
+      renderWithProviders(<LaughAndLieDownPage />);
+      expect(await screen.findByTestId('lld-lastin-0')).toBeInTheDocument();
+    });
+
+    // -1 は「該当なし」。出すと、誰も受け取っていないボーナスを説明することになる。
+    it('says nothing when nobody was last in', async () => {
+      mockExec.mockResolvedValue(makeState({ phase: LaughAndLieDownPhase.GAME_END, lastInIdx: -1 }));
+      renderWithProviders(<LaughAndLieDownPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+      expect(document.querySelector('[data-testid^="lld-lastin-"]')).toBeNull();
+    });
+
+    // 決着前は出さない。まだ確定していない。
+    it('says nothing before the game ends', async () => {
+      mockExec.mockResolvedValue(makeState({ phase: LaughAndLieDownPhase.PLAY, lastInIdx: 1, lastInBonus: 5 }));
+      renderWithProviders(<LaughAndLieDownPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+      expect(document.querySelector('[data-testid^="lld-lastin-"]')).toBeNull();
+    });
+
+    // **額はサーバから。**訳文に数字を書くと、額を変えたとき片方だけ嘘になる。
+    it('renders whatever amount the server sends', async () => {
+      mockExec.mockResolvedValue(makeState({ phase: LaughAndLieDownPhase.GAME_END, lastInIdx: 1, lastInBonus: 9 }));
+      renderWithProviders(<LaughAndLieDownPage />);
+      const row = await screen.findByTestId('lld-lastin-1');
+      expect(row).toHaveTextContent('9');
+      expect(row).not.toHaveTextContent('5');
+    });
+  });
+});
+
+// #5936: チュートリアルの精算ステップは「ポットから5を受け取る」と訳文に
+// 数字を書いていた。ドメイン定数を変えると盤面だけが追随し、チュートリアルは
+// 古い数字を教え続ける。**盤面と同じ値**を補間で渡す。
+describe('LaughAndLieDownPage tutorial amount', () => {
+  it('teaches the amount the server sent, not a number baked into the translation', async () => {
+    mockExec.mockResolvedValue(makeState({ lastInBonus: 9 }));
+    renderWithProviders(<LaughAndLieDownPage />);
+    await waitFor(() => expect(document.querySelector('[data-tutorial="lld-table"]')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'チュートリアル' }));
+    // 精算は最後のステップ。手前の 3 つを送る。
+    for (let i = 0; i < 3; i += 1) {
+      fireEvent.click(await screen.findByRole('button', { name: '次へ' }));
+    }
+
+    const tooltip = await screen.findByText(/ポットから/);
+    expect(tooltip).toHaveTextContent('9');
+    expect(tooltip).not.toHaveTextContent('5を受け取ります');
   });
 });

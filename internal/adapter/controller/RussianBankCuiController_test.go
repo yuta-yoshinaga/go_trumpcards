@@ -41,11 +41,11 @@ func TestRussianBankCuiController_Exec(t *testing.T) {
 
 	t.Run("invalid arguments report errors", func(t *testing.T) {
 		c := newRbCui()
-		assert.Contains(t, c.Exec("pf"), "required")
-		assert.Contains(t, c.Exec("pf zzz"), "Invalid source")
-		assert.Contains(t, c.Exec("mt r"), "Usage")
-		assert.Contains(t, c.Exec("mt zzz 0"), "Invalid source")
-		assert.Contains(t, c.Exec("mt r 9"), "Invalid column")
+		assert.True(t, msgRejected(c.Exec("pf")))
+		assert.Contains(t, c.Exec("pf zzz"), msgStem("invalidSourceDot"))
+		assert.True(t, msgRejected(c.Exec("mt r")))
+		assert.Contains(t, c.Exec("mt zzz 0"), msgStem("invalidSourceDot"))
+		assert.Contains(t, c.Exec("mt r 9"), msgStem("invalidColumnDot"))
 	})
 
 	t.Run("setdifficulty", func(t *testing.T) {

@@ -407,6 +407,18 @@ func (g *Nap) ScoreRound() {
 	}
 }
 
+// NapBidPayout は契約ごとの賭け金を返す。makeValue は達成時に宣言者が得る数、
+// failValue は失敗時に**相手それぞれが**得る数。
+//
+// **Nap 契約だけが非対称** (達成 +10 / 失敗は相手が各 +5) で、そこが宣言するか
+// 否かの判断そのものになる。ほかの契約は達成・失敗とも契約数と同じ数が動く。
+// 画面がこの数字を出せるよう公開する (#5651) -- 精算 (makeValue / failValue)
+// と同じ関数から返すので、表と実際の増減がずれない。
+func NapBidPayout(b NapBid) (makeValue, failValue int) {
+	g := &Nap{contract: b}
+	return g.makeValue(), g.failValue()
+}
+
 // makeValue 契約達成時に宣言者が得るチップ数。
 func (g *Nap) makeValue() int {
 	if g.contract == NapBidNap {
@@ -565,7 +577,7 @@ func (g *Nap) cpuPlaySmart(playerIdx int, valid []int) int {
 	}
 	winnerIdx := g.trickWinner()
 	topRank := g.trickTopRank(winnerIdx)
-	winners := napFilter(valid, func(idx int) bool { return g.napRank(player.GetCard(idx)) > topRank })
+	winners := filterIndices(valid, func(idx int) bool { return g.napRank(player.GetCard(idx)) > topRank })
 	// 宣言者は勝ちたい; 防御は宣言者が勝っているトリックを奪いたい。
 	declarerWinning := winnerIdx == g.declarerIdx
 	wantWin := isDeclarer || !declarerWinning
@@ -573,17 +585,6 @@ func (g *Nap) cpuPlaySmart(playerIdx int, valid []int) int {
 		return pickLowest(player, winners, func(c *Card) int { return g.napRank(c) })
 	}
 	return pickLowest(player, valid, func(c *Card) int { return g.napRank(c) })
-}
-
-// napFilter 述語を満たすインデックスを抽出する。
-func napFilter(indices []int, pred func(int) bool) []int {
-	var out []int
-	for _, idx := range indices {
-		if pred(idx) {
-			out = append(out, idx)
-		}
-	}
-	return out
 }
 
 // --- Hint ---

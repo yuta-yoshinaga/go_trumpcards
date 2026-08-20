@@ -10,6 +10,8 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 // は本バリアントには無く、最小限のヒット/スタンド/ダブルダウンに加えて
 // 「Switch（2枚目交換）」アクションを公開する。
 type BlackJackSwitchGame interface {
+	// SwitchPreviewScores 2枚目を入れ替えた場合の両ハンドの得点 (ok=false なら不可)
+	SwitchPreviewScores() (int, int, bool)
 	BaseGame
 	// Reset ゲームを初期化する
 	Reset()

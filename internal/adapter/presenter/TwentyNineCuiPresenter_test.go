@@ -7,11 +7,13 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func makeTwentyNinePlayers() []*domain.TwentyNinePlayer {
@@ -42,6 +44,7 @@ func setupTwentyNineCuiMock() *interfaces.MockTwentyNineGame {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	// 既定は「制限なし」。目印を確かめるテストは自分で上書きする。
 	m.On("GetPlayableIndices", 0).Return([]int(nil)).Maybe()
+	m.On("GetContractProgress").Return((*domain.TwentyNineContractProgress)(nil)).Maybe()
 	return m
 }
 
@@ -209,6 +212,77 @@ func TestTwentyNineCuiPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
 		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You plays ♠K"},
 	})
+	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+	m.On("GetPlayer", mock.Anything).Return(domain.NewTwentyNinePlayer(true)).Maybe()
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, "play")
+}
+
+// #5644: 落札チームが契約に届くかどうかは、目標点・現在点・場に残る点の 3 つを
+// 突き合わせないと分からない。姉妹ゲームの FortyFives は #4724 でこれを出したの
+// に、29 は計算そのものが無かった。
+func TestTwentyNineCuiPresenter_ShowsTheContractProgress(t *testing.T) {
+	p := new(presenter.TwentyNineCuiPresenter)
+
+	progressMock := func(pr *domain.TwentyNineContractProgress) *interfaces.MockTwentyNineGame {
+		m, _ := setupTwentyNineCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetContractProgress")
+		m.On("GetContractProgress").Return(pr)
+		return m
+	}
+
+	t.Run("still reachable shows how many points are missing", func(t *testing.T) {
+		out := p.Output(progressMock(&domain.TwentyNineContractProgress{
+			DeclarerTeam: 0, Points: 10, Contract: 20, Remaining: 10,
+			Status: domain.TwentyNineContractNeedMore,
+		}), nil)
+
+		assert.Contains(t, out, i18n.Tf("twentynine.contractProgress",
+			"team", i18n.T("twentynine.teamA"),
+			"got", "10", "contract", "20",
+			"status", i18n.Tf("twentynine.contractNeedMore", "remaining", "10")))
+	})
+
+	// Web は TrickEnd でも出しているので、CUI もそこで消さない。
+	t.Run("still shown between tricks", func(t *testing.T) {
+		m, _ := setupTwentyNineCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetContractProgress")
+		m.On("GetPhase").Return(domain.TwentyNinePhaseTrickEnd)
+		m.On("GetContractProgress").Return(&domain.TwentyNineContractProgress{
+			DeclarerTeam: 0, Points: 10, Contract: 20, Remaining: 10,
+			Status: domain.TwentyNineContractNeedMore,
+		})
+
+		out := p.Output(m, nil)
+
+		assert.Contains(t, out, i18n.Tf("twentynine.contractNeedMore", "remaining", "10"))
+	})
+
+	t.Run("already made", func(t *testing.T) {
+		out := p.Output(progressMock(&domain.TwentyNineContractProgress{
+			DeclarerTeam: 1, Points: 20, Contract: 16, Remaining: 0,
+			Status: domain.TwentyNineContractMade,
+		}), nil)
+
+		assert.Contains(t, out, i18n.T("twentynine.contractMade"))
+		assert.Contains(t, out, i18n.T("twentynine.teamB"))
+	})
+
+	t.Run("no longer reachable", func(t *testing.T) {
+		out := p.Output(progressMock(&domain.TwentyNineContractProgress{
+			DeclarerTeam: 0, Points: 10, Contract: 20, Remaining: 10,
+			Status: domain.TwentyNineContractFailed,
+		}), nil)
+
+		assert.Contains(t, out, i18n.T("twentynine.contractFailed"))
+	})
+
+	t.Run("nothing to say before a contract exists", func(t *testing.T) {
+		out := p.Output(progressMock(nil), nil)
+
+		assert.NotContains(t, out, i18n.T("twentynine.contractMade"))
+		assert.NotContains(t, out, i18n.T("twentynine.contractFailed"))
+		assert.NotContains(t, out, i18n.Tf("twentynine.contractNeedMore", "remaining", "10"))
+	})
 }

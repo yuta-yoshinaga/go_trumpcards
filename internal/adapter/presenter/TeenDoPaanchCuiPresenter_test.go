@@ -190,3 +190,49 @@ func TestTeenDoPaanchCuiPresenterActionLog(t *testing.T) {
 	p := new(TeenDoPaanchCuiPresenter)
 	assert.NotEmpty(t, p.ActionLogOutput(newTeenDoPaanchForCui(t)))
 }
+
+// **合計だけでは、誰の最強札が誰に渡ったのか分からない** (#5757)。
+func TestTeenDoPaanchCuiPresenterShowsTheExchangeBreakdown(t *testing.T) {
+	p := new(TeenDoPaanchCuiPresenter)
+	g := newTeenDoPaanchForCui(t)
+	g.SetPhaseForTest(domain.TeenDoPaanchPhasePlay)
+	teenDoPaanchCuiHandOf(g, 0, domain.NewCard(domain.CardDesignClover, 8, false),
+		domain.NewCard(domain.CardDesignClover, 9, false))
+	teenDoPaanchCuiHandOf(g, 1, domain.NewCard(domain.CardDesignHeart, 1, false))
+	teenDoPaanchCuiHandOf(g, 2, domain.NewCard(domain.CardDesignSpade, 13, false))
+	g.SetSurplusForTest([]int{2, -1, -1})
+	g.ExchangeForTest()
+
+	out := teenDoPaanchPlain(p.Output(g, nil))
+
+	// 誰から誰へ何枚か、ペアごとに出る (受け入れ条件1・2)。
+	for _, giver := range []int{1, 2} {
+		assert.Contains(t, out, i18n.Tf("teendopaanch.exchangePair",
+			"giver", teenDoPaanchPlain(cuiPlayerName(g.GetPlayer(giver), giver)),
+			"taker", teenDoPaanchPlain(cuiPlayerName(g.GetPlayer(0), 0)),
+			"n", "1"))
+	}
+	assert.NotContains(t, out, "{{")
+
+	// 交換が起きなければ何も出ない (受け入れ条件3)。
+	quiet := newTeenDoPaanchForCui(t)
+	quiet.SetPhaseForTest(domain.TeenDoPaanchPhasePlay)
+	teenDoPaanchCuiHandOf(quiet, 0, domain.NewCard(domain.CardDesignClover, 8, false))
+	quiet.SetSurplusForTest([]int{0, 0, 0})
+	quiet.ExchangeForTest()
+	assert.NotContains(t, teenDoPaanchPlain(p.Output(quiet, nil)), fixedPart("teendopaanch.exchangeLine"))
+}
+
+// teenDoPaanchCuiHandOf は指定席の手札を差し替える。
+func teenDoPaanchCuiHandOf(g *domain.TeenDoPaanch, idx int, cards ...*domain.Card) {
+	p := g.GetPlayer(idx)
+	p.ResetRound()
+	for _, c := range cards {
+		p.AddCard(c)
+	}
+}
+
+// teenDoPaanchPlain は色付けのエスケープを落とす。
+var teenDoPaanchAnsi = regexp.MustCompile(`\x1b\[[0-9;]*m`)
+
+func teenDoPaanchPlain(s string) string { return teenDoPaanchAnsi.ReplaceAllString(s, "") }

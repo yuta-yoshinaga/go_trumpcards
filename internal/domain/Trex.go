@@ -565,10 +565,19 @@ func (t *Trex) kingOfHeartsGone() bool {
 
 // cardPenalty は契約に応じた 1 枚の失点を返す。
 func (t *Trex) cardPenalty(c *Card) int {
+	return TrexCardPenalty(t.contract, c)
+}
+
+// TrexCardPenalty は契約 contract のもとで 1 枚が背負う失点を返す。
+//
+// **表示側が switch を書き写さないため。**5 つの契約が 1 王国内で入れ替わるので、
+// どの札が危険かは配りごとに変わる (#4911)。得点を決めているのと同じ関数を
+// 画面が呼べば、印と実際の失点が食い違いようがない (#5572)。
+func TrexCardPenalty(contract TrexContract, c *Card) int {
 	if c == nil {
 		return 0
 	}
-	switch t.contract {
+	switch contract {
 	case TrexContractKingOfHearts:
 		if c.GetDesign() == CardDesignHeart && c.GetValue() == 13 {
 			return TrexKingOfHeartsPenalty

@@ -12,5 +12,13 @@
   "hintFrom": "tableau column {{col}}[{{idx}}]",
   "hintToFoundation": "foundation",
   "hintToTableau": "tableau column {{col}}",
-  "hintLine": "Hint: {{from}} → {{to}}"
+  "hintLine": "Hint: {{from}} → {{to}}",
+  "helpExampleHint": "  h                    ask for a move",
+  "helpExampleAuto": "  ac                   send everything that can go to a foundation",
+  "helpUndo": "  u undo one move",
+  "targetsLine": "Column {{col}} can go to: {{targets}}",
+  "targetsNone": "Column {{col}} has nowhere to go",
+  "targetTableau": "column {{col}}",
+  "targetFoundation": "foundation {{idx}}",
+  "helpTargets": "  t <col>                  list where that column's card can go"
 }

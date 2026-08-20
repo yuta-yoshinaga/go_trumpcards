@@ -49,7 +49,7 @@ func bidWhistBidStr(b *domain.BidWhistBid) string {
 }
 
 // bidWhistPlayerStr returns the display string for a single player.
-func bidWhistPlayerStr(player *domain.BidWhistPlayer, i int) string {
+func bidWhistPlayerStr(player *domain.BidWhistPlayer, i int, kitty []int) string {
 	var b strings.Builder
 	status := ""
 	if player.GetIsDeclarer() {
@@ -68,7 +68,9 @@ func bidWhistPlayerStr(player *domain.BidWhistPlayer, i int) string {
 	))
 	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
-		b.WriteString(cuiIndexedCardListStr(player) + "\n")
+		// **どの6枚が交換で入ってきたのかを示す。**Web はバッジで区別しているのに、
+		// CUI は覚えておくしかなかった (#5632)。kitty が空なら無印のまま。
+		b.WriteString(cuiIndexMarkedCardListStr(player, kitty, CuiKittyMark) + "\n")
 	}
 	return b.String()
 }
@@ -105,7 +107,13 @@ func (p *BidWhistCuiPresenter) Output(g interfaces.BidWhistGame, lastErr error) 
 			"t1", strconv.Itoa(g.GetTeamScore(1))) + "\n")
 
 		for i := 0; i < g.GetPlayerCnt(); i++ {
-			b.WriteString(bidWhistPlayerStr(g.GetPlayer(i), i))
+			// 印はキティ交換フェーズの落札者にだけ付く (GetKittyIndices が
+			// フェーズと落札者を見て空を返す)。
+			var kitty []int
+			if g.GetPlayer(i) != nil && g.GetPlayer(i).GetIsHuman() {
+				kitty = g.GetKittyIndices()
+			}
+			b.WriteString(bidWhistPlayerStr(g.GetPlayer(i), i, kitty))
 		}
 
 		b.WriteString("----------\n")
@@ -156,7 +164,7 @@ func (p *BidWhistCuiPresenter) HintOutput(g interfaces.BidWhistGame) string {
 	if hint == nil {
 		return i18n.T("bidwhist.hintNone") + "\n"
 	}
-	reason := lookupHintReason(hint.Reason, bidWhistHintReasonKeys)
+	reason := hintReasonStr(hint.Reason, bidWhistHintReasonKeys)
 	switch {
 	case hint.Pass != nil && *hint.Pass:
 		return color.Yellow(i18n.Tf("bidwhist.hintPass", "reason", reason)) + "\n"
@@ -182,5 +190,5 @@ func (p *BidWhistCuiPresenter) HintOutput(g interfaces.BidWhistGame) string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *BidWhistCuiPresenter) ActionLogOutput(g interfaces.BidWhistGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.BidWhistPlayer](g)
 }

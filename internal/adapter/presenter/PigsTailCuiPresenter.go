@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
@@ -84,5 +85,5 @@ func (p *PigsTailCuiPresenter) Output(pt interfaces.PigsTailGame, lastErr error)
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *PigsTailCuiPresenter) ActionLogOutput(pt interfaces.PigsTailGame) string {
-	return actionLogOutputText(pt)
+	return actionLogOutputTextForSeats[*domain.PigsTailPlayer](pt)
 }

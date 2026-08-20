@@ -42,6 +42,15 @@ func TestSpoonsCuiController_Exec(t *testing.T) {
 		assert.Equal(t, "pass-ok", c.Exec("pass 0"))
 		m.AssertCalled(t, "Pass", 2)
 	})
+	// 引数なしの 0 番既定は残す一方、打ち間違いは 0 番として実行しない (issue #5390)。
+	t.Run("pass refuses an unparseable index", func(t *testing.T) {
+		m := newSpoonsCuiMock()
+		c := controller.NewSpoonsCuiController(m)
+
+		assert.Equal(t, msgInvalidCardIndex("zz"), c.Exec("p zz"))
+
+		m.AssertNotCalled(t, "Pass", mock.Anything)
+	})
 	t.Run("pass without index defaults to 0", func(t *testing.T) {
 		m := newSpoonsCuiMock()
 		c := controller.NewSpoonsCuiController(m)

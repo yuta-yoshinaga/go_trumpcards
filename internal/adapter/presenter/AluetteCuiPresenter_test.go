@@ -7,11 +7,13 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupAluetteCuiMock() *interfaces.MockAluetteGame {
@@ -28,6 +30,7 @@ func setupAluetteCuiMock() *interfaces.MockAluetteGame {
 	m.On("GetConfig").Return(domain.DefaultAluetteConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	m.On("GetHint").Return(nil).Maybe()
+	m.On("GetRoundTricks").Return([domain.AluettePlayerCnt]int{}).Maybe()
 	return m
 }
 
@@ -196,5 +199,50 @@ func TestAluetteCuiPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
 		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "Monsieur"},
 	})
+	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+	m.On("GetPlayer", mock.Anything).Return(domain.NewAluettePlayer(true)).Maybe()
 	assert.Contains(t, p.ActionLogOutput(m), "play")
+}
+
+// #5714: メーヌの勝敗は**チーム合計が 3 以上か**で決まる (4-1 でも 3-2 でも 1 点)。
+// それなのに Web も CUI も個人トリック数を並べるだけで、チーム集計も勝者チームも
+// 出しておらず、プレイヤーが自分で足し算する必要があった。
+func TestAluetteCuiPresenter_ShowsTheTeamTally(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.AluetteCuiPresenter)
+
+	atRoundEnd := func(tricks [domain.AluettePlayerCnt]int) *interfaces.MockAluetteGame {
+		m, players := setupAluetteCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.AluettePhaseRoundEnd)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundTricks")
+		m.On("GetRoundTricks").Return(tricks)
+		for i, n := range tricks {
+			for range n {
+				players[i].AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)})
+			}
+		}
+		return m
+	}
+
+	// 席 0/2 がチーム0、1/3 がチーム1。3-2 でもチーム0 の勝ち。
+	t.Run("adds up each team and names the winner", func(t *testing.T) {
+		out := p.Output(atRoundEnd([domain.AluettePlayerCnt]int{2, 1, 1, 1}), nil)
+
+		assert.Contains(t, out, i18n.Tf("aluette.roundEndTeamTally",
+			"team0", "3", "team1", "2"))
+		assert.Contains(t, out, i18n.Tf("aluette.roundEndMeineWinner",
+			"team", i18n.Tf("aluette.teamName", "n", "0")))
+	})
+
+	t.Run("names the other team when it takes the majority", func(t *testing.T) {
+		out := p.Output(atRoundEnd([domain.AluettePlayerCnt]int{1, 3, 0, 1}), nil)
+
+		assert.Contains(t, out, i18n.Tf("aluette.roundEndTeamTally",
+			"team0", "1", "team1", "4"))
+		assert.Contains(t, out, i18n.Tf("aluette.roundEndMeineWinner",
+			"team", i18n.Tf("aluette.teamName", "n", "1")))
+	})
 }

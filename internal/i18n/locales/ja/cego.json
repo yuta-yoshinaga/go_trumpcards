@@ -31,6 +31,8 @@
   "contractHandspielDesc": "  handspiel  盲札を使わず配られた手札のまま勝負。堅実だが得点の伸びは控えめ。",
   "promptExchange": "場札交換 — 手番: {{name}}",
   "promptExchangeHelp": "discard <i> ... 残す 1 枚を選び、他を伏せて場札を取る",
+  "promptExchangeStep1": "ステップ1/2: 手札から {{keep}} 枚だけ残す（残り {{laydown}} 枚は伏せて自分の得点札になります）",
+  "promptExchangeStep2": "ステップ2/2: 伏せたぶんの代わりにブラインド {{blind}} 枚を受け取ります",
   "promptPlay": "手番: {{name}}  (リードスートに従う。ボイド時は切り札。スキュースが最強)",
   "promptPlayHelp": "play <idx> ... カードを出す",
   "promptTrickEnd": "トリック完了",
@@ -48,5 +50,7 @@
   "hintReasonLeadLow": "あなたは対戦側 — 安い札でリードして温存する",
   "hintReasonFollowWin": "勝てる — トリックを取る",
   "hintReasonFollowDuck": "勝てない/取るべきでない — 低い札を出す",
-  "declarerLine": "宣言者: {{name}}（契約: {{contract}}）が全員と対戦"
+  "declarerLine": "宣言者: {{name}}（契約: {{contract}}）が全員と対戦",
+  "helpExamplePlay": "  play 0                    手札の 0 番のカードを出す",
+  "helpHint": "  h                         助言を表示"
 }

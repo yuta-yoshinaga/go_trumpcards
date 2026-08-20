@@ -160,11 +160,9 @@ func (ci *FrenchTarotInteractor) ActionLog() string {
 func (ci *FrenchTarotInteractor) advance() {
 	runCpuBidsLoop[domain.FrenchTarotPhase](ci.Game, domain.FrenchTarotPhaseBid)
 	// CPU デクレアラーのシアン交換を自動実行する。
-	for !ci.Game.GetGameEndFlag() &&
-		ci.Game.GetPhase() == domain.FrenchTarotPhaseChien &&
-		!ci.Game.IsHumanDiscardTurn() {
-		ci.Game.CpuDiscard()
-	}
+	runCpuTurnsUntil(ci.Game, func() bool {
+		return ci.Game.GetPhase() != domain.FrenchTarotPhaseChien || ci.Game.IsHumanDiscardTurn()
+	}, ci.Game.CpuDiscard)
 	runCpuTurnsLoop(ci.Game, frenchTarotTrickPhases())
 }
 

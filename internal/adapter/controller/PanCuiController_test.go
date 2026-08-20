@@ -72,7 +72,7 @@ func TestPanCuiController_Exec(t *testing.T) {
 
 	t.Run("layoff lo missing args", func(t *testing.T) {
 		result := controller.NewPanCuiController(newMock()).Exec("lo 0 1")
-		assert.Contains(t, result, "layoff requires")
+		assert.Contains(t, result, msgStem("layoffNeedsThreeInts"))
 	})
 
 	t.Run("discard d with index", func(t *testing.T) {
@@ -83,7 +83,7 @@ func TestPanCuiController_Exec(t *testing.T) {
 
 	t.Run("discard d no args", func(t *testing.T) {
 		result := controller.NewPanCuiController(newMock()).Exec("d")
-		assert.Contains(t, result, "Card index is required")
+		assert.Contains(t, result, msgCardIndexRequired())
 	})
 
 	t.Run("nextround nr", func(t *testing.T) {
@@ -102,7 +102,7 @@ func TestPanCuiController_Exec(t *testing.T) {
 
 	t.Run("setplayers pc out of range", func(t *testing.T) {
 		result := controller.NewPanCuiController(newMock()).Exec("pc 9")
-		assert.Contains(t, result, "Invalid player count")
+		assert.Contains(t, result, msgStem("invalidPlayerCount36"))
 	})
 
 	t.Run("setdifficulty sd valid", func(t *testing.T) {
@@ -115,7 +115,7 @@ func TestPanCuiController_Exec(t *testing.T) {
 
 	t.Run("setdifficulty sd out of range", func(t *testing.T) {
 		result := controller.NewPanCuiController(newMock()).Exec("sd 9")
-		assert.Contains(t, result, "Invalid CPU difficulty")
+		assert.Contains(t, result, msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("setrounds sr valid", func(t *testing.T) {
@@ -128,7 +128,7 @@ func TestPanCuiController_Exec(t *testing.T) {
 
 	t.Run("setrounds sr invalid", func(t *testing.T) {
 		result := controller.NewPanCuiController(newMock()).Exec("sr 0")
-		assert.Contains(t, result, "Invalid target rounds")
+		assert.Contains(t, result, msgStem("invalidTargetRounds1OrMore"))
 	})
 
 	t.Run("action log l", func(t *testing.T) {

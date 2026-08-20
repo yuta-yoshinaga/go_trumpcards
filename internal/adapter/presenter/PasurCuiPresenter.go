@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
@@ -91,6 +92,13 @@ func (p *PasurCuiPresenter) Output(s interfaces.PasurGame, lastErr error) string
 		currentIdx := s.GetCurrentPlayerIdx()
 		sb.WriteString(i18n.Tf("pasur.promptCurrentPlayer",
 			"name", cuiPlayerName(s.GetPlayer(currentIdx), currentIdx)) + "\n")
+		// **スールは「取った結果、場が空になる」こと** (#5762)。倍化を狙うなら
+		// 場の枚数と取る枚数を突き合わせる必要があるので、その基準を出す。
+		if n := len(s.GetTableCards()); n > 0 {
+			sb.WriteString(i18n.Tf("pasur.soorNote",
+				"n", strconv.Itoa(n),
+				"mult", strconv.Itoa(domain.PasurSoorMultiplier)) + "\n")
+		}
 		sb.WriteString(i18n.T("pasur.promptPlay") + "\n")
 	})
 }
@@ -114,11 +122,16 @@ func (p *PasurCuiPresenter) HintOutput(s interfaces.PasurGame) string {
 	for _, i := range hint.TableIndices {
 		nums = append(nums, strconv.Itoa(i))
 	}
-	return color.Yellow(i18n.Tf("pasur.hintCapture",
+	line := i18n.Tf("pasur.hintCapture",
 		"idx", strconv.Itoa(*hint.CardIndex),
 		"card", cuiCardStr(card),
 		"table", strings.Join(nums, " "),
-		"reason", reason)) + "\n"
+		"reason", reason)
+	// 勧めている取り方が場を空にするなら、そこも言う。
+	if len(hint.TableIndices) == len(s.GetTableCards()) {
+		line += i18n.Tf("pasur.hintSoorMark", "mult", strconv.Itoa(domain.PasurSoorMultiplier))
+	}
+	return color.Yellow(line) + "\n"
 }
 
 // pasurHintReasonKeys maps hint-reason identifiers to their i18n keys.
@@ -130,5 +143,5 @@ var pasurHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *PasurCuiPresenter) ActionLogOutput(s interfaces.PasurGame) string {
-	return actionLogOutputText(s)
+	return actionLogOutputTextForSeats[*domain.PasurPlayer](s)
 }

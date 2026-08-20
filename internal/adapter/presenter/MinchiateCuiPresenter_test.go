@@ -8,11 +8,13 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupMinchiateCuiMock() *interfaces.MockMinchiateGame {
@@ -190,5 +192,22 @@ func TestMinchiateCuiPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
 		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You play Angelo"},
 	})
+	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+	m.On("GetPlayer", mock.Anything).Return(domain.NewMinchiatePlayer(true)).Maybe()
 	assert.Contains(t, p.ActionLogOutput(m), "play")
+}
+
+// #5715: マットは「トリックを取らず、フォロー義務も免れ、リードスートも定めない」
+// という他の全カードと違う挙動なのに、その説明はヒント文言の中にしか無く、
+// ヒントを切っている人には伝わらなかった (切札40枚の注記は常設なのに)。
+func TestMinchiateCuiPresenter_AlwaysExplainsTheMatto(t *testing.T) {
+	p := new(presenter.MinchiateCuiPresenter)
+	g := domain.NewDefaultMinchiate()
+	g.Reset()
+
+	out := p.Output(g, nil)
+
+	assert.Contains(t, out, i18n.T("minchiate.mattoNote"))
+	// 切札の注記と並んで、常に出ること。
+	assert.Contains(t, out, i18n.T("minchiate.trumpCountNote"))
 }

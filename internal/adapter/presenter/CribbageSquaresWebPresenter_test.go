@@ -32,6 +32,11 @@ func setupCribbageSquaresWebMockDefaults(pg *interfaces.MockCribbageSquaresGame)
 	for i := range domain.CribbageSquaresGridSize {
 		pg.On("RowDetail", i).Return(domain.CribbageScoreDetail{}).Maybe()
 		pg.On("ColDetail", i).Return(domain.CribbageScoreDetail{}).Maybe()
+		// **確定ぶんは呼び出し側が先に登録できる。**testify は最初に一致した
+		// 登録を返すので、テストが局面を述べたい行はこのヘルパより前に
+		// 登録しておけばよい。
+		pg.On("RowPartialDetail", i).Return(domain.CribbageScoreDetail{}).Maybe()
+		pg.On("ColPartialDetail", i).Return(domain.CribbageScoreDetail{}).Maybe()
 	}
 }
 
@@ -91,6 +96,8 @@ func TestCribbageSquaresWebPresenter_Output_Complete(t *testing.T) {
 		pg.On("ColScore", i).Return(3).Maybe()
 		pg.On("RowDetail", i).Return(domain.CribbageScoreDetail{Pairs: 2, Total: 2}).Maybe()
 		pg.On("ColDetail", i).Return(domain.CribbageScoreDetail{Runs: 3, Total: 3}).Maybe()
+		pg.On("RowPartialDetail", i).Return(domain.CribbageScoreDetail{Pairs: 2, Total: 2}).Maybe()
+		pg.On("ColPartialDetail", i).Return(domain.CribbageScoreDetail{Runs: 3, Total: 3}).Maybe()
 	}
 	pg.On("TotalScore").Return(20).Maybe()
 	pg.On("GetStarter").Return(domain.NewCard(domain.CardDesignHeart, 7, true)).Maybe()
@@ -126,6 +133,8 @@ func TestCribbageSquaresWebPresenter_Output_Win(t *testing.T) {
 		pg.On("ColScore", i).Return(8).Maybe()
 		pg.On("RowDetail", i).Return(domain.CribbageScoreDetail{Fifteens: 8, Total: 8}).Maybe()
 		pg.On("ColDetail", i).Return(domain.CribbageScoreDetail{Fifteens: 8, Total: 8}).Maybe()
+		pg.On("RowPartialDetail", i).Return(domain.CribbageScoreDetail{Fifteens: 8, Total: 8}).Maybe()
+		pg.On("ColPartialDetail", i).Return(domain.CribbageScoreDetail{Fifteens: 8, Total: 8}).Maybe()
 	}
 	pg.On("TotalScore").Return(64).Maybe()
 	pg.On("GetStarter").Return(domain.NewCard(domain.CardDesignHeart, 7, true)).Maybe()
@@ -211,4 +220,27 @@ func TestCribbageSquaresWebPresenter_HintOutput(t *testing.T) {
 			assert.Equal(t, 3, out.Hint.Col)
 		}
 	})
+}
+
+// #6088: `rowScores` / `rowDetails` は `RowDetail` 由来で、スターターが出る
+// 16 枚目まで**必ず 0**。つまり Web は対局中の内訳を一切出せていなかった。
+// CUI は #6083 でスターター抜きの確定ぶんを出している。
+func TestCribbageSquaresWebPresenter_CarriesThePartialDetails(t *testing.T) {
+	pg := new(interfaces.MockCribbageSquaresGame)
+	// 行 0 に 5 と 10 が置かれていて 15 が 1 つ確定している局面。スターターは
+	// まだ伏せたままなので RowDetail は 0 のまま。**既定より先に登録する。**
+	pg.On("RowPartialDetail", 0).Return(domain.CribbageScoreDetail{Fifteens: 2, Total: 2})
+	setupCribbageSquaresWebMockDefaults(pg)
+
+	p := &CribbageSquaresWebPresenter{}
+	out := parseCribbageSquaresOutput(t, p.Output(pg, nil))
+
+	// **公式のスコアは 0 のまま。**低い数字を確定点と誤解させない。
+	assert.Equal(t, 0, out.RowScores[0], "スターター前の公式スコアは 0 のまま")
+	assert.Equal(t, 0, out.RowDetails[0].Total)
+	// 確定ぶんは別枠で運ぶ。
+	assert.Equal(t, 2, out.RowPartialDetails[0].Total, "15 の 2 点が確定しているのに 0")
+	assert.Equal(t, 2, out.RowPartialDetails[0].Fifteens)
+	assert.Equal(t, 0, out.RowPartialDetails[1].Total, "何も置いていない行に点が付いている")
+	assert.Len(t, out.ColPartialDetails, domain.CribbageSquaresGridSize)
 }

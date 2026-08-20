@@ -51,10 +51,10 @@ func TestSergeantMajorCuiControllerTrumpAcceptsEverySuit(t *testing.T) {
 // **範囲外のスートは弾く。** 通すと選んでいないスートが切り札になる。
 func TestSergeantMajorCuiControllerTrumpRejectsBadArgs(t *testing.T) {
 	for _, tc := range []struct{ name, cmd, want string }{
-		{"missing suit", "t", "Suit is required."},
-		{"non-numeric", "t x", "Invalid suit: x."},
-		{"below the range", "t 0", "Invalid suit: 0."},
-		{"above the range", "t 5", "Invalid suit: 5."},
+		{"missing suit", "t", msgKey("suitRequired")},
+		{"non-numeric", "t x", msgKey("invalidSuit", "val", "x")},
+		{"below the range", "t 0", msgKey("invalidSuit", "val", "0")},
+		{"above the range", "t 5", msgKey("invalidSuit", "val", "5")},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			si := newMockSergeantMajorInteractor()
@@ -81,9 +81,9 @@ func TestSergeantMajorCuiControllerDiscard(t *testing.T) {
 // **既定値で埋めない。** 埋めると捨てていない札が捨てられる。
 func TestSergeantMajorCuiControllerDiscardRejectsBadArgs(t *testing.T) {
 	for _, tc := range []struct{ name, cmd, want string }{
-		{"no args", "d", "Four card indices are required."},
-		{"too few", "d 0 1 2", "Four card indices are required."},
-		{"non-numeric", "d 0 x 2 3", "Invalid card index: x."},
+		{"no args", "d", msgKey("fourIndicesRequired")},
+		{"too few", "d 0 1 2", msgKey("fourIndicesRequired")},
+		{"non-numeric", "d 0 x 2 3", msgInvalidCardIndex("x")},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			si := newMockSergeantMajorInteractor()
@@ -108,8 +108,8 @@ func TestSergeantMajorCuiControllerPlay(t *testing.T) {
 
 func TestSergeantMajorCuiControllerPlayRejectsBadArgs(t *testing.T) {
 	for _, tc := range []struct{ name, cmd, want string }{
-		{"missing index", "p", "Card index is required."},
-		{"non-numeric", "p abc", "Invalid card index: abc."},
+		{"missing index", "p", msgCardIndexRequired()},
+		{"non-numeric", "p abc", msgInvalidCardIndex("abc")},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			si := newMockSergeantMajorInteractor()

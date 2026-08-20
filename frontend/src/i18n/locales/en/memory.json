@@ -18,7 +18,12 @@
       "slow": "2s"
     },
     "pairCount": "Pairs",
-    "pairCountOption": "{{pairs}} pairs ({{cards}} cards)"
+    "pairCountOption": "{{pairs}} pairs ({{cards}} cards)",
+    "difficultyOption": "{{level}} ({{memory}})",
+    "memoryEasy": "forgets often",
+    "memoryNormal": "forgets sometimes",
+    "memoryHard": "rarely forgets",
+    "difficultyTooltip": "Difficulty changes how well the CPU remembers: the chance it recalls a card it has seen, and the chance it forgets one each turn."
   },
   "scores": "Scores",
   "cardFaceDown": "Card {{position}} (face down)",

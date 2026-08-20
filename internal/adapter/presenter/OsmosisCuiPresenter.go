@@ -81,7 +81,8 @@ func (p *OsmosisCuiPresenter) Output(o interfaces.OsmosisGame, lastErr error) st
 			if o.IsStalemate() {
 				b.WriteString(color.Red(i18n.T("cuiSolitaireStalemate")) + "\n")
 			}
-			b.WriteString(i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(o.GetMoveCount())) + "\n")
+			b.WriteString(i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(o.GetMoveCount())) +
+				cuiSolitaireUndoHint(o.CanUndo()) + "\n")
 		case domain.OsmosisPhaseGameClear:
 			b.WriteString(color.Green(i18n.T("cuiSolitaireGameClear")) + " " +
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(o.GetMoveCount())) + "\n")

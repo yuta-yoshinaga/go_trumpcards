@@ -86,6 +86,11 @@ func (p *BisleyCuiPresenter) Output(bg interfaces.BisleyGame, lastErr error) str
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(bg.GetMoveCount())) + "\n")
 		case domain.BisleyPhaseGameOver:
 			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
+			af := bg.GetAceFoundations()
+			kf := bg.GetKingFoundations()
+			b.WriteString(color.Yellow(cuiSolitaireGameOverSummary(
+				cuiCountPileCards(af[:]...)+cuiCountPileCards(kf[:]...),
+				domain.BisleyFoundationCnt*domain.CardValueMax)) + "\n")
 		}
 	})
 }

@@ -767,3 +767,105 @@ func TestRummy500_CpuFindsQKARun(t *testing.T) {
 	require.Len(t, melds, 1, "CPU should meld Q-K-A")
 	assert.Equal(t, 35, domain.Rummy500MeldScore(melds[0]))
 }
+
+// #5611: 設定の CpuDifficulty をドメインがどこも読んでおらず、Easy を選んでも
+// Hard を選んでも CPU の打ち回しが 1 手も変わらなかった。効かない設定は、
+// 効くと信じて選ぶぶんだけ悪い。
+func rummy500WithDifficulty(t *testing.T, d domain.Rummy500CpuDifficulty) *domain.Rummy500 {
+	t.Helper()
+	g := newTestRummy500()
+	cfg := domain.DefaultRummy500Config()
+	cfg.CpuDifficulty = d
+	g.SetConfig(cfg)
+	return g
+}
+
+// 捨てる札の選び方が難易度で変わる。手札は「メルドになりかけの ♠5♠6 と、
+// 孤立した高得点の ♥K、孤立した低得点の ♦3」。
+func TestRummy500DifficultyChangesTheDiscard(t *testing.T) {
+	discardFor := func(t *testing.T, d domain.Rummy500CpuDifficulty) *domain.Card {
+		t.Helper()
+		g := rummy500WithDifficulty(t, d)
+		g.SetPhase(domain.Rummy500PhasePlay)
+		g.SetCurrentPlayerIdx(1)
+		setRummy500Hand(t, g.GetPlayer(1),
+			r5Card(t, domain.CardDesignSpade, 5),
+			r5Card(t, domain.CardDesignSpade, 6),
+			r5Card(t, domain.CardDesignHeart, 13),
+			r5Card(t, domain.CardDesignDiamond, 3),
+		)
+		g.SetDiscardPile(nil)
+		g.CpuPlay()
+		pile := g.GetDiscardPile()
+		require.Len(t, pile, 1, "CPU は必ず1枚捨てる")
+		return pile[0]
+	}
+
+	// Hard: 手札に残しても伸びない孤立札のうち、抱えると重い ♥K を切る。
+	hard := discardFor(t, domain.Rummy500CpuDifficultyHard)
+	assert.Equal(t, domain.CardDesignHeart, hard.GetDesign())
+	assert.Equal(t, 13, hard.GetValue())
+
+	// Easy: 一番安い札を切ってしまう (高得点札を抱えたまま終盤を迎える弱い打ち方)。
+	easy := discardFor(t, domain.Rummy500CpuDifficultyEasy)
+	assert.Equal(t, domain.CardDesignDiamond, easy.GetDesign())
+	assert.Equal(t, 3, easy.GetValue())
+
+	// **3 段階が同じ手にならないことを名指しで確かめる。**「難易度で分岐した」
+	// だけでは、分岐先が同じ値なら設定は依然として効いていない。
+	assert.NotEqual(t, easy.GetValue(), hard.GetValue())
+}
+
+// **Hard の「メルド材料は残す」を名指しで測る。**上のテストの手札では、一番重い札が
+// たまたま孤立札でもあったので、素点だけで選ぶ実装と区別が付かなかった (材料保護を
+// 外すミューテーションが素通りした)。ここでは一番重い札を**ペアの側**に置く。
+func TestRummy500HardKeepsMeldMaterialAndDiscardsTheDeadWeight(t *testing.T) {
+	g := rummy500WithDifficulty(t, domain.Rummy500CpuDifficultyHard)
+	g.SetPhase(domain.Rummy500PhasePlay)
+	g.SetCurrentPlayerIdx(1)
+	// ♠K/♥K はペア (各10点) で最重量、♦9 は孤立の9点、♣3 は孤立の3点。
+	setRummy500Hand(t, g.GetPlayer(1),
+		r5Card(t, domain.CardDesignSpade, 13),
+		r5Card(t, domain.CardDesignHeart, 13),
+		r5Card(t, domain.CardDesignDiamond, 9),
+		r5Card(t, domain.CardDesignClover, 3),
+	)
+	g.SetDiscardPile(nil)
+	g.CpuPlay()
+
+	pile := g.GetDiscardPile()
+	require.Len(t, pile, 1)
+	// 素点だけで選ぶと K を切ってしまう。材料を守るなら切るのは ♦9。
+	assert.Equal(t, domain.CardDesignDiamond, pile[0].GetDesign())
+	assert.Equal(t, 9, pile[0].GetValue())
+}
+
+// Hard は捨て札のトップが自分のメルドを完成させるなら、そこから引く。
+// Easy/Normal は常に山札から引く。
+func TestRummy500HardTakesTheDiscardThatCompletesAMeld(t *testing.T) {
+	drawnFrom := func(t *testing.T, d domain.Rummy500CpuDifficulty) int {
+		t.Helper()
+		g := rummy500WithDifficulty(t, d)
+		g.SetPhase(domain.Rummy500PhaseDraw)
+		g.SetCurrentPlayerIdx(1)
+		setRummy500Hand(t, g.GetPlayer(1),
+			r5Card(t, domain.CardDesignSpade, 5),
+			r5Card(t, domain.CardDesignSpade, 6),
+			r5Card(t, domain.CardDesignHeart, 2),
+		)
+		// トップの ♠7 は ♠5♠6 を 3 枚のランに仕上げる。
+		g.SetDiscardPile([]*domain.Card{
+			r5Card(t, domain.CardDesignClover, 9),
+			r5Card(t, domain.CardDesignSpade, 7),
+		})
+		g.SetDrawPile([]*domain.Card{r5Card(t, domain.CardDesignDiamond, 4)})
+		g.CpuPlay()
+		return len(g.GetDiscardPile())
+	}
+
+	// Hard は捨て札から取るので山が 1 枚減る。
+	assert.Equal(t, 1, drawnFrom(t, domain.Rummy500CpuDifficultyHard), "Hard は完成する札を拾う")
+	// Normal は山札から引くので捨て札は動かない。
+	assert.Equal(t, 2, drawnFrom(t, domain.Rummy500CpuDifficultyNormal), "Normal は山札から引く")
+	assert.Equal(t, 2, drawnFrom(t, domain.Rummy500CpuDifficultyEasy), "Easy は山札から引く")
+}

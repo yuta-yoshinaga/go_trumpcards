@@ -50,13 +50,13 @@ func (c *TarocchiniCuiController) Exec(command string) string {
 			case "scarto", "discard":
 				return c.execScarto(args)
 			case "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.di.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.di.Play)
 			case "n", "next":
 				return c.di.NextTrick(), true
 			case "nr", "nextround":
 				return c.di.NextRound(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.di.GetConfig()
 					cfg.CpuDifficulty = domain.TarocchiniCpuDifficulty(v)
 					return c.di.ResetWithConfig(cfg)
@@ -74,11 +74,11 @@ func (c *TarocchiniCuiController) Exec(command string) string {
 // 変わったときに案内だけが古くなる。
 func (c *TarocchiniCuiController) execScarto(args []string) (string, bool) {
 	if len(args) < domain.TarocchiniSurplus {
-		return fmt.Sprintf("%d card indices are required (e.g. scarto 0 1).", domain.TarocchiniSurplus), true
+		return invalidArg("cardIndicesRequiredScartoTwo", "n", fmt.Sprint(domain.TarocchiniSurplus)), true
 	}
 	indices, skipped := cuiutil.ParseIntSlice(args)
 	if len(skipped) > 0 {
-		return "Invalid card index: " + skipped[0] + ".", true
+		return invalidArg("invalidCardIndex", "val", skipped[0]), true
 	}
 	return c.di.Discard(indices), true
 }

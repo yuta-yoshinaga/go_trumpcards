@@ -116,7 +116,15 @@ func (p *PochCuiPresenter) promptBlock(c interfaces.PochGame) string {
 	case domain.PochPhaseStaking:
 		return i18n.T("poch.promptStaking") + "\n"
 	case domain.PochPhasePochen:
-		return i18n.Tf("poch.promptPochen", "target", strconv.Itoa(c.GetBetTarget())) + "\n"
+		// **自分の組は自分にとって既知の情報**。賭けるか降りるかを決めるのに
+		// 手札を数え直させる理由が無い (勝敗判定と同じ PochBestCombo を使う)。
+		combo := i18n.T("poch.yourComboNone")
+		if best := c.GetBestCombo(0); best.Size > 0 {
+			combo = i18n.Tf("poch.yourCombo",
+				"size", strconv.Itoa(best.Size), "rank", strconv.Itoa(best.Rank))
+		}
+		return combo + "\n" +
+			i18n.Tf("poch.promptPochen", "target", strconv.Itoa(c.GetBetTarget())) + "\n"
 	case domain.PochPhaseStops:
 		var sb strings.Builder
 		if w := c.GetPochenWinner(); w >= 0 {
@@ -180,5 +188,5 @@ var pochHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *PochCuiPresenter) ActionLogOutput(c interfaces.PochGame) string {
-	return actionLogOutputText(c)
+	return actionLogOutputTextForSeats[*domain.PochPlayer](c)
 }

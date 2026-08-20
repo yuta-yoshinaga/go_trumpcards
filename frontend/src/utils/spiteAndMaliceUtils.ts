@@ -1,7 +1,17 @@
 import type { Card } from '../types/card';
 
 /** Spite & Malice: K (13) acts as a wild that fills any foundation slot. */
-const KING_VALUE = 13;
+export const KING_VALUE = 13;
+
+/**
+ * True when the card is the wild King.
+ *
+ * **同じ 13 を画面側にも書かない (#5560)。**ワイルドという規則はここが持ち主で、
+ * 表示がその規則を自前で持つと、片方だけ直したときに黙って食い違う。
+ */
+export function isSpiteAndMaliceWild(card: { value: number } | null | undefined): boolean {
+  return card?.value === KING_VALUE;
+}
 /** Spite & Malice: a foundation completes at Q (12) — the next card cannot stack on a full foundation. */
 const FOUNDATION_TOP_COMPLETE = 12;
 

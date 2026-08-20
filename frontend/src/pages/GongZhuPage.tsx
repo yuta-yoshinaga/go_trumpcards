@@ -10,6 +10,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { GongZhuScoreBreakdownPanel } from '../components/GongZhuScoreBreakdownPanel';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
@@ -430,6 +431,14 @@ function GongZhuPageContent() {
               />
             </div>
 
+            {/* Round-end score breakdown (#5630) */}
+            {isRoundEnd && state.scoreBreakdowns && state.scoreBreakdowns.length > 0 && (
+              <GongZhuScoreBreakdownPanel
+                breakdowns={state.scoreBreakdowns}
+                playerName={(idx) => playerName(idx, state.players[idx]?.isHuman ?? false)}
+              />
+            )}
+
             {/* Action log */}
             <ActionLogSection
               isEndPhase={isGameEnd}
@@ -462,12 +471,19 @@ function GongZhuPageContent() {
 
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
 
-            {hint && (
-              <div className="text-ds-warning text-sm mb-2">
-                {t('hintAvailable')}: {hint.cardIndices.map((i) => `[${i}]`).join(', ')} (
-                {t(`hintReason.${hint.reason}`)})
-              </div>
-            )}
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-testid="gongzhu-hint-live" role="status" aria-live="polite">
+              {hint && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {t('hintAvailable')}: {hint.cardIndices.map((i) => `[${i}]`).join(', ')} (
+                  {t(`hintReason.${hint.reason}`)})
+                </div>
+              )}
+            </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex gap-2 items-center" data-tutorial="gz-play-button">

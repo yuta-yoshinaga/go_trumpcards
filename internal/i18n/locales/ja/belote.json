@@ -31,5 +31,8 @@
   "hintOrderUp": "[HINT: 取る ({{reason}})]",
   "hintPass": "[HINT: パス ({{reason}})]",
   "hintCallSuit": "[HINT: {{suit}}をコール ({{reason}})]",
-  "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]"
+  "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
+  "helpHint": "  h                    助言を表示",
+  "dixDeDerNotice": "最終トリック: 勝ったチームに Dix de Der +{{points}} 点"
 }

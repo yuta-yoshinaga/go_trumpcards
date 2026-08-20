@@ -62,7 +62,7 @@ func caribbeanStudDispatch(bc *baseController, w http.ResponseWriter, ci usecase
 	case "f", "fold":
 		bc.writePresenterResponse(w, ci.Fold())
 	default:
-		return dispatchResetAndLog(param.Command, bc, w, ci.Reset, ci.ActionLog)
+		return dispatchResetHintAndLog(param.Command, bc, w, ci.Reset, ci.Hint, ci.ActionLog)
 	}
 	return true
 }

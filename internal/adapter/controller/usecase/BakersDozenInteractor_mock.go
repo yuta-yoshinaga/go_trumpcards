@@ -34,6 +34,12 @@ func (_m *MockBakersDozenInteractor) Hint() string {
 	return ret.Get(0).(string)
 }
 
+// Targets は列 col の一番下の札を置ける先を一覧する。
+func (_m *MockBakersDozenInteractor) Targets(col int) string {
+	ret := _m.Called(col)
+	return ret.Get(0).(string)
+}
+
 func (_m *MockBakersDozenInteractor) AutoComplete() string {
 	ret := _m.Called()
 	return ret.Get(0).(string)

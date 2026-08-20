@@ -42,9 +42,19 @@ func (p *GaigelCuiPresenter) Output(g interfaces.GaigelGame, lastErr error) stri
 			"name", cuiPlayerName(g.GetPlayer(dealerIdx), dealerIdx)) + "\n")
 
 		if trumpSuit := g.GetTrumpSuit(); trumpSuit > 0 {
-			out.WriteString(i18n.Tf("gaigel.trumpLine",
-				"suit", cuiSuitName(trumpSuit),
-				"stock", strconv.Itoa(g.GetStockRemaining())) + "\n")
+			// **表向きの1枚が切り札を決め、それが最後に山から引かれる札** (#5686)。
+			// Web はその実カードを出しているのに、CUI はスートしか出していなかった。
+			// 山が尽きるとこの札は引かれて無くなるので、そのときはスートだけ。
+			if card := g.GetTrumpCard(); card != nil {
+				out.WriteString(i18n.Tf("gaigel.trumpLineWithCard",
+					"suit", cuiSuitName(trumpSuit),
+					"card", cuiCardStr(card),
+					"stock", strconv.Itoa(g.GetStockRemaining())) + "\n")
+			} else {
+				out.WriteString(i18n.Tf("gaigel.trumpLine",
+					"suit", cuiSuitName(trumpSuit),
+					"stock", strconv.Itoa(g.GetStockRemaining())) + "\n")
+			}
 		} else {
 			out.WriteString(i18n.T("gaigel.trumpUndecided") + "\n")
 		}
@@ -128,7 +138,7 @@ func (p *GaigelCuiPresenter) HintOutput(g interfaces.GaigelGame) string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *GaigelCuiPresenter) ActionLogOutput(g interfaces.GaigelGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.GaigelPlayer](g)
 }
 
 // gaigelHintReasonKeys maps Gaigel-specific hint-reason identifiers to their

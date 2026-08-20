@@ -43,7 +43,7 @@ func (c *LooCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "d", "decide":
-				return cuiutil.WithParsedInt(args, "Decision is required (0=pass, 1=play).", "Invalid decision: %s. Please enter 0 or 1.", 0, 1, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "decisionRequired0Pass1Play", "invalidDecision0Or1", 0, 1, func(v int) string {
 					return c.li.Decide(v == 1)
 				})
 			case "play":
@@ -51,11 +51,11 @@ func (c *LooCuiController) Exec(command string) string {
 			case "pass":
 				return c.li.Decide(false), true
 			case "p":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", 0, domain.LooHandSize-1, c.li.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", 0, domain.LooHandSize-1, c.li.Play)
 			case "n", "next", "nr", "nextround":
 				return c.li.NextRound(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.li.GetConfig()
 					cfg.CpuDifficulty = domain.LooCpuDifficulty(v)
 					return c.li.ResetWithConfig(cfg)

@@ -17,5 +17,10 @@
   "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
   "hintReasonWinTrick": "取れば山札から1枚補充できる",
   "hintReasonNoStock": "取れるが山札が空なので補充は無い",
-  "hintReasonDuck": "取れないので安い札から"
+  "hintReasonDuck": "取れないので安い札から",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
+  "helpHint": "  h                    助言を表示",
+  "gameEndLastTrickYou": "ゲーム終了！ 全員が同時に手札を出し切り、あなたが最後のトリックを取りました。",
+  "gameEndLastTrickCpu": "ゲーム終了！ 全員が同時に手札を出し切り、{{name}} が最後のトリックを取りました。",
+  "gameEndGiveUp": "ゲーム終了！ あなたが投了し、{{name}} の勝ちです。"
 }

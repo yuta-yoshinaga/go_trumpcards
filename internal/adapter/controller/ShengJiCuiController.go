@@ -33,10 +33,9 @@ func (c *ShengJiCuiController) Exec(command string) string {
 			switch cmd {
 			case "d", "declare":
 				// **0 はパス**なので下限は 0。
-				return cuiutil.WithParsedInt(args, "Suit is required (0 to pass, 1-4 to declare).",
-					"Invalid suit: %s.", domain.ShengJiNoTrump, domain.CardDesignDiamond, func(v int) string {
-						return c.gi.Declare(v)
-					})
+				return cuiutil.WithParsedIntKeys(args, "suitRequiredOrPass", "invalidSuit", domain.ShengJiNoTrump, domain.CardDesignDiamond, func(v int) string {
+					return c.gi.Declare(v)
+				})
 			case "b", "bury":
 				// **底牌を拾った直後だけ手札が 25 + 8 枚**あるので、上限が広い。
 				return shengJiParseIndexes(args, domain.ShengJiKittySize,
@@ -60,17 +59,17 @@ func (c *ShengJiCuiController) Exec(command string) string {
 // 埋め戻したあとは 25 枚しかない。
 func shengJiParseIndexes(args []string, want, maxIdx int, apply func([]int) string) (string, bool) {
 	if len(args) == 0 {
-		return "Card indexes are required (e.g. p 0 1 for a pair).", true
+		return invalidArg("cardIndexesRequiredPair"), true
 	}
 	if want > 0 && len(args) != want {
-		return "Give exactly " + strconv.Itoa(want) + " card indexes.", true
+		return invalidArg("giveExactlyNIndexes", "n", strconv.Itoa(want)), true
 	}
 	idxs := make([]int, 0, len(args))
 	seen := map[int]bool{}
 	for _, a := range args {
 		v, err := strconv.Atoi(a)
 		if err != nil || v < 0 || v > maxIdx {
-			return "Invalid card index: " + a + ". Please enter 0-" + strconv.Itoa(maxIdx) + ".", true
+			return invalidArg("invalidCardIndexRange", "val", a, "max", strconv.Itoa(maxIdx)), true
 		}
 		// **同じ札を 2 回数えられない。**通すと 1 枚から対子が作れてしまう。
 		if seen[v] {

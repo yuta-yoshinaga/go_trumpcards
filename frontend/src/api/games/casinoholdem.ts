@@ -6,6 +6,6 @@ import { gameExec } from '../gameExec';
 
 /** API client for the Casino Hold'em /casinoholdem/exec endpoint. */
 export const casinoholdemApi = {
-  exec: (command: 'reset' | 'bet' | 'call' | 'fold' | 'log', amount?: number, bonusBet?: number) =>
+  exec: (command: 'reset' | 'bet' | 'call' | 'fold' | 'log' | 'hint', amount?: number, bonusBet?: number) =>
     gameExec<CasinoHoldemResponse>('casinoholdem', { command, amount, bonusBet }),
 };

@@ -31,11 +31,11 @@ func (bcc *BaccaratCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bet":
-				amount, errMsg, ok := cuiutil.ParseIntArg(args, "Bet amount is required.", "Invalid bet amount. Please enter a number.", 1, math.MaxInt)
+				amount, errMsg, ok := cuiutil.ParseIntArgKeys(args, "betAmountRequired", "invalidBetAmount", 1, math.MaxInt)
 				if !ok {
 					return errMsg, true
 				}
-				betType, errMsg, ok := cuiutil.ParseIntArg(args[1:], "Bet type is required (0=Player, 1=Banker, 2=Tie).", "Invalid bet type. Please enter 0(Player), 1(Banker), or 2(Tie).", 0, 2)
+				betType, errMsg, ok := cuiutil.ParseIntArgKeys(args[1:], "betTypeRequired0Player1Banker2Tie", "invalidBetType0Player1BankerOr2Tie", 0, 2)
 				if !ok {
 					return errMsg, true
 				}

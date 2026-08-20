@@ -25,6 +25,8 @@ const playingState: PenguinResponse = {
   freeCells: [card('DIAMOND', 3), card('CLOVER', 5), card('HEART', 7), null, null, null, null],
   foundation: [[], [], [], []],
   baseRank: 4,
+  maxMovableCards: 8,
+  maxMovableCardsToEmptyColumn: 4,
   phase: 0,
   moveCount: 5,
   canUndo: true,
@@ -33,10 +35,14 @@ const playingState: PenguinResponse = {
   messageCode: 'penguin.playing',
 };
 
-// All free cells occupied and every column non-empty → supermoveLimit = (1+0)*2^0 = 1,
-// so the 2-card stack in column 0 exceeds the limit and shows the tooltip.
+// All free cells occupied and every column non-empty, so the domain reports a
+// limit of 1 and the 2-card stack in column 0 exceeds it. The limit now comes
+// from the response (#5614) rather than being recomputed here, so the fixture
+// states it instead of implying it.
 const supermoveExceedState: PenguinResponse = {
   ...playingState,
+  maxMovableCards: 1,
+  maxMovableCardsToEmptyColumn: 0,
   freeCells: [
     card('DIAMOND', 3),
     card('CLOVER', 5),
@@ -140,20 +146,26 @@ describe('PenguinPage', () => {
     expect(topCard).toHaveAttribute('data-supermove-blocked', 'true');
     // limit=1, cells=0, cols=0
     expect(topCard).toHaveAttribute('title', '一度に動かせるのは1枚まで（空きセル0・空き列0）');
+
+    // **同じ内容が読み上げにも出る。** title はホバー時にしか読まれない (#5820)。
+    expect(topCard.getAttribute('aria-label') ?? '').toContain('一度に動かせるのは1枚まで');
+    // 負のコントロール: 上限内の札には付かない。
+    const movable = screen.getByTestId('pg-tableau-0-1');
+    expect(movable).not.toHaveAttribute('data-supermove-blocked');
+    expect(movable.getAttribute('aria-label') ?? '').not.toContain('一度に動かせるのは');
   });
 
   it('shows a supermove-limit badge reflecting the free-cell/column counts', async () => {
-    // playingState: 4 empty free cells, 5 empty columns → (1+4)*2^5 = 160.
+    // 数字はサーバーが返した maxMovableCards をそのまま出す (#5614)。
     renderWithProviders(<PenguinPage />);
     const badge = await screen.findByTestId('pg-supermove-badge');
-    expect(badge).toHaveTextContent('最大移動: 160枚');
+    expect(badge).toHaveTextContent('最大移動: 8枚');
   });
 
   it('supermove-limit badge updates when free space shrinks', async () => {
     mockExec.mockResolvedValue(supermoveExceedState);
     renderWithProviders(<PenguinPage />);
     const badge = await screen.findByTestId('pg-supermove-badge');
-    // 0 empty free cells, 0 empty columns → (1+0)*2^0 = 1.
     expect(badge).toHaveTextContent('最大移動: 1枚');
   });
 
@@ -567,5 +579,59 @@ describe('PenguinPage', () => {
   it('renders tutorial button', async () => {
     renderWithProviders(<PenguinPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument());
+  });
+});
+
+// #5614: 空き列へ動かすときの上限はドメインが別に持っている (その空き列自身を
+// 経由地に使えないぶん低い)。ページは一般式で計算し直していたので、空き列宛ての
+// 束を「動かせる」と見せてサーバーに弾かれることがあった。
+describe('PenguinPage empty-column move limit', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
+  });
+
+  it('shows the server limits instead of recomputing them', async () => {
+    // 一般式なら (1 + 空きセル4) * 2^空き列5 = 160。サーバーは 8 と言っている。
+    mockExec.mockResolvedValue({ ...playingState, maxMovableCards: 8, maxMovableCardsToEmptyColumn: 4 });
+    renderWithProviders(<PenguinPage />);
+
+    const badge = await screen.findByTestId('pg-supermove-badge');
+    expect(badge).toHaveTextContent('8');
+    // 空き列宛ての低い方も出す ── CUI の penguin.supermoveToEmpty と同じ数字。
+    expect(badge).toHaveTextContent('4');
+  });
+
+  it('marks the empty column as out of reach for a stack that only the lower limit blocks', async () => {
+    // 3 枚の束: 一般上限 8 なら動かせるが、空き列上限 2 は超える。
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [[card('SPADE', 13), card('SPADE', 12), card('SPADE', 11)], [], [], [], [], [], []],
+      maxMovableCards: 8,
+      maxMovableCardsToEmptyColumn: 2,
+    });
+    renderWithProviders(<PenguinPage />);
+
+    const deep = await screen.findByTestId('pg-tableau-0-0');
+    // 一般上限では動く ── 札そのものはブロックしない。
+    expect(deep).not.toHaveAttribute('data-supermove-blocked');
+
+    fireEvent.click(deep);
+    const emptyCol = await screen.findByTestId('pg-empty-col-1');
+    expect(emptyCol).toHaveAttribute('data-empty-col-blocked', 'true');
+    expect(emptyCol.getAttribute('title') ?? '').toContain('2');
+  });
+
+  it('leaves the empty column usable when the stack fits the lower limit', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [[card('SPADE', 13), card('SPADE', 12)], [], [], [], [], [], []],
+      maxMovableCards: 8,
+      maxMovableCardsToEmptyColumn: 2,
+    });
+    renderWithProviders(<PenguinPage />);
+
+    fireEvent.click(await screen.findByTestId('pg-tableau-0-0'));
+    expect(await screen.findByTestId('pg-empty-col-1')).not.toHaveAttribute('data-empty-col-blocked');
   });
 });

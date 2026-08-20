@@ -21,6 +21,14 @@ func (iwp *IndianPokerWebPresenter) Output(ip interfaces.IndianPokerGame, lastEr
 func (iwp *IndianPokerWebPresenter) buildOutput(ip interfaces.IndianPokerGame, lastErr error) *controller.IndianPokerWebOutput {
 	resObj := new(controller.IndianPokerWebOutput)
 	resObj.Phase = ip.GetPhase()
+	// 人間の推定勝率。CUI (equityLine) と同じ値を送るので、同じ局面で
+	// 画面ごとに違う勝率が出ることはない。
+	for i := 0; i < ip.GetPlayerCnt(); i++ {
+		if p := ip.GetPlayer(i); p != nil && p.GetIsHuman() {
+			resObj.EstimatedStrength = ip.GetEstimatedStrength(i)
+			break
+		}
+	}
 	resObj.Pot = ip.GetPot()
 	resObj.DealerIdx = ip.GetDealerIdx()
 	resObj.CurrentTurn = ip.GetCurrentTurn()

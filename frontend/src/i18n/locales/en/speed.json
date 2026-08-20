@@ -41,5 +41,6 @@
     "drawPile": "Draw pile: cards are automatically drawn when you play",
     "flipButton": "Flip button: press when stuck to turn over new center cards"
   },
-  "centerPileCard": "Center pile {{n}}: {{card}}"
+  "centerPileCard": "Center pile {{n}}: {{card}}",
+  "centerPileNeedsSelection": "select a card from your hand first"
 }

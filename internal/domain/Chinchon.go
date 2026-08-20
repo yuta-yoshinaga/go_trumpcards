@@ -29,6 +29,13 @@ const (
 	ChinchonPhaseGameEnd ChinchonPhase = 4
 )
 
+// ChinchonRankPosition は chinchonRankPosition の公開版。
+//
+// **メルドが「セット (同ランク)」か「ラン (同スート連番)」か**は、レイオフで
+// 乗せられる札を決める。画面がその判定を書き写さずに済むよう、隣接位置の定義を
+// 公開する (#5665) -- 8/9/10 を抜いた 40 枚デッキなので、7 の次は J になる。
+func ChinchonRankPosition(value int) int { return chinchonRankPosition(value) }
+
 // chinchonRankPosition は 8・9・10 を除いた40枚デッキでのランクの「隣接位置」を返す。
 //
 // Chinchón は 8/9/10 を抜いた40枚のラテンデッキを使うため、ラン (連続) の判定では

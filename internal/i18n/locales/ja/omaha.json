@@ -46,5 +46,19 @@
   "addonPrompt": "アドオンしますか? ({{chips}}チップ) (ad=アドオン / sa=スキップ)",
   "gameEnd": "ゲーム終了",
   "hiLoRuleLine": "※ロー: 8以下5枚(8 or Better)。不成立時はHiが総取り",
-  "currentBestHand": "現在の最善役: {{hand}} ({{cards}})"
+  "currentBestHand": "現在の最善役: {{hand}} ({{cards}})",
+  "helpExampleRaise": "  ra 200               合計 200 チップになるようレイズする",
+  "helpExampleCall": "  c                    現在のベットにコールする",
+  "helpLog": "  l                    行動ログを表示",
+  "learningHeader": "[学習モード]",
+  "learningLine": "  勝率: {{equity}}% / ポットオッズ: {{potodds}}%",
+  "learningEvPlus": "  +EV (勝率がポットオッズを上回っています。コール有利)",
+  "learningEvMinus": "  -EV (勝率がポットオッズ以下です。コール不利)",
+  "resultBest": " / ベスト: {{cards}}",
+  "resultBestLabel": "ベスト:",
+  "resultBestLegend": "  (* = 自分の手札から使った札)",
+  "boardLowLive": "ロー: 成立圏 (ボードに8以下が3ランク)",
+  "boardLowPossible": "ロー: 成立可能 (あと{{needed}}ランク)",
+  "boardLowImpossible": "ロー: 不成立確定",
+  "scoop": "🏆 スクープ! ハイ・ロー総取り"
 }

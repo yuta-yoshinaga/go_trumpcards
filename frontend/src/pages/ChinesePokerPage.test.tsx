@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, ChinesePokerResponse } from '../types/card';
 import { ChinesePokerPhase } from '../types/phases';
@@ -8,10 +8,11 @@ vi.mock('../api/gameApi', () => ({
   chinesepokerApi: { exec: vi.fn() },
 }));
 vi.mock('../hooks/useGameHint', () => ({
-  useGameHint: () => ({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() }),
+  useGameHint: vi.fn(() => ({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() })),
 }));
 
 import { chinesepokerApi } from '../api/gameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { ChinesePokerPage } from './ChinesePokerPage';
 
@@ -249,5 +250,53 @@ describe('ChinesePokerPage', () => {
     expect(screen.queryByTestId('cp-foul-warning')).not.toBeInTheDocument();
     assignFrontMiddle([0, 1, 2, 3, 4, 5, 6, 7]);
     expect(screen.queryByTestId('cp-foul-warning')).not.toBeInTheDocument();
+  });
+});
+
+// #5615: ヒントは「ファウルの危険がある」としか言わず、**どの札をどこへ**は
+// プレイヤーの試行錯誤だった。サーバー (CUI と同じ計算) が前列に勧める札を
+// 名指しできるようになったので、その札を盤面で示す。
+describe('ChinesePokerPage suggested front row', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
+  });
+
+  it('marks the cards the hint names for the front row', async () => {
+    vi.mocked(useGameHint).mockReturnValue({
+      hint: {
+        targetAction: 'setHands',
+        reason: 'frontendHint.chinesepokerSplit',
+        confidence: 'moderate',
+        targetIndices: [10, 11, 12],
+      },
+      hintEnabled: true,
+      setHintEnabled: vi.fn(),
+    });
+    mockExec.mockResolvedValue(setHandsState);
+    renderWithProviders(<ChinesePokerPage />);
+
+    await waitFor(() => expect(screen.getByTestId('cp-hand-card-10')).toHaveAttribute('data-hint-front', 'true'));
+    expect(screen.getByTestId('cp-hand-card-12')).toHaveAttribute('data-hint-front', 'true');
+    // 名指しされていない札は印を持たない。
+    expect(screen.getByTestId('cp-hand-card-0')).not.toHaveAttribute('data-hint-front');
+  });
+
+  it('marks nothing while the hint is switched off', async () => {
+    vi.mocked(useGameHint).mockReturnValue({
+      hint: {
+        targetAction: 'setHands',
+        reason: 'frontendHint.chinesepokerSplit',
+        confidence: 'moderate',
+        targetIndices: [10, 11, 12],
+      },
+      hintEnabled: false,
+      setHintEnabled: vi.fn(),
+    });
+    mockExec.mockResolvedValue(setHandsState);
+    renderWithProviders(<ChinesePokerPage />);
+
+    await waitFor(() => expect(screen.getByTestId('cp-hand-card-10')).toBeInTheDocument());
+    expect(screen.getByTestId('cp-hand-card-10')).not.toHaveAttribute('data-hint-front');
   });
 });

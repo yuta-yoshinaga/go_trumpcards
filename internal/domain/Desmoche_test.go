@@ -828,3 +828,27 @@ func TestDesmocheUnmarshalClampsIndices(t *testing.T) {
 		t.Errorf("GetScore(0) = %d, want the value that was sent", got)
 	}
 }
+
+// **注記が主張している規則そのもの。** 他家のメルドへ付けた札は、そのメルドの
+// 持ち主のものになり、自分の上がり枚数 (10) には数えない (#5720)。
+func TestDesmoche_MeldedCountIgnoresOtherOwners(t *testing.T) {
+	g := NewDefaultDesmoche()
+	g.Reset()
+	run := func(owner int) *DesmocheMeld {
+		return &DesmocheMeld{Owner: owner, Kind: DesmocheMeldRun, Cards: []*Card{
+			NewCard(CardDesignSpade, 5, true),
+			NewCard(CardDesignSpade, 6, true),
+			NewCard(CardDesignSpade, 7, true),
+		}}
+	}
+	g.melds = []*DesmocheMeld{run(1), run(2)}
+
+	if got := g.MeldedCount(0); got != 0 {
+		t.Errorf("MeldedCount(0) = %d, want 0 — 他家のメルドは自分の枚数に入らない", got)
+	}
+	// 自分のメルドはもちろん数える (負のコントロール: 常に 0 を返す実装を弾く)。
+	g.melds = []*DesmocheMeld{run(0), run(1)}
+	if got := g.MeldedCount(0); got != 3 {
+		t.Errorf("MeldedCount(0) = %d, want 3", got)
+	}
+}

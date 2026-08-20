@@ -46,10 +46,9 @@ func TestBadugiCuiController_Exchange_OutOfRangeSkipped(t *testing.T) {
 	mi := newBadugiMockInteractor()
 	c := NewBadugiCuiController(mi)
 	// Badugi uses 4 cards, valid range 0..3. 4 is skipped, 1 is valid.
-	mi.On("Exchange", []int{1}).Return("exchange ok")
 	result := c.Exec("e 4 1")
-	assert.Contains(t, result, "'4'")
-	assert.Contains(t, result, "exchange ok")
+	assert.Contains(t, result, "4")
+	mi.AssertNotCalled(t, "Exchange", mock.Anything)
 }
 
 func TestBadugiCuiController_Exchange_NoIndices(t *testing.T) {
@@ -114,7 +113,7 @@ func TestBadugiCuiController_BettingLimit_NoArg(t *testing.T) {
 	mi := newBadugiMockInteractor()
 	c := NewBadugiCuiController(mi)
 	result := c.Exec("bl")
-	assert.Contains(t, result, "Betting limit type is required")
+	assert.Contains(t, result, msgStem("bettingLimitTypeRequired0Fixed1Potlimit2Nolimit"))
 }
 
 func TestBadugiCuiController_BettingLimit_Valid(t *testing.T) {
@@ -132,7 +131,7 @@ func TestBadugiCuiController_BettingLimit_Invalid(t *testing.T) {
 	mi := newBadugiMockInteractor()
 	c := NewBadugiCuiController(mi)
 	result := c.Exec("bl 7")
-	assert.Contains(t, result, "Invalid betting limit")
+	assert.Contains(t, result, msgStem("invalidBettingLimit02"))
 }
 
 func TestBadugiCuiController_SetCpuCount(t *testing.T) {
@@ -167,7 +166,7 @@ func TestBadugiCuiController_MetaAI_Invalid(t *testing.T) {
 	mi := newBadugiMockInteractor()
 	c := NewBadugiCuiController(mi)
 	result := c.Exec("mai abc")
-	assert.Equal(t, i18n.Tf("invalidMetaAI", "val", "abc"), result)
+	assert.Equal(t, invalidArg("invalidMetaAI", "val", "abc"), result)
 }
 
 // --- log ---

@@ -3,6 +3,8 @@
 package controller
 
 import (
+	"strings"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
@@ -43,13 +45,13 @@ func (c *ScoponeCuiController) Exec(command string) string {
 			case "n", "next", "nextround":
 				return c.si.NextRound(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.si.GetConfig()
 					cfg.CpuDifficulty = domain.ScoponeCpuDifficulty(v)
 					return c.si.ResetWithConfig(cfg)
 				})
 			case "st", "settarget":
-				return cuiutil.WithParsedInt(args, "target score is required.", "Invalid target score: %s.", 1, domain.ScoponeMaxTargetScore, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "targetScoreRequiredAlt", "invalidTargetScorePlain", 1, domain.ScoponeMaxTargetScore, func(v int) string {
 					cfg := c.si.GetConfig()
 					cfg.TargetScore = v
 					return c.si.ResetWithConfig(cfg)
@@ -64,12 +66,18 @@ func (c *ScoponeCuiController) Exec(command string) string {
 // handlePlay は `p <h> [t1 t2 ...]` を処理する。
 func (c *ScoponeCuiController) handlePlay(args []string) (string, bool) {
 	if len(args) < 1 {
-		return "Usage: p <handIdx> [tableIdx...]", true
+		return invalidArg("usagePHandidxTableidxMany"), true
 	}
-	handIdx, _, ok := cuiutil.ParseIntArg([]string{args[0]}, "hand index is required", "Invalid hand index: %s", 0, 39)
+	handIdx, _, ok := cuiutil.ParseIntArgKeys([]string{args[0]}, "handIndexRequired", "invalidHandIndex", 0, 39)
 	if !ok {
-		return "Invalid hand index: " + args[0], true
+		return invalidArg("invalidHandIndexRaw", "val", args[0]), true
 	}
 	tableIdxs, skipped := cuiutil.ParseIntSlice(args[1:])
-	return cuiutil.PrependSkippedWarning(c.si.Play(handIdx, tableIdxs), skipped), true
+	// Refuse before playing. PrependSkippedWarning ran the move first and
+	// put the warning above the new board, so a mistyped index was dropped
+	// and the remaining ones played as a different, legal move (issue #5390).
+	if len(skipped) > 0 {
+		return invalidArg("invalidCardIndex", "val", strings.Join(skipped, ", ")), true
+	}
+	return c.si.Play(handIdx, tableIdxs), true
 }

@@ -247,3 +247,19 @@ func TestBuraWholeHandIndices_ToleratesAMissingSeat(t *testing.T) {
 	m.On("GetPlayer", 0).Return((*domain.BuraPlayer)(nil))
 	assert.Nil(t, buraWholeHandIndices(m))
 }
+
+// #5568: 役の一覧はドメインから来ること。画面側で数え直すと、役を足したとき
+// 案内だけが古くなる。
+func TestBuraWebPresenter_CarriesTheWinningCombinations(t *testing.T) {
+	out := buraDecode(t, new(BuraWebPresenter).Output(buraTestGame(t), nil))
+
+	got, ok := out["winningCombinations"].([]any)
+	require.True(t, ok, "winningCombinations missing from the response")
+	want := make([]any, 0, len(domain.BuraWinningCombinations()))
+	for _, c := range domain.BuraWinningCombinations() {
+		want = append(want, c.Key())
+	}
+	assert.Equal(t, want, got)
+	// 空で通る検査にしない。
+	assert.NotEmpty(t, got)
+}

@@ -58,7 +58,9 @@
   },
   "roundResult": {
     "title": "Round Result",
-    "tricks": "{{name}} tricks: {{count}}"
+    "tricks": "{{name}} tricks: {{count}}",
+    "payoutMade": "{{name}} gains {{chips}} chips (contract made)",
+    "payoutFailed": "each opponent gains {{chips}} chips (contract failed)"
   },
   "hintAvailable": "Hint",
   "hint": {
@@ -74,5 +76,6 @@
     "actions": "In the bidding phase, buttons appear for Pass / Two (2 tricks) / Three (3 tricks) / Four (4 tricks) / Nap (all 5 tricks, high stakes). Only a bid higher than the current highest is selectable. The highest bidder becomes the declarer, picks trump, and leads. Make the bid to win chips (a successful Nap wins 10 chips); miss it and the opponents each win the bid value (a failed Nap costs 5 chips each)."
   },
   "hintRequested": "Hint available",
-  "noHint": "No hint available"
+  "noHint": "No hint available",
+  "bidStake": "+{{make}}/+{{fail}}"
 }

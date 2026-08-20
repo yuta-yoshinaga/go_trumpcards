@@ -40,6 +40,11 @@ export interface TonkResponse extends BaseGameResponse {
   opponentMelds: TonkMeld[];
   opponentDeadwood: Card[];
   isTonk: boolean;
+  /**
+   * Opponent hand size at or below which knocking risks an undercut. Sent so
+   * the warning fires on the same board state in both UIs.
+   */
+  undercutRiskMax: number;
   isUndercut: boolean;
   /**
    * 1枚捨てて到達できる最小デッドウッド。人間のディスカードフェーズ以外は -1。

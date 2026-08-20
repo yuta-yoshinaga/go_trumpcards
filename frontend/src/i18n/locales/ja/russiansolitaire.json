@@ -41,5 +41,6 @@
   "tableauRule": "タブロー間の移動は「同じスートで1つ下」のみ。Yukonと違い交互色では繋げません。裏向きのカードは動かせません。",
   "faceDownRule": "裏向きのカードは移動できません（表向きのカードのみ操作可能）",
   "dismissRule": "ルール説明を閉じる",
-  "faceDownCardLabel": "列{{col}}、上から{{pos}}枚目、裏向き"
+  "faceDownCardLabel": "列{{col}}、上から{{pos}}枚目、裏向き",
+  "blockMoveLabel": "{{n}}枚まとめて移動"
 }

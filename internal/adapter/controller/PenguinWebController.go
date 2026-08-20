@@ -34,11 +34,17 @@ type PenguinWebOutputHint struct {
 
 // PenguinWebOutput ペンギンWebアウトプット
 type PenguinWebOutput struct {
-	Tableau    [][]*WebOutputCard    `json:"tableau"`
-	FreeCells  []*WebOutputCard      `json:"freeCells"`
-	Foundation [][]*WebOutputCard    `json:"foundation"`
-	BaseRank   int                   `json:"baseRank"`
-	Hint       *PenguinWebOutputHint `json:"hint,omitempty"`
+	Tableau    [][]*WebOutputCard `json:"tableau"`
+	FreeCells  []*WebOutputCard   `json:"freeCells"`
+	Foundation [][]*WebOutputCard `json:"foundation"`
+	BaseRank   int                `json:"baseRank"`
+	// MaxMovableCards / MaxMovableCardsToEmptyColumn はドメインが決めた上限を
+	// そのまま運ぶ。フロントで数え直すと、空き列を経由地に使えない分の差
+	// (ドメインの maxMovableCards(toCol)) が抜け、動かせない束を「動かせる」と
+	// 表示してしまう (#5614)。
+	MaxMovableCards              int                   `json:"maxMovableCards"`
+	MaxMovableCardsToEmptyColumn int                   `json:"maxMovableCardsToEmptyColumn"`
+	Hint                         *PenguinWebOutputHint `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
 }

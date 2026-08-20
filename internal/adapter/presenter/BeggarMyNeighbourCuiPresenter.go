@@ -1,6 +1,7 @@
 package presenter
 
 import (
+	"math"
 	"strconv"
 	"strings"
 
@@ -53,6 +54,17 @@ func (p *BeggarMyNeighbourCuiPresenter) Output(g interfaces.BeggarMyNeighbourGam
 			"discard", strconv.Itoa(human.GetDiscardPileSize()),
 			"total", strconv.Itoa(human.TotalCards())) + "\n")
 
+		// **autoplay で何百ラウンドも回せるゲーム** (#5682)。生数値だけだと、どちらが
+		// 優勢かを毎回自分で割ることになる。Web は色分けバーで常時出している。
+		// 計算式は Web の youPct と同じ (両者 0 枚なら 50/50 — 0 除算しない)。
+		youPct := 50
+		if held := human.TotalCards() + cpu.TotalCards(); held > 0 {
+			youPct = int(math.Round(float64(human.TotalCards()) / float64(held) * 100))
+		}
+		b.WriteString(i18n.Tf("beggarmyneighbour.share",
+			"you", strconv.Itoa(youPct),
+			"cpu", strconv.Itoa(100-youPct)) + "\n")
+
 		switch g.GetPhase() {
 		case domain.BeggarMyNeighbourPhasePlay:
 			b.WriteString(i18n.T("beggarmyneighbour.promptPlay") + "\n")
@@ -80,5 +92,5 @@ func (p *BeggarMyNeighbourCuiPresenter) Output(g interfaces.BeggarMyNeighbourGam
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *BeggarMyNeighbourCuiPresenter) ActionLogOutput(g interfaces.BeggarMyNeighbourGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.BeggarMyNeighbourPlayer](g)
 }

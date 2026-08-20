@@ -88,6 +88,11 @@ func (p *KlaverjasCuiPresenter) Output(g interfaces.KlaverjasGame, lastErr error
 			b.WriteString(i18n.Tf("klaverjas.promptPlay",
 				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
 			b.WriteString(i18n.T("klaverjas.promptPlayHelp") + "\n")
+			// **切り札と非切り札で順序が丸ごと違う。** Web は
+			// klaverjas-strength-legend の 2 表を常時出しているのに、CUI には
+			// 説明が一切なかった (#5645)。姉妹の Manille は rankHelp で解決済み。
+			b.WriteString(i18n.T("klaverjas.rankHelpTrump") + "\n")
+			b.WriteString(i18n.T("klaverjas.rankHelpPlain") + "\n")
 		case domain.KlaverjasPhaseTrickEnd:
 			b.WriteString(i18n.T("klaverjas.promptTrickEnd") + "\n")
 			b.WriteString(i18n.T("klaverjas.promptTrickEndHelp") + "\n")
@@ -146,5 +151,5 @@ var klaverjasHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *KlaverjasCuiPresenter) ActionLogOutput(g interfaces.KlaverjasGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.KlaverjasPlayer](g)
 }

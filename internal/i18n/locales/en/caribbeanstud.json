@@ -27,5 +27,9 @@
   "hintFold": "fold",
   "hintPairOrBetter": "you have one pair or better",
   "hintAceKingHigh": "no made hand, but you hold an Ace and a King",
-  "hintWeakHand": "no made hand and nothing as high as Ace-King"
+  "hintWeakHand": "no made hand and nothing as high as Ace-King",
+  "helpExampleBet": "  b 10                 ante 10 and get a hand",
+  "helpExamplePlay": "  p                    call, placing a play bet of 2x the ante",
+  "helpHint": "  h                    show a hint",
+  "jackpotHelp": "Jackpot (optional): pays on a flush or better, whether or not you beat the dealer"
 }

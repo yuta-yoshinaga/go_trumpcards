@@ -46,19 +46,18 @@ func (c *NapCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bid":
-				return cuiutil.WithParsedInt(args, "Bid is required (0=Pass, 2/3/4=tricks, 5=Nap).",
-					"Invalid bid: %s. Please enter 0, 2, 3, 4 or 5.",
+				return cuiutil.WithParsedIntKeys(args, "bidRequiredNap", "invalidBidNap",
 					int(domain.NapBidPass), int(domain.NapBidNap), c.di.Bid)
 			case "pass":
 				return c.di.Bid(int(domain.NapBidPass)), true
 			case "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.di.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.di.Play)
 			case "n", "next":
 				return c.di.NextTrick(), true
 			case "nr", "nextround":
 				return c.di.NextRound(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.di.GetConfig()
 					cfg.CpuDifficulty = domain.NapCpuDifficulty(v)
 					return c.di.ResetWithConfig(cfg)

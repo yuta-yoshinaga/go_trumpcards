@@ -44,5 +44,9 @@
   "suitClover": "Clubs",
   "suitHeart": "Hearts",
   "suitDiamond": "Diamonds",
-  "suitNone": "none"
+  "suitNone": "none",
+  "helpExamplePlay": "  p 0                  play hand card 0",
+  "helpHint": "  h                    show a hint",
+  "doubledAllExact": "! EVERY SEAT HIT ITS BID. Scores for this round are doubled.",
+  "doubledAllMissed": "! EVERY SEAT MISSED. Penalties for this round are doubled."
 }

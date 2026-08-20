@@ -10,6 +10,9 @@
   "promptPlay": "手番: {{name}}",
   "promptPlayHelp": "play <idx>・・・カードを出す（10=マニーユが最強・A=マニヨンが次点／マストフォロー）",
   "promptTrickEnd": "トリック終了",
+  "trickWinner": "{{name}}（{{team}}）がトリック獲得",
+  "teamA": "チームA",
+  "teamB": "チームB",
   "promptTrickEndHelp": "n / next・・・次のトリックへ",
   "promptRoundEnd": "ラウンド終了（チームA: {{ptsA}}点, チームB: {{ptsB}}点）",
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
@@ -19,5 +22,8 @@
   "hintReasonFollowWin": "得点があるので勝ちに行く",
   "hintReasonFollowDuck": "取れない／取る価値がないのでダック",
   "hintReasonDiscardLow": "フォローできないので低い札を捨てる",
-  "rankHelp": "ランク順: 10 > A > K > Q > J > 9 > 8 > 7（得点: 10=5, A=4, K=3, Q=2, J=1）"
+  "rankHelp": "ランク順: 10 > A > K > Q > J > 9 > 8 > 7（得点: 10=5, A=4, K=3, Q=2, J=1）",
+  "helpExamplePlay": "  play 0                   手札の 0 番のカードを出す",
+  "helpExampleNext": "  n                        トリックの決着を見てから次のトリックへ",
+  "helpHint": "  h                         助言を表示"
 }

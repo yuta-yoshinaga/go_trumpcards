@@ -50,12 +50,12 @@ func TestNapCuiController_Exec(t *testing.T) {
 
 	t.Run("bid no args", func(t *testing.T) {
 		result := controller.NewNapCuiController(newMock()).Exec("bid")
-		assert.Contains(t, result, "Bid is required")
+		assert.Contains(t, result, msgStem("bidRequiredNap"))
 	})
 
 	t.Run("bid invalid", func(t *testing.T) {
 		result := controller.NewNapCuiController(newMock()).Exec("bid 9")
-		assert.Contains(t, result, "Invalid bid")
+		assert.Contains(t, result, msgStem("invalidBidNap"))
 	})
 
 	t.Run("pass maps to bid 0", func(t *testing.T) {
@@ -74,7 +74,7 @@ func TestNapCuiController_Exec(t *testing.T) {
 
 	t.Run("play no args", func(t *testing.T) {
 		result := controller.NewNapCuiController(newMock()).Exec("play")
-		assert.Contains(t, result, "Card index is required")
+		assert.Contains(t, result, msgCardIndexRequired())
 	})
 
 	t.Run("next / nextround", func(t *testing.T) {
@@ -97,7 +97,7 @@ func TestNapCuiController_Exec(t *testing.T) {
 
 	t.Run("setdifficulty invalid", func(t *testing.T) {
 		result := controller.NewNapCuiController(newMock()).Exec("sd 9")
-		assert.Contains(t, result, "Invalid CPU difficulty")
+		assert.Contains(t, result, msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("hint / log", func(t *testing.T) {

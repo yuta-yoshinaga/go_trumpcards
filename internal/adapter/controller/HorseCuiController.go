@@ -52,15 +52,13 @@ func (c *HorseCuiController) Exec(command string) string {
 			case "c", "call":
 				return c.hi.Action(domain.HoldemActionCall, 0, 0), true
 			case "b", "bet":
-				return cuiutil.WithParsedInt(args, "Bet amount is required.",
-					"Invalid amount: %s.", 1, cuiutil.NoMax, func(v int) string {
-						return c.hi.Action(domain.HoldemActionBet, v, 0)
-					})
+				return cuiutil.WithParsedIntKeys(args, "betAmountRequired", "invalidAmount", 1, cuiutil.NoMax, func(v int) string {
+					return c.hi.Action(domain.HoldemActionBet, v, 0)
+				})
 			case "raise":
-				return cuiutil.WithParsedInt(args, "Raise amount is required.",
-					"Invalid amount: %s.", 1, cuiutil.NoMax, func(v int) string {
-						return c.hi.Action(domain.HoldemActionRaise, v, 0)
-					})
+				return cuiutil.WithParsedIntKeys(args, "raiseAmountRequired", "invalidAmount", 1, cuiutil.NoMax, func(v int) string {
+					return c.hi.Action(domain.HoldemActionRaise, v, 0)
+				})
 			case "allin":
 				return c.hi.Action(domain.HoldemActionAllIn, 0, 0), true
 			case "n", "next":
@@ -68,9 +66,7 @@ func (c *HorseCuiController) Exec(command string) string {
 			case "ss", "setseats":
 				return c.execSetSeats(args)
 			case "sh", "sethands":
-				return cuiutil.WithParsedInt(args,
-					"Number of hands per discipline is required (1-10).",
-					"Invalid number of hands: %s. Please enter 1-10.",
+				return cuiutil.WithParsedIntKeys(args, "numberOfHandsPerDisciplineRequired110", "invalidNumberOfHands110",
 					domain.HorseMinHandsPerDiscipline, domain.HorseMaxHandsPerDiscipline,
 					func(v int) string {
 						cfg := c.hi.GetConfig()
@@ -90,13 +86,12 @@ func (c *HorseCuiController) Exec(command string) string {
 // 範囲で受けると 5 のような作れない数が通ってしまう。
 func (c *HorseCuiController) execSetSeats(args []string) (string, bool) {
 	if len(args) == 0 {
-		return "Number of seats is required (4, 6 or 9).", true
+		return invalidArg("numberOfSeatsRequired469"), true
 	}
-	return cuiutil.WithParsedInt(args, "Number of seats is required (4, 6 or 9).",
-		"Invalid number of seats: %s. Please enter 4, 6 or 9.",
+	return cuiutil.WithParsedIntKeys(args, "numberOfSeatsRequired469", "invalidNumberOfSeats46Or9",
 		cuiutil.NoMin, cuiutil.NoMax, func(v int) string {
 			if !domain.HorseValidSeats(v) {
-				return "Invalid number of seats: please enter 4, 6 or 9."
+				return invalidArg("invalidNumberOfSeats469")
 			}
 			cfg := c.hi.GetConfig()
 			cfg.Seats = v

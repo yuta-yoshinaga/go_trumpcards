@@ -48,5 +48,7 @@
   "hintReasonLeadStrong": "lead a strong card",
   "hintReasonFollowSuit": "follow the led suit",
   "hintReasonTrumpCut": "cut with a trump",
-  "hintReasonDiscardWeak": "discard a weak card"
+  "hintReasonDiscardWeak": "discard a weak card",
+  "helpExamplePlay": "  p 0                  play hand card 0",
+  "helpHint": "  h                    show a hint"
 }

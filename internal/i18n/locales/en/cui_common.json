@@ -21,8 +21,11 @@
   "cuiHintWeakHand": "Weak hand",
   "cuiHintNone": "No hint available.",
   "cuiSolitaireStalemate": "Stalemate",
+  "cuiSolitaireUndoToEscape": "Undo {{count}} move(s) to escape the dead end (undo {{count}}, or repeat u)",
   "cuiSolitaireGameClear": "Game clear!",
   "cuiSolitaireGameOver": "Game over",
+  "cuiSolitaireGameOverSummary": "Reached {{count}}/{{total}} cards on the foundations ({{percent}}%)",
+  "cuiSolitaireGameOverFaces": "Completed {{count}}/{{total}} clock faces",
   "cuiSolitaireMoves": "Moves: {{count}}",
   "cuiEmptyCol": "[empty]",
   "pokerHandRank0": "High Card",
@@ -47,5 +50,11 @@
   "sokoHandRank8": "Full House",
   "sokoHandRank9": "Four of a Kind",
   "sokoHandRank10": "Straight Flush",
-  "sokoHandRank11": "Royal Flush"
+  "sokoHandRank11": "Royal Flush",
+  "cuiSolitaireUndoAvailable": "(u undoes one move)",
+  "cuiSolitaireUndoUnavailable": "(nothing to undo)",
+  "cuiActionLogEmpty": "No actions recorded.",
+  "cuiActionLogHeader": "========== Action Log ==========",
+  "cuiActionLogSystem": "SYSTEM",
+  "cuiActionLogPlayer": "Player {{idx}}"
 }

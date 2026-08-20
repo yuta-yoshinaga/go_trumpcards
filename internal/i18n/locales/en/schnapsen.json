@@ -30,5 +30,7 @@
   "suitSpade": "Spades",
   "suitClover": "Clubs",
   "suitHeart": "Hearts",
-  "suitDiamond": "Diamonds"
+  "suitDiamond": "Diamonds",
+  "helpExamplePlay": "  p 0                  play hand card 0",
+  "helpHint": "  h                    show a hint"
 }

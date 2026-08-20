@@ -122,5 +122,5 @@ func (p *ContractRummyCuiPresenter) Output(g interfaces.ContractRummyGame, lastE
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *ContractRummyCuiPresenter) ActionLogOutput(g interfaces.ContractRummyGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.ContractRummyPlayer](g)
 }

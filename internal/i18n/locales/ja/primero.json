@@ -22,6 +22,7 @@
   "promptBetting": "アクションしてください: c（コール・必要 {{need}}）/ ra（レイズ・現在 {{bet}}→{{raiseTo}}）/ f（フォールド）",
   "promptResult": "ラウンド終了。n で次のラウンドへ。",
   "promptHelp": "c / ra / f でアクション、n で次のラウンド",
+  "handRanking": "役の強さ: {{fluxus}}（4枚同スート）＞ {{supremus}}（4スート各1枚・合計50以上）＞ {{primero}}（4スート各1枚・50未満）＞ {{numerus}}（最強スートの合計で比較）",
   "result.none": "ラウンド終了。",
   "result.win": "あなたがポットを獲得！",
   "result.lose": "あなたの負け。",
@@ -33,5 +34,7 @@
   "hint": "[HINT: {{action}}（{{reason}}）]",
   "hintReasonStrongHand": "強い手 — 攻める価値あり",
   "hintReasonMediumHand": "そこそこの手 — 様子を見てコール",
-  "hintReasonWeakHand": "弱い手 — 降りるのが無難"
+  "hintReasonWeakHand": "弱い手 — 降りるのが無難",
+  "helpExampleCall": "  c                         現在のベットにコールする",
+  "helpHint": "  h                         助言を表示"
 }

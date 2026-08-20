@@ -154,6 +154,17 @@ func (p *SheepsheadCuiPresenter) Output(g interfaces.SheepsheadGame, lastErr err
 			} else {
 				b.WriteString(color.Red(i18n.T("sheepshead.roundPickerLost")) + "\n")
 			}
+			// **ピッカーが何を埋めたかは得点の内訳そのもの** (#5638)。domain は
+			// 保持していて Web API も送っているのに、CUI は最後まで出さなかった。
+			// 公開されるのはラウンド終了以降なので、ここでだけ出す。
+			if buried := g.GetBuried(); len(buried) > 0 {
+				cards := make([]string, len(buried))
+				for i, c := range buried {
+					cards[i] = cuiCardStr(c)
+				}
+				b.WriteString(i18n.T("sheepshead.roundEndBuried") + ": " +
+					strings.Join(cards, "  ") + "\n")
+			}
 			b.WriteString(i18n.T("sheepshead.promptRoundEndHelp") + "\n")
 		}
 	})
@@ -213,5 +224,5 @@ var sheepsheadHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *SheepsheadCuiPresenter) ActionLogOutput(g interfaces.SheepsheadGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.SheepsheadPlayer](g)
 }

@@ -45,7 +45,7 @@ func (c *KingCuiController) Exec(command string) string {
 			case "n", "next":
 				return c.ki.NextDeal(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.ki.GetConfig()
 					cfg.CpuDifficulty = domain.KingCpuDifficulty(v)
 					return c.ki.ResetWithConfig(cfg)
@@ -60,15 +60,15 @@ func (c *KingCuiController) Exec(command string) string {
 // handleSelectContract は `c <contract> [trump]` を処理する。
 func (c *KingCuiController) handleSelectContract(args []string) (string, bool) {
 	if len(args) < 1 {
-		return "Usage: c <contract 0-6> [trumpSuit 1-4 for King Trump]", true
+		return invalidArg("usageCContract06Trumpsuit14ForKingTrump"), true
 	}
-	contract, _, ok := cuiutil.ParseIntArg([]string{args[0]}, "contract is required", "Invalid contract: %s", 0, domain.KingContractCnt-1)
+	contract, _, ok := cuiutil.ParseIntArgKeys([]string{args[0]}, "contractRequired", "invalidContract", 0, domain.KingContractCnt-1)
 	if !ok {
-		return "Invalid contract: " + args[0], true
+		return invalidArg("invalidContractRaw", "val", args[0]), true
 	}
 	trump := -1
 	if len(args) >= 2 {
-		t, _, tok := cuiutil.ParseIntArg([]string{args[1]}, "trump suit", "Invalid trump suit: %s", domain.CardDesignSpade, domain.CardDesignDiamond)
+		t, _, tok := cuiutil.ParseIntArgKeys([]string{args[1]}, "", "invalidTrumpSuitNoPeriod", domain.CardDesignSpade, domain.CardDesignDiamond)
 		if tok {
 			trump = t
 		}
@@ -79,11 +79,11 @@ func (c *KingCuiController) handleSelectContract(args []string) (string, bool) {
 // handlePlay は `p <h>` を処理する。
 func (c *KingCuiController) handlePlay(args []string) (string, bool) {
 	if len(args) < 1 {
-		return "Usage: p <handIdx>", true
+		return invalidArg("usagePHandidx"), true
 	}
-	handIdx, _, ok := cuiutil.ParseIntArg([]string{args[0]}, "hand index is required", "Invalid hand index: %s", 0, domain.KingHandSize-1)
+	handIdx, _, ok := cuiutil.ParseIntArgKeys([]string{args[0]}, "handIndexRequired", "invalidHandIndex", 0, domain.KingHandSize-1)
 	if !ok {
-		return "Invalid hand index: " + args[0], true
+		return invalidArg("invalidHandIndexRaw", "val", args[0]), true
 	}
 	return c.ki.Play(handIdx), true
 }

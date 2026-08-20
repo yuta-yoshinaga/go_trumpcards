@@ -11,7 +11,7 @@ export interface ScoponeConfigInput {
 }
 
 /** Command verbs accepted by the Scopone /scopone/exec endpoint (short forms). */
-export type ScoponeCommand = 'r' | 'n' | 'p' | 'log';
+export type ScoponeCommand = 'r' | 'n' | 'p' | 'log' | 'hint';
 
 /** Extra payload fields for the Scopone /scopone/exec endpoint. */
 export interface ScoponeExecParams {

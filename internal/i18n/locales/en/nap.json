@@ -41,5 +41,7 @@
   "result.cpuWin": "Game over! Player {{player}} wins!",
   "promptBidHolder": "Current high bidder: {{name}}",
   "declarerProgress": "Declarer: {{won}}/{{needed}} tricks ({{remaining}} left)",
-  "contractUnreachable": " - the contract can no longer be made"
+  "contractUnreachable": " - the contract can no longer be made",
+  "helpExampleBid": "  pass                      drop out of the bidding",
+  "helpHint": "  h                         show a hint"
 }

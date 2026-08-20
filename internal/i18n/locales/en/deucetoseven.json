@@ -36,5 +36,8 @@
   "gameEnd": "Game over",
   "hintExchange": "Suggestion: exchange hand [{{idxs}}] ({{cards}}) with e {{cmd}}",
   "hintStandPat": "Suggestion: made low — stand pat (s).",
-  "hintNotYourTurn": "It is not your draw phase right now."
+  "hintNotYourTurn": "It is not your draw phase right now.",
+  "helpExampleFold": "  f                    fold this hand",
+  "helpLog": "  l                    show the action log",
+  "madeLowWarning": "✨ You already have a made 8-or-better low — stand pat (s) rather than break it"
 }

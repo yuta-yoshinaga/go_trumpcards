@@ -44,5 +44,8 @@
   "reason.youCanLayAMeld": "出せる組み合わせがそろっています",
   "reason.discardTheLoneCard": "仲間の少ない札から手放すのが定石です",
   "reason.roundIsOver": "このラウンドは決着しました",
-  "result.gameEnd": "ゲームが終わりました"
+  "result.gameEnd": "ゲームが終わりました",
+  "helpExampleDraw": "  draw                 山札から 1 枚引く",
+  "meldPointsLine": "組み合わせの点: {{table}}",
+  "meld.points": "{{points}}点"
 }

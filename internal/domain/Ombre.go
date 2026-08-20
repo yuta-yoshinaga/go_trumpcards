@@ -1015,7 +1015,7 @@ func (g *Ombre) cpuPlaySmart(playerIdx int, valid []int) int {
 		return g.minByStrength(player, valid)
 	}
 
-	winners := ombreFilter(follows, func(idx int) bool {
+	winners := filterIndices(follows, func(idx int) bool {
 		return ombreCardStrength(player.GetCard(idx), trump) > topStr
 	})
 
@@ -1054,17 +1054,6 @@ func (g *Ombre) maxByStrength(player *OmbrePlayer, indices []int) int {
 		}
 	}
 	return best
-}
-
-// ombreFilter 述語を満たすインデックスを抽出する。
-func ombreFilter(indices []int, pred func(int) bool) []int {
-	var out []int
-	for _, idx := range indices {
-		if pred(idx) {
-			out = append(out, idx)
-		}
-	}
-	return out
 }
 
 // --- Hint ---

@@ -278,6 +278,69 @@ describe('CuckooPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', { config: { cpuDifficulty: 2 } }));
   });
 
+  // #5671: 脱落者はターン順から飛ばされるので、「隣」が席順の隣とは限らない。
+  // King 保持者は交換を拒否できるので、押す前に相手が分かるかが意思決定に効く。
+  it('names who the swap would hit', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<CuckooPage />);
+
+    const preview = await screen.findByTestId('cuckoo-swap-target');
+    expect(preview).toHaveTextContent('CPU 1');
+  });
+
+  it('skips eliminated seats when naming the target', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          makePlayer({ id: 0, isHuman: true, card: { design: 'SPADE', value: 5 }, isCurrentTurn: true }),
+          makePlayer({ id: 1, isEliminated: true }),
+          makePlayer({ id: 2 }),
+          makePlayer({ id: 3 }),
+        ],
+      }),
+    );
+    renderWithProviders(<CuckooPage />);
+
+    expect(await screen.findByTestId('cuckoo-swap-target')).toHaveTextContent('CPU 2');
+  });
+
+  // ディーラーは山札と交換するので、相手の名前ではなく専用の文言。
+  it('says the dealer trades with the stock', async () => {
+    mockExec.mockResolvedValue(makeState({ dealerIdx: 0 }));
+    renderWithProviders(<CuckooPage />);
+
+    const preview = await screen.findByTestId('cuckoo-swap-target');
+    expect(preview).toHaveTextContent('山札');
+    expect(preview).not.toHaveTextContent('CPU 1');
+  });
+
+  // **他に生き残りがいなければスワップは保持と同義** (domain の attemptSwap)。
+  // 相手がいないので名前も出さない。
+  it('says nothing when no one is left to swap with', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          makePlayer({ id: 0, isHuman: true, card: { design: 'SPADE', value: 5 }, isCurrentTurn: true }),
+          makePlayer({ id: 1, isEliminated: true }),
+          makePlayer({ id: 2, isEliminated: true }),
+          makePlayer({ id: 3, isEliminated: true }),
+        ],
+      }),
+    );
+    renderWithProviders(<CuckooPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('cuckoo-swap-target')).not.toBeInTheDocument();
+  });
+
+  it('says nothing when it is not your turn', async () => {
+    mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
+    renderWithProviders(<CuckooPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('cuckoo-swap-target')).not.toBeInTheDocument();
+  });
+
   it('toggles the CLI terminal', async () => {
     renderWithProviders(<CuckooPage />);
     await waitFor(() => expect(screen.getByText(/プレイヤー/)).toBeInTheDocument());

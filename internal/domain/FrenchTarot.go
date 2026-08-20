@@ -557,24 +557,84 @@ func (g *FrenchTarot) validateDiscards(player *FrenchTarotPlayer, cardIndices []
 		}
 	}
 	allowTrump := discardable < FrenchTarotChienSize
+	// 判定は FrenchTarotUnburiableReason ただ一つ。CUI/Web が出す案内と、ここで
+	// 実際に弾く条件が別々に書かれていると、片方だけ直ったときに黙ってずれる。
 	for _, idx := range cardIndices {
-		c := player.GetCard(idx)
-		if frenchTarotIsExcuse(c) {
+		switch FrenchTarotUnburiableReason(player.GetCard(idx)) {
+		case FrenchTarotUnburiableExcuse:
 			return NewDomainError(ErrInvalidPlay, "エクスキューズは捨てられません")
-		}
-		// プティ (切り札1) と 21 は bout であり、公式ルール上いかなる場合も écart に
-		// 出せない (手札24枚中 bout は最大3枚なので、除外しても捨て札6枚は必ず確保できる)。
-		if frenchTarotIsTrump(c) && frenchTarotIsBout(c) {
+		case FrenchTarotUnburiableBout:
+			// プティ (切り札1) と 21 は bout であり、公式ルール上いかなる場合も écart に
+			// 出せない (手札24枚中 bout は最大3枚なので、除外しても捨て札6枚は必ず確保できる)。
 			return NewDomainError(ErrInvalidPlay, "プティ・21 は捨てられません")
-		}
-		if !frenchTarotIsTrump(c) && c.GetValue() == FrenchTarotKingValue {
+		case FrenchTarotUnburiableKing:
 			return NewDomainError(ErrInvalidPlay, "キングは捨てられません")
-		}
-		if frenchTarotIsTrump(c) && !allowTrump {
-			return NewDomainError(ErrInvalidPlay, "切り札は (やむを得ない場合を除き) 捨てられません")
+		case FrenchTarotUnburiableTrump:
+			if !allowTrump {
+				return NewDomainError(ErrInvalidPlay, "切り札は (やむを得ない場合を除き) 捨てられません")
+			}
 		}
 	}
 	return nil
+}
+
+// エカルトに出せない理由の識別子。Web (frontend/src/utils/frenchtarotEcart.ts の
+// FrenchTarotUnburiableReason) と同じ語を使う。
+const (
+	// FrenchTarotUnburiableKing キング (Roi) は常に捨てられない。
+	FrenchTarotUnburiableKing = "king"
+	// FrenchTarotUnburiableExcuse エクスキューズは常に捨てられない。
+	FrenchTarotUnburiableExcuse = "excuse"
+	// FrenchTarotUnburiableBout プティ (切り札1) と 21 は bout なので常に捨てられない。
+	FrenchTarotUnburiableBout = "bout"
+	// FrenchTarotUnburiableTrump 通常の切り札。捨て札が足りないときだけ出せる。
+	FrenchTarotUnburiableTrump = "trump"
+)
+
+// FrenchTarotUnburiableReason はエカルトに出せない理由を返す (出せる札なら "")。
+// validateDiscards と同じ順序で判定する。
+func FrenchTarotUnburiableReason(c *Card) string {
+	switch {
+	case c == nil:
+		return ""
+	case frenchTarotIsExcuse(c):
+		return FrenchTarotUnburiableExcuse
+	case frenchTarotIsTrump(c) && frenchTarotIsBout(c):
+		return FrenchTarotUnburiableBout
+	case !frenchTarotIsTrump(c) && c.GetValue() == FrenchTarotKingValue:
+		return FrenchTarotUnburiableKing
+	case frenchTarotIsTrump(c):
+		return FrenchTarotUnburiableTrump
+	default:
+		return ""
+	}
+}
+
+// FrenchTarotBuriableIndices はいまエカルトに出せる手札の添字を返す。
+// 切り札は「自由に捨てられる札が 6 枚に足りないとき」だけ出せる (validateDiscards と同条件)。
+func FrenchTarotBuriableIndices(player *FrenchTarotPlayer) []int {
+	if player == nil {
+		return nil
+	}
+	discardable := 0
+	for i := 0; i < player.GetCardsSize(); i++ {
+		if frenchTarotDiscardable(player.GetCard(i)) {
+			discardable++
+		}
+	}
+	allowTrump := discardable < FrenchTarotChienSize
+	out := make([]int, 0, player.GetCardsSize())
+	for i := 0; i < player.GetCardsSize(); i++ {
+		switch FrenchTarotUnburiableReason(player.GetCard(i)) {
+		case "":
+			out = append(out, i)
+		case FrenchTarotUnburiableTrump:
+			if allowTrump {
+				out = append(out, i)
+			}
+		}
+	}
+	return out
 }
 
 // frenchTarotDiscardable 通常エカルトに出せる札か (非切り札・非キング・非エクスキューズ)。
@@ -1019,7 +1079,7 @@ func (g *FrenchTarot) trumpFollowIndices(player *FrenchTarotPlayer, highestTrump
 	if len(trumps) == 0 {
 		return g.nonExcuseIndices(player) // 切り札なし → 任意の非エクスキューズ札
 	}
-	higher := frenchTarotFilter(trumps, func(idx int) bool {
+	higher := filterIndices(trumps, func(idx int) bool {
 		return player.GetCard(idx).GetValue() > highestTrump
 	})
 	if len(higher) > 0 {
@@ -1039,7 +1099,7 @@ func (g *FrenchTarot) suitFollowIndices(player *FrenchTarotPlayer, led, highestT
 		return g.nonExcuseIndices(player) // ボイド + 切り札なし → 任意
 	}
 	// ボイド → 切り札義務 (+ 場に切り札があればオーバートランプ義務)。
-	higher := frenchTarotFilter(trumps, func(idx int) bool {
+	higher := filterIndices(trumps, func(idx int) bool {
 		return player.GetCard(idx).GetValue() > highestTrump
 	})
 	if highestTrump > 0 && len(higher) > 0 {
@@ -1258,7 +1318,7 @@ func (g *FrenchTarot) cpuPlaySmart(playerIdx int, valid []int) int {
 	winnerIsDecl := winnerIdx == g.declarerIdx
 	iAmDecl := playerIdx == g.declarerIdx
 	// 勝てる札。
-	winners := frenchTarotFilter(valid, func(idx int) bool {
+	winners := filterIndices(valid, func(idx int) bool {
 		return frenchTarotWinRank(p.GetCard(idx), led) > frenchTarotWinRank(winCard, led)
 	})
 	sameSideWinning := winnerIsDecl == iAmDecl
@@ -1502,17 +1562,6 @@ func frenchTarotValidBid(bid FrenchTarotBid) bool {
 // frenchTarotValidBidVal bid が定義済みの入札値 (Pass 含む) か。
 func frenchTarotValidBidVal(bid FrenchTarotBid) bool {
 	return bid >= FrenchTarotBidPass && bid <= FrenchTarotBidGardeContre
-}
-
-// frenchTarotFilter 述語を満たすインデックスを抽出する。
-func frenchTarotFilter(indices []int, pred func(int) bool) []int {
-	var out []int
-	for _, idx := range indices {
-		if pred(idx) {
-			out = append(out, idx)
-		}
-	}
-	return out
 }
 
 // frenchTarotAppendUnique スライスに未含有のインデックスを追加する。

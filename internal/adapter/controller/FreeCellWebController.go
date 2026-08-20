@@ -34,10 +34,16 @@ type FreeCellWebOutputHint struct {
 
 // FreeCellWebOutput フリーセルWebアウトプット
 type FreeCellWebOutput struct {
-	Tableau    [][]*WebOutputCard     `json:"tableau"`
-	FreeCells  []*WebOutputCard       `json:"freeCells"`
-	Foundation [][]*WebOutputCard     `json:"foundation"`
-	Hint       *FreeCellWebOutputHint `json:"hint,omitempty"`
+	Tableau    [][]*WebOutputCard `json:"tableau"`
+	FreeCells  []*WebOutputCard   `json:"freeCells"`
+	Foundation [][]*WebOutputCard `json:"foundation"`
+	// MaxMovableCards / MaxMovableCardsToEmptyColumn はドメインが決めた上限を
+	// そのまま運ぶ。フロントで数え直すと、空き列を経由地に使えない分の差
+	// (ドメインの maxMovableCards(toCol)) が抜け、動かせない束を「動かせる」と
+	// 表示してしまう (#5975)。
+	MaxMovableCards              int                    `json:"maxMovableCards"`
+	MaxMovableCardsToEmptyColumn int                    `json:"maxMovableCardsToEmptyColumn"`
+	Hint                         *FreeCellWebOutputHint `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
 }

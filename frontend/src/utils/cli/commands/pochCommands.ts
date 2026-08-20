@@ -32,6 +32,9 @@ export function parsePochCommand(input: string): CliParseResult<PochArgs> {
     case 'r':
     case 'reset':
       return { args: ['reset'] };
+    case 'h':
+    case 'hint':
+      return { args: ['hint'] };
     default: {
       const suggestion = suggestCommand(cmd, VALID_COMMANDS);
       if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
@@ -48,4 +51,5 @@ export const POCH_HELP: string[] = [
   'n/next          - Deal the next hand',
   'log             - Show action log',
   'r/reset         - New game',
+  'h/hint      - Get a hint',
 ];

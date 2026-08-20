@@ -48,13 +48,13 @@ func (c *ScartoCuiController) Exec(command string) string {
 			case "scarto", "discard":
 				return c.execScarto(args)
 			case "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.di.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.di.Play)
 			case "n", "next":
 				return c.di.NextTrick(), true
 			case "nr", "nextround":
 				return c.di.NextRound(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.di.GetConfig()
 					cfg.CpuDifficulty = domain.ScartoCpuDifficulty(v)
 					return c.di.ResetWithConfig(cfg)
@@ -69,11 +69,11 @@ func (c *ScartoCuiController) Exec(command string) string {
 // execScarto scarto / discard サブコマンドを解釈する (3 枚のインデックス)。
 func (c *ScartoCuiController) execScarto(args []string) (string, bool) {
 	if len(args) < domain.ScartoSurplus {
-		return "Three card indices are required (e.g. scarto 0 1 2).", true
+		return invalidArg("threeIndicesRequiredScarto"), true
 	}
 	indices, skipped := cuiutil.ParseIntSlice(args)
 	if len(skipped) > 0 {
-		return "Invalid card index: " + skipped[0] + ".", true
+		return invalidArg("invalidCardIndex", "val", skipped[0]), true
 	}
 	return c.di.Discard(indices), true
 }

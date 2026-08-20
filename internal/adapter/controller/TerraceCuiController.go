@@ -40,12 +40,28 @@ func (c *TerraceCuiController) Exec(command string) string {
 			case "ac", "autocomplete":
 				return c.ti.AutoComplete(), true
 			case "u", "undo":
-				return c.ti.Undo(), true
+				return c.handleUndo(args), true
 			default:
 				return handleCuiHintAndLog(cmd, c.ti.Hint, c.ti.ActionLog)
 			}
 		},
 	)
+}
+
+// handleUndo アンドゥ。引数なしなら 1 手、`undo <n>` なら n 手まとめて戻す。
+//
+// **手詰まりの案内が既に `undo <count>` と書いている** (terrace.undoToEscape)。
+// 引数を捨てて 1 手だけ戻していたので、案内どおりに打った人は脱出したつもりで
+// 手詰まりのまま置き去りにされていた (#5563)。
+//
+// 回数の上限は決めない。履歴より多ければドメインが答えるので、ここで打ち切ると
+// Web の undo_n (素通し) と答えが食い違う。
+func (c *TerraceCuiController) handleUndo(args []string) string {
+	if len(args) == 0 {
+		return c.ti.Undo()
+	}
+	out, _ := cuiutil.WithParsedIntKeys(args, "", "terrace.invalidUndoCount", 1, cuiutil.NoMax, c.ti.UndoN)
+	return out
 }
 
 // handleMove 移動コマンドを処理。supported syntax:
@@ -67,7 +83,7 @@ func (c *TerraceCuiController) handleMove(args []string) string {
 	case "t":
 		return c.handleMoveFromTableau(args[1:])
 	default:
-		return i18n.Tf("terrace.invalidFromZone", "val", args[0])
+		return invalidArg("terrace.invalidFromZone", "val", args[0])
 	}
 }
 
@@ -77,7 +93,7 @@ func (c *TerraceCuiController) handleMoveFromReserve(args []string) string {
 		return cuiutil.PromptRequest(i18n.T("terrace.promptReserveTo"), "m r {0}")
 	}
 	if args[0] != "f" {
-		return i18n.Tf("terrace.reserveOnlyToFoundation", "val", args[0])
+		return invalidArg("terrace.reserveOnlyToFoundation", "val", args[0])
 	}
 	return c.ti.MoveReserveToFoundation()
 }
@@ -95,11 +111,11 @@ func (c *TerraceCuiController) handleMoveFromWaste(args []string) string {
 		}
 		pile, err := strconv.Atoi(args[1])
 		if err != nil {
-			return i18n.Tf("terrace.invalidPile", "val", args[1])
+			return invalidArg("terrace.invalidPile", "val", args[1])
 		}
 		return c.ti.MoveWasteToTableau(pile)
 	default:
-		return i18n.Tf("terrace.invalidToZone", "val", args[0])
+		return invalidArg("terrace.invalidToZone", "val", args[0])
 	}
 }
 
@@ -109,7 +125,7 @@ func (c *TerraceCuiController) handleMoveFromTableau(args []string) string {
 	}
 	fromPile, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("terrace.invalidPile", "val", args[0])
+		return invalidArg("terrace.invalidPile", "val", args[0])
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("terrace.promptToZone"), fmt.Sprintf("m t %s {0}", args[0]))
@@ -123,10 +139,10 @@ func (c *TerraceCuiController) handleMoveFromTableau(args []string) string {
 		}
 		toPile, err := strconv.Atoi(args[2])
 		if err != nil {
-			return i18n.Tf("terrace.invalidPile", "val", args[2])
+			return invalidArg("terrace.invalidPile", "val", args[2])
 		}
 		return c.ti.MoveTableauToTableau(fromPile, toPile)
 	default:
-		return i18n.Tf("terrace.invalidToZone", "val", args[1])
+		return invalidArg("terrace.invalidToZone", "val", args[1])
 	}
 }

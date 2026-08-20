@@ -154,17 +154,50 @@ func (p *TwentyNineCuiPresenter) writePrompt(b *strings.Builder, g interfaces.Tw
 			"high", twentyNineBidName(int(highBid))) + "\n")
 		b.WriteString(i18n.T("twentynine.promptBidHelp") + "\n")
 	case domain.TwentyNinePhasePlay:
+		writeTwentyNineContractProgress(b, g)
 		currentIdx := g.GetCurrentPlayerIdx()
 		b.WriteString(i18n.Tf("twentynine.promptPlay",
 			"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
 		b.WriteString(i18n.T("twentynine.promptPlayHelp") + "\n")
 	case domain.TwentyNinePhaseTrickEnd:
+		// Web は TrickEnd でも進捗パネルを出している。ここで消すと、トリックの
+		// 合間だけ同じ局面が別物に見える (PR #6011 のレビュー指摘)。
+		writeTwentyNineContractProgress(b, g)
 		b.WriteString(i18n.T("twentynine.promptTrickEnd") + "\n")
 		b.WriteString(i18n.T("twentynine.promptTrickEndHelp") + "\n")
 	case domain.TwentyNinePhaseRoundEnd:
 		b.WriteString(i18n.T("twentynine.promptRoundEnd") + "\n")
 		b.WriteString(i18n.T("twentynine.promptRoundEndHelp") + "\n")
 	}
+}
+
+// twentyNineContractStatusKeys は進捗ステータスから i18n キーへの対応。
+var twentyNineContractStatusKeys = map[string]string{
+	domain.TwentyNineContractMade:     "twentynine.contractMade",
+	domain.TwentyNineContractFailed:   "twentynine.contractFailed",
+	domain.TwentyNineContractNeedMore: "twentynine.contractNeedMore",
+}
+
+// writeTwentyNineContractProgress は落札チームの契約進捗を1行で書く。
+// 落札が決まっていなければ何も書かない (#5644)。
+func writeTwentyNineContractProgress(b *strings.Builder, g interfaces.TwentyNineGame) {
+	pr := g.GetContractProgress()
+	if pr == nil {
+		return
+	}
+	key, ok := twentyNineContractStatusKeys[pr.Status]
+	if !ok {
+		return
+	}
+	team := i18n.T("twentynine.teamA")
+	if pr.DeclarerTeam == 1 {
+		team = i18n.T("twentynine.teamB")
+	}
+	b.WriteString(i18n.Tf("twentynine.contractProgress",
+		"team", team,
+		"got", strconv.Itoa(pr.Points),
+		"contract", strconv.Itoa(pr.Contract),
+		"status", i18n.Tf(key, "remaining", strconv.Itoa(pr.Remaining))) + "\n")
 }
 
 // HintOutput emits the current Twenty-Nine hint.
@@ -204,5 +237,5 @@ var twentyNineHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *TwentyNineCuiPresenter) ActionLogOutput(g interfaces.TwentyNineGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.TwentyNinePlayer](g)
 }

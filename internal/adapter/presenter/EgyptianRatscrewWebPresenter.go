@@ -22,6 +22,9 @@ func (p *EgyptianRatscrewWebPresenter) Output(g interfaces.EgyptianRatscrewGame,
 	resObj.TopCard = cardToOutput(g.GetTopCard())
 	resObj.CpuDifficulty = int(g.GetConfig().CpuDifficulty)
 	resObj.ChanceRemaining = g.GetChanceRemaining()
+	// 規則の説明を画面に書くための回数。ドメインの FaceCardChances から取る ──
+	// 訳文に 1/2/3/4 を焼き込むと、回数を変えたとき説明だけが嘘になる (#5580)。
+	resObj.FaceChances = controller.NewEgyptianRatscrewWebFaceChances()
 	resObj.ChanceFromIdx = g.GetChanceFromIdx()
 
 	pending := g.GetPending()

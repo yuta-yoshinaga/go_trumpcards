@@ -26,7 +26,17 @@ func (p *TichuCuiPresenter) Output(tg interfaces.TichuGame, lastErr error) strin
 		}
 
 		for idx := 0; idx < tg.GetPlayerCnt(); idx++ {
-			b.WriteString(tichuPlayerStr(tg.GetPlayer(idx), idx))
+			// 印は自分の手札にだけ。他家の手札は伏せられている。
+			var bomb []int
+			// 受信者 p を隠さないよう別名にする (レビュー #5998)。
+			if player := tg.GetPlayer(idx); player != nil && player.GetIsHuman() {
+				cards := make([]*domain.Card, player.GetCardsSize())
+				for i := range cards {
+					cards[i] = player.GetCard(i)
+				}
+				bomb = domain.TichuBombIndices(cards)
+			}
+			b.WriteString(tichuPlayerStr(tg.GetPlayer(idx), idx, bomb))
 		}
 
 		b.WriteString("----------\n")
@@ -63,17 +73,17 @@ func (p *TichuCuiPresenter) Output(tg interfaces.TichuGame, lastErr error) strin
 		}
 
 		if lastErr != nil {
-			b.WriteString(color.Red(lastErr.Error()) + "\n")
+			b.WriteString(i18n.MarkErrorLine(color.Red(lastErr.Error())) + "\n")
 		}
 	})
 }
 
 // ActionLogOutput 棋譜をCUI出力
 func (p *TichuCuiPresenter) ActionLogOutput(tg interfaces.TichuGame) string {
-	return actionLogOutputText(tg)
+	return actionLogOutputTextForSeats[*domain.TichuPlayer](tg)
 }
 
-func tichuPlayerStr(player *domain.TichuPlayer, idx int) string {
+func tichuPlayerStr(player *domain.TichuPlayer, idx int, bomb []int) string {
 	if player == nil {
 		return ""
 	}
@@ -91,7 +101,9 @@ func tichuPlayerStr(player *domain.TichuPlayer, idx int) string {
 	} else {
 		b.WriteString(i18n.Tf("tichu.playerCardCount", "count", strconv.Itoa(player.GetCardsSize())) + "\n")
 		if player.GetIsHuman() {
-			b.WriteString(cuiIndexedCardListStr(player) + "\n")
+			// **ボムは得点を左右する。**Web は赤いリングと💣で示しているのに、
+			// CUI は手札を目視で数えるしかなかった (#5635)。
+			b.WriteString(cuiIndexMarkedCardListStr(player, bomb, CuiBombMark) + "\n")
 		}
 	}
 	return b.String()

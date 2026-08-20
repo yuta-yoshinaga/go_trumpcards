@@ -62,10 +62,10 @@ func TestPontoonCuiControllerBuy(t *testing.T) {
 
 func TestPontoonCuiControllerRejectsBadAmounts(t *testing.T) {
 	for _, tc := range []struct{ cmd, contains string }{
-		{"b", "required."},
-		{"b abc", "Invalid"},
-		{"buy", "required."},
-		{"buy abc", "Invalid"},
+		{"b", msgBetAmountRequired()},
+		{"b abc", msgInvalidBetAmountPrefix()},
+		{"buy", msgStem("extraStakeRequired")},
+		{"buy abc", msgStem("invalidStakeANumber")},
 	} {
 		t.Run(tc.cmd, func(t *testing.T) {
 			c := NewPontoonCuiController(newMockPontoonInteractor())

@@ -22,5 +22,8 @@
   "promptSourceZone": "Specify the source (d <idx> or w)",
   "promptDivanIndex": "Specify the divan slot index",
   "invalidDivanIndex": "Invalid divan index: {{val}}",
-  "invalidFromZone": "Invalid source zone: {{val}}"
+  "invalidFromZone": "Invalid source zone: {{val}}",
+  "helpExampleHint": "  h                    ask for a move",
+  "helpExampleAuto": "  ac                   send everything that can go to a foundation",
+  "helpUndo": "  u                    undo one move"
 }

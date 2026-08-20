@@ -62,19 +62,19 @@ func TestUltimateTexasHoldemCuiController_Bet_Errors(t *testing.T) {
 
 	t.Run("missing args", func(t *testing.T) {
 		result := c.Exec("b")
-		assert.Contains(t, result, "Ante amount is required")
+		assert.Contains(t, result, msgAnteAmountRequired())
 	})
 	t.Run("invalid amount", func(t *testing.T) {
 		result := c.Exec("b abc")
-		assert.Contains(t, result, "Invalid ante amount")
+		assert.Contains(t, result, msgInvalidAnteAmountPrefix())
 	})
 	t.Run("zero amount", func(t *testing.T) {
 		result := c.Exec("b 0")
-		assert.Contains(t, result, "Invalid ante amount")
+		assert.Contains(t, result, msgInvalidAnteAmountPrefix())
 	})
 	t.Run("invalid trips", func(t *testing.T) {
 		result := c.Exec("b 100 abc")
-		assert.Contains(t, result, "Invalid trips amount")
+		assert.Contains(t, result, msgStem("invalidTripsAmount"))
 	})
 }
 
@@ -92,11 +92,11 @@ func TestUltimateTexasHoldemCuiController_Play_Errors(t *testing.T) {
 	c := controller.NewUltimateTexasHoldemCuiController(m)
 	t.Run("missing multiplier", func(t *testing.T) {
 		result := c.Exec("p")
-		assert.Contains(t, result, "Play multiplier is required")
+		assert.Contains(t, result, msgStem("playMultiplierRequiredEGP4"))
 	})
 	t.Run("invalid multiplier", func(t *testing.T) {
 		result := c.Exec("p abc")
-		assert.Contains(t, result, "Invalid play multiplier")
+		assert.Contains(t, result, msgStem("invalidPlayMultiplier"))
 	})
 }
 

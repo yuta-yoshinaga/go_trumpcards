@@ -20,5 +20,14 @@
   "hintReasonSeeFirst": "まず手札を見ましょう",
   "hintReasonStrongHand": "強い手です",
   "hintReasonMediumHand": "そこそこの手です",
-  "hintReasonWeakHand": "弱い手です"
+  "hintReasonWeakHand": "弱い手です",
+  "helpSee": "  s                    手札を見てシーンになる (ブラインド時)",
+  "helpBet": "  b                    現在のステークにコールする",
+  "helpRaise": "  rs <n>               ステークを上げてコールする",
+  "helpFold": "  f                    降りる",
+  "helpShow": "  sh                   ショーダウンを要求する (残り2人)",
+  "helpNext": "  n                    次のディールへ",
+  "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
+  "helpExampleSee": "  s                    手札を見てシーンになる",
+  "helpHint": "  h                    助言を表示"
 }

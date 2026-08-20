@@ -49,11 +49,11 @@ func TestGoStopCuiController_Exec(t *testing.T) {
 	})
 	t.Run("play missing index", func(t *testing.T) {
 		out := controller.NewGoStopCuiController(newMock()).Exec("p")
-		assert.Contains(t, out, "required")
+		assert.Contains(t, out, msgCardIndexRequiredField())
 	})
 	t.Run("play invalid index", func(t *testing.T) {
 		out := controller.NewGoStopCuiController(newMock()).Exec("p xyz")
-		assert.Contains(t, out, "Invalid card index")
+		assert.Contains(t, out, msgInvalidCardIndexPrefix())
 	})
 	t.Run("go", func(t *testing.T) {
 		m := newMock()

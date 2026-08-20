@@ -19,5 +19,10 @@
   "hintReasonFollowWin": "Points on the table — win the trick",
   "hintReasonFollowDuck": "Cannot/should not win — duck",
   "hintReasonDiscardLow": "Cannot follow suit — discard a low card",
-  "promptRoundEndRoem": "Roem: A +{{roemA}} / B +{{roemB}} (total A {{totalA}} / B {{totalB}})"
+  "promptRoundEndRoem": "Roem: A +{{roemA}} / B +{{roemB}} (total A {{totalA}} / B {{totalB}})",
+  "helpExamplePlay": "  play 0                   play hand card 0",
+  "helpExampleNext": "  n                        read the trick result, then start the next trick",
+  "helpHint": "  h                         show a hint",
+  "rankHelpTrump": "Trump order: J > 9 > A > 10 > K > Q > 8 > 7 (points: J=20, 9=14, A=11, 10=10, K=4, Q=3, 8/7=0)",
+  "rankHelpPlain": "Non-trump: A > 10 > K > Q > J > 9 > 8 > 7 (points: A=11, 10=10, K=4, Q=3, J=2, 9/8/7=0)"
 }

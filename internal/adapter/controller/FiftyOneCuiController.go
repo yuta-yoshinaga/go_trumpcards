@@ -33,15 +33,15 @@ func (c *FiftyOneCuiController) Exec(command string) string {
 			switch cmd {
 			case "p", "play":
 				if len(args) < 2 {
-					return "Usage: p <handIdx> <tableIdx>", true
+					return invalidArg("usagePHandidxTableidxOne"), true
 				}
 				handIdx, err1 := strconv.Atoi(args[0])
 				tableIdx, err2 := strconv.Atoi(args[1])
 				if err1 != nil {
-					return fmt.Sprintf("Invalid hand index: %s", args[0]), true
+					return invalidArg("invalidHandIndexRaw", "val", fmt.Sprint(args[0])), true
 				}
 				if err2 != nil {
-					return fmt.Sprintf("Invalid table index: %s", args[1]), true
+					return invalidArg("invalidTableIndexRaw", "val", fmt.Sprint(args[1])), true
 				}
 				return c.fi.ExchangeOne(handIdx, tableIdx), true
 			case "a", "all":
@@ -49,7 +49,7 @@ func (c *FiftyOneCuiController) Exec(command string) string {
 			case "stop":
 				return c.fi.Stop(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.fi.GetConfig()
 					cfg.CpuDifficulty = domain.FiftyOneCpuDifficulty(v)
 					return c.fi.Reset(cfg)

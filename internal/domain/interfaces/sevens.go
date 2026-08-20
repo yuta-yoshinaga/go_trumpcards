@@ -42,4 +42,7 @@ type SevensGame interface {
 	GetCpuActions() []*domain.SevensCpuAction
 	// GetTablePlaced 各スートの配置済みビットマスクを取得する
 	GetTablePlaced() [5]uint16
+	// GetPlayableCardIndices いま出せる人間の手札インデックスを取得する。
+	// nil は「判定していない」、空スライスは「1枚も出せない」で意味が違う。
+	GetPlayableCardIndices() []int
 }

@@ -32,5 +32,11 @@
   "round": "Round: {{round}}  Trick: {{trick}}",
   "roundEndTrickEntry": "{{name}} {{tricks}}",
   "roundEndTricks": "Tricks per player: {{list}}",
-  "teamLine": "Score  team 0: {{team0}}  team 1: {{team1}}"
+  "teamName": "Team {{n}}",
+  "roundEndLastTrick": "Last-trick bonus: +{{bonus}} to {{team}}",
+  "roundEndScarto": "Scarto: +{{count}} to {{team}} (the dealer side)",
+  "teamLine": "Score  team 0: {{team0}}  team 1: {{team1}}",
+  "helpExamplePlay": "  play 0               play hand card 0",
+  "helpExampleNext": "  n                    read the trick result, then continue",
+  "helpHint": "  h                    show a hint"
 }

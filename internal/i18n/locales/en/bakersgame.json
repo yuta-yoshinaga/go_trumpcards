@@ -1,5 +1,7 @@
 {
   "helpTitle": "Baker's Game",
+  "supermoveLine": "Supermove: up to {{limit}} cards ({{cells}} free cells / {{cols}} empty columns)",
+  "supermoveToEmpty": " / {{limit}} to an empty column",
   "helpMove": "  m t <col> t <col>    move tableau top card to tableau",
   "helpMoveTF": "  m t <col> f          move tableau to foundation",
   "helpMoveTT": "  m t <col> <idx> t <col>  move tableau sequence to tableau",
@@ -19,5 +21,9 @@
   "hintToFoundation": "foundation",
   "hintToTableau": "tableau column {{col}}",
   "hintToFreeCell": "free cell {{col}}",
-  "hintLine": "Hint: {{from}} → {{to}}"
+  "hintLine": "Hint: {{from}} → {{to}}",
+  "helpExampleMoveCell": "  m t 0 c 0            park the top of column 0 in free cell 0",
+  "helpExampleHint": "  h                    ask for a move",
+  "helpExampleAuto": "  ac                   send everything that can go to a foundation",
+  "helpUndo": "  u undo one move"
 }

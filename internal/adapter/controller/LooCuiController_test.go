@@ -49,11 +49,11 @@ func TestLooCuiController_Exec(t *testing.T) {
 	})
 	t.Run("decide missing arg", func(t *testing.T) {
 		out := controller.NewLooCuiController(newMock()).Exec("d")
-		assert.Contains(t, out, "required")
+		assert.True(t, msgRejected(out))
 	})
 	t.Run("decide invalid arg", func(t *testing.T) {
 		out := controller.NewLooCuiController(newMock()).Exec("d xyz")
-		assert.Contains(t, out, "Invalid decision")
+		assert.Contains(t, out, msgStem("invalidDecision0Or1"))
 	})
 	t.Run("play word", func(t *testing.T) {
 		m := newMock()
@@ -72,7 +72,7 @@ func TestLooCuiController_Exec(t *testing.T) {
 	})
 	t.Run("play invalid arg", func(t *testing.T) {
 		out := controller.NewLooCuiController(newMock()).Exec("p xyz")
-		assert.Contains(t, out, "Invalid card index")
+		assert.Contains(t, out, msgInvalidCardIndexPrefix())
 	})
 	t.Run("next round", func(t *testing.T) {
 		m := newMock()

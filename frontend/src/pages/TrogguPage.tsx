@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { trogguApi as TrogguApi } from '../api/gameApi';
 import { trogguApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -15,6 +16,7 @@ import { PlayerHandSection } from '../components/PlayerHandSection';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -55,6 +57,34 @@ const TROGGU_TUTORIAL_STEPS: TutorialStep[] = [
  * rather than as bare names.
  */
 const CONTRACTS = ['trois', 'solo', 'piccolo', 'misere'] as const;
+
+/**
+ * Bid values, in the same order the domain ranks them
+ * (`internal/domain/Troggu.go`: trois 1 < solo 2 < piccolo 3 < misère 4).
+ *
+ * **順位は名前から読めない。**ミゼールがソロより上なので、CPU がミゼールを
+ * 宣言した配りでは人間のソロは却下される (#5808)。
+ */
+const CONTRACT_VALUE: Record<(typeof CONTRACTS)[number], number> = {
+  trois: 1,
+  solo: 2,
+  piccolo: 3,
+  misere: 4,
+};
+
+/**
+ * Bid value -> contract key, for naming the bid that is currently winning.
+ *
+ * 0 は「まだ誰も入札していない」で、訳語は `-`。ここに置いておかないと
+ * 呼び出し側に既定値の分岐が要る。
+ */
+const CONTRACT_NAME: Record<number, string> = {
+  0: 'pass',
+  1: 'trois',
+  2: 'solo',
+  3: 'piccolo',
+  4: 'misere',
+};
 
 /** CPU difficulty options. */
 const CPU_DIFFICULTY_OPTIONS = [0, 1, 2] as const;
@@ -102,6 +132,28 @@ function TrogguPageContent() {
   );
   const { handleCommand } = useCliGame(callApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
+  // **キーボードから届かない操作を残さない** (#5787)。有効条件はボタンの
+  // 表示条件と同じ値なので、押せないのにキーだけ通ることはない。
+  //
+  // **フックは早期 return より上。** `if (!state)` の下に置くと初回レンダーだけ
+  // フック数が変わる (#4561)。
+  const phaseForKbd = state?.phase;
+  const gameEndForKbd = !!state?.gameEndFlag;
+  const canPassForKbd = phaseForKbd === TrogguPhase.BID && !!state?.isHumanTurn && !gameEndForKbd;
+  const isTrickEndForKbd = phaseForKbd === TrogguPhase.TRICK_END;
+  const canAdvanceForKbd = isTrickEndForKbd || (phaseForKbd === TrogguPhase.ROUND_END && !gameEndForKbd);
+  const advanceAction = useCallback(() => {
+    callApi(isTrickEndForKbd ? 'next' : 'nextround');
+  }, [callApi, isTrickEndForKbd]);
+  const actionBindings = useMemo(
+    () => [
+      { key: 'p', action: () => callApi('pass'), enabled: canPassForKbd, label: 'pass' },
+      { key: 'n', action: advanceAction, enabled: canAdvanceForKbd, label: 'next' },
+    ],
+    [callApi, canPassForKbd, advanceAction, canAdvanceForKbd],
+  );
+  useActionKeyboardNav({ bindings: actionBindings, enabled: !loading });
+
   if (!state) {
     return <GameSkeleton gameKey="troggu" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 18 }} />;
   }
@@ -112,6 +164,7 @@ function TrogguPageContent() {
   const isTrickEnd = state.phase === TrogguPhase.TRICK_END;
   const isRoundEnd = state.phase === TrogguPhase.ROUND_END;
   const isGameEnd = state.gameEndFlag;
+
   const isHumanTurn = state.isHumanTurn && !isGameEnd;
   const humanWon = isGameEnd && state.winnerPlayer === (human?.id ?? 0);
   const phaseName = isGameEnd
@@ -293,6 +346,7 @@ function TrogguPageContent() {
           />
 
           <GameFooter className={`${gameTheme.troggu.footer} px-4 py-2.5`}>
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="tg-kbd-shortcuts" />
             <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="tg-actions">
               {isBid &&
                 isHumanTurn &&
@@ -302,7 +356,14 @@ function TrogguPageContent() {
                     type="button"
                     className={btnSecondary}
                     onClick={() => callApi('bid', { bid: c })}
-                    disabled={loading}
+                    // **今の最高入札を超えられない契約は押させない。**押せても
+                    // サーバーに却下されるだけで、画面は入札のまま動かない (#5808)。
+                    disabled={loading || CONTRACT_VALUE[c] <= state.highestBid}
+                    title={
+                      CONTRACT_VALUE[c] <= state.highestBid
+                        ? t('bidTooLow', { high: t(`contract.${CONTRACT_NAME[state.highestBid]}`) })
+                        : undefined
+                    }
                     data-testid={`tg-bid-${c}`}
                   >
                     {t(`contract.${c}`)}

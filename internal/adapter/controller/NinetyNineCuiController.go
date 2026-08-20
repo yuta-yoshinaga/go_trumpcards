@@ -44,27 +44,27 @@ func (c *NinetyNineCuiController) Exec(command string) string {
 			switch cmd {
 			case "b", "bid":
 				if len(args) < domain.NinetyNineBurySize {
-					return "Bury 3 card indices are required (e.g. 'bid 0 1 2').", true
+					return invalidArg("buryThreeIndicesRequired"), true
 				}
 				idxs, skipped := cuiutil.ParseIntSlice(args)
 				if len(skipped) > 0 || len(idxs) < domain.NinetyNineBurySize {
-					return "Invalid bury indices. Please enter 3 valid card indices.", true
+					return invalidArg("invalidBuryIndices"), true
 				}
 				return c.oi.Bid(idxs[:domain.NinetyNineBurySize]), true
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.oi.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.oi.Play)
 			case "n", "next":
 				return c.oi.NextTrick(), true
 			case "nr", "nextround":
 				return c.oi.NextRound(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.oi.GetConfig()
 					cfg.CpuDifficulty = domain.NinetyNineCpuDifficulty(v)
 					return c.oi.ResetWithConfig(cfg)
 				})
 			case "st", "settarget":
-				return cuiutil.WithParsedInt(args, "Target score is required (10-1000).", "Invalid target score: %s. Please enter 10-1000.", 10, 1000, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "targetScoreRequired101000", "invalidTargetScore101000", 10, 1000, func(v int) string {
 					cfg := c.oi.GetConfig()
 					cfg.TargetScore = v
 					return c.oi.ResetWithConfig(cfg)

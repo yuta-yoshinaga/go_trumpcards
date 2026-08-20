@@ -3,6 +3,8 @@
 package controller
 
 import (
+	"strings"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
@@ -53,10 +55,22 @@ func (c *AnacondaCuiController) Exec(command string) string {
 			switch cmd {
 			case "p", "pass":
 				indices, skipped := cuiutil.ParseIntSlice(args)
-				return cuiutil.PrependSkippedWarning(c.ti.Pass(indices), skipped), true
+				// Refuse before playing. PrependSkippedWarning ran the move first and
+				// put the warning above the new board, so a mistyped index was dropped
+				// and the remaining ones played as a different, legal move (issue #5390).
+				if len(skipped) > 0 {
+					return invalidArg("invalidCardIndex", "val", strings.Join(skipped, ", ")), true
+				}
+				return c.ti.Pass(indices), true
 			case "k", "keep":
 				indices, skipped := cuiutil.ParseIntSlice(args)
-				return cuiutil.PrependSkippedWarning(c.ti.Keep(indices), skipped), true
+				// Refuse before playing. PrependSkippedWarning ran the move first and
+				// put the warning above the new board, so a mistyped index was dropped
+				// and the remaining ones played as a different, legal move (issue #5390).
+				if len(skipped) > 0 {
+					return invalidArg("invalidCardIndex", "val", strings.Join(skipped, ", ")), true
+				}
+				return c.ti.Keep(indices), true
 			case "c", "call":
 				return c.ti.Call(), true
 			case "ra", "raise":
@@ -66,25 +80,25 @@ func (c *AnacondaCuiController) Exec(command string) string {
 			case "n", "next", "nr", "nextround":
 				return c.ti.NextRound(), true
 			case "sp", "setplayers":
-				return cuiutil.WithParsedInt(args, "Player count is required (e.g. sp 4).", "Invalid player count: %s. Please enter 3-7.", domain.AnacondaMinPlayerCount, domain.AnacondaMaxPlayerCount, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "playerCountRequiredEGSp4", "invalidPlayerCount37", domain.AnacondaMinPlayerCount, domain.AnacondaMaxPlayerCount, func(v int) string {
 					cfg := c.ti.GetConfig()
 					cfg.PlayerCount = v
 					return c.ti.ResetWithConfig(cfg)
 				})
 			case "sa", "setante":
-				return cuiutil.WithParsedInt(args, "Ante is required (e.g. sa 10).", "Invalid ante: %s.", domain.AnacondaMinAnte, domain.AnacondaMaxAnte, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "anteRequired", "invalidAnte", domain.AnacondaMinAnte, domain.AnacondaMaxAnte, func(v int) string {
 					cfg := c.ti.GetConfig()
 					cfg.Ante = v
 					return c.ti.ResetWithConfig(cfg)
 				})
 			case "sc", "setchips":
-				return cuiutil.WithParsedInt(args, "Starting chips is required (e.g. sc 200).", "Invalid starting chips: %s.", domain.AnacondaMinStartingChips, domain.AnacondaMaxStartingChips, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "startingChipsRequired", "invalidStartingChips", domain.AnacondaMinStartingChips, domain.AnacondaMaxStartingChips, func(v int) string {
 					cfg := c.ti.GetConfig()
 					cfg.StartingChips = v
 					return c.ti.ResetWithConfig(cfg)
 				})
 			case "st", "setrounds":
-				return cuiutil.WithParsedInt(args, "Target rounds is required (e.g. st 10).", "Invalid target rounds: %s.", domain.AnacondaMinTargetRounds, domain.AnacondaMaxTargetRounds, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "targetRoundsRequired", "invalidTargetRounds", domain.AnacondaMinTargetRounds, domain.AnacondaMaxTargetRounds, func(v int) string {
 					cfg := c.ti.GetConfig()
 					cfg.TargetRounds = v
 					return c.ti.ResetWithConfig(cfg)

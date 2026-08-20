@@ -91,6 +91,11 @@ func (p *CribbageCuiPresenter) Output(g interfaces.CribbageGame, lastErr error) 
 		cuiErrorBlock(b, lastErr)
 
 		if g.GetGameEndFlag() {
+			// **最終ラウンドの内訳を見せてから終わる。** ここで早期 return して
+			// いたので writeShowDetails に到達せず、`n` を連打すると内訳を一度も
+			// 見ないままバナーだけが出ていた (#5512)。Web は isGameEnd でも内訳表を
+			// 出している。バナーは今までどおり最後に置く。
+			p.writeShowDetails(b, g)
 			winnerIdx := g.GetWinnerIdx()
 			banner := i18n.Tf("cribbage.gameEnd",
 				"name", cuiPlayerName(g.GetPlayer(winnerIdx), winnerIdx))
@@ -167,7 +172,7 @@ func (p *CribbageCuiPresenter) writeShowDetails(b *strings.Builder, g interfaces
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *CribbageCuiPresenter) ActionLogOutput(g interfaces.CribbageGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.CribbagePlayer](g)
 }
 
 // HintOutput ヒントを出力（ディスカード推奨2枚 or ペギング推奨1枚）

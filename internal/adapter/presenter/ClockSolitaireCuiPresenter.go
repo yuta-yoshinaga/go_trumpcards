@@ -20,6 +20,18 @@ func (pr *ClockSolitaireCuiPresenter) Output(g interfaces.ClockSolitaireGame, la
 		piles := g.GetPiles()
 		fuc := g.GetFaceUpCount()
 
+		// 完成した山の数。「あと何山で揃うか」という進捗の要約は、これまで
+		// CLI ターミナルを開いたときだけ見える隠れた計算だった (#5523)。
+		completed := 0
+		for _, up := range fuc {
+			if up >= domain.ClockSolitaireCardsPerPile {
+				completed++
+			}
+		}
+		b.WriteString(i18n.Tf("clocksolitaire.completedPiles",
+			"completed", strconv.Itoa(completed),
+			"total", strconv.Itoa(domain.ClockSolitairePileCount)) + "\n")
+
 		// Clock positions: 12, 1, 2, ..., 11 in display order.
 		displayOrder := []int{11, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
 		labels := []string{"12", " 1", " 2", " 3", " 4", " 5", " 6", " 7", " 8", " 9", "10", "11"}

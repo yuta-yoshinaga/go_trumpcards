@@ -135,5 +135,5 @@ var twoTenJackHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *TwoTenJackCuiPresenter) ActionLogOutput(s interfaces.TwoTenJackGame) string {
-	return actionLogOutputText(s)
+	return actionLogOutputTextForSeats[*domain.TwoTenJackPlayer](s)
 }

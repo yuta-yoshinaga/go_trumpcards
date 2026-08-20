@@ -599,7 +599,7 @@ func (g *TwentyNine) cpuPlaySmart(playerIdx int, valid []int) int {
 	winnerIdx := g.trickWinner()
 	topRank := g.trickTopRank(winnerIdx)
 	partnerWinning := TwentyNineTeamOf(winnerIdx) == TwentyNineTeamOf(playerIdx) && winnerIdx != playerIdx
-	winners := twentyNineFilter(valid, func(idx int) bool { return g.twentyNineRank(player.GetCard(idx)) > topRank })
+	winners := filterIndices(valid, func(idx int) bool { return g.twentyNineRank(player.GetCard(idx)) > topRank })
 	if partnerWinning {
 		// 味方が勝っている: 得点札を渡す。
 		return pickHighest(player, valid, func(c *Card) int { return twentyNineCardPoints(c) })
@@ -608,17 +608,6 @@ func (g *TwentyNine) cpuPlaySmart(playerIdx int, valid []int) int {
 		return pickLowest(player, winners, func(c *Card) int { return g.twentyNineRank(c) })
 	}
 	return pickLowest(player, valid, func(c *Card) int { return twentyNineCardPoints(c)*100 + g.twentyNineRank(c) })
-}
-
-// twentyNineFilter 述語を満たすインデックスを抽出する。
-func twentyNineFilter(indices []int, pred func(int) bool) []int {
-	var out []int
-	for _, idx := range indices {
-		if pred(idx) {
-			out = append(out, idx)
-		}
-	}
-	return out
 }
 
 // --- Hint ---
@@ -727,6 +716,77 @@ func (g *TwentyNine) GetTeamScores() [TwentyNineTeamCnt]int { return g.teamScore
 
 // SetTeamScores チーム別累積ゲーム点設定 (テスト用)
 func (g *TwentyNine) SetTeamScores(s [TwentyNineTeamCnt]int) { g.teamScores = s }
+
+// TwentyNineTotalPoints は 1 ラウンドで奪い合える点数の総量。
+//
+// カード点 (J=3, 9=2, A=1, 10=1) がスートあたり 7 点 × 4 スート = 28 に、
+// 最終トリック勝者への +1 を足した 29。ゲーム名そのもの。
+const TwentyNineTotalPoints = 29
+
+// 契約の進捗ステータス。FortyFives の同名定数と同じ語彙を使う。
+const (
+	// TwentyNineContractMade 契約成立 (すでに必要点に届いている)。
+	TwentyNineContractMade = "made"
+	// TwentyNineContractFailed 契約不成立が確定 (場に残る点を全部取っても届かない)。
+	TwentyNineContractFailed = "failed"
+	// TwentyNineContractNeedMore まだ足りないが、届く可能性が残っている。
+	TwentyNineContractNeedMore = "needMore"
+)
+
+// TwentyNineContractProgress は落札チームの契約達成状況。
+type TwentyNineContractProgress struct {
+	// DeclarerTeam は落札チーム (0 or 1)。
+	DeclarerTeam int
+	// Points は落札チームの現在の得点。
+	Points int
+	// Contract は達成すべき点数。
+	Contract int
+	// Remaining はあと何点必要か (成立済みなら 0)。
+	Remaining int
+	// Status は TwentyNineContract* のいずれか。
+	Status string
+}
+
+// GetContractProgress は落札チームが契約に届くかどうかを返す。落札が決まって
+// いない、または契約が無いときは nil。
+//
+// **姉妹ゲームの FortyFives は #4724 でこれを Web と CUI の両方に出したのに、
+// 29 には計算そのものが無かった** (#5644)。プレイヤーは「目標 - 現在点」を暗算し、
+// 場に残る点数と突き合わせて可否を判断するしかなかった。
+//
+// 「もう届かない」は**場に残る点を全部取っても足りない**ときに確定する。29 は
+// トリックごとの点が一定でない (J だけで 3 点) ので、FortyFives のように
+// 残りトリック数から数えることはできない。**両チームの取得点の合計を総量から
+// 引く**のが正しい残量で、最終トリックの +1 も未消化なら自動的に残る。
+func (g *TwentyNine) GetContractProgress() *TwentyNineContractProgress {
+	if g.declarerIdx < 0 || g.contract <= TwentyNineBidPass {
+		return nil
+	}
+	team := TwentyNineTeamOf(g.declarerIdx)
+	points := g.roundTeamPts[team]
+	contract := int(g.contract)
+
+	taken := 0
+	for _, p := range g.roundTeamPts {
+		taken += p
+	}
+	available := max(TwentyNineTotalPoints-taken, 0)
+
+	status := TwentyNineContractNeedMore
+	switch {
+	case points >= contract:
+		status = TwentyNineContractMade
+	case points+available < contract:
+		status = TwentyNineContractFailed
+	}
+	return &TwentyNineContractProgress{
+		DeclarerTeam: team,
+		Points:       points,
+		Contract:     contract,
+		Remaining:    max(contract-points, 0),
+		Status:       status,
+	}
+}
 
 // GetRoundTeamPoints 現ラウンドのチーム別カード得点取得
 func (g *TwentyNine) GetRoundTeamPoints() [TwentyNineTeamCnt]int { return g.roundTeamPts }

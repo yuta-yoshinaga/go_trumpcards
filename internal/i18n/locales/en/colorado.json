@@ -21,6 +21,9 @@
   "wasteEmpty": "Waste: empty",
   "wasteTop": "Waste: {{card}} ({{count}})",
   "pileLabel": "Pile {{pile}}:",
+  "pileTop": "<{{card}}>",
+  "pileBuried": "{{card}}",
+  "pileTopNote": "(only the card in <> can move; m t <pile> sends it to a foundation)",
   "emptyPile": "[empty]",
   "hintFromWaste": "the waste",
   "hintFromStock": "stock",
@@ -29,5 +32,7 @@
   "hintToTableau": "tableau pile {{pile}}",
   "hintToWaste": "turn it to the waste",
   "hintLine": "Hint: {{from}} → {{to}}",
-  "undoToEscape": "Undo {{count}} move(s) to escape the dead end (undo {{count}}, or repeat u)"
+  "undoToEscape": "Undo {{count}} move(s) to escape the dead end (undo {{count}}, or repeat u)",
+  "helpExampleHint": "  h                        ask for a move",
+  "helpExampleAuto": "  ac                       send everything that can go to a foundation"
 }

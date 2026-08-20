@@ -33,7 +33,7 @@ const goSourceRoot = "internal"
 
 // placeholderClasses are diagram nodes that stand for "the per-game
 // implementation" rather than naming one concrete Go type. They are a real
-// documentation device here -- there are 264 games and the diagrams show the
+// documentation device here -- there are 318 games and the diagrams show the
 // shape once -- so they are expected to have no counterpart in code.
 var placeholderClasses = map[string]bool{
 	"GameCui":           true,
@@ -112,6 +112,10 @@ type goSurface struct {
 	types    map[string]bool
 	methods  map[string]map[string]bool
 	embedded map[string][]string
+	// consts holds every package-level constant name. The state-diagram notes
+	// in the design document name phase constants directly, with no receiver to
+	// scope them, so they are checked against this flat set.
+	consts map[string]bool
 }
 
 // has reports whether typ (or anything it embeds) provides method. Embedding is
@@ -177,6 +181,7 @@ func parseGoSurface(t *testing.T, root string) *goSurface {
 		types:    map[string]bool{},
 		methods:  map[string]map[string]bool{},
 		embedded: map[string][]string{},
+		consts:   map[string]bool{},
 	}
 	addMethod := func(typ, name string) {
 		if s.methods[typ] == nil {
@@ -203,6 +208,13 @@ func parseGoSurface(t *testing.T, root string) *goSurface {
 			switch d := decl.(type) {
 			case *ast.GenDecl:
 				for _, spec := range d.Specs {
+					if d.Tok == token.CONST {
+						if vs, ok := spec.(*ast.ValueSpec); ok {
+							for _, n := range vs.Names {
+								s.consts[n.Name] = true
+							}
+						}
+					}
 					ts, ok := spec.(*ast.TypeSpec)
 					if !ok {
 						continue

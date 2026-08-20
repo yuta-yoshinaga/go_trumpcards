@@ -19,7 +19,7 @@ type PishtiCuiPresenter struct{}
 func (p *PishtiCuiPresenter) Output(pg interfaces.PishtiGame, lastErr error) string {
 	return buildCuiOutput(i18n.T("pishti.helpTitle"), func(b *strings.Builder) {
 		for i := 0; i < pg.GetPlayerCnt(); i++ {
-			b.WriteString(pishtiPlayerStr(pg.GetPlayer(i), i))
+			b.WriteString(pishtiPlayerStr(pg, pg.GetPlayer(i), i))
 		}
 		// **対局中の優劣を数値で出す。**ピシュティ賞と捕獲枚数を別々に出すだけ
 		// では、複数プレイヤー分を毎回暗算することになる (#4892)。ゲーム終了後は
@@ -82,7 +82,7 @@ func (p *PishtiCuiPresenter) Output(pg interfaces.PishtiGame, lastErr error) str
 }
 
 // pishtiPlayerStr は 1 プレイヤーの表示文字列を返す。
-func pishtiPlayerStr(player *domain.PishtiPlayer, i int) string {
+func pishtiPlayerStr(pg interfaces.PishtiGame, player *domain.PishtiPlayer, i int) string {
 	if player == nil {
 		return ""
 	}
@@ -93,12 +93,31 @@ func pishtiPlayerStr(player *domain.PishtiPlayer, i int) string {
 		"captured", strconv.Itoa(player.CapturedCount()),
 		"pisti", strconv.Itoa(player.GetPistiBonus())) + "\n")
 	if player.GetIsHuman() {
-		b.WriteString(cuiIndexedCardListStr(player) + "\n")
+		// **場を取れるのは「場のトップと同ランク」か「ジャック(総取り)」** (#5672)。
+		// Web は該当札にリングを付けているのに、CUI は素の一覧で、毎ターン場の
+		// トップと手札を照合させていた。自分の手番でないときは出さない。
+		var capturing []int
+		if pg.IsHumanTurn() {
+			top := pg.GetPileTop()
+			for idx := 0; idx < player.GetCardsSize(); idx++ {
+				c := player.GetCard(idx)
+				if c == nil {
+					continue
+				}
+				if c.GetValue() == domain.PishtiJackValue || (top != nil && c.GetValue() == top.GetValue()) {
+					capturing = append(capturing, idx)
+				}
+			}
+		}
+		b.WriteString(cuiIndexMarkedCardListStr(player, capturing, CuiLegalMark) + "\n")
+		if len(capturing) > 0 {
+			b.WriteString(i18n.T("pishti.captureLegend") + "\n")
+		}
 	}
 	return b.String()
 }
 
 // ActionLogOutput は棋譜をテキストとして出力する。
 func (p *PishtiCuiPresenter) ActionLogOutput(pg interfaces.PishtiGame) string {
-	return actionLogOutputText(pg)
+	return actionLogOutputTextForSeats[*domain.PishtiPlayer](pg)
 }

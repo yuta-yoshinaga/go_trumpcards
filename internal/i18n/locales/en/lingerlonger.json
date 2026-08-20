@@ -17,5 +17,10 @@
   "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
   "hintReasonWinTrick": "Take it and you draw a replacement",
   "hintReasonNoStock": "You can take it, but the stock is empty -- no refill",
-  "hintReasonDuck": "You cannot take it, so play low"
+  "hintReasonDuck": "You cannot take it, so play low",
+  "helpExamplePlay": "  p 0                  play hand card 0",
+  "helpHint": "  h                    show a hint",
+  "gameEndLastTrickYou": "Game over! Everyone ran out at once, and you took the last trick.",
+  "gameEndLastTrickCpu": "Game over! Everyone ran out at once, and {{name}} took the last trick.",
+  "gameEndGiveUp": "Game over! You gave up, so {{name}} wins."
 }

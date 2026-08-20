@@ -4,10 +4,12 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -424,8 +426,38 @@ func TestPineappleCuiPresenter_ActionLogOutput(t *testing.T) {
 		m.On("GetActionLog").Return([]*domain.ActionLogEntry{
 			{TurnNumber: 1, PlayerIdx: 0, ActionType: "raise", Detail: "raise 30"},
 		})
+		// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+		m.On("GetPlayer", mock.Anything).Return(domain.NewPineapplePlayer(true, domain.HoldemPlayStyle(0))).Maybe()
 		result := p.ActionLogOutput(m)
 		assert.Contains(t, result, "棋譜")
 		assert.Contains(t, result, "raise")
 	})
+}
+
+// **Omaha は暫定ベストを常時出しているのに Pineapple には無かった (#5488)。**
+// 3 枚配って 1 枚捨てる game なので、どの 2 枚を残すかの判断材料になる。
+func TestPineappleCuiPresenter_ShowsTheLiveBestHand(t *testing.T) {
+	m, players := setupPineappleCuiMockWithPlayers()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCommunityCards")
+	m.On("GetPhase").Return(domain.PineapplePhaseFlop)
+	board := []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 12, false),
+		domain.NewCard(domain.CardDesignSpade, 11, false),
+		domain.NewCard(domain.CardDesignSpade, 10, false),
+	}
+	m.On("GetCommunityCards").Return(board)
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 14, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 13, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+	beforeRank := players[0].GetHandRank()
+	out := new(presenter.PineappleCuiPresenter).Output(m, nil)
+
+	// 見出し部分だけ照合する (書式は {{hand}} を含むので全文一致はできない)。
+	assert.Contains(t, out, "現在の最善役")
+	assert.Contains(t, out, i18n.T("pokerHandRank"+strconv.Itoa(domain.PokerHandStraightFlush)))
+	// **表示のために状態を書き換えていないこと。** ここが動くと、描画のたびに
+	// handRank が更新され、ショーダウンの判定と食い違いうる。
+	assert.Equal(t, beforeRank, players[0].GetHandRank())
 }

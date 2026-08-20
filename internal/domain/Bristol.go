@@ -67,12 +67,13 @@ type Bristol struct {
 
 // bristolSnapshot アンドゥ用スナップショット
 type bristolSnapshot struct {
-	tableau    [BristolTableauCnt][]*Card
-	fan        [BristolFanCnt][]*Card
-	stock      []*Card
-	foundation [BristolFoundationCnt][]*Card
-	phase      BristolPhase
-	moveCount  int
+	tableau     [BristolTableauCnt][]*Card
+	fan         [BristolFanCnt][]*Card
+	stock       []*Card
+	foundation  [BristolFoundationCnt][]*Card
+	phase       BristolPhase
+	moveCount   int
+	isStalemate bool
 }
 
 // NewBristol コンストラクタ
@@ -403,6 +404,33 @@ func (b *Bristol) SetFan(f [BristolFanCnt][]*Card) { b.fan = f }
 func (b *Bristol) SetFoundation(f [BristolFoundationCnt][]*Card) { b.foundation = f }
 
 // Undo 直前の操作を取り消す
+// IsStalemate は合法手が 1 つも無い状態かを返す。
+//
+// **ストックは作り直せない。**Draw() で 3 つのファンへ配り切ると空になるので、
+// どこにも置けない盤面に普通に到達する。他のソリティアと違って検知が無く、
+// プレイヤーは動かせる札を探し続けるしかなかった (#5631)。
+//
+// **フィールドに覚えない。**覚えると更新する場所を数え上げることになり、
+// 1 つ漏れただけで永遠に false を返す (この機能の初版が Draw() を漏らした)。
+// 判定は GetHint に委ねる ── 「動かせる手があるか」を 2 か所で数えると、
+// ヒントは出るのに手詰まりと言う状態が作れる。
+func (b *Bristol) IsStalemate() bool {
+	if b.phase != BristolPhasePlaying {
+		return false
+	}
+	if len(b.stock) > 0 {
+		// 配れる札が残っていれば、まだ手はある。
+		return false
+	}
+	return b.GetHint() == nil
+}
+
+// UndoToEscape は膠着状態から抜けるために必要なアンドゥ回数を返す。
+// 膠着状態でなければ 0、脱出不可なら -1。
+func (b *Bristol) UndoToEscape() int {
+	return undoToEscape(b.IsStalemate(), b.history, func(s *bristolSnapshot) bool { return s.isStalemate })
+}
+
 func (b *Bristol) Undo() error {
 	if b.phase != BristolPhasePlaying {
 		return errors.New("cannot undo: game is not in playing phase")
@@ -516,6 +544,9 @@ func (b *Bristol) takeSnapshot() {
 	snap := &bristolSnapshot{
 		phase:     b.phase,
 		moveCount: b.moveCount,
+		// **記録は撮った時点の生の判定。**キャッシュを持つと更新漏れで古くなる
+		// (この PR の初版がまさにそれで、Draw() 後に更新されなかった)。
+		isStalemate: b.IsStalemate(),
 	}
 	for i := 0; i < BristolTableauCnt; i++ {
 		snap.tableau[i] = make([]*Card, len(b.tableau[i]))

@@ -52,12 +52,12 @@ func TestBeziqueCuiController_Exec(t *testing.T) {
 
 	t.Run("play missing index", func(t *testing.T) {
 		c := controller.NewBeziqueCuiController(newMock())
-		assert.Contains(t, c.Exec("p"), "Card index is required")
+		assert.Contains(t, c.Exec("p"), msgCardIndexRequired())
 	})
 
 	t.Run("play invalid index", func(t *testing.T) {
 		c := controller.NewBeziqueCuiController(newMock())
-		assert.Contains(t, c.Exec("p abc"), "Invalid card index")
+		assert.Contains(t, c.Exec("p abc"), msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("meld with index", func(t *testing.T) {
@@ -70,7 +70,7 @@ func TestBeziqueCuiController_Exec(t *testing.T) {
 
 	t.Run("meld missing index", func(t *testing.T) {
 		c := controller.NewBeziqueCuiController(newMock())
-		assert.Contains(t, c.Exec("meld"), "Meld index is required")
+		assert.Contains(t, c.Exec("meld"), msgStem("meldIndexRequired"))
 	})
 
 	t.Run("skip short", func(t *testing.T) {

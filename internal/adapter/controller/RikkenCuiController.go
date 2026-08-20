@@ -32,8 +32,8 @@ func (rc *RikkenCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "p", "play":
-				idx, errMsg, ok := cuiutil.ParseIntArg(args,
-					"Card index is required.", "Invalid card index. Please enter a number.", 0, math.MaxInt)
+				idx, errMsg, ok := cuiutil.ParseIntArgKeys(args,
+					"cardIndexRequired", "invalidCardIndexNotANumber", 0, math.MaxInt)
 				if !ok {
 					return errMsg, true
 				}
@@ -41,7 +41,7 @@ func (rc *RikkenCuiController) Exec(command string) string {
 			case "bid":
 				contract, ok := rikkenParseContract(args)
 				if !ok {
-					return "Invalid contract. Use rik / misere / solo / open, or pass.", true
+					return invalidArg("invalidContractRik"), true
 				}
 				return rc.ri.Bid(contract), true
 			case "pass":
@@ -50,7 +50,7 @@ func (rc *RikkenCuiController) Exec(command string) string {
 			case "call":
 				suit, ok := rikkenParseSuit(args)
 				if !ok {
-					return "Invalid trump. Use s / c / h / d.", true
+					return invalidArg("invalidTrumpSCHD"), true
 				}
 				return rc.ri.Call(suit), true
 			case "next":

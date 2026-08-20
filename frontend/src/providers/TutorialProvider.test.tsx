@@ -1,7 +1,7 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TutorialConfig } from '../types/tutorial';
-import { TutorialProvider, useTutorialContext } from './TutorialProvider';
+import { TutorialProvider, useTutorialContext, useTutorialMessageParams } from './TutorialProvider';
 
 // Mock ResizeObserver
 class MockResizeObserver {
@@ -156,5 +156,73 @@ describe('TutorialProvider', () => {
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
     expect(() => render(<TestConsumer />)).toThrow('useTutorialContext must be used within a TutorialProvider');
     spy.mockRestore();
+  });
+});
+
+// #5936: チュートリアルの文言に数値を焼き込むと、ドメイン定数を変えたとき
+// 盤面の表示だけが追随し、チュートリアルは古い数字を教え続ける。ステップは
+// モジュール定数なので、応答が運ぶ値は補間で渡すしかない。
+describe('TutorialProvider message interpolation', () => {
+  const paramConfig: TutorialConfig = {
+    gameName: 'paramgame',
+    steps: [
+      {
+        target: '[data-tutorial="step1"]',
+        messageKey: 'settle',
+        messageParams: { amount: 5 },
+        placement: 'bottom',
+        advanceOn: 'next',
+      },
+      { target: '[data-tutorial="step2"]', messageKey: 'plain', placement: 'top', advanceOn: 'next' },
+    ],
+  };
+
+  /** Stands in for i18next: substitutes `{{name}}` from the params it is given. */
+  const translate = (key: string, params?: Record<string, string | number>) =>
+    key === 'settle' ? `ポットから${String(params?.amount ?? '')}を受け取ります` : 'パラメータの無い説明';
+
+  function ParamPage({ dynamic }: { dynamic?: Record<string, string | number> }) {
+    useTutorialMessageParams(dynamic ?? {});
+    const ctx = useTutorialContext();
+    return (
+      <button type="button" onClick={ctx.start}>
+        Start
+      </button>
+    );
+  }
+
+  it('interpolates the step params into the message', async () => {
+    render(
+      <TutorialProvider config={paramConfig} translateMessage={translate}>
+        <ParamPage />
+      </TutorialProvider>,
+    );
+    fireEvent.click(screen.getByText('Start'));
+    await waitFor(() => expect(screen.getByText('ポットから5を受け取ります')).toBeInTheDocument());
+  });
+
+  // **ページが渡した値が後勝ち。**サーバーが運んでいる値の方が正しい。
+  it('lets the page override the step params with the value the board shows', async () => {
+    render(
+      <TutorialProvider config={paramConfig} translateMessage={translate}>
+        <ParamPage dynamic={{ amount: 7 }} />
+      </TutorialProvider>,
+    );
+    fireEvent.click(screen.getByText('Start'));
+    await waitFor(() => expect(screen.getByText('ポットから7を受け取ります')).toBeInTheDocument());
+    expect(screen.queryByText('ポットから5を受け取ります')).not.toBeInTheDocument();
+  });
+
+  // 負のコントロール: パラメータを持たないステップが壊れていないこと。
+  it('still renders a step that takes no params', async () => {
+    render(
+      <TutorialProvider config={paramConfig} translateMessage={translate}>
+        <ParamPage dynamic={{ amount: 7 }} />
+      </TutorialProvider>,
+    );
+    fireEvent.click(screen.getByText('Start'));
+    await waitFor(() => expect(screen.getByText('ポットから7を受け取ります')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: '次へ' }));
+    await waitFor(() => expect(screen.getByText('パラメータの無い説明')).toBeInTheDocument());
   });
 });

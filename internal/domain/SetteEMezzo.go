@@ -43,6 +43,14 @@ const (
 // 依存する形になるため、全体を 2 倍した整数で扱う。
 const SetteEMezzoTargetHalves = 15
 
+// SetteEMezzoCpuStandHalves CPU 席と CPU 親がここに達したら止める (5.5 点)。
+//
+// **相手の停止ラインは賭け続けるかの判断材料。**ブラックジャックの「17 で
+// スタンド」に当たる数字なのに、どの画面にも出ていなかった (#5566)。案内は
+// この定数を FormatHalves に通して書く。文言に 5.5 を焼き込むと、閾値を
+// 変えたとき案内だけが嘘になる。
+const SetteEMezzoCpuStandHalves = 11
+
 // SetteEMezzoMattaDesign マッタ（コインの K）に対応するスート。
 // フレンチスートではコイン＝ダイヤに対応させる。
 const SetteEMezzoMattaDesign = CardDesignDiamond
@@ -276,8 +284,7 @@ func (s *SetteEMezzo) playCpuSeat(h *SetteEMezzoHand) {
 		if total >= SetteEMezzoTargetHalves {
 			break
 		}
-		// 11 半点 = 5.5 点。ここを超えたら止める。
-		if total >= 11 {
+		if total >= SetteEMezzoCpuStandHalves {
 			h.stood = true
 			break
 		}

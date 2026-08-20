@@ -2,9 +2,12 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -546,6 +549,8 @@ func TestSevenCardStudCuiPresenter_ActionLogOutput(t *testing.T) {
 		}
 		mockGame.On("GetGameEndFlag").Return(true)
 		mockGame.On("GetActionLog").Return(entries)
+		// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+		mockGame.On("GetPlayer", mock.Anything).Return(domain.NewSevenCardStudPlayer(true, domain.SevenCardStudPlayStyle(0))).Maybe()
 
 		result := p.ActionLogOutput(mockGame)
 		assert.Contains(t, result, "棋譜")
@@ -739,4 +744,94 @@ func TestSevenCardStudCuiPresenter_HintOutput(t *testing.T) {
 		s.SetPhase(domain.SevenCardStudPhaseShowdown)
 		assert.Contains(t, p.HintOutput(s), i18n.T("sevencardstud.hintNone"))
 	})
+}
+
+// #5543: Hi-Lo の結果は合計額しか出ておらず、ハイを取ったのかローを取ったのか、
+// スクープしたのかが CUI からは読み取れなかった。Web は StudHiLoSplit が
+// 3 通りを別バッジで出している。
+func TestSevenCardStudCuiPresenter_Output_HiLoSplit(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.SevenCardStudCuiPresenter)
+
+	outputWith := func(hiLo bool, r domain.SevenCardStudResult) string {
+		var s *domain.SevenCardStud
+		if hiLo {
+			cfg := domain.DefaultSevenCardStudConfig()
+			s = domain.NewSevenCardStudHiLo(domain.NewTrumpCards(0),
+				domain.NewSevenCardStudPlayersForTable(cfg.TableSize), cfg)
+		} else {
+			s, _ = makeSevenCardStudForPresenter()
+		}
+		s.SetPhase(domain.SevenCardStudPhaseEnd)
+		s.SetRoundResults([]domain.SevenCardStudResult{r})
+		return p.Output(s, nil)
+	}
+
+	base := domain.SevenCardStudResult{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush"}
+
+	t.Run("splits the pot into the high and low shares", func(t *testing.T) {
+		r := base
+		r.WonAmount, r.WonLow = 100, 40
+		out := outputWith(true, r)
+		assert.Contains(t, out, i18n.Tf("sevencardstud.wonSplit",
+			"high", strconv.Itoa(60), "low", strconv.Itoa(40)))
+	})
+
+	t.Run("says scoop when the same player took both", func(t *testing.T) {
+		r := base
+		r.WonAmount, r.WonLow = 100, 40
+		assert.Contains(t, outputWith(true, r), i18n.T("sevencardstud.wonScoop"))
+	})
+
+	// ローだけ取ったときはスクープではない。
+	t.Run("is not a scoop when only the low was won", func(t *testing.T) {
+		r := base
+		r.WonAmount, r.WonLow = 40, 40
+		out := outputWith(true, r)
+		assert.NotContains(t, out, i18n.T("sevencardstud.wonScoop"))
+		assert.Contains(t, out, i18n.Tf("sevencardstud.wonSplit",
+			"high", strconv.Itoa(0), "low", strconv.Itoa(40)))
+	})
+
+	// **Hi-Lo でないゲームでは何も変わらない。**
+	t.Run("leaves plain seven card stud alone", func(t *testing.T) {
+		r := base
+		r.WonAmount = 100
+		out := outputWith(false, r)
+		assert.Contains(t, out, i18n.Tf("sevencardstud.wonAmount", "total", "100"))
+		assert.NotContains(t, out, strings.SplitN(i18n.T("sevencardstud.wonSplit"), "{{", 2)[0])
+	})
+}
+
+// #5542: Web は 3rd street でブリングイン (強制ベットを払い最初に動く席) に
+// バッジを出すのに、CUI は誰なのかを知る手段が無かった。Razz は「一番強い
+// ドアカード」という逆転ルールなので、なおさら判断材料になる。
+func TestSevenCardStudCuiPresenter_Output_BringIn(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.SevenCardStudCuiPresenter)
+
+	outputWith := func(phase, bringIn int) string {
+		s, players := makeSevenCardStudForPresenter()
+		s.SetPhase(phase)
+		s.SetBringInPlayerIdx(bringIn)
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		return p.Output(s, nil)
+	}
+
+	line := func(idx int) string {
+		return i18n.Tf("sevencardstud.bringInLine", "name", i18n.Tf("cuiPlayerCpu", "idx", strconv.Itoa(idx)))
+	}
+
+	out := outputWith(domain.SevenCardStudPhaseThirdStreet, 2)
+	assert.Contains(t, out, line(2))
+
+	// **他ストリートでは出さない。**強制ベットは 3rd street だけの話。
+	header := strings.SplitN(i18n.T("sevencardstud.bringInLine"), "{{", 2)[0]
+	assert.NotContains(t, outputWith(domain.SevenCardStudPhaseFourthStreet, 2), header)
+	// 未確定 (-1) のときも出さない。
+	assert.NotContains(t, outputWith(domain.SevenCardStudPhaseThirdStreet, -1), header)
 }

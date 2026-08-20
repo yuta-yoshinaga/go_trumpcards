@@ -22,6 +22,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { badgeErrorColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
+import { activeTurnClass, finishedPlayerClass } from '../styles/gameConstants';
 import { gameTheme } from '../styles/gameTheme';
 import type { BigTwoResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
@@ -32,6 +33,7 @@ import {
   formatBigTwoState,
   parseBigTwoCommand,
 } from '../utils/cli/commands/bigtwoCommands';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -112,8 +114,9 @@ function BigTwoPageContent() {
       parseCommand: parseBigTwoCommand,
       formatResponse: formatBigTwoState,
       helpText: [...BIGTWO_HELP],
+      localCommand: hintLocalCommand(frontendHint),
     }),
-    [],
+    [frontendHint],
   );
   const { handleCommand } = useCliGame(callApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
@@ -176,7 +179,20 @@ function BigTwoPageContent() {
               {state.players
                 .filter((p) => !p.isHuman)
                 .map((p) => (
-                  <div key={p.id} className="text-center">
+                  <div
+                    key={p.id}
+                    data-testid={`bt-cpu-${p.id.toString()}`}
+                    // **手番中の CPU を枠線で示す。** currentTurn は届いていたのに
+                    // isHumanTurn の判定にしか使われておらず、誰の番か画面に出て
+                    // いなかった。Daifugo / Sevens と同じ共有スタイルを使う (#5478)。
+                    className={`text-center rounded-[8px] p-1 ${
+                      p.isFinished
+                        ? `${finishedPlayerClass} border-2 border-transparent`
+                        : state.currentTurn === p.id && !isGameEnd
+                          ? activeTurnClass
+                          : 'border-2 border-transparent'
+                    }`}
+                  >
                     <div className="text-xs text-ds-text-muted mb-1 flex items-center justify-center gap-1">
                       <span>{tc('player.cpu', { id: p.id })}</span>
                       {p.isFinished ? (

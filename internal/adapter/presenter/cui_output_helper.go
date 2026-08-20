@@ -2,9 +2,11 @@ package presenter
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
@@ -42,10 +44,40 @@ func cuiTrickBlock[TC any](b *strings.Builder, trick []TC, playerIdx func(TC) in
 }
 
 // cuiErrorBlock writes the error line if lastErr is non-nil.
+//
+// An error that names an i18n key is translated here; one that carries a
+// finished phrase is printed as-is. Domain errors used to be phrases only, so
+// they came out in whatever language they were written in regardless of the
+// player's locale (#5556). Errors that have not been converted keep the old
+// behaviour rather than being routed through a lookup that would just render
+// the phrase back.
 func cuiErrorBlock(b *strings.Builder, lastErr error) {
 	if lastErr != nil {
-		fmt.Fprintf(b, "%s\n", color.Red(lastErr.Error()))
+		text := lastErr.Error()
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			text = i18n.Tf(code, i18nPairs(params)...)
+		}
+		fmt.Fprintf(b, "%s\n", i18n.MarkErrorLine(color.Red(text)))
 	}
+}
+
+// i18nPairs flattens interpolation values into the key, value, ... form Tf takes.
+// Sorted so a message with several params renders identically every time; map
+// order is random in Go and would otherwise make output order a coin toss.
+func i18nPairs(params map[string]string) []string {
+	if len(params) == 0 {
+		return nil
+	}
+	keys := make([]string, 0, len(params))
+	for k := range params {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	pairs := make([]string, 0, len(params)*2)
+	for _, k := range keys {
+		pairs = append(pairs, k, params[k])
+	}
+	return pairs
 }
 
 // sharedHintReasonKeys maps a hint-reason identifier to the i18n key
@@ -61,20 +93,6 @@ var sharedHintReasonKeys = map[string]string{
 	"strategic_bury": "cuiHintStrategicBury",
 	"strong_hand":    "cuiHintStrongHand",
 	"weak_hand":      "cuiHintWeakHand",
-}
-
-// lookupHintReason looks up a hint reason string from game-specific map, then shared map.
-// The gameReasons map holds already-resolved display strings (reason → text);
-// values are returned verbatim. For maps that hold i18n keys (reason → key)
-// use hintReasonStr instead, which applies i18n.T.
-func lookupHintReason(reason string, gameReasons map[string]string) string {
-	if s, ok := gameReasons[reason]; ok {
-		return s
-	}
-	if key, ok := sharedHintReasonKeys[reason]; ok {
-		return i18n.T(key)
-	}
-	return reason
 }
 
 // hintReasonStr resolves a hint reason via a game-specific key map first

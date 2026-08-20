@@ -68,15 +68,15 @@ func TestIndianPokerCuiController_Bet_NoAmount(t *testing.T) {
 func TestIndianPokerCuiController_Bet_InvalidAmount(t *testing.T) {
 	mi := new(usecase.MockIndianPokerInteractor)
 	c := NewIndianPokerCuiController(mi)
-	assert.Equal(t, i18n.Tf("indianpoker.invalidAmount", "val", "abc"), c.Exec("b abc"))
-	assert.Equal(t, i18n.Tf("indianpoker.invalidAmount", "val", "xyz"), c.Exec("bet xyz"))
+	assert.Equal(t, invalidArg("indianpoker.invalidAmount", "val", "abc"), c.Exec("b abc"))
+	assert.Equal(t, invalidArg("indianpoker.invalidAmount", "val", "xyz"), c.Exec("bet xyz"))
 }
 
 func TestIndianPokerCuiController_Bet_NonPositiveAmount(t *testing.T) {
 	mi := new(usecase.MockIndianPokerInteractor)
 	c := NewIndianPokerCuiController(mi)
-	assert.Equal(t, i18n.Tf("indianpoker.invalidAmount", "val", "-50"), c.Exec("b -50"))
-	assert.Equal(t, i18n.Tf("indianpoker.invalidAmount", "val", "0"), c.Exec("bet 0"))
+	assert.Equal(t, invalidArg("indianpoker.invalidAmount", "val", "-50"), c.Exec("b -50"))
+	assert.Equal(t, invalidArg("indianpoker.invalidAmount", "val", "0"), c.Exec("bet 0"))
 }
 
 func TestIndianPokerCuiController_Raise(t *testing.T) {
@@ -97,15 +97,15 @@ func TestIndianPokerCuiController_Raise_NoAmount(t *testing.T) {
 func TestIndianPokerCuiController_Raise_InvalidAmount(t *testing.T) {
 	mi := new(usecase.MockIndianPokerInteractor)
 	c := NewIndianPokerCuiController(mi)
-	assert.Equal(t, i18n.Tf("indianpoker.invalidAmount", "val", "abc"), c.Exec("ra abc"))
-	assert.Equal(t, i18n.Tf("indianpoker.invalidAmount", "val", "xyz"), c.Exec("raise xyz"))
+	assert.Equal(t, invalidArg("indianpoker.invalidAmount", "val", "abc"), c.Exec("ra abc"))
+	assert.Equal(t, invalidArg("indianpoker.invalidAmount", "val", "xyz"), c.Exec("raise xyz"))
 }
 
 func TestIndianPokerCuiController_Raise_NonPositiveAmount(t *testing.T) {
 	mi := new(usecase.MockIndianPokerInteractor)
 	c := NewIndianPokerCuiController(mi)
-	assert.Equal(t, i18n.Tf("indianpoker.invalidAmount", "val", "-30"), c.Exec("ra -30"))
-	assert.Equal(t, i18n.Tf("indianpoker.invalidAmount", "val", "0"), c.Exec("raise 0"))
+	assert.Equal(t, invalidArg("indianpoker.invalidAmount", "val", "-30"), c.Exec("ra -30"))
+	assert.Equal(t, invalidArg("indianpoker.invalidAmount", "val", "0"), c.Exec("raise 0"))
 }
 
 func TestIndianPokerCuiController_AllIn(t *testing.T) {
@@ -146,7 +146,7 @@ func TestIndianPokerCuiController_BettingLimit_NoArgs(t *testing.T) {
 func TestIndianPokerCuiController_BettingLimit_InvalidValue(t *testing.T) {
 	mi := new(usecase.MockIndianPokerInteractor)
 	c := NewIndianPokerCuiController(mi)
-	assert.Equal(t, i18n.Tf("indianpoker.invalidBettingLimit", "val", "abc"), c.Exec("bl abc"))
+	assert.Equal(t, invalidArg("indianpoker.invalidBettingLimit", "val", "abc"), c.Exec("bl abc"))
 }
 
 func TestIndianPokerCuiController_MetaAI_On(t *testing.T) {
@@ -180,14 +180,14 @@ func TestIndianPokerCuiController_MetaAI_MissingArg(t *testing.T) {
 func TestIndianPokerCuiController_MetaAI_InvalidArg(t *testing.T) {
 	mi := new(usecase.MockIndianPokerInteractor)
 	c := NewIndianPokerCuiController(mi)
-	assert.Equal(t, i18n.Tf("invalidMetaAI", "val", "abc"), c.Exec("mai abc"))
+	assert.Equal(t, invalidArg("invalidMetaAI", "val", "abc"), c.Exec("mai abc"))
 }
 
 func TestIndianPokerCuiController_MetaAI_OutOfRange(t *testing.T) {
 	mi := new(usecase.MockIndianPokerInteractor)
 	c := NewIndianPokerCuiController(mi)
-	assert.Equal(t, i18n.Tf("invalidMetaAI", "val", "5"), c.Exec("mai 5"))
-	assert.Equal(t, i18n.Tf("invalidMetaAI", "val", "-1"), c.Exec("mai -1"))
+	assert.Equal(t, invalidArg("invalidMetaAI", "val", "5"), c.Exec("mai 5"))
+	assert.Equal(t, invalidArg("invalidMetaAI", "val", "-1"), c.Exec("mai -1"))
 }
 
 func TestIndianPokerCuiController_Ante_Valid(t *testing.T) {
@@ -211,14 +211,14 @@ func TestIndianPokerCuiController_Ante_NoArgs(t *testing.T) {
 func TestIndianPokerCuiController_Ante_InvalidValue(t *testing.T) {
 	mi := new(usecase.MockIndianPokerInteractor)
 	c := NewIndianPokerCuiController(mi)
-	assert.Equal(t, i18n.Tf("indianpoker.invalidAnte", "val", "abc"), c.Exec("an abc"))
+	assert.Equal(t, invalidArg("indianpoker.invalidAnte", "val", "abc"), c.Exec("an abc"))
 }
 
 func TestIndianPokerCuiController_Ante_NonPositive(t *testing.T) {
 	mi := new(usecase.MockIndianPokerInteractor)
 	c := NewIndianPokerCuiController(mi)
-	assert.Equal(t, i18n.Tf("indianpoker.invalidAnte", "val", "0"), c.Exec("an 0"))
-	assert.Equal(t, i18n.Tf("indianpoker.invalidAnte", "val", "-1"), c.Exec("an -1"))
+	assert.Equal(t, invalidArg("indianpoker.invalidAnte", "val", "0"), c.Exec("an 0"))
+	assert.Equal(t, invalidArg("indianpoker.invalidAnte", "val", "-1"), c.Exec("an -1"))
 }
 
 func TestIndianPokerCuiController_ActionLog(t *testing.T) {

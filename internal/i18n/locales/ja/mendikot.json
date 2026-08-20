@@ -30,5 +30,8 @@
   "suitSpade": "スペード",
   "suitClover": "クラブ",
   "suitHeart": "ハート",
-  "suitDiamond": "ダイヤ"
+  "suitDiamond": "ダイヤ",
+  "helpExampleGiveUp": "  g                    この局を投了する",
+  "helpHint": "  h                    助言を表示",
+  "warnSetsTrump": "！ この 1 枚のスートが、このハンドの切り札になります（フォローできないため）。"
 }

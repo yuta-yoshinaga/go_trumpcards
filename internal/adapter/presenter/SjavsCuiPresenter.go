@@ -12,17 +12,27 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-func sjavsCardListStr(cards []*domain.Card, indexed bool) string {
+// sjavsCardListStr は切札に印を付けて並べる。trumpSuit が -1 (未確定) なら
+// 何も付けない。
+//
+// **6 枚の常時切札 (♣Q ♠Q ♣J ♠J ♥J ♦J) はスートを見ても分からない。**規則文は
+// 出ているが、手札のどれがそれかは暗記に頼らせていた (#5575)。判定は合法手と
+// 強さを決めている domain.SjavsIsTrump をそのまま呼ぶ ── 6 枚の一覧を書き写すと、
+// 印と実際の強さがずれても誰も気づけない。
+func sjavsCardListStr(cards []*domain.Card, indexed bool, trumpSuit int) string {
 	if len(cards) == 0 {
 		return "-"
 	}
 	parts := make([]string, 0, len(cards))
 	for i, c := range cards {
-		if indexed {
-			parts = append(parts, "["+strconv.Itoa(i)+"]"+cuiCardStr(c))
-			continue
+		str := cuiCardStr(c)
+		if trumpSuit >= 0 && domain.SjavsIsTrump(c, trumpSuit) {
+			str += color.Yellow(i18n.T("sjavs.trumpMark"))
 		}
-		parts = append(parts, cuiCardStr(c))
+		if indexed {
+			str = "[" + strconv.Itoa(i) + "]" + str
+		}
+		parts = append(parts, str)
 	}
 	return strings.Join(parts, " ")
 }
@@ -61,7 +71,8 @@ func (p *SjavsCuiPresenter) Output(c interfaces.SjavsGame, lastErr error) string
 			for _, tc := range c.GetTrick() {
 				trick = append(trick, tc.Card)
 			}
-			sb.WriteString(i18n.Tf("sjavs.trickLine", "cards", sjavsCardListStr(trick, false)) + "\n")
+			sb.WriteString(i18n.Tf("sjavs.trickLine",
+				"cards", sjavsCardListStr(trick, false, c.GetTrumpSuit())) + "\n")
 		}
 
 		bids := c.GetBids()
@@ -79,7 +90,7 @@ func (p *SjavsCuiPresenter) Output(c interfaces.SjavsGame, lastErr error) string
 				for j := range player.GetCardsSize() {
 					hand = append(hand, player.GetCard(j))
 				}
-				sb.WriteString("  " + sjavsCardListStr(hand, true) + "\n")
+				sb.WriteString("  " + sjavsCardListStr(hand, true, c.GetTrumpSuit()) + "\n")
 			}
 		}
 
@@ -159,5 +170,5 @@ var sjavsHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *SjavsCuiPresenter) ActionLogOutput(c interfaces.SjavsGame) string {
-	return actionLogOutputText(c)
+	return actionLogOutputTextForSeats[*domain.SjavsPlayer](c)
 }

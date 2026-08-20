@@ -9,6 +9,7 @@
   "header": "ラウンド: {{round}}  トリック: {{trick}}",
   "dealer": "ディーラー: {{name}}",
   "trumpLine": "切り札: {{suit}} (山札: {{stock}})",
+  "trumpLineWithCard": "切り札: {{suit}}（表示カード: {{card}}） (山札: {{stock}})",
   "trumpUndecided": "切り札: 未確定",
   "teamScoreLine": "チーム0: {{t0}}  チーム1: {{t1}}",
   "playerLine": "{{name}}: チーム {{team}} トリック={{tricks}} 手札={{cards}}",
@@ -30,5 +31,7 @@
   "hintReasonFollowWin": "トリックを取る",
   "hintReasonFollowDump": "低いカードを捨てる",
   "hintReasonMarriage": "マリアージュを宣言してボーナス点を得る",
-  "promptMarriageCards": "宣言可能: {{cards}}"
+  "promptMarriageCards": "宣言可能: {{cards}}",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
+  "helpHint": "  h                    助言を表示"
 }

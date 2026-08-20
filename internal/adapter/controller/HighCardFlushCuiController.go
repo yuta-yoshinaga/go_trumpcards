@@ -31,27 +31,27 @@ func (hcc *HighCardFlushCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bet":
-				ante, errMsg, ok := cuiutil.ParseIntArg(args, "Ante amount is required.", "Invalid ante amount. Please enter a number.", 1, math.MaxInt)
+				ante, errMsg, ok := cuiutil.ParseIntArgKeys(args, "anteAmountRequired", "invalidAnteAmount", 1, math.MaxInt)
 				if !ok {
 					return errMsg, true
 				}
 				flushBonus := 0
 				if len(args) > 1 {
-					flushBonus, errMsg, ok = cuiutil.ParseIntArg(args[1:], "", "Invalid Flush Bonus amount.", 0, math.MaxInt)
+					flushBonus, errMsg, ok = cuiutil.ParseIntArgKeys(args[1:], "", "invalidFlushBonusAmount", 0, math.MaxInt)
 					if !ok {
 						return errMsg, true
 					}
 				}
 				straightFlush := 0
 				if len(args) > 2 {
-					straightFlush, errMsg, ok = cuiutil.ParseIntArg(args[2:], "", "Invalid Straight Flush Bonus amount.", 0, math.MaxInt)
+					straightFlush, errMsg, ok = cuiutil.ParseIntArgKeys(args[2:], "", "invalidStraightFlushBonusAmount", 0, math.MaxInt)
 					if !ok {
 						return errMsg, true
 					}
 				}
 				return hcc.hi.Bet(ante, flushBonus, straightFlush), true
 			case "ra", "raise":
-				mult, errMsg, ok := cuiutil.ParseIntArg(args, "Raise multiplier is required (1-3).", "Invalid raise multiplier.", 1, 3)
+				mult, errMsg, ok := cuiutil.ParseIntArgKeys(args, "raiseMultiplierRequired13", "invalidRaiseMultiplier", 1, 3)
 				if !ok {
 					return errMsg, true
 				}

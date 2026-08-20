@@ -4,12 +4,14 @@ package presenter
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // setupBlackJackSwitchCuiMockDefaults registers permissive Maybe defaults so the
@@ -32,6 +34,7 @@ func setupBlackJackSwitchCuiMockDefaults(m *interfaces.MockBlackJackSwitchGame) 
 	m.On("GetTotalPayout").Return(0).Maybe()
 	m.On("GetOverallResult").Return(domain.GameResultDraw).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+	m.On("SwitchPreviewScores").Return(0, 0, false).Maybe()
 }
 
 func TestBlackJackSwitchCuiPresenter_Output_BetPhase(t *testing.T) {
@@ -173,4 +176,54 @@ func TestBlackJackSwitchCuiPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetGameEndFlag").Return(false)
 	out := p.ActionLogOutput(m)
 	assert.NotEmpty(t, out)
+}
+
+// #5586: 交換すると得か損かは、`switch` を打って結果を見るまで分からなかった。
+// Web はホバーで先読みを出している。
+func TestBlackJackSwitchCuiPresenter_ShowsTheSwitchPreview(t *testing.T) {
+	i18n.SetLang("ja")
+	build := func(phase, first, second int, ok bool) string {
+		m := new(interfaces.MockBlackJackSwitchGame)
+		setupBlackJackSwitchCuiMockDefaults(m)
+		m.ExpectedCalls = filterCalls(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = filterCalls(m.ExpectedCalls, "SwitchPreviewScores")
+		m.On("GetPhase").Return(phase)
+		m.On("SwitchPreviewScores").Return(first, second, ok)
+		return new(BlackJackSwitchCuiPresenter).Output(m, nil)
+	}
+
+	out := build(domain.BJSwitchPhaseSwitch, 20, 18, true)
+	assert.Contains(t, out, i18n.Tf("blackjackswitch.switchPreviewLine", "first", "20", "second", "18"))
+
+	// **21 超えはバーストと分かる形で出す** (受け入れ条件2)。数字だけでは、
+	// 良くなったのか壊れたのかが読み取りにくい。
+	bust := build(domain.BJSwitchPhaseSwitch, 23, 18, true)
+	assert.Contains(t, bust, i18n.Tf("blackjackswitch.switchPreviewBust", "score", "23"))
+
+	// ちょうど 21 はバーストでない。ここを >= で書くと、最良手が壊れて見える。
+	assert.NotContains(t, build(domain.BJSwitchPhaseSwitch, 21, 18, true),
+		i18n.Tf("blackjackswitch.switchPreviewBust", "score", "21"))
+
+	// 入れ替えられない局面 (2枚未満) では出さない。
+	assert.NotContains(t, build(domain.BJSwitchPhaseSwitch, 0, 0, false),
+		strings.SplitN(i18n.T("blackjackswitch.switchPreviewLine"), "{{", 2)[0])
+}
+
+// ACTION / END では出さない (受け入れ条件3)。確定した得点と読み違える。
+func TestBlackJackSwitchCuiPresenter_HidesThePreviewOutsideTheSwitchPhase(t *testing.T) {
+	i18n.SetLang("ja")
+	for _, phase := range []int{domain.BJSwitchPhaseBet, domain.BJSwitchPhaseAction, domain.BJSwitchPhaseEnd} {
+		m := new(interfaces.MockBlackJackSwitchGame)
+		setupBlackJackSwitchCuiMockDefaults(m)
+		m.ExpectedCalls = filterCalls(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = filterCalls(m.ExpectedCalls, "SwitchPreviewScores")
+		m.On("GetPhase").Return(phase)
+		// **呼ばれもしないこと。**フェーズを見ずに計算してから捨てる実装を弾く。
+		m.On("SwitchPreviewScores").Return(20, 18, true).Maybe()
+
+		out := new(BlackJackSwitchCuiPresenter).Output(m, nil)
+		assert.NotContains(t, out, strings.SplitN(i18n.T("blackjackswitch.switchPreviewLine"), "{{", 2)[0],
+			"phase %d", phase)
+		m.AssertNotCalled(t, "SwitchPreviewScores")
+	}
 }

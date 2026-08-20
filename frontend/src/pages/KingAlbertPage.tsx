@@ -27,13 +27,14 @@ import { useKingAlbertGame } from '../hooks/useKingAlbertGame';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { KingAlbertResponse } from '../types/card';
+import type { Card, KingAlbertResponse } from '../types/card';
 import { KingAlbertPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { KINGALBERT_HELP, parseKingAlbertCommand } from '../utils/cli/commands/kingalbertCommands';
 import { formatKingAlbertState } from '../utils/cli/formatters/kingalbertFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { kingAlbertLegalTargets } from '../utils/kingAlbertLegalTargets';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
@@ -196,6 +197,17 @@ function KingAlbertPageContent() {
     selectedSource.col === col &&
     selectedSource.cardIndex === cardIndex;
 
+  // 選択中の札そのもの。タブローは最上段しか動かせないので、列の一番上を読む。
+  const selectedCard = ((): Card | null => {
+    if (!selectedSource || selectedSource.col === undefined) return null;
+    if (selectedSource.zone === 'reserve') return state.reserve[selectedSource.col] ?? null;
+    const col = state.tableau[selectedSource.col];
+    return col?.[col.length - 1]?.card ?? null;
+  })();
+  // リングは**置ける先だけ**に付ける。「選択中なら全部光る」だと、エラーになる手を
+  // 勧めることになる (#5598)。
+  const legalTargets = kingAlbertLegalTargets(state.tableau, state.foundation, selectedCard);
+
   const renderTableauColumn = (colIdx: number) => {
     const col = state.tableau[colIdx];
     const tableauColZone: KingAlbertMoveZone = { zone: 'tableau', col: colIdx };
@@ -215,9 +227,9 @@ function KingAlbertPageContent() {
                 onClick={() => game.handleSelectTarget(tableauColZone)}
                 disabled={!isPlaying || loading || !selectedSource}
                 style={{ height: dims.ch }}
-                data-target-candidate={selectedSource ? true : undefined}
+                data-target-candidate={legalTargets.tableau.has(colIdx) || undefined}
                 className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center bg-transparent ${focusRingWhite} ${
-                  selectedSource ? 'ring-1 ring-ds-info' : ''
+                  legalTargets.tableau.has(colIdx) ? 'ring-1 ring-ds-info' : ''
                 }`}
               >
                 {t('empty')}
@@ -230,7 +242,8 @@ function KingAlbertPageContent() {
                   cardIndex: cardIdx,
                 };
                 const isTop = cardIdx === col.length - 1;
-                const isTargetCandidate = !!selectedSource && isTop && !isSourceSelected('tableau', colIdx, cardIdx);
+                const isTargetCandidate =
+                  isTop && legalTargets.tableau.has(colIdx) && !isSourceSelected('tableau', colIdx, cardIdx);
                 return (
                   <div
                     key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
@@ -382,9 +395,11 @@ function KingAlbertPageContent() {
                               suit: FOUNDATION_SUITS[idx],
                               count: pile.length,
                             })}
-                            data-target-candidate={selectedSource ? true : undefined}
+                            data-target-candidate={legalTargets.foundation.has(idx) || undefined}
                             className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
-                              selectedSource ? 'ring-1 ring-ds-info motion-safe:hover:ring-2 focus:ring-2' : ''
+                              legalTargets.foundation.has(idx)
+                                ? 'ring-1 ring-ds-info motion-safe:hover:ring-2 focus:ring-2'
+                                : ''
                             }`}
                           >
                             <AnimatedCard
@@ -401,7 +416,14 @@ function KingAlbertPageContent() {
                             disabled={!isPlaying || loading || !selectedSource}
                             aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
                             style={{ width: dims.cw, height: dims.ch }}
-                            className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                            // 空の枠は A の唯一の行き先。ここを暗いままにすると、
+                            // 「置ける先には光る」が片側だけ嘘になる。
+                            data-target-candidate={legalTargets.foundation.has(idx) || undefined}
+                            className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite} ${
+                              legalTargets.foundation.has(idx)
+                                ? 'ring-1 ring-ds-info motion-safe:hover:ring-2 focus:ring-2'
+                                : ''
+                            }`}
                           >
                             A
                           </button>
@@ -417,7 +439,12 @@ function KingAlbertPageContent() {
               {[0, 1, 2, 3, 4, 5, 6, 7, 8].map(renderTableauColumn)}
             </div>
 
-            <div data-tutorial="ka-hint-display">
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-tutorial="ka-hint-display" data-testid="ka-hint-live" role="status" aria-live="polite">
               {hint && (
                 <div className="text-ds-warning text-sm mb-2 mt-3">
                   {t('hintAvailable')}: {formatHintZone(t, hint.fromZone, hint.fromCol)} →{' '}

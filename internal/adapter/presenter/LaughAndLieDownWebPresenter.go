@@ -37,6 +37,7 @@ func (p *LaughAndLieDownWebPresenter) buildBase(c interfaces.LaughAndLieDownGame
 	resObj.Layout = laughAndLieDownCardsOutput(c.GetLayout())
 	resObj.DealerIdx = c.GetDealerIdx()
 	resObj.LastInIdx = c.GetLastInIdx()
+	resObj.LastInBonus = domain.LaughAndLieDownLastInBonus
 	resObj.Pot = domain.LaughAndLieDownPot
 	resObj.GameEndFlag = c.GetGameEndFlag()
 

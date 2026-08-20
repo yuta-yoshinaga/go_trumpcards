@@ -163,6 +163,11 @@ func (p *MightyCuiPresenter) Output(m interfaces.MightyGame, lastErr error) stri
 				"name", cuiPlayerName(m.GetPlayer(bidIdx), bidIdx)))
 			b.WriteString("\n")
 			b.WriteString(i18n.T("mighty.promptBidHelp") + "\n")
+			// **`nt` を付けると最低ビッドが上がる。**その分だけ数字が要るのに、
+			// CUI はコマンド構文しか出しておらず、付けてエラーになって初めて
+			// 気づく形だった (#5594)。点数は設定から取る。
+			b.WriteString(i18n.Tf("mighty.promptBidNoTrumpExtra",
+				"points", strconv.Itoa(m.GetConfig().NoTrumpExtra)) + "\n")
 		case domain.MightyPhaseTrumpAndFriend:
 			b.WriteString(i18n.T("mighty.promptTrumpHeader") + "\n")
 			b.WriteString(i18n.T("mighty.promptTrumpDeclareHelp") + "\n")
@@ -256,5 +261,5 @@ var mightyHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *MightyCuiPresenter) ActionLogOutput(m interfaces.MightyGame) string {
-	return actionLogOutputText(m)
+	return actionLogOutputTextForSeats[*domain.MightyPlayer](m)
 }

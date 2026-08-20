@@ -4,7 +4,7 @@ import type { CliParseResult } from '../types';
 
 type PaiGowArgs = Parameters<typeof paigowApi.exec>;
 
-const VALID_COMMANDS = ['b', 'bet', 's', 'set', 'log', 'r', 'reset', 'help', '?'];
+const VALID_COMMANDS = ['b', 'bet', 's', 'set', 'log', 'r', 'reset', 'h', 'hint', 'help', '?'];
 
 /** Parse a Pai Gow Poker CLI command into API exec arguments. */
 export function parsePaigowCommand(input: string): CliParseResult<PaiGowArgs> {
@@ -30,6 +30,9 @@ export function parsePaigowCommand(input: string): CliParseResult<PaiGowArgs> {
     case 'r':
     case 'reset':
       return { args: ['reset'] };
+    case 'h':
+    case 'hint':
+      return { args: ['hint'] };
     default: {
       const suggestion = suggestCommand(cmd, VALID_COMMANDS);
       if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
@@ -44,4 +47,5 @@ export const PAIGOW_HELP: string[] = [
   's <i0> <i1>   - Set low hand (2 card indices)',
   'log            - Show action log',
   'r/reset        - Reset game',
+  'h/hint         - Get a hint',
 ];

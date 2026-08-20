@@ -8,6 +8,8 @@
   "playerLine": "{{name}}: 手札{{hand}}枚  捕獲: {{captured}}  バスラ: {{basra}}",
   "promptPlay": "手番: {{name}}",
   "promptGameEnd": "ゲーム終了。nr で新しいゲームを始めます。",
+  "resultWinner": "勝者: {{names}}",
+  "resultScores": "最終得点: {{scores}}",
   "promptHelp": "p <h> [t...] でプレイ（t 省略でトレイル。ジャックは場を一掃）",
   "hintNone": "ヒントはありません。",
   "hintCard": "[HINT: {{cards}} ({{reason}})]",
@@ -16,5 +18,7 @@
   "hintReasonCapture": "価値の高い場札を捕獲する",
   "hintReasonTrail": "捕獲できないので低い札を捨てる",
   "result.scores": "ゲーム終了！ 得点: {{scores}}",
-  "captureHint": "{{hand}} → 場{{table}}"
+  "captureHint": "{{hand}} → 場{{table}}",
+  "helpExamplePlay": "  p 0                       手札の 0 番を場に置く (場札を取らない)",
+  "helpExampleNext": "  nr                        新しいゲームを始める"
 }

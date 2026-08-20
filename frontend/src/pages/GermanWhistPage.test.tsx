@@ -144,4 +144,73 @@ describe('GermanWhistPage', () => {
     renderWithProviders(<GermanWhistPage />);
     expect(await screen.findByText(/わざと負けましょう/)).toBeInTheDocument();
   });
+
+  // **前半は得点が両者 0 のまま。** trickCount を出さないと、13 トリックが
+  // どちらに有利に進んでいるか画面から読めない (#5744)。CUI は最初から両方出している。
+  it('shows the running trick count for both seats, not just the scoring ones', async () => {
+    // 既定の fixture は前半 (phase 0) で、得点はどちらも 0、通算は 2 対 1。
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<GermanWhistPage />);
+
+    const human = await screen.findByTestId('gw-human-tricks');
+    const cpu = screen.getByTestId('gw-cpu-tricks');
+
+    // 通算と得点が別々に読めること。得点だけなら 0 対 0 で区別がつかない。
+    expect(human).toHaveTextContent('獲得トリック: 2');
+    expect(cpu).toHaveTextContent('獲得トリック: 1');
+    expect(human).toHaveTextContent('得点トリック: 0');
+    expect(cpu).toHaveTextContent('得点トリック: 0');
+  });
+
+  // `cpu` は players.find(...) なので undefined になりうる。フォールバックが
+  // 効かないと画面に `NaN` や空欄が出る。
+  it('falls back to zero when the CPU seat is missing', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            cardCount: 3,
+            cards: [card('SPADE', 1)],
+            trickCount: 5,
+            scoringTricks: 2,
+          },
+        ],
+      }),
+    );
+    renderWithProviders(<GermanWhistPage />);
+
+    const cpu = await screen.findByTestId('gw-cpu-tricks');
+    expect(cpu).toHaveTextContent('獲得トリック: 0');
+    expect(cpu).not.toHaveTextContent('NaN');
+    // 人間側は通常どおり出ること (フォールバックが全体を潰していない)。
+    expect(screen.getByTestId('gw-human-tricks')).toHaveTextContent('獲得トリック: 5');
+  });
+
+  it('keeps both numbers distinguishable in the second half', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 1,
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            cardCount: 3,
+            cards: [card('SPADE', 1)],
+            trickCount: 9,
+            scoringTricks: 4,
+          },
+          { id: 1, isHuman: false, cardCount: 3, cards: [], trickCount: 7, scoringTricks: 3 },
+        ],
+      }),
+    );
+    renderWithProviders(<GermanWhistPage />);
+
+    const human = await screen.findByTestId('gw-human-tricks');
+    expect(human).toHaveTextContent('獲得トリック: 9');
+    expect(human).toHaveTextContent('得点トリック: 4');
+    // 同じ数字が両方に使われていたら見分けられない。
+    expect(human).not.toHaveTextContent('獲得トリック: 4');
+  });
 });

@@ -95,3 +95,36 @@ func TestMachiavelliCuiPresenter_ActionLogOutput(t *testing.T) {
 	out := p.ActionLogOutput(m)
 	assert.NotEmpty(t, out)
 }
+
+// #5704: 場の組み替えはこのゲームの核心なのに、CUI の案内は draw / newmeld /
+// layoff だけで、rearrange という手があること自体が伝わっていなかった。
+func TestMachiavelliCuiPresenter_MentionsRearrange(t *testing.T) {
+	p := new(presenter.MachiavelliCuiPresenter)
+
+	t.Run("offers the rearrange command while a meld is on the table", func(t *testing.T) {
+		g := domain.NewDefaultMachiavelli()
+		g.Reset()
+		g.SetPhase(domain.MachiavelliPhaseTurn)
+		g.SetTable([][]*domain.Card{{
+			domain.NewCard(domain.CardDesignSpade, 5, false),
+			domain.NewCard(domain.CardDesignHeart, 5, false),
+			domain.NewCard(domain.CardDesignDiamond, 5, false),
+		}})
+
+		out := p.Output(g, nil)
+
+		assert.Contains(t, out, i18n.T("machiavelli.promptRearrangeHelp"))
+	})
+
+	// 場が空なら組み替える対象が無いので出さない (layoff と同じ扱い)。
+	t.Run("stays quiet while the table is empty", func(t *testing.T) {
+		g := domain.NewDefaultMachiavelli()
+		g.Reset()
+		g.SetPhase(domain.MachiavelliPhaseTurn)
+		g.SetTable(nil)
+
+		out := p.Output(g, nil)
+
+		assert.NotContains(t, out, i18n.T("machiavelli.promptRearrangeHelp"))
+	})
+}

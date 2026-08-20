@@ -324,6 +324,10 @@ function WattenPageContent() {
                   <div
                     className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
                     data-testid="watten-stake-history"
+                    // 賭け金の吊り上げはこのゲームの核心なので、履歴が伸びるたびに
+                    // 読み上げる。視覚レイアウトは変えない。
+                    role="status"
+                    aria-live="polite"
                   >
                     <div className="text-ds-text-primary mb-1">{t('stakeHistory.title')}</div>
                     <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
@@ -443,12 +447,19 @@ function WattenPageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {state.hint && isRequestedHint(state) && (
-              <div className="text-ds-warning text-sm mb-2">
-                {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
-                {state.hint.cardIndex !== undefined && ` ([${state.hint.cardIndex}])`}
-              </div>
-            )}
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-testid="watten-hint-live" role="status" aria-live="polite">
+              {state.hint && isRequestedHint(state) && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
+                  {state.hint.cardIndex !== undefined && ` ([${state.hint.cardIndex}])`}
+                </div>
+              )}
+            </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="watten-action-buttons">

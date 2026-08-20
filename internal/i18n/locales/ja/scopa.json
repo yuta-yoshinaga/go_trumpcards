@@ -27,5 +27,7 @@
   "category.cards": "カルテ(最多枚数)",
   "category.denari": "デナリ(ダイヤ最多)",
   "category.primiera": "プリミエラ(7最多)",
-  "category.settebello": "セッテベッロ(7♦)"
+  "category.settebello": "セッテベッロ(7♦)",
+  "helpExampleNext": "  n                        ラウンドの結果を見てから次へ",
+  "helpLog": "  l                        行動ログを表示"
 }

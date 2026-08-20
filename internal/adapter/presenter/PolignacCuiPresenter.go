@@ -25,6 +25,19 @@ func polignacPlayerStr(player *domain.PolignacPlayer, idx int, isCapot bool) str
 		"round", strconv.Itoa(player.GetRoundPenalty()),
 		"cards", strconv.Itoa(player.GetCardsSize()),
 	))
+	// **合計失点だけでは、♠J を踏んだのか他を 2 枚拾ったのかが分からない** (#5746)。
+	if suits := player.GetTakenJackSuits(); len(suits) > 0 {
+		marks := make([]string, 0, len(suits))
+		for _, suit := range suits {
+			if suit == domain.CardDesignSpade {
+				marks = append(marks, i18n.T("polignac.jackSpade"))
+				continue
+			}
+			marks = append(marks, i18n.Tf("polignac.jackOther",
+				"suit", cuiCardStr(domain.NewCard(suit, domain.PolignacJackValue, true))))
+		}
+		b.WriteString(i18n.Tf("polignac.jackMarks", "jacks", strings.Join(marks, " ")))
+	}
 	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
 		b.WriteString(cuiIndexedCardListStr(player) + "\n")
@@ -121,5 +134,5 @@ var polignacHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *PolignacCuiPresenter) ActionLogOutput(g interfaces.PolignacGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.PolignacPlayer](g)
 }

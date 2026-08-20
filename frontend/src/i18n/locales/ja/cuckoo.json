@@ -55,5 +55,7 @@
     "cuckooKeepKing": "K は最強で、交換も拒否できます。必ず残しましょう",
     "cuckooRefuseKing": "K を見せて交換を拒めます。最強の札を守りましょう",
     "cuckooAcceptNoKing": "K が無いので拒否できません。受けるしかありません"
-  }
+  },
+  "swapTargetPreview": "{{name}} と交換します",
+  "swapTargetStock": "山札と交換します"
 }

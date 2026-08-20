@@ -34,5 +34,6 @@
     "controls": "Step advances one card, Auto Play runs to completion.",
     "resetButton": "Press Reset to start a new game."
   },
-  "undo": "Undo"
+  "undo": "Undo",
+  "completedPiles": "Completed: {{completed}}/{{total}}"
 }

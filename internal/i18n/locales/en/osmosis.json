@@ -29,5 +29,8 @@
   "hintToFoundation": "foundation {{idx}}",
   "allowedRanks": "[playable: {{ranks}}]",
   "anyRank": "any rank",
-  "hintLine": "Hint: {{from}} → {{to}} (allowed: {{allowed}})"
+  "hintLine": "Hint: {{from}} → {{to}} (allowed: {{allowed}})",
+  "helpExampleHint": "  h                    ask for a move",
+  "helpExampleAuto": "  ac                   send everything that can go to a foundation",
+  "helpUndo": "  u                    undo one move"
 }

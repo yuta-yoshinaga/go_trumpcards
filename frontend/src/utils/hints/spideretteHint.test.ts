@@ -22,6 +22,7 @@ function makeState(overrides: Partial<SpideretteResponse> = {}): SpideretteRespo
     canUndo: false,
     isStalemate: false,
     score: 500,
+    scoring: { start: 500, movePenalty: 1, suitBonus: 100 },
     message: '',
     ...overrides,
   };

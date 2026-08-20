@@ -116,5 +116,5 @@ var snapHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *SnapCuiPresenter) ActionLogOutput(s interfaces.SnapGame) string {
-	return actionLogOutputText(s)
+	return actionLogOutputTextForSeats[*domain.SnapPlayer](s)
 }

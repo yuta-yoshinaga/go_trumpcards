@@ -47,8 +47,7 @@ func (c *OpenFaceChineseCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "p", "place":
-				return cuiutil.WithParsedInt(args, "Row is required (0=front, 1=middle, 2=back).",
-					"Invalid row: %s. Please enter 0, 1 or 2.",
+				return cuiutil.WithParsedIntKeys(args, "rowRequired0Front1Middle2Back", "invalidRow01Or2",
 					domain.OpenFaceChineseRowFront, domain.OpenFaceChineseRowBack, c.di.Place)
 			case "front", "f":
 				return c.di.Place(domain.OpenFaceChineseRowFront), true
@@ -59,13 +58,13 @@ func (c *OpenFaceChineseCuiController) Exec(command string) string {
 			case "nr", "nextround":
 				return c.di.NextRound(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.di.GetConfig()
 					cfg.CpuDifficulty = domain.OpenFaceChineseCpuDifficulty(v)
 					return c.di.ResetWithConfig(cfg)
 				})
 			case "sp", "setplayers":
-				return cuiutil.WithParsedInt(args, "Player count is required (2-4).", "Invalid player count: %s. Please enter 2-4.", domain.OpenFaceChinesePlayerMin, domain.OpenFaceChinesePlayerMax, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "playerCountRequired", "invalidPlayerCount", domain.OpenFaceChinesePlayerMin, domain.OpenFaceChinesePlayerMax, func(v int) string {
 					cfg := c.di.GetConfig()
 					cfg.PlayerCount = v
 					return c.di.ResetWithConfig(cfg)

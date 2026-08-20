@@ -3,6 +3,7 @@
 package controller_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -52,12 +53,12 @@ func TestTarocchiniCuiController_Exec(t *testing.T) {
 	// 変わったときに案内だけ古くなる。
 	t.Run("scarto with too few indices names the required count", func(t *testing.T) {
 		out := controller.NewTarocchiniCuiController(newMock()).Exec("scarto 0")
-		assert.Contains(t, out, "2 card indices are required")
+		assert.Contains(t, out, msgKey("cardIndicesRequiredScartoTwo", "n", fmt.Sprint(domain.TarocchiniSurplus)))
 	})
 
 	t.Run("scarto with a non-numeric index", func(t *testing.T) {
 		out := controller.NewTarocchiniCuiController(newMock()).Exec("scarto x y")
-		assert.Contains(t, out, "Invalid card index")
+		assert.Contains(t, out, msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("play card", func(t *testing.T) {
@@ -67,7 +68,7 @@ func TestTarocchiniCuiController_Exec(t *testing.T) {
 	})
 
 	t.Run("play no args", func(t *testing.T) {
-		assert.Contains(t, controller.NewTarocchiniCuiController(newMock()).Exec("play"), "Card index is required")
+		assert.Contains(t, controller.NewTarocchiniCuiController(newMock()).Exec("play"), msgCardIndexRequired())
 	})
 
 	// このゲームに入札は無い。bid/pass が黙って別の動作に落ちてはならない。
@@ -95,7 +96,7 @@ func TestTarocchiniCuiController_Exec(t *testing.T) {
 	})
 
 	t.Run("setdifficulty invalid", func(t *testing.T) {
-		assert.Contains(t, controller.NewTarocchiniCuiController(newMock()).Exec("sd 9"), "Invalid CPU difficulty")
+		assert.Contains(t, controller.NewTarocchiniCuiController(newMock()).Exec("sd 9"), msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("hint / log", func(t *testing.T) {

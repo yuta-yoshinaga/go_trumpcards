@@ -3,6 +3,7 @@
 package presenter
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,6 +11,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupSpideretteCuiMockDefaults(sg *interfaces.MockSpideretteGame) {
@@ -20,6 +22,7 @@ func setupSpideretteCuiMockDefaults(sg *interfaces.MockSpideretteGame) {
 	sg.On("GetCompletedSuits").Return(0).Maybe()
 	sg.On("GetScore").Return(500).Maybe()
 	sg.On("IsStalemate").Return(false).Maybe()
+	sg.On("UndoToEscape").Return(0).Maybe()
 
 	var tableau [domain.SpideretteTableauCnt][]*domain.SpideretteTableauCard
 	for i := 0; i < domain.SpideretteTableauCnt; i++ {
@@ -89,6 +92,7 @@ func TestSpideretteCuiPresenter_Output(t *testing.T) {
 		setupSpideretteCuiMockDefaults(sg)
 		sg.ExpectedCalls = filterCalls(sg.ExpectedCalls, "IsStalemate")
 		sg.On("IsStalemate").Return(true)
+		sg.On("UndoToEscape").Return(0).Maybe()
 
 		p := new(SpideretteCuiPresenter)
 		result := p.Output(sg, nil)
@@ -202,4 +206,22 @@ func TestSpideretteCuiPresenter_DealsRemaining(t *testing.T) {
 	t.Run("still says zero once the stock is spent", func(t *testing.T) {
 		assert.Contains(t, p.Output(withDeals(0, 0), nil), "残り配布: 0回")
 	})
+}
+
+// #5593: スコアは常時出ているのに、手数のペナルティとスート完成のボーナスは
+// どこにも書かれておらず、数字が動く理由を推測させていた。
+func TestSpideretteCuiPresenter_ExplainsTheScoreRule(t *testing.T) {
+	i18n.SetLang("ja")
+	g := domain.NewDefaultSpiderette()
+	g.Reset()
+
+	out := new(SpideretteCuiPresenter).Output(g, nil)
+	// **数字はドメインの定数から。**訳文に焼き込むと、計算を変えたとき案内だけが古くなる。
+	assert.Contains(t, out, i18n.Tf("spiderette.scoreRule",
+		"start", strconv.Itoa(domain.SpideretteStartScore),
+		"penalty", strconv.Itoa(domain.SpideretteMovePenalty),
+		"bonus", strconv.Itoa(domain.SpideretteSuitBonus)))
+	// 3 つが同じ数字ではないこと。1 つの値を 3 箇所に流す実装を弾く。
+	assert.NotEqual(t, domain.SpideretteStartScore, domain.SpideretteSuitBonus)
+	assert.NotEqual(t, domain.SpideretteMovePenalty, domain.SpideretteSuitBonus)
 }

@@ -72,6 +72,18 @@ func (p *ShelemCuiPresenter) Output(s interfaces.ShelemGame, lastErr error) stri
 					"name", cuiPlayerName(s.GetPlayer(s.GetDeclarerIdx()), s.GetDeclarerIdx()),
 					"got", strconv.Itoa(s.GetRoundPoints(domain.ShelemTeamOf(s.GetDeclarerIdx())))) + "\n")
 			}
+			// **守備側の点も出す。**契約を阻止できているかは、宣言側の点だけ
+			// 見ていても分からない (#5754)。合計は必ず 100 点。
+			//
+			// **Shelem 宣言のときは出さない。**成否は全トリック取れたかどうか
+			// だけで決まり、カード点は一切見ないので、点を出すと「点が要る」と
+			// 誤解させる (レビュー指摘 #6098)。
+			if !s.GetShelemBid() {
+				defenders := 1 - domain.ShelemTeamOf(s.GetDeclarerIdx())
+				sb.WriteString(i18n.Tf("shelem.defenderLine",
+					"got", strconv.Itoa(s.GetRoundPoints(defenders)),
+					"total", strconv.Itoa(domain.ShelemHandPoints)) + "\n")
+			}
 		} else {
 			sb.WriteString(i18n.T("shelem.contractUndecided") + "\n")
 		}
@@ -190,5 +202,5 @@ var shelemHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *ShelemCuiPresenter) ActionLogOutput(s interfaces.ShelemGame) string {
-	return actionLogOutputText(s)
+	return actionLogOutputTextForSeats[*domain.ShelemPlayer](s)
 }

@@ -163,7 +163,7 @@ func kaiserDispatch(bc *baseController, w http.ResponseWriter, ki usecase.Kaiser
 	case "n", "next":
 		bc.writePresenterResponse(w, ki.NextHand())
 	default:
-		return dispatchLog(param.Command, bc, w, ki.ActionLog)
+		return dispatchHintAndLog(param.Command, bc, w, ki.Hint, ki.ActionLog)
 	}
 	return true
 }

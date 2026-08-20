@@ -43,6 +43,15 @@ type TriPeaksHint struct {
 	Col  int
 }
 
+// スコアの配点。**フロント (frontend/src/utils/tripeaksScore.ts) と同じ式**で、
+// これまでは得点計算そのものがフロントにしか無く、CUI からは触れなかった (#5511)。
+const (
+	// TriPeaksPointsPerChain は連鎖 n 手目の得点係数。n 手目は n × これ。
+	TriPeaksPointsPerChain = 100
+	// TriPeaksPeakBonus は 1 つの山を出し切ったときの一時金。
+	TriPeaksPeakBonus = 500
+)
+
 // TriPeaks トリピークスソリティアゲームクラス
 type TriPeaks struct {
 	trumpCards *TrumpCards
@@ -54,6 +63,10 @@ type TriPeaks struct {
 	actionLogBase
 	history     []*triPeaksSnapshot
 	isStalemate bool
+	// score は累計点、chain は途切れていない連続除去の長さ。
+	// **山札を引く / アンドゥで chain だけが 0 に戻り、score は残る。**
+	score int
+	chain int
 }
 
 // triPeaksSnapshot アンドゥ用スナップショット
@@ -126,6 +139,7 @@ func (t *TriPeaks) Reset() {
 	t.trumpCards.Shuffle()
 	t.phase = TriPeaksPhasePlaying
 	t.moveCount = 0
+	t.score, t.chain = 0, 0
 	t.actionLog = nil
 	t.history = nil
 	t.isStalemate = false
@@ -179,6 +193,8 @@ func (t *TriPeaks) Draw() error {
 	t.stock = t.stock[:len(t.stock)-1]
 	t.waste = append(t.waste, card)
 	t.moveCount++
+	// **引くと連鎖は切れるが、稼いだ点は残る。**
+	t.chain = 0
 	t.appendLog("draw", "ストックからカードを引きました", []*Card{card})
 	t.checkStalemate()
 	return nil
@@ -210,10 +226,14 @@ func (t *TriPeaks) Remove(row, col int) error {
 		return errors.New("card is not adjacent to waste top")
 	}
 	t.takeSnapshot()
+	peaksBefore := t.peaksCleared()
 	tc.Removed = true
 	// 除去したカードをウェイストの上に置く
 	t.waste = append(t.waste, tc.Card)
 	t.moveCount++
+	t.chain++
+	t.score += t.chain*TriPeaksPointsPerChain +
+		(t.peaksCleared()-peaksBefore)*TriPeaksPeakBonus
 	t.appendLog("remove", fmt.Sprintf("カード除去: (%d,%d)", row, col),
 		[]*Card{tc.Card})
 	t.checkGameClear()
@@ -314,6 +334,43 @@ func (t *TriPeaks) SetPhase(phase TriPeaksPhase) { t.phase = phase }
 
 // GetMoveCount 移動回数取得
 func (t *TriPeaks) GetMoveCount() int { return t.moveCount }
+
+// GetScore は累計点を返す。
+func (t *TriPeaks) GetScore() int { return t.score }
+
+// GetCombo は途切れていない連続除去の長さを返す。山札を引くかアンドゥで 0 に戻る。
+func (t *TriPeaks) GetCombo() int { return t.chain }
+
+// triPeaksPeakOfColumn は列がどの山に属するかを返す (0=左, 1=中央, 2=右)。
+func triPeaksPeakOfColumn(col int) int {
+	switch {
+	case col < 3:
+		return 0
+	case col < 6:
+		return 1
+	default:
+		return 2
+	}
+}
+
+// peaksCleared は出し切った山の数を返す。
+func (t *TriPeaks) peaksCleared() int {
+	var remaining [3]int
+	for _, row := range t.layout {
+		for col, tc := range row {
+			if tc != nil && tc.Card != nil && !tc.Removed {
+				remaining[triPeaksPeakOfColumn(col)]++
+			}
+		}
+	}
+	n := 0
+	for _, r := range remaining {
+		if r == 0 {
+			n++
+		}
+	}
+	return n
+}
 
 // GetStockCount ストック枚数取得
 func (t *TriPeaks) GetStockCount() int { return len(t.stock) }
@@ -480,6 +537,10 @@ func (t *TriPeaks) restoreSnapshot(snap *triPeaksSnapshot) {
 	t.phase = snap.phase
 	t.moveCount = snap.moveCount
 	t.isStalemate = snap.isStalemate
+	// **アンドゥは連鎖だけを切る。稼いだ点は戻さない。**
+	// フロントの applyTriPeaksScore も moveCount が減ったら chain のみ 0 にする。
+	// ここで score を巻き戻すと、アンドゥで点を稼ぎ直す抜け道ができる。
+	t.chain = 0
 }
 
 // appendLog 棋譜エントリを追加
@@ -498,6 +559,9 @@ type triPeaksJSON struct {
 	ActionLog   []*ActionLogEntry                             `json:"al"`
 	IsStalemate bool                                          `json:"sm"`
 	History     []*triPeaksSnapshot                           `json:"hi,omitempty"`
+	// Score / Chain を載せないと、KV に保存して復元した時点で得点が 0 に戻る。
+	Score int `json:"sc"`
+	Chain int `json:"ch"`
 }
 
 // triPeaksSnapshotJSON is the wire format for a single undo snapshot.
@@ -563,6 +627,8 @@ func (t *TriPeaks) MarshalJSON() ([]byte, error) {
 		ActionLog:   t.actionLog,
 		IsStalemate: t.isStalemate,
 		History:     t.history,
+		Score:       t.score,
+		Chain:       t.chain,
 	})
 }
 
@@ -604,5 +670,9 @@ func (t *TriPeaks) UnmarshalJSON(data []byte) error {
 		t.history = make([]*triPeaksSnapshot, 0)
 	}
 	t.isStalemate = j.IsStalemate
+	if j.Score < 0 || j.Chain < 0 {
+		return fmt.Errorf("invalid score/chain: %d/%d", j.Score, j.Chain)
+	}
+	t.score, t.chain = j.Score, j.Chain
 	return nil
 }

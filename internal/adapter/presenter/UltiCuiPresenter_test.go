@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -13,6 +14,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupUltiCuiMock() *interfaces.MockUltiGame {
@@ -29,6 +31,7 @@ func setupUltiCuiMock() *interfaces.MockUltiGame {
 	m.On("GetOutcome").Return(domain.UltiOutcomeWin)
 	m.On("GetWinnerPlayer").Return(-1)
 	m.On("GetPlayerCoins").Return([domain.UltiPlayerCnt]int{0, 0, 0})
+	m.On("GetLastDealCoins").Return([domain.UltiPlayerCnt]int{})
 	m.On("GetCardPoints", mock.Anything).Return(0)
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	return m
@@ -159,6 +162,47 @@ func TestUltiCuiPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
 		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You plays ♠K"},
 	})
+	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+	m.On("GetPlayer", mock.Anything).Return(domain.NewUltiPlayer(true)).Maybe()
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, "play")
+}
+
+// #5690: 精算は累積コインの差分でしか見えず、Web は prevCoinsRef で差分を取って
+// 「+2 / -1」を出していた。CUI は累積を出すだけで、今回の増減は出していなかった。
+func TestUltiCuiPresenter_CoinSettlement(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.UltiCuiPresenter)
+
+	build := func(phase domain.UltiPhase, gameEnd bool, deltas [domain.UltiPlayerCnt]int) *interfaces.MockUltiGame {
+		m, _ := setupUltiCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(phase)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
+		m.On("GetGameEndFlag").Return(gameEnd)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastDealCoins")
+		m.On("GetLastDealCoins").Return(deltas)
+		return m
+	}
+	settled := [domain.UltiPlayerCnt]int{10, -5, -5}
+	wantLine := i18n.Tf("ulti.coinSettlement",
+		"deltas", "あなた +10 / CPU 1 -5 / CPU 2 -5")
+
+	t.Run("shows the signed change at round end", func(t *testing.T) {
+		assert.Contains(t, p.Output(build(domain.UltiPhaseRoundEnd, false, settled), nil), wantLine)
+	})
+
+	// マッチを決めたディールは ROUND_END を飛ばして GAME_END に入るので、
+	// そこで出さないと最終ディールの精算だけ永久に見えない。
+	t.Run("shows it on the deciding deal too", func(t *testing.T) {
+		assert.Contains(t, p.Output(build(domain.UltiPhaseGameEnd, true, settled), nil), wantLine)
+	})
+
+	t.Run("says nothing while the deal is still running", func(t *testing.T) {
+		result := p.Output(build(domain.UltiPhasePlay, false, [domain.UltiPlayerCnt]int{}), nil)
+
+		assert.NotContains(t, result, strings.Split(i18n.T("ulti.coinSettlement"), "{{")[0])
+	})
 }

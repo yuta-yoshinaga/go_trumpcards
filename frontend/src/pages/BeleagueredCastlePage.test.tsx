@@ -227,6 +227,26 @@ describe('BeleagueredCastlePage', () => {
       expect(markedColumns().sort()).toEqual(['#1', '#2', '#3', '#4', '#5', '#6', '#7']);
     });
 
+    // **空の組札の唯一の受け手は A。**そこが光らないと、A にとって置き先が
+    // 無いように見える (#5958)。リングは組札を包む要素側にあるので closest で辿る。
+    it('marks the empty foundations when an ace is selected', async () => {
+      mockExec.mockResolvedValue({
+        ...playingState,
+        tableau: makeTableau([[{ card: card('SPADE', 1), faceUp: true }]]),
+        foundation: [[], [], [], []],
+      });
+      renderWithProviders(<BeleagueredCastlePage />);
+      fireEvent.click(await screen.findByRole('button', { name: '♠ A' }));
+
+      await waitFor(() =>
+        expect(
+          screen.getByRole('button', { name: '空の組札 (♠)' }).closest('[data-legal-target="true"]'),
+        ).not.toBeNull(),
+      );
+      // 組札 4 つ + 空き列 7 つ。組札側が 0 なら 7 で止まる。
+      expect(document.querySelectorAll('[data-legal-target="true"]')).toHaveLength(11);
+    });
+
     // ファンデーションは A の上に同スートの 2 だけ。♠5 では光らない。
     it('marks a foundation only for the card that continues it', async () => {
       mockExec.mockResolvedValue(playingState);
@@ -321,6 +341,39 @@ describe('BeleagueredCastlePage destination preview', () => {
     await waitFor(() => expect(previews().length).toBeGreaterThan(0));
     fireEvent.blur(spadeFive);
     await waitFor(() => expect(targets()).toHaveLength(0));
+  });
+
+  // #5596: ヒント表示は無言で書き換わっていた。**空のまま先にマウントしてある**
+  // 領域の中身が変わることが読み上げの条件なので、hint がある間だけ現れる内側の
+  // div ではなく、常設のラッパーがライブ領域でなければならない。
+  it('keeps the hint live region mounted before there is any hint to announce', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BeleagueredCastlePage />);
+    await waitFor(() => expect(screen.getByText(/包囲された城/)).toBeInTheDocument());
+
+    const region = screen.getByTestId('bc-hint-live');
+    expect(region).toHaveAttribute('role', 'status');
+    expect(region).toHaveAttribute('aria-live', 'polite');
+    expect(region).toHaveTextContent('');
+  });
+
+  it('announces the recommended move through that same region', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BeleagueredCastlePage />);
+    await waitFor(() => expect(screen.getByText(/包囲された城/)).toBeInTheDocument());
+
+    const region = screen.getByTestId('bc-hint-live');
+    expect(region).toHaveTextContent('');
+
+    mockExec.mockResolvedValue({
+      ...playingState,
+      hint: { fromCol: 1, cardIndex: 0, toZone: 'foundation', toCol: 2 },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    // **同じ要素**の中身が変わる (別の要素が現れるのではない) ことが読み上げの条件。
+    await waitFor(() => expect(region).toHaveTextContent(/→/));
+    expect(region.textContent).toBe('ヒントがあります: タブロー列1 → 組札');
   });
 
   // hover と選択で同じ集合を指す ── プレビューが嘘をつかないことの検証。

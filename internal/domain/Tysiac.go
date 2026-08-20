@@ -332,13 +332,34 @@ func (g *Tysiac) cpuMaxBid(playerIdx int) int {
 	return maxBid
 }
 
+// TysiacMarriageOption は宣言できる結婚 1 件 (スートとその結婚点)。
+type TysiacMarriageOption struct {
+	// Suit は K と Q を揃えているスート。
+	Suit int
+	// Points はそのスートの結婚点 (♠40/♣60/♦80/♥100)。
+	Points int
+}
+
+// GetMarriageOptions は playerIdx がいま宣言できる結婚を tysiacSuits() の順で返す。
+// 宣言には同スートの K と Q の **両方** が要る。範囲外の添字では nil を返す。
+func (g *Tysiac) GetMarriageOptions(playerIdx int) []TysiacMarriageOption {
+	if playerIdx < 0 || playerIdx >= len(g.players) {
+		return nil
+	}
+	var opts []TysiacMarriageOption
+	for _, suit := range tysiacSuits() {
+		if g.playerHasCard(playerIdx, suit, 13) && g.playerHasCard(playerIdx, suit, 12) {
+			opts = append(opts, TysiacMarriageOption{Suit: suit, Points: tysiacMarriagePoints(suit)})
+		}
+	}
+	return opts
+}
+
 // handMarriagePotential 手札中の K+Q ペアによる結婚点合計を返す。
 func (g *Tysiac) handMarriagePotential(playerIdx int) int {
 	total := 0
-	for _, suit := range tysiacSuits() {
-		if g.playerHasCard(playerIdx, suit, 13) && g.playerHasCard(playerIdx, suit, 12) {
-			total += tysiacMarriagePoints(suit)
-		}
+	for _, opt := range g.GetMarriageOptions(playerIdx) {
+		total += opt.Points
 	}
 	return total
 }
@@ -877,7 +898,7 @@ func (g *Tysiac) cpuPlaySmart(playerIdx int, valid []int) int {
 	for _, tc := range g.currentTrick {
 		trickPts += tysiacCardPoints(tc.Card)
 	}
-	winners := tysiacFilter(valid, func(idx int) bool { return g.tysiacRank(player.GetCard(idx)) > topRank })
+	winners := filterIndices(valid, func(idx int) bool { return g.tysiacRank(player.GetCard(idx)) > topRank })
 	if trickPts > 0 && len(winners) > 0 {
 		return pickLowest(player, winners, func(c *Card) int { return g.tysiacRank(c) })
 	}
@@ -906,17 +927,6 @@ func (g *Tysiac) cpuMarriageLead(playerIdx int, valid []int) int {
 		}
 	}
 	return best
-}
-
-// tysiacFilter 述語を満たすインデックスを抽出する。
-func tysiacFilter(indices []int, pred func(int) bool) []int {
-	var out []int
-	for _, idx := range indices {
-		if pred(idx) {
-			out = append(out, idx)
-		}
-	}
-	return out
 }
 
 // --- Hint ---

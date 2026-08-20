@@ -27,22 +27,27 @@ func (tcc *ThreeCardCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
 		func(_ []string) string { return tcc.ti.Reset() },
-		[]string{"b", "bet", "p", "play", "f", "fold", "h", "hint", "log", "l"},
+		[]string{"b", "bet", "rb", "rebet", "p", "play", "f", "fold", "h", "hint", "log", "l"},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bet":
-				ante, errMsg, ok := cuiutil.ParseIntArg(args, "Ante amount is required.", "Invalid ante amount. Please enter a number.", 1, math.MaxInt)
+				ante, errMsg, ok := cuiutil.ParseIntArgKeys(args, "anteAmountRequired", "invalidAnteAmount", 1, math.MaxInt)
 				if !ok {
 					return errMsg, true
 				}
 				pairPlus := 0
 				if len(args) > 1 {
-					pairPlus, errMsg, ok = cuiutil.ParseIntArg(args[1:], "", "Invalid Pair Plus amount.", 0, math.MaxInt)
+					pairPlus, errMsg, ok = cuiutil.ParseIntArgKeys(args[1:], "", "invalidPairPlusAmount", 0, math.MaxInt)
 					if !ok {
 						return errMsg, true
 					}
 				}
 				return tcc.ti.Bet(ante, pairPlus), true
+			case "rb", "rebet":
+				// **毎ラウンド同じ額を打ち直させない。** Web はワンクリックで
+				// 再ベットできるのに、テキスト側は bet <ante> <pairPlus> を毎回
+				// 手打ちする必要があった (#5513)。
+				return tcc.ti.Rebet(), true
 			case "p", "play":
 				return tcc.ti.Play(), true
 			case "f", "fold":

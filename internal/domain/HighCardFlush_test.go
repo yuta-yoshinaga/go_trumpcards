@@ -713,3 +713,44 @@ func TestHighCardFlush_DealerAndStraightFlushGetters(t *testing.T) {
 	hcf.SetGameEndFlag(true)
 	assert.True(t, hcf.GetGameEndFlag())
 }
+
+// #5607: 「4枚フラッシュ」と長さだけ言われても、7枚のうちどれがその4枚なのかは
+// 自分で数えるしかなかった。どのスートで数えた長さなのかはドメインが既に
+// 決めている (evalHighCardFlushHand の Suit) ので、それを名前を付けて出す。
+func TestHighCardFlushExposesTheSuitItCountedTheFlushIn(t *testing.T) {
+	hcf := domain.NewDefaultHighCardFlush()
+	hcf.Reset()
+	require.NoError(t, hcf.Bet(100, 0, 0))
+
+	suit := hcf.GetPlayerFlushSuit()
+	// 数えた長さと、そのスートの実際の枚数が一致すること。
+	count := 0
+	for _, c := range hcf.GetPlayerHand() {
+		if c.GetDesign() == suit {
+			count++
+		}
+	}
+	assert.Equal(t, hcf.GetPlayerFlushLen(), count,
+		"公開したスートの枚数が、公開した長さと一致する")
+}
+
+// 同着のときにどちらを採るかを固定する。**「どちらでもよい」ではない** --
+// 画面の印と長さの行が別のスートを指すと、数えても合わなくなる。
+func TestHighCardFlushBreaksASuitTieByTheHighCards(t *testing.T) {
+	hcf := domain.NewDefaultHighCardFlush()
+	hcf.Reset()
+	// ♠ と ♥ がどちらも 3 枚。♥ の方が高い札を持つので ♥ が選ばれる。
+	// SetPlayerHand は長さもスートも計算し直す (テスト用のセッタ)。
+	hcf.SetPlayerHand(makeHCFCards(
+		[2]int{domain.CardDesignSpade, 2},
+		[2]int{domain.CardDesignSpade, 3},
+		[2]int{domain.CardDesignSpade, 4},
+		[2]int{domain.CardDesignHeart, 13},
+		[2]int{domain.CardDesignHeart, 12},
+		[2]int{domain.CardDesignHeart, 11},
+		[2]int{domain.CardDesignClover, 5},
+	))
+
+	assert.Equal(t, domain.CardDesignHeart, hcf.GetPlayerFlushSuit())
+	assert.Equal(t, 3, hcf.GetPlayerFlushLen())
+}

@@ -8,6 +8,9 @@
   "helpNext": "  n / next                  Deal the next hand",
   "helpHint": "  h / hint                  show a hint",
   "header": "Hand: {{hand}}  Target: {{target}}  Team 0: {{t0}}  Team 1: {{t1}}",
+  "heartFiveTaken": "Heart 5 (+5): {{name}}",
+  "spadeThreeTaken": "Spade 3 (-3): {{name}}",
+  "notTakenYet": "not taken yet",
   "contractLine": "Contract: {{value}} {{kind}} trump: {{trump}}",
   "withTrump": "with trump",
   "noTrump": "no trump",
@@ -49,5 +52,6 @@
   "hintForced": "Only one card is legal.",
   "hintDumpSpadeThree": "The three of spades costs its taker 3 points — shed it while you still have a choice.",
   "hintChoose": "The five of hearts is worth 5 to whoever takes it, so leading it invites the opponents to grab it.",
-  "hintWith": "{{hint}} -> {{list}}"
+  "hintWith": "{{hint}} -> {{list}}",
+  "helpExamplePlay": "  p 0                       play hand card 0"
 }

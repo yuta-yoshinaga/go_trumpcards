@@ -44,5 +44,8 @@
   "hintReasonStrategicDeclare": "strategic declaration",
   "hintReasonStrategicDiscard": "strategic discard",
   "hintReasonPlayJoker": "play the joker",
-  "hintReasonDiscardLow": "discard a low card"
+  "hintReasonDiscardLow": "discard a low card",
+  "helpExamplePlay": "  p 0                  play hand card 0",
+  "helpHint": "  h                    show a hint",
+  "pointLimitLine": "Target: game ends at ±{{limit}} points"
 }

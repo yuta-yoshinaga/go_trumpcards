@@ -66,8 +66,8 @@ func TestThirtyOneCuiController_Exec(t *testing.T) {
 
 	t.Run("discard no args", func(t *testing.T) {
 		c := controller.NewThirtyOneCuiController(newMock())
-		assert.Contains(t, c.Exec("d"), "Card index is required")
-		assert.Contains(t, c.Exec("d abc"), "Invalid card index")
+		assert.Contains(t, c.Exec("d"), msgCardIndexRequired())
+		assert.Contains(t, c.Exec("d abc"), msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("knock takes no index", func(t *testing.T) {
@@ -97,9 +97,9 @@ func TestThirtyOneCuiController_Exec(t *testing.T) {
 
 	t.Run("setdifficulty errors", func(t *testing.T) {
 		c := controller.NewThirtyOneCuiController(newMock())
-		assert.Contains(t, c.Exec("sd"), "required")
-		assert.Contains(t, c.Exec("sd abc"), "Invalid CPU difficulty")
-		assert.Contains(t, c.Exec("sd 9"), "Invalid CPU difficulty")
+		assert.Contains(t, c.Exec("sd"), msgCpuDifficultyRequired())
+		assert.Contains(t, c.Exec("sd abc"), msgInvalidCpuDifficultyPrefix())
+		assert.Contains(t, c.Exec("sd 9"), msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("setlives valid", func(t *testing.T) {
@@ -113,9 +113,9 @@ func TestThirtyOneCuiController_Exec(t *testing.T) {
 
 	t.Run("setlives errors", func(t *testing.T) {
 		c := controller.NewThirtyOneCuiController(newMock())
-		assert.Contains(t, c.Exec("sv"), "required")
-		assert.Contains(t, c.Exec("sv abc"), "Invalid lives")
-		assert.Contains(t, c.Exec("sv 0"), "Invalid lives")
+		assert.True(t, msgRejected(c.Exec("sv")))
+		assert.Contains(t, c.Exec("sv abc"), msgStem("invalidLives"))
+		assert.Contains(t, c.Exec("sv 0"), msgStem("invalidLives"))
 	})
 
 	t.Run("log", func(t *testing.T) {

@@ -35,5 +35,8 @@
   "suitSpade": "Spades",
   "suitClover": "Clubs",
   "suitHeart": "Hearts",
-  "suitDiamond": "Diamonds"
+  "suitDiamond": "Diamonds",
+  "helpExampleNext": "  n                    read the trick result, then continue",
+  "helpHint": "  h                    show a hint",
+  "handCard": "[{{idx}}]{{card}} ({{points}})"
 }

@@ -57,7 +57,7 @@ func (c *MightyCuiController) Exec(command string) string {
 			switch cmd {
 			case "b", "bid":
 				if len(args) == 0 {
-					return "Bid value is required (0=pass, 13-20). Add 'nt' for no-trump.", true
+					return invalidArg("bidValueRequiredPass1320NoTrump"), true
 				}
 				noTrump := false
 				bidArgs := args
@@ -69,35 +69,35 @@ func (c *MightyCuiController) Exec(command string) string {
 						break
 					}
 				}
-				val, errMsg, ok := cuiutil.ParseIntArg(bidArgs, "Bid value is required (0=pass, 13-20).", "Invalid bid value: %s.", 0, domain.MightyMaxPoints)
+				val, errMsg, ok := cuiutil.ParseIntArgKeys(bidArgs, "bidValueRequiredPass1320", "invalidBidValue", 0, domain.MightyMaxPoints)
 				if !ok {
 					return errMsg, true
 				}
 				return c.mi.Bid(val, noTrump), true
 			case "t", "trump":
 				if len(args) < 3 {
-					return "Usage: trump <suit> <partnerSuit> <partnerVal>\n  suit: -1=No-Trump 1=Spade 2=Clover 3=Heart 4=Diamond\n  partnerSuit: 0=Joker 1=Spade 2=Clover 3=Heart 4=Diamond\n  partnerVal: 1=A 2-10 11=J 12=Q 13=K (Joker: 1)\n", true
+					return invalidArg("usageTrumpSuitPartnersuitPartnervalSuit1NoTrump1Spad"), true
 				}
-				suit, errMsg, ok := cuiutil.ParseIntArg(args[:1], "", "Invalid suit: %s.", -1, 4)
+				suit, errMsg, ok := cuiutil.ParseIntArgKeys(args[:1], "", "invalidSuit", -1, 4)
 				if !ok {
 					return errMsg, true
 				}
-				partnerSuit, errMsg, ok := cuiutil.ParseIntArg(args[1:2], "", "Invalid partner suit: %s.", 0, 4)
+				partnerSuit, errMsg, ok := cuiutil.ParseIntArgKeys(args[1:2], "", "invalidPartnerSuit", 0, 4)
 				if !ok {
 					return errMsg, true
 				}
-				partnerVal, errMsg, ok := cuiutil.ParseIntArg(args[2:3], "", "Invalid partner value: %s.", 1, 13)
+				partnerVal, errMsg, ok := cuiutil.ParseIntArgKeys(args[2:3], "", "invalidPartnerValue", 1, 13)
 				if !ok {
 					return errMsg, true
 				}
 				return c.mi.DeclareTrumpAndFriend(suit, partnerSuit, partnerVal), true
 			case "e", "exchange":
 				if len(args) < 3 {
-					return "Usage: exchange <i> <j> <k>  (three card indices to discard from kitty pickup)\n", true
+					return invalidArg("usageExchangeIJKThreeCardIndicesToDiscardFromKittyPi"), true
 				}
 				idxs := make([]int, 3)
 				for i := 0; i < 3; i++ {
-					v, errMsg, ok := cuiutil.ParseIntArg(args[i:i+1], "", "Invalid card index: %s.", 0, math.MaxInt)
+					v, errMsg, ok := cuiutil.ParseIntArgKeys(args[i:i+1], "", "invalidCardIndex", 0, math.MaxInt)
 					if !ok {
 						return errMsg, true
 					}
@@ -105,16 +105,16 @@ func (c *MightyCuiController) Exec(command string) string {
 				}
 				return c.mi.ExchangeKitty(idxs), true
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.mi.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.mi.Play)
 			case "jl", "jokerlead":
 				if len(args) < 2 {
-					return "Usage: jokerlead <cardIndex> <demandSuit>\n  demandSuit: 1=Spade 2=Clover 3=Heart 4=Diamond\n", true
+					return invalidArg("usageJokerleadCardindexDemandsuitDemandsuit1Spade2Cl"), true
 				}
-				cardIdx, errMsg, ok := cuiutil.ParseIntArg(args[:1], "", "Invalid card index: %s.", 0, math.MaxInt)
+				cardIdx, errMsg, ok := cuiutil.ParseIntArgKeys(args[:1], "", "invalidCardIndex", 0, math.MaxInt)
 				if !ok {
 					return errMsg, true
 				}
-				demandSuit, errMsg, ok := cuiutil.ParseIntArg(args[1:2], "", "Invalid demand suit: %s.", 1, 4)
+				demandSuit, errMsg, ok := cuiutil.ParseIntArgKeys(args[1:2], "", "invalidDemandSuit", 1, 4)
 				if !ok {
 					return errMsg, true
 				}
@@ -124,25 +124,25 @@ func (c *MightyCuiController) Exec(command string) string {
 			case "nr", "nextround":
 				return c.mi.NextRound(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.mi.GetConfig()
 					cfg.CpuDifficulty = domain.MightyCpuDifficulty(v)
 					return c.mi.ResetWithConfig(cfg)
 				})
 			case "sl", "setlimit":
-				return cuiutil.WithParsedInt(args, "Point limit is required.", "Invalid point limit: %s. Please enter 1 or more.", 1, math.MaxInt, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "pointLimitRequired", "invalidPointLimit", 1, math.MaxInt, func(v int) string {
 					cfg := c.mi.GetConfig()
 					cfg.PointLimit = v
 					return c.mi.ResetWithConfig(cfg)
 				})
 			case "sm", "setminbid":
-				return cuiutil.WithParsedInt(args, "Min bid is required.", "Invalid min bid: %s.", 1, domain.MightyMaxPoints, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "minBidRequired", "invalidMinBid", 1, domain.MightyMaxPoints, func(v int) string {
 					cfg := c.mi.GetConfig()
 					cfg.MinBid = v
 					return c.mi.ResetWithConfig(cfg)
 				})
 			case "sn", "setnotrumpextra":
-				return cuiutil.WithParsedInt(args, "No-trump extra is required.", "Invalid no-trump extra: %s.", 0, domain.MightyMaxPoints-1, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "noTrumpExtraRequired", "invalidNoTrumpExtra", 0, domain.MightyMaxPoints-1, func(v int) string {
 					cfg := c.mi.GetConfig()
 					cfg.NoTrumpExtra = v
 					return c.mi.ResetWithConfig(cfg)

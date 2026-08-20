@@ -11,6 +11,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/games"
 )
 
@@ -477,4 +478,55 @@ func TestOpenAPIErrorResponseMatchesTheSuccessSchema(t *testing.T) {
 		t.Fatal("no path documented both a 200 and a 400 -- the parse found nothing to check")
 	}
 	t.Logf("checked %d paths", checked)
+}
+
+// TestScopaManualTargetScoreRangeMatchesDomain guards the target-score range
+// printed in the Scopa CUI manual against the domain constants (#5619).
+// Same reasoning as the Truco guard below.
+func TestScopaManualTargetScoreRangeMatchesDomain(t *testing.T) {
+	const path = "docs/manual/cui/scopa.md"
+
+	got := struct{ min, max, def int }{
+		min: readDocNumber(t, path, regexp.MustCompile(`目標得点を変更してリセット（(\d+)〜\d+、既定 \d+）`)),
+		max: readDocNumber(t, path, regexp.MustCompile(`目標得点を変更してリセット（\d+〜(\d+)、既定 \d+）`)),
+		def: readDocNumber(t, path, regexp.MustCompile(`目標得点を変更してリセット（\d+〜\d+、既定 (\d+)）`)),
+	}
+
+	if got.min != domain.ScopaMinTargetScore {
+		t.Errorf("%s: min %d, domain %d", path, got.min, domain.ScopaMinTargetScore)
+	}
+	if got.max != domain.ScopaMaxTargetScore {
+		t.Errorf("%s: max %d, domain %d", path, got.max, domain.ScopaMaxTargetScore)
+	}
+	if got.def != domain.ScopaDefaultTargetScore {
+		t.Errorf("%s: default %d, domain %d", path, got.def, domain.ScopaDefaultTargetScore)
+	}
+}
+
+// TestTrucoManualMatchTargetRangeMatchesDomain guards the match-target range
+// printed in the Truco CUI manual against the domain constants the command
+// actually enforces.
+//
+// **数字を書いた場所は、書いた瞬間から古くなりうる。**#5618 のレビューで、
+// エラーメッセージからは定数を追い出したのにマニュアルの表には「1〜60、既定
+// 15」と直書きしたままだと指摘された。ここで突き合わせておけば、定数を動かした
+// 側がマニュアルの更新を忘れても CI で止まる。
+func TestTrucoManualMatchTargetRangeMatchesDomain(t *testing.T) {
+	const path = "docs/manual/cui/truco.md"
+
+	got := struct{ min, max, def int }{
+		min: readDocNumber(t, path, regexp.MustCompile(`マッチ目標点を変更してリセット（(\d+)〜\d+、既定 \d+）`)),
+		max: readDocNumber(t, path, regexp.MustCompile(`マッチ目標点を変更してリセット（\d+〜(\d+)、既定 \d+）`)),
+		def: readDocNumber(t, path, regexp.MustCompile(`マッチ目標点を変更してリセット（\d+〜\d+、既定 (\d+)）`)),
+	}
+
+	if got.min != domain.TrucoMinMatchTarget {
+		t.Errorf("%s: min %d, domain %d", path, got.min, domain.TrucoMinMatchTarget)
+	}
+	if got.max != domain.TrucoMaxMatchTarget {
+		t.Errorf("%s: max %d, domain %d", path, got.max, domain.TrucoMaxMatchTarget)
+	}
+	if got.def != domain.TrucoDefaultMatchTarget {
+		t.Errorf("%s: default %d, domain %d", path, got.def, domain.TrucoDefaultMatchTarget)
+	}
 }

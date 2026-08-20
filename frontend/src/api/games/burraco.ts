@@ -13,7 +13,17 @@ export interface BurracoConfigInput {
 /** API client for the Burraco /burraco/exec endpoint. */
 export const burracoApi = {
   exec: (
-    command: 'reset' | 'drawstock' | 'drawdiscard' | 'meld' | 'skipmeld' | 'discard' | 'goout' | 'nextround' | 'log',
+    command:
+      | 'reset'
+      | 'drawstock'
+      | 'drawdiscard'
+      | 'meld'
+      | 'skipmeld'
+      | 'discard'
+      | 'goout'
+      | 'nextround'
+      | 'log'
+      | 'hint',
     cardIndex?: number,
     config?: BurracoConfigInput,
     naturalPairIndices?: number[],

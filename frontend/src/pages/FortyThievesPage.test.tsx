@@ -89,6 +89,12 @@ const withHintState: FortyThievesResponse = {
   hint: { fromZone: 'waste', fromCol: -1, cardIndex: -1, toZone: 'tableau', toCol: 3 },
 };
 
+// #5525: 引くヒントは列を持たない。移動の体裁に落とすと「タブロー列-1」が出る。
+const withDrawHintState: FortyThievesResponse = {
+  ...playingState,
+  hint: { fromZone: 'stock', fromCol: -1, cardIndex: -1, toZone: 'waste', toCol: -1 },
+};
+
 beforeEach(() => {
   mockExec.mockResolvedValue(playingState);
   vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
@@ -489,6 +495,20 @@ describe('FortyThievesPage', () => {
     expect(region).toHaveAttribute('role', 'status');
     expect(region).toHaveAttribute('aria-live', 'polite');
     expect(region).toHaveTextContent('ヒント: ♣ 3をタブロー列3へ移動');
+  });
+
+  it('shows the draw hint as a sentence, not as a move with column -1', async () => {
+    renderWithProviders(<FortyThievesPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+    mockExec.mockResolvedValue(withDrawHintState);
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    const region = await screen.findByTestId('ft-hint-announcement');
+    await waitFor(() => expect(region).toHaveTextContent('山札から引きましょう'));
+    // **-1 が画面のどこにも出ないこと。**バナー側も同じ判定を通す。
+    expect(screen.getByTestId('ft-hint-display')).toHaveTextContent('山札から引きましょう');
+    expect(screen.getByTestId('ft-hint-display').textContent).not.toContain('-1');
   });
 
   it('renders an empty hint announcement region when there is no hint', async () => {

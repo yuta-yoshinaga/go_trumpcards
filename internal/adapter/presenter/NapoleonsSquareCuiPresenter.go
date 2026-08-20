@@ -13,6 +13,20 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
+// napoleonsSquareProgressStr は組札に収まっている枚数と割合を返す。
+func napoleonsSquareProgressStr(ns interfaces.NapoleonsSquareGame) string {
+	count := 0
+	for _, pile := range ns.GetFoundation() {
+		count += len(pile)
+	}
+	return i18n.Tf("napoleonssquare.foundationProgress",
+		"count", strconv.Itoa(count),
+		"total", strconv.Itoa(domain.NapoleonsSquareTotalCards),
+		// **Web と同じ丸め。**切り捨てにすると 9/104 が 8% と 9% に割れて、
+		// 同じ局面で 2 つの進捗が出る。
+		"percent", strconv.Itoa((count*100+domain.NapoleonsSquareTotalCards/2)/domain.NapoleonsSquareTotalCards))
+}
+
 // napoleonsSquareColumnStr returns the display string for one tableau column.
 func napoleonsSquareColumnStr(colCards []*domain.NapoleonsSquareTableauCard) string {
 	parts := make([]string, len(colCards))
@@ -89,11 +103,17 @@ func (p *NapoleonsSquareCuiPresenter) Output(ns interfaces.NapoleonsSquareGame, 
 			}
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
 				"count", strconv.Itoa(ns.GetMoveCount())) + "\n")
+			// 勝利条件は 8 つの組札を積み切ること。その進捗が、ゲームが終わるまで
+			// どちらの UI にも出ていなかった (#5554)。
+			b.WriteString(napoleonsSquareProgressStr(ns) + "\n")
 		case domain.NapoleonsSquarePhaseGameClear:
 			b.WriteString(color.Green(i18n.T("cuiSolitaireGameClear")) + " " +
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(ns.GetMoveCount())) + "\n")
 		case domain.NapoleonsSquarePhaseGameOver:
 			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
+			fnd := ns.GetFoundation()
+			b.WriteString(color.Yellow(cuiSolitaireGameOverSummary(
+				cuiCountPileCards(fnd[:]...), domain.NapoleonsSquareFoundationCnt*domain.CardValueMax)) + "\n")
 		}
 	})
 }

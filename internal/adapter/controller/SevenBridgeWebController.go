@@ -53,6 +53,9 @@ type SevenBridgeWebOutput struct {
 	GameEndFlag      bool                          `json:"gameEndFlag"`
 	WinnerIdx        int                           `json:"winnerIdx"`
 	RoundWinnerIdx   int                           `json:"roundWinnerIdx"`
+	// ClaimedThisTurn は直前ターンで捨て札をポン/チーで取得したか。
+	// メルドを見ても割り込みで取ったのか山から引いたのかは分からない (#5547)。
+	ClaimedThisTurn bool `json:"claimedThisTurn"`
 	WebOutputBase
 	Config SevenBridgeWebOutputConfig `json:"config"`
 }
@@ -118,7 +121,7 @@ func sevenBridgeDispatch(bc *baseController, w http.ResponseWriter, ci usecase.S
 	case "nr", "nextround":
 		bc.writePresenterResponse(w, ci.NextRound())
 	default:
-		return dispatchLog(param.Command, bc, w, ci.ActionLog)
+		return dispatchHintAndLog(param.Command, bc, w, ci.Hint, ci.ActionLog)
 	}
 	return true
 }

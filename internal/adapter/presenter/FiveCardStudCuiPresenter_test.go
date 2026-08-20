@@ -2,14 +2,18 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func TestFiveCardStudCuiPresenter_Output(t *testing.T) {
@@ -416,6 +420,8 @@ func TestFiveCardStudCuiPresenter_ActionLogOutput(t *testing.T) {
 		}
 		mockGame.On("GetGameEndFlag").Return(true)
 		mockGame.On("GetActionLog").Return(entries)
+		// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+		mockGame.On("GetPlayer", mock.Anything).Return(domain.NewFiveCardStudPlayer(true, domain.FiveCardStudPlayStyle(0))).Maybe()
 
 		result := p.ActionLogOutput(mockGame)
 		assert.Contains(t, result, "棋譜")
@@ -430,5 +436,78 @@ func TestFiveCardStudCuiPresenter_ActionLogOutput(t *testing.T) {
 		result := p.ActionLogOutput(mockGame)
 		assert.Contains(t, result, "棋譜はありません")
 		mockGame.AssertExpectations(t)
+	})
+}
+
+// **Soko の役順位は標準ポーカーと違う** (#5737)。チュートリアルを閉じたあとも
+// 読めるよう、対局中は常に出す。Five Card Stud 側には出さない。
+func TestFiveCardStudCuiPresenter_SokoHandRanking(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.FiveCardStudCuiPresenter)
+
+	cfg := domain.DefaultFiveCardStudConfig()
+	cfg.TableSize = 4
+	soko := domain.NewSoko(domain.NewTrumpCards(0), domain.NewFiveCardStudPlayersForTable(cfg.TableSize), cfg)
+	soko.SetPhase(domain.FiveCardStudPhaseSecondStreet)
+
+	out := p.Output(soko, nil)
+	assert.Contains(t, out, "役の強さ")
+	// **4 枚役の挿入位置まで読めること。**名前が並んでいるだけでは足りない。
+	assert.Contains(t, out, "ツーペア > 【4枚フラッシュ】 > 【4枚ストレート】 > ワンペア")
+	assert.Contains(t, out, "ロイヤルフラッシュ >")
+	assert.Contains(t, out, "> ハイカード")
+	assert.NotContains(t, out, "{{")
+
+	// 通常の Five Card Stud には出ない。
+	stud, _ := makeFiveCardStudForPresenter()
+	stud.SetPhase(domain.FiveCardStudPhaseSecondStreet)
+	assert.NotContains(t, p.Output(stud, nil), "役の強さ")
+}
+
+// #5674: ドアカードはストリートごとに 1 枚ずつ増える。Web は末尾の 1 枚
+// (今のストリートで公開されたもの) にリングを付けているのに、CUI は全部を平らに
+// 並べるだけで、**前回の出力と見比べないと何が増えたのか分からなかった。**
+func TestFiveCardStudCuiPresenter_MarksTheNewestDoorCard(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.FiveCardStudCuiPresenter)
+
+	t.Run("marks only the last door card", func(t *testing.T) {
+		s, players := makeFiveCardStudForPresenter()
+		s.SetPhase(domain.FiveCardStudPhaseThirdStreet)
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+
+		out := p.Output(s, nil)
+
+		assert.Contains(t, out, "♠9"+presenter.CuiNewestMark)
+		assert.NotContains(t, out, "♣5"+presenter.CuiNewestMark)
+	})
+
+	t.Run("marks the single card on the first door street", func(t *testing.T) {
+		s, players := makeFiveCardStudForPresenter()
+		s.SetPhase(domain.FiveCardStudPhaseSecondStreet)
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignClover, 5, false))
+
+		assert.Contains(t, p.Output(s, nil), "♣5"+presenter.CuiNewestMark)
+	})
+
+	// ホールカードの表示には影響しない (受け入れ条件3)。
+	t.Run("leaves the hole cards alone", func(t *testing.T) {
+		s, players := makeFiveCardStudForPresenter()
+		s.SetPhase(domain.FiveCardStudPhaseThirdStreet)
+		players[0].AddHoleCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		players[0].AddDoorCard(domain.NewCard(domain.CardDesignClover, 5, false))
+
+		out := p.Output(s, nil)
+
+		// テンプレートそのものではなく、描画後の前置きで見る。
+		holePrefix, _, ok := strings.Cut(i18n.Tf("fivecardstud.holeCards", "cards", "\x00"), "\x00")
+		require.True(t, ok)
+		assert.Contains(t, out, holePrefix)
+		assert.NotContains(t, out, "♠10"+presenter.CuiNewestMark)
 	})
 }

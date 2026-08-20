@@ -156,12 +156,7 @@ func (ci *SixCardGolfInteractor) SkipFlip() string {
 
 // NextRound 次のラウンドへ
 func (ci *SixCardGolfInteractor) NextRound() string {
-	if out, blocked := guardGameEnd(ci.Game, ci.gp); blocked {
-		return out
-	}
-	ci.Game.NextRound()
-	ci.runCpuTurns()
-	return ci.gp.Output(ci.Game, nil)
+	return advanceRound(ci.Game, ci.gp, ci.runCpuTurns)
 }
 
 // GetConfig 設定取得
@@ -181,16 +176,10 @@ func (ci *SixCardGolfInteractor) Hint() string {
 
 // runCpuTurns CPUターンループ
 func (ci *SixCardGolfInteractor) runCpuTurns() {
-	for !ci.Game.GetGameEndFlag() {
+	runCpuTurnsUntil(ci.Game, func() bool {
 		phase := ci.Game.GetPhase()
-		if phase == domain.SixCardGolfPhaseRoundOver || phase == domain.SixCardGolfPhaseGameOver {
-			break
-		}
-		if ci.Game.IsHumanTurn() {
-			break
-		}
-		ci.Game.CpuPlay()
-	}
+		return phase == domain.SixCardGolfPhaseRoundOver || phase == domain.SixCardGolfPhaseGameOver || ci.Game.IsHumanTurn()
+	}, ci.Game.CpuPlay)
 }
 
 // RestoreSixCardGolfInteractor JSON復元

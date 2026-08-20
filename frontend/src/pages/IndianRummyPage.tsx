@@ -38,6 +38,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { INDIANRUMMY_HELP, parseIndianrummyCommand } from '../utils/cli/commands/indianrummyCommands';
 import { formatIndianrummyState } from '../utils/cli/formatters/indianrummyFormatter';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { evaluateIndianRummyDeclare, INDIAN_RUMMY_HAND_SIZE } from '../utils/indianRummyDeclare';
 import { playerName } from '../utils/playerUtils';
@@ -128,8 +129,9 @@ function IndianRummyPageContent() {
       parseCommand: parseIndianrummyCommand,
       formatResponse: formatIndianrummyState,
       helpText: INDIANRUMMY_HELP,
+      localCommand: hintLocalCommand(frontendHint),
     }),
-    [],
+    [frontendHint],
   );
   const { handleCommand } = useCliGame(gameExec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
@@ -424,6 +426,12 @@ function IndianRummyPageContent() {
                 <span className={`ml-2 ${humanPlayer.hasPureSequence ? 'text-ds-success' : 'text-ds-warning'}`}>
                   {humanPlayer.hasPureSequence ? t('pureSequenceBadge') : t('pureSequenceMissing')}
                 </span>
+                {/* **A も 10 点。** ジンラミー系に慣れたプレイヤーほど A=1 を
+                    期待するので、合計だけ見せられると数字を逆算できない。
+                    ワイルドが 0 点であることも同時に言う (#5501)。 */}
+                <div className="text-xs" data-testid="indianrummy-points-legend">
+                  {t('pointsLegend')}
+                </div>
               </div>
             )}
 

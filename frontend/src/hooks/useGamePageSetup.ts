@@ -1,9 +1,8 @@
-import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { actionLogApi } from '../api/gameApi';
-import { SITE_NAME } from '../constants/site';
 import { useActionLog } from './useActionLog';
 import { useConfirmDialog } from './useConfirmDialog';
+import { useDocumentTitle } from './useDocumentTitle';
 
 /** Hook that provides common page setup: translations, action log, confirm dialogs, and document title. */
 export function useGamePageSetup(gameName: keyof typeof actionLogApi) {
@@ -21,13 +20,9 @@ export function useGamePageSetup(gameName: keyof typeof actionLogApi) {
     cancel: cancelGiveUp,
   } = useConfirmDialog();
 
-  const pageTitle = tc(`nav.${gameName}`);
-  useEffect(() => {
-    document.title = `${pageTitle} - ${SITE_NAME}`;
-    return () => {
-      document.title = SITE_NAME;
-    };
-  }, [pageTitle]);
+  // Title handling lives in useDocumentTitle so pages that are not games can
+  // use it too -- before that split only game pages set a title (#5360).
+  useDocumentTitle(tc(`nav.${gameName}`));
 
   return {
     t,

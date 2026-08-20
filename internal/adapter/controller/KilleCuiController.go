@@ -41,7 +41,7 @@ func (c *KilleCuiController) Exec(command string) string {
 			case "nr", "nextround":
 				return c.ki.NextRound(), true
 			case "st", "setstake":
-				return cuiutil.WithParsedInt(args, "Stake is required.", "Invalid stake: %s.", 1, 100, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "stakeRequired", "invalidStake", 1, 100, func(v int) string {
 					cfg := c.ki.GetConfig()
 					cfg.Stake = v
 					return c.ki.ResetWithConfig(cfg)

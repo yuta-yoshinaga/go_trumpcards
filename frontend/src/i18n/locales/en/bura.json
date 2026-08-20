@@ -31,5 +31,12 @@
   "tutorial.multiCard": "Cards of one suit can be led together, up to three. More points move at once -- but if the lead is beaten, all of them go to your opponent.",
   "tutorial.beating": "To take the trick you must match the lead's count and beat every card with a distinct better one. There is no obligation to follow suit, so throwing away a card you cannot win with is a real option.",
   "tutorial.claim": "31 points only wins if you claim it yourself. Claiming when you are short loses the round immediately.",
-  "tutorial.controls": "Pick cards and press Play. Once you reach 31, remember to claim."
+  "tutorial.controls": "Pick cards and press Play. Once you reach 31, remember to claim.",
+  "declareHint": "Declaring wins outright if your three cards are one of these (nothing happens if they are not):",
+  "combo": {
+    "bura": "Bura: three trumps",
+    "moscow": "Moscow: three aces",
+    "littleMoscow": "Little Moscow: three sixes, one of them the trump six",
+    "molodka": "Molodka: three cards of one suit"
+  }
 }

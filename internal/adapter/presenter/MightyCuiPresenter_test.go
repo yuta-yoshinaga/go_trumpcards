@@ -4,14 +4,18 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // setupMightyCuiMock returns a MockMightyGame with safe defaults so the
@@ -357,9 +361,12 @@ func TestMightyCuiPresenter_ActionLogOutput(t *testing.T) {
 		}
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return(entries)
+		// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+		m.On("GetPlayer", mock.Anything).Return(domain.NewMightyPlayer(true)).Maybe()
 		result := p.ActionLogOutput(m)
 		assert.Contains(t, result, "棋譜")
 		assert.Contains(t, result, "play")
+		assert.Contains(t, result, "あなた", "棋譜の座席名が他の行と揃っていない")
 	})
 
 	t.Run("game not ended", func(t *testing.T) {
@@ -368,4 +375,40 @@ func TestMightyCuiPresenter_ActionLogOutput(t *testing.T) {
 		result := p.ActionLogOutput(m)
 		assert.Contains(t, result, "棋譜はありません")
 	})
+}
+
+// #5594: `nt` を付けると最低ビッドが上がるのに、CUI はコマンド構文しか出して
+// おらず、付けてエラーになって初めて気づく形だった。
+func TestMightyCuiPresenter_ExplainsTheNoTrumpExtraWhileBidding(t *testing.T) {
+	i18n.SetLang("ja")
+	build := func(extra int) string {
+		m, _ := setupMightyCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetConfig")
+		cfg := domain.DefaultMightyConfig()
+		cfg.NoTrumpExtra = extra
+		m.On("GetPhase").Return(domain.MightyPhaseBid)
+		m.On("GetConfig").Return(cfg)
+		return new(presenter.MightyCuiPresenter).Output(m, nil)
+	}
+
+	line := func(points int) string {
+		return i18n.Tf("mighty.promptBidNoTrumpExtra", "points", strconv.Itoa(points))
+	}
+
+	assert.Contains(t, build(1), line(1))
+	// **設定を変えれば表示も変わる** (受け入れ条件2)。訳文に数字を焼き込んでいない証拠。
+	assert.Contains(t, build(3), line(3))
+	assert.NotContains(t, build(3), line(1))
+}
+
+// ビッド以外のフェーズでは出さない。`nt` を打てない局面の説明は雑音になる。
+func TestMightyCuiPresenter_HidesTheNoTrumpExtraOutsideTheBidPhase(t *testing.T) {
+	i18n.SetLang("ja")
+	m, _ := setupMightyCuiMockWithPlayers()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+	m.On("GetPhase").Return(domain.MightyPhasePlay)
+
+	out := new(presenter.MightyCuiPresenter).Output(m, nil)
+	assert.NotContains(t, out, strings.SplitN(i18n.T("mighty.promptBidNoTrumpExtra"), "{{", 2)[0])
 }

@@ -139,5 +139,5 @@ func (p *ScoponeCuiPresenter) HintOutput(sg interfaces.ScoponeGame) string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *ScoponeCuiPresenter) ActionLogOutput(sg interfaces.ScoponeGame) string {
-	return actionLogOutputText(sg)
+	return actionLogOutputTextForSeats[*domain.ScopaPlayer](sg)
 }

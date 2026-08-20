@@ -23,5 +23,7 @@
   "optHit": "h = draw",
   "optStand": "s = stand",
   "optMatta": "matta = set the matta",
-  "bankPasses": "{{name}} lands exactly 7.5 and takes the bank"
+  "bankPasses": "{{name}} lands exactly 7.5 and takes the bank",
+  "helpExampleBet": "  b 100                    bet 100 chips",
+  "cpuStandLine": "The CPU seats and the banker stand at {{total}} or more (over {{target}} busts)."
 }

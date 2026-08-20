@@ -78,9 +78,9 @@ func TestGolfCuiControllerRemove(t *testing.T) {
 func TestGolfCuiControllerRemove_InvalidArgs(t *testing.T) {
 	gi := newMockGolfInteractor()
 	c := NewGolfCuiController(gi)
-	assert.Contains(t, c.Exec("rm"), "Usage")
-	assert.Contains(t, c.Exec("rm 3 0"), "Usage")
-	assert.Contains(t, c.Exec("rm a"), "Invalid col")
+	assert.True(t, msgRejected(c.Exec("rm")))
+	assert.True(t, msgRejected(c.Exec("rm 3 0")))
+	assert.True(t, msgRejected(c.Exec("rm a")))
 }
 
 func TestGolfCuiControllerUnknown(t *testing.T) {

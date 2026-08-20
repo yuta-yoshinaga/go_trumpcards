@@ -26,5 +26,7 @@
   "hintReasonNotYourTurn": "あなたの手番ではありません",
   "hintReasonLead": "並びが止まっているので、低い札から始めます",
   "hintReasonFollow": "並びの続きになる札です",
-  "hintReasonBox": "この札は区画のチップを取れます"
+  "hintReasonBox": "この札は区画のチップを取れます",
+  "helpExampleNext": "  n                        トリックの決着を見てから次へ",
+  "helpHint": "  h                        助言を表示"
 }

@@ -364,15 +364,22 @@ function BeziquePageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {state.hint && isRequestedHint(state) && (
-              <div className="text-ds-warning text-sm mb-2">
-                {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
-                {state.hint.cardIndex != null && ` ([${state.hint.cardIndex}])`}
-                {state.hint.meldIndex != null &&
-                  state.hint.meldIndex >= 0 &&
-                  ` ([${t('meldShort')} ${state.hint.meldIndex}])`}
-              </div>
-            )}
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-testid="bezique-hint-live" role="status" aria-live="polite">
+              {state.hint && isRequestedHint(state) && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
+                  {state.hint.cardIndex != null && ` ([${state.hint.cardIndex}])`}
+                  {state.hint.meldIndex != null &&
+                    state.hint.meldIndex >= 0 &&
+                    ` ([${t('meldShort')} ${state.hint.meldIndex}])`}
+                </div>
+              )}
+            </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="bezique-action-buttons">
@@ -388,6 +395,15 @@ function BeziquePageContent() {
               )}
               {isHumanMeldTurn && (
                 <>
+                  {/* **メルドが選べる状態になったこと自体**を読み上げる (#5657)。
+                      マッチ進捗は role="status" を持っているのに、フェーズ遷移を
+                      知らせるライブリージョンは無かった。0 件でも黙らない ──
+                      沈黙は「まだ自分の番でない」と区別が付かない。 */}
+                  <span className="sr-only" role="status" aria-live="polite" data-testid="bezique-meld-live">
+                    {state.availableMelds.length > 0
+                      ? t('meldLiveCount', { count: state.availableMelds.length })
+                      : t('meldLiveNone')}
+                  </span>
                   {/* Fieldset groups the meld buttons; the sr-only legend names the group
                       (the visible prompt is aria-hidden to avoid a duplicate announcement). */}
                   <fieldset className="contents">

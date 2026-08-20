@@ -15,6 +15,7 @@
   "orderHokom": "切り札: J=20 > 9=14 > A=11 > 10 > K=4 > Q=3 > 8 > 7。非切り札は Sun と同じ（合計152点）",
   "playerLine": "{{name}}[T{{team}}]: {{baloot}} 獲得{{tricks}} 手札{{cards}}枚",
   "balootNone": "役なし",
+  "balootHidden": "Baloot: 不明",
   "balootHeld": "Baloot(K+Q)={{points}}点",
   "promptCurrentPlayer": "手番: {{name}}",
   "promptPlay": "play <idx>・・・カードを出す",
@@ -38,5 +39,7 @@
   "suitSpade": "スペード",
   "suitClover": "クラブ",
   "suitHeart": "ハート",
-  "suitDiamond": "ダイヤ"
+  "suitDiamond": "ダイヤ",
+  "helpExampleGiveUp": "  g                    この局を投了する",
+  "helpHint": "  h                    助言を表示"
 }

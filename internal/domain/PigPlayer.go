@@ -67,9 +67,13 @@ func (p *PigPlayer) GetNoticedOrder() int { return p.noticedOrder }
 // SetNoticedOrder は気づいた順を設定する。
 func (p *PigPlayer) SetNoticedOrder(n int) { p.noticedOrder = n }
 
+// PigLetterTargetWord は脱落までに溜まる語。**3 文字で脱落**という規則そのもの
+// なので、画面・CUI・レスポンスはこの 1 箇所を参照します (#5766)。
+const PigLetterTargetWord = "PIG"
+
 // GetLetterWord は溜まった文字を "PIG" から切り出して返す。
 func (p *PigPlayer) GetLetterWord() string {
-	const word = "PIG"
+	const word = PigLetterTargetWord
 	n := p.letters
 	if n < 0 {
 		n = 0

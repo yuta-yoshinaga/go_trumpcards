@@ -87,6 +87,35 @@ func (p *OpenFaceChineseCuiPresenter) gameEndBanner(g interfaces.OpenFaceChinese
 }
 
 // writePrompt renders the phase-specific prompt block.
+// openFaceChineseFoulWarning は、保留カードを置くと確定で反則になる段を挙げた
+// 警告行を返す。該当する段が無ければ空文字。
+func openFaceChineseFoulWarning(g interfaces.OpenFaceChineseGame, idx int) string {
+	player := g.GetPlayer(idx)
+	card := g.GetCurrentCard()
+	if player == nil || card == nil || !player.GetIsHuman() {
+		return ""
+	}
+	rows := []struct {
+		row int
+		key string
+	}{
+		{domain.OpenFaceChineseRowFront, "openfacechinese.rowFront"},
+		{domain.OpenFaceChineseRowMiddle, "openfacechinese.rowMiddle"},
+		{domain.OpenFaceChineseRowBack, "openfacechinese.rowBack"},
+	}
+	var fouling []string
+	for _, r := range rows {
+		if domain.OpenFaceChinesePlacementFouls(
+			player.GetFront(), player.GetMiddle(), player.GetBack(), card, r.row) {
+			fouling = append(fouling, i18n.T(r.key))
+		}
+	}
+	if len(fouling) == 0 {
+		return ""
+	}
+	return i18n.Tf("openfacechinese.foulRiskWarning", "rows", strings.Join(fouling, ", "))
+}
+
 func (p *OpenFaceChineseCuiPresenter) writePrompt(b *strings.Builder, g interfaces.OpenFaceChineseGame) {
 	switch g.GetPhase() {
 	case domain.OpenFaceChinesePhasePlacing:
@@ -95,6 +124,13 @@ func (p *OpenFaceChineseCuiPresenter) writePrompt(b *strings.Builder, g interfac
 			"name", cuiPlayerName(g.GetPlayer(idx), idx),
 			"card", cuiCardStr(g.GetCurrentCard())) + "\n")
 		b.WriteString(i18n.T("openfacechinese.promptPlaceHelp") + "\n")
+		// **反則は全段負け扱い**という重い結果なのに、CUI は置いてラウンドが
+		// 終わるまで気づけなかった (#5676)。Web は各段のボタンにその場で警告を
+		// 出している。確定するものだけを出す -- 未確定を反則と呼ぶと、まだ挽回
+		// できる配置まで避けさせる。
+		if warn := openFaceChineseFoulWarning(g, idx); warn != "" {
+			b.WriteString(color.BoldYellow(warn) + "\n")
+		}
 	case domain.OpenFaceChinesePhaseRoundEnd:
 		b.WriteString(i18n.T("openfacechinese.promptRoundEnd") + "\n")
 		b.WriteString(i18n.T("openfacechinese.promptRoundEndHelp") + "\n")
@@ -134,5 +170,5 @@ var openFaceChineseHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *OpenFaceChineseCuiPresenter) ActionLogOutput(g interfaces.OpenFaceChineseGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.OpenFaceChinesePlayer](g)
 }

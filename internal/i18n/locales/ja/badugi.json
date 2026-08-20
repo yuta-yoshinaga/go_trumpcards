@@ -43,5 +43,9 @@
   "handRank2": "2カード",
   "handRank3": "3カード",
   "handRank4": "バドゥーギ",
-  "handRankUnknown": "不明"
+  "handRankUnknown": "不明",
+  "helpExampleCall": "  c                    現在のベットにコールする",
+  "helpHint": "  h                    助言を表示",
+  "helpLog": "  l                    行動ログを表示",
+  "completeBadugiWarning": "✨ バドゥーギ完成（{{size}} 枚）。ここで交換すると弱くなります"
 }

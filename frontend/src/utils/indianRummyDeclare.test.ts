@@ -217,3 +217,28 @@ describe('evaluateIndianRummyDeclare', () => {
     expect(p.penalty).toBe(INDIAN_RUMMY_DEADWOOD_CAP);
   });
 });
+
+// #5501: 手札に出るのは合計のデッドウッドだけで、点数基準そのものはどこにも
+// 書かれていなかった。**A も 10 点**という、ジンラミー系に慣れたプレイヤーほど
+// 意外に感じる仕様なので、画面に凡例を出した。その凡例が主張する内容を、
+// 実装から機械的に確かめる — 関数を変えたら凡例が嘘になる。
+describe('indianRummyCardPoints backs the on-screen legend', () => {
+  const WILD = 5;
+  const card = (value: number, design = 'SPADE'): Card => ({ design, value }) as Card;
+
+  it('scores A, 10, J, Q and K as ten', () => {
+    for (const v of [1, 10, 11, 12, 13]) {
+      expect(indianRummyCardPoints(card(v), WILD)).toBe(10);
+    }
+  });
+
+  it('scores 2 through 9 at face value', () => {
+    for (const v of [2, 3, 4, 6, 7, 8, 9]) {
+      expect(indianRummyCardPoints(card(v), WILD)).toBe(v);
+    }
+  });
+
+  it('scores a wild at zero', () => {
+    expect(indianRummyCardPoints(card(WILD), WILD)).toBe(0);
+  });
+});

@@ -20,5 +20,9 @@
   "hintToTableau": "tableau column {{col}}",
   "hintToFreeCell": "free cell {{col}}",
   "hintLine": "Hint: {{from}} → {{to}}",
-  "supermoveLine": "Max cards per move: {{limit}} (free cells {{cells}}, empty columns {{cols}})"
+  "supermoveLine": "Max cards per move: {{limit}} (free cells {{cells}}, empty columns {{cols}})",
+  "helpExampleMoveCell": "  m t 0 c 0            park the top of column 0 in free cell 0",
+  "helpExampleHint": "  h                    ask for a move",
+  "helpExampleAuto": "  ac                   send everything that can go to a foundation",
+  "helpUndo": "  u undo one move"
 }

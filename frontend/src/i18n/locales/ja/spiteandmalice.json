@@ -18,7 +18,8 @@
     "cpuGoal": "CPUゴール: {{count}}",
     "foundation": "ファウンデーション",
     "stock": "ストック",
-    "completed": "完成済み"
+    "completed": "完成済み",
+    "wild": "ワイルド"
   },
   "moveCount": "手数",
   "endTurn": "ターン終了",

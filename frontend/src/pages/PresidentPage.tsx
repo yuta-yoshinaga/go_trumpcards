@@ -21,9 +21,10 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePresidentGame } from '../hooks/usePresidentGame';
 import { gameTheme } from '../styles/gameTheme';
-import type { PresidentResponse } from '../types/card';
+import type { PresidentAction, PresidentResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { cardLabel } from '../utils/cardUtils';
 import {
   formatPresidentState,
   PRESIDENT_HELP,
@@ -183,6 +184,16 @@ function PresidentPageContent() {
   const humanWon = isGameEnd && state.players[0]?.rank === 1;
   const isHumanTurn = state.currentTurn === 0 && !isGameEnd;
   const human = state.players[0];
+  // 自分の手と CPU の手を 1 本の時系列にする。CUI と同じ書き分け
+  // (出した / パスした) を使う。
+  const describeAction = (action: PresidentAction): string => {
+    const name = action.playerIdx === 0 ? tc('player.you') : tc('player.cpu', { id: action.playerIdx });
+    if (!action.playedCards || action.playedCards.length === 0) return t('actionPassed', { name });
+    return t('actionPlayed', { name, cards: action.playedCards.map(cardLabel).join(', ') });
+  };
+  const actionHistory = [...(state.humanAction ? [state.humanAction] : []), ...(state.cpuActions ?? [])].map(
+    describeAction,
+  );
   const canPlay = isHumanTurn && selectedIndices.length > 0;
   const phaseName = isGameEnd ? t('phase.end') : t('phase.play');
 
@@ -289,6 +300,21 @@ function PresidentPageContent() {
                 )}
               </div>
             </div>
+
+            {/* Action history: CUI は毎ターン「誰が何を出したか / パスしたか」を
+                出しているのに、Web は場札しか見えず、CPU 3 人のうち誰が場をこの形に
+                したのか追えなかった (#5548)。 */}
+            {actionHistory.length > 0 && (
+              <div
+                role="log"
+                aria-live="polite"
+                aria-label={t('label.actionLog')}
+                className="bg-black/40 rounded-lg text-ds-text-primary py-2 px-3.5 my-2 whitespace-pre-line text-xs"
+                data-testid="pr-action-log"
+              >
+                {actionHistory.join('\n')}
+              </div>
+            )}
 
             {/* Human hand */}
             <div className="text-center" data-tutorial="pr-player-hand">

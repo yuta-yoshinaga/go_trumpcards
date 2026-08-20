@@ -16,6 +16,21 @@ const GinRummyHandSize = 10
 // GinRummyKnockThreshold ノック可能なデッドウッド上限
 const GinRummyKnockThreshold = 10
 
+// CPU の難易度ごとの判断基準。**画面の説明文と同じ数字であることをテストで
+// 固定している** -- 片方だけ変えると、設定パネルが嘘の方針を説明する (#5500)。
+const (
+	// GinRummyKnockDeadwoodNormal は Normal がノックに踏み切るデッドウッド上限。
+	GinRummyKnockDeadwoodNormal = 7
+	// GinRummyKnockDeadwoodHard は Hard がノックに踏み切るデッドウッド上限
+	// (ジン=0 は別扱いで常にノックする)。
+	GinRummyKnockDeadwoodHard = 5
+	// GinRummyDiscardGainNormal は Normal が捨て札を拾う最低改善幅。これを
+	// **超える**改善が要る。
+	GinRummyDiscardGainNormal = 5
+	// GinRummyEasyPickOneIn は Easy が捨て札を拾う確率の分母 (1/N)。
+	GinRummyEasyPickOneIn = 3
+)
+
 // GinRummyGinBonus ジンボーナス点
 const GinRummyGinBonus = 25
 
@@ -502,9 +517,9 @@ func (g *GinRummy) cpuDraw() {
 		case GinRummyCpuDifficultyHard:
 			shouldPickDiscard = dwWith < dwWithout
 		case GinRummyCpuDifficultyNormal:
-			shouldPickDiscard = dwWith < dwWithout-5
+			shouldPickDiscard = dwWith < dwWithout-GinRummyDiscardGainNormal
 		default:
-			shouldPickDiscard = rand.Intn(3) == 0
+			shouldPickDiscard = rand.Intn(GinRummyEasyPickOneIn) == 0
 		}
 
 		if shouldPickDiscard {
@@ -567,9 +582,9 @@ func (g *GinRummy) cpuDiscardOrKnock() {
 		shouldKnock := false
 		switch g.config.CpuDifficulty {
 		case GinRummyCpuDifficultyHard:
-			shouldKnock = bestDeadwood <= 5 || bestDeadwood == 0
+			shouldKnock = bestDeadwood <= GinRummyKnockDeadwoodHard || bestDeadwood == 0
 		case GinRummyCpuDifficultyNormal:
-			shouldKnock = bestDeadwood <= 7
+			shouldKnock = bestDeadwood <= GinRummyKnockDeadwoodNormal
 		default:
 			shouldKnock = true
 		}

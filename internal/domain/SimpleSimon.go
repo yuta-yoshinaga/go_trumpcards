@@ -89,6 +89,22 @@ func (g *SimpleSimon) Reset() {
 // --- rules ---
 
 // isMovableRun cards が同スート降順の連続列か (単体は常に可)。
+// SimpleSimonMovableFrom は列のうち「まとめて動かせる塊」が始まる位置を返す。
+//
+// **動かせるのは末尾から同スート降順に途切れず続く部分だけ** (simpleSimonIsRun)。
+// 画面はどこからが掴めるのかを示すので、判定を書き写さずに済むよう位置を返す
+// (#5679)。空列は 0。
+func SimpleSimonMovableFrom(column []*Card) int {
+	if len(column) == 0 {
+		return 0
+	}
+	idx := len(column) - 1
+	for idx > 0 && simpleSimonIsRun(column[idx-1:idx+1]) {
+		idx--
+	}
+	return idx
+}
+
 func simpleSimonIsRun(cards []*Card) bool {
 	for i := 1; i < len(cards); i++ {
 		if cards[i].GetDesign() != cards[i-1].GetDesign() || cards[i].GetValue() != cards[i-1].GetValue()-1 {

@@ -49,7 +49,7 @@ func TestTressetteCuiController_Exec(t *testing.T) {
 
 	t.Run("play no args", func(t *testing.T) {
 		result := controller.NewTressetteCuiController(newMock()).Exec("p")
-		assert.Contains(t, result, "Card index is required")
+		assert.Contains(t, result, msgCardIndexRequired())
 	})
 
 	t.Run("next / nextround", func(t *testing.T) {
@@ -72,7 +72,7 @@ func TestTressetteCuiController_Exec(t *testing.T) {
 
 	t.Run("setdifficulty invalid", func(t *testing.T) {
 		result := controller.NewTressetteCuiController(newMock()).Exec("sd 9")
-		assert.Contains(t, result, "Invalid CPU difficulty")
+		assert.Contains(t, result, msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("settarget", func(t *testing.T) {
@@ -86,7 +86,7 @@ func TestTressetteCuiController_Exec(t *testing.T) {
 
 	t.Run("settarget invalid", func(t *testing.T) {
 		result := controller.NewTressetteCuiController(newMock()).Exec("st 0")
-		assert.Contains(t, result, "Invalid target points")
+		assert.Contains(t, result, msgStem("invalidTargetPoints1OrMore"))
 	})
 
 	t.Run("hint / log", func(t *testing.T) {

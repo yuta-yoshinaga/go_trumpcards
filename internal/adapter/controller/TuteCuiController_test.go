@@ -51,7 +51,7 @@ func TestTuteCuiController_Exec(t *testing.T) {
 
 	t.Run("play no args", func(t *testing.T) {
 		result := controller.NewTuteCuiController(newMock()).Exec("play")
-		assert.Contains(t, result, "Card index is required")
+		assert.Contains(t, result, msgCardIndexRequired())
 	})
 
 	t.Run("marriage shorthand m", func(t *testing.T) {
@@ -70,12 +70,12 @@ func TestTuteCuiController_Exec(t *testing.T) {
 
 	t.Run("marriage invalid suit", func(t *testing.T) {
 		result := controller.NewTuteCuiController(newMock()).Exec("m 9")
-		assert.Contains(t, result, "Invalid suit")
+		assert.Contains(t, result, msgStem("invalidSuitRange"))
 	})
 
 	t.Run("marriage no args", func(t *testing.T) {
 		result := controller.NewTuteCuiController(newMock()).Exec("m")
-		assert.Contains(t, result, "Suit is required")
+		assert.Contains(t, result, msgStem("suitRequiredSymbolsPlain"))
 	})
 
 	t.Run("tute declaration", func(t *testing.T) {
@@ -105,7 +105,7 @@ func TestTuteCuiController_Exec(t *testing.T) {
 
 	t.Run("setdifficulty invalid", func(t *testing.T) {
 		result := controller.NewTuteCuiController(newMock()).Exec("sd 9")
-		assert.Contains(t, result, "Invalid CPU difficulty")
+		assert.Contains(t, result, msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("hint / log", func(t *testing.T) {

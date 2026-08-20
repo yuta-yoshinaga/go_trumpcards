@@ -15,6 +15,7 @@ func setupYukonCuiMockDefaults(yg *interfaces.MockYukonGame) {
 	yg.On("GetPhase").Return(domain.YukonPhasePlaying).Maybe()
 	yg.On("GetMoveCount").Return(0).Maybe()
 	yg.On("IsStalemate").Return(false).Maybe()
+	yg.On("UndoToEscape").Return(0).Maybe()
 
 	var tableau [domain.YukonTableauCnt][]*domain.KlondikeTableauCard
 	for i := range domain.YukonTableauCnt {
@@ -72,6 +73,7 @@ func TestYukonCuiPresenter_Output(t *testing.T) {
 		yg.On("GetPhase").Return(domain.YukonPhasePlaying).Maybe()
 		yg.On("GetMoveCount").Return(5).Maybe()
 		yg.On("IsStalemate").Return(true).Maybe()
+		yg.On("UndoToEscape").Return(0).Maybe()
 		var tableau [domain.YukonTableauCnt][]*domain.KlondikeTableauCard
 		yg.On("GetTableau").Return(tableau).Maybe()
 		var foundation [domain.YukonFoundationCnt][]*domain.Card

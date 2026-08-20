@@ -22,6 +22,18 @@
   "promptTrickEnd": "Trick complete",
   "promptTrickEndHelp": "next — go to next trick",
   "promptRoundEnd": "Round complete",
+  "breakdownTitle": "Score breakdown",
+  "breakdownHearts": "  Hearts x{{count}}: {{sum}}",
+  "breakdownAllHearts": "  All-hearts bonus",
+  "breakdownAceExposed": "  Doubled by the exposed ♥A",
+  "breakdownPig": "  Pig (♠Q): -100",
+  "breakdownPigExposed": "  Pig (♠Q) exposed: -200",
+  "breakdownSheep": "  Sheep (♦J): +100",
+  "breakdownSheepExposed": "  Sheep (♦J) exposed: +200",
+  "breakdownDoubler": "  Doubler (♣10): x{{mult}}",
+  "breakdownDoublerStandalone": "  Doubler (♣10) alone: {{points}}",
+  "breakdownSubtotal": "  Subtotal: {{subtotal}}",
+  "breakdownTotal": "  Total: {{total}}",
   "promptRoundEndHelp": "nr / nextround — go to next round",
   "hintNone": "No hint available.",
   "hintCard": "[HINT: {{cards}} ({{reason}})]",
@@ -29,5 +41,7 @@
   "hintReasonExposeNone": "Hold back and don't expose",
   "hintReasonDiscardPig": "A chance to dump the ♠Q (pig)",
   "hintReasonDiscardHearts": "Discard hearts",
-  "capturedLine": "  Taken: {{cards}}"
+  "capturedLine": "  Taken: {{cards}}",
+  "helpExamplePlay": "  p 0                  play hand card 0",
+  "helpHint": "  h                    show a hint"
 }

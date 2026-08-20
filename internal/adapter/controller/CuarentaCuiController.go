@@ -41,7 +41,7 @@ func (c *CuarentaCuiController) Exec(command string) string {
 			case "n", "next":
 				return c.ci.NextRound(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.ci.GetConfig()
 					cfg.CpuDifficulty = domain.CuarentaCpuDifficulty(v)
 					return c.ci.ResetWithConfig(cfg)
@@ -56,11 +56,11 @@ func (c *CuarentaCuiController) Exec(command string) string {
 // handlePlay は `p <h>` を処理する。
 func (c *CuarentaCuiController) handlePlay(args []string) (string, bool) {
 	if len(args) < 1 {
-		return "Usage: p <handIdx>", true
+		return invalidArg("usagePHandidx"), true
 	}
-	handIdx, _, ok := cuiutil.ParseIntArg([]string{args[0]}, "hand index is required", "Invalid hand index: %s", 0, 39)
+	handIdx, _, ok := cuiutil.ParseIntArgKeys([]string{args[0]}, "handIndexRequired", "invalidHandIndex", 0, 39)
 	if !ok {
-		return "Invalid hand index: " + args[0], true
+		return invalidArg("invalidHandIndexRaw", "val", args[0]), true
 	}
 	return c.ci.Play(handIdx), true
 }

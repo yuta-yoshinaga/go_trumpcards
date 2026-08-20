@@ -30,13 +30,13 @@ func (c *FourCardPokerCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bet":
-				ante, errMsg, ok := cuiutil.ParseIntArg(args, "Ante amount is required.", "Invalid ante amount. Please enter a number.", 1, math.MaxInt)
+				ante, errMsg, ok := cuiutil.ParseIntArgKeys(args, "anteAmountRequired", "invalidAnteAmount", 1, math.MaxInt)
 				if !ok {
 					return errMsg, true
 				}
 				acesUp := 0
 				if len(args) > 1 {
-					acesUp, errMsg, ok = cuiutil.ParseIntArg(args[1:], "", "Invalid Aces Up amount.", 0, math.MaxInt)
+					acesUp, errMsg, ok = cuiutil.ParseIntArgKeys(args[1:], "", "invalidAcesUpAmount", 0, math.MaxInt)
 					if !ok {
 						return errMsg, true
 					}
@@ -46,7 +46,7 @@ func (c *FourCardPokerCuiController) Exec(command string) string {
 				// Default to 1x if not specified.
 				mul := 1
 				if len(args) >= 1 {
-					m, errMsg, ok := cuiutil.ParseIntArg(args, "", "Invalid play multiplier. Please enter 1, 2, or 3.", 1, 3)
+					m, errMsg, ok := cuiutil.ParseIntArgKeys(args, "", "invalidPlayMultiplier12Or3", 1, 3)
 					if !ok {
 						return errMsg, true
 					}

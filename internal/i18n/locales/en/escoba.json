@@ -10,6 +10,7 @@
   "helpSetTarget": "  st <n>                   target score (default 10)",
   "roundLine": "Round {{round}} (stock {{stock}} left)",
   "playerLine": "{{name}}: hand {{hand}} / captured {{captured}} / escoba {{escoba}} / {{score}}pt",
+  "capturedLine": "Captured: {{cards}}",
   "tableLine": "Table: {{cards}}",
   "tableEmpty": "Table: empty",
   "gameEnd": "Game over!",
@@ -19,5 +20,6 @@
   "specialLine": "  Ace of swords: P{{ace}} / 7 of swords: P{{sete}} (-1=none)",
   "promptNext": "n to start the next round",
   "promptCurrentTurn": "Current turn: {{name}}",
-  "promptHelp": "p <hand> [table...] to capture or lay / n for the next round"
+  "promptHelp": "p <hand> [table...] to capture or lay / n for the next round",
+  "helpExampleNext": "  n                        read the round result, then continue"
 }

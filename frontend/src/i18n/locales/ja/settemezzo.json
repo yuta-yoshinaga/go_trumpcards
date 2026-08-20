@@ -48,5 +48,6 @@
     "settemezzoHitLow": "7.5 まで距離があります。もう 1 枚引きましょう",
     "settemezzoStandClose": "7.5 に近く、引くと外す目のほうが多くなります",
     "settemezzoSetMatta": "マッタの値を決められます。7.5 ちょうどに合わせましょう"
-  }
+  },
+  "cpuStand": "相手は {{total}} 点で止まる"
 }

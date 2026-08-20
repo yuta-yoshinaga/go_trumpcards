@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -24,6 +25,8 @@ func setupGongZhuCuiMock() *interfaces.MockGongZhuGame {
 	m.On("GetCurrentPlayerIdx").Return(0)
 	m.On("GetWinnerIdx").Return(-1)
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	// 得点内訳の既定値 (#5630)。中身を見るテストは自分で上書きする。
+	m.On("ScoreBreakdownFor", mock.Anything).Return(domain.GongZhuScoreBreakdown{}).Maybe()
 	return m
 }
 
@@ -139,6 +142,83 @@ func TestGongZhuCuiPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
 		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "plays ♠5"},
 	})
+	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+	m.On("GetPlayer", mock.Anything).Return(domain.NewGongZhuPlayer(true)).Maybe()
 	result := p.ActionLogOutput(m)
 	assert.NotEmpty(t, result)
+}
+
+// #5630: 得点は「ハート合計 → 全ハートボーナス → ♥A で倍 → 猪/羊 → 猪抜きの倍率」と
+// 何段も重なるのに、画面には最終値しか出ず、なぜその点なのかを確かめる手段が無かった。
+func TestGongZhuCuiPresenterShowsTheRoundBreakdown(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+
+	m, _ := setupGongZhuCuiMockWithPlayers()
+	m.ExpectedCalls = filterGongZhuCall(m.ExpectedCalls, "GetPhase")
+	m.On("GetPhase").Return(domain.GongZhuPhaseRoundEnd)
+	// 既定 (共有ヘルパの .Maybe()) を先に消す。testify は最初に一致した期待値を
+	// 返すので、消さずに足すと上書きしたつもりのケースが何も確かめない。
+	m.ExpectedCalls = filterGongZhuCall(m.ExpectedCalls, "ScoreBreakdownFor")
+	m.On("ScoreBreakdownFor", mock.Anything).Return(domain.GongZhuScoreBreakdown{
+		HeartCount: 3, HeartsSum: -120, AceExposed: true,
+		HasPig: true, PigExposed: true,
+		HasSheep:   true,
+		HasDoubler: true, DoublerMultiplier: 2,
+		Subtotal: -220, Total: -440,
+	})
+
+	out := new(presenter.GongZhuCuiPresenter).Output(m, nil)
+
+	// 各段が個別に読める。合計だけでは検算できない。
+	assert.Contains(t, out, i18n.Tf("gongzhu.breakdownHearts", "count", "3", "sum", "-120"))
+	assert.Contains(t, out, i18n.T("gongzhu.breakdownPigExposed"))
+	assert.Contains(t, out, i18n.T("gongzhu.breakdownSheep"))
+	assert.Contains(t, out, i18n.Tf("gongzhu.breakdownDoubler", "mult", "2"))
+	assert.Contains(t, out, i18n.Tf("gongzhu.breakdownTotal", "total", "-440"))
+}
+
+// 起きていないことは書かない。猪を取っていないのに猪の行が出ると、
+// 何が起きたのか読めなくなる。
+func TestGongZhuCuiPresenterOmitsTheItemsThatDidNotHappen(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+
+	m, _ := setupGongZhuCuiMockWithPlayers()
+	m.ExpectedCalls = filterGongZhuCall(m.ExpectedCalls, "GetPhase")
+	m.On("GetPhase").Return(domain.GongZhuPhaseRoundEnd)
+	// 既定 (共有ヘルパの .Maybe()) を先に消す。testify は最初に一致した期待値を
+	// 返すので、消さずに足すと上書きしたつもりのケースが何も確かめない。
+	m.ExpectedCalls = filterGongZhuCall(m.ExpectedCalls, "ScoreBreakdownFor")
+	m.On("ScoreBreakdownFor", mock.Anything).Return(domain.GongZhuScoreBreakdown{
+		HeartCount: 2, HeartsSum: -90, Subtotal: -90, Total: -90,
+	})
+
+	out := new(presenter.GongZhuCuiPresenter).Output(m, nil)
+	assert.NotContains(t, out, i18n.T("gongzhu.breakdownPig"))
+	assert.NotContains(t, out, i18n.T("gongzhu.breakdownSheep"))
+	assert.NotContains(t, out, i18n.Tf("gongzhu.breakdownDoubler", "mult", "2"))
+}
+
+// ラウンド終了以外では内訳を出さない (途中経過の点は確定していない)。
+func TestGongZhuCuiPresenterOmitsTheBreakdownDuringPlay(t *testing.T) {
+	m, _ := setupGongZhuCuiMockWithPlayers()
+	m.On("ScoreBreakdownFor", mock.Anything).Return(domain.GongZhuScoreBreakdown{Total: -90}).Maybe()
+
+	out := new(presenter.GongZhuCuiPresenter).Output(m, nil)
+	// 見出しごと出ない。特定の数字だけ見ると、別の理由で消えていても気づけない。
+	assert.NotContains(t, out, i18n.T("gongzhu.breakdownTitle"))
+}
+
+// filterGongZhuCall removes an expectation so a test can override it.
+func filterGongZhuCall(calls []*mock.Call, method string) []*mock.Call {
+	out := calls[:0]
+	for _, c := range calls {
+		if c.Method != method {
+			out = append(out, c)
+		}
+	}
+	return out
 }

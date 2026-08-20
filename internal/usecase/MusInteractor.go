@@ -118,7 +118,10 @@ func (mi *MusInteractor) ActionLog() string {
 // Mus/Discard/Grande/Chica/Pares/Juego フェーズの CPU アクションを自動進行し、
 // Showdown を解決し、RoundEnd で待機する。
 func (mi *MusInteractor) runCpuTurns() {
-	for !mi.Game.GetGameEndFlag() {
+	for i := 0; i < MaxCpuIterations; i++ {
+		if mi.Game.GetGameEndFlag() {
+			return
+		}
 		switch mi.Game.GetPhase() {
 		case domain.MusPhaseMus, domain.MusPhaseDiscard,
 			domain.MusPhaseGrande, domain.MusPhaseChica,

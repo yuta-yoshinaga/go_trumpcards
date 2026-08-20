@@ -577,3 +577,124 @@ func TestVideoPoker_Payout_WheelStraight(t *testing.T) {
 	assert.Equal(t, 4, vp.GetPayout())
 	assert.Equal(t, "Straight", vp.GetHandName())
 }
+
+// #5508: Web はドロー中の5枚が配当対象の役かをリアルタイムに出すのに、CUI は
+// 手札とホールド推奨しか出さず、いまの役には一切触れない。評価そのものは
+// config.GetResult が持っているので、賭けずに問い合わせられればよい。
+func TestVideoPoker_GetCurrentHandKey(t *testing.T) {
+	card := func(design, value int) *Card { return NewCard(design, value, false) }
+
+	newJokerPoker := func(hand []*Card) *VideoPoker {
+		vp := NewJokerPokerVideoPoker()
+		vp.Reset()
+		vp.SetHand(hand)
+		return vp
+	}
+
+	t.Run("names a paying hand", func(t *testing.T) {
+		vp := newJokerPoker([]*Card{
+			card(CardDesignSpade, 5), card(CardDesignHeart, 5),
+			card(CardDesignClover, 5), card(CardDesignDiamond, 9),
+			card(CardDesignSpade, 12),
+		})
+		assert.Equal(t, "threeOfAKind", vp.GetCurrentHandKey())
+	})
+
+	// **Kings or Better 未満は空。** 配当の付かない手を役名で呼ぶと、払われると読める。
+	t.Run("returns an empty key below the pay minimum", func(t *testing.T) {
+		vp := newJokerPoker([]*Card{
+			card(CardDesignSpade, 11), card(CardDesignHeart, 11),
+			card(CardDesignClover, 3), card(CardDesignDiamond, 7),
+			card(CardDesignSpade, 9),
+		})
+		assert.Empty(t, vp.GetCurrentHandKey(), "J のペアは Joker Poker では配当対象外")
+	})
+
+	t.Run("counts the joker as wild", func(t *testing.T) {
+		vp := newJokerPoker([]*Card{
+			card(CardDesignSpade, 5), card(CardDesignHeart, 5),
+			NewCard(CardDesignJoker, 0, true),
+			card(CardDesignDiamond, 9), card(CardDesignSpade, 12),
+		})
+		assert.Equal(t, "threeOfAKind", vp.GetCurrentHandKey())
+	})
+
+	// **状態を変えない。** ドロー中に何度呼ばれても、チップも結果も動かない。
+	t.Run("does not pay out or change the game state", func(t *testing.T) {
+		vp := newJokerPoker([]*Card{
+			card(CardDesignSpade, 5), card(CardDesignHeart, 5),
+			card(CardDesignClover, 5), card(CardDesignDiamond, 9),
+			card(CardDesignSpade, 12),
+		})
+		chips, phase := vp.GetChips(), vp.GetPhase()
+		for i := 0; i < 3; i++ {
+			vp.GetCurrentHandKey()
+		}
+		assert.Equal(t, chips, vp.GetChips())
+		assert.Equal(t, phase, vp.GetPhase())
+		assert.Zero(t, vp.GetPayout())
+	})
+
+	// 5枚そろっていないときは空。
+	t.Run("returns an empty key for a partial hand", func(t *testing.T) {
+		vp := newJokerPoker([]*Card{card(CardDesignSpade, 5)})
+		assert.Empty(t, vp.GetCurrentHandKey())
+	})
+}
+
+// #5508 の受け入れ条件: Web の evaluateJokerPokerMadeHand と同じ入力で同じ役キーを
+// 返すこと。**両者は別言語の別実装**なので、代表的な手で突き合わせておく。
+// (frontend/src/utils/jokerPokerMadeHand.test.ts に同じ期待値が置いてある)
+func TestVideoPoker_CurrentHandKeyMatchesTheWebEvaluator(t *testing.T) {
+	card := func(design, value int) *Card { return NewCard(design, value, false) }
+	joker := func() *Card { return NewCard(CardDesignJoker, 0, true) }
+
+	for _, tc := range []struct {
+		name string
+		hand []*Card
+		want string
+	}{
+		{"natural royal", []*Card{card(CardDesignSpade, 1), card(CardDesignSpade, 13),
+			card(CardDesignSpade, 12), card(CardDesignSpade, 11), card(CardDesignSpade, 10)}, "naturalRoyalFlush"},
+		{"wild royal", []*Card{joker(), card(CardDesignSpade, 13),
+			card(CardDesignSpade, 12), card(CardDesignSpade, 11), card(CardDesignSpade, 10)}, "wildRoyalFlush"},
+		{"five of a kind", []*Card{card(CardDesignSpade, 7), card(CardDesignHeart, 7),
+			card(CardDesignClover, 7), card(CardDesignDiamond, 7), joker()}, "fiveOfAKind"},
+		{"kings or better", []*Card{card(CardDesignSpade, 13), card(CardDesignHeart, 13),
+			card(CardDesignClover, 3), card(CardDesignDiamond, 7), card(CardDesignSpade, 9)}, "kingsOrBetter"},
+		// **J のペアは Joker Poker では払わない。** Jacks or Better との違い。
+		{"jacks pay nothing here", []*Card{card(CardDesignSpade, 11), card(CardDesignHeart, 11),
+			card(CardDesignClover, 3), card(CardDesignDiamond, 7), card(CardDesignSpade, 9)}, ""},
+	} {
+		vp := NewJokerPokerVideoPoker()
+		vp.Reset()
+		vp.SetHand(tc.hand)
+		assert.Equal(t, tc.want, vp.GetCurrentHandKey(), tc.name)
+	}
+}
+
+// GetCurrentHandKey は「配当の付かない手には名前が付かない」という GetResult の
+// 規約に乗っている。**破れたら、払われない役名が「現在の役」として出る。**
+// 3バリアントとも、配当0の手でキーが空になることを固定しておく。
+func TestVideoPoker_NoPayingHandYieldsNoKey(t *testing.T) {
+	card := func(design, value int) *Card { return NewCard(design, value, false) }
+	// どのバリアントでも配当の付かない手 (バラバラのハイカード、2 もジョーカーも無し)。
+	junk := []*Card{
+		card(CardDesignSpade, 9), card(CardDesignHeart, 7),
+		card(CardDesignClover, 5), card(CardDesignDiamond, 3),
+		card(CardDesignSpade, 12),
+	}
+
+	for name, vp := range map[string]*VideoPoker{
+		"jacksOrBetter": NewDefaultVideoPoker(),
+		"deucesWild":    NewDeucesWildVideoPoker(),
+		"jokerPoker":    NewJokerPokerVideoPoker(),
+	} {
+		vp.Reset()
+		vp.SetHand(junk)
+		_, multiplier, handName := vp.config.GetResult(junk, vp.GetBetAmount())
+		assert.Zero(t, multiplier, name)
+		assert.Empty(t, handName, name+": 配当0の手に名前を付けている")
+		assert.Empty(t, vp.GetCurrentHandKey(), name)
+	}
+}

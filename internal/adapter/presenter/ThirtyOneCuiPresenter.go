@@ -68,6 +68,11 @@ func (p *ThirtyOneCuiPresenter) Output(g interfaces.ThirtyOneGame, lastErr error
 			"round", strconv.Itoa(g.GetRoundNumber()),
 			"stock", strconv.Itoa(g.GetDrawPileCount())) + "\n")
 
+		// **難易度の違いはこの数字がすべて。**Easy/Normal/Hard という名前だけでは、
+		// 何が変わるのか体験からしか分からなかった (#5623)。
+		b.WriteString(i18n.Tf("thirtyone.knockThresholdLine",
+			"score", strconv.Itoa(g.GetCpuKnockThreshold())) + "\n")
+
 		if top := g.GetDiscardTop(); top != nil {
 			b.WriteString(i18n.Tf("thirtyone.discardLine", "card", cuiCardStr(top)) + "\n")
 		}
@@ -126,7 +131,7 @@ func (p *ThirtyOneCuiPresenter) Output(g interfaces.ThirtyOneGame, lastErr error
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *ThirtyOneCuiPresenter) ActionLogOutput(g interfaces.ThirtyOneGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.ThirtyOnePlayer](g)
 }
 
 // HintOutput emits the recommended move for the human player.

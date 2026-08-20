@@ -114,6 +114,18 @@ func (p *HoneymoonBridgeCuiPresenter) Output(s interfaces.HoneymoonBridgeGame, l
 				sb.WriteString(i18n.T("honeymoonbridge.promptBidWait") + "\n")
 			}
 		case domain.HoneymoonBridgePhaseRoundEnd:
+			// **得点式は細かい (契約レベル×10 + オーバートリック×5 / 失敗は
+			// 不足×10)。**トリックの過不足だけでは何点動いたか読めない (#5760)。
+			if s.GetContractLevel() > 0 {
+				key := "honeymoonbridge.roundDown"
+				if s.GetLastMade() {
+					key = "honeymoonbridge.roundMade"
+				}
+				sb.WriteString(i18n.Tf(key,
+					"need", strconv.Itoa(s.RequiredTricks()),
+					"took", strconv.Itoa(s.GetLastTricks()),
+					"points", strconv.Itoa(s.GetLastPoints())) + "\n")
+			}
 			sb.WriteString(i18n.T("honeymoonbridge.promptNext") + "\n")
 		default:
 			currentIdx := s.GetCurrentPlayerIdx()
@@ -176,5 +188,5 @@ var honeymoonBridgeHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *HoneymoonBridgeCuiPresenter) ActionLogOutput(s interfaces.HoneymoonBridgeGame) string {
-	return actionLogOutputText(s)
+	return actionLogOutputTextForSeats[*domain.HoneymoonBridgePlayer](s)
 }

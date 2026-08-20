@@ -173,8 +173,17 @@ func (p *BridgeCuiPresenter) Output(b interfaces.BridgeGame, lastErr error) stri
 			sb.WriteString(i18n.T("bridge.promptBidHelp") + "\n")
 		case domain.BridgePhasePlay:
 			currentIdx := b.GetCurrentPlayerIdx()
-			sb.WriteString(i18n.Tf("bridge.promptPlay",
-				"name", cuiPlayerName(b.GetPlayer(currentIdx), currentIdx)) + "\n")
+			// **ダミーの手番は人間が打つ。** IsHumanTurn はそれを判定しているのに
+			// CUI は一度も呼ばず、人間が操作すべき局面で CPU の名前を出していた
+			// (#5516)。Web は yourTurnDummy で明示している。判定はドメインに任せる
+			// -- ここで declarer/dummy を突き合わせ直すと、片方だけ変わったときにずれる。
+			if currentIdx == b.GetDummyIdx() && b.IsHumanTurn() {
+				sb.WriteString(i18n.Tf("bridge.promptPlayDummy",
+					"seat", cuiPlayerName(b.GetPlayer(currentIdx), currentIdx)) + "\n")
+			} else {
+				sb.WriteString(i18n.Tf("bridge.promptPlay",
+					"name", cuiPlayerName(b.GetPlayer(currentIdx), currentIdx)) + "\n")
+			}
 			sb.WriteString(i18n.T("bridge.promptPlayHelp") + "\n")
 		case domain.BridgePhaseTrickEnd:
 			sb.WriteString(i18n.T("bridge.promptTrickEnd") + "\n")
@@ -252,5 +261,5 @@ var bridgeHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *BridgeCuiPresenter) ActionLogOutput(b interfaces.BridgeGame) string {
-	return actionLogOutputText(b)
+	return actionLogOutputTextForSeats[*domain.BridgePlayer](b)
 }

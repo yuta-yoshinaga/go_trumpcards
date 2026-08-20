@@ -11,6 +11,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
+import { LiveAnnouncement } from '../components/LiveAnnouncement';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -34,6 +35,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { MAO_HELP, parseMaoCommand } from '../utils/cli/commands/maoCommands';
 import { formatMaoState } from '../utils/cli/formatters/maoFormatter';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { ruleHintText } from '../utils/maoRuleHint';
 import { appendSayWordAttempt, type MaoSayWordAttempt } from '../utils/maoSayWordHistory';
@@ -135,20 +137,32 @@ function MaoPageContent() {
   // this history, but the player types the word and the response's rulePenalty
   // flag reveals whether it broke the hidden rule.
   const [sayWordHistory, setSayWordHistory] = useState<MaoSayWordAttempt[]>([]);
+  // **最新は末尾** (appendSayWordAttempt は後ろに足す)。先頭を読むと、2 回目以降は
+  // 1 回目の結果を読み上げ続ける。
+  const latestSayWord = sayWordHistory[sayWordHistory.length - 1] ?? null;
   // Holds a submitted word until its response arrives; prevState pins the state
   // object present at submit time so the outcome is read from the *response*,
   // not from an interim re-render.
   const pendingWordRef = useRef<{ word: string; board: Card | null; prevState: MaoResponse | null } | null>(null);
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('mao');
+
+  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
+  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('mao', state);
   const cliConfig: CliGameConfig<MaoResponse, Parameters<typeof maoApi.exec>> = useMemo(
     () => ({
       gameName: 'mao',
       parseCommand: parseMaoCommand,
       formatResponse: formatMaoState,
       helpText: MAO_HELP,
+      localCommand: hintLocalCommand(frontendHint),
     }),
-    [],
+    [frontendHint],
   );
   const { handleCommand } = useCliGame(gameExec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
@@ -215,14 +229,6 @@ function MaoPageContent() {
     }
     prevRulePenaltyRef.current = penalty;
   }, [state?.rulePenalty, playSound]);
-
-  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
-  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('mao', state);
 
   if (!state)
     return (
@@ -472,6 +478,24 @@ function MaoPageContent() {
               </div>
 
               {/* Attempt log: track which words were tried and how the hidden rule reacted. */}
+              {/* **違反はブザーと rule-penalty で強く伝わるのに、成功は履歴に静かに
+                  積まれるだけだった** (#5668)。隠しルールを試行錯誤で learn する
+                  ゲームなので、耳に届く情報が違反だけでは材料が片側しかない。
+                  最新の 1 件を、違反と同じ polite で読み上げる。 */}
+              {/* **ライブリージョンは中身より先に置く。** 領域と本文が同じ
+                  コミットで現れると読み上げられない (LiveAnnouncement の
+                  doc コメント)。sayWordHistory はラウンドごとに空へ戻るので、
+                  条件付きで mount すると毎ラウンド最初の 1 件が黙る。 */}
+              <LiveAnnouncement
+                message={
+                  latestSayWord
+                    ? t('sayWordAnnounce', {
+                        word: latestSayWord.word,
+                        outcome: latestSayWord.penalty ? t('sayWordHistory.penalty') : t('sayWordHistory.correct'),
+                      })
+                    : ''
+                }
+              />
               {sayWordHistory.length > 0 && (
                 <details className="rounded bg-black/20 px-2 py-1" data-testid="mao-sayword-history">
                   <summary className="cursor-pointer select-none text-ds-text-muted">

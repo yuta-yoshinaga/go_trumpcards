@@ -144,7 +144,7 @@ func cassinoDispatch(bc *baseController, w http.ResponseWriter, ci usecase.Cassi
 	case "tr", "trail":
 		bc.writePresenterResponse(w, ci.Trail(param.HandIndex))
 	default:
-		return dispatchLog(param.Command, bc, w, ci.ActionLog)
+		return dispatchHintAndLog(param.Command, bc, w, ci.Hint, ci.ActionLog)
 	}
 	return true
 }

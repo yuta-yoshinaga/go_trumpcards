@@ -47,15 +47,15 @@ func (c *TriPeaksCuiController) Exec(command string) string {
 // handleRemove 除去コマンドを処理
 func (c *TriPeaksCuiController) handleRemove(args []string) string {
 	if len(args) != 2 {
-		return "Usage: rm <row> <col>"
+		return invalidArg("usageRmRowCol")
 	}
 	row, err := strconv.Atoi(args[0])
 	if err != nil {
-		return fmt.Sprintf("Invalid row: %s.", args[0])
+		return invalidArg("invalidRowRaw", "val", fmt.Sprint(args[0]))
 	}
 	col, err := strconv.Atoi(args[1])
 	if err != nil {
-		return fmt.Sprintf("Invalid col: %s.", args[1])
+		return invalidArg("invalidColRaw", "val", fmt.Sprint(args[1]))
 	}
 	return c.ti.Remove(row, col)
 }

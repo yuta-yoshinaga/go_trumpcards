@@ -8,6 +8,8 @@
   "helpSetChips": "  sb <n>               基本チップ単位（既定2）",
   "round": "ラウンド: {{round}}  トリック: {{trick}}",
   "playerLine": "{{name}}: {{cards}}枚  チップ: {{chips}}  トリック: {{tricks}}",
+  "trumpLegend": "^ = 切り札",
+  "trumpOrder": "切り札の強さ: ♥10 > ♣Q > ♠Q > ♥Q > ♦Q > ♣J > ♠J > ♥J > ♦J > ♦A > ♦10 > ♦K > ♦9",
   "gameEnd": "ゲーム終了！{{name}}の勝利！",
   "promptPlay": "手番: {{name}}",
   "promptPlayHelp": "play <idx>・・・カードを出す（マストフォロー）",
@@ -23,5 +25,7 @@
   "hintReasonLeadLow": "低い札でリードして温存する",
   "hintReasonFollowWin": "得点があるので勝ちに行く",
   "hintReasonFollowDuck": "取れない／取る価値がないのでダック",
-  "hintReasonDiscardLow": "フォローできないので低い札を捨てる"
+  "hintReasonDiscardLow": "フォローできないので低い札を捨てる",
+  "helpExamplePlay": "  play 0               手札の 0 番のカードを出す",
+  "helpHint": "  h                    助言を表示"
 }

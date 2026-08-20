@@ -15,7 +15,8 @@
     "you": "You",
     "cpu": "CPU",
     "scoringTricks": "Scoring tricks",
-    "firstHalfNote": "Tricks in this half do not score"
+    "firstHalfNote": "Tricks in this half do not score",
+    "trickCount": "Tricks won"
   },
   "currentTrick": "Current trick",
   "actions": {

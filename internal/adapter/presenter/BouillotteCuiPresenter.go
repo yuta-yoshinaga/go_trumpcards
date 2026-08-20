@@ -96,8 +96,21 @@ func (p *BouillotteCuiPresenter) Output(g interfaces.BouillotteGame, lastErr err
 
 		switch g.GetPhase() {
 		case domain.BouillottePhaseBetting:
+			// コールに要る追加額とレイズ後の到達額まで出す (Primero と同じ式)。
+			// applyCall/applyRaise がそれぞれ currentBet-roundBet と
+			// currentBet+ante を使うので、案内と実際の支払いがずれない。
+			actor := g.GetPlayer(g.GetCurrentPlayerIdx())
+			need := 0
+			if actor != nil {
+				// 既払いが現在のベットを超える席では負にしない (applyCall と同じ扱い)。
+				if diff := g.GetCurrentBet() - actor.GetRoundBet(); diff > 0 {
+					need = diff
+				}
+			}
 			b.WriteString(i18n.Tf("bouillotte.promptBetting",
 				"bet", strconv.Itoa(g.GetCurrentBet()),
+				"need", strconv.Itoa(need),
+				"raiseTo", strconv.Itoa(g.GetCurrentBet()+g.GetAnte()),
 			) + "\n")
 		case domain.BouillottePhaseResult:
 			b.WriteString(p.resultLine(g))
@@ -150,5 +163,5 @@ func (p *BouillotteCuiPresenter) HintOutput(g interfaces.BouillotteGame) string 
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *BouillotteCuiPresenter) ActionLogOutput(g interfaces.BouillotteGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.BouillottePlayer](g)
 }

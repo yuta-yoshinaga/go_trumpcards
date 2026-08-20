@@ -19,11 +19,16 @@
   "promptHelp": "c <0-6> で選択 / p <手札> で出す (-1 パス) / n 次ディール",
   "gameEnd": "ゲーム終了！",
   "scoreEntry": "  {{name}}: {{score}}点",
+  "dealBreakdownHeader": "ディール別の得点",
+  "dealBreakdownRow": "  D{{deal}} {{contract}}{{trump}}: {{scores}}",
+  "dealBreakdownScore": "{{name}} {{score}}",
   "cNoTricks": "ノー・トリック",
   "cNoHearts": "ノー・ハーツ",
   "cNoQueens": "ノー・クイーン",
   "cBarbu": "バルブ (ハートの K)",
   "cNoLastTrick": "ノー・ラストトリック",
   "cTrumps": "トランプ",
-  "cDominoes": "ドミノ"
+  "cDominoes": "ドミノ",
+  "helpExamplePlay": "  p 0                      手札の 0 番のカードを出す",
+  "helpLog": "  l                        行動ログを表示"
 }

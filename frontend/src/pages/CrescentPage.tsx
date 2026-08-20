@@ -81,6 +81,9 @@ function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => stri
 }
 
 /** Inner content of the Crescent page, wrapped by TutorialProvider. */
+/** Two decks: what the eight foundations hold when the game is solved. */
+const CRESCENT_TOTAL_CARDS = 104;
+
 function CrescentPageContent() {
   const {
     t,
@@ -198,6 +201,9 @@ function CrescentPageContent() {
   const isGameClear = state.phase === CrescentPhase.GAME_CLEAR;
   const isGameOver = state.phase === CrescentPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
+  // 組札に収まった枚数。**種札 (各組札の A / K) も 1 枚として数える** ──
+  // 盤面に見えている枚数と一致しないと、達成率が信用されない。
+  const foundationCount = state.foundation.reduce((sum, pile) => sum + pile.length, 0);
   // Foundations are pre-seeded with an A (ascending) / K (descending) per suit,
   // so a length>0 check would always pass. Require at least one foundation to
   // have progressed beyond its seed card before the pulse animation fires.
@@ -427,7 +433,17 @@ function CrescentPageContent() {
             </div>
 
             {/* Hint display */}
-            <div data-tutorial="crescent-hint-display">
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div
+              data-tutorial="crescent-hint-display"
+              data-testid="crescent-hint-live"
+              role="status"
+              aria-live="polite"
+            >
               {hint && (
                 <div className="text-ds-warning text-sm mb-2">
                   {hint.redeal
@@ -445,6 +461,18 @@ function CrescentPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+
+            {/* **どこまで進んでいたかを自分で数えさせない。**8 組札 (昇順4 + 降順4)
+                は Congress より複雑なので、なおさら数えにくい (#5590)。
+                Congress / CrazyQuilt と同じ形。 */}
+            {isGameOver && (
+              <p data-testid="cr-gameover-summary" className="text-ds-text-muted text-sm text-center mt-1">
+                {t('gameOverSummary', {
+                  count: foundationCount,
+                  percent: Math.round((foundationCount / CRESCENT_TOTAL_CARDS) * 100),
+                })}
+              </p>
+            )}
 
             <ActionLogSection
               isEndPhase={isEnded}

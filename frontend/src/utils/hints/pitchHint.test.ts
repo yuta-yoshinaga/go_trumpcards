@@ -38,6 +38,7 @@ const makeState = (override: Partial<PitchResponse> = {}): PitchResponse => ({
   gameEndFlag: false,
   winnerIdx: -1,
   leadPlayerIdx: -1,
+  roundBreakdown: { high: -1, low: -1, jack: -1, game: -1 },
   validPlayIndices: [],
   message: '',
   config: baseConfig,

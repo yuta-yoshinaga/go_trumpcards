@@ -17,5 +17,7 @@
   "promptWarBury": "戦争発生！ step で伏せ札と表札を出します。",
   "gameWinHuman": "あなたの勝ちです！",
   "gameWinCpu": "CPUの勝ちです...",
-  "roundProgress": "ラウンド: {{played}} / {{max}}（上限で保有枚数の多い方が勝ち）"
+  "roundProgress": "ラウンド: {{played}} / {{max}}（上限で保有枚数の多い方が勝ち）",
+  "helpExampleStep": "  s                    次の 1 枚をめくる",
+  "helpLog": "  l                    行動ログを表示"
 }

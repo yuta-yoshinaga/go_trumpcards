@@ -63,6 +63,8 @@ type GongZhuGame interface {
 	GetPlayerCnt() int
 	// GetPlayer 指定インデックスのプレイヤーを取得する
 	GetPlayer(i int) *domain.GongZhuPlayer
+	// ScoreBreakdownFor 指定プレイヤーのラウンド得点の内訳を取得する
+	ScoreBreakdownFor(playerIdx int) domain.GongZhuScoreBreakdown
 	// GetHint ヒントを取得する
 	GetHint() *domain.GongZhuHint
 }

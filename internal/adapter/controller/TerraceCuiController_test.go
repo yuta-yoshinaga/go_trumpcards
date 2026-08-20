@@ -4,9 +4,11 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	mockusecase "github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func newMockTerraceInteractor() *mockusecase.MockTerraceInteractor {
@@ -53,9 +55,18 @@ func TestTerraceCuiControllerMoves(t *testing.T) {
 
 	// The terrace has exactly one destination, so a tableau target is refused
 	// rather than quietly reinterpreted.
+	//
+	// The refusal is asserted through i18n rather than with Contains(out, "t"),
+	// which the previous version used: every rendering of every message in this
+	// package contains a "t", so it held whether the command was refused or run.
 	t.Run("rejects the terrace to a pile", func(t *testing.T) {
 		c := NewTerraceCuiController(newMockTerraceInteractor())
-		assert.Contains(t, c.Exec("m r t 2"), "t")
+
+		out := c.Exec("m r t 2")
+
+		body, isErr := i18n.StripErrorPrefix(out)
+		assert.True(t, isErr, "a refused destination must be marked as an error")
+		assert.Equal(t, i18n.Tf("terrace.reserveOnlyToFoundation", "val", "t"), body)
 	})
 
 	t.Run("waste to a foundation", func(t *testing.T) {
@@ -110,4 +121,53 @@ func TestTerraceCuiControllerErrors(t *testing.T) {
 			assert.Contains(t, c.Exec(tc.cmd), tc.contains)
 		})
 	}
+}
+
+// #5563: 手詰まりの案内は「undo {{count}} または u を繰り返す」と**両ロケールで
+// 既に言っている**のに、コントローラは引数を捨てて 1 手しか戻していなかった。
+// 案内どおりに打った人は、脱出したつもりで手詰まりのまま置き去りにされる。
+func TestTerraceCuiControllerUndoTakesACount(t *testing.T) {
+	for _, alias := range []string{"u", "undo"} {
+		t.Run(alias, func(t *testing.T) {
+			ti := newMockTerraceInteractor()
+			c := NewTerraceCuiController(ti)
+			ti.On("UndoN", 5).Return("undone 5")
+			assert.Equal(t, "undone 5", c.Exec(alias+" 5"))
+			ti.AssertExpectations(t)
+		})
+	}
+}
+
+// 引数なしは今までどおり単発。UndoN(1) に寄せると、既存の Undo が死ぬ。
+func TestTerraceCuiControllerBareUndoStillUndoesOnce(t *testing.T) {
+	ti := newMockTerraceInteractor()
+	c := NewTerraceCuiController(ti)
+	ti.On("Undo").Return("undone")
+	assert.Equal(t, "undone", c.Exec("undo"))
+	ti.AssertNotCalled(t, "UndoN", mock.Anything)
+}
+
+// 不正な回数は案内を出して、何も戻さない。
+func TestTerraceCuiControllerUndoRejectsABadCount(t *testing.T) {
+	for _, arg := range []string{"0", "-1", "zz", "1.5"} {
+		t.Run(arg, func(t *testing.T) {
+			ti := newMockTerraceInteractor()
+			c := NewTerraceCuiController(ti)
+			out := c.Exec("undo " + arg)
+			assert.Contains(t, out, i18n.Tf("terrace.invalidUndoCount", "val", arg))
+			ti.AssertNotCalled(t, "UndoN", mock.Anything)
+			ti.AssertNotCalled(t, "Undo")
+		})
+	}
+}
+
+// **回数の上限はここで決めない。**履歴より多い回数はドメインが「戻せる手が
+// 足りない」と答える。コントローラで勝手に打ち切ると、Web の undo_n
+// (上限なしで素通し) と答えが食い違う。
+func TestTerraceCuiControllerUndoPassesLargeCountsThrough(t *testing.T) {
+	ti := newMockTerraceInteractor()
+	c := NewTerraceCuiController(ti)
+	ti.On("UndoN", 9999).Return("not enough history")
+	assert.Equal(t, "not enough history", c.Exec("undo 9999"))
+	ti.AssertExpectations(t)
 }

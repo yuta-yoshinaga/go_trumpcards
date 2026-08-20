@@ -4,14 +4,17 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupTonkCuiMock() *interfaces.MockTonkGame {
@@ -234,6 +237,8 @@ func TestTonkCuiPresenter_ActionLogOutput(t *testing.T) {
 		}
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return(entries)
+		// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+		m.On("GetPlayer", mock.Anything).Return(domain.NewTonkPlayer(true)).Maybe()
 
 		result := p.ActionLogOutput(m)
 		assert.Contains(t, result, "棋譜")
@@ -248,4 +253,53 @@ func TestTonkCuiPresenter_ActionLogOutput(t *testing.T) {
 		result := p.ActionLogOutput(m)
 		assert.Contains(t, result, "棋譜はありません")
 	})
+}
+
+// #5582: 相手の残りが少ないほどノックは裏目 (#1939)。Web はボタンに警告リングと
+// ⚠️ を出しているのに、CUI は各行の枚数を見比べさせるだけだった。
+func TestTonkCuiPresenter_WarnsAboutTheUndercutRisk(t *testing.T) {
+	i18n.SetLang("ja")
+	build := func(oppCards int) string {
+		m, players := setupTonkCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.TonkPhaseDiscard)
+		for range oppCards {
+			players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 3, true))
+		}
+		return new(presenter.TonkCuiPresenter).Output(m, nil)
+	}
+
+	// 境界値。閾値ちょうどでは出し、1 枚上では出さない (受け入れ条件3)。
+	assert.Contains(t, build(domain.TonkUndercutRiskMax),
+		i18n.Tf("tonk.knockUndercutWarning", "count", strconv.Itoa(domain.TonkUndercutRiskMax)))
+	assert.NotContains(t, build(domain.TonkUndercutRiskMax+1),
+		i18n.Tf("tonk.knockUndercutWarning", "count", strconv.Itoa(domain.TonkUndercutRiskMax+1)))
+
+	// **1 枚でも出ること。**「ちょうど 2 枚」だけを見る実装では通らない。
+	assert.Contains(t, build(1), i18n.Tf("tonk.knockUndercutWarning", "count", "1"))
+}
+
+// ドロー中は出さない。ノックできない局面で「ノックは危ない」と言っても仕方がない。
+func TestTonkCuiPresenter_DoesNotWarnOutsideTheDiscardPhase(t *testing.T) {
+	i18n.SetLang("ja")
+	m, players := setupTonkCuiMockWithPlayers()
+	players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 3, true))
+
+	out := new(presenter.TonkCuiPresenter).Output(m, nil)
+	assert.NotContains(t, out, i18n.Tf("tonk.knockUndercutWarning", "count", "1"))
+}
+
+// レビュー (#5941) の指摘: ノックを決めるのは人間なので、CPU の捨て札中に
+// 「相手の手札が少ない」と警告しても行動できない。上のデッドウッド表示と同じ条件。
+func TestTonkCuiPresenter_WarnsOnlyOnTheHumanTurn(t *testing.T) {
+	i18n.SetLang("ja")
+	m, players := setupTonkCuiMockWithPlayers()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentPlayerIdx")
+	m.On("GetPhase").Return(domain.TonkPhaseDiscard)
+	m.On("GetCurrentPlayerIdx").Return(1) // CPU の捨て札中
+	players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 3, true))
+
+	out := new(presenter.TonkCuiPresenter).Output(m, nil)
+	assert.NotContains(t, out, i18n.Tf("tonk.knockUndercutWarning", "count", "1"))
 }

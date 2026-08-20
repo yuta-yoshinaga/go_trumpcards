@@ -41,9 +41,9 @@ func TestCasinoWarCuiController_Bet(t *testing.T) {
 
 func TestCasinoWarCuiController_Bet_Errors(t *testing.T) {
 	c := controller.NewCasinoWarCuiController(newMockCasinoWarInteractor())
-	assert.Contains(t, c.Exec("b"), "Bet amount is required")
-	assert.Contains(t, c.Exec("b abc"), "Invalid bet amount")
-	assert.Contains(t, c.Exec("b 0"), "Invalid bet amount")
+	assert.Contains(t, c.Exec("b"), msgBetAmountRequired())
+	assert.Contains(t, c.Exec("b abc"), msgInvalidBetAmountPrefix())
+	assert.Contains(t, c.Exec("b 0"), msgInvalidBetAmountPrefix())
 }
 
 func TestCasinoWarCuiController_Surrender(t *testing.T) {

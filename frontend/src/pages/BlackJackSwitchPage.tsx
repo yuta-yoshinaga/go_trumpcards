@@ -33,6 +33,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { blackjackSwitchPreviewScores } from '../utils/blackjackSwitchPreview';
 import { BLACKJACKSWITCH_HELP, parseBlackjackSwitchCommand } from '../utils/cli/commands/blackjackswitchCommands';
 import { formatBlackjackSwitchState } from '../utils/cli/formatters/blackjackswitchFormatter';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 
 const BJSWITCH_TUTORIAL_STEPS: TutorialStep[] = [];
@@ -63,8 +64,9 @@ function BlackJackSwitchPageContent() {
       parseCommand: parseBlackjackSwitchCommand,
       formatResponse: formatBlackjackSwitchState,
       helpText: BLACKJACKSWITCH_HELP,
+      localCommand: hintLocalCommand(hint),
     }),
-    [],
+    [hint],
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 

@@ -120,6 +120,14 @@ func (p *CourtPieceCuiPresenter) Output(t interfaces.CourtPieceGame, lastErr err
 			b.WriteString(i18n.T("courtpiece.promptTrickEndHelp") + "\n")
 		case domain.CourtPiecePhaseRoundEnd:
 			b.WriteString(i18n.T("courtpiece.promptRoundEnd") + "\n")
+			// **Court は +1 ではなく +2 になるラウンド** (13トリック総取り or 連勝)。
+			// Web は roundResult.court で出しているのに CUI は触れておらず、
+			// スコアだけが 2 動く理由が読めなかった (#5656)。
+			// **集計はまだ走っていない。** lastRoundCourt は 1 つ前のラウンドの
+			// 結果を指しているので、いま終わったラウンドの判定を読む。
+			if t.IsRoundEndCourt() {
+				b.WriteString(color.BoldYellow(i18n.T("courtpiece.roundEndCourt")) + "\n")
+			}
 			b.WriteString(i18n.T("courtpiece.promptRoundEndHelp") + "\n")
 		}
 	})
@@ -158,5 +166,5 @@ var courtPieceHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *CourtPieceCuiPresenter) ActionLogOutput(t interfaces.CourtPieceGame) string {
-	return actionLogOutputText(t)
+	return actionLogOutputTextForSeats[*domain.CourtPiecePlayer](t)
 }

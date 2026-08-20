@@ -63,22 +63,22 @@ func TestRussianPokerCuiController_Bet_Errors(t *testing.T) {
 
 	t.Run("missing args", func(t *testing.T) {
 		result := c.Exec("b")
-		assert.Contains(t, result, "Ante amount is required")
+		assert.Contains(t, result, msgAnteAmountRequired())
 	})
 
 	t.Run("invalid amount", func(t *testing.T) {
 		result := c.Exec("b abc")
-		assert.Contains(t, result, "Invalid ante amount")
+		assert.Contains(t, result, msgInvalidAnteAmountPrefix())
 	})
 
 	t.Run("zero amount", func(t *testing.T) {
 		result := c.Exec("b 0")
-		assert.Contains(t, result, "Invalid ante amount")
+		assert.Contains(t, result, msgInvalidAnteAmountPrefix())
 	})
 
 	t.Run("negative amount", func(t *testing.T) {
 		result := c.Exec("b -10")
-		assert.Contains(t, result, "Invalid ante amount")
+		assert.Contains(t, result, msgInvalidAnteAmountPrefix())
 	})
 }
 
@@ -126,12 +126,12 @@ func TestRussianPokerCuiController_Select_Errors(t *testing.T) {
 
 	t.Run("missing args", func(t *testing.T) {
 		result := c.Exec("sel")
-		assert.Contains(t, result, "Discard index is required")
+		assert.Contains(t, result, msgStem("discardIndexRequired"))
 	})
 
 	t.Run("invalid index", func(t *testing.T) {
 		result := c.Exec("sel abc")
-		assert.Contains(t, result, "Invalid index")
+		assert.Contains(t, result, msgStem("invalidIndexANumber"))
 	})
 }
 
@@ -189,4 +189,13 @@ func TestRussianPokerCuiController_Empty(t *testing.T) {
 
 	result := c.Exec("")
 	assert.Contains(t, result, "'help' でコマンド一覧を表示します。")
+}
+
+// **落として残りで実行しない。** 打ち間違いを捨てると、プレイヤーが選んで
+// いない組み合わせが実行される (issue #5390)。
+func TestRussianPokerCuiController_RefusesMistypedIndex(t *testing.T) {
+	m := newMockRussianPokerInteractor()
+	c := controller.NewRussianPokerCuiController(m)
+	assert.Contains(t, c.Exec("e 0 zz"), msgInvalidCardIndexPrefix(),
+		"a mistyped index must be refused, not dropped")
 }

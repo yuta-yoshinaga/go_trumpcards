@@ -13,6 +13,7 @@
   "playerLine": "{{name}}: total {{cum}} round {{round}} hand {{cards}}",
   "eliminatedTag": "[out]",
   "knockerMeldLine": "  knocker meld: {{cards}}",
+  "knockerMeldLabelled": "  Knocker's meld [{{label}}]: {{cards}}",
   "gameEnd": "Game over! {{name}} wins!",
   "drawBanner": "Game over! No winner",
   "draw": "No winner",
@@ -36,5 +37,7 @@
   "meldedLine": "  Melded: {{melds}}",
   "deadwoodBreakdown": "  Deadwood: {{cards}} ({{sum}} = {{total}})",
   "deadwoodLine": "Deadwood: {{value}} (knock at {{threshold}} or less)",
-  "knockReady": "→ ready to knock"
+  "knockReady": "→ ready to knock",
+  "helpExampleDraw": "  ds                   start the turn by drawing from the stock",
+  "helpExampleDiscard": "  d 0                  discard hand card 0"
 }

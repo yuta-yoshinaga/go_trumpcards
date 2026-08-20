@@ -590,23 +590,12 @@ func (g *SoloWhist) cpuPlaySmart(playerIdx int, valid []int) int {
 	}
 	winnerIdx := g.trickWinner()
 	topRank := g.trickTopRank(winnerIdx)
-	winners := soloWhistFilter(valid, func(idx int) bool { return g.soloWhistRank(player.GetCard(idx)) > topRank })
+	winners := filterIndices(valid, func(idx int) bool { return g.soloWhistRank(player.GetCard(idx)) > topRank })
 	wantWin := isDeclarer != misere // 宣言者(非Misère)は勝ちたい; 防御は宣言者を負かしたい
 	if wantWin && len(winners) > 0 {
 		return pickLowest(player, winners, func(c *Card) int { return g.soloWhistRank(c) })
 	}
 	return pickLowest(player, valid, func(c *Card) int { return g.soloWhistRank(c) })
-}
-
-// soloWhistFilter 述語を満たすインデックスを抽出する。
-func soloWhistFilter(indices []int, pred func(int) bool) []int {
-	var out []int
-	for _, idx := range indices {
-		if pred(idx) {
-			out = append(out, idx)
-		}
-	}
-	return out
 }
 
 // --- Hint ---
@@ -713,6 +702,66 @@ func (g *SoloWhist) GetPlayerScores() [SoloWhistPlayerCnt]int { return g.playerS
 
 // SetPlayerScores プレイヤー別累積点設定 (テスト用)
 func (g *SoloWhist) SetPlayerScores(s [SoloWhistPlayerCnt]int) { g.playerScores = s }
+
+// SoloWhistDeclarerProgress は宣言者の契約達成状況。
+type SoloWhistDeclarerProgress struct {
+	// Won は宣言者が取ったトリック数。
+	Won int
+	// Needed は必要トリック数 (ミゼールは 0 = 1 つも取らないこと)。
+	Needed int
+	// Remaining は残りトリック数。
+	Remaining int
+	// IsMisere はミゼール契約か。判定の意味が反転するので呼び出し側が区別できるようにする。
+	IsMisere bool
+	// Made は現時点で達成が確定しているか。
+	Made bool
+	// Unreachable は現時点で不成立が確定しているか。
+	Unreachable bool
+}
+
+// GetDeclarerProgress は宣言者の契約達成状況を返す。宣言者が決まっていない、
+// またはプレイ中/トリック終了以外のフェーズでは nil。
+//
+// **ミゼールは 1 トリック取った瞬間に失敗が確定する**という、この契約でいちばん
+// 重要な情報が CUI に出ていなかった (#5649)。Web は solowhist-contract-progress
+// で常時出している。同じ入札制の Nap は #4763 で解決済み。
+//
+// 判定は contractMade / soloWhistBidTarget と同じ規則で組み立てる。写しを持つと
+// 「画面は達成と言っているのに負けた」が起きる。
+func (g *SoloWhist) GetDeclarerProgress() *SoloWhistDeclarerProgress {
+	if g.phase != SoloWhistPhasePlay && g.phase != SoloWhistPhaseTrickEnd {
+		return nil
+	}
+	if g.declarerIdx < 0 || g.declarerIdx >= SoloWhistPlayerCnt {
+		return nil
+	}
+	played := 0
+	for _, t := range g.roundTricks {
+		played += t
+	}
+	remaining := max(SoloWhistTrickCount-played, 0)
+	won := g.roundTricks[g.declarerIdx]
+	isMisere := g.contract == SoloWhistBidMisere
+	needed := soloWhistBidTarget(g.contract)
+
+	made, unreachable := false, false
+	switch {
+	case isMisere:
+		// ミゼールは 1 つでも取れば即失敗。残りトリック数は関係ない。
+		// 達成が確定するのは全トリックを取らずに終えたときだけ。
+		unreachable = won > 0
+		made = won == 0 && remaining == 0
+	default:
+		made = won >= needed
+		// **「もう届かない」は残りを全部取っても足りないときだけ。**早すぎる
+		// 判定は、まだ勝てるラウンドを投げさせる。
+		unreachable = !made && won+remaining < needed
+	}
+	return &SoloWhistDeclarerProgress{
+		Won: won, Needed: needed, Remaining: remaining,
+		IsMisere: isMisere, Made: made, Unreachable: unreachable,
+	}
+}
 
 // GetRoundTricks 現ラウンドの獲得トリック数取得
 func (g *SoloWhist) GetRoundTricks() [SoloWhistPlayerCnt]int { return g.roundTricks }

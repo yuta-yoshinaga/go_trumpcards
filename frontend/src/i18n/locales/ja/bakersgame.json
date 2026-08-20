@@ -19,6 +19,8 @@
   "emptyFreecellAriaLabel": "フリーセル {{idx}} (空)",
   "supermoveLimitTooltip": "一度に動かせるのは{{limit}}枚までです",
   "movableCount": "移動可能: {{count}}枚",
+  "supermoveToEmpty": "（空き列へは{{limit}}枚）",
+  "emptyColLimitTooltip": "空き列へ動かせるのは{{limit}}枚まで（選択中: {{size}}枚）",
   "tutorial": {
     "freeCells": "フリーセルです。一時的にカードを置ける4つのスペースです。空きセルが多いほど多くのカードを一度に移動できます。",
     "foundation": "ファウンデーションです。各スートをAからKまで順番に積み上げます。",

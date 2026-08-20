@@ -100,6 +100,13 @@ func (p *HokmCuiPresenter) Output(h interfaces.HokmGame, lastErr error) string {
 			} else {
 				sb.WriteString(i18n.T("hokm.promptHandEnd") + "\n")
 			}
+			// **親は負けたときだけ交代する。**次に自分が切り札を選べるかを
+			// 左右するのに、次ハンドが始まるまで分からなかった (#5753)。
+			if h.GetLastHandHakemChanged() {
+				sb.WriteString(i18n.T("hokm.hakemMoves") + "\n")
+			} else {
+				sb.WriteString(i18n.T("hokm.hakemStays") + "\n")
+			}
 			sb.WriteString(i18n.T("hokm.promptNext") + "\n")
 			return
 		}
@@ -153,5 +160,5 @@ var hokmHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *HokmCuiPresenter) ActionLogOutput(h interfaces.HokmGame) string {
-	return actionLogOutputText(h)
+	return actionLogOutputTextForSeats[*domain.HokmPlayer](h)
 }

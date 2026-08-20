@@ -17,5 +17,7 @@
   "header": "残り山札: {{stock}}  取り除いた枚数: {{removed}}/52  補充回数: {{deals}}",
   "hintLineRemove": "ヒント: ({{r1}},{{c1}}) と ({{r2}},{{c2}}) を取り除く",
   "hintLineRemoveCard": "ヒント: ({{r1}},{{c1}}){{card1}} と ({{r2}},{{c2}}){{card2}} を取り除く",
-  "hintLineDeal": "ヒント: 山札から補充 (deal)"
+  "hintLineDeal": "ヒント: 山札から補充 (deal)",
+  "helpExampleHint": "  h                   次の一手を教えてもらう",
+  "removablePairs": "除去可能: {{count}} 組"
 }

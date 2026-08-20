@@ -52,14 +52,14 @@ func (c *AccordionCuiController) handleMove(args []string) string {
 	}
 	fromIdx, err := strconv.Atoi(args[0])
 	if err != nil {
-		return i18n.Tf("invalidIndex", "val", args[0])
+		return invalidArg("invalidIndex", "val", args[0])
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("accordion.promptToIndex"), fmt.Sprintf("m %d {0}", fromIdx))
 	}
 	toIdx, err := strconv.Atoi(args[1])
 	if err != nil {
-		return i18n.Tf("invalidIndex", "val", args[1])
+		return invalidArg("invalidIndex", "val", args[1])
 	}
 	return c.ai.Move(fromIdx, toIdx)
 }

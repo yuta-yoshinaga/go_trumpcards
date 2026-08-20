@@ -27,7 +27,7 @@
   },
   "tutorial": {
     "pyramid": "This is the pyramid. Click exposed cards to select them.",
-    "stockWaste": "Click the stock pile to draw cards.",
+    "stockWaste": "Click the stock pile to draw cards. The stock is dealt once — there is no redeal.",
     "controls": "Control buttons.",
     "hintDisplay": "Press the Hint button to see available moves.",
     "resetButton": "Press the reset button to start a new game."
@@ -49,5 +49,6 @@
     "selected": "(selected)",
     "pairCandidate": "(pairs to 13)",
     "kingRemovable": "(K, removable alone)"
-  }
+  },
+  "noRedeal": "No redeal — the stock is dealt once"
 }

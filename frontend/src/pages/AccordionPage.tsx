@@ -84,6 +84,11 @@ function parseAccordionCommand(input: string): CliParseResult<ApiArgs> {
     case 'l':
     case 'log':
       return { args: ['log'] };
+    // 独立 CUI と同じ一括マージ。グラフィカル側にはボタンがあるのに、同じページの
+    // CLI モードからだけ呼べなかった (#5546)。
+    case 'ac':
+    case 'autocomplete':
+      return { args: ['autocomplete'] };
     case 'm':
     case 'move': {
       if (parts.length !== 3) return { error: 'Usage: m <fromIdx> <toIdx>' };
@@ -174,6 +179,7 @@ function AccordionPageContent() {
         'g              Give up',
         'h              Hint',
         'u              Undo',
+        'ac             Merge automatically until no legal merge is left',
         'l              Action log',
         'r              Reset',
       ],

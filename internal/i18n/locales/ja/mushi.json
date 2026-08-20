@@ -27,5 +27,8 @@
   "hintReasonNotYourTurn": "あなたの手番ではありません",
   "hintReasonSelect": "最も点の高い札を取れます",
   "hintReasonPlay": "この札が最も多くの点を取れます",
-  "cardLabel": "{{month}}月{{index}}({{category}})"
+  "cardLabel": "{{month}}月{{index}}({{category}})",
+  "helpExamplePlay": "  p 0                      手札の 0 番のカードを出す",
+  "helpHint": "  h                        助言を表示",
+  "wildRule": "★ の雷札はワイルド。柳以外なら何でも取れます（柳だけは取れません）"
 }

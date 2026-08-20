@@ -154,5 +154,5 @@ func (p *GoFishCuiPresenter) Output(gf interfaces.GoFishGame, lastErr error) str
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *GoFishCuiPresenter) ActionLogOutput(gf interfaces.GoFishGame) string {
-	return actionLogOutputText(gf)
+	return actionLogOutputTextForSeats[*domain.GoFishPlayer](gf)
 }

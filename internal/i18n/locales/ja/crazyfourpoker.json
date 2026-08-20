@@ -33,5 +33,7 @@
   "hintFold": "降りるのがよさそうです（{{reason}}）",
   "acesOrBetter": "エースのペア以上なので上限まで乗せられます",
   "marginal": "キング以上あるので同額で乗ります",
-  "fold": "キングにも届かないので分が悪いです"
+  "fold": "キングにも届かないので分が悪いです",
+  "helpExampleBet": "  bet 100            100 チップを賭ける",
+  "queensUpPayoutLine": "Queens Up 配当: {{table}}"
 }

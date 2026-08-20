@@ -16,13 +16,16 @@ import (
 
 func mustCribbageSquaresOutputJSON(msg string) string {
 	out := &controller.CribbageSquaresWebOutput{
-		Board:         [][]*controller.CribbageSquaresWebOutputCard{},
-		RowScores:     []int{},
-		ColScores:     []int{},
-		RowDetails:    []*controller.CribbageSquaresWebOutputScore{},
-		ColDetails:    []*controller.CribbageSquaresWebOutputScore{},
-		WinScore:      domain.CribbageSquaresWinScore,
-		WebOutputBase: controller.WebOutputBase{Message: msg},
+		Board:      [][]*controller.CribbageSquaresWebOutputCard{},
+		RowScores:  []int{},
+		ColScores:  []int{},
+		RowDetails: []*controller.CribbageSquaresWebOutputScore{},
+		ColDetails: []*controller.CribbageSquaresWebOutputScore{},
+		// **空配列で返す。**null だとフロントの map が落ちる (#6088)。
+		RowPartialDetails: []*controller.CribbageSquaresWebOutputScore{},
+		ColPartialDetails: []*controller.CribbageSquaresWebOutputScore{},
+		WinScore:          domain.CribbageSquaresWinScore,
+		WebOutputBase:     controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {

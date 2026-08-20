@@ -47,5 +47,12 @@
   "handRank6": "Flush",
   "handRank7": "Four of a Kind",
   "handRank8": "Straight Flush",
-  "handRank9": "Royal Flush"
+  "handRank9": "Royal Flush",
+  "helpExampleRaise": "  ra 200               raise to 200 chips total",
+  "helpExampleCall": "  c                    call the current bet",
+  "helpLog": "  l                    show the action log",
+  "learningHeader": "[Learning mode]",
+  "learningLine": "  Equity: {{equity}}% / Pot odds: {{potodds}}%",
+  "learningEvPlus": "  +EV (equity beats pot odds; calling is favorable)",
+  "learningEvMinus": "  -EV (equity at or below pot odds; calling is unfavorable)"
 }

@@ -79,6 +79,12 @@ func (p *FortyThievesCuiPresenter) Output(ft interfaces.FortyThievesGame, lastEr
 		case domain.FortyThievesPhasePlaying:
 			if ft.IsStalemate() {
 				b.WriteString(color.Red(i18n.T("cuiSolitaireStalemate")) + "\n")
+				// Tell the player how many undos escape the dead end, matching the
+				// web StalemateEscapeButton.
+				if n := ft.UndoToEscape(); n > 0 {
+					b.WriteString(color.Yellow(i18n.Tf("cuiSolitaireUndoToEscape",
+						"count", strconv.Itoa(n))) + "\n")
+				}
 			}
 			b.WriteString(i18n.T("fortythieves.cuiCommandHint") + "\n")
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
@@ -97,6 +103,11 @@ func (p *FortyThievesCuiPresenter) HintOutput(ft interfaces.FortyThievesGame) st
 	hint := ft.GetHint()
 	if hint == nil {
 		return i18n.T("cuiHintNone") + "\n"
+	}
+	// 盤上に手が無くストックだけ残っている局面。移動の体裁 (「A → B」) に
+	// 落とすと列 -1 が漏れるので、専用の文言で言う (#5525)。
+	if hint.FromZone == "stock" {
+		return i18n.T("fortythieves.hintDraw") + "\n"
 	}
 	var from string
 	if hint.FromZone == "tableau" {

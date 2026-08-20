@@ -50,13 +50,13 @@ func TestVintCuiController_Exec(t *testing.T) {
 
 	t.Run("bid rejects a bad level or denomination", func(t *testing.T) {
 		c := controller.NewVintCuiController(newMock())
-		assert.Contains(t, c.Exec("b"), "required")
-		assert.Contains(t, c.Exec("b 3"), "required")
-		assert.Contains(t, c.Exec("b abc 1"), "Invalid bid level")
-		assert.Contains(t, c.Exec("b 0 1"), "Invalid bid level")
-		assert.Contains(t, c.Exec("b 8 1"), "Invalid bid level")
-		assert.Contains(t, c.Exec("b 3 5"), "Invalid denomination")
-		assert.Contains(t, c.Exec("b 3 -1"), "Invalid denomination")
+		assert.True(t, msgRejected(c.Exec("b")))
+		assert.True(t, msgRejected(c.Exec("b 3")))
+		assert.Contains(t, c.Exec("b abc 1"), msgStem("invalidBidLevelMinMax"))
+		assert.Contains(t, c.Exec("b 0 1"), msgStem("invalidBidLevelMinMax"))
+		assert.Contains(t, c.Exec("b 8 1"), msgStem("invalidBidLevelMinMax"))
+		assert.Contains(t, c.Exec("b 3 5"), msgStem("invalidDenomination0Max"))
+		assert.Contains(t, c.Exec("b 3 -1"), msgStem("invalidDenomination0Max"))
 	})
 
 	t.Run("play and next", func(t *testing.T) {
@@ -66,8 +66,8 @@ func TestVintCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "PlayCard", 12)
 		assert.Equal(t, mockOutput, c.Exec("n"))
 		m.AssertCalled(t, "NextHand")
-		assert.Contains(t, c.Exec("p abc"), "Invalid card index")
-		assert.Contains(t, c.Exec("p 13"), "Invalid card index")
+		assert.Contains(t, c.Exec("p abc"), msgInvalidCardIndexPrefix())
+		assert.Contains(t, c.Exec("p 13"), msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("log and unknown", func(t *testing.T) {

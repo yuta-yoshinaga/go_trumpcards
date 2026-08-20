@@ -20,6 +20,9 @@
   "playable": "Playable: {{indexes}}",
   "ladderTitle": "Bid ladder:",
   "ladderTaken": "[{{bid}}]",
+  "ladderTarget": " (needs {{n}})",
+  "ladderTargetSuit": " (needs {{heart}} on ♥, {{other}} otherwise)",
+  "ladderTargetZero": " (take no points)",
   "ladderNoneLeft": "(nothing higher remains; pass only)",
   "bid.pass": "pass",
   "bid.solo": "Solo",
@@ -46,5 +49,6 @@
   "handMade": "Contract made",
   "handSet": "Contract set",
   "result.humanWin": "Game over! You win!",
-  "result.cpuWin": "Game over! A CPU wins."
+  "result.cpuWin": "Game over! A CPU wins.",
+  "helpExamplePlay": "  p 0                       play hand card 0"
 }

@@ -46,5 +46,8 @@
   "hintReasonTrumpLongest": "Make the longest suit trump",
   "hintReasonDiscardWeakest": "Discard the weakest cards",
   "hintReasonLeadTrump": "Lead a trump",
-  "hintReasonDiscardWeak": "Throw a weak card"
+  "hintReasonDiscardWeak": "Throw a weak card",
+  "helpExamplePlay": "  p 0                  play hand card 0",
+  "helpHint": "  h                    show a hint",
+  "helpLog": "  l                    show the action log"
 }

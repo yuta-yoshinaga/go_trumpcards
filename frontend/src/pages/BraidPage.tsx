@@ -13,6 +13,7 @@ import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
+import { LiveAnnouncement } from '../components/LiveAnnouncement';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
@@ -315,6 +316,15 @@ function BraidPageContent() {
       ) : (
         <>
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
+            {/* **一度きりで取り消せない選択**なのに、画面に現れたことが
+                読み上げられていなかった (#5564)。見えている案内はそのまま、
+                読み上げ用の領域を別に持つ。assertive なのは、方向を決めるまで
+                他の手が一切通らないから。 */}
+            <LiveAnnouncement
+              assertive
+              message={state.awaitingDirection && isPlaying ? t('chooseDirectionBanner', { rank: state.baseRank }) : ''}
+            />
+
             {state.awaitingDirection && isPlaying && (
               <div className="text-center mb-2" data-tutorial="br-direction">
                 <p className="text-ds-warning text-sm mb-1">{t('chooseDirectionBanner', { rank: state.baseRank })}</p>
@@ -485,7 +495,12 @@ function BraidPageContent() {
               </div>
             </div>
 
-            <div data-tutorial="br-hint-display">
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-tutorial="br-hint-display" data-testid="br-hint-live" role="status" aria-live="polite">
               {hint && (
                 <div className="text-ds-warning text-sm mb-2 mt-3">
                   {t('hintAvailable')}: {formatHintZone(t, hint.fromZone, hint.fromIdx)} →{' '}

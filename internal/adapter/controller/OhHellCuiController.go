@@ -43,21 +43,21 @@ func (c *OhHellCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bid":
-				return cuiutil.WithParsedInt(args, "Bid value is required.", "Invalid bid value: %s.", 0, cuiutil.NoMax, c.oi.Bid)
+				return cuiutil.WithParsedIntKeys(args, "bidValueRequired", "invalidBidValue", 0, cuiutil.NoMax, c.oi.Bid)
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.oi.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.oi.Play)
 			case "n", "next":
 				return c.oi.NextTrick(), true
 			case "nr", "nextround":
 				return c.oi.NextRound(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.oi.GetConfig()
 					cfg.CpuDifficulty = domain.OhHellCpuDifficulty(v)
 					return c.oi.ResetWithConfig(cfg)
 				})
 			case "sm", "setmaxhand":
-				return cuiutil.WithParsedInt(args, "Max hand size is required (1-13).", "Invalid max hand size: %s. Please enter 1-13.", 1, 13, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "maxHandSizeRequired113", "invalidMaxHandSize113", 1, 13, func(v int) string {
 					cfg := c.oi.GetConfig()
 					cfg.MaxHandSize = v
 					return c.oi.ResetWithConfig(cfg)

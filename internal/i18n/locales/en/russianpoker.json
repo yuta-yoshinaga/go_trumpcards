@@ -35,5 +35,6 @@
   "selectGuide": "Choose the number of the card to discard",
   "antePayoutLine": "Ante payout: {{payout}}",
   "playPayoutLine": "Play payout: {{payout}}",
-  "totalPayoutLine": "total payout: {{payout}}"
+  "totalPayoutLine": "total payout: {{payout}}",
+  "helpExampleBet": "  b 100                bet 100 chips"
 }

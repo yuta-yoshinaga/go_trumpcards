@@ -19,6 +19,7 @@ func setupFortyAndEightCuiMockDefaults(fg *interfaces.MockFortyAndEightGame) {
 	fg.On("GetStockCount").Return(64).Maybe()
 	fg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	fg.On("IsStalemate").Return(false).Maybe()
+	fg.On("UndoToEscape").Return(0).Maybe()
 	fg.On("GetRedealUsed").Return(false).Maybe()
 
 	var tableau [domain.FortyAndEightTableauCnt][]*domain.FortyAndEightTableauCard
@@ -121,6 +122,7 @@ func TestFortyAndEightCuiPresenter_Output(t *testing.T) {
 		setupFortyAndEightCuiMockDefaults(fg)
 		fg.ExpectedCalls = filterCalls(fg.ExpectedCalls, "IsStalemate")
 		fg.On("IsStalemate").Return(true)
+		fg.On("UndoToEscape").Return(0).Maybe()
 
 		p := new(FortyAndEightCuiPresenter)
 		result := p.Output(fg, nil)

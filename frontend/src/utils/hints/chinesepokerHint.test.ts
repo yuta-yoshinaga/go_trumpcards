@@ -112,3 +112,31 @@ describe('getChinesePokerHint', () => {
     expect(getChinesePokerHint(base({ playerCards: LEGAL_HAND.slice(0, 5) }))).toBeNull();
   });
 });
+
+// #5615: ドメインの推奨分割 (CUI が #4717 から出しているもの) が Web にも
+// 届くようになった。**届いているなら、それを使う。**フロントで並べ直すと
+// 同じ手札で違う分け方を勧めることになる。
+describe('getChinesePokerHint with the server arrangement', () => {
+  it('points at the cards the server chose for the front row', () => {
+    const state = base({
+      suggestedArrangement: { front: [10, 11, 12], middle: [5, 6, 7, 8, 9], back: [0, 1, 2, 3, 4], foul: false },
+    });
+    const hint = getChinesePokerHint(state);
+    expect(hint?.targetIndices).toEqual([10, 11, 12]);
+    expect(hint?.reason).toBe('frontendHint.chinesepokerSplit');
+  });
+
+  it('warns when the server says its own split fouls', () => {
+    const state = base({
+      suggestedArrangement: { front: [10, 11, 12], middle: [5, 6, 7, 8, 9], back: [0, 1, 2, 3, 4], foul: true },
+    });
+    expect(getChinesePokerHint(state)?.reason).toBe('frontendHint.chinesepokerFoulRisk');
+  });
+
+  // 届いていないとき (古いサーバー等) は従来のフロント計算のまま。
+  it('falls back to its own ranking when the server sent nothing', () => {
+    const hint = getChinesePokerHint(base());
+    expect(hint?.targetAction).toBe('setHands');
+    expect(hint?.targetIndices).toBeUndefined();
+  });
+});

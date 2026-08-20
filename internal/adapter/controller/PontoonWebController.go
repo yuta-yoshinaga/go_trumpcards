@@ -59,6 +59,11 @@ type PontoonWebOutput struct {
 	CanTwist bool `json:"canTwist"`
 	CanBuy   bool `json:"canBuy"`
 	CanSplit bool `json:"canSplit"`
+	// StickMin / CpuStickMin は宣言の下限と、CPU・親が止まる合計 (#5565)。
+	// 数字を訳文に焼き込むと、閾値を変えたとき案内だけが嘘になるので、
+	// ドメインの定数をそのまま渡してクライアントに差し込ませる。
+	StickMin    int `json:"stickMin"`
+	CpuStickMin int `json:"cpuStickMin"`
 	WebOutputBase
 }
 

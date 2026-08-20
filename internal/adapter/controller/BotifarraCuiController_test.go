@@ -42,8 +42,8 @@ func TestBotifarraCuiController_Play(t *testing.T) {
 	c := controller.NewBotifarraCuiController(newMockBotifarraInteractor())
 	assert.Equal(t, "played 3", c.Exec("p 3"))
 	assert.Equal(t, "played 3", c.Exec("play 3"))
-	assert.Contains(t, c.Exec("p"), "required")
-	assert.Contains(t, c.Exec("p abc"), "Invalid card index")
+	assert.Contains(t, c.Exec("p"), msgCardIndexRequired())
+	assert.Contains(t, c.Exec("p abc"), msgInvalidCardIndexPrefix())
 }
 
 // **切り札なし (n) も有効な宣言。** 「指定が無い」とは区別します。
@@ -58,8 +58,8 @@ func TestBotifarraCuiController_Declare(t *testing.T) {
 	assert.Equal(t, "declared no trump", c.Exec("declare n"))
 	assert.Equal(t, "declared no trump", c.Exec("declare none"))
 
-	assert.Contains(t, c.Exec("declare"), "Invalid trump")
-	assert.Contains(t, c.Exec("declare x"), "Invalid trump")
+	assert.Contains(t, c.Exec("declare"), msgStem("invalidTrumpSCHDN"))
+	assert.Contains(t, c.Exec("declare x"), msgStem("invalidTrumpSCHDN"))
 }
 
 func TestBotifarraCuiController_OtherCommands(t *testing.T) {

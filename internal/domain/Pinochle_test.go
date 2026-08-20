@@ -1303,3 +1303,55 @@ func (p *Pinochle) findHumanIdxForTest() int {
 	}
 	return -1
 }
+
+// #5519: 早見表はメルド定義そのものから引くこと。別に書き写した表は、
+// 点数を1つ直したときに黙って食い違う。
+func TestPinochleMeldTable(t *testing.T) {
+	table := PinochleMeldTable()
+
+	if len(table) != len(pinochleMeldPoints) {
+		t.Fatalf("expected %d entries, got %d", len(pinochleMeldPoints), len(table))
+	}
+	seen := map[PinochleMeldType]bool{}
+	for _, e := range table {
+		if seen[e.Type] {
+			t.Errorf("duplicate entry for meld %d", int(e.Type))
+		}
+		seen[e.Type] = true
+		// **点数は表示用に書き写した値ではなく、加点に使う値そのもの。**
+		if want := pinochleMeldPoints[e.Type]; e.Points != want {
+			t.Errorf("meld %d: table says %d, scoring says %d", int(e.Type), e.Points, want)
+		}
+	}
+
+	// 安い順に並ぶこと。並びが不定だと表示のたびに行が入れ替わる。
+	for i := 1; i < len(table); i++ {
+		if table[i-1].Points > table[i].Points {
+			t.Errorf("entry %d (%d pts) must not come after %d pts", i, table[i].Points, table[i-1].Points)
+		}
+	}
+	if table[0].Type != PinochleMeldDix || table[0].Points != 10 {
+		t.Errorf("first entry should be the 10-point dix, got type=%d points=%d", int(table[0].Type), table[0].Points)
+	}
+	last := table[len(table)-1]
+	if last.Type != PinochleMeldDoubleRun || last.Points != 1500 {
+		t.Errorf("last entry should be the 1500-point double run, got type=%d points=%d", int(last.Type), last.Points)
+	}
+
+	// 同点のメルドは種類の順で並ぶ (40点が3種類ある)。
+	var at40 []PinochleMeldType
+	for _, e := range table {
+		if e.Points == 40 {
+			at40 = append(at40, e.Type)
+		}
+	}
+	want40 := []PinochleMeldType{PinochleMeldRoyalMarriage, PinochleMeldPinochle, PinochleMeldJacksAround}
+	if len(at40) != len(want40) {
+		t.Fatalf("expected %d melds worth 40, got %d", len(want40), len(at40))
+	}
+	for i := range want40 {
+		if at40[i] != want40[i] {
+			t.Errorf("40-point order[%d]: got %d, want %d", i, int(at40[i]), int(want40[i]))
+		}
+	}
+}

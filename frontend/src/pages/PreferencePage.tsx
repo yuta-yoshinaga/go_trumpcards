@@ -291,6 +291,18 @@ function PreferencePageContent() {
                 : t('contractUndecided')}
             </div>
 
+            {/* 切り札は選ぶものではなく、契約成立と同時に宣言者の最長スートへ
+                自動設定される (Preference.go の resolveBidding)。切り札選択ボタンの
+                あるゲームと並ぶと、いつ選んだのか分からない (#5652)。
+                ミゼールは切り札そのものが無いので出さない。 */}
+            {/* declarerIdx は contract と同時に設定・解除される (resolveBidding) ので、
+                契約だけを見れば足りる。両方見ると片方が死んだ分岐になる。 */}
+            {state.contract !== PreferenceContract.PASS && state.contract !== PreferenceContract.MISERE && (
+              <div className="text-ds-text-muted text-center mb-2 text-xs" data-testid="preference-trump-note">
+                {t('trumpAutoNote')}
+              </div>
+            )}
+
             {contractProgress && (
               <div
                 className={`text-center mb-2 text-sm font-semibold ${CONTRACT_STATUS_COLOR[contractProgress.status]}`}
@@ -407,14 +419,21 @@ function PreferencePageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {state.hint && isRequestedHint(state) && (
-              <div className="text-ds-warning text-sm mb-2">
-                {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
-                {state.hint.cardIndices &&
-                  state.hint.cardIndices.length > 0 &&
-                  ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
-              </div>
-            )}
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-testid="preference-hint-live" role="status" aria-live="polite">
+              {state.hint && isRequestedHint(state) && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
+                  {state.hint.cardIndices &&
+                    state.hint.cardIndices.length > 0 &&
+                    ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
+                </div>
+              )}
+            </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="preference-action-buttons">

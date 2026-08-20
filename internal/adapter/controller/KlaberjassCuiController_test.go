@@ -55,10 +55,10 @@ func TestKlaberjassCuiController_Exec(t *testing.T) {
 	// **スートは 1〜4。**0 や 5 を通すとドメインで弾かれるだけの往復になる。
 	t.Run("call rejects a bad suit", func(t *testing.T) {
 		c := controller.NewKlaberjassCuiController(newMock())
-		assert.Contains(t, c.Exec("c"), "required")
-		assert.Contains(t, c.Exec("c abc"), "Invalid suit")
-		assert.Contains(t, c.Exec("c 0"), "Invalid suit")
-		assert.Contains(t, c.Exec("c 5"), "Invalid suit")
+		assert.Contains(t, c.Exec("c"), msgStem("suitRequiredLetters"))
+		assert.Contains(t, c.Exec("c abc"), msgStem("invalidSuitRange"))
+		assert.Contains(t, c.Exec("c 0"), msgStem("invalidSuitRange"))
+		assert.Contains(t, c.Exec("c 5"), msgStem("invalidSuitRange"))
 	})
 
 	t.Run("schmeiss and its answer", func(t *testing.T) {
@@ -84,9 +84,9 @@ func TestKlaberjassCuiController_Exec(t *testing.T) {
 
 	t.Run("play rejects a bad index", func(t *testing.T) {
 		c := controller.NewKlaberjassCuiController(newMock())
-		assert.Contains(t, c.Exec("p"), "required")
-		assert.Contains(t, c.Exec("p abc"), "Invalid card index")
-		assert.Contains(t, c.Exec("p 9"), "Invalid card index")
+		assert.Contains(t, c.Exec("p"), msgCardIndexRequired())
+		assert.Contains(t, c.Exec("p abc"), msgInvalidCardIndexPrefix())
+		assert.Contains(t, c.Exec("p 9"), msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("settarget", func(t *testing.T) {
@@ -96,7 +96,7 @@ func TestKlaberjassCuiController_Exec(t *testing.T) {
 		expected := domain.DefaultKlaberjassConfig()
 		expected.TargetScore = 300
 		m.AssertCalled(t, "ResetWithConfig", expected)
-		assert.Contains(t, c.Exec("st 5"), "Invalid target score")
+		assert.Contains(t, c.Exec("st 5"), msgStem("invalidTargetScorePlain"))
 	})
 
 	t.Run("log and unknown", func(t *testing.T) {

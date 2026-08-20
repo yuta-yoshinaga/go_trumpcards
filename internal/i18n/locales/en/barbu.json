@@ -19,11 +19,16 @@
   "promptHelp": "c <0-6> to choose / p <hand> to play (-1 pass) / n next deal",
   "gameEnd": "Game over!",
   "scoreEntry": "  {{name}}: {{score}}pt",
+  "dealBreakdownHeader": "Per-deal scores",
+  "dealBreakdownRow": "  D{{deal}} {{contract}}{{trump}}: {{scores}}",
+  "dealBreakdownScore": "{{name}} {{score}}",
   "cNoTricks": "No Tricks",
   "cNoHearts": "No Hearts",
   "cNoQueens": "No Queens",
   "cBarbu": "Barbu (K of Hearts)",
   "cNoLastTrick": "No Last Trick",
   "cTrumps": "Trumps",
-  "cDominoes": "Dominoes"
+  "cDominoes": "Dominoes",
+  "helpExamplePlay": "  p 0                      play hand card 0",
+  "helpLog": "  l                        show the action log"
 }

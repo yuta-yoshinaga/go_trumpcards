@@ -417,3 +417,43 @@ func TestBlackJackSwitch_PlayerKeep_WrongPhase(t *testing.T) {
 	err := bs.PlayerKeep()
 	require.Error(t, err)
 }
+
+// #5586: 交換すると得か損かは、打つまで分からなかった。先読みは実際に入れ替える
+// PlayerSwitch と**同じ採点**を通ること — 別に数え直すと予告と結果が食い違う。
+func TestBlackJackSwitch_SwitchPreviewMatchesTheActualSwitch(t *testing.T) {
+	bs := NewDefaultBlackJackSwitch()
+	bs.Reset()
+
+	// **配りに頼らない。**Reset→PlayerBet はシャッフルした実デッキを配るので、
+	// ディーラーがナチュラルを引いた回 (数 %) は即終局してスイッチフェーズに
+	// 入らない。そこを skip で逃がすと、その回はこのテストが何も見なくなる。
+	first0 := NewCard(CardDesignSpade, 10, true)
+	first1 := NewCard(CardDesignHeart, 6, true) // 16
+	second0 := NewCard(CardDesignClover, 9, true)
+	second1 := NewCard(CardDesignDiamond, 5, true) // 14 → 交換すると 15 と 15
+	handA, handB := NewBlackJackHand(), NewBlackJackHand()
+	handA.AddCard(first0)
+	handA.AddCard(first1)
+	handB.AddCard(second0)
+	handB.AddCard(second1)
+	bs.SetHands([]*BlackJackHand{handA, handB})
+	bs.SetPhase(BJSwitchPhaseSwitch)
+
+	first, second, ok := bs.SwitchPreviewScores()
+	require.True(t, ok, "two dealt hands can always be previewed")
+
+	require.NoError(t, bs.PlayerSwitch())
+	hands := bs.GetHands()
+	// **予告した得点がそのまま出ること。**
+	assert.Equal(t, first, hands[0].GetScore())
+	assert.Equal(t, second, hands[1].GetScore())
+}
+
+// 2 枚に満たないハンドは入れ替えられないので、先読みも返さない。
+func TestBlackJackSwitch_SwitchPreviewRefusesShortHands(t *testing.T) {
+	bs := NewDefaultBlackJackSwitch()
+	bs.Reset()
+
+	_, _, ok := bs.SwitchPreviewScores()
+	assert.False(t, ok, "no cards have been dealt yet")
+}

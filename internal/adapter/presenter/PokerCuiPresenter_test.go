@@ -677,11 +677,15 @@ func TestPokerCuiPresenter_ActionLogOutput(t *testing.T) {
 		}
 		mockGame.On("GetGameEndFlag").Return(true)
 		mockGame.On("GetActionLog").Return(entries)
+		mockGame.On("GetPlayers").Return([]*domain.PokerPlayer{domain.NewPokerPlayer(true, domain.PokerPlayStyle(0))}).Maybe()
+		// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+		mockGame.On("GetPlayers").Return([]*domain.PokerPlayer{domain.NewPokerPlayer(true, domain.PokerPlayStyle(0))}).Maybe()
 
 		result := p.ActionLogOutput(mockGame)
 
 		assert.Contains(t, result, "棋譜")
 		assert.Contains(t, result, "exchange")
+		assert.Contains(t, result, "あなた", "棋譜の座席名が他の行と揃っていない")
 		assert.Contains(t, result, "exchanged 2 cards")
 		mockGame.AssertExpectations(t)
 	})
@@ -690,6 +694,7 @@ func TestPokerCuiPresenter_ActionLogOutput(t *testing.T) {
 		mockGame := new(interfaces.MockPokerGame)
 		mockGame.On("GetGameEndFlag").Return(true)
 		mockGame.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+		mockGame.On("GetPlayers").Return([]*domain.PokerPlayer{domain.NewPokerPlayer(true, domain.PokerPlayStyle(0))}).Maybe()
 
 		result := p.ActionLogOutput(mockGame)
 
@@ -700,10 +705,38 @@ func TestPokerCuiPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("game_not_ended", func(t *testing.T) {
 		mockGame := new(interfaces.MockPokerGame)
 		mockGame.On("GetGameEndFlag").Return(false)
+		mockGame.On("GetPlayers").Return([]*domain.PokerPlayer{domain.NewPokerPlayer(true, domain.PokerPlayStyle(0))}).Maybe()
 
 		result := p.ActionLogOutput(mockGame)
 
 		assert.Contains(t, result, "棋譜はありません")
 		mockGame.AssertExpectations(t)
+	})
+}
+
+// #5475: 交換枚数が3枚未満だと CPU のフォールド閾値が1ランク上がる、という
+// 実在の戦略要素が Web にも CUI にも説明されていなかった。プレイヤーは自分の
+// 交換枚数が読まれていることを知る手段が無い。
+func TestPokerCuiPresenter_ExchangeRead(t *testing.T) {
+	p := new(presenter.PokerCuiPresenter)
+
+	game := func(phase, humanExchange int) *domain.Poker {
+		g := domain.NewDefaultPoker()
+		g.SetPhase(phase)
+		g.GetPlayers()[0].SetExchangeCount(humanExchange)
+		return g
+	}
+
+	t.Run("warns the human when their exchange count is being read", func(t *testing.T) {
+		assert.Contains(t, p.Output(game(domain.PokerPhaseSecondBet, 1), nil), i18n.T("poker.exchangeRead"))
+	})
+
+	// **閾値ちょうどでは出さない。**「3枚未満」という説明文と挙動を一致させる。
+	t.Run("stays quiet at the threshold", func(t *testing.T) {
+		assert.NotContains(t, p.Output(game(domain.PokerPhaseSecondBet, 3), nil), i18n.T("poker.exchangeRead"))
+	})
+
+	t.Run("stays quiet outside the second betting round", func(t *testing.T) {
+		assert.NotContains(t, p.Output(game(domain.PokerPhaseExchange, 0), nil), i18n.T("poker.exchangeRead"))
 	})
 }

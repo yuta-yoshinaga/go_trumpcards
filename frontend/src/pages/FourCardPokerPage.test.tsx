@@ -4,7 +4,7 @@ import { actionLogApi, fourcardpokerApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, FourCardPokerResponse } from '../types/card';
-import { FourCardPokerPage } from './FourCardPokerPage';
+import { FourCardPokerPage, fourCardBestIndices } from './FourCardPokerPage';
 
 vi.mock('../hooks/useGameHint');
 
@@ -302,5 +302,63 @@ describe('FourCardPokerPage', () => {
 
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.getByLabelText(/ヒント/)).toBeInTheDocument();
+  });
+
+  // **5 枚配って役は最良の 4 枚で決まる。** どの 4 枚だったかは playerBest /
+  // dealerBest で届いているのに画面では見分けられず、自分で見比べる必要があった
+  // (#5610)。CUI は bestHand 行で明示している。
+  describe('best-four highlight', () => {
+    it('marks exactly the four cards that made each hand', async () => {
+      mockExec.mockResolvedValue(endPhasePlayerWins);
+      renderWithProviders(<FourCardPokerPage />);
+      await waitFor(() => expect(screen.getByText('勝利！')).toBeInTheDocument());
+
+      // プレイヤー: 9,9,9,5 が役を作り、クラブ 2 は外れる。
+      const marked = document.querySelectorAll('[data-fcp-best="true"]');
+      expect(marked).toHaveLength(4);
+      const dealerMarked = document.querySelectorAll('[data-fcp-dealer-best="true"]');
+      expect(dealerMarked).toHaveLength(4);
+    });
+
+    // **負のコントロール: 決着前は何も強調しない。**
+    //
+    // FourCardPokerWebPresenter は playerBest を**フェーズに関係なく**送っている
+    // (dealerBest だけが END で条件付き)。つまり手番中も値は届いており、
+    // ページ側の isEndPhase 判定が唯一の歯止め。強調してしまうと、まだ確定して
+    // いない自分の役を先に教えることになる。
+    it('marks nothing during the action phase even though playerBest is populated', async () => {
+      mockExec.mockResolvedValue({
+        ...actionPhaseState,
+        // サーバの実際の振る舞いに合わせる: 手番中でも playerBest は入っている。
+        playerBest: [card('SPADE', 10), card('HEART', 11), card('DIAMOND', 13), card('CLOVER', 5)],
+      });
+      renderWithProviders(<FourCardPokerPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+      expect(document.querySelectorAll('[data-fcp-best="true"]')).toHaveLength(0);
+      expect(document.querySelectorAll('[data-fcp-dealer-best="true"]')).toHaveLength(0);
+    });
+  });
+
+  describe('fourCardBestIndices', () => {
+    const c = card;
+
+    it('finds the positions of the best cards inside the hand', () => {
+      const hand = [c('SPADE', 9), c('CLOVER', 9), c('HEART', 9), c('DIAMOND', 5), c('CLOVER', 2)];
+      const best = [c('SPADE', 9), c('CLOVER', 9), c('HEART', 9), c('DIAMOND', 5)];
+      expect([...fourCardBestIndices(hand, best)].sort()).toEqual([0, 1, 2, 3]);
+    });
+
+    // 同じランクでもスートが違えば別の札。ランクだけで照合すると外れ札まで光る。
+    it('distinguishes cards of the same rank by suit', () => {
+      const hand = [c('SPADE', 9), c('CLOVER', 9)];
+      expect([...fourCardBestIndices(hand, [c('CLOVER', 9)])]).toEqual([1]);
+    });
+
+    it('marks nothing when the showdown has not happened', () => {
+      const hand = [c('SPADE', 9), c('CLOVER', 9)];
+      expect(fourCardBestIndices(hand, []).size).toBe(0);
+      expect(fourCardBestIndices(hand, undefined).size).toBe(0);
+    });
   });
 });

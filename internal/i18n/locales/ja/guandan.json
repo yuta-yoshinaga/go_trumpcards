@@ -36,5 +36,16 @@
   "handEnd": "局終了",
   "handFirstSecond": "1着2着の独占。4段階昇級です",
   "result.humanWin": "ゲーム終了！ あなたのチームの勝ちです！",
-  "result.cpuWin": "ゲーム終了！ 相手チームの勝ちです。"
+  "result.cpuWin": "ゲーム終了！ 相手チームの勝ちです。",
+  "helpExampleNext": "  n                         トリックの決着を見てから次へ",
+  "checkNeedsIndexes": "調べたい手札の番号を並べてください (例: ch 0 1 2)。",
+  "checkOutOfRange": "手札の番号 {{val}} は範囲外です (0〜{{max}}、同じ番号は 2 度使えません)。",
+  "checkInvalid": "その組み合わせは役になりません。",
+  "checkCombo": "役: {{combo}} ({{size}}枚)",
+  "checkBeatsAll": "【通常役はすべて上回ります】",
+  "checkLead": "（場が流れているので、そのまま出せます）",
+  "checkBeatsTable": "【場の役に勝ちます】",
+  "checkLosesToTable": "（場の {{combo}} ({{size}}枚) には勝てません）",
+  "checkNoHand": "手札がありません。",
+  "helpCheck": "  ch <i...>                 出さずに役だけ調べる"
 }

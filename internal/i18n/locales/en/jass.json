@@ -1,5 +1,7 @@
 {
   "helpTitle": "Jass (Schieber)",
+  "previousTrick": "Previous trick",
+  "previousTrickWinner": "  → taken by {{name}}",
   "helpCall": "  c <suit>             choose trump (1=S,2=C,3=H,4=D)",
   "helpSchieben": "  sc                   schieben (pass choice to partner)",
   "helpPlay": "  p <idx>              play a card",
@@ -28,5 +30,7 @@
   "hintNone": "No hint available.",
   "hintSchieben": "[HINT: schieben ({{reason}})]",
   "hintTrump": "[HINT: choose {{suit}} ({{reason}})]",
-  "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]"
+  "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
+  "helpExamplePlay": "  p 0                  play hand card 0",
+  "helpHint": "  h                    show a hint"
 }

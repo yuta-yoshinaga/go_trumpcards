@@ -212,5 +212,5 @@ var zwanzigerrufenHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *ZwanzigerrufenCuiPresenter) ActionLogOutput(g interfaces.ZwanzigerrufenGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.ZwanzigerrufenPlayer](g)
 }

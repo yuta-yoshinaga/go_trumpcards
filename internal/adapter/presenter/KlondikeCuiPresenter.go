@@ -113,6 +113,12 @@ func (p *KlondikeCuiPresenter) Output(k interfaces.KlondikeGame, lastErr error) 
 		case domain.KlondikePhasePlaying:
 			if k.IsStalemate() {
 				b.WriteString(color.Red(i18n.T("cuiSolitaireStalemate")) + "\n")
+				// Tell the player how many undos escape the dead end, matching the
+				// web StalemateEscapeButton.
+				if n := k.UndoToEscape(); n > 0 {
+					b.WriteString(color.Yellow(i18n.Tf("cuiSolitaireUndoToEscape",
+						"count", strconv.Itoa(n))) + "\n")
+				}
 			}
 			// **もう自動で揃えられることを能動的に知らせる (#4776)。**Web は
 			// 条件が揃うとボタンを光らせバッジも出すのに、CUI は ac コマンドが

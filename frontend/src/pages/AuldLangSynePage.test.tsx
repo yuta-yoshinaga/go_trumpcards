@@ -213,7 +213,11 @@ describe('AuldLangSynePage', () => {
     mockExec.mockResolvedValue(passiveHintState);
     renderWithProviders(<AuldLangSynePage />);
     await waitFor(() => expect(screen.getByTestId('als-deal-button')).toBeInTheDocument());
-    expect(hintLiveRegion()).not.toBeInTheDocument();
+    // **領域は常設で中身が空。**読み上げは「既にある領域の変化」でしか起きない
+    // ので、領域ごと消してはいけない (#5955)。文言が出ていないことを見る。
+    expect(hintLiveRegion()).toBeInTheDocument();
+    expect(hintLiveRegion()).toHaveTextContent('');
+    expect(screen.queryByText(/ヒントがあります/)).not.toBeInTheDocument();
   });
 
   it('toggles a waste selection off when clicked twice', async () => {
@@ -275,5 +279,67 @@ describe('AuldLangSynePage', () => {
     mockExec.mockResolvedValue(gameOverState);
     renderWithProviders(<AuldLangSynePage />);
     await waitFor(() => expect(screen.queryByTestId('als-deal-button')).not.toBeInTheDocument());
+  });
+});
+
+// **キーボードだけで遊べること** (#5736)。同系統のページは全て
+// useActionKeyboardNav を持つのに、このページだけ Tab でボタンを辿るしかなかった。
+describe('AuldLangSynePage keyboard shortcuts', () => {
+  it.each([
+    ['d', 'deal'],
+    ['h', 'hint'],
+    ['u', 'undo'],
+  ])('pressing %s dispatches %s', async (key, command) => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<AuldLangSynePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playingState);
+    fireEvent.keyDown(document, { key });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith(command));
+  });
+
+  it('pressing a dispatches autocomplete', async () => {
+    mockExec.mockResolvedValue(stockEmptyState);
+    renderWithProviders(<AuldLangSynePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(stockEmptyState);
+    fireEvent.keyDown(document, { key: 'a' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
+  });
+
+  it('pressing g asks for give-up confirmation rather than firing it', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<AuldLangSynePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'g' });
+    expect(await screen.findByText('投了確認')).toBeInTheDocument();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('ignores shortcuts once the game has ended', async () => {
+    mockExec.mockResolvedValue(gameOverState);
+    renderWithProviders(<AuldLangSynePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockExec.mockClear();
+    for (const key of ['d', 'h', 'u', 'a', 'g']) {
+      fireEvent.keyDown(document, { key });
+    }
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('advertises the shortcuts in the footer', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<AuldLangSynePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    // 行は開いてから初めて mount される (KeyboardShortcutsPanel)。
+    const panel = screen.getByTestId('als-kbd-shortcuts');
+    fireEvent.click(screen.getByText('キーボードショートカット'));
+    for (const label of ['カードを配る', 'ヒント', '一手戻す', '自動で完成させる', '投了']) {
+      expect(panel).toHaveTextContent(label);
+    }
   });
 });

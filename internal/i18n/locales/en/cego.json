@@ -31,6 +31,8 @@
   "contractHandspielDesc": "  handspiel  skip the blind and play your dealt hand as is. Safer, but the upside is smaller.",
   "promptExchange": "Cego exchange — Turn: {{name}}",
   "promptExchangeHelp": "discard <i> ... keep 1 card, lay the rest away and take the blind",
+  "promptExchangeStep1": "Step 1/2: keep {{keep}} card (the other {{laydown}} go face-down onto your point pile)",
+  "promptExchangeStep2": "Step 2/2: you then take the {{blind}} blind cards in their place",
   "promptPlay": "Turn: {{name}}  (follow suit; if void play a trump; the Sküs is the top trump)",
   "promptPlayHelp": "play <idx> ... play a card",
   "promptTrickEnd": "Trick complete",
@@ -48,5 +50,7 @@
   "hintReasonLeadLow": "You are an opponent — lead a low card to conserve",
   "hintReasonFollowWin": "You can win — take the trick",
   "hintReasonFollowDuck": "Cannot/should not win — play low",
-  "declarerLine": "Declarer: {{name}} (contract: {{contract}}) vs the field"
+  "declarerLine": "Declarer: {{name}} (contract: {{contract}}) vs the field",
+  "helpExamplePlay": "  play 0                    play hand card 0",
+  "helpHint": "  h                         show a hint"
 }

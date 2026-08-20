@@ -10,6 +10,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupSpiteAndMaliceCuiMockDefaults(g *interfaces.MockSpiteAndMaliceGame) {
@@ -211,4 +212,24 @@ func TestSpiteAndMaliceCuiPresenter_ActionLogOutput(t *testing.T) {
 		g.On("GetActionLog").Return([]*domain.ActionLogEntry{{TurnNumber: 1, ActionType: "playHand", Detail: "test"}})
 		assert.NotEmpty(t, new(SpiteAndMaliceCuiPresenter).ActionLogOutput(g))
 	})
+}
+
+// #5560: K はどの基礎札にも出せるワイルドなのに、手札の表記では他の札と
+// 見分けが付かなかった。
+func TestSpiteAndMaliceCuiPresenter_MarksTheWildKing(t *testing.T) {
+	g := new(interfaces.MockSpiteAndMaliceGame)
+	human := domain.NewSpiteAndMalicePlayer(false)
+	human.AddToHand(domain.NewCard(domain.CardDesignClover, domain.SpiteAndMaliceWildValue, false))
+	human.AddToHand(domain.NewCard(domain.CardDesignSpade, 5, false))
+	cpu := domain.NewSpiteAndMalicePlayer(true)
+	g.On("GetPlayer", 0).Return(human)
+	g.On("GetPlayer", 1).Return(cpu)
+	setupSpiteAndMaliceCuiMockDefaults(g)
+
+	result := new(SpiteAndMaliceCuiPresenter).Output(g, nil)
+	mark := i18n.T("spiteandmalice.wildMark")
+	assert.Contains(t, result, "CLOVER 13"+mark)
+	// **K 以外には付かない。**全部に付いたら区別にならない。
+	assert.NotContains(t, result, "SPADE 5"+mark)
+	assert.Equal(t, 1, strings.Count(result, mark))
 }

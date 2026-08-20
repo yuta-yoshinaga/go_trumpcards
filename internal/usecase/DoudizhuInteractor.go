@@ -89,9 +89,7 @@ func (di *DoudizhuInteractor) ActionLog() string {
 
 // runCpuTurns ゲームが終わるか人間の手番になるまでCPUターンを実行
 func (di *DoudizhuInteractor) runCpuTurns() {
-	for !di.Game.GetGameEndFlag() && !di.Game.IsHumanTurn() {
-		di.Game.CpuPlay()
-	}
+	runCpuTurnsCapped(di.Game, di.Game.CpuPlay)
 }
 
 // RestoreDoudizhuInteractor deserialises JSON into a DoudizhuInteractor.

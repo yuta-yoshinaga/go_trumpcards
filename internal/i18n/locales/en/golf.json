@@ -13,5 +13,7 @@
   "roundComplete": "Round complete — {{total}} strokes over {{holes}} holes",
   "hintRemove": "Hint: remove column {{col}}",
   "hintDraw": "Hint: draw from stock",
-  "hintUnknown": "Hint: unknown"
+  "hintUnknown": "Hint: unknown",
+  "helpExampleHint": "  h                        ask for a move",
+  "helpUndo": "  u                        undo one move"
 }

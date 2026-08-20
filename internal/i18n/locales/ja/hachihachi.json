@@ -11,6 +11,7 @@
   "promptHelp": "p <h> [f] でプレイ（f は 2 枚一致時の場札）。nr=次のラウンドへ",
   "roundEnd": "ラウンド精算（素点 − 88 = 差分）:",
   "scoreLine": "  {{name}}: 素点{{raw}} + 役{{bonus}} − 88 = {{delta}}",
+  "roundBestMark": "★このラウンドの一番手",
   "roundDraw": "引き分け。",
   "hintNone": "ヒントはありません。",
   "hintCard": "[HINT: {{card}} ({{reason}})]",
@@ -23,5 +24,6 @@
   "yaku.sanko": "三光",
   "yaku.inoshikacho": "猪鹿蝶",
   "yaku.akatan": "赤短",
-  "yaku.aotan": "青短"
+  "yaku.aotan": "青短",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
 }

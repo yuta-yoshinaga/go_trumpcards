@@ -4,6 +4,8 @@ package domain
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // TestOmahaPlayer_EvalBestLowHand_Wheel: A-2-3-4-5 (ホイール) は最強のロー。
@@ -557,4 +559,82 @@ func TestOmahaPlayer_GetLowComparisonCards_DefensiveCopy(t *testing.T) {
 	if p.GetLowBestHand()[0] == nil {
 		t.Errorf("mutating returned slice leaked into player state")
 	}
+}
+
+// #5483: Web の OmahaHiLoPage は BoardLowBadge でベッティング中ずっとロー成立
+// 可能性を出しているが (frontend/src/utils/omahaLowCards.ts の boardLowPossibility)、
+// CUI はショーダウンの resultLow でしか見せない。CUI プレイヤーはベットのたびに
+// 自力で低ランクを数えることになる。
+func TestOmaha_GetBoardLowOutlook(t *testing.T) {
+	card := func(design, value int) *Card { return NewCard(design, value, false) }
+	board := func(cards ...*Card) OmahaBoardLowOutlook {
+		o := NewDefaultOmahaHiLo()
+		o.SetCommunityCards(cards)
+		return o.GetBoardLowOutlook()
+	}
+
+	t.Run("live once three distinct low ranks are on the board", func(t *testing.T) {
+		got := board(card(CardDesignSpade, 2), card(CardDesignHeart, 5),
+			card(CardDesignClover, 7))
+		assert.Equal(t, OmahaBoardLowLive, got.Status)
+		assert.Equal(t, 3, got.LowRankCount)
+		assert.Zero(t, got.Needed)
+	})
+
+	// **同じランクは1つとして数える。**ローは相異なる5ランクで作るので、
+	// 2 が2枚出ても板が供給できるローランクは1つ。
+	t.Run("counts distinct ranks, not cards", func(t *testing.T) {
+		got := board(card(CardDesignSpade, 2), card(CardDesignHeart, 2),
+			card(CardDesignClover, 5))
+		assert.Equal(t, OmahaBoardLowPossible, got.Status)
+		assert.Equal(t, 2, got.LowRankCount)
+		assert.Equal(t, 1, got.Needed)
+	})
+
+	// A は 1 として数える。9 以上は数えない。
+	t.Run("treats the ace as low and ignores nine and above", func(t *testing.T) {
+		got := board(card(CardDesignSpade, 1), card(CardDesignHeart, 9),
+			card(CardDesignClover, 13))
+		assert.Equal(t, 1, got.LowRankCount)
+		assert.Equal(t, 2, got.Needed)
+		assert.Equal(t, OmahaBoardLowPossible, got.Status, "残り2枚で2ランク足りるので、まだ可能")
+	})
+
+	// **残り枚数で足りなくなった時点で impossible。**フロップが高札3枚なら、
+	// ターンとリバーの2枚では3ランクに届かない。
+	t.Run("impossible once the remaining cards cannot supply enough ranks", func(t *testing.T) {
+		got := board(card(CardDesignSpade, 10), card(CardDesignHeart, 11),
+			card(CardDesignClover, 12))
+		assert.Equal(t, OmahaBoardLowImpossible, got.Status)
+		assert.Equal(t, 3, got.Needed)
+	})
+
+	t.Run("impossible on a full board with only two low ranks", func(t *testing.T) {
+		got := board(card(CardDesignSpade, 2), card(CardDesignHeart, 5),
+			card(CardDesignClover, 10), card(CardDesignDiamond, 11),
+			card(CardDesignSpade, 12))
+		assert.Equal(t, OmahaBoardLowImpossible, got.Status)
+		assert.Equal(t, 1, got.Needed)
+	})
+
+	t.Run("an empty board is still possible", func(t *testing.T) {
+		assert.Equal(t, OmahaBoardLowPossible, board().Status)
+	})
+
+	// **4ランク以上でも Needed は 0 で止まる。** 引き算をそのまま返すと -1 になり、
+	// 「あと -1 ランク」という文言が出る。
+	t.Run("needed never goes negative when the board is rich in low ranks", func(t *testing.T) {
+		got := board(card(CardDesignSpade, 2), card(CardDesignHeart, 3),
+			card(CardDesignClover, 4), card(CardDesignDiamond, 5))
+		assert.Equal(t, OmahaBoardLowLive, got.Status)
+		assert.Equal(t, 4, got.LowRankCount)
+		assert.Zero(t, got.Needed)
+	})
+
+	// nil の混じったボードは数に入れない (このコードベースの他所と同じ防御)。
+	t.Run("skips nil cards instead of counting them", func(t *testing.T) {
+		got := board(card(CardDesignSpade, 2), nil, card(CardDesignHeart, 5))
+		assert.Equal(t, 2, got.LowRankCount)
+		assert.Equal(t, OmahaBoardLowPossible, got.Status)
+	})
 }

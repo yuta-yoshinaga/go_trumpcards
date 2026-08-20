@@ -8,6 +8,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupCasinoWarCuiMockDefaults(m *interfaces.MockCasinoWarGame) {
@@ -183,4 +184,50 @@ func TestCasinoWarCuiPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetGameEndFlag").Return(false)
 	result := p.ActionLogOutput(m)
 	assert.NotEmpty(t, result)
+}
+
+// タイの局面でチップが足りないとき、選ぶ前に分かること。
+//
+// Web の CasinoWarPage は insufficientChips を role="alert" で出し、War ボタンを
+// disabled にしている。CUI には同じ比較が無く、"war" を打って初めてドメインの
+// エラーで気づく (#5583)。
+func TestCasinoWarCuiPresenter_WarnsBeforeAnUnaffordableWar(t *testing.T) {
+	render := func(chips, ante int, phase int) string {
+		m := new(interfaces.MockCasinoWarGame)
+		setupCasinoWarCuiMockDefaults(m)
+		m.ExpectedCalls = filterCalls(m.ExpectedCalls, "GetChips")
+		m.ExpectedCalls = filterCalls(m.ExpectedCalls, "GetAnte")
+		m.ExpectedCalls = filterCalls(m.ExpectedCalls, "GetPhase")
+		m.On("GetChips").Return(chips)
+		m.On("GetAnte").Return(ante)
+		m.On("GetPhase").Return(phase)
+		return new(CasinoWarCuiPresenter).Output(m, nil)
+	}
+
+	warn := i18n.Tf("casinowar.warInsufficientChips", "ante", "100")
+
+	t.Run("chips below the ante warn", func(t *testing.T) {
+		out := render(50, 100, domain.CasinoWarPhaseTieDecision)
+		assert.Contains(t, out, warn)
+	})
+
+	// ちょうど足りるのは足りる。ここを > で書くと、払えるのに警告が出る。
+	t.Run("chips exactly equal to the ante do not warn", func(t *testing.T) {
+		assert.NotContains(t, render(100, 100, domain.CasinoWarPhaseTieDecision), warn)
+	})
+
+	t.Run("ample chips do not warn", func(t *testing.T) {
+		assert.NotContains(t, render(900, 100, domain.CasinoWarPhaseTieDecision), warn)
+	})
+
+	// タイ以外の局面ではウォーを選べないので、警告する相手がいない。
+	t.Run("other phases stay silent even when chips are short", func(t *testing.T) {
+		for _, ph := range []int{
+			domain.CasinoWarPhaseBet,
+			domain.CasinoWarPhaseWarDealt,
+			domain.CasinoWarPhaseEnd,
+		} {
+			assert.NotContains(t, render(50, 100, ph), warn, "phase %v", ph)
+		}
+	})
 }

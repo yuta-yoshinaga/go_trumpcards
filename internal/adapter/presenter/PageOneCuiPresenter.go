@@ -65,7 +65,7 @@ func (p *PageOneCuiPresenter) Output(g interfaces.PageOneGame, lastErr error) st
 		b.WriteString("----------\n")
 
 		if lastErr != nil {
-			fmt.Fprintf(b, "%s\n", color.Red(lastErr.Error()))
+			fmt.Fprintf(b, "%s\n", i18n.MarkErrorLine(color.Red(lastErr.Error())))
 		}
 
 		if g.GetGameEndFlag() {
@@ -99,7 +99,7 @@ func (p *PageOneCuiPresenter) Output(g interfaces.PageOneGame, lastErr error) st
 
 // ActionLogOutput 棋譜をテキスト出力
 func (p *PageOneCuiPresenter) ActionLogOutput(g interfaces.PageOneGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.PageOnePlayer](g)
 }
 
 // HintOutput lists the human's playable card indices during the play phase, or

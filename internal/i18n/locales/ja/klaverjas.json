@@ -19,5 +19,10 @@
   "hintReasonFollowWin": "得点があるので勝ちに行く",
   "hintReasonFollowDuck": "取れない／取る価値がないのでダック",
   "hintReasonDiscardLow": "フォローできないので低い札を捨てる",
-  "promptRoundEndRoem": "Roem: A +{{roemA}} / B +{{roemB}}（合計 A {{totalA}} / B {{totalB}}）"
+  "promptRoundEndRoem": "Roem: A +{{roemA}} / B +{{roemB}}（合計 A {{totalA}} / B {{totalB}}）",
+  "helpExamplePlay": "  play 0                   手札の 0 番のカードを出す",
+  "helpExampleNext": "  n                        トリックの決着を見てから次のトリックへ",
+  "helpHint": "  h                         助言を表示",
+  "rankHelpTrump": "切り札の強さ: J > 9 > A > 10 > K > Q > 8 > 7（得点: J=20, 9=14, A=11, 10=10, K=4, Q=3, 8/7=0）",
+  "rankHelpPlain": "切り札以外: A > 10 > K > Q > J > 9 > 8 > 7（得点: A=11, 10=10, K=4, Q=3, J=2, 9/8/7=0）"
 }

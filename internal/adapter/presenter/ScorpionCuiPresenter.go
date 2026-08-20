@@ -45,6 +45,12 @@ func (p *ScorpionCuiPresenter) Output(s interfaces.ScorpionGame, lastErr error) 
 		case domain.ScorpionPhasePlaying:
 			if s.IsStalemate() {
 				b.WriteString(color.Red(i18n.T("cuiSolitaireStalemate")) + "\n")
+				// Tell the player how many undos escape the dead end, matching the
+				// web StalemateEscapeButton.
+				if n := s.UndoToEscape(); n > 0 {
+					b.WriteString(color.Yellow(i18n.Tf("cuiSolitaireUndoToEscape",
+						"count", strconv.Itoa(n))) + "\n")
+				}
 			}
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
 				"count", strconv.Itoa(s.GetMoveCount())) + "\n")
@@ -66,10 +72,16 @@ func (p *ScorpionCuiPresenter) HintOutput(s interfaces.ScorpionGame) string {
 	if hint.IsDeal() {
 		return i18n.T("scorpion.hintDeal") + "\n"
 	}
-	return i18n.Tf("scorpion.hintLine",
+	line := i18n.Tf("scorpion.hintLine",
 		"fromCol", strconv.Itoa(hint.FromCol),
 		"idx", strconv.Itoa(hint.CardIndex),
-		"toCol", strconv.Itoa(hint.ToCol)) + "\n"
+		"toCol", strconv.Itoa(hint.ToCol))
+	// **なぜその手なのかを言う。**GetHint は裏カードを開ける手を先に探しており、
+	// 移動先だけ見せてもプレイヤーはその優先順位を学べない (#5544)。
+	if hint.ExposesFaceDown {
+		line += i18n.T("scorpion.hintExposes")
+	}
+	return line + "\n"
 }
 
 // LegalMovesOutput lists the tableau columns onto which the top (last) card of

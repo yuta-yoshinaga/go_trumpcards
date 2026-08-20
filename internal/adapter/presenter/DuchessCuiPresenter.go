@@ -120,6 +120,9 @@ func (p *DuchessCuiPresenter) Output(d interfaces.DuchessGame, lastErr error) st
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(d.GetMoveCount())) + "\n")
 		case domain.DuchessPhaseGameOver:
 			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
+			fnd := d.GetFoundation()
+			b.WriteString(color.Yellow(cuiSolitaireGameOverSummary(
+				cuiCountPileCards(fnd[:]...), domain.DuchessFoundationCnt*domain.CardValueMax)) + "\n")
 		}
 	})
 }

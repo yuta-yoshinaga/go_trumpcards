@@ -30,5 +30,9 @@
   "roundEndTrickEntry": "{{name}} {{tricks}}",
   "roundEndTricks": "Tricks per player: {{list}}",
   "teamLine": "Score  team 0: {{team0}}  team 1: {{team1}}",
-  "trumpCountNote": "40 trumps -- including the 12 zodiac signs, the four elements and the virtues; tracking what is still above you is the skill"
+  "trumpCountNote": "40 trumps -- including the 12 zodiac signs, the four elements and the virtues; tracking what is still above you is the skill",
+  "mattoNote": "The Matto (Fool) is special: it never wins a trick, is exempt from following suit, and never sets the led suit",
+  "helpExamplePlay": "  play 0               play hand card 0",
+  "helpExampleNext": "  n                    read the trick result, then continue",
+  "helpHint": "  h                    show a hint"
 }

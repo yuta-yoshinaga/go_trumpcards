@@ -586,13 +586,23 @@ func (k *Klondike) UndoN(n int) error {
 	return undoN(k, n)
 }
 
-// GetScore スコア取得 (ベガス式: -52 + 5 * ファンデーション枚数)
+// KlondikeVegasBuyIn はベガス式の買い切り額 (負の初期スコア)。
+// KlondikeVegasPerCard は組札に1枚送るごとの得点。
+//
+// **UI の説明文と同じ数字であることをテストで固定している** -- 片方だけ変えると
+// 画面に嘘の計算式が出る (#5493)。
+const (
+	KlondikeVegasBuyIn   = -52
+	KlondikeVegasPerCard = 5
+)
+
+// GetScore スコア取得 (ベガス式: 買い切り + 1枚あたり得点 * ファンデーション枚数)
 func (k *Klondike) GetScore() int {
 	total := 0
 	for i := 0; i < KlondikeFoundationCnt; i++ {
 		total += len(k.foundation[i])
 	}
-	return -52 + 5*total
+	return KlondikeVegasBuyIn + KlondikeVegasPerCard*total
 }
 
 // GetScoringMode スコアリングモード取得

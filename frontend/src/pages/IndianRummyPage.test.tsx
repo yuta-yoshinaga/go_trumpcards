@@ -692,3 +692,18 @@ describe('IndianRummyPage', () => {
     expect(screen.queryByTestId('indianrummy-hand-status')).not.toBeInTheDocument();
   });
 });
+
+// #5501: 表示されるのは合計の未メルド点数だけで、なぜその数字になるのかを
+// 個々のカードから逆算する手掛かりが無かった。
+describe('IndianRummyPage points legend', () => {
+  it('shows the card-point legend next to the deadwood readout', async () => {
+    mockExec.mockResolvedValue(discardPhaseState);
+    renderWithProviders(<IndianRummyPage />);
+    const legend = await screen.findByTestId('indianrummy-points-legend');
+    // **A が 10 点であることが読み取れること。** ここが標準のジンラミー系と違う。
+    expect(legend.textContent).toMatch(/A/);
+    expect(legend.textContent).toMatch(/10/);
+    // ワイルドが 0 点であることも同じ行で言う (tutorial.wildJoker と矛盾しない)。
+    expect(legend.textContent).toMatch(/0/);
+  });
+});

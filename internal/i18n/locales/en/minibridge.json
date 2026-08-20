@@ -32,5 +32,7 @@
   "suitClover": "C",
   "suitHeart": "H",
   "suitDiamond": "D",
-  "suitNoTrump": "NT"
+  "suitNoTrump": "NT",
+  "helpExampleGiveUp": "  g                    give the round up",
+  "helpHint": "  h                    show a hint"
 }

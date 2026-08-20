@@ -21,6 +21,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useLaughAndLieDownGame } from '../hooks/useLaughAndLieDownGame';
+import { useTutorialMessageParams } from '../providers/TutorialProvider';
 import { gameTheme } from '../styles/gameTheme';
 import type { LaughAndLieDownResponse } from '../types/card';
 import { LaughAndLieDownPhase } from '../types/phases';
@@ -50,6 +51,11 @@ function LaughAndLieDownPageContent() {
   // choice only when the server offered it, so it lives next to the card
   // rather than as a mode toggle.
   const [threeArmed, setThreeArmed] = useState<number | null>(null);
+
+  // チュートリアルの精算ステップはボーナス額を名指しする。**文言に焼き込むと
+  // ドメイン定数を変えたとき盤面だけが追随する** ので、盤面と同じ値を渡す
+  // (#5936)。state が来る前は空 ── 空にしておけば古い数字を教えることはない。
+  useTutorialMessageParams(state ? { amount: state.lastInBonus } : {});
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('laughandliedown');
   const cliConfig: CliGameConfig<LaughAndLieDownResponse, Parameters<typeof laughandliedownApi.exec>> = useMemo(
@@ -146,6 +152,11 @@ function LaughAndLieDownPageContent() {
                     {t('won', { n: o.wonCount })}
                     {o.laidDown && ` · ${t('laidDown')}`}
                     {ended && ` · ${t('score', { n: o.score })}`}
+                    {ended && state.lastInIdx === o.id && (
+                      <span data-testid={`lld-lastin-${o.id.toString()}`}>
+                        {` · ${t('lastIn', { amount: state.lastInBonus })}`}
+                      </span>
+                    )}
                   </div>
                   <div
                     className="flex gap-1 justify-center flex-wrap"
@@ -181,6 +192,11 @@ function LaughAndLieDownPageContent() {
                 {' · '}
                 {t('won', { n: human?.wonCount ?? 0 })}
                 {ended && ` · ${t('score', { n: human?.score ?? 0 })}`}
+                {/* **既に訳文もサーバのデータもあったのに、画面が一度も読んでいなかった**
+                    (#5576)。最終点差の理由の一つがどこにも出ないまま終わっていた。 */}
+                {ended && state.lastInIdx === 0 && (
+                  <span data-testid="lld-lastin-0">{` · ${t('lastIn', { amount: state.lastInBonus })}`}</span>
+                )}
               </div>
               <div className="flex gap-2 justify-center flex-wrap items-start">
                 {(human?.cards ?? []).map((card, i) => {

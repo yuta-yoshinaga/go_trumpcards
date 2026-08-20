@@ -20,6 +20,9 @@
   "promptTrickEnd": "Trick complete",
   "promptTrickEndHelp": "n / next ... go to the next trick",
   "promptRoundEnd": "Deal complete ({{outcome}})",
+  "roundEndAverage": "Table average: {{avg}}",
+  "roundEndFormulaLine": "Swing = difference from the average x the number of players",
+  "roundEndEarned": "{{name}}: took {{points}} (diff {{diff}} -> swing {{scaled}})",
   "promptRoundEndHelp": "nr / nextround ... go to the next deal",
   "hintNone": "No hint available.",
   "hintCard": "[HINT: {{cards}} ({{reason}})]",
@@ -30,5 +33,8 @@
   "hintReasonPlayExcuse": "Play the Excuse — you keep it and it cannot be captured",
   "discardableList": "Discardable: {{cards}}",
   "discardableNone": "none",
-  "discardableLegend": "Note: trumps, the Excuse, and court cards cannot be discarded"
+  "discardableLegend": "Note: trumps, the Excuse, and court cards cannot be discarded",
+  "helpExamplePlay": "  play 0                    play hand card 0",
+  "helpExampleNext": "  n                         read the trick result, then continue",
+  "helpHint": "  h                         show a hint"
 }

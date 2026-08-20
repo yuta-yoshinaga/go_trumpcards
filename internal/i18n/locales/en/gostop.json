@@ -10,6 +10,14 @@
   "playerLine": "{{name}}: hand {{hand}}  captured: {{captured}}  score: {{score}}  go: {{go}}  points: {{breakdown}}",
   "promptPlay": "Turn: {{name}}",
   "promptDecision": "Reached {{points}} points. Type go to continue, st to stop and score now.",
+  "previewTitle": "Close to scoring: {{items}}",
+  "previewItem": "{{name}} needs {{remaining}}",
+  "previewSamgwang": "Samgwang (3 brights)",
+  "previewSagwang": "Sagwang (4 brights)",
+  "previewOgwang": "Ogwang (5 brights)",
+  "previewTti": "Tti (5 ribbons)",
+  "previewYeol": "Yeol (5 animals)",
+  "previewPi": "Pi (10 junk)",
   "promptGameEnd": "Game over. Type nr to start a new game.",
   "promptHelp": "p <h> [f] to play (f = field card on a 2-way match). go=Go, st=Stop, nr=next",
   "roundWin": "{{name}} wins the round! {{score}} -> {{total}} pts (bak x{{bak}}: {{bakinfo}})",
@@ -32,5 +40,6 @@
   "bak.gwang": "Gwang-bak",
   "bak.pi": "Pi-bak",
   "bak.go": "Go-bak",
-  "categoryCounts": "  Captured: Gwang {{gwang}} / Yeol {{yeol}} / Tti {{tti}} / Pi {{pi}}"
+  "categoryCounts": "  Captured: Gwang {{gwang}} / Yeol {{yeol}} / Tti {{tti}} / Pi {{pi}}",
+  "helpExamplePlay": "  p 0                  play hand card 0"
 }

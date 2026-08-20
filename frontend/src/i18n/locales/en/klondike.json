@@ -54,5 +54,6 @@
     "bestTime": "Best {{time}}",
     "fewestMoves": "{{moves}} moves",
     "newBest": "New personal best!"
-  }
+  },
+  "vegasFormula": "Vegas scoring: start at {{buyIn}}, then +{{perCard}} for every card sent to a foundation"
 }

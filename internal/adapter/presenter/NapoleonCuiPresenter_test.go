@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -365,10 +366,13 @@ func TestNapoleonCuiPresenter_ActionLogOutput(t *testing.T) {
 		}
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return(entries)
+		// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+		m.On("GetPlayer", mock.Anything).Return(domain.NewNapoleonPlayer(true)).Maybe()
 
 		result := p.ActionLogOutput(m)
 		assert.Contains(t, result, "棋譜")
 		assert.Contains(t, result, "play")
+		assert.Contains(t, result, "あなた", "棋譜の座席名が他の行と揃っていない")
 		assert.Contains(t, result, "played SPADE 5")
 		m.AssertExpectations(t)
 	})
@@ -618,5 +622,35 @@ func TestNapoleonCuiPresenter_English(t *testing.T) {
 		// Default mock leaves phase as Play, so the play prompt should render.
 		assert.Contains(t, result, "Turn: ")
 		assert.Contains(t, result, "p <idx>")
+	})
+}
+
+// #5504: 目標点数は開始前の設定でしか見えず、対局中は round/trick は出るのに
+// 到達条件だけが出ていなかった。**あと何点で決着するのかを知るには Settings を
+// 開き直すしかない。**
+func TestNapoleonCuiPresenter_PointLimitLine(t *testing.T) {
+	p := new(presenter.NapoleonCuiPresenter)
+
+	t.Run("shows the configured target", func(t *testing.T) {
+		n := domain.NewDefaultNapoleon()
+		n.Reset()
+		cfg := n.GetConfig()
+		cfg.PointLimit = 75
+		n.SetConfig(cfg)
+
+		assert.Contains(t, p.Output(n, nil), i18n.Tf("napoleon.pointLimitLine", "limit", "75"))
+	})
+
+	// **設定値を出していること。** 定数を書いているだけなら、変えても表示が動かない。
+	t.Run("follows a settings change", func(t *testing.T) {
+		n := domain.NewDefaultNapoleon()
+		n.Reset()
+		cfg := n.GetConfig()
+		cfg.PointLimit = 30
+		n.SetConfig(cfg)
+
+		out := p.Output(n, nil)
+		assert.Contains(t, out, i18n.Tf("napoleon.pointLimitLine", "limit", "30"))
+		assert.NotContains(t, out, i18n.Tf("napoleon.pointLimitLine", "limit", "75"))
 	})
 }

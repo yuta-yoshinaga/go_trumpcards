@@ -56,6 +56,17 @@ type ThirtyOneWebOutput struct {
 type ThirtyOneWebOutputConfig struct {
 	CpuDifficulty int `json:"cpuDifficulty"`
 	InitialLives  int `json:"initialLives"`
+	// KnockThresholds は難易度ごとに CPU がノックを検討する合計値
+	// (easy/normal/hard の順)。**難易度の違いはこの数字がすべて**なので、
+	// 説明文に書き写すのではなく運ぶ (#5623)。
+	KnockThresholds ThirtyOneWebOutputKnockThresholds `json:"knockThresholds"`
+}
+
+// ThirtyOneWebOutputKnockThresholds 難易度別のノック閾値
+type ThirtyOneWebOutputKnockThresholds struct {
+	Easy   int `json:"easy"`
+	Normal int `json:"normal"`
+	Hard   int `json:"hard"`
 }
 
 // ToConfig builds a ThirtyOneConfig from the nested web config, applying bounds checking.
@@ -110,7 +121,7 @@ func thirtyOneDispatch(bc *baseController, w http.ResponseWriter, ci usecase.Thi
 	case "nr", "nextround":
 		bc.writePresenterResponse(w, ci.NextRound())
 	default:
-		return dispatchLog(param.Command, bc, w, ci.ActionLog)
+		return dispatchHintAndLog(param.Command, bc, w, ci.Hint, ci.ActionLog)
 	}
 	return true
 }

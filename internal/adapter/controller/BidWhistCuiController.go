@@ -54,13 +54,13 @@ func (c *BidWhistCuiController) Exec(command string) string {
 			switch cmd {
 			case "b", "bid":
 				if len(args) < 2 {
-					return "Usage: bid <tricks> <dir>  (tricks 1-7, dir 0=Uptown 1=Downtown 2=NoTrump)\n", true
+					return invalidArg("usageBidTricksDirTricks17Dir0Uptown1Downtown2Notrump"), true
 				}
-				tricks, errMsg, ok := cuiutil.ParseIntArg(args[:1], "", "Invalid tricks: %s.", domain.BidWhistMinBid, domain.BidWhistMaxBid)
+				tricks, errMsg, ok := cuiutil.ParseIntArgKeys(args[:1], "", "invalidTricks", domain.BidWhistMinBid, domain.BidWhistMaxBid)
 				if !ok {
 					return errMsg, true
 				}
-				dir, errMsg, ok := cuiutil.ParseIntArg(args[1:2], "", "Invalid direction: %s.",
+				dir, errMsg, ok := cuiutil.ParseIntArgKeys(args[1:2], "", "invalidDirection",
 					domain.BidWhistDirectionUptown, domain.BidWhistDirectionNoTrump)
 				if !ok {
 					return errMsg, true
@@ -69,17 +69,16 @@ func (c *BidWhistCuiController) Exec(command string) string {
 			case "pa", "pass":
 				return c.bi.Pass(), true
 			case "t", "trump":
-				return cuiutil.WithParsedInt(args, "Trump suit is required (1=S 2=C 3=H 4=D).",
-					"Invalid suit: %s. Please enter 1-4.", 1, 4, func(s int) string {
-						return c.bi.DeclareTrump(s)
-					})
+				return cuiutil.WithParsedIntKeys(args, "trumpSuitRequiredLettersPlain", "invalidSuitRange", 1, 4, func(s int) string {
+					return c.bi.DeclareTrump(s)
+				})
 			case "e", "exchange":
 				if len(args) < domain.BidWhistKittySize {
-					return "Usage: exchange <i1> <i2> <i3> <i4> <i5> <i6>  (six card indices to discard)\n", true
+					return invalidArg("usageExchangeI1I2I3I4I5I6SixCardIndicesToDiscard"), true
 				}
 				idxs := make([]int, domain.BidWhistKittySize)
 				for i := 0; i < domain.BidWhistKittySize; i++ {
-					v, errMsg, ok := cuiutil.ParseIntArg(args[i:i+1], "", "Invalid card index: %s.", 0, math.MaxInt)
+					v, errMsg, ok := cuiutil.ParseIntArgKeys(args[i:i+1], "", "invalidCardIndex", 0, math.MaxInt)
 					if !ok {
 						return errMsg, true
 					}
@@ -87,7 +86,7 @@ func (c *BidWhistCuiController) Exec(command string) string {
 				}
 				return c.bi.ExchangeKitty(idxs), true
 			case "p", "play":
-				cardIdx, errMsg, ok := cuiutil.ParseIntArg(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax)
+				cardIdx, errMsg, ok := cuiutil.ParseIntArgKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax)
 				if !ok {
 					return errMsg, true
 				}
@@ -97,13 +96,13 @@ func (c *BidWhistCuiController) Exec(command string) string {
 			case "nr", "nextround":
 				return c.bi.NextRound(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.bi.GetConfig()
 					cfg.CpuDifficulty = domain.BidWhistCpuDifficulty(v)
 					return c.bi.ResetWithConfig(cfg)
 				})
 			case "st", "settarget":
-				return cuiutil.WithParsedInt(args, "Target score is required.", "Invalid target score: %s. Please enter 1 or more.", 1, math.MaxInt, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "targetScoreRequired", "invalidTargetScore", 1, math.MaxInt, func(v int) string {
 					cfg := c.bi.GetConfig()
 					cfg.TargetScore = v
 					return c.bi.ResetWithConfig(cfg)

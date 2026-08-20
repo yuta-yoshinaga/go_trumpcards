@@ -47,18 +47,14 @@ func (c *SakuraCuiController) Exec(command string) string {
 			case "n", "next", "nr", "nextround":
 				return c.si.NextRound(), true
 			case "ss", "setseats":
-				return cuiutil.WithParsedInt(args,
-					"Number of seats is required (2-4).",
-					"Invalid number of seats: %s. Please enter 2-4.",
+				return cuiutil.WithParsedIntKeys(args, "numberOfSeatsRequired24", "invalidNumberOfSeats24",
 					domain.SakuraMinSeats, domain.SakuraMaxSeats, func(v int) string {
 						cfg := c.si.GetConfig()
 						cfg.Seats = v
 						return c.si.ResetWithConfig(cfg)
 					})
 			case "sr", "setrounds":
-				return cuiutil.WithParsedInt(args,
-					"Number of rounds is required (1-12).",
-					"Invalid number of rounds: %s. Please enter 1-12.",
+				return cuiutil.WithParsedIntKeys(args, "numberOfRoundsRequired112", "invalidNumberOfRounds112",
 					domain.SakuraMinRounds, domain.SakuraMaxRounds, func(v int) string {
 						cfg := c.si.GetConfig()
 						cfg.Rounds = v
@@ -74,11 +70,11 @@ func (c *SakuraCuiController) Exec(command string) string {
 // handlePlay は "p <handIdx> [fieldIdx]" を解析して Play を呼ぶ。
 func (c *SakuraCuiController) handlePlay(args []string) string {
 	if len(args) == 0 {
-		return "Card index is required (e.g. p 0, or p 0 3 to pick a field card)."
+		return invalidArg("cardIndexRequiredField")
 	}
 	handIdx, err := strconv.Atoi(args[0])
 	if err != nil {
-		return "Invalid card index: " + args[0] + "."
+		return invalidArg("invalidCardIndex", "val", args[0])
 	}
 	fieldIdx := -1
 	if len(args) >= 2 {

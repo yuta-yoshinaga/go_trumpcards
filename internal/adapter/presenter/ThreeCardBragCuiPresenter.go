@@ -105,7 +105,12 @@ func (p *ThreeCardBragCuiPresenter) Output(g interfaces.ThreeCardBragGame, lastE
 		cuiErrorBlock(b, lastErr)
 
 		if g.GetGameEndFlag() {
-			banner := i18n.Tf("threecardbrag.gameEnd", "player", strconv.Itoa(g.GetMatchWinnerIdx()))
+			// **勝者だけ席番号のままだった** (#5659)。他のゲームは全部
+			// cuiPlayerName で「あなた」「CPU 1」と出しているので、ここだけ
+			// 「Player 0 の勝ち」に見えていた。
+			winnerIdx := g.GetMatchWinnerIdx()
+			banner := i18n.Tf("threecardbrag.gameEnd",
+				"player", cuiPlayerName(g.GetPlayer(winnerIdx), winnerIdx))
 			b.WriteString(color.Green(banner) + "\n")
 			return
 		}
@@ -119,7 +124,8 @@ func (p *ThreeCardBragCuiPresenter) Output(g interfaces.ThreeCardBragGame, lastE
 			b.WriteString(i18n.T("threecardbrag.promptShowdown") + "\n")
 		case domain.ThreeCardBragPhaseRoundEnd:
 			winner := g.GetRoundWinnerIdx()
-			b.WriteString(i18n.Tf("threecardbrag.promptRoundEnd", "player", strconv.Itoa(winner)) + "\n")
+			b.WriteString(i18n.Tf("threecardbrag.promptRoundEnd",
+				"player", cuiPlayerName(g.GetPlayer(winner), winner)) + "\n")
 			b.WriteString(i18n.T("threecardbrag.promptRoundEndHelp") + "\n")
 		}
 	})
@@ -145,5 +151,5 @@ var threeCardBragHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *ThreeCardBragCuiPresenter) ActionLogOutput(g interfaces.ThreeCardBragGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.ThreeCardBragPlayer](g)
 }

@@ -34,6 +34,7 @@ import { canastaMinMeld, canastaSelectionPoints } from '../utils/canastaScore';
 import { cardAlt } from '../utils/cardAlt';
 import { CANASTA_HELP, parseCanastaCommand } from '../utils/cli/commands/canastaCommands';
 import { formatCanastaState } from '../utils/cli/formatters/canastaFormatter';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -106,8 +107,9 @@ function CanastaPageContent() {
       parseCommand: parseCanastaCommand,
       formatResponse: formatCanastaState,
       helpText: CANASTA_HELP,
+      localCommand: hintLocalCommand(frontendHint),
     }),
-    [],
+    [frontendHint],
   );
   const { handleCommand } = useCliGame(gameExec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
@@ -140,8 +142,13 @@ function CanastaPageContent() {
 
   // Meld phase: surface the initial-meld minimum (by score band) and the
   // selected cards' running point total so the player can tell if they qualify.
+  // **メルドフェーズ以外では 0 点・未達なしを返す。** null を返すと、この値を
+  // 読むたびに「無いかもしれない」分岐が増え、押せるかどうかの判断が追いにくい
+  // (#6165、ハンド＆フットと同じ形)。
   const meldPointInfo = useMemo(() => {
-    if (!isMeldPhase || !humanPlayer) return null;
+    if (!isMeldPhase || !humanPlayer) {
+      return { selectedPoints: 0, needInitial: false, minMeld: 0, below: false };
+    }
     const selectedCards = selectedCardIndices.map((i) => humanPlayer.cards[i]).filter((c): c is Card => Boolean(c));
     const selectedPoints = canastaSelectionPoints(selectedCards);
     const needInitial = !humanPlayer.hasInitMeld;
@@ -159,10 +166,13 @@ function CanastaPageContent() {
   const isHumanTurn =
     (isDrawPhase || isMeldPhase || isDiscardPhase) && state?.players[state.currentPlayerIdx]?.isHuman === true;
 
+  // **キーボードの確定もボタンと同じ門番を通す** (#6165)。Enter が
+  // handleMeldSelected を直に呼ぶと、ボタンを無効化してもキーだけ通り、
+  // サーバのバリデーションで弾かれる形が残る。
   const kbdConfirmAction = useCallback(() => {
     if (isDiscardPhase) handleDiscard();
-    else if (isMeldPhase) handleMeldSelected();
-  }, [isDiscardPhase, isMeldPhase, handleDiscard, handleMeldSelected]);
+    else if (isMeldPhase && !meldPointInfo.below) handleMeldSelected();
+  }, [isDiscardPhase, isMeldPhase, meldPointInfo.below, handleDiscard, handleMeldSelected]);
 
   useCardKeyboardNav({
     cardCount: humanCardCount,
@@ -459,7 +469,7 @@ function CanastaPageContent() {
               )}
               {isMeldPhase && isHumanTurn && (
                 <>
-                  {meldPointInfo && (
+                  {
                     <div
                       id="ca-meld-points"
                       data-testid="ca-meld-points"
@@ -472,13 +482,16 @@ function CanastaPageContent() {
                           })
                         : t('meldPoints.selected', { points: meldPointInfo.selectedPoints })}
                     </div>
-                  )}
+                  }
                   <button
                     type="button"
                     className={btnPrimary}
                     onClick={handleMeldSelected}
-                    disabled={loading || selectedCardIndices.length < 3}
-                    aria-describedby={meldPointInfo?.below ? 'ca-meld-points' : undefined}
+                    // **最低点未達なら押させない** (#6165)。警告テキストは出て
+                    // いたのにボタンはそれを見ておらず、サーバのバリデーションで
+                    // 弾かれて初めて気づく形だった。
+                    disabled={loading || selectedCardIndices.length < 3 || meldPointInfo.below}
+                    aria-describedby={meldPointInfo.below ? 'ca-meld-points' : undefined}
                   >
                     {t('meldButton')}
                   </button>

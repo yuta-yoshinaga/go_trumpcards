@@ -32,9 +32,14 @@ export function formatFortythievesState(state: FortyThievesResponse): string {
   lines.push(`moves: ${state.moveCount}  undo:${state.canUndo ? 'yes' : 'no'}`);
 
   if (state.hint && isRequestedHint(state)) {
-    const from = state.hint.fromZone === 'waste' ? 'waste' : `t${state.hint.fromCol}[${state.hint.cardIndex}]`;
-    const target = state.hint.toCol >= 0 ? `${state.hint.toZone}${state.hint.toCol}` : state.hint.toZone;
-    lines.push(`HINT: ${from} → ${target}`);
+    // 引くヒントは列を持たない (#5525)。移動の体裁に落とすと t-1[-1] が出る。
+    if (state.hint.fromZone === 'stock') {
+      lines.push('HINT: draw from stock');
+    } else {
+      const from = state.hint.fromZone === 'waste' ? 'waste' : `t${state.hint.fromCol}[${state.hint.cardIndex}]`;
+      const target = state.hint.toCol >= 0 ? `${state.hint.toZone}${state.hint.toCol}` : state.hint.toZone;
+      lines.push(`HINT: ${from} → ${target}`);
+    }
   }
   if (state.isStalemate) lines.push('Stalemate - no more moves possible');
   if (state.message) lines.push(state.message);

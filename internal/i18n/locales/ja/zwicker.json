@@ -5,7 +5,7 @@
   "helpTrail": "  tr <i>                   手札 i を場に置く",
   "helpNext": "  n                        次のディールへ進む",
   "header": "山札{{stock}}枚 · 味方{{us}} 相手{{them}} ({{target}}点で勝ち)",
-  "ruleLine": "A=1/11 J=2/12 Q=3/13 K=4/14 は取る側が値を選ぶ／ジョーカーは15・20・25で固定／場を空にするとZwickで1点",
+  "ruleLine": "A=1/11 J=2/12 Q=3/13 K=4/14 は取る側が値を選ぶ／ジョーカーは15・20・25で固定／場を空にするとZwickで1点／ビルドの「所有者」は作った人を指すだけで、宣言値ちょうどの札を出せば誰でも取れます",
   "tableLine": "場: {{cards}}",
   "buildLine": "ビルド[{{idx}}] 宣言{{value}}（席{{owner}}）: {{cards}}",
   "playerLine": "{{name}}（チーム{{team}}）: 手札{{cards}}枚 獲得{{taken}}枚 Zwick{{zwicks}}回",
@@ -22,5 +22,7 @@
   "hintReasonRoundEnd": "このディールは終わっています",
   "hintReasonNotYourTurn": "あなたの手番ではありません",
   "hintReasonTake": "得点札を含めて取れます",
-  "hintReasonTrail": "取れる札がないので、点にならない札を置きます"
+  "hintReasonTrail": "取れる札がないので、点にならない札を置きます",
+  "helpExampleN": "  n                        次のディールを配る",
+  "helpHint": "  h                        助言を表示"
 }

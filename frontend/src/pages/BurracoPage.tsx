@@ -24,7 +24,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
 import { btnOutline, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
-import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
+import { focusRingCard, hintRingStyle, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { BurracoResponse, Card } from '../types/card';
@@ -108,6 +108,10 @@ function BurracoPageContent() {
   } = useGameHint('burraco', state);
 
   const humanPlayer = state?.players.find((p) => p.isHuman);
+  // ヒントが無効なとき・サーバがヒントを返さない場面 (CPU の手番など) では空。
+  // **useGameHint が無効時に null を返す**ので、ここで再度フラグを見ない
+  // (見ると、条件が二重になって片方が死ぬ)。
+  const hintedCards = useMemo(() => new Set(frontendHint?.targetIndices ?? []), [frontendHint?.targetIndices]);
   const humanCardCount = humanPlayer?.cards?.length ?? 0;
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('burraco');
@@ -499,9 +503,14 @@ function BurracoPageContent() {
                       padding: 0,
                       borderRadius: 8,
                       ...selectedCardStyle(selectedCardIndices.includes(idx)),
+                      // **どの札を指しているのかを盤面でも言う** (#5990)。
+                      // ヒントは「どの札か」まで持っているのに、文言だけ出して
+                      // 探させていた。
+                      ...(hintedCards.has(idx) ? hintRingStyle() : {}),
                       boxSizing: 'border-box',
                     }}
                     data-testid={`bu-hand-card-${idx}`}
+                    data-hint-card={hintedCards.has(idx) ? 'true' : undefined}
                   >
                     <AnimatedCard card={card} width={cardWidth} />
                   </button>

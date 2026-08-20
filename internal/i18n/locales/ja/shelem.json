@@ -12,6 +12,7 @@
   "scoreLine": "累計: あなたのチーム={{t0}}  相手={{t1}}",
   "contractUndecided": "契約: 未定（55点から5刻みで競り上げます。上限は100点＝1ラウンドの全カード点）",
   "contractLine": "契約: {{n}}点（{{name}} が落札・現在 {{got}} 点）",
+  "defenderLine": "守備側: {{got}}点（合計{{total}}点のうち）",
   "contractShelem": "契約: Shelem＝全トリック独占（{{name}} が宣言）",
   "trumpLine": "切り札: {{suit}}",
   "widowLine": "ウィドウ: {{n}}枚（落札者が取り込みます）",
@@ -45,5 +46,7 @@
   "suitSpade": "スペード",
   "suitClover": "クラブ",
   "suitHeart": "ハート",
-  "suitDiamond": "ダイヤ"
+  "suitDiamond": "ダイヤ",
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
+  "helpHint": "  h                    助言を表示"
 }

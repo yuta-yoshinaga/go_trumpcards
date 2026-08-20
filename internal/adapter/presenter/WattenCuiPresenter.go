@@ -195,5 +195,5 @@ func (p *WattenCuiPresenter) HintOutput(g interfaces.WattenGame) string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *WattenCuiPresenter) ActionLogOutput(g interfaces.WattenGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.WattenPlayer](g)
 }

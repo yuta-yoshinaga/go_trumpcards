@@ -47,11 +47,11 @@ func (c *GolfCuiController) Exec(command string) string {
 // handleRemove 除去コマンドを処理
 func (c *GolfCuiController) handleRemove(args []string) string {
 	if len(args) != 1 {
-		return "Usage: rm <col>"
+		return invalidArg("usageRmCol")
 	}
 	col, err := strconv.Atoi(args[0])
 	if err != nil {
-		return fmt.Sprintf("Invalid col: %s.", args[0])
+		return invalidArg("invalidColRaw", "val", fmt.Sprint(args[0]))
 	}
 	return c.gi.Remove(col)
 }

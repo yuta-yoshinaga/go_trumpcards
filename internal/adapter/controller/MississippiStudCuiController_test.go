@@ -57,13 +57,13 @@ func TestMississippiStudCuiController_Bet_Errors(t *testing.T) {
 	c := controller.NewMississippiStudCuiController(m)
 
 	t.Run("missing args", func(t *testing.T) {
-		assert.Contains(t, c.Exec("b"), "Bet amount is required")
+		assert.Contains(t, c.Exec("b"), msgBetAmountRequired())
 	})
 	t.Run("invalid amount", func(t *testing.T) {
-		assert.Contains(t, c.Exec("b abc"), "Invalid bet amount")
+		assert.Contains(t, c.Exec("b abc"), msgInvalidBetAmountPrefix())
 	})
 	t.Run("zero amount", func(t *testing.T) {
-		assert.Contains(t, c.Exec("b 0"), "Invalid bet amount")
+		assert.Contains(t, c.Exec("b 0"), msgInvalidBetAmountPrefix())
 	})
 }
 
@@ -81,13 +81,13 @@ func TestMississippiStudCuiController_Play_Errors(t *testing.T) {
 	c := controller.NewMississippiStudCuiController(m)
 
 	t.Run("missing multiplier", func(t *testing.T) {
-		assert.Contains(t, c.Exec("p"), "Multiplier")
+		assert.Contains(t, c.Exec("p"), msgStem("multiplier12Or3Required"))
 	})
 	t.Run("invalid multiplier", func(t *testing.T) {
-		assert.Contains(t, c.Exec("p 4"), "Invalid multiplier")
+		assert.Contains(t, c.Exec("p 4"), msgStem("invalidMultiplierANumber"))
 	})
 	t.Run("non-numeric multiplier", func(t *testing.T) {
-		assert.Contains(t, c.Exec("p abc"), "Invalid multiplier")
+		assert.Contains(t, c.Exec("p abc"), msgStem("invalidMultiplierANumber"))
 	})
 }
 

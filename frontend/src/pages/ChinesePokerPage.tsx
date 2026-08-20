@@ -267,8 +267,16 @@ function ChinesePokerPageContent() {
                       key={`p-${card.design}-${card.value}-${i}`}
                       type="button"
                       data-testid={`cp-hand-card-${i}`}
+                      // サーバー (CUI と同じ計算) が前列に勧めた札を名指しする。
+                      // 「ファウルの危険がある」だけでは、どれを動かせばいいのか
+                      // プレイヤーが総当たりすることになる (#5615)。
+                      data-hint-front={hintEnabled && hint?.targetIndices?.includes(i) ? 'true' : undefined}
                       onClick={() => toggleCard(i)}
-                      className={`relative transition-transform ${ringClass(assignments[i])}`}
+                      className={`relative transition-transform ${ringClass(assignments[i])} ${
+                        hintEnabled && hint?.targetIndices?.includes(i) && !assignments[i]
+                          ? 'ring-2 ring-ds-warning rounded-lg'
+                          : ''
+                      }`}
                       aria-pressed={!!assignments[i]}
                       aria-label={
                         assignments[i]

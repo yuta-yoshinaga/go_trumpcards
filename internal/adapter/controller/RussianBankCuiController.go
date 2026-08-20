@@ -72,24 +72,24 @@ func (c *RussianBankCuiController) Exec(command string) string {
 			switch cmd {
 			case "pf":
 				if len(args) < 1 {
-					return "Source is required (r/w/or/ow/t0..t3).", true
+					return invalidArg("sourceRequiredZones"), true
 				}
 				zone, opp, col, ok := rbParseSource(args[0])
 				if !ok {
-					return "Invalid source: " + args[0] + ".", true
+					return invalidArg("invalidSourceDot", "val", args[0]), true
 				}
 				return c.di.MoveToFoundation(zone, opp, col), true
 			case "mt":
 				if len(args) < 2 {
-					return "Usage: mt <src> <col>.", true
+					return invalidArg("usageMtSrcCol"), true
 				}
 				zone, opp, col, ok := rbParseSource(args[0])
 				if !ok {
-					return "Invalid source: " + args[0] + ".", true
+					return invalidArg("invalidSourceDot", "val", args[0]), true
 				}
 				toCol, err := strconv.Atoi(args[1])
 				if err != nil || toCol < 0 || toCol >= domain.RussianBankTableauCnt {
-					return "Invalid column: " + args[1] + ".", true
+					return invalidArg("invalidColumnDot", "val", args[1]), true
 				}
 				return c.di.MoveToTableau(zone, opp, col, toCol), true
 			case "d", "discard":
@@ -99,8 +99,8 @@ func (c *RussianBankCuiController) Exec(command string) string {
 			case "u", "undo":
 				return c.di.Undo(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).",
-					"Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired",
+					"invalidCpuDifficulty", 0, 2, func(v int) string {
 						cfg := c.di.GetConfig()
 						cfg.CpuDifficulty = domain.RussianBankCpuDifficulty(v)
 						return c.di.ResetWithConfig(cfg)

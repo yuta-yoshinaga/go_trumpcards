@@ -126,11 +126,17 @@ func hachihachiRoundResultStr(g interfaces.HachiHachiGame) string {
 	parts := make([]string, 0, len(res.Scores))
 	for _, s := range res.Scores {
 		name := cuiPlayerName(g.GetPlayer(s.PlayerIdx), s.PlayerIdx)
-		parts = append(parts, i18n.Tf("hachihachi.scoreLine",
+		line := i18n.Tf("hachihachi.scoreLine",
 			"name", name,
 			"raw", strconv.Itoa(s.RawScore),
 			"bonus", strconv.Itoa(s.Bonus),
-			"delta", hachihachiSignedStr(s.Delta)))
+			"delta", hachihachiSignedStr(s.Delta))
+		// 誰がラウンドを制したかを数字の見比べに頼らせない (Web は 👑 を付ける)。
+		// Best は総取りが決まらなければ -1 なので、そのときは誰にも付けない。
+		if s.PlayerIdx == res.Best {
+			line += "  " + color.Bold(i18n.T("hachihachi.roundBestMark"))
+		}
+		parts = append(parts, line)
 	}
 	return i18n.T("hachihachi.roundEnd") + "\n" + strings.Join(parts, "\n")
 }
@@ -166,5 +172,5 @@ var hachihachiHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *HachiHachiCuiPresenter) ActionLogOutput(g interfaces.HachiHachiGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.HachiHachiPlayer](g)
 }

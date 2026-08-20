@@ -47,13 +47,13 @@ func (c *MonteCarloCuiController) Exec(command string) string {
 // handleRemove は m コマンドを処理する (引数 4 個必須)。
 func (c *MonteCarloCuiController) handleRemove(args []string) string {
 	if len(args) != 4 {
-		return "Usage: m <r1> <c1> <r2> <c2>"
+		return invalidArg("usageMR1C1R2C2")
 	}
 	parsed := make([]int, 4)
 	for i, raw := range args {
 		v, err := strconv.Atoi(raw)
 		if err != nil {
-			return fmt.Sprintf("Invalid argument: %s.", raw)
+			return invalidArg("invalidArgumentRaw", "val", fmt.Sprint(raw))
 		}
 		parsed[i] = v
 	}

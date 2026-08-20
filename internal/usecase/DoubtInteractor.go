@@ -102,15 +102,9 @@ func (di *DoubtInteractor) ActionLog() string {
 
 // runCpuTurns ゲームが終わるか人間の手番またはダウトフェーズになるまでCPUターンを実行
 func (di *DoubtInteractor) runCpuTurns() {
-	for !di.Game.GetGameEndFlag() {
-		if di.Game.GetPhase() == domain.DoubtPhaseDoubt {
-			break
-		}
-		if di.Game.IsHumanTurn() {
-			break
-		}
-		di.Game.CpuPlay()
-	}
+	runCpuTurnsUntil(di.Game, func() bool {
+		return di.Game.GetPhase() == domain.DoubtPhaseDoubt || di.Game.IsHumanTurn()
+	}, di.Game.CpuPlay)
 }
 
 // RestoreDoubtInteractor deserialises JSON into a DoubtInteractor.

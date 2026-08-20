@@ -245,6 +245,13 @@ describe('WaspPage', () => {
   });
 
   it('autocomplete button triggers autocomplete command', async () => {
+    // #5545 以降、全カードが表向きでないとボタンは押せない (ドメインの
+    // AutoComplete が同じ条件で弾くため)。
+    mockExec.mockResolvedValue({
+      ...playingState,
+      stockCount: 0,
+      tableau: playingState.tableau.map((col) => col.map((c) => ({ ...c, faceUp: true }))),
+    });
     renderWithProviders(<WaspPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     const btn = screen.getByRole('button', { name: '自動完成' });
@@ -717,5 +724,50 @@ describe('WaspPage destination preview', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     fireEvent.mouseEnter(screen.getByRole('button', { name: /♠ 3/ }));
     expect(screen.queryByTestId('wasp-legal-target')).not.toBeInTheDocument();
+  });
+});
+
+// #5545: 兄弟ゲーム (Spiderette / Terrace / Windmill …) は自動完成ボタンに
+// 準備完了のパルスと未準備の理由を持つのに、Wasp だけが `disabled={loading}`
+// しか持たず、押していい合図も押せない理由も無かった。
+describe('WaspPage autocomplete readiness', () => {
+  const button = () => screen.getByTestId('autocomplete-button');
+
+  it('stays disabled with a reason while a card is still face down', async () => {
+    mockExec.mockResolvedValue(playingState); // 先頭2列に裏カードがある
+    renderWithProviders(<WaspPage />);
+    await waitFor(() => expect(button()).toBeInTheDocument());
+    expect(button()).toBeDisabled();
+    expect(button()).toHaveAttribute('title', expect.stringContaining('表向き'));
+    expect(button().className).not.toContain('animate-pulse');
+  });
+
+  // レビュー指摘 (#5545): ドメインの AllFaceUp は**ストックが空であること**も
+  // 要求する。表向きだけ見ると、山札が残った状態でボタンが押せてしまい、
+  // 押すと "not all cards are face up" で弾かれる — 直したはずのバグに戻る。
+  it('stays disabled while the stock still has cards, even with a fully face-up tableau', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      stockCount: 3,
+      tableau: playingState.tableau.map((col) => col.map((c) => ({ ...c, faceUp: true }))),
+    });
+    renderWithProviders(<WaspPage />);
+    await waitFor(() => expect(button()).toBeInTheDocument());
+    expect(button()).toBeDisabled();
+    expect(button().className).not.toContain('animate-pulse');
+  });
+
+  it('pulses once every card is face up', async () => {
+    const allUp = {
+      ...playingState,
+      stockCount: 0,
+      tableau: playingState.tableau.map((col) => col.map((c) => ({ ...c, faceUp: true }))),
+    };
+    mockExec.mockResolvedValue(allUp);
+    renderWithProviders(<WaspPage />);
+    await waitFor(() => expect(button()).not.toBeDisabled());
+    expect(button().className).toContain('animate-pulse');
+    // 押せる状態では理由を出さない。
+    expect(button()).not.toHaveAttribute('title');
   });
 });

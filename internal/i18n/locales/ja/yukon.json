@@ -24,5 +24,8 @@
   "hintToTableau": "タブロー列{{col}}",
   "hintLine": "ヒント: {{from}} → {{to}} {{confidence}}",
   "hintConfidenceFoundation": "（優先度: 高・基礎へ送れる安全手）",
-  "hintConfidenceTableau": "（優先度: 中・盤面を整える手）"
+  "hintConfidenceTableau": "（優先度: 中・盤面を整える手）",
+  "helpExampleHint": "  h                    次の一手を教えてもらう",
+  "helpExampleAuto": "  ac                   組札へ送れる札を自動で送る",
+  "helpUndo": "  u 1手戻す"
 }

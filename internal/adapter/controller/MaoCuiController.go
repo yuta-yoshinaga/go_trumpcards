@@ -56,11 +56,11 @@ func (c *MaoCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.playWithPrompts)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.playWithPrompts)
 			case "d", "draw":
 				return c.ci.Draw(), true
 			case "s", "suit":
-				return cuiutil.WithParsedInt(args, "Suit is required (1=♠, 2=♣, 3=♥, 4=♦).", "Invalid suit: %s. Please enter 1-4.", 1, 4, c.ci.ChooseSuit)
+				return cuiutil.WithParsedIntKeys(args, "suitRequiredSymbols", "invalidSuitRange", 1, 4, c.ci.ChooseSuit)
 			case "dc", "declare":
 				return c.ci.Declare(), true
 			case "sk", "skipdeclare":
@@ -68,13 +68,13 @@ func (c *MaoCuiController) Exec(command string) string {
 			case "dw", "declareword":
 				word := strings.TrimSpace(strings.Join(args, " "))
 				if word == "" {
-					return "A word is required.", true
+					return invalidArg("wordRequired"), true
 				}
 				return c.ci.DeclareWord(word), true
 			case "nr", "nextround":
 				return c.ci.NextRound(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.ci.GetConfig()
 					cfg.CpuDifficulty = domain.MaoCpuDifficulty(v)
 					return c.ci.ResetWithConfig(cfg)
@@ -82,7 +82,7 @@ func (c *MaoCuiController) Exec(command string) string {
 			case "sl", "setlimit":
 				// Cap matches the Web controller's bound (MaoWebConfig.ToConfig) so the
 				// CUI and Web layers enforce the same maximum point limit.
-				return cuiutil.WithParsedInt(args, "Point limit is required.", "Invalid point limit: %s. Please enter 1-1000.", 1, 1000, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "pointLimitRequired", "invalidPointLimit11000", 1, 1000, func(v int) string {
 					cfg := c.ci.GetConfig()
 					cfg.PointLimit = v
 					return c.ci.ResetWithConfig(cfg)

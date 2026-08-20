@@ -115,5 +115,5 @@ var toepenHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *ToepenCuiPresenter) ActionLogOutput(t interfaces.ToepenGame) string {
-	return actionLogOutputText(t)
+	return actionLogOutputTextForSeats[*domain.ToepenPlayer](t)
 }

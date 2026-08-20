@@ -13,7 +13,7 @@ import (
 )
 
 // tarabishPlayerStr returns the display string for a single player.
-func tarabishPlayerStr(player *domain.TarabishPlayer, idx int) string {
+func tarabishPlayerStr(player *domain.TarabishPlayer, idx, trumpSuit int) string {
 	var b strings.Builder
 	b.WriteString(i18n.Tf("tarabish.playerLine",
 		"name", cuiPlayerName(player, idx),
@@ -24,9 +24,30 @@ func tarabishPlayerStr(player *domain.TarabishPlayer, idx int) string {
 	))
 	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
-		b.WriteString(cuiIndexedCardListStr(player) + "\n")
+		b.WriteString(tarabishHandStr(player, trumpSuit) + "\n")
 	}
 	return b.String()
+}
+
+// tarabishHandStr は手札を、切り札を踏まえた点数付きで並べる。
+//
+// **切り札だけ点数表が入れ替わるのがこの系統の肝** (J=20 / 9=14)。同じ J でも
+// 切り札かどうかで 20 点と 2 点に分かれるので、暗算させると寄せる相手を
+// 間違える (#5749)。切り札が決まるまでは点が定まらないので出さない。
+func tarabishHandStr(player *domain.TarabishPlayer, trumpSuit int) string {
+	parts := make([]string, 0, player.GetCardsSize())
+	for i := range player.GetCardsSize() {
+		card := player.GetCard(i)
+		if trumpSuit == 0 {
+			parts = append(parts, "["+strconv.Itoa(i)+"]"+cuiCardStr(card))
+			continue
+		}
+		parts = append(parts, i18n.Tf("tarabish.handCard",
+			"idx", strconv.Itoa(i),
+			"card", cuiCardStr(card),
+			"points", strconv.Itoa(domain.TarabishCardPoints(card, trumpSuit))))
+	}
+	return strings.Join(parts, "  ")
 }
 
 // tarabishMeldStr メルドの内訳を短く表す
@@ -72,7 +93,7 @@ func (p *TarabishCuiPresenter) Output(t interfaces.TarabishGame, lastErr error) 
 		}
 
 		for i := 0; i < t.GetPlayerCnt(); i++ {
-			sb.WriteString(tarabishPlayerStr(t.GetPlayer(i), i))
+			sb.WriteString(tarabishPlayerStr(t.GetPlayer(i), i, t.GetTrumpSuit()))
 		}
 
 		sb.WriteString("----------\n")
@@ -165,5 +186,5 @@ var tarabishHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *TarabishCuiPresenter) ActionLogOutput(t interfaces.TarabishGame) string {
-	return actionLogOutputText(t)
+	return actionLogOutputTextForSeats[*domain.TarabishPlayer](t)
 }

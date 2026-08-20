@@ -141,6 +141,12 @@ func (pcp *PokerCuiPresenter) Output(p interfaces.PokerGame, lastErr error) stri
 			switch p.GetPhase() {
 			case domain.PokerPhaseDeal, domain.PokerPhaseSecondBet:
 				b.WriteString(i18n.T("poker.promptBet") + "\n")
+				// **交換枚数は読まれている。** 閾値未満だと全 CPU のフォールド
+				// 閾値が1ランク上がる (calcExchangeWarning)。実在の戦略要素なのに
+				// Web にも CUI にも説明が無く、プレイヤーは知りようがなかった (#5475)。
+				if p.IsExchangeRead(0) {
+					b.WriteString(color.BoldYellow(i18n.T("poker.exchangeRead")) + "\n")
+				}
 			case domain.PokerPhaseExchange:
 				b.WriteString(i18n.T("poker.promptExchange") + "\n")
 			}
@@ -166,7 +172,7 @@ func pokerPhaseName(phase int) string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (pcp *PokerCuiPresenter) ActionLogOutput(p interfaces.PokerGame) string {
-	return actionLogOutputText(p)
+	return actionLogOutputTextForSeatList(p, p.GetPlayers())
 }
 
 // OutputWithOdds appends the draw-odds table to the standard Output.

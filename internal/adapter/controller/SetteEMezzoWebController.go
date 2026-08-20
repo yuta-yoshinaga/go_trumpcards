@@ -52,10 +52,13 @@ type SetteEMezzoWebOutput struct {
 	LastResult    string                      `json:"lastResult"`
 	Phase         int                         `json:"phase"`
 	// TargetHalves は 7.5 を半点単位で表したもの（15）。
-	TargetHalves int  `json:"targetHalves"`
-	CanHit       bool `json:"canHit"`
-	CanStand     bool `json:"canStand"`
-	CanSetMatta  bool `json:"canSetMatta"`
+	TargetHalves int `json:"targetHalves"`
+	// CpuStandHalves は CPU 席と親が止まる合計（11 = 5.5 点、#5566）。
+	// 数字を訳文に焼き込むと、閾値を変えたとき案内だけが嘘になる。
+	CpuStandHalves int  `json:"cpuStandHalves"`
+	CanHit         bool `json:"canHit"`
+	CanStand       bool `json:"canStand"`
+	CanSetMatta    bool `json:"canSetMatta"`
 	WebOutputBase
 }
 

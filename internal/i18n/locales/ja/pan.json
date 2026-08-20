@@ -9,9 +9,9 @@
   "helpSetPlayers": "  pc [3-6]             プレイヤー数",
   "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
   "helpSetRounds": "  sr <n>               ラウンド数",
-  "header": "ラウンド: {{round}}/{{total}}  山札: {{stock}}枚",
+  "header": "ラウンド: {{round}}/{{total}}  山札: {{stock}}枚  あがり: メルド{{goal}}枚",
   "discardLine": "捨て札: {{card}}",
-  "playerLine": "{{name}}: 累積{{cum}}点 ラウンド{{round}}点 チップ{{chips}} メルド{{melded}}枚 手札{{cards}}枚",
+  "playerLine": "{{name}}: 累積{{cum}}点 ラウンド{{round}}点 チップ{{chips}} メルド{{melded}}/{{goal}}枚 手札{{cards}}枚",
   "valleTag": "★バジェ",
   "meldLine": "  メルド[{{idx}}]: {{cards}}",
   "gameEnd": "ゲーム終了！ {{name}}の勝利です！",
@@ -24,5 +24,7 @@
   "promptPlayHelpDiscard": "d <idx>・・・カードを捨てる (例: d 4)",
   "promptPlayHelpNote": "メルドは同ランクの組か同スートの連番で最低3枚。valle(特別札)を含むメルドはチップを獲得します。",
   "promptRoundEnd": "ラウンド終了",
-  "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ"
+  "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
+  "helpExampleDraw": "  ds                   手番の最初に山札から 1 枚引く",
+  "helpExampleDiscard": "  d 0                  手札の 0 番を捨てる"
 }

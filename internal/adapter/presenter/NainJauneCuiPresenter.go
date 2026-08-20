@@ -155,5 +155,5 @@ var nainJauneHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *NainJauneCuiPresenter) ActionLogOutput(c interfaces.NainJauneGame) string {
-	return actionLogOutputText(c)
+	return actionLogOutputTextForSeats[*domain.NainJaunePlayer](c)
 }

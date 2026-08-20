@@ -592,23 +592,12 @@ func (g *Preference) cpuPlaySmart(playerIdx int, valid []int) int {
 	}
 	winnerIdx := g.trickWinner()
 	topRank := g.trickTopRank(winnerIdx)
-	winners := preferenceFilter(valid, func(idx int) bool { return g.preferenceRank(player.GetCard(idx)) > topRank })
+	winners := filterIndices(valid, func(idx int) bool { return g.preferenceRank(player.GetCard(idx)) > topRank })
 	wantWin := isDeclarer != misere
 	if wantWin && len(winners) > 0 {
 		return pickLowest(player, winners, func(c *Card) int { return g.preferenceRank(c) })
 	}
 	return pickLowest(player, valid, func(c *Card) int { return g.preferenceRank(c) })
-}
-
-// preferenceFilter 述語を満たすインデックスを抽出する。
-func preferenceFilter(indices []int, pred func(int) bool) []int {
-	var out []int
-	for _, idx := range indices {
-		if pred(idx) {
-			out = append(out, idx)
-		}
-	}
-	return out
 }
 
 // --- Hint ---

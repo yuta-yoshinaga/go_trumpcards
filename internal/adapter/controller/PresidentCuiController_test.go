@@ -68,12 +68,12 @@ func TestPresidentCuiController_Exec(t *testing.T) {
 
 	t.Run("set difficulty requires arg", func(t *testing.T) {
 		c := controller.NewPresidentCuiController(newMock())
-		assert.Contains(t, c.Exec("sd"), "required")
+		assert.Contains(t, c.Exec("sd"), msgCpuDifficultyRequired())
 	})
 
 	t.Run("set difficulty invalid arg", func(t *testing.T) {
 		c := controller.NewPresidentCuiController(newMock())
-		assert.Contains(t, c.Exec("sd 9"), "Invalid")
+		assert.Contains(t, c.Exec("sd 9"), msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("setrule list", func(t *testing.T) {
@@ -86,17 +86,17 @@ func TestPresidentCuiController_Exec(t *testing.T) {
 
 	t.Run("setrule usage", func(t *testing.T) {
 		c := controller.NewPresidentCuiController(newMock())
-		assert.Contains(t, c.Exec("sr"), "Usage")
+		assert.True(t, msgRejected(c.Exec("sr")))
 	})
 
 	t.Run("setrule unknown", func(t *testing.T) {
 		c := controller.NewPresidentCuiController(newMock())
-		assert.Contains(t, c.Exec("sr unknown 1"), "Unknown")
+		assert.Contains(t, c.Exec("sr unknown 1"), msgStem("unknownRule"))
 	})
 
 	t.Run("setrule invalid value", func(t *testing.T) {
 		c := controller.NewPresidentCuiController(newMock())
-		assert.Contains(t, c.Exec("sr revolution 9"), "Invalid")
+		assert.True(t, msgRejected(c.Exec("sr revolution 9")))
 	})
 
 	t.Run("setrule valid", func(t *testing.T) {
@@ -104,5 +104,14 @@ func TestPresidentCuiController_Exec(t *testing.T) {
 		c := controller.NewPresidentCuiController(m)
 		result := c.Exec("sr revolution 0")
 		assert.Equal(t, mockOutput, result)
+	})
+
+	// **落として残りで実行しない。** 打ち間違いを捨てると、プレイヤーが
+	// 選んでいない組み合わせが実行される (issue #5390)。
+	t.Run("refuses a mistyped index", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewPresidentCuiController(m)
+		assert.Contains(t, c.Exec("p 0 zz"), msgInvalidCardIndexPrefix(),
+			"a mistyped index must be refused, not dropped")
 	})
 }

@@ -13,7 +13,7 @@
   "phaseLine": "フェーズ: {{phase}}",
   "handLine": "ハンド: {{hand}}（ポット: {{pot}}）",
   "streetLine": "ストリート: {{street}} / {{total}}",
-  "wildLine": "3 と 9 はワイルド。表の 4 は追加札、表の 3 は買い増し",
+  "wildLine": "{{wilds}} はワイルド。表の {{bonus}} は追加札、表の {{buyIn}} は買い増し",
   "seatLine": "{{mark}}{{name}}{{state}} チップ {{chips}} / 賭け {{bet}}{{bonus}} : {{cards}}",
   "hidden": "[??]",
   "foldedMark": "（降り）",
@@ -47,5 +47,6 @@
   "reason.cheapToStay": "安いので、次の1枚を見る価値があります",
   "reason.seeAnotherCard": "まだ役が弱いので、ただで次の1枚を見ましょう",
   "reason.wildsRaiseTheBar": "ワイルドが8枚あるぶん、この手では相場に届きません",
-  "result.gameEnd": "ゲームが終わりました"
+  "result.gameEnd": "ゲームが終わりました",
+  "helpExampleBet": "  bet 100             100 チップを賭ける"
 }

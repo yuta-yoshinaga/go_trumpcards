@@ -37,5 +37,6 @@
   "legalMoveCount": "合法手: {{count}}",
   "frontendHint": {
     "blackholePlayFan": "この山の一番上の札を穴へ吸い込めます"
-  }
+  },
+  "progress": "吸い込み: {{count}}/{{total}}枚"
 }

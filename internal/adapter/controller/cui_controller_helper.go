@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"sort"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
@@ -67,4 +68,73 @@ func execCuiCommand(
 		}
 		return unknownCommandMessage(fields[0], allCommands)
 	}
+}
+
+// solitaireCuiFns is the interactor surface of the tableau-solitaire CUI
+// command set, taken as function values because each game has its own
+// interactor type with no shared interface.
+type solitaireCuiFns struct {
+	reset        func() string
+	move         func(args []string) string
+	giveUp       func() string
+	autoComplete func() string
+	undo         func() string
+	hint         func() string
+	actionLog    func() string
+	// extraCommands はゲーム固有の追加コマンド (名前 → ハンドラ)。エイリアスは
+	// 別のキーとして登録する。
+	//
+	// **共有の一覧に直接足すと 6 ゲーム全部に生える。**受け取る側の能力
+	// (例: LegalTargets) はゲームごとに違うので、名前だけ生えて動かない
+	// コマンドができてしまう (#5581)。
+	extraCommands map[string]func(args []string) string
+}
+
+// execSolitaireCui runs the move/giveup/autocomplete/undo command set shared by
+// the tableau solitaires, delegating quit/reset and unknown-command suggestions
+// to execCuiCommand.
+//
+// Consolidates 6 byte-identical Exec bodies: BakersDozen, BeleagueredCastle,
+// Bisley, FlowerGarden, KingAlbert, StreetsAndAlleys. They differed only in
+// receiver name and in which interactor the closures called — see issue #5368.
+//
+// The command list is passed to execCuiCommand unchanged, so a typo still
+// reaches the shared suggestion path ("もしかして 'move' ですか？") instead of
+// being swallowed here.
+// solitaireCuiCommandNames は候補一覧を組む。追加コマンドも入れる ── 入れないと
+// 打ち間違いが「もしかして」で拾われず、存在しないコマンド扱いになる。
+func solitaireCuiCommandNames(fns solitaireCuiFns) []string {
+	names := []string{"m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"}
+	extra := make([]string, 0, len(fns.extraCommands))
+	for name := range fns.extraCommands {
+		extra = append(extra, name)
+	}
+	// map の反復順は毎回変わる。候補の並びが実行ごとに変わらないよう揃える。
+	sort.Strings(extra)
+	return append(names, extra...)
+}
+
+func execSolitaireCui(command string, fns solitaireCuiFns) string {
+	return execCuiCommand(
+		command,
+		func(_ []string) string { return fns.reset() },
+		solitaireCuiCommandNames(fns),
+		func(cmd string, args []string) (string, bool) {
+			if h, ok := fns.extraCommands[cmd]; ok {
+				return h(args), true
+			}
+			switch cmd {
+			case "m", "move":
+				return fns.move(args), true
+			case "g", "giveup":
+				return fns.giveUp(), true
+			case "ac", "autocomplete":
+				return fns.autoComplete(), true
+			case "u", "undo":
+				return fns.undo(), true
+			default:
+				return handleCuiHintAndLog(cmd, fns.hint, fns.actionLog)
+			}
+		},
+	)
 }

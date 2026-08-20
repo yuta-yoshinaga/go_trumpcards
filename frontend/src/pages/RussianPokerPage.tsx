@@ -35,6 +35,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { parseRussianpokerCommand, RUSSIANPOKER_HELP } from '../utils/cli/commands/russianpokerCommands';
 import { formatRussianpokerState } from '../utils/cli/formatters/russianpokerFormatter';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -110,8 +111,9 @@ function RussianPokerPageContent() {
       parseCommand: parseRussianpokerCommand,
       formatResponse: formatRussianpokerState,
       helpText: RUSSIANPOKER_HELP,
+      localCommand: hintLocalCommand(frontendHint),
     }),
-    [],
+    [frontendHint],
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
@@ -290,6 +292,23 @@ function RussianPokerPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+
+            {/*
+              **もう払ったコストは、払った後こそ見えている必要がある。**ACTION 中の
+              見積もりは交換した瞬間に消えるので、POST_ACTION / SELECT /
+              FORCE_QUALIFY では確認する手段が無かった (#5613)。CUI は同じ内容を
+              全フェーズで出し続けている。END は payout-breakdown が担当するので
+              重ねない。
+            */}
+            {!isEndPhase && (state.exchangeCount > 0 || state.bought6th || state.forceExchanged) && (
+              <div className="text-ds-text-muted text-center text-sm mb-2" data-testid="rp-paid-costs">
+                {state.exchangeCount > 0 && (
+                  <div>{t('paidCosts.exchange', { count: state.exchangeCount, fee: state.exchangeFee })}</div>
+                )}
+                {state.bought6th && <div>{t('paidCosts.buy6th', { fee: state.buy6thFee })}</div>}
+                {state.forceExchanged && <div>{t('paidCosts.forceExchange', { fee: state.forceExchangeFee })}</div>}
+              </div>
+            )}
 
             {isBetPhase && (
               <div className="flex flex-col items-center justify-center py-4 gap-4">

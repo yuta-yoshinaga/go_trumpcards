@@ -1,10 +1,21 @@
 {
   "helpTitle": "ビッド・ユーカー (Bid Euchre)",
+  "hintNone": "助言はありません",
+  "hintNotYourTurn": "いまはあなたの番ではありません",
+  "hintGameEnd": "ゲームは終了しています。r で新しいゲームを始められます",
+  "hintHandEnd": "この局は精算済みです。n で次の局へ",
+  "hintBid": "{{bid}} なら通せます（これ以下は宣言できません）",
+  "hintPass": "手札が弱いのでパスが無難です",
+  "hintTrump": "切札は最も長いスートから選ぶのが基本です",
+  "hintForced": "出せる札はこれだけです",
+  "hintChoose": "この札から選ぶとよいでしょう",
+  "hintWith": "{{hint}}: {{list}}",
   "helpBid": "  b <3-6>                   宣言する（最低3トリック）",
   "helpPass": "  ps / pass                 宣言を見送る",
   "helpTrump": "  t <0-5>                   切札を指定 (0=♠ 1=♣ 2=♦ 3=♥ 4=NTハイ 5=NTロー)",
   "helpPlay": "  p <i>                     手札 i を出す",
   "helpNext": "  n / next                  次の局へ",
+  "helpHint": "  h / hint                  ヒントを表示",
   "header": "局: {{hand}}  勝利点: {{target}}点",
   "scoreLine": "チーム0: {{s0}}点 / チーム1: {{s1}}点",
   "contractLine": "契約: {{value}}トリック  切札: {{trump}}",
@@ -37,5 +48,6 @@
   "handMade": "宣言達成",
   "handSet": "宣言失敗。取った数ではなく宣言額を失います",
   "result.humanWin": "ゲーム終了！ あなたのチームの勝ち！",
-  "result.cpuWin": "ゲーム終了！ 相手チームの勝ち！"
+  "result.cpuWin": "ゲーム終了！ 相手チームの勝ち！",
+  "helpExamplePlay": "  p 0                       手札の 0 番のカードを出す"
 }

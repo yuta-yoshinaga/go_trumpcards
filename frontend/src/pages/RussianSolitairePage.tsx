@@ -492,7 +492,15 @@ function RussianSolitairePageContent() {
                                         }
                                       }}
                                       disabled={!isPlaying}
-                                      aria-label={`${tc.card ? cardAlt(tc.card) : ''}${hintAria}`}
+                                      // 上に乗る札は全部まとめて動く。画面はリングで
+                                      // 示していたが、読み上げには枚数が乗っていな
+                                      // かった (#5534)。末尾の1枚だけのときは言わない
+                                      // -- 「1枚まとめて」は情報にならない。
+                                      aria-label={`${tc.card ? cardAlt(tc.card) : ''}${
+                                        col.length - cardIdx > 1
+                                          ? ` ${t('blockMoveLabel', { n: col.length - cardIdx })}`
+                                          : ''
+                                      }${hintAria}`}
                                     >
                                       {tc.card && <AnimatedCard card={tc.card} width={rs.cw} />}
                                     </button>

@@ -80,12 +80,12 @@ func TestSheepsheadCuiController_Exec(t *testing.T) {
 
 	t.Run("bury missing args", func(t *testing.T) {
 		result := controller.NewSheepsheadCuiController(newMock()).Exec("b 0")
-		assert.Contains(t, result, "Usage")
+		assert.True(t, msgRejected(result))
 	})
 
 	t.Run("bury no args", func(t *testing.T) {
 		result := controller.NewSheepsheadCuiController(newMock()).Exec("b")
-		assert.Contains(t, result, "Usage")
+		assert.True(t, msgRejected(result))
 	})
 
 	t.Run("call suit", func(t *testing.T) {
@@ -104,12 +104,12 @@ func TestSheepsheadCuiController_Exec(t *testing.T) {
 
 	t.Run("call no args", func(t *testing.T) {
 		result := controller.NewSheepsheadCuiController(newMock()).Exec("c")
-		assert.Contains(t, result, "Suit is required")
+		assert.Contains(t, result, msgStem("suitRequiredThree"))
 	})
 
 	t.Run("call invalid suit", func(t *testing.T) {
 		result := controller.NewSheepsheadCuiController(newMock()).Exec("c 9")
-		assert.Contains(t, result, "Invalid suit")
+		assert.Contains(t, result, msgStem("invalidSuitThree"))
 	})
 
 	t.Run("play card", func(t *testing.T) {
@@ -121,7 +121,7 @@ func TestSheepsheadCuiController_Exec(t *testing.T) {
 
 	t.Run("play no args", func(t *testing.T) {
 		result := controller.NewSheepsheadCuiController(newMock()).Exec("play")
-		assert.Contains(t, result, "Card index is required")
+		assert.Contains(t, result, msgCardIndexRequired())
 	})
 
 	t.Run("next / nextround", func(t *testing.T) {
@@ -144,7 +144,7 @@ func TestSheepsheadCuiController_Exec(t *testing.T) {
 
 	t.Run("setdifficulty invalid", func(t *testing.T) {
 		result := controller.NewSheepsheadCuiController(newMock()).Exec("sd 9")
-		assert.Contains(t, result, "Invalid CPU difficulty")
+		assert.Contains(t, result, msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("setchips", func(t *testing.T) {
@@ -158,7 +158,7 @@ func TestSheepsheadCuiController_Exec(t *testing.T) {
 
 	t.Run("setchips invalid", func(t *testing.T) {
 		result := controller.NewSheepsheadCuiController(newMock()).Exec("sb 0")
-		assert.Contains(t, result, "Invalid base chips")
+		assert.Contains(t, result, msgStem("invalidBaseChips1OrMore"))
 	})
 
 	t.Run("hint / log", func(t *testing.T) {
@@ -174,4 +174,26 @@ func TestSheepsheadCuiController_Exec(t *testing.T) {
 		result := controller.NewSheepsheadCuiController(newMock()).Exec("zzz")
 		assert.Contains(t, result, "コマンドが不明です")
 	})
+}
+
+// codecov flagged the bury rejection: two indices are required and either one
+// being unparseable has to stop the write.
+func TestSheepsheadCuiController_BuryRejectsBadIndices(t *testing.T) {
+	mockOutput := `{"phase":0}`
+	newMock := func() *mockUsecases.MockSheepsheadInteractor {
+		m := new(mockUsecases.MockSheepsheadInteractor)
+		m.On("GetConfig").Return(domain.DefaultSheepsheadConfig())
+		m.On("ResetWithConfig", mock.Anything).Return(mockOutput)
+		m.On("Bury", mock.Anything).Return(mockOutput)
+		return m
+	}
+
+	for _, args := range []string{"abc 1", "0 xyz"} {
+		t.Run("bury "+args, func(t *testing.T) {
+			m := newMock()
+			out := controller.NewSheepsheadCuiController(m).Exec("b " + args)
+			assert.Equal(t, msgKey("invalidCardIndicesUsageB"), out)
+			m.AssertNotCalled(t, "Bury", mock.Anything)
+		})
+	}
 }

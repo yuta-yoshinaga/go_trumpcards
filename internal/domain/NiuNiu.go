@@ -389,8 +389,30 @@ func NiuNiuRankLabel(rank NiuNiuRank) string {
 	return fmt.Sprintf("牛%d", int(rank))
 }
 
-// GetRankLabel 格の表示名を返す（表示用）
-func (n *NiuNiu) GetRankLabel(rank NiuNiuRank) string { return NiuNiuRankLabel(rank) }
+// NiuNiuRankKey は格をロケール非依存の識別子で返す。
+//
+// NiuNiuRankLabel は "牛牛" のような**表示文字列**で、settle() がそれを
+// "親: %s" に埋めて presenter がそのまま送っていたため、英語ロケールでも日本語が
+// 出ていた (#5567)。文言の組み立ては presenter の i18n に任せ、ドメインは
+// どの格かだけを伝える。
+func NiuNiuRankKey(rank NiuNiuRank) string {
+	switch rank {
+	case NiuNiuRankNone:
+		return "none"
+	case NiuNiuRankNiuNiu:
+		return "niuniu"
+	default:
+		return fmt.Sprintf("n%d", int(rank))
+	}
+}
+
+// GetBankerRankKey は親の格をロケール非依存の識別子で返す。役が未確定なら空。
+func (n *NiuNiu) GetBankerRankKey() string {
+	if n.bankerHand == nil {
+		return ""
+	}
+	return NiuNiuRankKey(n.bankerHand.rank)
+}
 
 // GetMultiplier 格の配当倍率を返す（表示用）
 func (n *NiuNiu) GetMultiplier(rank NiuNiuRank) int { return niuNiuMultiplier(rank) }

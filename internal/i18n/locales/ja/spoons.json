@@ -3,11 +3,11 @@
   "helpPass": "  p <n>, pass <n>      手札 n 番を次のプレイヤーへ渡す",
   "helpGrab": "  g, grab              スプーンを掴む",
   "helpNext": "  n, next              次のラウンドへ進む",
-  "helpSetDifficulty": "  sd <n>               CPU難易度 (0=Easy, 1=Normal, 2=Hard) を設定してリセット",
   "labelHuman": "あなた",
   "labelCpu": "CPU",
   "roundLine": "ラウンド{{round}}  残りスプーン: {{spoons}}本",
   "lettersLabel": "[{{letters}}]",
+  "feederTag": "[親]",
   "hasSpoon": "スプーン獲得",
   "playerEliminated": "{{name}}: 脱落 (SPOONS)",
   "cpuHandLine": "{{name}}: 手札{{count}}枚",
@@ -20,5 +20,6 @@
   "winCpu": "{{name}} の勝ちです...",
   "result.humanWin": "あなたの勝ちです！",
   "result.cpuWin": "CPUの勝ちです...",
-  "rankGroup": "(同{{count}}枚)"
+  "rankGroup": "(同{{count}}枚)",
+  "helpExamplePass": "  p 0                  手札の 0 番を隣へ回す"
 }

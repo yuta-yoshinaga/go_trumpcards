@@ -41,7 +41,7 @@ func (c *RamsCuiController) Exec(command string) string {
 			case "out", "pass":
 				return c.ri.Pass(), true
 			case "c", "card":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.ri.PlayCard)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.ri.PlayCard)
 			case "n", "next":
 				return c.ri.NextRound(), true
 			case "g", "giveup":

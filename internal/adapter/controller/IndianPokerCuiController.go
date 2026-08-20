@@ -59,7 +59,7 @@ func (c *IndianPokerCuiController) Exec(command string) string {
 				}
 				bl, err := strconv.Atoi(args[0])
 				if err != nil {
-					return i18n.Tf("indianpoker.invalidBettingLimit", "val", args[0]), true
+					return invalidArg("indianpoker.invalidBettingLimit", "val", args[0]), true
 				}
 				cfg := c.ipi.GetConfig()
 				cfg.BettingLimit = domain.BettingLimitType(bl)
@@ -70,7 +70,7 @@ func (c *IndianPokerCuiController) Exec(command string) string {
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 0 || v > 1 {
-					return i18n.Tf("invalidMetaAI", "val", args[0]), true
+					return invalidArg("invalidMetaAI", "val", args[0]), true
 				}
 				cfg := c.ipi.GetConfig()
 				cfg.CpuMetaAI = v == 1
@@ -81,7 +81,7 @@ func (c *IndianPokerCuiController) Exec(command string) string {
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 1 {
-					return i18n.Tf("indianpoker.invalidAnte", "val", args[0]), true
+					return invalidArg("indianpoker.invalidAnte", "val", args[0]), true
 				}
 				cfg := c.ipi.GetConfig()
 				cfg.Ante = v
@@ -100,7 +100,7 @@ func indianPokerParseAmount(args []string) (int, error) {
 	}
 	amount, err := strconv.Atoi(args[0])
 	if err != nil || amount <= 0 {
-		return 0, errors.New(i18n.Tf("indianpoker.invalidAmount", "val", args[0]))
+		return 0, errors.New(invalidArg("indianpoker.invalidAmount", "val", args[0]))
 	}
 	return amount, nil
 }

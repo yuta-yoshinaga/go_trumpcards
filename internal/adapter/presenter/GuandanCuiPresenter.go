@@ -184,5 +184,65 @@ func (p *GuandanCuiPresenter) writeHandEnd(b *strings.Builder, g interfaces.Guan
 
 // ActionLogOutput は棋譜をテキストで出力する。
 func (p *GuandanCuiPresenter) ActionLogOutput(g interfaces.GuandanGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.GuandanPlayer](g)
+}
+
+// guandanHumanIdx は人間の席を返す (いなければ -1)。
+func guandanHumanIdx(g interfaces.GuandanGame) int {
+	for i := range domain.GuandanPlayerCnt {
+		if p := g.GetPlayer(i); p != nil && p.GetIsHuman() {
+			return i
+		}
+	}
+	return -1
+}
+
+// CheckOutput は手札の組み合わせが何の役になるかを下読みする。
+//
+// **CUI は打って初めて拒否される。**Web は選択に合わせてカード下に役名と
+// 「場のどの役にも勝つ」を出しているのに、CUI には判定手段が無く、無効役だと
+// 分かるのが play を弾かれたときだった (#5734)。
+func (p *GuandanCuiPresenter) CheckOutput(g interfaces.GuandanGame, idxs []int) string {
+	human := guandanHumanIdx(g)
+	if human < 0 {
+		return color.Yellow(i18n.T("guandan.checkNoHand")) + "\n"
+	}
+	player := g.GetPlayer(human)
+	if len(idxs) == 0 {
+		return color.Yellow(i18n.T("guandan.checkNeedsIndexes")) + "\n"
+	}
+
+	cards := make([]*domain.Card, 0, len(idxs))
+	seen := make(map[int]bool, len(idxs))
+	for _, i := range idxs {
+		if i < 0 || i >= player.GetCardsSize() || seen[i] {
+			// **同じ添字を 2 度書いた場合も無効。**手札は 1 枚しかないので、
+			// 通してしまうと存在しない役を「作れる」と答えることになる。
+			return color.Yellow(i18n.Tf("guandan.checkOutOfRange",
+				"val", strconv.Itoa(i), "max", strconv.Itoa(player.GetCardsSize()-1))) + "\n"
+		}
+		seen[i] = true
+		cards = append(cards, player.GetCard(i))
+	}
+
+	combo := domain.GuandanEvaluate(cards, g.GetLevel())
+	if combo == nil || combo.Kind == domain.GuandanComboNone {
+		return color.Yellow(i18n.T("guandan.checkInvalid")) + "\n"
+	}
+
+	msg := i18n.Tf("guandan.checkCombo",
+		"combo", guandanComboLabel(combo.Kind), "size", strconv.Itoa(combo.Size))
+	if domain.GuandanIsBomb(combo.Kind) {
+		msg += " " + i18n.T("guandan.checkBeatsAll")
+	}
+	switch last := g.GetLastCombo(); {
+	case last == nil:
+		msg += " " + i18n.T("guandan.checkLead")
+	case domain.GuandanBeats(combo, last):
+		msg += " " + i18n.T("guandan.checkBeatsTable")
+	default:
+		msg += " " + i18n.Tf("guandan.checkLosesToTable",
+			"combo", guandanComboLabel(last.Kind), "size", strconv.Itoa(last.Size))
+	}
+	return color.Yellow(msg) + "\n"
 }

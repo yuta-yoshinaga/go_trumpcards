@@ -329,17 +329,24 @@ function EcartePageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {state.hint && isRequestedHint(state) && (
-              <div className="text-ds-warning text-sm mb-2">
-                {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
-                {state.hint.cardIndex != null && ` ([${state.hint.cardIndex}])`}
-                {/* **識別子をそのまま出さない。**`propose` のような英語が
-                    日本語 UI に混ざる (#4727)。訳が無ければ識別子に落とす
-                    (キー文字列は出さない)。 */}
-                {state.hint.action != null &&
-                  ` (${t(`action.${state.hint.action}`, { defaultValue: state.hint.action })})`}
-              </div>
-            )}
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-testid="ecarte-hint-live" role="status" aria-live="polite">
+              {state.hint && isRequestedHint(state) && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
+                  {state.hint.cardIndex != null && ` ([${state.hint.cardIndex}])`}
+                  {/* **識別子をそのまま出さない。**`propose` のような英語が
+                      日本語 UI に混ざる (#4727)。訳が無ければ識別子に落とす
+                      (キー文字列は出さない)。 */}
+                  {state.hint.action != null &&
+                    ` (${t(`action.${state.hint.action}`, { defaultValue: state.hint.action })})`}
+                </div>
+              )}
+            </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="ecarte-action-buttons">
@@ -416,6 +423,25 @@ function EcartePageContent() {
                     {t('consequence.refuse')}
                   </span>
                 </>
+              )}
+              {/* **損得説明が title と sr-only にしか無かった** (#5658)。タッチ端末は
+                  hover が起きないので、目の見える利用者がこの情報に到達できない。
+                  狭い画面でだけ本文として出す (デスクトップは従来どおりツールチップ)。 */}
+              {(isElderDecide || isDealerRespond) && (
+                <div
+                  className="sm:hidden basis-full text-xs text-ds-text-muted mt-1 space-y-0.5"
+                  data-testid="ecarte-consequences"
+                  // 同じ文はボタンの aria-describedby から既に読まれる。
+                  // ここは**見た目の側だけ**なので、読み上げからは外して
+                  // 二重に聞こえるのを避ける (レビュー指摘)。
+                  aria-hidden="true"
+                >
+                  {(isElderDecide ? (['propose', 'stand'] as const) : (['accept', 'refuse'] as const)).map((action) => (
+                    <div key={action}>
+                      {t(`${action}Button`)}: {t(`consequence.${action}`)}
+                    </div>
+                  ))}
+                </div>
               )}
               {isDiscardStep && (
                 <>

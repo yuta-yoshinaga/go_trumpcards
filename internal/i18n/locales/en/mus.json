@@ -12,6 +12,15 @@
   "helpSetDifficulty": "  sd [0-2]              CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
   "roundLine": "Round: {{round}}  Team 0: {{t0}} pts  Team 1: {{t1}} pts",
   "playerLine": "{{name}} (Team {{team}}, {{score}} pts): {{cards}} cards",
+  "summaryLabel": "Hand",
+  "summaryLine": "{{label}}: Grande {{grande}} / Chica {{chica}} / Pares {{pares}} / Juego {{juego}}",
+  "paresNone": "none",
+  "paresPar": "par",
+  "paresMedias": "medias (three of a kind)",
+  "paresDuples": "duples (two pairs)",
+  "juegoBest": "31 ★ (best)",
+  "juegoYes": "{{points}} (juego)",
+  "juegoPunto": "punto {{points}} (no juego)",
   "resultLine": "  {{round}}: kind={{kind}} stake={{stake}}",
   "gameEnd": "Game over! Team {{team}} wins!",
   "promptMus": "Mus or Corte?",
@@ -48,5 +57,7 @@
   "resultDeferred": "Paso (deferred to showdown)",
   "resultAccepted": "Quiero (showdown)",
   "resultAwarded": "No quiero (awarded)",
-  "resultOrdago": "Ordago accepted"
+  "resultOrdago": "Ordago accepted",
+  "helpExampleMus": "  m                     declare Mus to exchange cards",
+  "helpHint": "  h                     show a hint"
 }

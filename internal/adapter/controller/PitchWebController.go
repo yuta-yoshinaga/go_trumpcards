@@ -42,6 +42,14 @@ type PitchWebOutputHint struct {
 }
 
 // PitchWebOutput ピッチWebアウトプット
+// PitchWebOutputBreakdown は 4 種の得点をそれぞれ取った席の添字 (-1=なし)。
+type PitchWebOutputBreakdown struct {
+	High int `json:"high"`
+	Low  int `json:"low"`
+	Jack int `json:"jack"`
+	Game int `json:"game"`
+}
+
 type PitchWebOutput struct {
 	Players          []*PitchWebOutputPlayer `json:"players"`
 	Phase            int                     `json:"phase"`
@@ -59,8 +67,11 @@ type PitchWebOutput struct {
 	GameEndFlag      bool                    `json:"gameEndFlag"`
 	WinnerIdx        int                     `json:"winnerIdx"`
 	LeadPlayerIdx    int                     `json:"leadPlayerIdx"`
-	ValidPlayIndices []int                   `json:"validPlayIndices,omitempty"`
-	Hint             *PitchWebOutputHint     `json:"hint,omitempty"`
+	// RoundBreakdown は直近ラウンドの High/Low/Jack/Game を誰が取ったか (#5584)。
+	// -1 は誰も取っていない。合計だけでは 1 点差の理由が読めない。
+	RoundBreakdown   *PitchWebOutputBreakdown `json:"roundBreakdown"`
+	ValidPlayIndices []int                    `json:"validPlayIndices,omitempty"`
+	Hint             *PitchWebOutputHint      `json:"hint,omitempty"`
 	WebOutputBase
 	Config PitchWebOutputConfig `json:"config"`
 }
@@ -101,7 +112,14 @@ func newPitchDefaultOutput(msg string) *PitchWebOutput {
 		LastTrickWinner: -1,
 		WinnerIdx:       -1,
 		BidWinnerIdx:    -1,
-		WebOutputBase:   WebOutputBase{Message: msg},
+		// まだ何も争われていないので、どのカテゴリも「なし」。
+		RoundBreakdown: &PitchWebOutputBreakdown{
+			High: domain.PitchNoScorer,
+			Low:  domain.PitchNoScorer,
+			Jack: domain.PitchNoScorer,
+			Game: domain.PitchNoScorer,
+		},
+		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }
 

@@ -34,35 +34,35 @@ func (c *SixCardGolfCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "fi", "flipinitial":
-				return cuiutil.WithParsedInt(args, "Position is required (0-5).", "Invalid position: %s.", 0, 5, c.ci.FlipInitial)
+				return cuiutil.WithParsedIntKeys(args, "positionRequired05", "invalidPosition", 0, 5, c.ci.FlipInitial)
 			case "ds", "drawstock":
 				return c.ci.DrawStock(), true
 			case "dd", "drawdiscard":
 				return c.ci.DrawDiscard(), true
 			case "sw", "swap":
-				return cuiutil.WithParsedInt(args, "Position is required (0-5).", "Invalid position: %s.", 0, 5, c.ci.SwapCard)
+				return cuiutil.WithParsedIntKeys(args, "positionRequired05", "invalidPosition", 0, 5, c.ci.SwapCard)
 			case "di", "discard":
 				return c.ci.DiscardDrawn(), true
 			case "fl", "flip":
-				return cuiutil.WithParsedInt(args, "Position is required (0-5).", "Invalid position: %s.", 0, 5, c.ci.FlipCard)
+				return cuiutil.WithParsedIntKeys(args, "positionRequired05", "invalidPosition", 0, 5, c.ci.FlipCard)
 			case "sf", "skipflip":
 				return c.ci.SkipFlip(), true
 			case "nr", "nextround":
 				return c.ci.NextRound(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.ci.GetConfig()
 					cfg.CpuDifficulty = domain.SixCardGolfCpuDifficulty(v)
 					return c.ci.ResetWithConfig(cfg)
 				})
 			case "sp", "setplayers":
-				return cuiutil.WithParsedInt(args, "Player count is required (2-4).", "Invalid player count: %s. Please enter 2-4.", 2, 4, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "playerCountRequired", "invalidPlayerCount", 2, 4, func(v int) string {
 					cfg := c.ci.GetConfig()
 					cfg.PlayerCount = v
 					return c.ci.ResetWithConfig(cfg)
 				})
 			case "sr", "setrounds":
-				return cuiutil.WithParsedInt(args, "Round count is required (1-18).", "Invalid round count: %s. Please enter 1-18.", 1, 18, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "roundCountRequired118", "invalidRoundCount118", 1, 18, func(v int) string {
 					cfg := c.ci.GetConfig()
 					cfg.Rounds = v
 					return c.ci.ResetWithConfig(cfg)

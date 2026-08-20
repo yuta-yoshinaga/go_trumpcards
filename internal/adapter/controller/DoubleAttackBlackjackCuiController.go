@@ -32,15 +32,13 @@ func (cc *DoubleAttackBlackjackCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bet":
-				ante, errMsg, ok := cuiutil.ParseIntArg(args,
-					"Ante is required.", "Invalid ante. Please enter a number.", 0, math.MaxInt)
+				ante, errMsg, ok := cuiutil.ParseIntArgKeys(args, "anteRequiredPlain", "invalidAnteANumber", 0, math.MaxInt)
 				if !ok {
 					return errMsg, true
 				}
 				bustIt := 0
 				if len(args) > 1 {
-					v, errMsg2, ok2 := cuiutil.ParseIntArg(args[1:],
-						"", "Invalid bust it bet. Please enter a number.", 0, math.MaxInt)
+					v, errMsg2, ok2 := cuiutil.ParseIntArgKeys(args[1:], "", "invalidBustItBetANumber", 0, math.MaxInt)
 					if !ok2 {
 						return errMsg2, true
 					}
@@ -49,8 +47,7 @@ func (cc *DoubleAttackBlackjackCuiController) Exec(command string) string {
 				return cc.ci.PlaceBet(ante, bustIt), true
 			case "a", "attack":
 				// **0 は「見送り」。** 上限はドメインが持つのでここでは書かない。
-				amount, errMsg, ok := cuiutil.ParseIntArg(args,
-					"Attack amount is required.", "Invalid amount. Please enter a number.", 0, math.MaxInt)
+				amount, errMsg, ok := cuiutil.ParseIntArgKeys(args, "attackAmountRequired", "invalidAmountANumber", 0, math.MaxInt)
 				if !ok {
 					return errMsg, true
 				}

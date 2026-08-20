@@ -45,21 +45,21 @@ func (c *CallBreakCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bid":
-				return cuiutil.WithParsedInt(args, "Bid value is required (1-13).", "Invalid bid value: %s.", domain.CallBreakMinBid, domain.CallBreakHandSize, c.ci.Bid)
+				return cuiutil.WithParsedIntKeys(args, "bidValueRequired113", "invalidBidValue", domain.CallBreakMinBid, domain.CallBreakHandSize, c.ci.Bid)
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.ci.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.ci.Play)
 			case "n", "next":
 				return c.ci.NextTrick(), true
 			case "nr", "nextround":
 				return c.ci.NextRound(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.ci.GetConfig()
 					cfg.CpuDifficulty = domain.CallBreakCpuDifficulty(v)
 					return c.ci.ResetWithConfig(cfg)
 				})
 			case "sr", "setrounds":
-				return cuiutil.WithParsedInt(args, "Total rounds is required.", "Invalid round count: %s. Please enter 1 or more.", 1, math.MaxInt, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "totalRoundsRequired", "invalidRoundCount1OrMore", 1, math.MaxInt, func(v int) string {
 					cfg := c.ci.GetConfig()
 					cfg.MaxRounds = v
 					return c.ci.ResetWithConfig(cfg)

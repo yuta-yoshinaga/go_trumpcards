@@ -29,6 +29,13 @@ import { formatEstimationState } from '../utils/cli/formatters/estimationFormatt
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
+/** Signed round delta: the plus sign is ours to add, and 0 reads as "no change". */
+function signedScore(n: number): string {
+  if (n > 0) return `+${n.toString()}`;
+  if (n === 0) return '±0';
+  return n.toString();
+}
+
 /** Tricks per round (thirteen cards each). */
 const TRICKS_PER_ROUND = 13;
 
@@ -222,6 +229,17 @@ function EstimationPageContent() {
                   {t('header.took', { n: String(p.trickCount) })}
                   {' / '}
                   <span className="text-ds-accent">{t('header.total', { n: String(p.totalScore) })}</span>
+                  {/* **得点式が複雑（10+宣言 / Dash Call ±23 / Risk 2倍）なので、
+                      累計の差分を暗算させない** (#5751)。増減が確定するラウンド
+                      終了時にだけ出す。 */}
+                  {isRoundEnd && (
+                    <span
+                      className={`ml-2 ${p.roundScore < 0 ? 'text-ds-error' : 'text-ds-success'}`}
+                      data-testid={`est-round-delta-${p.id.toString()}`}
+                    >
+                      {t('header.roundDelta', { delta: signedScore(p.roundScore) })}
+                    </span>
+                  )}
                 </div>
               ))}
             </div>

@@ -45,21 +45,21 @@ func (c *PitchCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bid":
-				return cuiutil.WithParsedInt(args, "Bid value is required (0=pass, 2-4).", "Invalid bid value: %s.", domain.PitchPassBid, domain.PitchMaxBid, c.pi.Bid)
+				return cuiutil.WithParsedIntKeys(args, "bidValueRequiredPass24", "invalidBidValue", domain.PitchPassBid, domain.PitchMaxBid, c.pi.Bid)
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.pi.Play)
+				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.pi.Play)
 			case "n", "next":
 				return c.pi.NextTrick(), true
 			case "nr", "nextround":
 				return c.pi.NextRound(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.pi.GetConfig()
 					cfg.CpuDifficulty = domain.PitchCpuDifficulty(v)
 					return c.pi.ResetWithConfig(cfg)
 				})
 			case "sl", "setlimit":
-				return cuiutil.WithParsedInt(args, "Point limit is required.", "Invalid point limit: %s. Please enter 1 or more.", 1, math.MaxInt, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "pointLimitRequired", "invalidPointLimit", 1, math.MaxInt, func(v int) string {
 					cfg := c.pi.GetConfig()
 					cfg.PointLimit = v
 					return c.pi.ResetWithConfig(cfg)

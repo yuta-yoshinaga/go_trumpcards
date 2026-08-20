@@ -8,6 +8,7 @@ import { MoodQuestion } from '../components/discover/MoodQuestion';
 import { SurveyProgress } from '../components/discover/SurveyProgress';
 import { AXES, AXIS_KEYS, type AxisKey, TOTAL_QUESTIONS } from '../constants/discoverAxes';
 import { useDiscoverI18nBundle } from '../hooks/useDiscoverI18nBundle';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 import { useSurveyDraft } from '../hooks/useSurveyDraft';
 import { focusRingWhite } from '../styles/buttonStyles';
@@ -59,6 +60,8 @@ function firstUnansweredStep(axes: ReturnType<typeof useSurveyDraft>['axes']): n
  */
 export function DiscoverPage() {
   const { t } = useTranslation('discover');
+  const { t: tc } = useTranslation('common');
+  useDocumentTitle(tc('nav.discover'));
   const navigate = useNavigate();
   const bundleReady = useDiscoverI18nBundle();
   const reducedMotion = useReducedMotion();

@@ -14,7 +14,7 @@ export interface DeuceToSevenConfigInput {
 /** API client for the 2-7 Triple Draw /deucetoseven/exec endpoint. */
 export const deuceToSevenApi = {
   exec: (
-    command: 'reset' | 'exchange' | 'stand' | 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'allin',
+    command: 'reset' | 'exchange' | 'stand' | 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'allin' | 'hint',
     indices?: number[],
     amount?: number,
     config?: DeuceToSevenConfigInput,

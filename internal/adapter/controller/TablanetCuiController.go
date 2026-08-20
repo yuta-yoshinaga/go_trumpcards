@@ -48,7 +48,7 @@ func (c *TablanetCuiController) Exec(command string) string {
 			case "n", "next", "nr", "nextround":
 				return c.bi.NextRound(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.bi.GetConfig()
 					cfg.CpuDifficulty = domain.TablanetCpuDifficulty(v)
 					return c.bi.ResetWithConfig(cfg)
@@ -63,11 +63,11 @@ func (c *TablanetCuiController) Exec(command string) string {
 // handlePlay は "p <handIdx> [tableIdx...]" を解析して Play を呼ぶ。
 func (c *TablanetCuiController) handlePlay(args []string) string {
 	if len(args) == 0 {
-		return "Card index is required (e.g. p 0, or p 0 1 2 to capture table cards)."
+		return invalidArg("cardIndexRequiredCapture")
 	}
 	handIdx, err := strconv.Atoi(args[0])
 	if err != nil {
-		return "Invalid card index: " + args[0] + "."
+		return invalidArg("invalidCardIndex", "val", args[0])
 	}
 	tableIdxs, _ := cuiutil.ParseIntSlice(args[1:])
 	return c.bi.Play(handIdx, tableIdxs)

@@ -48,12 +48,12 @@ func TestOpenFaceChineseCuiController_Exec(t *testing.T) {
 
 	t.Run("place no args", func(t *testing.T) {
 		result := controller.NewOpenFaceChineseCuiController(newMock()).Exec("place")
-		assert.Contains(t, result, "Row is required")
+		assert.Contains(t, result, msgStem("rowRequired0Front1Middle2Back"))
 	})
 
 	t.Run("place invalid", func(t *testing.T) {
 		result := controller.NewOpenFaceChineseCuiController(newMock()).Exec("place 9")
-		assert.Contains(t, result, "Invalid row")
+		assert.Contains(t, result, msgStem("invalidRow01Or2"))
 	})
 
 	t.Run("front/middle/back shortcuts", func(t *testing.T) {
@@ -85,7 +85,7 @@ func TestOpenFaceChineseCuiController_Exec(t *testing.T) {
 
 	t.Run("setdifficulty invalid", func(t *testing.T) {
 		result := controller.NewOpenFaceChineseCuiController(newMock()).Exec("sd 9")
-		assert.Contains(t, result, "Invalid CPU difficulty")
+		assert.Contains(t, result, msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("setplayers", func(t *testing.T) {
@@ -99,7 +99,7 @@ func TestOpenFaceChineseCuiController_Exec(t *testing.T) {
 
 	t.Run("setplayers invalid", func(t *testing.T) {
 		result := controller.NewOpenFaceChineseCuiController(newMock()).Exec("sp 9")
-		assert.Contains(t, result, "Invalid player count")
+		assert.Contains(t, result, msgInvalidPlayerCountPrefix())
 	})
 
 	t.Run("hint / log", func(t *testing.T) {

@@ -47,23 +47,23 @@ func (c *GapsCuiController) Exec(command string) string {
 // handleMove は "m <fromRow> <fromCol> <toRow> <toCol>" を処理する。
 func (c *GapsCuiController) handleMove(args []string) string {
 	if len(args) != 4 {
-		return "Usage: m <fromRow> <fromCol> <toRow> <toCol>"
+		return invalidArg("usageMFromrowFromcolTorowTocol")
 	}
 	fr, err := strconv.Atoi(args[0])
 	if err != nil {
-		return fmt.Sprintf("Invalid fromRow: %s.", args[0])
+		return invalidArg("invalidFromRow", "val", fmt.Sprint(args[0]))
 	}
 	fc, err := strconv.Atoi(args[1])
 	if err != nil {
-		return fmt.Sprintf("Invalid fromCol: %s.", args[1])
+		return invalidArg("invalidFromCol", "val", fmt.Sprint(args[1]))
 	}
 	tr, err := strconv.Atoi(args[2])
 	if err != nil {
-		return fmt.Sprintf("Invalid toRow: %s.", args[2])
+		return invalidArg("invalidToRow", "val", fmt.Sprint(args[2]))
 	}
 	tc, err := strconv.Atoi(args[3])
 	if err != nil {
-		return fmt.Sprintf("Invalid toCol: %s.", args[3])
+		return invalidArg("invalidToCol", "val", fmt.Sprint(args[3]))
 	}
 	return c.gi.Move(fr, fc, tr, tc)
 }

@@ -31,6 +31,7 @@ import { KillePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { KILLE_HELP, parseKilleCommand } from '../utils/cli/commands/killeCommands';
 import { formatKilleState } from '../utils/cli/formatters/killeFormatter';
+import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 
 /** Stake options for the Kille settings panel. */
@@ -124,14 +125,23 @@ function KillePageContent() {
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('kille');
+
+  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
+  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('kille', state);
   const cliConfig: CliGameConfig<KilleResponse, Parameters<typeof killeApi.exec>> = useMemo(
     () => ({
       gameName: 'kille',
       parseCommand: parseKilleCommand,
       formatResponse: formatKilleState,
       helpText: KILLE_HELP,
+      localCommand: hintLocalCommand(frontendHint),
     }),
-    [],
+    [frontendHint],
   );
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
@@ -153,14 +163,6 @@ function KillePageContent() {
     [exec, kbIsHumanTurn, kbIsShowdown],
   );
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading });
-
-  // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
-  // だけフック数が変わってページが骨組みのまま固まる (#4561)。
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('kille', state);
 
   if (!state)
     return <GameSkeleton gameKey="kille" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 1 }} />;

@@ -43,13 +43,13 @@ func (c *PishtiCuiController) Exec(command string) string {
 			case "n", "next":
 				return c.pi.NextRound(), true
 			case "sd", "setdifficulty":
-				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.pi.GetConfig()
 					cfg.CpuDifficulty = domain.PishtiCpuDifficulty(v)
 					return c.pi.ResetWithConfig(cfg)
 				})
 			case "sp", "setplayers":
-				return cuiutil.WithParsedInt(args, "player count is required (2-4).", "Invalid player count: %s. Please enter 2-4.", domain.PishtiMinPlayerCnt, domain.PishtiMaxPlayerCnt, func(v int) string {
+				return cuiutil.WithParsedIntKeys(args, "playerCountRequired24", "invalidPlayerCount24", domain.PishtiMinPlayerCnt, domain.PishtiMaxPlayerCnt, func(v int) string {
 					cfg := c.pi.GetConfig()
 					cfg.PlayerCnt = v
 					return c.pi.ResetWithConfig(cfg)
@@ -64,11 +64,11 @@ func (c *PishtiCuiController) Exec(command string) string {
 // handlePlay は `p <h>` を処理する。
 func (c *PishtiCuiController) handlePlay(args []string) (string, bool) {
 	if len(args) < 1 {
-		return "Usage: p <handIdx>", true
+		return invalidArg("usagePHandidx"), true
 	}
-	handIdx, _, ok := cuiutil.ParseIntArg([]string{args[0]}, "hand index is required", "Invalid hand index: %s", 0, 51)
+	handIdx, _, ok := cuiutil.ParseIntArgKeys([]string{args[0]}, "handIndexRequired", "invalidHandIndex", 0, 51)
 	if !ok {
-		return "Invalid hand index: " + args[0], true
+		return invalidArg("invalidHandIndexRaw", "val", args[0]), true
 	}
 	return c.pi.Play(handIdx), true
 }

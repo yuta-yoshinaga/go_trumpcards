@@ -56,12 +56,12 @@ func TestScartoCuiController_Exec(t *testing.T) {
 
 	t.Run("scarto too few", func(t *testing.T) {
 		result := controller.NewScartoCuiController(newMock()).Exec("scarto 0 1")
-		assert.Contains(t, result, "Three card indices are required")
+		assert.Contains(t, result, msgStem("threeIndicesRequiredScarto"))
 	})
 
 	t.Run("scarto invalid index", func(t *testing.T) {
 		result := controller.NewScartoCuiController(newMock()).Exec("scarto 0 1 x")
-		assert.Contains(t, result, "Invalid card index")
+		assert.Contains(t, result, msgInvalidCardIndexPrefix())
 	})
 
 	t.Run("play card", func(t *testing.T) {
@@ -73,7 +73,7 @@ func TestScartoCuiController_Exec(t *testing.T) {
 
 	t.Run("play no args", func(t *testing.T) {
 		result := controller.NewScartoCuiController(newMock()).Exec("play")
-		assert.Contains(t, result, "Card index is required")
+		assert.Contains(t, result, msgCardIndexRequired())
 	})
 
 	t.Run("next / nextround", func(t *testing.T) {
@@ -96,7 +96,7 @@ func TestScartoCuiController_Exec(t *testing.T) {
 
 	t.Run("setdifficulty invalid", func(t *testing.T) {
 		result := controller.NewScartoCuiController(newMock()).Exec("sd 9")
-		assert.Contains(t, result, "Invalid CPU difficulty")
+		assert.Contains(t, result, msgInvalidCpuDifficultyPrefix())
 	})
 
 	t.Run("hint / log", func(t *testing.T) {

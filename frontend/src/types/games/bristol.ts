@@ -27,6 +27,10 @@ export interface BristolResponse extends BaseGameResponse {
   phase: number;
   moveCount: number;
   canUndo: boolean;
+  /** Whether the board has no legal move left (the stock cannot be rebuilt). */
+  isStalemate: boolean;
+  /** How many undos escape the dead end; 0 when not stuck. */
+  undoToEscape: number;
   hint?: BristolHint;
 }
 
