@@ -41,6 +41,8 @@ func (p *PochWebPresenter) buildBase(c interfaces.PochGame) *controller.PochWebO
 	resObj.CurrentPlayerIdx = c.GetCurrentPlayerIdx()
 	resObj.PaySuit = c.GetPaySuit()
 	resObj.BetTarget = c.GetBetTarget()
+	best := c.GetBestCombo(0)
+	resObj.YourBestComboSize, resObj.YourBestComboRank = best.Size, best.Rank
 	resObj.PochenWinner = c.GetPochenWinner()
 	resObj.PochenPot = c.GetPochenPot()
 	resObj.StopsSuit = c.GetStopsSuit()

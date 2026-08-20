@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { goofspielApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
@@ -153,8 +153,14 @@ describe('GoofspielPage', () => {
     const s1 = await screen.findByTestId('gs-seat-1');
     expect(s1).toHaveTextContent('12');
     expect(s1).toHaveTextContent('21');
-    // CPU の残り札そのものが出ている。
-    expect(s1.textContent).toMatch(/♣|CLOVER/);
+    // **勝負はランクの大小比較** (#5769)。CPU の残り札も、alt の羅列ではなく
+    // 自分の手札と同じカードの絵で出る。
+    const hand = within(s1).getByTestId('gs-hand-1');
+    const imgs = within(hand).getAllByRole('img');
+    expect(imgs).toHaveLength(2);
+    expect(imgs[0]).toHaveAccessibleName(expect.stringMatching(/♣|CLOVER/));
+    // 13 枚でも折り返せること。
+    expect(hand.className).toContain('flex-wrap');
   });
 
   it('reports who took the most', async () => {

@@ -69,6 +69,8 @@ type TysiacGame interface {
 	GetRoundCardPoints() [domain.TysiacPlayerCnt]int
 	// GetRoundMarriage 現ラウンドのプレイヤー別結婚点を取得する
 	GetRoundMarriage() [domain.TysiacPlayerCnt]int
+	// GetMarriageOptions いま結婚を宣言できるスートとその点を取得する
+	GetMarriageOptions(playerIdx int) []domain.TysiacMarriageOption
 	// GetWinnerPlayer 勝利プレイヤーを取得する (-1=未確定)
 	GetWinnerPlayer() int
 	// GetPlayerCnt プレイヤー数を取得する

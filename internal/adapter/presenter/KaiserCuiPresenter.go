@@ -96,6 +96,20 @@ func (p *KaiserCuiPresenter) Output(g interfaces.KaiserGame, lastErr error) stri
 			b.WriteString(kaiserPlayerStr(g, i))
 		}
 
+		// **この 2 枚だけで局の点差が決まる。**取られた時点で誰が持って行ったかが
+		// 見えないと、残り点の見積もりができない (Web は取得時に出している)。
+		// 未取得も情報なので、そのときは「未取得」と書く。
+		kaiserSpecialCardOwner := func(seat int) string {
+			if seat < 0 {
+				return i18n.T("kaiser.notTakenYet")
+			}
+			return cuiPlayerName(g.GetPlayer(seat), seat)
+		}
+		b.WriteString(i18n.Tf("kaiser.heartFiveTaken",
+			"name", kaiserSpecialCardOwner(g.GetHeartFiveBy())) + "\n")
+		b.WriteString(i18n.Tf("kaiser.spadeThreeTaken",
+			"name", kaiserSpecialCardOwner(g.GetSpadeThreeBy())) + "\n")
+
 		if trick := g.GetTrick(); len(trick) > 0 {
 			var t strings.Builder
 			for _, c := range trick {

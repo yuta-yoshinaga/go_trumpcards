@@ -44,6 +44,7 @@ function makeState(overrides: Partial<PigResponse> = {}): PigResponse {
     signallerIdx: -1,
     noticedCnt: 0,
     roundLoserIdx: -1,
+    letterTarget: 'PIG',
     roundNumber: 2,
     passCount: 3,
     deckSize: 16,
@@ -92,8 +93,10 @@ describe('PigPage', () => {
     renderWithProviders(<PigPage />);
     const s0 = await screen.findByTestId('pig-seat-0');
     expect(s0).toHaveTextContent('手札4枚');
-    expect(s0).toHaveTextContent('文字[PI]');
-    expect(screen.getByTestId('pig-seat-3')).toHaveTextContent('文字[-]');
+    // **3 文字で脱落**が規則なので、目標語を分母として併記する (#5766)。
+    expect(s0).toHaveTextContent('文字[PI/PIG]');
+    // 0 文字の席でも目標が読める。
+    expect(screen.getByTestId('pig-seat-3')).toHaveTextContent('文字[-/PIG]');
   });
 
   // **選び終えた席・気づいた席・脱落した席は盤面に痕跡が残らない。**

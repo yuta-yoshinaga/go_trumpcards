@@ -1,6 +1,6 @@
 {
   "title": "ベースボールポーカー",
-  "wildNotice": "3 と 9 はワイルド。表向きの 4 は追加札、表向きの 3 は買い増し",
+  "wildNotice": "{{wilds}} はワイルド。表向きの {{bonus}} は追加札、表向きの {{buyIn}} は買い増し",
   "label.chips": "チップ",
   "label.bet": "賭け",
   "label.pot": "ポット",

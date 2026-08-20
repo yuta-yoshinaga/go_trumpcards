@@ -64,6 +64,13 @@ export interface TeenDoPaanchResponse extends BaseGameResponse {
    * buy an opponent's best cards; nothing on the board shows this happened.
    */
   lastExchange: number;
+  /**
+   * Who handed cards to whom in the exchange that opened this round.
+   *
+   * The total alone cannot say whose best card was taken, or what was pulled out
+   * of your own hand (#5757).
+   */
+  lastExchangePairs?: { giver: number; taker: number; count: number }[];
   currentPlayerIdx: number;
   leadPlayerIdx: number;
   currentTrick: TeenDoPaanchTrickCard[];

@@ -3,6 +3,7 @@ package presenter_test
 import (
 	"errors"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func TestPrimeroCuiPresenter_OutputBettingPhase(t *testing.T) {
@@ -80,4 +82,29 @@ func TestPrimeroCuiPresenter_ActionLog(t *testing.T) {
 	g := primeroResultGame(false)
 	p := new(presenter.PrimeroCuiPresenter)
 	assert.NotEmpty(t, p.ActionLogOutput(g))
+}
+
+// #5699: fluxus / supremus / primero / numerus は一般的なポーカー用語ではなく、
+// CUI は役名ラベルを出すだけで、強さの順も条件もどこにも説明が無かった
+// (Web は primero-hand-legend の常設テーブルで4役を出している)。
+func TestPrimeroCuiPresenter_ShowsTheHandRanking(t *testing.T) {
+	g := domain.NewDefaultPrimero()
+	g.Reset()
+	p := new(presenter.PrimeroCuiPresenter)
+
+	out := p.Output(g, nil)
+
+	legend := i18n.Tf("primero.handRanking",
+		"fluxus", i18n.T("primero.hand.fluxus"),
+		"supremus", i18n.T("primero.hand.supremus"),
+		"primero", i18n.T("primero.hand.primero"),
+		"numerus", i18n.T("primero.hand.numerus"))
+	assert.Contains(t, out, legend)
+	assert.NotContains(t, out, "{{")
+
+	// 強い順であること: 4役が fluxus → supremus → primero → numerus の順に並ぶ。
+	idx := func(key string) int { return strings.Index(legend, i18n.T("primero.hand."+key)) }
+	assert.Less(t, idx("fluxus"), idx("supremus"))
+	assert.Less(t, idx("supremus"), idx("primero"))
+	assert.Less(t, idx("primero"), idx("numerus"))
 }

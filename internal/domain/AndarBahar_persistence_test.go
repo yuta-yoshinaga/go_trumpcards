@@ -115,6 +115,34 @@ func TestAndarBahar_UnmarshalRejectsTamperedState(t *testing.T) {
 			want:   "bet amount out of range",
 		},
 		{
+			// **内訳と合計は同時に決まる** (#5770)。片方だけ書き換わった保存を
+			// 通すと、画面が「メインは当たったのに合計は減っている」と出す。
+			name:   "払い戻しの内訳が合計と食い違う",
+			ended:  true,
+			mutate: func(m map[string]any) { m["pm"] = andarBaharToInt(m["pm"]) + 10 },
+			want:   "does not add up to",
+		},
+		{
+			name:   "内訳が負",
+			ended:  true,
+			mutate: func(m map[string]any) { m["pm"] = -10; m["pd"] = andarBaharToInt(m["po"]) + 10 },
+			want:   "payout breakdown cannot be negative",
+		},
+		{
+			// **張っていないサイドベットには払い戻せない。**
+			name:  "帯なしなのにサイドの払い戻しがある",
+			ended: true,
+			mutate: func(m map[string]any) {
+				m["sb"] = AndarBaharSideNone
+				m["sa"] = 0
+				// 合計も一緒に持ち上げる。**手前の「和が合わない」ガードに
+				// 落とされると、このガードを検査したことにならない。**
+				m["pd"] = 20
+				m["po"] = andarBaharToInt(m["pm"]) + 20
+			},
+			want: "paid on a side bet that was never placed",
+		},
+		{
 			name:   "サイドベット額が範囲外",
 			ended:  true,
 			mutate: func(m map[string]any) { m["sa"] = -10 },

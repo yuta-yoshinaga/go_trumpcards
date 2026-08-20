@@ -264,3 +264,14 @@ func TestGuandanInteractor_SnapshotAndRestore(t *testing.T) {
 	_, err = usecase.RestoreGuandanInteractor([]byte(`{`), pMock)
 	assert.Error(t, err)
 }
+
+// **役の下読みはここを通る** (#5734)。presenter の CheckOutput に素通しする。
+func TestGuandanInteractor_Check(t *testing.T) {
+	pMock := new(presenter.MockGuandanPresenter)
+	pMock.On("CheckOutput", mock.Anything, mock.Anything).Return("combo")
+	gameMock := new(interfaces.MockGuandanGame)
+
+	gi := usecase.NewGuandanInteractor(gameMock, pMock)
+	assert.Equal(t, "combo", gi.Check([]int{0, 1}))
+	pMock.AssertCalled(t, "CheckOutput", gameMock, []int{0, 1})
+}

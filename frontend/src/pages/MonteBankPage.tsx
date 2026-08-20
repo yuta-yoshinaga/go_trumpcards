@@ -167,6 +167,11 @@ function MonteBankPageContent() {
                   <span className="text-ds-text-muted text-xs" data-testid={`mb-count-${i}`}>
                     {t('label.suitCount', { count: entry.suitCount })}
                   </span>
+                  {/* **賭けの良し悪しは場の枚数と山の残りの両方で決まる** (#5779)。
+                      山残りはサーバが計算済みで、型にもあるのに出していなかった。 */}
+                  <span className="text-ds-text-muted text-xs" data-testid={`mb-remaining-${i}`}>
+                    {t('label.remainingOfSuit', { count: entry.remainingOfSuit })}
+                  </span>
                 </button>
               ))}
             </div>

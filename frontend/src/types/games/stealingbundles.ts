@@ -59,6 +59,15 @@ export interface StealingBundlesResponse extends BaseGameResponse {
   deckRemaining: number;
   /** The seat that captured last, or `-1`. It receives whatever is left on the table. */
   lastCaptureIdx: number;
+  /**
+   * Whether that capture was a plain table take (`"take"`) or a whole bundle
+   * stolen off another seat (`"steal"`); `""` before anyone has captured.
+   *
+   * A steal empties someone else's bundle, so it is not the same event as a take.
+   */
+  lastCaptureKind: string;
+  /** The seat robbed by the last steal, or `-1` when the last capture was a take. */
+  lastCaptureVictimIdx: number;
   currentPlayerIdx: number;
   turnNumber: number;
   packsDealt: number;

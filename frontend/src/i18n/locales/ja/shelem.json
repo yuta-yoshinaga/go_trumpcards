@@ -19,7 +19,8 @@
     "took": "獲得{{n}}",
     "team": "T{{team}}",
     "you": "あなた",
-    "cpu": "CPU{{idx}}"
+    "cpu": "CPU{{idx}}",
+    "defenders": "守備側 {{got}}点 / 全{{total}}点"
   },
   "role": {
     "declarer": "落札 {{n}}",

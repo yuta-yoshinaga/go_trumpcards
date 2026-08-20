@@ -135,6 +135,20 @@ func (p *VintCuiPresenter) Output(g interfaces.VintGame, lastErr error) string {
 				b.WriteString(i18n.Tf("vint.trickPointsLine",
 					"t0", strconv.Itoa(r.TrickPoints[0]),
 					"t1", strconv.Itoa(r.TrickPoints[1])) + "\n")
+				// **線上の点も局の得点。**オナー・エースは domain が既に持って
+				// いるのに CUI は出しておらず、自分の名誉札点が分からなかった。
+				b.WriteString(i18n.Tf("vint.honourLine",
+					"t0", strconv.Itoa(r.HonourPoints[0]),
+					"t1", strconv.Itoa(r.HonourPoints[1])) + "\n")
+				b.WriteString(i18n.Tf("vint.aceLine",
+					"t0", strconv.Itoa(r.AcePoints[0]),
+					"t1", strconv.Itoa(r.AcePoints[1])) + "\n")
+				// ペナルティは発生した局だけ (Web と同じ条件)。
+				if r.Penalty[0] > 0 || r.Penalty[1] > 0 {
+					b.WriteString(i18n.Tf("vint.penaltyLine",
+						"t0", strconv.Itoa(r.Penalty[0]),
+						"t1", strconv.Itoa(r.Penalty[1])) + "\n")
+				}
 			}
 			b.WriteString(i18n.T("vint.promptHandEndHelp") + "\n")
 		}

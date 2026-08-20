@@ -225,6 +225,12 @@ function HokmPageContent() {
                 {state.lastHandKot
                   ? t('handEnd.kot', { team: String(state.lastHandWinner) })
                   : t('handEnd.normal', { team: String(state.lastHandWinner), need: String(state.tricksToWin) })}
+                {/* **親は負けたときだけ交代する** (#5753)。次に自分が切り札を
+                    選べるかを左右するのに、次ハンドが始まって親バッジが動くまで
+                    分からなかった。Kot でも通常勝利でも同じように続けて出す。 */}
+                <span className="ml-2" data-testid="hk-hakem-change">
+                  {state.lastHandHakemChanged ? t('handEnd.hakemMoves') : t('handEnd.hakemStays')}
+                </span>
               </div>
             )}
 
