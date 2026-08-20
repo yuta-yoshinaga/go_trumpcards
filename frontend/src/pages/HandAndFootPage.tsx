@@ -137,8 +137,9 @@ function HandAndFootPageContent() {
   // Meld phase: show the selected cards' running point total and, until the
   // team has opened (no melds yet), the initial-meld minimum so the player can
   // tell if the selection qualifies. Point values + minimum bands mirror the
-  // shared Canasta-family scoring (the backend uses CanastaCardValue); the web
-  // build does not enforce the minimum, so this is a display-only readout.
+  // shared Canasta-family scoring (the backend uses CanastaCardValue). The
+  // readout also gates the meld button now (#5663): below the minimum the
+  // button is disabled, so the player is not sent to a server rejection.
   // **メルドフェーズ以外では 0 点・未達なしを返す。** null を返すと、この値を
   // 読むたびに「無いかもしれない」分岐が増え、押せるかどうかの判断が
   // 追いにくくなる (#5663)。

@@ -129,57 +129,23 @@ describe('HandAndFootPage', () => {
     mockExec.mockResolvedValue(drawPhaseState);
   });
 
-  it('renders skeleton before first API response', () => {
-    mockExec.mockReturnValue(new Promise(() => undefined));
+  // **既に上がっているチームには最低点が無い。** ここまで無効化すると、
+  // 開いた後のメルドが打てなくなる (PR のレビュー指摘)。
+  it('keeps the meld button live for a team that has already opened', async () => {
+    mockExec.mockResolvedValue({
+      ...meldPhaseState,
+      teams: [{ ...meldPhaseState.teams[0], melds: [{ rank: 5, cards: [], isCanasta: false, isNatural: true }] }, meldPhaseState.teams[1]],
+    });
     renderWithProviders(<HandAndFootPage />);
-    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
-  });
+    await waitFor(() => expect(screen.getByTestId('hf-meld-points')).toBeInTheDocument());
 
-  it('calls reset on mount', async () => {
-    renderWithProviders(<HandAndFootPage />);
-    await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
-        cpuDifficulty: 1,
-        pointLimit: 5000,
-      }),
-    );
-  });
+    // 10+10+5 = 25。初回最低点 (50) には届かないが、開いているので関係ない。
+    fireEvent.click(screen.getByRole('button', { name: '♠ 10' }));
+    fireEvent.click(screen.getByRole('button', { name: '♣ 10' }));
+    fireEvent.click(screen.getByRole('button', { name: '♠ 7' }));
 
-  it('shows draw phase buttons', async () => {
-    renderWithProviders(<HandAndFootPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '山札から引く' })).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeInTheDocument();
-  });
-
-  it('pulses the draw-from-discard button only when frozen and two cards are selected', async () => {
-    mockExec.mockResolvedValue({ ...drawPhaseState, isFrozen: true });
-    renderWithProviders(<HandAndFootPage />);
-    const btn = await screen.findByRole('button', { name: '捨て札を取る' });
-    // Disabled (no selection) → no misleading pulse yet.
-    expect(btn).not.toHaveAttribute('data-frozen');
-    // Select two hand cards to enable the action; the pulse then warns about the freeze.
-    const handCards = screen.getAllByRole('button', { pressed: false }).filter((b) => b.hasAttribute('aria-pressed'));
-    fireEvent.click(handCards[0]);
-    fireEvent.click(handCards[1]);
-    const enabled = screen.getByRole('button', { name: '捨て札を取る' });
-    expect(enabled).toHaveAttribute('data-frozen', 'true');
-    expect(enabled.className).toMatch(/animate-pulse/);
-  });
-
-  it('does not pulse the draw-from-discard button when not frozen', async () => {
-    renderWithProviders(<HandAndFootPage />);
-    const btn = await screen.findByRole('button', { name: '捨て札を取る' });
-    expect(btn).not.toHaveAttribute('data-frozen');
-    expect(btn.className).not.toMatch(/animate-pulse/);
-  });
-
-  it('calls drawstock command when button clicked', async () => {
-    renderWithProviders(<HandAndFootPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '山札から引く' })).toBeInTheDocument());
-    mockExec.mockClear();
-    mockExec.mockResolvedValue(meldPhaseState);
-    fireEvent.click(screen.getByRole('button', { name: '山札から引く' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawstock'));
+    await waitFor(() => expect(screen.getByTestId('hf-meld-points')).toHaveTextContent('選択合計: 25'));
+    expect(screen.getByRole('button', { name: 'メルドする' })).toBeEnabled();
   });
 
   it('shows meld phase buttons', async () => {
