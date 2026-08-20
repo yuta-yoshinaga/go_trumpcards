@@ -193,14 +193,18 @@ function BakersGamePageContent() {
   const isGameOver = state.phase === FreeCellPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
 
-  // Supermove limit: a tableau stack of N cards can only move when
-  // (1 + freeCells) * 2^emptyCols >= N. We compute the upper-bound limit (the
-  // optimistic case where the destination is NOT one of the empty columns) and
-  // mark anything deeper than that as undraggable, with a red ring + tooltip
-  // so the player sees the cap before the engine rejects the move.
-  const emptyFreeCells = state.freeCells.filter((c) => c === null).length;
-  const emptyTableauCols = state.tableau.filter((col: (Card | null)[]) => col.length === 0).length;
-  const supermoveLimit = (1 + emptyFreeCells) * 2 ** emptyTableauCols;
+  // Supermove limit: **上限はドメインが決める。**ここで一般式
+  // ((1 + freeCells) * 2^emptyCols) を持つと、空き列自身を経由地に使えない
+  // ぶんの差が抜け、空き列宛ての束を「動かせる」と見せてサーバーに弾かれる
+  // (#5975)。Baker's Game は FreeCell と同じレスポンスを使う。
+  const supermoveLimit = state.maxMovableCards;
+  const emptyColLimit = state.maxMovableCardsToEmptyColumn;
+
+  // 選択中の束の枚数。空き列が受け取れるかはこれと emptyColLimit で決まる。
+  const selectedStackSize =
+    selectedSource?.zone === 'tableau' && selectedSource.col !== undefined && selectedSource.cardIndex !== undefined
+      ? (state.tableau[selectedSource.col]?.length ?? 0) - selectedSource.cardIndex
+      : 0;
 
   const isSourceSelected = (zone: string, col?: number, cell?: number, cardIndex?: number) =>
     selectedSource !== null &&
@@ -387,7 +391,18 @@ function BakersGamePageContent() {
                               onClick={() => handleSelectTarget(tableauColZone)}
                               disabled={!isPlaying || loading || !selectedSource}
                               style={{ height: cardHeight }}
-                              className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                              data-testid={`bg-empty-col-${colIdx.toString()}`}
+                              // 空き列だけ上限が低い。選んだ束が超えているなら、
+                              // クリックする前に分かるようにする (#5975)。
+                              data-empty-col-blocked={selectedStackSize > emptyColLimit ? 'true' : undefined}
+                              title={
+                                selectedStackSize > emptyColLimit
+                                  ? t('emptyColLimitTooltip', { limit: emptyColLimit, size: selectedStackSize })
+                                  : undefined
+                              }
+                              className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite} ${
+                                selectedStackSize > emptyColLimit ? 'opacity-50' : ''
+                              }`}
                               aria-label={t('emptyTableauColumnAriaLabel', { idx: String(colIdx) })}
                             >
                               {t('emptyTableauColumnLabel')}
@@ -540,6 +555,7 @@ function BakersGamePageContent() {
                   className="text-ds-text-primary text-xs font-medium bg-ds-surface-elevated rounded px-2 py-1"
                 >
                   {t('movableCount', { count: supermoveLimit })}
+                  {emptyColLimit > 0 && <> {t('supermoveToEmpty', { limit: emptyColLimit })}</>}
                 </span>
               )}
               {isPlaying && (

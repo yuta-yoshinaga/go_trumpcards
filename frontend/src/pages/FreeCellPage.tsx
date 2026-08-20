@@ -210,14 +210,19 @@ function FreeCellPageContent() {
   const isGameOver = state.phase === FreeCellPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
 
-  // Supermove limit: a tableau stack of N cards can only move when
-  // (1 + freeCells) * 2^emptyCols >= N. We compute the upper-bound limit (the
-  // optimistic case where the destination is NOT one of the empty columns) and
-  // mark anything deeper than that as undraggable, with a red ring + tooltip
-  // so the player sees the cap before the engine rejects the move.
-  const emptyFreeCells = state.freeCells.filter((c) => c === null).length;
-  const emptyTableauCols = state.tableau.filter((col: (Card | null)[]) => col.length === 0).length;
-  const supermoveLimit = (1 + emptyFreeCells) * 2 ** emptyTableauCols;
+  // Supermove limit: a tableau stack of N cards can only move when the domain
+  // says so. **上限はドメインが決める。**ここで一般式 ((1 + freeCells) *
+  // 2^emptyCols) を持つと、空き列自身を経由地に使えないぶんの差
+  // (maxMovableCardsToEmptyColumn) が抜け、空き列宛ての束を「動かせる」と
+  // 見せてサーバーに弾かれる (#5975)。
+  const supermoveLimit = state.maxMovableCards;
+  const emptyColLimit = state.maxMovableCardsToEmptyColumn;
+
+  // 選択中の束の枚数。空き列が受け取れるかはこれと emptyColLimit で決まる。
+  const selectedStackSize =
+    selectedSource?.zone === 'tableau' && selectedSource.col !== undefined && selectedSource.cardIndex !== undefined
+      ? (state.tableau[selectedSource.col]?.length ?? 0) - selectedSource.cardIndex
+      : 0;
   // Auto-complete will deterministically win once every column is descending.
   const autoCompleteReady = freeCellAutoCompleteReady(state.tableau);
 
@@ -376,6 +381,7 @@ function FreeCellPageContent() {
             {/* Max bulk-move (supermove) limit, derived from empty free cells/columns */}
             <div className="text-game-text-muted text-xs mb-2" data-testid="fc-supermove-limit">
               {t('supermoveLimitLabel', { limit: supermoveLimit })}
+              {emptyColLimit > 0 && <> {t('supermoveToEmpty', { limit: emptyColLimit })}</>}
             </div>
 
             {/* Tableau */}
@@ -399,7 +405,18 @@ function FreeCellPageContent() {
                               onClick={() => handleSelectTarget(tableauColZone)}
                               disabled={!isPlaying || loading || !selectedSource}
                               style={{ height: cardHeight }}
-                              className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                              data-testid={`fc-empty-col-${colIdx.toString()}`}
+                              // 空き列だけ上限が低い。選んだ束が超えているなら、
+                              // クリックする前に分かるようにする (#5975)。
+                              data-empty-col-blocked={selectedStackSize > emptyColLimit ? 'true' : undefined}
+                              title={
+                                selectedStackSize > emptyColLimit
+                                  ? t('emptyColLimitTooltip', { limit: emptyColLimit, size: selectedStackSize })
+                                  : undefined
+                              }
+                              className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite} ${
+                                selectedStackSize > emptyColLimit ? 'opacity-50' : ''
+                              }`}
                             >
                               K
                             </button>

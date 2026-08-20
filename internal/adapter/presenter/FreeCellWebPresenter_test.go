@@ -94,6 +94,8 @@ func TestFreeCellWebPresenterOutputStalemateWithEscape(t *testing.T) {
 	fg.On("GetFreeCells").Return(freeCells).Maybe()
 	var foundation [domain.FreeCellFoundationCnt][]*domain.Card
 	fg.On("GetFoundation").Return(foundation).Maybe()
+	fg.On("GetMaxMovableCards").Return(1).Maybe()
+	fg.On("GetMaxMovableCardsToEmptyColumn").Return(0).Maybe()
 
 	result := p.Output(fg, nil)
 
@@ -216,4 +218,45 @@ func TestFreeCellWebPresenterActionLogGameOver(t *testing.T) {
 	err := json.Unmarshal([]byte(result), &out)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, out.Entries)
+}
+
+// #5975: 空き列へ動かすときの上限はドメインが別に持っており (その空き列自身を
+// 経由地に使えないぶん低い)、レスポンスには**どちらの上限も入っていなかった**。
+// ページは一般式で計算し直すしかなく、空き列宛ての手をサーバーが弾くまで
+// 気づけなかった。
+func TestFreeCellWebPresenterCarriesBothMoveLimits(t *testing.T) {
+	p := new(FreeCellWebPresenter)
+	f := domain.NewFreeCell(domain.NewTrumpCards(0))
+	f.Reset()
+	f.SetPhase(domain.FreeCellPhasePlaying)
+
+	var out controller.FreeCellWebOutput
+	err := json.Unmarshal([]byte(p.Output(f, nil)), &out)
+	assert.NoError(t, err)
+
+	// **ドメインの値をそのまま運ぶ。**presenter で数え直すと、空き列の扱いが
+	// 食い違ったときに画面とサーバーで別の答えが出る。
+	assert.Equal(t, f.GetMaxMovableCards(), out.MaxMovableCards)
+	assert.Equal(t, f.GetMaxMovableCardsToEmptyColumn(), out.MaxMovableCardsToEmptyColumn)
+	assert.Positive(t, out.MaxMovableCards, "配り直後は必ず1枚以上動かせる")
+}
+
+// 空き列がある局面では、空き列宛ての上限が一般の上限より**低い**。
+// 同じ値が返るだけなら、フロントが低い方を使う意味が無い。
+func TestFreeCellWebPresenterEmptyColumnLimitIsLower(t *testing.T) {
+	p := new(FreeCellWebPresenter)
+	f := domain.NewFreeCell(domain.NewTrumpCards(0))
+	f.Reset()
+	f.SetPhase(domain.FreeCellPhasePlaying)
+	// 1 列空ける。
+	tableau := f.GetTableau()
+	tableau[0] = nil
+	f.SetTableau(tableau)
+
+	var out controller.FreeCellWebOutput
+	err := json.Unmarshal([]byte(p.Output(f, nil)), &out)
+	assert.NoError(t, err)
+
+	assert.Less(t, out.MaxMovableCardsToEmptyColumn, out.MaxMovableCards,
+		"空き列自身を経由地に使えないぶん上限は下がる")
 }

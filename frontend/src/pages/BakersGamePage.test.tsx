@@ -24,6 +24,9 @@ const playingState: FreeCellResponse = {
   tableau: [[card('SPADE', 13)], [card('HEART', 12)], [], [], [], [], [], []],
   freeCells: [null, null, null, null],
   foundation: [[], [], [], []],
+  // 空きセル4 + 空き列6 → (1+4) * 2^6 = 320。空き列宛てはその列を経由地に使えず 160。
+  maxMovableCards: 320,
+  maxMovableCardsToEmptyColumn: 160,
   phase: 0,
   moveCount: 5,
   canUndo: true,
@@ -753,6 +756,9 @@ describe('BakersGamePage', () => {
           [card('HEART', 7)],
         ],
         freeCells: [card('DIAMOND', 8), card('CLOVER', 9), card('SPADE', 10), card('HEART', 11)],
+        // 空きセル 0 + 空き列 0 → 1 枚。空き列が無いので空き列宛ては 0。
+        maxMovableCards: 1,
+        maxMovableCardsToEmptyColumn: 0,
       };
       mockExec.mockResolvedValue(tightState);
       renderWithProviders(<BakersGamePage />);
@@ -973,5 +979,52 @@ describe('BakersGamePage', () => {
     // Anyone who skipped the tutorial would otherwise play it as Free Cell.
     const rule = await screen.findByTestId('bg-tableau-rule');
     expect(rule.textContent).toMatch(/同じスート/);
+  });
+});
+
+// #5975: Baker's Game は FreeCell と同じレスポンスを使っており、同じ計算し直しを
+// していた。空き列宛ての上限はその列自身を経由地に使えないぶん低い。
+describe('BakersGamePage empty-column move limit', () => {
+  it('shows the server limits instead of recomputing them', async () => {
+    // 一般式なら (1 + 4) * 2^6 = 320。サーバーは 8 と言っている。
+    mockExec.mockResolvedValue({ ...playingState, maxMovableCards: 8, maxMovableCardsToEmptyColumn: 4 });
+    renderWithProviders(<BakersGamePage />);
+
+    const badge = await screen.findByTestId('bg-movable-count');
+    expect(badge).toHaveTextContent('8');
+    expect(badge).toHaveTextContent('4');
+    expect(badge).not.toHaveTextContent('320');
+  });
+
+  it('marks the empty column as out of reach for a stack that only the lower limit blocks', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [[card('SPADE', 13), card('HEART', 12), card('CLOVER', 11)], [], [], [], [], [], [], []],
+      maxMovableCards: 8,
+      maxMovableCardsToEmptyColumn: 2,
+    });
+    renderWithProviders(<BakersGamePage />);
+
+    const deep = (await screen.findByAltText('♠ K')).closest('button') as HTMLButtonElement;
+    // 札そのものはブロックしない ── 他の列へは動かせる。
+    expect(deep).not.toHaveAttribute('data-supermove-blocked');
+
+    fireEvent.click(deep);
+    const emptyCol = await screen.findByTestId('bg-empty-col-1');
+    await waitFor(() => expect(emptyCol).toHaveAttribute('data-empty-col-blocked', 'true'));
+    expect(emptyCol.getAttribute('title') ?? '').toContain('2');
+  });
+
+  it('leaves the empty column usable when the stack fits the lower limit', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [[card('SPADE', 13), card('HEART', 12)], [], [], [], [], [], [], []],
+      maxMovableCards: 8,
+      maxMovableCardsToEmptyColumn: 2,
+    });
+    renderWithProviders(<BakersGamePage />);
+
+    fireEvent.click((await screen.findByAltText('♠ K')).closest('button') as HTMLButtonElement);
+    expect(await screen.findByTestId('bg-empty-col-1')).not.toHaveAttribute('data-empty-col-blocked');
   });
 });

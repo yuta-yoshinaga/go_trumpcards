@@ -24,6 +24,9 @@ const playingState: FreeCellResponse = {
   tableau: [[card('SPADE', 13)], [card('HEART', 12)], [], [], [], [], [], []],
   freeCells: [null, null, null, null],
   foundation: [[], [], [], []],
+  // 空きセル4 + 空き列6 → (1+4) * 2^6 = 320。空き列宛てはその列を経由地に使えず 160。
+  maxMovableCards: 320,
+  maxMovableCardsToEmptyColumn: 160,
   phase: 0,
   moveCount: 5,
   canUndo: true,
@@ -887,6 +890,9 @@ describe('FreeCellPage', () => {
           [card('HEART', 7)],
         ],
         freeCells: [card('DIAMOND', 8), card('CLOVER', 9), card('SPADE', 10), card('HEART', 11)],
+        // 空きセル 0 + 空き列 0 → 1 枚。空き列が無いので空き列宛ては 0。
+        maxMovableCards: 1,
+        maxMovableCardsToEmptyColumn: 0,
       };
       mockExec.mockResolvedValue(tightState);
       renderWithProviders(<FreeCellPage />);
@@ -1004,5 +1010,55 @@ describe('FreeCellPage', () => {
         ),
       );
     });
+  });
+});
+
+// #5975: 空き列へ動かすときの上限はドメインが別に持っている (その空き列自身を
+// 経由地に使えないぶん低い)。ページは一般式 (1 + 空きセル) * 2^空き列 で計算し
+// 直していたので、空き列宛ての束を「動かせる」と見せてサーバーに弾かれていた。
+describe('FreeCellPage empty-column move limit', () => {
+  it('shows the server limits instead of recomputing them', async () => {
+    // 一般式なら (1 + 4) * 2^6 = 320。サーバーは 8 と言っている。
+    mockExec.mockResolvedValue({ ...playingState, maxMovableCards: 8, maxMovableCardsToEmptyColumn: 4 });
+    renderWithProviders(<FreeCellPage />);
+
+    const limit = await screen.findByTestId('fc-supermove-limit');
+    expect(limit).toHaveTextContent('8');
+    // 空き列宛ての低い方も出す。
+    expect(limit).toHaveTextContent('4');
+    expect(limit).not.toHaveTextContent('320');
+  });
+
+  it('marks the empty column as out of reach for a stack that only the lower limit blocks', async () => {
+    // 3 枚の束: 一般上限 8 なら動かせるが、空き列上限 2 は超える。
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [[card('SPADE', 13), card('HEART', 12), card('CLOVER', 11)], [], [], [], [], [], [], []],
+      maxMovableCards: 8,
+      maxMovableCardsToEmptyColumn: 2,
+    });
+    renderWithProviders(<FreeCellPage />);
+
+    const deep = (await screen.findByAltText('♠ K')).closest('button') as HTMLButtonElement;
+    // 一般上限では動く ── 札そのものはブロックしない。
+    expect(deep).not.toHaveAttribute('data-supermove-blocked');
+
+    fireEvent.click(deep);
+    const emptyCol = await screen.findByTestId('fc-empty-col-1');
+    await waitFor(() => expect(emptyCol).toHaveAttribute('data-empty-col-blocked', 'true'));
+    expect(emptyCol.getAttribute('title') ?? '').toContain('2');
+  });
+
+  it('leaves the empty column usable when the stack fits the lower limit', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [[card('SPADE', 13), card('HEART', 12)], [], [], [], [], [], [], []],
+      maxMovableCards: 8,
+      maxMovableCardsToEmptyColumn: 2,
+    });
+    renderWithProviders(<FreeCellPage />);
+
+    fireEvent.click((await screen.findByAltText('♠ K')).closest('button') as HTMLButtonElement);
+    expect(await screen.findByTestId('fc-empty-col-1')).not.toHaveAttribute('data-empty-col-blocked');
   });
 });

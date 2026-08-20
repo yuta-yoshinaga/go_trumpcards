@@ -7,6 +7,8 @@ function makeState(overrides?: Partial<FreeCellResponse>): FreeCellResponse {
     tableau: [[{ design: 'SPADE', value: 13 }], [], [], [], [], [], [], []],
     freeCells: [null, null, null, null],
     foundation: [[], [], [], []],
+    maxMovableCards: 320,
+    maxMovableCardsToEmptyColumn: 160,
     phase: 0,
     moveCount: 3,
     canUndo: true,
