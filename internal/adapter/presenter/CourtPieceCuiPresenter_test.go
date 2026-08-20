@@ -201,7 +201,9 @@ func TestCourtPieceCuiPresenter_RoundEndCallsOutTheCourtBonus(t *testing.T) {
 	defer color.SetNoColor(orig)
 	p := new(presenter.CourtPieceCuiPresenter)
 
-	// 13トリック総取りは、その場で Court が成立する経路。
+	// **集計 (ScoreRound) は画面より後に走る。** 実際の呼び順は
+	// ResolveTrick → Output → (nr を打ってから) ScoreRound なので、
+	// テストも ScoreRound を呼ばずに描く。
 	t.Run("announces a clean sweep", func(t *testing.T) {
 		cp := newCourtPieceForCuiTest()
 		cp.SetCallerIdx(0)
@@ -209,8 +211,6 @@ func TestCourtPieceCuiPresenter_RoundEndCallsOutTheCourtBonus(t *testing.T) {
 			cp.GetPlayer(0).AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 2, false)})
 		}
 		cp.SetPhase(domain.CourtPiecePhaseRoundEnd)
-		cp.ScoreRound()
-		require.True(t, cp.IsLastRoundCourt(), "前提: 13トリック総取りで Court が成立する")
 
 		out := p.Output(cp, nil)
 
@@ -231,11 +231,65 @@ func TestCourtPieceCuiPresenter_RoundEndCallsOutTheCourtBonus(t *testing.T) {
 			cp.GetPlayer(1).AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 3, false)})
 		}
 		cp.SetPhase(domain.CourtPiecePhaseRoundEnd)
-		cp.ScoreRound()
-		require.False(t, cp.IsLastRoundCourt(), "前提: 初回の通常勝ちは Court ではない")
 
 		out := p.Output(cp, nil)
 
 		assert.NotContains(t, out, i18n.T("courtpiece.roundEndCourt"))
+	})
+
+	// **前のラウンドの Court を持ち越さない。** 集計済みのフラグを読むと、
+	// 直前が Court だったせいで今回の +1 のラウンドにも説明が付く。
+	t.Run("does not carry over the previous round's Court", func(t *testing.T) {
+		cp := newCourtPieceForCuiTest()
+		cp.SetCallerIdx(0)
+		// 1 ラウンド目: 13 トリック総取り = Court。ここで集計まで走らせる。
+		for i := 0; i < 13; i++ {
+			cp.GetPlayer(0).AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 2, false)})
+		}
+		cp.SetPhase(domain.CourtPiecePhaseRoundEnd)
+		cp.ScoreRound()
+		require.True(t, cp.IsLastRoundCourt(), "前提: 1 ラウンド目は Court")
+
+		// 2 ラウンド目: 相手チームが 8-5 で勝つ。連勝ではないので Court ではない。
+		for _, seat := range []int{0, 1, 2, 3} {
+			cp.GetPlayer(seat).ResetRound()
+		}
+		for i := 0; i < 8; i++ {
+			cp.GetPlayer(1).AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 3, false)})
+		}
+		for i := 0; i < 5; i++ {
+			cp.GetPlayer(0).AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 4, false)})
+		}
+		cp.SetPhase(domain.CourtPiecePhaseRoundEnd)
+
+		assert.NotContains(t, p.Output(cp, nil), i18n.T("courtpiece.roundEndCourt"))
+	})
+
+	// **連勝は集計前でも読める。** 同じチームが 2 ラウンド続けて勝てば Court。
+	t.Run("announces back-to-back wins before scoring", func(t *testing.T) {
+		cp := newCourtPieceForCuiTest()
+		cp.SetCallerIdx(0)
+		for i := 0; i < 8; i++ {
+			cp.GetPlayer(0).AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 2, false)})
+		}
+		for i := 0; i < 5; i++ {
+			cp.GetPlayer(1).AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 3, false)})
+		}
+		cp.SetPhase(domain.CourtPiecePhaseRoundEnd)
+		cp.ScoreRound() // 1 勝目 (Court ではない)
+		require.False(t, cp.IsLastRoundCourt())
+
+		for _, seat := range []int{0, 1, 2, 3} {
+			cp.GetPlayer(seat).ResetRound()
+		}
+		for i := 0; i < 7; i++ {
+			cp.GetPlayer(0).AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, false)})
+		}
+		for i := 0; i < 6; i++ {
+			cp.GetPlayer(1).AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 6, false)})
+		}
+		cp.SetPhase(domain.CourtPiecePhaseRoundEnd)
+
+		assert.Contains(t, p.Output(cp, nil), i18n.T("courtpiece.roundEndCourt"))
 	})
 }

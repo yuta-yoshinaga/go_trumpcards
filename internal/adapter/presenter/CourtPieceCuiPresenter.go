@@ -123,7 +123,9 @@ func (p *CourtPieceCuiPresenter) Output(t interfaces.CourtPieceGame, lastErr err
 			// **Court は +1 ではなく +2 になるラウンド** (13トリック総取り or 連勝)。
 			// Web は roundResult.court で出しているのに CUI は触れておらず、
 			// スコアだけが 2 動く理由が読めなかった (#5656)。
-			if t.IsLastRoundCourt() {
+			// **集計はまだ走っていない。** lastRoundCourt は 1 つ前のラウンドの
+			// 結果を指しているので、いま終わったラウンドの判定を読む。
+			if t.IsRoundEndCourt() {
 				b.WriteString(color.BoldYellow(i18n.T("courtpiece.roundEndCourt")) + "\n")
 			}
 			b.WriteString(i18n.T("courtpiece.promptRoundEndHelp") + "\n")

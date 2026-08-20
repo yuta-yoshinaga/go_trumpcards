@@ -314,28 +314,46 @@ func (c *CourtPiece) NextTrick() {
 	c.phase = CourtPiecePhasePlay
 }
 
+// pendingRoundResult は集計前のラウンドの結果を、状態を変えずに計算する。
+//
+// **Court 成立は集計 (ScoreRound) を待たずに決まっている。** ラウンド終了の画面は
+// 集計より前に描かれるので、画面がここを読めないと「前のラウンドの Court」を
+// 出してしまう (#5656)。判定を 1 箇所に置いて、集計側もここを通す。
+func (c *CourtPiece) pendingRoundResult() (teamTricks [CourtPieceTeamCnt]int, winningTeam int, isCourt bool, consecutive int) {
+	for _, p := range c.players {
+		teamTricks[p.GetTeam()] += p.GetTrickCount()
+	}
+	// 13 トリック (奇数) なので、必ず一方が 7 以上を取る。
+	if teamTricks[1] >= CourtPieceTricksToWin {
+		winningTeam = 1
+	}
+	consecutive = 1
+	if winningTeam == c.lastWinnerTeam {
+		consecutive = c.consecutiveWins + 1
+	}
+	isCourt = teamTricks[winningTeam] == CourtPieceHandSize || consecutive >= 2
+	return teamTricks, winningTeam, isCourt, consecutive
+}
+
+// IsRoundEndCourt はいま終わったラウンドが Court (+2) かを返す。
+//
+// ラウンド終了フェーズでのみ意味を持つ。**集計済みの lastRoundCourt とは別物**で、
+// あちらは 1 つ前のラウンドの結果を指している間がある。
+func (c *CourtPiece) IsRoundEndCourt() bool {
+	if c.phase != CourtPiecePhaseRoundEnd {
+		return false
+	}
+	_, _, isCourt, _ := c.pendingRoundResult()
+	return isCourt
+}
+
 // ScoreRound ラウンドのスコアを確定し、Sar / Court 判定とゲーム終了判定を行う。
 func (c *CourtPiece) ScoreRound() {
 	if c.phase != CourtPiecePhaseRoundEnd {
 		return
 	}
-	teamTricks := [CourtPieceTeamCnt]int{}
-	for _, p := range c.players {
-		teamTricks[p.GetTeam()] += p.GetTrickCount()
-	}
-	// 13 トリック (奇数) なので、必ず一方が 7 以上を取る。
-	winningTeam := 0
-	if teamTricks[1] >= CourtPieceTricksToWin {
-		winningTeam = 1
-	}
-
-	allThirteen := teamTricks[winningTeam] == CourtPieceHandSize
-	if winningTeam == c.lastWinnerTeam {
-		c.consecutiveWins++
-	} else {
-		c.consecutiveWins = 1
-	}
-	isCourt := allThirteen || c.consecutiveWins >= 2
+	teamTricks, winningTeam, isCourt, consecutive := c.pendingRoundResult()
+	c.consecutiveWins = consecutive
 	delta := 1
 	if isCourt {
 		delta = 2
