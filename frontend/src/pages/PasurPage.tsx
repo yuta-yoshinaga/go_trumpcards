@@ -17,7 +17,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { btnDanger, btnPrimary, btnWarning } from '../styles/buttonStyles';
+import { btnDanger, btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { PasurResponse } from '../types/card';
 import { PasurPhase } from '../types/phases';
@@ -238,20 +238,32 @@ function PasurPageContent() {
               <div className="mt-3" data-testid="ps-options">
                 <div className="text-ds-text-muted text-sm mb-1">{t('actions.pick')}</div>
                 <div className="flex flex-wrap gap-2">
-                  {pickedOptions.map((option) => (
-                    <button
-                      key={`opt-${option.join('-')}`}
-                      type="button"
-                      className={btnWarning}
-                      onClick={() => handlePlay(picked, option)}
-                      disabled={loading}
-                      data-testid={`ps-take-${option.join('-')}-btn`}
-                    >
-                      {t('actions.take', {
-                        cards: option.map((i) => cardAlt(state.table[i])).join(', '),
-                      })}
-                    </button>
-                  ))}
+                  {pickedOptions.map((option) => {
+                    // **スールは「取った結果、場が空になる」こと** (domain の
+                    // takeCards と同じ条件)。倍化を狙うなら、どの選択肢がそれに
+                    // 当たるかがボタンから読めないと選べない (#5762)。
+                    const isSoor = option.length === state.table.length && state.table.length > 0;
+                    return (
+                      <button
+                        key={`opt-${option.join('-')}`}
+                        type="button"
+                        className={isSoor ? `${btnSuccess} ring-2 ring-ds-success` : btnWarning}
+                        onClick={() => handlePlay(picked, option)}
+                        disabled={loading}
+                        data-testid={`ps-take-${option.join('-')}-btn`}
+                      >
+                        {t('actions.take', {
+                          cards: option.map((i) => cardAlt(state.table[i])).join(', '),
+                        })}
+                        {isSoor && (
+                          <span className="ml-1 font-bold" data-testid={`ps-soor-${option.join('-')}`}>
+                            <span aria-hidden="true">[{t('actions.takeSoor')}]</span>
+                            <span className="sr-only">{t('actions.takeSoorAria')}</span>
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
                   {canTrail ? (
                     <button
                       type="button"

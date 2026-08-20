@@ -110,6 +110,12 @@ function BotifarraPageContent() {
   }
 
   const human = state.players.find((p) => p.isHuman);
+  // **ゼロサムで動く 2 つの数字のどちらが自分の組か**は、ラベルが無いと席の
+  // 一覧まで見ないと分からなかった (#5771)。値そのものは触らず、並べ方だけ
+  // 「あなた / 相手」に固定する。
+  const humanTeam = human?.team ?? 0;
+  const humanTeamValue = (v: number[]) => v[humanTeam] ?? 0;
+  const opponentTeamValue = (v: number[]) => v[1 - humanTeam] ?? 0;
   const legal = new Set(state.validPlays);
   const phaseName = t(
     isDeclarePhase
@@ -136,8 +142,8 @@ function BotifarraPageContent() {
       phaseName={phaseName}
       gamePath="/botifarra"
       gameEndFlag={state.gameEndFlag}
-      winShow={state.gameEndFlag && state.winnerTeam === 0}
-      lossShow={state.gameEndFlag && state.winnerTeam === 1}
+      winShow={state.gameEndFlag && state.winnerTeam === humanTeam}
+      lossShow={state.gameEndFlag && state.winnerTeam === 1 - humanTeam}
       loading={loading}
       isHumanTurn={state.isHumanTurn}
       confirmOpen={confirmOpen}
@@ -145,8 +151,12 @@ function BotifarraPageContent() {
       cancelReset={cancelReset}
       headerExtra={
         <>
-          <span data-tutorial="bf-score">
-            {t('label.score')}: {state.scores[0] ?? 0} / {state.scores[1] ?? 0}
+          <span data-tutorial="bf-score" data-testid="botifarra-score">
+            {t('label.score')}:{' '}
+            {t('label.teamPair', {
+              yours: humanTeamValue(state.scores),
+              theirs: opponentTeamValue(state.scores),
+            })}
           </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
@@ -169,8 +179,12 @@ function BotifarraPageContent() {
                 {state.multiplier > 1 && ` (x${state.multiplier})`}
               </div>
               <div data-testid="botifarra-round-points">
-                {t('label.roundPoints')}: {state.roundPoints[0] ?? 0} / {state.roundPoints[1] ?? 0} (
-                {BOTIFARRA_TOTAL_POINTS})
+                {t('label.roundPoints')}:{' '}
+                {t('label.teamPair', {
+                  yours: humanTeamValue(state.roundPoints),
+                  theirs: opponentTeamValue(state.roundPoints),
+                })}{' '}
+                ({BOTIFARRA_TOTAL_POINTS})
               </div>
             </div>
 

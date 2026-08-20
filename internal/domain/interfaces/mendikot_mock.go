@@ -59,6 +59,11 @@ func (m *MockMendikotGame) GetCurrentTrick() []*domain.TrickCard {
 	return args.Get(0).([]*domain.TrickCard)
 }
 
+// WillSetTrump モック
+func (m *MockMendikotGame) WillSetTrump(playerIdx int) bool {
+	return m.Called(playerIdx).Bool(0)
+}
+
 func (m *MockMendikotGame) GetValidPlayIndices(playerIdx int) []int {
 	args := m.Called(playerIdx)
 	if args.Get(0) == nil {

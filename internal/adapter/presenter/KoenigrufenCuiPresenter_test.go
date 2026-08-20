@@ -151,3 +151,56 @@ func TestKoenigrufenCuiPresenter_ActionLogOutput(t *testing.T) {
 	g := koenigrufenCuiGame()
 	assert.NotEmpty(t, p.ActionLogOutput(g))
 }
+
+// #5713: 呼びスートのキングを自分が持っていれば、自分が秘密のパートナーだと
+// **自分の手札と公開済みの呼びスートだけ**から分かる。Web はこれを出しているのに、
+// CUI は partnerRevealed が真になるまで何も出さず、気づけないままだった。
+func TestKoenigrufenCuiPresenter_TellsYouThatYouAreThePartner(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.KoenigrufenCuiPresenter)
+
+	inPlay := func(declarer int, holdsKing, revealed bool) *domain.Koenigrufen {
+		g := koenigrufenCuiGame()
+		g.SetDeclarerIdx(declarer)
+		g.SetContract(domain.KoenigrufenBidRufer)
+		g.SetCalledKing(domain.CardDesignHeart)
+		g.SetPartnerRevealed(revealed)
+		g.SetPhase(domain.KoenigrufenPhasePlay)
+		g.SetCurrentPlayerIdx(0)
+		human := g.GetPlayer(0)
+		human.Reset()
+		if holdsKing {
+			human.AddCard(domain.NewCard(domain.CardDesignHeart, domain.KoenigrufenKingValue, false))
+		}
+		human.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		return g
+	}
+
+	t.Run("says so while the partner is still secret", func(t *testing.T) {
+		out := p.Output(inPlay(1, true, false), nil)
+
+		assert.Contains(t, out, i18n.T("koenigrufen.youArePartner"))
+	})
+
+	t.Run("stays quiet without the called King", func(t *testing.T) {
+		out := p.Output(inPlay(1, false, false), nil)
+
+		assert.NotContains(t, out, i18n.T("koenigrufen.youArePartner"))
+	})
+
+	// 公開後は通常の役割表示 (rolePartner) が出るので、この行は要らない。
+	t.Run("stops once the partner is revealed", func(t *testing.T) {
+		out := p.Output(inPlay(1, true, true), nil)
+
+		assert.NotContains(t, out, i18n.T("koenigrufen.youArePartner"))
+	})
+
+	// 宣言者は自分の持つキングを呼べない仕様なので、宣言者には出さない。
+	t.Run("never says it to the declarer", func(t *testing.T) {
+		out := p.Output(inPlay(0, true, false), nil)
+
+		assert.NotContains(t, out, i18n.T("koenigrufen.youArePartner"))
+	})
+}

@@ -742,3 +742,49 @@ func TestIsraeliWhist_ActionLog(t *testing.T) {
 	}
 	assert.True(t, kinds["auction"])
 }
+
+// **全員的中と全員外しはどちらも 2 倍** (#5752)。発動したかどうかを
+// アクションログの外からも読めるようにした値を、実際の精算で確かめる。
+func TestIsraeliWhistRoundDoubledFlags(t *testing.T) {
+	setBids := func(w *IsraeliWhist, bids, tricks [IsraeliWhistPlayerCnt]int) {
+		for i := range IsraeliWhistPlayerCnt {
+			p := w.GetPlayer(i)
+			p.SetBid(bids[i])
+			p.ResetTricks()
+			for range tricks[i] {
+				p.AddTrick([]*Card{})
+			}
+		}
+	}
+
+	t.Run("every seat hits", func(t *testing.T) {
+		w := newTestIsraeliWhist(t)
+		setBids(w, [IsraeliWhistPlayerCnt]int{3, 4, 3, 3}, [IsraeliWhistPlayerCnt]int{3, 4, 3, 3})
+		w.finishRound()
+		if !w.GetRoundDoubled() || !w.GetRoundAllExact() {
+			t.Errorf("doubled=%v allExact=%v, want true/true", w.GetRoundDoubled(), w.GetRoundAllExact())
+		}
+	})
+
+	t.Run("every seat misses", func(t *testing.T) {
+		w := newTestIsraeliWhist(t)
+		setBids(w, [IsraeliWhistPlayerCnt]int{3, 4, 3, 3}, [IsraeliWhistPlayerCnt]int{0, 1, 5, 7})
+		w.finishRound()
+		if !w.GetRoundDoubled() {
+			t.Error("all four missing must double the round")
+		}
+		if w.GetRoundAllExact() {
+			t.Error("the reason must read as everyone missing, not everyone hitting")
+		}
+	})
+
+	// **1 人でも違えば通常ラウンド** (負のコントロール)。
+	t.Run("a mixed round is not doubled", func(t *testing.T) {
+		w := newTestIsraeliWhist(t)
+		setBids(w, [IsraeliWhistPlayerCnt]int{3, 4, 3, 3}, [IsraeliWhistPlayerCnt]int{3, 0, 5, 5})
+		w.finishRound()
+		if w.GetRoundDoubled() {
+			t.Error("a round where only some seats hit must not be doubled")
+		}
+	})
+}

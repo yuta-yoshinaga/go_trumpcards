@@ -220,3 +220,54 @@ describe('HokmPage', () => {
     expect(await screen.findByText(/いちばん長いスート/)).toBeInTheDocument();
   });
 });
+
+// **親は負けたときだけ交代する** (#5753)。次に自分が切り札を選べるかを
+// 左右するのに、次ハンドが始まって親バッジが動くまで分からなかった。
+describe('HokmPage hakem hand-over notice', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+  });
+
+  it('says the hakem moves after a losing hand', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2,
+        lastHandWinner: 1,
+        lastHandKot: false,
+        lastHandHakemChanged: true,
+      } as Partial<HokmResponse>),
+    );
+    renderWithProviders(<HokmPage />);
+    expect(await screen.findByTestId('hk-hakem-change')).toHaveTextContent('親が次の席に移ります');
+  });
+
+  it('says the hakem keeps the deal after a winning hand', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2,
+        lastHandWinner: 0,
+        lastHandKot: false,
+        lastHandHakemChanged: false,
+      } as Partial<HokmResponse>),
+    );
+    renderWithProviders(<HokmPage />);
+    expect(await screen.findByTestId('hk-hakem-change')).toHaveTextContent('親は交代しません');
+  });
+
+  // Kot でも通常勝利でも同じように出る (受け入れ条件4)。
+  it('combines with the Kot result', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2,
+        lastHandWinner: 1,
+        lastHandKot: true,
+        lastHandHakemChanged: true,
+      } as Partial<HokmResponse>),
+    );
+    renderWithProviders(<HokmPage />);
+    const result = await screen.findByTestId('hk-hand-result');
+    expect(result).toHaveTextContent('Kot');
+    expect(result).toHaveTextContent('親が次の席に移ります');
+  });
+});

@@ -56,6 +56,17 @@ describe('MinchiatePage', () => {
     expect(note).toHaveTextContent('切札は40枚');
   });
 
+  // #5715: マットの特殊ルール (取らない・フォロー免除・リードを定めない) は
+  // ヒント文言の中にしか無く、ヒントを切っていると知る手段が無かった。
+  it('always explains the Matto', async () => {
+    renderWithProviders(<MinchiatePage />);
+
+    const note = await screen.findByTestId('minchiate-matto-note');
+
+    expect(note).toHaveTextContent('マット');
+    expect(note).toHaveTextContent('トリックを取らず');
+  });
+
   // 個人戦ではなくチーム戦。対面がパートナーであることが画面に出ていないと、
   // 味方のトリックを奪う手が「正しく」見えてしまう。
   it('shows team scores rather than per-player scores', async () => {

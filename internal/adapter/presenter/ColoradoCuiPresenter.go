@@ -3,7 +3,6 @@
 package presenter
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -14,10 +13,19 @@ import (
 )
 
 // coloradoPileStr returns the display string for one tableau pile.
+//
+// **動かせるのは一番上の 1 枚だけ。**`m t <山>` は山番号しか取らないのに、
+// 以前は全カードに [0][1][2]… と添字を振っていて、埋まった札まで番号で
+// 指定できるように見せていた (#5739)。番号を振るのをやめ、一番上だけ
+// 印を付ける。
 func coloradoPileStr(pile []*domain.Card) string {
 	parts := make([]string, len(pile))
 	for j, card := range pile {
-		parts[j] = fmt.Sprintf(" [%d]%s", j, cuiCardStr(card))
+		if j == len(pile)-1 {
+			parts[j] = " " + i18n.Tf("colorado.pileTop", "card", cuiCardStr(card))
+			continue
+		}
+		parts[j] = " " + i18n.Tf("colorado.pileBuried", "card", cuiCardStr(card))
 	}
 	return strings.Join(parts, " ")
 }
@@ -66,6 +74,8 @@ func (p *ColoradoCuiPresenter) Output(c interfaces.ColoradoGame, lastErr error) 
 		b.WriteString("\n")
 
 		b.WriteString("----------\n")
+
+		b.WriteString(i18n.T("colorado.pileTopNote") + "\n")
 
 		tableau := c.GetTableau()
 		for pile := range domain.ColoradoTableauCnt {

@@ -45,6 +45,11 @@ const (
 	ShengJiDefenderTarget = 80
 	// ShengJiAdvanceStep 守備側が 80 点を超えてから 1 段階上がるごとの点
 	ShengJiAdvanceStep = 40
+	// ShengJiKittyMultiplierPerCard 底牌に掛かる 1 枚あたりの倍率。
+	//
+	// **守備側が最終トリックを取ると底牌の点が最終トリックの枚数 × これ倍**で
+	// 守備側に入る。埋め戻しの怖さはこの倍率にある。
+	ShengJiKittyMultiplierPerCard = 2
 )
 
 // ShengJiNoTrump は無主 (切札スート無し) を表す。**レベル札とジョーカーだけが切札。**
@@ -923,7 +928,7 @@ func (s *ShengJi) finishHand() {
 		for _, c := range s.kitty {
 			raw += ShengJiCardPoints(c)
 		}
-		mult = 2 * s.lastTrickCards
+		mult = ShengJiKittyMultiplierPerCard * s.lastTrickCards
 		kittyPts = raw * mult
 		pts += kittyPts
 	}

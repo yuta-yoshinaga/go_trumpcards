@@ -2,6 +2,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -10,6 +11,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func TestBouillotteCuiPresenter_OutputBettingPhase(t *testing.T) {
@@ -102,4 +104,47 @@ func TestBouillotteCuiPresenter_ActionLog(t *testing.T) {
 	g := bouillotteResultGame(false)
 	p := new(presenter.BouillotteCuiPresenter)
 	assert.NotEmpty(t, p.ActionLogOutput(g))
+}
+
+// #5698: 同型の Primero は「コールに必要な額」と「レイズ後の到達額」を出すのに、
+// Bouillotte は現在のベット額しか出さず、必要額を暗算させていた。
+func TestBouillotteCuiPresenter_ShowsCallAndRaiseAmounts(t *testing.T) {
+	p := new(presenter.BouillotteCuiPresenter)
+
+	t.Run("spells out the call and the raise total", func(t *testing.T) {
+		g := domain.NewDefaultBouillotte()
+		g.Reset()
+		g.SetPhase(domain.BouillottePhaseBetting)
+		g.SetCurrentPlayerIdx(0)
+		g.SetCurrentBet(12)
+		human := g.GetPlayer(0)
+		human.AddRoundBet(5 - human.GetRoundBet()) // 既に 5 払っている状態にする
+
+		out := p.Output(g, nil)
+
+		// need = 12 - 5、raiseTo = 12 + アンティ。
+		assert.Contains(t, out, i18n.Tf("bouillotte.promptBetting",
+			"bet", "12",
+			"need", "7",
+			"raiseTo", strconv.Itoa(12+g.GetAnte())))
+		assert.NotContains(t, out, "{{", "no placeholder may leak into the prompt")
+	})
+
+	// 自分の払いが現在のベットに追いついている席では、追加は 0 (負にしない)。
+	t.Run("never asks for a negative call", func(t *testing.T) {
+		g := domain.NewDefaultBouillotte()
+		g.Reset()
+		g.SetPhase(domain.BouillottePhaseBetting)
+		g.SetCurrentPlayerIdx(0)
+		g.SetCurrentBet(4)
+		human := g.GetPlayer(0)
+		human.AddRoundBet(9 - human.GetRoundBet())
+
+		out := p.Output(g, nil)
+
+		assert.Contains(t, out, i18n.Tf("bouillotte.promptBetting",
+			"bet", "4",
+			"need", "0",
+			"raiseTo", strconv.Itoa(4+g.GetAnte())))
+	})
 }

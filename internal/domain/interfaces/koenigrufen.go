@@ -81,6 +81,8 @@ type KoenigrufenGame interface {
 	GetPartnerIdx() int
 	// GetPartnerRevealed パートナーが公開済みかを取得する
 	GetPartnerRevealed() bool
+	// KoenigrufenHoldsCalledKing 指定プレイヤーが呼ばれたキングを持っているかを取得する
+	KoenigrufenHoldsCalledKing(playerIdx int) bool
 	// GetTalonCount 場札の枚数を取得する
 	GetTalonCount() int
 	// GetTalon 場札を取得する

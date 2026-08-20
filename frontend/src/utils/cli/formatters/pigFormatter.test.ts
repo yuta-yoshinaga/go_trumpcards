@@ -26,6 +26,7 @@ const state = (over: Partial<PigResponse> = {}): PigResponse =>
     signallerIdx: -1,
     noticedCnt: 0,
     roundLoserIdx: -1,
+    letterTarget: 'PIG',
     roundNumber: 2,
     passCount: 3,
     deckSize: 16,
@@ -54,8 +55,9 @@ describe('formatPigState', () => {
 
   it('lists every seat with its hand size and letters', () => {
     const out = formatPigState(state({ players: [seat(0, { letters: 2, letterWord: 'PI' }), seat(1)] }));
-    expect(out).toMatch(/>あなた: 4 cards, letters \[PI\]/);
-    expect(out).toMatch(/ CPU 1: 4 cards, letters \[-\]/);
+    // **目標語まで出す** (#5766)。
+    expect(out).toMatch(/>あなた: 4 cards, letters \[PI\/PIG\]/);
+    expect(out).toMatch(/ CPU 1: 4 cards, letters \[-\/PIG\]/);
   });
 
   // **選び終えた席・気づいた席・脱落した席は盤面に痕跡が残らない。**

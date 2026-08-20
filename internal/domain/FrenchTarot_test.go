@@ -697,3 +697,96 @@ func TestFrenchTarotAccessors(t *testing.T) {
 	assert.Equal(t, 0, g.GetCardPoints(99))
 	assert.NotNil(t, g.GetActionLog())
 }
+
+// #5712: エカルトの合法性判定と、CUI/Web が出す「捨てられる札」の案内は
+// FrenchTarotUnburiableReason ただ一つから来る。ここは**弾く側**が各理由を
+// 実際に弾くことを固定する (案内だけ直って検証が古いままになるのを防ぐ)。
+func TestFrenchTarotDiscardRejectsEveryUnburiableReason(t *testing.T) {
+	cases := []struct {
+		name   string
+		card   *domain.Card
+		reason string
+	}{
+		{"king", frenchTarotSuitCard(1, domain.FrenchTarotKingValue), domain.FrenchTarotUnburiableKing},
+		{"excuse", frenchTarotExcuseCard(), domain.FrenchTarotUnburiableExcuse},
+		{"petit", frenchTarotTrumpCard(1), domain.FrenchTarotUnburiableBout},
+		{"twenty-one", frenchTarotTrumpCard(domain.FrenchTarotMaxTrump), domain.FrenchTarotUnburiableBout},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			// 分類と検証が同じ理由を指していること。
+			assert.Equal(t, c.reason, domain.FrenchTarotUnburiableReason(c.card))
+
+			g := frenchTarotNewReset()
+			g.SetDeclarerIdx(0)
+			g.SetContract(domain.FrenchTarotBidPetite)
+			g.SetPhase(domain.FrenchTarotPhaseChien)
+			// 捨てられる札を 7 枚 + 対象の 1 枚。切り札を許す条件には掛からない。
+			frenchTarotSetHand(g, 0, c.card,
+				frenchTarotSuitCard(1, 2), frenchTarotSuitCard(1, 3), frenchTarotSuitCard(1, 4),
+				frenchTarotSuitCard(1, 5), frenchTarotSuitCard(1, 6), frenchTarotSuitCard(1, 7),
+				frenchTarotSuitCard(2, 2),
+			)
+
+			// 対象を含む 6 枚は拒否され、含まない 6 枚は通る。
+			require.Error(t, g.PlayerDiscard([]int{0, 1, 2, 3, 4, 5}))
+			require.NoError(t, g.PlayerDiscard([]int{1, 2, 3, 4, 5, 6}))
+		})
+	}
+}
+
+// #5712: 案内 (CUI/Web) と検証 (validateDiscards) が同じ判定を使うので、その判定
+// 自体をここで直接固定する。
+func TestFrenchTarotUnburiableReason(t *testing.T) {
+	cases := []struct {
+		name string
+		card *domain.Card
+		want string
+	}{
+		{"pip is free", frenchTarotSuitCard(1, 5), ""},
+		{"king", frenchTarotSuitCard(1, domain.FrenchTarotKingValue), domain.FrenchTarotUnburiableKing},
+		{"excuse", frenchTarotExcuseCard(), domain.FrenchTarotUnburiableExcuse},
+		{"petit", frenchTarotTrumpCard(1), domain.FrenchTarotUnburiableBout},
+		{"twenty-one", frenchTarotTrumpCard(domain.FrenchTarotMaxTrump), domain.FrenchTarotUnburiableBout},
+		{"plain trump", frenchTarotTrumpCard(9), domain.FrenchTarotUnburiableTrump},
+		{"nil", nil, ""},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			assert.Equal(t, c.want, domain.FrenchTarotUnburiableReason(c.card))
+		})
+	}
+}
+
+// 切り札は「自由に捨てられる札が 6 枚に満たないとき」だけ候補に入る (validateDiscards と同条件)。
+func TestFrenchTarotBuriableIndices(t *testing.T) {
+	build := func(cards ...*domain.Card) *domain.FrenchTarotPlayer {
+		g := frenchTarotNewReset()
+		frenchTarotSetHand(g, 0, cards...)
+		return g.GetPlayer(0)
+	}
+
+	t.Run("skips kings, the Excuse and the bouts", func(t *testing.T) {
+		p := build(
+			frenchTarotSuitCard(1, 2), frenchTarotSuitCard(1, domain.FrenchTarotKingValue),
+			frenchTarotExcuseCard(), frenchTarotTrumpCard(1), frenchTarotTrumpCard(9),
+			frenchTarotSuitCard(1, 3), frenchTarotSuitCard(1, 4), frenchTarotSuitCard(1, 5),
+			frenchTarotSuitCard(1, 6), frenchTarotSuitCard(1, 7),
+		)
+
+		assert.Equal(t, []int{0, 5, 6, 7, 8, 9}, domain.FrenchTarotBuriableIndices(p))
+	})
+
+	t.Run("allows trumps only when the free cards run short", func(t *testing.T) {
+		p := build(
+			frenchTarotSuitCard(1, 2), frenchTarotSuitCard(1, 3),
+			frenchTarotTrumpCard(9), frenchTarotTrumpCard(10),
+		)
+
+		assert.Equal(t, []int{0, 1, 2, 3}, domain.FrenchTarotBuriableIndices(p))
+	})
+
+	t.Run("nil player yields nothing", func(t *testing.T) {
+		assert.Empty(t, domain.FrenchTarotBuriableIndices(nil))
+	})
+}

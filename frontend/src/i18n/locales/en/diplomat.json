@@ -48,5 +48,8 @@
     "toTableau": "Take the suggested tableau move to dig out the pile",
     "draw": "Nothing can move, so turn a card from the stock"
   },
-  "emptyColumn": "empty"
+  "emptyColumn": "empty",
+  "deadEndBadge": "dead end",
+  "deadEndAria": "{{card}} (nothing can be stacked here any more; the Ace can still go to a foundation)",
+  "deadEndTitle": "Nothing stacks on an Ace. This column takes no cards until it is sent to a foundation or emptied"
 }

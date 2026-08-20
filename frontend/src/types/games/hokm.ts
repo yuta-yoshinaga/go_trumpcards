@@ -63,6 +63,13 @@ export interface HokmResponse extends BaseGameResponse {
   tricksToWin: number;
   /** The previous hand was a Kot (the losers took no trick), worth 2. */
   lastHandKot: boolean;
+  /**
+   * Whether the hakem passed to the next seat after the hand just settled.
+   *
+   * The hakem only moves when its team loses, and which seat calls the trump
+   * next is worth knowing before the next hand starts (#5753).
+   */
+  lastHandHakemChanged: boolean;
   /** Team that took the previous hand, or `-1` before there is one. */
   lastHandWinner: number;
   currentPlayerIdx: number;

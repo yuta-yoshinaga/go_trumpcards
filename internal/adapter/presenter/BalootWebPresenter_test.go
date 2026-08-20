@@ -82,10 +82,32 @@ func TestBalootWebPresenterBalootSurfaces(t *testing.T) {
 	p := new(BalootWebPresenter)
 	b := newBalootForWeb(t)
 	b.GetPlayer(0).SetHasBaloot(true)
+	// **開示済みでなければ保有そのものを送らない** (#5750)。
+	b.GetPlayer(0).SetBalootRevealed(true)
 
 	human := decodeBaloot(t, p.Output(b, nil))["players"].([]any)[0].(map[string]any)
 	assert.True(t, human["hasBaloot"].(bool))
+	assert.True(t, human["balootRevealed"].(bool))
 	assert.False(t, decodeBaloot(t, p.Output(b, nil))["players"].([]any)[1].(map[string]any)["hasBaloot"].(bool))
+}
+
+// **伏せている席の Baloot はレスポンスにも出さない** (#5750)。フロントで
+// 隠すだけだと、通信を見れば分かってしまう。
+func TestBalootWebPresenterWithholdsAHiddenBaloot(t *testing.T) {
+	p := new(BalootWebPresenter)
+	b := newBalootForWeb(t)
+	b.GetPlayer(1).SetHasBaloot(true)
+	b.GetPlayer(1).SetBalootRevealed(false)
+
+	cpu := decodeBaloot(t, p.Output(b, nil))["players"].([]any)[1].(map[string]any)
+	assert.False(t, cpu["hasBaloot"].(bool), "a hidden Baloot must not leak through the API")
+	assert.False(t, cpu["balootRevealed"].(bool))
+
+	// 開示されたら送る。
+	b.GetPlayer(1).SetBalootRevealed(true)
+	revealed := decodeBaloot(t, p.Output(b, nil))["players"].([]any)[1].(map[string]any)
+	assert.True(t, revealed["hasBaloot"].(bool))
+	assert.True(t, revealed["balootRevealed"].(bool))
 }
 
 // **親は見送れないので案内が変わる。** 選べない選択肢を出さない。両側を踏む。

@@ -43,6 +43,7 @@ func setupUltiWebMock() *interfaces.MockUltiGame {
 	m.On("GetOutcome").Return(domain.UltiOutcomeNone)
 	m.On("GetResult").Return(domain.UltiResultNone)
 	m.On("GetPlayerCoins").Return([domain.UltiPlayerCnt]int{0, 0, 0})
+	m.On("GetLastDealCoins").Return([domain.UltiPlayerCnt]int{})
 	m.On("GetCardPoints", mock.Anything).Return(0)
 	m.On("GetWinnerPlayer").Return(-1)
 	m.On("GetPlayableIndices", 0).Return([]int{0})
@@ -216,6 +217,20 @@ func TestUltiWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 7, resObj.Players[0].Coins)
 		assert.Equal(t, 3, resObj.Players[1].Coins)
 		assert.Equal(t, 0, resObj.Players[2].Coins)
+	})
+
+	// #5690: 累積とは別に、今回のディールで動いた額そのものを返す。
+	// Web はこれ以前、累積を ref に退避して差分を取っていた。
+	t.Run("last deal settlement propagated", func(t *testing.T) {
+		m, _ := setupUltiWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPlayerCoins")
+		m.On("GetPlayerCoins").Return([domain.UltiPlayerCnt]int{7, 3, 0})
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastDealCoins")
+		m.On("GetLastDealCoins").Return([domain.UltiPlayerCnt]int{4, -2, -2})
+		result := p.Output(m, nil)
+		var resObj controller.UltiWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Equal(t, [domain.UltiPlayerCnt]int{4, -2, -2}, resObj.LastDealCoins)
 	})
 }
 

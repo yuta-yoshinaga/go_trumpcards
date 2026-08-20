@@ -57,6 +57,8 @@ type MendikotGame interface {
 	GetCurrentTrick() []*domain.TrickCard
 	// GetValidPlayIndices プレイ可能なカードのインデックスリストを返す
 	GetValidPlayIndices(playerIdx int) []int
+	// WillSetTrump その席が今出す札で切り札が決まってしまうかを返す
+	WillSetTrump(playerIdx int) bool
 	// GetPlayerCnt プレイヤー数を取得する
 	GetPlayerCnt() int
 	// GetPlayer 指定インデックスのプレイヤーを取得する

@@ -15,6 +15,16 @@ import (
 // TuSacCuiPresenter 四色牌CUIプレゼンタークラス
 type TuSacCuiPresenter struct{}
 
+// tuSacMeldPointsTableStr は組み合わせの点数を "同色同種3枚 2点 / ..." で返す。
+func tuSacMeldPointsTableStr() string {
+	parts := make([]string, 0, int(domain.TuSacMeldKindMax))
+	for k := domain.TuSacMeldNone + 1; k <= domain.TuSacMeldKindMax; k++ {
+		parts = append(parts, i18n.T("tusac.meld."+domain.TuSacMeldKindName(k))+" "+
+			i18n.Tf("tusac.meld.points", "points", strconv.Itoa(domain.TuSacMeldPoints(k))))
+	}
+	return strings.Join(parts, " / ")
+}
+
 // Output ゲーム状態を出力
 func (cp *TuSacCuiPresenter) Output(c interfaces.TuSacGame, lastErr error) string {
 	return buildCuiOutput(i18n.T("tusac.outputTitle"), func(sb *strings.Builder) {
@@ -24,6 +34,9 @@ func (cp *TuSacCuiPresenter) Output(c interfaces.TuSacGame, lastErr error) strin
 		sb.WriteString(i18n.Tf("tusac.stockLine",
 			"stock", strconv.Itoa(c.GetStockCount()),
 			"discard", tuSacCardStr(c.GetDiscardTop())) + "\n")
+		// **5 枚の卒を揃える価値は、狙う前に知りたい** (#5784)。点数は
+		// ドメインの TuSacMeldPoints から作るので、写した表にならない。
+		sb.WriteString(i18n.Tf("tusac.meldPointsLine", "table", tuSacMeldPointsTableStr()) + "\n")
 		cp.writeSeats(sb, c)
 		cp.writeHand(sb, c)
 		cp.writePrompt(sb, c)

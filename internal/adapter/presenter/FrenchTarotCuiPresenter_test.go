@@ -159,3 +159,53 @@ func TestFrenchTarotCuiPresenter_ActionLogOutput(t *testing.T) {
 	g := frenchTarotCuiGame()
 	assert.NotEmpty(t, p.ActionLogOutput(g))
 }
+
+// #5712: エカルトでは キング・エクスキューズ・ブー は捨てられず、切り札も原則
+// 捨てられない。Web はカードごとのツールチップで理由を出すのに、CUI は汎用の
+// 案内文だけで、**サーバに拒否されて初めて分かる**状態だった。
+func TestFrenchTarotCuiPresenter_ChienBuriableGuidance(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.FrenchTarotCuiPresenter)
+
+	chienWithHand := func(cards ...*domain.Card) *domain.FrenchTarot {
+		g := frenchTarotCuiGame()
+		g.SetDeclarerIdx(0)
+		g.SetContract(domain.FrenchTarotBidPetite)
+		g.SetPhase(domain.FrenchTarotPhaseChien)
+		human := g.GetPlayer(0)
+		human.Reset()
+		for _, c := range cards {
+			human.AddCard(c)
+		}
+		return g
+	}
+	suit := func(v int) *domain.Card { return domain.NewCard(domain.CardDesignHeart, v, false) }
+	trump := func(v int) *domain.Card { return domain.NewCard(domain.FrenchTarotTrumpDesign, v, false) }
+	excuse := domain.NewCard(domain.FrenchTarotExcuseDesign, domain.FrenchTarotExcuseValue, false)
+
+	t.Run("lists only the indices that may be buried", func(t *testing.T) {
+		// [0] 捨てられる / [1] キング / [2] エクスキューズ / [3] プティ(bout)
+		// [4] 通常の切り札 / [5..] 捨てられる — 自由に捨てられる札が 6 枚以上あるので
+		// 切り札は対象外になる。
+		out := p.Output(chienWithHand(
+			suit(3), suit(domain.FrenchTarotKingValue), excuse, trump(1), trump(9),
+			suit(4), suit(5), suit(6), suit(7), suit(8),
+		), nil)
+
+		assert.Contains(t, out, i18n.Tf("frenchtarot.promptChienBuriable",
+			"cards", "[0] [5] [6] [7] [8] [9]"))
+		assert.Contains(t, out, i18n.T("frenchtarot.promptChienLegend"))
+	})
+
+	// 自由に捨てられる札が 6 枚に満たないときだけ切り札も候補になる (domain と同条件)。
+	t.Run("includes trumps only when there is no other way", func(t *testing.T) {
+		out := p.Output(chienWithHand(
+			suit(3), suit(4), trump(9), trump(10), trump(11), trump(12),
+		), nil)
+
+		assert.Contains(t, out, i18n.Tf("frenchtarot.promptChienBuriable",
+			"cards", "[0] [1] [2] [3] [4] [5]"))
+	})
+}

@@ -548,3 +548,57 @@ func TestCribbageSquares_UnmarshalJSON_FillsNilCollections(t *testing.T) {
 	assert.NotNil(t, restored.history)
 	assert.NotNil(t, restored.trumpCards, "a missing deck is replaced rather than left nil")
 }
+
+// **途中経過はスターター抜きで数える** (#5740)。RowDetail はスターターが
+// 出るまで 0 のままなので、置いた札だけで確定している点を別に出す。
+func TestCribbageSquaresPartialDetail_CountsWhatIsAlreadyOnTheBoard(t *testing.T) {
+	c := NewDefaultCribbageSquares()
+	c.Reset()
+
+	// 行 0 に 5-5-5 (ペア 3 組 = 6 点)。行 1 は 1 枚だけで 0 点。
+	c.board[0][0] = NewCard(CardDesignSpade, 5, true)
+	c.board[0][1] = NewCard(CardDesignHeart, 5, true)
+	c.board[0][2] = NewCard(CardDesignClover, 5, true)
+	c.board[1][0] = NewCard(CardDesignDiamond, 10, true)
+
+	// **公式の得点はまだ 0。**スターターが伏せられているので確定しない。
+	if got := c.RowDetail(0).Total; got != 0 {
+		t.Errorf("RowDetail total %d, want 0 while the starter is face down", got)
+	}
+
+	partial := c.RowPartialDetail(0)
+	if partial.Pairs != 6 {
+		t.Errorf("pairs %d, want 6 for three fives", partial.Pairs)
+	}
+	if partial.Nobs != 0 {
+		t.Errorf("nobs %d, want 0 — nobs needs the starter", partial.Nobs)
+	}
+	if got := c.RowPartialDetail(1).Total; got != 0 {
+		t.Errorf("a single card scores %d, want 0", got)
+	}
+
+	// 列 0 は ♠5 と ♦10 で 15 になり 2 点。
+	if got := c.ColPartialDetail(0).Fifteens; got != 2 {
+		t.Errorf("fifteens %d, want 2 for 5+10", got)
+	}
+
+	// **4 枚そろわないとフラッシュは付かない。**
+	for i := range 3 {
+		c.board[2][i] = NewCard(CardDesignSpade, 2+i, true)
+	}
+	if got := c.ColPartialDetail(3).Flush; got != 0 {
+		t.Errorf("flush %d, want 0 for an empty column", got)
+	}
+	if got := c.RowPartialDetail(2).Flush; got != 0 {
+		t.Errorf("flush %d, want 0 with only three spades", got)
+	}
+	c.board[2][3] = NewCard(CardDesignSpade, 10, true)
+	if got := c.RowPartialDetail(2).Flush; got != 4 {
+		t.Errorf("flush %d, want 4 once four spades are placed", got)
+	}
+
+	// 範囲外は空。
+	if len(c.RowPlacedCards(-1)) != 0 || len(c.ColPlacedCards(CribbageSquaresGridSize)) != 0 {
+		t.Error("out-of-range lines must be empty")
+	}
+}

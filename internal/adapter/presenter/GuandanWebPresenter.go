@@ -147,3 +147,8 @@ func (p *GuandanWebPresenter) buildMessage(g interfaces.GuandanGame, lastErr err
 func (p *GuandanWebPresenter) ActionLogOutput(g interfaces.GuandanGame) string {
 	return actionLogOutputJSON(g)
 }
+
+// CheckOutput は Web では通常の状態出力と同じ (役の下読みは CUI 専用)。
+func (p *GuandanWebPresenter) CheckOutput(g interfaces.GuandanGame, _ []int) string {
+	return p.Output(g, nil)
+}

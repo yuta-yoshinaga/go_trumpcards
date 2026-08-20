@@ -35,6 +35,7 @@ const (
 	OichoKabuMaxBet       = 10000 // 最大ベット額
 	OichoKabuDeckSize     = 40    // カブ札（1〜10 を4枚ずつ）
 	OichoKabuHandMax      = 3     // 1手の最大枚数
+	OichoKabuHandInitial  = 2     // 初期配布枚数 (これを超えていれば追い引きした)
 	OichoKabuCopies       = 4     // 各数字の枚数
 	OichoKabuValueMax     = 10    // カブ札の最大数字
 
@@ -130,8 +131,12 @@ func (o *OichoKabu) Bet(amount int) error {
 	o.bet = amount
 	o.appendLog(0, "bet", fmt.Sprintf("bet=%d", amount), nil)
 
-	o.playerHand = []*Card{o.drawCard(), o.drawCard()}
-	o.bankerHand = []*Card{o.drawCard(), o.drawCard()}
+	o.playerHand = make([]*Card, 0, OichoKabuHandMax)
+	o.bankerHand = make([]*Card, 0, OichoKabuHandMax)
+	for i := 0; i < OichoKabuHandInitial; i++ {
+		o.playerHand = append(o.playerHand, o.drawCard())
+		o.bankerHand = append(o.bankerHand, o.drawCard())
+	}
 	o.appendLog(-1, "deal", "dealt 2 cards each", o.playerHand)
 	o.phase = OichoKabuPhaseDraw
 	return nil
