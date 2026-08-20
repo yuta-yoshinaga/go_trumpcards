@@ -13,6 +13,7 @@
   "signalSound": "音",
   "signalBlink": "瞬き",
   "fieldLabel": "フィールド:",
+  "swapLegend": "@ 手札と同ランク（交換候補）",
   "teamLabel": "[チーム{{team}}]",
   "cpuHandLine": "{{name}}: 手札{{count}}枚",
   "promptExchange": "あなたの番です。s <h> <f> で交換、p でパスしてください",
