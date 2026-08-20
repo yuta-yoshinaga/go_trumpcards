@@ -56,6 +56,15 @@ export interface CribbageSquaresResponse extends BaseGameResponse {
   rowDetails: CribbageSquaresScore[];
   /** Per-column breakdown, same order as `colScores`. */
   colDetails: CribbageSquaresScore[];
+  /**
+   * Per-row score already locked in without the starter.
+   *
+   * `rowDetails` stays 0 until the 16th card is placed, so this is the only
+   * breakdown there is during play. A lower bound: the starter can only add.
+   */
+  rowPartialDetails: CribbageSquaresScore[];
+  /** The same locked-in breakdown per column. */
+  colPartialDetails: CribbageSquaresScore[];
   /** Sum of all row and column scores. */
   totalScore: number;
   /** Total needed to clear the game (61). Sent so the page holds no copy. */

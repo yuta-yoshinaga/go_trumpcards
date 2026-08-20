@@ -29,6 +29,8 @@ function makeState(overrides: Partial<CribbageSquaresResponse> = {}): CribbageSq
     colScores: [0, 0, 0, 0],
     rowDetails: [zero(), zero(), zero(), zero()],
     colDetails: [zero(), zero(), zero(), zero()],
+    rowPartialDetails: [zero(), zero(), zero(), zero()],
+    colPartialDetails: [zero(), zero(), zero(), zero()],
     totalScore: 0,
     winScore: 61,
     isWin: false,
@@ -126,6 +128,32 @@ describe('CribbageSquaresPage', () => {
     expect(screen.getByTestId('row-breakdown-0')).toHaveTextContent('15が4');
     // A hand that scored nothing shows no breakdown at all.
     expect(screen.queryByTestId('row-breakdown-1')).not.toBeInTheDocument();
+  });
+
+  // #6088: 公式の内訳はスターターがめくれる 16 枚目まで**必ず 0**。対局中に
+  // 出せるのは「スターター抜きで確定しているぶん」だけで、CUI は #6083 から
+  // それを出している。
+  it('shows the locked-in breakdown while the starter is still face down', async () => {
+    const partial = [{ fifteens: 2, pairs: 2, runs: 0, flush: 0, nobs: 0, total: 4 }, zero(), zero(), zero()];
+    mockExec.mockResolvedValue(makeState({ rowPartialDetails: partial }));
+    renderWithProviders(<CribbageSquaresPage />);
+
+    await waitFor(() => expect(screen.getByTestId('row-partial-0')).toBeInTheDocument());
+    expect(screen.getByTestId('row-partial-0')).toHaveTextContent('15が2');
+    // **公式のスコアは 0 のまま。**低い数字を確定点と誤解させない。
+    expect(screen.getByTestId('row-score-0')).toHaveTextContent('0');
+    // 点の付いていない行には出さない。
+    expect(screen.queryByTestId('row-partial-1')).not.toBeInTheDocument();
+  });
+
+  // スターターが出たあとは公式の内訳が語れるので、途中集計は引っ込める。
+  it('drops the locked-in breakdown once the starter is revealed', async () => {
+    const partial = [{ fifteens: 2, pairs: 2, runs: 0, flush: 0, nobs: 0, total: 4 }, zero(), zero(), zero()];
+    mockExec.mockResolvedValue(makeState({ rowPartialDetails: partial, phase: 1, starter: card('CLOVER', 7) }));
+    renderWithProviders(<CribbageSquaresPage />);
+
+    await waitFor(() => expect(screen.getByTestId('row-score-0')).toBeInTheDocument());
+    expect(screen.queryByTestId('row-partial-0')).not.toBeInTheDocument();
   });
 
   // Finishing at 40 is a completed game, not a win; the two must read differently.

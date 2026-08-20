@@ -52796,6 +52796,20 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/CribbageSquaresScore'
+        rowPartialDetails:
+          type: array
+          description: >-
+            Per-row score that is already locked in without the starter. The
+            official rowDetails stay 0 until the 16th card is placed, so this
+            is the only in-play breakdown. It is a lower bound: the starter can
+            only add.
+          items:
+            $ref: '#/components/schemas/CribbageSquaresScore'
+        colPartialDetails:
+          type: array
+          description: The same locked-in breakdown per column.
+          items:
+            $ref: '#/components/schemas/CribbageSquaresScore'
         totalScore:
           type: integer
         winScore:
