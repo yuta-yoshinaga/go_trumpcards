@@ -1,8 +1,6 @@
 package presenter
 
 import (
-	"math"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
@@ -123,77 +121,17 @@ func allFoursPipValue(v int) int {
 // High/Low = 捕獲済みトランプの最高/最低ランク札の捕獲者。Jack = J トランプの捕獲者
 // (場に出なければ -1)。Game = ピップ合計が単独最大のプレイヤー (同点・全員 0 なら -1)。
 func (p *AllFoursWebPresenter) buildRoundBreakdown(s interfaces.AllFoursGame) *controller.AllFoursWebOutputRoundBreakdown {
-	phase := s.GetPhase()
-	// **プレイ中も出す (#4771)。**High / Low / Jack / Game はトリックが進むたびに
-	// 途中経過が確定していくのに、ラウンド終了まで隠れていた。「今どちらが何を
-	// 握っているか」はこのゲームの戦略そのもの。
-	//
-	// ただし途中の値は暫定。まだ出ていないトランプで High も Low も引っくり返る
-	// ので、Provisional を立てて画面側で確定値と区別させる。
-	final := phase == domain.AllFoursPhaseRoundEnd || phase == domain.AllFoursPhaseGameEnd
-	if !final && phase != domain.AllFoursPhasePlay {
+	bd := allFoursComputeBreakdown(s)
+	if bd == nil {
 		return nil
 	}
-	playerCnt := s.GetPlayerCnt()
-	bd := &controller.AllFoursWebOutputRoundBreakdown{
-		High:        controller.AllFoursWebOutputBreakdownAward{WinnerIdx: -1},
-		Low:         controller.AllFoursWebOutputBreakdownAward{WinnerIdx: -1},
-		Jack:        controller.AllFoursWebOutputBreakdownJack{WinnerIdx: -1},
-		Game:        controller.AllFoursWebOutputBreakdownGame{WinnerIdx: -1, Points: make([]int, playerCnt)},
-		Provisional: !final,
+	return &controller.AllFoursWebOutputRoundBreakdown{
+		High:        controller.AllFoursWebOutputBreakdownAward{WinnerIdx: bd.HighIdx, Card: cardToOutput(bd.HighCard)},
+		Low:         controller.AllFoursWebOutputBreakdownAward{WinnerIdx: bd.LowIdx, Card: cardToOutput(bd.LowCard)},
+		Jack:        controller.AllFoursWebOutputBreakdownJack{WinnerIdx: bd.JackIdx},
+		Game:        controller.AllFoursWebOutputBreakdownGame{WinnerIdx: bd.GameIdx, Points: bd.GamePoints},
+		Provisional: bd.Provisional,
 	}
-	trump := s.GetTrumpSuit()
-	if trump == domain.AllFoursTrumpUnset {
-		return bd
-	}
-
-	highRank, lowRank := -1, math.MaxInt32
-	var highCard, lowCard *domain.Card
-	for i := 0; i < playerCnt; i++ {
-		pl := s.GetPlayer(i)
-		if pl == nil {
-			continue
-		}
-		for _, trick := range pl.GetTricksTaken() {
-			for _, card := range trick {
-				if card == nil {
-					continue
-				}
-				bd.Game.Points[i] += allFoursPipValue(card.GetValue())
-				if card.GetDesign() != trump {
-					continue
-				}
-				rank := allFoursRankValue(card.GetValue())
-				if rank > highRank {
-					highRank, highCard = rank, card
-					bd.High.WinnerIdx = i
-				}
-				if rank < lowRank {
-					lowRank, lowCard = rank, card
-					bd.Low.WinnerIdx = i
-				}
-				if card.GetValue() == 11 {
-					bd.Jack.WinnerIdx = i
-				}
-			}
-		}
-	}
-	bd.High.Card = cardToOutput(highCard)
-	bd.Low.Card = cardToOutput(lowCard)
-
-	gw, maxTotal, tied := -1, -1, false
-	for i, total := range bd.Game.Points {
-		switch {
-		case total > maxTotal:
-			maxTotal, gw, tied = total, i, false
-		case total == maxTotal:
-			tied = true
-		}
-	}
-	if !tied && gw >= 0 && maxTotal > 0 {
-		bd.Game.WinnerIdx = gw
-	}
-	return bd
 }
 
 // buildMessage ゲーム結果メッセージを構築
