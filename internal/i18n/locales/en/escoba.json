@@ -10,6 +10,7 @@
   "helpSetTarget": "  st <n>                   target score (default 10)",
   "roundLine": "Round {{round}} (stock {{stock}} left)",
   "playerLine": "{{name}}: hand {{hand}} / captured {{captured}} / escoba {{escoba}} / {{score}}pt",
+  "capturedLine": "Captured: {{cards}}",
   "tableLine": "Table: {{cards}}",
   "tableEmpty": "Table: empty",
   "gameEnd": "Game over!",

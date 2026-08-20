@@ -10,8 +10,10 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupThreeThirteenCuiMock(phase domain.ThreeThirteenPhase, gameEnd bool) (*interfaces.MockThreeThirteenGame, []*domain.ThreeThirteenPlayer) {
@@ -118,4 +120,48 @@ func TestThreeThirteenCuiPresenter_ActionLogOutput(t *testing.T) {
 	m, _ := setupThreeThirteenCuiMock(domain.ThreeThirteenPhaseDraw, false)
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	assert.NotEmpty(t, p.ActionLogOutput(m))
+}
+
+// #5667: ワイルドランクは毎ラウンド変わる。Web は該当札にバッジとリングを付け
+// aria-label にも入れているのに、CUI は汎用の手札一覧なので、ヘッダーの wild 値と
+// 1枚ずつ照合しないとワイルド札に気づけなかった。
+func TestThreeThirteenCuiPresenter_MarksTheWildCards(t *testing.T) {
+	p := new(presenter.ThreeThirteenCuiPresenter)
+
+	handMock := func(cards ...*domain.Card) *interfaces.MockThreeThirteenGame {
+		m, players := setupThreeThirteenCuiMock(domain.ThreeThirteenPhaseDraw, false)
+		players[0].ResetRound()
+		for _, c := range cards {
+			players[0].AddCard(c)
+		}
+		return m
+	}
+
+	// mock の WildRank は 3。
+	t.Run("marks only the cards of the wild rank", func(t *testing.T) {
+		out := p.Output(handMock(
+			domain.NewCard(domain.CardDesignSpade, 3, false),
+			domain.NewCard(domain.CardDesignHeart, 5, false),
+		), nil)
+
+		// 黒スートは色付けされないので素の文字列。赤スートは color.Red が付く。
+		assert.Contains(t, out, "[0]SPADE 3"+presenter.CuiWildMark)
+		assert.NotContains(t, out, "[1]"+color.Red("HEART 5")+presenter.CuiWildMark)
+	})
+
+	t.Run("explains what the mark means", func(t *testing.T) {
+		out := p.Output(handMock(domain.NewCard(domain.CardDesignSpade, 3, false)), nil)
+
+		assert.Contains(t, out, i18n.T("threethirteen.wildLegend"))
+	})
+
+	t.Run("no wild card in hand leaves the list unmarked", func(t *testing.T) {
+		out := p.Output(handMock(
+			domain.NewCard(domain.CardDesignHeart, 5, false),
+			domain.NewCard(domain.CardDesignClover, 9, false),
+		), nil)
+
+		assert.NotContains(t, out, presenter.CuiWildMark)
+		assert.NotContains(t, out, i18n.T("threethirteen.wildLegend"))
+	})
 }
