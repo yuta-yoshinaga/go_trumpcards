@@ -1,4 +1,4 @@
-//go:build !js || !wasm || classic
+//go:build !js || !wasm || extra4
 
 // Package domain ベジーク (Bezique) のドメインモデル。
 //

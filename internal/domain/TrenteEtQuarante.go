@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra
+//go:build !js || !wasm || extra4
 
 // Package domain トラント・エ・カラント (Trente et Quarante / Rouge et Noir / トラント・エ・カラント)
 // のドメインモデル。

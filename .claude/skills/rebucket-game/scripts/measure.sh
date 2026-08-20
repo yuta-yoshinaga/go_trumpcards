@@ -6,7 +6,7 @@
 # measured 594139 raw / 232016 gzip both locally and in CI. `make` is not
 # installed on every dev box, which is why this exists as a shell script.
 #
-# Usage: measure.sh [worker ...]     (default: all six)
+# Usage: measure.sh [worker ...]     (default: all seven)
 set -euo pipefail
 
 cd "$(dirname "$0")/../../../.."
@@ -19,7 +19,7 @@ LIMIT=1048576
 # once with all six names as a single string and tinygo gets one invalid -tags value.
 workers=("$@")
 if [ ${#workers[@]} -eq 0 ]; then
-  workers=(casino classic solo extra extra2 extra3)
+  workers=(casino classic solo extra extra2 extra3 extra4)
 fi
 
 for w in "${workers[@]}"; do

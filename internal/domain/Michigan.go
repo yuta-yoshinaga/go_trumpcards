@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra3
+//go:build !js || !wasm || extra4
 
 // Package domain ミシガン (Michigan / Newmarket) のドメインモデル。
 //

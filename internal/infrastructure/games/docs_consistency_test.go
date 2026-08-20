@@ -195,7 +195,7 @@ func TestPerGameManualsMatchRegistry(t *testing.T) {
 }
 
 // bucketEnumRe matches a brace enumeration such as
-// `{casino,classic,solo,extra,extra2,extra3}` as used in build commands and
+// `{casino,classic,solo,extra,extra2,extra3,extra4}` as used in build commands and
 // path globs throughout the docs.
 var bucketEnumRe = regexp.MustCompile(`\{([a-z0-9]+(?:,[a-z0-9]+)+)\}`)
 

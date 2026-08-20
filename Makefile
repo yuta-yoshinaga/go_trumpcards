@@ -3,9 +3,9 @@ WASM_OPT ?= wasm-opt
 ASSETS_GEN := go run github.com/syumai/workers/cmd/workers-assets-gen
 COVERAGE_DIR := build/coverage
 
-.PHONY: build-workers build-worker-casino build-worker-classic build-worker-solo build-worker-extra build-worker-extra2 build-worker-extra3 clean-workers deploy-workers coverage clean-cov
+.PHONY: build-workers build-worker-casino build-worker-classic build-worker-solo build-worker-extra build-worker-extra2 build-worker-extra3 build-worker-extra4 clean-workers deploy-workers coverage clean-cov
 
-build-workers: build-worker-casino build-worker-classic build-worker-solo build-worker-extra build-worker-extra2 build-worker-extra3
+build-workers: build-worker-casino build-worker-classic build-worker-solo build-worker-extra build-worker-extra2 build-worker-extra3 build-worker-extra4
 
 define build_worker
 	@echo "Building worker: $(1)"
@@ -49,8 +49,11 @@ build-worker-extra2:
 build-worker-extra3:
 	$(call build_worker,extra3)
 
+build-worker-extra4:
+	$(call build_worker,extra4)
+
 clean-workers:
-	rm -rf workers/casino/build workers/classic/build workers/solo/build workers/extra/build workers/extra2/build workers/extra3/build
+	rm -rf workers/casino/build workers/classic/build workers/solo/build workers/extra/build workers/extra2/build workers/extra3/build workers/extra4/build
 
 # Deploys to production. CI passes `--env staging` for develop; this target does not,
 # so running it by hand publishes to the live workers.
@@ -61,6 +64,7 @@ deploy-workers: build-workers
 	cd workers/extra && bunx wrangler deploy
 	cd workers/extra2 && bunx wrangler deploy
 	cd workers/extra3 && bunx wrangler deploy
+	cd workers/extra4 && bunx wrangler deploy
 
 coverage: ## Run tests with coverage, writing profile and HTML report to build/coverage/.
 	@mkdir -p $(COVERAGE_DIR)

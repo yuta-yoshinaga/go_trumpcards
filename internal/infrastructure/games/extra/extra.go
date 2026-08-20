@@ -123,14 +123,6 @@ func init() {
 			return usecase.RestoreKingAlbertInteractor(data, new(presenter.KingAlbertWebPresenter))
 		},
 		controller.NewKingAlbertWebControllerWithProvider)
-	games.RegisterKVGame("flowergarden", games.CategoryExtra,
-		func() usecase.FlowerGardenInteractorIF {
-			return usecase.NewFlowerGardenInteractor(domain.NewDefaultFlowerGarden(), new(presenter.FlowerGardenWebPresenter))
-		},
-		func(data []byte) (usecase.FlowerGardenInteractorIF, error) {
-			return usecase.RestoreFlowerGardenInteractor(data, new(presenter.FlowerGardenWebPresenter))
-		},
-		controller.NewFlowerGardenWebControllerWithProvider)
 	games.RegisterKVGame("agnes", games.CategoryExtra,
 		func() usecase.AgnesInteractorIF {
 			return usecase.NewAgnesInteractor(domain.NewDefaultAgnes(), new(presenter.AgnesWebPresenter))
@@ -187,22 +179,6 @@ func init() {
 			return usecase.RestoreCinchInteractor(data, new(presenter.CinchWebPresenter))
 		},
 		controller.NewCinchWebControllerWithProvider)
-	games.RegisterKVGame("trenteetquarante", games.CategoryExtra,
-		func() usecase.TrenteEtQuaranteInteractorIF {
-			return usecase.NewTrenteEtQuaranteInteractor(domain.NewDefaultTrenteEtQuarante(), new(presenter.TrenteEtQuaranteWebPresenter))
-		},
-		func(data []byte) (usecase.TrenteEtQuaranteInteractorIF, error) {
-			return usecase.RestoreTrenteEtQuaranteInteractor(data, new(presenter.TrenteEtQuaranteWebPresenter))
-		},
-		controller.NewTrenteEtQuaranteWebControllerWithProvider)
-	games.RegisterKVGame("guts", games.CategoryExtra,
-		func() usecase.GutsInteractorIF {
-			return usecase.NewGutsInteractor(domain.NewDefaultGuts(), new(presenter.GutsWebPresenter))
-		},
-		func(data []byte) (usecase.GutsInteractorIF, error) {
-			return usecase.RestoreGutsInteractor(data, new(presenter.GutsWebPresenter))
-		},
-		controller.NewGutsWebControllerWithProvider)
 	games.RegisterKVGame("watten", games.CategoryExtra,
 		func() usecase.WattenInteractorIF {
 			return usecase.NewWattenInteractor(domain.NewDefaultWatten(), new(presenter.WattenWebPresenter))
@@ -227,14 +203,6 @@ func init() {
 			return usecase.RestoreSambaInteractor(data, new(presenter.SambaWebPresenter))
 		},
 		controller.NewSambaWebControllerWithProvider)
-	games.RegisterKVGame("anaconda", games.CategoryExtra,
-		func() usecase.AnacondaInteractorIF {
-			return usecase.NewAnacondaInteractor(domain.NewDefaultAnaconda(), new(presenter.AnacondaWebPresenter))
-		},
-		func(data []byte) (usecase.AnacondaInteractorIF, error) {
-			return usecase.RestoreAnacondaInteractor(data, new(presenter.AnacondaWebPresenter))
-		},
-		controller.NewAnacondaWebControllerWithProvider)
 	games.RegisterKVGame("machiavelli", games.CategoryExtra,
 		func() usecase.MachiavelliInteractorIF {
 			return usecase.NewMachiavelliInteractor(domain.NewDefaultMachiavelli(), new(presenter.MachiavelliWebPresenter))
@@ -315,46 +283,6 @@ func init() {
 			return usecase.RestoreDiplomatInteractor(data, new(presenter.DiplomatWebPresenter))
 		},
 		controller.NewDiplomatWebControllerWithProvider)
-	games.RegisterKVGame("mendikot", games.CategoryExtra,
-		func() usecase.MendikotInteractorIF {
-			return usecase.NewMendikotInteractor(domain.NewDefaultMendikot(), new(presenter.MendikotWebPresenter))
-		},
-		func(data []byte) (usecase.MendikotInteractorIF, error) {
-			return usecase.RestoreMendikotInteractor(data, new(presenter.MendikotWebPresenter))
-		},
-		controller.NewMendikotWebControllerWithProvider)
-	games.RegisterKVGame("bhabhi", games.CategoryExtra,
-		func() usecase.BhabhiInteractorIF {
-			return usecase.NewBhabhiInteractor(domain.NewDefaultBhabhi(), new(presenter.BhabhiWebPresenter))
-		},
-		func(data []byte) (usecase.BhabhiInteractorIF, error) {
-			return usecase.RestoreBhabhiInteractor(data, new(presenter.BhabhiWebPresenter))
-		},
-		controller.NewBhabhiWebControllerWithProvider)
-	games.RegisterKVGame("sergeantmajor", games.CategoryExtra,
-		func() usecase.SergeantMajorInteractorIF {
-			return usecase.NewSergeantMajorInteractor(domain.NewDefaultSergeantMajor(), new(presenter.SergeantMajorWebPresenter))
-		},
-		func(data []byte) (usecase.SergeantMajorInteractorIF, error) {
-			return usecase.RestoreSergeantMajorInteractor(data, new(presenter.SergeantMajorWebPresenter))
-		},
-		controller.NewSergeantMajorWebControllerWithProvider)
-	games.RegisterKVGame("pasur", games.CategoryExtra,
-		func() usecase.PasurInteractorIF {
-			return usecase.NewPasurInteractor(domain.NewDefaultPasur(), new(presenter.PasurWebPresenter))
-		},
-		func(data []byte) (usecase.PasurInteractorIF, error) {
-			return usecase.RestorePasurInteractor(data, new(presenter.PasurWebPresenter))
-		},
-		controller.NewPasurWebControllerWithProvider)
-	games.RegisterKVGame("lingerlonger", games.CategoryExtra,
-		func() usecase.LingerLongerInteractorIF {
-			return usecase.NewLingerLongerInteractor(domain.NewDefaultLingerLonger(), new(presenter.LingerLongerWebPresenter))
-		},
-		func(data []byte) (usecase.LingerLongerInteractorIF, error) {
-			return usecase.RestoreLingerLongerInteractor(data, new(presenter.LingerLongerWebPresenter))
-		},
-		controller.NewLingerLongerWebControllerWithProvider)
 	games.RegisterKVGame("goofspiel", games.CategoryExtra,
 		func() usecase.GoofspielInteractorIF {
 			return usecase.NewGoofspielInteractor(domain.NewDefaultGoofspiel(), new(presenter.GoofspielWebPresenter))

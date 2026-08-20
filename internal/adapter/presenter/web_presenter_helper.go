@@ -28,7 +28,7 @@ func buildWinnerWebMessage(gamePrefix string, winnerIdx int, isHuman bool) (stri
 
 // intSliceOrEmpty nil スライスを空スライスに正規化する (JSON で null を避ける)。
 //
-// **この共通ファイルはビルドタグを持たないので 6 つの Worker すべてに入る。**
+// **この共通ファイルはビルドタグを持たないので 7 つの Worker すべてに入る。**
 // Schnapsen の presenter (solo タグ) に置いたままだと、同じヘルパを使う別
 // カテゴリのゲームが classic の Worker ビルドだけで落ちる。
 func intSliceOrEmpty(in []int) []int {
