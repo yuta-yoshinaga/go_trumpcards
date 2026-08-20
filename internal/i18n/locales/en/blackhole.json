@@ -4,6 +4,7 @@
   "helpUndo": "  u / undo             undo the last move",
   "helpGiveUp": "  g / giveup           give up",
   "blackHoleLabel": "Black Hole:",
+  "progress": "Swallowed: {{count}}/{{total}}",
   "fanLabel": "Fan {{idx}}:",
   "hintLine": "[HINT: fan {{fan}} can be played]",
   "acceptableRanks": "Accepted ranks: {{ranks}}",
