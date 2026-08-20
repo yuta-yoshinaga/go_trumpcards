@@ -33,6 +33,22 @@ beforeEach(() => {
 });
 
 describe('LaBelleLuciePage', () => {
+  // **リングは 1 つだけ。** ring-* は同じ box-shadow を共有するので重ねられず、
+  // 連結すると選択中かつ移動可能な扇で選択リングが黙って消える (レビュー指摘)。
+  it('keeps the selection ring on a fan that can also move', async () => {
+    renderWithProviders(<LaBelleLuciePage />);
+
+    // 既定の盤面では扇 1 (♠8) が動かせる。
+    const fan = await screen.findByTestId('fan-1');
+    expect(fan).toHaveAttribute('data-movable', 'true');
+    fireEvent.click(fan);
+
+    const selected = screen.getByTestId('fan-1');
+    expect(selected.className).toContain('ring-2');
+    expect(selected.className).toContain('ring-ds-warning');
+    // 移動可能の細いリングは出さない (2 つは重ならない)。
+    expect(selected.className).not.toContain('ring-1');
+  });
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<LaBelleLuciePage />);

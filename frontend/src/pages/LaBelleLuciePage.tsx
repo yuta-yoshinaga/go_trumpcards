@@ -21,7 +21,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { Card } from '../types/card';
 import { LaBelleLuciePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { labelleLucieHasLegalMove, labelleLucieMovableFans } from '../utils/labelleLucieLegalMove';
+import { labelleLucieMovableFans } from '../utils/labelleLucieLegalMove';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** La Belle Lucie tutorial step definitions. */
@@ -98,11 +98,13 @@ function LaBelleLuciePageContent() {
   const isOver = state.phase === LaBelleLuciePhase.GAME_OVER;
   const isEnd = isClear || isOver;
   const canAct = !isEnd;
-  const hasLegalMove = labelleLucieHasLegalMove(state.fans, state.foundation);
+
   // **どの扇が動かせるかは、ヒント (4秒で消える) を押さないと分からなかった** (#5678)。
   // 同バッチの他ゲームと同じく「押す前に分かる」形にする。ヒントの強調とは別の
   // 控えめなリングにして、推奨手と混ざらないようにする。
   const movableFans = labelleLucieMovableFans(state.fans, state.foundation);
+  // **同じ走査を 2 度しない。** 動かせる扇が 1 つも無いことが「詰み」。
+  const hasLegalMove = movableFans.size > 0;
   // No legal move left but redeals remain: recommend a redeal before the
   // player wastes time hunting for a move that does not exist.
   const stuck = canAct && state.redealsLeft > 0 && !hasLegalMove;
@@ -159,22 +161,25 @@ function LaBelleLuciePageContent() {
   const renderFan = (fan: Card[], idx: number) => {
     const isHintSource = hint?.fromFan === idx;
     const isHintDest = hint !== undefined && !hintFoundation && hint.toFan === idx;
-    // Source ring (info) and destination ring (success) are additive hint cues.
-    // A selected fan keeps its own warning ring; hint rings take visual priority
-    // via later class order when both would apply to the same fan.
-    // 動かせる扇は常時 1px の控えめなリング。ヒントの 2px + パルスとは強さで
-    // 区別する (同じ印だと推奨手と混ざる)。
-    const movableRing = movableFans.has(idx) ? ' ring-1 ring-ds-success/60' : '';
-    const hintRing = isHintSource
+    // **リングは 1 つだけ選ぶ。** Tailwind の ring-* は同じ box-shadow 変数を
+    // 共有するので重ねられない —— 連結すると、生成された CSS の順序で
+    // どちらが勝つかが決まり、選択中かつ移動可能な扇 (ふつうに起きる組み合わせ)
+    // で選択リングが黙って消える。優先順は ヒント > 選択中 > 移動可能。
+    // 移動可能は 1px、ヒントは 2px + パルスで強さを分ける。
+    const ring = isHintSource
       ? ' ring-2 ring-ds-info motion-safe:animate-pulse'
       : isHintDest
         ? ' ring-2 ring-ds-success motion-safe:animate-pulse'
-        : '';
+        : selected === idx
+          ? ' ring-2 ring-ds-warning'
+          : movableFans.has(idx)
+            ? ' ring-1 ring-ds-success'
+            : '';
     return (
       <button
         type="button"
         key={`fan-${idx}`}
-        className={`relative flex flex-col items-center rounded p-1 ${selected === idx ? 'ring-2 ring-ds-warning' : ''}${hintRing || movableRing} ${canAct ? 'cursor-pointer' : ''}`}
+        className={`relative flex flex-col items-center rounded p-1${ring} ${canAct ? 'cursor-pointer' : ''}`}
         style={{ minHeight: Math.round(w * 1.4) }}
         onClick={canAct ? () => pickFan(idx) : undefined}
         disabled={!canAct}
