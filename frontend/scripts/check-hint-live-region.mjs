@@ -26,7 +26,9 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { assertFloor } from './lib/floor.mjs';
 
-const PAGES = fileURLToPath(new URL('../src/pages', import.meta.url));
+// The pages directory, overridable by argv so the guard's own test can run it
+// against fixtures instead of the real tree.
+const PAGES = process.argv[2] ?? fileURLToPath(new URL('../src/pages', import.meta.url));
 
 /** Pages that announce the hint through their own element rather than around `hintAvailable`. */
 const ANNOUNCES_ELSEWHERE = new Map([['FortyThievesPage.tsx', 'ft-hint-announcement']]);
