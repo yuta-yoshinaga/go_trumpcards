@@ -261,5 +261,5 @@ var bridgeHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *BridgeCuiPresenter) ActionLogOutput(b interfaces.BridgeGame) string {
-	return actionLogOutputText(b)
+	return actionLogOutputTextForSeats[*domain.BridgePlayer](b)
 }

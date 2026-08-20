@@ -175,5 +175,5 @@ var teenDoPaanchHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *TeenDoPaanchCuiPresenter) ActionLogOutput(g interfaces.TeenDoPaanchGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.TeenDoPaanchPlayer](g)
 }

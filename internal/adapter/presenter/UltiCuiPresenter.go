@@ -215,5 +215,5 @@ var ultiHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *UltiCuiPresenter) ActionLogOutput(g interfaces.UltiGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.UltiPlayer](g)
 }

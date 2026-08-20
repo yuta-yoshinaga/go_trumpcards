@@ -216,5 +216,5 @@ var gongZhuHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *GongZhuCuiPresenter) ActionLogOutput(g interfaces.GongZhuGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.GongZhuPlayer](g)
 }

@@ -198,5 +198,5 @@ var israeliWhistHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *IsraeliWhistCuiPresenter) ActionLogOutput(w interfaces.IsraeliWhistGame) string {
-	return actionLogOutputText(w)
+	return actionLogOutputTextForSeats[*domain.IsraeliWhistPlayer](w)
 }

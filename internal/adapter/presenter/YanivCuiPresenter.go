@@ -107,5 +107,5 @@ func (p *YanivCuiPresenter) Output(g interfaces.YanivGame, lastErr error) string
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *YanivCuiPresenter) ActionLogOutput(g interfaces.YanivGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.YanivPlayer](g)
 }

@@ -179,5 +179,5 @@ var kingHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *KingCuiPresenter) ActionLogOutput(kg interfaces.KingGame) string {
-	return actionLogOutputText(kg)
+	return actionLogOutputTextForSeats[*domain.KingPlayer](kg)
 }

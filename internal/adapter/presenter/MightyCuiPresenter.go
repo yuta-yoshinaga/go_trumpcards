@@ -261,5 +261,5 @@ var mightyHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *MightyCuiPresenter) ActionLogOutput(m interfaces.MightyGame) string {
-	return actionLogOutputText(m)
+	return actionLogOutputTextForSeats[*domain.MightyPlayer](m)
 }

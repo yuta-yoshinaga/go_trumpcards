@@ -97,7 +97,7 @@ func (p *MacauCuiPresenter) Output(g interfaces.MacauGame, lastErr error) string
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *MacauCuiPresenter) ActionLogOutput(g interfaces.MacauGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.MacauPlayer](g)
 }
 
 // HintOutput lists the human's currently playable card indices. During a

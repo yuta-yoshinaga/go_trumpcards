@@ -173,5 +173,5 @@ func vintLadderLine() string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *VintCuiPresenter) ActionLogOutput(g interfaces.VintGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.VintPlayer](g)
 }

@@ -243,5 +243,5 @@ var musHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *MusCuiPresenter) ActionLogOutput(g interfaces.MusGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.MusPlayer](g)
 }

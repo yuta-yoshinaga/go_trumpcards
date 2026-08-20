@@ -186,5 +186,5 @@ var tarabishHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *TarabishCuiPresenter) ActionLogOutput(t interfaces.TarabishGame) string {
-	return actionLogOutputText(t)
+	return actionLogOutputTextForSeats[*domain.TarabishPlayer](t)
 }

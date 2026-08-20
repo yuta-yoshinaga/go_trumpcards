@@ -204,5 +204,5 @@ var anacondaHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *AnacondaCuiPresenter) ActionLogOutput(g interfaces.AnacondaGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.AnacondaPlayer](g)
 }

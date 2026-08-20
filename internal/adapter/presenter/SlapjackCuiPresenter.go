@@ -93,5 +93,5 @@ func (p *SlapjackCuiPresenter) Output(g interfaces.SlapjackGame, lastErr error) 
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *SlapjackCuiPresenter) ActionLogOutput(g interfaces.SlapjackGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.SlapjackPlayer](g)
 }

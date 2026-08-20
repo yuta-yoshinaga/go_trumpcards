@@ -153,5 +153,5 @@ func (p *DoubtCuiPresenter) Output(d interfaces.DoubtGame, lastErr error) string
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *DoubtCuiPresenter) ActionLogOutput(d interfaces.DoubtGame) string {
-	return actionLogOutputText(d)
+	return actionLogOutputTextForSeats[*domain.DoubtPlayer](d)
 }

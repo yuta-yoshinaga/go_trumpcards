@@ -209,5 +209,5 @@ var aluetteHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *AluetteCuiPresenter) ActionLogOutput(g interfaces.AluetteGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.AluettePlayer](g)
 }

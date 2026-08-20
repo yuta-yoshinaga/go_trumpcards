@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -270,6 +271,7 @@ func TestBurracoCuiPresenter_ActionLogOutput(t *testing.T) {
 		}
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return(entries)
+		m.On("GetPlayer", mock.Anything).Return(domain.NewCanastaPlayer(true)).Maybe()
 
 		result := p.ActionLogOutput(m)
 		assert.Contains(t, result, "draw_stock")

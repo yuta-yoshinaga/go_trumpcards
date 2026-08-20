@@ -167,5 +167,5 @@ var desmocheHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *DesmocheCuiPresenter) ActionLogOutput(c interfaces.DesmocheGame) string {
-	return actionLogOutputText(c)
+	return actionLogOutputTextForSeats[*domain.DesmochePlayer](c)
 }

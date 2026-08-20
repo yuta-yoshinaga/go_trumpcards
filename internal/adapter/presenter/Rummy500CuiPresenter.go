@@ -101,7 +101,7 @@ func (p *Rummy500CuiPresenter) Output(g interfaces.Rummy500Game, lastErr error) 
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *Rummy500CuiPresenter) ActionLogOutput(g interfaces.Rummy500Game) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.Rummy500Player](g)
 }
 
 // rummy500MeldCandidates returns up to `limit` index triples of the player's

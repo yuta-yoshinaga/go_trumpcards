@@ -187,5 +187,5 @@ var tysiacHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *TysiacCuiPresenter) ActionLogOutput(g interfaces.TysiacGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.TysiacPlayer](g)
 }

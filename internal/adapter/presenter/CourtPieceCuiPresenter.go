@@ -166,5 +166,5 @@ var courtPieceHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *CourtPieceCuiPresenter) ActionLogOutput(t interfaces.CourtPieceGame) string {
-	return actionLogOutputText(t)
+	return actionLogOutputTextForSeats[*domain.CourtPiecePlayer](t)
 }

@@ -183,5 +183,5 @@ var minibridgeHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *MinibridgeCuiPresenter) ActionLogOutput(s interfaces.MinibridgeGame) string {
-	return actionLogOutputText(s)
+	return actionLogOutputTextForSeats[*domain.MinibridgePlayer](s)
 }

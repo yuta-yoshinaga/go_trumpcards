@@ -160,5 +160,5 @@ var hokmHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *HokmCuiPresenter) ActionLogOutput(h interfaces.HokmGame) string {
-	return actionLogOutputText(h)
+	return actionLogOutputTextForSeats[*domain.HokmPlayer](h)
 }

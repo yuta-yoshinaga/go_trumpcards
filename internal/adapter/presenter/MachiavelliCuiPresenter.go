@@ -103,5 +103,5 @@ func (p *MachiavelliCuiPresenter) Output(g interfaces.MachiavelliGame, lastErr e
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *MachiavelliCuiPresenter) ActionLogOutput(g interfaces.MachiavelliGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.MachiavelliPlayer](g)
 }

@@ -233,5 +233,5 @@ var frenchTarotHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *FrenchTarotCuiPresenter) ActionLogOutput(g interfaces.FrenchTarotGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.FrenchTarotPlayer](g)
 }

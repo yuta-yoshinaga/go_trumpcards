@@ -158,5 +158,5 @@ var teenPattiHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *TeenPattiCuiPresenter) ActionLogOutput(g interfaces.TeenPattiGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.TeenPattiPlayer](g)
 }

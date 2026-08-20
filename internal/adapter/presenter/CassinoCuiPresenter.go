@@ -178,5 +178,5 @@ func cassinoJoinIdxs(idxs []int) string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *CassinoCuiPresenter) ActionLogOutput(cg interfaces.CassinoGame) string {
-	return actionLogOutputText(cg)
+	return actionLogOutputTextForSeats[*domain.CassinoPlayer](cg)
 }

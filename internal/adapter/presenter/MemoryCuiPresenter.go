@@ -127,5 +127,5 @@ func (p *MemoryCuiPresenter) Output(m interfaces.MemoryGame, lastErr error) stri
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *MemoryCuiPresenter) ActionLogOutput(m interfaces.MemoryGame) string {
-	return actionLogOutputText(m)
+	return actionLogOutputTextForSeats[*domain.MemoryPlayer](m)
 }

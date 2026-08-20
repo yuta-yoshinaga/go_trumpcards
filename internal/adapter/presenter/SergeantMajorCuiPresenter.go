@@ -202,5 +202,5 @@ var sergeantMajorHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *SergeantMajorCuiPresenter) ActionLogOutput(s interfaces.SergeantMajorGame) string {
-	return actionLogOutputText(s)
+	return actionLogOutputTextForSeats[*domain.SergeantMajorPlayer](s)
 }

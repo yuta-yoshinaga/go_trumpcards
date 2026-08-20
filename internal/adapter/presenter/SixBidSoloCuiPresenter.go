@@ -235,5 +235,5 @@ func sixBidSoloLadderTarget(k domain.SixBidSoloBidKind) string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *SixBidSoloCuiPresenter) ActionLogOutput(g interfaces.SixBidSoloGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.SixBidSoloPlayer](g)
 }

@@ -88,5 +88,5 @@ func (p *ZhengCuiPresenter) Output(zg interfaces.ZhengGame, lastErr error) strin
 
 // ActionLogOutput 棋譜を出力
 func (p *ZhengCuiPresenter) ActionLogOutput(zg interfaces.ZhengGame) string {
-	return actionLogOutputText(zg)
+	return actionLogOutputTextForSeats[*domain.ZhengPlayer](zg)
 }

@@ -147,5 +147,5 @@ func (p *EscobaCuiPresenter) HintOutput(eg interfaces.EscobaGame) string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *EscobaCuiPresenter) ActionLogOutput(eg interfaces.EscobaGame) string {
-	return actionLogOutputText(eg)
+	return actionLogOutputTextForSeats[*domain.ScopaPlayer](eg)
 }

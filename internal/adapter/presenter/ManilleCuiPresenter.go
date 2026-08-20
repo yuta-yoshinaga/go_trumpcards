@@ -152,5 +152,5 @@ var manilleHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *ManilleCuiPresenter) ActionLogOutput(g interfaces.ManilleGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.ManillePlayer](g)
 }

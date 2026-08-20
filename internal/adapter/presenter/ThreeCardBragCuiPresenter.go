@@ -151,5 +151,5 @@ var threeCardBragHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *ThreeCardBragCuiPresenter) ActionLogOutput(g interfaces.ThreeCardBragGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.ThreeCardBragPlayer](g)
 }

@@ -224,5 +224,5 @@ func (p *ShengJiCuiPresenter) writeHandEnd(b *strings.Builder, g interfaces.Shen
 
 // ActionLogOutput は棋譜をテキストで出力する。
 func (p *ShengJiCuiPresenter) ActionLogOutput(g interfaces.ShengJiGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.ShengJiPlayer](g)
 }

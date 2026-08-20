@@ -137,5 +137,5 @@ var tressetteHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *TressetteCuiPresenter) ActionLogOutput(g interfaces.TressetteGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.TressettePlayer](g)
 }

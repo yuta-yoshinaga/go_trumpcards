@@ -188,5 +188,5 @@ var honeymoonBridgeHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *HoneymoonBridgeCuiPresenter) ActionLogOutput(s interfaces.HoneymoonBridgeGame) string {
-	return actionLogOutputText(s)
+	return actionLogOutputTextForSeats[*domain.HoneymoonBridgePlayer](s)
 }

@@ -161,5 +161,5 @@ var lobaHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *LobaCuiPresenter) ActionLogOutput(c interfaces.LobaGame) string {
-	return actionLogOutputText(c)
+	return actionLogOutputTextForSeats[*domain.LobaPlayer](c)
 }

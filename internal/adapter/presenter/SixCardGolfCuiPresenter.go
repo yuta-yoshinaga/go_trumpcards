@@ -122,7 +122,9 @@ func scgPlayerName(player *domain.SixCardGolfPlayer, idx int) string {
 
 // ActionLogOutput 棋譜
 func (p *SixCardGolfCuiPresenter) ActionLogOutput(g interfaces.SixCardGolfGame) string {
-	return actionLogOutputText(g)
+	// 席は IsCpu しか持たないので cuiPlayerName は使えない。この画面の他の行と
+	// 同じ scgPlayerName を通す (#5977)。
+	return actionLogOutputTextNamedBy(g, func(idx int) string { return scgPlayerName(g.GetPlayer(idx), idx) })
 }
 
 // HintOutput recommends a draw source (PlayerTurn) or a swap/discard for the

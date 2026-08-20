@@ -162,5 +162,5 @@ var mariasHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *MariasCuiPresenter) ActionLogOutput(g interfaces.MariasGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.MariasPlayer](g)
 }

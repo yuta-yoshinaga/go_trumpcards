@@ -170,5 +170,5 @@ var sjavsHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *SjavsCuiPresenter) ActionLogOutput(c interfaces.SjavsGame) string {
-	return actionLogOutputText(c)
+	return actionLogOutputTextForSeats[*domain.SjavsPlayer](c)
 }

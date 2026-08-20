@@ -240,5 +240,5 @@ var fortyFivesHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *FortyFivesCuiPresenter) ActionLogOutput(g interfaces.FortyFivesGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.FortyFivesPlayer](g)
 }

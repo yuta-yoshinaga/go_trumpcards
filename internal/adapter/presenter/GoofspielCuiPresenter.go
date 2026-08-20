@@ -131,5 +131,5 @@ var goofspielHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *GoofspielCuiPresenter) ActionLogOutput(s interfaces.GoofspielGame) string {
-	return actionLogOutputText(s)
+	return actionLogOutputTextForSeats[*domain.GoofspielPlayer](s)
 }

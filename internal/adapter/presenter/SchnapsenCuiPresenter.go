@@ -167,5 +167,5 @@ var schnapsenHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *SchnapsenCuiPresenter) ActionLogOutput(s interfaces.SchnapsenGame) string {
-	return actionLogOutputText(s)
+	return actionLogOutputTextForSeats[*domain.SchnapsenPlayer](s)
 }

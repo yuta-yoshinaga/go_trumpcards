@@ -169,5 +169,5 @@ func (p *TonkCuiPresenter) Output(g interfaces.TonkGame, lastErr error) string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *TonkCuiPresenter) ActionLogOutput(g interfaces.TonkGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.TonkPlayer](g)
 }

@@ -118,5 +118,5 @@ func (p *MaoCuiPresenter) Output(g interfaces.MaoGame, lastErr error) string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *MaoCuiPresenter) ActionLogOutput(g interfaces.MaoGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.MaoPlayer](g)
 }

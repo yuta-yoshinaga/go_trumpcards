@@ -260,5 +260,5 @@ var scartoHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *ScartoCuiPresenter) ActionLogOutput(g interfaces.ScartoGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.ScartoPlayer](g)
 }

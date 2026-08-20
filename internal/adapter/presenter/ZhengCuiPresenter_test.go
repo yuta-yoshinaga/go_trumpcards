@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -108,6 +109,8 @@ func TestZhengCuiPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
 		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "played 1 card(s)"},
 	})
+	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+	m.On("GetPlayer", mock.Anything).Return(domain.NewZhengPlayer(true)).Maybe()
 	assert.Contains(t, p.ActionLogOutput(m), "play")
 }
 

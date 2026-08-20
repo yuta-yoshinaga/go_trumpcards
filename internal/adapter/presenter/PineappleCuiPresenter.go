@@ -31,7 +31,7 @@ type PineappleCuiPresenter struct{}
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (pp *PineappleCuiPresenter) ActionLogOutput(p interfaces.PineappleGame) string {
-	return actionLogOutputText(p)
+	return actionLogOutputTextForSeats[*domain.PineapplePlayer](p)
 }
 
 // Output renders the current game state for the active locale (#1699).

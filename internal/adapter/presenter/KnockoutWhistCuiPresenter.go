@@ -165,5 +165,5 @@ var knockoutWhistHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *KnockoutWhistCuiPresenter) ActionLogOutput(g interfaces.KnockoutWhistGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.KnockoutWhistPlayer](g)
 }

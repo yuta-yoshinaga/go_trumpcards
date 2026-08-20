@@ -180,7 +180,7 @@ func (p *FiveHundredCuiPresenter) HintOutput(g interfaces.FiveHundredGame) strin
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *FiveHundredCuiPresenter) ActionLogOutput(g interfaces.FiveHundredGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.FiveHundredPlayer](g)
 }
 
 // ptrOrZero returns *p or 0 when p is nil.

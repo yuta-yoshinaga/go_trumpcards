@@ -95,5 +95,5 @@ func (p *IndianRummyCuiPresenter) Output(g interfaces.IndianRummyGame, lastErr e
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *IndianRummyCuiPresenter) ActionLogOutput(g interfaces.IndianRummyGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.IndianRummyPlayer](g)
 }

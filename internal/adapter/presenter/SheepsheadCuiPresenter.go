@@ -224,5 +224,5 @@ var sheepsheadHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *SheepsheadCuiPresenter) ActionLogOutput(g interfaces.SheepsheadGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.SheepsheadPlayer](g)
 }

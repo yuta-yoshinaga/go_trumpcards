@@ -172,5 +172,5 @@ var tuteHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *TuteCuiPresenter) ActionLogOutput(g interfaces.TuteGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.TutePlayer](g)
 }

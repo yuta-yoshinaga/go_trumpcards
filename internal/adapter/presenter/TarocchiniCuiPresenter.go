@@ -206,5 +206,5 @@ var tarocchiniHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *TarocchiniCuiPresenter) ActionLogOutput(g interfaces.TarocchiniGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.TarocchiniPlayer](g)
 }

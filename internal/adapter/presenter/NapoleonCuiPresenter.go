@@ -237,5 +237,5 @@ var napoleonHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *NapoleonCuiPresenter) ActionLogOutput(n interfaces.NapoleonGame) string {
-	return actionLogOutputText(n)
+	return actionLogOutputTextForSeats[*domain.NapoleonPlayer](n)
 }

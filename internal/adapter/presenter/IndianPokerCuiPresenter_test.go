@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
@@ -375,6 +376,8 @@ func TestIndianPokerCuiPresenter_ActionLogOutput(t *testing.T) {
 		}
 		mockGame.On("GetGameEndFlag").Return(true)
 		mockGame.On("GetActionLog").Return(entries)
+		// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+		mockGame.On("GetPlayer", mock.Anything).Return(domain.NewIndianPokerPlayer(true, domain.HoldemPlayStyle(0))).Maybe()
 
 		result := p.ActionLogOutput(mockGame)
 
@@ -388,6 +391,8 @@ func TestIndianPokerCuiPresenter_ActionLogOutput(t *testing.T) {
 		mockGame := new(interfaces.MockIndianPokerGame)
 		mockGame.On("GetGameEndFlag").Return(true)
 		mockGame.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+		// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+		mockGame.On("GetPlayer", mock.Anything).Return(domain.NewIndianPokerPlayer(true, domain.HoldemPlayStyle(0))).Maybe()
 
 		result := p.ActionLogOutput(mockGame)
 

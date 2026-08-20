@@ -161,5 +161,5 @@ var stealingBundlesHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *StealingBundlesCuiPresenter) ActionLogOutput(s interfaces.StealingBundlesGame) string {
-	return actionLogOutputText(s)
+	return actionLogOutputTextForSeats[*domain.StealingBundlesPlayer](s)
 }

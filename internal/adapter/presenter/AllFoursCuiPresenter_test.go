@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -150,6 +151,8 @@ func TestAllFoursCuiPresenter_ActionLogOutput(t *testing.T) {
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
 		{TurnNumber: 1, PlayerIdx: 0, ActionType: "stand", Detail: "You stand"},
 	})
+	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+	m.On("GetPlayer", mock.Anything).Return(domain.NewAllFoursPlayer(true)).Maybe()
 	out := p.ActionLogOutput(m)
 	assert.Contains(t, out, "You stand")
 }

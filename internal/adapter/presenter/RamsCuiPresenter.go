@@ -145,5 +145,5 @@ var ramsHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *RamsCuiPresenter) ActionLogOutput(r interfaces.RamsGame) string {
-	return actionLogOutputText(r)
+	return actionLogOutputTextForSeats[*domain.RamsPlayer](r)
 }

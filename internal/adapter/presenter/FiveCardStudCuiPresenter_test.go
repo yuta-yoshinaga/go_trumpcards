@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -419,6 +420,8 @@ func TestFiveCardStudCuiPresenter_ActionLogOutput(t *testing.T) {
 		}
 		mockGame.On("GetGameEndFlag").Return(true)
 		mockGame.On("GetActionLog").Return(entries)
+		// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+		mockGame.On("GetPlayer", mock.Anything).Return(domain.NewFiveCardStudPlayer(true, domain.FiveCardStudPlayStyle(0))).Maybe()
 
 		result := p.ActionLogOutput(mockGame)
 		assert.Contains(t, result, "棋譜")

@@ -172,5 +172,5 @@ func bostonLadderLine() string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *BostonCuiPresenter) ActionLogOutput(g interfaces.BostonGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.BostonPlayer](g)
 }

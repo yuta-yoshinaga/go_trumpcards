@@ -152,5 +152,5 @@ func karnoffelLadderLine() string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *KarnoffelCuiPresenter) ActionLogOutput(g interfaces.KarnoffelGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.KarnoffelPlayer](g)
 }

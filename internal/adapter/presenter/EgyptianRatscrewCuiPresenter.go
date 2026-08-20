@@ -109,5 +109,5 @@ func (p *EgyptianRatscrewCuiPresenter) Output(g interfaces.EgyptianRatscrewGame,
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *EgyptianRatscrewCuiPresenter) ActionLogOutput(g interfaces.EgyptianRatscrewGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.EgyptianRatscrewPlayer](g)
 }

@@ -195,5 +195,5 @@ var minchiateHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *MinchiateCuiPresenter) ActionLogOutput(g interfaces.MinchiateGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.MinchiatePlayer](g)
 }

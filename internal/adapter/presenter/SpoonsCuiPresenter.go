@@ -93,7 +93,7 @@ func (p *SpoonsCuiPresenter) Output(g interfaces.SpoonsGame, lastErr error) stri
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *SpoonsCuiPresenter) ActionLogOutput(g interfaces.SpoonsGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.SpoonsPlayer](g)
 }
 
 // spoonsLetters は文字数を "S-P-O-O-N-S" の取得済み接頭辞として表示する。

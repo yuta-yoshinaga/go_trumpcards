@@ -101,5 +101,5 @@ func (p *SpeedCuiPresenter) Output(s interfaces.SpeedGame, lastErr error) string
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *SpeedCuiPresenter) ActionLogOutput(s interfaces.SpeedGame) string {
-	return actionLogOutputText(s)
+	return actionLogOutputTextForSeats[*domain.SpeedPlayer](s)
 }

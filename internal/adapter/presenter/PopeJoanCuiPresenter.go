@@ -163,5 +163,5 @@ var popeJoanHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *PopeJoanCuiPresenter) ActionLogOutput(c interfaces.PopeJoanGame) string {
-	return actionLogOutputText(c)
+	return actionLogOutputTextForSeats[*domain.PopeJoanPlayer](c)
 }

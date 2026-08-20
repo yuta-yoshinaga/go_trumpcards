@@ -151,5 +151,5 @@ var mushiHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *MushiCuiPresenter) ActionLogOutput(m interfaces.MushiGame) string {
-	return actionLogOutputText(m)
+	return actionLogOutputTextForSeats[*domain.MushiPlayer](m)
 }

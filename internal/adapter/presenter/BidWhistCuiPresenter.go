@@ -190,5 +190,5 @@ func (p *BidWhistCuiPresenter) HintOutput(g interfaces.BidWhistGame) string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *BidWhistCuiPresenter) ActionLogOutput(g interfaces.BidWhistGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.BidWhistPlayer](g)
 }

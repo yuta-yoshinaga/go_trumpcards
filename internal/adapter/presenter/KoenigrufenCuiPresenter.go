@@ -246,5 +246,5 @@ var koenigrufenHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *KoenigrufenCuiPresenter) ActionLogOutput(g interfaces.KoenigrufenGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.KoenigrufenPlayer](g)
 }

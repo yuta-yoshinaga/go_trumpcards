@@ -119,5 +119,5 @@ func pishtiPlayerStr(pg interfaces.PishtiGame, player *domain.PishtiPlayer, i in
 
 // ActionLogOutput は棋譜をテキストとして出力する。
 func (p *PishtiCuiPresenter) ActionLogOutput(pg interfaces.PishtiGame) string {
-	return actionLogOutputText(pg)
+	return actionLogOutputTextForSeats[*domain.PishtiPlayer](pg)
 }

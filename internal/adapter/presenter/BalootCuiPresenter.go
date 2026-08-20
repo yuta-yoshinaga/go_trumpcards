@@ -182,5 +182,5 @@ var balootHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *BalootCuiPresenter) ActionLogOutput(b interfaces.BalootGame) string {
-	return actionLogOutputText(b)
+	return actionLogOutputTextForSeats[*domain.BalootPlayer](b)
 }

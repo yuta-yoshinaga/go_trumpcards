@@ -136,5 +136,5 @@ var callBreakHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *CallBreakCuiPresenter) ActionLogOutput(cb interfaces.CallBreakGame) string {
-	return actionLogOutputText(cb)
+	return actionLogOutputTextForSeats[*domain.CallBreakPlayer](cb)
 }

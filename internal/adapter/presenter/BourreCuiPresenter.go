@@ -78,7 +78,7 @@ func (p *BourreCuiPresenter) Output(bg interfaces.BourreGame, lastErr error) str
 
 // ActionLogOutput 棋譜をCUI出力
 func (p *BourreCuiPresenter) ActionLogOutput(bg interfaces.BourreGame) string {
-	return actionLogOutputText(bg)
+	return actionLogOutputTextForSeats[*domain.BourrePlayer](bg)
 }
 
 func bourrePlayerStr(bg interfaces.BourreGame, player *domain.BourrePlayer, idx int) string {

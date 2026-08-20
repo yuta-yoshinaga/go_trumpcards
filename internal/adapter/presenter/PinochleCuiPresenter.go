@@ -217,7 +217,7 @@ func (p *PinochleCuiPresenter) HintOutput(g interfaces.PinochleGame) string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *PinochleCuiPresenter) ActionLogOutput(g interfaces.PinochleGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.PinochlePlayer](g)
 }
 
 // buildCuiMessage writes the per-phase prompt or end-of-game banner.

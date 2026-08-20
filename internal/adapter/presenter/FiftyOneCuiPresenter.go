@@ -112,5 +112,5 @@ func fiftyOneSuitScoreLine(player *domain.FiftyOnePlayer) string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *FiftyOneCuiPresenter) ActionLogOutput(fo interfaces.FiftyOneGame) string {
-	return actionLogOutputText(fo)
+	return actionLogOutputTextForSeats[*domain.FiftyOnePlayer](fo)
 }

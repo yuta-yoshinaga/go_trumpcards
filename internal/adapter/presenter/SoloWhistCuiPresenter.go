@@ -214,5 +214,5 @@ var soloWhistHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *SoloWhistCuiPresenter) ActionLogOutput(g interfaces.SoloWhistGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.SoloWhistPlayer](g)
 }

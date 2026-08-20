@@ -254,5 +254,5 @@ var cegoHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *CegoCuiPresenter) ActionLogOutput(g interfaces.CegoGame) string {
-	return actionLogOutputText(g)
+	return actionLogOutputTextForSeats[*domain.CegoPlayer](g)
 }

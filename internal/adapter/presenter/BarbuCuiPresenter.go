@@ -242,5 +242,5 @@ func (p *BarbuCuiPresenter) HintOutput(bg interfaces.BarbuGame) string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *BarbuCuiPresenter) ActionLogOutput(bg interfaces.BarbuGame) string {
-	return actionLogOutputText(bg)
+	return actionLogOutputTextForSeats[*domain.BarbuPlayer](bg)
 }
