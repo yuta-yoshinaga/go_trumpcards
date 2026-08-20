@@ -68,6 +68,13 @@ func escobaPlayerStr(player *domain.ScopaPlayer, i int) string {
 		"score", strconv.Itoa(player.GetTotalScore())) + "\n")
 	if player.GetIsHuman() {
 		b.WriteString(cuiIndexedCardListStr(player) + "\n")
+		// **「7 は取れているか」「espadas は何枚か」は得点計算に直結する** (#5662)。
+		// Web は captured-viewer で実カードをいつでも開けるのに、CUI は枚数の
+		// 数字しか出しておらず、そこから読み取る術が無かった。CPU の分は
+		// 手札と同じく伏せたままにする。
+		if captured := player.GetCapturedCards(); len(captured) > 0 {
+			b.WriteString(i18n.Tf("escoba.capturedLine", "cards", cuiCardSliceStr(captured)) + "\n")
+		}
 	}
 	return b.String()
 }
