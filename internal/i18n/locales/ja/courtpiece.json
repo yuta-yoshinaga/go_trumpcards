@@ -19,6 +19,7 @@
   "promptTrickEnd": "トリック終了",
   "promptTrickEndHelp": "n・・・次のトリックへ",
   "promptRoundEnd": "ラウンド終了",
+  "roundEndCourt": "Court（独占／連勝ボーナス）成立 — このラウンドは +2 点",
   "promptRoundEndHelp": "nr・・・次のラウンドへ",
   "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
   "hintTrump": "推奨切り札: {{suit}} ({{reason}})",
