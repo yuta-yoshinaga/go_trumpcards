@@ -255,14 +255,6 @@ func init() {
 			return usecase.RestoreNapInteractor(data, new(presenter.NapWebPresenter))
 		},
 		controller.NewNapWebControllerWithProvider)
-	games.RegisterKVGame("preference", games.CategoryClassic,
-		func() usecase.PreferenceInteractorIF {
-			return usecase.NewPreferenceInteractor(domain.NewDefaultPreference(), new(presenter.PreferenceWebPresenter))
-		},
-		func(data []byte) (usecase.PreferenceInteractorIF, error) {
-			return usecase.RestorePreferenceInteractor(data, new(presenter.PreferenceWebPresenter))
-		},
-		controller.NewPreferenceWebControllerWithProvider)
 	games.RegisterKVGame("spoilfive", games.CategoryClassic,
 		func() usecase.SpoilFiveInteractorIF {
 			return usecase.NewSpoilFiveInteractor(domain.NewDefaultSpoilFive(), new(presenter.SpoilFiveWebPresenter))
@@ -380,14 +372,6 @@ func init() {
 			return usecase.RestoreReversisInteractor(data, new(presenter.ReversisWebPresenter))
 		},
 		controller.NewReversisWebControllerWithProvider)
-	games.RegisterKVGame("estimation", games.CategoryClassic,
-		func() usecase.EstimationInteractorIF {
-			return usecase.NewEstimationInteractor(domain.NewDefaultEstimation(), new(presenter.EstimationWebPresenter))
-		},
-		func(data []byte) (usecase.EstimationInteractorIF, error) {
-			return usecase.RestoreEstimationInteractor(data, new(presenter.EstimationWebPresenter))
-		},
-		controller.NewEstimationWebControllerWithProvider)
 	games.RegisterKVGame("hokm", games.CategoryClassic,
 		func() usecase.HokmInteractorIF {
 			return usecase.NewHokmInteractor(domain.NewDefaultHokm(), new(presenter.HokmWebPresenter))
@@ -412,12 +396,4 @@ func init() {
 			return usecase.RestoreBotifarraInteractor(data, new(presenter.BotifarraWebPresenter))
 		},
 		controller.NewBotifarraWebControllerWithProvider)
-	games.RegisterKVGame("colourwhist", games.CategoryClassic,
-		func() usecase.ColourWhistInteractorIF {
-			return usecase.NewColourWhistInteractor(domain.NewDefaultColourWhist(), new(presenter.ColourWhistWebPresenter))
-		},
-		func(data []byte) (usecase.ColourWhistInteractorIF, error) {
-			return usecase.RestoreColourWhistInteractor(data, new(presenter.ColourWhistWebPresenter))
-		},
-		controller.NewColourWhistWebControllerWithProvider)
 }

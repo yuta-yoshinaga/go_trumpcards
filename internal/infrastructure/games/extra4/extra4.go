@@ -11,8 +11,10 @@
 // under the Cloudflare Workers free-tier 1 MB gzipped limit, and nothing about
 // a game's genre says it belongs here.
 //
-// Currently empty. Phase 1 of ADR-0037 adds the bucket and proves the build and
-// deploy path; Phase 2 moves games in.
+// Unlike extra2/extra3, this bucket was not introduced empty. ADR-0037 adds it
+// and moves games in within one change, because extra3 had 188 bytes of gzip
+// headroom left and an empty Phase 1 would have left that exposed for the whole
+// gap between the two phases.
 package extra4
 
 import (
@@ -280,4 +282,60 @@ func init() {
 			return usecase.RestoreUltiInteractor(data, new(presenter.UltiWebPresenter))
 		},
 		controller.NewUltiWebControllerWithProvider)
+	games.RegisterKVGame("colourwhist", games.CategoryExtra4,
+		func() usecase.ColourWhistInteractorIF {
+			return usecase.NewColourWhistInteractor(domain.NewDefaultColourWhist(), new(presenter.ColourWhistWebPresenter))
+		},
+		func(data []byte) (usecase.ColourWhistInteractorIF, error) {
+			return usecase.RestoreColourWhistInteractor(data, new(presenter.ColourWhistWebPresenter))
+		},
+		controller.NewColourWhistWebControllerWithProvider)
+	games.RegisterKVGame("estimation", games.CategoryExtra4,
+		func() usecase.EstimationInteractorIF {
+			return usecase.NewEstimationInteractor(domain.NewDefaultEstimation(), new(presenter.EstimationWebPresenter))
+		},
+		func(data []byte) (usecase.EstimationInteractorIF, error) {
+			return usecase.RestoreEstimationInteractor(data, new(presenter.EstimationWebPresenter))
+		},
+		controller.NewEstimationWebControllerWithProvider)
+	games.RegisterKVGame("preference", games.CategoryExtra4,
+		func() usecase.PreferenceInteractorIF {
+			return usecase.NewPreferenceInteractor(domain.NewDefaultPreference(), new(presenter.PreferenceWebPresenter))
+		},
+		func(data []byte) (usecase.PreferenceInteractorIF, error) {
+			return usecase.RestorePreferenceInteractor(data, new(presenter.PreferenceWebPresenter))
+		},
+		controller.NewPreferenceWebControllerWithProvider)
+	games.RegisterKVGame("bhabhi", games.CategoryExtra4,
+		func() usecase.BhabhiInteractorIF {
+			return usecase.NewBhabhiInteractor(domain.NewDefaultBhabhi(), new(presenter.BhabhiWebPresenter))
+		},
+		func(data []byte) (usecase.BhabhiInteractorIF, error) {
+			return usecase.RestoreBhabhiInteractor(data, new(presenter.BhabhiWebPresenter))
+		},
+		controller.NewBhabhiWebControllerWithProvider)
+	games.RegisterKVGame("pasur", games.CategoryExtra4,
+		func() usecase.PasurInteractorIF {
+			return usecase.NewPasurInteractor(domain.NewDefaultPasur(), new(presenter.PasurWebPresenter))
+		},
+		func(data []byte) (usecase.PasurInteractorIF, error) {
+			return usecase.RestorePasurInteractor(data, new(presenter.PasurWebPresenter))
+		},
+		controller.NewPasurWebControllerWithProvider)
+	games.RegisterKVGame("guandan", games.CategoryExtra4,
+		func() usecase.GuandanInteractorIF {
+			return usecase.NewGuandanInteractor(domain.NewDefaultGuandan(), new(presenter.GuandanWebPresenter))
+		},
+		func(data []byte) (usecase.GuandanInteractorIF, error) {
+			return usecase.RestoreGuandanInteractor(data, new(presenter.GuandanWebPresenter))
+		},
+		controller.NewGuandanWebControllerWithProvider)
+	games.RegisterKVGame("michigan", games.CategoryExtra4,
+		func() usecase.MichiganInteractorIF {
+			return usecase.NewMichiganInteractor(domain.NewDefaultMichigan(), new(presenter.MichiganWebPresenter))
+		},
+		func(data []byte) (usecase.MichiganInteractorIF, error) {
+			return usecase.RestoreMichiganInteractor(data, new(presenter.MichiganWebPresenter))
+		},
+		controller.NewMichiganWebControllerWithProvider)
 }

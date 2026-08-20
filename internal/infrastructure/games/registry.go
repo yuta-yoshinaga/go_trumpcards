@@ -412,7 +412,7 @@ var registry = []*Game{
 	{Name: "solowhist", Category: CategoryClassic},
 	{Name: "knockoutwhist", Category: CategoryClassic},
 	{Name: "nap", Category: CategoryClassic},
-	{Name: "preference", Category: CategoryClassic},
+	{Name: "preference", Category: CategoryExtra4},
 	{Name: "ganjifa", Category: CategoryExtra},
 	{Name: "vira", Category: CategoryExtra},
 	{Name: "spoilfive", Category: CategoryClassic},
@@ -657,7 +657,7 @@ var registry = []*Game{
 	// boodle collects that boodle's chips. The round ends the instant a player empties
 	// their hand; unclaimed boodle chips carry over. Chips accumulate; the game ends after
 	// a fixed number of rounds, and the richest player wins.
-	{Name: "michigan", Category: CategoryExtra3},
+	{Name: "michigan", Category: CategoryExtra4},
 	// Watten: a Bavarian/Austrian 4-player/2-team trick-taker on a 32-card pack (7..A)
 	// with a bluff-raise stake mechanic. The dealer declares a Schlag rank and a critical
 	// (trump) suit; ranking is fixed Max(♥K) > Belli(♦K) > Spitz(♦7) > Schlag cards >
@@ -843,7 +843,7 @@ var registry = []*Game{
 	// TRIBUTE (highest card, wilds excluded) and receive one back, unless a
 	// payer holds both red jokers, which cancels tribute outright. Climbing
 	// past the ace wins the game.
-	{Name: "guandan", Category: CategoryExtra2},
+	{Name: "guandan", Category: CategoryExtra4},
 	// shengji -- Sheng Ji (Tractor), a two-pack point-trick game for four
 	// players in two partnerships sitting OPPOSITE. 25 cards each from 108,
 	// leaving an EIGHT-CARD KITTY -- 108 divides by four, but dealing 27 each
@@ -969,7 +969,7 @@ var registry = []*Game{
 	// wider than the rest: a Dash Call (0) is worth a flat ±23, and Risk (the
 	// highest call at the table) doubles. The "total must not be 13" rule it is
 	// often credited with is the same one OhHell already enforces on its dealer.
-	{Name: "estimation", Category: CategoryClassic},
+	{Name: "estimation", Category: CategoryExtra4},
 	// Israeli Whist bids **twice**: an auction settles the trump suit and a
 	// minimum quota for whoever wins it, and then everyone -- winner included --
 	// calls their own target separately. That second round is what makes it
@@ -999,7 +999,7 @@ var registry = []*Game{
 	// 配り切り、リードのスートにフォローできなかった人が**場札を全部引き取る**。
 	// 手札を出し切った人から抜け、**最後に残った 1 人が Bhabhi（敗者）**。
 	// 勝者ではなく敗者を決めるゲーム。
-	{Name: "bhabhi", Category: CategoryExtra},
+	{Name: "bhabhi", Category: CategoryExtra4},
 	// Teen Do Paanch (3-2-5 / ティーン・ドー・パーンチ) -- インド北部の 3 人専用。
 	// **ノルマは宣言ではなく割り当て**で、3 人が 3・2・5 という別々のトリック数を
 	// 負う。30 枚（8〜A の 28 枚 + 7♠ + 7♥）を 10 枚ずつ配り、3+2+5 = 10 トリック
@@ -1034,7 +1034,7 @@ var registry = []*Game{
 	// イランのフィッシング系。**手札 1 枚と場の数札の合計が 11** になる組み合わせを
 	// 取る。**J/Q/K は合計に使わず同ランクだけ**取れる。取った結果**場が空になると
 	// スール**で、その捕獲の札は得点が 2 倍。
-	{Name: "pasur", Category: CategoryExtra},
+	{Name: "pasur", Category: CategoryExtra4},
 	// Snap スナップ
 	//
 	// イギリスの反射ゲーム。**トリガーは固定ではなく「直前に出た札と同じランク」**
@@ -1107,7 +1107,7 @@ var registry = []*Game{
 	// **競りをせずに** Troel が成立し、4 枚目のエースの持ち主が自動的に相方になる。
 	// 該当が無ければ Samen(相方と8) < Alleen(単独8) < Miserie(0) を競る。
 	// 得点はゼロサムで、卓の合計は常に 0。
-	{Name: "colourwhist", Category: CategoryClassic},
+	{Name: "colourwhist", Category: CategoryExtra4},
 	// Chemin de Fer シュマン・ド・フェール
 	//
 	// バカラの原型。**ハウスではなく席の 1 つが親**になり、負けるとバンクが隣へ渡る。

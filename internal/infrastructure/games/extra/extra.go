@@ -283,22 +283,6 @@ func init() {
 			return usecase.RestoreDiplomatInteractor(data, new(presenter.DiplomatWebPresenter))
 		},
 		controller.NewDiplomatWebControllerWithProvider)
-	games.RegisterKVGame("bhabhi", games.CategoryExtra,
-		func() usecase.BhabhiInteractorIF {
-			return usecase.NewBhabhiInteractor(domain.NewDefaultBhabhi(), new(presenter.BhabhiWebPresenter))
-		},
-		func(data []byte) (usecase.BhabhiInteractorIF, error) {
-			return usecase.RestoreBhabhiInteractor(data, new(presenter.BhabhiWebPresenter))
-		},
-		controller.NewBhabhiWebControllerWithProvider)
-	games.RegisterKVGame("pasur", games.CategoryExtra,
-		func() usecase.PasurInteractorIF {
-			return usecase.NewPasurInteractor(domain.NewDefaultPasur(), new(presenter.PasurWebPresenter))
-		},
-		func(data []byte) (usecase.PasurInteractorIF, error) {
-			return usecase.RestorePasurInteractor(data, new(presenter.PasurWebPresenter))
-		},
-		controller.NewPasurWebControllerWithProvider)
 	games.RegisterKVGame("goofspiel", games.CategoryExtra,
 		func() usecase.GoofspielInteractorIF {
 			return usecase.NewGoofspielInteractor(domain.NewDefaultGoofspiel(), new(presenter.GoofspielWebPresenter))

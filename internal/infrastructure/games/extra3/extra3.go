@@ -77,14 +77,6 @@ func init() {
 			return usecase.RestoreJassInteractor(data, new(presenter.JassWebPresenter))
 		},
 		controller.NewJassWebControllerWithProvider)
-	games.RegisterKVGame("michigan", games.CategoryExtra3,
-		func() usecase.MichiganInteractorIF {
-			return usecase.NewMichiganInteractor(domain.NewDefaultMichigan(), new(presenter.MichiganWebPresenter))
-		},
-		func(data []byte) (usecase.MichiganInteractorIF, error) {
-			return usecase.RestoreMichiganInteractor(data, new(presenter.MichiganWebPresenter))
-		},
-		controller.NewMichiganWebControllerWithProvider)
 	games.RegisterKVGame("loo", games.CategoryExtra3,
 		func() usecase.LooInteractorIF {
 			return usecase.NewLooInteractor(domain.NewDefaultLoo(), new(presenter.LooWebPresenter))
