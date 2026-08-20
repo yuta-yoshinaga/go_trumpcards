@@ -385,3 +385,54 @@ func TestCourtPiece_GetPlayableIndicesAgreesWithPlayerPlay(t *testing.T) {
 		t.Error("範囲外のプレイヤーでは空を返す")
 	}
 }
+
+// **Court は集計を待たずに決まっている** (#5656)。画面はラウンド終了の時点で
+// 読むので、ScoreRound より前に正しい答えが要る。
+func TestCourtPiece_IsRoundEndCourt(t *testing.T) {
+	sweep := func(g *domain.CourtPiece, seat, tricks int) {
+		for range tricks {
+			g.GetPlayer(seat).AddTrick([]*domain.Card{cpCard(domain.CardDesignSpade, 2)})
+		}
+	}
+
+	t.Run("a clean sweep is Court before scoring", func(t *testing.T) {
+		g := newTestCourtPiece(true)
+		sweep(g, 0, 13)
+		g.SetPhase(domain.CourtPiecePhaseRoundEnd)
+		assert.True(t, g.IsRoundEndCourt())
+	})
+
+	t.Run("an ordinary win is not", func(t *testing.T) {
+		g := newTestCourtPiece(true)
+		sweep(g, 0, 8)
+		sweep(g, 1, 5)
+		g.SetPhase(domain.CourtPiecePhaseRoundEnd)
+		assert.False(t, g.IsRoundEndCourt())
+	})
+
+	// **連勝は 2 ラウンド目で Court。** 1 ラウンド目を集計してから確かめる。
+	t.Run("back-to-back wins are Court", func(t *testing.T) {
+		g := newTestCourtPiece(true)
+		sweep(g, 0, 8)
+		sweep(g, 1, 5)
+		g.SetPhase(domain.CourtPiecePhaseRoundEnd)
+		g.ScoreRound()
+		require.False(t, g.IsLastRoundCourt(), "1 勝目は Court ではない")
+
+		for seat := range 4 {
+			g.GetPlayer(seat).ResetRound()
+		}
+		sweep(g, 0, 7)
+		sweep(g, 1, 6)
+		g.SetPhase(domain.CourtPiecePhaseRoundEnd)
+		assert.True(t, g.IsRoundEndCourt(), "同じチームの連勝は Court")
+	})
+
+	// **ラウンド終了フェーズでしか意味を持たない。**
+	t.Run("says no outside the round-end phase", func(t *testing.T) {
+		g := newTestCourtPiece(true)
+		sweep(g, 0, 13)
+		g.SetPhase(domain.CourtPiecePhasePlay)
+		assert.False(t, g.IsRoundEndCourt())
+	})
+}
