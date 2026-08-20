@@ -1,4 +1,6 @@
 {
+  "cannotBeatAria": "cannot beat the pile",
+  "cannotBeatTooltip": "This card cannot beat the pile (needs a higher card of the same suit, or a trump)",
   "collected": "{{n}} collected",
   "duel": "Duel",
   "forcedPickUpNotice": "No card in your hand beats the pile — you must pick it up.",
@@ -6,6 +8,7 @@
   "hint.duel": "this card wins the duel",
   "hint.pickup": "nothing in your hand beats the pile",
   "landscapeBanner": "Turn your device sideways for a better view",
+  "notYourTurnAria": "not your turn",
   "opponentHand": "{{name}}: {{n}} card(s)",
   "opponentHandAriaLabel": "{{name}} holds {{n}} face-down card(s)",
   "phase.end": "Finished",
