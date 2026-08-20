@@ -12,6 +12,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupAllFoursCuiMock() *interfaces.MockAllFoursGame {
@@ -151,4 +152,60 @@ func TestAllFoursCuiPresenter_ActionLogOutput(t *testing.T) {
 	})
 	out := p.ActionLogOutput(m)
 	assert.Contains(t, out, "You stand")
+}
+
+// #5683: 得点は High / Low / Jack / Game の4項目で決まる。Web は af-breakdown で
+// 誰が何を取ったかを表にして、暫定値にはバッジまで付けているのに、CUI は合計点の
+// 増減しか出しておらず、**なぜその点差になったのかが読み取れなかった。**
+func TestAllFoursCuiPresenter_ShowsTheScoreBreakdown(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.AllFoursCuiPresenter)
+	card := func(d, v int) *domain.Card { return domain.NewCard(d, v, false) }
+
+	// 切り札は♥。席0 が ♥A(High) と ♥J(Jack)、席1 が ♥2(Low) を取った状態。
+	build := func(phase domain.AllFoursPhase) *interfaces.MockAllFoursGame {
+		m, players := setupAllFoursCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(phase)
+		players[0].AddTrick([]*domain.Card{card(domain.CardDesignHeart, 1), card(domain.CardDesignHeart, 11)})
+		players[1].AddTrick([]*domain.Card{card(domain.CardDesignHeart, 2)})
+		return m
+	}
+
+	t.Run("names who took each of the four", func(t *testing.T) {
+		out := p.Output(build(domain.AllFoursPhaseRoundEnd), nil)
+
+		you := color.Bold(i18n.T("cuiPlayerYou"))
+		cpu := color.Bold(i18n.Tf("cuiPlayerCpu", "idx", "1"))
+		assert.Contains(t, out, i18n.Tf("allfours.breakdownHigh", "name", you))
+		assert.Contains(t, out, i18n.Tf("allfours.breakdownLow", "name", cpu))
+		assert.Contains(t, out, i18n.Tf("allfours.breakdownJack", "name", you))
+	})
+
+	// **プレイ中の値は暫定。**まだ出ていないトランプで High も Low も引っくり返る。
+	t.Run("marks a mid-round breakdown as provisional", func(t *testing.T) {
+		out := p.Output(build(domain.AllFoursPhasePlay), nil)
+
+		assert.Contains(t, out, i18n.T("allfours.breakdownProvisional"))
+	})
+
+	t.Run("a settled breakdown is not marked provisional", func(t *testing.T) {
+		out := p.Output(build(domain.AllFoursPhaseRoundEnd), nil)
+
+		assert.NotContains(t, out, i18n.T("allfours.breakdownProvisional"))
+	})
+
+	// 該当なし (トランプ J が場に出ていない) は「なし」と区別して出す。
+	t.Run("says none when the trump jack never appeared", func(t *testing.T) {
+		m, players := setupAllFoursCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.AllFoursPhaseRoundEnd)
+		players[0].AddTrick([]*domain.Card{card(domain.CardDesignHeart, 1)})
+
+		out := p.Output(m, nil)
+
+		assert.Contains(t, out, i18n.Tf("allfours.breakdownJack", "name", i18n.T("allfours.breakdownNone")))
+	})
 }

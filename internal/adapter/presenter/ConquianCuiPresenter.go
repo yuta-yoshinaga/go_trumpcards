@@ -23,6 +23,20 @@ func conquianPlayerStr(player *domain.ConquianPlayer, i int) string {
 	for _, meld := range melds {
 		b.WriteString(i18n.Tf("conquian.meldLine", "cards", cuiCardSliceStr(meld)) + "\n")
 	}
+	// **勝利はメルドを並べきること**なのに、CUI は中身を列挙するだけで、あと何枚
+	// なのかは毎回目で数えるしかなかった (#5664)。Web は進捗バーで出しており、
+	// 残り2枚以下を警告色にしている。同じ基準で1行にする。
+	melded := 0
+	for _, meld := range melds {
+		melded += len(meld)
+	}
+	line := i18n.Tf("conquian.meldProgress",
+		"count", strconv.Itoa(melded),
+		"total", strconv.Itoa(domain.ConquianMeldTarget))
+	if remaining := domain.ConquianMeldTarget - melded; remaining > 0 && remaining <= 2 {
+		line += "  " + color.BoldYellow(i18n.Tf("conquian.meldRemaining", "count", strconv.Itoa(remaining)))
+	}
+	b.WriteString(line + "\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
 		b.WriteString(cuiIndexedCardListStr(player) + "\n")
 	}

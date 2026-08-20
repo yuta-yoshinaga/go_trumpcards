@@ -120,6 +120,20 @@ function KalookiPageContent() {
 
   const humanIdx = 0;
   const humanPlayer = state?.players[humanIdx];
+
+  // **ジョーカーはメルド点を 1.5 倍にするワイルド札** (kalookiMeldValue) なのに、
+  // 手札では通常札と見分けが付かなかった (#5666)。同種の概念を持つ ThreeThirteen
+  // は wildBadge を出している。aria-label は cardAlt が既に「ジョーカー」と読む。
+  const jokerBadge = (card: Card) =>
+    card.design === 'JOKER' ? (
+      <span
+        aria-hidden="true"
+        className="absolute top-0.5 right-0.5 px-1 rounded bg-ds-accent text-ds-text-on-accent text-[8px] font-extrabold tracking-wider shadow-md pointer-events-none"
+        data-testid="kalooki-joker-badge"
+      >
+        {t('jokerBadge')}
+      </span>
+    ) : null;
   // Points the staged groups are worth toward the opening requirement. Hand and
   // Foot shows the same readout; Kalooki only stated the target (#4839).
   const openingPoints = useMemo(
@@ -390,7 +404,10 @@ function KalookiPageContent() {
                             }`}
                           >
                             {m.cards.map((c, ci) => (
-                              <AnimatedCard key={`${p.id}-${mi}-${ci}`} card={c} width={cardWidth * 0.6} />
+                              <span key={`${p.id}-${mi}-${ci}`} className="relative inline-block">
+                                <AnimatedCard card={c} width={cardWidth * 0.6} />
+                                {jokerBadge(c)}
+                              </span>
                             ))}
                           </button>
                         );
@@ -447,7 +464,10 @@ function KalookiPageContent() {
                           isInGroup ? 'opacity-40' : ''
                         }`}
                       >
-                        <AnimatedCard card={c} width={cardWidth} />
+                        <span className="relative inline-block">
+                          <AnimatedCard card={c} width={cardWidth} />
+                          {jokerBadge(c)}
+                        </span>
                       </button>
                     );
                   })}

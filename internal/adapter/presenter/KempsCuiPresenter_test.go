@@ -11,6 +11,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func TestKempsCuiPresenter_Output(t *testing.T) {
@@ -121,4 +122,63 @@ func TestKempsCuiPresenter_AnnouncesFourOfAKind(t *testing.T) {
 	// `humanHasFour && !isGameEnd` で隠している（レビュー指摘）。
 	g.SetGameEndFlagForTest(true)
 	assert.NotContains(t, p.Output(g, nil), "4枚が同ランク")
+}
+
+// #5670: Kemps は場札と手札を交換して 4 枚同ランクを揃えるゲーム。Web は手札を
+// 選ぶと同ランクの場札にリングを付けて交換候補を示すのに、CUI は場札を素の一覧
+// で出すだけで、**手札と場札のランクを毎回目で照合させていた。**
+func TestKempsCuiPresenter_MarksFieldCardsMatchingTheHand(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.KempsCuiPresenter)
+
+	seed := func(hand []*domain.Card, field []*domain.Card) *domain.Kemps {
+		g := setupKempsTest()
+		human := g.GetPlayer(0)
+		human.Reset()
+		for _, c := range hand {
+			human.AddCard(c)
+		}
+		raw := make([]map[string]any, len(field))
+		for i, c := range field {
+			raw[i] = map[string]any{"d": c.GetDesign(), "v": c.GetValue(), "o": false}
+		}
+		kempsSetField(g, map[string]any{"fd": raw})
+		return g
+	}
+
+	card := func(d, v int) *domain.Card { return domain.NewCard(d, v, false) }
+
+	t.Run("marks the field cards that share a rank with the hand", func(t *testing.T) {
+		g := seed(
+			[]*domain.Card{card(domain.CardDesignSpade, 7), card(domain.CardDesignHeart, 3)},
+			[]*domain.Card{card(domain.CardDesignClover, 7), card(domain.CardDesignDiamond, 9)},
+		)
+
+		out := p.Output(g, nil)
+
+		assert.Contains(t, out, "[0]CLOVER 7"+presenter.CuiSwapMark)
+		assert.NotContains(t, out, "[1]"+color.Red("DIAMOND 9")+presenter.CuiSwapMark)
+	})
+
+	t.Run("marks nothing when no rank matches", func(t *testing.T) {
+		g := seed(
+			[]*domain.Card{card(domain.CardDesignSpade, 7)},
+			[]*domain.Card{card(domain.CardDesignClover, 2), card(domain.CardDesignDiamond, 9)},
+		)
+
+		out := p.Output(g, nil)
+
+		assert.NotContains(t, out, presenter.CuiSwapMark)
+	})
+
+	t.Run("explains what the mark means", func(t *testing.T) {
+		g := seed(
+			[]*domain.Card{card(domain.CardDesignSpade, 7)},
+			[]*domain.Card{card(domain.CardDesignClover, 7)},
+		)
+
+		assert.Contains(t, p.Output(g, nil), i18n.T("kemps.swapLegend"))
+	})
 }

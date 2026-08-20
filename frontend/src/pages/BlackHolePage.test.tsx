@@ -48,6 +48,24 @@ describe('BlackHolePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  // #5681: 勝利条件は52枚すべてを吸い込むこと。17個の扇を掘る長いゲームなのに、
+  // あと何枚で終わるかがどこにも出ていなかった。
+  it('shows how many of the 52 cards have been swallowed', async () => {
+    renderWithProviders(<BlackHolePage />);
+
+    const progress = await screen.findByTestId('bh-progress');
+    // 既定の盤面は穴に1枚。
+    expect(progress).toHaveTextContent('1');
+    expect(progress).toHaveTextContent('52');
+  });
+
+  it('updates as the hole fills', async () => {
+    mockExec.mockResolvedValue(makeState({ blackHole: [card('SPADE', 1), card('SPADE', 2), card('SPADE', 3)] }));
+    renderWithProviders(<BlackHolePage />);
+
+    expect(await screen.findByTestId('bh-progress')).toHaveTextContent('3');
+  });
+
   it('renders the 17 fans', async () => {
     renderWithProviders(<BlackHolePage />);
     await waitFor(() => expect(screen.getByTestId('fan-0')).toBeInTheDocument());

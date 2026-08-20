@@ -11,6 +11,8 @@
   "discardLine": "Discard: {{card}}",
   "playerLine": "{{name}}: wins {{wins}} hand {{cards}}",
   "meldLine": "  meld: {{cards}}",
+  "meldProgress": "Melded {{count}}/{{total}}",
+  "meldRemaining": "{{count}} to go",
   "gameEnd": "Game over! {{name}} wins!",
   "drawBanner": "Game over! It's a draw (stock exhausted)",
   "draw": "It's a draw (stock exhausted)",

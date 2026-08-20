@@ -10,6 +10,7 @@
   "helpSetTarget": "  st <n>                   目標スコア (デフォルト10)",
   "roundLine": "ラウンド {{round}} (山札 残り{{stock}}枚)",
   "playerLine": "{{name}}: 手札{{hand}}枚 / 捕獲{{captured}}枚 / エスコバ{{escoba}} / {{score}}点",
+  "capturedLine": "獲得札: {{cards}}",
   "tableLine": "場: {{cards}}",
   "tableEmpty": "場: なし",
   "gameEnd": "ゲーム終了！",

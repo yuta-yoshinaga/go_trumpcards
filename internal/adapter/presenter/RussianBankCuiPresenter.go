@@ -20,7 +20,34 @@ func rbCardOrDash(c *domain.Card) string {
 	return cuiCardStr(c)
 }
 
-// rbPileTops カード列をトップのみ簡潔表示する (タブロー/ファウンデーション用)。
+// rbTableauPiles はタブロー列を「下から順に並べ、トップだけ [] で囲む」形で表示する。
+//
+// **列は複数枚重なるのに、CUI はトップ 1 枚しか出していなかった** (#5677)。Web は
+// #3574 で埋もれた札のランク・スートをカスケード表示している。
+//
+// 1 枚だけの列と空列は rbPileTops と同じ見た目のままにする (`[card]` / `[-]`) ──
+// トップがどれかは常に [] で読める。
+func rbTableauPiles(piles [][]*domain.Card) string {
+	parts := make([]string, len(piles))
+	for i, pile := range piles {
+		if len(pile) == 0 {
+			parts[i] = "[-]"
+			continue
+		}
+		var sb strings.Builder
+		for _, c := range pile[:len(pile)-1] {
+			sb.WriteString(cuiCardStr(c) + " ")
+		}
+		sb.WriteString("[" + cuiCardStr(pile[len(pile)-1]) + "]")
+		parts[i] = sb.String()
+	}
+	return strings.Join(parts, "  ")
+}
+
+// rbPileTops カード列をトップのみ簡潔表示する (ファウンデーション用)。
+//
+// ファウンデーションは A から順に積むので、下に何があるかはトップから決まる。
+// タブローと違って埋もれた札を出す必要がない (#5677)。
 func rbPileTops(piles [][]*domain.Card) string {
 	parts := make([]string, len(piles))
 	for i, pile := range piles {
@@ -42,7 +69,7 @@ func (p *RussianBankCuiPresenter) Output(g interfaces.RussianBankGame, lastErr e
 		foundations := g.GetFoundations()
 		b.WriteString(i18n.Tf("russianbank.foundations", "cards", rbPileTops(foundations[:])) + "\n")
 		tableau := g.GetTableau()
-		b.WriteString(i18n.Tf("russianbank.tableau", "cards", rbPileTops(tableau[:])) + "\n")
+		b.WriteString(i18n.Tf("russianbank.tableau", "cards", rbTableauPiles(tableau[:])) + "\n")
 
 		for i, player := range g.GetPlayers() {
 			if player == nil {

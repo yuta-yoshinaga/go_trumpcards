@@ -43,7 +43,7 @@ func (p *CuarentaCuiPresenter) Output(cg interfaces.CuarentaGame, lastErr error)
 		b.WriteString("----------\n")
 
 		for i := 0; i < cg.GetPlayerCnt(); i++ {
-			b.WriteString(cuarentaPlayerStr(cg.GetPlayer(i), i))
+			b.WriteString(cuarentaPlayerStr(cg, cg.GetPlayer(i), i))
 		}
 		b.WriteString("----------\n")
 
@@ -84,7 +84,7 @@ func (p *CuarentaCuiPresenter) Output(cg interfaces.CuarentaGame, lastErr error)
 }
 
 // cuarentaPlayerStr returns the display string for a single Cuarenta player.
-func cuarentaPlayerStr(player *domain.CuarentaPlayer, i int) string {
+func cuarentaPlayerStr(cg interfaces.CuarentaGame, player *domain.CuarentaPlayer, i int) string {
 	if player == nil {
 		return ""
 	}
@@ -95,7 +95,23 @@ func cuarentaPlayerStr(player *domain.CuarentaPlayer, i int) string {
 		"hand", strconv.Itoa(player.GetCardsSize()),
 		"captured", strconv.Itoa(player.CapturedCount())) + "\n")
 	if player.GetIsHuman() {
-		b.WriteString(cuiIndexedCardListStr(player) + "\n")
+		// **どの札で何枚取れるかが手の選択そのもの** (#5673)。Web は手札に
+		// フォーカスすると捕獲対象の場札にリングを出すのに、CUI は素の一覧で
+		// 手探りだった。枚数はドメインの捕獲判定から数える。
+		if !cg.IsHumanTurn() {
+			b.WriteString(cuiIndexedCardListStr(player) + "\n")
+			return b.String()
+		}
+		table := cg.GetTableCards()
+		parts := make([]string, player.GetCardsSize())
+		for idx := 0; idx < player.GetCardsSize(); idx++ {
+			parts[idx] = "[" + strconv.Itoa(idx) + "]" + cuiCardStr(player.GetCard(idx))
+			// 0 枚のときは何も付けない -- 「取れる手がある」と読めてしまう。
+			if n := domain.CuarentaCaptureCount(player.GetCard(idx), table); n > 0 {
+				parts[idx] += i18n.Tf("cuarenta.capturePreview", "count", strconv.Itoa(n))
+			}
+		}
+		b.WriteString(strings.Join(parts, "  ") + "\n")
 	}
 	return b.String()
 }
