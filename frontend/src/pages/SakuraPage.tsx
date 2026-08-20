@@ -16,7 +16,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { SakuraBonus, SakuraPlayer } from '../types/card';
+import type { Card, SakuraBonus, SakuraPlayer } from '../types/card';
 import { SakuraPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -39,6 +39,29 @@ const SEAT_OPTIONS = [2, 3, 4] as const;
 
 /** Round-count options offered in the settings panel. */
 const ROUND_OPTIONS = [1, 3, 6, 12] as const;
+
+/**
+ * A card with its point value in the corner.
+ *
+ * **点数を札そのものに書く** (#5785)。さくらは役ではなく点数の合計で競うので、
+ * どの札が何点かが読めないと打ち手を決められない——CUI は最初からそう出している。
+ * 点数はサーバが札ごとに送る値で、ページは数えない。
+ */
+function SakuraCard({ card, width }: { card: Card; width: number }) {
+  return (
+    <span className="relative inline-block">
+      <CardImage card={card} width={width} />
+      {card.points != null && (
+        <span
+          className="absolute bottom-0 right-0 px-1 rounded-tl bg-ds-surface text-ds-text-primary text-[10px] leading-none"
+          data-testid="sakura-card-points"
+        >
+          {card.points}
+        </span>
+      )}
+    </span>
+  );
+}
 
 /** Renders the Sakura (さくら/肥後花) page: a hanafuda matching game scored by counting cards. */
 export const SakuraPage = withTutorial(SakuraPageContent, 'sakura', SAKURA_TUTORIAL_STEPS);
@@ -183,7 +206,7 @@ function SakuraPageContent() {
                     data-testid={`field-card-${i}`}
                     data-capture-candidate={isCandidate || undefined}
                   >
-                    <CardImage card={c} width={cardWidth * 0.9} />
+                    <SakuraCard card={c} width={cardWidth * 0.9} />
                   </button>
                 );
               })
@@ -215,7 +238,7 @@ function SakuraPageContent() {
             ) : (
               <div className="flex gap-0.5 overflow-x-auto justify-center px-2 min-h-[24px]">
                 {human.taken.map((c, i) => (
-                  <CardImage key={i} card={c} width={cardWidth * 0.42} />
+                  <SakuraCard key={i} card={c} width={cardWidth * 0.42} />
                 ))}
               </div>
             )}
@@ -236,7 +259,7 @@ function SakuraPageContent() {
                 data-testid={`hand-card-${i}`}
                 data-can-capture={(state.captureOptions[i]?.length ?? 0) > 0 || undefined}
               >
-                <CardImage card={c} width={cardWidth} />
+                <SakuraCard card={c} width={cardWidth} />
               </button>
             ))}
           </div>
