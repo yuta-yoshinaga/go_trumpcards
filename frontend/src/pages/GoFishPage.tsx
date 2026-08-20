@@ -26,7 +26,7 @@ import { useGoFishGame } from '../hooks/useGoFishGame';
 import { useGoFishKnownRanks } from '../hooks/useGoFishKnownRanks';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary } from '../styles/buttonStyles';
-import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
+import { focusRingCard, hintRingStyle, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { GoFishResponse } from '../types/card';
@@ -351,17 +351,17 @@ function GoFishPageContent() {
                       onClick={() => handleSelectRank(card.value)}
                       aria-label={cardAlt(card)}
                       aria-pressed={selectedRank === card.value}
-                      className={[
-                        'transition-transform',
-                        focusRingCard,
-                        isSuggested ? 'ring-2 ring-ds-warning' : '',
-                      ].join(' ')}
+                      className={['transition-transform', focusRingCard].join(' ')}
                       data-hint-card={isSuggested ? 'true' : undefined}
                       style={{
                         background: 'none',
                         padding: 0,
                         borderRadius: 8,
                         ...selectedCardStyle(selectedRank === card.value),
+                        // **ring-* では出ない。**上の selectedCardStyle が
+                        // 未選択時に `boxShadow: 'none'` をインラインで置くので、
+                        // 同じ box-shadow を使う Tailwind の ring は潰される。
+                        ...(isSuggested ? hintRingStyle() : {}),
                         boxSizing: 'border-box',
                       }}
                     >

@@ -262,6 +262,11 @@ describe('AnacondaPage', () => {
     fireEvent.click(toggle);
 
     await waitFor(() => expect(document.querySelectorAll('[data-hint-card="true"]')).toHaveLength(2));
+    // **リングはインラインで置く。**手札には selectedCardStyle の
+    // `boxShadow: 'none'` が乗るので、Tailwind の ring-* (同じ box-shadow) は
+    // 未選択のあいだ潰される。印だけ見ていても気づけない。
+    const ringed = document.querySelector('[data-hint-card="true"]') as HTMLElement;
+    expect(ringed.style.outline).toContain('var(--color-ds-warning)');
   });
 
   it('rings nothing for a betting suggestion or while hints are off', async () => {
