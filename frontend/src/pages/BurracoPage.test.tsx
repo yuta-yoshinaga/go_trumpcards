@@ -210,6 +210,45 @@ describe('BurracoPage', () => {
     await waitFor(() => expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument());
   });
 
+  // **ヒントは「どの札か」まで持っている** (#5990)。文言だけ出して探させない。
+  it('rings the hand cards the hint points at', async () => {
+    localStorage.setItem('hint_enabled_burraco', 'true');
+    mockExec.mockResolvedValue({
+      ...meldPhaseState,
+      hint: { action: 'meld', reason: 'meldInitial', indices: [0, 2] },
+    });
+    renderWithProviders(<BurracoPage />);
+
+    await waitFor(() => expect(screen.getByTestId('bu-hand-card-0')).toHaveAttribute('data-hint-card', 'true'));
+    expect(screen.getByTestId('bu-hand-card-2')).toHaveAttribute('data-hint-card', 'true');
+    expect(screen.getByTestId('bu-hand-card-1')).not.toHaveAttribute('data-hint-card');
+    // **印だけでなく見た目も付く。** data 属性しか見ないと、リングを外しても通る。
+    expect(screen.getByTestId('bu-hand-card-0').style.outline).toContain('var(--color-ds-warning)');
+    expect(screen.getByTestId('bu-hand-card-1').style.outline).toBe('');
+  });
+
+  it('rings nothing while the hint is off', async () => {
+    localStorage.setItem('hint_enabled_burraco', 'false');
+    mockExec.mockResolvedValue({
+      ...meldPhaseState,
+      hint: { action: 'meld', reason: 'meldInitial', indices: [0, 2] },
+    });
+    renderWithProviders(<BurracoPage />);
+
+    await waitFor(() => expect(screen.getByTestId('bu-hand-card-0')).toBeInTheDocument());
+    expect(screen.getByTestId('bu-hand-card-0')).not.toHaveAttribute('data-hint-card');
+  });
+
+  // **サーバがヒントを返さない場面 (CPU の手番など) では付かない。**
+  it('rings nothing when the server sent no hint', async () => {
+    localStorage.setItem('hint_enabled_burraco', 'true');
+    mockExec.mockResolvedValue({ ...meldPhaseState, hint: undefined });
+    renderWithProviders(<BurracoPage />);
+
+    await waitFor(() => expect(screen.getByTestId('bu-hand-card-0')).toBeInTheDocument());
+    expect(screen.getByTestId('bu-hand-card-0')).not.toHaveAttribute('data-hint-card');
+  });
+
   it('shows 次のゲーム at game-end and fires reset directly (no confirm)', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<BurracoPage />);

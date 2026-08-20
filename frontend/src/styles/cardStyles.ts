@@ -86,6 +86,24 @@ export function trumpRingStyle(): React.CSSProperties {
 }
 
 /**
+ * Return inline styles marking a card the hint is pointing at.
+ *
+ * Uses `outline` (not `border`/`boxShadow`) for the same reason as
+ * {@link trumpRingStyle}: hand cards carry an inline `boxShadow` from
+ * {@link selectedCardStyle}, which would override a Tailwind `ring-*` class —
+ * including the `none` it sets while unselected. An outline stacks on top of
+ * the selection border instead of fighting it, so a suggested card can also be
+ * selected.
+ */
+export function hintRingStyle(): React.CSSProperties {
+  return {
+    outline: '2px solid var(--color-ds-warning)',
+    outlineOffset: '1px',
+    borderRadius: 8,
+  };
+}
+
+/**
  * Return inline styles that color-code a hand card by meld membership (e.g. Gin
  * Rummy): a melded card gets a green outline, a deadwood card a subtle grey one.
  * Uses `outline` (not `border`/`boxShadow`) so it stacks additively on top of
