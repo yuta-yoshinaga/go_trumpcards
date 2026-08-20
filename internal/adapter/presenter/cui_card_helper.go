@@ -226,6 +226,14 @@ const CuiTrumpMark = "^"
 // どちらの話か読めない (#5643)。
 const CuiTopTrumpMark = "!!"
 
+// CuiWildMark は「その札はこのラウンドのワイルド」であることを示す印
+// (Three Thirteen)。
+//
+// 合法手の "*"、ボムの "!"、交換由来の "+"、切り札の "^"、最上位切り札の "!!" とは
+// また別の記号にする ── 同じ画面で意味の違う印が同じ形だと、どちらの話をして
+// いるのか読めない (#5667)。
+const CuiWildMark = "~"
+
 // cuiIndexMarkedCardListStr returns an indexed card list where the cards at the
 // given indices carry mark.
 //
