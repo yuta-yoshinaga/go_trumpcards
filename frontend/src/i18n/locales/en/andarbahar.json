@@ -48,7 +48,9 @@
     "firstColumnBadge": "Dealt first, pays 0.9:1 (51.50%)",
     "secondColumnBadge": "Dealt second, pays 1:1 (48.50%)",
     "sideHit": "Side bet hit (+{{amount}})",
-    "sideMiss": "Side bet missed"
+    "sideMiss": "Side bet missed",
+    "mainHit": "Main bet hit (+{{amount}})",
+    "mainMiss": "Main bet missed"
   },
   "band": {
     "exact": "exactly {{count}}",

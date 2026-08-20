@@ -71,6 +71,10 @@ export interface PochResponse extends BaseGameResponse {
    */
   stakingAwards: PochStakingAward[];
   betTarget: number;
+  /** Size of the human's own strongest same-rank set (0 = no set). */
+  yourBestComboSize: number;
+  /** Rank of that set (meaningless when the size is 0). */
+  yourBestComboRank: number;
   /** Seat whose set won the comparison; -1 until settled. There is no declaration. */
   pochenWinner: number;
   pochenPot: number;

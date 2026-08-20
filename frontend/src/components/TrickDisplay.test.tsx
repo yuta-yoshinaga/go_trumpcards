@@ -116,3 +116,27 @@ describe('TrickDisplay', () => {
     expect(screen.getByTestId('trick-winner-badge')).toHaveTextContent('WIN');
   });
 });
+
+// **場札が席数に縛られないゲームがある** (#5756)。Bhabhi の pile は
+// フォローできない人が出るまで精算されないので何十枚にもなり、1 行のままだと
+// ページ本体が横スクロールしてしまう。
+describe('TrickDisplay wrap mode', () => {
+  const longPile: TrickDisplayCard[] = Array.from({ length: 24 }, (_, i) => ({
+    playerIdx: i % 3,
+    card: { design: 'SPADE', value: (i % 13) + 1 } as Card,
+  }));
+
+  it('wraps the row when asked', () => {
+    render(<TrickDisplay currentTrick={longPile} players={players} cardWidth={40} label="場" wrap />);
+    const row = screen.getByTestId('trick-display-cards');
+    expect(row.className).toContain('flex-wrap');
+    // 全カードが読める (折り返しても枚数は減らない)。
+    expect(screen.getAllByTestId('animated-card')).toHaveLength(24);
+  });
+
+  // **既存のゲームの見た目は変えない** (受け入れ条件3)。
+  it('keeps a single row by default', () => {
+    render(<TrickDisplay currentTrick={trick} players={players} cardWidth={40} label="現在のトリック" />);
+    expect(screen.getByTestId('trick-display-cards').className).not.toContain('flex-wrap');
+  });
+});

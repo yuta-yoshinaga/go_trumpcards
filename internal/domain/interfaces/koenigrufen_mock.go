@@ -139,6 +139,11 @@ func (_m *MockKoenigrufenGame) GetPartnerIdx() int { return _m.Called().Int(0) }
 // GetPartnerRevealed モック
 func (_m *MockKoenigrufenGame) GetPartnerRevealed() bool { return _m.Called().Bool(0) }
 
+// KoenigrufenHoldsCalledKing モック
+func (_m *MockKoenigrufenGame) KoenigrufenHoldsCalledKing(playerIdx int) bool {
+	return _m.Called(playerIdx).Bool(0)
+}
+
 // GetTalonCount モック
 func (_m *MockKoenigrufenGame) GetTalonCount() int { return _m.Called().Int(0) }
 

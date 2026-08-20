@@ -244,6 +244,18 @@ function AndarBaharPageContent() {
                 >
                   {isProfit ? t('payout.win', { amount: profit }) : t('payout.loss', { amount: Math.abs(profit) })}
                 </div>
+                {/* **サイドベットは別の賭け** (#5770)。合計だけでは、外したのが
+                    メインなのかサイドなのか読めない。張った回だけ内訳を出す。 */}
+                {state.sideBand !== AndarBaharSideBand.NONE && (
+                  <div className="space-y-1" data-testid="payout-bet-breakdown">
+                    <div data-testid="payout-main">
+                      {state.mainPayout > 0 ? t('payout.mainHit', { amount: state.mainPayout }) : t('payout.mainMiss')}
+                    </div>
+                    <div data-testid="payout-side">
+                      {state.sidePayout > 0 ? t('payout.sideHit', { amount: state.sidePayout }) : t('payout.sideMiss')}
+                    </div>
+                  </div>
+                )}
                 <div className="font-bold">
                   {t('payout.total')}: {state.payout}
                 </div>

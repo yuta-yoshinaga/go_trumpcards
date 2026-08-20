@@ -53,8 +53,15 @@ type IsraeliWhistWebOutput struct {
 	Players     []*IsraeliWhistWebOutputPlayer `json:"players"`
 	Phase       int                            `json:"phase"`
 	RoundNumber int                            `json:"roundNumber"`
-	TrickNumber int                            `json:"trickNumber"`
-	TrumpSuit   int                            `json:"trumpSuit"`
+	// Doubled は直前のラウンドで得点が 2 倍になったか。
+	//
+	// **全員的中と全員外しはどちらも 2 倍**という起伏が、これまでアクション
+	// ログにしか残っていなかった (#5752)。
+	Doubled bool `json:"doubled"`
+	// DoubledAllExact は 2 倍の理由が「全員的中」か（false なら全員外し）。
+	DoubledAllExact bool `json:"doubledAllExact"`
+	TrickNumber     int  `json:"trickNumber"`
+	TrumpSuit       int  `json:"trumpSuit"`
 	// DeclarerIdx / HighBid / HighSuit は 1 段階目の結果。
 	DeclarerIdx int `json:"declarerIdx"`
 	HighBid     int `json:"highBid"`

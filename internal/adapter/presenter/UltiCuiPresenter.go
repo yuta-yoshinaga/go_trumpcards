@@ -3,6 +3,7 @@
 package presenter
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -104,6 +105,9 @@ func (p *UltiCuiPresenter) Output(g interfaces.UltiGame, lastErr error) string {
 			}
 			banner := i18n.Tf("ulti.gameEnd", "name", winnerStr)
 			b.WriteString(color.Green(banner) + "\n")
+			// マッチを決めたディールは RoundEnd を飛ばして GameEnd に入るので、
+			// ここで出さないと最終ディールの精算だけ見えないまま終わる。
+			ultiCoinSettlementLine(b, g)
 			return
 		}
 		switch g.GetPhase() {
@@ -128,9 +132,29 @@ func (p *UltiCuiPresenter) Output(g interfaces.UltiGame, lastErr error) string {
 			b.WriteString(i18n.Tf("ulti.promptRoundEnd",
 				"declarer", cuiPlayerName(g.GetPlayer(g.GetDeclarerIdx()), g.GetDeclarerIdx()),
 				"outcome", ultiOutcomeLabel(g.GetOutcome())) + "\n")
+			ultiCoinSettlementLine(b, g)
 			b.WriteString(i18n.T("ulti.promptRoundEndHelp") + "\n")
 		}
 	})
+}
+
+// ultiCoinSettlementLine writes the signed coin change this deal applied.
+// 累積コインだけでは「今回いくら動いたか」が読めないので、精算のあった
+// ディールでのみ 1 行足す (未精算のディール中は全員 0 なので出さない)。
+func ultiCoinSettlementLine(b *strings.Builder, g interfaces.UltiGame) {
+	deltas := g.GetLastDealCoins()
+	moved := false
+	parts := make([]string, 0, len(deltas))
+	for i, d := range deltas {
+		if d != 0 {
+			moved = true
+		}
+		parts = append(parts, fmt.Sprintf("%s %+d", cuiPlayerName(g.GetPlayer(i), i), d))
+	}
+	if !moved {
+		return
+	}
+	b.WriteString(i18n.Tf("ulti.coinSettlement", "deltas", strings.Join(parts, " / ")) + "\n")
 }
 
 // ultiOutcomeLabel maps a deal outcome to its i18n label key.

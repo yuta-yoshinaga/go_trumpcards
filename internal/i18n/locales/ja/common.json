@@ -527,6 +527,7 @@
   "usageMcABCDEFGHIOneSlotPerArg": "使い方: mc <a,b,c> <d,e,f> [<g,h,i>]  (引数 1 つにつき 1 枠)",
   "usageMtSrcCol": "使い方: mt <src> <col>.",
   "usageNmIJKAtLeast3HandIndices": "使い方: nm <i> <j> <k> ...  (手札の番号を 3 つ以上)",
+  "usageRaRearrangeGroups": "使い方: ra <グループ> / <手札番号>  （例: ra s5,h5,d5;c7,c8,c9 / 2,4）。グループは場の新しい並び全体を ; 区切りで、カードは スート(s/c/h/d)+ランク(1-13 か A/J/Q/K) で書きます",
   "usagePHandidx": "使い方: p <handIdx>",
   "usagePHandidx1ToPassInDominoes": "使い方: p <handIdx> (ドミノでパスするなら -1)",
   "usagePHandidxTableidxMany": "使い方: p <handIdx> [tableIdx...]",

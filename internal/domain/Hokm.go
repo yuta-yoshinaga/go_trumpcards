@@ -86,6 +86,11 @@ type Hokm struct {
 	scores [HokmTeamCnt]int
 	// lastHandKot は直前のハンドが Kot だったか（表示用）。
 	lastHandKot bool
+	// lastHandHakemChanged は直前のハンドで親が交代したか（表示用）。
+	//
+	// **次に自分が切り札を選べるかどうかを左右する。**これまでは次ハンドが
+	// 始まって親バッジが動くのを見るまで分からなかった (#5753)。
+	lastHandHakemChanged bool
 	// lastHandWinner は直前のハンドを制したチーム (-1: まだ無い)。
 	lastHandWinner int
 
@@ -120,6 +125,7 @@ func (h *Hokm) Reset() {
 	h.winnerTeam = -1
 	h.lastHandWinner = -1
 	h.lastHandKot = false
+	h.lastHandHakemChanged = false
 	h.scores = [HokmTeamCnt]int{}
 	h.actionLog = nil
 	for _, p := range h.players {
@@ -401,7 +407,8 @@ func (h *Hokm) finishHand(winnerTeam int) {
 	}
 
 	// **親は負けたときだけ交代する。** 勝っているあいだは切り札を選び続ける。
-	if HokmTeamOf(h.hakemIdx) != winnerTeam {
+	h.lastHandHakemChanged = HokmTeamOf(h.hakemIdx) != winnerTeam
+	if h.lastHandHakemChanged {
 		h.hakemIdx = (h.hakemIdx + 1) % HokmPlayerCnt
 		h.appendLog(-1, "hakem", fmt.Sprintf("親が %d へ移った", h.hakemIdx), nil)
 	}
@@ -612,6 +619,9 @@ func (h *Hokm) SetScoreForTestUse(team, n int) {
 // GetLastHandKot 直前のハンドが Kot だったか
 func (h *Hokm) GetLastHandKot() bool { return h.lastHandKot }
 
+// GetLastHandHakemChanged 直前のハンドで親が交代したか
+func (h *Hokm) GetLastHandHakemChanged() bool { return h.lastHandHakemChanged }
+
 // GetLastHandWinner 直前のハンドを制したチーム (-1: まだ無い)
 func (h *Hokm) GetLastHandWinner() int { return h.lastHandWinner }
 
@@ -669,45 +679,47 @@ func (h *Hokm) appendLog(playerIdx int, actionType, detail string, cards []*Card
 
 // hokmJSON is the KV snapshot format for Hokm.
 type hokmJSON struct {
-	TrumpCards       *TrumpCards       `json:"tc"`
-	Players          []*HokmPlayer     `json:"pl"`
-	Config           HokmConfig        `json:"cf"`
-	Phase            HokmPhase         `json:"ph"`
-	HandNumber       int               `json:"hn"`
-	TrickNumber      int               `json:"tn"`
-	TrumpSuit        int               `json:"ts"`
-	HakemIdx         int               `json:"hk"`
-	CurrentTrick     []*TrickCard      `json:"ct"`
-	CurrentPlayerIdx int               `json:"cp"`
-	LeadPlayerIdx    int               `json:"lp"`
-	Scores           [HokmTeamCnt]int  `json:"sc"`
-	LastHandKot      bool              `json:"lk"`
-	LastHandWinner   int               `json:"lw"`
-	GameEndFlag      bool              `json:"ge"`
-	WinnerTeam       int               `json:"wt"`
-	ActionLog        []*ActionLogEntry `json:"al"`
+	TrumpCards           *TrumpCards       `json:"tc"`
+	Players              []*HokmPlayer     `json:"pl"`
+	Config               HokmConfig        `json:"cf"`
+	Phase                HokmPhase         `json:"ph"`
+	HandNumber           int               `json:"hn"`
+	TrickNumber          int               `json:"tn"`
+	TrumpSuit            int               `json:"ts"`
+	HakemIdx             int               `json:"hk"`
+	CurrentTrick         []*TrickCard      `json:"ct"`
+	CurrentPlayerIdx     int               `json:"cp"`
+	LeadPlayerIdx        int               `json:"lp"`
+	Scores               [HokmTeamCnt]int  `json:"sc"`
+	LastHandKot          bool              `json:"lk"`
+	LastHandHakemChanged bool              `json:"lhc"`
+	LastHandWinner       int               `json:"lw"`
+	GameEndFlag          bool              `json:"ge"`
+	WinnerTeam           int               `json:"wt"`
+	ActionLog            []*ActionLogEntry `json:"al"`
 }
 
 // MarshalJSON KV スナップショット用のシリアライズ
 func (h *Hokm) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&hokmJSON{
-		TrumpCards:       h.trumpCards,
-		Players:          h.players,
-		Config:           h.config,
-		Phase:            h.phase,
-		HandNumber:       h.handNumber,
-		TrickNumber:      h.trickNumber,
-		TrumpSuit:        h.trumpSuit,
-		HakemIdx:         h.hakemIdx,
-		CurrentTrick:     h.currentTrick,
-		CurrentPlayerIdx: h.currentPlayerIdx,
-		LeadPlayerIdx:    h.leadPlayerIdx,
-		Scores:           h.scores,
-		LastHandKot:      h.lastHandKot,
-		LastHandWinner:   h.lastHandWinner,
-		GameEndFlag:      h.gameEndFlag,
-		WinnerTeam:       h.winnerTeam,
-		ActionLog:        h.actionLog,
+		TrumpCards:           h.trumpCards,
+		Players:              h.players,
+		Config:               h.config,
+		Phase:                h.phase,
+		HandNumber:           h.handNumber,
+		TrickNumber:          h.trickNumber,
+		TrumpSuit:            h.trumpSuit,
+		HakemIdx:             h.hakemIdx,
+		CurrentTrick:         h.currentTrick,
+		CurrentPlayerIdx:     h.currentPlayerIdx,
+		LeadPlayerIdx:        h.leadPlayerIdx,
+		Scores:               h.scores,
+		LastHandKot:          h.lastHandKot,
+		LastHandHakemChanged: h.lastHandHakemChanged,
+		LastHandWinner:       h.lastHandWinner,
+		GameEndFlag:          h.gameEndFlag,
+		WinnerTeam:           h.winnerTeam,
+		ActionLog:            h.actionLog,
 	})
 }
 
@@ -779,6 +791,7 @@ func (h *Hokm) UnmarshalJSON(data []byte) error {
 	h.leadPlayerIdx = j.LeadPlayerIdx
 	h.scores = j.Scores
 	h.lastHandKot = j.LastHandKot
+	h.lastHandHakemChanged = j.LastHandHakemChanged
 	h.lastHandWinner = j.LastHandWinner
 	h.gameEndFlag = j.GameEndFlag
 	h.winnerTeam = j.WinnerTeam

@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { auldlangsyneApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -16,6 +17,7 @@ import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -281,6 +283,22 @@ function AuldLangSynePageContent() {
     },
     [runApi],
   );
+
+  // **キーボードだけで遊べるようにする** (#5736)。同じ 4 基礎札 + 4 ウェイスト
+  // 系のページ (AcesUp / American Toad など) と同じ束ね方に揃える。
+  // 早期 return より前に置く: biome の useHookAtTopLevel。
+  const actionBindings = useMemo(
+    () => [
+      { key: 'd', action: handleDeal, label: 'deal' },
+      { key: 'h', action: handleHint, label: 'hint' },
+      { key: 'u', action: handleUndo, label: 'undo' },
+      { key: 'a', action: handleAutoComplete, label: 'autoComplete' },
+      { key: 'g', action: confirmGiveUpAction, label: 'giveUp' },
+    ],
+    [handleDeal, handleHint, handleUndo, handleAutoComplete, confirmGiveUpAction],
+  );
+  const isPlayingForKbd = state?.phase === AuldLangSynePhase.PLAYING;
+  useActionKeyboardNav({ bindings: actionBindings, enabled: !!isPlayingForKbd && !loading });
 
   const playToFoundation = useCallback(
     (foundationIdx: number) => {
@@ -579,6 +597,7 @@ function AuldLangSynePageContent() {
                 </>
               )}
             </div>
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="als-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

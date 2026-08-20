@@ -745,3 +745,32 @@ func TestTysiacConfig_Validate(t *testing.T) {
 	// Non-positive target points.
 	assert.Error(t, domain.TysiacConfig{CpuDifficulty: domain.TysiacCpuDifficultyEasy, TargetPoints: 0}.Validate())
 }
+
+// #5687: 結婚できるスートの判定は Web ページが自前で複製していた。
+// 宣言できるのは K と Q を **両方** 持つスートだけで、点はスートごとに違う。
+func TestTysiac_GetMarriageOptions(t *testing.T) {
+	g := newTestTysiac()
+	setTysiacHand(g, 0,
+		tysCard(domain.CardDesignSpade, 13), tysCard(domain.CardDesignSpade, 12),
+		tysCard(domain.CardDesignHeart, 13),   // Q が無いので結婚にならない
+		tysCard(domain.CardDesignDiamond, 12), // K が無いので結婚にならない
+		tysCard(domain.CardDesignClover, 13), tysCard(domain.CardDesignClover, 12),
+	)
+
+	got := g.GetMarriageOptions(0)
+
+	assert.Equal(t, []domain.TysiacMarriageOption{
+		{Suit: domain.CardDesignSpade, Points: 40},
+		{Suit: domain.CardDesignClover, Points: 60},
+	}, got)
+
+	t.Run("no pair yields nothing", func(t *testing.T) {
+		setTysiacHand(g, 1, tysCard(domain.CardDesignHeart, 13), tysCard(domain.CardDesignSpade, 12))
+		assert.Empty(t, g.GetMarriageOptions(1))
+	})
+
+	t.Run("out-of-range index is not a panic", func(t *testing.T) {
+		assert.Empty(t, g.GetMarriageOptions(-1))
+		assert.Empty(t, g.GetMarriageOptions(domain.TysiacPlayerCnt))
+	})
+}

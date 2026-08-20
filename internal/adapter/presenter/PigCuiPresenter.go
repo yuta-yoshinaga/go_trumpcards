@@ -38,6 +38,7 @@ func pigPlayerStr(s interfaces.PigGame, idx int, current bool) string {
 		"role", role,
 		"cards", strconv.Itoa(player.GetCardsSize()),
 		"letters", letters,
+		"target", domain.PigLetterTargetWord,
 	))
 	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {

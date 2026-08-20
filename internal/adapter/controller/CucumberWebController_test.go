@@ -22,8 +22,10 @@ func mustCucumberOutputJSON(msg string) string {
 		ValidPlays:         []int{},
 		CurrentTrick:       []*controller.WebOutputTrickCard{},
 		LastTrickWinnerIdx: -1,
-		WinnerIdx:          -1,
-		WebOutputBase:      controller.WebOutputBase{Message: msg},
+		// エラー応答でも総トリック数は規則どおりの固定値。
+		TotalTricks:   domain.CucumberHandSize,
+		WinnerIdx:     -1,
+		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {

@@ -32,5 +32,6 @@
   "suitHeart": "Hearts",
   "suitDiamond": "Diamonds",
   "helpExampleGiveUp": "  g                    give the round up",
-  "helpHint": "  h                    show a hint"
+  "helpHint": "  h                    show a hint",
+  "warnSetsTrump": "! THE SUIT YOU PLAY NOW BECOMES THE TRUMP for this hand (you cannot follow)."
 }

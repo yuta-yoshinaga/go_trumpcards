@@ -143,3 +143,21 @@ func TestZhengCuiPresenter_ErrorIsRed(t *testing.T) {
 	out := new(presenter.ZhengCuiPresenter).Output(m, errors.New("invalid play"))
 	assert.Contains(t, out, color.Red("invalid play"))
 }
+
+// #5719: 出せない理由が一律 "selected cards cannot be played" だったので、
+// 枚数・役の種類・強さのどれで弾かれたのか CUI からは分からなかった。
+// ドメインが具体的な理由を返すようになったので、それが画面に出ることを固定する。
+func TestZhengCuiPresenter_ShowsWhyThePlayWasRejected(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+
+	m, _ := setupZhengCuiMock()
+	// ドメインが返す具体的な理由 (Zheng_test.go 側で文言を固定している)。
+	err := domain.NewDomainError(domain.ErrInvalidPlay, "場と同じ枚数で出してください")
+
+	out := new(presenter.ZhengCuiPresenter).Output(m, err)
+
+	assert.Contains(t, out, "場と同じ枚数で出してください")
+	assert.NotContains(t, out, "cannot be played")
+}

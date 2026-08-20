@@ -60,6 +60,13 @@ export interface CucumberResponse extends BaseGameResponse {
   currentPlayerIdx: number;
   leadPlayerIdx: number;
   trickNumber: number;
+  /**
+   * Tricks in one round (= cards dealt to each seat).
+   *
+   * Only the last trick scores penalties, so how many are left is the number
+   * that matters.
+   */
+  totalTricks: number;
   roundNumber: number;
   /** The seat that took the last trick of the previous round, or `-1`. */
   lastTrickWinnerIdx: number;

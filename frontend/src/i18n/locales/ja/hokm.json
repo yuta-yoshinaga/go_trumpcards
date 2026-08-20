@@ -21,7 +21,9 @@
   "currentTrick": "現在のトリック",
   "handEnd": {
     "normal": "チーム{{team}} が{{need}}トリック先取でこのハンドを制しました（+1）。",
-    "kot": "チーム{{team}} が相手に1トリックも取らせず、Kot で +2 です。"
+    "kot": "チーム{{team}} が相手に1トリックも取らせず、Kot で +2 です。",
+    "hakemMoves": "親が次の席に移ります",
+    "hakemStays": "親は交代しません"
   },
   "actions": {
     "trump": "切り札 {{suit}}",
