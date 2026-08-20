@@ -5,7 +5,6 @@ package games_test
 import (
 	"regexp"
 	"strconv"
-	"sync"
 	"testing"
 )
 
@@ -24,24 +23,12 @@ func statesText(s, num string) bool {
 	return numberPattern(num).MatchString(s)
 }
 
-var (
-	numberPatternMu    sync.Mutex
-	numberPatternCache = map[string]*regexp.Regexp{}
-)
-
 // numberPattern は「前後が数字でない」ことを要求する正規表現を返す。
 //
 // 小数点を含む値 (0.95) もそのまま扱えるよう、区切りの判定は数字だけで行い、
 // 小数点は数値の一部として扱う。
 func numberPattern(num string) *regexp.Regexp {
-	numberPatternMu.Lock()
-	defer numberPatternMu.Unlock()
-	if re, ok := numberPatternCache[num]; ok {
-		return re
-	}
-	re := regexp.MustCompile(`(?:^|[^0-9.])` + regexp.QuoteMeta(num) + `(?:[^0-9.]|$)`)
-	numberPatternCache[num] = re
-	return re
+	return regexp.MustCompile(`(?:^|[^0-9.])` + regexp.QuoteMeta(num) + `(?:[^0-9.]|$)`)
 }
 
 // **ガード自身のガード。** 桁の一部で通ってしまう形に戻したら、ここが落ちる。
