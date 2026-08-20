@@ -5,7 +5,6 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"strings"
 	"testing"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -50,7 +49,10 @@ func TestBaccaratWebPayoutRefMatchesTheDomain(t *testing.T) {
 				t.Errorf("%s payoutRef.%s missing", loc, key)
 				continue
 			}
-			if !strings.Contains(line, fragment) {
+			// **数字の境界まで見る** (#6009)。括弧付きなので今の文言では
+			// 部分一致の穴は無いが、"(18:1)" のような文言に変わった日に
+			// "(8:1)" が通ってしまう形は残さない。
+			if !statesText(line, fragment) {
 				t.Errorf("%s payoutRef.%s should state %s (from the domain constants), got %q",
 					loc, key, fragment, line)
 			}

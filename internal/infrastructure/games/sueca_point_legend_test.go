@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
-	"strconv"
-	"strings"
 	"testing"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -62,7 +60,9 @@ func TestSuecaWebPointLegendMatchesTheDomain(t *testing.T) {
 				t.Errorf("%s pointLegend.%s missing", loc, key)
 				continue
 			}
-			if !strings.Contains(line, strconv.Itoa(pts)) {
+			// **部分一致では通っても何も保証しない** (#6009)。0 は "10点" の
+			// 0 でも通ってしまうので、桁の境界まで見る。
+			if !statesNumber(line, pts) {
 				t.Errorf("%s pointLegend.%s = %q, want it to state %d", loc, key, line, pts)
 			}
 		}
@@ -72,7 +72,7 @@ func TestSuecaWebPointLegendMatchesTheDomain(t *testing.T) {
 		}
 		// 合計 120 点と勝利ライン 61 点も本文に書いてある。数字だけずれても気づけない。
 		for _, n := range []int{total, domain.SuecaWinPoints} {
-			if !strings.Contains(note, strconv.Itoa(n)) {
+			if !statesNumber(note, n) {
 				t.Errorf("%s pointLegend.note = %q, want it to state %d", loc, note, n)
 			}
 		}
