@@ -72,8 +72,14 @@ const CONTRACT_VALUE: Record<(typeof CONTRACTS)[number], number> = {
   misere: 4,
 };
 
-/** Bid value -> contract key, for naming the bid that is currently winning. */
+/**
+ * Bid value -> contract key, for naming the bid that is currently winning.
+ *
+ * 0 は「まだ誰も入札していない」で、訳語は `-`。ここに置いておかないと
+ * 呼び出し側に既定値の分岐が要る。
+ */
 const CONTRACT_NAME: Record<number, string> = {
+  0: 'pass',
   1: 'trois',
   2: 'solo',
   3: 'piccolo',
@@ -352,10 +358,10 @@ function TrogguPageContent() {
                     onClick={() => callApi('bid', { bid: c })}
                     // **今の最高入札を超えられない契約は押させない。**押せても
                     // サーバーに却下されるだけで、画面は入札のまま動かない (#5808)。
-                    disabled={loading || CONTRACT_VALUE[c] <= (state.highestBid ?? 0)}
+                    disabled={loading || CONTRACT_VALUE[c] <= state.highestBid}
                     title={
-                      CONTRACT_VALUE[c] <= (state.highestBid ?? 0)
-                        ? t('bidTooLow', { high: t(`contract.${CONTRACT_NAME[state.highestBid] ?? 'pass'}`) })
+                      CONTRACT_VALUE[c] <= state.highestBid
+                        ? t('bidTooLow', { high: t(`contract.${CONTRACT_NAME[state.highestBid]}`) })
                         : undefined
                     }
                     data-testid={`tg-bid-${c}`}

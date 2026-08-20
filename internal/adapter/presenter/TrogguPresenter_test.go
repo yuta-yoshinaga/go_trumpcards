@@ -277,6 +277,30 @@ func TestTrogguCuiPresenter_OffersOnlyTheBidsThatCanWin(t *testing.T) {
 		}
 	})
 
+	// ミゼール(4) が出ていれば、人間にはもう宣言できる契約が無い。案内を空欄に
+	// すると壊れて見えるので、「これ以上の入札は無い」と言う。
+	t.Run("says so when nothing can beat the standing bid", func(t *testing.T) {
+		var g *domain.Troggu
+		for attempt := 0; attempt < 200 && g == nil; attempt++ {
+			c := newTrogguGame()
+			for i := 0; i < 20 && !c.IsHumanTurn() && c.GetPhase() == domain.TrogguPhaseBid; i++ {
+				c.CpuBid()
+			}
+			if c.GetPhase() == domain.TrogguPhaseBid && c.GetHighestBid() == domain.TrogguBidMisere {
+				g = c
+			}
+		}
+		if g == nil {
+			t.Skip("CPU がミゼールを宣言する配りが 200 回で引けなかった")
+		}
+
+		out := p.Output(g, nil)
+		assert.Contains(t, out, i18n.T("troggu.noBidBeatsIt"))
+		for _, name := range []string{"trois|", "solo|", "piccolo|"} {
+			assert.NotContains(t, out, name)
+		}
+	})
+
 	// **CPU が先に宣言した局面。**issue #5808 の再現形そのもの: ミゼールが出て
 	// いれば人間のソロは却下されるので、案内に残してはいけない。
 	t.Run("a bid on the table hides everything it beats", func(t *testing.T) {
