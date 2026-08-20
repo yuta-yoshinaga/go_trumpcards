@@ -58,6 +58,34 @@ const TROGGU_TUTORIAL_STEPS: TutorialStep[] = [
  */
 const CONTRACTS = ['trois', 'solo', 'piccolo', 'misere'] as const;
 
+/**
+ * Bid values, in the same order the domain ranks them
+ * (`internal/domain/Troggu.go`: trois 1 < solo 2 < piccolo 3 < misère 4).
+ *
+ * **順位は名前から読めない。**ミゼールがソロより上なので、CPU がミゼールを
+ * 宣言した配りでは人間のソロは却下される (#5808)。
+ */
+const CONTRACT_VALUE: Record<(typeof CONTRACTS)[number], number> = {
+  trois: 1,
+  solo: 2,
+  piccolo: 3,
+  misere: 4,
+};
+
+/**
+ * Bid value -> contract key, for naming the bid that is currently winning.
+ *
+ * 0 は「まだ誰も入札していない」で、訳語は `-`。ここに置いておかないと
+ * 呼び出し側に既定値の分岐が要る。
+ */
+const CONTRACT_NAME: Record<number, string> = {
+  0: 'pass',
+  1: 'trois',
+  2: 'solo',
+  3: 'piccolo',
+  4: 'misere',
+};
+
 /** CPU difficulty options. */
 const CPU_DIFFICULTY_OPTIONS = [0, 1, 2] as const;
 
@@ -328,7 +356,14 @@ function TrogguPageContent() {
                     type="button"
                     className={btnSecondary}
                     onClick={() => callApi('bid', { bid: c })}
-                    disabled={loading}
+                    // **今の最高入札を超えられない契約は押させない。**押せても
+                    // サーバーに却下されるだけで、画面は入札のまま動かない (#5808)。
+                    disabled={loading || CONTRACT_VALUE[c] <= state.highestBid}
+                    title={
+                      CONTRACT_VALUE[c] <= state.highestBid
+                        ? t('bidTooLow', { high: t(`contract.${CONTRACT_NAME[state.highestBid]}`) })
+                        : undefined
+                    }
                     data-testid={`tg-bid-${c}`}
                   >
                     {t(`contract.${c}`)}

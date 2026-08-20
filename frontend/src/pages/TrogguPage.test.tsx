@@ -54,6 +54,34 @@ describe('TrogguPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', { bid: 'misere' }));
   });
 
+  // **今の最高入札を超えられない契約は押せない。**押せてしまうとサーバーに
+  // 却下されるだけで、画面は入札のまま何も変わらない (#5808)。トロワ(1) <
+  // ソロ(2) < ピッコロ(3) < ミゼール(4) で、`bid <= highestBid` は却下される。
+  it('disables the contracts that cannot beat the current highest bid', async () => {
+    mockExec.mockResolvedValue(makeTrogguState({ highestBid: 2 }));
+    renderWithProviders(<TrogguPage />);
+
+    // ソロ(2) 以下は却下される。
+    expect(await screen.findByTestId('tg-bid-trois')).toBeDisabled();
+    expect(screen.getByTestId('tg-bid-solo')).toBeDisabled();
+    // 上回る契約は押せる。
+    expect(screen.getByTestId('tg-bid-piccolo')).toBeEnabled();
+    expect(screen.getByTestId('tg-bid-misere')).toBeEnabled();
+    // パスはいつでも押せる。
+    expect(screen.getByTestId('tg-pass')).toBeEnabled();
+    // 理由が読める (押せない理由が画面に無いと、ただ壊れて見える)。
+    expect(screen.getByTestId('tg-bid-solo').getAttribute('title') ?? '').not.toBe('');
+  });
+
+  // 負のコントロール: 誰も入札していなければ 4 契約すべて押せる。
+  it('leaves every contract available while no one has bid', async () => {
+    mockExec.mockResolvedValue(makeTrogguState({ highestBid: 0 }));
+    renderWithProviders(<TrogguPage />);
+    for (const c of ['trois', 'solo', 'piccolo', 'misere']) {
+      expect(await screen.findByTestId(`tg-bid-${c}`)).toBeEnabled();
+    }
+  });
+
   it('sends pass', async () => {
     renderWithProviders(<TrogguPage />);
     fireEvent.click(await screen.findByTestId('tg-pass'));

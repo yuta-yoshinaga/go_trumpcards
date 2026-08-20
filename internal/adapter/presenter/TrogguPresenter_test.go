@@ -216,7 +216,9 @@ func TestTrogguCuiPresenter_RoundResultSpeaksTheContractsUnits(t *testing.T) {
 			seen[phase] = true
 			switch phase {
 			case domain.TrogguPhaseBid:
-				assert.Contains(t, p.Output(g, nil), i18n.T("troggu.promptBidHelp"))
+				// 案内は今の最高入札で変わるので、テンプレートではなく展開後と比べる (#5808)。
+				assert.Contains(t, p.Output(g, nil),
+					i18n.Tf("troggu.promptBidHelp", "bids", "trois|solo|piccolo|misere"))
 			case domain.TrogguPhasePlay:
 				assert.Contains(t, p.Output(g, nil), i18n.T("troggu.promptPlayHelp"))
 			case domain.TrogguPhaseTrickEnd:
@@ -260,4 +262,72 @@ func TestTrogguCuiPresenter_HintOutput(t *testing.T) {
 func TestTrogguCuiPresenter_ActionLogOutput(t *testing.T) {
 	g := newTrogguGame()
 	assert.NotEmpty(t, new(presenter.TrogguCuiPresenter).ActionLogOutput(g))
+}
+
+// #5808: ミゼール(4) はソロ(2) より上なので、CPU がミゼールを宣言した配りでは
+// 人間のソロは却下される。それでも案内は 4 契約を並べたままで、**打てるのに
+// 弾かれる**ように見えていた。
+func TestTrogguCuiPresenter_OffersOnlyTheBidsThatCanWin(t *testing.T) {
+	p := new(presenter.TrogguCuiPresenter)
+
+	t.Run("no bid yet offers all four", func(t *testing.T) {
+		out := p.Output(newTrogguGame(), nil)
+		for _, name := range []string{"trois", "solo", "piccolo", "misere"} {
+			assert.Contains(t, out, name, "入札前なのに %s が案内されていない", name)
+		}
+	})
+
+	// ミゼール(4) が出ていれば、人間にはもう宣言できる契約が無い。案内を空欄に
+	// すると壊れて見えるので、「これ以上の入札は無い」と言う。
+	t.Run("says so when nothing can beat the standing bid", func(t *testing.T) {
+		var g *domain.Troggu
+		for attempt := 0; attempt < 200 && g == nil; attempt++ {
+			c := newTrogguGame()
+			for i := 0; i < 20 && !c.IsHumanTurn() && c.GetPhase() == domain.TrogguPhaseBid; i++ {
+				c.CpuBid()
+			}
+			if c.GetPhase() == domain.TrogguPhaseBid && c.GetHighestBid() == domain.TrogguBidMisere {
+				g = c
+			}
+		}
+		if g == nil {
+			t.Skip("CPU がミゼールを宣言する配りが 200 回で引けなかった")
+		}
+
+		out := p.Output(g, nil)
+		assert.Contains(t, out, i18n.T("troggu.noBidBeatsIt"))
+		for _, name := range []string{"trois|", "solo|", "piccolo|"} {
+			assert.NotContains(t, out, name)
+		}
+	})
+
+	// **CPU が先に宣言した局面。**issue #5808 の再現形そのもの: ミゼールが出て
+	// いれば人間のソロは却下されるので、案内に残してはいけない。
+	t.Run("a bid on the table hides everything it beats", func(t *testing.T) {
+		names := map[domain.TrogguBid]string{
+			domain.TrogguBidTrois: "trois", domain.TrogguBidSolo: "solo",
+			domain.TrogguBidPiccolo: "piccolo", domain.TrogguBidMisere: "misere",
+		}
+		// 配りを引き直す。CPU が全員パスする配りでは検証にならない。
+		var g *domain.Troggu
+		for attempt := 0; attempt < 50 && g == nil; attempt++ {
+			c := newTrogguGame()
+			for i := 0; i < 20 && !c.IsHumanTurn() && c.GetPhase() == domain.TrogguPhaseBid; i++ {
+				c.CpuBid()
+			}
+			if c.GetPhase() == domain.TrogguPhaseBid && c.GetHighestBid() >= domain.TrogguBidTrois {
+				g = c
+			}
+		}
+		require.NotNil(t, g, "CPU が入札する配りが 50 回で引けなかった")
+
+		out := p.Output(g, nil)
+		for bid, name := range names {
+			if bid <= g.GetHighestBid() {
+				assert.NotContains(t, out, name+"|", "%s は却下されるのに案内に残っている", name)
+			} else {
+				assert.Contains(t, out, name, "%s は打てるのに案内から消えている", name)
+			}
+		}
+	})
 }

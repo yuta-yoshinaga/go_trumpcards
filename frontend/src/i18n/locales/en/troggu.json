@@ -23,6 +23,7 @@
   "contract.solo": "Solo (most points)",
   "contract.piccolo": "Piccolo (exactly 1 trick)",
   "contract.misere": "Misere (no tricks)",
+  "bidTooLow": "This contract cannot beat the current highest bid ({{high}})",
   "roleDeclarer": "(declarer)",
   "you": "You",
   "cpu": "CPU{{n}}",
