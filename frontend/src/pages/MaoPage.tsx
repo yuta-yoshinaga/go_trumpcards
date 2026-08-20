@@ -11,6 +11,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
+import { LiveAnnouncement } from '../components/LiveAnnouncement';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -481,14 +482,20 @@ function MaoPageContent() {
                   積まれるだけだった** (#5668)。隠しルールを試行錯誤で learn する
                   ゲームなので、耳に届く情報が違反だけでは材料が片側しかない。
                   最新の 1 件を、違反と同じ polite で読み上げる。 */}
-              {latestSayWord && (
-                <span className="sr-only" role="status" aria-live="polite" data-testid="sayword-live">
-                  {t('sayWordAnnounce', {
-                    word: latestSayWord.word,
-                    outcome: latestSayWord.penalty ? t('sayWordHistory.penalty') : t('sayWordHistory.correct'),
-                  })}
-                </span>
-              )}
+              {/* **ライブリージョンは中身より先に置く。** 領域と本文が同じ
+                  コミットで現れると読み上げられない (LiveAnnouncement の
+                  doc コメント)。sayWordHistory はラウンドごとに空へ戻るので、
+                  条件付きで mount すると毎ラウンド最初の 1 件が黙る。 */}
+              <LiveAnnouncement
+                message={
+                  latestSayWord
+                    ? t('sayWordAnnounce', {
+                        word: latestSayWord.word,
+                        outcome: latestSayWord.penalty ? t('sayWordHistory.penalty') : t('sayWordHistory.correct'),
+                      })
+                    : ''
+                }
+              />
               {sayWordHistory.length > 0 && (
                 <details className="rounded bg-black/20 px-2 py-1" data-testid="mao-sayword-history">
                   <summary className="cursor-pointer select-none text-ds-text-muted">

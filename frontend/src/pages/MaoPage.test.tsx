@@ -76,6 +76,14 @@ beforeEach(() => {
   mockExec.mockResolvedValue(playPhaseState);
 });
 
+/**
+ * 唱えた言葉の読み上げ用リージョン。
+ *
+ * **LiveAnnouncement は中身より先に mount される**ので (領域と本文が同じ
+ * コミットで現れると読み上げられない)、testid ではなく role と aria-live で引く。
+ */
+const sayWordLive = () => document.querySelector('[role="status"][aria-live="polite"][aria-atomic="true"]');
+
 describe('MaoPage', () => {
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
@@ -255,12 +263,11 @@ describe('MaoPage', () => {
     mockExec.mockResolvedValueOnce({ ...playPhaseState, rulePenalty: false, correctCount: 1 });
     fireEvent.click(screen.getByRole('button', { name: '発言する' }));
 
-    const live = await screen.findByTestId('sayword-live');
-    expect(live).toHaveAttribute('role', 'status');
-    // 違反通知と同じ優先度 (polite)。
-    expect(live).toHaveAttribute('aria-live', 'polite');
-    expect(live).toHaveTextContent('mao');
-    expect(live).toHaveTextContent('正解');
+    // **領域は中身より先に mount される** ので、testid ではなく role で引く。
+    await waitFor(() => expect(sayWordLive()).toHaveTextContent('mao'));
+    expect(sayWordLive()).toHaveAttribute('aria-live', 'polite');
+    expect(sayWordLive()).toHaveAttribute('aria-atomic', 'true');
+    expect(sayWordLive()).toHaveTextContent('正解');
   });
 
   it('announces a penalty through the same live region', async () => {
@@ -270,8 +277,7 @@ describe('MaoPage', () => {
     mockExec.mockResolvedValueOnce({ ...playPhaseState, rulePenalty: true });
     fireEvent.click(screen.getByRole('button', { name: '発言する' }));
 
-    const live = await screen.findByTestId('sayword-live');
-    expect(live).toHaveTextContent('ペナルティ');
+    await waitFor(() => expect(sayWordLive()).toHaveTextContent('ペナルティ'));
   });
 
   // **2回目以降は最新を読む。**1件だけのテストは、先頭を読む実装でも末尾を読む
@@ -283,14 +289,14 @@ describe('MaoPage', () => {
     fireEvent.change(input, { target: { value: 'first' } });
     mockExec.mockResolvedValueOnce({ ...playPhaseState, rulePenalty: false, correctCount: 1 });
     fireEvent.click(screen.getByRole('button', { name: '発言する' }));
-    await waitFor(() => expect(screen.getByTestId('sayword-live')).toHaveTextContent('first'));
+    await waitFor(() => expect(sayWordLive()).toHaveTextContent('first'));
 
     fireEvent.change(input, { target: { value: 'second' } });
     mockExec.mockResolvedValueOnce({ ...playPhaseState, rulePenalty: true, correctCount: 1 });
     fireEvent.click(screen.getByRole('button', { name: '発言する' }));
 
-    await waitFor(() => expect(screen.getByTestId('sayword-live')).toHaveTextContent('second'));
-    expect(screen.getByTestId('sayword-live')).toHaveTextContent('ペナルティ');
+    await waitFor(() => expect(sayWordLive()).toHaveTextContent('second'));
+    expect(sayWordLive()).toHaveTextContent('ペナルティ');
   });
 
   it('says nothing before any word is declared', async () => {
