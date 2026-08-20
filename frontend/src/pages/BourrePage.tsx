@@ -172,6 +172,14 @@ function BourrePageContent() {
   const humanIdx = state?.players?.findIndex((p) => p.isHuman) ?? 0;
   const humanPlayer = state?.players?.[humanIdx];
   const isHumanTurn = state ? state.currentPlayerIdx === humanIdx : false;
+  // **罰金は払える額まで。** ドメインは min(ポット, 手持ち) を取る
+  // (Bourre.go の bourré 処理) ので、手持ちがポットより少ないときに
+  // ポット額を警告すると、払えない額を告げることになる (#6001)。
+  //
+  // 繰越ポットは足さない。配り直しの時点で carryPot は pot に畳み込まれて
+  // いる (Bourre.nextHand) ので、decide の間は常に 0 ——足すと将来の
+  // 二重計上の芽になる。
+  const penalty = Math.min(state?.pot ?? 0, humanPlayer?.chips ?? 0);
   const humanWon = isGameEnd && !!state && state.winnerIdx === humanIdx;
   const validPlays = useMemo(() => new Set(state?.validPlays ?? []), [state]);
 
@@ -359,19 +367,12 @@ function BourrePageContent() {
           {phase === 'decide' && isHumanTurn && (
             <p
               data-testid="bourre-decide-summary"
-              title={t('decideSummaryHelp', {
-                penalty: state.pot + state.carryPot,
-              })}
+              title={t('decideSummaryHelp', { penalty })}
               className={`mt-1 text-center text-xs ${
-                state.pot + state.carryPot >= BOURRE_PENALTY_WARN_THRESHOLD
-                  ? 'text-ds-warning font-medium'
-                  : 'text-ds-text-muted'
+                penalty >= BOURRE_PENALTY_WARN_THRESHOLD ? 'text-ds-warning font-medium' : 'text-ds-text-muted'
               }`}
             >
-              {t('decideSummary', {
-                pot: state.pot,
-                penalty: state.pot + state.carryPot,
-              })}
+              {t('decideSummary', { pot: state.pot, penalty })}
             </p>
           )}
 
