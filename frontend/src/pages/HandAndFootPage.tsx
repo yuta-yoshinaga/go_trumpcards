@@ -139,8 +139,13 @@ function HandAndFootPageContent() {
   // tell if the selection qualifies. Point values + minimum bands mirror the
   // shared Canasta-family scoring (the backend uses CanastaCardValue); the web
   // build does not enforce the minimum, so this is a display-only readout.
+  // **メルドフェーズ以外では 0 点・未達なしを返す。** null を返すと、この値を
+  // 読むたびに「無いかもしれない」分岐が増え、押せるかどうかの判断が
+  // 追いにくくなる (#5663)。
   const meldPointInfo = useMemo(() => {
-    if (!isMeldPhase || !humanPlayer) return null;
+    if (!isMeldPhase || !humanPlayer) {
+      return { selectedPoints: 0, needInitial: false, minMeld: 0, met: true, below: false };
+    }
     const selectedCards = selectedCardIndices
       .map((i) => humanPlayer.cards[i])
       .filter((c): c is NonNullable<typeof c> => !!c);
@@ -449,7 +454,7 @@ function HandAndFootPageContent() {
               )}
               {isMeldPhase && isHumanTurn && (
                 <>
-                  {meldPointInfo && (
+                  {
                     <div
                       id="hf-meld-points"
                       data-testid="hf-meld-points"
@@ -468,7 +473,7 @@ function HandAndFootPageContent() {
                           })
                         : t('meldPoints.selected', { points: meldPointInfo.selectedPoints })}
                     </div>
-                  )}
+                  }
                   <button
                     type="button"
                     className={btnPrimary}
@@ -476,8 +481,8 @@ function HandAndFootPageContent() {
                     // **最低点未達なら押させない** (#5663)。警告テキストは出ていた
                     // のにボタンはそれを見ておらず、サーバーのバリデーションで
                     // 弾かれて初めて気づく形だった。
-                    disabled={loading || selectedCardIndices.length < 3 || (meldPointInfo?.below ?? false)}
-                    aria-describedby={meldPointInfo?.below ? 'hf-meld-points' : undefined}
+                    disabled={loading || selectedCardIndices.length < 3 || meldPointInfo.below}
+                    aria-describedby={meldPointInfo.below ? 'hf-meld-points' : undefined}
                   >
                     {t('meldButton')}
                   </button>
