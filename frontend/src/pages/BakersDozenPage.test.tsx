@@ -46,8 +46,6 @@ function makeTableau(cols: BakersDozenTableauCard[][]): BakersDozenTableauCard[]
 
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 
-const emptyColumns = (n: number) => Array.from({ length: n }, () => []);
-
 const playingState: BakersDozenResponse = {
   tableau: makeTableau([
     [
@@ -359,7 +357,7 @@ describe('BakersDozenPage legal targets', () => {
   it('rings the empty foundations when an ace is selected', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
-      tableau: makeTableau([[{ card: card('SPADE', 1), faceUp: true }], ...emptyColumns(12)]),
+      tableau: makeTableau([[{ card: card('SPADE', 1), faceUp: true }]]),
     });
     renderWithProviders(<BakersDozenPage />);
     fireEvent.click(await screen.findByRole('button', { name: '♠ A' }));
