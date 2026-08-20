@@ -104,5 +104,5 @@ var whistHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *WhistCuiPresenter) ActionLogOutput(w interfaces.WhistGame) string {
-	return actionLogOutputTextWithNames(w, func(idx int) string { return cuiPlayerName(w.GetPlayer(idx), idx) })
+	return actionLogOutputTextForSeats[*domain.WhistPlayer](w)
 }

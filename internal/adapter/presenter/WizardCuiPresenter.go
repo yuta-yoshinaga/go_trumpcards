@@ -265,5 +265,5 @@ func (p *WizardCuiPresenter) HintOutput(o interfaces.WizardGame) string {
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *WizardCuiPresenter) ActionLogOutput(o interfaces.WizardGame) string {
-	return actionLogOutputTextWithNames(o, func(idx int) string { return cuiPlayerName(o.GetPlayer(idx), idx) })
+	return actionLogOutputTextForSeats[*domain.WizardPlayer](o)
 }

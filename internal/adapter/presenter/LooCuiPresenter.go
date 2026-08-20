@@ -179,5 +179,5 @@ var looHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *LooCuiPresenter) ActionLogOutput(g interfaces.LooGame) string {
-	return actionLogOutputTextWithNames(g, func(idx int) string { return cuiPlayerName(g.GetPlayer(idx), idx) })
+	return actionLogOutputTextForSeats[*domain.LooPlayer](g)
 }

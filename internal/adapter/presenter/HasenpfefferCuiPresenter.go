@@ -217,5 +217,5 @@ var hasenpfefferHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *HasenpfefferCuiPresenter) ActionLogOutput(h interfaces.HasenpfefferGame) string {
-	return actionLogOutputTextWithNames(h, func(idx int) string { return cuiPlayerName(h.GetPlayer(idx), idx) })
+	return actionLogOutputTextForSeats[*domain.HasenpfefferPlayer](h)
 }

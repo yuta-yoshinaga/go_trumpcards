@@ -237,5 +237,5 @@ var twentyNineHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *TwentyNineCuiPresenter) ActionLogOutput(g interfaces.TwentyNineGame) string {
-	return actionLogOutputTextWithNames(g, func(idx int) string { return cuiPlayerName(g.GetPlayer(idx), idx) })
+	return actionLogOutputTextForSeats[*domain.TwentyNinePlayer](g)
 }

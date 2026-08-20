@@ -196,5 +196,5 @@ var cinchHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *CinchCuiPresenter) ActionLogOutput(g interfaces.CinchGame) string {
-	return actionLogOutputTextWithNames(g, func(idx int) string { return cuiPlayerName(g.GetPlayer(idx), idx) })
+	return actionLogOutputTextForSeats[*domain.CinchPlayer](g)
 }

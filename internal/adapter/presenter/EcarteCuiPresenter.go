@@ -213,5 +213,5 @@ var ecarteHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *EcarteCuiPresenter) ActionLogOutput(b interfaces.EcarteGame) string {
-	return actionLogOutputTextWithNames(b, func(idx int) string { return cuiPlayerName(b.GetPlayer(idx), idx) })
+	return actionLogOutputTextForSeats[*domain.EcartePlayer](b)
 }

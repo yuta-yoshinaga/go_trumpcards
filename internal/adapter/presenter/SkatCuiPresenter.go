@@ -233,7 +233,7 @@ func (p *SkatCuiPresenter) HintOutput(s interfaces.SkatGame) string {
 
 // ActionLogOutput returns the round's action log as text.
 func (p *SkatCuiPresenter) ActionLogOutput(s interfaces.SkatGame) string {
-	return actionLogOutputTextWithNames(s, func(idx int) string { return cuiPlayerName(s.GetPlayer(idx), idx) })
+	return actionLogOutputTextForSeats[*domain.SkatPlayer](s)
 }
 
 // skatGameTypeLabel returns the localized label for a Skat game type.

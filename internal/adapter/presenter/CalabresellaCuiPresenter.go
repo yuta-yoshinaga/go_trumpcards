@@ -209,5 +209,5 @@ var calabresellaHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *CalabresellaCuiPresenter) ActionLogOutput(g interfaces.CalabresellaGame) string {
-	return actionLogOutputTextWithNames(g, func(idx int) string { return cuiPlayerName(g.GetPlayer(idx), idx) })
+	return actionLogOutputTextForSeats[*domain.CalabresellaPlayer](g)
 }

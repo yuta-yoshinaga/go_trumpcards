@@ -191,5 +191,5 @@ var allFoursHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *AllFoursCuiPresenter) ActionLogOutput(s interfaces.AllFoursGame) string {
-	return actionLogOutputTextWithNames(s, func(idx int) string { return cuiPlayerName(s.GetPlayer(idx), idx) })
+	return actionLogOutputTextForSeats[*domain.AllFoursPlayer](s)
 }

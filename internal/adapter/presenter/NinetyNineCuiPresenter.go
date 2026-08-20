@@ -131,5 +131,5 @@ func (p *NinetyNineCuiPresenter) HintOutput(o interfaces.NinetyNineGame) string 
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *NinetyNineCuiPresenter) ActionLogOutput(o interfaces.NinetyNineGame) string {
-	return actionLogOutputTextWithNames(o, func(idx int) string { return cuiPlayerName(o.GetPlayer(idx), idx) })
+	return actionLogOutputTextForSeats[*domain.NinetyNinePlayer](o)
 }

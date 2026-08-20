@@ -34,6 +34,25 @@ func actionLogOutputTextWithNames(game gameEndLogger, nameOf func(idx int) strin
 	return actionLogToTextWithNames(game.GetActionLog(), nameOf)
 }
 
+// seatedGame is a game that can name the seat behind a log entry's PlayerIdx.
+type seatedGame[P cuiPlayer] interface {
+	gameEndLogger
+	GetPlayer(int) P
+}
+
+// actionLogOutputTextForSeats renders the transcript naming seats the way the
+// rest of the screen names them.
+//
+// **クロージャはここに 1 つだけ置く。**呼び出し側 86 ファイルにインラインで
+// 書くと、席名を引く行が「棋譜が空の局面しか見ていないテスト」では通らず、
+// 全ファイルが部分的に未到達として並ぶ。
+//
+// P は明示する (`actionLogOutputTextForSeats[*domain.XPlayer](g)`)。
+// メソッドの戻り値からの型推論は Go には無い。
+func actionLogOutputTextForSeats[P cuiPlayer, G seatedGame[P]](game G) string {
+	return actionLogOutputTextWithNames(game, func(idx int) string { return cuiPlayerName(game.GetPlayer(idx), idx) })
+}
+
 // actionLogOutputJSON returns the action log as JSON, or an empty log if the game is not finished.
 func actionLogOutputJSON(game gameEndLogger) string {
 	if !game.GetGameEndFlag() {
