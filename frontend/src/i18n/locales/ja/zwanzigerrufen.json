@@ -65,5 +65,6 @@
   "frontendHint.zwanzigerrufenBidNeedsTrumps": "切り札が多いときだけ入札します",
   "frontendHint.zwanzigerrufenBuryCheap": "点の低い札を6枚伏せます",
   "frontendHint.zwanzigerrufenAvoidPoints": "トリシャーケンでは点を取ると負けます",
-  "frontendHint.zwanzigerrufenFollowSuit": "リードスートに従い、無ければ切り札を出します"
+  "frontendHint.zwanzigerrufenFollowSuit": "リードスートに従い、無ければ切り札を出します",
+  "highestBid": "現在の最高入札: {{name}}"
 }

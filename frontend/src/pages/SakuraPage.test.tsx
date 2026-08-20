@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { sakuraApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -40,6 +40,39 @@ beforeEach(() => {
 });
 
 describe('SakuraPage', () => {
+  // **点数を札そのものに書く** (#5785)。さくらは役ではなく点数の合計で競うので、
+  // どの札が何点かが読めないと打ち手を決められない（CUI は最初からそう出している）。
+  it('shows each card point value on the card', async () => {
+    mockExec.mockResolvedValue(
+      makeSakuraState({
+        players: [
+          {
+            ...playState.players[0],
+            cards: [{ ...playState.players[0].cards[0], points: 20 }],
+            taken: [{ ...playState.players[0].cards[1], points: 1 }],
+            takenCount: 1,
+          },
+          playState.players[1],
+          playState.players[2],
+        ],
+        fieldCards: [{ ...playState.fieldCards[0], points: 10 }],
+      }),
+    );
+    renderWithProviders(<SakuraPage />);
+
+    const hand = await screen.findByTestId('hand-card-0');
+    expect(within(hand).getByTestId('sakura-card-points')).toHaveTextContent('20');
+    expect(within(screen.getByTestId('field-card-0')).getByTestId('sakura-card-points')).toHaveTextContent('10');
+    // 取り札にも出る。
+    expect(within(screen.getByTestId('sakura-human')).getAllByTestId('sakura-card-points')[0]).toHaveTextContent('1');
+  });
+
+  // **点数を持たない札には出さない。** 他のゲームの札に空のバッジを付けない。
+  it('leaves the badge out when the card carries no points', async () => {
+    renderWithProviders(<SakuraPage />);
+    const hand = await screen.findByTestId('hand-card-0');
+    expect(within(hand).queryByTestId('sakura-card-points')).not.toBeInTheDocument();
+  });
   it('renders the loading fallback when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<SakuraPage />);

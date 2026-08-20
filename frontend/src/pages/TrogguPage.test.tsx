@@ -60,6 +60,56 @@ describe('TrogguPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('pass'));
   });
 
+  // **キーボードから届かない操作を残さない** (#5787)。
+  it('パスと「次へ」をキーからも打てる', async () => {
+    const { unmount } = renderWithProviders(<TrogguPage />);
+    await screen.findByTestId('tg-pass');
+
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'p' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('pass'));
+    unmount();
+
+    // トリック終了では next、ディール終了では nextround。
+    mockExec.mockResolvedValue(makeTrogguState({ ...playState, phase: 2, lastTrickWinner: 1 }));
+    const trick = renderWithProviders(<TrogguPage />);
+    await screen.findByTestId('tg-next-trick');
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'n' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('next'));
+    trick.unmount();
+
+    mockExec.mockResolvedValue(makeTrogguState({ ...playState, phase: 3 }));
+    renderWithProviders(<TrogguPage />);
+    await screen.findByTestId('tg-next-round');
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'n' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
+  });
+
+  // **押せない場面ではキーも効かない。** ボタンの表示条件と同じ値で門番する。
+  it('プレイ中はパスのキーが効かない', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<TrogguPage />);
+    await screen.findByTestId('tg-info');
+
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'p' });
+    fireEvent.keyDown(document.body, { key: 'n' });
+    await waitFor(() => expect(screen.getByTestId('tg-info')).toBeInTheDocument());
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  // キー一覧がフッターに出る（受け入れ条件4）。
+  it('キーの一覧をフッターに出す', async () => {
+    renderWithProviders(<TrogguPage />);
+    const panel = await screen.findByTestId('tg-kbd-shortcuts');
+    // 既定は閉じたまま（畳んでいる間は行そのものが mount されない）。
+    expect(panel).not.toHaveAttribute('open');
+    fireEvent.click(screen.getByText('キーボードショートカット'));
+    expect(screen.getByText('パスする')).toBeInTheDocument();
+  });
+
   it('plays a card immediately during the play phase', async () => {
     mockExec.mockResolvedValue(playState);
     renderWithProviders(<TrogguPage />);

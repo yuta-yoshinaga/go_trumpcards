@@ -281,3 +281,41 @@ func TestSakuraWebPresenter_DoesNotLeakOpponentHandInTheLog(t *testing.T) {
 	assert.NotContains(t, out, `"cards":null`)
 	assert.Positive(t, strings.Count(out, `"actionType"`))
 }
+
+// **点数を札そのものに書く** (#5785)。さくらは役ではなく点数の合計で競うので、
+// どの札が何点かが読めないと打ち手を決められない——CUI は最初からそう出している。
+func TestSakuraWebPresenter_SendsPointsWithEveryCard(t *testing.T) {
+	g := newSakuraForPresenter()
+	var out struct {
+		FieldCards []struct {
+			Points *int `json:"points"`
+		} `json:"fieldCards"`
+		Players []struct {
+			IsHuman bool `json:"isHuman"`
+			Cards   []struct {
+				Points *int `json:"points"`
+			} `json:"cards"`
+		} `json:"players"`
+	}
+	require.NoError(t, json.Unmarshal([]byte(new(presenter.SakuraWebPresenter).Output(g, nil)), &out))
+
+	require.NotEmpty(t, out.FieldCards)
+	for i, c := range out.FieldCards {
+		require.NotNil(t, c.Points, "場札 %d に点数が無い", i)
+		assert.Equal(t, domain.SakuraCardPoints(g.GetField()[i]), *c.Points)
+	}
+	humans := 0
+	for _, p := range out.Players {
+		if !p.IsHuman {
+			assert.Empty(t, p.Cards, "CPU の手札は出さない")
+			continue
+		}
+		humans++
+		require.NotEmpty(t, p.Cards)
+		for i, c := range p.Cards {
+			require.NotNil(t, c.Points, "手札 %d に点数が無い", i)
+			assert.Equal(t, domain.SakuraCardPoints(g.GetPlayer(0).GetCard(i)), *c.Points)
+		}
+	}
+	require.Equal(t, 1, humans, "人間の席が 1 つでない")
+}

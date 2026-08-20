@@ -5,6 +5,7 @@
   "helpSetDifficulty": "  sd [0-2]                 CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
   "teamScoreLine": "チーム{{team}}: {{score}}点",
   "playerLine": "{{name}} (チーム{{team}}): 手札{{hand}}枚 / 捕獲{{captured}}枚",
+  "capturePreview": "(取れる: {{count}}枚)",
   "tableLine": "場: {{cards}}",
   "tableEmpty": "場: なし",
   "humanActionLine": "あなたの行動: {{text}}",

@@ -73,5 +73,7 @@
   "hintRequested": "Hint available",
   "noHint": "No hint available",
   "matchProgress": "{{current}} / {{target}} ({{remaining}} to go)",
-  "matchProgressReached": "{{current}} / {{target}} (reached)"
+  "matchProgressReached": "{{current}} / {{target}} (reached)",
+  "meldLiveCount": "{{count}} melds can be declared",
+  "meldLiveNone": "No melds can be declared"
 }
