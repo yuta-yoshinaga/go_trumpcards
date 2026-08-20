@@ -166,10 +166,13 @@ function CanastaPageContent() {
   const isHumanTurn =
     (isDrawPhase || isMeldPhase || isDiscardPhase) && state?.players[state.currentPlayerIdx]?.isHuman === true;
 
+  // **キーボードの確定もボタンと同じ門番を通す** (#6165)。Enter が
+  // handleMeldSelected を直に呼ぶと、ボタンを無効化してもキーだけ通り、
+  // サーバのバリデーションで弾かれる形が残る。
   const kbdConfirmAction = useCallback(() => {
     if (isDiscardPhase) handleDiscard();
-    else if (isMeldPhase) handleMeldSelected();
-  }, [isDiscardPhase, isMeldPhase, handleDiscard, handleMeldSelected]);
+    else if (isMeldPhase && !meldPointInfo.below) handleMeldSelected();
+  }, [isDiscardPhase, isMeldPhase, meldPointInfo.below, handleDiscard, handleMeldSelected]);
 
   useCardKeyboardNav({
     cardCount: humanCardCount,

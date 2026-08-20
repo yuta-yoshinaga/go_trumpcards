@@ -197,6 +197,24 @@ describe('CanastaPage', () => {
     expect(screen.getByRole('button', { name: 'メルドする' })).toBeDisabled();
   });
 
+  // **キーボードの確定も同じ門番を通す** (#6165 レビュー指摘)。ボタンだけ
+  // 無効化しても Enter が素通りすれば、直したはずのサーバ拒否が残る。
+  it('does not meld from the keyboard while the selection is under the minimum', async () => {
+    mockExec.mockResolvedValue(meldPhaseState);
+    renderWithProviders(<CanastaPage />);
+    await screen.findByTestId('ca-meld-points');
+
+    fireEvent.click(screen.getByRole('button', { name: '♠ 7' }));
+    fireEvent.click(screen.getByRole('button', { name: '♣ 7' }));
+    fireEvent.click(screen.getByRole('button', { name: '♥ 7' }));
+    await waitFor(() => expect(screen.getByTestId('ca-meld-points')).toHaveTextContent('選択合計: 15'));
+
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'Enter' });
+    await waitFor(() => expect(screen.getByTestId('ca-meld-points')).toBeInTheDocument());
+    expect(mockExec).not.toHaveBeenCalledWith('meld', expect.anything());
+  });
+
   // **既に上がっているチームには最低点が無い。** ここまで無効化すると、
   // 開いた後のメルドが打てなくなる。
   it('keeps the meld live once the initial meld is made', async () => {
