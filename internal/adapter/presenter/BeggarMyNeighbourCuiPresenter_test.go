@@ -153,3 +153,63 @@ func TestBeggarMyNeighbourCuiPresenter_ShowsTheRoundProgress(t *testing.T) {
 	g.SetRoundsPlayedForTest(1)
 	assert.Contains(t, p.Output(g, nil), "ラウンド: 1 / 500")
 }
+
+// #5682: Web は 52 枚のうちどちらが優勢かを色分けバーで常時出しているのに、CUI は
+// 山札・捨て札・合計の生数値だけだった。**autoplay で何百ラウンドも回せるゲーム**
+// なので、最終局面を CUI で追う人ほど「今どちらが勝っているか」を素早く読みたい。
+func TestBeggarMyNeighbourCuiPresenter_ShowsTheShare(t *testing.T) {
+	p := new(presenter.BeggarMyNeighbourCuiPresenter)
+	card := func(v int) *domain.Card { return domain.NewCard(domain.CardDesignSpade, v, false) }
+
+	seed := func(humanCards, cpuCards int) *domain.BeggarMyNeighbour {
+		g := setupBeggarMyNeighbourTest()
+		for _, idx := range []int{0, 1} {
+			pl := g.GetPlayer(idx)
+			pl.ResetPiles()
+			n := humanCards
+			if idx == 1 {
+				n = cpuCards
+			}
+			for i := 0; i < n; i++ {
+				pl.AddToDrawPile(card(1))
+			}
+		}
+		return g
+	}
+
+	t.Run("reports the human share of the held cards", func(t *testing.T) {
+		// 39 対 13 = 75%。
+		out := p.Output(seed(39, 13), nil)
+
+		assert.Contains(t, out, i18n.Tf("beggarmyneighbour.share", "you", "75", "cpu", "25"))
+	})
+
+	// **0 枚でも 0 除算しない** (受け入れ条件2)。両者 0 は 50/50 とする (Web と同じ)。
+	t.Run("does not divide by zero when nobody holds a card", func(t *testing.T) {
+		out := p.Output(seed(0, 0), nil)
+
+		assert.Contains(t, out, i18n.Tf("beggarmyneighbour.share", "you", "50", "cpu", "50"))
+	})
+
+	t.Run("reads 100/0 once one side holds everything", func(t *testing.T) {
+		out := p.Output(seed(52, 0), nil)
+
+		assert.Contains(t, out, i18n.Tf("beggarmyneighbour.share", "you", "100", "cpu", "0"))
+	})
+
+	// **Web と同じ四捨五入。**2/3 = 66.67% を切り捨てると 66 になり、Web の
+	// Math.round (67) とずれる。
+	t.Run("rounds like the web page does", func(t *testing.T) {
+		out := p.Output(seed(2, 1), nil)
+
+		assert.Contains(t, out, i18n.Tf("beggarmyneighbour.share", "you", "67", "cpu", "33"))
+	})
+
+	// 既存の生数値の行は残す。
+	t.Run("keeps the raw pile counts", func(t *testing.T) {
+		out := p.Output(seed(39, 13), nil)
+
+		assert.Contains(t, out, i18n.Tf("beggarmyneighbour.humanStats",
+			"draw", "39", "discard", "0", "total", "39"))
+	})
+}
