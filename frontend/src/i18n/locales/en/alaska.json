@@ -31,12 +31,12 @@
   },
   "tutorial": {
     "foundation": "Build up cards A→K by suit here.",
-    "tableau": "Cards are dealt here. Click or drag face-up cards. Tableau-to-tableau moves require the SAME suit, descending.",
+    "tableau": "Cards are dealt here. Click or drag face-up cards. Tableau-to-tableau moves require the SAME suit but may build up or down, and an empty column accepts any card.",
     "controls": "Action buttons: hint, give up, undo.",
     "resetButton": "Start a new game."
   },
   "nav": {
-    "alaska": "Russian Solitaire"
+    "alaska": "Alaska"
   },
   "tableauRule": "Tableau moves must be the same suit, one rank up OR down — unlike Yukon, alternating colours will not connect, but Alaska builds in both directions. Any card may go to an empty column. Face-down cards can't be moved.",
   "faceDownRule": "Face-down cards can't be moved — only face-up cards are playable",

@@ -24,7 +24,6 @@ go run ./cmd/trumpcards --lang en alaska # 英語
 - タブロー → タブロー: 表向きカードとその上のカード全てをまとめて移動可能（**同スートで昇順または降順** — Yukon は異色降順、Russian Solitaire は同スート降順のみ）
 - 空の列: **任意の札**を置けます（Yukon / Russian Solitaire は K のみ）
 - タブロー → ファンデーション: 列最上段のみ（同スート・昇順）
-- 空の列にはKのみ配置可能
 
 ## ゲームの流れ
 

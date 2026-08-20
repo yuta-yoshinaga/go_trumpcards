@@ -93,14 +93,14 @@ describe('AlaskaPage', () => {
   it('shows the face-down rule note and gives face-down cards concise positional labels', async () => {
     renderWithProviders(<AlaskaPage />);
     await waitFor(() => expect(screen.getByTestId('alaska-facedown-rule')).toBeInTheDocument());
-    // **Alaska を Yukon / Russian Solitaire と取り違えさせない (#4789 と同じ理由)。**
+    // **Alaska を Yukon / Alaska と取り違えさせない (#4789 と同じ理由)。**
     // 「裏向きは動かせない」だけでは、交互色で積もうとする人も、降順しか繋げないと
     // 思い込む人も救えない。昇順にも積めることと空列が自由なことが Alaska の要点。
     const rule = () => screen.getByTestId('alaska-facedown-rule');
     expect(rule()).toHaveTextContent('同じスートで1つ上または1つ下');
     expect(rule()).toHaveTextContent('交互色では繋げません');
     expect(rule()).toHaveTextContent('空の列には任意の札を置けます');
-    // Negative control: the note must not still be showing Russian Solitaire's
+    // Negative control: the note must not still be showing Alaska's
     // descending-only rule, which is what this file was cloned from.
     expect(rule()).not.toHaveTextContent('同じスートで1つ下。');
     // The rule text lives only in the note, not repeated on every card label.

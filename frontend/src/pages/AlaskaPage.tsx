@@ -44,7 +44,7 @@ import { isTableauAllFaceUp } from '../utils/solitaireUtils';
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
 const noop = () => {};
 
-/** Russian Solitaire tutorial step definitions. */
+/** Alaska tutorial step definitions. */
 const RS_TUTORIAL_STEPS: TutorialStep[] = [
   {
     target: '[data-tutorial="rs-foundation"]',
@@ -72,7 +72,7 @@ const RS_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Format Russian Solitaire state for CLI display. */
+/** Format Alaska state for CLI display. */
 function formatAlaskaState(state: AlaskaResponse): string {
   const lines: string[] = [];
   lines.push('Foundation:');
@@ -94,9 +94,9 @@ function formatAlaskaState(state: AlaskaResponse): string {
   return lines.join('\n');
 }
 
-/** Renders the Russian Solitaire game page. */
+/** Renders the Alaska game page. */
 export const AlaskaPage = withTutorial(AlaskaPageContent, 'alaska', RS_TUTORIAL_STEPS);
-/** Inner content of the Russian Solitaire page. */
+/** Inner content of the Alaska page. */
 function AlaskaPageContent() {
   const {
     t,
@@ -126,7 +126,7 @@ function AlaskaPageContent() {
 
   const [selectedSource, setSelectedSource] = useState<AlaskaMoveZone | null>(null);
   /**
-   * The tableau coordinate the mouse is currently over. Russian Solitaire
+   * The tableau coordinate the mouse is currently over. Alaska
    * lets a player grab any face-up card AND drag every card above it as a
    * loose block, so on hover we glow every card from `cardIdx` to the column's
    * tail to make the moving block visually unambiguous.

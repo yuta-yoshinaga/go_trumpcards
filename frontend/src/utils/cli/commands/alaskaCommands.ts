@@ -6,7 +6,7 @@ type AlaskaArgs = Parameters<typeof alaskaHintApi.exec>;
 
 const VALID_COMMANDS = ['m', 'move', 'g', 'giveup', 'h', 'hint', 'ac', 'autocomplete', 'u', 'undo', 'r', 'reset'];
 
-/** Parse a Russian Solitaire CLI command into API call arguments. */
+/** Parse a Alaska CLI command into API call arguments. */
 export function parseAlaskaCommand(input: string): CliParseResult<AlaskaArgs> {
   const { cmd, args } = splitCommand(input);
   switch (cmd) {
@@ -53,7 +53,7 @@ export function parseAlaskaCommand(input: string): CliParseResult<AlaskaArgs> {
   }
 }
 
-/** Help text for Russian Solitaire CLI mode. */
+/** Help text for Alaska CLI mode. */
 export const RS_HELP: string[] = [
   'm <from> <to>          Move a tableau column block (top face-up card)',
   'm <from> <cardIdx> <to>  Move starting from a specific face-up card',

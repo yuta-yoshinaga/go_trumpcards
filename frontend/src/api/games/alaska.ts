@@ -4,14 +4,14 @@
 import type { AlaskaResponse } from '../../types/card';
 import { createSolitaireMoveApi } from '../gameExec';
 
-/** Source or target zone for a Russian Solitaire card move. */
+/** Source or target zone for a Alaska card move. */
 export interface AlaskaMoveZone {
   zone: string;
   col?: number;
   cardIndex?: number;
 }
 
-/** API client for the Russian Solitaire /alaska/exec endpoint. */
+/** API client for the Alaska /alaska/exec endpoint. */
 export const alaskaHintApi = createSolitaireMoveApi<
   AlaskaResponse,
   AlaskaMoveZone,

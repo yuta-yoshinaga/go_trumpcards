@@ -4,7 +4,7 @@
 import type { BaseGameResponse, Card } from '../common';
 import type { KlondikeTableauCard } from './klondike';
 
-/** A suggested move hint in Russian Solitaire. */
+/** A suggested move hint in Alaska. */
 export interface AlaskaHint {
   fromCol: number;
   cardIndex: number;
@@ -12,7 +12,7 @@ export interface AlaskaHint {
   toCol: number;
 }
 
-/** API response shape for a Russian Solitaire game. */
+/** API response shape for a Alaska game. */
 export interface AlaskaResponse extends BaseGameResponse {
   tableau: KlondikeTableauCard[][];
   foundation: Card[][];

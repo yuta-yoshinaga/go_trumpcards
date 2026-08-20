@@ -555,12 +555,12 @@ func (s *alaskaSnapshot) UnmarshalJSON(data []byte) error {
 	}
 	for _, col := range j.Tableau {
 		if len(col) > alaskaMaxSliceLen {
-			return fmt.Errorf("russiansolitaire: snapshot tableau column exceeds maximum allowed size")
+			return fmt.Errorf("alaska: snapshot tableau column exceeds maximum allowed size")
 		}
 	}
 	for _, pile := range j.Foundation {
 		if len(pile) > alaskaMaxSliceLen {
-			return fmt.Errorf("russiansolitaire: snapshot foundation pile exceeds maximum allowed size")
+			return fmt.Errorf("alaska: snapshot foundation pile exceeds maximum allowed size")
 		}
 	}
 	s.tableau = j.Tableau
@@ -596,16 +596,16 @@ func (y *Alaska) UnmarshalJSON(data []byte) error {
 	}
 	if len(j.ActionLog) > alaskaMaxSliceLen ||
 		len(j.History) > alaskaMaxSliceLen {
-		return fmt.Errorf("russiansolitaire: input array exceeds maximum allowed size")
+		return fmt.Errorf("alaska: input array exceeds maximum allowed size")
 	}
 	for _, col := range j.Tableau {
 		if len(col) > alaskaMaxSliceLen {
-			return fmt.Errorf("russiansolitaire: tableau column exceeds maximum allowed size")
+			return fmt.Errorf("alaska: tableau column exceeds maximum allowed size")
 		}
 	}
 	for _, pile := range j.Foundation {
 		if len(pile) > alaskaMaxSliceLen {
-			return fmt.Errorf("russiansolitaire: foundation pile exceeds maximum allowed size")
+			return fmt.Errorf("alaska: foundation pile exceeds maximum allowed size")
 		}
 	}
 
