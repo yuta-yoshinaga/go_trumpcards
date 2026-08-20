@@ -13,6 +13,7 @@
   "playerLine": "{{name}}: 累積{{cum}}点 ラウンド{{round}}点 {{cards}}枚",
   "eliminatedTag": "[脱落]",
   "knockerMeldLine": "  ノッカーのメルド: {{cards}}",
+  "knockerMeldLabelled": "  ノッカーのメルド [{{label}}]: {{cards}}",
   "gameEnd": "ゲーム終了！ {{name}}の勝利です！",
   "drawBanner": "ゲーム終了！ 勝者なし",
   "draw": "勝者なし",

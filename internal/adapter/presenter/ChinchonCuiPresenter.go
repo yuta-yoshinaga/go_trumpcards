@@ -56,6 +56,71 @@ func chinchonMeldSplitLines(g interfaces.ChinchonGame, idx int) string {
 	return b.String()
 }
 
+// chinchonMeldLabel はメルドの種別ラベルを返す。同ランクならランク名 ("7")、
+// 同スートの連番ならスート記号と範囲 ("♠ 7-Q")。空のメルドは空文字。
+//
+// Web の chinchonMeldLabel と同じ形。並び順は domain.ChinchonRankPosition に
+// 従う -- 8/9/10 を抜いた 40 枚デッキなので、7 の次は J になる。
+func chinchonMeldLabel(meld []*domain.Card) string {
+	if len(meld) == 0 {
+		return ""
+	}
+	first := meld[0]
+	sameRank := true
+	for _, c := range meld[1:] {
+		if c.GetValue() != first.GetValue() {
+			sameRank = false
+			break
+		}
+	}
+	if sameRank {
+		return cuiRankName(first.GetValue())
+	}
+	low, high := first, first
+	for _, c := range meld[1:] {
+		if domain.ChinchonRankPosition(c.GetValue()) < domain.ChinchonRankPosition(low.GetValue()) {
+			low = c
+		}
+		if domain.ChinchonRankPosition(c.GetValue()) > domain.ChinchonRankPosition(high.GetValue()) {
+			high = c
+		}
+	}
+	return chinchonSuitSymbol(first.GetDesign()) + " " +
+		cuiRankName(low.GetValue()) + "-" + cuiRankName(high.GetValue())
+}
+
+// chinchonSuitSymbol はスート記号を返す。
+func chinchonSuitSymbol(design int) string {
+	switch design {
+	case domain.CardDesignSpade:
+		return "♠"
+	case domain.CardDesignClover:
+		return "♣"
+	case domain.CardDesignHeart:
+		return "♥"
+	case domain.CardDesignDiamond:
+		return "♦"
+	default:
+		return "?"
+	}
+}
+
+// cuiRankName は表示用のランク名を返す (A/J/Q/K は文字、それ以外は数字)。
+func cuiRankName(value int) string {
+	switch value {
+	case 1:
+		return "A"
+	case 11:
+		return "J"
+	case 12:
+		return "Q"
+	case 13:
+		return "K"
+	default:
+		return strconv.Itoa(value)
+	}
+}
+
 // ChinchonCuiPresenter renders the Chinchón CUI view.
 type ChinchonCuiPresenter struct{}
 
@@ -92,7 +157,17 @@ func (p *ChinchonCuiPresenter) Output(g interfaces.ChinchonGame, lastErr error) 
 		// レイオフフェーズではノッカーのメルドを表示する。
 		if g.GetPhase() == domain.ChinchonPhaseLayoff {
 			for _, meld := range g.GetKnockerMelds() {
-				b.WriteString(i18n.Tf("chinchon.knockerMeldLine", "cards", cuiCardSliceStr(meld)) + "\n")
+				// 空のメルドに乗せる札は無い。行だけ出しても読めるものが無い。
+				if len(meld) == 0 {
+					continue
+				}
+				// **レイオフはこのメルドに札を乗せる操作**で、セット (同ランク) か
+				// ラン (同スート連番) かで乗せられる札が変わる (#5665)。Web は
+				// chinchonMeldLabel でバッジを出しているのに、CUI は札の羅列だけで
+				// 毎回見分けさせていた。
+				b.WriteString(i18n.Tf("chinchon.knockerMeldLabelled",
+					"label", chinchonMeldLabel(meld),
+					"cards", cuiCardSliceStr(meld)) + "\n")
 			}
 		}
 
