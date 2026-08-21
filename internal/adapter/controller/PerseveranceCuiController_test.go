@@ -84,6 +84,25 @@ func TestPerseveranceCuiControllerMoveTableauToTableau(t *testing.T) {
 	assert.Equal(t, "move_output", c.Exec("m 0 5"))
 }
 
+// **同スート降順の並びの一括移動は、この game の看板ルール。**CUI に開始位置を
+// 名指しする文法が無いと、ドメインが受け取れてもプレイヤーからは永久に使えない
+// (クローン元の BakersDozen は上札しか動かさないので 2 引数形しか無かった)。
+func TestPerseveranceCuiControllerMoveRunFromIndex(t *testing.T) {
+	bi := newMockPerseveranceInteractor()
+	c := NewPerseveranceCuiController(bi)
+	bi.On("MoveTableauToTableau", 0, 1, 5).Return("run_output")
+	assert.Equal(t, "run_output", c.Exec("m 0 1 5"))
+	// 負のコントロール: -1 に落ちていないこと。落ちる実装ならこの期待値は
+	// 一度も呼ばれず、AssertCalled が落ちる。
+	bi.AssertCalled(t, "MoveTableauToTableau", 0, 1, 5)
+}
+
+func TestPerseveranceCuiControllerMoveRunInvalidIndex(t *testing.T) {
+	bi := newMockPerseveranceInteractor()
+	c := NewPerseveranceCuiController(bi)
+	assert.Contains(t, c.Exec("m 0 xyz 5"), "xyz")
+}
+
 func TestPerseveranceCuiControllerMoveErrors(t *testing.T) {
 	t.Run("move no args prompts", func(t *testing.T) {
 		bi := newMockPerseveranceInteractor()

@@ -87,16 +87,37 @@ func perseveranceDispatch(bc *baseController, w http.ResponseWriter, bi usecase.
 	return true
 }
 
+// perseveranceMoveDispatch は `move` を捌く。
+//
+// **共有の dispatchTopCardMove は使えない。**あれは「上札しか動かさないソリティア」
+// (BakersDozen / BeleagueredCastle / StreetsAndAlleys) 専用で、クライアントの
+// cardIndex を捨てて -1 を渡す契約になっている。Perseverance は同スート降順の並びを
+// 一括で動かせるので、その契約のままだと**この game の看板ルールがサーバに届かない**。
+//
+// cardIndex は信用しないのではなく**ドメインに検査させる**: MoveTableauToTableau が
+// 範囲と isRun を見て、並びになっていなければ 1 枚も動かさずに弾く。省略時は -1 に
+// 落として従来どおり上札を動かす。
 func perseveranceMoveDispatch(bc *baseController, w http.ResponseWriter, bi usecase.PerseveranceInteractorIF, param PerseveranceWebInput, newDefault func(string) *PerseveranceWebOutput) bool {
-	mv := topCardMove{haveFrom: param.From != nil, haveTo: param.To != nil}
-	if param.From != nil {
-		mv.fromZone, mv.fromCol = param.From.Zone, param.From.Col
+	if !requireParam(bc, w, newDefault, param.From == nil || param.To == nil, "param error: from and to are required.") {
+		return true
 	}
-	if param.To != nil {
-		mv.toZone, mv.toCol = param.To.Zone, param.To.Col
+	switch {
+	case param.From.Zone == "tableau" && param.To.Zone == "tableau":
+		if !requireParam(bc, w, newDefault, param.From.Col == nil || param.To.Col == nil, "param error: from.col and to.col are required.") {
+			return true
+		}
+		cardIndex := -1
+		if param.From.CardIndex != nil {
+			cardIndex = *param.From.CardIndex
+		}
+		bc.writePresenterResponse(w, bi.MoveTableauToTableau(*param.From.Col, cardIndex, *param.To.Col))
+	case param.From.Zone == "tableau" && param.To.Zone == "foundation":
+		if !requireParam(bc, w, newDefault, param.From.Col == nil, "param error: from.col is required.") {
+			return true
+		}
+		bc.writePresenterResponse(w, bi.MoveTableauToFoundation(*param.From.Col))
+	default:
+		bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: invalid move zones."))
 	}
-	return dispatchTopCardMove(bc, w, mv, topCardMoveFns{
-		tableauToTableau:    bi.MoveTableauToTableau,
-		tableauToFoundation: bi.MoveTableauToFoundation,
-	}, newDefault)
+	return true
 }

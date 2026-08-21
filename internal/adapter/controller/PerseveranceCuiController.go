@@ -60,8 +60,13 @@ func (c *PerseveranceCuiController) handleTargets(args []string) string {
 // handleMove 移動コマンドを処理
 // Perseverance has no waste/stock; supported syntax:
 //
-//	m <fromCol> <toCol>   - move top card between tableau columns
-//	m <fromCol> f         - move top card to foundation
+//	m <fromCol> <toCol>        - move top card between tableau columns
+//	m <fromCol> <idx> <toCol>  - move the run starting at <idx> between columns
+//	m <fromCol> f              - move top card to foundation
+//
+// **3 引数形が無いと、同スート降順の並びを一括で動かせない。**ドメインは
+// cardIndex を受け取れるのに、CUI から名指しする文法が無ければ看板ルールが
+// CUI では死ぬ。索引の妥当性はドメイン (範囲 + isRun) に検査させる。
 func (c *PerseveranceCuiController) handleMove(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("promptFromColumn"), "m {0}")
@@ -75,6 +80,18 @@ func (c *PerseveranceCuiController) handleMove(args []string) string {
 	}
 	if args[1] == "f" {
 		return c.bi.MoveTableauToFoundation(fromCol)
+	}
+	// 3 引数形: 真ん中が列内の開始位置。
+	if len(args) >= 3 {
+		cardIndex, err := strconv.Atoi(args[1])
+		if err != nil {
+			return invalidArg("invalidColumn", "val", args[1])
+		}
+		toCol, err := strconv.Atoi(args[2])
+		if err != nil {
+			return invalidArg("invalidColumn", "val", args[2])
+		}
+		return c.bi.MoveTableauToTableau(fromCol, cardIndex, toCol)
 	}
 	toCol, err := strconv.Atoi(args[1])
 	if err != nil {

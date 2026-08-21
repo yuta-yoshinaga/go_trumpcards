@@ -1,7 +1,7 @@
 {
   "helpTitle": "Perseverance",
   "helpMoveTF": "  m <col> f            move tableau to foundation",
-  "helpMoveTT": "  m <fromCol> <toCol>  move between tableau cols (a same-suit run travels together)",
+  "helpMoveTT": "  m <fromCol> <toCol>  move between tableau cols (m <col> <idx> <col> moves a run)",
   "helpGiveUp": "  g                    give up",
   "helpHint": "  h                    hint",
   "helpAutoComplete": "  ac                   auto-complete",

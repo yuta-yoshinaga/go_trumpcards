@@ -295,29 +295,58 @@ func (bd *Perseverance) GetHint() *PerseveranceHint {
 			}
 		}
 	}
-	// 優先度2: タブローからタブローへ
+	// 優先度2: タブローからタブローへ。
+	//
+	// **上札だけを見てはいけない。**Perseverance は同スート降順の並びを一括で
+	// 動かせるので、上札が行き詰まっていても、その下から始まる並びは動けることが
+	// ある。上札しか見ないと checkGameOver がまだ手のある盤を「手詰まり」と
+	// 宣言する ── クローン元の BakersDozen は 1 枚ずつしか動かせないので、
+	// あちらの走査をそのまま流用すると必ずこの穴が開く。
 	for fromCol := range PerseveranceTableauCnt {
-		fromCards := bd.tableau[fromCol]
-		if len(fromCards) == 0 {
-			continue
-		}
-		card := fromCards[len(fromCards)-1].Card
-		for toCol := range PerseveranceTableauCnt {
-			if toCol == fromCol {
-				continue
-			}
-			if bd.canPlaceOnTableau(card, toCol) {
-				return &PerseveranceHint{
-					FromCol:   fromCol,
-					CardIndex: len(fromCards) - 1,
-					ToZone:    "tableau",
-					ToCol:     toCol,
+		for _, cardIndex := range bd.runStarts(fromCol) {
+			card := bd.tableau[fromCol][cardIndex].Card
+			for toCol := range PerseveranceTableauCnt {
+				if toCol == fromCol {
+					continue
+				}
+				if bd.canPlaceOnTableau(card, toCol) {
+					return &PerseveranceHint{
+						FromCol:   fromCol,
+						CardIndex: cardIndex,
+						ToZone:    "tableau",
+						ToCol:     toCol,
+					}
 				}
 			}
 		}
 	}
 	return nil
 }
+
+// runStarts は列 col で「そこから上が同スート降順に並んでいる」開始位置を、
+// 上札から順に返す。
+//
+// 動かせる単位はこの位置から上の塊だけなので、合法手の探索も UI の選択可否も
+// この一覧で決まる。並びは必ず上札から連続するため、上から下へ 1 つずつ伸ばして
+// 崩れた時点で止めればよい。
+func (bd *Perseverance) runStarts(col int) []int {
+	if col < 0 || col >= PerseveranceTableauCnt {
+		return nil
+	}
+	cards := bd.tableau[col]
+	starts := make([]int, 0, len(cards))
+	for i := len(cards) - 1; i >= 0; i-- {
+		if !bd.isRun(col, i) {
+			break
+		}
+		starts = append(starts, i)
+	}
+	return starts
+}
+
+// RunStarts は列 col の移動開始位置一覧 (上札から順)。UI が「掘り下げた札を
+// 掴めるか」を判断するために使う。
+func (bd *Perseverance) RunStarts(col int) []int { return bd.runStarts(col) }
 
 // AutoComplete オートコンプリート（全ての山から可能な限りファンデーションへ）
 func (bd *Perseverance) AutoComplete() error {

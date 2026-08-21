@@ -793,3 +793,80 @@ func TestPerseverance_RedealGathersInReverseOrderWithoutShuffling(t *testing.T) 
 	assert.Len(t, bd.GetTableau()[0], 4, "as many piles of four as the cards allow")
 	assert.Len(t, bd.GetTableau()[1], 1, "the remainder forms a short final pile")
 }
+
+// **上札だけを見た手詰まり判定は、まだ手のある盤を「詰み」と宣言する。**
+// クローン元の Baker's Dozen は 1 枚ずつしか動かせないので上札の走査で足りるが、
+// Perseverance は並びを一括で動かせる。上札が行き詰まっていても、その下から
+// 始まる並びが動けることがある。
+func TestPerseverance_StalemateSeesRunMoves(t *testing.T) {
+	bd := setupPlayingPerseverance()
+	clearPVTableau(bd)
+
+	tableau := bd.GetTableau()
+	// 列0 の上札は ♠7。行き先の ♠8 はどこにも無い。
+	// だが ♠8-♠7 は同スート降順の並びで、♠9 の上へ一括で動かせる。
+	tableau[0] = []*domain.PerseveranceTableauCard{
+		makePVTableauCard(domain.CardDesignHeart, domain.CardValueMax),
+		makePVTableauCard(domain.CardDesignSpade, 8),
+		makePVTableauCard(domain.CardDesignSpade, 7),
+	}
+	tableau[1] = []*domain.PerseveranceTableauCard{makePVTableauCard(domain.CardDesignSpade, 9)}
+	// 一括移動のあとにも手が残るようにしておく。残らない盤で isStalemate を見ると
+	// 「詰みでない」ことではなく「その手が最後だった」ことを測ってしまう。
+	tableau[2] = []*domain.PerseveranceTableauCard{makePVTableauCard(domain.CardDesignDiamond, 4)}
+	tableau[3] = []*domain.PerseveranceTableauCard{makePVTableauCard(domain.CardDesignDiamond, 5)}
+	bd.SetTableau(tableau)
+
+	hint := bd.GetHint()
+	require.NotNil(t, hint, "the run move exists, so this board is not stuck")
+	assert.Equal(t, 0, hint.FromCol)
+	assert.Equal(t, 1, hint.CardIndex, "the hint names the run start, not the top card")
+	assert.Equal(t, "tableau", hint.ToZone)
+	assert.Equal(t, 1, hint.ToCol)
+
+	// **IsStalemate() をここで読んではいけない。**SetTableau は再計算しないので、
+	// 直前の Reset が配った盤の判定が残っている ── つまり配り依存で、
+	// パッケージ全体を回したときだけ落ちる。手を実際に指せば checkStalemate が
+	// 走り、そのときの値は盤から決まる。
+	require.NoError(t, bd.MoveTableauToTableau(0, 1, 1), "the run the hint named is actually legal")
+	assert.False(t, bd.IsStalemate(), "a board with a legal run move is not a stalemate")
+	assert.Len(t, bd.GetTableau()[1], 3, "♠9 plus the two that travelled with it")
+	assert.Len(t, bd.GetTableau()[0], 1, "only the ♥K stays behind")
+}
+
+// 負のコントロール: 並びが崩れていれば、同じ形でも本当に詰み。
+func TestPerseverance_StalemateWhenTheRunIsBroken(t *testing.T) {
+	bd := setupPlayingPerseverance()
+	clearPVTableau(bd)
+
+	tableau := bd.GetTableau()
+	// ♦8 ♠7 はスートが違うので並びではない。♠7 単体の行き先も無い。
+	tableau[0] = []*domain.PerseveranceTableauCard{
+		makePVTableauCard(domain.CardDesignHeart, domain.CardValueMax),
+		makePVTableauCard(domain.CardDesignDiamond, 8),
+		makePVTableauCard(domain.CardDesignSpade, 7),
+	}
+	tableau[1] = []*domain.PerseveranceTableauCard{makePVTableauCard(domain.CardDesignSpade, 9)}
+	bd.SetTableau(tableau)
+
+	assert.Nil(t, bd.GetHint(), "no single card and no run can move")
+}
+
+func TestPerseverance_RunStartsWalksUpFromTheTop(t *testing.T) {
+	bd := setupPlayingPerseverance()
+	clearPVTableau(bd)
+
+	tableau := bd.GetTableau()
+	// ♥K ♠9 ♠8 ♠7: 並びは上3枚 (index 1,2,3)。♥K で切れる。
+	tableau[0] = []*domain.PerseveranceTableauCard{
+		makePVTableauCard(domain.CardDesignHeart, domain.CardValueMax),
+		makePVTableauCard(domain.CardDesignSpade, 9),
+		makePVTableauCard(domain.CardDesignSpade, 8),
+		makePVTableauCard(domain.CardDesignSpade, 7),
+	}
+	bd.SetTableau(tableau)
+
+	assert.Equal(t, []int{3, 2, 1}, bd.RunStarts(0), "top card first, stopping where the run breaks")
+	assert.Empty(t, bd.RunStarts(1), "an empty column has no run start")
+	assert.Nil(t, bd.RunStarts(domain.PerseveranceTableauCnt), "out of range is nil, not a panic")
+}

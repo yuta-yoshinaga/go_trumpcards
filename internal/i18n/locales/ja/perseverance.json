@@ -1,7 +1,7 @@
 {
   "helpTitle": "Perseverance (パーシビアランス)",
   "helpMoveTF": "  m <col> f            タブローから組札へ",
-  "helpMoveTT": "  m <fromCol> <toCol>  タブロー間で移動 (同スート降順の並びは一括)",
+  "helpMoveTT": "  m <fromCol> <toCol>  タブロー間で移動 (m <列> <位置> <列> で並びを一括)",
   "helpGiveUp": "  g                    ギブアップ",
   "helpHint": "  h                    ヒント",
   "helpAutoComplete": "  ac                   オートコンプリート",

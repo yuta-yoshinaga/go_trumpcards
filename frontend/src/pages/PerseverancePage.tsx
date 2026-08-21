@@ -36,7 +36,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { PERSEVERANCE_HELP, parsePerseveranceCommand } from '../utils/cli/commands/perseveranceCommands';
 import { formatPerseveranceState } from '../utils/cli/formatters/perseveranceFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { perseveranceLegalTargets } from '../utils/perseveranceLegalTargets';
+import { perseveranceLegalTargets, perseveranceStartsRun } from '../utils/perseveranceLegalTargets';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
@@ -374,6 +374,12 @@ function PerseverancePageContent() {
                               cardIndex: cardIdx,
                             };
                             const isTop = cardIdx === col.length - 1;
+                            // **掴めるのは上札だけではない。**同スート降順の並びは
+                            // 一括で動かせるので、その開始位置ならどれでも掴める。
+                            // クローン元 (Baker's Dozen) は 1 枚ずつなので isTop だけで
+                            // 足りたが、それを残すとこの game の看板ルールが UI から
+                            // 一切使えなくなる。
+                            const canGrab = perseveranceStartsRun(col, cardIdx);
                             const isLastInCol = isTop && col.length === 1;
                             const isSelected = isSourceSelected('tableau', colIdx, cardIdx);
                             const showEmptyColumnWarning = isLastInCol && isSelected;
@@ -393,24 +399,24 @@ function PerseverancePageContent() {
                                 {tc.card ? (
                                   <button
                                     type="button"
-                                    // **動かせる札だけがプレビューを持つ。** 埋もれた札に
+                                    // **動かせる札だけがプレビューを持つ。** 掴めない札に
                                     // 出しても、その札は選べないので嘘になる。
-                                    {...(isTop ? preview.previewProps(cardZone) : {})}
+                                    {...(canGrab ? preview.previewProps(cardZone) : {})}
                                     data-testid={isLastInCol ? `bd-last-card-${colIdx}` : undefined}
                                     onClick={() => {
                                       if (selectedSource) {
                                         handleSelectTarget(tableauColZone);
-                                      } else if (isTop) {
+                                      } else if (canGrab) {
                                         handleSelectSource(cardZone);
                                       }
                                     }}
-                                    disabled={!isPlaying || loading || (!isTop && !selectedSource)}
+                                    disabled={!isPlaying || loading || (!canGrab && !selectedSource)}
                                     aria-label={cardAlt(tc.card)}
                                     aria-pressed={isSelected}
-                                    draggable={isPlaying && !loading && isTop}
+                                    draggable={isPlaying && !loading && canGrab}
                                     onDragStart={dnd.handleDragStart(cardZone)}
                                     onDragEnd={dnd.handleDragEnd}
-                                    className={`p-0 border-0 bg-transparent w-full rounded ${focusRingWhite} ${isTop ? 'cursor-pointer' : 'cursor-default'} ${ringClass} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
+                                    className={`p-0 border-0 bg-transparent w-full rounded ${focusRingWhite} ${canGrab ? 'cursor-pointer' : 'cursor-default'} ${ringClass} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
                                     title={isLastInCol ? t('lastCardWarning') : undefined}
                                   >
                                     <AnimatedCard

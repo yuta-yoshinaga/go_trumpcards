@@ -37,6 +37,9 @@ func TestPerseveranceWebController_Method(t *testing.T) {
 	biMock.On("AutoComplete").Return(mockOutput)
 	biMock.On("ActionLog").Return(mockOutput)
 	biMock.On("MoveTableauToTableau", 0, -1, 5).Return(mockOutput)
+	// **並びの一括移動はこの game の看板ルール。**クライアントが送った cardIndex が
+	// ドメインまで届くことを、-1 とは別の期待値で見る。
+	biMock.On("MoveTableauToTableau", 0, 1, 5).Return(mockOutput)
 	biMock.On("MoveTableauToFoundation", 1).Return(mockOutput)
 	biMock.On("Undo").Return(mockOutput)
 	biMock.On("UndoN", 2).Return(mockOutput)
@@ -124,13 +127,19 @@ func TestPerseveranceWebController_Method(t *testing.T) {
 		recorded.BodyIs(expectedBody)
 	})
 
-	t.Run("move tableau to tableau ignores client cardIndex", func(t *testing.T) {
-		// Client sends cardIndex=99 but the server should pass -1 to the domain.
+	// **クローン元 (BakersDozen) の期待値をそのまま持ってくると、この game の看板
+	// ルールを塞ぐテストになる。**あちらは上札しか動かさないので cardIndex を捨てるのが
+	// 正しく、その名残が "ignores client cardIndex" という名前で残っていた。
+	// Perseverance では逆で、届かなければ並びの一括移動が永久に使えない。
+	t.Run("move tableau to tableau forwards the client cardIndex", func(t *testing.T) {
 		var input controller.PerseveranceWebInput
-		_ = json.Unmarshal([]byte(`{"command":"m","sessionId":"s1","from":{"zone":"tableau","col":0,"cardIndex":99},"to":{"zone":"tableau","col":5}}`), &input)
+		_ = json.Unmarshal([]byte(`{"command":"m","sessionId":"s1","from":{"zone":"tableau","col":0,"cardIndex":1},"to":{"zone":"tableau","col":5}}`), &input)
 		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.BodyIs(expectedBody)
+		// 負のコントロール: -1 ではなく 1 が渡ったこと。-1 を渡す実装なら、この
+		// 期待値は一度も呼ばれない。
+		biMock.AssertCalled(t, "MoveTableauToTableau", 0, 1, 5)
 	})
 
 	t.Run("move tableau to foundation", func(t *testing.T) {

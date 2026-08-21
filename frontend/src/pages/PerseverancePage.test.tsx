@@ -494,3 +494,56 @@ describe('PerseverancePage redeal', () => {
     expect(screen.getByTestId('redeal-button').className).not.toContain('animate-pulse');
   });
 });
+
+// **並びの一括移動は、盤から掴めなければ存在しないのと同じ。**ドメインは
+// cardIndex を受け取れるのに、UI が上札しか選ばせないと看板ルールが死ぬ。
+// クローン元の Baker's Dozen は 1 枚ずつなので isTop 判定で正しかった。
+describe('PerseverancePage run moves', () => {
+  // 列0 は ♥K ♠9 ♠8 — 上2枚が同スート降順の並び。♥K はその下で切れている。
+  const runState: PerseveranceResponse = {
+    ...playingState,
+    tableau: makeTableau([
+      [
+        { card: card('HEART', 13), faceUp: true },
+        { card: card('SPADE', 9), faceUp: true },
+        { card: card('SPADE', 8), faceUp: true },
+      ],
+      [{ card: card('SPADE', 10), faceUp: true }],
+    ]),
+  };
+
+  it('lets a buried card that starts a run be selected', async () => {
+    mockExec.mockResolvedValue(runState);
+    renderWithProviders(<PerseverancePage />);
+    const runStart = await screen.findByRole('button', { name: '♠ 9' });
+    expect(runStart).toBeEnabled();
+
+    fireEvent.click(runStart);
+    await waitFor(() => expect(runStart).toHaveAttribute('aria-pressed', 'true'));
+  });
+
+  // 負のコントロール: 並びが切れた下の札は掴めないまま。
+  it('still refuses a card below the break', async () => {
+    mockExec.mockResolvedValue(runState);
+    renderWithProviders(<PerseverancePage />);
+    const buried = await screen.findByRole('button', { name: '♥ K' });
+    expect(buried).toBeDisabled();
+  });
+
+  // **サーバに cardIndex が届かなければ、選べても一括移動にはならない。**
+  it('sends the run start index, not the top card', async () => {
+    mockExec.mockResolvedValue(runState);
+    renderWithProviders(<PerseverancePage />);
+    fireEvent.click(await screen.findByRole('button', { name: '♠ 9' }));
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: '♠ 10' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith(
+        'move',
+        { zone: 'tableau', col: 0, cardIndex: 1 },
+        expect.objectContaining({ zone: 'tableau', col: 1 }),
+      ),
+    );
+  });
+});
