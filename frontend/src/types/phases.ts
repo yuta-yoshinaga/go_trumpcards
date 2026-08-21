@@ -2649,6 +2649,13 @@ export const CongressPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Salic Law phase constants (sync: internal/domain/SalicLaw.go). */
+export const SalicLawPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** American Toad phase constants (sync: internal/domain/AmericanToad.go). */
 export const AmericanToadPhase = {
   PLAYING: 0,

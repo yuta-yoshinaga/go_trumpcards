@@ -6387,6 +6387,28 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                        action log"},
 		}),
+	BindCuiFor("saliclaw",
+		func() usecase.SalicLawInteractorIF {
+			return usecase.NewSalicLawInteractor(domain.NewDefaultSalicLaw(), new(presenter.SalicLawCuiPresenter))
+		},
+		controller.NewSalicLawCuiController,
+		CuiHelpSpec{
+			TitleKey: "saliclaw.helpTitle",
+			ExampleKeys: []string{
+				"saliclaw.helpExampleHint",
+				"saliclaw.helpExampleAuto",
+			},
+			CommandKeys: []string{
+				"saliclaw.helpDraw",
+				"saliclaw.helpMoveTF",
+				"saliclaw.helpMoveTT",
+				"saliclaw.helpGiveUp",
+				"saliclaw.helpHint",
+				"saliclaw.helpAutoComplete",
+				"saliclaw.helpUndo",
+			},
+			ExtraCommandLines: []string{"  l                        action log"},
+		}),
 }
 
 // GameRegistry returns a copy of the game registry for external use.

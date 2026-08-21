@@ -1,0 +1,52 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
+  "foundation": "組札",
+  "tableau": "場札",
+  "stock": "山札",
+  "queens": "退場したクイーン",
+  "draw": "配る",
+  "moveCount": "手数",
+  "giveup": "ギブアップ",
+  "empty": "未開放",
+  "bareKing": "Kのみ",
+  "foundationAriaLabel": "組札{{idx}} {{count}}枚",
+  "emptyFoundationAriaLabel": "空の組札{{idx}} (A から、スートは問いません)",
+  "emptyPileAriaLabel": "列 {{pile}} はまだ開いていません (K が出ると開きます)",
+  "bareKingPileAriaLabel": "列 {{pile}} は K のみ。任意の札を置けます",
+  "queensAriaLabel": "退場したクイーン {{count}}枚。飾りで、動かせません",
+  "stockAriaLabel": "山札 残り{{count}}枚",
+  "emptyStockAriaLabel": "山札は空です（めくり直しはありません）",
+  "landscapeBanner": "横画面での表示を推奨します",
+  "hint": "ヒント",
+  "autoComplete": "自動完成",
+  "autoCompleteNotReady": "組札へ送れる札があると有効になります",
+  "undo": "元に戻す",
+  "stalemate": "手詰まりです",
+  "playing": "カードを移動してください",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "gameOverSummary": "組札 {{count}}/88 枚（{{percent}}%）まで到達",
+  "hintAvailable": "ヒントがあります",
+  "noHint": "ヒントはありません",
+  "tutorial": {
+    "queens": "**クイーン8枚は場に出ません。**女子の王位継承を認めないサリカ法典が名前の由来で、抜いた8枚は脇に飾るだけです。残り96枚で遊びます。",
+    "foundation": "組札は8つ。A を置いて **スートを問わず** J まで11枚積みます（Q は場に無く、K は土台に残ります）。8×11＝88枚すべてでクリアです。組札は**対応する列が開いてから**使えます。",
+    "tableau": "列は K が土台。**配ると今の列に1枚ずつ積まれ、K が出たら次の列が開きます**。捨て札は無く、配った札はそのまま列の一番上に乗るのですぐ動かせます。",
+    "bareKing": "**列同士では積めません。**唯一の例外が「K だけの列」で、そこには任意の1枚を置けます。土台の K そのものは動かせません。",
+    "controls": "配る・ヒント・元に戻す・自動完成などの操作ボタンです。"
+  },
+  "frontendHint": {
+    "tableau": "列{{pile}}",
+    "foundation": "組札{{idx}}",
+    "stock": "山札"
+  },
+  "hintReason": {
+    "toFoundation": "このカードを組札に上げると列が1枚軽くなります",
+    "toTableau": "K だけの列へ逃がして、下の札を掘り出しましょう",
+    "draw": "動かせる札が無いので、山札から1枚配って手を増やしましょう"
+  }
+}

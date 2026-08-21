@@ -230,6 +230,7 @@ import type {
   RussianPokerResponse,
   RussianSolitaireResponse,
   SakuraResponse,
+  SalicLawResponse,
   SambaResponse,
   ScartoResponse,
   SchnapsenResponse,
@@ -555,6 +556,7 @@ import { getRussianBankHint } from '../utils/hints/russianbankHint';
 import { getRussianPokerHint } from '../utils/hints/russianpokerHint';
 import { getRussianSolitaireHint } from '../utils/hints/russianSolitaireHint';
 import { getSakuraHint } from '../utils/hints/sakuraHint';
+import { getSalicLawHint } from '../utils/hints/saliclawHint';
 import { getSambaHint } from '../utils/hints/sambaHint';
 import { getScartoHint } from '../utils/hints/scartoHint';
 import { getSchnapsenHint } from '../utils/hints/schnapsenHint';
@@ -884,6 +886,7 @@ export const hintFactories = {
   windmill: (s) => getWindmillHint(s as WindmillResponse),
   americantoad: (s) => getAmericanToadHint(s as AmericanToadResponse),
   congress: (s) => getCongressHint(s as CongressResponse),
+  saliclaw: (s) => getSalicLawHint(s as SalicLawResponse),
   terrace: (s) => getTerraceHint(s as TerraceResponse),
   braid: (s) => getBraidHint(s as BraidResponse),
   missmilligan: (s) => getMissMilliganHint(s as MissMilliganResponse),

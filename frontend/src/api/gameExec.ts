@@ -111,6 +111,7 @@ export const workerUrl: Record<string, string> = {
   windmill: WORKER_EXTRA2,
   americantoad: WORKER_EXTRA2,
   congress: WORKER_EXTRA3,
+  saliclaw: WORKER_EXTRA3,
   terrace: WORKER_EXTRA3,
   braid: WORKER_EXTRA2,
   pontoon: WORKER_EXTRA2,

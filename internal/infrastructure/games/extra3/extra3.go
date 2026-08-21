@@ -157,6 +157,14 @@ func init() {
 			return usecase.RestoreCongressInteractor(data, new(presenter.CongressWebPresenter))
 		},
 		controller.NewCongressWebControllerWithProvider)
+	games.RegisterKVGame("saliclaw", games.CategoryExtra3,
+		func() usecase.SalicLawInteractorIF {
+			return usecase.NewSalicLawInteractor(domain.NewDefaultSalicLaw(), new(presenter.SalicLawWebPresenter))
+		},
+		func(data []byte) (usecase.SalicLawInteractorIF, error) {
+			return usecase.RestoreSalicLawInteractor(data, new(presenter.SalicLawWebPresenter))
+		},
+		controller.NewSalicLawWebControllerWithProvider)
 	games.RegisterKVGame("terrace", games.CategoryExtra3,
 		func() usecase.TerraceInteractorIF {
 			return usecase.NewTerraceInteractor(domain.NewDefaultTerrace(), new(presenter.TerraceWebPresenter))

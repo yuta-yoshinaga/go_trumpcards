@@ -159,6 +159,7 @@ var gameDescriptions = map[string]string{
 	"narcotic":            "Narcotic (ナルコティック)",
 	"mrsmop":              "Mrs. Mop (ミセス・モップ)",
 	"rankandfile":         "Rank and File (ランク・アンド・ファイル)",
+	"saliclaw":            "Salic Law (サリカ法典)",
 	"tonk":                "Tonk (トンク)",
 	"casinowar":           "Casino War (カジノウォー)",
 	"pitch":               "Pitch / Setback (ピッチ / セットバック)",

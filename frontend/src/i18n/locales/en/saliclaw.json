@@ -1,0 +1,52 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "foundation": "Foundations",
+  "tableau": "Tableau",
+  "stock": "Stock",
+  "queens": "Queens out of play",
+  "draw": "Deal",
+  "moveCount": "Moves",
+  "giveup": "Give Up",
+  "empty": "not open",
+  "bareKing": "king only",
+  "foundationAriaLabel": "Foundation {{idx}}, {{count}} cards",
+  "emptyFoundationAriaLabel": "Empty foundation {{idx}} (starts on an ace, any suit)",
+  "emptyPileAriaLabel": "Column {{pile}} is not open yet (a king opens it)",
+  "bareKingPileAriaLabel": "Column {{pile}} holds just its king; any card may be placed here",
+  "queensAriaLabel": "{{count}} queens taken out of play; decoration only, not movable",
+  "stockAriaLabel": "Stock, {{count}} cards left",
+  "emptyStockAriaLabel": "The stock is empty (there is no redeal)",
+  "landscapeBanner": "Landscape orientation is recommended",
+  "hint": "Hint",
+  "autoComplete": "Auto-complete",
+  "autoCompleteNotReady": "Enabled once a card can go to a foundation",
+  "undo": "Undo",
+  "stalemate": "No moves left",
+  "playing": "Move a card",
+  "gameClear": "Game clear! Moves: {{moveCount}}",
+  "gameOver": "Game Over",
+  "gameOverSummary": "Reached {{count}}/88 cards on the foundations ({{percent}}%)",
+  "hintAvailable": "A hint is available",
+  "noHint": "No hint available",
+  "tutorial": {
+    "queens": "**The eight queens never enter play.** The game is named for the Salic Law barring female succession; the removed queens sit aside as decoration. You play with the remaining 96 cards.",
+    "foundation": "There are eight foundations. Start one on an ace and build up to a jack **ignoring suit** (11 cards -- queens are out of play and kings stay put). All 8 x 11 = 88 cards wins. A foundation cannot be used until its column has been opened.",
+    "tableau": "Each column is based on a king. **Dealing puts one card on the current column, and a king opens the next one.** There is no waste: a dealt card lands on top of its column, so you can move it straight away.",
+    "bareKing": "**Columns do not build on each other.** The one exception is a column holding just its king, which will take any single card. The base king itself never moves.",
+    "controls": "Buttons for dealing, hints, undo and auto-complete."
+  },
+  "frontendHint": {
+    "tableau": "column {{pile}}",
+    "foundation": "foundation {{idx}}",
+    "stock": "the stock"
+  },
+  "hintReason": {
+    "toFoundation": "Sending this card to a foundation frees up its column",
+    "toTableau": "Park it on the bare king to dig out the card beneath",
+    "draw": "Nothing can move -- deal another card to open up a play"
+  }
+}

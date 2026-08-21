@@ -259,6 +259,8 @@ tags:
     description: Forty Thieves (フォーティシーブス) game
   - name: rankandfile
     description: Rank and File (ランク・アンド・ファイル) game - Forty Thieves variant; ten columns of four with the first three face down, tableau builds down in alternating colour, and any part of a sequence may move as a unit
+  - name: saliclaw
+    description: Salic Law (サリカ法典) game - the eight queens are out of play; kings deal out as column bases, foundations build ace to jack ignoring suit, and only a column holding just its king accepts a card
   - name: paigow
     description: Pai Gow Poker (パイゴウポーカー) game
   - name: chinesepoker
@@ -10754,6 +10756,162 @@ paths:
                     type: integer
                   message:
                     type: string
+
+  /saliclaw/exec:
+    post:
+      tags:
+        - saliclaw
+      summary: Execute a Salic Law game command
+      description: |
+        Send a command to advance the Salic Law (サリカ法典) game session
+        identified by `sessionId`. Salic Law is a single-player solitaire named
+        after the law barring female succession: **the eight queens are taken
+        out of play**, leaving 96 cards.
+
+        One king is seated as the base of the first column. Each `draw` deals
+        one card onto the current column, and **a king starts the next column**,
+        so the deal builds up eight columns of varying length. There is no
+        waste: a dealt card lands on top of its column and can be moved off
+        immediately.
+
+        The eight foundations pair with the eight columns and build **up from
+        ace to jack ignoring suit** (11 cards; queens are out of play and kings
+        stay put). A foundation cannot be used until its column has been opened
+        by a king.
+
+        **The tableau does not build.** The only tableau move is onto a column
+        holding just its king, which acts as the game's one empty space. The
+        base king itself never moves.
+
+        The game is won when all 88 non-king cards are on the foundations.
+
+        The game proceeds through these phases:
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Playing   | `0`   | Game in progress |
+        | GameClear | `1`   | All foundations complete |
+        | GameOver  | `2`   | No more moves available |
+
+        | Command        | Aliases | Description |
+        |----------------|---------|-------------|
+        | `reset`        | `r`     | Start / restart a game |
+        | `draw`         | `d`     | Deal one card from the stock onto the tableau |
+        | `move`         | `m`     | Move a card between tableau/foundation |
+        | `undo`         | `u`     | Undo the last action |
+        | `giveup`       | `g`     | Give up the current game |
+        | `hint`         | `h`     | Show a hint for the next move |
+        | `autocomplete` | `ac`    | Auto-move cards to foundations |
+        | `log`          | `l`     | View action log |
+      operationId: salicLawExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, draw, d, move, m, undo, u, undo_n, giveup, g, hint, h, autocomplete, ac, log, l]
+                from:
+                  $ref: '#/components/schemas/SalicLawMoveZone'
+                to:
+                  $ref: '#/components/schemas/SalicLawMoveZone'
+                n:
+                  type: integer
+                  description: Number of times to undo (for undo_n command)
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              draw:
+                summary: Deal the next card onto the tableau
+                value:
+                  command: draw
+                  sessionId: my-session-001
+              move:
+                summary: Send the top of column 3 to a foundation
+                value:
+                  command: move
+                  from:
+                    zone: tableau
+                    col: 3
+                  to:
+                    zone: foundation
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tableau:
+                    type: array
+                    description: 8 tableau columns; a column not yet opened by a king is empty
+                    items:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Card'
+                  foundation:
+                    type: array
+                    description: 8 foundations, each built up from ace to jack ignoring suit
+                    items:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Card'
+                  stockCount:
+                    type: integer
+                    description: Cards left to deal
+                  queens:
+                    type: array
+                    description: The eight queens taken out of play; shown only as decoration
+                    items:
+                      $ref: '#/components/schemas/Card'
+                  openPiles:
+                    type: integer
+                    description: How many columns have had their base king dealt
+                  phase:
+                    type: integer
+                    description: Current game phase (0=Playing, 1=GameClear, 2=GameOver)
+                  moveCount:
+                    type: integer
+                  canUndo:
+                    type: boolean
+                  isStalemate:
+                    type: boolean
+                  undoToEscape:
+                    type: integer
+                  hint:
+                    type: object
+                    properties:
+                      fromZone:
+                        type: string
+                      fromIdx:
+                        type: integer
+                      toZone:
+                        type: string
+                      toIdx:
+                        type: integer
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+                  messageParams:
+                    type: object
+                    additionalProperties:
+                      type: string
+        '400':
+          description: Invalid request
 
   /crescent/exec:
     post:
@@ -29755,6 +29913,23 @@ components:
             this is honoured: naming a card below the top moves that card and
             everything above it, provided they form a descending alternating-colour
             sequence. A broken sequence moves nothing.
+    SalicLawMoveZone:
+      type: object
+      description: Source or target zone for a Salic Law card move
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          description: >-
+            Zone identifier. There is no waste and the stock is not a move
+            source: a dealt card goes straight onto its column.
+          enum: [tableau, foundation]
+        col:
+          type: integer
+          description: >-
+            Column index 0-7 (required for the tableau zone). The foundation is
+            chosen by the server, so a foundation zone needs no index.
     CrescentMoveZone:
       type: object
       description: Source or target zone for a Crescent Solitaire card move
